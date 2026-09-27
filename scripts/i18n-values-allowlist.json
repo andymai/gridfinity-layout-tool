@@ -115,6 +115,7 @@
     "binDesigner.plateWidthAuto",
     "binDesigner.projectionPerspective",
     "binDesigner.radius",
+    "binDesigner.interiorFillet.radius",
     "binDesigner.scoopRadius",
     "binDesigner.scoopRadiusAutoLabel",
     "binDesigner.scoopRadiusAutoRange",

@@ -62,6 +62,13 @@ export interface BinParams {
   readonly style: BinStyle;
   readonly compartments: CompartmentConfig;
   readonly scoop: ScoopConfig;
+  /**
+   * Radius in mm rounding every compartment's wall-to-floor edges, with its
+   * vertical corners rounded to at least the same. Absent when off: the
+   * community fingerprint hashes `params` wholesale, so a design that never
+   * used the feature must not start carrying the key.
+   */
+  readonly interiorFilletMm?: number;
   readonly label: LabelTabConfig;
   readonly walls: WallConfig;
   /** Sliding tray: a rail on this bin plus the companion tray that rides it. */

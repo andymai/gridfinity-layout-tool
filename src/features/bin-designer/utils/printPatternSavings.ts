@@ -12,6 +12,7 @@ import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
 import { resolveWallPatternSides } from '@/shared/utils/wallPatternSides';
+import { interiorFilletRiseMm } from '@/shared/utils/interiorFillet';
 import { FLOOR_PATTERN_BORDER, floorWindowSpan } from '@/shared/generation/floorPatternMetrics';
 import {
   stampPatternOpenArea,
@@ -65,7 +66,7 @@ export function computeWallPatternReduction(
   const wallHeight = totalH - bottomH;
   // wallThickness clears the floor slab; the skirt is the solid band above it
   // that anchors the lowest element row. Mirrors wallPatterns.ts.
-  const bottomKeepOut = wallThickness + BOTTOM_SOLID_SKIRT;
+  const bottomKeepOut = wallThickness + BOTTOM_SOLID_SKIRT + interiorFilletRiseMm(params);
   const patternHeight = wallHeight - TOP_KEEP_OUT - bottomKeepOut;
   const minPatternH = Math.sqrt(3) * HEX_RADIUS + WEB_THICKNESS;
   if (patternHeight < minPatternH) return 0;
@@ -168,7 +169,10 @@ function dividerPatternReduction(
   // Mirrors wallPatterns.ts (cross-feature import not allowed).
   const TOP_KEEP_OUT = 1.5;
   const BOTTOM_SOLID_SKIRT = 1.5;
-  const bandHeight = dividerHeight - TOP_KEEP_OUT - (params.wallThickness + BOTTOM_SOLID_SKIRT);
+  const bandHeight =
+    dividerHeight -
+    TOP_KEEP_OUT -
+    (params.wallThickness + BOTTOM_SOLID_SKIRT + interiorFilletRiseMm(params));
   if (bandHeight <= 0) return 0;
 
   const length = totalDividerLength(params, innerW, innerD);

@@ -17,6 +17,7 @@ import {
 } from '@/features/bin-designer/types/base';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { hasSlotFreeWall, isSlottedBody } from '@/shared/utils/slotFreeWalls';
+import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 import type { ConstraintRule, ImplicationRule } from './types';
 
 export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
@@ -31,7 +32,7 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     description: 'Nesting floor has a different floor plane from floor-mounted features',
     source: 'base.lid',
     when: (p) => isNestingBase(p.base),
-    disables: ['scoop', 'inserts', 'style.slotted'],
+    disables: ['scoop', 'interiorFillet', 'inserts', 'style.slotted'],
     reason: 'binDesigner.base.nesting.floorFeaturesUnavailable',
   },
   // ── Base: flat ↔ everything else ─────────────────────────────────────────
@@ -153,6 +154,21 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     reason: 'binDesigner.scoopDisablesLightweight',
   },
   {
+    description:
+      'Interior lightweight floor disables the interior fillet (would bridge the recesses)',
+    source: 'base.lightweight',
+    when: (p) => p.base.lightweight && !isUndersideRelief(p.base),
+    disables: ['interiorFillet'],
+    reason: 'binDesigner.lightweightDisablesInteriorFillet',
+  },
+  {
+    description: 'Interior fillet incompatible with an interior lightweight floor',
+    source: 'interiorFillet',
+    when: (p) => interiorFilletRadiusMm(p) > 0 && !undersideReliefSelected(p.base),
+    disables: ['base.lightweight'],
+    reason: 'binDesigner.interiorFilletDisablesLightweight',
+  },
+  {
     description: 'Interior lightweight floor disables top cutouts',
     source: 'base.lightweight',
     when: (p) => p.base.lightweight && !isUndersideRelief(p.base),
@@ -234,6 +250,13 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     disables: ['scoop'],
     reason: 'binDesigner.fingerScoopUnavailableSlotted',
   },
+  {
+    description: 'Slotted style disables the interior fillet (it would fill the divider slots)',
+    source: 'style.slotted',
+    when: (p) => p.style === 'slotted',
+    disables: ['interiorFillet'],
+    reason: 'binDesigner.interiorFilletUnavailableSlotted',
+  },
 
   // ── Base: spacer ─────────────────────────────────────────────────
   // A spacer is a floorless riser: the floor is punched through every cell so
@@ -243,7 +266,15 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     description: 'Spacer disables every floor-dependent feature',
     source: 'base.spacer',
     when: (p) => p.base.spacer,
-    disables: ['compartments', 'label', 'scoop', 'floorPattern', 'inserts', 'cutouts'],
+    disables: [
+      'compartments',
+      'label',
+      'scoop',
+      'interiorFillet',
+      'floorPattern',
+      'inserts',
+      'cutouts',
+    ],
     reason: 'binDesigner.spacerDisablesInterior',
   },
   {
@@ -315,7 +346,15 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     description: 'Base-only bin disables every depth-dependent interior feature',
     source: 'base.tile',
     when: (p) => p.base.tile === true,
-    disables: ['compartments', 'label', 'scoop', 'floorPattern', 'inserts', 'cutouts'],
+    disables: [
+      'compartments',
+      'label',
+      'scoop',
+      'interiorFillet',
+      'floorPattern',
+      'inserts',
+      'cutouts',
+    ],
     reason: 'binDesigner.tileDisablesInterior',
   },
   {
@@ -390,6 +429,7 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
       'compartments',
       'label',
       'scoop',
+      'interiorFillet',
       'wallPattern',
       'floorPattern',
       'inserts',

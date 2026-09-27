@@ -34,6 +34,7 @@ import { resolveWallLabelSlots } from '@/shared/utils/wallLabelSlotPlan';
 import type { PipelineContext } from './pipeline/types';
 import type { WallPatternDescriptor } from './wallPatterns';
 import { getSlotFreeWalls, TOP_KEEP_OUT, BOTTOM_SOLID_SKIRT } from './wallPatterns';
+import { interiorFilletRiseMm } from '@/shared/utils/interiorFillet';
 import { resolveWallPatternSides } from '@/shared/utils/wallPatternSides';
 import { getPatternCalculator, isWrappedLatticeCalculator, PATTERN_REGISTRY } from './patterns';
 import type { WrappedLatticeCalculator } from './patterns';
@@ -156,7 +157,7 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): KumikoWallPattern
   if (resolveWallLabelSlots(params).enabled) return NONE;
 
   const wallThickness = params.wallThickness;
-  const bottomKeepOut = wallThickness + BOTTOM_SOLID_SKIRT;
+  const bottomKeepOut = wallThickness + BOTTOM_SOLID_SKIRT + interiorFilletRiseMm(params);
   const patternHeight = dim.interiorHeight - TOP_KEEP_OUT - bottomKeepOut;
   if (patternHeight < calculator.getMinPatternHeight()) return NONE;
 

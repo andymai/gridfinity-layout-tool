@@ -53,6 +53,7 @@ bounded at 0 and 100, fractions at 0 and 1, and counts at 1.
 | `MAX_HANDLE_VERTICAL_POSITION` | `0.9` | `HandleConfig.verticalPosition` (maximum)                                                                                                                               |
 | `MAX_HANDLE_WIDTH`             | `100` | `HandleConfig.width` (maximum), `HandleSide.width` (maximum)                                                                                                            |
 | `MAX_HEIGHT`                   | `50`  | `BinParams.height` (maximum)                                                                                                                                            |
+| `MAX_INTERIOR_FILLET`          | `15`  | `BinParams.interiorFilletMm` (maximum)                                                                                                                                  |
 | `MAX_LABEL_TAB_DEPTH`          | `50`  | `LabelTabConfig.depth` (maximum)                                                                                                                                        |
 | `MAX_LABEL_TAB_HEIGHT`         | `350` | `LabelTabConfig.height` (maximum)                                                                                                                                       |
 | `MAX_LABEL_TAB_INSET`          | `100` | `LabelTabConfig.inset` (maximum)                                                                                                                                        |
@@ -81,6 +82,7 @@ bounded at 0 and 100, fractions at 0 and 1, and counts at 1.
 | `MIN_HANDLE_HEIGHT`            | `8`   | `HandleConfig.height` (minimum), `HandleSide.height` (minimum)                                                                                                          |
 | `MIN_HANDLE_VERTICAL_POSITION` | `0.2` | `HandleConfig.verticalPosition` (minimum)                                                                                                                               |
 | `MIN_HANDLE_WIDTH`             | `10`  | `HandleConfig.width` (minimum), `HandleSide.width` (minimum)                                                                                                            |
+| `MIN_INTERIOR_FILLET`          | `0.5` | `BinParams.interiorFilletMm` (minimum)                                                                                                                                  |
 | `MIN_LABEL_TAB_DEPTH`          | `8`   | `LabelTabConfig.depth` (minimum)                                                                                                                                        |
 | `MIN_LABEL_TAB_HEIGHT`         | `9`   | `LabelTabConfig.height` (minimum)                                                                                                                                       |
 | `MIN_LABEL_TAB_INSET`          | `0`   | `LabelTabConfig.inset` (minimum)                                                                                                                                        |

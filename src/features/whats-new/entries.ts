@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'interior-fillet',
+    date: '2026-09-26',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Round the inside of every compartment' },
+    body: {
+      en: 'Interior fillet rounds each compartment where its walls meet the floor, and the corners where the walls meet each other, so small parts slide out and the bin wipes clean. Find it on the Interior page and pick a radius. A compartment too small for the radius rounds as far as it fits, which turns a tray of small compartments into a set of bowls.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'stacked-corner-plates-seat',
     date: '2026-09-20',
     kind: 'fixed',

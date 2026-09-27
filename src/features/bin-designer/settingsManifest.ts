@@ -24,6 +24,7 @@ export const DESIGNER_SETTINGS: readonly DesignerSettingEntry[] = [
   { controlId: 'bd-base', category: 'shape' },
   { controlId: 'bd-interior', category: 'interior' },
   { controlId: 'bd-label-tabs', category: 'interior' },
+  { controlId: 'bd-interior-fillet', category: 'interior' },
   { controlId: 'bd-scoop', category: 'interior' },
   { controlId: 'bd-knife-rest', category: 'interior' },
   { controlId: 'bd-lid', category: 'features' },

@@ -13,6 +13,7 @@ import {
   isNestingBase,
 } from '@/shared/types/bin';
 import type { FeatureKey, FeatureManifest } from './types';
+import { defaultInteriorFilletMm, interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 
 /**
  * Complete registry of feature manifests.
@@ -161,6 +162,17 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
     label: 'Finger Scoop',
     isEnabled: (p) => p.scoop.enabled,
     apply: (p, enabled) => ({ scoop: { ...p.scoop, enabled } }),
+  },
+
+  interiorFillet: {
+    key: 'interiorFillet',
+    label: 'Interior Fillet',
+    isEnabled: (p) => interiorFilletRadiusMm(p) > 0,
+    // Off clears the key rather than writing 0, for the same fingerprint
+    // reason as detachable feet.
+    apply: (p, enabled) => ({
+      interiorFilletMm: enabled ? defaultInteriorFilletMm(p.wallThickness) : undefined,
+    }),
   },
 
   label: {

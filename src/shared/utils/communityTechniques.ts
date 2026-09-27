@@ -16,6 +16,7 @@
  * `slotted` keys off `style` alone, never `slotConfig`.
  */
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 import type { BinParams } from '@/shared/types/bin';
 import type { ExampleTechnique } from '@/shared/types/exampleTechniques';
 
@@ -28,6 +29,7 @@ export function deriveTechniques(params: BinParams): ExampleTechnique[] {
   if (getCompartmentCount(params.compartments) > 1) techniques.push('compartments');
   if (params.walls.enabled) techniques.push('wallCutouts');
   if (params.scoop.enabled) techniques.push('scoop');
+  if (interiorFilletRadiusMm(params) > 0) techniques.push('interiorFillet');
   if (params.label.enabled) techniques.push('labelTab');
   if (params.style === 'slotted') techniques.push('slotted');
   if (params.lid.enabled) techniques.push('lid');

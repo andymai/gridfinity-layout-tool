@@ -122,7 +122,7 @@ function cavitySpan(corners: CavityCorners): { cavW: number; cavD: number } {
  * compartments either side of a divider apply the same offsets so the
  * centerline displaces consistently and each side keeps its `half` inset.
  */
-function cavityCorners(
+export function cavityCorners(
   params: BinParams,
   innerW: number,
   innerD: number,

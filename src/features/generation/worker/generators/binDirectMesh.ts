@@ -405,6 +405,7 @@ export function canBinUseDirectMesh(params: BinParams): boolean {
   // Interior features.
   if (params.compartments.cols !== 1 || params.compartments.rows !== 1) return false;
   if (params.scoop.enabled) return false;
+  if (params.interiorFilletMm !== undefined) return false;
   if (params.label.enabled) return false;
   if (params.walls.enabled) return false;
   if (params.handles.enabled) return false;

@@ -141,6 +141,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'heightUnitMm',
   'wallThickness',
   'extraWallHeightMm',
+  'interiorFilletMm',
   'style',
   // Sub-objects (deep-validated below)
   'base',
@@ -430,6 +431,21 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
     return validationError(
       'INVALID_PARAMS',
       `extraWallHeightMm must be ${CONSTRAINTS.MIN_EXTRA_WALL_HEIGHT}-${CONSTRAINTS.MAX_EXTRA_WALL_HEIGHT}`
+    );
+  }
+
+  if (
+    params.interiorFilletMm !== undefined &&
+    (!isNumber(params.interiorFilletMm) ||
+      !inRange(
+        params.interiorFilletMm,
+        CONSTRAINTS.MIN_INTERIOR_FILLET,
+        CONSTRAINTS.MAX_INTERIOR_FILLET
+      ))
+  ) {
+    return validationError(
+      'INVALID_PARAMS',
+      `interiorFilletMm must be ${CONSTRAINTS.MIN_INTERIOR_FILLET}-${CONSTRAINTS.MAX_INTERIOR_FILLET}`
     );
   }
 

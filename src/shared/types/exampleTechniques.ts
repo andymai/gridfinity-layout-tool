@@ -11,6 +11,7 @@ export type ExampleTechnique =
   | 'compartments'
   | 'wallCutouts'
   | 'scoop'
+  | 'interiorFillet'
   | 'labelTab'
   | 'slotted'
   | 'lid'
@@ -24,6 +25,7 @@ export const TECHNIQUE_CONFIG: Record<ExampleTechnique, { readonly labelKey: str
   compartments: { labelKey: 'binExamples.technique.compartments' },
   wallCutouts: { labelKey: 'binExamples.technique.wallCutouts' },
   scoop: { labelKey: 'binExamples.technique.scoop' },
+  interiorFillet: { labelKey: 'binExamples.technique.interiorFillet' },
   labelTab: { labelKey: 'binExamples.technique.labelTab' },
   slotted: { labelKey: 'binExamples.technique.slotted' },
   lid: { labelKey: 'binExamples.technique.lid' },

@@ -15,6 +15,7 @@ export type FeatureKey =
   | 'style.solid'
   | 'compartments'
   | 'scoop'
+  | 'interiorFillet'
   | 'label'
   | 'wallPattern'
   | 'floorPattern'

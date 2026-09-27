@@ -191,3 +191,39 @@ describe('resolveCompartmentTriColor', () => {
     expect(resolveCompartmentTriColor(plan, outside)).toBeNull();
   });
 });
+
+describe('resolveCompartmentTriColor under an interior fillet', () => {
+  const rounded = planOf({ ...twoUp(), interiorFilletMm: 3 });
+  const floorTop = rounded.floorTopById?.get(0) ?? Number.NaN;
+
+  it('keeps the flat floor', () => {
+    const floor = { cx: -20, cy: 0, cz: floorTop, nx: 0, ny: 0, nz: 1 };
+    expect(resolveCompartmentTriColor(rounded, floor)).toBe(LEFT);
+  });
+
+  it('paints the curve as wall, so a floor-only colour stops where the curve starts', () => {
+    const curve = { cx: -20, cy: 0, cz: floorTop + 0.4, nx: 0, ny: 0.42, nz: 0.9 };
+    expect(resolveCompartmentTriColor(rounded, curve)).toBeNull();
+
+    const both = planOf({
+      ...twoUp({ compartmentColorScopes: ['floorAndWalls', 'floorAndWalls'] }),
+      interiorFilletMm: 3,
+    });
+    expect(resolveCompartmentTriColor(both, curve)).toBe(LEFT);
+  });
+
+  it('reads a raised compartment floor at its own height', () => {
+    const raised = planOf({ ...twoUp({ floorRaises: [6, null] }), interiorFilletMm: 3 });
+    const top = raised.floorTopById?.get(0) ?? Number.NaN;
+    expect(top).toBeCloseTo(floorTop + 6, 6);
+    const floor = { cx: -20, cy: 0, cz: top, nx: 0, ny: 0, nz: 1 };
+    expect(resolveCompartmentTriColor(raised, floor)).toBe(LEFT);
+  });
+
+  it('changes nothing for a bin without one', () => {
+    const plain = planOf(twoUp());
+    expect(plain.floorTopById).toBeUndefined();
+    const steep = { cx: -20, cy: 0, cz: plain.zMin + 1, nx: 0, ny: 0.42, nz: 0.9 };
+    expect(resolveCompartmentTriColor(plain, steep)).toBe(LEFT);
+  });
+});

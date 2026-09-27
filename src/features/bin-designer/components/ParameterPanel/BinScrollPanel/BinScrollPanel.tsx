@@ -35,6 +35,7 @@ import { HandleSection } from '../../panel/HandleSection';
 import { InteriorSection } from '../../panel/InteriorSection';
 import { LabelTabsSection } from '../../panel/LabelTabsSection';
 import { ScoopSection } from '../../panel/ScoopSection';
+import { InteriorFilletSection } from '../../panel/InteriorFilletSection';
 import { KnifeRestSection } from '../../panel/KnifeRestSection';
 import { SlideTraySection } from '../../panel/SlideTraySection';
 import { BaseSection, FloorPatternSection } from '../../panel/BaseSection';
@@ -192,6 +193,9 @@ export function BinScrollPanel({
               </FeatureGate>
             </PanelSection>
           )}
+          <PanelSection helpTarget="bd-interior-fillet">
+            <InteriorFilletSection />
+          </PanelSection>
           <PanelSection helpTarget="bd-scoop">
             {footprintFix}
             <FeatureGate disabled={isCustomShape} reason={customShapeReason}>

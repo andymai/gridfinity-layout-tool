@@ -50,6 +50,12 @@ describe('deriveTechniques', () => {
     expect(deriveTechniques(params)).toEqual(['scoop']);
   });
 
+  it('tags interiorFillet when a radius is set', () => {
+    expect(deriveTechniques({ ...DEFAULT_BIN_PARAMS, interiorFilletMm: 3 })).toEqual([
+      'interiorFillet',
+    ]);
+  });
+
   it('tags labelTab when label.enabled is true', () => {
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,

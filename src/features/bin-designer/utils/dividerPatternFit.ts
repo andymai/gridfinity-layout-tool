@@ -36,6 +36,7 @@ import {
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { interiorFilletCornerMm, interiorFilletRiseMm } from '@/shared/utils/interiorFillet';
 import { wallPatternElementMetrics } from '@/shared/generation/wallPatternMetrics';
 
 /** Keep-out from the divider's top edge (mm) — mirrors `wallPatterns.ts`. */
@@ -150,9 +151,13 @@ function resolveIntegratedBand(
     params.compartments.dividerHeight,
     interiorHeight
   );
+  // Mirrors `planDividerPatterns`: the fillet lifts the band and widens each junction.
   return {
-    bandHeight: dividerHeight - TOP_KEEP_OUT - (params.wallThickness + BOTTOM_SOLID_SKIRT),
-    spans: spans.map((span) => span - 2 * border),
+    bandHeight:
+      dividerHeight -
+      TOP_KEEP_OUT -
+      (params.wallThickness + BOTTOM_SOLID_SKIRT + interiorFilletRiseMm(params)),
+    spans: spans.map((span) => span - 2 * (border + interiorFilletCornerMm(params))),
   };
 }
 

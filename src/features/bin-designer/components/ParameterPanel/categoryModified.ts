@@ -24,6 +24,7 @@ const CATEGORY_OF: Partial<Record<keyof BinParams, PageCategory>> = {
   style: 'interior',
   compartments: 'interior',
   scoop: 'interior',
+  interiorFilletMm: 'interior',
   label: 'interior',
   slotConfig: 'interior',
   dividerPieces: 'interior',

@@ -17,6 +17,7 @@ import { DEFAULT_PATTERN_SCALE } from '@/shared/types/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { MASK_CELL_SIZE, isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { resolveWallPatternSides } from '@/shared/utils/wallPatternSides';
+import { interiorFilletCornerMm, interiorFilletRiseMm } from '@/shared/utils/interiorFillet';
 import { BOX_CORNER_RADIUS, CLEARANCE } from './generatorConstants';
 import { findPolygonEdgeForSide } from './maskPolygonEdges';
 import type { PatternCenter, StampPatternCalculator } from './patterns';
@@ -106,8 +107,9 @@ function getWallPatternDescriptors(
   }
 
   // Clear the floor slab (one wallThickness) AND leave a solid skirt above it
-  // so the lowest hex row anchors to solid wall, not the floor seam.
-  const bottomKeepOut = params.wallThickness + BOTTOM_SOLID_SKIRT;
+  // so the lowest hex row anchors to solid wall, not the floor seam — which an
+  // interior fillet lifts by its own rise.
+  const bottomKeepOut = params.wallThickness + BOTTOM_SOLID_SKIRT + interiorFilletRiseMm(params);
 
   const patternHeight = wallHeight - TOP_KEEP_OUT - bottomKeepOut;
   const minHeight = calculator.getMinPatternHeight();
@@ -146,7 +148,11 @@ function getWallPatternDescriptors(
     // span so cutout/handle clip anchoring is unaffected; only the stamped
     // centers shrink.
     const innerCornerRadius = Math.max(BOX_CORNER_RADIUS - params.wallThickness, 0);
-    const cornerKeepOut = Math.max(innerCornerRadius, hasLip ? 0 : WALL_CORNER_KEEP_OUT);
+    const cornerKeepOut = Math.max(
+      innerCornerRadius,
+      interiorFilletCornerMm(params),
+      hasLip ? 0 : WALL_CORNER_KEEP_OUT
+    );
     const centerFillW = Math.max(0, fillW - 2 * cornerKeepOut);
     const centers = calculator.calculateCenters({ fillW: centerFillW, fillH: patternHeight });
     if (centers.length === 0) return;

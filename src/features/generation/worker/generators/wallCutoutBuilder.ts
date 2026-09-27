@@ -256,7 +256,9 @@ export function buildWallCutoutCuts(
   innerD: number,
   wallHeight: number,
   hasLip: boolean,
-  dividerTopZ: number
+  dividerTopZ: number,
+  /** Extra reach either side of the wall, for trimming what stands in front of it. */
+  depthPadding = 0
 ): Shape3D | null {
   if (!params.walls.enabled) return null;
 
@@ -268,7 +270,8 @@ export function buildWallCutoutCuts(
       innerD,
       wallHeight,
       hasLip,
-      dividerTopZ
+      dividerTopZ,
+      depthPadding
     );
     // The fused/returned shape is registered in `scope` (directly or via
     // fuseAllOrNull's single-element passthrough). Clone it so the original
@@ -359,7 +362,8 @@ function buildWallCutoutCutsInScope(
   innerD: number,
   wallHeight: number,
   hasLip: boolean,
-  dividerTopZ: number
+  dividerTopZ: number,
+  depthPadding: number
 ): Shape3D | null {
   const wallThickness = params.wallThickness;
   const cutShapes: Shape3D[] = [];
@@ -367,7 +371,7 @@ function buildWallCutoutCutsInScope(
 
   const maxThickness = Math.max(wallThickness, params.compartments.thickness);
   const lipOverhang = hasLip ? LIP_TAPER_WIDTH : 0;
-  const extrudeDepth = (maxThickness + lipOverhang) * 2 + 1;
+  const extrudeDepth = (maxThickness + lipOverhang) * 2 + 1 + 2 * depthPadding;
   const overshoot = (hasLip ? LIP_HEIGHT : 0) + CUT_RIM_CLEARANCE;
 
   // For non-rectangular bins, map each side to the outermost polygon edge

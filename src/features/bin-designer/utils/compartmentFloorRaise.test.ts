@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '../constants';
 import { MAX_COMPARTMENT_FLOOR_RAISE_MM, MIN_RAISED_CAVITY_MM } from '../types';
 import { binDimensions } from './binDimensions';
-import { maxCompartmentFloorRaiseMm } from './compartmentFloorRaise';
+import { builtCompartmentFloorRaiseMm, maxCompartmentFloorRaiseMm } from './compartmentFloorRaise';
 
 describe('maxCompartmentFloorRaiseMm', () => {
   it('leaves a pocket above the raise on a short bin', () => {
@@ -36,5 +36,25 @@ describe('maxCompartmentFloorRaiseMm', () => {
 
   it('offers nothing on a bin with no pocket to spare', () => {
     expect(maxCompartmentFloorRaiseMm({ ...DEFAULT_BIN_PARAMS, height: 1 })).toBe(0);
+  });
+});
+
+describe('builtCompartmentFloorRaiseMm', () => {
+  const compartments = { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2, floorRaises: [6, null] };
+
+  it('builds the raise a compartment asks for', () => {
+    expect(
+      builtCompartmentFloorRaiseMm({ ...DEFAULT_BIN_PARAMS, width: 2, height: 4, compartments }, 0)
+    ).toBe(6);
+  });
+
+  it('builds nothing on a custom shape, which the floor raise does not support', () => {
+    const cellMask = { cols: 4, rows: 2, cells: [1, 1, 1, 1, 1, 1, 0, 0] as (0 | 1)[] };
+    expect(
+      builtCompartmentFloorRaiseMm(
+        { ...DEFAULT_BIN_PARAMS, width: 2, height: 4, compartments, cellMask },
+        0
+      )
+    ).toBe(0);
   });
 });

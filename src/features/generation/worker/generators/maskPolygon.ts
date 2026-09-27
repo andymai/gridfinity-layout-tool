@@ -224,6 +224,27 @@ export function buildMaskDrawingAtInset(
 }
 
 /**
+ * The sharp CCW vertices of the mask's outer loop at `insetMm`, with the corner
+ * radius `buildMaskDrawingAtInset` would round them to after its clamp. A
+ * radius of 0 means that drawing is sharp.
+ */
+export function maskOuterLoopAtInset(
+  mask: CellMask,
+  gridUnitMm: GridUnitInput,
+  insetMm: number,
+  cornerRadiusMm: number
+): { readonly vertices: readonly Point2Mm[]; readonly radius: number } {
+  const outer = maskToPolygon(mask)[0];
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
+  const halfWidthMm = (mask.cols * MASK_CELL_SIZE * unitX) / 2;
+  const halfDepthMm = (mask.rows * MASK_CELL_SIZE * unitY) / 2;
+  const loopMm = loopToMm(outer, halfWidthMm, halfDepthMm, unitX, unitY);
+  const vertices = insetMm !== 0 ? insetAxisAlignedPolygon(loopMm, insetMm) : loopMm;
+  const r = Math.min(cornerRadiusMm, minEdgeLength(vertices) / 2 - 0.01);
+  return { vertices, radius: r < MIN_ARC_RADIUS ? 0 : r };
+}
+
+/**
  * Whether the mask encloses any empty cells (O-shape interiors). `maskToPolygon`
  * returns the outer perimeter as loop 0 and one loop per enclosed hole.
  */
