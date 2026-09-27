@@ -241,6 +241,39 @@ describe('scoop keep-outs', () => {
   });
 });
 
+describe('scoop keep-outs on every scooped wall', () => {
+  const single = { cols: 1, rows: 1, cells: [0], thickness: 1.2 };
+
+  it('reserves each ramp against its own wall, across the compartment', () => {
+    const params = makeParams({
+      compartments: single,
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, sides: ['back', 'left'] },
+    });
+    const dim = deriveDimensions(params, false);
+    const keepOuts = scoopKeepOuts(params, dim);
+    expect(keepOuts).toHaveLength(2);
+    const halfW = dim.innerW / 2;
+    const halfD = dim.innerD / 2;
+    const back = keepOuts.find((k) => k.yMax === halfD && k.xMin === -halfW && k.xMax === halfW);
+    const left = keepOuts.find((k) => k.xMin === -halfW && k.yMin === -halfD && k.yMax === halfD);
+    expect(back?.yMin).toBeGreaterThan(-halfD);
+    expect(back?.yMin).toBeLessThan(halfD);
+    expect(left?.xMax).toBeGreaterThan(-halfW);
+    expect(left?.xMax).toBeLessThan(halfW);
+  });
+
+  it('keeps a front ramp where it always was', () => {
+    const front = makeParams({
+      compartments: single,
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, sides: ['front'] },
+    });
+    const [keepOut] = scoopKeepOuts(front, deriveDimensions(front, false));
+    const dim = deriveDimensions(front, false);
+    expect(keepOut.yMin).toBeCloseTo(-dim.innerD / 2, 9);
+    expect(keepOut.yMax).toBeGreaterThan(-dim.innerD / 2);
+  });
+});
+
 describe('widestClearRun', () => {
   const band = { bandZ0: 3, bandHeight: 20 };
 

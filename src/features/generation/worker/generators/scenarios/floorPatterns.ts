@@ -151,6 +151,16 @@ export const floorPatterns: ScenarioCase[] = [
     },
   }),
 
+  defineScenario('floor patterns', 'back and side scoop footings stay solid', {
+    params: {
+      width: 2,
+      depth: 2,
+      height: 5,
+      floorPattern: ROUND_FLOOR,
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, sides: ['back', 'left'] },
+    },
+  }),
+
   // ── Base variants ────────────────────────────────────────────────────────
 
   defineScenario('floor patterns', 'flat base takes one interior-wide window', {

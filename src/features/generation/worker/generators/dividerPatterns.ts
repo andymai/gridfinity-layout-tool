@@ -26,6 +26,8 @@ import {
   scoopFrameHeights,
   computeLipOffset,
   resolveScoopProfile,
+  resolveScoopPlacement,
+  resolveScoopSides,
   scoopArcAnchors,
   scoopFaceOffset,
 } from '@/shared/utils/scoopCalculations';
@@ -160,9 +162,9 @@ function projectFootprint(
 /**
  * Scoop ramp footprints in world space.
  *
- * Mirrors `scoopRampBuilder`: one ramp per compartment, spanning the
- * compartment's full width at its front edge, reaching `lipOffset + run` back
- * from that edge and rising to the profile height.
+ * Mirrors `scoopRampBuilder`: one ramp per compartment for each scooped wall,
+ * spanning the compartment along that wall and reaching `floorStart + run` in
+ * from it, up to the profile height.
  *
  * Coordinates are in the INTERIOR frame (centred on the cavity), so a caller
  * working in bin coordinates must add `innerOffsetX/Y`. Shared with the floor
@@ -173,13 +175,12 @@ export function scoopKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepO
   const { innerW, innerD, wallHeight, hasLip, floorThickness } = dim;
   const taper = dim.overhang.taper;
   const { cols, rows, cells } = params.compartments;
-  const cellW = innerW / cols;
-  const cellD = innerD / rows;
   const frame = scoopFrameHeights(
     wallHeight,
     computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER),
     floorThickness
   );
+  const sides = resolveScoopSides(params.scoop);
 
   const out: WorldKeepOut[] = [];
   const seen = new Set<number>();
@@ -192,42 +193,43 @@ export function scoopKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepO
     if (!isRectangularCompartment(params.compartments, compId)) continue;
     const bounds = findCompartmentBounds(compId, cols, rows, cells);
     if (!bounds) continue;
-    const { minCol, maxCol, minRow } = bounds;
-    const compW = (maxCol - minCol + 1) * cellW;
-    const compD = (bounds.maxRow - minRow + 1) * cellD;
-    const isMinRow = minRow === 0;
-    const lipOffset = computeLipOffset(hasLip, isMinRow, LIP_TAPER_WIDTH, params.wallThickness);
-    const profile = resolveScoopProfile(
-      params.scoop,
-      compW,
-      compD,
-      isMinRow,
-      hasLip,
-      frame.wallHeight,
-      frame.interiorHeight,
-      lipOffset
-    );
-    if (!profile) continue;
-    const centerX = -innerW / 2 + (minCol + (maxCol - minCol + 1) / 2) * cellW;
-    const frontY = -innerD / 2 + minRow * cellD;
-    // Against a tapered front wall the ramp rides the wall's inset, so its toe
-    // reaches further in than `lipOffset + run` from the rim edge.
-    const wallAt = (z: number): number =>
-      taper && isMinRow ? taperInsetAt(taper, taper.front, z, wallHeight) : 0;
-    const { floorStart } = scoopArcAnchors(
-      lipOffset,
-      wallAt(floorThickness + profile.height),
-      wallAt(floorThickness),
-      scoopFaceOffset(isMinRow, params.compartments.thickness)
-    );
-    out.push({
-      xMin: centerX - compW / 2,
-      xMax: centerX + compW / 2,
-      yMin: frontY,
-      yMax: frontY + floorStart + profile.run,
-      zMin: floorThickness,
-      zMax: floorThickness + profile.height,
-    });
+    for (const side of sides) {
+      const { span, depth, isOuter, alongCenter, edge, runsAlongY, runSign } =
+        resolveScoopPlacement(side, bounds, { cols, rows, innerW, innerD });
+      const lipOffset = computeLipOffset(hasLip, isOuter, LIP_TAPER_WIDTH, params.wallThickness);
+      const profile = resolveScoopProfile(
+        params.scoop,
+        span,
+        depth,
+        isOuter,
+        hasLip,
+        frame.wallHeight,
+        frame.interiorHeight,
+        lipOffset
+      );
+      if (!profile) continue;
+      // Against a tapered outer wall the ramp rides the wall's inset, so its toe
+      // reaches further in than `lipOffset + run` from the rim edge.
+      const wallAt = (z: number): number =>
+        taper && isOuter ? taperInsetAt(taper, taper[side], z, wallHeight) : 0;
+      const { floorStart } = scoopArcAnchors(
+        lipOffset,
+        wallAt(floorThickness + profile.height),
+        wallAt(floorThickness),
+        scoopFaceOffset(isOuter, params.compartments.thickness)
+      );
+      const toe = edge + runSign * (floorStart + profile.run);
+      const [runLo, runHi] = [Math.min(edge, toe), Math.max(edge, toe)];
+      const [acrossLo, acrossHi] = [alongCenter - span / 2, alongCenter + span / 2];
+      out.push({
+        xMin: runsAlongY ? acrossLo : runLo,
+        xMax: runsAlongY ? acrossHi : runHi,
+        yMin: runsAlongY ? runLo : acrossLo,
+        yMax: runsAlongY ? runHi : acrossHi,
+        zMin: floorThickness,
+        zMax: floorThickness + profile.height,
+      });
+    }
   }
   return out;
 }

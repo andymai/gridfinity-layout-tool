@@ -111,6 +111,18 @@ export const dividerPatterns: ScenarioCase[] = [
     },
   }),
 
+  defineScenario('divider patterns', 'dividers + back and side scoops keep their footings solid', {
+    params: {
+      width: 2,
+      depth: 2,
+      height: 6,
+      wallPattern: { enabled: true, pattern: 'honeycomb', dividers: true },
+      compartments: TWO_BY_TWO,
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, sides: ['back', 'left'] },
+      walls: ALL_SIDES_OFF,
+    },
+  }),
+
   defineScenario('divider patterns', 'dividers + interior cutouts', {
     params: {
       width: 2,
