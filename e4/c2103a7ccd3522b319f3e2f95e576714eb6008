@@ -1,0 +1,27 @@
+src/features/bin-designer/utils/interiorFilletFit.ts
+  s_6231a44d9b968c::t_cce0f54bb5b5f3 1-39
+src/features/bin-designer/utils/interiorFilletFit.test.ts
+  s_6231a44d9b968c::t_cce0f54bb5b5f3 1-41
+src/shared/utils/interiorFillet.ts
+  s_6231a44d9b968c::t_cce0f54bb5b5f3 27-29
+src/features/bin-designer/components/panel/InteriorFilletSection/useInteriorFilletSection.ts
+  s_6231a44d9b968c::t_cce0f54bb5b5f3 7-8,23
+src/features/generation/worker/generators/interiorFilletPlan.ts
+  s_6231a44d9b968c::t_cce0f54bb5b5f3 23,141
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e4c2103a7ccd3522b319f3e2f95e576714eb6008",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
