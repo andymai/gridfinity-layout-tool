@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/scenarios/interiorFilletScoops.ts
+  s_6231a44d9b968c::t_c501333a2f303b 201-212
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7c1641bfad7b51ff2d12e6c6f6ae16affbd140e7",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
