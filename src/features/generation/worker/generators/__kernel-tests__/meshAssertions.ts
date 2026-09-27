@@ -295,6 +295,56 @@ export function columnCrossings({ vertices, indices }: MeshData, x: number, y: n
   return crossings;
 }
 
+export interface RaisedColumnComparison {
+  /** Columns `plain` fills above its floor, where `subject` crosses at other heights. */
+  readonly mismatched: ReadonlyArray<readonly [number, number]>;
+  readonly raised: ReadonlyArray<readonly [number, number]>;
+  /** Columns outside `raised` where the two meshes differ. */
+  readonly differingElsewhere: number;
+}
+
+/**
+ * Probe two meshes of one bin over a grid of columns and hold `subject` to
+ * `plain` wherever `plain` stands above `floorTop` (a scoop ramp, say). A
+ * `skip`ped column still counts toward `differingElsewhere` but is never held
+ * to `plain`, for raised material the feature under test is meant to cut.
+ *
+ * The grid is offset from whole millimetres: a bin's axes are full of shared
+ * triangle edges, and a column along one reads differently per triangulation.
+ */
+export function compareRaisedColumns(
+  subject: MeshData,
+  plain: MeshData,
+  area: {
+    readonly xMin: number;
+    readonly xMax: number;
+    readonly yMin: number;
+    readonly yMax: number;
+  },
+  floorTop: number,
+  skip: (x: number, y: number) => boolean = () => false,
+  pitch = 1
+): RaisedColumnComparison {
+  const mismatched: Array<readonly [number, number]> = [];
+  const raised: Array<readonly [number, number]> = [];
+  let differingElsewhere = 0;
+  for (let x = area.xMin + 0.37; x < area.xMax; x += pitch) {
+    for (let y = area.yMin + 0.41; y < area.yMax; y += pitch) {
+      const want = columnCrossings(plain, x, y);
+      const got = columnCrossings(subject, x, y);
+      const same = want.length === got.length && want.every((z, i) => Math.abs(z - got[i]) < 1e-3);
+      const top = want[want.length - 1] ?? -Infinity;
+      if (!skip(x, y) && top > floorTop + 0.2) {
+        raised.push([x, y]);
+        if (!same) mismatched.push([x, y]);
+      } else if (!same) {
+        differingElsewhere++;
+      }
+    }
+  }
+  return { mismatched, raised, differingElsewhere };
+}
+
 /** True when a vertical ray at `(x, y)` is solid across the whole `[lo, hi]` band. */
 export function isSolidThrough(
   result: MeshData,

@@ -13,44 +13,14 @@
 import { box, clone, fuseAll, unwrap, withScope } from 'brepjs';
 import type { DisposalScope, Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
-import {
-  MAX_COMPARTMENT_FLOOR_RAISE_MM,
-  MIN_RAISED_CAVITY_MM,
-  compartmentHasTiltedEdge,
-  isNestingBase,
-} from '@/shared/types/bin';
+import { isNestingBase } from '@/shared/types/bin';
 import type { FeatureBuilder } from './pipeline/featureBuilder';
 import { FeatureTag } from './featureTags';
 import { buildCacheKey, compactKey, quantize, stableSerialize } from './cacheKeyUtils';
+import { resolveFloorRaises } from './floorRaisePlan';
 
 /** Growth (mm) into the surrounding walls, dividers and floor. */
 const FUSE_OVERLAP_MM = 0.2;
-
-/**
- * Each compartment's raise, clamped so {@link MIN_RAISED_CAVITY_MM} of pocket
- * survives above it. Compartments with no raise, or a tilted edge, are absent.
- */
-export function resolveFloorRaises(
-  params: BinParams,
-  floorZ: number,
-  interiorHeight: number
-): Map<number, number> {
-  const out = new Map<number, number>();
-  const raises = params.compartments.floorRaises;
-  if (!raises) return out;
-  const ceiling = Math.min(
-    MAX_COMPARTMENT_FLOOR_RAISE_MM,
-    interiorHeight - floorZ - MIN_RAISED_CAVITY_MM
-  );
-  if (ceiling <= 0) return out;
-  const ids = new Set(params.compartments.cells);
-  raises.forEach((raise, id) => {
-    if (typeof raise !== 'number' || !Number.isFinite(raise) || raise <= 0) return;
-    if (!ids.has(id) || compartmentHasTiltedEdge(params.compartments, id)) return;
-    out.set(id, Math.min(raise, ceiling));
-  });
-  return out;
-}
 
 export function hasAnyFloorRaise(params: BinParams): boolean {
   return (params.compartments.floorRaises ?? []).some((r) => typeof r === 'number' && r > 0);

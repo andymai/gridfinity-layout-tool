@@ -139,6 +139,20 @@ describe('planDividerPatterns', () => {
     expect(ramp?.uMin).toBeLessThanOrEqual(-(target?.wallLen ?? 0) / 2);
   });
 
+  it('keeps a ramp standing on a column divider off that divider', () => {
+    // Only the right compartment's left ramp meets the divider, and its box
+    // starts exactly on the divider line.
+    const params = makeParams({
+      compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, sides: ['left'] },
+    });
+    const target = plan(params)?.targets[0];
+    expect(target?.rotateZ).toBe(90);
+    const ramp = target?.keepOuts.find((k) => k.zMin <= FLOOR_TOP);
+    expect(ramp?.uMin).toBeLessThanOrEqual(-(target?.wallLen ?? 0) / 2);
+    expect(ramp?.uMax).toBeGreaterThanOrEqual((target?.wallLen ?? 0) / 2);
+  });
+
   it('blocks the pattern under a scoop ramp, near the floor only', () => {
     const params = makeParams({
       compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
@@ -238,6 +252,51 @@ describe('scoop keep-outs', () => {
     expect(wallAtFloor).toBeGreaterThan(wallAtTop);
     const reach = (k: { yMin: number; yMax: number }) => k.yMax - k.yMin;
     expect(reach(taperedKeepOut) - reach(flatKeepOut)).toBeCloseTo(wallAtFloor, 6);
+  });
+});
+
+describe('scoop keep-outs on every scooped wall', () => {
+  const single = { cols: 1, rows: 1, cells: [0], thickness: 1.2 };
+
+  it('reserves each ramp against its own wall, across the compartment', () => {
+    const params = makeParams({
+      compartments: single,
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, sides: ['back', 'left'] },
+    });
+    const dim = deriveDimensions(params, false);
+    const keepOuts = scoopKeepOuts(params, dim);
+    expect(keepOuts).toHaveLength(2);
+    const halfW = dim.innerW / 2;
+    const halfD = dim.innerD / 2;
+    const back = keepOuts.find((k) => k.yMax === halfD && k.xMin === -halfW && k.xMax === halfW);
+    const left = keepOuts.find((k) => k.xMin === -halfW && k.yMin === -halfD && k.yMax === halfD);
+    expect(back?.yMin).toBeGreaterThan(-halfD);
+    expect(back?.yMin).toBeLessThan(halfD);
+    expect(left?.xMax).toBeGreaterThan(-halfW);
+    expect(left?.xMax).toBeLessThan(halfW);
+  });
+
+  it('lifts a raised compartment keep-out onto its raised floor', () => {
+    const params = makeParams({
+      compartments: { cols: 1, rows: 2, cells: [0, 1], thickness: 1.2, floorRaises: [10, null] },
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, sides: ['back'] },
+    });
+    const dim = deriveDimensions(params, false);
+    const floors = scoopKeepOuts(params, dim).map((k) => k.zMin);
+    expect(floors).toHaveLength(2);
+    expect(floors).toContainEqual(dim.floorThickness);
+    expect(floors).toContainEqual(dim.floorThickness + 10);
+  });
+
+  it('keeps a front ramp where it always was', () => {
+    const front = makeParams({
+      compartments: single,
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, sides: ['front'] },
+    });
+    const [keepOut] = scoopKeepOuts(front, deriveDimensions(front, false));
+    const dim = deriveDimensions(front, false);
+    expect(keepOut.yMin).toBeCloseTo(-dim.innerD / 2, 9);
+    expect(keepOut.yMax).toBeGreaterThan(-dim.innerD / 2);
   });
 });
 

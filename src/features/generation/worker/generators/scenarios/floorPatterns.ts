@@ -8,8 +8,9 @@
  */
 import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { defineScenario } from '../__kernel-tests__/scenarioTypes';
-import { meshVolume } from '../__kernel-tests__/meshAssertions';
+import { buildParams, defineScenario } from '../__kernel-tests__/scenarioTypes';
+import { compareRaisedColumns, meshVolume } from '../__kernel-tests__/meshAssertions';
+import { deriveDimensions } from '../pipeline/context';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 import type { MeshData } from '@/features/generation/bridge/types';
 import type { BinParams, CompartmentConfig } from '@/shared/types/bin';
@@ -96,6 +97,13 @@ const TWO_BY_TWO: CompartmentConfig = { cols: 2, rows: 2, cells: [0, 1, 2, 3], t
 const ROUND_FLOOR = { enabled: true, pattern: 'round', scale: 0.5 } as const;
 const HONEYCOMB_FLOOR = { enabled: true, pattern: 'honeycomb', scale: 0.5 } as const;
 
+const BACK_AND_LEFT_SCOOPS: Partial<BinParams> = {
+  width: 2,
+  depth: 2,
+  height: 5,
+  scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, sides: ['back', 'left'] },
+};
+
 export const floorPatterns: ScenarioCase[] = [
   // ── The core promise: the holes drain ─────────────────────────────────────
 
@@ -148,6 +156,33 @@ export const floorPatterns: ScenarioCase[] = [
       height: 5,
       floorPattern: ROUND_FLOOR,
       scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
+    },
+  }),
+
+  defineScenario('floor patterns', 'back and side scoop footings stay solid', {
+    params: { ...BACK_AND_LEFT_SCOOPS, floorPattern: ROUND_FLOOR },
+    compareWith: {
+      params: BACK_AND_LEFT_SCOOPS,
+      assert: (patterned, plain) => {
+        const dim = deriveDimensions(buildParams(BACK_AND_LEFT_SCOOPS), false);
+        const [cx, cy] = [dim.innerOffsetX, dim.innerOffsetY];
+        const area = {
+          xMin: cx - dim.innerW / 2,
+          xMax: cx + dim.innerW / 2,
+          yMin: cy - dim.innerD / 2,
+          yMax: cy + dim.innerD / 2,
+        };
+        const { mismatched, raised, differingElsewhere } = compareRaisedColumns(
+          patterned,
+          plain,
+          area,
+          dim.baseOffsetZ + dim.floorThickness
+        );
+        expect(mismatched, 'a floor hole reached under a ramp').toEqual([]);
+        expect(differingElsewhere, 'the floor pattern cut nothing').toBeGreaterThan(0);
+        expect(raised.some(([x, y]) => Math.abs(x - cx) < 5 && y > area.yMax - 5)).toBe(true);
+        expect(raised.some(([x, y]) => Math.abs(y - cy) < 5 && x < area.xMin + 5)).toBe(true);
+      },
     },
   }),
 

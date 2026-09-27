@@ -5,8 +5,6 @@
  * to help slide items out of the bin.
  */
 
-import { isNestingBase } from '@/shared/types/bin';
-import { isPartialMask } from '@/shared/utils/cellMask';
 import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 import {
   draw,
@@ -22,27 +20,11 @@ import {
 import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
 import type { BinParams, ScoopSide } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
-import {
-  resolveScoopProfile,
-  resolveScoopPlacement,
-  resolveScoopSides,
-  computeLipOffset,
-  computeInteriorHeight,
-  scoopFrameHeights,
-  scoopArcAnchors,
-  scoopFaceOffset,
-} from '@/shared/utils/scoopCalculations';
-import {
-  LIP_SMALL_TAPER,
-  LIP_TAPER_WIDTH,
-  BOX_CORNER_RADIUS,
-  COPLANAR_MARGIN,
-} from './generatorConstants';
-import { findCompartmentBounds } from './compartmentBuilder';
-import { resolveFloorRaises } from './floorRaiseBuilder';
-import { compartmentHasTiltedEdge, isRectangularCompartment } from '@/shared/types/bin';
+import { resolveScoopSides } from '@/shared/utils/scoopCalculations';
+import { BOX_CORNER_RADIUS, COPLANAR_MARGIN } from './generatorConstants';
+import { resolveFloorRaises } from './floorRaisePlan';
+import { planScoopRamps, scoopRampsApply } from './scoopRampPlan';
 import { buildTaperedInnerEnvelope } from './taperedOuter';
-import { taperInsetAt } from './overhang';
 import type { ResolvedTaper } from './overhang';
 /**
  * Build finger scoop ramps that curve from the bin floor up to `scoop.side`.
@@ -148,12 +130,6 @@ export function buildScoopRampSolids(
   floorRaiseFor: (compartmentId: number) => number,
   taper: ResolvedTaper | null
 ): ScoopRampSolid[] {
-  const hasLip = params.base.stackingLip;
-  // The profile is authored with its floor at local Z=0 and the solid lifted
-  // onto the interior floor, so every height here is measured from that floor,
-  // which a raised compartment moves up.
-  const interiorHeightRaw = computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER);
-
   // The ramp's back edge and its two span ends sit on the surrounding walls'
   // inner faces. Merely TOUCHING those faces leaves zero-thickness coincident
   // faces when the ramp is fused into the body — non-manifold membranes (they
@@ -163,197 +139,137 @@ export function buildScoopRampSolids(
   // pipeline.
   const wallPenetration = scoopWallPenetration(params, wallThickness);
 
-  const { cols, rows, cells } = params.compartments;
-  const sides = resolveScoopSides(params.scoop);
   const climbs = filletClimbsRamps(params);
-
-  const processedCompartments = new Set<number>();
   const ramps: ScoopRampSolid[] = [];
+  for (const plan of planScoopRamps(
+    params,
+    innerW,
+    innerD,
+    wallHeight,
+    wallThickness,
+    floorZ,
+    floorRaiseFor,
+    taper
+  )) {
+    const { compId, side, placement, lipOffset, height, style, arcTop, floorStart, run, wallAt } =
+      plan;
+    const { span } = placement;
+    const compFloorZ = plan.floorZ;
+    const wallAtTop = wallAt(height);
 
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const compId = cells[row * cols + col];
-      if (processedCompartments.has(compId)) continue;
-      processedCompartments.add(compId);
-
-      // Scoop ramps assume axis-aligned compartment floors. When a divider
-      // override tilts one of this compartment's walls, the floor becomes a
-      // wedge/trapezoid and the ramp math no longer applies. Silently skip;
-      // the UI surfaces a tooltip explaining why.
-      if (compartmentHasTiltedEdge(params.compartments, compId)) continue;
-
-      // Same reasoning for a merged L, S or U: the ramp spans the compartment's
-      // bounding-box wall, which on those crosses the notch into a neighbour.
-      if (!isRectangularCompartment(params.compartments, compId)) continue;
-
-      const bounds = findCompartmentBounds(compId, cols, rows, cells);
-      if (!bounds) continue;
-
-      const compFloorZ = floorZ + floorRaiseFor(compId);
-      const frame = scoopFrameHeights(wallHeight, interiorHeightRaw, compFloorZ);
-
-      // One ramp per selected wall. Ramps on adjacent walls overlap in the
-      // corner between them, which the `fuseAll` below has to resolve into one
-      // solid rather than a pair meeting at a shared face — `scoopMultiSide`
-      // measures that it does.
-      for (const side of sides) {
-        const placement = resolveScoopPlacement(side, bounds, { cols, rows, innerW, innerD });
-        const { span, depth, isOuter } = placement;
-
-        const lipOffset = computeLipOffset(hasLip, isOuter, LIP_TAPER_WIDTH, wallThickness);
-        const scoopProfile = resolveScoopProfile(
-          params.scoop,
-          span,
-          depth,
-          isOuter,
-          hasLip,
-          frame.wallHeight,
-          frame.interiorHeight,
-          lipOffset
-        );
-        if (!scoopProfile) continue;
-        const { height, style } = scoopProfile;
-
-        // The profile is authored against the rim-anchored cavity edge, but a
-        // tapered outer wall leans inboard toward the floor, so the arc is drawn
-        // on the wall's own inset at each height plus its bulge. Anchoring it on
-        // the wall only at the top is not enough: a quarter-ellipse leaves the
-        // wall vertically and the wall leans away faster than the arc curves,
-        // which buries the top of the arc for the envelope clip below to shave
-        // off. The bulge is never negative, so the arc never re-enters the wall.
-        // Dividers are vertical, so an interior compartment never shifts.
-        const wallAt = (zAboveFloor: number): number =>
-          taper && isOuter
-            ? taperInsetAt(taper, taper[side], compFloorZ + zAboveFloor, wallHeight)
-            : 0;
-        const wallAtTop = wallAt(height);
-        const { arcTop, floorStart } = scoopArcAnchors(
-          lipOffset,
-          wallAtTop,
-          wallAt(0),
-          scoopFaceOffset(isOuter, params.compartments.thickness)
-        );
-        // The resolved run was clamped to the compartment depth from `lipOffset`;
-        // re-clamp from where the arc reaches the floor so its end still stops
-        // short of the opposite wall or divider.
-        const run = Math.min(scoopProfile.run, depth - 0.5 - floorStart);
-        if (run < 1) continue;
-
-        // Build scoop ramp solid.
-        // Profile in YZ plane: draw([u, v]) where u->Y (depth), v->Z (height).
-        // The ramp descends from (arcTop, height) to (floorStart + run, 0):
-        // a concave quarter-ellipse ('curved') or a straight bevel ('straight').
-        // Without lip offset (lipOffset = 0):
-        //   (0, 0) -> (0, H) -> ramp -> (run, 0) -> close
-        // With lip offset (lo), extends to wallHeight so scoop meets lip:
-        //   (0, 0) -> (0, wH) -> (lo, wH) -> (lo, H) -> ramp -> (lo+run, 0) -> close
-        //   Goes up the wall to wallHeight, across to the lip's inner face,
-        //   down to ramp start at H, then descends to floor. Fills solid.
-        // Against a tapered wall the arc top moves in to `arcTop` along a ledge
-        // at H that lies inside the wall.
-        // The wall-hugging back edge is authored at `-wallPenetration` (inside the
-        // wall) rather than 0 (on its inner face) so the fuse overlaps material;
-        // see `wallPenetration` above. The visible ramp surface (arc + top edge at
-        // Y=arcTop) is unchanged.
-        const backY = -wallPenetration;
-        // The ramp's underside is buried into the floor the same way its back is
-        // buried into the wall: landing it exactly on the floor top leaves a
-        // coplanar face for the fuse. Never deeper than half the floor.
-        const floorPenetration = Math.min(COPLANAR_MARGIN, compFloorZ * 0.5);
-        const segments = 24;
-        const points: [number, number][] = [];
-        // Start below the wall/floor corner, inside the floor
-        points.push([backY, -floorPenetration]);
-        if (lipOffset > 0) {
-          // Up the wall to wallHeight (lip base), across to lip inner face
-          points.push([backY, frame.wallHeight]);
-          points.push([lipOffset, frame.wallHeight]);
-          // Down to ramp start (only needed when height < wallHeight)
-          if (height < frame.wallHeight) {
-            points.push([lipOffset, height]);
-          }
-        } else {
-          // Standard: up the wall to scoop height
-          points.push([backY, height]);
-        }
-        // A curved ramp the interior fillet climbs is one smooth quarter-ellipse
-        // rather than chords, since the fillet rolls along it: over the chords'
-        // kinks OCCT builds a body whose volume integral disagrees with its own
-        // mesh. A leaning wall warps the arc point by point, so it keeps the
-        // chords, and the fillet leaves that ramp alone.
-        const leans = wallAt(0) !== wallAtTop;
-        const smoothArc = climbs && style === 'curved' && !leans;
-        // A smooth arc leaves the wall face itself, tangent to it, where the
-        // chords start from inside the wall.
-        if (arcTop > lipOffset || (smoothArc && lipOffset === 0)) {
-          points.push([arcTop, height]);
-        }
-        const arcFrom = points.length - 1;
-        if (style === 'curved' && !smoothArc) {
-          // Concave quarter-ellipse from (arcTop, height) to (floorStart+run, 0),
-          // each point pushed inboard by however far the wall has leaned in by
-          // that point's height.
-          for (let i = 1; i < segments; i++) {
-            const angle = (Math.PI / 2) * (i / segments);
-            const arcZ = height * (1 - Math.sin(angle));
-            const arcY = arcTop + (wallAt(arcZ) - wallAtTop) + run * (1 - Math.cos(angle));
-            points.push([arcY, arcZ]);
-          }
-        }
-        // Floor, floorStart + run away from wall. For 'straight' style the
-        // segment from the last wall point (arcTop, height) to here is the bevel
-        // face; no intermediate arc points are added. Then straight down into the
-        // floor so the closing edge back to the wall runs inside solid material.
-        points.push([floorStart + run, 0]);
-        points.push([floorStart + run, -floorPenetration]);
-
-        // Draw the profile (will be sketched on YZ and extruded along X)
-        let pen = draw(points[0]);
-        for (let i = 1; i < points.length; i++) {
-          pen =
-            smoothArc && i === arcFrom + 1
-              ? pen.cubicBezierCurveTo(
-                  points[i],
-                  [arcTop, height * (1 - QUARTER_ELLIPSE_K)],
-                  [points[i][0] - run * QUARTER_ELLIPSE_K, 0]
-                )
-              : pen.lineTo(points[i]);
-        }
-        const profile = pen.close();
-
-        // Do not fillet the longitudinal rim edges (top-of-ramp at Y=arcTop,
-        // Z=height; floor-of-ramp at Y=floorStart+run, Z=0). The curved arc is
-        // tangent to the wall and floor at those points, so the edges sit at
-        // polygon cusps — brepjs `fillet()` returns Ok but produces degenerate
-        // topology that fails STL export.
-        // Extrude longer than the span so both ends bury into the perpendicular
-        // walls/dividers rather than landing coincident on their inner faces (see
-        // `wallPenetration`). Centred, so `placement.alongCenter` still aligns it.
-        const spanExtruded = span + 2 * wallPenetration;
-        const scoopSolid = scope.register(
-          sketch(profile, 'YZ', -spanExtruded / 2).extrude(spanExtruded)
-        );
-
-        // The profile above is authored facing front (wall at Y=0, ramp running
-        // toward +Y). Rotating about +Z maps it onto whichever wall was chosen,
-        // then the translation drops it on that compartment's edge.
-        const oriented =
-          placement.rotationDeg === 0
-            ? scoopSolid
-            : scope.register(rotate(scoopSolid, placement.rotationDeg, { axis: [0, 0, 1] }));
-
-        const offset: [number, number, number] = placement.runsAlongY
-          ? [placement.alongCenter, placement.edge, compFloorZ]
-          : [placement.edge, placement.alongCenter, compFloorZ];
-
-        ramps.push({
-          compId,
-          side,
-          solid: scope.register(translate(oriented, offset)),
-          climbed: climbs && !leans,
-        });
+    // Build scoop ramp solid.
+    // Profile in YZ plane: draw([u, v]) where u->Y (depth), v->Z (height).
+    // The ramp descends from (arcTop, height) to (floorStart + run, 0):
+    // a concave quarter-ellipse ('curved') or a straight bevel ('straight').
+    // Without lip offset (lipOffset = 0):
+    //   (0, 0) -> (0, H) -> ramp -> (run, 0) -> close
+    // With lip offset (lo), extends to wallHeight so scoop meets lip:
+    //   (0, 0) -> (0, wH) -> (lo, wH) -> (lo, H) -> ramp -> (lo+run, 0) -> close
+    //   Goes up the wall to wallHeight, across to the lip's inner face,
+    //   down to ramp start at H, then descends to floor. Fills solid.
+    // Against a tapered wall the arc top moves in to `arcTop` along a ledge
+    // at H that lies inside the wall.
+    // The wall-hugging back edge is authored at `-wallPenetration` (inside the
+    // wall) rather than 0 (on its inner face) so the fuse overlaps material;
+    // see `wallPenetration` above. The visible ramp surface (arc + top edge at
+    // Y=arcTop) is unchanged.
+    const backY = -wallPenetration;
+    // The ramp's underside is buried into the floor the same way its back is
+    // buried into the wall: landing it exactly on the floor top leaves a
+    // coplanar face for the fuse. Never deeper than half the floor.
+    const floorPenetration = Math.min(COPLANAR_MARGIN, compFloorZ * 0.5);
+    const segments = 24;
+    const points: [number, number][] = [];
+    // Start below the wall/floor corner, inside the floor
+    points.push([backY, -floorPenetration]);
+    if (lipOffset > 0) {
+      // Up the wall to wallHeight (lip base), across to lip inner face
+      points.push([backY, plan.wallHeight]);
+      points.push([lipOffset, plan.wallHeight]);
+      // Down to ramp start (only needed when height < wallHeight)
+      if (height < plan.wallHeight) {
+        points.push([lipOffset, height]);
+      }
+    } else {
+      // Standard: up the wall to scoop height
+      points.push([backY, height]);
+    }
+    // A curved ramp the interior fillet climbs is one smooth quarter-ellipse
+    // rather than chords, since the fillet rolls along it: over the chords'
+    // kinks OCCT builds a body whose volume integral disagrees with its own
+    // mesh. A leaning wall warps the arc point by point, so it keeps the
+    // chords, and the fillet leaves that ramp alone.
+    const leans = wallAt(0) !== wallAtTop;
+    const smoothArc = climbs && style === 'curved' && !leans;
+    // A smooth arc leaves the wall face itself, tangent to it, where the
+    // chords start from inside the wall.
+    if (arcTop > lipOffset || (smoothArc && lipOffset === 0)) {
+      points.push([arcTop, height]);
+    }
+    const arcFrom = points.length - 1;
+    if (style === 'curved' && !smoothArc) {
+      // Concave quarter-ellipse from (arcTop, height) to (floorStart+run, 0),
+      // each point pushed inboard by however far the wall has leaned in by
+      // that point's height.
+      for (let i = 1; i < segments; i++) {
+        const angle = (Math.PI / 2) * (i / segments);
+        const arcZ = height * (1 - Math.sin(angle));
+        const arcY = arcTop + (wallAt(arcZ) - wallAtTop) + run * (1 - Math.cos(angle));
+        points.push([arcY, arcZ]);
       }
     }
+    // Floor, floorStart + run away from wall. For 'straight' style the
+    // segment from the last wall point (arcTop, height) to here is the bevel
+    // face; no intermediate arc points are added. Then straight down into the
+    // floor so the closing edge back to the wall runs inside solid material.
+    points.push([floorStart + run, 0]);
+    points.push([floorStart + run, -floorPenetration]);
+
+    // Draw the profile (will be sketched on YZ and extruded along X)
+    let pen = draw(points[0]);
+    for (let i = 1; i < points.length; i++) {
+      pen =
+        smoothArc && i === arcFrom + 1
+          ? pen.cubicBezierCurveTo(
+              points[i],
+              [arcTop, height * (1 - QUARTER_ELLIPSE_K)],
+              [points[i][0] - run * QUARTER_ELLIPSE_K, 0]
+            )
+          : pen.lineTo(points[i]);
+    }
+    const profile = pen.close();
+
+    // Do not fillet the longitudinal rim edges (top-of-ramp at Y=arcTop,
+    // Z=height; floor-of-ramp at Y=floorStart+run, Z=0). The curved arc is
+    // tangent to the wall and floor at those points, so the edges sit at
+    // polygon cusps — brepjs `fillet()` returns Ok but produces degenerate
+    // topology that fails STL export.
+    // Extrude longer than the span so both ends bury into the perpendicular
+    // walls/dividers rather than landing coincident on their inner faces (see
+    // `wallPenetration`). Centred, so `placement.alongCenter` still aligns it.
+    const spanExtruded = span + 2 * wallPenetration;
+    const scoopSolid = scope.register(
+      sketch(profile, 'YZ', -spanExtruded / 2).extrude(spanExtruded)
+    );
+
+    // The profile above is authored facing front (wall at Y=0, ramp running
+    // toward +Y). Rotating about +Z maps it onto whichever wall was chosen,
+    // then the translation drops it on that compartment's edge.
+    const oriented =
+      placement.rotationDeg === 0
+        ? scoopSolid
+        : scope.register(rotate(scoopSolid, placement.rotationDeg, { axis: [0, 0, 1] }));
+
+    const offset: [number, number, number] = placement.runsAlongY
+      ? [placement.alongCenter, placement.edge, compFloorZ]
+      : [placement.edge, placement.alongCenter, compFloorZ];
+
+    ramps.push({
+      compId,
+      side,
+      solid: scope.register(translate(oriented, offset)),
+      climbed: climbs && !leans,
+    });
   }
   return ramps;
 }
@@ -473,26 +389,7 @@ export function fuseScoopRamps(
 
 import type { FeatureBuilder } from './pipeline/featureBuilder';
 import { FeatureTag } from './featureTags';
-import type { BinDimensions } from './pipeline/types';
 import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKeyUtils';
-
-/**
- * Whether ramps are built for this bin at all. A ramp needs solid material to
- * rest on. `liteFloorOpen`, not `lightweight`: the interior mode and a spacer
- * leave nothing under the ramp but cup recesses, while the underside relief
- * keeps the floor a standard bin has. The scoop does not declare
- * `supportsCellMask`, so a custom shape never takes one either.
- */
-export function scoopRampsApply(params: BinParams, dim: BinDimensions): boolean {
-  return (
-    params.scoop.enabled &&
-    params.style === 'standard' &&
-    !isPartialMask(params.cellMask) &&
-    !isNestingBase(params.base) &&
-    !dim.isSlotted &&
-    !dim.liteFloorOpen
-  );
-}
 
 export const scoopRampsFeature: FeatureBuilder = {
   name: 'scoopRamps',

@@ -1,5 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`floor patterns > back and side scoop footings stay solid 1`] = `8898`;
+
 exports[`floor patterns > compartment divider footings stay solid 1`] = `6412`;
 
 exports[`floor patterns > custom-shape bin patterns only its filled feet 1`] = `12026`;
