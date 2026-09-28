@@ -78,9 +78,8 @@ export interface TabBuildDimensions {
  * group's text fit see every tab's real `tabWidth`.
  *
  * `text` is resolved here rather than at build time so it always comes from the
- * same compartment set the slot was planned against: the bin-spanning fallback
- * plans against a synthetic 1x1 grid whose `cellId` does not index the real
- * `compartmentTexts`.
+ * array the slot's `cellId` indexes: a compartment id, or a row under
+ * {@link TabLayout.spansRows}.
  */
 export interface TabSlot {
   readonly cellId: number;
@@ -105,11 +104,11 @@ export interface TabLayout {
   readonly dims: TabBuildDimensions;
   readonly plannedRows: readonly PlannedTabRow[];
   /**
-   * True when the socket plan degraded to one bin-spanning tab, which is
-   * planned against a SYNTHETIC 1x1 grid. Slot `cellId`s then index that
-   * grid, not the real compartments — see the note on {@link TabSlot}.
+   * One full-width tab per row, captioned from `label.rowTexts`: the
+   * `label.span` feature, or socket mode when no compartment is wide enough
+   * for a standard plate. Slot `cellId`s are then rows, not compartments.
    */
-  readonly spanningFallback: boolean;
+  readonly spansRows: boolean;
 }
 
 /**
@@ -165,11 +164,11 @@ export function planLabelTabLayout(
 
   // Swappable-label socket mode: resolve which standard plate each
   // compartment's tab hosts from the shared plan (same math the UI uses for
-  // warnings/pickers). When no compartment fits, the plan degrades to one
-  // socket on a single bin-spanning tab at the outer wall(s).
+  // warnings/pickers). When no compartment fits, every row takes one plate on
+  // a full-width tab instead.
   const mode = params.label.mode ?? 'text';
   let socket: SocketBuildInfo | null = null;
-  let spanningWidthU: LabelPlateWidthU | null = null;
+  let spansRows = params.label.span === true;
   if (mode === 'socket') {
     // `nozzleSizeMm` is merged onto these params transiently at each generation
     // boundary (`withSocketNozzle`) from the live print setting — it is never
@@ -181,11 +180,9 @@ export function planLabelTabLayout(
       params.label.plateFitOffset
     );
     const plan = planLabelSockets(params.compartments, innerW, clearanceMm, params.label.width);
-    spanningWidthU = plan.spanningWidthU;
+    spansRows ||= plan.spanningWidthU !== null;
     const plateByCompartment = new Map<number, LabelPlateWidthU>();
-    if (spanningWidthU !== null) {
-      plateByCompartment.set(0, spanningWidthU);
-    } else if (params.label.span === true) {
+    if (spansRows) {
       // Spanning slots are keyed by row and all share the bin-wide pocket, so
       // the per-compartment plan doesn't apply — reuse the full-width plate.
       const widthU =
@@ -235,41 +232,21 @@ export function planLabelTabLayout(
   if (edges === 'back' || edges === 'both') anchors.push('back');
   if (edges === 'front' || edges === 'both') anchors.push('front');
 
-  // Bin-spanning fallback: model the whole interior as one synthetic 1×1
-  // compartment and reuse the regular tab assembly. The spanning tab anchors to
-  // the outer wall(s) only — interior divider rows can't host it — and spans
-  // wall to wall (compartment 0 covers every column).
-  const isSpanning = spanningWidthU !== null;
-  const rowParams: BinParams = isSpanning
-    ? {
-        ...params,
-        compartments: { cols: 1, rows: 1, thickness: params.compartments.thickness, cells: [0] },
-      }
-    : params;
-  const rowDims: TabBuildDimensions = isSpanning ? { ...dims, cellW: innerW, cellD: innerD } : dims;
-  const rowCount = isSpanning ? 1 : rows;
-
-  // Full-width mode plans one shelf per row against the real config —
-  // never the socket fallback's synthetic grid, whose missing divider overrides
-  // would defeat the tilt guard. The two are mutually exclusive: a bin-spanning
-  // socket fallback is already one full-width tab.
-  const spanMode = params.label.span === true && !isSpanning;
-
   const plannedRows: PlannedTabRow[] = [];
-  for (let row = 0; row < rowCount; row++) {
+  for (let row = 0; row < rows; row++) {
     for (const anchor of anchors) {
       plannedRows.push({
-        params: rowParams,
+        params,
         anchor,
-        dims: rowDims,
-        slots: spanMode
+        dims,
+        slots: spansRows
           ? planSpanningTabAtRow(params, row, anchor, dims)
-          : planTabsAtRow(rowParams, row, anchor, rowDims, edges === 'both'),
+          : planTabsAtRow(params, row, anchor, dims, edges === 'both'),
       });
     }
   }
 
-  return { dims, plannedRows, spanningFallback: isSpanning };
+  return { dims, plannedRows, spansRows };
 }
 
 /**

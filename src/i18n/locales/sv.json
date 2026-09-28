@@ -1515,7 +1515,7 @@
   "binDesigner.plateIconAria": "Plattikon för {owner}",
   "binDesigner.plateIconAriaValue": "Plattikon för {owner}: {icon}",
   "binDesigner.plateIconOwnerCompartment": "fack {n}",
-  "binDesigner.plateSpanningNote": "Facken är för smala för egna plattor — ett enda fäste över hela lådans bredd används i stället.",
+  "binDesigner.plateSpanningNote": "Facken är för smala för egna plattor, så varje rad får en platta i full bredd.",
   "binDesigner.plateWidthAria": "Plattbredd för fack {n}",
   "binDesigner.plateWidthAuto": "Auto ({width})",
   "binDesigner.plateWidthNoFit": "Ingen standardplatta passar",

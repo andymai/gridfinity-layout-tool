@@ -1868,7 +1868,7 @@ const en: Record<string, string> = {
   'binDesigner.plateWidthAria': 'Plate width for compartment {n}',
   'binDesigner.plateWidthNoFit': 'No standard plate fits',
   'binDesigner.plateSpanningNote':
-    'Compartments are too narrow for individual plates, so one bin-wide socket is used instead.',
+    'Compartments are too narrow for individual plates, so each row gets one full-width plate.',
   'binDesigner.socketStyle': 'Socket style',
   'binDesigner.socketStyle.clickIn': 'Click-in',
   'binDesigner.socketStyle.slideChannel': 'Slide-in',

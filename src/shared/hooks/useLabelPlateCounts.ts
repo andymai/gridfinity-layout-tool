@@ -96,7 +96,6 @@ function computePlateSet(design: SavedDesign, nozzleSizeMm: number): DesignPlate
     innerDmm: inner.innerD,
     wallHeightMm: dims.wallHeight,
     clearanceMm,
-    fallbackText: '',
   });
   if (planned.length === 0) return null;
   return { perBin: planned.length, widthsU: planned.map((p) => p.widthU) };

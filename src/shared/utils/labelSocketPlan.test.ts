@@ -35,7 +35,6 @@ function plates(
   extra?: {
     label?: Partial<LabelTabConfig>;
     innerDmm?: number;
-    fallbackText?: string;
   }
 ): ReturnType<typeof planLabelPlates> {
   const params: BinParams = {
@@ -50,7 +49,6 @@ function plates(
     innerDmm: extra?.innerDmm ?? INNER_D,
     wallHeightMm: 40,
     clearanceMm: CLEARANCE,
-    fallbackText: extra?.fallbackText ?? '',
   });
 }
 
@@ -189,16 +187,19 @@ describe('planLabelPlates', () => {
     ]);
   });
 
-  it('emits a single fallback-text plate for the spanning socket', () => {
+  it('gives every row one full-width plate when no compartment fits one', () => {
     expect(
-      plates(grid(4, 1, [0, 1, 2, 3], { compartmentTexts: ['A', 'B', 'C', 'D'] }), 81.1, {
-        fallbackText: ' Hardware ',
+      plates(grid(4, 2, [0, 1, 2, 3, 4, 5, 6, 7], { compartmentTexts: ['A', 'B'] }), 81.1, {
+        label: { rowTexts: ['Front', ' Back '] },
       })
-    ).toEqual([{ scope: 'bin', anchor: 'back', widthU: 2, text: 'Hardware' }]);
+    ).toEqual([
+      { scope: 'row', row: 0, anchor: 'back', widthU: 2, text: 'Front', rowsForced: true },
+      { scope: 'row', row: 1, anchor: 'back', widthU: 2, text: 'Back', rowsForced: true },
+    ]);
   });
 
   it('emits no plates when nothing fits', () => {
-    expect(plates(grid(1, 1, [0]), 18.35, { fallbackText: 'X' })).toEqual([]);
+    expect(plates(grid(1, 1, [0]), 18.35)).toEqual([]);
   });
 
   it('produces blank plates for compartments without text', () => {
@@ -243,26 +244,24 @@ describe('planLabelPlates', () => {
     expect(plates(grid(1, 1, [0]), 39.1, { label: { edges: 'both' }, innerDmm: 10 })).toEqual([]);
   });
 
-  it('counts each edge separately for the bin-spanning socket', () => {
+  it('counts each edge separately for a full-width row plate', () => {
     expect(
       plates(grid(4, 1, [0, 1, 2, 3]), 81.1, {
-        label: { edges: 'both' },
-        fallbackText: 'Hardware',
+        label: { edges: 'both', rowTexts: ['Hardware'] },
       })
     ).toEqual([
-      { scope: 'bin', anchor: 'back', widthU: 2, text: 'Hardware' },
-      { scope: 'bin', anchor: 'front', widthU: 2, text: 'Hardware' },
+      { scope: 'row', row: 0, anchor: 'back', widthU: 2, text: 'Hardware', rowsForced: true },
+      { scope: 'row', row: 0, anchor: 'front', widthU: 2, text: 'Hardware', rowsForced: true },
     ]);
   });
 
-  it('drops the spanning front plate when the pair would collide across the bin', () => {
+  it('drops the full-width front plate when the pair would collide', () => {
     expect(
       plates(grid(4, 1, [0, 1, 2, 3]), 81.1, {
         label: { edges: 'both' },
         innerDmm: 20,
-        fallbackText: 'Hardware',
       })
-    ).toEqual([{ scope: 'bin', anchor: 'back', widthU: 2, text: 'Hardware' }]);
+    ).toEqual([{ scope: 'row', row: 0, anchor: 'back', widthU: 2, text: '', rowsForced: true }]);
   });
 
   describe('full-width mode', () => {
@@ -285,6 +284,17 @@ describe('planLabelPlates', () => {
       ).toEqual([
         { scope: 'row', row: 0, anchor: 'back', widthU: 3, text: 'ONLY' },
         { scope: 'row', row: 0, anchor: 'front', widthU: 3, text: 'ONLY' },
+      ]);
+    });
+
+    it('keeps a plate per row when no compartment fits one', () => {
+      expect(
+        plates(grid(4, 2, [0, 1, 2, 3, 4, 5, 6, 7]), 81.1, {
+          label: { span: true, rowTexts: ['X', 'Y'] },
+        })
+      ).toEqual([
+        { scope: 'row', row: 0, anchor: 'back', widthU: 2, text: 'X' },
+        { scope: 'row', row: 1, anchor: 'back', widthU: 2, text: 'Y' },
       ]);
     });
 
@@ -364,7 +374,6 @@ describe('planLabelPlates for a shadow board', () => {
       innerDmm: 81.1,
       wallHeightMm: 28,
       clearanceMm: CLEARANCE,
-      fallbackText: '',
     });
   }
 
@@ -414,7 +423,6 @@ describe('planLabelPlates for a shadow board', () => {
         innerDmm: 81.1,
         wallHeightMm: 28,
         clearanceMm: CLEARANCE,
-        fallbackText: '',
       })
     ).toEqual([]);
   });
@@ -440,7 +448,6 @@ describe('planLabelPlates wall slots', () => {
       innerDmm: INNER_D,
       wallHeightMm,
       clearanceMm: CLEARANCE,
-      fallbackText: '',
     });
 
   it('adds one blank 1u plate per slot, after the socket plates', () => {

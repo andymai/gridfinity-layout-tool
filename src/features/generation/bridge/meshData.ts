@@ -82,7 +82,7 @@ export interface TypeStemWarning {
 }
 
 export interface LabelTextOverflow {
-  readonly scope: 'compartment' | 'row' | 'bin';
+  readonly scope: 'compartment' | 'row';
   readonly index: number;
 }
 

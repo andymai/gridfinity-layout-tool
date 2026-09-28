@@ -1515,7 +1515,7 @@
   "binDesigner.plateIconAria": "Icona targhetta per {owner}",
   "binDesigner.plateIconAriaValue": "Icona targhetta per {owner}: {icon}",
   "binDesigner.plateIconOwnerCompartment": "lo scomparto {n}",
-  "binDesigner.plateSpanningNote": "Gli scomparti sono troppo stretti per targhette singole: viene usata una sola sede a tutta larghezza.",
+  "binDesigner.plateSpanningNote": "Gli scomparti sono troppo stretti per targhette singole, quindi ogni riga riceve una targhetta a tutta larghezza.",
   "binDesigner.plateWidthAria": "Larghezza targhetta per lo scomparto {n}",
   "binDesigner.plateWidthAuto": "Auto ({width})",
   "binDesigner.plateWidthNoFit": "Nessuna targhetta standard entra",

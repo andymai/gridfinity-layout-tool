@@ -1577,7 +1577,7 @@
   "binDesigner.plateWidthAuto": "ავტომატური ({width})",
   "binDesigner.plateWidthAria": "ფირფიტის სიგანე განყოფილებისთვის {n}",
   "binDesigner.plateWidthNoFit": "არცერთი სტანდარტული ფირფიტა არ ეტევა",
-  "binDesigner.plateSpanningNote": "განყოფილებები ცალკეული ფირფიტებისთვის მეტისმეტად ვიწროა, ამიტომ გამოიყენება ყუთის მთელ სიგანეზე ერთი ბუდე.",
+  "binDesigner.plateSpanningNote": "განყოფილებები ცალკეული ფირფიტებისთვის მეტისმეტად ვიწროა, ამიტომ თითოეული რიგი იღებს ერთ ფირფიტას მთელ სიგანეზე.",
   "binDesigner.socketStyle": "ბუდის სტილი",
   "binDesigner.socketStyle.clickIn": "ჩასაკლიკი",
   "binDesigner.socketStyle.slideChannel": "ჩასაცურებელი",

@@ -103,6 +103,7 @@ export function LabelTabsSection() {
     <LabelTextList
       rows={state.textRows}
       spanning={state.spanning}
+      perCompartmentUnavailable={state.rowsForced ? t('binDesigner.plateSpanningNote') : undefined}
       onToggleSpan={handlers.toggleSpan}
       onCommit={handlers.commitText}
       onClearAll={handlers.clearAllText}
@@ -198,7 +199,7 @@ export function LabelTabsSection() {
                   </p>
                 )}
               </div>
-              {state.socketSpanningWidthU !== null && (
+              {state.rowsForced && (
                 <p className="flex items-start gap-1 text-xs text-content-tertiary">
                   <InfoIcon size="xs" className="mt-0.5 shrink-0" />
                   <span>{t('binDesigner.plateSpanningNote')}</span>

@@ -1515,7 +1515,7 @@
   "binDesigner.plateIconAria": "Ícone da placa para {owner}",
   "binDesigner.plateIconAriaValue": "Ícone da placa para {owner}: {icon}",
   "binDesigner.plateIconOwnerCompartment": "o compartimento {n}",
-  "binDesigner.plateSpanningNote": "Os compartimentos são estreitos demais para placas individuais — um único encaixe na largura total é usado.",
+  "binDesigner.plateSpanningNote": "Os compartimentos são estreitos demais para placas individuais, então cada fileira recebe uma placa de largura total.",
   "binDesigner.plateWidthAria": "Largura da placa do compartimento {n}",
   "binDesigner.plateWidthAuto": "Auto ({width})",
   "binDesigner.plateWidthNoFit": "Nenhuma placa padrão cabe",

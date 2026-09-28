@@ -130,7 +130,7 @@ export interface LabelPlateSeat {
   readonly icon?: LabelPlateIconId;
   /** What `index` counts — see {@link LabelTextOverflow}. */
   readonly scope: LabelTextOverflow['scope'];
-  /** Compartment id, row, or 0 for the bin-spanning fallback, per `scope`. */
+  /** Compartment id or row, per `scope`. */
   readonly index: number;
 }
 
@@ -158,7 +158,7 @@ export function planLabelPlateSeats(
 
   const layout = planLabelTabLayout(params, innerW, innerD, wallHeight, wallThickness);
   if (!layout) return [];
-  const { dims, plannedRows, spanningFallback } = layout;
+  const { dims, plannedRows, spansRows } = layout;
   const { socket, tabDepth, shelfTopZ } = dims;
   if (!socket) return [];
 
@@ -168,17 +168,12 @@ export function planLabelPlateSeats(
       ? LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM + LABEL_SOCKET_POCKET_DEPTH_MM
       : LABEL_SOCKET_CLICK_POCKET_DEPTH_MM;
 
-  // The bin-spanning fallback plans against a synthetic 1x1 grid, so its slot
-  // `cellId` indexes that grid rather than the real compartments — reading
-  // per-compartment metadata by it would engrave compartment 0's caption and
-  // icon onto a plate that represents the whole bin.
-  const spanning = params.label.span === true;
-  const texts = spanningFallback
-    ? []
-    : spanning
-      ? (params.label.rowTexts ?? [])
-      : (params.compartments.compartmentTexts ?? []);
-  const icons = spanningFallback ? [] : (params.compartments.labelIcons ?? []);
+  // A spanning slot's `cellId` is a row, so reading per-compartment metadata by
+  // it would engrave one compartment's caption and icon onto a whole row.
+  const texts = spansRows
+    ? (params.label.rowTexts ?? [])
+    : (params.compartments.compartmentTexts ?? []);
+  const icons = spansRows ? [] : (params.compartments.labelIcons ?? []);
   const alignment = params.label.alignment;
   const wall = LABEL_SOCKET_WALL_MM;
 
@@ -212,8 +207,8 @@ export function planLabelPlateSeats(
         slideY: depthSign,
         plateWidthU,
         text: (texts[slot.cellId] ?? '').trim(),
-        ...(isLabelPlateIconId(icon) && !spanning ? { icon } : {}),
-        scope: spanningFallback ? 'bin' : spanning ? 'row' : 'compartment',
+        ...(isLabelPlateIconId(icon) ? { icon } : {}),
+        scope: spansRows ? 'row' : 'compartment',
         index: slot.cellId,
       });
     }
@@ -247,13 +242,9 @@ export function planTabTextOverflow(
 
   const layout = planLabelTabLayout(params, innerW, innerD, wallHeight, wallThickness);
   if (!layout) return [];
-  const { dims, plannedRows, spanningFallback } = layout;
+  const { dims, plannedRows, spansRows } = layout;
 
-  const scope: LabelTextOverflow['scope'] = spanningFallback
-    ? 'bin'
-    : params.label.span === true
-      ? 'row'
-      : 'compartment';
+  const scope: LabelTextOverflow['scope'] = spansRows ? 'row' : 'compartment';
   const style = { ...params.textDefaults, ...params.label.textStyle };
 
   // `edges: 'both'` plans the same compartment at two anchors with identical

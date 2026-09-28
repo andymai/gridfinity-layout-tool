@@ -654,9 +654,27 @@ describe('useLabelTabsSection', () => {
       // Default bin is 2×2 with a single compartment (~81.1mm inner) → 2U.
       expect(result.current.state.isSocketMode).toBe(true);
       expect(result.current.state.socketUnavailable).toBe(false);
-      expect(result.current.state.socketSpanningWidthU).toBeNull();
+      expect(result.current.state.rowsForced).toBe(false);
       expect(result.current.state.plateWidthRows).toHaveLength(1);
       expect(result.current.state.plateWidthRows[0].autoWidthU).toBe(2);
+    });
+
+    it('lists row captions when no compartment is wide enough for a plate', () => {
+      // 3x2 bin split 4 across: ~30mm compartments, under a 1U socket's 38.3mm.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          width: 3,
+          depth: 2,
+          label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'socket', depth: 14 },
+          compartments: { cols: 4, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5, 6, 7] },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      expect(result.current.state.rowsForced).toBe(true);
+      expect(result.current.state.spanning).toBe(true);
+      expect(result.current.state.textRows.map((r) => r.index)).toEqual([0, 1]);
     });
 
     it('disables the socket segment when nothing fits', () => {
@@ -836,7 +854,7 @@ describe('useLabelTabsSection', () => {
 
   describe('overflow report scoping', () => {
     const withOverflow = (
-      overflow: { scope: 'compartment' | 'row' | 'bin'; index: number }[],
+      overflow: { scope: 'compartment' | 'row'; index: number }[],
       span = false
     ) => {
       useDesignerStore.setState((prev) => ({
@@ -862,12 +880,6 @@ describe('useLabelTabsSection', () => {
       // Index alone is ambiguous — the report is compartment-indexed by default
       // and row-indexed under `span`, so row 1 must not light up compartment 1.
       const { result } = withOverflow([{ scope: 'row', index: 1 }]);
-      expect(result.current.state.textRows.every((r) => !r.overflows)).toBe(true);
-    });
-
-    it('ignores a bin-scoped report rather than blaming compartment 0', () => {
-      // The socket plan's bin-spanning fallback indexes a synthetic 1x1 grid.
-      const { result } = withOverflow([{ scope: 'bin', index: 0 }]);
       expect(result.current.state.textRows.every((r) => !r.overflows)).toBe(true);
     });
   });

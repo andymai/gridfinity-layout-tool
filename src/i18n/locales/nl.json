@@ -1515,7 +1515,7 @@
   "binDesigner.plateIconAria": "Plaatjespictogram voor {owner}",
   "binDesigner.plateIconAriaValue": "Plaatjespictogram voor {owner}: {icon}",
   "binDesigner.plateIconOwnerCompartment": "vak {n}",
-  "binDesigner.plateSpanningNote": "De vakken zijn te smal voor losse plaatjes — er wordt één houder over de hele breedte gebruikt.",
+  "binDesigner.plateSpanningNote": "De vakken zijn te smal voor losse plaatjes, dus elke rij krijgt één plaatje over de volle breedte.",
   "binDesigner.plateWidthAria": "Plaatbreedte voor vak {n}",
   "binDesigner.plateWidthAuto": "Auto ({width})",
   "binDesigner.plateWidthNoFit": "Geen standaardplaatje past",
