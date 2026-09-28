@@ -677,13 +677,16 @@ describe('injected-script throws', () => {
 });
 
 describe('posthog-js transport timeouts', () => {
+  // posthog-js aborts with name `AbortError` and this message, and the event
+  // carries them apart: `type` holds the name, `value` the bare message.
   it('drops the abort posthog-js raises when its own request times out', () => {
     const e = {
       event: '$exception',
       properties: {
         $exception_list: [
           {
-            value: 'AbortError: PostHog request timed out after 3000ms',
+            type: 'AbortError',
+            value: 'PostHog request timed out after 3000ms',
             stacktrace: {
               frames: [{ function: 'fetchWithRetry', filename: '/assets/posthog.js' }],
             },
@@ -697,7 +700,7 @@ describe('posthog-js transport timeouts', () => {
   it('drops it from the $exception_values fallback shape as well', () => {
     const e = {
       event: '$exception',
-      properties: { $exception_values: ['AbortError: PostHog request timed out after 3000ms'] },
+      properties: { $exception_values: ['PostHog request timed out after 3000ms'] },
     };
     expect(filterExceptionForPosthog(e)).toBeNull();
   });
@@ -708,7 +711,8 @@ describe('posthog-js transport timeouts', () => {
       properties: {
         $exception_list: [
           {
-            value: 'AbortError: Request timed out after 3000ms',
+            type: 'AbortError',
+            value: 'Request timed out after 3000ms',
             stacktrace: { frames: [{ function: 'loadSharedLayout' }] },
           },
         ],
