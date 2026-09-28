@@ -1,0 +1,19 @@
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.test.tsx
+  s_6231a44d9b968c::t_f134592ef8c84b 34-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "503483f9c33ff38d71b50517587234dc07653a23",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
