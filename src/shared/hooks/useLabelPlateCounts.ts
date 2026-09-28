@@ -23,7 +23,8 @@ import { effectiveLabelSocketClearance } from '@/shared/constants/labelPlates';
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import type { BinParams } from '@/shared/types/bin';
 import { useSettingsStore } from '@/core/store';
-import { labelTabsSpanRows, planLabelPlates } from '@/shared/utils/labelSocketPlan';
+import { planLabelPlates } from '@/shared/utils/labelSocketPlan';
+import type { LabelPlatePlanEntry } from '@/shared/utils/labelSocketPlan';
 
 /**
  * What a linked design's label tabs mean for the print list.
@@ -64,31 +65,28 @@ export function clearLabelPlateCountCache(): void {
   inFlight.clear();
 }
 
-// Both generation paths print exactly ONE of the two caption arrays, chosen by
-// whether the tabs span rows (`labelTabBuilder` for tabs, `labelSocketPlan` for
-// plates), and nothing copies captions across when that flips. Requiring both
-// to be empty would stay silent on a row design whose rows are blank while
-// stale compartment captions linger, which is the case the warning exists for.
-function printedLabelTexts(params: BinParams, nozzleSizeMm: number): readonly string[] {
-  const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, params.label.plateFitOffset);
-  return labelTabsSpanRows(params, cutoutInterior(params).innerW, clearanceMm)
+// Socket mode prints its captions on plates, one per tab the worker builds, so
+// the planned plates are exactly what prints. Text mode engraves exactly ONE of
+// the two caption arrays, chosen by `label.span`, and nothing copies captions
+// across when it is toggled: requiring both to be empty would stay silent on a
+// span design whose rows are blank while stale compartment captions linger,
+// which is the case the warning exists for.
+function printedLabelTexts(
+  params: BinParams,
+  planned: readonly LabelPlatePlanEntry[]
+): readonly string[] {
+  if ((params.label.mode ?? 'text') === 'socket' && planned.length > 0) {
+    return planned.map((p) => p.text);
+  }
+  return params.label.span === true
     ? (params.label.rowTexts ?? [])
     : (params.compartments.compartmentTexts ?? []);
 }
 
 function computeLabelInfo(design: SavedDesign, nozzleSizeMm: number): DesignLabelInfo {
   const params = design.params;
-  const tabsWithoutText =
-    params?.label.enabled === true &&
-    !printedLabelTexts(params, nozzleSizeMm).some((t) => t.trim() !== '');
-  return { plateSet: computePlateSet(design, nozzleSizeMm), tabsWithoutText };
-}
-
-function computePlateSet(design: SavedDesign, nozzleSizeMm: number): DesignPlateSet | null {
-  const params = design.params;
-  if (!params) return null;
+  if (!params) return { plateSet: null, tabsWithoutText: false };
   const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, params.label.plateFitOffset);
-  const dims = binDimensions(params);
   // Expanded interior, matching the worker's socket frame (see
   // `useCutoutSocketPlan`).
   const inner = cutoutInterior(params);
@@ -96,11 +94,14 @@ function computePlateSet(design: SavedDesign, nozzleSizeMm: number): DesignPlate
     params,
     innerWmm: inner.innerW,
     innerDmm: inner.innerD,
-    wallHeightMm: dims.wallHeight,
+    wallHeightMm: binDimensions(params).wallHeight,
     clearanceMm,
   });
-  if (planned.length === 0) return null;
-  return { perBin: planned.length, widthsU: planned.map((p) => p.widthU) };
+  const tabsWithoutText =
+    params.label.enabled && !printedLabelTexts(params, planned).some((t) => t.trim() !== '');
+  const plateSet =
+    planned.length === 0 ? null : { perBin: planned.length, widthsU: planned.map((p) => p.widthU) };
+  return { plateSet, tabsWithoutText };
 }
 
 function enqueueLoad(id: DesignId, key: string, nozzleSizeMm: number, onSettled: () => void): void {

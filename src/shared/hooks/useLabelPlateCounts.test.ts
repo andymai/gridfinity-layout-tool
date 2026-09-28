@@ -270,6 +270,27 @@ describe('useLabelPlateCounts', () => {
       await waitFor(() => expect(result.current.get(D1)?.tabsWithoutText).toBe(false));
     });
 
+    it('flags blank plates despite a caption on a row that gets no tab', async () => {
+      // Column 0 runs through both rows, so row 0's back edge has no wall to
+      // hang a shelf from and its caption never prints.
+      mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+      mockLoadDesign.mockResolvedValue(
+        ok(
+          makeSocketDesign({
+            label: { enabled: true, mode: 'socket', depth: 12, rowTexts: ['STALE', ''] },
+            compartments: { ...narrow, cells: [0, 1, 2, 3, 0, 4, 5, 6] },
+          })
+        )
+      );
+
+      const { result } = renderHook(() =>
+        useLabelPlateCounts([createTestBin({ linkedDesignId: D1 })])
+      );
+
+      await waitFor(() => expect(result.current.get(D1)?.plateSet?.perBin).toBe(1));
+      expect(result.current.get(D1)?.tabsWithoutText).toBe(true);
+    });
+
     it('flags blank rows despite compartment captions', async () => {
       mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
       mockLoadDesign.mockResolvedValue(
