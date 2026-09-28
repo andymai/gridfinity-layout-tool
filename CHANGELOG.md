@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.499.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.498.2...gridfinity-layout-tool-v4.499.0) (2026-09-28)
+
+
+### Features
+
+* **bins:** print label supports in the body colour by default ([#4422](https://github.com/andymai/gridfinity-layout-tool/issues/4422)) ([60ad264](https://github.com/andymai/gridfinity-layout-tool/commit/60ad264d547ed8a9f086707ca9f127e5ccf8299f))
+
+
+### Bug Fixes
+
+* **analytics:** drop a writing-assistant extension's RPC timeout rejections ([#4418](https://github.com/andymai/gridfinity-layout-tool/issues/4418)) ([9462265](https://github.com/andymai/gridfinity-layout-tool/commit/94622650a52b0396a666e839b0bbf2bd2c322cfc))
+* **analytics:** match posthog-js's transport timeout by its bare message ([#4408](https://github.com/andymai/gridfinity-layout-tool/issues/4408)) ([7ad29b2](https://github.com/andymai/gridfinity-layout-tool/commit/7ad29b26f1dc7ded9bbf45cafd1e99ebd278b9ee))
+* **bins:** call the text colour zone "Text", since it colours embossed text too ([#4409](https://github.com/andymai/gridfinity-layout-tool/issues/4409)) ([5608c23](https://github.com/andymai/gridfinity-layout-tool/commit/5608c231e1ff9e20f160ae9678e3ac82d59603fc))
+* **deps:** raise the fast-uri override past GHSA-58mr-gqgx-xq4g ([#4423](https://github.com/andymai/gridfinity-layout-tool/issues/4423)) ([538a9e0](https://github.com/andymai/gridfinity-layout-tool/commit/538a9e055f7cf3543ff8de6dc80d283d5e4405bc))
+
 ## [4.498.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.498.1...gridfinity-layout-tool-v4.498.2) (2026-09-28)
 
 
