@@ -1516,7 +1516,7 @@
   "binDesigner.plateIconAria": "{owner}의 플레이트 아이콘",
   "binDesigner.plateIconAriaValue": "{owner}의 플레이트 아이콘: {icon}",
   "binDesigner.plateIconOwnerCompartment": "{n}번 칸",
-  "binDesigner.plateSpanningNote": "칸이 개별 플레이트에는 너무 좁아 — 수납통 너비의 소켓 하나를 대신 사용합니다.",
+  "binDesigner.plateSpanningNote": "칸이 개별 플레이트에는 너무 좁아서 각 행에 전체 너비 플레이트를 하나씩 사용합니다.",
   "binDesigner.plateWidthAria": "{n}번 칸의 플레이트 너비",
   "binDesigner.plateWidthAuto": "자동 ({width})",
   "binDesigner.plateWidthNoFit": "맞는 표준 플레이트 없음",

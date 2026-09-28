@@ -80,7 +80,6 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
       innerDmm: innerD,
       wallHeightMm: wallHeight,
       clearanceMm,
-      fallbackText: '',
     });
   }, [params, label, nozzleSizeMm]);
 

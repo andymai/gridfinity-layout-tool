@@ -247,6 +247,68 @@ describe('useLabelPlateCounts', () => {
     await waitFor(() => expect(result.current.get(D1)?.tabsWithoutText).toBe(false));
   });
 
+  describe('with compartments too narrow for a plate', () => {
+    // Four columns across the mocked interior are each narrower than a 1U
+    // socket, so every row takes one full-width plate captioned from rowTexts.
+    const narrow = { cols: 4, rows: 2, cells: [0, 1, 2, 3, 4, 5, 6, 7], thickness: 1.2 };
+
+    it('reads the row captions the plates print', async () => {
+      mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+      mockLoadDesign.mockResolvedValue(
+        ok(
+          makeSocketDesign({
+            label: { enabled: true, mode: 'socket', depth: 12, rowTexts: ['DRILL BITS'] },
+            compartments: narrow,
+          })
+        )
+      );
+
+      const { result } = renderHook(() =>
+        useLabelPlateCounts([createTestBin({ linkedDesignId: D1 })])
+      );
+
+      await waitFor(() => expect(result.current.get(D1)?.tabsWithoutText).toBe(false));
+    });
+
+    it('flags blank plates despite a caption on a row that gets no tab', async () => {
+      // Column 0 runs through both rows, so row 0's back edge has no wall to
+      // hang a shelf from and its caption never prints.
+      mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+      mockLoadDesign.mockResolvedValue(
+        ok(
+          makeSocketDesign({
+            label: { enabled: true, mode: 'socket', depth: 12, rowTexts: ['STALE', ''] },
+            compartments: { ...narrow, cells: [0, 1, 2, 3, 0, 4, 5, 6] },
+          })
+        )
+      );
+
+      const { result } = renderHook(() =>
+        useLabelPlateCounts([createTestBin({ linkedDesignId: D1 })])
+      );
+
+      await waitFor(() => expect(result.current.get(D1)?.plateSet?.perBin).toBe(1));
+      expect(result.current.get(D1)?.tabsWithoutText).toBe(true);
+    });
+
+    it('flags blank rows despite compartment captions', async () => {
+      mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+      mockLoadDesign.mockResolvedValue(
+        ok(
+          makeSocketDesign({
+            compartments: { ...narrow, compartmentTexts: ['M3', 'M4'] },
+          })
+        )
+      );
+
+      const { result } = renderHook(() =>
+        useLabelPlateCounts([createTestBin({ linkedDesignId: D1 })])
+      );
+
+      await waitFor(() => expect(result.current.get(D1)?.tabsWithoutText).toBe(true));
+    });
+  });
+
   it('does not flag a design with no label tabs at all', async () => {
     mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
     mockLoadDesign.mockResolvedValue(

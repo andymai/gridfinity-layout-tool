@@ -1516,7 +1516,7 @@
   "binDesigner.plateIconAria": "{owner}のプレートアイコン",
   "binDesigner.plateIconAriaValue": "{owner}のプレートアイコン: {icon}",
   "binDesigner.plateIconOwnerCompartment": "仕切り{n}",
-  "binDesigner.plateSpanningNote": "コンパートメントが狭すぎるため、ビン全幅の1つのソケットを使用します。",
+  "binDesigner.plateSpanningNote": "コンパートメントが狭すぎて個別のプレートが入らないため、各行に全幅のプレートを1枚ずつ使用します。",
   "binDesigner.plateWidthAria": "コンパートメント{n}のプレート幅",
   "binDesigner.plateWidthAuto": "自動（{width}）",
   "binDesigner.plateWidthNoFit": "標準プレートが入りません",

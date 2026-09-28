@@ -33,9 +33,8 @@ export interface LabelTextRowModel {
   readonly value: string;
   /** The caption overflows its host and will not render. */
   readonly overflows: boolean;
-  /** The swappable plate this compartment hosts. Absent in text mode, and in
-   *  the socket plan's bin-spanning fallback where there is no per-compartment
-   *  plate to size. */
+  /** The swappable plate this compartment hosts. Absent in text mode, and on
+   *  row captions, whose full-width plate has no per-compartment size. */
   readonly plate?: {
     readonly fittingWidthsU: readonly LabelPlateWidthU[];
     readonly autoWidthU: LabelPlateWidthU | null;
@@ -47,6 +46,8 @@ export interface LabelTextRowModel {
 interface LabelTextListProps {
   readonly rows: readonly LabelTextRowModel[];
   readonly spanning: boolean;
+  /** Why per-compartment captions can't apply, when they can't. */
+  readonly perCompartmentUnavailable?: string;
   readonly onToggleSpan: (spanning: boolean) => void;
   readonly onCommit: (index: number, value: string) => void;
   readonly onClearAll: () => void;
@@ -72,6 +73,7 @@ interface LabelTextListProps {
 export function LabelTextList({
   rows,
   spanning,
+  perCompartmentUnavailable,
   onToggleSpan,
   onCommit,
   onClearAll,
@@ -157,6 +159,8 @@ export function LabelTextList({
           touchTarget={false}
           onClick={() => onToggleSpan(false)}
           aria-pressed={!spanning}
+          disabled={perCompartmentUnavailable !== undefined}
+          title={perCompartmentUnavailable}
           className={`flex-1 ${getSegmentClass(!spanning)}`}
         >
           {t('binDesigner.labelTextPerCompartment')}

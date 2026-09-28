@@ -379,8 +379,8 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   sources: the shell itself when `compartmentsBakedIntoShell` (2D cavity drawings can't
   express a partial height, so `shellStage` cuts it before `featuresStage` fuses the shelf —
   the boolean stage runs every cut AFTER every fuse, so a cut target would eat the shelf) and
-  `buildCompartmentWalls` on the additive path. Both spanning shapes need it: `label.span`,
-  and the socket plan's bin-spanning fallback for columns too narrow to host a plate.
+  `buildCompartmentWalls` on the additive path. Row-spanning tabs come from `label.span`, and
+  in socket mode from any grid whose columns are too narrow to host a plate.
 - **Label tab spans follow the divider, not the grid line (#3225)**: a `dividerOverride`
   translates a divider off `-innerW/2 + col * cellW`, so that expression is not the
   compartment edge. `compartmentTabXSpan` is the single source of truth, and the same three

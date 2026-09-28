@@ -1516,7 +1516,7 @@
   "binDesigner.plateIconAria": "Plattensymbol für {owner}",
   "binDesigner.plateIconAriaValue": "Plattensymbol für {owner}: {icon}",
   "binDesigner.plateIconOwnerCompartment": "Fach {n}",
-  "binDesigner.plateSpanningNote": "Die Fächer sind zu schmal für einzelne Etiketten — stattdessen wird eine behälterbreite Aufnahme verwendet.",
+  "binDesigner.plateSpanningNote": "Die Fächer sind zu schmal für einzelne Etiketten, daher erhält jede Reihe ein Etikett über die volle Breite.",
   "binDesigner.plateWidthAria": "Etikettenbreite für Fach {n}",
   "binDesigner.plateWidthAuto": "Auto ({width})",
   "binDesigner.plateWidthNoFit": "Kein Standard-Etikett passt",

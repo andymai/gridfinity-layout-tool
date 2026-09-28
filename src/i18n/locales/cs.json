@@ -1516,7 +1516,7 @@
   "binDesigner.plateIconAria": "Ikona destičky pro {owner}",
   "binDesigner.plateIconAriaValue": "Ikona destičky pro {owner}: {icon}",
   "binDesigner.plateIconOwnerCompartment": "přihrádku {n}",
-  "binDesigner.plateSpanningNote": "Přihrádky jsou příliš úzké pro jednotlivé destičky — místo toho se použije jedna patice přes celý bin.",
+  "binDesigner.plateSpanningNote": "Přihrádky jsou příliš úzké pro jednotlivé destičky, proto každá řada dostane jednu destičku přes celou šířku.",
   "binDesigner.plateWidthAria": "Šířka destičky pro přihrádku {n}",
   "binDesigner.plateWidthAuto": "Automaticky ({width})",
   "binDesigner.plateWidthNoFit": "Žádná standardní destička se nevejde",

@@ -1516,7 +1516,7 @@
   "binDesigner.plateIconAria": "Ikona płytki dla {owner}",
   "binDesigner.plateIconAriaValue": "Ikona płytki dla {owner}: {icon}",
   "binDesigner.plateIconOwnerCompartment": "przegrody {n}",
-  "binDesigner.plateSpanningNote": "Przegrody są zbyt wąskie na indywidualne płytki — używane jest jedno gniazdo na szerokość bina.",
+  "binDesigner.plateSpanningNote": "Przegrody są zbyt wąskie na indywidualne płytki, więc każdy rząd otrzymuje jedną płytkę na całą szerokość.",
   "binDesigner.plateWidthAria": "Szerokość płytki dla przegrody {n}",
   "binDesigner.plateWidthAuto": "Auto ({width})",
   "binDesigner.plateWidthNoFit": "Żadna standardowa płytka nie pasuje",

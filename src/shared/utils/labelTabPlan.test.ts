@@ -6,6 +6,7 @@ import {
   clickRailZBandAboveFloor,
   labelTabFootprints,
   labelTabInteriorDims,
+  planLabelTabLayout,
   railFoulingLabelFootprints,
   railSegmentsClearOfBlocks,
 } from './labelTabPlan';
@@ -153,6 +154,16 @@ describe('alignment and spanning tabs', () => {
       expect(fp.xMin).toBeCloseTo(-dims.innerW / 2, 3);
       expect(fp.xMax).toBeCloseTo(dims.innerW / 2, 3);
     }
+  });
+
+  it('drops the front spanning tab where a pair on both edges would meet', () => {
+    // Each shelf fits the row alone, but not both facing each other.
+    const p = withLabel({ span: true, edges: 'both', depth: 14, inset: 6 }, { depth: 1 });
+    const layout = planLabelTabLayout(p, 81.1, 39.1, dims.interiorHeight, p.wallThickness);
+    const slotsAt = (anchor: 'back' | 'front') =>
+      layout?.plannedRows.filter((r) => r.anchor === anchor).flatMap((r) => r.slots).length;
+    expect(slotsAt('back')).toBe(1);
+    expect(slotsAt('front')).toBe(0);
   });
 
   it('narrows a spanning tab with the width percentage too', () => {

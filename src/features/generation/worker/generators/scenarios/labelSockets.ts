@@ -43,6 +43,8 @@ const NO_LIP_BASE = { ...DEFAULT_BIN_PARAMS.base, stackingLip: false };
 interface PocketExpectation {
   readonly plateWidthU: LabelPlateWidthU;
   readonly label: string;
+  /** Y the tab hangs from; defaults to the interior back-wall face. */
+  readonly anchorY?: number;
 }
 
 /**
@@ -67,9 +69,9 @@ function assertSocketPocket(result: MeshData, params: BinParams, exp: PocketExpe
 
   const outerD = params.depth * params.gridUnitMm - 0.5;
   const innerD = outerD - 2 * params.wallThickness;
-  // Back-anchored tab: pocket sits one wall margin in from the interior
-  // back-wall face at +innerD/2.
-  const pocketYFar = innerD / 2 - LABEL_SOCKET_WALL_MM;
+  // Back-anchored tab: pocket sits one wall margin in from the face it hangs
+  // from, the interior back wall at +innerD/2 unless told otherwise.
+  const pocketYFar = (exp.anchorY ?? innerD / 2) - LABEL_SOCKET_WALL_MM;
   const pocketYNear = pocketYFar - pocketD;
 
   let maxZ = -Infinity;
@@ -224,7 +226,7 @@ export const labelSockets: ScenarioCase[] = [
   }),
 
   // 4 columns across a 2U bin: every column is too narrow for a 1U plate,
-  // so the builder falls back to ONE bin-spanning socket (2U plate).
+  // so the row takes ONE full-width socket (2U plate).
   defineScenario('label sockets', '2×1 four columns → bin-spanning 2U socket', {
     params: {
       width: 2,
@@ -236,6 +238,24 @@ export const labelSockets: ScenarioCase[] = [
     },
     customAssert: (result, params) =>
       assertSocketPocket(result, params, { plateWidthU: 2, label: '2x1-spanning' }),
+  }),
+
+  // 4 columns across a 3U bin leave compartments narrower than a 1U socket, so
+  // each row takes one full-width 3U socket: the front row's hangs from the
+  // middle divider, whose centreline is y=0.
+  defineScenario('label sockets', '3×2 four columns two rows → a 3U socket on each row', {
+    params: {
+      width: 3,
+      depth: 2,
+      height: 5,
+      base: NO_LIP_BASE,
+      label: SOCKET_LABEL,
+      compartments: { cols: 4, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5, 6, 7] },
+    },
+    customAssert: (result, params) => {
+      assertSocketPocket(result, params, { plateWidthU: 3, label: '3x2-back-row' });
+      assertSocketPocket(result, params, { plateWidthU: 3, label: '3x2-front-row', anchorY: 0 });
+    },
   }),
 
   // Two compartments side by side: each gets its own 1U socket. Verifies

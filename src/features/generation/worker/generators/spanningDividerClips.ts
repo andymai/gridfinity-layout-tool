@@ -28,8 +28,7 @@ export interface SpanningDividerClip {
  * surface the feature exists to provide.
  *
  * Derived from the same layout plan the shelves themselves are built from, so
- * the clip and the shelf cannot drift apart. Both spanning shapes qualify: the
- * `label.span` feature and the socket plan's bin-spanning fallback.
+ * the clip and the shelf cannot drift apart.
  */
 export function planSpanningDividerClips(
   params: BinParams,
@@ -43,7 +42,7 @@ export function planSpanningDividerClips(
   if (!layout) return [];
   // Per-compartment tabs are bounded by the dividers rather than crossing
   // them, so there is nothing to clip.
-  if (!layout.spanningFallback && params.label.span !== true) return [];
+  if (!layout.spansRows) return [];
 
   const { dims } = layout;
   const zMin = dims.shelfTopZ - dims.shelfT;

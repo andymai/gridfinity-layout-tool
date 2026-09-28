@@ -63,9 +63,9 @@ export interface LabelSocketCompartmentPlan {
 export interface LabelSocketPlan {
   readonly compartments: readonly LabelSocketCompartmentPlan[];
   /**
-   * When NO compartment can host a plate, fall back to one socket on a
-   * single tab spanning the full bin interior at the outer wall(s). Null
-   * when per-compartment sockets exist or when even spanning doesn't fit.
+   * When NO compartment can host a plate, the full-width plate every row takes
+   * instead. Null when per-compartment sockets exist or when even a full-width
+   * plate doesn't fit.
    */
   readonly spanningWidthU: LabelPlateWidthU | null;
   /** False when nothing fits anywhere — the UI disables socket mode. */
@@ -87,14 +87,19 @@ interface WallHungPlate extends LabelPlatePlanBase {
 
 /**
  * One printable plate derived from a socket-mode design, discriminated by what
- * it labels: a single compartment, one full-width row (`label.span`), the
- * whole bin (the spanning-socket fallback, whose caption the caller supplies),
- * one cutout on a shadow board, or one vertical slot in an outer wall.
+ * it labels: a single compartment, one full-width row (`label.span`, or every
+ * row when no compartment fits a plate), one cutout on a shadow board, or one
+ * vertical slot in an outer wall.
  */
 export type LabelPlatePlanEntry =
   | (WallHungPlate & { readonly scope: 'compartment'; readonly compartmentId: number })
-  | (WallHungPlate & { readonly scope: 'row'; readonly row: number })
-  | (WallHungPlate & { readonly scope: 'bin' })
+  | (WallHungPlate & {
+      readonly scope: 'row';
+      readonly row: number;
+      /** No compartment fits a plate, so the row stands in for them; a layout
+       *  export captions a blank one with the placed bin's own name. */
+      readonly rowsForced?: true;
+    })
   | (LabelPlatePlanBase & { readonly scope: 'cutout'; readonly cutoutId: string })
   | (LabelPlatePlanBase & { readonly scope: 'wall'; readonly side: WallLabelSlotSide });
 
@@ -112,8 +117,6 @@ export interface LabelPlatePlanInput {
   /** Interior ceiling height (mm): the plane a board's fill surface hangs from. */
   readonly wallHeightMm: number;
   readonly clearanceMm: number;
-  /** Caption for the bin-spanning plate, which labels no single compartment. */
-  readonly fallbackText: string;
 }
 
 /**
@@ -154,7 +157,7 @@ function planWallSlotPlates(input: LabelPlatePlanInput): LabelPlatePlanEntry[] {
 }
 
 function planSocketPlates(input: LabelPlatePlanInput): LabelPlatePlanEntry[] {
-  const { params, innerWmm, innerDmm, wallHeightMm, clearanceMm, fallbackText } = input;
+  const { params, innerWmm, innerDmm, wallHeightMm, clearanceMm } = input;
   const { compartments, label } = params;
 
   // A shadow board's sockets hang off no wall, so they are planned from the
@@ -181,29 +184,12 @@ function planSocketPlates(input: LabelPlatePlanInput): LabelPlatePlanEntry[] {
     bothEdges: edges === 'both',
   });
 
-  // Bin-spanning fallback: the worker models the whole interior as one
-  // synthetic 1x1 compartment, so eligibility is measured against the full
-  // inner depth and the grid carries no divider overrides to tilt an anchor.
-  if (plan.spanningWidthU !== null) {
-    const widthU = plan.spanningWidthU;
-    const synthetic: CompartmentConfig = {
-      cols: 1,
-      rows: 1,
-      thickness: compartments.thickness,
-      cells: [0],
-    };
-    const fit = fitAt(innerDmm);
-    return anchors
-      .filter((anchor) => compartmentTabEligible(synthetic, 0, anchor, fit))
-      .map((anchor) => ({ scope: 'bin' as const, anchor, widthU, text: fallbackText.trim() }));
-  }
-
   const cellD = innerDmm / compartments.rows;
 
   // Full-width mode: one bin-wide plate per row that hosts a spanning
   // tab, captioned from `label.rowTexts`. All rows share the bin-wide pocket,
   // so the per-compartment widths above don't describe this layout.
-  if (label.span === true) {
+  if (label.span === true || plan.spanningWidthU !== null) {
     const widthU =
       planLabelSockets(
         { cols: 1, rows: 1, thickness: compartments.thickness, cells: [0] },
@@ -224,6 +210,7 @@ function planSocketPlates(input: LabelPlatePlanInput): LabelPlatePlanEntry[] {
           anchor,
           widthU,
           text: (label.rowTexts?.[row] ?? '').trim(),
+          ...(label.span === true ? {} : { rowsForced: true as const }),
         });
       }
     }
@@ -252,6 +239,24 @@ function planSocketPlates(input: LabelPlatePlanInput): LabelPlatePlanEntry[] {
     }
   }
   return plates;
+}
+
+/**
+ * Whether label tabs run one per row: the `label.span` feature, or socket mode
+ * with no compartment wide enough for a standard plate. `innerWmm` and
+ * `clearanceMm` must be the worker's, since the fit decides it.
+ */
+export function labelTabsSpanRows(
+  params: BinParams,
+  innerWmm: number,
+  clearanceMm: number
+): boolean {
+  if (params.label.span === true) return true;
+  if ((params.label.mode ?? 'text') !== 'socket') return false;
+  return (
+    planLabelSockets(params.compartments, innerWmm, clearanceMm, params.label.width)
+      .spanningWidthU !== null
+  );
 }
 
 /**

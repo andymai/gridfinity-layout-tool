@@ -167,18 +167,20 @@ export function planLabelPlateExport(
       innerDmm: inner.innerD,
       wallHeightMm: dims.wallHeight,
       clearanceMm,
-      fallbackText: '',
     });
     if (planned.length === 0) continue;
 
     // Expand to physical plates: every plate the plan lists repeats per placed
-    // bin. Bin-spanning plates label the whole bin rather than any compartment,
-    // so they take each bin's own label text instead of the plan's caption.
+    // bin. A blank row plate that stands in for compartments too narrow for
+    // their own takes each bin's label, which names what the bin holds.
     const expanded: { widthU: LabelPlateWidthU; text: string; icon?: LabelPlateIconId }[] =
       linkedBins.flatMap((b) =>
         planned.map((p) => ({
           widthU: p.widthU,
-          text: p.scope === 'bin' ? b.label.trim() || design.name : p.text,
+          text:
+            p.scope === 'row' && p.rowsForced === true && p.text === ''
+              ? b.label.trim() || design.name
+              : p.text,
           ...(p.icon !== undefined ? { icon: p.icon } : {}),
         }))
       );

@@ -1516,7 +1516,7 @@
   "binDesigner.plateIconAria": "Значок пластини для {owner}",
   "binDesigner.plateIconAriaValue": "Значок пластини для {owner}: {icon}",
   "binDesigner.plateIconOwnerCompartment": "відділення {n}",
-  "binDesigner.plateSpanningNote": "Відсіки завузькі для окремих пластин — використовується одне гніздо на всю ширину контейнера.",
+  "binDesigner.plateSpanningNote": "Відсіки завузькі для окремих пластин, тому кожен ряд отримує одну пластину на всю ширину.",
   "binDesigner.plateWidthAria": "Ширина пластини для відсіку {n}",
   "binDesigner.plateWidthAuto": "Авто ({width})",
   "binDesigner.plateWidthNoFit": "Жодна стандартна пластина не підходить",

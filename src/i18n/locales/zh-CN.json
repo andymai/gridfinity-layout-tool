@@ -1516,7 +1516,7 @@
   "binDesigner.plateIconAria": "{owner}的标签板图标",
   "binDesigner.plateIconAriaValue": "{owner}的标签板图标：{icon}",
   "binDesigner.plateIconOwnerCompartment": "隔间 {n}",
-  "binDesigner.plateSpanningNote": "隔间太窄，放不下单独的标签板 — 改用一个贯通收纳盒整宽的卡槽。",
+  "binDesigner.plateSpanningNote": "隔间太窄，放不下单独的标签板，因此每行使用一块整宽标签板。",
   "binDesigner.plateWidthAria": "隔间 {n} 的标签板宽度",
   "binDesigner.plateWidthAuto": "自动（{width}）",
   "binDesigner.plateWidthNoFit": "没有合适的标准标签板",

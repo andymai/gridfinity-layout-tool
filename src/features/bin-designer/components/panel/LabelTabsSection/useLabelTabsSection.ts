@@ -4,9 +4,9 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store';
 import { useLayoutStore } from '@/core/store/layout';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
-import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
+import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
-import { rowHasFullWidthWall } from '@/shared/types/bin';
+import { spanningTabEligible } from '@/shared/types/bin';
 import { getFeatureStatus } from '@/shared/constraints';
 import {
   LABEL_TAB_LIP_HEIGHT_DEFAULT_MM,
@@ -543,7 +543,8 @@ export function useLabelTabsSection() {
   const isSocketMode = (label.mode ?? 'text') === 'socket';
 
   const socketPlan = useMemo(() => {
-    const { innerW } = binDimensions(params);
+    // Overhang-expanded, as the worker's label-tab frame is.
+    const { innerW } = cutoutInterior(params);
     // Nozzle-scaled to match the worker's cut so pickers/warnings can never
     // disagree with the geometry (a wider nozzle can drop a compartment from
     // a 2U plate to 1U).
@@ -554,6 +555,10 @@ export function useLabelTabsSection() {
   // Socket segment disabled when no standard plate fits anywhere, even
   // bin-spanning \u2014 sockets are never emitted at nonstandard widths.
   const socketUnavailable = !socketPlan.anyFits;
+  // No compartment is wide enough for a plate, so every row takes one
+  // full-width plate whatever the per-compartment/per-row choice says.
+  const rowsForced = isSocketMode && socketPlan.spanningWidthU !== null;
+  const spanning = label.span === true || rowsForced;
 
   const plateWidthRows = useMemo(() => {
     if (!isSocketMode || socketPlan.spanningWidthU !== null) return [];
@@ -624,21 +629,26 @@ export function useLabelTabsSection() {
     });
   }, [compartments, t]);
 
-  // In span mode the tabs are per row, so the text list follows: one field per
-  // row that actually hosts a spanning tab. Rows whose compartments merge
-  // across the boundary get no tab, so offering a caption there would be a
-  // field that renders nothing.
+  // When the tabs span rows the text list follows: one field per row that
+  // actually hosts a spanning tab, judged by the worker's own eligibility, so
+  // no field is offered for a caption that would render nothing.
   const rowTextRows = useMemo(() => {
-    if (label.span !== true) return [];
+    if (!spanning) return [];
     const edges = label.edges ?? 'back';
     const texts = label.rowTexts ?? [];
+    const fit = {
+      tabDepth: label.depth,
+      inset: label.inset ?? 0,
+      cellD: cutoutInterior(params).innerD / compartments.rows,
+      bothEdges: edges === 'both',
+    };
     const rows = [];
     for (let row = 0; row < compartments.rows; row++) {
       const hosts =
         ((edges === 'back' || edges === 'both') &&
-          rowHasFullWidthWall(compartments, row, 'back')) ||
+          spanningTabEligible(compartments, row, 'back', fit)) ||
         ((edges === 'front' || edges === 'both') &&
-          rowHasFullWidthWall(compartments, row, 'front'));
+          spanningTabEligible(compartments, row, 'front', fit));
       if (!hosts) continue;
       rows.push({
         row,
@@ -647,9 +657,7 @@ export function useLabelTabsSection() {
       });
     }
     return rows;
-  }, [label.span, label.edges, label.rowTexts, compartments, t]);
-
-  const spanning = label.span === true;
+  }, [spanning, label.edges, label.rowTexts, label.depth, label.inset, params, compartments, t]);
 
   // The build's own verdict on which captions overflow, reported alongside the
   // mesh because the drop leaves no trace in it. Absent while a generation is
@@ -657,11 +665,8 @@ export function useLabelTabsSection() {
   // next mesh rather than flickering on every keystroke.
   //
   // Matched on SCOPE as well as index: the report is compartment-indexed by
-  // default, row-indexed under `span`, and indexes a synthetic 1x1 grid when the
-  // socket plan degrades to one bin-spanning tab. Keying on index alone would
-  // let a report from one indexing scheme light up a row in another — today the
-  // `bin` scope never carries text so nothing misfires, but that is a property
-  // of `planLabelPlateSeats`, not something this list should depend on.
+  // default and row-indexed when the tabs span rows, so keying on index alone
+  // would let a report from one scheme light up an entry in the other.
   const overflowIndices = useMemo(() => {
     const wanted = spanning ? 'row' : 'compartment';
     const set = new Set<number>();
@@ -804,7 +809,7 @@ export function useLabelTabsSection() {
       rowTextRows,
       isSocketMode,
       socketUnavailable,
-      socketSpanningWidthU: socketPlan.spanningWidthU,
+      rowsForced,
       shownPlateCount: labelPlates?.plates.length ?? 0,
       omittedPlateCount: labelPlates?.omittedCount ?? 0,
       plateWidthRows,
