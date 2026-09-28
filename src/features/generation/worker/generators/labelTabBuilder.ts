@@ -17,6 +17,10 @@ import {
   translate,
   withScope,
   setShapeOrigin,
+  getFaceOrigins,
+  getFaces,
+  getBounds,
+  getHashCode,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
 import { BOX_CORNER_RADIUS, COPLANAR_OVERLAP } from './generatorConstants';
@@ -70,6 +74,31 @@ function buildGussetProfile(depth: number, height: number, depthSign: 1 | -1 = -
     .lineTo([0, 0])
     .close();
 }
+/**
+ * Split the tab's faces between the label and its support by height: below the
+ * shelf underside (`undersideZ`, in the tab's local frame) is the support. Done
+ * after the booleans rather than by tagging the parts before them: the fuse
+ * merges a shelf end face with the coplanar face of the edge gusset below it,
+ * and a merged face keeps neither origin. The shelf's own underside sits
+ * exactly on `undersideZ`, so it stays the label's.
+ *
+ * A socket pocket's faces come out of their cut untagged, and whatever tags
+ * them downstream can pick the support's tag off a neighbouring gusset, so
+ * untagged faces are settled here too. TEXT and other tags are left alone.
+ */
+function tagSupportFaces(tab: Shape3D, undersideZ: number): void {
+  const origins = getFaceOrigins(tab);
+  if (!origins) return;
+  for (const face of getFaces(tab)) {
+    const hash = getHashCode(face);
+    const origin = origins.get(hash);
+    if (origin !== undefined && origin !== FeatureTag.LABEL_TAB) continue;
+    const { zMin, zMax } = getBounds(face);
+    const below = (zMin + zMax) / 2 < undersideZ - 1e-3;
+    origins.set(hash, below ? FeatureTag.LABEL_SUPPORT : FeatureTag.LABEL_TAB);
+  }
+}
+
 /**
  * Build label tabs for every compartment.
  *
@@ -580,6 +609,10 @@ function buildTabsAtRow(
       setShapeOrigin(rim, FeatureTag.LABEL_TAB);
       tabSolid = scope.register(unwrap(fuse(tabSolid as ValidSolid, rim as ValidSolid)));
     }
+
+    // Last, so no boolean above ever carries a support tag onto a face it
+    // creates (a socket pocket wall picked one up).
+    if (gussetLeg > 0) tagSupportFaces(tabSolid, gussetLeg);
 
     // Position: X at alignment offset, Y at anchor wall + inset offset,
     // Z at gusset base (= shelfTopZ - tabHeight).

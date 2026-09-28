@@ -1162,6 +1162,8 @@
   "binDesigner.knifeRest.summary": "{style}，高 {height}mm",
   "binDesigner.knifeRest.title": "刀柄托座",
   "binDesigner.labelColor": "颜色",
+  "binDesigner.labelSupportsBodyColor": "支撑使用主体颜色",
+  "binDesigner.labelSupportsBodyColorHint": "可省去支撑所跨每一层的换料。",
   "binDesigner.labelColorsGroup": "颜色",
   "binDesigner.labelPlacementGroup": "位置",
   "binDesigner.labelPlatesOmitted": "正在预览 {total} 个标签牌中的 {shown} 个",

@@ -1162,6 +1162,8 @@
   "binDesigner.knifeRest.summary": "{style}, {height} mm de altura",
   "binDesigner.knifeRest.title": "Apoio dos cabos",
   "binDesigner.labelColor": "Cor",
+  "binDesigner.labelSupportsBodyColor": "Suporte na cor do corpo",
+  "binDesigner.labelSupportsBodyColorHint": "Economiza uma troca de filamento em cada camada que o suporte ocupa.",
   "binDesigner.labelColorsGroup": "Cores",
   "binDesigner.labelPlacementGroup": "Posicionamento",
   "binDesigner.labelPlatesOmitted": "Visualizando {shown} de {total} placas de rótulo",

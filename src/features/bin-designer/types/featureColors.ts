@@ -75,6 +75,16 @@ export interface FeatureColorConfig {
   readonly body: string;
   readonly lip: LipColorConfig;
   readonly labelTab: string;
+  /**
+   * Print the label tab's support (brackets, solid or fillet under the shelf,
+   * `FeatureTag.LABEL_SUPPORT`) in {@link labelTab} instead of {@link body}.
+   * Body is the default because the support spans every layer from its foot
+   * to the shelf, and a label colour there costs a filament swap on each.
+   *
+   * OPTIONAL and ABSENT unless true, for the same reason {@link lidLip} is:
+   * `communityParamsFingerprint` hashes `params` wholesale.
+   */
+  readonly labelSupportsInLabelColor?: true;
   /** Gridfinity foot (FeatureTag.SOCKET — magnets, screws, baseplate fit). */
   readonly base: string;
   /** Scoop / front internal ramp (FeatureTag.SCOOP). */
@@ -466,10 +476,15 @@ export function getZoneColor(c: FeatureColorConfig, z: ColorZone): string {
  * Maps a non-LIP FeatureTag to its ColorZone. LIP returns null because
  * lip faces need centroid-based classification into one of the grid cells.
  */
-export function featureTagToColorZone(tag: number): ColorZone | null {
+export function featureTagToColorZone(
+  tag: number,
+  labelSupportsInLabelColor = false
+): ColorZone | null {
   switch (tag) {
     case FeatureTag.LABEL_TAB:
       return 'labelTab';
+    case FeatureTag.LABEL_SUPPORT:
+      return labelSupportsInLabelColor ? 'labelTab' : 'body';
     case FeatureTag.SOCKET:
       return 'base';
     case FeatureTag.SCOOP:

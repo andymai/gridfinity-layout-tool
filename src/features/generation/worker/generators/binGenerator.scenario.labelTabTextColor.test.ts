@@ -27,7 +27,12 @@ beforeEach(() => clearAllCaches());
 const TEXT_HEX = '#ff0000';
 const TAB_HEX = '#2255aa';
 
-function params(mode: 'emboss' | 'engrave', scoop = false): BinParams {
+function params(
+  mode: 'emboss' | 'engrave',
+  scoop = false,
+  colors: Partial<BinParams['featureColors']> = {},
+  label: Partial<BinParams['label']> = {}
+): BinParams {
   return {
     ...DEFAULT_BIN_PARAMS,
     width: 2,
@@ -35,7 +40,7 @@ function params(mode: 'emboss' | 'engrave', scoop = false): BinParams {
     height: 3,
     base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
     scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: scoop },
-    label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, textStyle: { mode } },
+    label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, textStyle: { mode }, ...label },
     compartments: {
       ...DEFAULT_BIN_PARAMS.compartments,
       cols: 2,
@@ -48,6 +53,7 @@ function params(mode: 'emboss' | 'engrave', scoop = false): BinParams {
       enabled: true,
       labelTab: TAB_HEX,
       text: TEXT_HEX,
+      ...colors,
     },
   };
 }
@@ -166,4 +172,78 @@ describe('label-tab text color tag', () => {
     expect(codes.filter((c) => c === textCode)).toHaveLength(textTris);
     expect(codes.filter((c) => c === tabCode).length).toBeGreaterThan(0);
   }, 120_000);
+});
+
+function paintCodes(p: BinParams): {
+  tris: Tri[];
+  codes: string[];
+  codeFor: (hex: string) => string | undefined;
+} {
+  const m = getGenerateBin()(p);
+  const triCount = m.indices.length / 3;
+  const flat = new Float32Array(triCount * 9);
+  for (let t = 0; t < triCount; t++) {
+    for (let k = 0; k < 3; k++) {
+      const v = m.indices[t * 3 + k] * 3;
+      flat.set([m.vertices[v], m.vertices[v + 1], m.vertices[v + 2]], t * 9 + k * 3);
+    }
+  }
+  const mapping = buildTriangleMaterialIndices(
+    m.faceGroups ?? [],
+    p.featureColors,
+    triCount,
+    flat,
+    computeActiveZones(p)
+  );
+  if (!mapping) throw new Error('no material mapping');
+  const vertices = mapping.vertices ?? flat;
+  const files = unzipSync(
+    build3MFBuffer(vertices, mapping.normals ?? new Float32Array(vertices.length), {
+      name: 'support-color',
+      colorConfig: mapping.config,
+    })
+  );
+  const palette: string[] = JSON.parse(
+    strFromU8(files['Metadata/project_settings.config'])
+  ).filament_colour;
+  const model = strFromU8(files['3D/3dmodel.model']);
+  return {
+    tris: triangles(m),
+    codes: [...model.matchAll(/<triangle [^>]*paint_color="([^"]+)"/g)].map((r) => r[1]),
+    codeFor: (hex) => FILAMENT_PAINT_CODES[palette.indexOf(hex) + 1],
+  };
+}
+
+describe('label-tab support color', () => {
+  // Each support style is its own solid, and a socket tab thickens the shelf.
+  it.each([
+    ['bracket', { support: 'bracket' }],
+    ['solid', { support: 'solid' }],
+    ['fillet', { support: 'fillet' }],
+    ['socket', { support: 'bracket', mode: 'socket', depth: 14 }],
+  ] as const)(
+    'tags the %s support under the shelf LABEL_SUPPORT and keeps the shelf LABEL_TAB',
+    (_name, label) => {
+      const tris = triangles(getGenerateBin()(params('engrave', false, {}, label)));
+      const support = tris.filter((t) => t.tag === FeatureTag.LABEL_SUPPORT);
+      expect(support.length).toBeGreaterThan(0);
+      const shelfTop = tabTopZ(tris);
+      // Under the shelf plate, which is at least one wall thickness deep.
+      expect(Math.max(...support.flatMap((t) => [...t.zs]))).toBeLessThan(shelfTop - 1);
+    },
+    120_000
+  );
+
+  it('paints the support in the body filament, and in the label one when asked', () => {
+    const body = paintCodes(params('engrave'));
+    const tabTris = body.tris.filter((t) => t.tag === FeatureTag.LABEL_TAB).length;
+    const supportTris = body.tris.filter((t) => t.tag === FeatureTag.LABEL_SUPPORT).length;
+    expect(supportTris).toBeGreaterThan(0);
+    expect(body.codes.filter((c) => c === body.codeFor(TAB_HEX))).toHaveLength(tabTris);
+
+    const label = paintCodes(params('engrave', false, { labelSupportsInLabelColor: true }));
+    expect(label.codes.filter((c) => c === label.codeFor(TAB_HEX))).toHaveLength(
+      tabTris + supportTris
+    );
+  }, 180_000);
 });

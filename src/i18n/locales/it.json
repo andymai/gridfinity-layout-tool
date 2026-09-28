@@ -1162,6 +1162,8 @@
   "binDesigner.knifeRest.summary": "{style}, {height} mm di altezza",
   "binDesigner.knifeRest.title": "Appoggio manici",
   "binDesigner.labelColor": "Colore",
+  "binDesigner.labelSupportsBodyColor": "Supporto del colore del corpo",
+  "binDesigner.labelSupportsBodyColorHint": "Risparmia un cambio di filamento in ogni strato attraversato dal supporto.",
   "binDesigner.labelColorsGroup": "Colori",
   "binDesigner.labelPlacementGroup": "Posizionamento",
   "binDesigner.labelPlatesOmitted": "Anteprima di {shown} su {total} targhette",

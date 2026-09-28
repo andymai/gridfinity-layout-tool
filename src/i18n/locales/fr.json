@@ -1162,6 +1162,8 @@
   "binDesigner.knifeRest.summary": "{style}, {height} mm de haut",
   "binDesigner.knifeRest.title": "Repose-manches",
   "binDesigner.labelColor": "Couleur",
+  "binDesigner.labelSupportsBodyColor": "Support couleur du corps",
+  "binDesigner.labelSupportsBodyColorHint": "Évite un changement de filament à chaque couche que traverse le support.",
   "binDesigner.labelColorsGroup": "Couleurs",
   "binDesigner.labelPlacementGroup": "Emplacement",
   "binDesigner.labelPlatesOmitted": "Aperçu de {shown} sur {total} plaquettes",

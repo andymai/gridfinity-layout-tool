@@ -71,6 +71,11 @@ describe('featureTagToColorZone', () => {
   ] as const)('maps %s to body zone', (_name, tag) => {
     expect(featureTagToColorZone(tag)).toBe('body');
   });
+
+  it('sends the label support to the body unless it follows the label', () => {
+    expect(featureTagToColorZone(FeatureTag.LABEL_SUPPORT)).toBe('body');
+    expect(featureTagToColorZone(FeatureTag.LABEL_SUPPORT, true)).toBe('labelTab');
+  });
 });
 
 describe('lip cell helpers', () => {

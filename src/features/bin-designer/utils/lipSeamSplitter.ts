@@ -42,6 +42,8 @@ export interface LipSplitInput {
    *  zone. Already clamped against `topAccentCutZ` by `accentCutPlanes`, so the
    *  two never claim the same piece. Null disables the cut. */
   readonly bottomAccentCutZ?: number | null;
+  /** `FeatureColorConfig.labelSupportsInLabelColor`: where LABEL_SUPPORT goes. */
+  readonly labelSupportsInLabelColor?: boolean;
 }
 
 export interface LipSplitResult {
@@ -224,6 +226,7 @@ function lipCutPlanes(
  */
 export function splitLipMesh(input: LipSplitInput): LipSplitResult {
   const { triangleCount, faceGroups, getTriangle, geom, counts } = input;
+  const labelSupportsInLabelColor = input.labelSupportsInLabelColor ?? false;
   const splitLipGrid = input.splitLipGrid ?? true;
   const cutZ = input.topAccentCutZ ?? null;
   const bottomCutZ = input.bottomAccentCutZ ?? null;
@@ -258,7 +261,17 @@ export function splitLipMesh(input: LipSplitInput): LipSplitResult {
       const cyp = (piece[1] + piece[4] + piece[7]) / 3;
       const czp = (piece[2] + piece[5] + piece[8]) / 3;
       positions.push(...piece);
-      triZones.push(classifyPiece(cxp, cyp, czp, { cutZ, bottomCutZ, isLip, geom, counts, tag }));
+      triZones.push(
+        classifyPiece(cxp, cyp, czp, {
+          cutZ,
+          bottomCutZ,
+          isLip,
+          geom,
+          counts,
+          tag,
+          labelSupportsInLabelColor,
+        })
+      );
       triTags.push(tag);
     }
   }
@@ -284,6 +297,7 @@ function classifyPiece(
     readonly geom: LipGeom | null;
     readonly counts: { readonly corners: LipAxisCount; readonly bands: LipAxisCount };
     readonly tag: number;
+    readonly labelSupportsInLabelColor: boolean;
   }
 ): ColorZone {
   if (ctx.cutZ !== null && cz > ctx.cutZ) return 'topAccent';
@@ -294,7 +308,7 @@ function classifyPiece(
     const cell = classifyLipCell(cx, cy, cz, ctx.geom, ctx.counts);
     if (cell !== null) return cell;
   }
-  return featureTagToColorZone(ctx.tag) ?? 'body';
+  return featureTagToColorZone(ctx.tag, ctx.labelSupportsInLabelColor) ?? 'body';
 }
 
 /** True when the grid actually partitions the lip (otherwise skip splitting). */
@@ -329,6 +343,7 @@ export function computeLipColoredMesh(input: {
   /** Accent cut planes (see {@link LipSplitInput}). Null = that band is off. */
   readonly topAccentCutZ?: number | null;
   readonly bottomAccentCutZ?: number | null;
+  readonly labelSupportsInLabelColor?: boolean;
   /**
    * Whether re-tessellation is permitted. The hit-test path passes false so the
    * returned `triZones` stays 1:1 with the input triangles (it maps a clicked
@@ -343,6 +358,7 @@ export function computeLipColoredMesh(input: {
   triTags: Int32Array;
 } {
   const { triangleCount, faceGroups, getTriangle, geom, counts, lipUniform } = input;
+  const labelSupportsInLabelColor = input.labelSupportsInLabelColor ?? false;
   const cutZ = input.topAccentCutZ ?? null;
   const bottomCutZ = input.bottomAccentCutZ ?? null;
   const allowSplit = input.allowSplit ?? true;
@@ -363,6 +379,7 @@ export function computeLipColoredMesh(input: {
       splitLipGrid,
       topAccentCutZ: cutZ,
       bottomAccentCutZ: bottomCutZ,
+      labelSupportsInLabelColor,
     });
     return { triZones: r.triZones, positions: r.positions, normals: r.normals, triTags: r.triTags };
   }
@@ -373,7 +390,7 @@ export function computeLipColoredMesh(input: {
     const tag = tags[i];
     const isLip = tag === FeatureTag.LIP && geom !== null;
     if (!anyAccent && !isLip) {
-      triZones[i] = featureTagToColorZone(tag) ?? 'body';
+      triZones[i] = featureTagToColorZone(tag, labelSupportsInLabelColor) ?? 'body';
       continue;
     }
     const t = getTriangle(i);
@@ -381,7 +398,7 @@ export function computeLipColoredMesh(input: {
       (t[0] + t[3] + t[6]) / 3,
       (t[1] + t[4] + t[7]) / 3,
       (t[2] + t[5] + t[8]) / 3,
-      { cutZ, bottomCutZ, isLip, geom, counts, tag }
+      { cutZ, bottomCutZ, isLip, geom, counts, tag, labelSupportsInLabelColor }
     );
   }
   // In-place path keeps the original mesh; tags align 1:1 with input triangles.

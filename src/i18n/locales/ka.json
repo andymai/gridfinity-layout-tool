@@ -1557,6 +1557,8 @@
   "binDesigner.tabAlignmentHint": "როდესაც ჩანართი სრულ სიგანეზე ვიწროა, განსაზღვრავს მის მდებარეობას განყოფილებაში.",
   "binDesigner.tabEdges": "ჩანართის კიდეები",
   "binDesigner.labelColor": "ფერი",
+  "binDesigner.labelSupportsBodyColor": "საყრდენი კორპუსის ფერში",
+  "binDesigner.labelSupportsBodyColorHint": "ზოგავს ფილამენტის შეცვლას ყველა ფენაზე, რომელსაც საყრდენი მოიცავს.",
   "binDesigner.tabShapeGroup": "ჩანართის ფორმა და ზომა",
   "binDesigner.tabEdges.back": "უკანა",
   "binDesigner.tabEdges.front": "წინა",

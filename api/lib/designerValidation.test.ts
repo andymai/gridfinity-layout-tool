@@ -1080,6 +1080,12 @@ describe('validateDesignerShare', () => {
       return validateDesignerShare(payload, JSON.stringify(payload).length);
     }
 
+    it('accepts a boolean labelSupportsInLabelColor and rejects anything else', () => {
+      expect(withColors({ body: '#3b82f6', labelSupportsInLabelColor: true }).valid).toBe(true);
+      expect(withColors({ body: '#3b82f6', labelSupportsInLabelColor: false }).valid).toBe(true);
+      expect(withColors({ body: '#3b82f6', labelSupportsInLabelColor: 'yes' }).valid).toBe(false);
+    });
+
     it('accepts the current shape (4-corner lip)', () => {
       const result = withColors({
         body: '#3b82f6',
