@@ -1,0 +1,29 @@
+src/shared/hooks/useLabelPlateCounts.ts
+  s_6231a44d9b968c::t_d4ea1004b3fdd6 26,68-74,82-83
+src/features/bin-designer/components/preview/GhostLabelTabs/GhostLabelTabs.tsx
+  s_6231a44d9b968c::t_d4ea1004b3fdd6 12-18,25,79-88,275,335
+src/shared/hooks/useLabelPlateCounts.test.ts
+  s_6231a44d9b968c::t_0db363ec74bdab 250-290
+src/shared/utils/labelSocketPlan.ts
+  s_6231a44d9b968c::t_86eff35faef171 245-261
+  s_6231a44d9b968c::t_4a836e31b340a4 244
+src/features/bin-designer/components/preview/GhostLabelTabs/GhostLabelTabs.test.tsx
+  s_6231a44d9b968c::t_94dcd2ae94e753 8-9,69-72,90,165-193
+  s_6231a44d9b968c::t_db59c6fabbf0a1 194-195
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "df03c266ebf60a3f850443454224c26a6d2d5e3c",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
