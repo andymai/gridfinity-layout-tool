@@ -9,13 +9,20 @@
  */
 
 import { useMemo } from 'react';
-import { baseFloorZ, baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
+import {
+  baseFloorZ,
+  baseWallHeight,
+  binDimensions,
+} from '@/features/bin-designer/utils/binDimensions';
+import { useSettingsStore } from '@/core/store';
+import { labelTabsSpanRows } from '@/shared/utils/labelSocketPlan';
 import * as THREE from 'three';
 import { useGhostMeshMaterial } from '../useGhostMeshMaterial';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import {
+  effectiveLabelSocketClearance,
   labelLipReservationMm,
   labelShelfCeilingMm,
   resolveLabelShelfTopMm,
@@ -68,6 +75,16 @@ export function GhostLabelTabs() {
       params: s.params,
       generationStatus: s.generation.status,
     }))
+  );
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+  const spansRows = useMemo(
+    () =>
+      labelTabsSpanRows(
+        params,
+        binDimensions(params).innerW,
+        effectiveLabelSocketClearance(nozzleSizeMm, params.label.plateFitOffset)
+      ),
+    [params, nozzleSizeMm]
   );
   const { cols, rows, cells } = compartments;
 
@@ -255,7 +272,7 @@ export function GhostLabelTabs() {
       }
     };
 
-    const buildRow = label.span === true ? buildSpanningRow : buildAnchorRow;
+    const buildRow = spansRows ? buildSpanningRow : buildAnchorRow;
     for (let row = 0; row < rows; row++) {
       if (includeBack) buildRow(row, 'back');
       if (includeFront) buildRow(row, 'front');
@@ -315,7 +332,7 @@ export function GhostLabelTabs() {
     label.alignment,
     label.edges,
     label.inset,
-    label.span,
+    spansRows,
     label.lip,
     label.lipHeight,
   ]);

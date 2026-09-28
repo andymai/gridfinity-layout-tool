@@ -23,7 +23,7 @@ import { effectiveLabelSocketClearance } from '@/shared/constants/labelPlates';
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import type { BinParams } from '@/shared/types/bin';
 import { useSettingsStore } from '@/core/store';
-import { planLabelPlates } from '@/shared/utils/labelSocketPlan';
+import { labelTabsSpanRows, planLabelPlates } from '@/shared/utils/labelSocketPlan';
 
 /**
  * What a linked design's label tabs mean for the print list.
@@ -65,12 +65,13 @@ export function clearLabelPlateCountCache(): void {
 }
 
 // Both generation paths print exactly ONE of the two caption arrays, chosen by
-// `label.span` (`labelTabBuilder` for tabs, `labelSocketPlan` for plates), and
-// nothing copies captions across when the mode is toggled. Requiring both to be
-// empty would stay silent on a span design whose rows are blank while stale
-// compartment captions linger, which is the case the warning exists for.
-function printedLabelTexts(params: BinParams): readonly string[] {
-  return params.label.span === true
+// whether the tabs span rows (`labelTabBuilder` for tabs, `labelSocketPlan` for
+// plates), and nothing copies captions across when that flips. Requiring both
+// to be empty would stay silent on a row design whose rows are blank while
+// stale compartment captions linger, which is the case the warning exists for.
+function printedLabelTexts(params: BinParams, nozzleSizeMm: number): readonly string[] {
+  const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, params.label.plateFitOffset);
+  return labelTabsSpanRows(params, cutoutInterior(params).innerW, clearanceMm)
     ? (params.label.rowTexts ?? [])
     : (params.compartments.compartmentTexts ?? []);
 }
@@ -78,7 +79,8 @@ function printedLabelTexts(params: BinParams): readonly string[] {
 function computeLabelInfo(design: SavedDesign, nozzleSizeMm: number): DesignLabelInfo {
   const params = design.params;
   const tabsWithoutText =
-    params?.label.enabled === true && !printedLabelTexts(params).some((t) => t.trim() !== '');
+    params?.label.enabled === true &&
+    !printedLabelTexts(params, nozzleSizeMm).some((t) => t.trim() !== '');
   return { plateSet: computePlateSet(design, nozzleSizeMm), tabsWithoutText };
 }
 

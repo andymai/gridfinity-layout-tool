@@ -242,6 +242,24 @@ function planSocketPlates(input: LabelPlatePlanInput): LabelPlatePlanEntry[] {
 }
 
 /**
+ * Whether label tabs run one per row: the `label.span` feature, or socket mode
+ * with no compartment wide enough for a standard plate. `innerWmm` and
+ * `clearanceMm` must be the worker's, since the fit decides it.
+ */
+export function labelTabsSpanRows(
+  params: BinParams,
+  innerWmm: number,
+  clearanceMm: number
+): boolean {
+  if (params.label.span === true) return true;
+  if ((params.label.mode ?? 'text') !== 'socket') return false;
+  return (
+    planLabelSockets(params.compartments, innerWmm, clearanceMm, params.label.width)
+      .spanningWidthU !== null
+  );
+}
+
+/**
  * Plate choice follows the TAB, not the compartment: narrowing the shelf to fit
  * a 1u plate must not leave a 2u plate planned for a pocket that no longer has
  * the room. `widthPercent` is the tab width as a percentage of the compartment

@@ -5,6 +5,8 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '@/features/bin-designer/constants';
 import { GhostLabelTabs } from './GhostLabelTabs';
 
+const tabScales = vi.hoisted(() => [] as number[][]);
+
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
   useThree: () => ({
@@ -64,7 +66,10 @@ vi.mock('three', () => {
   }
 
   class Matrix4 {
-    makeScale = vi.fn().mockReturnThis();
+    makeScale = vi.fn((...scale: number[]) => {
+      tabScales.push(scale);
+      return this;
+    });
     setPosition = vi.fn().mockReturnThis();
   }
   return {
@@ -82,6 +87,7 @@ vi.mock('three', () => {
 describe('GhostLabelTabs', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    tabScales.length = 0;
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -154,6 +160,37 @@ describe('GhostLabelTabs', () => {
     });
     const { container } = render(<GhostLabelTabs />);
     expect(container.firstChild).not.toBeNull();
+  });
+
+  it('draws one full-width tab per row when no compartment fits a plate', () => {
+    // A 3x2 bin split 4 across: ~30mm compartments, under a 1U socket.
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 3,
+        depth: 2,
+        label: {
+          ...DEFAULT_BIN_PARAMS.label,
+          enabled: true,
+          mode: 'socket',
+          width: 100,
+          depth: 14,
+          alignment: 'center',
+        },
+        compartments: { cols: 4, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5, 6, 7] },
+      },
+      generation: {
+        ...DEFAULT_GENERATION_STATE,
+        status: 'generating',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
+    });
+    render(<GhostLabelTabs />);
+
+    const innerW = 3 * 42 - 0.5 - 2 * DEFAULT_BIN_PARAMS.wallThickness;
+    expect(tabScales.map(([w]) => w)).toEqual([innerW, innerW]);
   });
 
   it('renders nothing when style is slotted', () => {
