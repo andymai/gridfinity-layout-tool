@@ -278,7 +278,9 @@ function isInjectedScriptThrow(exception: ExceptionLike): boolean {
  * catches that rejection like any other. An analytics request that timed out is
  * not an app failure, and the library retries it anyway.
  *
- * The event keeps the error's name in `type`, so the value is the bare message.
+ * It rejects with a plain Error named `AbortError`, and posthog-js records a
+ * plain Error's value as the bare message; only a DOMException's value carries
+ * its name as a prefix, which is what `isNavigationAbort` matches.
  */
 const POSTHOG_TRANSPORT_TIMEOUT = /^PostHog request timed out/;
 
