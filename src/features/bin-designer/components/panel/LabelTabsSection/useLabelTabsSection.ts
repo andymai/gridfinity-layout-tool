@@ -6,7 +6,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
-import { rowHasFullWidthWall } from '@/shared/types/bin';
+import { spanningTabEligible } from '@/shared/types/bin';
 import { getFeatureStatus } from '@/shared/constraints';
 import {
   LABEL_TAB_LIP_HEIGHT_DEFAULT_MM,
@@ -629,21 +629,26 @@ export function useLabelTabsSection() {
     });
   }, [compartments, t]);
 
-  // In span mode the tabs are per row, so the text list follows: one field per
-  // row that actually hosts a spanning tab. Rows whose compartments merge
-  // across the boundary get no tab, so offering a caption there would be a
-  // field that renders nothing.
+  // When the tabs span rows the text list follows: one field per row that
+  // actually hosts a spanning tab, judged by the worker's own eligibility, so
+  // no field is offered for a caption that would render nothing.
   const rowTextRows = useMemo(() => {
     if (!spanning) return [];
     const edges = label.edges ?? 'back';
     const texts = label.rowTexts ?? [];
+    const fit = {
+      tabDepth: label.depth,
+      inset: label.inset ?? 0,
+      cellD: cutoutInterior(params).innerD / compartments.rows,
+      bothEdges: edges === 'both',
+    };
     const rows = [];
     for (let row = 0; row < compartments.rows; row++) {
       const hosts =
         ((edges === 'back' || edges === 'both') &&
-          rowHasFullWidthWall(compartments, row, 'back')) ||
+          spanningTabEligible(compartments, row, 'back', fit)) ||
         ((edges === 'front' || edges === 'both') &&
-          rowHasFullWidthWall(compartments, row, 'front'));
+          spanningTabEligible(compartments, row, 'front', fit));
       if (!hosts) continue;
       rows.push({
         row,
@@ -652,7 +657,7 @@ export function useLabelTabsSection() {
       });
     }
     return rows;
-  }, [spanning, label.edges, label.rowTexts, compartments, t]);
+  }, [spanning, label.edges, label.rowTexts, label.depth, label.inset, params, compartments, t]);
 
   // The build's own verdict on which captions overflow, reported alongside the
   // mesh because the drop leaves no trace in it. Absent while a generation is

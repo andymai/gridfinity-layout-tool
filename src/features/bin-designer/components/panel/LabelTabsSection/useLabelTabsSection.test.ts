@@ -677,6 +677,24 @@ describe('useLabelTabsSection', () => {
       expect(result.current.state.textRows.map((r) => r.index)).toEqual([0, 1]);
     });
 
+    it('offers no caption field for a row whose shelf cannot fit', () => {
+      // The shelf plus its inset is deeper than either row, so the worker
+      // builds no tab there.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          width: 2,
+          depth: 1,
+          label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, span: true, depth: 14, inset: 8 },
+          compartments: { cols: 1, rows: 2, thickness: 1.2, cells: [0, 1] },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      expect(result.current.state.spanning).toBe(true);
+      expect(result.current.state.textRows).toEqual([]);
+    });
+
     it('sizes plates against the overhang-widened interior the worker builds in', () => {
       // Nominally too narrow for a 1U socket; the overhang widens them past it.
       useDesignerStore.setState({
