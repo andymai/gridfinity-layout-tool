@@ -7,7 +7,7 @@
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import { Button, Stepper, Switch } from '@/design-system';
+import { Button, InfoIcon, Stepper, Switch } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import {
   DIVIDER_FLOOR_GROOVE_DEPTH,
@@ -34,6 +34,7 @@ export function SlotConfigurator() {
     dividerHeight,
     maxDividerHeight,
     maxHeightRounded,
+    stackingLip,
     requestedCrossStyle,
     longAxis,
     insertTooThin,
@@ -296,6 +297,12 @@ export function SlotConfigurator() {
           fullWidth
           aria-label={t('binDesigner.dividerHeight')}
         />
+        {dividerPieces.height === 'auto' && stackingLip && (
+          <p className="mt-1 flex items-start gap-1 text-xs text-content-tertiary">
+            <InfoIcon size="xs" className="mt-0.5 shrink-0" />
+            <span>{t('binDesigner.dividerHeightLipCeiling')}</span>
+          </p>
+        )}
       </div>
 
       {/* Thickness + Fit tolerance side by side */}

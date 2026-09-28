@@ -1827,6 +1827,8 @@ const en: Record<string, string> = {
   'binDesigner.dividerFloorGrooveHint':
     "A {depth}mm channel in the floor seats each divider's bottom edge. Turn off to print dividers for a bin made without one.",
   'binDesigner.dividerAutoHeight': 'Auto',
+  'binDesigner.dividerHeightLipCeiling':
+    "Auto is the tallest a divider can be while bins stack, since a stacked bin's feet sit just above it. With the stacking lip off, dividers reach the rim.",
   'binDesigner.dividerDimensions': '{length} × {height}mm',
   'binDesigner.dividerHeightOnly': '{height}mm tall',
   'binDesigner.labelTabs': 'Label tabs',

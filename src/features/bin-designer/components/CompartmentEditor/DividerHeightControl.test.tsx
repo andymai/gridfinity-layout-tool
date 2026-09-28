@@ -26,7 +26,7 @@ describe('DividerHeightControl', () => {
 
   it('shows the auto label by default', () => {
     render(<DividerHeightControl />);
-    expect(screen.getByText(/Auto/)).toBeInTheDocument();
+    expect(screen.getByText(/^Auto \(/)).toBeInTheDocument();
   });
 
   it('decrementing from auto produces a numeric partial height below full', async () => {
@@ -38,6 +38,24 @@ describe('DividerHeightControl', () => {
     const h = dividerHeight() as number;
     expect(h).toBeLessThan(FULL_HEIGHT);
     expect(h).toBeGreaterThanOrEqual(2);
+  });
+
+  it('explains why auto is the ceiling on a lipped bin', () => {
+    render(<DividerHeightControl />);
+    expect(screen.getByText(/stacked bin's feet/)).toBeInTheDocument();
+  });
+
+  it('drops the explanation below auto and without a stacking lip', () => {
+    useDesignerStore.getState().setCompartmentDividerHeight(10);
+    const partial = render(<DividerHeightControl />);
+    expect(screen.queryByText(/stacked bin's feet/)).not.toBeInTheDocument();
+    partial.unmount();
+
+    useDesignerStore.setState(() => ({
+      params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false } },
+    }));
+    render(<DividerHeightControl />);
+    expect(screen.queryByText(/stacked bin's feet/)).not.toBeInTheDocument();
   });
 
   it('never commits a height taller than the auto (full interior) value', async () => {

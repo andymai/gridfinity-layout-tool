@@ -26,6 +26,30 @@ describe('SlotConfigurator', () => {
     expect(screen.getByText(/direction/i)).toBeInTheDocument();
   });
 
+  it('explains why an auto piece stops short of the rim on a lipped bin', () => {
+    render(<SlotConfigurator />);
+    expect(screen.getByText(/stacked bin's feet/)).toBeInTheDocument();
+  });
+
+  it('drops the explanation for a set height and without a stacking lip', () => {
+    const { params } = useDesignerStore.getState();
+    useDesignerStore.setState({
+      params: { ...params, dividerPieces: { ...params.dividerPieces, height: 10 } },
+    });
+    const partial = render(<SlotConfigurator />);
+    expect(screen.queryByText(/stacked bin's feet/)).not.toBeInTheDocument();
+    partial.unmount();
+
+    useDesignerStore.setState({
+      params: {
+        ...params,
+        base: { ...params.base, stackingLip: false },
+      },
+    });
+    render(<SlotConfigurator />);
+    expect(screen.queryByText(/stacked bin's feet/)).not.toBeInTheDocument();
+  });
+
   it('shows direction toggle buttons', () => {
     render(<SlotConfigurator />);
     expect(screen.getByText(/vertical/i)).toBeInTheDocument();
@@ -149,7 +173,7 @@ describe('SlotConfigurator', () => {
       },
     });
     render(<SlotConfigurator />);
-    expect(screen.getByText(/auto/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Auto \(/)).toBeInTheDocument();
   });
 
   it('updates divider thickness when changed', () => {

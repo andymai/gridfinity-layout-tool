@@ -982,6 +982,7 @@
   "binDesigner.dimensions": "Afmetingen",
   "binDesigner.dismissTouchHints": "Aanraaktips sluiten",
   "binDesigner.dividerAutoHeight": "Auto",
+  "binDesigner.dividerHeightLipCeiling": "Auto is de hoogste stand van een scheidingswand waarbij bins stapelbaar blijven, omdat de voetjes van een gestapelde bin er vlak boven staan. Zonder stapelrand reiken de scheidingswanden tot aan de rand.",
   "binDesigner.dividerClearance": "Passingstolerantie",
   "binDesigner.dividerFloorGroove": "Bodemgroef",
   "binDesigner.dividerFloorGrooveHint": "Een groef van {depth} mm in de bodem vangt de onderrand van elke scheidingswand. Zet uit om scheidingswanden te printen voor een bin zonder groef.",

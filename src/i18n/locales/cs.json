@@ -982,6 +982,7 @@
   "binDesigner.dimensions": "Rozměry",
   "binDesigner.dismissTouchHints": "Zavřít dotykové rady",
   "binDesigner.dividerAutoHeight": "Automaticky",
+  "binDesigner.dividerHeightLipCeiling": "Automaticky je nejvyšší výška přepážky, při které lze biny stohovat, protože nožky bin postaveného nahoře sedí těsně nad ní. Bez stohovacího lemu sahají přepážky až k okraji.",
   "binDesigner.dividerClearance": "Tolerance uložení",
   "binDesigner.dividerFloorGroove": "Drážka v podlaze",
   "binDesigner.dividerFloorGrooveHint": "Kanál hluboký {depth} mm v podlaze usadí spodní hranu každé přepážky. Vypněte pro tisk přepážek do binu vyrobeného bez drážky.",

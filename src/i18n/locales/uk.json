@@ -982,6 +982,7 @@
   "binDesigner.dimensions": "Розміри",
   "binDesigner.dismissTouchHints": "Закрити сенсорні підказки",
   "binDesigner.dividerAutoHeight": "Авто",
+  "binDesigner.dividerHeightLipCeiling": "Авто означає найбільшу висоту розділювача, за якої bins можна штабелювати, бо ніжки bin, поставленого зверху, стоять одразу над ним. Без бортика для штабелювання розділювачі сягають краю.",
   "binDesigner.dividerClearance": "Допуск посадки",
   "binDesigner.dividerFloorGroove": "Паз у дні",
   "binDesigner.dividerFloorGrooveHint": "Канал глибиною {depth} мм у дні фіксує нижній край кожної перегородки. Вимкніть, щоб надрукувати перегородки для bin, зробленого без паза.",
