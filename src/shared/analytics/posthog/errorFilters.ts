@@ -277,8 +277,10 @@ function isInjectedScriptThrow(exception: ExceptionLike): boolean {
  * `AbortError` whose message it prefixes itself, and `capture_exceptions`
  * catches that rejection like any other. An analytics request that timed out is
  * not an app failure, and the library retries it anyway.
+ *
+ * The event keeps the error's name in `type`, so the value is the bare message.
  */
-const POSTHOG_TRANSPORT_TIMEOUT = /^AbortError: PostHog request timed out/;
+const POSTHOG_TRANSPORT_TIMEOUT = /^PostHog request timed out/;
 
 /**
  * PostHog `before_send` hook. Drops `$exception` events whose **primary**
