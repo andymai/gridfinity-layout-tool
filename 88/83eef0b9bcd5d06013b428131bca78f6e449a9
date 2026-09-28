@@ -1,0 +1,89 @@
+src/i18n/locales/en.ts
+  s_6231a44d9b968c::t_1a4c8cb5683217 1849-1850
+  s_6231a44d9b968c::t_0513984bdfda4f 1851
+src/features/bin-designer/types/designerState.ts
+  s_6231a44d9b968c::t_8f07e1a596a710 127
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.test.tsx
+  s_6231a44d9b968c::t_e6152fa76775b8 81-94
+src/features/bin-designer/store/slices/paramSlice/scopedUpdaters.ts
+  s_6231a44d9b968c::t_c9cc1ca5d00eeb 214,226-227,233,236-238,267
+src/features/bin-designer/types/featureColors.test.ts
+  s_6231a44d9b968c::t_4abb5494a32469 74-78
+src/i18n/locales/pt-BR.json
+  s_6231a44d9b968c::t_1a4c8cb5683217 1165-1166
+src/i18n/locales/it.json
+  s_6231a44d9b968c::t_1a4c8cb5683217 1165-1166
+src/i18n/locales/nl.json
+  s_6231a44d9b968c::t_1a4c8cb5683217 1165-1166
+src/i18n/locales/sv.json
+  s_6231a44d9b968c::t_1a4c8cb5683217 1165-1166
+src/features/generation/worker/generators/featureTags.ts
+  s_6231a44d9b968c::t_7db4720b2b112d 62-68
+src/i18n/locales/pl.json
+  s_6231a44d9b968c::t_1a4c8cb5683217 1165-1166
+src/i18n/locales/de.json
+  s_6231a44d9b968c::t_1a4c8cb5683217 1165-1166
+api/lib/designerColorValidation.ts
+  s_6231a44d9b968c::t_c9cc1ca5d00eeb 23,116-119
+src/i18n/locales/es.json
+  s_6231a44d9b968c::t_1a4c8cb5683217 1165-1166
+src/features/bin-designer/utils/multiColorGroups.ts
+  s_6231a44d9b968c::t_cfca3f4e9bcd26 141,187
+src/i18n/locales/ko.json
+  s_6231a44d9b968c::t_1a4c8cb5683217 1165-1166
+src/i18n/locales/nb.json
+  s_6231a44d9b968c::t_1a4c8cb5683217 1165-1166
+src/features/bin-designer/types/featureColors.ts
+  s_6231a44d9b968c::t_a9e7e48351b448 78-87,479-482,486-487
+src/features/bin-designer/utils/lipSeamSplitter.ts
+  s_6231a44d9b968c::t_f76cfdc2ad2b81 346,361,382
+  s_6231a44d9b968c::t_a5de25a18a946b 45-46,229,264-274,300,311,393,401
+src/i18n/locales/ka.json
+  s_6231a44d9b968c::t_1a4c8cb5683217 1560-1561
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_6231a44d9b968c::t_7db4720b2b112d 20-23,77-94,534
+public/schema/bin-design.schema.json
+  s_6231a44d9b968c::t_585606af5f9312 1102-1105
+src/features/bin-designer/utils/materialMapping.ts
+  s_6231a44d9b968c::t_cfca3f4e9bcd26 126
+src/i18n/locales/ja.json
+  s_6231a44d9b968c::t_1a4c8cb5683217 1165-1166
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_6231a44d9b968c::t_4abb5494a32469 253-261
+src/shared/schema/binContentKeys.ts
+  s_6231a44d9b968c::t_585606af5f9312 41
+src/i18n/locales/cs.json
+  s_6231a44d9b968c::t_1a4c8cb5683217 1165-1166
+api/lib/designerValidation.test.ts
+  s_6231a44d9b968c::t_4abb5494a32469 1083-1088
+src/i18n/locales/uk.json
+  s_6231a44d9b968c::t_1a4c8cb5683217 1165-1166
+src/shared/generation/meshPersistence.ts
+  s_6231a44d9b968c::t_940f76892a76f5 76
+src/i18n/locales/zh-CN.json
+  s_6231a44d9b968c::t_1a4c8cb5683217 1165-1166
+src/features/bin-designer/constants/paramMigrationColors.ts
+  s_6231a44d9b968c::t_c9cc1ca5d00eeb 36,184
+src/i18n/locales/fr.json
+  s_6231a44d9b968c::t_1a4c8cb5683217 1165-1166
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.tsx
+  s_6231a44d9b968c::t_3d5e29e4ed292f 18,127-136
+src/features/generation/worker/generators/binGenerator.scenario.labelTabTextColor.test.ts
+  s_6231a44d9b968c::t_9f3456c9c02ce7 30-34,55,175-238
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8883eef0b9bcd5d06013b428131bca78f6e449a9",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
