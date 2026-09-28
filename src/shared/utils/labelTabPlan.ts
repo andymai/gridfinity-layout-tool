@@ -17,12 +17,9 @@ import type {
   TabAnchorSide,
 } from '@/shared/types/bin';
 import {
-  compartmentHasTiltedBackWall,
-  compartmentHasTiltedFrontWall,
   compartmentTabEligible,
   compartmentTabXSpan,
-  rowHasFullWidthWall,
-  spanRegionDepth,
+  spanningTabEligible,
 } from '@/shared/types/bin';
 import {
   LABEL_SOCKET_SHELF_THICKNESS_MM,
@@ -240,7 +237,7 @@ export function planLabelTabLayout(
         anchor,
         dims,
         slots: spansRows
-          ? planSpanningTabAtRow(params, row, anchor, dims)
+          ? planSpanningTabAtRow(params, row, anchor, dims, edges === 'both')
           : planTabsAtRow(params, row, anchor, dims, edges === 'both'),
       });
     }
@@ -368,23 +365,19 @@ function planSpanningTabAtRow(
   params: BinParams,
   row: number,
   anchor: TabAnchorSide,
-  dims: TabBuildDimensions
+  dims: TabBuildDimensions,
+  bothEdges: boolean
 ): TabSlot[] {
-  const { cols, cells } = params.compartments;
   const { innerW, innerD, cellD, tabDepth } = dims;
   const inset = params.label.inset ?? 0;
 
-  if (!rowHasFullWidthWall(params.compartments, row, anchor)) return [];
-
-  // A tilted divider anywhere along this boundary breaks the axis-aligned
-  // anchor-wall assumption the shelf and gusset geometry depends on.
-  const hasTilt = anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
-  for (let col = 0; col < cols; col++) {
-    if (hasTilt(params.compartments, cells[row * cols + col])) return [];
+  // The plate planner asks the same question, so a tab exists exactly where a
+  // plate ships for it.
+  if (
+    !spanningTabEligible(params.compartments, row, anchor, { tabDepth, inset, cellD, bothEdges })
+  ) {
+    return [];
   }
-
-  // The body would otherwise punch through the wall bounding the far side.
-  if (tabDepth + inset > spanRegionDepth(params.compartments, row, anchor, cellD)) return [];
 
   const depthSign = anchor === 'back' ? -1 : 1;
   const anchorY = anchor === 'back' ? -innerD / 2 + (row + 1) * cellD : -innerD / 2 + row * cellD;
