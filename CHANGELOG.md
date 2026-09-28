@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.498.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.498.1...gridfinity-layout-tool-v4.498.2) (2026-09-28)
+
+
+### Bug Fixes
+
+* **bins:** give every row a swappable plate when compartments are too narrow ([#4395](https://github.com/andymai/gridfinity-layout-tool/issues/4395)) ([67473a8](https://github.com/andymai/gridfinity-layout-tool/commit/67473a86c9ccb5293f7a9a6a539afc2e97973217))
+* **bins:** say why a divider stops at auto on a lipped bin ([#4394](https://github.com/andymai/gridfinity-layout-tool/issues/4394)) ([84d27e8](https://github.com/andymai/gridfinity-layout-tool/commit/84d27e8cd66623903b573dc51bc70f27c8af67e2))
+
 ## [4.498.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.498.0...gridfinity-layout-tool-v4.498.1) (2026-09-27)
 
 
