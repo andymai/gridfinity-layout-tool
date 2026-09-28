@@ -13,7 +13,7 @@ overrides:
   '@surma/rollup-plugin-off-main-thread>magic-string': 0.30.21
   workbox-build>@rollup/plugin-node-resolve: ^16.0.0
   '@apideck/better-ajv-errors>ajv': ^8.17.1
-  fast-uri@>=3.0.0 <3.1.6: ^3.1.6
+  fast-uri@>=3.0.0 <3.1.7: ^3.1.7
   sharp: ^0.35.0
   serialize-javascript@>=7.0.0 <7.0.5: ^7.0.5
   eslint-plugin-react-hooks>eslint: ^10.0.3
@@ -3940,8 +3940,8 @@ packages:
   fast-sha256@1.3.0:
     resolution: {integrity: sha512-n11RGP/lrWEFI/bWdygLxhI+pVeo1ZYIVwvvPkW7azl/rOy+F3HYRZ2K5zeE9mmkhQppyv9sQFx0JM9UabnpPQ==}
 
-  fast-uri@3.1.6:
-    resolution: {integrity: sha512-7Ical1vFEMr0onbVzEDIreM22I4khW+fzyQPwvAFWBp1iwdshSZRsL4jjRvPG9JP1uiqMHRto+YU6R2/CzDz5Q==}
+  fast-uri@3.1.8:
+    resolution: {integrity: sha512-GZMtZUTNRpOVIECoXwLNZS5xUGE+mVNbTB8h/7Rwh2TFWcBQiPzTgyZi05BF9UMZKkLJv8XBRJTlU7zg8+ZfMg==}
 
   fast-xml-builder@1.3.1:
     resolution: {integrity: sha512-pIM/1n3ntFXKYrUZwW7QCK0gAW7XY+wzj1YMIV3tLDvPj/V+zTGJK5e3/4WJfwj0qWw2ElNXiTixda/R+3YSug==}
@@ -8869,7 +8869,7 @@ snapshots:
   ajv@8.20.0:
     dependencies:
       fast-deep-equal: 3.1.3
-      fast-uri: 3.1.6
+      fast-uri: 3.1.8
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
 
@@ -9691,7 +9691,7 @@ snapshots:
 
   fast-sha256@1.3.0: {}
 
-  fast-uri@3.1.6: {}
+  fast-uri@3.1.8: {}
 
   fast-xml-builder@1.3.1:
     dependencies:
