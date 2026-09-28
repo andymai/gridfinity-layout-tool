@@ -677,6 +677,25 @@ describe('useLabelTabsSection', () => {
       expect(result.current.state.textRows.map((r) => r.index)).toEqual([0, 1]);
     });
 
+    it('sizes plates against the overhang-widened interior the worker builds in', () => {
+      // Three columns across a 2-wide bin are ~26mm nominally, but 19mm of
+      // overhang each side widens them to ~38.9mm, past a 1U socket's 38.3mm.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          width: 2,
+          depth: 2,
+          overhang: { left: 19, right: 19, front: 0, back: 0 },
+          label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'socket', depth: 14 },
+          compartments: { cols: 3, rows: 1, thickness: 1.2, cells: [0, 1, 2] },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      expect(result.current.state.rowsForced).toBe(false);
+      expect(result.current.state.plateWidthRows.map((r) => r.autoWidthU)).toEqual([1, 1, 1]);
+    });
+
     it('disables the socket segment when nothing fits', () => {
       useDesignerStore.setState({
         params: { ...DEFAULT_BIN_PARAMS, width: 0.5 },

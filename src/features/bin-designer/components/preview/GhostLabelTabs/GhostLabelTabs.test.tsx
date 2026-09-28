@@ -193,6 +193,38 @@ describe('GhostLabelTabs', () => {
     expect(tabScales.map(([w]) => w)).toEqual([innerW, innerW]);
   });
 
+  it('keeps per-compartment tabs when overhang widens compartments to fit a plate', () => {
+    // ~26mm compartments nominally, ~38.9mm across the overhang-widened
+    // interior the worker plans in: past a 1U socket's 38.3mm.
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 2,
+        overhang: { left: 19, right: 19, front: 0, back: 0 },
+        label: {
+          ...DEFAULT_BIN_PARAMS.label,
+          enabled: true,
+          mode: 'socket',
+          width: 100,
+          depth: 14,
+          alignment: 'center',
+        },
+        compartments: { cols: 3, rows: 1, thickness: 1.2, cells: [0, 1, 2] },
+      },
+      generation: {
+        ...DEFAULT_GENERATION_STATE,
+        status: 'generating',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
+    });
+    render(<GhostLabelTabs />);
+
+    expect(tabScales).toHaveLength(3);
+  });
+
   it('renders nothing when style is slotted', () => {
     useDesignerStore.setState({
       params: {

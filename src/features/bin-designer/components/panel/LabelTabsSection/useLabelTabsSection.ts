@@ -4,7 +4,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store';
 import { useLayoutStore } from '@/core/store/layout';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
-import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
+import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
 import { rowHasFullWidthWall } from '@/shared/types/bin';
 import { getFeatureStatus } from '@/shared/constraints';
@@ -543,7 +543,8 @@ export function useLabelTabsSection() {
   const isSocketMode = (label.mode ?? 'text') === 'socket';
 
   const socketPlan = useMemo(() => {
-    const { innerW } = binDimensions(params);
+    // Overhang-expanded, as the worker's label-tab frame is.
+    const { innerW } = cutoutInterior(params);
     // Nozzle-scaled to match the worker's cut so pickers/warnings can never
     // disagree with the geometry (a wider nozzle can drop a compartment from
     // a 2U plate to 1U).

@@ -12,7 +12,7 @@ import { useMemo } from 'react';
 import {
   baseFloorZ,
   baseWallHeight,
-  binDimensions,
+  cutoutInterior,
 } from '@/features/bin-designer/utils/binDimensions';
 import { useSettingsStore } from '@/core/store';
 import { labelTabsSpanRows } from '@/shared/utils/labelSocketPlan';
@@ -77,11 +77,13 @@ export function GhostLabelTabs() {
     }))
   );
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+  // The worker plans tabs in the overhang-expanded interior, and the fit that
+  // decides this flips at a plate-width threshold.
   const spansRows = useMemo(
     () =>
       labelTabsSpanRows(
         params,
-        binDimensions(params).innerW,
+        cutoutInterior(params).innerW,
         effectiveLabelSocketClearance(nozzleSizeMm, params.label.plateFitOffset)
       ),
     [params, nozzleSizeMm]
