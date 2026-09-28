@@ -1,0 +1,23 @@
+src/shared/utils/labelTabPlan.test.ts
+  s_6231a44d9b968c::t_a607547ed2077a 9,159-166
+  s_6231a44d9b968c::t_c654da108de5c9 167-168
+src/shared/utils/labelTabPlan.ts
+  s_6231a44d9b968c::t_721e93ca37fb71 22,376-378
+  s_6231a44d9b968c::t_419d32da861f13 240,368-369,374-375,379
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "383e9a8288afb472b12d9126c4d16ee667adaca3",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
