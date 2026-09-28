@@ -153,6 +153,12 @@ const IGNORED_MESSAGE_PATTERNS: readonly RegExp[] = [
   // host app didn't register the handler the chain is undefined and the injected
   // script throws. No app code is involved — we never touch `webkit`.
   /webkit\.messageHandlers/,
+  // A writing-assistant extension's content script times out its own calls
+  // (`appSettingsDistributor.getValue`, `getDictionariesByLanguageId`, ...) and
+  // rejects each with a bare string, which posthog-js wraps as a non-Error
+  // rejection. The app never rejects with a string. Anchored to a single
+  // identifier so a sentence-shaped timeout message still reports.
+  /^Non-Error promise rejection captured with value: Request timeout [A-Za-z_$][\w$.]*$/,
 ];
 
 const IGNORED_SOURCE_PATTERNS: readonly RegExp[] = [

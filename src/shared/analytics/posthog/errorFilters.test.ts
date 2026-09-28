@@ -34,6 +34,9 @@ describe('shouldIgnoreError — message patterns', () => {
     // iOS in-app browser (WKWebView) bridge-script injection
     "TypeError: undefined is not an object (evaluating 'top.webkit.messageHandlers.foregroundToBackground.postMessage')",
     "TypeError: undefined is not an object (evaluating 'window.webkit.messageHandlers.handler.postMessage')",
+    // A writing-assistant extension's own RPC timeouts, rejected as bare strings
+    'Non-Error promise rejection captured with value: Request timeout lettersVoicesDistributor.getValue',
+    'Non-Error promise rejection captured with value: Request timeout getDictionariesByLanguageId',
   ])('ignores %j', (msg) => {
     expect(shouldIgnoreError(msg)).toBe(true);
   });
@@ -43,6 +46,7 @@ describe('shouldIgnoreError — message patterns', () => {
     'Error creating WebGL context',
     'Failed to fetch dynamically imported module',
     'TypeError: foo is not a function',
+    'Non-Error promise rejection captured with value: Request timeout after 30s',
   ])('does NOT ignore real app error %j', (msg) => {
     expect(shouldIgnoreError(msg)).toBe(false);
   });
