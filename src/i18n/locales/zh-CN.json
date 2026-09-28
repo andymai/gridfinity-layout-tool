@@ -982,6 +982,7 @@
   "binDesigner.dimensions": "尺寸",
   "binDesigner.dismissTouchHints": "关闭触控提示",
   "binDesigner.dividerAutoHeight": "自动",
+  "binDesigner.dividerHeightLipCeiling": "自动是 bin 仍可堆叠时隔板的最大高度，因为叠放在上方的 bin 的底脚正好位于其上方。关闭堆叠边缘后，隔板可一直延伸到顶边。",
   "binDesigner.dividerClearance": "贴合公差",
   "binDesigner.dividerFloorGroove": "底部凹槽",
   "binDesigner.dividerFloorGrooveHint": "在底部开一条 {depth}mm 深的凹槽，以固定每个隔板的下边缘。若要为没有凹槽的 bin 打印隔板，请关闭。",

@@ -982,6 +982,7 @@
   "binDesigner.dimensions": "Dimensjoner",
   "binDesigner.dismissTouchHints": "Avvis berøringshintet",
   "binDesigner.dividerAutoHeight": "Auto",
+  "binDesigner.dividerHeightLipCeiling": "Auto er den høyeste en skillevegg kan være når bins skal kunne stables, fordi føttene til en stablet bin står rett over. Uten stablekant når skilleveggene helt opp til kanten.",
   "binDesigner.dividerClearance": "Toleranse",
   "binDesigner.dividerFloorGroove": "Bunnspor",
   "binDesigner.dividerFloorGrooveHint": "Et {depth} mm dypt spor i bunnen holder underkanten av hver skillevegg. Slå av for å skrive ut skillevegger til en bin laget uten spor.",

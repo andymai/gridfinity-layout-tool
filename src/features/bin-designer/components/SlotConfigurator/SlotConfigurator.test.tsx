@@ -26,6 +26,11 @@ describe('SlotConfigurator', () => {
     expect(screen.getByText(/direction/i)).toBeInTheDocument();
   });
 
+  it('explains why an auto piece stops short of the rim on a lipped bin', () => {
+    render(<SlotConfigurator />);
+    expect(screen.getByText(/stacked bin's feet/)).toBeInTheDocument();
+  });
+
   it('shows direction toggle buttons', () => {
     render(<SlotConfigurator />);
     expect(screen.getByText(/vertical/i)).toBeInTheDocument();
@@ -149,7 +154,7 @@ describe('SlotConfigurator', () => {
       },
     });
     render(<SlotConfigurator />);
-    expect(screen.getByText(/auto/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Auto \(/)).toBeInTheDocument();
   });
 
   it('updates divider thickness when changed', () => {

@@ -1540,6 +1540,7 @@
   "binDesigner.dividerFloorGroove": "ძირის ღარი",
   "binDesigner.dividerFloorGrooveHint": "ძირში {depth}mm არხი თითოეული გამყოფის ქვედა კიდეს იჭერს. გამორთეთ, თუ გამყოფებს ასეთი არხის გარეშე დამზადებული ყუთისთვის ბეჭდავთ.",
   "binDesigner.dividerAutoHeight": "ავტომატურად",
+  "binDesigner.dividerHeightLipCeiling": "ავტომატურად არის გამყოფის მაქსიმალური სიმაღლე, რომლის დროსაც bins კვლავ იწყობა ერთმანეთზე, რადგან ზემოთ დადგმული bin-ის ფეხები პირდაპირ მის ზემოთ ჯდება. დასაწყობი რგოლის გარეშე გამყოფები კიდემდე აღწევს.",
   "binDesigner.dividerDimensions": "{length} × {height}mm",
   "binDesigner.dividerHeightOnly": "სიმაღლე {height}mm",
   "binDesigner.labelTabs": "ეტიკეტის ჩანართები",

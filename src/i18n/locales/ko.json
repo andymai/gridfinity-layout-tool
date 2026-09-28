@@ -982,6 +982,7 @@
   "binDesigner.dimensions": "치수",
   "binDesigner.dismissTouchHints": "터치 힌트 닫기",
   "binDesigner.dividerAutoHeight": "자동",
+  "binDesigner.dividerHeightLipCeiling": "자동은 bin을 쌓을 수 있는 칸막이의 최대 높이입니다. 위에 쌓은 bin의 발이 바로 그 위에 놓이기 때문입니다. 적층 립을 끄면 칸막이가 테두리까지 올라갑니다.",
   "binDesigner.dividerClearance": "맞춤 공차",
   "binDesigner.dividerFloorGroove": "바닥 홈",
   "binDesigner.dividerFloorGrooveHint": "바닥에 {depth}mm 깊이의 홈을 파서 각 칸막이의 아랫면을 고정합니다. 홈 없이 만든 bin용 칸막이를 출력하려면 끄세요.",

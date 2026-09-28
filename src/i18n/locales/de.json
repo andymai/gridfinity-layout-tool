@@ -982,6 +982,7 @@
   "binDesigner.dimensions": "Abmessungen",
   "binDesigner.dismissTouchHints": "Touch-Hinweise schließen",
   "binDesigner.dividerAutoHeight": "Auto",
+  "binDesigner.dividerHeightLipCeiling": "Auto ist die größte Trennwandhöhe, bei der sich Bins noch stapeln lassen, denn die Füße eines gestapelten Bins sitzen direkt darüber. Ohne Stapelrand reichen die Trennwände bis zum Rand.",
   "binDesigner.dividerClearance": "Passtoleranz",
   "binDesigner.dividerFloorGroove": "Bodennut",
   "binDesigner.dividerFloorGrooveHint": "Eine {depth} mm tiefe Nut im Boden fasst die Unterkante jedes Trenners. Ausschalten, um Trenner für einen Bin ohne Nut zu drucken.",

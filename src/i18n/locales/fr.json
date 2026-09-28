@@ -982,6 +982,7 @@
   "binDesigner.dimensions": "Dimensions",
   "binDesigner.dismissTouchHints": "Masquer les indications tactiles",
   "binDesigner.dividerAutoHeight": "Auto",
+  "binDesigner.dividerHeightLipCeiling": "Auto est la hauteur maximale d'un séparateur pour que les bins restent empilables, car les pieds d'un bin empilé se posent juste au-dessus. Sans rebord d'empilage, les séparateurs montent jusqu'au bord.",
   "binDesigner.dividerClearance": "Tolérance",
   "binDesigner.dividerFloorGroove": "Rainure de fond",
   "binDesigner.dividerFloorGrooveHint": "Une rainure de {depth} mm dans le fond cale le bord inférieur de chaque séparateur. Désactivez-la pour imprimer des séparateurs pour un bin fabriqué sans rainure.",

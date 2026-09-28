@@ -982,6 +982,7 @@
   "binDesigner.dimensions": "Mått",
   "binDesigner.dismissTouchHints": "Avfärda pektips",
   "binDesigner.dividerAutoHeight": "Auto",
+  "binDesigner.dividerHeightLipCeiling": "Auto är den högsta en avdelare kan vara när bins ska kunna staplas, eftersom fötterna på en staplad bin står precis ovanför. Utan staplingskant når avdelarna ända upp till kanten.",
   "binDesigner.dividerClearance": "Passningstolerans",
   "binDesigner.dividerFloorGroove": "Bottenspår",
   "binDesigner.dividerFloorGrooveHint": "Ett {depth} mm djupt spår i botten håller underkanten på varje avdelare. Stäng av för att skriva ut avdelare till en bin gjord utan spår.",

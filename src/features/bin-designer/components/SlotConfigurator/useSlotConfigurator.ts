@@ -364,6 +364,7 @@ export function useSlotConfigurator() {
     dividerHeight,
     maxDividerHeight,
     maxHeightRounded,
+    stackingLip,
     requestedCrossStyle,
     longAxis,
     insertTooThin,
