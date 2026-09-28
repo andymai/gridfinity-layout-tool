@@ -1,0 +1,21 @@
+src/shared/analytics/posthog/errorFilters.ts
+  s_6231a44d9b968c::t_8cb20b94d0339b 156-161
+src/shared/analytics/posthog/errorFilters.test.ts
+  s_6231a44d9b968c::t_3e3faa9e8d539c 37-39,49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "43a2eaf746552241616f389901a6f96aa7e7874f",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
