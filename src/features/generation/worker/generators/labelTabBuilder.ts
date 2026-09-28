@@ -17,6 +17,10 @@ import {
   translate,
   withScope,
   setShapeOrigin,
+  getFaceOrigins,
+  getFaces,
+  getBounds,
+  getHashCode,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
 import { BOX_CORNER_RADIUS, COPLANAR_OVERLAP } from './generatorConstants';
@@ -70,6 +74,24 @@ function buildGussetProfile(depth: number, height: number, depthSign: 1 | -1 = -
     .lineTo([0, 0])
     .close();
 }
+/**
+ * Re-tag the faces below the shelf underside (`undersideZ`, in the tab's local
+ * frame) as the support. Done by height after the fuse rather than by tagging
+ * the parts before it: the fuse merges a shelf end face with the coplanar face
+ * of the edge gusset below it, and a merged face keeps neither origin. The
+ * shelf's own underside sits exactly on `undersideZ`, so it stays the label's.
+ */
+function tagSupportFaces(tab: Shape3D, undersideZ: number): void {
+  const origins = getFaceOrigins(tab);
+  if (!origins) return;
+  for (const face of getFaces(tab)) {
+    const { zMin, zMax } = getBounds(face);
+    if ((zMin + zMax) / 2 < undersideZ - 1e-3) {
+      origins.set(getHashCode(face), FeatureTag.LABEL_SUPPORT);
+    }
+  }
+}
+
 /**
  * Build label tabs for every compartment.
  *
@@ -509,6 +531,7 @@ function buildTabsAtRow(
     // matched geometrically onto a neighbouring tab's TEXT faces when the tabs
     // are fused, printing a plain shelf in the text colour.
     setShapeOrigin(tabSolid, FeatureTag.LABEL_TAB);
+    if (gussetLeg > 0) tagSupportFaces(tabSolid, gussetLeg);
 
     if (socket) {
       // Swappable-label socket on the shelf top. Compartments whose

@@ -124,6 +124,7 @@ export interface DesignerState {
     body?: string;
     lip?: Partial<LipColorConfig>;
     labelTab?: string;
+    labelSupportsInLabelColor?: boolean;
     base?: string;
     scoop?: string;
     dividers?: string;

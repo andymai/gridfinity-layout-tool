@@ -1162,6 +1162,8 @@
   "binDesigner.knifeRest.summary": "{style}, wysokość {height} mm",
   "binDesigner.knifeRest.title": "Podpórka rękojeści",
   "binDesigner.labelColor": "Kolor",
+  "binDesigner.labelSupportsBodyColor": "Podparcie w kolorze korpusu",
+  "binDesigner.labelSupportsBodyColorHint": "Oszczędza zmianę filamentu na każdej warstwie, przez którą przechodzi podparcie.",
   "binDesigner.labelColorsGroup": "Kolory",
   "binDesigner.labelPlacementGroup": "Rozmieszczenie",
   "binDesigner.labelPlatesOmitted": "Podgląd {shown} z {total} tabliczek etykiet",

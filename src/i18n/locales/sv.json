@@ -1162,6 +1162,8 @@
   "binDesigner.knifeRest.summary": "{style}, {height} mm hög",
   "binDesigner.knifeRest.title": "Skafthållare",
   "binDesigner.labelColor": "Färg",
+  "binDesigner.labelSupportsBodyColor": "Stöd i stommens färg",
+  "binDesigner.labelSupportsBodyColorHint": "Sparar ett filamentbyte i varje lager som stödet sträcker sig genom.",
   "binDesigner.labelColorsGroup": "Färger",
   "binDesigner.labelPlacementGroup": "Placering",
   "binDesigner.labelPlatesOmitted": "Förhandsvisar {shown} av {total} etikettbrickor",

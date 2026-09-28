@@ -250,6 +250,15 @@ describe('migrateParams', () => {
     expect(result.fractionalEdgeY).toBe('end');
   });
 
+  it('keeps labelSupportsInLabelColor only while it is true', () => {
+    const colors = (value: unknown) =>
+      migrateParams({ featureColors: { labelSupportsInLabelColor: value } }).featureColors;
+    expect(colors(true).labelSupportsInLabelColor).toBe(true);
+    expect('labelSupportsInLabelColor' in colors(false)).toBe(false);
+    expect('labelSupportsInLabelColor' in colors(undefined)).toBe(false);
+    expect('labelSupportsInLabelColor' in colors('yes')).toBe(false);
+  });
+
   it('leaves surfaceText absent for pre-feature designs', () => {
     const result = migrateParams({ width: 2, depth: 2 });
     expect(result.surfaceText).toBeUndefined();

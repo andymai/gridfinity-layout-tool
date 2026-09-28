@@ -138,6 +138,7 @@ export function buildHitTestZones(
     allowSplit: false,
     topAccentCutZ: cuts.topZ,
     bottomAccentCutZ: cuts.bottomZ,
+    labelSupportsInLabelColor: featureColors.labelSupportsInLabelColor === true,
   }).triZones;
 }
 
@@ -183,6 +184,7 @@ export function buildMultiColorGroups(
     lipUniform: lipCellsUniform(featureColors.lip),
     topAccentCutZ: cuts.topZ,
     bottomAccentCutZ: cuts.bottomZ,
+    labelSupportsInLabelColor: featureColors.labelSupportsInLabelColor === true,
   });
   const meshOverride: MultiColorGroupsResult['meshOverride'] =
     positions && normals ? { vertices: positions, normals, indices: null } : null;

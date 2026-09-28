@@ -1162,6 +1162,8 @@
   "binDesigner.knifeRest.summary": "{style}, {height} mm høy",
   "binDesigner.knifeRest.title": "Skaftstøtte",
   "binDesigner.labelColor": "Farge",
+  "binDesigner.labelSupportsBodyColor": "Støtte i kroppsfarge",
+  "binDesigner.labelSupportsBodyColorHint": "Sparer et filamentbytte i hvert lag støtten går gjennom.",
   "binDesigner.labelColorsGroup": "Farger",
   "binDesigner.labelPlacementGroup": "Plassering",
   "binDesigner.labelPlatesOmitted": "Forhåndsviser {shown} av {total} etikettplater",

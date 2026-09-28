@@ -33,6 +33,7 @@ export interface LegacyFeatureColorInput {
   /** Legacy single-color string, legacy 4-corner object, or the new grid. */
   lip?: string | LegacyLipCorners | GridLipInput;
   labelTab?: string;
+  labelSupportsInLabelColor?: unknown;
   base?: string;
   scoop?: string;
   dividers?: string;
@@ -180,6 +181,7 @@ export function migrateFeatureColors(
     body,
     lip,
     labelTab,
+    ...(raw.labelSupportsInLabelColor === true ? { labelSupportsInLabelColor: true as const } : {}),
     base,
     scoop,
     dividers,

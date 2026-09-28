@@ -1162,6 +1162,8 @@
   "binDesigner.knifeRest.summary": "{style}、高さ{height}mm",
   "binDesigner.knifeRest.title": "柄受け",
   "binDesigner.labelColor": "色",
+  "binDesigner.labelSupportsBodyColor": "サポートを本体色で",
+  "binDesigner.labelSupportsBodyColorHint": "サポートが通るすべてのレイヤーでフィラメント交換を省けます。",
   "binDesigner.labelColorsGroup": "色",
   "binDesigner.labelPlacementGroup": "配置",
   "binDesigner.labelPlatesOmitted": "{total} 枚中 {shown} 枚のラベルプレートをプレビュー中",

@@ -123,6 +123,7 @@ export function buildTriangleMaterialIndices(
     lipUniform: lipCellsUniform(featureColors.lip),
     topAccentCutZ: cuts.topZ,
     bottomAccentCutZ: cuts.bottomZ,
+    labelSupportsInLabelColor: featureColors.labelSupportsInLabelColor === true,
   });
 
   const materialIndexForZone = (zone: ColorZone): number =>

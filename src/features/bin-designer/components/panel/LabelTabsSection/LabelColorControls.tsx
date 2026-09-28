@@ -15,6 +15,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_FEATURE_COLOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import { normalizeHex } from '@/features/bin-designer/types/featureColors';
+import { Checkbox } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useSwapZoneWithToast } from '@/features/bin-designer/hooks/useSwapZoneWithToast';
 import { ColorZoneRow } from '../ColorsSection/ColorZoneRow';
@@ -123,6 +124,16 @@ export function LabelColorControls() {
           />
         )}
       </div>
+      <Checkbox
+        className="mt-2"
+        size="sm"
+        checked={featureColors.labelSupportsInLabelColor !== true}
+        onChange={(bodyColor) => updateFeatureColors({ labelSupportsInLabelColor: !bodyColor })}
+        label={t('binDesigner.labelSupportsBodyColor')}
+      />
+      <p className="ml-6 mt-1 text-label leading-relaxed text-content-tertiary">
+        {t('binDesigner.labelSupportsBodyColorHint')}
+      </p>
     </div>
   );
 }

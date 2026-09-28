@@ -1846,6 +1846,9 @@ const en: Record<string, string> = {
     'Where the tab sits within the compartment when narrower than full width.',
   'binDesigner.tabEdges': 'Tab edges',
   'binDesigner.labelColor': 'Color',
+  'binDesigner.labelSupportsBodyColor': 'Supports in body color',
+  'binDesigner.labelSupportsBodyColorHint':
+    'Saves a filament swap on every layer the support spans.',
   'binDesigner.tabShapeGroup': 'Tab shape & size',
   'binDesigner.tabEdges.back': 'Back',
   'binDesigner.tabEdges.front': 'Front',

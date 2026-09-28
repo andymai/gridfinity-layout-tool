@@ -38,6 +38,7 @@ export const FEATURE_COLOR_KEYS = [
   'body',
   'lip',
   'labelTab',
+  'labelSupportsInLabelColor',
   'base',
   'scoop',
   'dividers',

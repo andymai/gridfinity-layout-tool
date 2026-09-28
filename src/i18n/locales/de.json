@@ -1162,6 +1162,8 @@
   "binDesigner.knifeRest.summary": "{style}, {height} mm hoch",
   "binDesigner.knifeRest.title": "Griffauflage",
   "binDesigner.labelColor": "Farbe",
+  "binDesigner.labelSupportsBodyColor": "Stütze in Korpusfarbe",
+  "binDesigner.labelSupportsBodyColorHint": "Spart einen Filamentwechsel in jeder Schicht, die die Stütze durchläuft.",
   "binDesigner.labelColorsGroup": "Farben",
   "binDesigner.labelPlacementGroup": "Platzierung",
   "binDesigner.labelPlatesOmitted": "Vorschau von {shown} von {total} Etikettenplättchen",

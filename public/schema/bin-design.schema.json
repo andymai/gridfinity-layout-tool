@@ -1099,6 +1099,10 @@
           "pattern": "^#[0-9a-fA-F]{6}$",
           "description": "Label tab colour."
         },
+        "labelSupportsInLabelColor": {
+          "type": "boolean",
+          "description": "When true, the label tab's support (brackets, solid or fillet under the shelf) prints in the label tab colour. Absent or false prints it in the body colour."
+        },
         "base": {
           "type": "string",
           "pattern": "^#[0-9a-fA-F]{6}$",

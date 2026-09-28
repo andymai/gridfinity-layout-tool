@@ -211,6 +211,7 @@ export function createScopedUpdaters(set: Set) {
       body?: string;
       lip?: Partial<LipColorConfig>;
       labelTab?: string;
+      labelSupportsInLabelColor?: boolean;
       base?: string;
       scoop?: string;
       dividers?: string;
@@ -222,14 +223,19 @@ export function createScopedUpdaters(set: Set) {
     }) => {
       set((state) => {
         pushHistoryEntry(state);
-        const current = state.params.featureColors;
+        const { labelSupportsInLabelColor: currentSupports, ...current } =
+          state.params.featureColors;
         const {
           lip: lipPatch,
           lidLip: lidLipPatch,
           topAccent: topAccentPatch,
           bottomAccent: bottomAccentPatch,
+          labelSupportsInLabelColor: supportsPatch,
           ...rest
         } = patch;
+        // Stored only while true: absent is the body-colour default, and an
+        // always-present key would shift `communityParamsFingerprint`.
+        const supportsInLabel = supportsPatch ?? currentSupports === true;
         const nextLip: LipColorConfig = lipPatch
           ? mergeLipConfig(current.lip, lipPatch)
           : current.lip;
@@ -258,6 +264,7 @@ export function createScopedUpdaters(set: Set) {
           ...(nextLidLip ? { lidLip: nextLidLip } : {}),
           topAccent: nextTopAccent,
           ...(nextBottomAccent ? { bottomAccent: nextBottomAccent } : {}),
+          ...(supportsInLabel ? { labelSupportsInLabelColor: true as const } : {}),
         };
         // Multi-color toggle drives the color-tool overlay's visibility; if the
         // user disables multi-color while a tool is active, the overlay unmounts

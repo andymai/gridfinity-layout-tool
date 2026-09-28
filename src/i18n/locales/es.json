@@ -1162,6 +1162,8 @@
   "binDesigner.knifeRest.summary": "{style}, {height} mm de alto",
   "binDesigner.knifeRest.title": "Soporte de mangos",
   "binDesigner.labelColor": "Color",
+  "binDesigner.labelSupportsBodyColor": "Soporte del color del cuerpo",
+  "binDesigner.labelSupportsBodyColorHint": "Ahorra un cambio de filamento en cada capa que ocupa el soporte.",
   "binDesigner.labelColorsGroup": "Colores",
   "binDesigner.labelPlacementGroup": "Colocación",
   "binDesigner.labelPlatesOmitted": "Vista previa de {shown} de {total} placas de etiqueta",

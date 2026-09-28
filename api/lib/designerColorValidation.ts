@@ -20,6 +20,7 @@ const ALLOWED_FEATURE_COLOR_KEYS = new Set([
   'body',
   'lip',
   'labelTab',
+  'labelSupportsInLabelColor',
   'base',
   'scoop',
   'dividers',
@@ -112,8 +113,10 @@ export function validateFeatureColors(value: unknown): string | null {
     }
   }
 
-  if (value.enabled !== undefined && !isBoolean(value.enabled)) {
-    return 'featureColors.enabled must be boolean';
+  for (const key of ['enabled', 'labelSupportsInLabelColor'] as const) {
+    if (value[key] !== undefined && !isBoolean(value[key])) {
+      return `featureColors.${key} must be boolean`;
+    }
   }
 
   for (const key of ['body', 'labelTab', 'base', 'scoop', 'dividers', 'text', 'lid'] as const) {

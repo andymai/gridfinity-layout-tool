@@ -78,4 +78,18 @@ describe('LabelColorControls', () => {
     expect(featureColors.labelTab.toLowerCase()).toBe(BODY.toLowerCase());
     expect(featureColors.enabled).toBe(false);
   });
+
+  it('prints the support in the body colour by default, and stores only the opt-out', () => {
+    render(<LabelColorControls />);
+    const box = screen.getByRole('checkbox', { name: 'Supports in body color' });
+    expect(box).toBeChecked();
+
+    fireEvent.click(box);
+    expect(useDesignerStore.getState().params.featureColors.labelSupportsInLabelColor).toBe(true);
+
+    fireEvent.click(box);
+    expect('labelSupportsInLabelColor' in useDesignerStore.getState().params.featureColors).toBe(
+      false
+    );
+  });
 });

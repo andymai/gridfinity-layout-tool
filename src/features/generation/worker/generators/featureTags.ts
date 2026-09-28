@@ -59,6 +59,13 @@ export const FeatureTag = {
    * material without the void would be describing half a joint.
    */
   LID_HINGE: 20,
+  /**
+   * A label tab's support under its shelf (brackets, solid prism or fillet).
+   * Split from {@link LABEL_TAB} so it can print in the body colour: it spans
+   * every layer from the gusset foot to the shelf, and a label colour there
+   * costs a filament swap on each one.
+   */
+  LABEL_SUPPORT: 21,
   UNKNOWN: 255,
 } as const;
 
