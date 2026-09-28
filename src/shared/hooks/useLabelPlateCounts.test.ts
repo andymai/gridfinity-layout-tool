@@ -248,7 +248,7 @@ describe('useLabelPlateCounts', () => {
   });
 
   describe('with compartments too narrow for a plate', () => {
-    // Four columns across the mocked 100mm interior: ~24mm each, under a 1U
+    // Four columns across the mocked interior are each narrower than a 1U
     // socket, so every row takes one full-width plate captioned from rowTexts.
     const narrow = { cols: 4, rows: 2, cells: [0, 1, 2, 3, 4, 5, 6, 7], thickness: 1.2 };
 

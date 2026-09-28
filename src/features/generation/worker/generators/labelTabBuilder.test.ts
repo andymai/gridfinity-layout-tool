@@ -830,7 +830,7 @@ describe('planLabelPlateSeats', () => {
 
   it('seats one row-captioned plate per row when no compartment can host one', async () => {
     const { planLabelPlateSeats } = await import('./labelTabBuilder');
-    // A 3x2 bin split 4 across: each ~30mm compartment is under a 1U socket.
+    // Four columns across a 3-wide bin: each compartment is narrower than a 1U socket.
     const params = socketParams({
       compartments: {
         cols: 4,

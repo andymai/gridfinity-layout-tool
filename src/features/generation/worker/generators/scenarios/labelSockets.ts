@@ -240,7 +240,7 @@ export const labelSockets: ScenarioCase[] = [
       assertSocketPocket(result, params, { plateWidthU: 2, label: '2x1-spanning' }),
   }),
 
-  // 4 columns across a 3U bin leave ~30mm compartments, under a 1U socket, so
+  // 4 columns across a 3U bin leave compartments narrower than a 1U socket, so
   // each row takes one full-width 3U socket: the front row's hangs from the
   // middle divider, whose centreline is y=0.
   defineScenario('label sockets', '3×2 four columns two rows → a 3U socket on each row', {

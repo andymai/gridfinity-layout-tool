@@ -163,7 +163,7 @@ describe('GhostLabelTabs', () => {
   });
 
   it('draws one full-width tab per row when no compartment fits a plate', () => {
-    // A 3x2 bin split 4 across: ~30mm compartments, under a 1U socket.
+    // Four columns across a 3-wide bin: each compartment is narrower than a 1U socket.
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -194,8 +194,8 @@ describe('GhostLabelTabs', () => {
   });
 
   it('keeps per-compartment tabs when overhang widens compartments to fit a plate', () => {
-    // ~26mm compartments nominally, ~38.9mm across the overhang-widened
-    // interior the worker plans in: past a 1U socket's 38.3mm.
+    // Nominally too narrow for a 1U socket; the overhang-widened interior the
+    // worker plans in fits one per compartment.
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,

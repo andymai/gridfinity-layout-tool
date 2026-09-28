@@ -660,7 +660,7 @@ describe('useLabelTabsSection', () => {
     });
 
     it('lists row captions when no compartment is wide enough for a plate', () => {
-      // 3x2 bin split 4 across: ~30mm compartments, under a 1U socket's 38.3mm.
+      // Four columns across a 3-wide bin: each compartment is narrower than a 1U socket.
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
@@ -678,8 +678,7 @@ describe('useLabelTabsSection', () => {
     });
 
     it('sizes plates against the overhang-widened interior the worker builds in', () => {
-      // Three columns across a 2-wide bin are ~26mm nominally, but 19mm of
-      // overhang each side widens them to ~38.9mm, past a 1U socket's 38.3mm.
+      // Nominally too narrow for a 1U socket; the overhang widens them past it.
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
