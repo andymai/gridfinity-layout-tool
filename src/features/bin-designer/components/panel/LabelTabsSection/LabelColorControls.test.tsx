@@ -25,11 +25,11 @@ describe('LabelColorControls', () => {
     setColors({});
   });
 
-  it('renders a Tab and Engraved Text swatch row', () => {
+  it('renders a Label Tab and Text swatch row', () => {
     render(<LabelColorControls />);
     expect(screen.getByText('Color')).toBeDefined();
     expect(screen.getByRole('button', { name: /Label Tab:/ })).toBeDefined();
-    expect(screen.getByRole('button', { name: /Engraved Text:/ })).toBeDefined();
+    expect(screen.getByRole('button', { name: /^Text:/ })).toBeDefined();
   });
 
   it('picks the zone for the swap tool instead of opening the picker when swap is active', () => {
@@ -57,7 +57,7 @@ describe('LabelColorControls', () => {
 
   it('routes the text swatch to the text zone', () => {
     render(<LabelColorControls />);
-    fireEvent.click(screen.getByRole('button', { name: /Engraved Text:/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Text:/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Red' }));
 
     const { featureColors } = useDesignerStore.getState().params;
