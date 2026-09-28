@@ -30,7 +30,8 @@ const TAB_HEX = '#2255aa';
 function params(
   mode: 'emboss' | 'engrave',
   scoop = false,
-  colors: Partial<BinParams['featureColors']> = {}
+  colors: Partial<BinParams['featureColors']> = {},
+  label: Partial<BinParams['label']> = {}
 ): BinParams {
   return {
     ...DEFAULT_BIN_PARAMS,
@@ -39,7 +40,7 @@ function params(
     height: 3,
     base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
     scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: scoop },
-    label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, textStyle: { mode } },
+    label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, textStyle: { mode }, ...label },
     compartments: {
       ...DEFAULT_BIN_PARAMS.compartments,
       cols: 2,
@@ -214,14 +215,24 @@ function paintCodes(p: BinParams): {
 }
 
 describe('label-tab support color', () => {
-  it('tags the support under the shelf LABEL_SUPPORT and keeps the shelf LABEL_TAB', () => {
-    const tris = triangles(getGenerateBin()(params('engrave')));
-    const support = tris.filter((t) => t.tag === FeatureTag.LABEL_SUPPORT);
-    expect(support.length).toBeGreaterThan(0);
-    const shelfTop = tabTopZ(tris);
-    // Under the shelf plate, which is one wall thickness deep.
-    expect(Math.max(...support.flatMap((t) => [...t.zs]))).toBeLessThan(shelfTop - 1);
-  }, 120_000);
+  // Each support style is its own solid, and a socket tab thickens the shelf.
+  it.each([
+    ['bracket', { support: 'bracket' }],
+    ['solid', { support: 'solid' }],
+    ['fillet', { support: 'fillet' }],
+    ['socket', { support: 'bracket', mode: 'socket', depth: 14 }],
+  ] as const)(
+    'tags the %s support under the shelf LABEL_SUPPORT and keeps the shelf LABEL_TAB',
+    (_name, label) => {
+      const tris = triangles(getGenerateBin()(params('engrave', false, {}, label)));
+      const support = tris.filter((t) => t.tag === FeatureTag.LABEL_SUPPORT);
+      expect(support.length).toBeGreaterThan(0);
+      const shelfTop = tabTopZ(tris);
+      // Under the shelf plate, which is at least one wall thickness deep.
+      expect(Math.max(...support.flatMap((t) => [...t.zs]))).toBeLessThan(shelfTop - 1);
+    },
+    120_000
+  );
 
   it('paints the support in the body filament, and in the label one when asked', () => {
     const body = paintCodes(params('engrave'));
