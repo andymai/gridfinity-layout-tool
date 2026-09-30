@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.500.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.499.0...gridfinity-layout-tool-v4.500.0) (2026-09-30)
+
+
+### Features
+
+* **bins:** let the label plates be hidden from the 3D preview ([#4435](https://github.com/andymai/gridfinity-layout-tool/issues/4435)) ([16d53a9](https://github.com/andymai/gridfinity-layout-tool/commit/16d53a97080e36ae8aca81a448426353fc391fb7))
+* **labels:** optional tweezer removal hole on click-in label sockets ([#4437](https://github.com/andymai/gridfinity-layout-tool/issues/4437)) ([0160258](https://github.com/andymai/gridfinity-layout-tool/commit/01602585a4f684dd5ca7a738ac16662dfe4d35cd))
+
+
+### Bug Fixes
+
+* **collab:** don't write to a room that granted read access only ([#4434](https://github.com/andymai/gridfinity-layout-tool/issues/4434)) ([d48bdc5](https://github.com/andymai/gridfinity-layout-tool/commit/d48bdc50023afd7927a717d6dc7511196c46b9c0))
+* **deps:** raise override floors past new brace-expansion, undici, dompurify and serialize-javascript advisories ([#4441](https://github.com/andymai/gridfinity-layout-tool/issues/4441)) ([45d21f5](https://github.com/andymai/gridfinity-layout-tool/commit/45d21f5f10d986c04e2059b51ecad1e581d746cb))
+* **generation:** treat a missing WebAssembly global as an unsupported browser ([#4433](https://github.com/andymai/gridfinity-layout-tool/issues/4433)) ([9de9659](https://github.com/andymai/gridfinity-layout-tool/commit/9de9659643a813f02909a145dbe22db6469038ac))
+* **split:** seat wall keys and the floor scarf on a tapered overhang wall ([#4436](https://github.com/andymai/gridfinity-layout-tool/issues/4436)) ([6161cfb](https://github.com/andymai/gridfinity-layout-tool/commit/6161cfbe9f1dd04d36d91ea4af98054ea2ea3920))
+* **split:** size connectors off the cells a custom-shaped cut meets ([#4439](https://github.com/andymai/gridfinity-layout-tool/issues/4439)) ([0516ec3](https://github.com/andymai/gridfinity-layout-tool/commit/0516ec37c7faf97069095343c383bfa6769bbec6))
+
 ## [4.499.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.498.2...gridfinity-layout-tool-v4.499.0) (2026-09-28)
 
 
