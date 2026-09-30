@@ -63,7 +63,9 @@ peerDependencyRules:
 # naming the parent already bounds the blast radius.
 overrides:
   '@vercel/node>undici': '^7.29.0'
-  'undici@>=6.0.0 <6.28.0': '^6.28.0'
+  # GHSA-3wwx-pv8p-q78v, GHSA-r53p-7pc4-xj5r and GHSA-rfgv-xxqx-mfg5 are fixed
+  # on the 6.x line at 6.28.1.
+  'undici@>=6.0.0 <6.28.1': '^6.28.1'
   'undici@>=7.0.0 <7.29.0': '^7.29.0'
   # GHSA-9wv6-86v2-598j — ReDoS, fixed at 6.3.0 for the 4.x-6.x range with no
   # backport. Scoped to 6.x, the only line in the tree (@vercel/node pins 6.1.0).
@@ -86,7 +88,8 @@ overrides:
   # the old floor was itself a vulnerable version. It never resolved there --
   # @rollup/plugin-terser asks for ^7.0.3 and gets 7.0.7 -- so OSV stayed green
   # and the stale floor never surfaced.
-  'serialize-javascript@>=7.0.0 <7.0.5': '^7.0.5'
+  # Floor raised again 7.0.5 -> 7.1.2 for GHSA-gfhx-hw2g-v5hg.
+  'serialize-javascript@>=7.0.0 <7.1.2': '^7.1.2'
   'eslint-plugin-react-hooks>eslint': '^10.0.3'
   'eslint-plugin-jsx-a11y>eslint': '^10.0.3'
   # All minimatch consumers are pinned to the 10.x line, the only line pulling a
@@ -111,7 +114,8 @@ overrides:
   'glob>minimatch': '^10.2.3'
   'flatted@>=3.0.0 <3.4.2': '^3.4.2'
   # posthog-js (^3.3.2) and @cesium/engine (^3.3.0) both sit on 3.x.
-  'dompurify@>=3.0.0 <3.4.13': '^3.4.13'
+  # 3.4.16 fixes GHSA-p98j-92pf-mc4p.
+  'dompurify@>=3.0.0 <3.4.16': '^3.4.16'
   '@babel/core@>=7.0.0 <7.29.6': '^7.29.6'
   # GHSA-5p4m-2wfm-xmqj (quadratic CPU in !!omap resolution) is fixed in 4.3.1
   # on the 4.x line and 3.15.1 on 3.x, with no single version covering both.
@@ -144,10 +148,11 @@ overrides:
   'vitest-axe>lodash-es': '^4.18.1'
   'picomatch@>=4.0.0 <4.0.4': '^4.0.4'
   # brace-expansion arrives only via minimatch@10 now (all consumers pinned to
-  # 10.x above), which uses the 5.x line. Force any 5.0.x below 5.0.9 up to the
-  # release patched against GHSA-rgw5-rvv9-x895. The 1.x line is gone, so its old
+  # 10.x above), which uses the 5.x line. Floor at 5.0.12, the first release
+  # patched against GHSA-rgw5-rvv9-x895, GHSA-6j4f-fj2g-mc7p, GHSA-qhr7-859c-m2p7
+  # and GHSA-q2hr-2g5m-vwhr. The 1.x line is gone, so its old
   # `brace-expansion@<1.1.17` pin is no longer needed (#2974).
-  'brace-expansion@>=5.0.0 <5.0.9': '^5.0.9'
+  'brace-expansion@>=5.0.0 <5.0.12': '^5.0.12'
   # @mapbox/node-pre-gyp asks for ^7.4.0. Lower-bounded because tar 6.x is very
   # common transitively and an unbounded `<7.5.21` would have forced any that
   # appeared onto 7.x, which is an ESM/API break.
