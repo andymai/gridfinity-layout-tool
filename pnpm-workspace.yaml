@@ -88,7 +88,7 @@ overrides:
   # the old floor was itself a vulnerable version. It never resolved there --
   # @rollup/plugin-terser asks for ^7.0.3 and gets 7.0.7 -- so OSV stayed green
   # and the stale floor never surfaced.
-  # Floor raised again 7.0.5 -> 7.1.2 for GHSA-gfhx-hw2g-v5hg.
+  # 7.1.2 fixes GHSA-gfhx-hw2g-v5hg.
   'serialize-javascript@>=7.0.0 <7.1.2': '^7.1.2'
   'eslint-plugin-react-hooks>eslint': '^10.0.3'
   'eslint-plugin-jsx-a11y>eslint': '^10.0.3'
