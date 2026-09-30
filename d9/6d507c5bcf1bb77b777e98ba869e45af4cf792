@@ -1,0 +1,23 @@
+src/features/generation/worker/generators/splitMaskCutFaces.ts
+  s_26d22a6aa62b53::t_43d2e03f3564d1 20-28,57
+src/features/generation/worker/generators/splitMaskCutFaces.test.ts
+  s_26d22a6aa62b53::t_f7cdc64ff3ef51 53-61
+src/features/generation/worker/generators/binGenerator.scenario.split-mask-connectors.test.ts
+  s_26d22a6aa62b53::t_f7cdc64ff3ef51 97-99,103-115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d96d507c5bcf1bb77b777e98ba869e45af4cf792",
+  "prompts": {},
+  "sessions": {
+    "s_26d22a6aa62b53": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ef810085-eb50-4342-9281-ad336a5921de",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
