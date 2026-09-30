@@ -333,6 +333,43 @@ describe('useCollabSync', () => {
       expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual(['room-bin']);
     });
 
+    it('takes an empty room on join rather than keep its own refused copy', () => {
+      mockUpdateRemoteLayout.mockReturnValue(false);
+      useLayoutStore.setState({
+        layout: createTestLayout([createBinOnGrid('stale-local')]),
+        lastEditSource: 'init',
+      });
+      const emptyRoom = createTestLayout();
+      mockUseStorage.mockImplementation((selector) => selector({ layout: emptyRoom }));
+
+      renderHook(() => useCollabSync());
+
+      expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
+    });
+
+    it('takes the room layout over a local edit the room refused', async () => {
+      mockUpdateRemoteLayout.mockReturnValue(false);
+      const roomLayout = createTestLayout([createBinOnGrid('room-bin')]);
+      useLayoutStore.setState({ layout: createTestLayout(), lastEditSource: 'init' });
+
+      let remoteLayout = roomLayout;
+      mockUseStorage.mockImplementation((selector) => selector({ layout: remoteLayout }));
+      const { rerender } = renderHook(() => useCollabSync());
+
+      act(() => {
+        useLayoutStore.setState({
+          layout: createTestLayout([createBinOnGrid('local-edit')]),
+          lastEditSource: 'local',
+        });
+      });
+      rerender();
+
+      remoteLayout = createTestLayout([createBinOnGrid('owner-edit')]);
+      rerender();
+
+      expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual(['owner-edit']);
+    });
+
     it('keeps accepting room updates after a push is refused', () => {
       mockUpdateRemoteLayout.mockReturnValue(false);
       const localLayout = createTestLayout([createBinOnGrid('stale-local')]);

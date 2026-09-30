@@ -52,6 +52,10 @@ export function useCollabSync(): void {
   const syncStateRef = useRef<SyncState>('pending');
   const lastSyncedLayoutRef = useRef<Layout | null>(null);
   const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Set once the room refuses a write. From then on the room's copy is the only
+  // one that counts: an edit it refused was never sent, so it must neither
+  // survive the join nor hold back the updates the room does send.
+  const writeRefusedRef = useRef(false);
 
   // Get layout from Liveblocks storage
   const remoteLayout = useStorage((root) => root.layout);
@@ -97,7 +101,10 @@ export function useCollabSync(): void {
 
       // If local has content (from API fetch), push it to remote
       // This ensures API-fetched data takes precedence over potentially stale remote
-      if (localHasContent && updateRemoteLayout(currentLocal)) {
+      if (localHasContent) {
+        writeRefusedRef.current = !updateRemoteLayout(currentLocal);
+      }
+      if (localHasContent && !writeRefusedRef.current) {
         lastSyncedLayoutRef.current = currentLocal;
         // Move to ready state after a brief delay to let the push complete
         // Store timeout ID for cleanup on unmount
@@ -108,8 +115,8 @@ export function useCollabSync(): void {
         return;
       }
 
-      // If only remote has content, use it
-      if (remoteHasContent) {
+      // If only remote has content, or the room refused ours, use the room's
+      if (remoteHasContent || writeRefusedRef.current) {
         lastSyncedLayoutRef.current = remoteLayout;
         importLayout(remoteLayout, undefined, 'remote');
         syncStateRef.current = 'ready';
@@ -139,7 +146,7 @@ export function useCollabSync(): void {
     }
 
     // Skip if last edit was local (we're the source of this change)
-    if (lastEditSource === 'local') {
+    if (lastEditSource === 'local' && !writeRefusedRef.current) {
       return;
     }
 
@@ -170,7 +177,8 @@ export function useCollabSync(): void {
     }
 
     // Push local changes to Liveblocks
-    if (updateRemoteLayout(localLayout)) {
+    writeRefusedRef.current = !updateRemoteLayout(localLayout);
+    if (!writeRefusedRef.current) {
       lastSyncedLayoutRef.current = localLayout;
     }
   }, [localLayout, lastEditSource, updateRemoteLayout]);
