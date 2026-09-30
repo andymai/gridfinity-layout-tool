@@ -268,6 +268,21 @@ export const labelSockets: ScenarioCase[] = [
     },
   }),
 
+  // Half-grid widths are a recurring generator failure mode.
+  defineScenario('label sockets', '1.5×1 socket with removal hole', {
+    params: {
+      width: 1.5,
+      depth: 1,
+      height: 5,
+      base: NO_LIP_BASE,
+      label: { ...SOCKET_LABEL, removalHole: true },
+    },
+    customAssert: (result, params) => {
+      assertSocketPocket(result, params, { plateWidthU: 1, label: '1.5x1-removal-hole' });
+      assertRemovalHole(result, params);
+    },
+  }),
+
   // The widest pocket the settings allow (0.8mm nozzle, +0.5mm fit offset) on
   // the shallowest socket tab: centred on the free edge, the notch would reach
   // the shelf's edge, so it has to pull back into the pocket.

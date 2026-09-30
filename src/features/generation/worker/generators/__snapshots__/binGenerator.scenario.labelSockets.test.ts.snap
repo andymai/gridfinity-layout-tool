@@ -1,5 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`label sockets > 1.5×1 socket with removal hole 1`] = `1300`;
+
 exports[`label sockets > 1×1 lipped socket sinks by the stacking relief 1`] = `1600`;
 
 exports[`label sockets > 1×1 removal hole keeps its shelf at maximum clearance 1`] = `968`;
