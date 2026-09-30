@@ -1,0 +1,26 @@
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_26d22a6aa62b53::t_454939235b19a2 21,516,532-534
+src/features/generation/worker/generators/splitMaskCutFaces.ts
+  s_26d22a6aa62b53::t_454939235b19a2 1-85
+src/features/generation/worker/generators/splitMaskCutFaces.test.ts
+  s_26d22a6aa62b53::t_830d913f0f0d30 1-57,60-80
+  s_26d22a6aa62b53::t_3cef8efd14ec78 58-59
+src/features/generation/worker/generators/binGenerator.scenario.split-mask-connectors.test.ts
+  s_26d22a6aa62b53::t_e46564c3eff280 1-137
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "87c308497c96213ab11ffefa95317634655a6b6a",
+  "prompts": {},
+  "sessions": {
+    "s_26d22a6aa62b53": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ef810085-eb50-4342-9281-ad336a5921de",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
