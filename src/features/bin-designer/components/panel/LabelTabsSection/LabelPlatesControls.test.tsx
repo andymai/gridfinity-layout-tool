@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { LabelPlatesControls } from './LabelPlatesControls';
@@ -39,6 +39,20 @@ describe('LabelPlatesControls', () => {
     expect(screen.getByText('SCREWS')).toBeInTheDocument();
     expect(screen.getAllByText('1U')).toHaveLength(2);
     expect(screen.getByText('(blank)')).toBeInTheDocument();
+  });
+
+  it('hides the plates from the 3D preview without touching the design', () => {
+    setSocketModeParams();
+    const paramsBefore = useDesignerStore.getState().params;
+    render(<LabelPlatesControls />);
+
+    const toggle = screen.getByRole('checkbox', { name: 'Show in 3D preview' });
+    expect(toggle).toBeChecked();
+    fireEvent.click(toggle);
+
+    expect(useDesignerStore.getState().ui.showLabelPlates).toBe(false);
+    expect(useDesignerStore.getState().params).toBe(paramsBefore);
+    useDesignerStore.getState().setShowLabelPlates(true);
   });
 
   it('disables preview/export when no bridge is active', () => {

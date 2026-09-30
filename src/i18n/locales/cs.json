@@ -1530,6 +1530,7 @@
   "binDesigner.plates.exportFailed": "Export štítkové destičky selhal",
   "binDesigner.plates.preview": "Náhled destiček",
   "binDesigner.plates.previewLoading": "Generuji náhled…",
+  "binDesigner.plates.showInPreview": "Zobrazit ve 3D náhledu",
   "binDesigner.plates.previewTitle": "Náhled štítkových destiček",
   "binDesigner.plates.title": "Štítkové destičky",
   "binDesigner.preview.degreeUnit": "°",

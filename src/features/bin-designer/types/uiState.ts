@@ -132,6 +132,8 @@ export interface DesignerUIState {
   } | null;
   /** View mode for split preview overlay (assembled=no gaps, exploded=gaps between pieces) */
   readonly splitViewMode: SplitViewMode;
+  /** Draw socket-mode label plates in the 3D preview. Preview-only: never saved or exported. */
+  readonly showLabelPlates: boolean;
   /** Per-piece mesh data for split bin preview (populated when exploded mode is active) */
   readonly splitPieceMeshes: readonly SplitPieceMeshEntry[];
   /** Currently hovered color zone in the panel (for 3D preview glow feedback) */

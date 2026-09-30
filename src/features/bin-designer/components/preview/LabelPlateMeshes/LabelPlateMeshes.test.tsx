@@ -53,6 +53,15 @@ describe('LabelPlateMeshes', () => {
     expect(container.firstChild).toBeNull();
   });
 
+  it('renders nothing while the plates are hidden from the preview', () => {
+    setPlates([plate(), plate({ seatX: 60 })]);
+    useDesignerStore.setState((s) => ({ ui: { ...s.ui, showLabelPlates: false } }));
+    const { container } = render(<LabelPlateMeshes color="#ccc" lidOffsetMm={0} />);
+    useDesignerStore.setState((s) => ({ ui: { ...s.ui, showLabelPlates: true } }));
+
+    expect(container.firstChild).toBeNull();
+  });
+
   // Every plate is drawn twice from one mesh: seated, and in the reference row.
   it('draws each plate twice', () => {
     setPlates([plate(), plate({ seatX: 60 })]);

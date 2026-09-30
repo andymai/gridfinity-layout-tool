@@ -1948,6 +1948,7 @@ const en: Record<string, string> = {
     'One printable file with a plate for each socket, carrying its compartment label text. Text depth snaps to whole layers, so a single filament swap prints two-color labels.',
   'binDesigner.plates.previewTitle': 'Label plates preview',
   'binDesigner.plates.previewLoading': 'Generating preview…',
+  'binDesigner.plates.showInPreview': 'Show in 3D preview',
   'binDesigner.fitSample.button': 'Print fit test',
   'binDesigner.fitSample.dialogTitle': 'Export fit test card',
   'binDesigner.fitSample.dialogDescription':

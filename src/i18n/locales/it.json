@@ -1530,6 +1530,7 @@
   "binDesigner.plates.exportFailed": "Esportazione delle targhette non riuscita",
   "binDesigner.plates.preview": "Anteprima targhette",
   "binDesigner.plates.previewLoading": "Generazione anteprima…",
+  "binDesigner.plates.showInPreview": "Mostra nell'anteprima 3D",
   "binDesigner.plates.previewTitle": "Anteprima targhette etichetta",
   "binDesigner.plates.title": "Targhette etichetta",
   "binDesigner.preview.degreeUnit": "°",

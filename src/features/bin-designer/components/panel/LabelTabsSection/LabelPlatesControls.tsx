@@ -11,10 +11,11 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 // Side-effect: must run before any <Text> mounts under this Canvas.
 import '@/shared/webgl/configureTroikaText';
-import { Badge, Button, Dialog } from '@/design-system';
+import { Badge, Button, CheckboxRow, Dialog } from '@/design-system';
 import { ExportDialog } from '@/shared/components/ExportDialog';
 import { SpaceMouseController } from '@/shared/spacemouse/components/SpaceMouseController';
 import { useToastStore } from '@/core/store/toast';
+import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { isErr } from '@/core/result';
@@ -47,6 +48,8 @@ function PlatesMesh({ mesh: data }: { mesh: PreviewMesh }) {
 export function LabelPlatesControls() {
   const t = useTranslation();
   const { plates, isExporting, canExport, downloadPlates, fetchPreviewStl } = useLabelPlateExport();
+  const showInPreview = useDesignerStore((s) => s.ui.showLabelPlates);
+  const setShowInPreview = useDesignerStore((s) => s.setShowLabelPlates);
 
   const [exportOpen, setExportOpen] = useState(false);
   const [fileNameConfig, setFileNameConfig] = useState<ExportFileNameConfig>({
@@ -139,6 +142,12 @@ export function LabelPlatesControls() {
           );
         })}
       </ul>
+      <CheckboxRow
+        className="mb-2"
+        label={t('binDesigner.plates.showInPreview')}
+        checked={showInPreview}
+        onChange={setShowInPreview}
+      />
       <div className="flex gap-2">
         <Button variant="secondary" size="sm" fullWidth onClick={openPreview} disabled={!canExport}>
           {t('binDesigner.plates.preview')}

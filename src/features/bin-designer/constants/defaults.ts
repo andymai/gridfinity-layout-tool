@@ -296,6 +296,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   previewCompartments: null,
   previewSelection: null,
   splitViewMode: 'exploded',
+  showLabelPlates: true,
   splitPieceMeshes: [],
   hoveredColorZone: null,
   hoveredOverhangSide: null,

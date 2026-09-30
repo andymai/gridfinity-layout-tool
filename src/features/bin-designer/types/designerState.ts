@@ -428,6 +428,7 @@ export interface DesignerState {
   setInteriorCard: (card: InteriorCard) => void;
   setShapeEditorOpen: (open: boolean) => void;
   setSplitViewMode: (mode: SplitViewMode) => void;
+  setShowLabelPlates: (show: boolean) => void;
   setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => void;
   setHoveredColorZone: (zone: HoverableZone | null) => void;
   setHoveredOverhangSide: (side: OverhangHighlightSide | null) => void;

@@ -1530,6 +1530,7 @@
   "binDesigner.plates.exportFailed": "Export der Etikettenplatten fehlgeschlagen",
   "binDesigner.plates.preview": "Platten-Vorschau",
   "binDesigner.plates.previewLoading": "Vorschau wird erstellt…",
+  "binDesigner.plates.showInPreview": "In der 3D-Vorschau zeigen",
   "binDesigner.plates.previewTitle": "Vorschau der Etikettenplatten",
   "binDesigner.plates.title": "Etikettenplatten",
   "binDesigner.preview.degreeUnit": "°",

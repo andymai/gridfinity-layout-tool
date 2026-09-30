@@ -199,6 +199,12 @@ export function createUISlice(set: Set) {
       });
     },
 
+    setShowLabelPlates: (show: boolean) => {
+      set((state) => {
+        state.ui.showLabelPlates = show;
+      });
+    },
+
     setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => {
       set((state) => {
         state.ui.splitPieceMeshes = [...meshes];

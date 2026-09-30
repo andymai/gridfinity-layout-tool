@@ -1530,6 +1530,7 @@
   "binDesigner.plates.exportFailed": "标签板导出失败",
   "binDesigner.plates.preview": "预览标签板",
   "binDesigner.plates.previewLoading": "正在生成预览…",
+  "binDesigner.plates.showInPreview": "在 3D 预览中显示",
   "binDesigner.plates.previewTitle": "标签板预览",
   "binDesigner.plates.title": "标签板",
   "binDesigner.preview.degreeUnit": "°",
