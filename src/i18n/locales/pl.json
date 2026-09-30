@@ -1530,6 +1530,7 @@
   "binDesigner.plates.exportFailed": "Eksport płytek etykiet nieudany",
   "binDesigner.plates.preview": "Podgląd płytek",
   "binDesigner.plates.previewLoading": "Generowanie podglądu…",
+  "binDesigner.plates.showInPreview": "Pokaż w podglądzie 3D",
   "binDesigner.plates.previewTitle": "Podgląd płytek etykiet",
   "binDesigner.plates.title": "Płytki etykiet",
   "binDesigner.preview.degreeUnit": "°",

@@ -1530,6 +1530,7 @@
   "binDesigner.plates.exportFailed": "Не вдалося експортувати пластини етикеток",
   "binDesigner.plates.preview": "Переглянути пластини",
   "binDesigner.plates.previewLoading": "Створення перегляду…",
+  "binDesigner.plates.showInPreview": "Показувати в 3D-перегляді",
   "binDesigner.plates.previewTitle": "Перегляд пластин етикеток",
   "binDesigner.plates.title": "Пластини етикеток",
   "binDesigner.preview.degreeUnit": "°",

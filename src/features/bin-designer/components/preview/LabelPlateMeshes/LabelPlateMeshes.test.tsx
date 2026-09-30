@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import { LabelPlateMeshes } from './LabelPlateMeshes';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
@@ -51,6 +51,16 @@ describe('LabelPlateMeshes', () => {
     const { container } = render(<LabelPlateMeshes color="#ccc" lidOffsetMm={0} />);
 
     expect(container.firstChild).toBeNull();
+  });
+
+  it('renders nothing while the plates are hidden from the preview', () => {
+    setPlates([plate(), plate({ seatX: 60 })]);
+    useDesignerStore.setState((s) => ({ ui: { ...s.ui, showLabelPlates: false } }));
+    const { container } = render(<LabelPlateMeshes color="#ccc" lidOffsetMm={0} />);
+
+    expect(container.firstChild).toBeNull();
+    act(() => useDesignerStore.setState((s) => ({ ui: { ...s.ui, showLabelPlates: true } })));
+    expect(container.querySelectorAll('mesh')).toHaveLength(4);
   });
 
   // Every plate is drawn twice from one mesh: seated, and in the reference row.

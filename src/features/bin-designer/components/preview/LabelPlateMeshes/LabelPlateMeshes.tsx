@@ -75,9 +75,10 @@ function PlateInstance({
 }
 
 export function LabelPlateMeshes({ color, lidOffsetMm, wireframe = false }: LabelPlateMeshesProps) {
-  const { labelPlates, depth, gridUnitMm, gridUnitMmY } = useDesignerStore(
+  const { labelPlates, visible, depth, gridUnitMm, gridUnitMmY } = useDesignerStore(
     useShallow((s) => ({
       labelPlates: s.generation.mesh?.labelPlates ?? null,
+      visible: s.ui.showLabelPlates,
       depth: s.params.depth,
       gridUnitMm: s.params.gridUnitMm,
       gridUnitMmY: s.params.gridUnitMmY,
@@ -102,7 +103,7 @@ export function LabelPlateMeshes({ color, lidOffsetMm, wireframe = false }: Labe
     [plates, depth, gridUnitMm, gridUnitMmY]
   );
 
-  if (plates.length === 0) return null;
+  if (!visible || plates.length === 0) return null;
 
   return (
     <group>

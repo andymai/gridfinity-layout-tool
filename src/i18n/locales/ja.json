@@ -1530,6 +1530,7 @@
   "binDesigner.plates.exportFailed": "ラベルプレートの書き出しに失敗しました",
   "binDesigner.plates.preview": "プレートをプレビュー",
   "binDesigner.plates.previewLoading": "プレビューを生成中…",
+  "binDesigner.plates.showInPreview": "3Dプレビューに表示",
   "binDesigner.plates.previewTitle": "ラベルプレートのプレビュー",
   "binDesigner.plates.title": "ラベルプレート",
   "binDesigner.preview.degreeUnit": "°",

@@ -1530,6 +1530,7 @@
   "binDesigner.plates.exportFailed": "라벨 플레이트 내보내기에 실패했습니다",
   "binDesigner.plates.preview": "플레이트 미리보기",
   "binDesigner.plates.previewLoading": "미리보기 생성 중…",
+  "binDesigner.plates.showInPreview": "3D 미리보기에 표시",
   "binDesigner.plates.previewTitle": "라벨 플레이트 미리보기",
   "binDesigner.plates.title": "라벨 플레이트",
   "binDesigner.preview.degreeUnit": "°",

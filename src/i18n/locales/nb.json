@@ -1530,6 +1530,7 @@
   "binDesigner.plates.exportFailed": "Eksport av etikettplater mislyktes",
   "binDesigner.plates.preview": "Forhåndsvis plater",
   "binDesigner.plates.previewLoading": "Genererer forhåndsvisning…",
+  "binDesigner.plates.showInPreview": "Vis i 3D-forhåndsvisningen",
   "binDesigner.plates.previewTitle": "Forhåndsvisning av etikettplater",
   "binDesigner.plates.title": "Etikettplater",
   "binDesigner.preview.degreeUnit": "°",

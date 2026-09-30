@@ -1530,6 +1530,7 @@
   "binDesigner.plates.exportFailed": "Error al exportar las placas de etiqueta",
   "binDesigner.plates.preview": "Vista previa de placas",
   "binDesigner.plates.previewLoading": "Generando vista previa…",
+  "binDesigner.plates.showInPreview": "Mostrar en la vista 3D",
   "binDesigner.plates.previewTitle": "Vista previa de placas de etiqueta",
   "binDesigner.plates.title": "Placas de etiqueta",
   "binDesigner.preview.degreeUnit": "°",

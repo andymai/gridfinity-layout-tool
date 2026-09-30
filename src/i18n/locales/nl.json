@@ -1530,6 +1530,7 @@
   "binDesigner.plates.exportFailed": "Exporteren van labelplaatjes mislukt",
   "binDesigner.plates.preview": "Plaatjes bekijken",
   "binDesigner.plates.previewLoading": "Voorbeeld genereren…",
+  "binDesigner.plates.showInPreview": "Tonen in 3D-voorbeeld",
   "binDesigner.plates.previewTitle": "Voorbeeld labelplaatjes",
   "binDesigner.plates.title": "Labelplaatjes",
   "binDesigner.preview.degreeUnit": "°",

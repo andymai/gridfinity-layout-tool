@@ -1530,6 +1530,7 @@
   "binDesigner.plates.exportFailed": "Falha ao exportar as placas de rótulo",
   "binDesigner.plates.preview": "Prévia das placas",
   "binDesigner.plates.previewLoading": "Gerando prévia…",
+  "binDesigner.plates.showInPreview": "Mostrar na prévia 3D",
   "binDesigner.plates.previewTitle": "Prévia das placas de rótulo",
   "binDesigner.plates.title": "Placas de rótulo",
   "binDesigner.preview.degreeUnit": "°",

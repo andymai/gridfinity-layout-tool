@@ -1530,6 +1530,7 @@
   "binDesigner.plates.exportFailed": "Échec de l'export des plaques d'étiquette",
   "binDesigner.plates.preview": "Aperçu des plaques",
   "binDesigner.plates.previewLoading": "Génération de l'aperçu…",
+  "binDesigner.plates.showInPreview": "Afficher dans l'aperçu 3D",
   "binDesigner.plates.previewTitle": "Aperçu des plaques d'étiquette",
   "binDesigner.plates.title": "Plaques d'étiquette",
   "binDesigner.preview.degreeUnit": "°",
