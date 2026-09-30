@@ -60,9 +60,13 @@ export function useCollabSync(): void {
   const lastEditSource = useLayoutStore((state) => state.lastEditSource);
   const importLayout = useLayoutStore((state) => state.importLayout);
 
-  // Liveblocks mutation to update storage
-  const updateRemoteLayout = useMutation(({ storage }, layout: Layout) => {
+  // The client joins on the permission it last saw, but the room grants the
+  // share's current one, so a stale 'edit' lands here read-only. Liveblocks
+  // throws on a write from a read-only connection, taking the provider down.
+  const updateRemoteLayout = useMutation(({ storage, self }, layout: Layout): boolean => {
+    if (!self.canWrite) return false;
     storage.set('layout', layout);
+    return true;
   }, []);
 
   // Effect: Remote → Local sync
@@ -93,9 +97,8 @@ export function useCollabSync(): void {
 
       // If local has content (from API fetch), push it to remote
       // This ensures API-fetched data takes precedence over potentially stale remote
-      if (localHasContent) {
+      if (localHasContent && updateRemoteLayout(currentLocal)) {
         lastSyncedLayoutRef.current = currentLocal;
-        updateRemoteLayout(currentLocal);
         // Move to ready state after a brief delay to let the push complete
         // Store timeout ID for cleanup on unmount
         initTimeoutRef.current = setTimeout(() => {
@@ -167,8 +170,9 @@ export function useCollabSync(): void {
     }
 
     // Push local changes to Liveblocks
-    lastSyncedLayoutRef.current = localLayout;
-    updateRemoteLayout(localLayout);
+    if (updateRemoteLayout(localLayout)) {
+      lastSyncedLayoutRef.current = localLayout;
+    }
   }, [localLayout, lastEditSource, updateRemoteLayout]);
 
   // Cleanup effect: clear pending timeout on unmount only
