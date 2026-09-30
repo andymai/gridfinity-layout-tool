@@ -1,7 +1,7 @@
 src/shared/hooks/useCollabSync.test.ts
   s_26d22a6aa62b53::t_f2d9cf9b49c5c6 373-393
 src/shared/hooks/useCollabSync.ts
-  s_26d22a6aa62b53::t_c46b270d1bf950 59,88,185-196,198
+  s_26d22a6aa62b53::t_3ed475a9bea26f 59,88,185-196,198
 ---
 {
   "schema_version": "authorship/3.0.0",
