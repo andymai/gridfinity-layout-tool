@@ -52,6 +52,11 @@ export function useCollabSync(): void {
   const syncStateRef = useRef<SyncState>('pending');
   const lastSyncedLayoutRef = useRef<Layout | null>(null);
   const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Set once the room refuses a write. From then on the room's copy is the only
+  // one that counts: an edit it refused was never sent, so it must neither
+  // survive the join nor hold back the updates the room does send.
+  const writeRefusedRef = useRef(false);
+  const latestRemoteRef = useRef<Layout | null>(null);
 
   // Get layout from Liveblocks storage
   const remoteLayout = useStorage((root) => root.layout);
@@ -60,9 +65,13 @@ export function useCollabSync(): void {
   const lastEditSource = useLayoutStore((state) => state.lastEditSource);
   const importLayout = useLayoutStore((state) => state.importLayout);
 
-  // Liveblocks mutation to update storage
-  const updateRemoteLayout = useMutation(({ storage }, layout: Layout) => {
+  // The client joins on the permission it last saw, but the room grants the
+  // share's current one, so a stale 'edit' lands here read-only. Liveblocks
+  // throws on a write from a read-only connection, taking the provider down.
+  const updateRemoteLayout = useMutation(({ storage, self }, layout: Layout): boolean => {
+    if (!self.canWrite) return false;
     storage.set('layout', layout);
+    return true;
   }, []);
 
   // Effect: Remote → Local sync
@@ -76,6 +85,7 @@ export function useCollabSync(): void {
   // branch below we read `localLayout` directly from the store so we always
   // get the freshest value.
   useEffect(() => {
+    latestRemoteRef.current = remoteLayout ?? null;
     if (!remoteLayout) {
       return;
     }
@@ -94,8 +104,10 @@ export function useCollabSync(): void {
       // If local has content (from API fetch), push it to remote
       // This ensures API-fetched data takes precedence over potentially stale remote
       if (localHasContent) {
+        writeRefusedRef.current = !updateRemoteLayout(currentLocal);
+      }
+      if (localHasContent && !writeRefusedRef.current) {
         lastSyncedLayoutRef.current = currentLocal;
-        updateRemoteLayout(currentLocal);
         // Move to ready state after a brief delay to let the push complete
         // Store timeout ID for cleanup on unmount
         initTimeoutRef.current = setTimeout(() => {
@@ -105,8 +117,8 @@ export function useCollabSync(): void {
         return;
       }
 
-      // If only remote has content, use it
-      if (remoteHasContent) {
+      // If only remote has content, or the room refused ours, use the room's
+      if (remoteHasContent || writeRefusedRef.current) {
         lastSyncedLayoutRef.current = remoteLayout;
         importLayout(remoteLayout, undefined, 'remote');
         syncStateRef.current = 'ready';
@@ -136,7 +148,7 @@ export function useCollabSync(): void {
     }
 
     // Skip if last edit was local (we're the source of this change)
-    if (lastEditSource === 'local') {
+    if (lastEditSource === 'local' && !writeRefusedRef.current) {
       return;
     }
 
@@ -167,9 +179,23 @@ export function useCollabSync(): void {
     }
 
     // Push local changes to Liveblocks
-    lastSyncedLayoutRef.current = localLayout;
-    updateRemoteLayout(localLayout);
-  }, [localLayout, lastEditSource, updateRemoteLayout]);
+    writeRefusedRef.current = !updateRemoteLayout(localLayout);
+    if (!writeRefusedRef.current) {
+      lastSyncedLayoutRef.current = localLayout;
+      return;
+    }
+    // The remote effect runs first in a commit, so a room update that landed
+    // alongside this edit was skipped as ours before the refusal was known.
+    const remote = latestRemoteRef.current;
+    if (
+      remote &&
+      lastSyncedLayoutRef.current &&
+      JSON.stringify(remote) !== JSON.stringify(lastSyncedLayoutRef.current)
+    ) {
+      lastSyncedLayoutRef.current = remote;
+      importLayout(remote, undefined, 'remote');
+    }
+  }, [localLayout, lastEditSource, updateRemoteLayout, importLayout]);
 
   // Cleanup effect: clear pending timeout on unmount only
   // Using empty deps [] ensures this only runs on unmount, not on re-renders
