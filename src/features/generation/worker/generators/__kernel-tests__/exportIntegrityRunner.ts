@@ -97,7 +97,7 @@ async function recoverBrepkitKernel(): Promise<void> {
   poisoned = false;
 }
 
-interface ManifoldStats {
+export interface ManifoldStats {
   triangleCount: number;
   nonManifoldEdges: number;
   boundaryEdges: number;
@@ -109,7 +109,7 @@ interface ManifoldStats {
 }
 
 /** Parse a binary STL and compute manifold/finiteness stats. Throws on parse failure. */
-function analyze(stl: ArrayBuffer, label: string): ManifoldStats {
+export function analyze(stl: ArrayBuffer, label: string): ManifoldStats {
   const parsed = parseSTLBinary(stl);
   if (!isOk(parsed)) {
     const detail =

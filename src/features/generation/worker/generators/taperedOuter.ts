@@ -49,6 +49,42 @@ export interface TaperedLofts {
 }
 
 /**
+ * The heights, measured up from the body bottom, at which the tapered body's
+ * lofts take a section. Between two of them the wall is the straight chord, so
+ * anything that has to sit on or inside the wall follows these same nodes.
+ */
+export function taperBandLevels(
+  taper: ResolvedTaper,
+  wallHeight: number,
+  wallThickness: number
+): readonly number[] {
+  const band = Math.min(taper.bandHeight, wallHeight);
+
+  // Chamfer is linear, so it needs only the band break; fillet samples the
+  // curve, finely enough that a tall band doesn't read as facets. Every loft of
+  // one taper takes these same levels: for the nonlinear fillet, two lofts
+  // sampled at different heights have non-parallel piecewise-linear faces, and
+  // the wall between them comes out uneven.
+  const filletSections = Math.min(
+    FILLET_SECTIONS_MAX,
+    Math.max(FILLET_SECTIONS_MIN, Math.ceil(band / FILLET_SECTION_MM))
+  );
+  const curveLevels =
+    taper.profile === 'chamfer'
+      ? [0, band]
+      : Array.from({ length: filletSections + 1 }, (_, i) => (band * i) / filletSections);
+
+  // The floor plane must be one of the shared nodes: it is where the cavity loft
+  // starts, and a concave fillet bulges outside its own chord — so with no outer
+  // section there, the cavity comes out wider than the wall it sits in and cuts a
+  // slot clean through (~1.9mm past a 1.2mm wall on a 30mm band). Chamfer is
+  // linear, so its chord is already exact.
+  return taper.profile !== 'chamfer' && wallThickness > 1e-6 && wallThickness < band
+    ? [...curveLevels, wallThickness].sort((a, b) => a - b)
+    : curveLevels;
+}
+
+/**
  * The band sampler shared by every loft cut from one taper.
  *
  * Callers must take their z-levels from `bandLevels` rather than subdividing
@@ -98,32 +134,7 @@ function taperSampler(
       .sketchOnPlane('XY', z) as Sketch;
   };
 
-  // z-levels from `bottom` to `top`: chamfer needs only the band break; fillet
-  // samples the curve, finely enough that a tall band doesn't read as facets.
-  // Near-duplicate levels are dropped (zero-height segments). Subdivide the band
-  // ONCE from a shared origin, so the outer body and the cavity sample the
-  // profile at identical heights. For the nonlinear fillet that alignment is
-  // what keeps wall thickness uniform — sampling the two lofts from different
-  // origins would leave their piecewise-linear faces non-parallel.
-  // Chamfer is linear, so it needs only the band break.
-  const filletSections = Math.min(
-    FILLET_SECTIONS_MAX,
-    Math.max(FILLET_SECTIONS_MIN, Math.ceil(band / FILLET_SECTION_MM))
-  );
-  const curveLevels =
-    taper.profile === 'chamfer'
-      ? [0, band]
-      : Array.from({ length: filletSections + 1 }, (_, i) => (band * i) / filletSections);
-
-  // The floor plane must be one of the shared nodes: it is where the cavity loft
-  // starts, and a concave fillet bulges outside its own chord — so with no outer
-  // section there, the cavity comes out wider than the wall it sits in and cuts a
-  // slot clean through (~1.9mm past a 1.2mm wall on a 30mm band). Chamfer is
-  // linear, so its chord is already exact.
-  const bandLevels =
-    taper.profile !== 'chamfer' && wallThickness > 1e-6 && wallThickness < band
-      ? [...curveLevels, wallThickness].sort((a, b) => a - b)
-      : curveLevels;
+  const bandLevels = taperBandLevels(taper, wallHeight, wallThickness);
 
   const loft = (zs: readonly number[], shrink: number): Shape3D => {
     const uniq = zs.filter((z, i) => i === 0 || z - zs[i - 1] > 1e-6);

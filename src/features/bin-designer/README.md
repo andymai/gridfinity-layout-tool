@@ -649,7 +649,7 @@ estimates), and the source file name.
     envelops the key and `addKeyConnectors` drops the pilaster entirely.
     **Adding a connector type:** extend `WallConnectorStyle`, add a `case` to the
     exhaustive `addWallConnectors` switch in
-    `generation/worker/generators/splitConnectorBuilder.ts` (the compiler flags it
+    `generation/worker/generators/splitWallKey.ts` (the compiler flags it
     until handled), reuse `perimeterWalls()` for placement, and add it to the UI.
 
 17. **Design tags sync as a `name`-sibling, not inside `params`** — `tags` rides
