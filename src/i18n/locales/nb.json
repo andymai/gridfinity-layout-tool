@@ -1718,6 +1718,8 @@
   "binDesigner.socketStyle": "Sokkelstil",
   "binDesigner.socketStyle.clickIn": "Klikk-inn",
   "binDesigner.socketStyle.slideChannel": "Skyv-inn",
+  "binDesigner.socketRemovalHole": "Uttakshull",
+  "binDesigner.socketRemovalHoleHint": "Et lite hakk i kanten som vender inn mot boksen, senket like under bunnen av lommen, så en innklikket plate kan løftes ut med pinsett.",
   "binDesigner.socketStyle.slideHint": "Platene skyves inn fra romsiden under holdelepper og hviler bak en liten knast. Bruker de samme standardplatene som klikk-sokkelen.",
   "binDesigner.solidDisablesCavity": "Ikke tilgjengelig for solide beholdere",
   "binDesigner.solidInteriorSummary": "Solid innside",

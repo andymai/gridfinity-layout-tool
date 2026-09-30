@@ -1718,6 +1718,8 @@
   "binDesigner.socketStyle": "卡槽样式",
   "binDesigner.socketStyle.clickIn": "卡入式",
   "binDesigner.socketStyle.slideChannel": "滑入式",
+  "binDesigner.socketRemovalHole": "取出孔",
+  "binDesigner.socketRemovalHoleHint": "在朝向盒内的边缘开一个小缺口，略低于槽底，便于用镊子取出卡入的标签片。",
   "binDesigner.socketStyle.slideHint": "标签板从隔间侧面滑入固定唇边下方，并停在一个小卡点后。使用与卡入式相同的标准标签板。",
   "binDesigner.solidDisablesCavity": "实心收纳盒不可用",
   "binDesigner.solidInteriorSummary": "实心内部",

@@ -244,6 +244,18 @@ export const LABEL_SOCKET_SLIDE_SHELF_THICKNESS_MM =
 export const LABEL_SOCKET_WALL_MM = 1;
 
 /**
+ * Optional tweezer recess on a click-in pocket's free edge: a round notch
+ * straddling the edge, sunk two 0.2mm layers below the pocket floor so a tip
+ * reaches under the seated plate. Its radius equals `LABEL_SOCKET_WALL_MM`, so
+ * it opens the pocket wall to the shelf beyond. A pocket grown by a wide nozzle
+ * or fit offset can leave too little shelf for that, so the notch moves back
+ * into the pocket until `LABEL_SOCKET_REMOVAL_HOLE_EDGE_MM` of shelf remains.
+ */
+export const LABEL_SOCKET_REMOVAL_HOLE_DIAMETER_MM = 2;
+export const LABEL_SOCKET_REMOVAL_HOLE_SINK_MM = 0.4;
+export const LABEL_SOCKET_REMOVAL_HOLE_EDGE_MM = 0.5;
+
+/**
  * Minimum label-tab depth able to host a socket: front/back walls + pocket
  * height + clearance headroom. (1 + 11.3 + 1 rounds up to 14 with margin
  * for nozzle-scaled clearance growth.)

@@ -1584,6 +1584,8 @@
   "binDesigner.socketStyle": "ბუდის სტილი",
   "binDesigner.socketStyle.clickIn": "ჩასაკლიკი",
   "binDesigner.socketStyle.slideChannel": "ჩასაცურებელი",
+  "binDesigner.socketRemovalHole": "ამოსაღები ხვრელი",
+  "binDesigner.socketRemovalHoleHint": "პატარა ჭრილი ყუთისკენ მიმართულ კიდეზე, ბუდის ფსკერზე ოდნავ ქვემოთ, რომ ჩამაგრებული ფირფიტა პინცეტით ამოიღოთ.",
   "binDesigner.socketStyle.slideHint": "ფირფიტები განყოფილების მხრიდან, დამჭერი კიდეების ქვეშ ცურდება და პატარა შემაკავებლის უკან ჩერდება. იყენებს იმავე სტანდარტულ ფირფიტებს, რასაც ჩასაკლიკი ვარიანტი.",
   "binDesigner.plateIconAria": "ფირფიტის ხატულა: {owner}",
   "binDesigner.plateIconAriaValue": "ფირფიტის ხატულა — {owner}: {icon}",

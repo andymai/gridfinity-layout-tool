@@ -213,6 +213,13 @@ export function useLabelTabsSection() {
     [updateLabel]
   );
 
+  const setRemovalHole = useCallback(
+    (removalHole: boolean) => {
+      updateLabel({ removalHole: removalHole ? true : undefined });
+    },
+    [updateLabel]
+  );
+
   const setTabInset = useCallback(
     (inset: number) => {
       updateLabel({ inset });
@@ -831,6 +838,7 @@ export function useLabelTabsSection() {
       setTabMode,
       setPlateFitOffset,
       setSocketStyle,
+      setRemovalHole,
       setCompartmentPlateWidth,
       setCompartmentPlateIcon,
       autoFixDimensions,

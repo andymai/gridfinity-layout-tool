@@ -351,7 +351,7 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
     id: 'opt-label-mode',
     labelKey: 'binDesigner.tabMode',
     section: 'bd-label-tabs',
-    keywords: ['engraved', 'socket', 'plate', 'label style'],
+    keywords: ['engraved', 'socket', 'plate', 'label style', 'removal hole', 'tweezer'],
   },
   {
     id: 'opt-label-edges',

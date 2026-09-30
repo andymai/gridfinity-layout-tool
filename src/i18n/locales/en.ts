@@ -1877,6 +1877,9 @@ const en: Record<string, string> = {
   'binDesigner.socketStyle': 'Socket style',
   'binDesigner.socketStyle.clickIn': 'Click-in',
   'binDesigner.socketStyle.slideChannel': 'Slide-in',
+  'binDesigner.socketRemovalHole': 'Removal hole',
+  'binDesigner.socketRemovalHoleHint':
+    'A small notch on the edge facing into the bin, sunk just below the pocket floor, so tweezers can lift a clicked-in plate out.',
   'binDesigner.socketStyle.slideHint':
     'Plates slide in from the compartment side under retaining lips and park behind a small detent. Takes the same standard plates as click-in.',
   'binDesigner.plateIconAria': 'Plate icon for {owner}',

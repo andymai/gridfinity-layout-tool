@@ -549,6 +549,7 @@ function buildTabsAtRow(
           plateWidthU,
           clearanceMm: socket.clearanceMm,
           style: socket.style,
+          removalHole: socket.removalHole,
           tabWidth,
           tabDepth,
           tabHeight,

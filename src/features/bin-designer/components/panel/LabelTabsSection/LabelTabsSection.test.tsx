@@ -50,6 +50,27 @@ describe('LabelTabsSection', () => {
     expect(screen.getByRole('button', { name: 'Solid', pressed: false })).toBeInTheDocument();
   });
 
+  it('offers the removal hole on click-in sockets only, and stores it only when on', () => {
+    useDesignerStore.setState((s) => ({
+      params: {
+        ...s.params,
+        label: { ...s.params.label, enabled: true, mode: 'socket', depth: 14 },
+      },
+    }));
+    render(<LabelTabsSection />);
+    fireEvent.click(screen.getByRole('button', { name: /Plate fit/ }));
+
+    const hole = screen.getByRole('checkbox', { name: 'Removal hole' });
+    expect(hole).not.toBeChecked();
+    fireEvent.click(hole);
+    expect(useDesignerStore.getState().params.label.removalHole).toBe(true);
+    fireEvent.click(hole);
+    expect(useDesignerStore.getState().params.label.removalHole).toBeUndefined();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Slide-in' }));
+    expect(screen.queryByRole('checkbox', { name: 'Removal hole' })).not.toBeInTheDocument();
+  });
+
   it('plate fit offset steps and displays in 0.05 increments', () => {
     useDesignerStore.setState((s) => ({
       params: {

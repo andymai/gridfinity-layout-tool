@@ -1718,6 +1718,8 @@
   "binDesigner.socketStyle": "Styl gniazda",
   "binDesigner.socketStyle.clickIn": "Zatrzaskowe",
   "binDesigner.socketStyle.slideChannel": "Wsuwane",
+  "binDesigner.socketRemovalHole": "Otwór do wyjmowania",
+  "binDesigner.socketRemovalHoleHint": "Małe wycięcie na krawędzi zwróconej do wnętrza pojemnika, sięgające tuż poniżej dna gniazda, aby wyjąć zatrzaśniętą tabliczkę pęsetą.",
   "binDesigner.socketStyle.slideHint": "Płytki wsuwają się od strony przegrody pod listwami przytrzymującymi i parkują za małym zatrzaskiem. Przyjmują te same standardowe płytki co gniazda zatrzaskowe.",
   "binDesigner.solidDisablesCavity": "Niedostępne dla pełnych binów",
   "binDesigner.solidInteriorSummary": "Pełne wnętrze",

@@ -831,6 +831,26 @@ describe('validateDesignerShare', () => {
       expect(result.valid).toBe(false);
     });
 
+    it('accepts a boolean removalHole', () => {
+      for (const removalHole of [true, false]) {
+        const payload = validPayload();
+        (payload.params.label as Record<string, unknown>).enabled = true;
+        (payload.params.label as Record<string, unknown>).mode = 'socket';
+        (payload.params.label as Record<string, unknown>).depth = 14;
+        (payload.params.label as Record<string, unknown>).removalHole = removalHole;
+        const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+        expect(result.valid).toBe(true);
+      }
+    });
+
+    it('rejects a non-boolean removalHole', () => {
+      const payload = validPayload();
+      (payload.params.label as Record<string, unknown>).enabled = true;
+      (payload.params.label as Record<string, unknown>).removalHole = 'yes';
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
     it('accepts a plateFitOffset within bounds', () => {
       const payload = validPayload();
       (payload.params.label as Record<string, unknown>).enabled = true;

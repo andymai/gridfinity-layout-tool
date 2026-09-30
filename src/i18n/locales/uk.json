@@ -1718,6 +1718,8 @@
   "binDesigner.socketStyle": "Тип гнізда",
   "binDesigner.socketStyle.clickIn": "Защіпка",
   "binDesigner.socketStyle.slideChannel": "Засувне",
+  "binDesigner.socketRemovalHole": "Отвір для виймання",
+  "binDesigner.socketRemovalHoleHint": "Невелика виїмка на краї, зверненому всередину контейнера, трохи нижче дна гнізда, щоб пінцетом вийняти вставлену табличку.",
   "binDesigner.socketStyle.slideHint": "Пластини засуваються з боку відділення під утримувальні губки та фіксуються за невеликим виступом. Підходять ті самі стандартні пластини, що й для защіпки.",
   "binDesigner.solidDisablesCavity": "Недоступно для суцільних бінів",
   "binDesigner.solidInteriorSummary": "Суцільний інтер’єр",
