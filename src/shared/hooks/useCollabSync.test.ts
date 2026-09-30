@@ -370,6 +370,27 @@ describe('useCollabSync', () => {
       expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual(['owner-edit']);
     });
 
+    it('takes a room update that lands in the same render as a refused edit', () => {
+      mockUpdateRemoteLayout.mockReturnValue(false);
+      const roomLayout = createTestLayout([createBinOnGrid('room-bin')]);
+      useLayoutStore.setState({ layout: createTestLayout(), lastEditSource: 'init' });
+
+      let remoteLayout = roomLayout;
+      mockUseStorage.mockImplementation((selector) => selector({ layout: remoteLayout }));
+      const { rerender } = renderHook(() => useCollabSync());
+
+      remoteLayout = createTestLayout([createBinOnGrid('owner-edit')]);
+      act(() => {
+        useLayoutStore.setState({
+          layout: createTestLayout([createBinOnGrid('local-edit')]),
+          lastEditSource: 'local',
+        });
+      });
+      rerender();
+
+      expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual(['owner-edit']);
+    });
+
     it('keeps accepting room updates after a push is refused', () => {
       mockUpdateRemoteLayout.mockReturnValue(false);
       const localLayout = createTestLayout([createBinOnGrid('stale-local')]);

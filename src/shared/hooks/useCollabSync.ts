@@ -56,6 +56,7 @@ export function useCollabSync(): void {
   // one that counts: an edit it refused was never sent, so it must neither
   // survive the join nor hold back the updates the room does send.
   const writeRefusedRef = useRef(false);
+  const latestRemoteRef = useRef<Layout | null>(null);
 
   // Get layout from Liveblocks storage
   const remoteLayout = useStorage((root) => root.layout);
@@ -84,6 +85,7 @@ export function useCollabSync(): void {
   // branch below we read `localLayout` directly from the store so we always
   // get the freshest value.
   useEffect(() => {
+    latestRemoteRef.current = remoteLayout ?? null;
     if (!remoteLayout) {
       return;
     }
@@ -180,8 +182,20 @@ export function useCollabSync(): void {
     writeRefusedRef.current = !updateRemoteLayout(localLayout);
     if (!writeRefusedRef.current) {
       lastSyncedLayoutRef.current = localLayout;
+      return;
     }
-  }, [localLayout, lastEditSource, updateRemoteLayout]);
+    // The remote effect runs first in a commit, so a room update that landed
+    // alongside this edit was skipped as ours before the refusal was known.
+    const remote = latestRemoteRef.current;
+    if (
+      remote &&
+      lastSyncedLayoutRef.current &&
+      JSON.stringify(remote) !== JSON.stringify(lastSyncedLayoutRef.current)
+    ) {
+      lastSyncedLayoutRef.current = remote;
+      importLayout(remote, undefined, 'remote');
+    }
+  }, [localLayout, lastEditSource, updateRemoteLayout, importLayout]);
 
   // Cleanup effect: clear pending timeout on unmount only
   // Using empty deps [] ensures this only runs on unmount, not on re-renders
