@@ -5,9 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@vercel/node>undici': ^7.29.0
+  '@vercel/node>undici': ^7.29.1
   undici@>=6.0.0 <6.28.1: ^6.28.1
-  undici@>=7.0.0 <7.29.0: ^7.29.0
+  undici@>=7.0.0 <7.29.1: ^7.29.1
   path-to-regexp@>=6.0.0 <6.3.0: 6.3.0
   '@rollup/plugin-replace>magic-string': 0.30.21
   '@surma/rollup-plugin-off-main-thread>magic-string': 0.30.21

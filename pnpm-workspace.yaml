@@ -62,11 +62,11 @@ peerDependencyRules:
 # no rule yet rather than guessing at one. `parent>child` entries are exempt --
 # naming the parent already bounds the blast radius.
 overrides:
-  '@vercel/node>undici': '^7.29.0'
+  '@vercel/node>undici': '^7.29.1'
   # GHSA-3wwx-pv8p-q78v, GHSA-r53p-7pc4-xj5r and GHSA-rfgv-xxqx-mfg5 are fixed
-  # on the 6.x line at 6.28.1.
+  # at 6.28.1 and 7.29.1 on their lines.
   'undici@>=6.0.0 <6.28.1': '^6.28.1'
-  'undici@>=7.0.0 <7.29.0': '^7.29.0'
+  'undici@>=7.0.0 <7.29.1': '^7.29.1'
   # GHSA-9wv6-86v2-598j — ReDoS, fixed at 6.3.0 for the 4.x-6.x range with no
   # backport. Scoped to 6.x, the only line in the tree (@vercel/node pins 6.1.0).
   # The 7.x and 8.x lines have their own advisories and their own fixes; a bare
