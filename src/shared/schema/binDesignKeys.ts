@@ -252,6 +252,7 @@ export const LABEL_TAB_KEYS = [
   'mode',
   'plateFitOffset',
   'socketStyle',
+  'removalHole',
   'support',
   'depth',
   'width',

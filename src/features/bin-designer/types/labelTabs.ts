@@ -46,6 +46,11 @@ export interface LabelTabConfig {
    * plates.
    */
   readonly socketStyle?: LabelSocketStyle;
+  /**
+   * Click-in sockets only: a tweezer recess on the pocket's free edge so a
+   * seated plate can be lifted out. Absent = no recess.
+   */
+  readonly removalHole?: boolean;
   /** Support structure: 'bracket' = open gussets, 'solid' = filled triangle */
   readonly support: LabelTabSupport;
   /** Depth of tab from inner back wall (horizontal inward), in mm */

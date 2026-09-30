@@ -1718,6 +1718,8 @@
   "binDesigner.socketStyle": "Fästtyp",
   "binDesigner.socketStyle.clickIn": "Klick-i",
   "binDesigner.socketStyle.slideChannel": "Skjut-i",
+  "binDesigner.socketRemovalHole": "Uttagshål",
+  "binDesigner.socketRemovalHoleHint": "Ett litet hack i kanten som vetter in mot lådan, försänkt strax under fickans botten, så att en inklickad skylt kan lyftas ut med pincett.",
   "binDesigner.socketStyle.slideHint": "Plattorna skjuts in från facksidan under hållläppar och vilar bakom en liten klack. Använder samma standardplattor som klickfästet.",
   "binDesigner.solidDisablesCavity": "Inte tillgängligt för massiva fack",
   "binDesigner.solidInteriorSummary": "Massiv interiör",

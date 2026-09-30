@@ -50,6 +50,8 @@ export interface SocketBuildInfo {
   readonly plateByCompartment: ReadonlyMap<number, LabelPlateWidthU>;
   /** Pocket profile: click-in ribs (default) or slide-in channel. */
   readonly style: LabelSocketStyle;
+  /** Cut the tweezer recess. Click-in only: a slide channel's mouth already frees the plate. */
+  readonly removalHole: boolean;
 }
 
 export interface TabBuildDimensions {
@@ -199,7 +201,13 @@ export function planLabelTabLayout(
         if (p.plateWidthU !== null) plateByCompartment.set(p.compartmentId, p.plateWidthU);
       }
     }
-    socket = { clearanceMm, plateByCompartment, style: params.label.socketStyle ?? 'clickIn' };
+    const style = params.label.socketStyle ?? 'clickIn';
+    socket = {
+      clearanceMm,
+      plateByCompartment,
+      style,
+      removalHole: style === 'clickIn' && params.label.removalHole === true,
+    };
   }
   const shelfT = socket
     ? Math.max(

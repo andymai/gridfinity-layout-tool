@@ -1718,6 +1718,8 @@
   "binDesigner.socketStyle": "Styl patice",
   "binDesigner.socketStyle.clickIn": "Zaklapávací",
   "binDesigner.socketStyle.slideChannel": "Zasouvací",
+  "binDesigner.socketRemovalHole": "Otvor pro vyjmutí",
+  "binDesigner.socketRemovalHoleHint": "Malý zářez na hraně směřující do krabičky, zapuštěný těsně pod dno kapsy, aby šlo zacvaknutou destičku vyjmout pinzetou.",
   "binDesigner.socketStyle.slideHint": "Destičky se zasunou ze strany přihrádky pod přídržné lemy a zaparkují za malou západkou. Bere stejné standardní destičky jako zaklapávací.",
   "binDesigner.solidDisablesCavity": "Není dostupné pro plné biny",
   "binDesigner.solidInteriorSummary": "Plný vnitřek",

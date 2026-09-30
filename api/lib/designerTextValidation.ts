@@ -422,6 +422,9 @@ export function validateLabel(label: unknown): string | null {
     ) {
       return `label.socketStyle must be one of: ${VALID_LABEL_SOCKET_STYLES.join(', ')}`;
     }
+    if (label.removalHole !== undefined && !isBoolean(label.removalHole)) {
+      return 'label.removalHole must be boolean';
+    }
     // Cross-field: socket-mode tabs must be deep enough to host the pocket.
     // Without this a crafted payload passes the generic depth range but the
     // builder silently drops every socket.

@@ -1718,6 +1718,8 @@
   "binDesigner.socketStyle": "ソケット方式",
   "binDesigner.socketStyle.clickIn": "はめ込み式",
   "binDesigner.socketStyle.slideChannel": "スライド式",
+  "binDesigner.socketRemovalHole": "取り外し穴",
+  "binDesigner.socketRemovalHoleHint": "ボックス内側に向いた縁に、ポケット底より少し深い小さな切り欠きを設け、はめ込んだプレートをピンセットで外せるようにします。",
   "binDesigner.socketStyle.slideHint": "プレートは仕切り側から押さえリップの下にスライドさせ、小さな突起の奥で固定されます。はめ込み式と同じ標準プレートが使えます。",
   "binDesigner.solidDisablesCavity": "無垢ビンでは利用できません",
   "binDesigner.solidInteriorSummary": "無垢内部",

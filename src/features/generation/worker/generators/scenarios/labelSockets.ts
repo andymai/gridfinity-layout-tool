@@ -16,6 +16,8 @@ import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import {
   LABEL_PLATE_HEIGHT_MM,
   LABEL_SOCKET_CLICK_POCKET_DEPTH_MM,
+  LABEL_SOCKET_REMOVAL_HOLE_DIAMETER_MM,
+  LABEL_SOCKET_REMOVAL_HOLE_SINK_MM,
   LABEL_SOCKET_RIB_HEIGHT_MM,
   LABEL_SOCKET_RIB_START_MM,
   LABEL_SOCKET_STACK_RELIEF_MM,
@@ -171,7 +173,87 @@ function assertRelievedPocketFloor(result: MeshData, label: string): void {
   }
 }
 
+/**
+ * Vertical faces on the recess radius around the back-anchored pocket's free
+ * edge, at the pocket's X centre.
+ */
+function removalHoleWall(
+  result: MeshData,
+  params: BinParams
+): { count: number; minZ: number; maxZ: number; shelfTopZ: number } {
+  const { vertices, normals } = result;
+  const clearanceMm = effectiveLabelSocketClearance(
+    params.nozzleSizeMm,
+    params.label.plateFitOffset
+  );
+  const pocketD = LABEL_PLATE_HEIGHT_MM + clearanceMm;
+  const innerD = params.depth * params.gridUnitMm - 0.5 - 2 * params.wallThickness;
+  const freeEdgeY = innerD / 2 - LABEL_SOCKET_WALL_MM - pocketD;
+  const r = LABEL_SOCKET_REMOVAL_HOLE_DIAMETER_MM / 2;
+
+  let count = 0;
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+  let meshMaxZ = -Infinity;
+  for (let i = 0; i < vertices.length; i += 3) {
+    const z = vertices[i + 2];
+    if (z > meshMaxZ) meshMaxZ = z;
+    if (Math.abs(normals[i + 2]) > 0.1) continue;
+    if (Math.abs(Math.hypot(vertices[i], vertices[i + 1] - freeEdgeY) - r) > 0.03) continue;
+    count++;
+    if (z < minZ) minZ = z;
+    if (z > maxZ) maxZ = z;
+  }
+  return { count, minZ, maxZ, shelfTopZ: meshMaxZ - COPLANAR_OVERLAP };
+}
+
+/** The recess runs from the shelf top to exactly the pinned sink below the pocket floor. */
+function assertRemovalHole(result: MeshData, params: BinParams): void {
+  const { count, minZ, maxZ, shelfTopZ } = removalHoleWall(result, params);
+  if (count < 16) {
+    throw new Error(`removal hole: only ${count} wall vertices on the recess radius`);
+  }
+  if (maxZ < shelfTopZ - 0.05) {
+    throw new Error(`removal hole: wall tops out at ${maxZ.toFixed(2)}, below the shelf top`);
+  }
+  const expectedBottom =
+    shelfTopZ - LABEL_SOCKET_CLICK_POCKET_DEPTH_MM - LABEL_SOCKET_REMOVAL_HOLE_SINK_MM;
+  if (Math.abs(minZ - expectedBottom) > 0.05) {
+    throw new Error(
+      `removal hole: bottom at ${minZ.toFixed(2)}, expected ${expectedBottom.toFixed(2)}`
+    );
+  }
+}
+
 export const labelSockets: ScenarioCase[] = [
+  defineScenario('label sockets', '1×1 socket with removal hole', {
+    params: {
+      width: 1,
+      depth: 1,
+      height: 5,
+      base: NO_LIP_BASE,
+      label: { ...SOCKET_LABEL, removalHole: true },
+    },
+    customAssert: (result, params) => {
+      assertSocketPocket(result, params, { plateWidthU: 1, label: '1x1-removal-hole' });
+      assertRemovalHole(result, params);
+    },
+  }),
+
+  defineScenario('label sockets', '1×1 slide channel ignores removal hole', {
+    params: {
+      width: 1,
+      depth: 1,
+      height: 5,
+      base: NO_LIP_BASE,
+      label: { ...SOCKET_LABEL, socketStyle: 'slideChannel' as const, removalHole: true },
+    },
+    customAssert: (result, params) => {
+      const { count } = removalHoleWall(result, params);
+      if (count > 0) throw new Error(`slide channel got a removal hole (${count} wall vertices)`);
+    },
+  }),
+
   defineScenario('label sockets', '1×1 socket hosts a 1U plate', {
     params: {
       width: 1,

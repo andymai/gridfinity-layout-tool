@@ -1718,6 +1718,8 @@
   "binDesigner.socketStyle": "Estilo de encaixe",
   "binDesigner.socketStyle.clickIn": "De pressão",
   "binDesigner.socketStyle.slideChannel": "Deslizante",
+  "binDesigner.socketRemovalHole": "Furo de remoção",
+  "binDesigner.socketRemovalHoleHint": "Um pequeno entalhe na borda voltada para dentro da caixa, rebaixado logo abaixo do fundo do encaixe, para retirar com pinça uma placa encaixada.",
   "binDesigner.socketStyle.slideHint": "As placas deslizam pelo lado do compartimento sob abas de retenção e param atrás de um pequeno ressalto. Usa as mesmas placas padrão do encaixe de pressão.",
   "binDesigner.solidDisablesCavity": "Não disponível para recipientes sólidos",
   "binDesigner.solidInteriorSummary": "Interior sólido",

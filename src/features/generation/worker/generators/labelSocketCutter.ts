@@ -1,6 +1,6 @@
 /** Cuts a label plate socket (click-in pocket or slide channel) into a finished tab. */
 
-import { draw, drawRoundedRectangle, unwrap, fuse, cut, translate } from 'brepjs';
+import { draw, drawCircle, drawRoundedRectangle, unwrap, fuse, cut, translate } from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
 import { COPLANAR_MARGIN } from './generatorConstants';
 import {
@@ -12,6 +12,8 @@ import {
   LABEL_SOCKET_LIP_OVERHANG_MM,
   LABEL_SOCKET_LIP_THICKNESS_MM,
   LABEL_SOCKET_POCKET_DEPTH_MM,
+  LABEL_SOCKET_REMOVAL_HOLE_DIAMETER_MM,
+  LABEL_SOCKET_REMOVAL_HOLE_SINK_MM,
   LABEL_SOCKET_RIB_HEIGHT_MM,
   LABEL_SOCKET_RIB_PROTRUSION_MM,
   LABEL_SOCKET_RIB_START_MM,
@@ -43,6 +45,7 @@ export function applySocket(
     plateWidthU: LabelPlateWidthU;
     clearanceMm: number;
     style: LabelSocketStyle;
+    removalHole?: boolean;
     tabWidth: number;
     tabDepth: number;
     tabHeight: number;
@@ -70,8 +73,9 @@ export function applySocket(
   const centerX = pocketX0 + pocketW / 2;
   const centerY = ctx.depthSign * (wall + pocketD / 2);
 
+  let socketed: Shape3D;
   try {
-    return cutLabelSocket(scope, tabSolid, {
+    socketed = cutLabelSocket(scope, tabSolid, {
       centerX,
       centerY,
       topZ: ctx.tabHeight,
@@ -88,6 +92,40 @@ export function applySocket(
   } catch {
     return tabSolid;
   }
+  if (!ctx.removalHole || ctx.style !== 'clickIn') return socketed;
+  try {
+    return cutRemovalHole(scope, socketed, {
+      centerX,
+      freeEdgeY: ctx.depthSign * (wall + pocketD),
+      topZ: ctx.tabHeight,
+    });
+  } catch {
+    return socketed;
+  }
+}
+
+/**
+ * Tweezer recess straddling a click-in pocket's free edge, from above the
+ * shelf top down to `LABEL_SOCKET_REMOVAL_HOLE_SINK_MM` below the pocket floor.
+ * Cut after the ribs, so it also opens the rib on that wall.
+ */
+function cutRemovalHole(
+  scope: DisposalScope,
+  solid: Shape3D,
+  ctx: { centerX: number; freeEdgeY: number; topZ: number }
+): Shape3D {
+  const bottomZ = ctx.topZ - LABEL_SOCKET_CLICK_POCKET_DEPTH_MM - LABEL_SOCKET_REMOVAL_HOLE_SINK_MM;
+  const hole = scope.register(
+    translate(
+      scope.register(
+        sketch(drawCircle(LABEL_SOCKET_REMOVAL_HOLE_DIAMETER_MM / 2), 'XY', bottomZ).extrude(
+          ctx.topZ - bottomZ + COPLANAR_MARGIN
+        )
+      ),
+      [ctx.centerX, ctx.freeEdgeY, 0]
+    )
+  );
+  return scope.register(unwrap(cut(solid as ValidSolid, hole as ValidSolid)));
 }
 
 /**
