@@ -17,6 +17,7 @@ import {
   LABEL_PLATE_HEIGHT_MM,
   LABEL_SOCKET_CLICK_POCKET_DEPTH_MM,
   LABEL_SOCKET_REMOVAL_HOLE_DIAMETER_MM,
+  LABEL_SOCKET_REMOVAL_HOLE_EDGE_MM,
   LABEL_SOCKET_REMOVAL_HOLE_SINK_MM,
   LABEL_SOCKET_RIB_HEIGHT_MM,
   LABEL_SOCKET_RIB_START_MM,
@@ -174,13 +175,21 @@ function assertRelievedPocketFloor(result: MeshData, label: string): void {
 }
 
 /**
- * Vertical faces on the recess radius around the back-anchored pocket's free
- * edge, at the pocket's X centre.
+ * Vertical faces on the recess radius around where the back-anchored tab's
+ * notch should sit: on the pocket's free edge, or pulled back into the pocket
+ * far enough to keep the pinned skin of shelf, at the pocket's X centre.
  */
 function removalHoleWall(
   result: MeshData,
   params: BinParams
-): { count: number; minZ: number; maxZ: number; shelfTopZ: number } {
+): {
+  count: number;
+  minY: number;
+  minZ: number;
+  maxZ: number;
+  shelfTopZ: number;
+  tabEdgeY: number;
+} {
   const { vertices, normals } = result;
   const clearanceMm = effectiveLabelSocketClearance(
     params.nozzleSizeMm,
@@ -188,10 +197,15 @@ function removalHoleWall(
   );
   const pocketD = LABEL_PLATE_HEIGHT_MM + clearanceMm;
   const innerD = params.depth * params.gridUnitMm - 0.5 - 2 * params.wallThickness;
-  const freeEdgeY = innerD / 2 - LABEL_SOCKET_WALL_MM - pocketD;
   const r = LABEL_SOCKET_REMOVAL_HOLE_DIAMETER_MM / 2;
+  const reach = Math.min(
+    LABEL_SOCKET_WALL_MM + pocketD,
+    params.label.depth - LABEL_SOCKET_REMOVAL_HOLE_EDGE_MM - r
+  );
+  const holeY = innerD / 2 - reach;
 
   let count = 0;
+  let minY = Infinity;
   let minZ = Infinity;
   let maxZ = -Infinity;
   let meshMaxZ = -Infinity;
@@ -199,17 +213,25 @@ function removalHoleWall(
     const z = vertices[i + 2];
     if (z > meshMaxZ) meshMaxZ = z;
     if (Math.abs(normals[i + 2]) > 0.1) continue;
-    if (Math.abs(Math.hypot(vertices[i], vertices[i + 1] - freeEdgeY) - r) > 0.03) continue;
+    if (Math.abs(Math.hypot(vertices[i], vertices[i + 1] - holeY) - r) > 0.03) continue;
     count++;
+    if (vertices[i + 1] < minY) minY = vertices[i + 1];
     if (z < minZ) minZ = z;
     if (z > maxZ) maxZ = z;
   }
-  return { count, minZ, maxZ, shelfTopZ: meshMaxZ - COPLANAR_OVERLAP };
+  return {
+    count,
+    minY,
+    minZ,
+    maxZ,
+    shelfTopZ: meshMaxZ - COPLANAR_OVERLAP,
+    tabEdgeY: innerD / 2 - params.label.depth,
+  };
 }
 
 /** The recess runs from the shelf top to exactly the pinned sink below the pocket floor. */
 function assertRemovalHole(result: MeshData, params: BinParams): void {
-  const { count, minZ, maxZ, shelfTopZ } = removalHoleWall(result, params);
+  const { count, minY, minZ, maxZ, shelfTopZ, tabEdgeY } = removalHoleWall(result, params);
   if (count < 16) {
     throw new Error(`removal hole: only ${count} wall vertices on the recess radius`);
   }
@@ -221,6 +243,12 @@ function assertRemovalHole(result: MeshData, params: BinParams): void {
   if (Math.abs(minZ - expectedBottom) > 0.05) {
     throw new Error(
       `removal hole: bottom at ${minZ.toFixed(2)}, expected ${expectedBottom.toFixed(2)}`
+    );
+  }
+  if (minY < tabEdgeY + LABEL_SOCKET_REMOVAL_HOLE_EDGE_MM - 0.05) {
+    throw new Error(
+      `removal hole: reaches ${(minY - tabEdgeY).toFixed(2)}mm from the shelf edge, ` +
+        `expected at least ${LABEL_SOCKET_REMOVAL_HOLE_EDGE_MM}mm`
     );
   }
 }
@@ -238,6 +266,21 @@ export const labelSockets: ScenarioCase[] = [
       assertSocketPocket(result, params, { plateWidthU: 1, label: '1x1-removal-hole' });
       assertRemovalHole(result, params);
     },
+  }),
+
+  // The widest pocket the settings allow (0.8mm nozzle, +0.5mm fit offset) on
+  // the shallowest socket tab: centred on the free edge, the notch would reach
+  // the shelf's edge, so it has to pull back into the pocket.
+  defineScenario('label sockets', '1×1 removal hole keeps its shelf at maximum clearance', {
+    params: {
+      width: 1,
+      depth: 1,
+      height: 5,
+      base: NO_LIP_BASE,
+      label: { ...SOCKET_LABEL, removalHole: true, plateFitOffset: 0.5 },
+      nozzleSizeMm: 0.8,
+    },
+    customAssert: (result, params) => assertRemovalHole(result, params),
   }),
 
   defineScenario('label sockets', '1×1 slide channel ignores removal hole', {

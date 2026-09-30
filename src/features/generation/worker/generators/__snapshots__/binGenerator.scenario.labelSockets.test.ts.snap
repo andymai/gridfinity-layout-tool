@@ -2,6 +2,8 @@
 
 exports[`label sockets > 1×1 lipped socket sinks by the stacking relief 1`] = `1600`;
 
+exports[`label sockets > 1×1 removal hole keeps its shelf at maximum clearance 1`] = `968`;
+
 exports[`label sockets > 1×1 slide channel ignores removal hole 1`] = `888`;
 
 exports[`label sockets > 1×1 socket hosts a 1U plate 1`] = `824`;

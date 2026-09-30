@@ -13,6 +13,7 @@ import {
   LABEL_SOCKET_LIP_THICKNESS_MM,
   LABEL_SOCKET_POCKET_DEPTH_MM,
   LABEL_SOCKET_REMOVAL_HOLE_DIAMETER_MM,
+  LABEL_SOCKET_REMOVAL_HOLE_EDGE_MM,
   LABEL_SOCKET_REMOVAL_HOLE_SINK_MM,
   LABEL_SOCKET_RIB_HEIGHT_MM,
   LABEL_SOCKET_RIB_PROTRUSION_MM,
@@ -93,10 +94,14 @@ export function applySocket(
     return tabSolid;
   }
   if (!ctx.removalHole || ctx.style !== 'clickIn') return socketed;
+  const reach = Math.min(
+    wall + pocketD,
+    ctx.tabDepth - LABEL_SOCKET_REMOVAL_HOLE_EDGE_MM - LABEL_SOCKET_REMOVAL_HOLE_DIAMETER_MM / 2
+  );
   try {
     return cutRemovalHole(scope, socketed, {
       centerX,
-      freeEdgeY: ctx.depthSign * (wall + pocketD),
+      centerY: ctx.depthSign * reach,
       topZ: ctx.tabHeight,
     });
   } catch {
@@ -105,14 +110,14 @@ export function applySocket(
 }
 
 /**
- * Tweezer recess straddling a click-in pocket's free edge, from above the
- * shelf top down to `LABEL_SOCKET_REMOVAL_HOLE_SINK_MM` below the pocket floor.
- * Cut after the ribs, so it also opens the rib on that wall.
+ * Tweezer recess at a click-in pocket's free edge, from above the shelf top
+ * down to `LABEL_SOCKET_REMOVAL_HOLE_SINK_MM` below the pocket floor. Cut after
+ * the ribs, so it also opens the rib on that wall.
  */
 function cutRemovalHole(
   scope: DisposalScope,
   solid: Shape3D,
-  ctx: { centerX: number; freeEdgeY: number; topZ: number }
+  ctx: { centerX: number; centerY: number; topZ: number }
 ): Shape3D {
   const bottomZ = ctx.topZ - LABEL_SOCKET_CLICK_POCKET_DEPTH_MM - LABEL_SOCKET_REMOVAL_HOLE_SINK_MM;
   const hole = scope.register(
@@ -122,7 +127,7 @@ function cutRemovalHole(
           ctx.topZ - bottomZ + COPLANAR_MARGIN
         )
       ),
-      [ctx.centerX, ctx.freeEdgeY, 0]
+      [ctx.centerX, ctx.centerY, 0]
     )
   );
   return scope.register(unwrap(cut(solid as ValidSolid, hole as ValidSolid)));
