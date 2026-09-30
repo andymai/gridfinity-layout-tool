@@ -53,7 +53,6 @@ const PARAMS: BinParams = {
   cellMask: T_MASK,
 };
 
-// Half-height of a vertical probe.
 const PROBE = 0.05;
 
 describe('split connectors on a custom-shaped bin', () => {
