@@ -94,20 +94,25 @@ describe('split connectors on a custom-shaped bin', () => {
     expect(worst, `material ${worst.toFixed(2)}mm outside the stem wall`).toBeLessThanOrEqual(0.05);
   }, 120000);
 
-  // A key's width in from the stem wall and a millimetre past the cut, so only
-  // the tongue can be there; the female piece carries its groove.
+  // A millimetre past the cut, measured in from each stem wall's face: the
+  // male carries its tongue a key's width in; the female keeps its outer skin,
+  // is grooved there, and has the pilaster behind the groove.
   it('keys both stem walls', () => {
     const z = (dim.baseOffsetZ + dim.wallTopZ) / 2;
     for (const side of [-1, 1] as const) {
-      const x = side * (stemHalfWidth - 1.75);
-      expect(
-        isSolidThrough(mesh(male), x, cutY + 1 - maleCenterY, z - PROBE, z + PROBE),
-        `tongue on the ${side < 0 ? 'left' : 'right'} stem wall`
-      ).toBe(true);
-      expect(
-        isSolidThrough(mesh(female), x, cutY + 1 - femaleCenterY, z - PROBE, z + PROBE),
-        `groove on the ${side < 0 ? 'left' : 'right'} stem wall`
-      ).toBe(false);
+      const wall = side < 0 ? 'left' : 'right';
+      const at = (piece: SplitPiece, centreY: number, inboard: number): boolean =>
+        isSolidThrough(
+          mesh(piece),
+          side * (stemHalfWidth - inboard),
+          cutY + 1 - centreY,
+          z - PROBE,
+          z + PROBE
+        );
+      expect(at(male, maleCenterY, 1.75), `tongue on the ${wall} stem wall`).toBe(true);
+      expect(at(female, femaleCenterY, 0.4), `outer skin on the ${wall} stem wall`).toBe(true);
+      expect(at(female, femaleCenterY, 1.75), `groove on the ${wall} stem wall`).toBe(false);
+      expect(at(female, femaleCenterY, 2.95), `pilaster on the ${wall} stem wall`).toBe(true);
     }
   }, 120000);
 

@@ -50,6 +50,15 @@ describe('maskCutFaces', () => {
     expect(face.pieceEdgeLength).toBeCloseTo(42);
   });
 
+  it('reads a cut nudged off the boundary as the boundary it was placed on', () => {
+    // The split moves an interior whole-grid cut 0.1mm so its boolean never
+    // meets the socket walls coplanar.
+    const [face] = maskCutFaces([yCut(21.1, 3)], T_MASK, PITCH);
+    expect(face.binEdgeMin).toBe(Number.NEGATIVE_INFINITY);
+    expect(face.binEdgeMax).toBe(Number.POSITIVE_INFINITY);
+    expect(face.pieceEdgeLength).toBeCloseTo(42);
+  });
+
   it('gives each separate run its own face', () => {
     const arm: (0 | 1)[] = [1, 1, 0, 0, 1, 1];
     const u = maskFromRows([arm, arm, arm, arm, BAR, BAR]);

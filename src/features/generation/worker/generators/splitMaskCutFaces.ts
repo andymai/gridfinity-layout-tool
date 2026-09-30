@@ -17,6 +17,15 @@ import type { CutFace } from './splitConnectorFrame';
 
 const EPSILON = 1e-6;
 
+/**
+ * How near a cell boundary a cut still counts as on it (mm). The split moves
+ * an interior whole-grid cut 0.1mm off its boundary so the boolean never meets
+ * the socket walls coplanar; the cells it separates are still the ones either
+ * side of that boundary. A mask cell is at least 21mm, so this cannot mistake
+ * a cut through a cell for one on its edge.
+ */
+const BOUNDARY_TOLERANCE_MM = 0.5;
+
 export function maskCutFaces(
   faces: readonly CutFace[],
   mask: CellMask,
@@ -45,7 +54,7 @@ function runFaces(face: CutFace, mask: CellMask, pitch: GridPitch): CutFace[] {
   // The cell lines either side of the cut: its two neighbours when it lies on
   // a cell boundary, the one cell it runs through otherwise.
   const t = (face.position - acrossOrigin) / acrossCellMm;
-  const onBoundary = Math.abs(t - Math.round(t)) < EPSILON;
+  const onBoundary = Math.abs(t - Math.round(t)) * acrossCellMm < BOUNDARY_TOLERANCE_MM;
   const before = onBoundary ? Math.round(t) - 1 : Math.floor(t);
   const after = onBoundary ? Math.round(t) : Math.floor(t);
   const meets = (i: number): boolean => filled(i, before) && filled(i, after);
