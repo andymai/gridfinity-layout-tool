@@ -5,9 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@vercel/node>undici': ^7.29.0
-  undici@>=6.0.0 <6.28.0: ^6.28.0
-  undici@>=7.0.0 <7.29.0: ^7.29.0
+  '@vercel/node>undici': ^7.29.1
+  undici@>=6.0.0 <6.28.1: ^6.28.1
+  undici@>=7.0.0 <7.29.1: ^7.29.1
   path-to-regexp@>=6.0.0 <6.3.0: 6.3.0
   '@rollup/plugin-replace>magic-string': 0.30.21
   '@surma/rollup-plugin-off-main-thread>magic-string': 0.30.21
@@ -15,7 +15,7 @@ overrides:
   '@apideck/better-ajv-errors>ajv': ^8.17.1
   fast-uri@>=3.0.0 <3.1.7: ^3.1.7
   sharp: ^0.35.0
-  serialize-javascript@>=7.0.0 <7.0.5: ^7.0.5
+  serialize-javascript@>=7.0.0 <7.1.2: ^7.1.2
   eslint-plugin-react-hooks>eslint: ^10.0.3
   eslint-plugin-jsx-a11y>eslint: ^10.0.3
   eslint-plugin-jsx-a11y>minimatch: ^10.2.5
@@ -26,7 +26,7 @@ overrides:
   '@vercel/static-config>ajv': ^8.18.0
   glob>minimatch: ^10.2.3
   flatted@>=3.0.0 <3.4.2: ^3.4.2
-  dompurify@>=3.0.0 <3.4.13: ^3.4.13
+  dompurify@>=3.0.0 <3.4.16: ^3.4.16
   '@babel/core@>=7.0.0 <7.29.6': ^7.29.6
   js-yaml@>=4.0.0 <4.3.1: ^4.3.1
   js-yaml@>=3.0.0 <3.15.1: ^3.15.1
@@ -36,7 +36,7 @@ overrides:
   eslint-plugin-i18next>lodash: ^4.18.1
   vitest-axe>lodash-es: ^4.18.1
   picomatch@>=4.0.0 <4.0.4: ^4.0.4
-  brace-expansion@>=5.0.0 <5.0.9: ^5.0.9
+  brace-expansion@>=5.0.0 <5.0.12: ^5.0.12
   tar@>=7.0.0 <7.5.21: ^7.5.21
   '@vercel/python-analysis>smol-toml': ^1.6.1
   esbuild: 0.28.1
@@ -3374,10 +3374,6 @@ packages:
     resolution: {integrity: sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==}
     engines: {node: 20 || >=22}
 
-  brace-expansion@5.0.9:
-    resolution: {integrity: sha512-ScQ4IuvIEF1TMlP7Zt+vjJ//9zlPb2SDcxWxM3bk8s6t6GGdJ7KO1dCcTidOPJKePW30LE/2cT7wCyPho9/Wxg==}
-    engines: {node: 20 || >=22}
-
   braces@3.0.3:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
     engines: {node: '>=8'}
@@ -3674,8 +3670,8 @@ packages:
   dom-accessibility-api@0.6.3:
     resolution: {integrity: sha512-7ZgogeTnjuHbo+ct10G9Ffp0mif17idi0IyWNVA/wcwcm7NPOD/WEHVP3n7n3MhXqxoIYm8d6MuZohYWIZ4T3w==}
 
-  dompurify@3.4.15:
-    resolution: {integrity: sha512-EUBjM+B+lkDE41iE82DDSCfkoPGfXx8IxFxPMjNzm/Uk4xDet77rTN9wqlxlVg71kK7XGuUMv6wUxJUwwv+Xyw==}
+  dompurify@3.4.16:
+    resolution: {integrity: sha512-sqo+pNp3qRhCIpbgRi1y8Tgk27Bo2Ry7w0dC1NBeNTdZChWjz9Xb/KOoZbRP/R6pQZ80Qw8YhXw13hWWBbMRnQ==}
 
   draco3d@1.5.7:
     resolution: {integrity: sha512-m6WCKt/erDXcw+70IJXnG7M3awwQPAsZvJGX5zY7beBqpELw6RDGkYVU0W43AFxye4pDZ5i2Lbyc/NNGqwjUVQ==}
@@ -5372,8 +5368,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  serialize-javascript@7.1.1:
-    resolution: {integrity: sha512-k3CMsaIvvdSwm8oLB4MXSl0wH2/cwlH7xGcnRd2DaeRmBkbzYmyT8j0tsX60DwD1eRwHTpNpH8ljKu9oUT1MeQ==}
+  serialize-javascript@7.1.2:
+    resolution: {integrity: sha512-GL2BWwVa6JydKO6l/ljVgjAZF4QJ3S7dWDWi53s5GZT8PJzD2fNxi67HANQGKAqPrwEpL5ba7gUBGi0Ls/sEoQ==}
     engines: {node: '>=20.0.0'}
 
   set-blocking@2.0.0:
@@ -5793,8 +5789,8 @@ packages:
   undici-types@8.9.0:
     resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
 
-  undici@6.28.0:
-    resolution: {integrity: sha512-LIY910g9TI13YS95lrMFrs8Rm/u/irgHeTWoKCoteeJ04CUJ92eEfj0rVn+7VKMPBpUPiUoBKfhNyLI23EE/KA==}
+  undici@6.28.1:
+    resolution: {integrity: sha512-zWpdTVD54H48CIybL0rWQ3ukpb9d23wM7eH5RtfdmeP70cWHNjtfo7P4vZX+5CoDcO53J4Pu5uXp7lNfjc6DRA==}
     engines: {node: '>=18.17'}
 
   undici@7.29.1:
@@ -7059,7 +7055,7 @@ snapshots:
       '@zip.js/zip.js': 2.8.34
       autolinker: 4.1.5
       bitmap-sdf: 1.0.4
-      dompurify: 3.4.15
+      dompurify: 3.4.16
       draco3d: 1.5.7
       earcut: 3.0.2
       grapheme-splitter: 1.0.4
@@ -8085,7 +8081,7 @@ snapshots:
 
   '@rollup/plugin-terser@1.0.0(rollup@4.63.4)':
     dependencies:
-      serialize-javascript: 7.1.1
+      serialize-javascript: 7.1.2
       smob: 1.6.2
       terser: 5.51.2
     optionalDependencies:
@@ -8689,7 +8685,7 @@ snapshots:
       is-buffer: 2.0.5
       is-node-process: 1.2.0
       throttleit: 2.1.0
-      undici: 6.28.0
+      undici: 6.28.1
 
   '@vercel/build-utils@14.10.1':
     dependencies:
@@ -9035,10 +9031,6 @@ snapshots:
     dependencies:
       balanced-match: 4.0.4
 
-  brace-expansion@5.0.9:
-    dependencies:
-      balanced-match: 4.0.4
-
   braces@3.0.3:
     dependencies:
       fill-range: 7.1.1
@@ -9309,7 +9301,7 @@ snapshots:
 
   dom-accessibility-api@0.6.3: {}
 
-  dompurify@3.4.15:
+  dompurify@3.4.16:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
@@ -10501,7 +10493,7 @@ snapshots:
 
   minimatch@10.2.5:
     dependencies:
-      brace-expansion: 5.0.9
+      brace-expansion: 5.0.12
 
   minimatch@10.2.6:
     dependencies:
@@ -10815,7 +10807,7 @@ snapshots:
       '@posthog/core': 1.55.2
       '@posthog/types': 1.412.4
       core-js: 3.50.0
-      dompurify: 3.4.15
+      dompurify: 3.4.16
       fflate: 0.4.9
       preact: 10.29.8
       query-selector-shadow-dom: 1.0.1
@@ -11134,7 +11126,7 @@ snapshots:
 
   semver@7.8.5: {}
 
-  serialize-javascript@7.1.1: {}
+  serialize-javascript@7.1.2: {}
 
   set-blocking@2.0.0: {}
 
@@ -11607,7 +11599,7 @@ snapshots:
 
   undici-types@8.9.0: {}
 
-  undici@6.28.0: {}
+  undici@6.28.1: {}
 
   undici@7.29.1: {}
 
