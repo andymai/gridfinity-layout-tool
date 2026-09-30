@@ -18,6 +18,7 @@ import { buildTopShape } from './boxBuilder';
 import { generateBin } from './binOrchestrator';
 import { getLastSolid, setLastSolid } from './shapeCache';
 import { applySplitConnectors, computeCutFaces } from './splitConnectorBuilder';
+import { maskCutFaces } from './splitMaskCutFaces';
 import type { BinGeometryContext } from './splitConnectorBuilder';
 import { buildLipSlotCuts } from './slotBuilder';
 import { buildWallCutoutCuts, interiorDividerTopZ } from './wallCutoutBuilder';
@@ -512,7 +513,7 @@ function splitSolidIntoPieces(
           connectorConfig &&
           (connectorConfig.enabled || connectorConfig.wallConnector === 'key')
         ) {
-          const cutFaces = computeCutFaces(
+          const rectFaces = computeCutFaces(
             col,
             row,
             adjustedCutPlanesX,
@@ -528,6 +529,9 @@ function splitSolidIntoPieces(
             centerX,
             centerY
           );
+          const cutFaces = isPartialMask(params.cellMask)
+            ? maskCutFaces(rectFaces, params.cellMask, { x: gridUnitMmX, y: gridUnitMmY })
+            : rectFaces;
           const geometryContext: BinGeometryContext = {
             floorZ,
             wallTopZ,
