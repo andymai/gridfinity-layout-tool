@@ -1,0 +1,82 @@
+public/schema/bin-design.schema.json
+  s_26d22a6aa62b53::t_22b43a733dfe4d 1464-1467
+src/i18n/locales/zh-CN.json
+  s_26d22a6aa62b53::t_e1557f74070d35 1721-1722
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_26d22a6aa62b53::t_fd9a8d9fc047f8 13,202-213
+src/i18n/locales/ko.json
+  s_26d22a6aa62b53::t_e1557f74070d35 1721-1722
+src/i18n/locales/it.json
+  s_26d22a6aa62b53::t_e1557f74070d35 1721-1722
+src/i18n/locales/de.json
+  s_26d22a6aa62b53::t_e1557f74070d35 1721-1722
+src/features/bin-designer/types/labelTabs.ts
+  s_26d22a6aa62b53::t_ad0c24d946415f 49-53
+src/i18n/locales/sv.json
+  s_26d22a6aa62b53::t_e1557f74070d35 1721-1722
+src/i18n/locales/es.json
+  s_26d22a6aa62b53::t_e1557f74070d35 1721-1722
+src/features/bin-designer/search/designerControlRegistry.ts
+  s_26d22a6aa62b53::t_fd9a8d9fc047f8 354
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.test.tsx
+  s_26d22a6aa62b53::t_de0222748e2436 53-73
+src/i18n/locales/nb.json
+  s_26d22a6aa62b53::t_e1557f74070d35 1721-1722
+src/i18n/locales/ja.json
+  s_26d22a6aa62b53::t_e1557f74070d35 1721-1722
+src/i18n/locales/uk.json
+  s_26d22a6aa62b53::t_e1557f74070d35 1721-1722
+src/i18n/locales/fr.json
+  s_26d22a6aa62b53::t_e1557f74070d35 1721-1722
+api/lib/designerValidation.test.ts
+  s_26d22a6aa62b53::t_1ab576213de986 834-853
+api/lib/designerTextValidation.ts
+  s_26d22a6aa62b53::t_18cc1803a51f15 425-427
+src/i18n/locales/pt-BR.json
+  s_26d22a6aa62b53::t_e1557f74070d35 1721-1722
+docs/schemas/bin-design.md
+  s_26d22a6aa62b53::t_22b43a733dfe4d 382-400
+src/shared/constants/labelPlates.ts
+  s_26d22a6aa62b53::t_ad0c24d946415f 247-255
+  s_26d22a6aa62b53::t_fa5c76e920ccdc 246
+src/i18n/locales/pl.json
+  s_26d22a6aa62b53::t_e1557f74070d35 1721-1722
+src/i18n/locales/en.ts
+  s_26d22a6aa62b53::t_e1557f74070d35 1880-1882
+src/i18n/locales/ka.json
+  s_26d22a6aa62b53::t_e1557f74070d35 1587-1588
+src/features/generation/worker/generators/scenarios/labelSockets.ts
+  s_26d22a6aa62b53::t_0d33757cec6574 19-20,176-227,229-256
+src/features/bin-designer/components/panel/LabelTabsSection/useLabelTabsSection.ts
+  s_26d22a6aa62b53::t_fd9a8d9fc047f8 216-222,841
+src/i18n/locales/cs.json
+  s_26d22a6aa62b53::t_e1557f74070d35 1721-1722
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_26d22a6aa62b53::t_ad0c24d946415f 552
+src/shared/utils/labelTabPlan.ts
+  s_26d22a6aa62b53::t_ad0c24d946415f 53-54,204-210
+src/features/generation/worker/generators/labelSocketCutter.ts
+  s_26d22a6aa62b53::t_ad0c24d946415f 3,15-16,48,76,78,95-128
+src/shared/schema/binDesignKeys.ts
+  s_26d22a6aa62b53::t_22b43a733dfe4d 255
+src/i18n/locales/nl.json
+  s_26d22a6aa62b53::t_e1557f74070d35 1721-1722
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.labelSockets.test.ts.snap
+  s_26d22a6aa62b53::t_85907856a23811 5-6,9-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0e5525689b11445fd1cc0487594bd4ffc83a187b",
+  "prompts": {},
+  "sessions": {
+    "s_26d22a6aa62b53": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ef810085-eb50-4342-9281-ad336a5921de",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
