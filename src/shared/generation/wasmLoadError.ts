@@ -53,7 +53,7 @@ export function isStaleAssetError(error: unknown): boolean {
 }
 
 /**
- * Every phrasing a browser uses for "I cannot compile this instruction".
+ * Every phrasing a browser uses for "I cannot run WebAssembly like this".
  *
  * The kernel is built with SIMD, so a browser without it rejects the binary
  * outright. JSC names the raw byte: 253 is 0xfd, the SIMD prefix, which is how
@@ -61,10 +61,16 @@ export function isStaleAssetError(error: unknown): boolean {
  * SpiderMonkey names the bytes in hex (`fd c`), and reaches it on current
  * Firefox too when the CPU lacks SSE4.1 or SIMD is switched off in about:config.
  */
-const UNSUPPORTED_INSTRUCTION_SIGNATURES = [
+const UNSUPPORTED_WASM_SIGNATURES = [
   'invalid opcode',
   'Wasm SIMD unsupported',
   'unrecognized opcode: fd',
+  // No `WebAssembly` global at all: the engine runs without a JIT and withholds
+  // it (V8's jitless mode, forced by a flag or policy; Safari Lockdown Mode).
+  // V8 and SpiderMonkey word the ReferenceError the same way; the second
+  // phrasing is JSC's.
+  'WebAssembly is not defined',
+  "Can't find variable: WebAssembly",
 ] as const;
 
 /**
@@ -78,7 +84,7 @@ const UNSUPPORTED_INSTRUCTION_SIGNATURES = [
 export function isUnsupportedWasmError(error: unknown): boolean {
   if (isStaleAssetError(error)) return false;
   const message = error instanceof Error ? error.message : String(error);
-  return UNSUPPORTED_INSTRUCTION_SIGNATURES.some((sig) => message.includes(sig));
+  return UNSUPPORTED_WASM_SIGNATURES.some((sig) => message.includes(sig));
 }
 
 /**

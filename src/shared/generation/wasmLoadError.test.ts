@@ -103,6 +103,15 @@ describe('isUnsupportedWasmError', () => {
       'Kernel init failed: Aborted(CompileError: wasm validation error: at offset 86165: ' +
         'unrecognized opcode: fd c). Build with -sASSERTIONS for more info.',
     ],
+    [
+      'V8 or SpiderMonkey with WebAssembly switched off, which removes the global',
+      'Kernel init failed: WebAssembly is not defined (first attempt: Kernel init failed: ' +
+        'WebAssembly is not defined)',
+    ],
+    [
+      'JavaScriptCore with WebAssembly switched off (Lockdown Mode)',
+      "Kernel init failed: Can't find variable: WebAssembly",
+    ],
   ])('flags %s', (_name, message) => {
     expect(isUnsupportedWasmError(new Error(message))).toBe(true);
   });

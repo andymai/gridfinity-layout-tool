@@ -25,7 +25,7 @@ describe('PreviewSkeleton', () => {
   it('shows the unsupported-browser message instead of a connection hint', () => {
     render(<PreviewSkeleton wasmStatus="unsupported" generationStatus="idle" />);
     expect(screen.getByText('Engine not supported')).toBeInTheDocument();
-    expect(screen.getByText(/too old to run the 3D engine/)).toBeInTheDocument();
+    expect(screen.getByText(/can't run the 3D engine/)).toBeInTheDocument();
   });
 
   it('withholds retry when the browser can never load the engine', () => {
