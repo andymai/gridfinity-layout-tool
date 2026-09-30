@@ -1,0 +1,19 @@
+pnpm-workspace.yaml
+  s_26d22a6aa62b53::t_6d398c0389280f 91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "159a5f1611cd97b740bc6f4f83661bcb226af80b",
+  "prompts": {},
+  "sessions": {
+    "s_26d22a6aa62b53": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ef810085-eb50-4342-9281-ad336a5921de",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
