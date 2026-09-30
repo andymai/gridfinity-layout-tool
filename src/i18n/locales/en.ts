@@ -4146,7 +4146,7 @@ const en: Record<string, string> = {
   'baseplate.wasmLoadFailed': 'Failed to load 3D engine',
   'baseplate.wasmUnsupported': 'Browser cannot run the 3D engine',
   'baseplate.wasmUnsupportedHint':
-    'This browser is too old to run the 3D engine. Update it, or open the tool in a recent Chrome, Edge, Firefox, or Safari.',
+    "This browser can't run the 3D engine. It may be out of date, or a security setting may have turned WebAssembly off. Update it or change that setting, or open the tool in a recent Chrome, Edge, Firefox, or Safari.",
   'baseplate.generationFailed': 'Baseplate generation failed',
   'baseplate.errorRetryHint':
     'Try refreshing the page. If the problem persists, try a different browser.',
@@ -5494,7 +5494,7 @@ const en: Record<string, string> = {
   'binDesigner.preview.engineLoadHelpText':
     'The WebAssembly engine could not be loaded. Check your connection and try again.',
   'binDesigner.preview.engineUnsupportedHelpText':
-    'This browser is too old to run the 3D engine. Update it, or open the tool in a recent Chrome, Edge, Firefox, or Safari.',
+    "This browser can't run the 3D engine. It may be out of date, or a security setting may have turned WebAssembly off. Update it or change that setting, or open the tool in a recent Chrome, Edge, Firefox, or Safari.",
   'binDesigner.preview.generationHelpText':
     'Mesh generation encountered an error. Try adjusting parameters or retry.',
   'binDesigner.preview.generationHelpTextWithError': '{error}. Try adjusting parameters or retry.',
