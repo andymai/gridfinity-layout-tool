@@ -1,7 +1,7 @@
 /**
  * Style of alignment connector added to the exterior side walls at each cut.
  * `'none'` disables wall connectors; `'key'` is the press-together alignment key.
- * Extend this union (and the dispatcher in `splitConnectorBuilder.ts`) to add
+ * Extend this union (and the dispatcher in `splitWallKey.ts`) to add
  * new wall connector types — the dispatcher's exhaustive switch will flag every
  * place that must handle the new member.
  */

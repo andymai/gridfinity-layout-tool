@@ -14,8 +14,13 @@ import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constant
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 import type { WallTaperProfile } from '@/core/types';
 import type { MeshData } from '@/features/generation/bridge/types';
-import { initBrepjs, getGenerateSplitPreview } from './__kernel-tests__/wasmInit';
-import { isSolidThrough } from './__kernel-tests__/meshAssertions';
+import {
+  initBrepjs,
+  getExportSplitBin,
+  getGenerateSplitPreview,
+} from './__kernel-tests__/wasmInit';
+import { analyze as analyzeExportedStl } from './__kernel-tests__/exportIntegrityRunner';
+import { assertStructurallyValid, isSolidThrough } from './__kernel-tests__/meshAssertions';
 import { deriveDimensions } from './pipeline/context';
 import { resolveOverhang, taperInsetAt } from './overhang';
 
@@ -146,5 +151,42 @@ describe.each<WallTaperProfile>(['chamfer', 'fillet'])(
       expect(solidAt(1.75)).toBe(false);
       expect(solidAt(2.95)).toBe(true);
     }, 120000);
+
+    // Just under the floor top, where the male lap overhangs the cut and the
+    // female floor is ramped away to receive it, centred on the floor's own span.
+    it('laps the floor across the cut at the narrowed floor centre', () => {
+      const z = dim.baseOffsetZ + PARAMS.wallThickness * 0.6;
+      const floorCentreLocalX = LEFT_TAPER / 2;
+      const at = (piece: SplitPiece, worldY: number, centreY: number): boolean =>
+        isSolidThrough(
+          { ...piece, triangleCount: piece.indices.length / 3 },
+          floorCentreLocalX,
+          worldY - centreY,
+          z - PROBE,
+          z + PROBE
+        );
+      expect(at(male, 0.3, pieceCenterY)).toBe(true);
+      expect(at(female, 0.3, -pieceCenterY)).toBe(false);
+      expect(at(female, 1.5, -pieceCenterY)).toBe(true);
+    }, 120000);
+
+    it('builds valid pieces that export watertight', async () => {
+      for (const [i, piece] of pieces.entries()) {
+        assertStructurallyValid(
+          { ...piece, triangleCount: piece.indices.length / 3 },
+          `${profile} preview piece ${i}`
+        );
+      }
+      const exported = await getExportSplitBin()(PARAMS, [], [0], 0.01, 5, KEYS);
+      expect(exported.pieces).toHaveLength(2);
+      for (const [i, piece] of exported.pieces.entries()) {
+        const label = `${profile} export piece ${i}`;
+        const stats = analyzeExportedStl(piece.data, label);
+        expect(stats.minFinite, `${label}: finite coordinates`).toBe(true);
+        expect(stats.boundaryEdges, `${label}: boundary edges`).toBe(0);
+        expect(stats.nonManifoldEdges, `${label}: non-manifold edges`).toBe(0);
+        expect(stats.volume, `${label}: volume`).toBeGreaterThan(0);
+      }
+    }, 240000);
   }
 );
