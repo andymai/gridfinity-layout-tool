@@ -268,7 +268,6 @@ export const labelSockets: ScenarioCase[] = [
     },
   }),
 
-  // Half-grid widths are a recurring generator failure mode.
   defineScenario('label sockets', '1.5×1 socket with removal hole', {
     params: {
       width: 1.5,
