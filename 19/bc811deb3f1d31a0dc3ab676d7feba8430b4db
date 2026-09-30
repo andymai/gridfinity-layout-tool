@@ -1,0 +1,68 @@
+src/features/bin-designer/constants/defaults.ts
+  s_26d22a6aa62b53::t_7826083e55b316 299
+src/i18n/locales/pl.json
+  s_26d22a6aa62b53::t_69dc292184f99c 1533
+src/features/bin-designer/types/designerState.ts
+  s_26d22a6aa62b53::t_7826083e55b316 431
+src/i18n/locales/ko.json
+  s_26d22a6aa62b53::t_69dc292184f99c 1533
+src/i18n/locales/cs.json
+  s_26d22a6aa62b53::t_69dc292184f99c 1533
+src/i18n/locales/pt-BR.json
+  s_26d22a6aa62b53::t_69dc292184f99c 1533
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_26d22a6aa62b53::t_7826083e55b316 202-207
+src/features/bin-designer/components/preview/LabelPlateMeshes/LabelPlateMeshes.test.tsx
+  s_26d22a6aa62b53::t_481262342e5d76 56-64
+src/i18n/locales/nb.json
+  s_26d22a6aa62b53::t_69dc292184f99c 1533
+src/i18n/locales/zh-CN.json
+  s_26d22a6aa62b53::t_69dc292184f99c 1533
+src/i18n/locales/de.json
+  s_26d22a6aa62b53::t_69dc292184f99c 1533
+src/i18n/locales/sv.json
+  s_26d22a6aa62b53::t_69dc292184f99c 1533
+src/i18n/locales/ka.json
+  s_26d22a6aa62b53::t_69dc292184f99c 1655
+src/features/bin-designer/components/preview/LabelPlateMeshes/LabelPlateMeshes.tsx
+  s_26d22a6aa62b53::t_7826083e55b316 78,81,106
+src/features/bin-designer/components/panel/LabelTabsSection/LabelPlatesControls.test.tsx
+  s_26d22a6aa62b53::t_481262342e5d76 2,44-48,50-55
+  s_26d22a6aa62b53::t_69dc292184f99c 49
+  s_26d22a6aa62b53::t_fc73dcb302fe48 56-57
+src/i18n/locales/it.json
+  s_26d22a6aa62b53::t_69dc292184f99c 1533
+src/i18n/locales/ja.json
+  s_26d22a6aa62b53::t_69dc292184f99c 1533
+src/i18n/locales/nl.json
+  s_26d22a6aa62b53::t_69dc292184f99c 1533
+src/i18n/locales/uk.json
+  s_26d22a6aa62b53::t_69dc292184f99c 1533
+src/features/bin-designer/types/uiState.ts
+  s_26d22a6aa62b53::t_7826083e55b316 135-136
+src/i18n/locales/en.ts
+  s_26d22a6aa62b53::t_69dc292184f99c 1951
+src/i18n/locales/es.json
+  s_26d22a6aa62b53::t_69dc292184f99c 1533
+src/i18n/locales/fr.json
+  s_26d22a6aa62b53::t_69dc292184f99c 1533
+src/features/bin-designer/components/panel/LabelTabsSection/LabelPlatesControls.tsx
+  s_26d22a6aa62b53::t_770a2860eac46a 145-150
+  s_26d22a6aa62b53::t_7826083e55b316 14,18,51-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "19bc811deb3f1d31a0dc3ab676d7feba8430b4db",
+  "prompts": {},
+  "sessions": {
+    "s_26d22a6aa62b53": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ef810085-eb50-4342-9281-ad336a5921de",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
