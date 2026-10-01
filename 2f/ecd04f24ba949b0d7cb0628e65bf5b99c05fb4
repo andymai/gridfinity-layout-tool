@@ -1,0 +1,19 @@
+src/features/bin-designer/components/PreviewCanvas/ColorToolOverlay.tsx
+  s_fe2c0a02f9f14e::t_86e08b3f517ab8 78-84,101-107,143,146-149,166-172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "2fecd04f24ba949b0d7cb0628e65bf5b99c05fb4",
+  "prompts": {},
+  "sessions": {
+    "s_fe2c0a02f9f14e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5b1cfa44-fa06-49f6-b48e-d3066914d5be",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
