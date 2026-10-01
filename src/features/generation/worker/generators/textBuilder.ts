@@ -28,6 +28,7 @@ import {
   compound,
   getFont,
   intersect,
+  isEmpty,
   unwrap,
   type Shape3D,
   type DisposalScope,
@@ -176,14 +177,18 @@ export function fitTextSize(options: TextHostOptions): number | null {
  * A flat prism trimmed to the material its host still has. A host that cuts
  * openings before it writes (the lid's through-holes) would otherwise get back
  * the part of an opening the caption crosses, since the prism is fused.
- * Returns null when nothing of the caption is left to place.
+ * Returns null when nothing of the caption is left to place. A clip the kernel
+ * cannot compute hands back the whole prism: refilling a sliver of a hole is a
+ * smaller loss than a caption that silently disappears.
  */
 export function clipFlatPrism(scope: DisposalScope, prism: Shape3D, host: Shape3D): Shape3D | null {
+  let clipped: Shape3D;
   try {
-    return scope.register(unwrap(intersect(prism as ValidSolid, host as ValidSolid)));
+    clipped = scope.register(unwrap(intersect(prism as ValidSolid, host as ValidSolid)));
   } catch {
-    return null;
+    return prism;
   }
+  return isEmpty(clipped) ? null : clipped;
 }
 
 /**

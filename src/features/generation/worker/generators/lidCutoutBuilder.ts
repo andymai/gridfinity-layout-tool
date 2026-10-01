@@ -194,7 +194,7 @@ export function applyLidCutouts(
   if (!cutouts) return body;
 
   const tools = buildTools(cutouts);
-  if (tools.length === 0) return applyLidTextElements(scope, body, cutouts, originToTag);
+  if (tools.length === 0) return applyLidTextElements(scope, body, cutouts, originToTag, false);
 
   let boundary: Shape3D;
   try {
@@ -233,12 +233,12 @@ export function applyLidCutouts(
     }
   }
 
-  if (holes.length === 0) return applyLidTextElements(scope, body, cutouts, originToTag);
+  if (holes.length === 0) return applyLidTextElements(scope, body, cutouts, originToTag, false);
   scope.register(body);
   const cutBody = unwrap(cutAll(body as ValidSolid, holes as ValidSolid[]));
   // Text AFTER the holes, so a caption engraves into what survives them —
   // the same ordering the bin top and `applyLidText` follow.
-  return applyLidTextElements(scope, cutBody, cutouts, originToTag);
+  return applyLidTextElements(scope, cutBody, cutouts, originToTag, true);
 }
 
 /**
@@ -255,7 +255,8 @@ function applyLidTextElements(
   scope: DisposalScope,
   body: Shape3D,
   cutouts: LidCutoutInputs,
-  originToTag?: Map<number, number>
+  originToTag: Map<number, number> | undefined,
+  holesCut: boolean
 ): Shape3D {
   const texts = cutouts.shapes.filter(
     (c) => c.shape === 'text' && c.hidden !== true && isCutoutEngraveMode(c)
@@ -311,7 +312,8 @@ function applyLidTextElements(
       });
       if (!result) continue;
       // The holes are already cut, so a flat caption must not refill them.
-      const solid = mode === 'flat' ? clipFlatPrism(scope, result.solid, current) : result.solid;
+      const solid =
+        mode === 'flat' && holesCut ? clipFlatPrism(scope, result.solid, current) : result.solid;
       if (!solid) continue;
       if (originToTag) {
         collectOrigins(solid, FeatureTag.TEXT, originToTag);

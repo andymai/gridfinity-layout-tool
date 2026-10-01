@@ -1383,6 +1383,42 @@ describe('lid generation and export scenarios', () => {
           expect(Math.abs(meshVolume(flat) - before)).toBeLessThan(before * 1e-5);
         }
       );
+
+      it('drops a flat caption that sits wholly over a hole, and the lid still builds', async () => {
+        const { generateLid } = await import('./lidOrchestrator');
+        const bigHole = {
+          id: 'h1',
+          shape: 'rectangle' as const,
+          x: 15,
+          y: 15,
+          width: 50,
+          depth: 50,
+          cutDepth: 5,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: null,
+        };
+        const base = { ...BASE, textDefaults: FLAT };
+        const holed = generateLid(makeParams({ cutouts: [bigHole] }, base));
+        const captioned = generateLid(
+          makeParams(
+            { cutouts: [bigHole] },
+            {
+              ...base,
+              surfaceText: {
+                lidText: 'II',
+                style: { anchor: 'center', sizeMode: 'fixed', fixedSize: 6 },
+              },
+            }
+          )
+        );
+        expect(holed).not.toBeNull();
+        expect(captioned).not.toBeNull();
+        if (!holed || !captioned) return;
+        expect(textZs(captioned)).toHaveLength(0);
+        expect(captioned.triangleCount).toBe(holed.triangleCount);
+      });
     });
 
     it('engraved text changes the mesh without raising the top', async () => {

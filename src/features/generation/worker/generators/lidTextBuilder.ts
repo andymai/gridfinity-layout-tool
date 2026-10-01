@@ -129,9 +129,11 @@ export function applyLidText(
     hostThickness,
   });
   if (!result) return body;
-  // The holes are already cut, so a flat caption must not refill them.
+  // Any holes are already cut, so a flat caption must not refill them.
   const solid =
-    text.style.mode === 'flat' ? clipFlatPrism(scope, result.solid, body) : result.solid;
+    text.style.mode === 'flat' && inputs.cutouts
+      ? clipFlatPrism(scope, result.solid, body)
+      : result.solid;
   if (!solid) return body;
 
   // Tag before the boolean so glyph faces surface as TEXT in the mesh face
