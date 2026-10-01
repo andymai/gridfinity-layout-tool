@@ -1,0 +1,40 @@
+src/features/bin-designer/components/panel/ColorsSection/ColorsActionsMenu.tsx
+  s_fe2c0a02f9f14e::t_23d5654678f3f4 292-295,303
+src/features/bin-designer/types/featureColors.test.ts
+  s_fe2c0a02f9f14e::t_cdd7a159fea532 414-447
+src/features/bin-designer/types/featureColors.ts
+  s_fe2c0a02f9f14e::t_06c0520efbe84f 577,670,720,723,726-728,758-761
+src/features/bin-designer/components/panel/shared/TextColorControl.test.tsx
+  s_fe2c0a02f9f14e::t_46d819052fcde3 7,11,37-41
+  s_fe2c0a02f9f14e::t_11c630e93c5120 42
+src/features/bin-designer/hooks/usePreviewColor.ts
+  s_fe2c0a02f9f14e::t_23d5654678f3f4 11,87-89
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.test.tsx
+  s_fe2c0a02f9f14e::t_cdd7a159fea532 55
+src/features/bin-designer/components/panel/shared/FlatTextClashWarning.test.tsx
+  s_fe2c0a02f9f14e::t_cdd7a159fea532 28
+src/features/generation/worker/generators/labelPlateBuilder.test.ts
+  s_fe2c0a02f9f14e::t_cdd7a159fea532 354,359-368
+src/features/bin-designer/components/panel/shared/TextColorControl.tsx
+  s_fe2c0a02f9f14e::t_46d819052fcde3 31-32,43
+src/features/bin-designer/utils/flatTextContrast.ts
+  s_fe2c0a02f9f14e::t_06c0520efbe84f 33-34,39-40,61
+src/features/bin-designer/utils/flatTextContrast.test.ts
+  s_fe2c0a02f9f14e::t_849abe85bf66f7 86-99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5e6a011e48ecd2b34e7b28c85a3e5bf17cde988e",
+  "prompts": {},
+  "sessions": {
+    "s_fe2c0a02f9f14e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5b1cfa44-fa06-49f6-b48e-d3066914d5be",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
