@@ -85,6 +85,24 @@ describe('ColorsSection', () => {
     expect(screen.queryByText('Label Tab')).toBeNull();
   });
 
+  it('offers the Text color for wall text on a bin with no label tabs', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: false },
+        featureColors: colors(),
+      },
+    });
+    const { unmount } = render(<ColorsSection />);
+    expect(screen.queryByText('Text')).toBeNull();
+    unmount();
+
+    const { params } = useDesignerStore.getState();
+    useDesignerStore.setState({ params: { ...params, surfaceText: { walls: { front: 'AB' } } } });
+    render(<ColorsSection />);
+    expect(screen.getByText('Text')).toBeDefined();
+  });
+
   it('hides the Interior group entirely when neither scoop nor dividers are active', () => {
     render(<ColorsSection />);
     // No scoop, no multi-cell compartments → no Interior section

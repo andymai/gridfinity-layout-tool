@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { CutoutEngraveLabelControls } from './CutoutEngraveLabelControls';
 import { useDesignerStore } from '../../store';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
@@ -25,13 +25,14 @@ function makeCutout(overrides: Partial<Cutout> = {}): Cutout {
   };
 }
 
-function renderControls(cutout: Cutout, onUpdate = vi.fn()) {
+function renderControls(cutout: Cutout, onUpdate = vi.fn(), monochromeHost = false) {
   render(
     <CutoutEngraveLabelControls
       cutout={cutout}
       binWidth={100}
       binDepth={100}
       disabled={false}
+      monochromeHost={monochromeHost}
       onUpdate={onUpdate}
     />
   );
@@ -69,6 +70,52 @@ describe('CutoutEngraveLabelControls relief depth', () => {
     expect(
       screen.getByRole('spinbutton', { name: 'binDesigner.cutoutTextDepth.emboss' })
     ).toHaveValue('0.4');
+  });
+
+  it('offers flat to a multi-color design and drops the depth field for it', () => {
+    renderControls(makeCutout());
+    expect(
+      screen.queryByRole('button', { name: 'binDesigner.textMode.flat' })
+    ).not.toBeInTheDocument();
+    cleanup();
+
+    const { params } = useDesignerStore.getState();
+    useDesignerStore.setState({
+      params: { ...params, featureColors: { ...params.featureColors, enabled: true } },
+    });
+    renderControls(makeCutout());
+    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.textMode.flat' }));
+
+    expect(useDesignerStore.getState().params.textDefaults.mode).toBe('flat');
+    expect(
+      screen.queryByRole('spinbutton', { name: /binDesigner\.cutoutTextDepth/ })
+    ).not.toBeInTheDocument();
+    expect(screen.getByText('binDesigner.textMode.flatHint')).toBeInTheDocument();
+  });
+
+  it('shows flat as the engraving a one-color lid host gets', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        textDefaults: { ...DEFAULT_BIN_PARAMS.textDefaults, mode: 'flat' },
+        featureColors: { ...DEFAULT_BIN_PARAMS.featureColors, enabled: true },
+      },
+    });
+    renderControls(makeCutout({ shape: 'text' }), vi.fn(), true);
+
+    expect(
+      screen.queryByRole('button', { name: 'binDesigner.textMode.flat' })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'binDesigner.textMode.engrave' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(
+      screen.getByRole('spinbutton', { name: 'binDesigner.cutoutTextDepth.engrave' })
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.textMode.engrave' }));
+    expect(useDesignerStore.getState().params.textDefaults.mode).toBe('flat');
   });
 
   it('keeps the depth field off the socket branch, which engraves nothing', () => {

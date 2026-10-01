@@ -28,6 +28,7 @@ import {
   hasLidGrip,
   hasBinLipDip,
   resolveTextStyle,
+  singleColorTextMode,
 } from '@/shared/types/bin';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
@@ -445,14 +446,13 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   if (lidTextValue !== '' && !stackGridOwnsTop && !cellMask) {
     // Three layers: the design defaults, the style shared by every surface,
     // then the lid's own refinement.
-    text = {
-      value: lidTextValue,
-      style: resolveTextStyle(
-        params.textDefaults,
-        params.surfaceText?.style,
-        params.surfaceText?.lidStyle
-      ),
-    };
+    const style = resolveTextStyle(
+      params.textDefaults,
+      params.surfaceText?.style,
+      params.surfaceText?.lidStyle
+    );
+    // The lid exports as a single colour zone, where flat text cannot show.
+    text = { value: lidTextValue, style: { ...style, mode: singleColorTextMode(style.mode) } };
   }
 
   const cutouts = resolveLidCutoutInputs(params);

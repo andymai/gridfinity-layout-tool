@@ -14,6 +14,7 @@ import {
   TEXT_CASES,
   TEXT_CUT_PROFILES,
   TEXT_FONT_FAMILIES,
+  TEXT_MODES,
   WALL_ALIGN_TO_ANCHOR,
   normalizeTextInput,
   WALL_TEXT_ALIGNS,
@@ -33,7 +34,7 @@ import { clampNumber, isObj } from './paramMigrationHelpers';
  */
 const MIGRATE_TEXT_FONTS: readonly TextFontFamily[] = TEXT_FONT_FAMILIES;
 
-const MIGRATE_TEXT_MODES: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'];
+const MIGRATE_TEXT_MODES: readonly TextMode[] = TEXT_MODES;
 
 function migrateTextStyleOverride(raw: unknown): TextStyleOverride | undefined {
   if (!isObj(raw)) return undefined;

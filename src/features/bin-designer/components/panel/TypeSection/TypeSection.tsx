@@ -43,7 +43,8 @@ import { resolveEffectiveFont } from '@/shared/utils/typePlan';
 import { useTypeMeasurer } from '@/features/bin-designer/hooks/useTypeMeasurer';
 import { AnchorPicker } from '../../controls/AnchorPicker';
 import { TypeSpecimen } from '../../controls/TypeSpecimen';
-import { Hint, SubHeader } from '../shared';
+import { FlatTextHint, Hint, SubHeader } from '../shared';
+import { textModeChoices } from '@/features/bin-designer/utils/textModeChoices';
 import { useTypeSection, TYPE_BOUNDS } from './useTypeSection';
 
 const TEXT_MODE_OPTIONS: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'] as const;
@@ -250,12 +251,15 @@ export function TypeSection() {
               size="sm"
               value={style.mode}
               onChange={handlers.setMode}
-              options={TEXT_MODE_OPTIONS.map((mode) => ({
-                value: mode,
-                label: t(`binDesigner.textMode.${mode}`),
-              }))}
+              options={textModeChoices(TEXT_MODE_OPTIONS, state.multiColor, style.mode).map(
+                (mode) => ({
+                  value: mode,
+                  label: t(`binDesigner.textMode.${mode}`),
+                })
+              )}
             />
           </Field>
+          {style.mode === 'flat' && <FlatTextHint />}
           <div className="space-y-1">
             <span className="block text-label text-content-tertiary">
               {t('binDesigner.type.tracking')}

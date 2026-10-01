@@ -84,4 +84,33 @@ describe('computeWallTextLayouts', () => {
     );
     expect(layout.mode).toBe('emboss');
   });
+
+  it('keeps flat text above a tapered flared band, where the face leaves the rim plane', () => {
+    const BAND = 12;
+    const tapered = (mode: 'flat' | 'engrave'): Partial<BinParams> => ({
+      overhang: {
+        left: 0,
+        right: 0,
+        front: 3,
+        back: 0,
+        feet: false,
+        taper: {
+          enabled: true,
+          profile: 'chamfer',
+          bandHeight: BAND,
+          left: 0,
+          right: 0,
+          front: 3,
+          back: 0,
+        },
+      },
+      surfaceText: { walls: { front: 'CABLES' }, style: { mode, anchor: 'bottom' } },
+    });
+    const inkBottom = (l: { centerZ: number; textH: number }): number => l.centerZ - l.textH / 2;
+
+    const [flat] = computeWallTextLayouts(params(tapered('flat')), DIMS, measurer);
+    expect(inkBottom(flat)).toBeGreaterThanOrEqual(BAND);
+    const [engraved] = computeWallTextLayouts(params(tapered('engrave')), DIMS, measurer);
+    expect(inkBottom(engraved)).toBeLessThan(BAND);
+  });
 });

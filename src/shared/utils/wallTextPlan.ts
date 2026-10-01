@@ -21,6 +21,7 @@
 import type { BinParams, TextMode, TextStyleDefaults, WallTextSide } from '@/shared/types/bin';
 import { WALL_TEXT_SIDES, resolveTextStyle } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { resolveOverhang } from '@/shared/utils/overhang';
 import {
   computeCutoutCenter,
   resolveCutoutDrop,
@@ -283,8 +284,23 @@ function chooseCandidate(
   });
 }
 
+/**
+ * Top of a tapered side's flared band. Below it the real face sits inboard of
+ * the rim plane every caption is built on, so flat text there would stand
+ * proud of the wall instead of lying in it.
+ */
+function taperBandTop(params: BinParams, side: WallTextSide, wallHeight: number): number {
+  const taper = resolveOverhang(params.overhang).taper;
+  return taper && taper[side] > 1e-6 ? Math.min(taper.bandHeight, wallHeight) : 0;
+}
+
 /** The band a wall's text may occupy, before obstacles. */
-function wallBounds(params: BinParams, dim: WallTextDims, wallSpan: number): Rect | null {
+function wallBounds(
+  params: BinParams,
+  dim: WallTextDims,
+  wallSpan: number,
+  floorZ: number
+): Rect | null {
   // Horizontal limit: the flat face ends where the outer corner rounding
   // begins, so the text bbox must stay inside span/2 + wt − cornerR.
   const uLimit = wallSpan / 2 + params.wallThickness - BOX_CORNER_RADIUS;
@@ -293,7 +309,7 @@ function wallBounds(params: BinParams, dim: WallTextDims, wallSpan: number): Rec
   const bounds: Rect = {
     minU: -uLimit,
     maxU: uLimit,
-    minZ: params.wallThickness + BOTTOM_SOLID_SKIRT,
+    minZ: Math.max(params.wallThickness + BOTTOM_SOLID_SKIRT, floorZ),
     maxZ: dim.wallHeight - TOP_KEEP_OUT,
   };
   return bounds.maxU > bounds.minU && bounds.maxZ > bounds.minZ ? bounds : null;
@@ -324,7 +340,8 @@ function collectSides(params: BinParams, dim: WallTextDims): SideInput[] {
     if (depth === null) continue;
 
     const wallSpan = side === 'front' || side === 'back' ? dim.innerW : dim.innerD;
-    const bounds = wallBounds(params, dim, wallSpan);
+    const floorZ = style.mode === 'flat' ? taperBandTop(params, side, dim.wallHeight) : 0;
+    const bounds = wallBounds(params, dim, wallSpan, floorZ);
     if (!bounds) continue;
 
     const obstacles = obstacleRects(

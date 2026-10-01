@@ -76,6 +76,13 @@ export function ColorsSection() {
     cells,
     lipCorners,
     lipBands,
+    labelMode,
+    labelSpan,
+    rowTexts,
+    compartmentTexts,
+    cutouts,
+    surfaceText,
+    cellMask,
     binHeight,
     heightUnitMm,
     extraWallHeightMm,
@@ -95,6 +102,13 @@ export function ColorsSection() {
       extraWallHeightMm: s.params.extraWallHeightMm,
       lipCorners: s.params.featureColors.lip.corners,
       lipBands: s.params.featureColors.lip.bands,
+      labelMode: s.params.label.mode,
+      labelSpan: s.params.label.span,
+      rowTexts: s.params.label.rowTexts,
+      compartmentTexts: s.params.compartments.compartmentTexts,
+      cutouts: s.params.cutouts,
+      surfaceText: s.params.surfaceText,
+      cellMask: s.params.cellMask,
       hoveredColorZone: s.ui.hoveredColorZone,
       colorTool: s.ui.colorTool,
     }))
@@ -122,10 +136,13 @@ export function ColorsSection() {
     () =>
       computeActiveZones({
         base: { style: baseStyle, stackingLip },
-        label: { enabled: labelEnabled },
+        label: { enabled: labelEnabled, mode: labelMode, span: labelSpan, rowTexts },
         scoop: { enabled: scoopEnabled },
         lid: { enabled: lidEnabled },
-        compartments: { cells },
+        compartments: { cells, compartmentTexts },
+        cutouts,
+        surfaceText,
+        cellMask,
         featureColors: {
           lip: { corners: lipCorners, bands: lipBands },
           topAccent: { enabled: topAccent.enabled, heightMm: topAccent.heightMm },
@@ -138,9 +155,16 @@ export function ColorsSection() {
       baseStyle,
       stackingLip,
       labelEnabled,
+      labelMode,
+      labelSpan,
+      rowTexts,
       scoopEnabled,
       lidEnabled,
       cells,
+      compartmentTexts,
+      cutouts,
+      surfaceText,
+      cellMask,
       lipCorners,
       lipBands,
       topAccent.enabled,
@@ -154,6 +178,7 @@ export function ColorsSection() {
   const hasScoop = activeZones.has('scoop');
   const hasDividers = activeZones.has('dividers');
   const hasLid = activeZones.has('lid');
+  const hasText = activeZones.has('text');
   const hasLidLip = activeZones.has(lidLipCellZone('frontLeft', 0));
 
   const featureColors: FeatureColorConfig = rawColors;
@@ -217,6 +242,7 @@ export function ColorsSection() {
     if (hasScoop) map.set('scoop', featureColors.scoop);
     if (hasDividers) map.set('dividers', featureColors.dividers);
     if (hasLid) map.set('lid', featureColors.lid);
+    if (hasText) map.set('text', featureColors.text);
     // Key off `enabled` (not hasTopAccent, which also requires heightMm > 0) so
     // this matches when the color row actually renders — otherwise an enabled
     // 0mm band shows a row whose otherColors filtering can't find its own color.
@@ -231,6 +257,7 @@ export function ColorsSection() {
     hasScoop,
     hasDividers,
     hasLid,
+    hasText,
     topAccent.enabled,
     topAccent.color,
     bottomAccent,
@@ -242,7 +269,7 @@ export function ColorsSection() {
   // auto-opens on each tick change so a newly-enabled feature is never
   // trapped behind a stale collapsed header.
   const interiorCount = (hasScoop ? 1 : 0) + (hasDividers ? 1 : 0);
-  const addonsCount = (hasLabelTabs ? 1 : 0) + (hasLid ? 1 : 0);
+  const addonsCount = (hasLabelTabs ? 1 : 0) + (hasText ? 1 : 0) + (hasLid ? 1 : 0);
   const [interiorGrowthTick, setInteriorGrowthTick] = useState(0);
   const [addonsGrowthTick, setAddonsGrowthTick] = useState(0);
   const prevInteriorCountRef = useRef(interiorCount);
@@ -463,7 +490,7 @@ export function ColorsSection() {
 
             <ColorGroup
               title={t('binDesigner.colors.group.addons')}
-              visible={hasLabelTabs || hasLid}
+              visible={hasLabelTabs || hasText || hasLid}
               growthTick={addonsGrowthTick}
             >
               {hasLabelTabs &&
@@ -473,6 +500,14 @@ export function ColorsSection() {
                   featureColors.labelTab,
                   DEFAULT_FEATURE_COLOR_CONFIG.labelTab,
                   (hex) => updateFeatureColors({ labelTab: hex })
+                )}
+              {hasText &&
+                renderZone(
+                  'text',
+                  t('binDesigner.colors.text'),
+                  featureColors.text,
+                  DEFAULT_FEATURE_COLOR_CONFIG.text,
+                  (hex) => updateFeatureColors({ text: hex })
                 )}
               {hasLid &&
                 renderZone(

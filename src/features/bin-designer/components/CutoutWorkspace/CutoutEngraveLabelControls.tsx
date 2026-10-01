@@ -20,6 +20,7 @@ import type {
 import {
   CUTOUT_LABEL_MODES,
   TEXT_MAX_LENGTH,
+  singleColorTextMode,
   withExactLabelSize,
 } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -40,6 +41,8 @@ import { Button, Input, NumberField } from '@/design-system';
 import { CutoutSocketControls } from './CutoutSocketControls';
 import { useCutoutSocketPlan } from '@/features/bin-designer/hooks/useCutoutSocketPlan';
 import { TYPE_BOUNDS } from '../panel/TypeSection/useTypeSection';
+import { FlatTextHint } from '../panel/shared';
+import { textModeChoices } from '@/features/bin-designer/utils/textModeChoices';
 import { fitLabelFontSize } from '../panel/CutoutsSection/renderer/cutoutLabelFit';
 
 /** 3×3 anchor grid in reading order; the glyph hints the position, the
@@ -56,17 +59,20 @@ const ANCHOR_GRID: readonly { anchor: CutoutTextAnchor; glyph: string }[] = [
   { anchor: 'bottom-right', glyph: '↘' },
 ] as const;
 
-/** Cutout labels support recessed + raised text; through-cut would punch the floor. */
-const CUTOUT_TEXT_MODES: readonly Extract<TextMode, 'engrave' | 'emboss'>[] = [
-  'engrave',
-  'emboss',
-] as const;
+/**
+ * Cutout labels support recessed + raised text, plus flat for a multi-colour
+ * design; through-cut would punch the floor.
+ */
+type CutoutTextMode = Extract<TextMode, 'engrave' | 'emboss' | 'flat'>;
+const CUTOUT_TEXT_MODES: readonly CutoutTextMode[] = ['engrave', 'emboss'] as const;
 
 interface CutoutEngraveLabelControlsProps {
   readonly cutout: Cutout;
   readonly binWidth: number;
   readonly binDepth: number;
   readonly disabled: boolean;
+  /** The lid prints in one colour, so flat text engraves there and is not offered. */
+  readonly monochromeHost?: boolean;
   readonly onUpdate: (patch: Partial<Cutout>) => void;
 }
 
@@ -75,6 +81,7 @@ export function CutoutEngraveLabelControls({
   binWidth,
   binDepth,
   disabled,
+  monochromeHost = false,
   onUpdate,
 }: CutoutEngraveLabelControlsProps) {
   const t = useTranslation();
@@ -90,6 +97,7 @@ export function CutoutEngraveLabelControls({
   const textDefaults = useDesignerStore((s) => s.params.textDefaults);
   const setTextDefaults = useDesignerStore((s) => s.setTextDefaults);
   const setCutoutArray = useDesignerStore((s) => s.setCutoutArray);
+  const multiColor = useDesignerStore((s) => s.params.featureColors.enabled);
   const { mode: textMode, depth: textDepth } = textDefaults;
 
   // The size an explicit request would print at, mirrored from the engraver's
@@ -116,7 +124,9 @@ export function CutoutEngraveLabelControls({
   };
   // Through-cut isn't offered for cutouts; show it as engrave so the picker
   // reflects what the generator will actually produce.
-  const effectiveMode: 'engrave' | 'emboss' = textMode === 'emboss' ? 'emboss' : 'engrave';
+  const hostMode = monochromeHost ? singleColorTextMode(textMode) : textMode;
+  const effectiveMode: CutoutTextMode =
+    hostMode === 'emboss' || hostMode === 'flat' ? hostMode : 'engrave';
 
   // Only the engraved path keys off an empty caption: a blank plate is a
   // legitimate design (print the socket now, letter the plate later), so
@@ -191,35 +201,45 @@ export function CutoutEngraveLabelControls({
       {!isSocket && (
         <>
           <div role="group" aria-label={t('binDesigner.textMode')} className={SEGMENT_GROUP_CLASS}>
-            {CUTOUT_TEXT_MODES.map((opt) => (
-              <Button
-                key={opt}
-                type="button"
-                variant="ghost"
-                disabled={disabled}
-                onClick={() => setTextDefaults({ mode: opt })}
-                aria-pressed={effectiveMode === opt}
-                className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(effectiveMode === opt)}`}
-              >
-                {t(`binDesigner.textMode.${opt}`)}
-              </Button>
-            ))}
-          </div>
-          <NumberField
-            label={t(
-              effectiveMode === 'emboss'
-                ? 'binDesigner.cutoutTextDepth.emboss'
-                : 'binDesigner.cutoutTextDepth.engrave'
+            {textModeChoices(CUTOUT_TEXT_MODES, multiColor && !monochromeHost, effectiveMode).map(
+              (opt) => (
+                <Button
+                  key={opt}
+                  type="button"
+                  variant="ghost"
+                  disabled={disabled}
+                  onClick={() => {
+                    // On a lid a stored Flat shows as Engrave; clicking that must not
+                    // rewrite the design-wide mode the bin's other text uses.
+                    if (opt !== effectiveMode) setTextDefaults({ mode: opt });
+                  }}
+                  aria-pressed={effectiveMode === opt}
+                  className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(effectiveMode === opt)}`}
+                >
+                  {t(`binDesigner.textMode.${opt}`)}
+                </Button>
+              )
             )}
-            value={textDepth}
-            onChange={(depth) => setTextDefaults({ depth })}
-            min={TYPE_BOUNDS.depth.min}
-            max={TYPE_BOUNDS.depth.max}
-            step={TYPE_BOUNDS.depth.step}
-            unit="mm"
-            disabled={disabled}
-            info={t('binDesigner.cutoutTextDepth.hint')}
-          />
+          </div>
+          {effectiveMode === 'flat' ? (
+            <FlatTextHint />
+          ) : (
+            <NumberField
+              label={t(
+                effectiveMode === 'emboss'
+                  ? 'binDesigner.cutoutTextDepth.emboss'
+                  : 'binDesigner.cutoutTextDepth.engrave'
+              )}
+              value={textDepth}
+              onChange={(depth) => setTextDefaults({ depth })}
+              min={TYPE_BOUNDS.depth.min}
+              max={TYPE_BOUNDS.depth.max}
+              step={TYPE_BOUNDS.depth.step}
+              unit="mm"
+              disabled={disabled}
+              info={t('binDesigner.cutoutTextDepth.hint')}
+            />
+          )}
         </>
       )}
       {!isTextElement && (

@@ -561,7 +561,6 @@ export interface ActiveZonesParams {
   readonly base: {
     readonly style: BaseStyle;
     readonly stackingLip: boolean;
-    readonly solid?: boolean;
   };
   readonly label: {
     readonly enabled: boolean;
@@ -576,10 +575,15 @@ export interface ActiveZonesParams {
     readonly cells: readonly number[];
     readonly compartmentTexts?: readonly string[];
   };
-  readonly cutouts?: readonly { readonly engraveLabel?: boolean; readonly label: string }[];
+  readonly cutouts?: readonly {
+    readonly engraveLabel?: boolean;
+    readonly label: string;
+    /** A repeat's per-copy captions; the master's label covers copies past its end. */
+    readonly array?: { readonly labels?: readonly string[] };
+  }[];
   /** Wall surface text renders on the bin body, so it activates the
-   *  `text` zone. Mirrors the worker gates: polygon and solid-mode bins skip
-   *  wall text entirely (see `wallTextLayout.ts`). Lid text deliberately does
+   *  `text` zone. Mirrors the worker gate: polygon bins skip wall text
+   *  entirely (see `wallTextLayout.ts`), solid bins carry it like hollow ones. Lid text deliberately does
    *  NOT activate the zone — the lid ships as a single color object. */
   readonly surfaceText?: { readonly walls?: Readonly<Partial<Record<WallTextSide, string>>> };
   readonly cellMask?: CellMask;
@@ -662,11 +666,12 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
     (p.label.mode ?? 'text') !== 'socket' &&
     (tabTexts ?? []).some((t) => t.trim().length > 0);
   const hasCutoutText = (p.cutouts ?? []).some(
-    (c) => c.engraveLabel === true && c.label.trim().length > 0
+    (c) =>
+      c.engraveLabel === true &&
+      (c.label.trim().length > 0 || (c.array?.labels ?? []).some((l) => l.trim().length > 0))
   );
-  // Wall surface text — worker gates mirrored: no polygon, no solid.
+  // Wall surface text: polygon bins skip it, solid ones keep it (featuresStage).
   const hasWallText =
-    p.base.solid !== true &&
     !isPartialMask(p.cellMask) &&
     Object.values(p.surfaceText?.walls ?? {}).some(
       (t) => typeof t === 'string' && t.trim().length > 0

@@ -2293,7 +2293,7 @@
           }
         },
         "mode": {
-          "enum": ["engrave", "emboss", "through-cut"],
+          "enum": ["engrave", "emboss", "through-cut", "flat"],
           "description": "How the glyphs meet the surface."
         },
         "depth": {
@@ -2414,7 +2414,7 @@
           }
         },
         "mode": {
-          "enum": ["engrave", "emboss", "through-cut"],
+          "enum": ["engrave", "emboss", "through-cut", "flat"],
           "description": "Mode override."
         },
         "depth": {

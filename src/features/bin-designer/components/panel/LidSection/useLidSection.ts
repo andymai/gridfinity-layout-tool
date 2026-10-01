@@ -59,7 +59,7 @@ import { resolveOverhang, overhangExpansion, hasOverhang } from '@/shared/utils/
 import { matchingTrayParams } from '@/features/bin-designer/utils/matchingTray';
 import { lidWallBottomZ } from '@/features/bin-designer/components/preview/LidMesh/lidAnchorZ';
 import { lidCutoutsAllowed } from '@/shared/utils/lidCutoutPlan';
-import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
+import { MAX_LID_CUTOUTS, singleColorTextMode } from '@/features/bin-designer/types';
 import {
   checkLidCompatibility,
   computeDisabledRails,
@@ -561,10 +561,12 @@ export function useLidSection() {
       : undefined;
   // Effective mode, resolved through the same three layers the worker uses: the
   // design defaults, the style shared by every surface, then the lid's own.
-  const textMode =
+  // Then the worker's single-colour fallback, since the lid has no text colour.
+  const textMode = singleColorTextMode(
     params.surfaceText?.lidStyle?.mode ??
-    params.surfaceText?.style?.mode ??
-    params.textDefaults.mode;
+      params.surfaceText?.style?.mode ??
+      params.textDefaults.mode
+  );
 
   // Adapter so the deferred-commit input (shared with compartment labels) can
   // take the store action by reference; the id slot is unused for the lid.

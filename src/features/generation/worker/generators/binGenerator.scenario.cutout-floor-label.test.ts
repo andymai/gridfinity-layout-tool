@@ -14,8 +14,10 @@ import { resolve } from 'node:path';
 import { loadTestFonts } from '@/test/loadTestFonts';
 import { loadFont, isErr } from 'brepjs';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, CutoutTextAnchor } from '@/shared/types/bin';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
+import { meshVolume } from './__kernel-tests__/meshAssertions';
+import { FeatureTag } from './featureTags';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -32,12 +34,17 @@ beforeAll(async () => {
 
 const CUT_DEPTH = 5;
 
-function solidBinWithRecessedLabel(label: string): BinParams {
+function solidBinWithRecessedLabel(
+  label: string,
+  anchor: CutoutTextAnchor = 'center',
+  mode: BinParams['textDefaults']['mode'] = DEFAULT_BIN_PARAMS.textDefaults.mode
+): BinParams {
   return {
     ...DEFAULT_BIN_PARAMS,
-    width: 1,
+    width: anchor === 'center' ? 1 : 2,
     depth: 1,
     height: 3,
+    textDefaults: { ...DEFAULT_BIN_PARAMS.textDefaults, mode },
     style: 'solid',
     base: { ...DEFAULT_BIN_PARAMS.base, solid: true, stackingLip: false },
     cutoutConfig: { topOffset: 0 },
@@ -54,7 +61,7 @@ function solidBinWithRecessedLabel(label: string): BinParams {
         cornerRadius: 0,
         label,
         engraveLabel: true,
-        textAnchor: 'center',
+        textAnchor: anchor,
         groupId: null,
       },
     ],
@@ -92,5 +99,51 @@ describe('recessed cutout label (#2726)', () => {
     const hi = floorZ - 0.05;
     expect(verticesInBand(plain.vertices, lo, hi)).toBe(0);
     expect(verticesInBand(labeled.vertices, lo, hi)).toBeGreaterThan(0);
+  }, 180000);
+});
+
+function topZOf(vertices: Float32Array): number {
+  let topZ = -Infinity;
+  for (let i = 2; i < vertices.length; i += 3) topZ = Math.max(topZ, vertices[i]);
+  return topZ;
+}
+
+function textVertexZs(mesh: ReturnType<ReturnType<typeof getGenerateBin>>): number[] {
+  const zs: number[] = [];
+  for (const fg of mesh.faceGroups ?? []) {
+    if (fg.tag !== FeatureTag.TEXT) continue;
+    for (let i = fg.start; i < fg.start + fg.count; i++) {
+      zs.push(mesh.vertices[mesh.indices[i] * 3 + 2]);
+    }
+  }
+  return zs;
+}
+
+describe('flat cutout labels', () => {
+  it.each([
+    ['beside the cutout, in the fill top', 'right', 0],
+    ['on the recess floor', 'center', CUT_DEPTH],
+  ] as const)(
+    'lays a label %s without changing the volume',
+    (_name, anchor, below) => {
+      const generateBin = getGenerateBin();
+      const labeled = generateBin(solidBinWithRecessedLabel('HI', anchor, 'flat'));
+      const plain = generateBin(solidBinWithRecessedLabel('', anchor, 'flat'));
+      const surfaceZ = topZOf(plain.vertices) - below;
+
+      const zs = textVertexZs(labeled);
+      expect(zs.length).toBeGreaterThan(0);
+      for (const z of zs) expect(z).toBeCloseTo(surfaceZ, 3);
+      expect(meshVolume(labeled)).toBeCloseTo(meshVolume(plain), 1);
+    },
+    180000
+  );
+
+  it('skips a flat label on a recess that leaves no floor', () => {
+    const p = solidBinWithRecessedLabel('HI', 'center', 'flat');
+    const throughFill = { ...p, cutouts: p.cutouts.map((c) => ({ ...c, cutDepth: 100 })) };
+    const mesh = getGenerateBin()(throughFill);
+    expect(mesh.indices.length).toBeGreaterThan(0);
+    expect(textVertexZs(mesh)).toHaveLength(0);
   }, 180000);
 });

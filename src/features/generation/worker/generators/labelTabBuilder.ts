@@ -663,7 +663,9 @@ function applyTabText(
     availD: ctx.tabDepth,
     centerX: ctx.tabWidth / 2,
     centerY: (ctx.centerYSign * ctx.tabDepth) / 2,
-    topZ: ctx.tabHeight,
+    // Flat glyphs must meet the shelf's real top face, which stands
+    // COPLANAR_OVERLAP proud of `tabHeight`; anything lower sinks them inside.
+    topZ: style.mode === 'flat' ? ctx.tabHeight + COPLANAR_OVERLAP : ctx.tabHeight,
     depth: style.depth,
     hostThickness: ctx.shelfThickness,
     ...(ctx.uniformTextSize !== undefined ? { sharedSizeMm: ctx.uniformTextSize } : {}),
