@@ -1,0 +1,107 @@
+src/features/bin-designer/components/CutoutWorkspace/CutoutEngraveLabelControls.tsx
+  s_fe2c0a02f9f14e::t_7da14acc53c024 124
+  s_fe2c0a02f9f14e::t_3e937b5b0a7b2e 199-211
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_fe2c0a02f9f14e::t_57d529a13275f6 32,35
+  s_fe2c0a02f9f14e::t_0a42dc779f3271 321-325,333
+src/features/bin-designer/components/preview/LabelPlateMeshes/LabelPlateMeshes.tsx
+  s_fe2c0a02f9f14e::t_fbcfc157183347 60,85
+  s_fe2c0a02f9f14e::t_2a7563b2b2277e 23,25,49,54,56-59,61-67,73,81-83,96,103,107-112,114-133,139,160
+src/features/bin-designer/components/PreviewCanvas/ColorToolOverlay.tsx
+  s_fe2c0a02f9f14e::t_6b9b4d2190903a 76,99,145,164
+src/shared/constants/labelPlates.ts
+  s_fe2c0a02f9f14e::t_9fbff7dee3f09d 16,145-152,154,172
+src/features/bin-designer/components/CutoutWorkspace/CutoutEngraveLabelControls.test.tsx
+  s_fe2c0a02f9f14e::t_cdb321aecf2d96 28
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.tsx
+  s_fe2c0a02f9f14e::t_6b9b4d2190903a 75,98,141,162
+src/features/bin-designer/types/featureColors.test.ts
+  s_fe2c0a02f9f14e::t_813dd185b456af 359-385
+src/features/bin-designer/types/text.ts
+  s_fe2c0a02f9f14e::t_7da14acc53c024 22
+src/features/generation/worker/generators/lidGenerator.scenario.test.ts
+  s_fe2c0a02f9f14e::t_74d789fe703d24 17,21,1280-1311,1346
+  s_fe2c0a02f9f14e::t_52f35948601557 1312-1330,1332-1345
+  s_fe2c0a02f9f14e::t_17e06ba9bd38be 1331
+  s_fe2c0a02f9f14e::t_2535890918a729 1347
+src/features/bin-designer/utils/lidColorGroups.ts
+  s_fe2c0a02f9f14e::t_4f4b155350682a 7-8
+  s_fe2c0a02f9f14e::t_4b5daa6f3fff92 2-3,5-6,15-21,29-67,75,95-96,98-99,102-112,114-117
+src/features/bin-designer/components/preview/BinMesh/BinMesh.tsx
+  s_fe2c0a02f9f14e::t_6b9b4d2190903a 77,104,142,157
+src/features/generation/worker/generators/labelPlateGenerator.ts
+  s_fe2c0a02f9f14e::t_9fbff7dee3f09d 199
+  s_fe2c0a02f9f14e::t_f2d63cd590014b 25
+  s_fe2c0a02f9f14e::t_05e19eef16ecf9 237
+src/features/generation/worker/generators/labelTextFit.ts
+  s_fe2c0a02f9f14e::t_9fbff7dee3f09d 37
+  s_fe2c0a02f9f14e::t_f2d63cd590014b 18
+src/features/generation/bridge/messages.ts
+  s_fe2c0a02f9f14e::t_881d074e9331f9 17
+  s_fe2c0a02f9f14e::t_9fbff7dee3f09d 240
+src/features/bin-designer/hooks/useLabelPlateExport.ts
+  s_fe2c0a02f9f14e::t_9fbff7dee3f09d 95
+  s_fe2c0a02f9f14e::t_f2d63cd590014b 35
+src/features/generation/worker/generators/lidInputs.ts
+  s_fe2c0a02f9f14e::t_7da14acc53c024 453
+src/features/bin-designer/utils/lidColorGroups.test.ts
+  s_fe2c0a02f9f14e::t_a9acbeb5ccfc67 89-112
+src/features/generation/worker/generators/labelPlateBuilder.ts
+  s_fe2c0a02f9f14e::t_9fbff7dee3f09d 73-74,217-218
+  s_fe2c0a02f9f14e::t_881d074e9331f9 46-50
+  s_fe2c0a02f9f14e::t_178fe59420f262 373
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_fe2c0a02f9f14e::t_9e9c44dec19b33 62,564,566-567,1006
+src/features/generation/worker/generators/lidCutoutBuilder.ts
+  s_fe2c0a02f9f14e::t_467904aa5cd97c 294
+src/features/generation/worker/generators/labelPlateIcons.ts
+  s_fe2c0a02f9f14e::t_5489b24654709f 91-93,127-140,167
+  s_fe2c0a02f9f14e::t_178fe59420f262 14,17
+src/features/bin-designer/utils/binDownloadHelpersLidColors.test.ts
+  s_fe2c0a02f9f14e::t_e95f9759e890f0 142-164
+src/features/generation/bridge/meshData.ts
+  s_fe2c0a02f9f14e::t_05e19eef16ecf9 95-96
+docs/schemas/bin-design.md
+  s_fe2c0a02f9f14e::t_b3f54a3d25be61 694-695
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_fe2c0a02f9f14e::t_f05cdd0215b94d 367-369
+  s_fe2c0a02f9f14e::t_f0d7e5d49e2454 38
+  s_fe2c0a02f9f14e::t_4f4b155350682a 234-236,238-239,253,257-262,264-267
+src/features/bin-designer/components/preview/LidMesh/LidMesh.tsx
+  s_fe2c0a02f9f14e::t_f05cdd0215b94d 95-97
+src/features/bin-designer/types/featureColors.ts
+  s_fe2c0a02f9f14e::t_4091f2c8de7aa7 573-580,585-592,651-663,665-683,705,743-745
+  s_fe2c0a02f9f14e::t_58dd4978617294 664
+src/features/generation/worker/generators/labelPlateIcons.test.ts
+  s_fe2c0a02f9f14e::t_5128e6cfefa5e7 40
+src/features/generation/worker/generators/labelPlateBuilder.test.ts
+  s_fe2c0a02f9f14e::t_68426c2a22002f 326-351
+src/shell/layoutExport/useLayoutExport.ts
+  s_fe2c0a02f9f14e::t_9fbff7dee3f09d 349
+  s_fe2c0a02f9f14e::t_881d074e9331f9 52
+src/features/generation/worker/generators/lidTextBuilder.ts
+  s_fe2c0a02f9f14e::t_53f8e3b2c19d5f 4-5,134
+src/shared/generation/meshPersistence.ts
+  s_fe2c0a02f9f14e::t_b3f54a3d25be61 45-46,82
+src/features/whats-new/entries.ts
+  s_fe2c0a02f9f14e::t_2a9172dc7cdeff 22
+src/features/bin-designer/components/preview/LabelPlateMeshes/LabelPlateMeshes.test.tsx
+  s_fe2c0a02f9f14e::t_05bf715aa07a2a 6,11-18,35-38,40,93-114
+  s_fe2c0a02f9f14e::t_1fcf0b7a6ae4e8 115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0e32fb3b4c82287e26834b78f17286583cbe6715",
+  "prompts": {},
+  "sessions": {
+    "s_fe2c0a02f9f14e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5b1cfa44-fa06-49f6-b48e-d3066914d5be",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
