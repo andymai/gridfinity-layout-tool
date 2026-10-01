@@ -79,7 +79,6 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
     lipCorners,
     lipBands,
     cutouts,
-    baseSolid,
     labelMode,
     labelSpan,
     rowTexts,
@@ -107,7 +106,6 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
       lipCorners: s.params.featureColors.lip.corners,
       lipBands: s.params.featureColors.lip.bands,
       cutouts: s.params.cutouts,
-      baseSolid: s.params.base.solid,
       labelMode: s.params.label.mode,
       labelSpan: s.params.label.span,
       rowTexts: s.params.label.rowTexts,
@@ -138,7 +136,7 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
   const activeZones = useMemo(
     () =>
       computeActiveZones({
-        base: { style: baseStyle, stackingLip, solid: baseSolid },
+        base: { style: baseStyle, stackingLip },
         label: { enabled: labelEnabled, mode: labelMode, span: labelSpan, rowTexts },
         scoop: { enabled: scoopEnabled },
         lid: { enabled: lidEnabled },
@@ -151,7 +149,6 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
     [
       baseStyle,
       stackingLip,
-      baseSolid,
       labelEnabled,
       labelMode,
       labelSpan,

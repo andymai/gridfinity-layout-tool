@@ -208,7 +208,11 @@ export function CutoutEngraveLabelControls({
                   type="button"
                   variant="ghost"
                   disabled={disabled}
-                  onClick={() => setTextDefaults({ mode: opt })}
+                  onClick={() => {
+                    // On a lid a stored Flat shows as Engrave; clicking that must not
+                    // rewrite the design-wide mode the bin's other text uses.
+                    if (opt !== effectiveMode) setTextDefaults({ mode: opt });
+                  }}
                   aria-pressed={effectiveMode === opt}
                   className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(effectiveMode === opt)}`}
                 >

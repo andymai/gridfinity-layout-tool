@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { FeatureTag } from '@/shared/types/generation';
-import { DEFAULT_FEATURE_COLOR_CONFIG } from '@/features/bin-designer/constants/defaults';
+import {
+  DEFAULT_BIN_PARAMS,
+  DEFAULT_FEATURE_COLOR_CONFIG,
+} from '@/features/bin-designer/constants/defaults';
 import {
   LIP_CELL_ZONES,
   ZONE_ORDER,
@@ -336,7 +339,7 @@ describe('computeActiveZones', () => {
       expect(zones.has('text')).toBe(false);
     });
 
-    it('mirrors the worker gates: polygon and solid bins skip wall text', () => {
+    it('mirrors the worker gates: polygon bins skip wall text, solid bins keep it', () => {
       const polygon = computeActiveZones({
         ...baseParams,
         surfaceText: { walls: { front: 'Cables' } },
@@ -344,13 +347,23 @@ describe('computeActiveZones', () => {
       });
       expect(polygon.has('text')).toBe(false);
 
+      const solidBin = { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, solid: true } };
       const solid = computeActiveZones({
-        ...baseParams,
-        base: { style: 'standard', stackingLip: false, solid: true },
+        ...solidBin,
         surfaceText: { walls: { front: 'Cables' } },
       });
-      expect(solid.has('text')).toBe(false);
+      expect(solid.has('text')).toBe(true);
     });
+  });
+
+  it('activates the text zone for a repeat whose captions live only in its label list', () => {
+    const repeat = (labels: string[]) =>
+      computeActiveZones({
+        ...baseParams,
+        cutouts: [{ engraveLabel: true, label: '', array: { labels } }],
+      });
+    expect(repeat(['M3', 'M4']).has('text')).toBe(true);
+    expect(repeat(['', ' ']).has('text')).toBe(false);
   });
 });
 

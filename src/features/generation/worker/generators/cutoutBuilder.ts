@@ -1858,9 +1858,10 @@ function buildCutoutLabel(
     : solidSurfaceZ;
   const mode = cutoutLabelMode(style.mode);
   const onRecessFloor = surfaceZ < solidSurfaceZ;
-  // A recess consuming the full fill depth leaves no floor to engrave into —
-  // the interior clip stops at z=0 to protect the base, so skip the label.
-  if (mode === 'engrave' && surfaceZ <= 0) return null;
+  // A recess consuming the full fill depth leaves no floor to engrave into or
+  // lay flat text on — the interior clip stops at z=0 to protect the base, so
+  // skip the label.
+  if ((mode === 'engrave' || mode === 'flat') && surfaceZ <= 0) return null;
 
   return withScope((scope: DisposalScope): CutoutLabelShape | null => {
     const result = buildTextSolid(scope, {

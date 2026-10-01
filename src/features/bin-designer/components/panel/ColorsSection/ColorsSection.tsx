@@ -76,7 +76,6 @@ export function ColorsSection() {
     cells,
     lipCorners,
     lipBands,
-    baseSolid,
     labelMode,
     labelSpan,
     rowTexts,
@@ -103,7 +102,6 @@ export function ColorsSection() {
       extraWallHeightMm: s.params.extraWallHeightMm,
       lipCorners: s.params.featureColors.lip.corners,
       lipBands: s.params.featureColors.lip.bands,
-      baseSolid: s.params.base.solid,
       labelMode: s.params.label.mode,
       labelSpan: s.params.label.span,
       rowTexts: s.params.label.rowTexts,
@@ -137,7 +135,7 @@ export function ColorsSection() {
   const activeZones = useMemo(
     () =>
       computeActiveZones({
-        base: { style: baseStyle, stackingLip, solid: baseSolid },
+        base: { style: baseStyle, stackingLip },
         label: { enabled: labelEnabled, mode: labelMode, span: labelSpan, rowTexts },
         scoop: { enabled: scoopEnabled },
         lid: { enabled: lidEnabled },
@@ -156,7 +154,6 @@ export function ColorsSection() {
     [
       baseStyle,
       stackingLip,
-      baseSolid,
       labelEnabled,
       labelMode,
       labelSpan,

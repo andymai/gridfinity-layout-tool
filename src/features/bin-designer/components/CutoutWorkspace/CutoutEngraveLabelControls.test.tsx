@@ -113,6 +113,9 @@ describe('CutoutEngraveLabelControls relief depth', () => {
     expect(
       screen.getByRole('spinbutton', { name: 'binDesigner.cutoutTextDepth.engrave' })
     ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.textMode.engrave' }));
+    expect(useDesignerStore.getState().params.textDefaults.mode).toBe('flat');
   });
 
   it('keeps the depth field off the socket branch, which engraves nothing', () => {

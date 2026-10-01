@@ -138,4 +138,12 @@ describe('flat cutout labels', () => {
     },
     180000
   );
+
+  it('skips a flat label on a recess that leaves no floor', () => {
+    const p = solidBinWithRecessedLabel('HI', 'center', 'flat');
+    const throughFill = { ...p, cutouts: p.cutouts.map((c) => ({ ...c, cutDepth: 100 })) };
+    const mesh = getGenerateBin()(throughFill);
+    expect(mesh.indices.length).toBeGreaterThan(0);
+    expect(textVertexZs(mesh)).toHaveLength(0);
+  }, 180000);
 });
