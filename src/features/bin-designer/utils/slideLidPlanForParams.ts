@@ -21,6 +21,7 @@ import {
 } from '@/shared/utils/slideLidPlan';
 import type { BinParams } from '../types';
 import { isSlideLid, resolveLidPlateThickness, resolveLidSlide } from '../types/lid';
+import { resolveLipTip } from '../types/base';
 import { binDimensions } from './binDimensions';
 
 /**
@@ -62,6 +63,7 @@ export function slideLidPlanForParams(params: BinParams): SlideLidPlan {
         isSolid: params.style === 'solid',
         isSlotted: params.style === 'slotted',
         isTile: params.base.tile === true,
+        lipTip: resolveLipTip(params.base),
       }
     )
   );

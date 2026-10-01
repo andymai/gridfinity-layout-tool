@@ -192,38 +192,176 @@ describe('sliding lid seating', () => {
     expect(entryOpeningMm({ ...pair, bin: bareBin(params) })).toBeLessThan(0.05);
   }, 300000);
 
-  it('takes the entry wall’s lip away rather than leaving it bridging', async () => {
-    // A notch that clears the plate's band and stops there leaves the lip
-    // spanning the whole opening with nothing under it — the worst overhang on
-    // the part, and a contradiction of what `slideRimInterrupted` tells the
-    // user. Every fit check passes on it, which is why this is its own probe.
-    //
-    // Stated as a DELTA: the same columns on the lidless bin carry the full lip.
-    const params = slideParams();
-    const pair = await build(params);
-    const bare = bareBin(params);
-    expect(entryLipRemnantMm(pair)).toBeLessThan(0.2);
-    expect(entryLipRemnantMm({ ...pair, bin: bare })).toBeGreaterThan(3);
+  it('keeps the entry wall’s lip over the opening at every wall thickness', async () => {
+    // A notch through the rim took a thick wall's whole lip and left a thin
+    // wall's inward jut hanging from the corners. Stated as identity against
+    // the lidless bin, both in the wall and over the cavity, where a thin
+    // wall's lip juts.
+    for (const wallThickness of [0.4, 2.6]) {
+      const params = slideParams({ wallThickness });
+      const pair = await build(params);
+      expect(entryOpeningMm(pair), `${wallThickness}`).toBeGreaterThan(
+        pair.geometry.plate.thicknessMm - 0.05
+      );
+      const bare = { ...pair, bin: bareBin(params) };
+      for (const inboard of [0.2, 1.5]) {
+        expect(entryLipRemnantMm(pair, 7, inboard), `${wallThickness} / ${inboard}`).toBeCloseTo(
+          entryLipRemnantMm(bare, 7, inboard),
+          2
+        );
+      }
+    }
+  }, 600000);
+
+  it('takes the entry wall’s lip away to its full depth for a finger catch', async () => {
+    // The notch stops at the cavity face and the lip juts past it, so a cut
+    // that ended there left a strip hanging from the corners, ~1.3mm at a
+    // 1.2mm wall, ~0.5mm at 2mm and gone by 2.6mm. Probed through the jut too.
+    for (const wallThickness of [1.2, 2.0]) {
+      const params = slideParams({ wallThickness }, { pull: 'catch' });
+      const pair = await build(params);
+      const bare = { ...pair, bin: bareBin(params) };
+      for (const inboard of [0.5, 1.5, 2.3]) {
+        const label = `${wallThickness} / ${inboard}`;
+        expect(entryLipRemnantMm(pair, 7, inboard), label).toBeLessThan(0.05);
+        // 2.3mm in is on the lip's lower taper, 0.3mm above the wall top.
+        expect(entryLipRemnantMm(bare, 7, inboard), label).toBeGreaterThan(0.2);
+      }
+    }
+  }, 600000);
+
+  it('exports a clipped thin wall and a thick wall watertight', async () => {
+    const { assertWatertight, meshTopologyStats } =
+      await import('./__kernel-tests__/meshAssertions');
+    for (const wallThickness of [0.4, 2.6]) {
+      const bin = getGenerateBin()(slideParams({ wallThickness }), undefined, true);
+      if (!bin) throw new Error('expected the bin to build');
+      assertWatertight(bin, `${wallThickness}`);
+      expect(meshTopologyStats(bin).nonManifoldEdges, `${wallThickness}`).toBe(0);
+    }
+  }, 600000);
+
+  it('keeps the rails inside the bin’s corners', async () => {
+    // The bars run into the cavity's corner arcs, and the entry bars run on to
+    // the outer face; either can reach past the outer arc, which the bounding
+    // box cannot see. Probed on a ring just outside each outer corner arc.
+    for (const wallThickness of [0.4, 2.6]) {
+      const params = slideParams({ wallThickness });
+      const pair = await build(params);
+      const r = GRIDFINITY_SPEC.BOX_CORNER_RADIUS;
+      const hw = (params.width * 42 - 0.5) / 2;
+      const hd = (params.depth * 42 - 0.5) / 2;
+      let hits = 0;
+      for (const [sx, sy] of [
+        [1, 1],
+        [-1, 1],
+        [1, -1],
+        [-1, -1],
+      ] as const) {
+        for (let a = 10; a <= 80; a += 10) {
+          const rad = (a * Math.PI) / 180;
+          const x = sx * (hw - r + (r + 0.15) * Math.cos(rad));
+          const y = sy * (hd - r + (r + 0.15) * Math.sin(rad));
+          if (columnCrossings(pair.bin, x, y).length > 0) hits++;
+        }
+      }
+      expect(hits, `${wallThickness}`).toBe(0);
+    }
+  }, 600000);
+
+  it('finishes the rails flush with the entry wall’s outer face', async () => {
+    // The window used to be cut after the bars fused, so the retainer stopped
+    // at the cavity face and the channel read as set back inside the wall.
+    // Probed mid-retainer, just inside the outer face, on the export mesh.
+    const { canonicalToBin } = await import('./__kernel-tests__/slideLidSeating');
+    for (const wallThickness of [0.4, 1.2, 2.6]) {
+      const params = slideParams({ wallThickness });
+      const { geometry } = slideLidPlanForParams(params);
+      if (!geometry) throw new Error('expected slide geometry');
+      const bin = getGenerateBin()(params, undefined, true);
+      if (!bin) throw new Error('expected the bin to build');
+      const dz = slideLidZOffset(params, geometry);
+      const roofReach = geometry.clearanceMm + geometry.plate.wedgeMm;
+      const across = geometry.travelEnvelope.yMax - roofReach / 2;
+      // Under the retainer's underside at that reach, the plate's slot.
+      const underside = roofReach / 2 - geometry.plate.wedgeMm;
+      // 0.2mm inside the outer CONTOUR: the retainer sits within the corner
+      // arc, where the entry bars follow the rounding rather than the face.
+      const { lengthMm, spanMm, cornerRadiusMm: r } = geometry.bodyFootprint;
+      const dy = across - (spanMm / 2 - r);
+      const along =
+        dy > 0
+          ? lengthMm / 2 - r + Math.sqrt((r - 0.2) ** 2 - dy ** 2)
+          : geometry.plate.trailingX - 0.2;
+      for (const sign of [1, -1]) {
+        const [x, y] = canonicalToBin(geometry, along, sign * across);
+        expect(
+          isSolidThrough(bin, x, y, dz + underside + 0.05, dz + geometry.clearanceMm + 0.5),
+          `${wallThickness} ${sign}`
+        ).toBe(true);
+      }
+    }
+  }, 600000);
+
+  it('keeps a thin wall’s entry corners closed around the plate', async () => {
+    // The plate's full width passes the entry corner arcs, and on a 0.4mm wall
+    // it is ~1.4mm wider than the bin's outline there: relieved for it, the
+    // corner opened to the outside. Probed inside the corner's skin, through
+    // the plate's band, beside the notch (which opens the wall on purpose).
+    const params = slideParams({ wallThickness: 0.4 });
+    const { geometry } = slideLidPlanForParams(params);
+    if (!geometry) throw new Error('expected slide geometry');
+    const bin = getGenerateBin()(params, undefined, true);
+    if (!bin) throw new Error('expected the bin to build');
+    const dz = slideLidZOffset(params, geometry);
+    const r = GRIDFINITY_SPEC.BOX_CORNER_RADIUS;
+    const hw = (params.width * 42 - 0.5) / 2;
+    const hd = (params.depth * 42 - 0.5) / 2;
+    const notchHalf = geometry.entryNotch.yMax;
+    const open: string[] = [];
+    let probed = 0;
+    for (const sx of [1, -1]) {
+      for (let a = 5; a <= 85; a += 5) {
+        const rad = (a * Math.PI) / 180;
+        // Front entry: the entry corners are the two at −Y.
+        const x = sx * (hw - r + (r - 0.2) * Math.cos(rad));
+        const y = -(hd - r + (r - 0.2) * Math.sin(rad));
+        // Front entry: canonical `along` is −y.
+        if (Math.abs(x) < notchHalf + 0.05 && -y > geometry.entryNotch.xMin - 0.05) continue;
+        probed++;
+        if (!isSolidThrough(bin, x, y, dz - geometry.plate.thicknessMm, dz))
+          open.push(`${sx}/${a}°`);
+      }
+    }
+    expect(probed).toBeGreaterThan(10);
+    expect(open).toEqual([]);
   }, 300000);
 
-  it('a finger catch fills the rim it took away, and still travels free', async () => {
-    const params = slideParams({}, { pull: 'catch', detent: false });
-    expect(await travelOverlap(params)).toBeLessThan(CONTACT_FLOOR_MM3);
-
+  it('a finger catch completes the lip it took away, and still travels free', async () => {
+    // Shut, bin and lid together must read as the lidless bin's lip across the
+    // entry wall: its jut and both tapers, so a bin stacked on top seats there
+    // too. Compared column by column at insets across the lip's section, away
+    // from the peak, whose tip style the catch does not copy.
     const { canonicalToBin } = await import('./__kernel-tests__/slideLidSeating');
-    const pair = await build(params);
-    const { plate } = pair.geometry;
-    const [x, y] = canonicalToBin(pair.geometry, plate.trailingX - plate.pullDepthMm / 2, 0);
-    const topOf = (p: SlidePair): number =>
-      Math.max(...columnCrossings(p.lid, x, y)) + slideLidZOffset(p.params, p.geometry);
-    // Shut, the bar's top lands on the lip's own top plane, so the rim reads
-    // continuous across the entry wall.
-    const lipTop = binWallTopZ(params) + GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP;
-    expect(topOf(pair)).toBeCloseTo(lipTop, 1);
-    // Stated as a delta: the plain plate at the same column stops far lower.
-    const plain = await build(slideParams({}, { pull: 'none', detent: false }));
-    expect(topOf(pair) - topOf(plain)).toBeGreaterThan(GRIDFINITY_SPEC.LIP_HEIGHT);
-  }, 600000);
+    for (const wallThickness of [1.2, 2.0, 2.6]) {
+      const params = slideParams({ wallThickness }, { pull: 'catch', detent: false });
+      expect(await travelOverlap(params), `${wallThickness}`).toBeLessThan(CONTACT_FLOOR_MM3);
+      const pair = await build(params);
+      const bare = bareBin(params);
+      const dz = slideLidZOffset(params, pair.geometry);
+      for (const inset of [0.8, 1.5, 1.9, 2.3]) {
+        const [x, y] = canonicalToBin(pair.geometry, pair.geometry.plate.trailingX - inset, 0);
+        const shut = Math.max(
+          ...columnCrossings(pair.bin, x, y),
+          ...columnCrossings(pair.lid, x, y).map((z) => z + dz)
+        );
+        expect(shut, `${wallThickness} @ ${inset}`).toBeCloseTo(
+          Math.max(...columnCrossings(bare, x, y)),
+          1
+        );
+      }
+    }
+  }, 900000);
 
   it('keeps the lip intact on the walls the notch does not touch', async () => {
     // The travel-envelope cutter stops at the retainer's top plane.
@@ -439,8 +577,10 @@ describe('sliding lid seating', () => {
 
     // The middle of the channel has never had anything to bridge, at all.
     expect(roofAt(-cornerR / 2, cornerR / 2)).toBeCloseTo(0, 6);
-    // Both corners together, against one 0.4mm bead's footprint.
-    expect(roofAt(face - cornerR, face)).toBeLessThan(NOZZLE_MM * NOZZLE_MM);
+    // Both corners together, against one 0.4mm bead's footprint. Stopped at the
+    // notch, whose ceiling is the lintel's underside: a bridge between the two
+    // corners by design.
+    expect(roofAt(face - cornerR, geometry.entryNotch.xMin)).toBeLessThan(NOZZLE_MM * NOZZLE_MM);
   }, 300000);
 
   it('opens the corner arc without taking the corner away', async () => {

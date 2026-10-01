@@ -1124,24 +1124,35 @@ describe('checkLidCompatibility — sliding attachment', () => {
     expect(ids(slideParams({ style: 'solid' }))).toContain('slideUnbuildable');
   });
 
-  it('reports the interrupted rim on the entry wall only', () => {
-    const issues = checkLidCompatibility(slideParams({}, { entrySide: 'right' }));
+  it('reports the interrupted rim on the entry wall only, for a finger catch', () => {
+    const issues = checkLidCompatibility(slideParams({}, { entrySide: 'right', pull: 'catch' }));
     const rim = issues.find((i) => i.id === 'slideRimInterrupted');
     expect(rim).toBeDefined();
     expect(rim?.severity).toBe('warning');
     expect(rim?.sides).toEqual(['right']);
   });
 
+  it('says nothing about the rim when the entry wall keeps its lip', () => {
+    for (const pull of ['none', 'notch', 'tab'] as const) {
+      expect(ids(slideParams({}, { pull }))).not.toContain('slideRimInterrupted');
+    }
+  });
+
   it('warns when a finger catch would be thinner than two perimeters', () => {
-    const thin = slideParams({ wallThickness: 0.8 }, { pull: 'catch' });
-    const issue = checkLidCompatibility(thin).find((i) => i.id === 'slideCatchThin');
+    // A thin wall is lined out to the channel's minimum, so the clearance is
+    // what thins the catch.
+    const loose = slideParams({ wallThickness: 1.2 }, { pull: 'catch', clearanceMm: 0.6 });
+    const issue = checkLidCompatibility(loose).find((i) => i.id === 'slideCatchThin');
     expect(issue?.severity).toBe('warning');
-    expect(ids(slideParams({ wallThickness: 1.2 }, { pull: 'catch' }))).not.toContain(
+    expect(ids(slideParams({ wallThickness: 0.4 }, { pull: 'catch' }))).not.toContain(
       'slideCatchThin'
     );
-    expect(ids(slideParams({ wallThickness: 0.8 }, { pull: 'tab' }))).not.toContain(
-      'slideCatchThin'
-    );
+    expect(
+      ids(slideParams({ wallThickness: 1.6 }, { pull: 'catch', clearanceMm: 0.6 }))
+    ).not.toContain('slideCatchThin');
+    expect(
+      ids(slideParams({ wallThickness: 1.2 }, { pull: 'tab', clearanceMm: 0.6 }))
+    ).not.toContain('slideCatchThin');
   });
 
   it('says nothing about the rim on a lipless bin', () => {

@@ -15,15 +15,28 @@
  * chances to get a sign backwards.
  */
 
-import { clone, draw, rotate, translate, unwrap, withScope } from 'brepjs';
-import type { Shape3D, DisposalScope } from 'brepjs';
+import {
+  clone,
+  cutAll,
+  draw,
+  drawRoundedRectangle,
+  getBounds,
+  intersect,
+  rotate,
+  translate,
+  unwrap,
+  withScope,
+} from 'brepjs';
+import type { DisposalScope, Shape3D, Sketch, ValidSolid } from 'brepjs';
 import { sketch } from './meshUtils';
 import type {
   SlideLidBar,
   SlideLidBox,
+  SlideLidFootprint,
   SlideLidDetent,
   SlideLidGeometry,
   SlideLidMouthRelief,
+  SlideLidWallLining,
 } from '@/shared/utils/slideLidPlan';
 import type { BinDimensions } from './pipeline/types';
 
@@ -40,17 +53,13 @@ export function slideLidPlateTopZ(dim: BinDimensions, geometry: SlideLidGeometry
 }
 
 /**
- * How far the entry notch flares as it breaks the rim (mm).
+ * How far the entry notch flares as it breaks the rim (mm), when it does.
  *
- * The window has to reach through the wall top — bounding it at the plate's own
- * height would leave the wall above spanning the whole opening as a horizontal
- * bridge, and past a 1-wide bin that is tens of millimetres of unsupported
- * lintel. Breaking the rim leaves the stacking lip ending at two vertical
- * shoulders instead, which is where an upper bin catches as it slides on and
- * where a crack starts, so the cut widens by this fixed run-out on each side
- * as it climbs from the plate's clearance height to the rim (the slope varies
- * with that rise). Same treatment, and the same reason, as `lidGripDipStage`'s
- * ramped ends.
+ * A rim break leaves the stacking lip ending at two vertical shoulders, which
+ * is where an upper bin catches as it slides on and where a crack starts, so
+ * the cut widens by this fixed run-out on each side as it climbs from the
+ * plate's clearance height to the rim. Same treatment, and the same reason, as
+ * `lidGripDipStage`'s ramped ends.
  */
 const NOTCH_RIM_RAMP_MM = 2.5;
 
@@ -94,19 +103,72 @@ function detentSolid(scope: DisposalScope, detent: SlideLidDetent): Shape3D {
  * fixed run-out each side as it climbs through the rim — see
  * {@link NOTCH_RIM_RAMP_MM}.
  */
-function notchSolid(scope: DisposalScope, notch: SlideLidBox, plateClearTopZ: number): Shape3D {
-  // Guard the degenerate case where the flare would start above the cut's own
-  // top: then it is a plain rectangle and the ramp has nothing to run out over.
-  const flareBase = Math.min(plateClearTopZ, notch.zMax);
-  const elevation = draw([notch.yMin, notch.zMin])
-    .lineTo([notch.yMax, notch.zMin])
-    .lineTo([notch.yMax, flareBase])
-    .lineTo([notch.yMax + NOTCH_RIM_RAMP_MM, notch.zMax])
-    .lineTo([notch.yMin - NOTCH_RIM_RAMP_MM, notch.zMax])
-    .lineTo([notch.yMin, flareBase])
-    .close();
+function notchSolid(
+  scope: DisposalScope,
+  notch: SlideLidBox,
+  plateClearTopZ: number,
+  rampsRim: boolean
+): Shape3D {
+  // A notch that stops at the plate's clearance height leaves the rim standing,
+  // so there is no rim break to ramp: a plain rectangle.
+  const ramps = rampsRim && notch.zMax > plateClearTopZ + 1e-6;
+  const bottom = draw([notch.yMin, notch.zMin]).lineTo([notch.yMax, notch.zMin]);
+  const elevation = (
+    ramps
+      ? bottom
+          .lineTo([notch.yMax, plateClearTopZ])
+          .lineTo([notch.yMax + NOTCH_RIM_RAMP_MM, notch.zMax])
+          .lineTo([notch.yMin - NOTCH_RIM_RAMP_MM, notch.zMax])
+          .lineTo([notch.yMin, plateClearTopZ])
+      : bottom.lineTo([notch.yMax, notch.zMax]).lineTo([notch.yMin, notch.zMax])
+  ).close();
   const extruded = scope.register(sketch(elevation, 'YZ').extrude(notch.xMax - notch.xMin));
   return scope.register(translate(extruded, [notch.xMin, 0, 0]));
+}
+
+/** Clip a canonical solid to the body's outer footprint. */
+function clipToFootprint(
+  scope: DisposalScope,
+  shape: Shape3D,
+  footprint: SlideLidFootprint
+): Shape3D {
+  const { zMin, zMax } = getBounds(shape);
+  const prism = scope.register(
+    drawRoundedRectangle(footprint.lengthMm, footprint.spanMm, footprint.cornerRadiusMm)
+      .sketchOnPlane('XY', zMin - 1)
+      .extrude(zMax - zMin + 2)
+  );
+  return scope.register(unwrap(intersect(shape, prism)));
+}
+
+/** The body's outer footprint, inset by `inset`, as a canonical rounded rectangle at `z`. */
+function liningSection(lining: SlideLidWallLining, inset: number, z: number): Sketch {
+  return drawRoundedRectangle(
+    lining.bodyLengthMm - 2 * inset,
+    lining.bodySpanMm - 2 * inset,
+    Math.max(lining.bodyCornerRadiusMm - inset, 0.05)
+  ).sketchOnPlane('XY', z) as Sketch;
+}
+
+/**
+ * The ring lining a thin wall out to the channel's face, over the joint's band.
+ *
+ * Starts 0.1mm inside the wall so the fuse has volume to merge, and chamfers
+ * 45° back to the wall under its bottom so the ledge never overhangs.
+ */
+function liningSolid(scope: DisposalScope, lining: SlideLidWallLining): Shape3D {
+  const { zMin, zMax, channelInsetMm, cavityInsetMm } = lining;
+  const grown = cavityInsetMm - 0.1;
+  const run = channelInsetMm - cavityInsetMm;
+  const outer = scope.register(liningSection(lining, grown, zMin - run).extrude(zMax - zMin + run));
+  const chamfer = scope.register(
+    liningSection(lining, grown, zMin - run - 0.1).loftWith(
+      [liningSection(lining, channelInsetMm, zMin)],
+      { ruled: true }
+    )
+  );
+  const core = scope.register(liningSection(lining, channelInsetMm, zMin).extrude(zMax - zMin + 1));
+  return scope.register(unwrap(cutAll(outer as ValidSolid, [chamfer, core] as ValidSolid[])));
 }
 
 /** Rotate a canonical solid onto the entry wall and drop it onto the cavity. */
@@ -126,26 +188,33 @@ function place(
 /** The channel's additive and subtractive halves, ready to apply to the bin. */
 export interface SlideLidChannelSolids {
   /**
+   * A thin wall's lining out to the channel's face. Fused FIRST: the mouth
+   * relief and the bars are both laid out against that face.
+   */
+  readonly linings: readonly Shape3D[];
+  /**
    * The cavity's entry corner arcs — cut BEFORE the additions fuse, so the
    * bars land back in the space this opens instead of being sawn off inside
    * the arcs they run into.
    */
   readonly mouthCuts: readonly Shape3D[];
+  /** The entry window — cut from the bin, before the additions fuse. */
+  readonly subtractions: readonly Shape3D[];
   /** Shelves, retainers and detents — fused onto the bin. */
   readonly additions: readonly Shape3D[];
-  /** The entry window — cut from the bin, after the additions fuse. */
-  readonly subtractions: readonly Shape3D[];
+  /** Cut AFTER the fuse: a finger catch's lip cut, ending the retainers flush with it. */
+  readonly finishingCuts: readonly Shape3D[];
 }
 
 /**
  * Build the channel in world coordinates.
  *
  * The caller owns every returned solid. Returned as three lists rather than
- * applied here because the ORDER matters and belongs to the stage, and the two
- * cuts want opposite sides of the fuse: the notch has to come AFTER, or a bar
- * reaching into the entry wall would be left standing across the opening it is
- * supposed to clear, while the mouth relief has to come BEFORE, or it takes the
- * shelf and retainer away with the corner arc they run into.
+ * applied here because the ORDER matters and belongs to the stage: both cuts
+ * come BEFORE the fuse. The mouth relief would otherwise take the shelf and
+ * retainer away with the corner arc they run into, and the notch would saw the
+ * entry bars off inside the window they line. The bars never reach into the
+ * plate's slot, so refilling the window with them leaves it open.
  */
 export function buildSlideLidChannel(
   geometry: SlideLidGeometry,
@@ -153,6 +222,8 @@ export function buildSlideLidChannel(
   innerOffsetX: number,
   innerOffsetY: number
 ): SlideLidChannelSolids {
+  const linings: Shape3D[] = [];
+  const finishingCuts: Shape3D[] = [];
   const mouthCuts: Shape3D[] = [];
   const additions: Shape3D[] = [];
   const subtractions: Shape3D[] = [];
@@ -173,11 +244,21 @@ export function buildSlideLidChannel(
     };
 
     for (const relief of geometry.mouthReliefs) put(barSolid(scope, relief), mouthCuts);
+    if (geometry.wallLining) put(liningSolid(scope, geometry.wallLining), linings);
     for (const bar of geometry.bars) put(barSolid(scope, bar), additions);
+    for (const bar of geometry.entryBars) {
+      put(clipToFootprint(scope, barSolid(scope, bar), geometry.bodyFootprint), additions);
+    }
     for (const detent of geometry.detents) put(detentSolid(scope, detent), additions);
-    put(notchSolid(scope, geometry.entryNotch, geometry.clearanceMm), subtractions);
+    put(
+      notchSolid(scope, geometry.entryNotch, geometry.clearanceMm, geometry.entryNotchFlares),
+      subtractions
+    );
+    if (geometry.lipNotch) {
+      put(notchSolid(scope, geometry.lipNotch, geometry.clearanceMm, false), finishingCuts);
+    }
     return null;
   });
 
-  return { mouthCuts, additions, subtractions };
+  return { linings, mouthCuts, additions, subtractions, finishingCuts };
 }
