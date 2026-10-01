@@ -25,6 +25,7 @@ describe('FlatTextClashWarning', () => {
     expect(screen.getByText(/won't show/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Use a contrasting color' }));
     expect(useDesignerStore.getState().params.featureColors.text).not.toBe(LIGHT);
+    expect(screen.queryByText(/won't show/)).toBeNull();
   });
 
   it('stays quiet when the colours contrast, or for another host', () => {

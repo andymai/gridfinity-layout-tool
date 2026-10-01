@@ -574,6 +574,7 @@ export interface ActiveZonesParams {
     readonly enabled: boolean;
     readonly stackableTop?: boolean;
     readonly stackLipOnly?: boolean;
+    readonly separateStackPlate?: boolean;
     readonly attachment?: string;
     /** Lid text elements carry their caption like a bin cutout label does. */
     readonly cutouts?: readonly CaptionedShape[];
@@ -666,7 +667,7 @@ export interface CaptionedShape {
  * plate in socket mode, where an icon alone is lettering too.
  */
 export function hasCaption(c: CaptionedShape): boolean {
-  if (c.engraveLabel !== true) return false;
+  if (c.engraveLabel !== true || c.hidden === true) return false;
   const words =
     c.label.trim().length > 0 || (c.array?.labels ?? []).some((l) => l.trim().length > 0);
   const onPlate = c.labelMode === 'socket' && c.shape !== 'text';
@@ -716,11 +717,15 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   // Span mode reads `label.rowTexts`, not `compartmentTexts` — missing
   // it here would drop the text colour zone from a spanning design's export.
   const tabTexts = p.label.span === true ? p.label.rowTexts : p.compartments.compartmentTexts;
+  // Full-width (spanning) plates carry no icon, and polygon bins build no tabs.
   const plateIcons =
     (p.label.mode ?? 'text') === 'socket' &&
+    p.label.span !== true &&
     (p.compartments.labelIcons ?? []).some((icon) => icon !== null);
   const hasTabText =
-    p.label.enabled && ((tabTexts ?? []).some((t) => t.trim().length > 0) || plateIcons);
+    p.label.enabled &&
+    !isPartialMask(p.cellMask) &&
+    ((tabTexts ?? []).some((t) => t.trim().length > 0) || plateIcons);
   const hasCutoutText = (p.cutouts ?? []).some(hasCaption);
   // Wall surface text: polygon bins skip it, solid ones keep it (featuresStage).
   const hasWallText =
@@ -750,10 +755,10 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
     // The lid's lip zones exist only when there is a stack grid to paint. A
     // non-stackable lid has a flat top and `FeatureTag.LID_LIP` geometry is
     // never built, so offering the cells would be a control that changes
-    // nothing — the same reasoning that gates `base` on a socketed base.
-    // `separateStackPlate` still counts: the grid ships as its own solid, but it
-    // is still the user's lid lip and still takes the colour.
-    if (p.lid.stackableTop === true) {
+    // nothing — the same reasoning that gates `base` on a socketed base. A
+    // `separateStackPlate` grid ships as its own solid and exports whole in the
+    // lid colour, so its cells would be a control that changes nothing too.
+    if (p.lid.stackableTop === true && p.lid.separateStackPlate !== true) {
       const grid = p.featureColors?.lidLip ?? { corners: 1, bands: 1 };
       for (const cell of activeLidLipCells(grid)) zones.add(cell);
     }

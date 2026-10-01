@@ -351,12 +351,21 @@ describe('labelPlateBuilder', () => {
 
   it('lays a flat icon on its own in the plate top', async () => {
     const flat = { ...OPTS, textMode: 'flat' as const };
-    const { faceGroups } = await exportLabelPlates(
+    const { data, faceGroups } = await exportLabelPlates(
       [{ widthU: 1, text: '', icon: 'bolt' }],
       flat,
       'stl'
     );
-    expect((faceGroups ?? []).some((g) => g.tag === FeatureTag.TEXT)).toBe(true);
+    const view = new DataView(data);
+    const z = (tri: number, corner: number): number =>
+      view.getFloat32(84 + tri * 50 + 12 + corner * 12 + 8, true);
+    const textTris = (faceGroups ?? [])
+      .filter((g) => g.tag === FeatureTag.TEXT)
+      .flatMap((g) => Array.from({ length: g.count / 3 }, (_, i) => g.start / 3 + i));
+    expect(textTris.length).toBeGreaterThan(0);
+    for (const t of textTris) {
+      for (let c = 0; c < 3; c++) expect(z(t, c)).toBeCloseTo(LABEL_PLATE_THICKNESS_MM, 3);
+    }
   });
 
   it('emits no TEXT face groups for blank plates', async () => {

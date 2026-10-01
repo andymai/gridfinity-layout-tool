@@ -411,6 +411,40 @@ describe('computeActiveZones', () => {
     expect(plateOnly.has('text')).toBe(true);
   });
 
+  it('skips lettering that is not built: hidden cutouts, spanning plate icons, polygon tabs', () => {
+    expect(
+      computeActiveZones({
+        ...baseParams,
+        cutouts: [{ engraveLabel: true, hidden: true, label: 'M3' }],
+      }).has('text')
+    ).toBe(false);
+    expect(
+      computeActiveZones({
+        ...baseParams,
+        label: { enabled: true, mode: 'socket', span: true },
+        compartments: { cells: [0], labelIcons: ['bolt'] },
+      }).has('text')
+    ).toBe(false);
+    expect(
+      computeActiveZones({
+        ...baseParams,
+        label: { enabled: true },
+        compartments: { cells: [0], compartmentTexts: ['M3'] },
+        cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] },
+      }).has('text')
+    ).toBe(false);
+  });
+
+  it('offers no lid lip cells for a separately printed stack plate', () => {
+    const zones = computeActiveZones({
+      ...baseParams,
+      base: { style: 'standard', stackingLip: true },
+      lid: { enabled: true, stackableTop: true, separateStackPlate: true },
+    });
+    expect(zones.has('lid')).toBe(true);
+    expect([...zones].some((z) => z.startsWith('lidLip:'))).toBe(false);
+  });
+
   it('activates the text zone for a repeat whose captions live only in its label list', () => {
     const repeat = (labels: string[]) =>
       computeActiveZones({

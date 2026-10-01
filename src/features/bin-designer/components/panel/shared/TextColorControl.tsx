@@ -28,6 +28,8 @@ export function TextColorControl({ surfaces, flat }: TextColorControlProps) {
   const t = useTranslation();
   const multiColor = useDesignerStore((s) => s.params.featureColors.enabled);
   const updateFeatureColors = useDesignerStore((s) => s.updateFeatureColors);
+  // Same rule as the Colors section: no lettering anywhere, nothing to colour.
+  const hasText = useActiveColorZones().has('text');
 
   if (!multiColor) {
     return flat ? (
@@ -38,6 +40,7 @@ export function TextColorControl({ surfaces, flat }: TextColorControlProps) {
       />
     ) : null;
   }
+  if (!hasText) return null;
   return (
     <div className="space-y-1">
       <TextColorRow />

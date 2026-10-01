@@ -4,10 +4,11 @@ import { TextColorControl } from './TextColorControl';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 
-function setMultiColor(enabled: boolean): void {
+function setMultiColor(enabled: boolean, walls: Record<string, string> = { front: 'AB' }): void {
   useDesignerStore.setState({
     params: {
       ...DEFAULT_BIN_PARAMS,
+      surfaceText: { walls },
       featureColors: { ...DEFAULT_BIN_PARAMS.featureColors, enabled },
     },
     ui: { ...DEFAULT_UI_STATE },
@@ -32,5 +33,11 @@ describe('TextColorControl', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Turn on Multi-Color' }));
     expect(useDesignerStore.getState().params.featureColors.enabled).toBe(true);
     expect(screen.getByRole('button', { name: /^Text color:/ })).toBeInTheDocument();
+  });
+
+  it('hides the swatch on a design with no text to colour', () => {
+    setMultiColor(true, {});
+    render(<TextColorControl flat={false} />);
+    expect(screen.queryByRole('button', { name: /^Text color:/ })).toBeNull();
   });
 });

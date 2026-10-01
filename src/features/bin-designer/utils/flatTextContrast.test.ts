@@ -83,6 +83,20 @@ describe('flatTextSurfaces', () => {
     expect([...flatTextSurfaces(cutoutPlate)]).toEqual(['labelTab']);
   });
 
+  it('ignores lettering generation skips: spanning plate icons, polygon tabs, hidden cutouts', () => {
+    const spanningIcons = design({
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'socket', span: true },
+      compartments: { ...DEFAULT_BIN_PARAMS.compartments, labelIcons: ['bolt'] },
+    });
+    expect(flatTextSurfaces(spanningIcons).size).toBe(0);
+    const polygon = design({
+      ...tabs(['BOLTS']),
+      cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] },
+    });
+    expect(flatTextSurfaces(polygon).size).toBe(0);
+    expect(flatTextSurfaces(design({ cutouts: [cutout({ hidden: true })] })).size).toBe(0);
+  });
+
   it('ignores text that is not flat or will not be built', () => {
     const engraved = design({
       ...tabs(['BOLTS']),

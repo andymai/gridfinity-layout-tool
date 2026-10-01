@@ -30,12 +30,14 @@ export function flatTextSurfaces(p: BinParams): ReadonlySet<TextSurface> {
   const out = new Set<TextSurface>();
   const plateFlat = isFlat(p.textDefaults.mode);
 
-  if (p.label.enabled) {
+  // Polygon bins build no label tabs, so their captions and plates print nothing.
+  if (p.label.enabled && !isPartialMask(p.cellMask)) {
     const texts =
       (p.label.span === true ? p.label.rowTexts : p.compartments.compartmentTexts) ?? [];
     const words = texts.some((t) => t.trim() !== '');
     if ((p.label.mode ?? 'text') === 'socket') {
-      const icons = (p.compartments.labelIcons ?? []).some((icon) => icon !== null);
+      const icons =
+        p.label.span !== true && (p.compartments.labelIcons ?? []).some((icon) => icon !== null);
       if ((words || icons) && plateFlat) out.add('labelTab');
     } else if (words && isFlat(resolveTextStyle(p.textDefaults, p.label.textStyle).mode)) {
       out.add('labelTab');
@@ -56,7 +58,7 @@ export function flatTextSurfaces(p: BinParams): ReadonlySet<TextSurface> {
   }
 
   for (const c of p.cutouts) {
-    if (c.hidden === true || !hasCaption(c)) continue;
+    if (!hasCaption(c)) continue;
     if (c.labelMode === 'socket' && c.shape !== 'text') {
       if (plateFlat) out.add('labelTab');
     } else if (isFlat(resolveTextStyle(p.textDefaults, c.textStyle).mode)) {

@@ -52,6 +52,7 @@ describe('ColorsSection', () => {
       },
       ui: { ...DEFAULT_UI_STATE },
     });
+    useSettingsStore.setState({ settings: { ...DEFAULT_SETTINGS } });
   });
 
   it('renders Body, Lip, Base, and Label Tab rows when active', () => {

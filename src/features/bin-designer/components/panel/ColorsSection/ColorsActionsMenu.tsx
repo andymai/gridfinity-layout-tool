@@ -289,9 +289,10 @@ function MenuButton({
 }
 
 function PaletteSwatch({ palette }: { palette: SavedColorPalette }) {
-  // 5-stripe summary: body / two lip cells / labelTab / base. Compact enough
-  // to scan a list, distinctive enough to remember the palette. Tolerant of
-  // legacy (4-corner) and current (grid) persisted lip shapes.
+  // 6-stripe summary: body / two lip cells / labelTab / base / text. Compact
+  // enough to scan a list, distinctive enough to remember the palette. Tolerant
+  // of legacy (4-corner) and current (grid) persisted lip shapes, and of
+  // palettes saved before Text joined them.
   const lip = normalizePaletteLip(palette.colors.lip, palette.colors.body);
   const stripes: string[] = [
     palette.colors.body,
@@ -299,6 +300,7 @@ function PaletteSwatch({ palette }: { palette: SavedColorPalette }) {
     lip.cells[lipCellZone('frontRight', 0)],
     palette.colors.labelTab,
     palette.colors.base,
+    palette.colors.text ?? palette.colors.body,
   ];
   return (
     <span
