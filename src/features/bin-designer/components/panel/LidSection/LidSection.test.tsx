@@ -602,7 +602,7 @@ describe('LidSection', () => {
       expect(screen.getByText(/won’t seat flat/i)).toBeInTheDocument();
     });
 
-    it('shows inherited flat text as the engraving the one-color lid gets', () => {
+    it('offers Flat for lid text on a multi-color design', () => {
       resetStore({
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
         textDefaults: { ...DEFAULT_BIN_PARAMS.textDefaults, mode: 'flat' },
@@ -611,11 +611,8 @@ describe('LidSection', () => {
       });
       render(<LidSection />);
       const finish = within(screen.getByRole('radiogroup', { name: 'Finish' }));
-      expect(finish.getByRole('radio', { name: 'Engrave' })).toHaveAttribute(
-        'aria-checked',
-        'true'
-      );
-      expect(finish.queryByRole('radio', { name: 'Flat' })).not.toBeInTheDocument();
+      expect(finish.getByRole('radio', { name: 'Flat' })).toHaveAttribute('aria-checked', 'true');
+      expect(screen.getByRole('button', { name: 'Colors' })).toBeInTheDocument();
     });
 
     it('does not warn about embossed text on a plain flat top', () => {
