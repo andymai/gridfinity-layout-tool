@@ -1,0 +1,26 @@
+src/features/generation/bridge/generationTimeout.test.ts
+  s_fe2c0a02f9f14e::t_90f4e5b55ab323 3
+  s_fe2c0a02f9f14e::t_d0e01d61bb264a 487-499
+src/features/generation/README.md
+  s_fe2c0a02f9f14e::t_d0e01d61bb264a 284-285
+src/features/generation/bridge/generationTimeout.ts
+  s_fe2c0a02f9f14e::t_d0e01d61bb264a 20,120-124,251-252,257
+src/shared/utils/slotMath.ts
+  s_fe2c0a02f9f14e::t_d0e01d61bb264a 169-172,174,181-193
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3bb06be5b9a4880c47db415fa3b726daf49329f5",
+  "prompts": {},
+  "sessions": {
+    "s_fe2c0a02f9f14e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5b1cfa44-fa06-49f6-b48e-d3066914d5be",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
