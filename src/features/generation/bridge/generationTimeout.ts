@@ -248,8 +248,7 @@ function countDividerSegments(params: BinParams): number {
 
 /**
  * An upper bound on the scoop ramps the worker builds: one per compartment and
- * scoop side, behind the worker's `scoopRampsApply` gate. A slotted body needs no
- * term of its own, since it is never `standard`.
+ * scoop side, behind the worker's `scoopRampsApply` gate.
  */
 function countScoopRamps(params: BinParams): number {
   if (!params.scoop.enabled || params.style !== 'standard') return 0;
