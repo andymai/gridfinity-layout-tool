@@ -20,7 +20,7 @@
 
 import { unwrap, fuse, cut } from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
-import { buildTextSolid } from './textBuilder';
+import { buildTextSolid, clipFlatPrism } from './textBuilder';
 import { pocketCornerRadius } from './generatorConstants';
 import { LID_MIN_CORNER_RADIUS } from './lidConstants';
 import { STACK_INSET_BOT } from './lidStackGrid';
@@ -129,15 +129,19 @@ export function applyLidText(
     hostThickness,
   });
   if (!result) return body;
+  // The holes are already cut, so a flat caption must not refill them.
+  const solid =
+    text.style.mode === 'flat' ? clipFlatPrism(scope, result.solid, body) : result.solid;
+  if (!solid) return body;
 
   // Tag before the boolean so glyph faces surface as TEXT in the mesh face
   // groups, which the lid's preview and 3MF paint in the Text colour.
   if (originToTag) {
-    collectOrigins(result.solid, FeatureTag.TEXT, originToTag);
+    collectOrigins(solid, FeatureTag.TEXT, originToTag);
   }
 
   scope.register(body);
   return result.op === 'fuse'
-    ? unwrap(fuse(body as ValidSolid, result.solid as ValidSolid))
-    : unwrap(cut(body as ValidSolid, result.solid as ValidSolid));
+    ? unwrap(fuse(body as ValidSolid, solid as ValidSolid))
+    : unwrap(cut(body as ValidSolid, solid as ValidSolid));
 }

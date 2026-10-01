@@ -41,7 +41,7 @@ import {
   buildGroupedCutouts,
   buildUngroupedCutout,
 } from './cutoutBuilder';
-import { buildTextSolid } from './textBuilder';
+import { buildTextSolid, clipFlatPrism } from './textBuilder';
 import { LID_TEXT_ENGRAVE_FLOOR, MIN_ENGRAVE_DEPTH } from './lidTextBuilder';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
@@ -310,14 +310,17 @@ function applyLidTextElements(
         angleDeg: instance.rotation,
       });
       if (!result) continue;
+      // The holes are already cut, so a flat caption must not refill them.
+      const solid = mode === 'flat' ? clipFlatPrism(scope, result.solid, current) : result.solid;
+      if (!solid) continue;
       if (originToTag) {
-        collectOrigins(result.solid, FeatureTag.TEXT, originToTag);
+        collectOrigins(solid, FeatureTag.TEXT, originToTag);
       }
       scope.register(current);
       current =
         result.op === 'fuse'
-          ? unwrap(fuse(current as ValidSolid, result.solid as ValidSolid))
-          : unwrap(cut(current as ValidSolid, result.solid as ValidSolid));
+          ? unwrap(fuse(current as ValidSolid, solid as ValidSolid))
+          : unwrap(cut(current as ValidSolid, solid as ValidSolid));
     }
   }
   return current;

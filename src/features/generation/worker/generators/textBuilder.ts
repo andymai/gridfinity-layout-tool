@@ -27,9 +27,12 @@ import {
   rotate,
   compound,
   getFont,
+  intersect,
+  unwrap,
   type Shape3D,
   type DisposalScope,
   type PlaneName,
+  type ValidSolid,
 } from 'brepjs';
 import type { Sketches } from 'brepjs';
 import type { TextFontFamily, TextMode, TextStyleDefaults } from '@/shared/types/bin';
@@ -167,6 +170,20 @@ export function planTextForHost(options: TextHostOptions): TypeBlockPlan | null 
 /** The rendered size a host would pick, or `null` when the caption will not fit. */
 export function fitTextSize(options: TextHostOptions): number | null {
   return planTextForHost(options)?.fontSize ?? null;
+}
+
+/**
+ * A flat prism trimmed to the material its host still has. A host that cuts
+ * openings before it writes (the lid's through-holes) would otherwise get back
+ * the part of an opening the caption crosses, since the prism is fused.
+ * Returns null when nothing of the caption is left to place.
+ */
+export function clipFlatPrism(scope: DisposalScope, prism: Shape3D, host: Shape3D): Shape3D | null {
+  try {
+    return scope.register(unwrap(intersect(prism as ValidSolid, host as ValidSolid)));
+  } catch {
+    return null;
+  }
 }
 
 /**

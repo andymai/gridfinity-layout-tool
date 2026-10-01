@@ -1343,6 +1343,46 @@ describe('lid generation and export scenarios', () => {
           expect(Math.abs(meshVolume(flat) - before)).toBeLessThan(before * 1e-5);
         }
       );
+      it.each([
+        ['the lid caption', {}, { surfaceText: { lidText: 'WWWW', style: { anchor: 'center' } } }],
+        ['a lid text element', { cutouts: [{ ...element, x: 10, y: 25, width: 60 }] }, {}],
+      ] as const)(
+        'lets a lid hole cut through %s instead of refilling it',
+        async (_name, lid, extra) => {
+          const { generateLid } = await import('./lidOrchestrator');
+          const hole = {
+            id: 'h1',
+            shape: 'rectangle' as const,
+            x: 36,
+            y: 5,
+            width: 6,
+            depth: 70,
+            cutDepth: 5,
+            rotation: 0,
+            cornerRadius: 0,
+            label: '',
+            groupId: null,
+          };
+          const withHole = (more: Partial<LidConfig>) => ({
+            ...more,
+            cutouts: [hole, ...((more as { cutouts?: unknown[] }).cutouts ?? [])],
+          });
+          const base = { ...BASE, textDefaults: FLAT };
+          const holed = generateLid(makeParams(withHole({}) as Partial<LidConfig>, base));
+          const flat = generateLid(
+            makeParams(withHole(lid as Partial<LidConfig>) as Partial<LidConfig>, {
+              ...base,
+              ...extra,
+            })
+          );
+          expect(holed).not.toBeNull();
+          expect(flat).not.toBeNull();
+          if (!holed || !flat) return;
+          expect(textZs(flat).length).toBeGreaterThan(0);
+          const before = meshVolume(holed);
+          expect(Math.abs(meshVolume(flat) - before)).toBeLessThan(before * 1e-5);
+        }
+      );
     });
 
     it('engraved text changes the mesh without raising the top', async () => {
