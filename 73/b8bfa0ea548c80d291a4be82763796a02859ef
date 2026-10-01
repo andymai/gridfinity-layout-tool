@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/textBuilder.ts
+  s_fe2c0a02f9f14e::t_eebfb9ba08c25d 180-182,186-187,189
+src/features/generation/worker/generators/textBuilder.scenario.test.ts
+  s_fe2c0a02f9f14e::t_eebfb9ba08c25d 29,413-414,418,420-423
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "73b8bfa0ea548c80d291a4be82763796a02859ef",
+  "prompts": {},
+  "sessions": {
+    "s_fe2c0a02f9f14e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5b1cfa44-fa06-49f6-b48e-d3066914d5be",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
