@@ -1,0 +1,38 @@
+src/features/bin-designer/types/featureColors.test.ts
+  s_fe2c0a02f9f14e::t_ed4f5b8419de3f 342,355,358-366
+  s_fe2c0a02f9f14e::t_f3e6196441f37f 350,352
+  s_fe2c0a02f9f14e::t_b3036c4c43744a 3-6
+  s_fe2c0a02f9f14e::t_03bad00fe481cb 367
+src/features/bin-designer/components/preview/BinMesh/BinMesh.tsx
+  s_fe2c0a02f9f14e::t_ae24cf3a990259 139
+src/features/generation/worker/generators/binGenerator.scenario.cutout-floor-label.test.ts
+  s_fe2c0a02f9f14e::t_a4730f5592cc3d 141-148
+src/features/bin-designer/types/featureColors.ts
+  s_fe2c0a02f9f14e::t_ed4f5b8419de3f 585-586,673
+  s_fe2c0a02f9f14e::t_be6f8e800044dd 578-583,669-671
+src/features/bin-designer/components/CutoutWorkspace/CutoutEngraveLabelControls.tsx
+  s_fe2c0a02f9f14e::t_34a3a905227c53 211
+  s_fe2c0a02f9f14e::t_8a1445113e02dc 212-215
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_fe2c0a02f9f14e::t_34a3a905227c53 1861-1864
+src/features/bin-designer/components/CutoutWorkspace/CutoutEngraveLabelControls.test.tsx
+  s_fe2c0a02f9f14e::t_a4730f5592cc3d 116-118
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.tsx
+  s_fe2c0a02f9f14e::t_ae24cf3a990259 138
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0a200de5211c3427a9c2e85416f3abe5688fbd1e",
+  "prompts": {},
+  "sessions": {
+    "s_fe2c0a02f9f14e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5b1cfa44-fa06-49f6-b48e-d3066914d5be",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
