@@ -30,6 +30,7 @@ import {
   computeGenerationTimeoutMs,
   computeSplitExportTimeoutMs,
   SPLIT_PIECE_MS_PER_CELL,
+  SCOOP_MS_PER_RAMP,
 } from './generationTimeout';
 
 const HEX_ON = { enabled: true, pattern: 'honeycomb' } as const;
@@ -446,6 +447,51 @@ describe('computeGenerationTimeoutMs', () => {
         baseline
       );
     }
+  });
+
+  describe('finger scoops', () => {
+    const grid = (cols: number, rows: number, cells?: number[]): BinParams['compartments'] => ({
+      ...DEFAULT_BIN_PARAMS.compartments,
+      cols,
+      rows,
+      cells: cells ?? Array.from({ length: cols * rows }, (_, i) => i),
+    });
+    const scoop = { ...DEFAULT_BIN_PARAMS.scoop, enabled: true };
+    const lipless = { ...DEFAULT_BIN_PARAMS.base, stackingLip: false };
+
+    it('gives a dense scoop grid a ramp of time per compartment', () => {
+      const shape = { width: 3, depth: 3, height: 3, base: lipless, compartments: grid(7, 4) };
+      const off = computeGenerationTimeoutMs(params(shape));
+      const on = computeGenerationTimeoutMs(params({ ...shape, scoop }));
+      expect(on - off).toBe(28 * SCOOP_MS_PER_RAMP);
+    });
+
+    it('counts a merged compartment once and every scoop side', () => {
+      const compartments = grid(2, 2, [0, 0, 1, 2]);
+      const off = computeGenerationTimeoutMs(params({ compartments }));
+      const twoSides = computeGenerationTimeoutMs(
+        params({ compartments, scoop: { ...scoop, sides: ['front', 'back'] } })
+      );
+      expect(twoSides - off).toBe(3 * 2 * SCOOP_MS_PER_RAMP);
+    });
+
+    it('grants nothing where the worker builds no ramps', () => {
+      const compartments = grid(3, 3);
+      const baseline = computeGenerationTimeoutMs(params({ compartments }));
+      const cellMask = {
+        cols: 3,
+        rows: 3,
+        cells: [1, 1, 1, 1, 1, 1, 1, 1, 0] as (0 | 1)[],
+      };
+      for (const overrides of [{ style: 'slotted' }, { style: 'solid' }, { cellMask }] as const) {
+        expect(computeGenerationTimeoutMs(params({ compartments, scoop, ...overrides }))).toBe(
+          computeGenerationTimeoutMs(params({ compartments, ...overrides }))
+        );
+      }
+      expect(
+        computeGenerationTimeoutMs(params({ compartments, scoop: { ...scoop, enabled: false } }))
+      ).toBe(baseline);
+    });
   });
 
   it('grants no divider bonus without dividers to pattern', () => {
