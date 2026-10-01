@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.501.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.500.0...gridfinity-layout-tool-v4.501.0) (2026-10-01)
+
+
+### Features
+
+* **bin-designer:** flat text finish for multi-color prints ([#4443](https://github.com/andymai/gridfinity-layout-tool/issues/4443)) ([0b4b1e1](https://github.com/andymai/gridfinity-layout-tool/commit/0b4b1e1a3e922cb2b7cbd9cfea8207250d115b9c))
+
 ## [4.500.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.499.0...gridfinity-layout-tool-v4.500.0) (2026-09-30)
 
 
