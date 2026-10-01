@@ -1810,7 +1810,7 @@
   "binDesigner.textMode.through-cut": "Vazado",
   "binDesigner.textMode.flat": "Plano",
   "binDesigner.textMode.flatHint": "O texto plano fica nivelado com a superfície e só aparece na cor Texto. Escolha uma que contraste.",
-  "binDesigner.textMode.flatNeedsMultiColor": "O texto plano fica nivelado com a superfície e só aparece com um segundo filamento. Ative o multicolorido para imprimi-lo.",
+  "binDesigner.textMode.flatNeedsMultiColor": "O texto plano fica nivelado com a superfície e só aparece com um segundo filamento. Ative o modo multicolorido para imprimi-lo.",
   "binDesigner.textMode.flatColorsAction": "Cores",
   "binDesigner.textMode.throughCutStencilNote": "O vazado usa Allerta Stencil para manter os miolos das letras conectados.",
   "binDesigner.textSize": "Tamanho do texto",

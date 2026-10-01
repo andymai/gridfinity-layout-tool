@@ -79,6 +79,13 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
     lipCorners,
     lipBands,
     cutouts,
+    baseSolid,
+    labelMode,
+    labelSpan,
+    rowTexts,
+    compartmentTexts,
+    surfaceText,
+    cellMask,
     hoveredColorZone,
     colorTool,
   } = useDesignerStore(
@@ -100,6 +107,13 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
       lipCorners: s.params.featureColors.lip.corners,
       lipBands: s.params.featureColors.lip.bands,
       cutouts: s.params.cutouts,
+      baseSolid: s.params.base.solid,
+      labelMode: s.params.label.mode,
+      labelSpan: s.params.label.span,
+      rowTexts: s.params.label.rowTexts,
+      compartmentTexts: s.params.compartments.compartmentTexts,
+      surfaceText: s.params.surfaceText,
+      cellMask: s.params.cellMask,
       hoveredColorZone: s.ui.hoveredColorZone,
       colorTool: s.ui.colorTool,
     }))
@@ -118,17 +132,40 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
   // robust).
   const multiColorActive = multiColorEnabled || anyCutoutColored(cutouts) || !!compartmentPlan;
 
+  // Text-bearing params included: with Text the only colour that differs from
+  // Body, leaving them out reads the design as single-colour and paints the
+  // glyphs body-coloured while the 3MF prints them in the text filament.
   const activeZones = useMemo(
     () =>
       computeActiveZones({
-        base: { style: baseStyle, stackingLip },
-        label: { enabled: labelEnabled },
+        base: { style: baseStyle, stackingLip, solid: baseSolid },
+        label: { enabled: labelEnabled, mode: labelMode, span: labelSpan, rowTexts },
         scoop: { enabled: scoopEnabled },
         lid: { enabled: lidEnabled },
-        compartments: { cells },
+        compartments: { cells, compartmentTexts },
+        cutouts,
+        surfaceText,
+        cellMask,
         featureColors: { lip: { corners: lipCorners, bands: lipBands } },
       }),
-    [baseStyle, stackingLip, labelEnabled, scoopEnabled, lidEnabled, cells, lipCorners, lipBands]
+    [
+      baseStyle,
+      stackingLip,
+      baseSolid,
+      labelEnabled,
+      labelMode,
+      labelSpan,
+      rowTexts,
+      scoopEnabled,
+      lidEnabled,
+      cells,
+      compartmentTexts,
+      cutouts,
+      surfaceText,
+      cellMask,
+      lipCorners,
+      lipBands,
+    ]
   );
 
   // Build multi-color groups when feature is active

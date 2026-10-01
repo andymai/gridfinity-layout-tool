@@ -1810,7 +1810,7 @@
   "binDesigner.textMode.through-cut": "Taglio passante",
   "binDesigner.textMode.flat": "A filo",
   "binDesigner.textMode.flatHint": "Il testo a filo è allineato alla superficie e si vede solo nel colore Testo. Scegline uno a contrasto.",
-  "binDesigner.textMode.flatNeedsMultiColor": "Il testo a filo è allineato alla superficie e si vede solo con un secondo filamento. Attiva il multicolore per stamparlo.",
+  "binDesigner.textMode.flatNeedsMultiColor": "Il testo a filo è allineato alla superficie e si vede solo con un secondo filamento. Attiva la modalità multicolore per stamparlo.",
   "binDesigner.textMode.flatColorsAction": "Colori",
   "binDesigner.textMode.throughCutStencilNote": "Il taglio passante usa Allerta Stencil così i centri delle lettere restano attaccati.",
   "binDesigner.textSize": "Dimensione testo",

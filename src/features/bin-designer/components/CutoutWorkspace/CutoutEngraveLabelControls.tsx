@@ -20,6 +20,7 @@ import type {
 import {
   CUTOUT_LABEL_MODES,
   TEXT_MAX_LENGTH,
+  singleColorTextMode,
   withExactLabelSize,
 } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -70,6 +71,8 @@ interface CutoutEngraveLabelControlsProps {
   readonly binWidth: number;
   readonly binDepth: number;
   readonly disabled: boolean;
+  /** The lid prints in one colour, so flat text engraves there and is not offered. */
+  readonly monochromeHost?: boolean;
   readonly onUpdate: (patch: Partial<Cutout>) => void;
 }
 
@@ -78,6 +81,7 @@ export function CutoutEngraveLabelControls({
   binWidth,
   binDepth,
   disabled,
+  monochromeHost = false,
   onUpdate,
 }: CutoutEngraveLabelControlsProps) {
   const t = useTranslation();
@@ -120,8 +124,9 @@ export function CutoutEngraveLabelControls({
   };
   // Through-cut isn't offered for cutouts; show it as engrave so the picker
   // reflects what the generator will actually produce.
+  const hostMode = monochromeHost ? singleColorTextMode(textMode) : textMode;
   const effectiveMode: CutoutTextMode =
-    textMode === 'emboss' || textMode === 'flat' ? textMode : 'engrave';
+    hostMode === 'emboss' || hostMode === 'flat' ? hostMode : 'engrave';
 
   // Only the engraved path keys off an empty caption: a blank plate is a
   // legitimate design (print the socket now, letter the plate later), so
@@ -196,19 +201,21 @@ export function CutoutEngraveLabelControls({
       {!isSocket && (
         <>
           <div role="group" aria-label={t('binDesigner.textMode')} className={SEGMENT_GROUP_CLASS}>
-            {textModeChoices(CUTOUT_TEXT_MODES, multiColor, effectiveMode).map((opt) => (
-              <Button
-                key={opt}
-                type="button"
-                variant="ghost"
-                disabled={disabled}
-                onClick={() => setTextDefaults({ mode: opt })}
-                aria-pressed={effectiveMode === opt}
-                className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(effectiveMode === opt)}`}
-              >
-                {t(`binDesigner.textMode.${opt}`)}
-              </Button>
-            ))}
+            {textModeChoices(CUTOUT_TEXT_MODES, multiColor && !monochromeHost, effectiveMode).map(
+              (opt) => (
+                <Button
+                  key={opt}
+                  type="button"
+                  variant="ghost"
+                  disabled={disabled}
+                  onClick={() => setTextDefaults({ mode: opt })}
+                  aria-pressed={effectiveMode === opt}
+                  className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(effectiveMode === opt)}`}
+                >
+                  {t(`binDesigner.textMode.${opt}`)}
+                </Button>
+              )
+            )}
           </div>
           {effectiveMode === 'flat' ? (
             <FlatTextHint />

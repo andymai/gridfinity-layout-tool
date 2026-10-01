@@ -66,6 +66,10 @@ export const TEXT_BOOLEAN_EPSILON = 0.01;
  */
 const FLAT_TEXT_PRISM_DEPTH = 0.2;
 
+export function flatTextPrismDepth(hostThickness: number): number {
+  return Math.min(FLAT_TEXT_PRISM_DEPTH, hostThickness / 2);
+}
+
 let measurer: TypeMeasurer | null = null;
 
 /**
@@ -199,7 +203,7 @@ export function buildTextSolid(
   // Flat is the exception: its top face coinciding with the host's is the
   // whole point, because that shared plane is where the fuse splits the face.
   // Lifted, the prism would add a sliver; sunk, it would vanish inside the host.
-  const flatDepth = Math.min(FLAT_TEXT_PRISM_DEPTH, options.hostThickness / 2);
+  const flatDepth = flatTextPrismDepth(options.hostThickness);
   const sketchOriginZ =
     mode === 'flat'
       ? options.topZ

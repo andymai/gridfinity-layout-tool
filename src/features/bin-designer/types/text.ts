@@ -19,8 +19,8 @@
  * `flat` leaves the surface level and only splits it along the glyph outlines,
  * so the letters exist as a separate paint region and nothing else. It reads
  * only when the text colour differs from its host's, which makes it a
- * multi-colour mode: a host that prints in one colour engraves instead (see
- * {@link singleColorTextMode}).
+ * multi-colour mode. The lid exports as one colour zone, so lid text engraves
+ * instead (see {@link singleColorTextMode}).
  */
 export type TextMode = 'engrave' | 'emboss' | 'through-cut' | 'flat';
 

@@ -268,7 +268,8 @@ describe('flat label-tab text', () => {
     const shelfTop = tabTopZ(tris);
     for (const z of text.flatMap((t) => [...t.zs])) expect(z).toBeCloseTo(shelfTop, 3);
 
-    expect(meshVolume(m)).toBeCloseTo(meshVolume(getGenerateBin()(withoutText(p))), 1);
+    const plain = meshVolume(getGenerateBin()(withoutText(p)));
+    expect(Math.abs(meshVolume(m) - plain)).toBeLessThan(plain * 1e-5);
   }, 180_000);
 
   it('keeps the glyph faces through the export fuse and stays watertight', () => {

@@ -108,33 +108,34 @@ function topZOf(vertices: Float32Array): number {
   return topZ;
 }
 
-describe('flat cutout labels', () => {
-  it('lays a label beside the cutout flat in the fill top', () => {
-    const generateBin = getGenerateBin();
-    const labeled = generateBin(solidBinWithRecessedLabel('HI', 'right', 'flat'));
-    const plain = generateBin(solidBinWithRecessedLabel('', 'right', 'flat'));
-    const topZ = topZOf(plain.vertices);
-
-    let textVerts = 0;
-    for (const fg of labeled.faceGroups ?? []) {
-      if (fg.tag !== FeatureTag.TEXT) continue;
-      for (let i = fg.start; i < fg.start + fg.count; i++) {
-        expect(labeled.vertices[labeled.indices[i] * 3 + 2]).toBeCloseTo(topZ, 3);
-        textVerts++;
-      }
+function textVertexZs(mesh: ReturnType<ReturnType<typeof getGenerateBin>>): number[] {
+  const zs: number[] = [];
+  for (const fg of mesh.faceGroups ?? []) {
+    if (fg.tag !== FeatureTag.TEXT) continue;
+    for (let i = fg.start; i < fg.start + fg.count; i++) {
+      zs.push(mesh.vertices[mesh.indices[i] * 3 + 2]);
     }
-    expect(textVerts).toBeGreaterThan(0);
-    expect(meshVolume(labeled)).toBeCloseTo(meshVolume(plain), 1);
-  }, 180000);
+  }
+  return zs;
+}
 
-  it('engraves a flat label that sits on the recess floor', () => {
-    const generateBin = getGenerateBin();
-    const labeled = generateBin(solidBinWithRecessedLabel('HI', 'center', 'flat'));
-    const plain = generateBin(solidBinWithRecessedLabel('', 'center', 'flat'));
-    const floorZ = topZOf(plain.vertices) - CUT_DEPTH;
-    const engraveDepth = DEFAULT_BIN_PARAMS.textDefaults.depth;
-    expect(
-      verticesInBand(labeled.vertices, floorZ - engraveDepth - 0.1, floorZ - 0.05)
-    ).toBeGreaterThan(0);
-  }, 180000);
+describe('flat cutout labels', () => {
+  it.each([
+    ['beside the cutout, in the fill top', 'right', 0],
+    ['on the recess floor', 'center', CUT_DEPTH],
+  ] as const)(
+    'lays a label %s without changing the volume',
+    (_name, anchor, below) => {
+      const generateBin = getGenerateBin();
+      const labeled = generateBin(solidBinWithRecessedLabel('HI', anchor, 'flat'));
+      const plain = generateBin(solidBinWithRecessedLabel('', anchor, 'flat'));
+      const surfaceZ = topZOf(plain.vertices) - below;
+
+      const zs = textVertexZs(labeled);
+      expect(zs.length).toBeGreaterThan(0);
+      for (const z of zs) expect(z).toBeCloseTo(surfaceZ, 3);
+      expect(meshVolume(labeled)).toBeCloseTo(meshVolume(plain), 1);
+    },
+    180000
+  );
 });
