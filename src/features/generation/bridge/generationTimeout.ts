@@ -17,6 +17,7 @@ import { hasDetachableFeet } from '@/shared/types/bin';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { resolveOverhang } from '@/shared/utils/overhang';
 import { resolveScoopSides } from '@/shared/utils/scoopCalculations';
+import { isLiteFloorOpen } from '@/shared/utils/slotMath';
 
 /** Minimum timeout for trivial bins (no heavy features). */
 export const BASE_TIMEOUT_MS = 30_000;
@@ -116,11 +117,11 @@ export const TAPER_MULTI_COMPARTMENT_BONUS_MS = 10_000;
 export const TAPER_MS_PER_COMPARTMENT = 100;
 
 /**
- * Extra time per finger-scoop ramp. Each compartment gets its own ramp on every
- * scoop side, built and fused into the body separately, so a dense grid pays
- * per ramp. Sized for Firefox, which runs the kernel several times slower than
- * the reference machine: the device-aware floor only learns that from a
- * finished build, so the first scoop build on a dense grid has this budget alone.
+ * Extra time per finger-scoop ramp. Each compartment gets its own ramp solid on
+ * every scoop side, all combined before the one fuse into the body, so a dense
+ * grid pays per ramp. Generous because the device-aware floor only learns a
+ * device's speed from a finished build: the first scoop build on a dense grid,
+ * on a slow device, has this budget alone.
  */
 export const SCOOP_MS_PER_RAMP = 1_500;
 
@@ -247,11 +248,13 @@ function countDividerSegments(params: BinParams): number {
 
 /**
  * An upper bound on the scoop ramps the worker builds: one per compartment and
- * scoop side, behind the cheap half of the worker's `scoopRampsApply` gate.
+ * scoop side, behind the worker's `scoopRampsApply` gate. A slotted body needs no
+ * term of its own, since it is never `standard`.
  */
 function countScoopRamps(params: BinParams): number {
   if (!params.scoop.enabled || params.style !== 'standard') return 0;
   if (isPartialMask(params.cellMask) || isNestingBase(params.base)) return 0;
+  if (isLiteFloorOpen(params)) return 0;
   return new Set(params.compartments.cells).size * resolveScoopSides(params.scoop).length;
 }
 

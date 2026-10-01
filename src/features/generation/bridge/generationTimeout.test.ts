@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
+import { DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
 import type { ResolvedBaseplateParams, BinParams } from '@/shared/types/bin';
 import {
   BASE_TIMEOUT_MS,
@@ -483,7 +484,19 @@ describe('computeGenerationTimeoutMs', () => {
         rows: 3,
         cells: [1, 1, 1, 1, 1, 1, 1, 1, 0] as (0 | 1)[],
       };
-      for (const overrides of [{ style: 'slotted' }, { style: 'solid' }, { cellMask }] as const) {
+      const nesting = {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'lid',
+        trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true },
+      } as const;
+      const liteFloor = { ...DEFAULT_BIN_PARAMS.base, lightweight: true };
+      for (const overrides of [
+        { style: 'slotted' },
+        { style: 'solid' },
+        { cellMask },
+        { base: nesting },
+        { base: liteFloor },
+      ] as const) {
         expect(computeGenerationTimeoutMs(params({ compartments, scoop, ...overrides }))).toBe(
           computeGenerationTimeoutMs(params({ compartments, ...overrides }))
         );

@@ -166,25 +166,31 @@ export function calculateDividerHeight(
 export const DIVIDER_FLOOR_GROOVE_DEPTH = 0.8;
 
 /**
- * Resolved floor-groove depth for a design: 0 unless the style is slotted, the
- * groove is on, and there is a closed floor to cut it into. The floor test
- * mirrors the pipeline's `liteFloorOpen` in `deriveDimensions` term for term
- * (an interior lightweight floor is cups, not a slab; detachable feet count
- * only when a foot is actually placed) so the preview ghosts, the piece
- * builder and the worker agree; the pipeline gates on its own flag as well.
+ * Whether the bin has no closed interior floor. Mirrors the pipeline's
+ * `liteFloorOpen` in `deriveDimensions` term for term (an interior lightweight
+ * floor is cups, not a slab; detachable feet count only when a foot is actually
+ * placed), so main-thread code agrees with the worker about what gets built.
  */
-export function dividerGrooveDepth(
-  params: Pick<BinParams, 'style' | 'dividerPieces' | 'base'> & DetachableFeetParams
-): number {
-  if (params.style !== 'slotted' || !params.dividerPieces.floorGroove) return 0;
+export function isLiteFloorOpen(params: Pick<BinParams, 'base'> & DetachableFeetParams): boolean {
   const { base } = params;
   const socketless = base.style === 'flat' || base.style === 'lid';
   const detachableFeet =
     hasDetachableFeet(base) && resolveDetachableFeet(params).placements.length > 0;
   const lightweight = (base.lightweight || base.spacer) && !socketless && !detachableFeet;
   const solid = base.solid || (base.tile === true && !socketless);
-  const liteFloorOpen = lightweight && !isUndersideRelief(base) && !solid;
-  return liteFloorOpen ? 0 : DIVIDER_FLOOR_GROOVE_DEPTH;
+  return lightweight && !isUndersideRelief(base) && !solid;
+}
+
+/**
+ * Resolved floor-groove depth for a design: 0 unless the style is slotted, the
+ * groove is on, and there is a closed floor to cut it into. The pipeline gates
+ * on its own flag as well.
+ */
+export function dividerGrooveDepth(
+  params: Pick<BinParams, 'style' | 'dividerPieces' | 'base'> & DetachableFeetParams
+): number {
+  if (params.style !== 'slotted' || !params.dividerPieces.floorGroove) return 0;
+  return isLiteFloorOpen(params) ? 0 : DIVIDER_FLOOR_GROOVE_DEPTH;
 }
 
 /**
