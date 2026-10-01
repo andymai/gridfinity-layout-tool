@@ -581,6 +581,8 @@ export interface ActiveZonesParams {
   readonly compartments: {
     readonly cells: readonly number[];
     readonly compartmentTexts?: readonly string[];
+    /** Socket plates' hardware icons, which print in the Text colour too. */
+    readonly labelIcons?: readonly (string | null)[];
   };
   readonly cutouts?: readonly CaptionedShape[];
   /** Wall and lid text both activate the `text` zone. Mirrors the worker
@@ -653,31 +655,37 @@ interface CaptionedShape {
   readonly hidden?: boolean;
   readonly engraveLabel?: boolean;
   readonly labelMode?: string;
+  readonly labelIcon?: string;
   readonly label: string;
   /** A repeat's per-copy captions; the master's label covers copies past its end. */
   readonly array?: { readonly labels?: readonly string[] };
 }
 
-function hasEngravedCaption(c: CaptionedShape): boolean {
-  return (
-    c.engraveLabel === true &&
-    (c.labelMode !== 'socket' || c.shape === 'text') &&
-    (c.label.trim().length > 0 || (c.array?.labels ?? []).some((l) => l.trim().length > 0))
-  );
+/**
+ * Lettering the shape prints: engraved beside it, or carried on its swappable
+ * plate in socket mode, where an icon alone is lettering too.
+ */
+function hasCaption(c: CaptionedShape): boolean {
+  if (c.engraveLabel !== true) return false;
+  const words =
+    c.label.trim().length > 0 || (c.array?.labels ?? []).some((l) => l.trim().length > 0);
+  const onPlate = c.labelMode === 'socket' && c.shape !== 'text';
+  return words || (onPlate && c.labelIcon !== undefined);
 }
 
 /**
- * Lid caption or lid text elements, gated as `resolveLidInputs` builds them: a
- * full stack grid leaves no face for the caption, and polygon lids skip it.
+ * Lid caption or lid text elements, gated as the lid builds them: a capping
+ * lid's full stack grid leaves no face to write on and polygon lids skip both,
+ * while a sliding lid is a plain plate whose text elements always have one.
  */
 function hasLidText(p: ActiveZonesParams): boolean {
-  const gridOwnsTop =
-    p.lid.stackableTop === true && p.lid.stackLipOnly !== true && p.lid.attachment !== 'slide';
-  const caption =
-    !gridOwnsTop && !isPartialMask(p.cellMask) && (p.surfaceText?.lidText ?? '').trim() !== '';
-  const elements = (p.lid.cutouts ?? []).some(
-    (c) => c.shape === 'text' && c.hidden !== true && hasEngravedCaption(c)
-  );
+  const slide = p.lid.attachment === 'slide';
+  const gridOwnsTop = !slide && p.lid.stackableTop === true && p.lid.stackLipOnly !== true;
+  const polygon = isPartialMask(p.cellMask);
+  const caption = !gridOwnsTop && !polygon && (p.surfaceText?.lidText ?? '').trim() !== '';
+  const elements =
+    (slide || (!gridOwnsTop && !polygon)) &&
+    (p.lid.cutouts ?? []).some((c) => c.shape === 'text' && c.hidden !== true && hasCaption(c));
   return caption || elements;
 }
 
@@ -692,17 +700,17 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   const cells = p.compartments.cells;
   const firstCell = cells[0] ?? 0;
   const hasDividers = cells.length > 1 && cells.some((c) => c !== firstCell);
-  // Socket-mode tabs carry a plate pocket, not engraved text — texts may
-  // persist in the config (they label grid cells and feed future plates)
-  // but produce no text geometry, so the zone must not reach the exporter.
+  // Socket-mode tabs move the caption onto a swappable plate, whose markings
+  // (an icon included) print in the Text colour like engraved tab text.
   // Span mode reads `label.rowTexts`, not `compartmentTexts` — missing
   // it here would drop the text colour zone from a spanning design's export.
   const tabTexts = p.label.span === true ? p.label.rowTexts : p.compartments.compartmentTexts;
+  const plateIcons =
+    (p.label.mode ?? 'text') === 'socket' &&
+    (p.compartments.labelIcons ?? []).some((icon) => icon !== null);
   const hasTabText =
-    p.label.enabled &&
-    (p.label.mode ?? 'text') !== 'socket' &&
-    (tabTexts ?? []).some((t) => t.trim().length > 0);
-  const hasCutoutText = (p.cutouts ?? []).some(hasEngravedCaption);
+    p.label.enabled && ((tabTexts ?? []).some((t) => t.trim().length > 0) || plateIcons);
+  const hasCutoutText = (p.cutouts ?? []).some(hasCaption);
   // Wall surface text: polygon bins skip it, solid ones keep it (featuresStage).
   const hasWallText =
     !isPartialMask(p.cellMask) &&
@@ -723,10 +731,10 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   }
   if (p.label.enabled) zones.add('labelTab');
   if (p.scoop.enabled) zones.add('scoop');
-  // Lid needs a stacking lip to click into; `shouldGenerateLid` enforces
-  // the same precondition. Without this guard the panel would expose a
-  // Lid color row for a config the worker won't export.
-  if (p.lid.enabled && p.base.stackingLip) {
+  // A capping lid needs a stacking lip to click into, a sliding lid its own
+  // channel; `shouldGenerateLid` applies the same split. Without this guard the
+  // panel would expose a Lid color row for a config the worker won't export.
+  if (p.lid.enabled && (p.base.stackingLip || p.lid.attachment === 'slide')) {
     zones.add('lid');
     // The lid's lip zones exist only when there is a stack grid to paint. A
     // non-stackable lid has a flat top and `FeatureTag.LID_LIP` geometry is

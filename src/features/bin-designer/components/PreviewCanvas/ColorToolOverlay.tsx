@@ -9,6 +9,7 @@
  * avoids reinventing placement.
  */
 
+import { useActiveColorZones } from '@/features/bin-designer/hooks/useActiveColorZones';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { IconButton } from '@/design-system';
@@ -20,11 +21,7 @@ import {
   DEFAULT_ACCENT_BAND,
   DEFAULT_FEATURE_COLOR_CONFIG,
 } from '@/features/bin-designer/constants/defaults';
-import {
-  computeActiveZones,
-  getZoneColor,
-  parseLipCell,
-} from '@/features/bin-designer/types/featureColors';
+import { getZoneColor, parseLipCell } from '@/features/bin-designer/types/featureColors';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import { useTranslation } from '@/i18n';
 import { zoneTranslationKey, zoneColorPatch } from '@/features/bin-designer/utils/zoneLabels';
@@ -69,19 +66,6 @@ export function ColorToolOverlay({ onClosePicker }: ColorToolOverlayProps) {
     swapFirstZone,
     pickerOverlay,
     featureColors,
-    baseStyle,
-    stackingLip,
-    labelEnabled,
-    scoopEnabled,
-    lid,
-    cells,
-    labelMode,
-    labelSpan,
-    rowTexts,
-    compartmentTexts,
-    cutouts,
-    surfaceText,
-    cellMask,
     setColorTool,
     updateFeatureColors,
     startTransaction,
@@ -92,19 +76,6 @@ export function ColorToolOverlay({ onClosePicker }: ColorToolOverlayProps) {
       swapFirstZone: s.ui.swapFirstZone,
       pickerOverlay: s.ui.pickerOverlay,
       featureColors: s.params.featureColors,
-      baseStyle: s.params.base.style,
-      stackingLip: s.params.base.stackingLip,
-      labelEnabled: s.params.label.enabled,
-      scoopEnabled: s.params.scoop.enabled,
-      lid: s.params.lid,
-      cells: s.params.compartments.cells,
-      labelMode: s.params.label.mode,
-      labelSpan: s.params.label.span,
-      rowTexts: s.params.label.rowTexts,
-      compartmentTexts: s.params.compartments.compartmentTexts,
-      cutouts: s.params.cutouts,
-      surfaceText: s.params.surfaceText,
-      cellMask: s.params.cellMask,
       setColorTool: s.setColorTool,
       updateFeatureColors: s.updateFeatureColors,
       startTransaction: s.startTransaction,
@@ -136,45 +107,7 @@ export function ColorToolOverlay({ onClosePicker }: ColorToolOverlayProps) {
     return () => document.removeEventListener('keydown', handleKey);
   }, [colorTool, pickerOverlay, onClosePicker, setColorTool, addToast, t]);
 
-  const activeZones = useMemo(
-    () =>
-      computeActiveZones({
-        base: { style: baseStyle, stackingLip },
-        label: { enabled: labelEnabled, mode: labelMode, span: labelSpan, rowTexts },
-        scoop: { enabled: scoopEnabled },
-        lid,
-        compartments: { cells, compartmentTexts },
-        cutouts,
-        surfaceText,
-        cellMask,
-        featureColors: {
-          lip: { corners: featureColors.lip.corners, bands: featureColors.lip.bands },
-          // Both accent bands, so a live band's colour reaches the picker's
-          // "other colours" quick-picks. Without them a band is pickable on the
-          // canvas but its colour is missing from every other zone's swatches.
-          topAccent: featureColors.topAccent,
-          bottomAccent: featureColors.bottomAccent,
-        },
-      }),
-    [
-      baseStyle,
-      stackingLip,
-      labelEnabled,
-      scoopEnabled,
-      lid,
-      cells,
-      labelMode,
-      labelSpan,
-      rowTexts,
-      compartmentTexts,
-      cutouts,
-      surfaceText,
-      cellMask,
-      featureColors.lip,
-      featureColors.topAccent,
-      featureColors.bottomAccent,
-    ]
-  );
+  const activeZones = useActiveColorZones();
 
   const otherColors = useMemo(() => {
     if (!pickerOverlay) return [] as readonly string[];

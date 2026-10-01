@@ -92,7 +92,10 @@ export interface LabelPlateMeshData {
   readonly normals: Float32Array;
   readonly indices: Uint32Array;
   readonly triangleCount: number;
-  /** Tags glyph and icon faces `FeatureTag.TEXT`, so the preview can paint them. */
+  /**
+   * Tags glyph and icon faces `FeatureTag.TEXT`, so the preview can paint them.
+   * Mutable for the same Immer reason as `LabelPlatesMeshData.plates`.
+   */
   readonly faceGroups?: FaceGroupData[];
   /**
    * Seated pose in bin-interior coordinates: plate centre in X/Y, BOTTOM face

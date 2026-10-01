@@ -99,8 +99,11 @@ describe('buildLidColorGroups', () => {
       text,
     });
 
-    it('paints glyph triangles the Text colour, with or without a lip grid', () => {
-      const result = buildLidColorGroups(glyphFirst, vertices, indices, plain('#ff0000'));
+    it.each([
+      ['without a lip grid', plain('#ff0000')],
+      ['with a lip grid stored', { ...colors({}), text: '#ff0000' }],
+    ])('paints glyph triangles the Text colour %s', (_name, config) => {
+      const result = buildLidColorGroups(glyphFirst, vertices, indices, config);
       expect(result?.colors).toEqual(['#111111', '#ff0000']);
       expect(result?.groups[0]).toEqual({ start: 0, count: 3, materialIndex: 1 });
       expect(result?.groups[1]).toMatchObject({ materialIndex: 0 });

@@ -71,3 +71,31 @@ export function getBinTextColors(hexColor: string): BinTextColors {
     };
   }
 }
+
+/** Per-channel sRGB (0..1) to linear, for WCAG relative luminance. */
+function linearize(channel: number): number {
+  return channel <= 0.03928 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4);
+}
+
+/** WCAG relative luminance of an sRGB triple in [0, 1]. */
+export function relativeLuminance(r: number, g: number, b: number): number {
+  return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b);
+}
+
+/** WCAG contrast ratio between two relative luminances (order-independent). */
+export function luminanceContrast(l1: number, l2: number): number {
+  const hi = Math.max(l1, l2);
+  const lo = Math.min(l1, l2);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/** WCAG contrast ratio between two `#rgb` / `#rrggbb` colours. */
+export function hexContrast(a: string, b: string): number {
+  const lum = (hexColor: string): number => {
+    let hex = hexColor.replace('#', '');
+    if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    const channel = (i: number): number => parseInt(hex.substring(i, i + 2), 16) / 255;
+    return relativeLuminance(channel(0), channel(2), channel(4));
+  };
+  return luminanceContrast(lum(a), lum(b));
+}

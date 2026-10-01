@@ -24,6 +24,10 @@ describe('resolveLidInputs', () => {
       makeParams({ enabled: true }, { textDefaults: flat, surfaceText: { lidText: 'ABC' } })
     );
     expect(inputs.text?.style.mode).toBe('flat');
+    const own = resolveLidInputs(
+      makeParams({ enabled: true }, { surfaceText: { lidText: 'ABC', lidStyle: { mode: 'flat' } } })
+    );
+    expect(own.text?.style.mode).toBe('flat');
   });
 
   it('derives outer dimensions from bin width/depth and grid unit', () => {

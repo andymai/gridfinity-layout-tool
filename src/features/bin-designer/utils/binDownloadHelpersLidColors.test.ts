@@ -160,6 +160,11 @@ describe('lid top-lip colours at export', () => {
 
     const [glyph, ...shell] = lidIndices();
     expect(new Set(shell).size).toBe(1);
-    expect(glyph).not.toBe(shell[0]);
+    const objects = export3MFMultiObjectSpy.mock.calls[0][0] as Array<{
+      colorConfig?: { materials: { color: string }[] };
+    }>;
+    const materials = objects[1].colorConfig?.materials ?? [];
+    expect(materials[glyph]?.color).toBe('#ff0000');
+    expect(materials[shell[0]]?.color).toBe('#111111');
   });
 });

@@ -6,6 +6,7 @@
  */
 
 import * as THREE from 'three';
+import { luminanceContrast, relativeLuminance } from '@/shared/utils/color';
 
 /** Same darkening `CutoutShapeMesh` applies to the bin color for the cut floor. */
 const CUT_FILL_DARKEN = 0.7;
@@ -16,23 +17,6 @@ export interface CutoutLabelColors {
   readonly fill: string;
   /** Opposite of `fill` — a halo so glyphs read on busy/mid-tone fills too. */
   readonly outline: string;
-}
-
-/** Per-channel sRGB → linear for WCAG relative luminance. */
-function linearize(channel: number): number {
-  return channel <= 0.03928 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4);
-}
-
-/** WCAG relative luminance of an sRGB triple in [0,1]. */
-function relativeLuminance(r: number, g: number, b: number): number {
-  return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b);
-}
-
-/** WCAG contrast ratio between two relative luminances (order-independent). */
-function contrastRatio(l1: number, l2: number): number {
-  const hi = Math.max(l1, l2);
-  const lo = Math.min(l1, l2);
-  return (hi + 0.05) / (lo + 0.05);
 }
 
 /**
@@ -59,8 +43,8 @@ export function cutoutLabelColors(binColor: string): CutoutLabelColors {
   // CUT_FILL_DARKEN equals linearize → ×0.7 → re-encode → linearize again, and
   // keeps the contrast decision aligned with the actual displayed fill.
   const fillLum = CUT_FILL_DARKEN * relativeLuminance(r, g, b);
-  const whiteContrast = contrastRatio(fillLum, 1);
-  const blackContrast = contrastRatio(fillLum, 0);
+  const whiteContrast = luminanceContrast(fillLum, 1);
+  const blackContrast = luminanceContrast(fillLum, 0);
 
   return whiteContrast >= blackContrast
     ? { fill: '#ffffff', outline: '#000000' }

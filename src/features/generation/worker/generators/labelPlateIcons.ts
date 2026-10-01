@@ -14,7 +14,7 @@ import { isLabelPlateIconId } from '@/shared/constants/labelPlates';
 import type { LabelPlateIconId, LabelPlateTextMode } from '@/shared/constants/labelPlates';
 import { sketch } from './meshUtils';
 import { drawingFromSvgPath } from './svgDrawing';
-import { TEXT_BOOLEAN_EPSILON, flatTextPrismDepth } from './textBuilder';
+import { textOpForMode, textPrism } from './textBuilder';
 
 // Map, not a keyed object: the icon id crosses the worker message boundary,
 // and a Map lookup can neither reach the prototype chain nor dispatch to an
@@ -124,20 +124,13 @@ export function buildIconSolid(
       options.centerY - cy,
     ]);
 
-  const { mode } = options;
-  // Flat meets the plate top exactly, for the reason `buildTextSolid` gives.
-  const sketchZ =
-    mode === 'flat'
-      ? options.topZ
-      : mode === 'emboss'
-        ? options.topZ - TEXT_BOOLEAN_EPSILON
-        : options.topZ + TEXT_BOOLEAN_EPSILON;
-  const extrusion =
-    mode === 'flat'
-      ? -flatTextPrismDepth(options.hostThickness)
-      : mode === 'emboss'
-        ? options.depthMm + TEXT_BOOLEAN_EPSILON
-        : -(options.depthMm + TEXT_BOOLEAN_EPSILON);
+  const textMode = options.mode === 'deboss' ? 'engrave' : options.mode;
+  const { originZ: sketchZ, extrusion } = textPrism(
+    textMode,
+    options.topZ,
+    options.depthMm,
+    options.hostThickness
+  );
 
   // Only the returned solid outlives this function — the caller registers it in
   // its disposal scope. Every intermediate is native WASM memory that nothing
@@ -164,5 +157,5 @@ export function buildIconSolid(
     if (result.value !== solid) solid.delete();
     solid = result.value;
   }
-  return { solid, op: mode === 'deboss' ? 'cut' : 'fuse' };
+  return { solid, op: textOpForMode(textMode) };
 }

@@ -349,6 +349,16 @@ describe('labelPlateBuilder', () => {
     }
   });
 
+  it('lays a flat icon on its own in the plate top', async () => {
+    const flat = { ...OPTS, textMode: 'flat' as const };
+    const { faceGroups } = await exportLabelPlates(
+      [{ widthU: 1, text: '', icon: 'bolt' }],
+      flat,
+      'stl'
+    );
+    expect((faceGroups ?? []).some((g) => g.tag === FeatureTag.TEXT)).toBe(true);
+  });
+
   it('emits no TEXT face groups for blank plates', async () => {
     const { faceGroups } = await exportLabelPlates([{ widthU: 1, text: '' }], OPTS, 'stl');
     expect((faceGroups ?? []).some((g) => g.tag === FeatureTag.TEXT)).toBe(false);

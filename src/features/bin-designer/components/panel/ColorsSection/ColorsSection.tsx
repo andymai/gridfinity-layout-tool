@@ -17,7 +17,6 @@ import {
 } from '@/features/bin-designer/constants/defaults';
 import {
   activeLipCells,
-  computeActiveZones,
   lidLipCellZone,
   lipCellZone,
   parseLidLipCell,
@@ -35,6 +34,7 @@ import { PipetteIcon } from '@/design-system/Icon';
 import { IconButton } from '@/design-system';
 import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 import { useSwapZoneWithToast } from '@/features/bin-designer/hooks/useSwapZoneWithToast';
+import { useActiveColorZones } from '@/features/bin-designer/hooks/useActiveColorZones';
 import { FeatureToggle } from '../FeatureToggle';
 import { SubHeader } from '../shared';
 import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
@@ -68,21 +68,8 @@ export function ColorsSection() {
 
   const {
     featureColors: rawColors,
-    baseStyle,
-    stackingLip,
-    labelEnabled,
-    scoopEnabled,
-    lid,
-    cells,
     lipCorners,
     lipBands,
-    labelMode,
-    labelSpan,
-    rowTexts,
-    compartmentTexts,
-    cutouts,
-    surfaceText,
-    cellMask,
     binHeight,
     heightUnitMm,
     extraWallHeightMm,
@@ -91,24 +78,11 @@ export function ColorsSection() {
   } = useDesignerStore(
     useShallow((s) => ({
       featureColors: s.params.featureColors,
-      baseStyle: s.params.base.style,
-      stackingLip: s.params.base.stackingLip,
-      labelEnabled: s.params.label.enabled,
-      scoopEnabled: s.params.scoop.enabled,
-      lid: s.params.lid,
-      cells: s.params.compartments.cells,
       binHeight: s.params.height,
       heightUnitMm: s.params.heightUnitMm,
       extraWallHeightMm: s.params.extraWallHeightMm,
       lipCorners: s.params.featureColors.lip.corners,
       lipBands: s.params.featureColors.lip.bands,
-      labelMode: s.params.label.mode,
-      labelSpan: s.params.label.span,
-      rowTexts: s.params.label.rowTexts,
-      compartmentTexts: s.params.compartments.compartmentTexts,
-      cutouts: s.params.cutouts,
-      surfaceText: s.params.surfaceText,
-      cellMask: s.params.cellMask,
       hoveredColorZone: s.ui.hoveredColorZone,
       colorTool: s.ui.colorTool,
     }))
@@ -132,46 +106,7 @@ export function ColorsSection() {
     }))
   );
 
-  const activeZones = useMemo(
-    () =>
-      computeActiveZones({
-        base: { style: baseStyle, stackingLip },
-        label: { enabled: labelEnabled, mode: labelMode, span: labelSpan, rowTexts },
-        scoop: { enabled: scoopEnabled },
-        lid,
-        compartments: { cells, compartmentTexts },
-        cutouts,
-        surfaceText,
-        cellMask,
-        featureColors: {
-          lip: { corners: lipCorners, bands: lipBands },
-          topAccent: { enabled: topAccent.enabled, heightMm: topAccent.heightMm },
-          bottomAccent: bottomAccent
-            ? { enabled: bottomAccent.enabled, heightMm: bottomAccent.heightMm }
-            : undefined,
-        },
-      }),
-    [
-      baseStyle,
-      stackingLip,
-      labelEnabled,
-      labelMode,
-      labelSpan,
-      rowTexts,
-      scoopEnabled,
-      lid,
-      cells,
-      compartmentTexts,
-      cutouts,
-      surfaceText,
-      cellMask,
-      lipCorners,
-      lipBands,
-      topAccent.enabled,
-      topAccent.heightMm,
-      bottomAccent,
-    ]
-  );
+  const activeZones = useActiveColorZones();
   const hasLip = activeZones.has(lipCellZone('frontLeft', 0));
   const hasLabelTabs = activeZones.has('labelTab');
   const hasBase = activeZones.has('base');
