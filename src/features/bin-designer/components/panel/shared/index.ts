@@ -7,4 +7,6 @@ export { LinkIcon, ChevronIcon } from './icons';
 export { Hint, Readout, SubHeader } from './panelText';
 export { ModeCard } from './ModeCard';
 export { DependencyHint } from './DependencyHint';
-export { FlatTextHint } from './FlatTextHint';
+export { FlatTextClashWarning } from './FlatTextClashWarning';
+export { TextColorControl } from './TextColorControl';
+export { TextFinishGrid } from './TextFinishGrid';

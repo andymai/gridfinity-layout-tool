@@ -612,7 +612,7 @@ describe('LidSection', () => {
       render(<LidSection />);
       const finish = within(screen.getByRole('radiogroup', { name: 'Finish' }));
       expect(finish.getByRole('radio', { name: 'Flat' })).toHaveAttribute('aria-checked', 'true');
-      expect(screen.getByRole('button', { name: 'Colors' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^Text color:/ })).toBeInTheDocument();
     });
 
     it('does not warn about embossed text on a plain flat top', () => {

@@ -74,22 +74,27 @@ describe('CutoutEngraveLabelControls relief depth', () => {
   it('offers flat to a multi-color design and drops the depth field for it', () => {
     renderControls(makeCutout());
     expect(
-      screen.queryByRole('button', { name: 'binDesigner.textMode.flat' })
+      screen.queryByRole('radio', { name: 'binDesigner.textMode.flat' })
     ).not.toBeInTheDocument();
     cleanup();
 
     const { params } = useDesignerStore.getState();
     useDesignerStore.setState({
-      params: { ...params, featureColors: { ...params.featureColors, enabled: true } },
+      params: {
+        ...params,
+        cutouts: [makeCutout()],
+        featureColors: { ...params.featureColors, enabled: true },
+      },
     });
     renderControls(makeCutout());
-    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.textMode.flat' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'binDesigner.textMode.flat' }));
 
     expect(useDesignerStore.getState().params.textDefaults.mode).toBe('flat');
     expect(
       screen.queryByRole('spinbutton', { name: /binDesigner\.cutoutTextDepth/ })
     ).not.toBeInTheDocument();
-    expect(screen.getByText('binDesigner.textMode.flatHint')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^binDesigner\.textColor:/ })).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.textColor.hidden')).toBeInTheDocument();
   });
 
   it('keeps the depth field off the socket branch, which engraves nothing', () => {

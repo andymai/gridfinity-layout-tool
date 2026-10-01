@@ -1003,7 +1003,6 @@ export function useLidSection() {
       // Lid-top text
       lidText,
       textMode,
-      multiColor: params.featureColors.enabled,
       textDisabledReason,
       textDisabledByStackGrid: stackGridOwnsTop,
       textOnTrayFloor: topSurface === 'tray',

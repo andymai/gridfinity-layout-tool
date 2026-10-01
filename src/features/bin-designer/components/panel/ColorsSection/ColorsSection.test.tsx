@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ColorsSection } from './ColorsSection';
+import { DEFAULT_SETTINGS, useSettingsStore } from '@/core/store';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import { makeUniformLipCells } from '@/features/bin-designer/types/featureColors';
@@ -94,13 +95,41 @@ describe('ColorsSection', () => {
       },
     });
     const { unmount } = render(<ColorsSection />);
-    expect(screen.queryByText('Text')).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Text:/ })).toBeNull();
     unmount();
 
     const { params } = useDesignerStore.getState();
     useDesignerStore.setState({ params: { ...params, surfaceText: { walls: { front: 'AB' } } } });
     render(<ColorsSection />);
-    expect(screen.getByText('Text')).toBeDefined();
+    expect(screen.getByRole('button', { name: /^Text:/ })).toBeDefined();
+    expect(screen.queryByText('Add-ons')).toBeNull();
+  });
+
+  it('applies a saved palette with its Text colour, and keeps Text when the palette has none', () => {
+    const palette = (id: string, text?: string) => ({
+      id,
+      name: id,
+      createdAt: new Date().toISOString(),
+      colors: { ...colors(), ...(text ? { text } : {}) },
+    });
+    const { text: _omit, ...withoutText } = colors();
+    useSettingsStore.setState({
+      settings: {
+        ...DEFAULT_SETTINGS,
+        savedColorPalettes: [
+          palette('Inky', '#111111'),
+          { ...palette('Legacy'), colors: withoutText },
+        ],
+      },
+    });
+    render(<ColorsSection />);
+    fireEvent.click(screen.getByLabelText('More actions'));
+    fireEvent.click(screen.getByText('Inky'));
+    expect(useDesignerStore.getState().params.featureColors.text).toBe('#111111');
+
+    fireEvent.click(screen.getByLabelText('More actions'));
+    fireEvent.click(screen.getByText('Legacy'));
+    expect(useDesignerStore.getState().params.featureColors.text).toBe('#111111');
   });
 
   it('hides the Interior group entirely when neither scoop nor dividers are active', () => {

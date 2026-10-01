@@ -88,6 +88,7 @@ describe('ColorsActionsMenu', () => {
     const palettes = useSettingsStore.getState().settings.savedColorPalettes;
     expect(palettes).toHaveLength(1);
     expect(palettes[0].name).toBe('My Palette');
+    expect(palettes[0].colors.text).toBe(fc.text);
   });
 
   it('cancels the inline save row when Escape is pressed', () => {

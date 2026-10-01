@@ -62,7 +62,7 @@ export function LabelTabsSection() {
   const groupTitles = {
     placement: t('binDesigner.labelPlacementGroup'),
     shape: t('binDesigner.tabShapeGroup'),
-    text: t('binDesigner.tabEngravedText'),
+    text: t('binDesigner.tabTextGroup'),
     colors: t('binDesigner.labelColorsGroup'),
   } as const;
 
@@ -83,11 +83,14 @@ export function LabelTabsSection() {
     state.spanning ? t('binDesigner.labelTextPerRow') : t('binDesigner.labelTextPerCompartment'),
   ].join(' · ');
 
-  // Technical readout, deliberately untranslated (same convention as
-  // dimensionsReadout) apart from the font's own display name.
-  const textStyleReadout = `${t(`binDesigner.type.font.${state.textDefaults.font}`)} · ${
-    state.textDefaults.depth
-  } mm`;
+  // Depth is shown only for the finishes that cut or raise to it; the depth
+  // figure itself stays untranslated, like dimensionsReadout.
+  const { mode: textMode, font: textFont, depth: textDepth } = state.textDefaults;
+  const textStyleReadout = [
+    t(`binDesigner.textMode.${textMode}`),
+    t(`binDesigner.type.font.${textFont}`),
+    ...(textMode === 'engrave' || textMode === 'emboss' ? [`${textDepth} mm`] : []),
+  ].join(' · ');
 
   // Marks a collapsed group holding an active warning. The message itself has
   // already escaped to section level; this is what ties it back to its home.

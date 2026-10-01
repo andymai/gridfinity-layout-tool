@@ -650,7 +650,7 @@ export function lipCellsUniform(lip: LipColorConfig): boolean {
   return active.every((zone) => lip.cells[zone] === first);
 }
 
-interface CaptionedShape {
+export interface CaptionedShape {
   readonly shape?: string;
   readonly hidden?: boolean;
   readonly engraveLabel?: boolean;
@@ -665,7 +665,7 @@ interface CaptionedShape {
  * Lettering the shape prints: engraved beside it, or carried on its swappable
  * plate in socket mode, where an icon alone is lettering too.
  */
-function hasCaption(c: CaptionedShape): boolean {
+export function hasCaption(c: CaptionedShape): boolean {
   if (c.engraveLabel !== true) return false;
   const words =
     c.label.trim().length > 0 || (c.array?.labels ?? []).some((l) => l.trim().length > 0);
@@ -678,15 +678,26 @@ function hasCaption(c: CaptionedShape): boolean {
  * lid's full stack grid leaves no face to write on and polygon lids skip both,
  * while a sliding lid is a plain plate whose text elements always have one.
  */
-function hasLidText(p: ActiveZonesParams): boolean {
+export function lidTextHosts(p: ActiveZonesParams): {
+  readonly caption: boolean;
+  readonly elements: readonly CaptionedShape[];
+} {
   const slide = p.lid.attachment === 'slide';
   const gridOwnsTop = !slide && p.lid.stackableTop === true && p.lid.stackLipOnly !== true;
   const polygon = isPartialMask(p.cellMask);
   const caption = !gridOwnsTop && !polygon && (p.surfaceText?.lidText ?? '').trim() !== '';
   const elements =
-    (slide || (!gridOwnsTop && !polygon)) &&
-    (p.lid.cutouts ?? []).some((c) => c.shape === 'text' && c.hidden !== true && hasCaption(c));
-  return caption || elements;
+    slide || (!gridOwnsTop && !polygon)
+      ? (p.lid.cutouts ?? []).filter(
+          (c) => c.shape === 'text' && c.hidden !== true && hasCaption(c)
+        )
+      : [];
+  return { caption, elements };
+}
+
+function hasLidText(p: ActiveZonesParams): boolean {
+  const { caption, elements } = lidTextHosts(p);
+  return caption || elements.length > 0;
 }
 
 /**

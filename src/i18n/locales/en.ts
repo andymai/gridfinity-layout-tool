@@ -1860,7 +1860,7 @@ const en: Record<string, string> = {
   'binDesigner.alignment.left': 'Left',
   'binDesigner.alignment.center': 'Center',
   'binDesigner.alignment.right': 'Right',
-  'binDesigner.tabEngravedText': 'Engraved text',
+  'binDesigner.tabTextGroup': 'Tab text',
   'binDesigner.tabEngravedTextPlaceholder': 'e.g. SCREWS',
   'binDesigner.tabEngravedTextAriaLabel': 'Engraved text for compartment {n}',
   'binDesigner.tabMode': 'Label style',
@@ -2034,11 +2034,12 @@ const en: Record<string, string> = {
   'binDesigner.textMode.emboss': 'Emboss',
   'binDesigner.textMode.through-cut': 'Through-cut',
   'binDesigner.textMode.flat': 'Flat',
-  'binDesigner.textMode.flatHint':
-    'Flat text is level with the surface and shows only in the Text color. Pick one that contrasts.',
-  'binDesigner.textMode.flatNeedsMultiColor':
-    'Flat text is level with the surface and shows only in a second filament. Turn on multi-color to print it.',
-  'binDesigner.textMode.flatColorsAction': 'Colors',
+  'binDesigner.textColor': 'Text color',
+  'binDesigner.textColor.hidden':
+    "Same color as the surface it sits on, so the flat letters won't show.",
+  'binDesigner.textColor.useContrasting': 'Use a contrasting color',
+  'binDesigner.textColor.needsMultiColor': 'Flat letters only show in a second filament.',
+  'binDesigner.textColor.turnOnMultiColor': 'Turn on Multi-Color',
   'binDesigner.textMode.throughCutStencilNote':
     'Through-cut uses Allerta Stencil so letter centers stay attached.',
   'binDesigner.textFont': 'Font',
@@ -2757,6 +2758,7 @@ const en: Record<string, string> = {
   'binDesigner.colors.group.exterior': 'Exterior',
   'binDesigner.colors.group.interior': 'Interior',
   'binDesigner.colors.group.addons': 'Add-ons',
+  'binDesigner.colors.group.text': 'Text',
   'binDesigner.colors.presets': 'Presets',
   'binDesigner.colors.hexColor': 'Hex color',
   'binDesigner.colors.hexInvalid': 'Invalid hex color',

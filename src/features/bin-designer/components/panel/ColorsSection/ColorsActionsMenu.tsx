@@ -90,6 +90,7 @@ export function ColorsActionsMenu({
         base: featureColors.base,
         scoop: featureColors.scoop,
         dividers: featureColors.dividers,
+        text: featureColors.text,
       },
     };
 

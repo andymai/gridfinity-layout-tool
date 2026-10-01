@@ -789,7 +789,6 @@ export function useLabelTabsSection() {
     state: {
       label,
       textDefaults,
-      multiColor: params.featureColors.enabled,
       spanning,
       textRows,
       canWidenTabs,

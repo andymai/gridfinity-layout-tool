@@ -29,10 +29,11 @@ import {
   SegmentGrid,
   InfoDot,
   SideSelector,
-  FlatTextHint,
+  TextColorControl,
+  TextFinishGrid,
 } from '../shared';
 import type { SideState } from '../shared';
-import { textModeChoices } from '@/features/bin-designer/utils/textModeChoices';
+import type { TextSurface } from '@/features/bin-designer/utils/flatTextContrast';
 import type {
   LidCompatibilityId,
   LidCompatibilityIssue,
@@ -47,6 +48,7 @@ import { LidAdvancedFields } from './LidAdvancedFields';
 
 /** Mode options for the lid-text picker, in the shared textMode order. */
 const TEXT_MODE_OPTIONS: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'] as const;
+const LID_SURFACE: readonly TextSurface[] = ['lid'];
 
 type Translator = ReturnType<typeof useTranslation>;
 
@@ -311,26 +313,15 @@ export function LidSection() {
                   />
                   {state.lidText.trim() !== '' && (
                     <>
-                      <SegmentedControl
-                        aria-label={t('binDesigner.textMode')}
-                        activeStyle="accent"
-                        fullWidth
-                        size="sm"
+                      <TextFinishGrid
+                        modes={TEXT_MODE_OPTIONS}
                         value={state.textMode}
                         onChange={handlers.setTextMode}
-                        options={textModeChoices(
-                          TEXT_MODE_OPTIONS,
-                          state.multiColor,
-                          state.textMode
-                        ).map((mode) => ({
-                          value: mode,
-                          label: t(`binDesigner.textMode.${mode}`),
-                        }))}
                       />
                       {state.textMode === 'through-cut' && (
                         <Hint>{t('binDesigner.textMode.throughCutStencilNote')}</Hint>
                       )}
-                      {state.textMode === 'flat' && <FlatTextHint />}
+                      <TextColorControl surfaces={LID_SURFACE} flat={state.textMode === 'flat'} />
                       {state.textOnTrayFloor && <Hint>{t('binDesigner.lid.text.trayHint')}</Hint>}
                       {state.textOnStackLipFloor && (
                         <Hint>{t('binDesigner.lid.text.stackLipHint')}</Hint>

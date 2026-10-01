@@ -11,6 +11,7 @@
  * degrades it to engrave.
  */
 
+import { useMemo } from 'react';
 import type {
   Cutout,
   CutoutLabelMode,
@@ -40,8 +41,8 @@ import { Button, Input, NumberField } from '@/design-system';
 import { CutoutSocketControls } from './CutoutSocketControls';
 import { useCutoutSocketPlan } from '@/features/bin-designer/hooks/useCutoutSocketPlan';
 import { TYPE_BOUNDS } from '../panel/TypeSection/useTypeSection';
-import { FlatTextHint } from '../panel/shared';
-import { textModeChoices } from '@/features/bin-designer/utils/textModeChoices';
+import { TextColorControl, TextFinishGrid } from '../panel/shared';
+import type { TextSurface } from '@/features/bin-designer/utils/flatTextContrast';
 import { fitLabelFontSize } from '../panel/CutoutsSection/renderer/cutoutLabelFit';
 
 /** 3×3 anchor grid in reading order; the glyph hints the position, the
@@ -70,6 +71,8 @@ interface CutoutEngraveLabelControlsProps {
   readonly binWidth: number;
   readonly binDepth: number;
   readonly disabled: boolean;
+  /** What the caption sits on: the bin's fill, or a lid for a lid text element. */
+  readonly surface?: TextSurface;
   readonly onUpdate: (patch: Partial<Cutout>) => void;
 }
 
@@ -78,8 +81,10 @@ export function CutoutEngraveLabelControls({
   binWidth,
   binDepth,
   disabled,
+  surface = 'body',
   onUpdate,
 }: CutoutEngraveLabelControlsProps) {
+  const textSurface = useMemo(() => [surface], [surface]);
   const t = useTranslation();
   const socketPlan = useCutoutSocketPlan();
   const anchor = resolveCutoutTextAnchor(cutout);
@@ -93,7 +98,6 @@ export function CutoutEngraveLabelControls({
   const textDefaults = useDesignerStore((s) => s.params.textDefaults);
   const setTextDefaults = useDesignerStore((s) => s.setTextDefaults);
   const setCutoutArray = useDesignerStore((s) => s.setCutoutArray);
-  const multiColor = useDesignerStore((s) => s.params.featureColors.enabled);
   const { mode: textMode, depth: textDepth } = textDefaults;
 
   // The size an explicit request would print at, mirrored from the engraver's
@@ -195,24 +199,14 @@ export function CutoutEngraveLabelControls({
       )}
       {!isSocket && (
         <>
-          <div role="group" aria-label={t('binDesigner.textMode')} className={SEGMENT_GROUP_CLASS}>
-            {textModeChoices(CUTOUT_TEXT_MODES, multiColor, effectiveMode).map((opt) => (
-              <Button
-                key={opt}
-                type="button"
-                variant="ghost"
-                disabled={disabled}
-                onClick={() => setTextDefaults({ mode: opt })}
-                aria-pressed={effectiveMode === opt}
-                className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(effectiveMode === opt)}`}
-              >
-                {t(`binDesigner.textMode.${opt}`)}
-              </Button>
-            ))}
-          </div>
-          {effectiveMode === 'flat' ? (
-            <FlatTextHint />
-          ) : (
+          <TextFinishGrid
+            modes={CUTOUT_TEXT_MODES}
+            value={effectiveMode}
+            onChange={(mode) => setTextDefaults({ mode })}
+            disabled={disabled}
+          />
+          <TextColorControl surfaces={textSurface} flat={effectiveMode === 'flat'} />
+          {effectiveMode !== 'flat' && (
             <NumberField
               label={t(
                 effectiveMode === 'emboss'
