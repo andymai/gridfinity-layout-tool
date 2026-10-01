@@ -1,0 +1,23 @@
+src/features/generation/bridge/generationTimeout.ts
+  s_fe2c0a02f9f14e::t_065b067cdb8edc 14,19,118-126,248-257,351
+  s_fe2c0a02f9f14e::t_6c70ba5bcc31fc 352
+src/features/generation/bridge/generationTimeout.test.ts
+  s_fe2c0a02f9f14e::t_c9fcb8326f50e5 33,452-494
+  s_fe2c0a02f9f14e::t_a1bc1476ec7ce0 495-496
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9d1a3dc97e125411b9edecf755fecf1c8fd1f725",
+  "prompts": {},
+  "sessions": {
+    "s_fe2c0a02f9f14e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5b1cfa44-fa06-49f6-b48e-d3066914d5be",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
