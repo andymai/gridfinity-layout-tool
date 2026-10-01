@@ -139,4 +139,32 @@ describe('lid top-lip colours at export', () => {
 
     expect(new Set(lidIndices()).size).toBe(1);
   });
+
+  it('paints lid glyphs the Text colour without a lid lip grid', async () => {
+    const { buildMultiObject3MF } = await import('./binDownloadHelpers');
+    export3MFMultiObjectSpy.mockClear();
+    const glyphFirst = [
+      { start: 0, count: 3, tag: FeatureTag.TEXT },
+      { start: 3, count: (QUADS.length - 1) * 3, tag: FeatureTag.LID_BODY },
+    ];
+    const p = params();
+
+    buildMultiObject3MF(
+      PIECES,
+      [],
+      { ...p, featureColors: { ...p.featureColors, text: '#ff0000' } },
+      'assembly',
+      PRINT_SETTINGS,
+      glyphFirst
+    );
+
+    const [glyph, ...shell] = lidIndices();
+    expect(new Set(shell).size).toBe(1);
+    const objects = export3MFMultiObjectSpy.mock.calls[0][0] as Array<{
+      colorConfig?: { materials: { color: string }[] };
+    }>;
+    const materials = objects[1].colorConfig?.materials ?? [];
+    expect(materials[glyph]?.color).toBe('#ff0000');
+    expect(materials[shell[0]]?.color).toBe('#111111');
+  });
 });

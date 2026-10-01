@@ -18,16 +18,16 @@ function makeParams(lid: Partial<LidConfig> = {}, extra: Partial<BinParams> = {}
 }
 
 describe('resolveLidInputs', () => {
-  it('engraves lid text that resolves to flat, since the lid prints in one color', () => {
+  it('keeps lid text flat, since the lid prints its glyphs in the Text color', () => {
     const flat = { ...DEFAULT_BIN_PARAMS.textDefaults, mode: 'flat' as const };
-    const inherited = resolveLidInputs(
+    const inputs = resolveLidInputs(
       makeParams({ enabled: true }, { textDefaults: flat, surfaceText: { lidText: 'ABC' } })
     );
-    expect(inherited.text?.style.mode).toBe('engrave');
+    expect(inputs.text?.style.mode).toBe('flat');
     const own = resolveLidInputs(
       makeParams({ enabled: true }, { surfaceText: { lidText: 'ABC', lidStyle: { mode: 'flat' } } })
     );
-    expect(own.text?.style.mode).toBe('engrave');
+    expect(own.text?.style.mode).toBe('flat');
   });
 
   it('derives outer dimensions from bin width/depth and grid unit', () => {

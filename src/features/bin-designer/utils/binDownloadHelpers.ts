@@ -29,19 +29,13 @@ import { enumerateCutoutColorUnits } from '@/shared/generation/cutoutColorUnits'
 import { planCompartmentColors } from '@/features/bin-designer/utils/compartmentColorUnits';
 import { isMultiColorDesign } from '@/features/bin-designer/utils/multiColorDesign';
 import {
-  collapseLidLipCell,
   computeActiveZones,
   getZoneColor,
   normalizeHex,
   resolveColorMapping,
 } from '@/features/bin-designer/types/featureColors';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
-import {
-  classifyLipBand,
-  classifyLipCorner,
-  computeLidLipGeom,
-} from '@/features/bin-designer/utils/lipCornerClassifier';
-import { FeatureTag } from '@/shared/types/generation';
+import { classifyLidTriangles } from '@/features/bin-designer/utils/lidColorGroups';
 import type { FaceGroupData } from '@/shared/types/generation';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { FORMAT_MIME_TYPES } from '@/shared/generation/exportUtils';
@@ -237,14 +231,12 @@ function uniformColorConfig(
 }
 
 /**
- * Per-triangle material indices for the LID piece: its shell takes the flat
- * `lid` colour while its stack grid (`FeatureTag.LID_LIP`) is classified into
- * the `lidLip` corner × band grid, so the lid's top lip can differ from the rest
- * of the lid.
+ * Per-triangle material indices for the LID piece, from the same
+ * `classifyLidTriangles` rule the preview uses: glyphs take the Text colour,
+ * the stack grid its `lidLip` cell, the rest the flat `lid` colour.
  *
- * Falls back to null when the lid carries no LID_LIP geometry (a non-stackable
- * lid has a flat top) or when the grid is uniform — the caller then keeps the
- * cheaper whole-object uniform config.
+ * Returns null when every triangle lands on the lid colour, so the caller keeps
+ * the cheaper whole-object uniform config.
  *
  * NB: the export path flips most lids for printing (`orientForPrint`), so bands
  * are derived from the lip's OWN Z extent via `computeLipGeom` rather than from
@@ -257,37 +249,22 @@ function lidColorConfig(
   triangleCount: number,
   vertices: Float32Array
 ): ThreeMFColorConfig | null {
-  const grid = featureColors.lidLip;
-  if (!grid) return null;
-  const counts = { corners: grid.corners, bands: grid.bands };
   const getTriangle = (t: number): Float32Array => vertices.subarray(t * 9, t * 9 + 9);
-  const triangleXYZ = (t: number) => {
-    const v = getTriangle(t);
-    return {
-      x: (v[0] + v[3] + v[6]) / 3,
-      y: (v[1] + v[4] + v[7]) / 3,
-      z: (v[2] + v[5] + v[8]) / 3,
-    };
-  };
-  const geom = computeLidLipGeom(faceGroups, getTriangle);
-  if (!geom) return null;
+  const zones = classifyLidTriangles(faceGroups, triangleCount, getTriangle, featureColors);
 
   const { colors, colorToIndex } = resolveColorMapping(featureColors);
   const lidSlot = colorToIndex.get(normalizeHex(getZoneColor(featureColors, 'lid'))) ?? 0;
-  const indices = new Array<number>(triangleCount).fill(lidSlot);
-
-  for (const g of faceGroups) {
-    if (g.tag !== FeatureTag.LID_LIP) continue;
-    const start = g.start / 3;
-    const end = Math.min(start + g.count / 3, triangleCount);
-    for (let t = start; t < end; t++) {
-      const { x, y, z } = triangleXYZ(t);
-      const corner = classifyLipCorner(x, y, geom.cx, geom.cy);
-      const band = classifyLipBand(z, geom.minZ, geom.maxZ, counts.bands);
-      const zone = collapseLidLipCell(corner, band, counts);
-      indices[t] = colorToIndex.get(normalizeHex(getZoneColor(featureColors, zone))) ?? lidSlot;
+  const slotByZone = new Map<ColorZone, number>();
+  const slotOf = (zone: ColorZone): number => {
+    let slot = slotByZone.get(zone);
+    if (slot === undefined) {
+      slot = colorToIndex.get(normalizeHex(getZoneColor(featureColors, zone))) ?? lidSlot;
+      slotByZone.set(zone, slot);
     }
-  }
+    return slot;
+  };
+  const indices = zones.map(slotOf);
+  if (indices.every((slot) => slot === lidSlot)) return null;
   return { materials: colors.map((c) => ({ color: c })), triangleMaterialIndices: indices };
 }
 
@@ -387,9 +364,9 @@ export function buildMultiObject3MFObjects(
       const zone = pieceZone(piece.label);
       if (zone !== null) {
         const triangleCount = vertices.length / 9;
-        // The lid gets per-triangle paint when it has a lip grid AND the worker
-        // sent its face groups; everything else (and a lid without either) stays
-        // on the cheaper uniform slot.
+        // The lid gets per-triangle paint when the worker sent its face groups
+        // and some of them (text, a lip grid) differ from the lid colour;
+        // everything else stays on the cheaper uniform slot.
         colorConfig =
           (zone === 'lid' && lidFaceGroups
             ? lidColorConfig(params.featureColors, lidFaceGroups, triangleCount, vertices)

@@ -270,6 +270,7 @@ export function runGeneration(
             normals: maybeCopy(plate.normals),
             indices: maybeCopy(plate.indices),
             triangleCount: plate.triangleCount,
+            ...(plate.faceGroups ? { faceGroups: plate.faceGroups } : {}),
             seatX: plate.seatX,
             seatY: plate.seatY,
             seatZ: plate.seatZ,

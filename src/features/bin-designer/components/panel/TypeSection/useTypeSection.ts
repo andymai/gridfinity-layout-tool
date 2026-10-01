@@ -57,11 +57,10 @@ export const TYPE_BOUNDS = {
 
 export function useTypeSection() {
   const t = useTranslation();
-  const { textDefaults, setTextDefaults, stemWarning, surfaceText, compartmentTexts, multiColor } =
+  const { textDefaults, setTextDefaults, stemWarning, surfaceText, compartmentTexts } =
     useDesignerStore(
       useShallow((s) => ({
         textDefaults: s.params.textDefaults,
-        multiColor: s.params.featureColors.enabled,
         setTextDefaults: s.setTextDefaults,
         surfaceText: s.params.surfaceText,
         compartmentTexts: s.params.compartments.compartmentTexts,
@@ -167,7 +166,6 @@ export function useTypeSection() {
       // Through-cut ignores the picked face, so saying which face it will use
       // is more honest than leaving the picker looking effective.
       stencilSubstituted: textDefaults.mode === 'through-cut',
-      multiColor,
       isFixedSize: textDefaults.sizeMode === 'fixed',
       isDrafted: textDefaults.cutProfile === 'drafted',
     },

@@ -20,7 +20,9 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
+import { FeatureTag } from '@/shared/types/generation';
 import type { LabelPlateMeshData } from '@/shared/types/generation';
+import { getZoneColor, normalizeHex } from '@/features/bin-designer/types/featureColors';
 import { referenceRowPoses, seatedPose } from './platePoses';
 import type { Pose } from './platePoses';
 
@@ -44,17 +46,31 @@ function PlateInstance({
   plate,
   poses,
   material,
+  textMaterial,
 }: {
   plate: LabelPlateMeshData;
   poses: readonly Pose[];
   material: THREE.Material;
+  textMaterial: THREE.Material | null;
 }) {
+  const twoTone = textMaterial !== null && plate.faceGroups !== undefined;
+  const groups = useMemo(
+    () =>
+      twoTone
+        ? plate.faceGroups.map((g) => ({
+            start: g.start,
+            count: g.count,
+            materialIndex: g.tag === FeatureTag.TEXT ? 1 : 0,
+          }))
+        : undefined,
+    [twoTone, plate.faceGroups]
+  );
   const { geometry } = useMeshGeometry({
     vertices: plate.vertices,
     normals: plate.normals,
     indices: plate.indices,
     edgeVertices: null,
-    faceGroups: undefined,
+    faceGroups: groups,
   });
 
   if (!geometry) return null;
@@ -62,9 +78,11 @@ function PlateInstance({
     <>
       {poses.map((pose, i) => (
         <mesh
-          key={i}
+          // A distinct key per material shape, so R3F never diffs a single
+          // material onto a mesh that was holding the two-tone array.
+          key={`${i}-${twoTone ? 'two' : 'one'}`}
           geometry={geometry}
-          material={material}
+          material={twoTone ? [material, textMaterial] : material}
           position={pose.position}
           rotation={[(pose.pitchDeg * Math.PI) / 180, 0, (pose.yawDeg * Math.PI) / 180, 'ZYX']}
           renderOrder={2}
@@ -75,24 +93,50 @@ function PlateInstance({
 }
 
 export function LabelPlateMeshes({ color, lidOffsetMm, wireframe = false }: LabelPlateMeshesProps) {
-  const { labelPlates, visible, depth, gridUnitMm, gridUnitMmY } = useDesignerStore(
+  const { labelPlates, visible, depth, gridUnitMm, gridUnitMmY, featureColors } = useDesignerStore(
     useShallow((s) => ({
       labelPlates: s.generation.mesh?.labelPlates ?? null,
       visible: s.ui.showLabelPlates,
       depth: s.params.depth,
       gridUnitMm: s.params.gridUnitMm,
       gridUnitMmY: s.params.gridUnitMmY,
+      featureColors: s.params.featureColors,
     }))
   );
 
+  // The same pair the plate 3MF prints (`labelPlateColors`): the label-tab
+  // colour for the plate, the Text colour for its glyphs and icon.
+  const plateHex = featureColors.enabled ? getZoneColor(featureColors, 'labelTab') : color;
+  const textHex = featureColors.enabled ? getZoneColor(featureColors, 'text') : color;
+  const twoTone = normalizeHex(plateHex) !== normalizeHex(textHex);
+
   const material = useMemo(
-    () => new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0.05, wireframe }),
-    [color, wireframe]
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: plateHex,
+        roughness: 0.6,
+        metalness: 0.05,
+        wireframe,
+      }),
+    [plateHex, wireframe]
+  );
+  const textMaterial = useMemo(
+    () =>
+      twoTone
+        ? new THREE.MeshStandardMaterial({
+            color: textHex,
+            roughness: 0.6,
+            metalness: 0.05,
+            wireframe,
+          })
+        : null,
+    [twoTone, textHex, wireframe]
   );
 
   // Without this, every colour or wireframe change strands the previous
   // material on the GPU for the rest of the editing session.
   useEffect(() => () => material.dispose(), [material]);
+  useEffect(() => () => textMaterial?.dispose(), [textMaterial]);
 
   const plates = useMemo(() => labelPlates?.plates ?? EMPTY_PLATES, [labelPlates]);
 
@@ -113,6 +157,7 @@ export function LabelPlateMeshes({ color, lidOffsetMm, wireframe = false }: Labe
           plate={plate}
           poses={[seatedPose(plate, lidOffsetMm), rowPositions[i]]}
           material={material}
+          textMaterial={textMaterial}
         />
       ))}
     </group>

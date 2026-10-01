@@ -1,13 +1,9 @@
 /**
- * Label color controls surfaced directly in the Label section.
- *
- * Labels are colorable through the multi-color `featureColors` model — the
- * raised tab (`labelTab`) and the engraved text (`text`) are distinct zones.
- * Those zones are otherwise only reachable from the experimental Colors
- * section, so users designing a label never discover them. These two swatches
- * drive the same `featureColors` slots and auto-enable multi-color the moment a
- * non-body color is picked, so a chosen color actually renders and exports
- * instead of silently doing nothing.
+ * The label tab's colour, surfaced directly in the Label section so people
+ * designing a label find it. It drives the same `featureColors.labelTab` slot
+ * as the Colors section and auto-enables multi-color the moment a non-body
+ * colour is picked, so a chosen colour actually renders and exports. The Text
+ * colour sits under the finish picker in the tab text group instead.
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -40,11 +36,10 @@ export function LabelColorControls() {
   const t = useTranslation();
   const [recentColors, setRecentColors] = useState<readonly string[]>([]);
 
-  const { featureColors, colorTool, labelMode } = useDesignerStore(
+  const { featureColors, colorTool } = useDesignerStore(
     useShallow((s) => ({
       featureColors: s.params.featureColors,
       colorTool: s.ui.colorTool,
-      labelMode: s.params.label.mode ?? 'text',
     }))
   );
   const updateFeatureColors = useDesignerStore((s) => s.updateFeatureColors);
@@ -73,7 +68,7 @@ export function LabelColorControls() {
   const textColor = featureColors.text;
 
   const applyColor = useCallback(
-    (patch: { labelTab?: string } | { text?: string }, hex: string) => {
+    (patch: { labelTab: string }, hex: string) => {
       remember(hex);
       // Picking any non-body color implies the user wants it to show, so turn
       // on multi-color. Resetting a swatch back to the body color leaves the
@@ -104,25 +99,6 @@ export function LabelColorControls() {
           onGestureEnd={commitTransaction}
           onClickOverride={swapActive ? () => swapZoneWithToast('labelTab') : undefined}
         />
-        {/* Socket-mode tabs carry a plate pocket instead of engraved text, so
-            the text zone produces no geometry there (computeActiveZones gates
-            it the same way). */}
-        {labelMode !== 'socket' && (
-          <ColorZoneRow
-            zone="text"
-            label={t('binDesigner.colors.text')}
-            color={textColor}
-            defaultColor={DEFAULT_FEATURE_COLOR_CONFIG.text}
-            otherColors={otherColors(textColor, tabColor, bodyColor)}
-            bodyColor={bodyColor}
-            recentColors={recentColors}
-            onChange={(hex) => applyColor({ text: hex }, hex)}
-            onHover={setHoveredColorZone}
-            onGestureStart={startTransaction}
-            onGestureEnd={commitTransaction}
-            onClickOverride={swapActive ? () => swapZoneWithToast('text') : undefined}
-          />
-        )}
       </div>
       <Checkbox
         className="mt-2"

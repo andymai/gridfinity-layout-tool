@@ -43,7 +43,11 @@ import {
   labelPlateV1ChannelsFitText,
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
-import type { LabelPlateIconId, LabelPlateWidthU } from '@/shared/constants/labelPlates';
+import type {
+  LabelPlateIconId,
+  LabelPlateTextMode,
+  LabelPlateWidthU,
+} from '@/shared/constants/labelPlates';
 import { splitTextLines } from '@/shared/types/bin';
 import type { TextStyleDefaults } from '@/shared/types/bin';
 import type { ExportFormat, FaceGroupData } from '../../bridge/types';
@@ -66,8 +70,8 @@ export interface LabelPlateSpec {
 }
 
 export interface LabelPlateBuildOptions {
-  /** Raised or recessed text. */
-  readonly textMode: 'emboss' | 'deboss';
+  /** Raised, recessed or level text. */
+  readonly textMode: LabelPlateTextMode;
   /** Text depth in mm — already snapped to a whole layer-height multiple. */
   readonly textDepthMm: number;
   readonly textDefaults: TextStyleDefaults;
@@ -210,8 +214,8 @@ function roundedRect(w: number, h: number, r: number): Drawing {
 }
 
 /** `deboss` is the plate spelling of an engraved cut. */
-function plateTextMode(opts: LabelPlateBuildOptions): 'emboss' | 'engrave' {
-  return opts.textMode === 'emboss' ? 'emboss' : 'engrave';
+function plateTextMode(opts: LabelPlateBuildOptions): 'emboss' | 'engrave' | 'flat' {
+  return opts.textMode === 'deboss' ? 'engrave' : opts.textMode;
 }
 
 /**
@@ -366,6 +370,7 @@ export function buildLabelPlate(
               topZ: t,
               depthMm: opts.textDepthMm,
               mode: opts.textMode,
+              hostThickness: t,
             })
           : null;
         if (icon && box) {

@@ -49,7 +49,7 @@ import type { LoadedDesign } from './planLayoutBinExport';
 // Deep import (not the barrel): same lazy-chunk rationale as the helpers above.
 import { planLabelPlateExport } from './planLabelPlateExport';
 import { dedupeFileNames } from './dedupeFileNames';
-import { snapTextDepthToLayers } from '@/shared/constants/labelPlates';
+import { labelPlateTextMode, snapTextDepthToLayers } from '@/shared/constants/labelPlates';
 import type { LabelPlateExportSpec } from '@/shared/generation/bridge';
 import { buildLayoutManifest } from './buildLayoutManifest';
 import type { ManifestLabelGroup } from './buildLayoutManifest';
@@ -346,8 +346,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
             }
             for (const group of platePlan.groups) {
               const options = {
-                textMode:
-                  group.textDefaults.mode === 'emboss' ? ('emboss' as const) : ('deboss' as const),
+                textMode: labelPlateTextMode(group.textDefaults.mode),
                 textDepthMm: snapTextDepthToLayers(
                   group.textDefaults.depth,
                   printSettings.layerHeightMm

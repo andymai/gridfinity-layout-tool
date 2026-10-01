@@ -320,6 +320,8 @@ export interface SavedColorPalette {
     readonly base: string;
     readonly scoop: string;
     readonly dividers: string;
+    /** Absent on palettes saved before text joined them; applying one keeps the current Text. */
+    readonly text?: string;
   };
 }
 

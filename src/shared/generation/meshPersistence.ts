@@ -42,6 +42,8 @@ const META_STORE = 'binMeshMeta';
  * one kernel's output, bump that kernel's {@link KERNEL_MESH_REVISION} entry
  * instead, so the other kernel's users keep their warm cache.
  *
+ * `v26`: lid text and label plates lay `flat` text flush, where they engraved
+ * and debossed it; plate meshes carry face groups for the two-tone preview.
  * `v25`: the `flat` text mode. A client that predates it keeps the mode in
  * `textDefaults` and engraves the design under the same key.
  * `v24`: `label.removalHole` cuts a notch. A client that predates the field keeps
@@ -77,7 +79,7 @@ const META_STORE = 'binMeshMeta';
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v25';
+const MESH_CACHE_VERSION = 'v26';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for

@@ -59,7 +59,6 @@ export {
   matchTextPreset,
   normalizeTextInput,
   resolveTextStyle,
-  singleColorTextMode,
   snapToTypeScale,
   splitTextLines,
   withExactLabelSize,

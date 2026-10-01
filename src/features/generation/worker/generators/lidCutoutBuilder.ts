@@ -41,7 +41,7 @@ import {
   buildGroupedCutouts,
   buildUngroupedCutout,
 } from './cutoutBuilder';
-import { buildTextSolid } from './textBuilder';
+import { buildTextSolid, clipFlatPrism } from './textBuilder';
 import { LID_TEXT_ENGRAVE_FLOOR, MIN_ENGRAVE_DEPTH } from './lidTextBuilder';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
@@ -194,7 +194,7 @@ export function applyLidCutouts(
   if (!cutouts) return body;
 
   const tools = buildTools(cutouts);
-  if (tools.length === 0) return applyLidTextElements(scope, body, cutouts, originToTag);
+  if (tools.length === 0) return applyLidTextElements(scope, body, cutouts, originToTag, false);
 
   let boundary: Shape3D;
   try {
@@ -233,12 +233,12 @@ export function applyLidCutouts(
     }
   }
 
-  if (holes.length === 0) return applyLidTextElements(scope, body, cutouts, originToTag);
+  if (holes.length === 0) return applyLidTextElements(scope, body, cutouts, originToTag, false);
   scope.register(body);
   const cutBody = unwrap(cutAll(body as ValidSolid, holes as ValidSolid[]));
   // Text AFTER the holes, so a caption engraves into what survives them —
   // the same ordering the bin top and `applyLidText` follow.
-  return applyLidTextElements(scope, cutBody, cutouts, originToTag);
+  return applyLidTextElements(scope, cutBody, cutouts, originToTag, true);
 }
 
 /**
@@ -255,7 +255,8 @@ function applyLidTextElements(
   scope: DisposalScope,
   body: Shape3D,
   cutouts: LidCutoutInputs,
-  originToTag?: Map<number, number>
+  originToTag: Map<number, number> | undefined,
+  holesCut: boolean
 ): Shape3D {
   const texts = cutouts.shapes.filter(
     (c) => c.shape === 'text' && c.hidden !== true && isCutoutEngraveMode(c)
@@ -291,7 +292,7 @@ function applyLidTextElements(
         resolved.sizeMode !== 'fixed' ? { ...resolved, sizeMode: 'fixed' as const } : resolved;
       // Through-cut would stencil the plate; like bin-top captions it degrades
       // to engrave, and the engrave keeps a floor so it cannot pierce.
-      const mode = style.mode === 'emboss' ? 'emboss' : 'engrave';
+      const mode = style.mode === 'emboss' || style.mode === 'flat' ? style.mode : 'engrave';
       let depth = style.depth;
       if (mode === 'engrave') {
         depth = Math.min(depth, thickness - LID_TEXT_ENGRAVE_FLOOR);
@@ -310,14 +311,18 @@ function applyLidTextElements(
         angleDeg: instance.rotation,
       });
       if (!result) continue;
+      // The holes are already cut, so a flat caption must not refill them.
+      const solid =
+        mode === 'flat' && holesCut ? clipFlatPrism(scope, result.solid, current) : result.solid;
+      if (!solid) continue;
       if (originToTag) {
-        collectOrigins(result.solid, FeatureTag.TEXT, originToTag);
+        collectOrigins(solid, FeatureTag.TEXT, originToTag);
       }
       scope.register(current);
       current =
         result.op === 'fuse'
-          ? unwrap(fuse(current as ValidSolid, result.solid as ValidSolid))
-          : unwrap(cut(current as ValidSolid, result.solid as ValidSolid));
+          ? unwrap(fuse(current as ValidSolid, solid as ValidSolid))
+          : unwrap(cut(current as ValidSolid, solid as ValidSolid));
     }
   }
   return current;

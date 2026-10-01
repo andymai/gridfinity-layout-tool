@@ -13,6 +13,7 @@
  * generator consume the SAME numbers and can't drift.
  */
 
+import type { TextMode } from '@/shared/types/bin';
 import { scaleClearance } from '@/shared/printSettings/connectorScaling';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
@@ -141,8 +142,16 @@ export const LABEL_PLATE_V1_CAVITY_TOP_MM = 0.8;
  */
 export const LABEL_PLATE_V1_ROOF_MIN_MM = 0.4;
 
+/** How a plate's markings meet its top face. */
+export type LabelPlateTextMode = 'emboss' | 'deboss' | 'flat';
+
+/** A plate has no through-cut and calls its engrave a deboss. */
+export function labelPlateTextMode(mode: TextMode): LabelPlateTextMode {
+  return mode === 'emboss' || mode === 'flat' ? mode : 'deboss';
+}
+
 /** Plate material left above the v1 cavity once the text is cut (mm). */
-export function labelPlateV1RoofMm(textMode: 'emboss' | 'deboss', textDepthMm: number): number {
+export function labelPlateV1RoofMm(textMode: LabelPlateTextMode, textDepthMm: number): number {
   const cutDepth = textMode === 'deboss' ? Math.max(0, textDepthMm) : 0;
   return LABEL_PLATE_THICKNESS_MM - LABEL_PLATE_V1_CAVITY_TOP_MM - cutDepth;
 }
@@ -160,7 +169,7 @@ export function labelPlateV1RoofMm(textMode: 'emboss' | 'deboss', textDepthMm: n
  * cavity depth re-decides it on its own.
  */
 export function labelPlateV1ChannelsFitText(
-  textMode: 'emboss' | 'deboss',
+  textMode: LabelPlateTextMode,
   textDepthMm: number
 ): boolean {
   // The untouched roof (1.2 − 0.8) lands a float ULP under the 0.4mm minimum,

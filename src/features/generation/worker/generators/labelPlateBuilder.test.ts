@@ -323,6 +323,51 @@ describe('labelPlateBuilder', () => {
     }
   });
 
+  it('lays flat text and icon glyphs in the plate top without changing its volume', async () => {
+    const flat = { ...OPTS, textMode: 'flat' as const };
+    const spec = { widthU: 1 as const, text: 'M3', icon: 'bolt' as const };
+    const { data, faceGroups } = await exportLabelPlates([spec], flat, 'stl');
+    const view = new DataView(data);
+    const z = (tri: number, corner: number): number =>
+      view.getFloat32(84 + tri * 50 + 12 + corner * 12 + 8, true);
+    const triCount = (data.byteLength - 84) / 50;
+    let top = -Infinity;
+    for (let t = 0; t < triCount; t++) for (let c = 0; c < 3; c++) top = Math.max(top, z(t, c));
+    const textTris = (faceGroups ?? [])
+      .filter((g) => g.tag === FeatureTag.TEXT)
+      .flatMap((g) => Array.from({ length: g.count / 3 }, (_, i) => g.start / 3 + i));
+    expect(textTris.length).toBeGreaterThan(0);
+    for (const t of textTris) for (let c = 0; c < 3; c++) expect(z(t, c)).toBeCloseTo(top, 3);
+
+    const withText = buildLabelPlate(spec, flat);
+    const blank = buildLabelPlate({ widthU: 1, text: '' }, flat);
+    try {
+      expect(Math.abs(volOf(withText) - volOf(blank))).toBeLessThan(volOf(blank) * 1e-5);
+    } finally {
+      withText.delete();
+      blank.delete();
+    }
+  });
+
+  it('lays a flat icon on its own in the plate top', async () => {
+    const flat = { ...OPTS, textMode: 'flat' as const };
+    const { data, faceGroups } = await exportLabelPlates(
+      [{ widthU: 1, text: '', icon: 'bolt' }],
+      flat,
+      'stl'
+    );
+    const view = new DataView(data);
+    const z = (tri: number, corner: number): number =>
+      view.getFloat32(84 + tri * 50 + 12 + corner * 12 + 8, true);
+    const textTris = (faceGroups ?? [])
+      .filter((g) => g.tag === FeatureTag.TEXT)
+      .flatMap((g) => Array.from({ length: g.count / 3 }, (_, i) => g.start / 3 + i));
+    expect(textTris.length).toBeGreaterThan(0);
+    for (const t of textTris) {
+      for (let c = 0; c < 3; c++) expect(z(t, c)).toBeCloseTo(LABEL_PLATE_THICKNESS_MM, 3);
+    }
+  });
+
   it('emits no TEXT face groups for blank plates', async () => {
     const { faceGroups } = await exportLabelPlates([{ widthU: 1, text: '' }], OPTS, 'stl');
     expect((faceGroups ?? []).some((g) => g.tag === FeatureTag.TEXT)).toBe(false);

@@ -22,6 +22,7 @@ import { checkCancelled } from './meshUtils';
 import {
   LABEL_PLATE_HEIGHT_MM,
   LABEL_PLATE_THICKNESS_MM,
+  labelPlateTextMode,
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
 import { buildLabelPlate, resolveUniformPlateTextSize } from './labelPlateBuilder';
@@ -195,7 +196,7 @@ export function generateLabelPlates(
   });
   const specs = shown.map(specOf);
   const opts = {
-    textMode: params.textDefaults.mode === 'emboss' ? ('emboss' as const) : ('deboss' as const),
+    textMode: labelPlateTextMode(params.textDefaults.mode),
     textDepthMm: params.textDefaults.depth,
     textDefaults: params.textDefaults,
     v1Channels: true,
@@ -233,6 +234,7 @@ export function generateLabelPlates(
         normals: indexed.normals,
         indices: indexed.indices,
         triangleCount: indexed.triangleCount,
+        ...(indexed.faceGroups ? { faceGroups: [...indexed.faceGroups] } : {}),
         seatX: seat.x,
         seatY: seat.y,
         // Both planners answer in the BODY frame, which `translateStage` then

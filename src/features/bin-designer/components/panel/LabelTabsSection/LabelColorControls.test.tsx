@@ -25,11 +25,11 @@ describe('LabelColorControls', () => {
     setColors({});
   });
 
-  it('renders a Label Tab and Text swatch row', () => {
+  it('renders the Label Tab swatch, leaving Text to the tab text group', () => {
     render(<LabelColorControls />);
     expect(screen.getByText('Color')).toBeDefined();
     expect(screen.getByRole('button', { name: /Label Tab:/ })).toBeDefined();
-    expect(screen.getByRole('button', { name: /^Text:/ })).toBeDefined();
+    expect(screen.queryByRole('button', { name: /^Text:/ })).toBeNull();
   });
 
   it('picks the zone for the swap tool instead of opening the picker when swap is active', () => {
@@ -53,17 +53,6 @@ describe('LabelColorControls', () => {
     const { featureColors } = useDesignerStore.getState().params;
     expect(featureColors.enabled).toBe(true);
     expect(featureColors.labelTab.toLowerCase()).toBe(RED);
-  });
-
-  it('routes the text swatch to the text zone', () => {
-    render(<LabelColorControls />);
-    fireEvent.click(screen.getByRole('button', { name: /^Text:/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Red' }));
-
-    const { featureColors } = useDesignerStore.getState().params;
-    expect(featureColors.enabled).toBe(true);
-    expect(featureColors.text.toLowerCase()).toBe(RED);
-    expect(featureColors.labelTab.toLowerCase()).toBe(BODY.toLowerCase());
   });
 
   it('does not force-enable multi-color when a swatch is set back to the body color', () => {

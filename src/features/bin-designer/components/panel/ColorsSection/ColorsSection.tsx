@@ -17,7 +17,6 @@ import {
 } from '@/features/bin-designer/constants/defaults';
 import {
   activeLipCells,
-  computeActiveZones,
   lidLipCellZone,
   lipCellZone,
   parseLidLipCell,
@@ -35,6 +34,8 @@ import { PipetteIcon } from '@/design-system/Icon';
 import { IconButton } from '@/design-system';
 import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 import { useSwapZoneWithToast } from '@/features/bin-designer/hooks/useSwapZoneWithToast';
+import { useActiveColorZones } from '@/features/bin-designer/hooks/useActiveColorZones';
+import { FlatTextClashWarning } from '../shared';
 import { FeatureToggle } from '../FeatureToggle';
 import { SubHeader } from '../shared';
 import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
@@ -68,21 +69,8 @@ export function ColorsSection() {
 
   const {
     featureColors: rawColors,
-    baseStyle,
-    stackingLip,
-    labelEnabled,
-    scoopEnabled,
-    lidEnabled,
-    cells,
     lipCorners,
     lipBands,
-    labelMode,
-    labelSpan,
-    rowTexts,
-    compartmentTexts,
-    cutouts,
-    surfaceText,
-    cellMask,
     binHeight,
     heightUnitMm,
     extraWallHeightMm,
@@ -91,24 +79,11 @@ export function ColorsSection() {
   } = useDesignerStore(
     useShallow((s) => ({
       featureColors: s.params.featureColors,
-      baseStyle: s.params.base.style,
-      stackingLip: s.params.base.stackingLip,
-      labelEnabled: s.params.label.enabled,
-      scoopEnabled: s.params.scoop.enabled,
-      lidEnabled: s.params.lid.enabled,
-      cells: s.params.compartments.cells,
       binHeight: s.params.height,
       heightUnitMm: s.params.heightUnitMm,
       extraWallHeightMm: s.params.extraWallHeightMm,
       lipCorners: s.params.featureColors.lip.corners,
       lipBands: s.params.featureColors.lip.bands,
-      labelMode: s.params.label.mode,
-      labelSpan: s.params.label.span,
-      rowTexts: s.params.label.rowTexts,
-      compartmentTexts: s.params.compartments.compartmentTexts,
-      cutouts: s.params.cutouts,
-      surfaceText: s.params.surfaceText,
-      cellMask: s.params.cellMask,
       hoveredColorZone: s.ui.hoveredColorZone,
       colorTool: s.ui.colorTool,
     }))
@@ -132,46 +107,7 @@ export function ColorsSection() {
     }))
   );
 
-  const activeZones = useMemo(
-    () =>
-      computeActiveZones({
-        base: { style: baseStyle, stackingLip },
-        label: { enabled: labelEnabled, mode: labelMode, span: labelSpan, rowTexts },
-        scoop: { enabled: scoopEnabled },
-        lid: { enabled: lidEnabled },
-        compartments: { cells, compartmentTexts },
-        cutouts,
-        surfaceText,
-        cellMask,
-        featureColors: {
-          lip: { corners: lipCorners, bands: lipBands },
-          topAccent: { enabled: topAccent.enabled, heightMm: topAccent.heightMm },
-          bottomAccent: bottomAccent
-            ? { enabled: bottomAccent.enabled, heightMm: bottomAccent.heightMm }
-            : undefined,
-        },
-      }),
-    [
-      baseStyle,
-      stackingLip,
-      labelEnabled,
-      labelMode,
-      labelSpan,
-      rowTexts,
-      scoopEnabled,
-      lidEnabled,
-      cells,
-      compartmentTexts,
-      cutouts,
-      surfaceText,
-      cellMask,
-      lipCorners,
-      lipBands,
-      topAccent.enabled,
-      topAccent.heightMm,
-      bottomAccent,
-    ]
-  );
+  const activeZones = useActiveColorZones();
   const hasLip = activeZones.has(lipCellZone('frontLeft', 0));
   const hasLabelTabs = activeZones.has('labelTab');
   const hasBase = activeZones.has('base');
@@ -269,7 +205,7 @@ export function ColorsSection() {
   // auto-opens on each tick change so a newly-enabled feature is never
   // trapped behind a stale collapsed header.
   const interiorCount = (hasScoop ? 1 : 0) + (hasDividers ? 1 : 0);
-  const addonsCount = (hasLabelTabs ? 1 : 0) + (hasText ? 1 : 0) + (hasLid ? 1 : 0);
+  const addonsCount = (hasLabelTabs ? 1 : 0) + (hasLid ? 1 : 0);
   const [interiorGrowthTick, setInteriorGrowthTick] = useState(0);
   const [addonsGrowthTick, setAddonsGrowthTick] = useState(0);
   const prevInteriorCountRef = useRef(interiorCount);
@@ -286,6 +222,12 @@ export function ColorsSection() {
     }
     prevAddonsCountRef.current = addonsCount;
   }, [addonsCount]);
+  const [textGrowthTick, setTextGrowthTick] = useState(0);
+  const prevHasTextRef = useRef(hasText);
+  useEffect(() => {
+    if (hasText && !prevHasTextRef.current) setTextGrowthTick((t) => t + 1);
+    prevHasTextRef.current = hasText;
+  }, [hasText]);
 
   // When the swap flow is active, intercept the row click so it acts as a
   // pick instead of opening the picker (clean path: the store advances the
@@ -347,6 +289,7 @@ export function ColorsSection() {
         base: palette.colors.base,
         scoop: palette.colors.scoop,
         dividers: palette.colors.dividers,
+        ...(palette.colors.text !== undefined ? { text: palette.colors.text } : {}),
       });
       commitTransaction();
     },
@@ -490,7 +433,7 @@ export function ColorsSection() {
 
             <ColorGroup
               title={t('binDesigner.colors.group.addons')}
-              visible={hasLabelTabs || hasText || hasLid}
+              visible={hasLabelTabs || hasLid}
               growthTick={addonsGrowthTick}
             >
               {hasLabelTabs &&
@@ -500,14 +443,6 @@ export function ColorsSection() {
                   featureColors.labelTab,
                   DEFAULT_FEATURE_COLOR_CONFIG.labelTab,
                   (hex) => updateFeatureColors({ labelTab: hex })
-                )}
-              {hasText &&
-                renderZone(
-                  'text',
-                  t('binDesigner.colors.text'),
-                  featureColors.text,
-                  DEFAULT_FEATURE_COLOR_CONFIG.text,
-                  (hex) => updateFeatureColors({ text: hex })
                 )}
               {hasLid &&
                 renderZone(
@@ -548,6 +483,21 @@ export function ColorsSection() {
                   onSwap={(zone) => swapZoneWithToast(zone)}
                 />
               )}
+            </ColorGroup>
+
+            <ColorGroup
+              title={t('binDesigner.colors.group.text')}
+              visible={hasText}
+              growthTick={textGrowthTick}
+            >
+              {renderZone(
+                'text',
+                t('binDesigner.colors.text'),
+                featureColors.text,
+                DEFAULT_FEATURE_COLOR_CONFIG.text,
+                (hex) => updateFeatureColors({ text: hex })
+              )}
+              <FlatTextClashWarning />
             </ColorGroup>
           </>
         }

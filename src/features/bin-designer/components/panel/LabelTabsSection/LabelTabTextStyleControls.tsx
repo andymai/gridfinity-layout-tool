@@ -1,17 +1,17 @@
-/** The collapsed "engraved text" group: finish, font, depth and the shared size control. */
+/** The collapsed "tab text" group: finish, Text colour, font, depth and the shared size control. */
 
-import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
-import { Button, Select, Stepper, InfoIcon, Collapsible } from '@/design-system';
+import { Select, Stepper, InfoIcon, Collapsible } from '@/design-system';
 import { LabelSizeControl } from '../../controls';
 import type { SelectOption } from '@/design-system';
 import type { TextFontFamily, TextMode } from '../../../types';
 import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest';
-import { DependencyHint, FlatTextHint } from '../shared';
-import { textModeChoices } from '@/features/bin-designer/utils/textModeChoices';
+import { DependencyHint, TextColorControl, TextFinishGrid } from '../shared';
+import type { TextSurface } from '@/features/bin-designer/utils/flatTextContrast';
 import type { useLabelTabsSection } from './useLabelTabsSection';
 import type { useTranslation } from '@/i18n';
 
-const MODE_OPTIONS: TextMode[] = ['engrave', 'emboss', 'through-cut'];
+const MODE_OPTIONS: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'];
+const TAB_SURFACE: readonly TextSurface[] = ['labelTab'];
 const FONT_OPTIONS: readonly TextFontFamily[] = [
   'atkinson',
   'jetbrains-mono',
@@ -52,39 +52,20 @@ export function LabelTabTextStyleControls({
       size="sm"
     >
       <div className="space-y-2">
-        {/* Mode picker */}
-        <div>
-          <span className="mb-1 block text-xs text-content-tertiary">
-            {t('binDesigner.textMode')}
-          </span>
-          <div role="group" aria-label={t('binDesigner.textMode')} className={SEGMENT_GROUP_CLASS}>
-            {textModeChoices(MODE_OPTIONS, state.multiColor, state.textDefaults.mode).map(
-              (option) => (
-                <Button
-                  key={option}
-                  type="button"
-                  variant="ghost"
-                  touchTarget={false}
-                  onClick={() => handlers.setTextMode(option)}
-                  aria-pressed={state.textDefaults.mode === option}
-                  className={`flex-1 ${getSegmentClass(state.textDefaults.mode === option)}`}
-                >
-                  {t(`binDesigner.textMode.${option}`)}
-                </Button>
-              )
-            )}
-          </div>
+        <div className="space-y-1">
+          <span className="block text-xs text-content-tertiary">{t('binDesigner.textMode')}</span>
+          <TextFinishGrid
+            modes={MODE_OPTIONS}
+            value={state.textDefaults.mode}
+            onChange={handlers.setTextMode}
+          />
           {state.textDefaults.mode === 'through-cut' && (
-            <p className="mt-1 flex items-start gap-1 text-xs text-content-tertiary">
+            <p className="flex items-start gap-1 text-xs text-content-tertiary">
               <InfoIcon size="xs" className="mt-0.5 shrink-0" />
               <span>{t('binDesigner.textMode.throughCutStencilNote')}</span>
             </p>
           )}
-          {state.textDefaults.mode === 'flat' && (
-            <div className="mt-1">
-              <FlatTextHint />
-            </div>
-          )}
+          <TextColorControl surfaces={TAB_SURFACE} flat={state.textDefaults.mode === 'flat'} />
         </div>
 
         {/* Font + (conditional) depth, side by side when both visible */}

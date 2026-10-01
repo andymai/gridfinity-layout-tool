@@ -37,6 +37,7 @@ const solidVolume = (icon: LabelPlateIconId): number => {
     topZ: 0,
     depthMm: DEPTH_MM,
     mode: 'emboss',
+    hostThickness: 1.2,
   });
   if (!built) throw new Error(`buildIconSolid returned null for ${icon}`);
   try {

@@ -14,7 +14,7 @@ import type {
   SlideConfig,
 } from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
-import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
+import type { LabelPlateIconId, LabelPlateTextMode } from '@/shared/constants/labelPlates';
 import type { MeshImportRotation } from '@/shared/generation/meshAsset';
 
 /** Geometry kernel backend for BREP operations */
@@ -237,7 +237,7 @@ export interface LabelPlateExportSpec {
  * whole layer-height multiple (the main thread owns print settings).
  */
 export interface LabelPlateExportOptions {
-  readonly textMode: 'emboss' | 'deboss';
+  readonly textMode: LabelPlateTextMode;
   readonly textDepthMm: number;
   readonly textDefaults: TextStyleDefaults;
   readonly v1Channels: boolean;

@@ -691,8 +691,8 @@ Connectors joining the pieces of a bin too large for the print bed.
 label tabs and cutouts attach a `TextStyleOverride`, which is sparse: an omitted
 field is not reset, it inherits.
 
-`surfaceText` puts text on exterior surfaces. Lid text is deliberately
-monochrome; wall text activates the text colour zone.
+`surfaceText` puts text on exterior surfaces. Wall and lid text both
+activate the text colour zone.
 
 <!-- schema:TextStyleDefaults indexed -->
 

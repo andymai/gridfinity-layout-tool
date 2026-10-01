@@ -570,22 +570,29 @@ export interface ActiveZonesParams {
     readonly rowTexts?: readonly string[];
   };
   readonly scoop: { readonly enabled: boolean };
-  readonly lid: { readonly enabled: boolean; readonly stackableTop?: boolean };
+  readonly lid: {
+    readonly enabled: boolean;
+    readonly stackableTop?: boolean;
+    readonly stackLipOnly?: boolean;
+    readonly separateStackPlate?: boolean;
+    readonly attachment?: string;
+    /** Lid text elements carry their caption like a bin cutout label does. */
+    readonly cutouts?: readonly CaptionedShape[];
+  };
   readonly compartments: {
     readonly cells: readonly number[];
     readonly compartmentTexts?: readonly string[];
+    /** Socket plates' hardware icons, which print in the Text colour too. */
+    readonly labelIcons?: readonly (string | null)[];
   };
-  readonly cutouts?: readonly {
-    readonly engraveLabel?: boolean;
-    readonly label: string;
-    /** A repeat's per-copy captions; the master's label covers copies past its end. */
-    readonly array?: { readonly labels?: readonly string[] };
-  }[];
-  /** Wall surface text renders on the bin body, so it activates the
-   *  `text` zone. Mirrors the worker gate: polygon bins skip wall text
-   *  entirely (see `wallTextLayout.ts`), solid bins carry it like hollow ones. Lid text deliberately does
-   *  NOT activate the zone — the lid ships as a single color object. */
-  readonly surfaceText?: { readonly walls?: Readonly<Partial<Record<WallTextSide, string>>> };
+  readonly cutouts?: readonly CaptionedShape[];
+  /** Wall and lid text both activate the `text` zone. Mirrors the worker
+   *  gates: polygon bins skip wall and lid text (see `wallTextLayout.ts`,
+   *  `resolveLidInputs`), solid bins carry wall text like hollow ones. */
+  readonly surfaceText?: {
+    readonly walls?: Readonly<Partial<Record<WallTextSide, string>>>;
+    readonly lidText?: string;
+  };
   readonly cellMask?: CellMask;
   /**
    * Active lip color-grid sizes. Determines which lip cells are exposed as
@@ -644,6 +651,56 @@ export function lipCellsUniform(lip: LipColorConfig): boolean {
   return active.every((zone) => lip.cells[zone] === first);
 }
 
+export interface CaptionedShape {
+  readonly shape?: string;
+  readonly hidden?: boolean;
+  readonly engraveLabel?: boolean;
+  readonly labelMode?: string;
+  readonly labelIcon?: string;
+  readonly label: string;
+  /** A repeat's per-copy captions; the master's label covers copies past its end. */
+  readonly array?: { readonly labels?: readonly string[] };
+}
+
+/**
+ * Lettering the shape prints: engraved beside it, or carried on its swappable
+ * plate in socket mode, where an icon alone is lettering too.
+ */
+export function hasCaption(c: CaptionedShape): boolean {
+  if (c.engraveLabel !== true || c.hidden === true) return false;
+  const words =
+    c.label.trim().length > 0 || (c.array?.labels ?? []).some((l) => l.trim().length > 0);
+  const onPlate = c.labelMode === 'socket' && c.shape !== 'text';
+  return words || (onPlate && c.labelIcon !== undefined);
+}
+
+/**
+ * Lid caption or lid text elements, gated as the lid builds them: a capping
+ * lid's full stack grid leaves no face to write on and polygon lids skip both,
+ * while a sliding lid is a plain plate whose text elements always have one.
+ */
+export function lidTextHosts(p: ActiveZonesParams): {
+  readonly caption: boolean;
+  readonly elements: readonly CaptionedShape[];
+} {
+  const slide = p.lid.attachment === 'slide';
+  const gridOwnsTop = !slide && p.lid.stackableTop === true && p.lid.stackLipOnly !== true;
+  const polygon = isPartialMask(p.cellMask);
+  const caption = !gridOwnsTop && !polygon && (p.surfaceText?.lidText ?? '').trim() !== '';
+  const elements =
+    slide || (!gridOwnsTop && !polygon)
+      ? (p.lid.cutouts ?? []).filter(
+          (c) => c.shape === 'text' && c.hidden !== true && hasCaption(c)
+        )
+      : [];
+  return { caption, elements };
+}
+
+function hasLidText(p: ActiveZonesParams): boolean {
+  const { caption, elements } = lidTextHosts(p);
+  return caption || elements.length > 0;
+}
+
 /**
  * The set of zones whose color a user can actually see in the current
  * configuration. Used uniformly by the panel (row visibility), the 3D
@@ -655,21 +712,21 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   const cells = p.compartments.cells;
   const firstCell = cells[0] ?? 0;
   const hasDividers = cells.length > 1 && cells.some((c) => c !== firstCell);
-  // Socket-mode tabs carry a plate pocket, not engraved text — texts may
-  // persist in the config (they label grid cells and feed future plates)
-  // but produce no text geometry, so the zone must not reach the exporter.
+  // Socket-mode tabs move the caption onto a swappable plate, whose markings
+  // (an icon included) print in the Text colour like engraved tab text.
   // Span mode reads `label.rowTexts`, not `compartmentTexts` — missing
   // it here would drop the text colour zone from a spanning design's export.
   const tabTexts = p.label.span === true ? p.label.rowTexts : p.compartments.compartmentTexts;
+  // Full-width (spanning) plates carry no icon, and polygon bins build no tabs.
+  const plateIcons =
+    (p.label.mode ?? 'text') === 'socket' &&
+    p.label.span !== true &&
+    (p.compartments.labelIcons ?? []).some((icon) => icon !== null);
   const hasTabText =
     p.label.enabled &&
-    (p.label.mode ?? 'text') !== 'socket' &&
-    (tabTexts ?? []).some((t) => t.trim().length > 0);
-  const hasCutoutText = (p.cutouts ?? []).some(
-    (c) =>
-      c.engraveLabel === true &&
-      (c.label.trim().length > 0 || (c.array?.labels ?? []).some((l) => l.trim().length > 0))
-  );
+    !isPartialMask(p.cellMask) &&
+    ((tabTexts ?? []).some((t) => t.trim().length > 0) || plateIcons);
+  const hasCutoutText = (p.cutouts ?? []).some(hasCaption);
   // Wall surface text: polygon bins skip it, solid ones keep it (featuresStage).
   const hasWallText =
     !isPartialMask(p.cellMask) &&
@@ -690,24 +747,26 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   }
   if (p.label.enabled) zones.add('labelTab');
   if (p.scoop.enabled) zones.add('scoop');
-  // Lid needs a stacking lip to click into; `shouldGenerateLid` enforces
-  // the same precondition. Without this guard the panel would expose a
-  // Lid color row for a config the worker won't export.
-  if (p.lid.enabled && p.base.stackingLip) {
+  // A capping lid needs a stacking lip to click into, a sliding lid its own
+  // channel; `shouldGenerateLid` applies the same split. Without this guard the
+  // panel would expose a Lid color row for a config the worker won't export.
+  if (p.lid.enabled && (p.base.stackingLip || p.lid.attachment === 'slide')) {
     zones.add('lid');
     // The lid's lip zones exist only when there is a stack grid to paint. A
     // non-stackable lid has a flat top and `FeatureTag.LID_LIP` geometry is
     // never built, so offering the cells would be a control that changes
-    // nothing — the same reasoning that gates `base` on a socketed base.
-    // `separateStackPlate` still counts: the grid ships as its own solid, but it
-    // is still the user's lid lip and still takes the colour.
-    if (p.lid.stackableTop === true) {
+    // nothing — the same reasoning that gates `base` on a socketed base. A
+    // `separateStackPlate` grid ships as its own solid and exports whole in the
+    // lid colour, so its cells would be a control that changes nothing too.
+    if (p.lid.stackableTop === true && p.lid.separateStackPlate !== true) {
       const grid = p.featureColors?.lidLip ?? { corners: 1, bands: 1 };
       for (const cell of activeLidLipCells(grid)) zones.add(cell);
     }
   }
   if (hasDividers) zones.add('dividers');
-  if (hasTabText || hasCutoutText || hasWallText) zones.add('text');
+  if (hasTabText || hasCutoutText || hasWallText || (zones.has('lid') && hasLidText(p))) {
+    zones.add('text');
+  }
   // Accent bands are independent of every other feature — a positive-height
   // band recolors an end of the bin whether or not it has a lip or a socket.
   const topAccent = p.featureColors?.topAccent;

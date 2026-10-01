@@ -11,6 +11,7 @@
  *   centroid quadrant relative to the lip's outer bbox center.
  */
 
+import { useActiveColorZones } from '@/features/bin-designer/hooks/useActiveColorZones';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useThree, useFrame } from '@react-three/fiber';
@@ -20,7 +21,6 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { planCompartmentColors } from '@/features/bin-designer/utils/compartmentColorUnits';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry, useCoarseGeometry } from '@/shared/components/preview/useMeshGeometry';
-import { computeActiveZones } from '@/features/bin-designer/types/featureColors';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import {
   buildHitTestZones,
@@ -70,21 +70,7 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
     faceGroups,
     coarseLOD,
     featureColors,
-    baseStyle,
-    stackingLip,
-    labelEnabled,
-    scoopEnabled,
-    lidEnabled,
-    cells,
-    lipCorners,
-    lipBands,
     cutouts,
-    labelMode,
-    labelSpan,
-    rowTexts,
-    compartmentTexts,
-    surfaceText,
-    cellMask,
     hoveredColorZone,
     colorTool,
   } = useDesignerStore(
@@ -97,21 +83,7 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
       faceGroups: s.generation.mesh?.faceGroups ?? null,
       coarseLOD: s.generation.mesh?.coarseLOD ?? null,
       featureColors: s.params.featureColors,
-      baseStyle: s.params.base.style,
-      stackingLip: s.params.base.stackingLip,
-      labelEnabled: s.params.label.enabled,
-      scoopEnabled: s.params.scoop.enabled,
-      lidEnabled: s.params.lid.enabled,
-      cells: s.params.compartments.cells,
-      lipCorners: s.params.featureColors.lip.corners,
-      lipBands: s.params.featureColors.lip.bands,
       cutouts: s.params.cutouts,
-      labelMode: s.params.label.mode,
-      labelSpan: s.params.label.span,
-      rowTexts: s.params.label.rowTexts,
-      compartmentTexts: s.params.compartments.compartmentTexts,
-      surfaceText: s.params.surfaceText,
-      cellMask: s.params.cellMask,
       hoveredColorZone: s.ui.hoveredColorZone,
       colorTool: s.ui.colorTool,
     }))
@@ -133,37 +105,7 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
   // Text-bearing params included: with Text the only colour that differs from
   // Body, leaving them out reads the design as single-colour and paints the
   // glyphs body-coloured while the 3MF prints them in the text filament.
-  const activeZones = useMemo(
-    () =>
-      computeActiveZones({
-        base: { style: baseStyle, stackingLip },
-        label: { enabled: labelEnabled, mode: labelMode, span: labelSpan, rowTexts },
-        scoop: { enabled: scoopEnabled },
-        lid: { enabled: lidEnabled },
-        compartments: { cells, compartmentTexts },
-        cutouts,
-        surfaceText,
-        cellMask,
-        featureColors: { lip: { corners: lipCorners, bands: lipBands } },
-      }),
-    [
-      baseStyle,
-      stackingLip,
-      labelEnabled,
-      labelMode,
-      labelSpan,
-      rowTexts,
-      scoopEnabled,
-      lidEnabled,
-      cells,
-      compartmentTexts,
-      cutouts,
-      surfaceText,
-      cellMask,
-      lipCorners,
-      lipBands,
-    ]
-  );
+  const activeZones = useActiveColorZones();
 
   // Build multi-color groups when feature is active
   const multiColorData = useMemo(() => {

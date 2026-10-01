@@ -3,7 +3,7 @@
  * walls. Lives on the Style page; thickness stays with Shape.
  */
 
-import { SliderInput, SegmentedControl, Checkbox, Stepper } from '@/design-system';
+import { SliderInput, Checkbox, Stepper } from '@/design-system';
 import type { TextMode } from '@/features/bin-designer/types';
 import {
   MAX_WALL_LABEL_SLOT_PITCH_CELLS,
@@ -20,11 +20,20 @@ import { FeatureToggle } from '../FeatureToggle';
 import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
 import { LabelPlatesControls } from '../LabelTabsSection/LabelPlatesControls';
 import { AnchorPicker } from '../../controls/AnchorPicker';
-import { FlatTextHint, Hint, Readout, SideSelector, SubHeader, type SideState } from '../shared';
-import { textModeChoices } from '@/features/bin-designer/utils/textModeChoices';
+import {
+  Hint,
+  Readout,
+  SideSelector,
+  SubHeader,
+  TextColorControl,
+  TextFinishGrid,
+  type SideState,
+} from '../shared';
+import type { TextSurface } from '@/features/bin-designer/utils/flatTextContrast';
 
 /** Mode options for the wall-text picker, in the shared textMode order. */
 const TEXT_MODE_OPTIONS: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'] as const;
+const WALL_SURFACE: readonly TextSurface[] = ['body'];
 
 export function WallSurfaceSection() {
   const { state, handlers, t } = useWallsSection();
@@ -169,28 +178,17 @@ export function WallSurfaceSection() {
             </div>
             {state.hasAnyWallText && (
               <>
-                <SegmentedControl
-                  aria-label={t('binDesigner.textMode')}
-                  activeStyle="accent"
-                  fullWidth
-                  size="sm"
+                <TextFinishGrid
+                  modes={TEXT_MODE_OPTIONS}
                   value={state.wallTextMode}
                   onChange={handlers.setTextMode}
-                  options={textModeChoices(
-                    TEXT_MODE_OPTIONS,
-                    state.multiColor,
-                    state.wallTextMode
-                  ).map((mode) => ({
-                    value: mode,
-                    label: t(`binDesigner.textMode.${mode}`),
-                  }))}
                 />
                 {state.wallTextMode === 'through-cut' && (
                   <p className="text-label leading-relaxed text-content-tertiary">
                     {t('binDesigner.textMode.throughCutStencilNote')}
                   </p>
                 )}
-                {state.wallTextMode === 'flat' && <FlatTextHint />}
+                <TextColorControl surfaces={WALL_SURFACE} flat={state.wallTextMode === 'flat'} />
                 <div className="space-y-1">
                   <span className="block text-label text-content-tertiary">
                     {t('binDesigner.type.anchor')}

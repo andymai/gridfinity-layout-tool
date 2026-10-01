@@ -356,6 +356,95 @@ describe('computeActiveZones', () => {
     });
   });
 
+  describe('lid text', () => {
+    const withLid = (lid: Partial<ActiveZonesParams['lid']>, lidText?: string) =>
+      computeActiveZones({
+        ...baseParams,
+        base: { style: 'standard', stackingLip: true },
+        lid: { enabled: true, ...lid },
+        ...(lidText !== undefined ? { surfaceText: { lidText } } : {}),
+      });
+    const element = {
+      shape: 'text',
+      engraveLabel: true,
+      label: 'AB',
+    };
+
+    it('activates the text zone for a lid caption or a lid text element', () => {
+      expect(withLid({}, 'Cables').has('text')).toBe(true);
+      expect(withLid({ cutouts: [element] }).has('text')).toBe(true);
+      expect(withLid({}, '  ').has('text')).toBe(false);
+    });
+
+    it('gates lid text elements like the caption, except on a sliding lid', () => {
+      expect(withLid({ stackableTop: true, cutouts: [element] }).has('text')).toBe(false);
+      const slide = computeActiveZones({
+        ...baseParams,
+        lid: { enabled: true, attachment: 'slide', cutouts: [element] },
+      });
+      expect(slide.has('lid')).toBe(true);
+      expect(slide.has('text')).toBe(true);
+    });
+
+    it('mirrors the lid gates: a full stack grid leaves no face for the caption', () => {
+      expect(withLid({ stackableTop: true }, 'Cables').has('text')).toBe(false);
+      expect(withLid({ stackableTop: true, stackLipOnly: true }, 'Cables').has('text')).toBe(true);
+      expect(withLid({ enabled: false }, 'Cables').has('text')).toBe(false);
+    });
+  });
+
+  it('counts socket plates, whose captions and icons print in the Text colour', () => {
+    const socketTabs = (compartments: Partial<ActiveZonesParams['compartments']>) =>
+      computeActiveZones({
+        ...baseParams,
+        label: { enabled: true, mode: 'socket' },
+        compartments: { cells: [0], ...compartments },
+      });
+    expect(socketTabs({ compartmentTexts: ['M3'] }).has('text')).toBe(true);
+    expect(socketTabs({ labelIcons: ['bolt'] }).has('text')).toBe(true);
+    expect(socketTabs({ labelIcons: [null] }).has('text')).toBe(false);
+
+    const plateOnly = computeActiveZones({
+      ...baseParams,
+      cutouts: [{ engraveLabel: true, labelMode: 'socket', label: '', labelIcon: 'bolt' }],
+    });
+    expect(plateOnly.has('text')).toBe(true);
+  });
+
+  it('skips lettering that is not built: hidden cutouts, spanning plate icons, polygon tabs', () => {
+    expect(
+      computeActiveZones({
+        ...baseParams,
+        cutouts: [{ engraveLabel: true, hidden: true, label: 'M3' }],
+      }).has('text')
+    ).toBe(false);
+    expect(
+      computeActiveZones({
+        ...baseParams,
+        label: { enabled: true, mode: 'socket', span: true },
+        compartments: { cells: [0], labelIcons: ['bolt'] },
+      }).has('text')
+    ).toBe(false);
+    expect(
+      computeActiveZones({
+        ...baseParams,
+        label: { enabled: true },
+        compartments: { cells: [0], compartmentTexts: ['M3'] },
+        cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] },
+      }).has('text')
+    ).toBe(false);
+  });
+
+  it('offers no lid lip cells for a separately printed stack plate', () => {
+    const zones = computeActiveZones({
+      ...baseParams,
+      base: { style: 'standard', stackingLip: true },
+      lid: { enabled: true, stackableTop: true, separateStackPlate: true },
+    });
+    expect(zones.has('lid')).toBe(true);
+    expect([...zones].some((z) => z.startsWith('lidLip:'))).toBe(false);
+  });
+
   it('activates the text zone for a repeat whose captions live only in its label list', () => {
     const repeat = (labels: string[]) =>
       computeActiveZones({

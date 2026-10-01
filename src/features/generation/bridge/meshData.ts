@@ -93,6 +93,11 @@ export interface LabelPlateMeshData {
   readonly indices: Uint32Array;
   readonly triangleCount: number;
   /**
+   * Tags glyph and icon faces `FeatureTag.TEXT`, so the preview can paint them.
+   * Mutable for the same Immer reason as `LabelPlatesMeshData.plates`.
+   */
+  readonly faceGroups?: FaceGroupData[];
+  /**
    * Seated pose in bin-interior coordinates: plate centre in X/Y, BOTTOM face
    * in Z. The mesh itself is centred on the origin bottom-on-Z=0, so the
    * preview applies this to draw it clicked in, and its own layout to draw the

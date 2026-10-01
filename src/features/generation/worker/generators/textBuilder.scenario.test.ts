@@ -12,7 +12,12 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
-import { buildTextSolid, planTextForHost, TEXT_BOOLEAN_EPSILON } from './textBuilder';
+import {
+  buildTextSolid,
+  clipFlatPrism,
+  planTextForHost,
+  TEXT_BOOLEAN_EPSILON,
+} from './textBuilder';
 import {
   loadFont,
   withScope,
@@ -20,6 +25,8 @@ import {
   clone,
   unwrap,
   sketchText,
+  box,
+  getBounds,
   type PlaneName,
   type Shape3D,
 } from 'brepjs';
@@ -388,5 +395,31 @@ describe('buildTextSolid (through-cut)', () => {
       }
     }
     expect(botMax - botMin).toBeCloseTo(topMax - topMin, 1);
+  });
+});
+
+describe('clipFlatPrism', () => {
+  // A boolean that leaves nothing returns an empty compound, not a null shape,
+  // so the check has to count solids.
+  it('returns null when the host has no material under the prism', () => {
+    const clipped = withScope((scope) => {
+      const host = scope.register(box(10, 10, 2, { at: [0, 0, 1] }));
+      const prism = scope.register(box(4, 4, 0.2, { at: [20, 0, 1.9] }));
+      return clipFlatPrism(scope, prism, host);
+    });
+    expect(clipped).toBeNull();
+  });
+
+  it('keeps only the part of the prism the host still has', () => {
+    const kept = withScope((scope) => {
+      const host = scope.register(box(10, 10, 2, { at: [0, 0, 1] }));
+      const prism = scope.register(box(4, 4, 0.2, { at: [5, 0, 1.9] }));
+      const clipped = clipFlatPrism(scope, prism, host);
+      return clipped ? getBounds(clipped) : null;
+    });
+    expect(kept).not.toBeNull();
+    if (!kept) return;
+    expect(kept.xMin).toBeCloseTo(3, 3);
+    expect(kept.xMax).toBeCloseTo(5, 3);
   });
 });

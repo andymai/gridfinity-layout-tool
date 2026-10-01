@@ -15,6 +15,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { LabelTextOverflow } from '../../bridge/types';
 import { planLabelPlateSeats, planTabTextOverflow } from './labelTabBuilder';
 import { plateTextFits } from './labelPlateBuilder';
+import { labelPlateTextMode } from '@/shared/constants/labelPlates';
 import { deriveDimensions } from './pipeline/context';
 
 export function planLabelTextOverflow(params: BinParams): LabelTextOverflow[] {
@@ -33,7 +34,7 @@ export function planLabelTextOverflow(params: BinParams): LabelTextOverflow[] {
   }
 
   const opts = {
-    textMode: params.textDefaults.mode === 'emboss' ? ('emboss' as const) : ('deboss' as const),
+    textMode: labelPlateTextMode(params.textDefaults.mode),
     textDepthMm: params.textDefaults.depth,
     textDefaults: params.textDefaults,
     v1Channels: true,

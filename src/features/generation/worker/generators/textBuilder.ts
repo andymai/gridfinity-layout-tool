@@ -27,9 +27,13 @@ import {
   rotate,
   compound,
   getFont,
+  intersect,
+  getSolids,
+  unwrap,
   type Shape3D,
   type DisposalScope,
   type PlaneName,
+  type ValidSolid,
 } from 'brepjs';
 import type { Sketches } from 'brepjs';
 import type { TextFontFamily, TextMode, TextStyleDefaults } from '@/shared/types/bin';
@@ -68,6 +72,36 @@ const FLAT_TEXT_PRISM_DEPTH = 0.2;
 
 export function flatTextPrismDepth(hostThickness: number): number {
   return Math.min(FLAT_TEXT_PRISM_DEPTH, hostThickness / 2);
+}
+
+/**
+ * Where a marking's prism is sketched and how far it extrudes (negative =
+ * down into the host). Text and plate icons both build through this, so a
+ * plate's glyphs and icon cannot meet its top face differently.
+ *
+ * The three relief modes need the EPSILON lift to avoid coplanar boolean
+ * fragility: engrave and through-cut sketch ABOVE `topZ` and extrude down
+ * through it, emboss sketches BELOW and extrudes up, so the solid always
+ * penetrates the host face instead of touching it. Flat is the exception: its
+ * top face coinciding with the host's is the whole point, because that shared
+ * plane is where the fuse splits the face. Lifted, the prism would add a
+ * sliver; sunk, it would vanish inside the host.
+ */
+export function textPrism(
+  mode: TextMode,
+  topZ: number,
+  depth: number,
+  hostThickness: number
+): { readonly originZ: number; readonly extrusion: number } {
+  if (mode === 'flat') return { originZ: topZ, extrusion: -flatTextPrismDepth(hostThickness) };
+  if (mode === 'emboss') {
+    return { originZ: topZ - TEXT_BOOLEAN_EPSILON, extrusion: depth + TEXT_BOOLEAN_EPSILON };
+  }
+  const extrusion =
+    mode === 'through-cut'
+      ? -(hostThickness + 2 * TEXT_BOOLEAN_EPSILON)
+      : -(depth + TEXT_BOOLEAN_EPSILON);
+  return { originZ: topZ + TEXT_BOOLEAN_EPSILON, extrusion };
 }
 
 let measurer: TypeMeasurer | null = null;
@@ -140,6 +174,23 @@ export function fitTextSize(options: TextHostOptions): number | null {
 }
 
 /**
+ * A flat prism trimmed to the material its host still has. A host that cuts
+ * openings before it writes (the lid's through-holes) would otherwise get back
+ * the part of an opening the caption crosses, since the prism is fused.
+ * Returns null when nothing of the caption is left, and when the kernel cannot
+ * compute the trim: a hole bridged by a glyph-shaped skin is a print defect,
+ * where a missing caption is not.
+ */
+export function clipFlatPrism(scope: DisposalScope, prism: Shape3D, host: Shape3D): Shape3D | null {
+  try {
+    const clipped = scope.register(unwrap(intersect(prism as ValidSolid, host as ValidSolid)));
+    return getSolids(clipped).length === 0 ? null : clipped;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Whether the host should `cut` or `fuse` the returned solid. Engrave and
  * through-cut both cut; emboss and flat fuse.
  */
@@ -193,31 +244,12 @@ export function buildTextSolid(
 
   const { mode } = options.style;
 
-  // The three relief modes need the EPSILON lift to avoid coplanar boolean
-  // fragility:
-  //  - engrave / through-cut: sketch sits ABOVE topZ, extrudes DOWN through it
-  //  - emboss: sketch sits BELOW topZ, extrudes UP through it
-  // Either way the solid penetrates the host's top face by EPSILON so the
-  // fuse/cut surfaces overlap instead of being coincident.
-  //
-  // Flat is the exception: its top face coinciding with the host's is the
-  // whole point, because that shared plane is where the fuse splits the face.
-  // Lifted, the prism would add a sliver; sunk, it would vanish inside the host.
-  const flatDepth = flatTextPrismDepth(options.hostThickness);
-  const sketchOriginZ =
-    mode === 'flat'
-      ? options.topZ
-      : mode === 'emboss'
-        ? options.topZ - TEXT_BOOLEAN_EPSILON
-        : options.topZ + TEXT_BOOLEAN_EPSILON;
-  const extrusion =
-    mode === 'flat'
-      ? -flatDepth
-      : mode === 'emboss'
-        ? options.depth + TEXT_BOOLEAN_EPSILON
-        : mode === 'through-cut'
-          ? -(options.hostThickness + 2 * TEXT_BOOLEAN_EPSILON)
-          : -(options.depth + TEXT_BOOLEAN_EPSILON);
+  const { originZ: sketchOriginZ, extrusion } = textPrism(
+    mode,
+    options.topZ,
+    options.depth,
+    options.hostThickness
+  );
 
   // A tapered through-cut would meet itself at a knife edge partway through a
   // thick host, so the profile applies to the two bounded modes only. A flat
@@ -230,7 +262,7 @@ export function buildTextSolid(
   const refX = plan.lines[0].x;
   const refY = plan.lines[0].baselineY;
   const canonical = getOrBuildCanonicalBlock(scope, plan, mode, {
-    depth: mode === 'flat' ? flatDepth : options.depth,
+    depth: mode === 'flat' ? flatTextPrismDepth(options.hostThickness) : options.depth,
     hostThickness: options.hostThickness,
     extrusion,
     taperDeg: taper,

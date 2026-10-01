@@ -269,7 +269,6 @@ export {
   matchTextPreset,
   normalizeTextInput,
   resolveTextStyle,
-  singleColorTextMode,
   snapToTypeScale,
   splitTextLines,
   MIN_POLYGON_SIDES,
