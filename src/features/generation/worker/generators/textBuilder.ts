@@ -28,7 +28,7 @@ import {
   compound,
   getFont,
   intersect,
-  isEmpty,
+  getSolids,
   unwrap,
   type Shape3D,
   type DisposalScope,
@@ -188,7 +188,7 @@ export function clipFlatPrism(scope: DisposalScope, prism: Shape3D, host: Shape3
   } catch {
     return prism;
   }
-  return isEmpty(clipped) ? null : clipped;
+  return getSolids(clipped).length === 0 ? null : clipped;
 }
 
 /**

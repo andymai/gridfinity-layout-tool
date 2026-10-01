@@ -1384,41 +1384,53 @@ describe('lid generation and export scenarios', () => {
         }
       );
 
-      it('drops a flat caption that sits wholly over a hole, and the lid still builds', async () => {
-        const { generateLid } = await import('./lidOrchestrator');
-        const bigHole = {
-          id: 'h1',
-          shape: 'rectangle' as const,
-          x: 15,
-          y: 15,
-          width: 50,
-          depth: 50,
-          cutDepth: 5,
-          rotation: 0,
-          cornerRadius: 0,
-          label: '',
-          groupId: null,
-        };
-        const base = { ...BASE, textDefaults: FLAT };
-        const holed = generateLid(makeParams({ cutouts: [bigHole] }, base));
-        const captioned = generateLid(
-          makeParams(
-            { cutouts: [bigHole] },
-            {
-              ...base,
-              surfaceText: {
-                lidText: 'II',
-                style: { anchor: 'center', sizeMode: 'fixed', fixedSize: 6 },
-              },
-            }
-          )
-        );
-        expect(holed).not.toBeNull();
-        expect(captioned).not.toBeNull();
-        if (!holed || !captioned) return;
-        expect(textZs(captioned)).toHaveLength(0);
-        expect(captioned.triangleCount).toBe(holed.triangleCount);
-      });
+      it.each([
+        [
+          'caption',
+          [],
+          {
+            surfaceText: {
+              lidText: 'II',
+              style: { anchor: 'center', sizeMode: 'fixed', fixedSize: 6 },
+            },
+          },
+        ],
+        ['text element', [{ ...element, x: 30, y: 35, width: 20, depth: 10, label: 'II' }], {}],
+      ] as const)(
+        'drops a flat %s that sits wholly over a hole, and the lid still builds',
+        async (_name, text, extra) => {
+          const { generateLid } = await import('./lidOrchestrator');
+          const bigHole = {
+            id: 'h1',
+            shape: 'rectangle' as const,
+            x: 15,
+            y: 15,
+            width: 50,
+            depth: 50,
+            cutDepth: 5,
+            rotation: 0,
+            cornerRadius: 0,
+            label: '',
+            groupId: null,
+          };
+          const base = { ...BASE, textDefaults: FLAT };
+          const holed = generateLid(makeParams({ cutouts: [bigHole] }, base));
+          const withText = generateLid(
+            makeParams(
+              { cutouts: [bigHole, ...text] },
+              {
+                ...base,
+                ...extra,
+              }
+            )
+          );
+          expect(holed).not.toBeNull();
+          expect(withText).not.toBeNull();
+          if (!holed || !withText) return;
+          expect(textZs(withText)).toHaveLength(0);
+          expect(withText.triangleCount).toBe(holed.triangleCount);
+        }
+      );
     });
 
     it('engraved text changes the mesh without raising the top', async () => {
