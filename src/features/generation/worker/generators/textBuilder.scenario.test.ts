@@ -26,7 +26,7 @@ import {
   unwrap,
   sketchText,
   box,
-  getSolids,
+  getBounds,
   type PlaneName,
   type Shape3D,
 } from 'brepjs';
@@ -410,13 +410,16 @@ describe('clipFlatPrism', () => {
     expect(clipped).toBeNull();
   });
 
-  it('keeps the part of the prism the host still has', () => {
-    const solids = withScope((scope) => {
+  it('keeps only the part of the prism the host still has', () => {
+    const kept = withScope((scope) => {
       const host = scope.register(box(10, 10, 2, { at: [0, 0, 1] }));
       const prism = scope.register(box(4, 4, 0.2, { at: [5, 0, 1.9] }));
       const clipped = clipFlatPrism(scope, prism, host);
-      return clipped ? getSolids(clipped).length : 0;
+      return clipped ? getBounds(clipped) : null;
     });
-    expect(solids).toBeGreaterThan(0);
+    expect(kept).not.toBeNull();
+    if (!kept) return;
+    expect(kept.xMin).toBeCloseTo(3, 3);
+    expect(kept.xMax).toBeCloseTo(5, 3);
   });
 });

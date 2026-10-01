@@ -177,18 +177,17 @@ export function fitTextSize(options: TextHostOptions): number | null {
  * A flat prism trimmed to the material its host still has. A host that cuts
  * openings before it writes (the lid's through-holes) would otherwise get back
  * the part of an opening the caption crosses, since the prism is fused.
- * Returns null when nothing of the caption is left to place. A clip the kernel
- * cannot compute hands back the whole prism: refilling a sliver of a hole is a
- * smaller loss than a caption that silently disappears.
+ * Returns null when nothing of the caption is left, and when the kernel cannot
+ * compute the trim: a hole bridged by a glyph-shaped skin is a print defect,
+ * where a missing caption is not.
  */
 export function clipFlatPrism(scope: DisposalScope, prism: Shape3D, host: Shape3D): Shape3D | null {
-  let clipped: Shape3D;
   try {
-    clipped = scope.register(unwrap(intersect(prism as ValidSolid, host as ValidSolid)));
+    const clipped = scope.register(unwrap(intersect(prism as ValidSolid, host as ValidSolid)));
+    return getSolids(clipped).length === 0 ? null : clipped;
   } catch {
-    return prism;
+    return null;
   }
-  return getSolids(clipped).length === 0 ? null : clipped;
 }
 
 /**
