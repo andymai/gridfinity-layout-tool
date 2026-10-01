@@ -409,6 +409,7 @@ export function useWallsSection() {
       wallTexts,
       wallTextAnchor,
       wallTextMode,
+      multiColor: params.featureColors.enabled,
       hasAnyWallText,
       wallTextDisabledReason,
       isWallTextOpen,

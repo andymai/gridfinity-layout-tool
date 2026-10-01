@@ -14,7 +14,8 @@ import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { buildTriangleMaterialIndices } from '@/features/bin-designer/utils/materialMapping';
 import { computeActiveZones } from '@/features/bin-designer/types/featureColors';
 import { build3MFBuffer, FILAMENT_PAINT_CODES } from '@/features/generation/export/threemfExporter';
-import type { BinParams } from '@/shared/types/bin';
+import { assertWatertight, meshVolume } from './__kernel-tests__/meshAssertions';
+import type { BinParams, TextMode } from '@/shared/types/bin';
 import type { FaceGroupData } from '@/shared/types/generation';
 
 beforeAll(async () => {
@@ -28,7 +29,7 @@ const TEXT_HEX = '#ff0000';
 const TAB_HEX = '#2255aa';
 
 function params(
-  mode: 'emboss' | 'engrave',
+  mode: TextMode,
   scoop = false,
   colors: Partial<BinParams['featureColors']> = {},
   label: Partial<BinParams['label']> = {}
@@ -246,4 +247,44 @@ describe('label-tab support color', () => {
       tabTris + supportTris
     );
   }, 180_000);
+});
+
+describe('flat label-tab text', () => {
+  const withoutText = (p: BinParams): BinParams => ({
+    ...p,
+    compartments: { ...p.compartments, compartmentTexts: ['', ''] },
+  });
+
+  it('splits the shelf top into TEXT glyph faces without adding or removing material', () => {
+    const p = params('flat');
+    const m = getGenerateBin()(p);
+    const tris = triangles(m);
+    const text = tris.filter((t) => t.tag === FeatureTag.TEXT);
+    expect(text.length).toBeGreaterThan(0);
+
+    const mid = midX(m.vertices);
+    expect(text.every((t) => t.cx < mid)).toBe(true);
+
+    const shelfTop = tabTopZ(tris);
+    for (const z of text.flatMap((t) => [...t.zs])) expect(z).toBeCloseTo(shelfTop, 3);
+
+    expect(meshVolume(m)).toBeCloseTo(meshVolume(getGenerateBin()(withoutText(p))), 1);
+  }, 180_000);
+
+  it('keeps the glyph faces through the export fuse and stays watertight', () => {
+    const m = getGenerateBin()(params('flat'), undefined, true);
+    assertWatertight(m, 'flat tab text export');
+    const tris = triangles(m);
+    const text = tris.filter((t) => t.tag === FeatureTag.TEXT);
+    expect(text.length).toBeGreaterThan(0);
+    const shelfTop = tabTopZ(tris);
+    for (const z of text.flatMap((t) => [...t.zs])) expect(z).toBeCloseTo(shelfTop, 3);
+  }, 180_000);
+
+  it('paints the flat glyphs with the text filament in the 3MF', () => {
+    const { tris, codes, codeFor } = paintCodes(params('flat'));
+    const textTris = tris.filter((t) => t.tag === FeatureTag.TEXT).length;
+    expect(textTris).toBeGreaterThan(0);
+    expect(codes.filter((c) => c === codeFor(TEXT_HEX))).toHaveLength(textTris);
+  }, 120_000);
 });

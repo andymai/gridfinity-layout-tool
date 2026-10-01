@@ -34,7 +34,14 @@ import {
 } from 'brepjs';
 import type { TransformOp, Bounds3D } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope, Drawing, Sketch } from 'brepjs';
-import type { BinParams, Cutout, CutoutArrayConfig, PathPoint, GroupOp } from '@/shared/types/bin';
+import type {
+  BinParams,
+  Cutout,
+  CutoutArrayConfig,
+  PathPoint,
+  GroupOp,
+  TextMode,
+} from '@/shared/types/bin';
 import { DEFAULT_KNIFE_SPEC } from '@/shared/types/bin';
 import {
   effectiveOpenSides,
@@ -1261,11 +1268,11 @@ export function buildCutoutCuts(
 
   // Per-cutout label text, placed by the 9-point anchor: the outer anchors
   // land on the bin top beside the cutout, `center` lands on the recess floor
-  // inside it. The design-level mode picks engrave (cut into the surface) or
-  // emboss (raised above it); through-cut falls back to engrave since punching
-  // bin-top text through the floor is meaningless. Engraved text joins the cut
-  // pile; top-surface embossed text is collected separately for fusing; floor
-  // embossed text is carved out of its cavity tool.
+  // inside it. The design-level mode picks engrave (cut into the surface),
+  // emboss (raised above it) or flat (level with it); `cutoutLabelMode` says
+  // where each degrades. Engraved text joins the cut pile; top-surface embossed
+  // and flat text is collected separately for fusing; floor embossed text is
+  // carved out of its cavity tool.
   // Group op per groupId, keyed off the first member in cutouts order — the
   // same member buildGroupedCutouts reads it from.
   const groupOps = new Map<string, GroupOp>();
@@ -1615,7 +1622,8 @@ function clipToInterior(
 interface CutoutLabelShape {
   readonly solid: Shape3D;
   /**
-   * `cut` engraves (bin top or recess floor), `fuse` embosses on the bin top,
+   * `cut` engraves (bin top or recess floor), `fuse` embosses or lays flat
+   * text on the bin top,
    * `carve` embosses on a recess floor: the solid must be subtracted from the
    * owning cavity tool instead of fused (see {@link carveLabelFromCavities}).
    */
@@ -1761,6 +1769,17 @@ function carveLabelFromCavities(
 }
 
 /**
+ * Through-cut would punch the floor, so it engraves. Flat engraves on a recess
+ * floor: fuses run before the cavity cut that opens that floor, so a flush
+ * prism there is swallowed by the solid around it and leaves no outline.
+ */
+function cutoutLabelMode(mode: TextMode, onRecessFloor: boolean): 'engrave' | 'emboss' | 'flat' {
+  if (mode === 'emboss') return 'emboss';
+  if (mode === 'flat' && !onRecessFloor) return 'flat';
+  return 'engrave';
+}
+
+/**
  * Label text for a cutout: on the bin top beside it (outer anchors) or on the
  * recess floor inside it (`center` anchor, see {@link labelSurfaceZ}).
  * `allowFloor` gates the floor branch — callers pass false for members of
@@ -1772,10 +1791,10 @@ function carveLabelFromCavities(
  * cutout's footprint — `cutoutWorldAabb()` projects the four rotated corners
  * and takes their min/max.
  *
- * The design-level mode selects `engrave` (recessed, returned with `op: 'cut'`)
- * or `emboss` (raised, returned with `op: 'fuse'` on the bin top, `op: 'carve'`
- * on a recess floor). `through-cut` falls back to engrave — punching bin-top
- * text through the floor is meaningless.
+ * The design-level mode selects `engrave` (recessed, returned with `op: 'cut'`),
+ * `emboss` (raised, returned with `op: 'fuse'` on the bin top, `op: 'carve'`
+ * on a recess floor) or `flat` (`op: 'fuse'`, bin top only). See
+ * {@link cutoutLabelMode} for the fallbacks.
  *
  * Placement (side gap + rotation-aware AABB) is delegated to
  * `cutoutLabelPlacement` so the 2D editor preview tracks this engraving.
@@ -1820,13 +1839,10 @@ function buildCutoutLabel(
       ? { ...resolved, sizeMode: 'fixed' as const }
       : resolved;
 
-  // Cutouts support engrave + emboss; through-cut would punch the floor, so it
-  // degrades to engrave.
-  const mode = style.mode === 'emboss' ? 'emboss' : 'engrave';
-
   const surfaceZ = allowFloor
     ? labelSurfaceZ(cutout, centerX, centerY, solidSurfaceZ, originX, originY)
     : solidSurfaceZ;
+  const mode = cutoutLabelMode(style.mode, surfaceZ < solidSurfaceZ);
   // A recess consuming the full fill depth leaves no floor to engrave into —
   // the interior clip stops at z=0 to protect the base, so skip the label.
   if (mode === 'engrave' && surfaceZ <= 0) return null;

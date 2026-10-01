@@ -274,6 +274,17 @@ describe('migrateParams', () => {
     expect(clamped.surfaceText?.lidText).toHaveLength(50);
   });
 
+  it('keeps a flat text mode on every layer that stores one', () => {
+    const result = migrateParams({
+      textDefaults: { ...DEFAULT_BIN_PARAMS.textDefaults, mode: 'flat' },
+      label: { ...DEFAULT_BIN_PARAMS.label, textStyle: { mode: 'flat' } },
+      surfaceText: { walls: { front: 'AB' }, style: { mode: 'flat' } },
+    });
+    expect(result.textDefaults.mode).toBe('flat');
+    expect(result.label.textStyle?.mode).toBe('flat');
+    expect(result.surfaceText?.style?.mode).toBe('flat');
+  });
+
   it('collapses empty/junk surfaceText to undefined', () => {
     expect(migrateParams({ surfaceText: {} } as any).surfaceText).toBeUndefined();
     expect(migrateParams({ surfaceText: { lidText: '   ' } } as any).surfaceText).toBeUndefined();

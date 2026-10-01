@@ -42,6 +42,8 @@ const META_STORE = 'binMeshMeta';
  * one kernel's output, bump that kernel's {@link KERNEL_MESH_REVISION} entry
  * instead, so the other kernel's users keep their warm cache.
  *
+ * `v25`: the `flat` text mode. A client that predates it keeps the mode in
+ * `textDefaults` and engraves the design under the same key.
  * `v24`: `label.removalHole` cuts a notch. A client that predates the field keeps
  * it in params and meshes the design without the notch under the same key.
  * `v17`: a sliding lid's channel is cut through the cavity's entry corner arcs,
@@ -75,7 +77,7 @@ const META_STORE = 'binMeshMeta';
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v24';
+const MESH_CACHE_VERSION = 'v25';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for

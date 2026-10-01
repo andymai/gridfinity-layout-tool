@@ -15,7 +15,26 @@
  * disagree, and then neither is authoritative.
  */
 
-export type TextMode = 'engrave' | 'emboss' | 'through-cut';
+/**
+ * `flat` leaves the surface level and only splits it along the glyph outlines,
+ * so the letters exist as a separate paint region and nothing else. It reads
+ * only when the text colour differs from its host's, which makes it a
+ * multi-colour mode: a host that prints in one colour engraves instead (see
+ * {@link singleColorTextMode}).
+ */
+export type TextMode = 'engrave' | 'emboss' | 'through-cut' | 'flat';
+
+export const TEXT_MODES: readonly TextMode[] = [
+  'engrave',
+  'emboss',
+  'through-cut',
+  'flat',
+] as const;
+
+/** The mode a host that cannot print a second colour builds instead. */
+export function singleColorTextMode(mode: TextMode): Exclude<TextMode, 'flat'> {
+  return mode === 'flat' ? 'engrave' : mode;
+}
 
 /**
  * Bundled font family. `allerta-stencil` is auto-substituted when

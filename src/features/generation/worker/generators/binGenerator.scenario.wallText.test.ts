@@ -15,13 +15,20 @@ import { resolve } from 'path';
 import { loadTestFonts } from '@/test/loadTestFonts';
 import { loadFont, isErr } from 'brepjs';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
-import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
+import {
+  assertStructurallyValid,
+  assertWatertight,
+  boundingBox,
+  meshVolume,
+} from './__kernel-tests__/meshAssertions';
 import type { BoundingBox } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, WallTextSide } from '@/shared/types/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { canBinUseDirectMesh } from './binDirectMesh';
 import { WALL_TEXT_MAX_EMBOSS } from './wallTextLayout';
+import { FeatureTag } from './featureTags';
+import type { MeshData } from '@/features/generation/bridge/types';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -283,6 +290,52 @@ describe('wall surface text scenarios', () => {
       )
     );
     assertStructurallyValid(result, 'half-grid solid wall text');
+  });
+
+  describe('flat', () => {
+    /** Y of every vertex of a TEXT-tagged triangle. */
+    function textVertexYs(m: MeshData): number[] {
+      const ys: number[] = [];
+      for (const fg of m.faceGroups ?? []) {
+        if (fg.tag !== FeatureTag.TEXT) continue;
+        for (let i = fg.start; i < fg.start + fg.count; i++) {
+          ys.push(m.vertices[m.indices[i] * 3 + 1]);
+        }
+      }
+      return ys;
+    }
+
+    it.each([
+      ['a plain bin', {}],
+      ['an overhanging front', { overhang: { left: 0, right: 0, front: 6, back: 0 } }],
+      ['a solid bin', { style: 'solid', base: { ...DEFAULT_BIN_PARAMS.base, solid: true } }],
+    ] as const)(
+      'lays the glyphs in the front face of %s without changing its volume',
+      (_name, extra) => {
+        const generateBin = getGenerateBin();
+        const plain = generateBin(makeParams(undefined, extra));
+        const flat = generateBin(
+          makeParams({ walls: { front: 'ABC' }, style: { mode: 'flat' } }, extra)
+        );
+        assertStructurallyValid(flat, 'flat wall text');
+        const ys = textVertexYs(flat);
+        expect(ys.length).toBeGreaterThan(0);
+        const frontY = boundingBox(plain.vertices).minY;
+        for (const y of ys) expect(y).toBeCloseTo(frontY, 3);
+        expect(boundingBox(flat.vertices).minY).toBeCloseTo(frontY, 3);
+        expect(meshVolume(flat)).toBeCloseTo(meshVolume(plain), 1);
+      }
+    );
+
+    it('keeps the glyph faces through the export fuse and stays watertight', () => {
+      const flat = getGenerateBin()(
+        makeParams({ walls: { front: 'ABC', back: 'XY' }, style: { mode: 'flat' } }),
+        undefined,
+        true
+      );
+      assertWatertight(flat, 'flat wall text export');
+      expect(textVertexYs(flat).length).toBeGreaterThan(0);
+    });
   });
 
   it('wall text rejects the direct-mesh draft path', () => {

@@ -61,6 +61,7 @@ export {
 } from './designerCutoutValidation.js';
 export {
   VALID_TEXT_FONTS,
+  VALID_TEXT_MODES,
   VALID_TEXT_ANCHORS,
   VALID_TEXT_CASES,
   VALID_TEXT_CUT_PROFILES,

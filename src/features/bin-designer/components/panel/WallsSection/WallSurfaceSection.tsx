@@ -20,7 +20,8 @@ import { FeatureToggle } from '../FeatureToggle';
 import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
 import { LabelPlatesControls } from '../LabelTabsSection/LabelPlatesControls';
 import { AnchorPicker } from '../../controls/AnchorPicker';
-import { Hint, Readout, SideSelector, SubHeader, type SideState } from '../shared';
+import { FlatTextHint, Hint, Readout, SideSelector, SubHeader, type SideState } from '../shared';
+import { textModeChoices } from '@/features/bin-designer/utils/textModeChoices';
 
 /** Mode options for the wall-text picker, in the shared textMode order. */
 const TEXT_MODE_OPTIONS: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'] as const;
@@ -175,7 +176,11 @@ export function WallSurfaceSection() {
                   size="sm"
                   value={state.wallTextMode}
                   onChange={handlers.setTextMode}
-                  options={TEXT_MODE_OPTIONS.map((mode) => ({
+                  options={textModeChoices(
+                    TEXT_MODE_OPTIONS,
+                    state.multiColor,
+                    state.wallTextMode
+                  ).map((mode) => ({
                     value: mode,
                     label: t(`binDesigner.textMode.${mode}`),
                   }))}
@@ -185,6 +190,7 @@ export function WallSurfaceSection() {
                     {t('binDesigner.textMode.throughCutStencilNote')}
                   </p>
                 )}
+                {state.wallTextMode === 'flat' && <FlatTextHint />}
                 <div className="space-y-1">
                   <span className="block text-label text-content-tertiary">
                     {t('binDesigner.type.anchor')}

@@ -2033,6 +2033,12 @@ const en: Record<string, string> = {
   'binDesigner.textMode.engrave': 'Engrave',
   'binDesigner.textMode.emboss': 'Emboss',
   'binDesigner.textMode.through-cut': 'Through-cut',
+  'binDesigner.textMode.flat': 'Flat',
+  'binDesigner.textMode.flatHint':
+    'Flat text is level with the surface and shows only in the Text color. Pick one that contrasts.',
+  'binDesigner.textMode.flatNeedsMultiColor':
+    'Flat text is level with the surface and shows only in a second filament. Turn on multi-color to print it.',
+  'binDesigner.textMode.flatColorsAction': 'Colors',
   'binDesigner.textMode.throughCutStencilNote':
     'Through-cut uses Allerta Stencil so letter centers stay attached.',
   'binDesigner.textFont': 'Font',

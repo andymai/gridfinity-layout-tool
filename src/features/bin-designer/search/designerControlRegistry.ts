@@ -411,7 +411,17 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
     id: 'opt-text-mode',
     labelKey: 'binDesigner.textMode',
     section: 'bd-type',
-    keywords: ['engrave', 'emboss', 'through cut', 'deboss', 'raised', 'stencil'],
+    keywords: [
+      'engrave',
+      'emboss',
+      'through cut',
+      'deboss',
+      'raised',
+      'stencil',
+      'flat',
+      'flush',
+      'inlay',
+    ],
   },
   // Physical units
   {

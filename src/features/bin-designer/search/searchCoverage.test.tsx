@@ -37,6 +37,7 @@ const GOLDEN: { query: string; expect: string[] }[] = [
   { query: 'drainage', expect: ['Floor pattern'] },
   { query: 'font', expect: ['Typeface'] },
   { query: 'engrave', expect: ['Typography'] },
+  { query: 'flush', expect: ['Finish'] },
   { query: 'nozzle', expect: ['Nozzle size'] },
   { query: 'grid unit', expect: ['Grid unit'] },
   { query: 'split', expect: ['Alignment connectors'] },

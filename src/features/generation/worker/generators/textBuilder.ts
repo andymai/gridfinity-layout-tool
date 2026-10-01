@@ -2,10 +2,12 @@
  * Text geometry builder.
  *
  * Materializes a caption as a 3D solid that the host (label tab, plate, wall,
- * lid, cutout surround) booleans against. Three modes:
+ * lid, cutout surround) booleans against. Four modes:
  *  - `engrave` extrudes downward into the host (caller cuts)
  *  - `emboss` extrudes upward above the host (caller fuses)
  *  - `through-cut` extrudes downward through the full host depth (caller cuts)
+ *  - `flat` extrudes downward from exactly the top face (caller fuses), which
+ *    adds no material and only splits the face along the glyph outlines
  *
  * WHERE the glyphs go is not decided here. `@/shared/utils/typePlan` owns
  * anchoring, sizing, tracking, case and line breaking, and the designer's ghost
@@ -55,6 +57,14 @@ export type ResolvedTextStyle = TextStyleDefaults & { readonly fontSizeOverride?
  * the magic number.
  */
 export const TEXT_BOOLEAN_EPSILON = 0.01;
+
+/**
+ * How far a flat glyph prism reaches into its host. Its walls and floor end up
+ * internal and vanish in the fuse, so the value is invisible; it only has to
+ * stay inside the thinnest host, where a prism poking out the far side would
+ * add material there.
+ */
+const FLAT_TEXT_PRISM_DEPTH = 0.2;
 
 let measurer: TypeMeasurer | null = null;
 
@@ -127,9 +137,13 @@ export function fitTextSize(options: TextHostOptions): number | null {
 
 /**
  * Whether the host should `cut` or `fuse` the returned solid. Engrave and
- * through-cut both cut; emboss fuses.
+ * through-cut both cut; emboss and flat fuse.
  */
 export type TextOp = 'cut' | 'fuse';
+
+export function textOpForMode(mode: TextMode): TextOp {
+  return mode === 'emboss' || mode === 'flat' ? 'fuse' : 'cut';
+}
 
 export interface TextSolidResult {
   readonly solid: Shape3D;
@@ -175,31 +189,44 @@ export function buildTextSolid(
 
   const { mode } = options.style;
 
-  // All three modes need the EPSILON lift to avoid coplanar boolean fragility:
+  // The three relief modes need the EPSILON lift to avoid coplanar boolean
+  // fragility:
   //  - engrave / through-cut: sketch sits ABOVE topZ, extrudes DOWN through it
   //  - emboss: sketch sits BELOW topZ, extrudes UP through it
   // Either way the solid penetrates the host's top face by EPSILON so the
   // fuse/cut surfaces overlap instead of being coincident.
+  //
+  // Flat is the exception: its top face coinciding with the host's is the
+  // whole point, because that shared plane is where the fuse splits the face.
+  // Lifted, the prism would add a sliver; sunk, it would vanish inside the host.
+  const flatDepth = Math.min(FLAT_TEXT_PRISM_DEPTH, options.hostThickness / 2);
   const sketchOriginZ =
-    mode === 'emboss' ? options.topZ - TEXT_BOOLEAN_EPSILON : options.topZ + TEXT_BOOLEAN_EPSILON;
+    mode === 'flat'
+      ? options.topZ
+      : mode === 'emboss'
+        ? options.topZ - TEXT_BOOLEAN_EPSILON
+        : options.topZ + TEXT_BOOLEAN_EPSILON;
   const extrusion =
-    mode === 'emboss'
-      ? options.depth + TEXT_BOOLEAN_EPSILON
-      : mode === 'through-cut'
-        ? -(options.hostThickness + 2 * TEXT_BOOLEAN_EPSILON)
-        : -(options.depth + TEXT_BOOLEAN_EPSILON);
+    mode === 'flat'
+      ? -flatDepth
+      : mode === 'emboss'
+        ? options.depth + TEXT_BOOLEAN_EPSILON
+        : mode === 'through-cut'
+          ? -(options.hostThickness + 2 * TEXT_BOOLEAN_EPSILON)
+          : -(options.depth + TEXT_BOOLEAN_EPSILON);
 
   // A tapered through-cut would meet itself at a knife edge partway through a
-  // thick host, so the profile applies to the two bounded modes only.
+  // thick host, so the profile applies to the two bounded modes only. A flat
+  // prism's walls end up internal, so a draft would only cost kernel time.
   const taper =
-    options.style.cutProfile === 'drafted' && mode !== 'through-cut'
+    options.style.cutProfile === 'drafted' && (mode === 'engrave' || mode === 'emboss')
       ? options.style.draftAngleDeg
       : 0;
 
   const refX = plan.lines[0].x;
   const refY = plan.lines[0].baselineY;
   const canonical = getOrBuildCanonicalBlock(scope, plan, mode, {
-    depth: options.depth,
+    depth: mode === 'flat' ? flatDepth : options.depth,
     hostThickness: options.hostThickness,
     extrusion,
     taperDeg: taper,
@@ -231,7 +258,7 @@ export function buildTextSolid(
     );
   }
 
-  return { solid, op: mode === 'emboss' ? 'fuse' : 'cut', plan };
+  return { solid, op: textOpForMode(mode), plan };
 }
 
 interface CanonicalOptions {

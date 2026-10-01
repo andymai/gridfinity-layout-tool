@@ -13,7 +13,7 @@ export const VALID_TEXT_FONTS = [
   'allerta-stencil',
 ] as const;
 
-const VALID_TEXT_MODES = ['engrave', 'emboss', 'through-cut'] as const;
+export const VALID_TEXT_MODES = ['engrave', 'emboss', 'through-cut', 'flat'] as const;
 
 export const VALID_TEXT_ANCHORS = [
   'top-left',

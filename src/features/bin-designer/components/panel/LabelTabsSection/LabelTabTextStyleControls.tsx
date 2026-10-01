@@ -6,7 +6,8 @@ import { LabelSizeControl } from '../../controls';
 import type { SelectOption } from '@/design-system';
 import type { TextFontFamily, TextMode } from '../../../types';
 import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest';
-import { DependencyHint } from '../shared';
+import { DependencyHint, FlatTextHint } from '../shared';
+import { textModeChoices } from '@/features/bin-designer/utils/textModeChoices';
 import type { useLabelTabsSection } from './useLabelTabsSection';
 import type { useTranslation } from '@/i18n';
 
@@ -17,8 +18,8 @@ const FONT_OPTIONS: readonly TextFontFamily[] = [
   'allerta-stencil',
 ] as const;
 /** Per-mode bounds for the engrave/emboss depth stepper. Through-cut ignores
- *  `depth` (cuts through the full shelf), so the picker is hidden in that
- *  mode rather than disabled. */
+ *  `depth` (cuts through the full shelf) and flat has none, so the picker is
+ *  hidden in those modes rather than disabled. */
 const TEXT_DEPTH_MIN = 0.2;
 const TEXT_DEPTH_MAX = 5;
 const TEXT_DEPTH_STEP = 0.1;
@@ -57,25 +58,32 @@ export function LabelTabTextStyleControls({
             {t('binDesigner.textMode')}
           </span>
           <div role="group" aria-label={t('binDesigner.textMode')} className={SEGMENT_GROUP_CLASS}>
-            {MODE_OPTIONS.map((option) => (
-              <Button
-                key={option}
-                type="button"
-                variant="ghost"
-                touchTarget={false}
-                onClick={() => handlers.setTextMode(option)}
-                aria-pressed={state.textDefaults.mode === option}
-                className={`flex-1 ${getSegmentClass(state.textDefaults.mode === option)}`}
-              >
-                {t(`binDesigner.textMode.${option}`)}
-              </Button>
-            ))}
+            {textModeChoices(MODE_OPTIONS, state.multiColor, state.textDefaults.mode).map(
+              (option) => (
+                <Button
+                  key={option}
+                  type="button"
+                  variant="ghost"
+                  touchTarget={false}
+                  onClick={() => handlers.setTextMode(option)}
+                  aria-pressed={state.textDefaults.mode === option}
+                  className={`flex-1 ${getSegmentClass(state.textDefaults.mode === option)}`}
+                >
+                  {t(`binDesigner.textMode.${option}`)}
+                </Button>
+              )
+            )}
           </div>
           {state.textDefaults.mode === 'through-cut' && (
             <p className="mt-1 flex items-start gap-1 text-xs text-content-tertiary">
               <InfoIcon size="xs" className="mt-0.5 shrink-0" />
               <span>{t('binDesigner.textMode.throughCutStencilNote')}</span>
             </p>
+          )}
+          {state.textDefaults.mode === 'flat' && (
+            <div className="mt-1">
+              <FlatTextHint />
+            </div>
           )}
         </div>
 
@@ -106,7 +114,7 @@ export function LabelTabTextStyleControls({
               }))}
             />
           </div>
-          {state.textDefaults.mode !== 'through-cut' && (
+          {state.textDefaults.mode !== 'through-cut' && state.textDefaults.mode !== 'flat' && (
             <div className="min-w-0 flex-1">
               <span className="mb-1 block text-xs text-content-tertiary">
                 {t('binDesigner.textDepth')}

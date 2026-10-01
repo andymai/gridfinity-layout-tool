@@ -14,9 +14,9 @@
  * offset and tags faces `FeatureTag.TEXT`.
  *
  * Registered as TWO builders because a FeatureBuilder has one static boolean
- * target: engrave/through-cut solids join the cut pile, embossed text joins
- * the fuse pile. The shared surface style has a single mode, so exactly one
- * of the two is active per generation.
+ * target: engrave/through-cut solids join the cut pile, embossed and flat text
+ * join the fuse pile. Walls may carry their own style, so both can be active
+ * in one generation.
  */
 
 import { rotate, translate, withScope, clone, unwrap, fuseAll } from 'brepjs';
@@ -27,7 +27,7 @@ import type { FeatureBuilder } from './pipeline/featureBuilder';
 import type { PipelineContext } from './pipeline/types';
 import { FeatureTag } from './featureTags';
 import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKeyUtils';
-import { buildTextSolid } from './textBuilder';
+import { buildTextSolid, textOpForMode } from './textBuilder';
 import { computeWallTextLayouts, wallTextReadingSign } from './wallTextLayout';
 import type { WallTextLayout } from './wallTextLayout';
 
@@ -95,7 +95,7 @@ function buildOneWallText(
 function buildWallTextShapes(ctx: PipelineContext, wantFuse: boolean): readonly Shape3D[] | null {
   const { params, dimensions: dim } = ctx;
   const layouts = computeWallTextLayouts(params, dim).filter(
-    (l) => (l.mode === 'emboss') === wantFuse
+    (l) => (textOpForMode(l.mode) === 'fuse') === wantFuse
   );
   if (layouts.length === 0) return null;
 
@@ -122,11 +122,11 @@ function hasAnyWallText(params: BinParams): boolean {
 }
 
 /**
- * Whether any wall resolves to emboss. Per wall, not per design: a wall may
- * carry its own style override, so asking the shared style would send an
+ * Whether any wall resolves to a fused mode. Per wall, not per design: a wall
+ * may carry its own style override, so asking the shared style would send an
  * embossed wall to the cut builder and lose it.
  */
-function hasWallTextMode(params: BinParams, wantEmboss: boolean): boolean {
+function hasWallTextMode(params: BinParams, wantFuse: boolean): boolean {
   const walls = params.surfaceText?.walls;
   if (!walls) return false;
   return WALL_TEXT_SIDES.some((side) => {
@@ -136,7 +136,7 @@ function hasWallTextMode(params: BinParams, wantEmboss: boolean): boolean {
       params.surfaceText?.style,
       params.surfaceText?.wallStyles?.[side]
     ).mode;
-    return (mode === 'emboss') === wantEmboss;
+    return (textOpForMode(mode) === 'fuse') === wantFuse;
   });
 }
 
