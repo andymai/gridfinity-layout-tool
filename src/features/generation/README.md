@@ -281,11 +281,10 @@ Fast generations → 50ms delay, slow generations → 300ms delay
 
 `computeGenerationTimeoutMs(params)` scales the per-request watchdog from
 `BASE_TIMEOUT_MS`, adding a bonus per cost driver and clamping to
-`MAX_TIMEOUT_MS`. The bonuses are named constants in `bridge/generationTimeout.ts`
-(`HEX_PATTERN_BONUS_MS`, `HEX_PLUS_CUTOUT_BONUS_MS`, `HEX_FOOTPRINT_BONUS_MS_PER_CELL`,
-`KUMIKO_PATTERN_BONUS_MS`, `FLOOR_PATTERN_BONUS_MS`, `TAPER_MULTI_COMPARTMENT_BONUS_MS`,
-`HEIGHT_BONUS_MS`, `DETACHABLE_FEET_BONUS_MS`), so read them there rather than
-restating values here. `EXPORT_TIMEOUT_MULTIPLIER` widens the budget for a
+`MAX_TIMEOUT_MS`. Every bonus is a named constant in `bridge/generationTimeout.ts`: bin
+bonuses sum in `binRawBudgetMs`, baseplate bonuses in `baseplateRawBudgetMs`,
+and split exports add a per-piece term in `computeSplitExportTimeoutMs`, so read
+them there rather than restating them here. `EXPORT_TIMEOUT_MULTIPLIER` widens the budget for a
 user-initiated export over a live preview. Baseplates keep the flat
 `BASEPLATE_MAX_TIMEOUT_MS` ceiling.
 

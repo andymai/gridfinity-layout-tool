@@ -11,11 +11,13 @@
  */
 
 import type { ResolvedBaseplateParams, BinParams } from '@/shared/types/bin';
-import { isKumikoPattern, isUndersideRelief } from '@/shared/types/bin';
+import { isKumikoPattern, isNestingBase, isUndersideRelief } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { hasDetachableFeet } from '@/shared/types/bin';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { resolveOverhang } from '@/shared/utils/overhang';
+import { resolveScoopSides } from '@/shared/utils/scoopCalculations';
+import { isLiteFloorOpen } from '@/shared/utils/slotMath';
 
 /** Minimum timeout for trivial bins (no heavy features). */
 export const BASE_TIMEOUT_MS = 30_000;
@@ -113,6 +115,15 @@ export const TAPER_MULTI_COMPARTMENT_BONUS_MS = 10_000;
 
 /** Per-compartment bonus for a tapered multi-compartment bin. */
 export const TAPER_MS_PER_COMPARTMENT = 100;
+
+/**
+ * Extra time per finger-scoop ramp. Each compartment gets its own ramp solid on
+ * every scoop side, all combined before the one fuse into the body, so a dense
+ * grid pays per ramp. Generous because the device-aware floor only learns a
+ * device's speed from a finished build: the first scoop build on a dense grid,
+ * on a slow device, has this budget alone.
+ */
+export const SCOOP_MS_PER_RAMP = 1_500;
 
 /**
  * Bonus per 2 height units above the reference height.
@@ -235,6 +246,17 @@ function countDividerSegments(params: BinParams): number {
   return count;
 }
 
+/**
+ * An upper bound on the scoop ramps the worker builds: one per compartment and
+ * scoop side, behind the worker's `scoopRampsApply` gate.
+ */
+function countScoopRamps(params: BinParams): number {
+  if (!params.scoop.enabled || params.style !== 'standard') return 0;
+  if (isPartialMask(params.cellMask) || isNestingBase(params.base)) return 0;
+  if (isLiteFloorOpen(params)) return 0;
+  return new Set(params.compartments.cells).size * resolveScoopSides(params.scoop).length;
+}
+
 function hasAnyActiveCutoutSide(params: BinParams): boolean {
   const { walls } = params;
   if (!walls.enabled) return false;
@@ -327,6 +349,8 @@ function binRawBudgetMs(params: BinParams): number {
     timeout += TAPER_MULTI_COMPARTMENT_BONUS_MS;
     timeout += compartmentCount * TAPER_MS_PER_COMPARTMENT;
   }
+
+  timeout += countScoopRamps(params) * SCOOP_MS_PER_RAMP;
 
   // Detachable feet are extra solids on top of the bin, not a cheaper base: a
   // lofted foot and a clip intersect per placement, then a SEQUENTIAL fuse per
