@@ -1,0 +1,118 @@
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabTextStyleControls.test.tsx
+  s_fe2c0a02f9f14e::t_10ecbb320a968c 37,46,49-76,81
+src/features/bin-designer/components/panel/shared/FlatTextClashWarning.tsx
+  s_fe2c0a02f9f14e::t_17b8392918cc8e 1-40
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.tsx
+  s_fe2c0a02f9f14e::t_f6da309d7c150c 2-6,39
+  s_fe2c0a02f9f14e::t_7ea9afb59ae840 71
+src/i18n/locales/zh-CN.json
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 489,1764,1813-1817
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.tsx
+  s_fe2c0a02f9f14e::t_e8799f0c4cd7e2 292
+  s_fe2c0a02f9f14e::t_ece02db0f369b8 38,208,225-230,436,487-500
+  s_fe2c0a02f9f14e::t_1c18c7b46fd490 501
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.test.tsx
+  s_fe2c0a02f9f14e::t_10ecbb320a968c 28,32
+src/features/bin-designer/components/CutoutWorkspace/CutoutEngraveLabelControls.test.tsx
+  s_fe2c0a02f9f14e::t_ef947fcd4f1861 77,90,96-97
+  s_fe2c0a02f9f14e::t_d83b7b09d5061f 83-87
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_fe2c0a02f9f14e::t_ef947fcd4f1861 615
+src/features/bin-designer/components/panel/shared/FlatTextClashWarning.test.tsx
+  s_fe2c0a02f9f14e::t_1b4abcd1029cea 1-39
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_fe2c0a02f9f14e::t_289fb98bfcd8af 32-33,36,51,316-317,324
+src/i18n/locales/cs.json
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 489,1764,1813-1817
+src/i18n/locales/ja.json
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 489,1764,1813-1817
+src/features/bin-designer/components/panel/ColorsSection/ColorsActionsMenu.test.tsx
+  s_fe2c0a02f9f14e::t_6c22d1b2e21b7f 91
+src/i18n/locales/fr.json
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 489,1764,1813-1817
+src/features/bin-designer/components/panel/TypeSection/useTypeSection.ts
+  s_fe2c0a02f9f14e::t_f8aa44ace4265d 60
+src/features/bin-designer/components/panel/TypeSection/TypeSection.tsx
+  s_fe2c0a02f9f14e::t_f8aa44ace4265d 46,246-247,252
+src/i18n/locales/en.ts
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 1863,2037-2042,2761
+src/i18n/locales/ko.json
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 489,1764,1813-1817
+src/features/bin-designer/components/CutoutWorkspace/CutoutEngraveLabelControls.tsx
+  s_fe2c0a02f9f14e::t_75be210748ea4d 14,44-45
+  s_fe2c0a02f9f14e::t_837a9d27cc8072 74-75,84,87,202-209
+src/i18n/locales/pt-BR.json
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 489,1764,1813-1817
+src/features/bin-designer/components/panel/shared/TextFinishGrid.test.tsx
+  s_fe2c0a02f9f14e::t_1b4abcd1029cea 1-42
+src/i18n/locales/es.json
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 489,1764,1813-1817
+src/i18n/locales/de.json
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 489,1764,1813-1817
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabTextStyleControls.tsx
+  s_fe2c0a02f9f14e::t_650fadae3fa2ef 1,3,8-9,13-14,55-61,63,68
+src/features/bin-designer/components/panel/ColorsSection/ColorsActionsMenu.tsx
+  s_fe2c0a02f9f14e::t_e8799f0c4cd7e2 93
+src/i18n/locales/sv.json
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 489,1764,1813-1817
+src/i18n/locales/ka.json
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 1572,1730-1734,2342
+src/i18n/locales/it.json
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 489,1764,1813-1817
+src/features/bin-designer/components/panel/shared/TextFinishGrid.tsx
+  s_fe2c0a02f9f14e::t_17b8392918cc8e 1-11,13-15,17-25,31-33
+  s_fe2c0a02f9f14e::t_837a9d27cc8072 12,16,26-30
+src/features/bin-designer/utils/flatTextContrast.ts
+  s_fe2c0a02f9f14e::t_d764412f5963c1 1-118
+src/features/bin-designer/components/panel/shared/index.ts
+  s_fe2c0a02f9f14e::t_17b8392918cc8e 10-12
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_fe2c0a02f9f14e::t_d9187c80456c37 388
+src/i18n/locales/nl.json
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 489,1764,1813-1817
+src/features/bin-designer/components/panel/shared/TextColorControl.test.tsx
+  s_fe2c0a02f9f14e::t_1b4abcd1029cea 1-36
+src/core/store/settings.types.ts
+  s_fe2c0a02f9f14e::t_e8799f0c4cd7e2 323-324
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_fe2c0a02f9f14e::t_e8799f0c4cd7e2 65,86-93
+src/i18n/locales/pl.json
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 489,1764,1813-1817
+src/i18n/locales/uk.json
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 489,1764,1813-1817
+src/features/bin-designer/types/featureColors.ts
+  s_fe2c0a02f9f14e::t_6010fa126fd4a0 653,668,681-684,690,694-700
+  s_fe2c0a02f9f14e::t_3a861e899317a6 691-693
+src/i18n/locales/nb.json
+  s_fe2c0a02f9f14e::t_ab43b617f74b68 489,1764,1813-1817
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.test.tsx
+  s_fe2c0a02f9f14e::t_ef947fcd4f1861 98,104-105
+  s_fe2c0a02f9f14e::t_7822e266e457cd 106-132
+  s_fe2c0a02f9f14e::t_c104d1b413953d 4
+src/features/bin-designer/components/panel/shared/TextColorControl.tsx
+  s_fe2c0a02f9f14e::t_17b8392918cc8e 1-105
+src/features/bin-designer/utils/flatTextContrast.test.ts
+  s_fe2c0a02f9f14e::t_b0ff587629b0c2 3,124-131
+  s_fe2c0a02f9f14e::t_9e5381d0d9784b 1-2,4-123,132-134
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.tsx
+  s_fe2c0a02f9f14e::t_2fddfc9bb5247b 6
+  s_fe2c0a02f9f14e::t_289fb98bfcd8af 23-32,36,181-182,191
+src/features/whats-new/entries.ts
+  s_fe2c0a02f9f14e::t_dcb6cd523a9f27 22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f07f59044a245c3810cddff1157aac780d494ca7",
+  "prompts": {},
+  "sessions": {
+    "s_fe2c0a02f9f14e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5b1cfa44-fa06-49f6-b48e-d3066914d5be",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
