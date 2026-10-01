@@ -356,6 +356,33 @@ describe('computeActiveZones', () => {
     });
   });
 
+  describe('lid text', () => {
+    const withLid = (lid: Partial<ActiveZonesParams['lid']>, lidText?: string) =>
+      computeActiveZones({
+        ...baseParams,
+        base: { style: 'standard', stackingLip: true },
+        lid: { enabled: true, ...lid },
+        ...(lidText !== undefined ? { surfaceText: { lidText } } : {}),
+      });
+    const element = {
+      shape: 'text',
+      engraveLabel: true,
+      label: 'AB',
+    };
+
+    it('activates the text zone for a lid caption or a lid text element', () => {
+      expect(withLid({}, 'Cables').has('text')).toBe(true);
+      expect(withLid({ cutouts: [element] }).has('text')).toBe(true);
+      expect(withLid({}, '  ').has('text')).toBe(false);
+    });
+
+    it('mirrors the lid gates: a full stack grid leaves no face for the caption', () => {
+      expect(withLid({ stackableTop: true }, 'Cables').has('text')).toBe(false);
+      expect(withLid({ stackableTop: true, stackLipOnly: true }, 'Cables').has('text')).toBe(true);
+      expect(withLid({ enabled: false }, 'Cables').has('text')).toBe(false);
+    });
+  });
+
   it('activates the text zone for a repeat whose captions live only in its label list', () => {
     const repeat = (labels: string[]) =>
       computeActiveZones({

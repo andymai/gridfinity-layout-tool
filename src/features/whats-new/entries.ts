@@ -19,7 +19,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     kind: 'new',
     title: { en: 'Flat text for multi-color prints' },
     body: {
-      en: 'Turn on multi-color and the Finish picker for label tabs, wall text and cutout labels gains Flat. The letters sit level with the surface and print in the Text color, so a two-filament label reads without raised or recessed lettering. Pick a Text color that contrasts with the surface under Colors.',
+      en: 'Turn on multi-color and the Finish picker gains Flat, for label tabs, wall text, cutout labels, lid text and swappable label plates. The letters sit level with the surface and print in the Text color, so a two-filament label reads without raised or recessed lettering. Lid text now prints in the Text color too. Pick one that contrasts with the surface under Colors.',
     },
     action: { kind: 'openTool', tool: 'designer' },
   },

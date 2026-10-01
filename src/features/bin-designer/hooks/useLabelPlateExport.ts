@@ -32,6 +32,7 @@ import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/bin
 import { buildLabelPlateColorConfig } from '@/features/bin-designer/utils/labelPlateColors';
 import {
   effectiveLabelSocketClearance,
+  labelPlateTextMode,
   snapTextDepthToLayers,
 } from '@/shared/constants/labelPlates';
 
@@ -91,7 +92,7 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
     return {
       specs: plates.map((p) => ({ widthU: p.widthU, text: p.text, icon: p.icon })),
       options: {
-        textMode: textDefaults.mode === 'emboss' ? 'emboss' : 'deboss',
+        textMode: labelPlateTextMode(textDefaults.mode),
         textDepthMm: snapTextDepthToLayers(textDefaults.depth, layerHeightMm),
         textDefaults,
         v1Channels: true,

@@ -92,9 +92,9 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
   // means.
   const hingePose = useMemo(() => lidHingePose(params, lidOffsetMm), [params, lidOffsetMm]);
 
-  // The lid's own top lip can differ from the rest of the lid. Classified by
-  // exactly the rule the 3MF assembler uses, so the preview keeps predicting
-  // the print (the invariant GH established).
+  // The lid's text and its own top lip can differ from the rest of the lid.
+  // Classified by exactly the rule the 3MF assembler uses, so the preview keeps
+  // predicting the print.
   const lidColorData = useMemo(
     () =>
       featureColors.enabled

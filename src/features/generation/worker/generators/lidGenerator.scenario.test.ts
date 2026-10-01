@@ -14,9 +14,11 @@ import { initBrepjs } from './__kernel-tests__/wasmInit';
 import {
   assertStructurallyValid,
   boundingBox,
+  meshVolume,
   verticalSolidSpans,
   triangleArea,
 } from './__kernel-tests__/meshAssertions';
+import { FeatureTag } from './featureTags';
 import { LID_STACK_GRID_HEIGHT_MM } from '@/shared/printSettings/gridfinityGeometry';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import {
@@ -1274,6 +1276,74 @@ describe('lid generation and export scenarios', () => {
     }, 30_000);
 
     const BASE = { width: 2, depth: 2, height: 3 } as const;
+
+    describe('flat', () => {
+      const FLAT = { ...DEFAULT_BIN_PARAMS.textDefaults, mode: 'flat' as const };
+      const textZs = (m: {
+        vertices: ArrayLike<number>;
+        indices: ArrayLike<number>;
+        faceGroups?: readonly { tag: number; start: number; count: number }[];
+      }): number[] => {
+        const zs: number[] = [];
+        for (const g of m.faceGroups ?? []) {
+          if (g.tag !== FeatureTag.TEXT) continue;
+          for (let i = g.start; i < g.start + g.count; i++)
+            zs.push(m.vertices[m.indices[i] * 3 + 2]);
+        }
+        return zs;
+      };
+      const caption = { lidText: 'ABC' };
+      const element = {
+        id: 't1',
+        shape: 'text' as const,
+        x: 20,
+        y: 30,
+        width: 30,
+        depth: 12,
+        cutDepth: 0,
+        rotation: 0,
+        cornerRadius: 0,
+        label: 'AB',
+        engraveLabel: true,
+        groupId: null,
+      };
+
+      it.each([
+        ['the plain top', {}, {}, { surfaceText: caption }],
+        [
+          'a tray floor',
+          { tray: { enabled: true, depthMm: 4, wallMm: 2 } },
+          {},
+          { surfaceText: caption },
+        ],
+        [
+          'a lip-only stack floor',
+          { stackableTop: true, stackLipOnly: true },
+          {},
+          { surfaceText: caption },
+        ],
+        ['a text element', {}, { cutouts: [element] }, {}],
+      ] as const)(
+        'lays text flat on %s without changing the volume',
+        async (_name, lid, withLid, withExtra) => {
+          const { generateLid } = await import('./lidOrchestrator');
+          const extra = { ...BASE, textDefaults: FLAT };
+          const plain = generateLid(makeParams(lid, extra));
+          const flat = generateLid(
+            makeParams({ ...lid, ...withLid } as Partial<LidConfig>, { ...extra, ...withExtra })
+          );
+          expect(plain).not.toBeNull();
+          expect(flat).not.toBeNull();
+          if (!plain || !flat) return;
+          assertStructurallyValid(flat, 'flat lid text');
+          const zs = textZs(flat);
+          expect(zs.length).toBeGreaterThan(0);
+          expect(Math.max(...zs) - Math.min(...zs)).toBeLessThan(1e-3);
+          const before = meshVolume(plain);
+          expect(Math.abs(meshVolume(flat) - before)).toBeLessThan(before * 1e-5);
+        }
+      );
+    });
 
     it('engraved text changes the mesh without raising the top', async () => {
       const { generateLid } = await import('./lidOrchestrator');

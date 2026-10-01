@@ -570,22 +570,26 @@ export interface ActiveZonesParams {
     readonly rowTexts?: readonly string[];
   };
   readonly scoop: { readonly enabled: boolean };
-  readonly lid: { readonly enabled: boolean; readonly stackableTop?: boolean };
+  readonly lid: {
+    readonly enabled: boolean;
+    readonly stackableTop?: boolean;
+    readonly stackLipOnly?: boolean;
+    readonly attachment?: string;
+    /** Lid text elements carry their caption like a bin cutout label does. */
+    readonly cutouts?: readonly CaptionedShape[];
+  };
   readonly compartments: {
     readonly cells: readonly number[];
     readonly compartmentTexts?: readonly string[];
   };
-  readonly cutouts?: readonly {
-    readonly engraveLabel?: boolean;
-    readonly label: string;
-    /** A repeat's per-copy captions; the master's label covers copies past its end. */
-    readonly array?: { readonly labels?: readonly string[] };
-  }[];
-  /** Wall surface text renders on the bin body, so it activates the
-   *  `text` zone. Mirrors the worker gate: polygon bins skip wall text
-   *  entirely (see `wallTextLayout.ts`), solid bins carry it like hollow ones. Lid text deliberately does
-   *  NOT activate the zone — the lid ships as a single color object. */
-  readonly surfaceText?: { readonly walls?: Readonly<Partial<Record<WallTextSide, string>>> };
+  readonly cutouts?: readonly CaptionedShape[];
+  /** Wall and lid text both activate the `text` zone. Mirrors the worker
+   *  gates: polygon bins skip wall and lid text (see `wallTextLayout.ts`,
+   *  `resolveLidInputs`), solid bins carry wall text like hollow ones. */
+  readonly surfaceText?: {
+    readonly walls?: Readonly<Partial<Record<WallTextSide, string>>>;
+    readonly lidText?: string;
+  };
   readonly cellMask?: CellMask;
   /**
    * Active lip color-grid sizes. Determines which lip cells are exposed as
@@ -644,6 +648,39 @@ export function lipCellsUniform(lip: LipColorConfig): boolean {
   return active.every((zone) => lip.cells[zone] === first);
 }
 
+interface CaptionedShape {
+  readonly shape?: string;
+  readonly hidden?: boolean;
+  readonly engraveLabel?: boolean;
+  readonly labelMode?: string;
+  readonly label: string;
+  /** A repeat's per-copy captions; the master's label covers copies past its end. */
+  readonly array?: { readonly labels?: readonly string[] };
+}
+
+function hasEngravedCaption(c: CaptionedShape): boolean {
+  return (
+    c.engraveLabel === true &&
+    (c.labelMode !== 'socket' || c.shape === 'text') &&
+    (c.label.trim().length > 0 || (c.array?.labels ?? []).some((l) => l.trim().length > 0))
+  );
+}
+
+/**
+ * Lid caption or lid text elements, gated as `resolveLidInputs` builds them: a
+ * full stack grid leaves no face for the caption, and polygon lids skip it.
+ */
+function hasLidText(p: ActiveZonesParams): boolean {
+  const gridOwnsTop =
+    p.lid.stackableTop === true && p.lid.stackLipOnly !== true && p.lid.attachment !== 'slide';
+  const caption =
+    !gridOwnsTop && !isPartialMask(p.cellMask) && (p.surfaceText?.lidText ?? '').trim() !== '';
+  const elements = (p.lid.cutouts ?? []).some(
+    (c) => c.shape === 'text' && c.hidden !== true && hasEngravedCaption(c)
+  );
+  return caption || elements;
+}
+
 /**
  * The set of zones whose color a user can actually see in the current
  * configuration. Used uniformly by the panel (row visibility), the 3D
@@ -665,11 +702,7 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
     p.label.enabled &&
     (p.label.mode ?? 'text') !== 'socket' &&
     (tabTexts ?? []).some((t) => t.trim().length > 0);
-  const hasCutoutText = (p.cutouts ?? []).some(
-    (c) =>
-      c.engraveLabel === true &&
-      (c.label.trim().length > 0 || (c.array?.labels ?? []).some((l) => l.trim().length > 0))
-  );
+  const hasCutoutText = (p.cutouts ?? []).some(hasEngravedCaption);
   // Wall surface text: polygon bins skip it, solid ones keep it (featuresStage).
   const hasWallText =
     !isPartialMask(p.cellMask) &&
@@ -707,7 +740,9 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
     }
   }
   if (hasDividers) zones.add('dividers');
-  if (hasTabText || hasCutoutText || hasWallText) zones.add('text');
+  if (hasTabText || hasCutoutText || hasWallText || (zones.has('lid') && hasLidText(p))) {
+    zones.add('text');
+  }
   // Accent bands are independent of every other feature — a positive-height
   // band recolors an end of the bin whether or not it has a lip or a socket.
   const topAccent = p.featureColors?.topAccent;

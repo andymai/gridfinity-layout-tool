@@ -29,8 +29,10 @@ import {
   SegmentGrid,
   InfoDot,
   SideSelector,
+  FlatTextHint,
 } from '../shared';
 import type { SideState } from '../shared';
+import { textModeChoices } from '@/features/bin-designer/utils/textModeChoices';
 import type {
   LidCompatibilityId,
   LidCompatibilityIssue,
@@ -316,7 +318,11 @@ export function LidSection() {
                         size="sm"
                         value={state.textMode}
                         onChange={handlers.setTextMode}
-                        options={TEXT_MODE_OPTIONS.map((mode) => ({
+                        options={textModeChoices(
+                          TEXT_MODE_OPTIONS,
+                          state.multiColor,
+                          state.textMode
+                        ).map((mode) => ({
                           value: mode,
                           label: t(`binDesigner.textMode.${mode}`),
                         }))}
@@ -324,6 +330,7 @@ export function LidSection() {
                       {state.textMode === 'through-cut' && (
                         <Hint>{t('binDesigner.textMode.throughCutStencilNote')}</Hint>
                       )}
+                      {state.textMode === 'flat' && <FlatTextHint />}
                       {state.textOnTrayFloor && <Hint>{t('binDesigner.lid.text.trayHint')}</Hint>}
                       {state.textOnStackLipFloor && (
                         <Hint>{t('binDesigner.lid.text.stackLipHint')}</Hint>

@@ -1,8 +1,8 @@
 /**
  * Lid-top text.
  *
- * Engraves, embosses, or through-cuts the design's surface text into the lid's
- * top face — or the tray floor when a tray recess is active (the recess owns
+ * Engraves, embosses, through-cuts or lays flat the design's surface text on the
+ * lid's top face — or the tray floor when a tray recess is active (the recess owns
  * the visible surface then), or the recessed floor inside the lip on a lip-only
  * stack top. Skipped entirely for FULL stack grids (no flat face left)
  * and polygon (cellMask) lids — both are gated upstream in `resolveLidInputs`,
@@ -131,9 +131,7 @@ export function applyLidText(
   if (!result) return body;
 
   // Tag before the boolean so glyph faces surface as TEXT in the mesh face
-  // groups. The lid renders and exports as a single color zone today
-  // (LidMesh / uniformColorConfig), so this is provenance only — it lets a
-  // per-face lid color path light up later without regenerating meshes.
+  // groups, which the lid's preview and 3MF paint in the Text colour.
   if (originToTag) {
     collectOrigins(result.solid, FeatureTag.TEXT, originToTag);
   }

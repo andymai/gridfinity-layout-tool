@@ -385,7 +385,6 @@ export function SingleCutoutInspector({
               binWidth={binWidth}
               binDepth={binDepth}
               disabled={disabled}
-              monochromeHost={throughOnly}
               onUpdate={(patch) => onUpdate(cutout.id, patch)}
             />
           </Collapsible>

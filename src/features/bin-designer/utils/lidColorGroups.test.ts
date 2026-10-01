@@ -86,4 +86,28 @@ describe('buildLidColorGroups', () => {
     const covered = result?.groups.reduce((n, g) => n + g.count, 0);
     expect(covered).toBe(indices.length);
   });
+
+  describe('text', () => {
+    const glyphFirst = [
+      { start: 0, count: 3, tag: FeatureTag.TEXT },
+      { start: 3, count: (QUADS.length - 1) * 3, tag: FeatureTag.LID_BODY },
+    ];
+    const plain = (text: string) => ({
+      ...DEFAULT_FEATURE_COLOR_CONFIG,
+      enabled: true,
+      lid: '#111111',
+      text,
+    });
+
+    it('paints glyph triangles the Text colour, with or without a lip grid', () => {
+      const result = buildLidColorGroups(glyphFirst, vertices, indices, plain('#ff0000'));
+      expect(result?.colors).toEqual(['#111111', '#ff0000']);
+      expect(result?.groups[0]).toEqual({ start: 0, count: 3, materialIndex: 1 });
+      expect(result?.groups[1]).toMatchObject({ materialIndex: 0 });
+    });
+
+    it('stays one colour when Text matches the lid', () => {
+      expect(buildLidColorGroups(glyphFirst, vertices, indices, plain('#111111'))).toBeNull();
+    });
+  });
 });

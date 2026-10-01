@@ -291,7 +291,7 @@ function applyLidTextElements(
         resolved.sizeMode !== 'fixed' ? { ...resolved, sizeMode: 'fixed' as const } : resolved;
       // Through-cut would stencil the plate; like bin-top captions it degrades
       // to engrave, and the engrave keeps a floor so it cannot pierce.
-      const mode = style.mode === 'emboss' ? 'emboss' : 'engrave';
+      const mode = style.mode === 'emboss' || style.mode === 'flat' ? style.mode : 'engrave';
       let depth = style.depth;
       if (mode === 'engrave') {
         depth = Math.min(depth, thickness - LID_TEXT_ENGRAVE_FLOOR);

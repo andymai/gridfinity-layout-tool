@@ -25,14 +25,13 @@ function makeCutout(overrides: Partial<Cutout> = {}): Cutout {
   };
 }
 
-function renderControls(cutout: Cutout, onUpdate = vi.fn(), monochromeHost = false) {
+function renderControls(cutout: Cutout, onUpdate = vi.fn()) {
   render(
     <CutoutEngraveLabelControls
       cutout={cutout}
       binWidth={100}
       binDepth={100}
       disabled={false}
-      monochromeHost={monochromeHost}
       onUpdate={onUpdate}
     />
   );
@@ -91,31 +90,6 @@ describe('CutoutEngraveLabelControls relief depth', () => {
       screen.queryByRole('spinbutton', { name: /binDesigner\.cutoutTextDepth/ })
     ).not.toBeInTheDocument();
     expect(screen.getByText('binDesigner.textMode.flatHint')).toBeInTheDocument();
-  });
-
-  it('shows flat as the engraving a one-color lid host gets', () => {
-    useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        textDefaults: { ...DEFAULT_BIN_PARAMS.textDefaults, mode: 'flat' },
-        featureColors: { ...DEFAULT_BIN_PARAMS.featureColors, enabled: true },
-      },
-    });
-    renderControls(makeCutout({ shape: 'text' }), vi.fn(), true);
-
-    expect(
-      screen.queryByRole('button', { name: 'binDesigner.textMode.flat' })
-    ).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'binDesigner.textMode.engrave' })).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
-    expect(
-      screen.getByRole('spinbutton', { name: 'binDesigner.cutoutTextDepth.engrave' })
-    ).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.textMode.engrave' }));
-    expect(useDesignerStore.getState().params.textDefaults.mode).toBe('flat');
   });
 
   it('keeps the depth field off the socket branch, which engraves nothing', () => {
