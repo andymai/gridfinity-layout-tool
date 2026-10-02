@@ -1,0 +1,28 @@
+src/features/bin-designer/utils/printEstimates.ts
+  s_3bb28d5c2ea1a9::t_8dfc82b53fc1b8 220
+src/shared/hooks/useDrawerCeiling.ts
+  s_3bb28d5c2ea1a9::t_8dfc82b53fc1b8 51,53-55
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_3bb28d5c2ea1a9::t_8dfc82b53fc1b8 976-977,979-980
+  s_3bb28d5c2ea1a9::t_cc0e484ba8181e 978
+  s_3bb28d5c2ea1a9::t_0c13d2ef9a7bac 9-15
+  s_3bb28d5c2ea1a9::t_7e6925e3d41e49 981-983
+src/shared/printSettings/standardBinVolume.ts
+  s_3bb28d5c2ea1a9::t_8dfc82b53fc1b8 160-162,173-175
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4785124525bc6a397ed208eff7e3800b8dae61c1",
+  "prompts": {},
+  "sessions": {
+    "s_3bb28d5c2ea1a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cfca2844-db93-4f92-8827-b0b886470ec4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
