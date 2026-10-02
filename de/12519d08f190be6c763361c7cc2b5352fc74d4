@@ -1,0 +1,21 @@
+src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.test.tsx
+  s_3bb28d5c2ea1a9::t_1f4ee4cfc9b221 7,72-97
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_3bb28d5c2ea1a9::t_6bb970928552ab 26-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "de12519d08f190be6c763361c7cc2b5352fc74d4",
+  "prompts": {},
+  "sessions": {
+    "s_3bb28d5c2ea1a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cfca2844-db93-4f92-8827-b0b886470ec4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
