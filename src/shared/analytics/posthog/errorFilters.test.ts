@@ -37,6 +37,8 @@ describe('shouldIgnoreError — message patterns', () => {
     // A writing-assistant extension's own RPC timeouts, rejected as bare strings
     'Non-Error promise rejection captured with value: Request timeout lettersVoicesDistributor.getValue',
     'Non-Error promise rejection captured with value: Request timeout getDictionariesByLanguageId',
+    // A Safari extension's plain-object rejection, posthog-js's object wording
+    "'TimeoutError' captured as exception with message: 'operation timed out'",
   ])('ignores %j', (msg) => {
     expect(shouldIgnoreError(msg)).toBe(true);
   });
@@ -47,6 +49,7 @@ describe('shouldIgnoreError — message patterns', () => {
     'Failed to fetch dynamically imported module',
     'TypeError: foo is not a function',
     'Non-Error promise rejection captured with value: Request timeout after 30s',
+    "'TimeoutError' captured as exception with message: 'operation timed out after 30s'",
   ])('does NOT ignore real app error %j', (msg) => {
     expect(shouldIgnoreError(msg)).toBe(false);
   });
@@ -67,6 +70,7 @@ describe('shouldIgnoreError — source patterns', () => {
     // A Safari extension packaged inside a macOS app bundle (e.g. PayPal Honey)
     // injects from a `file://` path, not an extension scheme.
     'file:///Applications/PayPal Honey.app/Contents/PlugIns/Extension.appex/Contents/Resources/Honey.safariextension/h0.js',
+    'webkit-masked-url://hidden/',
   ])('ignores %j', (source) => {
     expect(shouldIgnoreError('TypeError: x', source)).toBe(true);
   });
@@ -763,6 +767,27 @@ describe('extension-sourced exceptions', () => {
               frames: [
                 { function: 'a', filename: honeyFile },
                 { function: 'b', filename: honeyFile },
+              ],
+            },
+          },
+        ],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBeNull();
+  });
+
+  it('drops a Safari extension throw whose frames Safari masks', () => {
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          {
+            type: 'TypeError',
+            value: 'Cannot call a class as a function',
+            stacktrace: {
+              frames: [
+                { function: 'a', filename: 'webkit-masked-url://hidden/', in_app: false },
+                { function: 'b', filename: 'webkit-masked-url://hidden/', in_app: false },
               ],
             },
           },
