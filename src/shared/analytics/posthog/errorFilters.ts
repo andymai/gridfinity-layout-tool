@@ -159,6 +159,11 @@ const IGNORED_MESSAGE_PATTERNS: readonly RegExp[] = [
   // rejection. The app never rejects with a string. Anchored to a single
   // identifier so a sentence-shaped timeout message still reports.
   /^Non-Error promise rejection captured with value: Request timeout [A-Za-z_$][\w$.]*$/,
+  // posthog-js words a rejected plain `{ name, message }` object this way; app
+  // code only rejects Error instances. A Safari extension rejects exactly this
+  // alongside its `webkit-masked-url` throw, and the rejection carries no frames
+  // for the source check to match.
+  /^'TimeoutError' captured as exception with message: 'operation timed out'$/,
 ];
 
 const IGNORED_SOURCE_PATTERNS: readonly RegExp[] = [
@@ -168,6 +173,9 @@ const IGNORED_SOURCE_PATTERNS: readonly RegExp[] = [
   // `.appex/` plug-in and a `.safariextension/` resources folder. Scope to
   // those two path segments so local dev `file://` stacks stay reportable.
   /^file:\/\/.*\.(?:appex|safariextension)\//,
+  // Safari hides an extension script's real URL behind this placeholder in
+  // stack traces, so the page cannot fingerprint which extensions are installed.
+  /^webkit-masked-url:\/\//,
 ];
 
 export function shouldIgnoreError(
