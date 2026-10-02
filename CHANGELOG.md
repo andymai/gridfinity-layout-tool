@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.503.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.502.0...gridfinity-layout-tool-v4.503.0) (2026-10-02)
+
+
+### Features
+
+* **baseplate:** low-profile base for more room inside bins ([#4452](https://github.com/andymai/gridfinity-layout-tool/issues/4452)) ([47ce47e](https://github.com/andymai/gridfinity-layout-tool/commit/47ce47eca59a6d656067a278d40f1be67ceb89c8))
+
 ## [4.502.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.501.0...gridfinity-layout-tool-v4.502.0) (2026-10-02)
 
 
