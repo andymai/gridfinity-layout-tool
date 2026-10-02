@@ -48,9 +48,11 @@ export function useDrawerCeiling(): DrawerCeilingFit | null {
       // still on the stock foot when it is not a parametric bin.
       if (ref.assembledRiseMm === undefined) {
         if (!lowProfileBase || isBin) return undefined;
+        const hasLip = ref.hasLip ?? true;
         return {
-          riseMm: bin.height * heightUnitMm + LIP_PROTRUSION_MM,
-          socketless: false,
+          riseMm: bin.height * heightUnitMm + (hasLip ? LIP_PROTRUSION_MM : 0),
+          socketless: ref.socketless ?? false,
+          hasLip,
           standardFoot: true,
         };
       }

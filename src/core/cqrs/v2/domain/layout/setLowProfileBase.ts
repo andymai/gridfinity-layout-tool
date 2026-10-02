@@ -1,5 +1,3 @@
-/** Set the layout-scoped low-profile base. Captures `previousEnabled` for undo. */
-
 import { z } from 'zod';
 import { ok } from '@/core/result';
 import { defineCommand } from '../../defineCommand';

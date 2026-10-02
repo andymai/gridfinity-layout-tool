@@ -157,12 +157,9 @@ export function lightweightBaseSaving(
  * Material a low-profile base removes, per unit of cell footprint area
  * (mm³/mm²), keyed by relief and whether the feet are subdivided.
  *
- * Measured the same way as {@link LIGHTWEIGHT_SAVING_PER_CELL_AREA}: each
- * variant against its standard twin at 3x2, which 2x2 matches within 0.02. A
- * single cell reads up to 0.07 lower because it has no shared foot edge and so
- * no underside relief. The lightweight modes save little: their feet are
- * already hollow, so the band cut takes mostly air. A spacer's through-open
- * feet measure the same as `interior`, to the cubic millimetre.
+ * A single cell saves a little less than this: it has no shared foot edge, so
+ * none of the underside relief. A spacer's through-open feet lose exactly what
+ * `interior` does, so it takes that row.
  */
 const LOW_PROFILE_SAVING_PER_CELL_AREA = {
   solid: { full: 0.8162, half: 0.6168 },
@@ -173,9 +170,9 @@ const LOW_PROFILE_SAVING_PER_CELL_AREA = {
 export type LowProfileRelief = keyof typeof LOW_PROFILE_SAVING_PER_CELL_AREA;
 
 /**
- * Low-profile detachable feet against standard ones, by volume: 0.772 for 1x1,
- * 2x2 and 3x2 alike. The body above them grows by its taller wall, which the
- * wall term already prices at the full height.
+ * Low-profile detachable feet against standard ones, by volume. Only the feet
+ * scale: the body above them grows by its taller wall, which the wall term
+ * already prices at the full height.
  */
 export const LOW_PROFILE_DETACHABLE_FEET_SCALE = 0.7722;
 

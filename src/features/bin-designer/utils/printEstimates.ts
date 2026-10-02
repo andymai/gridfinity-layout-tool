@@ -217,7 +217,7 @@ function computeBinVolume(params: BinParams): number {
 
   // A low-profile base cuts the vertical band out of feet that are solid,
   // shelled or relieved, and each saves a different amount. Detachable feet
-  // are priced by their own kind below and keep the standard figure.
+  // are priced by their own kind below, scaled for the shorter foot there.
   if (params.base.lowProfile === true && !isSocketlessBase(params.base.style) && !feetDetach) {
     const relief =
       params.base.lightweight || params.base.spacer
