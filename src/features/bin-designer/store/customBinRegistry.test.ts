@@ -289,7 +289,9 @@ describe('customBinRegistry', () => {
         base: { ...lidded.base, lowProfile: true },
       });
       expect(standard.lowProfileRiseDeltaMm).toBeCloseTo(1.1, 6);
+      // Saved from a low-profile drawer, it still records the standard rise.
       expect(fromLow.assembledRiseMm).toBeCloseTo(standard.assembledRiseMm ?? 0, 6);
+      expect(fromLow.lowProfileRiseDeltaMm).toBeCloseTo(1.1, 6);
     });
 
     it('round-trips the low-profile delta through storage', () => {
@@ -298,6 +300,16 @@ describe('customBinRegistry', () => {
         JSON.stringify([{ ...makeRef('d1'), assembledRiseMm: 30, lowProfileRiseDeltaMm: 1.1 }])
       );
       expect(loadRegistry()[0]?.lowProfileRiseDeltaMm).toBe(1.1);
+    });
+
+    it('drops a delta a shorter foot could not produce', () => {
+      for (const lowProfileRiseDeltaMm of [-1, 0, 30, 45]) {
+        localStorage.setItem(
+          'gridfinity-custom-bins-v1',
+          JSON.stringify([{ ...makeRef('d1'), assembledRiseMm: 30, lowProfileRiseDeltaMm }])
+        );
+        expect(loadRegistry()[0]?.lowProfileRiseDeltaMm).toBeUndefined();
+      }
     });
   });
 

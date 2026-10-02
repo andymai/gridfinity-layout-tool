@@ -161,7 +161,8 @@ export function lightweightBaseSaving(
  * variant against its standard twin at 3x2, which 2x2 matches within 0.02. A
  * single cell reads up to 0.07 lower because it has no shared foot edge and so
  * no underside relief. The lightweight modes save little: their feet are
- * already hollow, so the band cut takes mostly air.
+ * already hollow, so the band cut takes mostly air. A spacer's through-open
+ * feet measure the same as `interior`, to the cubic millimetre.
  */
 const LOW_PROFILE_SAVING_PER_CELL_AREA = {
   solid: { full: 0.8162, half: 0.6168 },
@@ -170,6 +171,13 @@ const LOW_PROFILE_SAVING_PER_CELL_AREA = {
 } as const;
 
 export type LowProfileRelief = keyof typeof LOW_PROFILE_SAVING_PER_CELL_AREA;
+
+/**
+ * Low-profile detachable feet against standard ones, by volume: 0.772 for 1x1,
+ * 2x2 and 3x2 alike. The body above them grows by its taller wall, which the
+ * wall term already prices at the full height.
+ */
+export const LOW_PROFILE_DETACHABLE_FEET_SCALE = 0.7722;
 
 /** Material (mm³) a low-profile base removes from a bin of this footprint. */
 export function lowProfileBaseSaving(

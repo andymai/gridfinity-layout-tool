@@ -324,7 +324,12 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     assembledRiseMm > 0
       ? { assembledRiseMm }
       : {}),
-    ...(typeof lowProfileRiseDeltaMm === 'number' && Number.isFinite(lowProfileRiseDeltaMm)
+    // A shorter foot can only lower a rise, and never by all of it.
+    ...(typeof lowProfileRiseDeltaMm === 'number' &&
+    Number.isFinite(lowProfileRiseDeltaMm) &&
+    lowProfileRiseDeltaMm > 0 &&
+    typeof assembledRiseMm === 'number' &&
+    lowProfileRiseDeltaMm < assembledRiseMm
       ? { lowProfileRiseDeltaMm }
       : {}),
     ...(typeof socketless === 'boolean' ? { socketless } : {}),

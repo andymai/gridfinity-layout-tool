@@ -31,6 +31,7 @@ import {
   standardBinSolidComponents,
   lightweightBaseSaving,
   lowProfileBaseSaving,
+  LOW_PROFILE_DETACHABLE_FEET_SCALE,
   integralFeetVolume,
   detachableFeetVolume,
   type PrintSettings,
@@ -241,11 +242,9 @@ function computeBinVolume(params: BinParams): number {
   // alone would not do.
   if (feetDetach) {
     volume -= integralFeetVolume(params.width, params.depth, params.gridUnitMm, gridUnitMmY);
-    volume += detachableFeetVolume(
-      detachablePlacements.map(footKind),
-      params.gridUnitMm,
-      gridUnitMmY
-    );
+    volume +=
+      detachableFeetVolume(detachablePlacements.map(footKind), params.gridUnitMm, gridUnitMmY) *
+      (params.base.lowProfile === true ? LOW_PROFILE_DETACHABLE_FEET_SCALE : 1);
   }
 
   // A base-only bin IS feet + floor slab + an optional lip, which is exactly

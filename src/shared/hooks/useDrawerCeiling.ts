@@ -15,6 +15,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { useCustomBins } from '@/features/bin-designer';
 import type { Bin } from '@/core/types';
+import { LIP_PROTRUSION_MM } from '@/shared/utils/heightUnits';
 import {
   drawerCeilingFit,
   type DrawerCeilingFit,
@@ -39,11 +40,20 @@ export function useDrawerCeiling(): DrawerCeilingFit | null {
     const linkedRise = (bin: Bin): LinkedDesignRise | undefined => {
       if (bin.linkedDesignId === undefined) return undefined;
       const ref = byId.get(bin.linkedDesignId);
-      // A registry entry saved before `assembledRiseMm` existed, or an imported
-      // mesh that has no params to derive one from, measures as a plain bin.
-      if (ref?.assembledRiseMm === undefined) return undefined;
+      if (ref === undefined) return undefined;
       // Only a parametric bin is rebuilt on the layout's foot.
       const isBin = ref.kind === undefined || ref.kind === 'bin';
+      // A registry entry saved before `assembledRiseMm` existed, or an imported
+      // mesh that has no params to derive one from, measures as a plain bin,
+      // still on the stock foot when it is not a parametric bin.
+      if (ref.assembledRiseMm === undefined) {
+        if (!lowProfileBase || isBin) return undefined;
+        return {
+          riseMm: bin.height * heightUnitMm + LIP_PROTRUSION_MM,
+          socketless: false,
+          standardFoot: true,
+        };
+      }
       return {
         riseMm:
           ref.assembledRiseMm - (lowProfileBase && isBin ? (ref.lowProfileRiseDeltaMm ?? 0) : 0),

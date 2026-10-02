@@ -121,7 +121,6 @@ function plate(low: boolean): MeshData {
 
 const ON_GRID = { dx: 0, dy: 0 };
 
-/** Width of the strip inside the plate's +X edge that holds the pushed wall. */
 const PUSHED_WALL_STRIP_MM = 5;
 
 /**

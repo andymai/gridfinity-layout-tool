@@ -958,6 +958,18 @@ describe('printEstimates', () => {
       }
     });
 
+    it('prices low-profile feet below standard ones', () => {
+      const detachable = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 3,
+        depth: 2,
+        height: 3,
+        base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' as const },
+      };
+      const low = { ...detachable, base: { ...detachable.base, lowProfile: true } };
+      expect(estimatePrint(low).volumeMm3).toBeLessThan(estimatePrint(detachable).volumeMm3);
+    });
+
     it('is inert on a base with no feet to detach', () => {
       const flat = {
         ...DEFAULT_BIN_PARAMS,
