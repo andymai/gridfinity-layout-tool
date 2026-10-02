@@ -15,12 +15,13 @@
  * placement call, so a foot and its holes cannot disagree.
  *
  * Coordinate system matches the socket: Z=0 is the foot's top (the face the bin
- * floor sits on), Z=-SOCKET_HEIGHT its underside. Pins rise into positive Z.
+ * floor sits on), Z=-socketHeight its underside. Pins rise into positive Z.
  */
 
 import {
   drawCircle,
   drawRectangle,
+  drawRoundedRectangle,
   unwrap,
   fuse,
   fuseAll,
@@ -33,12 +34,13 @@ import {
   withScope,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Sketch, DisposalScope } from 'brepjs';
-import { CLEARANCE, SOCKET_HEIGHT, COPLANAR_MARGIN, COPLANAR_OVERLAP } from './generatorConstants';
 import {
-  buildSingleCellSocket,
-  buildSimplifiedCellSocket,
-  buildSocketRimReliefTool,
-} from './socketBuilder';
+  CLEARANCE,
+  COPLANAR_MARGIN,
+  COPLANAR_OVERLAP,
+  footCornerRadius,
+} from './generatorConstants';
+import { buildSingleCellSocket, buildSimplifiedCellSocket } from './socketBuilder';
 import {
   footCellCentre,
   footPinPositions,
@@ -65,6 +67,45 @@ const CLIP_MARGIN = 2;
  * untouched.
  */
 export const MATING_RIM_RELIEF_MM = 0.5;
+
+/**
+ * Tool that relieves a cell socket's top outer rim.
+ *
+ * Intersect a foot with this and its mating face is set back by `insetMm`, on
+ * the cell boundary only — the tool spans the whole cell, so the faces where a
+ * foot was clipped out of one are not touched.
+ *
+ * The ramp is confined to the top `CLEARANCE / 2` of the foot. Everything a
+ * baseplate grips — the vertical band and the whole lower chamfer — sits below
+ * that, so the relief cannot eat into the fit.
+ *
+ * The tool continues above Z=0 rather than stopping on the foot's top plane, so
+ * the intersection never has two coincident faces to resolve.
+ */
+function buildSocketRimReliefTool(
+  cellW_mm: number,
+  cellD_mm: number,
+  insetMm: number,
+  socketHeight: number
+): Shape3D {
+  const cornerR = footCornerRadius(cellW_mm, cellD_mm);
+  const sectionAt = (z: number, inset: number): Sketch =>
+    drawRoundedRectangle(
+      cellW_mm - 2 * inset,
+      cellD_mm - 2 * inset,
+      Math.max(cornerR - inset, 0.1)
+    ).sketchOnPlane('XY', z) as Sketch;
+
+  const below = sectionAt(-socketHeight - COPLANAR_MARGIN, 0);
+  try {
+    return below.loftWith(
+      [sectionAt(-(CLEARANCE / 2), 0), sectionAt(0, insetMm), sectionAt(COPLANAR_MARGIN, insetMm)],
+      { ruled: true }
+    );
+  } finally {
+    below.delete();
+  }
+}
 
 export interface DetachableFeetOptions {
   readonly placements: readonly FootPlacement[];
@@ -97,6 +138,8 @@ export interface DetachableFeetOptions {
   };
   /** Full 5-section profile for export; simplified for preview. */
   readonly forExport: boolean;
+  /** Foot depth: `SOCKET_HEIGHT`, or shorter on a low-profile base. */
+  readonly socketHeight: number;
 }
 
 export interface DetachableFeetGeometry {
@@ -209,9 +252,14 @@ function buildPin(scope: DisposalScope, diameterMm: number, heightMm: number): S
  * Each strip overshoots on the axis it does not bound, so no face of the clip
  * is ever coplanar with a face of the foot.
  */
-function buildClip(scope: DisposalScope, p: FootPlacement, armMm: number): Shape3D {
-  const zFrom = -SOCKET_HEIGHT - COPLANAR_MARGIN;
-  const zHeight = SOCKET_HEIGHT + 2 * COPLANAR_MARGIN;
+function buildClip(
+  scope: DisposalScope,
+  p: FootPlacement,
+  armMm: number,
+  socketHeight: number
+): Shape3D {
+  const zFrom = -socketHeight - COPLANAR_MARGIN;
+  const zHeight = socketHeight + 2 * COPLANAR_MARGIN;
   const slab = (w: number, d: number, cx: number, cy: number): Shape3D =>
     scope.register(
       translate(
@@ -241,7 +289,8 @@ function buildClip(scope: DisposalScope, p: FootPlacement, armMm: number): Shape
  * and arranging a print plate is the export layer's job, not the geometry's.
  */
 export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeetGeometry {
-  const { placements, armMm, pinDiameterMm, pinHoleDiameterMm, floorThicknessMm } = opts;
+  const { placements, armMm, pinDiameterMm, pinHoleDiameterMm, floorThicknessMm, socketHeight } =
+    opts;
   if (placements.length === 0) {
     throw new Error('Detachable feet: at least one placement required');
   }
@@ -270,14 +319,16 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
 
       const profile = scope.register(
         opts.forExport
-          ? buildSingleCellSocket(cellW, cellD)
-          : buildSimplifiedCellSocket(cellW, cellD)
+          ? buildSingleCellSocket(cellW, cellD, socketHeight)
+          : buildSimplifiedCellSocket(cellW, cellD, socketHeight)
       );
-      const rimTool = scope.register(buildSocketRimReliefTool(cellW, cellD, MATING_RIM_RELIEF_MM));
+      const rimTool = scope.register(
+        buildSocketRimReliefTool(cellW, cellD, MATING_RIM_RELIEF_MM, socketHeight)
+      );
       const full = scope.register(unwrap(intersect(profile, rimTool)));
       // The clip is expressed about the cell centre, so trim before moving the
       // foot into place rather than translating the clip to meet it.
-      const clip = buildClip(scope, p, armMm);
+      const clip = buildClip(scope, p, armMm, socketHeight);
       let foot: Shape3D = unwrap(intersect(full, clip));
 
       // Folded one at a time, NOT through fuseAll. Given a target and several
@@ -322,7 +373,7 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
                   style: magnet.style,
                 })
               ),
-              [mx - centre.x, my - centre.y, -SOCKET_HEIGHT]
+              [mx - centre.x, my - centre.y, -socketHeight]
             )
           )
         );
@@ -344,10 +395,10 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
               scope.register(
                 cylinder(
                   screw.diameterMm / 2,
-                  SOCKET_HEIGHT + floorThicknessMm + 2 * COPLANAR_MARGIN
+                  socketHeight + floorThicknessMm + 2 * COPLANAR_MARGIN
                 )
               ),
-              [mx - centre.x, my - centre.y, -SOCKET_HEIGHT - COPLANAR_MARGIN]
+              [mx - centre.x, my - centre.y, -socketHeight - COPLANAR_MARGIN]
             )
           )
         );

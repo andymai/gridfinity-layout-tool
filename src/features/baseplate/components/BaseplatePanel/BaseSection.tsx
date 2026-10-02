@@ -9,6 +9,7 @@
  */
 
 import { useSettingsStore } from '@/core/store/settings';
+import { useLayoutStore } from '@/core/store/layout';
 import {
   SOLID_FLOOR_DEFAULT_MM,
   SOLID_FLOOR_MIN_MM,
@@ -40,6 +41,7 @@ import { ConnectorPicker } from './ConnectorPicker';
 import type { ConnectorChoice } from './ConnectorPicker';
 import { isSeatedConnectorStyle } from '@/shared/types/bin';
 import { maxCornerRadiusMm } from '../../utils/buildFullParams';
+import { snapClipFitsPlate } from '../../utils/snapClipFit';
 import type { ScrewHeadStyle, ScrewHoleParams } from '@/core/types';
 import { Stepper } from '@/design-system/Stepper';
 import {
@@ -76,6 +78,7 @@ export function BaseSection() {
     useBaseplatePanelDerived();
   const tiling = useBaseplatePageStore((s) => s.tiling);
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+  const lowProfileBase = useLayoutStore((s) => s.layout.lowProfileBase === true);
   const screwHolesAvailable = useFeatureFlag('baseplate_screw_holes');
 
   // Render when the section has any content: connectors (split), magnets/floor
@@ -129,7 +132,11 @@ export function BaseSection() {
                   : 'none'
             }
             disabledOptions={
-              stackEnabled ? { snapClip: t('baseplate.connectors.snapClipNoStack') } : undefined
+              stackEnabled
+                ? { snapClip: t('baseplate.connectors.snapClipNoStack') }
+                : !snapClipFitsPlate(baseplateParams, lowProfileBase, nozzleSizeMm)
+                  ? { snapClip: t('baseplate.connectors.snapClipTooThin') }
+                  : undefined
             }
             onChange={(v: ConnectorChoice) => {
               if (v === 'none') {
@@ -213,6 +220,18 @@ export function BaseSection() {
             }
           />
         )}
+        {/* A floor the clip relied on can be taken away after the clip was
+            chosen; the plate then prints with no clip pockets, so say so where
+            the choice still shows as selected. */}
+        {tiling?.isSplit &&
+          !stackEnabled &&
+          baseplateParams.connectorNubs === true &&
+          baseplateParams.connectorStyle === 'snapClip' &&
+          !snapClipFitsPlate(baseplateParams, lowProfileBase, nozzleSizeMm) && (
+            <p className="text-label leading-relaxed text-warning">
+              {t('baseplate.connectors.snapClipTooThin')}
+            </p>
+          )}
         {!stackEnabled && (
           <>
             <div className="border-t border-stroke-subtle pt-3">

@@ -30,6 +30,7 @@ export function useConnectorSampleExport(): UseSampleExportReturn {
     fractionalEdgeX,
     fractionalEdgeY,
     baseplateParams,
+    lowProfileBase,
   } = useLayoutStore(
     useShallow((state) => ({
       drawerWidth: state.layout.drawer.width,
@@ -38,25 +39,37 @@ export function useConnectorSampleExport(): UseSampleExportReturn {
       fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
       baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+      lowProfileBase: state.layout.lowProfileBase,
     }))
   );
 
   const download = useCallback(
     (context: SampleExportContext) => {
-      const fullParams = buildFullParams(
-        baseplateParams,
-        drawerWidth,
-        drawerDepth,
-        gridUnitMm,
-        fractionalEdgeX,
-        fractionalEdgeY,
-        context.printSettings.nozzleSizeMm
-      );
+      const fullParams = {
+        ...buildFullParams(
+          baseplateParams,
+          drawerWidth,
+          drawerDepth,
+          gridUnitMm,
+          fractionalEdgeX,
+          fractionalEdgeY,
+          context.printSettings.nozzleSizeMm
+        ),
+        ...(lowProfileBase === true ? { lowProfileBase: true } : {}),
+      };
       return downloadWorkerSample(context, (format) =>
         context.bridge.exportConnectorSample(fullParams, format)
       );
     },
-    [baseplateParams, drawerWidth, drawerDepth, gridUnitMm, fractionalEdgeX, fractionalEdgeY]
+    [
+      baseplateParams,
+      drawerWidth,
+      drawerDepth,
+      gridUnitMm,
+      fractionalEdgeX,
+      fractionalEdgeY,
+      lowProfileBase,
+    ]
   );
 
   return useSampleExport({

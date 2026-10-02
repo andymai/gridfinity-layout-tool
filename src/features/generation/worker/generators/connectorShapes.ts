@@ -51,6 +51,7 @@ import {
   TONGUE_CLEARANCE,
   DOVETAIL_KEY_CLEARANCE,
   CLEARANCE,
+  SOCKET_HEIGHT,
   SNAP_CLIP,
   snapClipLevels,
   effectiveClearance,
@@ -272,7 +273,11 @@ export function makePuzzleGroove(
  * (bed-ready, relief scallops up); full height matches the plate's
  * `totalHeight` so the seated key is flush with the plate top.
  */
-export function buildDovetailKey(totalHeight: number, gridUnitMm: number): Shape3D {
+export function buildDovetailKey(
+  totalHeight: number,
+  gridUnitMm: number,
+  socketHeight: number = SOCKET_HEIGHT
+): Shape3D {
   const nH = PUZZLE_NECK_HALF;
   const hH = PUZZLE_HEAD_HALF;
   const nP = PUZZLE_NECK_PROTRUSION;
@@ -308,7 +313,7 @@ export function buildDovetailKey(totalHeight: number, gridUnitMm: number): Shape
     .customCorner(fA) // −x armpit
     .close();
   const seated = sketch(profile, 'XY', 0).extrude(-totalHeight);
-  const relieved = relieveForNeighborSockets(seated, gridUnitMm);
+  const relieved = relieveForNeighborSockets(seated, gridUnitMm, undefined, socketHeight);
   if (relieved !== seated) seated.delete();
   const lifted = translate(relieved, [0, 0, totalHeight]);
   relieved.delete();
@@ -389,11 +394,16 @@ const CONNECTOR_SOCKET_RELIEF_GAP = 0.3;
  * Reuses {@link buildSingleCellSocket} so the relief tracks the real socket
  * profile and can't drift.
  */
-function relieveForNeighborSockets(part: Shape3D, gridUnitMm: number, floorZ?: number): Shape3D {
+function relieveForNeighborSockets(
+  part: Shape3D,
+  gridUnitMm: number,
+  floorZ?: number,
+  socketHeight: number = SOCKET_HEIGHT
+): Shape3D {
   const footCell = gridUnitMm - CLEARANCE + 2 * CONNECTOR_SOCKET_RELIEF_GAP;
   const half = gridUnitMm / 2;
   // Loft the foot once and clone it to each of the four neighbouring cells.
-  const baseFoot = buildSingleCellSocket(footCell, footCell);
+  const baseFoot = buildSingleCellSocket(footCell, footCell, socketHeight);
   const cutters: ValidSolid[] = [];
   for (const sx of [-1, 1] as const) {
     for (const sy of [-1, 1] as const) {

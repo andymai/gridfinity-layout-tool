@@ -18,9 +18,9 @@
  *
  * Coordinate system (matches the exact mesh after `translateStage`):
  * - Z=0: foot underside (absolute bottom).
- * - Z=SOCKET_HEIGHT: foot top / socket interface (mates with the body).
- * - Z=SOCKET_HEIGHT + wallThickness: interior cavity floor.
- * - Z=totalHeight (= SOCKET_HEIGHT + wallHeight): body wall top.
+ * - Z=socketHeight: foot top / socket interface (mates with the body).
+ * - Z=socketHeight + wallThickness: interior cavity floor.
+ * - Z=totalHeight (= socketHeight + wallHeight): body wall top.
  * - With a lip: the outer wall extends to totalHeight + LIP_HEIGHT.
  * - XY centered at the origin; per-cell feet are CLEARANCE smaller than the
  *   nominal cell so they seat in a baseplate pocket.
@@ -43,8 +43,8 @@ import {
   CLEARANCE,
   BOX_CORNER_RADIUS,
   footCornerRadius,
-  SOCKET_HEIGHT,
-  FOOT_PROFILE,
+  socketHeightMm,
+  footProfileFor,
   LIP_HEIGHT,
   LIP_TAPER_WIDTH,
 } from './generatorConstants';
@@ -149,8 +149,8 @@ function footRingRadius(cellW: number, cellD: number): number {
 }
 
 /**
- * One gridfinity foot: {@link FOOT_PROFILE} walked down from the cell footprint
- * at Z=SOCKET_HEIGHT to the inset bottom ring at Z=0. Built as its own closed
+ * One gridfinity foot: its profile walked down from the cell footprint at
+ * Z=socketHeight to the inset bottom ring at Z=0. Built as its own closed
  * solid; its top cap sits coincident with the body's bottom cap (an interior,
  * non-visible join) so the overlap never z-fights.
  *
@@ -158,10 +158,17 @@ function footRingRadius(cellW: number, cellD: number): number {
  * ring instead draws a plain cone — the right silhouette from across the room,
  * and the wrong part to judge a baseplate fit against.
  */
-function addBaseFoot(mb: MeshBuilder, cx: number, cy: number, cellW: number, cellD: number): void {
+function addBaseFoot(
+  mb: MeshBuilder,
+  cx: number,
+  cy: number,
+  cellW: number,
+  cellD: number,
+  socketHeight: number
+): void {
   const cornerR = footRingRadius(cellW, cellD);
-  const rings = FOOT_PROFILE.map(([depth, inset]) => ({
-    z: SOCKET_HEIGHT - depth,
+  const rings = footProfileFor(socketHeight).map(([depth, inset]) => ({
+    z: socketHeight - depth,
     pts: roundedRectPoints(
       Math.max(cellW - 2 * inset, MIN_RING_DIM),
       Math.max(cellD - 2 * inset, MIN_RING_DIM),
@@ -186,6 +193,7 @@ interface BinBodyDims {
   readonly outerD: number;
   readonly wallThickness: number;
   readonly totalHeight: number;
+  readonly socketHeight: number;
   readonly hasLip: boolean;
 }
 
@@ -195,7 +203,7 @@ interface BinBodyDims {
  * (no lip) or a tapered stacking-lip collar.
  */
 function addBinBody(mb: MeshBuilder, dims: BinBodyDims): void {
-  const { outerW, outerD, wallThickness, totalHeight, hasLip } = dims;
+  const { outerW, outerD, wallThickness, totalHeight, socketHeight, hasLip } = dims;
 
   const innerW = Math.max(outerW - 2 * wallThickness, MIN_RING_DIM);
   const innerD = Math.max(outerD - 2 * wallThickness, MIN_RING_DIM);
@@ -204,9 +212,9 @@ function addBinBody(mb: MeshBuilder, dims: BinBodyDims): void {
   const outerPts = roundedRectPoints(outerW, outerD, BOX_CORNER_RADIUS, CORNER_SEGMENTS);
   const innerPts = roundedRectPoints(innerW, innerD, innerR, CORNER_SEGMENTS);
 
-  const zBodyBot = SOCKET_HEIGHT;
-  const zFloorTop = SOCKET_HEIGHT + wallThickness;
-  const zWallTop = totalHeight; // = SOCKET_HEIGHT + wallHeight
+  const zBodyBot = socketHeight;
+  const zFloorTop = socketHeight + wallThickness;
+  const zWallTop = totalHeight; // = socketHeight + wallHeight
   const zOuterTop = hasLip ? totalHeight + LIP_HEIGHT : zWallTop;
 
   // Outer wall: flush from the socket interface up to the wall top (or lip peak).
@@ -285,6 +293,7 @@ export function generateBinDirect(
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- legacy designs may lack heightUnitMm
   const heightUnit = params.heightUnitMm ?? HEIGHT_UNIT;
   const totalHeight = height * heightUnit;
+  const socketHeight = socketHeightMm(params.base.lowProfile);
 
   const mb = new MeshBuilder();
 
@@ -293,6 +302,7 @@ export function generateBinDirect(
     outerD: depth * gridUnitY - CLEARANCE,
     wallThickness: params.wallThickness,
     totalHeight,
+    socketHeight,
     hasLip: params.base.stackingLip,
   });
 
@@ -322,7 +332,8 @@ export function generateBinDirect(
         cell.centerX,
         cell.centerY,
         cell.widthUnits * gridUnit - CLEARANCE,
-        cell.depthUnits * gridUnitY - CLEARANCE
+        cell.depthUnits * gridUnitY - CLEARANCE,
+        socketHeight
       );
     },
     { x: params.fractionalEdgeX, y: params.fractionalEdgeY }

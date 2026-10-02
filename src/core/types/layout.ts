@@ -45,6 +45,13 @@ export interface Layout {
   heightUnitMm: Mm; // mm per height unit (default 7)
   /** Magnet hole placement anchor (default 'edge'). See {@link MagnetAnchor}. */
   magnetAnchor?: MagnetAnchor;
+  /**
+   * Low-profile base for the whole drawer: plate pockets, bin feet and lid stack
+   * grids all lose `LOW_PROFILE_BAND_CUT_MM` from their vertical band, so every
+   * bin gains that much interior at the same total height. Absent ⇒ standard;
+   * `false` is never stored.
+   */
+  lowProfileBase?: true;
   categories: Category[]; // 1-20 items
   layers: Layer[]; // 1-10 items, index 0 = bottom
   bins: Bin[];

@@ -4,6 +4,8 @@ import {
   estimateStandardBinVolume,
   estimateStandardBinFilament,
   standardBinSolidComponents,
+  lowProfileBaseSaving,
+  type LowProfileRelief,
 } from '@/shared/printSettings/standardBinVolume';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 
@@ -36,7 +38,35 @@ const OCCT_GROUND_TRUTH: ReadonlyArray<readonly [number, number, number, number]
   [4, 4, 6, 206526],
 ];
 
+/**
+ * The same measurement for low-profile bins (`base.lowProfile: true`), taken
+ * the same way. 1x1 reads furthest from the model: a single foot shares no
+ * edge, so it carries none of the underside relief the per-cell figure includes.
+ */
+const OCCT_LOW_PROFILE_GROUND_TRUTH: ReadonlyArray<readonly [number, number, number, number]> = [
+  [1, 1, 3, 13455],
+  [2, 2, 3, 45900],
+  [3, 2, 3, 66773],
+];
+
 describe('standardBinVolume', () => {
+  describe('estimateStandardBinVolume — low-profile ground truth (±10%)', () => {
+    for (const [w, d, h, truth] of OCCT_LOW_PROFILE_GROUND_TRUTH) {
+      it(`${w}×${d}×${h}u low profile ≈ ${truth}mm³`, () => {
+        const volume = estimateStandardBinVolume(w, d, h, 42, 7, 42, true);
+        expect(volume).toBeGreaterThan(truth * 0.9);
+        expect(volume).toBeLessThan(truth * 1.1);
+      });
+    }
+
+    it('saves least where the feet are already hollow', () => {
+      const saving = (relief: LowProfileRelief): number =>
+        lowProfileBaseSaving(2, 2, relief, false);
+      expect(saving('interior')).toBeLessThan(saving('underside'));
+      expect(saving('underside')).toBeLessThan(saving('solid'));
+    });
+  });
+
   describe('estimateStandardBinVolume — OCCT ground-truth accuracy (±10%)', () => {
     for (const [w, d, h, truth] of OCCT_GROUND_TRUTH) {
       it(`${w}×${d}×${h}u ≈ ${truth}mm³ (real generated solid)`, () => {

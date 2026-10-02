@@ -69,7 +69,7 @@ import { useSplitPreview } from '../../hooks/useSplitPreview';
 import { setPreviewCanvas, setPreviewContext, clearPreviewCanvas } from '../../utils/thumbnail';
 import { describeBin, getStatusAnnouncement } from '../../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
-import { stackPitchMm } from '@/shared/utils/heightUnits';
+import { stackJunctionMm, stackPitchMm } from '@/shared/utils/heightUnits';
 import { useTranslation } from '@/i18n';
 import { hasDetachableFeet } from '@/features/bin-designer/types/base';
 import { planKnifeRest } from '@/shared/utils/knifeRestPlan';
@@ -631,7 +631,13 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                         stackPitchLabel={
                           params.base.stackingLip
                             ? t('stackSolver.overlayPitch', {
-                                pitch: formatStackPitch(stackPitchMm(height, params.heightUnitMm)),
+                                pitch: formatStackPitch(
+                                  stackPitchMm(
+                                    height,
+                                    params.heightUnitMm,
+                                    stackJunctionMm(params.base.lowProfile)
+                                  )
+                                ),
                               })
                             : undefined
                         }

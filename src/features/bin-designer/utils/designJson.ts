@@ -10,6 +10,7 @@ import type { TFunction } from '@/i18n';
 import { BIN_STYLES } from '../types';
 import { DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import { migrateParams } from '../constants/paramMigration';
+import { withoutLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { sanitizeFileName } from './fileNaming';
 
 /**
@@ -51,7 +52,8 @@ export function exportDesignJSON(name: string, params: BinParams): string {
     type: 'gridfinity-bin-design',
     version: '1.0',
     name,
-    params,
+    // A shared file carries standard feet; the importer's drawer decides.
+    params: withoutLowProfileBase(params),
     _meta: {
       exportedFrom: 'https://gridfinitylayouttool.com',
       exportedAt: new Date().toISOString(),

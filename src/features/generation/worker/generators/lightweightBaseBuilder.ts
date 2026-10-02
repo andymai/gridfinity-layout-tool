@@ -34,7 +34,7 @@
  *   cross-web is fused inside each foot, bed to floor, halving that otherwise
  *   full-cell bridge span so it prints without sagging.
  *
- * Coordinate system matches the socket: Z=0 top (mates with body), Z=-SOCKET_HEIGHT bottom.
+ * Coordinate system matches the socket: Z=0 top (mates with body), Z=-socketHeight bottom.
  */
 
 import {
@@ -105,10 +105,10 @@ export interface LightweightBase {
  *
  * Returned pads are positioned in cell-local coordinates (caller translates by
  * the cell center). Both directions anchor the pad at the foot bottom
- * (Z=-SOCKET_HEIGHT) because the magnet/screw always enters from there — that's
+ * (Z=-socketHeight) because the magnet/screw always enters from there — that's
  * where the drill cutters live. `'up'` (hollow) cups close at the bottom, so a
  * short `holeFloorDepth` boss sits on the closed floor; `'down'` (solid) cups
- * open at the bottom, so the pad spans the full SOCKET_HEIGHT to tie the magnet
+ * open at the bottom, so the pad spans the full socket depth to tie the magnet
  * boss up to the solid body above (otherwise it'd float). Either way the drill
  * intersects the pad and the pocket is cut.
  *
@@ -123,12 +123,13 @@ function buildCellPads(
   positions: ReadonlyArray<readonly [number, number]>,
   holeRadius: number,
   holeFloorDepth: number,
-  openDir: LightweightOpenDirection
+  openDir: LightweightOpenDirection,
+  socketHeight: number
 ): Shape3D[] {
   const padRadius = holeRadius + PAD_MARGIN;
-  const padHeight = openDir === 'up' ? holeFloorDepth : SOCKET_HEIGHT;
+  const padHeight = openDir === 'up' ? holeFloorDepth : socketHeight;
   return positions.map(([x, y]) =>
-    translate(scope.register(cylinder(padRadius, padHeight)), [x, y, -SOCKET_HEIGHT])
+    translate(scope.register(cylinder(padRadius, padHeight)), [x, y, -socketHeight])
   );
 }
 
@@ -171,7 +172,8 @@ export function buildLightweightBase(
    * that face is the floor's, not the wall's.
    */
   floorThickness?: number,
-  holeStyle: MagnetHoleStyle = PLAIN_MAGNET_HOLE
+  holeStyle: MagnetHoleStyle = PLAIN_MAGNET_HOLE,
+  socketHeight: number = SOCKET_HEIGHT
 ): LightweightBase {
   const usingMask = isPartialMask(cellMask);
   // Per-axis pitch: unitX scales width/columns, unitY scales depth/rows.
@@ -233,8 +235,8 @@ export function buildLightweightBase(
               drawings.map(
                 (d) =>
                   scope.register(
-                    sketch(d, 'XY', -SOCKET_HEIGHT - 1).extrude(
-                      SOCKET_HEIGHT + (floorThickness ?? wallThickness) + 2
+                    sketch(d, 'XY', -socketHeight - 1).extrude(
+                      socketHeight + (floorThickness ?? wallThickness) + 2
                     )
                   ) as ValidSolid
               )
@@ -257,7 +259,9 @@ export function buildLightweightBase(
     };
 
     const buildFoot = (w: number, d: number): Shape3D =>
-      forExport ? buildSingleCellSocket(w, d) : buildSimplifiedCellSocket(w, d);
+      forExport
+        ? buildSingleCellSocket(w, d, socketHeight)
+        : buildSimplifiedCellSocket(w, d, socketHeight);
 
     const feet: Shape3D[] = [];
     const voids: Shape3D[] = [];
@@ -298,8 +302,8 @@ export function buildLightweightBase(
           translate(scope.register(unwrap(clone(innerFoot))), [cell.centerX, cell.centerY, zShift])
         );
         if (openDir === 'underside') {
-          const ribHeight = SOCKET_HEIGHT;
-          const ribZ = -SOCKET_HEIGHT / 2;
+          const ribHeight = socketHeight;
+          const ribZ = -socketHeight / 2;
           const slabs = [
             box(cellW_mm, UNDERSIDE_SUPPORT_RIB_MM, ribHeight, {
               at: [cell.centerX, cell.centerY, ribZ],
@@ -379,7 +383,7 @@ export function buildLightweightBase(
     if (withMagnet || withScrew) {
       const holeRadius = Math.max(withMagnet ? magnetRadius : 0, withScrew ? screwRadius : 0);
       const floorDepth =
-        (withMagnet ? magnetDepth : SOCKET_HEIGHT) + (withMagnet ? MAGNET_FLOOR : 0);
+        (withMagnet ? magnetDepth : socketHeight) + (withMagnet ? MAGNET_FLOOR : 0);
       const pads: Shape3D[] = [];
       const drills: Shape3D[] = [];
       forEachSocketCell(
@@ -394,7 +398,14 @@ export function buildLightweightBase(
           // Fit-or-center magnet positions so a non-square/small foot's pads and
           // drills stay inside the foot instead of breaching its side.
           const positions = magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor);
-          for (const p of buildCellPads(scope, positions, holeRadius, floorDepth, openDir)) {
+          for (const p of buildCellPads(
+            scope,
+            positions,
+            holeRadius,
+            floorDepth,
+            openDir,
+            socketHeight
+          )) {
             pads.push(p);
           }
           for (const [x, y] of positions) {
@@ -413,16 +424,16 @@ export function buildLightweightBase(
                       },
                     })
                   ),
-                  [x, y, -SOCKET_HEIGHT]
+                  [x, y, -socketHeight]
                 )
               );
             }
             if (withScrew) {
               drills.push(
-                translate(scope.register(cylinder(screwRadius, SOCKET_HEIGHT + 0.01)), [
+                translate(scope.register(cylinder(screwRadius, socketHeight + 0.01)), [
                   x,
                   y,
-                  -SOCKET_HEIGHT,
+                  -socketHeight,
                 ])
               );
             }

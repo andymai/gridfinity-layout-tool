@@ -34,10 +34,11 @@ export const STACK_SAMPLE_BASE_NAME = 'stack-fit-sample';
 export function useStackSampleExport(): UseSampleExportReturn {
   const t = useTranslation();
 
-  const { gridUnitMm, baseplateParams } = useLayoutStore(
+  const { gridUnitMm, baseplateParams, lowProfileBase } = useLayoutStore(
     useShallow((state) => ({
       gridUnitMm: state.layout.gridUnitMm,
       baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+      lowProfileBase: state.layout.lowProfileBase,
     }))
   );
 
@@ -48,24 +49,27 @@ export function useStackSampleExport(): UseSampleExportReturn {
 
       // A clean 1×1 plate: synced to a 1×1 drawer, no padding, stack-enabled so
       // buildFullParams strips connectors/magnets/rounding for uniform tiles.
-      const sampleParams = buildFullParams(
-        {
-          ...baseplateParams,
-          syncWithLayout: true,
-          paddingLeft: mm(0),
-          paddingRight: mm(0),
-          paddingFront: mm(0),
-          paddingBack: mm(0),
-          overTile: false,
-          stackPrint: stack,
-        },
-        1,
-        1,
-        gridUnitMm,
-        'end',
-        'end',
-        printSettings.nozzleSizeMm
-      );
+      const sampleParams = {
+        ...buildFullParams(
+          {
+            ...baseplateParams,
+            syncWithLayout: true,
+            paddingLeft: mm(0),
+            paddingRight: mm(0),
+            paddingFront: mm(0),
+            paddingBack: mm(0),
+            overTile: false,
+            stackPrint: stack,
+          },
+          1,
+          1,
+          gridUnitMm,
+          'end',
+          'end',
+          printSettings.nozzleSizeMm
+        ),
+        ...(lowProfileBase === true ? { lowProfileBase: true } : {}),
+      };
 
       const result = await bridge.exportBaseplate(sampleParams, 'stl');
       const parsed = parseSTLBinary(result.data);
@@ -88,7 +92,7 @@ export function useStackSampleExport(): UseSampleExportReturn {
       const blob = new Blob([buffer], { type: FORMAT_MIME_TYPES.stl });
       triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS.stl}`);
     },
-    [gridUnitMm, baseplateParams]
+    [gridUnitMm, baseplateParams, lowProfileBase]
   );
 
   return useSampleExport({

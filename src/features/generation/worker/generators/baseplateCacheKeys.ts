@@ -85,6 +85,8 @@ export function slabPocketsCacheKey(
     params.edges?.right ?? '',
     params.edges?.front ?? '',
     params.edges?.back ?? '',
-    forExport
+    forExport,
+    // Appended only when set, so every standard key stays byte-identical.
+    ...(params.lowProfileBase === true ? ['lowprofile'] : [])
   );
 }

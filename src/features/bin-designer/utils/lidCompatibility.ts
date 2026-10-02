@@ -23,6 +23,7 @@
  */
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { socketHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { hasAnyPatternedWall } from '@/shared/utils/wallPatternSides';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
@@ -36,7 +37,7 @@ import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 // shelf datum both need it and both are reached from here.
 export { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
 import { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
-import { binFloorMm } from '@/features/bin-designer/types/base';
+import { binFloorMm, isSocketlessBase } from '@/features/bin-designer/types/base';
 import {
   calculateDividerPieceHeight,
   dividerGrooveDepth,
@@ -159,7 +160,9 @@ const MAGNET_BOSS_WALL = 1.0;
  * relative to this height, not the total bin height.
  */
 function computeInteriorHeight(params: BinParams): number {
-  return params.height * params.heightUnitMm - GRIDFINITY.SOCKET_HEIGHT;
+  // The low profile is inert on a socketless base, so only a socket loses it.
+  const lowProfile = !isSocketlessBase(params.base.style) && params.base.lowProfile === true;
+  return params.height * params.heightUnitMm - socketHeightMm(lowProfile);
 }
 
 /**

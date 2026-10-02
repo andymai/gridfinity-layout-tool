@@ -15,6 +15,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { useCustomBins } from '@/features/bin-designer';
 import type { Bin } from '@/core/types';
+import { LIP_PROTRUSION_MM } from '@/shared/utils/heightUnits';
 import {
   drawerCeilingFit,
   type DrawerCeilingFit,
@@ -22,12 +23,13 @@ import {
 } from '@/shared/utils/drawerCeiling';
 
 export function useDrawerCeiling(): DrawerCeilingFit | null {
-  const { bins, layers, heightUnitMm, plate, ceilingMm } = useLayoutStore(
+  const { bins, layers, heightUnitMm, storedPlate, lowProfileBase, ceilingMm } = useLayoutStore(
     useShallow((s) => ({
       bins: s.layout.bins,
       layers: s.layout.layers,
       heightUnitMm: s.layout.heightUnitMm,
-      plate: s.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+      storedPlate: s.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+      lowProfileBase: s.layout.lowProfileBase === true,
       ceilingMm: s.layout.drawer.measuredMm?.height,
     }))
   );
@@ -38,16 +40,32 @@ export function useDrawerCeiling(): DrawerCeilingFit | null {
     const linkedRise = (bin: Bin): LinkedDesignRise | undefined => {
       if (bin.linkedDesignId === undefined) return undefined;
       const ref = byId.get(bin.linkedDesignId);
+      if (ref === undefined) return undefined;
+      // Only a parametric bin is rebuilt on the layout's foot.
+      const isBin = ref.kind === undefined || ref.kind === 'bin';
       // A registry entry saved before `assembledRiseMm` existed, or an imported
-      // mesh that has no params to derive one from, measures as a plain bin.
-      if (ref?.assembledRiseMm === undefined) return undefined;
+      // mesh that has no params to derive one from, measures as a plain bin,
+      // still on the stock foot when it is not a parametric bin.
+      if (ref.assembledRiseMm === undefined) {
+        if (!lowProfileBase || isBin) return undefined;
+        const hasLip = ref.hasLip ?? true;
+        return {
+          riseMm: bin.height * heightUnitMm + (hasLip ? LIP_PROTRUSION_MM : 0),
+          socketless: ref.socketless ?? false,
+          hasLip,
+          standardFoot: true,
+        };
+      }
       return {
-        riseMm: ref.assembledRiseMm,
+        riseMm:
+          ref.assembledRiseMm - (lowProfileBase && isBin ? (ref.lowProfileRiseDeltaMm ?? 0) : 0),
         socketless: ref.socketless ?? false,
         hasLip: ref.hasLip,
+        standardFoot: !isBin,
       };
     };
 
+    const plate = lowProfileBase ? { ...storedPlate, lowProfileBase } : storedPlate;
     return drawerCeilingFit({ bins, layers, heightUnitMm, plate, ceilingMm, linkedRise });
-  }, [bins, layers, heightUnitMm, plate, ceilingMm, customBins]);
+  }, [bins, layers, heightUnitMm, storedPlate, lowProfileBase, ceilingMm, customBins]);
 }

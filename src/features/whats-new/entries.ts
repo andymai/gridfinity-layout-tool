@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'low-profile-base',
+    date: '2026-10-01',
+    kind: 'new',
+    title: { en: 'Low-profile base for more room inside' },
+    body: {
+      en: 'Turn on Low-profile base in the baseplate settings and every bin in the drawer gets 1.1mm more room inside at the same height. The plate, the bin feet and lid stack grids all lose 1.1mm from the straight middle of their profile and keep both angled edges. Stock Gridfinity bins still sit in a low-profile plate, with less grip, and bins made this way still sit on standard plates and stacking lips.',
+    },
+    action: { kind: 'openTool', tool: 'baseplate' },
+  },
+  {
     id: 'flat-multicolor-text',
     date: '2026-09-30',
     kind: 'new',

@@ -11,7 +11,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
-import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import {
@@ -45,6 +45,7 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
     gridShiftX,
     gridShiftY,
     baseplateParams,
+    lowProfileBase,
   } = useLayoutStore(
     useShallow((s) => ({
       drawerWidth: s.layout.drawer.width,
@@ -60,6 +61,7 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
       gridShiftX: s.layout.drawer.gridShiftX ?? 0,
       gridShiftY: s.layout.drawer.gridShiftY ?? 0,
       baseplateParams: s.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+      lowProfileBase: s.layout.lowProfileBase,
     }))
   );
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
@@ -81,12 +83,14 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
       undefined,
       gridUnitMmY,
       gridShiftX,
-      gridShiftY
+      gridShiftY,
+      lowProfileBase
     );
     const groups = stackGroupsFromTiling(tiling, fullParams, copies);
-    const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.BASEPLATE_HEIGHT, gapMm);
+    const plateMm = plateProfileHeightMm(lowProfileBase);
+    const cap = stackHeightCap(maxPrintHeightMm, plateMm, gapMm);
     return {
-      status: evaluateStackPrint(groups, cap, GRIDFINITY_SPEC.BASEPLATE_HEIGHT, maxPrintHeightMm),
+      status: evaluateStackPrint(groups, cap, plateMm, maxPrintHeightMm),
       plan: planPhysicalStacks(groups, cap),
     };
   }, [
@@ -100,6 +104,7 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
     fractionalEdgeY,
     gridShiftX,
     gridShiftY,
+    lowProfileBase,
     nozzleSizeMm,
     maxPrintHeightMm,
     tiling,

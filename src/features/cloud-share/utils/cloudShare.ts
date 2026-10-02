@@ -29,6 +29,7 @@ export function createLayoutFingerprint(layout: Layout): string {
     gridUnitMm: layout.gridUnitMm,
     heightUnitMm: layout.heightUnitMm,
     magnetAnchor: layout.magnetAnchor,
+    lowProfileBase: layout.lowProfileBase,
   });
 }
 

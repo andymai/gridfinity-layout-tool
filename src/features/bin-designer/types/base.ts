@@ -449,6 +449,17 @@ export type BinStyle = (typeof BIN_STYLES)[number];
 /** Base configuration for bin attachment */
 export interface BaseConfig {
   readonly style: BaseStyle;
+  /**
+   * Low-profile foot: its vertical band is `LOW_PROFILE_BAND_CUT_MM` shorter and
+   * the interior floor drops with it, at the same total height. Synced from the
+   * owning layout like `BinParams.magnetAnchor`, and the layout overrides it
+   * wherever a design is generated inside one. Stripped
+   * (`withoutLowProfileBase`) from anything that leaves the app, so a published,
+   * shared or exported design always carries standard feet. Absent ⇒ standard;
+   * `false` is never stored, for the same fingerprint reason `tile` is absent.
+   * Inert on a socketless base.
+   */
+  readonly lowProfile?: boolean;
   readonly magnetDiameter: number;
   readonly magnetDepth: number;
   /**

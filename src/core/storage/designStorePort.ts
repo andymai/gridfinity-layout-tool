@@ -84,6 +84,7 @@ export interface DesignRegistryEntry extends DesignRegistryEdgeFields {
   readonly kind?: 'importedMesh' | 'assembly';
   /** Assembled-rise fields — mirror the feature's `CustomBinRef`. */
   readonly assembledRiseMm?: number;
+  readonly lowProfileRiseDeltaMm?: number;
   readonly socketless?: boolean;
   readonly hasLip?: boolean;
   readonly overhangMm?: {

@@ -23,6 +23,19 @@ describe('BaseSection', () => {
     expect(screen.getByText('Floor')).toBeInTheDocument();
   });
 
+  it('notes a low-profile base it does not let the user change', () => {
+    const note = /This layout uses a low-profile base/;
+    render(<BaseSection />);
+    expect(screen.queryByText(note)).not.toBeInTheDocument();
+
+    act(() => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, lowProfile: true } },
+      });
+    });
+    expect(screen.getByText(note)).toBeInTheDocument();
+  });
+
   it('renders the base controls under them', () => {
     render(<BaseSection />);
 

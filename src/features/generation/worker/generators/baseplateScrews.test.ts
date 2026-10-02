@@ -6,7 +6,12 @@ import { mesh } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import { initTestKernel } from '@/test/initTestKernel';
 import { boundingBox } from './__kernel-tests__/meshAssertions';
-import { HOLE_OFFSET, SOCKET_HEIGHT } from './generatorTypes';
+import {
+  HOLE_OFFSET,
+  SOCKET_HEIGHT,
+  PLATE_PROFILE_HEIGHT,
+  LOW_PROFILE_BAND_CUT_MM,
+} from './generatorTypes';
 import {
   buildScrewCutters,
   resolveScrewHoles,
@@ -248,7 +253,7 @@ describe('buildScrewCutters', () => {
   }
 
   it('builds nothing for no holes', () => {
-    expect(buildScrewCutters([], COUNTERSINK, totalHeight)).toEqual([]);
+    expect(buildScrewCutters([], COUNTERSINK, totalHeight, PLATE_PROFILE_HEIGHT)).toEqual([]);
   });
 
   it('builds one solid per hole', () => {
@@ -258,7 +263,8 @@ describe('buildScrewCutters', () => {
         { x: 13, y: 13, site: 'floor' },
       ],
       COUNTERSINK,
-      totalHeight
+      totalHeight,
+      PLATE_PROFILE_HEIGHT
     );
     try {
       expect(cutters).toHaveLength(2);
@@ -271,7 +277,12 @@ describe('buildScrewCutters', () => {
   it('reaches the underside from a margin entry', () => {
     // A margin screw enters at the top face and must run clear through, or it
     // fastens nothing.
-    const [cutter] = buildScrewCutters([{ x: 0, y: 0, site: 'margin' }], COUNTERSINK, totalHeight);
+    const [cutter] = buildScrewCutters(
+      [{ x: 0, y: 0, site: 'margin' }],
+      COUNTERSINK,
+      totalHeight,
+      PLATE_PROFILE_HEIGHT
+    );
     try {
       const bb = bbox(cutter);
       expect(bb.minZ).toBeLessThanOrEqual(-totalHeight);
@@ -284,7 +295,12 @@ describe('buildScrewCutters', () => {
   it('enters a floor hole at the pocket floor, not the top face', () => {
     // The head recess belongs at the pocket floor; starting it at the top would
     // carve a cone through the middle of the socket a bin seats in.
-    const [cutter] = buildScrewCutters([{ x: 0, y: 0, site: 'floor' }], COUNTERSINK, totalHeight);
+    const [cutter] = buildScrewCutters(
+      [{ x: 0, y: 0, site: 'floor' }],
+      COUNTERSINK,
+      totalHeight,
+      PLATE_PROFILE_HEIGHT
+    );
     try {
       const bb = bbox(cutter);
       expect(bb.maxZ).toBeLessThan(0);
@@ -295,8 +311,39 @@ describe('buildScrewCutters', () => {
     }
   });
 
+  it('moves a floor entry up with a low-profile pocket floor', () => {
+    const lowProfile = PLATE_PROFILE_HEIGHT - LOW_PROFILE_BAND_CUT_MM;
+    const lowTotal = totalHeight - LOW_PROFILE_BAND_CUT_MM;
+    const [standard] = buildScrewCutters(
+      [{ x: 0, y: 0, site: 'floor' }],
+      COUNTERSINK,
+      totalHeight,
+      PLATE_PROFILE_HEIGHT
+    );
+    const [low] = buildScrewCutters(
+      [{ x: 0, y: 0, site: 'floor' }],
+      COUNTERSINK,
+      lowTotal,
+      lowProfile
+    );
+    try {
+      const a = bbox(standard);
+      const b = bbox(low);
+      expect(b.maxZ - a.maxZ).toBeCloseTo(LOW_PROFILE_BAND_CUT_MM, 2);
+      expect(b.minZ).toBeLessThanOrEqual(-lowTotal);
+    } finally {
+      standard.delete();
+      low.delete();
+    }
+  });
+
   it('makes the countersink as wide as the head at its entry plane', () => {
-    const [cutter] = buildScrewCutters([{ x: 0, y: 0, site: 'floor' }], COUNTERSINK, totalHeight);
+    const [cutter] = buildScrewCutters(
+      [{ x: 0, y: 0, site: 'floor' }],
+      COUNTERSINK,
+      totalHeight,
+      PLATE_PROFILE_HEIGHT
+    );
     try {
       const bb = bbox(cutter);
       expect(bb.maxX - bb.minX).toBeCloseTo(8, 1);
@@ -310,7 +357,12 @@ describe('buildScrewCutters', () => {
     // countersink head defaults to 8mm, so the cone collapses to zero depth and
     // a loft between two coincident sections would throw.
     const flat: ScrewHoleParams = { ...COUNTERSINK, diameter: mm(8) };
-    const cutters = buildScrewCutters([{ x: 0, y: 0, site: 'floor' }], flat, totalHeight);
+    const cutters = buildScrewCutters(
+      [{ x: 0, y: 0, site: 'floor' }],
+      flat,
+      totalHeight,
+      PLATE_PROFILE_HEIGHT
+    );
     try {
       expect(cutters).toHaveLength(1);
       const bb = bbox(cutters[0]);
@@ -323,7 +375,12 @@ describe('buildScrewCutters', () => {
 
   it('survives a head narrower than the shaft', () => {
     const inverted: ScrewHoleParams = { ...COUNTERSINK, diameter: mm(6), headDiameter: mm(4) };
-    const cutters = buildScrewCutters([{ x: 0, y: 0, site: 'floor' }], inverted, totalHeight);
+    const cutters = buildScrewCutters(
+      [{ x: 0, y: 0, site: 'floor' }],
+      inverted,
+      totalHeight,
+      PLATE_PROFILE_HEIGHT
+    );
     try {
       expect(cutters).toHaveLength(1);
       const bb = bbox(cutters[0]);
@@ -334,7 +391,12 @@ describe('buildScrewCutters', () => {
   });
 
   it('makes a counterbore a flat pocket of the head diameter', () => {
-    const [cutter] = buildScrewCutters([{ x: 0, y: 0, site: 'floor' }], COUNTERBORE, totalHeight);
+    const [cutter] = buildScrewCutters(
+      [{ x: 0, y: 0, site: 'floor' }],
+      COUNTERBORE,
+      totalHeight,
+      PLATE_PROFILE_HEIGHT
+    );
     try {
       const bb = bbox(cutter);
       expect(bb.maxX - bb.minX).toBeCloseTo(5.5, 1);

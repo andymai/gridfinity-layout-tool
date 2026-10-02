@@ -14,6 +14,7 @@
  */
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { socketHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { hasDetachableFeet } from '@/features/bin-designer/types/base';
 import type {
   BaseConfig,
@@ -46,13 +47,13 @@ export interface BinDimensions {
   readonly totalH: number;
   /**
    * Wall height in mm — the vertical extent of the side walls.
-   * For socketed bins this excludes the socket (totalH − SOCKET_HEIGHT);
+   * For socketed bins this excludes the socket (totalH − its foot depth);
    * for flat-base bins it equals totalH.
    */
   readonly wallHeight: number;
   /**
    * Z of the cavity floor in mm. Matches the generator's coordinate
-   * system: socketed bins have their floor at SOCKET_HEIGHT (5mm) above
+   * system: socketed bins have their floor at the foot depth above
    * the world origin; flat bins sit on the floor at z=0.
    */
   readonly floorZ: number;
@@ -68,7 +69,7 @@ export interface BinDimensions {
  * still call this rather than recomputing, so the math stays canonical.
  */
 /** The slice of a base these Z helpers read — narrow so partial callers fit. */
-export type BaseFloorSource = Pick<BaseConfig, 'style' | 'trayBottom' | 'feet'>;
+export type BaseFloorSource = Pick<BaseConfig, 'style' | 'trayBottom' | 'feet' | 'lowProfile'>;
 
 /**
  * World Z of the interior floor for a given base — the depth of whatever sits
@@ -92,7 +93,7 @@ export function baseFloorZ(
   // all six ghosts - 5mm above the geometry they annotate.
   if (hasDetachableFeet(base)) return 0;
   const skirt = trayFloorZ(base, heightUnitMm, lid, cellMask);
-  return skirt ?? GRIDFINITY.SOCKET_HEIGHT;
+  return skirt ?? socketHeightMm(base.lowProfile);
 }
 
 /**
@@ -102,10 +103,13 @@ export function baseFloorZ(
  * this branch the ghost overlays and the validator would place an interior rim
  * the mesh does not build.
  */
-export function baseWallHeight(base: Pick<BaseConfig, 'style' | 'tile'>, totalH: number): number {
+export function baseWallHeight(
+  base: Pick<BaseConfig, 'style' | 'tile' | 'lowProfile'>,
+  totalH: number
+): number {
   if (base.style === 'flat' || base.style === 'lid') return totalH;
   if (base.tile === true) return 0;
-  return totalH - GRIDFINITY.SOCKET_HEIGHT;
+  return totalH - socketHeightMm(base.lowProfile);
 }
 
 /**

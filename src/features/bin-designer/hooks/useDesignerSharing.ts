@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { withoutLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { ok, err, isOk, type Result } from '@/core/result';
 import { generateLayoutId } from '@/shared/utils/uuid';
 import type { BinParams } from '@/features/bin-designer/types';
@@ -63,7 +64,8 @@ export async function createDesignerShare(
       body: JSON.stringify({
         type: 'designer',
         version: 1,
-        params,
+        // A share is opened outside this layout, so it carries standard feet.
+        params: withoutLowProfileBase(params),
         layoutId: shareId,
         permission: 'view',
       }),

@@ -66,4 +66,40 @@ describe('useSyncPhysicalUnits', () => {
     // Sync should NOT create undo history entries
     expect(useDesignerStore.getState().history.past).toHaveLength(0);
   });
+
+  describe('low-profile base', () => {
+    const setLayoutLowProfile = (enabled: boolean): void => {
+      useLayoutStore.setState((state) => {
+        const { lowProfileBase: _drop, ...layout } = state.layout;
+        return { layout: enabled ? { ...layout, lowProfileBase: true } : layout };
+      });
+    };
+
+    beforeEach(() => setLayoutLowProfile(false));
+
+    it('marks the open design low profile when the layout turns it on', () => {
+      renderHook(() => useSyncPhysicalUnits());
+      act(() => setLayoutLowProfile(true));
+      expect(useDesignerStore.getState().params.base.lowProfile).toBe(true);
+    });
+
+    it('clears it when the layout turns it off', () => {
+      renderHook(() => useSyncPhysicalUnits());
+      act(() => setLayoutLowProfile(true));
+      expect(useDesignerStore.getState().params.base.lowProfile).toBe(true);
+      act(() => setLayoutLowProfile(false));
+      expect('lowProfile' in useDesignerStore.getState().params.base).toBe(false);
+    });
+
+    it('re-applies the layout setting to a design opened afterwards', () => {
+      setLayoutLowProfile(true);
+      renderHook(() => useSyncPhysicalUnits());
+      act(() => {
+        useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, width: 3 } });
+      });
+      const { params } = useDesignerStore.getState();
+      expect(params.width).toBe(3);
+      expect(params.base.lowProfile).toBe(true);
+    });
+  });
 });

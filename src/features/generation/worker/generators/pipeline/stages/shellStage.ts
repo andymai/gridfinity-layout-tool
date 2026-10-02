@@ -18,6 +18,8 @@ import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled, isAbortError } from '../../utils/abort';
 import { buildBaseSocket, buildOverhangFeet, baseSocketShapeKey } from '../../socketBuilder';
 import { buildLightweightBase } from '../../lightweightBaseBuilder';
+import { buildRidgeReliefTool } from '../../ridgeReliefBuilder';
+import { SOCKET_HEIGHT } from '../../generatorConstants';
 import type { LightweightBase, LightweightOpenDirection } from '../../lightweightBaseBuilder';
 import { buildBinBox, buildTopShape } from '../../boxBuilder';
 import { buildBinBoxWithLip } from '../../integratedLipBuilder';
@@ -122,7 +124,8 @@ export const shellStage: PipelineStage = {
         { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
         params.magnetAnchor,
         dim.floorThickness,
-        magnetHoleStyleFrom(params.base)
+        magnetHoleStyleFrom(params.base),
+        dim.socketHeight
       );
       floorOpenings = liteBase.floorOpenings;
     }
@@ -365,6 +368,29 @@ export const shellStage: PipelineStage = {
         }
       }
 
+      // A short foot in a standard plate settles onto its tapers, which lifts
+      // the ridge crests between pockets above the underside where two feet
+      // meet. See `ridgeReliefBuilder`.
+      if (!dim.socketless && dim.socketHeight < SOCKET_HEIGHT) {
+        const relief = buildRidgeReliefTool(
+          params.width,
+          params.depth,
+          params.cellMask,
+          pitch,
+          dim.socketCellPlan,
+          { x: params.fractionalEdgeX, y: params.fractionalEdgeY }
+        );
+        if (relief) {
+          try {
+            const relieved = unwrap(cut(built as ValidSolid, relief as ValidSolid));
+            if (relieved !== built) built.delete();
+            built = relieved;
+          } finally {
+            relief.delete();
+          }
+        }
+      }
+
       setShellCache(dim.shellKey, built);
       // Metadata-preserving clone for the context (cache keeps `built`).
       body = translate(built, [0, 0, 0]);
@@ -396,6 +422,7 @@ export const shellStage: PipelineStage = {
           // this returns has to carry it. Magnets stay in the feet.
           screw: resolved.screw,
           forExport: true,
+          socketHeight: dim.socketHeight,
         });
         // The feet themselves are rebuilt by the parts generator; here only
         // their holes matter, so release them rather than carry them along.
@@ -434,7 +461,8 @@ export const shellStage: PipelineStage = {
           params.cellMask,
           { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
           params.magnetAnchor,
-          magnetHoleStyleFrom(params.base)
+          magnetHoleStyleFrom(params.base),
+          dim.socketHeight
         );
     // `withScope` can't wrap this section (it must yield TWO survivors — body
     // and socket — on the preview path), so dispose manually on any throw to
@@ -448,7 +476,14 @@ export const shellStage: PipelineStage = {
         // mate with baseplate sockets), so they keep the default 'end'
         // decomposition regardless of fractionalEdge — only the seam tiling at a
         // fractional edge differs cosmetically, never the socket mating.
-        feet = buildOverhangFeet(params.width, params.depth, dim.overhang, pitch, true);
+        feet = buildOverhangFeet(
+          params.width,
+          params.depth,
+          dim.overhang,
+          pitch,
+          true,
+          dim.socketHeight
+        );
         if (feet) {
           const withFeet = unwrap(fuse(socket, feet));
           socket.delete();
@@ -490,7 +525,8 @@ export const shellStage: PipelineStage = {
             params.cellMask,
             { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
             params.magnetAnchor,
-            magnetHoleStyleFrom(params.base)
+            magnetHoleStyleFrom(params.base),
+            dim.socketHeight
           )}|${feetFused ? overhangKey(dim.overhang) : 'nofeet'}`;
 
       return { ...ctx, solid: body, deferredSolid: socket, deferredSolidKey };

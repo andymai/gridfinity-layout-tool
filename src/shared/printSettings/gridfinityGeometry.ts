@@ -92,6 +92,34 @@ export const GRIDFINITY_SPEC = {
 } as const;
 
 /**
+ * Height a low-profile base takes out of the foot's and the pocket's vertical
+ * band (mm).
+ *
+ * Cut from the MIDDLE of the profile, never an end, so both tapers survive: a
+ * short foot still seats on a standard plate's upper taper and a stacking lip,
+ * and a stock foot standing in a low pocket still bears on
+ * `BASEPLATE vertical - this - (SOCKET_SMALL_TAPER - BASEPLATE_SMALL_TAPER)` of
+ * vertical wall: 0.6mm, where a standard pocket gives it 1.7mm of its 1.8mm
+ * band. Cutting from the bottom instead leaves a stock foot no vertical
+ * contact at all, and it rattles.
+ */
+export const LOW_PROFILE_BAND_CUT_MM = 1.1;
+
+function bandCutMm(lowProfile: boolean | undefined): number {
+  return lowProfile === true ? LOW_PROFILE_BAND_CUT_MM : 0;
+}
+
+/** Depth of a bin's base socket (mm) — the foot a seated bin stands on. */
+export function socketHeightMm(lowProfile: boolean | undefined): number {
+  return GRIDFINITY_SPEC.SOCKET_HEIGHT - bandCutMm(lowProfile);
+}
+
+/** Depth of a baseplate pocket's tapered profile (mm). */
+export function plateProfileHeightMm(lowProfile: boolean | undefined): number {
+  return GRIDFINITY_SPEC.BASEPLATE_HEIGHT - bandCutMm(lowProfile);
+}
+
+/**
  * Height of a lid's optional stack grid above the lid's top face (mm).
  *
  * Not a spec dimension — Gridfinity says nothing about a grid on a lid, so this
@@ -102,8 +130,11 @@ export const GRIDFINITY_SPEC = {
  * the grid ends up one half-clearance shorter than the baseplate profile it is
  * otherwise identical to.
  */
-export const LID_STACK_GRID_HEIGHT_MM =
-  GRIDFINITY_SPEC.BASEPLATE_HEIGHT - GRIDFINITY_SPEC.TOLERANCE / 2;
+export function lidStackGridHeightMm(lowProfile: boolean | undefined): number {
+  return plateProfileHeightMm(lowProfile) - GRIDFINITY_SPEC.TOLERANCE / 2;
+}
+
+export const LID_STACK_GRID_HEIGHT_MM = lidStackGridHeightMm(false);
 
 /**
  * Thin floor under each magnet hole that retains the magnet (mm).

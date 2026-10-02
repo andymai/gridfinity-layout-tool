@@ -55,7 +55,8 @@ import {
   JBM_DIGIT_INK_PER_FONT,
 } from './couponHelpers';
 import {
-  PLATE_PROFILE_HEIGHT,
+  plateProfileHeightMm,
+  socketHeightMm,
   MAGNET_FLOOR,
   COPLANAR_MARGIN,
   TONGUE_PROTRUSION,
@@ -257,7 +258,7 @@ function buildCoupon(
 
 function couponHeight(params: ResolvedBaseplateParams): number {
   const floorDepth = params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0;
-  return PLATE_PROFILE_HEIGHT + floorDepth;
+  return plateProfileHeightMm(params.lowProfileBase) + floorDepth;
 }
 
 /**
@@ -344,7 +345,7 @@ export function buildConnectorSampleTray(rawParams: ResolvedBaseplateParams): Sh
       const part =
         style.loose === 'clip'
           ? buildSnapClipForPrint(totalHeight, gridUnitMm, params.nozzleSizeMm)
-          : buildDovetailKey(totalHeight, gridUnitMm);
+          : buildDovetailKey(totalHeight, gridUnitMm, socketHeightMm(params.lowProfileBase));
       const placed = translate(part, [looseX, cellY, -totalHeight]);
       part.delete();
       pieces.push(placed);

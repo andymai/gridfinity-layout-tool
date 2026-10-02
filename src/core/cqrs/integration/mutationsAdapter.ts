@@ -184,6 +184,10 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       bus.dispatch(createCommand('layout.setMagnetAnchor', { anchor }));
     },
 
+    setLowProfileBase(enabled: boolean): void {
+      bus.dispatch(createCommand('layout.setLowProfileBase', { enabled }));
+    },
+
     setHeightUnitMm(mm: number): void {
       bus.dispatch(createCommand('layout.setHeightUnitMm', { mm }));
     },

@@ -31,7 +31,7 @@ import {
 import type { LabelPlateWidthU, LabelSocketStyle } from '@/shared/constants/labelPlates';
 import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
 import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
-import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { GRIDFINITY_SPEC, socketHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { resolveOverhang, overhangExpansion, hasOverhang } from '@/shared/utils/overhang';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
@@ -606,7 +606,10 @@ export function labelTabInteriorDims(params: BinParams): {
   const socketless = params.base.style === 'flat' || params.base.style === 'lid';
   const wallHeight = socketless
     ? totalHeight
-    : Math.max(totalHeight - GRIDFINITY_SPEC.SOCKET_HEIGHT, DESIGNER_CONSTRAINTS.MIN_BODY_WALL_MM);
+    : Math.max(
+        totalHeight - socketHeightMm(params.base.lowProfile),
+        DESIGNER_CONSTRAINTS.MIN_BODY_WALL_MM
+      );
   const interiorHeight = Math.max(
     0,
     params.base.stackingLip ? wallHeight - GRIDFINITY_SPEC.LIP_SMALL_TAPER : wallHeight

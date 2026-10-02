@@ -6,7 +6,7 @@
  * latency of the brepjs pipeline (solid modeling, boolean fuse/cut, tessellation).
  *
  * The output is geometrically equivalent to the BREP version — a waffle-grid
- * slab carrying the same `POCKET_PROFILE`, optional magnet holes, and a rounded
+ * slab carrying the same pocket profile, optional magnet holes, and a rounded
  * outer perimeter.
  *
  * Coordinate system (matches baseplateGenerator.ts):
@@ -15,7 +15,7 @@
  * - Without magnets: pockets through-cut (no floor), unless the solidFloor
  *   option leaves a plain floor of its own thickness below the sockets
  * - With magnets: slab is taller by (MAGNET_FLOOR + magnetDepth); pockets
- *   stop at PLATE_PROFILE_HEIGHT depth, leaving a solid continuous floor. Magnet
+ *   stop at the profile depth, leaving a solid continuous floor. Magnet
  *   holes are blind cylindrical pockets cut downward from the pocket floor
  *   into the solid floor, leaving a thin retaining floor (MAGNET_FLOOR)
  *   at the bottom. Magnets are dropped in from the pocket side
@@ -35,7 +35,7 @@ import { resolveCornerRadii } from './generatorConstants';
 import { creaseEdges } from './utils';
 import type { MeshData } from '../../bridge/types';
 import {
-  PLATE_PROFILE_HEIGHT,
+  plateProfileHeightMm,
   forEachCell,
   frameCells,
   marginPocketDepthMm,
@@ -127,7 +127,8 @@ export function generateBaseplateDirect(
   // require one; the standalone solidFloor option adds one without magnet holes.
   const floorDepth = baseplateFloorDepth(params);
   const hasFloor = floorDepth > 0;
-  const totalHeight = PLATE_PROFILE_HEIGHT + floorDepth;
+  const profileHeight = plateProfileHeightMm(params.lowProfileBase);
+  const totalHeight = profileHeight + floorDepth;
   const totalW = width * gridUnitMm + paddingLeft + paddingRight;
   const totalD = depth * gridUnitMmY + paddingFront + paddingBack;
   const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
@@ -210,7 +211,16 @@ export function generateBaseplateDirect(
   for (const cell of cells) {
     const cellW_mm = cell.widthUnits * gridUnitMm;
     const cellD_mm = cell.depthUnits * gridUnitMmY;
-    addPocketWalls(mb, cell.centerX, cell.centerY, cellW_mm, cellD_mm, totalHeight, floorDepth);
+    addPocketWalls(
+      mb,
+      cell.centerX,
+      cell.centerY,
+      cellW_mm,
+      cellD_mm,
+      totalHeight,
+      floorDepth,
+      profileHeight
+    );
   }
 
   onProgress('base', 0.5);
@@ -336,7 +346,7 @@ export function generateBaseplateDirect(
       magnetAnchor,
     });
     for (const hole of screwHoles) {
-      addScrewHoleAt(mb, hole.x, hole.y, hole.site, screwParams, totalHeight);
+      addScrewHoleAt(mb, hole.x, hole.y, hole.site, screwParams, totalHeight, profileHeight);
     }
   }
 

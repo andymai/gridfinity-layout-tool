@@ -2044,3 +2044,18 @@ describe('normalizeGroupChains', () => {
     expect(migrated.cutouts[0].parentGroups).toEqual(['outer']);
   });
 });
+
+describe('migrateParams - low-profile flag', () => {
+  it('keeps a stored low-profile foot', () => {
+    const migrated = migrateParams({ base: { ...DEFAULT_BIN_PARAMS.base, lowProfile: true } });
+    expect(migrated.base.lowProfile).toBe(true);
+  });
+
+  // `params` is hashed wholesale for the community duplicate guard, so a
+  // standard design must not gain the key in either form.
+  it('stores nothing for a standard foot, absent or false', () => {
+    expect('lowProfile' in migrateParams({ base: DEFAULT_BIN_PARAMS.base }).base).toBe(false);
+    const stale = migrateParams({ base: { ...DEFAULT_BIN_PARAMS.base, lowProfile: false } });
+    expect('lowProfile' in stale.base).toBe(false);
+  });
+});

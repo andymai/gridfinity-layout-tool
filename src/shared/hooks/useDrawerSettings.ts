@@ -58,6 +58,8 @@ export interface UseDrawerSettingsReturn {
    * same charge `drawerCeilingFit` applies per column.
    */
   plateRiseMm: number;
+  /** The layout's low-profile base, which sets how deep a stacked bin sinks. */
+  lowProfileBase: boolean;
   drawerFitSuggestion: DrawerFitSuggestion | null;
   handleMeasuredCommit: (widthMm: number, depthMm: number, heightMm?: number) => void;
   acceptDrawerFitSuggestion: () => void;
@@ -498,6 +500,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     // Measured physical drawer
     measuredMm,
     plateRiseMm: baseplateFloorDepth(layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS),
+    lowProfileBase: layout.lowProfileBase === true,
     drawerFitSuggestion,
     handleMeasuredCommit,
     acceptDrawerFitSuggestion,

@@ -97,6 +97,10 @@
       "default": "edge",
       "description": "Where magnet holes anchor in each cell. 'edge' holds a constant 8mm from the cell edge (the true Gridfinity corner). 'center' is the legacy fixed 13mm from cell centre. Identical at a 42mm grid; only observable above it."
     },
+    "lowProfileBase": {
+      "const": true,
+      "description": "Low-profile base for the whole drawer. Plate pockets, bin feet and lid stack grids all lose 1.1mm from the straight middle of their profile, so every bin gains that much room inside at the same total height. Stock Gridfinity bins still seat in the plate. Omit for a standard base; false is never written."
+    },
     "categories": {
       "type": "array",
       "minItems": 1,

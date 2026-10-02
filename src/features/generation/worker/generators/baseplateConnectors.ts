@@ -49,6 +49,7 @@ import {
   snapClipLevels,
   effectiveClearance,
   COPLANAR_MARGIN,
+  plateProfileHeightMm,
 } from './generatorTypes';
 import { computeCellBoundariesMm, computeCellCentersMm, decomposeCells } from './cellDecomposition';
 import { getPocketTemplate } from './baseplatePockets';
@@ -136,7 +137,8 @@ function relieveTongueForSockets(
   protrudeAxis: 'x' | 'y',
   boundaryCells: readonly CellSpan[],
   gridUnitMm: number,
-  magnetHoles: boolean
+  magnetHoles: boolean,
+  profileHeight: number
 ): Shape3D {
   // Widest tongue half-width (the puzzle head ≥ the legacy tip) plus groove
   // clearance and a small margin — the boundary-axis reach over which a neighbour
@@ -154,8 +156,8 @@ function relieveTongueForSockets(
     // along the boundary axis (the grid is continuous across the seam).
     const pocket =
       protrudeAxis === 'x'
-        ? getPocketTemplate(gridUnitMm, cell.size, throughCut)
-        : getPocketTemplate(cell.size, gridUnitMm, throughCut);
+        ? getPocketTemplate(gridUnitMm, cell.size, throughCut, 0, profileHeight)
+        : getPocketTemplate(cell.size, gridUnitMm, throughCut, 0, profileHeight);
     const pos: [number, number, number] =
       protrudeAxis === 'x'
         ? [neighborProtrude, cell.center, 0]
@@ -373,7 +375,8 @@ export function buildConnectors(
       def.protrudeAxis,
       def.boundaryCells,
       protrudePitch,
-      params.magnetHoles
+      params.magnetHoles,
+      plateProfileHeightMm(params.lowProfileBase)
     );
   };
 

@@ -23,26 +23,19 @@
 import { drawRoundedRectangle, unwrap, translate, cutAll } from 'brepjs';
 import type { Shape3D, DisposalScope, Drawing, Sketch, ValidSolid } from 'brepjs';
 import { pocketCornerRadius, safeSectionRect } from './generatorConstants';
-import { PLATE_PROFILE_HEIGHT, POCKET_INSET_BOT, POCKET_PROFILE } from './generatorTypes';
-import { LID_STACK_GRID_HEIGHT_MM } from '@/shared/printSettings/gridfinityGeometry';
+import {
+  PLATE_PROFILE_HEIGHT,
+  POCKET_INSET_BOT,
+  pocketProfileFor,
+  plateProfileHeightMm,
+  lidStackGridHeightMm,
+} from './generatorTypes';
 import { LID_COPLANAR_MARGIN } from './lidConstants';
 import { isRegionFilled } from '@/shared/utils/cellMask';
 import { forEachCell, type CellInfo } from './cellDecomposition';
 import { buildMaskDrawingAtInset } from './maskPolygon';
 import { buildOutlineDrawing } from './lidProfile';
 import type { LidInputs } from './lidInputs';
-
-/**
- * Height of the grid above the lid's top face.
- *
- * A half-clearance under the baseplate profile, because a lid is the BIN's
- * footprint: `gridUnitMm - 2 * LID_FIT_CLEARANCE` with its corner radius
- * reduced by the same, which is the nominal cell offset inward by exactly that
- * — flats and corners alike. A pocket grid laid on the nominal lattice
- * overhangs it by that much, and trimming the overhang off a 45-degree face
- * lowers the face's high point by the same amount.
- */
-const STACK_HEIGHT = LID_STACK_GRID_HEIGHT_MM;
 
 /**
  * Inset at the pocket floor, per side — on a lip-only top this is how far the
@@ -67,20 +60,26 @@ export const STACK_INSET_BOT = POCKET_INSET_BOT;
  * sliver triangles no watertight or triangle-count check reports
  * (`lidGenerator.scenario` counts them). Overhanging keeps every cut transversal.
  */
-export const POCKET_SECTIONS: readonly (readonly [z: number, inset: number])[] = [
-  [PLATE_PROFILE_HEIGHT + LID_COPLANAR_MARGIN, 0],
-  ...POCKET_PROFILE.map(([depth, inset]): readonly [number, number] => [
-    PLATE_PROFILE_HEIGHT - depth,
-    inset,
-  ]),
-  [-LID_COPLANAR_MARGIN, POCKET_INSET_BOT],
-];
+export function pocketSectionsFor(
+  profileHeight: number
+): readonly (readonly [z: number, inset: number])[] {
+  return [
+    [profileHeight + LID_COPLANAR_MARGIN, 0],
+    ...pocketProfileFor(profileHeight).map(([depth, inset]): readonly [number, number] => [
+      profileHeight - depth,
+      inset,
+    ]),
+    [-LID_COPLANAR_MARGIN, POCKET_INSET_BOT],
+  ];
+}
+
+export const POCKET_SECTIONS = pocketSectionsFor(PLATE_PROFILE_HEIGHT);
 
 /** `outlineAt` must return sections that share a vertex topology at every
  *  inset — a ruled loft can't bridge differing curve counts, which is why both
  *  callers size their sections through `safeSectionRect`. */
-function loftPocket(outlineAt: (inset: number) => Drawing): Shape3D {
-  const [first, ...rest] = POCKET_SECTIONS.map(
+function loftPocket(outlineAt: (inset: number) => Drawing, profileHeight: number): Shape3D {
+  const [first, ...rest] = pocketSectionsFor(profileHeight).map(
     ([z, inset]) => outlineAt(inset).sketchOnPlane('XY', z) as Sketch
   );
   return first.loftWith(rest, { ruled: true });
@@ -88,10 +87,14 @@ function loftPocket(outlineAt: (inset: number) => Drawing): Shape3D {
 
 /**
  * Build a single pocket cutter for one cell. Multi-section loft over
- * {@link POCKET_SECTIONS}, placed so the slab sits at Z ∈ [0, STACK_HEIGHT]
- * rather than the baseplate's Z ∈ [-BASEPLATE_HEIGHT, 0].
+ * {@link pocketSectionsFor}, placed so the slab sits at Z ∈ [0, grid height]
+ * rather than the baseplate's Z ∈ [-profile depth, 0].
  */
-function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D {
+function buildLidStackPocketCutter(
+  cellW_mm: number,
+  cellD_mm: number,
+  profileHeight: number
+): Shape3D {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
   return loftPocket((inset) => {
     const { width, depth, radius } = safeSectionRect(
@@ -100,7 +103,7 @@ function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D 
       cornerR - inset
     );
     return drawRoundedRectangle(width, depth, radius);
-  });
+  }, profileHeight);
 }
 
 /**
@@ -128,7 +131,7 @@ function buildStackLipCutter(inputs: LidInputs): Shape3D {
     return cellMask
       ? buildMaskDrawingAtInset(cellMask, { x: gridUnitMm, y: gridUnitMmY }, inset, radius)
       : drawRoundedRectangle(width, depth, radius);
-  });
+  }, plateProfileHeightMm(inputs.lowProfileBase));
 }
 
 /** The slice of {@link LidInputs} that locates a cell against the mask. */
@@ -166,11 +169,18 @@ export function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D
   // mate with the (equally non-square) sockets of a bin stacked on top.
   const pitch = { x: gridUnitMm, y: gridUnitMmY };
 
-  // 1. Slab — lid's outer footprint extruded UP by STACK_HEIGHT (the trimmed
-  //    baseplate's slab depth). `buildOutlineDrawing(inputs, 0)` gives the full
-  //    perimeter — rounded for plain bins, polygon for cellMask bins.
+  // 1. Slab — lid's outer footprint extruded UP by the grid height, a
+  //    half-clearance under the plate profile: a lid is the BIN's footprint,
+  //    the nominal cell offset inward by that much, and a pocket grid laid on
+  //    the nominal lattice overhangs it by the same. Trimming the overhang off a
+  //    45-degree face lowers the face's high point by exactly that amount.
+  //    `buildOutlineDrawing(inputs, 0)` gives the full perimeter — rounded for
+  //    plain bins, polygon for cellMask bins.
+  const profileHeight = plateProfileHeightMm(inputs.lowProfileBase);
   const slabSketch = buildOutlineDrawing(inputs, 0).sketchOnPlane('XY', 0) as Sketch;
-  let slab: Shape3D = scope.register(slabSketch.extrude(STACK_HEIGHT));
+  let slab: Shape3D = scope.register(
+    slabSketch.extrude(lidStackGridHeightMm(inputs.lowProfileBase))
+  );
 
   // 2. Pocket cutters. Lip-only cuts a single footprint-wide pocket,
   //    leaving just the perimeter lip. Otherwise one per filled cell:
@@ -189,7 +199,8 @@ export function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D
         if (!isLidCellFilled(inputs, cell)) return;
         const pocket = buildLidStackPocketCutter(
           cell.widthUnits * gridUnitMm,
-          cell.depthUnits * gridUnitMmY
+          cell.depthUnits * gridUnitMmY,
+          profileHeight
         );
         const positioned = scope.register(translate(pocket, [cell.centerX, cell.centerY, 0]));
         pocket.delete();

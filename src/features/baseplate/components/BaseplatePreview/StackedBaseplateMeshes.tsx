@@ -26,7 +26,7 @@ import {
   type StackMeshArrays,
 } from '../../utils/stackPrint';
 import { buildStackPreviewMeshes, type StackPreviewTower } from '../../utils/stackPreview';
-import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 
 const EMPTY_GEO = { vertices: null, normals: null, indices: null, edgeVertices: null } as const;
 const EMPTY_F32 = new Float32Array(0);
@@ -78,6 +78,7 @@ export function StackedBaseplateMeshes({
     gridShiftX,
     gridShiftY,
     baseplateParams,
+    lowProfileBase,
   } = useLayoutStore(
     useShallow((s) => ({
       drawerWidth: s.layout.drawer.width,
@@ -92,6 +93,7 @@ export function StackedBaseplateMeshes({
       gridShiftX: s.layout.drawer.gridShiftX ?? 0,
       gridShiftY: s.layout.drawer.gridShiftY ?? 0,
       baseplateParams: s.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+      lowProfileBase: s.layout.lowProfileBase,
     }))
   );
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
@@ -114,14 +116,15 @@ export function StackedBaseplateMeshes({
       undefined,
       gridUnitMmY,
       gridShiftX,
-      gridShiftY
+      gridShiftY,
+      lowProfileBase
     );
     const groups = stackGroupsFromTiling(
       tiling,
       fullParams,
       stack.copies ?? STACK_PRINT_DEFAULT_COPIES
     );
-    const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.BASEPLATE_HEIGHT, stack.gapMm);
+    const cap = stackHeightCap(maxPrintHeightMm, plateProfileHeightMm(lowProfileBase), stack.gapMm);
     const plan = planPhysicalStacks(groups, cap);
     const isSplit = tiling?.isSplit ?? false;
 
@@ -186,6 +189,7 @@ export function StackedBaseplateMeshes({
     fractionalEdgeY,
     gridShiftX,
     gridShiftY,
+    lowProfileBase,
     nozzleSizeMm,
     maxPrintHeightMm,
     tiling,

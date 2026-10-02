@@ -629,6 +629,8 @@ export function useBaseSection() {
       footLatticeLockedX,
       footLatticeLockedY,
       hasLightweight: base.lightweight,
+      // Set by the layout, never here: the panel only reports it.
+      lowProfile: base.lowProfile === true,
       lightweightMode: base.lightweightMode ?? DEFAULT_LIGHTWEIGHT_MODE,
       lipTip: resolveLipTip(base),
       undersideReliefUnblocks,

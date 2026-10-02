@@ -102,6 +102,7 @@ export function useBaseplateGeneration(): void {
     gridUnitMm,
     gridUnitMmY,
     magnetAnchor,
+    lowProfileBase,
     printBedSize,
     printBedDepth,
     fractionalEdgeX,
@@ -599,7 +600,8 @@ export function useBaseplateGeneration(): void {
           layoutState.layout.magnetAnchor,
           effectiveGridUnitMmY(layoutState.layout),
           layoutState.layout.drawer.gridShiftX ?? 0,
-          layoutState.layout.drawer.gridShiftY ?? 0
+          layoutState.layout.drawer.gridShiftY ?? 0,
+          layoutState.layout.lowProfileBase
         );
         const bedW = layoutState.layout.printBedSize;
         const bedD = layoutState.layout.printBedDepth ?? layoutState.layout.printBedSize;
@@ -662,7 +664,8 @@ export function useBaseplateGeneration(): void {
       magnetAnchor,
       gridUnitMmY,
       gridShiftX,
-      gridShiftY
+      gridShiftY,
+      lowProfileBase
     );
     runGeneration(params, printBedSize, printBedDepth ?? printBedSize);
     // `generationTriggers` carries the trigger-only params (connectorStyle,
@@ -676,6 +679,7 @@ export function useBaseplateGeneration(): void {
     gridUnitMm,
     gridUnitMmY,
     magnetAnchor,
+    lowProfileBase,
     printBedSize,
     printBedDepth,
     fractionalEdgeX,

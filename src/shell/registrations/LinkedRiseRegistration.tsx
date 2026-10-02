@@ -1,5 +1,5 @@
 import { registerLinkedExcessResolver } from '@/shared/utils/collision';
-import { linkedStackExcessUnits } from '@/shared/utils/heightUnits';
+import { linkedStackExcessUnits, stackJunctionMm } from '@/shared/utils/heightUnits';
 import { loadRegistry, subscribeToRegistry } from '@/features/bin-designer';
 import type { CustomBinRef } from '@/features/bin-designer';
 import { useLayoutStore } from '@/core/store/layout';
@@ -44,12 +44,25 @@ registerLinkedExcessResolver(
     if (bin.linkedDesignId === undefined) return 0;
     const ref = refs().get(bin.linkedDesignId);
     if (ref?.assembledRiseMm === undefined) return 0;
-    return linkedStackExcessUnits(bin.height, useLayoutStore.getState().layout.heightUnitMm, {
-      riseMm: ref.assembledRiseMm,
-      hasLip: ref.hasLip,
-    });
+    const { layout } = useLayoutStore.getState();
+    // Only a parametric bin is rebuilt on the layout's foot; an assembly or an
+    // imported mesh keeps the stock one.
+    const isBin = ref.kind === undefined || ref.kind === 'bin';
+    const low = layout.lowProfileBase === true && isBin;
+    return linkedStackExcessUnits(
+      bin.height,
+      layout.heightUnitMm,
+      {
+        riseMm: ref.assembledRiseMm - (low ? (ref.lowProfileRiseDeltaMm ?? 0) : 0),
+        hasLip: ref.hasLip,
+      },
+      stackJunctionMm(low)
+    );
   },
-  (): unknown => `${registryTick}:${useLayoutStore.getState().layout.heightUnitMm}`
+  (): unknown => {
+    const { layout } = useLayoutStore.getState();
+    return `${registryTick}:${layout.heightUnitMm}:${layout.lowProfileBase === true}`;
+  }
 );
 
 /**

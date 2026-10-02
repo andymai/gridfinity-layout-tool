@@ -15,7 +15,7 @@ import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { buildThreeMFPrintSettings, stlTo3MF } from '@/shared/generation/stlTo3mf';
 import { FORMAT_EXTENSIONS } from '@/shared/generation/exportUtils';
 import { isErr, getUserMessage } from '@/core/result';
-import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { STACK_PRINT_DEFAULT_COPIES } from '@/core/types';
 import type {
   DrawerOutline,
@@ -64,6 +64,8 @@ export interface BuildBaseplateExportInput {
   readonly magnetAnchor?: MagnetAnchor;
   readonly fractionalEdgeX: 'start' | 'end';
   readonly fractionalEdgeY: 'start' | 'end';
+  /** The layout's low-profile base. */
+  readonly lowProfileBase?: boolean;
   /** Manual grid shift within the perimeter (drawer.gridShiftX/Y). Default 0. */
   readonly gridShiftX?: number;
   readonly gridShiftY?: number;
@@ -170,6 +172,7 @@ export async function buildBaseplateExportPieces(
     gridUnitMm,
     gridUnitMmY,
     magnetAnchor,
+    lowProfileBase,
     fractionalEdgeX,
     fractionalEdgeY,
     printBedWidthMm,
@@ -199,7 +202,8 @@ export async function buildBaseplateExportPieces(
     magnetAnchor,
     gridUnitMmY,
     gridShiftX,
-    gridShiftY
+    gridShiftY,
+    lowProfileBase
   );
   const tiling = computeBaseplateTiling(previewParams, printBedWidthMm, printBedDepthMm);
 
@@ -216,7 +220,7 @@ export async function buildBaseplateExportPieces(
   const copies = Math.max(1, Math.floor(stack?.copies ?? STACK_PRINT_DEFAULT_COPIES));
   const stackCap = stackHeightCap(
     printSettings.maxPrintHeightMm,
-    GRIDFINITY_SPEC.BASEPLATE_HEIGHT,
+    plateProfileHeightMm(lowProfileBase),
     stack?.gapMm ?? 0.2
   );
 
@@ -236,7 +240,8 @@ export async function buildBaseplateExportPieces(
     magnetAnchor,
     gridUnitMmY,
     gridShiftX,
-    gridShiftY
+    gridShiftY,
+    lowProfileBase
   );
 
   const baseName = generateBaseplateFileName(toNamingParams(fullParams), format, fileNameConfig);

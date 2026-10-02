@@ -6,7 +6,13 @@ import {
   formatFilament,
 } from '@/features/bin-designer/utils/printEstimates';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
-import { DEFAULT_PRINT_SETTINGS, estimateStandardBinVolume } from '@/shared/printSettings';
+import {
+  DEFAULT_PRINT_SETTINGS,
+  estimateStandardBinVolume,
+  detachableFeetVolume,
+  LOW_PROFILE_DETACHABLE_FEET_SCALE,
+} from '@/shared/printSettings';
+import { footKind, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import type { BinParams } from '@/features/bin-designer/types';
 
 describe('printEstimates', () => {
@@ -956,6 +962,25 @@ describe('printEstimates', () => {
         }).volumeMm3;
         expect(detachable).toBeLessThan(integral);
       }
+    });
+
+    it('prices low-profile feet below standard ones', () => {
+      const detachable = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 3,
+        depth: 2,
+        height: 3,
+        base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' as const },
+      };
+      const low = { ...detachable, base: { ...detachable.base, lowProfile: true } };
+      const feet = detachableFeetVolume(
+        resolveDetachableFeet(detachable).placements.map(footKind),
+        detachable.gridUnitMm,
+        detachable.gridUnitMm
+      );
+      // Both estimates are rounded to the cubic millimetre.
+      const saved = estimatePrint(detachable).volumeMm3 - estimatePrint(low).volumeMm3;
+      expect(Math.abs(saved - feet * (1 - LOW_PROFILE_DETACHABLE_FEET_SCALE))).toBeLessThan(1);
     });
 
     it('is inert on a base with no feet to detach', () => {

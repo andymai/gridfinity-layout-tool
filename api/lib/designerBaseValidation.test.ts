@@ -20,3 +20,15 @@ describe('validateBase magnet press-fit options', () => {
     expect(validateBase({ ...base, magnetChamfer: 'yes' })).toContain('magnetChamfer');
   });
 });
+
+describe('validateBase low-profile flag', () => {
+  it('accepts the flag absent or boolean', () => {
+    expect(validateBase({ ...base, lowProfile: true })).toBeNull();
+    expect(validateBase({ ...base, lowProfile: false })).toBeNull();
+  });
+
+  it('rejects a non-boolean', () => {
+    expect(validateBase({ ...base, lowProfile: 1 })).toContain('lowProfile');
+    expect(validateBase({ ...base, lowProfile: 'yes' })).toContain('lowProfile');
+  });
+});

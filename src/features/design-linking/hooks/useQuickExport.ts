@@ -8,6 +8,8 @@
 import { useCallback, useState } from 'react';
 import type { DesignId } from '@/core/types';
 import { bridgeManager } from '@/shared/generation/bridge';
+import { withLowProfileBase } from '@/shared/generation/lowProfileBase';
+import { useLayoutStore } from '@/core/store/layout';
 import { generateFileName, loadDesign } from '@/features/bin-designer';
 import { assemblyDescriptor } from '@/shared/items/assembly/descriptor';
 import { useToastStore } from '@/core/store';
@@ -35,6 +37,8 @@ export function useQuickExport(): UseQuickExportReturn {
       if (isExporting) return;
 
       setIsExporting(true);
+      // Read before any await: the export must match the setting it began under.
+      const lowProfileBase = useLayoutStore.getState().layout.lowProfileBase;
 
       try {
         const designResult = await loadDesign(id);
@@ -57,7 +61,10 @@ export function useQuickExport(): UseQuickExportReturn {
         try {
           const exported = design.params
             ? {
-                data: (await bridge.exportBin(design.params, 'stl')).data,
+                // Exported from the layout, so the layout's foot profile applies.
+                data: (
+                  await bridge.exportBin(withLowProfileBase(design.params, lowProfileBase), 'stl')
+                ).data,
                 fileName: generateFileName(
                   design.params,
                   'stl',

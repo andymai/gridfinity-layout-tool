@@ -30,6 +30,8 @@ import {
   scalePrintTime,
   standardBinSolidComponents,
   lightweightBaseSaving,
+  lowProfileBaseSaving,
+  LOW_PROFILE_DETACHABLE_FEET_SCALE,
   integralFeetVolume,
   detachableFeetVolume,
   type PrintSettings,
@@ -213,6 +215,26 @@ function computeBinVolume(params: BinParams): number {
     );
   }
 
+  // A low-profile base cuts the vertical band out of feet that are solid,
+  // shelled or relieved, and each saves a different amount. Detachable feet
+  // are priced by their own kind below, scaled for the shorter foot there.
+  if (params.base.lowProfile === true && !isSocketlessBase(params.base.style) && !feetDetach) {
+    const relief =
+      params.base.lightweight || params.base.spacer
+        ? isUndersideRelief(params.base)
+          ? 'underside'
+          : 'interior'
+        : 'solid';
+    volume -= lowProfileBaseSaving(
+      params.width,
+      params.depth,
+      relief,
+      params.base.halfSockets,
+      params.gridUnitMm,
+      gridUnitMmY
+    );
+  }
+
   // Detachable feet: the socket's feet leave the bin and come back as separate
   // parts, so the base term loses its foot component and they are added back by
   // what each one actually is. A bar clipped against a cell edge and one centred
@@ -220,11 +242,9 @@ function computeBinVolume(params: BinParams): number {
   // alone would not do.
   if (feetDetach) {
     volume -= integralFeetVolume(params.width, params.depth, params.gridUnitMm, gridUnitMmY);
-    volume += detachableFeetVolume(
-      detachablePlacements.map(footKind),
-      params.gridUnitMm,
-      gridUnitMmY
-    );
+    volume +=
+      detachableFeetVolume(detachablePlacements.map(footKind), params.gridUnitMm, gridUnitMmY) *
+      (params.base.lowProfile === true ? LOW_PROFILE_DETACHABLE_FEET_SCALE : 1);
   }
 
   // A base-only bin IS feet + floor slab + an optional lip, which is exactly

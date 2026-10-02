@@ -61,7 +61,7 @@ export function validateBase(base: unknown): string | null {
   if (!isNumber(base.screwDiameter) || !inRange(base.screwDiameter, 1, 10)) {
     return 'base.screwDiameter must be 1-10';
   }
-  for (const key of ['magnetCrushRibs', 'magnetChamfer'] as const) {
+  for (const key of ['magnetCrushRibs', 'magnetChamfer', 'lowProfile'] as const) {
     if (base[key] !== undefined && !isBoolean(base[key])) {
       return `base.${key} must be boolean`;
     }

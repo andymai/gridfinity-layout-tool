@@ -22,7 +22,7 @@
 
 import {
   GRIDFINITY_SPEC as GRIDFINITY,
-  LID_STACK_GRID_HEIGHT_MM,
+  lidStackGridHeightMm,
 } from '@/shared/printSettings/gridfinityGeometry';
 import { baseFloorZ } from '@/features/bin-designer/utils/binDimensions';
 import {
@@ -43,7 +43,7 @@ import {
 import {
   baseplateFloorDepth,
   baseplateTotalHeight,
-  BASEPLATE_SEAT_DEPTH_MM,
+  baseplateSeatDepthMm,
   type BaseplateHeightParams,
 } from '@/shared/printSettings/baseplateHeight';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -107,6 +107,7 @@ export interface AssembledHeightSource {
     readonly stackingLip: boolean;
     readonly magnetDepth: number;
     readonly tile?: boolean;
+    readonly lowProfile?: boolean;
   };
   readonly lid: LidConfig;
   readonly cellMask?: CellMask;
@@ -188,7 +189,7 @@ export function assembledHeight(
   // The bin drops its base into the pockets, so only the solid floor under them
   // lifts it — zero for the common no-magnet, no-solid-floor plate.
   const plateBandMm = seatedOnPlate ? baseplateFloorDepth(plate) : 0;
-  const nestedMm = seatedOnPlate ? BASEPLATE_SEAT_DEPTH_MM : 0;
+  const nestedMm = seatedOnPlate ? baseplateSeatDepthMm(plate.lowProfileBase) : 0;
 
   // A tray's skirt is printed material below its floor, so it counts toward the
   // assembly's height. `extraHeightMm` is the whole point of the feature —
@@ -212,7 +213,8 @@ export function assembledHeight(
   // The stack grid is a LID_STACK_GRID_HEIGHT_MM slab above the lid's top face, whether it
   // is fused on or printed separately and glued. With nothing stacked on it, its
   // top is the assembly's highest point.
-  const gridMm = lidMm > 0 && params.lid.stackableTop ? LID_STACK_GRID_HEIGHT_MM : 0;
+  const gridMm =
+    lidMm > 0 && params.lid.stackableTop ? lidStackGridHeightMm(params.base.lowProfile) : 0;
 
   const segments: AssembledSegment[] = [];
   let z = 0;

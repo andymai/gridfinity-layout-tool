@@ -1,7 +1,7 @@
 /**
  * Pocket cutter geometry for baseplate cells.
  *
- * Each pocket is `POCKET_PROFILE` swept around the full grid cell: the bin
+ * Each pocket is the pocket profile (`pocketProfileFor`) swept around the full grid cell: the bin
  * socket's contour offset outward by CLEARANCE/2 perpendicular, which leaves
  * the seated foot 0.25mm of air on every face and lands it on the pocket floor
  * rather than on its own tapers.
@@ -15,7 +15,7 @@ import { drawRoundedRectangle, unwrap, clone } from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
 import {
   PLATE_PROFILE_HEIGHT,
-  POCKET_PROFILE,
+  pocketProfileFor,
   POCKET_INSET_BOT,
   pocketCornerRadius,
   COPLANAR_MARGIN,
@@ -28,9 +28,19 @@ function pocketCacheKey(
   cellW: number,
   cellD: number,
   throughCut: boolean,
-  belowSocketMm: number
+  belowSocketMm: number,
+  profileHeight: number
 ): string {
-  return buildCacheKey('v3', quantize(cellW), quantize(cellD), throughCut, quantize(belowSocketMm));
+  return buildCacheKey(
+    'v3',
+    quantize(cellW),
+    quantize(cellD),
+    throughCut,
+    quantize(belowSocketMm),
+    ...(quantize(profileHeight) !== quantize(PLATE_PROFILE_HEIGHT)
+      ? [`ph${quantize(profileHeight)}`]
+      : [])
+  );
 }
 
 function pocketSection(
@@ -51,7 +61,7 @@ function pocketSection(
 /**
  * Build a single pocket cutter at the origin using multi-section loft.
  *
- * Walks {@link POCKET_PROFILE} downward from Z=0 (the plate's top face), topped
+ * Walks the pocket profile downward from Z=0 (the plate's top face), topped
  * by an extension above the block that avoids coplanar boolean failures.
  *
  * When throughCut is true the cutter extends past the profile to clear the
@@ -68,17 +78,18 @@ function buildPocketCutter(
   cellW_mm: number,
   cellD_mm: number,
   throughCut: boolean,
-  belowSocketMm: number
+  belowSocketMm: number,
+  profileHeight: number
 ): Shape3D {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
   const s = (z: number, inset: number): Sketch =>
     pocketSection(cellW_mm, cellD_mm, cornerR, z, inset);
 
   const s0 = s(COPLANAR_MARGIN, 0);
-  const sections = POCKET_PROFILE.map(([depth, inset]) => s(-depth, inset));
+  const sections = pocketProfileFor(profileHeight).map(([depth, inset]) => s(-depth, inset));
 
   if (throughCut) {
-    sections.push(s(-PLATE_PROFILE_HEIGHT - belowSocketMm - COPLANAR_MARGIN, POCKET_INSET_BOT));
+    sections.push(s(-profileHeight - belowSocketMm - COPLANAR_MARGIN, POCKET_INSET_BOT));
   }
 
   return s0.loftWith(sections, { ruled: true });
@@ -92,14 +103,15 @@ export function getPocketTemplate(
   cellW_mm: number,
   cellD_mm: number,
   throughCut: boolean,
-  belowSocketMm = 0
+  belowSocketMm = 0,
+  profileHeight: number = PLATE_PROFILE_HEIGHT
 ): Shape3D {
-  const key = pocketCacheKey(cellW_mm, cellD_mm, throughCut, belowSocketMm);
+  const key = pocketCacheKey(cellW_mm, cellD_mm, throughCut, belowSocketMm, profileHeight);
   const cached = pocketTemplateCache.get(key);
   if (cached !== undefined) {
     return unwrap(clone(cached));
   }
-  const template = buildPocketCutter(cellW_mm, cellD_mm, throughCut, belowSocketMm);
+  const template = buildPocketCutter(cellW_mm, cellD_mm, throughCut, belowSocketMm, profileHeight);
   pocketTemplateCache.set(key, template);
   return unwrap(clone(template));
 }

@@ -30,7 +30,7 @@ import {
   type ScrewSite,
   type ScrewSlot,
 } from '@/shared/generation/screwHolePlan';
-import { PLATE_PROFILE_HEIGHT, COPLANAR_MARGIN, forEachCell } from './generatorTypes';
+import { COPLANAR_MARGIN, forEachCell } from './generatorTypes';
 import type { ForEachCellOptions, CellInfo } from './generatorTypes';
 import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import { resolvePitch, type GridPitch, type GridUnitInput } from './gridPitch';
@@ -216,12 +216,13 @@ export function planBaseplateScrewHoles(
 function buildScrewTemplate(
   params: ScrewHoleParams,
   site: ScrewSite,
-  totalHeightMm: number
+  totalHeightMm: number,
+  profileHeightMm: number
 ): Shape3D {
   const { entryBelowTop, recessDepth, throughDepth } = screwCutDepths(
     params,
     site,
-    PLATE_PROFILE_HEIGHT,
+    profileHeightMm,
     totalHeightMm
   );
   const entryZ = -entryBelowTop;
@@ -283,7 +284,8 @@ function buildScrewTemplate(
 export function buildScrewCutters(
   holes: readonly ResolvedScrewHole[],
   params: ScrewHoleParams,
-  totalHeightMm: number
+  totalHeightMm: number,
+  profileHeightMm: number
 ): Shape3D[] {
   if (holes.length === 0) return [];
 
@@ -294,7 +296,7 @@ export function buildScrewCutters(
     for (const hole of holes) {
       let template = templates.get(hole.site);
       if (template === undefined) {
-        template = buildScrewTemplate(params, hole.site, totalHeightMm);
+        template = buildScrewTemplate(params, hole.site, totalHeightMm, profileHeightMm);
         templates.set(hole.site, template);
       }
       const cloned = unwrap(clone(template));

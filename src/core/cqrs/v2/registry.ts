@@ -36,6 +36,7 @@ import { setPrintBedSize } from './domain/layout/setPrintBedSize';
 import { setGridUnitMm } from './domain/layout/setGridUnitMm';
 import { setGridUnitMmY } from './domain/layout/setGridUnitMmY';
 import { setMagnetAnchor } from './domain/layout/setMagnetAnchor';
+import { setLowProfileBase } from './domain/layout/setLowProfileBase';
 import { setHeightUnitMm } from './domain/layout/setHeightUnitMm';
 import { setBaseplateParams } from './domain/layout/setBaseplateParams';
 import { setActiveBaseplate } from './domain/layout/setActiveBaseplate';
@@ -92,6 +93,7 @@ export const v2HandlerOverrides: Record<string, V2HandlerFn> = {
   [setGridUnitMm.type]: wrapV2Handler(setGridUnitMm) as V2HandlerFn,
   [setGridUnitMmY.type]: wrapV2Handler(setGridUnitMmY) as V2HandlerFn,
   [setMagnetAnchor.type]: wrapV2Handler(setMagnetAnchor) as V2HandlerFn,
+  [setLowProfileBase.type]: wrapV2Handler(setLowProfileBase) as V2HandlerFn,
   [setHeightUnitMm.type]: wrapV2Handler(setHeightUnitMm) as V2HandlerFn,
   [setBaseplateParams.type]: wrapV2Handler(setBaseplateParams) as V2HandlerFn,
   [setActiveBaseplate.type]: wrapV2Handler(setActiveBaseplate) as V2HandlerFn,
@@ -134,6 +136,7 @@ export const v2Commands = [
   setGridUnitMm,
   setGridUnitMmY,
   setMagnetAnchor,
+  setLowProfileBase,
   setHeightUnitMm,
   setBaseplateParams,
   setActiveBaseplate,

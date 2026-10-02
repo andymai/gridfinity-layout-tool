@@ -1,5 +1,6 @@
 import { CONSTRAINTS } from '@/core/constants';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings';
+import { socketHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 
 /**
  * Exposed stacking lip on a printed bin, in mm — the part standing above the
@@ -19,7 +20,8 @@ export const LIP_PROTRUSION_MM = GRIDFINITY_SPEC.LIP_HEIGHT;
  * degrees, so the pair comes to rest when their full-width points meet — which
  * puts the upper bin's underside one base profile below the lip top. The base
  * reaches full width at the very top of its socket, so that profile is the
- * whole `SOCKET_HEIGHT`.
+ * whole socket depth — shorter on a low-profile foot, which therefore stacks
+ * that much higher.
  *
  * It is the base profile that sets this, never the lip: the base profile is the
  * taller of the two, so the bin above settles just past the lip's base plane
@@ -29,15 +31,23 @@ export const LIP_PROTRUSION_MM = GRIDFINITY_SPEC.LIP_HEIGHT;
  * Measured on the mated solids rather than trusted from this arithmetic —
  * `binStackSeating.kernel.test.ts`.
  */
-export const STACK_JUNCTION_MM = GRIDFINITY_SPEC.SOCKET_HEIGHT;
+export function stackJunctionMm(lowProfile: boolean | undefined): number {
+  return socketHeightMm(lowProfile);
+}
+
+export const STACK_JUNCTION_MM = stackJunctionMm(false);
 
 /**
  * Vertical pitch a stacked bin adds, in mm: its printed height less the depth
  * it sinks into the bin below. Slightly under the body height, because the bin
  * settles past the lip's base rather than onto it.
  */
-export function stackPitchMm(heightUnits: number, heightUnitMm: number): number {
-  return heightUnits * heightUnitMm + LIP_PROTRUSION_MM - STACK_JUNCTION_MM;
+export function stackPitchMm(
+  heightUnits: number,
+  heightUnitMm: number,
+  junctionMm: number = STACK_JUNCTION_MM
+): number {
+  return heightUnits * heightUnitMm + LIP_PROTRUSION_MM - junctionMm;
 }
 
 /**
@@ -45,9 +55,14 @@ export function stackPitchMm(heightUnits: number, heightUnitMm: number): number 
  * `count × pitch + the junction the topmost bin does not sink into`. A single
  * bin (count 1) returns its full printed height (`h·u + LIP_PROTRUSION_MM`).
  */
-export function stackedTotalMm(heightUnits: number, heightUnitMm: number, count: number): number {
+export function stackedTotalMm(
+  heightUnits: number,
+  heightUnitMm: number,
+  count: number,
+  junctionMm: number = STACK_JUNCTION_MM
+): number {
   if (count <= 0) return 0;
-  return count * stackPitchMm(heightUnits, heightUnitMm) + STACK_JUNCTION_MM;
+  return count * stackPitchMm(heightUnits, heightUnitMm, junctionMm) + junctionMm;
 }
 
 /**
@@ -62,13 +77,14 @@ export function stackedTotalMm(heightUnits: number, heightUnitMm: number, count:
 export function solveUnitsUnderCeiling(
   ceilingMm: number,
   heightUnitMm: number,
-  count: number
+  count: number,
+  junctionMm: number = STACK_JUNCTION_MM
 ): number | null {
   if (count <= 0 || heightUnitMm <= 0 || !Number.isFinite(ceilingMm)) return null;
   // Invert `stackedTotalMm`, then take the whole unit below it. The epsilon
   // absorbs binary error on an exact fit, so a ceiling of exactly 4 x 7mm + lip
   // reports 4u rather than 3u.
-  const bodyMm = (ceilingMm - STACK_JUNCTION_MM) / count - LIP_PROTRUSION_MM + STACK_JUNCTION_MM;
+  const bodyMm = (ceilingMm - junctionMm) / count - LIP_PROTRUSION_MM + junctionMm;
   const units = Math.floor(bodyMm / heightUnitMm + 1e-9);
   return units >= 1 ? units : null;
 }
@@ -97,11 +113,12 @@ const STACK_EXCESS_EPSILON_MM = 0.5;
 export function linkedStackExcessUnits(
   binHeightUnits: number,
   heightUnitMm: number,
-  linked: { riseMm: number; hasLip?: boolean } | undefined
+  linked: { riseMm: number; hasLip?: boolean } | undefined,
+  junctionMm: number = STACK_JUNCTION_MM
 ): number {
   if (linked === undefined || heightUnitMm <= 0 || !Number.isFinite(linked.riseMm)) return 0;
-  const linkedNetMm = linked.riseMm - (linked.hasLip !== false ? STACK_JUNCTION_MM : 0);
-  const excessMm = linkedNetMm - stackPitchMm(binHeightUnits, heightUnitMm);
+  const linkedNetMm = linked.riseMm - (linked.hasLip !== false ? junctionMm : 0);
+  const excessMm = linkedNetMm - stackPitchMm(binHeightUnits, heightUnitMm, junctionMm);
   return excessMm > STACK_EXCESS_EPSILON_MM ? excessMm / heightUnitMm : 0;
 }
 

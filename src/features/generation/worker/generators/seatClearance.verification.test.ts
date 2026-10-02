@@ -26,6 +26,13 @@ import {
   POCKET_PROFILE,
   PLATE_PROFILE_HEIGHT,
   SOCKET_HEIGHT,
+  SOCKET_BIG_TAPER,
+  SOCKET_SMALL_TAPER,
+  LOW_PROFILE_BAND_CUT_MM,
+  footProfileFor,
+  pocketProfileFor,
+  socketHeightMm,
+  plateProfileHeightMm,
   type TaperProfile,
 } from './generatorConstants';
 import { generateBaseplateDirect } from './baseplateDirectMesh';
@@ -60,14 +67,30 @@ const MATING_FACES = [
  * are parallel (asserted separately). Vertical faces differ by their radius; a
  * 45-degree face is the line `r - z = c`, whose offset projects by 1/sqrt(2).
  */
-function faceGap(pair: (typeof MATING_FACES)[number]): number {
+function faceGap(
+  pair: (typeof MATING_FACES)[number],
+  footBp: typeof foot = foot,
+  pocketBp: typeof pocket = pocket
+): number {
   const [fa, fb] = pair.foot;
   const [pa] = pair.pocket;
-  const vertical = foot[fa].r === foot[fb].r;
-  if (vertical) return pocket[pa].r - foot[fa].r;
-  const footC = foot[fa].r - foot[fa].z;
-  const pocketC = pocket[pa].r - pocket[pa].z;
+  const vertical = footBp[fa].r === footBp[fb].r;
+  if (vertical) return pocketBp[pa].r - footBp[fa].r;
+  const footC = footBp[fa].r - footBp[fa].z;
+  const pocketC = pocketBp[pa].r - pocketBp[pa].z;
   return (pocketC - footC) / Math.SQRT2;
+}
+
+/** Half-width of a profile's breakpoints at height `z`, interpolated. */
+function radiusAt(bp: typeof foot, z: number): number {
+  for (let i = 0; i + 1 < bp.length; i++) {
+    const top = bp[i];
+    const bot = bp[i + 1];
+    if (z <= top.z + 1e-9 && z >= bot.z - 1e-9) {
+      return bot.r + ((z - bot.z) / (top.z - bot.z)) * (top.r - bot.r);
+    }
+  }
+  return NaN;
 }
 
 describe('bin foot / baseplate pocket clearance', () => {
@@ -212,5 +235,84 @@ describe('lid stack grid / bin foot clearance', () => {
 
   it('stops short of the foot, so the foot lands on the grid floor', () => {
     expect(LID_STACK_GRID_HEIGHT_MM).toBeLessThan(SOCKET_HEIGHT);
+  });
+});
+
+/**
+ * The low profile takes `LOW_PROFILE_BAND_CUT_MM` out of the vertical band of
+ * the foot and the pocket alike. Its whole case for honouring the spec rests on
+ * two claims these pin: a low foot mates a low pocket exactly as a standard
+ * pair mates, and a STOCK foot standing in a low pocket still bears on some of
+ * the pocket's vertical wall. Cut from the bottom instead and that wall is gone,
+ * and the stock bin rattles.
+ */
+describe('low-profile foot / pocket clearance', () => {
+  const lowFoot = breakpoints(
+    footProfileFor(socketHeightMm(true)),
+    socketHeightMm(true),
+    SIZE - CLEARANCE
+  );
+  const lowPocket = breakpoints(
+    pocketProfileFor(plateProfileHeightMm(true)),
+    plateProfileHeightMm(true),
+    SIZE
+  );
+
+  it('mates a low foot to a low pocket with the standard clearance', () => {
+    for (const pair of MATING_FACES) {
+      expect(faceGap(pair, lowFoot, lowPocket), pair.name).toBeCloseTo(CLEARANCE / 2, 2);
+    }
+  });
+
+  it('cuts the vertical band and leaves both tapers at spec size', () => {
+    expect(lowFoot[0].z - lowFoot[1].z).toBeCloseTo(SOCKET_BIG_TAPER, 6);
+    expect(lowFoot[2].z - lowFoot[3].z).toBeCloseTo(SOCKET_SMALL_TAPER, 6);
+    expect(foot[1].z - foot[2].z - (lowFoot[1].z - lowFoot[2].z)).toBeCloseTo(
+      LOW_PROFILE_BAND_CUT_MM,
+      6
+    );
+  });
+
+  it('leaves a stock foot 0.6mm of the low pocket wall to bear on', () => {
+    // Both rest on the same floor. Where the stock foot's vertical band and the
+    // low pocket's overlap, the two sit the standard clearance apart.
+    const overlap = Math.min(foot[1].z, lowPocket[1].z) - Math.max(foot[2].z, lowPocket[2].z);
+    expect(overlap).toBeCloseTo(0.6, 6);
+    expect(lowPocket[1].r - foot[1].r).toBeCloseTo(CLEARANCE / 2, 6);
+  });
+
+  it('never narrows the low pocket into a stock foot', () => {
+    for (let z = 0; z <= plateProfileHeightMm(true); z += 0.05) {
+      expect(radiusAt(lowPocket, z) - radiusAt(foot, z), `z=${z.toFixed(2)}`).toBeGreaterThan(0);
+    }
+  });
+
+  it('emits the low profile it declares', () => {
+    const plate = generateBaseplateDirect(
+      {
+        width: 1,
+        depth: 1,
+        gridUnitMm: SIZE,
+        magnetHoles: false,
+        magnetDiameter: 6.5,
+        magnetDepth: 2.4,
+        paddingLeft: 0,
+        paddingRight: 0,
+        paddingFront: 0,
+        paddingBack: 0,
+        fractionalEdgeX: 'end',
+        fractionalEdgeY: 'end',
+        lightweight: false,
+        lowProfileBase: true,
+      },
+      () => {}
+    );
+    const levels = new Set<number>();
+    for (let i = 2; i < plate.vertices.length; i += 3) {
+      levels.add(+plate.vertices[i].toFixed(3));
+    }
+    for (const { z } of lowPocket) {
+      expect([...levels], `pocket breakpoint z=${z}`).toContain(+z.toFixed(3));
+    }
   });
 });

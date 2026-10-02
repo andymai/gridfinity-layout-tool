@@ -22,7 +22,7 @@ import {
   KNIFE_REST_DEFAULT_GAP_MM,
   KNIFE_REST_GROOVE_DEPTH_MM,
 } from '@/shared/types/bin';
-import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { GRIDFINITY_SPEC, socketHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import type { KnifeSlotExit } from './lipGapPlan';
 import { knifeSlotWallExits } from './lipGapPlan';
 import { labelTabInteriorDims } from './labelTabPlan';
@@ -84,7 +84,7 @@ export function planKnifeRest(params: BinParams): KnifeRestPlan | null {
   const style = knifeRestStyle(rest);
   const blockTop = knifeBlockTopZMm(params);
   const grooveDepth = rest.grooveDepthMm ?? KNIFE_REST_GROOVE_DEPTH_MM;
-  const minSaddle = GRIDFINITY_SPEC.SOCKET_HEIGHT + KNIFE_REST_MIN_FLOOR_MM;
+  const minSaddle = socketHeightMm(params.base.lowProfile) + KNIFE_REST_MIN_FLOOR_MM;
   const saddles = onSide.map((e) =>
     Math.max(minSaddle, Math.min(knifeRestSaddleZMm(blockTop, e.knife), blockTop))
   );
