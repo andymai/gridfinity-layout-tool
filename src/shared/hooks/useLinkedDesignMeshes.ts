@@ -33,7 +33,9 @@ import {
 } from '@/shared/generation/meshPersistence';
 import { bridgeManager, getActiveKernel } from '@/shared/generation/bridge';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
+import { withLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { useSettingsStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store/layout';
 import type { MeshData } from '@/shared/types/generation';
 import type { GridfinityItem } from '@/shared/types/item';
 
@@ -119,7 +121,8 @@ function stripLabelPlates(mesh: MeshData): MeshData {
 async function resolveDesignMesh(
   design: SavedDesign,
   sig: string,
-  nozzleSizeMm: number
+  nozzleSizeMm: number,
+  lowProfileBase: boolean
 ): Promise<LinkedDesignMesh | null> {
   const structure = design.structure;
   if (structure?.kind === 'importedMesh' && design.envelope) {
@@ -167,7 +170,8 @@ async function resolveDesignMesh(
 
   // Nozzle-merged (transient) so a socket bin's pocket matches the live print
   // setting and shares the same cache key the designer preview persists under.
-  const genParams = withSocketNozzle(params, nozzleSizeMm);
+  // The drawer decides the foot, whatever profile the design was saved with.
+  const genParams = withLowProfileBase(withSocketNozzle(params, nozzleSizeMm), lowProfileBase);
   // Kernel-namespaced: this reader returns a hit and stops, with no regeneration
   // behind it, so a cross-engine hit would survive until LRU eviction.
   const persistKey = binMeshCacheKey(genParams, getActiveKernel());
@@ -198,6 +202,7 @@ function enqueueResolve(
   id: DesignId,
   key: string,
   nozzleSizeMm: number,
+  lowProfileBase: boolean,
   onSettled: () => void
 ): void {
   if (inFlight.has(key)) return;
@@ -206,7 +211,7 @@ function enqueueResolve(
     try {
       const designResult = await loadDesign(id);
       const entry = isOk(designResult)
-        ? await resolveDesignMesh(designResult.value, key, nozzleSizeMm)
+        ? await resolveDesignMesh(designResult.value, key, nozzleSizeMm, lowProfileBase)
         : null;
       setCachedMesh(key, entry);
     } catch {
@@ -232,6 +237,7 @@ export function useLinkedDesignMeshes(bins: Bin[]): Map<DesignId, LinkedDesignMe
   // new pocket clearance. Non-socket designs re-resolve too but hit the persisted
   // mesh cache (their key is nozzle-invariant), so it stays cheap.
   const nozzleSizeMm = useSettingsStore((state) => state.settings.printSettings.nozzleSizeMm);
+  const lowProfileBase = useLayoutStore((state) => state.layout.lowProfileBase === true);
 
   const linkedRefs = useMemo(() => {
     const registryById = new Map(registry.map((ref) => [ref.id, ref]));
@@ -242,10 +248,13 @@ export function useLinkedDesignMeshes(bins: Bin[]): Map<DesignId, LinkedDesignMe
       // Quantize the nozzle so float noise (e.g. 0.6000000000000001) can't
       // fragment the cache key into avoidable misses.
       if (ref)
-        refs.set(bin.linkedDesignId, `${ref.id}:${ref.updatedAt}:n${nozzleSizeMm.toFixed(3)}`);
+        refs.set(
+          bin.linkedDesignId,
+          `${ref.id}:${ref.updatedAt}:n${nozzleSizeMm.toFixed(3)}${lowProfileBase ? ':lp' : ''}`
+        );
     }
     return refs;
-  }, [bins, registry, nozzleSizeMm]);
+  }, [bins, registry, nozzleSizeMm, lowProfileBase]);
 
   useEffect(() => {
     let cancelled = false;
@@ -253,12 +262,12 @@ export function useLinkedDesignMeshes(bins: Bin[]): Map<DesignId, LinkedDesignMe
       if (!cancelled) setLoadTick((tick) => tick + 1);
     };
     for (const [id, key] of linkedRefs) {
-      if (!meshCache.has(key)) enqueueResolve(id, key, nozzleSizeMm, onSettled);
+      if (!meshCache.has(key)) enqueueResolve(id, key, nozzleSizeMm, lowProfileBase, onSettled);
     }
     return () => {
       cancelled = true;
     };
-  }, [linkedRefs, nozzleSizeMm]);
+  }, [linkedRefs, nozzleSizeMm, lowProfileBase]);
 
   return useMemo(() => {
     // loadTick re-runs this memo when async resolutions land in the cache

@@ -23,7 +23,7 @@ import type { ResolvedBaseplateParams, MarginPiece } from '@/shared/types/bin';
 import { isMarginSeamStyle } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import {
-  PLATE_PROFILE_HEIGHT,
+  plateProfileHeightMm,
   baseplateFloorDepth,
   frameCells,
   toIndexedMeshData,
@@ -58,7 +58,7 @@ function railDims(params: ResolvedBaseplateParams, margin: MarginPiece): RailDim
   return {
     railW: horizontal ? margin.lengthMm : margin.bandThicknessMm,
     railD: horizontal ? margin.bandThicknessMm : margin.lengthMm,
-    totalHeight: PLATE_PROFILE_HEIGHT + floorDepth,
+    totalHeight: plateProfileHeightMm(params.lowProfileBase) + floorDepth,
   };
 }
 
@@ -136,7 +136,13 @@ function buildMarginSolid(params: ResolvedBaseplateParams, margin: MarginPiece):
       if (Math.abs(lx) > halfW + 1e-6 || Math.abs(ly) > halfD + 1e-6) continue;
       const cellW = cell.widthUnits * params.gridUnitMm;
       const cellD = cell.depthUnits * params.gridUnitMm;
-      const pocket = getPocketTemplate(cellW, cellD, throughCut, floorDepth);
+      const pocket = getPocketTemplate(
+        cellW,
+        cellD,
+        throughCut,
+        floorDepth,
+        plateProfileHeightMm(params.lowProfileBase)
+      );
       pockets.push(translate(pocket, [lx, ly, 0]));
       pocket.delete();
     }

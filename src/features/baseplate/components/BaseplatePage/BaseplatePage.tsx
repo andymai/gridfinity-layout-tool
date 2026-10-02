@@ -37,7 +37,7 @@ import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { generateBaseplateFileName, toNamingParams } from '../../utils/fileNaming';
 import { buildFullParams } from '../../utils/buildFullParams';
 import { stackGroupsFromTiling, planPhysicalStacks, stackHeightCap } from '../../utils/stackPrint';
-import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { STACK_PRINT_DEFAULT_GAP_MM, STACK_PRINT_DEFAULT_COPIES } from '@/core/types';
 import { BaseplatePanel } from '../BaseplatePanel/BaseplatePanel';
 import { BaseplatePreview } from '../BaseplatePreview/BaseplatePreview';
@@ -74,6 +74,7 @@ export function BaseplatePage() {
     gridUnitMm,
     gridUnitMmY,
     magnetAnchor,
+    lowProfileBase,
     fractionalEdgeX,
     fractionalEdgeY,
     gridShiftX,
@@ -88,6 +89,7 @@ export function BaseplatePage() {
       gridUnitMm: state.layout.gridUnitMm,
       gridUnitMmY: effectiveGridUnitMmY(state.layout),
       magnetAnchor: state.layout.magnetAnchor,
+      lowProfileBase: state.layout.lowProfileBase,
       fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
       gridShiftX: state.layout.drawer.gridShiftX ?? 0,
@@ -158,7 +160,8 @@ export function BaseplatePage() {
         magnetAnchor,
         gridUnitMmY,
         gridShiftX,
-        gridShiftY
+        gridShiftY,
+        lowProfileBase
       ),
     [
       baseplateParams,
@@ -168,6 +171,7 @@ export function BaseplatePage() {
       gridUnitMm,
       gridUnitMmY,
       magnetAnchor,
+      lowProfileBase,
       fractionalEdgeX,
       fractionalEdgeY,
       gridShiftX,
@@ -190,7 +194,11 @@ export function BaseplatePage() {
   const stackPlan = useMemo(() => {
     if (!stackEnabled || !tiling) return [];
     const groups = stackGroupsFromTiling(tiling, fullParams, stackCopies);
-    const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.BASEPLATE_HEIGHT, stackGapMm);
+    const cap = stackHeightCap(
+      maxPrintHeightMm,
+      plateProfileHeightMm(fullParams.lowProfileBase),
+      stackGapMm
+    );
     return planPhysicalStacks(groups, cap);
   }, [stackEnabled, tiling, fullParams, maxPrintHeightMm, stackGapMm, stackCopies]);
   const stackFileCount = stackPlan.length;

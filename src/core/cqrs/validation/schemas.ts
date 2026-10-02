@@ -279,6 +279,9 @@ const layoutSetGridUnitMmYSchema = z.object({ mm: positiveMm.nullable() });
 /** layout.setMagnetAnchor */
 const layoutSetMagnetAnchorSchema = z.object({ anchor: z.enum(['edge', 'center']) });
 
+/** layout.setLowProfileBase */
+const layoutSetLowProfileBaseSchema = z.object({ enabled: z.boolean() });
+
 /** layout.setHeightUnitMm */
 const layoutSetHeightUnitMmSchema = z.object({ mm: positiveMm });
 
@@ -398,6 +401,7 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
   'layout.setGridUnitMm': layoutSetGridUnitMmSchema,
   'layout.setGridUnitMmY': layoutSetGridUnitMmYSchema,
   'layout.setMagnetAnchor': layoutSetMagnetAnchorSchema,
+  'layout.setLowProfileBase': layoutSetLowProfileBaseSchema,
   'layout.setHeightUnitMm': layoutSetHeightUnitMmSchema,
   'layout.setBaseplateParams': layoutSetBaseplateParamsSchema,
   'layout.setActiveBaseplate': layoutSetActiveBaseplateSchema,

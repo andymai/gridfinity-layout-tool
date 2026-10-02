@@ -14,7 +14,7 @@
  * keeping crisp creases at arc→flat transitions and at each profile break.
  */
 
-import { POCKET_INSET_BOT, POCKET_PROFILE, pocketCornerRadius } from './generatorTypes';
+import { POCKET_INSET_BOT, pocketProfileFor, pocketCornerRadius } from './generatorTypes';
 import type { MeshBuilder } from './directMeshBuilder';
 import { CORNER_SEGMENTS } from './directMeshBuilder';
 import { roundedRectPoints } from './directMeshShapes';
@@ -36,14 +36,15 @@ export function addPocketWalls(
   cellW_mm: number,
   cellD_mm: number,
   totalHeight: number,
-  floorDepth: number
+  floorDepth: number,
+  profileHeight: number
 ): void {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
 
   // One ring per profile breakpoint. Collapsing these to just the opening and
   // the floor renders the pocket as a plain cone — no vertical band, no
   // 45-degree seat — which is the shape a bin cannot drop into.
-  const rings = POCKET_PROFILE.map(([depth, inset]) => ({
+  const rings = pocketProfileFor(profileHeight).map(([depth, inset]) => ({
     z: totalHeight - depth,
     pts: roundedRectPoints(
       Math.max(cellW_mm - 2 * inset, MIN_SECTION_MM),

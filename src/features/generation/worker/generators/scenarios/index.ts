@@ -66,6 +66,7 @@ import { openSides } from './openSides';
 import { cutoutRepeatOverlap } from './cutoutRepeatOverlap';
 import { cutoutLean } from './cutoutLean';
 import { variantOverrides } from './variantOverrides';
+import { lowProfile } from './lowProfile';
 
 export type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
@@ -131,4 +132,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...floorRaise,
   ...interiorFillet,
   ...interiorFilletScoops,
+  ...lowProfile,
 ];

@@ -14,7 +14,7 @@ import { useEffect, useMemo } from 'react';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useShallow } from 'zustand/react/shallow';
-import { GRIDFINITY_SPEC, MAGNET_FLOOR } from '@/shared/printSettings/gridfinityGeometry';
+import { MAGNET_FLOOR, plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { getAccentHex } from '@/shared/utils/color';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
@@ -234,6 +234,7 @@ export function ConnectorKeyMeshes() {
     fractionalEdgeX,
     fractionalEdgeY,
     baseplateParams,
+    lowProfileBase,
   } = useLayoutStore(
     useShallow((state) => ({
       drawerWidth: state.layout.drawer.width,
@@ -242,6 +243,7 @@ export function ConnectorKeyMeshes() {
       fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
       baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+      lowProfileBase: state.layout.lowProfileBase,
     }))
   );
 
@@ -275,13 +277,12 @@ export function ConnectorKeyMeshes() {
   );
 
   const totalHeight =
-    GRIDFINITY_SPEC.BASEPLATE_HEIGHT +
+    plateProfileHeightMm(lowProfileBase) +
     (fullParams.magnetHoles ? MAGNET_FLOOR + fullParams.magnetDepth : 0);
 
   const isSnapClip = fullParams.connectorStyle === 'snapClip';
   // On a slab too thin to flex, the worker skips snap pockets — so the preview
-  // must not draw a clip that wouldn't exist. (Unreachable at standard socket
-  // heights; a guard against future thinner-base options.)
+  // must not draw a clip that wouldn't exist.
   const snapViable = !isSnapClip || snapClipLevels(totalHeight, 0, nozzleSizeMm).viable;
   // Prefer the worker-meshed clip (the exact socket-relieved part). Until BREP
   // supplies it, fall back to the procedural draft clip so the seat isn't empty.

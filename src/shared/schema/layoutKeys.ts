@@ -34,6 +34,7 @@ export const LAYOUT_KEYS = [
   'gridUnitMmY',
   'heightUnitMm',
   'magnetAnchor',
+  'lowProfileBase',
   'categories',
   'layers',
   'bins',

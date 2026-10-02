@@ -22,7 +22,6 @@
 import type { ScrewHoleParams } from '@/core/types/baseplate';
 import type { ScrewSite } from '@/shared/generation/screwHolePlan';
 import { resolveScrewHeadDiameter, screwCutDepths } from '@/shared/generation/screwHolePlan';
-import { PLATE_PROFILE_HEIGHT } from './generatorTypes';
 import type { MeshBuilder } from './directMeshBuilder';
 import { CANCEL_EPSILON, CIRCLE_SEGMENTS } from './directMeshBuilder';
 import { circlePoints } from './directMeshShapes';
@@ -113,12 +112,13 @@ export function addScrewHoleAt(
   sy: number,
   site: ScrewSite,
   params: ScrewHoleParams,
-  totalHeightMm: number
+  totalHeightMm: number,
+  profileHeightMm: number
 ): void {
   const { entryBelowTop, recessDepth, throughDepth } = screwCutDepths(
     params,
     site,
-    PLATE_PROFILE_HEIGHT,
+    profileHeightMm,
     totalHeightMm
   );
   if (throughDepth <= 0) return;

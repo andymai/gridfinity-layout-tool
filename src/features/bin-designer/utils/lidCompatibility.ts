@@ -23,6 +23,7 @@
  */
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { socketHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { hasAnyPatternedWall } from '@/shared/utils/wallPatternSides';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
@@ -159,7 +160,7 @@ const MAGNET_BOSS_WALL = 1.0;
  * relative to this height, not the total bin height.
  */
 function computeInteriorHeight(params: BinParams): number {
-  return params.height * params.heightUnitMm - GRIDFINITY.SOCKET_HEIGHT;
+  return params.height * params.heightUnitMm - socketHeightMm(params.base.lowProfile);
 }
 
 /**

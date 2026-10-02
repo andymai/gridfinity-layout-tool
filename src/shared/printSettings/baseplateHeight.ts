@@ -11,7 +11,7 @@
  */
 
 import { SOLID_FLOOR_DEFAULT_MM } from '@/core/baseplateDefaults';
-import { GRIDFINITY_SPEC, MAGNET_FLOOR } from './gridfinityGeometry';
+import { MAGNET_FLOOR, plateProfileHeightMm } from './gridfinityGeometry';
 
 /** The subset of baseplate params that determines how tall the plate prints. */
 export interface BaseplateHeightParams {
@@ -26,6 +26,7 @@ export interface BaseplateHeightParams {
    * on one slab height or the assembly is stepped.
    */
   readonly screwPadThicknessMm?: number;
+  readonly lowProfileBase?: boolean;
 }
 
 /**
@@ -66,12 +67,12 @@ export function baseplateFloorDepthBeforeScrews(params: BaseplateHeightParams): 
  * solid material sits under it.
  *
  * NB this is the plate's PRINTED height, not what it contributes to an assembled
- * stack. A seated bin's foot drops the full {@link GRIDFINITY_SPEC.BASEPLATE_HEIGHT}
- * into the pocket, so the bin rises by {@link baseplateFloorDepth} plus the
- * 0.1mm its own base profile stands taller than the pocket receiving it.
+ * stack. A seated bin's foot drops the pocket's full profile depth into it, so
+ * the bin rises by {@link baseplateFloorDepth} plus the 0.1mm its own base
+ * profile stands taller than the pocket receiving it.
  */
 export function baseplateTotalHeight(params: BaseplateHeightParams): number {
-  return GRIDFINITY_SPEC.BASEPLATE_HEIGHT + baseplateFloorDepth(params);
+  return plateProfileHeightMm(params.lowProfileBase) + baseplateFloorDepth(params);
 }
 
 /**
@@ -79,4 +80,8 @@ export function baseplateTotalHeight(params: BaseplateHeightParams): number {
  * full depth, since the foot lands on the pocket floor rather than wedging on
  * its tapers.
  */
-export const BASEPLATE_SEAT_DEPTH_MM = GRIDFINITY_SPEC.BASEPLATE_HEIGHT;
+export function baseplateSeatDepthMm(lowProfile: boolean | undefined): number {
+  return plateProfileHeightMm(lowProfile);
+}
+
+export const BASEPLATE_SEAT_DEPTH_MM = baseplateSeatDepthMm(false);

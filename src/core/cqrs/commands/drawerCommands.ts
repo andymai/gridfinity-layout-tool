@@ -48,6 +48,11 @@ export type SetMagnetAnchorCommand = BaseCommand<
   { readonly anchor: 'edge' | 'center' }
 >;
 
+export type SetLowProfileBaseCommand = BaseCommand<
+  'layout.setLowProfileBase',
+  { readonly enabled: boolean }
+>;
+
 export type SetHeightUnitMmCommand = BaseCommand<'layout.setHeightUnitMm', { readonly mm: number }>;
 
 export type SetBaseplateParamsCommand = BaseCommand<
@@ -68,6 +73,7 @@ export type DrawerCommand =
   | SetGridUnitMmCommand
   | SetGridUnitMmYCommand
   | SetMagnetAnchorCommand
+  | SetLowProfileBaseCommand
   | SetHeightUnitMmCommand
   | SetBaseplateParamsCommand
   | SetActiveBaseplateCommand;

@@ -77,6 +77,12 @@ export interface BinDimensions {
    * rather than re-deriving it, so a third kind of underside cannot desync them.
    */
   readonly baseOffsetZ: number;
+  /**
+   * Depth of this bin's Gridfinity foot, standard or low profile, whether or
+   * not the base actually has one. Socket builders read it; anything asking
+   * where the body sits reads {@link baseOffsetZ}.
+   */
+  readonly socketHeight: number;
   readonly halfSockets: boolean;
   /**
    * The foot layout the base builds, after the user's half-socket toggle and

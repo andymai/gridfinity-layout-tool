@@ -121,11 +121,18 @@ function buildSplitMagnetCutters(
   groups: { readonly chamfered: Array<[number, number]>; readonly plain: Array<[number, number]> },
   magnetRadius: number,
   magnetDepth: number,
-  style: MagnetHoleStyle
+  style: MagnetHoleStyle,
+  profileHeight: number
 ): Shape3D[] {
   return [
-    ...buildMagnetCutters(groups.chamfered, magnetRadius, magnetDepth, style),
-    ...buildMagnetCutters(groups.plain, magnetRadius, magnetDepth, { ...style, chamfer: false }),
+    ...buildMagnetCutters(groups.chamfered, magnetRadius, magnetDepth, style, profileHeight),
+    ...buildMagnetCutters(
+      groups.plain,
+      magnetRadius,
+      magnetDepth,
+      { ...style, chamfer: false },
+      profileHeight
+    ),
   ];
 }
 
@@ -134,13 +141,14 @@ function buildMagnetCutters(
   positions: ReadonlyArray<readonly [number, number]>,
   magnetRadius: number,
   magnetDepth: number,
-  style: MagnetHoleStyle
+  style: MagnetHoleStyle,
+  profileHeight: number
 ): Shape3D[] {
   if (positions.length === 0) return [];
   // Cutter starts above the pocket floor (COPLANAR_MARGIN avoids coplanar with
-  // pocket bottom at Z=-PLATE_PROFILE_HEIGHT) and cuts downward by magnetDepth.
+  // pocket bottom at Z=-profileHeight) and cuts downward by magnetDepth.
   // Leaves MAGNET_FLOOR of solid material at the bottom of each hole.
-  const cutterZ = -PLATE_PROFILE_HEIGHT + COPLANAR_MARGIN;
+  const cutterZ = -profileHeight + COPLANAR_MARGIN;
   const cutterDepth = magnetDepth + COPLANAR_MARGIN;
   const atOrigin = buildMagnetHoleCutter({
     radius: magnetRadius,
@@ -178,7 +186,8 @@ export function buildMagnetHoles(
   cellOpts?: ForEachCellOptions,
   cellFilter?: (cell: CellInfo) => boolean,
   anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
-  style: MagnetHoleStyle = PLAIN_MAGNET_HOLE
+  style: MagnetHoleStyle = PLAIN_MAGNET_HOLE,
+  profileHeight: number = PLATE_PROFILE_HEIGHT
 ): Shape3D[] {
   const { x: pitchX, y: pitchY } = resolvePitch(cellOpts?.gridUnitMm);
   const groups = { chamfered: [] as Array<[number, number]>, plain: [] as Array<[number, number]> };
@@ -194,7 +203,7 @@ export function buildMagnetHoles(
     },
     cellOpts
   );
-  return buildSplitMagnetCutters(groups, magnetRadius, magnetDepth, style);
+  return buildSplitMagnetCutters(groups, magnetRadius, magnetDepth, style, profileHeight);
 }
 
 /**
@@ -312,7 +321,8 @@ export function buildPartialCellMagnetHoles(
   magnetDepth: number,
   gridUnitMm: GridUnitInput,
   anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
-  style: MagnetHoleStyle = PLAIN_MAGNET_HOLE
+  style: MagnetHoleStyle = PLAIN_MAGNET_HOLE,
+  profileHeight: number = PLATE_PROFILE_HEIGHT
 ): Shape3D[] {
   // `x` scales width, `y` scales depth (equal for a square grid).
   const { x: pitchX, y: pitchY } = resolvePitch(gridUnitMm);
@@ -320,5 +330,5 @@ export function buildPartialCellMagnetHoles(
   for (const cell of cells) {
     splitByChamferFit(cell, magnetRadius, pitchX, pitchY, anchor, style, groups);
   }
-  return buildSplitMagnetCutters(groups, magnetRadius, magnetDepth, style);
+  return buildSplitMagnetCutters(groups, magnetRadius, magnetDepth, style, profileHeight);
 }

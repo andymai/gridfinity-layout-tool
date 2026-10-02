@@ -629,6 +629,12 @@ export interface ResolvedBaseplateParams {
    * `@/core/types`. Layout-scoped so the plate matches its bins/lids.
    */
   readonly magnetAnchor?: MagnetAnchor;
+  /**
+   * Low-profile pockets, `LOW_PROFILE_BAND_CUT_MM` shallower out of the vertical
+   * band. Layout-scoped like {@link magnetAnchor} so the plate matches the bins
+   * built for it. Absent ⇒ standard.
+   */
+  readonly lowProfileBase?: boolean;
   readonly paddingLeft: number;
   readonly paddingRight: number;
   readonly paddingFront: number;

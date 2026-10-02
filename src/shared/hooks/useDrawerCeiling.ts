@@ -22,12 +22,13 @@ import {
 } from '@/shared/utils/drawerCeiling';
 
 export function useDrawerCeiling(): DrawerCeilingFit | null {
-  const { bins, layers, heightUnitMm, plate, ceilingMm } = useLayoutStore(
+  const { bins, layers, heightUnitMm, storedPlate, lowProfileBase, ceilingMm } = useLayoutStore(
     useShallow((s) => ({
       bins: s.layout.bins,
       layers: s.layout.layers,
       heightUnitMm: s.layout.heightUnitMm,
-      plate: s.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+      storedPlate: s.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+      lowProfileBase: s.layout.lowProfileBase === true,
       ceilingMm: s.layout.drawer.measuredMm?.height,
     }))
   );
@@ -48,6 +49,7 @@ export function useDrawerCeiling(): DrawerCeilingFit | null {
       };
     };
 
+    const plate = lowProfileBase ? { ...storedPlate, lowProfileBase } : storedPlate;
     return drawerCeilingFit({ bins, layers, heightUnitMm, plate, ceilingMm, linkedRise });
-  }, [bins, layers, heightUnitMm, plate, ceilingMm, customBins]);
+  }, [bins, layers, heightUnitMm, storedPlate, lowProfileBase, ceilingMm, customBins]);
 }

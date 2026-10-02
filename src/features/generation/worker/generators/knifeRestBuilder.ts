@@ -5,8 +5,8 @@
  * (non-pipeline) generator following `toolRackGenerator`.
  *
  * Coordinate system (before the final Z-shift): socket occupies
- * Z ∈ [-SOCKET_HEIGHT, 0]; body rises from 0. The assembly is shifted
- * +SOCKET_HEIGHT so Z=0 is the printable bottom — the same frame the block's
+ * Z ∈ [-socketHeight, 0]; body rises from 0. The assembly is shifted
+ * +socketHeight so Z=0 is the printable bottom — the same frame the block's
  * own mesh lands in, which is what makes the plan's mm heights line up across
  * the two parts.
  */
@@ -30,7 +30,8 @@ import type { BinParams } from '@/shared/types/bin';
 import type { KnifeRestPlan } from '@/shared/utils/knifeRestPlan';
 import { planKnifeRest, knifeRestGrooveRadius } from '@/shared/utils/knifeRestPlan';
 import type { ExportFormat, MeshData } from '../../bridge/types';
-import { SOCKET_HEIGHT, toIndexedMeshData, checkCancelled } from './generatorTypes';
+import { SOCKET_HEIGHT, socketHeightMm, toIndexedMeshData, checkCancelled } from './generatorTypes';
+import { buildRidgeReliefTool } from './ridgeReliefBuilder';
 import type { ProgressFn } from './generatorTypes';
 import { CLEARANCE, COPLANAR_OVERLAP } from './generatorConstants';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
@@ -56,15 +57,26 @@ export function buildKnifeRestSolid(
   const gridD = alongX ? plan.crossU : plan.alongU;
   const bodyW = gridW * unitX - CLEARANCE;
   const bodyD = gridD * unitY - CLEARANCE;
-  const bodyH = plan.bodyTopZMm - SOCKET_HEIGHT;
+  const socketHeight = socketHeightMm(params.base.lowProfile);
+  const bodyH = plan.bodyTopZMm - socketHeight;
 
   return withScope((scope) => {
     const radius = Math.min(GRIDFINITY_SPEC.BOX_CORNER_RADIUS, Math.min(bodyW, bodyD) / 2 - 0.1);
-    const body = scope.register(
+    let body = scope.register(
       drawRoundedRectangle(bodyW, bodyD, Math.max(radius, 0.1))
         .sketchOnPlane('XY', -COPLANAR_OVERLAP)
         .extrude(bodyH + COPLANAR_OVERLAP)
     );
+    if (socketHeight < SOCKET_HEIGHT) {
+      const relief = buildRidgeReliefTool(
+        gridW,
+        gridD,
+        undefined,
+        { x: unitX, y: unitY },
+        DEFAULT_SOCKET_CELL_PLAN
+      );
+      if (relief) body = scope.register(unwrap(cut(body, scope.register(relief))));
+    }
 
     const socket = buildBaseSocket(
       gridW,
@@ -76,7 +88,12 @@ export function buildKnifeRestSolid(
       0,
       forExport,
       DEFAULT_SOCKET_CELL_PLAN,
-      { x: unitX, y: unitY }
+      { x: unitX, y: unitY },
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      socketHeight
     );
     const socketClone = scope.register(unwrap(clone(socket)));
     let solid: Shape3D = scope.register(
@@ -99,7 +116,7 @@ export function buildKnifeRestSolid(
       solid = scope.register(unwrap(cut(solid, cutter)));
     }
 
-    return translate(solid, [0, 0, SOCKET_HEIGHT]);
+    return translate(solid, [0, 0, socketHeight]);
   });
 }
 
@@ -134,7 +151,7 @@ export function buildIntegratedKnifeRestTools(
   const lengthMm = plan.alongU * (alongX ? unitX : unitY);
   const alongHalf = (alongX ? bodyW : bodyD) / 2;
   const crossSpan = (alongX ? bodyD : bodyW) + 2 * GROOVE_OVERSHOOT;
-  const shelfTopZ = plan.bodyTopZMm - SOCKET_HEIGHT;
+  const shelfTopZ = plan.bodyTopZMm - socketHeightMm(params.base.lowProfile);
   const dropTopZ =
     dims.wallHeight + dims.collarHeight + GRIDFINITY_SPEC.LIP_HEIGHT + GROOVE_OVERSHOOT;
   if (shelfTopZ >= dropTopZ || lengthMm <= 0) return [];

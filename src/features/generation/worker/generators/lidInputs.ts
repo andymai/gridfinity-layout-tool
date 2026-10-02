@@ -181,6 +181,8 @@ export interface LidInputs {
   /** Magnet anchor (default 'edge'), injected from the layout so lid holes mate
    * with the bin base. See `MagnetAnchor` in `@/core/types`. */
   readonly magnetAnchor?: MagnetAnchor;
+  /** Low-profile stack grid, injected from the layout like {@link magnetAnchor}. */
+  readonly lowProfileBase?: boolean;
   readonly cellsX: number;
   readonly cellsY: number;
   /**
@@ -520,6 +522,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     magnetDepth: params.base.magnetDepth,
     magnetHoleStyle: magnetHoleStyleFrom(params.base),
     magnetAnchor: params.magnetAnchor,
+    lowProfileBase: params.base.lowProfile,
     attachment,
     retentionMagnets,
     // A detachable lid seats on the lip; `resolveTrayBottomInputs` overrides this

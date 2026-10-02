@@ -3699,6 +3699,8 @@ const en: Record<string, string> = {
   'binDesigner.base.section.stacking': 'Top rim',
   'binDesigner.base.section.mounting': 'Mounting',
   'binDesigner.base.section.feet': 'Feet',
+  'binDesigner.base.lowProfileNote':
+    'This layout uses a low-profile base: feet are 1.1mm shorter and the floor sits 1.1mm lower. Change it in the baseplate settings.',
   'binDesigner.base.section.floor': 'Floor',
   'binDesigner.base.stackingLip.hint': "Lets another bin's feet sit on top of this one",
   'binDesigner.base.lipTip': 'Lip peak',
@@ -4105,6 +4107,11 @@ const en: Record<string, string> = {
     'Magnets stay 8mm from each cell edge — the standard Gridfinity corner position.',
   'baseplate.magnetAnchorHintLegacy':
     'Magnets pinned 13mm from each cell center — matches parts printed before this was fixed.',
+  'baseplate.lowProfileBase': 'Low-profile base',
+  'baseplate.lowProfileBaseHint':
+    'Bins get 1.1mm more room inside at the same height. Stock Gridfinity bins still fit this plate, with less grip, and these bins still fit standard plates.',
+  'baseplate.lowProfileBaseSnapClipBlocked':
+    'Snap clips need a taller plate. Choose another connector, or turn on magnets or a solid floor first.',
   'baseplate.printBedTooltip': 'Baseplates larger than this are split automatically.',
   'baseplate.maxPrintHeight': 'Build height',
   'baseplate.maxPrintHeightTooltip':
@@ -4180,6 +4187,8 @@ const en: Record<string, string> = {
   'baseplate.connectors.label': 'Connectors',
   'baseplate.connectors.none': 'None',
   'baseplate.connectors.snapClipNoStack': "Can't be vertically stacked",
+  'baseplate.connectors.snapClipTooThin':
+    'A low-profile plate is too thin. Turn on magnets or a solid floor, or choose another connector.',
   'baseplate.connectorStyle.dovetail': 'Dovetail',
   'baseplate.connectorStyle.puzzle': 'Puzzle',
   'baseplate.connectorStyle.dovetailKey': 'Puzzle key',
@@ -5350,6 +5359,7 @@ const en: Record<string, string> = {
   'undo.printBedSizeChanged': 'Changed print bed size',
   'undo.gridUnitChanged': 'Changed grid unit',
   'undo.magnetAnchorChanged': 'Changed magnet anchor',
+  'undo.lowProfileBaseChanged': 'Changed low-profile base',
   'undo.heightUnitChanged': 'Changed height unit',
   'undo.baseplateParamsChanged': 'Changed baseplate params',
   'undo.activeBaseplateChanged': 'Changed active baseplate',

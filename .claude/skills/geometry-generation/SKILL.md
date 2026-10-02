@@ -154,6 +154,14 @@ connector prisms 40mm off their wall and has its own regression test. Prefer the
 `sketchOnPlane('YZ', -len/2)` + `extrude(len)` idiom (`buildClickRailBar`) when a
 section is constant along the run.
 
+### Foot depth is per part, not a constant
+
+`SOCKET_HEIGHT` and `PLATE_PROFILE_HEIGHT` are the standard depths. A low-profile
+layout cuts `LOW_PROFILE_BAND_CUT_MM` from every foot, pocket and lid stack grid,
+so geometry reads `dims.socketHeight`, `socketHeightMm()` or
+`plateProfileHeightMm()`; a constant builds a standard foot that every mesh check
+passes. `lowProfileBase.kernel.test` measures the pairings on mated meshes.
+
 ### A cut sized off the cell is not sized off the foot
 
 A foot's bottom face is `SOCKET_TAPER_WIDTH` (3.2mm) narrower than its cell on each

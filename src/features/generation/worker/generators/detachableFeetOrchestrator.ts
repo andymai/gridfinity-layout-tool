@@ -30,7 +30,7 @@ import type { MeshData } from '../../bridge/types';
 import { footCellCentre, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { buildDetachableFeet } from './detachableFeetBuilder';
 import type { ExportFormat } from '../../bridge/types';
-import { SOCKET_HEIGHT } from './generatorTypes';
+import { socketHeightMm } from './generatorTypes';
 import { toIndexedMeshData, creaseEdges } from './utils';
 import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
 import type { ProgressFn } from './generatorTypes';
@@ -73,6 +73,7 @@ function buildFeetSolids(
         }
       : undefined,
     forExport,
+    socketHeight: socketHeightMm(params.base.lowProfile),
   });
   // The holes belong to the body, which this path does not build.
   pinHoles?.delete();
@@ -89,7 +90,7 @@ function buildFeetSolids(
     const placed = translate(foot, [
       -centre.x + i * (pitch + PLATE_GAP_MM),
       -centre.y,
-      SOCKET_HEIGHT,
+      socketHeightMm(params.base.lowProfile),
     ]);
     if (placed !== foot) foot.delete();
     return placed;

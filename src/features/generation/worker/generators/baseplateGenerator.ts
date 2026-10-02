@@ -5,13 +5,16 @@
  * Each pocket receives a bin's tapered socket profile, offset outward by
  * CLEARANCE/2 perpendicular to every face (see `POCKET_PROFILE`).
  *
- * Without magnets: slab height = PLATE_PROFILE_HEIGHT. Pockets are through-cut,
+ * The pocket profile is PLATE_PROFILE_HEIGHT deep, or `LOW_PROFILE_BAND_CUT_MM`
+ * shallower on a low-profile plate; "profile depth" below means whichever.
+ *
+ * Without magnets: slab height = profile depth. Pockets are through-cut,
  * unless the standalone `solidFloor` option is on — then the slab grows by the
- * chosen floor thickness and pockets stop at PLATE_PROFILE_HEIGHT, leaving a plain
+ * chosen floor thickness and pockets stop at the profile depth, leaving a plain
  * continuous floor (no magnet holes). See `baseplateFloorDepth`.
  *
- * With magnets (matching Gridfinity spec): slab height = PLATE_PROFILE_HEIGHT +
- * MAGNET_FLOOR + magnetDepth. Pockets cut to PLATE_PROFILE_HEIGHT depth only,
+ * With magnets (matching Gridfinity spec): slab height = profile depth +
+ * MAGNET_FLOOR + magnetDepth. Pockets cut to the profile depth only,
  * leaving a solid continuous floor under each pocket. Magnet holes are blind
  * cylindrical pockets cut downward from the pocket floor into this solid
  * floor, leaving a thin retaining floor (MAGNET_FLOOR = 0.5mm) at the
@@ -44,7 +47,8 @@ import type { Shape3D, ValidSolid, BooleanPipelineStep } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat, ConnectorKeyMeshData } from '../../bridge/types';
 import {
-  PLATE_PROFILE_HEIGHT,
+  plateProfileHeightMm,
+  socketHeightMm,
   forEachCell,
   frameCells,
   toIndexedMeshData,
@@ -228,7 +232,7 @@ function buildConnectorKeyMeshIfNeeded(
   const hasJoinEdge = params.edges ? Object.values(params.edges).some((e) => e === 'join') : false;
   if (!hasJoinEdge) return undefined;
 
-  const totalHeight = PLATE_PROFILE_HEIGHT + baseplateFloorDepth(params);
+  const totalHeight = plateProfileHeightMm(params.lowProfileBase) + baseplateFloorDepth(params);
   if (!snapClipLevels(totalHeight, params.connectorFitOffset ?? 0, params.nozzleSizeMm).viable)
     return undefined;
 
@@ -288,7 +292,11 @@ export function buildBaseplateSolid(
   const floorDepth = baseplateFloorDepth(params);
   const totalW = width * gridUnitMm + paddingLeft + paddingRight;
   const totalD = depth * gridUnitMmY + paddingFront + paddingBack;
-  const totalHeight = PLATE_PROFILE_HEIGHT + floorDepth;
+  const profileHeight = plateProfileHeightMm(params.lowProfileBase);
+  // The foot this plate's pockets are cut for: the floor cutters anchor to it
+  // so their reach into the pocket keeps the same relationship at either depth.
+  const socketHeight = socketHeightMm(params.lowProfileBase);
+  const totalHeight = profileHeight + floorDepth;
   const slabOffsetX = (paddingRight - paddingLeft) / 2;
   const slabOffsetY = (paddingBack - paddingFront) / 2;
   // Material bound for the outline intersect: the nominal extent widened per
@@ -485,7 +493,8 @@ export function buildBaseplateSolid(
         cellW_mm,
         cellD_mm,
         !keepsFloor,
-        keepsFloor ? 0 : floorDepth
+        keepsFloor ? 0 : floorDepth,
+        profileHeight
       );
       // pocket from getPocketTemplate is a clone owned by caller — translate
       // produces a new shape, so dispose the pre-translation clone.
@@ -598,7 +607,8 @@ export function buildBaseplateSolid(
       cellOpts,
       magnetCellFilter,
       magnetAnchor,
-      magnetStyle
+      magnetStyle,
+      profileHeight
     );
     // Over-tile margin tiles get magnets too — the corner magnets that fit, or a
     // spread/centered magnet for tiles too small for any corner — so the clipped
@@ -613,7 +623,8 @@ export function buildBaseplateSolid(
           magnetDepth,
           pitch,
           magnetAnchor,
-          magnetStyle
+          magnetStyle,
+          profileHeight
         )
       );
     }
@@ -648,7 +659,8 @@ export function buildBaseplateSolid(
       magnetAnchor,
       // The full floor, not the magnet floor: a screw pad makes the floor
       // deeper, and a magnet-floor cut would seal every void with a membrane.
-      floorDepth
+      floorDepth,
+      socketHeight
     );
     const floorFrame =
       floorCellFilter === undefined ? overTileFrame : overTileFrame.filter(floorCellFilter);
@@ -662,7 +674,8 @@ export function buildBaseplateSolid(
           params.lightweight,
           params.nozzleSizeMm,
           magnetAnchor,
-          floorDepth
+          floorDepth,
+          socketHeight
         )
       );
     }
@@ -698,7 +711,8 @@ export function buildBaseplateSolid(
       screwCellFilter,
       params.nozzleSizeMm,
       magnetAnchor,
-      floorDepth
+      floorDepth,
+      socketHeight
     );
     baseplate = cutInBatches(baseplate, padCutters);
     probe?.('screwPadFloorCut', baseplate);
@@ -707,7 +721,7 @@ export function buildBaseplateSolid(
   // Screw holes last among the underside features: the lightweight pass has
   // already shaped the pads, so the recess is cut into material that is final.
   if (screwHoles.length > 0 && screwParams !== undefined) {
-    const cutters = buildScrewCutters(screwHoles, screwParams, totalHeight);
+    const cutters = buildScrewCutters(screwHoles, screwParams, totalHeight, profileHeight);
     baseplate = cutInBatches(baseplate, cutters);
     probe?.('screwHolesCut', baseplate);
   }
@@ -827,12 +841,12 @@ export async function exportConnectorKey(
   angularTolerance?: number
 ): Promise<{ data: ArrayBuffer; fileName: string }> {
   const params = sanitizeParams(rawParams);
-  const totalHeight = PLATE_PROFILE_HEIGHT + baseplateFloorDepth(params);
+  const totalHeight = plateProfileHeightMm(params.lowProfileBase) + baseplateFloorDepth(params);
   // Snap clip ships its own bed-flat part; dovetail key is the legacy default.
   const key =
     params.connectorStyle === 'snapClip'
       ? buildSnapClipForPrint(totalHeight, params.gridUnitMm, params.nozzleSizeMm)
-      : buildDovetailKey(totalHeight, params.gridUnitMm);
+      : buildDovetailKey(totalHeight, params.gridUnitMm, socketHeightMm(params.lowProfileBase));
   try {
     const name = 'connector_key';
     if (format === 'step') {

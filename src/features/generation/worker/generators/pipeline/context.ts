@@ -22,7 +22,7 @@ import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import {
   HEIGHT_UNIT,
   CLEARANCE,
-  SOCKET_HEIGHT,
+  socketHeightMm,
   LIP_HEIGHT,
   LIP_SMALL_TAPER,
   LIP_TAPER_WIDTH,
@@ -62,7 +62,7 @@ function resolveBaseOffsetZ(params: BinParams): number {
       params.base.trayBottom?.floorAtBed
     );
   if (params.base.style === 'flat') return 0;
-  return SOCKET_HEIGHT;
+  return socketHeightMm(params.base.lowProfile);
 }
 
 /** Derive all dimensions from bin parameters. */
@@ -156,7 +156,8 @@ export function deriveDimensions(
   // that as a bin. `minHeightUnits` keeps the UI and the server mirror above the
   // floor; this is the guard a crafted share payload cannot bypass, and it
   // degrades to the shortest real wall rather than losing the bin.
-  const socketedWall = Math.max(totalHeight - SOCKET_HEIGHT, MIN_BODY_WALL_MM);
+  const socketHeight = socketHeightMm(params.base.lowProfile);
+  const socketedWall = Math.max(totalHeight - socketHeight, MIN_BODY_WALL_MM);
   const wallHeight = isTile ? 0 : socketless ? totalHeight : socketedWall;
   // The base-only body. Shared with `assembledHeight` so the readout and the mesh
   // cannot disagree about how tall the plate is.
@@ -377,6 +378,10 @@ export function deriveDimensions(
       // socketed bin whose totalHeight happens to equal SOCKET_HEIGHT (a custom
       // 5mm heightUnitMm at 1u). Those are different solids, so separate them.
       ...(isTile ? ['tile'] : []),
+      // The shorter foot moves every lite cup and floor opening cut into the
+      // body, and a 1u body can floor its wall at MIN_BODY_WALL_MM in both
+      // profiles. Appended only when set, so standard keys stay byte-identical.
+      ...(params.base.lowProfile === true && !socketless ? ['lowprofile'] : []),
       // The one thing `omitLipSolid` changes is this shell, so it must not
       // share a cache entry with the lipped shell it is otherwise identical to.
       // Appended only when set, so every ordinary bin keeps a byte-identical
@@ -421,6 +426,7 @@ export function deriveDimensions(
     gridUnitMmY: gridUnitY,
     wallHeight,
     totalHeight,
+    socketHeight,
     collarHeight,
     wallTopZ,
     lipTopZ,

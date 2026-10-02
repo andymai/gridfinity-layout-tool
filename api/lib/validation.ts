@@ -61,6 +61,7 @@ interface LayoutShape {
   gridUnitMmY?: number;
   heightUnitMm?: number;
   magnetAnchor?: 'edge' | 'center';
+  lowProfileBase?: true;
   /** Library folder, carried for cloud sync only; shares strip it. */
   folderId?: string;
 }
@@ -319,6 +320,7 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
         layout.magnetAnchor === 'edge' || layout.magnetAnchor === 'center'
           ? layout.magnetAnchor
           : undefined,
+      ...(layout.lowProfileBase === true ? { lowProfileBase: true as const } : {}),
       ...(isValidFolderId(layout.folderId) ? { folderId: layout.folderId } : {}),
     },
   };

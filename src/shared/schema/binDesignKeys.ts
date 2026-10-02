@@ -107,6 +107,7 @@ export type _BinParamsKeys = Assert<KeysMatch<keyof BinParams, (typeof BIN_PARAM
 
 export const BASE_CONFIG_KEYS = [
   'style',
+  'lowProfile',
   'magnetDiameter',
   'magnetDepth',
   'magnetCrushRibs',

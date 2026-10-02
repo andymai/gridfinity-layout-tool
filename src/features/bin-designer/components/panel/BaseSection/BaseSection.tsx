@@ -285,6 +285,7 @@ export function BaseSection() {
       {state.showFeet && (
         <section className="space-y-3">
           <SubHeader>{t('binDesigner.base.section.feet')}</SubHeader>
+          {state.lowProfile && <Hint>{t('binDesigner.base.lowProfileNote')}</Hint>}
 
           {/* Heads the foot cluster. Half sockets and the lightweight modes
               below describe INTEGRAL feet, which this mode answers its own way

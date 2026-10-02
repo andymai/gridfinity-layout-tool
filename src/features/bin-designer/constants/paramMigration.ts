@@ -200,6 +200,9 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   if (mergedBase.tile !== true) {
     delete (mergedBase as { tile?: boolean }).tile;
   }
+  if (mergedBase.lowProfile !== true) {
+    delete (mergedBase as { lowProfile?: boolean }).lowProfile;
+  }
   // A stored pin diameter from the 5mm era meets pin holes now cut at a fixed
   // 3mm, so the printed parts are unassemblable and the server validator
   // rejects the design outright on re-publish. Snap anything off the current

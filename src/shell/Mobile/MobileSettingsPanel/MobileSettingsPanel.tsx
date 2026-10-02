@@ -52,6 +52,7 @@ export function MobileSettingsPanel() {
     realWorldDimensions,
     measuredMm,
     plateRiseMm,
+    lowProfileBase,
     drawerFitSuggestion,
     handleMeasuredCommit,
     acceptDrawerFitSuggestion,
@@ -259,6 +260,7 @@ export function MobileSettingsPanel() {
               heightUnitMm={heightUnitMm}
               ceilingMm={measuredMm?.height}
               plateRiseMm={plateRiseMm}
+              lowProfileBase={lowProfileBase}
               variant="mobile"
             />
           </div>

@@ -28,7 +28,7 @@ function build(
   totalHeight = TOTAL_HEIGHT
 ): MeshData {
   const mb = new MeshBuilder();
-  addScrewHoleAt(mb, x, y, site, params, totalHeight);
+  addScrewHoleAt(mb, x, y, site, params, totalHeight, PLATE_PROFILE_HEIGHT);
   return mb.build();
 }
 

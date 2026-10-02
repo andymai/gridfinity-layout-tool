@@ -150,6 +150,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
             depthMm: layout.printBedDepth ?? layout.printBedSize,
           },
           magnetAnchor: layout.magnetAnchor,
+          lowProfileBase: layout.lowProfileBase,
         });
 
         // Phase 1 — bins. The bridge emits STL/STEP only; 3MF + companion parts
@@ -412,6 +413,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
           gridUnitMm: layout.gridUnitMm,
           gridUnitMmY: effectiveGridUnitMmY(layout),
           magnetAnchor: layout.magnetAnchor,
+          lowProfileBase: layout.lowProfileBase,
           fractionalEdgeX: layout.drawer.fractionalEdgeX ?? 'end',
           fractionalEdgeY: layout.drawer.fractionalEdgeY ?? 'end',
           gridShiftX: layout.drawer.gridShiftX ?? 0,

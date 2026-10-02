@@ -83,6 +83,10 @@
           "enum": ["standard", "magnet", "screw", "magnet_and_screw", "weighted", "flat", "lid"],
           "description": "Base attachment style. This is a string union, not an enum: the UI derives it from boolean toggles via computeBaseStyle()."
         },
+        "lowProfile": {
+          "type": "boolean",
+          "description": "Low-profile foot, 1.1mm shorter through its straight middle, with the interior floor 1.1mm lower at the same total height. Synced from the owning layout and stripped from exported files, so a hand-written design should leave it out: the drawer it is placed in decides."
+        },
         "magnetDiameter": {
           "type": "number",
           "minimum": 4,

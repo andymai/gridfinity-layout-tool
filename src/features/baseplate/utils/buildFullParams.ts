@@ -253,7 +253,9 @@ export function buildFullParams(
   // Manual grid shift within the perimeter (drawer.gridShiftX/Y,) —
   // folded into the frame re-base; only meaningful with a synced drawer shape.
   gridShiftX: number = 0,
-  gridShiftY: number = 0
+  gridShiftY: number = 0,
+  // The layout's low-profile base; the plate's pockets must match its bins.
+  lowProfileBase?: boolean
 ): ResolvedBaseplateParams {
   const {
     synced,
@@ -374,6 +376,7 @@ export function buildFullParams(
     ...(stored.magnetCrushRibs === true ? { magnetCrushRibs: true } : {}),
     ...(stored.magnetChamfer === true ? { magnetChamfer: true } : {}),
     magnetAnchor,
+    ...(lowProfileBase === true ? { lowProfileBase: true } : {}),
     paddingLeft: paddingOn ? stored.paddingLeft : 0,
     paddingRight: paddingOn ? stored.paddingRight : 0,
     paddingFront: paddingOn ? stored.paddingFront : 0,

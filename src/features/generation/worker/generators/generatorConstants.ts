@@ -11,6 +11,12 @@ import { clamp } from '@/shared/utils/math';
 import { MAGNET_FLOOR, MAGNET_HOLE_OFFSET_MM } from '@/shared/printSettings/gridfinityGeometry';
 
 export { MAGNET_FLOOR };
+export {
+  LOW_PROFILE_BAND_CUT_MM,
+  socketHeightMm,
+  plateProfileHeightMm,
+  lidStackGridHeightMm,
+} from '@/shared/printSettings/gridfinityGeometry';
 export { baseplateFloorDepth } from '@/shared/printSettings/baseplateHeight';
 export const SIZE = GRIDFINITY.GRID_SIZE;
 export const HEIGHT_UNIT = GRIDFINITY.HEIGHT_UNIT;
@@ -109,28 +115,37 @@ export const FOOT_INSET_BOT = SOCKET_TAPER_WIDTH;
 export type TaperProfile = readonly (readonly [depth: number, inset: number])[];
 
 /**
- * Bin base socket, swept around `cell - CLEARANCE` with {@link BOX_CORNER_RADIUS}
- * corners.
+ * Bin base socket of a given total depth, swept around `cell - CLEARANCE` with
+ * {@link BOX_CORNER_RADIUS} corners. Any depth short of {@link SOCKET_HEIGHT}
+ * comes out of the vertical band only (see `LOW_PROFILE_BAND_CUT_MM`).
  */
-export const FOOT_PROFILE: TaperProfile = [
-  [0, 0],
-  [SOCKET_BIG_TAPER, SOCKET_BIG_TAPER],
-  [SOCKET_BIG_TAPER + SOCKET_VERTICAL_PART, SOCKET_BIG_TAPER],
-  [SOCKET_HEIGHT, SOCKET_TAPER_WIDTH],
-];
+export function footProfileFor(socketHeight: number): TaperProfile {
+  return [
+    [0, 0],
+    [SOCKET_BIG_TAPER, SOCKET_BIG_TAPER],
+    [SOCKET_BIG_TAPER + (socketHeight - SOCKET_SMALL_TAPER - SOCKET_BIG_TAPER), SOCKET_BIG_TAPER],
+    [socketHeight, SOCKET_TAPER_WIDTH],
+  ];
+}
 
 /**
- * Baseplate pocket, swept around the full cell with {@link CORNER_RADIUS}
- * corners — {@link FOOT_PROFILE} offset outward by `CLEARANCE / 2`
- * perpendicular. It bottoms out 0.1mm short of the foot, so a seated bin lands
- * on the pocket floor with its tapers clear rather than wedging on them.
+ * Baseplate pocket of a given total depth, swept around the full cell with
+ * {@link CORNER_RADIUS} corners — {@link footProfileFor} offset outward by
+ * `CLEARANCE / 2` perpendicular. It bottoms out 0.1mm short of the foot, so a
+ * seated bin lands on the pocket floor with its tapers clear rather than
+ * wedging on them.
  */
-export const POCKET_PROFILE: TaperProfile = [
-  [0, 0],
-  [PLATE_BIG_TAPER, PLATE_BIG_TAPER],
-  [PLATE_BIG_TAPER + PLATE_VERTICAL_PART, PLATE_BIG_TAPER],
-  [PLATE_PROFILE_HEIGHT, PLATE_TAPER_WIDTH],
-];
+export function pocketProfileFor(plateProfileHeight: number): TaperProfile {
+  return [
+    [0, 0],
+    [PLATE_BIG_TAPER, PLATE_BIG_TAPER],
+    [PLATE_BIG_TAPER + (plateProfileHeight - PLATE_SMALL_TAPER - PLATE_BIG_TAPER), PLATE_BIG_TAPER],
+    [plateProfileHeight, PLATE_TAPER_WIDTH],
+  ];
+}
+
+export const FOOT_PROFILE: TaperProfile = footProfileFor(SOCKET_HEIGHT);
+export const POCKET_PROFILE: TaperProfile = pocketProfileFor(PLATE_PROFILE_HEIGHT);
 
 /** Magnet position offsets relative to cell center (4 corners per cell) */
 export const MAGNET_OFFSETS: ReadonlyArray<readonly [number, number]> = [

@@ -190,6 +190,11 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       next.magnetAnchor = event.payload.anchor;
       break;
 
+    case 'layout.lowProfileBaseSet':
+      if (event.payload.enabled) next.lowProfileBase = true;
+      else delete next.lowProfileBase;
+      break;
+
     case 'layout.heightUnitMmSet':
       next.heightUnitMm = mm(event.payload.mm);
       break;

@@ -15,6 +15,8 @@ import { designId } from '@/core/types';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { hashBinParams, hashDesignContent } from '@/shared/utils/binParamsHash';
+import { withoutLowProfileBase } from '@/shared/generation/lowProfileBase';
+import type { BinParams } from '@/shared/types/bin';
 import { assemblyHeightUnits } from '@/shared/types/assemblyPlacement';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { loadPendingPublishAction } from '@/shared/utils/communityPendingAction';
@@ -109,7 +111,7 @@ export async function openCommunityPublish(draft: CommunityPublishDraft | null):
       designName: state.designName,
       ...(assembly !== null
         ? { kind: 'assembly' as const, ...assembly, paramsHash: hashDesignContent(assembly) }
-        : { params: state.params, paramsHash: hashBinParams(state.params) }),
+        : publishedParams(state.params)),
       publishedId,
       lineage,
       draft,
@@ -131,6 +133,12 @@ export async function openCommunityPublish(draft: CommunityPublishDraft | null):
     }
   );
   void capturePublishAssets();
+}
+
+// A published design carries standard feet; the downloader's drawer decides.
+function publishedParams(params: BinParams): { params: BinParams; paramsHash: string } {
+  const standard = withoutLowProfileBase(params);
+  return { params: standard, paramsHash: hashBinParams(standard) };
 }
 
 export interface CommunityPublishEntry {

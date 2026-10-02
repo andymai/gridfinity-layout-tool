@@ -25,6 +25,7 @@ import { shouldGenerateKnifeRest } from '@/shared/utils/knifeRestPlan';
 import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
 import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
 import { splitHasConnectors } from '@/shared/generation/splitUtils';
+import { withLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
 import { overhangKey as resolvedOverhangKey, resolveOverhang } from '@/shared/utils/overhang';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
@@ -205,6 +206,7 @@ export interface LayoutBinExportInput {
   /** Decides which bins have to ship as several pieces. */
   readonly printBed: PrintBedSize;
   readonly magnetAnchor?: MagnetAnchor;
+  readonly lowProfileBase?: boolean;
 }
 
 export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExportPlan {
@@ -218,6 +220,7 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
     baseplate,
     printBed,
     magnetAnchor,
+    lowProfileBase,
   } = input;
   const unlinkedBins = bins.filter((b) => b.linkedDesignId === undefined).length;
 
@@ -285,11 +288,13 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
       continue;
     }
     const overhang = resolveBinOverhang(b, drawer, baseplate);
-    // Inject the layout's magnet anchor (source of truth), overriding any value
-    // saved on the design, so exported bins mate with the baseplate's magnets.
+    // Inject the layout's magnet anchor and foot profile (source of truth),
+    // overriding any value saved on the design, so exported bins mate with the
+    // baseplate.
+    const layoutParams = withLowProfileBase(design.params, lowProfileBase);
     const params: BinParams = overhang
-      ? { ...design.params, overhang, magnetAnchor }
-      : { ...design.params, magnetAnchor };
+      ? { ...layoutParams, overhang, magnetAnchor }
+      : { ...layoutParams, magnetAnchor };
     const key = `${b.linkedDesignId}|${overhangKey(overhang)}`;
     const existing = groups.get(key);
     if (existing) {

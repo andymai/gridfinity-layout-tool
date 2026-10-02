@@ -9,6 +9,7 @@ import {
   formatHeightUnits,
   isStandardStackHeight,
   LIP_PROTRUSION_MM,
+  stackJunctionMm,
   stackPitchMm,
 } from '@/shared/utils/heightUnits';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
@@ -305,7 +306,13 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             <div>
               {t('inspector.printedAndStackHint', {
                 printed: heightMmAt(bin.height, LIP_PROTRUSION_MM),
-                pitch: formatMmValue(stackPitchMm(bin.height, layout.heightUnitMm)),
+                pitch: formatMmValue(
+                  stackPitchMm(
+                    bin.height,
+                    layout.heightUnitMm,
+                    stackJunctionMm(layout.lowProfileBase)
+                  )
+                ),
               })}
             </div>
             {!isStandardStackHeight(bin.height, layout.heightUnitMm) && (

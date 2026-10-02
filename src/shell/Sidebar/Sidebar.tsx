@@ -71,6 +71,7 @@ export function Sidebar() {
     realWorldDimensions,
     measuredMm,
     plateRiseMm,
+    lowProfileBase,
     drawerFitSuggestion,
     handleMeasuredCommit,
     acceptDrawerFitSuggestion,
@@ -501,6 +502,7 @@ export function Sidebar() {
                         heightUnitMm={heightUnitMm}
                         ceilingMm={measuredMm?.height}
                         plateRiseMm={plateRiseMm}
+                        lowProfileBase={lowProfileBase}
                       />
                     </Collapsible>
                   </div>

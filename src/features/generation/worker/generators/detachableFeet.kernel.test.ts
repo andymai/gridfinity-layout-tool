@@ -114,6 +114,7 @@ function feetOf(over: Partial<DetachableFeetOptions> = {}): DetachableFeetGeomet
     pinHoleDiameterMm: DETACHABLE_PIN_HOLE_DIAMETER_MM,
     floorThicknessMm: FLOOR,
     forExport: true,
+    socketHeight: SOCKET_HEIGHT,
     ...over,
   });
 }

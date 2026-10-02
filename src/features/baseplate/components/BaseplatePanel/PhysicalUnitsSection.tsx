@@ -21,6 +21,10 @@ import { SegmentedControl } from '@/design-system';
 import { HelpTargetMarker } from '@/shared/help/HelpTargetMarker';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 import { effectiveGridUnitMmY } from '@/core/types';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
+import { useMutations } from '@/shared/contexts';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
+import { snapClipFitsPlate } from '../../utils/snapClipFit';
 
 /** Print Settings header summary: "{grid}mm · {bed}mm", each half widening to
  *  "{x}×{y}mm" when that pair is asymmetric. */
@@ -36,15 +40,26 @@ function formatPrintSettingsSummary(
 
 export function PhysicalUnitsSection() {
   const t = useTranslation();
-  const { gridUnitMm, gridUnitMmY, magnetAnchor, printBedSize, printBedDepth } = useLayoutStore(
+  const {
+    gridUnitMm,
+    gridUnitMmY,
+    magnetAnchor,
+    lowProfileBase,
+    baseplateParams,
+    printBedSize,
+    printBedDepth,
+  } = useLayoutStore(
     useShallow((state) => ({
       gridUnitMm: state.layout.gridUnitMm,
       gridUnitMmY: effectiveGridUnitMmY(state.layout),
       magnetAnchor: state.layout.magnetAnchor ?? 'edge',
+      lowProfileBase: state.layout.lowProfileBase === true,
+      baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
       printBedSize: state.layout.printBedSize,
       printBedDepth: state.layout.printBedDepth,
     }))
   );
+  const mutations = useMutations();
 
   const handleGridUnitChange = useGridUnitChange();
 
@@ -60,6 +75,14 @@ export function PhysicalUnitsSection() {
       .getState()
       .updateSetting('printSettings', { ...current, maxPrintHeightMm: value });
   }, []);
+
+  // Only the switch-on direction is refused: turning it off always makes the
+  // plate taller, which a snap clip can only welcome.
+  const lowProfileBlocked =
+    !lowProfileBase &&
+    baseplateParams.connectorNubs === true &&
+    baseplateParams.connectorStyle === 'snapClip' &&
+    !snapClipFitsPlate(baseplateParams, true, nozzleSizeMm);
 
   const [printSettingsExpanded, setPrintSettingsExpanded] = useState(true);
   useEffect(() => {
@@ -133,6 +156,19 @@ export function PhysicalUnitsSection() {
               </p>
             </div>
           )}
+          <div className="space-y-1">
+            <FeatureToggle
+              label={t('baseplate.lowProfileBase')}
+              checked={lowProfileBase}
+              onChange={() => mutations.setLowProfileBase(!lowProfileBase)}
+              disabledReason={
+                lowProfileBlocked ? t('baseplate.lowProfileBaseSnapClipBlocked') : undefined
+              }
+            />
+            <p className="text-label leading-relaxed text-content-tertiary">
+              {t('baseplate.lowProfileBaseHint')}
+            </p>
+          </div>
           <HelpTargetMarker id="bp-print-bed-size">
             <SettingsRow
               label={t('baseplate.printBedSize')}

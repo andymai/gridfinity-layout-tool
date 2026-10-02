@@ -4,7 +4,7 @@ import {
   solveUnitsUnderCeiling,
   stackedTotalMm,
   LIP_PROTRUSION_MM,
-  STACK_JUNCTION_MM,
+  stackJunctionMm,
 } from '@/shared/utils/heightUnits';
 
 interface HeightUnitSolverProps {
@@ -19,6 +19,8 @@ interface HeightUnitSolverProps {
    * two adjacent panels contradict each other.
    */
   plateRiseMm?: number;
+  /** The layout's low-profile base: its feet sink less into the bin below. */
+  lowProfileBase?: boolean;
   variant?: 'desktop' | 'mobile';
 }
 
@@ -41,9 +43,11 @@ export function HeightUnitSolver({
   heightUnitMm,
   ceilingMm,
   plateRiseMm = 0,
+  lowProfileBase,
   variant = 'desktop',
 }: HeightUnitSolverProps) {
   const t = useTranslation();
+  const junctionMm = stackJunctionMm(lowProfileBase);
 
   const rows = useMemo(
     () =>
@@ -51,12 +55,12 @@ export function HeightUnitSolver({
         ? []
         : STACK_COUNTS.map((count) => {
             const budgetMm = ceilingMm - plateRiseMm;
-            const units = solveUnitsUnderCeiling(budgetMm, heightUnitMm, count);
+            const units = solveUnitsUnderCeiling(budgetMm, heightUnitMm, count, junctionMm);
             if (units === null) return { count, units: null, totalMm: 0, slackMm: 0 };
-            const totalMm = stackedTotalMm(units, heightUnitMm, count);
+            const totalMm = stackedTotalMm(units, heightUnitMm, count, junctionMm);
             return { count, units, totalMm, slackMm: budgetMm - totalMm };
           }),
-    [ceilingMm, heightUnitMm, plateRiseMm]
+    [ceilingMm, heightUnitMm, plateRiseMm, junctionMm]
   );
 
   const labelClass = variant === 'mobile' ? 'text-sm' : 'text-xs';
@@ -69,8 +73,8 @@ export function HeightUnitSolver({
     <div className={`space-y-2 ${labelClass}`}>
       <p className="text-content-tertiary">
         {t('stackSolver.description', {
-          junction: round2(STACK_JUNCTION_MM),
-          shortfall: round2(STACK_JUNCTION_MM - LIP_PROTRUSION_MM),
+          junction: round2(junctionMm),
+          shortfall: round2(junctionMm - LIP_PROTRUSION_MM),
         })}
       </p>
       <p className="text-content-tertiary">
