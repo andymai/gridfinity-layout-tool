@@ -45,11 +45,18 @@ registerLinkedExcessResolver(
     const ref = refs().get(bin.linkedDesignId);
     if (ref?.assembledRiseMm === undefined) return 0;
     const { layout } = useLayoutStore.getState();
+    // Only a parametric bin is rebuilt on the layout's foot; an assembly or an
+    // imported mesh keeps the stock one.
+    const isBin = ref.kind === undefined || ref.kind === 'bin';
+    const low = layout.lowProfileBase === true && isBin;
     return linkedStackExcessUnits(
       bin.height,
       layout.heightUnitMm,
-      { riseMm: ref.assembledRiseMm, hasLip: ref.hasLip },
-      stackJunctionMm(layout.lowProfileBase)
+      {
+        riseMm: ref.assembledRiseMm - (low ? (ref.lowProfileRiseDeltaMm ?? 0) : 0),
+        hasLip: ref.hasLip,
+      },
+      stackJunctionMm(low)
     );
   },
   (): unknown => {

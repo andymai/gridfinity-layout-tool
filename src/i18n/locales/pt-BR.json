@@ -4214,6 +4214,7 @@
   "snapshots.saveCheckpoint": "Salvar ponto de verificação",
   "stackSolver.ceiling": "Caixas mais altas que cabem em {ceiling} mm a {unit} mm por unidade",
   "stackSolver.description": "Bins empilhados se encaixam {junction}mm entre si, então cada um soma {shortfall}mm a menos que a altura do corpo.",
+  "stackSolver.descriptionMore": "Bins empilhados se encaixam {junction}mm entre si, então cada um soma {extra}mm a mais que a altura do corpo.",
   "stackSolver.overlayPitch": "empilha +{pitch}mm",
   "stackSolver.rowFit": "{units} u · {total} mm · {slack} mm de folga",
   "stackSolver.rowNoFit": "Nada cabe",

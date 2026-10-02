@@ -4214,6 +4214,7 @@
   "snapshots.saveCheckpoint": "Zapisz punkt kontrolny",
   "stackSolver.ceiling": "Najwyższe pojemniki mieszczące się w {ceiling} mm przy {unit} mm na jednostkę",
   "stackSolver.description": "Sztaplowane biny wchodzą w siebie na {junction} mm, więc każdy dodaje o {shortfall} mm mniej niż wysokość jego korpusu.",
+  "stackSolver.descriptionMore": "Sztaplowane biny wchodzą w siebie na {junction} mm, więc każdy dodaje o {extra} mm więcej niż wysokość jego korpusu.",
   "stackSolver.overlayPitch": "sztaplowanie +{pitch} mm",
   "stackSolver.rowFit": "{units} j · {total} mm · {slack} mm zapasu",
   "stackSolver.rowNoFit": "Nic się nie mieści",

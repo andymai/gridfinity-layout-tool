@@ -4214,6 +4214,7 @@
   "snapshots.saveCheckpoint": "Salva checkpoint",
   "stackSolver.ceiling": "Contenitori più alti che stanno sotto {ceiling} mm con {unit} mm per unità",
   "stackSolver.description": "I bin impilati si annidano di {junction}mm l’uno nell’altro, quindi ognuno aggiunge {shortfall}mm in meno della propria altezza del corpo.",
+  "stackSolver.descriptionMore": "I bin impilati si annidano di {junction}mm l’uno nell’altro, quindi ognuno aggiunge {extra}mm in più della propria altezza del corpo.",
   "stackSolver.overlayPitch": "impila +{pitch}mm",
   "stackSolver.rowFit": "{units} u · {total} mm · {slack} mm liberi",
   "stackSolver.rowNoFit": "Non entra nulla",

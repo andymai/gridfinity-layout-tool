@@ -274,6 +274,31 @@ describe('customBinRegistry', () => {
       });
       expect(flat.socketless).toBe(true);
     });
+
+    it('records the standard rise, and the low-profile delta only where it differs', () => {
+      expect(registryHeightFields(DEFAULT_BIN_PARAMS).lowProfileRiseDeltaMm).toBeUndefined();
+
+      // A lid's stack grid is a plate pocket, which the low profile shortens.
+      const lidded = {
+        ...DEFAULT_BIN_PARAMS,
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true },
+      };
+      const standard = registryHeightFields(lidded);
+      const fromLow = registryHeightFields({
+        ...lidded,
+        base: { ...lidded.base, lowProfile: true },
+      });
+      expect(standard.lowProfileRiseDeltaMm).toBeCloseTo(1.1, 6);
+      expect(fromLow.assembledRiseMm).toBeCloseTo(standard.assembledRiseMm ?? 0, 6);
+    });
+
+    it('round-trips the low-profile delta through storage', () => {
+      localStorage.setItem(
+        'gridfinity-custom-bins-v1',
+        JSON.stringify([{ ...makeRef('d1'), assembledRiseMm: 30, lowProfileRiseDeltaMm: 1.1 }])
+      );
+      expect(loadRegistry()[0]?.lowProfileRiseDeltaMm).toBe(1.1);
+    });
   });
 
   describe('registryAssemblyFields', () => {

@@ -1001,6 +1001,8 @@ const en: Record<string, string> = {
   'stackSolver.title': 'Fit bins to your drawer',
   'stackSolver.description':
     'Stacked bins nest {junction}mm into each other, so each one adds {shortfall}mm less than its body height.',
+  'stackSolver.descriptionMore':
+    'Stacked bins nest {junction}mm into each other, so each one adds {extra}mm more than its body height.',
   'stackSolver.unmeasured': 'Measure your drawer height to see which bin heights fit.',
   'stackSolver.ceiling': 'Tallest bins that fit under {ceiling}mm at {unit}mm per unit',
   'stackSolver.rowSingle': 'One bin',

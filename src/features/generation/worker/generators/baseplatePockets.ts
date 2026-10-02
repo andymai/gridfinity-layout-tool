@@ -37,7 +37,9 @@ function pocketCacheKey(
     quantize(cellD),
     throughCut,
     quantize(belowSocketMm),
-    ...(profileHeight !== PLATE_PROFILE_HEIGHT ? [`ph${quantize(profileHeight)}`] : [])
+    ...(quantize(profileHeight) !== quantize(PLATE_PROFILE_HEIGHT)
+      ? [`ph${quantize(profileHeight)}`]
+      : [])
   );
 }
 

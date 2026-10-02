@@ -37,6 +37,8 @@ export function useQuickExport(): UseQuickExportReturn {
       if (isExporting) return;
 
       setIsExporting(true);
+      // Read before any await: the export must match the setting it began under.
+      const lowProfileBase = useLayoutStore.getState().layout.lowProfileBase;
 
       try {
         const designResult = await loadDesign(id);
@@ -61,13 +63,7 @@ export function useQuickExport(): UseQuickExportReturn {
             ? {
                 // Exported from the layout, so the layout's foot profile applies.
                 data: (
-                  await bridge.exportBin(
-                    withLowProfileBase(
-                      design.params,
-                      useLayoutStore.getState().layout.lowProfileBase
-                    ),
-                    'stl'
-                  )
+                  await bridge.exportBin(withLowProfileBase(design.params, lowProfileBase), 'stl')
                 ).data,
                 fileName: generateFileName(
                   design.params,

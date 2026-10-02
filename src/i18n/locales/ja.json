@@ -4214,6 +4214,7 @@
   "snapshots.saveCheckpoint": "チェックポイントを保存",
   "stackSolver.ceiling": "1ユニット {unit}mm で {ceiling}mm に収まる最大のビン",
   "stackSolver.description": "積み重ねたビンは互いに {junction}mm 入れ子になるため、1 個あたり本体高さより {shortfall}mm 少なく積み上がります。",
+  "stackSolver.descriptionMore": "積み重ねたビンは互いに {junction}mm 入れ子になるため、1 個あたり本体高さより {extra}mm 多く積み上がります。",
   "stackSolver.overlayPitch": "積み重ね +{pitch}mm",
   "stackSolver.rowFit": "{units}u · {total}mm · 余裕 {slack}mm",
   "stackSolver.rowNoFit": "収まりません",

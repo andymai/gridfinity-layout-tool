@@ -52,4 +52,11 @@ describe('HeightUnitSolver', () => {
     render(<HeightUnitSolver heightUnitMm={7} ceilingMm={8} />);
     expect(screen.getAllByText('stackSolver.rowNoFit').length).toBeGreaterThan(0);
   });
+
+  it('explains a low-profile stack as adding more than the body height', () => {
+    render(<HeightUnitSolver heightUnitMm={7} ceilingMm={55} lowProfileBase />);
+    // A 3.65mm foot sinks less than the 4.4mm lip stands proud.
+    expect(screen.getByText(/stackSolver\.descriptionMore.*"extra":0\.75/)).toBeInTheDocument();
+    expect(screen.queryByText(/stackSolver\.description:/)).not.toBeInTheDocument();
+  });
 });

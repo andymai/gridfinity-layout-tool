@@ -4,8 +4,9 @@
  * The low profile shortens every foot the socket builders make, so it has to
  * build cleanly under each of them: integral feet with and without hardware,
  * both lightweight modes, half feet, separate feet, the floorless spacer and
- * the base-only plate. Each exports watertight at the standard total height,
- * which is the whole point of the mode: the interior gains what the feet lose.
+ * the base-only plate. Each exports watertight, and the integral-foot bins at
+ * the standard total height, which is the whole point of the mode: the interior
+ * gains what the feet lose.
  * How the parts MATE is measured in `lowProfileBase.kernel.test`.
  */
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
@@ -63,6 +64,8 @@ export const lowProfile: ScenarioCase[] = [
   }),
   defineScenario('low profile', 'detachable feet 2x1', {
     assert: 'structural',
+    forExport: true,
     params: { width: 2, depth: 1, height: 3, base: low({ feet: 'detachable' }) },
+    customAssert: (result) => assertWatertight(result, 'detachable feet'),
   }),
 ];

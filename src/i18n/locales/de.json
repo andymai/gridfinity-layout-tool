@@ -4214,6 +4214,7 @@
   "snapshots.saveCheckpoint": "Checkpoint speichern",
   "stackSolver.ceiling": "Höchste Behälter unter {ceiling} mm bei {unit} mm pro Einheit",
   "stackSolver.description": "Gestapelte Bins verschachteln sich {junction}mm ineinander, jeder fügt also {shortfall}mm weniger als seine Korpushöhe hinzu.",
+  "stackSolver.descriptionMore": "Gestapelte Bins verschachteln sich {junction}mm ineinander, jeder fügt also {extra}mm mehr als seine Korpushöhe hinzu.",
   "stackSolver.overlayPitch": "stapelt +{pitch}mm",
   "stackSolver.rowFit": "{units} E · {total} mm · {slack} mm frei",
   "stackSolver.rowNoFit": "Nichts passt",

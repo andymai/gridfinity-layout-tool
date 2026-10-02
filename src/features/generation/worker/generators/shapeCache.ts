@@ -192,7 +192,9 @@ export function socketCacheKey(
       ...fracSegments,
       ...anchorSegments,
       ...(holeStyleKey ? [`hole:${holeStyleKey}`] : []),
-      ...(socketHeight !== GRIDFINITY.SOCKET_HEIGHT ? [`sh${quantize(socketHeight)}`] : [])
+      ...(quantize(socketHeight) !== quantize(GRIDFINITY.SOCKET_HEIGHT)
+        ? [`sh${quantize(socketHeight)}`]
+        : [])
     )
   );
 }

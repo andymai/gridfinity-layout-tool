@@ -84,8 +84,9 @@ describe('useSyncPhysicalUnits', () => {
     });
 
     it('clears it when the layout turns it off', () => {
-      setLayoutLowProfile(true);
       renderHook(() => useSyncPhysicalUnits());
+      act(() => setLayoutLowProfile(true));
+      expect(useDesignerStore.getState().params.base.lowProfile).toBe(true);
       act(() => setLayoutLowProfile(false));
       expect('lowProfile' in useDesignerStore.getState().params.base).toBe(false);
     });

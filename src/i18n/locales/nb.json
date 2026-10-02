@@ -4214,6 +4214,7 @@
   "snapshots.saveCheckpoint": "Lagre kontrollpunkt",
   "stackSolver.ceiling": "Høyeste bokser som får plass under {ceiling} mm ved {unit} mm per enhet",
   "stackSolver.description": "Stablede binger settes {junction}mm inn i hverandre, så hver enkelt legger til {shortfall}mm mindre enn kroppshøyden sin.",
+  "stackSolver.descriptionMore": "Stablede binger settes {junction}mm inn i hverandre, så hver enkelt legger til {extra}mm mer enn kroppshøyden sin.",
   "stackSolver.overlayPitch": "stables +{pitch}mm",
   "stackSolver.rowFit": "{units} e · {total} mm · {slack} mm til overs",
   "stackSolver.rowNoFit": "Ingenting får plass",

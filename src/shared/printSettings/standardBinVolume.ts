@@ -154,6 +154,39 @@ export function lightweightBaseSaving(
 }
 
 /**
+ * Material a low-profile base removes, per unit of cell footprint area
+ * (mm³/mm²), keyed by relief and whether the feet are subdivided.
+ *
+ * Measured the same way as {@link LIGHTWEIGHT_SAVING_PER_CELL_AREA}: each
+ * variant against its standard twin at 3x2, which 2x2 matches within 0.02. A
+ * single cell reads up to 0.07 lower because it has no shared foot edge and so
+ * no underside relief. The lightweight modes save little: their feet are
+ * already hollow, so the band cut takes mostly air.
+ */
+const LOW_PROFILE_SAVING_PER_CELL_AREA = {
+  solid: { full: 0.8162, half: 0.6168 },
+  interior: { full: 0.0624, half: 0.1473 },
+  underside: { full: 0.2564, half: 0.4203 },
+} as const;
+
+export type LowProfileRelief = keyof typeof LOW_PROFILE_SAVING_PER_CELL_AREA;
+
+/** Material (mm³) a low-profile base removes from a bin of this footprint. */
+export function lowProfileBaseSaving(
+  widthUnits: number,
+  depthUnits: number,
+  relief: LowProfileRelief,
+  halfSockets: boolean,
+  gridUnitMm: number = GRIDFINITY_SPEC.GRID_SIZE,
+  gridUnitMmY: number = gridUnitMm
+): number {
+  const cells = widthUnits * depthUnits;
+  if (cells <= 0) return 0;
+  const perArea = LOW_PROFILE_SAVING_PER_CELL_AREA[relief][halfSockets ? 'half' : 'full'];
+  return perArea * gridUnitMm * gridUnitMmY * cells;
+}
+
+/**
  * The three structural components of a standard bin's solid volume (mm³).
  * Exposed so the bin-designer estimator can reuse the OCCT-calibrated base
  * geometry and add the lip conditionally (and layer its own feature deltas on
@@ -230,7 +263,8 @@ export function estimateStandardBinVolume(
   heightUnits: number,
   gridUnitMm: number = GRIDFINITY_SPEC.GRID_SIZE,
   heightUnitMm: number = GRIDFINITY_SPEC.HEIGHT_UNIT,
-  gridUnitMmY: number = gridUnitMm
+  gridUnitMmY: number = gridUnitMm,
+  lowProfile = false
 ): number {
   const { walls, base, lip } = standardBinSolidComponents(
     widthUnits,
@@ -240,7 +274,10 @@ export function estimateStandardBinVolume(
     heightUnitMm,
     gridUnitMmY
   );
-  return Math.max(0, walls + base + lip);
+  const saving = lowProfile
+    ? lowProfileBaseSaving(widthUnits, depthUnits, 'solid', false, gridUnitMm, gridUnitMmY)
+    : 0;
+  return Math.max(0, walls + base + lip - saving);
 }
 
 /**
@@ -264,7 +301,8 @@ export function estimateStandardBinFilament(
   settings: PrintSettings = DEFAULT_PRINT_SETTINGS,
   gridUnitMm: number = GRIDFINITY_SPEC.GRID_SIZE,
   heightUnitMm: number = GRIDFINITY_SPEC.HEIGHT_UNIT,
-  gridUnitMmY: number = gridUnitMm
+  gridUnitMmY: number = gridUnitMm,
+  lowProfile = false
 ): StandardBinEstimate {
   const volumeMm3 = estimateStandardBinVolume(
     widthUnits,
@@ -272,7 +310,8 @@ export function estimateStandardBinFilament(
     heightUnits,
     gridUnitMm,
     heightUnitMm,
-    gridUnitMmY
+    gridUnitMmY,
+    lowProfile
   );
 
   return estimateFromVolume(volumeMm3, settings);

@@ -6,7 +6,7 @@ import { createTestBin } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { drawerCeilingFit, type LinkedDesignRise } from './drawerCeiling';
-import { LIP_PROTRUSION_MM, STACK_JUNCTION_MM } from './heightUnits';
+import { LIP_PROTRUSION_MM, STACK_JUNCTION_MM, stackJunctionMm } from './heightUnits';
 
 const PLAIN_PLATE: BaseplateHeightParams = { magnetHoles: false, magnetDepth: 2.4 };
 const MAGNET_PLATE: BaseplateHeightParams = { magnetHoles: true, magnetDepth: 2.4 };
@@ -108,6 +108,24 @@ describe('drawerCeilingFit', () => {
       200
     );
     expect(result?.tallestMm).toBeCloseTo(2 * 7 + LIP_PROTRUSION_MM, 5);
+  });
+
+  it('nests an assembly on its stock foot even in a low-profile layout', () => {
+    const lower = bin({ id: binId('lower'), height: heightUnits(4) });
+    const upper = bin({ id: binId('upper'), height: heightUnits(4), layerId: layerId('l2') });
+    const result = (standardFoot: boolean) =>
+      drawerCeilingFit({
+        bins: [lower, upper],
+        layers: LAYERS,
+        heightUnitMm: 7,
+        plate: { ...PLAIN_PLATE, lowProfileBase: true },
+        ceilingMm: 200,
+        linkedRise: (b) =>
+          b.id === upper.id
+            ? { riseMm: 28 + LIP_PROTRUSION_MM, socketless: false, standardFoot }
+            : undefined,
+      })?.tallestMm ?? 0;
+    expect(result(false) - result(true)).toBeCloseTo(STACK_JUNCTION_MM - stackJunctionMm(true), 5);
   });
 
   it('measures a linked design through its own rise, lid included', () => {

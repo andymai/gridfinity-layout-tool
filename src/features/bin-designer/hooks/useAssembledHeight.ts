@@ -41,15 +41,17 @@ export interface AssembledHeightView {
 export function useAssembledHeight(): AssembledHeightView {
   const params = useDesignerStore((s) => s.params);
 
-  const { plate, drawerMm } = useLayoutStore(
+  const { storedPlate, lowProfileBase, drawerMm } = useLayoutStore(
     useShallow((s) => ({
       // An unconfigured layout still seats bins on a standard plate, so fall
       // back to the defaults rather than dropping the row — "adds 0mm" is the
       // answer users came for.
-      plate: s.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+      storedPlate: s.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+      lowProfileBase: s.layout.lowProfileBase === true,
       drawerMm: s.layout.drawer.measuredMm?.height,
     }))
   );
+  const plate = lowProfileBase ? { ...storedPlate, lowProfileBase } : storedPlate;
 
   const expanded = useSettingsStore((s) => s.settings.showAssembledHeightBreakdown);
   const updateSetting = useSettingsStore((s) => s.updateSetting);

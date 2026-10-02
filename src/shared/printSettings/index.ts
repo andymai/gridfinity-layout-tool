@@ -12,6 +12,7 @@ export {
   estimateMeshFilament,
   standardBinSolidComponents,
   lightweightBaseSaving,
+  lowProfileBaseSaving,
   integralFeetVolume,
   detachableFeetVolume,
 } from './standardBinVolume';

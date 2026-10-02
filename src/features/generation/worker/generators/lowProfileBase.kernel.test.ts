@@ -19,7 +19,11 @@ import { stackJunctionMm } from '@/shared/utils/heightUnits';
 import { initTestKernel } from '@/test/initTestKernel';
 import { descentLimitAt, seatDepth } from './__kernel-tests__/binSeating';
 import { stackSeat } from './__kernel-tests__/binStacking';
-import { boundingBox, columnCrossings } from './__kernel-tests__/meshAssertions';
+import {
+  assertKernelReturnedGeometry,
+  boundingBox,
+  columnCrossings,
+} from './__kernel-tests__/meshAssertions';
 
 let generateBin: (params: BinParams, onProgress: undefined, forExport: boolean) => MeshData;
 let generateBaseplate: (
@@ -76,6 +80,7 @@ function bin(low: boolean): MeshData {
       undefined,
       true
     );
+    assertKernelReturnedGeometry(mesh, key);
     meshes.set(key, mesh);
   }
   return mesh;
@@ -108,6 +113,7 @@ function plate(low: boolean): MeshData {
       () => {},
       false
     );
+    assertKernelReturnedGeometry(mesh, key);
     meshes.set(key, mesh);
   }
   return mesh;
@@ -115,15 +121,19 @@ function plate(low: boolean): MeshData {
 
 const ON_GRID = { dx: 0, dy: 0 };
 
+/** Width of the strip inside the plate's +X edge that holds the pushed wall. */
+const PUSHED_WALL_STRIP_MM = 5;
+
 /**
  * Seat depth with the bin pushed `dx` toward +X, probed column by column across
  * the pushed wall. The contact strip there is a fraction of a millimetre wide,
  * which `seatDepth`'s coarse sweep steps straight over.
  */
 function pushedSeat(b: MeshData, p: MeshData, dx: number): number {
-  const dz = boundingBox(p.vertices).maxZ - boundingBox(b.vertices).minZ;
+  const plateBox = boundingBox(p.vertices);
+  const dz = plateBox.maxZ - boundingBox(b.vertices).minZ;
   let worst = Infinity;
-  for (let x = 37; x <= 42; x += 0.01) {
+  for (let x = plateBox.maxX - PUSHED_WALL_STRIP_MM; x <= plateBox.maxX; x += 0.01) {
     worst = Math.min(worst, descentLimitAt(b, p, x, 0, { dx, dy: 0 }, dz));
   }
   return worst;

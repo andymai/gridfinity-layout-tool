@@ -99,8 +99,9 @@ export const GRIDFINITY_SPEC = {
  * short foot still seats on a standard plate's upper taper and a stacking lip,
  * and a stock foot standing in a low pocket still bears on
  * `BASEPLATE vertical - this - (SOCKET_SMALL_TAPER - BASEPLATE_SMALL_TAPER)` of
- * vertical wall (0.6mm of the standard 1.7mm). Cutting from the bottom instead
- * leaves a stock foot no vertical contact at all, and it rattles.
+ * vertical wall: 0.6mm, where a standard pocket gives it 1.7mm of its 1.8mm
+ * band. Cutting from the bottom instead leaves a stock foot no vertical
+ * contact at all, and it rattles.
  */
 export const LOW_PROFILE_BAND_CUT_MM = 1.1;
 

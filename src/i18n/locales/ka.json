@@ -864,6 +864,7 @@
   "settings.resetGridfinityStandard": "Gridfinity-ის სტანდარტზე დაბრუნება",
   "stackSolver.title": "მოარგეთ ყუთები თქვენს უჯრას",
   "stackSolver.description": "ერთმანეთზე დაწყობილი ყუთები ერთმანეთში {junction}mm-ით ჯდება, ამიტომ თითოეული სხეულის სიმაღლეზე {shortfall}mm-ით ნაკლებს ამატებს.",
+  "stackSolver.descriptionMore": "ერთმანეთზე დაწყობილი ყუთები ერთმანეთში {junction}mm-ით ჯდება, ამიტომ თითოეული სხეულის სიმაღლეზე {extra}mm-ით მეტს ამატებს.",
   "stackSolver.unmeasured": "გაზომეთ უჯრის სიმაღლე, რათა ნახოთ, რომელი ყუთის სიმაღლეები ეტევა.",
   "stackSolver.ceiling": "ყველაზე მაღალი ყუთები, რომლებიც {ceiling}mm-ის ქვეშ ეტევა, თითოეული სიმაღლის ერთეული — {unit}mm",
   "stackSolver.rowSingle": "ერთი ყუთი",

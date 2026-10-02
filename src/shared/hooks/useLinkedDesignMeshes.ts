@@ -54,7 +54,10 @@ export interface LinkedDesignMesh {
 // decode/generation failure, or deleted design payload.
 const meshCache = new Map<string, LinkedDesignMesh | null>();
 const MAX_CACHE_ENTRIES = 32;
-const inFlight = new Set<string>();
+// Every waiter is called when its key settles, including one registered by a
+// later mount: an effect that finds its key already in flight would otherwise
+// never hear back, since the effect that started it was cleaned up.
+const inFlight = new Map<string, Set<() => void>>();
 
 // Sequential resolution queue: one design at a time, so a layout with many
 // uncached linked designs doesn't stampede the (single-flight) worker.
@@ -205,8 +208,12 @@ function enqueueResolve(
   lowProfileBase: boolean,
   onSettled: () => void
 ): void {
-  if (inFlight.has(key)) return;
-  inFlight.add(key);
+  const waiters = inFlight.get(key);
+  if (waiters) {
+    waiters.add(onSettled);
+    return;
+  }
+  inFlight.set(key, new Set([onSettled]));
   resolveChain = resolveChain.then(async () => {
     try {
       const designResult = await loadDesign(id);
@@ -219,8 +226,9 @@ function enqueueResolve(
       // every render; a design re-save (new updatedAt) retries naturally.
       setCachedMesh(key, null);
     } finally {
+      const settled = inFlight.get(key);
       inFlight.delete(key);
-      onSettled();
+      for (const waiter of settled ?? []) waiter();
     }
   });
 }
@@ -250,7 +258,10 @@ export function useLinkedDesignMeshes(bins: Bin[]): Map<DesignId, LinkedDesignMe
       if (ref)
         refs.set(
           bin.linkedDesignId,
-          `${ref.id}:${ref.updatedAt}:n${nozzleSizeMm.toFixed(3)}${lowProfileBase ? ':lp' : ''}`
+          `${ref.id}:${ref.updatedAt}:n${nozzleSizeMm.toFixed(3)}${
+            // Only a parametric bin is rebuilt on the layout's foot.
+            lowProfileBase && (ref.kind === undefined || ref.kind === 'bin') ? ':lp' : ''
+          }`
         );
     }
     return refs;

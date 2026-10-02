@@ -22,7 +22,7 @@ import {
   baseplateTotalHeight,
   type BaseplateHeightParams,
 } from '@/shared/printSettings/baseplateHeight';
-import { LIP_PROTRUSION_MM, stackJunctionMm } from './heightUnits';
+import { LIP_PROTRUSION_MM, STACK_JUNCTION_MM, stackJunctionMm } from './heightUnits';
 
 /** Below this the difference is print tolerance, not a fit problem. */
 export const CEILING_EPSILON_MM = 0.05;
@@ -43,6 +43,11 @@ export interface LinkedDesignRise {
    * matching the plain-bin assumption.
    */
   readonly hasLip?: boolean;
+  /**
+   * Stands on a stock foot whatever the layout's profile: an assembly or an
+   * imported mesh, which a low-profile layout does not regenerate.
+   */
+  readonly standardFoot?: boolean;
 }
 
 export interface DrawerCeilingBin {
@@ -99,7 +104,7 @@ function binRise(
   if (linked) {
     return {
       riseMm: linked.riseMm,
-      nestMm: linked.socketless ? 0 : junctionMm,
+      nestMm: linked.socketless ? 0 : linked.standardFoot ? STACK_JUNCTION_MM : junctionMm,
       hasLip: linked.hasLip !== false,
     };
   }

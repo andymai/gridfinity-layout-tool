@@ -408,7 +408,8 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
       printSettings,
       u.params.gridUnitMm,
       u.params.heightUnitMm,
-      u.params.gridUnitMmY
+      u.params.gridUnitMmY,
+      u.params.base.lowProfile === true
     );
     totalGrams += est.gramsFilament * u.quantity;
     totalMinutes += est.printTimeMinutes * u.quantity;

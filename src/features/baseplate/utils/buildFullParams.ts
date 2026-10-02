@@ -224,6 +224,28 @@ function resolveRadiusOutline(
 }
 
 /**
+ * Floor pad mount-down screws add under the plate, from the stored params alone.
+ * Shared with the panel, which has to know the slab height a plate will print
+ * at without the drawer and split plan `buildFullParams` needs.
+ */
+export function resolveScrewPadMm(stored: StoredBaseplateParams): number {
+  if (stored.screwHoles?.enabled !== true) return 0;
+  const stackingOn = stored.stackPrint?.enabled === true;
+  return screwPadThicknessMm(
+    stored.screwHoles,
+    baseplateFloorDepthBeforeScrews({
+      magnetHoles: stackingOn ? false : stored.magnetHoles,
+      magnetDepth: stored.magnetDepth,
+      solidFloor: stackingOn ? false : stored.solidFloor,
+      solidFloorThickness: stored.solidFloorThickness,
+    }),
+    stored.magnetHoles && !stackingOn
+      ? { diameterMm: stored.magnetDiameter, depthMm: stored.magnetDepth }
+      : undefined
+  );
+}
+
+/**
  * Build full generation params from the stored per-layout config.
  *
  * @param drawerOutline - The drawer's non-rectangular boundary, if any.
@@ -329,21 +351,7 @@ export function buildFullParams(
   // unsplit plate would leave interior pieces unfastened, the exact failure
   // per-piece placement exists to prevent. With magnets the shortfall is
   // typically 0.6mm, since the magnet floor already covers most of the recess.
-  const screwPad =
-    screwHoles?.enabled === true
-      ? screwPadThicknessMm(
-          screwHoles,
-          baseplateFloorDepthBeforeScrews({
-            magnetHoles: stackingOn ? false : stored.magnetHoles,
-            magnetDepth: stored.magnetDepth,
-            solidFloor: stackingOn ? false : stored.solidFloor,
-            solidFloorThickness: stored.solidFloorThickness,
-          }),
-          stored.magnetHoles && !stackingOn
-            ? { diameterMm: stored.magnetDiameter, depthMm: stored.magnetDepth }
-            : undefined
-        )
-      : undefined;
+  const screwPad = screwHoles?.enabled === true ? resolveScrewPadMm(stored) : undefined;
   // The connector is only meaningful when margins actually detach. When
   // stacking strips a snapClip style to undefined, the seam gate downstream
   // would read undefined as the dovetail default and emit seams the unstacked

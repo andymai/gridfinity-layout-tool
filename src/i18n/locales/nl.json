@@ -4214,6 +4214,7 @@
   "snapshots.saveCheckpoint": "Checkpoint opslaan",
   "stackSolver.ceiling": "Hoogste bakjes die onder {ceiling} mm passen bij {unit} mm per eenheid",
   "stackSolver.description": "Gestapelde bakjes nestelen {junction}mm in elkaar, dus elk bakje voegt {shortfall}mm minder toe dan zijn romphoogte.",
+  "stackSolver.descriptionMore": "Gestapelde bakjes nestelen {junction}mm in elkaar, dus elk bakje voegt {extra}mm meer toe dan zijn romphoogte.",
   "stackSolver.overlayPitch": "stapelt +{pitch}mm",
   "stackSolver.rowFit": "{units} e · {total} mm · {slack} mm over",
   "stackSolver.rowNoFit": "Niets past",

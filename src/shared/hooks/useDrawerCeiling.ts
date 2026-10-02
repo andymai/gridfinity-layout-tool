@@ -42,10 +42,14 @@ export function useDrawerCeiling(): DrawerCeilingFit | null {
       // A registry entry saved before `assembledRiseMm` existed, or an imported
       // mesh that has no params to derive one from, measures as a plain bin.
       if (ref?.assembledRiseMm === undefined) return undefined;
+      // Only a parametric bin is rebuilt on the layout's foot.
+      const isBin = ref.kind === undefined || ref.kind === 'bin';
       return {
-        riseMm: ref.assembledRiseMm,
+        riseMm:
+          ref.assembledRiseMm - (lowProfileBase && isBin ? (ref.lowProfileRiseDeltaMm ?? 0) : 0),
         socketless: ref.socketless ?? false,
         hasLip: ref.hasLip,
+        standardFoot: !isBin,
       };
     };
 

@@ -23,6 +23,13 @@ describe('v2 layout.setLowProfileBase', () => {
     expect(result.value.event.payload).toEqual({ enabled: true, previousEnabled: false });
   });
 
+  it('captures an enabled layout for undo', () => {
+    const low = applyEnabled(makeLayout(), true);
+    const result = setLowProfileBase.handle({ enabled: false }, { aggregate: low });
+    if (!isOk(result)) throw new Error('handle failed');
+    expect(result.value.event.payload).toEqual({ enabled: false, previousEnabled: true });
+  });
+
   it('stores true when enabled', () => {
     expect(applyEnabled(makeLayout(), true).lowProfileBase).toBe(true);
   });

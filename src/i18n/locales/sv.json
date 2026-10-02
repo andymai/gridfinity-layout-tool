@@ -4214,6 +4214,7 @@
   "snapshots.saveCheckpoint": "Spara kontrollpunkt",
   "stackSolver.ceiling": "Högsta lådor som får plats under {ceiling} mm vid {unit} mm per enhet",
   "stackSolver.description": "Staplade lådor nästlas {junction}mm i varandra, så varje låda lägger till {shortfall}mm mindre än sin kroppshöjd.",
+  "stackSolver.descriptionMore": "Staplade lådor nästlas {junction}mm i varandra, så varje låda lägger till {extra}mm mer än sin kroppshöjd.",
   "stackSolver.overlayPitch": "staplar +{pitch}mm",
   "stackSolver.rowFit": "{units} e · {total} mm · {slack} mm över",
   "stackSolver.rowNoFit": "Inget får plats",

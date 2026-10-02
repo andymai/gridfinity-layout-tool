@@ -14,7 +14,7 @@ import { useEffect, useMemo } from 'react';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useShallow } from 'zustand/react/shallow';
-import { MAGNET_FLOOR, plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
+import { baseplateTotalHeight } from '@/shared/printSettings/baseplateHeight';
 import { getAccentHex } from '@/shared/utils/color';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
@@ -276,9 +276,9 @@ export function ConnectorKeyMeshes() {
     [tiling, fullParams]
   );
 
-  const totalHeight =
-    plateProfileHeightMm(lowProfileBase) +
-    (fullParams.magnetHoles ? MAGNET_FLOOR + fullParams.magnetDepth : 0);
+  // The worker's own derivation, so a floor or screw pad that makes a
+  // low-profile plate tall enough for a clip shows the clip here too.
+  const totalHeight = baseplateTotalHeight({ ...fullParams, lowProfileBase });
 
   const isSnapClip = fullParams.connectorStyle === 'snapClip';
   // On a slab too thin to flex, the worker skips snap pockets — so the preview

@@ -83,6 +83,13 @@ export interface CustomBinRef {
    */
   readonly assembledRiseMm?: number;
   /**
+   * How much lower {@link assembledRiseMm} reads inside a low-profile layout,
+   * which regenerates the design on the shorter foot. Only a base-only bin and
+   * a lid stack grid change height that way, so it is absent for everything
+   * else. The rise above is always the standard-foot figure.
+   */
+  readonly lowProfileRiseDeltaMm?: number;
+  /**
    * Whether the base has no socket. Such a design neither nests into the bin
    * below nor seats in a baseplate, so it stands on whatever is under it.
    */
@@ -169,9 +176,18 @@ export function registryEdgeFields(params: {
  */
 export function registryHeightFields(
   params: AssembledHeightSource
-): Pick<CustomBinRef, 'assembledRiseMm' | 'socketless' | 'hasLip'> {
+): Pick<CustomBinRef, 'assembledRiseMm' | 'lowProfileRiseDeltaMm' | 'socketless' | 'hasLip'> {
+  const rise = assembledHeight({
+    ...params,
+    base: { ...params.base, lowProfile: undefined },
+  }).totalMm;
+  const lowRise = assembledHeight({
+    ...params,
+    base: { ...params.base, lowProfile: true },
+  }).totalMm;
   return {
-    assembledRiseMm: assembledHeight(params).totalMm,
+    assembledRiseMm: rise,
+    ...(Math.abs(rise - lowRise) > 1e-6 ? { lowProfileRiseDeltaMm: rise - lowRise } : {}),
     socketless: isSocketlessBase(params.base.style),
     hasLip: params.base.stackingLip,
   };
@@ -269,6 +285,7 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     halfSockets,
     kind,
     assembledRiseMm,
+    lowProfileRiseDeltaMm,
     socketless,
     hasLip,
     knifeRest,
@@ -306,6 +323,9 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     Number.isFinite(assembledRiseMm) &&
     assembledRiseMm > 0
       ? { assembledRiseMm }
+      : {}),
+    ...(typeof lowProfileRiseDeltaMm === 'number' && Number.isFinite(lowProfileRiseDeltaMm)
+      ? { lowProfileRiseDeltaMm }
       : {}),
     ...(typeof socketless === 'boolean' ? { socketless } : {}),
     ...(typeof hasLip === 'boolean' ? { hasLip } : {}),
@@ -404,8 +424,14 @@ export function upsertRegistryEntry(ref: CustomBinRef): Result<void, StorageErro
 function withCarriedGeometry(next: CustomBinRef, prev: CustomBinRef): CustomBinRef {
   return {
     ...next,
+    // The delta belongs to the rise it was measured with: carried only with it.
     ...(next.assembledRiseMm === undefined && prev.assembledRiseMm !== undefined
-      ? { assembledRiseMm: prev.assembledRiseMm }
+      ? {
+          assembledRiseMm: prev.assembledRiseMm,
+          ...(prev.lowProfileRiseDeltaMm !== undefined
+            ? { lowProfileRiseDeltaMm: prev.lowProfileRiseDeltaMm }
+            : {}),
+        }
       : {}),
     ...(next.socketless === undefined && prev.socketless !== undefined
       ? { socketless: prev.socketless }

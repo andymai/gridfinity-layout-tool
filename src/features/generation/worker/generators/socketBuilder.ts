@@ -417,7 +417,7 @@ function getCellSocketTemplate(
     quantize(cellW_mm),
     quantize(cellD_mm),
     forExport,
-    ...(socketHeight !== SOCKET_HEIGHT ? [`sh${quantize(socketHeight)}`] : [])
+    ...(quantize(socketHeight) !== quantize(SOCKET_HEIGHT) ? [`sh${quantize(socketHeight)}`] : [])
   );
   const cached = getCellSocketTemplateCache(key);
   if (cached) return cached;

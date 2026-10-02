@@ -153,14 +153,6 @@ export function BaseSection() {
             renderExpanded={(style) =>
               style === 'none' ? null : (
                 <div className="space-y-3">
-                  {/* Reachable when the floor that made the clip fit is taken
-                      away afterwards; the worker then cuts no clip pockets. */}
-                  {style === 'snapClip' &&
-                    !snapClipFitsPlate(baseplateParams, lowProfileBase, nozzleSizeMm) && (
-                      <p className="text-label leading-relaxed text-warning">
-                        {t('baseplate.connectors.snapClipTooThin')}
-                      </p>
-                    )}
                   <SettingsRow
                     label={t('baseplate.connectorFit.label')}
                     tooltip={t('baseplate.connectorFit.info')}
@@ -228,6 +220,18 @@ export function BaseSection() {
             }
           />
         )}
+        {/* A floor the clip relied on can be taken away after the clip was
+            chosen; the plate then prints with no clip pockets, so say so where
+            the choice still shows as selected. */}
+        {tiling?.isSplit &&
+          !stackEnabled &&
+          baseplateParams.connectorNubs === true &&
+          baseplateParams.connectorStyle === 'snapClip' &&
+          !snapClipFitsPlate(baseplateParams, lowProfileBase, nozzleSizeMm) && (
+            <p className="text-label leading-relaxed text-warning">
+              {t('baseplate.connectors.snapClipTooThin')}
+            </p>
+          )}
         {!stackEnabled && (
           <>
             <div className="border-t border-stroke-subtle pt-3">

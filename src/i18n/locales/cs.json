@@ -4214,6 +4214,7 @@
   "snapshots.saveCheckpoint": "Uložit kontrolní bod",
   "stackSolver.ceiling": "Nejvyšší zásobníky do {ceiling} mm při {unit} mm na jednotku",
   "stackSolver.description": "Stohované biny se do sebe zasunou o {junction} mm, takže každý přidá o {shortfall} mm méně, než je výška jeho těla.",
+  "stackSolver.descriptionMore": "Stohované biny se do sebe zasunou o {junction} mm, takže každý přidá o {extra} mm více, než je výška jeho těla.",
   "stackSolver.overlayPitch": "stohuje +{pitch} mm",
   "stackSolver.rowFit": "{units} j · {total} mm · {slack} mm zbývá",
   "stackSolver.rowNoFit": "Nic se nevejde",

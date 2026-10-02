@@ -6,7 +6,12 @@ import { mesh } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import { initTestKernel } from '@/test/initTestKernel';
 import { boundingBox } from './__kernel-tests__/meshAssertions';
-import { HOLE_OFFSET, SOCKET_HEIGHT, PLATE_PROFILE_HEIGHT } from './generatorTypes';
+import {
+  HOLE_OFFSET,
+  SOCKET_HEIGHT,
+  PLATE_PROFILE_HEIGHT,
+  LOW_PROFILE_BAND_CUT_MM,
+} from './generatorTypes';
 import {
   buildScrewCutters,
   resolveScrewHoles,
@@ -303,6 +308,32 @@ describe('buildScrewCutters', () => {
       expect(bb.minZ).toBeLessThanOrEqual(-totalHeight);
     } finally {
       cutter.delete();
+    }
+  });
+
+  it('moves a floor entry up with a low-profile pocket floor', () => {
+    const lowProfile = PLATE_PROFILE_HEIGHT - LOW_PROFILE_BAND_CUT_MM;
+    const lowTotal = totalHeight - LOW_PROFILE_BAND_CUT_MM;
+    const [standard] = buildScrewCutters(
+      [{ x: 0, y: 0, site: 'floor' }],
+      COUNTERSINK,
+      totalHeight,
+      PLATE_PROFILE_HEIGHT
+    );
+    const [low] = buildScrewCutters(
+      [{ x: 0, y: 0, site: 'floor' }],
+      COUNTERSINK,
+      lowTotal,
+      lowProfile
+    );
+    try {
+      const a = bbox(standard);
+      const b = bbox(low);
+      expect(b.maxZ - a.maxZ).toBeCloseTo(LOW_PROFILE_BAND_CUT_MM, 2);
+      expect(b.minZ).toBeLessThanOrEqual(-lowTotal);
+    } finally {
+      standard.delete();
+      low.delete();
     }
   });
 

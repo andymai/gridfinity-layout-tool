@@ -72,10 +72,15 @@ export function HeightUnitSolver({
   return (
     <div className={`space-y-2 ${labelClass}`}>
       <p className="text-content-tertiary">
-        {t('stackSolver.description', {
-          junction: round2(junctionMm),
-          shortfall: round2(junctionMm - LIP_PROTRUSION_MM),
-        })}
+        {junctionMm >= LIP_PROTRUSION_MM
+          ? t('stackSolver.description', {
+              junction: round2(junctionMm),
+              shortfall: round2(junctionMm - LIP_PROTRUSION_MM),
+            })
+          : t('stackSolver.descriptionMore', {
+              junction: round2(junctionMm),
+              extra: round2(LIP_PROTRUSION_MM - junctionMm),
+            })}
       </p>
       <p className="text-content-tertiary">
         {t('stackSolver.ceiling', {

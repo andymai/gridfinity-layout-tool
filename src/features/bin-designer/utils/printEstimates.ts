@@ -30,6 +30,7 @@ import {
   scalePrintTime,
   standardBinSolidComponents,
   lightweightBaseSaving,
+  lowProfileBaseSaving,
   integralFeetVolume,
   detachableFeetVolume,
   type PrintSettings,
@@ -207,6 +208,26 @@ function computeBinVolume(params: BinParams): number {
       params.width,
       params.depth,
       isUndersideRelief(params.base),
+      params.base.halfSockets,
+      params.gridUnitMm,
+      gridUnitMmY
+    );
+  }
+
+  // A low-profile base cuts the vertical band out of feet that are solid,
+  // shelled or relieved, and each saves a different amount. Detachable feet
+  // are priced by their own kind below and keep the standard figure.
+  if (params.base.lowProfile === true && !isSocketlessBase(params.base.style) && !feetDetach) {
+    const relief =
+      params.base.lightweight || params.base.spacer
+        ? isUndersideRelief(params.base)
+          ? 'underside'
+          : 'interior'
+        : 'solid';
+    volume -= lowProfileBaseSaving(
+      params.width,
+      params.depth,
+      relief,
       params.base.halfSockets,
       params.gridUnitMm,
       gridUnitMmY
