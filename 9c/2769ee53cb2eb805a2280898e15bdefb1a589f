@@ -1,0 +1,138 @@
+src/shared/utils/drawerCeiling.ts
+  s_3bb28d5c2ea1a9::t_07edcbb6d1f3a4 25,46-50,107
+src/features/design-linking/hooks/useQuickExport.ts
+  s_3bb28d5c2ea1a9::t_45ec63f2ddac78 40-41,66
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_3bb28d5c2ea1a9::t_81fc38e5f17d7c 163-165
+  s_3bb28d5c2ea1a9::t_3e3f7b748db8ad 40
+src/shared/printSettings/gridfinityGeometry.ts
+  s_3bb28d5c2ea1a9::t_3e3f7b748db8ad 102
+  s_3bb28d5c2ea1a9::t_7d2d907616ebfa 103-104
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/useDesignGeometries.test.ts
+  s_3bb28d5c2ea1a9::t_65d8ecdcbd0e45 75-91
+  s_3bb28d5c2ea1a9::t_ea46fd95436c78 8
+src/i18n/locales/zh-CN.json
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 4217
+  s_3bb28d5c2ea1a9::t_b29bb77c6e5e12 151
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_3bb28d5c2ea1a9::t_7a020afc9a3305 2047-2061
+src/features/generation/worker/generators/shapeCache.ts
+  s_3bb28d5c2ea1a9::t_81fc38e5f17d7c 195-197
+src/features/generation/worker/generators/baseplateScrews.test.ts
+  s_3bb28d5c2ea1a9::t_683a1bef5e980f 10-14,314-336
+  s_3bb28d5c2ea1a9::t_0fd26a83862fdf 9,337-339
+src/i18n/locales/pt-BR.json
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 4217
+src/shared/hooks/useDrawerCeiling.ts
+  s_3bb28d5c2ea1a9::t_07edcbb6d1f3a4 45-46,52
+  s_3bb28d5c2ea1a9::t_1127c90869e68c 48-49
+src/shell/registrations/LinkedRiseRegistration.tsx
+  s_3bb28d5c2ea1a9::t_07edcbb6d1f3a4 48-51,55-59
+src/features/generation/worker/generators/socketBuilder.ts
+  s_3bb28d5c2ea1a9::t_81fc38e5f17d7c 420
+src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
+  s_3bb28d5c2ea1a9::t_a02b306f448768 223-234
+src/i18n/locales/nl.json
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 4217
+src/features/bin-designer/store/customBinRegistry.ts
+  s_3bb28d5c2ea1a9::t_ccffdf25763634 86-91,179,189-190,288,327-329,427,429-434
+  s_3bb28d5c2ea1a9::t_1127c90869e68c 180-187
+  s_3bb28d5c2ea1a9::t_bca39faff6a8ab 85
+src/features/baseplate/utils/buildFullParams.ts
+  s_3bb28d5c2ea1a9::t_a099420ca1d3aa 227-247,354
+  s_3bb28d5c2ea1a9::t_ad07d55005844a 226
+src/features/baseplate/utils/snapClipFit.ts
+  s_3bb28d5c2ea1a9::t_e6cd2ad87663ec 4,10,17,19-23
+src/i18n/locales/fr.json
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 4217
+src/i18n/locales/ja.json
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 4217
+src/i18n/locales/pl.json
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 4217
+src/i18n/locales/ka.json
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 867
+src/features/generation/worker/generators/scenarios/lowProfile.ts
+  s_3bb28d5c2ea1a9::t_7d2d907616ebfa 7-9,67,69
+src/i18n/locales/es.json
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 4217
+  s_3bb28d5c2ea1a9::t_b29bb77c6e5e12 152
+api/lib/designerBaseValidation.test.ts
+  s_3bb28d5c2ea1a9::t_f8545fa0443337 23-34
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_3bb28d5c2ea1a9::t_1127c90869e68c 297
+  s_3bb28d5c2ea1a9::t_0620a1ca6a3e98 277-296,298-301
+src/features/bin-designer/hooks/useSyncPhysicalUnits.test.ts
+  s_3bb28d5c2ea1a9::t_abca0a3c843494 88-89
+src/i18n/locales/cs.json
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 4217
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_3bb28d5c2ea1a9::t_609737afe96e0a 411-412
+src/i18n/locales/ko.json
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 4217
+src/i18n/locales/uk.json
+  s_3bb28d5c2ea1a9::t_b29bb77c6e5e12 152
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 4217
+src/i18n/locales/nb.json
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 4217
+src/core/cqrs/v2/domain/layout/setLowProfileBase.test.ts
+  s_3bb28d5c2ea1a9::t_abca0a3c843494 26-32
+src/features/generation/worker/generators/baseplatePockets.ts
+  s_3bb28d5c2ea1a9::t_81fc38e5f17d7c 40-42
+src/shared/components/HeightUnitSolver/HeightUnitSolver.tsx
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 75-83
+src/i18n/locales/sv.json
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 4217
+src/features/bin-designer/hooks/useDesignerSharing.ts
+  s_3bb28d5c2ea1a9::t_45ec63f2ddac78 9,67-68
+src/i18n/locales/it.json
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 4217
+src/shared/utils/drawerCeiling.test.ts
+  s_3bb28d5c2ea1a9::t_0620a1ca6a3e98 9,113-123,127-128
+  s_3bb28d5c2ea1a9::t_1127c90869e68c 124-126
+  s_3bb28d5c2ea1a9::t_86a37ef19fac2f 129-130
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_3bb28d5c2ea1a9::t_1007d96edec2d3 57-60,211-216,229,231
+  s_3bb28d5c2ea1a9::t_3e3f7b748db8ad 261-264
+src/i18n/locales/en.ts
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 1004-1005
+src/features/generation/worker/generators/lowProfileBase.kernel.test.ts
+  s_3bb28d5c2ea1a9::t_5ea64fdbd31f74 22-26,83,116,124-126,133-134,136
+src/i18n/locales/de.json
+  s_3bb28d5c2ea1a9::t_0ed3e34cb11edf 4217
+src/shared/printSettings/index.ts
+  s_3bb28d5c2ea1a9::t_62e8b7c70c54b1 15
+src/features/bin-designer/utils/printEstimates.ts
+  s_3bb28d5c2ea1a9::t_62e8b7c70c54b1 33,217-230
+  s_3bb28d5c2ea1a9::t_802d0c2f6d445a 231-236
+src/features/bin-designer/hooks/useAssembledHeight.ts
+  s_3bb28d5c2ea1a9::t_609cec53fa5b07 44,49-50,54
+src/core/storage/designStorePort.ts
+  s_3bb28d5c2ea1a9::t_ccffdf25763634 87
+src/shared/components/HeightUnitSolver/HeightUnitSolver.test.tsx
+  s_3bb28d5c2ea1a9::t_8daac23829d860 55-61
+src/shared/printSettings/standardBinVolume.test.ts
+  s_3bb28d5c2ea1a9::t_9021ed02d0ad2f 7-8,41-51,53-69
+src/features/baseplate/utils/snapClipFit.test.ts
+  s_3bb28d5c2ea1a9::t_e6cd2ad87663ec 19-37
+src/features/baseplate/components/BaseplatePreview/ConnectorKeyMeshes.tsx
+  s_3bb28d5c2ea1a9::t_1e67df16664e00 17,279-281
+src/shared/printSettings/standardBinVolume.ts
+  s_3bb28d5c2ea1a9::t_62e8b7c70c54b1 157-188,266-267,277-280,304-305,313-314
+  s_3bb28d5c2ea1a9::t_dd59d2fa98de3d 156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9c2769ee53cb2eb805a2280898e15bdefb1a589f",
+  "prompts": {},
+  "sessions": {
+    "s_3bb28d5c2ea1a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cfca2844-db93-4f92-8827-b0b886470ec4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
