@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.502.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.501.0...gridfinity-layout-tool-v4.502.0) (2026-10-02)
+
+
+### Features
+
+* **bin-designer:** text color and flat finish on lids and label plates ([#4445](https://github.com/andymai/gridfinity-layout-tool/issues/4445)) ([5693dd7](https://github.com/andymai/gridfinity-layout-tool/commit/5693dd7ca4522d2ddcba73c11089920adcd9aa2a))
+
+
+### Bug Fixes
+
+* **generation:** budget preview time per finger-scoop ramp ([#4448](https://github.com/andymai/gridfinity-layout-tool/issues/4448)) ([19a5141](https://github.com/andymai/gridfinity-layout-tool/commit/19a5141e697e9745fd6386a35945aeede9d4b801))
+
 ## [4.501.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.500.0...gridfinity-layout-tool-v4.501.0) (2026-10-01)
 
 
