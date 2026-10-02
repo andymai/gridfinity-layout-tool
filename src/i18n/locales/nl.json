@@ -1243,7 +1243,7 @@
   "binDesigner.lid.compat.slideInteriorBlocked": "Scheidingswanden, labellipjes of een schep steken in de baan van het deksel en blokkeren het. Zet „Binnenruimte vrijmaken” aan onder Geavanceerd om ze weg te snijden.",
   "binDesigner.lid.compat.slideLongSpan": "Het deksel is breed genoeg om tussen de rails door te buigen. Verhoog de dikte onder Geavanceerd.",
   "binDesigner.lid.compat.slideRimInterrupted": "De stapelrand is weggesneden op de wand {sides} zodat het deksel erin kan schuiven. Op de andere drie kun je nog stapelen.",
-  "binDesigner.lid.compat.slideCatchThin": "De vingergreep is zo dik als de invoerwand min de schuifspeling en wordt hier te dun om goed te printen. Verklein de speling onder Geavanceerd of gebruik een dikkere wand.",
+  "binDesigner.lid.compat.slideCatchThin": "De vingergreep is zo dik als de invoerwand min de schuifspeling en wordt hier te dun om goed te printen. Verklein de speling onder Fijnafstelling of gebruik een dikkere wand.",
   "binDesigner.lid.compat.slideUnbuildable": "Deze bak kan geen schuifdeksel dragen: hij is te klein of te ondiep voor de geleiding, of zijn stijl heeft geen holte om af te dekken.",
   "binDesigner.lid.compat.slideWallPattern": "Het wandpatroon perforeert precies de wanden waar de rails aan vastzitten, wat ze verzwakt.",
   "binDesigner.lid.compat.tallDividerPieces": "Verdeelstukken zijn hoger dan de bakbinnenkant — het deksel zal niet zitten met ze geplaatst.",

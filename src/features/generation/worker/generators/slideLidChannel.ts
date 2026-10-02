@@ -209,12 +209,13 @@ export interface SlideLidChannelSolids {
 /**
  * Build the channel in world coordinates.
  *
- * The caller owns every returned solid. Returned as three lists rather than
- * applied here because the ORDER matters and belongs to the stage: both cuts
- * come BEFORE the fuse. The mouth relief would otherwise take the shelf and
- * retainer away with the corner arc they run into, and the notch would saw the
- * entry bars off inside the window they line. The bars never reach into the
- * plate's slot, so refilling the window with them leaves it open.
+ * The caller owns every returned solid. Returned as one list per step rather
+ * than applied here because the ORDER matters and belongs to the stage: the
+ * lining first, then the mouth relief and notch BEFORE the bars fuse, and the
+ * finishing cuts after. Cut after the fuse, the mouth relief would take the
+ * shelf and retainer away with the corner arc they run into, and the notch
+ * would saw the entry bars off inside the window they line. The bars never
+ * reach into the plate's slot, so refilling the window with them leaves it open.
  */
 export function buildSlideLidChannel(
   geometry: SlideLidGeometry,
