@@ -4,6 +4,7 @@ import { PhysicalUnitsSection } from './PhysicalUnitsSection';
 import { useSettingsStore } from '@/core/store/settings';
 import { useLayoutStore } from '@/core/store/layout';
 import { mm } from '@/core/types';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { resetAllStores } from '@/test/testUtils';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -67,5 +68,31 @@ describe('PhysicalUnitsSection', () => {
     });
     render(<PhysicalUnitsSection />);
     expect(screen.getByLabelText('gridUnitInput.yAriaLabel')).toHaveValue(30);
+  });
+
+  it('turns the layout low-profile base on and back off', () => {
+    render(<PhysicalUnitsSection />);
+    const toggle = screen.getByRole('switch', { name: 'baseplate.lowProfileBase' });
+    fireEvent.click(toggle);
+    expect(useLayoutStore.getState().layout.lowProfileBase).toBe(true);
+    fireEvent.click(toggle);
+    expect('lowProfileBase' in useLayoutStore.getState().layout).toBe(false);
+  });
+
+  it('refuses the low-profile base while snap clips would no longer fit', () => {
+    const layout = useLayoutStore.getState().layout;
+    useLayoutStore.setState({
+      layout: {
+        ...layout,
+        baseplateParams: {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          connectorNubs: true,
+          connectorStyle: 'snapClip',
+        },
+      },
+    });
+    render(<PhysicalUnitsSection />);
+    expect(screen.getByRole('switch', { name: 'baseplate.lowProfileBase' })).toBeDisabled();
+    expect(screen.getByText('baseplate.lowProfileBaseSnapClipBlocked')).toBeInTheDocument();
   });
 });
