@@ -1,0 +1,34 @@
+src/shared/printSettings/standardBinVolume.ts
+  s_3bb28d5c2ea1a9::t_8c31c39f2e7dc7 164-165,175-180
+  s_3bb28d5c2ea1a9::t_bfb92ba1a07145 181
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_3bb28d5c2ea1a9::t_67b992dfb9c166 961-972
+src/shared/printSettings/index.ts
+  s_3bb28d5c2ea1a9::t_8c31c39f2e7dc7 16
+src/features/bin-designer/store/customBinRegistry.ts
+  s_3bb28d5c2ea1a9::t_8c31c39f2e7dc7 327-332
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_3bb28d5c2ea1a9::t_8c31c39f2e7dc7 292,294
+  s_3bb28d5c2ea1a9::t_67b992dfb9c166 304-313
+src/shared/hooks/useDrawerCeiling.ts
+  s_3bb28d5c2ea1a9::t_b6c957376df4c4 18
+  s_3bb28d5c2ea1a9::t_c8b82fd328bac7 43,46-56
+src/features/bin-designer/utils/printEstimates.ts
+  s_3bb28d5c2ea1a9::t_8c31c39f2e7dc7 34,245-247
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "af9c6348bf9d5989b44a020f1d77c5fc1bb499a0",
+  "prompts": {},
+  "sessions": {
+    "s_3bb28d5c2ea1a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cfca2844-db93-4f92-8827-b0b886470ec4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
