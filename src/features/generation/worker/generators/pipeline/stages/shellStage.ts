@@ -33,7 +33,12 @@ import {
   hasMultipleCompartments,
 } from '../../compartmentBuilder';
 import { isPartialMask } from '@/shared/utils/cellMask';
-import { getShellCache, setShellCache } from '../../shapeCache';
+import {
+  getFeetHoledBodyCache,
+  getShellCache,
+  setFeetHoledBodyCache,
+  setShellCache,
+} from '../../shapeCache';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
 import { applyPinHoles, buildDetachablePinHoles } from '../../detachableFeetBuilder';
@@ -409,7 +414,7 @@ export const shellStage: PipelineStage = {
     // and combined alongside the bin the way a lid is.
     //
     // Cutting here rather than before `setShellCache` is deliberate: the plain
-    // body stays cached under `shellKey`, and the holed one gets its own entry.
+    // body stays cached under `shellKey`, and the holed one has its own cache.
     if (dim.detachableFeet) {
       const resolved = resolveDetachableFeet(params);
       if (resolved.placements.length > 0) {
@@ -425,13 +430,13 @@ export const shellStage: PipelineStage = {
           screw: resolved.screw,
         };
         const holedKey = compactKey(JSON.stringify(['feet-holes-v1', dim.shellKey, holeOpts]));
-        const cachedHoled = getShellCache(holedKey);
+        const cachedHoled = getFeetHoledBodyCache(holedKey);
         if (cachedHoled) {
           body.delete();
           body = cachedHoled;
         } else {
           const holed = applyPinHoles(body, buildDetachablePinHoles(holeOpts));
-          setShellCache(holedKey, holed);
+          setFeetHoledBodyCache(holedKey, holed);
           body = translate(holed, [0, 0, 0]);
         }
       }

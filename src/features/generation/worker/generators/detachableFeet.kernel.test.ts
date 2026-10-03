@@ -56,6 +56,7 @@ type BuildCell = (w: number, d: number) => Shape3D;
 let buildDetachableFeet: BuildFeet;
 let buildDetachablePinHoles: BuildPinHoles;
 let volumeOf: (shape: Shape3D) => number;
+let differenceVolume: (a: Shape3D, b: Shape3D) => number;
 let buildSingleCellSocket: BuildCell;
 let meshOf: (shape: Shape3D) => MeshData;
 
@@ -66,8 +67,16 @@ beforeAll(async () => {
   buildDetachablePinHoles = feetModule.buildDetachablePinHoles;
   MATING_RIM_RELIEF_MM = feetModule.MATING_RIM_RELIEF_MM;
   buildSingleCellSocket = (await import('./socketBuilder')).buildSingleCellSocket;
-  const { mesh, measureVolume, unwrap } = await import('brepjs');
+  const { mesh, measureVolume, unwrap, cut } = await import('brepjs');
   volumeOf = (shape) => unwrap(measureVolume(shape));
+  differenceVolume = (a, b) => {
+    const rest = unwrap(cut(a, b));
+    try {
+      return unwrap(measureVolume(rest));
+    } finally {
+      rest.delete();
+    }
+  };
   const { toIndexedMeshData } = await import('./meshUtils');
   meshOf = (shape) => {
     const indexed = toIndexedMeshData(mesh(shape, { tolerance: 0.01, angularTolerance: 0.1 }));
@@ -447,7 +456,10 @@ describe('detachable foot geometry', () => {
       try {
         if (!pinHoles || !alone) throw new Error('expected a hole tool');
         expect(volumeOf(alone)).toBeCloseTo(volumeOf(pinHoles), 6);
-        expect(boundingBox(meshOf(alone).vertices)).toEqual(boundingBox(meshOf(pinHoles).vertices));
+        // Equal volumes could still place a hole elsewhere; an empty symmetric
+        // difference cannot.
+        expect(differenceVolume(alone, pinHoles)).toBeCloseTo(0, 6);
+        expect(differenceVolume(pinHoles, alone)).toBeCloseTo(0, 6);
       } finally {
         feet.forEach((f) => f.delete());
         pinHoles?.delete();

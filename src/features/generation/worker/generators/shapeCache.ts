@@ -75,6 +75,10 @@ const shellCache = new LRUCache<Shape3D>('shell', 15, disposeShape);
 // slabWithPocketsCache resume. Like shellCache it holds BASE/LIP/feature
 // face-origin tags, so reads must preserve metadata (see getBinBodyCache).
 const binBodyCache = new LRUCache<Shape3D>('bin-body', 12, disposeShape);
+// Detachable-feet body with its floor holes cut, keyed on the shell key plus the
+// hole inputs. Separate from shellCache so a feet design does not take two of
+// its entries. Same face-origin handling as shellCache.
+const feetHoledBodyCache = new LRUCache<Shape3D>('feet-holed-body', 8, disposeShape);
 
 // Per-cell-size loft templates. A uniform grid lofts one cell socket and clones
 // it per position instead of re-lofting every cell (mirrors the baseplate
@@ -123,6 +127,7 @@ const staticLruCaches: readonly LRUCache<Shape3D>[] = [
   shellCache,
   cellSocketTemplateCache,
   binBodyCache,
+  feetHoledBodyCache,
 ];
 
 export function socketCacheKey(
@@ -227,6 +232,17 @@ export function getShellCache(key: string): Shape3D | null {
 
 export function setShellCache(key: string, shape: Shape3D): void {
   shellCache.set(key, shape);
+}
+
+/** Holed detachable-feet body, read as a metadata-preserving clone like getShellCache. */
+export function getFeetHoledBodyCache(key: string): Shape3D | null {
+  const cached = feetHoledBodyCache.get(key);
+  if (cached === undefined) return null;
+  return translate(cached, [0, 0, 0]);
+}
+
+export function setFeetHoledBodyCache(key: string, shape: Shape3D): void {
+  feetHoledBodyCache.set(key, shape);
 }
 
 /**
