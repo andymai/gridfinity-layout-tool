@@ -1,0 +1,42 @@
+src/shared/utils/slideLidLiningOpenings.ts
+  s_d06c36a0712871::t_8fb8b0e320a28e 1-85
+src/shared/utils/lipGapPlan.test.ts
+  s_d06c36a0712871::t_1ef5c871f01cca 283-284
+  s_d06c36a0712871::t_42cd684aa19d19 273-277
+  s_d06c36a0712871::t_010387c8472b13 15,268-272,278-282,285-294
+  s_d06c36a0712871::t_8c05863f9c9719 295-296
+src/shared/utils/slideLidLiningOpenings.test.ts
+  s_d06c36a0712871::t_fa3ba5e2f05404 1-103
+src/features/generation/worker/generators/slideLidSeating.scenario.test.ts
+  s_d06c36a0712871::t_fa10647000bfff 20,22,218-238
+  s_d06c36a0712871::t_daf37a7ad458b5 239-241
+src/shared/utils/slideLidPlan.ts
+  s_d06c36a0712871::t_5b34cb3b673ac2 360-372,834
+src/features/generation/worker/generators/slideLidChannel.ts
+  s_d06c36a0712871::t_631b78f21ec79b 19,172-183
+src/features/bin-designer/utils/slideLidPlanForParams.ts
+  s_d06c36a0712871::t_91d751f7f4eefd 16,23,50,72-76
+src/shared/utils/lipGapPlan.ts
+  s_d06c36a0712871::t_b861edba0ec769 467
+  s_d06c36a0712871::t_ee7bd50d0758d3 121-136,146,240-241,322
+src/features/bin-designer/utils/slideLidPlanForParams.test.ts
+  s_d06c36a0712871::t_3844601c5f07f4 95-110
+src/features/generation/worker/generators/__kernel-tests__/slideLidSeating.ts
+  s_d06c36a0712871::t_fa10647000bfff 191
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "72611c5519719bcdb23ecdeb62e6598cce8f7d39",
+  "prompts": {},
+  "sessions": {
+    "s_d06c36a0712871": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "87561265-df90-4bb7-bd9a-13f9b110065f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
