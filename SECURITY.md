@@ -84,9 +84,8 @@ target versions are frozen, so the patches won't rot), then routed to
 `minimatch@3` and `brace-expansion@1.x` from the tree entirely, so the scan goes
 green on the version the advisory itself names as fixed.
 
-**Committed `pnpm patch`es reproduce on a clean install.** The three patches in
-[`patches/`](patches/) (the two above, plus a `brepjs` OCCT-handle-disposal fix)
-are each pinned by a content `patch_hash` in [`pnpm-lock.yaml`](pnpm-lock.yaml),
+**Committed `pnpm patch`es reproduce on a clean install.** Every patch in
+[`patches/`](patches/) is pinned by a content `patch_hash` in [`pnpm-lock.yaml`](pnpm-lock.yaml),
 so `pnpm install --frozen-lockfile` re-hashes every committed patch against the
 lockfile and **fails closed on any drift** — a patched dependency can't silently
 revert to its unpatched (or a tampered) form, and a missing patch file breaks the

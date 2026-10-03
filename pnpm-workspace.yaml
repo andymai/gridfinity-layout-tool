@@ -159,8 +159,28 @@ overrides:
   'tar@>=7.0.0 <7.5.21': '^7.5.21'
   '@vercel/python-analysis>smol-toml': '^1.6.1'
   esbuild: '0.28.1'
+  # GHSA-vfj7-8cjw-p6xm (braces <= 3.0.3: unbounded recursion on nested
+  # patterns) has no patched release, so braces is removed instead, by cutting
+  # the micromatch@4 and fast-glob edges that pulled it in. The consumers are
+  # patched onto picomatch@2 and tinyglobby (packageExtensions below). A new
+  # micromatch consumer reintroduces braces and OSV goes red again.
+  '@boundaries/elements>micromatch': '-'
+  'eslint-plugin-boundaries>micromatch': '-'
+  '@ts-morph/common>fast-glob': '-'
+
+# @boundaries/elements calls only isMatch, capture and makeRe, which
+# micromatch@4.0.8 forwards to picomatch@2 unchanged, so its matching semantics
+# are identical.
+packageExtensions:
+  '@boundaries/elements@3.1.1':
+    dependencies:
+      picomatch: '^2.3.2'
+  '@ts-morph/common@0.11.1':
+    dependencies:
+      tinyglobby: '^0.2.17'
 
 patchedDependencies:
+  '@boundaries/elements@3.1.1': patches/@boundaries__elements@3.1.1.patch
   '@ts-morph/common@0.11.1': patches/@ts-morph__common@0.11.1.patch
   brepjs@18.124.8: patches/brepjs@18.124.8.patch
   eslint-plugin-jsx-a11y@6.10.2: patches/eslint-plugin-jsx-a11y@6.10.2.patch
