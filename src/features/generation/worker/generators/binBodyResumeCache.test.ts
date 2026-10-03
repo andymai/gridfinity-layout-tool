@@ -20,6 +20,7 @@ import { DEFAULT_FLOOR_PATTERN_CONFIG } from '@/shared/types/bin';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { clearAllCaches, getAllShapeCacheStats, resetAllShapeCacheStats } from './shapeCache';
 import type { MeshData } from '@/features/generation/bridge/types';
+import type { CacheStats } from './lruCache';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -30,7 +31,7 @@ beforeEach(() => {
   resetAllShapeCacheStats();
 });
 
-function cacheStats(name: string) {
+function cacheStats(name: string): CacheStats {
   const stats = getAllShapeCacheStats().find((s) => s.name === name);
   return stats ?? { name, hits: 0, misses: 0, evictions: 0, size: 0, maxSize: 0 };
 }
