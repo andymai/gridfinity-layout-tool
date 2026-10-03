@@ -109,6 +109,45 @@ let lastSolidIdentity: string | null = null;
  */
 const featureToolCaches = new Map<string, LRUCache<Shape3D>>();
 
+/**
+ * Caches holding a whole tool set per key, created lazily by name. A builder
+ * that emits one tool per window can emit more tools than a per-shape LRU
+ * holds, evicting its own first entries before reading them back.
+ * The budget counts shapes, not sets, so a few large sets cannot pin an
+ * unbounded number of WASM solids.
+ */
+const shapeSetCaches = new Map<string, LRUCache<readonly Shape3D[]>>();
+const SHAPE_SET_BUDGET = 256;
+
+const disposeShapeSet = (_key: string, shapes: readonly Shape3D[]): void => {
+  for (const shape of shapes) shape.delete();
+};
+
+function getOrCreateShapeSetCache(name: string): LRUCache<readonly Shape3D[]> {
+  let cache = shapeSetCaches.get(name);
+  if (!cache) {
+    cache = new LRUCache<readonly Shape3D[]>(
+      `set-${name}`,
+      SHAPE_SET_BUDGET,
+      disposeShapeSet,
+      (shapes) => shapes.length
+    );
+    shapeSetCaches.set(name, cache);
+  }
+  return cache;
+}
+
+/** Clones of every shape in a cached set, or null on miss. Caller owns the clones. */
+export function getShapeSetCache(name: string, key: string): Shape3D[] | null {
+  const cached = getOrCreateShapeSetCache(name).get(key);
+  return cached === undefined ? null : cached.map((shape) => unwrap(clone(shape)));
+}
+
+/** Store a set; the cache owns the shapes from here on. */
+export function setShapeSetCache(name: string, key: string, shapes: readonly Shape3D[]): void {
+  getOrCreateShapeSetCache(name).set(key, shapes);
+}
+
 /** Get or create a feature cache by name. */
 function getOrCreateFeatureCache(name: string): LRUCache<Shape3D> {
   let cache = featureToolCaches.get(name);
@@ -383,6 +422,9 @@ export function clearAllCaches(): void {
   for (const cache of featureToolCaches.values()) {
     cache.dispose();
   }
+  for (const cache of shapeSetCaches.values()) {
+    cache.dispose();
+  }
   clearSocketMeshCache();
   clearTextMetricsMemo();
   clearTextSolidCache();
@@ -411,6 +453,7 @@ export function getAllShapeCacheStats(): CacheStats[] {
   return [
     ...staticLruCaches.map((cache) => cache.getStats()),
     ...[...featureToolCaches.values()].map((cache) => cache.getStats()),
+    ...[...shapeSetCaches.values()].map((cache) => cache.getStats()),
     getTextSolidCacheStats(),
   ];
 }
@@ -421,6 +464,9 @@ export function resetAllShapeCacheStats(): void {
     cache.resetStats();
   }
   for (const cache of featureToolCaches.values()) {
+    cache.resetStats();
+  }
+  for (const cache of shapeSetCaches.values()) {
     cache.resetStats();
   }
   resetTextSolidCacheStats();
