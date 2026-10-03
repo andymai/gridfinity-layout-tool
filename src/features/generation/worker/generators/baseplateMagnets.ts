@@ -17,7 +17,7 @@
  * for any corner, so the clipped padding tiles aren't left solid.
  */
 
-import { unwrap, clone, translate } from 'brepjs';
+import { translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
@@ -162,12 +162,7 @@ function buildMagnetCutters(
   const holes: Shape3D[] = [];
   try {
     for (const [x, y] of positions) {
-      const cloned = unwrap(clone(magnetTemplate));
-      try {
-        holes.push(translate(cloned, [x, y, 0]));
-      } finally {
-        cloned.delete();
-      }
+      holes.push(translate(magnetTemplate, [x, y, 0]));
     }
   } catch (e) {
     for (const h of holes) h.delete();

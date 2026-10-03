@@ -15,7 +15,7 @@
  * what keeps a screw concentric with its magnet instead of 0.3mm off it.
  */
 
-import { cylinder, drawCircle, unwrap, clone, translate, fuse } from 'brepjs';
+import { cylinder, drawCircle, unwrap, translate, fuse } from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
@@ -299,12 +299,7 @@ export function buildScrewCutters(
         template = buildScrewTemplate(params, hole.site, totalHeightMm, profileHeightMm);
         templates.set(hole.site, template);
       }
-      const cloned = unwrap(clone(template));
-      try {
-        cutters.push(translate(cloned, [hole.x, hole.y, 0]));
-      } finally {
-        cloned.delete();
-      }
+      cutters.push(translate(template, [hole.x, hole.y, 0]));
     }
   } catch (e) {
     for (const c of cutters) c.delete();

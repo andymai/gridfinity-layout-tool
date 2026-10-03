@@ -8,7 +8,7 @@
  * halves the per-cell boolean cost.
  */
 
-import { draw, drawRectangle, clone, unwrap, translate } from 'brepjs';
+import { draw, drawRectangle, translate } from 'brepjs';
 import type { Shape3D, Drawing } from 'brepjs';
 import { SOCKET_HEIGHT, MAGNET_FLOOR, COPLANAR_MARGIN, FOOT_INSET_BOT } from './generatorConstants';
 import { forEachCell } from './cellDecomposition';
@@ -133,13 +133,7 @@ export function buildLightweightFloorCutters(
             fractionalTemplate = sketch(rectProfile, 'XY', cutterZ).extrude(-cutterDepth);
             templates.set(fractionalKey, fractionalTemplate);
           }
-          const cloned = unwrap(clone(fractionalTemplate));
-          try {
-            const positioned = translate(cloned, [cell.centerX, cell.centerY, 0]);
-            cutters.push(positioned);
-          } finally {
-            cloned.delete();
-          }
+          cutters.push(translate(fractionalTemplate, [cell.centerX, cell.centerY, 0]));
           return;
         }
 
@@ -184,13 +178,7 @@ export function buildLightweightFloorCutters(
           templates.set(cacheKey, template);
         }
 
-        const cloned = unwrap(clone(template));
-        try {
-          const positioned = translate(cloned, [cell.centerX, cell.centerY, 0]);
-          cutters.push(positioned);
-        } finally {
-          cloned.delete();
-        }
+        cutters.push(translate(template, [cell.centerX, cell.centerY, 0]));
       },
       cellOpts
     );

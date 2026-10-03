@@ -28,7 +28,6 @@ import {
   cut,
   cutAll,
   intersect,
-  clone,
   translate,
   cylinder,
   withScope,
@@ -343,11 +342,7 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
       const pins = engagementMm > 0 ? footPinPositions(p, armMm, pinDiameterMm) : [];
       for (const pin of pins) {
         const solid = scope.register(
-          translate(scope.register(unwrap(clone(pinTemplate))), [
-            pin.x - centre.x,
-            pin.y - centre.y,
-            0,
-          ])
+          translate(pinTemplate, [pin.x - centre.x, pin.y - centre.y, 0])
         );
         const pinned = unwrap(fuse(foot, solid));
         if (pinned !== foot) foot.delete();
