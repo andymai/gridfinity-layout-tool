@@ -29,7 +29,6 @@ function carveHits(): number {
   return getAllShapeCacheStats().find((s) => s.name === 'carved-socket')?.hits ?? 0;
 }
 
-/** Carve a square socket of `size` with one drainage hole, under `socketKey`. */
 function carve(size: number, socketKey: string): { volume: number; key: string | null } {
   const { box, cylinder, translate, measureVolume, unwrap } = brepjs;
   const ctx = createInitialContext(buildParams({ width: 1, depth: 1, height: 3 }));
