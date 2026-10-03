@@ -73,13 +73,15 @@ export function ConfirmDialog({
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
-    document.addEventListener('keydown', handleTab);
+    // Capture phase: focus starts inside the dialog, whose content stops
+    // keydown from bubbling, so a bubble listener here would never hear it.
+    document.addEventListener('keydown', handleEscape, true);
+    document.addEventListener('keydown', handleTab, true);
 
     return () => {
       document.body.style.overflow = '';
-      document.removeEventListener('keydown', handleEscape);
-      document.removeEventListener('keydown', handleTab);
+      document.removeEventListener('keydown', handleEscape, true);
+      document.removeEventListener('keydown', handleTab, true);
       restoreFocus();
     };
   }, [isOpen, onCancel, restoreFocus]);

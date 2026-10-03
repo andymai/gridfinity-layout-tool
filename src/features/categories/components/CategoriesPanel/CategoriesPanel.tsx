@@ -96,9 +96,9 @@ export function CategoriesPanel() {
   // Close edit mode or color picker on click outside or Escape
   useEffect(() => {
     if (!editingId && !colorPickerId) return;
-    // The delete confirmation sits outside the edit row, so its clicks and its
-    // Escape would otherwise read as leaving the edit.
-    if (deleteConfirm) return;
+    // The delete confirmation sits outside the edit row, so while it is open
+    // its clicks and its Escape would otherwise read as leaving the edit.
+    const keepEditing = deleteConfirm !== null;
 
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target;
@@ -111,7 +111,7 @@ export function CategoriesPanel() {
       }
 
       // Close edit mode if clicking outside the editing area
-      if (editingId && editingRef.current && !editingRef.current.contains(target)) {
+      if (editingId && !keepEditing && editingRef.current && !editingRef.current.contains(target)) {
         setEditingId(null);
       }
     };
@@ -119,7 +119,7 @@ export function CategoriesPanel() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setColorPickerId(null);
-        setEditingId(null);
+        if (!keepEditing) setEditingId(null);
       }
     };
 
