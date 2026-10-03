@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/kumikoWrapBuilder.cache.test.ts
+  s_ecfadab7dc0ed4::t_753777408f0fed 80-81
+src/features/generation/worker/generators/shapeCache.ts
+  s_ecfadab7dc0ed4::t_eafa21ba0706cd 114-115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "feea676e0a5d59fb2c8e2ca40e521ab042b94a60",
+  "prompts": {},
+  "sessions": {
+    "s_ecfadab7dc0ed4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e974b0-81fc-44e7-84c5-a753966b5aa7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
