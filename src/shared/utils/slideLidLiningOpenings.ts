@@ -20,12 +20,11 @@ import type {
 const CUT_OVERRUN_MM = 0.5;
 
 /**
- * Extra depth (mm) when choosing which handle holes reach the band.
- * `wallOpenings` measures down from the interior's top, which sits a lip taper
- * below the wall top this plan measures from. Erring deep only clears lining
- * beside a hole that just misses the band, and that lining holds nothing up.
+ * How far (mm) the band is widened when asking which openings reach it. The
+ * band and the openings are measured through different dimension helpers, and
+ * erring wide only clears lining beside an opening that just misses the band.
  */
-const BAND_DEPTH_MARGIN_MM = 1;
+const BAND_MARGIN_MM = 0.5;
 
 const OUTWARD: Record<LidCompatibilitySide, readonly [number, number]> = {
   back: [0, 1],
@@ -34,10 +33,16 @@ const OUTWARD: Record<LidCompatibilitySide, readonly [number, number]> = {
   left: [-1, 0],
 };
 
-/** How far below the wall top the lining reaches, chamfer included. */
-export function liningBandDepthMm(geometry: SlideLidGeometry, lining: SlideLidWallLining): number {
+/** The lining's height, chamfer included, as depths below the wall top. */
+export function liningBand(
+  geometry: SlideLidGeometry,
+  lining: SlideLidWallLining
+): { readonly topDepthMm: number; readonly bottomDepthMm: number } {
   const run = lining.channelInsetMm - lining.cavityInsetMm;
-  return geometry.plateTopBelowWallTopMm - lining.zMin + run + BAND_DEPTH_MARGIN_MM;
+  return {
+    topDepthMm: geometry.plateTopBelowWallTopMm - lining.zMax - BAND_MARGIN_MM,
+    bottomDepthMm: geometry.plateTopBelowWallTopMm - lining.zMin + run + BAND_MARGIN_MM,
+  };
 }
 
 /** `geometry` with its lining cut back from every opening on the entry or far wall. */

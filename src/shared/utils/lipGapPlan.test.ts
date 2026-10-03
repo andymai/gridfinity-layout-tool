@@ -266,31 +266,42 @@ describe('lipGaps: handle holes', () => {
 });
 
 describe('wallOpenings', () => {
+  // The default bin's wall stands a lip taper above its interior ceiling, and
+  // a band is stated as depths below that wall top.
+  const WALL_H = INTERIOR_H + GRIDFINITY_SPEC.LIP_SMALL_TAPER;
   const frontHandle = (verticalPosition: number): BinParams =>
     bin({ handles: handles({ front: { ...HANDLE_SIDE, enabled: true }, verticalPosition }) });
+  const backCut = (depthMm: number): BinParams =>
+    bin({ walls: walls({ back: { ...walls().back, enabled: true, depthMm } }) });
 
   it('is lipGaps when the band is the lip', () => {
-    for (const p of [
-      frontHandle(0.7),
-      frontHandle(0.3),
-      bin({ walls: walls({ back: { ...walls().back, enabled: true } }) }),
-    ]) {
-      expect(wallOpenings(p, GRIDFINITY_SPEC.LIP_HEIGHT)).toEqual(lipGaps(p));
+    const lip = {
+      topDepthMm: -Infinity,
+      bottomDepthMm: WALL_H - INTERIOR_H + GRIDFINITY_SPEC.LIP_HEIGHT,
+    };
+    for (const p of [frontHandle(0.7), frontHandle(0.3), backCut(3)]) {
+      expect(wallOpenings(p, lip)).toEqual(lipGaps(p));
     }
   });
 
   it('counts a handle below the lip once the band reaches down to it', () => {
-    // The 30% handle sits under the lip, but its top is inside a band reaching
-    // 10mm down and clear of one reaching 2mm.
     const low = frontHandle(0.3);
     expect(lipGaps(low)).toEqual([]);
-    expect(wallOpenings(low, 10).map((g) => g.source)).toEqual(['handle']);
-    expect(wallOpenings(low, 2)).toEqual([]);
+    expect(wallOpenings(low, { topDepthMm: 0, bottomDepthMm: 10.7 }).map((g) => g.source)).toEqual([
+      'handle',
+    ]);
+    expect(wallOpenings(low, { topDepthMm: 0, bottomDepthMm: 2.7 })).toEqual([]);
   });
 
-  it('counts a cutout at any depth, since it comes down from the rim', () => {
-    const cut = bin({ walls: walls({ back: { ...walls().back, enabled: true } }) });
-    expect(wallOpenings(cut, 0.5).map((g) => g.side)).toEqual(['back']);
+  it('skips a handle that sits wholly above the band', () => {
+    expect(wallOpenings(frontHandle(0.7), { topDepthMm: 14.5, bottomDepthMm: 15.5 })).toEqual([]);
+  });
+
+  it('counts a cutout only when it comes down into the band', () => {
+    expect(
+      wallOpenings(backCut(3), { topDepthMm: 1, bottomDepthMm: 10 }).map((g) => g.side)
+    ).toEqual(['back']);
+    expect(wallOpenings(backCut(3), { topDepthMm: 5, bottomDepthMm: 10 })).toEqual([]);
   });
 });
 

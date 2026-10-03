@@ -118,21 +118,39 @@ function lipBottomZ(interiorHeight: number): number {
  *.
  */
 export function lipGaps(params: BinParams): readonly LipGap[] {
-  return rectangleGaps(params, lipBottomZ);
+  return rectangleGaps(params, (dims) => ({
+    top: Infinity,
+    bottom: lipBottomZ(dims.interiorHeight),
+  }));
 }
 
 /**
- * {@link lipGaps} for a band reaching `depthMm` below the interior's top
- * instead of the lip's bottom. Only handle holes test height, so only they can
- * differ: one counts once its top rises past that depth.
+ * {@link lipGaps} for the openings that overlap a band of wall instead of the
+ * lip. The band is given as depths below the wall top INCLUDING any collar,
+ * the plane a sliding lid's plan is stated against. Knife slots and open sides
+ * run the wall's full height, so they always count.
  */
-export function wallOpenings(params: BinParams, depthMm: number): readonly LipGap[] {
-  return rectangleGaps(params, (interiorHeight) => interiorHeight - depthMm);
+export function wallOpenings(
+  params: BinParams,
+  band: { readonly topDepthMm: number; readonly bottomDepthMm: number }
+): readonly LipGap[] {
+  return rectangleGaps(params, (dims) => {
+    const top = dims.wallHeight + dims.collarHeight;
+    return { top: top - band.topDepthMm, bottom: top - band.bottomDepthMm };
+  });
 }
+
+/** A band of wall, as Z above the cavity floor. */
+interface ZBand {
+  readonly top: number;
+  readonly bottom: number;
+}
+
+type InteriorDims = NonNullable<ReturnType<typeof labelTabInteriorDims>>;
 
 function rectangleGaps(
   params: BinParams,
-  holeFloorZ: (interiorHeight: number) => number
+  bandOf: (dims: InteriorDims) => ZBand
 ): readonly LipGap[] {
   if (isPartialMask(params.cellMask)) return [];
   const dims = labelTabInteriorDims(params);
@@ -143,7 +161,7 @@ function rectangleGaps(
   const out: LipGap[] = [];
   for (const side of WALL_SIDES) {
     const wallSpan = spanOf(side);
-    for (const g of wallGaps(params, dims, side, wallSpan, holeFloorZ(dims.interiorHeight))) {
+    for (const g of wallGaps(params, dims, side, wallSpan, bandOf(dims))) {
       // A rectangle's wall is centred on the interior origin, so its local
       // coordinates are already the bin's.
       out.push({
@@ -235,26 +253,26 @@ interface WallGap {
  */
 function wallGaps(
   params: BinParams,
-  dims: NonNullable<ReturnType<typeof labelTabInteriorDims>>,
+  dims: InteriorDims,
   side: LidCompatibilitySide,
   wallSpan: number,
-  holeFloorZ: number
+  band: ZBand
 ): readonly WallGap[] {
   const { wallHeight, interiorHeight } = dims;
   const wallThickness = params.wallThickness;
   const out: WallGap[] = [];
   if (wallSpan <= 0) return out;
 
-  // Wall cutouts. No Z test: the profile is positioned with its top at
-  // `wallHeight + overshoot` where the overshoot alone exceeds the lip, so any
-  // cutout the builder emits removes the lip across its whole span.
+  // Wall cutouts. The profile's top sits at `wallHeight + overshoot`, where the
+  // overshoot alone exceeds the lip, so every cutout opens the lip; only a band
+  // that starts below the rim can lie entirely under one.
   const cfg = params.walls[side];
   if (params.walls.enabled && cfg.enabled) {
     const cutWidth = resolveCutoutSpan(cfg, wallSpan);
     // The builder measures depth against the wall MINUS one thickness, not
     // against the cavity ceiling. Only decides whether the cut is built.
     const userCutHeight = resolveCutoutDrop(cfg, wallHeight - wallThickness);
-    if (cutWidth >= 0.1 && userCutHeight >= 0.1) {
+    if (cutWidth >= 0.1 && userCutHeight >= 0.1 && wallHeight - userCutHeight < band.top) {
       const centre = computeCutoutCenter(
         wallSpan,
         cutWidth,
@@ -319,7 +337,8 @@ function wallGaps(
     handles.verticalPosition
   );
   if (effectiveHeight < 1) return out;
-  if (centerZ + effectiveHeight / 2 <= holeFloorZ) return out;
+  if (centerZ + effectiveHeight / 2 <= band.bottom) return out;
+  if (centerZ - effectiveHeight / 2 >= band.top) return out;
 
   const sideWidth = sideCfg.width ?? handles.width;
   const segments = computeWallHandleSegments(
@@ -464,7 +483,8 @@ export function polygonLipGaps(params: BinParams): readonly PolygonLipGap[] {
 
     const alongMid = alongX ? edge.midX : edge.midY;
     const edgeCross = alongX ? edge.midY : edge.midX;
-    for (const g of wallGaps(params, dims, side, wallSpan, lipBottomZ(dims.interiorHeight))) {
+    const band = { top: Infinity, bottom: lipBottomZ(dims.interiorHeight) };
+    for (const g of wallGaps(params, dims, side, wallSpan, band)) {
       out.push({
         side,
         source: g.source,

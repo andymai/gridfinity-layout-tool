@@ -6,7 +6,7 @@ import { slideLidPlanForParams } from '@/shared/types/bin';
 import type { LidCompatibilitySide } from '@/shared/types/bin';
 import type { LipGap } from './lipGapPlan';
 import type { SlideLidGeometry } from './slideLidPlan';
-import { liningBandDepthMm, withLiningOpenings } from './slideLidLiningOpenings';
+import { liningBand, withLiningOpenings } from './slideLidLiningOpenings';
 
 function geometryAt(wallThickness: number, slide: Partial<LidSlideConfig> = {}): SlideLidGeometry {
   const params: BinParams = {
@@ -90,13 +90,15 @@ describe('withLiningOpenings', () => {
   });
 });
 
-describe('liningBandDepthMm', () => {
-  it('reaches below the plate’s top by the lining’s depth and its chamfer', () => {
+describe('liningBand', () => {
+  it('spans the lining from the retainer’s top to the foot of its chamfer', () => {
     const geometry = geometryAt(0.4);
     const lining = geometry.wallLining;
     if (!lining) throw new Error('expected a lining');
     const chamferRun = lining.channelInsetMm - lining.cavityInsetMm;
-    expect(liningBandDepthMm(geometry, lining)).toBeGreaterThan(
+    const band = liningBand(geometry, lining);
+    expect(band.topDepthMm).toBeLessThan(geometry.plateTopBelowWallTopMm - lining.zMax);
+    expect(band.bottomDepthMm).toBeGreaterThan(
       geometry.plateTopBelowWallTopMm - lining.zMin + chamferRun
     );
   });

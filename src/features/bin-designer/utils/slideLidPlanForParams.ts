@@ -20,7 +20,7 @@ import {
   slideLidPlanInput,
   type SlideLidPlan,
 } from '@/shared/utils/slideLidPlan';
-import { liningBandDepthMm, withLiningOpenings } from '@/shared/utils/slideLidLiningOpenings';
+import { liningBand, withLiningOpenings } from '@/shared/utils/slideLidLiningOpenings';
 import type { BinParams } from '../types';
 import { isSlideLid, resolveLidPlateThickness, resolveLidSlide } from '../types/lid';
 import { resolveLipTip } from '../types/base';
@@ -72,6 +72,6 @@ export function slideLidPlanForParams(params: BinParams): SlideLidPlan {
 
   const { geometry } = plan;
   if (!geometry?.wallLining) return plan;
-  const gaps = wallOpenings(params, liningBandDepthMm(geometry, geometry.wallLining));
+  const gaps = wallOpenings(params, liningBand(geometry, geometry.wallLining));
   return { ...plan, geometry: withLiningOpenings(geometry, gaps) };
 }
