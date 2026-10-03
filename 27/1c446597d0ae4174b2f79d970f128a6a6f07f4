@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/slideLidSeating.scenario.test.ts
+  s_ecfadab7dc0ed4::t_b2c08284c6a34f 171,173-176
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "271c446597d0ae4174b2f79d970f128a6a6f07f4",
+  "prompts": {},
+  "sessions": {
+    "s_ecfadab7dc0ed4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e974b0-81fc-44e7-84c5-a753966b5aa7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
