@@ -36,7 +36,8 @@ import { isPartialMask } from '@/shared/utils/cellMask';
 import { getShellCache, setShellCache } from '../../shapeCache';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
-import { applyPinHoles, buildDetachableFeet } from '../../detachableFeetBuilder';
+import { applyPinHoles, buildDetachablePinHoles } from '../../detachableFeetBuilder';
+import { compactKey } from '../../cacheKeyUtils';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { DETACHABLE_PIN_HOLE_DIAMETER_MM, resolveLipTip } from '@/shared/types/bin';
 import { magnetHoleStyleFrom } from '@/shared/generation/magnetHoleStyle';
@@ -407,27 +408,32 @@ export const shellStage: PipelineStage = {
     // happen to something the user presses on afterwards. They are generated
     // and combined alongside the bin the way a lid is.
     //
-    // Cutting here rather than before `setShellCache` is deliberate: only this
-    // clone gets holed.
+    // Cutting here rather than before `setShellCache` is deliberate: the plain
+    // body stays cached under `shellKey`, and the holed one gets its own entry.
     if (dim.detachableFeet) {
       const resolved = resolveDetachableFeet(params);
       if (resolved.placements.length > 0) {
-        const { feet, pinHoles } = buildDetachableFeet({
+        // Only the holes touch the body; the parts generator builds the feet.
+        // Screws only: their bore also passes through the FLOOR, so the tool
+        // has to carry it. Magnets stay in the feet.
+        const holeOpts = {
           placements: resolved.placements,
           armMm: resolved.armMm,
           pinDiameterMm: resolved.pinDiameterMm,
           pinHoleDiameterMm: DETACHABLE_PIN_HOLE_DIAMETER_MM,
           floorThicknessMm: dim.floorThickness,
-          // Screws only: their bore also passes through the FLOOR, so the tool
-          // this returns has to carry it. Magnets stay in the feet.
           screw: resolved.screw,
-          forExport: true,
-          socketHeight: dim.socketHeight,
-        });
-        // The feet themselves are rebuilt by the parts generator; here only
-        // their holes matter, so release them rather than carry them along.
-        for (const f of feet) f.delete();
-        body = applyPinHoles(body, pinHoles);
+        };
+        const holedKey = compactKey(JSON.stringify(['feet-holes-v1', dim.shellKey, holeOpts]));
+        const cachedHoled = getShellCache(holedKey);
+        if (cachedHoled) {
+          body.delete();
+          body = cachedHoled;
+        } else {
+          const holed = applyPinHoles(body, buildDetachablePinHoles(holeOpts));
+          setShellCache(holedKey, holed);
+          body = translate(holed, [0, 0, 0]);
+        }
       }
       return { ...ctx, solid: body, deferredSolid: null };
     }
