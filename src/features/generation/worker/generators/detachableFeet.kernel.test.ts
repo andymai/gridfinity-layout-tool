@@ -442,7 +442,9 @@ describe('detachable foot geometry', () => {
   });
 
   it('builds the same floor holes without building the feet', () => {
-    const screw = { diameterMm: 3, positions: [[PITCH / 2 + 8, PITCH / 2 + 8]] as const };
+    // Inside the corner CORNER_L covers, so the second pass really bores a screw.
+    const screw = { diameterMm: 3, positions: [[PITCH / 2 - 8, PITCH / 2 - 8]] as const };
+    const holeVolumes: number[] = [];
     for (const over of [{}, { screw }]) {
       const { feet, pinHoles } = feetOf(over);
       const alone = buildDetachablePinHoles({
@@ -456,6 +458,7 @@ describe('detachable foot geometry', () => {
       try {
         if (!pinHoles || !alone) throw new Error('expected a hole tool');
         expect(volumeOf(alone)).toBeCloseTo(volumeOf(pinHoles), 6);
+        holeVolumes.push(volumeOf(alone));
         // Equal volumes could still place a hole elsewhere; an empty symmetric
         // difference cannot.
         expect(differenceVolume(alone, pinHoles)).toBeCloseTo(0, 6);
@@ -466,6 +469,7 @@ describe('detachable foot geometry', () => {
         alone?.delete();
       }
     }
+    expect(holeVolumes[1]).toBeGreaterThan(holeVolumes[0] ?? Infinity);
   });
 
   it('builds one solid per placement', () => {

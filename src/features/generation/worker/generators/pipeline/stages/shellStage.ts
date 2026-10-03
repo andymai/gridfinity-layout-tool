@@ -41,8 +41,11 @@ import {
 } from '../../shapeCache';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
-import { applyPinHoles, buildDetachablePinHoles } from '../../detachableFeetBuilder';
-import { compactKey } from '../../cacheKeyUtils';
+import {
+  applyPinHoles,
+  buildDetachablePinHoles,
+} from '@/features/generation/worker/generators/detachableFeetBuilder';
+import { compactKey } from '@/features/generation/worker/generators/cacheKeyUtils';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { DETACHABLE_PIN_HOLE_DIAMETER_MM, resolveLipTip } from '@/shared/types/bin';
 import { magnetHoleStyleFrom } from '@/shared/generation/magnetHoleStyle';
