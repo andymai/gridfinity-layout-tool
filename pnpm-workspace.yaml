@@ -182,6 +182,6 @@ packageExtensions:
 patchedDependencies:
   '@boundaries/elements@3.1.1': patches/@boundaries__elements@3.1.1.patch
   '@ts-morph/common@0.11.1': patches/@ts-morph__common@0.11.1.patch
-  brepjs@20.0.1: patches/brepjs@20.0.1.patch
+  brepjs@20.1.2: patches/brepjs@20.1.2.patch
   eslint-plugin-jsx-a11y@6.10.2: patches/eslint-plugin-jsx-a11y@6.10.2.patch
   three-stdlib: patches/three-stdlib.patch
