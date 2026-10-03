@@ -1,0 +1,14 @@
+package.json
+  h_b755e1950659f4 118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f5e1a2c8a3e2acf434b7abbac24bc15c45723ec5",
+  "prompts": {},
+  "humans": {
+    "h_b755e1950659f4": {
+      "author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
