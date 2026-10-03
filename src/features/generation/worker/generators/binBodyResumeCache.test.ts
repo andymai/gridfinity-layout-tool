@@ -19,6 +19,8 @@ import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin
 import { DEFAULT_FLOOR_PATTERN_CONFIG } from '@/shared/types/bin';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { clearAllCaches, getAllShapeCacheStats, resetAllShapeCacheStats } from './shapeCache';
+import type { MeshData } from '@/features/generation/bridge/types';
+import type { CacheStats } from './lruCache';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -28,6 +30,17 @@ beforeEach(() => {
   clearAllCaches();
   resetAllShapeCacheStats();
 });
+
+function cacheStats(name: string): CacheStats {
+  const stats = getAllShapeCacheStats().find((s) => s.name === name);
+  return stats ?? { name, hits: 0, misses: 0, evictions: 0, size: 0, maxSize: 0 };
+}
+
+function sameGeometry(a: MeshData, b: MeshData): boolean {
+  const same = (x: ArrayLike<number>, y: ArrayLike<number>): boolean =>
+    x.length === y.length && Array.from(x).every((v, i) => v === y[i]);
+  return same(a.vertices, b.vertices) && same(a.indices, b.indices);
+}
 
 function binBodyStats() {
   const stats = getAllShapeCacheStats().find((s) => s.name === 'bin-body');
@@ -104,9 +117,8 @@ describe('bin-body resume cache with wall patterns', () => {
 
   it('resumes the booleaned body for a floor-patterned bin', () => {
     // The floor pattern reports its identity, so an unchanged regen resumes the
-    // body. Its shapes also carve the deferred socket, but booleanStage
-    // re-derives that carve from the same shapes on every build, so the resumed
-    // body and the freshly cut socket stay consistent.
+    // body. Its shapes also carve the deferred socket, which is cached on the
+    // same identity, so the resumed body and the socket stay consistent.
     const generateBin = getGenerateBin();
     const withFloor = {
       ...HONEYCOMB,
@@ -151,4 +163,37 @@ describe('bin-body resume cache with wall patterns', () => {
     expect(binBodyStats().hits, 'a different floor pattern must not resume').toBe(0);
     expect(changed.triangleCount).not.toBe(first.triangleCount);
   }, 120_000);
+
+  const FLOOR_ONLY = {
+    ...HONEYCOMB,
+    wallPattern: { enabled: false, pattern: 'honeycomb' as const },
+    floorPattern: { ...DEFAULT_FLOOR_PATTERN_CONFIG, enabled: true, pattern: 'honeycomb' as const },
+  };
+
+  it('reuses the carved socket for an unchanged floor-patterned regen', () => {
+    const generateBin = getGenerateBin();
+    const first = generateBin(FLOOR_ONLY);
+    resetAllShapeCacheStats();
+    const second = generateBin(FLOOR_ONLY);
+
+    expect(cacheStats('carved-socket').hits).toBe(1);
+    expect(sameGeometry(second, first)).toBe(true);
+  }, 120_000);
+
+  it('re-carves the socket when the floor pattern changes', () => {
+    const generateBin = getGenerateBin();
+    const variant = {
+      ...FLOOR_ONLY,
+      floorPattern: { ...DEFAULT_FLOOR_PATTERN_CONFIG, enabled: true, pattern: 'diamond' as const },
+    };
+    clearAllCaches();
+    const cold = generateBin(variant);
+    clearAllCaches();
+    generateBin(FLOOR_ONLY);
+    resetAllShapeCacheStats();
+    const warm = generateBin(variant);
+
+    expect(cacheStats('carved-socket').hits).toBe(0);
+    expect(sameGeometry(warm, cold)).toBe(true);
+  }, 240_000);
 });

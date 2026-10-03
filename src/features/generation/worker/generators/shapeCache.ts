@@ -79,6 +79,9 @@ const binBodyCache = new LRUCache<Shape3D>('bin-body', 12, disposeShape);
 // hole inputs. Separate from shellCache so a feet design does not take two of
 // its entries. Same face-origin handling as shellCache.
 const feetHoledBodyCache = new LRUCache<Shape3D>('feet-holed-body', 8, disposeShape);
+// Base socket with the floor pattern's drainage holes cut through it, keyed on
+// the socket and the pattern. Same face-origin handling as binBodyCache.
+const carvedSocketCache = new LRUCache<Shape3D>('carved-socket', 6, disposeShape);
 
 // Per-cell-size loft templates. A uniform grid lofts one cell socket and clones
 // it per position instead of re-lofting every cell (mirrors the baseplate
@@ -158,7 +161,6 @@ function getOrCreateFeatureCache(name: string): LRUCache<Shape3D> {
   return cache;
 }
 
-/** Static LRU caches (socket, lip, box, shell, cell-socket template, bin-body). */
 const staticLruCaches: readonly LRUCache<Shape3D>[] = [
   socketCache,
   lipCache,
@@ -167,6 +169,7 @@ const staticLruCaches: readonly LRUCache<Shape3D>[] = [
   cellSocketTemplateCache,
   binBodyCache,
   feetHoledBodyCache,
+  carvedSocketCache,
 ];
 
 export function socketCacheKey(
@@ -298,6 +301,17 @@ export function getBinBodyCache(key: string): Shape3D | null {
 
 export function setBinBodyCache(key: string, shape: Shape3D): void {
   binBodyCache.set(key, shape);
+}
+
+/** Carved-socket cache, read as a metadata-preserving clone like getBinBodyCache. */
+export function getCarvedSocketCache(key: string): Shape3D | null {
+  const cached = carvedSocketCache.get(key);
+  if (cached === undefined) return null;
+  return translate(cached, [0, 0, 0]);
+}
+
+export function setCarvedSocketCache(key: string, shape: Shape3D): void {
+  carvedSocketCache.set(key, shape);
 }
 
 /** Returns raw shape (no clone) — caller uses transformCopy which is non-destructive. */

@@ -485,6 +485,7 @@ export function createInitialContext(
     cutTargets: [],
     patternCutTargets: [],
     deferredCutTargets: [],
+    deferredCutKey: null,
     featuresKey: null,
     mesh: null,
     deferredMesh: null,
