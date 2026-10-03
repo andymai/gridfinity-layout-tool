@@ -34,7 +34,7 @@
  * Z=-totalHeight).
  */
 
-import { draw, rotate, translate, intersect, cutAll, clone } from 'brepjs';
+import { draw, rotate, translate, intersect, cutAll } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isOk, unwrap } from '@/core/result';
@@ -409,7 +409,7 @@ function relieveForNeighborSockets(
     for (const sy of [-1, 1] as const) {
       const cx = sx * half;
       const cy = sy * half;
-      const foot = translate(unwrap(clone(baseFoot)), [cx, cy, 0]);
+      const foot = translate(baseFoot, [cx, cy, 0]);
       if (floorZ === undefined) {
         cutters.push(foot as ValidSolid);
         continue;

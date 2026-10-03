@@ -15,7 +15,6 @@ import {
   unwrap,
   fuseAll,
   cutAll,
-  clone,
   translate,
   fuse,
   withScope,
@@ -646,7 +645,7 @@ export function buildBaseSocket(
             chamferFitsCell(cell, holeRadius, unitX, unitY, anchor, positions);
           const cutout = cutoutFor(chamfer);
           for (const [x, y] of positions) {
-            holeTools.push(translate(scope.register(unwrap(clone(cutout))), [x, y, -socketHeight]));
+            holeTools.push(translate(cutout, [x, y, -socketHeight]));
           }
         },
         { gridUnitMm, fractionalEdgeX: fractionalEdge.x, fractionalEdgeY: fractionalEdge.y }
