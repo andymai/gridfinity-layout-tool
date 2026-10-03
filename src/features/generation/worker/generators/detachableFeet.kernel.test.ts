@@ -40,15 +40,22 @@ import {
   type FootLattice,
 } from '@/shared/types/bin';
 
-import type { DetachableFeetGeometry, DetachableFeetOptions } from './detachableFeetBuilder';
+import type {
+  DetachableFeetGeometry,
+  DetachableFeetOptions,
+  DetachablePinHoleOptions,
+} from './detachableFeetBuilder';
 import { PLAIN_MAGNET_HOLE } from '@/shared/generation/magnetHoleStyle';
 
 let MATING_RIM_RELIEF_MM: number;
 
 type BuildFeet = (opts: DetachableFeetOptions) => DetachableFeetGeometry;
+type BuildPinHoles = (opts: DetachablePinHoleOptions) => Shape3D | null;
 type BuildCell = (w: number, d: number) => Shape3D;
 
 let buildDetachableFeet: BuildFeet;
+let buildDetachablePinHoles: BuildPinHoles;
+let volumeOf: (shape: Shape3D) => number;
 let buildSingleCellSocket: BuildCell;
 let meshOf: (shape: Shape3D) => MeshData;
 
@@ -56,9 +63,11 @@ beforeAll(async () => {
   await initTestKernel();
   const feetModule = await import('./detachableFeetBuilder');
   buildDetachableFeet = feetModule.buildDetachableFeet;
+  buildDetachablePinHoles = feetModule.buildDetachablePinHoles;
   MATING_RIM_RELIEF_MM = feetModule.MATING_RIM_RELIEF_MM;
   buildSingleCellSocket = (await import('./socketBuilder')).buildSingleCellSocket;
-  const { mesh } = await import('brepjs');
+  const { mesh, measureVolume, unwrap } = await import('brepjs');
+  volumeOf = (shape) => unwrap(measureVolume(shape));
   const { toIndexedMeshData } = await import('./meshUtils');
   meshOf = (shape) => {
     const indexed = toIndexedMeshData(mesh(shape, { tolerance: 0.01, angularTolerance: 0.1 }));
@@ -420,6 +429,30 @@ describe('detachable foot geometry', () => {
     } finally {
       feet.forEach((f) => f.delete());
       pinHoles?.delete();
+    }
+  });
+
+  it('builds the same floor holes without building the feet', () => {
+    const screw = { diameterMm: 3, positions: [[PITCH / 2 + 8, PITCH / 2 + 8]] as const };
+    for (const over of [{}, { screw }]) {
+      const { feet, pinHoles } = feetOf(over);
+      const alone = buildDetachablePinHoles({
+        placements: [CORNER_L],
+        armMm: ARM,
+        pinDiameterMm: PIN,
+        pinHoleDiameterMm: DETACHABLE_PIN_HOLE_DIAMETER_MM,
+        floorThicknessMm: FLOOR,
+        ...over,
+      });
+      try {
+        if (!pinHoles || !alone) throw new Error('expected a hole tool');
+        expect(volumeOf(alone)).toBeCloseTo(volumeOf(pinHoles), 6);
+        expect(boundingBox(meshOf(alone).vertices)).toEqual(boundingBox(meshOf(pinHoles).vertices));
+      } finally {
+        feet.forEach((f) => f.delete());
+        pinHoles?.delete();
+        alone?.delete();
+      }
     }
   });
 
