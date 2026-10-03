@@ -96,6 +96,6 @@ describe('kumiko wrap cutter caches', () => {
 
     expect(baseHits()).toBe(hitsBefore + 1);
     expect(warm.triangleCount).toBe(cold.triangleCount);
-    expect(warm.vertices.length).toBe(cold.vertices.length);
+    expect(Array.from(warm.vertices)).toEqual(Array.from(cold.vertices));
   }, 300_000);
 });

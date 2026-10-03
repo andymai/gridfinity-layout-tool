@@ -113,8 +113,11 @@ const featureToolCaches = new Map<string, LRUCache<Shape3D>>();
  * Caches holding a whole tool set per key, created lazily by name. A builder
  * that emits one tool per window (kumiko emits over a hundred on a 3x3) would
  * spill a per-shape LRU, evicting its first entries before reading them back.
+ * The budget counts shapes, not sets, so a few large sets cannot pin an
+ * unbounded number of WASM solids.
  */
 const shapeSetCaches = new Map<string, LRUCache<readonly Shape3D[]>>();
+const SHAPE_SET_BUDGET = 256;
 
 const disposeShapeSet = (_key: string, shapes: readonly Shape3D[]): void => {
   for (const shape of shapes) shape.delete();
@@ -123,7 +126,12 @@ const disposeShapeSet = (_key: string, shapes: readonly Shape3D[]): void => {
 function getOrCreateShapeSetCache(name: string): LRUCache<readonly Shape3D[]> {
   let cache = shapeSetCaches.get(name);
   if (!cache) {
-    cache = new LRUCache<readonly Shape3D[]>(`set-${name}`, 6, disposeShapeSet);
+    cache = new LRUCache<readonly Shape3D[]>(
+      `set-${name}`,
+      SHAPE_SET_BUDGET,
+      disposeShapeSet,
+      (shapes) => shapes.length
+    );
     shapeSetCaches.set(name, cache);
   }
   return cache;

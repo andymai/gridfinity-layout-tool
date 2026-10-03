@@ -212,4 +212,41 @@ describe('LRUCache', () => {
       expect(stats.maxSize).toBe(5);
     });
   });
+
+  describe('with weigh', () => {
+    const byLength = (v: readonly number[]): number => v.length;
+
+    it('evicts oldest entries until the new one fits the weight budget', () => {
+      const evicted: string[] = [];
+      const cache = new LRUCache<number[]>('w', 5, (k) => evicted.push(k), byLength);
+      cache.set('a', [1, 2]);
+      cache.set('b', [1, 2]);
+      cache.set('c', [1, 2, 3]);
+      expect(evicted).toEqual(['a']);
+      expect(cache.get('b')).toEqual([1, 2]);
+      expect(cache.get('c')).toEqual([1, 2, 3]);
+      cache.set('d', [1, 2, 3, 4]);
+      expect(evicted).toEqual(['a', 'b', 'c']);
+    });
+
+    it('keeps an entry heavier than the budget, alone', () => {
+      const cache = new LRUCache<number[]>('w', 2, undefined, byLength);
+      cache.set('a', [1]);
+      cache.set('big', [1, 2, 3, 4]);
+      expect(cache.get('a')).toBeUndefined();
+      expect(cache.get('big')).toHaveLength(4);
+      expect(cache.size).toBe(1);
+    });
+
+    it('frees the old weight when a key is replaced', () => {
+      const evicted: string[] = [];
+      const cache = new LRUCache<number[]>('w', 4, (k) => evicted.push(k), byLength);
+      cache.set('a', [1, 2, 3]);
+      cache.set('a', [1]);
+      cache.set('b', [1, 2, 3]);
+      expect(evicted).toEqual(['a']);
+      expect(cache.get('a')).toEqual([1]);
+      expect(cache.get('b')).toHaveLength(3);
+    });
+  });
 });
