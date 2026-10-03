@@ -12,6 +12,7 @@ import {
   polygonLipGaps,
   railSegmentsClearOfPolygonGaps,
   knifeSlotWallExits,
+  wallOpenings,
 } from './lipGapPlan';
 
 /**
@@ -261,6 +262,46 @@ describe('lipGaps: handle holes', () => {
     // A 1U bin leaves ~2mm of interior; the 10% margin either side clamps the
     // hole below the builder's own floor.
     expect(frontHandle({ height: 0.4 })).toEqual([]);
+  });
+});
+
+describe('wallOpenings', () => {
+  // The default bin's wall stands a lip taper above its interior ceiling, and
+  // a band is stated as depths below that wall top.
+  const WALL_H = INTERIOR_H + GRIDFINITY_SPEC.LIP_SMALL_TAPER;
+  const frontHandle = (verticalPosition: number): BinParams =>
+    bin({ handles: handles({ front: { ...HANDLE_SIDE, enabled: true }, verticalPosition }) });
+  const backCut = (depthMm: number): BinParams =>
+    bin({ walls: walls({ back: { ...walls().back, enabled: true, depthMm } }) });
+
+  it('is lipGaps when the band is the lip', () => {
+    const lip = {
+      topDepthMm: -Infinity,
+      bottomDepthMm: WALL_H - INTERIOR_H + GRIDFINITY_SPEC.LIP_HEIGHT,
+    };
+    for (const p of [frontHandle(0.7), frontHandle(0.3), backCut(3)]) {
+      expect(wallOpenings(p, lip)).toEqual(lipGaps(p));
+    }
+  });
+
+  it('counts a handle below the lip once the band reaches down to it', () => {
+    const low = frontHandle(0.3);
+    expect(lipGaps(low)).toEqual([]);
+    expect(wallOpenings(low, { topDepthMm: 0, bottomDepthMm: 10.7 }).map((g) => g.source)).toEqual([
+      'handle',
+    ]);
+    expect(wallOpenings(low, { topDepthMm: 0, bottomDepthMm: 2.7 })).toEqual([]);
+  });
+
+  it('skips a handle that sits wholly above the band', () => {
+    expect(wallOpenings(frontHandle(0.7), { topDepthMm: 14.5, bottomDepthMm: 15.5 })).toEqual([]);
+  });
+
+  it('counts a cutout only when it comes down into the band', () => {
+    expect(
+      wallOpenings(backCut(3), { topDepthMm: 1, bottomDepthMm: 10 }).map((g) => g.side)
+    ).toEqual(['back']);
+    expect(wallOpenings(backCut(3), { topDepthMm: 5, bottomDepthMm: 10 })).toEqual([]);
   });
 });
 

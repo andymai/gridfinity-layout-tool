@@ -188,7 +188,7 @@ export async function travelInterferenceMm3(
 }
 
 /** Crossings the channel ADDED at a column, in ascending Z. */
-function addedCrossings(
+export function addedCrossings(
   withLid: MeshData,
   withoutLid: MeshData,
   x: number,
@@ -234,22 +234,19 @@ export function newCrossingsAbovePlate(pair: SlidePair, bareBin: MeshData, sampl
 }
 
 /**
- * How much of the entry wall survives ABOVE the bin's wall top, across the
- * plate's width — i.e. how much stacking lip is left bridging the opening.
+ * How much of the entry wall stands ABOVE the bin's wall top, across the
+ * plate's width — i.e. how much stacking lip runs over the opening.
  *
- * The counterpart to {@link entryOpeningMm}, and the reason that probe is not
- * enough: a notch that clears the plate's own band exactly, and stops there,
- * leaves the lip spanning the whole opening with nothing under it. Every check
- * about whether the plate FITS passes — it does — while the part carries the
- * worst overhang on the bin and the panel tells the user the lip was removed.
+ * The counterpart to {@link entryOpeningMm}: whether the plate fits says
+ * nothing about whether the rim over it survived, which is the difference
+ * between a finger-catch notch and every other one.
  *
- * Returns the greatest surviving material found at any sampled column, so a
- * notch that reaches in the middle and pinches at the edges fails.
+ * Returns the greatest surviving material found at any sampled column.
  */
-export function entryLipRemnantMm(pair: SlidePair, samples = 7): number {
+export function entryLipRemnantMm(pair: SlidePair, samples = 7, inboardMm = 0.5): number {
   const wallTop = binWallTopZ(pair.params);
   const { plate } = pair.geometry;
-  const along = plate.trailingX - 0.5;
+  const along = plate.trailingX - inboardMm;
 
   let worst = 0;
   for (let i = 0; i < samples; i++) {
@@ -275,11 +272,11 @@ export function entryLipRemnantMm(pair: SlidePair, samples = 7): number {
  * which no interference measure would report: at the closed position everything
  * fits perfectly.
  *
- * Asked as "is the wall's topmost surface below the band" rather than by
- * pairing crossings into spans. The notch is cut clean THROUGH the rim, so
- * where it lands there is no upper face to pair with — a probe that looked for
- * one read a correct notch as no notch at all. Parity-free either way, which
- * the bin's coincident socket seam requires.
+ * Parity-free, because the preview mesh carries unfused shells (the socket
+ * seam, the lip) whose faces cross every column: the notch's own floor, a
+ * crossing on the band's bottom plane, is what says the wall was opened, and
+ * the lowest crossing above it is the window's ceiling — a lintel's underside,
+ * or nothing when the notch breaks the rim.
  *
  * Returns the SMALLEST opening over the sampled width, so a notch that reaches
  * in the middle and pinches at the edges fails rather than averaging out.
@@ -287,9 +284,10 @@ export function entryLipRemnantMm(pair: SlidePair, samples = 7): number {
 export function entryOpeningMm(pair: SlidePair, samples = 7): number {
   const dz = slideLidZOffset(pair.params, pair.geometry);
   const { plate } = pair.geometry;
-  // Half a millimetre inside the entry wall's outer face, where the plate's
-  // trailing edge finishes.
-  const along = plate.trailingX - 0.5;
+  // Inside the entry wall, where the plate's trailing edge finishes: half a
+  // millimetre in, or mid-wall on a wall thinner than that.
+  const entryWall = plate.trailingX - pair.geometry.travelEnvelope.xMax;
+  const along = plate.trailingX - Math.min(0.5, entryWall / 2);
   const bandLo = dz - plate.thicknessMm;
 
   let worst = Infinity;
@@ -299,8 +297,10 @@ export function entryOpeningMm(pair: SlidePair, samples = 7): number {
     const across = t * (plate.spanMm - plate.pullSpanMm - 4);
     const [x, y] = canonicalToBin(pair.geometry, along, across);
     const crossings = columnCrossings(pair.bin, x, y);
-    const top = crossings.length === 0 ? -Infinity : Math.max(...crossings);
-    worst = Math.min(worst, Math.max(0, Math.min(dz - bandLo, dz - Math.max(top, bandLo))));
+    const floored = crossings.some((z) => Math.abs(z - bandLo) < 0.05);
+    const above = crossings.filter((z) => z > bandLo + 0.05);
+    const ceiling = above.length === 0 ? Infinity : Math.min(...above);
+    worst = Math.min(worst, floored ? Math.max(0, Math.min(dz, ceiling) - bandLo) : 0);
   }
   return worst === Infinity ? 0 : worst;
 }
@@ -466,7 +466,10 @@ export async function entryCornerMm3(
     .lineTo([toX, hs])
     .lineTo([fromX, hs])
     .close();
-  const prism = outline.sketchOnPlane('XY', base).extrude(geometry.entryNotch.zMax - base);
+  // Up through the rim and lip, whether or not the notch breaks them.
+  const prism = outline
+    .sketchOnPlane('XY', base)
+    .extrude(geometry.plateTopBelowWallTopMm + 6 - base);
   const oriented =
     geometry.rotationDeg === 0 ? prism : rotate(prism, geometry.rotationDeg, { axis: [0, 0, 1] });
   const probe = translate(oriented, [innerOffsetX, innerOffsetY, plateTopZ]);

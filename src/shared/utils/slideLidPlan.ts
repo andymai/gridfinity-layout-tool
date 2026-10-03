@@ -68,6 +68,8 @@
 
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { LID_SLIDE_PLATE_MIN_MM } from '@/features/bin-designer/types/lid';
+import { catchSection } from './slideLidCatch';
+import type { LipTipStyle } from '@/features/bin-designer/types/base';
 import type { LidRailSide, LidSlideConfig, LidSlidePull } from '@/shared/types/bin';
 
 const LIP_TAPER_WIDTH = GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER;
@@ -109,6 +111,20 @@ export const SLIDE_WEDGE_MM = 1;
  * is the exact edge the joint bears on when the plate is lifted.
  */
 export const SLIDE_PLATE_EDGE_MIN_MM = 0.6;
+
+/**
+ * Thinnest wall (mm) the channel is laid against.
+ *
+ * The plate's running edges are straight, so as it slides out its full width
+ * passes the cavity's entry corner arcs, and the mouth relief opens them to
+ * the channel's face. The body's outer corner radius does not move, so on a
+ * thinner wall the face reaches past the outer arc and that cut breaks through
+ * the corner: at 0.4mm the plate is ~1.4mm wider than the bin's own outline
+ * there. A thinner wall is lined out to this face over the joint's band
+ * instead. The same margin keeps the bars' outer corner (`cornerR·√2` from
+ * the arc centre) inside the outer radius (`cornerR + wall`).
+ */
+export const SLIDE_MIN_CHANNEL_WALL_MM = 1.2;
 
 /** Smallest plate span (mm) across the travel axis worth generating. */
 const MIN_PLATE_SPAN_MM = 10;
@@ -282,6 +298,16 @@ export interface SlideLidPlate {
    */
   readonly pullDepthMm: number;
   /**
+   * A finger catch's solid, as an XZ section in the plate's canonical frame
+   * swept across {@link pullSpanMm}. Null for every other pull.
+   *
+   * On a lipped bin the catch is the stacking lip itself: a bar the entry wall's
+   * thickness up to the lip's base, and above the retainers the lip's own
+   * section, inward jut and both tapers included, so a shut lid completes the
+   * rim and a bin stacked on it seats as it would on any other wall.
+   */
+  readonly catchSection: readonly (readonly [number, number])[] | null;
+  /**
    * The detent pockets cut into the plate's underside, one per shelf, that the
    * bumps drop into when the lid is shut. Empty when the design has no detent.
    *
@@ -303,16 +329,99 @@ export interface SlideLidDetentPocket {
   readonly depthMm: number;
 }
 
+/** A rounded-rectangle footprint in the canonical frame, centred on the cavity. */
+export interface SlideLidFootprint {
+  readonly lengthMm: number;
+  readonly spanMm: number;
+  readonly cornerRadiusMm: number;
+}
+
+/**
+ * The ring lining a thin wall out to {@link SLIDE_MIN_CHANNEL_WALL_MM} over the
+ * band the joint occupies.
+ *
+ * Both faces are insets of the body's outer footprint, a rounded rectangle in
+ * the canonical frame centred on the cavity.
+ */
+export interface SlideLidWallLining {
+  readonly bodyLengthMm: number;
+  readonly bodySpanMm: number;
+  readonly bodyCornerRadiusMm: number;
+  /** Inset of the channel's face from the body's outer face. */
+  readonly channelInsetMm: number;
+  /** Inset of the real cavity face — the wall thickness. */
+  readonly cavityInsetMm: number;
+  /**
+   * Band bottom, where the lining reaches the channel face. It chamfers 45°
+   * back to the wall below, so it never overhangs.
+   */
+  readonly zMin: number;
+  readonly zMax: number;
+  /**
+   * Where the lining is cut back over its whole band, so it does not fill in a
+   * wall opening. See `withLiningOpenings`.
+   */
+  readonly openings: readonly SlideLidLiningOpening[];
+}
+
+/** An XY box in the canonical frame, cut through the lining's whole height. */
+export interface SlideLidLiningOpening {
+  readonly xMin: number;
+  readonly xMax: number;
+  readonly yMin: number;
+  readonly yMax: number;
+}
+
 export interface SlideLidGeometry {
   /** Z rotation mapping the canonical (+X entry) plan onto the chosen wall. */
   readonly rotationDeg: number;
   readonly entrySide: LidRailSide;
   /** Bars fused onto the bin. */
   readonly bars: readonly SlideLidBar[];
+  /**
+   * The bars carried on through the entry wall to its outer face, so the
+   * channel's profile finishes flush with the bin instead of set back in the
+   * window. Clipped to {@link bodyFootprint} so they follow the rounded corners.
+   *
+   * Empty for a finger catch: it fills that stretch of wall across the plate's
+   * full width, and would run into them.
+   */
+  readonly entryBars: readonly SlideLidBar[];
+  /** The body's outer footprint in the canonical frame, centred on the cavity. */
+  readonly bodyFootprint: SlideLidFootprint;
   /** Detent bumps, empty when the design turned them off. */
   readonly detents: readonly SlideLidDetent[];
   /** Window cut through the entry wall, in canonical coords. */
   readonly entryNotch: SlideLidBox;
+  /**
+   * Whether the notch widens as it climbs through the rim, so a bin sliding on
+   * meets ramped lip ends rather than square shoulders. Not for a finger
+   * catch: the shut lid fills the rim, and a ramp would only leave a gap
+   * either side of it.
+   */
+  readonly entryNotchFlares: boolean;
+  /**
+   * For a finger catch on a lipped bin, the cut taking the entry wall's lip
+   * away to its full depth, cut AFTER the bars fuse.
+   *
+   * The notch stops at the cavity face, and the lip juts past it: left there,
+   * the jut is a strip hanging from the corners that thins to nothing as the
+   * wall thickens. The catch carries that jut instead. Cut after the fuse and
+   * down past the retainers, so they end flush with the cut lip and clear the
+   * catch's 45° support, which lands below their top on a thin wall.
+   */
+  readonly lipNotch: SlideLidBox | null;
+  /**
+   * Whether the entry notch runs up through the rim and the stacking lip.
+   *
+   * True for a finger catch, which IS the rim section the notch removes carried
+   * on the plate, and on a lipless bin, which has no lip to keep. Otherwise the
+   * wall and lip stand over the opening as a lintel, so the bin keeps a
+   * stacking lip on all four walls.
+   */
+  readonly entryBreaksRim: boolean;
+  /** Null unless the wall is thinner than {@link SLIDE_MIN_CHANNEL_WALL_MM}. */
+  readonly wallLining: SlideLidWallLining | null;
   /**
    * The channel's own profile, carried through the cavity's two ENTRY corner
    * arcs — without it the plate cannot be inserted at all.
@@ -392,6 +501,8 @@ export interface SlideLidPlanInput {
   readonly isSolid: boolean;
   readonly isSlotted: boolean;
   readonly isTile: boolean;
+  /** The bin's lip peak finish, which a finger catch's lip copies. Sharp when absent. */
+  readonly lipTip?: LipTipStyle;
 }
 
 const NO_GEOMETRY = (rejection: SlideLidRejection): SlideLidPlan => ({
@@ -431,6 +542,7 @@ export interface SlideLidBinDims {
   readonly isSolid: boolean;
   readonly isSlotted: boolean;
   readonly isTile: boolean;
+  readonly lipTip?: LipTipStyle;
 }
 
 /**
@@ -478,6 +590,7 @@ export function slideLidPlanInput(
     isSolid: dims.isSolid,
     isSlotted: dims.isSlotted,
     isTile: dims.isTile,
+    lipTip: dims.lipTip,
   };
 }
 
@@ -559,8 +672,12 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
 
   const travelsX = slideTravelsAlongX(slide.entrySide);
   // Canonical: travel along X, span along Y.
-  const travelInner = travelsX ? innerW : innerD;
-  const spanInner = travelsX ? innerD : innerW;
+  // A thin wall's channel sits at the minimum wall's face, not its own.
+  const channelWall = Math.max(wallThickness, SLIDE_MIN_CHANNEL_WALL_MM);
+  const lining = channelWall - wallThickness;
+  const travelInner = (travelsX ? innerW : innerD) - 2 * lining;
+  const spanInner = (travelsX ? innerD : innerW) - 2 * lining;
+  const entryWallMm = input.entryWallThicknessMm + lining;
 
   const halfSpan = spanInner / 2;
   const plateHalfSpan = halfSpan - c;
@@ -597,7 +714,7 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
   // notch and the bin reads as finished.
   const leadingX = -travelInner / 2 + c;
   const detentPeakX = leadingX + DETENT_POCKET_INSET_MM;
-  const trailingX = travelInner / 2 + input.entryWallThicknessMm;
+  const trailingX = travelInner / 2 + entryWallMm;
   const plateLength = trailingX - leadingX;
   if (plateLength < MIN_PLATE_LENGTH_MM) return NO_GEOMETRY('bin-too-short');
 
@@ -606,7 +723,7 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
   // own corner material and the fuse is a no-op — and stopping short of it
   // instead would leave the detent's ramp, which sits right at the far end,
   // with no shelf under it to grow from.
-  const cornerR = Math.max(GRIDFINITY_SPEC.BOX_CORNER_RADIUS - wallThickness, 0);
+  const cornerR = Math.max(GRIDFINITY_SPEC.BOX_CORNER_RADIUS - channelWall, 0);
   const barXMin = -travelInner / 2;
   const barXMax = travelInner / 2;
 
@@ -703,6 +820,21 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
     }
   }
 
+  // From the shelf gusset's root, so the gusset meets it, to the retainer's top.
+  const wallLining: SlideLidWallLining | null =
+    lining > 1e-6
+      ? {
+          bodyLengthMm: travelInner + 2 * channelWall,
+          bodySpanMm: spanInner + 2 * channelWall,
+          bodyCornerRadiusMm: GRIDFINITY_SPEC.BOX_CORNER_RADIUS,
+          channelInsetMm: channelWall,
+          cavityInsetMm: wallThickness,
+          zMin: -t - SLIDE_SHELF_TIP_MM - shelfReach,
+          zMax: roofTop,
+          openings: [],
+        }
+      : null;
+
   const detents: SlideLidDetent[] = [];
   const detentPockets: SlideLidDetentPocket[] = [];
   // Only when the ramp has shelf either side of it to grow from, and the pocket
@@ -742,19 +874,18 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
   }
 
   // ENTRY NOTCH. A window through the entry wall wide enough for the plate and
-  // tall enough for it to pass under the retainers, cut clear THROUGH the rim
-  // and the stacking lip above it.
+  // tall enough for it to pass under the retainers.
   //
-  // All the way through, not merely past the plate: anything left above the
-  // window spans the whole opening as a horizontal bridge with no support under
-  // it, and on a 3-wide bin that is 120mm of unsupported lintel. Stopping just
-  // above the wall top is the version that looks right and is not — it leaves
-  // exactly the lip band bridging, which is both the worst overhang on the part
-  // and a contradiction of what the panel tells the user is happening.
+  // On a lipped bin it stops one clearance above the plate, leaving the wall
+  // and the stacking lip over it as a lintel, so the bin stacks on all four
+  // walls. Its underside is a bridge the width of the plate, which a slicer
+  // handles; what it must never be is the lip's inward jut alone, hanging from
+  // the corners with no wall under it — the thin-wall result of a notch that
+  // starts at the cavity face and runs through the rim.
   //
-  // So the stacking lip really is interrupted on this one wall. That is the
-  // trade `grip.binDip` already makes, `slideRimInterrupted` reports it, and
-  // the bin still stacks on its other three walls and its corners.
+  // It breaks the rim when there is nothing worth keeping there: a finger
+  // catch carries that section of rim on the plate, and a lipless bin would
+  // keep a sub-millimetre sliver of wall above the plate.
   //
   // The FLOOR is the one face that gets no clearance, and deliberately. Every
   // other face here is a sliding gap the plate must not touch, so it takes `c`.
@@ -764,6 +895,7 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
   // exactly the span a thumb pushes on while inserting it — and leaves a step
   // in the opening at the height the eye reads as its floor. Held flush, the
   // bearing plane simply runs through the wall.
+  const entryBreaksRim = slide.pull === 'catch' || !input.hasLip;
   const notchTopAboveWallTop = input.hasLip ? GRIDFINITY_SPEC.LIP_HEIGHT + 1 : 1;
   const entryNotch: SlideLidBox = {
     xMin: travelInner / 2 - 0.1,
@@ -771,7 +903,7 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
     yMin: -plateHalfSpan - c,
     yMax: plateHalfSpan + c,
     zMin: -t,
-    zMax: plateTopBelowWallTop + notchTopAboveWallTop,
+    zMax: entryBreaksRim ? plateTopBelowWallTop + notchTopAboveWallTop : c,
   };
 
   // TRAVEL ENVELOPE. Spans the whole cavity, because the plate sweeps the whole
@@ -794,6 +926,15 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
   // On a lipless bin the catch ends at the wall top: adding the absent lip's
   // height would leave it standing far above the remaining sides.
   const isCatch = slide.pull === 'catch';
+  // Overshooting the outer face; the footprint clip trims them back to it.
+  const entryBars: SlideLidBar[] = isCatch
+    ? []
+    : bars.map((bar) => ({ ...bar, xMin: barXMax - 0.1, xMax: trailingX + 1 }));
+  const bodyFootprint: SlideLidFootprint = {
+    lengthMm: travelInner + 2 * entryWallMm,
+    spanMm: spanInner + 2 * channelWall,
+    cornerRadiusMm: GRIDFINITY_SPEC.BOX_CORNER_RADIUS,
+  };
   const pullSpan = isCatch ? plateSpan : Math.min(Math.max(plateSpan * 0.3, 12), 40);
   const pullReach =
     slide.pull === 'tab'
@@ -801,10 +942,42 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
       : slide.pull === 'notch'
         ? 5
         : isCatch
-          ? plateTopBelowWallTop +
-            (input.hasLip ? GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP : 0)
+          ? plateTopBelowWallTop + (input.hasLip ? GRIDFINITY_SPEC.LIP_HEIGHT : 0)
           : 0;
-  const pullDepth = isCatch ? Math.max(0, input.entryWallThicknessMm - c) : 0;
+  const pullDepth = isCatch ? Math.max(0, entryWallMm - c) : 0;
+
+  // The bin's lip stands on the wall top: `lipTopZ` is `wallTopZ + LIP_HEIGHT`.
+  const lipBase = plateTopBelowWallTop;
+  let catchOutline: (readonly [number, number])[] | null = null;
+  let lipNotch: SlideLidBox | null = null;
+  const toCanonical = ([u, z]: readonly [number, number]): readonly [number, number] => [
+    trailingX - u,
+    z,
+  ];
+  // Down through the plate's full thickness, so the catch's ends are one flat
+  // face over the plate's running-edge profile rather than stopping on it. It
+  // only ever sits in the entry window, whose floor is the plate's underside.
+  if (isCatch && input.hasLip && pullDepth > 0) {
+    catchOutline = catchSection(lipBase, pullDepth, -t, input.lipTip ?? 'sharp').map(toCanonical);
+    lipNotch = {
+      xMin: trailingX - LIP_TAPER_WIDTH - 0.3,
+      xMax: entryNotch.xMin + 0.1,
+      yMin: entryNotch.yMin,
+      yMax: entryNotch.yMax,
+      // Under the retainers, whose underside meets the wall `wedge` below the
+      // plate's top, so they end on the same plane as the cut lip. The shelf,
+      // below the plate, runs on to the wall.
+      zMin: -wedge - 0.05,
+      zMax: entryNotch.zMax,
+    };
+  } else if (isCatch && pullDepth > 0) {
+    catchOutline = [
+      [trailingX - pullDepth, -t],
+      [trailingX, -t],
+      [trailingX, pullReach],
+      [trailingX - pullDepth, pullReach],
+    ];
+  }
 
   return {
     rejection: null,
@@ -814,7 +987,13 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
       bars,
       detents,
       entryNotch,
+      lipNotch,
+      entryNotchFlares: entryBreaksRim && !isCatch,
+      entryBreaksRim,
+      wallLining,
       mouthReliefs,
+      entryBars,
+      bodyFootprint,
       travelEnvelope,
       plate: {
         spanMm: plateSpan,
@@ -828,6 +1007,7 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
         pullSpanMm: pullSpan,
         pullReachMm: pullReach,
         pullDepthMm: pullDepth,
+        catchSection: catchOutline,
         detentPockets,
       },
       plateTopBelowWallTopMm: plateTopBelowWallTop,

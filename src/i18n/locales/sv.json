@@ -1243,7 +1243,7 @@
   "binDesigner.lid.compat.slideInteriorBlocked": "Mellanväggar, etikettflikar eller en skopa når in i lockets bana och stoppar det. Slå på ”Frilägg insidan” under Avancerat för att skära dem fria.",
   "binDesigner.lid.compat.slideLongSpan": "Locket är brett nog att buckla sig mellan skenorna. Öka dess tjocklek under Avancerat.",
   "binDesigner.lid.compat.slideRimInterrupted": "Stapelläppen är bortskuren på väggen {sides} så att locket kan glida in. På de andra tre går det fortfarande att stapla.",
-  "binDesigner.lid.compat.slideCatchThin": "Fingergreppet kan inte vara tjockare än ingångsväggen och blir här för tunt för att skrivas ut bra. En vägg på 1,2 mm eller mer ger det styrka.",
+  "binDesigner.lid.compat.slideCatchThin": "Fingergreppet är lika tjockt som ingångsväggen minus glidspelet och blir här för tunt för att skrivas ut bra. Minska spelet under Finjustering eller använd en tjockare vägg.",
   "binDesigner.lid.compat.slideUnbuildable": "Den här lådan kan inte ta ett skjutbart lock — den är för liten eller för grund för spåret, eller så har dess stil ingen hålighet att täcka.",
   "binDesigner.lid.compat.slideWallPattern": "Väggmönstret perforerar just de väggar som skenorna fäster i, vilket försvagar dem.",
   "binDesigner.lid.compat.tallDividerPieces": "Avdelardelar är högre än fackets interiör — locket sitter inte med dem isatta.",

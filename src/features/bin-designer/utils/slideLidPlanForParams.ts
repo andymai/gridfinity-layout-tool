@@ -13,14 +13,17 @@
  */
 
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { wallOpenings } from '@/shared/utils/lipGapPlan';
 import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 import {
   resolveSlideLidPlan,
   slideLidPlanInput,
   type SlideLidPlan,
 } from '@/shared/utils/slideLidPlan';
+import { liningBand, withLiningOpenings } from '@/shared/utils/slideLidLiningOpenings';
 import type { BinParams } from '../types';
 import { isSlideLid, resolveLidPlateThickness, resolveLidSlide } from '../types/lid';
+import { resolveLipTip } from '../types/base';
 import { binDimensions } from './binDimensions';
 
 /**
@@ -44,7 +47,7 @@ export function slideLidPlanForParams(params: BinParams): SlideLidPlan {
     ? { addW: 0, addD: 0, offsetX: 0, offsetY: 0 }
     : overhangExpansion(resolveOverhang(params.overhang));
 
-  return resolveSlideLidPlan(
+  const plan = resolveSlideLidPlan(
     slideLidPlanInput(
       resolveLidSlide(params.lid),
       resolveLidPlateThickness(params),
@@ -62,7 +65,13 @@ export function slideLidPlanForParams(params: BinParams): SlideLidPlan {
         isSolid: params.style === 'solid',
         isSlotted: params.style === 'slotted',
         isTile: params.base.tile === true,
+        lipTip: resolveLipTip(params.base),
       }
     )
   );
+
+  const { geometry } = plan;
+  if (!geometry?.wallLining) return plan;
+  const gaps = wallOpenings(params, liningBand(geometry, geometry.wallLining));
+  return { ...plan, geometry: withLiningOpenings(geometry, gaps) };
 }

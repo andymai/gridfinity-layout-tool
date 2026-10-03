@@ -1243,7 +1243,7 @@
   "binDesigner.lid.compat.slideInteriorBlocked": "Divisori, linguette per etichette o una rampa invadono il percorso del coperchio e lo bloccheranno. Attiva «Libera interno» in Avanzate per tagliarli via.",
   "binDesigner.lid.compat.slideLongSpan": "Il coperchio è abbastanza largo da inflettersi tra le guide. Aumenta il suo spessore in Avanzate.",
   "binDesigner.lid.compat.slideRimInterrupted": "Il labbro di impilamento è interrotto sulla parete {sides} per far entrare il coperchio. Sulle altre tre si impila ancora.",
-  "binDesigner.lid.compat.slideCatchThin": "La presa per il dito può essere spessa al massimo quanto la parete d’ingresso, che qui la rende troppo sottile per stamparla bene. Una parete da 1,2 mm o più le dà robustezza.",
+  "binDesigner.lid.compat.slideCatchThin": "La presa per il dito ha lo spessore della parete d’ingresso meno il gioco di scorrimento, che qui la rende troppo sottile per stamparla bene. Riduci il gioco in Regolazione fine o usa una parete più spessa.",
   "binDesigner.lid.compat.slideUnbuildable": "Questo contenitore non può avere un coperchio scorrevole: è troppo piccolo o troppo basso per la guida, oppure il suo stile non ha una cavità da coprire.",
   "binDesigner.lid.compat.slideWallPattern": "Il motivo a parete perfora proprio le pareti su cui si saldano le guide, indebolendole.",
   "binDesigner.lid.compat.tallDividerPieces": "I pezzi divisori sono più alti dell'interno del bin; il coperchio non si posizionerà con essi inseriti.",

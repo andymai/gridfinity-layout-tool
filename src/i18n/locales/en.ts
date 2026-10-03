@@ -2315,7 +2315,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.compat.slideRimInterrupted':
     'The stacking lip is cut away on the {sides} wall so the lid can slide in. Bins still stack on the other three.',
   'binDesigner.lid.compat.slideCatchThin':
-    'The finger catch can only be as thick as the entry wall, which leaves it too thin to print well here. A 1.2 mm wall or thicker gives it some strength.',
+    'The finger catch is the entry wall less the sliding clearance, which leaves it too thin to print well here. Reduce the clearance under Fine tuning, or use a thicker wall.',
   'binDesigner.lid.compat.slideChannelInterrupted':
     'A cutout or handle opens the {sides} wall the lid runs along. The runner will bridge that opening, blocking part of it and standing unsupported across it.',
   'binDesigner.lid.compat.slideWallPattern':

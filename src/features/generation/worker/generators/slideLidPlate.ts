@@ -295,25 +295,23 @@ function tabSolid(scope: DisposalScope, geometry: SlideLidGeometry): Shape3D | n
 }
 
 /**
- * The finger catch: a bar standing up from the trailing edge to the rim's top,
- * across the whole plate.
+ * The finger catch, swept across the plate from the plan's XZ section.
  *
- * Confined to the entry wall's thickness so it passes under the lip's inward
- * overhang and never meets a stacked bin's feet. Overlaps down into the plate
- * so the fuse has volume to merge, and is added BEFORE the footprint clip: its
- * ends have to follow the bin's rounded corners exactly as the plate's do.
+ * Drawn in XY and stood upright with `rotate(+90, X)`, which maps
+ * `(x, y, z) → (x, -z, y)`: the drawing's vertical becomes +Z and the extrusion
+ * runs toward −Y, as in `slideLidChannel`'s detent. Added BEFORE the footprint
+ * clip, so its ends follow the bin's rounded corners exactly as the plate's do.
  */
 function catchSolid(scope: DisposalScope, geometry: SlideLidGeometry): Shape3D | null {
   const { plate } = geometry;
-  if (plate.pull !== 'catch' || plate.pullReachMm <= 0 || plate.pullDepthMm <= 0) return null;
-  const depth = plate.pullDepthMm;
-  const outline = drawRoundedRectangle(depth, plate.pullSpanMm, 0.01);
-  return scope.register(
-    outline
-      .translate(plate.trailingX - depth / 2, 0)
-      .sketchOnPlane('XY', -plate.thicknessMm / 2)
-      .extrude(plate.thicknessMm / 2 + plate.pullReachMm)
-  );
+  if (plate.pull !== 'catch' || !plate.catchSection) return null;
+  const span = plate.pullSpanMm;
+  const [first, ...rest] = plate.catchSection;
+  let pen = draw([first[0], first[1]]);
+  for (const [x, z] of rest) pen = pen.lineTo([x, z]);
+  const slab = scope.register(pen.close().sketchOnPlane('XY', 0).extrude(span));
+  const upright = scope.register(rotate(slab, 90, { axis: [1, 0, 0] }));
+  return scope.register(translate(upright, [0, span / 2, 0]));
 }
 
 /** Rotate a canonical solid onto the entry wall and centre it on the cavity. */

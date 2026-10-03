@@ -1243,7 +1243,7 @@
   "binDesigner.lid.compat.slideInteriorBlocked": "Přepážky, štítkové jazýčky nebo naběhová plocha zasahují do dráhy víka a zablokují ho. Zapněte „Uvolnit vnitřek“ v Pokročilém a ořízněte je.",
   "binDesigner.lid.compat.slideLongSpan": "Víko je dost široké na to, aby se mezi lištami prohnulo. Zvyšte jeho tloušťku v Pokročilém.",
   "binDesigner.lid.compat.slideRimInterrupted": "Stohovací lem je na stěně {sides} vyříznutý, aby víko mohlo zajet. Na zbylých třech se dál stohuje.",
-  "binDesigner.lid.compat.slideCatchThin": "Úchyt pro prst může být jen tak silný jako vstupní stěna, takže zde vychází příliš tenký na kvalitní tisk. Stěna 1,2 mm nebo silnější mu dodá pevnost.",
+  "binDesigner.lid.compat.slideCatchThin": "Úchyt pro prst má tloušťku vstupní stěny mínus vůli posuvu, takže zde vychází příliš tenký na kvalitní tisk. Zmenšete vůli v Jemném doladění nebo použijte silnější stěnu.",
   "binDesigner.lid.compat.slideUnbuildable": "Tento box posuvné víko nepobere — je pro drážku moc malý nebo mělký, případně jeho styl nemá dutinu, kterou by bylo co zakrýt.",
   "binDesigner.lid.compat.slideWallPattern": "Vzor stěny perforuje právě ty stěny, ke kterým lišty přiléhají, a oslabuje je.",
   "binDesigner.lid.compat.tallDividerPieces": "Díly přepážek jsou vyšší než vnitřek binu — víko s nimi zasunutými nedosedne.",

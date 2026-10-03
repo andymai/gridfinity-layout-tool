@@ -301,16 +301,15 @@ function checkSlideLidCompatibility(params: BinParams): LidCompatibilityIssue[] 
     issues.push({ id: 'slideLongSpan', severity: 'warning' });
   }
 
-  // The catch cannot be thicker than the wall it fills, so a thin wall leaves
-  // it a single perimeter. Named here because the wall control is the fix.
+  // The catch is the entry wall (lined out to the channel's minimum) less the
+  // clearance, so a loose fit on a thin wall leaves it a single perimeter.
   if (geometry.plate.pull === 'catch' && geometry.plate.pullDepthMm < SLIDE_CATCH_MIN_DEPTH_MM) {
     issues.push({ id: 'slideCatchThin', severity: 'warning' });
   }
 
-  // The entry window has to break the rim — see the note on the notch in
-  // `slideLidChannel`. Worth stating once: the bin is still stackable on its
-  // other three walls and its corners, but not across this one.
-  if (params.base.stackingLip) {
+  // Only a finger catch takes the entry wall's rim with it (see the notch in
+  // `slideLidPlan`); every other pull leaves the lip standing as a lintel.
+  if (params.base.stackingLip && geometry.entryBreaksRim) {
     issues.push({ id: 'slideRimInterrupted', severity: 'warning', sides: [entrySide] });
   }
 

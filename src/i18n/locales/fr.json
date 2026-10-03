@@ -1243,7 +1243,7 @@
   "binDesigner.lid.compat.slideInteriorBlocked": "Des séparateurs, des languettes d’étiquette ou une rampe empiètent sur le passage du couvercle et l’empêcheront de coulisser. Activez « Dégager l’intérieur » dans Avancé pour les recouper.",
   "binDesigner.lid.compat.slideLongSpan": "Le couvercle est assez large pour fléchir entre ses rails. Augmentez son épaisseur dans Avancé.",
   "binDesigner.lid.compat.slideRimInterrupted": "La lèvre d’empilage est entaillée sur la paroi {sides} pour laisser entrer le couvercle. L’empilage reste possible sur les trois autres.",
-  "binDesigner.lid.compat.slideCatchThin": "La butée ne peut pas être plus épaisse que la paroi d’entrée, ce qui la rend ici trop fine pour bien s’imprimer. Une paroi de 1,2 mm ou plus lui donne de la tenue.",
+  "binDesigner.lid.compat.slideCatchThin": "La butée a l’épaisseur de la paroi d’entrée moins le jeu de coulissement, ce qui la rend ici trop fine pour bien s’imprimer. Réduisez le jeu dans Réglage fin ou utilisez une paroi plus épaisse.",
   "binDesigner.lid.compat.slideUnbuildable": "Ce bac ne peut pas recevoir de couvercle coulissant : il est trop petit ou trop peu profond pour la glissière, ou son style n’a pas de cavité à couvrir.",
   "binDesigner.lid.compat.slideWallPattern": "Le motif de paroi perfore justement les parois sur lesquelles les rails se soudent, ce qui les affaiblit.",
   "binDesigner.lid.compat.tallDividerPieces": "Les séparateurs sont plus hauts que l'intérieur du bac — le couvercle ne s'assied pas avec eux insérés.",

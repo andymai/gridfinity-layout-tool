@@ -8,14 +8,16 @@
  * track back off again. `lidRetentionStage` sits in the same position for the
  * same reason — a magnetic lid's corner pads are interface, not contents.
  *
- * Within the stage the three parts are ordered too, and the two CUTS want
- * opposite sides of the fuse. The mouth relief goes first: it carries the
+ * A thin wall's lining goes before all of it, since the relief and the bars
+ * are laid out against the face it builds.
+ *
+ * Within the stage both CUTS go before the fuse. The mouth relief carries the
  * channel's profile through the cavity's entry corner arcs, and the bars run
- * into those arcs, so cutting it afterwards would saw the shelf and retainer
- * off inside them. Cut first, the bars land back in the space it opened. The
- * notch goes last for the mirror-image reason: cut before the fuse, it would be
- * re-filled by any bar reaching into the entry wall, closing the opening it
- * exists to make.
+ * into those arcs; the notch opens the entry wall, and the entry bars run
+ * through it to the outer face. Cut afterwards, either would saw the shelf and
+ * retainer off inside it. The bars never reach into the plate's slot, so
+ * refilling the window with them leaves it open. A finger catch's lip cut is
+ * the one that follows the fuse: it ends the retainers flush with the lip.
  *
  * Runs after `translateStage`, so Z is final world Z.
  */
@@ -50,7 +52,7 @@ export const slideLidChannelStage: PipelineStage = {
     const { geometry } = slideLidPlanForParams(params);
     if (!geometry) return ctx;
 
-    const { mouthCuts, additions, subtractions } = buildSlideLidChannel(
+    const { linings, mouthCuts, additions, subtractions, finishingCuts } = buildSlideLidChannel(
       geometry,
       slideLidPlateTopZ(dim, geometry),
       dim.innerOffsetX,
@@ -61,7 +63,8 @@ export const slideLidChannelStage: PipelineStage = {
     // face-origin map, so tagging the post-boolean solid would stamp the entire
     // bin — taking LIP with it, which is the sole key the per-cell multicolour
     // lip is built from.
-    for (const part of [...mouthCuts, ...additions, ...subtractions]) {
+    const parts = [...linings, ...mouthCuts, ...additions, ...subtractions, ...finishingCuts];
+    for (const part of parts) {
       collectOrigins(part, FeatureTag.SLIDE_LID_CHANNEL, ctx.originToTag);
     }
 
@@ -71,8 +74,14 @@ export const slideLidChannelStage: PipelineStage = {
     let solid: Shape3D = ctx.solid;
     const scratch: Shape3D[] = [];
     try {
-      if (mouthCuts.length > 0) {
-        const relieved = unwrap(cutAll(solid as ValidSolid, mouthCuts as ValidSolid[]));
+      if (linings.length > 0) {
+        const lined = unwrap(fuseAll([solid, ...linings] as ValidSolid[]));
+        scratch.push(lined);
+        solid = lined;
+      }
+      const cuts = [...mouthCuts, ...subtractions];
+      if (cuts.length > 0) {
+        const relieved = unwrap(cutAll(solid as ValidSolid, cuts as ValidSolid[]));
         scratch.push(relieved);
         solid = relieved;
       }
@@ -81,15 +90,13 @@ export const slideLidChannelStage: PipelineStage = {
         scratch.push(fused);
         solid = fused;
       }
-      if (subtractions.length > 0) {
-        const cut = unwrap(cutAll(solid as ValidSolid, subtractions as ValidSolid[]));
-        scratch.push(cut);
-        solid = cut;
+      if (finishingCuts.length > 0) {
+        const finished = unwrap(cutAll(solid as ValidSolid, finishingCuts as ValidSolid[]));
+        scratch.push(finished);
+        solid = finished;
       }
     } finally {
-      for (const part of mouthCuts) part.delete();
-      for (const part of additions) part.delete();
-      for (const part of subtractions) part.delete();
+      for (const part of parts) part.delete();
       // Everything built along the way except the survivor.
       for (const s of scratch) {
         if (s !== solid) s.delete();

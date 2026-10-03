@@ -19,6 +19,7 @@ import {
   slideTravelsAlongX,
   slideWallThicknessMm,
   SLIDE_BEARING_MM,
+  SLIDE_MIN_CHANNEL_WALL_MM,
   SLIDE_ROOF_TIP_MM,
   SLIDE_SAG_SPAN_MM,
   SLIDE_WEDGE_MM,
@@ -393,15 +394,30 @@ describe('resolveSlideLidPlan', () => {
       expect(g.entryNotch.yMax).toBeCloseTo(g.plate.spanMm / 2 + g.clearanceMm, 9);
     });
 
-    it('cuts clear through the rim AND the lip above it', () => {
-      // Anything left above the window bridges the whole opening with nothing
-      // under it. Stopping just past the wall top is the version that looks
-      // right and is not: it leaves exactly the lip band spanning, which is the
-      // worst overhang on the part.
-      //
+    it('leaves the wall and lip over the opening on a lipped bin', () => {
+      // Stops one clearance above the plate, so the stacking lip runs across
+      // the entry wall at every wall thickness. A notch through the rim kept a
+      // thin wall's inward lip jut, hanging from the corners, and took a thick
+      // wall's lip away entirely.
+      for (const pull of ['none', 'notch', 'tab'] as const) {
+        for (const wallThickness of [0.4, 1.2, 2.6]) {
+          const g = geometryOf({
+            wallThickness,
+            entryWallThicknessMm: wallThickness,
+            slide: { ...DEFAULT_LID_SLIDE_CONFIG, pull },
+          });
+          expect(g.entryBreaksRim, `${pull} @ ${wallThickness}`).toBe(false);
+          expect(g.entryNotch.zMax, `${pull} @ ${wallThickness}`).toBeCloseTo(g.clearanceMm, 9);
+        }
+      }
+    });
+
+    it('cuts clear through the rim AND the lip above it for a finger catch', () => {
+      // The catch is the rim section this removes, carried on the plate.
       // `zMax` is measured from the PLATE's top plane, so the lip's top face
       // sits `plateTopBelowWallTopMm + LIP_HEIGHT` above it.
-      const g = geometryOf();
+      const g = geometryOf({ slide: { ...DEFAULT_LID_SLIDE_CONFIG, pull: 'catch' } });
+      expect(g.entryBreaksRim).toBe(true);
       const lipTopAbovePlate = g.plateTopBelowWallTopMm + 4.4;
       expect(g.entryNotch.zMax).toBeGreaterThan(lipTopAbovePlate);
     });
@@ -413,7 +429,165 @@ describe('resolveSlideLidPlan', () => {
         hasLip: false,
         slide: { ...DEFAULT_LID_SLIDE_CONFIG, placement: 'flush' },
       });
+      expect(g.entryBreaksRim).toBe(true);
       expect(g.entryNotch.zMax).toBeCloseTo(g.plateTopBelowWallTopMm + 1, 9);
+    });
+  });
+
+  describe('entry bars', () => {
+    it('carry every bar past the entry wall’s outer face', () => {
+      const g = geometryOf();
+      expect(g.entryBars).toHaveLength(g.bars.length);
+      for (const [i, bar] of g.entryBars.entries()) {
+        expect(bar.section).toEqual(g.bars[i].section);
+        // Overlapping the cavity bars, and past the face the clip trims to.
+        expect(bar.xMin).toBeLessThan(g.bars[i].xMax);
+        expect(bar.xMax).toBeGreaterThan(g.bodyFootprint.lengthMm / 2);
+      }
+      expect(g.bodyFootprint.lengthMm / 2).toBeCloseTo(g.plate.trailingX, 9);
+    });
+
+    it('give a finger catch the lip’s own section, support and all', () => {
+      const g = geometryOf({ slide: { ...DEFAULT_LID_SLIDE_CONFIG, pull: 'catch' } });
+      const section = g.plate.catchSection ?? [];
+      expect(section.length).toBeGreaterThan(4);
+      const insets = section.map(([x]) => g.plate.trailingX - x);
+      // The lip's full jut, and a sharp peak on the lip's top plane.
+      expect(Math.max(...insets)).toBeCloseTo(2.6, 9);
+      expect(Math.max(...section.map(([, z]) => z))).toBeCloseTo(g.plate.pullReachMm, 9);
+      // No face the printer has to bridge: every edge leaving the outer face
+      // is vertical or at most 45° off it, measured where it faces down.
+      for (let k = 0; k < section.length; k++) {
+        const [x0, z0] = section[k];
+        const [x1, z1] = section[(k + 1) % section.length];
+        const run = Math.abs(x1 - x0);
+        const rise = Math.abs(z1 - z0);
+        if (run > 1e-9 && z1 - z0 < 0 && x1 > x0) {
+          // Walking clockwise, a step outward and down is an underside.
+          expect(rise, `edge ${k}`).toBeGreaterThanOrEqual(run - 1e-9);
+        }
+      }
+      // Through the plate's full thickness, so its ends cover the plate's edge.
+      expect(Math.min(...section.map(([, z]) => z))).toBeCloseTo(-g.plate.thicknessMm, 9);
+      // And the bin's lip goes to that full depth.
+      expect(g.plate.trailingX - (g.lipNotch?.xMin ?? 0)).toBeGreaterThan(2.6);
+    });
+
+    it('end the retainers flush with the cut lip, and leave the shelf', () => {
+      for (const wallThickness of [0.4, 1.2, 2.0]) {
+        const g = geometryOf({
+          wallThickness,
+          entryWallThicknessMm: wallThickness,
+          slide: { ...DEFAULT_LID_SLIDE_CONFIG, pull: 'catch' },
+        });
+        const cut = g.lipNotch;
+        const retainerLow = Math.min(
+          ...g.bars.filter((b) => b.kind === 'retainer').flatMap((b) => b.section.map(([, z]) => z))
+        );
+        const shelfTop = Math.max(
+          ...g.bars.filter((b) => b.kind === 'shelf').flatMap((b) => b.section.map(([, z]) => z))
+        );
+        expect(cut?.zMin, `${wallThickness}`).toBeLessThan(retainerLow);
+        expect(cut?.zMin, `${wallThickness}`).toBeGreaterThan(shelfTop);
+        // Below the catch everywhere, so the shut lid clears what is left.
+        const catchLow = Math.min(
+          ...(g.plate.catchSection ?? []).map(([, z]) => z).filter((z) => z > 0)
+        );
+        expect(cut?.zMin, `${wallThickness}`).toBeLessThan(catchLow);
+      }
+    });
+
+    it('finish the catch’s peak the way the bin finishes its lip', () => {
+      const peakOf = (lipTip: 'sharp' | 'round' | 'chamfer' | 'flat'): number => {
+        const g = geometryOf({ lipTip, slide: { ...DEFAULT_LID_SLIDE_CONFIG, pull: 'catch' } });
+        return g.plate.pullReachMm - Math.max(...(g.plate.catchSection ?? []).map(([, z]) => z));
+      };
+      expect(peakOf('sharp')).toBeCloseTo(0, 9);
+      expect(peakOf('flat')).toBeCloseTo(0.7, 9);
+      // A chamfer takes `LIP_TIP_MM` along each face; a fillet of that radius
+      // between faces 45° apart crowns `r / tan(22.5°) − r` below the peak.
+      expect(peakOf('chamfer')).toBeCloseTo(0.4 / Math.SQRT2, 9);
+      // Sampled arc: its crown falls between two points.
+      expect(peakOf('round')).toBeCloseTo(0.4 / Math.tan(Math.PI / 8) - 0.4, 2);
+    });
+
+    it('do not ramp the rim for a finger catch, which fills it', () => {
+      expect(
+        geometryOf({ slide: { ...DEFAULT_LID_SLIDE_CONFIG, pull: 'catch' } }).entryNotchFlares
+      ).toBe(false);
+      // A lipless bin breaks its rim with no lid to fill it, so it still ramps.
+      expect(geometryOf({ hasLip: false }).entryNotchFlares).toBe(true);
+      expect(geometryOf().entryNotchFlares).toBe(false);
+    });
+
+    it('cut no extra lip for any other pull', () => {
+      expect(geometryOf().plate.catchSection).toBeNull();
+      expect(geometryOf().lipNotch).toBeNull();
+    });
+
+    it('leave the entry wall to a finger catch', () => {
+      const g = geometryOf({ slide: { ...DEFAULT_LID_SLIDE_CONFIG, pull: 'catch' } });
+      expect(g.entryBars).toEqual([]);
+    });
+  });
+
+  describe('minimum channel wall', () => {
+    // The same 3x2 body at another wall thickness: the cavity moves, the outer
+    // face does not.
+    function atWall(wallThickness: number) {
+      return geometryOf({
+        innerW: 3 * 42 - 0.5 - 2 * wallThickness,
+        innerD: 2 * 42 - 0.5 - 2 * wallThickness,
+        wallThickness,
+        entryWallThicknessMm: wallThickness,
+      });
+    }
+    const rounded = (v: unknown): string =>
+      JSON.stringify(v, (_k, x: unknown) => (typeof x === 'number' ? Math.round(x * 1e6) : x));
+
+    it('lays a thinner wall’s channel at the minimum wall’s face', () => {
+      const minimum = atWall(SLIDE_MIN_CHANNEL_WALL_MM);
+      expect(minimum.wallLining).toBeNull();
+      for (const wall of [0.4, 0.8]) {
+        const g = atWall(wall);
+        expect(rounded(g.plate), `${wall}`).toBe(rounded(minimum.plate));
+        expect(rounded(g.bars), `${wall}`).toBe(rounded(minimum.bars));
+      }
+    });
+
+    it('follows a thicker wall', () => {
+      const minimum = atWall(SLIDE_MIN_CHANNEL_WALL_MM);
+      const thick = atWall(2.6);
+      expect(thick.wallLining).toBeNull();
+      expect(minimum.plate.spanMm - thick.plate.spanMm).toBeCloseTo(
+        2 * (2.6 - SLIDE_MIN_CHANNEL_WALL_MM),
+        9
+      );
+    });
+
+    it('lines a thinner wall from the shelf’s root to the retainer’s top', () => {
+      const g = atWall(0.4);
+      const lining = g.wallLining;
+      expect(lining?.cavityInsetMm).toBeCloseTo(0.4, 9);
+      expect(lining?.channelInsetMm).toBeCloseTo(SLIDE_MIN_CHANNEL_WALL_MM, 9);
+      const shelfRoot = Math.min(...g.bars.flatMap((b) => b.section.map(([, z]) => z)));
+      expect(lining?.zMin).toBeCloseTo(shelfRoot, 9);
+      expect(lining?.zMax).toBeCloseTo(g.travelEnvelope.zMax, 9);
+      expect(lining?.bodySpanMm).toBeCloseTo(3 * 42 - 0.5, 9);
+    });
+
+    it('keeps the plate inside the body’s outline where it passes the entry corners', () => {
+      // At the entry wall's channel face the outer arc has come in to
+      // `halfSpan - cornerR + √(R² − cornerR²)`; the plate's edge must stay
+      // inside it, with skin to spare, at every wall the slider offers.
+      const R = GRIDFINITY_SPEC.BOX_CORNER_RADIUS;
+      for (const wall of [0.4, 0.6, 0.8, 1.2, 1.6, 2.6]) {
+        const g = atWall(wall);
+        const halfSpan = g.travelEnvelope.yMax;
+        const cornerR = g.plate.cornerRadiusMm;
+        const outerAtFace = halfSpan - cornerR + Math.sqrt(R * R - cornerR * cornerR);
+        expect(outerAtFace - g.plate.spanMm / 2, `${wall}`).toBeGreaterThan(0.4);
+      }
     });
   });
 
@@ -663,10 +837,11 @@ describe('finger catch', () => {
     const g = geometryOf({ slide: catchConfig });
     expect(g.plate.pull).toBe('catch');
     expect(g.plate.pullSpanMm).toBeCloseTo(g.plate.spanMm, 9);
-    // From the plate's top to the lip's top: the section of rim the notch
-    // removed, moved onto the lid.
+    // From the plate's top to the lip's top, which the pipeline puts at
+    // `wallTopZ + LIP_HEIGHT`: the section of rim the notch removed, moved onto
+    // the lid. The kernel suite checks it against a generated lip.
     expect(g.plate.pullReachMm).toBeCloseTo(
-      g.plateTopBelowWallTopMm + GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP,
+      g.plateTopBelowWallTopMm + GRIDFINITY_SPEC.LIP_HEIGHT,
       9
     );
   });

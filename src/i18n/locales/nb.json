@@ -1243,7 +1243,7 @@
   "binDesigner.lid.compat.slideInteriorBlocked": "Skillevegger, etikettapper eller en skje rekker inn i lokkets bane og stopper det. Slå på «Frigjør innsiden» under Avansert for å skjære dem klar.",
   "binDesigner.lid.compat.slideLongSpan": "Lokket er bredt nok til å bøye seg mellom skinnene. Øk tykkelsen under Avansert.",
   "binDesigner.lid.compat.slideRimInterrupted": "Stableleppen er skåret bort på veggen {sides} så lokket kan skli inn. På de tre andre kan du fortsatt stable.",
-  "binDesigner.lid.compat.slideCatchThin": "Fingergrepet kan ikke være tykkere enn inngangsveggen, og blir her for tynt til å skrives ut godt. En vegg på 1,2 mm eller mer gir det styrke.",
+  "binDesigner.lid.compat.slideCatchThin": "Fingergrepet er like tykt som inngangsveggen minus glideklaringen, og blir her for tynt til å skrives ut godt. Reduser klaringen under Finjustering, eller bruk en tykkere vegg.",
   "binDesigner.lid.compat.slideUnbuildable": "Denne boksen kan ikke ta et skyvbart lokk — den er for liten eller for grunn for sporet, eller stilen har ingen hulrom å dekke.",
   "binDesigner.lid.compat.slideWallPattern": "Veggmønsteret perforerer nettopp de veggene skinnene fester seg i, noe som svekker dem.",
   "binDesigner.lid.compat.tallDividerPieces": "Skilleplater er høyere enn boksens innside — lokket vil ikke sitte med dem satt inn.",
