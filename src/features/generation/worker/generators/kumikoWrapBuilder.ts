@@ -41,7 +41,7 @@ import type { WrappedLatticeCalculator } from './patterns';
 import { BOX_CORNER_RADIUS } from './generatorConstants';
 import { buildCacheKey, quantize, compactKey } from './cacheKeyUtils';
 import { checkCancelled } from './utils/abort';
-import { getFeatureCache, setFeatureCache } from './shapeCache';
+import { getShapeSetCache, setShapeSetCache } from './shapeCache';
 import { applyWallPatternClips } from './wallPatternClips';
 import { computeWallClipContext, computeWallClips } from './wallPatternBuilder';
 import { KUMIKO_WRAP_BASE_CACHE, KUMIKO_WRAP_CLIPPED_CACHE } from './wallPatternTypes';
@@ -245,7 +245,7 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): KumikoWallPattern
   const activeSlabs = layout.slabs.filter((s) => (s.kind === 'flat' || exact) && slabSelected(s));
   if (activeSlabs.length === 0) return NONE;
   // One planned cutter per flat window / corner — the plan is deterministic
-  // from layout + lattice, so cache entries index it directly.
+  // from layout + lattice, so a cached set lines up with it index for index.
   const plan: Array<{ slab: PerimeterSlab; windowA: number; windowB: number }> = [];
   for (const slab of activeSlabs) {
     if (slab.kind === 'flat') {
@@ -257,22 +257,16 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): KumikoWallPattern
     }
   }
   const cacheGetAll = (cacheName: string, key: string): Shape3D[] | null => {
-    const shapes: Shape3D[] = [];
-    for (let i = 0; i < plan.length; i++) {
-      const hit = getFeatureCache(cacheName, `${key}#${i}`);
-      if (!hit) {
-        for (const s of shapes) s.delete();
-        return null;
-      }
-      shapes.push(hit);
+    const shapes = getShapeSetCache(cacheName, key);
+    if (shapes && shapes.length !== plan.length) {
+      for (const s of shapes) s.delete();
+      return null;
     }
     return shapes;
   };
   const cacheSetAll = (cacheName: string, key: string, shapes: Shape3D[]): Shape3D[] => {
-    return shapes.map((s, i) => {
-      setFeatureCache(cacheName, `${key}#${i}`, s);
-      return unwrap(clone(s));
-    });
+    setShapeSetCache(cacheName, key, shapes);
+    return shapes.map((s) => unwrap(clone(s)));
   };
 
   // Which walls' clip boxes can reach each slab: a flat sees its own wall's
