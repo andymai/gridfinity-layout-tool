@@ -1682,6 +1682,8 @@
   "binDesigner.lid.slide.pull.tabHint": "与盖板同一平面、伸出盒体前端的凸耳。戴手套时最好抓握。",
   "binDesigner.lid.slide.pull.catch": "指扣",
   "binDesigner.lid.slide.pull.catchHint": "盖子外缘上一段可移动的堆叠边缘。合上时补齐边缘，打开时提供宽阔的抓握处。",
+  "binDesigner.lid.slide.pull.groove": "指甲槽",
+  "binDesigner.lid.slide.pull.grooveHint": "在盖子上距外边缘约 2 cm 处横贯两道浅槽，可用指甲推开或推合盖子。盖子的外形保持不变。",
   "binDesigner.lid.slide.sagThicknessReadout": "{thickness} mm 厚的盖板即可承受该跨度",
   "binDesigner.lid.slide.spanReadout": "无支撑跨距：{span} mm",
   "binDesigner.lid.stackGridHint": "在整个顶面生成完整的网格凹槽。叠放在上面的收纳盒会锁进各个格子。",

@@ -1713,6 +1713,8 @@
   "binDesigner.lid.slide.pull.tabHint": "Un ergot qui dépasse de la face du bac, dans le plan du couvercle. Le plus facile à saisir avec des gants.",
   "binDesigner.lid.slide.pull.catch": "Butée pour le doigt",
   "binDesigner.lid.slide.pull.catchHint": "Une section mobile du rebord d’empilage sur le bord extérieur du couvercle. Fermé, il complète le rebord ; ouvert, il offre une large prise.",
+  "binDesigner.lid.slide.pull.groove": "Rainure pour l’ongle",
+  "binDesigner.lid.slide.pull.grooveHint": "Deux rainures peu profondes en travers du couvercle, à environ 2 cm de son bord extérieur, pour l’ouvrir ou le fermer avec l’ongle. Le contour du couvercle reste intact.",
   "binDesigner.lid.slide.sagThicknessReadout": "Une plaque de {thickness} mm porterait cette portée",
   "binDesigner.lid.slide.spanReadout": "Portée libre : {span} mm",
   "binDesigner.lid.stackGridHint": "Une grille complète d’alvéoles sur toute la face supérieure. Les bacs empilés dessus se verrouillent dans chaque cellule.",

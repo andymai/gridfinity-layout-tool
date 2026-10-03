@@ -1713,6 +1713,8 @@
   "binDesigner.lid.slide.pull.tabHint": "En knast som stikker ut forbi boksens forside, i lokkets eget plan. Lettest å gripe med hansker på.",
   "binDesigner.lid.slide.pull.catch": "Fingergrep",
   "binDesigner.lid.slide.pull.catchHint": "En bevegelig del av stablekanten på lokkets ytterkant. Lukket fullfører den kanten, åpen gir den et bredt grep.",
+  "binDesigner.lid.slide.pull.groove": "Neglspor",
+  "binDesigner.lid.slide.pull.grooveHint": "To grunne spor tvers over lokket, omtrent 2 cm inn fra ytterkanten, så du kan skyve det opp og igjen med neglen. Lokkets omriss forblir uendret.",
   "binDesigner.lid.slide.sagThicknessReadout": "En plate på {thickness} mm ville båret dette spennet",
   "binDesigner.lid.slide.spanReadout": "Fri spennvidde: {span} mm",
   "binDesigner.lid.stackGridHint": "Et fullt rutenett av sokler over hele oversiden. Binger som stables oppå, låses til enkeltceller.",

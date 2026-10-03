@@ -270,6 +270,46 @@ function notchCutter(scope: DisposalScope, geometry: SlideLidGeometry): Shape3D 
   );
 }
 
+/** Flat floor (mm) under a fingernail groove, so a nail seats rather than wedges. */
+const GROOVE_FLOOR_MM = 0.6;
+
+/** Width (mm) of the beam left standing between the two grooves. */
+const GROOVE_BEAM_MM = 2;
+
+/**
+ * The fingernail grooves: a mirrored pair of shallow channels across the
+ * plate's top face, set in from the trailing edge, with a beam between them.
+ *
+ * Each is asymmetric: the face against the beam is vertical, the outer face a
+ * shallow ramp a nail slides down into. A nail pulling the lid open bears on the
+ * inner groove's vertical face, one pushing it shut on the outer groove's — a
+ * slope in either place lets the nail ride up and out. Both are on the top
+ * face, so neither is an overhang on a plate printed flat.
+ */
+function grooveCutters(scope: DisposalScope, geometry: SlideLidGeometry): Shape3D[] {
+  const { plate } = geometry;
+  if (plate.pull !== 'groove' || plate.pullReachMm <= 0 || plate.pullDepthMm <= 0) return [];
+  const half = Math.min(plate.pullSpanMm, plate.spanMm - 4) / 2;
+  if (half <= 1) return [];
+  const d = plate.pullDepthMm;
+  const run = GROOVE_FLOOR_MM + 1.5 * d;
+  const groove = (wall: number, dir: 1 | -1): Shape3D =>
+    sweptY(
+      scope,
+      [
+        [wall, OVERSHOOT_MM],
+        [wall, -d],
+        [wall - dir * GROOVE_FLOOR_MM, -d],
+        [wall - dir * run, 0],
+        [wall - dir * (run + OVERSHOOT_MM), OVERSHOOT_MM],
+      ],
+      -half,
+      half
+    );
+  const inner = plate.trailingX - plate.pullReachMm;
+  return [groove(inner, 1), groove(inner + GROOVE_BEAM_MM, -1)];
+}
+
 /**
  * The pull tab: a lug in the plate's OWN PLANE reaching past the bin's face.
  *
@@ -353,6 +393,7 @@ export function buildSlideLidPlate(
   ];
   const notch = notchCutter(scope, geometry);
   if (notch) cutters.push(notch);
+  cutters.push(...grooveCutters(scope, geometry));
 
   let shaped: Shape3D = body;
   if (cutters.length > 0) {
