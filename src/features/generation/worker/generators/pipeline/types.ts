@@ -292,6 +292,12 @@ export interface PipelineContext {
    */
   readonly deferredCutTargets: readonly Shape3D[];
   /**
+   * Geometry-identity key for {@link deferredCutTargets} (the floor pattern's
+   * key), or `null` when there are none. With `deferredSolidKey` it identifies
+   * the carved socket, so the carve and its mesh can be cached.
+   */
+  readonly deferredCutKey: string | null;
+  /**
    * Composite geometry-identity key for the feature targets this run, set by
    * the features stage. Combined with `dimensions.shellKey` + `forExport` it
    * keys the post-boolean body cache, so a metadata-only edit (no geometry

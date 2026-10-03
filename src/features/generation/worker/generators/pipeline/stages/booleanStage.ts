@@ -21,7 +21,12 @@ import type { Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import type { BooleanOpts } from '../../meshUtils';
 import { checkCancelled } from '../../utils/abort';
-import { getBinBodyCache, setBinBodyCache } from '../../shapeCache';
+import {
+  getBinBodyCache,
+  getCarvedSocketCache,
+  setBinBodyCache,
+  setCarvedSocketCache,
+} from '../../shapeCache';
 import { compactKey } from '../../cacheKeyUtils';
 
 function applyCutPass(
@@ -44,14 +49,32 @@ function applyCutPass(
  * them and disposes them at the end. A failure here degrades to an uncarved
  * socket — the holes then stop at the socket's top face instead of draining —
  * rather than failing the whole generation.
+ *
+ * The carve is cached on the socket's key, the pattern's key and `forExport`
+ * (which drives `simplify`), and that composite becomes the returned key, so
+ * the socket's mesh cache hits for a carved socket too.
  */
 function cutDeferredSolid(ctx: PipelineContext): {
   solid: Shape3D | null;
   key: string | null;
 } {
-  const { deferredSolid, deferredCutTargets, signal, forExport } = ctx;
+  const { deferredSolid, deferredCutTargets, deferredSolidKey, deferredCutKey, signal, forExport } =
+    ctx;
   if (!deferredSolid || deferredCutTargets.length === 0) {
-    return { solid: deferredSolid, key: ctx.deferredSolidKey };
+    return { solid: deferredSolid, key: deferredSolidKey };
+  }
+  const carveKey =
+    deferredSolidKey !== null && deferredCutKey !== null
+      ? compactKey(
+          JSON.stringify(['carved-socket-v1', deferredSolidKey, deferredCutKey, forExport])
+        )
+      : null;
+  if (carveKey !== null) {
+    const cached = getCarvedSocketCache(carveKey);
+    if (cached) {
+      deferredSolid.delete();
+      return { solid: cached, key: carveKey };
+    }
   }
   try {
     const { shape } = unwrap(
@@ -65,16 +88,13 @@ function cutDeferredSolid(ctx: PipelineContext): {
       )
     );
     if (shape !== deferredSolid) deferredSolid.delete();
-    // The socket's mesh cache is keyed on the SOCKET's own geometry, which says
-    // nothing about the pattern carved into it — and the carve also depends on
-    // divider/scoop keep-outs that key can't see. Drop it so a CARVED socket
-    // always re-tessellates, mirroring how `featuresKey` disables the body's
-    // resume cache for pattern cuts.
-    return { solid: shape, key: null };
+    if (carveKey === null) return { solid: shape, key: null };
+    setCarvedSocketCache(carveKey, shape);
+    return { solid: translate(shape, [0, 0, 0]), key: carveKey };
   } catch {
     // The cut produced no shape, so this is the original socket untouched — its
     // key still describes it, and dropping it would only cost a re-tessellation.
-    return { solid: deferredSolid, key: ctx.deferredSolidKey };
+    return { solid: deferredSolid, key: deferredSolidKey };
   }
 }
 
@@ -123,9 +143,8 @@ export const booleanStage: PipelineStage = {
       if (cached) {
         // The cached body already has features fused/cut in and carries their
         // face-origin tags (preserved by the metadata clone). Drop the shell
-        // and the now-unused feature tools; the freshly built socket flows
-        // through as-is (a floor-patterned bin can't reach here — it disables
-        // the resume key — but the carve above is still honoured if it did).
+        // and the now-unused feature tools; the socket from the carve above
+        // flows through as-is.
         originalSolid.delete();
         for (const t of allTargets) t.delete();
         return {
@@ -137,6 +156,7 @@ export const booleanStage: PipelineStage = {
           cutTargets: [],
           patternCutTargets: [],
           deferredCutTargets: [],
+          deferredCutKey: null,
         };
       }
     }
@@ -189,6 +209,7 @@ export const booleanStage: PipelineStage = {
       cutTargets: [],
       patternCutTargets: [],
       deferredCutTargets: [],
+      deferredCutKey: null,
     };
   },
 };
