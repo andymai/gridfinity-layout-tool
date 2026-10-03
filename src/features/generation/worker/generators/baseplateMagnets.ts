@@ -5,7 +5,7 @@
  * into the solid floor below. Extends down by magnetDepth, leaving a thin
  * retaining floor (MAGNET_FLOOR = 0.5mm) at the bottom.
  *
- * Builds one template cylinder, clones+translates per position.
+ * Builds one template cylinder and translates it to each position.
  *
  * Nominal full (1.0+ unit) cells get the standard 4-corner pattern (±13mm from
  * cell center). A half cell keeps whatever of that pattern still fits — two
@@ -17,7 +17,7 @@
  * for any corner, so the clipped padding tiles aren't left solid.
  */
 
-import { unwrap, clone, translate } from 'brepjs';
+import { translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
@@ -162,12 +162,7 @@ function buildMagnetCutters(
   const holes: Shape3D[] = [];
   try {
     for (const [x, y] of positions) {
-      const cloned = unwrap(clone(magnetTemplate));
-      try {
-        holes.push(translate(cloned, [x, y, 0]));
-      } finally {
-        cloned.delete();
-      }
+      holes.push(translate(magnetTemplate, [x, y, 0]));
     }
   } catch (e) {
     for (const h of holes) h.delete();

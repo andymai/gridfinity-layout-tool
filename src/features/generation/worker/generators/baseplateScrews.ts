@@ -7,7 +7,7 @@
  *     a piece's params into absolute XY positions, snapping each floor target to
  *     a real magnet position. No brepjs, so `baseplateDirectMesh` calls them too.
  *   - {@link buildScrewCutters}: the BREP cutters, built as one template per
- *     site and cloned per position, the same way magnets and pockets are.
+ *     site and translated to each position, the same way magnets are.
  *
  * The floor snap is why this lives beside `baseplateMagnets` rather than in
  * shared: it consumes `magnetPositionsForCell`, which is also what the magnets,
@@ -15,7 +15,7 @@
  * what keeps a screw concentric with its magnet instead of 0.3mm off it.
  */
 
-import { cylinder, drawCircle, unwrap, clone, translate, fuse } from 'brepjs';
+import { cylinder, drawCircle, unwrap, translate, fuse } from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
@@ -279,7 +279,7 @@ function buildScrewTemplate(
 
 /**
  * Build cutters for every resolved hole. Templates are built once per site and
- * cloned, matching how magnets and pockets amortise their construction.
+ * translated into place, matching how magnets amortise their construction.
  */
 export function buildScrewCutters(
   holes: readonly ResolvedScrewHole[],
@@ -299,12 +299,7 @@ export function buildScrewCutters(
         template = buildScrewTemplate(params, hole.site, totalHeightMm, profileHeightMm);
         templates.set(hole.site, template);
       }
-      const cloned = unwrap(clone(template));
-      try {
-        cutters.push(translate(cloned, [hole.x, hole.y, 0]));
-      } finally {
-        cloned.delete();
-      }
+      cutters.push(translate(template, [hole.x, hole.y, 0]));
     }
   } catch (e) {
     for (const c of cutters) c.delete();

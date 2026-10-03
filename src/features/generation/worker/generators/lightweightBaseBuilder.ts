@@ -298,9 +298,7 @@ export function buildLightweightBase(
         // 'up' it also pokes a slug above the foot top, reused as the
         // floor-opening tool.
         const innerFoot = scope.register(buildFoot(innerW, innerD));
-        voids.push(
-          translate(scope.register(unwrap(clone(innerFoot))), [cell.centerX, cell.centerY, zShift])
-        );
+        voids.push(translate(innerFoot, [cell.centerX, cell.centerY, zShift]));
         if (openDir === 'underside') {
           const ribHeight = socketHeight;
           const ribZ = -socketHeight / 2;
@@ -324,13 +322,7 @@ export function buildLightweightBase(
           // flush with the cup mouth. Shifting it further to reach a thicker
           // floor would cut with a narrower slice of the taper and leave an
           // unsupported horizontal ledge around every cup.
-          openingTools.push(
-            translate(scope.register(unwrap(clone(innerFoot))), [
-              cell.centerX,
-              cell.centerY,
-              zShift,
-            ])
-          );
+          openingTools.push(translate(innerFoot, [cell.centerX, cell.centerY, zShift]));
           // What the void does not reach: a prism of the cup mouth carrying the
           // opening the rest of the way up through the floor.
           const remaining = (floorThickness ?? wallThickness) - zShift;

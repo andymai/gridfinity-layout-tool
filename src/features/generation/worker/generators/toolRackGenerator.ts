@@ -108,7 +108,7 @@ export function buildToolRackSolid(
       drawRoundedRectangle(totalW, totalD, Math.max(radius, 0.1)).sketchOnPlane('XY', 0).extrude(z0)
     );
 
-    // (b) Fins: build one, clone+translate across X.
+    // (b) Fins: build one, translate it across X.
     const baseFin = buildLeaningFin(
       scope,
       structure.finThickness,
@@ -120,7 +120,7 @@ export function buildToolRackSolid(
     const parts: Shape3D[] = [floor];
     for (let i = 0; i < count; i++) {
       const x = -totalW / 2 + structure.slotInsetMm + i * pitch;
-      parts.push(translate(scope.register(unwrap(clone(baseFin))), [x, 0, 0]));
+      parts.push(translate(baseFin, [x, 0, 0]));
     }
 
     // (c) Optional back rail along +Y, fins fuse into it.

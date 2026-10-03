@@ -34,7 +34,7 @@
  * Z=-totalHeight).
  */
 
-import { draw, rotate, translate, intersect, cutAll, clone } from 'brepjs';
+import { draw, rotate, translate, intersect, cutAll } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isOk, unwrap } from '@/core/result';
@@ -402,14 +402,14 @@ function relieveForNeighborSockets(
 ): Shape3D {
   const footCell = gridUnitMm - CLEARANCE + 2 * CONNECTOR_SOCKET_RELIEF_GAP;
   const half = gridUnitMm / 2;
-  // Loft the foot once and clone it to each of the four neighbouring cells.
+  // Loft the foot once and translate it to each of the four neighbouring cells.
   const baseFoot = buildSingleCellSocket(footCell, footCell, socketHeight);
   const cutters: ValidSolid[] = [];
   for (const sx of [-1, 1] as const) {
     for (const sy of [-1, 1] as const) {
       const cx = sx * half;
       const cy = sy * half;
-      const foot = translate(unwrap(clone(baseFoot)), [cx, cy, 0]);
+      const foot = translate(baseFoot, [cx, cy, 0]);
       if (floorZ === undefined) {
         cutters.push(foot as ValidSolid);
         continue;
