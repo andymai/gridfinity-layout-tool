@@ -511,15 +511,6 @@ describe('resolveSlideLidPlan', () => {
       expect(peakOf('round')).toBeCloseTo(0.4 / Math.tan(Math.PI / 8) - 0.4, 2);
     });
 
-    it('do not ramp the rim for a finger catch, which fills it', () => {
-      expect(
-        geometryOf({ slide: { ...DEFAULT_LID_SLIDE_CONFIG, pull: 'catch' } }).entryNotchFlares
-      ).toBe(false);
-      // A lipless bin breaks its rim with no lid to fill it, so it still ramps.
-      expect(geometryOf({ hasLip: false }).entryNotchFlares).toBe(true);
-      expect(geometryOf().entryNotchFlares).toBe(false);
-    });
-
     it('cut no extra lip for any other pull', () => {
       expect(geometryOf().plate.catchSection).toBeNull();
       expect(geometryOf().lipNotch).toBeNull();

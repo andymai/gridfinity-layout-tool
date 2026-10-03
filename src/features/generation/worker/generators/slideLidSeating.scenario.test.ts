@@ -435,6 +435,38 @@ describe('sliding lid seating', () => {
     ]);
   }, 900000);
 
+  it('leaves a lipless bin’s wall top whole beside the entry window', async () => {
+    // A lipless bin's window breaks the rim, and used to widen 2.5mm each side
+    // on its way up: a ramp meant to soften lip ends, cutting a triangle out
+    // of the corner where there was no lip. Probed across both entry corners,
+    // outside the window's own span, against the lidless bin.
+    const lipless = { ...DEFAULT_BIN_PARAMS.base, stackingLip: false };
+    const params = slideParams({ base: lipless }, { placement: 'flush', pull: 'notch' });
+    const pair = await build(params);
+    const bare = bareBin(params);
+    const { trailingX } = pair.geometry.plate;
+    const halfBody = pair.geometry.bodyFootprint.spanMm / 2;
+    const notchHalf = pair.geometry.entryNotch.yMax;
+    const bitten: string[] = [];
+    let probed = 0;
+    for (const sign of [1, -1]) {
+      for (let xIn = 0.1; xIn <= 1.25; xIn += 0.05) {
+        for (let across = notchHalf + 0.05; across < halfBody - 0.05; across += 0.05) {
+          const [x, y] = canonicalToBin(pair.geometry, trailingX - xIn, sign * across);
+          const want = columnCrossings(bare, x, y);
+          if (want.length === 0) continue;
+          probed++;
+          const got = columnCrossings(pair.bin, x, y);
+          if (got.length === 0 || Math.max(...got) < Math.max(...want) - 0.05) {
+            bitten.push(`${sign}: ${xIn.toFixed(2)}/${across.toFixed(2)}`);
+          }
+        }
+      }
+    }
+    expect(probed).toBeGreaterThan(8);
+    expect(bitten).toEqual([]);
+  }, 300000);
+
   it('a rim-height channel leaves the deepest interior', async () => {
     // The reason the placement exists, stated as a comparison between the two
     // placements rather than an absolute depth, so it tracks the lip spec

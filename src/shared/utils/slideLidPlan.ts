@@ -394,13 +394,6 @@ export interface SlideLidGeometry {
   /** Window cut through the entry wall, in canonical coords. */
   readonly entryNotch: SlideLidBox;
   /**
-   * Whether the notch widens as it climbs through the rim, so a bin sliding on
-   * meets ramped lip ends rather than square shoulders. Not for a finger
-   * catch: the shut lid fills the rim, and a ramp would only leave a gap
-   * either side of it.
-   */
-  readonly entryNotchFlares: boolean;
-  /**
    * For a finger catch on a lipped bin, the cut taking the entry wall's lip
    * away to its full depth, cut AFTER the bars fuse.
    *
@@ -988,7 +981,6 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
       detents,
       entryNotch,
       lipNotch,
-      entryNotchFlares: entryBreaksRim && !isCatch,
       entryBreaksRim,
       wallLining,
       mouthReliefs,

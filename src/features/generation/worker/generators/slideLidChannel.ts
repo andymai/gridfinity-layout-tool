@@ -53,17 +53,6 @@ export function slideLidPlateTopZ(dim: BinDimensions, geometry: SlideLidGeometry
   return dim.wallTopZ - geometry.plateTopBelowWallTopMm;
 }
 
-/**
- * How far the entry notch flares as it breaks the rim (mm), when it does.
- *
- * A rim break leaves the stacking lip ending at two vertical shoulders, which
- * is where an upper bin catches as it slides on and where a crack starts, so
- * the cut widens by this fixed run-out on each side as it climbs from the
- * plate's clearance height to the rim. Same treatment, and the same reason, as
- * `lidGripDipStage`'s ramped ends.
- */
-const NOTCH_RIM_RAMP_MM = 2.5;
-
 /** Coplanar bite (mm) so a fused bump has real volume to merge, not a face. */
 const DETENT_BITE_MM = 0.2;
 
@@ -97,32 +86,13 @@ function detentSolid(scope: DisposalScope, detent: SlideLidDetent): Shape3D {
   return scope.register(translate(upright, [0, detent.yMax, detent.baseZ]));
 }
 
-/**
- * The entry window, as a YZ elevation swept along X.
- *
- * Rectangular up to the plate's clearance height, then flaring outward by a
- * fixed run-out each side as it climbs through the rim — see
- * {@link NOTCH_RIM_RAMP_MM}.
- */
-function notchSolid(
-  scope: DisposalScope,
-  notch: SlideLidBox,
-  plateClearTopZ: number,
-  rampsRim: boolean
-): Shape3D {
-  // A notch that stops at the plate's clearance height leaves the rim standing,
-  // so there is no rim break to ramp: a plain rectangle.
-  const ramps = rampsRim && notch.zMax > plateClearTopZ + 1e-6;
-  const bottom = draw([notch.yMin, notch.zMin]).lineTo([notch.yMax, notch.zMin]);
-  const elevation = (
-    ramps
-      ? bottom
-          .lineTo([notch.yMax, plateClearTopZ])
-          .lineTo([notch.yMax + NOTCH_RIM_RAMP_MM, notch.zMax])
-          .lineTo([notch.yMin - NOTCH_RIM_RAMP_MM, notch.zMax])
-          .lineTo([notch.yMin, plateClearTopZ])
-      : bottom.lineTo([notch.yMax, notch.zMax]).lineTo([notch.yMin, notch.zMax])
-  ).close();
+/** The entry window, or a finger catch's lip cut: a box in the canonical frame. */
+function notchSolid(scope: DisposalScope, notch: SlideLidBox): Shape3D {
+  const elevation = draw([notch.yMin, notch.zMin])
+    .lineTo([notch.yMax, notch.zMin])
+    .lineTo([notch.yMax, notch.zMax])
+    .lineTo([notch.yMin, notch.zMax])
+    .close();
   const extruded = scope.register(sketch(elevation, 'YZ').extrude(notch.xMax - notch.xMin));
   return scope.register(translate(extruded, [notch.xMin, 0, 0]));
 }
@@ -263,12 +233,9 @@ export function buildSlideLidChannel(
       put(clipToFootprint(scope, barSolid(scope, bar), geometry.bodyFootprint), additions);
     }
     for (const detent of geometry.detents) put(detentSolid(scope, detent), additions);
-    put(
-      notchSolid(scope, geometry.entryNotch, geometry.clearanceMm, geometry.entryNotchFlares),
-      subtractions
-    );
+    put(notchSolid(scope, geometry.entryNotch), subtractions);
     if (geometry.lipNotch) {
-      put(notchSolid(scope, geometry.lipNotch, geometry.clearanceMm, false), finishingCuts);
+      put(notchSolid(scope, geometry.lipNotch), finishingCuts);
     }
     return null;
   });
