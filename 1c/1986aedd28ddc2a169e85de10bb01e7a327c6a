@@ -1,0 +1,14 @@
+src/features/generation/worker/generators/shapeSetCache.test.ts
+  h_b755e1950659f4 1-2,4-5,7,9-12,14-16,18-20,24,26,28,32-35,39,41-42,46-47,50-51,56-57,61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1c1986aedd28ddc2a169e85de10bb01e7a327c6a",
+  "prompts": {},
+  "humans": {
+    "h_b755e1950659f4": {
+      "author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
