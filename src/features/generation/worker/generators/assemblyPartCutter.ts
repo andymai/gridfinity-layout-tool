@@ -93,7 +93,7 @@ export function buildCutterSolid(params: CutterParams): Shape3D | null {
       [sketch(outer, 'XY', CUTTER_TOP_OVERSHOOT)],
       { ruled: true }
     );
-    const fused = fuseAll([body, collar] as ValidSolid[], { optimisation: 'commonFace' });
+    const fused = fuseAll([body, collar] as ValidSolid[]);
     const result = unwrap(fused);
     if (result !== body) body.delete();
     if (result !== collar) collar.delete();

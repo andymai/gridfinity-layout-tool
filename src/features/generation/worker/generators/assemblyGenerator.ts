@@ -189,9 +189,7 @@ export function buildAssemblySolid(
     scope.register(floor);
     onStage?.('features', 0.5);
 
-    let superstructure = unwrap(
-      fuseAll(additive as ValidSolid[], { optimisation: 'commonFace' })
-    ) as Shape3D;
+    let superstructure = unwrap(fuseAll(additive as ValidSolid[])) as Shape3D;
     if (!additive.includes(superstructure)) scope.register(superstructure);
 
     // Molded blend at every seat plane: the concave cove where a part meets
@@ -272,12 +270,10 @@ export function buildAssemblySolid(
         axis: wedgeTransform.axis,
       });
       clipBox.delete();
-      const filler = unwrap(cut(slab, clip, { optimisation: 'commonFace' }));
+      const filler = unwrap(cut(slab, clip));
       clip.delete();
       if (filler !== slab) scope.register(filler);
-      const merged = unwrap(
-        fuseAll([rotatedSuper, filler] as ValidSolid[], { optimisation: 'commonFace' })
-      ) as Shape3D;
+      const merged = unwrap(fuseAll([rotatedSuper, filler] as ValidSolid[])) as Shape3D;
       if (merged !== rotatedSuper && merged !== filler) scope.register(merged);
       superstructure = merged;
     }
@@ -300,9 +296,7 @@ export function buildAssemblySolid(
       attachmentHoleStyle(envelope.attachment)
     );
     const socketClone = scope.register(unwrap(clone(socket)));
-    const fused = unwrap(
-      fuseAll([superstructure, socketClone] as ValidSolid[], { optimisation: 'commonFace' })
-    );
+    const fused = unwrap(fuseAll([superstructure, socketClone] as ValidSolid[]));
     if (fused !== superstructure && fused !== socketClone) scope.register(fused);
     onStage?.('merge', 0.7);
 
@@ -320,9 +314,7 @@ export function buildAssemblySolid(
                 })
               )
             );
-      const carved = unwrap(
-        cutAll(fused, effectiveCutters as ValidSolid[], { optimisation: 'commonFace' })
-      );
+      const carved = unwrap(cutAll(fused, effectiveCutters as ValidSolid[]));
       if (carved !== fused) scope.register(carved);
       solid = carved;
     }
