@@ -49,7 +49,6 @@ function carve(size: number, socketKey: string): { volume: number; key: string |
   return { volume, key: out.deferredSolidKey };
 }
 
-/** Three 8 mm cells 10 mm apart; holes over the first two, none over the third. */
 function carveCells(): Shape3D {
   const { box, cylinder, translate, compound, setShapeOrigin } = brepjs;
   const ctx = createInitialContext(buildParams({ width: 1, depth: 1, height: 3 }));

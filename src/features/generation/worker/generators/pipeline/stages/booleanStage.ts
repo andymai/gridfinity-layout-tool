@@ -33,7 +33,7 @@ import {
   setCarvedSocketCache,
 } from '../../shapeCache';
 import { compactKey } from '../../cacheKeyUtils';
-import { copyFaceOrigins } from '../collectOrigins';
+import { copyFaceOrigins } from '@/features/generation/worker/generators/pipeline/collectOrigins';
 
 function applyCutPass(
   bin: Shape3D,
