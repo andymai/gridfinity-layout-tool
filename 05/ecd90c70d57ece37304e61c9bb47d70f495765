@@ -1,0 +1,25 @@
+package.json
+  s_ecfadab7dc0ed4::t_299636bb544f7a 139-140,151-152
+patches/brepjs@20.0.1.patch
+  s_ecfadab7dc0ed4::t_e5d46ef66c9251 1-4,21-24
+pnpm-lock.yaml
+  s_ecfadab7dc0ed4::t_d6dba21d401e8a 52,94-95,97-98,130-131,133-134,3371-3372,3374,3379,3390-3391,4706-4707,4906-4907,8972,8977-8978,8980,10351,10512
+pnpm-workspace.yaml
+  s_ecfadab7dc0ed4::t_9a9ba925e538aa 185
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "05ecd90c70d57ece37304e61c9bb47d70f495765",
+  "prompts": {},
+  "sessions": {
+    "s_ecfadab7dc0ed4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e974b0-81fc-44e7-84c5-a753966b5aa7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
