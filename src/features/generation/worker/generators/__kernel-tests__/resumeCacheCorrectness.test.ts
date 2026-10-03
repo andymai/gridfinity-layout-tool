@@ -99,14 +99,14 @@ const CASES: Case[] = [
         }),
       },
       {
-        // Same floor pattern, different socket: the carved-socket key must
-        // change with the socket, not just with the pattern.
+        // Same floor pattern, different socket: the warm build must not reuse
+        // the base bin's carved socket.
         name: 'socket',
         params: buildParams({
           width: 3,
           depth: 3,
           height: 5,
-          base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' },
+          base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
           wallPattern: { enabled: true, pattern: 'honeycomb' },
           floorPattern: { enabled: true, pattern: 'honeycomb', scale: 0.5 },
         }),

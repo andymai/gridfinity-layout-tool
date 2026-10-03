@@ -179,29 +179,20 @@ describe('bin-body resume cache with wall patterns', () => {
     expect(sameGeometry(second, first)).toBe(true);
   }, 120_000);
 
-  it('re-carves the socket when the socket or the floor pattern changes', () => {
+  it('re-carves the socket when the floor pattern changes', () => {
     const generateBin = getGenerateBin();
-    const variants = [
-      { ...FLOOR_ONLY, base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' as const } },
-      {
-        ...FLOOR_ONLY,
-        floorPattern: {
-          ...DEFAULT_FLOOR_PATTERN_CONFIG,
-          enabled: true,
-          pattern: 'diamond' as const,
-        },
-      },
-    ];
-    for (const variant of variants) {
-      clearAllCaches();
-      const cold = generateBin(variant);
-      clearAllCaches();
-      generateBin(FLOOR_ONLY);
-      resetAllShapeCacheStats();
-      const warm = generateBin(variant);
+    const variant = {
+      ...FLOOR_ONLY,
+      floorPattern: { ...DEFAULT_FLOOR_PATTERN_CONFIG, enabled: true, pattern: 'diamond' as const },
+    };
+    clearAllCaches();
+    const cold = generateBin(variant);
+    clearAllCaches();
+    generateBin(FLOOR_ONLY);
+    resetAllShapeCacheStats();
+    const warm = generateBin(variant);
 
-      expect(cacheStats('carved-socket').hits).toBe(0);
-      expect(sameGeometry(warm, cold)).toBe(true);
-    }
+    expect(cacheStats('carved-socket').hits).toBe(0);
+    expect(sameGeometry(warm, cold)).toBe(true);
   }, 240_000);
 });
