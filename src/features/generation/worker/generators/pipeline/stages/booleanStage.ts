@@ -4,13 +4,9 @@
  * Cuts go through brepjs's `cutAllBisect`, which tries a single n-way batch op
  * first, then recursively bisects on failure down to pairwise ops.
  *
- * Fuses fold pairwise. occt-wasm's n-way fuse is OCCT's General Fuse: it
- * splits the inputs and keeps every cell rather than unioning them, so a body
- * with a feature comes back as overlapping shells, and the export's outer-shell
- * collapse can then ship the feature carved out. The two-argument fuse is a
- * real union and keeps the face-origin tags. A target whose step fails is
- * dropped, the same recovery the bisect gives a failed input, never handed to
- * the n-way fuse.
+ * Fuses fold pairwise. The two-argument fuse carries face history, so each
+ * feature keeps its face tags through the union. A target whose step fails is
+ * dropped, the same recovery the bisect gives a failed input.
  *
  * booleanPipeline() is still used by socketBuilder and baseplateGenerator
  * for simpler fuse→cut chains where bisect's recovery would be wasted.

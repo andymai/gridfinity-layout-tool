@@ -102,8 +102,8 @@ const MESH_CACHE_VERSION = 'v27';
  * the map is total so a future caller cannot fall through to `undefined`.
  */
 const KERNEL_MESH_REVISION: Record<KernelName, string> = {
-  'occt-wasm': 'r1',
-  brepkit: 'r3',
+  'occt-wasm': 'r2',
+  brepkit: 'r4',
   manifold: 'r1',
 };
 

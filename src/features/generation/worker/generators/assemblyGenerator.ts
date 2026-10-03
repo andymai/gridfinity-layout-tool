@@ -208,10 +208,13 @@ export function buildAssemblySolid(
       junctionEdges.push(...edgesNearPlane(superstructure, plane, 0.3));
     }
     if (junctionEdges.length > 0) {
+      // The rest of the assembly fuses onto this blend, so an invalid one
+      // breaks the whole solid, not just the cove.
       const blended = applyFilletWithFallback(
         superstructure,
         junctionEdges,
-        Math.min(JUNCTION_FILLET_MM, floorThickness * 0.75)
+        Math.min(JUNCTION_FILLET_MM, floorThickness * 0.75),
+        { requireValid: true }
       );
       if (blended !== superstructure) {
         superstructure = scope.register(blended);

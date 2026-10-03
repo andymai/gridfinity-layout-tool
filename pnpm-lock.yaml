@@ -49,7 +49,7 @@ packageExtensionsChecksum: sha256-G315C/MO08Zr68b9FCVYRoEeirMnjfq9EIMkR3yzUUk=
 patchedDependencies:
   '@boundaries/elements@3.1.1': 6024f736b6e85c0232d56417f0a7a6a21a6fde6919064858449037c14cb33d19
   '@ts-morph/common@0.11.1': 0bfc6fe55a9af424dbd3f4bdbbd59a555b2eaef9855cca13466f93e69ba97232
-  brepjs@18.124.8: b093465b7360e6fe29f5e7136a059c6fcc9202184fc822672ae62b38533c5ff6
+  brepjs@20.0.1: e90c90d813eb265d787c63e2e5e6ea4d0cd767ae1a0d9aafe9463456cd22f22d
   eslint-plugin-jsx-a11y@6.10.2: b8ef271a4b50b7ee48a5e92a3ee36f8e5ca942682264a445d0b76b82b084e993
   three-stdlib: 36724fca3e5152268afe4887b2c2ec81ad8a494ef2b660d4f1c1c34ef4ddfa47
 
@@ -91,11 +91,11 @@ importers:
         specifier: ^3.7.0
         version: 3.7.0
       brepjs:
-        specifier: 18.124.8
-        version: 18.124.8(patch_hash=b093465b7360e6fe29f5e7136a059c6fcc9202184fc822672ae62b38533c5ff6)(brepkit-wasm@3.3.9)(occt-wasm@4.3.2)
+        specifier: 20.0.1
+        version: 20.0.1(patch_hash=e90c90d813eb265d787c63e2e5e6ea4d0cd767ae1a0d9aafe9463456cd22f22d)(brepkit-wasm@3.4.18)(occt-wasm@5.5.1)
       brepkit-wasm:
-        specifier: 3.3.9
-        version: 3.3.9
+        specifier: 3.4.18
+        version: 3.4.18
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -127,11 +127,11 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
       manifold-3d:
-        specifier: 3.5.1
-        version: 3.5.1(@gltf-transform/core@4.4.1)(@gltf-transform/extensions@4.4.1)(@gltf-transform/functions@4.4.1(@types/node@26.6.2))(esbuild-wasm@0.27.7)
+        specifier: 3.5.3
+        version: 3.5.3(@gltf-transform/core@4.4.1)(@gltf-transform/extensions@4.4.1)(@gltf-transform/functions@4.4.1(@types/node@26.6.2))(esbuild-wasm@0.27.7)
       occt-wasm:
-        specifier: 4.3.2
-        version: 4.3.2
+        specifier: 5.5.1
+        version: 5.5.1
       polygon-clipping:
         specifier: ^0.15.7
         version: 0.15.7
@@ -3368,14 +3368,15 @@ packages:
     resolution: {integrity: sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==}
     engines: {node: 20 || >=22}
 
-  brepjs@18.124.8:
-    resolution: {integrity: sha512-c+rAL81PfGT7Xd1GOWcO7DGmpsu/TRcmUZpNSGg/cF6M12rumBlu4DB4tqdFUyckaXyx7onUiarD9hT0BN3ZMw==}
+  brepjs@20.0.1:
+    resolution: {integrity: sha512-t7izdxaf1/UXMBiZMXbvLm+ljw3WVs8r52jqTi6ruyUyFlGYCryqvhrVrsQmkK+4L1DyhfmT8SEAeaiBjJCjoA==}
     engines: {node: '>=24'}
+    hasBin: true
     peerDependencies:
       brepjs-manifold: ^0.1.0
       brepjs-opencascade: ^0.5.1 || ^0.6.0 || ^0.7.0 || ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^0.14.0 || ^0.15.0 || ^0.16.0
       brepkit-wasm: ^0.10.1 || ^1.0.0 || ^2.0.0 || ^3.0.0
-      occt-wasm: ^3.8.0 || ^4.0.0
+      occt-wasm: ^3.8.0 || ^4.0.0 || ^5.0.0
     peerDependenciesMeta:
       brepjs-manifold:
         optional: true
@@ -3386,8 +3387,8 @@ packages:
       occt-wasm:
         optional: true
 
-  brepkit-wasm@3.3.9:
-    resolution: {integrity: sha512-EqDwkEDZVvrkViwaecx+Gi/vUm55ajn3Ttohaok460cENnJ2nOyg6EGZYmkVGrCL0k0zXeVXwG33C0V/QeRgGQ==}
+  brepkit-wasm@3.4.18:
+    resolution: {integrity: sha512-44H7taWYDTyUXsOw7IS5dLpRS3h+anplLFDj/6wACUC1QM8q+7rbSueGD3p9CWo1q9LqRi0GHkf8vdCM3ci1FA==}
 
   browserslist@4.28.7:
     resolution: {integrity: sha512-JxV13hNrFxqjOc8alRbq9dK1MM79NEXYpma2B2J4wAtpWS5zIEIKqWPGCl7N4o7Uc7B7itylh7SuDujATRyyTw==}
@@ -4702,8 +4703,8 @@ packages:
   magicast@0.5.5:
     resolution: {integrity: sha512-UicdXN8zQ3JHlxVq+28afMXPr1z7WNY6+7EJnzTdQWkTAlMLF5fNCCKxJHBQwGaNGR11581EiQmQzx73+MvszA==}
 
-  manifold-3d@3.5.1:
-    resolution: {integrity: sha512-/+m6kxYMMhnPutcQ5oSmFJiJ+gyP/0fmuUCb9Qeaunvecm/bfqogKYDDJarsnWiFioSMtKheF+lGmSlnYCik9g==}
+  manifold-3d@3.5.3:
+    resolution: {integrity: sha512-u00Dc4IKm6W6VyVCAs6eFWNOW9V1w9/QM+xdwS/0TQKXLDtMIauxH5RXUwhOGDnvXa9uciKKYMUD2At76ffsaA==}
     hasBin: true
     peerDependencies:
       '@gltf-transform/core': ^4.2.0
@@ -4902,8 +4903,8 @@ packages:
     resolution: {integrity: sha512-XrsrhT5sybtKI6wakr2SPOlGZWWYbUXZ7a0jT8/QOeAPau+1X/bSegNe5YR75oJmEZQbKningirmGOEJCIk61Q==}
     engines: {node: '>=12.20.0'}
 
-  occt-wasm@4.3.2:
-    resolution: {integrity: sha512-bqCr8VbioWYn72WpeZwc7fFAYp++GMv7uHahJJ9DvSBgaxJC8vwiOyrr0Lf/FNvIXD54QjLvj8eaXftaUXVojw==}
+  occt-wasm@5.5.1:
+    resolution: {integrity: sha512-4Yb/P6yLxHilU1QpXoQMEDuz/TvCfclk39FoKGoL+HA4yhYK0AmrfWuqc5LnMr8dpB7+t4scw68Aiu210nG3MQ==}
 
   onetime@5.1.2:
     resolution: {integrity: sha512-kbpaSSGJTWdAY5KPVeMOKXSrPtr8C8C7wodJbcsd51jRnmD+GZu8Y0VoU6Dm5Z4vWr0Ig/1NKuWRKf7j5aaYSg==}
@@ -8968,15 +8969,15 @@ snapshots:
     dependencies:
       balanced-match: 4.0.4
 
-  brepjs@18.124.8(patch_hash=b093465b7360e6fe29f5e7136a059c6fcc9202184fc822672ae62b38533c5ff6)(brepkit-wasm@3.3.9)(occt-wasm@4.3.2):
+  brepjs@20.0.1(patch_hash=e90c90d813eb265d787c63e2e5e6ea4d0cd767ae1a0d9aafe9463456cd22f22d)(brepkit-wasm@3.4.18)(occt-wasm@5.5.1):
     dependencies:
       flatbush: 4.6.2
       opentype.js: 1.3.4
     optionalDependencies:
-      brepkit-wasm: 3.3.9
-      occt-wasm: 4.3.2
+      brepkit-wasm: 3.4.18
+      occt-wasm: 5.5.1
 
-  brepkit-wasm@3.3.9: {}
+  brepkit-wasm@3.4.18: {}
 
   browserslist@4.28.7:
     dependencies:
@@ -10347,7 +10348,7 @@ snapshots:
       '@babel/types': 7.29.8
       source-map-js: 1.2.1
 
-  manifold-3d@3.5.1(@gltf-transform/core@4.4.1)(@gltf-transform/extensions@4.4.1)(@gltf-transform/functions@4.4.1(@types/node@26.6.2))(esbuild-wasm@0.27.7):
+  manifold-3d@3.5.3(@gltf-transform/core@4.4.1)(@gltf-transform/extensions@4.4.1)(@gltf-transform/functions@4.4.1(@types/node@26.6.2))(esbuild-wasm@0.27.7):
     dependencies:
       '@gltf-transform/core': 4.4.1
       '@gltf-transform/extensions': 4.4.1
@@ -10508,7 +10509,7 @@ snapshots:
 
   obug@2.2.1: {}
 
-  occt-wasm@4.3.2:
+  occt-wasm@5.5.1:
     dependencies:
       comlink: 4.4.2
 
