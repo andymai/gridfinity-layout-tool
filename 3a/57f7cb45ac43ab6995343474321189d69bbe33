@@ -1,0 +1,23 @@
+src/features/generation/worker/generators/detachableFeet.cache.test.ts
+  s_ecfadab7dc0ed4::t_f163fe341d9812 23-25
+src/features/generation/worker/generators/detachableFeet.kernel.test.ts
+  s_ecfadab7dc0ed4::t_d04de0a6c6b083 445-447,461,472
+src/features/generation/worker/generators/pipeline/stages/shellStage.ts
+  s_ecfadab7dc0ed4::t_5f0abdf485b274 44-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3a57f7cb45ac43ab6995343474321189d69bbe33",
+  "prompts": {},
+  "sessions": {
+    "s_ecfadab7dc0ed4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e974b0-81fc-44e7-84c5-a753966b5aa7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
