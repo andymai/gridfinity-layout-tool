@@ -1,0 +1,37 @@
+src/features/generation/worker/generators/toolRackGenerator.ts
+  s_ecfadab7dc0ed4::t_118e684b487ae5 139,159
+src/features/generation/worker/generators/detachableFeetBuilder.ts
+  s_ecfadab7dc0ed4::t_742a844437c7b1 468
+src/features/generation/worker/generators/knifeRestBuilder.ts
+  s_ecfadab7dc0ed4::t_1bb368e005411c 99
+src/features/generation/worker/generators/socketBuilder.ts
+  s_ecfadab7dc0ed4::t_263696c74a4c91 431,667,731
+src/features/generation/worker/generators/ridgeReliefBuilder.ts
+  s_ecfadab7dc0ed4::t_1cf5ef4c58bce4 101
+src/features/generation/worker/generators/detachableFeetOrchestrator.ts
+  s_ecfadab7dc0ed4::t_30cf591b7a2205 117,164
+src/features/generation/worker/generators/lightweightBaseBuilder.ts
+  s_ecfadab7dc0ed4::t_f0f2317a9e7593 348,352,362,447
+src/features/generation/worker/generators/assemblyPartCutter.ts
+  s_ecfadab7dc0ed4::t_0f17204934e12b 96
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_ecfadab7dc0ed4::t_eaccfb064f3017 192,273,276,299,317
+src/features/generation/worker/generators/assemblyPartTemplate.ts
+  s_ecfadab7dc0ed4::t_8f0812851d222b 180,247,256,308,385,427,501
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "25bd044f80915c0b54d02a9040433e60fe2cef68",
+  "prompts": {},
+  "sessions": {
+    "s_ecfadab7dc0ed4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e974b0-81fc-44e7-84c5-a753966b5aa7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
