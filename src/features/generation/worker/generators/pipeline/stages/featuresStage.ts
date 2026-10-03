@@ -41,9 +41,7 @@ export const featuresStage: PipelineStage = {
 
     // Solid mode: cutouts are the only feature. Hand each cutout tool to
     // booleanStage as an independent cutTarget so cutAllBisect can recover
-    // from a single bad tool instead of dropping the whole set, and so
-    // export passes pick up the `simplify` topology cleanup that the rest
-    // of the pipeline already benefits from.
+    // from a single bad tool instead of dropping the whole set.
     if (dim.solid) {
       // booleanStage early-returns when ctx.solid is null; building tools
       // we'd never apply would just leak their WASM shapes.

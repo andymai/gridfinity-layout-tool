@@ -140,10 +140,7 @@ function cutDeferredSolid(ctx: PipelineContext): {
   }
   let carved: { shape: Shape3D; complete: boolean };
   try {
-    carved = carveByCell(deferredSolid, deferredCutTargets, {
-      simplify: forExport,
-      signal,
-    });
+    carved = carveByCell(deferredSolid, deferredCutTargets, { signal });
   } catch {
     // The cut produced no shape, so this is the original socket untouched — its
     // key still describes it, and dropping it would only cost a re-tessellation.
@@ -182,9 +179,8 @@ export const booleanStage: PipelineStage = {
     // Resume cache: a metadata-only edit (label text, notes, category) leaves
     // the shell and every feature's geometry key unchanged, so the post-boolean
     // body is identical — skip the whole boolean stage. The key composes the
-    // shell identity, the feature geometry (`featuresKey`), and `forExport`
-    // (which drives `simplify`), so it changes whenever the booleaned body
-    // would. Disabled when `featuresKey` is null (solid mode / wall patterns,
+    // shell identity, the feature geometry (`featuresKey`), and `forExport`,
+    // which keeps preview and export bodies apart. Disabled when `featuresKey` is null (solid mode / wall patterns,
     // whose tools aren't captured by the key — see featuresStage).
     // JSON.stringify keeps the composition injective end-to-end: `shellKey` and
     // `featuresKey` can both contain `|`, which a flat `buildCacheKey` join could
@@ -220,14 +216,11 @@ export const booleanStage: PipelineStage = {
       }
     }
 
-    // Shared by fuse and cut passes — `simplify: forExport` merges
-    // same-domain faces left behind by the n-way boolean, and `signal`
-    // threads cancellation through. Fuse used to drop both, accumulating
-    // duplicate / coincident faces from additive features (label tabs,
-    // scoop ramps) that share a face with the shell; slicers (BambuStudio)
-    // flag the resulting duplicate triangles as non-manifold (—
-    // partial fix; see labelTab gusset-back-face follow-up).
-    const boolOpts = { simplify: forExport, signal } as BooleanOpts;
+    // `signal` threads cancellation through the fuse and cut passes. No
+    // `simplify`: merging same-domain faces folds flat label text into the
+    // tab top it sits flush with, dropping its colour, and opens the exported
+    // mesh of some kumiko patterns.
+    const boolOpts = { signal } as BooleanOpts;
 
     if (ctx.fuseTargets.length > 0) {
       for (const target of ctx.fuseTargets) {
