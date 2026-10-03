@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.503.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.503.1...gridfinity-layout-tool-v4.503.2) (2026-10-03)
+
+
+### Bug Fixes
+
+* **deps:** remove braces from the tree to clear its stack-overflow advisory ([#4460](https://github.com/andymai/gridfinity-layout-tool/issues/4460)) ([33ff7dd](https://github.com/andymai/gridfinity-layout-tool/commit/33ff7dd364f4f89c500963d16548eb2202a28a1e))
+* **layouts:** keep dialogs and menus from acting on the list behind them ([#4459](https://github.com/andymai/gridfinity-layout-tool/issues/4459)) ([d3518e9](https://github.com/andymai/gridfinity-layout-tool/commit/d3518e91521cc27b2cfb632ee94caadab750d2b4))
+* **lid:** keep the sliding lid's entry wall whole at every wall thickness ([#4454](https://github.com/andymai/gridfinity-layout-tool/issues/4454)) ([504c6aa](https://github.com/andymai/gridfinity-layout-tool/commit/504c6aa304201d7c36d0fdbb2a43415f7bf6be66))
+
 ## [4.503.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.503.0...gridfinity-layout-tool-v4.503.1) (2026-10-03)
 
 
