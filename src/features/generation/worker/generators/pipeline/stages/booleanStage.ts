@@ -72,8 +72,9 @@ function cutDeferredSolid(ctx: PipelineContext): {
       return { solid: cached, key: carveKey };
     }
   }
+  let carved: { shape: Shape3D; telemetry: { failedInputs: readonly number[] } };
   try {
-    const { shape, telemetry } = unwrap(
+    carved = unwrap(
       cutAllBisect(
         deferredSolid as ValidSolid,
         [...deferredCutTargets] as ValidSolid[],
@@ -83,16 +84,17 @@ function cutDeferredSolid(ctx: PipelineContext): {
         } as BooleanOpts
       )
     );
-    if (shape !== deferredSolid) deferredSolid.delete();
-    // A tool the bisect had to drop leaves a carve the key does not describe.
-    if (carveKey === null || telemetry.failedInputs.length > 0) return { solid: shape, key: null };
-    setCarvedSocketCache(carveKey, shape);
-    return { solid: translate(shape, [0, 0, 0]), key: carveKey };
   } catch {
     // The cut produced no shape, so this is the original socket untouched — its
     // key still describes it, and dropping it would only cost a re-tessellation.
     return { solid: deferredSolid, key: deferredSolidKey };
   }
+  const { shape, telemetry } = carved;
+  if (shape !== deferredSolid) deferredSolid.delete();
+  // A tool the bisect had to drop leaves a carve the key does not describe.
+  if (carveKey === null || telemetry.failedInputs.length > 0) return { solid: shape, key: null };
+  setCarvedSocketCache(carveKey, shape);
+  return { solid: translate(shape, [0, 0, 0]), key: carveKey };
 }
 
 export const booleanStage: PipelineStage = {
