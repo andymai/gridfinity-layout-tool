@@ -123,6 +123,21 @@ describe('ConfirmDialog', () => {
       fireEvent.keyDown(document, { key: 'Escape' });
       expect(defaultProps.onCancel).toHaveBeenCalledTimes(1);
     });
+
+    it('cancels on Escape from the focused button inside it', () => {
+      // Focus starts inside, and the content stops keydown from bubbling.
+      render(<ConfirmDialog {...defaultProps} />);
+      fireEvent.keyDown(screen.getByText('Cancel'), { key: 'Escape' });
+      expect(defaultProps.onCancel).toHaveBeenCalledTimes(1);
+    });
+
+    it('wraps Tab from the last button inside it to the first', () => {
+      render(<ConfirmDialog {...defaultProps} />);
+      const confirm = screen.getByText('Confirm');
+      confirm.focus();
+      expect(fireEvent.keyDown(confirm, { key: 'Tab' })).toBe(false);
+      expect(screen.getByText('Cancel')).toHaveFocus();
+    });
   });
 
   describe('focus trap', () => {
@@ -163,7 +178,8 @@ describe('ConfirmDialog', () => {
       const { unmount } = render(<ConfirmDialog {...defaultProps} />);
       unmount();
 
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));
+      // Same capture flag as the add, or the listener outlives the dialog.
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function), true);
       removeEventListenerSpy.mockRestore();
     });
   });

@@ -16,8 +16,14 @@ const design = {
   updatedAt: 0,
 } as unknown as SavedDesign;
 
-function key(k: string) {
-  return { key: k, preventDefault: vi.fn() } as unknown as ReactKeyboardEvent;
+function key(k: string, from: 'row' | 'child' = 'row') {
+  const row = {};
+  return {
+    key: k,
+    currentTarget: row,
+    target: from === 'row' ? row : {},
+    preventDefault: vi.fn(),
+  } as unknown as ReactKeyboardEvent;
 }
 
 describe('useDesignItem', () => {
@@ -48,5 +54,16 @@ describe('useDesignItem', () => {
     bulk.result.current.handleItemKeyDown(key(' '));
     expect(onToggleSelect).toHaveBeenCalledOnce();
     expect(onSelect).toHaveBeenCalledTimes(2);
+  });
+
+  it('leaves Enter on the row’s buttons and its portaled menu to them', () => {
+    const onSelect = vi.fn();
+    const { result } = renderHook(() =>
+      useDesignItem({ design, onSelect, onRename: vi.fn(), selectionActive: false })
+    );
+    const enter = key('Enter', 'child');
+    result.current.handleItemKeyDown(enter);
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(enter.preventDefault).not.toHaveBeenCalled();
   });
 });

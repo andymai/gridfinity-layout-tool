@@ -7,7 +7,11 @@ import type { SavedDesign } from '../../types';
 import { designId } from '@/core/types';
 
 vi.mock('../DesignActions', () => ({
-  DesignActions: () => <div data-testid="design-actions">Actions</div>,
+  DesignActions: ({ onRename }: { onRename: () => void }) => (
+    <div data-testid="design-actions" role="presentation" onClick={(e) => e.stopPropagation()}>
+      <button onClick={onRename}>Start rename</button>
+    </div>
+  ),
 }));
 
 vi.mock('../BinDesignThumbnail', () => ({
@@ -85,6 +89,16 @@ describe('DesignListItem', () => {
     render(<DesignListItem {...defaultProps} isFocused={true} />);
     fireEvent.keyDown(screen.getByRole('option'), { key: ' ' });
     expect(defaultProps.onSelect).toHaveBeenCalled();
+  });
+
+  it('saves a rename once when Enter is pressed in the name field', () => {
+    render(<DesignListItem {...defaultProps} />);
+    fireEvent.click(screen.getByText('Start rename'));
+    const input = screen.getByRole('textbox');
+    fireEvent.change(input, { target: { value: 'Renamed' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(defaultProps.onRename).toHaveBeenCalledTimes(1);
+    expect(defaultProps.onRename).toHaveBeenCalledWith('Renamed');
   });
 
   it('shows thumbnail image when available', () => {

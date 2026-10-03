@@ -798,6 +798,37 @@ describe('LayoutManagerModal folders', () => {
     expect(storage.saveLibrary).toHaveBeenCalled();
   });
 
+  it('stays open while a destination is picked and the move is made', async () => {
+    // The move dialog portals out of the manager's DOM but not out of its React
+    // tree, so its clicks bubble to the manager's backdrop.
+    const onClose = vi.fn();
+    render(<LayoutManagerModal isOpen onClose={onClose} />);
+    fireEvent.click(screen.getByRole('button', { name: 'More actions for Kitchen' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Move to folder' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Desk' }));
+    expect(onClose).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Move' }));
+    await waitFor(() => {
+      const moved = useLibraryStore.getState().library.entries.find((e) => e.id === 'layout-1');
+      expect(moved?.folderId).toBe(desk.id);
+    });
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('leaves Enter on a row’s buttons and menu items to them, not to the row', async () => {
+    // A cancelled keydown is what stops the browser turning Enter into a click.
+    const onClose = vi.fn();
+    render(<LayoutManagerModal isOpen onClose={onClose} />);
+    const trigger = screen.getByRole('button', { name: 'More actions for Kitchen' });
+    expect(fireEvent.keyDown(trigger, { key: 'Enter' })).toBe(true);
+    fireEvent.click(trigger);
+    const item = screen.getByRole('menuitem', { name: 'Move to folder' });
+    expect(fireEvent.keyDown(item, { key: 'Enter' })).toBe(true);
+    await act(async () => {});
+    expect(onClose).not.toHaveBeenCalled();
+    expect(storage.loadLayoutAsync).not.toHaveBeenCalled();
+  });
+
   it('keeps the move dialog inert until the move has saved', async () => {
     let finish: (() => void) | undefined;
     vi.mocked(storage.saveLibrary).mockImplementationOnce(
