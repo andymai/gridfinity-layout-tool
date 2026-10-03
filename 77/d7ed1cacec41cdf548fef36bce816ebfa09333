@@ -1,0 +1,21 @@
+src/features/generation/README.md
+  s_ecfadab7dc0ed4::t_a58aa76f1260ed 77
+src/features/generation/worker/generators/binBodyResumeCache.test.ts
+  s_ecfadab7dc0ed4::t_5670d60e0da354 22,33-42,118-119,164-205
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "77d7ed1cacec41cdf548fef36bce816ebfa09333",
+  "prompts": {},
+  "sessions": {
+    "s_ecfadab7dc0ed4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e974b0-81fc-44e7-84c5-a753966b5aa7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
