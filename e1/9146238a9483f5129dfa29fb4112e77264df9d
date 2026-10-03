@@ -1,0 +1,29 @@
+src/shared/utils/lipGapPlan.ts
+  s_d06c36a0712871::t_407288dce980e5 266-268
+  s_d06c36a0712871::t_886f692be34c5f 121-124,128-131,133-140,143-150,153,164,256,259,275,340-341,486-487
+src/features/bin-designer/utils/slideLidPlanForParams.ts
+  s_d06c36a0712871::t_9fd045c5a5fa41 23,75
+src/shared/utils/slideLidLiningOpenings.ts
+  s_d06c36a0712871::t_3b7459deaa6335 23-25
+  s_d06c36a0712871::t_9fd045c5a5fa41 27,36-40,42-45
+src/shared/utils/slideLidLiningOpenings.test.ts
+  s_d06c36a0712871::t_34b27adf56399a 9,93-94,99-101
+src/shared/utils/lipGapPlan.test.ts
+  s_d06c36a0712871::t_34b27adf56399a 269-271,274-275,278-283,290-297,300-304
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e19146238a9483f5129dfa29fb4112e77264df9d",
+  "prompts": {},
+  "sessions": {
+    "s_d06c36a0712871": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "87561265-df90-4bb7-bd9a-13f9b110065f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
