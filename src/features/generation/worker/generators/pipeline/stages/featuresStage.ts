@@ -175,10 +175,8 @@ export const featuresStage: PipelineStage = {
     }
 
     // The floor cut reports its identity too, so a floor-patterned bin can
-    // resume the post-boolean body like any other. Its shapes also carve the
-    // deferred socket, but booleanStage re-derives that carve from the same
-    // shapes on every build, so a resumed body and the freshly cut socket always
-    // agree (caching the socket carve itself is a separate follow-up).
+    // resume the post-boolean body like any other, and the boolean stage can
+    // reuse the socket it carves.
     if (floorPattern.key) wallPatternKeys.push(floorPattern.key);
 
     return {
@@ -187,6 +185,7 @@ export const featuresStage: PipelineStage = {
       cutTargets: targets.cutTargets,
       patternCutTargets: targets.patternCutTargets,
       deferredCutTargets: floorPattern.shapes,
+      deferredCutKey: floorPattern.key || null,
       // Pattern cuts ride in `featuresKey` via the same per-shape identity the
       // pattern caches trust, so any patterned bin can resume the post-boolean
       // body. The honeycomb-plus-cutouts, kumiko, divider and floor bins are the
