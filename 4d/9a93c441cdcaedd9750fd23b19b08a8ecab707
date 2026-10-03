@@ -1,0 +1,25 @@
+src/features/generation/worker/generators/baseplateMagnets.ts
+  s_ecfadab7dc0ed4::t_16429c51ec364a 8
+src/features/generation/worker/generators/baseplateScrews.ts
+  s_ecfadab7dc0ed4::t_5204c427a8a331 10,282
+src/features/generation/worker/generators/connectorShapes.ts
+  s_ecfadab7dc0ed4::t_a2e43d398f6537 405
+src/features/generation/worker/generators/toolRackGenerator.ts
+  s_ecfadab7dc0ed4::t_a1cf354bc25468 111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4d9a93c441cdcaedd9750fd23b19b08a8ecab707",
+  "prompts": {},
+  "sessions": {
+    "s_ecfadab7dc0ed4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e974b0-81fc-44e7-84c5-a753966b5aa7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
