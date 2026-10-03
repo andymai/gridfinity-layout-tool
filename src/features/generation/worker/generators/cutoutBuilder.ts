@@ -33,6 +33,7 @@ import {
   setShapeOrigin,
   getFaceOrigins,
   fuse,
+  isValid,
 } from 'brepjs';
 import type { TransformOp, Bounds3D } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope, Drawing, Sketch } from 'brepjs';
@@ -647,18 +648,26 @@ const FALLBACK_FACTORS = [1.0, 0.75, 0.5, 0.25] as const;
 /**
  * Apply a fillet with progressive radius fallback for ungrouped cutouts.
  * Tries 100%, 75%, 50%, 25% of the target radius. Returns original shape on total failure.
+ *
+ * `requireValid` also treats a fillet that comes back geometrically invalid as
+ * a failure. The kernel's own check is topology-only, so a blend can pass it
+ * and still break every boolean that consumes it.
  */
 export function applyFilletWithFallback(
   shape: Shape3D,
   edges: readonly Edge[],
-  radius: number
+  radius: number,
+  { requireValid = false }: { requireValid?: boolean } = {}
 ): Shape3D {
   for (const factor of FALLBACK_FACTORS) {
     const r = radius * factor;
     if (r < MIN_FILLET_RADIUS) break;
     try {
       const result = fillet(shape as ValidSolid, edges as Edge[], r);
-      if (isOk(result)) return unwrap(result);
+      if (!isOk(result)) continue;
+      const filleted = unwrap(result);
+      if (!requireValid || isValid(filleted)) return filleted;
+      filleted.delete();
     } catch {
       // Try next reduction
     }
