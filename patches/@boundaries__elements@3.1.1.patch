@@ -1,0 +1,100 @@
+diff --git a/dist/index.browser.js b/dist/index.browser.js
+index 2682114d2a2426328d33fd9a349c219b68d118e3..2895796c2da58824f211261d3800b6cb83d49bce 100644
+--- a/dist/index.browser.js
++++ b/dist/index.browser.js
+@@ -611,7 +611,19 @@ function extendsSingleSelector(value) {
+ }
+ 
+ // src/Matcher/Shared/Micromatch.ts
+-var import_micromatch = __toESM(require("micromatch"));
++var import_picomatch = require("picomatch");
++var import_picomatch_utils = require("picomatch/lib/utils");
++var import_micromatch = { default: {
++  isMatch: (str, patterns, options) => import_picomatch(patterns, options)(str),
++  makeRe: (...args) => import_picomatch.makeRe(...args),
++  capture: (glob, input, options) => {
++    const regex = import_picomatch.makeRe(String(glob), { ...options, capture: true });
++    const match = regex.exec(import_picomatch_utils.isWindows(options) ? import_picomatch_utils.toPosixSlashes(input) : input);
++    if (match) {
++      return match.slice(1).map((v) => v === void 0 ? "" : v);
++    }
++  }
++} };
+ 
+ // src/Cache/Cache.ts
+ var CacheManager = class {
+diff --git a/dist/index.browser.mjs b/dist/index.browser.mjs
+index 01f950dca4b17f317499045d68a4cae9a48f41aa..2447db6d576caad9425bbef49a646673610894f0 100644
+--- a/dist/index.browser.mjs
++++ b/dist/index.browser.mjs
+@@ -480,7 +480,19 @@ function extendsSingleSelector(value) {
+ }
+ 
+ // src/Matcher/Shared/Micromatch.ts
+-import micromatch from "micromatch";
++import picomatch from "picomatch";
++import picomatchUtils from "picomatch/lib/utils.js";
++var micromatch = {
++  isMatch: (str, patterns, options) => picomatch(patterns, options)(str),
++  makeRe: (...args) => picomatch.makeRe(...args),
++  capture: (glob, input, options) => {
++    const regex = picomatch.makeRe(String(glob), { ...options, capture: true });
++    const match = regex.exec(picomatchUtils.isWindows(options) ? picomatchUtils.toPosixSlashes(input) : input);
++    if (match) {
++      return match.slice(1).map((v) => v === void 0 ? "" : v);
++    }
++  }
++};
+ 
+ // src/Cache/Cache.ts
+ var CacheManager = class {
+diff --git a/dist/index.js b/dist/index.js
+index 3ca17af2913822d09654bcf2025fffc538284093..c0d9bb936fc2b7493180605c7f745d770f65570e 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -611,7 +611,19 @@ function extendsSingleSelector(value) {
+ }
+ 
+ // src/Matcher/Shared/Micromatch.ts
+-var import_micromatch = __toESM(require("micromatch"));
++var import_picomatch = require("picomatch");
++var import_picomatch_utils = require("picomatch/lib/utils");
++var import_micromatch = { default: {
++  isMatch: (str, patterns, options) => import_picomatch(patterns, options)(str),
++  makeRe: (...args) => import_picomatch.makeRe(...args),
++  capture: (glob, input, options) => {
++    const regex = import_picomatch.makeRe(String(glob), { ...options, capture: true });
++    const match = regex.exec(import_picomatch_utils.isWindows(options) ? import_picomatch_utils.toPosixSlashes(input) : input);
++    if (match) {
++      return match.slice(1).map((v) => v === void 0 ? "" : v);
++    }
++  }
++} };
+ 
+ // src/Cache/Cache.ts
+ var CacheManager = class {
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 13e722a8224e097d4a5fa51d0124a33236a53474..c7b7cd734db6e4d83f71476c4df1070e92df65ad 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -480,7 +480,19 @@ function extendsSingleSelector(value) {
+ }
+ 
+ // src/Matcher/Shared/Micromatch.ts
+-import micromatch from "micromatch";
++import picomatch from "picomatch";
++import picomatchUtils from "picomatch/lib/utils.js";
++var micromatch = {
++  isMatch: (str, patterns, options) => picomatch(patterns, options)(str),
++  makeRe: (...args) => picomatch.makeRe(...args),
++  capture: (glob, input, options) => {
++    const regex = picomatch.makeRe(String(glob), { ...options, capture: true });
++    const match = regex.exec(picomatchUtils.isWindows(options) ? picomatchUtils.toPosixSlashes(input) : input);
++    if (match) {
++      return match.slice(1).map((v) => v === void 0 ? "" : v);
++    }
++  }
++};
+ 
+ // src/Cache/Cache.ts
+ var CacheManager = class {
