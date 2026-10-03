@@ -73,7 +73,7 @@ function cutDeferredSolid(ctx: PipelineContext): {
     }
   }
   try {
-    const { shape } = unwrap(
+    const { shape, telemetry } = unwrap(
       cutAllBisect(
         deferredSolid as ValidSolid,
         [...deferredCutTargets] as ValidSolid[],
@@ -84,7 +84,8 @@ function cutDeferredSolid(ctx: PipelineContext): {
       )
     );
     if (shape !== deferredSolid) deferredSolid.delete();
-    if (carveKey === null) return { solid: shape, key: null };
+    // A tool the bisect had to drop leaves a carve the key does not describe.
+    if (carveKey === null || telemetry.failedInputs.length > 0) return { solid: shape, key: null };
     setCarvedSocketCache(carveKey, shape);
     return { solid: translate(shape, [0, 0, 0]), key: carveKey };
   } catch {

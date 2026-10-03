@@ -36,8 +36,9 @@ function cacheStats(name: string) {
 }
 
 function sameGeometry(a: MeshData, b: MeshData): boolean {
-  if (a.triangleCount !== b.triangleCount || a.vertices.length !== b.vertices.length) return false;
-  return a.vertices.every((v, i) => v === b.vertices[i]);
+  const same = (x: ArrayLike<number>, y: ArrayLike<number>): boolean =>
+    x.length === y.length && Array.from(x).every((v, i) => v === y[i]);
+  return same(a.vertices, b.vertices) && same(a.indices, b.indices);
 }
 
 function binBodyStats() {
