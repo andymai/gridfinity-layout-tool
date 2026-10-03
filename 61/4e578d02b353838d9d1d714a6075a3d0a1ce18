@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/binBodyResumeCache.test.ts
+  s_ecfadab7dc0ed4::t_797328e3afae58 39-41
+src/features/generation/worker/generators/pipeline/stages/booleanStage.ts
+  s_ecfadab7dc0ed4::t_28d1f522c8c6d5 80,91-92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "614e578d02b353838d9d1d714a6075a3d0a1ce18",
+  "prompts": {},
+  "sessions": {
+    "s_ecfadab7dc0ed4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e974b0-81fc-44e7-84c5-a753966b5aa7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
