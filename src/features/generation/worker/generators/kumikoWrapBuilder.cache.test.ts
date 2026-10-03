@@ -77,8 +77,8 @@ describe('kumiko wrap cutter caches', () => {
   }, 180_000);
 
   it('serves a warm regen from cache when the cutter count is large', () => {
-    // A 3x3 asanoha fill plans well over a hundred cutters, more than a
-    // per-shape LRU holds, so only a whole-set entry survives to be read back.
+    // A 3x3 asanoha fill plans more cutters than a per-shape LRU holds, so only
+    // a whole-set entry survives to be read back.
     const generateBin = getGenerateBin();
     const params = buildParams({
       width: 3,

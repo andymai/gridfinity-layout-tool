@@ -111,8 +111,8 @@ const featureToolCaches = new Map<string, LRUCache<Shape3D>>();
 
 /**
  * Caches holding a whole tool set per key, created lazily by name. A builder
- * that emits one tool per window (kumiko emits over a hundred on a 3x3) would
- * spill a per-shape LRU, evicting its first entries before reading them back.
+ * that emits one tool per window can emit more tools than a per-shape LRU
+ * holds, evicting its own first entries before reading them back.
  * The budget counts shapes, not sets, so a few large sets cannot pin an
  * unbounded number of WASM solids.
  */
