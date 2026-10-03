@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_ecfadab7dc0ed4::t_993dda56c94331 211-212,216-217
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_ecfadab7dc0ed4::t_e067200a5b023a 36,651-654,659-660,667-670
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5db5522cb3f34c4c536a02c6f8c86c1acd9e18d9",
+  "prompts": {},
+  "sessions": {
+    "s_ecfadab7dc0ed4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e974b0-81fc-44e7-84c5-a753966b5aa7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
