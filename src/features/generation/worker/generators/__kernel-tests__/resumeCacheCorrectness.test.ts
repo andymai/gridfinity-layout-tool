@@ -15,6 +15,7 @@
 import { describe, it, beforeAll, expect } from 'vitest';
 import { initBrepjs, getGenerateBin } from './wasmInit';
 import { buildParams } from './scenarioTypes';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { clearAllCaches } from '../shapeCache';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
@@ -95,6 +96,19 @@ const CASES: Case[] = [
           height: 5,
           wallPattern: { enabled: true, pattern: 'honeycomb' },
           floorPattern: { enabled: true, pattern: 'diamond', scale: 0.5 },
+        }),
+      },
+      {
+        // Same floor pattern, different socket: the carved-socket key must
+        // change with the socket, not just with the pattern.
+        name: 'socket',
+        params: buildParams({
+          width: 3,
+          depth: 3,
+          height: 5,
+          base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' },
+          wallPattern: { enabled: true, pattern: 'honeycomb' },
+          floorPattern: { enabled: true, pattern: 'honeycomb', scale: 0.5 },
         }),
       },
     ],
