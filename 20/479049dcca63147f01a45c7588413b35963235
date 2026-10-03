@@ -1,0 +1,35 @@
+src/shared/generation/meshPersistence.ts
+  s_ecfadab7dc0ed4::t_ba4b1f80aaa607 105
+pnpm-lock.yaml
+  s_ecfadab7dc0ed4::t_27b11dec035599 52,94-95,133-134,3371-3372,4906-4907,8972,8978,10512
+package.json
+  s_ecfadab7dc0ed4::t_0394a0464c92fe 139,152
+pnpm-workspace.yaml
+  s_ecfadab7dc0ed4::t_8e31dd9883b6a7 185
+patches/brepjs@20.1.0.patch
+  s_a8677c67f85a06::t_5be8ff7663a3cc 1-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "20479049dcca63147f01a45c7588413b35963235",
+  "prompts": {},
+  "sessions": {
+    "s_a8677c67f85a06": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85b17417-28bf-4293-9803-4c3b96f3617d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_ecfadab7dc0ed4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e974b0-81fc-44e7-84c5-a753966b5aa7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
