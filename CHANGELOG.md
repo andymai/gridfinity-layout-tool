@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.503.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.503.0...gridfinity-layout-tool-v4.503.1) (2026-10-03)
+
+
+### Bug Fixes
+
+* **analytics:** drop Safari extension errors behind masked script URLs ([#4456](https://github.com/andymai/gridfinity-layout-tool/issues/4456)) ([69156a5](https://github.com/andymai/gridfinity-layout-tool/commit/69156a5942452a011896d87082bdb499b3eb0ce3)), closes [#4449](https://github.com/andymai/gridfinity-layout-tool/issues/4449) [#4450](https://github.com/andymai/gridfinity-layout-tool/issues/4450)
+
 ## [4.503.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.502.0...gridfinity-layout-tool-v4.503.0) (2026-10-02)
 
 
