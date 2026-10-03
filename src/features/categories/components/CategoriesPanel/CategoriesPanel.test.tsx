@@ -257,6 +257,28 @@ describe('CategoriesPanel', () => {
       expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument();
     });
 
+    it('keeps the edit open behind the confirmation, through Escape and Cancel', async () => {
+      // The confirmation sits outside the edit row, so its clicks and its
+      // Escape read as leaving the edit unless the panel stands down.
+      vi.useFakeTimers();
+      try {
+        useLayoutStore.getState().addCategory({ name: 'Third', color: '#00FF00' });
+        render(<CategoriesPanel />);
+        fireEvent.click(screen.getByRole('button', { name: /Edit Third/i }));
+        await vi.advanceTimersByTimeAsync(100);
+
+        fireEvent.click(screen.getByText('Delete'));
+        fireEvent.keyDown(document, { key: 'Escape' });
+        const cancel = screen.getByText('Cancel');
+        fireEvent.mouseDown(cancel);
+        fireEvent.click(cancel);
+
+        expect(screen.getByDisplayValue('Third')).toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
     it('deletes category on confirm', () => {
       useLayoutStore.getState().addCategory({ name: 'Third', color: '#00FF00' });
 

@@ -266,6 +266,14 @@ describe('LayoutListItem', () => {
       expect(mockOnSelect).toHaveBeenCalledOnce();
     });
 
+    it('leaves Enter on its own buttons to them', () => {
+      render(<LayoutListItem {...defaultProps} />);
+
+      expect(fireEvent.keyDown(screen.getByTestId('download-btn'), { key: 'Enter' })).toBe(true);
+
+      expect(mockOnSelect).not.toHaveBeenCalled();
+    });
+
     it('calls onSelect on Space key', () => {
       render(<LayoutListItem {...defaultProps} />);
 

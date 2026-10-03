@@ -149,7 +149,11 @@ function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
   return createPortal(
     <div
       className="fixed inset-0 bg-overlay-dark flex items-center justify-center z-50 animate-fade-in"
-      onClick={onClose}
+      // The delete warning portals out of this DOM but not out of its React
+      // tree, so clicks on its own backdrop bubble here too.
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
       role="presentation"
     >
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
@@ -267,6 +271,9 @@ function BaseplateCard({
 
   const handleItemKeyDown = (e: React.KeyboardEvent) => {
     if (isEditing) return;
+    // Keys from the row's buttons bubble here, and so do keys from its menu,
+    // which portals out of the row's DOM but not out of its React tree.
+    if (e.target !== e.currentTarget) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       onSelect();

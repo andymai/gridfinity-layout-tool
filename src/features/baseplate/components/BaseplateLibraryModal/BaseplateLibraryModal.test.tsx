@@ -156,6 +156,32 @@ describe('BaseplateLibraryModal', () => {
     );
   });
 
+  it('dismissing the delete warning by its backdrop leaves the library open', async () => {
+    // The warning portals out of the library's DOM but not out of its React
+    // tree, so a click on the warning's backdrop bubbles to the library's.
+    const onClose = vi.fn();
+    render(<BaseplateLibraryModal isOpen onClose={onClose} />);
+    await screen.findByText('One');
+    fireEvent.click(screen.getAllByRole('button', { name: /moreActions/ })[0]);
+    fireEvent.click(screen.getByText('common.delete'));
+    const warning = await screen.findByRole('alertdialog');
+    const backdrop = warning.parentElement;
+    if (!backdrop) throw new Error('expected the warning backdrop');
+    fireEvent.click(backdrop);
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('leaves Enter on a card’s menu button to the button', async () => {
+    const onClose = vi.fn();
+    render(<BaseplateLibraryModal isOpen onClose={onClose} />);
+    await screen.findByText('One');
+    const trigger = screen.getAllByRole('button', { name: /moreActions/ })[0];
+    expect(fireEvent.keyDown(trigger, { key: 'Enter' })).toBe(true);
+    await act(async () => {});
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   describe('New Baseplate', () => {
     it('creates a design, activates it, and closes', async () => {
       mocks.saveCurrentAsNew.mockResolvedValue(

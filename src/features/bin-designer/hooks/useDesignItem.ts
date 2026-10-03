@@ -37,6 +37,9 @@ export function useDesignItem({
       edit.handleKeyDown(e);
       return;
     }
+    // Keys from the row's buttons bubble here, and so do keys from its menu,
+    // which portals out of the row's DOM but not out of its React tree.
+    if (e.target !== e.currentTarget) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       activate();

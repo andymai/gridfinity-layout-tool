@@ -148,6 +148,22 @@ describe('LayoutGridItem', () => {
     expect(mockCallbacks.onSelect).toHaveBeenCalled();
   });
 
+  it('leaves Enter on its actions to them', () => {
+    render(
+      <LayoutGridItem
+        entry={mockEntry}
+        isActive={false}
+        isFocused={true}
+        isOnlyLayout={false}
+        {...mockCallbacks}
+      />
+    );
+
+    expect(fireEvent.keyDown(screen.getByTestId('layout-actions'), { key: 'Enter' })).toBe(true);
+
+    expect(mockCallbacks.onSelect).not.toHaveBeenCalled();
+  });
+
   it('renders thumbnail', () => {
     render(
       <LayoutGridItem
