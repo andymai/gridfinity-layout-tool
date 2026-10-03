@@ -45,10 +45,6 @@ function applyCutPass(
  * them and disposes them at the end. A failure here degrades to an uncarved
  * socket — the holes then stop at the socket's top face instead of draining —
  * rather than failing the whole generation.
- *
- * The carve is cached on the socket's key, the pattern's key and `forExport`
- * (which drives `simplify`), and that composite becomes the returned key, so
- * the socket's mesh cache hits for a carved socket too.
  */
 function cutDeferredSolid(ctx: PipelineContext): {
   solid: Shape3D | null;
