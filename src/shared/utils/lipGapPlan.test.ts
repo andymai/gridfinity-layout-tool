@@ -12,6 +12,7 @@ import {
   polygonLipGaps,
   railSegmentsClearOfPolygonGaps,
   knifeSlotWallExits,
+  wallOpenings,
 } from './lipGapPlan';
 
 /**
@@ -261,6 +262,35 @@ describe('lipGaps: handle holes', () => {
     // A 1U bin leaves ~2mm of interior; the 10% margin either side clamps the
     // hole below the builder's own floor.
     expect(frontHandle({ height: 0.4 })).toEqual([]);
+  });
+});
+
+describe('wallOpenings', () => {
+  const frontHandle = (verticalPosition: number): BinParams =>
+    bin({ handles: handles({ front: { ...HANDLE_SIDE, enabled: true }, verticalPosition }) });
+
+  it('is lipGaps when the band is the lip', () => {
+    for (const p of [
+      frontHandle(0.7),
+      frontHandle(0.3),
+      bin({ walls: walls({ back: { ...walls().back, enabled: true } }) }),
+    ]) {
+      expect(wallOpenings(p, GRIDFINITY_SPEC.LIP_HEIGHT)).toEqual(lipGaps(p));
+    }
+  });
+
+  it('counts a handle below the lip once the band reaches down to it', () => {
+    // The 30% handle sits under the lip, but its top is inside a band reaching
+    // 10mm down and clear of one reaching 2mm.
+    const low = frontHandle(0.3);
+    expect(lipGaps(low)).toEqual([]);
+    expect(wallOpenings(low, 10).map((g) => g.source)).toEqual(['handle']);
+    expect(wallOpenings(low, 2)).toEqual([]);
+  });
+
+  it('counts a cutout at any depth, since it comes down from the rim', () => {
+    const cut = bin({ walls: walls({ back: { ...walls().back, enabled: true } }) });
+    expect(wallOpenings(cut, 0.5).map((g) => g.side)).toEqual(['back']);
   });
 });
 

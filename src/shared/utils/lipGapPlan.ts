@@ -118,6 +118,22 @@ function lipBottomZ(interiorHeight: number): number {
  *.
  */
 export function lipGaps(params: BinParams): readonly LipGap[] {
+  return rectangleGaps(params, lipBottomZ);
+}
+
+/**
+ * {@link lipGaps} for a band reaching `depthMm` below the interior's top
+ * instead of the lip's bottom. Only handle holes test height, so only they can
+ * differ: one counts once its top rises past that depth.
+ */
+export function wallOpenings(params: BinParams, depthMm: number): readonly LipGap[] {
+  return rectangleGaps(params, (interiorHeight) => interiorHeight - depthMm);
+}
+
+function rectangleGaps(
+  params: BinParams,
+  holeFloorZ: (interiorHeight: number) => number
+): readonly LipGap[] {
   if (isPartialMask(params.cellMask)) return [];
   const dims = labelTabInteriorDims(params);
   if (!dims) return [];
@@ -127,7 +143,7 @@ export function lipGaps(params: BinParams): readonly LipGap[] {
   const out: LipGap[] = [];
   for (const side of WALL_SIDES) {
     const wallSpan = spanOf(side);
-    for (const g of wallGaps(params, dims, side, wallSpan)) {
+    for (const g of wallGaps(params, dims, side, wallSpan, holeFloorZ(dims.interiorHeight))) {
       // A rectangle's wall is centred on the interior origin, so its local
       // coordinates are already the bin's.
       out.push({
@@ -221,7 +237,8 @@ function wallGaps(
   params: BinParams,
   dims: NonNullable<ReturnType<typeof labelTabInteriorDims>>,
   side: LidCompatibilitySide,
-  wallSpan: number
+  wallSpan: number,
+  holeFloorZ: number
 ): readonly WallGap[] {
   const { wallHeight, interiorHeight } = dims;
   const wallThickness = params.wallThickness;
@@ -302,7 +319,7 @@ function wallGaps(
     handles.verticalPosition
   );
   if (effectiveHeight < 1) return out;
-  if (centerZ + effectiveHeight / 2 <= lipBottomZ(interiorHeight)) return out;
+  if (centerZ + effectiveHeight / 2 <= holeFloorZ) return out;
 
   const sideWidth = sideCfg.width ?? handles.width;
   const segments = computeWallHandleSegments(
@@ -447,7 +464,7 @@ export function polygonLipGaps(params: BinParams): readonly PolygonLipGap[] {
 
     const alongMid = alongX ? edge.midX : edge.midY;
     const edgeCross = alongX ? edge.midY : edge.midX;
-    for (const g of wallGaps(params, dims, side, wallSpan)) {
+    for (const g of wallGaps(params, dims, side, wallSpan, lipBottomZ(dims.interiorHeight))) {
       out.push({
         side,
         source: g.source,

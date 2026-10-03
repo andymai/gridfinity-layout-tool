@@ -92,6 +92,22 @@ describe('slideLidPlanForParams', () => {
     expect(grown?.plate.lengthMm).toBeGreaterThan(flat?.plate.lengthMm ?? 0);
   });
 
+  it('cuts a thin wall’s lining back from a cutout on the far wall only', () => {
+    const cut = (side: 'back' | 'left'): BinParams['walls'] => ({
+      ...DEFAULT_BIN_PARAMS.walls,
+      enabled: true,
+      [side]: { ...DEFAULT_BIN_PARAMS.walls[side], enabled: true, width: 50, depth: 30 },
+    });
+    const far = slideLidPlanForParams(slideParams({ wallThickness: 0.8, walls: cut('back') }));
+    const openings = far.geometry?.wallLining?.openings ?? [];
+    expect(openings).toHaveLength(1);
+    expect(openings[0].yMin).toBeLessThan(0);
+    expect(openings[0].yMax).toBeGreaterThan(0);
+
+    const channel = slideLidPlanForParams(slideParams({ wallThickness: 0.8, walls: cut('left') }));
+    expect(channel.geometry?.wallLining?.openings).toEqual([]);
+  });
+
   it('refuses a custom shape, which has no polygon-edge mapping', () => {
     const masked = slideParams({ cellMask: { cols: 3, rows: 2, cells: [1, 1, 1, 1, 1, 0] } });
     expect(slideLidPlanForParams(masked).rejection).toBe('unsupported-shape');

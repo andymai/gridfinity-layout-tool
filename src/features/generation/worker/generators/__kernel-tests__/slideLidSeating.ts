@@ -188,7 +188,7 @@ export async function travelInterferenceMm3(
 }
 
 /** Crossings the channel ADDED at a column, in ascending Z. */
-function addedCrossings(
+export function addedCrossings(
   withLid: MeshData,
   withoutLid: MeshData,
   x: number,

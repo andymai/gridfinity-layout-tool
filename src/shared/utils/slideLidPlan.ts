@@ -357,6 +357,19 @@ export interface SlideLidWallLining {
    */
   readonly zMin: number;
   readonly zMax: number;
+  /**
+   * Where the lining is cut back over its whole band, so it does not fill in a
+   * wall opening. See `withLiningOpenings`.
+   */
+  readonly openings: readonly SlideLidLiningOpening[];
+}
+
+/** An XY box in the canonical frame, cut through the lining's whole height. */
+export interface SlideLidLiningOpening {
+  readonly xMin: number;
+  readonly xMax: number;
+  readonly yMin: number;
+  readonly yMax: number;
 }
 
 export interface SlideLidGeometry {
@@ -818,6 +831,7 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
           cavityInsetMm: wallThickness,
           zMin: -t - SLIDE_SHELF_TIP_MM - shelfReach,
           zMax: roofTop,
+          openings: [],
         }
       : null;
 

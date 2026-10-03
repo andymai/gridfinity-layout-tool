@@ -17,7 +17,9 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import {
+  addedCrossings,
   binWallTopZ,
+  canonicalToBin,
   entryLipRemnantMm,
   entryOpeningMm,
   entryCornerMm3,
@@ -210,6 +212,30 @@ describe('sliding lid seating', () => {
           2
         );
       }
+    }
+  }, 600000);
+
+  it('leaves a thin wall’s cutouts open on the entry and far walls', async () => {
+    // The lining is a ring fused after the wall cutouts are cut, so left whole
+    // it re-fills the window on every wall it crosses. Asked down the lining's
+    // own column at the window's centre, against the lidless bin.
+    for (const side of ['back', 'front'] as const) {
+      const params = slideParams({
+        wallThickness: 0.8,
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          [side]: { ...DEFAULT_BIN_PARAMS.walls[side], enabled: true, width: 50, depth: 30 },
+        },
+      });
+      const pair = await build(params);
+      const lining = pair.geometry.wallLining;
+      if (!lining) throw new Error('expected a lining');
+      // A front entry: the back wall is the far one.
+      const end = side === 'back' ? -1 : 1;
+      const inset = (lining.cavityInsetMm + lining.channelInsetMm) / 2;
+      const [x, y] = canonicalToBin(pair.geometry, end * (lining.bodyLengthMm / 2 - inset), 0);
+      expect(addedCrossings(pair.bin, bareBin(params), x, y), side).toEqual([]);
     }
   }, 600000);
 

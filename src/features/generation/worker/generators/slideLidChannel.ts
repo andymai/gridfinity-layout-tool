@@ -16,6 +16,7 @@
  */
 
 import {
+  box,
   clone,
   cutAll,
   draw,
@@ -168,7 +169,18 @@ function liningSolid(scope: DisposalScope, lining: SlideLidWallLining): Shape3D 
     )
   );
   const core = scope.register(liningSection(lining, channelInsetMm, zMin).extrude(zMax - zMin + 1));
-  return scope.register(unwrap(cutAll(outer as ValidSolid, [chamfer, core] as ValidSolid[])));
+  const bottom = zMin - run - 0.2;
+  const height = zMax + 1 - bottom;
+  const openings = lining.openings.map((o) =>
+    scope.register(
+      box(o.xMax - o.xMin, o.yMax - o.yMin, height, {
+        at: [(o.xMin + o.xMax) / 2, (o.yMin + o.yMax) / 2, bottom + height / 2],
+      })
+    )
+  );
+  return scope.register(
+    unwrap(cutAll(outer as ValidSolid, [chamfer, core, ...openings] as ValidSolid[]))
+  );
 }
 
 /** Rotate a canonical solid onto the entry wall and drop it onto the cavity. */
