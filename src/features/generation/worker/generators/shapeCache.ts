@@ -161,7 +161,7 @@ function getOrCreateFeatureCache(name: string): LRUCache<Shape3D> {
   return cache;
 }
 
-/** Static LRU caches (socket, lip, box, shell, cell-socket template, bin-body, carved socket). */
+/** Static LRU caches, disposed and reported together. */
 const staticLruCaches: readonly LRUCache<Shape3D>[] = [
   socketCache,
   lipCache,
