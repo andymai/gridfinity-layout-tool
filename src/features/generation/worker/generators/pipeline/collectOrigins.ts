@@ -33,3 +33,27 @@ export function tagUntaggedFaces(shape: Shape3D, tag: FeatureTag): void {
     if (map.has(hash)) map.set(hash, origin);
   }
 }
+
+/**
+ * Gives `target` the origins its faces carry in `sources`. A compound built
+ * from parts, or a solid taken out of a compound, starts with no origins, and
+ * an untagged face meshes as origin 0. Faces no source knows keep 0.
+ */
+export function copyFaceOrigins(target: Shape3D, sources: readonly Shape3D[]): void {
+  const maps = sources
+    .map((s) => getFaceOrigins(s))
+    .filter((m): m is Map<number, number> => m !== undefined);
+  if (maps.length === 0) return;
+  setShapeOrigin(target, 0);
+  const own = getFaceOrigins(target);
+  if (!own) return;
+  for (const hash of own.keys()) {
+    for (const m of maps) {
+      const origin = m.get(hash);
+      if (origin !== undefined) {
+        own.set(hash, origin);
+        break;
+      }
+    }
+  }
+}

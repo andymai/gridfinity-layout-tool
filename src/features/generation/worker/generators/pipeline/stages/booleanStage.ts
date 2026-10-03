@@ -12,8 +12,17 @@
  * for simpler fuse→cut chains where bisect's recovery would be wasted.
  */
 
-import { unwrap, fuse, cutAllBisect, translate, isErr } from 'brepjs';
-import type { Shape3D, ValidSolid } from 'brepjs';
+import {
+  unwrap,
+  fuse,
+  cutAllBisect,
+  translate,
+  isErr,
+  compound,
+  getBounds,
+  getSolids,
+} from 'brepjs';
+import type { Bounds3D, Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import type { BooleanOpts } from '../../meshUtils';
 import { checkCancelled } from '../../utils/abort';
@@ -24,6 +33,7 @@ import {
   setCarvedSocketCache,
 } from '../../shapeCache';
 import { compactKey } from '../../cacheKeyUtils';
+import { copyFaceOrigins } from '../collectOrigins';
 
 function applyCutPass(
   bin: Shape3D,
@@ -35,6 +45,66 @@ function applyCutPass(
   const { shape } = unwrap(cutAllBisect(bin as ValidSolid, [...targets] as ValidSolid[], opts));
   if (prev !== originalSolid && prev !== shape) prev.delete();
   return shape;
+}
+
+function boundsTouch(a: Bounds3D, b: Bounds3D): boolean {
+  return (
+    a.xMin <= b.xMax &&
+    b.xMin <= a.xMax &&
+    a.yMin <= b.yMax &&
+    b.yMin <= a.yMax &&
+    a.zMin <= b.zMax &&
+    b.zMin <= a.zMax
+  );
+}
+
+/**
+ * Cuts each solid of `socket` with only the tools whose bounds touch it, and
+ * gathers the results into a compound. A cut distributes over the cells' union,
+ * so this is the whole cut, but each boolean sees one cell and its own hole
+ * instead of every hole in the floor. A one-solid socket takes the whole cut.
+ */
+function carveByCell(
+  socket: Shape3D,
+  tools: readonly Shape3D[],
+  opts: BooleanOpts
+): { shape: Shape3D; complete: boolean } {
+  const cells = getSolids(socket);
+  if (cells.length < 2) {
+    const { shape, telemetry } = unwrap(
+      cutAllBisect(socket as ValidSolid, [...tools] as ValidSolid[], opts)
+    );
+    return { shape, complete: telemetry.failedInputs.length === 0 };
+  }
+  const toolBounds = tools.map((t) => getBounds(t));
+  const parts: Shape3D[] = [];
+  const carved: Shape3D[] = [];
+  let complete = true;
+  try {
+    for (const cell of cells) {
+      const bounds = getBounds(cell);
+      const over = tools.filter((_, i) => boundsTouch(bounds, toolBounds[i]));
+      if (over.length === 0) {
+        parts.push(cell);
+        continue;
+      }
+      // The cell is a borrowed sub-shape with no origins of its own; give it
+      // the socket's so the cut carries them onto the carved faces.
+      copyFaceOrigins(cell, [socket]);
+      const { shape, telemetry } = unwrap(
+        cutAllBisect(cell as ValidSolid, over as ValidSolid[], opts)
+      );
+      if (shape !== cell) carved.push(shape);
+      if (telemetry.failedInputs.length > 0) complete = false;
+      parts.push(shape);
+    }
+    const whole = compound(parts);
+    copyFaceOrigins(whole, [...carved, socket]);
+    return { shape: whole, complete };
+  } finally {
+    // The compound holds its own references to the carved solids.
+    for (const s of carved) s.delete();
+  }
 }
 
 /**
@@ -68,27 +138,21 @@ function cutDeferredSolid(ctx: PipelineContext): {
       return { solid: cached, key: carveKey };
     }
   }
-  let carved: { shape: Shape3D; telemetry: { failedInputs: readonly number[] } };
+  let carved: { shape: Shape3D; complete: boolean };
   try {
-    carved = unwrap(
-      cutAllBisect(
-        deferredSolid as ValidSolid,
-        [...deferredCutTargets] as ValidSolid[],
-        {
-          simplify: forExport,
-          signal,
-        } as BooleanOpts
-      )
-    );
+    carved = carveByCell(deferredSolid, deferredCutTargets, {
+      simplify: forExport,
+      signal,
+    });
   } catch {
     // The cut produced no shape, so this is the original socket untouched — its
     // key still describes it, and dropping it would only cost a re-tessellation.
     return { solid: deferredSolid, key: deferredSolidKey };
   }
-  const { shape, telemetry } = carved;
+  const { shape, complete } = carved;
   if (shape !== deferredSolid) deferredSolid.delete();
   // A tool the bisect had to drop leaves a carve the key does not describe.
-  if (carveKey === null || telemetry.failedInputs.length > 0) return { solid: shape, key: null };
+  if (carveKey === null || !complete) return { solid: shape, key: null };
   setCarvedSocketCache(carveKey, shape);
   return { solid: translate(shape, [0, 0, 0]), key: carveKey };
 }
