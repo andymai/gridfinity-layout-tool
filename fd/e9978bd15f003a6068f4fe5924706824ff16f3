@@ -1,0 +1,21 @@
+src/features/generation/README.md
+  s_ecfadab7dc0ed4::t_e9d1d69ea0b25e 77
+src/features/generation/worker/generators/pipeline/stages/booleanStage.ts
+  s_ecfadab7dc0ed4::t_62d5567a8f62c0 7-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "fde9978bd15f003a6068f4fe5924706824ff16f3",
+  "prompts": {},
+  "sessions": {
+    "s_ecfadab7dc0ed4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e974b0-81fc-44e7-84c5-a753966b5aa7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
