@@ -402,7 +402,7 @@ function relieveForNeighborSockets(
 ): Shape3D {
   const footCell = gridUnitMm - CLEARANCE + 2 * CONNECTOR_SOCKET_RELIEF_GAP;
   const half = gridUnitMm / 2;
-  // Loft the foot once and clone it to each of the four neighbouring cells.
+  // Loft the foot once and translate it to each of the four neighbouring cells.
   const baseFoot = buildSingleCellSocket(footCell, footCell, socketHeight);
   const cutters: ValidSolid[] = [];
   for (const sx of [-1, 1] as const) {

@@ -5,7 +5,7 @@
  * into the solid floor below. Extends down by magnetDepth, leaving a thin
  * retaining floor (MAGNET_FLOOR = 0.5mm) at the bottom.
  *
- * Builds one template cylinder, clones+translates per position.
+ * Builds one template cylinder and translates it to each position.
  *
  * Nominal full (1.0+ unit) cells get the standard 4-corner pattern (±13mm from
  * cell center). A half cell keeps whatever of that pattern still fits — two

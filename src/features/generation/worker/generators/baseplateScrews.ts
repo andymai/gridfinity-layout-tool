@@ -7,7 +7,7 @@
  *     a piece's params into absolute XY positions, snapping each floor target to
  *     a real magnet position. No brepjs, so `baseplateDirectMesh` calls them too.
  *   - {@link buildScrewCutters}: the BREP cutters, built as one template per
- *     site and cloned per position, the same way magnets and pockets are.
+ *     site and translated to each position, the same way magnets are.
  *
  * The floor snap is why this lives beside `baseplateMagnets` rather than in
  * shared: it consumes `magnetPositionsForCell`, which is also what the magnets,
@@ -279,7 +279,7 @@ function buildScrewTemplate(
 
 /**
  * Build cutters for every resolved hole. Templates are built once per site and
- * cloned, matching how magnets and pockets amortise their construction.
+ * translated into place, matching how magnets amortise their construction.
  */
 export function buildScrewCutters(
   holes: readonly ResolvedScrewHole[],

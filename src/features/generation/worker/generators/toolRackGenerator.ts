@@ -108,7 +108,7 @@ export function buildToolRackSolid(
       drawRoundedRectangle(totalW, totalD, Math.max(radius, 0.1)).sketchOnPlane('XY', 0).extrude(z0)
     );
 
-    // (b) Fins: build one, clone+translate across X.
+    // (b) Fins: build one, translate it across X.
     const baseFin = buildLeaningFin(
       scope,
       structure.finThickness,
