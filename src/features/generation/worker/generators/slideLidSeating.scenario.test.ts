@@ -167,8 +167,15 @@ describe('sliding lid seating', () => {
     const flat = await build(slideParams({}, { detent: false }));
     const withBump = columnCrossings(pair.bin, px, py);
     const noBump = columnCrossings(flat.bin, px, py);
-    expect(Math.max(...withBump)).toBeGreaterThan(Math.max(...noBump) - 1e-6);
-    expect(withBump.length).toBeGreaterThan(noBump.length);
+    // Fused into the shelf, the bump replaces the shelf top at its peak with a
+    // higher surface rather than adding one, so look for a crossing the flat
+    // design does not have and that sits above the one it replaces.
+    const added = withBump.filter((z) => !noBump.some((n) => Math.abs(n - z) < 1e-6));
+    expect(added.length).toBeGreaterThan(0);
+    const highest = Math.max(...added);
+    const below = noBump.filter((n) => n < highest);
+    expect(below.length).toBeGreaterThan(0);
+    expect(highest).toBeGreaterThan(Math.max(...below));
   }, 600000);
 
   it('is held down by the channel along both running edges', async () => {
