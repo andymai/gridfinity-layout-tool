@@ -1,0 +1,24 @@
+src/features/generation/worker/generators/pipeline/stages/booleanStage.ts
+  s_6cfaf5eb687914::t_812c5a1e9b89a6 165
+  s_6cfaf5eb687914::t_ed34f069bce83d 179-182
+  s_6cfaf5eb687914::t_97fd5eddb9b1bb 123,129
+  s_6cfaf5eb687914::t_40607b3be35156 189
+src/features/generation/worker/generators/binResumeCache.test.ts
+  s_6cfaf5eb687914::t_e69b733d4320f2 38,44-46,49-50,52-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6c0627256c4a3d60e7acdb4a8c63fb6e5b90efd0",
+  "prompts": {},
+  "sessions": {
+    "s_6cfaf5eb687914": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "190cefda-81d6-4120-8537-e65d0ffeecff",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
