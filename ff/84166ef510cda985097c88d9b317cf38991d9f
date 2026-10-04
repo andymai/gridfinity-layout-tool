@@ -1,0 +1,33 @@
+src/features/generation/worker/generators/__kernel-tests__/labelSocketClearance.ts
+  s_b590134dfc57b8::t_86527153fe9e97 27-31
+  s_b590134dfc57b8::t_e7fef388fb9363 1-26,32-141
+src/features/generation/worker/generators/labelSocketKeepouts.test.ts
+  s_b590134dfc57b8::t_86527153fe9e97 50,52
+  s_b590134dfc57b8::t_bb67e59b5427f9 37,46-49,51,53-54
+src/features/generation/worker/generators/labelSocketKeepouts.ts
+  s_b590134dfc57b8::t_bb67e59b5427f9 20-23,45
+src/features/generation/worker/generators/scenarios/labelSockets.ts
+  s_b590134dfc57b8::t_e7fef388fb9363 32-36
+  s_b590134dfc57b8::t_8727fb685c86e2 429-446
+  s_b590134dfc57b8::t_f6432662fe949c 447
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_b590134dfc57b8::t_bb67e59b5427f9 43,190-191
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.labelSockets.test.ts.snap
+  s_b590134dfc57b8::t_68af7928c33988 31-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ff84166ef510cda985097c88d9b317cf38991d9f",
+  "prompts": {},
+  "sessions": {
+    "s_b590134dfc57b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "62db57de-71e8-4c95-b90e-db931eac01e8",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
