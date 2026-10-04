@@ -273,6 +273,9 @@ export function planLabelSockets(
 ): LabelSocketPlan {
   const { cols, rows, cells } = compartments;
   const overrides = compartments.labelPlateWidths;
+  // A full-width tab ends against a wall or divider at both sides, and
+  // `labelSocketPocketX0` lets those ends run thin.
+  const endsBacked = widthPercent >= 100;
 
   const plans: LabelSocketCompartmentPlan[] = [];
   const seen = new Set<number>();
@@ -288,7 +291,7 @@ export function planLabelSockets(
       const availableWidthMm = ((span.right - span.left) * widthPercent) / 100;
 
       const fittingWidthsU = LABEL_PLATE_WIDTHS_U.filter(
-        (u) => labelSocketOuterWidthMm(u, clearanceMm) <= availableWidthMm
+        (u) => labelSocketOuterWidthMm(u, clearanceMm, endsBacked) <= availableWidthMm
       );
       const autoWidthU = fittingWidthsU.at(-1) ?? null;
 
@@ -303,7 +306,7 @@ export function planLabelSockets(
   const anyCompartmentFits = plans.some((p) => p.plateWidthU !== null);
   const spanningWidthU = anyCompartmentFits
     ? null
-    : largestFittingPlateWidthU((innerWmm * widthPercent) / 100, clearanceMm);
+    : largestFittingPlateWidthU((innerWmm * widthPercent) / 100, clearanceMm, endsBacked);
 
   return {
     compartments: plans,

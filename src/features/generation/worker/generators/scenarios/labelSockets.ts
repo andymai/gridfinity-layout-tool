@@ -16,11 +16,14 @@ import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import {
   LABEL_PLATE_HEIGHT_MM,
   LABEL_SOCKET_CLICK_POCKET_DEPTH_MM,
+  LABEL_SOCKET_LIP_THICKNESS_MM,
+  LABEL_SOCKET_POCKET_DEPTH_MM,
   LABEL_SOCKET_REMOVAL_HOLE_DIAMETER_MM,
   LABEL_SOCKET_REMOVAL_HOLE_EDGE_MM,
   LABEL_SOCKET_REMOVAL_HOLE_SINK_MM,
   LABEL_SOCKET_RIB_HEIGHT_MM,
   LABEL_SOCKET_RIB_START_MM,
+  LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM,
   LABEL_SOCKET_STACK_RELIEF_MM,
   LABEL_SOCKET_WALL_MM,
   effectiveLabelSocketClearance,
@@ -134,6 +137,56 @@ function assertSocketPocket(result: MeshData, params: BinParams, exp: PocketExpe
   if (Math.abs(floorMinX + pocketW / 2) > 0.1 || Math.abs(floorMaxX - pocketW / 2) > 0.1) {
     throw new Error(
       `${exp.label}: pocket not centered (X ${floorMinX.toFixed(2)}..${floorMaxX.toFixed(2)})`
+    );
+  }
+}
+
+/**
+ * A centred slide channel's cavity floor spans the full pocket width
+ * (plate + clearance), measured on the up-facing floor plane inside the
+ * pocket's Y band.
+ */
+function assertSlideCavity(result: MeshData, params: BinParams, exp: PocketExpectation): void {
+  const { vertices, normals } = result;
+  const clearanceMm = effectiveLabelSocketClearance(
+    params.nozzleSizeMm,
+    params.label.plateFitOffset
+  );
+  const pocketW = labelPlateWidthMm(exp.plateWidthU) + clearanceMm;
+  const pocketD = LABEL_PLATE_HEIGHT_MM + clearanceMm;
+  const innerD = params.depth * params.gridUnitMm - 0.5 - 2 * params.wallThickness;
+  const pocketYFar = innerD / 2 - LABEL_SOCKET_WALL_MM;
+  const pocketYNear = pocketYFar - pocketD;
+
+  let maxZ = -Infinity;
+  for (let i = 2; i < vertices.length; i += 3) {
+    if (vertices[i] > maxZ) maxZ = vertices[i];
+  }
+  const floorZ =
+    maxZ -
+    COPLANAR_OVERLAP -
+    LABEL_SOCKET_LIP_THICKNESS_MM -
+    LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM -
+    LABEL_SOCKET_POCKET_DEPTH_MM;
+
+  let count = 0;
+  let minX = Infinity;
+  let maxX = -Infinity;
+  for (let i = 0; i < vertices.length; i += 3) {
+    const y = vertices[i + 1];
+    if (y < pocketYNear - 0.05 || y > pocketYFar + 0.05) continue;
+    if (normals[i + 2] < 0.9 || Math.abs(vertices[i + 2] - floorZ) > 0.05) continue;
+    count++;
+    if (vertices[i] < minX) minX = vertices[i];
+    if (vertices[i] > maxX) maxX = vertices[i];
+  }
+  if (count < 4) {
+    throw new Error(`${exp.label}: no slide cavity floor at Z=${floorZ.toFixed(2)}`);
+  }
+  if (Math.abs(minX + pocketW / 2) > 0.1 || Math.abs(maxX - pocketW / 2) > 0.1) {
+    throw new Error(
+      `${exp.label}: cavity X ${minX.toFixed(2)}..${maxX.toFixed(2)}, ` +
+        `expected ±${(pocketW / 2).toFixed(2)}`
     );
   }
 }
@@ -362,6 +415,34 @@ export const labelSockets: ScenarioCase[] = [
     },
     customAssert: (result, params) =>
       assertSocketPocket(result, params, { plateWidthU: 1, label: '3x1-override-1u' }),
+  }),
+
+  // The walls back a full-width tab's pocket ends, so a 2U plate still fits
+  // between the thickest walls the designer allows.
+  defineScenario('label sockets', '2×1 socket keeps a 2U plate on 2.4mm walls', {
+    params: {
+      width: 2,
+      depth: 1,
+      height: 5,
+      wallThickness: 2.4,
+      base: NO_LIP_BASE,
+      label: SOCKET_LABEL,
+    },
+    customAssert: (result, params) =>
+      assertSocketPocket(result, params, { plateWidthU: 2, label: '2x1-thick-walls' }),
+  }),
+
+  defineScenario('label sockets', '2×1 slide channel keeps a 2U plate on 2mm walls', {
+    params: {
+      width: 2,
+      depth: 1,
+      height: 5,
+      wallThickness: 2,
+      base: NO_LIP_BASE,
+      label: { ...SOCKET_LABEL, socketStyle: 'slideChannel' as const },
+    },
+    customAssert: (result, params) =>
+      assertSlideCavity(result, params, { plateWidthU: 2, label: '2x1-slide-2mm-walls' }),
   }),
 
   // 4 columns across a 2U bin: every column is too narrow for a 1U plate,

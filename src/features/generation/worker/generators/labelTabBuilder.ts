@@ -34,6 +34,7 @@ import {
   LABEL_SOCKET_WALL_MM,
   labelLipReservationMm,
   labelPlateWidthMm,
+  labelSocketPocketX0,
 } from '@/shared/constants/labelPlates';
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
@@ -216,15 +217,15 @@ export function planLabelPlateSeats(
       // Same guards `applySocket` applies before cutting: no pocket, no seat.
       const pocketW = labelPlateWidthMm(plateWidthU) + socket.clearanceMm;
       const pocketD = LABEL_PLATE_HEIGHT_MM + socket.clearanceMm;
-      if (pocketW + 2 * wall > slot.tabWidth + 0.01) continue;
+      const pocketX0 = labelSocketPocketX0({
+        tabWidth: slot.tabWidth,
+        pocketW,
+        alignment,
+        touchesLeft: slot.touchesLeft,
+        touchesRight: slot.touchesRight,
+      });
+      if (pocketX0 === null) continue;
       if (pocketD + 2 * wall > tabDepth + 0.01) continue;
-
-      const pocketX0 =
-        alignment === 'left'
-          ? wall
-          : alignment === 'right'
-            ? slot.tabWidth - wall - pocketW
-            : (slot.tabWidth - pocketW) / 2;
 
       const icon = icons[slot.cellId];
       seats.push({
@@ -554,6 +555,8 @@ function buildTabsAtRow(
           tabDepth,
           tabHeight,
           alignment,
+          touchesLeft,
+          touchesRight,
           depthSign,
         });
       }
