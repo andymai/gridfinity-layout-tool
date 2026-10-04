@@ -96,9 +96,7 @@ export function buildKnifeRestSolid(
       socketHeight
     );
     const socketClone = scope.register(unwrap(clone(socket)));
-    let solid: Shape3D = scope.register(
-      unwrap(fuseAll([body, socketClone] as ValidSolid[], { optimisation: 'commonFace' }))
-    );
+    let solid: Shape3D = scope.register(unwrap(fuseAll([body, socketClone] as ValidSolid[])));
 
     // Saddle grooves: one horizontal cylinder per knife, axis along the knife
     // direction, sunk so the segment it cuts is groove-width wide at the top

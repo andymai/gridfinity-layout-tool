@@ -12,8 +12,17 @@
  * for simpler fuse→cut chains where bisect's recovery would be wasted.
  */
 
-import { unwrap, fuse, cutAllBisect, translate, isErr } from 'brepjs';
-import type { Shape3D, ValidSolid } from 'brepjs';
+import {
+  unwrap,
+  fuse,
+  cutAllBisect,
+  translate,
+  isErr,
+  compound,
+  getBounds,
+  getSolids,
+} from 'brepjs';
+import type { Bounds3D, Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import type { BooleanOpts } from '../../meshUtils';
 import { checkCancelled } from '../../utils/abort';
@@ -24,6 +33,7 @@ import {
   setCarvedSocketCache,
 } from '../../shapeCache';
 import { compactKey } from '../../cacheKeyUtils';
+import { copyFaceOrigins } from '@/features/generation/worker/generators/pipeline/collectOrigins';
 
 function applyCutPass(
   bin: Shape3D,
@@ -35,6 +45,66 @@ function applyCutPass(
   const { shape } = unwrap(cutAllBisect(bin as ValidSolid, [...targets] as ValidSolid[], opts));
   if (prev !== originalSolid && prev !== shape) prev.delete();
   return shape;
+}
+
+function boundsTouch(a: Bounds3D, b: Bounds3D): boolean {
+  return (
+    a.xMin <= b.xMax &&
+    b.xMin <= a.xMax &&
+    a.yMin <= b.yMax &&
+    b.yMin <= a.yMax &&
+    a.zMin <= b.zMax &&
+    b.zMin <= a.zMax
+  );
+}
+
+/**
+ * Cuts each solid of `socket` with only the tools whose bounds touch it, and
+ * gathers the results into a compound. A cut distributes over the cells' union,
+ * so this is the whole cut, but each boolean sees one cell and its own hole
+ * instead of every hole in the floor. A one-solid socket takes the whole cut.
+ */
+function carveByCell(
+  socket: Shape3D,
+  tools: readonly Shape3D[],
+  opts: BooleanOpts
+): { shape: Shape3D; complete: boolean } {
+  const cells = getSolids(socket);
+  if (cells.length < 2) {
+    const { shape, telemetry } = unwrap(
+      cutAllBisect(socket as ValidSolid, [...tools] as ValidSolid[], opts)
+    );
+    return { shape, complete: telemetry.failedInputs.length === 0 };
+  }
+  const toolBounds = tools.map((t) => getBounds(t));
+  const parts: Shape3D[] = [];
+  const carved: Shape3D[] = [];
+  let complete = true;
+  try {
+    for (const cell of cells) {
+      const bounds = getBounds(cell);
+      const over = tools.filter((_, i) => boundsTouch(bounds, toolBounds[i]));
+      if (over.length === 0) {
+        parts.push(cell);
+        continue;
+      }
+      // The cell is a borrowed sub-shape with no origins of its own; give it
+      // the socket's so the cut carries them onto the carved faces.
+      copyFaceOrigins(cell, [socket]);
+      const { shape, telemetry } = unwrap(
+        cutAllBisect(cell as ValidSolid, over as ValidSolid[], opts)
+      );
+      if (shape !== cell) carved.push(shape);
+      if (telemetry.failedInputs.length > 0) complete = false;
+      parts.push(shape);
+    }
+    const whole = compound(parts);
+    copyFaceOrigins(whole, [...carved, socket]);
+    return { shape: whole, complete };
+  } finally {
+    // The compound holds its own references to the carved solids.
+    for (const s of carved) s.delete();
+  }
 }
 
 /**
@@ -50,16 +120,13 @@ function cutDeferredSolid(ctx: PipelineContext): {
   solid: Shape3D | null;
   key: string | null;
 } {
-  const { deferredSolid, deferredCutTargets, deferredSolidKey, deferredCutKey, signal, forExport } =
-    ctx;
+  const { deferredSolid, deferredCutTargets, deferredSolidKey, deferredCutKey, signal } = ctx;
   if (!deferredSolid || deferredCutTargets.length === 0) {
     return { solid: deferredSolid, key: deferredSolidKey };
   }
   const carveKey =
     deferredSolidKey !== null && deferredCutKey !== null
-      ? compactKey(
-          JSON.stringify(['carved-socket-v1', deferredSolidKey, deferredCutKey, forExport])
-        )
+      ? compactKey(JSON.stringify(['carved-socket-v1', deferredSolidKey, deferredCutKey]))
       : null;
   if (carveKey !== null) {
     const cached = getCarvedSocketCache(carveKey);
@@ -68,27 +135,18 @@ function cutDeferredSolid(ctx: PipelineContext): {
       return { solid: cached, key: carveKey };
     }
   }
-  let carved: { shape: Shape3D; telemetry: { failedInputs: readonly number[] } };
+  let carved: { shape: Shape3D; complete: boolean };
   try {
-    carved = unwrap(
-      cutAllBisect(
-        deferredSolid as ValidSolid,
-        [...deferredCutTargets] as ValidSolid[],
-        {
-          simplify: forExport,
-          signal,
-        } as BooleanOpts
-      )
-    );
+    carved = carveByCell(deferredSolid, deferredCutTargets, { signal });
   } catch {
     // The cut produced no shape, so this is the original socket untouched — its
     // key still describes it, and dropping it would only cost a re-tessellation.
     return { solid: deferredSolid, key: deferredSolidKey };
   }
-  const { shape, telemetry } = carved;
+  const { shape, complete } = carved;
   if (shape !== deferredSolid) deferredSolid.delete();
   // A tool the bisect had to drop leaves a carve the key does not describe.
-  if (carveKey === null || telemetry.failedInputs.length > 0) return { solid: shape, key: null };
+  if (carveKey === null || !complete) return { solid: shape, key: null };
   setCarvedSocketCache(carveKey, shape);
   return { solid: translate(shape, [0, 0, 0]), key: carveKey };
 }
@@ -104,7 +162,7 @@ export const booleanStage: PipelineStage = {
   },
 
   execute(ctx: PipelineContext): PipelineContext {
-    const { signal, forExport, featuresKey } = ctx;
+    const { signal, featuresKey } = ctx;
     const originalSolid = ctx.solid;
     if (!originalSolid) return ctx;
     let bin: Shape3D = originalSolid;
@@ -118,19 +176,17 @@ export const booleanStage: PipelineStage = {
     // Resume cache: a metadata-only edit (label text, notes, category) leaves
     // the shell and every feature's geometry key unchanged, so the post-boolean
     // body is identical — skip the whole boolean stage. The key composes the
-    // shell identity, the feature geometry (`featuresKey`), and `forExport`
-    // (which drives `simplify`), so it changes whenever the booleaned body
-    // would. Disabled when `featuresKey` is null (solid mode / wall patterns,
-    // whose tools aren't captured by the key — see featuresStage).
+    // shell identity and the feature geometry (`featuresKey`). It leaves out
+    // `forExport`: no input to this stage depends on it, so preview and export
+    // share one body. Disabled when `featuresKey` is null (solid mode / wall
+    // patterns, whose tools aren't captured by the key — see featuresStage).
     // JSON.stringify keeps the composition injective end-to-end: `shellKey` and
     // `featuresKey` can both contain `|`, which a flat `buildCacheKey` join could
     // collide across segment boundaries into a false hit (stale geometry).
     // `compactKey` then hashes long keys, the same as every other cache here.
     const resumeKey =
       featuresKey !== null
-        ? compactKey(
-            JSON.stringify(['binbody-v1', ctx.dimensions.shellKey, forExport, featuresKey])
-          )
+        ? compactKey(JSON.stringify(['binbody-v1', ctx.dimensions.shellKey, featuresKey]))
         : null;
 
     if (resumeKey !== null) {
@@ -156,14 +212,11 @@ export const booleanStage: PipelineStage = {
       }
     }
 
-    // Shared by fuse and cut passes — `simplify: forExport` merges
-    // same-domain faces left behind by the n-way boolean, and `signal`
-    // threads cancellation through. Fuse used to drop both, accumulating
-    // duplicate / coincident faces from additive features (label tabs,
-    // scoop ramps) that share a face with the shell; slicers (BambuStudio)
-    // flag the resulting duplicate triangles as non-manifold (—
-    // partial fix; see labelTab gusset-back-face follow-up).
-    const boolOpts = { simplify: forExport, signal } as BooleanOpts;
+    // `signal` threads cancellation through the fuse and cut passes. No
+    // `simplify`: merging same-domain faces folds flat label text into the
+    // tab top it sits flush with, dropping its colour, and opens the exported
+    // mesh of some kumiko patterns.
+    const boolOpts = { signal } as BooleanOpts;
 
     if (ctx.fuseTargets.length > 0) {
       for (const target of ctx.fuseTargets) {

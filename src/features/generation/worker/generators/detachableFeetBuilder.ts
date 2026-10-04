@@ -465,10 +465,7 @@ function buildFloorHoles(
       );
     }
   }
-  const pinHoles =
-    holes.length > 0
-      ? unwrap(fuseAll(holes as ValidSolid[], { optimisation: 'commonFace' }))
-      : null;
+  const pinHoles = holes.length > 0 ? unwrap(fuseAll(holes as ValidSolid[])) : null;
   for (const h of holes) if (h !== pinHoles) h.delete();
   return pinHoles;
 }

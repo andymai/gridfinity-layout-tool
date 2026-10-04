@@ -136,9 +136,7 @@ export function buildToolRackSolid(
     }
 
     // (d) Fuse superstructure onto the floor.
-    const superstructure = scope.register(
-      unwrap(fuseAll(parts as ValidSolid[], { optimisation: 'commonFace' }))
-    );
+    const superstructure = scope.register(unwrap(fuseAll(parts as ValidSolid[])));
 
     // (e) Socket base (cache-owned survivor — clone before fusing, never delete).
     const socket = buildBaseSocket(
@@ -158,9 +156,7 @@ export function buildToolRackSolid(
       attachmentHoleStyle(envelope.attachment)
     );
     const socketClone = scope.register(unwrap(clone(socket)));
-    const fused = scope.register(
-      unwrap(fuseAll([superstructure, socketClone] as ValidSolid[], { optimisation: 'commonFace' }))
-    );
+    const fused = scope.register(unwrap(fuseAll([superstructure, socketClone] as ValidSolid[])));
 
     // (f) Shift so Z=0 is the printable bottom.
     return translate(fused, [0, 0, SOCKET_HEIGHT]);

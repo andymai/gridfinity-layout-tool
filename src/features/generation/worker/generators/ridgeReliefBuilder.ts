@@ -98,7 +98,7 @@ export function buildRidgeReliefTool(
       }
       placed.push(scope.register(translate(template, [cell.centerX, cell.centerY, 0])));
     }
-    const fused = unwrap(fuseAll(placed as ValidSolid[], { optimisation: 'commonFace' }));
+    const fused = unwrap(fuseAll(placed as ValidSolid[]));
     // Every input is scope-owned, so a fuse that hands one back must not
     // return it to be freed on the way out.
     return placed.includes(fused) ? unwrap(clone(fused)) : fused;

@@ -428,7 +428,7 @@ function getCellSocketTemplate(
 
 /** Fuse all cell sockets, then cut all hole tools. Disposes replaced intermediates. */
 function batchFuseAndCut(cellSockets: Shape3D[], holeTools: Shape3D[]): Shape3D {
-  let result = unwrap(fuseAll(cellSockets as ValidSolid[], { optimisation: 'commonFace' }));
+  let result = unwrap(fuseAll(cellSockets as ValidSolid[]));
   if (holeTools.length > 0) {
     const preCut = result;
     result = unwrap(cutAll(result, holeTools as ValidSolid[]));
@@ -664,9 +664,7 @@ export function buildBaseSocket(
         ...cellSockets.slice(1).map((s): BooleanPipelineStep => ({ op: 'fuse', tool: s })),
         ...holeTools.map((t): BooleanPipelineStep => ({ op: 'cut', tool: t })),
       ];
-      const pipelineResult = booleanPipeline(cellSockets[0], steps, {
-        optimisation: 'commonFace',
-      });
+      const pipelineResult = booleanPipeline(cellSockets[0], steps);
 
       if (isOk(pipelineResult)) {
         result = pipelineResult.value;
@@ -730,7 +728,7 @@ export function buildOverhangFeet(
         [cell.centerX, cell.centerY, 0]
       );
     });
-    const result = unwrap(fuseAll(sockets as ValidSolid[], { optimisation: 'commonFace' }));
+    const result = unwrap(fuseAll(sockets as ValidSolid[]));
     for (const s of sockets) {
       if (s !== result) s.delete();
     }

@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.503.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.503.3...gridfinity-layout-tool-v4.503.4) (2026-10-04)
+
+
+### Bug Fixes
+
+* **lid:** stop the sliding lid's entry window biting a lipless bin's corners ([#4467](https://github.com/andymai/gridfinity-layout-tool/issues/4467)) ([9484575](https://github.com/andymai/gridfinity-layout-tool/commit/9484575664abe02ab25a7e6c5937528cb41fa430))
+
+## [4.503.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.503.2...gridfinity-layout-tool-v4.503.3) (2026-10-04)
+
+
+### Performance
+
+* **generation:** build only the floor holes for detachable-feet bins ([#4462](https://github.com/andymai/gridfinity-layout-tool/issues/4462)) ([a21d5fb](https://github.com/andymai/gridfinity-layout-tool/commit/a21d5fb14dfadf457537bd48b95590eda98d99de))
+* **generation:** cache kumiko cutters as one set per key ([#4464](https://github.com/andymai/gridfinity-layout-tool/issues/4464)) ([0f8729b](https://github.com/andymai/gridfinity-layout-tool/commit/0f8729b52736c9ecc1ac62573bb1aaf4844ad1f4))
+* **generation:** cache the floor-pattern carve of the base socket ([#4463](https://github.com/andymai/gridfinity-layout-tool/issues/4463)) ([f50d9ea](https://github.com/andymai/gridfinity-layout-tool/commit/f50d9ea2ddde74f6978ddeb824dec1a36963f3ee))
+* **generation:** carve the base socket one cell at a time ([#4469](https://github.com/andymai/gridfinity-layout-tool/issues/4469)) ([6ab8f15](https://github.com/andymai/gridfinity-layout-tool/commit/6ab8f15ed13d2b44fc42f9210b87a1ee09ca067f))
+
 ## [4.503.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.503.1...gridfinity-layout-tool-v4.503.2) (2026-10-03)
 
 
