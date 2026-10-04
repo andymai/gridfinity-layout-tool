@@ -40,6 +40,7 @@ import {
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { planLabelTabLayout } from '@/shared/utils/labelTabPlan';
+import { isPartialMask } from '@/shared/utils/cellMask';
 import type { TabSlot, PlannedTabRow, TabBuildDimensions } from '@/shared/utils/labelTabPlan';
 import { isLabelPlateIconId } from '@/shared/constants/labelPlates';
 import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
@@ -186,6 +187,8 @@ export function planLabelPlateSeats(
 ): LabelPlateSeat[] {
   if (!params.label.enabled) return [];
   if ((params.label.mode ?? 'text') !== 'socket') return [];
+  // Label tabs do not opt into cell masks, so a custom footprint gets none.
+  if (isPartialMask(params.cellMask)) return [];
 
   const layout = planLabelTabLayout(params, innerW, innerD, wallHeight, wallThickness);
   if (!layout) return [];

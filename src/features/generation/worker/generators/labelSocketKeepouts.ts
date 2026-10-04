@@ -17,14 +17,10 @@ export interface LabelSocketKeepout {
 }
 
 /**
- * The air each label socket needs to stay open: the pocket footprint from its
- * floor up (a click-in plate drops in from above), plus the mouth corridor out
- * to the shelf edge for a slide channel. A feature fused after the tabs, such
- * as the interior fillet rounding the cavity's corners, must leave these
- * empty or a pocket running into a corner no longer takes its plate.
- *
- * Derived from the plate seats so a keep-out exists exactly where a socket
- * was cut.
+ * The air a label plate passes through, from the pocket floor up: a click-in
+ * plate drops in from above, and a slide-in plate travels out through the
+ * mouth until it clears the shelf edge by its own depth. The interior fillet
+ * is fused after the tabs are cut and must leave these empty.
  */
 export function planLabelSocketKeepouts(
   params: BinParams,
@@ -46,7 +42,7 @@ export function planLabelSocketKeepouts(
     const halfW = (labelPlateWidthMm(seat.plateWidthU) + clearanceMm) / 2;
     const anchorEdge = seat.y - (seat.slideY * pocketD) / 2;
     const openEdge = slide
-      ? anchorEdge + seat.slideY * (params.label.depth - LABEL_SOCKET_WALL_MM)
+      ? anchorEdge + seat.slideY * (params.label.depth - LABEL_SOCKET_WALL_MM + pocketD)
       : seat.y + (seat.slideY * pocketD) / 2;
     return {
       x0: seat.x - halfW,

@@ -28,6 +28,8 @@ exports[`label sockets > 2×1 socket on 2.4mm walls clears a 4mm interior fillet
 
 exports[`label sockets > 2×1 two compartments, two 1U sockets 1`] = `1888`;
 
+exports[`label sockets > 2×3 lowered slide channel keeps its way out past a 15mm fillet 1`] = `3686`;
+
 exports[`label sockets > 3u lipped socket at the tightest height budget 1`] = `1612`;
 
 exports[`label sockets > 3×1 override forces a 1U plate 1`] = `1532`;

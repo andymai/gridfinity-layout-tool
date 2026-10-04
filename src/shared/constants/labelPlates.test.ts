@@ -254,7 +254,6 @@ describe('labelPlates', () => {
     });
 
     it('fits a wider plate when walls back both pocket ends', () => {
-      // A 2u bin with 2mm walls: 79.5mm between them.
       expect(largestFittingPlateWidthU(79.5, 0.3)).toBe(1);
       expect(largestFittingPlateWidthU(79.5, 0.3, true)).toBe(2);
     });
@@ -278,8 +277,6 @@ describe('labelPlates', () => {
     });
 
     it('thins only the backed end when one end is free', () => {
-      // Free right end keeps its 1mm, so the 0.4mm of slack beyond the two
-      // minimums splits evenly.
       const x0 = labelSocketPocketX0({
         pocketW,
         tabWidth: 79.9,

@@ -121,8 +121,6 @@ describe('planLabelSockets', () => {
   });
 
   it('grows clearance shrinks what fits', () => {
-    // A full-width tab's ends are backed, so a 1U socket needs 36.4mm plus
-    // clearance: 39.1mm still fits at 2.6 and tips over at 2.8.
     expect(planLabelSockets(grid(1, 1, [0]), 39.1, 2.6).anyFits).toBe(true);
     expect(planLabelSockets(grid(1, 1, [0]), 39.1, 2.8).anyFits).toBe(false);
   });
@@ -136,8 +134,6 @@ describe('planLabelSockets', () => {
   });
 
   it('lets divider-bounded compartments use the backed allowance', () => {
-    // 4U bin, 2.4mm walls and divider: each half spans 80.15mm, short of the
-    // 80.3mm a 2U socket needs between free ends.
     const plan = planLabelSockets(
       grid(2, 1, [0, 1], { thickness: 2.4 }),
       4 * 42 - 0.5 - 2 * 2.4,
@@ -357,8 +353,6 @@ describe('planLabelSockets width percentage (#3402)', () => {
   });
 
   it('keeps full end walls on a tab narrower than its compartment', () => {
-    // 79.2mm of tab with free ends cannot take a 2u socket's 80.3mm, even
-    // though the same width between two walls would.
     expect(planLabelSockets(grid, 80, 0.3, 99).compartments[0].autoWidthU).toBe(1);
     expect(planLabelSockets(grid, 79.2, 0.3).compartments[0].autoWidthU).toBe(2);
   });

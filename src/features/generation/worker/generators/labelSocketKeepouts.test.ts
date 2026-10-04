@@ -4,7 +4,6 @@ import type { BinParams } from '@/shared/types/bin';
 import { planLabelSocketKeepouts } from './labelSocketKeepouts';
 import { planLabelPlateSeats } from './labelTabBuilder';
 
-// A 2u bin with 2mm walls: 79.5 × 36.7mm inside, 30mm interior height.
 const INNER_W = 79.5;
 const INNER_D = 36.7;
 const INTERIOR_H = 30;
@@ -28,7 +27,6 @@ describe('planLabelSocketKeepouts', () => {
     const params = socketBin('clickIn');
     const [seat] = planLabelPlateSeats(params, INNER_W, INNER_D, INTERIOR_H, 2);
     const [box] = planLabelSocketKeepouts(params, INNER_W, INNER_D, INTERIOR_H, 2);
-    // 2u plate + 0.3mm clearance, 11mm + 0.3mm deep.
     expect(box.x1 - box.x0).toBeCloseTo(78.3);
     expect(box.y1 - box.y0).toBeCloseTo(11.3);
     expect((box.x0 + box.x1) / 2).toBeCloseTo(seat.x);
@@ -36,7 +34,7 @@ describe('planLabelSocketKeepouts', () => {
     expect(box.z0).toBeCloseTo(seat.z);
   });
 
-  it('runs a slide channel out to the shelf edge it opens through', () => {
+  it('runs a slide channel out past the shelf edge by a plate depth', () => {
     const [box] = planLabelSocketKeepouts(
       socketBin('slideChannel'),
       INNER_W,
@@ -44,9 +42,16 @@ describe('planLabelSocketKeepouts', () => {
       INTERIOR_H,
       2
     );
-    // Back-anchored: from 1mm off the back wall to the 14mm shelf's front edge.
     expect(box.y1).toBeCloseTo(INNER_D / 2 - 1);
-    expect(box.y0).toBeCloseTo(INNER_D / 2 - 14);
+    expect(box.y0).toBeCloseTo(INNER_D / 2 - 14 - 11.3);
+  });
+
+  it('plans nothing on a custom footprint, which builds no label tabs', () => {
+    const params: BinParams = {
+      ...socketBin('clickIn'),
+      cellMask: { cols: 4, rows: 2, cells: [1, 1, 1, 1, 1, 1, 0, 0] },
+    };
+    expect(planLabelSocketKeepouts(params, INNER_W, INNER_D, INTERIOR_H, 2)).toEqual([]);
   });
 
   it('plans nothing for text-mode tabs', () => {
