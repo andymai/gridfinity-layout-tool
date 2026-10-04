@@ -1,0 +1,40 @@
+src/shared/generation/meshPersistence.ts
+  s_b590134dfc57b8::t_b32a29fc0b0345 90-91,95
+src/features/generation/worker/generators/labelTabBuilder.test.ts
+  s_b590134dfc57b8::t_b4f995dd944243 998,1007-1010
+src/shared/constants/labelPlates.ts
+  s_b590134dfc57b8::t_52baad6a7dc212 16,255-261,432-468,499-500,504
+src/shared/utils/labelSocketPlan.test.ts
+  s_b590134dfc57b8::t_0bafd88752254c 139-146
+  s_b590134dfc57b8::t_ebff5f7800e36b 124-138,147,358-364
+src/features/generation/worker/generators/labelSocketCutter.ts
+  s_b590134dfc57b8::t_c77b7d00bcd0c2 35-37
+  s_b590134dfc57b8::t_52baad6a7dc212 24,55-56,66-73
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_b590134dfc57b8::t_52baad6a7dc212 37,220-227,558-559
+src/features/generation/worker/generators/scenarios/labelSockets.ts
+  s_b590134dfc57b8::t_6225d0f96d58ff 19-20,26,144-193,420-446
+  s_b590134dfc57b8::t_0d26a50f504e04 447
+src/shared/constants/labelPlates.test.ts
+  s_b590134dfc57b8::t_ebff5f7800e36b 32,255-307
+src/shared/utils/labelSocketPlan.ts
+  s_b590134dfc57b8::t_52baad6a7dc212 276-278,294,309
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.labelSockets.test.ts.snap
+  s_b590134dfc57b8::t_51ee5a5f226ee6 19-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7af5c83ad21c9a60186847b437062d6af03aca31",
+  "prompts": {},
+  "sessions": {
+    "s_b590134dfc57b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "62db57de-71e8-4c95-b90e-db931eac01e8",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
