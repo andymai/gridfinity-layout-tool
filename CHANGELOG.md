@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.503.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.503.3...gridfinity-layout-tool-v4.503.4) (2026-10-04)
+
+
+### Bug Fixes
+
+* **lid:** stop the sliding lid's entry window biting a lipless bin's corners ([#4467](https://github.com/andymai/gridfinity-layout-tool/issues/4467)) ([9484575](https://github.com/andymai/gridfinity-layout-tool/commit/9484575664abe02ab25a7e6c5937528cb41fa430))
+
 ## [4.503.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.503.2...gridfinity-layout-tool-v4.503.3) (2026-10-04)
 
 
