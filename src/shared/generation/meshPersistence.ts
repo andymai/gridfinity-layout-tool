@@ -40,7 +40,8 @@ const META_STORE = 'binMeshMeta';
  * kernel-independent pipeline. A bump changes every key, so old entries never
  * match again and are evicted by the LRU budget. For a change that only moves
  * one kernel's output, bump that kernel's {@link KERNEL_MESH_REVISION} entry
- * instead, so the other kernel's users keep their warm cache.
+ * instead, so the other kernel's users keep their warm cache; for one that
+ * only moves bins, bump {@link BIN_MESH_REVISION}.
  *
  * `v26`: lid text and label plates lay `flat` text flush, where they engraved
  * and debossed it; plate meshes carry face groups for the two-tone preview.
@@ -79,7 +80,17 @@ const META_STORE = 'binMeshMeta';
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v28';
+const MESH_CACHE_VERSION = 'v27';
+
+/**
+ * Bumped when only BIN output moves for unchanged params, so the persisted
+ * assembly-item previews (their own `item` segment) stay warm. The mirror of
+ * {@link itemMeshCacheKey}'s segment.
+ *
+ * `bin1`: a lipless bin's sliding-lid entry window no longer ramps through the
+ * rim, so its entry corners keep their full wall height.
+ */
+const BIN_MESH_REVISION = 'bin1';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for
@@ -192,7 +203,7 @@ function djb2(str: string): string {
  */
 export function binMeshCacheKey(params: BinParams, kernel: KernelName): string {
   const revision = KERNEL_MESH_REVISION[kernel];
-  return `${MESH_CACHE_VERSION}:${kernel}-${revision}:${djb2(stableStringify(params))}`;
+  return `${MESH_CACHE_VERSION}:${kernel}-${revision}:${BIN_MESH_REVISION}:${djb2(stableStringify(params))}`;
 }
 
 /**
