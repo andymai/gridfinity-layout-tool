@@ -2,8 +2,10 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import type { MeshData } from '@/shared/types/generation';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { binParamsToItem } from '@/shared/types/itemAdapter';
 import {
   binMeshCacheKey,
+  itemMeshCacheKey,
   loadPersistedBinMesh,
   savePersistedBinMesh,
   __savePersistedBinMeshForTests as saveMesh,
@@ -65,6 +67,18 @@ describe('binMeshCacheKey', () => {
 
   it('is prefixed with the cache version so a bump orphans old keys', () => {
     expect(binMeshCacheKey(DEFAULT_BIN_PARAMS, 'occt-wasm')).toMatch(/^v\d/);
+  });
+
+  // A bins-only bump that moved the shared prefix also orphaned every cached
+  // assembly-item preview, which nothing about the change touched.
+  it('carries a bin revision that item keys do not share', () => {
+    const bin = binMeshCacheKey(DEFAULT_BIN_PARAMS, 'occt-wasm');
+    const item = itemMeshCacheKey(binParamsToItem(DEFAULT_BIN_PARAMS), 'occt-wasm');
+    const [binVersion, binKernel, binRevision] = bin.split(':');
+    const [itemVersion, itemKernel, itemSegment] = item.split(':');
+    expect([itemVersion, itemKernel]).toEqual([binVersion, binKernel]);
+    expect(binRevision).toMatch(/^bin\d+$/);
+    expect(itemSegment).toMatch(/^item\d+$/);
   });
 
   // The two engines wrote unchanged params into one namespace, so
