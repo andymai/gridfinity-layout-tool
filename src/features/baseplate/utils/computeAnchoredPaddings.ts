@@ -64,10 +64,7 @@ export function computeAnchoredPaddings(
   );
 }
 
-/**
- * Split per-axis padding totals between the two sides. A start weight is the
- * share that goes to the left (x) or back (y) side.
- */
+/** `startWeight` is the left share on x and the back share on y. */
 export function distributePaddings(
   totals: { readonly x: number; readonly y: number },
   startWeight: { readonly x: number; readonly y: number }

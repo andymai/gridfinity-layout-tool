@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fitPaddingToDrawer, plateDrawerOverflow } from './fitPaddingToDrawer';
 
-// A 541 × 496 mm drawer holding a 12.5 × 11.5 unit grid (525 × 483 mm), with
-// padding sized for a 12 × 11 grid and moved to the back by the anchor.
 const MEASURED = { width: 541, depth: 496 };
 const STALE = {
   paddingLeft: 10.5,
