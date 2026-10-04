@@ -49,7 +49,7 @@ export function fitPaddingToDrawer(
   const currentX = current.paddingLeft + current.paddingRight;
   const currentY = current.paddingFront + current.paddingBack;
   const overflows = (drawerMm: number, gridMm: number, padMm: number): boolean =>
-    gridMm + padMm - drawerMm > OVERFLOW_EPSILON_MM;
+    gridMm + padMm - drawerMm > 1e-6;
   const slack = (drawerMm: number, gridMm: number): number =>
     Math.max(0, Math.floor((drawerMm - gridMm) * 100 + 1e-6) / 100);
   const shrinkX = overflows(measured.width, gridWidthMm, currentX);

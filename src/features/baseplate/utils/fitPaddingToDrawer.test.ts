@@ -53,6 +53,17 @@ describe('fitPaddingToDrawer', () => {
     expect(fitted).toMatchObject({ paddingFront: 0, paddingBack: 21 });
   });
 
+  // The notice hides an overflow under its tolerance, but the fit must not
+  // leave one behind on the axis it was not called for.
+  it('also shrinks an axis that overflows by less than the notice tolerance', () => {
+    const slightly = { ...STALE, paddingLeft: 8.02, paddingRight: 8.02 };
+    expect(fitPaddingToDrawer(slightly, 525, 483, MEASURED)).toMatchObject({
+      paddingLeft: 8,
+      paddingRight: 8,
+      paddingBack: 13,
+    });
+  });
+
   it('never lands the plate over the drawer on a fractional slack', () => {
     const fitted = fitPaddingToDrawer(STALE, 525, 483, { width: 541.257, depth: 496 });
     expect(525 + fitted.paddingLeft + fitted.paddingRight).toBeLessThanOrEqual(541.257);
