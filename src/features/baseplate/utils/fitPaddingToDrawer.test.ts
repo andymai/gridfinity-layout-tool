@@ -38,13 +38,21 @@ describe('fitPaddingToDrawer', () => {
   });
 
   it('keeps the current proportions without an anchor', () => {
-    const custom = { paddingLeft: 3, paddingRight: 1, paddingFront: 0, paddingBack: 0 };
+    const custom = { paddingLeft: 15, paddingRight: 5, paddingFront: 2, paddingBack: 0 };
     expect(fitPaddingToDrawer(custom, 525, 483, MEASURED)).toMatchObject({
       paddingLeft: 12,
       paddingRight: 4,
-      paddingFront: 6.5,
-      paddingBack: 6.5,
+      paddingFront: 2,
+      paddingBack: 0,
     });
+  });
+
+  // Slack left on a fitting axis may be deliberate, and refilling it could also
+  // run past the per-side padding cap on a wide drawer.
+  it('leaves an axis that already fits untouched', () => {
+    const fitted = fitPaddingToDrawer(STALE, 525, 483, { width: 541, depth: 900 });
+    expect(fitted).toMatchObject({ paddingLeft: 8, paddingRight: 8 });
+    expect(fitted).toMatchObject({ paddingFront: 0, paddingBack: 21 });
   });
 
   it('never lands the plate over the drawer on a fractional slack', () => {

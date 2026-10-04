@@ -14,12 +14,6 @@ interface MeasuredDrawerOverflowProps {
   readonly outerDepthMm: number;
 }
 
-/**
- * Flags a synced plate that comes out larger than the drawer measured on the
- * layout, and offers to resize the padding to fill the drawer exactly. The
- * padding is absolute millimetres, so a grid change made elsewhere (accepting
- * a half-unit fit, switching designs) can leave it sized for another grid.
- */
 export function MeasuredDrawerOverflow({
   baseplateParams,
   gridWidthMm,

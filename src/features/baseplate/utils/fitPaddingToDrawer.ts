@@ -1,3 +1,4 @@
+import { mm } from '@/core/types';
 import type { PaddingAnchor } from '@/core/types';
 import { computeAnchoredPaddings, distributePaddings } from './computeAnchoredPaddings';
 import type { AnchoredPaddings } from './computeAnchoredPaddings';
@@ -23,7 +24,6 @@ export interface DrawerOverflowMm {
   readonly depthMm: number;
 }
 
-/** How far a plate's footprint runs past the measured drawer, or null when it fits. */
 export function plateDrawerOverflow(
   outerWidthMm: number,
   outerDepthMm: number,
@@ -36,10 +36,9 @@ export function plateDrawerOverflow(
 }
 
 /**
- * Padding that grows the bare cells out to the measured drawer, split the way
- * the current padding is: by the anchor when one is chosen, otherwise in the
- * current proportions (evenly on an axis that has none). Floored to 0.01mm so
- * the plate never lands a hair over the drawer.
+ * Shrinks the padding on each overflowing axis so the plate meets the drawer;
+ * an axis that already fits keeps its padding, slack and all. The new total is
+ * floored to 0.01mm so rounding can never land the plate over the drawer.
  */
 export function fitPaddingToDrawer(
   current: PaddingState,
@@ -47,23 +46,38 @@ export function fitPaddingToDrawer(
   gridDepthMm: number,
   measured: DrawerSizeMm
 ): AnchoredPaddings {
+  const currentX = current.paddingLeft + current.paddingRight;
+  const currentY = current.paddingFront + current.paddingBack;
+  const overflows = (drawerMm: number, gridMm: number, padMm: number): boolean =>
+    gridMm + padMm - drawerMm > OVERFLOW_EPSILON_MM;
   const slack = (drawerMm: number, gridMm: number): number =>
     Math.max(0, Math.floor((drawerMm - gridMm) * 100 + 1e-6) / 100);
+  const shrinkX = overflows(measured.width, gridWidthMm, currentX);
+  const shrinkY = overflows(measured.depth, gridDepthMm, currentY);
   const totals = {
-    x: slack(measured.width, gridWidthMm),
-    y: slack(measured.depth, gridDepthMm),
+    x: shrinkX ? slack(measured.width, gridWidthMm) : currentX,
+    y: shrinkY ? slack(measured.depth, gridDepthMm) : currentY,
   };
   const anchor = current.paddingAnchor ?? 'custom';
-  if (anchor !== 'custom') {
-    return computeAnchoredPaddings(
-      { paddingLeft: totals.x, paddingRight: 0, paddingFront: totals.y, paddingBack: 0 },
-      anchor
-    );
-  }
   const share = (start: number, end: number): number =>
     start + end > 0 ? start / (start + end) : 0.5;
-  return distributePaddings(totals, {
-    x: share(current.paddingLeft, current.paddingRight),
-    y: share(current.paddingBack, current.paddingFront),
-  });
+  const split =
+    anchor !== 'custom'
+      ? computeAnchoredPaddings(
+          { paddingLeft: totals.x, paddingRight: 0, paddingFront: totals.y, paddingBack: 0 },
+          anchor
+        )
+      : distributePaddings(totals, {
+          x: share(current.paddingLeft, current.paddingRight),
+          y: share(current.paddingBack, current.paddingFront),
+        });
+  return {
+    ...split,
+    ...(shrinkX
+      ? {}
+      : { paddingLeft: mm(current.paddingLeft), paddingRight: mm(current.paddingRight) }),
+    ...(shrinkY
+      ? {}
+      : { paddingFront: mm(current.paddingFront), paddingBack: mm(current.paddingBack) }),
+  };
 }
