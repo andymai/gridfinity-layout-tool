@@ -1,0 +1,24 @@
+src/features/generation/worker/generators/binResumeCache.test.ts
+  s_6cfaf5eb687914::t_6caeaef91fe68c 53-56
+src/features/generation/worker/generators/pipeline/types.ts
+  s_6cfaf5eb687914::t_93ea29c078c191 303-305
+  s_6cfaf5eb687914::t_56c4dd0b167456 302
+src/features/generation/README.md
+  s_6cfaf5eb687914::t_27308814a10f1c 77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1eb7f1d77138359802a2e1046722b44c78d03b88",
+  "prompts": {},
+  "sessions": {
+    "s_6cfaf5eb687914": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "190cefda-81d6-4120-8537-e65d0ffeecff",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
