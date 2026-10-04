@@ -10,6 +10,7 @@ import type {
   MagnetAnchor,
   OutlineOverhang,
   ScrewHoleParams,
+  MountMagnetParams,
   SplitOverride,
   StackPrintParams,
 } from '@/core/types';
@@ -782,6 +783,8 @@ export interface ResolvedBaseplateParams {
    * out stepped. Never recompute this per piece.
    */
   readonly screwPadThicknessMm?: number;
+  /** Underside mount magnets. Omitted ⇒ none. */
+  readonly mountMagnets?: MountMagnetParams;
   /** Uniform outer corner radius in mm. */
   readonly cornerRadius?: number;
   /** Per-corner radius overrides (tl/tr/bl/br in mm). */

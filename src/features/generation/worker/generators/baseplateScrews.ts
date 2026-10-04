@@ -311,6 +311,22 @@ export function buildScrewCutters(
   return cutters;
 }
 
+/** True when a floor-sited screw lands inside this cell, so it keeps a floor. */
+export function cellHoldsFloorScrew(
+  holes: readonly ResolvedScrewHole[],
+  cell: CellInfo,
+  pitch: GridPitch
+): boolean {
+  const halfW = (cell.widthUnits * pitch.x) / 2;
+  const halfD = (cell.depthUnits * pitch.y) / 2;
+  return holes.some(
+    (h) =>
+      h.site === 'floor' &&
+      Math.abs(h.x - cell.centerX) <= halfW &&
+      Math.abs(h.y - cell.centerY) <= halfD
+  );
+}
+
 /**
  * Largest cutter radius that will sit at a magnet position once screws are on.
  *

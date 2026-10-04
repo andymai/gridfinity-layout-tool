@@ -114,6 +114,27 @@ export interface ScrewHoleParams {
   readonly screwsPerPiece?: number;
 }
 
+/**
+ * Mount magnets: blind holes opening on the plate's UNDERSIDE at the "+"
+ * junctions where four pockets meet, so the plate holds to a steel drawer or
+ * tool chest without growing taller. Distinct from `magnetHoles`, which hold
+ * BINS to the plate from above.
+ *
+ * Only junctions interior to a printed piece qualify: a seam or the plate edge
+ * has no solid junction to sit in. The pocket corners close in toward the
+ * junction as they rise, so a hole too wide or deep for the plate's profile is
+ * skipped rather than breaking into a pocket (see `mountMagnetFits`).
+ */
+export interface MountMagnetParams {
+  readonly enabled: boolean;
+  readonly diameter: Mm;
+  readonly depth: Mm;
+  /** Magnets per split piece. Absent ⇒ `MOUNT_MAGNETS_PER_PIECE_DEFAULT`. */
+  readonly perPiece?: number;
+  /** 45° lead-in at each hole's mouth on the underside. Absent means off. */
+  readonly chamfer?: boolean;
+}
+
 /** Stored (persisted) baseplate config saved per-layout.
  * Padding is in mm; width/depth/gridUnitMm are NOT stored — they are derived from the
  * layout's drawer at generation time unless syncWithLayout is false, in which case
@@ -278,4 +299,9 @@ export interface StoredBaseplateParams {
    * {@link ScrewHoleParams}.
    */
   readonly screwHoles?: ScrewHoleParams;
+  /**
+   * Underside mount magnets. Omitted/undefined = none. See
+   * {@link MountMagnetParams}.
+   */
+  readonly mountMagnets?: MountMagnetParams;
 }

@@ -909,3 +909,41 @@ describe('direct mesh mount-down screw holes (#3425)', () => {
     );
   });
 });
+
+describe('mount magnets in the draft', () => {
+  const magnets = { enabled: true, diameter: mm(6.5), depth: mm(2.5) };
+
+  it('adds the same holes the BREP plate cuts, ceiling at the hole depth', () => {
+    const plain = generateDirect(defaults({ width: 3, depth: 3 }), noop);
+    const drafted = generateDirect(defaults({ width: 3, depth: 3, mountMagnets: magnets }), noop);
+    // Four holes: a cancel disc, a bore band and a ceiling disc each.
+    expect(drafted.triangleCount - plain.triangleCount).toBe(4 * 4 * CIRCLE_SEGMENTS);
+
+    let ceilingVerts = 0;
+    for (let i = 0; i < drafted.vertices.length; i += 3) {
+      const [x, y, z] = [drafted.vertices[i], drafted.vertices[i + 1], drafted.vertices[i + 2]];
+      if (
+        Math.abs(z - 2.5) < 1e-4 &&
+        Math.hypot(Math.abs(x) - 21, Math.abs(y) - 21) <= 3.25 + 1e-4
+      ) {
+        ceilingVerts++;
+      }
+    }
+    expect(ceilingVerts).toBeGreaterThan(0);
+  });
+
+  it('adds the chamfer band when asked', () => {
+    const plain = generateDirect(defaults({ width: 3, depth: 3, mountMagnets: magnets }), noop);
+    const chamfered = generateDirect(
+      defaults({ width: 3, depth: 3, mountMagnets: { ...magnets, chamfer: true } }),
+      noop
+    );
+    expect(chamfered.triangleCount - plain.triangleCount).toBe(4 * 2 * CIRCLE_SEGMENTS);
+  });
+
+  it('adds nothing on a single-cell plate, which has no interior junction', () => {
+    const plain = generateDirect(defaults({ width: 1, depth: 1 }), noop);
+    const drafted = generateDirect(defaults({ width: 1, depth: 1, mountMagnets: magnets }), noop);
+    expect(drafted.triangleCount).toBe(plain.triangleCount);
+  });
+});

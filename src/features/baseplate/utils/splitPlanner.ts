@@ -710,6 +710,7 @@ export function pieceToBaseplateParams(
     // piece that computed its own pad would come out a different thickness from
     // its neighbours and the assembly would be stepped.
     screwPadThicknessMm: parentParams.screwPadThicknessMm,
+    mountMagnets: parentParams.mountMagnets,
     cornerRadius: parentParams.cornerRadius,
     cornerRadii,
   };

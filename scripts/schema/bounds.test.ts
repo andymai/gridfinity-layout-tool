@@ -12,6 +12,12 @@
 import { describe, expect, it } from 'vitest';
 import { CONSTRAINTS } from '@/core/constants';
 import {
+  MOUNT_MAGNET_MAX_DEPTH_MM,
+  MOUNT_MAGNET_MAX_DIAMETER_MM,
+  MOUNT_MAGNET_MIN_DEPTH_MM,
+  MOUNT_MAGNET_MIN_DIAMETER_MM,
+  MOUNT_MAGNETS_PER_PIECE_MAX,
+  MOUNT_MAGNETS_PER_PIECE_MIN,
   SCREWS_PER_PIECE_MAX,
   SCREWS_PER_PIECE_MIN,
   SCREW_COUNTERBORE_MAX_DEPTH_MM,
@@ -180,6 +186,12 @@ const SOURCES: Record<string, unknown> = {
   MAX_POLYGON_SIDES,
   MIN_POLYGON_SIDES,
   MIN_TEXT_DRAFT_DEG,
+  MOUNT_MAGNET_MAX_DEPTH_MM,
+  MOUNT_MAGNET_MAX_DIAMETER_MM,
+  MOUNT_MAGNET_MIN_DEPTH_MM,
+  MOUNT_MAGNET_MIN_DIAMETER_MM,
+  MOUNT_MAGNETS_PER_PIECE_MAX,
+  MOUNT_MAGNETS_PER_PIECE_MIN,
   SCREWS_PER_PIECE_MAX,
   SCREWS_PER_PIECE_MIN,
   SCREW_COUNTERBORE_MAX_DEPTH_MM,
@@ -239,7 +251,7 @@ const annotations = collectAnnotations();
  * a drop means someone deleted provenance rather than a bound legitimately
  * becoming hand-picked, which is the erosion this guards against.
  */
-const MIN_ANNOTATED_BOUNDS = 213;
+const MIN_ANNOTATED_BOUNDS = 219;
 
 describe('x-constant annotations', () => {
   it('finds annotations to check', () => {

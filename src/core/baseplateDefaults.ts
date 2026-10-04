@@ -10,6 +10,7 @@ import type {
   StackPrintParams,
   SplitOverride,
   ScrewHoleParams,
+  MountMagnetParams,
   FractionalEdge,
 } from './types';
 import {
@@ -104,6 +105,27 @@ export const SCREWS_PER_PIECE_DEFAULT = 4;
 export const SCREWS_PER_PIECE_MIN = 1;
 export const SCREWS_PER_PIECE_MAX = 8;
 
+/**
+ * Underside mount-magnet bounds + defaults (mm): a ø6 × 2mm magnet with 0.5mm
+ * of clearance each way, which a standard 4.65mm plate holds with ~0.56mm to
+ * the nearest pocket corner. A low-profile plate without a floor does not, so
+ * the generator checks each junction and the panel warns.
+ */
+export const MOUNT_MAGNET_DEFAULT_DIAMETER_MM = 6.5;
+export const MOUNT_MAGNET_MIN_DIAMETER_MM = 2;
+export const MOUNT_MAGNET_MAX_DIAMETER_MM = 6.5;
+export const MOUNT_MAGNET_DEFAULT_DEPTH_MM = 2.5;
+export const MOUNT_MAGNET_MIN_DEPTH_MM = 0.5;
+export const MOUNT_MAGNET_MAX_DEPTH_MM = 2.5;
+
+/**
+ * Mount magnets per split piece. The ceiling bounds the stored value only; a
+ * piece never takes more than its interior junctions, so "max" means "all".
+ */
+export const MOUNT_MAGNETS_PER_PIECE_DEFAULT = 4;
+export const MOUNT_MAGNETS_PER_PIECE_MIN = 1;
+export const MOUNT_MAGNETS_PER_PIECE_MAX = 64;
+
 /** Default baseplate parameters: no magnets, no padding */
 export const DEFAULT_BASEPLATE_PARAMS: StoredBaseplateParams = {
   magnetHoles: false,
@@ -139,6 +161,7 @@ export function migrateBaseplateParams(stored: unknown): StoredBaseplateParams {
   const stackPrint = migrateStackPrint(obj.stackPrint);
   const splitOverride = migrateSplitOverride(obj.splitOverride);
   const screwHoles = migrateScrewHoles(obj.screwHoles);
+  const mountMagnets = migrateMountMagnets(obj.mountMagnets);
   const radii = obj.cornerRadii;
   const hasRadii =
     radii !== null &&
@@ -239,6 +262,7 @@ export function migrateBaseplateParams(stored: unknown): StoredBaseplateParams {
     ...(isFractionalEdge(obj.fractionalEdgeY) ? { fractionalEdgeY: obj.fractionalEdgeY } : {}),
     ...(splitOverride ? { splitOverride } : {}),
     ...(screwHoles ? { screwHoles } : {}),
+    ...(mountMagnets ? { mountMagnets } : {}),
   };
 }
 
@@ -315,6 +339,45 @@ function migrateScrewHoles(value: unknown): ScrewHoleParams | undefined {
           ),
         }
       : {}),
+  };
+}
+
+/** Validate + clamp persisted mount-magnet params, or undefined if absent/invalid. */
+function migrateMountMagnets(value: unknown): MountMagnetParams | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const o = value as Record<string, unknown>;
+  if (typeof o.enabled !== 'boolean') return undefined;
+  return {
+    enabled: o.enabled,
+    diameter: mm(
+      clampNumber(
+        o.diameter,
+        MOUNT_MAGNET_MIN_DIAMETER_MM,
+        MOUNT_MAGNET_MAX_DIAMETER_MM,
+        MOUNT_MAGNET_DEFAULT_DIAMETER_MM
+      )
+    ),
+    depth: mm(
+      clampNumber(
+        o.depth,
+        MOUNT_MAGNET_MIN_DEPTH_MM,
+        MOUNT_MAGNET_MAX_DEPTH_MM,
+        MOUNT_MAGNET_DEFAULT_DEPTH_MM
+      )
+    ),
+    ...(typeof o.perPiece === 'number' && Number.isFinite(o.perPiece)
+      ? {
+          perPiece: Math.round(
+            clampNumber(
+              o.perPiece,
+              MOUNT_MAGNETS_PER_PIECE_MIN,
+              MOUNT_MAGNETS_PER_PIECE_MAX,
+              MOUNT_MAGNETS_PER_PIECE_DEFAULT
+            )
+          ),
+        }
+      : {}),
+    ...(o.chamfer === true ? { chamfer: true } : {}),
   };
 }
 
