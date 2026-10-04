@@ -32,6 +32,7 @@ import {
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
+import { columnCrossings } from '../__kernel-tests__/meshAssertions';
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 import { COPLANAR_OVERLAP, LIP_HEIGHT, LIP_SMALL_TAPER } from '../generatorConstants';
@@ -188,6 +189,45 @@ function assertSlideCavity(result: MeshData, params: BinParams, exp: PocketExpec
       `${exp.label}: cavity X ${minX.toFixed(2)}..${maxX.toFixed(2)}, ` +
         `expected ±${(pocketW / 2).toFixed(2)}`
     );
+  }
+}
+
+/**
+ * A plate seats only if both of the pocket's back corners are open down to
+ * the floor. Each probe is a column just inside one rounded corner: it must
+ * cross the pocket floor as an open surface, which fails once anything (an
+ * interior fillet rounding the cavity corner) fills the corner above it.
+ */
+function assertPocketCornersOpen(result: MeshData, params: BinParams, label: string): void {
+  const clearanceMm = effectiveLabelSocketClearance(
+    params.nozzleSizeMm,
+    params.label.plateFitOffset
+  );
+  const pocketW = labelPlateWidthMm(2) + clearanceMm;
+  const innerD = params.depth * params.gridUnitMm - 0.5 - 2 * params.wallThickness;
+  const probeY = innerD / 2 - LABEL_SOCKET_WALL_MM - 0.6;
+
+  let maxZ = -Infinity;
+  for (let i = 2; i < result.vertices.length; i += 3) {
+    if (result.vertices[i] > maxZ) maxZ = result.vertices[i];
+  }
+  const shelfTopZ = maxZ - COPLANAR_OVERLAP;
+  const floorZ =
+    params.label.socketStyle === 'slideChannel'
+      ? shelfTopZ -
+        LABEL_SOCKET_LIP_THICKNESS_MM -
+        LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM -
+        LABEL_SOCKET_POCKET_DEPTH_MM
+      : shelfTopZ - LABEL_SOCKET_CLICK_POCKET_DEPTH_MM;
+
+  for (const x of [-pocketW / 2 + 0.3, pocketW / 2 - 0.3]) {
+    const hits = columnCrossings(result, x, probeY);
+    if (!hits.some((z) => Math.abs(z - floorZ) < 0.05)) {
+      throw new Error(
+        `${label}: pocket corner at x=${x.toFixed(2)} is filled above the floor ` +
+          `(crossings ${hits.map((z) => z.toFixed(2)).join(', ')})`
+      );
+    }
   }
 }
 
@@ -443,6 +483,48 @@ export const labelSockets: ScenarioCase[] = [
     },
     customAssert: (result, params) =>
       assertSlideCavity(result, params, { plateWidthU: 2, label: '2x1-slide-2mm-walls' }),
+  }),
+
+  // The interior fillet rounds the cavity's corners after the tabs are cut, so
+  // a pocket ending near a wall would take its rounding unless the fillet
+  // leaves the socket open.
+  defineScenario('label sockets', '2×1 socket on 2.4mm walls clears a 4mm interior fillet', {
+    params: {
+      width: 2,
+      depth: 1,
+      height: 5,
+      wallThickness: 2.4,
+      interiorFilletMm: 4,
+      base: NO_LIP_BASE,
+      label: SOCKET_LABEL,
+    },
+    customAssert: (result, params) => assertPocketCornersOpen(result, params, '2x1-fillet-4'),
+  }),
+
+  defineScenario('label sockets', '2×1 slide channel on 2.4mm walls clears a 4mm interior fillet', {
+    params: {
+      width: 2,
+      depth: 1,
+      height: 5,
+      wallThickness: 2.4,
+      interiorFilletMm: 4,
+      base: NO_LIP_BASE,
+      label: { ...SOCKET_LABEL, socketStyle: 'slideChannel' as const },
+    },
+    customAssert: (result, params) => assertPocketCornersOpen(result, params, '2x1-slide-fillet-4'),
+  }),
+
+  // A fillet this wide reaches a pocket even behind full 1mm end walls.
+  defineScenario('label sockets', '2×1 socket clears a 10mm interior fillet', {
+    params: {
+      width: 2,
+      depth: 1,
+      height: 5,
+      interiorFilletMm: 10,
+      base: NO_LIP_BASE,
+      label: SOCKET_LABEL,
+    },
+    customAssert: (result, params) => assertPocketCornersOpen(result, params, '2x1-fillet-10'),
   }),
 
   // 4 columns across a 2U bin: every column is too narrow for a 1U plate,

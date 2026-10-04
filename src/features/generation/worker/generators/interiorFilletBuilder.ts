@@ -13,7 +13,17 @@
  * Compartments with finger scoops are rounded in `interiorFilletScoop.ts`.
  */
 
-import { cut, fuseAll, getBounds, getEdges, intersect, translate, unwrap, withScope } from 'brepjs';
+import {
+  cut,
+  draw,
+  fuseAll,
+  getBounds,
+  getEdges,
+  intersect,
+  translate,
+  unwrap,
+  withScope,
+} from 'brepjs';
 import type { DisposalScope, Edge, Shape3D, ValidSolid } from 'brepjs';
 import { isNestingBase } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
@@ -41,6 +51,9 @@ import type { ResolvedTaper } from './overhang';
 import { buildWallCutoutCuts, interiorDividerTopZ } from './wallCutoutBuilder';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import type { BinDimensions } from './pipeline/types';
+import { planLabelSocketKeepouts } from './labelSocketKeepouts';
+import type { LabelSocketKeepout } from './labelSocketKeepouts';
+import { sketch } from './meshUtils';
 
 export interface InteriorFilletBuild {
   readonly params: BinParams;
@@ -173,8 +186,9 @@ export function buildInteriorFillet(input: InteriorFilletBuild): Shape3D | null 
     // keeping only the ramps it took over from the scoop feature.
     const tapered = clipToTaper(scope, fused, params, dim, pen);
     const holed = tapered && clearMaskHoles(scope, tapered, params, dim);
+    const doorways = holed && trimDoorways(scope, holed, params, dim, plans);
     const trimmed =
-      (holed && trimDoorways(scope, holed, params, dim, plans)) ??
+      (doorways && clearLabelSockets(scope, doorways, labelSocketKeepouts(params, dim), dim)) ??
       fuseScoopRamps(
         scope,
         params,
@@ -322,6 +336,45 @@ function trimDoorways(
   }
 }
 
+function labelSocketKeepouts(params: BinParams, dim: BinDimensions): LabelSocketKeepout[] {
+  return planLabelSocketKeepouts(
+    params,
+    dim.innerW,
+    dim.innerD,
+    dim.interiorHeight,
+    params.wallThickness
+  );
+}
+
+/**
+ * The label tabs' sockets are cut before this fuse, so a rounded corner would
+ * otherwise fill the end of a pocket that runs into it. Null when a cut fails.
+ */
+function clearLabelSockets(
+  scope: DisposalScope,
+  solid: Shape3D,
+  keepouts: readonly LabelSocketKeepout[],
+  dim: BinDimensions
+): Shape3D | null {
+  let result = solid;
+  try {
+    for (const k of keepouts) {
+      const outline = draw([k.x0, k.y0])
+        .lineTo([k.x1, k.y0])
+        .lineTo([k.x1, k.y1])
+        .lineTo([k.x0, k.y1])
+        .close();
+      const tool = scope.register(
+        sketch(outline, 'XY', k.z0).extrude(dim.wallHeight + CUTTER_OVERSHOOT_MM - k.z0)
+      );
+      result = scope.register(unwrap(cut(result as ValidSolid, tool as ValidSolid)));
+    }
+  } catch {
+    return null;
+  }
+  return result;
+}
+
 // --- FeatureBuilder protocol ---
 
 import type { FeatureBuilder } from './pipeline/featureBuilder';
@@ -352,9 +405,18 @@ export const interiorFilletFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        'v2',
+        'v3',
         dim.shellKey,
         quantize(interiorFilletRadiusMm(params)),
+        stableSerialize(
+          labelSocketKeepouts(params, dim).map((k) => [
+            quantize(k.x0),
+            quantize(k.x1),
+            quantize(k.y0),
+            quantize(k.y1),
+            quantize(k.z0),
+          ])
+        ),
         quantize(dim.innerW),
         quantize(dim.innerD),
         quantize(dim.wallHeight),

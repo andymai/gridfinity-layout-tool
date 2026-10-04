@@ -29,6 +29,7 @@ import { resolveTextStyle } from '@/shared/types/bin';
 import {
   LABEL_PLATE_HEIGHT_MM,
   LABEL_SOCKET_CLICK_POCKET_DEPTH_MM,
+  LABEL_SOCKET_LIP_THICKNESS_MM,
   LABEL_SOCKET_POCKET_DEPTH_MM,
   LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM,
   LABEL_SOCKET_WALL_MM,
@@ -195,7 +196,9 @@ export function planLabelPlateSeats(
   // Mirrors the pocket floor in `cutLabelSocket` for each retention profile.
   const pocketDepth =
     socket.style === 'slideChannel'
-      ? LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM + LABEL_SOCKET_POCKET_DEPTH_MM
+      ? LABEL_SOCKET_LIP_THICKNESS_MM +
+        LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM +
+        LABEL_SOCKET_POCKET_DEPTH_MM
       : LABEL_SOCKET_CLICK_POCKET_DEPTH_MM;
 
   // A spanning slot's `cellId` is a row, so reading per-compartment metadata by
