@@ -1,0 +1,21 @@
+src/features/baseplate/utils/fitPaddingToDrawer.test.ts
+  s_b590134dfc57b8::t_4b53fd0102539d 56-66
+src/features/baseplate/utils/fitPaddingToDrawer.ts
+  s_b590134dfc57b8::t_41dc2fbc7e3abe 52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ef9a87d1e8d6f3e5f9de246cfbefca26248e7ec8",
+  "prompts": {},
+  "sessions": {
+    "s_b590134dfc57b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "62db57de-71e8-4c95-b90e-db931eac01e8",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
