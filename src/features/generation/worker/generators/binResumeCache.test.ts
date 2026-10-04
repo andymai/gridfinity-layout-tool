@@ -35,18 +35,23 @@ describe('post-boolean body resume cache (#2333)', () => {
     expect(second.vertices.length).toBe(first.vertices.length);
   }, 60_000);
 
-  it('keys export and preview bodies separately (forExport drives simplify)', () => {
+  it('shares one body between preview and export, matching a cold export', () => {
     const generateBin = getGenerateBin();
     const params = buildParams({
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket', alignment: 'left' },
     });
 
     clearAllCaches();
-    resetAllShapeCacheStats();
+    const coldExport = generateBin(params, undefined, true);
 
-    generateBin(params, undefined, false); // preview → miss
-    generateBin(params, undefined, true); // export → separate key, miss (not a false hit)
-    expect(binBodyStats()).toEqual({ hits: 0, misses: 2 });
+    clearAllCaches();
+    resetAllShapeCacheStats();
+    generateBin(params, undefined, false);
+    const resumedExport = generateBin(params, undefined, true);
+
+    expect(binBodyStats()).toEqual({ hits: 1, misses: 1 });
+    expect(resumedExport.triangleCount).toBe(coldExport.triangleCount);
+    expect(resumedExport.vertices.length).toBe(coldExport.vertices.length);
   }, 60_000);
 
   // Stamp wall patterns DO resume now — they report a per-wall identity that

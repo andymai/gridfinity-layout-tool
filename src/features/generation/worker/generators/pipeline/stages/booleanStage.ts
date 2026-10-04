@@ -120,16 +120,13 @@ function cutDeferredSolid(ctx: PipelineContext): {
   solid: Shape3D | null;
   key: string | null;
 } {
-  const { deferredSolid, deferredCutTargets, deferredSolidKey, deferredCutKey, signal, forExport } =
-    ctx;
+  const { deferredSolid, deferredCutTargets, deferredSolidKey, deferredCutKey, signal } = ctx;
   if (!deferredSolid || deferredCutTargets.length === 0) {
     return { solid: deferredSolid, key: deferredSolidKey };
   }
   const carveKey =
     deferredSolidKey !== null && deferredCutKey !== null
-      ? compactKey(
-          JSON.stringify(['carved-socket-v1', deferredSolidKey, deferredCutKey, forExport])
-        )
+      ? compactKey(JSON.stringify(['carved-socket-v1', deferredSolidKey, deferredCutKey]))
       : null;
   if (carveKey !== null) {
     const cached = getCarvedSocketCache(carveKey);
@@ -165,7 +162,7 @@ export const booleanStage: PipelineStage = {
   },
 
   execute(ctx: PipelineContext): PipelineContext {
-    const { signal, forExport, featuresKey } = ctx;
+    const { signal, featuresKey } = ctx;
     const originalSolid = ctx.solid;
     if (!originalSolid) return ctx;
     let bin: Shape3D = originalSolid;
@@ -179,18 +176,17 @@ export const booleanStage: PipelineStage = {
     // Resume cache: a metadata-only edit (label text, notes, category) leaves
     // the shell and every feature's geometry key unchanged, so the post-boolean
     // body is identical — skip the whole boolean stage. The key composes the
-    // shell identity, the feature geometry (`featuresKey`), and `forExport`,
-    // which keeps preview and export bodies apart. Disabled when `featuresKey` is null (solid mode / wall patterns,
-    // whose tools aren't captured by the key — see featuresStage).
+    // shell identity and the feature geometry (`featuresKey`). It leaves out
+    // `forExport`: no input to this stage depends on it, so preview and export
+    // share one body. Disabled when `featuresKey` is null (solid mode / wall
+    // patterns, whose tools aren't captured by the key — see featuresStage).
     // JSON.stringify keeps the composition injective end-to-end: `shellKey` and
     // `featuresKey` can both contain `|`, which a flat `buildCacheKey` join could
     // collide across segment boundaries into a false hit (stale geometry).
     // `compactKey` then hashes long keys, the same as every other cache here.
     const resumeKey =
       featuresKey !== null
-        ? compactKey(
-            JSON.stringify(['binbody-v1', ctx.dimensions.shellKey, forExport, featuresKey])
-          )
+        ? compactKey(JSON.stringify(['binbody-v1', ctx.dimensions.shellKey, featuresKey]))
         : null;
 
     if (resumeKey !== null) {
