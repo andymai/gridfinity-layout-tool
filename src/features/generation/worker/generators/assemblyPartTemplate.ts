@@ -177,7 +177,7 @@ export function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
         const clip = box(length, thickness + 2, total * 2 + 2, {
           at: [0, 0, total / 2 - sink],
         });
-        const clipped = unwrap(intersect(sheared, clip, { optimisation: 'commonFace' }));
+        const clipped = unwrap(intersect(sheared, clip));
         if (clipped !== sheared) sheared.delete();
         clip.delete();
         return easedOrOriginal(clipped, longTopEdges(clipped, height, length), crown);
@@ -244,7 +244,7 @@ export function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
               { at: [0, 0, -sink - 1] }
             )
           : cylinder(rTop, boreH, { at: [0, 0, -sink - 1] });
-      let hollow = unwrap(cut(outer, bore, { optimisation: 'commonFace' })) as Shape3D;
+      let hollow = unwrap(cut(outer, bore)) as Shape3D;
       if (hollow !== outer) outer.delete();
       bore.delete();
       // Collar recess: a wider, shallow bore at the mouth so a tool's
@@ -253,7 +253,7 @@ export function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
       const cbDepth = Math.min(node.params.counterboreDepth ?? 0, height - 1);
       if (cbR > rTop && cbDepth > 0.2) {
         const collar = cylinder(cbR, cbDepth + 1, { at: [0, 0, height - cbDepth] });
-        const recessed = unwrap(cut(hollow, collar, { optimisation: 'commonFace' }));
+        const recessed = unwrap(cut(hollow, collar));
         if (recessed !== hollow) hollow.delete();
         collar.delete();
         hollow = recessed;
@@ -305,7 +305,7 @@ export function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
         at: [-(length + 20) / 2, 0, height - gd + r],
         axis: [1, 0, 0],
       });
-      const carved = unwrap(cut(body, groove, { optimisation: 'commonFace' }));
+      const carved = unwrap(cut(body, groove));
       if (carved !== body) body.delete();
       groove.delete();
       // Only the outer rim: the groove's near-tangent seam edges sliver under
@@ -382,7 +382,7 @@ export function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
         const thickness = Math.min(bridgeWidth, height / 2);
         parts.push(box(crossLength, depth, thickness, { at: [0, 0, height - thickness / 2] }));
       }
-      let fused = unwrap(fuseAll(parts as ValidSolid[], { optimisation: 'commonFace' })) as Shape3D;
+      let fused = unwrap(fuseAll(parts as ValidSolid[])) as Shape3D;
       for (const part of parts) {
         if (part !== fused) part.delete();
       }
@@ -424,7 +424,7 @@ export function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
           })
         );
       }
-      const carved = unwrap(cutAll(body, cutters as ValidSolid[], { optimisation: 'commonFace' }));
+      const carved = unwrap(cutAll(body, cutters as ValidSolid[]));
       for (const cutter of cutters) cutter.delete();
       if (carved !== body) body.delete();
       return carved;
@@ -498,7 +498,7 @@ export function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
         }
       }
       if (cutters.length === 0) return body;
-      const drilled = unwrap(cutAll(body, cutters as ValidSolid[], { optimisation: 'commonFace' }));
+      const drilled = unwrap(cutAll(body, cutters as ValidSolid[]));
       for (const cutter of cutters) cutter.delete();
       if (drilled !== body) body.delete();
       return drilled;

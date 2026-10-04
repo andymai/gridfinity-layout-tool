@@ -114,7 +114,7 @@ export function generateDetachableFeetMesh(
   if (!feet) return null;
   onProgress?.('feet', 0.9);
   try {
-    const compound = unwrap(fuseAll(feet as ValidSolid[], { optimisation: 'commonFace' }));
+    const compound = unwrap(fuseAll(feet as ValidSolid[]));
     try {
       const shapeMesh = mesh(compound, {
         tolerance: 0.01,
@@ -161,7 +161,7 @@ export async function exportDetachableFeet(
   const feet = buildFeetSolids(params, true, true);
   if (!feet) return null;
 
-  const plate = unwrap(fuseAll(feet as ValidSolid[], { optimisation: 'commonFace' }));
+  const plate = unwrap(fuseAll(feet as ValidSolid[]));
   const name = `gridfinity-${params.width}x${params.depth}-feet`;
   try {
     if (format === 'step') {

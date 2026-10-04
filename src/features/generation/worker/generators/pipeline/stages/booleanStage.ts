@@ -120,16 +120,13 @@ function cutDeferredSolid(ctx: PipelineContext): {
   solid: Shape3D | null;
   key: string | null;
 } {
-  const { deferredSolid, deferredCutTargets, deferredSolidKey, deferredCutKey, signal, forExport } =
-    ctx;
+  const { deferredSolid, deferredCutTargets, deferredSolidKey, deferredCutKey, signal } = ctx;
   if (!deferredSolid || deferredCutTargets.length === 0) {
     return { solid: deferredSolid, key: deferredSolidKey };
   }
   const carveKey =
     deferredSolidKey !== null && deferredCutKey !== null
-      ? compactKey(
-          JSON.stringify(['carved-socket-v1', deferredSolidKey, deferredCutKey, forExport])
-        )
+      ? compactKey(JSON.stringify(['carved-socket-v1', deferredSolidKey, deferredCutKey]))
       : null;
   if (carveKey !== null) {
     const cached = getCarvedSocketCache(carveKey);
@@ -140,10 +137,7 @@ function cutDeferredSolid(ctx: PipelineContext): {
   }
   let carved: { shape: Shape3D; complete: boolean };
   try {
-    carved = carveByCell(deferredSolid, deferredCutTargets, {
-      simplify: forExport,
-      signal,
-    });
+    carved = carveByCell(deferredSolid, deferredCutTargets, { signal });
   } catch {
     // The cut produced no shape, so this is the original socket untouched — its
     // key still describes it, and dropping it would only cost a re-tessellation.
@@ -168,7 +162,7 @@ export const booleanStage: PipelineStage = {
   },
 
   execute(ctx: PipelineContext): PipelineContext {
-    const { signal, forExport, featuresKey } = ctx;
+    const { signal, featuresKey } = ctx;
     const originalSolid = ctx.solid;
     if (!originalSolid) return ctx;
     let bin: Shape3D = originalSolid;
@@ -182,19 +176,17 @@ export const booleanStage: PipelineStage = {
     // Resume cache: a metadata-only edit (label text, notes, category) leaves
     // the shell and every feature's geometry key unchanged, so the post-boolean
     // body is identical — skip the whole boolean stage. The key composes the
-    // shell identity, the feature geometry (`featuresKey`), and `forExport`
-    // (which drives `simplify`), so it changes whenever the booleaned body
-    // would. Disabled when `featuresKey` is null (solid mode / wall patterns,
-    // whose tools aren't captured by the key — see featuresStage).
+    // shell identity and the feature geometry (`featuresKey`). It leaves out
+    // `forExport`: no input to this stage depends on it, so preview and export
+    // share one body. Disabled when `featuresKey` is null (solid mode / wall
+    // patterns, whose tools aren't captured by the key — see featuresStage).
     // JSON.stringify keeps the composition injective end-to-end: `shellKey` and
     // `featuresKey` can both contain `|`, which a flat `buildCacheKey` join could
     // collide across segment boundaries into a false hit (stale geometry).
     // `compactKey` then hashes long keys, the same as every other cache here.
     const resumeKey =
       featuresKey !== null
-        ? compactKey(
-            JSON.stringify(['binbody-v1', ctx.dimensions.shellKey, forExport, featuresKey])
-          )
+        ? compactKey(JSON.stringify(['binbody-v1', ctx.dimensions.shellKey, featuresKey]))
         : null;
 
     if (resumeKey !== null) {
@@ -220,14 +212,11 @@ export const booleanStage: PipelineStage = {
       }
     }
 
-    // Shared by fuse and cut passes — `simplify: forExport` merges
-    // same-domain faces left behind by the n-way boolean, and `signal`
-    // threads cancellation through. Fuse used to drop both, accumulating
-    // duplicate / coincident faces from additive features (label tabs,
-    // scoop ramps) that share a face with the shell; slicers (BambuStudio)
-    // flag the resulting duplicate triangles as non-manifold (—
-    // partial fix; see labelTab gusset-back-face follow-up).
-    const boolOpts = { simplify: forExport, signal } as BooleanOpts;
+    // `signal` threads cancellation through the fuse and cut passes. No
+    // `simplify`: merging same-domain faces folds flat label text into the
+    // tab top it sits flush with, dropping its colour, and opens the exported
+    // mesh of some kumiko patterns.
+    const boolOpts = { signal } as BooleanOpts;
 
     if (ctx.fuseTargets.length > 0) {
       for (const target of ctx.fuseTargets) {

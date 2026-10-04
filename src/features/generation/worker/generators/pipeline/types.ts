@@ -299,9 +299,10 @@ export interface PipelineContext {
   readonly deferredCutKey: string | null;
   /**
    * Composite geometry-identity key for the feature targets this run, set by
-   * the features stage. Combined with `dimensions.shellKey` + `forExport` it
-   * keys the post-boolean body cache, so a metadata-only edit (no geometry
-   * change) skips the boolean stage. `null` disables that resume cache for
+   * the features stage. Combined with `dimensions.shellKey` it keys the
+   * post-boolean body cache, which preview and export share, so a
+   * metadata-only edit (no geometry change) skips the boolean stage. `null`
+   * disables that resume cache for
    * paths whose targets aren't fully captured by feature builder keys (solid
    * mode, wall patterns) — correctness over coverage.
    */

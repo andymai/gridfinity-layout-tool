@@ -345,13 +345,11 @@ export function buildLightweightBase(
     }
 
     // Fuse feet → solid base, fuse voids → one tool, hollow in a single cut.
-    let base = unwrap(fuseAll(feet as ValidSolid[], { optimisation: 'commonFace' }));
+    let base = unwrap(fuseAll(feet as ValidSolid[]));
     for (const f of feet) if (f !== base) f.delete();
 
     if (voids.length > 0) {
-      let voidSolid: Shape3D = unwrap(
-        fuseAll(voids as ValidSolid[], { optimisation: 'commonFace' })
-      );
+      let voidSolid: Shape3D = unwrap(fuseAll(voids as ValidSolid[]));
       for (const v of voids) if (v !== voidSolid) v.delete();
       if (cavityClip) voidSolid = clipRegion(voidSolid);
       const hollow = unwrap(cut(base, voidSolid));
@@ -361,9 +359,7 @@ export function buildLightweightBase(
     }
 
     if (undersideSupports.length > 0) {
-      const supports = unwrap(
-        fuseAll(undersideSupports as ValidSolid[], { optimisation: 'commonFace' })
-      );
+      const supports = unwrap(fuseAll(undersideSupports as ValidSolid[]));
       for (const rib of undersideSupports) if (rib !== supports) rib.delete();
       const supported = unwrap(fuse(base, supports));
       if (supported !== base) base.delete();
@@ -448,7 +444,7 @@ export function buildLightweightBase(
 
     let floorOpenings: Shape3D | null = null;
     if (openingTools.length > 0) {
-      floorOpenings = unwrap(fuseAll(openingTools as ValidSolid[], { optimisation: 'commonFace' }));
+      floorOpenings = unwrap(fuseAll(openingTools as ValidSolid[]));
       for (const t of openingTools) if (t !== floorOpenings) t.delete();
       // Clip to the open cavity (and out of scoop bands) so the floor stays
       // solid under dividers + scoops, in lockstep with the cup void above (a
