@@ -1,0 +1,19 @@
+src/features/baseplate/utils/computeAnchoredPaddings.ts
+  s_b590134dfc57b8::t_b5e0bbc5d5413f 67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "56379b264e004fe91408cf32bbfb3a224d9a4ae2",
+  "prompts": {},
+  "sessions": {
+    "s_b590134dfc57b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "62db57de-71e8-4c95-b90e-db931eac01e8",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
