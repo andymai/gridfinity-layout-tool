@@ -55,9 +55,25 @@ export function computeAnchoredPaddings(
   current: PaddingSums,
   anchor: ConcreteAnchor
 ): AnchoredPaddings {
-  const weight = ANCHOR_START_WEIGHT[anchor];
-  const y = splitAxis(current.paddingFront + current.paddingBack, weight.y);
-  const x = splitAxis(current.paddingLeft + current.paddingRight, weight.x);
+  return distributePaddings(
+    {
+      x: current.paddingLeft + current.paddingRight,
+      y: current.paddingFront + current.paddingBack,
+    },
+    ANCHOR_START_WEIGHT[anchor]
+  );
+}
+
+/**
+ * Split per-axis padding totals between the two sides. A start weight is the
+ * share that goes to the left (x) or back (y) side.
+ */
+export function distributePaddings(
+  totals: { readonly x: number; readonly y: number },
+  startWeight: { readonly x: number; readonly y: number }
+): AnchoredPaddings {
+  const y = splitAxis(totals.y, startWeight.y);
+  const x = splitAxis(totals.x, startWeight.x);
 
   const back = clampMm(y.start);
   const front = clampMm(y.end);

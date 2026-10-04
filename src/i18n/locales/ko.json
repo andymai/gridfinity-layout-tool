@@ -114,6 +114,8 @@
   "baseplate.inclPadding": "여백 포함",
   "baseplate.inclShape": "서랍 모양 포함",
   "baseplate.inclPaddingShape": "여백 + 서랍 모양 포함",
+  "baseplate.drawerOverflow": "베이스플레이트가 측정한 서랍({drawerWidth} × {drawerDepth} mm)을 {width} × {depth} mm 초과합니다",
+  "baseplate.fitPaddingToDrawer": "여백을 서랍에 맞추기",
   "baseplate.increasePadding": "{label} 늘리기",
   "baseplate.isoView": "등각",
   "baseplate.leftoverGrid": "그리드",

@@ -114,6 +114,8 @@
   "baseplate.inclPadding": "incl. margen",
   "baseplate.inclShape": "incl. forma del cajón",
   "baseplate.inclPaddingShape": "incl. margen + forma del cajón",
+  "baseplate.drawerOverflow": "La base supera el cajón medido ({drawerWidth} × {drawerDepth} mm) en {width} × {depth} mm",
+  "baseplate.fitPaddingToDrawer": "Ajustar relleno al cajón",
   "baseplate.increasePadding": "Aumentar {label}",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Rejilla",
