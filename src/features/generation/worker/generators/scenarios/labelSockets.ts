@@ -29,6 +29,11 @@ import {
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
+import {
+  assertPocketCornersOpen,
+  assertSlideCavity,
+  assertSlidePathOpen,
+} from '../__kernel-tests__/labelSocketClearance';
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 import { COPLANAR_OVERLAP, LIP_HEIGHT, LIP_SMALL_TAPER } from '../generatorConstants';
@@ -362,6 +367,95 @@ export const labelSockets: ScenarioCase[] = [
     },
     customAssert: (result, params) =>
       assertSocketPocket(result, params, { plateWidthU: 1, label: '3x1-override-1u' }),
+  }),
+
+  // The walls back a full-width tab's pocket ends, so a 2U plate still fits
+  // between the thickest walls the designer allows.
+  defineScenario('label sockets', '2×1 socket keeps a 2U plate on 2.4mm walls', {
+    params: {
+      width: 2,
+      depth: 1,
+      height: 5,
+      wallThickness: 2.4,
+      base: NO_LIP_BASE,
+      label: SOCKET_LABEL,
+    },
+    customAssert: (result, params) =>
+      assertSocketPocket(result, params, { plateWidthU: 2, label: '2x1-thick-walls' }),
+  }),
+
+  defineScenario('label sockets', '2×1 slide channel keeps a 2U plate on 2mm walls', {
+    params: {
+      width: 2,
+      depth: 1,
+      height: 5,
+      wallThickness: 2,
+      base: NO_LIP_BASE,
+      label: { ...SOCKET_LABEL, socketStyle: 'slideChannel' as const },
+    },
+    customAssert: (result, params) =>
+      assertSlideCavity(result, params, { plateWidthU: 2, label: '2x1-slide-2mm-walls' }),
+  }),
+
+  // The interior fillet rounds the cavity's corners after the tabs are cut, so
+  // a pocket ending near a wall would take its rounding unless the fillet
+  // leaves the socket open.
+  defineScenario('label sockets', '2×1 socket on 2.4mm walls clears a 4mm interior fillet', {
+    params: {
+      width: 2,
+      depth: 1,
+      height: 5,
+      wallThickness: 2.4,
+      interiorFilletMm: 4,
+      base: NO_LIP_BASE,
+      label: SOCKET_LABEL,
+    },
+    customAssert: (result, params) => assertPocketCornersOpen(result, params, '2x1-fillet-4'),
+  }),
+
+  defineScenario('label sockets', '2×1 slide channel on 2.4mm walls clears a 4mm interior fillet', {
+    params: {
+      width: 2,
+      depth: 1,
+      height: 5,
+      wallThickness: 2.4,
+      interiorFilletMm: 4,
+      base: NO_LIP_BASE,
+      label: { ...SOCKET_LABEL, socketStyle: 'slideChannel' as const },
+    },
+    customAssert: (result, params) => assertPocketCornersOpen(result, params, '2x1-slide-fillet-4'),
+  }),
+
+  // On a lowered shelf the fillet along the side walls rises past the slide
+  // channel's floor, where the plate has to pass on its way out.
+  defineScenario(
+    'label sockets',
+    '2×3 lowered slide channel keeps its way out past a 15mm fillet',
+    {
+      params: {
+        width: 2,
+        depth: 3,
+        height: 6,
+        wallThickness: 2.4,
+        interiorFilletMm: 15,
+        base: NO_LIP_BASE,
+        label: { ...SOCKET_LABEL, socketStyle: 'slideChannel' as const, height: 15 },
+      },
+      customAssert: (result, params) => assertSlidePathOpen(result, params, '2x3-lowered-slide'),
+    }
+  ),
+
+  // A fillet this wide reaches a pocket even behind full 1mm end walls.
+  defineScenario('label sockets', '2×1 socket clears a 10mm interior fillet', {
+    params: {
+      width: 2,
+      depth: 1,
+      height: 5,
+      interiorFilletMm: 10,
+      base: NO_LIP_BASE,
+      label: SOCKET_LABEL,
+    },
+    customAssert: (result, params) => assertPocketCornersOpen(result, params, '2x1-fillet-10'),
   }),
 
   // 4 columns across a 2U bin: every column is too narrow for a 1U plate,

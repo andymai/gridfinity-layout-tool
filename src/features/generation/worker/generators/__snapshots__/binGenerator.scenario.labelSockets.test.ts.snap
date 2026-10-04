@@ -16,7 +16,19 @@ exports[`label sockets > 1×1 text mode unchanged 1`] = `616`;
 
 exports[`label sockets > 2×1 four columns → bin-spanning 2U socket 1`] = `1752`;
 
+exports[`label sockets > 2×1 slide channel keeps a 2U plate on 2mm walls 1`] = `1236`;
+
+exports[`label sockets > 2×1 slide channel on 2.4mm walls clears a 4mm interior fillet 1`] = `1764`;
+
+exports[`label sockets > 2×1 socket clears a 10mm interior fillet 1`] = `2084`;
+
+exports[`label sockets > 2×1 socket keeps a 2U plate on 2.4mm walls 1`] = `1172`;
+
+exports[`label sockets > 2×1 socket on 2.4mm walls clears a 4mm interior fillet 1`] = `1716`;
+
 exports[`label sockets > 2×1 two compartments, two 1U sockets 1`] = `1888`;
+
+exports[`label sockets > 2×3 lowered slide channel keeps its way out past a 15mm fillet 1`] = `3686`;
 
 exports[`label sockets > 3u lipped socket at the tightest height budget 1`] = `1612`;
 

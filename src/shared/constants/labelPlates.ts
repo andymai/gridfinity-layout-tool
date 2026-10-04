@@ -13,7 +13,7 @@
  * generator consume the SAME numbers and can't drift.
  */
 
-import type { TextMode } from '@/shared/types/bin';
+import type { LabelTabAlignment, TextMode } from '@/shared/types/bin';
 import { scaleClearance } from '@/shared/printSettings/connectorScaling';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
@@ -253,6 +253,13 @@ export const LABEL_SOCKET_SLIDE_SHELF_THICKNESS_MM =
 export const LABEL_SOCKET_WALL_MM = 1;
 
 /**
+ * Minimum pocket end wall where the tab end is fused to a bin wall or divider
+ * (mm). That wall holds the plate instead, so the end only has to keep the
+ * cut off the fuse seam.
+ */
+export const LABEL_SOCKET_BACKED_WALL_MM = 0.2;
+
+/**
  * Optional tweezer recess on a click-in pocket's free edge: a round notch
  * straddling the edge, sunk two 0.2mm layers below the pocket floor so a tip
  * reaches under the seated plate. Its radius equals `LABEL_SOCKET_WALL_MM`, so
@@ -422,9 +429,43 @@ export function snapTextDepthToLayers(depthMm: number, layerHeightMm: number): n
   );
 }
 
-/** Outer X span a socket needs for a given plate width (pocket + walls). */
-export function labelSocketOuterWidthMm(widthU: LabelPlateWidthU, clearanceMm: number): number {
-  return labelPlateWidthMm(widthU) + clearanceMm + 2 * LABEL_SOCKET_WALL_MM;
+/**
+ * Outer X span a socket needs for a given plate width (pocket + walls).
+ * `endsBacked`: both pocket ends butt a wall or divider, as on a tab that
+ * spans its whole compartment.
+ */
+export function labelSocketOuterWidthMm(
+  widthU: LabelPlateWidthU,
+  clearanceMm: number,
+  endsBacked = false
+): number {
+  const endWall = endsBacked ? LABEL_SOCKET_BACKED_WALL_MM : LABEL_SOCKET_WALL_MM;
+  return labelPlateWidthMm(widthU) + clearanceMm + 2 * endWall;
+}
+
+/**
+ * Tab-local X where a socket pocket starts, or null when it doesn't fit.
+ * Alignment places the pocket while both ends keep a full wall; a tighter
+ * plate centres between the end walls it has left, thinning only an end that
+ * a wall or divider backs.
+ */
+export function labelSocketPocketX0(args: {
+  readonly tabWidth: number;
+  readonly pocketW: number;
+  readonly alignment: LabelTabAlignment;
+  readonly touchesLeft: boolean;
+  readonly touchesRight: boolean;
+}): number | null {
+  const slack = args.tabWidth - args.pocketW;
+  if (slack >= 2 * LABEL_SOCKET_WALL_MM) {
+    if (args.alignment === 'left') return LABEL_SOCKET_WALL_MM;
+    if (args.alignment === 'right') return slack - LABEL_SOCKET_WALL_MM;
+    return slack / 2;
+  }
+  const minX0 = args.touchesLeft ? LABEL_SOCKET_BACKED_WALL_MM : LABEL_SOCKET_WALL_MM;
+  const maxX0 = slack - (args.touchesRight ? LABEL_SOCKET_BACKED_WALL_MM : LABEL_SOCKET_WALL_MM);
+  if (maxX0 < minX0 - 0.01) return null;
+  return (minX0 + maxX0) / 2;
 }
 
 /** Outer span across the plate's short axis a socket needs (pocket + walls). */
@@ -455,11 +496,12 @@ export function cutoutSocketSinkMm(stackingLip: boolean, topOffsetMm: number): n
  */
 export function largestFittingPlateWidthU(
   availableWidthMm: number,
-  clearanceMm: number
+  clearanceMm: number,
+  endsBacked = false
 ): LabelPlateWidthU | null {
   for (let i = LABEL_PLATE_WIDTHS_U.length - 1; i >= 0; i--) {
     const u = LABEL_PLATE_WIDTHS_U[i];
-    if (labelSocketOuterWidthMm(u, clearanceMm) <= availableWidthMm) return u;
+    if (labelSocketOuterWidthMm(u, clearanceMm, endsBacked) <= availableWidthMm) return u;
   }
   return null;
 }
