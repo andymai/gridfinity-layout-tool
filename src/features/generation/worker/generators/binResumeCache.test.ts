@@ -50,8 +50,10 @@ describe('post-boolean body resume cache (#2333)', () => {
     const resumedExport = generateBin(params, undefined, true);
 
     expect(binBodyStats()).toEqual({ hits: 1, misses: 1 });
-    expect(resumedExport.triangleCount).toBe(coldExport.triangleCount);
-    expect(resumedExport.vertices.length).toBe(coldExport.vertices.length);
+    expect(resumedExport.vertices).toEqual(coldExport.vertices);
+    expect(resumedExport.normals).toEqual(coldExport.normals);
+    expect(resumedExport.indices).toEqual(coldExport.indices);
+    expect(resumedExport.faceGroups).toEqual(coldExport.faceGroups);
   }, 60_000);
 
   // Stamp wall patterns DO resume now — they report a per-wall identity that
