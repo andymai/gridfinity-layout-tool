@@ -114,6 +114,8 @@
   "baseplate.inclPadding": "avec marge",
   "baseplate.inclShape": "avec forme du tiroir",
   "baseplate.inclPaddingShape": "avec marge + forme du tiroir",
+  "baseplate.drawerOverflow": "La platine dépasse de {width} × {depth} mm le tiroir mesuré ({drawerWidth} × {drawerDepth} mm)",
+  "baseplate.fitPaddingToDrawer": "Ajuster la marge au tiroir",
   "baseplate.increasePadding": "Augmenter {label}",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Grille",

@@ -3395,6 +3395,8 @@
   "baseplate.inclPadding": "შევსების ჩათვლით",
   "baseplate.inclShape": "უჯრის ფორმის ჩათვლით",
   "baseplate.inclPaddingShape": "შევსებისა და უჯრის ფორმის ჩათვლით",
+  "baseplate.drawerOverflow": "საბაზისო ფირფიტა თქვენს გაზომილ უჯრას ({drawerWidth} × {drawerDepth} mm) {width} × {depth} mm-ით აღემატება",
+  "baseplate.fitPaddingToDrawer": "შევსების მორგება უჯრაზე",
   "baseplate.editDimensionsWidth": "საბაზისო ფირფიტის სიგანე mm-ში",
   "baseplate.editDimensionsDepth": "საბაზისო ფირფიტის სიღრმე mm-ში",
   "baseplate.reset": "ნაგულისხმევზე დაბრუნება",

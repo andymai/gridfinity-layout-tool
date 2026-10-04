@@ -114,6 +114,8 @@
   "baseplate.inclPadding": "incl. margine",
   "baseplate.inclShape": "incl. forma del cassetto",
   "baseplate.inclPaddingShape": "incl. margine + forma del cassetto",
+  "baseplate.drawerOverflow": "La baseplate supera di {width} × {depth} mm il cassetto misurato ({drawerWidth} × {drawerDepth} mm)",
+  "baseplate.fitPaddingToDrawer": "Adatta il margine al cassetto",
   "baseplate.increasePadding": "Aumenta {label}",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Griglia",

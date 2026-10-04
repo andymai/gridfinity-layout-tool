@@ -114,6 +114,8 @@
   "baseplate.inclPadding": "含留边",
   "baseplate.inclShape": "含抽屉形状",
   "baseplate.inclPaddingShape": "含留边和抽屉形状",
+  "baseplate.drawerOverflow": "底板比你测量的抽屉（{drawerWidth} × {drawerDepth} mm）超出 {width} × {depth} mm",
+  "baseplate.fitPaddingToDrawer": "按抽屉调整留边",
   "baseplate.increasePadding": "增加 {label}",
   "baseplate.isoView": "等距",
   "baseplate.leftoverGrid": "网格",

@@ -114,6 +114,8 @@
   "baseplate.inclPadding": "余白を含む",
   "baseplate.inclShape": "引き出しの形状を含む",
   "baseplate.inclPaddingShape": "余白と引き出しの形状を含む",
+  "baseplate.drawerOverflow": "ベースプレートが実測した引き出し（{drawerWidth} × {drawerDepth} mm）を {width} × {depth} mm 超えています",
+  "baseplate.fitPaddingToDrawer": "余白を引き出しに合わせる",
   "baseplate.increasePadding": "{label}を増やす",
   "baseplate.isoView": "アイソ",
   "baseplate.leftoverGrid": "グリッド",

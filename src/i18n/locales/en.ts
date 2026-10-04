@@ -3996,6 +3996,9 @@ const en: Record<string, string> = {
   'baseplate.inclPadding': 'incl. padding',
   'baseplate.inclShape': 'incl. drawer shape',
   'baseplate.inclPaddingShape': 'incl. padding + drawer shape',
+  'baseplate.drawerOverflow':
+    'Plate exceeds your measured {drawerWidth} × {drawerDepth} mm drawer by {width} × {depth} mm',
+  'baseplate.fitPaddingToDrawer': 'Fit padding to drawer',
   'baseplate.editDimensionsWidth': 'Baseplate width in mm',
   'baseplate.editDimensionsDepth': 'Baseplate depth in mm',
   'baseplate.reset': 'Reset to defaults',

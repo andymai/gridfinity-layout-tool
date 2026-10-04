@@ -114,6 +114,8 @@
   "baseplate.inclPadding": "incl. margem",
   "baseplate.inclShape": "incl. formato da gaveta",
   "baseplate.inclPaddingShape": "incl. margem + formato da gaveta",
+  "baseplate.drawerOverflow": "A placa base excede a gaveta medida ({drawerWidth} × {drawerDepth} mm) em {width} × {depth} mm",
+  "baseplate.fitPaddingToDrawer": "Ajustar preenchimento à gaveta",
   "baseplate.increasePadding": "Aumentar {label}",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Grade",

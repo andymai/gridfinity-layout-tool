@@ -114,6 +114,8 @@
   "baseplate.inclPadding": "vč. odsazení",
   "baseplate.inclShape": "vč. tvaru zásuvky",
   "baseplate.inclPaddingShape": "vč. odsazení + tvaru zásuvky",
+  "baseplate.drawerOverflow": "Základní deska přesahuje tvou naměřenou zásuvku ({drawerWidth} × {drawerDepth} mm) o {width} × {depth} mm",
+  "baseplate.fitPaddingToDrawer": "Přizpůsobit odsazení zásuvce",
   "baseplate.increasePadding": "Zvětšit {label}",
   "baseplate.isoView": "Izo",
   "baseplate.leftoverGrid": "Mřížka",

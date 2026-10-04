@@ -114,6 +114,8 @@
   "baseplate.inclPadding": "inkl. Rand",
   "baseplate.inclShape": "inkl. Schubladenform",
   "baseplate.inclPaddingShape": "inkl. Rand + Schubladenform",
+  "baseplate.drawerOverflow": "Die Grundplatte ist {width} × {depth} mm größer als die gemessene Schublade ({drawerWidth} × {drawerDepth} mm)",
+  "baseplate.fitPaddingToDrawer": "Polsterung an Schublade anpassen",
   "baseplate.increasePadding": "{label} vergrößern",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Raster",

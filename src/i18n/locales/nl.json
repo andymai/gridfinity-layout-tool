@@ -114,6 +114,8 @@
   "baseplate.inclPadding": "incl. marge",
   "baseplate.inclShape": "incl. ladevorm",
   "baseplate.inclPaddingShape": "incl. marge + ladevorm",
+  "baseplate.drawerOverflow": "De basisplaat is {width} × {depth} mm groter dan de gemeten lade ({drawerWidth} × {drawerDepth} mm)",
+  "baseplate.fitPaddingToDrawer": "Vulling aan lade aanpassen",
   "baseplate.increasePadding": "{label} vergroten",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Raster",

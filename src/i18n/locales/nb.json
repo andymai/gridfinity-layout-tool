@@ -114,6 +114,8 @@
   "baseplate.inclPadding": "inkl. kantluft",
   "baseplate.inclShape": "inkl. skuffeform",
   "baseplate.inclPaddingShape": "inkl. kantluft + skuffeform",
+  "baseplate.drawerOverflow": "Bunnplaten er {width} × {depth} mm større enn den målte skuffen ({drawerWidth} × {drawerDepth} mm)",
+  "baseplate.fitPaddingToDrawer": "Tilpass polstring til skuffen",
   "baseplate.increasePadding": "Øk {label}",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Rutenett",

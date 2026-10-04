@@ -114,6 +114,8 @@
   "baseplate.inclPadding": "inkl. utfyllnad",
   "baseplate.inclShape": "inkl. lådans form",
   "baseplate.inclPaddingShape": "inkl. utfyllnad + lådans form",
+  "baseplate.drawerOverflow": "Bottenplattan är {width} × {depth} mm större än den uppmätta lådan ({drawerWidth} × {drawerDepth} mm)",
+  "baseplate.fitPaddingToDrawer": "Anpassa utfyllnad till lådan",
   "baseplate.increasePadding": "Öka {label}",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Rutnät",

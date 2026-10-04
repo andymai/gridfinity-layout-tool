@@ -114,6 +114,8 @@
   "baseplate.inclPadding": "вкл. відступи",
   "baseplate.inclShape": "вкл. форму шухляди",
   "baseplate.inclPaddingShape": "вкл. відступи + форму шухляди",
+  "baseplate.drawerOverflow": "Базова плита більша за виміряну шухляду ({drawerWidth} × {drawerDepth} мм) на {width} × {depth} мм",
+  "baseplate.fitPaddingToDrawer": "Підігнати відступи під шухляду",
   "baseplate.increasePadding": "Збільшити {label}",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Сітка",

@@ -114,6 +114,8 @@
   "baseplate.inclPadding": "wraz z marginesem",
   "baseplate.inclShape": "wraz z kształtem szuflady",
   "baseplate.inclPaddingShape": "wraz z marginesem i kształtem szuflady",
+  "baseplate.drawerOverflow": "Płyta bazowa przekracza zmierzoną szufladę ({drawerWidth} × {drawerDepth} mm) o {width} × {depth} mm",
+  "baseplate.fitPaddingToDrawer": "Dopasuj margines do szuflady",
   "baseplate.increasePadding": "Zwiększ {label}",
   "baseplate.isoView": "Izo",
   "baseplate.leftoverGrid": "Siatka",

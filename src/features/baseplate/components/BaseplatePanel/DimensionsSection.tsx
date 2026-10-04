@@ -20,6 +20,7 @@ import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { CheckboxRow, SegmentedControl } from '@/design-system';
 import { EditableDimensions } from '@/shared/components/EditableDimensions';
 import { GridAlignmentControls } from '@/shared/components/GridAlignmentControls';
+import { MeasuredDrawerOverflow } from './MeasuredDrawerOverflow';
 import { PaddingSchematic } from './PaddingSchematic';
 import { GridDimensionStepper } from './GridDimensionStepper';
 import { resolveOverTileStatus } from '../../utils/overTileStatus';
@@ -53,6 +54,8 @@ export function DimensionsSection() {
     synced,
     effectiveWidth,
     effectiveDepth,
+    gridWidthMm,
+    gridDepthMm,
     outerWidthMm,
     outerDepthMm,
     hasPadding,
@@ -400,6 +403,15 @@ export function DimensionsSection() {
             <span className="text-label italic text-content-tertiary">{t(extentNoteKey)}</span>
           )}
         </div>
+        {synced && !outlineActive && (
+          <MeasuredDrawerOverflow
+            baseplateParams={baseplateParams}
+            gridWidthMm={gridWidthMm}
+            gridDepthMm={gridDepthMm}
+            outerWidthMm={outerWidthMm}
+            outerDepthMm={outerDepthMm}
+          />
+        )}
 
         {/* Where the lattice sits inside the shape. Padding cannot express this:
             on a synced shaped plate the outer size comes from the drawer, so the
