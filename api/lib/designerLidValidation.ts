@@ -144,6 +144,9 @@ export function validateLid(lid: unknown): string | null {
   if (lid.relieveInterior !== undefined && typeof lid.relieveInterior !== 'boolean') {
     return 'lid.relieveInterior must be a boolean';
   }
+  if (lid.fill !== undefined && typeof lid.fill !== 'boolean') {
+    return 'lid.fill must be a boolean';
+  }
   if (lid.retentionMagnet !== undefined) {
     const magnetErr = validateRetentionMagnet(lid.retentionMagnet, 'lid.retentionMagnet');
     if (magnetErr) return magnetErr;

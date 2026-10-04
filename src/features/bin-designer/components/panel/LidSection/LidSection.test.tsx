@@ -127,6 +127,23 @@ describe('LidSection', () => {
       expect(screen.queryByRole('switch', { name: 'Back' })).not.toBeInTheDocument();
     });
 
+    it('offers the lid fill on friction lids and stores it as true', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'friction' },
+      });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('switch', { name: 'Lid fill' }));
+      expect(useDesignerStore.getState().params.lid.fill).toBe(true);
+    });
+
+    it('does not offer the lid fill on click-rail lids', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'clickRails' },
+      });
+      render(<LidSection />);
+      expect(screen.queryByRole('switch', { name: 'Lid fill' })).not.toBeInTheDocument();
+    });
+
     it('reveals magnet dimensions under Advanced in magnetic mode', () => {
       resetStore({
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'magnetic' },
