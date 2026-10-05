@@ -1861,9 +1861,32 @@ export function lidHasFill(params: LidGeometrySource): boolean {
   return (
     lid.enabled &&
     lid.fill === true &&
-    (lid.attachment === 'friction' || lid.attachment === 'magnetic') &&
+    attachmentTakesFill(lid.attachment) &&
     params.base.stackingLip
   );
+}
+
+export function attachmentTakesFill(attachment: LidAttachment): boolean {
+  return attachment === 'friction' || attachment === 'magnetic';
+}
+
+/**
+ * The fill plug's underside in lid-local Z, or null without a plug: flush with
+ * the magnet bosses' face on a magnetic lid, the skirt's bottom otherwise. The
+ * seated lid drops `mateRelief * √2` below its anchor, so the plane is taken one
+ * settle high, as `retentionBossFaceZ` takes the bosses.
+ */
+export function lidFillBottomZ(params: LidGeometrySource): number | null {
+  if (!lidHasFill(params)) return null;
+  const { heightUnitMm } = params;
+  const cavityExtra = resolveLidCavityExtraMm(params);
+  // The worker's `retentionMagnets`, narrowed by `lidHasFill`: no hinge catch,
+  // and a lipless bin never reaches here.
+  const edgeZ =
+    params.lid.attachment === 'magnetic' && !isPartialMask(params.cellMask)
+      ? lidRetentionInterfaceZ(heightUnitMm, cavityExtra, params.lid.retentionMagnet.depth)
+      : lidWallBottomZ(heightUnitMm, LID_FIT_CLEARANCE, cavityExtra);
+  return edgeZ + resolveLidMateRelief(params) * Math.SQRT2;
 }
 
 /** Whether this design generates any grip relief at all. */

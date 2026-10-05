@@ -136,6 +136,22 @@ describe('LidSection', () => {
       expect(useDesignerStore.getState().params.lid.fill).toBe(true);
     });
 
+    it('replaces the relief hint with the reason it is off while the lid is filled', () => {
+      resetStore({
+        lid: {
+          ...DEFAULT_BIN_PARAMS.lid,
+          enabled: true,
+          attachment: 'friction',
+          fill: true,
+          relieveInterior: true,
+        },
+      });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('button', { name: 'Fine tuning' }));
+      expect(screen.getByText(/Not used while the lid fill is on/)).toBeInTheDocument();
+      expect(screen.queryByText(/click rails run unbroken/)).not.toBeInTheDocument();
+    });
+
     it('does not offer the lid fill on click-rail lids', () => {
       resetStore({
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'clickRails' },

@@ -207,6 +207,8 @@ export {
   lidGripHeightMm,
   hasLidGrip,
   lidHasFill,
+  lidFillBottomZ,
+  attachmentTakesFill,
   hasAnyLidGripSide,
   hasBinLipDip,
   lidGripModeAllowed,

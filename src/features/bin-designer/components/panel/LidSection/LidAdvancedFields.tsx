@@ -235,11 +235,13 @@ export function LidAdvancedFields({
             onChange={handlers.toggleRelieveInterior}
             disabledReason={state.relieveInteriorDisabledReason}
           />
-          <Hint>
-            {state.relieveInterior
-              ? t('binDesigner.lid.relieveInteriorHint')
-              : t('binDesigner.lid.relieveInteriorOffHint')}
-          </Hint>
+          {state.relieveInteriorDisabledReason === undefined && (
+            <Hint>
+              {state.relieveInterior
+                ? t('binDesigner.lid.relieveInteriorHint')
+                : t('binDesigner.lid.relieveInteriorOffHint')}
+            </Hint>
+          )}
         </div>
 
         {showTrayAdvanced && (
