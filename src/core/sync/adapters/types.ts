@@ -29,7 +29,6 @@ export interface SyncableItem<T = unknown> {
   id: string;
   payload: T;
   modifiedAt: number;
-  /** The server envelope's schema version, on items pulled from the server. */
   schemaVersion?: number;
 }
 
