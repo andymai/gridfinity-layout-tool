@@ -1,0 +1,21 @@
+src/features/baseplate/hooks/useBaseplateAutoSave.ts
+  s_f6ef8af5057228::t_2b23bd252aa0e7 131-132,137-139,143-151,168-170,265-266,310-312
+src/features/baseplate/hooks/useBaseplateAutoSave.test.ts
+  s_f6ef8af5057228::t_1c62d828efdfd7 2,7,12,15-17,20-24,74-75,144-204
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f5e9c9f95748dc420f004c56d53845b2edc60ee6",
+  "prompts": {},
+  "sessions": {
+    "s_f6ef8af5057228": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b2f7a60d-c28b-4bef-b4be-eefb3d4c0aef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
