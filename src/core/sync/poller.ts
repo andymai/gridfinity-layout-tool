@@ -168,6 +168,7 @@ async function diffKind(
         id,
         payload,
         modifiedAt: fetched.envelope.modifiedAt,
+        schemaVersion: fetched.envelope.schemaVersion,
       });
       applied++;
     }

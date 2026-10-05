@@ -167,6 +167,28 @@ describe('runClaim — diff quadrants', () => {
     });
   });
 
+  it('passes the envelope schema version through to the adapter', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        manifestResponse({
+          layouts: { a: { modifiedAt: 1000, sizeBytes: 100 } },
+          designs: {},
+          indexUpdatedAt: 1000,
+        })
+      )
+      .mockResolvedValueOnce(
+        envelopeResponse({ layout: { v: 1 }, modifiedAt: 1000, schemaVersion: 2 })
+      );
+
+    await runClaim(ctx());
+    expect(layouts.applyRemote).toHaveBeenCalledWith({
+      id: 'a',
+      payload: { v: 1 },
+      modifiedAt: 1000,
+      schemaVersion: 2,
+    });
+  });
+
   it('local-newer: enqueues a PUT (no fetch needed)', async () => {
     layouts.items.set('a', { id: 'a', payload: { v: 'newer' }, modifiedAt: 9000 });
     fetchMock.mockResolvedValueOnce(

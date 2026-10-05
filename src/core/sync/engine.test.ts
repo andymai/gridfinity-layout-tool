@@ -147,7 +147,7 @@ describe('push: PUT happy path', () => {
       expect.objectContaining({ method: 'PUT' })
     );
     const body = JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string);
-    expect(body).toEqual({ layout: { v: 1 }, modifiedAt: 1000 });
+    expect(body).toEqual({ layout: { v: 1 }, modifiedAt: 1000, schemaVersion: 2 });
     expect(await outboxGetAll()).toEqual([]);
   });
 
@@ -213,6 +213,7 @@ describe('push: 409 conflict', () => {
       id: 'lay-1',
       payload: { v: 99 },
       modifiedAt: 9000,
+      schemaVersion: 1,
     });
     expect(events).toContainEqual(
       expect.objectContaining({ type: 'remote-replaced-local', kind: 'layouts', id: 'lay-1' })

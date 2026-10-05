@@ -59,7 +59,12 @@ export interface SyncResourceConfig<TEnvelope extends SyncEnvelope> {
   /** 410 message when a stale edit hits a newer tombstone. */
   deletedError: string;
   /** Validate the payload and shape the envelope; everything per-resource. */
-  buildPut: (payload: unknown, modifiedAt: number, id: string) => BuildPutResult<TEnvelope>;
+  buildPut: (
+    payload: unknown,
+    modifiedAt: number,
+    id: string,
+    body: Record<string, unknown>
+  ) => BuildPutResult<TEnvelope>;
   /** Stored-side value handed to the equal-ms tiebreaker. */
   storedComparable: (stored: TEnvelope) => unknown;
 }
@@ -113,7 +118,7 @@ export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
       return;
     }
 
-    const built = config.buildPut(body[config.payloadKey], modifiedAt, id);
+    const built = config.buildPut(body[config.payloadKey], modifiedAt, id, body);
     if (!built.ok) {
       res.status(built.status).json({ error: built.error, code: built.code });
       return;

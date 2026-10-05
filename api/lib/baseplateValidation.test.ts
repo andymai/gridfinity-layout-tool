@@ -27,6 +27,61 @@ describe('validateBaseplateShare', () => {
     if (result.valid) expect(result.payload.params).not.toHaveProperty('evil');
   });
 
+  describe('optional settings', () => {
+    it('keeps well-formed optional settings', () => {
+      const optional = {
+        syncWithLayout: true,
+        overTile: false,
+        connectorStyle: 'puzzle',
+        paddingAnchor: 'tl',
+        fractionalEdgeX: 'end',
+        stackPrint: { enabled: true, gapMm: 0.3, copies: 4 },
+      };
+      const result = validate({ ...validParams, ...optional });
+      expect(result.valid).toBe(true);
+      if (result.valid) expect(result.payload.params).toMatchObject(optional);
+    });
+
+    it('drops malformed optional settings without rejecting the plate', () => {
+      const result = validate({
+        ...validParams,
+        syncWithLayout: 'yes',
+        overTile: 1,
+        connectorStyle: 'zigzag',
+        paddingAnchor: 'x'.repeat(200),
+        fractionalEdgeX: 'middle',
+        stackPrint: { enabled: true, gapMm: 'bad' },
+      });
+      expect(result.valid).toBe(true);
+      if (result.valid) {
+        for (const key of [
+          'syncWithLayout',
+          'overTile',
+          'connectorStyle',
+          'paddingAnchor',
+          'fractionalEdgeX',
+          'stackPrint',
+        ]) {
+          expect(result.payload.params).not.toHaveProperty(key);
+        }
+      }
+    });
+
+    it('drops a stack-print setting outside the bounds the client clamps to', () => {
+      for (const stackPrint of [
+        { enabled: true, gapMm: 5 },
+        { enabled: true, copies: 0 },
+        { enabled: true, copies: 2.5 },
+        { gapMm: 0.3 },
+        { enabled: true, extra: 1 },
+      ]) {
+        const result = validate({ ...validParams, stackPrint });
+        expect(result.valid).toBe(true);
+        if (result.valid) expect(result.payload.params).not.toHaveProperty('stackPrint');
+      }
+    });
+  });
+
   describe('splitOverride (#3115)', () => {
     it('accepts a well-formed plan and preserves it through the allowlist', () => {
       const result = validate({ ...validParams, splitOverride: { cols: [6, 4], rows: [8] } });

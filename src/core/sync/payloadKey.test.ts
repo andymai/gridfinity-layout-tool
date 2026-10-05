@@ -4,10 +4,13 @@
  * exports only stay in lockstep via these tests.
  */
 import { describe, expect, it } from 'vitest';
-import { PAYLOAD_KEY } from './payloadKey';
+import { LAYOUT_SCHEMA_VERSION, PAYLOAD_KEY, syncPutBody } from './payloadKey';
 import type { SyncKind } from './adapters/types';
 
-import { PAYLOAD_KEY as API_LAYOUTS_PAYLOAD_KEY } from '../../../api/sync/layouts/[id].js';
+import {
+  PAYLOAD_KEY as API_LAYOUTS_PAYLOAD_KEY,
+  SCHEMA_VERSION as API_LAYOUTS_SCHEMA_VERSION,
+} from '../../../api/sync/layouts/[id].js';
 import { PAYLOAD_KEY as API_DESIGNS_PAYLOAD_KEY } from '../../../api/sync/designs/[id].js';
 import { PAYLOAD_KEY as API_BASEPLATES_PAYLOAD_KEY } from '../../../api/sync/baseplates/[id].js';
 import { PAYLOAD_KEY as API_DESIGN_VERSIONS_PAYLOAD_KEY } from '../../../api/sync/designVersions/[id].js';
@@ -45,5 +48,23 @@ describe('PAYLOAD_KEY', () => {
   it('assigns a distinct payload key per kind (no fallback collisions)', () => {
     const values = Object.values(PAYLOAD_KEY);
     expect(new Set(values).size).toBe(values.length);
+  });
+});
+
+describe('syncPutBody', () => {
+  it('declares the layout schema the server stamps', () => {
+    expect(LAYOUT_SCHEMA_VERSION).toBe(API_LAYOUTS_SCHEMA_VERSION);
+  });
+
+  it('declares the layout payload schema', () => {
+    expect(syncPutBody('layouts', { v: 1 }, 1000)).toEqual({
+      layout: { v: 1 },
+      modifiedAt: 1000,
+      schemaVersion: LAYOUT_SCHEMA_VERSION,
+    });
+  });
+
+  it('leaves other kinds as they were', () => {
+    expect(syncPutBody('designs', { v: 1 }, 1000)).toEqual({ design: { v: 1 }, modifiedAt: 1000 });
   });
 });

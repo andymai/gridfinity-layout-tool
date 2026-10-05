@@ -11,12 +11,32 @@ import {
 } from '@/core/storage';
 import type { AdapterChange, AdapterChangeListener, LayoutAdapter, SyncableItem } from './types';
 import { syncPersistError } from './persistError';
+import { LAYOUT_SCHEMA_VERSION } from '../payloadKey';
 
 // Wider than `Bin` because legacy cloud blobs (pre-validator-fix) literally
 // omit `notes`/`label`. Without this the runtime guard below reads as
 // unreachable to TypeScript.
 type IncomingBin = Omit<Bin, 'notes' | 'label'> & { notes?: unknown; label?: unknown };
 type IncomingLayout = Omit<Layout, 'bins'> & { bins: IncomingBin[] };
+
+/**
+ * Before schema 2 the server rebuilt layouts without `drawer.measuredMm`,
+ * `baseplateParams` and `activeBaseplateId`, so their absence in an older copy
+ * says nothing about the other device. This device's values stand in for them.
+ */
+function restoreStrippedFields(remote: Layout, local: Layout): Layout {
+  const measuredMm = remote.drawer.measuredMm ?? local.drawer.measuredMm;
+  return {
+    ...remote,
+    drawer: measuredMm === undefined ? remote.drawer : { ...remote.drawer, measuredMm },
+    ...(remote.baseplateParams === undefined && local.baseplateParams !== undefined
+      ? { baseplateParams: local.baseplateParams }
+      : {}),
+    ...(remote.activeBaseplateId === undefined && local.activeBaseplateId !== undefined
+      ? { activeBaseplateId: local.activeBaseplateId }
+      : {}),
+  };
+}
 
 /**
  * Default missing `notes`/`label` to '' so the 3D view's `bin.notes.trim()`
@@ -88,8 +108,15 @@ export const layoutAdapter: LayoutAdapter = {
   },
 
   async applyRemote(item: SyncableItem<Layout>): Promise<void> {
+    // Restored before normalizing: the outline is clipped to an extent the
+    // measured drawer widens, so clipping first would cut it to the grid.
+    let incoming = item.payload;
+    if ((item.schemaVersion ?? 1) < LAYOUT_SCHEMA_VERSION) {
+      const local = await loadLayoutAsync(item.id);
+      if (local) incoming = restoreStrippedFields(incoming, local);
+    }
     // The folder rides on the wire only; locally the entry holds it.
-    const { folderId, ...document } = normalizeIncomingLayout(item.payload);
+    const { folderId, ...document } = normalizeIncomingLayout(incoming);
     const layout: Layout = document;
     const saveResult = await saveLayoutAsync(item.id, layout);
     if (!saveResult.ok) {

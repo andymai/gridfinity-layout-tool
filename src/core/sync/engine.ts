@@ -11,7 +11,7 @@ import {
 import { parseRetryAfter, rateLimitedBackoffMs } from './retryAfter';
 import { useSyncStatusStore } from './status';
 import type { AdapterChange, SyncAdapter, SyncAdapters, SyncKind } from './adapters/types';
-import { PAYLOAD_KEY } from './payloadKey';
+import { PAYLOAD_KEY, syncPutBody } from './payloadKey';
 
 type ConflictReason = 'remote-newer' | 'deleted-elsewhere' | 'quota' | 'gave-up';
 
@@ -194,7 +194,7 @@ async function sendOne(
     return;
   }
 
-  const body = { [PAYLOAD_KEY[kind]]: latest.payload, modifiedAt: latest.modifiedAt };
+  const body = syncPutBody(kind, latest.payload, latest.modifiedAt);
 
   const res = await apiFetch(url, {
     method: 'PUT',
@@ -262,6 +262,9 @@ async function handleConflict(
         id: entry.id,
         payload,
         modifiedAt: stored.modifiedAt,
+        ...(typeof stored.schemaVersion === 'number'
+          ? { schemaVersion: stored.schemaVersion }
+          : {}),
       });
       emitEngineEvent(s, { type: 'remote-replaced-local', kind, id: entry.id });
     }

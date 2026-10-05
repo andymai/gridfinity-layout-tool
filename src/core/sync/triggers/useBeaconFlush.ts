@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { getPendingEntries } from '../engine';
-import { PAYLOAD_KEY } from '../payloadKey';
-import type { SyncAdapters, SyncKind } from '../adapters/types';
+import { syncPutBody } from '../payloadKey';
+import type { SyncAdapters } from '../adapters/types';
 
 const BEACON_MAX_BYTES = 60 * 1024;
 
@@ -77,14 +77,10 @@ async function collectBeacons(adapters: SyncAdapters): Promise<PreparedBeacon[]>
       continue;
     }
     if (!payload) continue;
-    const body = bodyForKind(entry.kind, payload.payload, payload.modifiedAt);
+    const body = syncPutBody(entry.kind, payload.payload, payload.modifiedAt);
     const blob = new Blob([JSON.stringify(body)], { type: 'application/json' });
     if (blob.size > BEACON_MAX_BYTES) continue;
     prepared.push({ url: `/api/sync/${entry.kind}/${entry.id}`, blob });
   }
   return prepared;
-}
-
-function bodyForKind(kind: SyncKind, payload: unknown, modifiedAt: number): object {
-  return { [PAYLOAD_KEY[kind]]: payload, modifiedAt };
 }

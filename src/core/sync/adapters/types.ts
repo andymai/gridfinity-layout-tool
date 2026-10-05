@@ -29,6 +29,7 @@ export interface SyncableItem<T = unknown> {
   id: string;
   payload: T;
   modifiedAt: number;
+  schemaVersion?: number;
 }
 
 /**

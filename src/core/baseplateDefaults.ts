@@ -354,7 +354,7 @@ function clampNumber(value: unknown, min: number, max: number, defaultVal: numbe
   return Math.min(max, Math.max(min, value));
 }
 
-const PADDING_ANCHOR_VALUES = new Set<string>([
+export const PADDING_ANCHOR_VALUES = new Set<string>([
   'tl',
   'tc',
   'tr',
