@@ -2,7 +2,12 @@ import { isValidShareId } from '../../lib/shared.js';
 import { isValidationError, validateShareLayout } from '../../lib/validation.js';
 import { createSyncResourceHandler } from '../lib/resourceHandler.js';
 
-export const SCHEMA_VERSION = 1 as const;
+/**
+ * Fields missing from a version-1 envelope are unknown, not cleared. A write is
+ * stamped 2 only when its client declares it: an older tab still sends layouts
+ * that lost those fields, and stamping them 2 would read as clears elsewhere.
+ */
+export const SCHEMA_VERSION = 2 as const;
 
 /** The PUT body / GET envelope key for this resource; mirrors `PAYLOAD_KEY.layouts` in src/core/sync/payloadKey.ts. */
 export const PAYLOAD_KEY = 'layout' as const;
@@ -10,7 +15,7 @@ export const PAYLOAD_KEY = 'layout' as const;
 interface LayoutEnvelope {
   layout: unknown;
   modifiedAt: number;
-  schemaVersion: typeof SCHEMA_VERSION;
+  schemaVersion: 1 | typeof SCHEMA_VERSION;
 }
 
 /**
@@ -31,7 +36,7 @@ export default createSyncResourceHandler<LayoutEnvelope>({
   isValidId: isValidShareId,
   invalidIdError: 'Invalid layout id',
   deletedError: 'Layout was deleted on another device. Save again to restore.',
-  buildPut: (layout, modifiedAt) => {
+  buildPut: (layout, modifiedAt, _id, body) => {
     // Two byte counts intentionally: `preValidationBytes` is what the
     // validator's 500 KB size cap sees — purely a CPU guard against huge
     // inputs. `sizeBytes` is what we actually store after sanitization, and
@@ -51,7 +56,11 @@ export default createSyncResourceHandler<LayoutEnvelope>({
     const sizeBytes = Buffer.byteLength(JSON.stringify({ layout: validation.layout }), 'utf8');
     return {
       ok: true,
-      envelope: { layout: validation.layout, modifiedAt, schemaVersion: SCHEMA_VERSION },
+      envelope: {
+        layout: validation.layout,
+        modifiedAt,
+        schemaVersion: body.schemaVersion === SCHEMA_VERSION ? SCHEMA_VERSION : 1,
+      },
       sizeBytes,
       tiebreakerCandidate: validation.layout,
     };

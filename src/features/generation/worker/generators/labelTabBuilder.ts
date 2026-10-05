@@ -29,15 +29,18 @@ import { resolveTextStyle } from '@/shared/types/bin';
 import {
   LABEL_PLATE_HEIGHT_MM,
   LABEL_SOCKET_CLICK_POCKET_DEPTH_MM,
+  LABEL_SOCKET_LIP_THICKNESS_MM,
   LABEL_SOCKET_POCKET_DEPTH_MM,
   LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM,
   LABEL_SOCKET_WALL_MM,
   labelLipReservationMm,
   labelPlateWidthMm,
+  labelSocketPocketX0,
 } from '@/shared/constants/labelPlates';
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { planLabelTabLayout } from '@/shared/utils/labelTabPlan';
+import { isPartialMask } from '@/shared/utils/cellMask';
 import type { TabSlot, PlannedTabRow, TabBuildDimensions } from '@/shared/utils/labelTabPlan';
 import { isLabelPlateIconId } from '@/shared/constants/labelPlates';
 import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
@@ -184,6 +187,8 @@ export function planLabelPlateSeats(
 ): LabelPlateSeat[] {
   if (!params.label.enabled) return [];
   if ((params.label.mode ?? 'text') !== 'socket') return [];
+  // Label tabs do not opt into cell masks, so a custom footprint gets none.
+  if (isPartialMask(params.cellMask)) return [];
 
   const layout = planLabelTabLayout(params, innerW, innerD, wallHeight, wallThickness);
   if (!layout) return [];
@@ -194,7 +199,9 @@ export function planLabelPlateSeats(
   // Mirrors the pocket floor in `cutLabelSocket` for each retention profile.
   const pocketDepth =
     socket.style === 'slideChannel'
-      ? LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM + LABEL_SOCKET_POCKET_DEPTH_MM
+      ? LABEL_SOCKET_LIP_THICKNESS_MM +
+        LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM +
+        LABEL_SOCKET_POCKET_DEPTH_MM
       : LABEL_SOCKET_CLICK_POCKET_DEPTH_MM;
 
   // A spanning slot's `cellId` is a row, so reading per-compartment metadata by
@@ -216,15 +223,15 @@ export function planLabelPlateSeats(
       // Same guards `applySocket` applies before cutting: no pocket, no seat.
       const pocketW = labelPlateWidthMm(plateWidthU) + socket.clearanceMm;
       const pocketD = LABEL_PLATE_HEIGHT_MM + socket.clearanceMm;
-      if (pocketW + 2 * wall > slot.tabWidth + 0.01) continue;
+      const pocketX0 = labelSocketPocketX0({
+        tabWidth: slot.tabWidth,
+        pocketW,
+        alignment,
+        touchesLeft: slot.touchesLeft,
+        touchesRight: slot.touchesRight,
+      });
+      if (pocketX0 === null) continue;
       if (pocketD + 2 * wall > tabDepth + 0.01) continue;
-
-      const pocketX0 =
-        alignment === 'left'
-          ? wall
-          : alignment === 'right'
-            ? slot.tabWidth - wall - pocketW
-            : (slot.tabWidth - pocketW) / 2;
 
       const icon = icons[slot.cellId];
       seats.push({
@@ -554,6 +561,8 @@ function buildTabsAtRow(
           tabDepth,
           tabHeight,
           alignment,
+          touchesLeft,
+          touchesRight,
           depthSign,
         });
       }

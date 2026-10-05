@@ -486,4 +486,53 @@ describe('DimensionsSection', () => {
       });
     });
   });
+  // Padding is absolute millimetres, so a grid change can leave a synced plate
+  // larger than the drawer the user measured on the layout.
+  describe('measured drawer overflow', () => {
+    function seedOverflow(): void {
+      useLayoutStore.setState((state) => {
+        const { drawer, gridUnitMm } = state.layout;
+        return {
+          layout: {
+            ...state.layout,
+            drawer: {
+              ...drawer,
+              measuredMm: {
+                width: drawer.width * gridUnitMm + 5,
+                depth: drawer.depth * effectiveGridUnitMmY(state.layout) + 5,
+              },
+            },
+            baseplateParams: {
+              ...DEFAULT_BASEPLATE_PARAMS,
+              paddingLeft: mm(10),
+              paddingRight: mm(10),
+              paddingFront: mm(10),
+              paddingBack: mm(10),
+            },
+          },
+        };
+      });
+    }
+
+    it('flags a synced plate larger than the measured drawer', () => {
+      seedOverflow();
+      render(<DimensionsSection />);
+      expect(screen.getByText('baseplate.drawerOverflow')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'baseplate.fitPaddingToDrawer' }));
+      expect(useLayoutStore.getState().layout.baseplateParams).toMatchObject({
+        paddingLeft: 2.5,
+        paddingRight: 2.5,
+        paddingFront: 2.5,
+        paddingBack: 2.5,
+      });
+      expect(screen.queryByText('baseplate.drawerOverflow')).toBeNull();
+    });
+
+    it('stays quiet once the plate is no longer synced to the layout', () => {
+      seedOverflow();
+      render(<DimensionsSection />);
+      fireEvent.click(screen.getByLabelText('baseplate.syncWithLayout'));
+      expect(screen.queryByText('baseplate.drawerOverflow')).toBeNull();
+    });
+  });
 });

@@ -28,6 +28,24 @@ describe('EditableDimensions', () => {
     expect(btn.className).toContain('cursor-pointer');
   });
 
+  it('mounts in edit mode, seeded with the current values, when asked to', () => {
+    render(<EditableDimensions {...defaultProps} initialEditing />);
+
+    expect(screen.getByLabelText('Width mm')).toHaveValue(441);
+    expect(screen.getByLabelText('Depth mm')).toHaveValue(357);
+  });
+
+  it('reports edit mode opening and closing', () => {
+    const onEditingChange = vi.fn();
+    render(<EditableDimensions {...defaultProps} onEditingChange={onEditingChange} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit dimensions' }));
+    expect(onEditingChange).toHaveBeenLastCalledWith(true);
+
+    fireEvent.keyDown(screen.getByLabelText('Width mm'), { key: 'Escape' });
+    expect(onEditingChange).toHaveBeenLastCalledWith(false);
+  });
+
   it('enters edit mode on click, showing two inputs', () => {
     render(<EditableDimensions {...defaultProps} />);
     fireEvent.click(screen.getByRole('button', { name: 'Edit dimensions' }));

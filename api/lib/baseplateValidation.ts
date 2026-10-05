@@ -17,6 +17,7 @@ import {
   isString,
   validationError,
 } from './validationUtils.js';
+import { isValidShareId } from './shared.js';
 
 /** 100 KB — generous for a flat params object; a guard against smuggled bloat. */
 const MAX_PAYLOAD_BYTES = 100_000;
@@ -131,14 +132,76 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'mountMagnets',
 ]);
 
+const BOOLEAN_PARAM_KEYS = new Set<string>([
+  'overTile',
+  'overTileHalfGrid',
+  'overTileHalfGridSolidLeftover',
+  'wholeCellsOnly',
+  'connectorNubs',
+  'lightweight',
+  'solidFloor',
+  'syncWithLayout',
+  'invertDovetails',
+  'preferIdenticalPieces',
+  'connectorSlotsAllEdges',
+  'detachMargins',
+  'detachMarginConnector',
+]);
+
+export const PADDING_ANCHORS = ['tl', 'tc', 'tr', 'ml', 'c', 'mr', 'bl', 'bc', 'br', 'custom'];
+export const CONNECTOR_STYLES = ['dovetail', 'puzzle', 'dovetailKey', 'snapClip'];
+export const FRACTIONAL_EDGES = ['start', 'end'];
+
+const ENUM_PARAM_VALUES = new Map<string, ReadonlySet<string>>([
+  ['paddingAnchor', new Set(PADDING_ANCHORS)],
+  ['connectorStyle', new Set(CONNECTOR_STYLES)],
+  ['fractionalEdgeX', new Set(FRACTIONAL_EDGES)],
+  ['fractionalEdgeY', new Set(FRACTIONAL_EDGES)],
+]);
+
+/** Mirrors STACK_PRINT_* in src/core/types/baseplate.ts. */
+function isValidStackPrint(value: unknown): boolean {
+  if (!isObject(value) || !isBoolean(value.enabled)) return false;
+  if (value.gapMm !== undefined && !(isNumber(value.gapMm) && inRange(value.gapMm, 0.1, 1))) {
+    return false;
+  }
+  if (
+    value.copies !== undefined &&
+    !(isNumber(value.copies) && Number.isInteger(value.copies) && inRange(value.copies, 1, 20))
+  ) {
+    return false;
+  }
+  return Object.keys(value).every(
+    (key) => key === 'enabled' || key === 'gapMm' || key === 'copies'
+  );
+}
+
+/**
+ * Optional settings the required checks above don't cover. A malformed one is
+ * dropped rather than failing the plate, so one bad option can't stop a design
+ * or a layout from syncing.
+ */
+function isWellFormedParam(key: string, value: unknown): boolean {
+  if (BOOLEAN_PARAM_KEYS.has(key)) return isBoolean(value);
+  const values = ENUM_PARAM_VALUES.get(key);
+  if (values) return isString(value) && values.has(value);
+  if (key === 'stackPrint') return isValidStackPrint(value);
+  return true;
+}
+
 function pickAllowedParams(params: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const key of Object.keys(params)) {
-    if (ALLOWED_PARAM_KEYS.has(key)) {
+    if (ALLOWED_PARAM_KEYS.has(key) && isWellFormedParam(key, params[key])) {
       out[key] = params[key];
     }
   }
   return out;
+}
+
+/** Share-format ids too: a design keeps the id it was shared under when it round-trips. */
+export function isValidBaseplateId(id: unknown): id is string {
+  return typeof id === 'string' && (/^baseplate_\d+_[a-z0-9]{1,8}$/.test(id) || isValidShareId(id));
 }
 
 export interface BaseplateSharePayload {

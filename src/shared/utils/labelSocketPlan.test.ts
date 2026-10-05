@@ -121,9 +121,26 @@ describe('planLabelSockets', () => {
   });
 
   it('grows clearance shrinks what fits', () => {
-    // 39.1mm hosts a 1U socket at 0.3 clearance (38.3) but not at 1.0 (39.0
-    // still fits) — push to 1.2 so it tips over the edge.
-    expect(planLabelSockets(grid(1, 1, [0]), 39.1, 1.2).anyFits).toBe(false);
+    expect(planLabelSockets(grid(1, 1, [0]), 39.1, 2.6).anyFits).toBe(true);
+    expect(planLabelSockets(grid(1, 1, [0]), 39.1, 2.8).anyFits).toBe(false);
+  });
+
+  it('keeps a 2U plate in a 2U bin at every wall thickness', () => {
+    for (const wallMm of [1.2, 1.6, 2, 2.4]) {
+      const innerW = 2 * 42 - 0.5 - 2 * wallMm;
+      const plan = planLabelSockets(grid(1, 1, [0]), innerW, CLEARANCE);
+      expect(plan.compartments[0].plateWidthU).toBe(2);
+    }
+  });
+
+  it('lets divider-bounded compartments use the backed allowance', () => {
+    const plan = planLabelSockets(
+      grid(2, 1, [0, 1], { thickness: 2.4 }),
+      4 * 42 - 0.5 - 2 * 2.4,
+      CLEARANCE
+    );
+    expect(plan.compartments[0].availableWidthMm).toBeCloseTo(80.15);
+    expect(plan.compartments.map((p) => p.plateWidthU)).toEqual([2, 2]);
   });
 
   // Sizing against the nominal grid line handed the narrowed compartment a
@@ -333,6 +350,11 @@ describe('planLabelSockets width percentage (#3402)', () => {
   it('leaves no plate fitting once the tab is too narrow for even 1u', () => {
     const plan = planLabelSockets(grid, 123.1, 0.3, 10);
     expect(plan.compartments[0].plateWidthU).toBeNull();
+  });
+
+  it('keeps full end walls on a tab narrower than its compartment', () => {
+    expect(planLabelSockets(grid, 80, 0.3, 99).compartments[0].autoWidthU).toBe(1);
+    expect(planLabelSockets(grid, 79.2, 0.3).compartments[0].autoWidthU).toBe(2);
   });
 });
 

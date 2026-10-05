@@ -1626,6 +1626,10 @@
           "type": "boolean",
           "description": "Hollow the lid interior to save filament."
         },
+        "fill": {
+          "type": "boolean",
+          "description": "Fill the lid's hollow down to its mating edge, just above the divider tops, so small parts stay in their compartments. Friction and magnetic lids only. Omit when off."
+        },
         "slide": {
           "$ref": "#/$defs/LidSlideConfig"
         },

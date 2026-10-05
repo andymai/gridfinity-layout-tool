@@ -181,6 +181,10 @@ export function sanitizeDrawer(drawer: DrawerShape): DrawerShape {
   if (isValidGridShift(drawer.gridShiftY) && drawer.gridShiftY !== 0) {
     out.gridShiftY = drawer.gridShiftY;
   }
+  if (drawer.measuredMm !== undefined && isValidMeasuredMm(drawer.measuredMm)) {
+    const { width, depth, height } = drawer.measuredMm;
+    out.measuredMm = height === undefined ? { width, depth } : { width, depth, height };
+  }
   if (drawer.outline !== undefined) {
     out.outline = {
       vertices: drawer.outline.vertices.map((v) =>

@@ -233,6 +233,7 @@ export function LidAdvancedFields({
             label={t('binDesigner.lid.relieveInterior')}
             checked={state.relieveInterior}
             onChange={handlers.toggleRelieveInterior}
+            disabledReason={state.relieveInteriorDisabledReason}
           />
           <Hint>
             {state.relieveInterior

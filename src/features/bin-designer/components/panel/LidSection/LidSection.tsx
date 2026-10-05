@@ -223,6 +223,17 @@ export function LidSection() {
               </>
             )}
 
+            {state.fillAvailable && (
+              <div className="space-y-1">
+                <FeatureToggle
+                  label={t('binDesigner.lid.fill')}
+                  checked={state.fill}
+                  onChange={handlers.toggleFill}
+                />
+                <Hint>{t('binDesigner.lid.fillHint')}</Hint>
+              </div>
+            )}
+
             {state.attachment === 'clickRails' && (
               <RailSides state={state} onToggle={handlers.toggleClickRailSide} t={t} />
             )}

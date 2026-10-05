@@ -238,6 +238,7 @@ export {
   lidGripRequestedDepthMm,
   lidGripHeightMm,
   hasLidGrip,
+  lidHasFill,
   hasBinLipDip,
   lidGripModeAllowed,
   DEFAULT_SCOOP_EDGES,

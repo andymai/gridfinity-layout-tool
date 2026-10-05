@@ -2270,6 +2270,11 @@ const en: Record<string, string> = {
     'The top of the cavity’s perimeter is trimmed so the click rails run unbroken. Dividers stop a few mm short of the rim and label shelves sit lower.',
   'binDesigner.lid.relieveInteriorOffHint':
     'The rails notch around each divider and label tab instead. Kept for designs made before this option, so they reprint identically.',
+  'binDesigner.lid.fill': 'Lid fill',
+  'binDesigner.lid.fillHint':
+    'Fills the lid down to its bottom edge, just above the dividers, so small parts stay in their compartment. Dividers keep their full height at the walls.',
+  'binDesigner.lid.relieveInteriorFillReason':
+    'Not used while the lid fill is on: the dividers keep their full height at the walls.',
   'binDesigner.lid.editCutouts': 'Cut holes in the lid',
   'binDesigner.lid.editCutoutsCount': 'Cut holes in the lid ({count})',
   'binDesigner.lid.editCutoutsHint':
@@ -3996,6 +4001,9 @@ const en: Record<string, string> = {
   'baseplate.inclPadding': 'incl. padding',
   'baseplate.inclShape': 'incl. drawer shape',
   'baseplate.inclPaddingShape': 'incl. padding + drawer shape',
+  'baseplate.drawerOverflow':
+    'Plate exceeds your measured {drawerWidth} × {drawerDepth} mm drawer by {width} × {depth} mm',
+  'baseplate.fitPaddingToDrawer': 'Fit padding to drawer',
   'baseplate.editDimensionsWidth': 'Baseplate width in mm',
   'baseplate.editDimensionsDepth': 'Baseplate depth in mm',
   'baseplate.reset': 'Reset to defaults',
@@ -4278,6 +4286,8 @@ const en: Record<string, string> = {
   'baseplate.library.moreActions': 'More actions for {name}',
   'baseplate.library.thumbnailPlaceholder': 'No preview',
   'baseplate.library.active': 'Active',
+  'baseplate.library.usedBy': 'Used by {names}',
+  'baseplate.library.unused': 'Not used by any layout',
   'baseplate.library.currentlyActive': 'Currently active baseplate',
   'baseplate.library.empty': 'No saved baseplates yet',
   'baseplate.library.emptyHint': 'Open the Baseplate tool to create one',
@@ -5286,6 +5296,8 @@ const en: Record<string, string> = {
   'drawerDims.heightLabel': 'Measured height (mm)',
   'drawerDims.clear': 'Clear measurement',
   'drawerDims.fit': 'Grid {width} × {depth} mm · {freeWidth} × {freeDepth} mm free',
+  'drawerDims.gridSize': 'Grid {width} × {depth} mm',
+  'drawerDims.addMeasured': "Add your drawer's measured size",
   'drawerDims.overflow': 'Grid exceeds your measured drawer by {width} × {depth} mm',
   'drawerDims.suggestionTitle': '{width} × {depth} units fits your drawer',
   'drawerDims.suggestionDetail': 'Leaves {freeWidth} × {freeDepth} mm free.',

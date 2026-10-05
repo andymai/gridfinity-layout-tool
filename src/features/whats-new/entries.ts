@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'baseplate-per-layout',
+    date: '2026-10-05',
+    kind: 'improved',
+    title: { en: 'Every layout keeps its own baseplate' },
+    body: {
+      en: 'Each layout now keeps its own baseplate design, so editing its plate leaves every other layout unchanged. Picking a design used by another layout makes a copy named for the design and layout, such as "Baseplate 2 (Kitchen)". Existing shared designs separate when the newer layout is opened, using its current plate settings, while the older layout keeps the original. The library shows which layouts use each design.',
+    },
+    action: { kind: 'openModal', modal: 'baseplateLibrary' },
+  },
+  {
     id: 'low-profile-base',
     date: '2026-10-01',
     kind: 'new',

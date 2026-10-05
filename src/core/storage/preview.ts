@@ -39,5 +39,6 @@ export function computePreview(layout: Layout): LayoutPreview {
     binCount: layout.bins.length,
     layerCount: layout.layers.length,
     binMap,
+    baseplateId: layout.activeBaseplateId ?? null,
   };
 }

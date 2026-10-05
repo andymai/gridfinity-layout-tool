@@ -6,8 +6,7 @@ import { useState, useCallback } from 'react';
 import { batch } from '@/core/cqrs';
 import { useLayoutStore, useToastStore } from '@/core/store';
 import type { Mutations } from '@/shared/contexts';
-import { CONSTRAINTS } from '@/core/constants';
-import { fitAxisUnits, halfUnitUpgrade } from '@/shared/utils/drawerFit';
+import { fitAxisUnits, halfUnitUpgrade, measuredHeightUnits } from '@/shared/utils/drawerFit';
 import {
   trackDrawerHalfFitSuggestion,
   trackDrawerMeasuredCommitted,
@@ -106,19 +105,9 @@ export function useDrawerFitSuggestion({
         depth: depthMm,
         ...(heightMm !== undefined ? { height: heightMm } : {}),
       };
-      // Floor at the 0.01-unit height resolution (mmToHeightUnits rounds,
-      // which could exceed the measured drawer by a hair). The floor clamp
-      // must match drawerUpdateSchema's MIN_LAYER_HEIGHT or validation
-      // silently rejects the whole command, measurement included.
       const heightUnitsValue =
         heightMm !== undefined
-          ? (Math.max(
-              CONSTRAINTS.MIN_LAYER_HEIGHT,
-              Math.min(
-                CONSTRAINTS.GRID_MAX,
-                Math.floor((heightMm / heightUnitMm) * 100 + 1e-6) / 100
-              )
-            ) as HeightUnits)
+          ? (measuredHeightUnits(heightMm, heightUnitMm) as HeightUnits)
           : undefined;
 
       batch(() =>

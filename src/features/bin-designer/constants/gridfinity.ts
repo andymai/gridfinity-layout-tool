@@ -13,12 +13,6 @@ export { GRIDFINITY_SPEC as GRIDFINITY } from '@/shared/printSettings/gridfinity
 // import to read the socket height it has to clear.
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
-/** Wall thickness per bin style (mm) */
-export const STYLE_WALL_THICKNESS: Record<string, number> = {
-  standard: 0.95,
-  slotted: 0.95,
-} as const;
-
 /** Dimension constraints for bin parameters */
 export const DESIGNER_CONSTRAINTS = {
   MIN_DIMENSION: 0.5, // grid units

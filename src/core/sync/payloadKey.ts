@@ -1,5 +1,8 @@
 import type { SyncKind } from './adapters/types';
 
+/** Mirrors `SCHEMA_VERSION` in api/sync/layouts/[id].ts; declared on every layout PUT. */
+export const LAYOUT_SCHEMA_VERSION = 2;
+
 /**
  * The key each kind's payload travels under, in both directions: the `PUT` body
  * a client sends and the envelope field the server returns.
@@ -20,3 +23,15 @@ export const PAYLOAD_KEY: Record<
   designVersions: 'designVersion',
   folders: 'folder',
 };
+
+export function syncPutBody(
+  kind: SyncKind,
+  payload: unknown,
+  modifiedAt: number
+): Record<string, unknown> {
+  return {
+    [PAYLOAD_KEY[kind]]: payload,
+    modifiedAt,
+    ...(kind === 'layouts' ? { schemaVersion: LAYOUT_SCHEMA_VERSION } : {}),
+  };
+}

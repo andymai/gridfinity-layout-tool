@@ -32,6 +32,10 @@ interface EditableDimensionsProps {
   readonly depthLabel: string;
   /** Accessible label for the height input; required when heightMm is set. */
   readonly heightLabel?: string;
+  /** Mount already in edit mode, seeded with the current values. */
+  readonly initialEditing?: boolean;
+  /** Called when edit mode opens or closes (commit or cancel). */
+  readonly onEditingChange?: (editing: boolean) => void;
 }
 
 /**
@@ -56,6 +60,8 @@ export function EditableDimensions({
   widthLabel,
   depthLabel,
   heightLabel,
+  initialEditing = false,
+  onEditingChange,
 }: EditableDimensionsProps) {
   const restClass =
     variant === 'secondary'
@@ -76,10 +82,12 @@ export function EditableDimensions({
       ? 'text-center text-xs tabular-nums'
       : 'text-center text-sm font-semibold tabular-nums';
   const hasHeight = heightMm !== undefined;
-  const [editing, setEditing] = useState(false);
-  const [localWidth, setLocalWidth] = useState('');
-  const [localDepth, setLocalDepth] = useState('');
-  const [localHeight, setLocalHeight] = useState('');
+  const [editing, setEditing] = useState(initialEditing);
+  const [localWidth, setLocalWidth] = useState(() => (initialEditing ? formatMm(widthMm) : ''));
+  const [localDepth, setLocalDepth] = useState(() => (initialEditing ? formatMm(depthMm) : ''));
+  const [localHeight, setLocalHeight] = useState(() =>
+    initialEditing && heightMm !== undefined ? formatMm(heightMm) : ''
+  );
   const widthRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -89,7 +97,13 @@ export function EditableDimensions({
     setLocalDepth(formatMm(depthMm));
     setLocalHeight(heightMm !== undefined ? formatMm(heightMm) : '');
     setEditing(true);
-  }, [widthMm, depthMm, heightMm]);
+    onEditingChange?.(true);
+  }, [widthMm, depthMm, heightMm, onEditingChange]);
+
+  const stopEditing = useCallback(() => {
+    setEditing(false);
+    onEditingChange?.(false);
+  }, [onEditingChange]);
 
   // Focus width input when edit mode activates
   useEffect(() => {
@@ -108,7 +122,7 @@ export function EditableDimensions({
     const w = parseFloat(localWidth);
     const d = parseFloat(localDepth);
     if (Number.isNaN(w) || Number.isNaN(d)) {
-      setEditing(false);
+      stopEditing();
       return;
     }
     const h = hasHeight ? parseFloat(localHeight) : undefined;
@@ -125,7 +139,7 @@ export function EditableDimensions({
       same(d, depthMm) &&
       (heightMm === undefined || h === undefined || Number.isNaN(h) || same(h, heightMm))
     ) {
-      setEditing(false);
+      stopEditing();
       return;
     }
     if (hasHeight) {
@@ -135,7 +149,7 @@ export function EditableDimensions({
     } else {
       onCommit(clamp(w), clamp(d));
     }
-    setEditing(false);
+    stopEditing();
   }, [
     localWidth,
     localDepth,
@@ -147,11 +161,12 @@ export function EditableDimensions({
     clamp,
     clampHeight,
     onCommit,
+    stopEditing,
   ]);
 
   const cancel = useCallback(() => {
-    setEditing(false);
-  }, []);
+    stopEditing();
+  }, [stopEditing]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {

@@ -995,7 +995,7 @@ describe('shifted dividers', () => {
 
     const nominal = planLabelPlateSeats(twoUp(), INNER_W, INNER_D, INTERIOR_H, 1.2);
     const shifted = planLabelPlateSeats(
-      twoUp([{ compartmentA: 0, compartmentB: 1, offsetStart: -30, offsetEnd: -30 }]),
+      twoUp([{ compartmentA: 0, compartmentB: 1, offsetStart: 30, offsetEnd: 30 }]),
       INNER_W,
       INNER_D,
       INTERIOR_H,
@@ -1004,11 +1004,10 @@ describe('shifted dividers', () => {
 
     expect(nominal).toHaveLength(2);
     expect(shifted).toHaveLength(2);
-    // Compartment 0 keeps its outer wall, so its left-aligned pocket is
-    // unmoved; compartment 1's wall came 30mm left and its pocket follows.
-    expect(shifted[1].x).toBeLessThan(nominal[1].x);
-    // A wider compartment now hosts a wider plate.
-    expect(shifted[1].plateWidthU).toBeGreaterThan(nominal[1].plateWidthU);
+    // Compartment 1's wall came 30mm right and its pocket follows.
+    expect(shifted[1].x).toBeGreaterThan(nominal[1].x);
+    // A narrower compartment now hosts a narrower plate.
+    expect(shifted[1].plateWidthU).toBeLessThan(nominal[1].plateWidthU);
   });
 
   it('keeps each tab inside its own compartment', async () => {

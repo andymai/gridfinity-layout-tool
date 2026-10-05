@@ -7,6 +7,7 @@ import { sanitizeString } from './sanitize.js';
 export { sanitizeString } from './sanitize.js';
 import { isNumber, isObject, inRange, validationError } from './validationUtils.js';
 import { isValidDrawer, sanitizeDrawer } from './drawerValidation.js';
+import { isValidBaseplateId, validateBaseplateShare } from './baseplateValidation.js';
 import type { DrawerShape } from './drawerValidation.js';
 import { DESIGN_ID_MAX_LENGTH, RESERVED_PROPERTY_KEYS } from './sharedDesignsValidation.js';
 import { SHARE_CONSTRAINTS } from './shareConstraints.js';
@@ -62,6 +63,9 @@ interface LayoutShape {
   heightUnitMm?: number;
   magnetAnchor?: 'edge' | 'center';
   lowProfileBase?: true;
+  baseplateParams?: Record<string, unknown>;
+  /** The owner's library design; carried for cloud sync only, shares strip it. */
+  activeBaseplateId?: string;
   /** Library folder, carried for cloud sync only; shares strip it. */
   folderId?: string;
 }
@@ -72,12 +76,29 @@ export function isValidFolderId(value: unknown): value is string {
   return typeof value === 'string' && FOLDER_ID_PATTERN.test(value);
 }
 
-/** A share is public; the owner's library placement stays home. */
-export function withoutLibraryPlacement<T extends { folderId?: string }>(
-  layout: T
-): Omit<T, 'folderId'> {
-  const { folderId: _folderId, ...rest } = layout;
+/**
+ * A share is public; the owner's library placement and the design link into
+ * their own baseplate library stay home.
+ */
+export function withoutLibraryPlacement<
+  T extends { folderId?: string; activeBaseplateId?: string },
+>(layout: T): Omit<T, 'folderId' | 'activeBaseplateId'> {
+  const { folderId: _folderId, activeBaseplateId: _activeBaseplateId, ...rest } = layout;
   return rest;
+}
+
+/**
+ * Plate settings that fail validation are dropped rather than failing the
+ * layout: the drawer and bins still have to sync.
+ */
+function sanitizeBaseplateParams(value: unknown): Record<string, unknown> | undefined {
+  if (value === undefined) return undefined;
+  const payload = { type: 'baseplate', version: 1, params: value };
+  const result = validateBaseplateShare(
+    payload,
+    Buffer.byteLength(JSON.stringify(payload), 'utf8')
+  );
+  return result.valid ? result.payload.params : undefined;
 }
 
 export type ValidationResult =
@@ -295,6 +316,8 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
     });
   }
 
+  const baseplateParams = sanitizeBaseplateParams(layout.baseplateParams);
+
   // Return sanitized layout
   return {
     valid: true,
@@ -321,6 +344,12 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
           ? layout.magnetAnchor
           : undefined,
       ...(layout.lowProfileBase === true ? { lowProfileBase: true as const } : {}),
+      ...(baseplateParams ? { baseplateParams } : {}),
+      // The client only resolves a link alongside inline params; a link left
+      // without them would show a design while drawing default padding.
+      ...(baseplateParams && isValidBaseplateId(layout.activeBaseplateId)
+        ? { activeBaseplateId: layout.activeBaseplateId }
+        : {}),
       ...(isValidFolderId(layout.folderId) ? { folderId: layout.folderId } : {}),
     },
   };

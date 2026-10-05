@@ -545,6 +545,7 @@ describe('computePreview', () => {
         { x: 0, y: 0, w: 1, d: 1, c: '#3B82F6' },
         { x: 1, y: 0, w: 2, d: 3, c: '#3B82F6' },
       ],
+      baseplateId: null,
     });
   });
 

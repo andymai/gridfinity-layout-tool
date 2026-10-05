@@ -21,6 +21,7 @@ import {
   LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM,
   LABEL_SOCKET_WALL_MM,
   labelPlateWidthMm,
+  labelSocketPocketX0,
 } from '@/shared/constants/labelPlates';
 import type { LabelPlateWidthU, LabelSocketStyle } from '@/shared/constants/labelPlates';
 import { sketch } from './meshUtils';
@@ -31,9 +32,9 @@ import { sketch } from './meshUtils';
  * Y:[depthSign·tabDepth, 0] with the shelf top at Z=tabHeight.
  *
  * Pocket = plate footprint + total clearance, one pocket-wall margin in
- * from the anchor wall, placed along X by `alignment`. Ribs sit on the two
- * long (X-parallel) pocket walls: 0.2mm proud, 0.4mm tall, starting 0.2mm
- * above the pocket floor — the band the plate's perimeter latch clicks
+ * from the anchor wall, placed along X by `labelSocketPocketX0`. Ribs sit on
+ * the two long (X-parallel) pocket walls: 0.2mm proud, 0.4mm tall, starting
+ * 0.2mm above the pocket floor — the band the plate's perimeter latch clicks
  * behind.
  *
  * Best-effort like `applyTabText`: geometry that doesn't fit or a boolean
@@ -51,6 +52,8 @@ export function applySocket(
     tabDepth: number;
     tabHeight: number;
     alignment: 'left' | 'center' | 'right';
+    touchesLeft: boolean;
+    touchesRight: boolean;
     depthSign: 1 | -1;
   }
 ): Shape3D {
@@ -60,17 +63,16 @@ export function applySocket(
 
   // Defense in depth: the plan already sized the plate to the tab width, but
   // a crafted payload (short depth, huge fit offset) could still overflow.
-  if (pocketW + 2 * wall > ctx.tabWidth + 0.01) return tabSolid;
+  const pocketX0 = labelSocketPocketX0({
+    tabWidth: ctx.tabWidth,
+    pocketW,
+    alignment: ctx.alignment,
+    touchesLeft: ctx.touchesLeft,
+    touchesRight: ctx.touchesRight,
+  });
+  if (pocketX0 === null) return tabSolid;
   if (pocketD + 2 * wall > ctx.tabDepth + 0.01) return tabSolid;
 
-  let pocketX0: number;
-  if (ctx.alignment === 'left') {
-    pocketX0 = wall;
-  } else if (ctx.alignment === 'right') {
-    pocketX0 = ctx.tabWidth - wall - pocketW;
-  } else {
-    pocketX0 = (ctx.tabWidth - pocketW) / 2;
-  }
   const centerX = pocketX0 + pocketW / 2;
   const centerY = ctx.depthSign * (wall + pocketD / 2);
 

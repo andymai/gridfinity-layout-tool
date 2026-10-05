@@ -8,6 +8,7 @@
  * Geometry breakdown (in build order):
  *   - `buildLidFloor`     — flat plate at the top              (lidProfile)
  *   - `buildMatingShell`  — inverted-lip wall                  (lidProfile)
+ *   - `addLidFill`        — plug down to the mating edge     (lidFill)
  *   - `addClickRails`     — tapered snap rails on each wall    (lidClickRail)
  *   - `cutMagnetHoles`    — standard magnet pattern through floor (lidMagnets)
  *   - `buildStackGrid`    — Gridfinity lip profile on top      (lidStackGrid)
@@ -37,6 +38,7 @@ import { addGripRelief } from './lidGripRelief';
 import { buildStackGrid } from './lidStackGrid';
 import { cutMagnetHoles } from './lidMagnets';
 import { addLidRetentionMagnets } from './lidRetentionMagnets';
+import { addLidFill } from './lidFill';
 import { cutTrayRecess } from './lidTray';
 import { applyLidCutouts } from './lidCutoutBuilder';
 import { applyLidText } from './lidTextBuilder';
@@ -87,6 +89,12 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
       collectOrigins(matingShell, FeatureTag.LID_BODY, originToTag);
     }
     let body: Shape3D = unwrap(fuse(floor, matingShell));
+
+    // 1b. Lid fill. Before the retention bosses, whose pockets would
+    //     otherwise be filled by it.
+    if (inputs.fill) {
+      body = addLidFill(scope, body, inputs, inputs.fill, originToTag);
+    }
 
     // 2. Click rails — fuse onto the mating shell from outside (tags rails).
     // Skipped entirely when no side has rails enabled, producing a

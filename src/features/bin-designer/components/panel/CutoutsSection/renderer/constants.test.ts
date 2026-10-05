@@ -12,7 +12,6 @@ import {
   EDGE_HANDLE_HEIGHT,
   ROTATION_HANDLE_OFFSET_PX,
   ROTATION_HANDLE_RADIUS_PX,
-  LARGE_BIN_THRESHOLD,
 } from './constants';
 
 describe('constants', () => {
@@ -78,12 +77,6 @@ describe('constants', () => {
 
     it('defines ROTATION_HANDLE_RADIUS_PX', () => {
       expect(ROTATION_HANDLE_RADIUS_PX).toBe(4);
-    });
-  });
-
-  describe('grid constants', () => {
-    it('defines LARGE_BIN_THRESHOLD', () => {
-      expect(LARGE_BIN_THRESHOLD).toBe(10000);
     });
   });
 });

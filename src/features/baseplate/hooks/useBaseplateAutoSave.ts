@@ -118,8 +118,8 @@ export function useBaseplateAutoSave(): SaveStatus {
   const isFirstRender = useRef(true);
   const lastSavedParams = useRef<StoredBaseplateParams | undefined>(undefined);
   const lastActiveId = useRef<BaseplateDesignId | null>(null);
-  // Since a save now awaits generation-settle + a delay, two saves for the same
-  // design can overlap. Each save carries a token; scheduling a newer one flips
+  // A save's thumbnail stage awaits generation-settle + a delay, so two saves
+  // for the same design can overlap. Each save carries a token; scheduling a newer one flips
   // the previous token so the older save bails before its read-modify-write can
   // land stale params/thumbnail (or flash a stale "saved" status). Same shape as
   // the designer's `useAutoSave`.
@@ -128,6 +128,28 @@ export function useBaseplateAutoSave(): SaveStatus {
   // captures) — flipped from the save effect so a slow backfill can't overwrite
   // the edit's params with a thumbnail-only write.
   const backfillAbortRef = useRef<{ current: boolean }>({ current: false });
+  // Kept apart from the live params: by the time a design switch flushes, those
+  // already belong to the next design.
+  const pendingRef = useRef<{ designId: BaseplateDesignId; params: StoredBaseplateParams } | null>(
+    null
+  );
+
+  // The edit stays pending until a write lands, so a failed flush is retried by
+  // the next one. A late completion only clears what it wrote, and only touches
+  // save tracking while its design is still the active one.
+  const flushPending = useCallback((): void => {
+    const pending = pendingRef.current;
+    if (!pending || pending.params === lastSavedParams.current) return;
+    void updateDesignParams(pending.designId, pending.params).then((result) => {
+      const stillActive = useLayoutStore.getState().layout.activeBaseplateId === pending.designId;
+      if (!isOk(result)) {
+        if (stillActive) setStatus('error');
+        return;
+      }
+      if (pendingRef.current === pending) pendingRef.current = null;
+      if (stillActive) lastSavedParams.current = pending.params;
+    });
+  }, []);
 
   const performSave = useCallback(
     async (
@@ -143,6 +165,27 @@ export function useBaseplateAutoSave(): SaveStatus {
       const superseded = (): boolean =>
         abortToken.current || useLayoutStore.getState().layout.activeBaseplateId !== designId;
 
+      // Not held for the thumbnail: the layout saves its own copy on this same
+      // debounce, and a library copy left behind it is what
+      // `useBaseplateLibraryInit` restores over the edit on the next load.
+      const result = await updateDesignParams(designId, paramsToSave);
+      if (superseded()) return;
+      if (!isOk(result)) {
+        // Surfaced in the header rather than swallowed — the edit is still in
+        // the layout, but it is no longer in the library.
+        setStatus('error');
+        return;
+      }
+      lastSavedParams.current = paramsToSave;
+      if (pendingRef.current?.params === paramsToSave) pendingRef.current = null;
+      setActiveDesignId(result.value.id);
+      upsertRegistryEntry({
+        id: result.value.id,
+        name: result.value.name,
+        updatedAt: result.value.updatedAt,
+      });
+      setStatus('saved');
+
       // Wait for the mesh to settle, then let R3F flush the final frame, so the
       // capture reads the finished geometry rather than a ghost wireframe.
       await waitForGenerationSettled(superseded);
@@ -153,24 +196,14 @@ export function useBaseplateAutoSave(): SaveStatus {
       // `null` (capture unavailable — e.g. WebGL context lost) leaves the stored
       // thumbnail untouched rather than clearing it; a data URL replaces it.
       const thumbnail = captureBaseplateThumbnailAtPreset(resolveThumbnailFraming(paramsToSave));
-      if (superseded()) return;
-
-      const result = await updateDesignParams(designId, paramsToSave, thumbnail ?? undefined);
-      if (superseded()) return;
-      if (!isOk(result)) {
-        // Surfaced in the header rather than swallowed — the edit is still in
-        // the layout, but it is no longer in the library.
-        setStatus('error');
-        return;
-      }
-      lastSavedParams.current = paramsToSave;
-      setActiveDesignId(result.value.id);
+      if (!thumbnail || superseded()) return;
+      const withThumbnail = await updateDesignThumbnail(designId, thumbnail);
+      if (superseded() || !isOk(withThumbnail)) return;
       upsertRegistryEntry({
-        id: result.value.id,
-        name: result.value.name,
-        updatedAt: result.value.updatedAt,
+        id: withThumbnail.value.id,
+        name: withThumbnail.value.name,
+        updatedAt: withThumbnail.value.updatedAt,
       });
-      setStatus('saved');
     },
     []
   );
@@ -229,9 +262,10 @@ export function useBaseplateAutoSave(): SaveStatus {
       return;
     }
 
-    // When switching active design, reset tracking without saving — the newly
-    // active design's params are already persisted in the library.
+    // The previous design's debounce was just cancelled; its edit still has to
+    // land. The new design's params came out of the library.
     if (activeBaseplateId !== lastActiveId.current) {
+      flushPending();
       lastActiveId.current = activeBaseplateId;
       lastSavedParams.current = params;
       return;
@@ -260,6 +294,7 @@ export function useBaseplateAutoSave(): SaveStatus {
     abortTokenRef.current = abortToken;
     const designId = activeBaseplateId;
     const paramsToSave = params;
+    pendingRef.current = { designId, params: paramsToSave };
     timerRef.current = setTimeout(() => {
       void performSave(paramsToSave, designId, abortToken);
     }, AUTO_SAVE_DELAY_MS);
@@ -270,27 +305,21 @@ export function useBaseplateAutoSave(): SaveStatus {
         clearTimeout(timerRef.current);
       }
     };
-  }, [params, activeBaseplateId, performSave]);
+  }, [params, activeBaseplateId, performSave, flushPending]);
 
-  // Flush a pending edit when the page unmounts (navigating away). The debounced
-  // save above is otherwise cancelled by its own cleanup, so a quick edit-then-
-  // leave would never reach the library — and `useBaseplateLibraryInit` would
-  // then re-materialize the stale design over the layout's newer inline params,
-  // silently dropping the edit. Params-only (no thumbnail),
-  // fired before the next route's re-materialize reads the design.
-  const latestRef = useRef({ params, activeBaseplateId });
+  // Unmount cancels the debounce, and a hidden tab may be discarded before it
+  // fires. Params-only, so it lands before the next route's re-materialize reads
+  // the design.
   useEffect(() => {
-    latestRef.current = { params, activeBaseplateId };
-  });
-  useEffect(
-    () => () => {
-      const { params: pending, activeBaseplateId: designId } = latestRef.current;
-      if (designId && pending && pending !== lastSavedParams.current) {
-        void updateDesignParams(designId, pending);
-      }
-    },
-    []
-  );
+    const onVisibilityChange = (): void => {
+      if (document.visibilityState === 'hidden') flushPending();
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      flushPending();
+    };
+  }, [flushPending]);
 
   // An active design with no save in flight is, by definition, saved: its
   // params came out of the library. Mirrors the designer, which marks a loaded

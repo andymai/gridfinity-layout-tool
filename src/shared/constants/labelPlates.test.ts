@@ -29,6 +29,7 @@ import {
   labelPlateWidthMm,
   labelShelfCeilingMm,
   labelSocketOuterWidthMm,
+  labelSocketPocketX0,
   largestFittingPlateWidthU,
   resolveLabelShelfTopMm,
 } from './labelPlates';
@@ -250,6 +251,56 @@ describe('labelPlates', () => {
     it('returns null when even 1U does not fit', () => {
       expect(largestFittingPlateWidthU(38, 0.3)).toBeNull();
       expect(largestFittingPlateWidthU(0, 0.3)).toBeNull();
+    });
+
+    it('fits a wider plate when walls back both pocket ends', () => {
+      expect(largestFittingPlateWidthU(79.5, 0.3)).toBe(1);
+      expect(largestFittingPlateWidthU(79.5, 0.3, true)).toBe(2);
+    });
+  });
+
+  describe('labelSocketPocketX0', () => {
+    const pocketW = labelPlateWidthMm(2) + 0.3;
+    const backed = { pocketW, touchesLeft: true, touchesRight: true } as const;
+
+    it('places by alignment while both ends keep a full wall', () => {
+      const roomy = { ...backed, tabWidth: 81.1 };
+      expect(labelSocketPocketX0({ ...roomy, alignment: 'left' })).toBeCloseTo(1);
+      expect(labelSocketPocketX0({ ...roomy, alignment: 'right' })).toBeCloseTo(81.1 - 1 - pocketW);
+      expect(labelSocketPocketX0({ ...roomy, alignment: 'center' })).toBeCloseTo(1.4);
+    });
+
+    it('centres a tight plate between backed ends whatever the alignment', () => {
+      for (const alignment of ['left', 'center', 'right'] as const) {
+        expect(labelSocketPocketX0({ ...backed, tabWidth: 79.5, alignment })).toBeCloseTo(0.6);
+      }
+    });
+
+    it('thins only the backed end when one end is free', () => {
+      const x0 = labelSocketPocketX0({
+        pocketW,
+        tabWidth: 79.9,
+        alignment: 'left',
+        touchesLeft: true,
+        touchesRight: false,
+      });
+      expect(x0).toBeCloseTo(0.4);
+    });
+
+    it('rejects a plate that leaves free ends thinner than a full wall', () => {
+      expect(
+        labelSocketPocketX0({
+          pocketW,
+          tabWidth: 79.5,
+          alignment: 'center',
+          touchesLeft: false,
+          touchesRight: false,
+        })
+      ).toBeNull();
+    });
+
+    it('rejects a plate wider than the backed allowance', () => {
+      expect(labelSocketPocketX0({ ...backed, tabWidth: 78.5, alignment: 'center' })).toBeNull();
     });
   });
 });

@@ -166,6 +166,7 @@ describe('diff: only-remote (live)', () => {
       id: 'lay-1',
       payload: { v: 1 },
       modifiedAt: 5000,
+      schemaVersion: 1,
     });
   });
 });

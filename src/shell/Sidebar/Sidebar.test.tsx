@@ -263,12 +263,11 @@ describe('Sidebar', () => {
       expect(screen.getByLabelText('Decrease Drawer depth in grid units')).toBeDisabled();
     });
 
-    it('shows real-world dimensions in mm', () => {
+    it('labels the unmeasured size as the grid’s', () => {
       render(<Sidebar />);
 
-      // Default: 10×8×12 units with 42mm grid unit and 7mm height unit
-      // 420 × 336 × 84 mm
-      expect(screen.getByText(/420.*×.*336.*×.*84.*mm/)).toBeInTheDocument();
+      // Default: 10×8×12 units with 42mm grid unit
+      expect(screen.getByText('Grid 420 × 336 mm')).toBeInTheDocument();
     });
   });
 
