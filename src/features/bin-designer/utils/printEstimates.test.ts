@@ -79,6 +79,54 @@ describe('printEstimates', () => {
       expect(tall.gramsFilament).toBeGreaterThan(short.gramsFilament);
     });
 
+    it('a thicker wall uses more material', () => {
+      const volumes = [0.4, 0.95, 1.2, 1.6, 2.0, 2.4].map(
+        (wallThickness) =>
+          estimatePrint({ ...DEFAULT_BIN_PARAMS, width: 2, depth: 1, height: 6, wallThickness })
+            .volumeMm3
+      );
+      for (let i = 1; i < volumes.length; i++) {
+        expect(volumes[i]).toBeGreaterThan(volumes[i - 1]);
+      }
+    });
+
+    it('moves the filament weight a reporter would compare (2x1x6, 1.2 to 2.0mm walls)', () => {
+      const thin = estimatePrint({ ...DEFAULT_BIN_PARAMS, width: 2, depth: 1, height: 6 });
+      const thick = estimatePrint({
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 1,
+        height: 6,
+        wallThickness: 2,
+      });
+      expect(thick.gramsFilament - thin.gramsFilament).toBeGreaterThan(5);
+    });
+
+    it('drops the stacking lip at its real size', () => {
+      const lipped = estimatePrint({ ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, height: 3 });
+      const open = estimatePrint({
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 2,
+        height: 3,
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+      });
+      // Measured on the exported solid: 3030 mm³ for a 2x2 bin.
+      expect(lipped.volumeMm3 - open.volumeMm3).toBeGreaterThan(2900);
+      expect(lipped.volumeMm3 - open.volumeMm3).toBeLessThan(3150);
+    });
+
+    it('leaves a solid bin unchanged by its wall, which only trades fill for wall', () => {
+      const solid = (wallThickness: number): number =>
+        estimatePrint({
+          ...DEFAULT_BIN_PARAMS,
+          style: 'solid',
+          base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+          wallThickness,
+        }).volumeMm3;
+      expect(Math.abs(solid(2.4) - solid(1.2)) / solid(1.2)).toBeLessThan(0.02);
+    });
+
     it('slotted style uses similar material to standard', () => {
       const standard = estimatePrint({ ...DEFAULT_BIN_PARAMS, style: 'standard' });
       const slotted = estimatePrint({ ...DEFAULT_BIN_PARAMS, style: 'slotted' });
@@ -322,13 +370,27 @@ describe('printEstimates', () => {
     // ─── Honeycomb wall reduction ─────────────────────────────────────
 
     it('honeycomb walls reduce volume', () => {
-      const standard = estimatePrint(DEFAULT_BIN_PARAMS);
+      const standard = estimatePrint({ ...DEFAULT_BIN_PARAMS, height: 6 });
       const honeycomb = estimatePrint({
         ...DEFAULT_BIN_PARAMS,
         height: 6,
         wallPattern: { enabled: true, pattern: 'honeycomb' as const },
       });
       expect(honeycomb.volumeMm3).toBeLessThan(standard.volumeMm3);
+    });
+
+    it('a wall pattern removes more through a thicker wall', () => {
+      const removal = (wallThickness: number): number => {
+        const plain = { ...DEFAULT_BIN_PARAMS, height: 8, depth: 1, width: 3, wallThickness };
+        return (
+          estimatePrint(plain).volumeMm3 -
+          estimatePrint({ ...plain, wallPattern: { enabled: true, pattern: 'honeycomb' as const } })
+            .volumeMm3
+        );
+      };
+      // Measured on the exported solid: 9024 mm³ removed per mm of wall here.
+      expect(removal(2) / 2).toBeCloseTo(9024, -2);
+      expect(removal(1.2) / 1.2).toBeCloseTo(9024, -2);
     });
 
     it('honeycomb walls have no effect on short bins', () => {
@@ -661,19 +723,21 @@ describe('printEstimates', () => {
           compartments: { cols: 2, rows: 1, thickness: 1.2, cells: [0, 0] },
           label: enabledLabel,
         };
-        const split: BinParams = {
+        const single: BinParams = {
           ...merged,
-          compartments: { cols: 2, rows: 1, thickness: 1.2, cells: [0, 1] },
+          compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
         };
         const withoutLabel = (p: BinParams) =>
           estimatePrint({ ...p, label: { ...p.label, enabled: false } }).volumeMm3;
 
         const mergedLabelVol = estimatePrint(merged).volumeMm3 - withoutLabel(merged);
-        const splitLabelVol = estimatePrint(split).volumeMm3 - withoutLabel(split);
+        const singleLabelVol = estimatePrint(single).volumeMm3 - withoutLabel(single);
 
-        // Shelf area is identical (one wide shelf vs two half-width shelves),
-        // but the merged version has one support instead of two.
-        expect(mergedLabelVol).toBeLessThan(splitLabelVol);
+        // A merged row is the same compartment as an unsplit bin. Comparing
+        // against the split row instead would hang on where each tab's gusset
+        // count crosses a ceil boundary, which moves with the wall.
+        expect(mergedLabelVol).toBeGreaterThan(0);
+        expect(mergedLabelVol).toBe(singleLabelVol);
       });
 
       it('accounts for interior-row back walls (1x3 vertical stack)', () => {

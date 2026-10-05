@@ -6,13 +6,19 @@ import { baseWallHeight } from './binDimensions';
 import {
   DEFAULT_PATTERN_SCALE,
   DEFAULT_PATTERN_WEB_THICKNESS,
+  isKumikoPattern,
 } from '@/features/bin-designer/types';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
 import { resolveWallPatternSides } from '@/shared/utils/wallPatternSides';
-import { interiorFilletRiseMm } from '@/shared/utils/interiorFillet';
+import { interiorFilletCornerMm, interiorFilletRiseMm } from '@/shared/utils/interiorFillet';
+import {
+  BOTTOM_SOLID_SKIRT,
+  CUTOUT_BORDER_WIDTH,
+  TOP_KEEP_OUT,
+} from '@/shared/constants/wallBands';
 import { FLOOR_PATTERN_BORDER, floorWindowSpan } from '@/shared/generation/floorPatternMetrics';
 import {
   stampPatternOpenArea,
@@ -21,8 +27,9 @@ import {
 
 /**
  * Approximate open-area fraction of each pattern at neutral scale — the share
- * of the wall face removed by the perforation. Honeycomb keeps its historical
- * 0.907 so existing estimates are unchanged; the sparser patterns remove less.
+ * of the face removed by the perforation. Outer walls price stamped patterns
+ * exactly (see `stampedWallOpenArea`); this table covers the kumiko lattices
+ * and divider faces. Honeycomb's 0.907 runs about 1.4x the real stamp area.
  *
  * Mirrors the geometry in patterns/* (cross-feature import not allowed). These
  * are estimates; the true fraction shifts slightly with web and keep-outs.
@@ -45,9 +52,9 @@ const PATTERN_VOID_FRACTION: Record<WallPatternType, number> = {
 /**
  * Volume removed by wall-pattern cutouts, for any pattern type.
  *
- * Approximation: pattern-specific open-area fraction of the wall face area,
- * modulated by the scale slider (bolder = more open, web fixed), cut through
- * the full wall thickness.
+ * Stamped patterns count their real holes; kumiko lattices take an
+ * open-area fraction of the face, modulated by the scale slider. Either way
+ * the cut goes through the full wall thickness.
  */
 export function computeWallPatternReduction(
   params: BinParams,
@@ -57,11 +64,24 @@ export function computeWallPatternReduction(
   wallThickness: number,
   bottomH: number
 ): number {
+  const innerW = outerW - 2 * wallThickness;
+  const innerD = outerD - 2 * wallThickness;
+
+  // Patterned wall spans: slot-free walls (front/back seat y-axis dividers,
+  // left/right seat x-axis) intersected with the per-side selection.
+  const sides = resolveWallPatternSides(params.wallPattern);
+  const yFree = params.style !== 'slotted' || !params.slotConfig.y.enabled;
+  const xFree = params.style !== 'slotted' || !params.slotConfig.x.enabled;
+  const spans = [
+    yFree && sides.front ? innerW : 0,
+    yFree && sides.back ? innerW : 0,
+    xFree && sides.left ? innerD : 0,
+    xFree && sides.right ? innerD : 0,
+  ];
+
   // Must match wallPatterns.ts constants (cross-feature import not allowed)
   const HEX_RADIUS = 1.8;
   const WEB_THICKNESS = 0.8;
-  const TOP_KEEP_OUT = 1.5;
-  const BOTTOM_SOLID_SKIRT = 1.5;
 
   const wallHeight = totalH - bottomH;
   // wallThickness clears the floor slab; the skirt is the solid band above it
@@ -69,42 +89,81 @@ export function computeWallPatternReduction(
   const bottomKeepOut = wallThickness + BOTTOM_SOLID_SKIRT + interiorFilletRiseMm(params);
   const patternHeight = wallHeight - TOP_KEEP_OUT - bottomKeepOut;
   const minPatternH = Math.sqrt(3) * HEX_RADIUS + WEB_THICKNESS;
-  if (patternHeight < minPatternH) return 0;
-
-  const innerW = outerW - 2 * wallThickness;
-  const innerD = outerD - 2 * wallThickness;
-
-  // Patterned wall length: slot-free walls (front/back seat y-axis dividers,
-  // left/right seat x-axis) intersected with the per-side selection.
-  const sides = resolveWallPatternSides(params.wallPattern);
-  const yFree = params.style !== 'slotted' || !params.slotConfig.y.enabled;
-  const xFree = params.style !== 'slotted' || !params.slotConfig.x.enabled;
-  let patternedWallLength = 0;
-  if (yFree) {
-    if (sides.front) patternedWallLength += innerW;
-    if (sides.back) patternedWallLength += innerW;
-  }
-  if (xFree) {
-    if (sides.left) patternedWallLength += innerD;
-    if (sides.right) patternedWallLength += innerD;
-  }
-
-  const wallFaceArea = patternedWallLength * patternHeight;
+  const fractionFits = patternHeight >= minPatternH;
 
   // Pattern open-area fraction, modulated by scale (0.5 = neutral, factor 1.0)
   // and by the strut width, which the table's fractions assume at 0.8mm.
   const scale = params.wallPattern.scale ?? DEFAULT_PATTERN_SCALE;
   const base = PATTERN_VOID_FRACTION[params.wallPattern.pattern];
-  const coverageFraction = Math.min(
-    0.95,
-    Math.max(0, base * (0.85 + 0.3 * scale) * strutWidthFactor(params, patternHeight))
+  const coverageFraction = fractionFits
+    ? Math.min(
+        0.95,
+        Math.max(0, base * (0.85 + 0.3 * scale) * strutWidthFactor(params, patternHeight))
+      )
+    : 0;
+
+  const wallOpenArea = isKumikoPattern(params.wallPattern.pattern)
+    ? spans.reduce((sum, span) => sum + span, 0) * patternHeight * coverageFraction
+    : stampedWallOpenArea(params, spans, totalH, wallThickness);
+  const dividerRemoval = fractionFits
+    ? dividerPatternReduction(params, innerW, innerD, coverageFraction)
+    : 0;
+
+  // Prisms cut straight through the wall, so each mm² open removes one wall thickness.
+  return wallOpenArea * wallThickness + dividerRemoval;
+}
+
+/**
+ * Exact open area (mm²) of a stamped pattern across the given wall spans:
+ * the worker's own stamp calculator, over the band and corner keep-outs
+ * `wallPatterns.ts` stamps into. Whole rows drop out as the band shrinks, so
+ * a fraction of face area misses steps of a third of the removal.
+ */
+function stampedWallOpenArea(
+  params: BinParams,
+  spans: readonly number[],
+  totalH: number,
+  wallThickness: number
+): number {
+  const hasLip = params.base.stackingLip;
+  const bandTop = computeInteriorHeight(
+    baseWallHeight(params.base, totalH),
+    hasLip,
+    GRIDFINITY.LIP_SMALL_TAPER
   );
-  const coverage = wallFaceArea * coverageFraction;
+  const bottomKeepOut = wallThickness + BOTTOM_SOLID_SKIRT + interiorFilletRiseMm(params);
+  const bandHeight = bandTop - TOP_KEEP_OUT - bottomKeepOut;
 
-  // Material removed per unit area = wall thickness (prisms cut through wall)
-  const cutDepth = wallThickness;
+  const { pattern, webThickness } = params.wallPattern;
+  const scale = params.wallPattern.scale ?? DEFAULT_PATTERN_SCALE;
+  const { minPatternHeight } = wallPatternElementMetrics(
+    pattern,
+    params.height,
+    scale,
+    webThickness
+  );
+  if (bandHeight < minPatternHeight) return 0;
 
-  return coverage * cutDepth + dividerPatternReduction(params, innerW, innerD, coverageFraction);
+  const cornerKeepOut = Math.max(
+    GRIDFINITY.BOX_CORNER_RADIUS - wallThickness,
+    interiorFilletCornerMm(params),
+    hasLip ? 0 : CUTOUT_BORDER_WIDTH
+  );
+  return spans.reduce(
+    (sum, span) =>
+      span > 0
+        ? sum +
+          stampPatternOpenArea(
+            pattern,
+            params.height,
+            scale,
+            Math.max(0, span - 2 * cornerKeepOut),
+            bandHeight,
+            webThickness
+          )
+        : sum,
+    0
+  );
 }
 
 /**
@@ -166,9 +225,6 @@ function dividerPatternReduction(
 
   const dividerHeight = effectiveDividerHeight(params);
 
-  // Mirrors wallPatterns.ts (cross-feature import not allowed).
-  const TOP_KEEP_OUT = 1.5;
-  const BOTTOM_SOLID_SKIRT = 1.5;
   const bandHeight =
     dividerHeight -
     TOP_KEEP_OUT -

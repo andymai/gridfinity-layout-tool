@@ -18,7 +18,7 @@ import {
 } from '@/features/bin-designer/types/base';
 import { baseWallHeight } from './binDimensions';
 import { maxCompartmentFloorRaiseMm } from './compartmentFloorRaise';
-import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
+import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
 import { isFeatureActive } from '@/shared/constraints';
 import {
@@ -54,6 +54,7 @@ import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
 import { cutoutDisplacementMm3 } from '@/shared/utils/fitTestPlan';
 import { computeLabelTabVolume, lipSupportArea } from './printLabelTabVolume';
 import { computeInteriorFilletVolume } from './printInteriorFilletVolume';
+import { stackingLipVolume, wallThicknessDelta } from './printShellVolume';
 import {
   computeWallPatternReduction,
   computeFloorPatternReduction,
@@ -153,7 +154,10 @@ export function formatFilament(meters: number): string {
  * over-reporting standard bins by ~3–6×.)
  */
 function computeBinVolume(params: BinParams): number {
-  const wallThickness = STYLE_WALL_THICKNESS[params.style] ?? GRIDFINITY.WALL_THICKNESS;
+  const wallThickness =
+    Number.isFinite(params.wallThickness) && params.wallThickness > 0
+      ? params.wallThickness
+      : GRIDFINITY.WALL_THICKNESS;
   // Y axis uses gridUnitMmY when set (non-square grid); otherwise it equals the
   // X pitch, so square bins are unchanged.
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
@@ -256,6 +260,15 @@ function computeBinVolume(params: BinParams): number {
   if (params.base.tile === true && !isSocketlessBase(params.base.style)) {
     return volume - shell.walls;
   }
+
+  if (!params.base.stackingLip) volume -= stackingLipVolume(outerW, outerD) - shell.lip;
+  volume += wallThicknessDelta(
+    outerW,
+    outerD,
+    baseWallHeight(params.base, totalH),
+    wallThickness,
+    params.base.stackingLip
+  );
 
   // A solid bin fills the cavity the shell model leaves empty. Without this
   // term every solid bin was priced as the hollow one it is not — measured at
