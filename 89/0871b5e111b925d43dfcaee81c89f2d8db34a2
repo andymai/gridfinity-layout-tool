@@ -1,0 +1,21 @@
+src/features/baseplate/hooks/useBaseplateLibraryInit.test.ts
+  s_f6ef8af5057228::t_52cb5a582e0dbd 367-397
+src/features/baseplate/hooks/useBaseplateLibraryInit.ts
+  s_f6ef8af5057228::t_52cb5a582e0dbd 142,145-150,156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "890871b5e111b925d43dfcaee81c89f2d8db34a2",
+  "prompts": {},
+  "sessions": {
+    "s_f6ef8af5057228": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b2f7a60d-c28b-4bef-b4be-eefb3d4c0aef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
