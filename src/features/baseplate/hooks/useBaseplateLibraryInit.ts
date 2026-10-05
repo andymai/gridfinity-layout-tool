@@ -8,8 +8,9 @@
  * - **Auto-create** (`{ autoCreate: true }`, /baseplate only): the layout has
  *   neither — create a design from the defaults.
  * - **Re-materialize**: `activeBaseplateId` still resolves to a library design —
- *   copy the design's (possibly edited-elsewhere) params back into the layout so
- *   shared edits propagate on load.
+ *   copy the design's (possibly edited on another device) params back into the
+ *   layout. A design an older layout also links is first split off into this
+ *   layout's own copy, keeping this layout's params.
  * - **Orphan**: `activeBaseplateId` is set but the design is gone (deleted on
  *   another device) — drop the pointer to null, keeping the inline copy.
  *
