@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.503.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.503.4...gridfinity-layout-tool-v4.503.5) (2026-10-05)
+
+
+### Bug Fixes
+
+* **baseplate:** flag a synced plate larger than the measured drawer ([#4478](https://github.com/andymai/gridfinity-layout-tool/issues/4478)) ([0483bdf](https://github.com/andymai/gridfinity-layout-tool/commit/0483bdf7e04dd5fc459ca2eb97ef3239f42c222c))
+* **labels:** keep a full-width plate on bins with thick walls ([#4475](https://github.com/andymai/gridfinity-layout-tool/issues/4475)) ([57c15f6](https://github.com/andymai/gridfinity-layout-tool/commit/57c15f6fbb5ceb7aa4a5b7fff265020d7f6c8de6))
+
 ## [4.503.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.503.3...gridfinity-layout-tool-v4.503.4) (2026-10-04)
 
 
