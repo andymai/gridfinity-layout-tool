@@ -1,0 +1,83 @@
+src/features/baseplate/hooks/useBaseplateLibraryInit.test.ts
+  s_f6ef8af5057228::t_711a7cbc6fd5da 5,7-8,477-552
+  s_f6ef8af5057228::t_2048a88f987025 553
+src/features/baseplate/hooks/useBaseplateLibraryInit.ts
+  s_f6ef8af5057228::t_4e8cc58dcab40b 43-48,192-224,227
+src/features/baseplate/utils/designUsers.ts
+  s_f6ef8af5057228::t_dee91c89ce3e48 1-4,11-22,30-33,45,47,52
+  s_f6ef8af5057228::t_29b6f389d737b0 5-10,23-29,34-44,46,48-51
+src/i18n/locales/fr.json
+  s_f6ef8af5057228::t_29b6f389d737b0 125-126
+src/i18n/locales/it.json
+  s_f6ef8af5057228::t_29b6f389d737b0 125-126
+src/i18n/locales/ko.json
+  s_f6ef8af5057228::t_29b6f389d737b0 125-126
+src/i18n/locales/sv.json
+  s_f6ef8af5057228::t_29b6f389d737b0 125-126
+src/features/baseplate/utils/designOwnership.ts
+  s_f6ef8af5057228::t_341f2ebaadecd2 1-11,18,22,24-25,29,43,56-90
+  s_f6ef8af5057228::t_29b6f389d737b0 12-17,19-21,23,26-28,30,32-42,44-55
+  s_f6ef8af5057228::t_9411a55a30895f 31
+src/features/baseplate/utils/designUsers.test.ts
+  s_f6ef8af5057228::t_2c81dfc1bdbd48 1-58
+src/core/store/library.test.ts
+  s_f6ef8af5057228::t_66275060fda282 548
+src/i18n/locales/nl.json
+  s_f6ef8af5057228::t_29b6f389d737b0 125-126
+src/i18n/locales/nb.json
+  s_f6ef8af5057228::t_29b6f389d737b0 125-126
+src/i18n/locales/de.json
+  s_f6ef8af5057228::t_29b6f389d737b0 125-126
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.tsx
+  s_f6ef8af5057228::t_29b6f389d737b0 27,57-66,229,261,271,364-365,367,369
+  s_f6ef8af5057228::t_6bff3612619679 31-32,287-290,366,368
+src/features/baseplate/utils/designOwnership.test.ts
+  s_f6ef8af5057228::t_c0f4f3d6f671a5 1-15,23-47,49-95
+  s_f6ef8af5057228::t_29b6f389d737b0 16-22,48
+src/i18n/locales/es.json
+  s_f6ef8af5057228::t_29b6f389d737b0 125-126
+src/i18n/locales/ja.json
+  s_f6ef8af5057228::t_29b6f389d737b0 125-126
+src/i18n/locales/ka.json
+  s_f6ef8af5057228::t_29b6f389d737b0 3606-3607
+src/i18n/locales/pt-BR.json
+  s_f6ef8af5057228::t_29b6f389d737b0 125-126
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.test.tsx
+  s_f6ef8af5057228::t_b0964471fbb375 35-39,99-104
+  s_f6ef8af5057228::t_eb25f479eda0f3 105-106
+src/i18n/locales/uk.json
+  s_f6ef8af5057228::t_29b6f389d737b0 125-126
+src/i18n/locales/cs.json
+  s_f6ef8af5057228::t_29b6f389d737b0 125-126
+src/i18n/locales/en.ts
+  s_f6ef8af5057228::t_29b6f389d737b0 4267-4268
+src/features/baseplate/hooks/useBaseplateLibrary.test.ts
+  s_f6ef8af5057228::t_a21c331bf8eec8 5-7,10-16,73-144
+  s_f6ef8af5057228::t_746d1af9472772 145
+src/i18n/locales/pl.json
+  s_f6ef8af5057228::t_29b6f389d737b0 125-126
+src/i18n/locales/zh-CN.json
+  s_f6ef8af5057228::t_29b6f389d737b0 125-126
+src/features/baseplate/hooks/useBaseplateLibrary.ts
+  s_f6ef8af5057228::t_dee91c89ce3e48 31-32,176-196
+src/core/storage/preview.ts
+  s_f6ef8af5057228::t_5723e1ece80521 42
+src/core/types/preview.ts
+  s_f6ef8af5057228::t_676f45bf790391 26-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d2b132968a00b4d8f00c57e8147c207721ca2ffb",
+  "prompts": {},
+  "sessions": {
+    "s_f6ef8af5057228": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b2f7a60d-c28b-4bef-b4be-eefb3d4c0aef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
