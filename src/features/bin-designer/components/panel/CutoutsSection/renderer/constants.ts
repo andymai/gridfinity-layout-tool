@@ -85,9 +85,6 @@ export const EDGE_HANDLE_HEIGHT = 4;
 /** Hover scale factor for handles */
 export const HANDLE_HOVER_SCALE = 1.3;
 
-/** Grid dot radius in screen pixels (constant size regardless of zoom) */
-export const DOT_RADIUS_PX = 1.2;
-
 /** SDF stroke width in screen pixels */
 export const STROKE_WIDTH_SELECTED_PX = 1.5;
 export const STROKE_WIDTH_DEFAULT_PX = 0.75;
@@ -97,6 +94,3 @@ export const STROKE_WIDTH_GROUPED_PX = 0.75;
 /** Rotation handle offset in screen pixels above the shape */
 export const ROTATION_HANDLE_OFFSET_PX = 15;
 export const ROTATION_HANDLE_RADIUS_PX = 4;
-
-/** Dot grid threshold — bins larger than this use 2mm spacing */
-export const LARGE_BIN_THRESHOLD = 10000;

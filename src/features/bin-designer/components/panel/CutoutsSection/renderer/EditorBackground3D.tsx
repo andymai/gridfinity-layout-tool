@@ -4,16 +4,18 @@
  * Renders:
  * - Bin area fill (elevated surface plane)
  * - Bin boundary (line loop)
- * - Dot grid at 1mm intervals (2mm for large bins) via InstancedMesh
+ * - Dot grid via InstancedMesh, spaced by `getDotInterval`
  * - Center crosshair dashed lines
  *
  * World coordinates: mm, Y-up. Origin at (0,0) = front-left corner.
  */
 
-import { useMemo } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { useSettingsStore } from '@/core/store/settings';
 import { isPartialMask, maskToPolygon, type CellMask } from '@/shared/utils/cellMask';
-import { RENDER_ORDER, LARGE_BIN_THRESHOLD, DOT_RADIUS_PX } from './constants';
+import { RENDER_ORDER } from './constants';
+import { getDotGridStyle, getDotInterval } from './dotGrid';
 
 interface EditorBackground3DProps {
   readonly binWidth: number;
@@ -22,16 +24,6 @@ interface EditorBackground3DProps {
   readonly cellMask?: CellMask;
   readonly zoom: number;
   readonly binColor: string;
-}
-
-/** Compute dot spacing based on zoom and bin size */
-function getDotInterval(binWidth: number, binDepth: number, zoom: number): number {
-  const area = binWidth * binDepth;
-  const isLarge = area > LARGE_BIN_THRESHOLD;
-  // Adaptive: at very high zoom, thin out dots since rulers show scale
-  if (zoom > 15) return isLarge ? 10 : 5;
-  if (zoom > 8) return isLarge ? 5 : 2;
-  return isLarge ? 2 : 1;
 }
 
 export function EditorBackground3D({
@@ -43,20 +35,16 @@ export function EditorBackground3D({
 }: EditorBackground3DProps) {
   const hasPolygon = isPartialMask(cellMask);
   const dotInterval = getDotInterval(binWidth, binDepth, zoom);
+  const highContrast = useSettingsStore((s) => s.settings.highContrast);
+  const dotStyle = useMemo(() => getDotGridStyle(binColor, highContrast), [binColor, highContrast]);
+  const dotColor = dotStyle.color;
 
   // Constant screen-size dot radius (convert screen px to world mm)
-  const dotRadius = DOT_RADIUS_PX / zoom;
-
-  // Dots contrast against the bin surface: darken for light surfaces, lighten for dark
-  const binLuminance = useMemo(
-    () => new THREE.Color(binColor).getHSL({ h: 0, s: 0, l: 0 }).l,
-    [binColor]
-  );
-  const dotColor = binLuminance > 0.5 ? '#000000' : '#ffffff';
-  const dotOpacity = binLuminance > 0.5 ? 0.12 : 0.1;
+  const dotRadius = dotStyle.radiusPx / zoom;
 
   // Dot geometry recreated when zoom changes (screen-space sizing)
   const dotGeometry = useMemo(() => new THREE.CircleGeometry(dotRadius, 6), [dotRadius]);
+  useEffect(() => () => dotGeometry.dispose(), [dotGeometry]);
 
   // Build instanced mesh matrices for grid dots. For custom shapes, skip dots
   // whose sample cell is outside the polygon — keeps the "inside" region visible.
@@ -80,6 +68,18 @@ export function EditorBackground3D({
     }
     return { matrices: mats, count: mats.length };
   }, [binWidth, binDepth, dotInterval, cellMask, hasPolygon]);
+
+  // The geometry is a prop, not an `args` entry, so a zoom swaps it without
+  // rebuilding the mesh; instance matrices are rewritten only when the grid moves.
+  const dotsRef = useRef<THREE.InstancedMesh>(null);
+  useLayoutEffect(() => {
+    const mesh = dotsRef.current;
+    if (!mesh) return;
+    for (let i = 0; i < matrices.length; i++) {
+      mesh.setMatrixAt(i, matrices[i]);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+  }, [matrices]);
 
   // Polygon loops scaled from mask grid units to editor interior mm.
   // Using binWidth/binDepth (vs gridUnitMm) keeps validator and visuals aligned:
@@ -172,17 +172,14 @@ export function EditorBackground3D({
 
       {/* Dot grid via InstancedMesh */}
       {count > 0 && (
-        <instancedMesh
-          args={[dotGeometry, undefined, count]}
-          ref={(mesh) => {
-            if (!mesh) return;
-            for (let i = 0; i < matrices.length; i++) {
-              mesh.setMatrixAt(i, matrices[i]);
-            }
-            mesh.instanceMatrix.needsUpdate = true;
-          }}
-        >
-          <meshBasicMaterial color={dotColor} transparent opacity={dotOpacity} depthTest={false} />
+        <instancedMesh ref={dotsRef} args={[undefined, undefined, count]} geometry={dotGeometry}>
+          <meshBasicMaterial
+            color={dotColor}
+            transparent
+            opacity={dotStyle.opacity}
+            depthTest={false}
+            toneMapped={false}
+          />
         </instancedMesh>
       )}
 
