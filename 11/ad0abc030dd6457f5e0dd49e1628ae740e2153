@@ -1,0 +1,25 @@
+src/features/bin-designer/components/panel/CutoutsSection/renderer/dotGrid.test.ts
+  s_f6ef8af5057228::t_470315dddaa566 4,7,23,45-51
+  s_f6ef8af5057228::t_711238f5470a7c 52-54
+src/features/bin-designer/components/panel/CutoutsSection/renderer/dotGrid.ts
+  s_f6ef8af5057228::t_2af7095e95ed99 4,32-33,37-64,92,94
+  s_f6ef8af5057228::t_a2fb1295186731 100
+src/features/bin-designer/components/panel/CutoutsSection/renderer/EditorBackground3D.tsx
+  s_f6ef8af5057228::t_470315dddaa566 13,47,72-83,175,181
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "11ad0abc030dd6457f5e0dd49e1628ae740e2153",
+  "prompts": {},
+  "sessions": {
+    "s_f6ef8af5057228": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b2f7a60d-c28b-4bef-b4be-eefb3d4c0aef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
