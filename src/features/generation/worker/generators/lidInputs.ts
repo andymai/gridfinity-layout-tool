@@ -27,7 +27,7 @@ import {
   resolveLidGripHeightPlan,
   hasLidGrip,
   hasBinLipDip,
-  lidHasFill,
+  lidFillBottomZ,
   resolveTextStyle,
 } from '@/shared/types/bin';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
@@ -38,13 +38,7 @@ import { dividerRailBlocks } from '@/shared/utils/dividerRailPlan';
 import { lipGapRailBlocks, lipGaps, polygonLipGaps } from '@/shared/utils/lipGapPlan';
 import type { PolygonLipGap } from '@/shared/utils/lipGapPlan';
 import type { WallSpanBlock } from '@/shared/utils/labelTabPlan';
-import {
-  LID_FIT_CLEARANCE,
-  LID_CORNER_RADIUS,
-  lidAnchorZ,
-  lidWallBottomZ,
-  lidRetentionInterfaceZ,
-} from './lidConstants';
+import { LID_FIT_CLEARANCE, LID_CORNER_RADIUS, lidAnchorZ, lidWallBottomZ } from './lidConstants';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { magnetHoleStyleFrom } from '@/shared/generation/magnetHoleStyle';
 import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
@@ -336,7 +330,7 @@ export interface LidInputs {
    * in, so the builder never re-derives either.
    */
   readonly cutouts: LidCutoutInputs | null;
-  /** Null unless {@link lidHasFill}. */
+  /** Null without a plug ({@link lidFillBottomZ}). */
   readonly fill: LidFillInputs | null;
   /**
    * Resolved sliding-lid geometry, or null for every other attachment.
@@ -387,10 +381,7 @@ export interface LidInputs {
  * are refused here as well as dropped in migration: an imprint is subtracted
  * after tessellation, in the BIN's mesh frame, so no lid solid can describe one.
  */
-function resolveLidCutoutInputs(
-  params: BinParams,
-  fill: LidFillInputs | null
-): LidCutoutInputs | null {
+function resolveLidCutoutInputs(params: BinParams): LidCutoutInputs | null {
   const shapes = (params.lid.cutouts ?? []).filter((c) => c.shape !== 'mesh');
   if (shapes.length === 0) return null;
 
@@ -409,35 +400,16 @@ function resolveLidCutoutInputs(
     shapes,
     window,
     topZ: host.topZ,
-    // A through-cut has to clear a fill plug too, or a dispensing slot
-    // becomes a blind pocket.
-    thickness: fill ? host.topZ - fill.bottomZ : host.thickness,
+    thickness: host.thickness,
     textDefaults: params.textDefaults,
   };
 }
 
-/**
- * The seated lid drops `mateRelief * √2` below its anchor, so the plug is built
- * that much higher to keep the clearance it was asked for — the same settle
- * `retentionBossFaceZ` applies to the magnet bosses.
- */
-/**
- * The seated lid drops `mateRelief * √2` below its anchor, so both planes are
- * taken one settle high, as `retentionBossFaceZ` takes the bosses.
- */
-function resolveLidFillInputs(
-  params: BinParams,
-  cavityExtra: number,
-  mateRelief: number,
-  retentionMagnets: boolean
-): LidFillInputs | null {
-  if (!lidHasFill(params)) return null;
-  const { heightUnitMm } = params;
-  const edgeZ = retentionMagnets
-    ? lidRetentionInterfaceZ(heightUnitMm, cavityExtra, params.lid.retentionMagnet.depth)
-    : lidWallBottomZ(heightUnitMm, LID_FIT_CLEARANCE, cavityExtra);
+function resolveLidFillInputs(params: BinParams, mateRelief: number): LidFillInputs | null {
+  const bottomZ = lidFillBottomZ(params);
+  if (bottomZ === null) return null;
   return {
-    bottomZ: edgeZ + mateRelief * Math.SQRT2,
+    bottomZ,
     outlineInset:
       GRIDFINITY_SPEC.LIP_SMALL_TAPER +
       GRIDFINITY_SPEC.LIP_BIG_TAPER +
@@ -554,7 +526,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // here rather than inline below because the height reads the depth: a
   // chamfer's 45° section is sized by whichever of the two is scarcer.
   const anchorZ = lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE, cavityExtra);
-  const fill = resolveLidFillInputs(params, cavityExtra, mateRelief, retentionMagnets);
+  const fill = resolveLidFillInputs(params, mateRelief);
   const gripDepthMm = gripActive ? resolveLidGripDepth(params).depthMm : 0;
 
   return {
@@ -663,7 +635,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     wallBottomZ: lidWallBottomZ(heightUnitMm, LID_FIT_CLEARANCE, cavityExtra),
     cellMask,
     text,
-    cutouts: resolveLidCutoutInputs(params, fill),
+    cutouts: resolveLidCutoutInputs(params),
     fill,
     slide,
     outerOffsetX,

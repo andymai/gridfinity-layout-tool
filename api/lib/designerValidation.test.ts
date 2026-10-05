@@ -2292,7 +2292,11 @@ describe('validateDesignerShare — lid.slide', () => {
       const payload = { ...p, params: { ...p.params, lid: { enabled: true, fill } } };
       return validateDesignerShare(payload, Buffer.byteLength(JSON.stringify(payload), 'utf8'));
     };
-    expect(withFill(true).valid).toBe(true);
+    const filled = withFill(true);
+    expect(filled.valid).toBe(true);
+    if (filled.valid) {
+      expect((filled.payload.params.lid as Record<string, unknown>).fill).toBe(true);
+    }
     expect(withFill(false).valid).toBe(true);
     expect(withFill('yes').valid).toBe(false);
   });

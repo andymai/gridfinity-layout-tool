@@ -14,6 +14,7 @@ import {
   LID_TOP_THICKNESS_STEP_MM,
   LID_MAGNETIC_EXTRA_CLEARANCE,
   lidHasFill,
+  attachmentTakesFill,
   resolveLidMateRelief,
   resolveLidPlateThickness,
   resolveLidTrayBreakdown,
@@ -914,7 +915,7 @@ export function useLidSection() {
       anyRail,
       clickRailCoverage: lid.clickRailCoverage,
       relieveInterior: lid.relieveInterior,
-      fillAvailable: lid.attachment === 'friction' || lid.attachment === 'magnetic',
+      fillAvailable: attachmentTakesFill(lid.attachment),
       fill: lid.fill === true,
       // The fill overrides the relief, so its toggle would do nothing.
       relieveInteriorDisabledReason: lidHasFill(params)

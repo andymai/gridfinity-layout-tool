@@ -4,6 +4,7 @@ import {
   LID_CORNER_RADIUS,
   LID_FIT_CLEARANCE,
   LID_TRAY_FLOOR,
+  lidFillBottomZ,
   resolveLidMateRelief,
   resolveLidPlateThickness,
   retentionBossRadius,
@@ -95,6 +96,19 @@ describe('lidCutoutHostFace', () => {
     const p = params({ tray: { enabled: true, depthMm: 5, wallMm: 2 }, stackableTop: true });
     expect(lidCutoutHostFace(p).topZ).toBe(0);
   });
+
+  it.each(['friction', 'magnetic'] as const)(
+    'cuts through the fill plug under a filled %s lid',
+    (attachment) => {
+      const p = params({ attachment, fill: true });
+      const fillZ = lidFillBottomZ(p);
+      expect(fillZ).not.toBeNull();
+      const host = lidCutoutHostFace(p);
+      expect(host.topZ).toBe(0);
+      expect(host.thickness).toBeCloseTo(-(fillZ ?? 0), 9);
+      expect(host.thickness).toBeGreaterThan(resolveLidPlateThickness(p) + 3);
+    }
+  );
 });
 
 describe('lidCutoutWindow', () => {

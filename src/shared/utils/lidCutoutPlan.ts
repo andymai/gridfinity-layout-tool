@@ -24,7 +24,8 @@
  *
  * 3. HOW DEEP ({@link lidCutoutHostFace}). Always the full remaining plate,
  *    measured from whichever surface is actually on top: the plate on a plain
- *    lid, the recessed floor under a tray. Same datum `resolveTextHostFace`
+ *    lid, the recessed floor under a tray. A fill plug under the plate is cut
+ *    through as well, or a dispensing slot becomes a blind pocket. Same datum `resolveTextHostFace`
  *    picks, and for the same reason — the recess owns the visible surface once
  *    it exists.
  *
@@ -47,7 +48,11 @@ import { isPartialMask } from '@/shared/utils/cellMask';
 import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 import type { OverhangExpansion } from '@/shared/utils/overhang';
 import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
-import { isSlideLid, LID_MIN_CORNER_RADIUS } from '@/features/bin-designer/types/lid';
+import {
+  isSlideLid,
+  LID_MIN_CORNER_RADIUS,
+  lidFillBottomZ,
+} from '@/features/bin-designer/types/lid';
 import { slideLidPlanForParams } from '@/features/bin-designer/utils/slideLidPlanForParams';
 import { SLIDE_BEARING_MM, slideTravelsAlongX } from '@/shared/utils/slideLidPlan';
 
@@ -178,10 +183,12 @@ export function lidCutoutHostFace(params: BinParams): LidCutoutHostFace {
   // below, so the cut starts at its top face and goes all the way through.
   if (isSlideLid(params.lid)) return { topZ: 0, thickness: plate };
   const tray = params.lid.tray;
-  if (tray.enabled && !params.lid.stackableTop) {
-    return { topZ: -tray.depthMm, thickness: plate - tray.depthMm };
-  }
-  return { topZ: 0, thickness: plate };
+  const host =
+    tray.enabled && !params.lid.stackableTop
+      ? { topZ: -tray.depthMm, thickness: plate - tray.depthMm }
+      : { topZ: 0, thickness: plate };
+  const fillZ = lidFillBottomZ(params);
+  return fillZ === null ? host : { topZ: host.topZ, thickness: host.topZ - fillZ };
 }
 
 /**
