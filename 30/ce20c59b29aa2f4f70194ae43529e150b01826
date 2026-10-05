@@ -1,0 +1,23 @@
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.test.tsx
+  s_f6ef8af5057228::t_8e8063e42fee87 80,103
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.tsx
+  s_f6ef8af5057228::t_8e8063e42fee87 18,278,290-292
+src/features/baseplate/utils/designUsers.ts
+  s_f6ef8af5057228::t_8e8063e42fee87 50-53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "30ce20c59b29aa2f4f70194ae43529e150b01826",
+  "prompts": {},
+  "sessions": {
+    "s_f6ef8af5057228": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b2f7a60d-c28b-4bef-b4be-eefb3d4c0aef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
