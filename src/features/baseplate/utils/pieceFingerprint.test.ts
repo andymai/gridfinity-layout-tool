@@ -4,7 +4,8 @@ import { computeBaseplateTiling } from './splitPlanner';
 import { rotateOutline180 } from '@/shared/utils/drawerOutline';
 import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
-import type { DrawerOutline } from '@/core/types';
+import { mm } from '@gridfinity/branded-types';
+import type { DrawerOutline, MountMagnetParams } from '@/core/types';
 
 function makeParams(overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams {
   return {
@@ -71,6 +72,18 @@ describe('computePieceFingerprint', () => {
     const a = makeParams({ width: 3, depth: 3, magnetHoles: true });
     const b = makeParams({ width: 3, depth: 3, magnetHoles: false });
     expect(computePieceFingerprint(a)).not.toBe(computePieceFingerprint(b));
+  });
+
+  it('produces different keys when mount magnets differ, and ignores them while off', () => {
+    const on: MountMagnetParams = { enabled: true, diameter: mm(6.5), depth: mm(2) };
+    const key = (mountMagnets: MountMagnetParams | undefined) =>
+      computePieceFingerprint(makeParams({ width: 3, depth: 3, mountMagnets }));
+    const base = key(on);
+    expect(base).not.toBe(key(undefined));
+    expect(base).not.toBe(key({ ...on, depth: mm(2.5) }));
+    expect(base).not.toBe(key({ ...on, perPiece: 6 }));
+    expect(base).not.toBe(key({ ...on, chamfer: true }));
+    expect(key({ ...on, enabled: false })).toBe(key(undefined));
   });
 
   it('dedupes edge and interior pieces that round no corner (rounded, no connectors)', () => {

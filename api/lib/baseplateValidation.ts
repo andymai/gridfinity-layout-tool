@@ -176,6 +176,34 @@ function isValidStackPrint(value: unknown): boolean {
   );
 }
 
+function isValidMountMagnets(value: unknown): boolean {
+  if (!isObject(value) || !isBoolean(value.enabled)) return false;
+  if (!Object.keys(value).every((key) => ALLOWED_MOUNT_MAGNET_KEYS.has(key))) return false;
+  if (
+    !isNumber(value.diameter) ||
+    !inRange(value.diameter, MIN_MOUNT_MAGNET_DIAMETER_MM, MAX_MOUNT_MAGNET_DIAMETER_MM)
+  ) {
+    return false;
+  }
+  if (
+    !isNumber(value.depth) ||
+    !inRange(value.depth, MIN_MOUNT_MAGNET_DEPTH_MM, MAX_MOUNT_MAGNET_DEPTH_MM)
+  ) {
+    return false;
+  }
+  if (
+    value.perPiece !== undefined &&
+    !(
+      isNumber(value.perPiece) &&
+      Number.isInteger(value.perPiece) &&
+      inRange(value.perPiece, MIN_MOUNT_MAGNETS_PER_PIECE, MAX_MOUNT_MAGNETS_PER_PIECE)
+    )
+  ) {
+    return false;
+  }
+  return value.chamfer === undefined || isBoolean(value.chamfer);
+}
+
 /**
  * Optional settings the required checks above don't cover. A malformed one is
  * dropped rather than failing the plate, so one bad option can't stop a design
@@ -186,6 +214,7 @@ function isWellFormedParam(key: string, value: unknown): boolean {
   const values = ENUM_PARAM_VALUES.get(key);
   if (values) return isString(value) && values.has(value);
   if (key === 'stackPrint') return isValidStackPrint(value);
+  if (key === 'mountMagnets') return isValidMountMagnets(value);
   return true;
 }
 
@@ -403,53 +432,6 @@ export function validateBaseplateShare(
         'INVALID_PARAMS',
         `screwHoles.screwsPerPiece must be a whole number ${MIN_SCREWS_PER_PIECE}-${MAX_SCREWS_PER_PIECE}`
       );
-    }
-  }
-
-  if (params.mountMagnets !== undefined) {
-    const mountMagnets = params.mountMagnets;
-    if (!isObject(mountMagnets)) {
-      return validationError('INVALID_PARAMS', 'mountMagnets must be an object');
-    }
-    for (const key of Object.keys(mountMagnets)) {
-      if (!ALLOWED_MOUNT_MAGNET_KEYS.has(key)) {
-        return validationError('INVALID_PARAMS', `mountMagnets has unknown key: ${key}`);
-      }
-    }
-    if (!isBoolean(mountMagnets.enabled)) {
-      return validationError('INVALID_PARAMS', 'mountMagnets.enabled must be a boolean');
-    }
-    if (
-      !isNumber(mountMagnets.diameter) ||
-      !inRange(mountMagnets.diameter, MIN_MOUNT_MAGNET_DIAMETER_MM, MAX_MOUNT_MAGNET_DIAMETER_MM)
-    ) {
-      return validationError(
-        'INVALID_PARAMS',
-        `mountMagnets.diameter must be ${MIN_MOUNT_MAGNET_DIAMETER_MM}-${MAX_MOUNT_MAGNET_DIAMETER_MM}`
-      );
-    }
-    if (
-      !isNumber(mountMagnets.depth) ||
-      !inRange(mountMagnets.depth, MIN_MOUNT_MAGNET_DEPTH_MM, MAX_MOUNT_MAGNET_DEPTH_MM)
-    ) {
-      return validationError(
-        'INVALID_PARAMS',
-        `mountMagnets.depth must be ${MIN_MOUNT_MAGNET_DEPTH_MM}-${MAX_MOUNT_MAGNET_DEPTH_MM}`
-      );
-    }
-    if (
-      mountMagnets.perPiece !== undefined &&
-      (!isNumber(mountMagnets.perPiece) ||
-        !Number.isInteger(mountMagnets.perPiece) ||
-        !inRange(mountMagnets.perPiece, MIN_MOUNT_MAGNETS_PER_PIECE, MAX_MOUNT_MAGNETS_PER_PIECE))
-    ) {
-      return validationError(
-        'INVALID_PARAMS',
-        `mountMagnets.perPiece must be a whole number ${MIN_MOUNT_MAGNETS_PER_PIECE}-${MAX_MOUNT_MAGNETS_PER_PIECE}`
-      );
-    }
-    if (mountMagnets.chamfer !== undefined && !isBoolean(mountMagnets.chamfer)) {
-      return validationError('INVALID_PARAMS', 'mountMagnets.chamfer must be a boolean');
     }
   }
 

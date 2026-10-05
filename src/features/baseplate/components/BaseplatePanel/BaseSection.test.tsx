@@ -218,7 +218,7 @@ describe('BaseSection', () => {
       expect(useLayoutStore.getState().layout.baseplateParams?.mountMagnets).toEqual({
         enabled: true,
         diameter: 6.5,
-        depth: 2.5,
+        depth: 2,
       });
     });
 
@@ -235,7 +235,7 @@ describe('BaseSection', () => {
       useLayoutStore.setState((s) => ({ layout: { ...s.layout, lowProfileBase: true } }));
       useLayoutStore.getState().setBaseplateParams({
         ...DEFAULT_BASEPLATE_PARAMS,
-        mountMagnets: { enabled: true, diameter: mm(6), depth: mm(3) },
+        mountMagnets: { enabled: true, diameter: mm(6), depth: mm(2.5) },
       });
       render(<BaseSection />);
       expect(screen.getByText('baseplate.mountMagnets.tooDeep')).toBeInTheDocument();

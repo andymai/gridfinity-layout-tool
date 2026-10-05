@@ -147,37 +147,22 @@ describe('validateBaseplateShare', () => {
       if (result.valid) expect(result.payload.params.mountMagnets).toEqual(mountMagnets);
     });
 
-    it('rejects a hole wider than a junction holds', () => {
-      expect(
-        validate({ ...validParams, mountMagnets: { ...mountMagnets, diameter: 7 } }).valid
-      ).toBe(false);
-    });
-
-    it('rejects a hole deeper than the cap', () => {
-      expect(validate({ ...validParams, mountMagnets: { ...mountMagnets, depth: 3 } }).valid).toBe(
-        false
-      );
-    });
-
-    it('rejects a fractional or out-of-range count', () => {
-      expect(
-        validate({ ...validParams, mountMagnets: { ...mountMagnets, perPiece: 2.5 } }).valid
-      ).toBe(false);
-      expect(
-        validate({ ...validParams, mountMagnets: { ...mountMagnets, perPiece: 65 } }).valid
-      ).toBe(false);
-    });
-
-    it('rejects a non-boolean chamfer', () => {
-      expect(
-        validate({ ...validParams, mountMagnets: { ...mountMagnets, chamfer: 'yes' } }).valid
-      ).toBe(false);
-    });
-
-    it('rejects unknown keys inside the object', () => {
-      expect(validate({ ...validParams, mountMagnets: { ...mountMagnets, extra: 1 } }).valid).toBe(
-        false
-      );
+    it('drops a malformed config without rejecting the plate', () => {
+      for (const bad of [
+        { ...mountMagnets, diameter: 7 },
+        { ...mountMagnets, depth: 3 },
+        { ...mountMagnets, perPiece: 2.5 },
+        { ...mountMagnets, perPiece: 65 },
+        { ...mountMagnets, chamfer: 'yes' },
+        { ...mountMagnets, extra: 1 },
+        { diameter: 6.5, depth: 2 },
+        { enabled: true },
+        'on',
+      ]) {
+        const result = validate({ ...validParams, mountMagnets: bad });
+        expect(result.valid).toBe(true);
+        if (result.valid) expect(result.payload.params).not.toHaveProperty('mountMagnets');
+      }
     });
   });
 

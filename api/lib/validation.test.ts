@@ -113,6 +113,18 @@ describe('validateShareLayout', () => {
       if (result.valid) expect(result.layout.baseplateParams).toEqual(plate);
     });
 
+    it('keeps the plate settings when only the underside magnet setting is malformed', () => {
+      const result = validateShareLayout(
+        {
+          ...createValidLayout(),
+          baseplateParams: { ...plate, mountMagnets: { enabled: true, diameter: 6.5, depth: 9 } },
+        },
+        1000
+      );
+      expect(result.valid).toBe(true);
+      if (result.valid) expect(result.layout.baseplateParams).toEqual(plate);
+    });
+
     it('drops plate settings that fail validation without rejecting the layout', () => {
       const result = validateShareLayout(
         { ...createValidLayout(), baseplateParams: { ...plate, magnetDiameter: 500 } },
