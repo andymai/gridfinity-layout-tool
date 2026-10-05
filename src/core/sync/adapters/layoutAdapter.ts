@@ -18,12 +18,6 @@ import { syncPersistError } from './persistError';
 type IncomingBin = Omit<Bin, 'notes' | 'label'> & { notes?: unknown; label?: unknown };
 type IncomingLayout = Omit<Layout, 'bins'> & { bins: IncomingBin[] };
 
-/**
- * Default missing `notes`/`label` to '' so the 3D view's `bin.notes.trim()`
- * doesn't crash on legacy cloud blobs written before `api/lib/validation.ts`
- * began emitting both as required strings.
- */
-/** The layout sync schema from which the server keeps the fields below. */
 const SCHEMA_KEEPS_DRAWER_AND_PLATE = 2;
 
 /**
@@ -45,6 +39,11 @@ function restoreStrippedFields(remote: Layout, local: Layout): Layout {
   };
 }
 
+/**
+ * Default missing `notes`/`label` to '' so the 3D view's `bin.notes.trim()`
+ * doesn't crash on legacy cloud blobs written before `api/lib/validation.ts`
+ * began emitting both as required strings.
+ */
 export function normalizeIncomingLayout(layout: Layout): Layout {
   const bins = (layout as IncomingLayout).bins;
   const needsHealing = bins.some((b) => typeof b.notes !== 'string' || typeof b.label !== 'string');
