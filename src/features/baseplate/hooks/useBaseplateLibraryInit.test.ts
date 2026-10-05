@@ -8,6 +8,7 @@ import { isOk } from '@/core/result';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
 import {
   saveDesign,
+  loadDesign,
   listDesigns,
   closeBaseplateDb,
 } from '@/features/baseplate/storage/BaseplateStorage';
@@ -217,5 +218,100 @@ describe('useBaseplateLibraryInit', () => {
     expect(useLayoutStore.getState().activeLayoutId).toBe(layoutId('layout-b'));
     expect(useLayoutStore.getState().layout.activeBaseplateId).toBeUndefined();
     expect(useLayoutStore.getState().layout.baseplateParams).toBeUndefined();
+  });
+
+  describe('a change made while the library read is in flight', () => {
+    const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 50));
+    const edited: StoredBaseplateParams = {
+      ...params,
+      paddingLeft: 5 as StoredBaseplateParams['paddingLeft'],
+    };
+
+    it('keeps a padding edit instead of re-materializing over it', async () => {
+      const saved = await saveDesign({
+        name: 'Baseplate 1',
+        params: { ...params, paddingBack: 21 as StoredBaseplateParams['paddingBack'] },
+        thumbnail: null,
+      });
+      if (!isOk(saved)) throw new Error('saveDesign failed');
+      useLayoutStore
+        .getState()
+        .importLayout(
+          createTestLayout({ baseplateParams: params, activeBaseplateId: saved.value.id })
+        );
+
+      renderHook(() => useBaseplateLibraryInit());
+      act(() => {
+        useLayoutStore.getState().setBaseplateParams(edited);
+      });
+      await settle();
+
+      expect(useLayoutStore.getState().layout.baseplateParams).toEqual(edited);
+      expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(saved.value.id);
+    });
+
+    it('keeps a design picked from the dropdown instead of reverting to the old one', async () => {
+      const oldDesign = await saveDesign({
+        name: 'Old',
+        params: { ...params, magnetHoles: true },
+        thumbnail: null,
+      });
+      const picked = await saveDesign({ name: 'Picked', params: edited, thumbnail: null });
+      if (!isOk(oldDesign) || !isOk(picked)) throw new Error('saveDesign failed');
+      useLayoutStore
+        .getState()
+        .importLayout(
+          createTestLayout({ baseplateParams: params, activeBaseplateId: oldDesign.value.id })
+        );
+
+      renderHook(() => useBaseplateLibraryInit());
+      act(() => {
+        useLayoutStore.getState().setActiveBaseplateLocal(picked.value.id, picked.value.params);
+      });
+      await settle();
+
+      expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(picked.value.id);
+      expect(useLayoutStore.getState().layout.baseplateParams).toEqual(edited);
+    });
+
+    it('keeps the edit when the design turns out to be deleted', async () => {
+      useLayoutStore.getState().importLayout(
+        createTestLayout({
+          baseplateParams: params,
+          activeBaseplateId: baseplateDesignId('baseplate_missing'),
+        })
+      );
+
+      renderHook(() => useBaseplateLibraryInit());
+      act(() => {
+        useLayoutStore.getState().setBaseplateParams(edited);
+      });
+
+      await waitFor(() => {
+        expect(useLayoutStore.getState().layout.activeBaseplateId).toBeNull();
+      });
+      expect(useLayoutStore.getState().layout.baseplateParams).toEqual(edited);
+    });
+
+    it('seeds the library with an edit made while the seed was being written', async () => {
+      useLayoutStore.getState().importLayout(createTestLayout({ baseplateParams: params }));
+
+      renderHook(() => useBaseplateLibraryInit());
+      act(() => {
+        useLayoutStore.getState().setBaseplateParams(edited);
+      });
+
+      await waitFor(() => {
+        expect(useLayoutStore.getState().layout.activeBaseplateId).toBeTruthy();
+      });
+      const activeId = useLayoutStore.getState().layout.activeBaseplateId;
+      if (!activeId) throw new Error('no active design');
+      expect(useLayoutStore.getState().layout.baseplateParams).toEqual(edited);
+      await waitFor(async () => {
+        const stored = await loadDesign(activeId);
+        if (!isOk(stored)) throw new Error('loadDesign failed');
+        expect(stored.value.params).toEqual(edited);
+      });
+    });
   });
 });
