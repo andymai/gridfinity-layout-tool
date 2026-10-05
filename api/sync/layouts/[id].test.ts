@@ -183,6 +183,46 @@ describe('GET', () => {
     expect(body.indexEntry.modifiedAt).toBe(1000);
   });
 
+  it('round-trips the measured drawer, plate settings and design link at schema 2', async () => {
+    const { default: handler } = await import('./[id]');
+    const plate = {
+      magnetHoles: false,
+      magnetDiameter: 6,
+      magnetDepth: 2,
+      paddingLeft: 10.5,
+      paddingRight: 10.5,
+      paddingFront: 0,
+      paddingBack: 21,
+    };
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          layout: {
+            ...VALID_LAYOUT,
+            drawer: { ...VALID_LAYOUT.drawer, measuredMm: { width: 220, depth: 215, height: 30 } },
+            baseplateParams: plate,
+            activeBaseplateId: 'baseplate_1700000000000_ab12cd',
+          },
+          modifiedAt: 1000,
+        },
+      }),
+      makeRes() as unknown as VercelResponse
+    );
+
+    const res = makeRes();
+    await handler(makeReq({ method: 'GET' }), res as unknown as VercelResponse);
+    const body = res._body as {
+      envelope: { schemaVersion: number; layout: Record<string, unknown> };
+    };
+    expect(body.envelope.schemaVersion).toBe(2);
+    expect(body.envelope.layout).toMatchObject({
+      drawer: { measuredMm: { width: 220, depth: 215, height: 30 } },
+      baseplateParams: plate,
+      activeBaseplateId: 'baseplate_1700000000000_ab12cd',
+    });
+  });
+
   it('returns 410 Gone when the entry is tombstoned', async () => {
     const { default: handler } = await import('./[id]');
     await handler(

@@ -8,6 +8,7 @@ import {
   validateShareLayout,
   validateExpiration,
   validateSharedDesigns,
+  withoutLibraryPlacement,
 } from '../../api/lib/validation.js';
 
 interface TestBin {
@@ -89,6 +90,65 @@ describe('validateShareLayout', () => {
         const result = validateShareLayout({ ...createValidLayout(), folderId }, 1000);
         expect(result.valid).toBe(true);
         if (result.valid) expect(result.layout).not.toHaveProperty('folderId');
+      }
+    });
+  });
+
+  describe('baseplate', () => {
+    const plate = {
+      magnetHoles: false,
+      magnetDiameter: 6,
+      magnetDepth: 2,
+      paddingLeft: 10.5,
+      paddingRight: 10.5,
+      paddingFront: 0,
+      paddingBack: 21,
+      syncWithLayout: true,
+    };
+    const designId = 'baseplate_1700000000000_ab12cd';
+
+    it('keeps the plate settings', () => {
+      const result = validateShareLayout({ ...createValidLayout(), baseplateParams: plate }, 1000);
+      expect(result.valid).toBe(true);
+      if (result.valid) expect(result.layout.baseplateParams).toEqual(plate);
+    });
+
+    it('drops plate settings that fail validation without rejecting the layout', () => {
+      const result = validateShareLayout(
+        { ...createValidLayout(), baseplateParams: { ...plate, magnetDiameter: 500 } },
+        1000
+      );
+      expect(result.valid).toBe(true);
+      if (result.valid) expect(result.layout).not.toHaveProperty('baseplateParams');
+    });
+
+    it('keeps the design link for sync', () => {
+      const result = validateShareLayout(
+        { ...createValidLayout(), baseplateParams: plate, activeBaseplateId: designId },
+        1000
+      );
+      expect(result.valid).toBe(true);
+      if (result.valid) expect(result.layout.activeBaseplateId).toBe(designId);
+    });
+
+    it('leaves the design link out of a share, where it points into the sharer’s library', () => {
+      const result = validateShareLayout(
+        { ...createValidLayout(), baseplateParams: plate, activeBaseplateId: designId },
+        1000
+      );
+      expect(result.valid).toBe(true);
+      if (result.valid) {
+        const shared = withoutLibraryPlacement(result.layout);
+        expect(shared).not.toHaveProperty('activeBaseplateId');
+        expect(shared.baseplateParams).toEqual(plate);
+      }
+    });
+
+    it('drops a design link that is not one of ours', () => {
+      for (const activeBaseplateId of ['../etc', 'baseplate_x', 42, null]) {
+        const result = validateShareLayout({ ...createValidLayout(), activeBaseplateId }, 1000);
+        expect(result.valid).toBe(true);
+        if (result.valid) expect(result.layout).not.toHaveProperty('activeBaseplateId');
       }
     });
   });
@@ -305,6 +365,26 @@ describe('validateShareLayout', () => {
       const result = validateShareLayout(layout, 1000);
 
       expect(result.valid).toBe(true);
+    });
+
+    it('keeps a measured drawer size in the stored layout', () => {
+      const layout = createValidLayout();
+      layout.drawer.measuredMm = { width: 541, depth: 496, height: 88 };
+      const result = validateShareLayout(layout, 1000);
+
+      expect(result.valid).toBe(true);
+      if (result.valid) {
+        expect(result.layout.drawer.measuredMm).toEqual({ width: 541, depth: 496, height: 88 });
+      }
+    });
+
+    it('keeps a measured drawer size without a height', () => {
+      const layout = createValidLayout();
+      layout.drawer.measuredMm = { width: 541, depth: 496 };
+      const result = validateShareLayout(layout, 1000);
+
+      expect(result.valid).toBe(true);
+      if (result.valid) expect(result.layout.drawer.measuredMm).toEqual({ width: 541, depth: 496 });
     });
 
     it('accepts a measured drawer size without height', () => {

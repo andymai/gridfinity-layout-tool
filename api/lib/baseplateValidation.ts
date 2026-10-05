@@ -17,6 +17,7 @@ import {
   isString,
   validationError,
 } from './validationUtils.js';
+import { isValidShareId } from './shared.js';
 
 /** 100 KB — generous for a flat params object; a guard against smuggled bloat. */
 const MAX_PAYLOAD_BYTES = 100_000;
@@ -122,6 +123,11 @@ function pickAllowedParams(params: Record<string, unknown>): Record<string, unkn
     }
   }
   return out;
+}
+
+/** Locally minted ids (base36 suffix of 1-8 chars) plus the share formats designs round-trip through. */
+export function isValidBaseplateId(id: unknown): id is string {
+  return typeof id === 'string' && (/^baseplate_\d+_[a-z0-9]{1,8}$/.test(id) || isValidShareId(id));
 }
 
 export interface BaseplateSharePayload {

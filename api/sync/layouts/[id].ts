@@ -2,7 +2,11 @@ import { isValidShareId } from '../../lib/shared.js';
 import { isValidationError, validateShareLayout } from '../../lib/validation.js';
 import { createSyncResourceHandler } from '../lib/resourceHandler.js';
 
-export const SCHEMA_VERSION = 1 as const;
+/**
+ * 2: layouts keep `drawer.measuredMm`, `baseplateParams` and `activeBaseplateId`.
+ * Version-1 copies had them stripped, which clients read as "unknown", not "cleared".
+ */
+export const SCHEMA_VERSION = 2 as const;
 
 /** The PUT body / GET envelope key for this resource; mirrors `PAYLOAD_KEY.layouts` in src/core/sync/payloadKey.ts. */
 export const PAYLOAD_KEY = 'layout' as const;

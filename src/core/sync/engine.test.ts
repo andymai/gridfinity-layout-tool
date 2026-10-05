@@ -213,6 +213,7 @@ describe('push: 409 conflict', () => {
       id: 'lay-1',
       payload: { v: 99 },
       modifiedAt: 9000,
+      schemaVersion: 1,
     });
     expect(events).toContainEqual(
       expect.objectContaining({ type: 'remote-replaced-local', kind: 'layouts', id: 'lay-1' })

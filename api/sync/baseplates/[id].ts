@@ -1,5 +1,5 @@
-import { ErrorCode, isValidShareId, MAX_NAME_LENGTH } from '../../lib/shared.js';
-import { validateBaseplateShare } from '../../lib/baseplateValidation.js';
+import { ErrorCode, MAX_NAME_LENGTH } from '../../lib/shared.js';
+import { isValidBaseplateId, validateBaseplateShare } from '../../lib/baseplateValidation.js';
 import { sanitizeString } from '../../lib/validation.js';
 import { createSyncResourceHandler } from '../lib/resourceHandler.js';
 
@@ -45,9 +45,7 @@ function unwrapBaseplatePayload(
 export default createSyncResourceHandler<BaseplateEnvelope>({
   kind: 'baseplates',
   payloadKey: PAYLOAD_KEY,
-  // Locally-minted baseplate ids (base36 suffix up to 6 chars but can be
-  // shorter, so accept 1-8) plus the share formats for round-tripping.
-  isValidId: (id) => /^baseplate_\d+_[a-z0-9]{1,8}$/.test(id) || isValidShareId(id),
+  isValidId: isValidBaseplateId,
   invalidIdError: 'Invalid baseplate id',
   deletedError: 'Baseplate was deleted on another device. Save again to restore.',
   buildPut: (baseplate, modifiedAt) => {

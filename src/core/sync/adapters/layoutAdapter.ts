@@ -23,6 +23,28 @@ type IncomingLayout = Omit<Layout, 'bins'> & { bins: IncomingBin[] };
  * doesn't crash on legacy cloud blobs written before `api/lib/validation.ts`
  * began emitting both as required strings.
  */
+/** The layout sync schema from which the server keeps the fields below. */
+const SCHEMA_KEEPS_DRAWER_AND_PLATE = 2;
+
+/**
+ * Before schema 2 the server rebuilt layouts without `drawer.measuredMm`,
+ * `baseplateParams` and `activeBaseplateId`, so their absence in an older copy
+ * says nothing about the other device. This device's values stand in for them.
+ */
+function restoreStrippedFields(remote: Layout, local: Layout): Layout {
+  const measuredMm = remote.drawer.measuredMm ?? local.drawer.measuredMm;
+  return {
+    ...remote,
+    drawer: measuredMm === undefined ? remote.drawer : { ...remote.drawer, measuredMm },
+    ...(remote.baseplateParams === undefined && local.baseplateParams !== undefined
+      ? { baseplateParams: local.baseplateParams }
+      : {}),
+    ...(remote.activeBaseplateId === undefined && local.activeBaseplateId !== undefined
+      ? { activeBaseplateId: local.activeBaseplateId }
+      : {}),
+  };
+}
+
 export function normalizeIncomingLayout(layout: Layout): Layout {
   const bins = (layout as IncomingLayout).bins;
   const needsHealing = bins.some((b) => typeof b.notes !== 'string' || typeof b.label !== 'string');
@@ -90,7 +112,11 @@ export const layoutAdapter: LayoutAdapter = {
   async applyRemote(item: SyncableItem<Layout>): Promise<void> {
     // The folder rides on the wire only; locally the entry holds it.
     const { folderId, ...document } = normalizeIncomingLayout(item.payload);
-    const layout: Layout = document;
+    let layout: Layout = document;
+    if ((item.schemaVersion ?? 1) < SCHEMA_KEEPS_DRAWER_AND_PLATE) {
+      const local = await loadLayoutAsync(item.id);
+      if (local) layout = restoreStrippedFields(layout, local);
+    }
     const saveResult = await saveLayoutAsync(item.id, layout);
     if (!saveResult.ok) {
       throw syncPersistError('saveLayoutAsync', item.id, saveResult.error);

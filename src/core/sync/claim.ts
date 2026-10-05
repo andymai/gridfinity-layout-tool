@@ -50,6 +50,7 @@ interface ItemFetchResponse {
     designVersion?: unknown;
     folder?: unknown;
     modifiedAt: number;
+    schemaVersion: number;
   };
 }
 
@@ -204,7 +205,12 @@ async function mergeKind(
       if (fetched) {
         const payload = envelopePayload(kind, fetched);
         if (payload !== undefined) {
-          await adapter.applyRemote({ id, payload, modifiedAt: fetched.envelope.modifiedAt });
+          await adapter.applyRemote({
+            id,
+            payload,
+            modifiedAt: fetched.envelope.modifiedAt,
+            schemaVersion: fetched.envelope.schemaVersion,
+          });
           pulled++;
         }
       }
@@ -216,7 +222,12 @@ async function mergeKind(
       if (fetched) {
         const payload = envelopePayload(kind, fetched);
         if (payload !== undefined) {
-          await adapter.applyRemote({ id, payload, modifiedAt: fetched.envelope.modifiedAt });
+          await adapter.applyRemote({
+            id,
+            payload,
+            modifiedAt: fetched.envelope.modifiedAt,
+            schemaVersion: fetched.envelope.schemaVersion,
+          });
           pulled++;
         }
       }

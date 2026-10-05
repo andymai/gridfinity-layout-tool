@@ -262,6 +262,9 @@ async function handleConflict(
         id: entry.id,
         payload,
         modifiedAt: stored.modifiedAt,
+        ...(typeof stored.schemaVersion === 'number'
+          ? { schemaVersion: stored.schemaVersion }
+          : {}),
       });
       emitEngineEvent(s, { type: 'remote-replaced-local', kind, id: entry.id });
     }

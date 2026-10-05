@@ -104,10 +104,95 @@ describe('layoutAdapter placement', () => {
         folderId: 'folder_1_abc',
       } as unknown as Layout,
       modifiedAt: 2000,
+      schemaVersion: 2,
     });
     const saved = useLibraryStore.getState().library.entries.find((e) => e.id === 'lay-1');
     expect(saved?.folderId).toBe('folder_1_abc');
     expect(saveLayoutAsyncMock.mock.calls[0][1]).not.toHaveProperty('folderId');
+  });
+});
+
+describe('layoutAdapter.applyRemote — copies the server stored before schema 2', () => {
+  const plate = { magnetHoles: false, magnetDiameter: 6, magnetDepth: 2, paddingBack: 21 };
+  const local = {
+    ...minimalLayout('Mine'),
+    bins: [],
+    drawer: {
+      width: 12.5,
+      depth: 11.5,
+      height: 12.57,
+      measuredMm: { width: 541, depth: 496, height: 88 },
+    },
+    baseplateParams: plate,
+    activeBaseplateId: 'baseplate_1700000000000_ab12cd',
+  };
+  const stripped = {
+    ...minimalLayout('Renamed elsewhere'),
+    bins: [],
+    drawer: { width: 12.5, depth: 11.5, height: 12.57 },
+  };
+
+  beforeEach(() => {
+    computePreviewMock.mockReturnValue({ binCount: 0 });
+    saveLayoutAsyncMock.mockResolvedValue({ ok: true });
+    saveLibraryMock.mockResolvedValue({ ok: true });
+  });
+
+  const savedLayout = (): Record<string, unknown> =>
+    saveLayoutAsyncMock.mock.calls[0][1] as Record<string, unknown>;
+
+  it('keeps this device’s measurement, plate settings and link that an older copy lost', async () => {
+    loadLayoutAsyncMock.mockResolvedValue(local);
+    await layoutAdapter.applyRemote({
+      id: 'lay-1',
+      payload: stripped as unknown as Layout,
+      modifiedAt: 2000,
+      schemaVersion: 1,
+    });
+
+    expect(savedLayout()).toMatchObject({
+      name: 'Renamed elsewhere',
+      drawer: { width: 12.5, measuredMm: { width: 541, depth: 496, height: 88 } },
+      baseplateParams: plate,
+      activeBaseplateId: 'baseplate_1700000000000_ab12cd',
+    });
+  });
+
+  it('treats a copy with no version as an older one', async () => {
+    loadLayoutAsyncMock.mockResolvedValue(local);
+    await layoutAdapter.applyRemote({
+      id: 'lay-1',
+      payload: stripped as unknown as Layout,
+      modifiedAt: 2000,
+    });
+
+    expect(savedLayout()).toMatchObject({ baseplateParams: plate });
+  });
+
+  it('takes a current copy as it is, so a measurement cleared elsewhere stays cleared', async () => {
+    loadLayoutAsyncMock.mockResolvedValue(local);
+    await layoutAdapter.applyRemote({
+      id: 'lay-1',
+      payload: stripped as unknown as Layout,
+      modifiedAt: 2000,
+      schemaVersion: 2,
+    });
+
+    expect(savedLayout()).not.toHaveProperty('baseplateParams');
+    expect(savedLayout()).not.toHaveProperty('activeBaseplateId');
+    expect(savedLayout().drawer).not.toHaveProperty('measuredMm');
+  });
+
+  it('leaves a first pull alone when this device has no copy', async () => {
+    loadLayoutAsyncMock.mockResolvedValue(null);
+    await layoutAdapter.applyRemote({
+      id: 'lay-1',
+      payload: stripped as unknown as Layout,
+      modifiedAt: 2000,
+      schemaVersion: 1,
+    });
+
+    expect(savedLayout()).not.toHaveProperty('baseplateParams');
   });
 });
 
