@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { useLayoutStore } from '@/core/store/layout';
 import { baseplateDesignId, layoutId } from '@/core/types';
@@ -10,9 +10,16 @@ import {
   saveDesign,
   loadDesign,
   listDesigns,
+  updateDesignParams,
   closeBaseplateDb,
 } from '@/features/baseplate/storage/BaseplateStorage';
 import { useBaseplateLibraryInit } from './useBaseplateLibraryInit';
+import type * as BaseplateStorageModule from '@/features/baseplate/storage/BaseplateStorage';
+
+vi.mock('@/features/baseplate/storage/BaseplateStorage', async (importOriginal) => {
+  const actual = await importOriginal<typeof BaseplateStorageModule>();
+  return { ...actual, updateDesignParams: vi.fn(actual.updateDesignParams) };
+});
 
 const params: StoredBaseplateParams = {
   magnetHoles: false,
@@ -312,6 +319,35 @@ describe('useBaseplateLibraryInit', () => {
         if (!isOk(stored)) throw new Error('loadDesign failed');
         expect(stored.value.params).toEqual(edited);
       });
+    });
+
+    it('stores a second edit made while the seed catch-up write is pending', async () => {
+      const second: StoredBaseplateParams = {
+        ...params,
+        paddingRight: 9 as StoredBaseplateParams['paddingRight'],
+      };
+      const real = vi.mocked(updateDesignParams).getMockImplementation();
+      if (!real) throw new Error('updateDesignParams is not wrapped');
+      vi.mocked(updateDesignParams).mockImplementationOnce((id, next, thumbnail) => {
+        useLayoutStore.getState().setBaseplateParams(second);
+        return real(id, next, thumbnail);
+      });
+      useLayoutStore.getState().importLayout(createTestLayout({ baseplateParams: params }));
+
+      renderHook(() => useBaseplateLibraryInit());
+      act(() => {
+        useLayoutStore.getState().setBaseplateParams(edited);
+      });
+
+      await waitFor(() => {
+        expect(useLayoutStore.getState().layout.activeBaseplateId).toBeTruthy();
+      });
+      const activeId = useLayoutStore.getState().layout.activeBaseplateId;
+      if (!activeId) throw new Error('no active design');
+      expect(useLayoutStore.getState().layout.baseplateParams).toEqual(second);
+      const stored = await loadDesign(activeId);
+      if (!isOk(stored)) throw new Error('loadDesign failed');
+      expect(stored.value.params).toEqual(second);
     });
   });
 });

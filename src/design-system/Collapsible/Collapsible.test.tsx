@@ -102,6 +102,24 @@ describe('Collapsible', () => {
       expect(screen.getByText('2x2x3u')).toBeInTheDocument();
     });
 
+    it('describes the collapsed toggle with its summary', () => {
+      render(
+        <Collapsible title="Dims" defaultExpanded={false} summary="2x2x3u">
+          <p>Content</p>
+        </Collapsible>
+      );
+      expect(screen.getByRole('button', { name: 'Dims' })).toHaveAccessibleDescription('2x2x3u');
+    });
+
+    it('drops the description once expanded', () => {
+      render(
+        <Collapsible title="Dims" defaultExpanded={true} summary="2x2x3u">
+          <p>Content</p>
+        </Collapsible>
+      );
+      expect(screen.getByRole('button', { name: 'Dims' })).not.toHaveAttribute('aria-describedby');
+    });
+
     it('hides summary when expanded', () => {
       render(
         <Collapsible title="Dims" defaultExpanded={true} summary="2x2x3u">

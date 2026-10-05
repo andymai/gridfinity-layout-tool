@@ -21,7 +21,11 @@ export function ActiveBaseplatePanel() {
   const t = useTranslation();
   const { list, activeBaseplateId, switchActive } = useBaseplateLibrary();
   const setShowBaseplateLibrary = useViewStore((s) => s.setShowBaseplateLibrary);
-  const activeName = list.find((ref) => ref.id === activeBaseplateId)?.name;
+  // A linked design whose registry entry is missing is not a draft; leave it unnamed.
+  const summary =
+    activeBaseplateId === null
+      ? t('baseplate.library.draftName')
+      : list.find((ref) => ref.id === activeBaseplateId)?.name;
 
   const handleChange = useCallback(
     (value: string) => {
@@ -50,7 +54,7 @@ export function ActiveBaseplatePanel() {
       title={t('baseplate.title')}
       size="md"
       actions={manageButton}
-      summary={activeName ?? t('baseplate.library.draftName')}
+      summary={summary}
       defaultExpanded={false}
     >
       <Select

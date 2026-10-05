@@ -55,6 +55,19 @@ describe('ActiveBaseplatePanel', () => {
     expect(screen.getAllByText('One')).toHaveLength(2);
   });
 
+  it('leaves a linked design unnamed when its registry entry is missing', () => {
+    const linked = mocks.libraryState.activeBaseplateId;
+    mocks.libraryState.activeBaseplateId = 'bp-gone' as typeof linked;
+    try {
+      render(<ActiveBaseplatePanel />);
+      const draftLabels = screen.getAllByText('baseplate.library.draftName');
+      expect(draftLabels).toHaveLength(1);
+      expect(draftLabels[0].tagName).toBe('OPTION');
+    } finally {
+      mocks.libraryState.activeBaseplateId = linked;
+    }
+  });
+
   it('reads as an unsaved draft when no library design is linked', () => {
     const linked = mocks.libraryState.activeBaseplateId;
     mocks.libraryState.activeBaseplateId = null as unknown as typeof linked;

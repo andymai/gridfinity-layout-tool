@@ -132,11 +132,15 @@ export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions
         if (isStale()) return false;
         if (isOk(saved)) {
           let design = saved.value;
-          const edited = current().params;
-          if (edited !== undefined && !deepEqual(edited, seedParams)) {
+          // Each catch-up write is itself an await another edit can land in, so
+          // repeat until the stored design matches what the layout holds.
+          for (let attempt = 0; attempt < 5; attempt++) {
+            const edited = current().params;
+            if (edited === undefined || deepEqual(edited, design.params)) break;
             const updated = await updateDesignParams(design.id, edited);
             if (isStale()) return false;
-            if (isOk(updated)) design = updated.value;
+            if (!isOk(updated)) break;
+            design = updated.value;
           }
           if (current().activeId !== null) {
             await deleteDesign(design.id);
