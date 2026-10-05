@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { Color, SRGBColorSpace } from 'three';
 import { luminanceContrast, relativeLuminance } from '@/shared/utils/color';
-import { getDotGridStyle, getDotInterval } from './dotGrid';
+import { displayedSurfaceSrgb, getDotGridStyle, getDotInterval } from './dotGrid';
 
 function blendedContrast(surface: string, ink: string, opacity: number): number {
-  const s = new Color(surface).getRGB({ r: 0, g: 0, b: 0 }, SRGBColorSpace);
+  const s = displayedSurfaceSrgb(surface);
   const i = new Color(ink).getRGB({ r: 0, g: 0, b: 0 }, SRGBColorSpace);
   const mix = (a: number, b: number): number => a * (1 - opacity) + b * opacity;
   return luminanceContrast(
@@ -20,7 +20,7 @@ describe('getDotInterval', () => {
   });
 
   it('never packs dots closer than a few screen pixels when zoomed out', () => {
-    for (const zoom of [0.5, 1, 2, 3, 4, 6, 10, 25, 50]) {
+    for (const zoom of [0.1, 0.3, 0.5, 1, 2, 3, 4, 6, 10, 25, 50]) {
       expect(getDotInterval(84, 42, zoom) * zoom).toBeGreaterThanOrEqual(8);
     }
   });
@@ -39,6 +39,16 @@ describe('getDotInterval', () => {
     const dots = (Math.floor(420 / interval) + 1) ** 2;
     expect(interval).toBeGreaterThan(1);
     expect(dots).toBeLessThanOrEqual(50_000);
+  });
+});
+
+describe('displayedSurfaceSrgb', () => {
+  it('matches the pixels the editor canvas renders for a bin fill', () => {
+    const toBytes = (c: { r: number; g: number; b: number }): number[] =>
+      [c.r, c.g, c.b].map((v) => Math.round(v * 255));
+    // Read off screenshots of the cutout editor under R3F's default tone mapping.
+    expect(toBytes(displayedSurfaceSrgb('#d4d8dc'))).toEqual([211, 212, 214]);
+    expect(toBytes(displayedSurfaceSrgb('#3a3f47'))).toEqual([44, 49, 59]);
   });
 });
 

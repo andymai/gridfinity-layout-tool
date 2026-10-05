@@ -1,7 +1,7 @@
 import { Color, SRGBColorSpace } from 'three';
 import { luminanceContrast, relativeLuminance } from '@/shared/utils/color';
 
-const DOT_STEPS_MM = [1, 2, 5, 10, 20] as const;
+const DOT_STEPS_MM = [1, 2, 5, 10, 20, 50, 100] as const;
 const MIN_DOT_SPACING_PX = 8;
 /** Every instance matrix is rebuilt in JS when the interval changes; more than this stalls a zoom. */
 const MAX_DOTS = 50_000;
@@ -29,11 +29,39 @@ export interface DotGridStyle {
 const DEFAULT_CONTRAST = 2;
 /** WCAG 1.4.11 non-text contrast. */
 const HIGH_CONTRAST = 3;
+/** The minimal opacity lands a hair under target once the 8-bit framebuffer rounds it. */
+const ROUNDING_MARGIN = 0.05;
 
 type Rgb = { r: number; g: number; b: number };
 
-function parseSrgb(color: string): Rgb {
-  return new Color(color).getRGB({ r: 0, g: 0, b: 0 }, SRGBColorSpace);
+const ACES_IN = [
+  [0.59719, 0.35458, 0.04823],
+  [0.076, 0.90834, 0.01566],
+  [0.0284, 0.13383, 0.83777],
+] as const;
+const ACES_OUT = [
+  [1.60475, -0.53108, -0.07367],
+  [-0.10208, 1.10813, -0.00605],
+  [-0.00327, -0.07276, 1.07602],
+] as const;
+
+function mul(m: typeof ACES_IN | typeof ACES_OUT, v: readonly number[]): number[] {
+  return m.map((row) => row[0] * v[0] + row[1] * v[1] + row[2] * v[2]);
+}
+
+/**
+ * The bin fill as it reaches the screen. The editor's Canvas keeps R3F's
+ * default ACES filmic tone mapping (exposure 1) and the fill is tone-mapped,
+ * so solving against the picked colour misses the target on dark bins. This
+ * is three's `ACESFilmicToneMapping` shader, run on the CPU.
+ */
+export function displayedSurfaceSrgb(color: string): Rgb {
+  const linear = new Color(color);
+  const fitted = mul(ACES_IN, [linear.r / 0.6, linear.g / 0.6, linear.b / 0.6]).map(
+    (x) => (x * (x + 0.0245786) - 0.000090537) / (x * (0.983729 * x + 0.432951) + 0.238081)
+  );
+  const [r, g, b] = mul(ACES_OUT, fitted).map((c) => Math.min(1, Math.max(0, c)));
+  return new Color().setRGB(r, g, b).getRGB({ r: 0, g: 0, b: 0 }, SRGBColorSpace);
 }
 
 /**
@@ -61,14 +89,15 @@ function opacityForContrast(surface: Rgb, ink: number, target: number): number {
   return hi;
 }
 
+/** Dots must render with `toneMapped={false}`: the ink is solved as exact black or white. */
 export function getDotGridStyle(binColor: string, highContrast: boolean): DotGridStyle {
-  const surface = parseSrgb(binColor);
+  const surface = displayedSurfaceSrgb(binColor);
   const surfaceLum = relativeLuminance(surface.r, surface.g, surface.b);
   const darkInk = luminanceContrast(surfaceLum, 0) >= luminanceContrast(surfaceLum, 1);
   const target = highContrast ? HIGH_CONTRAST : DEFAULT_CONTRAST;
   return {
     color: darkInk ? '#000000' : '#ffffff',
-    opacity: opacityForContrast(surface, darkInk ? 0 : 1, target),
+    opacity: opacityForContrast(surface, darkInk ? 0 : 1, target + ROUNDING_MARGIN),
     radiusPx: highContrast ? 2 : 1.5,
   };
 }
