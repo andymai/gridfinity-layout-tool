@@ -1,7 +1,7 @@
 import { loadLayoutAsync } from '@/core/storage';
 import { useLibraryStore } from '@/core/store';
 import { useLayoutStore } from '@/core/store/layout';
-import type { LayoutId } from '@/core/types';
+import type { LayoutEntry } from '@/core/types';
 import {
   layoutLinks,
   layoutsUsingDesign,
@@ -9,14 +9,15 @@ import {
   type LiveLayout,
 } from './designOwnership';
 
-const storedLinks = new Map<LayoutId, string | null>();
+const storedLinks = new Map<string, string | null>();
 
-async function readStoredLink(id: LayoutId): Promise<string | null> {
-  const cached = storedLinks.get(id);
+async function readStoredLink(entry: LayoutEntry): Promise<string | null> {
+  const key = `${entry.id}@${entry.modifiedAt}`;
+  const cached = storedLinks.get(key);
   if (cached !== undefined) return cached;
-  const layout = await loadLayoutAsync(id);
+  const layout = await loadLayoutAsync(entry.id);
   const link = layout?.activeBaseplateId ?? null;
-  storedLinks.set(id, link);
+  storedLinks.set(key, link);
   return link;
 }
 

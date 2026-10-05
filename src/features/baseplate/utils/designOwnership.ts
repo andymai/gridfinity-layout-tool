@@ -20,34 +20,34 @@ export interface LiveLayout {
  * link once the layout is saved; an entry saved before that is read through
  * `readLink`. `live` stands in for the open layout, whose entry trails its edits.
  */
-export async function layoutLinks(
+export function layoutLinks(
   entries: readonly LayoutEntry[],
-  readLink: (id: LayoutId) => Promise<string | null>,
+  readLink: (entry: LayoutEntry) => Promise<string | null>,
   live?: LiveLayout
 ): Promise<Array<DesignUser & { readonly link: string | null }>> {
-  const links: Array<DesignUser & { readonly link: string | null }> = [];
-  for (const entry of entries) {
-    const isLive = live !== undefined && entry.id === live.id;
-    const recorded = entry.preview.baseplateId;
-    const link = isLive
-      ? live.designId
-      : recorded !== undefined
-        ? recorded
-        : await readLink(entry.id);
-    links.push({
-      id: entry.id,
-      name: isLive ? live.name : entry.name,
-      createdAt: entry.createdAt,
-      link,
-    });
-  }
-  return links;
+  return Promise.all(
+    entries.map(async (entry) => {
+      const isLive = live !== undefined && entry.id === live.id;
+      const recorded = entry.preview.baseplateId;
+      const link = isLive
+        ? live.designId
+        : recorded !== undefined
+          ? recorded
+          : await readLink(entry);
+      return {
+        id: entry.id,
+        name: isLive ? live.name : entry.name,
+        createdAt: entry.createdAt,
+        link,
+      };
+    })
+  );
 }
 
 export async function layoutsUsingDesign(
   designId: string,
   entries: readonly LayoutEntry[],
-  readLink: (id: LayoutId) => Promise<string | null>,
+  readLink: (entry: LayoutEntry) => Promise<string | null>,
   live?: LiveLayout
 ): Promise<DesignUser[]> {
   return (await layoutLinks(entries, readLink, live))
@@ -55,7 +55,13 @@ export async function layoutsUsingDesign(
     .map(({ id, name, createdAt }) => ({ id, name, createdAt }));
 }
 
-/** The oldest layout keeps a shared design, so a duplicate copies and its source keeps the original. */
+/**
+ * The oldest layout keeps a shared design, so a duplicate copies and its source
+ * keeps the original. `createdAt` is local: a layout pulled from sync is stamped
+ * with its last edit, so two devices can name different owners. If both split
+ * before syncing, each layout still ends up with its own copy, and the original
+ * is left unused.
+ */
 export function designOwner(users: readonly DesignUser[]): DesignUser | undefined {
   return [...users].sort(
     (a, b) => a.createdAt - b.createdAt || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)

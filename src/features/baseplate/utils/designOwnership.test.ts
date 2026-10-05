@@ -37,7 +37,7 @@ describe('layoutsUsingDesign', () => {
     const readLink = vi.fn().mockResolvedValue('X');
     const users = await layoutsUsingDesign('X', [entry('old', 1)], readLink);
     expect(users.map((u) => u.id)).toEqual(['old']);
-    expect(readLink).toHaveBeenCalledWith(layoutId('old'));
+    expect(readLink).toHaveBeenCalledWith(expect.objectContaining({ id: layoutId('old') }));
   });
 
   it('takes the open layout’s live link over its trailing entry', async () => {

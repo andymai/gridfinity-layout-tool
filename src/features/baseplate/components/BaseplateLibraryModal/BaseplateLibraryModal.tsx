@@ -57,9 +57,11 @@ function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
   const [usage, setUsage] = useState<ReadonlyMap<string, string[]>>(new Map());
   useEffect(() => {
     let current = true;
-    void designUsage().then((next) => {
-      if (current) setUsage(next);
-    });
+    designUsage()
+      .then((next) => {
+        if (current) setUsage(next);
+      })
+      .catch(() => undefined);
     return () => {
       current = false;
     };

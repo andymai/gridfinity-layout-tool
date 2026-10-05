@@ -221,6 +221,10 @@ export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions
                   }
                   return true;
                 }
+                // No copy, so adopting the shared params would overwrite what
+                // this layout shows. Left unmaterialized, the next resolve
+                // tries the split again.
+                return true;
               }
             }
             // Reference, not value: an edit undone to its original value is

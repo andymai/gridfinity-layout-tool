@@ -24,6 +24,7 @@ vi.mock('@/features/baseplate/storage/BaseplateStorage', async (importOriginal) 
   const actual = await importOriginal<typeof BaseplateStorageModule>();
   return {
     ...actual,
+    saveDesign: vi.fn(actual.saveDesign),
     updateDesignParams: vi.fn(actual.updateDesignParams),
     deleteDesign: vi.fn(actual.deleteDesign),
   };
@@ -549,6 +550,35 @@ describe('useBaseplateLibraryInit', () => {
         expect(useLayoutStore.getState().layout.baseplateParams?.paddingBack).toBe(21);
       });
       expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(shared);
+    });
+
+    it('keeps what the newer layout shows when its copy cannot be saved', async () => {
+      const actual = await vi.importActual<typeof BaseplateStorageModule>(
+        '@/features/baseplate/storage/BaseplateStorage'
+      );
+      // The split's copy is the only save that names its own id.
+      vi.mocked(saveDesign).mockImplementation((design) =>
+        design.id === undefined
+          ? actual.saveDesign(design)
+          : Promise.resolve(err(storageUnavailable('indexedDB', new Error('quota'))))
+      );
+      try {
+        const shared = await openLayout('layout-new');
+
+        await waitFor(() => {
+          expect(saveDesign).toHaveBeenCalledWith(
+            expect.objectContaining({ name: 'Baseplate 1 (Garage)' })
+          );
+        });
+        await act(async () => {
+          await Promise.resolve();
+        });
+        const { layout } = useLayoutStore.getState();
+        expect(layout.activeBaseplateId).toBe(shared);
+        expect(layout.baseplateParams).toEqual(mine);
+      } finally {
+        vi.mocked(saveDesign).mockImplementation(actual.saveDesign);
+      }
     });
   });
 });
