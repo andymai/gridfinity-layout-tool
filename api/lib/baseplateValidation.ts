@@ -115,10 +115,64 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'screwHoles',
 ]);
 
+const BOOLEAN_PARAM_KEYS = new Set<string>([
+  'overTile',
+  'overTileHalfGrid',
+  'overTileHalfGridSolidLeftover',
+  'wholeCellsOnly',
+  'connectorNubs',
+  'lightweight',
+  'solidFloor',
+  'syncWithLayout',
+  'invertDovetails',
+  'preferIdenticalPieces',
+  'connectorSlotsAllEdges',
+  'detachMargins',
+  'detachMarginConnector',
+]);
+
+/** Enum values are checked on the client; here only their type and size, so the lists can't drift. */
+const STRING_PARAM_KEYS = new Set<string>([
+  'paddingAnchor',
+  'connectorStyle',
+  'fractionalEdgeX',
+  'fractionalEdgeY',
+]);
+const MAX_ENUM_LENGTH = 32;
+
+/** Mirrors STACK_PRINT_* in src/core/types/baseplate.ts. */
+function isValidStackPrint(value: unknown): boolean {
+  if (!isObject(value) || !isBoolean(value.enabled)) return false;
+  if (value.gapMm !== undefined && !(isNumber(value.gapMm) && inRange(value.gapMm, 0.1, 1))) {
+    return false;
+  }
+  if (
+    value.copies !== undefined &&
+    !(isNumber(value.copies) && Number.isInteger(value.copies) && inRange(value.copies, 1, 20))
+  ) {
+    return false;
+  }
+  return Object.keys(value).every(
+    (key) => key === 'enabled' || key === 'gapMm' || key === 'copies'
+  );
+}
+
+/**
+ * Optional settings the required checks above don't cover. A malformed one is
+ * dropped rather than failing the plate, so one bad option can't stop a design
+ * or a layout from syncing.
+ */
+function isWellFormedParam(key: string, value: unknown): boolean {
+  if (BOOLEAN_PARAM_KEYS.has(key)) return isBoolean(value);
+  if (STRING_PARAM_KEYS.has(key)) return isString(value) && value.length <= MAX_ENUM_LENGTH;
+  if (key === 'stackPrint') return isValidStackPrint(value);
+  return true;
+}
+
 function pickAllowedParams(params: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const key of Object.keys(params)) {
-    if (ALLOWED_PARAM_KEYS.has(key)) {
+    if (ALLOWED_PARAM_KEYS.has(key) && isWellFormedParam(key, params[key])) {
       out[key] = params[key];
     }
   }
