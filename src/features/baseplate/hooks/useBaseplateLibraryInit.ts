@@ -146,9 +146,21 @@ export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions
           // session's first resolve restore them over the edit; unlinked, that
           // session seeds again from what the layout holds.
           const latest = current();
-          const caughtUp = latest.params === undefined || deepEqual(latest.params, design.params);
+          const caughtUp =
+            latest.params === undefined
+              ? params === undefined
+              : deepEqual(latest.params, design.params);
           if (latest.activeId !== null || !caughtUp) {
-            await deleteDesign(design.id);
+            const removed = await deleteDesign(design.id);
+            // Unregistered, a seed the delete missed would sit in IndexedDB where
+            // no list shows it; registered, the library offers it for deletion.
+            if (!isOk(removed) && removed.error.code !== 'STORAGE_NOT_FOUND') {
+              upsertRegistryEntry({
+                id: design.id,
+                name: design.name,
+                updatedAt: design.updatedAt,
+              });
+            }
             return true;
           }
           upsertRegistryEntry({ id: design.id, name: design.name, updatedAt: design.updatedAt });

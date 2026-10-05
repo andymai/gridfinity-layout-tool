@@ -11,14 +11,20 @@ import {
   loadDesign,
   listDesigns,
   updateDesignParams,
+  deleteDesign,
   closeBaseplateDb,
 } from '@/features/baseplate/storage/BaseplateStorage';
+import { loadRegistry } from '@/features/baseplate/store/baseplateRegistry';
 import { useBaseplateLibraryInit } from './useBaseplateLibraryInit';
 import type * as BaseplateStorageModule from '@/features/baseplate/storage/BaseplateStorage';
 
 vi.mock('@/features/baseplate/storage/BaseplateStorage', async (importOriginal) => {
   const actual = await importOriginal<typeof BaseplateStorageModule>();
-  return { ...actual, updateDesignParams: vi.fn(actual.updateDesignParams) };
+  return {
+    ...actual,
+    updateDesignParams: vi.fn(actual.updateDesignParams),
+    deleteDesign: vi.fn(actual.deleteDesign),
+  };
 });
 
 const params: StoredBaseplateParams = {
@@ -362,6 +368,48 @@ describe('useBaseplateLibraryInit', () => {
       });
       expect(useLayoutStore.getState().layout.activeBaseplateId ?? null).toBeNull();
       expect(useLayoutStore.getState().layout.baseplateParams).toEqual(edited);
+    });
+
+    it('drops the seed when the layout loses its plate while the seed is written', async () => {
+      useLayoutStore
+        .getState()
+        .importLayout(createTestLayout({ baseplateParams: params }), layoutId('layout-a'));
+
+      renderHook(() => useBaseplateLibraryInit());
+      act(() => {
+        useLayoutStore.getState().importLayout(createTestLayout(), layoutId('layout-a'));
+      });
+
+      await waitFor(async () => {
+        const designs = await listDesigns();
+        if (!isOk(designs)) throw new Error('listDesigns failed');
+        expect(designs.value).toHaveLength(0);
+      });
+      expect(useLayoutStore.getState().layout.activeBaseplateId ?? null).toBeNull();
+      expect(useLayoutStore.getState().layout.baseplateParams).toBeUndefined();
+    });
+
+    it('lists a discarded seed the delete could not remove', async () => {
+      vi.mocked(updateDesignParams).mockResolvedValueOnce(
+        err(storageUnavailable('indexedDB', new Error('quota')))
+      );
+      vi.mocked(deleteDesign).mockResolvedValueOnce(
+        err(storageUnavailable('indexedDB', new Error('locked')))
+      );
+      useLayoutStore.getState().importLayout(createTestLayout({ baseplateParams: params }));
+
+      renderHook(() => useBaseplateLibraryInit());
+      act(() => {
+        useLayoutStore.getState().setBaseplateParams(edited);
+      });
+
+      await waitFor(() => {
+        expect(loadRegistry()).toHaveLength(1);
+      });
+      const designs = await listDesigns();
+      if (!isOk(designs)) throw new Error('listDesigns failed');
+      expect(designs.value.map((d) => d.id)).toEqual(loadRegistry().map((r) => r.id));
+      expect(useLayoutStore.getState().layout.activeBaseplateId ?? null).toBeNull();
     });
 
     it('leaves the layout unlinked when edits outrun every catch-up write', async () => {

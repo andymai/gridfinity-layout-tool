@@ -21,7 +21,6 @@ export function ActiveBaseplatePanel() {
   const t = useTranslation();
   const { list, activeBaseplateId, switchActive } = useBaseplateLibrary();
   const setShowBaseplateLibrary = useViewStore((s) => s.setShowBaseplateLibrary);
-  // A linked design whose registry entry is missing is not a draft; leave it unnamed.
   const summary =
     activeBaseplateId === null
       ? t('baseplate.library.draftName')
