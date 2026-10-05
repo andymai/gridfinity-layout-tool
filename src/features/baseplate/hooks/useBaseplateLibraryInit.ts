@@ -139,22 +139,21 @@ export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions
             if (edited === undefined || deepEqual(edited, design.params)) break;
             const updated = await updateDesignParams(design.id, edited);
             if (isStale()) return false;
-            if (!isOk(updated)) {
-              // Linking a design that holds older params would let the next
-              // session's first resolve restore them over the edit; unlinked,
-              // that session seeds again from what the layout holds.
-              await deleteDesign(design.id);
-              return true;
-            }
+            if (!isOk(updated)) break;
             design = updated.value;
           }
-          if (current().activeId !== null) {
+          // Linking a design that holds older params would let the next
+          // session's first resolve restore them over the edit; unlinked, that
+          // session seeds again from what the layout holds.
+          const latest = current();
+          const caughtUp = latest.params === undefined || deepEqual(latest.params, design.params);
+          if (latest.activeId !== null || !caughtUp) {
             await deleteDesign(design.id);
             return true;
           }
           upsertRegistryEntry({ id: design.id, name: design.name, updatedAt: design.updatedAt });
           setActiveDesignId(design.id);
-          setActiveBaseplateLocal(design.id, current().params ?? design.params);
+          setActiveBaseplateLocal(design.id, latest.params ?? design.params);
           // The layout now mirrors the freshly created design, so a later mount
           // must not re-copy over a subsequent edit.
           materializedThisSession.add(materializeKey(targetLayoutId, design.id));

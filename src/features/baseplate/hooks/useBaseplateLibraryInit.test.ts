@@ -364,6 +364,37 @@ describe('useBaseplateLibraryInit', () => {
       expect(useLayoutStore.getState().layout.baseplateParams).toEqual(edited);
     });
 
+    it('leaves the layout unlinked when edits outrun every catch-up write', async () => {
+      const real = vi.mocked(updateDesignParams).getMockImplementation();
+      if (!real) throw new Error('updateDesignParams is not wrapped');
+      let n = 0;
+      vi.mocked(updateDesignParams).mockImplementation((id, next, thumbnail) => {
+        n += 1;
+        useLayoutStore.getState().setBaseplateParams({
+          ...params,
+          paddingFront: n as StoredBaseplateParams['paddingFront'],
+        });
+        return real(id, next, thumbnail);
+      });
+      try {
+        useLayoutStore.getState().importLayout(createTestLayout({ baseplateParams: params }));
+
+        renderHook(() => useBaseplateLibraryInit());
+        act(() => {
+          useLayoutStore.getState().setBaseplateParams(edited);
+        });
+
+        await waitFor(async () => {
+          const designs = await listDesigns();
+          if (!isOk(designs)) throw new Error('listDesigns failed');
+          expect(designs.value).toHaveLength(0);
+        });
+        expect(useLayoutStore.getState().layout.activeBaseplateId ?? null).toBeNull();
+      } finally {
+        vi.mocked(updateDesignParams).mockImplementation(real);
+      }
+    });
+
     it('stores a second edit made while the seed catch-up write is pending', async () => {
       const second: StoredBaseplateParams = {
         ...params,
