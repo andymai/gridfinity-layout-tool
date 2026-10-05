@@ -1,22 +1,22 @@
-src/features/bin-designer/utils/printShellVolume.ts
-  s_f6ef8af5057228::t_c4a17816d2e852 1-65
-src/features/bin-designer/utils/printEstimates.ts
-  s_f6ef8af5057228::t_7692206c1b78f1 21,57,157-160,264-271
-  s_f6ef8af5057228::t_da2d33983cfd90 272
 src/features/bin-designer/utils/printPatternSavings.ts
-  s_f6ef8af5057228::t_8cd954d65a36cc 17-21,55-57
   s_f6ef8af5057228::t_079377b1d80bd3 67-81,92,98-110,113
   s_f6ef8af5057228::t_60a810c9446e0a 9,16,30-32,112,114-132,134-135,137-145,147-166
-  s_f6ef8af5057228::t_bfb512cfbe2416 111
+  s_f6ef8af5057228::t_8cd954d65a36cc 17-21,55-57
+  s_f6ef8af5057228::t_f1131bd66e0b98 111
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_f6ef8af5057228::t_ea13c7d2b7f3c0 82-129,394
+  s_f6ef8af5057228::t_2fe23896366191 373,382-393
+  s_f6ef8af5057228::t_5833703999ebb7 726,728,734,736-740
+  s_1d5e36a6570c0d::t_1be583954d2666 395
+src/features/bin-designer/utils/printEstimates.ts
+  s_f6ef8af5057228::t_7692206c1b78f1 21,57,157-160,264-271
+  s_f6ef8af5057228::t_d0960f2dc2fa33 272
+src/features/bin-designer/utils/printShellVolume.ts
+  s_f6ef8af5057228::t_c4a17816d2e852 1-65
 src/features/generation/worker/generators/printEstimates.wallThickness.scenario.test.ts
   s_f6ef8af5057228::t_9b31008c2b6434 1-136
-  s_f6ef8af5057228::t_416b05b25ac23b 137-139
-  s_f6ef8af5057228::t_62cb361d086451 140-141
-src/features/bin-designer/utils/printEstimates.test.ts
-  s_f6ef8af5057228::t_5833703999ebb7 726,728,734,736-740
-  s_f6ef8af5057228::t_2fe23896366191 373,382-393
-  s_f6ef8af5057228::t_ea13c7d2b7f3c0 82-129,394
-  s_1d5e36a6570c0d::t_de9529e769c99d 395
+  s_f6ef8af5057228::t_c784f68c868986 137-139
+  s_f6ef8af5057228::t_824301f1284d7f 140-141
 src/features/bin-designer/utils/printShellVolume.test.ts
   s_f6ef8af5057228::t_d284ac046d4e23 1-45
 ---
