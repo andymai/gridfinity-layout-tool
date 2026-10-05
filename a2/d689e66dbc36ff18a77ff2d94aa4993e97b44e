@@ -1,0 +1,32 @@
+src/design-system/Collapsible/Collapsible.tsx
+  s_f6ef8af5057228::t_7c7d7e43c2ea9b 183-184,210-213,235,237
+src/design-system/Collapsible/Collapsible.test.tsx
+  s_f6ef8af5057228::t_7c7d7e43c2ea9b 105-122
+src/features/baseplate/components/ActiveBaseplatePanel/ActiveBaseplatePanel.tsx
+  s_f6ef8af5057228::t_7c7d7e43c2ea9b 24-28,57
+src/features/baseplate/components/ActiveBaseplatePanel/ActiveBaseplatePanel.test.tsx
+  s_f6ef8af5057228::t_7c7d7e43c2ea9b 58-62,66-70
+  s_f6ef8af5057228::t_6fa6901448d2a9 63-65
+src/features/baseplate/hooks/useBaseplateLibraryInit.test.ts
+  s_f6ef8af5057228::t_7583e35d2a4e7e 17,20
+  s_f6ef8af5057228::t_b4449a17efcc1d 2,13,19,21-22,323-350
+  s_f6ef8af5057228::t_ee2462608cf662 18,351
+src/features/baseplate/hooks/useBaseplateLibraryInit.ts
+  s_f6ef8af5057228::t_7c7d7e43c2ea9b 135-139,142-143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a2d689e66dbc36ff18a77ff2d94aa4993e97b44e",
+  "prompts": {},
+  "sessions": {
+    "s_f6ef8af5057228": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b2f7a60d-c28b-4bef-b4be-eefb3d4c0aef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
