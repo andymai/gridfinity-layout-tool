@@ -144,6 +144,19 @@ describe('validateShareLayout', () => {
       }
     });
 
+    it('drops the design link along with plate settings that fail validation', () => {
+      const result = validateShareLayout(
+        {
+          ...createValidLayout(),
+          baseplateParams: { ...plate, magnetDiameter: 500 },
+          activeBaseplateId: designId,
+        },
+        1000
+      );
+      expect(result.valid).toBe(true);
+      if (result.valid) expect(result.layout).not.toHaveProperty('activeBaseplateId');
+    });
+
     it('drops a design link that is not one of ours', () => {
       for (const activeBaseplateId of ['../etc', 'baseplate_x', 42, null]) {
         const result = validateShareLayout({ ...createValidLayout(), activeBaseplateId }, 1000);

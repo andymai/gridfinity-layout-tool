@@ -125,7 +125,7 @@ function pickAllowedParams(params: Record<string, unknown>): Record<string, unkn
   return out;
 }
 
-/** Locally minted ids (base36 suffix of 1-8 chars) plus the share formats designs round-trip through. */
+/** Share-format ids too: a design keeps the id it was shared under when it round-trips. */
 export function isValidBaseplateId(id: unknown): id is string {
   return typeof id === 'string' && (/^baseplate_\d+_[a-z0-9]{1,8}$/.test(id) || isValidShareId(id));
 }

@@ -342,7 +342,9 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
           : undefined,
       ...(layout.lowProfileBase === true ? { lowProfileBase: true as const } : {}),
       ...(baseplateParams ? { baseplateParams } : {}),
-      ...(isValidBaseplateId(layout.activeBaseplateId)
+      // The client only resolves a link alongside inline params; a link left
+      // without them would show a design while drawing default padding.
+      ...(baseplateParams && isValidBaseplateId(layout.activeBaseplateId)
         ? { activeBaseplateId: layout.activeBaseplateId }
         : {}),
       ...(isValidFolderId(layout.folderId) ? { folderId: layout.folderId } : {}),
