@@ -119,6 +119,7 @@ export const LID_CONFIG_KEYS = [
   'tray',
   'grip',
   'relieveInterior',
+  'fill',
   'slide',
   'hinge',
   'cutouts',

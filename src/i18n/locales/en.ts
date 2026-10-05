@@ -2270,6 +2270,11 @@ const en: Record<string, string> = {
     'The top of the cavity’s perimeter is trimmed so the click rails run unbroken. Dividers stop a few mm short of the rim and label shelves sit lower.',
   'binDesigner.lid.relieveInteriorOffHint':
     'The rails notch around each divider and label tab instead. Kept for designs made before this option, so they reprint identically.',
+  'binDesigner.lid.fill': 'Lid fill',
+  'binDesigner.lid.fillHint':
+    'Fills the lid down to its bottom edge, just above the dividers, so small parts stay in their compartment. Dividers keep their full height at the walls.',
+  'binDesigner.lid.relieveInteriorFillReason':
+    'Not used while the lid fill is on: the dividers keep their full height at the walls.',
   'binDesigner.lid.editCutouts': 'Cut holes in the lid',
   'binDesigner.lid.editCutoutsCount': 'Cut holes in the lid ({count})',
   'binDesigner.lid.editCutoutsHint':

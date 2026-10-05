@@ -1228,6 +1228,18 @@ export interface LidConfig {
    */
   readonly relieveInterior: boolean;
   /**
+   * Fill the lid's hollow with a plug flush with its mating edge — the skirt
+   * bottom, or the magnet bosses' face — just above the divider tops, so small
+   * parts stay in their compartment with the lid on. Friction and magnetic
+   * lids only; read it through {@link lidHasFill}.
+   *
+   * Changes the BIN as well: a filled lid's bin skips the interior relief ring, whose
+   * notches at every divider end would otherwise leave a passage along the walls.
+   *
+   * ABSENT when off, for the fingerprint reason {@link slide} documents.
+   */
+  readonly fill?: true;
+  /**
    * Sliding-lid geometry. Read only when {@link attachment} is `'slide'`, so
    * switching modes preserves it exactly as the per-side `clickRails` selection
    * and the `retentionMagnet` dimensions are preserved.
@@ -1836,6 +1848,22 @@ export function lidGripModeAllowed(params: LidGeometrySource, mode: LidGripMode)
  */
 export function hasAnyLidGripSide(sides: LidGripSides): boolean {
   return LID_RAIL_SIDES.some((side) => sides[side]);
+}
+
+/**
+ * Whether the lid carries a fill plug and the bin keeps its
+ * divider ends whole. Click rails are excluded because they need the relief
+ * ring; a slide or hinge lid has no cavity to fill or would sweep the plug
+ * through the dividers.
+ */
+export function lidHasFill(params: LidGeometrySource): boolean {
+  const { lid } = params;
+  return (
+    lid.enabled &&
+    lid.fill === true &&
+    (lid.attachment === 'friction' || lid.attachment === 'magnetic') &&
+    params.base.stackingLip
+  );
 }
 
 /** Whether this design generates any grip relief at all. */

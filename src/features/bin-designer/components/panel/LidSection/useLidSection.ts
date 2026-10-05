@@ -13,6 +13,7 @@ import {
   LID_TOP_THICKNESS_MAX_MM,
   LID_TOP_THICKNESS_STEP_MM,
   LID_MAGNETIC_EXTRA_CLEARANCE,
+  lidHasFill,
   resolveLidMateRelief,
   resolveLidPlateThickness,
   resolveLidTrayBreakdown,
@@ -424,6 +425,11 @@ export function useLidSection() {
   const toggleRelieveInterior = useCallback(() => {
     updateLid({ relieveInterior: !lid.relieveInterior });
   }, [lid.relieveInterior, updateLid]);
+
+  // Off is an absent key, never `false` (see `LidConfig.fill`).
+  const toggleFill = useCallback(() => {
+    updateLid({ fill: lid.fill === true ? undefined : true });
+  }, [lid.fill, updateLid]);
 
   const setClickRailCoverage = useCallback(
     (clickRailCoverage: number) => {
@@ -908,6 +914,12 @@ export function useLidSection() {
       anyRail,
       clickRailCoverage: lid.clickRailCoverage,
       relieveInterior: lid.relieveInterior,
+      fillAvailable: lid.attachment === 'friction' || lid.attachment === 'magnetic',
+      fill: lid.fill === true,
+      // The fill overrides the relief, so its toggle would do nothing.
+      relieveInteriorDisabledReason: lidHasFill(params)
+        ? t('binDesigner.lid.relieveInteriorFillReason')
+        : undefined,
       // Sliding lid. `slidePlan` carries the resolver's own account of the
       // joint — the free span the sag warning is about and the thickness that
       // would carry it — so the panel never restates arithmetic the worker
@@ -1023,6 +1035,7 @@ export function useLidSection() {
       toggleClickRailSide,
       setClickRailCoverage,
       toggleRelieveInterior,
+      toggleFill,
       setHingeSide,
       setHingeCatch,
       setHingeFit,

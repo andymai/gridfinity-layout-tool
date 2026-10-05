@@ -104,5 +104,6 @@ export function resolveTrayBottomInputs(params: BinParams): LidInputs {
     // bin's design, not this tray's, so reading this tray's labels would clip
     // rails against a shelf on the wrong part.
     labelFootprints: [],
+    fill: null,
   };
 }

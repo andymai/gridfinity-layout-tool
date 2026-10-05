@@ -484,6 +484,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         tray: rawTray,
         grip: rawGrip,
         relieveInterior: rawRelieveInterior,
+        fill: rawFill,
         slide: rawSlide,
         hinge: rawHinge,
         cutouts: _rawLidCutouts,
@@ -523,6 +524,8 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         // NOT left to the `DEFAULT_LID_CONFIG` spread above: that defaults it
         // on, which is right for a new design and wrong for every old one.
         relieveInterior: rawRelieveInterior === true,
+        // Spread `undefined` deliberately, as `cutouts` below does: off is an absent key.
+        fill: rawFill === true ? true : undefined,
         slide: migrateSlide(rawSlide),
         hinge: migrateHinge(rawHinge),
         // Spread `undefined` deliberately: the key is present-but-undefined here,

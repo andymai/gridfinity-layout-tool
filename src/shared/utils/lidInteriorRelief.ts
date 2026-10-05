@@ -17,6 +17,7 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { LID_KEEPOUT_BELOW_CEILING_MM } from '@/shared/constants/lidKeepout';
 import {
   isSlideLid,
+  lidHasFill,
   resolveLidPlateThickness,
   resolveLidSlide,
 } from '@/features/bin-designer/types/lid';
@@ -28,6 +29,9 @@ import {
 export function interiorReliefActive(params: BinParams): boolean {
   if (!params.lid.relieveInterior) return false;
   if (!params.lid.enabled) return false;
+  // The ring exists for click rails, which a filled lid never has, and its
+  // notches at the divider ends are exactly the leak the fill closes.
+  if (lidHasFill(params)) return false;
   // A CAPPING lid needs a lip to grip. A sliding one is held by a channel of
   // its own and works on a lipless bin — which is the whole of the `flush`
   // placement — so the precondition follows the attachment rather than the bin.

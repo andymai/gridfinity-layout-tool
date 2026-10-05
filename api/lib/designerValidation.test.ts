@@ -2286,6 +2286,17 @@ describe('validateDesignerShare — lid.slide', () => {
     ).toBe(true);
   });
 
+  it('accepts a boolean fill and refuses anything else', () => {
+    const p = validPayload();
+    const withFill = (fill: unknown) => {
+      const payload = { ...p, params: { ...p.params, lid: { enabled: true, fill } } };
+      return validateDesignerShare(payload, Buffer.byteLength(JSON.stringify(payload), 'utf8'));
+    };
+    expect(withFill(true).valid).toBe(true);
+    expect(withFill(false).valid).toBe(true);
+    expect(withFill('yes').valid).toBe(false);
+  });
+
   it('accepts the new attachment on the lid', () => {
     const p = validPayload();
     const payload = { ...p, params: { ...p.params, lid: { attachment: 'slide' } } };

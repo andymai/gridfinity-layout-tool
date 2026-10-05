@@ -1245,6 +1245,14 @@ describe('migrateParams', () => {
     expect(DEFAULT_BIN_PARAMS.lid.relieveInterior).toBe(true);
   });
 
+  it('keeps fill only when true, so off never reaches the fingerprint', () => {
+    const lid = (fill: unknown) =>
+      migrateParams({ lid: { ...DEFAULT_BIN_PARAMS.lid, fill } as never }).lid;
+    expect(lid(true).fill).toBe(true);
+    expect(JSON.stringify(lid(false))).not.toContain('fill');
+    expect(JSON.stringify(lid(undefined))).not.toContain('fill');
+  });
+
   it('derives attachment from legacy rails and backfills magnet/tray defaults', () => {
     // Legacy lid predating the attachment field, with rails on → clickRails.
     const withRails = migrateParams({
