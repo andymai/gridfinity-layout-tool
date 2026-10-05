@@ -108,13 +108,16 @@ export const layoutAdapter: LayoutAdapter = {
   },
 
   async applyRemote(item: SyncableItem<Layout>): Promise<void> {
-    // The folder rides on the wire only; locally the entry holds it.
-    const { folderId, ...document } = normalizeIncomingLayout(item.payload);
-    let layout: Layout = document;
+    // Restored before normalizing: the outline is clipped to an extent the
+    // measured drawer widens, so clipping first would cut it to the grid.
+    let incoming = item.payload;
     if ((item.schemaVersion ?? 1) < LAYOUT_SCHEMA_VERSION) {
       const local = await loadLayoutAsync(item.id);
-      if (local) layout = restoreStrippedFields(layout, local);
+      if (local) incoming = restoreStrippedFields(incoming, local);
     }
+    // The folder rides on the wire only; locally the entry holds it.
+    const { folderId, ...document } = normalizeIncomingLayout(incoming);
+    const layout: Layout = document;
     const saveResult = await saveLayoutAsync(item.id, layout);
     if (!saveResult.ok) {
       throw syncPersistError('saveLayoutAsync', item.id, saveResult.error);

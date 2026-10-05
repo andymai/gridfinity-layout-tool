@@ -158,6 +158,35 @@ describe('layoutAdapter.applyRemote — copies the server stored before schema 2
     });
   });
 
+  it('restores the measurement before clipping the drawer outline to it', async () => {
+    const outline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 110, y: 0 },
+        { x: 110, y: 110 },
+        { x: 0, y: 110 },
+      ],
+    };
+    loadLayoutAsyncMock.mockResolvedValue({
+      ...local,
+      gridUnitMm: 42,
+      drawer: { width: 2, depth: 2, height: 3, outline, measuredMm: { width: 120, depth: 120 } },
+    });
+    await layoutAdapter.applyRemote({
+      id: 'lay-1',
+      payload: {
+        ...stripped,
+        gridUnitMm: 42,
+        drawer: { width: 2, depth: 2, height: 3, outline },
+      } as unknown as Layout,
+      modifiedAt: 2000,
+      schemaVersion: 1,
+    });
+
+    const drawer = savedLayout().drawer as { outline?: typeof outline };
+    expect(Math.max(...(drawer.outline?.vertices ?? []).map((v) => v.x))).toBe(110);
+  });
+
   it('treats a copy with no version as an older one', async () => {
     loadLayoutAsyncMock.mockResolvedValue(local);
     await layoutAdapter.applyRemote({

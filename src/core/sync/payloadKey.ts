@@ -24,7 +24,6 @@ export const PAYLOAD_KEY: Record<
   folders: 'folder',
 };
 
-/** The `PUT` body for one item; layouts declare the payload schema they carry. */
 export function syncPutBody(
   kind: SyncKind,
   payload: unknown,
