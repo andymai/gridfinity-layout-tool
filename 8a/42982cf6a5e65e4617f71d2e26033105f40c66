@@ -1,0 +1,41 @@
+src/core/baseplateDefaults.ts
+  s_f6ef8af5057228::t_15e38d52977240 109-114,119
+src/features/baseplate/components/BaseplatePanel/BaseSection.test.tsx
+  s_f6ef8af5057228::t_3bfa76bcefd250 221
+  s_f6ef8af5057228::t_15e38d52977240 238
+src/core/constants.test.ts
+  s_f6ef8af5057228::t_8b4fe0389abe73 19-20,705-720,722
+  s_f6ef8af5057228::t_f384882f4320bb 721,723
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_f6ef8af5057228::t_549724bd9cc088 455-469
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_f6ef8af5057228::t_c13366daf2a4c3 884-893
+src/features/baseplate/utils/pieceFingerprint.test.ts
+  s_f6ef8af5057228::t_46f478abec362e 8,78-79,83-86
+  s_f6ef8af5057228::t_19223cc2ce8066 7
+  s_f6ef8af5057228::t_55b36596cb4f5d 77,80-82,87-88
+api/lib/baseplateValidation.test.ts
+  s_f6ef8af5057228::t_bbed5dcc6b0418 150-165
+api/lib/baseplateValidation.ts
+  s_f6ef8af5057228::t_bbed5dcc6b0418 179-206,217
+src/features/generation/worker/generators/mountMagnetPlan.test.ts
+  s_f6ef8af5057228::t_15e38d52977240 34,41,179
+src/features/baseplate/hooks/useBaseplateGeneration.test.ts
+  s_f6ef8af5057228::t_55b36596cb4f5d 178-209
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8a42982cf6a5e65e4617f71d2e26033105f40c66",
+  "prompts": {},
+  "sessions": {
+    "s_f6ef8af5057228": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b2f7a60d-c28b-4bef-b4be-eefb3d4c0aef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
