@@ -1,17 +1,26 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { useLayoutStore } from '@/core/store/layout';
 import { layoutId } from '@/core/types';
 import type { BaseplateDesignId, StoredBaseplateParams } from '@/core/types';
-import { isOk } from '@/core/result';
+import { err, isOk, storageUnavailable } from '@/core/result';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
 import {
   saveDesign,
   loadDesign,
+  updateDesignParams,
   closeBaseplateDb,
 } from '@/features/baseplate/storage/BaseplateStorage';
+import type * as BaseplateStorageModule from '@/features/baseplate/storage/BaseplateStorage';
+import { useBaseplatePageStore } from '@/features/baseplate/store/baseplatePageStore';
+import { clearPreviewCanvas, setPreviewCanvas } from '@/features/baseplate/utils/thumbnail';
 import { useBaseplateAutoSave } from './useBaseplateAutoSave';
+
+vi.mock('@/features/baseplate/storage/BaseplateStorage', async (importOriginal) => {
+  const actual = await importOriginal<typeof BaseplateStorageModule>();
+  return { ...actual, updateDesignParams: vi.fn(actual.updateDesignParams) };
+});
 
 const params: StoredBaseplateParams = {
   magnetHoles: false,
@@ -62,6 +71,8 @@ describe('useBaseplateAutoSave', () => {
   });
 
   afterEach(() => {
+    clearPreviewCanvas();
+    vi.restoreAllMocks();
     closeBaseplateDb();
   });
 
@@ -129,5 +140,66 @@ describe('useBaseplateAutoSave', () => {
     unmount();
 
     await waitFor(async () => expect(await storedParams(id)).toEqual(edited), { timeout: 500 });
+  });
+
+  it('keeps a hidden-tab edit pending when its write fails, so the next flush lands it', async () => {
+    const id = await linkedLayout();
+    vi.mocked(updateDesignParams).mockResolvedValueOnce(
+      err(storageUnavailable('indexedDB', new Error('quota')))
+    );
+    const { unmount } = renderHook(() => useBaseplateAutoSave());
+    const visibility = Object.getOwnPropertyDescriptor(Document.prototype, 'visibilityState');
+    try {
+      act(() => {
+        useLayoutStore.getState().setBaseplateParams(edited);
+      });
+      Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+      document.dispatchEvent(new Event('visibilitychange'));
+      await waitFor(() => expect(updateDesignParams).toHaveBeenCalledTimes(1));
+    } finally {
+      delete (document as { visibilityState?: unknown }).visibilityState;
+      if (visibility) Object.defineProperty(Document.prototype, 'visibilityState', visibility);
+    }
+    unmount();
+
+    await waitFor(async () => expect(await storedParams(id)).toEqual(edited), { timeout: 500 });
+  });
+
+  it('stores a thumbnail of the settled preview after the settings', async () => {
+    const id = await linkedLayout();
+    const preview = document.createElement('canvas');
+    preview.width = 800;
+    preview.height = 600;
+    const ctx = { drawImage: vi.fn() } as unknown as CanvasRenderingContext2D;
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (
+      this: HTMLCanvasElement,
+      contextId: string
+    ) {
+      return contextId === '2d' && this !== preview ? ctx : null;
+    } as typeof HTMLCanvasElement.prototype.getContext);
+    vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue(
+      'data:image/webp;base64,settled'
+    );
+    setPreviewCanvas(preview);
+    useBaseplatePageStore.getState().setGenerationStatus('complete');
+
+    const { unmount } = renderHook(() => useBaseplateAutoSave());
+    try {
+      act(() => {
+        useLayoutStore.getState().setBaseplateParams(edited);
+      });
+
+      await waitFor(
+        async () => {
+          const stored = await loadDesign(id);
+          if (!isOk(stored)) throw new Error('loadDesign failed');
+          expect(stored.value.params).toEqual(edited);
+          expect(stored.value.thumbnail).toBe('data:image/webp;base64,settled');
+        },
+        { timeout: 2500 }
+      );
+    } finally {
+      unmount();
+    }
   });
 });
