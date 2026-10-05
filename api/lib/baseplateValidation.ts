@@ -131,14 +131,16 @@ const BOOLEAN_PARAM_KEYS = new Set<string>([
   'detachMarginConnector',
 ]);
 
-/** Enum values are checked on the client; here only their type and size, so the lists can't drift. */
-const STRING_PARAM_KEYS = new Set<string>([
-  'paddingAnchor',
-  'connectorStyle',
-  'fractionalEdgeX',
-  'fractionalEdgeY',
+export const PADDING_ANCHORS = ['tl', 'tc', 'tr', 'ml', 'c', 'mr', 'bl', 'bc', 'br', 'custom'];
+export const CONNECTOR_STYLES = ['dovetail', 'puzzle', 'dovetailKey', 'snapClip'];
+export const FRACTIONAL_EDGES = ['start', 'end'];
+
+const ENUM_PARAM_VALUES = new Map<string, ReadonlySet<string>>([
+  ['paddingAnchor', new Set(PADDING_ANCHORS)],
+  ['connectorStyle', new Set(CONNECTOR_STYLES)],
+  ['fractionalEdgeX', new Set(FRACTIONAL_EDGES)],
+  ['fractionalEdgeY', new Set(FRACTIONAL_EDGES)],
 ]);
-const MAX_ENUM_LENGTH = 32;
 
 /** Mirrors STACK_PRINT_* in src/core/types/baseplate.ts. */
 function isValidStackPrint(value: unknown): boolean {
@@ -164,7 +166,8 @@ function isValidStackPrint(value: unknown): boolean {
  */
 function isWellFormedParam(key: string, value: unknown): boolean {
   if (BOOLEAN_PARAM_KEYS.has(key)) return isBoolean(value);
-  if (STRING_PARAM_KEYS.has(key)) return isString(value) && value.length <= MAX_ENUM_LENGTH;
+  const values = ENUM_PARAM_VALUES.get(key);
+  if (values) return isString(value) && values.has(value);
   if (key === 'stackPrint') return isValidStackPrint(value);
   return true;
 }

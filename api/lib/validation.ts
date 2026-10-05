@@ -94,7 +94,10 @@ export function withoutLibraryPlacement<
 function sanitizeBaseplateParams(value: unknown): Record<string, unknown> | undefined {
   if (value === undefined) return undefined;
   const payload = { type: 'baseplate', version: 1, params: value };
-  const result = validateBaseplateShare(payload, JSON.stringify(payload).length);
+  const result = validateBaseplateShare(
+    payload,
+    Buffer.byteLength(JSON.stringify(payload), 'utf8')
+  );
   return result.valid ? result.payload.params : undefined;
 }
 

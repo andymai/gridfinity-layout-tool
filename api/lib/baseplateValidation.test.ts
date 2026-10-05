@@ -47,8 +47,9 @@ describe('validateBaseplateShare', () => {
         ...validParams,
         syncWithLayout: 'yes',
         overTile: 1,
-        connectorStyle: { evil: true },
+        connectorStyle: 'zigzag',
         paddingAnchor: 'x'.repeat(200),
+        fractionalEdgeX: 'middle',
         stackPrint: { enabled: true, gapMm: 'bad' },
       });
       expect(result.valid).toBe(true);
@@ -58,6 +59,7 @@ describe('validateBaseplateShare', () => {
           'overTile',
           'connectorStyle',
           'paddingAnchor',
+          'fractionalEdgeX',
           'stackPrint',
         ]) {
           expect(result.payload.params).not.toHaveProperty(key);
