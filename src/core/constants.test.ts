@@ -16,6 +16,8 @@ import {
 } from '@/core/constants';
 import {
   migrateBaseplateParams,
+  MOUNT_MAGNET_DEFAULT_DEPTH_MM,
+  MOUNT_MAGNET_MAX_DIAMETER_MM,
   SOLID_FLOOR_MIN_MM,
   SOLID_FLOOR_MAX_MM,
 } from '@/core/baseplateDefaults';
@@ -697,6 +699,25 @@ describe('migrateBaseplateParams', () => {
         ...currentShapeBase,
         splitOverride: { cols: [], rows: [3] },
       }).splitOverride
+    ).toBeUndefined();
+  });
+
+  it('preserves mountMagnets across a save/load round-trip', () => {
+    const full = { enabled: true, diameter: 6, depth: 2, perPiece: 6, chamfer: true };
+    expect(
+      migrateBaseplateParams({ ...currentShapeBase, mountMagnets: full }).mountMagnets
+    ).toEqual(full);
+  });
+
+  it('clamps mountMagnets, fills a missing depth and drops an invalid object', () => {
+    const clamped = migrateBaseplateParams({
+      ...currentShapeBase,
+      mountMagnets: { enabled: true, diameter: 99 },
+    }).mountMagnets;
+    expect(clamped?.diameter).toBe(MOUNT_MAGNET_MAX_DIAMETER_MM);
+    expect(clamped?.depth).toBe(MOUNT_MAGNET_DEFAULT_DEPTH_MM);
+    expect(
+      migrateBaseplateParams({ ...currentShapeBase, mountMagnets: { diameter: 6 } }).mountMagnets
     ).toBeUndefined();
   });
 

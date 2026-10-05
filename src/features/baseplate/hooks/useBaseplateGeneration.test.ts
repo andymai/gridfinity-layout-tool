@@ -175,6 +175,38 @@ describe('selectGenerationTriggers', () => {
     });
   });
 
+  describe('mount magnet params', () => {
+    const magnets = (over: Partial<StoredBaseplateParams['mountMagnets'] & object> = {}) =>
+      ({
+        enabled: true,
+        diameter: mm(6.5),
+        depth: mm(2),
+        ...over,
+      }) as StoredBaseplateParams['mountMagnets'];
+
+    it.each([
+      ['toggle', undefined, magnets()],
+      ['depth', magnets(), magnets({ depth: mm(2.5) })],
+      ['diameter', magnets(), magnets({ diameter: mm(6) })],
+      ['count', magnets({ perPiece: 4 }), magnets({ perPiece: 6 })],
+      ['chamfer', magnets(), magnets({ chamfer: true })],
+    ])('produces a different trigger selection when the %s changes', (_field, before, after) => {
+      const a = makeState(undefined, { mountMagnets: before });
+      const b = makeState(undefined, { mountMagnets: after });
+      expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(false);
+    });
+
+    it('ignores magnet fields while stacking strips them (no needless regen)', () => {
+      const stack = { enabled: true, gapMm: mm(0.2) } as const;
+      const a = makeState(undefined, { stackPrint: stack, mountMagnets: magnets() });
+      const b = makeState(undefined, {
+        stackPrint: stack,
+        mountMagnets: magnets({ depth: mm(2.5) }),
+      });
+      expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(true);
+    });
+  });
+
   /**
    * Regression: the connector fit offset shifts every connector clearance, but
    * was absent from the trigger set — stepping it left the exploded preview's

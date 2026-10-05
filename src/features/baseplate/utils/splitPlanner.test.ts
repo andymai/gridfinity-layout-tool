@@ -881,6 +881,16 @@ describe('pieceToBaseplateParams', () => {
     }
   });
 
+  it('propagates mount magnets to every piece', () => {
+    const mountMagnets = { enabled: true, diameter: mm(6.5), depth: mm(2), perPiece: 6 };
+    const parent = makeParams({ width: 10, depth: 8, mountMagnets });
+    const tiling = computeBaseplateTiling(parent, 256);
+    expect(tiling.isSplit).toBe(true);
+    for (const piece of tiling.pieces) {
+      expect(pieceToBaseplateParams(piece, parent).mountMagnets).toEqual(mountMagnets);
+    }
+  });
+
   it('gives every piece of a plate the same slab height', () => {
     // Pieces assemble flush only if they agree on the pad; a piece deriving its
     // own would be a different thickness from its neighbours.

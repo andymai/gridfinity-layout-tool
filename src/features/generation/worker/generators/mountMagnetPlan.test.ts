@@ -31,14 +31,14 @@ describe('junctionClearanceMm', () => {
 });
 
 describe('mountMagnetFits', () => {
-  it('fits the ø6 × 3mm cap on a standard plate with the wall to spare', () => {
+  it('fits a ø6 × 3mm hole on a standard plate with the wall to spare', () => {
     expect(mountMagnetFits(6, 3, STANDARD, STANDARD)).toBe(true);
     const wall = junctionClearanceMm(STANDARD - 3, STANDARD) - 3;
     expect(wall).toBeGreaterThanOrEqual(MOUNT_MAGNET_MIN_WALL_MM);
     expect(wall).toBeCloseTo(0.307, 2);
   });
 
-  it('rejects the cap on a low-profile plate, whose pockets reach lower', () => {
+  it('rejects that hole on a low-profile plate, whose pockets reach lower', () => {
     expect(mountMagnetFits(6, 3, LOW, LOW)).toBe(false);
   });
 
@@ -176,7 +176,7 @@ describe('selectMountMagnets', () => {
 });
 
 describe('mountMagnetChamferFits', () => {
-  it('fits the ø6.5 × 2.5mm default on a standard plate', () => {
+  it('fits the ø6.5 × 2.5mm cap on a standard plate', () => {
     expect(mountMagnetChamferFits(6.5, 2.5, STANDARD, STANDARD)).toBe(true);
   });
 

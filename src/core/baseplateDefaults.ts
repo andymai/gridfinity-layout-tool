@@ -106,15 +106,17 @@ export const SCREWS_PER_PIECE_MIN = 1;
 export const SCREWS_PER_PIECE_MAX = 8;
 
 /**
- * Underside mount-magnet bounds + defaults (mm): a ø6 × 2mm magnet with 0.5mm
- * of clearance each way, which a standard 4.65mm plate holds with ~0.56mm to
- * the nearest pocket corner. A low-profile plate without a floor does not, so
- * the generator checks each junction and the panel warns.
+ * Underside mount-magnet bounds + defaults (mm), sized for a ø6 × 2mm magnet.
+ * The hole is 0.5mm wider than the magnet but exactly as deep, so the magnet
+ * sits flush with the underside and touches the steel it holds to. A standard
+ * plate keeps the default clear of the pocket corners; a low-profile plate
+ * without a floor may not, so the generator checks each junction and the panel
+ * warns.
  */
 export const MOUNT_MAGNET_DEFAULT_DIAMETER_MM = 6.5;
 export const MOUNT_MAGNET_MIN_DIAMETER_MM = 2;
 export const MOUNT_MAGNET_MAX_DIAMETER_MM = 6.5;
-export const MOUNT_MAGNET_DEFAULT_DEPTH_MM = 2.5;
+export const MOUNT_MAGNET_DEFAULT_DEPTH_MM = 2;
 export const MOUNT_MAGNET_MIN_DEPTH_MM = 0.5;
 export const MOUNT_MAGNET_MAX_DEPTH_MM = 2.5;
 

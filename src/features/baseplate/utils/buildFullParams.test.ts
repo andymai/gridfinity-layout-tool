@@ -452,6 +452,21 @@ describe('buildFullParams', () => {
       expect(stored.connectorStyle).toBe('snapClip');
     });
 
+    it('passes mount magnets through, and strips them while stacking', () => {
+      const mountMagnets = { enabled: true, diameter: mm(6.5), depth: mm(2) };
+      const flat = buildFullParams({ ...storedBase, mountMagnets }, 10, 8, 42, 'end', 'end');
+      expect(flat.mountMagnets).toEqual(mountMagnets);
+      const stacked = buildFullParams(
+        { ...storedBase, mountMagnets, stackPrint: { enabled: true, gapMm: mm(0.2) } },
+        10,
+        8,
+        42,
+        'end',
+        'end'
+      );
+      expect(stacked.mountMagnets).toBeUndefined();
+    });
+
     it('keeps connectors and magnets when stackPrint exists but is disabled', () => {
       const stored = {
         ...withFeatures,
