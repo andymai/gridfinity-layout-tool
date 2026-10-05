@@ -46,6 +46,7 @@ vi.mock('@/shared/hooks/useDrawerSettings', () => ({
     widthStep: 1,
     depthStep: 1,
     realWorldDimensions: { width: 252, depth: 168, height: 42 },
+    drawerHeightDisplayMm: 42,
     measuredMm: undefined,
     halfFitSuggestion: null,
     handleMeasuredCommit: vi.fn(),

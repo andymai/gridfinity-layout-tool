@@ -25,14 +25,30 @@ describe('DrawerDimensionsSummary', () => {
     vi.clearAllMocks();
   });
 
-  it('shows the derived grid mm when no measurement exists, with no fit line or clear button', () => {
+  it('labels a size with no measurement behind it as the grid, and offers to add one', () => {
     render(<DrawerDimensionsSummary {...defaultProps} />);
 
+    expect(screen.getByText('Grid 420 × 336 mm')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: 'Edit measured drawer dimensions' })
-    ).toHaveTextContent(/420\s*×\s*336\s*×\s*84\s*mm/);
+      screen.getByRole('button', { name: "Add your drawer's measured size" })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Edit measured drawer dimensions' })
+    ).not.toBeInTheDocument();
     expect(screen.queryByText(/free/)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Clear measurement' })).not.toBeInTheDocument();
+  });
+
+  it('returns to the prompt when adding a measurement is cancelled', () => {
+    render(<DrawerDimensionsSummary {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button', { name: "Add your drawer's measured size" }));
+
+    fireEvent.keyDown(screen.getByLabelText('Measured width (mm)'), { key: 'Escape' });
+
+    expect(defaultProps.onCommit).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole('button', { name: "Add your drawer's measured size" })
+    ).toBeInTheDocument();
   });
 
   it('shows the measured size, the grid fit, and per-axis free space', () => {
@@ -58,7 +74,7 @@ describe('DrawerDimensionsSummary', () => {
 
   it('commits typed mm, dropping the seeded height the user never edited', () => {
     render(<DrawerDimensionsSummary {...defaultProps} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Edit measured drawer dimensions' }));
+    fireEvent.click(screen.getByRole('button', { name: "Add your drawer's measured size" }));
 
     fireEvent.change(screen.getByLabelText('Measured width (mm)'), { target: { value: '450' } });
     fireEvent.change(screen.getByLabelText('Measured depth (mm)'), { target: { value: '380' } });
@@ -69,7 +85,7 @@ describe('DrawerDimensionsSummary', () => {
 
   it('commits an edited height as measured', () => {
     render(<DrawerDimensionsSummary {...defaultProps} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Edit measured drawer dimensions' }));
+    fireEvent.click(screen.getByRole('button', { name: "Add your drawer's measured size" }));
 
     fireEvent.change(screen.getByLabelText('Measured height (mm)'), { target: { value: '90' } });
     fireEvent.keyDown(screen.getByLabelText('Measured height (mm)'), { key: 'Enter' });
@@ -160,11 +176,24 @@ describe('DrawerDimensionsSummary', () => {
       overflowing: [],
     });
 
-    it('prompts for a height measurement when the drawer is unmeasured', () => {
-      render(<DrawerDimensionsSummary {...defaultProps} ceiling={null} />);
+    it('prompts for a height measurement when the drawer is measured without one', () => {
+      render(
+        <DrawerDimensionsSummary
+          {...defaultProps}
+          measuredMm={{ width: 450, depth: 380 }}
+          ceiling={null}
+        />
+      );
       expect(
         screen.getByText('Add a height measurement to check the lid closes')
       ).toBeInTheDocument();
+    });
+
+    it('leaves the height prompt to the add-measurement prompt when nothing is measured', () => {
+      render(<DrawerDimensionsSummary {...defaultProps} ceiling={null} />);
+      expect(
+        screen.queryByText('Add a height measurement to check the lid closes')
+      ).not.toBeInTheDocument();
     });
 
     it('makes no fit claim for an empty layout', () => {

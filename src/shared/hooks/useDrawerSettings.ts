@@ -23,6 +23,7 @@ import { baseplateFloorDepth } from '@/shared/printSettings/baseplateHeight';
 import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
 import type { HalfGridConstraintViolation } from '@/shared/utils/halfGridConstraints';
 import { drawerSizeFloors } from '@/shared/utils/drawerOutline';
+import { drawerHeightDisplayMm } from '@/shared/utils/drawerFit';
 import type { STLSearchSite, UserSettings } from '@/core/store/settings';
 import type { Category, GridUnits, HeightUnits, MeasuredDrawerMm } from '@/core/types';
 import {
@@ -79,6 +80,8 @@ export interface UseDrawerSettingsReturn {
     depth: number;
     height: number;
   };
+  /** The drawer-height box's value: the measured mm while the grid height still matches it. */
+  drawerHeightDisplayMm: number;
   maxGridUnits: { width: number; depth: number };
 
   // Physical units
@@ -515,6 +518,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     hasFractionalWidth,
     hasFractionalDepth,
     realWorldDimensions,
+    drawerHeightDisplayMm: drawerHeightDisplayMm(drawerHeight, heightUnitMm, measuredMm?.height),
     maxGridUnits,
 
     // Physical units

@@ -2926,6 +2926,8 @@
   "drawerDims.depthLabel": "Profundidade medida (mm)",
   "drawerDims.editAria": "Editar medidas da gaveta",
   "drawerDims.fit": "Grade {width} × {depth} mm · {freeWidth} × {freeDepth} mm livres",
+  "drawerDims.gridSize": "Grade {width} × {depth} mm",
+  "drawerDims.addMeasured": "Adicionar medida da gaveta",
   "drawerDims.heightLabel": "Altura medida (mm)",
   "drawerDims.overflow": "A grade excede a gaveta medida em {width} × {depth} mm",
   "drawerDims.suggestionDetail": "Deixa {freeWidth} × {freeDepth} mm livres.",

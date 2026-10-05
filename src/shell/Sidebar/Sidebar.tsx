@@ -88,6 +88,7 @@ export function Sidebar() {
     handleDrawerDepthChange,
     handleDrawerHeightChange,
     handleDrawerHeightInput,
+    drawerHeightDisplayMm,
     handleDrawerWidthInput,
     handleDrawerDepthInput,
     handleFractionalEdgeChange,
@@ -338,7 +339,7 @@ export function Sidebar() {
                         {t('sidebar.drawerHeight')}
                       </label>
                       <Stepper
-                        value={drawer.height * heightUnitMm}
+                        value={drawerHeightDisplayMm}
                         onChange={handleDrawerHeightInput}
                         onStep={handleDrawerHeightChange}
                         min={heightUnitMm}

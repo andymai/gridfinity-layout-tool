@@ -2926,6 +2926,8 @@
   "drawerDims.depthLabel": "Profondeur mesurée (mm)",
   "drawerDims.editAria": "Modifier les dimensions mesurées du tiroir",
   "drawerDims.fit": "Grille {width} × {depth} mm · {freeWidth} × {freeDepth} mm libres",
+  "drawerDims.gridSize": "Grille {width} × {depth} mm",
+  "drawerDims.addMeasured": "Ajouter la taille mesurée du tiroir",
   "drawerDims.heightLabel": "Hauteur mesurée (mm)",
   "drawerDims.overflow": "La grille dépasse le tiroir mesuré de {width} × {depth} mm",
   "drawerDims.suggestionDetail": "Laisse {freeWidth} × {freeDepth} mm libres.",

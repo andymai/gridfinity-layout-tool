@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { fitAxisUnits, halfUnitUpgrade } from './drawerFit';
+import {
+  drawerHeightDisplayMm,
+  fitAxisUnits,
+  halfUnitUpgrade,
+  measuredHeightUnits,
+} from './drawerFit';
 
 describe('fitAxisUnits', () => {
   it('floors to the largest whole-unit grid that fits', () => {
@@ -67,5 +72,26 @@ describe('halfUnitUpgrade', () => {
 
   it('stays null when neither fit fits', () => {
     expect(halfUnitUpgrade(10, 42, 1)).toBeNull();
+  });
+});
+
+describe('measuredHeightUnits', () => {
+  it('floors to the 0.01-unit step so the grid never exceeds the drawer', () => {
+    expect(measuredHeightUnits(88, 7)).toBe(12.57);
+    expect(measuredHeightUnits(84, 7)).toBe(12);
+  });
+});
+
+describe('drawerHeightDisplayMm', () => {
+  it('shows the measured height while the grid height is the one recorded from it', () => {
+    expect(drawerHeightDisplayMm(12.57, 7, 88)).toBe(88);
+  });
+
+  it('shows the grid height once it has been stepped away from the measurement', () => {
+    expect(drawerHeightDisplayMm(13, 7, 88)).toBe(91);
+  });
+
+  it('shows the grid height when no height was measured', () => {
+    expect(drawerHeightDisplayMm(12.57, 7, undefined)).toBeCloseTo(87.99, 5);
   });
 });

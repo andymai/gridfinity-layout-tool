@@ -4392,6 +4392,8 @@
   "drawerDims.heightLabel": "გაზომილი სიმაღლე (mm)",
   "drawerDims.clear": "გაზომვის გასუფთავება",
   "drawerDims.fit": "ბადე {width} × {depth} mm · თავისუფალია {freeWidth} × {freeDepth} mm",
+  "drawerDims.gridSize": "ბადე {width} × {depth} mm",
+  "drawerDims.addMeasured": "უჯრის გაზომილი ზომის დამატება",
   "drawerDims.overflow": "ბადე თქვენს გაზომილ უჯრას {width} × {depth} mm-ით აღემატება",
   "drawerDims.suggestionTitle": "{width} × {depth} ერთეული თქვენს უჯრაში ეტევა",
   "drawerDims.suggestionDetail": "თავისუფალი რჩება {freeWidth} × {freeDepth} mm.",

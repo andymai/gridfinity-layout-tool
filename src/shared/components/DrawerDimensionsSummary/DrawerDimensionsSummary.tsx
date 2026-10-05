@@ -1,6 +1,6 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { Button } from '@/design-system';
-import { RulerIcon, SparklesIcon, XIcon } from '@/design-system/Icon';
+import { PlusIcon, RulerIcon, SparklesIcon, XIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import type { MeasuredDrawerMm } from '@/core/types';
 import type { DrawerFitSuggestion } from '@/shared/hooks/useDrawerSettings';
@@ -44,8 +44,10 @@ interface DrawerDimensionsSummaryProps {
 /**
  * The drawer-size mm line in the settings panels: a click-to-edit measured
  * size (same pattern as the baseplate panel), the derived grid fit + slack
- * beneath it, and a dismissible tighter-half-unit-fit suggestion. Rendered
- * by both the desktop Sidebar and the mobile settings sheet.
+ * beneath it, and a dismissible tighter-half-unit-fit suggestion. Without a
+ * measurement it names the grid's own size and offers to add one, so a
+ * grid-derived size is never read as the drawer. Rendered by both the desktop
+ * Sidebar and the mobile settings sheet.
  */
 export function DrawerDimensionsSummary({
   measuredMm,
@@ -92,39 +94,63 @@ export function DrawerDimensionsSummary({
   );
 
   const actionClass = variant === 'mobile' ? 'text-sm h-9' : 'text-xs h-7';
+  const [adding, setAdding] = useState(false);
+  const handleEditingChange = useCallback((open: boolean) => {
+    if (!open) setAdding(false);
+  }, []);
 
   return (
     <div className="space-y-1.5 pt-2">
-      <div className="flex items-center justify-center gap-1 text-content-tertiary">
-        <RulerIcon size="xs" className="flex-shrink-0" />
-        <EditableDimensions
-          widthMm={displayWidth}
-          depthMm={displayDepth}
-          heightMm={displayHeight}
-          minMm={minMm}
-          maxMm={maxMm}
-          minHeightMm={minHeightMm}
-          maxHeightMm={maxHeightMm}
-          onCommit={handleCommit}
-          variant="secondary"
-          aria-label={t('drawerDims.editAria')}
-          widthLabel={t('drawerDims.widthLabel')}
-          depthLabel={t('drawerDims.depthLabel')}
-          heightLabel={t('drawerDims.heightLabel')}
-        />
-        {hasMeasurement && (
+      {hasMeasurement || adding ? (
+        <div className="flex items-center justify-center gap-1 text-content-tertiary">
+          <RulerIcon size="xs" className="flex-shrink-0" />
+          <EditableDimensions
+            widthMm={displayWidth}
+            depthMm={displayDepth}
+            heightMm={displayHeight}
+            minMm={minMm}
+            maxMm={maxMm}
+            minHeightMm={minHeightMm}
+            maxHeightMm={maxHeightMm}
+            onCommit={handleCommit}
+            variant="secondary"
+            aria-label={t('drawerDims.editAria')}
+            widthLabel={t('drawerDims.widthLabel')}
+            depthLabel={t('drawerDims.depthLabel')}
+            heightLabel={t('drawerDims.heightLabel')}
+            initialEditing={adding && !hasMeasurement}
+            onEditingChange={handleEditingChange}
+          />
+          {hasMeasurement && (
+            <Button
+              variant="ghost"
+              type="button"
+              onClick={onClearMeasurement}
+              aria-label={t('drawerDims.clear')}
+              title={t('drawerDims.clear')}
+              className="!p-0.5 hover:bg-transparent hover:text-content-secondary"
+            >
+              <XIcon size="xs" />
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center gap-0.5">
+          <p className="flex items-center justify-center gap-1 text-xs tabular-nums text-content-secondary">
+            <RulerIcon size="xs" className="flex-shrink-0 text-content-tertiary" />
+            {t('drawerDims.gridSize', { width: fmt(gridWidthMm), depth: fmt(gridDepthMm) })}
+          </p>
           <Button
             variant="ghost"
             type="button"
-            onClick={onClearMeasurement}
-            aria-label={t('drawerDims.clear')}
-            title={t('drawerDims.clear')}
-            className="!p-0.5 hover:bg-transparent hover:text-content-secondary"
+            onClick={() => setAdding(true)}
+            className={`!px-1 !py-0.5 gap-1 text-accent hover:bg-transparent hover:underline ${variant === 'mobile' ? 'text-sm' : 'text-micro'}`}
           >
-            <XIcon size="xs" />
+            <PlusIcon size="xs" />
+            {t('drawerDims.addMeasured')}
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {hasMeasurement &&
         (hasOverflow ? (
@@ -146,9 +172,11 @@ export function DrawerDimensionsSummary({
         ))}
 
       {ceiling === null ? (
-        <p className="text-center text-micro text-content-tertiary">
-          {t('drawerCeiling.measurePrompt')}
-        </p>
+        hasMeasurement && (
+          <p className="text-center text-micro text-content-tertiary">
+            {t('drawerCeiling.measurePrompt')}
+          </p>
+        )
       ) : /* an empty layout has no stack to judge, so no fit claim */
       ceiling.tallestMm === 0 ? null : ceiling.fits ? (
         <p className="text-center text-micro text-content-tertiary tabular-nums">

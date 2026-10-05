@@ -2926,6 +2926,8 @@
   "drawerDims.depthLabel": "実測奥行き (mm)",
   "drawerDims.editAria": "実測した引き出し寸法を編集",
   "drawerDims.fit": "グリッド {width} × {depth} mm · 余白 {freeWidth} × {freeDepth} mm",
+  "drawerDims.gridSize": "グリッド {width} × {depth} mm",
+  "drawerDims.addMeasured": "実測した引き出しサイズを追加",
   "drawerDims.heightLabel": "実測高さ (mm)",
   "drawerDims.overflow": "グリッドが実測サイズを {width} × {depth} mm 超えています",
   "drawerDims.suggestionDetail": "余白は {freeWidth} × {freeDepth} mm になります。",

@@ -2926,6 +2926,8 @@
   "drawerDims.depthLabel": "Uppmätt djup (mm)",
   "drawerDims.editAria": "Redigera uppmätta lådmått",
   "drawerDims.fit": "Rutnät {width} × {depth} mm · {freeWidth} × {freeDepth} mm fritt",
+  "drawerDims.gridSize": "Rutnät {width} × {depth} mm",
+  "drawerDims.addMeasured": "Lägg till uppmätt lådstorlek",
   "drawerDims.heightLabel": "Uppmätt höjd (mm)",
   "drawerDims.overflow": "Rutnätet är {width} × {depth} mm större än den uppmätta lådan",
   "drawerDims.suggestionDetail": "Lämnar {freeWidth} × {freeDepth} mm fritt.",
