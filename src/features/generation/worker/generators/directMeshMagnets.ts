@@ -102,3 +102,27 @@ export function addMagnetHoleAt(
   // Floor disc the magnet rests on.
   addDisc(mb, mx, my, zBot, bore, true);
 }
+
+/**
+ * Emit an underside mount-magnet hole at absolute (mx, my): the blind pocket
+ * above mirrored to open on the bottom face (Z=0) and rise by `depth`.
+ */
+export function addMountMagnetHoleAt(
+  mb: MeshBuilder,
+  mx: number,
+  my: number,
+  radius: number,
+  depth: number,
+  chamfer: boolean
+): void {
+  const bore = circlePoints(radius, CIRCLE_SEGMENTS);
+  const mouth = chamfer ? circlePoints(radius + MAGNET_CHAMFER_MM, CIRCLE_SEGMENTS) : bore;
+  addDisc(mb, mx, my, CANCEL_EPSILON, mouth, true);
+  let boreBottomZ = 0;
+  if (chamfer) {
+    boreBottomZ = MAGNET_CHAMFER_MM;
+    addBand(mb, mx, my, bore, boreBottomZ, mouth, 0);
+  }
+  addBand(mb, mx, my, bore, depth, bore, boreBottomZ);
+  addDisc(mb, mx, my, depth, bore, false);
+}

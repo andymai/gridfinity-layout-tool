@@ -18,7 +18,27 @@ import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMag
 import { sketch } from './meshUtils';
 import { magnetOuterWallMarginForNozzle, magnetPadMarginForNozzle } from '@/shared/printSettings';
 import type { MagnetAnchor } from '@/core/types';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
+
+/**
+ * Whether this cell's floor relief is the plain rectangle cut into a cell too
+ * small for a magnet, whose square corners reach toward the cell corners. A
+ * cell that hosts magnets keeps a pad in each corner instead. Mirrors the gates
+ * on the two relief passes in `buildBaseplateSolid`.
+ */
+export function floorReliefReachesCorners(
+  params: Pick<ResolvedBaseplateParams, 'lightweight' | 'solidFloor' | 'magnetHoles'>,
+  cell: CellInfo,
+  holeRadius: number,
+  pitchX: number,
+  pitchY: number,
+  cellHoldsScrew: (cell: CellInfo) => boolean
+): boolean {
+  if (params.lightweight === false || params.solidFloor === true) return false;
+  if (!params.magnetHoles && !cellHoldsScrew(cell)) return false;
+  return !cellHostsAttachmentHoles(cell, holeRadius, pitchX, pitchY);
+}
 
 /** Minimum arm width for the cross cutout (mm). Skip cell if arms too narrow. */
 const MIN_ARM_WIDTH = 2;

@@ -885,6 +885,9 @@
         },
         "screwHoles": {
           "$ref": "#/$defs/ScrewHoleParams"
+        },
+        "mountMagnets": {
+          "$ref": "#/$defs/MountMagnetParams"
         }
       }
     },
@@ -1024,6 +1027,52 @@
             "maximum": "SCREWS_PER_PIECE_MAX"
           },
           "description": "How many screw holes each split piece gets."
+        }
+      }
+    },
+    "MountMagnetParams": {
+      "type": "object",
+      "description": "Magnet holes on the plate's underside at the junctions where four pockets meet, for holding the plate to a steel drawer. Only junctions inside a printed piece are used; a junction too small for the hole is skipped.",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Cut mount-magnet holes."
+        },
+        "diameter": {
+          "type": "number",
+          "minimum": 2,
+          "maximum": 6.5,
+          "x-constant": {
+            "minimum": "MOUNT_MAGNET_MIN_DIAMETER_MM",
+            "maximum": "MOUNT_MAGNET_MAX_DIAMETER_MM"
+          },
+          "description": "Magnet hole diameter in mm."
+        },
+        "depth": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2.5,
+          "x-constant": {
+            "minimum": "MOUNT_MAGNET_MIN_DEPTH_MM",
+            "maximum": "MOUNT_MAGNET_MAX_DEPTH_MM"
+          },
+          "description": "Magnet hole depth in mm, measured up from the underside."
+        },
+        "perPiece": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64,
+          "x-constant": {
+            "minimum": "MOUNT_MAGNETS_PER_PIECE_MIN",
+            "maximum": "MOUNT_MAGNETS_PER_PIECE_MAX"
+          },
+          "description": "How many magnets each split piece gets, capped by its interior junctions."
+        },
+        "chamfer": {
+          "type": "boolean",
+          "default": false,
+          "description": "45 degree lead-in at each hole's mouth on the underside. Skipped where it would leave too thin a wall or too short a bore."
         }
       }
     },

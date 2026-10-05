@@ -83,6 +83,12 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
           `sp:${params.screwPadThicknessMm ?? 0}`,
         ]
       : []),
+    ...(params.mountMagnets?.enabled === true
+      ? [
+          `mm:${params.mountMagnets.diameter},${params.mountMagnets.depth},` +
+            `${params.mountMagnets.perPiece ?? ''},${params.mountMagnets.chamfer === true ? 1 : 0}`,
+        ]
+      : []),
     `sft:${params.solidFloor ? (params.solidFloorThickness ?? '') : ''}`,
     params.cornerRadius === undefined ? 'cr:default' : `cr:${params.cornerRadius}`,
   ];

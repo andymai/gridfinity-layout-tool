@@ -138,6 +138,49 @@ describe('validateBaseplateShare', () => {
     });
   });
 
+  describe('mountMagnets', () => {
+    const mountMagnets = { enabled: true, diameter: 6.5, depth: 2.5, perPiece: 4, chamfer: true };
+
+    it('accepts and keeps a valid config', () => {
+      const result = validate({ ...validParams, mountMagnets });
+      expect(result.valid).toBe(true);
+      if (result.valid) expect(result.payload.params.mountMagnets).toEqual(mountMagnets);
+    });
+
+    it('rejects a hole wider than a junction holds', () => {
+      expect(
+        validate({ ...validParams, mountMagnets: { ...mountMagnets, diameter: 7 } }).valid
+      ).toBe(false);
+    });
+
+    it('rejects a hole deeper than the cap', () => {
+      expect(validate({ ...validParams, mountMagnets: { ...mountMagnets, depth: 3 } }).valid).toBe(
+        false
+      );
+    });
+
+    it('rejects a fractional or out-of-range count', () => {
+      expect(
+        validate({ ...validParams, mountMagnets: { ...mountMagnets, perPiece: 2.5 } }).valid
+      ).toBe(false);
+      expect(
+        validate({ ...validParams, mountMagnets: { ...mountMagnets, perPiece: 65 } }).valid
+      ).toBe(false);
+    });
+
+    it('rejects a non-boolean chamfer', () => {
+      expect(
+        validate({ ...validParams, mountMagnets: { ...mountMagnets, chamfer: 'yes' } }).valid
+      ).toBe(false);
+    });
+
+    it('rejects unknown keys inside the object', () => {
+      expect(validate({ ...validParams, mountMagnets: { ...mountMagnets, extra: 1 } }).valid).toBe(
+        false
+      );
+    });
+  });
+
   describe('screwHoles (#3425)', () => {
     const screwHoles = {
       enabled: true,

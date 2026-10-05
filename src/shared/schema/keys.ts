@@ -33,6 +33,7 @@ import {
   OUTLINE_AUTHORING_KEYS,
   OUTLINE_VERTEX_KEYS,
   SCREW_HOLES_KEYS,
+  MOUNT_MAGNETS_KEYS,
   SPLIT_OVERRIDE_KEYS,
   STACK_PRINT_KEYS,
 } from './layoutKeys';
@@ -242,6 +243,7 @@ export const SCHEMA_KEYS = {
   ScoopConfig: SCOOP_CONFIG_KEYS,
   SideFlags: SIDE_FLAGS_KEYS,
   ScrewHoleParams: SCREW_HOLES_KEYS,
+  MountMagnetParams: MOUNT_MAGNETS_KEYS,
   SlideConfig: SLIDE_CONFIG_KEYS,
   SlotConfig: SLOT_CONFIG_KEYS,
   SplitConnectorConfig: SPLIT_CONNECTOR_KEYS,

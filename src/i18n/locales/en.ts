@@ -4107,6 +4107,23 @@ const en: Record<string, string> = {
   'baseplate.screwHoles.perPiece.label': 'Screws per piece',
   'baseplate.screwHoles.perPiece.info':
     'Holes placed in every split piece, so no printed piece is left unfastened. Four fill the corners; higher counts add the edge midpoints.',
+  'baseplate.mountMagnets.label': 'Underside magnets',
+  'baseplate.mountMagnets.summary': 'ø{diameter} × {depth}mm, {count} per piece',
+  'baseplate.mountMagnets.info':
+    'Magnet holes in the underside, where four pockets meet, so the plate holds to a steel drawer or tool chest without getting any taller. Crossings on a split seam or the plate edge are skipped.',
+  'baseplate.mountMagnets.diameter.label': 'Magnet diameter',
+  'baseplate.mountMagnets.diameter.info':
+    "Hole diameter: the magnet's diameter plus clearance for your printer, usually 0.2 to 0.5mm.",
+  'baseplate.mountMagnets.depth.label': 'Magnet depth',
+  'baseplate.mountMagnets.depth.info':
+    'Measured up from the underside, so a magnet of this height sits flush with the bottom.',
+  'baseplate.mountMagnets.tooDeep':
+    'Too deep for this plate: at ø{diameter}mm, at most {max}mm fits between the pockets. Holes that do not fit are skipped.',
+  'baseplate.mountMagnets.tooWide':
+    'ø{diameter}mm does not fit between the pockets of this plate, so no holes are cut.',
+  'baseplate.mountMagnets.perPiece.label': 'Magnets per piece',
+  'baseplate.mountMagnets.perPiece.info':
+    'Spread evenly over each printed piece. A piece has one spot per inner grid crossing, so a high count fills them all.',
   'baseplate.gridUnitTooltip': 'Width of one grid square (standard: 42mm)',
   'baseplate.magnetAnchor': 'Magnet anchor',
   'baseplate.magnetAnchorTooltip':

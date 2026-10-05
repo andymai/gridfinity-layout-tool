@@ -53,7 +53,8 @@ import { MeshBuilder, CORNER_SEGMENTS } from './directMeshBuilder';
 import { roundedRectPointsSelective } from './directMeshShapes';
 import { addPocketWalls, addOuterWalls } from './directMeshWalls';
 import { addPlateFace, addSolidBottomFace } from './directMeshFaces';
-import { addMagnetHoleAt } from './directMeshMagnets';
+import { addMagnetHoleAt, addMountMagnetHoleAt } from './directMeshMagnets';
+import { planMountMagnets } from './mountMagnetPlan';
 import { addScrewHoleAt } from './directMeshScrews';
 import {
   cellHostsAttachmentHoles,
@@ -61,7 +62,12 @@ import {
   magnetPositionsForCell,
 } from './baseplateMagnets';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
-import { planBaseplateScrewHoles } from './baseplateScrews';
+import {
+  cellHoldsFloorScrew,
+  planBaseplateScrewHoles,
+  screwAwareHoleRadius,
+} from './baseplateScrews';
+import { floorReliefReachesCorners } from './lightweightFloorCutter';
 import { addConnectorNub, addConnectorHole } from './directMeshConnectors';
 
 /**
@@ -333,20 +339,49 @@ export function generateBaseplateDirect(
   // the exported plate put every hole in the same place. No cell filter: the
   // direct mesh is never used for a shaped plate.
   const screwParams = params.screwHoles?.enabled === true ? params.screwHoles : undefined;
+  const screwHoles =
+    screwParams !== undefined
+      ? planBaseplateScrewHoles(screwParams, params, {
+          resolvedCornerRadii: resolved,
+          totalWidthMm: totalW,
+          totalDepthMm: totalD,
+          gridW: width,
+          gridD: depth,
+          pitch,
+          cellOpts,
+          magnetRadius: magnetDiameter / 2,
+          magnetAnchor,
+        })
+      : [];
   if (screwParams !== undefined) {
-    const screwHoles = planBaseplateScrewHoles(screwParams, params, {
-      resolvedCornerRadii: resolved,
-      totalWidthMm: totalW,
-      totalDepthMm: totalD,
-      gridW: width,
-      gridD: depth,
-      pitch,
-      cellOpts,
-      magnetRadius: magnetDiameter / 2,
-      magnetAnchor,
-    });
     for (const hole of screwHoles) {
       addScrewHoleAt(mb, hole.x, hole.y, hole.site, screwParams, totalHeight, profileHeight);
+    }
+  }
+
+  // Shares the BREP build's planner, so the draft and the export agree on
+  // every hole; no cell filter for the same reason as the screws above.
+  const mountMagnets = params.mountMagnets;
+  if (mountMagnets?.enabled === true) {
+    for (const { x, y, chamfer } of planMountMagnets(
+      mountMagnets,
+      width,
+      depth,
+      totalHeight,
+      profileHeight,
+      { ...cellOpts, gridUnitMm: pitch },
+      undefined,
+      (cell: CellInfo): boolean =>
+        floorReliefReachesCorners(
+          params,
+          cell,
+          screwAwareHoleRadius(magnetDiameter / 2, screwParams),
+          gridUnitMm,
+          gridUnitMmY,
+          (c) => cellHoldsFloorScrew(screwHoles, c, pitch)
+        )
+    )) {
+      addMountMagnetHoleAt(mb, x, y, mountMagnets.diameter / 2, mountMagnets.depth, chamfer);
     }
   }
 

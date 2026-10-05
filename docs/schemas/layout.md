@@ -343,6 +343,7 @@ anything in combination with them.
 | `stackPrint`                    | [`StackPrintParams`](#stackprintparams)                                                             |          |              |                         |                                                                                                                                                                                                                                              |
 | `splitOverride`                 | [`SplitOverride`](#splitoverride)                                                                   |          |              |                         |                                                                                                                                                                                                                                              |
 | `screwHoles`                    | [`ScrewHoleParams`](#screwholeparams)                                                               |          |              |                         |                                                                                                                                                                                                                                              |
+| `mountMagnets`                  | [`MountMagnetParams`](#mountmagnetparams)                                                           |          |              |                         |                                                                                                                                                                                                                                              |
 
 <!-- generated:end -->
 
@@ -413,6 +414,24 @@ the override is dropped and the automatic plan is used instead, silently.
 | `headDiameter`     | `number`                           |          |         | >= 3, <= 16 | Head recess diameter in mm. Absent uses the style default (8 for countersink, 5.5 for counterbore). |
 | `counterboreDepth` | `number`                           |          |         | >= 0, <= 6  | Counterbore depth in mm. Only meaningful for headStyle 'counterbore'.                               |
 | `screwsPerPiece`   | `integer`                          |          |         | >= 1, <= 8  | How many screw holes each split piece gets.                                                         |
+
+<!-- generated:end -->
+
+### MountMagnetParams
+
+<!-- schema:MountMagnetParams -->
+
+<a id="mountmagnetparams"></a>
+
+<!-- generated:start -->
+
+| Field      | Type      | Required | Default | Constraint     | Notes                                                                                                                      |
+| ---------- | --------- | -------- | ------- | -------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`  | `boolean` | yes      |         |                | Cut mount-magnet holes.                                                                                                    |
+| `diameter` | `number`  |          |         | >= 2, <= 6.5   | Magnet hole diameter in mm.                                                                                                |
+| `depth`    | `number`  |          |         | >= 0.5, <= 2.5 | Magnet hole depth in mm, measured up from the underside.                                                                   |
+| `perPiece` | `integer` |          |         | >= 1, <= 64    | How many magnets each split piece gets, capped by its interior junctions.                                                  |
+| `chamfer`  | `boolean` |          | `false` |                | 45 degree lead-in at each hole's mouth on the underside. Skipped where it would leave too thin a wall or too short a bore. |
 
 <!-- generated:end -->
 

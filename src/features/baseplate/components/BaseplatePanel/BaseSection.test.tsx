@@ -211,6 +211,56 @@ describe('BaseSection', () => {
     });
   });
 
+  describe('mount magnets', () => {
+    it('writes the defaults through to the layout store on toggle', () => {
+      render(<BaseSection />);
+      fireEvent.click(screen.getByRole('switch', { name: 'baseplate.mountMagnets.label' }));
+      expect(useLayoutStore.getState().layout.baseplateParams?.mountMagnets).toEqual({
+        enabled: true,
+        diameter: 6.5,
+        depth: 2.5,
+      });
+    });
+
+    it('hides the toggle while stacking, which strips the magnets', () => {
+      useLayoutStore.getState().setBaseplateParams({
+        ...DEFAULT_BASEPLATE_PARAMS,
+        stackPrint: { enabled: true, copies: 2, gapMm: mm(0.2) },
+      });
+      render(<BaseSection />);
+      expect(screen.queryByText('baseplate.mountMagnets.label')).not.toBeInTheDocument();
+    });
+
+    it('warns when the hole is too deep for a low-profile plate', () => {
+      useLayoutStore.setState((s) => ({ layout: { ...s.layout, lowProfileBase: true } }));
+      useLayoutStore.getState().setBaseplateParams({
+        ...DEFAULT_BASEPLATE_PARAMS,
+        mountMagnets: { enabled: true, diameter: mm(6), depth: mm(3) },
+      });
+      render(<BaseSection />);
+      expect(screen.getByText('baseplate.mountMagnets.tooDeep')).toBeInTheDocument();
+    });
+
+    it('writes the chamfer through on toggle', () => {
+      useLayoutStore.getState().setBaseplateParams({
+        ...DEFAULT_BASEPLATE_PARAMS,
+        mountMagnets: { enabled: true, diameter: mm(6.5), depth: mm(2.5) },
+      });
+      render(<BaseSection />);
+      fireEvent.click(screen.getByLabelText('baseplate.magnetChamfer'));
+      expect(useLayoutStore.getState().layout.baseplateParams?.mountMagnets?.chamfer).toBe(true);
+    });
+
+    it('does not warn for the ø6.5 × 2.5mm cap on a standard plate', () => {
+      useLayoutStore.getState().setBaseplateParams({
+        ...DEFAULT_BASEPLATE_PARAMS,
+        mountMagnets: { enabled: true, diameter: mm(6.5), depth: mm(2.5) },
+      });
+      render(<BaseSection />);
+      expect(screen.queryByText('baseplate.mountMagnets.tooDeep')).not.toBeInTheDocument();
+    });
+  });
+
   it('renders nothing when stacking + unsplit + a drawn shape hides even the radius control', () => {
     useLayoutStore.getState().setBaseplateParams({
       ...DEFAULT_BASEPLATE_PARAMS,

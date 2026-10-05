@@ -82,6 +82,7 @@ export function selectGenerationTriggers(state: LayoutState) {
   // neither family's fields can change the mesh while it is on.
   const stackingOn = bp.stackPrint?.enabled === true;
   const screwsOn = !stackingOn && bp.screwHoles?.enabled === true;
+  const mountMagnetsOn = !stackingOn && bp.mountMagnets?.enabled === true;
   // The underside cross cutters run on magnet plates and screw-pad cells.
   const lightweightRelevant = (!stackingOn && bp.magnetHoles) || screwsOn;
   return {
@@ -165,6 +166,11 @@ export function selectGenerationTriggers(state: LayoutState) {
         ? bp.screwHoles.counterboreDepth
         : undefined,
     screwsPerPiece: screwsOn ? bp.screwHoles.screwsPerPiece : undefined,
+    mountMagnetsEnabled: mountMagnetsOn,
+    mountMagnetDiameter: mountMagnetsOn ? bp.mountMagnets.diameter : undefined,
+    mountMagnetDepth: mountMagnetsOn ? bp.mountMagnets.depth : undefined,
+    mountMagnetsPerPiece: mountMagnetsOn ? bp.mountMagnets.perPiece : undefined,
+    mountMagnetChamfer: mountMagnetsOn && bp.mountMagnets.chamfer === true,
     // Nothing in the UI writes `lightweight` today, but synced/imported params
     // can carry it, and the underside cross cutters consume it on magnet
     // plates and screw-pad cells alike — fold it out when neither can

@@ -422,6 +422,11 @@ export function buildFullParams(
     solidFloorThickness: stored.solidFloorThickness,
     screwHoles,
     screwPadThicknessMm: screwPad,
+    // Stripped while stacking with the other magnets: a flipped tile would
+    // carry the holes on top, and the uniform-tile assumption holds no
+    // per-tile differences.
+    mountMagnets:
+      !stackingOn && stored.mountMagnets?.enabled === true ? stored.mountMagnets : undefined,
     cornerRadius: roundingOn ? stored.cornerRadius : 0,
     cornerRadii: roundingOn ? stored.cornerRadii : undefined,
     detachMargins,

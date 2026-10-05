@@ -54,6 +54,22 @@ const MAX_SCREWS_PER_PIECE = 8;
  */
 const MAX_COUNTERBORE_DEPTH_MM = 6;
 
+/** Mount-magnet bounds, mirroring `MOUNT_MAGNET_*` in `src/core/baseplateDefaults.ts`. */
+const MIN_MOUNT_MAGNET_DIAMETER_MM = 2;
+const MAX_MOUNT_MAGNET_DIAMETER_MM = 6.5;
+const MIN_MOUNT_MAGNET_DEPTH_MM = 0.5;
+const MAX_MOUNT_MAGNET_DEPTH_MM = 2.5;
+const MIN_MOUNT_MAGNETS_PER_PIECE = 1;
+const MAX_MOUNT_MAGNETS_PER_PIECE = 64;
+
+const ALLOWED_MOUNT_MAGNET_KEYS = new Set<string>([
+  'enabled',
+  'diameter',
+  'depth',
+  'perPiece',
+  'chamfer',
+]);
+
 const VALID_SCREW_HEAD_STYLES = ['countersink', 'counterbore'] as const;
 
 /**
@@ -113,6 +129,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'stackPrint',
   'splitOverride',
   'screwHoles',
+  'mountMagnets',
 ]);
 
 const BOOLEAN_PARAM_KEYS = new Set<string>([
@@ -386,6 +403,53 @@ export function validateBaseplateShare(
         'INVALID_PARAMS',
         `screwHoles.screwsPerPiece must be a whole number ${MIN_SCREWS_PER_PIECE}-${MAX_SCREWS_PER_PIECE}`
       );
+    }
+  }
+
+  if (params.mountMagnets !== undefined) {
+    const mountMagnets = params.mountMagnets;
+    if (!isObject(mountMagnets)) {
+      return validationError('INVALID_PARAMS', 'mountMagnets must be an object');
+    }
+    for (const key of Object.keys(mountMagnets)) {
+      if (!ALLOWED_MOUNT_MAGNET_KEYS.has(key)) {
+        return validationError('INVALID_PARAMS', `mountMagnets has unknown key: ${key}`);
+      }
+    }
+    if (!isBoolean(mountMagnets.enabled)) {
+      return validationError('INVALID_PARAMS', 'mountMagnets.enabled must be a boolean');
+    }
+    if (
+      !isNumber(mountMagnets.diameter) ||
+      !inRange(mountMagnets.diameter, MIN_MOUNT_MAGNET_DIAMETER_MM, MAX_MOUNT_MAGNET_DIAMETER_MM)
+    ) {
+      return validationError(
+        'INVALID_PARAMS',
+        `mountMagnets.diameter must be ${MIN_MOUNT_MAGNET_DIAMETER_MM}-${MAX_MOUNT_MAGNET_DIAMETER_MM}`
+      );
+    }
+    if (
+      !isNumber(mountMagnets.depth) ||
+      !inRange(mountMagnets.depth, MIN_MOUNT_MAGNET_DEPTH_MM, MAX_MOUNT_MAGNET_DEPTH_MM)
+    ) {
+      return validationError(
+        'INVALID_PARAMS',
+        `mountMagnets.depth must be ${MIN_MOUNT_MAGNET_DEPTH_MM}-${MAX_MOUNT_MAGNET_DEPTH_MM}`
+      );
+    }
+    if (
+      mountMagnets.perPiece !== undefined &&
+      (!isNumber(mountMagnets.perPiece) ||
+        !Number.isInteger(mountMagnets.perPiece) ||
+        !inRange(mountMagnets.perPiece, MIN_MOUNT_MAGNETS_PER_PIECE, MAX_MOUNT_MAGNETS_PER_PIECE))
+    ) {
+      return validationError(
+        'INVALID_PARAMS',
+        `mountMagnets.perPiece must be a whole number ${MIN_MOUNT_MAGNETS_PER_PIECE}-${MAX_MOUNT_MAGNETS_PER_PIECE}`
+      );
+    }
+    if (mountMagnets.chamfer !== undefined && !isBoolean(mountMagnets.chamfer)) {
+      return validationError('INVALID_PARAMS', 'mountMagnets.chamfer must be a boolean');
     }
   }
 

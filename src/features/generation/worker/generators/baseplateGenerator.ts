@@ -61,6 +61,7 @@ import type { ProgressFn, CellInfo, SideMargins } from './generatorTypes';
 import {
   buildLightweightFloorCutters,
   buildPartialCellFloorCutters,
+  floorReliefReachesCorners,
 } from './lightweightFloorCutter';
 import { slabWithPocketsCache } from './baseplateCaches';
 import { slabPocketsCacheKey } from './baseplateCacheKeys';
@@ -71,9 +72,12 @@ import { buildMagnetHoles, buildPartialCellMagnetHoles } from './baseplateMagnet
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import {
   buildScrewCutters,
+  cellHoldsFloorScrew,
   planBaseplateScrewHoles,
   screwAwareHoleRadius,
 } from './baseplateScrews';
+import { buildMountMagnetCutters } from './baseplateMountMagnets';
+import { planMountMagnets } from './mountMagnetPlan';
 import {
   buildConnectors,
   buildDovetailKey,
@@ -177,7 +181,7 @@ export function generateBaseplate(
   if (forExport) {
     tolerance = 0.01;
     angularTolerance = EXPORT_ANGULAR_TOLERANCE_RAD;
-  } else if (params.magnetHoles) {
+  } else if (params.magnetHoles || params.mountMagnets?.enabled === true) {
     tolerance = Math.min(0.1, Math.max(0.05, maxDimension / 2500));
     angularTolerance = PREVIEW_ANGULAR_TOLERANCE_RAD;
   } else {
@@ -425,18 +429,7 @@ export function buildBaseplateSolid(
               : undefined,
         })
       : [];
-  /** True when a floor-sited screw lands inside this cell, so it keeps a floor. */
-  const cellHoldsScrew = (cell: CellInfo): boolean => {
-    if (screwHoles.length === 0) return false;
-    const halfW = (cell.widthUnits * gridUnitMm) / 2;
-    const halfD = (cell.depthUnits * gridUnitMmY) / 2;
-    return screwHoles.some(
-      (h) =>
-        h.site === 'floor' &&
-        Math.abs(h.x - cell.centerX) <= halfW &&
-        Math.abs(h.y - cell.centerY) <= halfD
-    );
-  };
+  const cellHoldsScrew = (cell: CellInfo): boolean => cellHoldsFloorScrew(screwHoles, cell, pitch);
 
   const pocketMaskHash = pocketDecisions ? hashPocketDecisions(pocketDecisions) : undefined;
 
@@ -724,6 +717,40 @@ export function buildBaseplateSolid(
     const cutters = buildScrewCutters(screwHoles, screwParams, totalHeight, profileHeight);
     baseplate = cutInBatches(baseplate, cutters);
     probe?.('screwHolesCut', baseplate);
+  }
+
+  const mountMagnets = params.mountMagnets;
+  if (mountMagnets?.enabled === true) {
+    const positions = planMountMagnets(
+      mountMagnets,
+      width,
+      depth,
+      totalHeight,
+      profileHeight,
+      cellOpts,
+      outline !== undefined
+        ? (cell: CellInfo): boolean => classifyCell(cell) === 'inside'
+        : undefined,
+      (cell: CellInfo): boolean =>
+        floorReliefReachesCorners(
+          params,
+          cell,
+          screwAwareHoleRadius(magnetDiameter / 2, screwParams),
+          gridUnitMm,
+          gridUnitMmY,
+          cellHoldsScrew
+        )
+    );
+    const cutters = buildMountMagnetCutters(
+      positions,
+      mountMagnets.diameter,
+      mountMagnets.depth,
+      totalHeight
+    );
+    if (cutters.length > 0) {
+      baseplate = cutInBatches(baseplate, cutters);
+      probe?.('mountMagnetsCut', baseplate);
+    }
   }
 
   onProgress?.(0.4);

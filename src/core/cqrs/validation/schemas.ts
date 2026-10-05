@@ -20,6 +20,12 @@ import {
   SCREW_COUNTERBORE_MAX_DEPTH_MM,
   SCREWS_PER_PIECE_MIN,
   SCREWS_PER_PIECE_MAX,
+  MOUNT_MAGNET_MIN_DIAMETER_MM,
+  MOUNT_MAGNET_MAX_DIAMETER_MM,
+  MOUNT_MAGNET_MIN_DEPTH_MM,
+  MOUNT_MAGNET_MAX_DEPTH_MM,
+  MOUNT_MAGNETS_PER_PIECE_MIN,
+  MOUNT_MAGNETS_PER_PIECE_MAX,
 } from '@/core/baseplateDefaults';
 import { STACK_PRINT_MIN_GAP_MM, STACK_PRINT_MAX_GAP_MM } from '@/core/types';
 import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
@@ -352,6 +358,20 @@ const baseplateParamsSchema = z.object({
         .min(SCREWS_PER_PIECE_MIN)
         .max(SCREWS_PER_PIECE_MAX)
         .optional(),
+    })
+    .optional(),
+  mountMagnets: z
+    .object({
+      enabled: z.boolean(),
+      diameter: z.number().min(MOUNT_MAGNET_MIN_DIAMETER_MM).max(MOUNT_MAGNET_MAX_DIAMETER_MM),
+      depth: z.number().min(MOUNT_MAGNET_MIN_DEPTH_MM).max(MOUNT_MAGNET_MAX_DEPTH_MM),
+      perPiece: z
+        .number()
+        .int()
+        .min(MOUNT_MAGNETS_PER_PIECE_MIN)
+        .max(MOUNT_MAGNETS_PER_PIECE_MAX)
+        .optional(),
+      chamfer: z.boolean().optional(),
     })
     .optional(),
 });
