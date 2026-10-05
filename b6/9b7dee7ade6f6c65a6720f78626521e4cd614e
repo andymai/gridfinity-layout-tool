@@ -1,0 +1,31 @@
+src/features/baseplate/utils/designOwnership.ts
+  s_f6ef8af5057228::t_d502af470f0752 23,25,28-44,50,58-64
+src/features/baseplate/hooks/useBaseplateLibraryInit.ts
+  s_f6ef8af5057228::t_d502af470f0752 224-227
+src/features/baseplate/utils/designOwnership.test.ts
+  s_f6ef8af5057228::t_d502af470f0752 40
+src/features/baseplate/utils/designUsers.ts
+  s_f6ef8af5057228::t_d502af470f0752 4,12,14-16,18,20
+src/features/baseplate/hooks/useBaseplateLibraryInit.test.ts
+  s_f6ef8af5057228::t_6e98d711d1b0f9 556-564,580
+  s_f6ef8af5057228::t_c256ed4a827b11 27,554-555,565-579,581
+  s_f6ef8af5057228::t_10c6ea5aab5f1f 582
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.tsx
+  s_f6ef8af5057228::t_d502af470f0752 60-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b69b7dee7ade6f6c65a6720f78626521e4cd614e",
+  "prompts": {},
+  "sessions": {
+    "s_f6ef8af5057228": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b2f7a60d-c28b-4bef-b4be-eefb3d4c0aef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
