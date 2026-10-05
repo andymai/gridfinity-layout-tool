@@ -17,7 +17,6 @@ describe('wallThicknessDelta', () => {
   });
 
   it('matches the exported 2x1x6 solid from 1.2 to 2.0mm walls', () => {
-    // Exported BREP volumes: 33800 → 39925 mm³ with a lip, 31560 → 38095 without.
     expect(wallThicknessDelta(W, D, WALL_HEIGHT, 2, true)).toBeCloseTo(39925 - 33800, -2);
     expect(wallThicknessDelta(W, D, WALL_HEIGHT, 2, false)).toBeCloseTo(38095 - 31560, -2);
   });

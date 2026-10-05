@@ -102,7 +102,7 @@ describe('printEstimates', () => {
       expect(thick.gramsFilament - thin.gramsFilament).toBeGreaterThan(5);
     });
 
-    it('drops the stacking lip at its real size', () => {
+    it('drops the stacking lip at the size the exported 2x2 solid loses', () => {
       const lipped = estimatePrint({ ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, height: 3 });
       const open = estimatePrint({
         ...DEFAULT_BIN_PARAMS,
@@ -111,7 +111,6 @@ describe('printEstimates', () => {
         height: 3,
         base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
       });
-      // Measured on the exported solid: 3030 mm³ for a 2x2 bin.
       expect(lipped.volumeMm3 - open.volumeMm3).toBeGreaterThan(2900);
       expect(lipped.volumeMm3 - open.volumeMm3).toBeLessThan(3150);
     });
@@ -379,7 +378,7 @@ describe('printEstimates', () => {
       expect(honeycomb.volumeMm3).toBeLessThan(standard.volumeMm3);
     });
 
-    it('a wall pattern removes more through a thicker wall', () => {
+    it('removes what the exported 3x1x8 honeycomb loses per mm of wall', () => {
       const removal = (wallThickness: number): number => {
         const plain = { ...DEFAULT_BIN_PARAMS, height: 8, depth: 1, width: 3, wallThickness };
         return (
@@ -388,7 +387,6 @@ describe('printEstimates', () => {
             .volumeMm3
         );
       };
-      // Measured on the exported solid: 9024 mm³ removed per mm of wall here.
       expect(removal(2) / 2).toBeCloseTo(9024, -2);
       expect(removal(1.2) / 1.2).toBeCloseTo(9024, -2);
     });
