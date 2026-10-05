@@ -180,6 +180,8 @@ export const Collapsible = forwardRef<HTMLDivElement, CollapsibleProps>(
 
     const contentId = useId();
     const triggerId = useId();
+    const summaryId = useId();
+    const showSummary = Boolean(summary) && !expanded;
 
     const handleToggle = () => {
       setHasToggled(true);
@@ -205,6 +207,10 @@ export const Collapsible = forwardRef<HTMLDivElement, CollapsibleProps>(
             onClick={handleToggle}
             aria-expanded={expanded}
             aria-controls={contentId}
+            // The summary stays aria-hidden so browse mode doesn't read it twice;
+            // a description still resolves from hidden text, so the collapsed
+            // toggle announces it.
+            aria-describedby={showSummary ? summaryId : undefined}
           >
             <ChevronDownIcon
               size="xs"
@@ -226,8 +232,9 @@ export const Collapsible = forwardRef<HTMLDivElement, CollapsibleProps>(
         </div>
 
         {/* Summary (shown when collapsed) */}
-        {summary && !expanded && (
+        {showSummary && (
           <div
+            id={summaryId}
             className={cn(
               'mt-1 text-xs text-content-tertiary truncate',
               hasIcon ? 'ml-[38px]' : 'ml-[22px]'

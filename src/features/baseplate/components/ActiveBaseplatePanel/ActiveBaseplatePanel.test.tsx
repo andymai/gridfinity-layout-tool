@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { baseplateDesignId } from '@/core/types';
 import { ActiveBaseplatePanel } from './ActiveBaseplatePanel';
 
@@ -45,8 +45,38 @@ describe('ActiveBaseplatePanel', () => {
 
   it('renders the library entries as options', () => {
     render(<ActiveBaseplatePanel />);
-    expect(screen.getByText('One')).toBeInTheDocument();
-    expect(screen.getByText('Two')).toBeInTheDocument();
+    const select = screen.getByLabelText('baseplate.library.selectLabel');
+    expect(within(select).getByText('One')).toBeInTheDocument();
+    expect(within(select).getByText('Two')).toBeInTheDocument();
+  });
+
+  it('names the linked baseplate while the section is collapsed', () => {
+    render(<ActiveBaseplatePanel />);
+    expect(screen.getAllByText('One')).toHaveLength(2);
+  });
+
+  it('leaves a linked design unnamed when its registry entry is missing', () => {
+    const linked = mocks.libraryState.activeBaseplateId;
+    mocks.libraryState.activeBaseplateId = 'bp-gone' as typeof linked;
+    try {
+      render(<ActiveBaseplatePanel />);
+      const draftLabels = screen.getAllByText('baseplate.library.draftName');
+      expect(draftLabels).toHaveLength(1);
+      expect(draftLabels[0].tagName).toBe('OPTION');
+    } finally {
+      mocks.libraryState.activeBaseplateId = linked;
+    }
+  });
+
+  it('reads as an unsaved draft when no library design is linked', () => {
+    const linked = mocks.libraryState.activeBaseplateId;
+    mocks.libraryState.activeBaseplateId = null as unknown as typeof linked;
+    try {
+      render(<ActiveBaseplatePanel />);
+      expect(screen.getAllByText('baseplate.library.draftName')).toHaveLength(2);
+    } finally {
+      mocks.libraryState.activeBaseplateId = linked;
+    }
   });
 
   it('switches the active design when a different option is selected', () => {
