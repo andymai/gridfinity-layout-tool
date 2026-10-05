@@ -11,14 +11,13 @@ import {
 } from '@/core/storage';
 import type { AdapterChange, AdapterChangeListener, LayoutAdapter, SyncableItem } from './types';
 import { syncPersistError } from './persistError';
+import { LAYOUT_SCHEMA_VERSION } from '../payloadKey';
 
 // Wider than `Bin` because legacy cloud blobs (pre-validator-fix) literally
 // omit `notes`/`label`. Without this the runtime guard below reads as
 // unreachable to TypeScript.
 type IncomingBin = Omit<Bin, 'notes' | 'label'> & { notes?: unknown; label?: unknown };
 type IncomingLayout = Omit<Layout, 'bins'> & { bins: IncomingBin[] };
-
-const SCHEMA_KEEPS_DRAWER_AND_PLATE = 2;
 
 /**
  * Before schema 2 the server rebuilt layouts without `drawer.measuredMm`,
@@ -112,7 +111,7 @@ export const layoutAdapter: LayoutAdapter = {
     // The folder rides on the wire only; locally the entry holds it.
     const { folderId, ...document } = normalizeIncomingLayout(item.payload);
     let layout: Layout = document;
-    if ((item.schemaVersion ?? 1) < SCHEMA_KEEPS_DRAWER_AND_PLATE) {
+    if ((item.schemaVersion ?? 1) < LAYOUT_SCHEMA_VERSION) {
       const local = await loadLayoutAsync(item.id);
       if (local) layout = restoreStrippedFields(layout, local);
     }

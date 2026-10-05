@@ -147,7 +147,7 @@ describe('push: PUT happy path', () => {
       expect.objectContaining({ method: 'PUT' })
     );
     const body = JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string);
-    expect(body).toEqual({ layout: { v: 1 }, modifiedAt: 1000 });
+    expect(body).toEqual({ layout: { v: 1 }, modifiedAt: 1000, schemaVersion: 2 });
     expect(await outboxGetAll()).toEqual([]);
   });
 

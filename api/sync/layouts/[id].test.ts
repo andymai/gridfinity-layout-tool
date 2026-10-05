@@ -205,6 +205,7 @@ describe('GET', () => {
             activeBaseplateId: 'baseplate_1700000000000_ab12cd',
           },
           modifiedAt: 1000,
+          schemaVersion: 2,
         },
       }),
       makeRes() as unknown as VercelResponse
@@ -221,6 +222,18 @@ describe('GET', () => {
       baseplateParams: plate,
       activeBaseplateId: 'baseplate_1700000000000_ab12cd',
     });
+  });
+
+  it('stores a write from a client that declares no schema as version 1', async () => {
+    const { default: handler } = await import('./[id]');
+    await handler(
+      makeReq({ method: 'PUT', body: { layout: VALID_LAYOUT, modifiedAt: 1000 } }),
+      makeRes() as unknown as VercelResponse
+    );
+
+    const res = makeRes();
+    await handler(makeReq({ method: 'GET' }), res as unknown as VercelResponse);
+    expect((res._body as { envelope: { schemaVersion: number } }).envelope.schemaVersion).toBe(1);
   });
 
   it('returns 410 Gone when the entry is tombstoned', async () => {
