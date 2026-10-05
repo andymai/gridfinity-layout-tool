@@ -4,7 +4,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { useLayoutStore } from '@/core/store/layout';
 import { baseplateDesignId, layoutId } from '@/core/types';
 import type { StoredBaseplateParams } from '@/core/types';
-import { isOk } from '@/core/result';
+import { err, isOk, storageUnavailable } from '@/core/result';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
 import {
   saveDesign,
@@ -257,6 +257,29 @@ describe('useBaseplateLibraryInit', () => {
       expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(saved.value.id);
     });
 
+    it('keeps an edit the user undid back to its original value', async () => {
+      const saved = await saveDesign({
+        name: 'Baseplate 1',
+        params: { ...params, paddingBack: 21 as StoredBaseplateParams['paddingBack'] },
+        thumbnail: null,
+      });
+      if (!isOk(saved)) throw new Error('saveDesign failed');
+      useLayoutStore
+        .getState()
+        .importLayout(
+          createTestLayout({ baseplateParams: params, activeBaseplateId: saved.value.id })
+        );
+
+      renderHook(() => useBaseplateLibraryInit());
+      act(() => {
+        useLayoutStore.getState().setBaseplateParams(edited);
+        useLayoutStore.getState().setBaseplateParams({ ...params });
+      });
+      await settle();
+
+      expect(useLayoutStore.getState().layout.baseplateParams).toEqual(params);
+    });
+
     it('keeps a design picked from the dropdown instead of reverting to the old one', async () => {
       const oldDesign = await saveDesign({
         name: 'Old',
@@ -319,6 +342,26 @@ describe('useBaseplateLibraryInit', () => {
         if (!isOk(stored)) throw new Error('loadDesign failed');
         expect(stored.value.params).toEqual(edited);
       });
+    });
+
+    it('leaves the layout unlinked when the seed catch-up write fails', async () => {
+      vi.mocked(updateDesignParams).mockResolvedValueOnce(
+        err(storageUnavailable('indexedDB', new Error('quota')))
+      );
+      useLayoutStore.getState().importLayout(createTestLayout({ baseplateParams: params }));
+
+      renderHook(() => useBaseplateLibraryInit());
+      act(() => {
+        useLayoutStore.getState().setBaseplateParams(edited);
+      });
+
+      await waitFor(async () => {
+        const designs = await listDesigns();
+        if (!isOk(designs)) throw new Error('listDesigns failed');
+        expect(designs.value).toHaveLength(0);
+      });
+      expect(useLayoutStore.getState().layout.activeBaseplateId ?? null).toBeNull();
+      expect(useLayoutStore.getState().layout.baseplateParams).toEqual(edited);
     });
 
     it('stores a second edit made while the seed catch-up write is pending', async () => {

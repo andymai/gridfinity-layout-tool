@@ -139,7 +139,13 @@ export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions
             if (edited === undefined || deepEqual(edited, design.params)) break;
             const updated = await updateDesignParams(design.id, edited);
             if (isStale()) return false;
-            if (!isOk(updated)) break;
+            if (!isOk(updated)) {
+              // Linking a design that holds older params would let the next
+              // session's first resolve restore them over the edit; unlinked,
+              // that session seeds again from what the layout holds.
+              await deleteDesign(design.id);
+              return true;
+            }
             design = updated.value;
           }
           if (current().activeId !== null) {
@@ -166,7 +172,9 @@ export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions
           // so a different layout sharing the design still gets its first sync.
           const key = materializeKey(targetLayoutId, activeId);
           if (!materializedThisSession.has(key)) {
-            if (deepEqual(now.params, params) && !deepEqual(loaded.value.params, params)) {
+            // Reference, not value: an edit undone to its original value is
+            // still the user's latest word on the plate.
+            if (now.params === params && !deepEqual(loaded.value.params, params)) {
               setActiveBaseplateLocal(activeId, loaded.value.params);
             }
             materializedThisSession.add(key);
