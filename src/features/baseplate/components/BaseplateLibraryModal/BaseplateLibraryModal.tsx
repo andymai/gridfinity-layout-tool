@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
+import { useLibraryStore } from '@/core/store/library';
 import { useToastStore } from '@/core/store/toast';
 import { useMutations } from '@/shared/contexts';
 import { isOk } from '@/core/result';
@@ -53,6 +54,7 @@ function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
 
   const [designs, setDesigns] = useState<SavedBaseplateDesign[]>([]);
   const [usage, setUsage] = useState<ReadonlyMap<string, string[]>>(new Map());
+  const layoutEntries = useLibraryStore((s) => s.library.entries);
   useEffect(() => {
     let current = true;
     designUsage()
@@ -63,7 +65,7 @@ function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
     return () => {
       current = false;
     };
-  }, [designs, activeBaseplateId]);
+  }, [designs, activeBaseplateId, layoutEntries]);
   const [creating, setCreating] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<SavedBaseplateDesign | null>(null);
 

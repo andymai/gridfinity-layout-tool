@@ -5,7 +5,8 @@ import { useLayoutStore } from '@/core/store/layout';
 import { baseplateDesignId, layoutId } from '@/core/types';
 import type { LayoutEntry } from '@/core/types';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
-import { designUsage, findDesignUsers } from './designUsers';
+import { ownedCopyId } from './designOwnership';
+import { designUsage, findDesignUsers, ownedCopyTarget } from './designUsers';
 
 const entry = (id: string, name: string, baseplateId: string | null): LayoutEntry =>
   ({
@@ -49,6 +50,19 @@ describe('designUsers', () => {
     const usage = await designUsage();
     expect(usage.get('B')).toEqual(['Kitchen (renamed)', 'Garage']);
     expect(usage.has('A')).toBe(false);
+  });
+
+  it('saves a split under the shared copy id while no other layout links it', async () => {
+    expect(await ownedCopyTarget(layoutId('open'), 'A')).toBe(ownedCopyId(layoutId('open'), 'A'));
+  });
+
+  it('mints a fresh copy id once another layout links that copy', async () => {
+    const adopted = ownedCopyId(layoutId('open'), 'A');
+    const { library } = useLibraryStore.getState();
+    useLibraryStore.setState({
+      library: { ...library, entries: [...library.entries, entry('attic', 'Attic', adopted)] },
+    });
+    expect(await ownedCopyTarget(layoutId('open'), 'A')).toBeUndefined();
   });
 
   it('finds the layouts using one design', async () => {

@@ -123,6 +123,37 @@ describe('useBaseplateLibrary', () => {
       expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(picked);
     });
 
+    it('links a used design while the layout has no id yet', async () => {
+      const picked = await setUp('picked');
+      useLayoutStore.setState({ activeLayoutId: null });
+      const { result } = renderHook(() => useBaseplateLibrary());
+
+      await act(async () => {
+        await result.current.switchActive(baseplateDesignId(picked));
+      });
+
+      expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(picked);
+      const designs = await listDesigns();
+      if (!isOk(designs)) throw new Error('listDesigns failed');
+      expect(designs.value).toHaveLength(1);
+    });
+
+    it('drops a pick when another layout opens before it resolves', async () => {
+      const picked = await setUp('picked');
+      const { result } = renderHook(() => useBaseplateLibrary());
+
+      await act(async () => {
+        const pending = result.current.switchActive(baseplateDesignId(picked));
+        useLayoutStore
+          .getState()
+          .importLayout(createTestLayout({ name: 'Shed' }), layoutId('layout-shed'));
+        await pending;
+      });
+
+      expect(useLayoutStore.getState().activeLayoutId).toBe(layoutId('layout-shed'));
+      expect(useLayoutStore.getState().layout.activeBaseplateId ?? null).toBeNull();
+    });
+
     it('gives this layout its own copy of a design another layout uses', async () => {
       const picked = await setUp('picked');
       const { result } = renderHook(() => useBaseplateLibrary());

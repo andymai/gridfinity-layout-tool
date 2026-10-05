@@ -41,12 +41,8 @@ import {
 import { loadRegistry, upsertRegistryEntry } from '@/features/baseplate/store/baseplateRegistry';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { nextBaseplateName } from '@/features/baseplate/utils/baseplateName';
-import {
-  designOwner,
-  ownedCopyId,
-  ownedCopyName,
-} from '@/features/baseplate/utils/designOwnership';
-import { findDesignUsers } from '@/features/baseplate/utils/designUsers';
+import { designOwner, ownedCopyName } from '@/features/baseplate/utils/designOwnership';
+import { findDesignUsers, ownedCopyTarget } from '@/features/baseplate/utils/designUsers';
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -198,8 +194,11 @@ export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions
               if (current().activeId !== activeId) return true;
               const owner = designOwner(users);
               if (users.length > 1 && owner !== undefined && owner.id !== targetLayoutId) {
+                const copyId = await ownedCopyTarget(targetLayoutId, activeId);
+                if (isStale()) return false;
+                if (current().activeId !== activeId) return true;
                 const copy = await saveDesign({
-                  id: ownedCopyId(targetLayoutId, activeId),
+                  ...(copyId !== undefined ? { id: copyId } : {}),
                   name: ownedCopyName(loaded.value.name, useLayoutStore.getState().layout.name),
                   params: current().params ?? params,
                   thumbnail: loaded.value.thumbnail,
