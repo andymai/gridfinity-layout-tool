@@ -77,6 +77,7 @@ vi.mock('@/core/store/toast', () => ({
 vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string, params?: Record<string, unknown>) =>
     params ? `${key}:${JSON.stringify(params)}` : key,
+  useLocale: () => ({ locale: 'en' }),
 }));
 
 describe('BaseplateLibraryModal', () => {
@@ -99,7 +100,7 @@ describe('BaseplateLibraryModal', () => {
   it('names the layouts using each design', async () => {
     render(<BaseplateLibraryModal isOpen onClose={vi.fn()} />);
     expect(
-      await screen.findByText('baseplate.library.usedBy:{"names":"Kitchen, Garage"}')
+      await screen.findByText('baseplate.library.usedBy:{"names":"Kitchen and Garage"}')
     ).toBeInTheDocument();
     expect(screen.getByText('baseplate.library.unused')).toBeInTheDocument();
   });

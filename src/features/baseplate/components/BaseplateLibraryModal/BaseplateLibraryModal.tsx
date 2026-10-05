@@ -15,7 +15,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useToastStore } from '@/core/store/toast';
 import { useMutations } from '@/shared/contexts';
 import { isOk } from '@/core/result';
-import { useTranslation } from '@/i18n';
+import { useLocale, useTranslation } from '@/i18n';
 import { useAnchoredMenu } from '@/shared/hooks/useAnchoredMenu';
 import { useResponsive } from '@/shared/hooks';
 import { Button, IconButton, Input, XIcon, useInlineEdit } from '@/design-system';
@@ -27,8 +27,6 @@ import { nextBaseplateName } from '@/features/baseplate/utils/baseplateName';
 import { designUsage } from '@/features/baseplate/utils/designUsers';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { DeleteBaseplateWarningDialog } from '../DeleteBaseplateWarningDialog';
-
-const LIST_SEPARATOR = ', ';
 
 interface BaseplateLibraryModalProps {
   isOpen: boolean;
@@ -277,6 +275,7 @@ function BaseplateCard({
   onDelete,
 }: BaseplateCardProps) {
   const t = useTranslation();
+  const { locale } = useLocale();
   const {
     isEditing,
     editingValue,
@@ -288,7 +287,9 @@ function BaseplateCard({
   } = useInlineEdit({ initialValue: design.name, onSave: onRename });
   const usage =
     usedBy.length > 0
-      ? t('baseplate.library.usedBy', { names: usedBy.join(LIST_SEPARATOR) })
+      ? t('baseplate.library.usedBy', {
+          names: new Intl.ListFormat(locale, { type: 'conjunction' }).format(usedBy),
+        })
       : t('baseplate.library.unused');
 
   const handleItemKeyDown = (e: React.KeyboardEvent) => {

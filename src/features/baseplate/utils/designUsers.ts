@@ -47,7 +47,10 @@ export async function designUsage(): Promise<Map<string, string[]>> {
     liveLayout()
   );
   for (const { link, name } of links) {
-    if (link !== null) usage.set(link, [...(usage.get(link) ?? []), name]);
+    if (link === null) continue;
+    const names = usage.get(link);
+    if (names) names.push(name);
+    else usage.set(link, [name]);
   }
   return usage;
 }
