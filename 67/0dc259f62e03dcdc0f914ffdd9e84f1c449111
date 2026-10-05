@@ -1,0 +1,41 @@
+src/core/sync/adapters/layoutAdapter.ts
+  s_f6ef8af5057228::t_85a3237f86c114 114
+  s_f6ef8af5057228::t_378c1e0afbe417 14
+api/sync/layouts/[id].ts
+  s_f6ef8af5057228::t_85a3237f86c114 6-8,18,39,59-63
+api/sync/lib/resourceHandler.ts
+  s_f6ef8af5057228::t_85a3237f86c114 62-67,121
+api/sync/layouts/[id].test.ts
+  s_f6ef8af5057228::t_378c1e0afbe417 208,227-236
+  s_f6ef8af5057228::t_3381f9248cded6 237-238
+src/core/sync/payloadKey.ts
+  s_f6ef8af5057228::t_85a3237f86c114 3-5,26-38
+src/core/sync/engine.ts
+  s_f6ef8af5057228::t_85a3237f86c114 197
+  s_f6ef8af5057228::t_378c1e0afbe417 14
+src/core/sync/triggers/useBeaconFlush.ts
+  s_f6ef8af5057228::t_85a3237f86c114 80
+  s_f6ef8af5057228::t_378c1e0afbe417 3
+  s_f6ef8af5057228::t_a91432336e6f23 4
+src/core/sync/payloadKey.test.ts
+  s_f6ef8af5057228::t_378c1e0afbe417 53-54,59-70
+  s_f6ef8af5057228::t_1ea2359e6bb4bf 7,10-13,55-58
+src/core/sync/engine.test.ts
+  s_f6ef8af5057228::t_a91432336e6f23 150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "670dc259f62e03dcdc0f914ffdd9e84f1c449111",
+  "prompts": {},
+  "sessions": {
+    "s_f6ef8af5057228": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b2f7a60d-c28b-4bef-b4be-eefb3d4c0aef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
