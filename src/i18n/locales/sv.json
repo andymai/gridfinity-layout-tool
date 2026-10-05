@@ -122,6 +122,8 @@
   "baseplate.leftoverLabel": "Restmarginal",
   "baseplate.leftoverSolid": "Massiv",
   "baseplate.library.active": "Aktiv",
+  "baseplate.library.usedBy": "Används av {names}",
+  "baseplate.library.unused": "Används inte av någon layout",
   "baseplate.library.baseplates": "Bottenplattor",
   "baseplate.library.clickToRename": "Klicka för att byta namn på bottenplattan",
   "baseplate.library.closeDialog": "Stäng bottenplattebibliotek",

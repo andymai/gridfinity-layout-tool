@@ -122,6 +122,8 @@
   "baseplate.leftoverLabel": "Restmarge",
   "baseplate.leftoverSolid": "Massief",
   "baseplate.library.active": "Actief",
+  "baseplate.library.usedBy": "Gebruikt door {names}",
+  "baseplate.library.unused": "Door geen enkele indeling gebruikt",
   "baseplate.library.baseplates": "Basisplaten",
   "baseplate.library.clickToRename": "Klik om basisplaat te hernoemen",
   "baseplate.library.closeDialog": "Basisplaatbibliotheek sluiten",

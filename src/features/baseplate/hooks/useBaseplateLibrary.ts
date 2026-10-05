@@ -28,6 +28,8 @@ import {
   removeRegistryEntry,
   type BaseplateRef,
 } from '@/features/baseplate/store/baseplateRegistry';
+import { ownedCopyId, ownedCopyName } from '@/features/baseplate/utils/designOwnership';
+import { findDesignUsers } from '@/features/baseplate/utils/designUsers';
 
 // useSyncExternalStore requires referentially stable snapshots between
 // notifications. `cachedRegistry` is only reassigned inside `notifyAll` (or on
@@ -171,9 +173,27 @@ export function useBaseplateLibrary(): UseBaseplateLibrary {
       if (isErr(result)) {
         return result;
       }
-      mutations.setActiveBaseplate(id, result.value.params);
-      setActiveDesignId(id);
-      return result;
+      // A design another layout uses is copied rather than shared, so this
+      // layout's later edits never reach the other's plate.
+      const { activeLayoutId, layout } = useLayoutStore.getState();
+      const usedElsewhere = (await findDesignUsers(id)).some((u) => u.id !== activeLayoutId);
+      if (token !== switchSeq) return result;
+      if (!usedElsewhere) {
+        mutations.setActiveBaseplate(id, result.value.params);
+        setActiveDesignId(id);
+        return result;
+      }
+      const copy = await saveDesign({
+        ...(activeLayoutId !== null ? { id: ownedCopyId(activeLayoutId, id) } : {}),
+        name: ownedCopyName(result.value.name, layout.name),
+        params: result.value.params,
+        thumbnail: result.value.thumbnail,
+      });
+      if (token !== switchSeq || isErr(copy)) return copy;
+      upsertRegistryEntry(refFromDesign(copy.value));
+      mutations.setActiveBaseplate(copy.value.id, copy.value.params);
+      setActiveDesignId(copy.value.id);
+      return copy;
     },
     [mutations]
   );

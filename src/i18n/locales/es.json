@@ -122,6 +122,8 @@
   "baseplate.leftoverLabel": "Margen sobrante",
   "baseplate.leftoverSolid": "Macizo",
   "baseplate.library.active": "Activo",
+  "baseplate.library.usedBy": "Usado por {names}",
+  "baseplate.library.unused": "No lo usa ningún diseño",
   "baseplate.library.baseplates": "Placas base",
   "baseplate.library.clickToRename": "Haz clic para renombrar la placa base",
   "baseplate.library.closeDialog": "Cerrar biblioteca de bases",

@@ -4269,6 +4269,8 @@ const en: Record<string, string> = {
   'baseplate.library.moreActions': 'More actions for {name}',
   'baseplate.library.thumbnailPlaceholder': 'No preview',
   'baseplate.library.active': 'Active',
+  'baseplate.library.usedBy': 'Used by {names}',
+  'baseplate.library.unused': 'Not used by any layout',
   'baseplate.library.currentlyActive': 'Currently active baseplate',
   'baseplate.library.empty': 'No saved baseplates yet',
   'baseplate.library.emptyHint': 'Open the Baseplate tool to create one',

@@ -122,6 +122,8 @@
   "baseplate.leftoverLabel": "Resztka marginesu",
   "baseplate.leftoverSolid": "Lite",
   "baseplate.library.active": "Aktywna",
+  "baseplate.library.usedBy": "Używane przez {names}",
+  "baseplate.library.unused": "Nieużywane przez żaden układ",
   "baseplate.library.baseplates": "Płyty bazowe",
   "baseplate.library.clickToRename": "Kliknij, aby zmienić nazwę płyty bazowej",
   "baseplate.library.closeDialog": "Zamknij bibliotekę płyt bazowych",

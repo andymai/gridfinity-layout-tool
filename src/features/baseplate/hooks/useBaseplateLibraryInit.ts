@@ -40,6 +40,12 @@ import {
 import { loadRegistry, upsertRegistryEntry } from '@/features/baseplate/store/baseplateRegistry';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { nextBaseplateName } from '@/features/baseplate/utils/baseplateName';
+import {
+  designOwner,
+  ownedCopyId,
+  ownedCopyName,
+} from '@/features/baseplate/utils/designOwnership';
+import { findDesignUsers } from '@/features/baseplate/utils/designUsers';
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -183,9 +189,42 @@ export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions
           // so a different layout sharing the design still gets its first sync.
           const key = materializeKey(targetLayoutId, activeId);
           if (!materializedThisSession.has(key)) {
+            // A design an older layout also uses stays with that layout; this
+            // one takes its own copy of what it shows now.
+            if (targetLayoutId !== null) {
+              const users = await findDesignUsers(activeId);
+              if (isStale()) return false;
+              if (current().activeId !== activeId) return true;
+              const owner = designOwner(users);
+              if (users.length > 1 && owner !== undefined && owner.id !== targetLayoutId) {
+                const copy = await saveDesign({
+                  id: ownedCopyId(targetLayoutId, activeId),
+                  name: ownedCopyName(loaded.value.name, useLayoutStore.getState().layout.name),
+                  params: current().params ?? params,
+                  thumbnail: loaded.value.thumbnail,
+                });
+                if (isStale()) return false;
+                const latest = current();
+                if (latest.activeId !== activeId) return true;
+                if (isOk(copy)) {
+                  upsertRegistryEntry({
+                    id: copy.value.id,
+                    name: copy.value.name,
+                    updatedAt: copy.value.updatedAt,
+                  });
+                  setActiveDesignId(copy.value.id);
+                  setActiveBaseplateLocal(copy.value.id, latest.params ?? copy.value.params);
+                  materializedThisSession.add(materializeKey(targetLayoutId, copy.value.id));
+                  if (latest.params !== undefined && !deepEqual(latest.params, copy.value.params)) {
+                    await updateDesignParams(copy.value.id, latest.params);
+                  }
+                  return true;
+                }
+              }
+            }
             // Reference, not value: an edit undone to its original value is
             // still the user's latest word on the plate.
-            if (now.params === params && !deepEqual(loaded.value.params, params)) {
+            if (current().params === params && !deepEqual(loaded.value.params, params)) {
               setActiveBaseplateLocal(activeId, loaded.value.params);
             }
             materializedThisSession.add(key);

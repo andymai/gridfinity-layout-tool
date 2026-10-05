@@ -122,6 +122,8 @@
   "baseplate.leftoverLabel": "나머지 여백",
   "baseplate.leftoverSolid": "솔리드",
   "baseplate.library.active": "활성",
+  "baseplate.library.usedBy": "사용 중: {names}",
+  "baseplate.library.unused": "사용하는 레이아웃 없음",
   "baseplate.library.baseplates": "베이스플레이트",
   "baseplate.library.clickToRename": "클릭하여 베이스플레이트 이름 변경",
   "baseplate.library.closeDialog": "베이스플레이트 라이브러리 닫기",
