@@ -122,6 +122,8 @@
   "baseplate.leftoverLabel": "Restmarg",
   "baseplate.leftoverSolid": "Massiv",
   "baseplate.library.active": "Aktiv",
+  "baseplate.library.usedBy": "Brukes av {names}",
+  "baseplate.library.unused": "Brukes ikke av noen layout",
   "baseplate.library.baseplates": "Bunnplater",
   "baseplate.library.clickToRename": "Klikk for å gi bunnplaten nytt navn",
   "baseplate.library.closeDialog": "Lukk bunnplate-bibliotek",

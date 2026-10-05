@@ -23,4 +23,6 @@ export interface LayoutPreview {
   layerCount: number;
   /** Simplified bin positions for thumbnail (top-down view, all layers merged) */
   binMap?: ThumbnailBin[];
+  /** The linked baseplate design; absent on entries saved before it was recorded. */
+  baseplateId?: string | null;
 }

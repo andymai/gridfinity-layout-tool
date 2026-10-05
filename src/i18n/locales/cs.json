@@ -122,6 +122,8 @@
   "baseplate.leftoverLabel": "Zbývající okraj",
   "baseplate.leftoverSolid": "Plný",
   "baseplate.library.active": "Aktivní",
+  "baseplate.library.usedBy": "Používá {names}",
+  "baseplate.library.unused": "Nepoužívá žádné rozvržení",
   "baseplate.library.baseplates": "Základní desky",
   "baseplate.library.clickToRename": "Klikni pro přejmenování základní desky",
   "baseplate.library.closeDialog": "Zavřít knihovnu základních desek",

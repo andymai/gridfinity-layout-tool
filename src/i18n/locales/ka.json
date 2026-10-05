@@ -3606,6 +3606,8 @@
   "baseplate.library.moreActions": "მეტი მოქმედება: {name}",
   "baseplate.library.thumbnailPlaceholder": "გადახედვა არ არის",
   "baseplate.library.active": "აქტიური",
+  "baseplate.library.usedBy": "იყენებს: {names}",
+  "baseplate.library.unused": "არცერთი განლაგება არ იყენებს",
   "baseplate.library.currentlyActive": "ამჟამად აქტიური საბაზისო ფირფიტა",
   "baseplate.library.empty": "შენახული საბაზისო ფირფიტები ჯერ არ არის",
   "baseplate.library.emptyHint": "შესაქმნელად გახსენით საბაზისო ფირფიტის ხელსაწყო",

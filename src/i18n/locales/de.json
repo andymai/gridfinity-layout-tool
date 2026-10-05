@@ -122,6 +122,8 @@
   "baseplate.leftoverLabel": "Restrand",
   "baseplate.leftoverSolid": "Massiv",
   "baseplate.library.active": "Aktiv",
+  "baseplate.library.usedBy": "Verwendet von {names}",
+  "baseplate.library.unused": "Von keinem Layout verwendet",
   "baseplate.library.baseplates": "Grundplatten",
   "baseplate.library.clickToRename": "Klicken zum Umbenennen der Grundplatte",
   "baseplate.library.closeDialog": "Grundplatten-Bibliothek schließen",

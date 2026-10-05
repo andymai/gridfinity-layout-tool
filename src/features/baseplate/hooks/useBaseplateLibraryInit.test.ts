@@ -2,8 +2,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { useLayoutStore } from '@/core/store/layout';
+import { useLibraryStore } from '@/core/store';
 import { baseplateDesignId, layoutId } from '@/core/types';
-import type { StoredBaseplateParams } from '@/core/types';
+import type { LayoutEntry, StoredBaseplateParams } from '@/core/types';
+import { ownedCopyId } from '@/features/baseplate/utils/designOwnership';
 import { err, isOk, storageUnavailable } from '@/core/result';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
 import {
@@ -22,6 +24,7 @@ vi.mock('@/features/baseplate/storage/BaseplateStorage', async (importOriginal) 
   const actual = await importOriginal<typeof BaseplateStorageModule>();
   return {
     ...actual,
+    saveDesign: vi.fn(actual.saveDesign),
     updateDesignParams: vi.fn(actual.updateDesignParams),
     deleteDesign: vi.fn(actual.deleteDesign),
   };
@@ -470,6 +473,112 @@ describe('useBaseplateLibraryInit', () => {
       const stored = await loadDesign(activeId);
       if (!isOk(stored)) throw new Error('loadDesign failed');
       expect(stored.value.params).toEqual(second);
+    });
+  });
+
+  describe('a design another layout also uses', () => {
+    const entry = (id: string, name: string, createdAt: number, baseplateId: string) =>
+      ({
+        id: layoutId(id),
+        name,
+        createdAt,
+        modifiedAt: createdAt,
+        preview: {
+          drawerWidth: 4,
+          drawerDepth: 4,
+          drawerHeight: 7,
+          binCount: 0,
+          layerCount: 1,
+          baseplateId,
+        },
+      }) as LayoutEntry;
+    const mine: StoredBaseplateParams = {
+      ...params,
+      paddingLeft: 7 as StoredBaseplateParams['paddingLeft'],
+    };
+
+    async function openLayout(openId: string): Promise<string> {
+      const saved = await saveDesign({
+        name: 'Baseplate 1',
+        params: { ...params, paddingBack: 21 as StoredBaseplateParams['paddingBack'] },
+        thumbnail: null,
+      });
+      if (!isOk(saved)) throw new Error('saveDesign failed');
+      const library = useLibraryStore.getState().library;
+      useLibraryStore.setState({
+        library: {
+          ...library,
+          entries: [
+            entry('layout-old', 'Kitchen', 1, saved.value.id),
+            entry('layout-new', 'Garage', 2, saved.value.id),
+          ],
+        },
+      });
+      useLayoutStore.getState().importLayout(
+        createTestLayout({
+          name: openId === 'layout-old' ? 'Kitchen' : 'Garage',
+          baseplateParams: mine,
+          activeBaseplateId: saved.value.id,
+        }),
+        layoutId(openId)
+      );
+      renderHook(() => useBaseplateLibraryInit());
+      return saved.value.id;
+    }
+
+    it('gives the newer layout its own copy of the settings it shows', async () => {
+      const shared = await openLayout('layout-new');
+      const copyId = ownedCopyId(layoutId('layout-new'), shared);
+
+      await waitFor(() => {
+        expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(copyId);
+      });
+      expect(useLayoutStore.getState().layout.baseplateParams).toEqual(mine);
+      const copy = await loadDesign(copyId);
+      if (!isOk(copy)) throw new Error('copy missing');
+      expect(copy.value.name).toBe('Baseplate 1 (Garage)');
+      expect(copy.value.params).toEqual(mine);
+      const original = await loadDesign(baseplateDesignId(shared));
+      if (!isOk(original)) throw new Error('original missing');
+      expect(original.value.params.paddingBack).toBe(21);
+    });
+
+    it('leaves the oldest layout on the shared design', async () => {
+      const shared = await openLayout('layout-old');
+
+      await waitFor(() => {
+        expect(useLayoutStore.getState().layout.baseplateParams?.paddingBack).toBe(21);
+      });
+      expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(shared);
+    });
+
+    it('keeps what the newer layout shows when its copy cannot be saved', async () => {
+      const actual = await vi.importActual<typeof BaseplateStorageModule>(
+        '@/features/baseplate/storage/BaseplateStorage'
+      );
+      // The split's copy is the only save that names its own id.
+      vi.mocked(saveDesign).mockImplementation((design) =>
+        design.id === undefined
+          ? actual.saveDesign(design)
+          : Promise.resolve(err(storageUnavailable('indexedDB', new Error('quota'))))
+      );
+      try {
+        const shared = await openLayout('layout-new');
+
+        await waitFor(() => {
+          expect(saveDesign).toHaveBeenCalledWith(
+            expect.objectContaining({ name: 'Baseplate 1 (Garage)' })
+          );
+        });
+        await act(async () => {
+          await Promise.resolve();
+        });
+        const { layout } = useLayoutStore.getState();
+        expect(layout.activeBaseplateId).toBe(shared);
+        expect(layout.baseplateParams).toEqual(mine);
+      } finally {
+        vi.mocked(saveDesign).mockImplementation(actual.saveDesign);
+      }
     });
   });
 });

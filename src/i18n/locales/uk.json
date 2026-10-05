@@ -122,6 +122,8 @@
   "baseplate.leftoverLabel": "Залишковий відступ",
   "baseplate.leftoverSolid": "Суцільний",
   "baseplate.library.active": "Активна",
+  "baseplate.library.usedBy": "Використовує {names}",
+  "baseplate.library.unused": "Не використовується жодним макетом",
   "baseplate.library.baseplates": "Основи",
   "baseplate.library.clickToRename": "Натисніть, щоб перейменувати основу",
   "baseplate.library.closeDialog": "Закрити бібліотеку базових плит",

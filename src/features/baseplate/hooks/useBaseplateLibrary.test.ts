@@ -2,11 +2,18 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useLayoutStore } from '@/core/store/layout';
-import { baseplateDesignId } from '@/core/types';
-import type { StoredBaseplateParams } from '@/core/types';
+import { useLibraryStore } from '@/core/store';
+import { baseplateDesignId, layoutId } from '@/core/types';
+import type { LayoutEntry, StoredBaseplateParams } from '@/core/types';
 import { isOk } from '@/core/result';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
-import { listDesigns, closeBaseplateDb } from '@/features/baseplate/storage/BaseplateStorage';
+import {
+  listDesigns,
+  loadDesign,
+  saveDesign,
+  closeBaseplateDb,
+} from '@/features/baseplate/storage/BaseplateStorage';
+import { ownedCopyId } from '@/features/baseplate/utils/designOwnership';
 import { useBaseplateLibrary } from './useBaseplateLibrary';
 
 const params: StoredBaseplateParams = {
@@ -62,5 +69,109 @@ describe('useBaseplateLibrary', () => {
     const designs = await listDesigns();
     if (!isOk(designs)) throw new Error('listDesigns failed');
     expect(designs.value).toHaveLength(0);
+  });
+
+  describe('switchActive', () => {
+    const mine = layoutId('layout-mine');
+    const entry = (id: string, name: string, baseplateId: string | null): LayoutEntry =>
+      ({
+        id: layoutId(id),
+        name,
+        createdAt: 1,
+        modifiedAt: 1,
+        preview: {
+          drawerWidth: 4,
+          drawerDepth: 4,
+          drawerHeight: 7,
+          binCount: 0,
+          layerCount: 1,
+          baseplateId,
+        },
+      }) as LayoutEntry;
+
+    async function setUp(otherLink: string | null): Promise<string> {
+      const picked = await saveDesign({
+        name: 'Baseplate 2',
+        params: { ...params, paddingBack: 21 as StoredBaseplateParams['paddingBack'] },
+        thumbnail: null,
+      });
+      if (!isOk(picked)) throw new Error('saveDesign failed');
+      useLayoutStore
+        .getState()
+        .importLayout(createTestLayout({ name: 'Kitchen', baseplateParams: params }), mine);
+      const library = useLibraryStore.getState().library;
+      useLibraryStore.setState({
+        library: {
+          ...library,
+          entries: [
+            entry('layout-mine', 'Kitchen', null),
+            entry('layout-other', 'Garage', otherLink === 'picked' ? picked.value.id : otherLink),
+          ],
+        },
+      });
+      return picked.value.id;
+    }
+
+    it('links a design no other layout uses', async () => {
+      const picked = await setUp(null);
+      const { result } = renderHook(() => useBaseplateLibrary());
+
+      await act(async () => {
+        await result.current.switchActive(baseplateDesignId(picked));
+      });
+
+      expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(picked);
+    });
+
+    it('links a used design while the layout has no id yet', async () => {
+      const picked = await setUp('picked');
+      useLayoutStore.setState({ activeLayoutId: null });
+      const { result } = renderHook(() => useBaseplateLibrary());
+
+      await act(async () => {
+        await result.current.switchActive(baseplateDesignId(picked));
+      });
+
+      expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(picked);
+      const designs = await listDesigns();
+      if (!isOk(designs)) throw new Error('listDesigns failed');
+      expect(designs.value).toHaveLength(1);
+    });
+
+    it('drops a pick when another layout opens before it resolves', async () => {
+      const picked = await setUp('picked');
+      const { result } = renderHook(() => useBaseplateLibrary());
+
+      await act(async () => {
+        const pending = result.current.switchActive(baseplateDesignId(picked));
+        useLayoutStore
+          .getState()
+          .importLayout(createTestLayout({ name: 'Shed' }), layoutId('layout-shed'));
+        await pending;
+      });
+
+      expect(useLayoutStore.getState().activeLayoutId).toBe(layoutId('layout-shed'));
+      expect(useLayoutStore.getState().layout.activeBaseplateId ?? null).toBeNull();
+    });
+
+    it('gives this layout its own copy of a design another layout uses', async () => {
+      const picked = await setUp('picked');
+      const { result } = renderHook(() => useBaseplateLibrary());
+
+      await act(async () => {
+        await result.current.switchActive(baseplateDesignId(picked));
+      });
+
+      const copyId = ownedCopyId(mine, picked);
+      const layout = useLayoutStore.getState().layout;
+      expect(layout.activeBaseplateId).toBe(copyId);
+      expect(layout.baseplateParams?.paddingBack).toBe(21);
+      const copy = await loadDesign(copyId);
+      if (!isOk(copy)) throw new Error('copy missing');
+      expect(copy.value.name).toBe('Baseplate 2 (Kitchen)');
+      const original = await loadDesign(baseplateDesignId(picked));
+      if (!isOk(original)) throw new Error('original missing');
+      expect(original.value.name).toBe('Baseplate 2');
+    });
   });
 });

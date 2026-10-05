@@ -12,10 +12,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
+import { useLibraryStore } from '@/core/store/library';
 import { useToastStore } from '@/core/store/toast';
 import { useMutations } from '@/shared/contexts';
 import { isOk } from '@/core/result';
-import { useTranslation } from '@/i18n';
+import { useLocale, useTranslation } from '@/i18n';
 import { useAnchoredMenu } from '@/shared/hooks/useAnchoredMenu';
 import { useResponsive } from '@/shared/hooks';
 import { Button, IconButton, Input, XIcon, useInlineEdit } from '@/design-system';
@@ -24,6 +25,7 @@ import type { SavedBaseplateDesign } from '@/features/baseplate/types/library';
 import { listDesigns } from '@/features/baseplate/storage/BaseplateStorage';
 import { useBaseplateLibrary } from '@/features/baseplate/hooks/useBaseplateLibrary';
 import { nextBaseplateName } from '@/features/baseplate/utils/baseplateName';
+import { designUsage } from '@/features/baseplate/utils/designUsers';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { DeleteBaseplateWarningDialog } from '../DeleteBaseplateWarningDialog';
 
@@ -51,6 +53,19 @@ function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
   const addToast = useToastStore((s) => s.addToast);
 
   const [designs, setDesigns] = useState<SavedBaseplateDesign[]>([]);
+  const [usage, setUsage] = useState<ReadonlyMap<string, string[]>>(new Map());
+  const layoutEntries = useLibraryStore((s) => s.library.entries);
+  useEffect(() => {
+    let current = true;
+    designUsage()
+      .then((next) => {
+        if (current) setUsage(next);
+      })
+      .catch(() => undefined);
+    return () => {
+      current = false;
+    };
+  }, [designs, activeBaseplateId, layoutEntries]);
   const [creating, setCreating] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<SavedBaseplateDesign | null>(null);
 
@@ -213,6 +228,7 @@ function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
                     key={design.id}
                     design={design}
                     isActive={design.id === activeBaseplateId}
+                    usedBy={usage.get(design.id) ?? []}
                     onSelect={() => handleSwitch(design.id)}
                     onRename={(name) => void handleRename(design.id, name)}
                     onDuplicate={() => void handleDuplicate(design.id)}
@@ -244,6 +260,7 @@ function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
 interface BaseplateCardProps {
   design: SavedBaseplateDesign;
   isActive: boolean;
+  usedBy: readonly string[];
   onSelect: () => void;
   onRename: (name: string) => void;
   onDuplicate: () => void;
@@ -253,12 +270,14 @@ interface BaseplateCardProps {
 function BaseplateCard({
   design,
   isActive,
+  usedBy,
   onSelect,
   onRename,
   onDuplicate,
   onDelete,
 }: BaseplateCardProps) {
   const t = useTranslation();
+  const { locale } = useLocale();
   const {
     isEditing,
     editingValue,
@@ -268,6 +287,12 @@ function BaseplateCard({
     handleFinish,
     handleKeyDown,
   } = useInlineEdit({ initialValue: design.name, onSave: onRename });
+  const usage =
+    usedBy.length > 0
+      ? t('baseplate.library.usedBy', {
+          names: new Intl.ListFormat(locale, { type: 'conjunction' }).format(usedBy),
+        })
+      : t('baseplate.library.unused');
 
   const handleItemKeyDown = (e: React.KeyboardEvent) => {
     if (isEditing) return;
@@ -341,6 +366,12 @@ function BaseplateCard({
           onDelete={onDelete}
         />
       </div>
+      <p
+        className="px-2 pb-1.5 bg-surface-secondary text-micro text-content-tertiary line-clamp-1"
+        title={usage}
+      >
+        {usage}
+      </p>
     </div>
   );
 }

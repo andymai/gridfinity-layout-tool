@@ -122,6 +122,8 @@
   "baseplate.leftoverLabel": "Margine residuo",
   "baseplate.leftoverSolid": "Pieno",
   "baseplate.library.active": "Attiva",
+  "baseplate.library.usedBy": "Usato da {names}",
+  "baseplate.library.unused": "Non usato da nessun layout",
   "baseplate.library.baseplates": "Piastre base",
   "baseplate.library.clickToRename": "Clicca per rinominare la piastra base",
   "baseplate.library.closeDialog": "Chiudi la libreria di baseplate",

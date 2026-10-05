@@ -122,6 +122,8 @@
   "baseplate.leftoverLabel": "余量留边",
   "baseplate.leftoverSolid": "实心",
   "baseplate.library.active": "当前使用",
+  "baseplate.library.usedBy": "使用者：{names}",
+  "baseplate.library.unused": "未被任何布局使用",
   "baseplate.library.baseplates": "底板",
   "baseplate.library.clickToRename": "点击以重命名底板",
   "baseplate.library.closeDialog": "关闭底板库",

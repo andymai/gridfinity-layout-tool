@@ -122,6 +122,8 @@
   "baseplate.leftoverLabel": "Marge restante",
   "baseplate.leftoverSolid": "Plein",
   "baseplate.library.active": "Actif",
+  "baseplate.library.usedBy": "Utilisé par {names}",
+  "baseplate.library.unused": "Utilisé par aucune disposition",
   "baseplate.library.baseplates": "Plaques de base",
   "baseplate.library.clickToRename": "Cliquer pour renommer la plaque de base",
   "baseplate.library.closeDialog": "Fermer la bibliothèque de platines",

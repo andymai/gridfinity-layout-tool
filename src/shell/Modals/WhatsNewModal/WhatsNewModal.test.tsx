@@ -203,7 +203,7 @@ describe('WhatsNewModal', () => {
     await user.click(screen.getByRole('button', { name: /whatsNew.seeAll/ }));
 
     const withAction = WHATS_NEW_ENTRIES.find(
-      (e) => e.action !== undefined && e.labs === undefined
+      (e) => e.action?.kind === 'openTool' && e.labs === undefined
     );
     expect(withAction).toBeDefined();
     const title = withAction?.title.en ?? '';

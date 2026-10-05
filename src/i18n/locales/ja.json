@@ -122,6 +122,8 @@
   "baseplate.leftoverLabel": "余りの余白",
   "baseplate.leftoverSolid": "ソリッド",
   "baseplate.library.active": "アクティブ",
+  "baseplate.library.usedBy": "使用中: {names}",
+  "baseplate.library.unused": "どのレイアウトでも未使用",
   "baseplate.library.baseplates": "ベースプレート",
   "baseplate.library.clickToRename": "クリックしてベースプレートの名前を変更",
   "baseplate.library.closeDialog": "ベースプレートライブラリを閉じる",

@@ -102,6 +102,13 @@ used one. A `SavedDesign` is standalone, but `baseplateParams` live on the
 baseplate settings the layout already has. It only runs on `/baseplate`, so a
 library entry appears when someone opens the tool, not for every layout they own.
 
+**A design belongs to one layout.** Picking a design another layout links copies
+it, and `useBaseplateLibraryInit` splits a design two layouts already share when a
+layout other than its `designOwner` (the oldest) opens. `ownedCopyId` derives the
+copy's id from the layout and design, so two devices splitting the same pair
+converge on one synced design. `findDesignUsers` reads each layout's link from
+`preview.baseplateId` on its library entry.
+
 ## Gotchas
 
 1. **Padding is position-aware** — only edge pieces carry padding; join edges always have 0mm

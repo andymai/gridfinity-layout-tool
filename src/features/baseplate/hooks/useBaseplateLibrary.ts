@@ -28,6 +28,8 @@ import {
   removeRegistryEntry,
   type BaseplateRef,
 } from '@/features/baseplate/store/baseplateRegistry';
+import { ownedCopyName } from '@/features/baseplate/utils/designOwnership';
+import { findDesignUsers, ownedCopyTarget } from '@/features/baseplate/utils/designUsers';
 
 // useSyncExternalStore requires referentially stable snapshots between
 // notifications. `cachedRegistry` is only reassigned inside `notifyAll` (or on
@@ -164,16 +166,40 @@ export function useBaseplateLibrary(): UseBaseplateLibrary {
       // the previous state for undo. Synced fields resolve live downstream in
       // `buildFullParams`, so the design still adapts to this layout's drawer.
       const token = ++switchSeq;
+      const { activeLayoutId } = useLayoutStore.getState();
+      // A newer switch, or a different layout opened, while a read was in
+      // flight: drop this result so it never lands on the wrong selection.
+      const superseded = () =>
+        token !== switchSeq || useLayoutStore.getState().activeLayoutId !== activeLayoutId;
       const result = await loadDesign(id);
-      // A newer switch started while this read was in flight — drop this
-      // result so the later selection wins regardless of resolve order.
-      if (token !== switchSeq) return result;
+      if (superseded()) return result;
       if (isErr(result)) {
         return result;
       }
-      mutations.setActiveBaseplate(id, result.value.params);
-      setActiveDesignId(id);
-      return result;
+      // A design another layout uses is copied rather than shared, so this
+      // layout's later edits never reach the other's plate. A layout without
+      // an id links it; the split on load copies it once the layout has one.
+      const usedElsewhere =
+        activeLayoutId !== null && (await findDesignUsers(id)).some((u) => u.id !== activeLayoutId);
+      if (superseded()) return result;
+      if (!usedElsewhere) {
+        mutations.setActiveBaseplate(id, result.value.params);
+        setActiveDesignId(id);
+        return result;
+      }
+      const copyId = await ownedCopyTarget(activeLayoutId, id);
+      if (superseded()) return result;
+      const copy = await saveDesign({
+        ...(copyId !== undefined ? { id: copyId } : {}),
+        name: ownedCopyName(result.value.name, useLayoutStore.getState().layout.name),
+        params: result.value.params,
+        thumbnail: result.value.thumbnail,
+      });
+      if (superseded() || isErr(copy)) return copy;
+      upsertRegistryEntry(refFromDesign(copy.value));
+      mutations.setActiveBaseplate(copy.value.id, copy.value.params);
+      setActiveDesignId(copy.value.id);
+      return copy;
     },
     [mutations]
   );

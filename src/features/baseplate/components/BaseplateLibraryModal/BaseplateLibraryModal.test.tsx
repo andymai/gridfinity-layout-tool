@@ -32,6 +32,11 @@ const mocks = vi.hoisted(() => ({
   deleteDesign: vi.fn(() => Promise.resolve(ok(undefined))),
   setActiveBaseplate: vi.fn(),
   listDesigns: vi.fn(() => Promise.resolve(ok(designs))),
+  designUsage: vi.fn(() => Promise.resolve(new Map([['bp-1', ['Kitchen', 'Garage']]]))),
+}));
+
+vi.mock('@/features/baseplate/utils/designUsers', () => ({
+  designUsage: () => mocks.designUsage(),
 }));
 
 vi.mock('@/features/baseplate/storage/BaseplateStorage', () => ({
@@ -72,6 +77,7 @@ vi.mock('@/core/store/toast', () => ({
 vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string, params?: Record<string, unknown>) =>
     params ? `${key}:${JSON.stringify(params)}` : key,
+  useLocale: () => ({ locale: 'en' }),
 }));
 
 describe('BaseplateLibraryModal', () => {
@@ -89,6 +95,14 @@ describe('BaseplateLibraryModal', () => {
     render(<BaseplateLibraryModal isOpen onClose={vi.fn()} />);
     expect(await screen.findByText('One')).toBeInTheDocument();
     expect(screen.getByText('Two')).toBeInTheDocument();
+  });
+
+  it('names the layouts using each design', async () => {
+    render(<BaseplateLibraryModal isOpen onClose={vi.fn()} />);
+    expect(
+      await screen.findByText('baseplate.library.usedBy:{"names":"Kitchen and Garage"}')
+    ).toBeInTheDocument();
+    expect(screen.getByText('baseplate.library.unused')).toBeInTheDocument();
   });
 
   it('closes via the close button', async () => {
