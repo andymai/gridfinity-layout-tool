@@ -1,0 +1,75 @@
+src/i18n/locales/nb.json
+  s_f6ef8af5057228::t_e2151e3d0aad31 2929-2930
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_f6ef8af5057228::t_580a39123f36ee 73,150
+src/i18n/locales/ja.json
+  s_f6ef8af5057228::t_e2151e3d0aad31 2929-2930
+src/i18n/locales/cs.json
+  s_f6ef8af5057228::t_e2151e3d0aad31 2929-2930
+src/shared/hooks/useDrawerFitSuggestion.ts
+  s_f6ef8af5057228::t_0de637077dd1ef 9,110
+src/shared/utils/drawerFit.ts
+  s_f6ef8af5057228::t_0de637077dd1ef 48-79
+src/i18n/locales/it.json
+  s_f6ef8af5057228::t_e2151e3d0aad31 2929-2930
+src/i18n/locales/ko.json
+  s_f6ef8af5057228::t_e2151e3d0aad31 2929-2930
+src/i18n/locales/uk.json
+  s_f6ef8af5057228::t_e2151e3d0aad31 2929-2930
+src/i18n/locales/sv.json
+  s_f6ef8af5057228::t_e2151e3d0aad31 2929-2930
+src/shared/components/EditableDimensions/EditableDimensions.test.tsx
+  s_f6ef8af5057228::t_6391d67e7fe935 31-48
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.tsx
+  s_f6ef8af5057228::t_e2151e3d0aad31 1,3,47-50,97-100,104-142,146-147,149-150,152-153,175-179
+src/shared/utils/drawerFit.test.ts
+  s_f6ef8af5057228::t_ad8982d0731900 2-7,77-97
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.test.tsx
+  s_f6ef8af5057228::t_408fc5b26da9fd 49
+src/shared/components/EditableDimensions/EditableDimensions.tsx
+  s_f6ef8af5057228::t_e7723cfc59fb2e 35-38,63-64,85-90,100-106,125,142,152,164,168-169
+src/i18n/locales/de.json
+  s_f6ef8af5057228::t_e2151e3d0aad31 2929-2930
+src/shell/Sidebar/Sidebar.tsx
+  s_f6ef8af5057228::t_580a39123f36ee 91,342
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.test.tsx
+  s_f6ef8af5057228::t_ad8982d0731900 28,31,33-37,42-53,77,88,179-186,192-196
+  s_f6ef8af5057228::t_b491c30a0697c6 197-198
+src/i18n/locales/zh-CN.json
+  s_f6ef8af5057228::t_e2151e3d0aad31 2929-2930
+src/i18n/locales/en.ts
+  s_f6ef8af5057228::t_e2151e3d0aad31 5275-5276
+src/i18n/locales/es.json
+  s_f6ef8af5057228::t_e2151e3d0aad31 2929-2930
+src/i18n/locales/pl.json
+  s_f6ef8af5057228::t_e2151e3d0aad31 2929-2930
+src/i18n/locales/nl.json
+  s_f6ef8af5057228::t_e2151e3d0aad31 2929-2930
+src/shell/Sidebar/Sidebar.test.tsx
+  s_f6ef8af5057228::t_c9f0a45df384f0 270
+  s_f6ef8af5057228::t_43aea78abc1abc 266,269
+src/i18n/locales/pt-BR.json
+  s_f6ef8af5057228::t_e2151e3d0aad31 2929-2930
+src/i18n/locales/ka.json
+  s_f6ef8af5057228::t_e2151e3d0aad31 4395-4396
+src/i18n/locales/fr.json
+  s_f6ef8af5057228::t_e2151e3d0aad31 2929-2930
+src/shared/hooks/useDrawerSettings.ts
+  s_f6ef8af5057228::t_580a39123f36ee 26,83-84,521
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "22186e3aa48455274fe564db1fbdea9830601baf",
+  "prompts": {},
+  "sessions": {
+    "s_f6ef8af5057228": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b2f7a60d-c28b-4bef-b4be-eefb3d4c0aef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
