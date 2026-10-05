@@ -35,7 +35,7 @@ Rate limits are keyed by `userId`, not IP — each authenticated user gets their
 {
   layout: Layout,           // sanitized via validateShareLayout
   modifiedAt: number,       // ms since epoch (LWW comparison value)
-  schemaVersion: 1,
+  schemaVersion: 2,
 }
 
 // users/{uid}/designs/{id}.json
