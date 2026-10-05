@@ -2926,6 +2926,8 @@
   "drawerDims.depthLabel": "Naměřená hloubka (mm)",
   "drawerDims.editAria": "Upravit naměřené rozměry zásuvky",
   "drawerDims.fit": "Mřížka {width} × {depth} mm · {freeWidth} × {freeDepth} mm volných",
+  "drawerDims.gridSize": "Mřížka {width} × {depth} mm",
+  "drawerDims.addMeasured": "Přidat naměřenou velikost zásuvky",
   "drawerDims.heightLabel": "Naměřená výška (mm)",
   "drawerDims.overflow": "Mřížka přesahuje tvou naměřenou zásuvku o {width} × {depth} mm",
   "drawerDims.suggestionDetail": "Nechá {freeWidth} × {freeDepth} mm volných.",

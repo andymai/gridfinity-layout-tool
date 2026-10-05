@@ -70,6 +70,7 @@ export function MobileSettingsPanel() {
     handleDrawerDepthChange,
     handleDrawerHeightChange,
     handleDrawerHeightInput,
+    drawerHeightDisplayMm,
     handleDrawerWidthInput,
     handleDrawerDepthInput,
     handleHalfBinToggle,
@@ -146,7 +147,7 @@ export function MobileSettingsPanel() {
             {t('sidebar.drawerHeight')}
           </label>
           <Stepper
-            value={drawer.height * heightUnitMm}
+            value={drawerHeightDisplayMm}
             onChange={handleDrawerHeightInput}
             onStep={handleDrawerHeightChange}
             min={heightUnitMm}

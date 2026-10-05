@@ -2926,6 +2926,8 @@
   "drawerDims.depthLabel": "Виміряна глибина (мм)",
   "drawerDims.editAria": "Редагувати виміряні розміри шухляди",
   "drawerDims.fit": "Сітка {width} × {depth} мм · {freeWidth} × {freeDepth} мм вільно",
+  "drawerDims.gridSize": "Сітка {width} × {depth} мм",
+  "drawerDims.addMeasured": "Додати виміряний розмір шухляди",
   "drawerDims.heightLabel": "Виміряна висота (мм)",
   "drawerDims.overflow": "Сітка більша за виміряну шухляду на {width} × {depth} мм",
   "drawerDims.suggestionDetail": "Залишає {freeWidth} × {freeDepth} мм вільно.",

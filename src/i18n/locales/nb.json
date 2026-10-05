@@ -2926,6 +2926,8 @@
   "drawerDims.depthLabel": "Målt dybde (mm)",
   "drawerDims.editAria": "Rediger målte skuffemål",
   "drawerDims.fit": "Rutenett {width} × {depth} mm · {freeWidth} × {freeDepth} mm ledig",
+  "drawerDims.gridSize": "Rutenett {width} × {depth} mm",
+  "drawerDims.addMeasured": "Legg til målt skuffestørrelse",
   "drawerDims.heightLabel": "Målt høyde (mm)",
   "drawerDims.overflow": "Rutenettet er {width} × {depth} mm større enn den målte skuffen",
   "drawerDims.suggestionDetail": "Etterlater {freeWidth} × {freeDepth} mm ledig.",

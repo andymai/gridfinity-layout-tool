@@ -2926,6 +2926,8 @@
   "drawerDims.depthLabel": "测量深度（mm）",
   "drawerDims.editAria": "编辑测量的抽屉尺寸",
   "drawerDims.fit": "网格 {width} × {depth} mm · 空余 {freeWidth} × {freeDepth} mm",
+  "drawerDims.gridSize": "网格 {width} × {depth} mm",
+  "drawerDims.addMeasured": "添加测量的抽屉尺寸",
   "drawerDims.heightLabel": "测量高度（mm）",
   "drawerDims.overflow": "网格比你测量的抽屉超出 {width} × {depth} mm",
   "drawerDims.suggestionDetail": "留出 {freeWidth} × {freeDepth} mm 空余。",

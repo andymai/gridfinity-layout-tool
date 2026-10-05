@@ -2926,6 +2926,8 @@
   "drawerDims.depthLabel": "측정 깊이 (mm)",
   "drawerDims.editAria": "측정한 서랍 치수 편집",
   "drawerDims.fit": "그리드 {width} × {depth} mm · 여유 {freeWidth} × {freeDepth} mm",
+  "drawerDims.gridSize": "그리드 {width} × {depth} mm",
+  "drawerDims.addMeasured": "측정한 서랍 크기 추가",
   "drawerDims.heightLabel": "측정 높이 (mm)",
   "drawerDims.overflow": "그리드가 측정한 서랍을 {width} × {depth} mm 초과합니다",
   "drawerDims.suggestionDetail": "{freeWidth} × {freeDepth} mm의 여유가 남습니다.",

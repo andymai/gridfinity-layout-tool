@@ -2926,6 +2926,8 @@
   "drawerDims.depthLabel": "Profondità misurata (mm)",
   "drawerDims.editAria": "Modifica le dimensioni misurate del cassetto",
   "drawerDims.fit": "Griglia {width} × {depth} mm · {freeWidth} × {freeDepth} mm liberi",
+  "drawerDims.gridSize": "Griglia {width} × {depth} mm",
+  "drawerDims.addMeasured": "Aggiungi la misura del cassetto",
   "drawerDims.heightLabel": "Altezza misurata (mm)",
   "drawerDims.overflow": "La griglia supera il cassetto misurato di {width} × {depth} mm",
   "drawerDims.suggestionDetail": "Lascia {freeWidth} × {freeDepth} mm liberi.",

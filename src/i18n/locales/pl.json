@@ -2926,6 +2926,8 @@
   "drawerDims.depthLabel": "Zmierzona głębokość (mm)",
   "drawerDims.editAria": "Edytuj zmierzone wymiary szuflady",
   "drawerDims.fit": "Siatka {width} × {depth} mm · {freeWidth} × {freeDepth} mm wolne",
+  "drawerDims.gridSize": "Siatka {width} × {depth} mm",
+  "drawerDims.addMeasured": "Dodaj zmierzony rozmiar szuflady",
   "drawerDims.heightLabel": "Zmierzona wysokość (mm)",
   "drawerDims.overflow": "Siatka przekracza zmierzoną szufladę o {width} × {depth} mm",
   "drawerDims.suggestionDetail": "Zostawia {freeWidth} × {freeDepth} mm wolne.",

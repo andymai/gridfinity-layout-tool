@@ -5272,6 +5272,8 @@ const en: Record<string, string> = {
   'drawerDims.heightLabel': 'Measured height (mm)',
   'drawerDims.clear': 'Clear measurement',
   'drawerDims.fit': 'Grid {width} × {depth} mm · {freeWidth} × {freeDepth} mm free',
+  'drawerDims.gridSize': 'Grid {width} × {depth} mm',
+  'drawerDims.addMeasured': "Add your drawer's measured size",
   'drawerDims.overflow': 'Grid exceeds your measured drawer by {width} × {depth} mm',
   'drawerDims.suggestionTitle': '{width} × {depth} units fits your drawer',
   'drawerDims.suggestionDetail': 'Leaves {freeWidth} × {freeDepth} mm free.',

@@ -2926,6 +2926,8 @@
   "drawerDims.depthLabel": "Profundidad medida (mm)",
   "drawerDims.editAria": "Editar las medidas del cajón",
   "drawerDims.fit": "Cuadrícula {width} × {depth} mm · {freeWidth} × {freeDepth} mm libres",
+  "drawerDims.gridSize": "Cuadrícula {width} × {depth} mm",
+  "drawerDims.addMeasured": "Añadir la medida de tu cajón",
   "drawerDims.heightLabel": "Altura medida (mm)",
   "drawerDims.overflow": "La cuadrícula supera el cajón medido en {width} × {depth} mm",
   "drawerDims.suggestionDetail": "Deja {freeWidth} × {freeDepth} mm libres.",

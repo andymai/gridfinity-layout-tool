@@ -2926,6 +2926,8 @@
   "drawerDims.depthLabel": "Gemessene Tiefe (mm)",
   "drawerDims.editAria": "Gemessene Schubladenmaße bearbeiten",
   "drawerDims.fit": "Raster {width} × {depth} mm · {freeWidth} × {freeDepth} mm frei",
+  "drawerDims.gridSize": "Raster {width} × {depth} mm",
+  "drawerDims.addMeasured": "Gemessene Schubladengröße hinzufügen",
   "drawerDims.heightLabel": "Gemessene Höhe (mm)",
   "drawerDims.overflow": "Das Raster ist {width} × {depth} mm größer als die gemessene Schublade",
   "drawerDims.suggestionDetail": "Lässt {freeWidth} × {freeDepth} mm frei.",

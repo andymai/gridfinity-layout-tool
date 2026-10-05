@@ -45,3 +45,35 @@ export function halfUnitUpgrade(
   const wholeOverflows = measuredMm - wholeUnits * gridUnitMm < -FLOAT_EPSILON;
   return wholeOverflows && half.slackMm >= -FLOAT_EPSILON ? half : null;
 }
+
+/**
+ * Height units recorded for a measured drawer height. Floored at the 0.01-unit
+ * resolution, since rounding could exceed the measured drawer by a hair, and
+ * clamped to `drawerUpdateSchema`'s range, which otherwise rejects the whole
+ * command, measurement included.
+ */
+export function measuredHeightUnits(heightMm: number, heightUnitMm: number): number {
+  return Math.max(
+    CONSTRAINTS.MIN_LAYER_HEIGHT,
+    Math.min(CONSTRAINTS.GRID_MAX, Math.floor((heightMm / heightUnitMm) * 100 + 1e-6) / 100)
+  );
+}
+
+/**
+ * The drawer height to show: the measured mm while the grid height is still
+ * the one recorded from that measurement, so a measured 88 does not read back
+ * as its floored 87.99. Once the height is stepped away, the grid's own value.
+ */
+export function drawerHeightDisplayMm(
+  heightUnits: number,
+  heightUnitMm: number,
+  measuredHeightMm: number | undefined
+): number {
+  if (
+    measuredHeightMm !== undefined &&
+    measuredHeightUnits(measuredHeightMm, heightUnitMm) === heightUnits
+  ) {
+    return measuredHeightMm;
+  }
+  return heightUnits * heightUnitMm;
+}
