@@ -12,6 +12,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { intersect, measureVolume, translate } from 'brepjs';
+import type { Shape3D } from 'brepjs';
 import { isOk } from '@/core/result';
 import type { BinParams, ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
@@ -276,6 +277,14 @@ describe('low-profile base: stacking', () => {
 });
 
 describe('low-profile base: the relief tool', () => {
+  const sharedVolume = (a: Shape3D, b: Shape3D): number => {
+    const overlap = intersect(a, b);
+    if (!isOk(overlap)) throw new Error('intersect failed');
+    const volume = measureVolume(overlap.value);
+    if (!isOk(volume)) throw new Error('measureVolume failed');
+    return volume.value;
+  };
+
   // A narrow foot is clamped squarer than the box radius, so a keepout built
   // to that radius leaves the foot's corners inside the cutter.
   it.each([
@@ -299,14 +308,22 @@ describe('low-profile base: the relief tool', () => {
           ),
           [cell.centerX, cell.centerY, 0]
         );
-        const overlap = intersect(relief, foot);
-        if (!isOk(overlap)) throw new Error('intersect failed');
-        const volume = measureVolume(overlap.value);
-        if (!isOk(volume)) throw new Error('measureVolume failed');
-        shared += volume.value;
+        shared += sharedVolume(relief, foot);
       }
       expect(shared).toBeLessThan(1e-4);
     },
     120000
   );
+
+  it('leaves the feet under an overhang whole', async () => {
+    const { buildRidgeReliefTool } = await import('./ridgeReliefBuilder');
+    const { buildOverhangFeet, resolveSocketCellPlan } = await import('./socketBuilder');
+    const { resolveOverhang } = await import('./overhang');
+    const overhang = resolveOverhang({ left: 0, right: 14, front: 0, back: 0, feet: true });
+    const plan = resolveSocketCellPlan(false, undefined, undefined, undefined, 1, 2);
+    const relief = buildRidgeReliefTool(1, 2, undefined, 42, plan, undefined, overhang);
+    const feet = buildOverhangFeet(1, 2, overhang, 42, true);
+    if (!relief || !feet) throw new Error('expected a relief tool and overhang feet');
+    expect(sharedVolume(relief, feet)).toBeLessThan(1e-4);
+  }, 120000);
 });
