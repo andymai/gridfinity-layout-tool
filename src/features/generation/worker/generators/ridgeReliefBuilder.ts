@@ -91,8 +91,8 @@ function buildCellKeepouts(scope: DisposalScope, cellW: number, cellD: number): 
 
 /**
  * The relief as one cutting tool in the body frame (underside at Z=0), or null
- * for a single foot with nothing beside it, which has no crest under it. Caller
- * owns the result.
+ * when one foot fills the whole footprint, which leaves no crest under the bin.
+ * Caller owns the result.
  *
  * `overhang` must be the one the body was built with: the slab has to reach its
  * walls, and overhang feet are foot cells like any other.
@@ -108,7 +108,12 @@ export function buildRidgeReliefTool(
 ): Shape3D | null {
   const cells = filledSocketCells(gridW, gridD, cellMask, gridUnitMm, plan, fractionalEdge);
   const overhung = hasOverhang(overhang);
-  if (cells.length < 2 && !overhung) return null;
+  const [lone] = cells;
+  const fillsFootprint =
+    cells.length === 1 &&
+    Math.abs(lone.widthUnits - gridW) < 1e-9 &&
+    Math.abs(lone.depthUnits - gridD) < 1e-9;
+  if (!overhung && (cells.length === 0 || fillsFootprint)) return null;
   const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
   const footCells =
     overhung && overhang.feet

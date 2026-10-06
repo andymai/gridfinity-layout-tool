@@ -174,35 +174,45 @@ describe('low-profile base: bin in plate', () => {
 
 describe('low-profile base: overhang', () => {
   /**
-   * A 1x1 low bin in the left cell of a standard 2x1 plate, overhanging the
-   * crest between the two pockets. Probed across that crest column by column:
+   * A one-foot low bin in the left cell of a standard 2x1 plate, its body
+   * reaching past the foot over the crest between the two pockets. Probed across that crest column by column:
    * the contact strip is a fraction of a millimetre wide.
    */
-  it('seats a low bin by its taper when an overhang crosses the crest beside it', () => {
-    const overhung = generateBin(
-      {
-        ...DEFAULT_BIN_PARAMS,
-        width: 1,
-        depth: 1,
-        height: 3,
-        base: { ...DEFAULT_BIN_PARAMS.base, lowProfile: true },
-        overhang: { left: 0, right: 10, front: 0, back: 0, feet: false },
-      },
-      undefined,
-      true
-    );
-    assertKernelReturnedGeometry(overhung, 'overhung low bin');
-    const p = plate(false);
-    const place = { dx: -21, dy: 0 };
-    const dz = boundingBox(p.vertices).maxZ - boundingBox(overhung.vertices).minZ;
-    let worst = Infinity;
-    for (let x = -2; x <= 2; x += 0.01) {
-      for (const y of [-15, 0, 15]) {
-        worst = Math.min(worst, descentLimitAt(overhung, p, x, y, place, dz));
+  it.each([
+    [
+      'an overhang',
+      { width: 1, overhang: { left: 0, right: 10, front: 0, back: 0, feet: false } },
+      -21,
+    ],
+    ['a strip too narrow for a foot', { width: 1.05 }, -19.95],
+  ] as const)(
+    'seats a low bin by its taper when %s crosses the crest beside it',
+    (_label, shape, dx) => {
+      const lone = generateBin(
+        {
+          ...DEFAULT_BIN_PARAMS,
+          ...shape,
+          depth: 1,
+          height: 3,
+          base: { ...DEFAULT_BIN_PARAMS.base, lowProfile: true },
+        },
+        undefined,
+        true
+      );
+      assertKernelReturnedGeometry(lone, 'lone-foot low bin');
+      const p = plate(false);
+      const place = { dx, dy: 0 };
+      const dz = boundingBox(p.vertices).maxZ - boundingBox(lone.vertices).minZ;
+      let worst = Infinity;
+      for (let x = -2; x <= 2; x += 0.01) {
+        for (const y of [-15, 0, 15]) {
+          worst = Math.min(worst, descentLimitAt(lone, p, x, y, place, dz));
+        }
       }
-    }
-    expect(Math.abs(worst - LOW_IN_STANDARD_MM)).toBeLessThan(TAPER_TOLERANCE_MM);
-  }, 120000);
+      expect(Math.abs(worst - LOW_IN_STANDARD_MM)).toBeLessThan(TAPER_TOLERANCE_MM);
+    },
+    120000
+  );
 });
 
 describe('low-profile base: the bin itself', () => {

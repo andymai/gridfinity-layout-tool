@@ -89,7 +89,13 @@ export const lowProfile: ScenarioCase[] = [
         gridEdge + OVERHANG_MM / 2,
         footEdge + OVERHANG_MM - 0.05,
       ];
-      const undersides = xs.map((x) => columnCrossings(result, x, 0)[0]);
+      const undersides = xs.map((x) => {
+        const z = columnCrossings(result, x, 0).at(0);
+        if (z === undefined || !Number.isFinite(z)) {
+          throw new Error(`right overhang: no underside at x=${x.toFixed(2)}`);
+        }
+        return z;
+      });
       for (let i = 1; i < undersides.length; i++) {
         if (undersides[i] < undersides[i - 1] - 0.01) {
           throw new Error(
