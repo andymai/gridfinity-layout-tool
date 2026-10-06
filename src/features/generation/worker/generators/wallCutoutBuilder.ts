@@ -7,7 +7,6 @@
 
 import { draw, translate, rotate, clone, unwrap, withScope, fuseAll } from 'brepjs';
 import type { Shape3D, Drawing, DisposalScope, ValidSolid } from 'brepjs';
-import { binFloorMm } from '@/shared/types/bin';
 import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH, CUT_RIM_CLEARANCE } from './generatorConstants';
@@ -318,7 +317,7 @@ export function computeInteriorDividerCutouts(
   // The divider standing above the cavity floor, which is thicker than the wall
   // on a spec base. Measured against the wall, a cut at 100% carries on past
   // the divider and slots the floor.
-  const dividerH = dividerTopZ - binFloorMm(params.wallThickness);
+  const dividerH = dividerTopZ - resolveBinFloorMm(params);
   const out: InteriorDividerCutout[] = [];
   for (const seg of interiorDividerSegments(params, innerW, innerD, dividerTopZ)) {
     // `seg.x/y` is the wall's TOP edge. A leaning divider is a non-vertical
@@ -470,7 +469,7 @@ import type { FeatureBuilder } from './pipeline/featureBuilder';
 import type { BinDimensions } from './pipeline/types';
 import { FeatureTag } from './featureTags';
 import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKeyUtils';
-import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
+import { resolveBinFloorMm, resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 
 /**
  * Where the interior dividers actually end, in the body frame.

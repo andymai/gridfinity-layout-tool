@@ -7,6 +7,7 @@
 
 import { GRIDFINITY } from '@/shared/constants/bin';
 import type {
+  BaseStyle,
   BinParams,
   CrossDividerStyle,
   PartialDividerStyle,
@@ -160,8 +161,8 @@ export function calculateDividerHeight(
 
 /**
  * Depth of the floor channel that seats a removable divider's bottom edge.
- * Leaves 1.2mm of the 2mm floor every base style carries (`binFloorMm`), the
- * same as the default wall.
+ * Leaves 1.45mm of a socketed bin's spec floor; a flat base's floor grows by
+ * this much instead (`binFloorMm`), so the groove leaves it a wall thick.
  */
 export const DIVIDER_FLOOR_GROOVE_DEPTH = 0.8;
 
@@ -200,8 +201,15 @@ export function dividerGrooveDepth(
  * off this one value so the lock lands on the throat instead of inside the
  * floor.
  */
-export function dividerSeatZ(wallThickness: number, grooveDepth: number): number {
-  return binFloorMm(wallThickness) - grooveDepth;
+export function dividerSeatZ(wallThickness: number, style: BaseStyle, grooveDepth: number): number {
+  return binFloorMm(wallThickness, style, grooveDepth) - grooveDepth;
+}
+
+export function resolveBinFloorMm(
+  params: Pick<BinParams, 'wallThickness' | 'style' | 'dividerPieces' | 'base'> &
+    DetachableFeetParams
+): number {
+  return binFloorMm(params.wallThickness, params.base.style, dividerGrooveDepth(params));
 }
 
 /**

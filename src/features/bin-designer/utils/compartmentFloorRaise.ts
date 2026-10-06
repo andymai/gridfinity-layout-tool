@@ -1,8 +1,8 @@
 import type { BinParams } from '../types';
 import { MAX_COMPARTMENT_FLOOR_RAISE_MM, MIN_RAISED_CAVITY_MM } from '../types';
-import { binFloorMm } from '../types/base';
 import { GRIDFINITY } from '../constants/gridfinity';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
+import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { binDimensions } from './binDimensions';
 import { compartmentHasTiltedEdge } from './compartments';
 import { isPartialMask } from '@/shared/utils/cellMask';
@@ -20,7 +20,7 @@ export function maxCompartmentFloorRaiseMm(params: BinParams): number {
     params.base.stackingLip,
     GRIDFINITY.LIP_SMALL_TAPER
   );
-  const room = interiorHeight - binFloorMm(params.wallThickness) - MIN_RAISED_CAVITY_MM;
+  const room = interiorHeight - resolveBinFloorMm(params) - MIN_RAISED_CAVITY_MM;
   return Math.max(0, Math.min(MAX_COMPARTMENT_FLOOR_RAISE_MM, Math.floor(room)));
 }
 
@@ -43,7 +43,7 @@ export function builtCompartmentFloorRaiseMm(params: BinParams, id: number): num
   );
   const ceiling = Math.min(
     MAX_COMPARTMENT_FLOOR_RAISE_MM,
-    interiorHeight - binFloorMm(params.wallThickness) - MIN_RAISED_CAVITY_MM
+    interiorHeight - resolveBinFloorMm(params) - MIN_RAISED_CAVITY_MM
   );
   return ceiling > 0 ? Math.min(raise, ceiling) : 0;
 }

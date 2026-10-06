@@ -11,7 +11,7 @@ import {
 } from './dividerPatterns';
 import { taperInsetAt } from './overhang';
 
-const FLOOR_TOP = binFloorMm(DEFAULT_BIN_PARAMS.wallThickness);
+const FLOOR_TOP = binFloorMm(DEFAULT_BIN_PARAMS.wallThickness, 'standard', 0);
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {
   return {

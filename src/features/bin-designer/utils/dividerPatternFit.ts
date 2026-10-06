@@ -190,7 +190,7 @@ function resolveSlottedBand(
     dividerPieces,
     wallHeight,
     params.base.stackingLip,
-    dividerSeatZ(params.wallThickness, dividerGrooveDepth(params))
+    dividerSeatZ(params.wallThickness, params.base.style, dividerGrooveDepth(params))
   );
   const usable = (length: number, endTab: number): number => length - 2 * (endTab + border);
 

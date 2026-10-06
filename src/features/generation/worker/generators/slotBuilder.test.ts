@@ -1,10 +1,13 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { BinParams } from '@/shared/types/bin';
-import { binFloorMm } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { getEffectiveSlotDimensions, buildSlotCuts } from './slotBuilder';
 import { box } from 'brepjs';
-import { DIVIDER_FLOOR_GROOVE_DEPTH, getDividerLockPlan } from '@/shared/utils/slotMath';
+import {
+  DIVIDER_FLOOR_GROOVE_DEPTH,
+  getDividerLockPlan,
+  resolveBinFloorMm,
+} from '@/shared/utils/slotMath';
 
 // Mock brepjs — slotBuilder imports it at module level.
 // Vitest hoists vi.mock calls above imports automatically.
@@ -116,7 +119,7 @@ describe('buildSlotCuts', () => {
     expect(pockets.length).toBeGreaterThan(0);
     for (const p of pockets) {
       expect((p[3] as { at: [number, number, number] }).at[2]).toBeCloseTo(
-        binFloorMm(params.wallThickness) + headHeight / 2,
+        resolveBinFloorMm(params) + headHeight / 2,
         5
       );
     }

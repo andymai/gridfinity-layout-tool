@@ -16,6 +16,9 @@ import { binFloorMm } from '@/features/bin-designer/types/base';
 
 export const SHELL_REFERENCE_WALL_MM = 1.2;
 
+/** The floor the reference shell was measured with: a socketed bin's. */
+const SHELL_REFERENCE_FLOOR_MM = binFloorMm(SHELL_REFERENCE_WALL_MM, 'standard', 0);
+
 /**
  * Height at the top of the cavity a thicker wall does not fill. Under a lip
  * the lip's inward overhang already occupies it, so most of the band is lost.
@@ -31,9 +34,10 @@ function cavityVolume(
   outerD: number,
   wallHeight: number,
   wall: number,
+  floor: number,
   allowance: number
 ): number {
-  const height = wallHeight - binFloorMm(wall) - allowance;
+  const height = wallHeight - floor - allowance;
   if (height <= 0) return 0;
   const r = Math.max(GRIDFINITY.BOX_CORNER_RADIUS - wall, 0);
   const area =
@@ -42,20 +46,28 @@ function cavityVolume(
 }
 
 /**
- * Material (mm³) a `wall`-thick shell holds beyond the reference wall: the
- * cavity it gives up, including the floor slab rising once the wall exceeds it.
+ * Material (mm³) a `wall`-thick shell on a `floor`-thick floor holds beyond the
+ * reference shell: the cavity it gives up, or gains back where its floor is
+ * thinner than the reference's.
  */
 export function wallThicknessDelta(
   outerW: number,
   outerD: number,
   wallHeight: number,
   wall: number,
+  floor: number,
   stackingLip: boolean
 ): number {
   const allowance = stackingLip ? CAVITY_TOP_ALLOWANCE_MM.lip : CAVITY_TOP_ALLOWANCE_MM.open;
   return (
-    cavityVolume(outerW, outerD, wallHeight, SHELL_REFERENCE_WALL_MM, allowance) -
-    cavityVolume(outerW, outerD, wallHeight, wall, allowance)
+    cavityVolume(
+      outerW,
+      outerD,
+      wallHeight,
+      SHELL_REFERENCE_WALL_MM,
+      SHELL_REFERENCE_FLOOR_MM,
+      allowance
+    ) - cavityVolume(outerW, outerD, wallHeight, wall, floor, allowance)
   );
 }
 

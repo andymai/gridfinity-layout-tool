@@ -20,7 +20,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
-import { binFloorMm } from '@/shared/types/bin';
+import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { resolveScoopProfile, scoopFrameHeights } from '@/shared/utils/scoopCalculations';
 import type { Shape3D } from 'brepjs';
 import { BOX_CORNER_RADIUS, CLEARANCE, SOCKET_HEIGHT } from './generatorConstants';
@@ -84,7 +84,7 @@ async function verticesOutsideOuterWall(params: BinParams): Promise<number> {
     innerD,
     wallHeight,
     wt,
-    binFloorMm(wt),
+    resolveBinFloorMm(params),
     undefined,
     ov.taper
   );
@@ -320,7 +320,7 @@ describe('scoop ramps keep their full rise against a tapered wall', () => {
     innerD: number,
     wallHeight: number
   ): number {
-    const floorZ = binFloorMm(params.wallThickness);
+    const floorZ = resolveBinFloorMm(params);
     const frame = scoopFrameHeights(wallHeight, wallHeight, floorZ);
     const profile = resolveScoopProfile(
       params.scoop,
@@ -372,7 +372,7 @@ describe('scoop ramps keep their full rise against a tapered wall', () => {
     const taper = ov.taper;
     if (!taper) throw new Error('scenario lost its taper');
     const wallHeight = params.height * params.heightUnitMm - SOCKET_HEIGHT;
-    const floorZ = binFloorMm(wt);
+    const floorZ = resolveBinFloorMm(params);
     const built = buildScoopRamps(params, innerW, innerD, wallHeight, wt, floorZ, undefined, taper);
     if (!built) throw new Error('no ramps built');
     const envelope = buildTaperedInnerEnvelope(
@@ -410,7 +410,7 @@ describe('scoop ramps keep their full rise against a tapered wall', () => {
     if (!taper) throw new Error('scenario lost its taper');
     const wt = params.wallThickness;
     const wallHeight = params.height * params.heightUnitMm - SOCKET_HEIGHT;
-    const floorZ = binFloorMm(wt);
+    const floorZ = resolveBinFloorMm(params);
     const envelope = buildTaperedInnerEnvelope(
       outerW,
       outerD,

@@ -24,7 +24,7 @@ import type { BinParams } from '@/shared/types/bin';
 import { binDimensions, cutoutInterior } from './binDimensions';
 import { buildOverrideLookup, findPairAwareRuns, overrideKey } from './compartments';
 import { DEFAULT_COMPARTMENT_COLOR_SCOPE } from '../types/compartments';
-import { binFloorMm } from '../types/base';
+import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 import { builtCompartmentFloorRaiseMm } from './compartmentFloorRaise';
 import type { CompartmentColorScope } from '../types/compartments';
@@ -208,7 +208,7 @@ export function planCompartmentColors(params: BinParams): CompartmentColorPlan |
   }
   if (cells.length === 0) return null;
 
-  const floorTop = floorZ + binFloorMm(params.wallThickness);
+  const floorTop = floorZ + resolveBinFloorMm(params);
   const floorTopById =
     interiorFilletRadiusMm(params) > 0
       ? new Map(

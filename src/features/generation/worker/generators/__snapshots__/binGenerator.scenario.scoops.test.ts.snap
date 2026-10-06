@@ -16,7 +16,7 @@ exports[`scoop flat base > 2×2 flat base scoop no lip 1`] = `436`;
 
 exports[`scoop flat base > 2×2 flat base scoop with lip 1`] = `1046`;
 
-exports[`scoop flat base > 2×2 flat base thin-wall scoop (corner clip active) 1`] = `1242`;
+exports[`scoop flat base > 2×2 flat base thin-wall scoop (corner clip active) 1`] = `1098`;
 
 exports[`scoop flat base > 2×2 tray-bottom (lid) base scoop with lip 1`] = `1686`;
 

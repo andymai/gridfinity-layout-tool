@@ -548,7 +548,7 @@ describe('a bin built with detachable feet', () => {
     const { minZ } = boundingBox(m.vertices);
     const resolved = resolveDetachableFeet(binParams('detachable'));
     expect(resolved.placements.length).toBe(4);
-    const floor = binFloorMm(FLOOR);
+    const floor = binFloorMm(FLOOR, 'standard', 0);
 
     for (const foot of resolved.placements) {
       for (const pin of footPinPositions(foot, resolved.armMm, resolved.pinDiameterMm)) {
@@ -567,7 +567,7 @@ describe('a bin built with detachable feet', () => {
     const m = bin('detachable');
     const { minZ } = boundingBox(m.vertices);
     const resolved = resolveDetachableFeet(binParams('detachable'));
-    const floor = binFloorMm(FLOOR);
+    const floor = binFloorMm(FLOOR, 'standard', 0);
     expect(floor).toBeGreaterThan(FLOOR);
 
     const pin = footPinPositions(resolved.placements[0], resolved.armMm, resolved.pinDiameterMm)[0];
@@ -715,7 +715,7 @@ describe('a floor too thin to hold a pin', () => {
           // passes while a hole eats almost all of the band it is meant to
           // protect, which is the invariant the blind holes exist for.
           expect(isSolidThrough(m, pin.x, pin.y, top - MEMBRANE, top)).toBe(true);
-          const reach = detachablePinEngagementMm(binFloorMm(wallThickness));
+          const reach = detachablePinEngagementMm(binFloorMm(wallThickness, 'standard', 0));
           expect(
             isSolidThrough(m, pin.x, pin.y, top - MEMBRANE - reach + 0.1, top - MEMBRANE - 0.1)
           ).toBe(false);

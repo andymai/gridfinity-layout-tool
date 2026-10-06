@@ -336,7 +336,7 @@ export function buildUniqueDividerPieces(
   const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
   const { thickness, clearance } = dividerPieces;
 
-  const seatZ = dividerSeatZ(params.wallThickness, dividerGrooveDepth(params));
+  const seatZ = dividerSeatZ(params.wallThickness, params.base.style, dividerGrooveDepth(params));
   const dividerHeight = calculateDividerPieceHeight(dividerPieces, wallHeight, hasLip, seatZ);
 
   const bothAxes = slotConfig.x.enabled && slotConfig.y.enabled;
@@ -592,7 +592,7 @@ export function buildAuthoredDividerPieces(
 
   const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
   const { thickness, clearance } = dividerPieces;
-  const seatZ = dividerSeatZ(params.wallThickness, dividerGrooveDepth(params));
+  const seatZ = dividerSeatZ(params.wallThickness, params.base.style, dividerGrooveDepth(params));
   const dividerHeight = calculateDividerPieceHeight(dividerPieces, wallHeight, hasLip, seatZ);
   const notchDepth = dividerHeight / 2 + clearance;
 

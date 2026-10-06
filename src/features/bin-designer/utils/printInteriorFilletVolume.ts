@@ -10,7 +10,7 @@
  */
 
 import type { BinParams } from '@/features/bin-designer/types';
-import { binFloorMm } from '@/features/bin-designer/types/base';
+import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { baseWallHeight } from './binDimensions';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
@@ -35,7 +35,7 @@ export function computeInteriorFilletVolume(
   const boxWallHeight = baseWallHeight(params.base, totalH);
   const height =
     computeInteriorHeight(boxWallHeight, params.base.stackingLip, GRIDFINITY.LIP_SMALL_TAPER) -
-    binFloorMm(wall);
+    resolveBinFloorMm(params);
   if (height <= 0) return 0;
 
   const corner = interiorFilletCornerMm(params);

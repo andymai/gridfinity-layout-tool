@@ -1,8 +1,7 @@
 import type { BinParams } from '../types';
-import { binFloorMm } from '../types/base';
 import { GRIDFINITY } from '../constants/gridfinity';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
-import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
+import { resolveBinFloorMm, resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { INTERIOR_FILLET_HEADROOM_MM, narrowestCavitySpansMm } from '@/shared/utils/interiorFillet';
 import { binDimensions } from './binDimensions';
 import { builtCompartmentFloorRaiseMm } from './compartmentFloorRaise';
@@ -23,7 +22,7 @@ export function interiorFilletFitMm(params: BinParams): number {
   const { cells, dividerHeight } = params.compartments;
   const top =
     new Set(cells).size > 1 ? resolveCompartmentDividerHeight(dividerHeight, interior) : interior;
-  const floor = binFloorMm(params.wallThickness);
+  const floor = resolveBinFloorMm(params);
   let fit = Infinity;
   for (const [id, span] of narrowestCavitySpansMm(params)) {
     const height =

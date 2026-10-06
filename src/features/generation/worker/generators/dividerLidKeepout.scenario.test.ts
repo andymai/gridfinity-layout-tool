@@ -149,7 +149,7 @@ function sectionXSpanAtY({ vertices, indices }: PieceMesh, y: number): [number, 
 /** Local Y of the piece's top edge — the installed interior ceiling. The piece
  *  is built centred on Y, so this is half its height. */
 function pieceHalfHeight(params: BinParams): number {
-  const seatZ = dividerSeatZ(params.wallThickness, dividerGrooveDepth(params));
+  const seatZ = dividerSeatZ(params.wallThickness, params.base.style, dividerGrooveDepth(params));
   return calculateDividerPieceHeight(params.dividerPieces, WALL_HEIGHT, true, seatZ) / 2;
 }
 
