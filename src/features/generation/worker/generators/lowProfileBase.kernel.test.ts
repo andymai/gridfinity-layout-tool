@@ -12,6 +12,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { intersect, measureVolume, translate } from 'brepjs';
+import type { Shape3D } from 'brepjs';
 import { isOk } from '@/core/result';
 import type { BinParams, ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
@@ -172,6 +173,49 @@ describe('low-profile base: bin in plate', () => {
   }, 120000);
 });
 
+describe('low-profile base: overhang', () => {
+  /**
+   * A one-foot low bin in the left cell of a standard 2x1 plate, its body
+   * reaching past the foot over the crest between the two pockets. Probed across that crest column by column:
+   * the contact strip is a fraction of a millimetre wide.
+   */
+  it.each([
+    [
+      'an overhang',
+      { width: 1, overhang: { left: 0, right: 10, front: 0, back: 0, feet: false } },
+      -21,
+    ],
+    ['a strip too narrow for a foot', { width: 1.05 }, -19.95],
+  ] as const)(
+    'seats a low bin by its taper when %s crosses the crest beside it',
+    (_label, shape, dx) => {
+      const lone = generateBin(
+        {
+          ...DEFAULT_BIN_PARAMS,
+          ...shape,
+          depth: 1,
+          height: 3,
+          base: { ...DEFAULT_BIN_PARAMS.base, lowProfile: true },
+        },
+        undefined,
+        true
+      );
+      assertKernelReturnedGeometry(lone, 'lone-foot low bin');
+      const p = plate(false);
+      const place = { dx, dy: 0 };
+      const dz = boundingBox(p.vertices).maxZ - boundingBox(lone.vertices).minZ;
+      let worst = Infinity;
+      for (let x = -2; x <= 2; x += 0.01) {
+        for (const y of [-15, 0, 15]) {
+          worst = Math.min(worst, descentLimitAt(lone, p, x, y, place, dz));
+        }
+      }
+      expect(Math.abs(worst - LOW_IN_STANDARD_MM)).toBeLessThan(TAPER_TOLERANCE_MM);
+    },
+    120000
+  );
+});
+
 describe('low-profile base: the bin itself', () => {
   it('keeps the total height and drops the interior floor by the band cut', () => {
     const stock = bin(false);
@@ -233,6 +277,14 @@ describe('low-profile base: stacking', () => {
 });
 
 describe('low-profile base: the relief tool', () => {
+  const sharedVolume = (a: Shape3D, b: Shape3D): number => {
+    const overlap = intersect(a, b);
+    if (!isOk(overlap)) throw new Error('intersect failed');
+    const volume = measureVolume(overlap.value);
+    if (!isOk(volume)) throw new Error('measureVolume failed');
+    return volume.value;
+  };
+
   // A narrow foot is clamped squarer than the box radius, so a keepout built
   // to that radius leaves the foot's corners inside the cutter.
   it.each([
@@ -256,14 +308,22 @@ describe('low-profile base: the relief tool', () => {
           ),
           [cell.centerX, cell.centerY, 0]
         );
-        const overlap = intersect(relief, foot);
-        if (!isOk(overlap)) throw new Error('intersect failed');
-        const volume = measureVolume(overlap.value);
-        if (!isOk(volume)) throw new Error('measureVolume failed');
-        shared += volume.value;
+        shared += sharedVolume(relief, foot);
       }
       expect(shared).toBeLessThan(1e-4);
     },
     120000
   );
+
+  it('leaves the feet under an overhang whole', async () => {
+    const { buildRidgeReliefTool } = await import('./ridgeReliefBuilder');
+    const { buildOverhangFeet, resolveSocketCellPlan } = await import('./socketBuilder');
+    const { resolveOverhang } = await import('./overhang');
+    const overhang = resolveOverhang({ left: 0, right: 14, front: 0, back: 0, feet: true });
+    const plan = resolveSocketCellPlan(false, undefined, undefined, undefined, 1, 2);
+    const relief = buildRidgeReliefTool(1, 2, undefined, 42, plan, undefined, overhang);
+    const feet = buildOverhangFeet(1, 2, overhang, 42, true);
+    if (!relief || !feet) throw new Error('expected a relief tool and overhang feet');
+    expect(sharedVolume(relief, feet)).toBeLessThan(1e-4);
+  }, 120000);
 });
