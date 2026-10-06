@@ -1,0 +1,101 @@
+src/features/generation/worker/generators/boxBuilder.ts
+  s_9c232e0720df0c::t_4b825c7fb32896 291-294,302-304
+src/features/bin-designer/README.md
+  s_9c232e0720df0c::t_e7ac724b911667 189
+src/features/bin-designer/utils/compartmentColorUnits.ts
+  s_9c232e0720df0c::t_d1899a51b24ee2 27,211
+src/features/generation/worker/generators/dividerBuilder.test.ts
+  s_9c232e0720df0c::t_7a603008cb6b8b 44-48
+src/features/generation/worker/generators/nestingFloor.geometry.test.ts
+  s_9c232e0720df0c::t_7a603008cb6b8b 219-221
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.tsx
+  s_9c232e0720df0c::t_3878de4ce33fe2 168
+src/features/bin-designer/types/base.test.ts
+  s_9c232e0720df0c::t_98c9e5d4a60bd3 70
+  s_9c232e0720df0c::t_7a603008cb6b8b 63,68
+  s_9c232e0720df0c::t_3cf824807a77b6 69,71-85
+src/features/generation/worker/generators/detachableFeetOrchestrator.ts
+  s_9c232e0720df0c::t_48f0a885578707 28-29,66
+src/features/bin-designer/utils/printInteriorFilletVolume.test.ts
+  s_9c232e0720df0c::t_7a603008cb6b8b 7,86
+src/features/generation/worker/generators/dividerLidKeepout.scenario.test.ts
+  s_9c232e0720df0c::t_7a603008cb6b8b 152
+src/features/bin-designer/utils/printShellVolume.ts
+  s_9c232e0720df0c::t_ae11e63007641d 19-21,37,40,49-51,58,63-70
+src/features/bin-designer/utils/printShellVolume.test.ts
+  s_9c232e0720df0c::t_0867801ce6c3da 2,9-12,15-16,20-21,25-26,30,34-44
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_9c232e0720df0c::t_c448d00d589d45 40,45,206,478
+src/features/bin-designer/components/panel/ScoopSection/useScoopSection.ts
+  s_9c232e0720df0c::t_24c54b3bb81f12 18
+  s_9c232e0720df0c::t_5e5f7deb96514f 94
+src/features/generation/worker/generators/wallCutoutBuilder.ts
+  s_9c232e0720df0c::t_b73866bed09418 320,472
+src/features/generation/worker/generators/undersideRelief.kernel.test.ts
+  s_9c232e0720df0c::t_c1344ff30c5c35 213
+  s_9c232e0720df0c::t_7a603008cb6b8b 212
+src/features/bin-designer/utils/compartmentFloorRaise.ts
+  s_9c232e0720df0c::t_d1899a51b24ee2 5,23,46
+src/features/generation/worker/generators/dividerPatterns.test.ts
+  s_9c232e0720df0c::t_d69400f22b7600 14
+src/features/generation/worker/generators/slotBuilder.test.ts
+  s_9c232e0720df0c::t_7a603008cb6b8b 6-10,122
+src/features/generation/worker/generators/slotBuilder.ts
+  s_9c232e0720df0c::t_b73866bed09418 24,243
+src/features/bin-designer/components/preview/GhostScoops/GhostScoops.tsx
+  s_9c232e0720df0c::t_5e5f7deb96514f 28,49,66
+src/features/generation/worker/generators/flatBaseFloor.geometry.test.ts
+  s_9c232e0720df0c::t_b0c4899467f712 1-88
+src/features/generation/worker/generators/detachableFeet.kernel.test.ts
+  s_9c232e0720df0c::t_7a603008cb6b8b 551,570,718
+src/features/generation/worker/generators/binGenerator.scenario.authoredDividers.test.ts
+  s_9c232e0720df0c::t_7a603008cb6b8b 87
+src/features/generation/worker/generators/pipeline/context.ts
+  s_9c232e0720df0c::t_466ca167a92979 17,94
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_9c232e0720df0c::t_c448d00d589d45 339,595
+src/features/bin-designer/utils/printInteriorFilletVolume.ts
+  s_9c232e0720df0c::t_c64af90edd06e1 13,38
+src/features/bin-designer/utils/dividerPatternFit.ts
+  s_9c232e0720df0c::t_c448d00d589d45 193
+src/shared/utils/slotMath.ts
+  s_9c232e0720df0c::t_2a122f646e9a83 10,164-165,204-212
+src/features/bin-designer/types/base.ts
+  s_9c232e0720df0c::t_55d145e35ef47c 357-363,365-370
+src/features/bin-designer/utils/interiorFilletFit.ts
+  s_9c232e0720df0c::t_d1899a51b24ee2 4,25
+src/shared/generation/meshPersistence.ts
+  s_9c232e0720df0c::t_2264db1e962c55 100
+  s_9c232e0720df0c::t_a58c1a17dddb05 90
+  s_9c232e0720df0c::t_8b36850c638c26 91-92
+src/features/bin-designer/utils/printEstimates.ts
+  s_9c232e0720df0c::t_ae11e63007641d 14-15,267,360,448
+src/features/generation/worker/generators/binGenerator.scenario.scoopContainment.test.ts
+  s_9c232e0720df0c::t_7a603008cb6b8b 23,87,323,375,413
+src/features/generation/worker/generators/__kernel-tests__/authoredDividers.test.ts
+  s_9c232e0720df0c::t_7a603008cb6b8b 75
+src/features/bin-designer/components/SlotConfigurator/useSlotConfigurator.ts
+  s_9c232e0720df0c::t_c448d00d589d45 48
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.scoops.test.ts.snap
+  s_9c232e0720df0c::t_d3300975294dea 19
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.wallThickness.test.ts.snap
+  s_9c232e0720df0c::t_a8348a216ad14f 5
+src/features/generation/worker/generators/binGenerator.scenario.dividerSeat.test.ts
+  s_9c232e0720df0c::t_e37958bbe3ecd2 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "acbcc4958cc8a6a3b62789d3d2ff0d9f751a080e",
+  "prompts": {},
+  "sessions": {
+    "s_9c232e0720df0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27eb60d8-7420-46eb-89be-0e93ba7858b3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}

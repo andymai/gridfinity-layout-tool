@@ -1,0 +1,24 @@
+src/features/bin-designer/utils/printPatternSavings.ts
+  s_9c232e0720df0c::t_2eb594906e55f6 249-253,265,329
+src/features/bin-designer/utils/printEstimates.ts
+  s_9c232e0720df0c::t_2eb594906e55f6 262,268,304-310
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_9c232e0720df0c::t_2eb594906e55f6 16
+  s_9c232e0720df0c::t_6b6b633d75d969 556-576
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7ed44c873c26af2f9616b436d66b465fbe9e5271",
+  "prompts": {},
+  "sessions": {
+    "s_9c232e0720df0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27eb60d8-7420-46eb-89be-0e93ba7858b3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
