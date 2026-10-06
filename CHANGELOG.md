@@ -1,5 +1,26 @@
 # Changelog
 
+## [4.504.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.503.5...gridfinity-layout-tool-v4.504.0) (2026-10-06)
+
+
+### Features
+
+* **baseplate:** add underside magnets at pocket junctions ([#4476](https://github.com/andymai/gridfinity-layout-tool/issues/4476)) ([25d77cc](https://github.com/andymai/gridfinity-layout-tool/commit/25d77cc288967976911e284f8794e421e1f73211))
+* **baseplate:** give each layout its own baseplate design ([#4495](https://github.com/andymai/gridfinity-layout-tool/issues/4495)) ([56af46e](https://github.com/andymai/gridfinity-layout-tool/commit/56af46e3a055382eef97e1cf15df00d2da67f953))
+* **bin-designer:** add a lid fill option for friction and magnetic lids ([#4477](https://github.com/andymai/gridfinity-layout-tool/issues/4477)) ([6ffea5a](https://github.com/andymai/gridfinity-layout-tool/commit/6ffea5a7d73beb215e3a66171e14bdd0e82a811d))
+
+
+### Bug Fixes
+
+* **baseplate:** save plate settings to the library before the thumbnail ([#4490](https://github.com/andymai/gridfinity-layout-tool/issues/4490)) ([b14d08f](https://github.com/andymai/gridfinity-layout-tool/commit/b14d08f60a1a51b563b7efd17df752aa981344c4))
+* **baseplate:** seat underside magnets flush and keep a plate past a bad setting ([#4497](https://github.com/andymai/gridfinity-layout-tool/issues/4497)) ([584ea7f](https://github.com/andymai/gridfinity-layout-tool/commit/584ea7ffa4183fcc97e2f512600afdd8233854f7))
+* **baseplate:** stop the library load reverting plate edits ([#4484](https://github.com/andymai/gridfinity-layout-tool/issues/4484)) ([48189df](https://github.com/andymai/gridfinity-layout-tool/commit/48189df5a02f1842522bc2dd1f3777d68c0cb8cc))
+* **bin-designer:** keep cutout editor grid dots visible at every zoom ([#4482](https://github.com/andymai/gridfinity-layout-tool/issues/4482)) ([f796d21](https://github.com/andymai/gridfinity-layout-tool/commit/f796d21903dcc996b13e39e2525fc6b7ff00a441))
+* **bin-designer:** make print estimates follow wall thickness ([#4483](https://github.com/andymai/gridfinity-layout-tool/issues/4483)) ([6ea15d3](https://github.com/andymai/gridfinity-layout-tool/commit/6ea15d3738440d03c642595a9cf8341d26475187))
+* **bin-designer:** show lid cutouts at their depth through the fill plug ([#4496](https://github.com/andymai/gridfinity-layout-tool/issues/4496)) ([f1d213a](https://github.com/andymai/gridfinity-layout-tool/commit/f1d213a0c66dacd81f28d437e7c0dbbdd4edb994))
+* **drawer:** label an unmeasured size as the grid's, and show a measured height as typed ([#4493](https://github.com/andymai/gridfinity-layout-tool/issues/4493)) ([1018f28](https://github.com/andymai/gridfinity-layout-tool/commit/1018f28b17f244c5383b58f9aa969e412ce8a8ed))
+* **sync:** keep a layout's measured drawer, plate settings and design link ([#4494](https://github.com/andymai/gridfinity-layout-tool/issues/4494)) ([e81726f](https://github.com/andymai/gridfinity-layout-tool/commit/e81726f78b68bb0a145e8d20320fc31c2db17557))
+
 ## [4.503.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.503.4...gridfinity-layout-tool-v4.503.5) (2026-10-05)
 
 
