@@ -165,6 +165,27 @@ describe('DesignerStore - lid actions', () => {
       expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
     });
 
+    it('setLidTextRotation writes a turn, is undoable, and drops the key at 0', () => {
+      const { setLidText, setLidTextRotation, undo } = useDesignerStore.getState();
+      setLidText('Cables');
+      const epoch = useDesignerStore.getState().generation.epoch;
+      setLidTextRotation(90);
+      expect(useDesignerStore.getState().params.surfaceText?.lidTextRotation).toBe(90);
+      expect(useDesignerStore.getState().generation.epoch).toBeGreaterThan(epoch);
+      setLidTextRotation(0);
+      expect(useDesignerStore.getState().params.surfaceText).toEqual({ lidText: 'Cables' });
+      undo();
+      expect(useDesignerStore.getState().params.surfaceText?.lidTextRotation).toBe(90);
+    });
+
+    it('setLidTextRotation to the current turn pushes no history', () => {
+      const { setLidTextRotation } = useDesignerStore.getState();
+      const epoch = useDesignerStore.getState().generation.epoch;
+      setLidTextRotation(0);
+      expect(useDesignerStore.getState().generation.epoch).toBe(epoch);
+      expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
+    });
+
     it('clearing the text preserves a style override', () => {
       const { setLidText, setSurfaceTextStyle } = useDesignerStore.getState();
       setLidText('Cables');

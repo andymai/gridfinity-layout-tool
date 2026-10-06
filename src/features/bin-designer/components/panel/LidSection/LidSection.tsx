@@ -45,6 +45,7 @@ import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
 import { FeatureToggle } from '../FeatureToggle';
 import { useLidSection, LID_TOP_SURFACES } from './useLidSection';
 import { LidAdvancedFields } from './LidAdvancedFields';
+import { LidTextRotation } from './LidTextRotation';
 
 /** Mode options for the lid-text picker, in the shared textMode order. */
 const TEXT_MODE_OPTIONS: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'] as const;
@@ -332,6 +333,7 @@ export function LidSection() {
                       {state.textMode === 'through-cut' && (
                         <Hint>{t('binDesigner.textMode.throughCutStencilNote')}</Hint>
                       )}
+                      <LidTextRotation />
                       <TextColorControl surfaces={LID_SURFACE} flat={state.textMode === 'flat'} />
                       {state.textOnTrayFloor && <Hint>{t('binDesigner.lid.text.trayHint')}</Hint>}
                       {state.textOnStackLipFloor && (

@@ -1385,6 +1385,8 @@
   "binDesigner.lid.summaryPartialRails": "{coverage}% рейок на {sides}/4",
   "binDesigner.lid.summarySlide": "Зсувна",
   "binDesigner.lid.text.aria": "Текст на кришці",
+  "binDesigner.lid.text.rotation": "Обертання",
+  "binDesigner.lid.text.rotationOption": "{angle}°",
   "binDesigner.lid.text.disabledPolygon": "Недоступно для контейнерів довільної форми.",
   "binDesigner.lid.text.disabledStackable": "Недоступно з повною сіткою для штабелювання — перемкніться на «Лише край для стекування», щоб звільнити верхню поверхню кришки.",
   "binDesigner.lid.text.useStackLipOnly": "Лише край для стекування",

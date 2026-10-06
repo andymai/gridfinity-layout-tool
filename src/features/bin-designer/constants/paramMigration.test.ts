@@ -293,6 +293,22 @@ describe('migrateParams', () => {
     expect(migrateParams({ surfaceText: { lidText: 42 } } as any).surfaceText).toBeUndefined();
   });
 
+  it('keeps a quarter-turn lid text rotation and drops anything else', () => {
+    expect(
+      migrateParams({ surfaceText: { lidText: 'Cables', lidTextRotation: 90 } }).surfaceText
+    ).toEqual({ lidText: 'Cables', lidTextRotation: 90 });
+    expect(
+      migrateParams({ surfaceText: { lidText: 'Cables', lidTextRotation: 0 } }).surfaceText
+    ).toEqual({ lidText: 'Cables' });
+    for (const junk of [45, '90', -90, null]) {
+      expect(
+        migrateParams({
+          surfaceText: { lidText: 'Cables', lidTextRotation: junk as unknown as 90 },
+        }).surfaceText
+      ).toEqual({ lidText: 'Cables' });
+    }
+  });
+
   it('trims persisted lid text so store, worker, and geometry agree', () => {
     const result = migrateParams({ surfaceText: { lidText: '  Cables  ' } });
     expect(result.surfaceText?.lidText).toBe('Cables');

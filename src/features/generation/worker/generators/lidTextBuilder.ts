@@ -110,6 +110,9 @@ export function applyLidText(
   if (!text) return body;
 
   const { availW, availD, centerX, centerY, topZ, hostThickness } = resolveTextHostFace(inputs);
+  // The caption is fitted in the reading frame and the frame is turned about
+  // the face centre, so a quarter turn plans against the swapped sides.
+  const sideways = text.rotation === 90 || text.rotation === 270;
 
   let depth = text.style.depth;
   if (text.style.mode === 'engrave') {
@@ -120,13 +123,15 @@ export function applyLidText(
   const result = buildTextSolid(scope, {
     text: text.value,
     style: text.style,
-    availW,
-    availD,
+    availW: sideways ? availD : availW,
+    availD: sideways ? availW : availD,
     centerX,
     centerY,
     topZ,
     depth,
     hostThickness,
+    angleDeg: text.rotation,
+    pivot: 'host',
   });
   if (!result) return body;
   // Any holes are already cut, so a flat caption must not refill them.

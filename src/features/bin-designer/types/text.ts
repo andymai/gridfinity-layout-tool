@@ -403,6 +403,21 @@ export const WALL_ALIGN_TO_ANCHOR: Record<WallTextVerticalAlign, TextAnchor> = {
 } as const;
 
 /**
+ * Turn of an auto-fitted caption on its host, in degrees clockwise seen from
+ * above (the cutout `rotation` convention). Quarter turns only: the caption is
+ * fitted to the host rect, and only a quarter turn maps that rect onto itself
+ * (with its sides swapped). Any other angle has no box to fit into; a text
+ * element in the cut editor covers those.
+ */
+export type TextQuarterTurn = 0 | 90 | 180 | 270;
+
+export const TEXT_QUARTER_TURNS: readonly TextQuarterTurn[] = [0, 90, 180, 270] as const;
+
+export function isTextQuarterTurn(value: unknown): value is TextQuarterTurn {
+  return (TEXT_QUARTER_TURNS as readonly unknown[]).includes(value);
+}
+
+/**
  * Text on the design's exterior surfaces. One shared style for all surface
  * text (merged over `BinParams.textDefaults`), optionally refined per surface,
  * with a string per surface.
@@ -419,6 +434,12 @@ export interface SurfaceTextConfig {
    * polygon `cellMask` (auto-fit assumes a rectangle).
    */
   readonly lidText?: string;
+  /**
+   * Turns the lid caption's whole reading frame, so the anchor and offset
+   * turn with it and a 90° or 270° turn fits the caption along the lid's
+   * other side. Absent means 0.
+   */
+  readonly lidTextRotation?: TextQuarterTurn;
   /**
    * Per-wall text on the bin's outer walls. Each string fits into the largest
    * clear region on its wall (avoiding wall cutouts and handles, and clearing

@@ -15,7 +15,13 @@ import type {
 } from '@/shared/types/assembly';
 import type { AccentBandConfig, ColorZone, HoverableZone, LipColorConfig } from './featureColors';
 import type { LidConfig } from './lid';
-import type { TextStyleDefaults, TextStyleOverride, WallTextSide, TextAnchor } from './text';
+import type {
+  TextStyleDefaults,
+  TextStyleOverride,
+  WallTextSide,
+  TextAnchor,
+  TextQuarterTurn,
+} from './text';
 import type {
   Cutout,
   CutoutArrayConfig,
@@ -274,6 +280,7 @@ export interface DesignerState {
   /** Anchor for every surface, written onto the shared surface style. */
   setSurfaceTextAnchor: (anchor: TextAnchor) => void;
   setLidTextStyle: (overrides: TextStyleOverride | null) => void;
+  setLidTextRotation: (rotation: TextQuarterTurn) => void;
   setWallTextStyle: (side: WallTextSide, overrides: TextStyleOverride | null) => void;
 
   // Wall pattern actions

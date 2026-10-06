@@ -1385,6 +1385,8 @@
   "binDesigner.lid.summaryPartialRails": "{sides}/4 면에 레일 {coverage}%",
   "binDesigner.lid.summarySlide": "슬라이드형",
   "binDesigner.lid.text.aria": "뚜껑 텍스트",
+  "binDesigner.lid.text.rotation": "회전",
+  "binDesigner.lid.text.rotationOption": "{angle}°",
   "binDesigner.lid.text.disabledPolygon": "맞춤 모양 수납통에는 사용할 수 없습니다.",
   "binDesigner.lid.text.disabledStackable": "전체 스택 그리드에서는 사용할 수 없습니다 — ‘적층 립만’으로 바꾸면 뚜껑 윗면이 비워집니다.",
   "binDesigner.lid.text.useStackLipOnly": "적층 립만 사용",

@@ -723,7 +723,7 @@ activate the text colour zone.
 
 <a id="surfacetextconfig"></a>
 
-6 fields, in `src/features/bin-designer/types/text.ts`.
+7 fields, in `src/features/bin-designer/types/text.ts`.
 
 ## Colours
 

@@ -532,6 +532,21 @@ describe('LidSection', () => {
       expect(screen.getByRole('textbox', { name: 'Lid text' })).toBeInTheDocument();
     });
 
+    it('offers rotation only once there is a caption to turn', () => {
+      resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
+      const { unmount } = render(<LidSection />);
+      fireEvent.click(screen.getByRole('switch', { name: 'Lid text' }));
+      expect(screen.queryByRole('radiogroup', { name: 'Rotation' })).not.toBeInTheDocument();
+      unmount();
+
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        surfaceText: { lidText: 'Cables' },
+      });
+      render(<LidSection />);
+      expect(screen.getByRole('radiogroup', { name: 'Rotation' })).toBeInTheDocument();
+    });
+
     it('commits the typed text to surfaceText.lidText on blur', () => {
       resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
       render(<LidSection />);

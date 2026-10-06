@@ -186,6 +186,7 @@ export function validateTextStyleOverride(value: unknown, label: string): string
 
 const ALLOWED_SURFACE_TEXT_KEYS = new Set([
   'lidText',
+  'lidTextRotation',
   'walls',
   'wallAlign',
   'style',
@@ -218,6 +219,9 @@ export const VALID_WALL_TEXT_SIDES = ['front', 'back', 'left', 'right'] as const
 
 export const VALID_WALL_TEXT_ALIGNS = ['top', 'center', 'bottom'] as const;
 
+/** Mirrors the client `TEXT_QUARTER_TURNS`. */
+export const VALID_TEXT_QUARTER_TURNS = [0, 90, 180, 270] as const;
+
 /**
  * Exterior-surface text: a lid-top string plus per-wall strings
  * and a shared vertical alignment. Strings share the client's
@@ -238,6 +242,12 @@ export function validateSurfaceText(value: unknown): string | null {
     if (typeof value.lidText !== 'string') return 'surfaceText.lidText must be a string';
     const err = checkCaption(value.lidText, 'surfaceText.lidText');
     if (err) return err;
+  }
+  if (
+    value.lidTextRotation !== undefined &&
+    !(VALID_TEXT_QUARTER_TURNS as readonly unknown[]).includes(value.lidTextRotation)
+  ) {
+    return `surfaceText.lidTextRotation must be one of: ${VALID_TEXT_QUARTER_TURNS.join(', ')}`;
   }
   if (value.walls !== undefined) {
     if (!isObject(value.walls)) return 'surfaceText.walls must be an object';

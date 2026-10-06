@@ -2236,6 +2236,14 @@
           "type": "string",
           "description": "Text engraved or embossed on the lid top. Deliberately monochrome."
         },
+        "lidTextRotation": {
+          "enum": [0, 90, 180, 270],
+          "default": 0,
+          "description": "Turn of the lid text in degrees clockwise seen from above. The anchor and offset turn with it; 90 and 270 fit the text along the lid's other side.",
+          "x-constant": {
+            "enum": "TEXT_QUARTER_TURNS"
+          }
+        },
         "walls": {
           "type": "object",
           "additionalProperties": {

@@ -1385,6 +1385,8 @@
   "binDesigner.lid.summaryPartialRails": "{coverage}% trilhos em {sides}/4",
   "binDesigner.lid.summarySlide": "Deslizante",
   "binDesigner.lid.text.aria": "Texto da tampa",
+  "binDesigner.lid.text.rotation": "Rotação",
+  "binDesigner.lid.text.rotationOption": "{angle}°",
   "binDesigner.lid.text.disabledPolygon": "Indisponível para caixas de formato personalizado.",
   "binDesigner.lid.text.disabledStackable": "Indisponível com uma grade de empilhamento completa — mude para “Somente borda de empilhamento” para liberar a face superior da tampa.",
   "binDesigner.lid.text.useStackLipOnly": "Usar somente borda de empilhamento",

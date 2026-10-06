@@ -106,6 +106,7 @@ import {
   TEXT_CUT_PROFILES,
   TEXT_FONT_FAMILIES,
   TEXT_MAX_LENGTH,
+  TEXT_QUARTER_TURNS,
 } from '@/features/bin-designer/types/text';
 import {
   DEFAULT_PATTERN_SCALE,
@@ -151,6 +152,7 @@ const SOURCES: Record<string, unknown> = {
   TEXT_CUT_PROFILES,
   TEXT_FONT_FAMILIES,
   TEXT_MAX_LENGTH,
+  TEXT_QUARTER_TURNS,
   WALL_PATTERN_TYPES,
   ACCENT_BAND_DEFAULT_MM,
   ACCENT_BAND_MIN_MM,
@@ -251,7 +253,7 @@ const annotations = collectAnnotations();
  * a drop means someone deleted provenance rather than a bound legitimately
  * becoming hand-picked, which is the erosion this guards against.
  */
-const MIN_ANNOTATED_BOUNDS = 219;
+const MIN_ANNOTATED_BOUNDS = 220;
 
 describe('x-constant annotations', () => {
   it('finds annotations to check', () => {

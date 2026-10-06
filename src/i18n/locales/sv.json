@@ -1385,6 +1385,8 @@
   "binDesigner.lid.summaryPartialRails": "{coverage}% skenor på {sides}/4",
   "binDesigner.lid.summarySlide": "Skjutlock",
   "binDesigner.lid.text.aria": "Locktext",
+  "binDesigner.lid.text.rotation": "Rotation",
+  "binDesigner.lid.text.rotationOption": "{angle}°",
   "binDesigner.lid.text.disabledPolygon": "Inte tillgängligt för lådor med anpassad form.",
   "binDesigner.lid.text.disabledStackable": "Inte tillgängligt med fullt stapelrutnät — byt till ”Endast stapelbar läpp” för att frigöra lockets ovansida.",
   "binDesigner.lid.text.useStackLipOnly": "Använd endast stapelbar läpp",

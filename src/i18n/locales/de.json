@@ -1385,6 +1385,8 @@
   "binDesigner.lid.summaryPartialRails": "{coverage}% Schienen auf {sides}/4",
   "binDesigner.lid.summarySlide": "Schiebedeckel",
   "binDesigner.lid.text.aria": "Deckeltext",
+  "binDesigner.lid.text.rotation": "Drehung",
+  "binDesigner.lid.text.rotationOption": "{angle}°",
   "binDesigner.lid.text.disabledPolygon": "Für Sonderformen nicht verfügbar.",
   "binDesigner.lid.text.disabledStackable": "Bei vollem Stapelraster nicht verfügbar — wechsle zu „Nur Stapelrand“, um die Deckeloberseite freizugeben.",
   "binDesigner.lid.text.useStackLipOnly": "Nur Stapelrand verwenden",

@@ -226,6 +226,13 @@ export interface BuildTextSolidOptions extends TextHostOptions {
    * label tracks the 2D editor preview.
    */
   readonly angleDeg?: number;
+  /**
+   * What `angleDeg` turns about. `ink` (default) spins the caption in place.
+   * `host` turns the whole planned block about the host centre, so an anchored
+   * caption keeps its corner in a turned reading frame instead of pivoting off
+   * it.
+   */
+  readonly pivot?: 'ink' | 'host';
   /** A plan the caller already computed. Saves re-planning and, more
    *  importantly, guarantees the geometry matches what the caller measured. */
   readonly plan?: TypeBlockPlan;
@@ -277,12 +284,14 @@ export function buildTextSolid(
       translate(canonical, [options.centerX + refX, options.centerY + refY, sketchOriginZ])
     );
   } else {
-    // Rotate about the block's own ink centre: recentre on it, spin about +Z
-    // (negated to match the cutout-rotation convention), then place. The ink
-    // centre, not the advance box, so a rotated caption pivots where it looks
-    // like it should.
-    const pivotX = (plan.minX + plan.maxX) / 2 - refX;
-    const pivotY = (plan.minY + plan.maxY) / 2 - refY;
+    // Rotate about the pivot: recentre on it, spin about +Z (negated to match
+    // the cutout-rotation convention), then place. For `ink` that is the
+    // block's ink centre, not the advance box, so a rotated caption pivots
+    // where it looks like it should. Plan coordinates are relative to the host
+    // centre, so `host` is the plan origin.
+    const aboutHost = options.pivot === 'host';
+    const pivotX = aboutHost ? -refX : (plan.minX + plan.maxX) / 2 - refX;
+    const pivotY = aboutHost ? -refY : (plan.minY + plan.maxY) / 2 - refY;
     const centered = scope.register(translate(canonical, [-pivotX, -pivotY, 0]));
     const rotated = scope.register(rotate(centered, -angle, { axis: [0, 0, 1] }));
     solid = scope.register(

@@ -1385,6 +1385,8 @@
   "binDesigner.lid.summaryPartialRails": "{coverage}% skinner på {sides}/4",
   "binDesigner.lid.summarySlide": "Skyvelokk",
   "binDesigner.lid.text.aria": "Lokktekst",
+  "binDesigner.lid.text.rotation": "Rotasjon",
+  "binDesigner.lid.text.rotationOption": "{angle}°",
   "binDesigner.lid.text.disabledPolygon": "Ikke tilgjengelig for bokser med tilpasset form.",
   "binDesigner.lid.text.disabledStackable": "Ikke tilgjengelig med fullt stablerutenett — bytt til «Bare stablekant» for å frigjøre lokkets overside.",
   "binDesigner.lid.text.useStackLipOnly": "Bruk bare stablekant",
