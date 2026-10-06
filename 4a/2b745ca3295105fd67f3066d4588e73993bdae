@@ -1,0 +1,27 @@
+src/features/generation/worker/generators/pipeline/stages/shellStage.ts
+  s_9c232e0720df0c::t_b0b3b5845d800f 390-391
+src/features/generation/worker/generators/scenarios/lowProfile.ts
+  s_9c232e0720df0c::t_b0b3b5845d800f 14,17-19,67-114
+src/features/generation/worker/generators/lowProfileBase.kernel.test.ts
+  s_9c232e0720df0c::t_cdc61d82eb86e5 175-207
+src/features/generation/worker/generators/ridgeReliefBuilder.ts
+  s_9c232e0720df0c::t_48fd19303dee5d 14-23,26,33,41-42,49-51,53-55,57,89,94-98,106-107,110-111,113-125,128-147,153,156-158,160-163
+src/shared/generation/meshPersistence.ts
+  s_9c232e0720df0c::t_7c47d7f713d4aa 90-91,99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4a2b745ca3295105fd67f3066d4588e73993bdae",
+  "prompts": {},
+  "sessions": {
+    "s_9c232e0720df0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27eb60d8-7420-46eb-89be-0e93ba7858b3",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
