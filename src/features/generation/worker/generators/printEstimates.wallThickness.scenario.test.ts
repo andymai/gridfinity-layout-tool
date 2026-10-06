@@ -42,6 +42,9 @@ const L_SHAPE = mask(4, 4, (col, row) => col >= 2 && row >= 2);
 const O_SHAPE = mask(6, 6, (col, row) => col >= 2 && col < 4 && row >= 2 && row < 4);
 const OVERHANG = { left: 0, right: 10, front: 5, back: 0, feet: false };
 
+/** Tighter than MAX_RESIDUAL, which a two-axis taper's double-counted corner would still pass. */
+const TAPER_CORNER_RESIDUAL = 0.01;
+
 async function exportedVolume(params: BinParams): Promise<number> {
   clearAllCaches();
   await exportBin(params, 'stl');
@@ -371,6 +374,115 @@ describe('print estimate — wall thickness', () => {
         cutoutConfig: { topOffset: 0 },
       }),
     },
+    {
+      name: 'solid nesting tray 2x2x3',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 3,
+        style: 'solid',
+        base: {
+          ...P.base,
+          style: 'lid',
+          solid: true,
+          trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true },
+        },
+        cutoutConfig: { topOffset: 0 },
+      }),
+    },
+    {
+      name: 'solid nesting tray 3x2x6 at 2.0mm',
+      params: bin({
+        width: 3,
+        depth: 2,
+        height: 6,
+        wallThickness: 2,
+        style: 'solid',
+        base: {
+          ...P.base,
+          style: 'lid',
+          solid: true,
+          trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true },
+        },
+        cutoutConfig: { topOffset: 0 },
+      }),
+    },
+    {
+      name: 'solid standard 2x2x3 overhung',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 3,
+        style: 'solid',
+        base: { ...P.base, solid: true },
+        overhang: OVERHANG,
+        cutoutConfig: { topOffset: 0 },
+      }),
+    },
+    {
+      name: 'solid flat 2x2x3 overhung',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 3,
+        style: 'solid',
+        base: { ...P.base, style: 'flat', solid: true },
+        overhang: OVERHANG,
+        cutoutConfig: { topOffset: 0 },
+      }),
+    },
+    {
+      name: 'solid raised tray 2x2x3 overhung',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 3,
+        style: 'solid',
+        base: { ...P.base, style: 'lid', solid: true },
+        overhang: OVERHANG,
+        cutoutConfig: { topOffset: 0 },
+      }),
+    },
+    {
+      name: 'solid nesting tray 2x2x3 overhung',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 3,
+        style: 'solid',
+        base: {
+          ...P.base,
+          style: 'lid',
+          solid: true,
+          trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true },
+        },
+        overhang: OVERHANG,
+        cutoutConfig: { topOffset: 0 },
+      }),
+    },
+    {
+      name: 'solid flat 2x2x6 overhung with a tapered base',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 6,
+        style: 'solid',
+        base: { ...P.base, style: 'flat', solid: true },
+        overhang: {
+          ...OVERHANG,
+          taper: {
+            enabled: true,
+            profile: 'chamfer',
+            bandHeight: 10,
+            left: 0,
+            right: 10,
+            front: 5,
+            back: 0,
+          },
+        },
+        cutoutConfig: { topOffset: 0 },
+      }),
+    },
   ];
 
   it.each(cases)(
@@ -385,6 +497,39 @@ describe('print estimate — wall thickness', () => {
     },
     60000
   );
+
+  it('narrows a solid on both axes under a wide taper on two adjacent walls', async () => {
+    const params = bin({
+      width: 2,
+      depth: 2,
+      height: 6,
+      style: 'solid',
+      base: { ...P.base, style: 'flat', solid: true },
+      overhang: {
+        left: 0,
+        right: 20,
+        front: 20,
+        back: 0,
+        feet: false,
+        taper: {
+          enabled: true,
+          profile: 'chamfer',
+          bandHeight: 42,
+          left: 0,
+          right: 20,
+          front: 20,
+          back: 0,
+        },
+      },
+      cutoutConfig: { topOffset: 0 },
+    });
+    const measured = await exportedVolume(params);
+    const estimated = estimatePrint(params).volumeMm3;
+    expect(
+      Math.abs(estimated - measured) / measured,
+      `estimated ${estimated} vs measured ${Math.round(measured)}`
+    ).toBeLessThan(TAPER_CORNER_RESIDUAL);
+  }, 60000);
 
   it('fills a custom-shape solid by what the solid adds to the export', async () => {
     const shape = { width: 2, depth: 2, height: 3, cellMask: L_SHAPE };

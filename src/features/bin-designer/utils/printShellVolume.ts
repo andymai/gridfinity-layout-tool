@@ -25,6 +25,7 @@ import {
   lidWallBottomZ,
   plugInsetAtWallBottom,
   resolveLidCavityExtraMm,
+  trayBottomSkirtDepth,
 } from '@/features/bin-designer/types/lid';
 import { roundedRectArea, type ShellFootprint } from './printFootprint';
 
@@ -182,6 +183,23 @@ function matingShellVolume(
 }
 
 /**
+ * The tray's own joint, scoped as `trayFloorZ` scopes it, so a lid chosen for
+ * the top cannot reshape the skirt.
+ */
+function trayCavityExtraMm(tray: TrayBottomConfig, heightUnitMm: number): number {
+  return resolveLidCavityExtraMm({
+    lid: {
+      ...DEFAULT_LID_CONFIG,
+      attachment: tray.attachment,
+      extraHeightMm: tray.extraHeightMm,
+      retentionMagnet: tray.retentionMagnet,
+    },
+    base: { stackingLip: true, magnetDepth: 0 },
+    heightUnitMm,
+  });
+}
+
+/**
  * What a tray bin's lid skirt adds under its {@link flatShellVolume} body (mm³),
  * for a `tray` already through `resolveTrayBottomConfig`.
  *
@@ -214,23 +232,33 @@ export function traySkirtVolume(
       : anyRail
         ? LID_SNAP_PLUG_CLEARANCE
         : 0;
-  // The tray's own joint, scoped as `trayFloorZ` scopes it, so a lid chosen
-  // for the top cannot reshape the skirt.
-  const cavityExtraMm = resolveLidCavityExtraMm({
-    lid: {
-      ...DEFAULT_LID_CONFIG,
-      attachment: tray.attachment,
-      extraHeightMm: tray.extraHeightMm,
-      retentionMagnet: tray.retentionMagnet,
-    },
-    base: { stackingLip: true, magnetDepth: 0 },
-    heightUnitMm,
-  });
-
+  const cavityExtraMm = trayCavityExtraMm(tray, heightUnitMm);
   let volume = matingShellVolume(footprint, heightUnitMm, cavityExtraMm, mateRelief);
   volume += TRAY_RAIL_SECTION_MM2 * railLength;
   if (magnetic) {
     volume += magnetCount * TRAY_MAGNET_MM3[tray.floorAtBed === true ? 'nesting' : 'raised'];
   }
   return volume;
+}
+
+/**
+ * The plug interior a solid nesting tray keeps (mm³). `addNestingFloor` fills
+ * the plug, then a hollow tray cuts the lid cavity's section back out of it
+ * from its bed floor up through the body's floor; a solid one keeps it, over
+ * the skirt's whole depth. A nesting joint has no click rails, and a deep
+ * magnet that sinks the bed floor below the skirt is not modelled.
+ */
+export function nestingPlugFillVolume(
+  footprint: ShellFootprint,
+  tray: TrayBottomConfig,
+  heightUnitMm: number
+): number {
+  const cavityInset = LID_CORNER_RADIUS - LID_FIT_CLEARANCE;
+  const depth = trayBottomSkirtDepth(
+    heightUnitMm,
+    LID_FIT_CLEARANCE,
+    trayCavityExtraMm(tray, heightUnitMm),
+    false
+  );
+  return footprint.outerSection(cavityInset, 0) * depth;
 }
