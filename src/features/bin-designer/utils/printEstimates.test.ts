@@ -14,6 +14,7 @@ import {
 } from '@/shared/printSettings';
 import { footKind, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { DIVIDER_FLOOR_GROOVE_DEPTH } from '@/shared/utils/slotMath';
+import { DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
 import type { BinParams } from '@/features/bin-designer/types';
 
 describe('printEstimates', () => {
@@ -1093,5 +1094,71 @@ describe('printEstimates', () => {
     }).volumeMm3;
     expect(both).toBe(feetOnly);
     expect(both).toBeGreaterThan(0);
+  });
+});
+
+describe('socketed bins keep the fitted shell', () => {
+  // Pinned so the flat shell model can never leak into a socketed estimate.
+  const base = DEFAULT_BIN_PARAMS.base;
+  it.each<[string, Partial<BinParams>, number]>([
+    ['the default 2x2x6', { width: 2, depth: 2, height: 6 }, 59770],
+    [
+      'a lipless 3x2x6 at 0.8mm',
+      { width: 3, depth: 2, height: 6, wallThickness: 0.8, base: { ...base, stackingLip: false } },
+      76110,
+    ],
+    [
+      'a magnet 1x1x3 at 2.0mm',
+      { width: 1, depth: 1, height: 3, wallThickness: 2, base: { ...base, style: 'magnet' } },
+      16330,
+    ],
+    [
+      'a slotted 2x2x3 at 2.4mm',
+      { width: 2, depth: 2, height: 3, wallThickness: 2.4, style: 'slotted' },
+      56949,
+    ],
+  ])('prices %s as before', (_label, over, volume) => {
+    expect(estimatePrint({ ...DEFAULT_BIN_PARAMS, ...over }).volumeMm3).toBe(volume);
+  });
+});
+
+describe('tray click rails', () => {
+  it('prices a tray too small for any rail the same whichever walls ask for one', () => {
+    const tray = (front: boolean, back: boolean, left: boolean, right: boolean): BinParams => ({
+      ...DEFAULT_BIN_PARAMS,
+      width: 0.5,
+      depth: 0.5,
+      height: 3,
+      gridUnitMm: 20,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'lid',
+        trayBottom: { ...DEFAULT_TRAY_BOTTOM, clickRails: { front, back, left, right } },
+      },
+    });
+    expect(estimatePrint(tray(true, true, true, true)).volumeMm3).toBe(
+      estimatePrint(tray(true, false, false, false)).volumeMm3
+    );
+  });
+});
+
+describe('solid fill on a custom shape', () => {
+  it('fills the share of mask cells the shape keeps', () => {
+    const fill = (over: Partial<BinParams>): number => {
+      const hollow = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, height: 3, ...over };
+      const solid: BinParams = {
+        ...hollow,
+        style: 'solid',
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutoutConfig: { topOffset: 0 },
+      };
+      return estimatePrint(solid).volumeMm3 - estimatePrint(hollow).volumeMm3;
+    };
+    const lShape = {
+      cols: 4,
+      rows: 4,
+      cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0] as (0 | 1)[],
+    };
+    expect(fill({ cellMask: lShape }) / fill({})).toBeCloseTo(12 / 16, 3);
   });
 });
