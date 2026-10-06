@@ -1,0 +1,23 @@
+src/features/generation/worker/generators/printEstimates.wallThickness.scenario.test.ts
+  s_9c232e0720df0c::t_9e1a795a3be9da 45
+  s_9c232e0720df0c::t_eecbb9c0b57f5e 46-47,501-532
+  s_9c232e0720df0c::t_2d30727c2fd8c3 533
+src/features/bin-designer/utils/printEstimates.ts
+  s_9c232e0720df0c::t_894ddb9c8e3151 193-195,210-215
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9b56cab711f0983b2bc8c599e72420601d0eca52",
+  "prompts": {},
+  "sessions": {
+    "s_9c232e0720df0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27eb60d8-7420-46eb-89be-0e93ba7858b3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
