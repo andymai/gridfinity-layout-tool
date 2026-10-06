@@ -11,7 +11,13 @@
  */
 
 import type { BinParams } from '@/features/bin-designer/types';
-import { isSocketlessBase, isUndersideRelief } from '@/features/bin-designer/types/base';
+import {
+  isSocketlessBase,
+  isUndersideRelief,
+  resolveTrayBottomConfig,
+} from '@/features/bin-designer/types/base';
+import { retentionBossRadius, retentionMagnetInset } from '@/features/bin-designer/types/lid';
+import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
 import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { baseWallHeight } from './binDimensions';
 import { maxCompartmentFloorRaiseMm } from './compartmentFloorRaise';
@@ -51,7 +57,12 @@ import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
 import { cutoutDisplacementMm3 } from '@/shared/utils/fitTestPlan';
 import { computeLabelTabVolume, lipSupportArea } from './printLabelTabVolume';
 import { computeInteriorFilletVolume } from './printInteriorFilletVolume';
-import { flatShellVolume, stackingLipVolume, wallThicknessDelta } from './printShellVolume';
+import {
+  flatShellVolume,
+  stackingLipVolume,
+  traySkirtVolume,
+  wallThicknessDelta,
+} from './printShellVolume';
 import {
   computeWallPatternReduction,
   computeFloorPatternReduction,
@@ -134,6 +145,30 @@ export function formatFilament(meters: number): string {
   if (meters < 1) return `${Math.round(meters * 100)}cm`;
   return `${meters.toFixed(1)}m`;
 }
+
+/**
+ * A tray bin's lid skirt, with its retention magnets counted where the
+ * generator places them, so an edge-magnet setting that a short wall cannot
+ * take adds nothing here either.
+ */
+function trayBottomSkirt(params: BinParams, outerW: number, outerD: number): number {
+  const tray = resolveTrayBottomConfig(params.base.trayBottom, params.lid.retentionMagnet);
+  const { diameter, edgeMagnets } = tray.retentionMagnet;
+  const magnets =
+    tray.attachment === 'magnetic'
+      ? retentionMagnetPositions(
+          params.width,
+          params.depth,
+          params.gridUnitMm,
+          params.gridUnitMmY ?? params.gridUnitMm,
+          retentionMagnetInset(diameter),
+          edgeMagnets,
+          retentionBossRadius(diameter)
+        ).length
+      : 0;
+  return traySkirtVolume(outerW, outerD, tray, magnets);
+}
+
 /**
  * Computes total material volume analytically from bin parameters.
  *
@@ -178,8 +213,8 @@ function computeBinVolume(params: BinParams): number {
     gridUnitMmY
   );
   const floorThickness = resolveBinFloorMm({ ...params, wallThickness });
-  const flat = params.base.style === 'flat';
-  let volume = flat
+  const socketless = isSocketlessBase(params.base.style);
+  let volume = socketless
     ? flatShellVolume(
         outerW,
         outerD,
@@ -189,6 +224,7 @@ function computeBinVolume(params: BinParams): number {
         params.base.stackingLip
       )
     : shell.walls + shell.base + (params.base.stackingLip ? shell.lip : 0);
+  if (params.base.style === 'lid') volume += trayBottomSkirt(params, outerW, outerD);
 
   // The geometry follows the PLAN, not the flag: with detachable feet
   // requested but no pocket-aligned whole cell to anchor one (a half-lattice
@@ -269,7 +305,7 @@ function computeBinVolume(params: BinParams): number {
     return volume - shell.walls;
   }
 
-  if (!flat) {
+  if (!socketless) {
     if (!params.base.stackingLip) volume -= stackingLipVolume(outerW, outerD) - shell.lip;
     volume += wallThicknessDelta(
       outerW,

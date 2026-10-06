@@ -13,6 +13,8 @@
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { binFloorMm } from '@/features/bin-designer/types/base';
+import type { TrayBottomConfig } from '@/features/bin-designer/types/base';
+import { LID_CORNER_RADIUS, LID_FIT_CLEARANCE } from '@/features/bin-designer/types/lid';
 
 export const SHELL_REFERENCE_WALL_MM = 1.2;
 
@@ -28,6 +30,25 @@ const CAVITY_TOP_ALLOWANCE_MM = { lip: 2.35, open: 0.2 } as const;
 /** Lip cross-section per mm of outer perimeter, and what the rounded corners take back. */
 const LIP_SECTION_MM2 = 9.462;
 const LIP_CORNER_DEFICIT_MM3 = 131;
+
+/**
+ * A tray bin's lid skirt, measured as the tray less a flat bin on the same
+ * floor: linear in the outer perimeter from 1x1 to 4x4, worst residual
+ * 0.04mm³. A nesting tray measures the same, its bed floor standing in for the
+ * body floor it opens.
+ */
+const TRAY_SKIRT_SECTION_MM2 = 16.498;
+const TRAY_SKIRT_CORNER_DEFICIT_MM3 = 334.5;
+
+/** The 0.15mm mate relief that click rails and retention magnets both cut. */
+const TRAY_MATE_RELIEF_SECTION_MM2 = 0.698;
+const TRAY_MATE_RELIEF_CORNER_MM3 = 16.8;
+
+/** Per mm of the rail each wall gets, its coverage share of the run between corners. */
+const TRAY_RAIL_SECTION_MM2 = 7.345;
+
+/** One retention magnet's boss less its pocket, at the default magnet size. */
+const TRAY_MAGNET_MM3 = { raised: 174.7, nesting: 92.4 } as const;
 
 function roundedRectArea(w: number, d: number, r: number): number {
   return Math.max(0, w) * Math.max(0, d) - (4 - Math.PI) * r * r;
@@ -83,9 +104,9 @@ export function stackingLipVolume(outerW: number, outerD: number): number {
 }
 
 /**
- * A flat bin's whole shell (mm³), standing in for the fitted model rather than
- * correcting it: that model's `base` term is a socket and its 7mm dead space,
- * neither of which a flat bin has.
+ * A flat bin's whole shell (mm³), and a tray bin's above its skirt, standing in
+ * for the fitted model rather than correcting it: that model's `base` term is a
+ * socket and its 7mm dead space, neither of which a socketless bin has.
  *
  * The body is exact, the outer box less the cavity above the floor. The lip is
  * the socketed bin's lip, plus or minus the cavity band its inward overhang
@@ -106,4 +127,50 @@ export function flatShellVolume(
   const lipBand = CAVITY_TOP_ALLOWANCE_MM.lip - CAVITY_TOP_ALLOWANCE_MM.open;
   const reference = cavityArea(outerW, outerD, SHELL_REFERENCE_WALL_MM);
   return body + stackingLipVolume(outerW, outerD) + lipBand * (cavity - reference);
+}
+
+/**
+ * What a tray bin's lid skirt adds under its {@link flatShellVolume} body (mm³),
+ * for a `tray` already through `resolveTrayBottomConfig`. Extra skirt depth is
+ * the lid wall's own ring, the lid cavity's inset thick.
+ */
+export function traySkirtVolume(
+  outerW: number,
+  outerD: number,
+  tray: TrayBottomConfig,
+  magnetCount: number
+): number {
+  const perimeter = 2 * (outerW + outerD);
+  const inset = LID_CORNER_RADIUS - LID_FIT_CLEARANCE;
+  const ring =
+    roundedRectArea(outerW, outerD, GRIDFINITY.BOX_CORNER_RADIUS) -
+    roundedRectArea(
+      outerW - 2 * inset,
+      outerD - 2 * inset,
+      Math.max(0, GRIDFINITY.BOX_CORNER_RADIUS - inset)
+    );
+  let volume =
+    TRAY_SKIRT_SECTION_MM2 * perimeter -
+    TRAY_SKIRT_CORNER_DEFICIT_MM3 +
+    Math.max(0, ring) * Math.max(0, tray.extraHeightMm);
+
+  const rails = tray.clickRails;
+  const railRun = (side: number): number =>
+    (tray.clickRailCoverage / 100) * Math.max(0, side - 2 * LID_CORNER_RADIUS);
+  const railLength =
+    tray.attachment === 'clickRails'
+      ? (rails.front ? railRun(outerW) : 0) +
+        (rails.back ? railRun(outerW) : 0) +
+        (rails.left ? railRun(outerD) : 0) +
+        (rails.right ? railRun(outerD) : 0)
+      : 0;
+  const magnetic = tray.attachment === 'magnetic';
+  if (railLength > 0 || magnetic) {
+    volume += TRAY_MATE_RELIEF_CORNER_MM3 - TRAY_MATE_RELIEF_SECTION_MM2 * perimeter;
+  }
+  volume += TRAY_RAIL_SECTION_MM2 * railLength;
+  if (magnetic) {
+    volume += magnetCount * TRAY_MAGNET_MM3[tray.floorAtBed === true ? 'nesting' : 'raised'];
+  }
+  return volume;
 }

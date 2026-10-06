@@ -10,6 +10,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { measureVolume, unwrap } from 'brepjs';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
 import type { BinParams } from '@/shared/types/bin';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { clearAllCaches, getLastSolid } from './shapeCache';
@@ -145,6 +146,65 @@ describe('print estimate — wall thickness', () => {
         height: 6,
         style: 'slotted',
         base: { ...P.base, style: 'flat' },
+      }),
+    },
+    {
+      name: 'raised tray 2x2x6 at 1.2mm',
+      params: bin({ width: 2, depth: 2, height: 6, base: { ...P.base, style: 'lid' } }),
+    },
+    {
+      name: 'raised tray 1x1x3 at 2.0mm',
+      params: bin({
+        width: 1,
+        depth: 1,
+        height: 3,
+        wallThickness: 2,
+        base: { ...P.base, style: 'lid' },
+      }),
+    },
+    {
+      name: 'raised friction tray 2x2x3 with 5mm of extra skirt',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 3,
+        base: {
+          ...P.base,
+          style: 'lid',
+          trayBottom: { ...DEFAULT_TRAY_BOTTOM, attachment: 'friction', extraHeightMm: 5 },
+        },
+      }),
+    },
+    {
+      name: 'raised magnetic tray 4x4x3 with edge magnets',
+      params: bin({
+        width: 4,
+        depth: 4,
+        height: 3,
+        base: {
+          ...P.base,
+          style: 'lid',
+          trayBottom: {
+            ...DEFAULT_TRAY_BOTTOM,
+            attachment: 'magnetic',
+            retentionMagnet: { ...DEFAULT_TRAY_BOTTOM.retentionMagnet, edgeMagnets: 1 },
+          },
+        },
+      }),
+    },
+    {
+      name: 'nesting tray 3x2x3 without a lip at 0.8mm',
+      params: bin({
+        width: 3,
+        depth: 2,
+        height: 3,
+        wallThickness: 0.8,
+        base: {
+          ...P.base,
+          style: 'lid',
+          stackingLip: false,
+          trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true },
+        },
       }),
     },
     {
