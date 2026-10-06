@@ -14,7 +14,12 @@
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { binFloorMm } from '@/features/bin-designer/types/base';
 import type { TrayBottomConfig } from '@/features/bin-designer/types/base';
-import { LID_CORNER_RADIUS, LID_FIT_CLEARANCE } from '@/features/bin-designer/types/lid';
+import {
+  LID_CORNER_RADIUS,
+  LID_FIT_CLEARANCE,
+  LID_MIN_RAIL_LENGTH,
+} from '@/features/bin-designer/types/lid';
+import { roundedRectArea, type ShellFootprint } from './printFootprint';
 
 export const SHELL_REFERENCE_WALL_MM = 1.2;
 
@@ -32,27 +37,22 @@ const LIP_SECTION_MM2 = 9.462;
 const LIP_CORNER_DEFICIT_MM3 = 131;
 
 /**
- * A tray bin's lid skirt, measured as the tray less a flat bin on the same
- * floor: linear in the outer perimeter from 1x1 to 4x4, worst residual
- * 0.04mm³. A nesting tray measures the same, its bed floor standing in for the
- * body floor it opens.
+ * A tray bin's lid skirt: what a tray holds beyond a flat bin on the same floor.
+ * A nesting tray's skirt is the same, its bed floor standing in for the body
+ * floor it opens.
  */
 const TRAY_SKIRT_SECTION_MM2 = 16.498;
 const TRAY_SKIRT_CORNER_DEFICIT_MM3 = 334.5;
 
-/** The 0.15mm mate relief that click rails and retention magnets both cut. */
+/** The mate relief click rails and retention magnets cut into the skirt. */
 const TRAY_MATE_RELIEF_SECTION_MM2 = 0.698;
 const TRAY_MATE_RELIEF_CORNER_MM3 = 16.8;
 
-/** Per mm of the rail each wall gets, its coverage share of the run between corners. */
+/** A click rail's cross-section. */
 const TRAY_RAIL_SECTION_MM2 = 7.345;
 
 /** One retention magnet's boss less its pocket, at the default magnet size. */
 const TRAY_MAGNET_MM3 = { raised: 174.7, nesting: 92.4 } as const;
-
-function roundedRectArea(w: number, d: number, r: number): number {
-  return Math.max(0, w) * Math.max(0, d) - (4 - Math.PI) * r * r;
-}
 
 function cavityArea(outerW: number, outerD: number, wall: number): number {
   const r = Math.max(GRIDFINITY.BOX_CORNER_RADIUS - wall, 0);
@@ -108,65 +108,70 @@ export function stackingLipVolume(outerW: number, outerD: number): number {
  * for the fitted model rather than correcting it: that model's `base` term is a
  * socket and its 7mm dead space, neither of which a socketless bin has.
  *
- * The body is exact, the outer box less the cavity above the floor. The lip is
+ * The body is exact, the outline less the cavity above the floor. The lip is
  * the socketed bin's lip, plus or minus the cavity band its inward overhang
  * fills as the wall moves off the reference.
  */
 export function flatShellVolume(
-  outerW: number,
-  outerD: number,
+  footprint: ShellFootprint,
   height: number,
   wall: number,
   floor: number,
   stackingLip: boolean
 ): number {
-  const cavity = cavityArea(outerW, outerD, wall);
-  const outer = Math.max(0, roundedRectArea(outerW, outerD, GRIDFINITY.BOX_CORNER_RADIUS));
-  const body = outer * height - cavity * Math.max(0, height - floor);
+  const box = GRIDFINITY.BOX_CORNER_RADIUS;
+  const cavity = footprint.section(wall, Math.max(box - wall, 0));
+  const body = footprint.section(0, box) * height - cavity * Math.max(0, height - floor);
   if (!stackingLip) return body;
   const lipBand = CAVITY_TOP_ALLOWANCE_MM.lip - CAVITY_TOP_ALLOWANCE_MM.open;
-  const reference = cavityArea(outerW, outerD, SHELL_REFERENCE_WALL_MM);
-  return body + stackingLipVolume(outerW, outerD) + lipBand * (cavity - reference);
+  const reference = footprint.section(
+    SHELL_REFERENCE_WALL_MM,
+    Math.max(box - SHELL_REFERENCE_WALL_MM, 0)
+  );
+  const lip = Math.max(
+    0,
+    LIP_SECTION_MM2 * footprint.lipPerimeter - LIP_CORNER_DEFICIT_MM3 * footprint.turning
+  );
+  return body + lip + lipBand * (cavity - reference);
 }
 
 /**
  * What a tray bin's lid skirt adds under its {@link flatShellVolume} body (mm³),
  * for a `tray` already through `resolveTrayBottomConfig`. Extra skirt depth is
  * the lid wall's own ring, the lid cavity's inset thick.
+ *
+ * A rail shorter than the minimum is one the lid builder drops, but the relief
+ * follows the rail toggles, so a wall too short for its rail is still relieved.
  */
 export function traySkirtVolume(
-  outerW: number,
-  outerD: number,
+  footprint: ShellFootprint,
   tray: TrayBottomConfig,
   magnetCount: number
 ): number {
-  const perimeter = 2 * (outerW + outerD);
+  const box = GRIDFINITY.BOX_CORNER_RADIUS;
   const inset = LID_CORNER_RADIUS - LID_FIT_CLEARANCE;
   const ring =
-    roundedRectArea(outerW, outerD, GRIDFINITY.BOX_CORNER_RADIUS) -
-    roundedRectArea(
-      outerW - 2 * inset,
-      outerD - 2 * inset,
-      Math.max(0, GRIDFINITY.BOX_CORNER_RADIUS - inset)
-    );
+    footprint.outerSection(0, box) - footprint.outerSection(inset, Math.max(0, box - inset));
   let volume =
-    TRAY_SKIRT_SECTION_MM2 * perimeter -
+    TRAY_SKIRT_SECTION_MM2 * footprint.outerPerimeter -
     TRAY_SKIRT_CORNER_DEFICIT_MM3 +
     Math.max(0, ring) * Math.max(0, tray.extraHeightMm);
 
+  const railed = tray.attachment === 'clickRails';
+  let railLength = 0;
+  if (railed) {
+    for (const edge of footprint.railEdges) {
+      if (!tray.clickRails[edge.side]) continue;
+      const rail =
+        (tray.clickRailCoverage / 100) * Math.max(0, edge.length - 2 * LID_CORNER_RADIUS);
+      if (rail >= LID_MIN_RAIL_LENGTH) railLength += rail;
+    }
+  }
   const rails = tray.clickRails;
-  const railRun = (side: number): number =>
-    (tray.clickRailCoverage / 100) * Math.max(0, side - 2 * LID_CORNER_RADIUS);
-  const railLength =
-    tray.attachment === 'clickRails'
-      ? (rails.front ? railRun(outerW) : 0) +
-        (rails.back ? railRun(outerW) : 0) +
-        (rails.left ? railRun(outerD) : 0) +
-        (rails.right ? railRun(outerD) : 0)
-      : 0;
+  const anyRail = railed && (rails.front || rails.back || rails.left || rails.right);
   const magnetic = tray.attachment === 'magnetic';
-  if (railLength > 0 || magnetic) {
-    volume += TRAY_MATE_RELIEF_CORNER_MM3 - TRAY_MATE_RELIEF_SECTION_MM2 * perimeter;
+  if (!footprint.polygon && (anyRail || magnetic)) {
+    volume += TRAY_MATE_RELIEF_CORNER_MM3 - TRAY_MATE_RELIEF_SECTION_MM2 * footprint.outerPerimeter;
   }
   volume += TRAY_RAIL_SECTION_MM2 * railLength;
   if (magnetic) {

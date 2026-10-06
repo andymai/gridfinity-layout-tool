@@ -18,6 +18,14 @@ import {
 } from '@/features/bin-designer/types/base';
 import { retentionBossRadius, retentionMagnetInset } from '@/features/bin-designer/types/lid';
 import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
+import {
+  hasOverhang,
+  overhangExpansion,
+  resolveOverhang,
+  taperInsetAt,
+  type ResolvedOverhang,
+} from '@/shared/utils/overhang';
+import { maskFootprint, rectFootprint, type ShellFootprint } from './printFootprint';
 import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { baseWallHeight } from './binDimensions';
 import { maxCompartmentFloorRaiseMm } from './compartmentFloorRaise';
@@ -147,15 +155,70 @@ export function formatFilament(meters: number): string {
 }
 
 /**
+ * The outline a socketless bin's shell is built on. A custom shape keeps its
+ * mask and takes no overhang, in the body and lid builders alike; a rectangle
+ * grows by the overhang.
+ */
+function socketlessFootprint(
+  params: BinParams,
+  outerW: number,
+  outerD: number,
+  overhang: ResolvedOverhang
+): ShellFootprint {
+  if (isPartialMask(params.cellMask)) {
+    return maskFootprint(
+      params.cellMask,
+      params.gridUnitMm,
+      params.gridUnitMmY ?? params.gridUnitMm
+    );
+  }
+  const growth = overhangExpansion(overhang);
+  return rectFootprint(outerW + growth.addW, outerD + growth.addD);
+}
+
+/**
+ * Floor a tapered overhang takes back. The whole shell follows the taper in, so
+ * under each tapered wall the floor slab is narrower by the taper's inset.
+ */
+function taperFloorRelief(
+  overhang: ResolvedOverhang,
+  bodyW: number,
+  bodyD: number,
+  floor: number,
+  wallHeight: number
+): number {
+  const taper = overhang.taper;
+  if (!taper || floor <= 0) return 0;
+  const steps = 16;
+  const dz = floor / steps;
+  let relief = 0;
+  for (const [side, length] of [
+    [taper.left, bodyD],
+    [taper.right, bodyD],
+    [taper.front, bodyW],
+    [taper.back, bodyW],
+  ] as const) {
+    for (let i = 0; i < steps; i++) {
+      relief += length * taperInsetAt(taper, side, (i + 0.5) * dz, wallHeight) * dz;
+    }
+  }
+  return relief;
+}
+
+/**
  * A tray bin's lid skirt, with its retention magnets counted where the
  * generator places them, so an edge-magnet setting that a short wall cannot
  * take adds nothing here either.
  */
-function trayBottomSkirt(params: BinParams, outerW: number, outerD: number): number {
+function trayBottomSkirt(
+  params: BinParams,
+  footprint: ShellFootprint,
+  overhang: ResolvedOverhang
+): number {
   const tray = resolveTrayBottomConfig(params.base.trayBottom, params.lid.retentionMagnet);
   const { diameter, edgeMagnets } = tray.retentionMagnet;
   const magnets =
-    tray.attachment === 'magnetic'
+    tray.attachment === 'magnetic' && !footprint.polygon
       ? retentionMagnetPositions(
           params.width,
           params.depth,
@@ -163,10 +226,11 @@ function trayBottomSkirt(params: BinParams, outerW: number, outerD: number): num
           params.gridUnitMmY ?? params.gridUnitMm,
           retentionMagnetInset(diameter),
           edgeMagnets,
-          retentionBossRadius(diameter)
+          retentionBossRadius(diameter),
+          hasOverhang(overhang) ? overhangExpansion(overhang) : null
         ).length
       : 0;
-  return traySkirtVolume(outerW, outerD, tray, magnets);
+  return traySkirtVolume(footprint, tray, magnets);
 }
 
 /**
@@ -214,17 +278,32 @@ function computeBinVolume(params: BinParams): number {
   );
   const floorThickness = resolveBinFloorMm({ ...params, wallThickness });
   const socketless = isSocketlessBase(params.base.style);
-  let volume = socketless
-    ? flatShellVolume(
-        outerW,
-        outerD,
-        baseWallHeight(params.base, totalH),
-        wallThickness,
-        floorThickness,
-        params.base.stackingLip
-      )
-    : shell.walls + shell.base + (params.base.stackingLip ? shell.lip : 0);
-  if (params.base.style === 'lid') volume += trayBottomSkirt(params, outerW, outerD);
+  let volume: number;
+  if (socketless) {
+    const overhang = isPartialMask(params.cellMask)
+      ? resolveOverhang(undefined)
+      : resolveOverhang(params.overhang);
+    const footprint = socketlessFootprint(params, outerW, outerD, overhang);
+    const wallHeight = baseWallHeight(params.base, totalH);
+    volume = flatShellVolume(
+      footprint,
+      wallHeight,
+      wallThickness,
+      floorThickness,
+      params.base.stackingLip
+    );
+    const growth = overhangExpansion(overhang);
+    volume -= taperFloorRelief(
+      overhang,
+      outerW + growth.addW,
+      outerD + growth.addD,
+      floorThickness,
+      wallHeight
+    );
+    if (params.base.style === 'lid') volume += trayBottomSkirt(params, footprint, overhang);
+  } else {
+    volume = shell.walls + shell.base + (params.base.stackingLip ? shell.lip : 0);
+  }
 
   // The geometry follows the PLAN, not the flag: with detachable feet
   // requested but no pocket-aligned whole cell to anchor one (a half-lattice

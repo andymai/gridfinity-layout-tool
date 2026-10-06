@@ -14,6 +14,7 @@ import {
 } from '@/shared/printSettings';
 import { footKind, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { DIVIDER_FLOOR_GROOVE_DEPTH } from '@/shared/utils/slotMath';
+import { DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
 import type { BinParams } from '@/features/bin-designer/types';
 
 describe('printEstimates', () => {
@@ -1118,5 +1119,25 @@ describe('socketed bins keep the fitted shell', () => {
     ],
   ])('prices %s as before', (_label, over, volume) => {
     expect(estimatePrint({ ...DEFAULT_BIN_PARAMS, ...over }).volumeMm3).toBe(volume);
+  });
+});
+
+describe('tray click rails', () => {
+  it('prices a tray too small for any rail the same whichever walls ask for one', () => {
+    const tray = (front: boolean, back: boolean, left: boolean, right: boolean): BinParams => ({
+      ...DEFAULT_BIN_PARAMS,
+      width: 0.5,
+      depth: 0.5,
+      height: 3,
+      gridUnitMm: 20,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'lid',
+        trayBottom: { ...DEFAULT_TRAY_BOTTOM, clickRails: { front, back, left, right } },
+      },
+    });
+    expect(estimatePrint(tray(true, true, true, true)).volumeMm3).toBe(
+      estimatePrint(tray(true, false, false, false)).volumeMm3
+    );
   });
 });

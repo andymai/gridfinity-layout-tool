@@ -12,6 +12,7 @@ import { measureVolume, unwrap } from 'brepjs';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
 import type { BinParams } from '@/shared/types/bin';
+import type { CellMask } from '@/shared/utils/cellMask';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { clearAllCaches, getLastSolid } from './shapeCache';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
@@ -28,6 +29,18 @@ const MAX_RESIDUAL = 0.03;
 
 const P = DEFAULT_BIN_PARAMS;
 const bin = (over: Partial<BinParams>): BinParams => ({ ...P, ...over });
+
+/** Half-cell mask with the cells `empty` picks left out. */
+function mask(cols: number, rows: number, empty: (col: number, row: number) => boolean): CellMask {
+  const cells: (0 | 1)[] = [];
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) cells.push(empty(col, row) ? 0 : 1);
+  }
+  return { cols, rows, cells };
+}
+const L_SHAPE = mask(4, 4, (col, row) => col >= 2 && row >= 2);
+const O_SHAPE = mask(6, 6, (col, row) => col >= 2 && col < 4 && row >= 2 && row < 4);
+const OVERHANG = { left: 0, right: 10, front: 5, back: 0, feet: false };
 
 async function exportedVolume(params: BinParams): Promise<number> {
   clearAllCaches();
@@ -208,6 +221,125 @@ describe('print estimate — wall thickness', () => {
       }),
     },
     {
+      name: 'flat 2x2x6 overhung on the right and front',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 6,
+        base: { ...P.base, style: 'flat' },
+        overhang: OVERHANG,
+      }),
+    },
+    {
+      name: 'flat 2x2x6 overhung with a tapered base',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 6,
+        base: { ...P.base, style: 'flat' },
+        overhang: {
+          ...OVERHANG,
+          taper: {
+            enabled: true,
+            profile: 'chamfer',
+            bandHeight: 10,
+            left: 0,
+            right: 10,
+            front: 5,
+            back: 0,
+          },
+        },
+      }),
+    },
+    {
+      name: 'raised tray 2x2x6 overhung on the right and front',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 6,
+        base: { ...P.base, style: 'lid' },
+        overhang: OVERHANG,
+      }),
+    },
+    {
+      name: 'magnetic tray 4x4x3 overhung, with edge magnets',
+      params: bin({
+        width: 4,
+        depth: 4,
+        height: 3,
+        base: {
+          ...P.base,
+          style: 'lid',
+          trayBottom: {
+            ...DEFAULT_TRAY_BOTTOM,
+            attachment: 'magnetic',
+            retentionMagnet: { ...DEFAULT_TRAY_BOTTOM.retentionMagnet, edgeMagnets: 1 },
+          },
+        },
+        overhang: OVERHANG,
+      }),
+    },
+    {
+      name: 'flat L-shaped 2x2x3',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 3,
+        base: { ...P.base, style: 'flat' },
+        cellMask: L_SHAPE,
+      }),
+    },
+    {
+      name: 'flat O-shaped 3x3x3',
+      params: bin({
+        width: 3,
+        depth: 3,
+        height: 3,
+        base: { ...P.base, style: 'flat' },
+        cellMask: O_SHAPE,
+      }),
+    },
+    {
+      name: 'raised tray L-shaped 2x2x3',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 3,
+        base: { ...P.base, style: 'lid' },
+        cellMask: L_SHAPE,
+      }),
+    },
+    {
+      name: 'raised tray O-shaped 3x3x3',
+      params: bin({
+        width: 3,
+        depth: 3,
+        height: 3,
+        base: { ...P.base, style: 'lid' },
+        cellMask: O_SHAPE,
+      }),
+    },
+    {
+      name: 'flat 0.5x0.5 at a 10mm pitch without a lip',
+      params: bin({
+        width: 0.5,
+        depth: 0.5,
+        height: 6,
+        gridUnitMm: 10,
+        base: { ...P.base, style: 'flat', stackingLip: false },
+      }),
+    },
+    {
+      name: 'flat 0.5x1 at a 15mm pitch',
+      params: bin({
+        width: 0.5,
+        depth: 1,
+        height: 6,
+        gridUnitMm: 15,
+        base: { ...P.base, style: 'flat' },
+      }),
+    },
+    {
       name: 'solid 2x2x3 at 2.4mm',
       params: bin({
         width: 2,
@@ -233,6 +365,19 @@ describe('print estimate — wall thickness', () => {
     },
     60000
   );
+
+  it('leaves out the rails a tray too small for them never gets', async () => {
+    const params = bin({
+      width: 0.5,
+      depth: 0.5,
+      height: 3,
+      gridUnitMm: 20,
+      base: { ...P.base, style: 'lid' },
+    });
+    const measured = await exportedVolume(params);
+    const estimated = estimatePrint(params).volumeMm3;
+    expect(Math.abs(estimated - measured) / measured).toBeLessThan(0.01);
+  }, 60000);
 
   it('rises with the wall by what the exported solid gains', async () => {
     const at = (wallThickness: number): BinParams =>
