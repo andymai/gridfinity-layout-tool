@@ -1,0 +1,25 @@
+src/features/bin-designer/utils/printShellVolume.ts
+  s_9c232e0720df0c::t_4b989e24b6640d 32-40,51,84-109
+src/features/bin-designer/utils/printEstimates.ts
+  s_9c232e0720df0c::t_dd62f7a634f58e 54,180-191,272-282
+src/features/generation/worker/generators/printEstimates.wallThickness.scenario.test.ts
+  s_9c232e0720df0c::t_4873b4e8c1977e 106-149
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_9c232e0720df0c::t_4873b4e8c1977e 1098-1122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "87be2e0095c63683b0f8cf654ff2d36989d27680",
+  "prompts": {},
+  "sessions": {
+    "s_9c232e0720df0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27eb60d8-7420-46eb-89be-0e93ba7858b3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
