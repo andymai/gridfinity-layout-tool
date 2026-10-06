@@ -190,8 +190,9 @@ function estimateOverhang(params: BinParams): ResolvedOverhang {
 
 /**
  * Material a tapered overhang takes back between `z0` and `z1` above the body
- * bottom. The whole body follows the taper in, so under each tapered wall a
- * `w` by `d` section is narrower by the taper's inset at that height.
+ * bottom. The whole body follows the taper in, so at each height a `w` by `d`
+ * section is narrowed on both axes before the two are multiplied: two adjacent
+ * tapered walls share their corner rather than each taking it.
  */
 function taperRelief(
   overhang: ResolvedOverhang,
@@ -206,15 +207,12 @@ function taperRelief(
   const steps = 16;
   const dz = (z1 - z0) / steps;
   let relief = 0;
-  for (const [side, length] of [
-    [taper.left, d],
-    [taper.right, d],
-    [taper.front, w],
-    [taper.back, w],
-  ] as const) {
-    for (let i = 0; i < steps; i++) {
-      relief += length * taperInsetAt(taper, side, z0 + (i + 0.5) * dz, wallHeight) * dz;
-    }
+  for (let i = 0; i < steps; i++) {
+    const z = z0 + (i + 0.5) * dz;
+    const inset = (side: number): number => taperInsetAt(taper, side, z, wallHeight);
+    const narrowW = Math.max(0, w - inset(taper.left) - inset(taper.right));
+    const narrowD = Math.max(0, d - inset(taper.front) - inset(taper.back));
+    relief += (w * d - narrowW * narrowD) * dz;
   }
   return relief;
 }
