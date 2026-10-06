@@ -1385,6 +1385,8 @@
   "binDesigner.lid.summaryPartialRails": "{coverage}% rails sur {sides}/4",
   "binDesigner.lid.summarySlide": "Coulissant",
   "binDesigner.lid.text.aria": "Texte du couvercle",
+  "binDesigner.lid.text.rotation": "Rotation",
+  "binDesigner.lid.text.rotationOption": "{angle}°",
   "binDesigner.lid.text.disabledPolygon": "Indisponible pour les bacs de forme personnalisée.",
   "binDesigner.lid.text.disabledStackable": "Indisponible avec une grille d’empilage complète — passez à « Lèvre d’empilage seule » pour libérer la face supérieure du couvercle.",
   "binDesigner.lid.text.useStackLipOnly": "Utiliser la lèvre d’empilage seule",

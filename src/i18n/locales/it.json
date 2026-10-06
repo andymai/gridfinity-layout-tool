@@ -1385,6 +1385,8 @@
   "binDesigner.lid.summaryPartialRails": "{coverage}% guide su {sides}/4",
   "binDesigner.lid.summarySlide": "Scorrevole",
   "binDesigner.lid.text.aria": "Testo del coperchio",
+  "binDesigner.lid.text.rotation": "Rotazione",
+  "binDesigner.lid.text.rotationOption": "{angle}°",
   "binDesigner.lid.text.disabledPolygon": "Non disponibile per contenitori con forma personalizzata.",
   "binDesigner.lid.text.disabledStackable": "Non disponibile con una griglia di impilamento completa: passa a «Solo labbro di impilamento» per liberare la faccia superiore del coperchio.",
   "binDesigner.lid.text.useStackLipOnly": "Usa solo il labbro di impilamento",

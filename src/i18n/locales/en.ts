@@ -2104,6 +2104,8 @@ const en: Record<string, string> = {
   'binDesigner.lid.section.text': 'Lid text',
   'binDesigner.lid.text.placeholder': 'e.g. Cables',
   'binDesigner.lid.text.aria': 'Lid text',
+  'binDesigner.lid.text.rotation': 'Rotation',
+  'binDesigner.lid.text.rotationOption': '{angle}°',
   'binDesigner.infoButton': 'More information',
   'binDesigner.lid.text.useStackLipOnly': 'Use stacking lip only',
   'binDesigner.lid.text.disabledStackable':

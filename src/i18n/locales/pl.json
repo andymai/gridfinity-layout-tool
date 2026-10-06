@@ -1385,6 +1385,8 @@
   "binDesigner.lid.summaryPartialRails": "{coverage}% szyn na {sides}/4",
   "binDesigner.lid.summarySlide": "Przesuwna",
   "binDesigner.lid.text.aria": "Tekst pokrywy",
+  "binDesigner.lid.text.rotation": "Obrót",
+  "binDesigner.lid.text.rotationOption": "{angle}°",
   "binDesigner.lid.text.disabledPolygon": "Niedostępne dla binów o własnym kształcie.",
   "binDesigner.lid.text.disabledStackable": "Niedostępne przy pełnej siatce stosu — przełącz na „Tylko kołnierz sztaplujący”, aby zwolnić górną ściankę pokrywy.",
   "binDesigner.lid.text.useStackLipOnly": "Użyj tylko kołnierza sztaplującego",

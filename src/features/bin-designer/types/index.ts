@@ -32,6 +32,7 @@ export type {
   SurfaceTextConfig,
   WallTextSide,
   WallTextVerticalAlign,
+  TextQuarterTurn,
 } from './text';
 export {
   DEFAULT_TEXT_STYLE_DEFAULTS,
@@ -65,6 +66,8 @@ export {
   withFontSizeOverride,
   WALL_TEXT_SIDES,
   WALL_TEXT_ALIGNS,
+  TEXT_QUARTER_TURNS,
+  isTextQuarterTurn,
 } from './text';
 
 export type {

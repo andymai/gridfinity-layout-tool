@@ -1385,6 +1385,8 @@
   "binDesigner.lid.summaryPartialRails": "レール{coverage}%・{sides}/4",
   "binDesigner.lid.summarySlide": "スライド式",
   "binDesigner.lid.text.aria": "フタのテキスト",
+  "binDesigner.lid.text.rotation": "回転",
+  "binDesigner.lid.text.rotationOption": "{angle}°",
   "binDesigner.lid.text.disabledPolygon": "カスタム形状のビンでは使用できません。",
   "binDesigner.lid.text.disabledStackable": "フルスタックグリッドでは使用できません。「スタッキングリップのみ」に切り替えるとフタの天面が空きます。",
   "binDesigner.lid.text.useStackLipOnly": "スタッキングリップのみにする",

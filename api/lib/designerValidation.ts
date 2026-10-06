@@ -67,6 +67,7 @@ export {
   VALID_TEXT_CUT_PROFILES,
   VALID_WALL_TEXT_SIDES,
   VALID_WALL_TEXT_ALIGNS,
+  VALID_TEXT_QUARTER_TURNS,
   VALID_LABEL_SOCKET_STYLES,
 } from './designerTextValidation.js';
 export {

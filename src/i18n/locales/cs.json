@@ -1385,6 +1385,8 @@
   "binDesigner.lid.summaryPartialRails": "{coverage} % kolejnic na {sides}/4",
   "binDesigner.lid.summarySlide": "Posuvné",
   "binDesigner.lid.text.aria": "Text víka",
+  "binDesigner.lid.text.rotation": "Otočení",
+  "binDesigner.lid.text.rotationOption": "{angle}°",
   "binDesigner.lid.text.disabledPolygon": "Není dostupné pro biny s vlastním tvarem.",
   "binDesigner.lid.text.disabledStackable": "Není dostupné s plnou stohovou mřížkou — přepni na „Pouze stohovací lem“ a uvolni horní plochu víka.",
   "binDesigner.lid.text.useStackLipOnly": "Použít pouze stohovací lem",

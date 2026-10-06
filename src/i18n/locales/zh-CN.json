@@ -1385,6 +1385,8 @@
   "binDesigner.lid.summaryPartialRails": "{coverage}% 导轨，覆盖 {sides}/4 边",
   "binDesigner.lid.summarySlide": "滑动式",
   "binDesigner.lid.text.aria": "盖子文字",
+  "binDesigner.lid.text.rotation": "旋转",
+  "binDesigner.lid.text.rotationOption": "{angle}°",
   "binDesigner.lid.text.disabledPolygon": "自定义形状收纳盒不可用。",
   "binDesigner.lid.text.disabledStackable": "使用完整堆叠网格时不可用 — 切换到“仅堆叠唇边”即可空出盖子的顶面。",
   "binDesigner.lid.text.useStackLipOnly": "仅堆叠唇边",

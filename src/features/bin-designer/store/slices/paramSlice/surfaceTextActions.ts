@@ -5,7 +5,12 @@
  * byte-identically.
  */
 
-import type { WallTextSide, TextAnchor, TextStyleOverride } from '@/features/bin-designer/types';
+import type {
+  WallTextSide,
+  TextAnchor,
+  TextQuarterTurn,
+  TextStyleOverride,
+} from '@/features/bin-designer/types';
 import { TEXT_MAX_LENGTH, normalizeTextInput } from '@/features/bin-designer/types/text';
 import { pushHistoryEntry } from '@/features/bin-designer/store/helpers';
 import type { Set, Get } from './types';
@@ -135,6 +140,20 @@ export function createSurfaceTextActions(set: Set, get: Get) {
           ...(overrides !== null && Object.keys(overrides).length > 0
             ? { lidStyle: overrides }
             : {}),
+        };
+        state.params.surfaceText = Object.keys(next).length > 0 ? next : undefined;
+      });
+    },
+
+    setLidTextRotation: (rotation: TextQuarterTurn) => {
+      const { params } = get();
+      if ((params.surfaceText?.lidTextRotation ?? 0) === rotation) return;
+      set((state) => {
+        pushHistoryEntry(state);
+        const { lidTextRotation: _drop, ...rest } = state.params.surfaceText ?? {};
+        const next = {
+          ...rest,
+          ...(rotation !== 0 ? { lidTextRotation: rotation } : {}),
         };
         state.params.surfaceText = Object.keys(next).length > 0 ? next : undefined;
       });

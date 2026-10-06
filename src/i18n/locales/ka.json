@@ -1788,6 +1788,8 @@
   "binDesigner.lid.section.text": "თავსახურის ტექსტი",
   "binDesigner.lid.text.placeholder": "მაგ. კაბელები",
   "binDesigner.lid.text.aria": "თავსახურის ტექსტი",
+  "binDesigner.lid.text.rotation": "ბრუნვა",
+  "binDesigner.lid.text.rotationOption": "{angle}°",
   "binDesigner.infoButton": "დამატებითი ინფორმაცია",
   "binDesigner.lid.text.useStackLipOnly": "მხოლოდ დასაწყობი კიდის გამოყენება",
   "binDesigner.lid.text.disabledStackable": "სრული დასაწყობი ბადით მიუწვდომელია. თავსახურის ზედა მხარის გასათავისუფლებლად აირჩიეთ „მხოლოდ დასაწყობი კიდე“.",

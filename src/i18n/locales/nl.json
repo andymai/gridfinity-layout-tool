@@ -1385,6 +1385,8 @@
   "binDesigner.lid.summaryPartialRails": "{coverage}% rails op {sides}/4",
   "binDesigner.lid.summarySlide": "Schuifdeksel",
   "binDesigner.lid.text.aria": "Dekseltekst",
+  "binDesigner.lid.text.rotation": "Rotatie",
+  "binDesigner.lid.text.rotationOption": "{angle}°",
   "binDesigner.lid.text.disabledPolygon": "Niet beschikbaar voor bakken met aangepaste vorm.",
   "binDesigner.lid.text.disabledStackable": "Niet beschikbaar met een volledig stapelraster — schakel over naar “Alleen stapelrand” om de bovenkant van het deksel vrij te maken.",
   "binDesigner.lid.text.useStackLipOnly": "Alleen stapelrand gebruiken",

@@ -105,6 +105,8 @@
     "binDesigner.lid.outerDimensions",
     "binDesigner.lid.railsTwoAxis",
     "binDesigner.lid.summary",
+    "binDesigner.lid.text.rotation",
+    "binDesigner.lid.text.rotationOption",
     "binDesigner.lid.topSurface.flat",
     "binDesigner.measure.deltas",
     "binDesigner.multiColor.experimental",

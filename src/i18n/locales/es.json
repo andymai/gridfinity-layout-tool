@@ -1385,6 +1385,8 @@
   "binDesigner.lid.summaryPartialRails": "{coverage}% rieles en {sides}/4",
   "binDesigner.lid.summarySlide": "Deslizante",
   "binDesigner.lid.text.aria": "Texto de la tapa",
+  "binDesigner.lid.text.rotation": "Rotación",
+  "binDesigner.lid.text.rotationOption": "{angle}°",
   "binDesigner.lid.text.disabledPolygon": "No disponible para contenedores de forma personalizada.",
   "binDesigner.lid.text.disabledStackable": "No disponible con una rejilla de apilado completa: cambia a «Solo borde apilable» para liberar la cara superior de la tapa.",
   "binDesigner.lid.text.useStackLipOnly": "Usar solo borde apilable",

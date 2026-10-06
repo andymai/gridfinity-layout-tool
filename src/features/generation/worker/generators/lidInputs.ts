@@ -13,6 +13,7 @@ import type {
   LidCompatibilitySide,
   LidGripMode,
   LidGripSides,
+  TextQuarterTurn,
   TextStyleDefaults,
 } from '@/shared/types/bin';
 import type { MagnetAnchor } from '@/core/types';
@@ -63,6 +64,7 @@ export interface LidTextInputs {
    * through it, and a field added later needs no change here.
    */
   readonly style: TextStyleDefaults & { readonly fontSizeOverride?: number };
+  readonly rotation: TextQuarterTurn;
 }
 
 /**
@@ -485,7 +487,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
       params.surfaceText?.style,
       params.surfaceText?.lidStyle
     );
-    text = { value: lidTextValue, style };
+    text = { value: lidTextValue, style, rotation: params.surfaceText?.lidTextRotation ?? 0 };
   }
 
   // Floor plate takes the largest of: the user's knob, a stack-magnet pocket's

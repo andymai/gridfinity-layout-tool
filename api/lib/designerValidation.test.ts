@@ -1317,6 +1317,27 @@ describe('validateDesignerShare', () => {
       }
     });
 
+    it('round-trips a quarter-turn lid text rotation', () => {
+      const payload = validPayload() as ReturnType<typeof validPayload> & {
+        params: { surfaceText?: unknown };
+      };
+      payload.params.surfaceText = { lidText: 'Cables', lidTextRotation: 270 };
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
+      if (result.valid) {
+        expect((result.payload.params as { surfaceText?: unknown }).surfaceText).toEqual({
+          lidText: 'Cables',
+          lidTextRotation: 270,
+        });
+      }
+    });
+
+    it.each([45, -90, 360, '90', null])('rejects lidTextRotation %s', (rotation) => {
+      const result = withSurfaceText({ lidText: 'Cables', lidTextRotation: rotation });
+      expect(result.valid).toBe(false);
+      if (!result.valid) expect(result.error.message).toMatch(/lidTextRotation/);
+    });
+
     it('rejects non-object', () => {
       expect(withSurfaceText('Cables').valid).toBe(false);
     });
