@@ -1,0 +1,22 @@
+pnpm-workspace.yaml
+  s_9c232e0720df0c::t_ba7430b20131f6 32-37,133
+  s_9c232e0720df0c::t_9277f729437315 134
+pnpm-lock.yaml
+  s_9c232e0720df0c::t_77e4e22c82beac 34,5399-5400,8189,9128,10331,10688,11119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "03bbb6e85f8b87ceeb96a7e9d540cbabc4f39196",
+  "prompts": {},
+  "sessions": {
+    "s_9c232e0720df0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27eb60d8-7420-46eb-89be-0e93ba7858b3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
