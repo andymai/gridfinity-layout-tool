@@ -19,7 +19,7 @@
  * Coordinate system (matches the exact mesh after `translateStage`):
  * - Z=0: foot underside (absolute bottom).
  * - Z=socketHeight: foot top / socket interface (mates with the body).
- * - Z=socketHeight + wallThickness: interior cavity floor.
+ * - Z=socketHeight + resolveBinFloorMm: interior cavity floor.
  * - Z=totalHeight (= socketHeight + wallHeight): body wall top.
  * - With a lip: the outer wall extends to totalHeight + LIP_HEIGHT.
  * - XY centered at the origin; per-cell feet are CLEARANCE smaller than the
@@ -30,6 +30,7 @@ import type { BinParams } from '@/shared/types/bin';
 import { isUndersideRelief } from '@/shared/types/bin';
 import { CONSTRAINTS } from '@/core/constants';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 import type { MeshData } from '../../bridge/types';
 import type { ProgressFn } from './meshUtils';
 import { MeshBuilder, CORNER_SEGMENTS } from './directMeshBuilder';
@@ -192,6 +193,7 @@ interface BinBodyDims {
   readonly outerW: number;
   readonly outerD: number;
   readonly wallThickness: number;
+  readonly floorThickness: number;
   readonly totalHeight: number;
   readonly socketHeight: number;
   readonly hasLip: boolean;
@@ -203,7 +205,7 @@ interface BinBodyDims {
  * (no lip) or a tapered stacking-lip collar.
  */
 function addBinBody(mb: MeshBuilder, dims: BinBodyDims): void {
-  const { outerW, outerD, wallThickness, totalHeight, socketHeight, hasLip } = dims;
+  const { outerW, outerD, wallThickness, floorThickness, totalHeight, socketHeight, hasLip } = dims;
 
   const innerW = Math.max(outerW - 2 * wallThickness, MIN_RING_DIM);
   const innerD = Math.max(outerD - 2 * wallThickness, MIN_RING_DIM);
@@ -213,7 +215,7 @@ function addBinBody(mb: MeshBuilder, dims: BinBodyDims): void {
   const innerPts = roundedRectPoints(innerW, innerD, innerR, CORNER_SEGMENTS);
 
   const zBodyBot = socketHeight;
-  const zFloorTop = socketHeight + wallThickness;
+  const zFloorTop = socketHeight + floorThickness;
   const zWallTop = totalHeight; // = socketHeight + wallHeight
   const zOuterTop = hasLip ? totalHeight + LIP_HEIGHT : zWallTop;
 
@@ -301,6 +303,7 @@ export function generateBinDirect(
     outerW: width * gridUnit - CLEARANCE,
     outerD: depth * gridUnitY - CLEARANCE,
     wallThickness: params.wallThickness,
+    floorThickness: resolveBinFloorMm(params),
     totalHeight,
     socketHeight,
     hasLip: params.base.stackingLip,

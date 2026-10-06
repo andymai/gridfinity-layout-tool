@@ -6,14 +6,17 @@
  * result, so the two must line up — a footprint, foot, or lip-rim mismatch
  * would make the bin visibly jump on the swap. Visual parity isn't
  * snapshot-verifiable, so this measures the dimensional invariants that a
- * CLEARANCE / corner-radius / lip drift would break: bounding box, lip-rim
- * height, and triangle-count order of magnitude. The exact path runs at preview
- * quality (`forExport = false`), the same profile the draft targets.
+ * CLEARANCE / corner-radius / lip / floor drift would break: bounding box,
+ * lip-rim height, cavity floor height, and triangle-count order of magnitude.
+ * The exact path runs at preview quality (`forExport = false`), the same
+ * profile the draft targets.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { BinParams } from '@/shared/types/bin';
+import type { MeshData } from '@/features/generation/bridge/types';
 import { initBrepjs, getGenerateBin, type GenerateBinFn } from './__kernel-tests__/wasmInit';
 import { buildParams } from './__kernel-tests__/scenarioTypes';
+import { columnCrossings } from './__kernel-tests__/meshAssertions';
 import { generateBinDirect } from './binDirectMesh';
 
 let generateBin: GenerateBinFn;
@@ -54,6 +57,11 @@ function bounds(vertices: Float32Array): Bounds {
   return b;
 }
 
+/** An open-top bin's highest surface over its centre is the cavity floor. */
+function cavityFloorZ(mesh: MeshData): number {
+  return Math.max(...columnCrossings(mesh, 0, 0));
+}
+
 /** Assert each bounding-box face aligns within the given tolerances. */
 function expectBoundsMatch(direct: Bounds, brep: Bounds, xyTol: number, zTol: number): void {
   expect(Math.abs(direct.minX - brep.minX)).toBeLessThan(xyTol);
@@ -78,6 +86,11 @@ const cases: ReadonlyArray<readonly [string, Partial<BinParams>]> = [
     '2×2×3 magnet base',
     { width: 2, depth: 2, height: 3, base: { ...buildParams({}).base, style: 'magnet' } },
   ],
+  [
+    '2×2×3 low-profile base',
+    { width: 2, depth: 2, height: 3, base: { ...buildParams({}).base, lowProfile: true } },
+  ],
+  ['2×2×3 wall thicker than the spec floor', { width: 2, depth: 2, height: 3, wallThickness: 2.6 }],
 ];
 
 describe('binDirectMesh — draft/exact parity', () => {
@@ -90,6 +103,14 @@ describe('binDirectMesh — draft/exact parity', () => {
       // XY within 1mm (corner-arc tessellation differs); Z within 0.2mm
       // (the lip rim is the tight constraint — it must not visibly shift).
       expectBoundsMatch(bounds(direct.vertices), bounds(brep.vertices), 1, 0.2);
+    });
+
+    it(`${label}: cavity floor sits where the exact preview puts it`, () => {
+      const params = buildParams(overrides);
+      const brep = generateBin(params, noop, false);
+      const direct = generateBinDirect(params, noop);
+
+      expect(cavityFloorZ(direct)).toBeCloseTo(cavityFloorZ(brep), 2);
     });
 
     it(`${label}: triangle count stays within an order of magnitude`, () => {
