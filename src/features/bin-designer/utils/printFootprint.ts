@@ -28,6 +28,8 @@ export interface ShellFootprint {
   readonly lipPerimeter: number;
   /** Net corner turns over four, which is one fewer per hole. */
   readonly turning: number;
+  /** The box radius as the outline actually rounds it, after any cap or clamp. */
+  readonly cornerRadius: number;
   /** Straight runs a click rail may take, each before its corner allowance. */
   readonly railEdges: ReadonlyArray<{ readonly side: RailSide; readonly length: number }>;
   /** A custom shape, which the lid builder gives no relief, magnets or overhang. */
@@ -46,12 +48,14 @@ export function rectFootprint(outerW: number, outerD: number): ShellFootprint {
     return Math.max(0, roundedRectArea(w, d, r));
   };
   const perimeter = 2 * (outerW + outerD);
+  const box = GRIDFINITY.BOX_CORNER_RADIUS;
   return {
     section,
     outerSection: section,
     outerPerimeter: perimeter,
     lipPerimeter: perimeter,
     turning: 1,
+    cornerRadius: Math.max(0, Math.min(box, SECTION_RADIUS_FRACTION * Math.min(outerW, outerD))),
     railEdges: [
       { side: 'front', length: outerW },
       { side: 'back', length: outerW },
@@ -104,13 +108,17 @@ function toLoop(points: MaskLoop, unitX: number, unitY: number): Loop {
  * sharp below the arc floor. Rounding takes a convex corner's tip and fills a
  * reflex one's, and a simple loop turns four times more convex than reflex.
  */
-function offsetLoopArea(loop: Loop, offset: number, radius: number): number {
+function offsetLoopRadius(loop: Loop, offset: number, radius: number): number {
   let shortest = Infinity;
   loop.lengths.forEach((len, i) => {
     shortest = Math.min(shortest, len - offset * loop.endTurns[i]);
   });
   const clamped = Math.min(radius, shortest / 2 - 0.01);
-  const r = clamped < MIN_ARC_RADIUS_MM ? 0 : clamped;
+  return clamped < MIN_ARC_RADIUS_MM ? 0 : clamped;
+}
+
+function offsetLoopArea(loop: Loop, offset: number, radius: number): number {
+  const r = offsetLoopRadius(loop, offset, radius);
   return loop.area - loop.perimeter * offset + 4 * offset * offset - (4 - Math.PI) * r * r;
 }
 
@@ -155,6 +163,7 @@ export function maskFootprint(mask: CellMask, unitX: number, unitY: number): She
     outerPerimeter,
     lipPerimeter: holes.reduce((s, h) => s + h.perimeter + 8 * clearance, outerPerimeter),
     turning: 1 - holes.length,
+    cornerRadius: offsetLoopRadius(outer, clearance, box),
     railEdges,
     polygon: true,
   };

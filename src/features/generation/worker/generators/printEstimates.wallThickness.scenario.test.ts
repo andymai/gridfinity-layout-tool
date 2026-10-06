@@ -30,7 +30,6 @@ const MAX_RESIDUAL = 0.03;
 const P = DEFAULT_BIN_PARAMS;
 const bin = (over: Partial<BinParams>): BinParams => ({ ...P, ...over });
 
-/** Half-cell mask with the cells `empty` picks left out. */
 function mask(cols: number, rows: number, empty: (col: number, row: number) => boolean): CellMask {
   const cells: (0 | 1)[] = [];
   for (let row = 0; row < rows; row++) {
@@ -38,6 +37,7 @@ function mask(cols: number, rows: number, empty: (col: number, row: number) => b
   }
   return { cols, rows, cells };
 }
+// Mask cells are half grid units, so a 2x2 bin's mask is 4x4.
 const L_SHAPE = mask(4, 4, (col, row) => col >= 2 && row >= 2);
 const O_SHAPE = mask(6, 6, (col, row) => col >= 2 && col < 4 && row >= 2 && row < 4);
 const OVERHANG = { left: 0, right: 10, front: 5, back: 0, feet: false };
@@ -330,6 +330,26 @@ describe('print estimate — wall thickness', () => {
       }),
     },
     {
+      name: 'flat 0.5x0.5 at a 10mm pitch',
+      params: bin({
+        width: 0.5,
+        depth: 0.5,
+        height: 3,
+        gridUnitMm: 10,
+        base: { ...P.base, style: 'flat' },
+      }),
+    },
+    {
+      name: 'raised tray 0.5x0.5 at a 10mm pitch',
+      params: bin({
+        width: 0.5,
+        depth: 0.5,
+        height: 3,
+        gridUnitMm: 10,
+        base: { ...P.base, style: 'lid' },
+      }),
+    },
+    {
       name: 'flat 0.5x1 at a 15mm pitch',
       params: bin({
         width: 0.5,
@@ -365,6 +385,20 @@ describe('print estimate — wall thickness', () => {
     },
     60000
   );
+
+  it('fills a custom-shape solid by what the solid adds to the export', async () => {
+    const shape = { width: 2, depth: 2, height: 3, cellMask: L_SHAPE };
+    const hollow = bin(shape);
+    const solid = bin({
+      ...shape,
+      style: 'solid',
+      base: { ...P.base, solid: true },
+      cutoutConfig: { topOffset: 0 },
+    });
+    const measured = (await exportedVolume(solid)) - (await exportedVolume(hollow));
+    const estimated = estimatePrint(solid).volumeMm3 - estimatePrint(hollow).volumeMm3;
+    expect(Math.abs(estimated - measured) / measured).toBeLessThan(MAX_RESIDUAL);
+  }, 60000);
 
   it('leaves out the rails a tray too small for them never gets', async () => {
     const params = bin({

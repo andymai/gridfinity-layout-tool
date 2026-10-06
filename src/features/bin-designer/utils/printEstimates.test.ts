@@ -1141,3 +1141,24 @@ describe('tray click rails', () => {
     );
   });
 });
+
+describe('solid fill on a custom shape', () => {
+  it('fills the share of mask cells the shape keeps', () => {
+    const fill = (over: Partial<BinParams>): number => {
+      const hollow = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, height: 3, ...over };
+      const solid: BinParams = {
+        ...hollow,
+        style: 'solid',
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutoutConfig: { topOffset: 0 },
+      };
+      return estimatePrint(solid).volumeMm3 - estimatePrint(hollow).volumeMm3;
+    };
+    const lShape = {
+      cols: 4,
+      rows: 4,
+      cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0] as (0 | 1)[],
+    };
+    expect(fill({ cellMask: lShape }) / fill({})).toBeCloseTo(12 / 16, 3);
+  });
+});

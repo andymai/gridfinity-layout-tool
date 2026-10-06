@@ -22,6 +22,7 @@ describe('rectFootprint', () => {
     const capped = rectFootprint(4.5, 4.5).section(0, 3.75);
     expect(capped).toBeCloseTo(roundedRectArea(4.5, 4.5, 0.4 * 4.5), 9);
     expect(capped).toBeGreaterThan(roundedRectArea(4.5, 4.5, 3.75));
+    expect(rectFootprint(4.5, 4.5).cornerRadius).toBeCloseTo(0.4 * 4.5, 9);
   });
 });
 

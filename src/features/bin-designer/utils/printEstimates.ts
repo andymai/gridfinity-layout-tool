@@ -230,7 +230,7 @@ function trayBottomSkirt(
           hasOverhang(overhang) ? overhangExpansion(overhang) : null
         ).length
       : 0;
-  return traySkirtVolume(footprint, tray, magnets);
+  return traySkirtVolume(footprint, tray, magnets, params.heightUnitMm);
 }
 
 /**
@@ -502,8 +502,8 @@ function solidFillVolume(
   // A partial mask carves whole cells out of the footprint, so the fill shrinks
   // with the cell count rather than with the bounding box.
   if (isPartialMask(params.cellMask)) {
-    const cells = params.width * params.depth;
-    if (cells > 0) fill *= countFilled(params.cellMask) / cells;
+    const { cols, rows } = params.cellMask;
+    if (cols * rows > 0) fill *= countFilled(params.cellMask) / (cols * rows);
   }
 
   return Math.max(0, fill - cutoutDisplacementMm3(params, fillHeight));
