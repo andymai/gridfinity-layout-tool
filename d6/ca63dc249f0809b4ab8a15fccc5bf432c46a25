@@ -1,0 +1,114 @@
+api/lib/designerTextValidation.ts
+  s_9c232e0720df0c::t_bdd3f36932c741 189,222-224,246-250
+  s_9c232e0720df0c::t_df6479efc69e2b 251
+docs/schemas/constraints.md
+  s_9c232e0720df0c::t_381446d5f0c06e 189
+src/i18n/locales/fr.json
+  s_9c232e0720df0c::t_26b4b039537c6b 1388-1389
+src/shared/schema/binContentKeys.ts
+  s_9c232e0720df0c::t_6adcd1dc4abaaf 97
+public/schema/bin-design.schema.json
+  s_9c232e0720df0c::t_6adcd1dc4abaaf 2239-2246
+src/features/bin-designer/constants/paramMigrationText.ts
+  s_9c232e0720df0c::t_feb1525d62e7c7 19,105,107,118-120,168,178
+src/i18n/locales/ko.json
+  s_9c232e0720df0c::t_26b4b039537c6b 1388-1389
+src/i18n/locales/nb.json
+  s_9c232e0720df0c::t_26b4b039537c6b 1388-1389
+api/lib/designerValidation.ts
+  s_9c232e0720df0c::t_bdd3f36932c741 70
+src/features/bin-designer/components/panel/LidSection/LidTextRotation.tsx
+  s_9c232e0720df0c::t_67ea7164d4126c 1-36
+scripts/schema/bounds.test.ts
+  s_9c232e0720df0c::t_6adcd1dc4abaaf 109,155,256
+src/i18n/locales/nl.json
+  s_9c232e0720df0c::t_26b4b039537c6b 1388-1389
+src/i18n/locales/cs.json
+  s_9c232e0720df0c::t_26b4b039537c6b 1388-1389
+src/i18n/locales/en.ts
+  s_9c232e0720df0c::t_26b4b039537c6b 2107-2108
+src/i18n/locales/it.json
+  s_9c232e0720df0c::t_26b4b039537c6b 1388-1389
+src/features/generation/worker/generators/textBuilder.ts
+  s_9c232e0720df0c::t_ca5bc98321328f 229-235,287-294
+src/i18n/locales/pl.json
+  s_9c232e0720df0c::t_26b4b039537c6b 1388-1389
+src/features/generation/worker/generators/lidInputs.ts
+  s_9c232e0720df0c::t_18951bb8e00afa 16,67,490
+api/lib/designerValidation.crossBoundary.test.ts
+  s_9c232e0720df0c::t_4160b1c41c594c 94
+  s_9c232e0720df0c::t_bdd3f36932c741 38,156
+api/lib/designerValidation.test.ts
+  s_9c232e0720df0c::t_974f17ac1b6d3f 1320-1340
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_9c232e0720df0c::t_990e2720a9202d 48,336
+src/features/bin-designer/types/index.ts
+  s_9c232e0720df0c::t_26511c10ccaa22 35,69-70
+src/features/bin-designer/store/slices/paramSlice/surfaceTextActions.ts
+  s_9c232e0720df0c::t_5876cc548a0409 8-13,148-156
+  s_9c232e0720df0c::t_a019e91126882e 157-161
+src/shared/types/bin.ts
+  s_9c232e0720df0c::t_3afccb6ad2f1e1 110,302
+src/i18n/locales/de.json
+  s_9c232e0720df0c::t_26b4b039537c6b 1388-1389
+src/i18n/locales/ja.json
+  s_9c232e0720df0c::t_26b4b039537c6b 1388-1389
+src/i18n/locales/ka.json
+  s_9c232e0720df0c::t_26b4b039537c6b 1791-1792
+src/features/bin-designer/types/designerState.ts
+  s_9c232e0720df0c::t_5876cc548a0409 19-24,283
+  s_9c232e0720df0c::t_3e3199afa86e5c 18
+src/i18n/locales/pt-BR.json
+  s_9c232e0720df0c::t_26b4b039537c6b 1388-1389
+src/i18n/locales/sv.json
+  s_9c232e0720df0c::t_26b4b039537c6b 1388-1389
+src/features/generation/worker/generators/lidTextBuilder.ts
+  s_9c232e0720df0c::t_873b961c1d5441 113-115,126-127,133-134
+src/i18n/locales/zh-CN.json
+  s_9c232e0720df0c::t_26b4b039537c6b 1388-1389
+src/features/bin-designer/store/designer.scenario.lid.test.ts
+  s_9c232e0720df0c::t_ac9601d65832d0 168-188
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_9c232e0720df0c::t_c7e0bfc651726a 535-549
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_9c232e0720df0c::t_ac9601d65832d0 296-310
+scripts/i18n-values-allowlist.json
+  s_9c232e0720df0c::t_1e3ebb7a56d3a4 108-109
+src/features/generation/worker/generators/lidTextBuilder.test.ts
+  s_9c232e0720df0c::t_3edde3b619f3cb 72-74,77-81
+  s_9c232e0720df0c::t_2ff5d22256369c 1-71,75-76,82-112
+src/features/bin-designer/components/panel/LidSection/LidTextRotation.test.tsx
+  s_9c232e0720df0c::t_a362df498de8a2 1-45
+src/features/bin-designer/types/text.ts
+  s_9c232e0720df0c::t_575c5b6a0cb4d3 406-419
+  s_9c232e0720df0c::t_a3986b6f1ec917 438-442
+  s_a8677c67f85a06::t_6f01f18a122220 405,437
+src/i18n/locales/es.json
+  s_9c232e0720df0c::t_26b4b039537c6b 1388-1389
+src/i18n/locales/uk.json
+  s_9c232e0720df0c::t_26b4b039537c6b 1388-1389
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d6ca63dc249f0809b4ab8a15fccc5bf432c46a25",
+  "prompts": {},
+  "sessions": {
+    "s_9c232e0720df0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27eb60d8-7420-46eb-89be-0e93ba7858b3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_a8677c67f85a06": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85b17417-28bf-4293-9803-4c3b96f3617d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
