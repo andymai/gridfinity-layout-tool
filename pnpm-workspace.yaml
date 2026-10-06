@@ -29,15 +29,12 @@ minimumReleaseAgeExclude:
   # every future release of it. One package needing two versions exempted takes
   # a single `||` union entry, never a second line (see SECURITY.md).
   #
-  # nanoid 3.3.18 (2026-08-07) fixes GHSA-2v37-7h3g-55p8 / CVE-2026-67213: a custom generator
-  # loops forever when size is 0. Reached only through postcss at build time.
-  # TODO: remove after 2026-08-15.
-  - nanoid@3.3.18
-  # dompurify 3.4.13 (2026-08-03) fixes GHSA-55q2-fjhq-7xh7: removing a hook
-  # with IN_PLACE leaves the detached subtree executable (XSS). This one ships
-  # to the browser — posthog-js is a runtime dependency.
-  # TODO: remove after 2026-08-10.
-  - dompurify@3.4.13
+  # source-map-js 1.2.2 (2026-09-30) fixes GHSA-68fv-2mgg-jv7q / CVE-2026-93749:
+  # an indexed source map with a huge section offset exhausts the event loop.
+  # Reached only through build and test tooling (postcss, Tailwind, css-tree,
+  # magicast).
+  # TODO: remove after 2026-10-08.
+  - source-map-js@1.2.2
 
 # Blocks Shai-Hulud-class worms that spread via npm lifecycle scripts.
 # Packages that need to build are listed in allowBuilds.
@@ -133,6 +130,8 @@ overrides:
   # major cannot be patched in place anyway — OSV would flag it and it gets its
   # own rule then. The 4.x–5.x affected range is not in the tree.
   'nanoid@>=3.0.0 <3.3.18': '^3.3.18'
+  # 1.2.2 fixes GHSA-68fv-2mgg-jv7q.
+  'source-map-js@>=1.0.0 <1.2.2': '^1.2.2'
   # The bare `protobufjs: ^7.6.4` this replaces was not latent -- it was firing.
   # @cesium/engine asks for ^8.6.5 and was being pinned back to the 7.x line,
   # two majors of API behind what it declares, for no security gain: 8.x resolves
