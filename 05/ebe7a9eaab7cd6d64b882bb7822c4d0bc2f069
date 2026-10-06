@@ -1,0 +1,21 @@
+src/features/bin-designer/utils/printEstimates.ts
+  s_9c232e0720df0c::t_f41a53eb4de1bc 182-183,185-196,198-201,205,207,210-213,216,301,312,316,515-530
+src/features/generation/worker/generators/printEstimates.wallThickness.scenario.test.ts
+  s_9c232e0720df0c::t_43392835b7010a 407-482
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "05ebe7a9eaab7cd6d64b882bb7822c4d0bc2f069",
+  "prompts": {},
+  "sessions": {
+    "s_9c232e0720df0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27eb60d8-7420-46eb-89be-0e93ba7858b3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
