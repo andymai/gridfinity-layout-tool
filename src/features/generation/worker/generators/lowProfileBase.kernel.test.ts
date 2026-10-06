@@ -183,8 +183,6 @@ describe('low-profile base: the bin itself', () => {
   }, 120000);
 
   it('runs the outer wall flush into the feet, with no groove above them', () => {
-    // 0.05mm inside each wall, over a foot's straight edge: the foot's taper
-    // starts 0.05 under its 3.65 top, so the column is solid from there up.
     const low = bin(true);
     const columns: ReadonlyArray<readonly [number, number]> = [
       [-30.37, -20.7],
