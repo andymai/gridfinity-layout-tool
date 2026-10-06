@@ -11,11 +11,8 @@
  */
 
 import type { BinParams } from '@/features/bin-designer/types';
-import {
-  binFloorMm,
-  isSocketlessBase,
-  isUndersideRelief,
-} from '@/features/bin-designer/types/base';
+import { isSocketlessBase, isUndersideRelief } from '@/features/bin-designer/types/base';
+import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { baseWallHeight } from './binDimensions';
 import { maxCompartmentFloorRaiseMm } from './compartmentFloorRaise';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
@@ -262,11 +259,13 @@ function computeBinVolume(params: BinParams): number {
   }
 
   if (!params.base.stackingLip) volume -= stackingLipVolume(outerW, outerD) - shell.lip;
+  const floorThickness = resolveBinFloorMm({ ...params, wallThickness });
   volume += wallThicknessDelta(
     outerW,
     outerD,
     baseWallHeight(params.base, totalH),
     wallThickness,
+    floorThickness,
     params.base.stackingLip
   );
 
@@ -302,7 +301,13 @@ function computeBinVolume(params: BinParams): number {
   }
 
   // Floor pattern: drainage holes remove floor slab AND foot material.
-  volume -= computeFloorPatternReduction(params, wallThickness, shell.base, feetDetach);
+  volume -= computeFloorPatternReduction(
+    params,
+    wallThickness,
+    floorThickness,
+    shell.base,
+    feetDetach
+  );
 
   // Exterior-wall collar: a walled ring raised above the nominal
   // body — perimeter wall material only, no floor/interior. Ring cross-section
@@ -359,7 +364,7 @@ function solidFillVolume(
   // the difference twice. Resolved from `params.wallThickness` rather than the
   // style constant above, because that is what the pipeline resolves it from —
   // they part company once a wall exceeds the spec floor.
-  const floorThickness = binFloorMm(params.wallThickness);
+  const floorThickness = resolveBinFloorMm(params);
   const fillHeight = wallHeight - floorThickness - Math.max(0, params.cutoutConfig.topOffset);
   if (fillHeight <= 0) return 0;
 
@@ -447,7 +452,7 @@ function computeScoopVolume(params: BinParams, outerW: number, outerD: number): 
   const frame = scoopFrameHeights(
     boxWallHeight,
     computeInteriorHeight(boxWallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER),
-    binFloorMm(wall)
+    resolveBinFloorMm(params)
   );
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
   const sides = resolveScoopSides(params.scoop);

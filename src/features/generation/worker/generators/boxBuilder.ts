@@ -288,7 +288,10 @@ export function buildBinBox(
 
     /**
      * The slab overlaps the existing floor top by COPLANAR_MARGIN — merely
-     * meeting that face fuses non-manifold.
+     * meeting that face fuses non-manifold. Never by more than half the floor
+     * it lands on: under a 1mm wall the full margin reaches past the body's
+     * underside, onto the bed of a flat bin and into the gaps between a
+     * socketed bin's feet.
      *
      * Its footprint is rim-sized, so on a tapered body it has to be clipped to
      * the inner envelope: down at the floor the wall has narrowed away from the
@@ -296,8 +299,9 @@ export function buildBinBox(
      */
     const finish = (shape: Shape3D, taper?: ResolvedTaper | null): Shape3D => {
       if (!raisesFloor) return setBoxCache(boxKey, shape);
-      const solidSlab = sketch(makeInnerFootprint(), 'XY', wallThickness - COPLANAR_MARGIN).extrude(
-        floorThickness - wallThickness + COPLANAR_MARGIN
+      const slabBottom = Math.max(wallThickness - COPLANAR_MARGIN, wallThickness / 2);
+      const solidSlab = sketch(makeInnerFootprint(), 'XY', slabBottom).extrude(
+        floorThickness - slabBottom
       );
       // A custom shape's inner footprint is its outer loop alone; the slab
       // would close each hole through the bin.

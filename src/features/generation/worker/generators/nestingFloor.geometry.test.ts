@@ -216,9 +216,9 @@ describe('nesting body', () => {
   });
 
   it.each([
-    [0.8, binFloorMm(0.8)],
-    [1.2, binFloorMm(1.2)],
-    [2.6, binFloorMm(2.6)],
+    [0.8, binFloorMm(0.8, 'lid', 0)],
+    [1.2, binFloorMm(1.2, 'lid', 0)],
+    [2.6, binFloorMm(2.6, 'lid', 0)],
   ])(
     'uses the ordinary floor minimum with %s mm walls (%s mm floor)',
     (wallThickness, expectedFloor) => {

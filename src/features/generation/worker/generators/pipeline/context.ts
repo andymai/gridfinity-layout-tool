@@ -8,14 +8,13 @@
 import type { BinParams } from '@/shared/types/bin';
 import {
   hasDetachableFeet,
-  binFloorMm,
   hasDividerLean,
   isUndersideRelief,
   resolveLipTip,
   resolveTileFloorThickness,
 } from '@/shared/types/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
-import { dividerGrooveDepth } from '@/shared/utils/slotMath';
+import { dividerGrooveDepth, resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { isSlottedBody } from '@/shared/utils/slotFreeWalls';
 import { isFractional } from '@/core/constants';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
@@ -92,7 +91,7 @@ export function deriveDimensions(
   // is skipped too, and the export is a flat-bottomed box with no feet part.
   const detachableFeet =
     hasDetachableFeet(params.base) && resolveDetachableFeet(params).placements.length > 0;
-  const floorThickness = binFloorMm(params.wallThickness);
+  const floorThickness = resolveBinFloorMm(params);
   // User flag only. When the mask has mixed half-bin detail, the socket
   // builder does a per-cell dispatch using the mask — it splits only
   // those 1u cells that straddle a half-bin boundary into quarter

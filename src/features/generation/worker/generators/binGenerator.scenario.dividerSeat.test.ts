@@ -2,7 +2,7 @@
  * Scenario test: a removable divider can reach its lock.
  *
  * The wall slot's head pocket and throat only work if the divider can seat at
- * the pocket. Every base style carries a 2mm interior floor (binFloorMm), so a
+ * the pocket. A socketed bin carries a 2.25mm interior floor (binFloorMm), so a
  * slot that starts inside that floor buries the pocket where no divider can
  * drop to it, and the divider's full-thickness head lands on the throat
  * instead. That is what shipped for the first two retention attempts. This

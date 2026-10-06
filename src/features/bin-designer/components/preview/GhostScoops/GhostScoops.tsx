@@ -25,7 +25,7 @@ import {
   scoopFaceOffset,
   scoopFrameHeights,
 } from '@/shared/utils/scoopCalculations';
-import { binFloorMm } from '@/features/bin-designer/types/base';
+import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 
 const GHOST_COLOR = '#f97316';
 const GHOST_OPACITY = 0.35;
@@ -46,6 +46,7 @@ export function GhostScoops() {
     base,
     cellMask,
     lid,
+    floorThickness,
     generationStatus,
   } = useDesignerStore(
     useShallow((s) => ({
@@ -62,6 +63,7 @@ export function GhostScoops() {
       base: s.params.base,
       cellMask: s.params.cellMask,
       lid: s.params.lid,
+      floorThickness: resolveBinFloorMm(s.params),
       generationStatus: s.generation.status,
     }))
   );
@@ -77,7 +79,6 @@ export function GhostScoops() {
   const boxWallHeight = baseWallHeight(base, totalH);
   // The ramp stands on the interior floor: its rise clamps against the heights
   // above that floor and the strip is drawn from there, matching the worker.
-  const floorThickness = binFloorMm(wallThickness);
   const { wallHeight, interiorHeight } = scoopFrameHeights(
     boxWallHeight,
     computeInteriorHeight(boxWallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER),

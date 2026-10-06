@@ -37,11 +37,12 @@ import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 // shelf datum both need it and both are reached from here.
 export { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
 import { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
-import { binFloorMm, isSocketlessBase } from '@/features/bin-designer/types/base';
+import { isSocketlessBase } from '@/features/bin-designer/types/base';
 import {
   calculateDividerPieceHeight,
   dividerGrooveDepth,
   dividerSeatZ,
+  resolveBinFloorMm,
 } from '@/shared/utils/slotMath';
 import {
   computeLipOffset,
@@ -202,7 +203,7 @@ function scoopReachesRailBand(params: BinParams, side: ScoopSide): boolean {
   const { wallHeight, interiorHeight } = scoopFrameHeights(
     boxWallHeight,
     computeInteriorHeight(params),
-    binFloorMm(params.wallThickness)
+    resolveBinFloorMm(params)
   );
   const idAt = (col: number, row: number): number => cells[row * cols + col];
   const against =
@@ -474,7 +475,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
         { height: 'auto' },
         binDimensions(params).wallHeight,
         params.base.stackingLip,
-        dividerSeatZ(params.wallThickness, dividerGrooveDepth(params))
+        dividerSeatZ(params.wallThickness, params.base.style, dividerGrooveDepth(params))
       )
   ) {
     issues.push({ id: 'tallDividerPieces', severity: 'blocker' });

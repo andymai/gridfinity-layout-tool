@@ -41,7 +41,11 @@ const AUTO_HEIGHT = calculateDividerPieceHeight(
   { height: 'auto' },
   WALL_HEIGHT,
   false,
-  dividerSeatZ(DEFAULT_BIN_PARAMS.wallThickness, DIVIDER_FLOOR_GROOVE_DEPTH)
+  dividerSeatZ(
+    DEFAULT_BIN_PARAMS.wallThickness,
+    DEFAULT_BIN_PARAMS.base.style,
+    DIVIDER_FLOOR_GROOVE_DEPTH
+  )
 );
 
 describe('buildDividerPiece', () => {

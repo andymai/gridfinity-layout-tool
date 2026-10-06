@@ -45,7 +45,7 @@ export function useSlotConfigurator() {
   const { slotConfig, dividerPieces } = params;
   const stackingLip = params.base.stackingLip;
   const grooveDepth = dividerGrooveDepth(params);
-  const seatZ = dividerSeatZ(params.wallThickness, grooveDepth);
+  const seatZ = dividerSeatZ(params.wallThickness, params.base.style, grooveDepth);
   const t = useTranslation();
 
   // ── Dimension calculations ──────────────────────────────────────────

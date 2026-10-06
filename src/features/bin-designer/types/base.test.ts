@@ -60,11 +60,28 @@ describe('detachable pin engagement', () => {
 
   it('gives every allowed wall the same engagement, so the fit never depends on it', () => {
     for (const wall of [1, 1.2, 1.6, 2, 2.4]) {
-      expect(detachablePinEngagementMm(binFloorMm(wall))).toBeGreaterThanOrEqual(
+      expect(detachablePinEngagementMm(binFloorMm(wall, 'standard', 0))).toBeGreaterThanOrEqual(
         DETACHABLE_PIN_TARGET_ENGAGEMENT_MM
       );
     }
     // A thicker wall keeps its own floor rather than being thinned to the target.
-    expect(binFloorMm(4)).toBe(4);
+    expect(binFloorMm(4, 'standard', 0)).toBe(4);
+  });
+});
+
+describe('binFloorMm', () => {
+  it('gives a socketed or tray base the spec floor above its socket', () => {
+    for (const style of ['standard', 'magnet', 'lid'] as const) {
+      expect(binFloorMm(1.2, style, 0)).toBeCloseTo(2.25, 9);
+      expect(binFloorMm(1.2, style, 0.8)).toBeCloseTo(2.25, 9);
+    }
+  });
+
+  it('gives a flat base a floor as thick as its wall', () => {
+    for (const wall of [0.4, 1.2, 2.6]) expect(binFloorMm(wall, 'flat', 0)).toBe(wall);
+  });
+
+  it('thickens a flat floor by its divider groove, leaving a wall under the groove', () => {
+    expect(binFloorMm(1.2, 'flat', 0.8) - 0.8).toBeCloseTo(1.2, 9);
   });
 });

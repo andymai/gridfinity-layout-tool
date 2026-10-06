@@ -17,11 +17,11 @@ import { box, unwrap, fuseAll, withScope, clone } from 'brepjs';
 import type { DisposalScope } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
-import { binFloorMm } from '@/shared/types/bin';
 import {
   calculateSlotPositions,
   dividerGrooveDepth,
   getDividerLockPlan,
+  resolveBinFloorMm,
   getEffectiveSlotDimensions as getEffectiveSlotDimensionsRaw,
   MIN_WALL_FOR_SLOTS,
 } from '@/shared/utils/slotMath';
@@ -240,7 +240,7 @@ export function buildSlotCuts(
   wallHeight: number,
   lipInfo?: LipCutInfo,
   seat: DividerSeat = {
-    floorZ: binFloorMm(params.wallThickness),
+    floorZ: resolveBinFloorMm(params),
     grooveDepth: dividerGrooveDepth(params),
   }
 ): Shape3D | null {

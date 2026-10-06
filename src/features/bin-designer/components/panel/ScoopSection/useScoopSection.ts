@@ -15,7 +15,7 @@ import {
   computeInteriorHeight,
   scoopFrameHeights,
 } from '@/shared/utils/scoopCalculations';
-import { binFloorMm } from '@/features/bin-designer/types/base';
+import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 import type { ScoopStyle, ScoopSide } from '@/shared/types/bin';
 import { getFeatureStatus } from '@/shared/constraints';
 
@@ -91,7 +91,7 @@ export function useScoopSection() {
     const { wallHeight, interiorHeight } = scoopFrameHeights(
       boxWallHeight,
       computeInteriorHeight(boxWallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER),
-      binFloorMm(params.wallThickness)
+      resolveBinFloorMm(params)
     );
     const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
 

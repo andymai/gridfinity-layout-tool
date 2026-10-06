@@ -209,7 +209,8 @@ describe('the interior relief opens its cups whatever the wall', () => {
       const { minZ } = boundingBox(m.vertices);
       // The export mesh sits with the feet on its own minZ, so the cavity floor is
       // a socket plus a floor above that.
-      const floorTop = minZ + GRIDFINITY_SPEC.SOCKET_HEIGHT + binFloorMm(wallThickness);
+      const floorTop =
+        minZ + GRIDFINITY_SPEC.SOCKET_HEIGHT + binFloorMm(wallThickness, 'standard', 0);
       // Just under the cavity floor, at a cup mouth: open on the interior relief.
       expect(isSolidThrough(m, 21, 0, floorTop - 0.3, floorTop - 0.05)).toBe(false);
       // And between the cups the floor is still there, so this is an opening

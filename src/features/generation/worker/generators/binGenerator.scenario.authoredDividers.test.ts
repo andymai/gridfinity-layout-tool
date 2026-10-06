@@ -84,7 +84,7 @@ describe('authored divider pieces through the real kernel', () => {
       params.dividerPieces,
       WALL_HEIGHT,
       false,
-      dividerSeatZ(params.wallThickness, dividerGrooveDepth(params))
+      dividerSeatZ(params.wallThickness, params.base.style, dividerGrooveDepth(params))
     );
     const notchDepth = pieceHeight / 2 + clearance;
 

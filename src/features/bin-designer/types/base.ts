@@ -354,8 +354,20 @@ export function detachablePinEngagementMm(floorThicknessMm: number): number {
  *
  * A wall thicker than the remainder keeps its own floor: thinning it back to
  * spec would put less material under the cavity than beside it.
+ *
+ * A flat base has no socket, so that dead space has nothing to describe: its
+ * floor lies on the bed and its height already counts from there. The spec
+ * floor there is a slab of solid infill the bin never needed, so it takes the
+ * wall instead, thickened by any divider groove cut into it so the membrane
+ * under the groove is still a wall thick. A tray keeps the spec floor, because
+ * it spans the open skirt beneath it.
  */
-export function binFloorMm(wallThicknessMm: number): number {
+export function binFloorMm(
+  wallThicknessMm: number,
+  style: BaseStyle,
+  grooveDepthMm: number
+): number {
+  if (style === 'flat') return wallThicknessMm + grooveDepthMm;
   return Math.max(wallThicknessMm, GRIDFINITY.BASE_HEIGHT - GRIDFINITY.SOCKET_HEIGHT);
 }
 

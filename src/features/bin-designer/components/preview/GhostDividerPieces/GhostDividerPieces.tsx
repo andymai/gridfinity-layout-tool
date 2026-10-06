@@ -165,10 +165,13 @@ export function GhostDividerPieces() {
   // body's Z=0. Flat bases have no offset.
   const seatZ = dividerSeatZ(
     wallThickness,
+    base.style,
     dividerGrooveDepth({
       style,
       dividerPieces,
       base,
+      wallThickness,
+      slotConfig,
       width,
       depth,
       gridUnitMm,

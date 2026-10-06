@@ -87,6 +87,9 @@ const MESH_CACHE_VERSION = 'v27';
  * assembly-item previews (their own `item` segment) stay warm. The mirror of
  * {@link itemMeshCacheKey}'s segment.
  *
+ * `bin5`: a flat base's floor follows the wall instead of the spec floor, and a
+ * raised floor under a wall below 1mm no longer reaches past the body's
+ * underside.
  * `bin4`: a low-profile bin's ridge relief lifts every underside region with
  * no foot above it, so an overhang or a footless fractional strip sits higher.
  * `bin3`: a low-profile bin's ridge relief stays off the feet's top faces, so
@@ -96,7 +99,7 @@ const MESH_CACHE_VERSION = 'v27';
  * `bin1`: a lipless bin's sliding-lid entry window no longer ramps through the
  * rim, so its entry corners keep their full wall height.
  */
-const BIN_MESH_REVISION = 'bin4';
+const BIN_MESH_REVISION = 'bin5';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for
