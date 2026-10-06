@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/lowProfileBase.kernel.test.ts
+  s_9c232e0720df0c::t_edd3e867be3588 15,280-287,311,317-328
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "42e202c6412731cafabaee27627472ae97df02e5",
+  "prompts": {},
+  "sessions": {
+    "s_9c232e0720df0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27eb60d8-7420-46eb-89be-0e93ba7858b3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
