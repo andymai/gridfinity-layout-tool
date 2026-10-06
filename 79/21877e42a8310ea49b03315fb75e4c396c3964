@@ -1,0 +1,31 @@
+src/features/bin-designer/utils/printFootprint.test.ts
+  s_9c232e0720df0c::t_ed4b2250f3922f 25
+src/features/bin-designer/utils/printEstimates.ts
+  s_9c232e0720df0c::t_75905ee8303c85 233,505-506
+src/features/generation/worker/generators/printEstimates.wallThickness.scenario.test.ts
+  s_9c232e0720df0c::t_ed4cddcf692a9a 40
+  s_9c232e0720df0c::t_ed4b2250f3922f 332-351,389-401
+  s_9c232e0720df0c::t_3a22da488fdb49 402
+src/features/bin-designer/utils/printFootprint.ts
+  s_9c232e0720df0c::t_7de66f20181874 31-32,51,58,111,117-121,166
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_9c232e0720df0c::t_ed4b2250f3922f 1144-1164
+src/features/bin-designer/utils/printShellVolume.ts
+  s_9c232e0720df0c::t_9975d9fb91df1e 18,21,23-27,46-47,129-133,137-183,186,194-195,210-230
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7921877e42a8310ea49b03315fb75e4c396c3964",
+  "prompts": {},
+  "sessions": {
+    "s_9c232e0720df0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27eb60d8-7420-46eb-89be-0e93ba7858b3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
