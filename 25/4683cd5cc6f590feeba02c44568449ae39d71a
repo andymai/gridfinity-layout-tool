@@ -1,0 +1,23 @@
+src/features/generation/worker/generators/binDirectMesh.ts
+  s_9c232e0720df0c::t_055c5def3b76b9 22,33,196,208,218,306
+src/features/generation/worker/generators/binDirectMesh.parity.test.ts
+  s_9c232e0720df0c::t_267160452aac9e 19,60,62
+  s_9c232e0720df0c::t_bbedad9e046f8f 9,63-64,89-93,108-115
+  s_9c232e0720df0c::t_8a1169cb105613 10-12,16,61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "254683cd5cc6f590feeba02c44568449ae39d71a",
+  "prompts": {},
+  "sessions": {
+    "s_9c232e0720df0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27eb60d8-7420-46eb-89be-0e93ba7858b3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
