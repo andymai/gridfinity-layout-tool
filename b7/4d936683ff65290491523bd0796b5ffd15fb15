@@ -1,0 +1,24 @@
+src/features/generation/worker/generators/ridgeReliefBuilder.ts
+  s_9c232e0720df0c::t_8cded8dc37693a 94-95,111-116
+src/features/generation/worker/generators/scenarios/lowProfile.ts
+  s_9c232e0720df0c::t_8cded8dc37693a 92-98
+src/features/generation/worker/generators/lowProfileBase.kernel.test.ts
+  s_9c232e0720df0c::t_2b5a27f6d9b8f8 181-210,212-215
+  s_9c232e0720df0c::t_8cded8dc37693a 177-178
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b74d936683ff65290491523bd0796b5ffd15fb15",
+  "prompts": {},
+  "sessions": {
+    "s_9c232e0720df0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27eb60d8-7420-46eb-89be-0e93ba7858b3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
