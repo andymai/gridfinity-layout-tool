@@ -404,6 +404,82 @@ describe('print estimate — wall thickness', () => {
         cutoutConfig: { topOffset: 0 },
       }),
     },
+    {
+      name: 'solid standard 2x2x3 overhung',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 3,
+        style: 'solid',
+        base: { ...P.base, solid: true },
+        overhang: OVERHANG,
+        cutoutConfig: { topOffset: 0 },
+      }),
+    },
+    {
+      name: 'solid flat 2x2x3 overhung',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 3,
+        style: 'solid',
+        base: { ...P.base, style: 'flat', solid: true },
+        overhang: OVERHANG,
+        cutoutConfig: { topOffset: 0 },
+      }),
+    },
+    {
+      name: 'solid raised tray 2x2x3 overhung',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 3,
+        style: 'solid',
+        base: { ...P.base, style: 'lid', solid: true },
+        overhang: OVERHANG,
+        cutoutConfig: { topOffset: 0 },
+      }),
+    },
+    {
+      name: 'solid nesting tray 2x2x3 overhung',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 3,
+        style: 'solid',
+        base: {
+          ...P.base,
+          style: 'lid',
+          solid: true,
+          trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true },
+        },
+        overhang: OVERHANG,
+        cutoutConfig: { topOffset: 0 },
+      }),
+    },
+    {
+      name: 'solid flat 2x2x6 overhung with a tapered base',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 6,
+        style: 'solid',
+        base: { ...P.base, style: 'flat', solid: true },
+        overhang: {
+          ...OVERHANG,
+          taper: {
+            enabled: true,
+            profile: 'chamfer',
+            bandHeight: 10,
+            left: 0,
+            right: 10,
+            front: 5,
+            back: 0,
+          },
+        },
+        cutoutConfig: { topOffset: 0 },
+      }),
+    },
   ];
 
   it.each(cases)(

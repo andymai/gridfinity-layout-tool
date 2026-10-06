@@ -179,29 +179,41 @@ function socketlessFootprint(
 }
 
 /**
- * Floor a tapered overhang takes back. The whole shell follows the taper in, so
- * under each tapered wall the floor slab is narrower by the taper's inset.
+ * The overhang the body is built with: none on a custom shape, as
+ * `deriveDimensions` and `resolveLidInputs` resolve it.
  */
-function taperFloorRelief(
+function estimateOverhang(params: BinParams): ResolvedOverhang {
+  return isPartialMask(params.cellMask)
+    ? resolveOverhang(undefined)
+    : resolveOverhang(params.overhang);
+}
+
+/**
+ * Material a tapered overhang takes back between `z0` and `z1` above the body
+ * bottom. The whole body follows the taper in, so under each tapered wall a
+ * `w` by `d` section is narrower by the taper's inset at that height.
+ */
+function taperRelief(
   overhang: ResolvedOverhang,
-  bodyW: number,
-  bodyD: number,
-  floor: number,
+  w: number,
+  d: number,
+  z0: number,
+  z1: number,
   wallHeight: number
 ): number {
   const taper = overhang.taper;
-  if (!taper || floor <= 0) return 0;
+  if (!taper || z1 <= z0) return 0;
   const steps = 16;
-  const dz = floor / steps;
+  const dz = (z1 - z0) / steps;
   let relief = 0;
   for (const [side, length] of [
-    [taper.left, bodyD],
-    [taper.right, bodyD],
-    [taper.front, bodyW],
-    [taper.back, bodyW],
+    [taper.left, d],
+    [taper.right, d],
+    [taper.front, w],
+    [taper.back, w],
   ] as const) {
     for (let i = 0; i < steps; i++) {
-      relief += length * taperInsetAt(taper, side, (i + 0.5) * dz, wallHeight) * dz;
+      relief += length * taperInsetAt(taper, side, z0 + (i + 0.5) * dz, wallHeight) * dz;
     }
   }
   return relief;
@@ -286,9 +298,7 @@ function computeBinVolume(params: BinParams): number {
   const socketless = isSocketlessBase(params.base.style);
   let volume: number;
   if (socketless) {
-    const overhang = isPartialMask(params.cellMask)
-      ? resolveOverhang(undefined)
-      : resolveOverhang(params.overhang);
+    const overhang = estimateOverhang(params);
     const footprint = socketlessFootprint(params, outerW, outerD, overhang);
     const wallHeight = baseWallHeight(params.base, totalH);
     volume = flatShellVolume(
@@ -299,10 +309,11 @@ function computeBinVolume(params: BinParams): number {
       params.base.stackingLip
     );
     const growth = overhangExpansion(overhang);
-    volume -= taperFloorRelief(
+    volume -= taperRelief(
       overhang,
       outerW + growth.addW,
       outerD + growth.addD,
+      0,
       floorThickness,
       wallHeight
     );
@@ -501,9 +512,22 @@ function solidFillVolume(
   const fillHeight = wallHeight - floorThickness - Math.max(0, params.cutoutConfig.topOffset);
   if (fillHeight <= 0) return 0;
 
-  const innerW = Math.max(0, outerW - 2 * wallThickness);
-  const innerD = Math.max(0, outerD - 2 * wallThickness);
-  let fill = innerW * innerD * fillHeight * SOLID_FILL_EFFICIENCY;
+  // Out to the overhang's walls on every base: the body grows above a socket
+  // as it does on a flat bin, and the fill follows a taper's walls in.
+  const overhang = estimateOverhang(params);
+  const growth = overhangExpansion(overhang);
+  const innerW = Math.max(0, outerW + growth.addW - 2 * wallThickness);
+  const innerD = Math.max(0, outerD + growth.addD - 2 * wallThickness);
+  // Sampled over the band only: above it the inset is zero.
+  const taperTop = Math.min(
+    floorThickness + fillHeight,
+    overhang.taper?.bandHeight ?? 0,
+    wallHeight
+  );
+  let fill =
+    (innerW * innerD * fillHeight -
+      taperRelief(overhang, innerW, innerD, floorThickness, taperTop, wallHeight)) *
+    SOLID_FILL_EFFICIENCY;
 
   // A partial mask carves whole cells out of the footprint, so the fill shrinks
   // with the cell count rather than with the bounding box.
