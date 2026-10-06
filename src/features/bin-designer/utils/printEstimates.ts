@@ -51,7 +51,7 @@ import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
 import { cutoutDisplacementMm3 } from '@/shared/utils/fitTestPlan';
 import { computeLabelTabVolume, lipSupportArea } from './printLabelTabVolume';
 import { computeInteriorFilletVolume } from './printInteriorFilletVolume';
-import { stackingLipVolume, wallThicknessDelta } from './printShellVolume';
+import { flatShellVolume, stackingLipVolume, wallThicknessDelta } from './printShellVolume';
 import {
   computeWallPatternReduction,
   computeFloorPatternReduction,
@@ -177,7 +177,18 @@ function computeBinVolume(params: BinParams): number {
     params.heightUnitMm,
     gridUnitMmY
   );
-  let volume = shell.walls + shell.base + (params.base.stackingLip ? shell.lip : 0);
+  const floorThickness = resolveBinFloorMm({ ...params, wallThickness });
+  const flat = params.base.style === 'flat';
+  let volume = flat
+    ? flatShellVolume(
+        outerW,
+        outerD,
+        baseWallHeight(params.base, totalH),
+        wallThickness,
+        floorThickness,
+        params.base.stackingLip
+      )
+    : shell.walls + shell.base + (params.base.stackingLip ? shell.lip : 0);
 
   // The geometry follows the PLAN, not the flag: with detachable feet
   // requested but no pocket-aligned whole cell to anchor one (a half-lattice
@@ -258,16 +269,17 @@ function computeBinVolume(params: BinParams): number {
     return volume - shell.walls;
   }
 
-  if (!params.base.stackingLip) volume -= stackingLipVolume(outerW, outerD) - shell.lip;
-  const floorThickness = resolveBinFloorMm({ ...params, wallThickness });
-  volume += wallThicknessDelta(
-    outerW,
-    outerD,
-    baseWallHeight(params.base, totalH),
-    wallThickness,
-    floorThickness,
-    params.base.stackingLip
-  );
+  if (!flat) {
+    if (!params.base.stackingLip) volume -= stackingLipVolume(outerW, outerD) - shell.lip;
+    volume += wallThicknessDelta(
+      outerW,
+      outerD,
+      baseWallHeight(params.base, totalH),
+      wallThickness,
+      floorThickness,
+      params.base.stackingLip
+    );
+  }
 
   // A solid bin fills the cavity the shell model leaves empty. Without this
   // term every solid bin was priced as the hollow one it is not — measured at

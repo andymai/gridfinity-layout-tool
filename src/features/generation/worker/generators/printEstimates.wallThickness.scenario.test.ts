@@ -104,6 +104,50 @@ describe('print estimate — wall thickness', () => {
       params: bin({ width: 2, depth: 2, height: 5, wallThickness: 2, style: 'slotted' }),
     },
     {
+      name: 'flat 1x1x3 without a lip at 0.8mm',
+      params: bin({
+        width: 1,
+        depth: 1,
+        height: 3,
+        wallThickness: 0.8,
+        base: { ...P.base, style: 'flat', stackingLip: false },
+      }),
+    },
+    {
+      name: 'flat 2x2x6 at 1.2mm',
+      params: bin({ width: 2, depth: 2, height: 6, base: { ...P.base, style: 'flat' } }),
+    },
+    {
+      name: 'flat 3x2x6 at 0.8mm',
+      params: bin({
+        width: 3,
+        depth: 2,
+        height: 6,
+        wallThickness: 0.8,
+        base: { ...P.base, style: 'flat' },
+      }),
+    },
+    {
+      name: 'flat 3x2x3 at 2.0mm',
+      params: bin({
+        width: 3,
+        depth: 2,
+        height: 3,
+        wallThickness: 2,
+        base: { ...P.base, style: 'flat' },
+      }),
+    },
+    {
+      name: 'flat slotted 2x2x6 at 1.2mm',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 6,
+        style: 'slotted',
+        base: { ...P.base, style: 'flat' },
+      }),
+    },
+    {
       name: 'solid 2x2x3 at 2.4mm',
       params: bin({
         width: 2,

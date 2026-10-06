@@ -1095,3 +1095,28 @@ describe('printEstimates', () => {
     expect(both).toBeGreaterThan(0);
   });
 });
+
+describe('socketed bins keep the fitted shell', () => {
+  // Pinned so the flat shell model can never leak into a socketed estimate.
+  const base = DEFAULT_BIN_PARAMS.base;
+  it.each<[string, Partial<BinParams>, number]>([
+    ['the default 2x2x6', { width: 2, depth: 2, height: 6 }, 59770],
+    [
+      'a lipless 3x2x6 at 0.8mm',
+      { width: 3, depth: 2, height: 6, wallThickness: 0.8, base: { ...base, stackingLip: false } },
+      76110,
+    ],
+    [
+      'a magnet 1x1x3 at 2.0mm',
+      { width: 1, depth: 1, height: 3, wallThickness: 2, base: { ...base, style: 'magnet' } },
+      16330,
+    ],
+    [
+      'a slotted 2x2x3 at 2.4mm',
+      { width: 2, depth: 2, height: 3, wallThickness: 2.4, style: 'slotted' },
+      56949,
+    ],
+  ])('prices %s as before', (_label, over, volume) => {
+    expect(estimatePrint({ ...DEFAULT_BIN_PARAMS, ...over }).volumeMm3).toBe(volume);
+  });
+});

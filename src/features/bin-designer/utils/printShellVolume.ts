@@ -29,6 +29,15 @@ const CAVITY_TOP_ALLOWANCE_MM = { lip: 2.35, open: 0.2 } as const;
 const LIP_SECTION_MM2 = 9.462;
 const LIP_CORNER_DEFICIT_MM3 = 131;
 
+function roundedRectArea(w: number, d: number, r: number): number {
+  return Math.max(0, w) * Math.max(0, d) - (4 - Math.PI) * r * r;
+}
+
+function cavityArea(outerW: number, outerD: number, wall: number): number {
+  const r = Math.max(GRIDFINITY.BOX_CORNER_RADIUS - wall, 0);
+  return Math.max(0, roundedRectArea(outerW - 2 * wall, outerD - 2 * wall, r));
+}
+
 function cavityVolume(
   outerW: number,
   outerD: number,
@@ -39,10 +48,7 @@ function cavityVolume(
 ): number {
   const height = wallHeight - floor - allowance;
   if (height <= 0) return 0;
-  const r = Math.max(GRIDFINITY.BOX_CORNER_RADIUS - wall, 0);
-  const area =
-    Math.max(0, outerW - 2 * wall) * Math.max(0, outerD - 2 * wall) - (4 - Math.PI) * r * r;
-  return Math.max(0, area) * height;
+  return cavityArea(outerW, outerD, wall) * height;
 }
 
 /**
@@ -74,4 +80,30 @@ export function wallThicknessDelta(
 /** The stacking lip's own volume (mm³), measured as a lipped bin less its open twin. */
 export function stackingLipVolume(outerW: number, outerD: number): number {
   return Math.max(0, LIP_SECTION_MM2 * 2 * (outerW + outerD) - LIP_CORNER_DEFICIT_MM3);
+}
+
+/**
+ * A flat bin's whole shell (mm³), standing in for the fitted model rather than
+ * correcting it: that model's `base` term is a socket and its 7mm dead space,
+ * neither of which a flat bin has.
+ *
+ * The body is exact, the outer box less the cavity above the floor. The lip is
+ * the socketed bin's lip, plus or minus the cavity band its inward overhang
+ * fills as the wall moves off the reference.
+ */
+export function flatShellVolume(
+  outerW: number,
+  outerD: number,
+  height: number,
+  wall: number,
+  floor: number,
+  stackingLip: boolean
+): number {
+  const cavity = cavityArea(outerW, outerD, wall);
+  const outer = Math.max(0, roundedRectArea(outerW, outerD, GRIDFINITY.BOX_CORNER_RADIUS));
+  const body = outer * height - cavity * Math.max(0, height - floor);
+  if (!stackingLip) return body;
+  const lipBand = CAVITY_TOP_ALLOWANCE_MM.lip - CAVITY_TOP_ALLOWANCE_MM.open;
+  const reference = cavityArea(outerW, outerD, SHELL_REFERENCE_WALL_MM);
+  return body + stackingLipVolume(outerW, outerD) + lipBand * (cavity - reference);
 }
