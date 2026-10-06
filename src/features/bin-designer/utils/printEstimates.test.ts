@@ -1162,3 +1162,23 @@ describe('solid fill on a custom shape', () => {
     expect(fill({ cellMask: lShape }) / fill({})).toBeCloseTo(12 / 16, 3);
   });
 });
+
+describe('solid fill keys on base.solid, as the generator does', () => {
+  const hollow: BinParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, height: 3 };
+
+  it('prices a solid style without base.solid as the hollow bin it exports', () => {
+    const styleOnly: BinParams = {
+      ...hollow,
+      style: 'solid',
+      base: { ...hollow.base, solid: false },
+    };
+    expect(estimatePrint(styleOnly).volumeMm3).toBe(estimatePrint(hollow).volumeMm3);
+  });
+
+  it('fills a bin with base.solid set, whatever its style says', () => {
+    const baseOnly: BinParams = { ...hollow, base: { ...hollow.base, solid: true } };
+    const both: BinParams = { ...baseOnly, style: 'solid' };
+    expect(estimatePrint(baseOnly).volumeMm3).toBe(estimatePrint(both).volumeMm3);
+    expect(estimatePrint(baseOnly).volumeMm3).toBeGreaterThan(2 * estimatePrint(hollow).volumeMm3);
+  });
+});

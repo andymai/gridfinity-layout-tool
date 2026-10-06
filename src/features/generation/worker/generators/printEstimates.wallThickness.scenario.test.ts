@@ -371,6 +371,39 @@ describe('print estimate — wall thickness', () => {
         cutoutConfig: { topOffset: 0 },
       }),
     },
+    {
+      name: 'solid nesting tray 2x2x3',
+      params: bin({
+        width: 2,
+        depth: 2,
+        height: 3,
+        style: 'solid',
+        base: {
+          ...P.base,
+          style: 'lid',
+          solid: true,
+          trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true },
+        },
+        cutoutConfig: { topOffset: 0 },
+      }),
+    },
+    {
+      name: 'solid nesting tray 3x2x6 at 2.0mm',
+      params: bin({
+        width: 3,
+        depth: 2,
+        height: 6,
+        wallThickness: 2,
+        style: 'solid',
+        base: {
+          ...P.base,
+          style: 'lid',
+          solid: true,
+          trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true },
+        },
+        cutoutConfig: { topOffset: 0 },
+      }),
+    },
   ];
 
   it.each(cases)(

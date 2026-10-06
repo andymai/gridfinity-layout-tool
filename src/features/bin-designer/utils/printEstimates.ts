@@ -12,6 +12,7 @@
 
 import type { BinParams } from '@/features/bin-designer/types';
 import {
+  isNestingBase,
   isSocketlessBase,
   isUndersideRelief,
   resolveTrayBottomConfig,
@@ -67,6 +68,7 @@ import { computeLabelTabVolume, lipSupportArea } from './printLabelTabVolume';
 import { computeInteriorFilletVolume } from './printInteriorFilletVolume';
 import {
   flatShellVolume,
+  nestingPlugFillVolume,
   stackingLipVolume,
   traySkirtVolume,
   wallThicknessDelta,
@@ -208,7 +210,8 @@ function taperFloorRelief(
 /**
  * A tray bin's lid skirt, with its retention magnets counted where the
  * generator places them, so an edge-magnet setting that a short wall cannot
- * take adds nothing here either.
+ * take adds nothing here either. A solid nesting tray also keeps its plug's
+ * interior.
  */
 function trayBottomSkirt(
   params: BinParams,
@@ -230,7 +233,10 @@ function trayBottomSkirt(
           hasOverhang(overhang) ? overhangExpansion(overhang) : null
         ).length
       : 0;
-  return traySkirtVolume(footprint, tray, magnets, params.heightUnitMm);
+  const skirt = traySkirtVolume(footprint, tray, magnets, params.heightUnitMm);
+  return params.base.solid && isNestingBase(params.base)
+    ? skirt + nestingPlugFillVolume(footprint, tray, params.heightUnitMm)
+    : skirt;
 }
 
 /**
@@ -480,10 +486,10 @@ function solidFillVolume(
   outerD: number,
   wallThickness: number
 ): number {
-  // `style` is kept in lockstep with `base.solid` by the constraint engine, but
-  // a crafted payload can carry one without the other; the generator fills on
-  // `base.solid`, so either flag is enough to price it as filled.
-  if (!params.base.solid && params.style !== 'solid') return 0;
+  // `base.solid` alone, as `deriveDimensions` reads it. The constraint engine
+  // keeps `style` in lockstep, but a crafted design can carry `style: 'solid'`
+  // without it, and that one exports hollow.
+  if (!params.base.solid) return 0;
 
   const wallHeight = baseWallHeight(params.base, params.height * params.heightUnitMm);
   // From the FLOOR's top, not the wall's: the `base` component already prices
