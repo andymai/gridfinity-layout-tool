@@ -22,6 +22,8 @@ import {
   MIN_DIVIDER_FOR_RECEPTACLES,
   MIN_DIVIDER_FOR_SNAP,
   RECEPTACLE_DEPTH_RATIO,
+  DIVIDER_FLOOR_GROOVE_DEPTH,
+  resolveBinFloorMm,
 } from './slotMath';
 
 describe('calculateSlotPositions', () => {
@@ -534,5 +536,35 @@ describe('dividerInterior', () => {
   it('uses the Y pitch on a non-square grid', () => {
     const { innerD } = dividerInterior({ ...base, gridUnitMmY: 22 });
     expect(innerD).toBeCloseTo(2 * 22 - 0.5 - 2 * base.wallThickness, 5);
+  });
+});
+
+describe('resolveBinFloorMm on a flat slotted bin', () => {
+  const flat = (wallThickness: number, slotConfig: Partial<SlotConfig> = {}): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    style: 'slotted',
+    wallThickness,
+    base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+    slotConfig: { ...DEFAULT_BIN_PARAMS.slotConfig, ...slotConfig },
+  });
+  const off = { enabled: false, pitch: 20 };
+
+  it('thickens the floor by the groove the slots cut into it', () => {
+    expect(resolveBinFloorMm(flat(1.2))).toBeCloseTo(1.2 + DIVIDER_FLOOR_GROOVE_DEPTH, 9);
+  });
+
+  it('keeps a wall-thick floor when the wall is too thin for slots', () => {
+    expect(resolveBinFloorMm(flat(0.4))).toBeCloseTo(0.4, 9);
+  });
+
+  it('keeps a wall-thick floor when no axis has slots', () => {
+    expect(resolveBinFloorMm(flat(1.2, { x: off, y: off }))).toBeCloseTo(1.2, 9);
+  });
+
+  it('still grooves an authored layout with both axes off', () => {
+    expect(resolveBinFloorMm(flat(1.2, { x: off, y: off, layout: 'custom' }))).toBeCloseTo(
+      1.2 + DIVIDER_FLOOR_GROOVE_DEPTH,
+      9
+    );
   });
 });

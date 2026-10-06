@@ -170,6 +170,8 @@ export function GhostDividerPieces() {
       style,
       dividerPieces,
       base,
+      wallThickness,
+      slotConfig,
       width,
       depth,
       gridUnitMm,

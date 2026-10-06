@@ -184,13 +184,21 @@ export function isLiteFloorOpen(params: Pick<BinParams, 'base'> & DetachableFeet
 
 /**
  * Resolved floor-groove depth for a design: 0 unless the style is slotted, the
- * groove is on, and there is a closed floor to cut it into. The pipeline gates
- * on its own flag as well.
+ * groove is on, the slot builder would cut anything, and there is a closed
+ * floor to cut it into. The pipeline gates on its own flag as well.
+ *
+ * A flat floor is thickened by this depth, so a groove the builder never cuts
+ * would leave that floor thicker for nothing. The builder's own gates are the
+ * wall floor and, outside an authored layout, an enabled axis.
  */
 export function dividerGrooveDepth(
-  params: Pick<BinParams, 'style' | 'dividerPieces' | 'base'> & DetachableFeetParams
+  params: Pick<BinParams, 'style' | 'dividerPieces' | 'base' | 'wallThickness' | 'slotConfig'> &
+    DetachableFeetParams
 ): number {
   if (params.style !== 'slotted' || !params.dividerPieces.floorGroove) return 0;
+  if (params.wallThickness < MIN_WALL_FOR_SLOTS) return 0;
+  const { slotConfig } = params;
+  if (slotConfig.layout !== 'custom' && !slotConfig.x.enabled && !slotConfig.y.enabled) return 0;
   return isLiteFloorOpen(params) ? 0 : DIVIDER_FLOOR_GROOVE_DEPTH;
 }
 
@@ -206,7 +214,7 @@ export function dividerSeatZ(wallThickness: number, style: BaseStyle, grooveDept
 }
 
 export function resolveBinFloorMm(
-  params: Pick<BinParams, 'wallThickness' | 'style' | 'dividerPieces' | 'base'> &
+  params: Pick<BinParams, 'wallThickness' | 'style' | 'dividerPieces' | 'base' | 'slotConfig'> &
     DetachableFeetParams
 ): number {
   return binFloorMm(params.wallThickness, params.base.style, dividerGrooveDepth(params));
