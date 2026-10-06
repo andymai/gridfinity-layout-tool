@@ -302,8 +302,9 @@ describe('migrateParams', () => {
     ).toEqual({ lidText: 'Cables' });
     for (const junk of [45, '90', -90, null]) {
       expect(
-        migrateParams({ surfaceText: { lidText: 'Cables', lidTextRotation: junk } } as any)
-          .surfaceText
+        migrateParams({
+          surfaceText: { lidText: 'Cables', lidTextRotation: junk as unknown as 90 },
+        }).surfaceText
       ).toEqual({ lidText: 'Cables' });
     }
   });
