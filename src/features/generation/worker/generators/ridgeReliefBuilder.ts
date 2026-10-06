@@ -11,28 +11,26 @@
  * rocks on it. `lowProfileBase.kernel.test` measures the seat.
  *
  * The relief is that plate material itself, plus the same headroom a stock foot
- * keeps over the crest: per cell, the pocket's upper taper with its own corner
- * radius, taken out of the body's underside. Inside the feet's outlines it
- * removes nothing, so no foot loses any surface it bears on. In a low-profile
- * plate the crest sits that headroom below the underside and never reaches it.
+ * keeps over the crest: the whole underside is lifted by it except inside each
+ * foot cell's pocket taper, with its own corner radius. Inside the feet's
+ * outlines it removes nothing, so no foot loses any surface it bears on. In a
+ * low-profile plate the crest sits that headroom below the underside and never
+ * reaches it.
+ *
+ * Underside with no foot above it (an overhang, a fractional strip too narrow to
+ * hold one) is lifted flat. It hangs over the neighbouring pocket, so the crest
+ * at the grid edge and any plate beyond it would otherwise hold the bin up, and
+ * relieving only the grid side of that crest cuts a slot along the grid edge.
  */
 
-import {
-  box,
-  clone,
-  cutAll,
-  drawRoundedRectangle,
-  fuseAll,
-  translate,
-  unwrap,
-  withScope,
-} from 'brepjs';
+import { box, clone, cutAll, drawRoundedRectangle, translate, unwrap, withScope } from 'brepjs';
 import type { DisposalScope, Shape3D, Sketch, ValidSolid } from 'brepjs';
 import type { CellMask } from '@/shared/utils/cellMask';
 import {
   CLEARANCE,
   COPLANAR_MARGIN,
   COPLANAR_OVERLAP,
+  MIN_PRINTABLE_TILE_MM,
   PLATE_PROFILE_HEIGHT,
   SOCKET_HEIGHT,
   footCornerRadius,
@@ -40,22 +38,23 @@ import {
   safeSectionRect,
 } from './generatorConstants';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
+import { frameCells } from './cellDecomposition';
+import { hasOverhang, overhangBaseSides, resolveOverhang, type ResolvedOverhang } from './overhang';
 import { filledSocketCells, type FractionalEdge, type SocketCellPlan } from './socketBuilder';
 
 /** How far the relief reaches above the underside, in mm. */
 export const RIDGE_RELIEF_MM = CLEARANCE / 2 + (SOCKET_HEIGHT - PLATE_PROFILE_HEIGHT);
 
 /**
- * One cell's relief at the origin: its cell box less the pocket's upper taper,
- * which leaves a frame hugging the cell edge. The taper runs on down past the
- * underside so its walls cross that plane rather than sit on it.
+ * What one foot cell keeps out of the relief, at the origin: the pocket's upper
+ * taper, run on down past the underside so its walls cross that plane rather
+ * than sit on it, and the foot's own top.
  *
- * The frame's inner 0.1mm overlaps the foot's top face, where the foot's own
- * taper already lies on the pocket's, so the foot's top is taken out of it too.
- * Left in, that strip is a groove above every foot's top edge, all the way
- * round the outer wall.
+ * The taper's inner 0.1mm overlaps the foot's top face, where the foot's own
+ * taper already lies on the pocket's. Relieved, that strip is a groove above
+ * every foot's top edge, all the way round the outer wall.
  */
-function buildCellRelief(scope: DisposalScope, cellW: number, cellD: number): Shape3D {
+function buildCellKeepouts(scope: DisposalScope, cellW: number, cellD: number): Shape3D[] {
   const cornerR = pocketCornerRadius(cellW, cellD);
   const section = (z: number, inset: number): Sketch => {
     const { width, depth, radius } = safeSectionRect(
@@ -70,7 +69,6 @@ function buildCellRelief(scope: DisposalScope, cellW: number, cellD: number): Sh
   const below = section(-m, h + m);
   const taper = scope.register(below.loftWith([section(h, 0), section(h + m, 0)], { ruled: true }));
   below.delete();
-  const frame = scope.register(box(cellW, cellD, h + m, { at: [0, 0, (h - m) / 2] }));
   // The foot's own top section, clamped as the socket clamps it: on a narrow
   // cell that comes out squarer than `footCornerRadius` alone, and a rounder
   // keepout leaves the foot's corners to the cut. Grown past the foot so its
@@ -88,13 +86,16 @@ function buildCellRelief(scope: DisposalScope, cellW: number, cellD: number): Sh
       ) as Sketch
     ).extrude(h + 2 * m)
   );
-  return unwrap(cutAll(frame, [taper, footTop] as ValidSolid[]));
+  return [taper, footTop];
 }
 
 /**
  * The relief as one cutting tool in the body frame (underside at Z=0), or null
- * for a single foot, which has no neighbour to share a crest with. Caller owns
- * the result.
+ * for a single foot with nothing beside it, which has no crest under it. Caller
+ * owns the result.
+ *
+ * `overhang` must be the one the body was built with: the slab has to reach its
+ * walls, and overhang feet are foot cells like any other.
  */
 export function buildRidgeReliefTool(
   gridW: number,
@@ -102,29 +103,63 @@ export function buildRidgeReliefTool(
   cellMask: CellMask | undefined,
   gridUnitMm: GridUnitInput,
   plan: SocketCellPlan,
-  fractionalEdge?: FractionalEdge
+  fractionalEdge?: FractionalEdge,
+  overhang: ResolvedOverhang = resolveOverhang(undefined)
 ): Shape3D | null {
   const cells = filledSocketCells(gridW, gridD, cellMask, gridUnitMm, plan, fractionalEdge);
-  if (cells.length < 2) return null;
+  const overhung = hasOverhang(overhang);
+  if (cells.length < 2 && !overhung) return null;
   const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
+  const footCells =
+    overhung && overhang.feet
+      ? [
+          ...cells,
+          ...frameCells(
+            gridW,
+            gridD,
+            overhangBaseSides(overhang),
+            gridUnitMm,
+            MIN_PRINTABLE_TILE_MM
+          ),
+        ]
+      : cells;
 
   return withScope((scope: DisposalScope) => {
-    const templates = new Map<string, Shape3D>();
-    const placed: Shape3D[] = [];
-    for (const cell of cells) {
+    const h = RIDGE_RELIEF_MM;
+    const m = COPLANAR_MARGIN;
+    const slab = scope.register(
+      box(
+        gridW * unitX + overhang.left + overhang.right + 2 * m,
+        gridD * unitY + overhang.front + overhang.back + 2 * m,
+        h + m,
+        {
+          at: [
+            (overhang.right - overhang.left) / 2,
+            (overhang.back - overhang.front) / 2,
+            (h - m) / 2,
+          ],
+        }
+      )
+    );
+
+    const templates = new Map<string, Shape3D[]>();
+    const keepouts: Shape3D[] = [];
+    for (const cell of footCells) {
       const cellW = cell.widthUnits * unitX;
       const cellD = cell.depthUnits * unitY;
       const key = `${cellW.toFixed(4)}x${cellD.toFixed(4)}`;
       let template = templates.get(key);
       if (template === undefined) {
-        template = scope.register(buildCellRelief(scope, cellW, cellD));
+        template = buildCellKeepouts(scope, cellW, cellD);
         templates.set(key, template);
       }
-      placed.push(scope.register(translate(template, [cell.centerX, cell.centerY, 0])));
+      for (const shape of template) {
+        keepouts.push(scope.register(translate(shape, [cell.centerX, cell.centerY, 0])));
+      }
     }
-    const fused = unwrap(fuseAll(placed as ValidSolid[]));
-    // Every input is scope-owned, so a fuse that hands one back must not
-    // return it to be freed on the way out.
-    return placed.includes(fused) ? unwrap(clone(fused)) : fused;
+    const relief = unwrap(cutAll(slab, keepouts as ValidSolid[]));
+    // Every input is scope-owned, so a cut that hands one back must not return
+    // it to be freed on the way out.
+    return relief === slab ? unwrap(clone(relief)) : relief;
   });
 }

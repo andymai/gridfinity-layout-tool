@@ -387,7 +387,8 @@ export const shellStage: PipelineStage = {
           params.cellMask,
           pitch,
           dim.socketCellPlan,
-          { x: params.fractionalEdgeX, y: params.fractionalEdgeY }
+          { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
+          dim.overhang
         );
         if (relief) {
           try {
