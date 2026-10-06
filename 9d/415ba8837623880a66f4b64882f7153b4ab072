@@ -1,0 +1,24 @@
+src/shared/utils/slotMath.ts
+  s_9c232e0720df0c::t_6eb9ee5f710991 187-192,195-196,199-201,217
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.tsx
+  s_9c232e0720df0c::t_6eb9ee5f710991 173-174
+src/shared/utils/slotMath.test.ts
+  s_9c232e0720df0c::t_e67cee238f8a43 25-26,541-569
+  s_9c232e0720df0c::t_1a6bec82e00c82 570
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9d415ba8837623880a66f4b64882f7153b4ab072",
+  "prompts": {},
+  "sessions": {
+    "s_9c232e0720df0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27eb60d8-7420-46eb-89be-0e93ba7858b3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
