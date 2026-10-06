@@ -35,16 +35,12 @@ import {
   COPLANAR_OVERLAP,
   PLATE_PROFILE_HEIGHT,
   SOCKET_HEIGHT,
+  footCornerRadius,
   pocketCornerRadius,
   safeSectionRect,
 } from './generatorConstants';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
-import {
-  buildSocketTopPrism,
-  filledSocketCells,
-  type FractionalEdge,
-  type SocketCellPlan,
-} from './socketBuilder';
+import { filledSocketCells, type FractionalEdge, type SocketCellPlan } from './socketBuilder';
 
 /** How far the relief reaches above the underside, in mm. */
 export const RIDGE_RELIEF_MM = CLEARANCE / 2 + (SOCKET_HEIGHT - PLATE_PROFILE_HEIGHT);
@@ -75,15 +71,22 @@ function buildCellRelief(scope: DisposalScope, cellW: number, cellD: number): Sh
   const taper = scope.register(below.loftWith([section(h, 0), section(h + m, 0)], { ruled: true }));
   below.delete();
   const frame = scope.register(box(cellW, cellD, h + m, { at: [0, 0, (h - m) / 2] }));
-  // Grown past the foot so its side never lies in the bin's outer wall, which
-  // the cut would imprint as a seam 0.1mm above the feet.
-  const grow = CLEARANCE - 2 * COPLANAR_OVERLAP;
+  // The foot's own top section, clamped as the socket clamps it: on a narrow
+  // cell that comes out squarer than `footCornerRadius` alone, and a rounder
+  // keepout leaves the foot's corners to the cut. Grown past the foot so its
+  // side never lies in the bin's outer wall, which the cut would imprint as a
+  // seam 0.1mm above the feet.
+  const footW = cellW - CLEARANCE;
+  const footD = cellD - CLEARANCE;
+  const foot = safeSectionRect(footW, footD, footCornerRadius(footW, footD));
+  const o = COPLANAR_OVERLAP;
   const footTop = scope.register(
-    translate(scope.register(buildSocketTopPrism(cellW - grow, cellD - grow, h + 2 * m)), [
-      0,
-      0,
-      -m,
-    ])
+    (
+      drawRoundedRectangle(foot.width + 2 * o, foot.depth + 2 * o, foot.radius + o).sketchOnPlane(
+        'XY',
+        -m
+      ) as Sketch
+    ).extrude(h + 2 * m)
   );
   return unwrap(cutAll(frame, [taper, footTop] as ValidSolid[]));
 }

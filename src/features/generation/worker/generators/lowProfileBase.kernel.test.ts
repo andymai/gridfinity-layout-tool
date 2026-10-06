@@ -11,12 +11,15 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { intersect, measureVolume, translate } from 'brepjs';
+import { isOk } from '@/core/result';
 import type { BinParams, ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { lidStackGridHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { stackJunctionMm } from '@/shared/utils/heightUnits';
 import { initTestKernel } from '@/test/initTestKernel';
+import { CLEARANCE } from './generatorConstants';
 import { descentLimitAt, seatDepth } from './__kernel-tests__/binSeating';
 import { stackSeat } from './__kernel-tests__/binStacking';
 import {
@@ -229,4 +232,40 @@ describe('low-profile base: stacking', () => {
       2
     );
   }, 120000);
+});
+
+describe('low-profile base: the relief tool', () => {
+  // A narrow foot is clamped squarer than the box radius, so a keepout built
+  // to that radius leaves the foot's corners inside the cutter.
+  it.each([
+    ['a 0.2u edge foot', 1.2, 1, 42],
+    ['feet on a 9mm pitch', 2, 1, 9],
+  ] as const)(
+    'leaves %s whole',
+    async (_label, gridW, gridD, pitch) => {
+      const { buildRidgeReliefTool } = await import('./ridgeReliefBuilder');
+      const { buildSingleCellSocket, filledSocketCells, resolveSocketCellPlan } =
+        await import('./socketBuilder');
+      const plan = resolveSocketCellPlan(false, undefined, undefined, undefined, gridW, gridD);
+      const relief = buildRidgeReliefTool(gridW, gridD, undefined, pitch, plan);
+      if (!relief) throw new Error('expected a relief tool');
+      let shared = 0;
+      for (const cell of filledSocketCells(gridW, gridD, undefined, pitch, plan)) {
+        const foot = translate(
+          buildSingleCellSocket(
+            cell.widthUnits * pitch - CLEARANCE,
+            cell.depthUnits * pitch - CLEARANCE
+          ),
+          [cell.centerX, cell.centerY, 0]
+        );
+        const overlap = intersect(relief, foot);
+        if (!isOk(overlap)) throw new Error('intersect failed');
+        const volume = measureVolume(overlap.value);
+        if (!isOk(volume)) throw new Error('measureVolume failed');
+        shared += volume.value;
+      }
+      expect(shared).toBeLessThan(1e-4);
+    },
+    120000
+  );
 });
