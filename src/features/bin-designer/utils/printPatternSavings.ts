@@ -246,10 +246,11 @@ function dividerPatternReduction(
  * a foot is not a prism, so a share of the measured term beats an area×depth
  * model). Every SLAB-ONLY base — flat, the underside relief (whose cavity is
  * already open below the slab) and detachable feet (whose body floor sits at
- * Z=0) — only loses `wallThickness` of material under each hole, so the
- * removal is the open area times the slab, priced directly. Booking the
- * full-socket share for those cut a 3x3 estimate roughly in half for a
- * pattern that removes ~4mm³ per cm² of window.
+ * Z=0) — only loses its slab under each hole, so the removal is the open
+ * area times the slab, priced directly. Booking the full-socket share for those
+ * cut a 3x3 estimate roughly in half for a pattern that removes ~4mm³ per cm²
+ * of window. A flat base's slab is its whole floor, which a divider groove
+ * thickens past the wall.
  *
  * Open area is measured from the real element placement rather than a
  * fraction-of-area model: a per-foot window is only ~33mm across, and over a box
@@ -261,6 +262,7 @@ function dividerPatternReduction(
 export function computeFloorPatternReduction(
   params: BinParams,
   wallThickness: number,
+  floorThickness: number,
   baseVolume: number,
   feetDetach: boolean
 ): number {
@@ -324,7 +326,7 @@ export function computeFloorPatternReduction(
   // socketed full-depth cut as a share of the measured base term.
   const slabOnly = isFlat || isUndersideRelief(params.base) || feetDetach;
   if (slabOnly) {
-    return Math.min(totalOpenArea, planArea) * wallThickness;
+    return Math.min(totalOpenArea, planArea) * (isFlat ? floorThickness : wallThickness);
   }
   return baseVolume * Math.min(1, totalOpenArea / planArea);
 }

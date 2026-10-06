@@ -259,12 +259,13 @@ function computeBinVolume(params: BinParams): number {
   }
 
   if (!params.base.stackingLip) volume -= stackingLipVolume(outerW, outerD) - shell.lip;
+  const floorThickness = resolveBinFloorMm({ ...params, wallThickness });
   volume += wallThicknessDelta(
     outerW,
     outerD,
     baseWallHeight(params.base, totalH),
     wallThickness,
-    resolveBinFloorMm({ ...params, wallThickness }),
+    floorThickness,
     params.base.stackingLip
   );
 
@@ -300,7 +301,13 @@ function computeBinVolume(params: BinParams): number {
   }
 
   // Floor pattern: drainage holes remove floor slab AND foot material.
-  volume -= computeFloorPatternReduction(params, wallThickness, shell.base, feetDetach);
+  volume -= computeFloorPatternReduction(
+    params,
+    wallThickness,
+    floorThickness,
+    shell.base,
+    feetDetach
+  );
 
   // Exterior-wall collar: a walled ring raised above the nominal
   // body — perimeter wall material only, no floor/interior. Ring cross-section

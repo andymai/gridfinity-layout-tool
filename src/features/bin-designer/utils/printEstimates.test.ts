@@ -13,6 +13,7 @@ import {
   LOW_PROFILE_DETACHABLE_FEET_SCALE,
 } from '@/shared/printSettings';
 import { footKind, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
+import { DIVIDER_FLOOR_GROOVE_DEPTH } from '@/shared/utils/slotMath';
 import type { BinParams } from '@/features/bin-designer/types';
 
 describe('printEstimates', () => {
@@ -550,6 +551,27 @@ describe('printEstimates', () => {
         estimatePrint(flat).volumeMm3 - estimatePrint({ ...flat, floorPattern }).volumeMm3;
       expect(flatSaving).toBeGreaterThan(0);
       expect(flatSaving).toBeLessThan(socketSaving);
+    });
+
+    it('drainage holes through a flat floor go through the divider groove’s extra floor too', () => {
+      const flat: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 2,
+        height: 4,
+        style: 'slotted',
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+      };
+      const floorPattern = { enabled: true, pattern: 'round' as const, scale: 0.5 };
+      const saving = (floorGroove: boolean): number => {
+        const p = { ...flat, dividerPieces: { ...flat.dividerPieces, floorGroove } };
+        return estimatePrint(p).volumeMm3 - estimatePrint({ ...p, floorPattern }).volumeMm3;
+      };
+      const wall = DEFAULT_BIN_PARAMS.wallThickness;
+      expect(saving(true) / saving(false)).toBeCloseTo(
+        (wall + DIVIDER_FLOOR_GROOVE_DEPTH) / wall,
+        3
+      );
     });
 
     it('half sockets quarter each foot, so the holes remove less', () => {
