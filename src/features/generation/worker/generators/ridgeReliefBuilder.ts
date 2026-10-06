@@ -20,7 +20,7 @@
 import {
   box,
   clone,
-  cut,
+  cutAll,
   drawRoundedRectangle,
   fuseAll,
   translate,
@@ -32,8 +32,10 @@ import type { CellMask } from '@/shared/utils/cellMask';
 import {
   CLEARANCE,
   COPLANAR_MARGIN,
+  COPLANAR_OVERLAP,
   PLATE_PROFILE_HEIGHT,
   SOCKET_HEIGHT,
+  footCornerRadius,
   pocketCornerRadius,
   safeSectionRect,
 } from './generatorConstants';
@@ -47,6 +49,11 @@ export const RIDGE_RELIEF_MM = CLEARANCE / 2 + (SOCKET_HEIGHT - PLATE_PROFILE_HE
  * One cell's relief at the origin: its cell box less the pocket's upper taper,
  * which leaves a frame hugging the cell edge. The taper runs on down past the
  * underside so its walls cross that plane rather than sit on it.
+ *
+ * The frame's inner 0.1mm overlaps the foot's top face, where the foot's own
+ * taper already lies on the pocket's, so the foot's top is taken out of it too.
+ * Left in, that strip is a groove above every foot's top edge, all the way
+ * round the outer wall.
  */
 function buildCellRelief(scope: DisposalScope, cellW: number, cellD: number): Shape3D {
   const cornerR = pocketCornerRadius(cellW, cellD);
@@ -64,7 +71,24 @@ function buildCellRelief(scope: DisposalScope, cellW: number, cellD: number): Sh
   const taper = scope.register(below.loftWith([section(h, 0), section(h + m, 0)], { ruled: true }));
   below.delete();
   const frame = scope.register(box(cellW, cellD, h + m, { at: [0, 0, (h - m) / 2] }));
-  return unwrap(cut(frame, taper as ValidSolid));
+  // The foot's own top section, clamped as the socket clamps it: on a narrow
+  // cell that comes out squarer than `footCornerRadius` alone, and a rounder
+  // keepout leaves the foot's corners to the cut. Grown past the foot so its
+  // side never lies in the bin's outer wall, which the cut would imprint as a
+  // seam 0.1mm above the feet.
+  const footW = cellW - CLEARANCE;
+  const footD = cellD - CLEARANCE;
+  const foot = safeSectionRect(footW, footD, footCornerRadius(footW, footD));
+  const o = COPLANAR_OVERLAP;
+  const footTop = scope.register(
+    (
+      drawRoundedRectangle(foot.width + 2 * o, foot.depth + 2 * o, foot.radius + o).sketchOnPlane(
+        'XY',
+        -m
+      ) as Sketch
+    ).extrude(h + 2 * m)
+  );
+  return unwrap(cutAll(frame, [taper, footTop] as ValidSolid[]));
 }
 
 /**
