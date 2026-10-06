@@ -23,6 +23,7 @@ import {
   assertKernelReturnedGeometry,
   boundingBox,
   columnCrossings,
+  isSolidThrough,
 } from './__kernel-tests__/meshAssertions';
 
 let generateBin: (params: BinParams, onProgress: undefined, forExport: boolean) => MeshData;
@@ -176,6 +177,31 @@ describe('low-profile base: the bin itself', () => {
     // Lowest crossing above the foot at a cell centre: the interior floor.
     const floorTop = (m: MeshData): number => columnCrossings(m, 21, 0)[1];
     expect(floorTop(stock) - floorTop(low)).toBeCloseTo(1.1, 2);
+  }, 120000);
+
+  it('runs the outer wall flush into the feet, with no groove above them', () => {
+    // 0.05mm inside each wall, over a foot's straight edge: the foot's taper
+    // starts 0.05 under its 3.65 top, so the column is solid from there up.
+    const low = bin(true);
+    const columns: ReadonlyArray<readonly [number, number]> = [
+      [-30.37, -20.7],
+      [-11.63, -20.7],
+      [11.63, -20.7],
+      [30.37, -20.7],
+      [-30.37, 20.7],
+      [30.37, 20.7],
+      [-41.7, -8.41],
+      [-41.7, 8.41],
+      [41.7, -8.41],
+      [41.7, 8.41],
+    ];
+    for (const [x, y] of columns) {
+      expect(isSolidThrough(low, x, y, 3.62, 4.5), `${x},${y}`).toBe(true);
+    }
+  }, 120000);
+
+  it('still lifts the underside clear of the crest between two feet', () => {
+    expect(columnCrossings(bin(true), 0.03, -10.37)[0]).toBeGreaterThan(3.9);
   }, 120000);
 });
 

@@ -20,7 +20,7 @@
 import {
   box,
   clone,
-  cut,
+  cutAll,
   drawRoundedRectangle,
   fuseAll,
   translate,
@@ -32,13 +32,19 @@ import type { CellMask } from '@/shared/utils/cellMask';
 import {
   CLEARANCE,
   COPLANAR_MARGIN,
+  COPLANAR_OVERLAP,
   PLATE_PROFILE_HEIGHT,
   SOCKET_HEIGHT,
   pocketCornerRadius,
   safeSectionRect,
 } from './generatorConstants';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
-import { filledSocketCells, type FractionalEdge, type SocketCellPlan } from './socketBuilder';
+import {
+  buildSocketTopPrism,
+  filledSocketCells,
+  type FractionalEdge,
+  type SocketCellPlan,
+} from './socketBuilder';
 
 /** How far the relief reaches above the underside, in mm. */
 export const RIDGE_RELIEF_MM = CLEARANCE / 2 + (SOCKET_HEIGHT - PLATE_PROFILE_HEIGHT);
@@ -47,6 +53,11 @@ export const RIDGE_RELIEF_MM = CLEARANCE / 2 + (SOCKET_HEIGHT - PLATE_PROFILE_HE
  * One cell's relief at the origin: its cell box less the pocket's upper taper,
  * which leaves a frame hugging the cell edge. The taper runs on down past the
  * underside so its walls cross that plane rather than sit on it.
+ *
+ * The frame's inner 0.1mm overlaps the foot's top face, where the foot's own
+ * taper already lies on the pocket's, so the foot's top is taken out of it too.
+ * Left in, that strip is a groove above every foot's top edge, all the way
+ * round the outer wall.
  */
 function buildCellRelief(scope: DisposalScope, cellW: number, cellD: number): Shape3D {
   const cornerR = pocketCornerRadius(cellW, cellD);
@@ -64,7 +75,17 @@ function buildCellRelief(scope: DisposalScope, cellW: number, cellD: number): Sh
   const taper = scope.register(below.loftWith([section(h, 0), section(h + m, 0)], { ruled: true }));
   below.delete();
   const frame = scope.register(box(cellW, cellD, h + m, { at: [0, 0, (h - m) / 2] }));
-  return unwrap(cut(frame, taper as ValidSolid));
+  // Grown past the foot so its side never lies in the bin's outer wall, which
+  // the cut would imprint as a seam 0.1mm above the feet.
+  const grow = CLEARANCE - 2 * COPLANAR_OVERLAP;
+  const footTop = scope.register(
+    translate(scope.register(buildSocketTopPrism(cellW - grow, cellD - grow, h + 2 * m)), [
+      0,
+      0,
+      -m,
+    ])
+  );
+  return unwrap(cutAll(frame, [taper, footTop] as ValidSolid[]));
 }
 
 /**
