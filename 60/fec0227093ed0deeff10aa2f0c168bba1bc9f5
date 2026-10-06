@@ -1,0 +1,30 @@
+src/features/generation/worker/generators/ridgeReliefBuilder.ts
+  s_9c232e0720df0c::t_2e58948adf6794 35
+  s_9c232e0720df0c::t_ace589bcc7b9c8 23
+  s_9c232e0720df0c::t_462c85a1118e88 56
+  s_9c232e0720df0c::t_fd3fc3c196c0d8 57-60
+  s_9c232e0720df0c::t_3d70690934c6d0 42-47
+  s_9c232e0720df0c::t_253085b6002a9d 81,87-88
+  s_9c232e0720df0c::t_aabc50c202ffae 78-80,82-86
+src/shared/generation/meshPersistence.ts
+  s_9c232e0720df0c::t_1de20e21642835 90-91,97
+src/features/generation/worker/generators/lowProfileBase.kernel.test.ts
+  s_9c232e0720df0c::t_b7354d09e4dc06 26
+  s_9c232e0720df0c::t_b9f0826aee2380 181-205
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "60fec0227093ed0deeff10aa2f0c168bba1bc9f5",
+  "prompts": {},
+  "sessions": {
+    "s_9c232e0720df0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27eb60d8-7420-46eb-89be-0e93ba7858b3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
