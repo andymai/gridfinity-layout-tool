@@ -9,7 +9,6 @@ import {
   type Pt,
 } from './polygonOffset';
 
-/** refineForOffset for an outline the test expects to fit the point budget. */
 function refine(points: readonly Pt[], d: number): Pt[] {
   const refined = refineForOffset(points, d);
   if (!refined) throw new Error('the outline did not fit the point budget');
@@ -120,7 +119,6 @@ function touchesItself(p: readonly Pt[]): boolean {
   return false;
 }
 
-/** How close a point comes to the outline. */
 function distanceToOutline(q: Pt, poly: readonly Pt[]): number {
   let best = Infinity;
   for (let i = 0; i < poly.length; i++) {
