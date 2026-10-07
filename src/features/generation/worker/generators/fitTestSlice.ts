@@ -167,7 +167,6 @@ export function fitTestBandTopZ(params: BinParams): number {
   return dims.wallTopZ - dims.collarHeight - dims.tileFloorHeight - params.cutoutConfig.topOffset;
 }
 
-/** The bin's material between `topZ - thicknessMm` and `topZ`. */
 export function cutFitTestBand(
   scope: DisposalScope,
   solid: Shape3D,

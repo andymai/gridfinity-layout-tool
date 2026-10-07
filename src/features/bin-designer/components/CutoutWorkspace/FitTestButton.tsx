@@ -182,7 +182,6 @@ export function FitTestButton() {
   const tips = useMemo(() => {
     if (isOutline) return [t('binDesigner.cutouts.fitTest.outlineTip')];
     const cardTips = [t('binDesigner.cutouts.fitTest.tip1'), t('binDesigner.cutouts.fitTest.tip2')];
-    // Thinner cards go unstamped: there are too few layers over the glyphs.
     return thicknessMm >= FIT_TEST_STAMP_MIN_THICKNESS_MM
       ? [...cardTips, t('binDesigner.cutouts.fitTest.tip3')]
       : cardTips;

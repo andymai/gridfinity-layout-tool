@@ -38,7 +38,6 @@ import type { FitTestExportResult, FitTestMeshPiece } from './fitTestSlice';
 /** How far under the fill surface the pocket wall is traced (mm): below the top
  *  face, which the band shares with the bin, and above any real pocket floor. */
 const TRACE_DEPTH_MM = 0.1;
-/** Band tessellated to take the trace from (mm). */
 const TRACE_BAND_MM = 0.5;
 /** Width under which a pocket region is tessellation noise rather than a pocket
  *  (mm): the two bodies are meshed separately, so their shared outer wall can
@@ -48,16 +47,14 @@ const SLIVER_MM = 0.1;
  *  chord error at the widest ring, where the default quality leaves visible
  *  facets on a 1mm radius. */
 const CORNER_SEGMENTS = 64;
-/** Islands smaller than this (mm²) cannot print and are dropped. */
+/** Unprintable at any nozzle (mm²). */
 const MIN_ISLAND_MM2 = 0.05;
-/** Reach of a split window's outer edges past anything it can hold (mm). */
 const WINDOW_REACH_MM = 1e4;
 
 export const FIT_TEST_OUTLINE_BASE_NAME = 'fit-test-outline';
 
 export interface FitTestOutlineOptions {
   readonly size?: Partial<FitTestOutlineSize>;
-  /** Print bed (mm). An outline that overflows it is split like the card. */
   readonly bed?: BedSize;
 }
 
@@ -67,7 +64,6 @@ function loadedModule(): ManifoldToplevel {
   return module;
 }
 
-/** The body's material in a plane just under its fill surface. */
 function traceMaterial(
   scope: DisposalScope,
   module: ManifoldToplevel,
@@ -90,7 +86,6 @@ function traceMaterial(
   }
 }
 
-/** Run `build` with every CrossSection it registers freed afterwards. */
 function withSections<T>(build: (keep: (s: CrossSection) => CrossSection) => T): T {
   const owned: CrossSection[] = [];
   try {
@@ -103,7 +98,7 @@ function withSections<T>(build: (keep: (s: CrossSection) => CrossSection) => T):
   }
 }
 
-/** The rings as one 2D region. The caller owns the result. */
+/** The caller owns the result. */
 function traceRings(params: BinParams, wallMm: number): CrossSection {
   const module = loadedModule();
   const source = fitTestOutlineSource(params);
@@ -144,12 +139,7 @@ function extrudeToMesh(region: CrossSection, heightMm: number, label: string): F
   }
 }
 
-/**
- * The tessellated outline, one entry per piece, standing on Z=0.
- *
- * Needs the manifold module loaded, and any mesh imprints prepared, before it
- * is called; `exportFitTestOutline` does both.
- */
+/** Needs the manifold module loaded and any mesh imprints prepared; `exportFitTestOutline` does both. */
 export function buildFitTestOutlineMeshes(
   params: BinParams,
   options: FitTestOutlineOptions = {}
@@ -190,7 +180,7 @@ export function buildFitTestOutlineMeshes(
   }
 }
 
-/** Export the outline fit test. STL only at the worker; 3MF is wrapped on the main thread. */
+/** STL only: the main thread wraps 3MF around it. */
 export async function exportFitTestOutline(
   params: BinParams,
   format: ExportFormat,

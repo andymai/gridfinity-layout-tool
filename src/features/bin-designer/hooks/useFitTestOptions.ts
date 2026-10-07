@@ -1,8 +1,4 @@
-/**
- * What the fit-test dialog will ask the worker for: card or outline, and the
- * size of whichever one it is. Every value it hands out is already clamped by
- * the same plan the worker clamps with.
- */
+/** Every value handed out is already clamped by the plan the worker clamps with. */
 
 import { useCallback, useMemo, useState } from 'react';
 import type { BinParams } from '@/shared/types/bin';

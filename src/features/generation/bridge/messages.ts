@@ -308,13 +308,12 @@ export interface ExportFitTestMessage {
   readonly payload: ExportFitTestPayload;
 }
 
-/** What a fit-test export asks for beyond the design itself. */
 export interface FitTestExportOptions {
   /** Absent prints the full card. */
   readonly mode?: FitTestMode;
   /** Card thickness (mm). Clamped worker-side to the design's legal range. */
   readonly thicknessMm?: number;
-  /** Ring height and width for the outline (mm). Clamped worker-side. */
+  /** Clamped worker-side. */
   readonly outline?: Partial<FitTestOutlineSize>;
   /** Design name and piece label for the underside stamp. */
   readonly stamp?: { readonly designName?: string };
