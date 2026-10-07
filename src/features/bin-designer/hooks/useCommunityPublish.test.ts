@@ -11,6 +11,8 @@ import { useToastStore } from '@/core/store/toast';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { hashBinParams } from '@/shared/utils/binParamsHash';
 import { savePendingPublishAction } from '@/shared/utils/communityPendingAction';
+import type { MeshAsset } from '@/shared/generation/meshAsset';
+import { storeMeshAsset } from '@/shared/generation/meshRefs';
 import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '../constants';
 import { useDesignerStore } from '../store/designer';
 import type { SavedDesign } from '../types';
@@ -130,6 +132,50 @@ describe('useCommunityPublish', () => {
           glb: 'Z2xURg==',
         })
       );
+    });
+
+    it('publishes a design whose meshes are refs with its meshes inline', async () => {
+      const asset: MeshAsset = {
+        name: 'wrench',
+        data: 'AAAA',
+        triangleCount: 1,
+        sizeMm: { x: 20, y: 10, z: 5 },
+        outlines: [
+          [
+            { x: 0, y: 0 },
+            { x: 20, y: 0 },
+            { x: 0, y: 10 },
+          ],
+        ],
+      };
+      const ref = await storeMeshAsset(asset);
+      const base = { ...DEFAULT_BIN_PARAMS, cutouts: [qualifyingCutout] };
+      useDesignerStore.setState({ params: { ...base, meshAssets: ref ? { m1: ref } : {} } });
+
+      await openCommunityPublish(null);
+
+      const context = useCommunityPublishStore.getState().context;
+      const published = context && 'params' in context ? context.params : undefined;
+      expect(published?.meshAssets).toEqual({ m1: asset });
+      expect(context?.paramsHash).toBe(hashBinParams({ ...base, meshAssets: { m1: asset } }));
+    });
+
+    it('does not open when a mesh file is missing', async () => {
+      const missing = {
+        name: 'gone',
+        hash: '4'.repeat(64),
+        triangleCount: 1,
+        sizeMm: { x: 1, y: 1, z: 1 },
+        bytes: 1,
+      };
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, cutouts: [qualifyingCutout], meshAssets: { m1: missing } },
+      });
+
+      await openCommunityPublish(null);
+
+      expect(useCommunityPublishStore.getState().isOpen).toBe(false);
+      expect(useToastStore.getState().toasts).toHaveLength(1);
     });
 
     it('opens with assembly content and frames captures from the envelope', async () => {

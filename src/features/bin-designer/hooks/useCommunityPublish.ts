@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useEffect, useRef } from 'react';
-import { useTranslation } from '@/i18n';
+import { getStaticTranslation, useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
 import { useCommunityPublishStore } from '@/core/store/communityPublish';
 import { useToastStore } from '@/core/store/toast';
@@ -16,6 +16,7 @@ import { useSessionStore } from '@/core/sync/session/useSession';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { hashBinParams, hashDesignContent } from '@/shared/utils/binParamsHash';
 import { withoutLowProfileBase } from '@/shared/generation/lowProfileBase';
+import { inlineParamsMeshes } from '@/shared/generation/meshRefs';
 import type { BinParams } from '@/shared/types/bin';
 import { assemblyHeightUnits } from '@/shared/types/assemblyPlacement';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
@@ -97,6 +98,17 @@ export async function openCommunityPublish(draft: CommunityPublishDraft | null):
   const currentId = state.currentDesignId;
   if (currentId === null) return;
 
+  let params: BinParams;
+  try {
+    // The community store takes inline meshes only.
+    params = await inlineParamsMeshes(state.params);
+  } catch {
+    useToastStore
+      .getState()
+      .addToast(getStaticTranslation('community.publish.error.generic'), 'error');
+    return;
+  }
+
   let publishedId: string | null = null;
   let lineage = null;
   const saved = await loadDesign(designId(currentId));
@@ -111,7 +123,7 @@ export async function openCommunityPublish(draft: CommunityPublishDraft | null):
       designName: state.designName,
       ...(assembly !== null
         ? { kind: 'assembly' as const, ...assembly, paramsHash: hashDesignContent(assembly) }
-        : publishedParams(state.params)),
+        : publishedParams(params)),
       publishedId,
       lineage,
       draft,

@@ -27,6 +27,7 @@ import { MAX_VERSIONS_PER_DESIGN } from '@/features/bin-designer/types';
 import { getDb, DESIGN_VERSIONS_STORE } from './designerDb';
 import { emit as announce } from '@/features/bin-designer/sync/designVersionEvents';
 import { generateUUID } from '@/shared/utils/uuid';
+import { storeHolderMeshes } from '@/shared/generation/meshRefs';
 
 /** Strip the compressed body so the history list never holds every design in memory. */
 function toSummary(version: DesignVersion): DesignVersionSummary {
@@ -78,6 +79,8 @@ export interface CreateVersionResult {
  * A design whose versions are all pinned is at its ceiling with nothing to drop;
  * the write still succeeds, because refusing to save is a worse answer than
  * exceeding a soft cap by the one version the user is actively trying to keep.
+ *
+ * The body holds mesh refs, like the design, so a version adds no copy of a mesh.
  */
 export async function createDesignVersion(
   designId: DesignId,
@@ -87,6 +90,7 @@ export async function createDesignVersion(
   origin: DesignVersionOrigin = 'manual'
 ): Promise<Result<CreateVersionResult, StorageError>> {
   try {
+    const body = await storeHolderMeshes(content);
     const db = await getDb();
     const existing = await readAll(designId);
 
@@ -103,7 +107,7 @@ export async function createDesignVersion(
       id: generateUUID(),
       designId,
       name,
-      content: compressString(JSON.stringify(content)),
+      content: compressString(JSON.stringify(body)),
       thumbnail,
       createdAt: new Date().toISOString(),
       origin,

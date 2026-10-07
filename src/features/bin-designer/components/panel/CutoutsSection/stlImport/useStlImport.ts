@@ -22,6 +22,7 @@ import type {
   MeshImportRotation,
 } from '@/shared/generation/meshAsset';
 import { MAX_MESH_ASSETS_PER_DESIGN, MAX_MESH_FILE_BYTES } from '@/shared/generation/meshAsset';
+import { storeMeshAsset } from '@/shared/generation/meshRefs';
 import { defaultEntryChamfer } from '@/features/bin-designer/types';
 import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { generateUUID } from '@/shared/utils/uuid';
@@ -57,8 +58,8 @@ export interface UseStlImportReturn {
   readonly importing: boolean;
   /** Re-run the import with the given axis set to an absolute angle (degrees). */
   readonly setAxisRotation: (axis: keyof MeshImportRotation, degrees: number) => void;
-  /** Place the pending mesh as a cutout at the interior center. */
-  readonly place: () => void;
+  /** Place the pending mesh as a cutout at the interior center, its mesh stored as a file. */
+  readonly place: () => Promise<void>;
   /** Discard the pending import. */
   readonly cancel: () => void;
 }
@@ -156,10 +157,11 @@ export function useStlImport(): UseStlImportReturn {
     [pending, importing, runImport]
   );
 
-  const place = useCallback(() => {
+  const place = useCallback(async () => {
     if (!pending) return;
     const meshId = generateUUID();
     const { asset, suggestedCutDepth } = pending;
+    const stored = await storeMeshAsset(asset);
     const current = useDesignerStore.getState().params;
     const { innerW, innerD } = cutoutInterior(current);
     addMeshCutout(
@@ -182,7 +184,7 @@ export function useStlImport(): UseStlImportReturn {
           suggestedCutDepth
         ),
       },
-      asset
+      stored ?? asset
     );
     trackEvent('stl_import', {
       success: true,

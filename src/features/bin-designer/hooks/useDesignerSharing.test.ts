@@ -3,6 +3,8 @@ import { renderHook, act } from '@testing-library/react';
 import { createDesignerShare, fetchDesignerShare, useDesignerSharing } from './useDesignerSharing';
 import { isOk, isErr } from '@/core/result';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
+import type { MeshAsset } from '@/shared/generation/meshAsset';
+import { storeMeshAsset } from '@/shared/generation/meshRefs';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -50,6 +52,50 @@ describe('createDesignerShare', () => {
       expect(result.value.url).toBe('https://example.com/d/share-id-abc');
       expect(result.value.deleteToken).toBe('del-token-xyz');
     }
+  });
+
+  it('sends a design whose meshes are refs with its meshes inline', async () => {
+    const asset: MeshAsset = {
+      name: 'wrench',
+      data: 'AAAA',
+      triangleCount: 1,
+      sizeMm: { x: 20, y: 10, z: 5 },
+      outlines: [
+        [
+          { x: 0, y: 0 },
+          { x: 20, y: 0 },
+          { x: 0, y: 10 },
+        ],
+      ],
+    };
+    const ref = await storeMeshAsset(asset);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ id: 'a', url: 'u', deleteToken: 'd' }),
+    });
+
+    await createDesignerShare({ ...DEFAULT_BIN_PARAMS, meshAssets: ref ? { m1: ref } : {} });
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.params).toEqual({ ...DEFAULT_BIN_PARAMS, meshAssets: { m1: asset } });
+  });
+
+  it('shares nothing when a mesh file is missing', async () => {
+    const missing = {
+      name: 'gone',
+      hash: '6'.repeat(64),
+      triangleCount: 1,
+      sizeMm: { x: 1, y: 1, z: 1 },
+      bytes: 1,
+    };
+
+    const result = await createDesignerShare({
+      ...DEFAULT_BIN_PARAMS,
+      meshAssets: { m1: missing },
+    });
+
+    expect(isErr(result) && result.error.code).toBe('MESH_UNAVAILABLE');
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 
   it('returns error on non-ok response', async () => {

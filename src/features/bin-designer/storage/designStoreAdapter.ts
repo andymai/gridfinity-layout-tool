@@ -10,6 +10,10 @@
  * IndexedDB/registry code stays out of any eager chunk that only needs the
  * adapter reference — the same code-splitting the old dynamic imports in
  * `core/storage` provided, now on an allowed feature-internal edge.
+ *
+ * Every design core loads leaves the device (layout file export, cloud share,
+ * bulk archive), so `loadDesign` hands back its meshes inline, and a design
+ * whose mesh file is missing does not load.
  */
 
 import type {
@@ -20,6 +24,7 @@ import type {
   SaveDesignInput,
   SavedDesignData,
 } from '@/core/storage/designStorePort';
+import { err, isOk, ok, storageCorrupted } from '@/core/result';
 import type { Result, StorageError } from '@/core/result';
 import type { DesignId } from '@/core/types';
 import type { BinParams } from '@/features/bin-designer/types';
@@ -27,8 +32,17 @@ import type { ItemEnvelope } from '@/shared/types/item';
 
 export const designStoreAdapter: DesignStorePort = {
   async loadDesign(id: DesignId): Promise<Result<LoadedDesignData, StorageError>> {
-    const { loadDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
-    return loadDesign(id);
+    const [{ loadDesign }, { inlineHolderMeshes }] = await Promise.all([
+      import('@/features/bin-designer/storage/DesignerStorage'),
+      import('@/shared/generation/meshRefs'),
+    ]);
+    const loaded = await loadDesign(id);
+    if (!isOk(loaded)) return loaded;
+    try {
+      return ok(await inlineHolderMeshes(loaded.value));
+    } catch {
+      return err(storageCorrupted(id, ['a mesh file this design uses is missing']));
+    }
   },
 
   async saveDesign(input: SaveDesignInput): Promise<Result<SavedDesignData, StorageError>> {

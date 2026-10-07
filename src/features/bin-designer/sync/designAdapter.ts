@@ -25,6 +25,7 @@ import {
 } from '@/features/bin-designer/store/customBinRegistry';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { syncPersistError } from '@/core/sync/adapters/persistError';
+import { inlineHolderMeshes } from '@/shared/generation/meshRefs';
 import { subscribe as subscribeDesignerEvents } from './designerEvents';
 
 // Lives in features/ because BinParams is feature-internal; core/ can't
@@ -32,6 +33,10 @@ import { subscribe as subscribeDesignerEvents } from './designerEvents';
 //
 // SavedDesign stores `updatedAt` as ISO; the cloud envelope is ms. We
 // normalize at this boundary so the engine never sees ISO strings.
+//
+// Locally a design's meshes are refs into the mesh store, but the server and
+// other devices take inline meshes only: payloads are built inline, and
+// `saveDesign` turns a pulled payload's inline meshes back into refs.
 
 // Held across the full `saveDesign`/`deleteDesign` await chain because
 // the `emit()` that needs suppression fires past internal await boundaries;
@@ -188,20 +193,27 @@ export const designAdapter: DesignAdapter = {
     if (!isOk(result)) return [];
     // Bins and assemblies sync; toolRack and importedMesh (base64 mesh
     // blobs) stay local-only.
-    return result.value.filter(isSyncableDesign).map((d) => ({
-      id: d.id,
-      payload: buildPayload(d),
-      modifiedAt: toMs(d.updatedAt),
-    }));
+    return Promise.all(
+      result.value.filter(isSyncableDesign).map(async (d) => ({
+        id: d.id,
+        // Every caller of list() reads ids and mtimes only, and a design whose
+        // mesh file is missing must still be listed: sign-out wipes by this list.
+        payload: buildPayload(await inlineHolderMeshes(d).catch(() => d)),
+        modifiedAt: toMs(d.updatedAt),
+      }))
+    );
   },
 
   async get(id: string): Promise<SyncableItem<DesignSyncPayload> | null> {
     const result = await loadDesign(designId(id));
     if (!isOk(result)) return null;
-    const d = result.value;
     // Non-syncable kinds: returning null makes the engine drop the outbox
-    // entry as a no-op (it never tombstones on a null get).
-    if (!isSyncableDesign(d)) return null;
+    // entry as a no-op (it never tombstones on a null get). A design whose mesh
+    // file is missing is dropped the same way, so the copy on the server keeps
+    // its mesh.
+    if (!isSyncableDesign(result.value)) return null;
+    const d = await inlineHolderMeshes(result.value).catch(() => null);
+    if (!d) return null;
     return {
       id: d.id,
       payload: buildPayload(d),

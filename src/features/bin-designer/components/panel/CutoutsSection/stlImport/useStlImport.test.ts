@@ -2,8 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useToastStore } from '@/core/store/toast';
-import { MAX_MESH_FILE_BYTES } from '@/shared/generation/meshAsset';
+import { MAX_MESH_FILE_BYTES, isMeshAssetRef } from '@/shared/generation/meshAsset';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
+import { resolveMeshAsset } from '@/shared/generation/meshRefs';
 
 const importMesh = vi.fn();
 vi.mock('@/shared/generation/bridge', () => ({
@@ -176,7 +177,7 @@ describe('useStlImport', () => {
     });
   });
 
-  it('places the pending mesh as a centered cutout with its asset', async () => {
+  it('places the pending mesh as a centered cutout, its asset stored as a mesh file', async () => {
     importMesh.mockResolvedValue({
       ok: true,
       asset,
@@ -193,8 +194,8 @@ describe('useStlImport', () => {
       expect(result.current.pending).not.toBeNull();
     });
 
-    act(() => {
-      result.current.place();
+    await act(async () => {
+      await result.current.place();
     });
 
     const { params } = useDesignerStore.getState();
@@ -204,7 +205,9 @@ describe('useStlImport', () => {
     expect(placed.width).toBe(20);
     expect(placed.cutDepth).toBe(5);
     expect(placed.meshId).toBeDefined();
-    expect(params.meshAssets?.[placed.meshId ?? '']).toBeDefined();
+    const entry = params.meshAssets?.[placed.meshId ?? ''];
+    expect(entry && isMeshAssetRef(entry)).toBe(true);
+    expect(entry && (await resolveMeshAsset(entry))).toEqual(asset);
     expect(result.current.pending).toBeNull();
   });
 });
