@@ -27,25 +27,28 @@
 
 import type { Cutout } from '@/shared/types/bin';
 import { CHAMFER_SHAPES, DEFAULT_GROUP_OP, resolveCutoutLeanDeg } from '@/shared/types/bin';
-import { cutoutOutlineRing, ringBounds, rotateAbout } from '@/shared/utils/cutoutOutline';
-import type { OutlineBounds, OutlinePoint, OutlineRing } from '@/shared/utils/cutoutOutline';
+import { cutoutOutlineRing, rotateAbout } from '@/shared/utils/cutoutOutline';
 import { expandCutoutArray, expandCutoutGroup } from '@/shared/utils/cutoutArray';
+import { pointInPolyline } from '@/shared/utils/drawerOutlineGeometry';
+import { outlinesComeWithin, outlinesTouch } from '@/shared/utils/outlineSegments';
+import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
+import type { Pt } from '@/shared/utils/polygonOffset';
+import {
+  clearedProfile,
+  entryChamferWidth,
+  MIN_LOFTED_CHAMFER,
+  MIN_STRAIGHT_WALL_MM,
+} from './cutoutFit';
 import { resolveScoop } from './cutoutScoopHelpers';
-
-/** The straight wall the builder keeps under any entry chamfer (mm). */
-const MIN_STRAIGHT_WALL_MM = 0.2;
-
-/** Narrowest flare worth a tool; the builder skips a top chamfer below it too. */
-const MIN_FLARE_MM = 0.05;
 
 /** How far past a scooped floor's fillet a flare of its own carries on (mm). */
 const RISE_PAST_SCOOP_MM = 0.5;
 
 /**
- * The outlines here are nominal, so a pocket counts as wholly inside a floor
- * only with room to spare: a path or polygon flare can reach this many times
- * its width at a sharp corner (the offset's miter limit), plus a margin for
- * the worker flattening a curve differently from the outline sampled here.
+ * A pocket counts as wholly inside a floor only with room to spare: a path or
+ * polygon flare can reach this many times its width at a sharp corner (the
+ * offset's miter limit), plus a margin for an outline drawing an arc as chords
+ * where the kernel cuts the arc itself.
  */
 const FLARE_CORNER_REACH = 4;
 const CONTAINMENT_MARGIN_MM = 0.25;
@@ -94,6 +97,13 @@ export interface NestedOpeningPlan {
   readonly flares: readonly NestedOpening[];
 }
 
+interface Bounds {
+  readonly minX: number;
+  readonly minY: number;
+  readonly maxX: number;
+  readonly maxY: number;
+}
+
 interface Unit {
   readonly key: string;
   readonly cutout: Cutout;
@@ -101,8 +111,9 @@ interface Unit {
   readonly colorOwner: Cutout;
   readonly grouped: boolean;
   readonly depth: number;
-  readonly ring: OutlineRing;
-  readonly bounds: OutlineBounds;
+  /** The outline it is cut to at its floor, clearance included. */
+  readonly ring: Pt[];
+  readonly bounds: Bounds;
 }
 
 interface PocketOpenings {
@@ -122,7 +133,7 @@ export function planNestedOpenings(
 ): NestedOpeningPlan {
   const sunk = new Map<string, SunkMouth>();
   const flares: NestedOpening[] = [];
-  if (solidSurfaceZ <= 0) return { sunk, flares };
+  if (solidSurfaceZ <= 0 || !cutouts.some(takesChamfer)) return { sunk, flares };
   const units = collectUnits(cutouts, solidSurfaceZ);
   const floors = units.filter((u) => resolveCutoutLeanDeg(u.cutout) === 0);
 
@@ -153,6 +164,15 @@ export function planNestedOpenings(
   return { sunk, flares };
 }
 
+/** Whether the builder could chamfer this cutout's opening at all. */
+function takesChamfer(cutout: Cutout): boolean {
+  return (
+    cutout.shape !== 'mesh' &&
+    (CHAMFER_SHAPES as readonly string[]).includes(cutout.shape) &&
+    (cutout.chamferWidth ?? 0) > MIN_LOFTED_CHAMFER
+  );
+}
+
 function mouthAt(opening: NestedOpening): SunkMouth {
   return { depth: opening.floorDepth, flare: opening.flare };
 }
@@ -168,7 +188,7 @@ function collectUnits(cutouts: readonly Cutout[], solidSurfaceZ: number): Unit[]
     const depth = Math.min(cutout.cutDepth, solidSurfaceZ);
     // The builder cuts nothing for a zero box, though a path still has a ring.
     if (depth <= 0 || cutout.width <= 0 || cutout.depth <= 0) return;
-    const ring = cutoutOutlineRing(cutout);
+    const ring = cutRing(cutout, depth);
     if (!ring || ring.length < 3) return;
     const { array: _array, ...placed } = cutout;
     units.push({
@@ -179,7 +199,7 @@ function collectUnits(cutouts: readonly Cutout[], solidSurfaceZ: number): Unit[]
       grouped,
       depth,
       ring,
-      bounds: ringBounds(ring),
+      bounds: boundsOf(ring),
     });
   };
 
@@ -203,14 +223,38 @@ function collectUnits(cutouts: readonly Cutout[], solidSurfaceZ: number): Unit[]
   return units;
 }
 
-function pocketOpenings(unit: Unit, floors: readonly Unit[]): PocketOpenings {
-  const chamfer = unit.cutout.chamferWidth ?? 0;
-  if (
-    !(CHAMFER_SHAPES as readonly string[]).includes(unit.cutout.shape) ||
-    chamfer <= MIN_FLARE_MM
-  ) {
-    return { sinkTo: null, below: [] };
+/**
+ * The outline a cutout is cut to below its chamfer, in the interior frame and
+ * turned by `rotation`: its insertion clearance included, from the same
+ * sections the builder lofts, so a pocket the clearance carries onto a floor
+ * is seen to open there.
+ */
+function cutRing(cutout: Cutout, depth: number, rotation = cutout.rotation): Pt[] | null {
+  const cx = cutout.x + cutout.width / 2;
+  const cy = cutout.y + cutout.depth / 2;
+  const { clearance, w, d } = clearedProfile(cutout);
+  let ring;
+  if (cutout.shape === 'path') {
+    const chamfer = entryChamferWidth({ ...cutout, cutDepth: depth });
+    const cut = pathCutoutCut(cutout, clearance, chamfer > MIN_LOFTED_CHAMFER ? chamfer : 0);
+    if (cut) {
+      return cut.base.map((p) => {
+        const [x, y] = rotateAbout(cx + p.x, cy + p.y, cx, cy, rotation);
+        return { x, y };
+      });
+    }
+    // A degenerate path is cut as its bounding box.
+    ring = cutoutOutlineRing({ ...cutout, shape: 'rectangle', cornerRadius: 0, rotation });
+  } else {
+    const size = { x: cx - w / 2, y: cy - d / 2, width: w, depth: d };
+    ring = cutoutOutlineRing({ ...cutout, ...size, rotation });
   }
+  return ring ? ring.map(([x, y]) => ({ x, y })) : null;
+}
+
+function pocketOpenings(unit: Unit, floors: readonly Unit[]): PocketOpenings {
+  if (!takesChamfer(unit.cutout)) return { sinkTo: null, below: [] };
+  const chamfer = unit.cutout.chamferWidth ?? 0;
   const openings: NestedOpening[] = [];
   for (const floor of floors) {
     if (floor === unit) continue;
@@ -231,16 +275,15 @@ function openingOnto(unit: Unit, chamfer: number, floor: Unit): NestedOpening | 
   const scoop = resolveScoop(unit.cutout, unit.depth);
   const reserve = Math.max(MIN_STRAIGHT_WALL_MM, scoop.w, scoop.d);
   const flare = Math.min(chamfer, unit.depth - floor.depth / cos - reserve);
-  if (flare <= MIN_FLARE_MM) return null;
+  if (flare <= MIN_LOFTED_CHAMFER) return null;
 
-  const section = lean === 0 ? unit.ring : leanedSection(unit.cutout, floor.depth, lean);
+  const section = lean === 0 ? unit.ring : leanedSection(unit, floor.depth, lean);
   if (!section) return null;
   // Sized by the full chamfer, not this floor's: a pocket counted as inside
   // loses its surface chamfer and any shallower flare to this floor, so those
   // have to fit inside it too.
-  const reach = (Math.max(0, unit.cutout.clearance ?? 0) + chamfer) / cos;
-  const slack = FLARE_CORNER_REACH * reach + CONTAINMENT_MARGIN_MM;
-  if (!boundsMeet(ringBounds(section), floor.bounds, slack)) return null;
+  const slack = (FLARE_CORNER_REACH * chamfer) / cos + CONTAINMENT_MARGIN_MM;
+  if (!boundsMeet(boundsOf(section), floor.bounds, slack)) return null;
 
   const relation = relate(section, floor.ring, slack);
   if (relation === 'apart') return null;
@@ -262,21 +305,39 @@ function openingOnto(unit: Unit, chamfer: number, floor: Unit): NestedOpening | 
 }
 
 /**
- * Where a leaned pocket crosses the level `depth` below its mouth: its drawn
- * section stretched along the lean by 1/cos and carried down the axis, which
- * travels toward local +Y for a positive lean.
+ * Where a leaned pocket crosses the level `depth` below its mouth: its section
+ * stretched along the lean by 1/cos and carried down the axis, which travels
+ * toward local +Y for a positive lean.
  */
-function leanedSection(cutout: Cutout, depth: number, lean: number): OutlineRing | null {
-  const flat = cutoutOutlineRing({ ...cutout, rotation: 0 });
+function leanedSection(unit: Unit, depth: number, lean: number): Pt[] | null {
+  const { cutout } = unit;
+  const flat = cutRing(cutout, unit.depth, 0);
   if (!flat) return null;
   const cx = cutout.x + cutout.width / 2;
   const cy = cutout.y + cutout.depth / 2;
   const shift = depth * Math.tan(lean);
   const cos = Math.cos(lean);
-  return flat.map(([x, y]) => rotateAbout(x, cy + (y - cy) / cos + shift, cx, cy, cutout.rotation));
+  return flat.map((p) => {
+    const [x, y] = rotateAbout(p.x, cy + (p.y - cy) / cos + shift, cx, cy, cutout.rotation);
+    return { x, y };
+  });
 }
 
-function boundsMeet(a: OutlineBounds, b: OutlineBounds, slack: number): boolean {
+function boundsOf(ring: readonly Pt[]): Bounds {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const { x, y } of ring) {
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x);
+    maxY = Math.max(maxY, y);
+  }
+  return { minX, minY, maxX, maxY };
+}
+
+function boundsMeet(a: Bounds, b: Bounds, slack: number): boolean {
   return (
     a.minX - slack <= b.maxX &&
     a.maxX + slack >= b.minX &&
@@ -291,98 +352,11 @@ function boundsMeet(a: OutlineBounds, b: OutlineBounds, slack: number): boolean 
  * stays more than `slack` clear of the floor's edge, `crossing` otherwise.
  */
 function relate(
-  rim: OutlineRing,
-  floor: OutlineRing,
+  rim: readonly Pt[],
+  floor: readonly Pt[],
   slack: number
 ): 'apart' | 'inside' | 'crossing' {
-  if (ringsCross(rim, floor)) return 'crossing';
-  if (!pointInRing(floor, rim[0])) return 'apart';
-  return ringsCloserThan(rim, floor, slack) ? 'crossing' : 'inside';
-}
-
-function pointInRing(ring: OutlineRing, [x, y]: OutlinePoint): boolean {
-  let inside = false;
-  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const [xi, yi] = ring[i];
-    const [xj, yj] = ring[j];
-    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
-  }
-  return inside;
-}
-
-function cross(o: OutlinePoint, a: OutlinePoint, b: OutlinePoint): number {
-  return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
-}
-
-function segmentsCross(
-  a: OutlinePoint,
-  b: OutlinePoint,
-  c: OutlinePoint,
-  d: OutlinePoint
-): boolean {
-  const d1 = cross(c, d, a);
-  const d2 = cross(c, d, b);
-  const d3 = cross(a, b, c);
-  const d4 = cross(a, b, d);
-  return d1 * d2 <= 0 && d3 * d4 <= 0 && !(d1 === 0 && d2 === 0);
-}
-
-type Edge = readonly [OutlinePoint, OutlinePoint];
-
-/** The ring's edges whose box comes within `slack` of `bounds`. */
-function edgesNear(ring: OutlineRing, bounds: OutlineBounds, slack: number): Edge[] {
-  const edges: Edge[] = [];
-  for (let i = 0; i < ring.length; i++) {
-    const p = ring[i];
-    const q = ring[(i + 1) % ring.length];
-    if (segmentMeetsBounds(p, q, bounds, slack)) edges.push([p, q]);
-  }
-  return edges;
-}
-
-function ringsCross(a: OutlineRing, b: OutlineRing): boolean {
-  const others = edgesNear(b, ringBounds(a), 0);
-  for (const [p, q] of edgesNear(a, ringBounds(b), 0)) {
-    for (const [c, d] of others) if (segmentsCross(p, q, c, d)) return true;
-  }
-  return false;
-}
-
-function segmentMeetsBounds(
-  p: OutlinePoint,
-  q: OutlinePoint,
-  bounds: OutlineBounds,
-  slack: number
-): boolean {
-  return (
-    Math.min(p[0], q[0]) - slack <= bounds.maxX &&
-    Math.max(p[0], q[0]) + slack >= bounds.minX &&
-    Math.min(p[1], q[1]) - slack <= bounds.maxY &&
-    Math.max(p[1], q[1]) + slack >= bounds.minY
-  );
-}
-
-function pointSegmentDistance(p: OutlinePoint, a: OutlinePoint, b: OutlinePoint): number {
-  const dx = b[0] - a[0];
-  const dy = b[1] - a[1];
-  const len2 = dx * dx + dy * dy;
-  const t =
-    len2 === 0 ? 0 : Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2));
-  return Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy));
-}
-
-/** Whether two rings that do not cross come within `gap` of each other. */
-function ringsCloserThan(a: OutlineRing, b: OutlineRing, gap: number): boolean {
-  const others = edgesNear(b, ringBounds(a), gap);
-  for (const [p, q] of edgesNear(a, ringBounds(b), gap)) {
-    for (const [c, d] of others) {
-      const near =
-        pointSegmentDistance(p, c, d) < gap ||
-        pointSegmentDistance(q, c, d) < gap ||
-        pointSegmentDistance(c, p, q) < gap ||
-        pointSegmentDistance(d, p, q) < gap;
-      if (near) return true;
-    }
-  }
-  return false;
+  if (outlinesTouch(rim, floor)) return 'crossing';
+  if (!pointInPolyline(floor, rim[0].x, rim[0].y)) return 'apart';
+  return outlinesComeWithin(rim, floor, slack) ? 'crossing' : 'inside';
 }

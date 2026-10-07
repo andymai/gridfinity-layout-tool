@@ -54,13 +54,7 @@ import {
 } from '@/shared/utils/cutoutOpenSides';
 import { LIP_HEIGHT, CUT_RIM_CLEARANCE } from './generatorConstants';
 import { isCutoutEngraveMode } from '@/shared/utils/cutoutLabelSocketPlan';
-import {
-  DEFAULT_GROUP_OP,
-  DEFAULT_POLYGON_SIDES,
-  CLEARANCE_SHAPES,
-  CHAMFER_SHAPES,
-  resolveCutoutLeanDeg,
-} from '@/shared/types/bin';
+import { DEFAULT_GROUP_OP, DEFAULT_POLYGON_SIDES, resolveCutoutLeanDeg } from '@/shared/types/bin';
 import {
   regularPolygonPoints,
   slotCornerRadius,
@@ -96,6 +90,7 @@ import {
   pathCutoutSections,
 } from '@/shared/utils/pathCutoutOutline';
 import type { Pt } from '@/shared/utils/polygonOffset';
+import { clearedProfile, entryChamferWidth, MIN_LOFTED_CHAMFER } from './cutoutFit';
 import { planNestedOpenings } from './nestedCutoutOpenings';
 import type { FloorTrim, NestedOpening, SunkMouth } from './nestedCutoutOpenings';
 import { buildTaperedInnerEnvelope } from './taperedOuter';
@@ -299,52 +294,6 @@ function buildChamferedCutoutShape(p: {
     flare,
     p.cutDepth + p.topExtension
   );
-}
-
-/**
- * A cutout's profile size once its insertion clearance is applied. The
- * clearance enlarges the cut symmetrically about its own center so a part cut
- * to spec drops in; the cutout stays positioned by its nominal center, so the
- * enlarged shape stays aligned. Missing clearance / non-insert shapes keep
- * their exact nominal size.
- */
-function clearedProfile(cutout: {
-  readonly shape: string;
-  readonly width: number;
-  readonly depth: number;
-  readonly clearance?: number;
-}): { readonly clearance: number; readonly w: number; readonly d: number } {
-  const clearance =
-    (CLEARANCE_SHAPES as readonly string[]).includes(cutout.shape) && cutout.clearance !== undefined
-      ? Math.max(0, cutout.clearance)
-      : 0;
-  const d = cutout.depth + clearance;
-  // Polygons scale uniformly (across-flats = depth grows by clearance) so the
-  // result stays a *regular* N-gon; a flat additive box offset would skew the
-  // width/depth ratio. Other shapes use a symmetric additive offset.
-  const w =
-    cutout.shape === 'polygon' && cutout.depth > 0
-      ? cutout.width * (d / cutout.depth)
-      : cutout.width + clearance;
-  return { clearance, w, d };
-}
-
-/** An entry chamfer narrower than this (mm) is cut as a straight wall. */
-const MIN_LOFTED_CHAMFER = 0.05;
-
-/**
- * The entry chamfer a cut of `cutDepth` takes at its rim, clamped so a
- * straight wall always remains below the bevel (loft needs cutDepth − chamfer
- * > 0).
- */
-function entryChamferWidth(cutout: {
-  readonly shape: string;
-  readonly cutDepth: number;
-  readonly chamferWidth?: number;
-}): number {
-  return (CHAMFER_SHAPES as readonly string[]).includes(cutout.shape) && cutout.chamferWidth
-    ? Math.max(0, Math.min(cutout.chamferWidth, cutout.cutDepth - 0.2))
-    : 0;
 }
 
 /** Create an extruded cutout shape centered at origin, **without rotation**.

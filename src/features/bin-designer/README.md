@@ -330,9 +330,11 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   `maxEntryChamfer(cutDepth)` (a `MIN_STRAIGHT_WALL` straight section must
   remain below the bevel). New insert-style holes seed a size-scaled default
   via `defaultEntryChamfer` (~10% of the tightest dimension, clamped to a
-  tasteful 0.4–0.8mm). Available on `rectangle` / `circle` / `polygon` /
-  `slot`. The editor exposes tolerance + chamfer as 0.2mm steppers that still
-  accept off-grid fractional typing.
+  tasteful 0.4–0.8mm). Available on every shape in `CHAMFER_SHAPES`:
+  `rectangle` / `circle` / `polygon` / `slot` / `knifeSlot` / `path`, and
+  `mesh`, whose bevel is swept in the mesh domain. The editor exposes
+  tolerance + chamfer as 0.2mm steppers that still accept off-grid fractional
+  typing.
 
 - **Label plate preview**: socket-mode plates render as REAL geometry, meshed by
   `labelPlateGenerator` and carried on the generation result beside `lidMesh`. Seats come

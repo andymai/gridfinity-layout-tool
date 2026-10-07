@@ -1,9 +1,44 @@
-import { describe, it, expect } from 'vitest';
-import type { Cutout, CutoutArrayConfig } from '@/shared/types/bin';
+import { describe, it, expect, vi } from 'vitest';
+import type { Cutout, CutoutArrayConfig, PathPoint } from '@/shared/types/bin';
+import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import type * as CutoutArrayModule from '@/shared/utils/cutoutArray';
 import { planNestedOpenings } from './nestedCutoutOpenings';
 import type { NestedOpeningPlan } from './nestedCutoutOpenings';
 
+vi.mock('@/shared/utils/cutoutArray', async (importOriginal) => {
+  const actual = await importOriginal<typeof CutoutArrayModule>();
+  return { ...actual, expandCutoutArray: vi.fn(actual.expandCutoutArray) };
+});
+
 const SURFACE = 30;
+
+function corner(x: number, y: number): PathPoint {
+  return { x, y, handleIn: null, handleOut: null, symmetric: false };
+}
+
+/** A path cutout through `points`, its box fitted to them. */
+function pathCutout(points: ReadonlyArray<{ x: number; y: number }>, overrides: Partial<Cutout>) {
+  const xs = points.map((p) => p.x);
+  const ys = points.map((p) => p.y);
+  const x = Math.min(...xs);
+  const y = Math.min(...ys);
+  return cutout({
+    shape: 'path',
+    x,
+    y,
+    width: Math.max(...xs) - x,
+    depth: Math.max(...ys) - y,
+    path: points.map((p) => corner(p.x, p.y)),
+    ...overrides,
+  });
+}
+
+function circlePoints(n: number, cx: number, cy: number, r: number) {
+  return Array.from({ length: n }, (_, k) => {
+    const a = (k / n) * 2 * Math.PI;
+    return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+  });
+}
 
 function cutout(overrides: Partial<Cutout>): Cutout {
   return {
@@ -224,5 +259,70 @@ describe('planNestedOpenings', () => {
     const turned = planNestedOpenings([TRAY, { ...long, rotation: 45 }], SURFACE);
     expect(turned.sunk.size).toBe(0);
     expect(turned.flares[0].trimTo?.key).toBe('tray');
+  });
+
+  it('opens a pocket onto the floor its clearance carries out to', () => {
+    const circle = cutout({
+      id: 'circle',
+      shape: 'circle',
+      x: 70.2,
+      y: 25,
+      width: 10,
+      depth: 10,
+      cutDepth: 16,
+      chamferWidth: 0.8,
+    });
+    const square = [corner(10, 10), corner(70, 10), corner(70, 50), corner(10, 50)];
+    const pathFloor = cutout({
+      id: 'floor',
+      shape: 'path',
+      x: 10,
+      y: 10,
+      width: 60,
+      depth: 40,
+      clearance: 1,
+      path: square,
+    });
+    const roundFloor = cutout({
+      id: 'floor',
+      shape: 'circle',
+      x: 30,
+      y: 10,
+      width: 40,
+      depth: 40,
+      clearance: 1,
+    });
+    for (const floor of [pathFloor, roundFloor]) {
+      const plan = planNestedOpenings([floor, circle], SURFACE);
+      expect(plan.flares.map((f) => [f.pocket.id, f.trimTo?.key])).toEqual([['circle', 'floor']]);
+      expect(isEmpty(planNestedOpenings([{ ...floor, clearance: 0 }, circle], SURFACE))).toBe(true);
+    }
+  });
+
+  it('measures nothing in a design with no chamfer to open', () => {
+    vi.mocked(expandCutoutArray).mockClear();
+    const plain = [
+      TRAY,
+      { ...SLOT, chamferWidth: 0 },
+      { ...SLOT, id: 'hairline', chamferWidth: 0.05 },
+      { ...TRAY, id: 'imprint', shape: 'mesh' as const, meshId: 'm', chamferWidth: 2 },
+    ];
+    expect(isEmpty(planNestedOpenings(plain, SURFACE))).toBe(true);
+    expect(expandCutoutArray).not.toHaveBeenCalled();
+    planNestedOpenings([TRAY, SLOT], SURFACE);
+    expect(expandCutoutArray).toHaveBeenCalled();
+  });
+
+  it('plans two nested 20,000-point outlines without comparing every pair', () => {
+    const floor = pathCutout(circlePoints(20000, 40, 40, 30), { id: 'floor' });
+    const pocket = pathCutout(circlePoints(20000, 40, 40, 20), {
+      id: 'pocket',
+      cutDepth: 16,
+      chamferWidth: 0.8,
+    });
+    const started = performance.now();
+    const plan = planNestedOpenings([floor, pocket], SURFACE);
+    expect(performance.now() - started).toBeLessThan(1000);
+    expect([...plan.sunk]).toEqual([['pocket', { depth: 6, flare: 0.8 }]]);
   });
 });
