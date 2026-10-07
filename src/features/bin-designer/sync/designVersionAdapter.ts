@@ -49,9 +49,10 @@ function toMs(version: DesignVersion): number {
 }
 
 /**
- * `forPush` refuses a body whose mesh file is missing, rather than push it
- * without the mesh over the copy the server has. list() keeps it, refs and
- * all: its callers read ids and mtimes, and sign-out wipes by that list.
+ * `forPush` inlines the body's meshes and refuses a body whose mesh file is
+ * missing, rather than push it without the mesh over the copy the server has.
+ * list() leaves the refs: it runs on every poll, its callers read ids and
+ * mtimes only, and sign-out wipes by that list.
  */
 async function toItem(
   version: DesignVersion,
@@ -70,10 +71,13 @@ async function toItem(
     if (typeof parsed !== 'object' || parsed === null || !isSyncableDesign(parsed)) {
       return null;
     }
-    const inline = await inlineHolderMeshes(parsed);
-    if (isOk(inline)) content = inline.value;
-    else if (forPush) return null;
-    else content = parsed;
+    if (forPush) {
+      const inline = await inlineHolderMeshes(parsed);
+      if (!isOk(inline)) return null;
+      content = inline.value;
+    } else {
+      content = parsed;
+    }
   } catch {
     return null;
   }

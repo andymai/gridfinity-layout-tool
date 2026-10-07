@@ -6,13 +6,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/shared/analytics/posthog', () => ({ trackDesignCreated: vi.fn() }));
+vi.mock('@/shared/generation/meshStore', async (importOriginal) => {
+  const actual = await importOriginal<typeof MeshStore>();
+  return { ...actual, getMeshFile: vi.fn(actual.getMeshFile) };
+});
 
 import { unwrap } from '@/core/result';
 import { designId } from '@/core/types';
 import { encodeMeshData, isMeshAssetRef } from '@/shared/generation/meshAsset';
 import type { MeshAsset, MeshAssetEntry, MeshAssetRef } from '@/shared/generation/meshAsset';
 import { holderMeshHashes } from '@/shared/generation/meshRefs';
-import { __resetMeshStoreForTests } from '@/shared/generation/meshStore';
+import { __resetMeshStoreForTests, getMeshFile } from '@/shared/generation/meshStore';
+import type * as MeshStore from '@/shared/generation/meshStore';
 import { compressString, decompressString } from '@/shared/utils/compression';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { BinParams, Cutout, DesignVersion, SavedDesign } from '../types';
@@ -121,7 +126,38 @@ describe('design sync payloads', () => {
     expect(Object.values(stored.params?.meshAssets ?? {}).every(isMeshAssetRef)).toBe(true);
 
     expect(JSON.stringify(await designAdapter.get(DESIGN_ID))).toBe(JSON.stringify(before));
-    expect(JSON.stringify(await designAdapter.list())).toBe(JSON.stringify(listedBefore));
+    const listed = await designAdapter.list();
+    expect(listed.map((i) => [i.id, i.modifiedAt])).toEqual(
+      listedBefore.map((i) => [i.id, i.modifiedAt])
+    );
+  });
+
+  it('list designs and versions without reading a mesh file', async () => {
+    const params = await inlineParams();
+    await writeRaw(rawDesign(params));
+    await (
+      await getDb()
+    ).put(DESIGN_VERSIONS_STORE, {
+      id: 'version_list',
+      designId: DESIGN_ID,
+      name: 'v1',
+      content: compressString(JSON.stringify({ name: 'Sync', params })),
+      thumbnail: null,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      origin: 'manual',
+    } satisfies DesignVersion);
+    await moveInlineMeshesToFiles();
+    __resetMeshStoreForTests();
+    vi.mocked(getMeshFile).mockClear();
+
+    const designs = await designAdapter.list();
+    const versions = await designVersionAdapter.list();
+
+    expect(designs.map((i) => i.id)).toEqual([DESIGN_ID]);
+    expect(versions.map((i) => i.id)).toEqual(['version_list']);
+    expect(getMeshFile).not.toHaveBeenCalled();
+    const listedParams = designs[0].payload.params as BinParams;
+    expect(Object.values(listedParams.meshAssets ?? {}).every(isMeshAssetRef)).toBe(true);
   });
 
   it('store a pulled inline design as refs, and push it back unchanged', async () => {

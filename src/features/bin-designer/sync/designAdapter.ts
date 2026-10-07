@@ -164,11 +164,6 @@ function branchFields(d: SavedDesign) {
   };
 }
 
-async function inlinedOrAsIs(d: SavedDesign): Promise<SavedDesign> {
-  const inline = await inlineHolderMeshes(d);
-  return isOk(inline) ? inline.value : d;
-}
-
 function buildPayload(d: SavedDesign): DesignSyncPayload {
   if (isBinDesign(d)) {
     return {
@@ -198,15 +193,13 @@ export const designAdapter: DesignAdapter = {
     if (!isOk(result)) return [];
     // Bins and assemblies sync; toolRack and importedMesh (base64 mesh
     // blobs) stay local-only.
-    return Promise.all(
-      result.value.filter(isSyncableDesign).map(async (d) => ({
-        id: d.id,
-        // Every caller of list() reads ids and mtimes only, and a design whose
-        // mesh file is missing must still be listed: sign-out wipes by this list.
-        payload: buildPayload(await inlinedOrAsIs(d)),
-        modifiedAt: toMs(d.updatedAt),
-      }))
-    );
+    return result.value.filter(isSyncableDesign).map((d) => ({
+      id: d.id,
+      // Meshes stay refs: every caller of list() reads ids and mtimes only, and
+      // it runs on every poll. Only get(), which feeds a push, inlines them.
+      payload: buildPayload(d),
+      modifiedAt: toMs(d.updatedAt),
+    }));
   },
 
   async get(id: string): Promise<SyncableItem<DesignSyncPayload> | null> {
