@@ -1,0 +1,65 @@
+src/core/storage/ShareService.ts
+  s_1606b97c1ea28d::t_afd92f6fca90cd 17,81-84,86-88,95,100,105-108,122,144-149,159
+src/features/cloud-share/hooks/useCloudShare.test.ts
+  s_1606b97c1ea28d::t_3a588134e13625 12,190-204
+  s_1606b97c1ea28d::t_43adbf436ea783 205-207
+src/core/storage/BulkArchiveService.ts
+  s_1606b97c1ea28d::t_5276e813e3e768 12-18,87-90,95,130-133,175,179,183-184,189-192,204
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx
+  s_1606b97c1ea28d::t_636546ec049273 28
+  s_1606b97c1ea28d::t_e500ece4ff3cf1 260,264-265
+src/core/storage/ShareService.test.ts
+  s_1606b97c1ea28d::t_d4f4fd5c1ff1e3 665,689,725,744,779,1250
+  s_1606b97c1ea28d::t_6c850c780bbbbe 20-28,786-793
+  s_1606b97c1ea28d::t_a1d65a47627288 401-412,794
+src/features/cloud-share/components/ShareModal/ShareModal.tsx
+  s_1606b97c1ea28d::t_e500ece4ff3cf1 134-138
+  s_1606b97c1ea28d::t_636546ec049273 16-17
+src/features/cloud-share/hooks/useCloudShare.ts
+  s_1606b97c1ea28d::t_4f5977c4292846 19,133-135
+src/features/cloud-share/components/ShareModal/ShareModal.test.tsx
+  s_1606b97c1ea28d::t_2ce3a33787bd09 16
+  s_1606b97c1ea28d::t_a85d11d6b730ef 226-227
+  s_1606b97c1ea28d::t_6e8ab3b53d6969 6-7,212-225
+src/shell/ErrorBoundary/ErrorBoundary.test.tsx
+  s_1606b97c1ea28d::t_2ce3a33787bd09 23-25
+src/features/layout-library/components/LayoutManagerModal/LayoutManagerModal.tsx
+  s_1606b97c1ea28d::t_995c1eee26328f 275-280
+src/core/storage/utils.ts
+  s_1606b97c1ea28d::t_afd92f6fca90cd 10-11,31-32,34-40,50
+src/shell/ErrorBoundary/ErrorBoundary.tsx
+  s_1606b97c1ea28d::t_e500ece4ff3cf1 6,88
+src/shared/hooks/useAppWindowEvents.ts
+  s_1606b97c1ea28d::t_636546ec049273 4,7-8,31,83-85
+  s_1606b97c1ea28d::t_8ca8dd6162401f 86
+  s_1606b97c1ea28d::t_c9ca5b01003a09 90
+src/core/api/share.ts
+  s_1606b97c1ea28d::t_872401216eacc3 283,314
+  s_1606b97c1ea28d::t_d675def438323b 10,92-94,97,101,108,282,284-286,313,315-317
+src/features/layout-library/components/LayoutManagerModal/LayoutList/LayoutList.tsx
+  s_1606b97c1ea28d::t_e500ece4ff3cf1 194,198-199
+  s_1606b97c1ea28d::t_636546ec049273 9-10
+src/features/layout-library/components/LayoutManagerModal/LayoutList/LayoutList.test.tsx
+  s_1606b97c1ea28d::t_2ce3a33787bd09 24
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.test.tsx
+  s_1606b97c1ea28d::t_2ce3a33787bd09 42
+src/core/storage/BulkArchiveService.test.ts
+  s_1606b97c1ea28d::t_995c1eee26328f 19
+  s_1606b97c1ea28d::t_64879e933ed05a 192,222,234,248,256-265,270
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a1e793d6629a27dcf83af30effdab7dc2d1e6b38",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
