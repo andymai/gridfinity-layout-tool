@@ -1,0 +1,86 @@
+src/i18n/locales/nl.json
+  s_900382acfc8cb3::t_043ffe1d1c2cff 3419
+src/i18n/locales/ja.json
+  s_900382acfc8cb3::t_043ffe1d1c2cff 3419
+src/i18n/locales/ko.json
+  s_900382acfc8cb3::t_043ffe1d1c2cff 3419
+src/shared/utils/drawerMargin.ts
+  s_900382acfc8cb3::t_ee870b9fcde5e5 17,21,99-108,111-113,118-119,121,212-213,215,226-227,229
+  s_900382acfc8cb3::t_59430b1568fcce 198
+src/i18n/locales/fr.json
+  s_900382acfc8cb3::t_043ffe1d1c2cff 3419
+src/features/bin-inspector/README.md
+  s_900382acfc8cb3::t_59430b1568fcce 78
+src/i18n/locales/it.json
+  s_900382acfc8cb3::t_043ffe1d1c2cff 3419
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverhangExtensions/binOverhangStrips.ts
+  s_900382acfc8cb3::t_854f292aca8efc 26,47-48,98-99
+src/i18n/locales/uk.json
+  s_900382acfc8cb3::t_043ffe1d1c2cff 3419
+src/i18n/locales/es.json
+  s_900382acfc8cb3::t_043ffe1d1c2cff 3419
+src/i18n/locales/sv.json
+  s_900382acfc8cb3::t_043ffe1d1c2cff 3419
+src/i18n/locales/zh-CN.json
+  s_900382acfc8cb3::t_043ffe1d1c2cff 3419
+src/i18n/locales/pt-BR.json
+  s_900382acfc8cb3::t_043ffe1d1c2cff 3419
+src/i18n/locales/pl.json
+  s_900382acfc8cb3::t_043ffe1d1c2cff 3419
+src/shared/hooks/useLinkedDesignKinds.test.ts
+  s_900382acfc8cb3::t_e46cea25afe4d3 1-7,9-64
+  s_900382acfc8cb3::t_cd1bf201edbebe 8
+src/features/print-export/hooks/usePrintList.test.ts
+  s_900382acfc8cb3::t_1f5a02df45da42 20,32-35,38,75,616-650
+  s_900382acfc8cb3::t_db45c0f015c142 651
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverhangExtensions/BinOverhangExtensions.test.tsx
+  s_900382acfc8cb3::t_859bcb7c9fe595 13-14,60-61,89-108
+  s_900382acfc8cb3::t_8d70149728b430 109-110
+src/i18n/locales/en.ts
+  s_900382acfc8cb3::t_043ffe1d1c2cff 518-519
+src/features/grid-editor/components/Grid/Bin/BinOverhangExtension.tsx
+  s_900382acfc8cb3::t_342ad09b22248f 22,65,67-73
+src/features/print-export/hooks/usePrintList.ts
+  s_900382acfc8cb3::t_8f7412d6ad67da 37,122,135-136,139,142-143,154
+  s_900382acfc8cb3::t_bd232a75c71588 137,140-141
+  s_900382acfc8cb3::t_69975feed0f6ae 138
+src/features/bin-inspector/components/Inspector/ExtendToMarginToggle/ExtendToMarginToggle.test.tsx
+  s_900382acfc8cb3::t_5eedacaf80424f 7-9,43-54,58-59,114-158
+src/shared/utils/drawerMargin.test.ts
+  s_900382acfc8cb3::t_64e0a4cd7b584d 5,150-162,166-175,281-285,313-322
+src/features/bin-inspector/components/Inspector/ExtendToMarginToggle/ExtendToMarginToggle.tsx
+  s_900382acfc8cb3::t_79c8fee9535ab5 10-11,23-24,46,51-54,86-87,91-95
+src/i18n/locales/nb.json
+  s_900382acfc8cb3::t_043ffe1d1c2cff 3419
+src/i18n/locales/de.json
+  s_900382acfc8cb3::t_043ffe1d1c2cff 3419
+src/shared/hooks/useLinkedDesignKinds.ts
+  s_900382acfc8cb3::t_5a8f3239ab4cb3 1-24
+src/i18n/locales/ka.json
+  s_900382acfc8cb3::t_043ffe1d1c2cff 428
+src/features/grid-editor/components/Grid/Bin/BinOverhangExtension.test.tsx
+  s_900382acfc8cb3::t_859bcb7c9fe595 8,10-12,64-75,79-80,97-113
+  s_900382acfc8cb3::t_1fa80bc6c9827c 114-115
+src/i18n/locales/cs.json
+  s_900382acfc8cb3::t_043ffe1d1c2cff 3419
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverhangExtensions/BinOverhangExtensions.tsx
+  s_900382acfc8cb3::t_854f292aca8efc 18,50,55,68,77-86
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverhangExtensions/binOverhangStrips.test.ts
+  s_900382acfc8cb3::t_590364ed986cfc 115-128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "689b5498a72dbae26909b794ce35dd12b977011f",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
