@@ -53,9 +53,9 @@ export interface FetchShareResponse {
 }
 
 /**
- * Mirrors MAX_LINKED_DESIGNS_BYTES in api/lib/validation.ts. Trimming here
- * keeps an oversized design set (realistically: imported-mesh designs carrying
- * base64 geometry) from turning the whole share into a 400.
+ * Mirrors MAX_LINKED_DESIGNS_BYTES in api/lib/sharedDesignsValidation.ts.
+ * Trimming here keeps an oversized design set (realistically: imported-mesh
+ * designs carrying base64 geometry) from turning the whole share into a 400.
  */
 const LINKED_DESIGNS_BUDGET_BYTES = 512 * 1024;
 
@@ -63,6 +63,10 @@ const LINKED_DESIGNS_BUDGET_BYTES = 512 * 1024;
  * Resolve a layout's linked designs, dropping any that would push the payload
  * past the server's budget. Order is preserved so the result is deterministic;
  * a single oversized design is skipped rather than starving the rest.
+ *
+ * Each entry is measured whole, which slightly overcounts against the server
+ * (it counts only params, or envelope + structure), so a set within this
+ * budget is always within the server's total.
  */
 async function collectDesignsForShare(layout: Layout): Promise<SharedLinkedDesign[]> {
   const { collectLinkedDesigns } = await import('@/core/storage/ShareService');
@@ -71,10 +75,10 @@ async function collectDesignsForShare(layout: Layout): Promise<SharedLinkedDesig
   const withinBudget: SharedLinkedDesign[] = [];
   let bytes = 0;
   for (const design of designs) {
-    const size = JSON.stringify(design.params).length;
+    const size = JSON.stringify(design).length;
     if (bytes + size > LINKED_DESIGNS_BUDGET_BYTES) continue;
     bytes += size;
-    withinBudget.push({ id: design.id, name: design.name, params: design.params });
+    withinBudget.push(design);
   }
   return withinBudget;
 }
