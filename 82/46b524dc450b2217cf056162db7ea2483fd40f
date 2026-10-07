@@ -1,0 +1,23 @@
+src/features/bin-designer/utils/binDimensions.test.ts
+  s_900382acfc8cb3::t_4e132a53bf7ccc 23-29
+src/features/bin-designer/utils/binDimensions.ts
+  s_900382acfc8cb3::t_fff0a31a22f3b5 18,36,68,177-182
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/useDesignGeometries.ts
+  s_900382acfc8cb3::t_4e132a53bf7ccc 67-68,70-71,74-77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8246b524dc450b2217cf056162db7ea2483fd40f",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
