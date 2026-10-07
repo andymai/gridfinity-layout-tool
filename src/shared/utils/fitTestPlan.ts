@@ -167,14 +167,6 @@ function openingGrowthMm(cutout: Cutout): {
   return { clearanceW, clearanceD, chamfer: chamferClamped > 0.05 ? chamferClamped : 0 };
 }
 
-/** A path's outline grown by `d`, or the bare outline the builder falls back to. */
-function grownPathOutline(
-  outline: readonly { x: number; y: number }[],
-  d: number
-): Array<{ x: number; y: number }> {
-  return growPathOutline(outline, d) ?? outline.map((p) => ({ x: p.x, y: p.y }));
-}
-
 /**
  * A path's opening at its rim, as `buildUnrotatedCutoutShape` cuts it. The
  * offset's miter joins reach past the clearance at sharp corners, so a plain
@@ -188,8 +180,10 @@ function pathRimHalfExtents(
   const outline = pathCutoutOutline(cutout);
   if (!outline) return { hw: cutout.width / 2, hd: cutout.depth / 2 };
   const base = growPathOutline(outline, grow.clearanceD);
-  const flared = grow.chamfer > 0 ? growPathOutline(outline, grow.clearanceD + grow.chamfer) : null;
-  const rim = base && flared ? flared : grownPathOutline(outline, grow.clearanceD);
+  // The builder only lofts a flare off a clearance outline that built.
+  const flared =
+    base && grow.chamfer > 0 ? growPathOutline(outline, grow.clearanceD + grow.chamfer) : null;
+  const rim = flared ?? base ?? outline;
   return {
     hw: Math.max(...rim.map((p) => Math.abs(p.x))),
     hd: Math.max(...rim.map((p) => Math.abs(p.y))),
@@ -666,7 +660,7 @@ export function openingPerimeterMm(cutout: Cutout): number {
     case 'path': {
       const outline = pathCutoutOutline(cutout);
       return outline
-        ? polygonPerimeter(grownPathOutline(outline, grow.clearanceD))
+        ? polygonPerimeter(growPathOutline(outline, grow.clearanceD) ?? outline)
         : 2 * (cutout.width + cutout.depth);
     }
     // A scan has no outline here, only its footprint; the box over-reads it.

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { BinParams, Cutout } from '@/shared/types/bin';
@@ -21,6 +21,14 @@ import {
   planFitTestSplit,
   planFitTestStampArea,
 } from './fitTestPlan';
+import { growPathOutline } from '@/shared/utils/pathCutoutOutline';
+import type * as PathCutoutOutline from '@/shared/utils/pathCutoutOutline';
+
+// Wraps the real offset, so every other case here runs the true geometry.
+vi.mock('@/shared/utils/pathCutoutOutline', async (importOriginal) => {
+  const actual = await importOriginal<typeof PathCutoutOutline>();
+  return { ...actual, growPathOutline: vi.fn(actual.growPathOutline) };
+});
 
 const cutout = (over: Partial<Cutout>): Cutout => ({
   id: 'c1',
@@ -485,6 +493,18 @@ describe('clearance as each builder cuts it', () => {
     const [span] = fitTestCutoutSpans(board({}, [spike])).x;
     const [plain] = fitTestCutoutSpans(board({}, [{ ...spike, clearance: 0 }])).x;
     expect(span.max - plain.max).toBeCloseTo(2, 6);
+  });
+
+  it('offsets a path once when it has no chamfer, and once more for a flare', () => {
+    // Each offset runs a quadratic self-intersection scan on the main thread.
+    const offset = vi.mocked(growPathOutline);
+    offset.mockClear();
+    fitTestCutoutSpans(board({}, [square(0.5)]));
+    expect(offset).toHaveBeenCalledTimes(1);
+
+    offset.mockClear();
+    fitTestCutoutSpans(board({}, [{ ...square(0.5), chamferWidth: 0.6 }]));
+    expect(offset).toHaveBeenCalledTimes(2);
   });
 
   it('offsets a mesh silhouette by its whole clearance on every side', () => {
