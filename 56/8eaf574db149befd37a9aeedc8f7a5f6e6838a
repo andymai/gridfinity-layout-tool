@@ -1,0 +1,34 @@
+src/features/bin-designer/components/panel/CutoutsSection/geometryAlign.ts
+  s_900382acfc8cb3::t_d6506eaccdad10 10
+  s_900382acfc8cb3::t_e729448a413237 55-56
+src/features/bin-designer/components/panel/CutoutsSection/geometryAlign.test.ts
+  s_900382acfc8cb3::t_60b7730fd29892 56-58,63-65,68,71-80
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.test.tsx
+  s_900382acfc8cb3::t_8b7e8cacee17ca 377-397
+src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.test.tsx
+  s_900382acfc8cb3::t_f1eb37a584583b 82-90
+src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.tsx
+  s_900382acfc8cb3::t_ae3ddc610ae811 32-40
+  s_900382acfc8cb3::t_41c6d187053441 23-24
+  s_900382acfc8cb3::t_2c4a01baf92bba 329-330,332
+src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.tsx
+  s_900382acfc8cb3::t_8c1ceecf1432c6 21-22
+  s_900382acfc8cb3::t_5d9a4c72c8c70b 44-52
+  s_900382acfc8cb3::t_8bb0ff0332decd 172-173
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "568eaf574db149befd37a9aeedc8f7a5f6e6838a",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
