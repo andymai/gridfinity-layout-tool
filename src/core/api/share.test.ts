@@ -457,6 +457,17 @@ describe('linked designs over the server per-design cap', () => {
     expect(postedIds()).toEqual([small.id]);
   });
 
+  it('skips a mesh-free bin between 100,000 B and 100 KiB', async () => {
+    const params = { notes: 'x'.repeat(100_500) };
+    expect(JSON.stringify(params).length).toBeLessThan(100 * 1024);
+    const nearCap: LoadedDesignData = { id: designId('design_near'), name: 'Near', params };
+    installDesigns([nearCap, small]);
+
+    expectOk(await createShare('abc123xyz789', layoutLinking(nearCap.id, small.id), 'view'));
+
+    expect(postedIds()).toEqual([small.id]);
+  });
+
   it('keeps a bin over 100 KB whose size comes from its meshes', async () => {
     const meshBin: LoadedDesignData = {
       id: designId('design_mesh_bin'),

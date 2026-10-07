@@ -61,21 +61,23 @@ export interface FetchShareResponse {
 const LINKED_DESIGNS_BUDGET_BYTES = 512 * 1024;
 
 /**
- * Mirrors the server's per-design caps: MAX_ASSEMBLY_DESIGN_BYTES in
- * api/lib/sharedDesignsValidation.ts, and CONSTRAINTS.MAX_PAYLOAD_BYTES for a
- * bin without mesh assets (a bin carrying meshes is bounded by the total). One
- * entry over either fails the whole share, so it is skipped instead.
+ * Mirror the server's per-design caps: MAX_ASSEMBLY_DESIGN_BYTES in
+ * api/lib/sharedDesignsValidation.ts, and CONSTRAINTS.MAX_PAYLOAD_BYTES in
+ * api/lib/designerValidationConstants.ts for a bin without mesh assets (a bin
+ * carrying meshes is bounded by the total). One entry over either fails the
+ * whole share, so it is skipped instead.
  */
-const SINGLE_DESIGN_BUDGET_BYTES = 100 * 1024;
+const ASSEMBLY_DESIGN_BUDGET_BYTES = 100 * 1024;
+const BIN_DESIGN_BUDGET_BYTES = 100_000;
 
 function exceedsSingleDesignBudget(design: LinkedDesignExport): boolean {
   if (design.kind === 'assembly') {
     const size = JSON.stringify({ envelope: design.envelope, structure: design.structure }).length;
-    return size > SINGLE_DESIGN_BUDGET_BYTES;
+    return size > ASSEMBLY_DESIGN_BUDGET_BYTES;
   }
   const meshAssets = design.params?.meshAssets;
   if (meshAssets && Object.keys(meshAssets).length > 0) return false;
-  return JSON.stringify(design.params ?? null).length > SINGLE_DESIGN_BUDGET_BYTES;
+  return JSON.stringify(design.params ?? null).length > BIN_DESIGN_BUDGET_BYTES;
 }
 
 /**
