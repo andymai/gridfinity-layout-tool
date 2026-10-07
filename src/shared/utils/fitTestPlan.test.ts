@@ -436,6 +436,69 @@ describe('openingPerimeterMm', () => {
   });
 });
 
+describe('clearance as each builder cuts it', () => {
+  const corner = (x: number, y: number) => ({
+    x,
+    y,
+    handleIn: null,
+    handleOut: null,
+    symmetric: false,
+  });
+  const square = (clearance: number) =>
+    cutout({
+      shape: 'path',
+      x: 10,
+      y: 10,
+      width: 20,
+      depth: 20,
+      clearance,
+      path: [corner(10, 10), corner(30, 10), corner(30, 30), corner(10, 30)],
+    });
+  const widthOf = (params: BinParams): number => {
+    const [span] = fitTestCutoutSpans(params).x;
+    return span.max - span.min;
+  };
+
+  it('grows a circle by its clearance across the diameter, half on each side', () => {
+    expect(widthOf(board({}, [cutout({ width: 12, depth: 12, clearance: 0.4 })]))).toBeCloseTo(
+      12.4,
+      9
+    );
+  });
+
+  it('offsets a path by its whole clearance on every side', () => {
+    expect(widthOf(board({}, [square(0.5)]))).toBeCloseTo(21, 9);
+  });
+
+  it('reaches as far as the miter of a sharp path corner', () => {
+    // The 14 degree tip's miter runs past the clearance until the offset's
+    // limit of four clearances stops it: 2mm beyond the tip, not 0.5.
+    const spike = cutout({
+      shape: 'path',
+      x: 0,
+      y: 0,
+      width: 40,
+      depth: 10,
+      clearance: 0.5,
+      path: [corner(0, 0), corner(40, 5), corner(0, 10)],
+    });
+    const [span] = fitTestCutoutSpans(board({}, [spike])).x;
+    const [plain] = fitTestCutoutSpans(board({}, [{ ...spike, clearance: 0 }])).x;
+    expect(span.max - plain.max).toBeCloseTo(2, 6);
+  });
+
+  it('offsets a mesh silhouette by its whole clearance on every side', () => {
+    const scan = cutout({ shape: 'mesh', meshId: 'm1', width: 20, depth: 10, clearance: 1 });
+    expect(widthOf(board({}, [scan]))).toBeCloseTo(22, 9);
+  });
+
+  it('measures a path perimeter round its clearance offset', () => {
+    // A square offset 0.5mm with mitred corners is a 21mm square.
+    expect(openingPerimeterMm(square(0.5))).toBeCloseTo(84, 6);
+    expect(openingPerimeterMm(square(0))).toBeCloseTo(80, 6);
+  });
+});
+
 describe('regressions found in review', () => {
   it('does not grow a rectangle by a stale clearance the builder ignores', () => {
     // CLEARANCE_SHAPES excludes 'rectangle', so a cutout switched from circle

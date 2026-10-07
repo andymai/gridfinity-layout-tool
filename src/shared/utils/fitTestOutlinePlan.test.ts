@@ -1,14 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
+import { DEFAULT_KNIFE_SPEC } from '@/shared/types/bin';
 import type { BinParams, Cutout } from '@/shared/types/bin';
 import { getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
-import { planFitTestSplit } from './fitTestPlan';
+import { fitTestFootprintBox, planFitTestSplit } from './fitTestPlan';
 import {
   FIT_TEST_OUTLINE_HEIGHT_MM,
   FIT_TEST_OUTLINE_WALL_MM,
   clampFitTestOutlineHeightMm,
   clampFitTestOutlineWallMm,
   estimateFitTestOutlineVolumeMm3,
+  fitTestOutlineBoxes,
   fitTestOutlineSource,
   planFitTestOutlineSplit,
   resolveFitTestOutlineSize,
@@ -176,6 +178,62 @@ describe('planFitTestOutlineSplit', () => {
     expect(outline.planesX).toHaveLength(1);
     expect(outline.planesX[0]).toBeCloseTo(-2.5 + 1.2 + 2, 6);
     expect(outline.blockedSeams).toBe(0);
+  });
+});
+
+describe('outline reach through a breached wall', () => {
+  const splitPlanes = getSplitPlanePositionsMm;
+  const bed = { width: 100, depth: 100 };
+  const rail = (pocket: Cutout): BinParams => board({ width: 6, depth: 1 }, [pocket]);
+
+  it('runs an open side out to the board edge', () => {
+    const closed = rail(cutout({ id: 'a', x: 5, y: 5, width: 20, depth: 20 }));
+    const open = rail(
+      cutout({ id: 'a', x: 5, y: 5, width: 20, depth: 20, openSides: [{ side: 'right' }] })
+    );
+    const boardRight = fitTestFootprintBox(open).maxX;
+
+    expect(Math.max(...fitTestOutlineBoxes(closed, 1.2).map((b) => b.maxX))).toBeLessThan(0);
+    expect(Math.max(...fitTestOutlineBoxes(open, 1.2).map((b) => b.maxX))).toBeCloseTo(
+      boardRight,
+      9
+    );
+    // The pocket alone fits the bed; the channel to the far wall does not.
+    expect(planFitTestOutlineSplit(closed, bed, splitPlanes, 1.2).pieceCount).toBe(1);
+    expect(planFitTestOutlineSplit(open, bed, splitPlanes, 1.2).pieceCount).toBeGreaterThan(1);
+  });
+
+  it('runs a knife slot exit out to the board edge', () => {
+    const slot = cutout({
+      id: 'k',
+      shape: 'knifeSlot',
+      x: 5,
+      y: 10,
+      width: 30,
+      depth: 3,
+      knife: { ...DEFAULT_KNIFE_SPEC, openEnd: 'end' },
+    });
+    const boxes = fitTestOutlineBoxes(rail(slot), 1.2);
+    expect(Math.max(...boxes.map((b) => b.maxX))).toBeCloseTo(
+      fitTestFootprintBox(rail(slot)).maxX,
+      9
+    );
+    expect(planFitTestOutlineSplit(rail(slot), bed, splitPlanes, 1.2).pieceCount).toBeGreaterThan(
+      1
+    );
+  });
+
+  it('never reaches past the board', () => {
+    const open = rail(
+      cutout({ id: 'a', x: 5, y: 5, width: 20, depth: 20, openSides: [{ side: 'left' }] })
+    );
+    const box = fitTestFootprintBox(open);
+    for (const b of fitTestOutlineBoxes(open, 2.4)) {
+      expect(b.minX).toBeGreaterThanOrEqual(box.minX);
+      expect(b.maxX).toBeLessThanOrEqual(box.maxX);
+      expect(b.minY).toBeGreaterThanOrEqual(box.minY);
+      expect(b.maxY).toBeLessThanOrEqual(box.maxY);
+    }
   });
 });
 

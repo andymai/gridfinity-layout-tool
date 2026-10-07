@@ -1,30 +1,24 @@
 /**
- * Outline fit test planning: pure, kernel-free, shared by the worker that
- * traces the rings and the export dialog that sizes, prices and warns about
- * them before anything is generated.
- *
- * The outline is a thin ring around each opening, its inner edge the real
- * pocket wall. A maker leaves it on the build plate and sets the part on it
- * from above, so it answers the 2D question (shape and XY clearance) for a few
- * layers of filament instead of a whole card.
+ * Outline fit test planning, shared by the worker that traces the rings and
+ * the dialog that sizes, prices and warns about them before anything is
+ * generated.
  */
 
 import type { BinParams, Cutout } from '@/shared/types/bin';
 import {
   fitTestCutoutBoxes,
+  fitTestFootprintBox,
   openingPerimeterMm,
   planFitTestSplit,
   sumOverCutouts,
 } from '@/shared/utils/fitTestPlan';
 import type { BedSize, CutoutBox2D, FitTestSplitPlan } from '@/shared/utils/fitTestPlan';
+import { openSideChannelOutline, openSideChannels } from '@/shared/utils/cutoutOpenSides';
+import { knifeSlotWallExits } from '@/shared/utils/lipGapPlan';
+import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 
-/**
- * What the fit test prints: the full card (a slice of the bin top with every
- * opening through it), or only a ring traced around each opening.
- */
 export type FitTestMode = 'card' | 'outline';
 
-/** A stepper's legal band, with the value it opens on. */
 export interface FitTestRange {
   readonly min: number;
   readonly max: number;
@@ -32,8 +26,7 @@ export interface FitTestRange {
   readonly step: number;
 }
 
-/** Ring height (mm). The floor is one layer; the default is three, enough for
- *  the rings to peel off the plate in one piece. */
+/** The floor is one layer; three peel off the plate in one piece. */
 export const FIT_TEST_OUTLINE_HEIGHT_MM: FitTestRange = {
   min: 0.2,
   max: 2,
@@ -41,8 +34,7 @@ export const FIT_TEST_OUTLINE_HEIGHT_MM: FitTestRange = {
   step: 0.2,
 };
 
-/** Ring width (mm), grown outward from the pocket wall. The default is three
- *  0.4mm extrusions; past the cap the outline is turning back into a card. */
+/** Three 0.4mm extrusions by default; past the cap the outline is turning back into a card. */
 export const FIT_TEST_OUTLINE_WALL_MM: FitTestRange = {
   min: 0.8,
   max: 2.4,
@@ -50,7 +42,6 @@ export const FIT_TEST_OUTLINE_WALL_MM: FitTestRange = {
   step: 0.4,
 };
 
-/** The ring dimensions a caller asks for. */
 export interface FitTestOutlineSize {
   readonly heightMm: number;
   readonly wallMm: number;
@@ -69,7 +60,6 @@ export function clampFitTestOutlineWallMm(wallMm: number): number {
   return clampToRange(FIT_TEST_OUTLINE_WALL_MM, wallMm);
 }
 
-/** Both ring dimensions clamped, a missing one taking its default. */
 export function resolveFitTestOutlineSize(size?: Partial<FitTestOutlineSize>): FitTestOutlineSize {
   return {
     heightMm: clampFitTestOutlineHeightMm(size?.heightMm ?? NaN),
@@ -78,9 +68,8 @@ export function resolveFitTestOutlineSize(size?: Partial<FitTestOutlineSize>): F
 }
 
 /**
- * The design an outline is traced from: the same pockets with everything that
- * is not the pocket wall taken off. An entry chamfer flares the rim past the
- * wall a part has to clear, and an engraved label, a label socket or a text
+ * The design an outline is traced from. An entry chamfer flares the rim past
+ * the wall a part has to clear, and an engraved label, a label socket or a text
  * element each cut an outline of their own into the surface being traced.
  */
 export function fitTestOutlineSource(params: BinParams): BinParams {
@@ -98,17 +87,68 @@ function outlineSourceCutout(cutout: Cutout): Cutout {
   return { ...stripped, array: placement };
 }
 
-function grow(box: CutoutBox2D, by: number): CutoutBox2D {
-  return { minX: box.minX - by, maxX: box.maxX + by, minY: box.minY - by, maxY: box.maxY + by };
+function bounds(points: readonly (readonly [number, number])[]): CutoutBox2D {
+  const xs = points.map((p) => p[0]);
+  const ys = points.map((p) => p[1]);
+  return {
+    minX: Math.min(...xs),
+    maxX: Math.max(...xs),
+    minY: Math.min(...ys),
+    maxY: Math.max(...ys),
+  };
 }
 
 /**
- * Where the outline gets cut for a given bed.
- *
- * The rings span only the openings, so an outline often fits a bed its card
- * would overflow; it is checked on that extent first. When it does overflow,
- * it takes the card's own seams, widened by the ring so a nudged seam misses
- * the ring as well as the hole. A window holding no ring yields no piece.
+ * Open-side channels and knife exits breach the wall, so the traced ring runs
+ * from the pocket out to the board edge, well past the pocket's own box.
+ */
+function breachBoxes(source: BinParams): CutoutBox2D[] {
+  const { innerW, innerD, offsetX, offsetY } = cutoutInterior(source);
+  const boxes = openSideChannels(source).map((ch) =>
+    bounds(
+      openSideChannelOutline(ch, { innerW, innerD, wallThickness: source.wallThickness }).map(
+        ([x, y]): [number, number] => [x - innerW / 2 + offsetX, y - innerD / 2 + offsetY]
+      )
+    )
+  );
+  for (const exit of knifeSlotWallExits(source, innerW, innerD)) {
+    const alongX = exit.side === 'left' || exit.side === 'right';
+    const outward = exit.side === 'right' || exit.side === 'back';
+    const start = exit.start + (alongX ? offsetX : offsetY);
+    const across = exit.centre + (alongX ? offsetY : offsetX);
+    const [lo, hi] = outward ? [start, Infinity] : [-Infinity, start];
+    const [acrossLo, acrossHi] = [across - exit.width / 2, across + exit.width / 2];
+    boxes.push(
+      alongX
+        ? { minX: lo, maxX: hi, minY: acrossLo, maxY: acrossHi }
+        : { minX: acrossLo, maxX: acrossHi, minY: lo, maxY: hi }
+    );
+  }
+  return boxes;
+}
+
+/**
+ * Where each ring can reach: its opening or breach grown by the ring width,
+ * cut back to the board, since the rings are traced from the board's material.
+ */
+export function fitTestOutlineBoxes(params: BinParams, wallMm: number): CutoutBox2D[] {
+  const source = fitTestOutlineSource(params);
+  const board = fitTestFootprintBox(params);
+  return [...fitTestCutoutBoxes(source), ...breachBoxes(source)]
+    .map((b) => ({
+      minX: Math.max(board.minX, b.minX - wallMm),
+      maxX: Math.min(board.maxX, b.maxX + wallMm),
+      minY: Math.max(board.minY, b.minY - wallMm),
+      maxY: Math.min(board.maxY, b.maxY + wallMm),
+    }))
+    .filter((b) => b.maxX > b.minX && b.maxY > b.minY);
+}
+
+/**
+ * Where the outline gets cut for a given bed. The rings span only the
+ * openings, so an outline can fit a bed its card overflows; when it does not,
+ * it takes the card's seams, held clear of the ring as well as the hole. A
+ * window holding no ring yields no piece.
  */
 export function planFitTestOutlineSplit(
   params: BinParams,
@@ -117,15 +157,14 @@ export function planFitTestOutlineSplit(
   wallMm: number
 ): FitTestSplitPlan {
   const whole: FitTestSplitPlan = { planesX: [], planesY: [], pieceCount: 1, blockedSeams: 0 };
-  const source = fitTestOutlineSource(params);
-  const boxes = fitTestCutoutBoxes(source).map((b) => grow(b, wallMm));
+  const boxes = fitTestOutlineBoxes(params, wallMm);
   if (!bed || boxes.length === 0) return whole;
 
   const width = Math.max(...boxes.map((b) => b.maxX)) - Math.min(...boxes.map((b) => b.minX));
   const depth = Math.max(...boxes.map((b) => b.maxY)) - Math.min(...boxes.map((b) => b.minY));
   if (width <= bed.width && depth <= bed.depth) return whole;
 
-  const card = planFitTestSplit(source, bed, splitPlanes, wallMm);
+  const card = planFitTestSplit(fitTestOutlineSource(params), bed, splitPlanes, wallMm);
   const xEdges = [-Infinity, ...card.planesX, Infinity];
   const yEdges = [-Infinity, ...card.planesY, Infinity];
   let pieces = 0;
@@ -145,11 +184,8 @@ export function planFitTestOutlineSplit(
 }
 
 /**
- * Material (mm³) in the outline, for the dialog's cost line.
- *
- * Each ring is priced as an outward offset of its opening: perimeter times
- * width, plus the round each convex corner adds. Rings that run into each
- * other or off the board edge are counted whole, so this reads high.
+ * Material (mm³) in the outline: each ring priced as its opening offset
+ * outward, so rings that merge or run off the board edge read high.
  */
 export function estimateFitTestOutlineVolumeMm3(
   params: BinParams,

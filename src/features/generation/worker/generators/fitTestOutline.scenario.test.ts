@@ -12,13 +12,17 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { loadFont, isErr } from 'brepjs';
-import type { ManifoldToplevel, SimplePolygon } from 'manifold-3d';
+import type { CrossSection, ManifoldToplevel, SimplePolygon } from 'manifold-3d';
 import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
 import type { BinParams, Cutout, PathPoint } from '@/shared/types/bin';
 import { buildSTLBuffer } from '@/shared/generation/export';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { isOk } from '@/core/result';
-import { estimateFitTestOutlineVolumeMm3 } from '@/shared/utils/fitTestOutlinePlan';
+import {
+  estimateFitTestOutlineVolumeMm3,
+  planFitTestOutlineSplit,
+} from '@/shared/utils/fitTestOutlinePlan';
+import { getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { boundingBox, hasNoNaNOrInfinity, meshVolume } from './__kernel-tests__/meshAssertions';
 import { setManifoldModuleForTests } from '../manifoldRuntime';
@@ -423,6 +427,9 @@ describe('outline fit test: a bed smaller than the outline', () => {
     const split = await outline(params, { ...defaultSize, bed });
 
     expect(split.pieces.length).toBeGreaterThan(1);
+    expect(split.pieces).toHaveLength(
+      planFitTestOutlineSplit(params, bed, getSplitPlanePositionsMm, WALL).pieceCount
+    );
     for (const piece of split.pieces) {
       const box = boundingBox(piece.vertices);
       expect(box.maxX - box.minX).toBeLessThanOrEqual(bed.width);
@@ -430,5 +437,206 @@ describe('outline fit test: a bed smaller than the outline', () => {
     }
     const summed = split.pieces.reduce((sum, p) => sum + meshVolume(asMeshData(p)), 0);
     expect(summed).toBeCloseTo(meshVolume(asMeshData(whole)), 0);
+  });
+});
+
+/** A plane section of a mesh. The caller deletes it. */
+function crossSection(
+  mesh: { vertices: Float32Array; indices: Uint32Array },
+  z: number
+): CrossSection {
+  const input = new module.Mesh({
+    numProp: 3,
+    vertProperties: mesh.vertices,
+    triVerts: mesh.indices,
+  });
+  input.merge();
+  const solid = new module.Manifold(input);
+  try {
+    return solid.slice(z);
+  } finally {
+    solid.delete();
+  }
+}
+
+/**
+ * How far a ring's inner edge strays from the bin's own pocket walls, as two
+ * areas (mm²): ring lying inside a pocket, and pocket wall left without ring
+ * in the 0.3mm just outside it. Both stay near zero only when the inner edge
+ * runs along the wall, wherever the pocket is: a hole, a notch out through
+ * the board edge, or the island a subtract leaves. The pockets are what the
+ * cutouts take out of the plain body a millimetre under the fill surface.
+ */
+function edgeMismatchMm2(
+  params: BinParams,
+  piece: { vertices: Float32Array; indices: Uint32Array }
+): { intrusion: number; gap: number } {
+  const generate = getGenerateBin();
+  const z = fitTestBandTopZ(params) - 1;
+  const owned: CrossSection[] = [];
+  const keep = (c: CrossSection): CrossSection => {
+    owned.push(c);
+    return c;
+  };
+  try {
+    const material = keep(crossSection(generate(params, undefined, true), z));
+    const body = keep(crossSection(generate({ ...params, cutouts: [] }, undefined, true), z));
+    const pockets = keep(body.subtract(material));
+    const ring = keep(crossSection(piece, HEIGHT / 2));
+    const band = keep(
+      keep(keep(pockets.offset(0.3, 'Round')).subtract(pockets)).intersect(material)
+    );
+    return {
+      intrusion: keep(ring.intersect(pockets)).area(),
+      gap: keep(band.subtract(ring)).area(),
+    };
+  } finally {
+    for (const c of owned) c.delete();
+  }
+}
+
+/** Measured noise is under 1e-4; an edge 0.1mm off the wall here reads tens of mm². */
+const EDGE_TOLERANCE_MM2 = 0.05;
+
+describe('outline fit test: arrays, pathfinder groups and open sides', () => {
+  const INNER_W = 3 * 42 - GRIDFINITY.TOLERANCE - 2 * DEFAULT_BIN_PARAMS.wallThickness;
+
+  function features(): BinParams {
+    return {
+      ...DEFAULT_BIN_PARAMS,
+      width: 3,
+      depth: 2,
+      height: 4,
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutoutConfig: { topOffset: 0 },
+      cutouts: [
+        cutout({
+          id: 'row',
+          x: 6,
+          y: 6,
+          width: 10,
+          depth: 10,
+          clearance: 0.2,
+          array: {
+            mode: 'grid',
+            cols: 3,
+            rows: 1,
+            pitchX: 15,
+            pitchY: 15,
+            count: 1,
+            radius: 10,
+            startAngle: 0,
+            rotateToCenter: false,
+          },
+        }),
+        cutout({
+          id: 'tray',
+          shape: 'rectangle',
+          x: 60,
+          y: 6,
+          width: 30,
+          depth: 20,
+          groupId: 'g',
+          groupOp: 'subtract',
+        }),
+        cutout({
+          id: 'post',
+          x: 70,
+          y: 11,
+          width: 10,
+          depth: 10,
+          groupId: 'g',
+          groupOp: 'subtract',
+          zIndex: 1,
+        }),
+        cutout({
+          id: 'open',
+          shape: 'rectangle',
+          x: INNER_W - 25,
+          y: 45,
+          width: 20,
+          depth: 20,
+          openSides: [{ side: 'right' }],
+        }),
+      ],
+    };
+  }
+
+  it('runs every inner edge along the wall the bin cuts', async () => {
+    const params = features();
+    const piece = (await outline(params, defaultSize)).pieces[0];
+    const { intrusion, gap } = edgeMismatchMm2(params, piece);
+    expect(intrusion).toBeLessThan(EDGE_TOLERANCE_MM2);
+    expect(gap).toBeLessThan(EDGE_TOLERANCE_MM2);
+  });
+
+  it('rings every copy of an array', async () => {
+    const params = features();
+    const holes = section((await outline(params, defaultSize)).pieces[0], HEIGHT / 2).holes;
+    for (const dx of [0, 15, 30]) {
+      const hole = bbox(enclosing(holes, probe(params, 'row', { x: dx, y: 0 })));
+      expect(hole.w).toBeCloseTo(10.2, 1);
+    }
+  });
+
+  it('rings the post a subtract leaves standing in its pocket', async () => {
+    const params = features();
+    const cut = section((await outline(params, defaultSize)).pieces[0], HEIGHT / 2);
+    // The tray's ring has a hole (the pocket), and inside that hole the post
+    // carries a ring of its own around its edge, which is a second outline.
+    const tray = enclosing(cut.holes, probe(params, 'tray', { x: -10, y: 0 }));
+    const postRing = cut.outers.filter((o) => contains(tray, o[0]));
+    expect(postRing).toHaveLength(1);
+    expect(bbox(postRing[0]).w).toBeCloseTo(10, 1);
+  });
+
+  it('follows an open side out through the board edge instead of closing it', async () => {
+    const params = features();
+    const piece = (await outline(params, defaultSize)).pieces[0];
+    const cut = section(piece, HEIGHT / 2);
+    // No closed hole at the open pocket: its ring is a U that ends at the edge.
+    expect(cut.holes.some((h) => contains(h, probe(params, 'open')))).toBe(false);
+    const binRight = boundingBox(getGenerateBin()(params, undefined, true).vertices).maxX;
+    expect(boundingBox(piece.vertices).maxX).toBeCloseTo(binRight, 1);
+  });
+});
+
+describe('outline fit test: the dialog plans the pieces the worker cuts', () => {
+  // A 4x1 rail whose one pocket sits at the left end. Its box alone fits a
+  // 100mm bed; open to the right wall, its ring runs the length of the rail.
+  const rail = (open: boolean): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    width: 4,
+    depth: 1,
+    height: 4,
+    style: 'solid',
+    base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+    cutoutConfig: { topOffset: 0 },
+    cutouts: [
+      cutout({
+        id: 'a',
+        shape: 'rectangle',
+        x: 5,
+        y: 10,
+        width: 20,
+        depth: 15,
+        ...(open ? { openSides: [{ side: 'right' as const }] } : {}),
+      }),
+    ],
+  });
+  const bed = { width: 100, depth: 200 };
+
+  it.each([false, true])('agrees on the piece count with an open side: %s', async (open) => {
+    const params = rail(open);
+    const plan = planFitTestOutlineSplit(params, bed, getSplitPlanePositionsMm, WALL);
+    const built = await outline(params, { ...defaultSize, bed });
+
+    expect(built.pieces).toHaveLength(plan.pieceCount);
+    expect(plan.pieceCount).toBe(open ? 2 : 1);
+    for (const piece of built.pieces) {
+      const box = boundingBox(piece.vertices);
+      expect(box.maxX - box.minX).toBeLessThanOrEqual(bed.width);
+    }
   });
 });
