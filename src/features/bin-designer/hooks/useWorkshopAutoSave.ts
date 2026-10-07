@@ -13,14 +13,20 @@ import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { isOk } from '@/core/result';
 import { designId as toDesignId } from '@/core/types';
+import type { DesignId } from '@/core/types';
 import type { ItemEnvelope, ItemStructure } from '@/shared/types/item';
 import { assemblyHeightUnits } from '@/shared/types/assemblyPlacement';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
-import { loadDesign, saveDesign } from '@/features/bin-designer/storage/DesignerStorage';
+import {
+  loadDesign,
+  saveDesign,
+  updateDesignName,
+} from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
 import {
   registryAssemblyFields,
   registryEdgeFields,
+  renameRegistryEntry,
   upsertRegistryEntry,
 } from '../store/customBinRegistry';
 import { captureThumbnailAtPreset } from '../utils/thumbnail';
@@ -78,6 +84,11 @@ async function persistExisting(
   });
 }
 
+async function persistName(id: DesignId, name: string): Promise<void> {
+  const result = await updateDesignName(id, name);
+  if (isOk(result)) renameRegistryEntry(result.value.id, result.value.name);
+}
+
 export function useWorkshopAutoSave(): void {
   const { itemKind, envelope, structure, currentDesignId, designName, generationStatus } =
     useDesignerStore(
@@ -126,6 +137,11 @@ export function useWorkshopAutoSave(): void {
           // Only adopt the id if the user is still on this same build.
           if (store.itemKind === 'assembly' && store.currentDesignId === null) {
             store.setCurrentDesignId(result.value.id);
+            // A rename while this save was in flight had no id to write to,
+            // and the edit check below compares geometry only.
+            if (store.designName !== result.value.name) {
+              void persistName(result.value.id, store.designName);
+            }
           }
         });
       }, AUTO_SAVE_DELAY_MS);

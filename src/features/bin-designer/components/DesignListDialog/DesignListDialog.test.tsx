@@ -3,7 +3,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { DesignListDialog } from '@/features/bin-designer/components/DesignListDialog';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
-import { ok } from '@/core/result';
+import { err, ok, storageUnavailable } from '@/core/result';
+import { INITIAL_TOAST_STATE, useToastStore } from '@/core/store/toast';
 import type { SavedDesign } from '@/features/bin-designer/types';
 import { designId } from '@/core/types';
 import { loadRegistry, upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
@@ -242,32 +243,79 @@ describe('DesignListDialog', () => {
     expect(input).toHaveValue('Tool Holder');
   });
 
-  it('renames the layout palette entry along with the design', async () => {
-    localStorage.clear();
-    upsertRegistryEntry({
-      id: designId('design-1'),
-      name: 'Tool Holder',
-      width: 3,
-      depth: 2,
-      height: 6,
-      updatedAt: '2026-01-22T12:00:00.000Z',
+  describe('renaming from the library', () => {
+    const registryName = (): string | undefined =>
+      loadRegistry().find((r) => r.id === 'design-1')?.name;
+
+    async function renameFirstDesign(name: string): Promise<void> {
+      render(<DesignListDialog open={true} onClose={onClose} />);
+      await waitFor(() => {
+        expect(screen.getByText('Tool Holder')).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getAllByRole('button', { name: /more actions/i })[0]);
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /rename/i })).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByRole('menuitem', { name: /rename/i }));
+      const input = screen.getByRole('textbox', { name: 'Design name' });
+      fireEvent.change(input, { target: { value: name } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+    }
+
+    beforeEach(() => {
+      localStorage.clear();
+      useToastStore.setState(INITIAL_TOAST_STATE);
+      upsertRegistryEntry({
+        id: designId('design-1'),
+        name: 'Tool Holder',
+        width: 3,
+        depth: 2,
+        height: 6,
+        updatedAt: '2026-01-22T12:00:00.000Z',
+      });
     });
-    render(<DesignListDialog open={true} onClose={onClose} />);
-    await waitFor(() => {
+
+    it('renames the layout palette entry along with the design', async () => {
+      await renameFirstDesign('Pliers');
+
+      await waitFor(() => {
+        expect(registryName()).toBe('Pliers');
+      });
+    });
+
+    it('keeps the old name everywhere when the design cannot be saved', async () => {
+      const DesignerStorage = await import('@/features/bin-designer/storage/DesignerStorage');
+      vi.mocked(DesignerStorage.saveDesign).mockResolvedValueOnce(
+        err(storageUnavailable('indexedDB'))
+      );
+
+      await renameFirstDesign('Pliers');
+
+      await waitFor(() => {
+        expect(useToastStore.getState().toasts.map((toast) => toast.type)).toEqual(['error']);
+      });
+      expect(registryName()).toBe('Tool Holder');
       expect(screen.getByText('Tool Holder')).toBeInTheDocument();
+      expect(screen.queryByText('Pliers')).not.toBeInTheDocument();
+      expect(useDesignerStore.getState().designName).toBe('Tool Holder');
     });
 
-    fireEvent.click(screen.getAllByRole('button', { name: /more actions/i })[0]);
-    await waitFor(() => {
-      expect(screen.getByRole('menuitem', { name: /rename/i })).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByRole('menuitem', { name: /rename/i }));
-    const input = screen.getByRole('textbox', { name: 'Design name' });
-    fireEvent.change(input, { target: { value: 'Pliers' } });
-    fireEvent.keyDown(input, { key: 'Enter' });
+    it('still renames the design when its palette entry cannot be written', async () => {
+      const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw new DOMException('full', 'QuotaExceededError');
+      });
+      try {
+        await renameFirstDesign('Pliers');
 
-    await waitFor(() => {
-      expect(loadRegistry().find((r) => r.id === 'design-1')?.name).toBe('Pliers');
+        await waitFor(() => {
+          expect(useToastStore.getState().toasts.map((toast) => toast.type)).toEqual(['error']);
+        });
+        expect(screen.getByText('Pliers')).toBeInTheDocument();
+        expect(useDesignerStore.getState().designName).toBe('Pliers');
+      } finally {
+        setItem.mockRestore();
+      }
+      expect(registryName()).toBe('Tool Holder');
     });
   });
 

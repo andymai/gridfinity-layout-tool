@@ -34,7 +34,7 @@ import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import type { SavedDesign } from '@/features/bin-designer/types';
 import { createDefaultEnvelope } from '@/shared/items/defaultEnvelope';
 import type { ImportedMeshStructure } from '@/shared/types/item';
-import { expectOk } from '@/test/testUtils';
+import { expectOk, resetAllStores } from '@/test/testUtils';
 
 async function resetDesignerDb(): Promise<void> {
   closeDesignerDb();
@@ -142,6 +142,7 @@ describe('useDesignNameEditor', () => {
     await resetDesignerDb();
     localStorage.clear();
     saveDesignSpy.mockClear();
+    resetAllStores();
     useDesignerStore.setState(useDesignerStore.getInitialState());
   });
 
@@ -201,6 +202,17 @@ describe('useDesignNameEditor', () => {
       expect(saveDesignSpy).not.toHaveBeenCalled();
       expect(useDesignerStore.getState().currentDesignId).toBeNull();
     });
+
+    it('falls back to the non-bin default name when left blank', async () => {
+      const imported = await saveImportedDesign();
+      useDesignerStore.getState().loadDesign(imported);
+
+      renameFromHeader('   ');
+
+      expect(useDesignerStore.getState().designName).toBe('Untitled');
+      await waitFor(() => expect(registryEntry(imported.id)?.name).toBe('Untitled'));
+      expect(expectOk(await loadDesign(imported.id)).name).toBe('Untitled');
+    });
   });
 
   describe('renaming a bin', () => {
@@ -213,6 +225,17 @@ describe('useDesignNameEditor', () => {
 
       await waitFor(() => expect(registryEntry(id)?.name).toBe('Big bin, renamed'));
       expect(registryEntry(id)).toMatchObject({ width: 5, depth: 4, height: 9 });
+    });
+
+    it('falls back to the bin default name when left blank', async () => {
+      await openPreviousBin();
+      const id = useDesignerStore.getState().currentDesignId;
+      if (!id) throw new Error('no bin open');
+
+      renameFromHeader('   ');
+
+      expect(useDesignerStore.getState().designName).toBe('Untitled Bin');
+      await waitFor(() => expect(registryEntry(id)?.name).toBe('Untitled Bin'));
     });
   });
 });

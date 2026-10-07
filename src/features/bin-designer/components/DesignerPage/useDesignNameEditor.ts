@@ -78,7 +78,7 @@ export function useDesignNameEditor(): DesignNameEditor {
   }, [designName]);
 
   const handleNameSubmit = useCallback(() => {
-    const name = editNameValue.trim() || 'Untitled Bin';
+    const name = editNameValue.trim() || (itemKind === 'bin' ? 'Untitled Bin' : 'Untitled');
     setDesignName(name);
     setIsEditingName(false);
 

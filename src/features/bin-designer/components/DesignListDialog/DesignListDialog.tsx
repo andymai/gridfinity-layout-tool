@@ -290,8 +290,13 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
 
   const handleRename = useCallback(
     async (design: SavedDesign, newName: string) => {
-      await saveDesign({ ...design, name: newName });
-      renameRegistryEntry(design.id, newName);
+      const saved = await saveDesign({ ...design, name: newName });
+      if (!isOk(saved)) {
+        showErrorToast(saved.error);
+        return;
+      }
+      const registry = renameRegistryEntry(design.id, newName);
+      if (!isOk(registry)) showErrorToast(registry.error);
       setDesigns((prev) => prev.map((d) => (d.id === design.id ? { ...d, name: newName } : d)));
       if (design.id === currentDesignId) {
         useDesignerStore.getState().setDesignName(newName);
