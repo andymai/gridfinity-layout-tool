@@ -9,8 +9,9 @@ import {
 } from '../lib/shared.js';
 import { logger } from '../lib/logger.js';
 import { putContentAddressed } from '../lib/blobStore.js';
-import { checkMeshQuota } from '../lib/quota.js';
-import { acquireAccountMesh, getHeldMesh } from '../lib/meshIndex.js';
+import { checkMeshQuota, type QuotaError } from '../lib/quota.js';
+import { acquireAccountMesh, getHeldMesh, getMeshUsage } from '../lib/meshIndex.js';
+import { readSessionCookie } from '../lib/cookies.js';
 import {
   MAX_MESH_UPLOAD_BYTES,
   isMeshHash,
@@ -20,21 +21,25 @@ import {
 } from '../lib/meshFile.js';
 import { requireSyncContext } from '../sync/lib/requireSyncContext.js';
 
-/** Carries a held file's Blob URL on HEAD, which has no body. */
 export const MESH_URL_HEADER = 'X-Mesh-Url';
 
 const MESH_CONTENT_TYPE = 'application/octet-stream';
 
-/**
- * Kill switch matching `COMMUNITY_PUBLISH_ENABLED`: unset, or anything but the
- * literal string 'true', makes every method 503. Documented in CLAUDE.md.
- */
 function meshStoreEnabled(): boolean {
   return process.env.MESH_STORE_ENABLED === 'true';
 }
 
 function isOctetStream(req: VercelRequest): boolean {
   return req.headers['content-type']?.split(';')[0].trim().toLowerCase() === MESH_CONTENT_TYPE;
+}
+
+function sendQuotaExceeded(res: VercelResponse, error: QuotaError): void {
+  sendError(
+    res,
+    413,
+    ErrorCode.SIZE_LIMIT,
+    `Quota exceeded (${error.reason}): ${error.current} of ${error.limit}.`
+  );
 }
 
 async function handleHead(
@@ -95,34 +100,47 @@ async function handlePut(
     return;
   }
 
-  const quota = await checkMeshQuota(redis, userId, hash, bytes.byteLength);
+  const quota = checkMeshQuota(await getMeshUsage(redis, userId), bytes.byteLength);
   if (!quota.ok) {
-    sendError(
-      res,
-      413,
-      ErrorCode.SIZE_LIMIT,
-      `Quota exceeded (${quota.error.reason}): ${quota.error.current} of ${quota.error.limit}.`
-    );
+    sendQuotaExceeded(res, quota.error);
     return;
   }
 
+  const sessionToken = readSessionCookie(req);
+  if (sessionToken === null) {
+    sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Not signed in');
+    return;
+  }
+
+  // The Blob write comes before the hold so a held hash always has a blob
+  // behind it: HEAD answering "held" for a file that was never written would
+  // make a client skip the upload for good. The write is content-addressed and
+  // write-once, so repeating or abandoning it is harmless. The pre-check above
+  // keeps an upload that cannot fit from reaching Blob; only a race past it
+  // can leave a blob with no holder, and its empty holder set marks it.
+  const sizeBytes = bytes.byteLength;
   const url = await putContentAddressed(meshBlobPath(hash), bytes, MESH_CONTENT_TYPE);
-  await acquireAccountMesh(redis, userId, hash, { sizeBytes: bytes.byteLength, url });
-  res.status(200).json({ hash, url, sizeBytes: bytes.byteLength });
+  const acquired = await acquireAccountMesh(redis, {
+    userId,
+    sessionToken,
+    hash,
+    held: { sizeBytes, url },
+  });
+  if (acquired.status === 'signed-out') {
+    sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Session expired');
+    return;
+  }
+  if (acquired.status === 'over-quota') {
+    sendQuotaExceeded(res, acquired.error);
+    return;
+  }
+  res.status(200).json({ hash, url, sizeBytes });
 }
 
 /**
- * PUT  /api/meshes/{hash}  body: the mesh file bytes. Stores it once and
- *                          records that this account holds it; 200 with
- *                          `{ hash, url, sizeBytes }`. A re-PUT of a held
- *                          hash is a cheap 200.
- * HEAD /api/meshes/{hash}  200 with the URL in `X-Mesh-Url` when this account
- *                          holds the file, else 404, so a client can skip the
- *                          upload.
- *
- * Files are read from the Blob CDN at that URL, so there is no GET. They are
- * public: the URL needs the hash, and the hash needs the content or a design
- * that references it.
+ * Files are read from the Blob CDN, so there is no GET. They are public: the
+ * URL needs the hash, and the hash needs the content or a design that
+ * references it.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (!meshStoreEnabled()) {

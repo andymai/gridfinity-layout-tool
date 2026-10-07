@@ -23,6 +23,7 @@ import {
   userIndexKey,
   userIndexUpdatedAtKey,
   userMeshesKey,
+  userMeshUsageKey,
   userProfileKey,
   userSessionsKey,
   userTombstoneSweptAtKey,
@@ -243,6 +244,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
     // 3c. Leave every stored mesh file's holder set. The files themselves are
     //     shared by content hash across accounts, so they are not ours to delete.
+    //     This must stay after step 1: a mesh upload records its hold only if
+    //     its session still exists, so once sessions are gone no in-flight
+    //     upload can add a hold behind this release.
     await releaseAllAccountMeshes(redis, userId);
 
     // 4. Drop all per-user KV state in one DEL.
@@ -257,6 +261,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       userSessionsKey(userId),
       userTombstoneSweptAtKey(userId),
       userMeshesKey(userId),
+      userMeshUsageKey(userId),
       communityLikedKey(userId),
       communityPublishedKey(userId),
       communityReportedKey(userId),

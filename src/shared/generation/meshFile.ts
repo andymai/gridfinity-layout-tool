@@ -35,7 +35,7 @@ import {
 } from './meshAsset';
 import type { MeshAsset, MeshOutlinePoint } from './meshAsset';
 
-/** The part of a {@link MeshAsset} a mesh file carries; name and size stay in the design. */
+/** Name and size stay in the design, so one mesh imported under two names is one file. */
 export type MeshFileContent = Pick<MeshAsset, 'data' | 'triangleCount' | 'outlines'>;
 
 const MAGIC = 0x48534d47; // 'GMSH' read as a little-endian u32
@@ -86,7 +86,6 @@ function pointError(v: number): string | null {
   return null;
 }
 
-/** Header, counts, exact length and outline bounds. Geometry is checked by decode. */
 function parseMeshFile(bytes: Uint8Array): Result<ParsedMeshFile, ValidationError> {
   if (bytes.byteLength < MESH_FILE_HEADER_BYTES) return invalid('truncated header');
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -140,10 +139,6 @@ function parseMeshFile(bytes: Uint8Array): Result<ParsedMeshFile, ValidationErro
   });
 }
 
-/**
- * Serializes an asset's content into the mesh file bytes. Deterministic: equal
- * content always yields identical bytes, so it always hashes to the same name.
- */
 export function encodeMeshFile(content: MeshFileContent): Result<Uint8Array, ValidationError> {
   let geometry: Uint8Array;
   try {
@@ -186,10 +181,6 @@ export function encodeMeshFile(content: MeshFileContent): Result<Uint8Array, Val
   return isErr(parsed) ? parsed : ok(bytes);
 }
 
-/**
- * Parses and fully validates a mesh file, including the geometry: it must
- * decode, and it must not hold more triangles than the file declares.
- */
 export async function decodeMeshFile(
   bytes: Uint8Array
 ): Promise<Result<MeshFileContent, ValidationError>> {

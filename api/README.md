@@ -77,7 +77,7 @@ See [`auth/README.md`](./auth/README.md) for the OAuth setup and [`sync/README.m
 
 ## Mesh store
 
-Each imported mesh is one Blob file at `meshes/{hash}`, the SHA-256 of its bytes (layout in `src/shared/generation/meshFile.ts`, mirrored by `lib/meshFile.ts`). Public and write-once: the URL needs the hash, and the hash needs the content. Clients read it from the CDN. `users:{uid}:meshes` holds an account's hashes and sizes against `MESH_QUOTA_BYTES`; `mesh:holders:{hash}` is the refcount set. Off unless `MESH_STORE_ENABLED=true`.
+Each imported mesh is one Blob file at `meshes/{hash}`, the SHA-256 of its bytes (layout in `src/shared/generation/meshFile.ts`, mirrored by `lib/meshFile.ts`). Public and write-once: the URL needs the hash, and the hash needs the content. Clients read it from the CDN. `users:{uid}:meshes` holds an account's hashes and sizes, with totals in `users:{uid}:meshUsage` checked against `MESH_QUOTA_BYTES` and `MESH_QUOTA_COUNT` in the same Lua step that records a hold; `mesh:holders:{hash}` is the refcount set. Off unless `MESH_STORE_ENABLED=true`.
 
 ## Ko-fi supporter ingest
 

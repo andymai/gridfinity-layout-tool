@@ -31,63 +31,74 @@ import { unwrap } from '../../src/core/result/index.js';
 import { encodeMeshData } from '../../src/shared/generation/meshAsset.js';
 import { encodeMeshFile } from '../../src/shared/generation/meshFile.js';
 import type { MeshFileContent } from '../../src/shared/generation/meshFile.js';
-import { meshHoldersKey, userMeshesKey } from '../lib/redisKeys.js';
+import { meshHoldersKey, sessionKey, userMeshesKey, userMeshUsageKey } from '../lib/redisKeys.js';
+import { getSessionCookieName } from '../lib/cookies.js';
 import { MAX_MESH_UPLOAD_BYTES, meshBlobPath, meshFileHash } from '../lib/meshFile.js';
-import { MESH_QUOTA_BYTES } from '../lib/quota.js';
+import { MESH_QUOTA_BYTES, MESH_QUOTA_COUNT } from '../lib/quota.js';
 import handler, { MESH_URL_HEADER } from './[hash].js';
 
 const USER_ID = 'user-1';
 const OTHER_USER_ID = 'user-2';
 const BLOB_ORIGIN = 'https://store.public.blob.vercel-storage.com';
 
-type Reply = [Error | null, unknown];
-
+/** Emulates the acquire script in JS; `meshIndex.integration.test.ts` runs the real one. */
 class FakeRedis {
+  strings = new Map<string, string>();
   hashes = new Map<string, Map<string, string>>();
   sets = new Map<string, Set<string>>();
+  meshAcquire?: (...args: (string | number)[]) => Promise<(string | number)[]>;
 
   async hget(key: string, field: string): Promise<string | null> {
     return this.hashes.get(key)?.get(field) ?? null;
   }
 
-  async hgetall(key: string): Promise<Record<string, string>> {
-    return Object.fromEntries(this.hashes.get(key) ?? new Map<string, string>());
+  async hmget(key: string, ...fields: string[]): Promise<(string | null)[]> {
+    return fields.map((field) => this.hashes.get(key)?.get(field) ?? null);
   }
 
-  hset(key: string, field: string, value: string): number {
-    const hash = this.hashes.get(key) ?? new Map<string, string>();
-    hash.set(field, value);
-    this.hashes.set(key, hash);
-    return 1;
+  setUsage(userId: string, bytes: number, count: number): void {
+    this.hashes.set(
+      userMeshUsageKey(userId),
+      new Map([
+        ['bytes', String(bytes)],
+        ['count', String(count)],
+      ])
+    );
   }
 
-  sadd(key: string, member: string): number {
-    const set = this.sets.get(key) ?? new Set<string>();
-    set.add(member);
-    this.sets.set(key, set);
-    return 1;
-  }
-
-  pipeline(): Record<string, unknown> {
-    const queue: (() => unknown)[] = [];
-    const chain = {
-      hset: (k: string, f: string, v: string) => {
-        queue.push(() => this.hset(k, f, v));
-        return chain;
-      },
-      sadd: (k: string, m: string) => {
-        queue.push(() => this.sadd(k, m));
-        return chain;
-      },
-      exec: async (): Promise<Reply[]> => queue.map((run) => [null, run()]),
+  defineCommand(name: string): void {
+    if (name !== 'meshAcquire') return;
+    this.meshAcquire = async (...args) => {
+      const [session, meshes, usage, holders, hash, entry, size, holder, maxBytes, maxCount] =
+        args.map(String);
+      if (!this.strings.has(session)) return ['signed-out'];
+      if (this.hashes.get(meshes)?.has(hash)) return ['held'];
+      const bytes = Number(this.hashes.get(usage)?.get('bytes') ?? '0');
+      const count = Number(this.hashes.get(usage)?.get('count') ?? '0');
+      if (count + 1 > Number(maxCount) || bytes + Number(size) > Number(maxBytes)) {
+        return ['over-quota', bytes, count];
+      }
+      const held = this.hashes.get(meshes) ?? new Map<string, string>();
+      held.set(hash, entry);
+      this.hashes.set(meshes, held);
+      this.hashes.set(
+        usage,
+        new Map([
+          ['bytes', String(bytes + Number(size))],
+          ['count', String(count + 1)],
+        ])
+      );
+      const set = this.sets.get(holders) ?? new Set<string>();
+      set.add(holder);
+      this.sets.set(holders, set);
+      return ['acquired'];
     };
-    return chain;
   }
 }
 
-/** Vercel Blob keyed by pathname; put honours `allowOverwrite: false`. */
 let blobs: Map<string, Buffer>;
 let redis: FakeRedis;
+let sessionToken: string;
 
 interface MockRes {
   _status: number;
@@ -141,6 +152,7 @@ async function handle(options: RequestOptions): Promise<MockRes> {
       'sec-fetch-site': 'same-origin',
       'x-requested-with': 'gflt',
       'content-type': options.contentType ?? 'application/octet-stream',
+      cookie: `${getSessionCookieName()}=${sessionToken}`,
     },
   } as unknown as VercelRequest;
   const res = makeRes();
@@ -157,6 +169,8 @@ function check(hash: string): Promise<MockRes> {
 }
 
 function signedInAs(userId: string): void {
+  sessionToken = `tok-${userId}`;
+  redis.strings.set(sessionKey(sessionToken), JSON.stringify({ userId }));
   mocks.requireSession.mockResolvedValue({ userId, provider: 'google' });
 }
 
@@ -403,13 +417,9 @@ describe('PUT', () => {
     );
   });
 
-  it('413s a file that would take the account over its mesh quota', async () => {
+  it('413s a file past the byte quota before it reaches Blob', async () => {
     const file = await meshFile();
-    redis.hset(
-      userMeshesKey(USER_ID),
-      'f'.repeat(64),
-      JSON.stringify({ sizeBytes: MESH_QUOTA_BYTES - file.byteLength + 1, url: 'u' })
-    );
+    redis.setUsage(USER_ID, MESH_QUOTA_BYTES - file.byteLength + 1, 1);
 
     const res = await upload(file);
 
@@ -420,17 +430,75 @@ describe('PUT', () => {
     expect(heldBy(USER_ID, meshFileHash(file))).toBeUndefined();
   });
 
+  it('413s one file past the count quota, however small', async () => {
+    redis.setUsage(USER_ID, 0, MESH_QUOTA_COUNT);
+
+    const res = await upload(await meshFile());
+
+    expect(res._status).toBe(413);
+    expect((res._body as { error: string }).error).toMatch(/^Quota exceeded \(count\)/);
+    expect(mocks.put).not.toHaveBeenCalled();
+  });
+
   it('fills the quota exactly, and counts a held file once on re-PUT', async () => {
     const file = await meshFile();
-    redis.hset(
-      userMeshesKey(USER_ID),
-      'f'.repeat(64),
-      JSON.stringify({ sizeBytes: MESH_QUOTA_BYTES - file.byteLength, url: 'u' })
-    );
+    redis.setUsage(USER_ID, MESH_QUOTA_BYTES - file.byteLength, 1);
 
     expect((await upload(file))._status).toBe(200);
     expect((await upload(file))._status).toBe(200);
+    expect(await redis.hmget(userMeshUsageKey(USER_ID), 'bytes', 'count')).toEqual([
+      String(MESH_QUOTA_BYTES),
+      '2',
+    ]);
     expect((await upload(await meshFile({ triangleCount: 5 })))._status).toBe(413);
+  });
+
+  it('admits only what fits when concurrent uploads all pass the pre-check', async () => {
+    const files = await Promise.all([4, 5, 6, 7].map((n) => meshFile({ triangleCount: n })));
+    const size = files[0].byteLength;
+    redis.setUsage(USER_ID, MESH_QUOTA_BYTES - 2 * size, 0);
+    // Hold every Blob write until all four uploads are past the pre-check, so
+    // each one read the same usage before any of them recorded a hold.
+    let entered = 0;
+    let releaseWrites = (): void => undefined;
+    const allEntered = new Promise<void>((resolve) => {
+      releaseWrites = resolve;
+    });
+    mocks.put.mockImplementation(async (path: string, body: Buffer) => {
+      entered += 1;
+      if (entered === files.length) releaseWrites();
+      await allEntered;
+      blobs.set(path, body);
+      return { url: `${BLOB_ORIGIN}/${path}` };
+    });
+
+    const results = await Promise.all(files.map((file) => upload(file)));
+
+    expect(entered).toBe(4);
+    expect(results.map((res) => res._status).sort()).toEqual([200, 200, 413, 413]);
+    expect(await redis.hmget(userMeshUsageKey(USER_ID), 'bytes', 'count')).toEqual([
+      String(MESH_QUOTA_BYTES),
+      '2',
+    ]);
+    expect(redis.hashes.get(userMeshesKey(USER_ID))?.size).toBe(2);
+  });
+
+  it('records no hold when the account is deleted while the Blob write is in flight', async () => {
+    const file = await meshFile();
+    const hash = meshFileHash(file);
+    // What DELETE /api/sync/account does first: drop every session.
+    mocks.put.mockImplementation(async (path: string, body: Buffer) => {
+      redis.strings.delete(sessionKey(sessionToken));
+      blobs.set(path, body);
+      return { url: `${BLOB_ORIGIN}/${path}` };
+    });
+
+    const res = await upload(file);
+
+    expect(res._status).toBe(401);
+    expect(redis.hashes.has(userMeshesKey(USER_ID))).toBe(false);
+    expect(redis.hashes.has(userMeshUsageKey(USER_ID))).toBe(false);
+    expect(redis.sets.has(meshHoldersKey(hash))).toBe(false);
   });
 
   it('settles on the stored blob when a racing upload of the same file wins', async () => {

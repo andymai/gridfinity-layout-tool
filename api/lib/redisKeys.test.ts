@@ -11,6 +11,7 @@ import {
   userIndexKey,
   userIndexUpdatedAtKey,
   userMeshesKey,
+  userMeshUsageKey,
   meshHoldersKey,
   COMMUNITY_INDEX_SORTS,
   communityDesignKey,
@@ -81,12 +82,17 @@ describe('redisKeys', () => {
       expect(userMeshesKey('user-1')).toBe('users:user-1:meshes');
     });
 
+    it('userMeshUsageKey produces users:{uid}:meshUsage', () => {
+      expect(userMeshUsageKey('user-1')).toBe('users:user-1:meshUsage');
+    });
+
     it('meshHoldersKey produces mesh:holders:{hash}', () => {
       expect(meshHoldersKey('ab'.repeat(32))).toBe(`mesh:holders:${'ab'.repeat(32)}`);
     });
 
-    it('userMeshesKey stays out of the sync index pattern sync-admin scans', () => {
+    it('mesh keys stay out of the sync index pattern sync-admin scans', () => {
       expect(userMeshesKey('user-1')).not.toMatch(/^users:[^:]+:index:/);
+      expect(userMeshUsageKey('user-1')).not.toMatch(/^users:[^:]+:index:/);
     });
   });
 

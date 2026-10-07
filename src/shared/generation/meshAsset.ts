@@ -297,7 +297,6 @@ export async function decodeMeshData(
   return decodeMeshBytes(compressed);
 }
 
-/** {@link decodeMeshData} for the deflated bytes themselves, before base64. */
 export async function decodeMeshBytes(
   compressed: Uint8Array
 ): Promise<Result<DecodedMeshData, ValidationError>> {

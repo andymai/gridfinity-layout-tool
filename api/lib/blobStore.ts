@@ -78,12 +78,9 @@ export async function headBlob(path: string): Promise<HeadBlobResult | null> {
 }
 
 /**
- * Write bytes whose `path` is derived from their content (a hash), once, and
- * return the blob URL. A blob already at the path is never rewritten, so a
- * second writer of the same content costs a head() and no put(). Two first
- * writers racing both end at the winner's blob: the loser's put() fails on
- * `allowOverwrite: false`, and since the path names the content, the winner
- * holds the same bytes. Only valid for content-addressed paths.
+ * Only for a `path` derived from the bytes (a content hash). A put that fails
+ * because a racing writer got there first counts as success, which is safe
+ * only because the path guarantees the winner stored the same bytes.
  */
 export async function putContentAddressed(
   path: string,

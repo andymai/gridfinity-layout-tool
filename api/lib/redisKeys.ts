@@ -19,6 +19,7 @@
  *   users:{uid}:index:{kind}        → HASH of a user's synced layouts/designs
  *   users:{uid}:indexUpdatedAt      → ms timestamp for If-Modified-Since on /api/sync/manifest
  *   users:{uid}:meshes              → HASH of mesh file hash → JSON {sizeBytes,url} the account holds
+ *   users:{uid}:meshUsage           → HASH {bytes,count}: running totals of users:{uid}:meshes
  *   mesh:holders:{hash}             → SET of holder ids referencing a stored mesh file (refcount via SCARD)
  *   supporters:donors               → HASH of donorId → JSON {n,t,m} record (legacy: bare name)
  *   supporters:totals               → HASH of currency → received minor units (collect-only)
@@ -139,9 +140,14 @@ export function userTombstoneSweptAtKey(userId: string): string {
   return `users:${userId}:tombstoneSweptAt`;
 }
 
-/** Mesh files an account holds: content hash → JSON `{ sizeBytes, url }`. Mesh quota sums it. */
+/** Mesh files an account holds: content hash → JSON `{ sizeBytes, url }`. */
 export function userMeshesKey(userId: string): string {
   return `users:${userId}:meshes`;
+}
+
+/** Running `bytes` and `count` totals of `userMeshesKey`, so the mesh quota never scans it. */
+export function userMeshUsageKey(userId: string): string {
+  return `users:${userId}:meshUsage`;
 }
 
 /**

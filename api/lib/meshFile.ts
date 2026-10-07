@@ -1,7 +1,4 @@
 /**
- * Upload-side validation of a stored mesh file: one imported imprint mesh,
- * named by the lowercase hex SHA-256 of its bytes.
- *
  * MIRROR: the layout is defined by `src/shared/generation/meshFile.ts`, and the
  * geometry checks mirror `decodeMeshBytes` in `src/shared/generation/meshAsset.ts`
  * (api/ cannot import from src/). `meshFile.crossBoundary.test.ts` runs both
@@ -112,7 +109,6 @@ async function inflateBounded(input: Uint8Array, limit: number): Promise<Uint8Ar
   return out;
 }
 
-/** Returns the geometry's triangle count, or an error string. */
 async function checkGeometry(compressed: Uint8Array): Promise<number | string> {
   let raw: Uint8Array;
   try {
@@ -142,10 +138,9 @@ async function checkGeometry(compressed: Uint8Array): Promise<number | string> {
 }
 
 /**
- * Full validation of an uploaded mesh file: header, counts, exact length,
- * outline bounds, and geometry that decodes to no more triangles than the
- * file declares. A design carries the declared count and its triangle caps are
- * checked against it, so a file that understates it would slip geometry past them.
+ * Geometry may hold fewer triangles than the file declares, never more: a
+ * design carries the declared count and its triangle caps are checked against
+ * it, so a file that understates it would slip geometry past them.
  */
 export async function validateMeshFile(bytes: Uint8Array): Promise<MeshFileCheck> {
   if (bytes.byteLength < MESH_FILE_HEADER_BYTES) return invalid('truncated header');

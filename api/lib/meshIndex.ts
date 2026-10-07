@@ -1,13 +1,11 @@
-import type { ChainableCommander, Redis } from 'ioredis';
-import { meshHoldersKey, userMeshesKey } from './redisKeys.js';
+import type { Redis } from 'ioredis';
+import { MESH_QUOTA_BYTES, MESH_QUOTA_COUNT, checkMeshQuota, type QuotaError } from './quota.js';
+import { meshHoldersKey, sessionKey, userMeshesKey, userMeshUsageKey } from './redisKeys.js';
 
 /**
- * Who holds which stored mesh file.
- *
- * Per account, `users:{uid}:meshes` maps each held hash to its size (summed by
- * the mesh quota, so a file costs an account its bytes once however many
- * designs use it) and its Blob URL. Per file, `mesh:holders:{hash}` is the set
- * of holders; when it empties, nothing references the file.
+ * The two scripts below are the only writers of `users:{uid}:meshes`, its
+ * running totals in `users:{uid}:meshUsage`, and `mesh:holders:{hash}`. That is
+ * what keeps the totals equal to the hash without ever scanning it.
  */
 
 export interface HeldMesh {
@@ -15,8 +13,88 @@ export interface HeldMesh {
   readonly url: string;
 }
 
+export interface MeshUsage {
+  readonly bytes: number;
+  readonly count: number;
+}
+
 export function accountMeshHolder(userId: string): string {
   return `user:${userId}`;
+}
+
+/**
+ * Rejects on the same comparisons as `checkMeshQuota` and returns the usage it
+ * read, so the caller rebuilds the identical error from it.
+ */
+const MESH_ACQUIRE_LUA = `
+if redis.call('EXISTS', KEYS[1]) == 0 then
+  return {'signed-out'}
+end
+if redis.call('HEXISTS', KEYS[2], ARGV[1]) == 1 then
+  return {'held'}
+end
+local size = tonumber(ARGV[3])
+local bytes = tonumber(redis.call('HGET', KEYS[3], 'bytes') or '0')
+local count = tonumber(redis.call('HGET', KEYS[3], 'count') or '0')
+if count + 1 > tonumber(ARGV[6]) or bytes + size > tonumber(ARGV[5]) then
+  return {'over-quota', bytes, count}
+end
+redis.call('HSET', KEYS[2], ARGV[1], ARGV[2])
+redis.call('HINCRBY', KEYS[3], 'bytes', size)
+redis.call('HINCRBY', KEYS[3], 'count', 1)
+redis.call('SADD', KEYS[4], ARGV[4])
+return {'acquired'}
+`;
+
+/** The below-zero clamps cover drifted totals: a release must never leave them negative. */
+const MESH_RELEASE_LUA = `
+local raw = redis.call('HGET', KEYS[1], ARGV[1])
+if raw then
+  local ok, entry = pcall(cjson.decode, raw)
+  local size = ok and type(entry) == 'table' and tonumber(entry.sizeBytes) or 0
+  redis.call('HDEL', KEYS[1], ARGV[1])
+  if redis.call('HINCRBY', KEYS[2], 'bytes', -size) < 0 then
+    redis.call('HSET', KEYS[2], 'bytes', 0)
+  end
+  if redis.call('HINCRBY', KEYS[2], 'count', -1) < 0 then
+    redis.call('HSET', KEYS[2], 'count', 0)
+  end
+end
+redis.call('SREM', KEYS[3], ARGV[2])
+return redis.call('SCARD', KEYS[3])
+`;
+
+interface MeshRedis extends Redis {
+  meshAcquire(
+    sessionKey: string,
+    meshesKey: string,
+    usageKey: string,
+    holdersKey: string,
+    hash: string,
+    entry: string,
+    sizeBytes: number,
+    holder: string,
+    maxBytes: number,
+    maxCount: number
+  ): Promise<(string | number)[]>;
+  meshRelease(
+    meshesKey: string,
+    usageKey: string,
+    holdersKey: string,
+    hash: string,
+    holder: string
+  ): Promise<number>;
+}
+
+// Registered lazily on whatever client `getRedis()` hands back, and per
+// instance, for the same reason as `ensureLikeToggle` in communityStore.ts.
+function ensureMeshScripts(redis: Redis): MeshRedis {
+  const client = redis as MeshRedis;
+  if (typeof client.meshAcquire !== 'function') {
+    client.defineCommand('meshAcquire', { numberOfKeys: 4, lua: MESH_ACQUIRE_LUA });
+    client.defineCommand('meshRelease', { numberOfKeys: 3, lua: MESH_RELEASE_LUA });
+  }
+  return client;
 }
 
 function parseHeldMesh(raw: string): HeldMesh | null {
@@ -41,62 +119,79 @@ export async function getHeldMesh(
   return raw === null ? null : parseHeldMesh(raw);
 }
 
-/** Every file an account holds, keyed by hash. Malformed entries are skipped. */
-export async function getHeldMeshes(
-  redis: Redis,
-  userId: string
-): Promise<Record<string, HeldMesh>> {
-  const raw = await redis.hgetall(userMeshesKey(userId));
-  const out: Record<string, HeldMesh> = {};
-  for (const [hash, encoded] of Object.entries(raw)) {
-    const parsed = parseHeldMesh(encoded);
-    if (parsed) out[hash] = parsed;
-  }
-  return out;
+export async function getMeshUsage(redis: Redis, userId: string): Promise<MeshUsage> {
+  const [bytes, count] = await redis.hmget(userMeshUsageKey(userId), 'bytes', 'count');
+  return { bytes: Number(bytes ?? 0), count: Number(count ?? 0) };
 }
 
-async function execPipeline(pipeline: ChainableCommander, context: string): Promise<unknown[]> {
-  const results = await pipeline.exec();
-  if (results === null) throw new Error(`${context}: redis connection lost`);
-  return results.map(([error, value]) => {
-    if (error) throw new Error(`${context}: ${error.message}`);
-    return value;
-  });
+export interface MeshHold {
+  readonly userId: string;
+  readonly sessionToken: string;
+  readonly hash: string;
+  readonly held: HeldMesh;
 }
 
-/** Record that an account holds a stored file. Repeating it changes nothing. */
-export async function acquireAccountMesh(
-  redis: Redis,
-  userId: string,
-  hash: string,
-  held: HeldMesh
-): Promise<void> {
-  const pipeline = redis.pipeline();
-  pipeline.hset(userMeshesKey(userId), hash, JSON.stringify(held));
-  pipeline.sadd(meshHoldersKey(hash), accountMeshHolder(userId));
-  await execPipeline(pipeline, 'Mesh acquire failed');
-}
+export type MeshAcquireResult =
+  | { readonly status: 'acquired' | 'held' | 'signed-out' }
+  | { readonly status: 'over-quota'; readonly error: QuotaError };
 
 /**
- * Drop an account's hold on a file, which frees its quota, and return how many
- * holders the file has left. Zero means nothing references it. Repeating a
- * release changes nothing and returns the same count.
+ * Checking the quota and recording the hold in one script is what stops
+ * concurrent uploads of different files from all passing on the same usage.
+ * The session check shares the step because account deletion removes sessions
+ * before it releases holds, so a request authenticated before a deletion
+ * cannot record a hold after it.
  */
+export async function acquireAccountMesh(redis: Redis, hold: MeshHold): Promise<MeshAcquireResult> {
+  const [status, bytes, count] = await ensureMeshScripts(redis).meshAcquire(
+    sessionKey(hold.sessionToken),
+    userMeshesKey(hold.userId),
+    userMeshUsageKey(hold.userId),
+    meshHoldersKey(hold.hash),
+    hold.hash,
+    JSON.stringify(hold.held),
+    hold.held.sizeBytes,
+    accountMeshHolder(hold.userId),
+    MESH_QUOTA_BYTES,
+    MESH_QUOTA_COUNT
+  );
+  if (status === 'acquired' || status === 'held' || status === 'signed-out') return { status };
+  const verdict = checkMeshQuota(
+    { bytes: Number(bytes), count: Number(count) },
+    hold.held.sizeBytes
+  );
+  if (verdict.ok) throw new Error(`Mesh acquire returned ${String(status)} within the quota`);
+  return { status: 'over-quota', error: verdict.error };
+}
+
 export async function releaseAccountMesh(
   redis: Redis,
   userId: string,
   hash: string
 ): Promise<number> {
-  const pipeline = redis.pipeline();
-  pipeline.hdel(userMeshesKey(userId), hash);
-  pipeline.srem(meshHoldersKey(hash), accountMeshHolder(userId));
-  pipeline.scard(meshHoldersKey(hash));
-  const results = await execPipeline(pipeline, 'Mesh release failed');
-  return Number(results[2]);
+  return ensureMeshScripts(redis).meshRelease(
+    userMeshesKey(userId),
+    userMeshUsageKey(userId),
+    meshHoldersKey(hash),
+    hash,
+    accountMeshHolder(userId)
+  );
 }
 
-/** Release every file an account holds, for account deletion. */
+/** Batched so an account at the mesh count cap is released inside one function's time limit. */
+const RELEASE_BATCH = 500;
+
 export async function releaseAllAccountMeshes(redis: Redis, userId: string): Promise<void> {
-  const hashes = await redis.hkeys(userMeshesKey(userId));
-  await Promise.all(hashes.map((hash) => releaseAccountMesh(redis, userId, hash)));
+  let cursor = '0';
+  do {
+    const [next, entries] = await redis.hscan(
+      userMeshesKey(userId),
+      cursor,
+      'COUNT',
+      RELEASE_BATCH
+    );
+    cursor = next;
+    const hashes = entries.filter((_, i) => i % 2 === 0);
+    await Promise.all(hashes.map((hash) => releaseAccountMesh(redis, userId, hash)));
+  } while (cursor !== '0');
 }

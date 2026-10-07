@@ -1,8 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Redis } from 'ioredis';
-import { checkMeshQuota, checkQuota, getQuotaCaps, MESH_QUOTA_BYTES } from './quota';
+import {
+  checkMeshQuota,
+  checkQuota,
+  getQuotaCaps,
+  MESH_QUOTA_BYTES,
+  MESH_QUOTA_COUNT,
+} from './quota';
 import { tombstone, upsertEntry } from './userIndex';
-import { userMeshesKey } from './redisKeys';
 
 let mockRedis: Redis;
 
@@ -171,26 +176,12 @@ describe('checkQuota', () => {
 describe('checkMeshQuota', () => {
   const MB = 1024 * 1024;
 
-  beforeEach(() => {
-    mockRedis = makeRedisMock();
+  it('allows a file that fits exactly', () => {
+    expect(checkMeshQuota({ bytes: 60 * MB, count: 3 }, 40 * MB)).toEqual({ ok: true });
   });
 
-  async function hold(userId: string, hash: string, sizeBytes: number): Promise<void> {
-    await mockRedis.hset(
-      userMeshesKey(userId),
-      hash,
-      JSON.stringify({ sizeBytes, url: `https://blob/meshes/${hash}` })
-    );
-  }
-
-  it('allows a file that fits beside what the account holds', async () => {
-    await hold('u1', 'a', 60 * MB);
-    expect(await checkMeshQuota(mockRedis, 'u1', 'b', 40 * MB)).toEqual({ ok: true });
-  });
-
-  it('rejects a file that would pass the cap, reporting the projected bytes', async () => {
-    await hold('u1', 'a', 60 * MB);
-    expect(await checkMeshQuota(mockRedis, 'u1', 'b', 40 * MB + 1)).toEqual({
+  it('rejects a file past the byte cap, reporting the projected bytes', () => {
+    expect(checkMeshQuota({ bytes: 60 * MB, count: 3 }, 40 * MB + 1)).toEqual({
       ok: false,
       error: {
         type: 'QUOTA_EXCEEDED',
@@ -201,20 +192,21 @@ describe('checkMeshQuota', () => {
     });
   });
 
-  it('counts a held file once, so re-checking it passes even at the cap', async () => {
-    await hold('u1', 'a', 60 * MB);
-    await hold('u1', 'b', 40 * MB);
-    expect(await checkMeshQuota(mockRedis, 'u1', 'a', 60 * MB)).toEqual({ ok: true });
-    expect((await checkMeshQuota(mockRedis, 'u1', 'c', 1)).ok).toBe(false);
+  it('rejects one file past the count cap, however small', () => {
+    expect(checkMeshQuota({ bytes: 0, count: MESH_QUOTA_COUNT - 1 }, 1)).toEqual({ ok: true });
+    expect(checkMeshQuota({ bytes: 0, count: MESH_QUOTA_COUNT }, 1)).toEqual({
+      ok: false,
+      error: {
+        type: 'QUOTA_EXCEEDED',
+        reason: 'count',
+        current: MESH_QUOTA_COUNT + 1,
+        limit: MESH_QUOTA_COUNT,
+      },
+    });
   });
 
-  it('is per account', async () => {
-    await hold('u1', 'a', MESH_QUOTA_BYTES);
-    expect(await checkMeshQuota(mockRedis, 'u2', 'b', 1)).toEqual({ ok: true });
-  });
-
-  it('is independent of the sync quotas', async () => {
-    await upsertEntry(mockRedis, 'u1', 'designs', 'd1', { modifiedAt: 1, sizeBytes: 9 * MB });
-    expect(await checkMeshQuota(mockRedis, 'u1', 'a', 99 * MB)).toEqual({ ok: true });
+  it('reports the count first when both caps would be passed', () => {
+    const result = checkMeshQuota({ bytes: MESH_QUOTA_BYTES, count: MESH_QUOTA_COUNT }, 1);
+    expect(result.ok ? null : result.error.reason).toBe('count');
   });
 });

@@ -1,6 +1,5 @@
 import type { Redis } from 'ioredis';
 import { getIndex, type SyncItemKind } from './userIndex.js';
-import { getHeldMeshes } from './meshIndex.js';
 
 /**
  * Per-kind caps. Tombstones are excluded from both axes — deleting an
@@ -122,35 +121,36 @@ export function getQuotaCaps(kind: SyncItemKind): { maxCount: number; maxBytes: 
   return QUOTA[kind];
 }
 
-/** Stored mesh files per account, in unique bytes. */
 export const MESH_QUOTA_BYTES = 100 * 1024 * 1024;
 
 /**
- * Check whether holding the file `hash` would push the account over its mesh
- * quota. A file the account already holds is already counted, so it always
- * passes: each unique file costs its bytes once. Same soft-ceiling race as
- * `checkQuota`.
+ * 100 designs at 8 meshes each is 800 files, and version history can keep older
+ * imports alive, so 5000 leaves a real library room. Without a count cap, tiny
+ * files could grow one account's hash past what account deletion can walk.
  */
-export async function checkMeshQuota(
-  redis: Redis,
-  userId: string,
-  hash: string,
+export const MESH_QUOTA_COUNT = 5000;
+
+/**
+ * Whether one more file of `sizeBytes` fits beside `usage`. Unlike
+ * `checkQuota` this is not the gate: `acquireAccountMesh` re-runs the same
+ * comparisons atomically as it records the hold.
+ */
+export function checkMeshQuota(
+  usage: { readonly bytes: number; readonly count: number },
   sizeBytes: number
-): Promise<QuotaCheck> {
-  const held = await getHeldMeshes(redis, userId);
-  if (Object.hasOwn(held, hash)) return { ok: true };
-  let usedBytes = 0;
-  for (const entry of Object.values(held)) usedBytes += entry.sizeBytes;
-  const projectedBytes = usedBytes + sizeBytes;
-  if (projectedBytes > MESH_QUOTA_BYTES) {
+): QuotaCheck {
+  const count = usage.count + 1;
+  if (count > MESH_QUOTA_COUNT) {
     return {
       ok: false,
-      error: {
-        type: 'QUOTA_EXCEEDED',
-        reason: 'bytes',
-        current: projectedBytes,
-        limit: MESH_QUOTA_BYTES,
-      },
+      error: { type: 'QUOTA_EXCEEDED', reason: 'count', current: count, limit: MESH_QUOTA_COUNT },
+    };
+  }
+  const bytes = usage.bytes + sizeBytes;
+  if (bytes > MESH_QUOTA_BYTES) {
+    return {
+      ok: false,
+      error: { type: 'QUOTA_EXCEEDED', reason: 'bytes', current: bytes, limit: MESH_QUOTA_BYTES },
     };
   }
   return { ok: true };
