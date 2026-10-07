@@ -74,10 +74,9 @@ type IndexEntry = {
 blob stores — so quota accounting matches reality. Each kind also has a
 **pre-validation cap** that bounds CPU on huge inputs: layouts use
 `SHARE_CONSTRAINTS.MAX_SIZE_BYTES` (500 KB, measured on `{ layout }`); designs
-use `CONSTRAINTS.MAX_PAYLOAD_BYTES` (100 KB, measured on
-`{ name, type, version, params }`). The pre-validation count is intentionally a
-subset of the request body, not the full HTTP payload — its only job is to gate
-the validator's workload.
+use `CONSTRAINTS.MAX_PAYLOAD_BYTES` (100 KB), or `MESH_MAX_PAYLOAD_BYTES` (2 MB)
+when params carry mesh assets. The cap counts a subset of the request body, not
+the full HTTP payload, since its only job is to gate the validator's workload.
 
 ### Folders
 
