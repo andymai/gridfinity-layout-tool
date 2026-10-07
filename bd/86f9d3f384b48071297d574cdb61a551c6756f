@@ -1,0 +1,31 @@
+src/features/design-linking/components/Dialogs/BlockedResizeDialog/BlockedResizeDialog.tsx
+  s_900382acfc8cb3::t_6c89ea9e72030b 40
+src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.tsx
+  s_900382acfc8cb3::t_bdf9a3ca214717 108,110,322
+src/features/design-linking/hooks/useBinLinking.test.ts
+  s_900382acfc8cb3::t_cf00063d34d9b8 302-317
+src/features/design-linking/hooks/useBinLinking.ts
+  s_900382acfc8cb3::t_54675043424c9a 38,54,153-154
+src/shared/hooks/useDesignerRouting.test.ts
+  s_900382acfc8cb3::t_0f0f9bf8f45947 133-156
+src/shared/hooks/useDesignerRouting.ts
+  s_900382acfc8cb3::t_0e9005ee60a650 50-51,53-66,78-80,86,100,113,127,137,145-146
+src/shell/Mobile/BinContextMenuDesignSection/BinContextMenuDesignSection.tsx
+  s_900382acfc8cb3::t_69b4f9b54d6fbc 25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bd86f9d3f384b48071297d574cdb61a551c6756f",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
