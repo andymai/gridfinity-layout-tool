@@ -87,6 +87,7 @@ const MESH_CACHE_VERSION = 'v27';
  * assembly-item previews (their own `item` segment) stay warm. The mirror of
  * {@link itemMeshCacheKey}'s segment.
  *
+ * `bin7`: a chamfered pocket inside a shallower one is chamfered at that floor.
  * `bin6`: a path pocket with a curve tighter than its clearance plus entry
  * chamfer keeps both, held back only at that curve, instead of a straight wall.
  * `bin5`: a flat base's floor follows the wall instead of the spec floor, and a
@@ -101,7 +102,7 @@ const MESH_CACHE_VERSION = 'v27';
  * `bin1`: a lipless bin's sliding-lid entry window no longer ramps through the
  * rim, so its entry corners keep their full wall height.
  */
-const BIN_MESH_REVISION = 'bin6';
+const BIN_MESH_REVISION = 'bin7';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for

@@ -1,0 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`nested chamfers > 2×2 solid, leaned slot nested in a tray 1`] = `2566`;
+
+exports[`nested chamfers > 2×2 solid, repeated slots and a union member nested at the floor 1`] = `3480`;
+
+exports[`nested chamfers > 2×2 solid, slot inside and circle across a freeform tray 1`] = `3026`;
