@@ -1,0 +1,38 @@
+src/features/bin-designer/hooks/useDesignerSharing.ts
+  s_900382acfc8cb3::t_f039f98a5f7530 61
+src/features/bin-designer/sync/meshPayloads.test.ts
+  s_900382acfc8cb3::t_f039f98a5f7530 2-4
+src/features/bin-designer/hooks/useMeshFileMaintenance.test.ts
+  s_900382acfc8cb3::t_137c7552e10996 5
+src/features/bin-designer/hooks/useCommunityPublish.ts
+  s_900382acfc8cb3::t_f039f98a5f7530 103
+src/features/bin-designer/hooks/useDesignerSharing.test.ts
+  s_900382acfc8cb3::t_f039f98a5f7530 57
+src/features/bin-designer/sync/designAdapter.ts
+  s_900382acfc8cb3::t_f039f98a5f7530 37-39
+src/features/bin-designer/storage/designMeshFiles.ts
+  s_900382acfc8cb3::t_f039f98a5f7530 2-3,6-7
+src/features/bin-designer/hooks/useMeshFileMaintenance.ts
+  s_900382acfc8cb3::t_137c7552e10996 21
+src/features/bin-designer/hooks/useCommunityPublish.test.ts
+  s_900382acfc8cb3::t_f039f98a5f7530 137
+src/features/bin-designer/storage/DesignerStorage.ts
+  s_900382acfc8cb3::t_137c7552e10996 46-48
+  s_900382acfc8cb3::t_f039f98a5f7530 65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7ca29bf1b689175642e6c1966b650bbd459e18d1",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
