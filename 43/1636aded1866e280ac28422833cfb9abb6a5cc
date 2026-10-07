@@ -70,6 +70,7 @@ src/features/generation/worker/generators/cutoutBuilder.ts
   s_900382acfc8cb3::t_c134f016d0943d 353-373
   s_900382acfc8cb3::t_b0a08b1901b6c3 304-309,311,316,329-330,335-337,339-349,376-377
   s_900382acfc8cb3::t_686b8fe09beb1a 350-352,374-375
+  s_900382acfc8cb3::t_c76d4dc27df5a6 98,533-535,563-566,582-583,587,589-590,593
 src/features/generation/worker/generators/binGenerator.export.nestedChamfers.test.ts
   s_900382acfc8cb3::t_7bd199cf05fb62 1-5
 src/features/generation/worker/generators/scenarios/nestedChamfers.ts
