@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { COINCIDENT_POINT_EPSILON } from '@/shared/utils/polyline';
+import { COINCIDENT_POINT_EPSILON } from './polyline';
 import {
+  MAX_OFFSET_POINTS,
   offsetClosedPolygon,
   offsetClosedPolygonWithinReach,
   refineForOffset,
@@ -190,6 +191,27 @@ function notch(left: number, right: number, slot = 20): Pt[] {
   ];
 }
 
+/**
+ * A 30×20 rectangle whose top edge runs through `n` points jittered inside a
+ * 2×2mm square, stepping steadily along x so the outline stays simple.
+ */
+function scribble(n: number): Pt[] {
+  let seed = 12345;
+  const jitter = Array.from({ length: n }, (_, k) => {
+    seed = (seed * 1103515245 + 12345) % 2147483648;
+    return { x: 16 - (2 * (k + 0.5)) / n, y: 18 + (2 * seed) / 2147483648 };
+  });
+  return [
+    { x: 0, y: 0 },
+    { x: 30, y: 0 },
+    { x: 30, y: 20 },
+    { x: 16, y: 20 },
+    ...jitter,
+    { x: 14, y: 20 },
+    { x: 0, y: 20 },
+  ];
+}
+
 /** A 30×20 rectangle with a 1mm-radius bump pushed into its top, `n` points on the bump. */
 function bite(n: number): Pt[] {
   const bump = Array.from({ length: n + 1 }, (_, k) => {
@@ -331,6 +353,28 @@ describe('offsetClosedPolygonWithinReach', () => {
     expect(performance.now() - started).toBeLessThan(750);
   });
 
+  it('bounds the work on a compact scribble of any size', () => {
+    // Long jittered edges packed into a 2mm square sit within reach of each
+    // other however the grid is cut, so only the point budget bounds them.
+    const d = 1.5;
+    const started = performance.now();
+    const poly = scribble(10000);
+    const refined = refineForOffset(poly, d);
+    const rim = offsetClosedPolygonWithinReach(refined, d);
+    const base = offsetClosedPolygonWithinReach(refined, 0.7, rim.reach);
+    const elapsed = performance.now() - started;
+    expect(refined.length).toBeLessThanOrEqual(3 * MAX_OFFSET_POINTS);
+    expect(touchesItself(rim.points)).toBe(false);
+    expect(touchesItself(base.points)).toBe(false);
+    expect(elapsed).toBeLessThan(400);
+  });
+
+  it('leaves an outline within the point budget as it is', () => {
+    const poly = star(MAX_OFFSET_POINTS, 12);
+    const refined = refineForOffset(poly, 1.05);
+    poly.forEach((p) => expect(refined).toContainEqual(p));
+  });
+
   it('scales near linearly with the density of a tight inside curve', () => {
     // Every point of a curve tighter than the offset sits within reach of
     // every other, and an imported SVG can sample one as densely as it likes.
@@ -387,6 +431,36 @@ describe('refineForOffset', () => {
       added.forEach(({ r }) => expect(r).toBe(d));
     });
   }
+
+  it('takes one midpoint when the pair would sit exactly a path vertex spacing apart', () => {
+    // At this scale every coordinate is a power-of-two multiple of the
+    // spacing, so the floor is exactly 2d + ε long and a pair of transition
+    // points would sit exactly ε apart, which dropCoincidentPoints merges.
+    const eps = COINCIDENT_POINT_EPSILON;
+    const d = eps / 2;
+    const r = 0.0002;
+    const arc = (cx: number, from: number): Pt[] =>
+      Array.from({ length: 11 }, (_, k) => {
+        const a = from - ((k + 1) / 12) * (Math.PI / 2);
+        return { x: cx + r * Math.cos(a), y: r + r * Math.sin(a) };
+      });
+    const poly: Pt[] = [
+      { x: -1, y: -1 },
+      { x: 1, y: -1 },
+      { x: 1, y: 1 },
+      { x: 2 * eps + r, y: 1 },
+      { x: 2 * eps + r, y: r },
+      ...arc(2 * eps, 0),
+      { x: 2 * eps, y: 0 },
+      { x: 0, y: 0 },
+      ...arc(0, -Math.PI / 2),
+      { x: -r, y: r },
+      { x: -r, y: 1 },
+      { x: -1, y: 1 },
+    ];
+    const floor = refineForOffset(poly, d).filter((p) => p.y === 0);
+    expect(floor.map((p) => p.x)).toEqual([2 * eps, eps, 0]);
+  });
 
   it('never leaves an edge shorter than a path vertex spacing', () => {
     // A floor a hair over 2d between two held corners: one transition point d
