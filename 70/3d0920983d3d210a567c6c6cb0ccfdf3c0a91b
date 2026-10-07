@@ -1,0 +1,23 @@
+src/features/bin-designer/hooks/useFitTestOptions.ts
+  s_900382acfc8cb3::t_77c1f478adfde0 1
+src/features/generation/worker/generators/fitTestOutline.ts
+  s_900382acfc8cb3::t_1ea71395e847d7 50,101,142,183
+src/features/generation/bridge/messages.ts
+  s_900382acfc8cb3::t_77c1f478adfde0 316
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "703d0920983d3d210a567c6c6cb0ccfdf3c0a91b",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
