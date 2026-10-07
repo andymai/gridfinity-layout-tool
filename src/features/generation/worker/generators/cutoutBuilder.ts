@@ -89,7 +89,8 @@ import {
 import { sketch } from './meshUtils';
 import { buildTextSolid, flatTextPrismDepth } from './textBuilder';
 import { resolveTextStyle, ZERO_TEXT_OFFSET } from '@/shared/types/bin';
-import { growPathOutline, pathCutoutOutline } from '@/shared/utils/pathCutoutOutline';
+import { pathCutoutOutline } from '@/shared/utils/pathCutoutOutline';
+import { offsetClosedPolygonWithinReach, refineForOffset } from '@/shared/utils/polygonOffset';
 import { buildTaperedInnerEnvelope } from './taperedOuter';
 import type { ResolvedTaper } from './overhang';
 import { FeatureTag } from './featureTags';
@@ -428,8 +429,7 @@ export function pathWire(pts: readonly { x: number; y: number }[]): Drawing {
 /**
  * Build an extruded path cutout from bezier path points. Flattens curves to a
  * polyline, applies the insertion `clearance` (outward offset), and extrudes the
- * closed wire. Falls back to a bbox rect for a degenerate outline, and to the
- * un-offset outline if the clearance offset can't be built.
+ * closed wire. Falls back to a bbox rect for a degenerate outline.
  */
 function buildPathCutoutShape(
   cutout: {
@@ -446,7 +446,10 @@ function buildPathCutoutShape(
   if (!outline) {
     return box(cutout.width, cutout.depth, cutout.cutDepth, { at: [0, 0, cutout.cutDepth / 2] });
   }
-  const grown = growPathOutline(outline, clearance) ?? outline;
+  const grown = offsetClosedPolygonWithinReach(
+    refineForOffset(outline, clearance),
+    clearance
+  ).points;
   return sketch(pathWire(grown), 'XY').extrude(cutout.cutDepth);
 }
 
@@ -454,8 +457,8 @@ function buildPathCutoutShape(
  * Entry-chamfered path cutout: a 3-section ruled loft (clearance-offset base →
  * same at `cutDepth − chamfer` → base offset outward by `chamfer` at the top
  * rim), so a freeform outline gets the same ~45° self-centering countersink as
- * the parametric shapes. Throws on degenerate input or a bad offset so the
- * caller can fall back to a straight (clearance-only) extrude.
+ * the parametric shapes. Throws on degenerate input so the caller can fall
+ * back to a straight (clearance-only) extrude.
  */
 function buildChamferedPathShape(
   cutout: {
@@ -473,16 +476,20 @@ function buildChamferedPathShape(
   const outline = pathCutoutOutline(cutout);
   if (!outline) throw new Error('path: degenerate');
   // Base carries the clearance; the flared rim is offset a further `chamfer`.
-  const base = growPathOutline(outline, clearance);
-  const flared = growPathOutline(outline, clearance + chamfer);
-  if (!base || !flared) throw new Error('path: bad offset');
+  // Capping the base by the rim's reach keeps every ruled face flaring outward
+  // where a tight notch held the rim back.
+  const refined = refineForOffset(outline, clearance + chamfer);
+  const flared = offsetClosedPolygonWithinReach(refined, clearance + chamfer);
+  const base = offsetClosedPolygonWithinReach(refined, clearance, flared.reach).points;
 
   const baseSketch = pathWire(base).sketchOnPlane('XY', 0) as Sketch;
   const straightTop = pathWire(base).sketchOnPlane('XY', cutout.cutDepth - chamfer) as Sketch;
-  const flaredTop = pathWire(flared).sketchOnPlane('XY', cutout.cutDepth) as Sketch;
+  const flaredTop = pathWire(flared.points).sketchOnPlane('XY', cutout.cutDepth) as Sketch;
   const sections = [straightTop, flaredTop];
   if (topExtension > 0) {
-    sections.push(pathWire(flared).sketchOnPlane('XY', cutout.cutDepth + topExtension) as Sketch);
+    sections.push(
+      pathWire(flared.points).sketchOnPlane('XY', cutout.cutDepth + topExtension) as Sketch
+    );
   }
   return baseSketch.loftWith(sections, { ruled: true });
 }
