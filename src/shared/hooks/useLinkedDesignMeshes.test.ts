@@ -530,6 +530,49 @@ describe('useLinkedDesignMeshes', () => {
       });
     });
 
+    const OVER = MAX_CACHE_ENTRIES + 8;
+    const flushMicrotasks = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    it('trims back to the bound once a preview stops showing its meshes', async () => {
+      const { refs, bins } = manyDesigns(0, OVER);
+      mockUseCustomBins.mockReturnValue(refs);
+
+      const first = renderHook(() => useLinkedDesignMeshes(bins));
+      await waitFor(() => {
+        expect(first.result.current.size).toBe(OVER);
+      });
+      first.unmount();
+      await flushMicrotasks();
+
+      // Only the 8 least recently used were trimmed, so only they reload.
+      const second = renderHook(() => useLinkedDesignMeshes(bins));
+      await waitFor(() => {
+        expect(second.result.current.size).toBe(OVER);
+      });
+      expect(mockLoadDesign).toHaveBeenCalledTimes(OVER + 8);
+    });
+
+    it('keeps the meshes a requests update still shows, without reloading them', async () => {
+      const { refs, bins } = manyDesigns(0, OVER);
+      mockUseCustomBins.mockReturnValue(refs);
+
+      const { result, rerender } = renderHook(
+        ({ bins }: { bins: Bin[] }) => useLinkedDesignMeshes(bins),
+        { initialProps: { bins } }
+      );
+      await waitFor(() => {
+        expect(result.current.size).toBe(OVER);
+      });
+
+      // A fresh array re-runs the loading effect: every key is unpinned and
+      // pinned again in one commit.
+      rerender({ bins: [...bins] });
+      await flushMicrotasks();
+
+      expect(result.current.size).toBe(OVER);
+      expect(mockLoadDesign).toHaveBeenCalledTimes(OVER);
+    });
+
     it('reloads a mesh evicted while nothing was showing it', async () => {
       const sets = [0, 1, 2].map((i) => manyDesigns(i * MAX_CACHE_ENTRIES, MAX_CACHE_ENTRIES));
       mockUseCustomBins.mockReturnValue(sets.flatMap((s) => s.refs));

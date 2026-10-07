@@ -33,7 +33,12 @@ export interface DesignGeometryEntry {
  * cleared wholesale when the owning preview unmounts (layout switch).
  */
 const designGeometryCache = new Map<string, THREE.BufferGeometry>();
-const MAX_CACHE_SIZE = 64;
+/** Bound on geometries no mounted preview is drawing. @internal, exported for tests. */
+export const MAX_CACHE_SIZE = 64;
+// Keys a committed preview is drawing, refcounted across mounts. Never evicted,
+// so building past the bound cannot dispose a geometry a visible bin binds.
+const pinnedGeometryKeys = new Map<string, number>();
+let trimScheduled = false;
 
 /** Clear all cached design geometries and dispose them. */
 export function clearDesignGeometryCache(): void {
@@ -41,6 +46,43 @@ export function clearDesignGeometryCache(): void {
     geometry.dispose();
   }
   designGeometryCache.clear();
+  pinnedGeometryKeys.clear();
+}
+
+function pinGeometry(key: string): void {
+  pinnedGeometryKeys.set(key, (pinnedGeometryKeys.get(key) ?? 0) + 1);
+}
+
+function unpinGeometry(key: string): void {
+  const count = pinnedGeometryKeys.get(key) ?? 0;
+  if (count <= 1) pinnedGeometryKeys.delete(key);
+  else pinnedGeometryKeys.set(key, count - 1);
+}
+
+// Dispose least-recently-used geometries that are neither pinned nor in
+// `inUse` until at most `limit` such remain.
+function evictUnused(limit: number, inUse: ReadonlySet<string>): void {
+  const used = (key: string): boolean => pinnedGeometryKeys.has(key) || inUse.has(key);
+  let unused = 0;
+  for (const key of designGeometryCache.keys()) if (!used(key)) unused++;
+  for (const [key, geometry] of designGeometryCache) {
+    if (unused <= limit) return;
+    if (used(key)) continue;
+    geometry.dispose();
+    designGeometryCache.delete(key);
+    unused--;
+  }
+}
+
+// Deferred past the effect cleanup and setup React runs back to back, so an
+// update re-pins what it still draws before anything unpinned is disposed.
+function scheduleTrim(): void {
+  if (trimScheduled) return;
+  trimScheduled = true;
+  queueMicrotask(() => {
+    trimScheduled = false;
+    evictUnused(MAX_CACHE_SIZE, new Set());
+  });
 }
 
 /** Concatenate a companion part's buffers onto the body's, shifting its indices. */
@@ -120,52 +162,38 @@ export function buildDesignGeometry(mesh: MeshData): THREE.BufferGeometry {
  * Rest geometries share the body's LRU (keyed `sig:rest`) so both age out
  * together when a design re-save mints a new sig.
  */
-function getCachedRestGeometry(sig: string, restMesh: MeshData): THREE.BufferGeometry {
-  const key = `${sig}:rest`;
+function restKey(sig: string): string {
+  return `${sig}:rest`;
+}
+
+function restMeshOf(designMesh: LinkedDesignMesh): MeshData | undefined {
+  const restMesh = designMesh.mesh.knifeRestMesh;
+  return restMesh && restMesh.vertices.length > 0 ? restMesh : undefined;
+}
+
+function getCachedGeometry(
+  key: string,
+  mesh: MeshData,
+  inUse: ReadonlySet<string>
+): THREE.BufferGeometry {
   let geometry = designGeometryCache.get(key);
   if (geometry) {
+    // LRU: move accessed entry to the end
     designGeometryCache.delete(key);
     designGeometryCache.set(key, geometry);
     return geometry;
   }
-  geometry = buildDesignGeometry(restMesh);
-  if (designGeometryCache.size >= MAX_CACHE_SIZE) {
-    const oldestKey = designGeometryCache.keys().next().value;
-    if (oldestKey !== undefined) {
-      designGeometryCache.get(oldestKey)?.dispose();
-      designGeometryCache.delete(oldestKey);
-    }
-  }
+  geometry = buildDesignGeometry(mesh);
+  evictUnused(MAX_CACHE_SIZE, inUse);
   designGeometryCache.set(key, geometry);
   return geometry;
 }
 
-function getCachedDesignGeometry(designMesh: LinkedDesignMesh): THREE.BufferGeometry {
-  let geometry = designGeometryCache.get(designMesh.sig);
-  if (geometry) {
-    // LRU: move accessed entry to the end
-    designGeometryCache.delete(designMesh.sig);
-    designGeometryCache.set(designMesh.sig, geometry);
-    return geometry;
-  }
-
-  geometry = buildDesignGeometry(designMesh.mesh);
-  if (designGeometryCache.size >= MAX_CACHE_SIZE) {
-    const oldestKey = designGeometryCache.keys().next().value;
-    if (oldestKey !== undefined) {
-      designGeometryCache.get(oldestKey)?.dispose();
-      designGeometryCache.delete(oldestKey);
-    }
-  }
-  designGeometryCache.set(designMesh.sig, geometry);
-  return geometry;
-}
-
-function buildEntry(designMesh: LinkedDesignMesh): DesignGeometryEntry {
-  const restMesh = designMesh.mesh.knifeRestMesh;
+function buildEntry(designMesh: LinkedDesignMesh, inUse: ReadonlySet<string>): DesignGeometryEntry {
+  const restMesh = restMeshOf(designMesh);
   let rest: DesignGeometryEntry['rest'];
-  if (restMesh && restMesh.vertices.length > 0) {
-    const geometry = getCachedRestGeometry(designMesh.sig, restMesh);
+  if (restMesh) {
+    const geometry = getCachedGeometry(restKey(designMesh.sig), restMesh, inUse);
     geometry.computeBoundingBox();
     const bb = geometry.boundingBox;
     if (bb) {
@@ -175,7 +203,7 @@ function buildEntry(designMesh: LinkedDesignMesh): DesignGeometryEntry {
   const { bodyBaseMm } = designMesh;
   return {
     sig: designMesh.sig,
-    geometry: getCachedDesignGeometry(designMesh),
+    geometry: getCachedGeometry(designMesh.sig, designMesh.mesh, inUse),
     width: designMesh.width,
     depth: designMesh.depth,
     ...(bodyBaseMm !== undefined
@@ -194,19 +222,34 @@ function buildEntry(designMesh: LinkedDesignMesh): DesignGeometryEntry {
 export function useDesignGeometries(
   designMeshes: Map<BinId, LinkedDesignMesh>
 ): Map<BinId, DesignGeometryEntry> {
-  const entries = useMemo(() => {
+  const { entries, inUse } = useMemo(() => {
+    // Every key this build draws is protected before any is built, so a build
+    // past the bound evicts only geometries no bin here binds.
+    const inUse = new Set<string>();
+    for (const designMesh of designMeshes.values()) {
+      inUse.add(designMesh.sig);
+      if (restMeshOf(designMesh)) inUse.add(restKey(designMesh.sig));
+    }
     const map = new Map<BinId, DesignGeometryEntry>();
     const byMesh = new Map<LinkedDesignMesh, DesignGeometryEntry>();
     for (const [id, designMesh] of designMeshes) {
       let entry = byMesh.get(designMesh);
       if (!entry) {
-        entry = buildEntry(designMesh);
+        entry = buildEntry(designMesh, inUse);
         byMesh.set(designMesh, entry);
       }
       map.set(id, entry);
     }
-    return map;
+    return { entries: map, inUse };
   }, [designMeshes]);
+
+  useEffect(() => {
+    for (const key of inUse) pinGeometry(key);
+    return () => {
+      for (const key of inUse) unpinGeometry(key);
+      scheduleTrim();
+    };
+  }, [inUse]);
 
   // Clear the cache when the preview unmounts (e.g. layout switch), matching
   // MergedBinMeshes' clearGeometryCache lifecycle.

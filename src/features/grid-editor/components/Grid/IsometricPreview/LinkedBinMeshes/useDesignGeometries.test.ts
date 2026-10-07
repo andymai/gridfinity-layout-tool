@@ -9,8 +9,10 @@ import { GRIDFINITY_SPEC, socketHeightMm } from '@/shared/printSettings/gridfini
 import {
   buildDesignGeometry,
   clearDesignGeometryCache,
+  MAX_CACHE_SIZE,
   useDesignGeometries,
 } from './useDesignGeometries';
+import type { DesignGeometryEntry } from './useDesignGeometries';
 
 /** Two-triangle quad in the XY plane. */
 function makeMesh(withNormals: boolean): MeshData {
@@ -231,5 +233,74 @@ describe('useDesignGeometries', () => {
     clearDesignGeometryCache();
 
     expect(disposed).toBe(true);
+  });
+
+  describe('with more geometries in use than the cache bound', () => {
+    type Meshes = Map<BinId, LinkedDesignMesh>;
+
+    function manyMeshes(count: number, withRest: boolean): Meshes {
+      const meshes: Meshes = new Map();
+      for (let i = 0; i < count; i++) {
+        const entry = makeEntry(`d${i}:t1`);
+        meshes.set(
+          binId(`bin-${i}`),
+          withRest ? { ...entry, mesh: { ...entry.mesh, knifeRestMesh: makeMesh(true) } } : entry
+        );
+      }
+      return meshes;
+    }
+
+    function geometriesOf(entries: Map<BinId, DesignGeometryEntry>): THREE.BufferGeometry[] {
+      return [...entries.values()].flatMap((e) =>
+        e.rest ? [e.geometry, e.rest.geometry] : [e.geometry]
+      );
+    }
+
+    function countDisposals(geometries: THREE.BufferGeometry[]): () => number {
+      let disposed = 0;
+      for (const g of geometries) {
+        g.addEventListener('dispose', () => {
+          disposed++;
+        });
+      }
+      return () => disposed;
+    }
+
+    const flushMicrotasks = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    it('never disposes or rebuilds a geometry a bin still draws, rest geometries included', async () => {
+      // Body plus rest per design puts the drawn set two past the bound.
+      const meshes = manyMeshes(MAX_CACHE_SIZE / 2 + 1, true);
+      const { result, rerender } = renderHook(
+        ({ meshes }: { meshes: Meshes }) => useDesignGeometries(meshes),
+        { initialProps: { meshes } }
+      );
+      const before = geometriesOf(result.current);
+      expect(before).toHaveLength(MAX_CACHE_SIZE + 2);
+      const disposals = countDisposals(before);
+
+      // A new map of the same meshes, as an unrelated layout edit produces.
+      rerender({ meshes: new Map(meshes) });
+      await flushMicrotasks();
+
+      const after = geometriesOf(result.current);
+      expect(after).toHaveLength(before.length);
+      after.forEach((g, i) => expect(g).toBe(before[i]));
+      expect(disposals()).toBe(0);
+    });
+
+    it('disposes geometries no bin draws any more down to the bound', async () => {
+      const meshes = manyMeshes(MAX_CACHE_SIZE + 8, false);
+      const { result, rerender } = renderHook(
+        ({ meshes }: { meshes: Meshes }) => useDesignGeometries(meshes),
+        { initialProps: { meshes } }
+      );
+      const disposals = countDisposals(geometriesOf(result.current));
+
+      rerender({ meshes: new Map() });
+      await flushMicrotasks();
+
+      expect(disposals()).toBe(8);
+    });
   });
 });

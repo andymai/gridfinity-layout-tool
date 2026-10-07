@@ -106,26 +106,39 @@ function unpinKey(key: string): void {
   else pinnedKeys.set(key, count - 1);
 }
 
-function unpinnedCount(): number {
-  let count = 0;
-  for (const key of meshCache.keys()) if (!pinnedKeys.has(key)) count++;
-  return count;
-}
-
-// Insert an entry, evicting least-recently-used unpinned entries until those
-// fit the bound. Pinned entries sit outside it, so the cache grows to hold
-// whatever the mounted previews show. Recency is refreshed on read by
-// getCachedMesh (matches designGeometryCache's LRU policy).
-function setCachedMesh(key: string, entry: LinkedDesignMesh | null): void {
-  meshCache.delete(key);
-  const room = pinnedKeys.has(key) ? MAX_CACHE_ENTRIES : MAX_CACHE_ENTRIES - 1;
-  let unpinned = unpinnedCount();
-  for (const oldKey of meshCache.keys()) {
-    if (unpinned <= room) break;
-    if (pinnedKeys.has(oldKey)) continue;
-    meshCache.delete(oldKey);
+// Evict least-recently-used unpinned entries until at most `limit` remain.
+// Pinned entries sit outside the bound, so the cache grows to hold whatever
+// the mounted previews show.
+function evictUnpinned(limit: number): void {
+  let unpinned = 0;
+  for (const key of meshCache.keys()) if (!pinnedKeys.has(key)) unpinned++;
+  for (const key of meshCache.keys()) {
+    if (unpinned <= limit) return;
+    if (pinnedKeys.has(key)) continue;
+    meshCache.delete(key);
     unpinned--;
   }
+}
+
+let trimScheduled = false;
+
+// Deferred past the effect cleanup and setup React runs back to back, so a
+// requests update re-pins the meshes it still shows before anything unpinned
+// is trimmed, instead of evicting and reloading them.
+function scheduleTrim(): void {
+  if (trimScheduled) return;
+  trimScheduled = true;
+  queueMicrotask(() => {
+    trimScheduled = false;
+    evictUnpinned(MAX_CACHE_ENTRIES);
+  });
+}
+
+// Recency is refreshed on read by getCachedMesh (matches designGeometryCache's
+// LRU policy).
+function setCachedMesh(key: string, entry: LinkedDesignMesh | null): void {
+  meshCache.delete(key);
+  evictUnpinned(pinnedKeys.has(key) ? MAX_CACHE_ENTRIES : MAX_CACHE_ENTRIES - 1);
   meshCache.set(key, entry);
 }
 
@@ -365,6 +378,7 @@ export function useLinkedDesignMeshes(bins: Bin[]): Map<BinId, LinkedDesignMesh>
     return () => {
       cancelled = true;
       for (const key of requests.keys()) unpinKey(key);
+      scheduleTrim();
     };
   }, [requests, nozzleSizeMm, lowProfileBase]);
 
