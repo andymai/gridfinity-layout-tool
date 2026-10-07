@@ -1,6 +1,7 @@
 src/features/generation/worker/generators/cutoutEntryChamfer.kernel.test.ts
   s_900382acfc8cb3::t_5951a6c068dd00 1-8,11-17,19,20-170
   s_900382acfc8cb3::t_64ed52aa4ffad4 9-10
+  s_900382acfc8cb3::t_afbea1e0f00c12 18
 src/shared/generation/meshPersistence.ts
   s_900382acfc8cb3::t_38459a68e7abc8 104
   s_900382acfc8cb3::t_80d18c180bd4e7 90-91
@@ -24,6 +25,7 @@ src/features/generation/worker/generators/cutoutBuilder.ts
   s_900382acfc8cb3::t_23c631efea307f 449-452
   s_900382acfc8cb3::t_7b4b3d66bced22 460-461
   s_900382acfc8cb3::t_9b5da83e00cd48 479-480,487,490-492
+  s_900382acfc8cb3::t_4a62d7a5be4f8b 92-93
 ---
 {
   "schema_version": "authorship/3.0.0",
