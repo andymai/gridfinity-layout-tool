@@ -15,6 +15,7 @@ import {
   putRemoteDesignVersion,
   deleteRemoteDesignVersion,
 } from '@/features/bin-designer/storage/DesignVersionService';
+import { isSyncableDesign } from '@/features/bin-designer/utils/designKind';
 import { subscribe as subscribeVersionEvents } from './designVersionEvents';
 
 // Lives in features/ for the same reason `designAdapter` does: the record type
@@ -54,6 +55,11 @@ function toItem(version: DesignVersion): SyncableItem<DesignVersionPayload> | nu
   try {
     content = JSON.parse(json);
   } catch {
+    return null;
+  }
+  // Keyed off the content rather than the owning design: the content is what
+  // the server validates, and it records the kind it was captured as.
+  if (typeof content !== 'object' || content === null || !isSyncableDesign(content)) {
     return null;
   }
   return {

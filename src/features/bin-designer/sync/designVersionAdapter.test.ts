@@ -17,6 +17,7 @@ import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { expectOk } from '@/test/testUtils';
 import { designId } from '@/core/types';
 import type { AdapterChange } from '@/core/sync/adapters/types';
+import type { DesignVersionContent } from '@/features/bin-designer/types';
 
 const DESIGN = designId('design_adapter_test');
 
@@ -75,6 +76,44 @@ describe('designVersionAdapter', () => {
       const saved = await seedVersion('named');
       const item = await designVersionAdapter.get(saved.id);
       expect(item?.payload.name).toBe('named');
+    });
+  });
+
+  describe('design kinds that stay local', () => {
+    const envelope = { width: 2, depth: 2, gridUnitMm: 42, heightUnitMm: 7 };
+
+    async function seedContent(content: DesignVersionContent) {
+      return expectOk(await createDesignVersion(DESIGN, 'v', content, null)).version;
+    }
+
+    it('keeps an imported-mesh version off the wire', async () => {
+      const saved = await seedContent({
+        name: 'Scanned Part',
+        kind: 'importedMesh',
+        envelope,
+        structure: { kind: 'importedMesh', heightUnits: 3, mesh: 'AAAA' },
+      });
+
+      expect(await designVersionAdapter.list()).toEqual([]);
+      expect(await designVersionAdapter.get(saved.id)).toBeNull();
+    });
+
+    it('still syncs an assembly version', async () => {
+      const saved = await seedContent({
+        name: 'Pliers Rack',
+        kind: 'assembly',
+        envelope,
+        structure: {
+          kind: 'assembly',
+          schemaVersion: 1,
+          base: { floorThickness: 2 },
+          mirrorAxis: 'x',
+          parts: [],
+        },
+      });
+
+      expect((await designVersionAdapter.list()).map((item) => item.id)).toEqual([saved.id]);
+      expect(await designVersionAdapter.get(saved.id)).not.toBeNull();
     });
   });
 
