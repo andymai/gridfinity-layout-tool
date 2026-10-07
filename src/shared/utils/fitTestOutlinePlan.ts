@@ -147,8 +147,8 @@ export function fitTestOutlineBoxes(params: BinParams, wallMm: number): CutoutBo
 /**
  * Where the outline gets cut for a given bed. The rings span only the
  * openings, so an outline can fit a bed its card overflows; when it does not,
- * it takes the card's seams, held clear of the ring as well as the hole. A
- * window holding no ring yields no piece.
+ * it takes the card's seams, held clear of every ring, breach rails included,
+ * or counted as blocked. A window holding no ring yields no piece.
  */
 export function planFitTestOutlineSplit(
   params: BinParams,
@@ -164,7 +164,10 @@ export function planFitTestOutlineSplit(
   const depth = Math.max(...boxes.map((b) => b.maxY)) - Math.min(...boxes.map((b) => b.minY));
   if (width <= bed.width && depth <= bed.depth) return whole;
 
-  const card = planFitTestSplit(fitTestOutlineSource(params), bed, splitPlanes, wallMm);
+  const card = planFitTestSplit(fitTestOutlineSource(params), bed, splitPlanes, {
+    x: boxes.map((b) => ({ min: b.minX, max: b.maxX })),
+    y: boxes.map((b) => ({ min: b.minY, max: b.maxY })),
+  });
   const xEdges = [-Infinity, ...card.planesX, Infinity];
   const yEdges = [-Infinity, ...card.planesY, Infinity];
   let pieces = 0;

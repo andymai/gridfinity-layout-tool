@@ -3,7 +3,7 @@ import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
 import { DEFAULT_KNIFE_SPEC } from '@/shared/types/bin';
 import type { BinParams, Cutout } from '@/shared/types/bin';
 import { getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
-import { fitTestFootprintBox, planFitTestSplit } from './fitTestPlan';
+import { FIT_TEST_SEAM_MARGIN_MM, fitTestFootprintBox, planFitTestSplit } from './fitTestPlan';
 import {
   FIT_TEST_OUTLINE_HEIGHT_MM,
   FIT_TEST_OUTLINE_WALL_MM,
@@ -234,6 +234,61 @@ describe('outline reach through a breached wall', () => {
       expect(b.minY).toBeGreaterThanOrEqual(box.minY);
       expect(b.maxY).toBeLessThanOrEqual(box.maxY);
     }
+  });
+});
+
+describe('seams across a breach', () => {
+  const splitPlanes = getSplitPlanePositionsMm;
+  const bed = { width: 100, depth: 100 };
+  // A 4x1 rail splits at its centre on a 100mm bed. Interior x runs from the
+  // left wall; the model frame is centred on the rail.
+  const fourByOne = (cutouts: Cutout[]): BinParams => board({ width: 4, depth: 1 }, cutouts);
+  const innerW = (params: BinParams): number =>
+    4 * params.gridUnitMm - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
+
+  it('reports a seam it cannot move off a channel running to the far wall', () => {
+    // The channel runs from the left-end pocket to the right wall, so every
+    // plane across the rail cuts its rails and none is within reach of clear.
+    const params = fourByOne([
+      cutout({
+        id: 'a',
+        shape: 'rectangle',
+        x: 5,
+        y: 10,
+        width: 20,
+        depth: 15,
+        openSides: [{ side: 'right' }],
+      }),
+    ]);
+    const plan = planFitTestOutlineSplit(params, bed, splitPlanes, 1.2);
+    expect(plan.pieceCount).toBe(2);
+    expect(plan.blockedSeams).toBe(1);
+    // The card's seam crosses only the notch beside the pocket it measures.
+    expect(planFitTestSplit(params, bed, splitPlanes).blockedSeams).toBe(0);
+  });
+
+  it('moves a seam to the side of the pocket the channel does not run from', () => {
+    // Pocket b spans model x -12..-2 and opens right. Clear of its ring alone
+    // the nearer edge is +1.2, which would cut the channel's rails; with the
+    // rails counted, only the far side of the pocket is clear.
+    const base = fourByOne([]);
+    const half = innerW(base) / 2;
+    const params = fourByOne([
+      cutout({ id: 'a', shape: 'rectangle', x: 2, y: 10, width: 20, depth: 15 }),
+      cutout({
+        id: 'b',
+        shape: 'rectangle',
+        x: half - 12,
+        y: 10,
+        width: 10,
+        depth: 15,
+        openSides: [{ side: 'right' }],
+      }),
+    ]);
+    const plan = planFitTestOutlineSplit(params, bed, splitPlanes, 1.2);
+    expect(plan.blockedSeams).toBe(0);
+    expect(plan.planesX).toHaveLength(1);
+    expect(plan.planesX[0]).toBeCloseTo(-12 - 1.2 - FIT_TEST_SEAM_MARGIN_MM, 6);
   });
 });
 

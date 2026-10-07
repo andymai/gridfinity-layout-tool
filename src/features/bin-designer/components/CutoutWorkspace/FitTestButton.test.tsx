@@ -202,4 +202,24 @@ describe('FitTestButton', () => {
     fireEvent.click(screen.getByRole('radio', { name: OUTLINE }));
     expect(screen.queryByText(/fitTest.warnSplit/)).toBeNull();
   });
+
+  it('warns that an outline seam crosses a channel it cannot avoid', async () => {
+    setDesign({ width: 4, depth: 1 }, [
+      cutout({
+        shape: 'rectangle',
+        x: 5,
+        y: 10,
+        width: 20,
+        depth: 15,
+        openSides: [{ side: 'right' }],
+      }),
+    ]);
+    useSettingsStore.setState((s) => ({
+      settings: { ...s.settings, defaultPrintBedSize: 100, defaultPrintBedDepth: 100 },
+    }));
+    render(<FitTestButton />);
+    fireEvent.click(screen.getByRole('button', { name: BUTTON }));
+    fireEvent.click(await screen.findByRole('radio', { name: OUTLINE }));
+    expect(screen.getByText('binDesigner.cutouts.fitTest.warnSeamThroughOutline')).toBeVisible();
+  });
 });

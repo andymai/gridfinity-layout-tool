@@ -520,14 +520,15 @@ export function fitTestFootprintBox(params: BinParams): CutoutBox2D {
  * quiet about a seam through the hole being measured.
  *
  * `splitPlanes` is injected rather than imported so this stays free of the
- * generation feature; callers pass `getSplitPlanePositionsMm`. `extraMarginMm`
- * widens every opening first, for a print that carries material outside it.
+ * generation feature; callers pass `getSplitPlanePositionsMm`. `avoid` replaces
+ * the card's openings as what the seams must miss, for a print that carries
+ * material elsewhere.
  */
 export function planFitTestSplit(
   params: BinParams,
   bed: BedSize | undefined,
   splitPlanes: (sizeUnits: number, maxUnits: number, pitchMm: number) => number[],
-  extraMarginMm = 0
+  avoid?: { readonly x: readonly AxisSpan[]; readonly y: readonly AxisSpan[] }
 ): FitTestSplitPlan {
   const whole: FitTestSplitPlan = { planesX: [], planesY: [], pieceCount: 1, blockedSeams: 0 };
   if (!bed) return whole;
@@ -551,11 +552,7 @@ export function planFitTestSplit(
   // card's REAL bounds follow the overhang offset (the body spans
   // [-outerW/2 - left, outerW/2 + right]); symmetric bounds would let a nudged
   // seam step past one edge and build a cutter that intersects nothing.
-  const spans = fitTestCutoutSpans(params);
-  const widen = (s: AxisSpan): AxisSpan => ({
-    min: s.min - extraMarginMm,
-    max: s.max + extraMarginMm,
-  });
+  const spans = avoid ?? fitTestCutoutSpans(params);
   const { offsetX, offsetY } = overhangExpansion(
     resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang)
   );
@@ -563,13 +560,13 @@ export function planFitTestSplit(
   const halfD = footprint.depth / 2;
   const planX = nudgeSeamsClearOfCutouts(
     rawX,
-    spans.x.map(widen),
+    spans.x,
     Math.max(0, bed.width - (params.width * pitchX) / (rawX.length + 1)),
     { min: -halfW + offsetX, max: halfW + offsetX }
   );
   const planY = nudgeSeamsClearOfCutouts(
     rawY,
-    spans.y.map(widen),
+    spans.y,
     Math.max(0, bed.depth - (params.depth * pitchY) / (rawY.length + 1)),
     { min: -halfD + offsetY, max: halfD + offsetY }
   );

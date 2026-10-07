@@ -634,9 +634,45 @@ describe('outline fit test: the dialog plans the pieces the worker cuts', () => 
 
     expect(built.pieces).toHaveLength(plan.pieceCount);
     expect(plan.pieceCount).toBe(open ? 2 : 1);
+    // Open, the centre seam has nowhere clear to go across the channel's rails.
+    expect(built.blockedSeams).toBe(plan.blockedSeams);
+    expect(plan.blockedSeams).toBe(open ? 1 : 0);
     for (const piece of built.pieces) {
       const box = boundingBox(piece.vertices);
       expect(box.maxX - box.minX).toBeLessThanOrEqual(bed.width);
     }
+  });
+
+  it('keeps a channel whole by moving the seam behind its pocket', async () => {
+    const innerW = 4 * 42 - GRIDFINITY.TOLERANCE - 2 * DEFAULT_BIN_PARAMS.wallThickness;
+    const params: BinParams = {
+      ...rail(false),
+      cutouts: [
+        cutout({ id: 'a', shape: 'rectangle', x: 2, y: 10, width: 20, depth: 15 }),
+        cutout({
+          id: 'b',
+          shape: 'rectangle',
+          x: innerW / 2 - 12,
+          y: 10,
+          width: 10,
+          depth: 15,
+          openSides: [{ side: 'right' }],
+        }),
+      ],
+    };
+    const plan = planFitTestOutlineSplit(params, bed, getSplitPlanePositionsMm, WALL);
+    const built = await outline(params, { ...defaultSize, bed });
+
+    expect(built.pieces).toHaveLength(2);
+    expect(built.blockedSeams).toBe(0);
+    expect(plan.blockedSeams).toBe(0);
+    // Pocket b's ring starts a ring width left of the pocket and its rails run
+    // on to the board edge, all on one piece.
+    const right = built.pieces
+      .map((p) => boundingBox(p.vertices))
+      .reduce((a, b) => (a.maxX > b.maxX ? a : b));
+    const binRight = boundingBox(getGenerateBin()(params, undefined, true).vertices).maxX;
+    expect(right.minX).toBeCloseTo(-12 - WALL, 1);
+    expect(right.maxX).toBeCloseTo(binRight, 1);
   });
 });
