@@ -15,6 +15,7 @@ src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
 src/features/bin-designer/components/panel/CutoutsSection/renderer/MeshFootprintMesh.tsx
   s_900382acfc8cb3::t_195beaade5b114 4-10,17,64-65,70-83,90-94,96-98,101,113-117
   s_900382acfc8cb3::t_ed8a09e3ce5c8b 118
+  s_900382acfc8cb3::t_0b91b4ce27bf7a 155
 src/features/generation/worker/meshFiles.ts
   s_900382acfc8cb3::t_a9f2947a095720 54-55
   s_900382acfc8cb3::t_bb9c205e65d968 1-53,56-72
@@ -22,6 +23,7 @@ src/features/bin-designer/components/CutoutWorkspace/CutoutOpenSidesControls.tsx
   s_900382acfc8cb3::t_6462d75db2a96c 4
   s_900382acfc8cb3::t_27538268e209a2 67
   s_900382acfc8cb3::t_6a874092cf8e63 71-72
+  s_900382acfc8cb3::t_0b91b4ce27bf7a 74
 src/features/bin-designer/constants/paramMigration.test.ts
   s_900382acfc8cb3::t_475b477bf61548 199-227
 src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.ts
@@ -99,6 +101,7 @@ src/shared/items/importedMesh/descriptor.ts
   s_900382acfc8cb3::t_cf876a154dc38c 12,47-54,58
 src/shared/generation/meshFile.ts
   s_900382acfc8cb3::t_6c307497c9bac4 54,89,93-94,147-149
+  s_900382acfc8cb3::t_44e8cbcb270fd4 90-92
 src/shared/generation/meshOutlines.ts
   s_900382acfc8cb3::t_64a6c9d5ba5040 1-59
 ---
