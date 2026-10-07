@@ -1,0 +1,143 @@
+src/features/generation/bridge/GenerationBridge.ts
+  s_900382acfc8cb3::t_c2f5479f8eea51 65-66,323-324,326,369,371,374,774-775,778-781,783
+  s_900382acfc8cb3::t_d140d4a0cda8e7 157-159,250,325,327-329,370,372-373,375-379,776-777,782,784
+  s_900382acfc8cb3::t_92a6e6c956cf60 785
+src/features/generation/bridge/GenerationBridge.test.ts
+  s_900382acfc8cb3::t_f1629cd492b7d9 4-9,1019-1122
+  s_900382acfc8cb3::t_3c2cb4c96d585d 1123-1125
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_900382acfc8cb3::t_d0d791338d493f 275
+src/features/generation/bridge/messages.ts
+  s_900382acfc8cb3::t_601b9b67c1c6db 49-62,64-67
+  s_900382acfc8cb3::t_f039f98a5f7530 63
+src/features/generation/bridge/bridgeTypes.ts
+  s_900382acfc8cb3::t_8f39b13ca4e149 30-35
+src/features/generation/bridge/meshDelivery.test.ts
+  s_900382acfc8cb3::t_d087fa3925ea86 1-218
+src/features/bin-designer/hooks/useGeneration.ts
+  s_900382acfc8cb3::t_d0d791338d493f 354-359
+src/shared/generation/meshRefs.ts
+  s_900382acfc8cb3::t_f5df2947f3ea25 18,54-57,59-61,64,66,71-93
+src/shared/generation/paramsFingerprint.test.ts
+  s_900382acfc8cb3::t_c09dc0438f81f4 15-19
+src/features/generation/bridge/bridgeExports.ts
+  s_900382acfc8cb3::t_c2f5479f8eea51 33-34,51-52,56-63,65,72-85
+src/features/bin-designer/hooks/useGeneration.test.ts
+  s_900382acfc8cb3::t_6955c1b4a1758b 625-649
+src/features/generation/bridge/meshDelivery.ts
+  s_900382acfc8cb3::t_3026077f55027d 1-3,6-18,23-58,61-66,69-72,75-113,117,119-121,123,130,132-133,135-136,139,146,148-194
+  s_900382acfc8cb3::t_4ee976416b6388 19-22,131
+  s_900382acfc8cb3::t_ef64e43008ae52 59-60,67-68,73-74,114-116,118,122,124-129,134,137-138,140-145,147
+  s_900382acfc8cb3::t_f039f98a5f7530 4-5
+src/features/generation/worker/generation.worker.ts
+  s_900382acfc8cb3::t_1fb4d396886c7f 13,63,83-91,93-94,223
+src/shared/hooks/useLinkedDesignMeshes.test.ts
+  s_900382acfc8cb3::t_8548dc36ffd50b 243-259
+src/shared/generation/meshPersistence.test.ts
+  s_900382acfc8cb3::t_c09dc0438f81f4 68-81
+src/features/generation/bridge/bridgeGeneration.ts
+  s_900382acfc8cb3::t_c2f5479f8eea51 24,45,47,97
+  s_900382acfc8cb3::t_d140d4a0cda8e7 88-89
+  s_900382acfc8cb3::t_a33d9233bb9fe5 44,46,72-74,80-81,83-87,90-96,98-105,238
+src/App.tsx
+  s_900382acfc8cb3::t_4bda96c9d6ab07 87,228
+src/features/bin-designer/hooks/useMeshFileMaintenance.ts
+  s_900382acfc8cb3::t_cda8bcf0c29344 1-20,22-31
+  s_900382acfc8cb3::t_137c7552e10996 21
+src/features/bin-designer/storage/designStoreAdapter.test.ts
+  s_900382acfc8cb3::t_c1b996a70d5ef0 10,24-38,65,67,83
+  s_900382acfc8cb3::t_7fe6cac5182432 1-9,11-23,39-64,66,68-82,84-89,91-103
+  s_900382acfc8cb3::t_ed8d6b8efbb063 90
+src/features/bin-designer/components/ExportDialog/ExportDialog.test.tsx
+  s_900382acfc8cb3::t_c416fcff9858de 61
+src/features/bin-designer/hooks/useCommunityPublish.ts
+  s_900382acfc8cb3::t_cc0431a56a8ada 19,101-102,104-105,109-111,126
+  s_900382acfc8cb3::t_6c567bae73677b 9,106-108
+  s_900382acfc8cb3::t_f039f98a5f7530 103
+src/features/bin-designer/hooks/useMeshFileMaintenance.test.ts
+  s_900382acfc8cb3::t_d6e740ed107a41 1-4,6-26
+  s_900382acfc8cb3::t_137c7552e10996 5
+src/features/bin-designer/sync/designAdapter.ts
+  s_900382acfc8cb3::t_1ee788f484072b 28,36,196-204,211-216
+  s_900382acfc8cb3::t_f039f98a5f7530 37-39
+src/features/bin-designer/storage/designStoreAdapter.ts
+  s_900382acfc8cb3::t_c98b51223d36cf 13-16,27,35-45
+src/features/bin-designer/utils/designJson.ts
+  s_900382acfc8cb3::t_02951e828b89f3 14,70-72,78,82-83
+src/features/bin-designer/storage/designMeshFiles.ts
+  s_900382acfc8cb3::t_3d98cf01d70fdf 1,4-5,8-102
+  s_900382acfc8cb3::t_bcb1701d0a805b 103-107
+  s_900382acfc8cb3::t_f039f98a5f7530 2-3,6-7
+src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
+  s_900382acfc8cb3::t_c5b8b84c61874c 105-112
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.ts
+  s_900382acfc8cb3::t_ced17d19868cb3 25,61-62,160,164,187
+src/features/bin-designer/hooks/useDesignerSharing.ts
+  s_900382acfc8cb3::t_cc0431a56a8ada 10,59-60,62-68,79
+  s_900382acfc8cb3::t_f039f98a5f7530 61
+src/features/bin-designer/storage/DesignVersionService.ts
+  s_900382acfc8cb3::t_6a06c4e947a66a 30,82-83,93,110
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.test.ts
+  s_900382acfc8cb3::t_0f67dd43f5cbb2 5,7,180,197-198,208-210
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_900382acfc8cb3::t_c5b8b84c61874c 138-149
+  s_900382acfc8cb3::t_fcbb0339115304 481-494
+src/features/bin-designer/sync/designVersionAdapter.ts
+  s_900382acfc8cb3::t_544c7cf6b4f479 19-20,28-29,65,67-72,92,122,132
+  s_900382acfc8cb3::t_62d1674172f2ab 51-59,73-74,94-97,102,121
+  s_900382acfc8cb3::t_cf7c252002a807 128
+src/features/bin-designer/index.ts
+  s_900382acfc8cb3::t_4bda96c9d6ab07 44
+src/features/bin-designer/storage/designMeshFiles.test.ts
+  s_900382acfc8cb3::t_f9b45a827c35b2 1-105,112-121,128-146,148-156,165-170,177-254,261-265,268-283
+  s_900382acfc8cb3::t_c1b996a70d5ef0 106-111,122-127,147,157-164,171-176,255-260
+  s_900382acfc8cb3::t_c5aef3c28a1f3c 267
+  s_900382acfc8cb3::t_127a412b654caf 266
+src/features/bin-designer/utils/designJson.test.ts
+  s_900382acfc8cb3::t_bf51ad0b84982a 12-13,100-115,117-137
+  s_900382acfc8cb3::t_02951e828b89f3 75-76,85-86,90-91,95-96,139-141
+  s_900382acfc8cb3::t_85503075bf8a09 138
+src/features/bin-designer/hooks/useDesignerSharing.test.ts
+  s_900382acfc8cb3::t_a4769d00759081 6-7,58-96,99
+  s_a8677c67f85a06::t_716df957b52bc7 97-98,100
+  s_900382acfc8cb3::t_f039f98a5f7530 57
+src/features/bin-designer/storage/DesignerStorage.ts
+  s_900382acfc8cb3::t_13bf592b62713a 116
+  s_900382acfc8cb3::t_52450bea57d4e1 35,62-64,139-140
+  s_900382acfc8cb3::t_137c7552e10996 46-48
+  s_900382acfc8cb3::t_f039f98a5f7530 65
+src/features/bin-designer/hooks/useCommunityPublish.test.ts
+  s_900382acfc8cb3::t_2e815cf296a499 14-15,138-179
+  s_900382acfc8cb3::t_4f2cf7021c2bfc 180
+  s_900382acfc8cb3::t_f039f98a5f7530 137
+src/features/bin-designer/sync/meshPayloads.test.ts
+  s_900382acfc8cb3::t_170597db515d63 138-139
+  s_900382acfc8cb3::t_cf7c252002a807 213
+  s_900382acfc8cb3::t_7884fb79bd7535 1,5-137,140-146,148-212,214-215
+  s_900382acfc8cb3::t_046a2232b2fc38 147
+  s_900382acfc8cb3::t_f039f98a5f7530 2-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e0b4d867197749ada6583bac17aad4fe97eb6aee",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_a8677c67f85a06": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85b17417-28bf-4293-9803-4c3b96f3617d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
