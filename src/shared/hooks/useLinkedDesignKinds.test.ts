@@ -52,6 +52,23 @@ describe('useLinkedDesignKinds', () => {
     expect(result.current.has(designId('legacy'))).toBe(false);
   });
 
+  it('still reads an assembly after a rename that omits the kind', () => {
+    upsertRegistryEntry(makeRef('holder', 'assembly'));
+    upsertRegistryEntry({ ...makeRef('holder'), name: 'Renamed holder' });
+
+    const { result } = renderHook(() => useLinkedDesignKinds());
+    expect(result.current.get(designId('holder'))).toBe('assembly');
+  });
+
+  // One projection per registry snapshot: the 2D grid mounts this once per bin.
+  it('hands every caller the same map for the same registry snapshot', () => {
+    upsertRegistryEntry(makeRef('mesh', 'importedMesh'));
+
+    const { result } = renderHook(() => [useLinkedDesignKinds(), useLinkedDesignKinds()]);
+    const [first, second] = result.current;
+    expect(first).toBe(second);
+  });
+
   it('picks up a design registered after mount', () => {
     const { result } = renderHook(() => useLinkedDesignKinds());
     expect(result.current.has(designId('mesh'))).toBe(false);

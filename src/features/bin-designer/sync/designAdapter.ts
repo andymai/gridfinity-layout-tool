@@ -18,7 +18,16 @@ import {
   loadDesign,
   saveDesign,
 } from '@/features/bin-designer/storage/DesignerStorage';
-import { isBinDesign, isSyncableDesign } from '@/features/bin-designer/utils/designKind';
+import {
+  designFootprint,
+  isBinDesign,
+  isSyncableDesign,
+} from '@/features/bin-designer/utils/designKind';
+import {
+  registryAssemblyFields,
+  registryEdgeFields,
+  upsertRegistryEntry,
+} from '@/features/bin-designer/store/customBinRegistry';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { syncPersistError } from '@/core/sync/adapters/persistError';
 import { subscribe as subscribeDesignerEvents } from './designerEvents';
@@ -286,6 +295,23 @@ export const designAdapter: DesignAdapter = {
             });
       if (!isOk(result)) {
         throw syncPersistError('saveDesign', item.id, result.error);
+      }
+      // saveDesign never registers, and the boot thumbnail pass that registers
+      // synced bins skips assemblies, so a pulled Workshop design would
+      // otherwise stay invisible to the planner and read as a parametric bin.
+      const saved = result.value;
+      if (saved.envelope && saved.structure?.kind === 'assembly') {
+        const { width, depth, height } = designFootprint(saved);
+        upsertRegistryEntry({
+          id: saved.id,
+          name: saved.name,
+          width,
+          depth,
+          height,
+          ...registryEdgeFields({}),
+          ...registryAssemblyFields(saved.envelope, saved.structure),
+          updatedAt: saved.updatedAt,
+        });
       }
       // `saveDesign` falls back to the STORED value for both variant fields, so
       // it cannot clear them; `detachVariant` writes through the store for

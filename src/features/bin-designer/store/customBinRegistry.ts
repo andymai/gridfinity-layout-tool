@@ -220,7 +220,7 @@ export function registryKnifeRestFields(params: BinParams): Pick<CustomBinRef, '
  * Spread wherever {@link registryHeightFields} is. Explicitly `undefined` when
  * there is none, so a re-save that turned the overhang off clears the stale
  * field rather than carrying it — the same contract as
- * {@link registryKnifeRestFields}, and the reason `withCarriedGeometry` tests
+ * {@link registryKnifeRestFields}, and the reason `withCarriedFields` tests
  * key presence for both.
  *
  * Suppressed for a partial cell mask, matching `deriveDimensions`: a custom
@@ -407,7 +407,7 @@ export function upsertRegistryEntry(ref: CustomBinRef): Result<void, StorageErro
   const refs = loadRegistry();
   const idx = refs.findIndex((r) => r.id === ref.id);
   if (idx >= 0) {
-    refs[idx] = withCarriedGeometry(ref, refs[idx]);
+    refs[idx] = withCarriedFields(ref, refs[idx]);
   } else {
     refs.push(ref);
   }
@@ -417,18 +417,24 @@ export function upsertRegistryEntry(ref: CustomBinRef): Result<void, StorageErro
 }
 
 /**
- * Carry the geometry-derived fields forward when an update omits them.
+ * Carry the design kind and the geometry-derived fields forward when an update
+ * omits them.
  *
  * An upsert replaces the whole entry, and most writers only have a thumbnail or
  * a new name to record — a rename must not silently erase the assembled height
- * the drawer-ceiling check reads. Thirteen call sites write this registry, so
- * the rule is enforced here rather than remembered at each: a writer holding
- * `BinParams` spreads {@link registryHeightFields} and overwrites these with
- * fresh values, and a writer that is not touching geometry cannot drop them.
+ * the drawer-ceiling check reads, nor the kind that tells layout surfaces an
+ * imported mesh or an assembly from a parametric bin. Thirteen call sites write
+ * this registry, so the rule is enforced here rather than remembered at each: a
+ * writer holding `BinParams` spreads {@link registryHeightFields} and overwrites
+ * these with fresh values, and a writer that is not touching geometry cannot
+ * drop them.
  */
-function withCarriedGeometry(next: CustomBinRef, prev: CustomBinRef): CustomBinRef {
+function withCarriedFields(next: CustomBinRef, prev: CustomBinRef): CustomBinRef {
   return {
     ...next,
+    // A design never turns back into a parametric bin, so an absent kind only
+    // means the writer did not know it.
+    ...(next.kind === undefined && prev.kind !== undefined ? { kind: prev.kind } : {}),
     // The delta belongs to the rise it was measured with: carried only with it.
     ...(next.assembledRiseMm === undefined && prev.assembledRiseMm !== undefined
       ? {

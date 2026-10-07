@@ -242,6 +242,24 @@ describe('customBinRegistry', () => {
       expect(stored?.socketless).toBe(false);
     });
 
+    // The designer header renames any kind with a bin-shaped entry that has no
+    // `kind`; dropping it would make a Workshop design read as a parametric bin.
+    it('keeps the design kind when an update omits it', () => {
+      upsertRegistryEntry({ ...makeRef('d1'), kind: 'assembly' });
+      upsertRegistryEntry({ ...makeRef('d1', 'Renamed') });
+
+      const stored = loadRegistry()[0];
+      expect(stored?.name).toBe('Renamed');
+      expect(stored?.kind).toBe('assembly');
+    });
+
+    it('takes a fresh kind when the writer supplies one', () => {
+      upsertRegistryEntry({ ...makeRef('d1'), kind: 'toolRack' });
+      upsertRegistryEntry({ ...makeRef('d1'), kind: 'assembly' });
+
+      expect(loadRegistry()[0]?.kind).toBe('assembly');
+    });
+
     it('takes a fresh rise when the writer supplies one', () => {
       upsertRegistryEntry({ ...makeRef('d1'), assembledRiseMm: 64.3 });
       upsertRegistryEntry({ ...makeRef('d1'), assembledRiseMm: 92.1 });
