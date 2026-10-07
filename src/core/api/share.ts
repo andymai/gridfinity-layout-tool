@@ -6,6 +6,7 @@
  */
 
 import type { Layout, SharePermission } from '@/core/types';
+import type { LinkedDesignExport } from '@/core/storage';
 import type { Result, ApiError, ValidationError } from '@/core/result';
 import {
   ok,
@@ -53,16 +54,40 @@ export interface FetchShareResponse {
 }
 
 /**
- * Mirrors MAX_LINKED_DESIGNS_BYTES in api/lib/validation.ts. Trimming here
- * keeps an oversized design set (realistically: imported-mesh designs carrying
- * base64 geometry) from turning the whole share into a 400.
+ * Mirrors MAX_LINKED_DESIGNS_BYTES in api/lib/sharedDesignsValidation.ts.
+ * Trimming here keeps an oversized design set (realistically: imported-mesh
+ * designs carrying base64 geometry) from turning the whole share into a 400.
  */
 const LINKED_DESIGNS_BUDGET_BYTES = 512 * 1024;
+
+/**
+ * Mirror the server's per-design caps: MAX_ASSEMBLY_DESIGN_BYTES in
+ * api/lib/sharedDesignsValidation.ts, and CONSTRAINTS.MAX_PAYLOAD_BYTES in
+ * api/lib/designerValidationConstants.ts for a bin without mesh assets (a bin
+ * carrying meshes is bounded by the total). One entry over either fails the
+ * whole share, so it is skipped instead.
+ */
+const ASSEMBLY_DESIGN_BUDGET_BYTES = 100 * 1024;
+const BIN_DESIGN_BUDGET_BYTES = 100_000;
+
+function exceedsSingleDesignBudget(design: LinkedDesignExport): boolean {
+  if (design.kind === 'assembly') {
+    const size = JSON.stringify({ envelope: design.envelope, structure: design.structure }).length;
+    return size > ASSEMBLY_DESIGN_BUDGET_BYTES;
+  }
+  const meshAssets = design.params?.meshAssets;
+  if (meshAssets && Object.keys(meshAssets).length > 0) return false;
+  return JSON.stringify(design.params ?? null).length > BIN_DESIGN_BUDGET_BYTES;
+}
 
 /**
  * Resolve a layout's linked designs, dropping any that would push the payload
  * past the server's budget. Order is preserved so the result is deterministic;
  * a single oversized design is skipped rather than starving the rest.
+ *
+ * Each entry is measured whole, which slightly overcounts against the server
+ * (it counts only params, or envelope + structure), so a set within this
+ * budget is always within the server's total.
  */
 async function collectDesignsForShare(layout: Layout): Promise<SharedLinkedDesign[]> {
   const { collectLinkedDesigns } = await import('@/core/storage/ShareService');
@@ -71,10 +96,11 @@ async function collectDesignsForShare(layout: Layout): Promise<SharedLinkedDesig
   const withinBudget: SharedLinkedDesign[] = [];
   let bytes = 0;
   for (const design of designs) {
-    const size = JSON.stringify(design.params).length;
+    if (exceedsSingleDesignBudget(design)) continue;
+    const size = JSON.stringify(design).length;
     if (bytes + size > LINKED_DESIGNS_BUDGET_BYTES) continue;
     bytes += size;
-    withinBudget.push({ id: design.id, name: design.name, params: design.params });
+    withinBudget.push(design);
   }
   return withinBudget;
 }

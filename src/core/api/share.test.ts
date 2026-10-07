@@ -6,9 +6,15 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createShare, updateShare, fetchShare, deleteShare, reportShare } from '@/core/api/share';
 import { expectOk, expectErr } from '@/test/testUtils';
-import { getUserMessage } from '@/core/result';
-import type { Layout } from '@/core/types';
-import { gridUnits, heightUnits, mm, categoryId, layerId } from '@/core/types';
+import { getUserMessage, ok } from '@/core/result';
+import type { Layout, DesignId } from '@/core/types';
+import { gridUnits, heightUnits, mm, categoryId, layerId, binId, designId } from '@/core/types';
+import {
+  registerDesignStorePort,
+  resetDesignStorePort,
+  type DesignStorePort,
+  type LoadedDesignData,
+} from '@/core/storage/designStorePort';
 
 const mockLayout: Layout = {
   version: '1.0',
@@ -241,6 +247,238 @@ describe('updateShare', () => {
     const result = await updateShare('nonexistent', 'token', mockLayout, 'edit');
 
     expect(expectErr(result).code).toBe('API_NOT_FOUND');
+  });
+});
+
+describe('linked designs travelling with a share', () => {
+  const layoutLinking = (...ids: DesignId[]): Layout => ({
+    ...mockLayout,
+    bins: ids.map((id, i) => ({
+      id: binId(`bin-${i}`),
+      layerId: layerId('layer1'),
+      x: gridUnits(i * 2),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(3),
+      category: categoryId('cat1'),
+      label: '',
+      notes: '',
+      linkedDesignId: id,
+    })),
+  });
+
+  const assembly: LoadedDesignData = {
+    id: designId('design_asm'),
+    name: 'Pliers Rack',
+    kind: 'assembly',
+    envelope: {
+      width: 2,
+      depth: 2,
+      gridUnitMm: 42,
+      heightUnitMm: 7,
+      attachment: {
+        magnetHoles: false,
+        magnetDiameter: 6.5,
+        magnetDepth: 2.4,
+        screwHoles: false,
+        screwDiameter: 3,
+      },
+      featureColors: { enabled: false },
+    },
+    structure: {
+      kind: 'assembly',
+      schemaVersion: 1,
+      base: { floorThickness: 2 },
+      mirrorAxis: 'x',
+      parts: [],
+    },
+  };
+
+  const installDesigns = (designs: readonly LoadedDesignData[]): void => {
+    const byId = new Map(designs.map((d) => [d.id, d]));
+    const port: DesignStorePort = {
+      loadDesign: async (id) => {
+        const design = byId.get(id);
+        if (!design) throw new Error(`unexpected load of ${id}`);
+        return ok(design);
+      },
+      saveDesign: () => Promise.reject(new Error('unused')),
+      upsertRegistryEntry: () => Promise.reject(new Error('unused')),
+      registryEdgeFields: async () => ({}),
+    };
+    registerDesignStorePort(port);
+  };
+
+  const postedLinkedDesigns = (): unknown => {
+    const [, init] = vi.mocked(fetch).mock.calls[0] ?? [];
+    return (JSON.parse(init?.body as string) as { linkedDesigns: unknown }).linkedDesigns;
+  };
+
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: () =>
+        Promise.resolve({ id: 'abc123xyz789', url: '/l/x', deleteToken: 't', permission: 'view' }),
+    } as Response);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    resetDesignStorePort();
+  });
+
+  it('sends an assembly entry with its kind, envelope and structure', async () => {
+    installDesigns([assembly]);
+
+    expectOk(await createShare('abc123xyz789', layoutLinking(assembly.id), 'view'));
+
+    expect(postedLinkedDesigns()).toEqual([
+      {
+        id: assembly.id,
+        name: assembly.name,
+        kind: 'assembly',
+        envelope: assembly.envelope,
+        structure: assembly.structure,
+      },
+    ]);
+  });
+
+  it('sends an assembly entry on update too', async () => {
+    installDesigns([assembly]);
+
+    expectOk(await updateShare('abc123xyz789', 't', layoutLinking(assembly.id), 'view'));
+
+    expect(postedLinkedDesigns()).toEqual([expect.objectContaining({ kind: 'assembly' })]);
+  });
+
+  it('skips a design over the budget without starving the ones after it', async () => {
+    const huge: LoadedDesignData = {
+      id: designId('design_huge'),
+      name: 'Huge',
+      params: { meshAssets: { m: { data: 'x'.repeat(600 * 1024) } } },
+    };
+    const small: LoadedDesignData = { id: designId('design_small'), name: 'Small', params: {} };
+    installDesigns([huge, assembly, small]);
+
+    expectOk(
+      await createShare('abc123xyz789', layoutLinking(huge.id, assembly.id, small.id), 'view')
+    );
+
+    expect(postedLinkedDesigns()).toEqual([
+      expect.objectContaining({ id: assembly.id }),
+      expect.objectContaining({ id: small.id }),
+    ]);
+  });
+});
+
+describe('linked designs over the server per-design cap', () => {
+  const layoutLinking = (...ids: DesignId[]): Layout => ({
+    ...mockLayout,
+    bins: ids.map((id, i) => ({
+      id: binId(`bin-${i}`),
+      layerId: layerId('layer1'),
+      x: gridUnits(i * 2),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(3),
+      category: categoryId('cat1'),
+      label: '',
+      notes: '',
+      linkedDesignId: id,
+    })),
+  });
+
+  const installDesigns = (designs: readonly LoadedDesignData[]): void => {
+    const byId = new Map(designs.map((d) => [d.id, d]));
+    registerDesignStorePort({
+      loadDesign: async (id) => {
+        const design = byId.get(id);
+        if (!design) throw new Error(`unexpected load of ${id}`);
+        return ok(design);
+      },
+      saveDesign: () => Promise.reject(new Error('unused')),
+      upsertRegistryEntry: () => Promise.reject(new Error('unused')),
+      registryEdgeFields: async () => ({}),
+    });
+  };
+
+  const postedIds = (): unknown => {
+    const [, init] = vi.mocked(fetch).mock.calls[0] ?? [];
+    const body = JSON.parse(init?.body as string) as { linkedDesigns: { id: string }[] };
+    return body.linkedDesigns.map((d) => d.id);
+  };
+
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: () =>
+        Promise.resolve({ id: 'abc123xyz789', url: '/l/x', deleteToken: 't', permission: 'view' }),
+    } as Response);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    resetDesignStorePort();
+  });
+
+  const small: LoadedDesignData = { id: designId('design_small'), name: 'Small', params: {} };
+
+  it('skips an assembly over 100 KB and keeps the designs after it', async () => {
+    const bigAssembly: LoadedDesignData = {
+      id: designId('design_big_asm'),
+      name: 'Big rack',
+      kind: 'assembly',
+      envelope: {},
+      structure: { kind: 'assembly', outline: 'x'.repeat(110 * 1024) },
+    };
+    installDesigns([bigAssembly, small]);
+
+    expectOk(await createShare('abc123xyz789', layoutLinking(bigAssembly.id, small.id), 'view'));
+
+    expect(postedIds()).toEqual([small.id]);
+  });
+
+  it('skips a bin over 100 KB that carries no meshes', async () => {
+    const bigBin: LoadedDesignData = {
+      id: designId('design_big_bin'),
+      name: 'Big bin',
+      params: { notes: 'x'.repeat(110 * 1024) },
+    };
+    installDesigns([bigBin, small]);
+
+    expectOk(await createShare('abc123xyz789', layoutLinking(bigBin.id, small.id), 'view'));
+
+    expect(postedIds()).toEqual([small.id]);
+  });
+
+  it('skips a mesh-free bin between 100,000 B and 100 KiB', async () => {
+    const params = { notes: 'x'.repeat(100_500) };
+    expect(JSON.stringify(params).length).toBeLessThan(100 * 1024);
+    const nearCap: LoadedDesignData = { id: designId('design_near'), name: 'Near', params };
+    installDesigns([nearCap, small]);
+
+    expectOk(await createShare('abc123xyz789', layoutLinking(nearCap.id, small.id), 'view'));
+
+    expect(postedIds()).toEqual([small.id]);
+  });
+
+  it('keeps a bin over 100 KB whose size comes from its meshes', async () => {
+    const meshBin: LoadedDesignData = {
+      id: designId('design_mesh_bin'),
+      name: 'Mesh bin',
+      params: { meshAssets: { m: { data: 'x'.repeat(110 * 1024) } } },
+    };
+    installDesigns([meshBin, small]);
+
+    expectOk(await createShare('abc123xyz789', layoutLinking(meshBin.id, small.id), 'view'));
+
+    expect(postedIds()).toEqual([meshBin.id, small.id]);
   });
 });
 
