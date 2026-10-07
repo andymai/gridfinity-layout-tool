@@ -491,9 +491,9 @@ estimates), and the source file name.
 - **Registry**: `CustomBinRef.kind?: ItemKind` (absent = bin) lets the
   planner/link dialog identify imported entries; `designFootprint()` in
   `utils/designKind.ts` reads dimensions for any kind.
-- **Scope (v1)**: local-only — cloud sync deliberately skips non-bin kinds
-  (`sync/designAdapter.ts` filters with `isBinDesign`); the layout grid/3D
-  view renders the standard box + link badge, not the real mesh.
+- **Scope (v1)**: local-only, since `isSyncableDesign` keeps them and their
+  versions out of cloud sync; the layout grid/3D view renders the standard
+  box + link badge, not the real mesh.
 
 ## Gotchas
 
