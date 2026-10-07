@@ -1,0 +1,35 @@
+src/features/bin-designer/store/customBinRegistry.ts
+  s_900382acfc8cb3::t_75b09096501798 26,28,266-283
+  s_900382acfc8cb3::t_24574f115cef77 284-286
+src/features/bin-designer/hooks/useBackgroundThumbnailRegen.test.ts
+  s_900382acfc8cb3::t_a4e5b0dbd00e54 428
+  s_900382acfc8cb3::t_f6a90f3a35bbc6 32-43,61-62,89-113,115-118,409-427,429-467
+  s_900382acfc8cb3::t_657ca52dafe5c3 114
+  s_900382acfc8cb3::t_ab4a879ed19a78 468
+src/features/bin-designer/sync/designAdapter.ts
+  s_900382acfc8cb3::t_75b09096501798 21,23,297-298
+  s_900382acfc8cb3::t_d62201f1f1dd3e 294-296
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_900382acfc8cb3::t_f6a90f3a35bbc6 8,371-405
+  s_900382acfc8cb3::t_6adb3b6957ef10 406-407
+src/features/bin-designer/hooks/useBackgroundThumbnailRegen.ts
+  s_900382acfc8cb3::t_d62201f1f1dd3e 121-123
+  s_900382acfc8cb3::t_75b09096501798 7-8,34,36,119-120,124-133,279
+  s_900382acfc8cb3::t_c1cd3e8d2b47fd 280
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ebdfb6e8a82b3c99d14e4fc097fd24974d020b60",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
