@@ -43,6 +43,7 @@ import {
 } from '@/shared/utils/knifeRestPlan';
 import { exportSlideFitSample } from '../generators/slideFitSample';
 import { exportFitTestSlice } from '../generators/fitTestSlice';
+import { exportFitTestOutline } from '../generators/fitTestOutline';
 import { ensureFontsLoaded } from '../wasmInstantiator';
 import type { FaceGroupData } from '@/shared/types/generation';
 import { buildLid, buildStackPlate } from '../generators/lidBuilder';
@@ -224,9 +225,9 @@ export async function handleExportSlideFitSample(
 }
 
 /**
- * Export the cutout fit-test card. Runs a full export-quality generation (the
- * card is a slice of the real solid), so it takes the bin's own timeout rather
- * than the fixed coupon ceiling.
+ * Export the cutout fit test, as the card or as its outline. Either runs a full
+ * export-quality generation (both are cut from the real solid), so it takes the
+ * bin's own timeout rather than the fixed coupon ceiling.
  */
 export async function handleExportFitTest(message: ExportFitTestMessage): Promise<void> {
   const payload = message.payload;
@@ -235,11 +236,17 @@ export async function handleExportFitTest(message: ExportFitTestMessage): Promis
     'FIT_TEST_EXPORT_RESULT',
     async () => {
       reportProgress(payload.requestId, 'merge', 0);
-      const result = await exportFitTestSlice(payload.params, payload.format, {
-        thicknessMm: payload.thicknessMm,
-        stamp: payload.stamp,
-        bed: payload.bed,
-      });
+      const result =
+        payload.mode === 'outline'
+          ? await exportFitTestOutline(payload.params, payload.format, {
+              size: payload.outline,
+              bed: payload.bed,
+            })
+          : await exportFitTestSlice(payload.params, payload.format, {
+              thicknessMm: payload.thicknessMm,
+              stamp: payload.stamp,
+              bed: payload.bed,
+            });
       reportProgress(payload.requestId, 'merge', 1);
       return {
         pieces: result.pieces,

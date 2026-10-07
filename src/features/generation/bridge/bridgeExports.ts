@@ -19,6 +19,7 @@ import type { GridfinityItem } from '@/shared/types/item';
 import type {
   WorkerMessage,
   ExportFormat,
+  FitTestExportOptions,
   LabelPlateExportOptions,
   LabelPlateExportSpec,
 } from './types';
@@ -451,11 +452,7 @@ export function exportFitTest(
   ctx: BridgeExportContext,
   params: BinParams,
   format: ExportFormat,
-  options?: {
-    thicknessMm?: number;
-    stamp?: { designName?: string };
-    bed?: { width: number; depth: number };
-  }
+  options?: FitTestExportOptions
 ): Promise<FitTestExportResult> {
   return runExport<FitTestExportResult>(
     ctx,
@@ -463,14 +460,7 @@ export function exportFitTest(
     computeExportTimeoutMs(params),
     (requestId) => ({
       type: 'EXPORT_FIT_TEST',
-      payload: {
-        requestId,
-        params,
-        format,
-        thicknessMm: options?.thicknessMm,
-        stamp: options?.stamp,
-        bed: options?.bed,
-      },
+      payload: { ...options, requestId, params, format },
     })
   );
 }

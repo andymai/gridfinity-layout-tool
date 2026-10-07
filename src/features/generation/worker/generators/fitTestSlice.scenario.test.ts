@@ -311,6 +311,18 @@ describe('fit-test card — thickness', () => {
     expect(thinBox.maxZ).toBeCloseTo(thickBox.maxZ, 2);
   });
 
+  it('cuts a single-layer card, and leaves it unstamped', () => {
+    // A 0.4mm deboss through a 0.2mm card would print the glyphs as holes.
+    const params = boardParams();
+    const stamped = card(params, { thicknessMm: 0.2, stamp: { designName: 'Socket rail' } })
+      .pieces[0];
+    const bare = card(params, { thicknessMm: 0.2 }).pieces[0];
+
+    const box = boundingBox(stamped.vertices);
+    expect(box.maxZ - box.minZ).toBeCloseTo(0.2, 2);
+    expect(meshVolume(asMeshData(stamped))).toBeCloseTo(meshVolume(asMeshData(bare)), 3);
+  });
+
   it('gives a deep pocket its real floor once the card is thicker than the cut', () => {
     const params = boardParams();
     // The deep channel is 20mm; a 21mm card reaches past it.

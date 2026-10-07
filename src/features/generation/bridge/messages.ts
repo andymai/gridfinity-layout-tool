@@ -16,6 +16,7 @@ import type {
 import type { GridfinityItem } from '@/shared/types/item';
 import type { LabelPlateIconId, LabelPlateTextMode } from '@/shared/constants/labelPlates';
 import type { MeshImportRotation } from '@/shared/generation/meshAsset';
+import type { FitTestMode, FitTestOutlineSize } from '@/shared/utils/fitTestOutlinePlan';
 
 /** Geometry kernel backend for BREP operations */
 export type KernelName = 'brepkit' | 'occt-wasm' | 'manifold';
@@ -307,16 +308,24 @@ export interface ExportFitTestMessage {
   readonly payload: ExportFitTestPayload;
 }
 
-export interface ExportFitTestPayload {
-  readonly requestId: string;
-  readonly params: BinParams;
-  readonly format: ExportFormat;
+/** What a fit-test export asks for beyond the design itself. */
+export interface FitTestExportOptions {
+  /** Absent prints the full card. */
+  readonly mode?: FitTestMode;
   /** Card thickness (mm). Clamped worker-side to the design's legal range. */
   readonly thicknessMm?: number;
+  /** Ring height and width for the outline (mm). Clamped worker-side. */
+  readonly outline?: Partial<FitTestOutlineSize>;
   /** Design name and piece label for the underside stamp. */
   readonly stamp?: { readonly designName?: string };
   /** Print bed (mm). Omitted leaves an oversize card whole. */
   readonly bed?: { readonly width: number; readonly depth: number };
+}
+
+export interface ExportFitTestPayload extends FitTestExportOptions {
+  readonly requestId: string;
+  readonly params: BinParams;
+  readonly format: ExportFormat;
 }
 
 export interface ExportMessage {

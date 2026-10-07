@@ -4,6 +4,7 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { BinParams, Cutout } from '@/shared/types/bin';
 import {
   FIT_TEST_MIN_THICKNESS_MM,
+  FIT_TEST_STAMP_MIN_THICKNESS_MM,
   canBuildFitTest,
   clampFitTestThicknessMm,
   cutoutDisplacementMm3,
@@ -16,6 +17,7 @@ import {
   fitTestStampLines,
   fitTestThicknessRangeMm,
   nudgeSeamsClearOfCutouts,
+  openingPerimeterMm,
   planFitTestSplit,
   planFitTestStampArea,
 } from './fitTestPlan';
@@ -117,6 +119,21 @@ describe('thickness', () => {
   it('charges the top offset against the usable material', () => {
     const params = board({ cutoutConfig: { topOffset: 6 } }, [cutout({ cutDepth: 23 })]);
     expect(fitTestThicknessRangeMm(params).max).toBe(28 - GRIDFINITY_SPEC.SOCKET_HEIGHT - 6);
+  });
+
+  it('goes down to a single layer on a design without entry chamfers', () => {
+    expect(FIT_TEST_MIN_THICKNESS_MM).toBe(0.2);
+    expect(clampFitTestThicknessMm(board(), 0.2)).toBe(0.2);
+  });
+
+  it('keeps a layer of straight wall under the deepest entry chamfer', () => {
+    // A card no deeper than the bevel is bevel all the way down, and every hole
+    // in it reads loose.
+    const params = board({}, [
+      cutout({ id: 'a', chamferWidth: 0.4 }),
+      cutout({ id: 'b', x: 40, chamferWidth: 0.8 }),
+    ]);
+    expect(fitTestThicknessRangeMm(params).min).toBeCloseTo(0.8 + FIT_TEST_MIN_THICKNESS_MM, 9);
   });
 
   it('clamps an out-of-range value and falls back to the default on a non-number', () => {
@@ -287,6 +304,12 @@ describe('planFitTestStampArea', () => {
     expect(seamY <= lo || seamY >= hi).toBe(true);
   });
 
+  it('leaves a card thinner than a stamp can bridge unstamped', () => {
+    const params = board();
+    expect(planFitTestStampArea(params, FIT_TEST_STAMP_MIN_THICKNESS_MM, 8, 0.4)).not.toBeNull();
+    expect(planFitTestStampArea(params, 0.6, 8, 0.4)).toBeNull();
+  });
+
   it('refuses when every strip is broken by a through cut', () => {
     const dense = board({}, [
       cutout({ shape: 'rectangle', x: 0, y: 0, width: 81, depth: 81, cutDepth: 20 }),
@@ -374,6 +397,42 @@ describe('cutoutDisplacementMm3', () => {
       cutout({ shape: 'rectangle', width: 10, depth: 10, cutDepth: 20, cornerRadius: 0 }),
     ]);
     expect(cutoutDisplacementMm3(params, 5)).toBeCloseTo(10 * 10 * 5, 5);
+  });
+});
+
+describe('openingPerimeterMm', () => {
+  it('measures a circle round its clearance', () => {
+    expect(openingPerimeterMm(cutout({ width: 12, depth: 12, clearance: 0.2 }))).toBeCloseTo(
+      Math.PI * 12.2,
+      6
+    );
+  });
+
+  it('takes the corner arcs off a rounded rectangle', () => {
+    const rounded = cutout({ shape: 'rectangle', width: 20, depth: 10, cornerRadius: 2 });
+    expect(openingPerimeterMm(rounded)).toBeCloseTo(60 - 16 + 4 * Math.PI, 6);
+  });
+
+  it('runs a slot as two straights and two half circles', () => {
+    const slot = cutout({ shape: 'slot', width: 30, depth: 10 });
+    expect(openingPerimeterMm(slot)).toBeCloseTo(2 * 20 + 10 * Math.PI, 6);
+  });
+
+  it('follows a freeform path rather than its box', () => {
+    const corner = (x: number, y: number) => ({
+      x,
+      y,
+      handleIn: null,
+      handleOut: null,
+      symmetric: false,
+    });
+    const triangle = cutout({
+      shape: 'path',
+      width: 30,
+      depth: 40,
+      path: [corner(0, 0), corner(30, 0), corner(0, 40)],
+    });
+    expect(openingPerimeterMm(triangle)).toBeCloseTo(30 + 40 + 50, 6);
   });
 });
 

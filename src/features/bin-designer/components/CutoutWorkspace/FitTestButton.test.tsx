@@ -14,10 +14,12 @@ let canExport = true;
 
 vi.mock('../../hooks/useFitTestExport', () => ({
   FIT_TEST_BASE_NAME: 'fit-test',
+  FIT_TEST_OUTLINE_BASE_NAME: 'fit-test-outline',
   useFitTestExport: () => ({ isExporting: false, canExport, downloadCard }),
 }));
 
 const BUTTON = 'binDesigner.cutouts.fitTest.button';
+const OUTLINE = 'binDesigner.cutouts.fitTest.modeOutline';
 
 const cutout = (over: Partial<Cutout> = {}): Cutout => ({
   id: 'c1',
@@ -143,5 +145,61 @@ describe('FitTestButton', () => {
     // focusable and can explain itself.
     const step = await screen.findByRole('radio', { name: /step/i });
     expect(step).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('prints only the outline when asked, at its default size', async () => {
+    setDesign();
+    render(<FitTestButton />);
+    fireEvent.click(screen.getByRole('button', { name: BUTTON }));
+    fireEvent.click(await screen.findByRole('radio', { name: OUTLINE }));
+    expect(screen.getByText('binDesigner.cutouts.fitTest.dialogDescriptionOutline')).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: /download/i }));
+
+    await waitFor(() => expect(downloadCard).toHaveBeenCalled());
+    expect(downloadCard.mock.calls[0][0]).toMatchObject({
+      mode: 'outline',
+      outline: { heightMm: 0.6, wallMm: 1.2 },
+      baseName: 'fit-test-outline',
+    });
+  });
+
+  it('swaps the card thickness for the outline height and ring width', async () => {
+    setDesign();
+    render(<FitTestButton />);
+    fireEvent.click(screen.getByRole('button', { name: BUTTON }));
+    expect(
+      await screen.findByLabelText('binDesigner.cutouts.fitTest.thickness')
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('radio', { name: OUTLINE }));
+    expect(screen.queryByLabelText('binDesigner.cutouts.fitTest.thickness')).toBeNull();
+    expect(screen.getByLabelText('binDesigner.cutouts.fitTest.outlineHeight')).toBeInTheDocument();
+    expect(screen.getByLabelText('binDesigner.cutouts.fitTest.outlineWall')).toBeInTheDocument();
+  });
+
+  it('has no STEP for the outline, and drops a STEP pick on the way in', async () => {
+    setDesign();
+    render(<FitTestButton />);
+    fireEvent.click(screen.getByRole('button', { name: BUTTON }));
+    fireEvent.click(await screen.findByRole('radio', { name: /step/i }));
+    fireEvent.click(screen.getByRole('radio', { name: OUTLINE }));
+
+    expect(screen.getByRole('radio', { name: /step/i })).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(screen.getByRole('button', { name: /download/i }));
+    await waitFor(() => expect(downloadCard).toHaveBeenCalled());
+    expect(downloadCard.mock.calls[0][0]).toMatchObject({ mode: 'outline', format: 'stl' });
+  });
+
+  it('keeps an outline whole on a bed its card would overflow', async () => {
+    setDesign({ width: 8 });
+    useSettingsStore.setState((s) => ({
+      settings: { ...s.settings, defaultPrintBedSize: 180, defaultPrintBedDepth: 180 },
+    }));
+    render(<FitTestButton />);
+    fireEvent.click(screen.getByRole('button', { name: BUTTON }));
+    expect(await screen.findByText(/fitTest.warnSplit/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('radio', { name: OUTLINE }));
+    expect(screen.queryByText(/fitTest.warnSplit/)).toBeNull();
   });
 });

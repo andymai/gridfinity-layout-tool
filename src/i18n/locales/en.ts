@@ -3076,6 +3076,25 @@ const en: Record<string, string> = {
     'Bigger than your print bed, so the card exports as {count} pieces in a ZIP.',
   'binDesigner.cutouts.fitTest.warnSeamThroughCutout':
     'The card is too big for your print bed and there is no clear gap to cut through, so a seam crosses a cutout. That cutout cannot be measured on this card.',
+  'binDesigner.cutouts.fitTest.mode': 'What to print',
+  'binDesigner.cutouts.fitTest.modeCard': 'Full card',
+  'binDesigner.cutouts.fitTest.modeOutline': 'Outline only',
+  'binDesigner.cutouts.fitTest.dialogDescriptionOutline':
+    'Just a thin ring around each cutout, its inside edge exactly where the cutout wall will be. It prints in minutes with almost no filament, so you can check each part’s shape and fit from above.',
+  'binDesigner.cutouts.fitTest.outlineHeight': 'Outline height',
+  'binDesigner.cutouts.fitTest.outlineHeightHint':
+    '0.2 mm prints as a single layer. A few layers peel off the plate in one piece.',
+  'binDesigner.cutouts.fitTest.outlineWall': 'Ring width',
+  'binDesigner.cutouts.fitTest.outlineWallHint':
+    'Measured outward from the cutout edge, so the inside of every ring stays the real cutout size.',
+  'binDesigner.cutouts.fitTest.outlineTip':
+    'Leave it on the build plate and set each part inside its ring. Rides up onto the ring? Raise Clearance on that cutout. A wide gap all round? Lower it.',
+  'binDesigner.cutouts.fitTest.stepUnavailableOutline':
+    'STEP cannot carry the outline. Use STL or 3MF.',
+  'binDesigner.cutouts.fitTest.warnSplitOutline':
+    'Bigger than your print bed, so the outline exports as {count} pieces in a ZIP.',
+  'binDesigner.cutouts.fitTest.warnSeamThroughOutline':
+    'The outline is too big for your print bed and there is no clear gap to cut through, so a seam crosses a cutout. That cutout cannot be checked on this print.',
   'binDesigner.cutouts.group': 'Group',
   'binDesigner.cutouts.ungroup': 'Ungroup',
   'binDesigner.cutouts.pathfinder.title': 'Pathfinder',

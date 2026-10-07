@@ -189,6 +189,40 @@ describe('useFitTestExport', () => {
     expect(messages).toContain('binDesigner.cutouts.fitTest.warnSeamThroughCutout');
   });
 
+  it('asks for the outline and its size when the user picks it', async () => {
+    const { result } = renderHook(() => useFitTestExport());
+    await act(async () => {
+      await result.current.downloadCard({
+        format: 'stl',
+        mode: 'outline',
+        thicknessMm: 4,
+        outline: { heightMm: 0.2, wallMm: 1.6 },
+        baseName: 'fit-test-outline',
+      });
+    });
+    expect(activeBridge?.exportFitTest.mock.calls[0][2]).toMatchObject({
+      mode: 'outline',
+      outline: { heightMm: 0.2, wallMm: 1.6 },
+    });
+    expect(vi.mocked(triggerDownload).mock.calls[0][1]).toBe('fit-test-outline.stl');
+  });
+
+  it('reports a seam through the outline in the outline’s own words', async () => {
+    activeBridge = {
+      exportFitTest: vi.fn().mockResolvedValue({
+        pieces: [piece('A1'), piece('B1')],
+        fileName: 'fit-test-outline.stl',
+        blockedSeams: 1,
+      }),
+    };
+    const { result } = renderHook(() => useFitTestExport());
+    await act(async () => {
+      await result.current.downloadCard({ format: 'stl', mode: 'outline', thicknessMm: 4 });
+    });
+    const messages = useToastStore.getState().toasts.map((toast) => toast.message);
+    expect(messages).toContain('binDesigner.cutouts.fitTest.warnSeamThroughOutline');
+  });
+
   it('says nothing when every seam found clear material', async () => {
     const { result } = renderHook(() => useFitTestExport());
     await act(async () => {

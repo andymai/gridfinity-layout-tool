@@ -23,14 +23,19 @@ import {
 } from '@/shared/types/bin';
 import { regularPolygonPoints } from '@/shared/utils/cutoutPolygon';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import { flattenPath } from '@/shared/utils/pathGeometryBezier';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
 import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 
-/** Thinnest card the field accepts (mm). Below this a chamfered rim has no
- *  straight wall under it and the card tears off the plate. */
-export const FIT_TEST_MIN_THICKNESS_MM = 1;
+/** Thinnest card the field accepts (mm): one layer. A chamfered design's floor
+ *  sits higher, see {@link fitTestThicknessRangeMm}. */
+export const FIT_TEST_MIN_THICKNESS_MM = 0.2;
+
+/** Thinnest card that carries the underside stamp (mm). The deboss is 0.4mm,
+ *  and under this there are too few layers over it to bridge the glyphs. */
+export const FIT_TEST_STAMP_MIN_THICKNESS_MM = 1;
 
 /** Band the default thickness is clamped into (mm). The floor keeps a straight
  *  wall under the deepest entry chamfer the editor allows; the cap stops a
@@ -102,7 +107,14 @@ export function fitTestThicknessRangeMm(params: BinParams): { min: number; max: 
     FIT_TEST_MIN_THICKNESS_MM,
     Math.min(usable, Math.min(deepestCutoutDepthMm(params), usable) + params.wallThickness)
   );
-  return { min: FIT_TEST_MIN_THICKNESS_MM, max };
+  // The band is taken down from the opening, so a card no deeper than an entry
+  // chamfer is bevel all the way through and every hole reads loose. One layer
+  // of straight wall under the deepest bevel is the least that measures a fit.
+  const deepestChamfer = fitTestCutouts(params).reduce(
+    (deepest, c) => Math.max(deepest, openingGrowthMm(c).chamfer),
+    0
+  );
+  return { min: Math.min(max, FIT_TEST_MIN_THICKNESS_MM + deepestChamfer), max };
 }
 
 /** Clamp an arbitrary thickness into the range this design allows. */
@@ -271,7 +283,7 @@ export function planFitTestStampArea(
   split?: Pick<FitTestSplitPlan, 'planesX' | 'planesY'>
 ): StampArea | null {
   const { width, depth } = fitTestFootprintMm(params);
-  if (neededDepthMm <= 0) return null;
+  if (neededDepthMm <= 0 || thicknessMm < FIT_TEST_STAMP_MIN_THICKNESS_MM) return null;
 
   // Asymmetric overhang shifts the card body off the model origin — the same
   // offsets the cutout boxes below already carry — so the windows and the
@@ -452,12 +464,14 @@ export function fitTestFootprintMm(params: BinParams): { width: number; depth: n
  * quiet about a seam through the hole being measured.
  *
  * `splitPlanes` is injected rather than imported so this stays free of the
- * generation feature; callers pass `getSplitPlanePositionsMm`.
+ * generation feature; callers pass `getSplitPlanePositionsMm`. `extraMarginMm`
+ * widens every opening first, for a print that carries material outside it.
  */
 export function planFitTestSplit(
   params: BinParams,
   bed: BedSize | undefined,
-  splitPlanes: (sizeUnits: number, maxUnits: number, pitchMm: number) => number[]
+  splitPlanes: (sizeUnits: number, maxUnits: number, pitchMm: number) => number[],
+  extraMarginMm = 0
 ): FitTestSplitPlan {
   const whole: FitTestSplitPlan = { planesX: [], planesY: [], pieceCount: 1, blockedSeams: 0 };
   if (!bed) return whole;
@@ -482,6 +496,10 @@ export function planFitTestSplit(
   // [-outerW/2 - left, outerW/2 + right]); symmetric bounds would let a nudged
   // seam step past one edge and build a cutter that intersects nothing.
   const spans = fitTestCutoutSpans(params);
+  const widen = (s: AxisSpan): AxisSpan => ({
+    min: s.min - extraMarginMm,
+    max: s.max + extraMarginMm,
+  });
   const { offsetX, offsetY } = overhangExpansion(
     resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang)
   );
@@ -489,13 +507,13 @@ export function planFitTestSplit(
   const halfD = footprint.depth / 2;
   const planX = nudgeSeamsClearOfCutouts(
     rawX,
-    spans.x,
+    spans.x.map(widen),
     Math.max(0, bed.width - (params.width * pitchX) / (rawX.length + 1)),
     { min: -halfW + offsetX, max: halfW + offsetX }
   );
   const planY = nudgeSeamsClearOfCutouts(
     rawY,
-    spans.y,
+    spans.y.map(widen),
     Math.max(0, bed.depth - (params.depth * pitchY) / (rawY.length + 1)),
     { min: -halfD + offsetY, max: halfD + offsetY }
   );
@@ -560,6 +578,51 @@ function openingAreaMm2(cutout: Cutout): number {
   }
 }
 
+/** Length of a closed polygon's boundary. */
+function polygonPerimeter(points: readonly { readonly x: number; readonly y: number }[]): number {
+  let length = 0;
+  for (let i = 0; i < points.length; i++) {
+    const a = points[i];
+    const b = points[(i + 1) % points.length];
+    length += Math.hypot(b.x - a.x, b.y - a.y);
+  }
+  return length;
+}
+
+/** Length (mm) of a cutout's opening at the straight wall, clearance included. */
+export function openingPerimeterMm(cutout: Cutout): number {
+  const grow = openingGrowthMm(cutout);
+  const w = cutout.width + 2 * grow.clearanceW;
+  const d = cutout.depth + 2 * grow.clearanceD;
+  switch (cutout.shape) {
+    case 'circle': {
+      const a = w / 2;
+      const b = d / 2;
+      return Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
+    }
+    case 'polygon':
+      return polygonPerimeter(regularPolygonPoints(cutout.sides ?? DEFAULT_POLYGON_SIDES, w, d));
+    case 'slot':
+    case 'knifeSlot': {
+      const r = Math.min(w, d) / 2;
+      return 2 * (Math.max(w, d) - 2 * r) + 2 * Math.PI * r;
+    }
+    case 'rectangle': {
+      const r = Math.min(cutout.cornerRadius, Math.min(w, d) / 2);
+      return 2 * (w + d) - (8 - 2 * Math.PI) * r;
+    }
+    case 'path': {
+      const outline = cutout.path ? flattenPath(cutout.path) : [];
+      return outline.length >= 3 ? polygonPerimeter(outline) : 2 * (w + d);
+    }
+    // A scan has no outline here, only its footprint; the box over-reads it.
+    case 'mesh':
+      return 2 * (w + d);
+    case 'text':
+      return 0;
+  }
+}
+
 /**
  * Material (mm³) the openings remove, counted no deeper than `maxDepthMm`.
  *
@@ -568,22 +631,31 @@ function openingAreaMm2(cutout: Cutout): number {
  * disagree about how much a pocket takes out.
  */
 export function cutoutDisplacementMm3(params: BinParams, maxDepthMm = Infinity): number {
-  const volumeOf = (cutout: Cutout): number =>
-    openingAreaMm2(cutout) * Math.min(cutout.cutDepth, maxDepthMm);
+  return sumOverCutouts(
+    params,
+    (cutout) => openingAreaMm2(cutout) * Math.min(cutout.cutDepth, maxDepthMm)
+  );
+}
 
-  // Members of a pathfinder group are NOT additive: `subtract`, `intersect` and
-  // `exclude` all put material back, so summing them removes more than the
-  // group ever cuts and can drive a dense board's estimate to zero. The group's
-  // largest member is the honest bound for those; only `union` accumulates.
+/**
+ * Total of a per-cutout quantity over the card's cutouts, counting each
+ * pathfinder group once.
+ *
+ * Members of a group are NOT additive: `subtract`, `intersect` and `exclude`
+ * all put material back, so summing them removes more than the group ever cuts
+ * and can drive a dense board's estimate to zero. The group's largest member is
+ * the honest bound for those; only `union` accumulates.
+ */
+export function sumOverCutouts(params: BinParams, valueOf: (cutout: Cutout) => number): number {
   let total = 0;
   const groups = new Map<string, number>();
   for (const cutout of fitTestCutouts(params)) {
-    const volume = volumeOf(cutout);
+    const value = valueOf(cutout);
     if (cutout.groupId === null || (cutout.groupOp ?? 'union') === 'union') {
-      total += volume;
+      total += value;
       continue;
     }
-    groups.set(cutout.groupId, Math.max(groups.get(cutout.groupId) ?? 0, volume));
+    groups.set(cutout.groupId, Math.max(groups.get(cutout.groupId) ?? 0, value));
   }
   for (const largest of groups.values()) total += largest;
   return total;

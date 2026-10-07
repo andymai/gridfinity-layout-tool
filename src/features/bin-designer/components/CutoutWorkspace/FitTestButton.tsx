@@ -1,42 +1,86 @@
 /**
  * "Print fit test" control for cutouts.
  *
- * Downloads a thin slice of this design's own top: every opening at its real
- * size, position and spacing, at a fraction of the bin to print. The maker
- * tries their parts in it, adjusts Clearance above, and reprints the card until
- * the fit is right — the whole bin only gets printed once.
+ * Downloads a thin slice of this design's own top, every opening at its real
+ * size, position and spacing, or only a thin ring around each opening. The
+ * maker tries their parts on it, adjusts Clearance above, and reprints until
+ * the fit is right; the whole bin only gets printed once.
  *
  * The dialog is deliberately answerable before anything is generated: the
- * thickness range, the material comparison and the split warning all come from
- * `fitTestPlan`, which is the same plan the worker cuts from.
+ * size ranges, the material comparison and the split warning all come from
+ * `fitTestPlan` and `fitTestOutlinePlan`, the same plans the worker cuts from.
  */
 
 import { useCallback, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Button } from '@/design-system/Button';
-import { Stepper } from '@/design-system';
+import { SegmentedControl, Stepper } from '@/design-system';
 import { ExportDialog } from '@/shared/components/ExportDialog';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { useFitTestExport, FIT_TEST_BASE_NAME } from '../../hooks/useFitTestExport';
+import {
+  useFitTestExport,
+  FIT_TEST_BASE_NAME,
+  FIT_TEST_OUTLINE_BASE_NAME,
+} from '../../hooks/useFitTestExport';
+import { FIT_TEST_THICKNESS_STEP, useFitTestOptions } from '../../hooks/useFitTestOptions';
 import { estimateFromVolume, estimatePrint, formatPrintTime } from '../../utils/printEstimates';
 import {
+  FIT_TEST_STAMP_MIN_THICKNESS_MM,
   canBuildFitTest,
-  clampFitTestThicknessMm,
-  defaultFitTestThicknessMm,
   estimateFitTestVolumeMm3,
-  fitTestThicknessRangeMm,
   planFitTestSplit,
 } from '@/shared/utils/fitTestPlan';
+import {
+  FIT_TEST_OUTLINE_HEIGHT_MM,
+  FIT_TEST_OUTLINE_WALL_MM,
+  estimateFitTestOutlineVolumeMm3,
+  planFitTestOutlineSplit,
+} from '@/shared/utils/fitTestOutlinePlan';
+import type { FitTestMode } from '@/shared/utils/fitTestOutlinePlan';
 import { getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
 import { hasMeshImprints } from '@/shared/generation/meshAsset';
 import { FORMAT_EXTENSIONS } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
 
-/** Stepper increment for the thickness field. Matches the cutout fit fields. */
-const THICKNESS_STEP = 0.5;
+interface SizeFieldProps {
+  readonly label: string;
+  readonly hint: string;
+  readonly info?: string;
+  readonly value: number;
+  readonly min: number;
+  readonly max: number;
+  readonly step: number;
+  readonly onChange: (value: number) => void;
+  readonly onStep: (delta: number) => void;
+}
+
+function SizeField({ label, hint, info, value, min, max, step, onChange, onStep }: SizeFieldProps) {
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-2" title={info}>
+        <span className="text-xs text-content-secondary">
+          {label}
+          <span className="ml-1 text-content-tertiary">mm</span>
+        </span>
+        <Stepper
+          size="sm"
+          value={value}
+          onChange={onChange}
+          onStep={onStep}
+          min={min}
+          max={max}
+          step={step}
+          aria-label={label}
+        />
+      </div>
+      <p className="mt-1.5 text-label leading-relaxed text-content-tertiary">{hint}</p>
+    </div>
+  );
+}
 
 export function FitTestButton() {
   const t = useTranslation();
@@ -52,26 +96,16 @@ export function FitTestButton() {
   );
 
   const [open, setOpen] = useState(false);
-  const [thickness, setThickness] = useState<number | null>(null);
   const [fileNameConfig, setFileNameConfig] = useState<ExportFileNameConfig>({
     style: 'descriptive',
     customName: '',
     format: 'stl',
   });
+  const options = useFitTestOptions(params);
+  const { mode, setMode, thicknessMm, outline } = options;
+  const isOutline = mode === 'outline';
 
   const available = canBuildFitTest(params);
-  const range = useMemo(() => fitTestThicknessRangeMm(params), [params]);
-  // Null until the user touches the field, so the default tracks the design as
-  // cutouts are added rather than freezing at whatever it was when mounted.
-  const activeThickness = clampFitTestThicknessMm(
-    params,
-    thickness ?? defaultFitTestThicknessMm(params)
-  );
-
-  const clampThickness = useCallback(
-    (v: number) => clampFitTestThicknessMm(params, Number(v.toFixed(2))),
-    [params]
-  );
 
   // A square bed leaves the depth unset, which is how `calcMaxGridUnits` reads
   // it too.
@@ -80,8 +114,11 @@ export function FitTestButton() {
     [bedWidth, bedDepth]
   );
   const splitPlan = useMemo(
-    () => planFitTestSplit(params, bed, getSplitPlanePositionsMm),
-    [params, bed]
+    () =>
+      isOutline
+        ? planFitTestOutlineSplit(params, bed, getSplitPlanePositionsMm, outline.wallMm)
+        : planFitTestSplit(params, bed, getSplitPlanePositionsMm),
+    [isOutline, params, bed, outline.wallMm]
   );
 
   const activeFormat: ExportFileFormat = fileNameConfig.format ?? 'stl';
@@ -90,7 +127,21 @@ export function FitTestButton() {
   const baseName =
     fileNameConfig.style === 'custom' && fileNameConfig.customName.trim() !== ''
       ? fileNameConfig.customName.trim()
-      : FIT_TEST_BASE_NAME;
+      : isOutline
+        ? FIT_TEST_OUTLINE_BASE_NAME
+        : FIT_TEST_BASE_NAME;
+
+  const handleModeChange = useCallback(
+    (next: FitTestMode) => {
+      setMode(next);
+      // The outline has no solid to write STEP from, so a STEP pick from the
+      // card would otherwise sit selected on a disabled option.
+      if (next === 'outline' && fileNameConfig.format === 'step') {
+        setFileNameConfig({ ...fileNameConfig, format: 'stl' });
+      }
+    },
+    [setMode, fileNameConfig]
+  );
 
   const estimates = useMemo(() => {
     if (!available) return null;
@@ -99,7 +150,9 @@ export function FitTestButton() {
     // finished figure: the print time carries a flat overhead that does not
     // shrink with the part, so a ratio would under-report the card.
     const card = estimateFromVolume(
-      estimateFitTestVolumeMm3(params, activeThickness),
+      isOutline
+        ? estimateFitTestOutlineVolumeMm3(params, outline)
+        : estimateFitTestVolumeMm3(params, thicknessMm),
       printSettings
     );
     return [
@@ -112,10 +165,10 @@ export function FitTestButton() {
         value: `${bin.gramsFilament.toFixed(1)} g · ${formatPrintTime(bin.printTimeMinutes)}`,
       },
     ];
-  }, [available, params, printSettings, activeThickness, t]);
+  }, [available, params, printSettings, isOutline, outline, thicknessMm, t]);
 
   const handleDownload = useCallback(() => {
-    void downloadCard({ format: activeFormat, thicknessMm: activeThickness, baseName, bed }).then(
+    void downloadCard({ format: activeFormat, mode, thicknessMm, outline, baseName, bed }).then(
       (succeeded) => {
         if (!succeeded) return;
         useToastStore
@@ -124,41 +177,89 @@ export function FitTestButton() {
         setOpen(false);
       }
     );
-  }, [downloadCard, activeFormat, activeThickness, baseName, bed, t]);
+  }, [downloadCard, activeFormat, mode, thicknessMm, outline, baseName, bed, t]);
 
-  const tips = useMemo(
-    () => [
-      t('binDesigner.cutouts.fitTest.tip1'),
-      t('binDesigner.cutouts.fitTest.tip2'),
-      t('binDesigner.cutouts.fitTest.tip3'),
-    ],
-    [t]
-  );
+  const tips = useMemo(() => {
+    if (isOutline) return [t('binDesigner.cutouts.fitTest.outlineTip')];
+    const cardTips = [t('binDesigner.cutouts.fitTest.tip1'), t('binDesigner.cutouts.fitTest.tip2')];
+    // Thinner cards go unstamped: there are too few layers over the glyphs.
+    return thicknessMm >= FIT_TEST_STAMP_MIN_THICKNESS_MM
+      ? [...cardTips, t('binDesigner.cutouts.fitTest.tip3')]
+      : cardTips;
+  }, [isOutline, thicknessMm, t]);
 
   // STEP carries no mesh imprint: those pockets are subtracted after
   // tessellation, so a STEP file would be valid, plausibly sized, and missing
   // every scanned pocket. The worker refuses it; say so before they pick it.
-  const formatStates = useMemo(
-    () =>
-      hasMeshImprints(params)
-        ? { step: { disabled: true, reason: t('binDesigner.cutouts.fitTest.stepUnavailable') } }
-        : undefined,
-    [params, t]
-  );
+  // The outline is built in the mesh domain throughout, so it has no STEP at all.
+  const formatStates = useMemo(() => {
+    if (isOutline) {
+      return {
+        step: { disabled: true, reason: t('binDesigner.cutouts.fitTest.stepUnavailableOutline') },
+      };
+    }
+    return hasMeshImprints(params)
+      ? { step: { disabled: true, reason: t('binDesigner.cutouts.fitTest.stepUnavailable') } }
+      : undefined;
+  }, [isOutline, params, t]);
 
   const warning = useMemo(() => {
     if (splitPlan.blockedSeams > 0) {
-      return { message: t('binDesigner.cutouts.fitTest.warnSeamThroughCutout') };
+      return {
+        message: isOutline
+          ? t('binDesigner.cutouts.fitTest.warnSeamThroughOutline')
+          : t('binDesigner.cutouts.fitTest.warnSeamThroughCutout'),
+      };
     }
     if (isSplit) {
+      const count = splitPlan.pieceCount;
       return {
-        message: t('binDesigner.cutouts.fitTest.warnSplit', { count: splitPlan.pieceCount }),
+        message: isOutline
+          ? t('binDesigner.cutouts.fitTest.warnSplitOutline', { count })
+          : t('binDesigner.cutouts.fitTest.warnSplit', { count }),
       };
     }
     return null;
-  }, [splitPlan.blockedSeams, splitPlan.pieceCount, isSplit, t]);
+  }, [splitPlan.blockedSeams, splitPlan.pieceCount, isSplit, isOutline, t]);
 
   if (!available) return null;
+
+  const sizeFields: ReactNode = isOutline ? (
+    <>
+      <SizeField
+        label={t('binDesigner.cutouts.fitTest.outlineHeight')}
+        hint={t('binDesigner.cutouts.fitTest.outlineHeightHint')}
+        value={outline.heightMm}
+        min={FIT_TEST_OUTLINE_HEIGHT_MM.min}
+        max={FIT_TEST_OUTLINE_HEIGHT_MM.max}
+        step={FIT_TEST_OUTLINE_HEIGHT_MM.step}
+        onChange={options.setOutlineHeight}
+        onStep={options.stepOutlineHeight}
+      />
+      <SizeField
+        label={t('binDesigner.cutouts.fitTest.outlineWall')}
+        hint={t('binDesigner.cutouts.fitTest.outlineWallHint')}
+        value={outline.wallMm}
+        min={FIT_TEST_OUTLINE_WALL_MM.min}
+        max={FIT_TEST_OUTLINE_WALL_MM.max}
+        step={FIT_TEST_OUTLINE_WALL_MM.step}
+        onChange={options.setOutlineWall}
+        onStep={options.stepOutlineWall}
+      />
+    </>
+  ) : (
+    <SizeField
+      label={t('binDesigner.cutouts.fitTest.thickness')}
+      hint={t('binDesigner.cutouts.fitTest.thicknessHint')}
+      info={t('binDesigner.cutouts.fitTest.thicknessInfo')}
+      value={thicknessMm}
+      min={options.thicknessRange.min}
+      max={options.thicknessRange.max}
+      step={FIT_TEST_THICKNESS_STEP}
+      onChange={options.setThickness}
+      onStep={options.stepThickness}
+    />
+  );
 
   return (
     <>
@@ -188,34 +289,26 @@ export function FitTestButton() {
         estimates={estimates}
         estimatesTitle={t('binDesigner.cutouts.fitTest.estimatesTitle')}
         sectionTitle={t('binDesigner.cutouts.fitTest.dialogTitle')}
-        sectionDescription={t('binDesigner.cutouts.fitTest.dialogDescription')}
+        sectionDescription={
+          isOutline
+            ? t('binDesigner.cutouts.fitTest.dialogDescriptionOutline')
+            : t('binDesigner.cutouts.fitTest.dialogDescription')
+        }
         extras={
           <div className="mb-4 space-y-3">
-            <div className="rounded-lg border border-stroke-subtle bg-surface p-3">
-              <div
-                className="flex items-center justify-between gap-2"
-                title={t('binDesigner.cutouts.fitTest.thicknessInfo')}
-              >
-                <span className="text-xs text-content-secondary">
-                  {t('binDesigner.cutouts.fitTest.thickness')}
-                  <span className="ml-1 text-content-tertiary">mm</span>
-                </span>
-                <Stepper
-                  size="sm"
-                  value={activeThickness}
-                  onChange={(v) => setThickness(clampThickness(v))}
-                  onStep={(delta) =>
-                    setThickness(clampThickness(activeThickness + delta * THICKNESS_STEP))
-                  }
-                  min={range.min}
-                  max={range.max}
-                  step={THICKNESS_STEP}
-                  aria-label={t('binDesigner.cutouts.fitTest.thickness')}
-                />
-              </div>
-              <p className="mt-1.5 text-label leading-relaxed text-content-tertiary">
-                {t('binDesigner.cutouts.fitTest.thicknessHint')}
-              </p>
+            <div className="space-y-3 rounded-lg border border-stroke-subtle bg-surface p-3">
+              <SegmentedControl
+                size="sm"
+                fullWidth
+                value={mode}
+                onChange={handleModeChange}
+                aria-label={t('binDesigner.cutouts.fitTest.mode')}
+                options={[
+                  { value: 'card', label: t('binDesigner.cutouts.fitTest.modeCard') },
+                  { value: 'outline', label: t('binDesigner.cutouts.fitTest.modeOutline') },
+                ]}
+              />
+              {sizeFields}
             </div>
 
             <div className="rounded-lg border border-stroke-subtle bg-surface p-3">
