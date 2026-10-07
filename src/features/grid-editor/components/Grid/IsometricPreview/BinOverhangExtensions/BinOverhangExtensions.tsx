@@ -13,7 +13,7 @@ import * as THREE from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
 import { effectiveGridUnitMmY } from '@/core/types';
-import type { DesignId } from '@/core/types';
+import type { BinId } from '@/core/types';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
 import { useLinkedDesignKinds } from '@/shared/hooks/useLinkedDesignKinds';
 import { designEntryFor } from '../LinkedBinMeshes/placement';
@@ -26,7 +26,7 @@ interface BinOverhangExtensionsProps {
   drawerWidth: number;
   drawerDepth: number;
   /** Resolved design meshes; a bin drawn with one hangs its strips from its body. */
-  designGeometries: Map<DesignId, DesignGeometryEntry>;
+  designGeometries: Map<BinId, DesignGeometryEntry>;
 }
 
 interface ColoredStrip extends OverhangStrip {

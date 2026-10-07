@@ -1,4 +1,4 @@
-import type { DesignId } from '@/core/types';
+import type { BinId } from '@/core/types';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
 import type { DesignGeometryEntry } from './useDesignGeometries';
 
@@ -24,10 +24,10 @@ export function isRotatedPlacement(
 /** Resolve the design geometry for a bin, or undefined for unlinked/unresolved bins. */
 export function designEntryFor(
   binData: BinRenderData,
-  designGeometries: Map<DesignId, DesignGeometryEntry>
+  designGeometries: Map<BinId, DesignGeometryEntry>
 ): DesignGeometryEntry | undefined {
   return binData.bin.linkedDesignId !== undefined
-    ? designGeometries.get(binData.bin.linkedDesignId)
+    ? designGeometries.get(binData.bin.id)
     : undefined;
 }
 
@@ -43,7 +43,7 @@ export interface DesignMeshBin {
  */
 export function partitionByDesignMesh(
   bins: BinRenderData[],
-  designGeometries: Map<DesignId, DesignGeometryEntry>
+  designGeometries: Map<BinId, DesignGeometryEntry>
 ): { designMeshBins: DesignMeshBin[]; plainBins: BinRenderData[] } {
   const designMeshBins: DesignMeshBin[] = [];
   const plainBins: BinRenderData[] = [];

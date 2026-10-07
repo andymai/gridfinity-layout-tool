@@ -1,13 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
-import type { DesignId } from '@/core/types';
-import { designId } from '@/core/types';
+import type { BinId } from '@/core/types';
+import { binId, designId } from '@/core/types';
 import { createTestBin } from '@/test/testUtils';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
 import { isRotatedPlacement, designEntryFor, partitionByDesignMesh } from './placement';
 import type { DesignGeometryEntry } from './useDesignGeometries';
 
 const D1 = designId('design-1');
+const LINKED = binId('linked');
 
 function makeBinData(overrides: Partial<BinRenderData> = {}): BinRenderData {
   return {
@@ -48,25 +49,26 @@ describe('isRotatedPlacement', () => {
 describe('designEntryFor', () => {
   it('resolves the entry for a linked bin', () => {
     const entry = makeEntry();
-    const geometries = new Map<DesignId, DesignGeometryEntry>([[D1, entry]]);
-    const binData = makeBinData({ bin: createTestBin({ linkedDesignId: D1 }) });
+    const geometries = new Map<BinId, DesignGeometryEntry>([[LINKED, entry]]);
+    const binData = makeBinData({ bin: createTestBin({ id: LINKED, linkedDesignId: D1 }) });
 
     expect(designEntryFor(binData, geometries)).toBe(entry);
     entry.geometry.dispose();
   });
 
   it('returns undefined for unlinked bins', () => {
-    const geometries = new Map<DesignId, DesignGeometryEntry>([[D1, makeEntry()]]);
-    expect(designEntryFor(makeBinData(), geometries)).toBeUndefined();
+    const geometries = new Map<BinId, DesignGeometryEntry>([[LINKED, makeEntry()]]);
+    const unlinked = makeBinData({ bin: createTestBin({ id: LINKED }) });
+    expect(designEntryFor(unlinked, geometries)).toBeUndefined();
   });
 });
 
 describe('partitionByDesignMesh', () => {
   it('splits bins into mesh-backed and plain groups', () => {
     const entry = makeEntry();
-    const geometries = new Map<DesignId, DesignGeometryEntry>([[D1, entry]]);
+    const geometries = new Map<BinId, DesignGeometryEntry>([[LINKED, entry]]);
     const linked = makeBinData({
-      bin: createTestBin({ id: 'linked', linkedDesignId: D1 } as never),
+      bin: createTestBin({ id: LINKED, linkedDesignId: D1 }),
     });
     const plain = makeBinData({ bin: createTestBin({ id: 'plain' } as never) });
 
@@ -80,7 +82,7 @@ describe('partitionByDesignMesh', () => {
   });
 
   it('keeps linked bins plain while their mesh is unresolved', () => {
-    const geometries = new Map<DesignId, DesignGeometryEntry>();
+    const geometries = new Map<BinId, DesignGeometryEntry>();
     const linked = makeBinData({ bin: createTestBin({ linkedDesignId: D1 }) });
 
     const { designMeshBins, plainBins } = partitionByDesignMesh([linked], geometries);

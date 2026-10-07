@@ -1,12 +1,12 @@
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { toCreasedNormals } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import type { DesignId } from '@/core/types';
+import type { BinId } from '@/core/types';
 import type { MeshData } from '@/shared/types/generation';
 import type { LinkedDesignMesh } from '@/shared/hooks/useLinkedDesignMeshes';
 import { CREASE_ANGLE_RAD } from '@/shared/constants/tessellation';
 
-/** A ready-to-render design geometry, shared by every bin linked to the design. */
+/** A ready-to-render design geometry, shared by every bin that resolves to the same mesh. */
 export interface DesignGeometryEntry {
   readonly sig: string;
   readonly geometry: THREE.BufferGeometry;
@@ -161,39 +161,49 @@ function getCachedDesignGeometry(designMesh: LinkedDesignMesh): THREE.BufferGeom
   return geometry;
 }
 
+function buildEntry(designMesh: LinkedDesignMesh): DesignGeometryEntry {
+  const restMesh = designMesh.mesh.knifeRestMesh;
+  let rest: DesignGeometryEntry['rest'];
+  if (restMesh && restMesh.vertices.length > 0) {
+    const geometry = getCachedRestGeometry(designMesh.sig, restMesh);
+    geometry.computeBoundingBox();
+    const bb = geometry.boundingBox;
+    if (bb) {
+      rest = { geometry, widthMm: bb.max.x - bb.min.x, depthMm: bb.max.y - bb.min.y };
+    }
+  }
+  const { bodyBaseMm } = designMesh;
+  return {
+    sig: designMesh.sig,
+    geometry: getCachedDesignGeometry(designMesh),
+    width: designMesh.width,
+    depth: designMesh.depth,
+    ...(bodyBaseMm !== undefined
+      ? { bodyBaseMm: bodyBaseMm + detachableFeetLiftMm(designMesh.mesh) }
+      : {}),
+    ...(rest !== undefined ? { rest } : {}),
+  };
+}
+
 /**
- * Provide one BufferGeometry per linked design, built lazily and shared
- * across every bin instance linked to that design (a geometry can be bound
- * to many meshes). Stale geometries (design edited → new sig) age out of the
- * LRU cache; everything is disposed when the preview unmounts.
+ * Provide each linked bin's BufferGeometry, built lazily per design mesh and
+ * shared across every bin that resolves to it (a geometry can be bound to many
+ * meshes). Stale geometries (design edited → new sig) age out of the LRU
+ * cache; everything is disposed when the preview unmounts.
  */
 export function useDesignGeometries(
-  designMeshes: Map<DesignId, LinkedDesignMesh>
-): Map<DesignId, DesignGeometryEntry> {
+  designMeshes: Map<BinId, LinkedDesignMesh>
+): Map<BinId, DesignGeometryEntry> {
   const entries = useMemo(() => {
-    const map = new Map<DesignId, DesignGeometryEntry>();
+    const map = new Map<BinId, DesignGeometryEntry>();
+    const byMesh = new Map<LinkedDesignMesh, DesignGeometryEntry>();
     for (const [id, designMesh] of designMeshes) {
-      const restMesh = designMesh.mesh.knifeRestMesh;
-      let rest: DesignGeometryEntry['rest'];
-      if (restMesh && restMesh.vertices.length > 0) {
-        const geometry = getCachedRestGeometry(designMesh.sig, restMesh);
-        geometry.computeBoundingBox();
-        const bb = geometry.boundingBox;
-        if (bb) {
-          rest = { geometry, widthMm: bb.max.x - bb.min.x, depthMm: bb.max.y - bb.min.y };
-        }
+      let entry = byMesh.get(designMesh);
+      if (!entry) {
+        entry = buildEntry(designMesh);
+        byMesh.set(designMesh, entry);
       }
-      const { bodyBaseMm } = designMesh;
-      map.set(id, {
-        sig: designMesh.sig,
-        geometry: getCachedDesignGeometry(designMesh),
-        width: designMesh.width,
-        depth: designMesh.depth,
-        ...(bodyBaseMm !== undefined
-          ? { bodyBaseMm: bodyBaseMm + detachableFeetLiftMm(designMesh.mesh) }
-          : {}),
-        ...(rest !== undefined ? { rest } : {}),
-      });
+      map.set(id, entry);
     }
     return map;
   }, [designMeshes]);
