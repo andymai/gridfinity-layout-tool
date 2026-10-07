@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { COINCIDENT_POINT_EPSILON } from '@/shared/utils/polyline';
 import {
   offsetClosedPolygon,
   offsetClosedPolygonWithinReach,
@@ -171,7 +172,7 @@ function roundedL(radius: number): Pt[] {
  * A 30×20 U whose slot (x 5 to 25, down to y = 5) has its inside corners
  * rounded to `left` and `right`, leaving a straight floor between them.
  */
-function notch(left: number, right: number): Pt[] {
+function notch(left: number, right: number, slot = 20): Pt[] {
   const corner = (cx: number, cy: number, r: number, from: number): Pt[] =>
     Array.from({ length: 13 }, (_, k) => {
       const a = from - (k / 12) * (Math.PI / 2);
@@ -179,14 +180,23 @@ function notch(left: number, right: number): Pt[] {
     });
   return [
     { x: 0, y: 0 },
-    { x: 30, y: 0 },
-    { x: 30, y: 20 },
-    { x: 25, y: 20 },
-    ...corner(25 - right, 5 + right, right, 0),
+    { x: 10 + slot, y: 0 },
+    { x: 10 + slot, y: 20 },
+    { x: 5 + slot, y: 20 },
+    ...corner(5 + slot - right, 5 + right, right, 0),
     ...corner(5 + left, 5 + left, left, -Math.PI / 2),
     { x: 5, y: 20 },
     { x: 0, y: 20 },
   ];
+}
+
+/** A 30×20 rectangle with a 1mm-radius bump pushed into its top, `n` points on the bump. */
+function bite(n: number): Pt[] {
+  const bump = Array.from({ length: n + 1 }, (_, k) => {
+    const a = (k / n) * Math.PI;
+    return { x: 15 + Math.cos(a), y: 20 - Math.sin(a) };
+  });
+  return [{ x: 0, y: 0 }, { x: 30, y: 0 }, { x: 30, y: 20 }, ...bump, { x: 0, y: 20 }];
 }
 
 /** A U whose arms stand `gap` apart, so their offsets meet once `d > gap/2`. */
@@ -320,6 +330,25 @@ describe('offsetClosedPolygonWithinReach', () => {
     }
     expect(performance.now() - started).toBeLessThan(750);
   });
+
+  it('scales near linearly with the density of a tight inside curve', () => {
+    // Every point of a curve tighter than the offset sits within reach of
+    // every other, and an imported SVG can sample one as densely as it likes.
+    const d = 1.5;
+    const chamfer = (poly: Pt[]): number => {
+      const started = performance.now();
+      const refined = refineForOffset(poly, d);
+      const rim = offsetClosedPolygonWithinReach(refined, d);
+      offsetClosedPolygonWithinReach(refined, 0.7, rim.reach);
+      return performance.now() - started;
+    };
+    const fastest = (poly: Pt[]): number => Math.min(chamfer(poly), chamfer(poly), chamfer(poly));
+    chamfer(bite(500));
+    const sparse = fastest(bite(2500));
+    const dense = fastest(bite(10000));
+    expect(dense).toBeLessThan(500);
+    expect(dense / Math.max(sparse, 1)).toBeLessThan(8);
+  });
 });
 
 describe('refineForOffset', () => {
@@ -358,4 +387,18 @@ describe('refineForOffset', () => {
       added.forEach(({ r }) => expect(r).toBe(d));
     });
   }
+
+  it('never leaves an edge shorter than a path vertex spacing', () => {
+    // A floor a hair over 2d between two held corners: one transition point d
+    // in from each end would sit 1e-8mm from the other, an edge the kernel
+    // rejects.
+    const d = 1.5;
+    const poly = notch(0.5, 0.5, 2 * d + 1 + 1e-8);
+    const refined = refineForOffset(poly, d);
+    expect(refined.length).toBeGreaterThan(poly.length);
+    refined.forEach((p, i) => {
+      const q = refined[(i + 1) % refined.length];
+      expect(Math.hypot(q.x - p.x, q.y - p.y)).toBeGreaterThanOrEqual(COINCIDENT_POINT_EPSILON);
+    });
+  });
 });

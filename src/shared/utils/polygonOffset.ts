@@ -8,6 +8,8 @@
  * downstream ruled loft well-behaved.
  */
 
+import { COINCIDENT_POINT_EPSILON } from '@/shared/utils/polyline';
+
 export interface Pt {
   readonly x: number;
   readonly y: number;
@@ -130,6 +132,12 @@ const FOLD_CHORD_REACH = 4;
 /** A turn (radians) toward the outside past this ends a run of inside turns. */
 const INSIDE_TURN = 1e-9;
 
+/**
+ * How far (mm) the outline may stray from the coarser copy the gap pass
+ * measures on: the spacing below which a path's points count as one.
+ */
+const PROXY_TOLERANCE = COINCIDENT_POINT_EPSILON;
+
 /** Distance (mm) at which two segments count as touching. */
 const CONTACT = 1e-7;
 
@@ -194,6 +202,78 @@ function gapAcross(a1: Pt, a2: Pt, b1: Pt, b2: Pt, out: Across): boolean {
   return true;
 }
 
+/** A lower bound on the gap between segments ab and cg, from their boxes. */
+function boxGap(a: Pt, b: Pt, c: Pt, g: Pt): number {
+  const dx = Math.max(
+    0,
+    Math.min(c.x, g.x) - Math.max(a.x, b.x),
+    Math.min(a.x, b.x) - Math.max(c.x, g.x)
+  );
+  const dy = Math.max(
+    0,
+    Math.min(c.y, g.y) - Math.max(a.y, b.y),
+    Math.min(a.y, b.y) - Math.max(c.y, g.y)
+  );
+  return Math.hypot(dx, dy);
+}
+
+function distance2(p: Pt, a: Pt, b: Pt): number {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const len2 = dx * dx + dy * dy;
+  const t = len2 > 0 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2)) : 0;
+  return (a.x + t * dx - p.x) ** 2 + (a.y + t * dy - p.y) ** 2;
+}
+
+/**
+ * The vertices a coarser copy of a closed outline keeps (Douglas–Peucker):
+ * every vertex it drops lies within `tol` of the proxy edge replacing its
+ * run, and no proxy edge that replaces a run is longer than `maxSpan`, so a
+ * hold measured on one stays local. Sorted, starting at vertex 0.
+ */
+function proxyIndices(points: readonly Pt[], tol: number, maxSpan: number): number[] {
+  const n = points.length;
+  const keep = new Uint8Array(n);
+  let far = 0;
+  let farthest = -1;
+  for (let v = 1; v < n; v++) {
+    const d2 = (points[v].x - points[0].x) ** 2 + (points[v].y - points[0].y) ** 2;
+    if (d2 > farthest) {
+      farthest = d2;
+      far = v;
+    }
+  }
+  keep[0] = 1;
+  keep[far] = 1;
+  // Pairs of run ends; an end of n is vertex 0 again, closing the loop.
+  const runs = [0, far, far, n];
+  for (;;) {
+    const b = runs.pop();
+    const a = runs.pop();
+    if (a === undefined || b === undefined) break;
+    if (b - a < 2) continue;
+    const pa = points[a];
+    const pb = points[b % n];
+    let worst = a + 1;
+    let worst2 = -1;
+    for (let v = a + 1; v < b; v++) {
+      const d2 = distance2(points[v], pa, pb);
+      if (d2 > worst2) {
+        worst2 = d2;
+        worst = v;
+      }
+    }
+    const long = (pb.x - pa.x) ** 2 + (pb.y - pa.y) ** 2 > maxSpan * maxSpan;
+    if (worst2 <= tol * tol && !long) continue;
+    const split = worst2 > tol * tol ? worst : (a + b) >> 1;
+    keep[split] = 1;
+    runs.push(a, split, split, b);
+  }
+  const out: number[] = [];
+  for (let v = 0; v < n; v++) if (keep[v]) out.push(v);
+  return out;
+}
+
 /** Uniform grid over a polygon's edges, so each edge only meets its neighbours. */
 class EdgeGrid {
   private readonly cells = new Map<number, number[]>();
@@ -203,6 +283,12 @@ class EdgeGrid {
   private readonly originY: number;
   private readonly size: number;
 
+  /**
+   * Cells are at least `minCell`, and otherwise as small as the typical
+   * edge, so a densely sampled stretch spreads over many cells instead of
+   * filling one. Cutting the long edges into cell-sized pieces stays within
+   * 8 pieces per edge overall.
+   */
   constructor(poly: readonly Pt[], minCell: number) {
     const n = poly.length;
     let minX = Infinity;
@@ -210,6 +296,7 @@ class EdgeGrid {
     let maxX = -Infinity;
     let maxY = -Infinity;
     let perimeter = 0;
+    const lengths = new Float64Array(n);
     for (let i = 0; i < n; i++) {
       const p = poly[i];
       const q = poly[i + 1 === n ? 0 : i + 1];
@@ -217,12 +304,14 @@ class EdgeGrid {
       minY = Math.min(minY, p.y);
       maxX = Math.max(maxX, p.x);
       maxY = Math.max(maxY, p.y);
-      perimeter += Math.hypot(q.x - p.x, q.y - p.y);
+      lengths[i] = Math.hypot(q.x - p.x, q.y - p.y);
+      perimeter += lengths[i];
     }
     this.originX = minX;
     this.originY = minY;
     const extent = Math.max(maxX - minX, maxY - minY);
-    this.size = Math.max(minCell, perimeter / n, extent / (GRID_STRIDE / 4), 1e-6);
+    const median = lengths.sort()[n >> 1];
+    this.size = Math.max(minCell, median, perimeter / (8 * n), extent / (GRID_STRIDE / 4), 1e-6);
     this.seen = new Int32Array(n);
     for (let e = 0; e < n; e++) {
       const a = poly[e];
@@ -320,9 +409,9 @@ class ReachSolver {
   }
 
   /**
-   * The fold bound, in closed form, on every edge and on every chord across a
-   * run of inside turns. A chord's offset keeps `|C|² + rⱼ(mⱼ·C) − rᵢ(mᵢ·C)`
-   * of its length along `C`; counting only the terms that shorten it,
+   * The fold bound, in closed form, on every edge and on chords across a run
+   * of inside turns. A chord's offset keeps `|C|² + rⱼ(mⱼ·C) − rᵢ(mᵢ·C)` of
+   * its length along `C`; counting only the terms that shorten it,
    * `rᵢcᵢ + rⱼcⱼ ≤ (1 − keep)|C|²` holds while both ends stay under
    * `(1 − keep)|C|² / (cᵢ + cⱼ)`, and keeps holding as reaches only shrink.
    *
@@ -330,22 +419,31 @@ class ReachSolver {
    * it meets a straight turns by half a chord, so it can move past the
    * curve's centre and cross the vertex at its other end. A chord over a
    * circular arc bounds both ends to 0.9 of its radius whatever its span, as
-   * the edges do, so an arc wider than `d` is not held at all.
+   * the edges do, so an arc wider than `d` is not held at all, and one chord
+   * per doubling of span is enough to reach both ends of any run. That keeps
+   * a densely sampled curve to a logarithmic number of chords per vertex.
    */
   boundFolds(d: number): void {
     const { points, n } = this;
     const reachCap = FOLD_CHORD_REACH * d;
+    const outsideBefore = [0];
+    const turningBefore = [0];
+    for (let v = 0; v < n; v++) {
+      const turn = this.turnBefore[v + 1] - this.turnBefore[v];
+      outsideBefore.push(outsideBefore[v] + (turn * this.sign > INSIDE_TURN ? 1 : 0));
+      turningBefore.push(turningBefore[v] + Math.abs(turn));
+    }
+    // Sum over the `count` vertices from `start` on, round the loop.
+    const over = (prefix: readonly number[], start: number, count: number): number => {
+      const end = start + count;
+      return end <= n ? prefix[end] - prefix[start] : prefix[n] - prefix[start] + prefix[end - n];
+    };
     for (let i = 0; i < n; i++) {
-      let turned = 0;
-      for (let k = 1; k < n; k++) {
+      for (let k = 1; k < n; k *= 2) {
         const j = (i + k) % n;
-        if (k > 1) {
-          const v = (i + k - 1) % n;
-          const turn = this.turnBefore[v + 1] - this.turnBefore[v];
-          if (turn * this.sign > INSIDE_TURN) break;
-          turned += Math.abs(turn);
-          if (turned >= Math.PI) break;
-        }
+        const between = this.next(i);
+        if (k > 1 && over(outsideBefore, between, k - 1) > 0) break;
+        if (k > 1 && over(turningBefore, between, k - 1) >= Math.PI) break;
         const cx = points[j].x - points[i].x;
         const cy = points[j].y - points[i].y;
         const len2 = cx * cx + cy * cy;
@@ -366,24 +464,78 @@ class ReachSolver {
   }
 
   /**
-   * Hold apart every pair that faces across a gap, found on a grid: each edge
-   * looks as far as it could move twice over, so a pair is found from the
-   * edge that moves more.
+   * Hold apart every pair of runs that face across a gap, found on a grid
+   * over a coarser copy of the outline ({@link proxyIndices}): each proxy
+   * edge looks as far as its run could move twice over, so a pair is found
+   * from the run that moves more. A densely sampled curve is a handful of
+   * proxy edges, so the pairs within reach of each other stay few however
+   * many points it carries.
    */
   boundGaps(d: number): void {
     const { points, n } = this;
     const from = [...this.reach];
-    const moves = points.map((_, e) => this.edgeMove(e, from));
-    const grid = new EdgeGrid(points, 2 * d);
-    for (let e = 0; e < n; e++) {
-      if (moves[e] === 0) continue;
-      grid.collect(points[e], points[this.next(e)], 2 * moves[e], this.candidates);
-      for (const f of this.candidates) {
-        if (moves[e] + moves[f] <= this.boxGap(e, f) || this.adjacent(e, f)) continue;
-        if (this.turnBetween(e, f) < GAP_TURN) continue;
-        this.holdApart(e, f, from);
+    const keep = proxyIndices(points, PROXY_TOLERANCE, d / 2);
+    const m = keep.length;
+    const proxy = keep.map((v) => points[v]);
+    const spans: number[][] = keep.map((start, k) => {
+      const end = k + 1 < m ? keep[k + 1] : keep[0] + n;
+      return Array.from({ length: end - start + 1 }, (_, s) => (start + s) % n);
+    });
+    const moves = spans.map((span) => {
+      let move = 0;
+      for (const v of span) move = Math.max(move, from[v] * this.miterLen[v]);
+      return move;
+    });
+    const after = (k: number): number => (k + 1 === m ? 0 : k + 1);
+    const grid = new EdgeGrid(proxy, 2 * d);
+    for (let k = 0; k < m; k++) {
+      if (moves[k] === 0) continue;
+      const reachK = 2 * moves[k] + 2 * PROXY_TOLERANCE;
+      grid.collect(proxy[k], proxy[after(k)], reachK, this.candidates);
+      for (const l of this.candidates) {
+        if (l === k || after(k) === l || after(l) === k) continue;
+        const box = boxGap(proxy[k], proxy[after(k)], proxy[l], proxy[after(l)]);
+        if (moves[k] + moves[l] <= box - 2 * PROXY_TOLERANCE) continue;
+        if (this.turnBetween(keep[k], keep[l]) < GAP_TURN) continue;
+        this.holdRunsApart(
+          proxy[k],
+          proxy[after(k)],
+          spans[k],
+          proxy[l],
+          proxy[after(l)],
+          spans[l],
+          from
+        );
       }
     }
+  }
+
+  /**
+   * {@link holdApart} for two runs of the outline, each within
+   * PROXY_TOLERANCE of the proxy edge standing in for it, so the gap they
+   * keep across is the proxies' less twice that.
+   */
+  private holdRunsApart(
+    a1: Pt,
+    a2: Pt,
+    runA: readonly number[],
+    b1: Pt,
+    b2: Pt,
+    runB: readonly number[],
+    from: readonly number[]
+  ): void {
+    const { across } = this;
+    if (!gapAcross(a1, a2, b1, b2, across)) return;
+    const gap = across.gap - 2 * PROXY_TOLERANCE;
+    if (gap <= CONTACT) return;
+    let closeA = 0;
+    for (const v of runA) closeA = Math.max(closeA, this.closing(v, 1) * from[v]);
+    let closeB = 0;
+    for (const v of runB) closeB = Math.max(closeB, this.closing(v, -1) * from[v]);
+    if (closeA + closeB < gap) return;
+    const budget = (GAP_CLOSE * gap) / (closeA + closeB);
+    for (const v of runA) this.hold(v, 1, budget * closeA);
+    for (const v of runB) this.hold(v, -1, budget * closeB);
   }
 
   /**
@@ -392,12 +544,12 @@ class ReachSolver {
    * the loop ends. An outline that already touches itself at a pair has
    * nothing to give there, and holdApart leaves it as it is.
    */
-  repairContacts(d: number): Pt[] {
+  repairContacts(): Pt[] {
     const { n } = this;
     const settled = new Set<number>();
     for (;;) {
       const out = this.place();
-      const grid = new EdgeGrid(out, 2 * d);
+      const grid = new EdgeGrid(out, 0);
       const contacts: number[] = [];
       for (let e = 0; e < n; e++) {
         const a = out[e];
@@ -425,36 +577,12 @@ class ReachSolver {
     return e === f || this.next(e) === f || this.next(f) === e;
   }
 
-  private edgeMove(e: number, from: readonly number[]): number {
-    const j = this.next(e);
-    return Math.max(from[e] * this.miterLen[e], from[j] * this.miterLen[j]);
-  }
-
   /** Net turning between edges e and f the smaller way round. */
   private turnBetween(e: number, f: number): number {
     const lo = Math.min(e, f);
     const hi = Math.max(e, f);
     const forward = this.turnBefore[hi + 1] - this.turnBefore[lo + 1];
     return Math.min(Math.abs(forward), Math.abs(this.turnBefore[this.n] - forward));
-  }
-
-  /** A lower bound on the gap between two edges, from their boxes. */
-  private boxGap(e: number, f: number): number {
-    const a = this.points[e];
-    const b = this.points[this.next(e)];
-    const c = this.points[f];
-    const g = this.points[this.next(f)];
-    const dx = Math.max(
-      0,
-      Math.min(c.x, g.x) - Math.max(a.x, b.x),
-      Math.min(a.x, b.x) - Math.max(c.x, g.x)
-    );
-    const dy = Math.max(
-      0,
-      Math.min(c.y, g.y) - Math.max(a.y, b.y),
-      Math.min(a.y, b.y) - Math.max(c.y, g.y)
-    );
-    return Math.hypot(dx, dy);
   }
 
   /**
@@ -520,7 +648,7 @@ export function offsetClosedPolygonWithinReach(
   const solver = new ReachSolver(points, d, cap);
   solver.boundFolds(d);
   solver.boundGaps(d);
-  return { points: solver.repairContacts(d), reach: solver.reach };
+  return { points: solver.repairContacts(), reach: solver.reach };
 }
 
 /** Reach below this share of `d` counts as held back. */
@@ -535,6 +663,11 @@ const HELD_BACK = 0.999;
  * makes, and the offset then tapers along the whole run. The extra vertex
  * confines that taper to `d`. The shape is unchanged, so one refined outline
  * can feed every section of a loft.
+ *
+ * An edge held at both ends but too short to fit both points
+ * {@link COINCIDENT_POINT_EPSILON} apart, the spacing below which a path's
+ * points count as one, takes a single midpoint instead: the pair would leave
+ * an edge too short for the kernel to build.
  */
 export function refineForOffset(points: readonly Pt[], d: number): Pt[] {
   const { reach } = offsetClosedPolygonWithinReach(points, d);
@@ -551,8 +684,14 @@ export function refineForOffset(points: readonly Pt[], d: number): Pt[] {
       x: a.x + ((b.x - a.x) * s) / len,
       y: a.y + ((b.y - a.y) * s) / len,
     });
-    if (reach[i] < d * HELD_BACK) out.push(at(d));
-    if (reach[j] < d * HELD_BACK) out.push(at(len - d));
+    const heldStart = reach[i] < d * HELD_BACK;
+    const heldEnd = reach[j] < d * HELD_BACK;
+    if (heldStart && heldEnd && len - 2 * d < COINCIDENT_POINT_EPSILON) {
+      out.push(at(len / 2));
+      continue;
+    }
+    if (heldStart) out.push(at(d));
+    if (heldEnd) out.push(at(len - d));
   }
   return out;
 }
