@@ -6,6 +6,7 @@ import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { ok } from '@/core/result';
 import type { SavedDesign } from '@/features/bin-designer/types';
 import { designId } from '@/core/types';
+import { loadRegistry, upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 
 vi.mock('@/features/bin-designer/storage/DesignerStorage');
 
@@ -239,6 +240,35 @@ describe('DesignListDialog', () => {
     const input = screen.getByRole('textbox', { name: 'Design name' });
     expect(input).toBeInTheDocument();
     expect(input).toHaveValue('Tool Holder');
+  });
+
+  it('renames the layout palette entry along with the design', async () => {
+    localStorage.clear();
+    upsertRegistryEntry({
+      id: designId('design-1'),
+      name: 'Tool Holder',
+      width: 3,
+      depth: 2,
+      height: 6,
+      updatedAt: '2026-01-22T12:00:00.000Z',
+    });
+    render(<DesignListDialog open={true} onClose={onClose} />);
+    await waitFor(() => {
+      expect(screen.getByText('Tool Holder')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getAllByRole('button', { name: /more actions/i })[0]);
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: /rename/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('menuitem', { name: /rename/i }));
+    const input = screen.getByRole('textbox', { name: 'Design name' });
+    fireEvent.change(input, { target: { value: 'Pliers' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    await waitFor(() => {
+      expect(loadRegistry().find((r) => r.id === 'design-1')?.name).toBe('Pliers');
+    });
   });
 
   it('closes on backdrop click', async () => {
