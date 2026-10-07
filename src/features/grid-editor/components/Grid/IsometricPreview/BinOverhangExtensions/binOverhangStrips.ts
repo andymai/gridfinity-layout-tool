@@ -3,12 +3,17 @@
  *
  * A bin grows outward either into the drawer margin on edges it abuts or
  * by an explicit per-placement overhang from "Expand to Fit"; both arrive here
- * already reconciled by `binOverhangSides`. Rather than rebuild the merged bin
+ * already reconciled by `resolveBinOverhang`. Rather than rebuild the merged bin
  * geometry, the extension is drawn as up to four solid strips filling the space
  * around the bin — left/right strips span the full (extended) depth so they also
  * cover the corners, and front/back strips fill only the bin's width. Strips
  * overlap the bin body by a hair so their inner faces sit inside the solid (no
  * coincident-face flicker).
+ *
+ * The generator grows only the body, so a strip hangs from the body's underside
+ * (`bodyBase`), above the feet and clear of the baseplate margin beneath it. The
+ * exception is an overhang with `feet`, whose foot lattice fills the over-tiled
+ * margin down to the floor.
  *
  * All axes are in the preview's grid-unit scene space: X/Y match the bin
  * positions, and Z/height are height-units already scaled into that space by
@@ -16,7 +21,7 @@
  * `gridUnitMm` across and `gridUnitMmY` in depth.
  */
 
-import { binOverhangSides } from '@/shared/utils/drawerMargin';
+import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
 import type { OverhangConfig, StoredBaseplateParams } from '@/core/types';
 
 // All coordinates below are in the preview's grid-unit scene space (Z included).
@@ -31,6 +36,11 @@ export interface OverhangStripBin {
   readonly depth: number;
   /** Bin height in grid-unit scene space (height-units × heightToGridScale). */
   readonly height: number;
+  /**
+   * Height of the drawn body's underside above `z`, scene space: the top of a
+   * socketed bin's feet, 0 for a body that stands on the floor. Omitted = 0.
+   */
+  readonly bodyBase?: number;
   readonly extendToMargin?: boolean;
   readonly overhang?: OverhangConfig;
 }
@@ -72,7 +82,7 @@ export function buildBinOverhangStrips(
   gridUnitMmY: number = gridUnitMm
 ): OverhangStrip[] {
   if (gridUnitMm <= 0 || gridUnitMmY <= 0) return [];
-  const sides = binOverhangSides(
+  const overhang = resolveBinOverhang(
     {
       x: bin.x,
       y: bin.y,
@@ -84,17 +94,21 @@ export function buildBinOverhangStrips(
     { width: drawerWidth, depth: drawerDepth },
     baseplate
   );
+  if (!overhang) return [];
   // Scene space is grid units on both axes, so each axis divides by its own
   // pitch: on a 42×21 grid the same mm of depth overhang is twice the fraction
   // of a cell that it would be across the width.
-  const left = sides.left / gridUnitMm;
-  const right = sides.right / gridUnitMm;
-  const front = sides.front / gridUnitMmY;
-  const back = sides.back / gridUnitMmY;
+  const left = Math.max(0, overhang.left) / gridUnitMm;
+  const right = Math.max(0, overhang.right) / gridUnitMm;
+  const front = Math.max(0, overhang.front) / gridUnitMmY;
+  const back = Math.max(0, overhang.back) / gridUnitMmY;
   if (left + right + front + back <= 0) return [];
 
-  const { x, y, width, depth, z, height } = bin;
-  const zc = z + height / 2;
+  const { x, y, width, depth } = bin;
+  const lift = overhang.feet === true ? 0 : Math.max(0, bin.bodyBase ?? 0);
+  const height = bin.height - lift;
+  if (height <= 0) return [];
+  const zc = bin.z + lift + height / 2;
   // Full extended Y span (incl. any front/back extension) for the side strips.
   const yFull0 = y - front;
   const yFull1 = y + depth + back;

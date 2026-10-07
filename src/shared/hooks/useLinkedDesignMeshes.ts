@@ -23,7 +23,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Bin, DesignId } from '@/core/types';
 import { isOk } from '@/core/result';
-import { loadDesign, useCustomBins, type SavedDesign } from '@/features/bin-designer';
+import {
+  binDimensions,
+  loadDesign,
+  useCustomBins,
+  type SavedDesign,
+} from '@/features/bin-designer';
 import { decodeMeshData } from '@/shared/generation/meshAsset';
 import {
   binMeshCacheKey,
@@ -48,6 +53,11 @@ export interface LinkedDesignMesh {
   /** Design footprint in grid units — detects rotated (w↔d) placement. */
   readonly width: number;
   readonly depth: number;
+  /**
+   * Z (mm, mesh frame) of the body's underside: where an overhang hangs from.
+   * Parametric bins only; a stored or assembled mesh has no body to extend.
+   */
+  readonly bodyBaseMm?: number;
 }
 
 // Module-level cache shared across preview mounts. null = unsupported kind,
@@ -178,9 +188,10 @@ async function resolveDesignMesh(
   // Kernel-namespaced: this reader returns a hit and stops, with no regeneration
   // behind it, so a cross-engine hit would survive until LRU eviction.
   const persistKey = binMeshCacheKey(genParams, getActiveKernel());
+  const bodyBaseMm = binDimensions(genParams).floorZ;
   const persisted = await loadPersistedBinMesh(persistKey);
   if (persisted) {
-    return { sig, mesh: persisted, width: params.width, depth: params.depth };
+    return { sig, mesh: persisted, width: params.width, depth: params.depth, bodyBaseMm };
   }
 
   // Cold path: generate the exact preview mesh in the worker (same flow as
@@ -195,7 +206,7 @@ async function resolveDesignMesh(
     // into every cross-session cache entry.
     const mesh = stripLabelPlates(result.mesh);
     savePersistedBinMesh(persistKey, mesh);
-    return { sig, mesh, width: params.width, depth: params.depth };
+    return { sig, mesh, width: params.width, depth: params.depth, bodyBaseMm };
   } finally {
     bridgeManager.release();
   }

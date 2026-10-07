@@ -68,6 +68,32 @@ describe('buildBinOverhangStrips', () => {
     expect(s.position[2]).toBeCloseTo(1, 5); // z center = z + height/2
   });
 
+  it('hangs the strip from the body, above the feet and the margin they stand beside', () => {
+    const socket = 4.75 / GRID;
+    const [s] = buildBinOverhangStrips(
+      bin({ extendToMargin: true, bodyBase: socket }),
+      DW,
+      DD,
+      baseplate({ paddingLeft: mm(21) }),
+      GRID
+    );
+    expect(s.size[2]).toBeCloseTo(2 - socket, 5);
+    expect(s.position[2] - s.size[2] / 2).toBeCloseTo(socket, 5);
+    expect(s.position[2] + s.size[2] / 2).toBeCloseTo(2, 5);
+  });
+
+  it('takes an over-tiled margin to the floor, where the overhang feet fill it', () => {
+    const [s] = buildBinOverhangStrips(
+      bin({ extendToMargin: true, bodyBase: 4.75 / GRID }),
+      DW,
+      DD,
+      baseplate({ paddingLeft: mm(21), overTile: true }),
+      GRID
+    );
+    expect(s.size[2]).toBeCloseTo(2, 5);
+    expect(s.position[2]).toBeCloseTo(1, 5);
+  });
+
   it('builds two strips for a corner bin, side strip spanning the corner', () => {
     const strips = buildBinOverhangStrips(
       bin({ extendToMargin: true }),
