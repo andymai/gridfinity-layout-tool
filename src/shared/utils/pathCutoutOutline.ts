@@ -107,8 +107,8 @@ export interface PathCutoutSections {
  * entry chamfer as well, as one loft's sections. A notch too tight for the full
  * offset takes what it can hold, and the base is capped by the rim's reach
  * there, so every ruled face between them flares outward. Null when the
- * outline cannot be offset within its point budget, which leaves the builder
- * cutting the path's bounding box.
+ * outline cannot be offset, because thinning it to its point budget would
+ * make it touch itself.
  */
 export function pathCutoutSections(
   outline: readonly Pt[],
@@ -124,4 +124,19 @@ export function pathCutoutSections(
     base: offsetClosedPolygonWithinReach(refined, clearance, rim.reach).points,
     rim: rim.points,
   };
+}
+
+/**
+ * What the builder cuts a path cutout to: its {@link pathCutoutSections}, or
+ * the bare outline, without clearance or chamfer, when those cannot be built.
+ * Null only for a degenerate path, which the builder cuts as its bounding box.
+ */
+export function pathCutoutCut(
+  cutout: Parameters<typeof pathCutoutOutline>[0],
+  clearance: number,
+  chamfer: number
+): PathCutoutSections | null {
+  const outline = pathCutoutOutline(cutout);
+  if (!outline) return null;
+  return pathCutoutSections(outline, clearance, chamfer) ?? { base: outline, rim: outline };
 }

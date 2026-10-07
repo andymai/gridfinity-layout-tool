@@ -89,7 +89,11 @@ import {
 import { sketch } from './meshUtils';
 import { buildTextSolid, flatTextPrismDepth } from './textBuilder';
 import { resolveTextStyle, ZERO_TEXT_OFFSET } from '@/shared/types/bin';
-import { pathCutoutOutline, pathCutoutSections } from '@/shared/utils/pathCutoutOutline';
+import {
+  pathCutoutCut,
+  pathCutoutOutline,
+  pathCutoutSections,
+} from '@/shared/utils/pathCutoutOutline';
 import { buildTaperedInnerEnvelope } from './taperedOuter';
 import type { ResolvedTaper } from './overhang';
 import { FeatureTag } from './featureTags';
@@ -428,8 +432,8 @@ export function pathWire(pts: readonly { x: number; y: number }[]): Drawing {
 /**
  * Build an extruded path cutout from bezier path points. Flattens curves to a
  * polyline, applies the insertion `clearance` (outward offset), and extrudes the
- * closed wire. Falls back to a bbox rect for a degenerate outline, or one too
- * dense to offset.
+ * closed wire ({@link pathCutoutCut}). An outline that cannot be offset is cut
+ * bare; a degenerate one falls back to a bbox rect.
  */
 function buildPathCutoutShape(
   cutout: {
@@ -442,12 +446,11 @@ function buildPathCutoutShape(
   },
   clearance: number
 ): Shape3D {
-  const outline = pathCutoutOutline(cutout);
-  const sections = outline ? pathCutoutSections(outline, clearance, 0) : null;
-  if (!sections) {
+  const cut = pathCutoutCut(cutout, clearance, 0);
+  if (!cut) {
     return box(cutout.width, cutout.depth, cutout.cutDepth, { at: [0, 0, cutout.cutDepth / 2] });
   }
-  return sketch(pathWire(sections.base), 'XY').extrude(cutout.cutDepth);
+  return sketch(pathWire(cut.base), 'XY').extrude(cutout.cutDepth);
 }
 
 /**

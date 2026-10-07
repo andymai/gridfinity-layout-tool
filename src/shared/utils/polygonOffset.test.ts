@@ -228,6 +228,52 @@ function bite(n: number): Pt[] {
   return [{ x: 0, y: 0 }, { x: 30, y: 0 }, { x: 30, y: 20 }, ...bump, { x: 0, y: 20 }];
 }
 
+/**
+ * A pocket split by a slit between two interleaved combs, 607 points. The
+ * lower comb's 0.03mm teeth are shallower than the thinning tolerance's cap, so
+ * thinning straightens it at their tips, through the tips of the upper comb's
+ * deeper teeth hanging between them.
+ */
+function slitZipper(): Pt[] {
+  const teeth = 150;
+  const pitch = 3 / teeth;
+  const lower: Pt[] = [];
+  const upper: Pt[] = [];
+  for (let k = 0; k < teeth; k++) {
+    lower.push({ x: 3 - k * pitch, y: 0.03 }, { x: 3 - (k + 0.5) * pitch, y: 0 });
+    upper.push({ x: k * pitch, y: 0.1 }, { x: (k + 0.5) * pitch, y: 0.003 });
+  }
+  return [
+    { x: 0, y: -5 },
+    { x: 3, y: -5 },
+    ...lower,
+    { x: 0, y: 0.03 },
+    ...upper,
+    { x: 3, y: 0.1 },
+    { x: 3, y: 5 },
+    { x: -1, y: 5 },
+    { x: -1, y: -5 },
+  ];
+}
+
+/** A 30mm-radius disc with `teeth` square teeth of `height` round its rim. */
+function toothedDisc(teeth: number, height: number): Pt[] {
+  const pts: Pt[] = [];
+  const at = (a: number, r: number): Pt => ({ x: r * Math.cos(a), y: r * Math.sin(a) });
+  for (let t = 0; t < teeth; t++) {
+    const a0 = (t / teeth) * Math.PI * 2;
+    const step = (Math.PI * 2) / teeth / 4;
+    pts.push(
+      at(a0, 30),
+      at(a0 + step, 30),
+      at(a0 + step, 30 + height),
+      at(a0 + 3 * step, 30 + height),
+      at(a0 + 3 * step, 30)
+    );
+  }
+  return pts;
+}
+
 /** A U whose arms stand `gap` apart, so their offsets meet once `d > gap/2`. */
 function narrowU(gap: number): Pt[] {
   return [
@@ -282,6 +328,26 @@ describe('offsetClosedPolygonWithinReach', () => {
     expect(points[5].x - points[4].x).toBeLessThan(0);
     expect(points[6].x).toBeLessThan(points[3].x);
     expect([reach[0], reach[1], reach[2], reach[7]]).toEqual([1.5, 1.5, 1.5, 1.5]);
+  });
+
+  it('keeps a hair-wide floor longer than a path vertex spacing', () => {
+    // A V notch closing to a 0.002mm flat: keeping a tenth of it would leave
+    // 0.0002mm, an edge pathWire merges away.
+    const poly: Pt[] = [
+      { x: -10, y: -10 },
+      { x: 10, y: -10 },
+      { x: 10, y: 10 },
+      { x: 1, y: 10 },
+      { x: 0.001, y: 0 },
+      { x: -0.001, y: 0 },
+      { x: -1, y: 10 },
+      { x: -10, y: 10 },
+    ];
+    const { points } = offsetClosedPolygonWithinReach(poly, 1.5);
+    points.forEach((p, i) => {
+      const q = points[(i + 1) % points.length];
+      expect(Math.hypot(q.x - p.x, q.y - p.y)).toBeGreaterThan(COINCIDENT_POINT_EPSILON);
+    });
   });
 
   it('never moves a vertex past its cap', () => {
@@ -377,17 +443,21 @@ describe('offsetClosedPolygonWithinReach', () => {
   });
 
   it('gives up on an outline that thinning would make cross itself', () => {
-    // A zigzag channel 0.1mm wide between two interleaved combs: any chord
-    // that skips a tooth on one side cuts through a tooth of the other.
-    const left: Pt[] = [];
-    const right: Pt[] = [];
-    for (let i = 0; i < 300; i++) {
-      left.push({ x: 0, y: i * 0.1 }, { x: 0.9, y: i * 0.1 + 0.05 });
-      right.push({ x: 1, y: i * 0.1 + 0.05 }, { x: 0.1, y: i * 0.1 + 0.1 });
-    }
-    const zipper = [...left, { x: 0, y: 30 }, ...right.reverse()];
+    const zipper = slitZipper();
+    expect(zipper.length).toBeGreaterThan(MAX_OFFSET_POINTS);
     expect(touchesItself(zipper)).toBe(false);
     expect(refineForOffset(zipper, 0.5)).toBeNull();
+  });
+
+  it('keeps every tooth of a profile with more corners than the point budget', () => {
+    // 400 teeth 0.3mm tall round a 60mm disc: 1600 corners, every one detail
+    // a print shows, so thinning may move none of them more than 0.05mm.
+    const gear = toothedDisc(400, 0.3);
+    expect(gear.length).toBeGreaterThan(MAX_OFFSET_POINTS);
+    const refined = refine(gear, 1);
+    const tips = refined.filter((p) => Math.hypot(p.x, p.y) > 30.25);
+    expect(tips).toHaveLength(2 * 400);
+    gear.forEach((p) => expect(distanceToOutline(p, refined)).toBeLessThanOrEqual(0.05));
   });
 
   it('leaves an outline within the point budget as it is', () => {

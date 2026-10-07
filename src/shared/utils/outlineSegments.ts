@@ -234,3 +234,21 @@ export class EdgeGrid {
     }
   }
 }
+
+/** Whether any two non-adjacent edges of a closed outline touch, found on a grid. */
+export function touchesItself(poly: readonly Pt[]): boolean {
+  const n = poly.length;
+  const grid = new EdgeGrid(poly, 0);
+  const across: Across = { gap: 0, ux: 0, uy: 0 };
+  const near: number[] = [];
+  for (let e = 0; e < n; e++) {
+    const a = poly[e];
+    const b = poly[(e + 1) % n];
+    grid.collect(a, b, CONTACT, near);
+    for (const f of near) {
+      if (f <= e + 1 || (e === 0 && f === n - 1)) continue;
+      if (!gapAcross(a, b, poly[f], poly[(f + 1) % n], across)) return true;
+    }
+  }
+  return false;
+}

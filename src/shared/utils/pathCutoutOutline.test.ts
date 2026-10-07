@@ -1,6 +1,33 @@
 import { describe, it, expect } from 'vitest';
-import { pathCutoutSections } from './pathCutoutOutline';
+import { pathCutoutCut, pathCutoutOutline, pathCutoutSections } from './pathCutoutOutline';
 import type { Pt } from './polygonOffset';
+
+/**
+ * A pocket split by a slit between two interleaved combs, 607 points. The
+ * lower comb's teeth are too shallow to survive thinning, so it straightens at
+ * their tips, through the tips of the upper comb's deeper teeth.
+ */
+function slitZipper(): Pt[] {
+  const teeth = 150;
+  const pitch = 3 / teeth;
+  const lower: Pt[] = [];
+  const upper: Pt[] = [];
+  for (let k = 0; k < teeth; k++) {
+    lower.push({ x: 3 - k * pitch, y: 0.03 }, { x: 3 - (k + 0.5) * pitch, y: 0 });
+    upper.push({ x: k * pitch, y: 0.1 }, { x: (k + 0.5) * pitch, y: 0.003 });
+  }
+  return [
+    { x: 0, y: -5 },
+    { x: 3, y: -5 },
+    ...lower,
+    { x: 0, y: 0.03 },
+    ...upper,
+    { x: 3, y: 0.1 },
+    { x: 3, y: 5 },
+    { x: -1, y: 5 },
+    { x: -1, y: -5 },
+  ];
+}
 
 const square: Pt[] = [
   { x: -10, y: -10 },
@@ -71,14 +98,41 @@ describe('pathCutoutSections', () => {
     });
   });
 
-  it('gives up on an outline it cannot thin to its point budget without crossing', () => {
-    const left: Pt[] = [];
-    const right: Pt[] = [];
-    for (let i = 0; i < 300; i++) {
-      left.push({ x: 0, y: i * 0.1 }, { x: 0.9, y: i * 0.1 + 0.05 });
-      right.push({ x: 1, y: i * 0.1 + 0.05 }, { x: 0.1, y: i * 0.1 + 0.1 });
-    }
-    const zipper = [...left, { x: 0, y: 30 }, ...right.reverse()];
-    expect(pathCutoutSections(zipper, 0.5, 0)).toBeNull();
+  it('gives up on an outline that thinning would make cross itself', () => {
+    expect(pathCutoutSections(slitZipper(), 0.5, 0)).toBeNull();
+  });
+});
+
+describe('pathCutoutCut', () => {
+  const corner = (p: Pt) => ({ ...p, handleIn: null, handleOut: null, symmetric: false });
+  const asCutout = (points: readonly Pt[]) => {
+    const xs = points.map((p) => p.x);
+    const ys = points.map((p) => p.y);
+    const x = Math.min(...xs);
+    const y = Math.min(...ys);
+    return {
+      x,
+      y,
+      width: Math.max(...xs) - x,
+      depth: Math.max(...ys) - y,
+      path: points.map(corner),
+    };
+  };
+
+  it('cuts a path that cannot be offset to its bare outline, not its box', () => {
+    const cutout = asCutout(slitZipper());
+    const outline = pathCutoutOutline(cutout);
+    const cut = pathCutoutCut(cutout, 0.5, 0.8);
+    expect(outline).not.toBeNull();
+    expect(cut?.base).toEqual(outline);
+    expect(cut?.rim).toEqual(outline);
+  });
+
+  it('offsets a path that can be', () => {
+    expect(area(pathCutoutCut(asCutout(square), 0.5, 0)?.base ?? [])).toBeCloseTo(21 * 21, 9);
+  });
+
+  it('has nothing to cut for a degenerate path', () => {
+    expect(pathCutoutCut({ ...asCutout(square), path: [] }, 0.5, 0)).toBeNull();
   });
 });

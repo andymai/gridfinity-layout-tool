@@ -21,13 +21,13 @@ import {
   planFitTestSplit,
   planFitTestStampArea,
 } from './fitTestPlan';
-import { pathCutoutSections } from '@/shared/utils/pathCutoutOutline';
+import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
 import type * as PathCutoutOutline from '@/shared/utils/pathCutoutOutline';
 
 // Wraps the real offset, so every other case here runs the true geometry.
 vi.mock('@/shared/utils/pathCutoutOutline', async (importOriginal) => {
   const actual = await importOriginal<typeof PathCutoutOutline>();
-  return { ...actual, pathCutoutSections: vi.fn(actual.pathCutoutSections) };
+  return { ...actual, pathCutoutCut: vi.fn(actual.pathCutoutCut) };
 });
 
 const cutout = (over: Partial<Cutout>): Cutout => ({
@@ -497,7 +497,7 @@ describe('clearance as each builder cuts it', () => {
 
   it('offsets a path once, flare included, as the builder does', () => {
     // The offset runs on the main thread, once per path whatever its chamfer.
-    const offset = vi.mocked(pathCutoutSections);
+    const offset = vi.mocked(pathCutoutCut);
     offset.mockClear();
     fitTestCutoutSpans(board({}, [square(0.5)]));
     expect(offset).toHaveBeenCalledTimes(1);

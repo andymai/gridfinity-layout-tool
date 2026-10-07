@@ -23,8 +23,7 @@ import {
 } from '@/shared/types/bin';
 import { regularPolygonPoints } from '@/shared/utils/cutoutPolygon';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
-import { pathCutoutOutline, pathCutoutSections } from '@/shared/utils/pathCutoutOutline';
-import type { PathCutoutSections } from '@/shared/utils/pathCutoutOutline';
+import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
@@ -169,27 +168,15 @@ function openingGrowthMm(cutout: Cutout): {
 }
 
 /**
- * The sections the builder cuts a path between ({@link pathCutoutSections}),
- * or null where it cuts the path's bare box instead.
- */
-function pathSections(
-  cutout: Cutout,
-  grow: { clearanceD: number; chamfer: number }
-): PathCutoutSections | null {
-  const outline = pathCutoutOutline(cutout);
-  return outline ? pathCutoutSections(outline, grow.clearanceD, grow.chamfer) : null;
-}
-
-/**
- * A path's opening at its rim, as `buildUnrotatedCutoutShape` cuts it. The
- * offset's miter joins reach past the clearance at sharp corners, so a plain
- * per-side growth under-reads it.
+ * A path's opening at its rim, as `buildUnrotatedCutoutShape` cuts it
+ * ({@link pathCutoutCut}). The offset's miter joins reach past the clearance
+ * at sharp corners, so a plain per-side growth under-reads it.
  */
 function pathRimHalfExtents(
   cutout: Cutout,
   grow: { clearanceD: number; chamfer: number }
 ): { hw: number; hd: number } {
-  const sections = pathSections(cutout, grow);
+  const sections = pathCutoutCut(cutout, grow.clearanceD, grow.chamfer);
   if (!sections) return { hw: cutout.width / 2, hd: cutout.depth / 2 };
   let hw = 0;
   let hd = 0;
@@ -668,8 +655,8 @@ export function openingPerimeterMm(cutout: Cutout): number {
       return 2 * (w + d) - (8 - 2 * Math.PI) * r;
     }
     case 'path': {
-      const sections = pathSections(cutout, grow);
-      return sections ? polygonPerimeter(sections.base) : 2 * (cutout.width + cutout.depth);
+      const cut = pathCutoutCut(cutout, grow.clearanceD, grow.chamfer);
+      return cut ? polygonPerimeter(cut.base) : 2 * (cutout.width + cutout.depth);
     }
     // A scan has no outline here, only its footprint; the box over-reads it.
     case 'mesh':

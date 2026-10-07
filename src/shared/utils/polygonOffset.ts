@@ -8,8 +8,17 @@
  * downstream ruled loft well-behaved.
  */
 
+import { ARC_FLATTEN_TOLERANCE } from './drawerOutlineGeometry';
 import { COINCIDENT_POINT_EPSILON } from './polyline';
-import { CONTACT, EdgeGrid, boxGap, gapAcross, proxyIndices, type Across } from './outlineSegments';
+import {
+  CONTACT,
+  EdgeGrid,
+  boxGap,
+  gapAcross,
+  proxyIndices,
+  touchesItself,
+  type Across,
+} from './outlineSegments';
 
 export interface Pt {
   readonly x: number;
@@ -107,6 +116,14 @@ export interface ReachLimitedOffset {
 const MIN_EDGE_KEEP = 0.1;
 
 /**
+ * Length (mm) an edge's offset always keeps along its own direction, whatever
+ * its share: twice the spacing at which a path's points count as one, so no
+ * edge of an offset section is merged away or too short to build. An edge no
+ * longer than this keeps its own length.
+ */
+const MIN_EDGE_KEPT_MM = 2 * COINCIDENT_POINT_EPSILON;
+
+/**
  * Share of the gap between two edges that the pair may close between them.
  * Two disjoint segments lie on either side of the line square to their closest
  * approach, and an offset edge stays within its endpoints' moves of where it
@@ -185,10 +202,12 @@ class ReachSolver {
 
   /**
    * The fold bound, in closed form, on every edge and on chords across a run
-   * of inside turns. A chord's offset keeps `|C|² + rⱼ(mⱼ·C) − rᵢ(mᵢ·C)` of
-   * its length along `C`; counting only the terms that shorten it,
-   * `rᵢcᵢ + rⱼcⱼ ≤ (1 − keep)|C|²` holds while both ends stay under
-   * `(1 − keep)|C|² / (cᵢ + cⱼ)`, and keeps holding as reaches only shrink.
+   * of inside turns. A chord's offset, projected on `C`, measures
+   * `(|C|² + rⱼ(mⱼ·C) − rᵢ(mᵢ·C)) / |C|`; counting only the terms that
+   * shorten it, it stays at least `kept` while both ends stay under
+   * `(|C|² − kept·|C|) / (cᵢ + cⱼ)`, and keeps doing so as reaches only
+   * shrink. `kept` is {@link MIN_EDGE_KEEP} of the chord, never less than
+   * {@link MIN_EDGE_KEPT_MM}.
    *
    * The edges alone are not enough at a tight inside curve: the vertex where
    * it meets a straight turns by half a chord, so it can move past the
@@ -233,7 +252,9 @@ class ReachSolver {
     const ci = Math.max(0, miter[i].x * cx + miter[i].y * cy);
     const cj = Math.max(0, -(miter[j].x * cx + miter[j].y * cy));
     if (len2 === 0 || ci + cj === 0) return;
-    const limit = ((1 - MIN_EDGE_KEEP) * len2) / (ci + cj);
+    const len = Math.sqrt(len2);
+    const kept = Math.max(MIN_EDGE_KEEP * len, MIN_EDGE_KEPT_MM);
+    const limit = Math.max(0, (len2 - kept * len) / (ci + cj));
     if (ci > 0) reach[i] = Math.min(reach[i], limit);
     if (cj > 0) reach[j] = Math.min(reach[j], limit);
   }
@@ -430,37 +451,33 @@ export function offsetClosedPolygonWithinReach(
 const HELD_BACK = 0.999;
 
 /**
- * Most points an outline keeps before it is offset: the explicit bound on the
- * offset's work. Spread-out outlines offset in near linear time, but a compact
- * scribble puts every edge within reach of every other, so its cost grows with
- * the square of this, and an imported SVG has no point cap of its own.
+ * Points an outline is thinned toward before it is offset. Spread-out outlines
+ * offset in near linear time, but a compact scribble puts every edge within
+ * reach of every other, and an imported SVG has no point cap of its own.
  */
 export const MAX_OFFSET_POINTS = 500;
 
-/** Whether any two non-adjacent edges of a closed outline touch. */
-function touchesItself(poly: readonly Pt[]): boolean {
-  const n = poly.length;
-  const across: Across = { gap: 0, ux: 0, uy: 0 };
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 2; j < n; j++) {
-      if (i === 0 && j === n - 1) continue;
-      if (!gapAcross(poly[i], poly[(i + 1) % n], poly[j], poly[(j + 1) % n], across)) return true;
-    }
-  }
-  return false;
-}
+/**
+ * Furthest (mm) thinning may move the outline: the chord deviation the app
+ * already flattens arcs to, and the tolerance an imported mesh's opening is
+ * simplified to before its chamfer, both far below what a print resolves. An
+ * outline with more real detail than the point budget keeps it, and pays for
+ * it in offset time.
+ */
+export const MAX_THINNING_MM = ARC_FLATTEN_TOLERANCE;
 
 /**
- * The outline thinned (Douglas–Peucker) to at most {@link MAX_OFFSET_POINTS},
- * doubling the tolerance from {@link COINCIDENT_POINT_EPSILON} until it fits.
- * An outline already within the budget is used as it is. Null when thinning
- * makes the outline touch itself, the same failure as a path that crosses.
+ * The outline thinned (Douglas–Peucker) toward {@link MAX_OFFSET_POINTS},
+ * doubling the tolerance from {@link COINCIDENT_POINT_EPSILON} until it fits
+ * or reaches {@link MAX_THINNING_MM}. An outline already within the budget is
+ * used as it is. Null when thinning makes the outline touch itself.
  */
 function withinPointBudget(points: readonly Pt[]): readonly Pt[] | null {
   if (points.length <= MAX_OFFSET_POINTS) return points;
-  for (let tol = COINCIDENT_POINT_EPSILON; ; tol *= 2) {
+  for (let tol = COINCIDENT_POINT_EPSILON; ; tol = Math.min(2 * tol, MAX_THINNING_MM)) {
     const keep = proxyIndices(points, tol, Infinity);
-    if (keep.length > MAX_OFFSET_POINTS) continue;
+    if (keep.length > MAX_OFFSET_POINTS && tol < MAX_THINNING_MM) continue;
+    if (keep.length === points.length) return points;
     const thinned = keep.map((v) => points[v]);
     return thinned.length < 3 || touchesItself(thinned) ? null : thinned;
   }
