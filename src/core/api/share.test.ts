@@ -272,7 +272,20 @@ describe('linked designs travelling with a share', () => {
     id: designId('design_asm'),
     name: 'Pliers Rack',
     kind: 'assembly',
-    envelope: { width: 2, depth: 2, gridUnitMm: 42, heightUnitMm: 7 },
+    envelope: {
+      width: 2,
+      depth: 2,
+      gridUnitMm: 42,
+      heightUnitMm: 7,
+      attachment: {
+        magnetHoles: false,
+        magnetDiameter: 6.5,
+        magnetDepth: 2.4,
+        screwHoles: false,
+        screwDiameter: 3,
+      },
+      featureColors: { enabled: false },
+    },
     structure: {
       kind: 'assembly',
       schemaVersion: 1,
@@ -345,7 +358,7 @@ describe('linked designs travelling with a share', () => {
     const huge: LoadedDesignData = {
       id: designId('design_huge'),
       name: 'Huge',
-      params: { blob: 'x'.repeat(600 * 1024) },
+      params: { meshAssets: { m: { data: 'x'.repeat(600 * 1024) } } },
     };
     const small: LoadedDesignData = { id: designId('design_small'), name: 'Small', params: {} };
     installDesigns([huge, assembly, small]);
@@ -358,6 +371,103 @@ describe('linked designs travelling with a share', () => {
       expect.objectContaining({ id: assembly.id }),
       expect.objectContaining({ id: small.id }),
     ]);
+  });
+});
+
+describe('linked designs over the server per-design cap', () => {
+  const layoutLinking = (...ids: DesignId[]): Layout => ({
+    ...mockLayout,
+    bins: ids.map((id, i) => ({
+      id: binId(`bin-${i}`),
+      layerId: layerId('layer1'),
+      x: gridUnits(i * 2),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(3),
+      category: categoryId('cat1'),
+      label: '',
+      notes: '',
+      linkedDesignId: id,
+    })),
+  });
+
+  const installDesigns = (designs: readonly LoadedDesignData[]): void => {
+    const byId = new Map(designs.map((d) => [d.id, d]));
+    registerDesignStorePort({
+      loadDesign: async (id) => {
+        const design = byId.get(id);
+        if (!design) throw new Error(`unexpected load of ${id}`);
+        return ok(design);
+      },
+      saveDesign: () => Promise.reject(new Error('unused')),
+      upsertRegistryEntry: () => Promise.reject(new Error('unused')),
+      registryEdgeFields: async () => ({}),
+    });
+  };
+
+  const postedIds = (): unknown => {
+    const [, init] = vi.mocked(fetch).mock.calls[0] ?? [];
+    const body = JSON.parse(init?.body as string) as { linkedDesigns: { id: string }[] };
+    return body.linkedDesigns.map((d) => d.id);
+  };
+
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: () =>
+        Promise.resolve({ id: 'abc123xyz789', url: '/l/x', deleteToken: 't', permission: 'view' }),
+    } as Response);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    resetDesignStorePort();
+  });
+
+  const small: LoadedDesignData = { id: designId('design_small'), name: 'Small', params: {} };
+
+  it('skips an assembly over 100 KB and keeps the designs after it', async () => {
+    const bigAssembly: LoadedDesignData = {
+      id: designId('design_big_asm'),
+      name: 'Big rack',
+      kind: 'assembly',
+      envelope: {},
+      structure: { kind: 'assembly', outline: 'x'.repeat(110 * 1024) },
+    };
+    installDesigns([bigAssembly, small]);
+
+    expectOk(await createShare('abc123xyz789', layoutLinking(bigAssembly.id, small.id), 'view'));
+
+    expect(postedIds()).toEqual([small.id]);
+  });
+
+  it('skips a bin over 100 KB that carries no meshes', async () => {
+    const bigBin: LoadedDesignData = {
+      id: designId('design_big_bin'),
+      name: 'Big bin',
+      params: { notes: 'x'.repeat(110 * 1024) },
+    };
+    installDesigns([bigBin, small]);
+
+    expectOk(await createShare('abc123xyz789', layoutLinking(bigBin.id, small.id), 'view'));
+
+    expect(postedIds()).toEqual([small.id]);
+  });
+
+  it('keeps a bin over 100 KB whose size comes from its meshes', async () => {
+    const meshBin: LoadedDesignData = {
+      id: designId('design_mesh_bin'),
+      name: 'Mesh bin',
+      params: { meshAssets: { m: { data: 'x'.repeat(110 * 1024) } } },
+    };
+    installDesigns([meshBin, small]);
+
+    expectOk(await createShare('abc123xyz789', layoutLinking(meshBin.id, small.id), 'view'));
+
+    expect(postedIds()).toEqual([meshBin.id, small.id]);
   });
 });
 

@@ -6,6 +6,7 @@
  */
 
 import type { Layout, SharePermission } from '@/core/types';
+import type { LinkedDesignExport } from '@/core/storage';
 import type { Result, ApiError, ValidationError } from '@/core/result';
 import {
   ok,
@@ -60,6 +61,24 @@ export interface FetchShareResponse {
 const LINKED_DESIGNS_BUDGET_BYTES = 512 * 1024;
 
 /**
+ * Mirrors the server's per-design caps: MAX_ASSEMBLY_DESIGN_BYTES in
+ * api/lib/sharedDesignsValidation.ts, and CONSTRAINTS.MAX_PAYLOAD_BYTES for a
+ * bin without mesh assets (a bin carrying meshes is bounded by the total). One
+ * entry over either fails the whole share, so it is skipped instead.
+ */
+const SINGLE_DESIGN_BUDGET_BYTES = 100 * 1024;
+
+function exceedsSingleDesignBudget(design: LinkedDesignExport): boolean {
+  if (design.kind === 'assembly') {
+    const size = JSON.stringify({ envelope: design.envelope, structure: design.structure }).length;
+    return size > SINGLE_DESIGN_BUDGET_BYTES;
+  }
+  const meshAssets = design.params?.meshAssets;
+  if (meshAssets && Object.keys(meshAssets).length > 0) return false;
+  return JSON.stringify(design.params ?? null).length > SINGLE_DESIGN_BUDGET_BYTES;
+}
+
+/**
  * Resolve a layout's linked designs, dropping any that would push the payload
  * past the server's budget. Order is preserved so the result is deterministic;
  * a single oversized design is skipped rather than starving the rest.
@@ -75,6 +94,7 @@ async function collectDesignsForShare(layout: Layout): Promise<SharedLinkedDesig
   const withinBudget: SharedLinkedDesign[] = [];
   let bytes = 0;
   for (const design of designs) {
+    if (exceedsSingleDesignBudget(design)) continue;
     const size = JSON.stringify(design).length;
     if (bytes + size > LINKED_DESIGNS_BUDGET_BYTES) continue;
     bytes += size;
