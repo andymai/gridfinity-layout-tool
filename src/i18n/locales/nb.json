@@ -3416,6 +3416,7 @@
   "inspector.extendToMargin": "Utvid inn i skuffemargen",
   "inspector.extendToMargin.hint": "Fyller bunnplatens skufftilpasningsmarg på hver skuffkant den berører.",
   "inspector.extendToMargin.needsLink": "Koble til et design for å utvide inn i margen.",
+  "inspector.extendToMargin.fixedShape": "Importerte bokser og Workshop-design beholder den lagrede formen, så de kan ikke utvides inn i margen.",
   "inspector.fitsPrintBedDimensions": "{binWidth}×{binDepth} passer print bed ({max}mm)",
   "inspector.heightReasonDrawerHeight": "skuffhøyde",
   "inspector.heightReasonLayerHeight": "laghøyde",

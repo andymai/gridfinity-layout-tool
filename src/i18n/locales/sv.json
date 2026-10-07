@@ -3416,6 +3416,7 @@
   "inspector.extendToMargin": "Utöka in i lådmarginalen",
   "inspector.extendToMargin.hint": "Fyller bottenplattans lådanpassningsmarginal på varje lådkant den rör vid.",
   "inspector.extendToMargin.needsLink": "Länka en design för att utöka in i marginalen.",
+  "inspector.extendToMargin.fixedShape": "Importerade lådor och Workshop-designer behåller sin sparade form och kan därför inte utökas in i marginalen.",
   "inspector.fitsPrintBedDimensions": "{binWidth}×{binDepth} passar utskriftsbädd ({max}mm)",
   "inspector.heightReasonDrawerHeight": "lådhöjd",
   "inspector.heightReasonLayerHeight": "lagerhöjd",

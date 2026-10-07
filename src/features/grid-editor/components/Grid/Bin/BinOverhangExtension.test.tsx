@@ -5,8 +5,11 @@ import { BinOverhangExtension } from './BinOverhangExtension';
 import { useLayoutStore } from '@/core/store';
 import { createDefaultLayout } from '@/core/constants';
 import { createTestBin } from '@/test/testUtils';
-import { gridUnits, heightUnits, mm } from '@/core/types';
+import { designId, gridUnits, heightUnits, mm } from '@/core/types';
 import type { Bin, Drawer, StoredBaseplateParams } from '@/core/types';
+import { resetCustomBinsCache } from '@/features/bin-designer/hooks/useCustomBins';
+import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
+import type { CustomBinRef } from '@/features/bin-designer/store/customBinRegistry';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
@@ -58,9 +61,23 @@ function renderExt(b: Bin, extra: { showSocketEdge?: boolean; cellSizeY?: number
   );
 }
 
+function registerDesign(id: string, kind: CustomBinRef['kind']): void {
+  upsertRegistryEntry({
+    id: designId(id),
+    name: id,
+    width: 1,
+    depth: 1,
+    height: 3,
+    kind,
+    updatedAt: '2026-10-07T00:00:00.000Z',
+  });
+}
+
 describe('BinOverhangExtension', () => {
   beforeEach(() => {
     resetAllStores();
+    localStorage.clear();
+    resetCustomBinsCache();
     setup({ paddingLeft: mm(21) });
   });
 
@@ -75,6 +92,25 @@ describe('BinOverhangExtension', () => {
         bin({ x: gridUnits(1), y: gridUnits(1), extendToMargin: true })
       );
       expect(container.firstChild).toBeNull();
+    });
+
+    it.each(['importedMesh', 'assembly'] as const)(
+      'renders nothing for an opted-in bin linked to an %s design',
+      (kind) => {
+        registerDesign('d1', kind);
+        const { container } = renderExt(
+          bin({ extendToMargin: true, linkedDesignId: designId('d1') })
+        );
+        expect(container.firstChild).toBeNull();
+      }
+    );
+
+    it('extends a bin linked to a parametric design', () => {
+      registerDesign('d1', 'bin');
+      const { container } = renderExt(
+        bin({ extendToMargin: true, linkedDesignId: designId('d1') })
+      );
+      expect((container.firstChild as HTMLElement).style.left).toBe('-17px');
     });
 
     it('extends into the padded side, scaled to the grid pitch', () => {

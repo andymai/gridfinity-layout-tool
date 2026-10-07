@@ -112,6 +112,20 @@ describe('buildBinOverhangStrips', () => {
     expect(front?.size[1]).toBeCloseTo(1.02, 5);
   });
 
+  it.each(['importedMesh', 'assembly'] as const)(
+    'builds nothing for an opted-in bin linked to an %s design',
+    (linkedKind) => {
+      const strips = buildBinOverhangStrips(
+        bin({ extendToMargin: true, linkedKind }),
+        DW,
+        DD,
+        baseplate({ paddingLeft: mm(21) }),
+        GRID
+      );
+      expect(strips).toEqual([]);
+    }
+  );
+
   it('extends the far edges (right/back)', () => {
     const strips = buildBinOverhangStrips(
       bin({ x: 4, y: 3, extendToMargin: true }), // top-right corner

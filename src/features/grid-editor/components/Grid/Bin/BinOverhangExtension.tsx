@@ -19,6 +19,7 @@
 
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
+import { useLinkedDesignKinds } from '@/shared/hooks/useLinkedDesignKinds';
 import { binOverhangSides } from '@/shared/utils/drawerMargin';
 import { effectiveGridUnitMmY } from '@/core/types';
 import type { Bin, Drawer } from '@/core/types';
@@ -61,8 +62,15 @@ export function BinOverhangExtension({
       gridUnitMmY: effectiveGridUnitMmY(s.layout),
     }))
   );
+  const designKinds = useLinkedDesignKinds();
 
-  const sides = binOverhangSides(bin, drawer, baseplate);
+  const linkedId = bin.linkedDesignId;
+  const sides = binOverhangSides(
+    bin,
+    drawer,
+    baseplate,
+    linkedId === undefined ? undefined : designKinds.get(linkedId)
+  );
   if (sides.left + sides.right + sides.front + sides.back <= 0) return null;
 
   // One grid unit spans `cellSize + gap` px across and `cellSizeY + gap` down;

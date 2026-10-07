@@ -3416,6 +3416,7 @@
   "inspector.extendToMargin": "Estendi nel margine del cassetto",
   "inspector.extendToMargin.hint": "Riempie il margine di adattamento della baseplate su ogni bordo del cassetto che tocca.",
   "inspector.extendToMargin.needsLink": "Collega un design per estenderlo nel margine.",
+  "inspector.extendToMargin.fixedShape": "I contenitori importati e i design Workshop mantengono la forma salvata, quindi non possono estendersi nel margine.",
   "inspector.fitsPrintBedDimensions": "{binWidth}×{binDepth} entra nel piano di stampa ({max}mm)",
   "inspector.heightReasonDrawerHeight": "altezza del cassetto",
   "inspector.heightReasonLayerHeight": "altezza del livello",

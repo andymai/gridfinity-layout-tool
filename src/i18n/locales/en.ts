@@ -515,6 +515,8 @@ const en: Record<string, string> = {
   'inspector.extendToMargin.hint':
     "Fills the baseplate's drawer-fit margin on every drawer edge it touches.",
   'inspector.extendToMargin.needsLink': 'Link a design to extend into the margin.',
+  'inspector.extendToMargin.fixedShape':
+    "Imported bins and Workshop designs keep their saved shape, so they can't extend into the margin.",
   'inspector.taper': 'Taper walls',
   'inspector.taper.profile': 'Profile',
   'inspector.taper.chamfer': 'Chamfer',

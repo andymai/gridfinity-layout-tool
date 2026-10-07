@@ -19,6 +19,10 @@ import {
   saveDesign,
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { isBinDesign, isSyncableDesign } from '@/features/bin-designer/utils/designKind';
+import {
+  registryAssemblyEntry,
+  upsertRegistryEntry,
+} from '@/features/bin-designer/store/customBinRegistry';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { syncPersistError } from '@/core/sync/adapters/persistError';
 import { subscribe as subscribeDesignerEvents } from './designerEvents';
@@ -287,6 +291,11 @@ export const designAdapter: DesignAdapter = {
       if (!isOk(result)) {
         throw syncPersistError('saveDesign', item.id, result.error);
       }
+      // saveDesign never registers, and the startup pass that backfills
+      // assemblies runs once per page load, so a Workshop design pulled
+      // mid-session would read as a parametric bin until the next reload.
+      const assemblyEntry = registryAssemblyEntry(result.value);
+      if (assemblyEntry) upsertRegistryEntry(assemblyEntry);
       // `saveDesign` falls back to the STORED value for both variant fields, so
       // it cannot clear them; `detachVariant` writes through the store for
       // exactly that reason. Runs after the save so it keeps what was just

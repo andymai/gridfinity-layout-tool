@@ -3416,6 +3416,7 @@
   "inspector.extendToMargin": "Extender hasta el margen del cajón",
   "inspector.extendToMargin.hint": "Rellena el margen de ajuste de la base en cada borde del cajón que toca.",
   "inspector.extendToMargin.needsLink": "Vincula un diseño para extender hasta el margen.",
+  "inspector.extendToMargin.fixedShape": "Los contenedores importados y los diseños de Workshop conservan su forma guardada, así que no pueden extenderse hasta el margen.",
   "inspector.fitsPrintBedDimensions": "{binWidth}×{binDepth} cabe en print bed ({max}mm)",
   "inspector.heightReasonDrawerHeight": "altura del cajón",
   "inspector.heightReasonLayerHeight": "altura de capa",

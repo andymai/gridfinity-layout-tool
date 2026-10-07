@@ -20,6 +20,7 @@ vi.mock('@/features/bin-designer/storage/DesignerStorage', () => ({
 
 import { designAdapter } from './designAdapter';
 import { __resetForTests, emit } from './designerEvents';
+import { loadRegistry } from '@/features/bin-designer/store/customBinRegistry';
 
 const sampleParams = (): BinParams => ({}) as BinParams;
 const samplePayload = (name = 'D'): { name: string; params: BinParams } => ({
@@ -194,6 +195,50 @@ describe('designAdapter assembly kind', () => {
     expect(saved.params).toBeUndefined();
     expect(saved.structure?.kind).toBe('assembly');
     expect(saved.structure?.kind === 'assembly' ? saved.structure.parts : []).toHaveLength(1);
+  });
+
+  // saveDesign never registers a design, and the boot thumbnail pass that
+  // registers synced bins skips assemblies. Without this a Workshop design
+  // pulled onto a fresh device reads as a parametric bin in the layout.
+  it('applyRemote registers an assembly so the layout knows its kind', async () => {
+    localStorage.clear();
+    loadDesignMock.mockResolvedValueOnce(err(storageNotFound('missing')));
+    saveDesignMock.mockResolvedValueOnce(ok(assemblyDesign('w')));
+    await designAdapter.applyRemote({
+      id: 'w',
+      payload: {
+        name: 'Remote build',
+        kind: 'assembly',
+        envelope: assemblyEnvelope(),
+        structure: assemblyStructure(),
+      },
+      modifiedAt: 1,
+    });
+    const entry = loadRegistry().find((r) => r.id === 'w');
+    expect(entry?.kind).toBe('assembly');
+    expect(entry?.name).toBe('Workshop build');
+    expect(entry?.width).toBe(4);
+    expect(entry?.depth).toBe(2);
+    expect(entry?.assembledRiseMm).toBeGreaterThan(0);
+  });
+
+  it('applyRemote leaves the registry alone when the assembly save fails', async () => {
+    localStorage.clear();
+    loadDesignMock.mockResolvedValueOnce(err(storageNotFound('missing')));
+    saveDesignMock.mockResolvedValueOnce(err(storageUnavailable('indexedDB')));
+    await expect(
+      designAdapter.applyRemote({
+        id: 'w',
+        payload: {
+          name: 'Remote build',
+          kind: 'assembly',
+          envelope: assemblyEnvelope(),
+          structure: assemblyStructure(),
+        },
+        modifiedAt: 1,
+      })
+    ).rejects.toThrow();
+    expect(loadRegistry()).toHaveLength(0);
   });
 
   it('applyRemote drops invalid remote nodes through migration instead of failing', async () => {

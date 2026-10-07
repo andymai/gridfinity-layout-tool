@@ -3416,6 +3416,7 @@
   "inspector.extendToMargin": "Estender até a margem da gaveta",
   "inspector.extendToMargin.hint": "Preenche a margem de ajuste da placa base em cada borda da gaveta que toca.",
   "inspector.extendToMargin.needsLink": "Vincule um design para estender até a margem.",
+  "inspector.extendToMargin.fixedShape": "Compartimentos importados e designs do Workshop mantêm a forma salva, então não podem se estender até a margem.",
   "inspector.fitsPrintBedDimensions": "{binWidth}×{binDepth} cabe na print bed ({max}mm)",
   "inspector.heightReasonDrawerHeight": "altura da gaveta",
   "inspector.heightReasonLayerHeight": "altura da camada",

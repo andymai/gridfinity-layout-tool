@@ -14,9 +14,11 @@
  * `binMarginSides`/`binCanExtendToMargin` pair stays padding-only, because the
  * inspector toggle's visibility must depend on padding alone — an authored
  * flare widens the resolved overhang but must not make the control appear.
+ * Whether the linked design can extend at all is `designKindExtendsToMargin`.
  */
 
 import type { OverhangConfig, StoredBaseplateParams, WallTaperProfile } from '@/core/types';
+import type { ItemKind } from '@/shared/types/item';
 
 /** Per-side padding (mm) a bin could claim on each drawer edge it abuts. */
 export interface MarginSides {
@@ -95,16 +97,28 @@ export function binCanExtendToMargin(
 }
 
 /**
+ * Whether a linked design of this kind can grow into the drawer margin. Only a
+ * parametric bin has walls to widen: the layout export prints an imported mesh
+ * or an assembly exactly as stored. `undefined` is a parametric bin, matching
+ * the registry, whose bin entries omit the kind.
+ */
+export function designKindExtendsToMargin(kind: ItemKind | undefined): boolean {
+  return kind === undefined || kind === 'bin';
+}
+
+/**
  * The live {@link OverhangConfig} for a bin that has opted into extending, or
- * `null` when it hasn't opted in or abuts no padded edge (dormant). mm come
- * from the current padding; `feet` matches the baseplate's over-tile margin.
+ * `null` when it hasn't opted in, abuts no padded edge (dormant), or is linked
+ * to a design kind that cannot extend. mm come from the current padding;
+ * `feet` matches the baseplate's over-tile margin.
  */
 export function resolveBinMarginOverhang(
   bin: Pick<OverhangSource, 'x' | 'y' | 'width' | 'depth' | 'extendToMargin' | 'marginTaper'>,
   drawer: DrawerSize,
-  baseplate: StoredBaseplateParams | undefined
+  baseplate: StoredBaseplateParams | undefined,
+  linkedKind?: ItemKind
 ): OverhangConfig | null {
-  if (!bin.extendToMargin) return null;
+  if (!bin.extendToMargin || !designKindExtendsToMargin(linkedKind)) return null;
   const sides = binMarginSides(bin, drawer, baseplate);
   if (sidesTotal(sides) <= EPS) return null;
   const feet = baseplate?.overTile ?? false;
@@ -181,6 +195,7 @@ function explicitBinOverhang(bin: Pick<OverhangSource, 'overhang'>): OverhangCon
  * Precedence:
  *  1. `bin.overhang` — explicit, authored by "Expand to Fit".
  *  2. `bin.extendToMargin` — derived live from the baseplate's drawer padding.
+ *     Skipped when `linkedKind` is a design that cannot extend.
  *  3. `null` — the caller keeps whatever the linked design specifies in
  *     `params.overhang`.
  *
@@ -194,9 +209,10 @@ function explicitBinOverhang(bin: Pick<OverhangSource, 'overhang'>): OverhangCon
 export function resolveBinOverhang(
   bin: OverhangSource,
   drawer: DrawerSize,
-  baseplate: StoredBaseplateParams | undefined
+  baseplate: StoredBaseplateParams | undefined,
+  linkedKind?: ItemKind
 ): OverhangConfig | null {
-  return explicitBinOverhang(bin) ?? resolveBinMarginOverhang(bin, drawer, baseplate);
+  return explicitBinOverhang(bin) ?? resolveBinMarginOverhang(bin, drawer, baseplate, linkedKind);
 }
 
 /**
@@ -207,9 +223,10 @@ export function resolveBinOverhang(
 export function binOverhangSides(
   bin: OverhangSource,
   drawer: DrawerSize,
-  baseplate: StoredBaseplateParams | undefined
+  baseplate: StoredBaseplateParams | undefined,
+  linkedKind?: ItemKind
 ): MarginSides {
-  const o = resolveBinOverhang(bin, drawer, baseplate);
+  const o = resolveBinOverhang(bin, drawer, baseplate, linkedKind);
   if (!o) return ZERO_SIDES;
   return {
     left: Math.max(0, o.left),

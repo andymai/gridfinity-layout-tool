@@ -7,7 +7,8 @@
  * actual overhang is derived live from the current padding at render/export
  * (see `@/shared/utils/drawerMargin`). The control appears only when the bin
  * abuts a padded edge; it requires a linked design (only linked bins generate
- * geometry), so it's disabled with a hint until one is linked.
+ * geometry), so it's disabled with a hint until one is linked, and stays
+ * disabled for an imported mesh or an assembly, which print as stored.
  *
  * The taper angles the wall outward from the padding-wide base up to the rim so
  * the bin reaches into a drawer's curved sides; the per-side reach is derived
@@ -19,7 +20,8 @@
 import { CheckboxRow, SegmentedControl, SliderInput } from '@/design-system';
 import type { SegmentedControlOption } from '@/design-system';
 import { useMutations } from '@/shared/contexts/MutationsContext';
-import { binCanExtendToMargin } from '@/shared/utils/drawerMargin';
+import { useLinkedDesignKinds } from '@/shared/hooks/useLinkedDesignKinds';
+import { binCanExtendToMargin, designKindExtendsToMargin } from '@/shared/utils/drawerMargin';
 import { useTranslation } from '@/i18n';
 import type { Bin, Drawer, StoredBaseplateParams, WallTaperProfile } from '@/core/types';
 import type { Result, LayoutError } from '@/core/result';
@@ -41,12 +43,15 @@ const MAX_FLARE_MM = 42;
 export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginToggleProps) {
   const t = useTranslation();
   const { updateBin } = useMutations();
+  const designKinds = useLinkedDesignKinds();
 
   // No control for interior bins or drawers with no margin — nothing to fill.
   if (!binCanExtendToMargin(bin, drawer, baseplate)) return null;
 
-  const linked = bin.linkedDesignId !== undefined;
-  const canTaper = linked && bin.extendToMargin === true;
+  const linkedId = bin.linkedDesignId;
+  const linked = linkedId !== undefined;
+  const extendable = linked && designKindExtendsToMargin(designKinds.get(linkedId));
+  const canTaper = extendable && bin.extendToMargin === true;
 
   const marginTaper = bin.marginTaper;
   const taperOn = marginTaper?.enabled === true;
@@ -78,12 +83,16 @@ export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginT
     <div>
       <CheckboxRow
         label={t('inspector.extendToMargin')}
-        checked={linked && bin.extendToMargin === true}
-        disabled={!linked}
+        checked={extendable && bin.extendToMargin === true}
+        disabled={!extendable}
         onChange={(checked) => updateBin(bin.id, { extendToMargin: checked })}
       />
       <p className="mt-1 px-2 text-micro leading-snug text-content-disabled">
-        {linked ? t('inspector.extendToMargin.hint') : t('inspector.extendToMargin.needsLink')}
+        {!linked
+          ? t('inspector.extendToMargin.needsLink')
+          : extendable
+            ? t('inspector.extendToMargin.hint')
+            : t('inspector.extendToMargin.fixedShape')}
       </p>
 
       {canTaper && (

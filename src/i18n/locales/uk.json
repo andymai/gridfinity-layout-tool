@@ -3416,6 +3416,7 @@
   "inspector.extendToMargin": "Розширити в поле шухляди",
   "inspector.extendToMargin.hint": "Заповнює поле підгонки базової плити на кожному краю шухляди, якого торкається.",
   "inspector.extendToMargin.needsLink": "Прив’яжіть дизайн, щоб розширити в поле.",
+  "inspector.extendToMargin.fixedShape": "Імпортовані контейнери та дизайни Workshop друкуються у збереженій формі, тому не можуть розширюватися в поле.",
   "inspector.fitsPrintBedDimensions": "{binWidth}×{binDepth} вміщується на стіл ({max}мм)",
   "inspector.heightReasonDrawerHeight": "висота шухляди",
   "inspector.heightReasonLayerHeight": "висота шару",
