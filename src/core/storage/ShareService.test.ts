@@ -17,7 +17,15 @@ import {
 } from '@/core/storage';
 import type { Layout } from '@/core/types';
 import { binId, categoryId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
-import { getUserMessage, ok, err, storageNotFound } from '@/core/result';
+import {
+  getUserMessage,
+  ok,
+  err,
+  isErr,
+  storageMeshMissing,
+  storageNotFound,
+  unwrap,
+} from '@/core/result';
 import type { Result, ValidationError, ValidationImportError } from '@/core/result';
 import {
   registerDesignStorePort,
@@ -390,6 +398,18 @@ describe('storage-share', () => {
       expect(mockURL.revokeObjectURL).toHaveBeenCalledWith('blob:test');
     });
 
+    it('downloads nothing when a linked design names a missing mesh file', async () => {
+      registerDesignStorePort(fakePort);
+      mockLoadDesign.mockResolvedValue(err(storageMeshMissing('a'.repeat(64))));
+      const layout = createTestLayout();
+      layout.bins = layout.bins.map((bin) => ({ ...bin, linkedDesignId: designId('design-1') }));
+
+      const result = await downloadLayoutAsFile(layout);
+
+      expect(isErr(result)).toBe(true);
+      expect(mockAnchor.click).not.toHaveBeenCalled();
+    });
+
     it('uses custom filename if provided', async () => {
       const layout = createTestLayout();
       await downloadLayoutAsFile(layout, 'custom-name.json');
@@ -642,7 +662,7 @@ describe('storage-share', () => {
 
     it('exports layout without linked designs (no linkedDesigns key in output)', async () => {
       const layout = createTestLayout();
-      const json = await exportLayoutJSONWithDesigns(layout);
+      const json = unwrap(await exportLayoutJSONWithDesigns(layout));
 
       const parsed = JSON.parse(json);
       expect(parsed.linkedDesigns).toBeUndefined();
@@ -666,7 +686,7 @@ describe('storage-share', () => {
         })
       );
 
-      const json = await exportLayoutJSONWithDesigns(layout);
+      const json = unwrap(await exportLayoutJSONWithDesigns(layout));
       const parsed = JSON.parse(json);
 
       expect(parsed.linkedDesigns).toBeDefined();
@@ -702,7 +722,7 @@ describe('storage-share', () => {
         })
       );
 
-      const json = await exportLayoutJSONWithDesigns(layout);
+      const json = unwrap(await exportLayoutJSONWithDesigns(layout));
       const parsed = JSON.parse(json);
 
       expect(parsed.linkedDesigns).toHaveLength(1);
@@ -721,7 +741,7 @@ describe('storage-share', () => {
       // Mock loadDesign to return not found error
       mockLoadDesign.mockResolvedValue(err(storageNotFound('design-1')));
 
-      const json = await exportLayoutJSONWithDesigns(layout);
+      const json = unwrap(await exportLayoutJSONWithDesigns(layout));
       const parsed = JSON.parse(json);
 
       // Should not include linkedDesigns key when no designs were found
@@ -756,12 +776,21 @@ describe('storage-share', () => {
         )
         .mockResolvedValueOnce(err(storageNotFound('design-2')));
 
-      const json = await exportLayoutJSONWithDesigns(layout);
+      const json = unwrap(await exportLayoutJSONWithDesigns(layout));
       const parsed = JSON.parse(json);
 
       expect(parsed.linkedDesigns).toBeDefined();
       expect(parsed.linkedDesigns).toHaveLength(1);
       expect(parsed.linkedDesigns[0].id).toBe('design-1');
+    });
+
+    it('fails the whole export when a linked design names a missing mesh file', async () => {
+      const layout = createLayoutWithLinkedDesigns();
+      mockLoadDesign.mockResolvedValue(err(storageMeshMissing('a'.repeat(64))));
+
+      const exported = await exportLayoutJSONWithDesigns(layout);
+
+      expect(isErr(exported) && exported.error.code).toBe('STORAGE_MESH_MISSING');
     });
   });
 
@@ -1218,7 +1247,7 @@ describe('storage-share', () => {
         linkedDesignId: i === 0 ? designId('design-1') : undefined,
       }));
 
-      const json = await exportLayoutJSONWithDesigns(layout);
+      const json = unwrap(await exportLayoutJSONWithDesigns(layout));
       const parsed = JSON.parse(json);
 
       expect(parsed.linkedDesigns).toBeUndefined();

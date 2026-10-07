@@ -3,6 +3,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { useLayoutStore, useLibraryStore } from '@/core/store';
 import { useInteractionStore } from '@/core/store/interaction';
+import { useToastStore } from '@/core/store/toast';
+import { storageMeshMissing } from '@/core/result';
 import { resetAllStores } from '@/test/testUtils';
 import * as storage from '@/core/storage';
 import type { Layout } from '@/core/types';
@@ -11,7 +13,7 @@ import { binId, categoryId, gridUnits, heightUnits, layerId, layoutId, mm } from
 // Mock storage utilities
 vi.mock('@/core/storage', () => ({
   generateShareableURL: vi.fn(() => 'https://example.com/share?layout=abc'),
-  downloadLayoutAsFile: vi.fn(() => Promise.resolve()),
+  downloadLayoutAsFile: vi.fn(() => Promise.resolve({ ok: true as const, value: undefined })),
   copyToClipboard: vi.fn(() => Promise.resolve(true)),
   exportLayoutJSON: vi.fn(() => '{"version":"1.0","name":"Test"}'),
   getSharedLayoutFromURL: vi.fn(() => null),
@@ -205,6 +207,22 @@ describe('ShareModal', () => {
       await waitFor(() => {
         expect(storage.downloadLayoutAsFile).toHaveBeenCalledWith(mockLayout);
       });
+    });
+
+    it('toasts instead of downloading when a linked design names a missing mesh file', async () => {
+      vi.mocked(storage.downloadLayoutAsFile).mockResolvedValueOnce({
+        ok: false,
+        error: storageMeshMissing('a'.repeat(64)),
+      });
+
+      fireEvent.click(screen.getByText('Download'));
+
+      await waitFor(() => {
+        expect(useToastStore.getState().toasts.map((toast) => toast.message)).toContain(
+          "An imported STL used here is missing from this device, so it can't be shared or exported."
+        );
+      });
+      expect(mockTrackEvent).not.toHaveBeenCalledWith('ui.layoutExported', expect.any(Object));
     });
 
     it('tracks file export', async () => {

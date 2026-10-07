@@ -7,7 +7,7 @@
 
 import type { Layout, SharePermission } from '@/core/types';
 import type { LinkedDesignExport } from '@/core/storage';
-import type { Result, ApiError, ValidationError } from '@/core/result';
+import type { Result, ApiError, StorageMeshMissingError, ValidationError } from '@/core/result';
 import {
   ok,
   err,
@@ -89,20 +89,23 @@ function exceedsSingleDesignBudget(design: LinkedDesignExport): boolean {
  * (it counts only params, or envelope + structure), so a set within this
  * budget is always within the server's total.
  */
-async function collectDesignsForShare(layout: Layout): Promise<SharedLinkedDesign[]> {
+async function collectDesignsForShare(
+  layout: Layout
+): Promise<Result<SharedLinkedDesign[], StorageMeshMissingError>> {
   const { collectLinkedDesigns } = await import('@/core/storage/ShareService');
   const designs = await collectLinkedDesigns(layout);
+  if (isErr(designs)) return designs;
 
   const withinBudget: SharedLinkedDesign[] = [];
   let bytes = 0;
-  for (const design of designs) {
+  for (const design of designs.value) {
     if (exceedsSingleDesignBudget(design)) continue;
     const size = JSON.stringify(design).length;
     if (bytes + size > LINKED_DESIGNS_BUDGET_BYTES) continue;
     bytes += size;
     withinBudget.push(design);
   }
-  return withinBudget;
+  return ok(withinBudget);
 }
 
 export interface UpdateShareResponse {
@@ -276,9 +279,11 @@ export async function createShare(
   layout: Layout,
   permission: SharePermission = 'view',
   authorName?: string
-): Promise<Result<ShareResponse, ApiError>> {
-  return withNetworkErrors(async () => {
-    const linkedDesigns = await collectDesignsForShare(layout);
+): Promise<Result<ShareResponse, ApiError | StorageMeshMissingError>> {
+  return withNetworkErrors<ShareResponse, ApiError | StorageMeshMissingError>(async () => {
+    const collected = await collectDesignsForShare(layout);
+    if (isErr(collected)) return collected;
+    const linkedDesigns = collected.value;
     const post = (shareId: string): Promise<Response> =>
       fetch(
         '/api/share',
@@ -305,9 +310,11 @@ export async function updateShare(
   deleteToken: string,
   layout: Layout,
   permission?: SharePermission
-): Promise<Result<UpdateShareResponse, ApiError>> {
-  return withNetworkErrors(async () => {
-    const linkedDesigns = await collectDesignsForShare(layout);
+): Promise<Result<UpdateShareResponse, ApiError | StorageMeshMissingError>> {
+  return withNetworkErrors<UpdateShareResponse, ApiError | StorageMeshMissingError>(async () => {
+    const collected = await collectDesignsForShare(layout);
+    if (isErr(collected)) return collected;
+    const linkedDesigns = collected.value;
     return requestShare(
       `/api/share/${id}`,
       jsonInit('PUT', { layout, permission, deleteToken, linkedDesigns }),

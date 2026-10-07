@@ -3,6 +3,7 @@ import type { ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/design-system';
 import { captureException } from '@/shared/analytics/posthog';
 import { downloadArchive } from '@/core/storage';
+import { isOk } from '@/core/result';
 import { useLibraryStore } from '@/core/store/library';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { recoverStaleBundle } from '@/shared/pwa/staleRecovery';
@@ -84,7 +85,7 @@ export class ErrorBoundary extends Component<Props, State> {
   handleDownloadBackup = () => {
     this.setState({ backupState: 'working' });
     void downloadArchive(useLibraryStore.getState().library)
-      .then(() => this.setState({ backupState: 'done' }))
+      .then((result) => this.setState({ backupState: isOk(result) ? 'done' : 'error' }))
       .catch(() => this.setState({ backupState: 'error' }));
   };
 

@@ -9,7 +9,7 @@ import * as shareApi from '@/core/api/share';
 import * as storage from '@/core/storage';
 import type { LayoutLibrary, CloudShareInfo } from '@/core/types';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
-import { ok, err, apiRateLimited, apiNotFound } from '@/core/result';
+import { ok, err, apiRateLimited, apiNotFound, storageMeshMissing } from '@/core/result';
 
 // Mock the share API module
 vi.mock('@/core/api/share', () => ({
@@ -185,6 +185,24 @@ describe('useCloudShare', () => {
       expect(result.current.error).not.toBeNull();
       expect(result.current.error?.code).toBe('API_RATE_LIMITED');
       expect(mockAnnounce).toHaveBeenCalledWith(expect.stringContaining('failed'));
+    });
+
+    it('refuses a share whose linked design names a missing mesh file, saying why', async () => {
+      vi.mocked(shareApi.createShare).mockResolvedValue(err(storageMeshMissing('a'.repeat(64))));
+
+      const { result } = renderHook(() => useCloudShare());
+
+      let success: boolean | undefined;
+      await act(async () => {
+        success = await result.current.share('view');
+      });
+
+      expect(success).toBe(false);
+      expect(result.current.error).toMatchObject({
+        code: 'STORAGE_MESH_MISSING',
+        message:
+          "An imported STL used here is missing from this device, so it can't be shared or exported.",
+      });
     });
 
     it('handles offline state', async () => {

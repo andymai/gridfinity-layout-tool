@@ -21,7 +21,7 @@ vi.mock('@/core/storage', () => ({
       heightUnitMm: 7,
     })
   ),
-  downloadLayoutAsFile: vi.fn(() => Promise.resolve()),
+  downloadLayoutAsFile: vi.fn(() => Promise.resolve({ ok: true as const, value: undefined })),
 }));
 
 vi.mock('@/shared/components/LayoutThumbnail', () => ({

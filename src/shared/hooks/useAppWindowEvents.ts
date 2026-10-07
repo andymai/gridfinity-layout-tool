@@ -1,8 +1,11 @@
 import { useCallback, useEffect } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { useLayoutStore } from '@/core/store';
+import { useToastStore } from '@/core/store/toast';
 import { downloadLayoutAsFile } from '@/core/storage';
 import { SHORTCUTS } from '@/core/constants';
+import { isOk } from '@/core/result';
+import { useTranslation } from '@/i18n';
 
 export interface AppWindowEventsDeps {
   readonly setIsHelpOpen: Dispatch<SetStateAction<boolean>>;
@@ -25,6 +28,7 @@ export function useAppWindowEvents({
   navigateToSupporters,
   navigateToDesigner,
 }: AppWindowEventsDeps): void {
+  const t = useTranslation();
   // Allow external surfaces (e.g. HelpModal's empty-state fall-through) to open
   // the command palette pre-filled with a query via a window event.
   useEffect(() => {
@@ -76,9 +80,12 @@ export function useAppWindowEvents({
     const handleDownloadLayout = () => {
       const layout = useLayoutStore.getState().layout;
       const filename = `${layout.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`;
-      void downloadLayoutAsFile(layout, filename);
+      void downloadLayoutAsFile(layout, filename).then((downloaded) => {
+        if (!isOk(downloaded))
+          useToastStore.getState().addToast(t('toast.meshFileMissing'), 'error');
+      });
     };
     window.addEventListener('download-layout', handleDownloadLayout);
     return () => window.removeEventListener('download-layout', handleDownloadLayout);
-  }, []);
+  }, [t]);
 }

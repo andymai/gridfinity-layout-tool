@@ -39,7 +39,7 @@ vi.mock('@/core/storage', async (importOriginal) => {
     getLayoutStorageKey: vi.fn((id: string) => `gridfinity-layout-${id}`),
     generateShareableURL: vi.fn(() => 'https://example.com/share'),
     copyToClipboard: vi.fn().mockResolvedValue(true),
-    downloadLayoutAsFile: vi.fn(() => Promise.resolve()),
+    downloadLayoutAsFile: vi.fn(() => Promise.resolve({ ok: true as const, value: undefined })),
 
     // Atomic functions used by useLayoutSwitcher
     saveLayoutWithMetadata: vi

@@ -7,6 +7,8 @@
 
 import { exportLayoutJSONWithDesigns } from './ShareService';
 import type { Layout } from '@/core/types';
+import { isOk, OK } from '@/core/result';
+import type { Result, StorageMeshMissingError } from '@/core/result';
 
 /**
  * Copy text to clipboard.
@@ -26,11 +28,16 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 /**
  * Download a layout as a JSON file with embedded bin designs.
  * Creates a temporary anchor element to trigger the download.
- * Async because it needs to look up linked designs from IndexedDB.
+ * Async because it needs to look up linked designs from IndexedDB. Fails,
+ * downloading nothing, when a linked design's mesh file is missing.
  */
-export async function downloadLayoutAsFile(layout: Layout, filename?: string): Promise<void> {
-  const json = await exportLayoutJSONWithDesigns(layout);
-  const blob = new Blob([json], { type: 'application/json' });
+export async function downloadLayoutAsFile(
+  layout: Layout,
+  filename?: string
+): Promise<Result<void, StorageMeshMissingError>> {
+  const exported = await exportLayoutJSONWithDesigns(layout);
+  if (!isOk(exported)) return exported;
+  const blob = new Blob([exported.value], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement('a');
@@ -40,4 +47,5 @@ export async function downloadLayoutAsFile(layout: Layout, filename?: string): P
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  return OK;
 }

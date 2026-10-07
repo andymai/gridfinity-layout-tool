@@ -16,7 +16,7 @@ import {
   heightUnits,
   mm,
 } from '@/core/types';
-import { ok, err } from '@/core/result';
+import { ok, err, isErr, storageMeshMissing, unwrap } from '@/core/result';
 import {
   registerDesignStorePort,
   resetDesignStorePort,
@@ -189,7 +189,7 @@ describe('exportAllLayouts', () => {
     mockLoadLayoutAsync.mockResolvedValueOnce(layout1).mockResolvedValueOnce(layout2);
 
     const library = makeLibrary([makeEntry('id-1', 'Alpha'), makeEntry('id-2', 'Beta')]);
-    const result = await exportAllLayouts(library);
+    const result = unwrap(await exportAllLayouts(library));
     const parsed = JSON.parse(result.json);
 
     expect(result.exported).toBe(2);
@@ -219,7 +219,7 @@ describe('exportAllLayouts', () => {
       .mockResolvedValueOnce(makeLayout('Beta'));
     const library = makeLibrary([makeEntry('id-1', 'Alpha'), makeEntry('id-2', 'Beta')]);
 
-    const result = await exportAllLayouts(library);
+    const result = unwrap(await exportAllLayouts(library));
     const parsed = JSON.parse(result.json);
 
     expect(result.exported).toBe(1);
@@ -231,7 +231,7 @@ describe('exportAllLayouts', () => {
     mockLoadLayoutAsync.mockResolvedValueOnce(null).mockResolvedValueOnce(makeLayout('Beta'));
     const library = makeLibrary([makeEntry('id-1', 'Alpha'), makeEntry('id-2', 'Beta')]);
 
-    const result = await exportAllLayouts(library);
+    const result = unwrap(await exportAllLayouts(library));
     const parsed = JSON.parse(result.json);
 
     expect(result.exported).toBe(1);
@@ -245,7 +245,7 @@ describe('exportAllLayouts', () => {
     mockLoadLayoutAsync.mockResolvedValueOnce(makeLayoutWithLinkedDesign('d1'));
     mockLoadDesign.mockResolvedValue(ok({ id: 'd1', name: 'Widget', params: { width: 2 } }));
 
-    const result = await exportAllLayouts(makeLibrary([makeEntry('id-1', 'L1')]));
+    const result = unwrap(await exportAllLayouts(makeLibrary([makeEntry('id-1', 'L1')])));
     const parsed = JSON.parse(result.json);
 
     expect(mockLoadDesign).toHaveBeenCalledWith('d1');
@@ -253,11 +253,21 @@ describe('exportAllLayouts', () => {
     expect(parsed.layouts[0].linkedDesigns[0].id).toBe('d1');
   });
 
+  it('fails the whole archive when a linked design names a missing mesh file', async () => {
+    registerDesignStorePort(fakePort);
+    mockLoadLayoutAsync.mockResolvedValueOnce(makeLayoutWithLinkedDesign('d1'));
+    mockLoadDesign.mockResolvedValue(err(storageMeshMissing('a'.repeat(64))));
+
+    const result = await exportAllLayouts(makeLibrary([makeEntry('id-1', 'L1')]));
+
+    expect(isErr(result) && result.error.code).toBe('STORAGE_MESH_MISSING');
+  });
+
   it('omits linked designs when no port is registered (null fallback)', async () => {
     resetDesignStorePort();
     mockLoadLayoutAsync.mockResolvedValueOnce(makeLayoutWithLinkedDesign('d1'));
 
-    const result = await exportAllLayouts(makeLibrary([makeEntry('id-1', 'L1')]));
+    const result = unwrap(await exportAllLayouts(makeLibrary([makeEntry('id-1', 'L1')])));
     const parsed = JSON.parse(result.json);
 
     expect(result.exported).toBe(1);

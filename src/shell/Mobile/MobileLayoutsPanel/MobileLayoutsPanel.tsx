@@ -25,6 +25,7 @@ import {
 import type { Layout } from '@/core/types';
 import { layoutId } from '@/core/types';
 import { isOk } from '@/core/result';
+import { useToastStore } from '@/core/store/toast';
 import { useTranslation, useFormatting } from '@/i18n';
 import { Button, Input } from '@/design-system';
 import {
@@ -256,11 +257,12 @@ export function MobileLayoutsPanel() {
       const entry = findEntry(entries, id);
       const layout = await resolveLayout(id, activeLayoutId, currentLayout);
       if (layout && entry) {
-        await downloadLayoutAsFile(
+        const downloaded = await downloadLayoutAsFile(
           layout,
           `${entry.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`
         );
-        announceToScreenReader(t('layouts.announce.downloaded'));
+        if (isOk(downloaded)) announceToScreenReader(t('layouts.announce.downloaded'));
+        else useToastStore.getState().addToast(t('toast.meshFileMissing'), 'error');
       }
       setShareMenuId(null);
     },

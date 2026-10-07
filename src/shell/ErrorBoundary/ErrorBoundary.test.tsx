@@ -20,7 +20,9 @@ vi.mock('@/shared/analytics/posthog', () => ({
 // Mock storage: the boundary now offers a non-destructive backup, not a wipe.
 // Mock resolves with the real ExportResult shape ({ json, exported, skipped }).
 vi.mock('@/core/storage', () => ({
-  downloadArchive: vi.fn().mockResolvedValue({ json: '{}', exported: 0, skipped: 0 }),
+  downloadArchive: vi
+    .fn()
+    .mockResolvedValue({ ok: true, value: { json: '{}', exported: 0, skipped: 0 } }),
 }));
 
 // Mock the library store the boundary reads imperatively. Minimal but
