@@ -1,5 +1,23 @@
 # Changelog
 
+## [4.505.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.504.0...gridfinity-layout-tool-v4.505.0) (2026-10-07)
+
+
+### Features
+
+* **bin-designer:** rotate lid text in quarter turns ([#4503](https://github.com/andymai/gridfinity-layout-tool/issues/4503)) ([a958403](https://github.com/andymai/gridfinity-layout-tool/commit/a958403a0a9eb5614860d7c87f9ced7535a1cd17))
+
+
+### Bug Fixes
+
+* **bin-designer:** price a solid bin's fill under nesting trays and overhangs ([#4510](https://github.com/andymai/gridfinity-layout-tool/issues/4510)) ([fb42f11](https://github.com/andymai/gridfinity-layout-tool/commit/fb42f11de201784a92af6b5c3caf6b4a9e70977a))
+* **bin-designer:** price flat and tray bins without a socket ([#4509](https://github.com/andymai/gridfinity-layout-tool/issues/4509)) ([923b2f2](https://github.com/andymai/gridfinity-layout-tool/commit/923b2f2e948e9a3979192008130a732bac8e440d))
+* **bins:** keep the low-profile ridge relief off the feet's top faces ([#4504](https://github.com/andymai/gridfinity-layout-tool/issues/4504)) ([a680b56](https://github.com/andymai/gridfinity-layout-tool/commit/a680b56cb60c792a914f01082aa925aa35c4c879))
+* **bins:** level a low-profile overhang's underside with the ridge relief ([#4505](https://github.com/andymai/gridfinity-layout-tool/issues/4505)) ([a214503](https://github.com/andymai/gridfinity-layout-tool/commit/a2145038f4e1c76273bcd82734a628bfbecd54a1))
+* **deps:** raise source-map-js past its event-loop advisory ([#4507](https://github.com/andymai/gridfinity-layout-tool/issues/4507)) ([81c91e8](https://github.com/andymai/gridfinity-layout-tool/commit/81c91e8bba0a20ddc2da18a06028c8b8af961d80))
+* **generation:** build a flat base's floor a wall thick ([#4506](https://github.com/andymai/gridfinity-layout-tool/issues/4506)) ([a45ce55](https://github.com/andymai/gridfinity-layout-tool/commit/a45ce554d86cf071192f50075263492cef2a4611))
+* **generation:** seat the instant draft's floor where the exact bin's is ([#4508](https://github.com/andymai/gridfinity-layout-tool/issues/4508)) ([943d2cc](https://github.com/andymai/gridfinity-layout-tool/commit/943d2cce672555631e02b7d70fb95964b1303e04))
+
 ## [4.504.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.503.5...gridfinity-layout-tool-v4.504.0) (2026-10-06)
 
 
