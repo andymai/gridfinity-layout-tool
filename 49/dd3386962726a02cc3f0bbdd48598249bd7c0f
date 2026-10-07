@@ -1,0 +1,83 @@
+api/lib/redisKeys.ts
+  s_900382acfc8cb3::t_35eb9f74c4a24d 143,148-150
+  s_900382acfc8cb3::t_536add00a03046 22
+  s_900382acfc8cb3::t_e790793dc381a5 151-152
+api/sync/account.test.ts
+  s_900382acfc8cb3::t_40b068a841976e 70-80
+  s_900382acfc8cb3::t_439d8c98da8edf 338,341-342,351-356,358
+api/lib/redisKeys.test.ts
+  s_900382acfc8cb3::t_9fec4fd1b3a69e 14
+  s_900382acfc8cb3::t_e293179e7246be 85-88
+  s_900382acfc8cb3::t_29a54928c5bb51 93,95
+api/lib/meshFile.ts
+  s_900382acfc8cb3::t_02f27c3f8a6d4e 141-143
+api/lib/meshIndex.ts
+  s_900382acfc8cb3::t_12078db31b9487 2
+  s_900382acfc8cb3::t_df263fd23eaf8f 26-27
+  s_900382acfc8cb3::t_a3116cde62005d 1,3,6-8,16-20,25,28-99,122-124,127-131,134-136,139-143,146-154,157-166,172-178,181-183,185-196
+  s_900382acfc8cb3::t_66028e34178bc1 145
+  s_900382acfc8cb3::t_9277e23f6544cd 155-156
+api/sync/account.ts
+  s_900382acfc8cb3::t_73c47ce0d84687 247-249
+  s_900382acfc8cb3::t_d2c6562d1d0fa0 264
+  s_900382acfc8cb3::t_5400317e4fdae8 26
+api/README.md
+  s_900382acfc8cb3::t_81a8f924ca5eb4 80
+api/lib/quota.test.ts
+  s_900382acfc8cb3::t_d0b933314bbb10 3-9
+  s_900382acfc8cb3::t_f3049b4c42b668 179-180,183-184,195-205,208-210
+api/lib/blobStore.ts
+  s_900382acfc8cb3::t_686c1a176ba574 81-83
+api/lib/quota.ts
+  s_900382acfc8cb3::t_8b17e3e07e0d69 127-129,131-139,141-143,146-153
+api/meshes/[hash].ts
+  s_900382acfc8cb3::t_54a242e2599f4c 36-42
+  s_900382acfc8cb3::t_c4901c66102799 103,105-107,115-119,121,123-137,141-143
+  s_900382acfc8cb3::t_4ad7af2467ad1c 120
+  s_900382acfc8cb3::t_1d685db4970eab 12-14
+  s_900382acfc8cb3::t_7797ab3e547a7b 109-111
+  s_bf3ece01e79893::t_e3c88494c0c389 43-44,108
+api/lib/meshIndex.integration.test.ts
+  s_900382acfc8cb3::t_5d6932a031356f 87-90,92-102
+  s_900382acfc8cb3::t_610058f0624f57 1-86,91,103-140
+src/shared/generation/meshFile.ts
+  s_900382acfc8cb3::t_738918b0866db6 38
+api/meshes/[hash].test.ts
+  s_900382acfc8cb3::t_f11d1b51969968 44,46,49,55-56,59-66,69-83,91-94,101
+  s_900382acfc8cb3::t_5ad6738c526ca8 172-173
+  s_900382acfc8cb3::t_493221073c6059 420,422,433-442,445,449-452,456-502
+  s_900382acfc8cb3::t_940b4b527904ca 155
+  s_900382acfc8cb3::t_80fa3007edae61 34-35,37
+  s_900382acfc8cb3::t_d2c845affb2a8e 84-90
+  s_900382acfc8cb3::t_5372c2c7bbce5c 503
+api/lib/meshIndex.test.ts
+  s_900382acfc8cb3::t_a11d83fb5d5a73 1-4,11,15-17,21,24,27-31,33,36,39-42,45-46,49-50,53-66,69-103,105-120,127-144,148,152-161,165-192,194-197,200-205,207-210,213-216,221-227,231-232,238-240,244,247,255,260-264,268,270-272,280-282,284
+  s_900382acfc8cb3::t_b28ed306cb2f60 104
+  s_900382acfc8cb3::t_7a45ad4ecf99ec 248-251
+api/sync/README.md
+  s_900382acfc8cb3::t_447d4c958daa1b 137-138
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "49dd3386962726a02cc3f0bbdd48598249bd7c0f",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_bf3ece01e79893": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a7e2b386-6e11-4281-bc6c-eb451959cc2a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
