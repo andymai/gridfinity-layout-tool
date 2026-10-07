@@ -265,3 +265,124 @@ export function touchesItself(poly: readonly Pt[]): boolean {
   }
   return false;
 }
+
+/**
+ * Whether edges `i` and `j` of a closed outline, laid out as coordinates with
+ * the first vertex repeated at the end, cross well inside both: the test a
+ * path cutout has always been validated with. Touching, overlapping and
+ * near-parallel edges pass.
+ */
+function edgesCrossInside(xs: Float64Array, ys: Float64Array, i: number, j: number): boolean {
+  const ax = xs[i + 1] - xs[i];
+  const ay = ys[i + 1] - ys[i];
+  const bx = xs[j + 1] - xs[j];
+  const by = ys[j + 1] - ys[j];
+  const d = ax * by - ay * bx;
+  if (Math.abs(d) < 1e-10) return false;
+  const ox = xs[j] - xs[i];
+  const oy = ys[j] - ys[i];
+  const t = (ox * by - oy * bx) / d;
+  const u = (ox * ay - oy * ax) / d;
+  const eps = 1e-6;
+  return t > eps && t < 1 - eps && u > eps && u < 1 - eps;
+}
+
+/** Runs of at most this many consecutive edges are checked pair by pair. */
+const CROSSING_LEAF = 16;
+
+/**
+ * Whether any two non-adjacent edges of a closed polyline cross
+ * ({@link edgesCrossInside}), checked over a tree of boxes round runs of
+ * consecutive edges. Two edges that cross meet strictly inside both, so their
+ * boxes overlap and the pair is always reached: the verdict is the all-pairs
+ * one. Only runs whose boxes overlap are opened, which keeps a dense zigzag,
+ * a jittered edge or a tight spiral near linear. Long edges that all pass one
+ * point, like a fan of spikes, overlap in every box and are still compared
+ * pair by pair.
+ */
+export function polylineCrosses(poly: readonly Pt[]): boolean {
+  const n = poly.length;
+  if (n < 4) return false;
+  const xs = new Float64Array(n + 1);
+  const ys = new Float64Array(n + 1);
+  for (let i = 0; i <= n; i++) {
+    xs[i] = poly[i % n].x;
+    ys[i] = poly[i % n].y;
+  }
+  const lo: number[] = [];
+  const hi: number[] = [];
+  const left: number[] = [];
+  const right: number[] = [];
+  const box: number[] = [];
+  const build = (from: number, to: number): number => {
+    const node = lo.length;
+    lo.push(from);
+    hi.push(to);
+    left.push(-1);
+    right.push(-1);
+    if (to - from <= CROSSING_LEAF) {
+      let minX = Infinity;
+      let minY = Infinity;
+      let maxX = -Infinity;
+      let maxY = -Infinity;
+      for (let v = from; v <= to; v++) {
+        minX = Math.min(minX, xs[v]);
+        minY = Math.min(minY, ys[v]);
+        maxX = Math.max(maxX, xs[v]);
+        maxY = Math.max(maxY, ys[v]);
+      }
+      box.push(minX, minY, maxX, maxY);
+      return node;
+    }
+    box.push(0, 0, 0, 0);
+    const mid = (from + to) >> 1;
+    const l = build(from, mid);
+    const r = build(mid, to);
+    left[node] = l;
+    right[node] = r;
+    box[4 * node] = Math.min(box[4 * l], box[4 * r]);
+    box[4 * node + 1] = Math.min(box[4 * l + 1], box[4 * r + 1]);
+    box[4 * node + 2] = Math.max(box[4 * l + 2], box[4 * r + 2]);
+    box[4 * node + 3] = Math.max(box[4 * l + 3], box[4 * r + 3]);
+    return node;
+  };
+  const root = build(0, n);
+
+  const overlap = (a: number, b: number): boolean =>
+    box[4 * a] <= box[4 * b + 2] &&
+    box[4 * b] <= box[4 * a + 2] &&
+    box[4 * a + 1] <= box[4 * b + 3] &&
+    box[4 * b + 1] <= box[4 * a + 3];
+  // Every run of `a` comes before every run of `b`, so i < j throughout.
+  const across = (a: number, b: number): boolean => {
+    if (!overlap(a, b)) return false;
+    const aLeaf = left[a] < 0;
+    const bLeaf = left[b] < 0;
+    if (aLeaf && bLeaf) {
+      for (let i = lo[a]; i < hi[a]; i++) {
+        const end = i === 0 && hi[b] === n ? n - 1 : hi[b];
+        for (let j = Math.max(lo[b], i + 2); j < end; j++) {
+          if (edgesCrossInside(xs, ys, i, j)) return true;
+        }
+      }
+      return false;
+    }
+    if (bLeaf || (!aLeaf && hi[a] - lo[a] >= hi[b] - lo[b])) {
+      return across(left[a], b) || across(right[a], b);
+    }
+    return across(a, left[b]) || across(a, right[b]);
+  };
+  const within = (node: number): boolean => {
+    if (left[node] < 0) {
+      for (let i = lo[node]; i < hi[node]; i++) {
+        const end = i === 0 && hi[node] === n ? n - 1 : hi[node];
+        for (let j = i + 2; j < end; j++) {
+          if (edgesCrossInside(xs, ys, i, j)) return true;
+        }
+      }
+      return false;
+    }
+    return within(left[node]) || within(right[node]) || across(left[node], right[node]);
+  };
+  return within(root);
+}

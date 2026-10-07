@@ -5,6 +5,7 @@
 
 import type { PathPoint } from '@/shared/types/bin';
 import { MIN_PATH_POINTS } from '@/shared/types/bin';
+import { polylineCrosses } from '@/shared/utils/outlineSegments';
 import { dropCoincidentPoints } from '@/shared/utils/polyline';
 import { offsetClosedPolygonWithinReach, refineForOffset } from '@/shared/utils/polygonOffset';
 import type { Pt } from '@/shared/utils/polygonOffset';
@@ -56,25 +57,7 @@ export function flattenPathToPolyline(path: readonly PathPoint[]): Array<{ x: nu
 
 /** Check if a closed polyline self-intersects (any non-adjacent edges cross). */
 export function polylineSelfIntersects(poly: readonly { x: number; y: number }[]): boolean {
-  const n = poly.length;
-  if (n < 4) return false;
-
-  for (let i = 0; i < n; i++) {
-    const a1 = poly[i];
-    const a2 = poly[(i + 1) % n];
-    for (let j = i + 2; j < n; j++) {
-      if (j === n - 1 && i === 0) continue; // adjacent (closing edge)
-      const b1 = poly[j];
-      const b2 = poly[(j + 1) % n];
-      const d = (a2.x - a1.x) * (b2.y - b1.y) - (a2.y - a1.y) * (b2.x - b1.x);
-      if (Math.abs(d) < 1e-10) continue;
-      const t = ((b1.x - a1.x) * (b2.y - b1.y) - (b1.y - a1.y) * (b2.x - b1.x)) / d;
-      const u = ((b1.x - a1.x) * (a2.y - a1.y) - (b1.y - a1.y) * (a2.x - a1.x)) / d;
-      const eps = 1e-6;
-      if (t > eps && t < 1 - eps && u > eps && u < 1 - eps) return true;
-    }
-  }
-  return false;
+  return polylineCrosses(poly);
 }
 
 /** Centered, flattened, validated outline for a path cutout (or null if degenerate). */
