@@ -1,0 +1,68 @@
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_900382acfc8cb3::t_91488c3b86cc23 143-154,159-160
+  s_900382acfc8cb3::t_8b2c681148b444 50
+  s_900382acfc8cb3::t_681f1f69b6f462 205,210
+  s_900382acfc8cb3::t_ed62146ad4ebc4 21-26,30-32
+  s_900382acfc8cb3::t_aac9f41331abaa 277-279,281,288-294,296,298-299,301,303-311,314-319,321-322,329-331,336,341-348,352
+  s_900382acfc8cb3::t_f125524e5f8a00 239,253,255-261
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/placement.ts
+  s_900382acfc8cb3::t_28fde87cb54ba8 1
+  s_900382acfc8cb3::t_366ffa6f4b9924 46
+  s_900382acfc8cb3::t_575ec55a25c465 27,30
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/SelectedBin.tsx
+  s_900382acfc8cb3::t_3499ebb14fc154 1,10
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/useDesignGeometries.test.ts
+  s_900382acfc8cb3::t_cc3a2fb62f309b 136-154
+  s_900382acfc8cb3::t_c41f16ce0ff144 167,173,180
+  s_900382acfc8cb3::t_1df726e07857be 4-5
+  s_900382acfc8cb3::t_c04a352b5eeaba 186,198
+  s_900382acfc8cb3::t_b05d5077c802a9 115,127,130,172,179,187,189,192-193,199,201,203,205,210,212,224-225
+  s_900382acfc8cb3::t_0a9797f647cb99 168,174,181
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverhangExtensions/BinOverhangExtensions.test.tsx
+  s_900382acfc8cb3::t_8dccbe0b4479b8 125-126,128,134
+  s_900382acfc8cb3::t_7f498bf81c0081 10
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverhangExtensions/BinOverhangExtensions.tsx
+  s_900382acfc8cb3::t_df11f25e7af90a 29
+  s_900382acfc8cb3::t_fab5f3797a21a1 16
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/placement.test.ts
+  s_900382acfc8cb3::t_0e7dd89791f7e7 3-4
+  s_900382acfc8cb3::t_6788687d216c8a 85
+  s_900382acfc8cb3::t_b1cb8d0ccc5cfc 52-53,60,69,71
+  s_900382acfc8cb3::t_4cee1bcc5a21b5 61-62
+  s_900382acfc8cb3::t_53a35d86c32724 11
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/SelectedBin.test.tsx
+  s_900382acfc8cb3::t_44a644d9627336 4-5
+  s_900382acfc8cb3::t_36a7d426979190 26
+  s_900382acfc8cb3::t_788146fafab010 49-50
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/useDesignGeometries.ts
+  s_900382acfc8cb3::t_bc02c4962ebe9e 9
+  s_900382acfc8cb3::t_3970bf11029512 164-187,189-192,195-196,198-199,201-204,206
+  s_900382acfc8cb3::t_a9f6c5373ae2e5 4
+src/features/grid-editor/components/Grid/IsometricPreview/ExplodedLayerGroup/ExplodedLayerGroup.tsx
+  s_900382acfc8cb3::t_34cdf11ba27025 5
+  s_900382acfc8cb3::t_df3e167945c326 29-30
+src/shared/hooks/useLinkedDesignMeshes.test.ts
+  s_900382acfc8cb3::t_5311dd006af8fd 208,210,233,235,256,278,283,299,306,320,339,341,470,475
+  s_900382acfc8cb3::t_1fa62ad1536e9f 41-42,44-49
+  s_900382acfc8cb3::t_15c05c5a26108b 1,3-7
+  s_900382acfc8cb3::t_9be5ff681e1778 93,97-103
+  s_900382acfc8cb3::t_ce3efc6c552bf8 204,227,252,274,295,316,335,354,375,467
+  s_900382acfc8cb3::t_9bb2493ee998ff 69
+  s_900382acfc8cb3::t_fa051303a6f78b 384-460
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "401d90a2e888a9547fe8e0217cec65a6aa05541a",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
