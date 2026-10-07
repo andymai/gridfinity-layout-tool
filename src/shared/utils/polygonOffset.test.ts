@@ -167,6 +167,28 @@ function roundedL(radius: number): Pt[] {
   ];
 }
 
+/**
+ * A 30×20 U whose slot (x 5 to 25, down to y = 5) has its inside corners
+ * rounded to `left` and `right`, leaving a straight floor between them.
+ */
+function notch(left: number, right: number): Pt[] {
+  const corner = (cx: number, cy: number, r: number, from: number): Pt[] =>
+    Array.from({ length: 13 }, (_, k) => {
+      const a = from - (k / 12) * (Math.PI / 2);
+      return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+    });
+  return [
+    { x: 0, y: 0 },
+    { x: 30, y: 0 },
+    { x: 30, y: 20 },
+    { x: 25, y: 20 },
+    ...corner(25 - right, 5 + right, right, 0),
+    ...corner(5 + left, 5 + left, left, -Math.PI / 2),
+    { x: 5, y: 20 },
+    { x: 0, y: 20 },
+  ];
+}
+
 /** A U whose arms stand `gap` apart, so their offsets meet once `d > gap/2`. */
 function narrowU(gap: number): Pt[] {
   return [
@@ -288,8 +310,7 @@ describe('offsetClosedPolygonWithinReach', () => {
 
   it('stays near linear on dense outlines', () => {
     // Every regeneration of a chamfered path runs refine, rim and base. A
-    // drawn path reaches 2400 points and an imported SVG has no cap. These
-    // take about 110ms; an all-pairs crossing check per pass took over 2s.
+    // drawn path reaches 2400 points and an imported SVG has no cap.
     const d = 1.05;
     const started = performance.now();
     for (const poly of [star(2400, 12), star(2400, 80), comb(40, 4)]) {
@@ -314,4 +335,27 @@ describe('refineForOffset', () => {
     expect(added).toContainEqual({ x: 12.5, y: 8 });
     expect(added).toContainEqual({ x: 10, y: 10.5 });
   });
+
+  // An 18.5mm floor between two inside corners tighter than d: both of its
+  // ends are held back, and its middle has room for the full offset.
+  for (const [left, right] of [
+    [1, 0.5],
+    [0.5, 0.5],
+  ]) {
+    it(`gives a floor between ${left}mm and ${right}mm corners the full d across its middle`, () => {
+      const d = 1.5;
+      const poly = notch(left, right);
+      const refined = refineForOffset(poly, d);
+      const { reach } = offsetClosedPolygonWithinReach(refined, d);
+      const onFloor = (p: Pt): boolean => p.y === 5 && p.x > 5 + left && p.x < 25 - right;
+      const added = refined.flatMap((p, i) =>
+        onFloor(p) && !poly.some((q) => q.x === p.x && q.y === p.y) ? [{ p, r: reach[i] }] : []
+      );
+      expect(added.map(({ p }) => p.x).sort((a, b) => a - b)).toEqual([
+        5 + left + d,
+        25 - right - d,
+      ]);
+      added.forEach(({ r }) => expect(r).toBe(d));
+    });
+  }
 });

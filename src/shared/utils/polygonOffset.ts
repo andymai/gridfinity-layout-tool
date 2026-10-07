@@ -121,6 +121,15 @@ const GAP_CLOSE = 0.98;
  */
 const GAP_TURN = (2 * Math.PI) / 3;
 
+/**
+ * Chords longer than this many `d` are not fold-checked: both ends would have
+ * to close more than the chord's length before it reversed.
+ */
+const FOLD_CHORD_REACH = 4;
+
+/** A turn (radians) toward the outside past this ends a run of inside turns. */
+const INSIDE_TURN = 1e-9;
+
 /** Distance (mm) at which two segments count as touching. */
 const CONTACT = 1e-7;
 
@@ -274,6 +283,7 @@ class ReachSolver {
   private readonly miter: Pt[];
   private readonly miterLen: number[];
   private readonly turnBefore: number[];
+  private readonly sign: number;
   private readonly across: Across = { gap: 0, ux: 0, uy: 0 };
   private readonly candidates: number[] = [];
 
@@ -283,6 +293,7 @@ class ReachSolver {
     this.n = n;
     this.reach = points.map((_, i) => Math.max(0, Math.min(d, cap?.[i] ?? d)));
     const sign = signedArea(points) >= 0 ? 1 : -1;
+    this.sign = sign;
     this.miter = offsetWithSign(points, 1, sign).map((q, i) => ({
       x: q.x - points[i].x,
       y: q.y - points[i].y,
@@ -309,25 +320,49 @@ class ReachSolver {
   }
 
   /**
-   * The fold bound, in closed form. An edge's offset keeps `|E|² + rⱼ(mⱼ·E) −
-   * rᵢ(mᵢ·E)` of its length along `E`; counting only the terms that shorten
-   * it, `rᵢcᵢ + rⱼcⱼ ≤ (1 − keep)|E|²` holds while both endpoints stay under
-   * `(1 − keep)|E|² / (cᵢ + cⱼ)`, and keeps holding as reaches only shrink.
+   * The fold bound, in closed form, on every edge and on every chord across a
+   * run of inside turns. A chord's offset keeps `|C|² + rⱼ(mⱼ·C) − rᵢ(mᵢ·C)`
+   * of its length along `C`; counting only the terms that shorten it,
+   * `rᵢcᵢ + rⱼcⱼ ≤ (1 − keep)|C|²` holds while both ends stay under
+   * `(1 − keep)|C|² / (cᵢ + cⱼ)`, and keeps holding as reaches only shrink.
+   *
+   * The edges alone are not enough at a tight inside curve: the vertex where
+   * it meets a straight turns by half a chord, so it can move past the
+   * curve's centre and cross the vertex at its other end. A chord over a
+   * circular arc bounds both ends to 0.9 of its radius whatever its span, as
+   * the edges do, so an arc wider than `d` is not held at all.
    */
-  boundFolds(): void {
-    const { points, miter, reach } = this;
-    for (let i = 0; i < this.n; i++) {
-      const j = this.next(i);
-      const ex = points[j].x - points[i].x;
-      const ey = points[j].y - points[i].y;
-      const len2 = ex * ex + ey * ey;
-      const ci = Math.max(0, miter[i].x * ex + miter[i].y * ey);
-      const cj = Math.max(0, -(miter[j].x * ex + miter[j].y * ey));
-      if (len2 === 0 || ci + cj === 0) continue;
-      const limit = ((1 - MIN_EDGE_KEEP) * len2) / (ci + cj);
-      if (ci > 0) reach[i] = Math.min(reach[i], limit);
-      if (cj > 0) reach[j] = Math.min(reach[j], limit);
+  boundFolds(d: number): void {
+    const { points, n } = this;
+    const reachCap = FOLD_CHORD_REACH * d;
+    for (let i = 0; i < n; i++) {
+      let turned = 0;
+      for (let k = 1; k < n; k++) {
+        const j = (i + k) % n;
+        if (k > 1) {
+          const v = (i + k - 1) % n;
+          const turn = this.turnBefore[v + 1] - this.turnBefore[v];
+          if (turn * this.sign > INSIDE_TURN) break;
+          turned += Math.abs(turn);
+          if (turned >= Math.PI) break;
+        }
+        const cx = points[j].x - points[i].x;
+        const cy = points[j].y - points[i].y;
+        const len2 = cx * cx + cy * cy;
+        if (k > 1 && len2 > reachCap * reachCap) break;
+        this.holdChord(i, j, cx, cy, len2);
+      }
     }
+  }
+
+  private holdChord(i: number, j: number, cx: number, cy: number, len2: number): void {
+    const { miter, reach } = this;
+    const ci = Math.max(0, miter[i].x * cx + miter[i].y * cy);
+    const cj = Math.max(0, -(miter[j].x * cx + miter[j].y * cy));
+    if (len2 === 0 || ci + cj === 0) return;
+    const limit = ((1 - MIN_EDGE_KEEP) * len2) / (ci + cj);
+    if (ci > 0) reach[i] = Math.min(reach[i], limit);
+    if (cj > 0) reach[j] = Math.min(reach[j], limit);
   }
 
   /**
@@ -483,17 +518,17 @@ export function offsetClosedPolygonWithinReach(
     };
   }
   const solver = new ReachSolver(points, d, cap);
-  solver.boundFolds();
+  solver.boundFolds(d);
   solver.boundGaps(d);
   return { points: solver.repairContacts(d), reach: solver.reach };
 }
 
-/** Reach below this share of a neighbour's counts as held back. */
+/** Reach below this share of `d` counts as held back. */
 const HELD_BACK = 0.999;
 
 /**
- * The same outline with a collinear vertex `d` in from the held-back end of
- * every edge longer than `2d` whose ends are offset by different amounts.
+ * The same outline with a collinear vertex `d` in from each held-back end of
+ * every edge longer than `2d`.
  *
  * A vertex can only move along its own miter, so the one where a tight notch
  * meets a long straight run has to stop short of the corner the true offset
@@ -516,8 +551,8 @@ export function refineForOffset(points: readonly Pt[], d: number): Pt[] {
       x: a.x + ((b.x - a.x) * s) / len,
       y: a.y + ((b.y - a.y) * s) / len,
     });
-    if (reach[i] < reach[j] * HELD_BACK) out.push(at(d));
-    else if (reach[j] < reach[i] * HELD_BACK) out.push(at(len - d));
+    if (reach[i] < d * HELD_BACK) out.push(at(d));
+    if (reach[j] < d * HELD_BACK) out.push(at(len - d));
   }
   return out;
 }
