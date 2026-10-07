@@ -1,0 +1,77 @@
+api/lib/redisKeys.test.ts
+  s_900382acfc8cb3::t_e1101325cb9b77 79-90
+  s_900382acfc8cb3::t_18c259df0b03fc 13-14
+  s_900382acfc8cb3::t_fdab3979bc844d 91-92
+api/lib/rateLimit.ts
+  s_900382acfc8cb3::t_509c38428cfe37 19-20
+  s_900382acfc8cb3::t_6d2848d3b14edc 76-78
+  s_900382acfc8cb3::t_52666afbc70a76 75
+api/lib/quota.test.ts
+  s_900382acfc8cb3::t_b9f7cbf864d51f 3,5
+  s_900382acfc8cb3::t_d6fc74b853ba59 170-219
+  s_900382acfc8cb3::t_2ac8975faddf1f 220
+api/lib/quota.ts
+  s_900382acfc8cb3::t_3247eb5b6abcc4 141
+  s_900382acfc8cb3::t_150ddad565eb1e 3
+  s_900382acfc8cb3::t_a811e6a43e5a17 124-140,142-156
+  s_900382acfc8cb3::t_1956a6859c3856 157
+api/meshes/[hash].test.ts
+  s_900382acfc8cb3::t_61d2acb4ec9ceb 316
+  s_900382acfc8cb3::t_235a566e582ea6 1-315,317-492
+api/lib/blobStore.test.ts
+  s_900382acfc8cb3::t_75a67e61729e34 179-228
+  s_900382acfc8cb3::t_1cef63f29e4f5d 21
+  s_900382acfc8cb3::t_76e633bea15ab1 229-230
+api/lib/blobStore.ts
+  s_900382acfc8cb3::t_cffe77e38ce85e 81-109
+  s_900382acfc8cb3::t_91e944e54e9bf1 80
+api/lib/meshIndex.test.ts
+  s_900382acfc8cb3::t_c3c9144a7bd3ec 1-71,76,82-190
+  s_900382acfc8cb3::t_1be69e3bb05f8c 72-75,77-81
+api/README.md
+  s_900382acfc8cb3::t_9b94abdfb823be 80
+  s_900382acfc8cb3::t_ac914d749765c5 59-60
+  s_900382acfc8cb3::t_cb82b302a93fa1 78-79
+  s_900382acfc8cb3::t_229251c0c71cb5 81
+api/lib/meshIndex.ts
+  s_900382acfc8cb3::t_bd11920fa493b5 1-102
+api/lib/redisKeys.ts
+  s_900382acfc8cb3::t_9edd5b1ce48753 148-150
+  s_900382acfc8cb3::t_e009f62df064d9 21-22
+  s_900382acfc8cb3::t_c4d5e92230bfd1 142-147,151-154
+  s_900382acfc8cb3::t_469bbbee039cfd 155
+api/sync/account.test.ts
+  s_900382acfc8cb3::t_06ea10a56aa3cb 335-356
+  s_900382acfc8cb3::t_1200dd6c412883 123-130
+  s_900382acfc8cb3::t_f1258625569f68 70-76
+  s_900382acfc8cb3::t_5afda0428127c9 357-358
+api/sync/README.md
+  s_900382acfc8cb3::t_447608053a67ef 137-139
+CLAUDE.md
+  s_900382acfc8cb3::t_7e7786bf7803fe 105
+api/sync/account.ts
+  s_900382acfc8cb3::t_dd081b6fafe193 244-247
+  s_900382acfc8cb3::t_d7d6c7dfe7b6e8 259
+  s_900382acfc8cb3::t_22b14b5cc43971 25,30
+  s_900382acfc8cb3::t_21f18d10f0cba3 62,64-65
+api/meshes/[hash].ts
+  s_900382acfc8cb3::t_ecc297e904c3e9 32
+  s_900382acfc8cb3::t_473733e2f1a775 37
+  s_900382acfc8cb3::t_c5f66aabdedcae 1-31,33-36,38-162
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5165aac1225b096b65340cd05b5e712046f71a8a",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
