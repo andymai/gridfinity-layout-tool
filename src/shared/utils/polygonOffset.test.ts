@@ -76,6 +76,80 @@ function selfIntersects(p: readonly Pt[]): boolean {
   return false;
 }
 
+function segmentGap2(p: Pt, a: Pt, b: Pt): number {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const len2 = dx * dx + dy * dy;
+  const t = len2 > 0 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2)) : 0;
+  return (a.x + t * dx - p.x) ** 2 + (a.y + t * dy - p.y) ** 2;
+}
+
+/**
+ * Whether any two non-adjacent edges cross, touch or overlap. Stricter than
+ * {@link selfIntersects}, which misses two edges landing on one line.
+ */
+function touchesItself(p: readonly Pt[]): boolean {
+  const n = p.length;
+  for (let i = 0; i < n; i++) {
+    const a1 = p[i];
+    const a2 = p[(i + 1) % n];
+    for (let j = i + 2; j < n; j++) {
+      if (i === 0 && j === n - 1) continue;
+      const b1 = p[j];
+      const b2 = p[(j + 1) % n];
+      if (crosses(a1, a2, b1, b2)) return true;
+      const gap2 = Math.min(
+        segmentGap2(a1, b1, b2),
+        segmentGap2(a2, b1, b2),
+        segmentGap2(b1, a1, a2),
+        segmentGap2(b2, a1, a2)
+      );
+      if (gap2 <= 1e-14) return true;
+    }
+  }
+  return false;
+}
+
+/** How close a point comes to the outline. */
+function distanceToOutline(q: Pt, poly: readonly Pt[]): number {
+  let best = Infinity;
+  for (let i = 0; i < poly.length; i++) {
+    best = Math.min(best, segmentGap2(q, poly[i], poly[(i + 1) % poly.length]));
+  }
+  return Math.sqrt(best);
+}
+
+/** `lobes` cosine spikes between radii 10 and 25, sampled at `n` points. */
+function star(n: number, lobes: number): Pt[] {
+  return Array.from({ length: n }, (_, i) => {
+    const a = (2 * Math.PI * i) / n;
+    const r = 17.5 + 7.5 * Math.cos(a * lobes);
+    return { x: r * Math.cos(a), y: r * Math.sin(a) };
+  });
+}
+
+/** `teeth` 1mm fingers 20mm tall, 0.6mm apart, on a 6mm base; edges cut into `perEdge`. */
+function comb(teeth: number, perEdge: number): Pt[] {
+  const pts: Pt[] = [];
+  const run = (a: Pt, b: Pt): void => {
+    for (let k = 0; k < perEdge; k++) {
+      const s = k / perEdge;
+      pts.push({ x: a.x + (b.x - a.x) * s, y: a.y + (b.y - a.y) * s });
+    }
+  };
+  let x = 0;
+  for (let t = 0; t < teeth; t++) {
+    run({ x, y: 0 }, { x, y: 20 });
+    run({ x, y: 20 }, { x: x + 1, y: 20 });
+    run({ x: x + 1, y: 20 }, { x: x + 1, y: 1 });
+    run({ x: x + 1, y: 1 }, { x: x + 1.6, y: 1 });
+    x += 1.6;
+  }
+  run({ x, y: 1 }, { x, y: -5 });
+  run({ x, y: -5 }, { x: 0, y: -5 });
+  return pts;
+}
+
 /** A 30×25 L whose inner corner is a quarter circle of `radius`, in 12 chords. */
 function roundedL(radius: number): Pt[] {
   const arc: Pt[] = [];
@@ -167,11 +241,63 @@ describe('offsetClosedPolygonWithinReach', () => {
         for (const d of [0.4, 1.5, 3]) {
           const { points, reach } = offsetClosedPolygonWithinReach(poly, d);
           expect(points).toHaveLength(poly.length);
-          expect(selfIntersects(points)).toBe(false);
+          expect(touchesItself(points)).toBe(false);
           expect(reach.every((r) => r >= 0 && r <= d)).toBe(true);
         }
       }
     }
+  });
+
+  it('keeps the offset everywhere it can on a dense outline of tight valleys', () => {
+    // 40 spikes about 1.5mm apart at mid-height: the flanks of every valley sit
+    // closer than 2d, so most vertices cannot take the full offset at all.
+    const poly = star(2000, 40);
+    const d = 1.05;
+    const { points, reach } = offsetClosedPolygonWithinReach(poly, d);
+    expect(touchesItself(points)).toBe(false);
+    expect(Math.min(...reach)).toBeGreaterThan(0);
+
+    // A vertex whose full miter point stays d clear of the rest of the outline
+    // harms nothing by moving the full d.
+    const full = offsetClosedPolygon(poly, d);
+    const free = poly.filter((_, i) => distanceToOutline(full[i], poly) >= 0.99 * d);
+    expect(free.length).toBeGreaterThan(poly.length / 3);
+    poly.forEach((_, i) => {
+      if (distanceToOutline(full[i], poly) >= 0.99 * d) expect(reach[i]).toBeGreaterThan(0.85 * d);
+    });
+  });
+
+  it('holds a comb back only inside its slots', () => {
+    const poly = comb(40, 4);
+    const d = 1.05;
+    const { points, reach } = offsetClosedPolygonWithinReach(poly, d);
+    expect(touchesItself(points)).toBe(false);
+    const at = (v: number, target: number): boolean => Math.abs(v - target) < 1e-9;
+    const rim = poly
+      .map((p, i) => ({ p, r: reach[i] }))
+      .filter(({ p }) => at(p.y, -5) || (at(p.x, 0) && p.y < 20) || (at(p.x, 64) && p.y < 1));
+    expect(rim).toHaveLength(11);
+    rim.forEach(({ r }) => expect(r).toBe(d));
+    // Mid-height on every slot wall: two walls 0.6mm apart split the gap.
+    const walls = poly
+      .map((p, i) => ({ p, r: reach[i] }))
+      .filter(({ p }) => at(p.y, 10) || at(p.y, 10.5));
+    expect(walls).toHaveLength(80);
+    walls.filter(({ p }) => p.x > 0.5 && p.x < 63).forEach(({ r }) => expect(r).toBeLessThan(0.3));
+  });
+
+  it('stays near linear on dense outlines', () => {
+    // Every regeneration of a chamfered path runs refine, rim and base. A
+    // drawn path reaches 2400 points and an imported SVG has no cap. These
+    // take about 110ms; an all-pairs crossing check per pass took over 2s.
+    const d = 1.05;
+    const started = performance.now();
+    for (const poly of [star(2400, 12), star(2400, 80), comb(40, 4)]) {
+      const refined = refineForOffset(poly, d);
+      const rim = offsetClosedPolygonWithinReach(refined, d);
+      offsetClosedPolygonWithinReach(refined, 0.25, rim.reach);
+    }
+    expect(performance.now() - started).toBeLessThan(750);
   });
 });
 
