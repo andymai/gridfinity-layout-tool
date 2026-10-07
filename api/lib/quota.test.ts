@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Redis } from 'ioredis';
-import { checkQuota, getQuotaCaps } from './quota';
+import {
+  checkMeshQuota,
+  checkQuota,
+  getQuotaCaps,
+  MESH_QUOTA_BYTES,
+  MESH_QUOTA_COUNT,
+} from './quota';
 import { tombstone, upsertEntry } from './userIndex';
 
 let mockRedis: Redis;
@@ -164,5 +170,43 @@ describe('checkQuota', () => {
       sizeBytes: 100,
     });
     expect(result.ok).toBe(true);
+  });
+});
+
+describe('checkMeshQuota', () => {
+  const MB = 1024 * 1024;
+
+  it('allows a file that fits exactly', () => {
+    expect(checkMeshQuota({ bytes: 60 * MB, count: 3 }, 40 * MB)).toEqual({ ok: true });
+  });
+
+  it('rejects a file past the byte cap, reporting the projected bytes', () => {
+    expect(checkMeshQuota({ bytes: 60 * MB, count: 3 }, 40 * MB + 1)).toEqual({
+      ok: false,
+      error: {
+        type: 'QUOTA_EXCEEDED',
+        reason: 'bytes',
+        current: 100 * MB + 1,
+        limit: MESH_QUOTA_BYTES,
+      },
+    });
+  });
+
+  it('rejects one file past the count cap, however small', () => {
+    expect(checkMeshQuota({ bytes: 0, count: MESH_QUOTA_COUNT - 1 }, 1)).toEqual({ ok: true });
+    expect(checkMeshQuota({ bytes: 0, count: MESH_QUOTA_COUNT }, 1)).toEqual({
+      ok: false,
+      error: {
+        type: 'QUOTA_EXCEEDED',
+        reason: 'count',
+        current: MESH_QUOTA_COUNT + 1,
+        limit: MESH_QUOTA_COUNT,
+      },
+    });
+  });
+
+  it('reports the count first when both caps would be passed', () => {
+    const result = checkMeshQuota({ bytes: MESH_QUOTA_BYTES, count: MESH_QUOTA_COUNT }, 1);
+    expect(result.ok ? null : result.error.reason).toBe('count');
   });
 });

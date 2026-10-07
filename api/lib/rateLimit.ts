@@ -16,6 +16,8 @@ export type RateLimitAction =
   | 'auth.read'
   | 'sync.write'
   | 'sync.read'
+  | 'mesh.write'
+  | 'mesh.read'
   | 'scan.create'
   | 'scan.upload'
   | 'scan.poll'
@@ -70,6 +72,10 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   // protect against runaway clients.
   'sync.write': { limit: 60, windowSeconds: 60 }, // 60/minute per user
   'sync.read': { limit: 240, windowSeconds: 60 }, // 240/minute per user
+  // Mesh store, keyed by userId. Its own budget so uploading a library's
+  // meshes and the design writes that reference them never starve each other.
+  'mesh.write': { limit: 60, windowSeconds: 60 }, // 60/minute per user
+  'mesh.read': { limit: 240, windowSeconds: 60 }, // 240/minute per user
   // Phone-scan handoff — keyed by client IP. Create/upload are one-shot per
   // scan; poll is generous because the desktop polls every ~1.5s while waiting.
   'scan.create': { limit: 30, windowSeconds: 60 }, // 30/minute per IP

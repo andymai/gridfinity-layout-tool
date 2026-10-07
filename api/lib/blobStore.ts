@@ -78,6 +78,33 @@ export async function headBlob(path: string): Promise<HeadBlobResult | null> {
 }
 
 /**
+ * Only for a `path` derived from the bytes (a content hash). A put that fails
+ * because a racing writer got there first counts as success, which is safe
+ * only because the path guarantees the winner stored the same bytes.
+ */
+export async function putContentAddressed(
+  path: string,
+  bytes: Uint8Array,
+  contentType: string
+): Promise<string> {
+  const existing = await headBlob(path);
+  if (existing) return existing.url;
+  try {
+    const result = await put(path, Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength), {
+      access: 'public',
+      contentType,
+      addRandomSuffix: false,
+      allowOverwrite: false,
+    });
+    return result.url;
+  } catch (error) {
+    const raced = await headBlob(path);
+    if (raced) return raced.url;
+    throw error;
+  }
+}
+
+/**
  * Delete a blob at `path`.
  * Mirrors the existing share-feature behavior: errors propagate to the caller
  * (Vercel Blob does not throw on a missing blob, so this is effectively idempotent).

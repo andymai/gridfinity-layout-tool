@@ -22,10 +22,13 @@ import {
   sessionKey,
   userIndexKey,
   userIndexUpdatedAtKey,
+  userMeshesKey,
+  userMeshUsageKey,
   userProfileKey,
   userSessionsKey,
   userTombstoneSweptAtKey,
 } from '../lib/redisKeys.js';
+import { releaseAllAccountMeshes } from '../lib/meshIndex.js';
 import {
   adjustRemixCredit,
   communityDesignBlobPath,
@@ -57,8 +60,10 @@ import { requireSyncContext } from './lib/requireSyncContext.js';
  *                   memberships), un-like everything
  *                   in the reverse liked set, un-report everything in the
  *                   reverse reported set
+ *   3c. Meshes    : leave every stored mesh file's holder set
  *   4. KV keys    : drop indexes, profile, sessions set, indexUpdatedAt,
- *                   tombstoneSweptAt, liked/published/reported sets, author set
+ *                   tombstoneSweptAt, held meshes, liked/published/reported
+ *                   sets, author set
  *   5. Cookie     : clear the session cookie on the responding device
  *
  * Deny-list membership survives deletion on purpose: the userId is a
@@ -237,6 +242,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     // signing in again.
     await unlinkSupporterAccount(redis, userId);
 
+    // 3c. Leave every stored mesh file's holder set. The files themselves are
+    //     shared by content hash across accounts, so they are not ours to delete.
+    //     This must stay after step 1: a mesh upload records its hold only if
+    //     its session still exists, so once sessions are gone no in-flight
+    //     upload can add a hold behind this release.
+    await releaseAllAccountMeshes(redis, userId);
+
     // 4. Drop all per-user KV state in one DEL.
     await redis.del(
       userIndexKey(userId, 'layouts'),
@@ -248,6 +260,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       userProfileKey(userId),
       userSessionsKey(userId),
       userTombstoneSweptAtKey(userId),
+      userMeshesKey(userId),
+      userMeshUsageKey(userId),
       communityLikedKey(userId),
       communityPublishedKey(userId),
       communityReportedKey(userId),

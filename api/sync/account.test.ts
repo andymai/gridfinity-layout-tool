@@ -67,6 +67,17 @@ const mockRedis = {
     return next;
   }),
   hkeys: vi.fn(async (k: string) => Array.from(redisHashes.get(k)?.keys() ?? [])),
+  hscan: vi.fn(async (k: string) => ['0', Array.from(redisHashes.get(k) ?? new Map()).flat()]),
+  // Emulates the mesh release script; meshIndex.integration.test.ts runs the real one.
+  defineCommand: vi.fn(),
+  meshRelease: vi.fn(
+    async (meshes: string, _usage: string, holders: string, hash: string, holder: string) => {
+      redisHashes.get(meshes)?.delete(hash);
+      if (redisHashes.get(meshes)?.size === 0) redisHashes.delete(meshes);
+      await mockRedis.srem(holders, holder);
+      return redisSets.get(holders)?.size ?? 0;
+    }
+  ),
   hget: vi.fn(async (k: string, f: string) => redisHashes.get(k)?.get(f) ?? null),
   hset: vi.fn(async (k: string, f: string | Record<string, string>, v?: string) => {
     const h = redisHashes.get(k) ?? new Map<string, string>();
@@ -315,6 +326,40 @@ describe('DELETE /api/sync/account', () => {
     const cookieHeader = res._headers['Set-Cookie'];
     const cookies = Array.isArray(cookieHeader) ? cookieHeader.map(String) : [String(cookieHeader)];
     expect(cookies.some((c) => c.includes('Max-Age=0'))).toBe(true);
+  });
+
+  it('leaves every mesh holder set but keeps the shared files', async () => {
+    const mine = 'a'.repeat(64);
+    const shared = 'b'.repeat(64);
+    setHash('users:user-1:meshes', {
+      [mine]: JSON.stringify({ sizeBytes: 10, url: 'https://blob.example/meshes/a' }),
+      [shared]: JSON.stringify({ sizeBytes: 20, url: 'https://blob.example/meshes/b' }),
+    });
+    setHash('users:user-1:meshUsage', { bytes: '30', count: '2' });
+    setSet(`mesh:holders:${mine}`, ['user:user-1']);
+    setSet(`mesh:holders:${shared}`, ['user:user-1', 'user:user-2']);
+    setSet('users:user-1:sessions', ['tok-a']);
+    redisStore.set('session:tok-a', 'a');
+    blobStore.set(`meshes/${mine}`, {});
+    blobStore.set(`meshes/${shared}`, {});
+
+    const { default: handler } = await import('./account');
+    const res = makeRes();
+    await handler(makeReq(), res as unknown as VercelResponse);
+
+    expect(res._status).toBe(204);
+    // An upload records its hold only while its session exists, so the
+    // release must come after the sessions are gone.
+    const sessionDel = mockRedis.del.mock.calls.findIndex((keys) => keys.includes('session:tok-a'));
+    expect(mockRedis.del.mock.invocationCallOrder[sessionDel]).toBeLessThan(
+      Math.min(...mockRedis.meshRelease.mock.invocationCallOrder)
+    );
+    expect(redisHashes.has('users:user-1:meshes')).toBe(false);
+    expect(redisHashes.has('users:user-1:meshUsage')).toBe(false);
+    expect(redisSets.has(`mesh:holders:${mine}`)).toBe(false);
+    expect(redisSets.get(`mesh:holders:${shared}`)).toEqual(new Set(['user:user-2']));
+    expect(blobStore.has(`meshes/${mine}`)).toBe(true);
+    expect(blobStore.has(`meshes/${shared}`)).toBe(true);
   });
 
   it('is idempotent — replaying after partial failure is safe', async () => {

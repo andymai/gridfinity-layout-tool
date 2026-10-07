@@ -134,8 +134,9 @@ The existing share endpoints (`/api/share`) run `filterLayoutContent` because sh
 1. `SMEMBERS users:{uid}:sessions` → `DEL session:{token}` for each
 2. `HKEYS users:{uid}:index:{layouts|designs|baseplates|designVersions|folders}` → `del()` each blob
 3. Release the Ko-fi supporter link and pull the public badge (`unlinkSupporterAccount`)
-4. `DEL users:{uid}:*` (indexes, profile, sessions set, indexUpdatedAt, tombstoneSweptAt)
-5. Clear session cookie on responding device
+4. Leave every held mesh file's holder set (`releaseAllAccountMeshes`); the files are shared by content hash, so they stay. A mesh upload records its hold only while its session exists, so this must follow step 1
+5. `DEL users:{uid}:*` (indexes, profile, sessions set, indexUpdatedAt, tombstoneSweptAt, meshes, meshUsage)
+6. Clear session cookie on responding device
 
 Step 3 deliberately leaves the **donor record** on the supporters wall: it
 carries no user identifier, so deleting it is not required for erasure, and

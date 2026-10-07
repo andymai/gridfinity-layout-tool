@@ -211,7 +211,7 @@ export function bytesToBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-function base64ToBytes(data: string): Uint8Array {
+export function base64ToBytes(data: string): Uint8Array {
   const binary = atob(data);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
@@ -288,9 +288,21 @@ export async function encodeMeshData(
 export async function decodeMeshData(
   data: string
 ): Promise<Result<DecodedMeshData, ValidationError>> {
+  let compressed: Uint8Array;
+  try {
+    compressed = base64ToBytes(data);
+  } catch {
+    return err(validationImportFailed(['Mesh decode failed: corrupt asset data']));
+  }
+  return decodeMeshBytes(compressed);
+}
+
+export async function decodeMeshBytes(
+  compressed: Uint8Array
+): Promise<Result<DecodedMeshData, ValidationError>> {
   let raw: Uint8Array;
   try {
-    raw = await inflateBounded(base64ToBytes(data), MAX_DECODED_MESH_BYTES);
+    raw = await inflateBounded(compressed, MAX_DECODED_MESH_BYTES);
   } catch {
     return err(validationImportFailed(['Mesh decode failed: corrupt asset data']));
   }

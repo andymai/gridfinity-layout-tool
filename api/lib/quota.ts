@@ -120,3 +120,38 @@ export async function checkQuota(
 export function getQuotaCaps(kind: SyncItemKind): { maxCount: number; maxBytes: number } {
   return QUOTA[kind];
 }
+
+export const MESH_QUOTA_BYTES = 100 * 1024 * 1024;
+
+/**
+ * 100 designs at 8 meshes each is 800 files, and version history can keep older
+ * imports alive, so 5000 leaves a real library room. Without a count cap, tiny
+ * files could grow one account's hash past what account deletion can walk.
+ */
+export const MESH_QUOTA_COUNT = 5000;
+
+/**
+ * Whether one more file of `sizeBytes` fits beside `usage`. Unlike
+ * `checkQuota` this is not the gate: `acquireAccountMesh` re-runs the same
+ * comparisons atomically as it records the hold.
+ */
+export function checkMeshQuota(
+  usage: { readonly bytes: number; readonly count: number },
+  sizeBytes: number
+): QuotaCheck {
+  const count = usage.count + 1;
+  if (count > MESH_QUOTA_COUNT) {
+    return {
+      ok: false,
+      error: { type: 'QUOTA_EXCEEDED', reason: 'count', current: count, limit: MESH_QUOTA_COUNT },
+    };
+  }
+  const bytes = usage.bytes + sizeBytes;
+  if (bytes > MESH_QUOTA_BYTES) {
+    return {
+      ok: false,
+      error: { type: 'QUOTA_EXCEEDED', reason: 'bytes', current: bytes, limit: MESH_QUOTA_BYTES },
+    };
+  }
+  return { ok: true };
+}
