@@ -1,0 +1,59 @@
+api/lib/designerCutoutValidation.ts
+  s_900382acfc8cb3::t_c194715b5123de 237,269-272
+api/lib/designerValidationConstants.ts
+  s_900382acfc8cb3::t_c194715b5123de 113-116
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_900382acfc8cb3::t_2bcf6adcd593e1 132
+src/features/bin-designer/types/designerState.ts
+  s_900382acfc8cb3::t_b31b9fd0c855ad 306
+src/shared/generation/meshAsset.test.ts
+  s_900382acfc8cb3::t_67f71a3a4166db 186-188
+  s_900382acfc8cb3::t_07acdb567187f0 184-185,189-191
+  s_900382acfc8cb3::t_1d60b9eeb13695 10-11,16,22-26,40,52,61,85,96,152,166-183,192-199,223-232,275-286
+  s_900382acfc8cb3::t_d162df92c4b0b7 287
+api/lib/designerValidation.test.ts
+  s_900382acfc8cb3::t_1976636f346542 1871-1875,1879-1880
+  s_900382acfc8cb3::t_47082eaf509927 1860-1870,1876-1878,1881-1891
+src/shared/generation/meshAsset.ts
+  s_900382acfc8cb3::t_2bcf6adcd593e1 90
+  s_900382acfc8cb3::t_c5b10e72f60293 84-89,91-96,130-136,140,150-151,188-191,201-210,233-236,238-243,370,373-377,380,382-385,388,402-404
+  s_900382acfc8cb3::t_77090ad9efa1bb 83
+src/shell/layoutExport/useLayoutExport.ts
+  s_900382acfc8cb3::t_2bcf6adcd593e1 260
+src/features/bin-designer/store/slices/cutoutSlice.test.ts
+  s_900382acfc8cb3::t_1976636f346542 1805-1807
+  s_900382acfc8cb3::t_47082eaf509927 8,1800-1804,1808
+  s_900382acfc8cb3::t_1b242e2c4eff30 1809-1810
+src/features/generation/worker/generators/meshImprint.ts
+  s_900382acfc8cb3::t_2bcf6adcd593e1 110
+src/features/bin-designer/constants/paramMigration.ts
+  s_900382acfc8cb3::t_b31b9fd0c855ad 31,418-421,439-440
+  s_900382acfc8cb3::t_1976636f346542 429
+src/features/generation/worker/items/importedMeshItem.ts
+  s_900382acfc8cb3::t_2bcf6adcd593e1 12,28-29,37,78,114
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_900382acfc8cb3::t_fd5f2744f97e64 26,28,353-354,365,367-368
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_900382acfc8cb3::t_e4713c58b95b72 20-23,221-262
+  s_900382acfc8cb3::t_9c0cb9c05d2134 263-264
+api/lib/designerValidation.crossBoundary.test.ts
+  s_900382acfc8cb3::t_c194715b5123de 109,283-287
+src/features/generation/worker/generators/meshImport.test.ts
+  s_900382acfc8cb3::t_47082eaf509927 224
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "de32a01e6c252773422ff75a164eed96f99a0296",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
