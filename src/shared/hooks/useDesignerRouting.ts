@@ -47,13 +47,23 @@ function getDesignIdFromUrl(): string | null {
 }
 
 /**
- * Build designer URL with optional design ID.
+ * The layout bin a design was opened from, so the designer can show what that
+ * placement adds to it. Only meaningful alongside an `id`.
  */
-function buildDesignerUrl(designId?: string | null): string {
-  if (designId) {
-    return `/designer?id=${encodeURIComponent(designId)}`;
-  }
-  return '/designer';
+function getPlacementBinIdFromUrl(): string | null {
+  if (!isDesignerPath()) return null;
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('id') ? urlParams.get('bin') : null;
+}
+
+/**
+ * Build designer URL with optional design ID and the layout bin it was opened
+ * from.
+ */
+export function buildDesignerUrl(designId?: string | null, placementBinId?: string): string {
+  if (!designId) return '/designer';
+  const url = `/designer?id=${encodeURIComponent(designId)}`;
+  return placementBinId ? `${url}&bin=${encodeURIComponent(placementBinId)}` : url;
 }
 
 /**
@@ -65,11 +75,15 @@ function buildDesignerUrl(designId?: string | null): string {
 export function useDesignerRouting() {
   const [isDesignerRoute, setIsDesignerRoute] = useState(isDesignerPath);
   const [designIdFromUrl, setDesignIdFromUrl] = useState<string | null>(getDesignIdFromUrl);
+  const [placementBinIdFromUrl, setPlacementBinIdFromUrl] = useState<string | null>(
+    getPlacementBinIdFromUrl
+  );
 
   useEffect(() => {
     const handlePopState = () => {
       setIsDesignerRoute(isDesignerPath());
       setDesignIdFromUrl(getDesignIdFromUrl());
+      setPlacementBinIdFromUrl(getPlacementBinIdFromUrl());
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -83,6 +97,7 @@ export function useDesignerRouting() {
     window.history.pushState({ designId: null }, '', '/designer');
     setIsDesignerRoute(true);
     setDesignIdFromUrl(null);
+    setPlacementBinIdFromUrl(null);
     dispatchSyntheticPopstate();
   }, []);
 
@@ -95,6 +110,7 @@ export function useDesignerRouting() {
     window.history.pushState({ designId }, '', url);
     setIsDesignerRoute(true);
     setDesignIdFromUrl(designId);
+    setPlacementBinIdFromUrl(null);
     dispatchSyntheticPopstate();
   }, []);
 
@@ -108,6 +124,7 @@ export function useDesignerRouting() {
     const url = buildDesignerUrl(designId);
     window.history.replaceState({ designId }, '', url);
     setDesignIdFromUrl(designId);
+    setPlacementBinIdFromUrl(null);
   }, []);
 
   /**
@@ -117,6 +134,7 @@ export function useDesignerRouting() {
     window.history.pushState(null, '', '/');
     setIsDesignerRoute(false);
     setDesignIdFromUrl(null);
+    setPlacementBinIdFromUrl(null);
     dispatchSyntheticPopstate();
   }, []);
 
@@ -124,6 +142,8 @@ export function useDesignerRouting() {
     isDesignerRoute,
     /** The design ID parsed from the current URL (null = new design) */
     designIdFromUrl,
+    /** The layout bin the design was opened from, if the URL names one */
+    placementBinIdFromUrl,
     navigateToDesigner,
     navigateToDesign,
     navigateToPlanner,

@@ -105,9 +105,9 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
 
   const handleThumbnailClick = useCallback(() => {
     if (linkedDesign) {
-      editLinkedDesign(linkedDesign.id);
+      editLinkedDesign(linkedDesign.id, bin.id);
     }
-  }, [linkedDesign, editLinkedDesign]);
+  }, [linkedDesign, editLinkedDesign, bin.id]);
 
   const handleExport = useCallback(() => {
     if (linkedDesign) {
@@ -319,7 +319,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
         {/* Edit button with label */}
         <Button
           variant="secondary"
-          onClick={() => editLinkedDesign(linkedDesign.id)}
+          onClick={() => editLinkedDesign(linkedDesign.id, bin.id)}
           className={`flex-1 ${actionButtonClass}`}
           leftIcon={
             <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">

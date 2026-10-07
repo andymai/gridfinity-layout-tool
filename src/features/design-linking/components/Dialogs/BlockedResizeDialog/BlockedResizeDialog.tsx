@@ -37,7 +37,7 @@ export function BlockedResizeDialog() {
   const handleEditDesign = useCallback(() => {
     if (!pendingBlockedResize) return;
     hideBlockedResizeDialog();
-    editLinkedDesign(pendingBlockedResize.designId);
+    editLinkedDesign(pendingBlockedResize.designId, pendingBlockedResize.binId);
   }, [pendingBlockedResize, hideBlockedResizeDialog, editLinkedDesign]);
 
   return (

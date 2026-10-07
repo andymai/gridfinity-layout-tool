@@ -130,6 +130,30 @@ describe('useDesignerRouting', () => {
       expect(result.current.designIdFromUrl).toBe('abc123');
     });
 
+    it('parses the layout bin a design was opened from', () => {
+      window.history.replaceState(null, '', '/designer?id=abc123&bin=bin-9');
+      const { result } = renderHook(() => useDesignerRouting());
+      expect(result.current.placementBinIdFromUrl).toBe('bin-9');
+    });
+
+    it('ignores a layout bin without a design id', () => {
+      window.history.replaceState(null, '', '/designer?bin=bin-9');
+      const { result } = renderHook(() => useDesignerRouting());
+      expect(result.current.placementBinIdFromUrl).toBeNull();
+    });
+
+    it('drops the layout bin when the URL moves to another design', () => {
+      window.history.replaceState(null, '', '/designer?id=abc123&bin=bin-9');
+      const { result } = renderHook(() => useDesignerRouting());
+
+      act(() => {
+        result.current.navigateToDesign('other');
+      });
+
+      expect(result.current.placementBinIdFromUrl).toBeNull();
+      expect(window.location.search).toBe('?id=other');
+    });
+
     it('returns null designIdFromUrl when no ?id= param', () => {
       window.history.replaceState(null, '', '/designer');
       const { result } = renderHook(() => useDesignerRouting());

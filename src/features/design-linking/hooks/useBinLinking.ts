@@ -35,7 +35,7 @@ import {
 import type { BinId, DesignId, SyncResult } from '../types';
 import { isErr, isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
-import { dispatchSyntheticPopstate } from '@/shared/hooks/useDesignerRouting';
+import { buildDesignerUrl, dispatchSyntheticPopstate } from '@/shared/hooks/useDesignerRouting';
 
 interface UseBinLinkingReturn {
   /** Link a bin to a design (undoable) */
@@ -51,7 +51,7 @@ interface UseBinLinkingReturn {
   deleteLinkedDesign: (binId: BinId, designId: DesignId, designName: string) => Promise<boolean>;
 
   /** Navigate to designer to edit a linked design */
-  editLinkedDesign: (designId: DesignId) => void;
+  editLinkedDesign: (designId: DesignId, fromBinId?: BinId) => void;
 
   /** Show create design dialog for a bin */
   showCreateDesignDialog: (binId: BinId) => void;
@@ -150,8 +150,8 @@ export function useBinLinking(): UseBinLinkingReturn {
   );
 
   // Navigate to designer to edit a design
-  const editLinkedDesign = useCallback((designId: DesignId) => {
-    window.history.pushState({ designId }, '', `/designer?id=${encodeURIComponent(designId)}`);
+  const editLinkedDesign = useCallback((designId: DesignId, fromBinId?: BinId) => {
+    window.history.pushState({ designId }, '', buildDesignerUrl(designId, fromBinId));
     dispatchSyntheticPopstate();
   }, []);
 
