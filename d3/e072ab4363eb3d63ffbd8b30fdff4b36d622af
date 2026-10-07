@@ -1,0 +1,108 @@
+src/shared/utils/fitTestPlan.ts
+  s_900382acfc8cb3::t_f7b971f5014e0f 26,467-468,473-474,499-502,510,516,581-625,634-638,640-649,653,655,658
+  s_900382acfc8cb3::t_c615e6ed5fc52e 110-117
+  s_900382acfc8cb3::t_548f41e8d2c556 32-38
+  s_900382acfc8cb3::t_54c35b1d522b09 286
+src/shared/utils/fitTestPlan.test.ts
+  s_900382acfc8cb3::t_4d283a3abacd59 7,20,124-138,307-312,403-436
+  s_900382acfc8cb3::t_984f01d51642db 437-438
+src/i18n/locales/nl.json
+  s_900382acfc8cb3::t_0015f59385b202 751,758-765,767,776,778
+src/features/bin-designer/hooks/useFitTestOptions.test.ts
+  s_900382acfc8cb3::t_4d6a076e1fe0e9 82,84-88
+  s_900382acfc8cb3::t_f7efbfc43c394b 1-81,83,89-127
+src/features/bin-designer/hooks/useFitTestExport.test.ts
+  s_900382acfc8cb3::t_39607ad0c38c7d 192-225
+src/i18n/locales/ka.json
+  s_900382acfc8cb3::t_0015f59385b202 2598-2614,2617,2621,2623-2625
+src/features/generation/worker/generators/fitTestOutline.scenario.test.ts
+  s_900382acfc8cb3::t_93d1e4f708b11c 302,336,405,417
+  s_900382acfc8cb3::t_12b917cd73b21d 1-140,143-301,303-335,337-404,406-416,418-434
+  s_900382acfc8cb3::t_5dbe35ff4ce27e 141-142
+src/features/generation/bridge/messages.ts
+  s_900382acfc8cb3::t_42a94a8b4b7e09 19,311-314,317-318,325-328
+  s_900382acfc8cb3::t_07222546d41d85 329-330
+src/i18n/locales/ja.json
+  s_900382acfc8cb3::t_0015f59385b202 751,758-765,767,776,778
+src/features/generation/worker/handlers/exportHandler.ts
+  s_900382acfc8cb3::t_36b631f9d0e7c4 46,228-230,239-249
+src/i18n/locales/sv.json
+  s_900382acfc8cb3::t_0015f59385b202 751,758-765,767,776,778
+src/features/generation/worker/generators/fitTestOutline.ts
+  s_900382acfc8cb3::t_5361b459d9cf61 1-46,51-122,124-125,127-165,167-177,179-184,186-201,203-215
+  s_900382acfc8cb3::t_1ed6dd87d7335b 126
+  s_900382acfc8cb3::t_d94d2f130487aa 47-50,123
+  s_900382acfc8cb3::t_d48db1b634deeb 166,185,202
+  s_900382acfc8cb3::t_b470b6acc939bb 178
+src/features/generation/bridge/GenerationBridge.ts
+  s_900382acfc8cb3::t_42a94a8b4b7e09 622
+  s_900382acfc8cb3::t_36b631f9d0e7c4 32
+src/features/generation/bridge/bridgeExports.ts
+  s_900382acfc8cb3::t_36b631f9d0e7c4 22
+  s_900382acfc8cb3::t_42a94a8b4b7e09 455,463
+src/i18n/locales/cs.json
+  s_900382acfc8cb3::t_0015f59385b202 751,758-765,767,776,778
+src/i18n/locales/uk.json
+  s_900382acfc8cb3::t_0015f59385b202 751,758-765,767,776,778
+src/i18n/locales/en.ts
+  s_900382acfc8cb3::t_8bbaffbcab6a7c 3077-3095
+src/i18n/locales/pt-BR.json
+  s_900382acfc8cb3::t_0015f59385b202 751,758-765,767,776,778
+src/features/bin-designer/components/CutoutWorkspace/FitTestButton.test.tsx
+  s_900382acfc8cb3::t_3c215524605c83 17,22,149-204
+src/shared/utils/fitTestOutlinePlan.ts
+  s_900382acfc8cb3::t_d094b8879f956e 1-94,96-164
+  s_900382acfc8cb3::t_f54b327c41dd12 95
+src/i18n/locales/ko.json
+  s_900382acfc8cb3::t_0015f59385b202 751,758-765,767,776,778
+src/i18n/locales/nb.json
+  s_900382acfc8cb3::t_0015f59385b202 751,758-765,767,776,778
+src/features/bin-designer/components/CutoutWorkspace/FitTestButton.tsx
+  s_900382acfc8cb3::t_f6d1392a178795 4-7,10-11,15,18,24-29,32,37-43,49-83,104,106,117-121,130-135,137-142,144,153-155,168,171,180-189,194-204,208-212,215,217-219,223,227-263,292-296,299-311
+  s_900382acfc8cb3::t_8bbaffbcab6a7c 105,136,143
+src/i18n/locales/zh-CN.json
+  s_900382acfc8cb3::t_0015f59385b202 751,758-765,767,776,778
+src/i18n/locales/pl.json
+  s_900382acfc8cb3::t_0015f59385b202 751,758-765,767,776,778
+src/i18n/locales/de.json
+  s_900382acfc8cb3::t_0015f59385b202 751,758-765,767,776,778
+src/features/bin-designer/hooks/useFitTestExport.ts
+  s_900382acfc8cb3::t_3b854703b7d9be 2-4
+  s_900382acfc8cb3::t_544844dd966206 123-127
+  s_900382acfc8cb3::t_cf584f60056231 34,37,41,43,61-68,86,88
+src/i18n/locales/es.json
+  s_900382acfc8cb3::t_0015f59385b202 751,758-765,767,776,778
+src/features/generation/worker/generators/fitTestSlice.scenario.test.ts
+  s_900382acfc8cb3::t_d7caec85520822 314-325
+src/features/bin-designer/hooks/useFitTestOptions.ts
+  s_900382acfc8cb3::t_7cddf458c3ddf1 1-108
+  s_900382acfc8cb3::t_f2a3fe9f4a3852 109-111
+src/shared/utils/fitTestOutlinePlan.test.ts
+  s_900382acfc8cb3::t_a122b66406032a 169
+  s_900382acfc8cb3::t_a7dc609a359440 1,3-161,173,179-204
+  s_900382acfc8cb3::t_ea92a9469eaefb 2,162-168,170-172,174-178
+src/i18n/locales/fr.json
+  s_900382acfc8cb3::t_0015f59385b202 751,758-765,767,776,778
+src/features/generation/worker/generators/fitTestSlice.ts
+  s_900382acfc8cb3::t_9f67bd9012a654 90,150-153,165-171,174-175,187,192-206,301-305
+  s_900382acfc8cb3::t_f9be330dad6189 154,156-158,160-164
+  s_900382acfc8cb3::t_93d1e4f708b11c 155,159
+src/i18n/locales/it.json
+  s_900382acfc8cb3::t_0015f59385b202 751,758-765,767,776,778
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d3e072ab4363eb3d63ffbd8b30fdff4b36d622af",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
