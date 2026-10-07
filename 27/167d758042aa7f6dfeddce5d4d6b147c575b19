@@ -1,0 +1,44 @@
+src/shared/generation/meshFile.ts
+  s_900382acfc8cb3::t_2b4edb6bb75e9a 1-15,21-207
+  s_900382acfc8cb3::t_e0132ada0cb322 16-20
+src/shared/generation/meshFile.test.ts
+  s_900382acfc8cb3::t_f2a0991a574240 1-248
+api/lib/meshFile.ts
+  s_900382acfc8cb3::t_052bcec26191aa 88
+  s_900382acfc8cb3::t_38f72b7e4f06ad 147-148
+  s_900382acfc8cb3::t_b6f277422af4f0 40-43
+  s_900382acfc8cb3::t_dc081523d13c0e 1-39,44-87,89-146,149-189
+api/lib/meshFile.crossBoundary.test.ts
+  s_900382acfc8cb3::t_9764cb56734e21 1-158,160-167,169,172-173
+  s_900382acfc8cb3::t_e12fff4ed08305 159,168,170-171
+src/shared/generation/meshAsset.ts
+  s_900382acfc8cb3::t_60592aa00099fd 291-302,306
+  s_900382acfc8cb3::t_45630146041a46 214
+  s_a8677c67f85a06::t_6afbba56027bf9 290
+api/lib/meshFile.test.ts
+  s_900382acfc8cb3::t_1f77a9c7f19f51 1-244
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "27167d758042aa7f6dfeddce5d4d6b147c575b19",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_a8677c67f85a06": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85b17417-28bf-4293-9803-4c3b96f3617d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
