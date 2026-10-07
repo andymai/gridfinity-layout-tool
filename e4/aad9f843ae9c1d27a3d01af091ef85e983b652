@@ -1,0 +1,31 @@
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.test.tsx
+  s_900382acfc8cb3::t_a4fa5a128e8bbc 6-7,246-275,277-283,286-300,303-318
+src/features/bin-designer/hooks/useWorkshopAutoSave.ts
+  s_900382acfc8cb3::t_d3eba92fc554be 140-144
+  s_900382acfc8cb3::t_36ed0f05ce560a 16,20-24,29
+  s_900382acfc8cb3::t_ac6d8920ec2ff0 87-91
+src/features/bin-designer/components/DesignerPage/useDesignNameEditor.test.ts
+  s_900382acfc8cb3::t_ceb0c27b910342 37,145,205-215,229-239
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_900382acfc8cb3::t_98ce579ab89174 293-299
+src/features/bin-designer/components/DesignerPage/useDesignNameEditor.ts
+  s_900382acfc8cb3::t_9bc1ea9121a673 81
+src/features/bin-designer/hooks/useWorkshopAutoSave.test.ts
+  s_900382acfc8cb3::t_6fbb96cb46799b 9,17,60-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e4aad9f843ae9c1d27a3d01af091ef85e983b652",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
