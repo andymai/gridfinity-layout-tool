@@ -18,7 +18,8 @@ import {
   type CenterAxis,
 } from './geometry';
 import { useCutoutSelection } from '@/features/bin-designer/store';
-import { expandSelectionToGroups, toArrangeUnits, unitsBounds } from './cutoutGroups';
+import { expandSelectionToGroups } from './cutoutGroups';
+import { alignSelection, type AlignMode } from './geometryAlign';
 import { autoArrangeCutouts } from './autoArrange';
 import { PathfinderControls } from './PathfinderControls';
 import { canGroupSelection } from './pathfinderHelpers';
@@ -39,6 +40,15 @@ interface AlignmentToolbarProps {
 }
 
 type AlignType = 'left' | 'right' | 'top' | 'bottom' | 'center-h' | 'center-v';
+
+const ALIGN_MODES: Readonly<Record<AlignType, AlignMode>> = {
+  left: 'left',
+  'center-h': 'centerX',
+  right: 'right',
+  top: 'top',
+  'center-v': 'middleY',
+  bottom: 'bottom',
+};
 
 const AlignIcon = ({ type }: { type: AlignType }) => {
   switch (type) {
@@ -159,49 +169,8 @@ export function AlignmentToolbar({
   };
 
   const handleAlign = (type: AlignType) => {
-    const units = toArrangeUnits(arrangeTargets, groupContext);
-    const bounds = unitsBounds(units);
-    const positions: Record<string, { x?: number; y?: number }> = {};
-
-    for (const unit of units) {
-      if (unit.locked) continue;
-      const eb = unit.bounds;
-      let dx = 0;
-      let dy = 0;
-
-      switch (type) {
-        case 'left':
-          dx = bounds.minX - eb.minX;
-          break;
-        case 'right':
-          dx = bounds.maxX - eb.maxX;
-          break;
-        case 'top':
-          dy = bounds.maxY - eb.maxY;
-          break;
-        case 'bottom':
-          dy = bounds.minY - eb.minY;
-          break;
-        case 'center-h':
-          dx = (bounds.minX + bounds.maxX) / 2 - (eb.minX + eb.maxX) / 2;
-          break;
-        case 'center-v':
-          dy = (bounds.minY + bounds.maxY) / 2 - (eb.minY + eb.maxY) / 2;
-          break;
-      }
-
-      // A unit already on the line needs no write — emitting one would dirty
-      // the design and cost an undo step for nothing.
-      if (dx === 0 && dy === 0) continue;
-
-      for (const member of unit.members) {
-        positions[member.id] = {
-          ...(dx !== 0 ? { x: member.x + dx } : {}),
-          ...(dy !== 0 ? { y: member.y + dy } : {}),
-        };
-      }
-    }
-    applyPositions(positions);
+    const updates = alignSelection(arrangeTargets, ALIGN_MODES[type], groupContext);
+    if (updates.size > 0) onUpdateBatch(updates);
   };
 
   const handleAutoArrange = () => {

@@ -374,6 +374,27 @@ describe('InspectorContent multi-select editing', () => {
     expect(updates.get('b')?.x).toBe(0);
   });
 
+  // y=0 is the front edge, drawn at the bottom of the canvas.
+  it('aligns top edges to the cutout drawn highest on the canvas', () => {
+    const onUpdateBatch = renderMulti(two);
+
+    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.cutouts.align.top' }));
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    expect(updates.get('a')?.y).toBe(40);
+    expect(updates.has('b')).toBe(false);
+  });
+
+  it('aligns bottom edges to the cutout drawn lowest on the canvas', () => {
+    const onUpdateBatch = renderMulti(two);
+
+    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.cutouts.align.bottom' }));
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    expect(updates.get('b')?.y).toBe(0);
+    expect(updates.has('a')).toBe(false);
+  });
+
   it('marks a mixed field indeterminate and a shared one concrete', () => {
     renderMulti(two);
 
