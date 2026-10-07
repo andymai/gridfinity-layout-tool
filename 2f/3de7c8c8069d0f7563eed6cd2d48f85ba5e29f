@@ -1,0 +1,37 @@
+src/shared/utils/polygonOffset.test.ts
+  s_900382acfc8cb3::t_72c93ffa8e0ec5 2
+  s_900382acfc8cb3::t_e8cb500a414b3f 333-351
+  s_900382acfc8cb3::t_99cc1a3b470e3a 390-403
+  s_900382acfc8cb3::t_1846b4861b5e1d 193-201
+  s_900382acfc8cb3::t_a0eb1a56c6ac56 175,183-186
+src/shared/utils/polygonOffset.ts
+  s_900382acfc8cb3::t_685e7a2f34ca07 412-414,422-424,429-440,442,444-446
+  s_900382acfc8cb3::t_7f10e495b6aa91 11-12
+  s_900382acfc8cb3::t_8a1821aa7e03c1 552
+  s_900382acfc8cb3::t_cd4ccd1dde4d0c 286-291,299,307-308,313-314
+  s_900382acfc8cb3::t_9ef8d6df392c50 687-694
+  s_900382acfc8cb3::t_d6b30adf63dae2 547
+  s_900382acfc8cb3::t_0f86d047ccf5f7 666-670
+  s_900382acfc8cb3::t_2ed76b04f5f0f7 205-276,539
+  s_900382acfc8cb3::t_2fa242f08266ef 135-140
+  s_900382acfc8cb3::t_47cd456807f39e 484-488
+  s_900382acfc8cb3::t_ad7c861990ae3e 467-472,477-483,489-508,513-538
+  s_900382acfc8cb3::t_0ad7f32fe80028 651
+  s_900382acfc8cb3::t_0cd4c891957d1c 540
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2f3de7c8c8069d0f7563eed6cd2d48f85ba5e29f",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
