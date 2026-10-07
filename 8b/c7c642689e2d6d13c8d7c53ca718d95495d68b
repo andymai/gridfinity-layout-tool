@@ -1,0 +1,34 @@
+src/shared/utils/pathCutoutOutline.test.ts
+  s_900382acfc8cb3::t_6de041167a2519 145
+  s_900382acfc8cb3::t_05e53fba5d60c4 229,232-235,238
+  s_900382acfc8cb3::t_2a717281eebcbd 244,246,251-255
+  s_900382acfc8cb3::t_3e7225f6a050ae 2-7
+  s_900382acfc8cb3::t_e3ae459d954293 144,146-228,230-231,236-237,239-243,245,247-250,256-264,266-284
+  s_900382acfc8cb3::t_1eeb81b9892b02 265
+src/shared/utils/pathCutoutOutline.ts
+  s_900382acfc8cb3::t_d0f080a6b68b80 60
+  s_900382acfc8cb3::t_11a5e23b95dc6b 8
+src/shared/utils/outlineSegments.ts
+  s_900382acfc8cb3::t_46a8ef757fcea5 299
+  s_900382acfc8cb3::t_c8b1b25a4234df 300-301
+  s_900382acfc8cb3::t_20015ea5d9b972 268-269,274,281,286-290,292-294,296-298,302-305,312-323,333,335-336,338-355,357-362,367-377,382-388
+  s_900382acfc8cb3::t_eea7719b52e957 306-311,324-332,334,337,356,365-366,380-381
+  s_900382acfc8cb3::t_51b8e19ed0bfe0 270-273,275-280,282-285
+  s_900382acfc8cb3::t_e68eeab458449a 291,295,363-364,378-379
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8bc7c642689e2d6d13c8d7c53ca718d95495d68b",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
