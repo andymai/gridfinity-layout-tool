@@ -34,6 +34,7 @@ import {
   getFaceOrigins,
   fuse,
   isValid,
+  getSolids,
 } from 'brepjs';
 import type { TransformOp, Bounds3D } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope, Drawing, Sketch } from 'brepjs';
@@ -53,13 +54,7 @@ import {
 } from '@/shared/utils/cutoutOpenSides';
 import { LIP_HEIGHT, CUT_RIM_CLEARANCE } from './generatorConstants';
 import { isCutoutEngraveMode } from '@/shared/utils/cutoutLabelSocketPlan';
-import {
-  DEFAULT_GROUP_OP,
-  DEFAULT_POLYGON_SIDES,
-  CLEARANCE_SHAPES,
-  CHAMFER_SHAPES,
-  resolveCutoutLeanDeg,
-} from '@/shared/types/bin';
+import { DEFAULT_GROUP_OP, DEFAULT_POLYGON_SIDES, resolveCutoutLeanDeg } from '@/shared/types/bin';
 import {
   regularPolygonPoints,
   slotCornerRadius,
@@ -94,6 +89,10 @@ import {
   pathCutoutOutline,
   pathCutoutSections,
 } from '@/shared/utils/pathCutoutOutline';
+import type { Pt } from '@/shared/utils/polygonOffset';
+import { clearedProfile, entryChamferWidth, MIN_LOFTED_CHAMFER } from './cutoutFit';
+import { planNestedOpenings } from './nestedCutoutOpenings';
+import type { FloorTrim, NestedOpening, SunkMouth } from './nestedCutoutOpenings';
 import { buildTaperedInnerEnvelope } from './taperedOuter';
 import type { ResolvedTaper } from './overhang';
 import { FeatureTag } from './featureTags';
@@ -217,17 +216,66 @@ function applyCutoutLean(shape: Shape3D, leanDeg: number, mouthZ: number): Shape
 }
 
 /**
- * Entry-chamfer cutout: a straight prism that flares outward over the top
- * `chamfer` mm so the opening is a ~45° countersink (bits self-center). Built
- * as a 3-section ruled loft — nominal at the bottom, nominal again at
- * `cutDepth − chamfer`, then the outset profile at the top rim. The outset
- * grows each bounding dimension by `2·chamfer` (and the corner radius by
- * `chamfer`), matching the vertical drop for a true 45° bevel.
- *
- * `topExtension` (leaned tools) continues the flared rim profile straight up
- * past the mouth as a fourth section, so the countersink stays at the mouth
- * while the extension keeps the tilted opening fully clear.
+ * A chamfer's two outlines in the cutout's local frame: the straight wall's,
+ * and the rim's `flare` further out. `rimReach` is how far the rim reaches
+ * along local Y, the axis a lean tips it about.
  */
+interface ChamferSections {
+  readonly wall: (z: number) => Sketch;
+  readonly rim: (z: number) => Sketch;
+  readonly rimReach: number;
+}
+
+/**
+ * A parametric shape's chamfer outlines. The rim grows each bounding dimension
+ * by `2·flare` (and the corner radius by `flare`), matching the vertical drop
+ * for a true 45° bevel.
+ */
+function profileSections(
+  p: {
+    readonly shape: string;
+    readonly w: number;
+    readonly d: number;
+    readonly cornerRadius: number;
+    readonly sides?: number;
+  },
+  flare: number
+): ChamferSections {
+  const profile = (grow: number, z: number): Sketch =>
+    cutoutProfileDrawing({
+      shape: p.shape,
+      w: p.w + 2 * grow,
+      d: p.d + 2 * grow,
+      cornerRadius: p.cornerRadius + grow,
+      sides: p.sides,
+    }).sketchOnPlane('XY', z) as Sketch;
+  return { wall: (z) => profile(0, z), rim: (z) => profile(flare, z), rimReach: p.d / 2 + flare };
+}
+
+/**
+ * Entry-chamfer cutout: a straight prism that flares outward over `flare` mm
+ * so its mouth is a ~45° countersink (bits self-center). Built as a ruled loft:
+ * the wall outline at the bottom, again `flare` under the mouth, then the rim
+ * at the mouth. The mouth is the top unless a pocket around this one has
+ * already cut the top away; there it sits on that pocket's floor and the rim
+ * carries on straight up.
+ *
+ * A `topZ` past the mouth (a sunk mouth, or a leaned tool's extension) carries
+ * the rim straight on up as a last section, so the countersink stays at the
+ * mouth while the rest stays clear.
+ */
+function loftChamfer(
+  sections: ChamferSections,
+  mouthZ: number,
+  flare: number,
+  topZ: number
+): Shape3D {
+  const base = sections.wall(0);
+  const rest = [sections.wall(mouthZ - flare), sections.rim(mouthZ)];
+  if (topZ > mouthZ) rest.push(sections.rim(topZ));
+  return base.loftWith(rest, { ruled: true });
+}
+
 function buildChamferedCutoutShape(p: {
   readonly shape: string;
   readonly w: number;
@@ -237,73 +285,45 @@ function buildChamferedCutoutShape(p: {
   readonly cutDepth: number;
   readonly chamfer: number;
   readonly topExtension: number;
+  readonly sunk?: SunkMouth;
 }): Shape3D {
-  const profile = (w: number, dd: number, cr: number, z: number): Sketch =>
-    cutoutProfileDrawing({
-      shape: p.shape,
-      w,
-      d: dd,
-      cornerRadius: cr,
-      sides: p.sides,
-    }).sketchOnPlane('XY', z) as Sketch;
-
-  const base = profile(p.w, p.d, p.cornerRadius, 0);
-  const straightTop = profile(p.w, p.d, p.cornerRadius, p.cutDepth - p.chamfer);
-  const flaredW = p.w + 2 * p.chamfer;
-  const flaredD = p.d + 2 * p.chamfer;
-  const flaredCR = p.cornerRadius + p.chamfer;
-  const flared = profile(flaredW, flaredD, flaredCR, p.cutDepth);
-  const sections = [straightTop, flared];
-  if (p.topExtension > 0) {
-    sections.push(profile(flaredW, flaredD, flaredCR, p.cutDepth + p.topExtension));
-  }
-  return base.loftWith(sections, { ruled: true });
+  const flare = p.sunk?.flare ?? p.chamfer;
+  return loftChamfer(
+    profileSections(p, flare),
+    p.cutDepth - (p.sunk?.depth ?? 0),
+    flare,
+    p.cutDepth + p.topExtension
+  );
 }
 
 /** Create an extruded cutout shape centered at origin, **without rotation**.
  *  Splitting out rotation lets callers apply axis-aware fillets in the
  *  cutout's canonical local frame (W along X, D along Y) before rotating.
+ *  `sunk` moves the entry chamfer down to the floor of a pocket around this
+ *  one (see {@link planNestedOpenings}).
  *  Returns null if dimensions are degenerate (would crash WASM).
  */
-function buildUnrotatedCutoutShape(cutout: {
-  readonly shape: string;
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly depth: number;
-  readonly cutDepth: number;
-  readonly cornerRadius: number;
-  readonly sides?: number;
-  readonly clearance?: number;
-  readonly chamferWidth?: number;
-  readonly leanDeg?: number;
-  readonly path?: readonly PathPoint[];
-}): Shape3D | null {
+function buildUnrotatedCutoutShape(
+  cutout: {
+    readonly shape: string;
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly depth: number;
+    readonly cutDepth: number;
+    readonly cornerRadius: number;
+    readonly sides?: number;
+    readonly clearance?: number;
+    readonly chamferWidth?: number;
+    readonly leanDeg?: number;
+    readonly path?: readonly PathPoint[];
+  },
+  sunk?: SunkMouth
+): Shape3D | null {
   if (cutout.cutDepth <= 0 || cutout.width <= 0 || cutout.depth <= 0) return null;
 
-  // Insertion clearance enlarges the cut symmetrically about its own center so a
-  // part cut to spec drops in. The cutout stays positioned by its nominal
-  // center (cutout.x + cutout.width/2), so the enlarged shape stays aligned.
-  // Missing clearance / non-insert shapes keep their exact nominal size.
-  const clearance =
-    (CLEARANCE_SHAPES as readonly string[]).includes(cutout.shape) && cutout.clearance !== undefined
-      ? Math.max(0, cutout.clearance)
-      : 0;
-  const d = cutout.depth + clearance;
-  // Polygons scale uniformly (across-flats = depth grows by clearance) so the
-  // result stays a *regular* N-gon; a flat additive box offset would skew the
-  // width/depth ratio. Other shapes use a symmetric additive offset.
-  const w =
-    cutout.shape === 'polygon' && cutout.depth > 0
-      ? cutout.width * (d / cutout.depth)
-      : cutout.width + clearance;
-
-  // Entry chamfer: flare the top rim. Clamp so a straight wall always remains
-  // below the bevel (loft needs cutDepth − chamfer > 0).
-  const chamfer =
-    (CHAMFER_SHAPES as readonly string[]).includes(cutout.shape) && cutout.chamferWidth
-      ? Math.max(0, Math.min(cutout.chamferWidth, cutout.cutDepth - 0.2))
-      : 0;
+  const { clearance, w, d } = clearedProfile(cutout);
+  const chamfer = entryChamferWidth(cutout);
 
   // Leaned tools carry extra length past the mouth so the tilted top still
   // clears the whole opening; the interior clip trims the excess. `d` (with
@@ -311,12 +331,12 @@ function buildUnrotatedCutoutShape(cutout: {
   const topExt = leanTopExtension(resolveCutoutLeanDeg(cutout), d);
   const fullDepth = cutout.cutDepth + topExt;
 
-  if (chamfer > 0.05) {
+  if (chamfer > MIN_LOFTED_CHAMFER) {
     if (cutout.shape === 'path') {
       // Paths can't use the parametric profile loft; flatten + offset the outline
       // for the flared rim. On any failure, fall through to a straight extrude.
       try {
-        return buildChamferedPathShape(cutout, chamfer, clearance, topExt);
+        return buildChamferedPathShape(cutout, chamfer, clearance, topExt, sunk);
       } catch {
         /* fall through to the straight `case 'path'` below */
       }
@@ -330,6 +350,7 @@ function buildUnrotatedCutoutShape(cutout: {
         cutDepth: cutout.cutDepth,
         chamfer,
         topExtension: topExt,
+        sunk,
       });
     }
   }
@@ -395,22 +416,25 @@ function buildUnrotatedCutoutShape(cutout: {
 /** Create an extruded + rotated cutout shape centered at origin (no translation).
  *  Returns null if dimensions are degenerate (would crash WASM).
  */
-function buildCutoutShape(cutout: {
-  readonly shape: string;
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly depth: number;
-  readonly cutDepth: number;
-  readonly rotation: number;
-  readonly cornerRadius: number;
-  readonly sides?: number;
-  readonly clearance?: number;
-  readonly chamferWidth?: number;
-  readonly leanDeg?: number;
-  readonly path?: readonly PathPoint[];
-}): Shape3D | null {
-  let shape = buildUnrotatedCutoutShape(cutout);
+function buildCutoutShape(
+  cutout: {
+    readonly shape: string;
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly depth: number;
+    readonly cutDepth: number;
+    readonly rotation: number;
+    readonly cornerRadius: number;
+    readonly sides?: number;
+    readonly clearance?: number;
+    readonly chamferWidth?: number;
+    readonly leanDeg?: number;
+    readonly path?: readonly PathPoint[];
+  },
+  sunk?: SunkMouth
+): Shape3D | null {
+  let shape = buildUnrotatedCutoutShape(cutout, sunk);
   if (!shape) return null;
 
   shape = applyCutoutLean(shape, resolveCutoutLeanDeg(cutout), cutout.cutDepth);
@@ -454,12 +478,10 @@ function buildPathCutoutShape(
 }
 
 /**
- * Entry-chamfered path cutout: a 3-section ruled loft (clearance-offset base →
- * same at `cutDepth − chamfer` → base offset outward by `chamfer` at the top
- * rim), so a freeform outline gets the same ~45° self-centering countersink as
- * the parametric shapes, its sections from {@link pathCutoutSections}. Throws
- * on degenerate input so the caller can fall back to a straight
- * (clearance-only) extrude.
+ * Entry-chamfered path cutout: the parametric shapes' ~45° self-centering
+ * countersink (see {@link loftChamfer}) on a freeform outline, its sections
+ * from {@link pathCutoutSections}. Throws when those cannot be built so the
+ * caller can fall back to a straight (clearance-only) extrude.
  */
 function buildChamferedPathShape(
   cutout: {
@@ -472,20 +494,57 @@ function buildChamferedPathShape(
   },
   chamfer: number,
   clearance: number,
-  topExtension: number
+  topExtension: number,
+  sunk?: SunkMouth
 ): Shape3D {
+  const flare = sunk?.flare ?? chamfer;
+  const sections = pathSections(cutout, chamfer, clearance, flare);
+  if (!sections) throw new Error('path: degenerate');
+  return loftChamfer(
+    sections,
+    cutout.cutDepth - (sunk?.depth ?? 0),
+    flare,
+    cutout.cutDepth + topExtension
+  );
+}
+
+/**
+ * A chamfered path's outlines from {@link pathCutoutSections}, the same ones
+ * the surface chamfer lofts between. A narrower `flare` takes its rim that much
+ * of the way up the same 45° band, so it stays vertex for vertex outside the
+ * wall. Null when the sections cannot be built.
+ */
+function pathSections(
+  cutout: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly depth: number;
+    readonly path?: readonly PathPoint[];
+  },
+  chamfer: number,
+  clearance: number,
+  flare: number
+): ChamferSections | null {
   const outline = pathCutoutOutline(cutout);
   const cut = outline ? pathCutoutSections(outline, clearance, chamfer) : null;
-  if (!cut) throw new Error('path: degenerate');
-
-  const baseSketch = pathWire(cut.base).sketchOnPlane('XY', 0) as Sketch;
-  const straightTop = pathWire(cut.base).sketchOnPlane('XY', cutout.cutDepth - chamfer) as Sketch;
-  const flaredTop = pathWire(cut.rim).sketchOnPlane('XY', cutout.cutDepth) as Sketch;
-  const sections = [straightTop, flaredTop];
-  if (topExtension > 0) {
-    sections.push(pathWire(cut.rim).sketchOnPlane('XY', cutout.cutDepth + topExtension) as Sketch);
-  }
-  return baseSketch.loftWith(sections, { ruled: true });
+  if (!cut) return null;
+  const { base } = cut;
+  const t = flare / chamfer;
+  const rim: Pt[] =
+    t === 1
+      ? cut.rim
+      : base.map((p, i) => ({
+          x: p.x + (cut.rim[i].x - p.x) * t,
+          y: p.y + (cut.rim[i].y - p.y) * t,
+        }));
+  let rimReach = 0;
+  for (const q of rim) rimReach = Math.max(rimReach, Math.abs(q.y));
+  return {
+    wall: (z) => pathWire(base).sketchOnPlane('XY', z) as Sketch,
+    rim: (z) => pathWire(rim).sketchOnPlane('XY', z) as Sketch,
+    rimReach,
+  };
 }
 
 /**
@@ -652,12 +711,13 @@ export function buildUngroupedCutout(
   cutout: BinParams['cutouts'][number],
   solidSurfaceZ: number,
   originX: number,
-  originY: number
+  originY: number,
+  sunk?: SunkMouth
 ): Shape3D | null {
   const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
   if (effectiveDepth <= 0) return null;
 
-  let shape = buildUnrotatedCutoutShape({ ...cutout, cutDepth: effectiveDepth });
+  let shape = buildUnrotatedCutoutShape({ ...cutout, cutDepth: effectiveDepth }, sunk);
   if (!shape) return null;
 
   const scoop = resolveScoop(cutout, effectiveDepth);
@@ -809,14 +869,17 @@ function withoutArray(cutout: Cutout): Cutout {
  *
  * A grouped repeat always leaves `drot` at 0 (`groupArrayConfig` refuses
  * rotate-to-center for a group), so a copy is a pure translation.
+ *
+ * `sunkOf` gives a member's sunk chamfer by its id, which holds for every copy.
  */
 export function buildGroupedCutouts(
   groupMembers: BinParams['cutouts'],
   solidSurfaceZ: number,
   originX: number,
-  originY: number
+  originY: number,
+  sunkOf: (memberId: string) => SunkMouth | undefined = () => undefined
 ): Shape3D[] {
-  const base = buildGroupSolid(groupMembers, solidSurfaceZ, originX, originY);
+  const base = buildGroupSolid(groupMembers, solidSurfaceZ, originX, originY, sunkOf);
   if (!base) return [];
 
   // Only when every member agrees on the placement. A stored design can carry a
@@ -846,7 +909,8 @@ function buildGroupSolid(
   groupMembers: BinParams['cutouts'],
   solidSurfaceZ: number,
   originX: number,
-  originY: number
+  originY: number,
+  sunkOf: (memberId: string) => SunkMouth | undefined
 ): Shape3D | null {
   // Create and translate each member shape (no individual scoop).
   // Track which members actually produced shapes so scoop aggregates
@@ -861,7 +925,7 @@ function buildGroupSolid(
     const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
     if (effectiveDepth <= 0) continue;
 
-    const shape = buildCutoutShape({ ...cutout, cutDepth: effectiveDepth });
+    const shape = buildCutoutShape({ ...cutout, cutDepth: effectiveDepth }, sunkOf(cutout.id));
     if (!shape) continue;
 
     builtMembers.push(cutout);
@@ -936,9 +1000,10 @@ function buildGroupSolid(
 /**
  * Build all positioned instances of an array cutout using transformCopy.
  *
- * Builds the master shape (extrude + scoop fillet) exactly once, then clones
- * and positions each instance with a single OCCT matrix operation. For a grid
- * with N instances this reduces scoop fillet calls from N to 1.
+ * Builds the master shape (extrude + scoop fillet) once per chamfer placement,
+ * then clones and positions each instance with a single OCCT matrix
+ * operation. For a grid with N instances this reduces scoop fillet calls from
+ * N to 1, or to one more for the instances `sunkOf` sinks (by instance id).
  *
  * Radial arrays with rotateToCenter get per-instance rotation composed with
  * the translate; all other modes bake the master rotation in up front.
@@ -947,7 +1012,8 @@ export function buildArrayUngroupedCutouts(
   cutout: BinParams['cutouts'][number],
   solidSurfaceZ: number,
   originX: number,
-  originY: number
+  originY: number,
+  sunkOf: (instanceId: string) => SunkMouth | undefined = () => undefined
 ): Shape3D[] {
   const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
   if (effectiveDepth <= 0 || !cutout.array) return [];
@@ -959,32 +1025,42 @@ export function buildArrayUngroupedCutouts(
   // All other modes (grid, staggered, radial without rotateToCenter): uniform.
   const nonUniformRotation = cutout.array.mode === 'radial' && cutout.array.rotateToCenter;
 
-  let master = buildUnrotatedCutoutShape({ ...cutout, cutDepth: effectiveDepth });
-  if (!master) return [];
+  const buildMaster = (sunk: SunkMouth | undefined): Shape3D | null => {
+    let master = buildUnrotatedCutoutShape({ ...cutout, cutDepth: effectiveDepth }, sunk);
+    if (!master) return null;
 
-  const scoop = resolveScoop(cutout, effectiveDepth);
-  if (scoop.w > 0 || scoop.d > 0) {
-    const filleted = applyAxisAwareScoop(master, cutout, scoop);
-    if (filleted !== master) {
-      master.delete();
-      master = filleted;
+    const scoop = resolveScoop(cutout, effectiveDepth);
+    if (scoop.w > 0 || scoop.d > 0) {
+      const filleted = applyAxisAwareScoop(master, cutout, scoop);
+      if (filleted !== master) {
+        master.delete();
+        master = filleted;
+      }
     }
-  }
 
-  master = applyCutoutLean(master, resolveCutoutLeanDeg(cutout), effectiveDepth);
+    master = applyCutoutLean(master, resolveCutoutLeanDeg(cutout), effectiveDepth);
 
-  // Bake the uniform rotation into master so instances only need a translate.
-  if (!nonUniformRotation && cutout.rotation !== 0) {
-    const rotated = rotate(master, -cutout.rotation, { axis: [0, 0, 1] });
-    master.delete();
-    master = rotated;
-  }
+    // Bake the uniform rotation into master so instances only need a translate.
+    if (!nonUniformRotation && cutout.rotation !== 0) {
+      const rotated = rotate(master, -cutout.rotation, { axis: [0, 0, 1] });
+      master.delete();
+      master = rotated;
+    }
+    return master;
+  };
 
   const zOffset = solidSurfaceZ - effectiveDepth;
   const results: Shape3D[] = [];
+  const masters = new Map<string, Shape3D | null>();
 
   try {
     for (const instance of instances) {
+      const sunk = sunkOf(instance.id);
+      const key = sunk ? `${sunk.depth}:${sunk.flare}` : '';
+      if (!masters.has(key)) masters.set(key, buildMaster(sunk));
+      const master = masters.get(key);
+      if (!master) continue;
+
       const tx = originX + instance.x + instance.width / 2;
       const ty = originY + instance.y + instance.depth / 2;
 
@@ -1002,10 +1078,149 @@ export function buildArrayUngroupedCutouts(
       }
     }
   } finally {
-    master.delete();
+    for (const master of masters.values()) master?.delete();
   }
 
   return results;
+}
+
+/**
+ * A pocket's entry chamfer on its own, at a mouth `floorDepth` below the fill
+ * surface: the tool's wall outline `flare` under the mouth, its rim `flare`
+ * further out at the mouth, carried on until all of it is `rise` above the
+ * floor. Built in the tool's frame from the same sections and leaned, turned
+ * and placed the same way, so the flare's foot lies on the tool's wall. Null
+ * when the pocket has no outline to flare or the loft fails.
+ */
+function buildNestedEntryFlare(
+  opening: NestedOpening,
+  solidSurfaceZ: number,
+  originX: number,
+  originY: number
+): Shape3D | null {
+  const { floorDepth, flare, rise } = opening;
+  const pocket = { ...opening.pocket, cutDepth: Math.min(opening.pocket.cutDepth, solidSurfaceZ) };
+  const lean = resolveCutoutLeanDeg(pocket);
+  const { clearance, w, d } = clearedProfile(pocket);
+  const chamfer = entryChamferWidth(pocket);
+  if (chamfer <= MIN_LOFTED_CHAMFER || flare > chamfer) return null;
+  const sections =
+    pocket.shape === 'path'
+      ? pathSections(pocket, chamfer, clearance, flare)
+      : profileSections({ ...pocket, w, d }, flare);
+  if (!sections) return null;
+
+  // A leaned rim is square to the axis, so its low side dips below the mouth
+  // and the rim has to carry on further for all of it to clear `rise`.
+  const tilt = (lean * Math.PI) / 180;
+  const mouthZ = pocket.cutDepth - floorDepth / Math.cos(tilt);
+  const carry = (rise + sections.rimReach * Math.abs(Math.sin(tilt))) / Math.cos(tilt);
+  const topZ = Math.min(mouthZ + carry, pocket.cutDepth + leanTopExtension(lean, d));
+  let shape: Shape3D;
+  try {
+    const foot = sections.wall(mouthZ - flare);
+    const rest = [sections.rim(mouthZ)];
+    if (topZ > mouthZ) rest.push(sections.rim(topZ));
+    shape = foot.loftWith(rest, { ruled: true });
+  } catch {
+    return null;
+  }
+  shape = applyCutoutLean(shape, lean, pocket.cutDepth);
+  if (pocket.rotation !== 0) {
+    const rotated = rotate(shape, -pocket.rotation, { axis: [0, 0, 1] });
+    shape.delete();
+    shape = rotated;
+  }
+  const positioned = translate(shape, [
+    originX + pocket.x + pocket.width / 2,
+    originY + pocket.y + pocket.depth / 2,
+    solidSurfaceZ - pocket.cutDepth,
+  ]);
+  shape.delete();
+  return positioned;
+}
+
+/** How far below z=0 a floor prism reaches, so it spans every flare's foot. */
+const FLOOR_PRISM_UNDERSHOOT = 1;
+
+/**
+ * The outline a floor was cut with, as a prism from below the bin up to the
+ * fill surface: that pocket's own tool, unscooped and carried down, so a flare
+ * trimmed to it stops on the wall the pocket really has.
+ */
+function buildFloorPrism(
+  floor: Cutout,
+  solidSurfaceZ: number,
+  originX: number,
+  originY: number
+): Shape3D | null {
+  const chamferWidth = entryChamferWidth({
+    ...floor,
+    cutDepth: Math.min(floor.cutDepth, solidSurfaceZ),
+  });
+  const span = solidSurfaceZ + FLOOR_PRISM_UNDERSHOOT;
+  let shape = buildUnrotatedCutoutShape({ ...floor, cutDepth: span, chamferWidth, leanDeg: 0 });
+  if (!shape) return null;
+  if (floor.rotation !== 0) {
+    const rotated = rotate(shape, -floor.rotation, { axis: [0, 0, 1] });
+    shape.delete();
+    shape = rotated;
+  }
+  const positioned = translate(shape, [
+    originX + floor.x + floor.width / 2,
+    originY + floor.y + floor.depth / 2,
+    -FLOOR_PRISM_UNDERSHOOT,
+  ]);
+  shape.delete();
+  return positioned;
+}
+
+/**
+ * The flares a pocket gets as tools of their own (see
+ * {@link planNestedOpenings}), each trimmed to its floor's outline unless it
+ * lies wholly inside it. One tool per opening, so a flare that fails costs
+ * only itself, and the pocket keeps its chamfer at the surface there.
+ */
+function buildNestedEntryFlares(
+  openings: readonly NestedOpening[],
+  solidSurfaceZ: number,
+  originX: number,
+  originY: number
+): Array<{ readonly opening: NestedOpening; readonly shape: Shape3D }> {
+  if (openings.length === 0) return [];
+  const prisms = new Map<string, Shape3D | null>();
+  const prismFor = (trim: FloorTrim): Shape3D | null => {
+    if (!prisms.has(trim.key)) {
+      prisms.set(trim.key, buildFloorPrism(trim.cutout, solidSurfaceZ, originX, originY));
+    }
+    return prisms.get(trim.key) ?? null;
+  };
+
+  const flares: Array<{ readonly opening: NestedOpening; readonly shape: Shape3D }> = [];
+  try {
+    for (const opening of openings) {
+      const flare = buildNestedEntryFlare(opening, solidSurfaceZ, originX, originY);
+      if (!flare) continue;
+      if (!opening.trimTo) {
+        flares.push({ opening, shape: flare });
+        continue;
+      }
+      try {
+        const prism = prismFor(opening.trimTo);
+        if (!prism) continue;
+        const trimmed = unwrap(intersect(flare, prism));
+        if (getSolids(trimmed).length > 0) flares.push({ opening, shape: trimmed });
+        else trimmed.delete();
+      } catch {
+        // This flare is dropped; the pocket keeps its chamfer at the surface.
+      } finally {
+        flare.delete();
+      }
+    }
+  } finally {
+    for (const prism of prisms.values()) prism?.delete();
+  }
+  return flares;
 }
 
 /**
@@ -1042,7 +1257,8 @@ const CUTOUT_BOOLEAN_EPSILON = 0.1;
 /**
  * Build the cut and fuse tool sets for a solid bin's cutouts.
  * Each cut entry is one logical cutout (an ungrouped cutout, a fused-and-scooped
- * group, or an engraved label) clipped to the bin interior. The pipeline
+ * group, an entry chamfer where a pocket opens onto a shallower pocket's floor,
+ * or an engraved label) clipped to the bin interior. The pipeline
  * subtracts them from the shell via the booleanStage's cutAllBisect, which
  * recovers individual tool failures instead of dropping the whole set. Embossed
  * labels are returned as fuse tools instead, raised above the bin top.
@@ -1128,6 +1344,11 @@ export function buildCutoutCuts(
     rawTags.push(tag);
   };
 
+  // Where pockets open onto the floor of a shallower pocket around them, so
+  // each tool below is built with its chamfer where the pocket really opens.
+  const nested = planNestedOpenings(params.cutouts, solidSurfaceZ);
+  const sunkOf = (id: string): SunkMouth | undefined => nested.sunk.get(id);
+
   // Partition cutouts by groupId: null -> ungrouped, same groupId -> collected.
   // Array masters expand into one cut per instance first — the grouped path
   // expands its own members inside `buildGroupedCutouts`.
@@ -1139,11 +1360,23 @@ export function buildCutoutCuts(
     if (cutout.shape === 'text') continue;
     if (cutout.groupId === null) {
       if (cutout.array) {
-        for (const s of buildArrayUngroupedCutouts(cutout, solidSurfaceZ, originX, originY)) {
+        for (const s of buildArrayUngroupedCutouts(
+          cutout,
+          solidSurfaceZ,
+          originX,
+          originY,
+          sunkOf
+        )) {
           pushRaw(s, cavityTag(cutout), cutout.id);
         }
       } else {
-        const shape = buildUngroupedCutout(cutout, solidSurfaceZ, originX, originY);
+        const shape = buildUngroupedCutout(
+          cutout,
+          solidSurfaceZ,
+          originX,
+          originY,
+          sunkOf(cutout.id)
+        );
         if (shape) pushRaw(shape, cavityTag(cutout), cutout.id);
       }
     } else {
@@ -1162,7 +1395,13 @@ export function buildCutoutCuts(
   for (const [, groupMembers] of groups) {
     // One entry per copy of a repeated group; a plain group yields one.
     const indices: number[] = [];
-    for (const shape of buildGroupedCutouts(groupMembers, solidSurfaceZ, originX, originY)) {
+    for (const shape of buildGroupedCutouts(
+      groupMembers,
+      solidSurfaceZ,
+      originX,
+      originY,
+      sunkOf
+    )) {
       indices.push(rawShapes.length);
       // All members share a groupId -> one unit, one color for the merged cavity.
       pushRaw(shape, cavityTag(groupMembers[0]));
@@ -1175,6 +1414,17 @@ export function buildCutoutCuts(
     } else {
       for (const m of groupMembers) emptyGroupOwners.add(m.id);
     }
+  }
+
+  // Registered under the pocket like its own tool, so a floor label carves the
+  // flare too rather than having its glyphs cut away by it.
+  for (const { opening, shape } of buildNestedEntryFlares(
+    nested.flares,
+    solidSurfaceZ,
+    originX,
+    originY
+  )) {
+    pushRaw(shape, cavityTag(opening.colorOwner), opening.ownerId);
   }
 
   // Per-cutout label text, placed by the 9-point anchor: the outer anchors

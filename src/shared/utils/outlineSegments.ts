@@ -1,7 +1,8 @@
 /**
  * Segment geometry behind the reach-limited path offset: the closest approach
  * between two segments, a coarser copy of an outline, and a uniform grid that
- * lets each edge meet only the edges near it.
+ * lets each edge meet only the edges near it. The same grid answers whether
+ * two outlines touch or come near each other.
  */
 
 interface Pt {
@@ -385,4 +386,46 @@ export function polylineCrosses(poly: readonly Pt[]): boolean {
     return within(left[node]) || within(right[node]) || across(left[node], right[node]);
   };
   return within(root);
+}
+
+/**
+ * Whether any edge of `b` comes within `gap` of an edge of `a`, both closed
+ * outlines, touching included. Each edge of `a` meets only the edges of `b` on
+ * the grid cells around it.
+ */
+function edgesWithin(a: readonly Pt[], b: readonly Pt[], gap: number, minCell: number): boolean {
+  if (a.length < 2 || b.length < 2) return false;
+  const grid = new EdgeGrid(b, minCell);
+  const across: Across = { gap: 0, ux: 0, uy: 0 };
+  const near: number[] = [];
+  for (let i = 0; i < a.length; i++) {
+    const p = a[i];
+    const q = a[i + 1 === a.length ? 0 : i + 1];
+    grid.collect(p, q, gap, near);
+    for (const f of near) {
+      const g = b[f + 1 === b.length ? 0 : f + 1];
+      if (!gapAcross(p, q, b[f], g, across) || across.gap < gap) return true;
+    }
+  }
+  return false;
+}
+
+/** Whether two closed outlines cross or touch each other. */
+export function outlinesTouch(a: readonly Pt[], b: readonly Pt[]): boolean {
+  return edgesWithin(a, b, CONTACT, 0);
+}
+
+/**
+ * Whether two closed outlines come within `gap` of each other. Measured
+ * between coarser copies kept within `gap / 16` of each outline, so a dense one
+ * costs what its shape needs rather than its point count. Outlines up to a
+ * quarter further than `gap` apart can read as near; two within `gap` never
+ * read as apart.
+ */
+export function outlinesComeWithin(a: readonly Pt[], b: readonly Pt[], gap: number): boolean {
+  const tol = gap / 16;
+  const coarse = (points: readonly Pt[]): Pt[] =>
+    points.length < 4 ? [...points] : proxyIndices(points, tol, Infinity).map((i) => points[i]);
+  const reach = gap + 2 * tol;
+  return edgesWithin(coarse(a), coarse(b), reach, reach / 2);
 }
