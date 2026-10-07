@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.505.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.505.0...gridfinity-layout-tool-v4.505.1) (2026-10-07)
+
+
+### Bug Fixes
+
+* **bin-designer:** align top and bottom edges the right way up in the cutout editor ([#4518](https://github.com/andymai/gridfinity-layout-tool/issues/4518)) ([44541c9](https://github.com/andymai/gridfinity-layout-tool/commit/44541c95c50b5ad1078ab2bdd47ca5bd0591908c)), closes [#4516](https://github.com/andymai/gridfinity-layout-tool/issues/4516)
+* **grid-editor:** hang drawer-margin overhangs from the bin body in the 3D preview ([#4520](https://github.com/andymai/gridfinity-layout-tool/issues/4520)) ([0a31600](https://github.com/andymai/gridfinity-layout-tool/commit/0a3160059a0113b53744f76e9823c49ef8208ff2))
+
 ## [4.505.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.504.0...gridfinity-layout-tool-v4.505.0) (2026-10-07)
 
 
