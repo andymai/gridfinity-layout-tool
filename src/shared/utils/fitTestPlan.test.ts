@@ -21,13 +21,13 @@ import {
   planFitTestSplit,
   planFitTestStampArea,
 } from './fitTestPlan';
-import { growPathOutline } from '@/shared/utils/pathCutoutOutline';
+import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
 import type * as PathCutoutOutline from '@/shared/utils/pathCutoutOutline';
 
 // Wraps the real offset, so every other case here runs the true geometry.
 vi.mock('@/shared/utils/pathCutoutOutline', async (importOriginal) => {
   const actual = await importOriginal<typeof PathCutoutOutline>();
-  return { ...actual, growPathOutline: vi.fn(actual.growPathOutline) };
+  return { ...actual, pathCutoutCut: vi.fn(actual.pathCutoutCut) };
 });
 
 const cutout = (over: Partial<Cutout>): Cutout => ({
@@ -495,16 +495,16 @@ describe('clearance as each builder cuts it', () => {
     expect(span.max - plain.max).toBeCloseTo(2, 6);
   });
 
-  it('offsets a path once when it has no chamfer, and once more for a flare', () => {
-    // Each offset runs a quadratic self-intersection scan on the main thread.
-    const offset = vi.mocked(growPathOutline);
+  it('offsets a path once, flare included, as the builder does', () => {
+    // The offset runs on the main thread, once per path whatever its chamfer.
+    const offset = vi.mocked(pathCutoutCut);
     offset.mockClear();
     fitTestCutoutSpans(board({}, [square(0.5)]));
     expect(offset).toHaveBeenCalledTimes(1);
 
     offset.mockClear();
     fitTestCutoutSpans(board({}, [{ ...square(0.5), chamferWidth: 0.6 }]));
-    expect(offset).toHaveBeenCalledTimes(2);
+    expect(offset).toHaveBeenCalledTimes(1);
   });
 
   it('offsets a mesh silhouette by its whole clearance on every side', () => {

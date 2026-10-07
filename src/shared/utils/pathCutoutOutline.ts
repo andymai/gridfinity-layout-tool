@@ -5,8 +5,9 @@
 
 import type { PathPoint } from '@/shared/types/bin';
 import { MIN_PATH_POINTS } from '@/shared/types/bin';
+import { polylineCrosses } from '@/shared/utils/outlineSegments';
 import { dropCoincidentPoints } from '@/shared/utils/polyline';
-import { offsetClosedPolygon } from '@/shared/utils/polygonOffset';
+import { offsetClosedPolygonWithinReach, refineForOffset } from '@/shared/utils/polygonOffset';
 import type { Pt } from '@/shared/utils/polygonOffset';
 
 export const BEZIER_SEGMENTS = 12;
@@ -56,25 +57,7 @@ export function flattenPathToPolyline(path: readonly PathPoint[]): Array<{ x: nu
 
 /** Check if a closed polyline self-intersects (any non-adjacent edges cross). */
 export function polylineSelfIntersects(poly: readonly { x: number; y: number }[]): boolean {
-  const n = poly.length;
-  if (n < 4) return false;
-
-  for (let i = 0; i < n; i++) {
-    const a1 = poly[i];
-    const a2 = poly[(i + 1) % n];
-    for (let j = i + 2; j < n; j++) {
-      if (j === n - 1 && i === 0) continue; // adjacent (closing edge)
-      const b1 = poly[j];
-      const b2 = poly[(j + 1) % n];
-      const d = (a2.x - a1.x) * (b2.y - b1.y) - (a2.y - a1.y) * (b2.x - b1.x);
-      if (Math.abs(d) < 1e-10) continue;
-      const t = ((b1.x - a1.x) * (b2.y - b1.y) - (b1.y - a1.y) * (b2.x - b1.x)) / d;
-      const u = ((b1.x - a1.x) * (a2.y - a1.y) - (b1.y - a1.y) * (a2.x - a1.x)) / d;
-      const eps = 1e-6;
-      if (t > eps && t < 1 - eps && u > eps && u < 1 - eps) return true;
-    }
-  }
-  return false;
+  return polylineCrosses(poly);
 }
 
 /** Centered, flattened, validated outline for a path cutout (or null if degenerate). */
@@ -94,17 +77,49 @@ export function pathCutoutOutline(cutout: {
   return polyline.map((p) => ({ x: p.x - cx, y: p.y - cy }));
 }
 
+/** The two outlines a path cutout is cut between, vertex for vertex. */
+export interface PathCutoutSections {
+  /** The insertion clearance: the straight wall, floor to where the chamfer starts. */
+  readonly base: Pt[];
+  /** The opening the entry chamfer flares to at the rim; `base` without one. */
+  readonly rim: Pt[];
+}
+
 /**
- * Outset a centered outline by `d` (insertion clearance / chamfer flare). Returns
- * the input unchanged for d<=0, or null when the offset degenerates (self-cross
- * or vertex-count change) so callers can decide how to fall back.
+ * A centered outline offset by its insertion clearance and, at the rim, its
+ * entry chamfer as well, as one loft's sections. A notch too tight for the full
+ * offset takes what it can hold, and the base is capped by the rim's reach
+ * there, so every ruled face between them flares outward. Null when the
+ * outline cannot be offset, because thinning it to its point budget would
+ * make it touch itself.
  */
-export function growPathOutline(
+export function pathCutoutSections(
   outline: readonly Pt[],
-  d: number
-): Array<{ x: number; y: number }> | null {
-  if (d <= 0) return outline.map((p) => ({ x: p.x, y: p.y }));
-  const out = offsetClosedPolygon(outline, d);
-  if (out.length !== outline.length || polylineSelfIntersects(out)) return null;
-  return out;
+  clearance: number,
+  chamfer: number
+): PathCutoutSections | null {
+  const toRim = clearance + Math.max(0, chamfer);
+  const refined = refineForOffset(outline, toRim);
+  if (!refined) return null;
+  const rim = offsetClosedPolygonWithinReach(refined, toRim);
+  if (chamfer <= 0) return { base: rim.points, rim: rim.points };
+  return {
+    base: offsetClosedPolygonWithinReach(refined, clearance, rim.reach).points,
+    rim: rim.points,
+  };
+}
+
+/**
+ * What the builder cuts a path cutout to: its {@link pathCutoutSections}, or
+ * the bare outline, without clearance or chamfer, when those cannot be built.
+ * Null only for a degenerate path, which the builder cuts as its bounding box.
+ */
+export function pathCutoutCut(
+  cutout: Parameters<typeof pathCutoutOutline>[0],
+  clearance: number,
+  chamfer: number
+): PathCutoutSections | null {
+  const outline = pathCutoutOutline(cutout);
+  if (!outline) return null;
+  return pathCutoutSections(outline, clearance, chamfer) ?? { base: outline, rim: outline };
 }

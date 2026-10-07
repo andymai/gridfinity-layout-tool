@@ -23,7 +23,7 @@ import {
 } from '@/shared/types/bin';
 import { regularPolygonPoints } from '@/shared/utils/cutoutPolygon';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
-import { growPathOutline, pathCutoutOutline } from '@/shared/utils/pathCutoutOutline';
+import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
@@ -168,26 +168,23 @@ function openingGrowthMm(cutout: Cutout): {
 }
 
 /**
- * A path's opening at its rim, as `buildUnrotatedCutoutShape` cuts it. The
- * offset's miter joins reach past the clearance at sharp corners, so a plain
- * per-side growth under-reads it. Each fallback is the builder's: a flare that
- * degenerates leaves the clearance outline, and a degenerate path its bare box.
+ * A path's opening at its rim, as `buildUnrotatedCutoutShape` cuts it
+ * ({@link pathCutoutCut}). The offset's miter joins reach past the clearance
+ * at sharp corners, so a plain per-side growth under-reads it.
  */
 function pathRimHalfExtents(
   cutout: Cutout,
   grow: { clearanceD: number; chamfer: number }
 ): { hw: number; hd: number } {
-  const outline = pathCutoutOutline(cutout);
-  if (!outline) return { hw: cutout.width / 2, hd: cutout.depth / 2 };
-  const base = growPathOutline(outline, grow.clearanceD);
-  // The builder only lofts a flare off a clearance outline that built.
-  const flared =
-    base && grow.chamfer > 0 ? growPathOutline(outline, grow.clearanceD + grow.chamfer) : null;
-  const rim = flared ?? base ?? outline;
-  return {
-    hw: Math.max(...rim.map((p) => Math.abs(p.x))),
-    hd: Math.max(...rim.map((p) => Math.abs(p.y))),
-  };
+  const sections = pathCutoutCut(cutout, grow.clearanceD, grow.chamfer);
+  if (!sections) return { hw: cutout.width / 2, hd: cutout.depth / 2 };
+  let hw = 0;
+  let hd = 0;
+  for (const p of sections.rim) {
+    hw = Math.max(hw, Math.abs(p.x));
+    hd = Math.max(hd, Math.abs(p.y));
+  }
+  return { hw, hd };
 }
 
 /**
@@ -658,10 +655,8 @@ export function openingPerimeterMm(cutout: Cutout): number {
       return 2 * (w + d) - (8 - 2 * Math.PI) * r;
     }
     case 'path': {
-      const outline = pathCutoutOutline(cutout);
-      return outline
-        ? polygonPerimeter(growPathOutline(outline, grow.clearanceD) ?? outline)
-        : 2 * (cutout.width + cutout.depth);
+      const cut = pathCutoutCut(cutout, grow.clearanceD, grow.chamfer);
+      return cut ? polygonPerimeter(cut.base) : 2 * (cutout.width + cutout.depth);
     }
     // A scan has no outline here, only its footprint; the box over-reads it.
     case 'mesh':

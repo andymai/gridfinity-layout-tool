@@ -121,10 +121,10 @@ export function defaultEntryChamfer(holeSize: number, cutDepth: number): number 
 /**
  * Shapes that accept an entry {@link Cutout.chamferWidth}. Paths are included:
  * the generator flattens the outline to a polyline and offsets *that* (a
- * well-defined polygon offset) for the flared top rim, falling back to a
- * straight extrude if the offset/loft can't be built. (A constant-offset of an
- * unflattened arbitrary bezier still isn't well-defined — flattening first is
- * what makes the path case tractable.)
+ * well-defined polygon offset, held back locally at any curve too tight for
+ * it) for the flared top rim, falling back to a straight extrude if the loft
+ * can't be built. (A constant-offset of an unflattened arbitrary bezier still
+ * isn't well-defined — flattening first is what makes the path case tractable.)
  */
 export const CHAMFER_SHAPES: readonly CutoutShape[] = [
   'rectangle',
