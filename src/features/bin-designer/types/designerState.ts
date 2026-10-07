@@ -1,5 +1,5 @@
 import type { SaveStatus } from '@/shared/types/saveStatus';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import type { MeasurePoint } from '@/features/bin-designer/utils/measure3d';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
@@ -303,7 +303,7 @@ export interface DesignerState {
   // Cutout actions
   /** Returns whether the cutout landed — false when the lid is at its cap. */
   addCutout: (cutout: Cutout) => boolean;
-  addMeshCutout: (cutout: Cutout, asset: MeshAsset) => void;
+  addMeshCutout: (cutout: Cutout, asset: MeshAssetEntry) => void;
   removeCutout: (id: string) => void;
   updateCutout: (id: string, updates: Partial<Cutout>) => void;
   clearCutouts: () => void;

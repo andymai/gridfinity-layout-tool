@@ -18,7 +18,8 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { DEFAULT_POLYGON_SIDES, MIN_PATH_POINTS } from '@/features/bin-designer/types';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
+import { meshAssetOutlines } from '@/shared/generation/meshOutlines';
 import {
   clampPolygonSides,
   regularPolygonPoints,
@@ -108,18 +109,20 @@ function roundedRectRing(
 /**
  * Stored top-down silhouette of a mesh imprint, mapped from the asset's
  * `[0..sizeMm]` frame onto the cutout's footprint box. Returns `null` when the
- * asset is unavailable so the caller can fall back to the footprint rectangle.
+ * asset or its file is unavailable so the caller can fall back to the footprint
+ * rectangle.
  * Holes were already dropped at import, so each ring is an independent island.
  */
 function meshRings(
   cutout: Cutout,
-  meshAssets: Readonly<Record<string, MeshAsset>> | undefined
+  meshAssets: Readonly<Record<string, MeshAssetEntry>> | undefined
 ): Point2D[][] | null {
   const asset = cutout.meshId !== undefined ? meshAssets?.[cutout.meshId] : undefined;
-  if (!asset || asset.sizeMm.x <= 0 || asset.sizeMm.y <= 0) return null;
+  const outlines = meshAssetOutlines(asset);
+  if (!asset || !outlines || asset.sizeMm.x <= 0 || asset.sizeMm.y <= 0) return null;
   const scaleX = cutout.width / asset.sizeMm.x;
   const scaleY = cutout.depth / asset.sizeMm.y;
-  const rings = asset.outlines
+  const rings = outlines
     .filter((ring) => ring.length >= MIN_RING_POINTS)
     .map((ring) => ring.map((p) => ({ x: cutout.x + p.x * scaleX, y: cutout.y + p.y * scaleY })));
   return rings.length > 0 ? rings : null;
@@ -135,7 +138,7 @@ function meshRings(
  */
 export function getCutoutOutline(
   cutout: Cutout,
-  meshAssets?: Readonly<Record<string, MeshAsset>>
+  meshAssets?: Readonly<Record<string, MeshAssetEntry>>
 ): Point2D[][] | null {
   if (cutout.shape === 'path') {
     if (!cutout.path || cutout.path.length < MIN_PATH_POINTS) return null;

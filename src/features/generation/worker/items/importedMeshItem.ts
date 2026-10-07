@@ -8,32 +8,36 @@
  * exists), mirroring the mesh-imprint rule in `binExporter.ts`.
  */
 import { isErr } from '@/core/result';
-import { decodeMeshData } from '@/shared/generation/meshAsset';
-import type { DecodedMeshData } from '@/shared/generation/meshAsset';
+import type { DecodedMeshData, MeshAssetEntry } from '@/shared/generation/meshAsset';
 import { isItemKind } from '@/shared/types/item';
 import type { GridfinityItem } from '@/shared/types/item';
 import type { MeshData } from '../../bridge/types';
 import type { ItemExportResult, ItemGeneratorModule } from './generatorRegistry';
 import { buildSTLBufferFromIndexed } from '../../export/stlExporter';
+import { decodeMeshEntry, meshEntryKey } from '../meshFiles';
 // Direct descriptor import, NOT the registry: the worker bundle never runs
 // registerDescriptors() (that's a main-thread module), so a registry lookup
 // here would throw at export time.
 import { importedMeshDescriptor } from '@/shared/items/importedMesh/descriptor';
 
-/** Decoded assets kept per worker, content-keyed by the GMA1 payload string. */
+/** Decoded assets kept per worker, keyed by `meshEntryKey`. */
 const MAX_DECODED_ASSETS = 4;
 
 const decodedAssets = new Map<string, DecodedMeshData>();
 
-async function decodeCached(data: string): Promise<DecodedMeshData> {
-  const hit = decodedAssets.get(data);
+async function decodeCached(asset: MeshAssetEntry): Promise<DecodedMeshData> {
+  const key = meshEntryKey(asset);
+  const hit = decodedAssets.get(key);
   if (hit) {
     // Refresh LRU position.
-    decodedAssets.delete(data);
-    decodedAssets.set(data, hit);
+    decodedAssets.delete(key);
+    decodedAssets.set(key, hit);
     return hit;
   }
-  const decoded = await decodeMeshData(data);
+  const decoded = await decodeMeshEntry(asset);
+  if (decoded === null) {
+    throw new Error('Imported mesh file has not reached the worker');
+  }
   if (isErr(decoded)) {
     throw new Error(`Imported mesh asset failed to decode: ${decoded.error.message}`);
   }
@@ -42,7 +46,7 @@ async function decodeCached(data: string): Promise<DecodedMeshData> {
     if (oldest === undefined) break;
     decodedAssets.delete(oldest);
   }
-  decodedAssets.set(data, decoded.value);
+  decodedAssets.set(key, decoded.value);
   return decoded.value;
 }
 
@@ -74,7 +78,7 @@ export const importedMeshGeneratorModule: ItemGeneratorModule = {
 
   prepare: async (item: GridfinityItem) => {
     if (!isItemKind(item, 'importedMesh')) return;
-    await decodeCached(item.structure.asset.data);
+    await decodeCached(item.structure.asset);
   },
 
   generate: (item, onProgress, _isExport, _signal) => {
@@ -82,7 +86,7 @@ export const importedMeshGeneratorModule: ItemGeneratorModule = {
       throw new Error('importedMesh generator received a non-importedMesh item');
     }
     const { asset } = item.structure;
-    const decoded = decodedAssets.get(asset.data);
+    const decoded = decodedAssets.get(meshEntryKey(asset));
     if (!decoded) {
       throw new Error('Imported mesh asset not prepared — prepare() must run before generate()');
     }
@@ -110,7 +114,7 @@ export const importedMeshGeneratorModule: ItemGeneratorModule = {
       );
     }
     const { asset } = item.structure;
-    const decoded = await decodeCached(asset.data);
+    const decoded = await decodeCached(asset);
     const fileName = importedMeshDescriptor.exportFileName(item.envelope, item.structure);
     // Exported STL keeps the stored origin-normalized frame (bbox min at
     // 0,0,0 — bottom on the build plate), which is what slicers expect.

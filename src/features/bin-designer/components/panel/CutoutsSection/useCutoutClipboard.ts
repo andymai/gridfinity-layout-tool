@@ -9,7 +9,7 @@
 import { useCallback, useRef, useState } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import type { MaskCellSize } from './maskFit';
 import { useShallow } from 'zustand/react/shallow';
 import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
@@ -57,7 +57,7 @@ interface UseCutoutClipboardOptions {
   readonly binDepth: number;
   readonly cellMask?: CellMask;
   readonly maskCellSize?: MaskCellSize;
-  readonly meshAssets?: Readonly<Record<string, MeshAsset>>;
+  readonly meshAssets?: Readonly<Record<string, MeshAssetEntry>>;
 }
 
 export interface CutoutClipboard {

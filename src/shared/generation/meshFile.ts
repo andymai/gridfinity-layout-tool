@@ -51,7 +51,7 @@ export const MAX_MESH_FILE_RINGS = Math.floor(MAX_MESH_OUTLINE_POINTS / 3);
 /** MIRROR: `CONSTRAINTS.MAX_MESH_SIZE_MM` in `api/lib/designerValidationConstants.ts`. */
 export const MAX_MESH_OUTLINE_COORD_MM = 1000;
 
-interface ParsedMeshFile {
+export interface ParsedMeshFile {
   readonly triangleCount: number;
   readonly geometry: Uint8Array;
   readonly outlines: MeshOutlinePoint[][];
@@ -86,7 +86,12 @@ function pointError(v: number): string | null {
   return null;
 }
 
-function parseMeshFile(bytes: Uint8Array): Result<ParsedMeshFile, ValidationError> {
+/**
+ * Every check but the geometry's, which stays deflated: enough for a file this
+ * device stored itself, whose geometry each consumer decodes and checks on use.
+ * Bytes from anywhere else go through {@link decodeMeshFile}.
+ */
+export function parseMeshFile(bytes: Uint8Array): Result<ParsedMeshFile, ValidationError> {
   if (bytes.byteLength < MESH_FILE_HEADER_BYTES) return invalid('truncated header');
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   if (view.getUint32(0, true) !== MAGIC) return invalid('bad magic');
@@ -139,7 +144,9 @@ function parseMeshFile(bytes: Uint8Array): Result<ParsedMeshFile, ValidationErro
   });
 }
 
-export function encodeMeshFile(content: MeshFileContent): Result<Uint8Array, ValidationError> {
+export function encodeMeshFile(
+  content: MeshFileContent
+): Result<Uint8Array<ArrayBuffer>, ValidationError> {
   let geometry: Uint8Array;
   try {
     geometry = base64ToBytes(content.data);

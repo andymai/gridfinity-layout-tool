@@ -38,6 +38,7 @@ import {
   type SavedDesign,
 } from '@/features/bin-designer';
 import { decodeMeshData } from '@/shared/generation/meshAsset';
+import { resolveMeshAsset } from '@/shared/generation/meshRefs';
 import {
   binMeshCacheKey,
   itemMeshCacheKey,
@@ -202,7 +203,9 @@ async function resolveDesignMesh(
 ): Promise<LinkedDesignMesh | null> {
   const structure = design.structure;
   if (structure?.kind === 'importedMesh' && design.envelope) {
-    const decoded = await decodeMeshData(structure.asset.data);
+    const asset = await resolveMeshAsset(structure.asset);
+    if (!asset) return null;
+    const decoded = await decodeMeshData(asset.data);
     if (!isOk(decoded)) return null;
     const { positions, indices } = decoded.value;
     const mesh: MeshData = {

@@ -11,6 +11,7 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useLoadedMeshAssets } from '@/shared/hooks/useMeshOutlines';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { LidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
@@ -41,7 +42,7 @@ export function OffBoardFrames3D({
   // Read straight from the store (like MeshFootprintMesh) so a mesh imprint is
   // re-tested by the same silhouette `offBoardIds` used — otherwise the frames
   // drift out of lockstep with the warning that summons them.
-  const meshAssets = useDesignerStore((s) => s.params.meshAssets);
+  const meshAssets = useLoadedMeshAssets(useDesignerStore((s) => s.params.meshAssets));
   if (offBoardIds.size === 0) return null;
   // Rebuilt rather than passed: this component re-tests each instance against
   // the LIVE drag preview, so it needs the board itself, not the verdict.

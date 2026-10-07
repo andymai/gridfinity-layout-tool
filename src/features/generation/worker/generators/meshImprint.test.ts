@@ -12,10 +12,13 @@ import { setManifoldModuleForTests } from '../manifoldRuntime';
 import { prepareMeshImprints, hasMeshImprints, clearMeshImprintCache } from './meshImprint';
 import { importMeshFromStl } from './meshImport';
 import { buildSTLBuffer } from '@/shared/generation/export';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAsset, MeshAssetEntry, MeshAssetRef } from '@/shared/generation/meshAsset';
+import { encodeMeshFile } from '@/shared/generation/meshFile';
+import { sha256Hex } from '@/shared/generation/sha256';
 import type { BinParams, Cutout } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { isOk } from '@/core/result';
+import { isOk, unwrap } from '@/core/result';
+import { __clearMeshFilesForTests, receiveMeshFile } from '../meshFiles';
 import { SOCKET_HEIGHT } from './generatorConstants';
 import { deriveDimensions } from './pipeline/context';
 import { CUTOUT_COLOR_TAG_BASE } from '@/shared/generation/cutoutColorUnits';
@@ -94,7 +97,7 @@ function meshCutout(overrides: Partial<Cutout> = {}): Cutout {
   };
 }
 
-function solidBinParams(cutouts: Cutout[], meshAssets?: Record<string, MeshAsset>): BinParams {
+function solidBinParams(cutouts: Cutout[], meshAssets?: Record<string, MeshAssetEntry>): BinParams {
   return buildParams({
     width: 2,
     depth: 2,
@@ -468,6 +471,52 @@ describe('mesh imprint generation (occt + manifold)', () => {
     solid.delete();
     expect(componentCount).toBe(1);
     expect(Array.from(imprinted.vertices).every(Number.isFinite)).toBe(true);
+  }, 120_000);
+
+  it('cuts the same pocket from a ref as from the inline asset it was stored from', async () => {
+    const file = unwrap(encodeMeshFile(toolAsset));
+    const ref: MeshAssetRef = {
+      name: toolAsset.name,
+      hash: await sha256Hex(file),
+      triangleCount: toolAsset.triangleCount,
+      sizeMm: toolAsset.sizeMm,
+      bytes: file.byteLength,
+    };
+    receiveMeshFile(ref.hash, file);
+    try {
+      const fromRefParams = solidBinParams([meshCutout()], { 'asset-1': ref });
+      const inlineParams = solidBinParams([meshCutout()]);
+      await prepareMeshImprints(fromRefParams, module);
+      await prepareMeshImprints(inlineParams, module);
+      const generate = getGenerateBin();
+
+      const fromRef = generate(fromRefParams, undefined, true);
+      const fromInline = generate(inlineParams, undefined, true);
+
+      expect(fromRef.triangleCount).toBe(fromInline.triangleCount);
+      expect(Array.from(fromRef.vertices)).toEqual(Array.from(fromInline.vertices));
+    } finally {
+      __clearMeshFilesForTests();
+    }
+  }, 120_000);
+
+  it('leaves the pocket of a ref whose file has not arrived uncut', async () => {
+    const pending: MeshAssetRef = {
+      name: toolAsset.name,
+      hash: 'e'.repeat(64),
+      triangleCount: toolAsset.triangleCount,
+      sizeMm: toolAsset.sizeMm,
+      bytes: 1,
+    };
+    const params = solidBinParams([meshCutout()], { 'asset-1': pending });
+    expect(hasMeshImprints(params)).toBe(true);
+    await prepareMeshImprints(params, module);
+    const generate = getGenerateBin();
+
+    const withPending = generate(params, undefined, true);
+    const plain = generate(solidBinParams([]), undefined, true);
+
+    expect(withPending.triangleCount).toBe(plain.triangleCount);
   }, 120_000);
 
   it('skips hidden mesh cutouts', async () => {

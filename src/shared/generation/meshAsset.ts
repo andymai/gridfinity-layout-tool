@@ -47,6 +47,27 @@ export interface MeshAsset {
   readonly outlines: MeshOutlinePoint[][];
 }
 
+/**
+ * A stored design's handle on a mesh asset whose geometry and outlines live in
+ * a mesh file (`meshFile.ts`), named by the SHA-256 of the file's bytes. The
+ * fields a panel shows stay here, so reading them needs no file.
+ */
+export interface MeshAssetRef {
+  readonly name: string;
+  readonly hash: string;
+  readonly triangleCount: number;
+  readonly sizeMm: { readonly x: number; readonly y: number; readonly z: number };
+  /** The mesh file's size. */
+  readonly bytes: number;
+}
+
+/** What `BinParams.meshAssets` and an imported-mesh structure hold. */
+export type MeshAssetEntry = MeshAsset | MeshAssetRef;
+
+export function isMeshAssetRef(entry: MeshAssetEntry): entry is MeshAssetRef {
+  return 'hash' in entry;
+}
+
 /** Why a mesh import failed — drives the user-facing toast + analytics reason. */
 export type MeshImportErrorReason = 'too_large' | 'parse_failed' | 'not_manifold' | 'empty';
 

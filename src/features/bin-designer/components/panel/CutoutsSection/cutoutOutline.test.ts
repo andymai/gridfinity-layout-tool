@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAsset, MeshAssetRef } from '@/shared/generation/meshAsset';
+import { deleteMeshOutlines, setMeshOutlines } from '@/shared/generation/meshOutlines';
 import { getCutoutOutline } from './cutoutOutline';
 
 const base: Cutout = {
@@ -191,6 +192,23 @@ describe('getCutoutOutline', () => {
       const ring = getCutoutOutline(meshCutout)?.[0] ?? [];
       expect(ring).toHaveLength(4);
       expect(ringArea(ring)).toBeCloseTo(400);
+    });
+
+    it('reads a ref as its footprint box until its file arrives, then as its silhouette', () => {
+      const ref: MeshAssetRef = {
+        name: 'wrench',
+        hash: 'c'.repeat(64),
+        triangleCount: 4,
+        sizeMm: asset.sizeMm,
+        bytes: 100,
+      };
+      try {
+        expect(ringArea(getCutoutOutline(meshCutout, { m1: ref })?.[0] ?? [])).toBeCloseTo(400);
+        setMeshOutlines(ref.hash, asset.outlines);
+        expect(ringArea(getCutoutOutline(meshCutout, { m1: ref })?.[0] ?? [])).toBeCloseTo(300);
+      } finally {
+        deleteMeshOutlines(ref.hash);
+      }
     });
   });
 });

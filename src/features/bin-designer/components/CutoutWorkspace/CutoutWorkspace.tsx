@@ -62,6 +62,7 @@ import { CutoutEmptyState } from '../panel/CutoutsSection/CutoutEmptyState';
 import { useCutoutQuickstart } from '../../hooks/useCutoutQuickstart';
 import { useGroupLevel } from '../../hooks/useGroupLevel';
 import { useTranslation } from '@/i18n';
+import { useLoadedMeshAssets } from '@/shared/hooks/useMeshOutlines';
 import { useCutoutWorkspaceCamera } from './useCutoutWorkspaceCamera';
 import { useCutoutWorkspacePointer } from './useCutoutWorkspacePointer';
 import { buildCutoutContextActions } from './cutoutWorkspaceContextActions';
@@ -184,6 +185,7 @@ export function CutoutWorkspace() {
   // auto-rescaled); on the lid, the window is rounded and a retention magnet's
   // boss is a hole the cut must leave intact. Both are the same question, so
   // both feed one flagged set, one banner and one clamp.
+  const meshAssets = useLoadedMeshAssets(params.meshAssets);
   const cutoutBoard = useMemo(
     () => ({
       width: binWidth,
@@ -191,9 +193,9 @@ export function CutoutWorkspace() {
       mask: boardMask,
       cellSize: maskCellSize,
       lidWindow: lidWindow ?? undefined,
-      meshAssets: params.meshAssets,
+      meshAssets,
     }),
-    [binWidth, binDepth, boardMask, maskCellSize, lidWindow, params.meshAssets]
+    [binWidth, binDepth, boardMask, maskCellSize, lidWindow, meshAssets]
   );
 
   const offBoardIds = useMemo(

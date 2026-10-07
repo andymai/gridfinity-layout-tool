@@ -17,7 +17,7 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import { getRotatedBounds } from '../geometry';
 import { getCutoutOutline } from '../cutoutOutline';
 
@@ -49,7 +49,7 @@ export interface SnapModel {
 /** Board context the snap model is built from. */
 export interface SnapModelInput {
   readonly cutouts: readonly Cutout[];
-  readonly meshAssets?: Readonly<Record<string, MeshAsset>>;
+  readonly meshAssets?: Readonly<Record<string, MeshAssetEntry>>;
   /** Interior cavity width in mm. The editor works in the [0, innerW] frame. */
   readonly innerW: number;
   /** Interior cavity depth in mm. */

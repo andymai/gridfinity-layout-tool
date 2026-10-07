@@ -20,6 +20,7 @@ import {
   type BinParams,
 } from '@/features/bin-designer';
 import { decodeMeshData } from '@/shared/generation/meshAsset';
+import { storeMeshAsset } from '@/shared/generation/meshRefs';
 import { loadPersistedBinMesh, savePersistedBinMesh } from '@/shared/generation/meshPersistence';
 import { bridgeManager } from '@/shared/generation/bridge';
 import type { KernelName } from '@/shared/generation/bridge';
@@ -35,7 +36,8 @@ vi.mock('@/features/bin-designer', () => ({
   binDimensions: vi.fn(() => ({ floorZ: BODY_BASE_MM })),
 }));
 
-vi.mock('@/shared/generation/meshAsset', () => ({
+vi.mock('@/shared/generation/meshAsset', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   decodeMeshData: vi.fn(),
 }));
 
@@ -344,6 +346,41 @@ describe('useLinkedDesignMeshes', () => {
     expect(Array.from(entry?.mesh.vertices ?? [])).toEqual([-20, -20, 0, 20, 20, 28]);
     expect(entry?.width).toBe(1);
     expect(mockAcquire).not.toHaveBeenCalled();
+  });
+
+  it('decodes an imported STL design stored as a ref from its mesh file', async () => {
+    const ref = await storeMeshAsset({
+      name: 'holder',
+      data: 'AAAA',
+      triangleCount: 1,
+      sizeMm: { x: 40, y: 40, z: 28 },
+      outlines: [
+        [
+          { x: 0, y: 0 },
+          { x: 40, y: 0 },
+          { x: 0, y: 40 },
+        ],
+      ],
+    });
+    const design = makeImportedDesign();
+    const structure = design.structure;
+    if (!ref || structure?.kind !== 'importedMesh') throw new Error('fixture');
+    mockUseCustomBins.mockReturnValue([makeRegistryRef({ width: 1, depth: 1 })]);
+    mockLoadDesign.mockResolvedValue(ok({ ...design, structure: { ...structure, asset: ref } }));
+    mockDecodeMeshData.mockResolvedValue(
+      ok({
+        positions: new Float32Array([0, 0, 0, 40, 40, 28]),
+        indices: new Uint32Array([0, 1, 0]),
+      })
+    );
+
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
+    const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+    await waitFor(() => {
+      expect(result.current.get(B1)).toBeDefined();
+    });
+    expect(mockDecodeMeshData).toHaveBeenCalledWith('AAAA');
   });
 
   it('caches failures so a broken design does not retry every render', async () => {

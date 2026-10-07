@@ -19,7 +19,7 @@ import type {
 import { DEFAULT_GROUP_OP, DEFAULT_CUTOUT_COLOR_SCOPE } from '../../types';
 import { canArray } from '@/shared/utils/cutoutArray';
 import { withTextFootprint } from '@/shared/utils/cutoutLabel';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import { MAX_MESH_ASSETS_PER_DESIGN } from '@/shared/generation/meshAsset';
 import {
   adoptedGroupArray,
@@ -346,7 +346,7 @@ export function createCutoutSlice(rawSet: Set) {
      * entry, so undo removes both). No-ops when the design is already at the
      * asset cap — callers surface that limit before invoking.
      */
-    addMeshCutout: (cutout: Cutout, asset: MeshAsset) => {
+    addMeshCutout: (cutout: Cutout, asset: MeshAssetEntry) => {
       const meshId = cutout.meshId;
       if (cutout.shape !== 'mesh' || meshId === undefined) return;
       set((state) => {
