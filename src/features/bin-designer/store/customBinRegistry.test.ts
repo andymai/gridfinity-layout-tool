@@ -5,6 +5,7 @@ import {
   upsertRegistryEntry,
   removeRegistryEntry,
   rebuildRegistry,
+  registryAssemblyEntry,
   registryAssemblyFields,
   registryEdgeFields,
   registryHeightFields,
@@ -364,6 +365,43 @@ describe('customBinRegistry', () => {
       const fields = registryAssemblyFields(envelope, overhung);
       expect(fields.overhangMm).toEqual({ left: 20, right: 0, front: 0, back: 0 });
       expect(fields.assembledRiseMm).toBeCloseTo(GRIDFINITY_SPEC.SOCKET_HEIGHT + 2 + 20, 5);
+    });
+  });
+
+  describe('registryAssemblyEntry', () => {
+    const envelope = { width: 4, depth: 2, gridUnitMm: 42, heightUnitMm: 7 } as ItemEnvelope;
+    const structure = {
+      kind: 'assembly',
+      schemaVersion: 1,
+      base: { floorThickness: 2 },
+      mirrorAxis: 'x',
+      parts: [],
+    } as AssemblyStructure;
+    const saved = {
+      id: designId('w'),
+      name: 'Workshop build',
+      thumbnail: null,
+      exportFileNameConfig: null,
+      createdAt: '2026-05-19T00:00:00.000Z',
+      updatedAt: '2026-05-20T00:00:00.000Z',
+    };
+
+    it('builds a full entry for an assembly', () => {
+      const entry = registryAssemblyEntry({ ...saved, kind: 'assembly', envelope, structure });
+      expect(entry).toMatchObject({
+        id: 'w',
+        name: 'Workshop build',
+        width: 4,
+        depth: 2,
+        kind: 'assembly',
+        hasLip: false,
+        updatedAt: '2026-05-20T00:00:00.000Z',
+      });
+      expect(entry?.assembledRiseMm).toBeCloseTo(GRIDFINITY_SPEC.SOCKET_HEIGHT + 2, 5);
+    });
+
+    it('is null for a parametric bin', () => {
+      expect(registryAssemblyEntry({ ...saved, params: DEFAULT_BIN_PARAMS })).toBeNull();
     });
   });
 

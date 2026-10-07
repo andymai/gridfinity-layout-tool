@@ -4,7 +4,8 @@
  * Runs one boot-time pass through saved designs and regenerates any missing
  * or outdated thumbnails on idle time. Without this, fresh / imported / version-
  * bumped designs only get their thumbnail on the user's *next* modal open —
- * which is exactly when they notice it's missing.
+ * which is exactly when they notice it's missing. The same pass registers any
+ * stored Workshop assembly that has no registry entry.
  *
  * Coordination contract:
  *  - **Sync**: signed-in users wait for the sync store to leave `'syncing'`
@@ -30,7 +31,9 @@ import { useSyncStatusStore } from '@/core/sync/status';
 import { useDesignerStore } from '../store';
 import { listDesigns, updateDesignThumbnail } from '../storage/DesignerStorage';
 import {
+  loadRegistry,
   upsertRegistryEntry,
+  registryAssemblyEntry,
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
@@ -110,6 +113,21 @@ function readPreviewColor(): string {
     return window.localStorage.getItem(PREVIEW_COLOR_KEY) ?? DEFAULT_PREVIEW_COLOR;
   } catch {
     return DEFAULT_PREVIEW_COLOR;
+  }
+}
+
+/**
+ * Register stored assemblies that have no registry entry. `saveDesign` never
+ * registers, so an assembly stored with the designer closed (a sync pull) can
+ * lack one and would read as a parametric bin in the layout. An existing entry
+ * is left exactly as it is, which also makes a second pass a no-op.
+ */
+function registerUnlistedAssemblies(designs: readonly SavedDesign[]): void {
+  const registered = new Set(loadRegistry().map((ref) => ref.id));
+  for (const design of designs) {
+    if (registered.has(design.id)) continue;
+    const entry = registryAssemblyEntry(design);
+    if (entry) upsertRegistryEntry(entry);
   }
 }
 
@@ -257,6 +275,8 @@ export function useBackgroundThumbnailRegen(): void {
 
         const listResult = await listDesigns();
         if (!isOk(listResult)) return;
+
+        registerUnlistedAssemblies(listResult.value);
 
         const stale = listResult.value.filter(needsRegen);
         if (stale.length === 0) return;

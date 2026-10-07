@@ -23,8 +23,9 @@ import {
 import { planKnifeRest } from '@/shared/utils/knifeRestPlan';
 import { hasOverhang, resolveOverhang } from '@/shared/utils/overhang';
 import { isPartialMask } from '@/shared/utils/cellMask';
-import type { BinParams } from '../types';
+import type { BinParams, SavedDesign } from '../types';
 import { isSocketlessBase } from '../types/base';
+import { designFootprint } from '../utils/designKind';
 
 const REGISTRY_KEY = 'gridfinity-custom-bins-v1';
 
@@ -259,6 +260,27 @@ export function registryAssemblyFields(
       w: envelope.width * envelope.gridUnitMm,
       d: envelope.depth * envelope.gridUnitMm,
     }),
+  };
+}
+
+/**
+ * The full registry entry for a saved Workshop assembly, or `null` for any
+ * other kind. `saveDesign` never registers a design, so the paths that store
+ * an assembly outside the designer (a sync pull, the startup pass) build the
+ * entry here.
+ */
+export function registryAssemblyEntry(design: SavedDesign): CustomBinRef | null {
+  if (!design.envelope || design.structure?.kind !== 'assembly') return null;
+  const { width, depth, height } = designFootprint(design);
+  return {
+    id: design.id,
+    name: design.name,
+    width,
+    depth,
+    height,
+    ...registryEdgeFields({}),
+    ...registryAssemblyFields(design.envelope, design.structure),
+    updatedAt: design.updatedAt,
   };
 }
 

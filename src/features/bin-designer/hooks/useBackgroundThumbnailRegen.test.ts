@@ -29,13 +29,18 @@ vi.mock('@/features/bin-designer/storage/DesignerStorage', () => ({
   updateDesignThumbnail: vi.fn(),
 }));
 
-vi.mock('../store/customBinRegistry', () => ({
-  upsertRegistryEntry: vi.fn(),
-  registryEdgeFields: vi.fn(() => ({})),
-  registryHeightFields: vi.fn(() => ({})),
-  registryOverhangFields: vi.fn(() => ({})),
-  registryKnifeRestFields: vi.fn(() => ({})),
-}));
+vi.mock('../store/customBinRegistry', async (importOriginal) => {
+  const actual = await importOriginal<typeof CustomBinRegistry>();
+  return {
+    upsertRegistryEntry: vi.fn(),
+    loadRegistry: vi.fn(() => []),
+    registryAssemblyEntry: actual.registryAssemblyEntry,
+    registryEdgeFields: vi.fn(() => ({})),
+    registryHeightFields: vi.fn(() => ({})),
+    registryOverhangFields: vi.fn(() => ({})),
+    registryKnifeRestFields: vi.fn(() => ({})),
+  };
+});
 
 vi.mock('./useDesignThumbnail', () => ({
   updateThumbnailCache: vi.fn(),
@@ -53,6 +58,8 @@ vi.mock('@/shared/analytics/posthog', () => ({
 }));
 
 import { regenerateThumbnail } from '../utils/thumbnailRegenerator';
+import type * as CustomBinRegistry from '../store/customBinRegistry';
+import { loadRegistry, upsertRegistryEntry } from '../store/customBinRegistry';
 import * as DesignerStorage from '@/features/bin-designer/storage/DesignerStorage';
 import { bridgeManager } from '@/shared/generation/bridge';
 import { trackEvent } from '@/shared/analytics/posthog';
@@ -76,6 +83,36 @@ function makeDesign(
     createdAt: '2026-05-19T00:00:00.000Z',
     updatedAt: '2026-05-19T00:00:00.000Z',
     ...rest,
+  };
+}
+
+function makeAssembly(id: string, overrides: Partial<SavedDesign> = {}): SavedDesign {
+  const { params: _params, ...bin } = makeDesign({ id, name: 'Workshop build' });
+  return {
+    ...bin,
+    kind: 'assembly',
+    envelope: {
+      width: 4,
+      depth: 2,
+      gridUnitMm: 42,
+      heightUnitMm: 7,
+      attachment: {
+        magnetHoles: false,
+        magnetDiameter: 6.5,
+        magnetDepth: 2.4,
+        screwHoles: false,
+        screwDiameter: 3,
+      },
+      featureColors: { enabled: false },
+    } as SavedDesign['envelope'],
+    structure: {
+      kind: 'assembly',
+      schemaVersion: 1,
+      base: { floorThickness: 2 },
+      mirrorAxis: 'x',
+      parts: [],
+    },
+    ...overrides,
   };
 }
 
@@ -368,5 +405,65 @@ describe('useBackgroundThumbnailRegen', () => {
     expect(regenerateThumbnail).toHaveBeenCalledTimes(1);
     // No batch summary on abort.
     expect(trackEvent).not.toHaveBeenCalled();
+  });
+
+  // A stored Workshop design with no registry entry reads as a parametric bin
+  // in the layout, so the startup pass registers it.
+  describe('unregistered assemblies', () => {
+    it('registers an assembly that has no registry entry, without a thumbnail render', async () => {
+      vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(ok([makeAssembly('w')]));
+
+      renderHook(() => useBackgroundThumbnailRegen());
+
+      await waitFor(() => {
+        expect(upsertRegistryEntry).toHaveBeenCalledTimes(1);
+      });
+      expect(upsertRegistryEntry).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'w', name: 'Workshop build', kind: 'assembly', width: 4 })
+      );
+      expect(regenerateThumbnail).not.toHaveBeenCalled();
+    });
+
+    it('leaves an assembly that already has an entry alone, kind or not', async () => {
+      vi.mocked(loadRegistry).mockReturnValueOnce([
+        {
+          id: designId('w'),
+          name: 'Renamed',
+          width: 1,
+          depth: 1,
+          height: 3,
+          updatedAt: '2026-05-19T00:00:00.000Z',
+        },
+      ]);
+      vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(
+        ok([makeAssembly('w', { thumbnail: 'fresh', thumbnailVersion: THUMBNAIL_VERSION })])
+      );
+
+      renderHook(() => useBackgroundThumbnailRegen());
+
+      await waitFor(() => {
+        expect(DesignerStorage.listDesigns).toHaveBeenCalled();
+      });
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 10));
+      });
+      expect(upsertRegistryEntry).not.toHaveBeenCalled();
+    });
+
+    it('registers nothing for a bin whose thumbnail is current', async () => {
+      vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(
+        ok([makeDesign({ id: 'd1', thumbnail: 'fresh', thumbnailVersion: THUMBNAIL_VERSION })])
+      );
+
+      renderHook(() => useBackgroundThumbnailRegen());
+
+      await waitFor(() => {
+        expect(DesignerStorage.listDesigns).toHaveBeenCalled();
+      });
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 10));
+      });
+      expect(upsertRegistryEntry).not.toHaveBeenCalled();
+    });
   });
 });
