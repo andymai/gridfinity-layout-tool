@@ -72,7 +72,13 @@ export interface LinkedDesignMesh {
 // Module-level cache shared across preview mounts. null = unsupported kind,
 // decode/generation failure, or deleted design payload.
 const meshCache = new Map<string, LinkedDesignMesh | null>();
-const MAX_CACHE_ENTRIES = 32;
+/** Bound on entries no mounted preview is using. @internal, exported for tests. */
+export const MAX_CACHE_ENTRIES = 32;
+// Keys a mounted preview is showing, refcounted across mounts. They are never
+// evicted: the loading effect only re-runs when the requested set changes, so
+// an entry evicted under a mounted preview would leave its bins as plain boxes
+// until something unrelated changed.
+const pinnedKeys = new Map<string, number>();
 // Every waiter is called when its key settles, including one registered by a
 // later mount: an effect that finds its key already in flight would otherwise
 // never hear back, since the effect that started it was cleaned up.
@@ -86,16 +92,39 @@ let resolveChain: Promise<void> = Promise.resolve();
 export function clearLinkedDesignMeshCache(): void {
   meshCache.clear();
   inFlight.clear();
+  pinnedKeys.clear();
   resolveChain = Promise.resolve();
 }
 
-// Insert an entry, evicting the least-recently-used on overflow. Recency is
-// refreshed on read by getCachedMesh, so a still-visible design is never
-// evicted by an unrelated insert (matches designGeometryCache's LRU policy).
+function pinKey(key: string): void {
+  pinnedKeys.set(key, (pinnedKeys.get(key) ?? 0) + 1);
+}
+
+function unpinKey(key: string): void {
+  const count = pinnedKeys.get(key) ?? 0;
+  if (count <= 1) pinnedKeys.delete(key);
+  else pinnedKeys.set(key, count - 1);
+}
+
+function unpinnedCount(): number {
+  let count = 0;
+  for (const key of meshCache.keys()) if (!pinnedKeys.has(key)) count++;
+  return count;
+}
+
+// Insert an entry, evicting least-recently-used unpinned entries until those
+// fit the bound. Pinned entries sit outside it, so the cache grows to hold
+// whatever the mounted previews show. Recency is refreshed on read by
+// getCachedMesh (matches designGeometryCache's LRU policy).
 function setCachedMesh(key: string, entry: LinkedDesignMesh | null): void {
-  if (meshCache.size >= MAX_CACHE_ENTRIES && !meshCache.has(key)) {
-    const oldestKey = meshCache.keys().next().value;
-    if (oldestKey !== undefined) meshCache.delete(oldestKey);
+  meshCache.delete(key);
+  const room = pinnedKeys.has(key) ? MAX_CACHE_ENTRIES : MAX_CACHE_ENTRIES - 1;
+  let unpinned = unpinnedCount();
+  for (const oldKey of meshCache.keys()) {
+    if (unpinned <= room) break;
+    if (pinnedKeys.has(oldKey)) continue;
+    meshCache.delete(oldKey);
+    unpinned--;
   }
   meshCache.set(key, entry);
 }
@@ -146,7 +175,6 @@ function withoutOwnOverhang(params: BinParams): BinParams {
   return rest;
 }
 
-/** One mesh to resolve: a design, optionally built without its own overhang. */
 interface MeshRequest {
   readonly id: DesignId;
   readonly stripOwnOverhang: boolean;
@@ -327,12 +355,16 @@ export function useLinkedDesignMeshes(bins: Bin[]): Map<BinId, LinkedDesignMesh>
     const onSettled = (): void => {
       if (!cancelled) setLoadTick((tick) => tick + 1);
     };
+    // Pinned for as long as this preview shows them. The has-check below still
+    // reloads any evicted before this effect ran, between render and commit.
+    for (const key of requests.keys()) pinKey(key);
     for (const [key, request] of requests) {
       if (!meshCache.has(key))
         enqueueResolve(request, key, nozzleSizeMm, lowProfileBase, onSettled);
     }
     return () => {
       cancelled = true;
+      for (const key of requests.keys()) unpinKey(key);
     };
   }, [requests, nozzleSizeMm, lowProfileBase]);
 

@@ -10,6 +10,7 @@ import type { StorageError } from '@/core/result';
 import {
   useLinkedDesignMeshes,
   clearLinkedDesignMeshCache,
+  MAX_CACHE_ENTRIES,
 } from '@/shared/hooks/useLinkedDesignMeshes';
 import {
   loadDesign,
@@ -496,5 +497,59 @@ describe('useLinkedDesignMeshes', () => {
     const second = renderHook(() => useLinkedDesignMeshes(bins));
     expect(second.result.current.get(B1)?.mesh).toBe(mesh);
     expect(mockLoadDesign).toHaveBeenCalledTimes(1);
+  });
+
+  describe('with more meshes in use than the cache bound', () => {
+    function manyDesigns(from: number, count: number): { refs: CustomBinRef[]; bins: Bin[] } {
+      const refs: CustomBinRef[] = [];
+      const bins: Bin[] = [];
+      for (let i = from; i < from + count; i++) {
+        const id = designId(`design-${i}`);
+        refs.push(makeRegistryRef({ id }));
+        bins.push(createTestBin({ id: binId(`bin-${i}`), linkedDesignId: id }));
+      }
+      return { refs, bins };
+    }
+
+    beforeEach(() => {
+      mockLoadDesign.mockImplementation(async (id) => ok({ ...makeBinDesign(), id }));
+      mockLoadPersistedBinMesh.mockResolvedValue(makeMesh());
+    });
+
+    it('keeps every mesh a mounted preview is showing', async () => {
+      const { refs, bins } = manyDesigns(0, MAX_CACHE_ENTRIES + 1);
+      mockUseCustomBins.mockReturnValue(refs);
+
+      const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+      await waitFor(() => {
+        expect(mockLoadDesign).toHaveBeenCalledTimes(MAX_CACHE_ENTRIES + 1);
+      });
+      await waitFor(() => {
+        expect(result.current.size).toBe(MAX_CACHE_ENTRIES + 1);
+      });
+    });
+
+    it('reloads a mesh evicted while nothing was showing it', async () => {
+      const sets = [0, 1, 2].map((i) => manyDesigns(i * MAX_CACHE_ENTRIES, MAX_CACHE_ENTRIES));
+      mockUseCustomBins.mockReturnValue(sets.flatMap((s) => s.refs));
+
+      const { result, rerender } = renderHook(
+        ({ bins }: { bins: Bin[] }) => useLinkedDesignMeshes(bins),
+        { initialProps: { bins: sets[0].bins } }
+      );
+      // Two more full sets leave more unused entries than the bound holds, so
+      // the oldest, the first set, is evicted.
+      for (const set of [sets[1], sets[2], sets[0]]) {
+        await waitFor(() => {
+          expect(result.current.size).toBe(MAX_CACHE_ENTRIES);
+        });
+        rerender({ bins: set.bins });
+      }
+      await waitFor(() => {
+        expect(result.current.size).toBe(MAX_CACHE_ENTRIES);
+      });
+      expect(mockLoadDesign).toHaveBeenCalledTimes(MAX_CACHE_ENTRIES * 4);
+    });
   });
 });
