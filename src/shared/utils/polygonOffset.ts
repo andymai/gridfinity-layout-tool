@@ -453,19 +453,16 @@ function touchesItself(poly: readonly Pt[]): boolean {
 /**
  * The outline thinned (Douglas–Peucker) to at most {@link MAX_OFFSET_POINTS},
  * doubling the tolerance from {@link COINCIDENT_POINT_EPSILON} until it fits.
- * An outline already within the budget is used as it is. Throws when thinning
+ * An outline already within the budget is used as it is. Null when thinning
  * makes the outline touch itself, the same failure as a path that crosses.
  */
-function withinPointBudget(points: readonly Pt[]): readonly Pt[] {
+function withinPointBudget(points: readonly Pt[]): readonly Pt[] | null {
   if (points.length <= MAX_OFFSET_POINTS) return points;
   for (let tol = COINCIDENT_POINT_EPSILON; ; tol *= 2) {
     const keep = proxyIndices(points, tol, Infinity);
     if (keep.length > MAX_OFFSET_POINTS) continue;
     const thinned = keep.map((v) => points[v]);
-    if (thinned.length < 3 || touchesItself(thinned)) {
-      throw new Error('path: too dense to offset within its point budget');
-    }
-    return thinned;
+    return thinned.length < 3 || touchesItself(thinned) ? null : thinned;
   }
 }
 
@@ -483,9 +480,13 @@ function withinPointBudget(points: readonly Pt[]): readonly Pt[] {
  * {@link COINCIDENT_POINT_EPSILON} apart, the spacing at or below which a
  * path's points count as one, takes a single midpoint instead: the pair would
  * leave an edge too short for the kernel to build.
+ *
+ * Null when the outline cannot be thinned to the budget without touching
+ * itself.
  */
-export function refineForOffset(points: readonly Pt[], d: number): Pt[] {
+export function refineForOffset(points: readonly Pt[], d: number): Pt[] | null {
   const outline = d > 0 ? withinPointBudget(points) : points;
+  if (!outline) return null;
   const { reach } = offsetClosedPolygonWithinReach(outline, d);
   const n = outline.length;
   const out: Pt[] = [];

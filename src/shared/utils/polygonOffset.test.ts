@@ -8,6 +8,13 @@ import {
   type Pt,
 } from './polygonOffset';
 
+/** refineForOffset for an outline the test expects to fit the point budget. */
+function refine(points: readonly Pt[], d: number): Pt[] {
+  const refined = refineForOffset(points, d);
+  if (!refined) throw new Error('the outline did not fit the point budget');
+  return refined;
+}
+
 const CCW_SQUARE: Pt[] = [
   { x: -5, y: -5 },
   { x: 5, y: -5 },
@@ -346,7 +353,7 @@ describe('offsetClosedPolygonWithinReach', () => {
     const d = 1.05;
     const started = performance.now();
     for (const poly of [star(2400, 12), star(2400, 80), comb(40, 4)]) {
-      const refined = refineForOffset(poly, d);
+      const refined = refine(poly, d);
       const rim = offsetClosedPolygonWithinReach(refined, d);
       offsetClosedPolygonWithinReach(refined, 0.25, rim.reach);
     }
@@ -359,7 +366,7 @@ describe('offsetClosedPolygonWithinReach', () => {
     const d = 1.5;
     const started = performance.now();
     const poly = scribble(10000);
-    const refined = refineForOffset(poly, d);
+    const refined = refine(poly, d);
     const rim = offsetClosedPolygonWithinReach(refined, d);
     const base = offsetClosedPolygonWithinReach(refined, 0.7, rim.reach);
     const elapsed = performance.now() - started;
@@ -369,9 +376,23 @@ describe('offsetClosedPolygonWithinReach', () => {
     expect(elapsed).toBeLessThan(400);
   });
 
+  it('gives up on an outline that thinning would make cross itself', () => {
+    // A zigzag channel 0.1mm wide between two interleaved combs: any chord
+    // that skips a tooth on one side cuts through a tooth of the other.
+    const left: Pt[] = [];
+    const right: Pt[] = [];
+    for (let i = 0; i < 300; i++) {
+      left.push({ x: 0, y: i * 0.1 }, { x: 0.9, y: i * 0.1 + 0.05 });
+      right.push({ x: 1, y: i * 0.1 + 0.05 }, { x: 0.1, y: i * 0.1 + 0.1 });
+    }
+    const zipper = [...left, { x: 0, y: 30 }, ...right.reverse()];
+    expect(touchesItself(zipper)).toBe(false);
+    expect(refineForOffset(zipper, 0.5)).toBeNull();
+  });
+
   it('leaves an outline within the point budget as it is', () => {
     const poly = star(MAX_OFFSET_POINTS, 12);
-    const refined = refineForOffset(poly, 1.05);
+    const refined = refine(poly, 1.05);
     poly.forEach((p) => expect(refined).toContainEqual(p));
   });
 
@@ -381,7 +402,7 @@ describe('offsetClosedPolygonWithinReach', () => {
     const d = 1.5;
     const chamfer = (poly: Pt[]): number => {
       const started = performance.now();
-      const refined = refineForOffset(poly, d);
+      const refined = refine(poly, d);
       const rim = offsetClosedPolygonWithinReach(refined, d);
       offsetClosedPolygonWithinReach(refined, 0.7, rim.reach);
       return performance.now() - started;
@@ -397,12 +418,12 @@ describe('offsetClosedPolygonWithinReach', () => {
 
 describe('refineForOffset', () => {
   it('returns the outline unchanged when no vertex is held back', () => {
-    expect(refineForOffset(CCW_SQUARE, 1)).toEqual(CCW_SQUARE);
+    expect(refine(CCW_SQUARE, 1)).toEqual(CCW_SQUARE);
   });
 
   it('adds a collinear vertex d in from a held-back end of a long edge', () => {
     const poly = roundedL(1);
-    const refined = refineForOffset(poly, 1.5);
+    const refined = refine(poly, 1.5);
     const added = refined.filter((p) => !poly.some((q) => q.x === p.x && q.y === p.y));
     expect(added).toHaveLength(2);
     expect(added).toContainEqual({ x: 12.5, y: 8 });
@@ -418,7 +439,7 @@ describe('refineForOffset', () => {
     it(`gives a floor between ${left}mm and ${right}mm corners the full d across its middle`, () => {
       const d = 1.5;
       const poly = notch(left, right);
-      const refined = refineForOffset(poly, d);
+      const refined = refine(poly, d);
       const { reach } = offsetClosedPolygonWithinReach(refined, d);
       const onFloor = (p: Pt): boolean => p.y === 5 && p.x > 5 + left && p.x < 25 - right;
       const added = refined.flatMap((p, i) =>
@@ -458,7 +479,7 @@ describe('refineForOffset', () => {
       { x: -r, y: 1 },
       { x: -1, y: 1 },
     ];
-    const floor = refineForOffset(poly, d).filter((p) => p.y === 0);
+    const floor = refine(poly, d).filter((p) => p.y === 0);
     expect(floor.map((p) => p.x)).toEqual([2 * eps, eps, 0]);
   });
 
@@ -468,7 +489,7 @@ describe('refineForOffset', () => {
     // rejects.
     const d = 1.5;
     const poly = notch(0.5, 0.5, 2 * d + 1 + 1e-8);
-    const refined = refineForOffset(poly, d);
+    const refined = refine(poly, d);
     expect(refined.length).toBeGreaterThan(poly.length);
     refined.forEach((p, i) => {
       const q = refined[(i + 1) % refined.length];

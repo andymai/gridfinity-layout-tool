@@ -6,7 +6,7 @@
 import type { PathPoint } from '@/shared/types/bin';
 import { MIN_PATH_POINTS } from '@/shared/types/bin';
 import { dropCoincidentPoints } from '@/shared/utils/polyline';
-import { offsetClosedPolygon } from '@/shared/utils/polygonOffset';
+import { offsetClosedPolygonWithinReach, refineForOffset } from '@/shared/utils/polygonOffset';
 import type { Pt } from '@/shared/utils/polygonOffset';
 
 export const BEZIER_SEGMENTS = 12;
@@ -94,17 +94,34 @@ export function pathCutoutOutline(cutout: {
   return polyline.map((p) => ({ x: p.x - cx, y: p.y - cy }));
 }
 
+/** The two outlines a path cutout is cut between, vertex for vertex. */
+export interface PathCutoutSections {
+  /** The insertion clearance: the straight wall, floor to where the chamfer starts. */
+  readonly base: Pt[];
+  /** The opening the entry chamfer flares to at the rim; `base` without one. */
+  readonly rim: Pt[];
+}
+
 /**
- * Outset a centered outline by `d` (insertion clearance / chamfer flare). Returns
- * the input unchanged for d<=0, or null when the offset degenerates (self-cross
- * or vertex-count change) so callers can decide how to fall back.
+ * A centered outline offset by its insertion clearance and, at the rim, its
+ * entry chamfer as well, as one loft's sections. A notch too tight for the full
+ * offset takes what it can hold, and the base is capped by the rim's reach
+ * there, so every ruled face between them flares outward. Null when the
+ * outline cannot be offset within its point budget, which leaves the builder
+ * cutting the path's bounding box.
  */
-export function growPathOutline(
+export function pathCutoutSections(
   outline: readonly Pt[],
-  d: number
-): Array<{ x: number; y: number }> | null {
-  if (d <= 0) return outline.map((p) => ({ x: p.x, y: p.y }));
-  const out = offsetClosedPolygon(outline, d);
-  if (out.length !== outline.length || polylineSelfIntersects(out)) return null;
-  return out;
+  clearance: number,
+  chamfer: number
+): PathCutoutSections | null {
+  const toRim = clearance + Math.max(0, chamfer);
+  const refined = refineForOffset(outline, toRim);
+  if (!refined) return null;
+  const rim = offsetClosedPolygonWithinReach(refined, toRim);
+  if (chamfer <= 0) return { base: rim.points, rim: rim.points };
+  return {
+    base: offsetClosedPolygonWithinReach(refined, clearance, rim.reach).points,
+    rim: rim.points,
+  };
 }
