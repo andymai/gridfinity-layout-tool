@@ -5,6 +5,7 @@ import {
   upsertRegistryEntry,
   removeRegistryEntry,
   rebuildRegistry,
+  renameRegistryEntry,
   registryAssemblyEntry,
   registryAssemblyFields,
   registryEdgeFields,
@@ -177,6 +178,29 @@ describe('customBinRegistry', () => {
     it('handles empty registry gracefully', () => {
       removeRegistryEntry('anything');
       expect(loadRegistry()).toEqual([]);
+    });
+  });
+
+  describe('renameRegistryEntry', () => {
+    it('changes the name and keeps every other field as stored', () => {
+      const stored: CustomBinRef = {
+        ...makeRef('w', 'Before'),
+        kind: 'assembly',
+        assembledRiseMm: 26.75,
+        hasLip: false,
+        socketless: false,
+        overhangMm: { left: 20, right: 0, front: 0, back: 0 },
+      };
+      upsertRegistryEntry(stored);
+      upsertRegistryEntry(makeRef('other', 'Other'));
+      renameRegistryEntry('w', 'After');
+      expect(loadRegistry()).toEqual([{ ...stored, name: 'After' }, makeRef('other', 'Other')]);
+    });
+
+    it('does not create an entry for an unknown id', () => {
+      upsertRegistryEntry(makeRef('bin-1'));
+      renameRegistryEntry('unknown', 'Renamed');
+      expect(loadRegistry()).toEqual([makeRef('bin-1')]);
     });
   });
 

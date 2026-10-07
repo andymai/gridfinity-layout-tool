@@ -6,6 +6,7 @@ import { designId } from '@/core/types';
 
 const saveDesignMock = vi.fn();
 const loadDesignMock = vi.fn();
+const updateDesignNameMock = vi.fn();
 
 vi.mock('@/features/bin-designer/storage/DesignerStorage', async (importOriginal) => {
   const actual = await importOriginal<typeof DesignerStorageModule>();
@@ -13,6 +14,7 @@ vi.mock('@/features/bin-designer/storage/DesignerStorage', async (importOriginal
     ...actual,
     saveDesign: (input: unknown) => saveDesignMock(input),
     loadDesign: (id: string) => loadDesignMock(id),
+    updateDesignName: (id: string, name: string) => updateDesignNameMock(id, name),
   };
 });
 
@@ -55,6 +57,42 @@ describe('useWorkshopAutoSave', () => {
     const created = saveDesignMock.mock.calls[0]?.[0] as { kind?: string; structure?: unknown };
     expect(created.kind).toBe('assembly');
     expect(useDesignerStore.getState().currentDesignId).toBe('design_1_abcdef');
+    expect(updateDesignNameMock).not.toHaveBeenCalled();
+    unmount();
+    vi.useRealTimers();
+  });
+
+  it('persists a rename made while the first save is in flight', async () => {
+    let finishSave: (result: unknown) => void = () => {};
+    saveDesignMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finishSave = resolve;
+      })
+    );
+    updateDesignNameMock.mockResolvedValue(
+      ok({ ...savedRow('design_1_abcdef'), name: 'Workbench' })
+    );
+    const { unmount } = renderHook(() => useWorkshopAutoSave());
+    act(() => {
+      useDesignerStore.getState().addAssemblyPart('post', null);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1100);
+      await Promise.resolve();
+    });
+    expect(saveDesignMock).toHaveBeenCalledTimes(1);
+    expect((saveDesignMock.mock.calls[0]?.[0] as { name?: string }).name).toBe('Untitled');
+
+    act(() => {
+      useDesignerStore.getState().setDesignName('Workbench');
+    });
+    await act(async () => {
+      finishSave(ok(savedRow('design_1_abcdef')));
+      await Promise.resolve();
+    });
+
+    expect(useDesignerStore.getState().currentDesignId).toBe('design_1_abcdef');
+    expect(updateDesignNameMock).toHaveBeenCalledWith('design_1_abcdef', 'Workbench');
     unmount();
     vi.useRealTimers();
   });

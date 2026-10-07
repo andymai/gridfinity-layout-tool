@@ -34,7 +34,7 @@ import { DesignItemsView } from './DesignItemsView';
 import { filterAndSortDesigns, SORT_OPTIONS, SORT_OPTION_KEYS } from './designListSort';
 import { groupByLineage, branchesOf } from './designLineage';
 import type { SortOption } from './designListSort';
-import { removeRegistryEntry } from '../../store/customBinRegistry';
+import { removeRegistryEntry, renameRegistryEntry } from '../../store/customBinRegistry';
 import { useDesignerStore } from '../../store';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import type { ItemKind } from '@/shared/types/item';
@@ -290,7 +290,13 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
 
   const handleRename = useCallback(
     async (design: SavedDesign, newName: string) => {
-      await saveDesign({ ...design, name: newName });
+      const saved = await saveDesign({ ...design, name: newName });
+      if (!isOk(saved)) {
+        showErrorToast(saved.error);
+        return;
+      }
+      const registry = renameRegistryEntry(design.id, newName);
+      if (!isOk(registry)) showErrorToast(registry.error);
       setDesigns((prev) => prev.map((d) => (d.id === design.id ? { ...d, name: newName } : d)));
       if (design.id === currentDesignId) {
         useDesignerStore.getState().setDesignName(newName);

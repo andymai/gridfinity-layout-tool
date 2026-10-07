@@ -14,7 +14,7 @@ import { assemblyOverhangMm, assemblyRiseMm } from '@/shared/types/assemblyPlace
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { Result } from '@/core/result';
 import type { StorageError } from '@/core/result/errors';
-import { isOk } from '@/core/result';
+import { isOk, ok } from '@/core/result';
 import { saveToLocalStorage, loadFromLocalStorage } from '@/core/storage/backends/localStorage';
 import {
   assembledHeight,
@@ -483,6 +483,19 @@ function withCarriedFields(next: CustomBinRef, prev: CustomBinRef): CustomBinRef
       ? { knifeRest: prev.knifeRest }
       : {}),
   };
+}
+
+/**
+ * Change an entry's name and nothing else, for a writer that holds no geometry
+ * for the design. `updatedAt` stays as stored on purpose: it keys the linked
+ * mesh caches, and a rename leaves the mesh as it was.
+ */
+export function renameRegistryEntry(id: string, name: string): Result<void, StorageError> {
+  const refs = loadRegistry();
+  if (!refs.some((r) => r.id === id)) return ok(undefined);
+  const result = saveRegistry(refs.map((r) => (r.id === id ? { ...r, name } : r)));
+  notifySubscribers();
+  return result;
 }
 
 /**
