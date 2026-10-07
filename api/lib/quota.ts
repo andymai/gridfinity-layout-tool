@@ -16,8 +16,7 @@ const QUOTA: Record<SyncItemKind, { maxCount: number; maxBytes: number }> = {
   // Versions are per-design, so this axis counts differently from the others:
   // 100 items across a whole library would be a handful of designs' history.
   // The client caps each design at MAX_VERSIONS_PER_DESIGN; this is the
-  // whole-account ceiling. Bodies are stored uncompressed with no thumbnail, so
-  // each is about the size of a design envelope.
+  // whole-account ceiling.
   designVersions: { maxCount: 500, maxBytes: 25 * 1024 * 1024 },
   // A folder is a name and a parent pointer; the count matches the client's
   // FOLDERS_MAX so the two limits never disagree about which folder is one too many.
