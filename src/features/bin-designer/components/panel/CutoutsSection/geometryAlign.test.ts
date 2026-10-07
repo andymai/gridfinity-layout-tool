@@ -53,19 +53,31 @@ describe('alignSelection', () => {
     expect(updates.get('b')?.x).toBe(15);
   });
 
-  it('aligns vertically without touching x', () => {
+  // The editor is Y-up: y=0 is the bin's front edge, drawn at the bottom of
+  // the canvas, so "top" means the largest y.
+  it('aligns top edges to the cutout furthest from the front', () => {
     const cutouts = [cutout({ id: 'a', x: 3, y: 0 }), cutout({ id: 'b', x: 40, y: 25 })];
 
     const updates = alignSelection(cutouts, 'top');
 
-    expect(updates.get('b')?.y).toBe(0);
-    expect(updates.get('b')?.x).toBe(40);
+    expect(updates.get('a')?.y).toBe(25);
+    expect(updates.get('a')?.x).toBe(3);
+    expect(updates.has('b')).toBe(false);
   });
 
-  it('aligns bottom edges', () => {
+  it('aligns top edges accounting for differing depths', () => {
     const cutouts = [cutout({ id: 'a', y: 0, depth: 30 }), cutout({ id: 'b', y: 0, depth: 10 })];
 
-    expect(alignSelection(cutouts, 'bottom').get('b')?.y).toBe(20);
+    expect(alignSelection(cutouts, 'top').get('b')?.y).toBe(20);
+  });
+
+  it('aligns bottom edges to the cutout nearest the front', () => {
+    const cutouts = [cutout({ id: 'a', y: 0, depth: 30 }), cutout({ id: 'b', y: 12, depth: 10 })];
+
+    const updates = alignSelection(cutouts, 'bottom');
+
+    expect(updates.get('b')?.y).toBe(0);
+    expect(updates.has('a')).toBe(false);
   });
 
   it('centres vertically', () => {

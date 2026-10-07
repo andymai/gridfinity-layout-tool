@@ -20,17 +20,23 @@ import {
   centerInBin,
   type CenterAxis,
 } from '../panel/CutoutsSection/geometry';
-import {
-  expandSelectionToGroups,
-  toArrangeUnits,
-  unitsBounds,
-} from '../panel/CutoutsSection/cutoutGroups';
+import { expandSelectionToGroups } from '../panel/CutoutsSection/cutoutGroups';
+import { alignSelection, type AlignMode } from '../panel/CutoutsSection/geometryAlign';
 import { autoArrangeCutouts } from '../panel/CutoutsSection/autoArrange';
 import { PathfinderControls } from '../panel/CutoutsSection/PathfinderControls';
 import { canGroupSelection } from '../panel/CutoutsSection/pathfinderHelpers';
 import { TransformControls } from '../panel/CutoutsSection/TransformControls';
 import { ArrangeControls } from '../panel/CutoutsSection/ArrangeControls';
 type AlignType = 'left' | 'right' | 'top' | 'bottom' | 'center-h' | 'center-v';
+
+const ALIGN_MODES: Readonly<Record<AlignType, AlignMode>> = {
+  left: 'left',
+  'center-h': 'centerX',
+  right: 'right',
+  top: 'top',
+  'center-v': 'middleY',
+  bottom: 'bottom',
+};
 
 function AlignIcon({ type }: { readonly type: AlignType }) {
   const props = {
@@ -320,51 +326,10 @@ export function WorkspaceHeader({
 
   const handleAlign = useCallback(
     (type: AlignType) => {
-      const units = toArrangeUnits(arrangeTargets, groupContext);
-      const bounds = unitsBounds(units);
-      const positions: Record<string, { x?: number; y?: number }> = {};
-
-      for (const unit of units) {
-        if (unit.locked) continue;
-        const eb = unit.bounds;
-        let dx = 0;
-        let dy = 0;
-
-        switch (type) {
-          case 'left':
-            dx = bounds.minX - eb.minX;
-            break;
-          case 'right':
-            dx = bounds.maxX - eb.maxX;
-            break;
-          case 'top':
-            dy = bounds.maxY - eb.maxY;
-            break;
-          case 'bottom':
-            dy = bounds.minY - eb.minY;
-            break;
-          case 'center-h':
-            dx = (bounds.minX + bounds.maxX) / 2 - (eb.minX + eb.maxX) / 2;
-            break;
-          case 'center-v':
-            dy = (bounds.minY + bounds.maxY) / 2 - (eb.minY + eb.maxY) / 2;
-            break;
-        }
-
-        // A unit already on the line needs no write — emitting one would dirty
-        // the design and cost an undo step for nothing.
-        if (dx === 0 && dy === 0) continue;
-
-        for (const member of unit.members) {
-          positions[member.id] = {
-            ...(dx !== 0 ? { x: member.x + dx } : {}),
-            ...(dy !== 0 ? { y: member.y + dy } : {}),
-          };
-        }
-      }
-      applyPositions(positions);
+      const updates = alignSelection(arrangeTargets, ALIGN_MODES[type], groupContext);
+      if (updates.size > 0) onUpdateBatch(updates);
     },
-    [arrangeTargets, groupContext, applyPositions]
+    [arrangeTargets, groupContext, onUpdateBatch]
   );
 
   const handleDistributeH = useCallback(() => {

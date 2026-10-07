@@ -7,7 +7,7 @@
  * and aligning the rest to it works.
  *
  * Every move is expressed as a translation rather than an assignment, because
- * a cutout's `x`/`y` is its unrotated top-left while alignment is judged
+ * a cutout's `x`/`y` is its unrotated front-left corner while alignment is judged
  * against the rotated silhouette. Translating by a delta keeps the two in step
  * for rotated shapes, and lets path cutouts (whose points are absolute) carry
  * their geometry along.
@@ -51,9 +51,9 @@ function alignDelta(b: Bounds, mode: AlignMode, bounds: Bounds): { dx: number; d
     case 'centerX':
       return { dx: (bounds.minX + bounds.maxX) / 2 - (b.minX + b.maxX) / 2, dy: 0 };
     case 'top':
-      return { dx: 0, dy: bounds.minY - b.minY };
-    case 'bottom':
       return { dx: 0, dy: bounds.maxY - b.maxY };
+    case 'bottom':
+      return { dx: 0, dy: bounds.minY - b.minY };
     case 'middleY':
       return { dx: 0, dy: (bounds.minY + bounds.maxY) / 2 - (b.minY + b.maxY) / 2 };
   }

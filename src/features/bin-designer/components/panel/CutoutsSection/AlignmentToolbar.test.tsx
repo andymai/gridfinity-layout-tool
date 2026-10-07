@@ -79,6 +79,15 @@ describe('AlignmentToolbar', () => {
     expect(updates.get('b')).toEqual(expect.objectContaining({ x: 5 }));
   });
 
+  it('aligns top edges to the largest y, since y=0 is the front edge', () => {
+    render(<AlignmentToolbar {...defaultProps} />);
+    fireEvent.click(screen.getByLabelText('binDesigner.cutouts.alignTop'));
+
+    const updates = onUpdateBatch.mock.calls[0][0] as ReadonlyMap<string, Partial<Cutout>>;
+    expect(updates.get('a')).toEqual(expect.objectContaining({ y: 20 }));
+    expect(updates.has('b')).toBe(false);
+  });
+
   it('keeps a group rigid when auto-arranging (#3468)', () => {
     // Two shapes 30mm apart, grouped, plus a loose shape. Auto-arrange must
     // reposition the group as one body rather than shelving its members apart.
