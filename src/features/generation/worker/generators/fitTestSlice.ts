@@ -87,7 +87,7 @@ export interface FitTestSliceOptions {
 }
 
 /** One piece of a fit-test card. A whole card is a single piece labelled ''. */
-interface FitTestPiece {
+export interface FitTestPiece {
   readonly solid: Shape3D;
   readonly label: string;
 }
@@ -147,31 +147,32 @@ function stampLine(
   return result.ok ? scope.register(result.value) : card;
 }
 
-/** Cut the band out of an already-generated bin solid and stamp its underside. */
-function buildCard(
+/**
+ * Z of the solid fill surface, the top of every fit-test band.
+ *
+ * The rim is NOT the fill surface. `wallTopZ` is
+ * `baseOffsetZ + wallHeight + tileFloorHeight + collarHeight`, while
+ * `buildCutoutCuts` places every tool against `wallHeight - topOffset`, so an
+ * exterior-wall collar (`extraWallHeightMm`) raises the rim above the material
+ * the cutouts are cut into. Anchoring the band to the rim put the card mostly
+ * above its own openings: a 3mm collar left a 4mm card with 1mm-deep holes,
+ * and a collar at or past the thickness left a card with no openings at all,
+ * still a valid, plausibly-sized export.
+ *
+ * Subtracted from `wallTopZ` by named dimensions rather than restating the
+ * `baseOffsetZ + wallHeight` chain (gotcha #14).
+ */
+export function fitTestBandTopZ(params: BinParams): number {
+  const dims = deriveDimensions(params, true);
+  return dims.wallTopZ - dims.collarHeight - dims.tileFloorHeight - params.cutoutConfig.topOffset;
+}
+
+export function cutFitTestBand(
   scope: DisposalScope,
   solid: Shape3D,
-  params: BinParams,
-  thicknessMm: number,
-  stamp: FitTestStampContext,
-  split: FitTestSplitPlan
+  topZ: number,
+  thicknessMm: number
 ): Shape3D {
-  const dims = deriveDimensions(params, true);
-  // The rim is NOT the fill surface. `wallTopZ` is
-  // `baseOffsetZ + wallHeight + tileFloorHeight + collarHeight`, while
-  // `buildCutoutCuts` places every tool against `wallHeight - topOffset` — so an
-  // exterior-wall collar (`extraWallHeightMm`) raises the rim above the material
-  // the cutouts are cut into. Anchoring the band to the rim put the card mostly
-  // above its own openings: a 3mm collar left a 4mm card with 1mm-deep holes,
-  // and a collar at or past the thickness left a card with no openings at all —
-  // still a valid, plausibly-sized export.
-  //
-  // Subtracted from `wallTopZ` by named dimensions rather than restating the
-  // `baseOffsetZ + wallHeight` chain (gotcha #14).
-  const topZ =
-    dims.wallTopZ - dims.collarHeight - dims.tileFloorHeight - params.cutoutConfig.topOffset;
-  const bottomZ = topZ - thicknessMm;
-
   const bounds = getBounds(solid);
   const bandBox = scope.register(
     box(
@@ -182,12 +183,26 @@ function buildCard(
         at: [
           (bounds.xMin + bounds.xMax) / 2,
           (bounds.yMin + bounds.yMax) / 2,
-          (bottomZ + topZ) / 2,
+          topZ - thicknessMm / 2,
         ],
       }
     )
   );
-  let card: Shape3D = scope.register(unwrap(intersect(solid, bandBox)));
+  return scope.register(unwrap(intersect(solid, bandBox)));
+}
+
+/** Cut the band out of an already-generated bin solid and stamp its underside. */
+function buildCard(
+  scope: DisposalScope,
+  solid: Shape3D,
+  params: BinParams,
+  thicknessMm: number,
+  stamp: FitTestStampContext,
+  split: FitTestSplitPlan
+): Shape3D {
+  const topZ = fitTestBandTopZ(params);
+  const bottomZ = topZ - thicknessMm;
+  let card = cutFitTestBand(scope, solid, topZ, thicknessMm);
 
   const lines = fitTestStampLines(params, thicknessMm, stamp);
   // The split plan is passed in so the stamp lands whole on one piece rather
@@ -282,7 +297,11 @@ export interface FitTestMeshPiece {
 /** Tessellate one piece and apply any mesh imprints, exactly as split export
  *  does: the pockets never exist on the BREP solid, so they are subtracted here
  *  or not at all. */
-function pieceToMesh(piece: FitTestPiece, params: BinParams, imprinted: boolean): FitTestMeshPiece {
+export function pieceToMesh(
+  piece: FitTestPiece,
+  params: BinParams,
+  imprinted: boolean
+): FitTestMeshPiece {
   const m = mesh(piece.solid, {
     tolerance: EXPORT_TOLERANCE,
     angularTolerance: EXPORT_ANGULAR_TOLERANCE_RAD,

@@ -54,7 +54,6 @@ import {
 import { LIP_HEIGHT, CUT_RIM_CLEARANCE } from './generatorConstants';
 import { isCutoutEngraveMode } from '@/shared/utils/cutoutLabelSocketPlan';
 import {
-  MIN_PATH_POINTS,
   DEFAULT_GROUP_OP,
   DEFAULT_POLYGON_SIDES,
   CLEARANCE_SHAPES,
@@ -72,7 +71,6 @@ import {
   groupRepeatConfig,
   labelledInstances,
 } from '@/shared/utils/cutoutArray';
-import { dropCoincidentPoints } from '@/shared/utils/polyline';
 import { pointInPolyline } from '@/shared/utils/drawerOutlineGeometry';
 import {
   cutoutLabelPlacement,
@@ -91,7 +89,7 @@ import {
 import { sketch } from './meshUtils';
 import { buildTextSolid, flatTextPrismDepth } from './textBuilder';
 import { resolveTextStyle, ZERO_TEXT_OFFSET } from '@/shared/types/bin';
-import { offsetClosedPolygon } from './polygonOffset';
+import { growPathOutline, pathCutoutOutline } from '@/shared/utils/pathCutoutOutline';
 import { buildTaperedInnerEnvelope } from './taperedOuter';
 import type { ResolvedTaper } from './overhang';
 import { FeatureTag } from './featureTags';
@@ -421,38 +419,6 @@ function buildCutoutShape(cutout: {
 
   return shape;
 }
-/** Centered, flattened, validated outline for a path cutout (or null if degenerate). */
-function pathOutline(cutout: {
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly depth: number;
-  readonly path?: readonly PathPoint[];
-}): Array<{ x: number; y: number }> | null {
-  const path = cutout.path;
-  if (!path || path.length < MIN_PATH_POINTS) return null;
-  const polyline = dropCoincidentPoints(flattenPathToPolyline(path));
-  if (polyline.length < 3 || polylineSelfIntersects(polyline)) return null;
-  const cx = cutout.x + cutout.width / 2;
-  const cy = cutout.y + cutout.depth / 2;
-  return polyline.map((p) => ({ x: p.x - cx, y: p.y - cy }));
-}
-
-/**
- * Outset a centered outline by `d` (insertion clearance / chamfer flare). Returns
- * the input unchanged for d<=0, or null when the offset degenerates (self-cross
- * or vertex-count change) so callers can decide how to fall back.
- */
-function offsetPathOutline(
-  outline: readonly { x: number; y: number }[],
-  d: number
-): Array<{ x: number; y: number }> | null {
-  if (d <= 0) return outline.map((p) => ({ x: p.x, y: p.y }));
-  const out = offsetClosedPolygon(outline, d);
-  if (out.length !== outline.length || polylineSelfIntersects(out)) return null;
-  return out;
-}
-
 export function pathWire(pts: readonly { x: number; y: number }[]): Drawing {
   let pen = draw([pts[0].x, pts[0].y]);
   for (let i = 1; i < pts.length; i++) pen = pen.lineTo([pts[i].x, pts[i].y]);
@@ -476,11 +442,11 @@ function buildPathCutoutShape(
   },
   clearance: number
 ): Shape3D {
-  const outline = pathOutline(cutout);
+  const outline = pathCutoutOutline(cutout);
   if (!outline) {
     return box(cutout.width, cutout.depth, cutout.cutDepth, { at: [0, 0, cutout.cutDepth / 2] });
   }
-  const grown = offsetPathOutline(outline, clearance) ?? outline;
+  const grown = growPathOutline(outline, clearance) ?? outline;
   return sketch(pathWire(grown), 'XY').extrude(cutout.cutDepth);
 }
 
@@ -504,11 +470,11 @@ function buildChamferedPathShape(
   clearance: number,
   topExtension: number
 ): Shape3D {
-  const outline = pathOutline(cutout);
+  const outline = pathCutoutOutline(cutout);
   if (!outline) throw new Error('path: degenerate');
   // Base carries the clearance; the flared rim is offset a further `chamfer`.
-  const base = offsetPathOutline(outline, clearance);
-  const flared = offsetPathOutline(outline, clearance + chamfer);
+  const base = growPathOutline(outline, clearance);
+  const flared = growPathOutline(outline, clearance + chamfer);
   if (!base || !flared) throw new Error('path: bad offset');
 
   const baseSketch = pathWire(base).sketchOnPlane('XY', 0) as Sketch;
@@ -521,73 +487,6 @@ function buildChamferedPathShape(
   return baseSketch.loftWith(sections, { ruled: true });
 }
 
-/** Flatten a closed bezier path to an open polyline for 3D generation.
- * Returns points for each anchor and bezier intermediates — without duplicating
- * the first point at the end, since brepjs `close()` handles wire closure.
- */
-export const BEZIER_SEGMENTS = 12;
-
-export function flattenPathToPolyline(path: readonly PathPoint[]): Array<{ x: number; y: number }> {
-  const result: Array<{ x: number; y: number }> = [];
-  const n = path.length;
-
-  for (let i = 0; i < n; i++) {
-    const p0 = path[i];
-    const p1 = path[(i + 1) % n];
-
-    result.push({ x: p0.x, y: p0.y });
-
-    // Flatten bezier curves between consecutive anchors (including closing segment)
-    if (p0.handleOut || p1.handleIn) {
-      const bx = p0.handleOut ? p0.x + p0.handleOut.dx : p0.x;
-      const by = p0.handleOut ? p0.y + p0.handleOut.dy : p0.y;
-      const cx = p1.handleIn ? p1.x + p1.handleIn.dx : p1.x;
-      const cy = p1.handleIn ? p1.y + p1.handleIn.dy : p1.y;
-
-      // Skip s=0 (p0 already pushed) and s=BEZIER_SEGMENTS (next iteration pushes p1,
-      // or for closing segment we omit to avoid duplicating first point)
-      for (let s = 1; s < BEZIER_SEGMENTS; s++) {
-        const t = s / BEZIER_SEGMENTS;
-        const mt = 1 - t;
-        const mt2 = mt * mt;
-        const mt3 = mt2 * mt;
-        const t2 = t * t;
-        const t3 = t2 * t;
-        const x = mt3 * p0.x + 3 * mt2 * t * bx + 3 * mt * t2 * cx + t3 * p1.x;
-        const y = mt3 * p0.y + 3 * mt2 * t * by + 3 * mt * t2 * cy + t3 * p1.y;
-        result.push({ x, y });
-      }
-
-      // p1 is pushed as p0 of the next iteration for non-closing segments.
-      // For the closing segment, brepjs close() handles the connection back to start.
-    }
-  }
-
-  return result;
-}
-
-/** Check if a closed polyline self-intersects (any non-adjacent edges cross). */
-export function polylineSelfIntersects(poly: readonly { x: number; y: number }[]): boolean {
-  const n = poly.length;
-  if (n < 4) return false;
-
-  for (let i = 0; i < n; i++) {
-    const a1 = poly[i];
-    const a2 = poly[(i + 1) % n];
-    for (let j = i + 2; j < n; j++) {
-      if (j === n - 1 && i === 0) continue; // adjacent (closing edge)
-      const b1 = poly[j];
-      const b2 = poly[(j + 1) % n];
-      const d = (a2.x - a1.x) * (b2.y - b1.y) - (a2.y - a1.y) * (b2.x - b1.x);
-      if (Math.abs(d) < 1e-10) continue;
-      const t = ((b1.x - a1.x) * (b2.y - b1.y) - (b1.y - a1.y) * (b2.x - b1.x)) / d;
-      const u = ((b1.x - a1.x) * (a2.y - a1.y) - (b1.y - a1.y) * (a2.x - a1.x)) / d;
-      const eps = 1e-6;
-      if (t > eps && t < 1 - eps && u > eps && u < 1 - eps) return true;
-    }
-  }
-  return false;
-}
 /**
  * Find the bottom-plane edges within XY bounds — the edges a scoop fillet should
  * round.
@@ -1696,7 +1595,7 @@ function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean
     case 'knifeSlot':
       return roundedRectContains(lx, ly, hw, hd, slotCornerRadius(cutout.width, cutout.depth));
     case 'path': {
-      const outline = pathOutline(cutout);
+      const outline = pathCutoutOutline(cutout);
       if (!outline) return Math.abs(lx) <= hw && Math.abs(ly) <= hd;
       return pointInPolyline(outline, lx, ly);
     }

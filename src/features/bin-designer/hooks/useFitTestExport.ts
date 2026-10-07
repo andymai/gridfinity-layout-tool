@@ -1,7 +1,7 @@
 /**
- * Export the cutout fit-test card: a thin slice of this design's own top, so a
- * maker can check that their parts drop into the openings before committing to
- * a whole bin.
+ * Export the cutout fit test: a thin slice of this design's own top, or just a
+ * ring around each of its openings, so a maker can check that their parts fit
+ * before committing to a whole bin.
  *
  * The design's live params ride along because the card IS the bin — it is cut
  * from the same solid the exporter ships, not rebuilt from the cutout list.
@@ -31,12 +31,16 @@ import {
 } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat } from '@/shared/types/bin';
 import type { BedSize } from '@/shared/utils/fitTestPlan';
+import type { FitTestMode, FitTestOutlineSize } from '@/shared/utils/fitTestOutlinePlan';
 
 export const FIT_TEST_BASE_NAME = 'fit-test';
+export const FIT_TEST_OUTLINE_BASE_NAME = 'fit-test-outline';
 
 interface DownloadOptions {
   readonly format: ExportFileFormat;
+  readonly mode?: FitTestMode;
   readonly thicknessMm: number;
+  readonly outline?: FitTestOutlineSize;
   readonly baseName?: string;
   readonly bed?: BedSize;
 }
@@ -54,7 +58,14 @@ export function useFitTestExport(): UseFitTestExportReturn {
   const canExport = useEngineReady();
 
   const downloadCard = useCallback(
-    async ({ format, thicknessMm, baseName = FIT_TEST_BASE_NAME, bed }: DownloadOptions) => {
+    async ({
+      format,
+      mode = 'card',
+      thicknessMm,
+      outline,
+      baseName = FIT_TEST_BASE_NAME,
+      bed,
+    }: DownloadOptions) => {
       const bridge = getActiveBridge();
       if (!bridge) return false;
 
@@ -72,7 +83,9 @@ export function useFitTestExport(): UseFitTestExportReturn {
           const liveBridge = getActiveBridge();
           if (!liveBridge) throw new Error('Bridge not available');
           return liveBridge.exportFitTest(params, workerFormat, {
+            mode,
             thicknessMm,
+            outline,
             stamp: { designName },
             bed,
           });
@@ -107,9 +120,11 @@ export function useFitTestExport(): UseFitTestExportReturn {
         // caller that skipped the dialog's warning still cannot ship a card with
         // a seam through the hole being measured without saying so.
         if (result.blockedSeams > 0) {
-          useToastStore
-            .getState()
-            .addToast(t('binDesigner.cutouts.fitTest.warnSeamThroughCutout'), 'info', 8000);
+          const message =
+            mode === 'outline'
+              ? t('binDesigner.cutouts.fitTest.warnSeamThroughOutline')
+              : t('binDesigner.cutouts.fitTest.warnSeamThroughCutout');
+          useToastStore.getState().addToast(message, 'info', 8000);
         }
         // A fit-test card is a printable file, which is what the conversion
         // funnel (and the feedback nudge's session gate) count.

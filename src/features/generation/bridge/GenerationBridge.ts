@@ -29,6 +29,7 @@ import type {
   WorkerMessage,
   WorkerResponse,
   ExportFormat,
+  FitTestExportOptions,
   LabelPlateExportOptions,
   LabelPlateExportSpec,
 } from './types';
@@ -618,11 +619,7 @@ export class GenerationBridge {
   exportFitTest(
     params: BinParams,
     format: ExportFormat,
-    options?: {
-      thicknessMm?: number;
-      stamp?: { designName?: string };
-      bed?: { width: number; depth: number };
-    }
+    options?: FitTestExportOptions
   ): Promise<FitTestExportResult> {
     return exportFitTestImpl(this, params, format, options);
   }

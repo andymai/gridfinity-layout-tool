@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { BinParams, Cutout } from '@/shared/types/bin';
 import {
   FIT_TEST_MIN_THICKNESS_MM,
+  FIT_TEST_STAMP_MIN_THICKNESS_MM,
   canBuildFitTest,
   clampFitTestThicknessMm,
   cutoutDisplacementMm3,
@@ -16,9 +17,18 @@ import {
   fitTestStampLines,
   fitTestThicknessRangeMm,
   nudgeSeamsClearOfCutouts,
+  openingPerimeterMm,
   planFitTestSplit,
   planFitTestStampArea,
 } from './fitTestPlan';
+import { growPathOutline } from '@/shared/utils/pathCutoutOutline';
+import type * as PathCutoutOutline from '@/shared/utils/pathCutoutOutline';
+
+// Wraps the real offset, so every other case here runs the true geometry.
+vi.mock('@/shared/utils/pathCutoutOutline', async (importOriginal) => {
+  const actual = await importOriginal<typeof PathCutoutOutline>();
+  return { ...actual, growPathOutline: vi.fn(actual.growPathOutline) };
+});
 
 const cutout = (over: Partial<Cutout>): Cutout => ({
   id: 'c1',
@@ -117,6 +127,21 @@ describe('thickness', () => {
   it('charges the top offset against the usable material', () => {
     const params = board({ cutoutConfig: { topOffset: 6 } }, [cutout({ cutDepth: 23 })]);
     expect(fitTestThicknessRangeMm(params).max).toBe(28 - GRIDFINITY_SPEC.SOCKET_HEIGHT - 6);
+  });
+
+  it('goes down to a single layer on a design without entry chamfers', () => {
+    expect(FIT_TEST_MIN_THICKNESS_MM).toBe(0.2);
+    expect(clampFitTestThicknessMm(board(), 0.2)).toBe(0.2);
+  });
+
+  it('keeps a layer of straight wall under the deepest entry chamfer', () => {
+    // A card no deeper than the bevel is bevel all the way down, and every hole
+    // in it reads loose.
+    const params = board({}, [
+      cutout({ id: 'a', chamferWidth: 0.4 }),
+      cutout({ id: 'b', x: 40, chamferWidth: 0.8 }),
+    ]);
+    expect(fitTestThicknessRangeMm(params).min).toBeCloseTo(0.8 + FIT_TEST_MIN_THICKNESS_MM, 9);
   });
 
   it('clamps an out-of-range value and falls back to the default on a non-number', () => {
@@ -287,6 +312,12 @@ describe('planFitTestStampArea', () => {
     expect(seamY <= lo || seamY >= hi).toBe(true);
   });
 
+  it('leaves a card thinner than a stamp can bridge unstamped', () => {
+    const params = board();
+    expect(planFitTestStampArea(params, FIT_TEST_STAMP_MIN_THICKNESS_MM, 8, 0.4)).not.toBeNull();
+    expect(planFitTestStampArea(params, 0.6, 8, 0.4)).toBeNull();
+  });
+
   it('refuses when every strip is broken by a through cut', () => {
     const dense = board({}, [
       cutout({ shape: 'rectangle', x: 0, y: 0, width: 81, depth: 81, cutDepth: 20 }),
@@ -374,6 +405,117 @@ describe('cutoutDisplacementMm3', () => {
       cutout({ shape: 'rectangle', width: 10, depth: 10, cutDepth: 20, cornerRadius: 0 }),
     ]);
     expect(cutoutDisplacementMm3(params, 5)).toBeCloseTo(10 * 10 * 5, 5);
+  });
+});
+
+describe('openingPerimeterMm', () => {
+  it('measures a circle round its clearance', () => {
+    expect(openingPerimeterMm(cutout({ width: 12, depth: 12, clearance: 0.2 }))).toBeCloseTo(
+      Math.PI * 12.2,
+      6
+    );
+  });
+
+  it('takes the corner arcs off a rounded rectangle', () => {
+    const rounded = cutout({ shape: 'rectangle', width: 20, depth: 10, cornerRadius: 2 });
+    expect(openingPerimeterMm(rounded)).toBeCloseTo(60 - 16 + 4 * Math.PI, 6);
+  });
+
+  it('runs a slot as two straights and two half circles', () => {
+    const slot = cutout({ shape: 'slot', width: 30, depth: 10 });
+    expect(openingPerimeterMm(slot)).toBeCloseTo(2 * 20 + 10 * Math.PI, 6);
+  });
+
+  it('follows a freeform path rather than its box', () => {
+    const corner = (x: number, y: number) => ({
+      x,
+      y,
+      handleIn: null,
+      handleOut: null,
+      symmetric: false,
+    });
+    const triangle = cutout({
+      shape: 'path',
+      width: 30,
+      depth: 40,
+      path: [corner(0, 0), corner(30, 0), corner(0, 40)],
+    });
+    expect(openingPerimeterMm(triangle)).toBeCloseTo(30 + 40 + 50, 6);
+  });
+});
+
+describe('clearance as each builder cuts it', () => {
+  const corner = (x: number, y: number) => ({
+    x,
+    y,
+    handleIn: null,
+    handleOut: null,
+    symmetric: false,
+  });
+  const square = (clearance: number) =>
+    cutout({
+      shape: 'path',
+      x: 10,
+      y: 10,
+      width: 20,
+      depth: 20,
+      clearance,
+      path: [corner(10, 10), corner(30, 10), corner(30, 30), corner(10, 30)],
+    });
+  const widthOf = (params: BinParams): number => {
+    const [span] = fitTestCutoutSpans(params).x;
+    return span.max - span.min;
+  };
+
+  it('grows a circle by its clearance across the diameter, half on each side', () => {
+    expect(widthOf(board({}, [cutout({ width: 12, depth: 12, clearance: 0.4 })]))).toBeCloseTo(
+      12.4,
+      9
+    );
+  });
+
+  it('offsets a path by its whole clearance on every side', () => {
+    expect(widthOf(board({}, [square(0.5)]))).toBeCloseTo(21, 9);
+  });
+
+  it('reaches as far as the miter of a sharp path corner', () => {
+    // The 14 degree tip's miter runs past the clearance until the offset's
+    // limit of four clearances stops it: 2mm beyond the tip, not 0.5.
+    const spike = cutout({
+      shape: 'path',
+      x: 0,
+      y: 0,
+      width: 40,
+      depth: 10,
+      clearance: 0.5,
+      path: [corner(0, 0), corner(40, 5), corner(0, 10)],
+    });
+    const [span] = fitTestCutoutSpans(board({}, [spike])).x;
+    const [plain] = fitTestCutoutSpans(board({}, [{ ...spike, clearance: 0 }])).x;
+    expect(span.max - plain.max).toBeCloseTo(2, 6);
+  });
+
+  it('offsets a path once when it has no chamfer, and once more for a flare', () => {
+    // Each offset runs a quadratic self-intersection scan on the main thread.
+    const offset = vi.mocked(growPathOutline);
+    offset.mockClear();
+    fitTestCutoutSpans(board({}, [square(0.5)]));
+    expect(offset).toHaveBeenCalledTimes(1);
+
+    offset.mockClear();
+    fitTestCutoutSpans(board({}, [{ ...square(0.5), chamferWidth: 0.6 }]));
+    expect(offset).toHaveBeenCalledTimes(2);
+  });
+
+  it('offsets a mesh silhouette by its whole clearance on every side', () => {
+    const scan = cutout({ shape: 'mesh', meshId: 'm1', width: 20, depth: 10, clearance: 1 });
+    expect(widthOf(board({}, [scan]))).toBeCloseTo(22, 9);
+  });
+
+  it('measures a path perimeter round its clearance offset', () => {
+    // A square offset 0.5mm with mitred corners is a 21mm square.
+    expect(openingPerimeterMm(square(0.5))).toBeCloseTo(84, 6);
+    expect(openingPerimeterMm(square(0))).toBeCloseTo(80, 6);
   });
 });
 

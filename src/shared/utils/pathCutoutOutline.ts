@@ -1,0 +1,110 @@
+/**
+ * The outline a path cutout is cut to. Kernel-free so the fit-test plan can
+ * bound exactly what the worker's builder cuts, instead of a second guess at it.
+ */
+
+import type { PathPoint } from '@/shared/types/bin';
+import { MIN_PATH_POINTS } from '@/shared/types/bin';
+import { dropCoincidentPoints } from '@/shared/utils/polyline';
+import { offsetClosedPolygon } from '@/shared/utils/polygonOffset';
+import type { Pt } from '@/shared/utils/polygonOffset';
+
+export const BEZIER_SEGMENTS = 12;
+
+/** Flatten a closed bezier path to an open polyline for 3D generation.
+ * Returns points for each anchor and bezier intermediates — without duplicating
+ * the first point at the end, since brepjs `close()` handles wire closure.
+ */
+export function flattenPathToPolyline(path: readonly PathPoint[]): Array<{ x: number; y: number }> {
+  const result: Array<{ x: number; y: number }> = [];
+  const n = path.length;
+
+  for (let i = 0; i < n; i++) {
+    const p0 = path[i];
+    const p1 = path[(i + 1) % n];
+
+    result.push({ x: p0.x, y: p0.y });
+
+    // Flatten bezier curves between consecutive anchors (including closing segment)
+    if (p0.handleOut || p1.handleIn) {
+      const bx = p0.handleOut ? p0.x + p0.handleOut.dx : p0.x;
+      const by = p0.handleOut ? p0.y + p0.handleOut.dy : p0.y;
+      const cx = p1.handleIn ? p1.x + p1.handleIn.dx : p1.x;
+      const cy = p1.handleIn ? p1.y + p1.handleIn.dy : p1.y;
+
+      // Skip s=0 (p0 already pushed) and s=BEZIER_SEGMENTS (next iteration pushes p1,
+      // or for closing segment we omit to avoid duplicating first point)
+      for (let s = 1; s < BEZIER_SEGMENTS; s++) {
+        const t = s / BEZIER_SEGMENTS;
+        const mt = 1 - t;
+        const mt2 = mt * mt;
+        const mt3 = mt2 * mt;
+        const t2 = t * t;
+        const t3 = t2 * t;
+        const x = mt3 * p0.x + 3 * mt2 * t * bx + 3 * mt * t2 * cx + t3 * p1.x;
+        const y = mt3 * p0.y + 3 * mt2 * t * by + 3 * mt * t2 * cy + t3 * p1.y;
+        result.push({ x, y });
+      }
+
+      // p1 is pushed as p0 of the next iteration for non-closing segments.
+      // For the closing segment, brepjs close() handles the connection back to start.
+    }
+  }
+
+  return result;
+}
+
+/** Check if a closed polyline self-intersects (any non-adjacent edges cross). */
+export function polylineSelfIntersects(poly: readonly { x: number; y: number }[]): boolean {
+  const n = poly.length;
+  if (n < 4) return false;
+
+  for (let i = 0; i < n; i++) {
+    const a1 = poly[i];
+    const a2 = poly[(i + 1) % n];
+    for (let j = i + 2; j < n; j++) {
+      if (j === n - 1 && i === 0) continue; // adjacent (closing edge)
+      const b1 = poly[j];
+      const b2 = poly[(j + 1) % n];
+      const d = (a2.x - a1.x) * (b2.y - b1.y) - (a2.y - a1.y) * (b2.x - b1.x);
+      if (Math.abs(d) < 1e-10) continue;
+      const t = ((b1.x - a1.x) * (b2.y - b1.y) - (b1.y - a1.y) * (b2.x - b1.x)) / d;
+      const u = ((b1.x - a1.x) * (a2.y - a1.y) - (b1.y - a1.y) * (a2.x - a1.x)) / d;
+      const eps = 1e-6;
+      if (t > eps && t < 1 - eps && u > eps && u < 1 - eps) return true;
+    }
+  }
+  return false;
+}
+
+/** Centered, flattened, validated outline for a path cutout (or null if degenerate). */
+export function pathCutoutOutline(cutout: {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly depth: number;
+  readonly path?: readonly PathPoint[];
+}): Array<{ x: number; y: number }> | null {
+  const path = cutout.path;
+  if (!path || path.length < MIN_PATH_POINTS) return null;
+  const polyline = dropCoincidentPoints(flattenPathToPolyline(path));
+  if (polyline.length < 3 || polylineSelfIntersects(polyline)) return null;
+  const cx = cutout.x + cutout.width / 2;
+  const cy = cutout.y + cutout.depth / 2;
+  return polyline.map((p) => ({ x: p.x - cx, y: p.y - cy }));
+}
+
+/**
+ * Outset a centered outline by `d` (insertion clearance / chamfer flare). Returns
+ * the input unchanged for d<=0, or null when the offset degenerates (self-cross
+ * or vertex-count change) so callers can decide how to fall back.
+ */
+export function growPathOutline(
+  outline: readonly Pt[],
+  d: number
+): Array<{ x: number; y: number }> | null {
+  if (d <= 0) return outline.map((p) => ({ x: p.x, y: p.y }));
+  const out = offsetClosedPolygon(outline, d);
+  if (out.length !== outline.length || polylineSelfIntersects(out)) return null;
+  return out;
+}

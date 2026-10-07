@@ -8,8 +8,9 @@ import {
   slotCornerRadius,
 } from '@/shared/utils/cutoutPolygon';
 import { dropCoincidentPoints } from '@/shared/utils/polyline';
-import { flattenPathToPolyline, pathWire, polylineSelfIntersects } from './cutoutBuilder';
-import { offsetClosedPolygon } from './polygonOffset';
+import { flattenPathToPolyline, polylineSelfIntersects } from '@/shared/utils/pathCutoutOutline';
+import { offsetClosedPolygon } from '@/shared/utils/polygonOffset';
+import { pathWire } from './cutoutBuilder';
 import { sketch } from './meshUtils';
 
 /** Cutters overshoot their seat so the cut opens the top face cleanly. */
