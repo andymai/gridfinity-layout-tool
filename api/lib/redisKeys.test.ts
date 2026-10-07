@@ -10,6 +10,8 @@ import {
   userProfileKey,
   userIndexKey,
   userIndexUpdatedAtKey,
+  userMeshesKey,
+  meshHoldersKey,
   COMMUNITY_INDEX_SORTS,
   communityDesignKey,
   communityIndexKey,
@@ -71,6 +73,20 @@ describe('redisKeys', () => {
 
     it('userIndexUpdatedAtKey produces users:{uid}:indexUpdatedAt', () => {
       expect(userIndexUpdatedAtKey('user-1')).toBe('users:user-1:indexUpdatedAt');
+    });
+  });
+
+  describe('mesh keys', () => {
+    it('userMeshesKey produces users:{uid}:meshes', () => {
+      expect(userMeshesKey('user-1')).toBe('users:user-1:meshes');
+    });
+
+    it('meshHoldersKey produces mesh:holders:{hash}', () => {
+      expect(meshHoldersKey('ab'.repeat(32))).toBe(`mesh:holders:${'ab'.repeat(32)}`);
+    });
+
+    it('userMeshesKey stays out of the sync index pattern sync-admin scans', () => {
+      expect(userMeshesKey('user-1')).not.toMatch(/^users:[^:]+:index:/);
     });
   });
 

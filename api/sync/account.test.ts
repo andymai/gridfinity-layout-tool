@@ -67,6 +67,13 @@ const mockRedis = {
     return next;
   }),
   hkeys: vi.fn(async (k: string) => Array.from(redisHashes.get(k)?.keys() ?? [])),
+  hdel: vi.fn(async (k: string, f: string) => {
+    const h = redisHashes.get(k);
+    const removed = h?.delete(f) ? 1 : 0;
+    if (h?.size === 0) redisHashes.delete(k);
+    return removed;
+  }),
+  scard: vi.fn(async (k: string) => redisSets.get(k)?.size ?? 0),
   hget: vi.fn(async (k: string, f: string) => redisHashes.get(k)?.get(f) ?? null),
   hset: vi.fn(async (k: string, f: string | Record<string, string>, v?: string) => {
     const h = redisHashes.get(k) ?? new Map<string, string>();
@@ -111,6 +118,14 @@ const mockRedis = {
       },
       srem: (k: string, ...members: string[]) => {
         queued.push(() => mockRedis.srem(k, ...members));
+        return chain;
+      },
+      hdel: (k: string, f: string) => {
+        queued.push(() => mockRedis.hdel(k, f));
+        return chain;
+      },
+      scard: (k: string) => {
+        queued.push(() => mockRedis.scard(k));
         return chain;
       },
       hset: (k: string, fields: Record<string, string>) => {
@@ -315,6 +330,30 @@ describe('DELETE /api/sync/account', () => {
     const cookieHeader = res._headers['Set-Cookie'];
     const cookies = Array.isArray(cookieHeader) ? cookieHeader.map(String) : [String(cookieHeader)];
     expect(cookies.some((c) => c.includes('Max-Age=0'))).toBe(true);
+  });
+
+  it('leaves every mesh holder set but keeps the shared files', async () => {
+    const mine = 'a'.repeat(64);
+    const shared = 'b'.repeat(64);
+    setHash('users:user-1:meshes', {
+      [mine]: JSON.stringify({ sizeBytes: 10, url: 'https://blob.example/meshes/a' }),
+      [shared]: JSON.stringify({ sizeBytes: 20, url: 'https://blob.example/meshes/b' }),
+    });
+    setSet(`mesh:holders:${mine}`, ['user:user-1']);
+    setSet(`mesh:holders:${shared}`, ['user:user-1', 'user:user-2']);
+    blobStore.set(`meshes/${mine}`, {});
+    blobStore.set(`meshes/${shared}`, {});
+
+    const { default: handler } = await import('./account');
+    const res = makeRes();
+    await handler(makeReq(), res as unknown as VercelResponse);
+
+    expect(res._status).toBe(204);
+    expect(redisHashes.has('users:user-1:meshes')).toBe(false);
+    expect(redisSets.has(`mesh:holders:${mine}`)).toBe(false);
+    expect(redisSets.get(`mesh:holders:${shared}`)).toEqual(new Set(['user:user-2']));
+    expect(blobStore.has(`meshes/${mine}`)).toBe(true);
+    expect(blobStore.has(`meshes/${shared}`)).toBe(true);
   });
 
   it('is idempotent — replaying after partial failure is safe', async () => {

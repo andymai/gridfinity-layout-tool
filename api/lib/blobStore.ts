@@ -78,6 +78,36 @@ export async function headBlob(path: string): Promise<HeadBlobResult | null> {
 }
 
 /**
+ * Write bytes whose `path` is derived from their content (a hash), once, and
+ * return the blob URL. A blob already at the path is never rewritten, so a
+ * second writer of the same content costs a head() and no put(). Two first
+ * writers racing both end at the winner's blob: the loser's put() fails on
+ * `allowOverwrite: false`, and since the path names the content, the winner
+ * holds the same bytes. Only valid for content-addressed paths.
+ */
+export async function putContentAddressed(
+  path: string,
+  bytes: Uint8Array,
+  contentType: string
+): Promise<string> {
+  const existing = await headBlob(path);
+  if (existing) return existing.url;
+  try {
+    const result = await put(path, Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength), {
+      access: 'public',
+      contentType,
+      addRandomSuffix: false,
+      allowOverwrite: false,
+    });
+    return result.url;
+  } catch (error) {
+    const raced = await headBlob(path);
+    if (raced) return raced.url;
+    throw error;
+  }
+}
+
+/**
  * Delete a blob at `path`.
  * Mirrors the existing share-feature behavior: errors propagate to the caller
  * (Vercel Blob does not throw on a missing blob, so this is effectively idempotent).

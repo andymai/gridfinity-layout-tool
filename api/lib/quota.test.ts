@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Redis } from 'ioredis';
-import { checkQuota, getQuotaCaps } from './quota';
+import { checkMeshQuota, checkQuota, getQuotaCaps, MESH_QUOTA_BYTES } from './quota';
 import { tombstone, upsertEntry } from './userIndex';
+import { userMeshesKey } from './redisKeys';
 
 let mockRedis: Redis;
 
@@ -164,5 +165,56 @@ describe('checkQuota', () => {
       sizeBytes: 100,
     });
     expect(result.ok).toBe(true);
+  });
+});
+
+describe('checkMeshQuota', () => {
+  const MB = 1024 * 1024;
+
+  beforeEach(() => {
+    mockRedis = makeRedisMock();
+  });
+
+  async function hold(userId: string, hash: string, sizeBytes: number): Promise<void> {
+    await mockRedis.hset(
+      userMeshesKey(userId),
+      hash,
+      JSON.stringify({ sizeBytes, url: `https://blob/meshes/${hash}` })
+    );
+  }
+
+  it('allows a file that fits beside what the account holds', async () => {
+    await hold('u1', 'a', 60 * MB);
+    expect(await checkMeshQuota(mockRedis, 'u1', 'b', 40 * MB)).toEqual({ ok: true });
+  });
+
+  it('rejects a file that would pass the cap, reporting the projected bytes', async () => {
+    await hold('u1', 'a', 60 * MB);
+    expect(await checkMeshQuota(mockRedis, 'u1', 'b', 40 * MB + 1)).toEqual({
+      ok: false,
+      error: {
+        type: 'QUOTA_EXCEEDED',
+        reason: 'bytes',
+        current: 100 * MB + 1,
+        limit: MESH_QUOTA_BYTES,
+      },
+    });
+  });
+
+  it('counts a held file once, so re-checking it passes even at the cap', async () => {
+    await hold('u1', 'a', 60 * MB);
+    await hold('u1', 'b', 40 * MB);
+    expect(await checkMeshQuota(mockRedis, 'u1', 'a', 60 * MB)).toEqual({ ok: true });
+    expect((await checkMeshQuota(mockRedis, 'u1', 'c', 1)).ok).toBe(false);
+  });
+
+  it('is per account', async () => {
+    await hold('u1', 'a', MESH_QUOTA_BYTES);
+    expect(await checkMeshQuota(mockRedis, 'u2', 'b', 1)).toEqual({ ok: true });
+  });
+
+  it('is independent of the sync quotas', async () => {
+    await upsertEntry(mockRedis, 'u1', 'designs', 'd1', { modifiedAt: 1, sizeBytes: 9 * MB });
+    expect(await checkMeshQuota(mockRedis, 'u1', 'a', 99 * MB)).toEqual({ ok: true });
   });
 });

@@ -18,7 +18,7 @@ vi.mock('@vercel/blob', async () => {
 });
 
 import { BlobNotFoundError } from '@vercel/blob';
-import { putJson, getJson, headBlob, deleteBlob } from './blobStore';
+import { putJson, getJson, headBlob, deleteBlob, putContentAddressed } from './blobStore';
 
 describe('blobStore', () => {
   beforeEach(() => {
@@ -173,6 +173,58 @@ describe('blobStore', () => {
     it('propagates non-404 head() errors', async () => {
       mockHead.mockRejectedValue(new Error('Service unavailable'));
       await expect(headBlob('x.json')).rejects.toThrow('Service unavailable');
+    });
+  });
+
+  describe('putContentAddressed', () => {
+    const bytes = new Uint8Array([1, 2, 3]);
+
+    it('writes once, public and never overwriting, when the path is free', async () => {
+      mockHead.mockRejectedValue(new BlobNotFoundError());
+      mockPut.mockResolvedValue({ url: 'https://blob/meshes/h', pathname: 'meshes/h' });
+
+      expect(await putContentAddressed('meshes/h', bytes, 'application/octet-stream')).toBe(
+        'https://blob/meshes/h'
+      );
+      expect(mockPut).toHaveBeenCalledTimes(1);
+      const [path, body, options] = mockPut.mock.calls[0] as [string, Buffer, unknown];
+      expect(path).toBe('meshes/h');
+      expect([...body]).toEqual([1, 2, 3]);
+      expect(options).toEqual({
+        access: 'public',
+        contentType: 'application/octet-stream',
+        addRandomSuffix: false,
+        allowOverwrite: false,
+      });
+    });
+
+    it('skips the write when the content is already stored', async () => {
+      mockHead.mockResolvedValue({ url: 'https://blob/meshes/h' });
+
+      expect(await putContentAddressed('meshes/h', bytes, 'application/octet-stream')).toBe(
+        'https://blob/meshes/h'
+      );
+      expect(mockPut).not.toHaveBeenCalled();
+    });
+
+    it('resolves to the winner when a racing writer stored it first', async () => {
+      mockHead
+        .mockRejectedValueOnce(new BlobNotFoundError())
+        .mockResolvedValueOnce({ url: 'https://blob/meshes/h' });
+      mockPut.mockRejectedValue(new Error('This blob already exists'));
+
+      expect(await putContentAddressed('meshes/h', bytes, 'application/octet-stream')).toBe(
+        'https://blob/meshes/h'
+      );
+    });
+
+    it('propagates a put failure that left nothing behind', async () => {
+      mockHead.mockRejectedValue(new BlobNotFoundError());
+      mockPut.mockRejectedValue(new Error('blob storage down'));
+
+      await expect(
+        putContentAddressed('meshes/h', bytes, 'application/octet-stream')
+      ).rejects.toThrow('blob storage down');
     });
   });
 

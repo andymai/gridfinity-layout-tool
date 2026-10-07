@@ -18,6 +18,8 @@
  *   users:{uid}:profile             → user profile (email, provider, etc.)
  *   users:{uid}:index:{kind}        → HASH of a user's synced layouts/designs
  *   users:{uid}:indexUpdatedAt      → ms timestamp for If-Modified-Since on /api/sync/manifest
+ *   users:{uid}:meshes              → HASH of mesh file hash → JSON {sizeBytes,url} the account holds
+ *   mesh:holders:{hash}             → SET of holder ids referencing a stored mesh file (refcount via SCARD)
  *   supporters:donors               → HASH of donorId → JSON {n,t,m} record (legacy: bare name)
  *   supporters:totals               → HASH of currency → received minor units (collect-only)
  *   supporters:msg:{messageId}      → Ko-fi webhook dedupe marker
@@ -135,6 +137,20 @@ export function userIndexUpdatedAtKey(userId: string): string {
 /** Ms timestamp of the last tombstone sweep — gates how often `upsertEntry` HGETALLs. */
 export function userTombstoneSweptAtKey(userId: string): string {
   return `users:${userId}:tombstoneSweptAt`;
+}
+
+/** Mesh files an account holds: content hash → JSON `{ sizeBytes, url }`. Mesh quota sums it. */
+export function userMeshesKey(userId: string): string {
+  return `users:${userId}:meshes`;
+}
+
+/**
+ * Every holder referencing a stored mesh file, one member each (`user:{uid}`
+ * for an account). A SET rather than a counter, so a repeated acquire or
+ * release is a no-op instead of drift, and SCARD is the refcount.
+ */
+export function meshHoldersKey(hash: string): string {
+  return `mesh:holders:${hash}`;
 }
 
 /** HASH of Ko-fi supporters: donorId → JSON `{n,t,m}` record (legacy values are a bare name). */

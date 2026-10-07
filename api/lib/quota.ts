@@ -1,5 +1,6 @@
 import type { Redis } from 'ioredis';
 import { getIndex, type SyncItemKind } from './userIndex.js';
+import { getHeldMeshes } from './meshIndex.js';
 
 /**
  * Per-kind caps. Tombstones are excluded from both axes — deleting an
@@ -119,4 +120,38 @@ export async function checkQuota(
 
 export function getQuotaCaps(kind: SyncItemKind): { maxCount: number; maxBytes: number } {
   return QUOTA[kind];
+}
+
+/** Stored mesh files per account, in unique bytes. */
+export const MESH_QUOTA_BYTES = 100 * 1024 * 1024;
+
+/**
+ * Check whether holding the file `hash` would push the account over its mesh
+ * quota. A file the account already holds is already counted, so it always
+ * passes: each unique file costs its bytes once. Same soft-ceiling race as
+ * `checkQuota`.
+ */
+export async function checkMeshQuota(
+  redis: Redis,
+  userId: string,
+  hash: string,
+  sizeBytes: number
+): Promise<QuotaCheck> {
+  const held = await getHeldMeshes(redis, userId);
+  if (Object.hasOwn(held, hash)) return { ok: true };
+  let usedBytes = 0;
+  for (const entry of Object.values(held)) usedBytes += entry.sizeBytes;
+  const projectedBytes = usedBytes + sizeBytes;
+  if (projectedBytes > MESH_QUOTA_BYTES) {
+    return {
+      ok: false,
+      error: {
+        type: 'QUOTA_EXCEEDED',
+        reason: 'bytes',
+        current: projectedBytes,
+        limit: MESH_QUOTA_BYTES,
+      },
+    };
+  }
+  return { ok: true };
 }
