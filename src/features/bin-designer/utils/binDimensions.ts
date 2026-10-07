@@ -15,7 +15,7 @@
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { socketHeightMm } from '@/shared/printSettings/gridfinityGeometry';
-import { hasDetachableFeet } from '@/features/bin-designer/types/base';
+import { DEFAULT_FEET_MODE, hasDetachableFeet } from '@/features/bin-designer/types/base';
 import type {
   BaseConfig,
   BinParams,
@@ -33,6 +33,7 @@ import {
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { resolveOverhang } from '@/shared/utils/overhang';
+import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 
 export interface BinDimensions {
   /** Outer bin width in mm (XY footprint, includes tolerance) */
@@ -64,8 +65,7 @@ export interface BinDimensions {
 /**
  * Derive every dimension that downstream code needs from a `BinParams`.
  *
- * Pure function — safe to call inline in render paths (no allocations
- * beyond the result object). Callers that need only one field should
+ * Pure function — safe to call inline in render paths. Callers that need only one field should
  * still call this rather than recomputing, so the math stays canonical.
  */
 /** The slice of a base these Z helpers read — narrow so partial callers fit. */
@@ -174,7 +174,12 @@ export function binDimensions(params: BinParams): BinDimensions {
   // overlays, the cutout and divider editors, the scoop bounds — reads these
   // two numbers, so getting them wrong here misplaces all of them at once.
   const wallHeight = baseWallHeight(params.base, totalH);
-  const floorZ = baseFloorZ(params.base, params.heightUnitMm, params.lid, params.cellMask);
+  // Detachable feet that place no foot leave the integral socket on the body.
+  const floorBase =
+    hasDetachableFeet(params.base) && resolveDetachableFeet(params).placements.length === 0
+      ? { ...params.base, feet: DEFAULT_FEET_MODE }
+      : params.base;
+  const floorZ = baseFloorZ(floorBase, params.heightUnitMm, params.lid, params.cellMask);
   return { outerW, outerD, innerW, innerD, totalH, wallHeight, floorZ, isFlat };
 }
 

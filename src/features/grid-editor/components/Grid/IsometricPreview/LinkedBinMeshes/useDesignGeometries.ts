@@ -64,11 +64,17 @@ function mergeParts(
   return { vertices, indices };
 }
 
+const feetLiftMemo = new WeakMap<MeshData, number>();
+
 function detachableFeetLiftMm(mesh: MeshData): number {
+  const memo = feetLiftMemo.get(mesh);
+  if (memo !== undefined) return memo;
   const feet = mesh.detachableFeetMesh?.vertices;
   let lift = 0;
-  if (!feet) return lift;
-  for (let i = 2; i < feet.length; i += 3) lift = Math.max(lift, -feet[i]);
+  if (feet) {
+    for (let i = 2; i < feet.length; i += 3) lift = Math.max(lift, -feet[i]);
+  }
+  feetLiftMemo.set(mesh, lift);
   return lift;
 }
 

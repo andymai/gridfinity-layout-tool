@@ -20,6 +20,13 @@ describe('binDimensions', () => {
     expect(dims.isFlat).toBe(false);
   });
 
+  it('keeps the socket floor when detachable feet place no foot', () => {
+    const detachable = { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' as const };
+    expect(binDimensions({ ...DEFAULT_BIN_PARAMS, base: detachable }).floorZ).toBe(0);
+    const tooNarrow = { ...DEFAULT_BIN_PARAMS, width: 0.5, base: detachable };
+    expect(binDimensions(tooNarrow).floorZ).toBeCloseTo(GRIDFINITY.SOCKET_HEIGHT, 5);
+  });
+
   it('tracks a custom half-pitch gridUnitMm (30mm)', () => {
     const dims = binDimensions({ ...DEFAULT_BIN_PARAMS, gridUnitMm: 30 });
     // outerW = 2 × 30 − 0.5 = 59.5 (would be 83.5 with hardcoded 42)
