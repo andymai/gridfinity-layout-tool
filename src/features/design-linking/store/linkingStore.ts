@@ -87,7 +87,7 @@ interface LinkingStoreState {
   hideBlockedResizeDialog: () => void;
 
   // Designer-updated dialog actions
-  showDesignerUpdatedDialog: (designId: DesignId, designName: string) => void;
+  showDesignerUpdatedDialog: (binId: BinId, designId: DesignId, designName: string) => void;
   hideDesignerUpdatedDialog: () => void;
 }
 
@@ -178,9 +178,9 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
     }),
   hideBlockedResizeDialog: () => set({ pendingBlockedResize: null }),
 
-  showDesignerUpdatedDialog: (designId, designName) =>
+  showDesignerUpdatedDialog: (binId, designId, designName) =>
     set({
-      pendingDesignerUpdated: { designId, designName },
+      pendingDesignerUpdated: { binId, designId, designName },
     }),
   hideDesignerUpdatedDialog: () => set({ pendingDesignerUpdated: null }),
 }));

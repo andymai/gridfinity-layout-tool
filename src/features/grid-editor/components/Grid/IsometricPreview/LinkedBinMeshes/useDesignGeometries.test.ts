@@ -1,16 +1,18 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import * as THREE from 'three';
-import type { DesignId } from '@/core/types';
-import { designId } from '@/core/types';
+import type { BinId } from '@/core/types';
+import { binId } from '@/core/types';
 import type { MeshData } from '@/shared/types/generation';
 import type { LinkedDesignMesh } from '@/shared/hooks/useLinkedDesignMeshes';
 import { GRIDFINITY_SPEC, socketHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import {
   buildDesignGeometry,
   clearDesignGeometryCache,
+  MAX_CACHE_SIZE,
   useDesignGeometries,
 } from './useDesignGeometries';
+import type { DesignGeometryEntry } from './useDesignGeometries';
 
 /** Two-triangle quad in the XY plane. */
 function makeMesh(withNormals: boolean): MeshData {
@@ -112,7 +114,7 @@ describe('buildDesignGeometry', () => {
 });
 
 describe('useDesignGeometries', () => {
-  const D1 = designId('design-1');
+  const B1 = binId('bin-1');
 
   beforeEach(() => {
     clearDesignGeometryCache();
@@ -124,13 +126,32 @@ describe('useDesignGeometries', () => {
   });
 
   it('builds one geometry per design and carries footprint through', () => {
-    const meshes = new Map<DesignId, LinkedDesignMesh>([[D1, makeEntry('d1:t1')]]);
+    const meshes = new Map<BinId, LinkedDesignMesh>([[B1, makeEntry('d1:t1')]]);
     const { result } = renderHook(() => useDesignGeometries(meshes));
 
-    const entry = result.current.get(D1);
+    const entry = result.current.get(B1);
     expect(entry?.geometry).toBeInstanceOf(THREE.BufferGeometry);
     expect(entry?.width).toBe(2);
     expect(entry?.depth).toBe(1);
+  });
+
+  it('shares one entry between bins on the same mesh and keeps a variant apart', () => {
+    const shared = makeEntry('d1:t1');
+    const variant = makeEntry('d1:t1:no-own-overhang');
+    const B2 = binId('bin-2');
+    const B3 = binId('bin-3');
+    const { result } = renderHook(() =>
+      useDesignGeometries(
+        new Map([
+          [B1, shared],
+          [B2, shared],
+          [B3, variant],
+        ])
+      )
+    );
+
+    expect(result.current.get(B2)).toBe(result.current.get(B1));
+    expect(result.current.get(B3)?.geometry).not.toBe(result.current.get(B1)?.geometry);
   });
 
   it('carries the body base through, raised by the lift that stands detachable feet on Z=0', () => {
@@ -145,52 +166,52 @@ describe('useDesignGeometries', () => {
       mesh: { ...makeMesh(true), detachableFeetMesh: feet },
       bodyBaseMm: 0,
     };
-    const D2 = designId('design-2');
-    const D3 = designId('design-3');
+    const B2 = binId('bin-2');
+    const B3 = binId('bin-3');
     const { result } = renderHook(() =>
       useDesignGeometries(
         new Map([
-          [D1, socketed],
-          [D2, detached],
-          [D3, makeEntry('d3:t1')],
+          [B1, socketed],
+          [B2, detached],
+          [B3, makeEntry('d3:t1')],
         ])
       )
     );
 
-    expect(result.current.get(D1)?.bodyBaseMm).toBeCloseTo(s, 6);
-    expect(result.current.get(D2)?.bodyBaseMm).toBeCloseTo(s, 6);
-    expect(result.current.get(D3)?.bodyBaseMm).toBeUndefined();
+    expect(result.current.get(B1)?.bodyBaseMm).toBeCloseTo(s, 6);
+    expect(result.current.get(B2)?.bodyBaseMm).toBeCloseTo(s, 6);
+    expect(result.current.get(B3)?.bodyBaseMm).toBeUndefined();
   });
 
   it('reuses the geometry across re-renders when the sig is unchanged', () => {
     const { result, rerender } = renderHook(
-      ({ meshes }: { meshes: Map<DesignId, LinkedDesignMesh> }) => useDesignGeometries(meshes),
-      { initialProps: { meshes: new Map([[D1, makeEntry('d1:t1')]]) } }
+      ({ meshes }: { meshes: Map<BinId, LinkedDesignMesh> }) => useDesignGeometries(meshes),
+      { initialProps: { meshes: new Map([[B1, makeEntry('d1:t1')]]) } }
     );
-    const firstGeometry = result.current.get(D1)?.geometry;
+    const firstGeometry = result.current.get(B1)?.geometry;
 
     // New map identity, same sig — geometry instance is reused
-    rerender({ meshes: new Map([[D1, makeEntry('d1:t1')]]) });
-    expect(result.current.get(D1)?.geometry).toBe(firstGeometry);
+    rerender({ meshes: new Map([[B1, makeEntry('d1:t1')]]) });
+    expect(result.current.get(B1)?.geometry).toBe(firstGeometry);
   });
 
   it('rebuilds the geometry when the design sig changes (design edited)', () => {
     const { result, rerender } = renderHook(
-      ({ meshes }: { meshes: Map<DesignId, LinkedDesignMesh> }) => useDesignGeometries(meshes),
-      { initialProps: { meshes: new Map([[D1, makeEntry('d1:t1')]]) } }
+      ({ meshes }: { meshes: Map<BinId, LinkedDesignMesh> }) => useDesignGeometries(meshes),
+      { initialProps: { meshes: new Map([[B1, makeEntry('d1:t1')]]) } }
     );
-    const firstGeometry = result.current.get(D1)?.geometry;
+    const firstGeometry = result.current.get(B1)?.geometry;
 
-    rerender({ meshes: new Map([[D1, makeEntry('d1:t2')]]) });
+    rerender({ meshes: new Map([[B1, makeEntry('d1:t2')]]) });
 
-    expect(result.current.get(D1)?.geometry).not.toBe(firstGeometry);
+    expect(result.current.get(B1)?.geometry).not.toBe(firstGeometry);
   });
 
   it('disposes all cached geometries on unmount', () => {
     const { result, unmount } = renderHook(() =>
-      useDesignGeometries(new Map([[D1, makeEntry('d1:t1')]]))
+      useDesignGeometries(new Map([[B1, makeEntry('d1:t1')]]))
     );
-    const geometry = result.current.get(D1)?.geometry as THREE.BufferGeometry;
+    const geometry = result.current.get(B1)?.geometry as THREE.BufferGeometry;
     let disposed = false;
     geometry.addEventListener('dispose', () => {
       disposed = true;
@@ -202,8 +223,8 @@ describe('useDesignGeometries', () => {
   });
 
   it('clearDesignGeometryCache disposes cached geometries', () => {
-    const { result } = renderHook(() => useDesignGeometries(new Map([[D1, makeEntry('d1:t1')]])));
-    const geometry = result.current.get(D1)?.geometry as THREE.BufferGeometry;
+    const { result } = renderHook(() => useDesignGeometries(new Map([[B1, makeEntry('d1:t1')]])));
+    const geometry = result.current.get(B1)?.geometry as THREE.BufferGeometry;
     let disposed = false;
     geometry.addEventListener('dispose', () => {
       disposed = true;
@@ -212,5 +233,74 @@ describe('useDesignGeometries', () => {
     clearDesignGeometryCache();
 
     expect(disposed).toBe(true);
+  });
+
+  describe('with more geometries in use than the cache bound', () => {
+    type Meshes = Map<BinId, LinkedDesignMesh>;
+
+    function manyMeshes(count: number, withRest: boolean): Meshes {
+      const meshes: Meshes = new Map();
+      for (let i = 0; i < count; i++) {
+        const entry = makeEntry(`d${i}:t1`);
+        meshes.set(
+          binId(`bin-${i}`),
+          withRest ? { ...entry, mesh: { ...entry.mesh, knifeRestMesh: makeMesh(true) } } : entry
+        );
+      }
+      return meshes;
+    }
+
+    function geometriesOf(entries: Map<BinId, DesignGeometryEntry>): THREE.BufferGeometry[] {
+      return [...entries.values()].flatMap((e) =>
+        e.rest ? [e.geometry, e.rest.geometry] : [e.geometry]
+      );
+    }
+
+    function countDisposals(geometries: THREE.BufferGeometry[]): () => number {
+      let disposed = 0;
+      for (const g of geometries) {
+        g.addEventListener('dispose', () => {
+          disposed++;
+        });
+      }
+      return () => disposed;
+    }
+
+    const flushMicrotasks = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    it('never disposes or rebuilds a geometry a bin still draws, rest geometries included', async () => {
+      // Body plus rest per design puts the drawn set two past the bound.
+      const meshes = manyMeshes(MAX_CACHE_SIZE / 2 + 1, true);
+      const { result, rerender } = renderHook(
+        ({ meshes }: { meshes: Meshes }) => useDesignGeometries(meshes),
+        { initialProps: { meshes } }
+      );
+      const before = geometriesOf(result.current);
+      expect(before).toHaveLength(MAX_CACHE_SIZE + 2);
+      const disposals = countDisposals(before);
+
+      // A new map of the same meshes, as an unrelated layout edit produces.
+      rerender({ meshes: new Map(meshes) });
+      await flushMicrotasks();
+
+      const after = geometriesOf(result.current);
+      expect(after).toHaveLength(before.length);
+      after.forEach((g, i) => expect(g).toBe(before[i]));
+      expect(disposals()).toBe(0);
+    });
+
+    it('disposes geometries no bin draws any more down to the bound', async () => {
+      const meshes = manyMeshes(MAX_CACHE_SIZE + 8, false);
+      const { result, rerender } = renderHook(
+        ({ meshes }: { meshes: Meshes }) => useDesignGeometries(meshes),
+        { initialProps: { meshes } }
+      );
+      const disposals = countDisposals(geometriesOf(result.current));
+
+      rerender({ meshes: new Map() });
+      await flushMicrotasks();
+
+      expect(disposals()).toBe(8);
+    });
   });
 });

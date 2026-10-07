@@ -1,4 +1,4 @@
-import type { DesignId } from '@/core/types';
+import type { BinId } from '@/core/types';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
 import { BinMesh } from '../BinMesh';
 import { LinkedBinMesh } from './LinkedBinMesh';
@@ -7,7 +7,7 @@ import type { DesignGeometryEntry } from './useDesignGeometries';
 
 interface SelectedBinProps {
   binData: BinRenderData;
-  designGeometries: Map<DesignId, DesignGeometryEntry>;
+  designGeometries: Map<BinId, DesignGeometryEntry>;
   gridUnitMm: number;
 }
 

@@ -2371,6 +2371,11 @@ const en: Record<string, string> = {
   'binDesigner.overhang.taper.bandHeight': 'Rises up',
   'binDesigner.overhang.taper.sidesHeading': 'Flare, per side',
   'binDesigner.overhang.taper.sideAria': 'Flare {side}',
+  'binDesigner.overhang.placement.title': 'Overhang from the layout',
+  'binDesigner.overhang.placement.marginHint':
+    "This layout bin extends into the drawer margin, so it prints with the overhang below instead of this design's own. Change it in the layout, not here.",
+  'binDesigner.overhang.placement.expandToFitHint':
+    "This layout bin was expanded to fit, so it prints with the overhang below instead of this design's own. Change it in the layout, not here.",
   'binDesigner.itemKind.bin': 'Bin',
   'binDesigner.itemKind.bin.description': 'Custom Gridfinity storage bin',
   'binDesigner.itemKind.toolRack': 'Tool rack',

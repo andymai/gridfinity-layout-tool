@@ -7,7 +7,7 @@ import { useLayoutStore } from '@/core/store';
 import { createDefaultLayout } from '@/core/constants';
 import { createTestBin } from '@/test/testUtils';
 import { designId, gridUnits, mm } from '@/core/types';
-import type { Bin, DesignId, StoredBaseplateParams } from '@/core/types';
+import type { Bin, BinId, StoredBaseplateParams } from '@/core/types';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
 import type { DesignGeometryEntry } from '../LinkedBinMeshes/useDesignGeometries';
 import { resetCustomBinsCache } from '@/features/bin-designer/hooks/useCustomBins';
@@ -122,16 +122,16 @@ describe('BinOverhangExtensions', () => {
   });
 
   it("hangs a linked bin's strip from its design's body, not the floor", () => {
-    const design = designId('d1');
-    const geometries = new Map<DesignId, DesignGeometryEntry>([
+    const bin = edgeBin({ extendToMargin: true, linkedDesignId: designId('d1') });
+    const geometries = new Map<BinId, DesignGeometryEntry>([
       [
-        design,
+        bin.id,
         { sig: 'd1:t1', geometry: new THREE.BufferGeometry(), width: 1, depth: 1, bodyBaseMm: 4.2 },
       ],
     ]);
     const { container } = render(
       <BinOverhangExtensions
-        bins={[renderData(edgeBin({ extendToMargin: true, linkedDesignId: design }))]}
+        bins={[renderData(bin)]}
         drawerWidth={5}
         drawerDepth={4}
         designGeometries={geometries}

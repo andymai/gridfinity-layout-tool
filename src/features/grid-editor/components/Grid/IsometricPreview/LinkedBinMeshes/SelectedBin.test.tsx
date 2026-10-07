@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import * as THREE from 'three';
-import type { DesignId } from '@/core/types';
-import { designId } from '@/core/types';
+import type { BinId } from '@/core/types';
+import { binId, designId } from '@/core/types';
 import { createTestBin } from '@/test/testUtils';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
 import { SelectedBin } from './SelectedBin';
@@ -23,6 +23,7 @@ vi.mock('../BinMesh', () => ({
 }));
 
 const D1 = designId('design-1');
+const B1 = binId('bin-1');
 
 function makeBinData(overrides: Partial<BinRenderData> = {}): BinRenderData {
   return {
@@ -45,8 +46,8 @@ function makeEntry(): DesignGeometryEntry {
 describe('SelectedBin', () => {
   it('renders the real design mesh when the linked geometry is resolved', () => {
     const entry = makeEntry();
-    const geometries = new Map<DesignId, DesignGeometryEntry>([[D1, entry]]);
-    const binData = makeBinData({ bin: createTestBin({ linkedDesignId: D1 }) });
+    const geometries = new Map<BinId, DesignGeometryEntry>([[B1, entry]]);
+    const binData = makeBinData({ bin: createTestBin({ id: B1, linkedDesignId: D1 }) });
 
     const { queryByTestId } = render(
       <SelectedBin binData={binData} designGeometries={geometries} gridUnitMm={42} />

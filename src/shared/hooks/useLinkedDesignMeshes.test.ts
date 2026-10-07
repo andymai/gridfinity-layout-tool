@@ -1,12 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { createTestBin } from '@/test/testUtils';
-import { designId } from '@/core/types';
+import { createTestBin, resetAllStores } from '@/test/testUtils';
+import { binId, designId, gridUnits, mm } from '@/core/types';
+import type { Bin } from '@/core/types';
+import { createDefaultLayout } from '@/core/constants';
+import { useLayoutStore } from '@/core/store/layout';
 import { ok, err } from '@/core/result';
 import type { StorageError } from '@/core/result';
 import {
   useLinkedDesignMeshes,
   clearLinkedDesignMeshCache,
+  MAX_CACHE_ENTRIES,
 } from '@/shared/hooks/useLinkedDesignMeshes';
 import {
   loadDesign,
@@ -35,9 +39,15 @@ vi.mock('@/shared/generation/meshAsset', () => ({
   decodeMeshData: vi.fn(),
 }));
 
+const OWN_OVERHANG_SUFFIX = '-own-overhang';
+
 vi.mock('@/shared/generation/meshPersistence', () => ({
-  // Kernel-sensitive so the per-kernel namespacing is observable.
-  binMeshCacheKey: vi.fn((_p: unknown, kernel: KernelName) => `persist-key-${kernel}`),
+  // Kernel-sensitive so the per-kernel namespacing is observable, and
+  // overhang-sensitive so a params variant without one is too.
+  binMeshCacheKey: vi.fn(
+    (p: BinParams, kernel: KernelName) =>
+      `persist-key-${kernel}${p.overhang ? OWN_OVERHANG_SUFFIX : ''}`
+  ),
   itemMeshCacheKey: vi.fn((_i: unknown, kernel: KernelName) => `item-key-${kernel}`),
   loadPersistedBinMesh: vi.fn(async () => null),
   savePersistedBinMesh: vi.fn(),
@@ -57,6 +67,7 @@ const mockAcquire = vi.mocked(bridgeManager.acquire);
 const mockRelease = vi.mocked(bridgeManager.release);
 
 const D1 = designId('design-1');
+const B1 = binId('bin-1');
 
 function makeMesh(): MeshData {
   return {
@@ -80,11 +91,17 @@ function makeRegistryRef(overrides: Partial<CustomBinRef> = {}): CustomBinRef {
   };
 }
 
-function makeBinDesign(): SavedDesign {
+function makeBinDesign(params: Partial<BinParams> = {}): SavedDesign {
   return {
     id: D1,
     name: 'Test Design',
-    params: { width: 2, depth: 1, label: { enabled: false }, base: {} } as unknown as BinParams,
+    params: {
+      width: 2,
+      depth: 1,
+      label: { enabled: false },
+      base: {},
+      ...params,
+    } as unknown as BinParams,
     thumbnail: null,
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
@@ -185,13 +202,13 @@ describe('useLinkedDesignMeshes', () => {
     mockLoadDesign.mockResolvedValue(ok(makeBinDesign()));
     mockLoadPersistedBinMesh.mockResolvedValue(mesh);
 
-    const bins = [createTestBin({ linkedDesignId: D1 })];
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
     const { result } = renderHook(() => useLinkedDesignMeshes(bins));
 
     await waitFor(() => {
-      expect(result.current.get(D1)).toBeDefined();
+      expect(result.current.get(B1)).toBeDefined();
     });
-    const entry = result.current.get(D1);
+    const entry = result.current.get(B1);
     expect(entry?.mesh).toBe(mesh);
     expect(entry?.width).toBe(2);
     expect(entry?.depth).toBe(1);
@@ -208,15 +225,15 @@ describe('useLinkedDesignMeshes', () => {
       generateImmediate: vi.fn(async () => ({ mesh })),
     } as unknown as Awaited<ReturnType<typeof bridgeManager.acquire>>);
 
-    const bins = [createTestBin({ linkedDesignId: D1 })];
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
     const { result } = renderHook(() => useLinkedDesignMeshes(bins));
 
     await waitFor(() => {
       // No plates present, so the mesh passes through untouched rather than
       // being re-wrapped by the strip.
-      expect(result.current.get(D1)?.mesh).toBe(mesh);
+      expect(result.current.get(B1)?.mesh).toBe(mesh);
     });
-    expect(result.current.get(D1)?.bodyBaseMm).toBe(BODY_BASE_MM);
+    expect(result.current.get(B1)?.bodyBaseMm).toBe(BODY_BASE_MM);
     expect(mockSavePersistedBinMesh).toHaveBeenCalledWith('persist-key-occt-wasm', mesh);
     expect(mockRelease).toHaveBeenCalledTimes(1);
   });
@@ -233,11 +250,11 @@ describe('useLinkedDesignMeshes', () => {
       generateImmediate: vi.fn(async () => ({ mesh })),
     } as unknown as Awaited<ReturnType<typeof bridgeManager.acquire>>);
 
-    const bins = [createTestBin({ linkedDesignId: D1 })];
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
     const { result } = renderHook(() => useLinkedDesignMeshes(bins));
 
     await waitFor(() => {
-      expect(result.current.get(D1)?.mesh).toBe(mesh);
+      expect(result.current.get(B1)?.mesh).toBe(mesh);
     });
     expect(mockLoadPersistedBinMesh).toHaveBeenCalledWith('persist-key-brepkit');
     expect(mockSavePersistedBinMesh).toHaveBeenCalledWith('persist-key-brepkit', mesh);
@@ -255,16 +272,16 @@ describe('useLinkedDesignMeshes', () => {
       generateImmediate: vi.fn(async () => ({ mesh })),
     } as unknown as Awaited<ReturnType<typeof bridgeManager.acquire>>);
 
-    const bins = [createTestBin({ linkedDesignId: D1 })];
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
     const { result } = renderHook(() => useLinkedDesignMeshes(bins));
 
     await waitFor(() => {
-      expect(result.current.get(D1)).toBeDefined();
+      expect(result.current.get(B1)).toBeDefined();
     });
 
     const persisted = mockSavePersistedBinMesh.mock.calls[0][1];
     expect(persisted).not.toHaveProperty('labelPlates');
-    expect(result.current.get(D1)?.mesh).not.toHaveProperty('labelPlates');
+    expect(result.current.get(B1)?.mesh).not.toHaveProperty('labelPlates');
   });
 
   it('generates an assembly through the item bridge and persists under the item key', async () => {
@@ -276,18 +293,18 @@ describe('useLinkedDesignMeshes', () => {
       generateItemImmediate,
     } as unknown as Awaited<ReturnType<typeof bridgeManager.acquire>>);
 
-    const bins = [createTestBin({ linkedDesignId: D1 })];
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
     const { result } = renderHook(() => useLinkedDesignMeshes(bins));
 
     await waitFor(() => {
-      expect(result.current.get(D1)?.mesh).toBe(mesh);
+      expect(result.current.get(B1)?.mesh).toBe(mesh);
     });
     expect(generateItemImmediate).toHaveBeenCalledWith(
       expect.objectContaining({ structure: expect.objectContaining({ kind: 'assembly' }) })
     );
     expect(mockLoadPersistedBinMesh).toHaveBeenCalledWith('item-key-occt-wasm');
     expect(mockSavePersistedBinMesh).toHaveBeenCalledWith('item-key-occt-wasm', mesh);
-    expect(result.current.get(D1)).toMatchObject({ width: 2, depth: 1 });
+    expect(result.current.get(B1)).toMatchObject({ width: 2, depth: 1 });
     expect(mockRelease).toHaveBeenCalledTimes(1);
   });
 
@@ -297,11 +314,11 @@ describe('useLinkedDesignMeshes', () => {
     mockLoadDesign.mockResolvedValue(ok(makeAssemblyDesign()));
     mockLoadPersistedBinMesh.mockResolvedValue(mesh);
 
-    const bins = [createTestBin({ linkedDesignId: D1 })];
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
     const { result } = renderHook(() => useLinkedDesignMeshes(bins));
 
     await waitFor(() => {
-      expect(result.current.get(D1)?.mesh).toBe(mesh);
+      expect(result.current.get(B1)?.mesh).toBe(mesh);
     });
     expect(mockAcquire).not.toHaveBeenCalled();
   });
@@ -316,13 +333,13 @@ describe('useLinkedDesignMeshes', () => {
       })
     );
 
-    const bins = [createTestBin({ linkedDesignId: D1 })];
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
     const { result } = renderHook(() => useLinkedDesignMeshes(bins));
 
     await waitFor(() => {
-      expect(result.current.get(D1)).toBeDefined();
+      expect(result.current.get(B1)).toBeDefined();
     });
-    const entry = result.current.get(D1);
+    const entry = result.current.get(B1);
     // Stored frame has bbox min at origin; preview frame is XY-centered
     expect(Array.from(entry?.mesh.vertices ?? [])).toEqual([-20, -20, 0, 20, 20, 28]);
     expect(entry?.width).toBe(1);
@@ -335,7 +352,7 @@ describe('useLinkedDesignMeshes', () => {
       err({ type: 'not_found', message: 'gone' } as unknown as StorageError)
     );
 
-    const bins = [createTestBin({ linkedDesignId: D1 })];
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
     const { result, rerender } = renderHook(() => useLinkedDesignMeshes(bins));
 
     await waitFor(() => {
@@ -356,7 +373,7 @@ describe('useLinkedDesignMeshes', () => {
       }),
     } as unknown as Awaited<ReturnType<typeof bridgeManager.acquire>>);
 
-    const bins = [createTestBin({ linkedDesignId: D1 })];
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
     const { result } = renderHook(() => useLinkedDesignMeshes(bins));
 
     await waitFor(() => {
@@ -365,21 +382,217 @@ describe('useLinkedDesignMeshes', () => {
     expect(result.current.size).toBe(0);
   });
 
+  describe('a placement whose overhang replaces the design own', () => {
+    const MARGIN_BIN = binId('bin-margin');
+    const PLAIN_BIN = binId('bin-plain');
+    const ownOverhangMesh = makeMesh();
+    const bareMesh = makeMesh();
+
+    function placeInPaddedDrawer(): Bin[] {
+      const base = createDefaultLayout();
+      useLayoutStore.setState({
+        layout: {
+          ...base,
+          drawer: { ...base.drawer, width: gridUnits(5), depth: gridUnits(4) },
+          baseplateParams: {
+            magnetHoles: false,
+            magnetDiameter: mm(6),
+            magnetDepth: mm(2),
+            paddingLeft: mm(4.5),
+            paddingRight: mm(0),
+            paddingFront: mm(0),
+            paddingBack: mm(0),
+          },
+        },
+      });
+      return [
+        createTestBin({ id: MARGIN_BIN, linkedDesignId: D1, extendToMargin: true }),
+        createTestBin({ id: PLAIN_BIN, linkedDesignId: D1, x: gridUnits(2), y: gridUnits(1) }),
+      ];
+    }
+
+    beforeEach(() => {
+      mockLoadPersistedBinMesh.mockImplementation(async (key: string) =>
+        key.endsWith(OWN_OVERHANG_SUFFIX) ? ownOverhangMesh : bareMesh
+      );
+    });
+
+    afterEach(() => {
+      resetAllStores();
+    });
+
+    it('draws the extended placement without the design own overhang, the rest with it', async () => {
+      mockUseCustomBins.mockReturnValue([
+        makeRegistryRef({ overhangMm: { left: 3, right: 0, front: 0, back: 0 } }),
+      ]);
+      mockLoadDesign.mockResolvedValue(
+        ok(
+          makeBinDesign({
+            overhang: { left: 3, right: 0, front: 0, back: 0, enabled: true },
+          })
+        )
+      );
+
+      const bins = placeInPaddedDrawer();
+      const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+      await waitFor(() => {
+        expect(result.current.get(MARGIN_BIN)?.mesh).toBe(bareMesh);
+        expect(result.current.get(PLAIN_BIN)?.mesh).toBe(ownOverhangMesh);
+      });
+      expect(result.current.get(MARGIN_BIN)?.sig).not.toBe(result.current.get(PLAIN_BIN)?.sig);
+      expect(result.current.get(MARGIN_BIN)?.bodyBaseMm).toBe(BODY_BASE_MM);
+    });
+
+    it('keeps one shared mesh for an assembly, which never extends into the margin', async () => {
+      mockUseCustomBins.mockReturnValue([
+        makeRegistryRef({
+          kind: 'assembly',
+          overhangMm: { left: 3, right: 0, front: 0, back: 0 },
+        }),
+      ]);
+      mockLoadDesign.mockResolvedValue(ok(makeAssemblyDesign()));
+      mockAcquire.mockResolvedValue({
+        generateItemImmediate: vi.fn(async () => ({ mesh: makeMesh() })),
+      } as unknown as Awaited<ReturnType<typeof bridgeManager.acquire>>);
+
+      const bins = placeInPaddedDrawer();
+      const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+      await waitFor(() => {
+        expect(result.current.get(MARGIN_BIN)).toBeDefined();
+      });
+      expect(result.current.get(MARGIN_BIN)).toBe(result.current.get(PLAIN_BIN));
+      expect(mockLoadDesign).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps one shared mesh when the design has no overhang of its own', async () => {
+      mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+      mockLoadDesign.mockResolvedValue(ok(makeBinDesign()));
+
+      const bins = placeInPaddedDrawer();
+      const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+      await waitFor(() => {
+        expect(result.current.get(MARGIN_BIN)).toBeDefined();
+      });
+      expect(result.current.get(MARGIN_BIN)).toBe(result.current.get(PLAIN_BIN));
+      expect(mockLoadDesign).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it('reuses cached meshes across mounts without reloading', async () => {
     const mesh = makeMesh();
     mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
     mockLoadDesign.mockResolvedValue(ok(makeBinDesign()));
     mockLoadPersistedBinMesh.mockResolvedValue(mesh);
 
-    const bins = [createTestBin({ linkedDesignId: D1 })];
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
     const first = renderHook(() => useLinkedDesignMeshes(bins));
     await waitFor(() => {
-      expect(first.result.current.get(D1)).toBeDefined();
+      expect(first.result.current.get(B1)).toBeDefined();
     });
     first.unmount();
 
     const second = renderHook(() => useLinkedDesignMeshes(bins));
-    expect(second.result.current.get(D1)?.mesh).toBe(mesh);
+    expect(second.result.current.get(B1)?.mesh).toBe(mesh);
     expect(mockLoadDesign).toHaveBeenCalledTimes(1);
+  });
+
+  describe('with more meshes in use than the cache bound', () => {
+    function manyDesigns(from: number, count: number): { refs: CustomBinRef[]; bins: Bin[] } {
+      const refs: CustomBinRef[] = [];
+      const bins: Bin[] = [];
+      for (let i = from; i < from + count; i++) {
+        const id = designId(`design-${i}`);
+        refs.push(makeRegistryRef({ id }));
+        bins.push(createTestBin({ id: binId(`bin-${i}`), linkedDesignId: id }));
+      }
+      return { refs, bins };
+    }
+
+    beforeEach(() => {
+      mockLoadDesign.mockImplementation(async (id) => ok({ ...makeBinDesign(), id }));
+      mockLoadPersistedBinMesh.mockResolvedValue(makeMesh());
+    });
+
+    it('keeps every mesh a mounted preview is showing', async () => {
+      const { refs, bins } = manyDesigns(0, MAX_CACHE_ENTRIES + 1);
+      mockUseCustomBins.mockReturnValue(refs);
+
+      const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+      await waitFor(() => {
+        expect(mockLoadDesign).toHaveBeenCalledTimes(MAX_CACHE_ENTRIES + 1);
+      });
+      await waitFor(() => {
+        expect(result.current.size).toBe(MAX_CACHE_ENTRIES + 1);
+      });
+    });
+
+    const OVER = MAX_CACHE_ENTRIES + 8;
+    const flushMicrotasks = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    it('trims back to the bound once a preview stops showing its meshes', async () => {
+      const { refs, bins } = manyDesigns(0, OVER);
+      mockUseCustomBins.mockReturnValue(refs);
+
+      const first = renderHook(() => useLinkedDesignMeshes(bins));
+      await waitFor(() => {
+        expect(first.result.current.size).toBe(OVER);
+      });
+      first.unmount();
+      await flushMicrotasks();
+
+      // Only the 8 least recently used were trimmed, so only they reload.
+      const second = renderHook(() => useLinkedDesignMeshes(bins));
+      await waitFor(() => {
+        expect(second.result.current.size).toBe(OVER);
+      });
+      expect(mockLoadDesign).toHaveBeenCalledTimes(OVER + 8);
+    });
+
+    it('keeps the meshes a requests update still shows, without reloading them', async () => {
+      const { refs, bins } = manyDesigns(0, OVER);
+      mockUseCustomBins.mockReturnValue(refs);
+
+      const { result, rerender } = renderHook(
+        ({ bins }: { bins: Bin[] }) => useLinkedDesignMeshes(bins),
+        { initialProps: { bins } }
+      );
+      await waitFor(() => {
+        expect(result.current.size).toBe(OVER);
+      });
+
+      // A fresh array re-runs the loading effect: every key is unpinned and
+      // pinned again in one commit.
+      rerender({ bins: [...bins] });
+      await flushMicrotasks();
+
+      expect(result.current.size).toBe(OVER);
+      expect(mockLoadDesign).toHaveBeenCalledTimes(OVER);
+    });
+
+    it('reloads a mesh evicted while nothing was showing it', async () => {
+      const sets = [0, 1, 2].map((i) => manyDesigns(i * MAX_CACHE_ENTRIES, MAX_CACHE_ENTRIES));
+      mockUseCustomBins.mockReturnValue(sets.flatMap((s) => s.refs));
+
+      const { result, rerender } = renderHook(
+        ({ bins }: { bins: Bin[] }) => useLinkedDesignMeshes(bins),
+        { initialProps: { bins: sets[0].bins } }
+      );
+      // Two more full sets leave more unused entries than the bound holds, so
+      // the oldest, the first set, is evicted.
+      for (const set of [sets[1], sets[2], sets[0]]) {
+        await waitFor(() => {
+          expect(result.current.size).toBe(MAX_CACHE_ENTRIES);
+        });
+        rerender({ bins: set.bins });
+      }
+      await waitFor(() => {
+        expect(result.current.size).toBe(MAX_CACHE_ENTRIES);
+      });
+      expect(mockLoadDesign).toHaveBeenCalledTimes(MAX_CACHE_ENTRIES * 4);
+    });
   });
 });

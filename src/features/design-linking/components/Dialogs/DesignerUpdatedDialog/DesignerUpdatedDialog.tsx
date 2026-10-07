@@ -25,7 +25,7 @@ export function DesignerUpdatedDialog() {
   const handleGoToDesigner = useCallback(() => {
     if (!pendingDesignerUpdated) return;
     hideDesignerUpdatedDialog();
-    editLinkedDesign(pendingDesignerUpdated.designId);
+    editLinkedDesign(pendingDesignerUpdated.designId, pendingDesignerUpdated.binId);
   }, [pendingDesignerUpdated, hideDesignerUpdatedDialog, editLinkedDesign]);
 
   return (

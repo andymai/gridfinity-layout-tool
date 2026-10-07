@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { Group } from 'three';
-import type { DesignId, LayerId } from '@/core/types';
+import type { BinId, LayerId } from '@/core/types';
 import { MergedBinMeshes } from '../MergedBinMeshes';
 import {
   LinkedBinMesh,
@@ -26,8 +26,8 @@ interface ExplodedLayerGroupProps {
   layerHeightMm: number;
   nonSelectedBins: BinRenderData[];
   selectedBins: BinRenderData[];
-  /** Resolved real geometries for linked designs, keyed by design id. */
-  designGeometries: Map<DesignId, DesignGeometryEntry>;
+  /** Resolved real geometries for linked bins, keyed by bin id. */
+  designGeometries: Map<BinId, DesignGeometryEntry>;
   gridUnitMm: number;
   explodedZOffset: number;
   isActive: boolean;

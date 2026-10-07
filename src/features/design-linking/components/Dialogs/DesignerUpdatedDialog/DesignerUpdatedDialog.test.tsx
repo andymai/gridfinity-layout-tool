@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DesignerUpdatedDialog } from './DesignerUpdatedDialog';
 import { useLinkingStore } from '../../../store';
-import { designId } from '@/core/types';
+import { binId, designId } from '@/core/types';
 
 // Mock useBinLinking
 const mockEditLinkedDesign = vi.fn();
@@ -30,6 +30,7 @@ describe('DesignerUpdatedDialog', () => {
   it('renders dialog when pendingDesignerUpdated is set', () => {
     useLinkingStore.setState({
       pendingDesignerUpdated: {
+        binId: binId('bin-1'),
         designId: designId('design-1'),
         designName: 'My Custom Bin',
       },
@@ -43,6 +44,7 @@ describe('DesignerUpdatedDialog', () => {
   it('hides dialog on dismiss', () => {
     useLinkingStore.setState({
       pendingDesignerUpdated: {
+        binId: binId('bin-1'),
         designId: designId('design-1'),
         designName: 'My Custom Bin',
       },
@@ -54,9 +56,10 @@ describe('DesignerUpdatedDialog', () => {
     expect(useLinkingStore.getState().pendingDesignerUpdated).toBeNull();
   });
 
-  it('navigates to designer on "Edit Design" click', () => {
+  it('navigates to designer on "Edit Design" click, naming the resized bin', () => {
     useLinkingStore.setState({
       pendingDesignerUpdated: {
+        binId: binId('bin-1'),
         designId: designId('design-1'),
         designName: 'My Custom Bin',
       },
@@ -65,13 +68,14 @@ describe('DesignerUpdatedDialog', () => {
     render(<DesignerUpdatedDialog />);
     fireEvent.click(screen.getByText('Edit Design'));
 
-    expect(mockEditLinkedDesign).toHaveBeenCalledWith('design-1');
+    expect(mockEditLinkedDesign).toHaveBeenCalledWith('design-1', 'bin-1');
     expect(useLinkingStore.getState().pendingDesignerUpdated).toBeNull();
   });
 
   it('includes design name in description', () => {
     useLinkingStore.setState({
       pendingDesignerUpdated: {
+        binId: binId('bin-1'),
         designId: designId('design-1'),
         designName: 'Screwdriver Holder',
       },

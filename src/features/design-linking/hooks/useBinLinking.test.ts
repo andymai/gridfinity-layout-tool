@@ -299,6 +299,22 @@ describe('useBinLinking', () => {
         '/designer?id=design%20with%20spaces'
       );
     });
+
+    it('names the layout bin it was opened from', () => {
+      setupStores([]);
+
+      const { result } = renderHook(() => useBinLinking());
+
+      act(() => {
+        result.current.editLinkedDesign(designId('design-1'), binId('bin 7'));
+      });
+
+      expect(pushStateSpy).toHaveBeenCalledWith(
+        { designId: 'design-1' },
+        '',
+        '/designer?id=design-1&bin=bin%207'
+      );
+    });
   });
 
   describe('showCreateDesignDialog', () => {

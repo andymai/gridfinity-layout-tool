@@ -22,7 +22,7 @@ export function BinContextMenuDesignSection({ bin, onClose }: BinContextMenuDesi
 
   const handleEditDesign = () => {
     if (linkedDesign) {
-      editLinkedDesign(linkedDesign.id);
+      editLinkedDesign(linkedDesign.id, bin.id);
     }
     onClose();
   };
