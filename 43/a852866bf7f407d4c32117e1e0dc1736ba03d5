@@ -1,0 +1,45 @@
+src/features/generation/worker/generators/cutoutFit.ts
+  s_900382acfc8cb3::t_728bf67c54d492 1-56
+src/features/generation/worker/generators/nestedCutoutOpenings.ts
+  s_900382acfc8cb3::t_d1c057ca15faab 236,246-250
+  s_900382acfc8cb3::t_16caf73db00d70 30,32-41,48-51,100-106,114-116,136,167-175,191,202,226-235,237-245,251-254,256,278,280,285-286,308-310,312-314,320-323,326-340,355-356,359-361
+src/features/generation/worker/generators/cutoutFit.test.ts
+  s_900382acfc8cb3::t_079c0370de0cf0 1-37
+src/features/generation/worker/generators/nestedCutoutOpenings.test.ts
+  s_900382acfc8cb3::t_6418598764801b 289
+  s_900382acfc8cb3::t_9a465aaf8cc966 4,9
+  s_900382acfc8cb3::t_ad1baa74e156c8 1-3,8,10-12,15-41
+  s_900382acfc8cb3::t_2e226763e588e1 263-288,290-327
+  s_900382acfc8cb3::t_3c17a567894a9e 42
+src/features/bin-designer/README.md
+  s_900382acfc8cb3::t_da54b39a5bfb6a 333-337
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_900382acfc8cb3::t_beb8d8fba2fda3 57
+  s_900382acfc8cb3::t_be713151109dfe 93
+src/shared/utils/outlineSegments.test.ts
+  s_900382acfc8cb3::t_9c64922658b5d0 138,140-143,145-147
+  s_900382acfc8cb3::t_af271588214386 83-137,139,148-161,163-182
+  s_900382acfc8cb3::t_c96d6c6f58e904 2-9
+  s_900382acfc8cb3::t_38a957de7b4a21 144
+  s_900382acfc8cb3::t_ebbfe542708935 162
+src/shared/utils/outlineSegments.ts
+  s_900382acfc8cb3::t_20b5fba0330fdc 390-419,424-425,427-431
+  s_900382acfc8cb3::t_3e20c4a26c6a2e 4-5
+  s_900382acfc8cb3::t_1bb6c4d19c0636 420-423,426
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "43a852866bf7f407d4c32117e1e0dc1736ba03d5",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
