@@ -5,6 +5,8 @@
  * the worker's caches key on the hash.
  */
 
+import { err, isErr, ok, storageMeshMissing } from '@/core/result';
+import type { Result, StorageMeshMissingError } from '@/core/result';
 import { isMeshAssetRef } from '@/shared/generation/meshAsset';
 import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import { meshAssetFile } from '@/shared/generation/meshRefs';
@@ -72,19 +74,21 @@ type Files = Map<string, Uint8Array<ArrayBuffer>>;
 
 const unchanged = (message: WorkerMessage): WorkerMessage => message;
 
-/** The entry to send, or null when it is a ref whose file this device lacks. */
-async function deliverable(entry: MeshAssetEntry, files: Files): Promise<MeshAssetEntry | null> {
+async function deliverable(
+  entry: MeshAssetEntry,
+  files: Files
+): Promise<Result<MeshAssetEntry, StorageMeshMissingError>> {
   if (isMeshAssetRef(entry)) {
     const bytes = await getMeshFile(entry.hash);
-    if (!bytes) return null;
+    if (!bytes) return err(storageMeshMissing(entry.hash));
     files.set(entry.hash, bytes);
-    return entry;
+    return ok(entry);
   }
   // An asset the file format cannot hold goes inline, as it is stored.
   const file = await meshAssetFile(entry);
-  if (!file) return entry;
+  if (!file) return ok(entry);
   files.set(file.ref.hash, file.bytes);
-  return file.ref;
+  return ok(file.ref);
 }
 
 async function prepareParams(
@@ -98,9 +102,9 @@ async function prepareParams(
   let changed = false;
   for (const [id, entry] of Object.entries(assets)) {
     const sent = await deliverable(entry, files);
-    if (sent === null) pendingIds.add(id);
-    else next[id] = sent;
-    if (sent !== entry) changed = true;
+    if (isErr(sent)) pendingIds.add(id);
+    else next[id] = sent.value;
+    if (isErr(sent) || sent.value !== entry) changed = true;
   }
   if (!changed) return { params, pending: false };
   const cutouts =
@@ -112,10 +116,12 @@ async function prepareParams(
 
 /**
  * Swap a request's inline assets for refs and gather the files those refs
- * name. Throws {@link MeshUnavailableError} for an imported STL design whose
- * file is missing, since the mesh is all there is to build.
+ * name. Fails for an imported STL design whose file is missing, since the mesh
+ * is all there is to build.
  */
-export async function prepareMeshes(message: WorkerMessage): Promise<PreparedMeshes> {
+export async function prepareMeshes(
+  message: WorkerMessage
+): Promise<Result<PreparedMeshes, StorageMeshMissingError>> {
   const files: Files = new Map();
   if (carriesBinParams(message)) {
     const prepared = await prepareParams(message.payload.params, files);
@@ -126,14 +132,15 @@ export async function prepareMeshes(message: WorkerMessage): Promise<PreparedMes
             carriesBinParams(m)
               ? ({ ...m, payload: { ...m.payload, params: prepared.params } } as WorkerMessage)
               : m;
-    return { files, pending: prepared.pending, apply };
+    return ok({ files, pending: prepared.pending, apply });
   }
   if (carriesItem(message)) {
     const { item } = message.payload;
     const structure = item.structure;
-    if (structure.kind !== 'importedMesh') return { files, pending: false, apply: unchanged };
-    const sent = await deliverable(structure.asset, files);
-    if (sent === null) throw new MeshUnavailableError();
+    if (structure.kind !== 'importedMesh') return ok({ files, pending: false, apply: unchanged });
+    const delivered = await deliverable(structure.asset, files);
+    if (isErr(delivered)) return delivered;
+    const sent = delivered.value;
     const sentItem: GridfinityItem = { ...item, structure: { ...structure, asset: sent } };
     const apply =
       sent === structure.asset
@@ -142,9 +149,9 @@ export async function prepareMeshes(message: WorkerMessage): Promise<PreparedMes
             carriesItem(m)
               ? ({ ...m, payload: { ...m.payload, item: sentItem } } as WorkerMessage)
               : m;
-    return { files, pending: false, apply };
+    return ok({ files, pending: false, apply });
   }
-  return { files, pending: false, apply: unchanged };
+  return ok({ files, pending: false, apply: unchanged });
 }
 
 /** Which files one worker holds, so each is sent once and the total stays bounded. */

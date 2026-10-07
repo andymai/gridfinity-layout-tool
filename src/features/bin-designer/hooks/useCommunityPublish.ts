@@ -98,16 +98,13 @@ export async function openCommunityPublish(draft: CommunityPublishDraft | null):
   const currentId = state.currentDesignId;
   if (currentId === null) return;
 
-  let params: BinParams;
-  try {
-    // The community store takes inline meshes only.
-    params = await inlineParamsMeshes(state.params);
-  } catch {
-    useToastStore
-      .getState()
-      .addToast(getStaticTranslation('community.publish.error.generic'), 'error');
+  // The community store takes inline meshes only.
+  const inline = await inlineParamsMeshes(state.params);
+  if (!isOk(inline)) {
+    useToastStore.getState().addToast(getStaticTranslation('toast.meshFileMissing'), 'error');
     return;
   }
+  const params = inline.value;
 
   let publishedId: string | null = null;
   let lineage = null;

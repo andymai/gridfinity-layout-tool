@@ -8,7 +8,7 @@
 
 import { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import { isOk } from '@/core/result';
+import { isErr, isOk } from '@/core/result';
 import {
   listDesigns,
   deleteDesign,
@@ -135,18 +135,17 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const handleDownloadJSON = useCallback(
     (design: SavedDesign) => {
       if (!design.params) return;
-      void downloadDesignAsFile(design.name, design.params).then(
-        () => {
+      void downloadDesignAsFile(design.name, design.params).then((result) => {
+        if (isOk(result)) {
           addToast({
             message: t('binDesigner.downloadDesignJson'),
             type: 'success',
             duration: 2000,
           });
-        },
-        () => {
-          addToast(t('designLinking.toast.exportFailed'), 'error');
+        } else {
+          addToast(t('toast.meshFileMissing'), 'error');
         }
-      );
+      });
     },
     [addToast, t]
   );
@@ -481,9 +480,9 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     const downloads = targets.flatMap((d) =>
       d.params ? [downloadDesignAsFile(d.name, d.params)] : []
     );
-    void Promise.allSettled(downloads).then((results) => {
-      if (results.some((r) => r.status === 'rejected')) {
-        addToast(t('designLinking.toast.exportFailed'), 'error');
+    void Promise.all(downloads).then((results) => {
+      if (results.some(isErr)) {
+        addToast(t('toast.meshFileMissing'), 'error');
       } else if (targets.length > 0) {
         addToast({
           message: t('binDesigner.bulk.toastExported', { count: targets.length }),

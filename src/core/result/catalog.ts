@@ -89,6 +89,14 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorCatalogEntry> = {
     severity: 'error',
   },
 
+  STORAGE_MESH_MISSING: {
+    code: 'STORAGE_MESH_MISSING',
+    defaultMessage: 'A mesh file a design names is not on this device',
+    userMessage: 'An imported STL used here is missing from this device',
+    retryable: false,
+    severity: 'error',
+  },
+
   // Validation Errors
 
   VALIDATION_OUT_OF_BOUNDS: {

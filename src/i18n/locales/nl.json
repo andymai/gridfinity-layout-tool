@@ -4450,6 +4450,7 @@
   "toast.stlImport.notManifold": "Mesh is niet waterdicht — repareer deze in je slicer en exporteer opnieuw",
   "toast.stlImport.parseFailed": "Kon het STL-bestand niet lezen",
   "toast.stlImport.success": "\"{name}\" geplaatst als 3D-afdruk",
+  "toast.meshFileMissing": "Een hier gebruikte geïmporteerde STL ontbreekt op dit apparaat, dus delen of exporteren is niet mogelijk.",
   "toast.svgImport.fileTooLarge": "SVG-bestand is te groot (max 5 MB)",
   "toast.svgImport.noShapes": "Geen ondersteunde vormen gevonden in SVG",
   "toast.svgImport.parseFailed": "Kan het SVG-bestand niet lezen",

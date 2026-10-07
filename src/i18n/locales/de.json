@@ -4450,6 +4450,7 @@
   "toast.stlImport.notManifold": "Mesh ist nicht wasserdicht — im Slicer reparieren und neu exportieren",
   "toast.stlImport.parseFailed": "STL-Datei konnte nicht gelesen werden",
   "toast.stlImport.success": "\"{name}\" als 3D-Abdruck platziert",
+  "toast.meshFileMissing": "Ein hier verwendetes importiertes STL fehlt auf diesem Gerät, daher ist Teilen oder Exportieren nicht möglich.",
   "toast.svgImport.fileTooLarge": "SVG-Datei ist zu groß (max. 5 MB)",
   "toast.svgImport.noShapes": "Keine unterstützten Formen in SVG gefunden",
   "toast.svgImport.parseFailed": "SVG-Datei konnte nicht gelesen werden",

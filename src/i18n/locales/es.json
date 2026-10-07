@@ -4450,6 +4450,7 @@
   "toast.stlImport.notManifold": "La malla no es estanca: repárala en tu slicer y vuelve a exportarla",
   "toast.stlImport.parseFailed": "No se pudo leer el archivo STL",
   "toast.stlImport.success": "\"{name}\" colocado como huella 3D",
+  "toast.meshFileMissing": "Falta en este dispositivo un STL importado que se usa aquí, así que no se puede compartir ni exportar.",
   "toast.svgImport.fileTooLarge": "El archivo SVG es demasiado grande (máx. 5 MB)",
   "toast.svgImport.noShapes": "No se encontraron formas compatibles en el SVG",
   "toast.svgImport.parseFailed": "No se pudo leer el archivo SVG",

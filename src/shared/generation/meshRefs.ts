@@ -8,7 +8,8 @@
  * design produced.
  */
 
-import { isErr } from '@/core/result';
+import { err, isErr, ok, storageMeshMissing } from '@/core/result';
+import type { Result, StorageMeshMissingError } from '@/core/result';
 import type { BinParams } from '@/shared/types/bin';
 import { bytesToBase64, isMeshAssetRef } from './meshAsset';
 import type { MeshAsset, MeshAssetEntry, MeshAssetRef } from './meshAsset';
@@ -16,16 +17,6 @@ import { encodeMeshFile, parseMeshFile } from './meshFile';
 import { hasMeshOutlines, setMeshOutlines } from './meshOutlines';
 import { getMeshFile, putMeshFile } from './meshStore';
 import { sha256Hex } from './sha256';
-
-export class MeshFileMissingError extends Error {
-  readonly hash: string;
-
-  constructor(hash: string) {
-    super(`Mesh file ${hash} is not on this device`);
-    this.name = 'MeshFileMissingError';
-    this.hash = hash;
-  }
-}
 
 /** A design, version body or payload: bin params, or an item structure. */
 export interface MeshHolder {
@@ -167,32 +158,42 @@ export function storeHolderMeshes<T extends MeshHolder>(holder: T): Promise<T> {
   );
 }
 
-/**
- * Swap every ref in `holder` for its inline asset. Throws
- * {@link MeshFileMissingError} when a ref's file is not on this device: a
- * payload missing a mesh must not go out in place of the one that has it.
- */
-export function inlineHolderMeshes<T extends MeshHolder>(holder: T): Promise<T> {
-  return mapHolder(holder, async (entry) => {
-    if (!isMeshAssetRef(entry)) return entry;
-    const asset = await resolveMeshAsset(entry);
-    if (!asset) throw new MeshFileMissingError(entry.hash);
-    return asset;
-  });
-}
-
-/** {@link inlineHolderMeshes} for bare bin params. */
-export async function inlineParamsMeshes(params: BinParams): Promise<BinParams> {
-  return (await inlineHolderMeshes({ params })).params;
-}
-
-/** The hash of every ref `holder` holds. */
-export function holderMeshHashes(holder: MeshHolder): string[] {
+function holderRefs(holder: MeshHolder): MeshAssetRef[] {
   const entries = [
     ...Object.values(meshAssetsOf(holder.params) ?? {}),
     importedMeshAssetOf(holder.structure),
   ];
-  return entries.flatMap((e) => (isEntry(e) && isMeshAssetRef(e) ? [e.hash] : []));
+  return entries.filter((e): e is MeshAssetRef => isEntry(e) && isMeshAssetRef(e));
+}
+
+/**
+ * Swap every ref in `holder` for its inline asset. Fails when a ref's file is
+ * not on this device: a payload missing a mesh must not go out in place of the
+ * one that has it.
+ */
+export async function inlineHolderMeshes<T extends MeshHolder>(
+  holder: T
+): Promise<Result<T, StorageMeshMissingError>> {
+  const inline = new Map<MeshAssetEntry, MeshAsset>();
+  for (const ref of holderRefs(holder)) {
+    const asset = await resolveMeshAsset(ref);
+    if (!asset) return err(storageMeshMissing(ref.hash));
+    inline.set(ref, asset);
+  }
+  return ok(await mapHolder(holder, (entry) => Promise.resolve(inline.get(entry) ?? entry)));
+}
+
+/** {@link inlineHolderMeshes} for bare bin params. */
+export async function inlineParamsMeshes(
+  params: BinParams
+): Promise<Result<BinParams, StorageMeshMissingError>> {
+  const inline = await inlineHolderMeshes({ params });
+  return isErr(inline) ? inline : ok(inline.value.params);
+}
+
+/** The hash of every ref `holder` holds. */
+export function holderMeshHashes(holder: MeshHolder): string[] {
+  return holderRefs(holder).map((ref) => ref.hash);
 }
 
 const loadingOutlines = new Set<string>();

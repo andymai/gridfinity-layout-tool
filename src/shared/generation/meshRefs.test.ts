@@ -1,12 +1,11 @@
 import { createHash } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { unwrap } from '@/core/result';
+import { isErr, isOk, unwrap } from '@/core/result';
 import { encodeMeshData, isMeshAssetRef } from './meshAsset';
 import type { MeshAsset, MeshAssetRef } from './meshAsset';
 import { encodeMeshFile } from './meshFile';
 import { __clearMeshOutlinesForTests, meshAssetOutlines } from './meshOutlines';
 import {
-  MeshFileMissingError,
   holderMeshHashes,
   inlineHolderMeshes,
   loadMeshOutlines,
@@ -172,13 +171,16 @@ describe('inlineHolderMeshes', () => {
     const stored = await storeHolderMeshes(design);
     __resetMeshStoreForTests();
 
-    expect(JSON.stringify(await inlineHolderMeshes(stored))).toBe(JSON.stringify(design));
+    const inline = await inlineHolderMeshes(stored);
+    expect(isOk(inline) && JSON.stringify(inline.value)).toBe(JSON.stringify(design));
   });
 
-  it('throws rather than drop a mesh whose file is missing', async () => {
-    await expect(
-      inlineHolderMeshes({ params: { meshAssets: { a: missingRef() } } })
-    ).rejects.toBeInstanceOf(MeshFileMissingError);
+  it('fails, naming the file, rather than drop a mesh whose file is missing', async () => {
+    const inline = await inlineHolderMeshes({ params: { meshAssets: { a: missingRef() } } });
+    expect(isErr(inline) && inline.error).toMatchObject({
+      code: 'STORAGE_MESH_MISSING',
+      hash: MISSING_HASH,
+    });
   });
 });
 

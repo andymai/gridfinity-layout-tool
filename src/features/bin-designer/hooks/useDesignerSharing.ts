@@ -8,7 +8,7 @@
 import { useState, useCallback } from 'react';
 import { withoutLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { inlineParamsMeshes } from '@/shared/generation/meshRefs';
-import { ok, err, isOk, type Result } from '@/core/result';
+import { ok, err, isOk, getUserMessage, type Result } from '@/core/result';
 import { generateLayoutId } from '@/shared/utils/uuid';
 import type { BinParams } from '@/features/bin-designer/types';
 
@@ -56,15 +56,10 @@ export type ShareStatus = 'idle' | 'sharing' | 'loading' | 'success' | 'error';
 export async function createDesignerShare(
   params: BinParams
 ): Promise<Result<DesignerShareResponse, DesignerShareError>> {
-  let shared: BinParams;
-  try {
-    // Shares take inline meshes only.
-    shared = await inlineParamsMeshes(params);
-  } catch {
-    return err({
-      code: 'MESH_UNAVAILABLE',
-      message: 'A mesh this design uses is not on this device.',
-    });
+  // Shares take inline meshes only.
+  const shared = await inlineParamsMeshes(params);
+  if (!isOk(shared)) {
+    return err({ code: shared.error.code, message: getUserMessage(shared.error) });
   }
   try {
     const shareId = generateLayoutId();
@@ -76,7 +71,7 @@ export async function createDesignerShare(
         type: 'designer',
         version: 1,
         // A share is opened outside this layout, so it carries standard feet.
-        params: withoutLowProfileBase(shared),
+        params: withoutLowProfileBase(shared.value),
         layoutId: shareId,
         permission: 'view',
       }),

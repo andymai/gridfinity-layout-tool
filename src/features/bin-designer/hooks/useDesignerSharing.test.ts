@@ -94,7 +94,7 @@ describe('createDesignerShare', () => {
       meshAssets: { m1: missing },
     });
 
-    expect(isErr(result) && result.error.code).toBe('MESH_UNAVAILABLE');
+    expect(isErr(result) && result.error.code).toBe('STORAGE_MESH_MISSING');
     expect(mockFetch).not.toHaveBeenCalled();
   });
 

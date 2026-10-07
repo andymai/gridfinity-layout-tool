@@ -21,7 +21,10 @@ import { computeBaseplateTimeoutMs, computeGenerationTimeoutMs } from './generat
 import { paramsFingerprint } from './bridgeHelpers';
 import type { GenerationResultCache } from './resultCache';
 import type { ProgressCallback, GenerationResult } from './bridgeTypes';
+import { MeshUnavailableError } from './meshDelivery';
 import type { PreparedMeshes } from './meshDelivery';
+import { isErr } from '@/core/result';
+import type { Result, StorageMeshMissingError } from '@/core/result';
 
 export interface BridgeGenerationContext {
   readonly isDestroyed: boolean;
@@ -42,7 +45,9 @@ export interface BridgeGenerationContext {
   /** Ensure a worker is initialized; resolves once it is ready for requests. */
   init: () => Promise<void>;
   /** Swap a request's inline mesh assets for refs and gather the files they name. */
-  prepareMeshes: (message: WorkerMessage) => Promise<PreparedMeshes>;
+  prepareMeshes: (
+    message: WorkerMessage
+  ) => Promise<Result<PreparedMeshes, StorageMeshMissingError>>;
   /** Send the worker the files it lacks, then the request. */
   postPrepared: (prepared: PreparedMeshes, message: WorkerMessage) => void;
   /** Terminate the current worker and bring up a fresh one. */
@@ -84,14 +89,21 @@ function sendWhenReady(
     .init()
     .then(() => ctx.prepareMeshes(message))
     .then(
-      (prepared) => {
+      (result) => {
         // A newer request superseded this one while the worker was initializing
         // or its mesh files were loading.
         if (ctx.currentRequestId !== requestId) return;
+        if (isErr(result)) {
+          const reject = ctx.pendingReject;
+          ctx.clearPending();
+          reject?.(new MeshUnavailableError());
+          return;
+        }
+        const prepared = result.value;
         const resolve = ctx.pendingResolve;
         if (prepared.pending && resolve) {
           cache?.clearPending();
-          ctx.pendingResolve = (result) => resolve({ ...result, meshesPending: true });
+          ctx.pendingResolve = (generated) => resolve({ ...generated, meshesPending: true });
         }
         startGenerationTimeout(ctx, requestId, timeoutMs);
         ctx.postPrepared(prepared, message);

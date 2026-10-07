@@ -70,8 +70,10 @@ async function toItem(
     if (typeof parsed !== 'object' || parsed === null || !isSyncableDesign(parsed)) {
       return null;
     }
-    const inline = inlineHolderMeshes(parsed);
-    content = forPush ? await inline : await inline.catch(() => parsed);
+    const inline = await inlineHolderMeshes(parsed);
+    if (isOk(inline)) content = inline.value;
+    else if (forPush) return null;
+    else content = parsed;
   } catch {
     return null;
   }

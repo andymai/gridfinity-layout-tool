@@ -64,6 +64,8 @@ import { GenerationResultCache } from './resultCache';
 import { installMessageHandler } from './bridgeMessageHandler';
 import { MeshDelivery, prepareMeshes } from './meshDelivery';
 import type { PreparedMeshes } from './meshDelivery';
+import { isOk } from '@/core/result';
+import type { Result, StorageMeshMissingError } from '@/core/result';
 import {
   exportBin as exportBinImpl,
   exportDividers as exportDividersImpl,
@@ -323,7 +325,9 @@ export class GenerationBridge {
       const message: WorkerMessage = { type: 'ESTIMATE', payload: { params, requestId } };
       void this.prepareMeshes(message).then(
         (prepared) => {
-          if (this.pendingEstimates.has(requestId)) this.postPrepared(prepared, message);
+          if (isOk(prepared) && this.pendingEstimates.has(requestId)) {
+            this.postPrepared(prepared.value, message);
+          }
         },
         () => {}
       );
@@ -370,8 +374,11 @@ export class GenerationBridge {
     // A warm without a mesh's file would build a solid no export can use.
     void this.prepareMeshes(message).then(
       (prepared) => {
-        if (prepared.pending || this.currentRequestId) this.isWarming = false;
-        else this.postPrepared(prepared, message);
+        if (!isOk(prepared) || prepared.value.pending || this.currentRequestId) {
+          this.isWarming = false;
+        } else {
+          this.postPrepared(prepared.value, message);
+        }
       },
       () => {
         this.isWarming = false;
@@ -771,7 +778,7 @@ export class GenerationBridge {
     this.worker?.postMessage(message);
   }
 
-  prepareMeshes(message: WorkerMessage): Promise<PreparedMeshes> {
+  prepareMeshes(message: WorkerMessage): Promise<Result<PreparedMeshes, StorageMeshMissingError>> {
     return prepareMeshes(message);
   }
 

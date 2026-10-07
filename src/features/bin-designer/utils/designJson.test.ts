@@ -10,7 +10,8 @@ import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { BinParams } from '../types';
 import { testT as t } from '@/test/i18nTestUtils';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
-import { MeshFileMissingError, storeMeshAsset } from '@/shared/generation/meshRefs';
+import { storeMeshAsset } from '@/shared/generation/meshRefs';
+import { isErr } from '@/core/result';
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...overrides };
@@ -130,9 +131,8 @@ describe('downloadDesignAsFile', () => {
       sizeMm: { x: 1, y: 1, z: 1 },
       bytes: 1,
     };
-    await expect(
-      downloadDesignAsFile('Test', makeParams({ meshAssets: { m1: missing } }))
-    ).rejects.toBeInstanceOf(MeshFileMissingError);
+    const result = await downloadDesignAsFile('Test', makeParams({ meshAssets: { m1: missing } }));
+    expect(isErr(result) && result.error.code).toBe('STORAGE_MESH_MISSING');
     expect(anchorElement.click).not.toHaveBeenCalled();
   });
 

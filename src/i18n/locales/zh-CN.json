@@ -4450,6 +4450,7 @@
   "toast.stlImport.notManifold": "网格不是水密的 — 请在切片软件中修复后重新导出",
   "toast.stlImport.parseFailed": "无法读取该 STL 文件",
   "toast.stlImport.success": "已将“{name}”作为 3D 压印放置",
+  "toast.meshFileMissing": "此处使用的导入 STL 不在此设备上，因此无法分享或导出。",
   "toast.svgImport.fileTooLarge": "SVG 文件太大（上限 5 MB）",
   "toast.svgImport.noShapes": "SVG 中未找到受支持的形状",
   "toast.svgImport.parseFailed": "无法读取该 SVG 文件",

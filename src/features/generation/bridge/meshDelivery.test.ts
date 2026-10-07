@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { unwrap } from '@/core/result';
+import { isErr, unwrap } from '@/core/result';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { encodeMeshData, isMeshAssetRef } from '@/shared/generation/meshAsset';
 import type { MeshAsset, MeshAssetRef } from '@/shared/generation/meshAsset';
@@ -9,7 +9,7 @@ import { storeMeshAsset } from '@/shared/generation/meshRefs';
 import { __resetMeshStoreForTests } from '@/shared/generation/meshStore';
 import type { BinParams, Cutout } from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
-import { MeshDelivery, MeshUnavailableError, prepareMeshes } from './meshDelivery';
+import { MeshDelivery, prepareMeshes } from './meshDelivery';
 import type { GenerateMessage, WorkerMessage } from './types';
 
 async function makeAsset(name: string, scale = 30): Promise<MeshAsset> {
@@ -79,7 +79,7 @@ describe('prepareMeshes', () => {
     const params = { ...DEFAULT_BIN_PARAMS, meshAssets: { m1: ref } };
     const message = generate(params);
 
-    const prepared = await prepareMeshes(message);
+    const prepared = unwrap(await prepareMeshes(message));
 
     expect(prepared.pending).toBe(false);
     expect(prepared.apply(message)).toBe(message);
@@ -96,7 +96,7 @@ describe('prepareMeshes', () => {
     };
     const message = generate(params);
 
-    const prepared = await prepareMeshes(message);
+    const prepared = unwrap(await prepareMeshes(message));
     const sent = paramsOf(prepared.apply(message)).meshAssets?.m1;
 
     const file = unwrap(encodeMeshFile(asset));
@@ -120,7 +120,7 @@ describe('prepareMeshes', () => {
     };
     const message = generate(params);
 
-    const prepared = await prepareMeshes(message);
+    const prepared = unwrap(await prepareMeshes(message));
     const sent = paramsOf(prepared.apply(message));
 
     expect(prepared.pending).toBe(true);
@@ -130,7 +130,7 @@ describe('prepareMeshes', () => {
 
   it('applies the same rewrite to another request built from the same params', async () => {
     const params = { ...DEFAULT_BIN_PARAMS, meshAssets: { m1: await makeAsset('c') } };
-    const prepared = await prepareMeshes(generate(params));
+    const prepared = unwrap(await prepareMeshes(generate(params)));
     const exported: WorkerMessage = {
       type: 'EXPORT',
       payload: { params, requestId: 'r2', format: 'stl' },
@@ -151,7 +151,7 @@ describe('prepareMeshes', () => {
     } as unknown as GridfinityItem;
     const message: WorkerMessage = { type: 'GENERATE_ITEM', payload: { item, requestId: 'r' } };
 
-    const prepared = await prepareMeshes(message);
+    const prepared = unwrap(await prepareMeshes(message));
     const sent = prepared.apply(message);
     const sentAsset =
       sent.type === 'GENERATE_ITEM' && sent.payload.item.structure.kind === 'importedMesh'
@@ -164,14 +164,19 @@ describe('prepareMeshes', () => {
       ...item,
       structure: { kind: 'importedMesh', heightUnits: 2, asset: MISSING },
     } as unknown as GridfinityItem;
-    await expect(
-      prepareMeshes({ type: 'GENERATE_ITEM', payload: { item: missing, requestId: 'r' } })
-    ).rejects.toBeInstanceOf(MeshUnavailableError);
+    const refused = await prepareMeshes({
+      type: 'GENERATE_ITEM',
+      payload: { item: missing, requestId: 'r' },
+    });
+    expect(isErr(refused) && refused.error).toMatchObject({
+      code: 'STORAGE_MESH_MISSING',
+      hash: MISSING.hash,
+    });
   });
 
   it('passes a design without meshes through untouched', async () => {
     const message = generate(DEFAULT_BIN_PARAMS);
-    const prepared = await prepareMeshes(message);
+    const prepared = unwrap(await prepareMeshes(message));
     expect(prepared.apply(message)).toBe(message);
     expect(prepared.files.size).toBe(0);
   });

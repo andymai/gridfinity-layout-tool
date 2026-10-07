@@ -102,14 +102,13 @@ export function ExportDialog() {
   // Deliberately leaves the dialog open: the source file is usually taken
   // alongside a 3D export, not instead of it.
   const handleDownloadJSON = useCallback(() => {
-    void downloadDesignAsFile(designName, params).then(
-      () => {
+    void downloadDesignAsFile(designName, params).then((result) => {
+      if (isOk(result)) {
         addToast({ message: t('binDesigner.downloadDesignJson'), type: 'success', duration: 2000 });
-      },
-      () => {
-        addToast(t('designLinking.toast.exportFailed'), 'error');
+      } else {
+        addToast(t('toast.meshFileMissing'), 'error');
       }
-    );
+    });
   }, [designName, params, addToast, t]);
 
   const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';

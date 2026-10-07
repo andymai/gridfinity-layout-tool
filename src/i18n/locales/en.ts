@@ -1444,6 +1444,8 @@ const en: Record<string, string> = {
   'toast.stlImport.notManifold': 'Mesh is not watertight — repair it in your slicer and re-export',
   'toast.stlImport.empty': 'STL contains no printable geometry',
   'toast.stlImport.assetLimit': 'A design can hold up to {count} imported meshes',
+  'toast.meshFileMissing':
+    "An imported STL used here is missing from this device, so it can't be shared or exported.",
   'toast.svgImport.success': 'Imported {count} shape(s) from SVG',
   'toast.cutoutsClipped': 'Added {added} of {requested} shapes. A lid holds at most {max}.',
   'toast.flattenNoRoom': 'Not enough room to flatten this repeat. A lid holds at most {max}.',

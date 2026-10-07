@@ -30,6 +30,8 @@ import {
   computeSplitExportTimeoutMs,
   EXPORT_MAX_TIMEOUT_MS,
 } from './generationTimeout';
+import { isErr } from '@/core/result';
+import type { Result, StorageMeshMissingError } from '@/core/result';
 import { MeshUnavailableError } from './meshDelivery';
 import type { PreparedMeshes } from './meshDelivery';
 import type {
@@ -48,7 +50,9 @@ export interface BridgeExportContext {
   prepareExport: (slot: ExportSlot) => Promise<string>;
   readonly pendingExports: PendingExportMap;
   startExportTimeout: (slot: ExportSlot, requestId: string, timeoutMs: number) => void;
-  prepareMeshes: (message: WorkerMessage) => Promise<PreparedMeshes>;
+  prepareMeshes: (
+    message: WorkerMessage
+  ) => Promise<Result<PreparedMeshes, StorageMeshMissingError>>;
   postPrepared: (prepared: PreparedMeshes, message: WorkerMessage) => void;
 }
 
@@ -69,8 +73,9 @@ async function runExport<T>(
   buildMessage: (requestId: string) => WorkerMessage,
   onProgress?: (progress: number) => void
 ): Promise<T> {
-  const prepared = await ctx.prepareMeshes(buildMessage(''));
-  if (prepared.pending) throw new MeshUnavailableError();
+  const result = await ctx.prepareMeshes(buildMessage(''));
+  if (isErr(result) || result.value.pending) throw new MeshUnavailableError();
+  const prepared = result.value;
   const requestId = await ctx.prepareExport(slot);
   return new Promise<T>((resolve, reject) => {
     ctx.pendingExports.set(slot, {

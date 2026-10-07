@@ -4450,6 +4450,7 @@
   "toast.stlImport.notManifold": "La mesh non è a tenuta stagna: riparala nello slicer e riesportala",
   "toast.stlImport.parseFailed": "Impossibile leggere il file STL",
   "toast.stlImport.success": "\"{name}\" posizionato come impronta 3D",
+  "toast.meshFileMissing": "Un STL importato usato qui manca su questo dispositivo, quindi non è possibile condividere né esportare.",
   "toast.svgImport.fileTooLarge": "Il file SVG è troppo grande (max 5 MB)",
   "toast.svgImport.noShapes": "Nessuna forma supportata trovata nell'SVG",
   "toast.svgImport.parseFailed": "Impossibile leggere il file SVG",

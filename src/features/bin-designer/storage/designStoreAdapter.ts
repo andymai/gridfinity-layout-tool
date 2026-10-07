@@ -13,7 +13,7 @@
  *
  * Every design core loads leaves the device (layout file export, cloud share,
  * bulk archive), so `loadDesign` hands back its meshes inline, and a design
- * whose mesh file is missing does not load.
+ * whose mesh file is missing fails with `STORAGE_MESH_MISSING`.
  */
 
 import type {
@@ -24,7 +24,7 @@ import type {
   SaveDesignInput,
   SavedDesignData,
 } from '@/core/storage/designStorePort';
-import { err, isOk, ok, storageCorrupted } from '@/core/result';
+import { isOk } from '@/core/result';
 import type { Result, StorageError } from '@/core/result';
 import type { DesignId } from '@/core/types';
 import type { BinParams } from '@/features/bin-designer/types';
@@ -37,12 +37,7 @@ export const designStoreAdapter: DesignStorePort = {
       import('@/shared/generation/meshRefs'),
     ]);
     const loaded = await loadDesign(id);
-    if (!isOk(loaded)) return loaded;
-    try {
-      return ok(await inlineHolderMeshes(loaded.value));
-    } catch {
-      return err(storageCorrupted(id, ['a mesh file this design uses is missing']));
-    }
+    return isOk(loaded) ? inlineHolderMeshes(loaded.value) : loaded;
   },
 
   async saveDesign(input: SaveDesignInput): Promise<Result<SavedDesignData, StorageError>> {

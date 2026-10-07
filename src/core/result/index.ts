@@ -103,6 +103,7 @@ export type {
   StorageCorruptedError,
   StorageUnavailableError,
   StorageNetworkError,
+  StorageMeshMissingError,
 
   // Validation errors
   ValidationError,
@@ -152,6 +153,7 @@ export {
   storageCorrupted,
   storageUnavailable,
   storageNetworkError,
+  storageMeshMissing,
 
   // Validation errors
   validationOutOfBounds,

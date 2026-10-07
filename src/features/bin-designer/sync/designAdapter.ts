@@ -164,6 +164,11 @@ function branchFields(d: SavedDesign) {
   };
 }
 
+async function inlinedOrAsIs(d: SavedDesign): Promise<SavedDesign> {
+  const inline = await inlineHolderMeshes(d);
+  return isOk(inline) ? inline.value : d;
+}
+
 function buildPayload(d: SavedDesign): DesignSyncPayload {
   if (isBinDesign(d)) {
     return {
@@ -198,7 +203,7 @@ export const designAdapter: DesignAdapter = {
         id: d.id,
         // Every caller of list() reads ids and mtimes only, and a design whose
         // mesh file is missing must still be listed: sign-out wipes by this list.
-        payload: buildPayload(await inlineHolderMeshes(d).catch(() => d)),
+        payload: buildPayload(await inlinedOrAsIs(d)),
         modifiedAt: toMs(d.updatedAt),
       }))
     );
@@ -212,8 +217,9 @@ export const designAdapter: DesignAdapter = {
     // file is missing is dropped the same way, so the copy on the server keeps
     // its mesh.
     if (!isSyncableDesign(result.value)) return null;
-    const d = await inlineHolderMeshes(result.value).catch(() => null);
-    if (!d) return null;
+    const inline = await inlineHolderMeshes(result.value);
+    if (!isOk(inline)) return null;
+    const d = inline.value;
     return {
       id: d.id,
       payload: buildPayload(d),

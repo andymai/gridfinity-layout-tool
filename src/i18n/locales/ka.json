@@ -1200,6 +1200,7 @@
   "toast.layoutDeleted": "განლაგება წაიშალა",
   "toast.layoutImported": "იმპორტირებულია „{name}“",
   "toast.stlImport.success": "„{name}“ განთავსდა, როგორც 3D ანაბეჭდი",
+  "toast.meshFileMissing": "აქ გამოყენებული იმპორტირებული STL ამ მოწყობილობაზე არ არის, ამიტომ გაზიარება ან ექსპორტი შეუძლებელია.",
   "toast.stlImport.parseFailed": "STL ფაილის წაკითხვა ვერ მოხერხდა",
   "toast.stlImport.fileTooLarge": "STL ფაილი ზედმეტად დიდია (მაქს. 50MB)",
   "toast.stlImport.notManifold": "პოლიგონური ბადე ჰერმეტული არ არის — შეაკეთეთ სლაისერში და ხელახლა ექსპორტირეთ",

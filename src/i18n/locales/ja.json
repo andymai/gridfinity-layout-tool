@@ -4450,6 +4450,7 @@
   "toast.stlImport.notManifold": "メッシュが水密ではありません。スライサーで修復して再エクスポートしてください",
   "toast.stlImport.parseFailed": "STLファイルを読み込めませんでした",
   "toast.stlImport.success": "「{name}」を3Dインプリントとして配置しました",
+  "toast.meshFileMissing": "ここで使われているインポートしたSTLがこのデバイスにないため、共有やエクスポートができません。",
   "toast.svgImport.fileTooLarge": "SVGファイルが大きすぎます(最大5 MB)",
   "toast.svgImport.noShapes": "SVGに対応する図形が見つかりません",
   "toast.svgImport.parseFailed": "SVGファイルを読み込めませんでした",

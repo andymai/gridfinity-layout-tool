@@ -4450,6 +4450,7 @@
   "toast.stlImport.notManifold": "Meshen är inte vattentät — reparera den i din slicer och exportera igen",
   "toast.stlImport.parseFailed": "Kunde inte läsa STL-filen",
   "toast.stlImport.success": "\"{name}\" placerad som 3D-avtryck",
+  "toast.meshFileMissing": "En importerad STL som används här saknas på den här enheten, så det går inte att dela eller exportera.",
   "toast.svgImport.fileTooLarge": "SVG-filen är för stor (max 5 MB)",
   "toast.svgImport.noShapes": "Inga formstöd hittades i SVG",
   "toast.svgImport.parseFailed": "Kunde inte läsa SVG-filen",
