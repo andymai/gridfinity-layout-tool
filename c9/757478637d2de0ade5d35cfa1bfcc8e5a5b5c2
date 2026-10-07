@@ -1,0 +1,43 @@
+src/features/generation/worker/generators/fitTestOutline.scenario.test.ts
+  s_900382acfc8cb3::t_8d77291275342c 15,21-25,430-432,442-495,498-640
+  s_900382acfc8cb3::t_42934b7864d31a 496-497
+  s_bf3ece01e79893::t_6a9f9884b1af7e 641-642
+src/shared/utils/lipGapPlan.ts
+  s_900382acfc8cb3::t_e242c645ed4779 198-199,228-237
+src/shared/utils/fitTestOutlinePlan.ts
+  s_900382acfc8cb3::t_a70678ab6a53fd 2-4,10,16-18,29,37,71-72,90-98,102-151,160,167,187-188
+src/shared/utils/fitTestOutlinePlan.test.ts
+  s_900382acfc8cb3::t_03be2f2859ae79 3,6,13,184-232
+  s_bf3ece01e79893::t_a0ee232b133b10 233-239
+src/shared/utils/fitTestPlan.ts
+  s_900382acfc8cb3::t_77c1f478adfde0 32
+  s_900382acfc8cb3::t_6d7c52297214c9 26,131-139,154-155,159-165,170-198,207-215,514,671-673
+  s_900382acfc8cb3::t_a0d7d286046a00 502-513
+  s_bf3ece01e79893::t_f8d611fb6e3137 501,647,670
+src/shared/utils/fitTestPlan.test.ts
+  s_900382acfc8cb3::t_03be2f2859ae79 439-501
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c9757478637d2de0ade5d35cfa1bfcc8e5a5b5c2",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_bf3ece01e79893": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a7e2b386-6e11-4281-bc6c-eb451959cc2a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
