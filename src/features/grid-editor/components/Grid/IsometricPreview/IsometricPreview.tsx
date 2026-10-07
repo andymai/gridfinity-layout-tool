@@ -223,6 +223,7 @@ export function IsometricPreview(props: IsometricPreviewProps) {
                 bins={binsToRender}
                 drawerWidth={drawer.width}
                 drawerDepth={drawer.depth}
+                designGeometries={designGeometries}
               />
             </>
           )}

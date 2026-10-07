@@ -133,6 +133,35 @@ describe('useDesignGeometries', () => {
     expect(entry?.depth).toBe(1);
   });
 
+  it('carries the body base through, raised by the lift that stands detachable feet on Z=0', () => {
+    const s = GRIDFINITY_SPEC.SOCKET_HEIGHT;
+    const feet: MeshData = {
+      ...makeMesh(true),
+      vertices: new Float32Array([0, 0, -s, 10, 0, -s, 10, 10, -s, 0, 10, 0]),
+    };
+    const socketed: LinkedDesignMesh = { ...makeEntry('d1:t1'), bodyBaseMm: s };
+    const detached: LinkedDesignMesh = {
+      ...makeEntry('d2:t1'),
+      mesh: { ...makeMesh(true), detachableFeetMesh: feet },
+      bodyBaseMm: 0,
+    };
+    const D2 = designId('design-2');
+    const D3 = designId('design-3');
+    const { result } = renderHook(() =>
+      useDesignGeometries(
+        new Map([
+          [D1, socketed],
+          [D2, detached],
+          [D3, makeEntry('d3:t1')],
+        ])
+      )
+    );
+
+    expect(result.current.get(D1)?.bodyBaseMm).toBeCloseTo(s, 6);
+    expect(result.current.get(D2)?.bodyBaseMm).toBeCloseTo(s, 6);
+    expect(result.current.get(D3)?.bodyBaseMm).toBeUndefined();
+  });
+
   it('reuses the geometry across re-renders when the sig is unchanged', () => {
     const { result, rerender } = renderHook(
       ({ meshes }: { meshes: Map<DesignId, LinkedDesignMesh> }) => useDesignGeometries(meshes),

@@ -13,6 +13,8 @@ export interface DesignGeometryEntry {
   /** Design footprint in grid units — detects rotated (w↔d) placement. */
   readonly width: number;
   readonly depth: number;
+  /** Z (mm) of the body's underside in the rendered frame, feet lift included. */
+  readonly bodyBaseMm?: number;
   /**
    * Companion handle-rest geometry for a knife-block design. A layout bin
    * with `pairRole: 'rest'` renders THIS instead of the block body; footprint
@@ -62,6 +64,14 @@ function mergeParts(
   return { vertices, indices };
 }
 
+function detachableFeetLiftMm(mesh: MeshData): number {
+  const feet = mesh.detachableFeetMesh?.vertices;
+  let lift = 0;
+  if (!feet) return lift;
+  for (let i = 2; i < feet.length; i += 3) lift = Math.max(lift, -feet[i]);
+  return lift;
+}
+
 /**
  * Build a renderable geometry from worker/imported mesh data. Mirrors
  * `useMeshGeometry`'s shading rules: worker meshes (with precomputed normals)
@@ -79,10 +89,8 @@ export function buildDesignGeometry(mesh: MeshData): THREE.BufferGeometry {
   // still sits a socket below an integral neighbour's. The lift is read off the
   // feet themselves, since a low-profile drawer builds them shorter.
   const { vertices, indices } = mergeParts(mesh, mesh.detachableFeetMesh);
-  const feet = mesh.detachableFeetMesh?.vertices;
-  if (feet && feet.length > 0) {
-    let lift = 0;
-    for (let i = 2; i < feet.length; i += 3) lift = Math.max(lift, -feet[i]);
+  const lift = detachableFeetLiftMm(mesh);
+  if (lift > 0) {
     for (let i = 2; i < vertices.length; i += 3) {
       vertices[i] += lift;
     }
@@ -169,11 +177,15 @@ export function useDesignGeometries(
           rest = { geometry, widthMm: bb.max.x - bb.min.x, depthMm: bb.max.y - bb.min.y };
         }
       }
+      const { bodyBaseMm } = designMesh;
       map.set(id, {
         sig: designMesh.sig,
         geometry: getCachedDesignGeometry(designMesh),
         width: designMesh.width,
         depth: designMesh.depth,
+        ...(bodyBaseMm !== undefined
+          ? { bodyBaseMm: bodyBaseMm + detachableFeetLiftMm(designMesh.mesh) }
+          : {}),
         ...(rest !== undefined ? { rest } : {}),
       });
     }

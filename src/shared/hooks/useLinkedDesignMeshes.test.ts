@@ -23,9 +23,12 @@ import type { MeshData } from '@/shared/types/generation';
 
 let mockActiveKernel: KernelName = 'occt-wasm';
 
+const BODY_BASE_MM = 4.75;
+
 vi.mock('@/features/bin-designer', () => ({
   loadDesign: vi.fn(),
   useCustomBins: vi.fn(() => []),
+  binDimensions: vi.fn(() => ({ floorZ: BODY_BASE_MM })),
 }));
 
 vi.mock('@/shared/generation/meshAsset', () => ({
@@ -192,6 +195,7 @@ describe('useLinkedDesignMeshes', () => {
     expect(entry?.mesh).toBe(mesh);
     expect(entry?.width).toBe(2);
     expect(entry?.depth).toBe(1);
+    expect(entry?.bodyBaseMm).toBe(BODY_BASE_MM);
     expect(entry?.sig).toContain('2026-01-01T00:00:00.000Z');
     expect(mockAcquire).not.toHaveBeenCalled();
   });
@@ -212,6 +216,7 @@ describe('useLinkedDesignMeshes', () => {
       // being re-wrapped by the strip.
       expect(result.current.get(D1)?.mesh).toBe(mesh);
     });
+    expect(result.current.get(D1)?.bodyBaseMm).toBe(BODY_BASE_MM);
     expect(mockSavePersistedBinMesh).toHaveBeenCalledWith('persist-key-occt-wasm', mesh);
     expect(mockRelease).toHaveBeenCalledTimes(1);
   });

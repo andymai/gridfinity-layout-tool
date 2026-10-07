@@ -13,7 +13,10 @@ import * as THREE from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
 import { effectiveGridUnitMmY } from '@/core/types';
+import type { DesignId } from '@/core/types';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
+import { designEntryFor } from '../LinkedBinMeshes/placement';
+import type { DesignGeometryEntry } from '../LinkedBinMeshes/useDesignGeometries';
 import { buildBinOverhangStrips } from './binOverhangStrips';
 import type { OverhangStrip } from './binOverhangStrips';
 
@@ -21,6 +24,8 @@ interface BinOverhangExtensionsProps {
   bins: readonly BinRenderData[];
   drawerWidth: number;
   drawerDepth: number;
+  /** Resolved design meshes; a bin drawn with one hangs its strips from its body. */
+  designGeometries: Map<DesignId, DesignGeometryEntry>;
 }
 
 interface ColoredStrip extends OverhangStrip {
@@ -32,6 +37,7 @@ export function BinOverhangExtensions({
   bins,
   drawerWidth,
   drawerDepth,
+  designGeometries,
 }: BinOverhangExtensionsProps) {
   const { baseplate, gridUnitMm, gridUnitMmY } = useLayoutStore(
     useShallow((s) => ({
@@ -42,8 +48,9 @@ export function BinOverhangExtensions({
   );
 
   const strips = useMemo<ColoredStrip[]>(() => {
-    return bins.flatMap((bd) =>
-      buildBinOverhangStrips(
+    return bins.flatMap((bd) => {
+      const bodyBaseMm = designEntryFor(bd, designGeometries)?.bodyBaseMm ?? 0;
+      return buildBinOverhangStrips(
         {
           id: bd.bin.id,
           x: bd.x,
@@ -52,6 +59,7 @@ export function BinOverhangExtensions({
           width: bd.bin.width,
           depth: bd.bin.depth,
           height: bd.height,
+          bodyBase: bodyBaseMm / gridUnitMm,
           extendToMargin: bd.bin.extendToMargin,
           overhang: bd.bin.overhang,
         },
@@ -60,9 +68,9 @@ export function BinOverhangExtensions({
         baseplate,
         gridUnitMm,
         gridUnitMmY
-      ).map((s) => ({ ...s, color: bd.color, opacity: bd.opacity }))
-    );
-  }, [baseplate, gridUnitMm, gridUnitMmY, bins, drawerWidth, drawerDepth]);
+      ).map((s) => ({ ...s, color: bd.color, opacity: bd.opacity }));
+    });
+  }, [baseplate, gridUnitMm, gridUnitMmY, bins, drawerWidth, drawerDepth, designGeometries]);
 
   if (strips.length === 0) return null;
 

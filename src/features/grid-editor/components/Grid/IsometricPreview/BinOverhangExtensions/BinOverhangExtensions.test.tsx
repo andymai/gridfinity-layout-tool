@@ -1,13 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
+import * as THREE from 'three';
 import { resetAllStores } from '@/test/testUtils';
 import { BinOverhangExtensions } from './BinOverhangExtensions';
 import { useLayoutStore } from '@/core/store';
 import { createDefaultLayout } from '@/core/constants';
 import { createTestBin } from '@/test/testUtils';
-import { gridUnits, mm } from '@/core/types';
-import type { Bin, StoredBaseplateParams } from '@/core/types';
+import { designId, gridUnits, mm } from '@/core/types';
+import type { Bin, DesignId, StoredBaseplateParams } from '@/core/types';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
+import type { DesignGeometryEntry } from '../LinkedBinMeshes/useDesignGeometries';
 
 function setup(padding: Partial<StoredBaseplateParams> = {}) {
   useLayoutStore.setState({
@@ -62,6 +64,7 @@ describe('BinOverhangExtensions', () => {
         bins={[renderData(edgeBin({ extendToMargin: false }))]}
         drawerWidth={5}
         drawerDepth={4}
+        designGeometries={new Map()}
       />
     );
     expect(container.querySelectorAll('mesh')).toHaveLength(0);
@@ -73,6 +76,7 @@ describe('BinOverhangExtensions', () => {
         bins={[renderData(edgeBin({ extendToMargin: true }))]}
         drawerWidth={5}
         drawerDepth={4}
+        designGeometries={new Map()}
       />
     );
     expect(container.querySelectorAll('mesh').length).toBeGreaterThanOrEqual(1);
@@ -85,8 +89,29 @@ describe('BinOverhangExtensions', () => {
         bins={[renderData(edgeBin({ extendToMargin: true }))]}
         drawerWidth={5}
         drawerDepth={4}
+        designGeometries={new Map()}
       />
     );
     expect(container.querySelectorAll('mesh')).toHaveLength(2);
+  });
+
+  it("hangs a linked bin's strip from its design's body, not the floor", () => {
+    const design = designId('d1');
+    const geometries = new Map<DesignId, DesignGeometryEntry>([
+      [
+        design,
+        { sig: 'd1:t1', geometry: new THREE.BufferGeometry(), width: 1, depth: 1, bodyBaseMm: 4.2 },
+      ],
+    ]);
+    const { container } = render(
+      <BinOverhangExtensions
+        bins={[renderData(edgeBin({ extendToMargin: true, linkedDesignId: design }))]}
+        drawerWidth={5}
+        drawerDepth={4}
+        designGeometries={geometries}
+      />
+    );
+    const size = container.querySelector('boxGeometry')?.getAttribute('args')?.split(',');
+    expect(Number(size?.[2])).toBeCloseTo(2 - 4.2 / 42, 5);
   });
 });
