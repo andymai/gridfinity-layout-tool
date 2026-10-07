@@ -98,19 +98,30 @@ function bounds(points: readonly (readonly [number, number])[]): CutoutBox2D {
   };
 }
 
+interface Breach {
+  readonly box: CutoutBox2D;
+  readonly side: 'left' | 'right' | 'front' | 'back';
+  /** Where the pocket ends and the channel's rails begin, on the exit axis. */
+  readonly mouth: number;
+}
+
 /**
  * Open-side channels and knife exits breach the wall, so the traced ring runs
  * from the pocket out to the board edge, well past the pocket's own box.
  */
-function breachBoxes(source: BinParams): CutoutBox2D[] {
+function breaches(source: BinParams): Breach[] {
   const { innerW, innerD, offsetX, offsetY } = cutoutInterior(source);
-  const boxes = openSideChannels(source).map((ch) =>
-    bounds(
+  const toModel = (alongX: boolean, v: number): number =>
+    alongX ? v - innerW / 2 + offsetX : v - innerD / 2 + offsetY;
+  const out: Breach[] = openSideChannels(source).map((ch) => ({
+    box: bounds(
       openSideChannelOutline(ch, { innerW, innerD, wallThickness: source.wallThickness }).map(
-        ([x, y]): [number, number] => [x - innerW / 2 + offsetX, y - innerD / 2 + offsetY]
+        ([x, y]): [number, number] => [toModel(true, x), toModel(false, y)]
       )
-    )
-  );
+    ),
+    side: ch.side,
+    mouth: toModel(ch.side === 'left' || ch.side === 'right', ch.edge),
+  }));
   for (const exit of knifeSlotWallExits(source, innerW, innerD)) {
     const alongX = exit.side === 'left' || exit.side === 'right';
     const outward = exit.side === 'right' || exit.side === 'back';
@@ -118,13 +129,15 @@ function breachBoxes(source: BinParams): CutoutBox2D[] {
     const across = exit.centre + (alongX ? offsetY : offsetX);
     const [lo, hi] = outward ? [start, Infinity] : [-Infinity, start];
     const [acrossLo, acrossHi] = [across - exit.width / 2, across + exit.width / 2];
-    boxes.push(
-      alongX
+    out.push({
+      box: alongX
         ? { minX: lo, maxX: hi, minY: acrossLo, maxY: acrossHi }
-        : { minX: acrossLo, maxX: acrossHi, minY: lo, maxY: hi }
-    );
+        : { minX: acrossLo, maxX: acrossHi, minY: lo, maxY: hi },
+      side: exit.side,
+      mouth: exit.edge + (alongX ? offsetX : offsetY),
+    });
   }
-  return boxes;
+  return out;
 }
 
 /**
@@ -134,7 +147,7 @@ function breachBoxes(source: BinParams): CutoutBox2D[] {
 export function fitTestOutlineBoxes(params: BinParams, wallMm: number): CutoutBox2D[] {
   const source = fitTestOutlineSource(params);
   const board = fitTestFootprintBox(params);
-  return [...fitTestCutoutBoxes(source), ...breachBoxes(source)]
+  return [...fitTestCutoutBoxes(source), ...breaches(source).map((b) => b.box)]
     .map((b) => ({
       minX: Math.max(board.minX, b.minX - wallMm),
       maxX: Math.min(board.maxX, b.maxX + wallMm),
@@ -188,16 +201,26 @@ export function planFitTestOutlineSplit(
 
 /**
  * Material (mm³) in the outline: each ring priced as its opening offset
- * outward, so rings that merge or run off the board edge read high.
+ * outward, and each breach as its two rails from the pocket to the board edge.
+ * Rings that merge or run off the board edge, and the ring across a breach's
+ * mouth, are counted whole, so this reads high.
  */
 export function estimateFitTestOutlineVolumeMm3(
   params: BinParams,
   size: FitTestOutlineSize
 ): number {
   const { wallMm, heightMm } = size;
+  const source = fitTestOutlineSource(params);
   const ringArea = (cutout: Cutout): number => {
     const perimeter = openingPerimeterMm(cutout);
     return perimeter > 0 ? perimeter * wallMm + Math.PI * wallMm * wallMm : 0;
   };
-  return sumOverCutouts(fitTestOutlineSource(params), ringArea) * heightMm;
+  const board = fitTestFootprintBox(params);
+  const face = { left: board.minX, right: board.maxX, front: board.minY, back: board.maxY };
+  const railArea = breaches(source).reduce((sum, b) => {
+    const outward = b.side === 'right' || b.side === 'back';
+    const length = Math.max(0, outward ? face[b.side] - b.mouth : b.mouth - face[b.side]);
+    return sum + 2 * length * wallMm;
+  }, 0);
+  return (sumOverCutouts(source, ringArea) + railArea) * heightMm;
 }

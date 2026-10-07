@@ -310,6 +310,49 @@ describe('estimateFitTestOutlineVolumeMm3', () => {
     expect(outline).toBeLessThan(100);
   });
 
+  it('prices the rails a breach runs out to the board edge', () => {
+    // A 4x1 rail with a 20mm pocket at its left end: open to the right, its
+    // ring carries two rails from the pocket's right edge to the board's.
+    const pocket = (over: Partial<Cutout>): BinParams =>
+      board({ width: 4, depth: 1 }, [
+        cutout({ id: 'a', shape: 'rectangle', x: 5, y: 10, width: 20, depth: 15, ...over }),
+      ]);
+    const size = { heightMm: 0.6, wallMm: 1.2 };
+    const open = pocket({ openSides: [{ side: 'right' }] });
+    const innerW = 4 * open.gridUnitMm - GRIDFINITY.TOLERANCE - 2 * open.wallThickness;
+    const railLength = fitTestFootprintBox(open).maxX - (25 - innerW / 2);
+
+    const added =
+      estimateFitTestOutlineVolumeMm3(open, size) -
+      estimateFitTestOutlineVolumeMm3(pocket({}), size);
+    expect(added).toBeCloseTo(2 * railLength * 1.2 * 0.6, 6);
+    expect(added).toBeGreaterThan(200);
+  });
+
+  it('prices a knife exit from the end of its slot, not its centre', () => {
+    const slot = (openEnd: 'end' | undefined): BinParams =>
+      board({ width: 4, depth: 1 }, [
+        cutout({
+          id: 'k',
+          shape: 'knifeSlot',
+          x: 5,
+          y: 10,
+          width: 30,
+          depth: 3,
+          knife: { ...DEFAULT_KNIFE_SPEC, openEnd },
+        }),
+      ]);
+    const size = { heightMm: 0.6, wallMm: 1.2 };
+    const open = slot('end');
+    const innerW = 4 * open.gridUnitMm - GRIDFINITY.TOLERANCE - 2 * open.wallThickness;
+    const railLength = fitTestFootprintBox(open).maxX - (35 - innerW / 2);
+
+    const added =
+      estimateFitTestOutlineVolumeMm3(open, size) -
+      estimateFitTestOutlineVolumeMm3(slot(undefined), size);
+    expect(added).toBeCloseTo(2 * railLength * 1.2 * 0.6, 6);
+  });
+
   it('prices nothing for a board of text elements only', () => {
     const params = board({}, [cutout({ shape: 'text', label: 'TOOLS' })]);
     expect(estimateFitTestOutlineVolumeMm3(params, { heightMm: 0.6, wallMm: 1.2 })).toBe(0);

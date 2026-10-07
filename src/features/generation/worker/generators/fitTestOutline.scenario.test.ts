@@ -643,6 +643,15 @@ describe('outline fit test: the dialog plans the pieces the worker cuts', () => 
     }
   });
 
+  it('prices an open side within reach of what it prints, rails included', async () => {
+    const params = rail(true);
+    const actual = meshVolume(asMeshData((await outline(params, defaultSize)).pieces[0]));
+    const predicted = estimateFitTestOutlineVolumeMm3(params, { heightMm: HEIGHT, wallMm: WALL });
+    // The ring across the channel's mouth is priced whole, so it may only read high.
+    expect(predicted).toBeGreaterThanOrEqual(actual * 0.97);
+    expect(predicted).toBeLessThan(actual * 1.2);
+  });
+
   it('keeps a channel whole by moving the seam behind its pocket', async () => {
     const innerW = 4 * 42 - GRIDFINITY.TOLERANCE - 2 * DEFAULT_BIN_PARAMS.wallThickness;
     const params: BinParams = {
