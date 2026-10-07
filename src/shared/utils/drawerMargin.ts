@@ -180,7 +180,7 @@ export interface OverhangSource extends BinRect {
 }
 
 /** A bin's own overhang, if it carries an enabled, non-trivial one. */
-function explicitBinOverhang(bin: Pick<OverhangSource, 'overhang'>): OverhangConfig | null {
+export function explicitBinOverhang(bin: Pick<OverhangSource, 'overhang'>): OverhangConfig | null {
   const o = bin.overhang;
   if (!o) return null;
   if (o.enabled === false) return null;

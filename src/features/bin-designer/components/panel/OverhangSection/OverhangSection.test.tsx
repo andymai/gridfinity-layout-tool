@@ -3,6 +3,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { OverhangSection } from './OverhangSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import { useLayoutStore } from '@/core/store/layout';
+import { createDefaultLayout } from '@/core/constants';
+import { createTestBin } from '@/test/testUtils';
+import { binId, designId, gridUnits, mm } from '@/core/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 
 describe('OverhangSection', () => {
@@ -297,6 +301,53 @@ describe('OverhangSection', () => {
     render(<OverhangSection />);
     fireEvent.click(screen.getByText('Taper walls'));
     expect(useDesignerStore.getState().params.overhang?.taper?.enabled).toBe(true);
+  });
+
+  it("shows the layout bin's overhang without writing it into the design", () => {
+    const base = createDefaultLayout();
+    useLayoutStore.setState({
+      layout: {
+        ...base,
+        drawer: { ...base.drawer, width: gridUnits(5), depth: gridUnits(4) },
+        baseplateParams: {
+          magnetHoles: false,
+          magnetDiameter: mm(6),
+          magnetDepth: mm(2),
+          paddingLeft: mm(4.5),
+          paddingRight: mm(0),
+          paddingFront: mm(0),
+          paddingBack: mm(0),
+        },
+        bins: [
+          createTestBin({
+            id: binId('bin-1'),
+            linkedDesignId: designId('design-1'),
+            extendToMargin: true,
+          }),
+        ],
+      },
+    });
+    useDesignerStore.setState({
+      currentDesignId: 'design-1',
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        overhang: { left: 2, right: 0, front: 0, back: 0, enabled: true },
+      },
+    });
+    window.history.replaceState(null, '', '/designer?id=design-1&bin=bin-1');
+    try {
+      render(<OverhangSection />);
+      expect(screen.getByText('Overhang from the layout')).toBeDefined();
+      expect(screen.getByText('4.5 mm')).toBeDefined();
+      expect(useDesignerStore.getState().params.overhang?.left).toBe(2);
+
+      // The design's own Overhang still edits, for the placements that use it.
+      fireEvent.click(screen.getByRole('switch', { name: 'Overhang' }));
+      expect(useDesignerStore.getState().params.overhang?.enabled).toBe(false);
+      expect(screen.getByText('Overhang from the layout')).toBeDefined();
+    } finally {
+      window.history.replaceState(null, '', '/');
+    }
   });
 
   it('disables the controls for custom-shape bins', () => {
