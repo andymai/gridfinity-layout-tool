@@ -461,22 +461,52 @@ export const MAX_OFFSET_POINTS = 500;
  * Furthest (mm) thinning may move the outline: the chord deviation the app
  * already flattens arcs to, and the tolerance an imported mesh's opening is
  * simplified to before its chamfer, both far below what a print resolves. An
- * outline with more real detail than the point budget keeps it, and pays for
- * it in offset time.
+ * outline with more real detail than the point budget keeps it, within
+ * {@link HARD_MAX_OFFSET_POINTS} and {@link MAX_EDGES_PER_REACH}.
  */
 export const MAX_THINNING_MM = ARC_FLATTEN_TOLERANCE;
 
 /**
- * The outline thinned (Douglas–Peucker) toward {@link MAX_OFFSET_POINTS},
- * doubling the tolerance from {@link COINCIDENT_POINT_EPSILON} until it fits
- * or reaches {@link MAX_THINNING_MM}. An outline already within the budget is
- * used as it is. Null when thinning makes the outline touch itself.
+ * Hard ceiling on the points an outline is offset with, past which thinning
+ * gives up detail. Shared links and community designs carry paths that run in
+ * the viewer's worker, so the work has to be bounded whatever a path holds.
  */
-function withinPointBudget(points: readonly Pt[]): readonly Pt[] | null {
+export const HARD_MAX_OFFSET_POINTS = 5000;
+
+/**
+ * Most edges any cell four offsets wide may hold before thinning gives up
+ * detail. Every pass meets only edges within a few offsets of each other, so
+ * this, with {@link HARD_MAX_OFFSET_POINTS}, bounds the work on an outline
+ * that packs its points into a small area.
+ */
+export const MAX_EDGES_PER_REACH = 96;
+
+/** Cell size, in offsets, that {@link MAX_EDGES_PER_REACH} is counted over. */
+const REACH_CELL = 4;
+
+/**
+ * The outline thinned (Douglas–Peucker), doubling the tolerance from
+ * {@link COINCIDENT_POINT_EPSILON}. Up to {@link MAX_THINNING_MM} it stops at
+ * {@link MAX_OFFSET_POINTS}, or at that tolerance with more points, which
+ * keeps every real detail. Past it, it goes on until the outline is within
+ * {@link HARD_MAX_OFFSET_POINTS} and {@link MAX_EDGES_PER_REACH}, which no
+ * real profile reaches. An outline already within the first budget is used as
+ * it is. Null when thinning makes the outline touch itself.
+ */
+function withinPointBudget(points: readonly Pt[], d: number): readonly Pt[] | null {
   if (points.length <= MAX_OFFSET_POINTS) return points;
-  for (let tol = COINCIDENT_POINT_EPSILON; ; tol = Math.min(2 * tol, MAX_THINNING_MM)) {
+  const coarser = (tol: number): number =>
+    tol < MAX_THINNING_MM ? Math.min(2 * tol, MAX_THINNING_MM) : 2 * tol;
+  for (let tol = COINCIDENT_POINT_EPSILON; ; tol = coarser(tol)) {
     const keep = proxyIndices(points, tol, Infinity);
-    if (keep.length > MAX_OFFSET_POINTS && tol < MAX_THINNING_MM) continue;
+    if (keep.length > MAX_OFFSET_POINTS) {
+      if (tol < MAX_THINNING_MM || keep.length > HARD_MAX_OFFSET_POINTS) continue;
+      const crowd = new EdgeGrid(
+        keep.map((v) => points[v]),
+        REACH_CELL * d
+      ).busiest();
+      if (crowd > MAX_EDGES_PER_REACH) continue;
+    }
     if (keep.length === points.length) return points;
     const thinned = keep.map((v) => points[v]);
     return thinned.length < 3 || touchesItself(thinned) ? null : thinned;
@@ -502,7 +532,7 @@ function withinPointBudget(points: readonly Pt[]): readonly Pt[] | null {
  * itself.
  */
 export function refineForOffset(points: readonly Pt[], d: number): Pt[] | null {
-  const outline = d > 0 ? withinPointBudget(points) : points;
+  const outline = d > 0 ? withinPointBudget(points, d) : points;
   if (!outline) return null;
   const { reach } = offsetClosedPolygonWithinReach(outline, d);
   const n = outline.length;

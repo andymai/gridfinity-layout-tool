@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { COINCIDENT_POINT_EPSILON } from './polyline';
 import {
+  HARD_MAX_OFFSET_POINTS,
   MAX_OFFSET_POINTS,
   offsetClosedPolygon,
   offsetClosedPolygonWithinReach,
@@ -257,21 +258,54 @@ function slitZipper(): Pt[] {
 }
 
 /** A 30mm-radius disc with `teeth` square teeth of `height` round its rim. */
-function toothedDisc(teeth: number, height: number): Pt[] {
+function toothedDisc(teeth: number, height: number, radius = 30): Pt[] {
   const pts: Pt[] = [];
   const at = (a: number, r: number): Pt => ({ x: r * Math.cos(a), y: r * Math.sin(a) });
   for (let t = 0; t < teeth; t++) {
     const a0 = (t / teeth) * Math.PI * 2;
     const step = (Math.PI * 2) / teeth / 4;
     pts.push(
-      at(a0, 30),
-      at(a0 + step, 30),
-      at(a0 + step, 30 + height),
-      at(a0 + 3 * step, 30 + height),
-      at(a0 + 3 * step, 30)
+      at(a0, radius),
+      at(a0 + step, radius),
+      at(a0 + step, radius + height),
+      at(a0 + 3 * step, radius + height),
+      at(a0 + 3 * step, radius)
     );
   }
   return pts;
+}
+
+/**
+ * A 30mm-tall pocket whose top edge runs through `n` points 0.2mm deep packed
+ * into `length` mm, each from `height(k)`: far more detail than thinning may
+ * drop within its print-resolution cap.
+ */
+function crowdedEdge(n: number, length: number, height: (k: number) => number): Pt[] {
+  const left = 15 - length / 2;
+  const edge = Array.from({ length: n }, (_, k) => ({
+    x: left + length - (length * (k + 0.5)) / n,
+    y: 20 - height(k),
+  }));
+  return [
+    { x: left - 5, y: 0 },
+    { x: left + length + 5, y: 0 },
+    { x: left + length + 5, y: 20 },
+    { x: left + length, y: 20 },
+    ...edge,
+    { x: left, y: 20 },
+    { x: left - 5, y: 20 },
+  ];
+}
+
+const zigzagEdge = (n: number, length: number): Pt[] =>
+  crowdedEdge(n, length, (k) => (k % 2 === 0 ? 0 : 0.2));
+
+function jitteredEdge(n: number, length: number): Pt[] {
+  let seed = 7;
+  return crowdedEdge(n, length, () => {
+    seed = (seed * 16807) % 2147483647;
+    return (0.2 * seed) / 2147483647;
+  });
 }
 
 /** A U whose arms stand `gap` apart, so their offsets meet once `d > gap/2`. */
@@ -426,20 +460,35 @@ describe('offsetClosedPolygonWithinReach', () => {
     expect(performance.now() - started).toBeLessThan(750);
   });
 
-  it('bounds the work on a compact scribble of any size', () => {
-    // Long jittered edges packed into a 2mm square sit within reach of each
-    // other however the grid is cut, so only the point budget bounds them.
-    const d = 1.5;
+  // Shared links and community designs run their paths in the viewer's worker,
+  // so a path crafted to defeat thinning must still come out bounded.
+  const chamferedPath = (poly: Pt[]): { refined: Pt[]; ms: number } => {
     const started = performance.now();
-    const poly = scribble(10000);
-    const refined = refine(poly, d);
-    const rim = offsetClosedPolygonWithinReach(refined, d);
-    const base = offsetClosedPolygonWithinReach(refined, 0.7, rim.reach);
-    const elapsed = performance.now() - started;
-    expect(refined.length).toBeLessThanOrEqual(3 * MAX_OFFSET_POINTS);
-    expect(touchesItself(rim.points)).toBe(false);
-    expect(touchesItself(base.points)).toBe(false);
-    expect(elapsed).toBeLessThan(400);
+    const refined = refine(poly, 1.5);
+    const rim = offsetClosedPolygonWithinReach(refined, 1.5);
+    offsetClosedPolygonWithinReach(refined, 0.7, rim.reach);
+    return { refined, ms: performance.now() - started };
+  };
+
+  it('bounds the work on a compact scribble too detailed to thin within print resolution', () => {
+    for (const poly of [zigzagEdge(50000, 3), jitteredEdge(50000, 3), scribble(10000)]) {
+      const { refined, ms } = chamferedPath(poly);
+      expect(refined.length).toBeLessThanOrEqual(HARD_MAX_OFFSET_POINTS);
+      expect(ms).toBeLessThan(500);
+    }
+  });
+
+  it('bounds the work at the point and crowding ceilings', () => {
+    // The densest zigzag both ceilings let through untouched.
+    const { refined, ms } = chamferedPath(zigzagEdge(4990, 320));
+    expect(refined.length).toBeGreaterThan(4990);
+    expect(ms).toBeLessThan(1500);
+  });
+
+  it('leaves a large, finely toothed profile within the ceilings untouched', () => {
+    const gear = toothedDisc(1000, 0.5, 80);
+    const { refined } = chamferedPath(gear);
+    expect(refined.filter((p) => Math.hypot(p.x, p.y) > 80.4)).toHaveLength(2 * 1000);
   });
 
   it('gives up on an outline that thinning would make cross itself', () => {

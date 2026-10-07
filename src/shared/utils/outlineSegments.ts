@@ -101,6 +101,10 @@ function distance2(p: Pt, a: Pt, b: Pt): number {
  * every vertex it drops lies within `tol` of the proxy edge replacing its
  * run, and no proxy edge that replaces a run is longer than `maxSpan`, so a
  * hold measured on one stays local. Sorted, starting at vertex 0.
+ *
+ * A run splits at its worst vertex unless that lies in the run's outer eighth,
+ * when it splits in the middle instead: every run still ends within `tol`, and
+ * a crafted outline cannot drive the splits one vertex at a time.
  */
 export function proxyIndices(points: readonly Pt[], tol: number, maxSpan: number): number[] {
   const n = points.length;
@@ -136,7 +140,9 @@ export function proxyIndices(points: readonly Pt[], tol: number, maxSpan: number
     }
     const long = (pb.x - pa.x) ** 2 + (pb.y - pa.y) ** 2 > maxSpan * maxSpan;
     if (worst2 <= tol * tol && !long) continue;
-    const split = worst2 > tol * tol ? worst : (a + b) >> 1;
+    const margin = (b - a) >> 3;
+    const balanced = worst - a > margin && b - worst > margin;
+    const split = worst2 > tol * tol && balanced ? worst : (a + b) >> 1;
     keep[split] = 1;
     runs.push(a, split, split, b);
   }
@@ -189,6 +195,13 @@ export class EdgeGrid {
       const b = poly[e + 1 === n ? 0 : e + 1];
       this.walk(a, b, 0, e, null);
     }
+  }
+
+  /** Most edges any one cell holds. */
+  busiest(): number {
+    let most = 0;
+    for (const list of this.cells.values()) most = Math.max(most, list.length);
+    return most;
   }
 
   /** Into `out`, every edge with a piece within roughly `pad` of the segment, once. */
