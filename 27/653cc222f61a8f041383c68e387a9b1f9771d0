@@ -1,0 +1,33 @@
+src/features/bin-designer/store/customBinRegistry.ts
+  s_900382acfc8cb3::t_fb96c0920c9538 17
+  s_900382acfc8cb3::t_a8a5dbf33f8d98 489-500
+  s_900382acfc8cb3::t_f7f7cc574b2951 488
+src/features/bin-designer/components/DesignerPage/useDesignNameEditor.ts
+  s_900382acfc8cb3::t_e7265f6df99c83 21
+  s_900382acfc8cb3::t_9d58a208a5e8b0 51
+  s_900382acfc8cb3::t_2920d04ffa8f27 5
+  s_900382acfc8cb3::t_25cd5692520c36 162
+  s_900382acfc8cb3::t_dfaefa7dbb5393 85-95
+src/features/bin-designer/components/DesignerPage/useDesignNameEditor.test.ts
+  s_900382acfc8cb3::t_68af57e707ab79 64,161,181,198,212
+  s_900382acfc8cb3::t_d11d8ce50afe05 1-63,65-160,162-180,182-197,199-211,213-218
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_900382acfc8cb3::t_0f3d9228011d57 8,184-204
+  s_900382acfc8cb3::t_fb52cbcb446d71 205-206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "27653cc222f61a8f041383c68e387a9b1f9771d0",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
