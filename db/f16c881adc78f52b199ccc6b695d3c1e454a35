@@ -1,0 +1,105 @@
+src/i18n/locales/nl.json
+  s_900382acfc8cb3::t_b368b70f7da944 4436
+src/i18n/locales/sv.json
+  s_900382acfc8cb3::t_b368b70f7da944 4436
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.ts
+  s_900382acfc8cb3::t_89d3203b816b01 24-28,80-81,95-100,143-144,149-154,158,181,203-209
+src/i18n/locales/es.json
+  s_900382acfc8cb3::t_b368b70f7da944 4436
+src/i18n/locales/uk.json
+  s_900382acfc8cb3::t_b368b70f7da944 4436
+src/features/generation/worker/generators/meshImport.test.ts
+  s_900382acfc8cb3::t_df5364f1ff474e 257-274,279,287-292,296-299
+  s_900382acfc8cb3::t_29ab3777a69c09 275-278,280-286,293-295
+  s_900382acfc8cb3::t_57ea4db10d6a5d 256
+src/features/generation/bridge/GenerationBridge.ts
+  s_900382acfc8cb3::t_a12197325817ec 329-330,339
+src/i18n/locales/ko.json
+  s_900382acfc8cb3::t_b368b70f7da944 4436
+api/lib/designerValidation.crossBoundary.test.ts
+  s_900382acfc8cb3::t_bb872b32c30d26 108,284-288
+src/i18n/locales/pt-BR.json
+  s_900382acfc8cb3::t_b368b70f7da944 4436
+src/features/generation/worker/generators/meshImprint.ts
+  s_900382acfc8cb3::t_a61af91eac9fbf 129-133
+  s_900382acfc8cb3::t_c1ef9d3ff4ffc3 95-103
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_900382acfc8cb3::t_23a33647a4dc8b 24-27,350-352,354,356-357,362-366,379,381
+  s_900382acfc8cb3::t_7b2afa6daaf714 9,359-361
+  s_900382acfc8cb3::t_c9245e73b83d6f 23
+src/features/bin-designer/types/designerState.ts
+  s_900382acfc8cb3::t_23a33647a4dc8b 306-307
+api/lib/designerValidation.test.ts
+  s_900382acfc8cb3::t_5c3444516b9fd1 1839,1841-1857
+src/features/generation/bridge/generationTimeout.test.ts
+  s_900382acfc8cb3::t_e4d51bd1956eb3 35,37-38,513-557
+  s_900382acfc8cb3::t_c2ea16d3caf8c4 558-559
+src/features/bin-designer/store/slices/cutoutSlice.test.ts
+  s_900382acfc8cb3::t_1bead940573d0d 1801
+  s_900382acfc8cb3::t_c0e57bf28ebc5c 1802
+  s_900382acfc8cb3::t_37fa9193a1c50f 5-8,1750,1770,1772-1776,1782-1800,1803-1805
+api/lib/designerValidationConstants.ts
+  s_900382acfc8cb3::t_9c614be1098510 106-109,111
+src/shared/generation/meshAsset.test.ts
+  s_900382acfc8cb3::t_13355554ecb93a 9,11-14,16,190-234
+  s_900382acfc8cb3::t_3591da5c15a5fa 235
+src/i18n/locales/en.ts
+  s_900382acfc8cb3::t_b368b70f7da944 1445-1446
+src/features/generation/worker/handlers/importMeshHandler.ts
+  s_900382acfc8cb3::t_a12197325817ec 16,18
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.test.ts
+  s_900382acfc8cb3::t_207eb86cca7ae3 5-9,164-169,177-182,216-284
+  s_900382acfc8cb3::t_97b69eeff8bac7 285
+src/features/generation/worker/generators/meshImprint.cache.test.ts
+  s_900382acfc8cb3::t_6d6cf2533ef3c4 1-10,12-16,18-33,58-110
+  s_900382acfc8cb3::t_f069364d990a63 11,17,34-57
+src/i18n/locales/zh-CN.json
+  s_900382acfc8cb3::t_b368b70f7da944 4436
+src/i18n/locales/ja.json
+  s_900382acfc8cb3::t_b368b70f7da944 4436
+src/shared/generation/meshAsset.ts
+  s_900382acfc8cb3::t_c2ad7cf98a5036 163-169
+  s_900382acfc8cb3::t_62fb0c7f5b768d 86-87,94
+  s_900382acfc8cb3::t_1710b45a96aad4 64-85,88-93,95-96
+  s_900382acfc8cb3::t_4b2315bb686b0b 111-115,117-121,123-133
+content/gridfinity-cutout-generator.md
+  s_900382acfc8cb3::t_a1bad4123a5021 61,101
+src/i18n/locales/de.json
+  s_900382acfc8cb3::t_b368b70f7da944 4436
+src/features/generation/bridge/generationTimeout.ts
+  s_900382acfc8cb3::t_a8dc2071c0e5c2 21,152-153,158-160,375-376
+  s_900382acfc8cb3::t_62fb0c7f5b768d 154-157
+  s_900382acfc8cb3::t_5eea58c337050c 377
+src/i18n/locales/ka.json
+  s_900382acfc8cb3::t_b368b70f7da944 1201
+src/i18n/locales/cs.json
+  s_900382acfc8cb3::t_b368b70f7da944 4436
+src/i18n/locales/it.json
+  s_900382acfc8cb3::t_b368b70f7da944 4436
+src/i18n/locales/nb.json
+  s_900382acfc8cb3::t_b368b70f7da944 4436
+src/features/generation/worker/generators/meshImport.ts
+  s_900382acfc8cb3::t_5cf5d4892029bd 214-215,218,240-241,281-285,288,292
+src/features/generation/bridge/messages.ts
+  s_900382acfc8cb3::t_a12197325817ec 67-68
+src/i18n/locales/fr.json
+  s_900382acfc8cb3::t_b368b70f7da944 4436
+src/i18n/locales/pl.json
+  s_900382acfc8cb3::t_b368b70f7da944 4436
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dbf16c881adc78f52b199ccc6b695d3c1e454a35",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
