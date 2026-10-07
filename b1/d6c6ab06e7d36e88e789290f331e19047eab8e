@@ -1,0 +1,120 @@
+src/features/generation/worker/generators/meshImprint.test.ts
+  s_900382acfc8cb3::t_377ff67181fd27 15-17,20-21,100,476-519
+  s_900382acfc8cb3::t_1906484030c433 520-521
+src/features/generation/worker/generators/meshImprintTools.ts
+  s_900382acfc8cb3::t_23460bb7b21e31 191,193-194,387
+  s_900382acfc8cb3::t_17eccaef6dd61e 192
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutPointerHandlers.ts
+  s_900382acfc8cb3::t_fcc0ea88cec5cc 13,64
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_900382acfc8cb3::t_5ce0505023d3d2 32,82
+src/shared/generation/meshAsset.ts
+  s_900382acfc8cb3::t_18a63ccd4db049 50-70
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_900382acfc8cb3::t_317ce170d304cb 65,188,196,198
+src/features/bin-designer/components/panel/CutoutsSection/renderer/MeshFootprintMesh.tsx
+  s_900382acfc8cb3::t_195beaade5b114 4-10,17,64-65,70-83,90-94,96-98,101,113-117
+  s_900382acfc8cb3::t_ed8a09e3ce5c8b 118
+src/features/generation/worker/meshFiles.ts
+  s_900382acfc8cb3::t_a9f2947a095720 54-55
+  s_900382acfc8cb3::t_bb9c205e65d968 1-53,56-72
+src/features/bin-designer/components/CutoutWorkspace/CutoutOpenSidesControls.tsx
+  s_900382acfc8cb3::t_6462d75db2a96c 4
+  s_900382acfc8cb3::t_27538268e209a2 67
+  s_900382acfc8cb3::t_6a874092cf8e63 71-72
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_900382acfc8cb3::t_475b477bf61548 199-227
+src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.ts
+  s_900382acfc8cb3::t_fcc0ea88cec5cc 27,51,198
+src/shared/hooks/useLinkedDesignMeshes.test.ts
+  s_900382acfc8cb3::t_208aa2c22eb40c 39
+  s_900382acfc8cb3::t_1ce6d7c44a19c4 23,351-383
+  s_900382acfc8cb3::t_f6e2d4ce31b450 40
+  s_900382acfc8cb3::t_d1645d73ee4031 384-385
+src/shared/generation/meshRefs.ts
+  s_900382acfc8cb3::t_33669668d5aa73 1-19,23-24,26-192
+  s_900382acfc8cb3::t_0cf0468b47dbd6 20-22,25
+src/features/generation/worker/meshFiles.test.ts
+  s_900382acfc8cb3::t_5251ce4ff4f4df 1-95
+src/shared/utils/cutoutOutline.ts
+  s_900382acfc8cb3::t_05db675783f316 11-12,130-131,133-135,140
+src/features/generation/worker/items/importedMeshItem.ts
+  s_900382acfc8cb3::t_513c1dad4f503d 11,17,23,28-30,33-34,37-40,49,81,89,117
+src/features/bin-designer/components/panel/CutoutsSection/handlers/rulerHandler.ts
+  s_900382acfc8cb3::t_fcc0ea88cec5cc 20,52
+src/features/bin-designer/types/designerState.ts
+  s_900382acfc8cb3::t_6a874092cf8e63 2,306
+src/features/bin-designer/components/panel/CutoutsSection/cutoutOutline.test.ts
+  s_900382acfc8cb3::t_e9a382673560f2 3-4,196-211
+  s_900382acfc8cb3::t_03f9b7dffcb910 212
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutClipboard.ts
+  s_900382acfc8cb3::t_fcc0ea88cec5cc 12,60
+src/features/bin-designer/components/panel/CutoutsSection/renderer/OpenSideOverlay.tsx
+  s_900382acfc8cb3::t_27538268e209a2 11,29,34,49
+src/features/bin-designer/components/panel/CutoutsSection/lidWindowFit.ts
+  s_900382acfc8cb3::t_fcc0ea88cec5cc 25,137,274
+src/features/bin-designer/components/panel/CutoutsSection/renderer/OffBoardFrames3D.tsx
+  s_900382acfc8cb3::t_27538268e209a2 14
+  s_900382acfc8cb3::t_74ff4657d5943d 45
+src/features/bin-designer/components/panel/CutoutsSection/cutoutInteractionTypes.ts
+  s_900382acfc8cb3::t_fcc0ea88cec5cc 9,137
+src/shared/generation/meshRefs.test.ts
+  s_900382acfc8cb3::t_7e4573b9881fe8 1-53,55-167,169-197
+  s_900382acfc8cb3::t_55a1d4526a30a9 54,168
+src/shared/types/item.ts
+  s_900382acfc8cb3::t_5c38e16cdc2c0d 14,97
+  s_900382acfc8cb3::t_b2da85a49045f0 96
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_900382acfc8cb3::t_5ce0505023d3d2 41,206-208
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_900382acfc8cb3::t_6a874092cf8e63 22,349
+src/features/bin-designer/components/panel/CutoutsSection/cutoutOutline.ts
+  s_900382acfc8cb3::t_66662b11f39768 22,112-113,121-122,125
+  s_900382acfc8cb3::t_fcc0ea88cec5cc 21,118,141
+src/shell/layoutExport/useLayoutExport.ts
+  s_900382acfc8cb3::t_f7cc1ae75fb2cc 29,261-263
+src/features/bin-designer/components/panel/CutoutsSection/maskFit.ts
+  s_900382acfc8cb3::t_fcc0ea88cec5cc 19,185,220
+src/shared/hooks/useMeshOutlines.test.ts
+  s_900382acfc8cb3::t_d9e0de9d418378 1-83
+src/shared/items/importedMesh/descriptor.test.ts
+  s_900382acfc8cb3::t_fe562fd725724c 90-107
+src/features/bin-designer/components/panel/CutoutsSection/handlers/types.ts
+  s_900382acfc8cb3::t_fcc0ea88cec5cc 10,38
+src/shared/hooks/useMeshOutlines.ts
+  s_900382acfc8cb3::t_fe76fad602c6ea 1-43
+  s_900382acfc8cb3::t_836f93635a43aa 44-45
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutEditor.ts
+  s_900382acfc8cb3::t_74ff4657d5943d 122-123
+  s_900382acfc8cb3::t_317ce170d304cb 22,185
+src/features/bin-designer/types/binParams.ts
+  s_900382acfc8cb3::t_5c38e16cdc2c0d 2,90
+  s_900382acfc8cb3::t_b2da85a49045f0 86-88
+src/features/generation/worker/items/importedMeshItem.test.ts
+  s_900382acfc8cb3::t_0ac0e8e714a25e 4-5,10,116-146
+  s_900382acfc8cb3::t_a5671f602fdd5e 147-148
+src/features/generation/worker/generators/meshImprint.ts
+  s_900382acfc8cb3::t_23460bb7b21e31 27,41,55,85-86,99-101,105-106,131,253-256,260
+src/shared/items/importedMesh/descriptor.ts
+  s_900382acfc8cb3::t_cf876a154dc38c 12,47-54,58
+src/shared/generation/meshFile.ts
+  s_900382acfc8cb3::t_6c307497c9bac4 54,89,93-94,147-149
+src/shared/generation/meshOutlines.ts
+  s_900382acfc8cb3::t_64a6c9d5ba5040 1-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b1d6c6ab06e7d36e88e789290f331e19047eab8e",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
