@@ -1,0 +1,54 @@
+src/features/generation/worker/generators/drawerMarginSeat.scenario.test.ts
+  s_900382acfc8cb3::t_79418e808eed68 144-145
+  s_900382acfc8cb3::t_71f057badcafa5 1-5,11,16-24,26-32,35,37,40-44,47-68,71-72,74-77,93,96-102,104-110,113-114,116-117,120-124,126-129,131-135,137-138,142,152-153,155-158,161
+  s_900382acfc8cb3::t_0bee3692401d29 148
+  s_900382acfc8cb3::t_eeaa97e46da19c 6-10,12-15,25,33-34,36,38,45-46,69-70,73,78-92,94-95,103,111-112,115,118-119,125,130,136,139-141,143,146-147,149-151,154,159-160
+  s_900382acfc8cb3::t_c1eeb8b729a846 39
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverhangExtensions/binOverhangStrips.ts
+  s_900382acfc8cb3::t_e74e1e8b177614 6,13-17,24,39-43,85,97,101-104,107-111
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_900382acfc8cb3::t_e86a926778931f 26
+  s_900382acfc8cb3::t_9591c05033c4c8 27-29
+  s_934714727841f0::t_348ee4c4fea70d 30-31,56-60,191,194,209
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverhangExtensions/BinOverhangExtensions.tsx
+  s_900382acfc8cb3::t_5e7e7bd9e704b1 16,18-19,27,40,51,53,62,71-73
+  s_900382acfc8cb3::t_d1dec79fc0af46 28,52
+src/shared/hooks/useLinkedDesignMeshes.test.ts
+  s_900382acfc8cb3::t_626adb5e102d58 26-27,31,198,219
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverhangExtensions/BinOverhangExtensions.test.tsx
+  s_900382acfc8cb3::t_dc06ad7c5c2bba 3,9-10,12,97-115
+  s_900382acfc8cb3::t_78d08265d934d1 67,79,92
+  s_900382acfc8cb3::t_313d0cb0dcd25c 116
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/useDesignGeometries.ts
+  s_900382acfc8cb3::t_48cf1ce0eebbec 16-17,67-74,92-93,180,186-188
+src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreview.tsx
+  s_900382acfc8cb3::t_5e7e7bd9e704b1 226
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverhangExtensions/binOverhangStrips.test.ts
+  s_900382acfc8cb3::t_78d08265d934d1 71-96
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/useDesignGeometries.test.ts
+  s_900382acfc8cb3::t_78d08265d934d1 136-164
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4f68219e775e9554563069b5e1ff5518ec22d0ed",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_934714727841f0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a7f0da6ec9702b449",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
