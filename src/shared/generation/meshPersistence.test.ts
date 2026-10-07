@@ -65,6 +65,20 @@ describe('binMeshCacheKey', () => {
     expect(wider).not.toBe(base);
   });
 
+  it('keys a mesh ref by its hash: one key per mesh, the same key for copies', () => {
+    const ref = (hash: string) => ({
+      name: 'tool',
+      hash,
+      triangleCount: 4,
+      sizeMm: { x: 1, y: 1, z: 1 },
+      bytes: 10,
+    });
+    const keyFor = (hash: string) =>
+      binMeshCacheKey({ ...DEFAULT_BIN_PARAMS, meshAssets: { m1: ref(hash) } }, 'occt-wasm');
+    expect(keyFor('a'.repeat(64))).not.toBe(keyFor('b'.repeat(64)));
+    expect(keyFor('a'.repeat(64))).toBe(keyFor('a'.repeat(64)));
+  });
+
   it('is prefixed with the cache version so a bump orphans old keys', () => {
     expect(binMeshCacheKey(DEFAULT_BIN_PARAMS, 'occt-wasm')).toMatch(/^v\d/);
   });

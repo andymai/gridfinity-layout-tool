@@ -15,6 +15,7 @@ import type { MeshAsset, MeshAssetEntry, MeshAssetRef } from './meshAsset';
 import { encodeMeshFile, parseMeshFile } from './meshFile';
 import { hasMeshOutlines, setMeshOutlines } from './meshOutlines';
 import { getMeshFile, putMeshFile } from './meshStore';
+import { sha256Hex } from './sha256';
 
 export class MeshFileMissingError extends Error {
   readonly hash: string;
@@ -50,21 +51,46 @@ function importedMeshAssetOf(structure: unknown): MeshAssetEntry | undefined {
   return kind === 'importedMesh' && isEntry(asset) ? asset : undefined;
 }
 
-const storing = new WeakMap<MeshAsset, Promise<MeshAssetRef | null>>();
+export interface MeshAssetFile {
+  readonly ref: MeshAssetRef;
+  readonly bytes: Uint8Array<ArrayBuffer>;
+}
 
-async function writeMeshAsset(asset: MeshAsset): Promise<MeshAssetRef | null> {
+const assetFiles = new WeakMap<MeshAsset, Promise<MeshAssetFile | null>>();
+
+async function encodeAssetFile(asset: MeshAsset): Promise<MeshAssetFile | null> {
   const file = encodeMeshFile(asset);
   if (isErr(file)) return null;
-  const hash = await putMeshFile(file.value);
-  if (hash === null) return null;
-  setMeshOutlines(hash, asset.outlines);
-  return {
+  const ref: MeshAssetRef = {
     name: asset.name,
-    hash,
+    hash: await sha256Hex(file.value),
     triangleCount: asset.triangleCount,
     sizeMm: asset.sizeMm,
     bytes: file.value.byteLength,
   };
+  return { ref, bytes: file.value };
+}
+
+/**
+ * An inline asset's mesh file and the ref that names it, without storing
+ * either; null when the file format cannot hold the asset.
+ */
+export function meshAssetFile(asset: MeshAsset): Promise<MeshAssetFile | null> {
+  let known = assetFiles.get(asset);
+  if (!known) {
+    known = encodeAssetFile(asset).catch(() => null);
+    assetFiles.set(asset, known);
+  }
+  return known;
+}
+
+const storing = new WeakMap<MeshAsset, Promise<MeshAssetRef | null>>();
+
+async function writeMeshAsset(asset: MeshAsset): Promise<MeshAssetRef | null> {
+  const file = await meshAssetFile(asset);
+  if (!file || (await putMeshFile(file.bytes)) === null) return null;
+  setMeshOutlines(file.ref.hash, asset.outlines);
+  return file.ref;
 }
 
 /**

@@ -46,7 +46,25 @@ export type WorkerMessage =
   | ExportCombinedMessage
   | ExportSplitMessage
   | ExportSplitRangeMessage
-  | ImportMeshMessage;
+  | ImportMeshMessage
+  | PutMeshMessage
+  | DropMeshMessage;
+
+/**
+ * A mesh file (`meshFile.ts`) for the refs in later requests, sent once per
+ * worker and named by its hash. The bytes are transferred.
+ */
+export interface PutMeshMessage {
+  readonly type: 'PUT_MESH';
+  readonly hash: string;
+  readonly bytes: Uint8Array;
+}
+
+/** Release a file the bridge sent, which no request in flight needs. */
+export interface DropMeshMessage {
+  readonly type: 'DROP_MESH';
+  readonly hash: string;
+}
 
 /**
  * Parse + normalize an uploaded STL into a compressed `MeshAsset` (mesh

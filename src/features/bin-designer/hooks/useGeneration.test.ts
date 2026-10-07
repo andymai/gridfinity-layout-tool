@@ -622,6 +622,31 @@ describe('useGeneration', () => {
     expect(mesh.vertices).toEqual(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]));
   });
 
+  it('shows but never persists a mesh built while a mesh file was missing', async () => {
+    const pendingResult = {
+      mesh: {
+        vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        indices: new Uint32Array([0, 1, 2]),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 1,
+      },
+      timingMs: 5,
+      meshesPending: true as const,
+    };
+    (mockBridge.generate as ReturnType<typeof vi.fn>).mockResolvedValue(pendingResult);
+    (mockBridge.generateImmediate as ReturnType<typeof vi.fn>).mockResolvedValue(pendingResult);
+    renderHook(() => useGeneration());
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+      await vi.advanceTimersByTimeAsync(201);
+    });
+
+    expect(useDesignerStore.getState().generation.status).toBe('complete');
+    expect(mockSavePersisted).not.toHaveBeenCalled();
+  });
+
   // The persisted entry must be namespaced by the kernel that built it,
   // or a Labs engine switch serves the other engine's mesh for unchanged params.
   it('persists under a key namespaced by the active kernel', async () => {

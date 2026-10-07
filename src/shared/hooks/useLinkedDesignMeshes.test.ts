@@ -240,6 +240,23 @@ describe('useLinkedDesignMeshes', () => {
     expect(mockRelease).toHaveBeenCalledTimes(1);
   });
 
+  it('shows a mesh built while a mesh file was missing without persisting it', async () => {
+    const mesh = makeMesh();
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(ok(makeBinDesign()));
+    mockAcquire.mockResolvedValue({
+      generateImmediate: vi.fn(async () => ({ mesh, meshesPending: true })),
+    } as unknown as Awaited<ReturnType<typeof bridgeManager.acquire>>);
+
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
+    const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+    await waitFor(() => {
+      expect(result.current.get(B1)?.mesh).toBe(mesh);
+    });
+    expect(mockSavePersistedBinMesh).not.toHaveBeenCalled();
+  });
+
   // This reader returns a persisted hit and stops, with no regeneration
   // behind it, so a key shared across engines would strand the other engine's
   // mesh in the layout preview until LRU eviction.

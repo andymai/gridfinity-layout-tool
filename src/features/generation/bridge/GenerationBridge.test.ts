@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GenerationBridge } from './GenerationBridge';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { unwrap } from '@/core/result';
+import { encodeMeshData } from '@/shared/generation/meshAsset';
+import type { MeshAsset, MeshAssetRef } from '@/shared/generation/meshAsset';
+import { __resetMeshStoreForTests } from '@/shared/generation/meshStore';
+import type { BinParams, Cutout } from '@/shared/types/bin';
+import { MeshUnavailableError } from './meshDelivery';
 import type { WorkerResponse, MeshResultResponse } from './types';
 
 /**
@@ -1007,6 +1013,120 @@ describe('GenerationBridge', () => {
       bridge.destroy();
       bridge.destroy(); // Should not throw
       expect(bridge.isDestroyed).toBe(true);
+    });
+  });
+
+  describe('mesh delivery', () => {
+    type Posted = {
+      type: string;
+      hash?: string;
+      payload?: { requestId: string; params: BinParams };
+    };
+
+    const missing: MeshAssetRef = {
+      name: 'gone',
+      hash: '5'.repeat(64),
+      triangleCount: 4,
+      sizeMm: { x: 30, y: 30, z: 30 },
+      bytes: 1,
+    };
+    const cutout: Cutout = {
+      id: 'c1',
+      shape: 'mesh',
+      meshId: 'm1',
+      x: 5,
+      y: 5,
+      width: 30,
+      depth: 30,
+      cutDepth: 10,
+      rotation: 0,
+      cornerRadius: 0,
+      label: '',
+      groupId: null,
+    };
+
+    async function makeAsset(): Promise<MeshAsset> {
+      const positions = new Float32Array([0, 0, 0, 30, 0, 0, 0, 30, 0, 0, 0, 30]);
+      const indices = new Uint32Array([0, 2, 1, 0, 1, 3, 0, 3, 2, 1, 2, 3]);
+      return {
+        name: 'tool',
+        data: unwrap(await encodeMeshData(positions, indices)),
+        triangleCount: 4,
+        sizeMm: { x: 30, y: 30, z: 30 },
+        outlines: [
+          [
+            { x: 0, y: 0 },
+            { x: 30, y: 0 },
+            { x: 0, y: 30 },
+          ],
+        ],
+      };
+    }
+
+    const posted = (): Posted[] => getWorker().messages as Posted[];
+    const ofType = (type: string): Posted[] => posted().filter((m) => m.type === type);
+
+    function answer(message: Posted): void {
+      getWorker().simulateResponse({
+        type: 'MESH_RESULT',
+        requestId: message.payload?.requestId ?? '',
+        vertices: new Float32Array(0),
+        normals: new Float32Array(0),
+        indices: new Uint32Array(0),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 0,
+        timingMs: 1,
+      });
+    }
+
+    beforeEach(async () => {
+      vi.useRealTimers();
+      __resetMeshStoreForTests();
+      await bridge.init();
+    });
+
+    it('sends a mesh file once, ahead of the request, which carries only its ref', async () => {
+      const params = {
+        ...DEFAULT_BIN_PARAMS,
+        cutouts: [cutout],
+        meshAssets: { m1: await makeAsset() },
+      };
+
+      const first = bridge.generateImmediate(params);
+      await vi.waitFor(() => expect(ofType('GENERATE')).toHaveLength(1));
+      expect(posted().map((m) => m.type)).toEqual(['INIT', 'PUT_MESH', 'GENERATE']);
+      const sentEntry = ofType('GENERATE')[0].payload?.params.meshAssets?.m1;
+      expect(sentEntry).not.toHaveProperty('data');
+      expect(sentEntry).toHaveProperty('hash', ofType('PUT_MESH')[0].hash);
+      answer(ofType('GENERATE')[0]);
+      await first;
+
+      const second = bridge.generateImmediate({ ...params, height: params.height + 1 });
+      await vi.waitFor(() => expect(ofType('GENERATE')).toHaveLength(2));
+      expect(ofType('PUT_MESH')).toHaveLength(1);
+      answer(ofType('GENERATE')[1]);
+      await second;
+    });
+
+    it('builds a design whose mesh file is missing without its pocket, and caches nothing', async () => {
+      const params = { ...DEFAULT_BIN_PARAMS, cutouts: [cutout], meshAssets: { m1: missing } };
+
+      const first = bridge.generateImmediate(params);
+      await vi.waitFor(() => expect(ofType('GENERATE')).toHaveLength(1));
+      expect(ofType('GENERATE')[0].payload?.params.cutouts).toEqual([]);
+      answer(ofType('GENERATE')[0]);
+      expect((await first).meshesPending).toBe(true);
+
+      const again = bridge.generateImmediate(params);
+      await vi.waitFor(() => expect(ofType('GENERATE')).toHaveLength(2));
+      answer(ofType('GENERATE')[1]);
+      await again;
+    });
+
+    it('refuses to export a design whose mesh file is missing', async () => {
+      const params = { ...DEFAULT_BIN_PARAMS, cutouts: [cutout], meshAssets: { m1: missing } };
+      await expect(bridge.exportBin(params, 'stl')).rejects.toBeInstanceOf(MeshUnavailableError);
+      expect(ofType('EXPORT')).toEqual([]);
     });
   });
 

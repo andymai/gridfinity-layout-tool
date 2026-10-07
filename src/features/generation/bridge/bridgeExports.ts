@@ -30,6 +30,8 @@ import {
   computeSplitExportTimeoutMs,
   EXPORT_MAX_TIMEOUT_MS,
 } from './generationTimeout';
+import { MeshUnavailableError } from './meshDelivery';
+import type { PreparedMeshes } from './meshDelivery';
 import type {
   ExportResult,
   DividersExportResult,
@@ -46,35 +48,41 @@ export interface BridgeExportContext {
   prepareExport: (slot: ExportSlot) => Promise<string>;
   readonly pendingExports: PendingExportMap;
   startExportTimeout: (slot: ExportSlot, requestId: string, timeoutMs: number) => void;
-  postMessage: (message: WorkerMessage) => void;
+  prepareMeshes: (message: WorkerMessage) => Promise<PreparedMeshes>;
+  postPrepared: (prepared: PreparedMeshes, message: WorkerMessage) => void;
 }
 
 /**
- * Run an export request: prepare the slot, register the Promise callbacks,
- * start the timeout, and post the worker message. Returned Promise resolves
- * when the worker sends back the result (handled by the message handler).
+ * Run an export request: gather its mesh files, prepare the slot, register the
+ * Promise callbacks, start the timeout, and post the worker message. Returned
+ * Promise resolves when the worker sends back the result (handled by the
+ * message handler).
+ *
+ * The files are gathered before the slot is claimed, so a later export on the
+ * same slot still supersedes this one. A design whose mesh file is missing
+ * rejects rather than export without its pocket.
  */
-function runExport<T>(
+async function runExport<T>(
   ctx: BridgeExportContext,
   slot: ExportSlot,
   timeoutMs: number,
   buildMessage: (requestId: string) => WorkerMessage,
   onProgress?: (progress: number) => void
 ): Promise<T> {
-  return ctx.prepareExport(slot).then(
-    (requestId) =>
-      new Promise<T>((resolve, reject) => {
-        ctx.pendingExports.set(slot, {
-          resolve: resolve as (result: unknown) => void,
-          reject,
-          requestId,
-          timer: null,
-          onProgress,
-        });
-        ctx.startExportTimeout(slot, requestId, timeoutMs);
-        ctx.postMessage(buildMessage(requestId));
-      })
-  );
+  const prepared = await ctx.prepareMeshes(buildMessage(''));
+  if (prepared.pending) throw new MeshUnavailableError();
+  const requestId = await ctx.prepareExport(slot);
+  return new Promise<T>((resolve, reject) => {
+    ctx.pendingExports.set(slot, {
+      resolve: resolve as (result: unknown) => void,
+      reject,
+      requestId,
+      timer: null,
+      onProgress,
+    });
+    ctx.startExportTimeout(slot, requestId, timeoutMs);
+    ctx.postPrepared(prepared, buildMessage(requestId));
+  });
 }
 
 export function exportBin(

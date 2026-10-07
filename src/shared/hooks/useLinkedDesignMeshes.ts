@@ -272,7 +272,7 @@ async function resolveDesignMesh(
     // designer result could alias in. Strip them rather than bake plate buffers
     // into every cross-session cache entry.
     const mesh = stripLabelPlates(result.mesh);
-    savePersistedBinMesh(persistKey, mesh);
+    if (!result.meshesPending) savePersistedBinMesh(persistKey, mesh);
     return { sig, mesh, width: params.width, depth: params.depth, bodyBaseMm };
   } finally {
     bridgeManager.release();
