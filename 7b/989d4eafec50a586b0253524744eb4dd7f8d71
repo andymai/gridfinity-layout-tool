@@ -1,0 +1,29 @@
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_900382acfc8cb3::t_cdedd46da27f2a 360,367
+  s_900382acfc8cb3::t_9c5f8f62df2283 77-81
+  s_900382acfc8cb3::t_47bed1ff2a8efa 95,99-118,120,122-123,125-127
+  s_900382acfc8cb3::t_e605361836f6d4 76
+  s_900382acfc8cb3::t_9c86603aedd27c 121,124
+  s_900382acfc8cb3::t_f5f66bd3032158 75
+  s_900382acfc8cb3::t_ab27bc7bf578ae 358-359
+src/shared/hooks/useLinkedDesignMeshes.test.ts
+  s_900382acfc8cb3::t_a291b8575a22ae 501-533,536-538,540,549-551,553-554
+  s_900382acfc8cb3::t_68a902d1f4e72b 534-535,539,541-548,552
+  s_900382acfc8cb3::t_fb5d9d20616269 13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7b989d4eafec50a586b0253524744eb4dd7f8d71",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
