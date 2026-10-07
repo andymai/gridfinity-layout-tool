@@ -1,0 +1,21 @@
+src/shared/generation/meshOutlines.test.ts
+  s_900382acfc8cb3::t_e2b9f0ed915bfc 1-67
+src/shared/generation/meshOutlines.ts
+  s_900382acfc8cb3::t_5e40d282cb1e0c 23,25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "93588de228b8550aaec53193abf620aeabb9cc4b",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
