@@ -1,0 +1,54 @@
+src/shared/utils/pathCutoutOutline.test.ts
+  s_900382acfc8cb3::t_9ab69fd599b70f 1-23,25-35,48-53,55-61,63-64,71,83-84
+  s_900382acfc8cb3::t_138b8db0a20cf2 36-47,62,65-70,72-82
+  s_900382acfc8cb3::t_adc1cb294a42bf 54
+  s_c52b87c334c54d::t_8e4b2e23dad6db 24
+src/shared/utils/pathCutoutOutline.ts
+  s_900382acfc8cb3::t_92856fa02f23ae 9
+  s_900382acfc8cb3::t_0ed096e95e040d 97-104,106-111,113,115-126
+src/shared/utils/fitTestPlan.ts
+  s_900382acfc8cb3::t_6c3bacf95d0881 172-182,186,192-200
+  s_900382acfc8cb3::t_ae87fe58f6613a 671-672
+  s_900382acfc8cb3::t_c775cbfba2f10b 26-27
+  s_900382acfc8cb3::t_6d6a161633d30f 171
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_900382acfc8cb3::t_e273e215a52844 457-459
+  s_900382acfc8cb3::t_f651f4ace1e5bb 431-432,446-447,450
+  s_900382acfc8cb3::t_b42d346298e253 475-476,478-480,483
+  s_900382acfc8cb3::t_71cfb823c6e1ae 92
+src/shared/utils/polygonOffset.ts
+  s_900382acfc8cb3::t_95846f1ee10b84 456,459,465
+  s_900382acfc8cb3::t_3c61dea3c2a78c 483-485,487,489
+src/shared/utils/polygonOffset.test.ts
+  s_900382acfc8cb3::t_f665357d32cee4 356,369,395,405,426,442,482,492
+  s_900382acfc8cb3::t_08ae0b7e072971 379-392
+  s_900382acfc8cb3::t_0aa56d401c6dfb 11-17
+  s_900382acfc8cb3::t_f78d3f8eb893bd 421
+src/shared/utils/fitTestPlan.test.ts
+  s_900382acfc8cb3::t_be20e57bd57814 498-500,507
+  s_900382acfc8cb3::t_33561426a16224 24,30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e117a4314bae4283d0ce8df05ba88a9b6a63c54e",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_c52b87c334c54d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "974aca98-80c9-4f51-aae8-3c5bf999f57c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
