@@ -3416,6 +3416,7 @@
   "inspector.extendToMargin": "Rozšířit do okraje zásuvky",
   "inspector.extendToMargin.hint": "Vyplní zásuvkový okraj základní desky na každé hraně zásuvky, které se dotýká.",
   "inspector.extendToMargin.needsLink": "Propoj návrh pro rozšíření do okraje.",
+  "inspector.extendToMargin.fixedShape": "Importované biny a návrhy z Workshopu si zachovávají uložený tvar, takže se nemohou rozšířit do okraje.",
   "inspector.fitsPrintBedDimensions": "{binWidth}×{binDepth} se vejde na podložku tiskárny ({max} mm)",
   "inspector.heightReasonDrawerHeight": "výška zásuvky",
   "inspector.heightReasonLayerHeight": "výška vrstvy",

@@ -3416,6 +3416,7 @@
   "inspector.extendToMargin": "서랍 여백까지 확장",
   "inspector.extendToMargin.hint": "닿는 모든 서랍 가장자리에서 베이스플레이트의 서랍 맞춤 여백을 채웁니다.",
   "inspector.extendToMargin.needsLink": "여백까지 확장하려면 디자인을 연결하세요.",
+  "inspector.extendToMargin.fixedShape": "가져온 수납통과 Workshop 디자인은 저장된 형태를 유지하므로 여백까지 확장할 수 없습니다.",
   "inspector.fitsPrintBedDimensions": "{binWidth}×{binDepth}(이)가 프린트 베드({max}mm)에 맞습니다",
   "inspector.heightReasonDrawerHeight": "서랍 높이",
   "inspector.heightReasonLayerHeight": "레이어 높이",

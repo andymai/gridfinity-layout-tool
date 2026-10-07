@@ -3416,6 +3416,7 @@
   "inspector.extendToMargin": "In den Schubladenrand ausdehnen",
   "inspector.extendToMargin.hint": "Füllt den Passrand der Grundplatte an jeder berührten Schubladenkante.",
   "inspector.extendToMargin.needsLink": "Verknüpfe ein Design, um in den Rand auszudehnen.",
+  "inspector.extendToMargin.fixedShape": "Importierte Behälter und Workshop-Designs behalten ihre gespeicherte Form und können sich daher nicht in den Rand ausdehnen.",
   "inspector.fitsPrintBedDimensions": "{binWidth}×{binDepth} passt auf print bed ({max}mm)",
   "inspector.heightReasonDrawerHeight": "Schubladenhöhe",
   "inspector.heightReasonLayerHeight": "Lagenhöhe",

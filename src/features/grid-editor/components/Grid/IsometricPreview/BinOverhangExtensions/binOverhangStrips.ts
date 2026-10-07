@@ -23,6 +23,7 @@
 
 import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
 import type { OverhangConfig, StoredBaseplateParams } from '@/core/types';
+import type { ItemKind } from '@/shared/types/item';
 
 // All coordinates below are in the preview's grid-unit scene space (Z included).
 export interface OverhangStripBin {
@@ -43,6 +44,8 @@ export interface OverhangStripBin {
   readonly bodyBase?: number;
   readonly extendToMargin?: boolean;
   readonly overhang?: OverhangConfig;
+  /** Kind of the linked design; absent = parametric bin or unlinked. */
+  readonly linkedKind?: ItemKind;
 }
 
 export interface OverhangStrip {
@@ -92,7 +95,8 @@ export function buildBinOverhangStrips(
       overhang: bin.overhang,
     },
     { width: drawerWidth, depth: drawerDepth },
-    baseplate
+    baseplate,
+    bin.linkedKind
   );
   if (!overhang) return [];
   // Scene space is grid units on both axes, so each axis divides by its own

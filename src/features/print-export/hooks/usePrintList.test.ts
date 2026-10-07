@@ -17,6 +17,7 @@ import {
 import type { Layout, Bin } from '@/core/types';
 import { useLabelPlateCounts } from '@/shared/hooks/useLabelPlateCounts';
 import { useLinkedDesignOverhangs } from '@/shared/hooks/useLinkedDesignOverhangs';
+import { useLinkedDesignKinds } from '@/shared/hooks/useLinkedDesignKinds';
 
 vi.mock('@/shared/hooks/useLabelPlateCounts', () => ({
   useLabelPlateCounts: vi.fn(() => new Map()),
@@ -28,8 +29,13 @@ vi.mock('@/shared/hooks/useLinkedDesignOverhangs', () => ({
   useLinkedDesignOverhangs: vi.fn(() => new Map()),
 }));
 
+vi.mock('@/shared/hooks/useLinkedDesignKinds', () => ({
+  useLinkedDesignKinds: vi.fn(() => new Map()),
+}));
+
 const mockUseLabelPlateCounts = vi.mocked(useLabelPlateCounts);
 const mockUseLinkedDesignOverhangs = vi.mocked(useLinkedDesignOverhangs);
+const mockUseLinkedDesignKinds = vi.mocked(useLinkedDesignKinds);
 
 // Helper to create test bins
 function createTestBin(overrides: Partial<Bin> = {}): Bin {
@@ -66,6 +72,7 @@ describe('usePrintList', () => {
     vi.clearAllMocks();
     mockUseLabelPlateCounts.mockImplementation(() => new Map());
     mockUseLinkedDesignOverhangs.mockImplementation(() => new Map());
+    mockUseLinkedDesignKinds.mockImplementation(() => new Map());
 
     // Reset stores
     const layout = createTestLayout();
@@ -604,6 +611,42 @@ describe('usePrintList', () => {
       const { result } = renderHook(() => usePrintList());
       expect(result.current.rows[0].needsSplit).toBe(false);
       expect(result.current.rows[0].totalPieces).toBe(1);
+    });
+
+    // 4 units of grid fit the 180mm bed; 21mm of left padding pushes the
+    // extended part to 189mm, which does not.
+    function withPaddedBed(bins: Bin[]): Layout {
+      return {
+        ...withBed(bins),
+        baseplateParams: {
+          magnetHoles: false,
+          magnetDiameter: mm(6),
+          magnetDepth: mm(2),
+          paddingLeft: mm(21),
+          paddingRight: mm(0),
+          paddingFront: mm(0),
+          paddingBack: mm(0),
+        },
+      };
+    }
+
+    it('charges the drawer margin against the bed for a parametric design', () => {
+      useLayoutStore.setState({
+        layout: withPaddedBed([{ ...linkedBin(), extendToMargin: true }]),
+      });
+
+      const { result } = renderHook(() => usePrintList());
+      expect(result.current.rows[0].needsSplit).toBe(true);
+    });
+
+    it('does not charge the drawer margin for an imported mesh, which prints as stored', () => {
+      mockUseLinkedDesignKinds.mockImplementation(() => new Map([[DESIGN, 'importedMesh']]));
+      useLayoutStore.setState({
+        layout: withPaddedBed([{ ...linkedBin(), extendToMargin: true }]),
+      });
+
+      const { result } = renderHook(() => usePrintList());
+      expect(result.current.rows[0].needsSplit).toBe(false);
     });
 
     it('ignores a design overhang for a bin that is not linked to it', () => {

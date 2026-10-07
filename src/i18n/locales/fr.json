@@ -3416,6 +3416,7 @@
   "inspector.extendToMargin": "Étendre dans la marge du tiroir",
   "inspector.extendToMargin.hint": "Comble la marge d'ajustement de la platine de base sur chaque bord du tiroir touché.",
   "inspector.extendToMargin.needsLink": "Liez un modèle pour étendre dans la marge.",
+  "inspector.extendToMargin.fixedShape": "Les bacs importés et les modèles Workshop gardent leur forme enregistrée : ils ne peuvent pas s'étendre dans la marge.",
   "inspector.fitsPrintBedDimensions": "{binWidth}×{binDepth} correspond au print bed ({max}mm)",
   "inspector.heightReasonDrawerHeight": "hauteur du tiroir",
   "inspector.heightReasonLayerHeight": "hauteur de couche",

@@ -15,6 +15,7 @@ import { useLayoutStore } from '@/core/store';
 import { effectiveGridUnitMmY } from '@/core/types';
 import type { DesignId } from '@/core/types';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
+import { useLinkedDesignKinds } from '@/shared/hooks/useLinkedDesignKinds';
 import { designEntryFor } from '../LinkedBinMeshes/placement';
 import type { DesignGeometryEntry } from '../LinkedBinMeshes/useDesignGeometries';
 import { buildBinOverhangStrips } from './binOverhangStrips';
@@ -46,10 +47,12 @@ export function BinOverhangExtensions({
       gridUnitMmY: effectiveGridUnitMmY(s.layout),
     }))
   );
+  const designKinds = useLinkedDesignKinds();
 
   const strips = useMemo<ColoredStrip[]>(() => {
     return bins.flatMap((bd) => {
       const bodyBaseMm = designEntryFor(bd, designGeometries)?.bodyBaseMm ?? 0;
+      const linkedId = bd.bin.linkedDesignId;
       return buildBinOverhangStrips(
         {
           id: bd.bin.id,
@@ -62,6 +65,7 @@ export function BinOverhangExtensions({
           bodyBase: bodyBaseMm / gridUnitMm,
           extendToMargin: bd.bin.extendToMargin,
           overhang: bd.bin.overhang,
+          linkedKind: linkedId === undefined ? undefined : designKinds.get(linkedId),
         },
         drawerWidth,
         drawerDepth,
@@ -70,7 +74,16 @@ export function BinOverhangExtensions({
         gridUnitMmY
       ).map((s) => ({ ...s, color: bd.color, opacity: bd.opacity }));
     });
-  }, [baseplate, gridUnitMm, gridUnitMmY, bins, drawerWidth, drawerDepth, designGeometries]);
+  }, [
+    baseplate,
+    gridUnitMm,
+    gridUnitMmY,
+    bins,
+    drawerWidth,
+    drawerDepth,
+    designGeometries,
+    designKinds,
+  ]);
 
   if (strips.length === 0) return null;
 

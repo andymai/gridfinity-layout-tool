@@ -3416,6 +3416,7 @@
   "inspector.extendToMargin": "Rozszerz na margines szuflady",
   "inspector.extendToMargin.hint": "Wypełnia margines dopasowania płyty bazowej na każdej krawędzi szuflady, której dotyka.",
   "inspector.extendToMargin.needsLink": "Powiąż projekt, aby rozszerzyć na margines.",
+  "inspector.extendToMargin.fixedShape": "Zaimportowane biny i projekty Workshop zachowują zapisany kształt, więc nie mogą rozszerzyć się na margines.",
   "inspector.fitsPrintBedDimensions": "{binWidth}×{binDepth} mieści się na stole roboczym ({max} mm)",
   "inspector.heightReasonDrawerHeight": "wysokość szuflady",
   "inspector.heightReasonLayerHeight": "wysokość warstwy",

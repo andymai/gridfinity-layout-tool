@@ -3416,6 +3416,7 @@
   "inspector.extendToMargin": "ドロワーの余白まで拡張",
   "inspector.extendToMargin.hint": "ベースプレートのドロワー調整余白を、接するすべてのドロワー端で埋めます。",
   "inspector.extendToMargin.needsLink": "デザインをリンクすると余白まで拡張できます。",
+  "inspector.extendToMargin.fixedShape": "インポートしたビンとWorkshopのデザインは保存した形状のままなので、余白まで拡張できません。",
   "inspector.fitsPrintBedDimensions": "{binWidth}×{binDepth}はプリントベッド({max}mm)に収まります",
   "inspector.heightReasonDrawerHeight": "ドロワー高さ",
   "inspector.heightReasonLayerHeight": "レイヤー高さ",

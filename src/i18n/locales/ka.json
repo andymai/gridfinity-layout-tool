@@ -425,6 +425,7 @@
   "inspector.extendToMargin": "უჯრის ნაპირში გაფართოება",
   "inspector.extendToMargin.hint": "ავსებს საბაზისო ფირფიტის უჯრაზე მორგების ნაპირს უჯრის ყველა მხარეს, რომელსაც ეხება.",
   "inspector.extendToMargin.needsLink": "ნაპირში გასაფართოებლად დააკავშირეთ დიზაინი.",
+  "inspector.extendToMargin.fixedShape": "იმპორტირებული ყუთები და სახელოსნოს დიზაინები ინარჩუნებენ შენახულ ფორმას, ამიტომ ნაპირში ვერ გაფართოვდებიან.",
   "inspector.taper": "კედლების შევიწროება",
   "inspector.taper.profile": "პროფილი",
   "inspector.taper.chamfer": "ცერობი",

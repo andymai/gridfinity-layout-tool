@@ -3416,6 +3416,7 @@
   "inspector.extendToMargin": "Uitbreiden tot de lademarge",
   "inspector.extendToMargin.hint": "Vult de ladepassingsmarge van de basisplaat op elke laderand die het raakt.",
   "inspector.extendToMargin.needsLink": "Koppel een ontwerp om uit te breiden tot de marge.",
+  "inspector.extendToMargin.fixedShape": "Geïmporteerde bakken en Workshop-ontwerpen behouden hun opgeslagen vorm en kunnen dus niet uitbreiden tot de marge.",
   "inspector.fitsPrintBedDimensions": "{binWidth}×{binDepth} past in print bed ({max}mm)",
   "inspector.heightReasonDrawerHeight": "ladehoogte",
   "inspector.heightReasonLayerHeight": "laaghoogte",

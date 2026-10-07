@@ -10,6 +10,8 @@ import { designId, gridUnits, mm } from '@/core/types';
 import type { Bin, DesignId, StoredBaseplateParams } from '@/core/types';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
 import type { DesignGeometryEntry } from '../LinkedBinMeshes/useDesignGeometries';
+import { resetCustomBinsCache } from '@/features/bin-designer/hooks/useCustomBins';
+import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 
 function setup(padding: Partial<StoredBaseplateParams> = {}) {
   useLayoutStore.setState({
@@ -55,6 +57,8 @@ const edgeBin = (o: Partial<Bin> = {}) =>
 describe('BinOverhangExtensions', () => {
   beforeEach(() => {
     resetAllStores();
+    localStorage.clear();
+    resetCustomBinsCache();
     setup({ paddingLeft: mm(21) });
   });
 
@@ -80,6 +84,28 @@ describe('BinOverhangExtensions', () => {
       />
     );
     expect(container.querySelectorAll('mesh').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders nothing for an extended bin linked to an imported mesh', () => {
+    const design = designId('mesh');
+    upsertRegistryEntry({
+      id: design,
+      name: 'mesh',
+      width: 1,
+      depth: 1,
+      height: 3,
+      kind: 'importedMesh',
+      updatedAt: '2026-10-07T00:00:00.000Z',
+    });
+    const { container } = render(
+      <BinOverhangExtensions
+        bins={[renderData(edgeBin({ extendToMargin: true, linkedDesignId: design }))]}
+        drawerWidth={5}
+        drawerDepth={4}
+        designGeometries={new Map()}
+      />
+    );
+    expect(container.querySelectorAll('mesh')).toHaveLength(0);
   });
 
   it('renders two strips for a corner bin', () => {

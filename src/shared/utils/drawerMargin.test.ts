@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   binMarginSides,
   binCanExtendToMargin,
+  designKindExtendsToMargin,
   resolveBinMarginOverhang,
   resolveBinOverhang,
   binOverhangSides,
@@ -146,8 +147,31 @@ describe('binCanExtendToMargin', () => {
   });
 });
 
+describe('designKindExtendsToMargin', () => {
+  it('is true for a parametric bin, including a registry entry with no kind', () => {
+    expect(designKindExtendsToMargin(undefined)).toBe(true);
+    expect(designKindExtendsToMargin('bin')).toBe(true);
+  });
+
+  it('is false for kinds the export prints as stored', () => {
+    expect(designKindExtendsToMargin('importedMesh')).toBe(false);
+    expect(designKindExtendsToMargin('assembly')).toBe(false);
+    expect(designKindExtendsToMargin('toolRack')).toBe(false);
+  });
+});
+
 describe('resolveBinMarginOverhang', () => {
   const bp = baseplate({ paddingLeft: mm(3), paddingFront: mm(2), overTile: true });
+
+  it('returns null for an opted-in bin linked to an imported mesh or an assembly', () => {
+    const b = bin(0, 0, 1, 1, true);
+    expect(resolveBinMarginOverhang(b, DRAWER, bp, 'importedMesh')).toBeNull();
+    expect(resolveBinMarginOverhang(b, DRAWER, bp, 'assembly')).toBeNull();
+  });
+
+  it('still extends a bin linked to a parametric design', () => {
+    expect(resolveBinMarginOverhang(bin(0, 0, 1, 1, true), DRAWER, bp, 'bin')?.left).toBe(3);
+  });
 
   it('returns null when the bin has not opted in', () => {
     expect(resolveBinMarginOverhang(bin(0, 0, 1, 1, false), DRAWER, bp)).toBeNull();
@@ -254,6 +278,11 @@ describe('resolveBinOverhang', () => {
     expect(resolveBinOverhang(bin(0, 0, 1, 1, true), DRAWER, bp)?.left).toBe(3);
   });
 
+  it('drops the drawer margin for a design the export prints as stored', () => {
+    expect(resolveBinOverhang(bin(0, 0, 1, 1, true), DRAWER, bp, 'importedMesh')).toBeNull();
+    expect(resolveBinOverhang(bin(0, 0, 1, 1, true), DRAWER, bp, 'assembly')).toBeNull();
+  });
+
   it('serves an interior bin on a drawer with no padding at all', () => {
     const b = { ...bin(2, 1, 1, 1, false), overhang: explicit };
     expect(resolveBinOverhang(b, DRAWER, baseplate())).toEqual(explicit);
@@ -281,6 +310,16 @@ describe('resolveBinOverhang', () => {
 });
 
 describe('binOverhangSides', () => {
+  it('is all-zero for an extended edge bin linked to an imported mesh', () => {
+    const bp = baseplate({ paddingLeft: mm(3) });
+    expect(binOverhangSides(bin(0, 0, 1, 1, true), DRAWER, bp, 'importedMesh')).toEqual({
+      left: 0,
+      right: 0,
+      front: 0,
+      back: 0,
+    });
+  });
+
   it('is all-zero when nothing resolves', () => {
     expect(binOverhangSides(bin(1, 1, 1, 1, false), DRAWER, baseplate())).toEqual({
       left: 0,
