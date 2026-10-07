@@ -88,7 +88,7 @@ export function useBinResizedListener(): void {
 
         const designName =
           registryRef.current.find((r) => r.id === linkedDesignId)?.name ?? linkedDesignId;
-        showDesignerUpdatedDialogRef.current(linkedDesignId, designName);
+        showDesignerUpdatedDialogRef.current(binId, linkedDesignId, designName);
         return;
       }
 

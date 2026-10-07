@@ -126,6 +126,8 @@ export interface PendingCreateDesignState {
 
 /** State for the designer-updated notification dialog */
 export interface PendingDesignerUpdatedState {
+  /** Layout bin whose resize updated the design */
+  readonly binId: BinId;
   /** Design that was updated */
   readonly designId: DesignId;
   /** Design name for display */
