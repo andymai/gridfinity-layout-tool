@@ -160,20 +160,20 @@ function assemblyContent(assembly: { envelope: ItemEnvelope; structure: Assembly
 async function binContent(
   params: BinParams
 ): Promise<{ params: BinParams; paramsHash: string } | null> {
+  // Taken before the files are read, so files read for this account are never
+  // uploaded under one that signs in meanwhile.
+  const session = meshCloudSession();
+  const signedIn = useSessionStore.getState().status === 'authenticated';
   // Read even when the files go by ref: the preview and GLB captured for the
   // listing need every file on this device, and an account can hold one whose
   // download here has not finished.
   const inline = await inlineParamsMeshes(params);
   if (!isOk(inline)) return null;
-  const resolved = (await meshesHeldByAccount(params)) ? params : inline.value;
+  const byRef = signedIn && (await accountHoldsMeshFiles(holderMeshHashes({ params }), session));
+  const resolved = byRef ? params : inline.value;
   // A published design carries standard feet; the downloader's drawer decides.
   const standard = withoutLowProfileBase(resolved);
   return { params: standard, paramsHash: hashBinParams(standard) };
-}
-
-async function meshesHeldByAccount(params: BinParams): Promise<boolean> {
-  if (useSessionStore.getState().status !== 'authenticated') return false;
-  return accountHoldsMeshFiles(holderMeshHashes({ params }), meshCloudSession());
 }
 
 export interface CommunityPublishEntry {

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { err, isErr, isOk, ok } from '@/core/result';
 import { forgetHeldMeshes } from '@/shared/generation/meshCloud';
 import { inlineParamsMeshes } from '@/shared/generation/meshRefs';
+import { onAccountChanged } from '@/core/sync/accountGeneration';
 import type { BinParams } from '@/shared/types/bin';
 import type { CommunityCard, CommunityDesignLineage } from '@/shared/types/community';
 import {
@@ -292,6 +293,29 @@ describe('a design naming mesh files the server finds unheld', () => {
 
     expect(isOk(result)).toBe(true);
     expect(sentParams()).toEqual([refInput.params, inlineParams]);
+  });
+
+  it('sends a design of refs over its size cap inline from the start', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(201, { id: 'AbCdEf123456', url: '/community/d/AbCdEf123456' })
+    );
+
+    const result = await publishDesign({ ...refInput, description: 'x'.repeat(100_001) });
+
+    expect(isOk(result)).toBe(true);
+    expect(sentParams()).toEqual([inlineParams]);
+  });
+
+  it('sends nothing more once the account changed after the first request', async () => {
+    fetchMock.mockImplementationOnce(async () => {
+      onAccountChanged();
+      return refused();
+    });
+
+    const result = await publishDesign(refInput);
+
+    expect(isErr(result)).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('sends a design with no refs once, whatever the refusal', async () => {

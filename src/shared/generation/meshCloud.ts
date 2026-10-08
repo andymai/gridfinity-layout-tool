@@ -216,7 +216,6 @@ export async function accountHoldsMeshFiles(
   }
 }
 
-/** The files a 424 `MESH_MISSING` lists, or none when its body cannot be read. */
 export async function readMissingMeshes(response: Response): Promise<string[]> {
   try {
     const { missing } = (await response.json()) as { missing?: unknown };
@@ -228,10 +227,6 @@ export async function readMissingMeshes(response: Response): Promise<string[]> {
 
 const MESH_HASH = /^[0-9a-f]{64}$/;
 
-/**
- * The file URLs a server answer names, keeping only an https URL named by a
- * file hash; undefined when none is left.
- */
 export function parseMeshFiles(raw: unknown): Record<string, string> | undefined {
   if (typeof raw !== 'object' || raw === null) return undefined;
   const files = Object.entries(raw).filter(

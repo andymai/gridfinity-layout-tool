@@ -64,7 +64,10 @@ const mocks = vi.hoisted(() => ({
   holdCommunityMeshes: vi.fn(),
 }));
 
-vi.mock('../lib/shareMeshes.js', () => ({ resolveHeldMeshFiles: mocks.resolveHeldMeshFiles }));
+vi.mock('../lib/shareMeshes.js', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  resolveHeldMeshFiles: mocks.resolveHeldMeshFiles,
+}));
 vi.mock('../lib/meshIndex.js', async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   holdCommunityMeshes: mocks.holdCommunityMeshes,
@@ -821,6 +824,7 @@ describe('community/[id]', () => {
         expect(res._status).toBe(424);
         expect(mocks.writeCommunityDesignBlob).not.toHaveBeenCalled();
         expect(mocks.put).not.toHaveBeenCalled();
+        expect(mocks.checkRateLimit).not.toHaveBeenCalled();
       });
     });
 

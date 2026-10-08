@@ -17,7 +17,11 @@ vi.mock('./session.js', async (importOriginal) => ({
 vi.mock('./rateLimit.js', () => ({ getRedis: mocks.getRedis }));
 vi.mock('./meshIndex.js', () => ({ heldMeshUrls: mocks.heldMeshUrls }));
 
-import { resolveHeldMeshFiles, resolveShareMeshFiles } from './shareMeshes.js';
+import {
+  resolveHeldMeshFiles,
+  resolveShareMeshFiles,
+  unvalidatedMeshRefHashes,
+} from './shareMeshes.js';
 
 const [A, B] = ['a', 'b'].map((c) => c.repeat(64));
 const url = (hash: string): string => `https://store.public.blob.vercel-storage.com/meshes/${hash}`;
@@ -104,5 +108,27 @@ describe('resolveHeldMeshFiles', () => {
     expect(await resolveHeldMeshFiles(res, {} as never, 'u1', [A, B])).toBeNull();
     expect(res._status).toBe(424);
     expect(res._body).toMatchObject({ code: 'MESH_MISSING', missing: [B] });
+  });
+});
+
+describe('unvalidatedMeshRefHashes', () => {
+  it('reads each well-formed ref hash once, ignoring inline assets and junk', () => {
+    const body = {
+      params: {
+        meshAssets: {
+          a: { hash: A },
+          b: { hash: A },
+          c: { hash: 'NOT-HEX' },
+          d: { data: 'AAAA' },
+          e: 'junk',
+        },
+      },
+    };
+    expect(unvalidatedMeshRefHashes(body)).toEqual([A]);
+  });
+
+  it('reads nothing from a body without params', () => {
+    expect(unvalidatedMeshRefHashes(null)).toEqual([]);
+    expect(unvalidatedMeshRefHashes({ params: 'x' })).toEqual([]);
   });
 });

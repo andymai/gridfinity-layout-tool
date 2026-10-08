@@ -4,6 +4,8 @@ import { heldMeshUrls } from './meshIndex.js';
 import { getRedis } from './rateLimit.js';
 import { checkCsrfDefense, readOptionalSession } from './session.js';
 import { ErrorCode, MESH_MISSING_STATUS, sendJson } from './shared.js';
+import { meshRefHashes } from './designerCutoutValidation.js';
+import { isObject } from './validationUtils.js';
 
 /**
  * The CDN URL of each mesh file a shared or published design names by ref,
@@ -32,6 +34,22 @@ export async function resolveHeldMeshFiles(
     return null;
   }
   return Object.fromEntries(urls);
+}
+
+const MESH_HASH = /^[0-9a-f]{64}$/;
+/** Bounds the lookup made before a request's rate limit is charged. */
+const MAX_UNVALIDATED_HASHES = 512;
+
+/**
+ * The ref hashes in a design body's `params.meshAssets`, read before the body
+ * is validated, so a design refused for files the account does not hold can
+ * be turned back before it spends its rate limit. The check after validation
+ * stays the authoritative one.
+ */
+export function unvalidatedMeshRefHashes(body: unknown): string[] {
+  const params = isObject(body) && isObject(body.params) ? body.params : null;
+  const hashes = meshRefHashes(params?.meshAssets).filter((hash) => MESH_HASH.test(hash));
+  return [...new Set(hashes)].slice(0, MAX_UNVALIDATED_HASHES);
 }
 
 /**

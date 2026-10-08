@@ -24,7 +24,7 @@ import { checkRateLimit, getClientIP, getRedis } from './rateLimit.js';
 import { requireSession } from './session.js';
 import { meshRefHashes } from './designerCutoutValidation.js';
 import { holdCommunityMeshes } from './meshIndex.js';
-import { resolveHeldMeshFiles } from './shareMeshes.js';
+import { resolveHeldMeshFiles, unvalidatedMeshRefHashes } from './shareMeshes.js';
 import { logger } from './logger.js';
 import {
   ErrorCode,
@@ -98,6 +98,15 @@ export async function handlePut(req: VercelRequest, res: VercelResponse, id: str
 
     const session = await requireSession(req, res);
     if (!session) return;
+
+    // As on publish: the refusal is resent inline, so it spends no budget.
+    const preCheck = await resolveHeldMeshFiles(
+      res,
+      getRedis(),
+      session.userId,
+      unvalidatedMeshRefHashes(req.body)
+    );
+    if (!preCheck) return;
 
     const rateLimit = await checkRateLimit(session.userId, 'community.manage');
     if (!rateLimit.allowed) {

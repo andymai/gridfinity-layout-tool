@@ -18,7 +18,10 @@ const mocks = vi.hoisted(() => ({
   holdCommunityMeshes: vi.fn(),
 }));
 
-vi.mock('./lib/shareMeshes.js', () => ({ resolveHeldMeshFiles: mocks.resolveHeldMeshFiles }));
+vi.mock('./lib/shareMeshes.js', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  resolveHeldMeshFiles: mocks.resolveHeldMeshFiles,
+}));
 vi.mock('./lib/meshIndex.js', async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   holdCommunityMeshes: mocks.holdCommunityMeshes,
@@ -614,6 +617,7 @@ describe('POST /api/community (publish)', () => {
       expect(res._status).toBe(424);
       expect(mocks.put).not.toHaveBeenCalled();
       expect(mocks.holdCommunityMeshes).not.toHaveBeenCalled();
+      expect(mocks.checkRateLimit).not.toHaveBeenCalled();
     });
 
     it('stores no meshFiles for a design without refs', async () => {

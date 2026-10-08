@@ -24,7 +24,7 @@ description: 'Imported STL meshes stored once as content-addressed files (src/sh
 
 - A signed-in sharer's linked designs go by ref once `uploadMeshFiles` answers held (`designsWithMeshRefs` in `src/core/api/share.ts`); otherwise, or on a 424, inline. The server's `resolveShareMeshFiles` takes refs only from a session holding every file, stores each file's CDN URL in the share as `meshFiles`, and adds `share:{id}` to the file's holders. Holds only grow, through deletion too, because an update racing the delete can write the share back; `share:meshes:{id}` records them for a cleanup that lets go once the share's blob is gone.
 - The importer calls `fetchSharedMeshFiles`, which reads each file from its URL with no account, retries a failed one on its own backoff timer, and remembers the URL, so a later sync download skips the HEAD.
-- Community publishing does the same for a bin (`meshesHeldByAccount` in `useCommunityPublish.ts`, `resolveHeldMeshFiles` on publish and update, holder `community:{id}` recorded in `community:meshes:{id}`), and a 424 resends inline. Remix and place fetch the record's `meshFiles` in `communityToDesign`. Publish fingerprints hash refs as sent, so a design published inline does not match the same design sent by ref.
+- Community publishing does the same for a bin (`binContent` in `useCommunityPublish.ts`, `resolveHeldMeshFiles` on publish and update, holder `community:{id}` recorded in `community:meshes:{id}`), and a 424 resends inline. Remix and place fetch the record's `meshFiles` in `communityToDesign`. Publish fingerprints hash refs as sent, so a design published inline does not match the same design sent by ref.
 
 ## Sync
 

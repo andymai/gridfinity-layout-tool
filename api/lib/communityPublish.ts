@@ -11,7 +11,7 @@ import {
 import { requireSession } from './session.js';
 import { meshRefHashes } from './designerCutoutValidation.js';
 import { holdCommunityMeshes } from './meshIndex.js';
-import { resolveHeldMeshFiles } from './shareMeshes.js';
+import { resolveHeldMeshFiles, unvalidatedMeshRefHashes } from './shareMeshes.js';
 import { checkRateLimit, getRedis } from './rateLimit.js';
 import { logger } from './logger.js';
 import { ErrorCode, rateLimited, sendError, serviceUnavailable } from './shared.js';
@@ -178,6 +178,16 @@ export async function handlePublish(req: VercelRequest, res: VercelResponse): Pr
   if (!session) return;
 
   try {
+    // A design turned back for its mesh files is sent again inline, and the
+    // refusal must not spend a slot of the scarce daily publish budget.
+    const preCheck = await resolveHeldMeshFiles(
+      res,
+      getRedis(),
+      session.userId,
+      unvalidatedMeshRefHashes(req.body)
+    );
+    if (!preCheck) return;
+
     const rate = await checkRateLimit(session.userId, 'community.publish');
     if (!rate.allowed) {
       rateLimited(res, rate.retryAfterSeconds, 'Publish limit reached. Try again later.');

@@ -13,6 +13,7 @@ import { ok, err, isErr, isOk } from '@/core/result';
 import { isApiErrorResponse } from '@/core/api/mapApiError';
 import { apiFetch } from '@/core/sync/apiFetch';
 import { MISSING_DEPENDENCY_STATUS } from '@/core/sync/payloadKey';
+import { accountGeneration } from '@/core/sync/accountGeneration';
 import { forgetHeldMeshes, readMissingMeshes } from '@/shared/generation/meshCloud';
 import { holderMeshHashes, inlineParamsMeshes } from '@/shared/generation/meshRefs';
 import type { BinParams } from '@/shared/types/bin';
@@ -190,18 +191,46 @@ export async function fetchCommunityCapabilities(
   }
 }
 
-/** A design that names mesh files goes again with them inline when the server turns the refs down. */
+/**
+ * MIRROR: `CONSTRAINTS.MAX_PAYLOAD_BYTES` in api/lib/designerValidationConstants.ts,
+ * the cap on a design whose meshes are all refs; inline meshes lift it. Sent
+ * over it, a design would spend a publish of the daily budget being refused.
+ */
+const REF_DESIGN_MAX_BYTES = 100_000;
+
+function overRefCap(input: CommunityPublishInput): boolean {
+  const { name, description, category, params } = input;
+  const measured = JSON.stringify({
+    name,
+    description,
+    category,
+    type: 'designer',
+    version: 1,
+    params,
+  });
+  return new TextEncoder().encode(measured).length > REF_DESIGN_MAX_BYTES;
+}
+
 async function sendWithInlineFallback(
   input: CommunityPublishInput,
   send: (input: CommunityPublishInput) => Promise<Response>
 ): Promise<Response> {
+  const params = input.params;
+  if (params === undefined || holderMeshHashes({ params }).length === 0) return send(input);
+  // The retry must go out under the account that sent the first request: an
+  // account switch in another tab would otherwise publish this design there.
+  const generation = accountGeneration();
+  const inlined = async (): Promise<CommunityPublishInput | null> => {
+    const inline = await inlineParamsMeshes(params);
+    return isOk(inline) && accountGeneration() === generation
+      ? { ...input, params: inline.value }
+      : null;
+  };
+  if (overRefCap(input)) return send((await inlined()) ?? input);
   const response = await send(input);
-  if (input.params === undefined || holderMeshHashes({ params: input.params }).length === 0) {
-    return response;
-  }
-  if (!(await refusesMeshRefs(response))) return response;
-  const inline = await inlineParamsMeshes(input.params);
-  return isOk(inline) ? send({ ...input, params: inline.value }) : response;
+  if (accountGeneration() !== generation || !(await refusesMeshRefs(response))) return response;
+  const retry = await inlined();
+  return retry ? send(retry) : response;
 }
 
 /**
