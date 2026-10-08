@@ -1,0 +1,40 @@
+src/core/sync/claim.ts
+  s_1606b97c1ea28d::t_0a42b89d56866b 120-122
+  s_1606b97c1ea28d::t_78ccc91d463d6d 67
+  s_1606b97c1ea28d::t_d0ba695f45165d 161-163
+src/core/sync/poller.ts
+  s_1606b97c1ea28d::t_548291b9a07981 52-61,214
+  s_1606b97c1ea28d::t_553790aba67ff2 167,172-173,181,186,194,197-204,211-213
+  s_1606b97c1ea28d::t_9ccca8b43cf91c 117-118,122-139,145-146
+  s_1606b97c1ea28d::t_8171c9f935ddac 215
+src/core/sync/pullState.ts
+  s_1606b97c1ea28d::t_74c5ca3559e015 15-17
+src/core/sync/claim.test.ts
+  s_1606b97c1ea28d::t_a1fa7e4e1fae75 172-199
+src/shell/sync/SyncSessionMount.tsx
+  s_1606b97c1ea28d::t_0862e5a8cbf163 106-109
+  s_1606b97c1ea28d::t_cbcd6fdeaf58e7 9
+src/core/sync/poller.test.ts
+  s_1606b97c1ea28d::t_dadc0b3f35e58b 3
+  s_1606b97c1ea28d::t_af25001023ebe7 174-214
+src/shell/sync/SyncSessionMount.test.tsx
+  s_1606b97c1ea28d::t_21cd25516af073 28
+  s_1606b97c1ea28d::t_879422fca54854 73-74
+  s_1606b97c1ea28d::t_6d8568df991358 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0e473cbb710ed8fda75ad93569bf69cb5848ce02",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
