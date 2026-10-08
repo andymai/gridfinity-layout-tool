@@ -1,0 +1,25 @@
+src/core/sync/claim.ts
+  s_1606b97c1ea28d::t_f556e543c2a7fd 78-79,91-92,140
+src/shell/sync/SyncSessionMount.tsx
+  s_1606b97c1ea28d::t_f556e543c2a7fd 44-46,112
+src/shell/sync/SyncSessionMount.test.tsx
+  s_1606b97c1ea28d::t_8c4f45b11d8f7a 65-75
+src/core/sync/claim.test.ts
+  s_1606b97c1ea28d::t_8c4f45b11d8f7a 206-236
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9429adb586b6d08024dc15933d6a2f8cbdb7bb17",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
