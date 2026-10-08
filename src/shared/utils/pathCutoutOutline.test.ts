@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  BEZIER_SEGMENTS,
   pathCutoutCut,
   pathCutoutOutline,
   pathCutoutSections,
@@ -203,6 +204,15 @@ function spiralBand(n: number, turns: number): Pt[] {
   ];
 }
 
+/** `n` points alternating between the origin and a circle: long edges that all meet at one point. */
+function spikeFan(n: number): Pt[] {
+  return Array.from({ length: n }, (_, k): Pt => {
+    if (k % 2 === 0) return { x: 0, y: 0 };
+    const a = (k / n) * 2 * Math.PI;
+    return { x: 50 * Math.cos(a), y: 50 * Math.sin(a) };
+  });
+}
+
 describe('polylineSelfIntersects', () => {
   const bowtie: Pt[] = [
     { x: 0, y: 0 },
@@ -279,6 +289,21 @@ describe('polylineSelfIntersects', () => {
     [swapped[100], swapped[40000]] = [swapped[40000], swapped[100]];
     const started = performance.now();
     expect(polylineSelfIntersects(swapped)).toBe(true);
+    expect(performance.now() - started).toBeLessThan(300);
+  });
+
+  it('compares every pair of a fan as large as a drawn path flattens to', () => {
+    const drawn = spikeFan(200 * BEZIER_SEGMENTS);
+    expect(allPairsSelfIntersects(drawn)).toBe(false);
+    expect(polylineSelfIntersects(drawn)).toBe(false);
+  });
+
+  it('rejects a crafted 50,000-point fan instead of comparing every pair', () => {
+    const fan = spikeFan(50000);
+    const started = performance.now();
+    expect(polylineSelfIntersects(fan)).toBe(true);
+    const path = fan.map((p) => ({ ...p, handleIn: null, handleOut: null, symmetric: false }));
+    expect(pathCutoutOutline({ x: 0, y: 0, width: 100, depth: 100, path })).toBeNull();
     expect(performance.now() - started).toBeLessThan(300);
   });
 });
