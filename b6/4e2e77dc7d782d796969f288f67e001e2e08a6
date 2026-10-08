@@ -1,21 +1,21 @@
-src/core/sync/session/useSession.test.ts
-  s_1606b97c1ea28d::t_de4eb7322311c9 138-143
-src/core/sync/engine.test.ts
-  s_1606b97c1ea28d::t_727f955e72b5f4 139-144
-src/core/sync/session/useSession.ts
-  s_1606b97c1ea28d::t_914f88d518f67b 133-136
-  s_2fb0424f1c7a72::t_c2909f3a07c3cd 137-138
-src/core/sync/claim.ts
-  s_1606b97c1ea28d::t_a35835030267f1 78-81,86-91,93,96-98
-  s_1606b97c1ea28d::t_f9041001d88e18 152-153,156-158
-  s_1606b97c1ea28d::t_5b6444a8b283e0 190
-src/core/sync/claim.test.ts
-  s_1606b97c1ea28d::t_efef1c279fb891 170-177,181-217
-  s_1606b97c1ea28d::t_f8ba73340fd69a 64
-  s_1606b97c1ea28d::t_b8392183ddb901 131-133
-  s_1606b97c1ea28d::t_0a29c0208adfcc 218
 src/core/sync/engine.ts
   s_1606b97c1ea28d::t_9e06c6360eee85 84-92
+src/core/sync/session/useSession.test.ts
+  s_1606b97c1ea28d::t_de4eb7322311c9 138-143
+src/core/sync/claim.test.ts
+  s_1606b97c1ea28d::t_b8392183ddb901 131-133
+  s_1606b97c1ea28d::t_efef1c279fb891 170-177,181-217
+  s_1606b97c1ea28d::t_f8ba73340fd69a 64
+  s_1606b97c1ea28d::t_047ce8854c9f98 218
+src/core/sync/session/useSession.ts
+  s_1606b97c1ea28d::t_914f88d518f67b 133-136
+  s_2fb0424f1c7a72::t_46082710af1a6e 137-138
+src/core/sync/claim.ts
+  s_1606b97c1ea28d::t_5b6444a8b283e0 190
+  s_1606b97c1ea28d::t_f9041001d88e18 152-153,156-158
+  s_1606b97c1ea28d::t_a35835030267f1 78-81,86-91,93,96-98
+src/core/sync/engine.test.ts
+  s_1606b97c1ea28d::t_727f955e72b5f4 139-144
 ---
 {
   "schema_version": "authorship/3.0.0",
