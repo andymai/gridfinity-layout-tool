@@ -10,6 +10,7 @@ import {
   type SyncItemKind,
 } from '../lib/userIndex.js';
 import { readCommunityDesignBlob } from '../lib/communityStore.js';
+import { listHeldMeshes, type HeldMesh } from '../lib/meshIndex.js';
 import { communityPublishedKey } from '../lib/redisKeys.js';
 import { requireSyncContext } from './lib/requireSyncContext.js';
 
@@ -25,6 +26,8 @@ import { requireSyncContext } from './lib/requireSyncContext.js';
  *   community/{id}.json  : full record for each design the user published to
  *                          the community showcase (server-side user data that
  *                          may exist nowhere locally)
+ *   meshes/{hash}        : each imported mesh file the account holds, which
+ *                          designs and versions name by hash
  *
  * Tombstones are excluded: the user asked to export their data, not
  * the audit trail of deletions.
@@ -43,6 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       foldersIndex,
       indexUpdatedAt,
       publishedIds,
+      meshes,
     ] = await Promise.all([
       getIndex(redis, session.userId, 'layouts'),
       getIndex(redis, session.userId, 'designs'),
@@ -51,6 +55,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       getIndex(redis, session.userId, 'folders'),
       getIndexUpdatedAt(redis, session.userId),
       redis.smembers(communityPublishedKey(session.userId)),
+      listHeldMeshes(redis, session.userId),
     ]);
     const communityIds = [...publishedIds].sort();
 
@@ -79,6 +84,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
               designVersions: liveDesignVersions,
               folders: liveFolders,
               community: communityIds,
+              meshes: Object.fromEntries(
+                [...meshes].map(([hash, { sizeBytes }]) => [hash, { sizeBytes }])
+              ),
               indexUpdatedAt,
               exportedAt: Date.now(),
               schemaVersion: 1,
@@ -95,6 +103,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         streamEnvelopes(addFile, session.userId, 'designVersions', Object.keys(liveDesignVersions)),
         streamEnvelopes(addFile, session.userId, 'folders', Object.keys(liveFolders)),
         streamCommunityRecords(addFile, communityIds),
+        streamMeshFiles(addFile, meshes),
       ]);
     });
   } catch (error) {
@@ -178,6 +187,20 @@ async function streamEnvelopes(
     if (envelope) {
       addFile(`${kind}/${ids[i]}.json`, strToU8(JSON.stringify(envelope, null, 2)));
     }
+  }
+}
+
+// One file at a time, so an account at the mesh quota never holds every file
+// in memory at once. A file gone from the store is skipped like a missing blob.
+async function streamMeshFiles(
+  addFile: AddFile,
+  meshes: ReadonlyMap<string, HeldMesh>
+): Promise<void> {
+  for (const [hash, { url }] of meshes) {
+    const response = await fetch(url);
+    if (response.status === 404) continue;
+    if (!response.ok) throw new Error(`sync/export mesh fetch failed: ${response.status}`);
+    addFile(`meshes/${hash}`, new Uint8Array(await response.arrayBuffer()));
   }
 }
 

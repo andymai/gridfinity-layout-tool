@@ -276,6 +276,42 @@ describe('GET /api/sync/export', () => {
     expect(manifest.exportedAt).toBeGreaterThan(0);
   });
 
+  it('packages the mesh files the account holds, which designs name by hash', async () => {
+    const hash = 'a'.repeat(64);
+    const gone = 'b'.repeat(64);
+    const bytes = new Uint8Array([71, 77, 65, 49, 1, 2, 3]);
+    redisHashes.set(
+      'users:user-1:meshes',
+      new Map([
+        [hash, JSON.stringify({ sizeBytes: bytes.length, url: 'https://blob.test/meshes/a' })],
+        [gone, JSON.stringify({ sizeBytes: 9, url: 'https://blob.test/meshes/b' })],
+      ])
+    );
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) =>
+        url === 'https://blob.test/meshes/a'
+          ? new Response(bytes, { status: 200 })
+          : new Response(null, { status: 404 })
+      )
+    );
+
+    const { default: handler } = await import('./export');
+    const res = makeRes();
+    await handler(makeReq(), res as unknown as VercelResponse);
+    vi.unstubAllGlobals();
+
+    const { unzipSync, strFromU8 } = await import('fflate');
+    const zip = unzipSync(new Uint8Array(res._body as Buffer));
+    expect(Array.from(zip[`meshes/${hash}`])).toEqual(Array.from(bytes));
+    expect(zip[`meshes/${gone}`]).toBeUndefined();
+    const manifest = JSON.parse(strFromU8(zip['manifest.json']));
+    expect(manifest.meshes).toEqual({
+      [hash]: { sizeBytes: bytes.length },
+      [gone]: { sizeBytes: 9 },
+    });
+  });
+
   it('skips tombstoned items in both the manifest and the file list', async () => {
     await seedItem('layouts', 'lay-live', 1000, {
       layout: { name: 'L' },
