@@ -520,6 +520,23 @@ describe('push: preparePush', () => {
     expect(await outboxGetAll()).toEqual([]);
   });
 
+  it('wakes for a deferred entry when its backoff ends, not only on the next edit', async () => {
+    const preparePush = vi
+      .fn<NonNullable<SyncAdapter['preparePush']>>()
+      .mockResolvedValueOnce({ status: 'defer', reason: 'mesh upload: HTTP 500' })
+      .mockResolvedValueOnce({ status: 'defer', reason: 'mesh upload: HTTP 500' })
+      .mockImplementation(async (id) => ({
+        status: 'send',
+        item: { id, payload: { v: 2 }, modifiedAt: 2000 },
+      }));
+    designsAdapter.preparePush = preparePush;
+    engine.start(adapters);
+    designsAdapter.triggerChange({ kind: 'put', id: 'des-1', modifiedAt: 2000 });
+
+    await vi.waitFor(() => expect(puts()).toHaveLength(1), { timeout: 6_000, interval: 50 });
+    expect(preparePush).toHaveBeenCalledTimes(3);
+  }, 10_000);
+
   it('waits out a throttled push without spending an attempt', async () => {
     designsAdapter.preparePush = vi.fn(async () => ({
       status: 'throttle' as const,

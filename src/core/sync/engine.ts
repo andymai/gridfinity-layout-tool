@@ -146,13 +146,22 @@ async function rehydrate(s: EngineState): Promise<void> {
 async function drain(s: EngineState): Promise<void> {
   if (s.stopping) return;
   const due = await outboxGetDue();
-  if (due.length === 0) {
-    await syncStatusFromOutbox();
-    return;
+  if (due.length > 0) {
+    useSyncStatusStore.getState().beginSync();
+    await Promise.all(due.map((entry) => pushOne(s, entry)));
   }
-  useSyncStatusStore.getState().beginSync();
-  await Promise.all(due.map((entry) => pushOne(s, entry)));
   await syncStatusFromOutbox();
+  await wakeForNextDue(s);
+}
+
+// A backoff can put an entry further out than the drain its failure asked for,
+// and a later drain replaces that timer, so a drain that leaves entries waiting
+// sleeps until the soonest rather than leaving them to the next edit.
+async function wakeForNextDue(s: EngineState): Promise<void> {
+  if (s.drainTimer !== null || s.stopping) return;
+  const waiting = await outboxGetAll();
+  if (waiting.length === 0) return;
+  scheduleDrain(s, Math.min(...waiting.map((entry) => entry.nextAttemptAt)) - Date.now());
 }
 
 async function pushOne(s: EngineState, entry: OutboxEntry): Promise<void> {
