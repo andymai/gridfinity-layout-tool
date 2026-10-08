@@ -1,11 +1,19 @@
 import type { Redis } from 'ioredis';
 import { MESH_QUOTA_BYTES, MESH_QUOTA_COUNT, checkMeshQuota, type QuotaError } from './quota.js';
-import { meshHoldersKey, sessionKey, userMeshesKey, userMeshUsageKey } from './redisKeys.js';
+import {
+  meshHoldersKey,
+  sessionKey,
+  shareMeshesKey,
+  userMeshesKey,
+  userMeshUsageKey,
+} from './redisKeys.js';
 
 /**
  * The two scripts below are the only writers of `users:{uid}:meshes`, its
- * running totals in `users:{uid}:meshUsage`, and `mesh:holders:{hash}`. That is
- * what keeps the totals equal to the hash without ever scanning it.
+ * running totals in `users:{uid}:meshUsage`, and an account's members of
+ * `mesh:holders:{hash}`. That is what keeps the totals equal to the hash
+ * without ever scanning it. A share's members carry no totals, so plain set
+ * writes add and drop them.
  */
 
 export interface HeldMesh {
@@ -20,6 +28,10 @@ export interface MeshUsage {
 
 export function accountMeshHolder(userId: string): string {
   return `user:${userId}`;
+}
+
+export function shareMeshHolder(shareId: string): string {
+  return `share:${shareId}`;
 }
 
 /**
@@ -64,6 +76,19 @@ redis.call('SREM', KEYS[3], ARGV[2])
 return redis.call('SCARD', KEYS[3])
 `;
 
+/**
+ * KEYS[1] is the share's own set, KEYS[2..] the holder sets of the files in
+ * ARGV[2..]; ARGV[1] is the share's holder name. One step, so the share's set
+ * never names a file without its hold, or the reverse.
+ */
+const SHARE_HOLD_LUA = `
+for i = 2, #KEYS do
+  redis.call('SADD', KEYS[1], ARGV[i])
+  redis.call('SADD', KEYS[i], ARGV[1])
+end
+return #KEYS - 1
+`;
+
 interface MeshRedis extends Redis {
   meshAcquire(
     sessionKey: string,
@@ -84,6 +109,7 @@ interface MeshRedis extends Redis {
     hash: string,
     holder: string
   ): Promise<number>;
+  shareHold(numberOfKeys: number, ...keysAndArgs: string[]): Promise<number>;
 }
 
 // Registered lazily on whatever client `getRedis()` hands back, and per
@@ -93,6 +119,9 @@ function ensureMeshScripts(redis: Redis): MeshRedis {
   if (typeof client.meshAcquire !== 'function') {
     client.defineCommand('meshAcquire', { numberOfKeys: 4, lua: MESH_ACQUIRE_LUA });
     client.defineCommand('meshRelease', { numberOfKeys: 3, lua: MESH_RELEASE_LUA });
+  }
+  if (typeof client.shareHold !== 'function') {
+    client.defineCommand('shareHold', { lua: SHARE_HOLD_LUA });
   }
   return client;
 }
@@ -145,6 +174,51 @@ export async function unheldMeshes(
     const raw = held[i];
     return raw === null || parseHeldMesh(raw) === null;
   });
+}
+
+/** The CDN URL of each file in `hashes` this account holds: none while the mesh store is off. */
+export async function heldMeshUrls(
+  redis: Redis,
+  userId: string,
+  hashes: readonly string[]
+): Promise<Map<string, string>> {
+  const urls = new Map<string, string>();
+  const unique = [...new Set(hashes)];
+  if (unique.length === 0 || !meshStoreEnabled()) return urls;
+  const held = await redis.hmget(userMeshesKey(userId), ...unique);
+  unique.forEach((hash, i) => {
+    const raw = held[i];
+    const mesh = raw === null ? null : parseHeldMesh(raw);
+    if (mesh) urls.set(hash, mesh.url);
+  });
+  return urls;
+}
+
+function shareScriptArgs(shareId: string, hashes: readonly string[]): [number, ...string[]] {
+  return [
+    hashes.length + 1,
+    shareMeshesKey(shareId),
+    ...hashes.map(meshHoldersKey),
+    shareMeshHolder(shareId),
+    ...hashes,
+  ];
+}
+
+/**
+ * Count a share among the holders of each file it names, so the files outlive
+ * the sharer's own account holding them. Holds only grow, deletion included:
+ * an update racing another, or racing the share's deletion, can write the
+ * share back, so letting go is left to a cleanup that finds the share's blob
+ * gone. The share's own set records every hold for that cleanup.
+ */
+export async function holdShareMeshes(
+  redis: Redis,
+  shareId: string,
+  hashes: readonly string[]
+): Promise<void> {
+  const unique = [...new Set(hashes)];
+  if (unique.length === 0) return;
+  await ensureMeshScripts(redis).shareHold(...shareScriptArgs(shareId, unique));
 }
 
 export async function getMeshUsage(redis: Redis, userId: string): Promise<MeshUsage> {

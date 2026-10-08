@@ -14,7 +14,11 @@ import { SHARE_CONSTRAINTS } from './shareConstraints.js';
 import type { ValidExpiration, ValidationError } from './shareConstraints.js';
 export { SHARE_CONSTRAINTS } from './shareConstraints.js';
 export type { ValidExpiration, ValidationError } from './shareConstraints.js';
-export { validateSharedDesigns, isSharedDesignsError } from './sharedDesignsValidation.js';
+export {
+  validateSharedDesigns,
+  isSharedDesignsError,
+  sharedDesignMeshHashes,
+} from './sharedDesignsValidation.js';
 export type { SharedDesignShape, SharedDesignsResult } from './sharedDesignsValidation.js';
 
 interface LayerShape {

@@ -6,7 +6,7 @@ export const LAYOUT_SCHEMA_VERSION = 2;
 /**
  * A PUT refused for naming things the account has not put on the server, which
  * the response lists as `missing`. Mirrors `MESH_MISSING_STATUS` in
- * api/sync/lib/resourceHandler.ts.
+ * api/lib/shared.ts.
  */
 export const MISSING_DEPENDENCY_STATUS = 424;
 

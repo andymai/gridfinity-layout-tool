@@ -7,7 +7,10 @@ import {
   isValidationError,
   validateSharedDesigns,
   isSharedDesignsError,
+  sharedDesignMeshHashes,
 } from '../lib/validation.js';
+import { holdShareMeshes } from '../lib/meshIndex.js';
+import { resolveShareMeshFiles } from '../lib/shareMeshes.js';
 import { filterLayoutContent, filterSharedDesignsContent } from '../lib/contentFilter.js';
 import { logger } from '../lib/logger.js';
 import {
@@ -96,6 +99,7 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
     return res.status(200).json({
       layout: shareData.layout,
       linkedDesigns: shareData.linkedDesigns,
+      meshFiles: shareData.meshFiles,
       metadata: {
         createdAt: shareData.metadata.createdAt,
         lastUpdatedAt: shareData.metadata.lastUpdatedAt,
@@ -176,7 +180,8 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
         },
       };
 
-      return await writeShareAndRespond(res, id, blobPath, updatedData, newPermission);
+      await writeShare(id, blobPath, updatedData, newPermission);
+      return respondShare(res, id, newPermission);
     }
 
     // Full update with layout
@@ -219,11 +224,19 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       );
     }
 
+    const meshFiles = await resolveShareMeshFiles(
+      req,
+      res,
+      sharedDesignMeshHashes(designsResult.designs)
+    );
+    if (!meshFiles) return;
+
     // Update share data (preserve original deleteTokenHash and createdAt;
     // drop legacy lastAccessedAt — see note above).
     const updatedData: ShareData = {
       layout: withoutLibraryPlacement(validationResult.layout),
       ...(designsResult.designs.length > 0 ? { linkedDesigns: designsResult.designs } : {}),
+      ...(Object.keys(meshFiles).length > 0 ? { meshFiles } : {}),
       metadata: {
         ...metadataWithoutAccess,
         permission: newPermission,
@@ -231,7 +244,11 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       },
     };
 
-    return await writeShareAndRespond(res, id, blobPath, updatedData, newPermission);
+    // Held before the write, so no file the share names goes unheld.
+    const redis = getRedis();
+    if (redis) await holdShareMeshes(redis, id, Object.keys(meshFiles));
+    await writeShare(id, blobPath, updatedData, newPermission);
+    return respondShare(res, id, newPermission);
   } catch (error) {
     logger.error('Share update error', {
       error: error instanceof Error ? error.message : String(error),
@@ -286,7 +303,9 @@ async function handleDelete(
       return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Invalid delete token');
     }
 
-    // Delete the blob and clean up Redis keys
+    // Delete the blob and clean up Redis keys. The share's mesh holds stay, with
+    // their record in `share:meshes:{id}`: an update already past its token
+    // check can still write the share back, and it must find its files held.
     await del(blobPath);
     const redis = getRedis();
     if (redis) {
@@ -324,13 +343,12 @@ async function verifyDeleteToken(
   return timingSafeCompare(await hashToken(deleteToken), storedHash) ? 'ok' : 'mismatch';
 }
 
-async function writeShareAndRespond(
-  res: VercelResponse,
+async function writeShare(
   id: string,
   blobPath: string,
   data: ShareData,
   permission: ShareData['metadata']['permission']
-) {
+): Promise<void> {
   await put(blobPath, JSON.stringify(data), {
     access: 'public',
     contentType: 'application/json',
@@ -338,5 +356,12 @@ async function writeShareAndRespond(
     allowOverwrite: true,
   });
   await recordSharePermission(getRedis(), id, permission);
+}
+
+function respondShare(
+  res: VercelResponse,
+  id: string,
+  permission: ShareData['metadata']['permission']
+) {
   return res.status(200).json({ id, url: `${getBaseUrl()}/l/${id}`, permission });
 }

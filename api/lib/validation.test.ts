@@ -8,6 +8,7 @@ import {
   validateShareLayout,
   validateExpiration,
   validateSharedDesigns,
+  sharedDesignMeshHashes,
   withoutLibraryPlacement,
 } from '../../api/lib/validation.js';
 
@@ -1092,6 +1093,27 @@ describe('validateSharedDesigns', () => {
     name: 'Socket Tray',
     params: validParams(),
     ...over,
+  });
+
+  it('accepts a design naming a mesh file by ref, and lists the file it names', () => {
+    const hash = 'a'.repeat(64);
+    const params = {
+      ...validParams(),
+      cutouts: [{ id: 'c1', shape: 'mesh', meshId: 'asset-1' }],
+      meshAssets: {
+        'asset-1': {
+          name: 'wrench',
+          hash,
+          triangleCount: 12,
+          sizeMm: { x: 20, y: 10, z: 5 },
+          bytes: 4_000,
+        },
+      },
+    };
+    const result = validateSharedDesigns([design({ params })]);
+
+    expect(result.valid).toBe(true);
+    if (result.valid) expect(sharedDesignMeshHashes(result.designs)).toEqual([hash]);
   });
 
   it('treats absent designs as an empty set', () => {

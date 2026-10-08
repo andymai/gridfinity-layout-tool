@@ -6,6 +6,7 @@ import {
   beginMeshCloudSession,
   endMeshCloudSession,
   fetchMeshFiles,
+  fetchSharedMeshFiles,
   meshCloudSession,
   forgetHeldMeshes,
   uploadMeshFiles,
@@ -573,6 +574,106 @@ describe('fetchMeshFiles', () => {
     fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
 
     await expect(fetchMeshFiles([file.hash])).resolves.toBeUndefined();
+    expect(await hasMeshFile(file.hash)).toBe(false);
+  });
+});
+
+describe('fetchSharedMeshFiles', () => {
+  const CDN = 'https://store.public.blob.vercel-storage.com/meshes/';
+
+  async function remoteFile(seed: number): Promise<{ hash: string; bytes: Uint8Array }> {
+    const bytes = new Uint8Array([seed, 7, 7, 7, 6, 5, 4, 3]);
+    return { hash: await sha256Hex(bytes), bytes };
+  }
+
+  /** The CDN answers each file under its hash; the API answers nothing. */
+  function serveCdn(files: ReadonlyMap<string, Uint8Array>): void {
+    fetchMock.mockImplementation(async (url) => {
+      const body = url.startsWith(CDN) ? files.get(url.slice(CDN.length)) : undefined;
+      return body
+        ? new Response(body.slice(), { status: 200 })
+        : new Response(null, { status: 404 });
+    });
+  }
+
+  it('stores each file straight from the URL the share gives, asking no account', async () => {
+    const a = await remoteFile(1);
+    const b = await remoteFile(2);
+    serveCdn(
+      new Map([
+        [a.hash, a.bytes],
+        [b.hash, b.bytes],
+      ])
+    );
+
+    await fetchSharedMeshFiles({ [a.hash]: CDN + a.hash, [b.hash]: CDN + b.hash });
+
+    expect(calls().every(({ url }) => url.startsWith(CDN))).toBe(true);
+    expect(await getMeshFile(a.hash)).toEqual(a.bytes);
+    expect(await getMeshFile(b.hash)).toEqual(b.bytes);
+  });
+
+  it('works between sessions, for a signed-out recipient', async () => {
+    const file = await remoteFile(3);
+    serveCdn(new Map([[file.hash, file.bytes]]));
+    endMeshCloudSession();
+
+    await fetchSharedMeshFiles({ [file.hash]: CDN + file.hash });
+
+    expect(await hasMeshFile(file.hash)).toBe(true);
+  });
+
+  it('refuses bytes that are not the file their name says', async () => {
+    const file = await remoteFile(4);
+    const other = await remoteFile(5);
+    serveCdn(new Map([[file.hash, other.bytes]]));
+
+    await fetchSharedMeshFiles({ [file.hash]: CDN + file.hash });
+
+    expect(await hasMeshFile(file.hash)).toBe(false);
+    expect(await hasMeshFile(other.hash)).toBe(false);
+  });
+
+  it('asks nothing for a file already on this device', async () => {
+    const file = await storedFile(6);
+
+    await fetchSharedMeshFiles({ [file.hash]: CDN + file.hash });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("lets a later sync download use the share's URL instead of asking the account", async () => {
+    const file = await remoteFile(7);
+    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    await fetchSharedMeshFiles({ [file.hash]: CDN + file.hash });
+    serveCdn(new Map([[file.hash, file.bytes]]));
+    fetchMock.mockClear();
+
+    await fetchMeshFiles([file.hash]);
+
+    expect(calls()).toEqual([{ method: undefined, url: CDN + file.hash }]);
+    expect(await hasMeshFile(file.hash)).toBe(true);
+  });
+
+  it('tries a failed file again on its own a minute later, with no account', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const file = await remoteFile(9);
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+    endMeshCloudSession();
+
+    await fetchSharedMeshFiles({ [file.hash]: CDN + file.hash });
+    expect(await hasMeshFile(file.hash)).toBe(false);
+
+    serveCdn(new Map([[file.hash, file.bytes]]));
+    await vi.advanceTimersByTimeAsync(60_000);
+    await vi.waitFor(async () => expect(await hasMeshFile(file.hash)).toBe(true));
+  });
+
+  it('settles quietly when the network is down', async () => {
+    const file = await remoteFile(8);
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    await expect(fetchSharedMeshFiles({ [file.hash]: CDN + file.hash })).resolves.toBeUndefined();
     expect(await hasMeshFile(file.hash)).toBe(false);
   });
 });

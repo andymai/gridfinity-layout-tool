@@ -15,12 +15,20 @@ import {
   acquireAccountMesh,
   getHeldMesh,
   getMeshUsage,
+  holdShareMeshes,
   releaseAccountMesh,
   releaseAllAccountMeshes,
+  shareMeshHolder,
 } from './meshIndex.js';
 import type { MeshHold } from './meshIndex.js';
 import { MESH_QUOTA_BYTES, MESH_QUOTA_COUNT, checkMeshQuota } from './quota.js';
-import { meshHoldersKey, sessionKey, userMeshesKey, userMeshUsageKey } from './redisKeys.js';
+import {
+  meshHoldersKey,
+  sessionKey,
+  shareMeshesKey,
+  userMeshesKey,
+  userMeshUsageKey,
+} from './redisKeys.js';
 
 const REDIS_TEST_URL = process.env.REDIS_TEST_URL;
 
@@ -74,6 +82,19 @@ describe.skipIf(!REDIS_TEST_URL)('mesh holds (real Redis)', () => {
     expect(await getMeshUsage(redis, 'u1')).toEqual({ bytes: 0, count: 0 });
     expect(await releaseAccountMesh(redis, 'u2', HASH)).toBe(0);
     expect(await redis.exists(meshHoldersKey(HASH))).toBe(0);
+  });
+
+  it("holds a share's files beside the account's, with a record of each", async () => {
+    const OTHER = 'b'.repeat(64);
+    await acquireAccountMesh(redis, hold('u1', HASH));
+    await holdShareMeshes(redis, 'share1', [HASH]);
+    await holdShareMeshes(redis, 'share1', [HASH, OTHER]);
+
+    expect((await redis.smembers(shareMeshesKey('share1'))).sort()).toEqual([HASH, OTHER].sort());
+    expect((await redis.smembers(meshHoldersKey(HASH))).sort()).toEqual(
+      [accountMeshHolder('u1'), shareMeshHolder('share1')].sort()
+    );
+    expect(await redis.smembers(meshHoldersKey(OTHER))).toEqual([shareMeshHolder('share1')]);
   });
 
   it('records nothing for a session that no longer exists', async () => {

@@ -4,6 +4,7 @@ import { sanitizeString } from './sanitize.js';
 import type { ValidationError } from './shareConstraints.js';
 import { isObject, validationError } from './validationUtils.js';
 import { validateDesignerShare } from './designerValidation.js';
+import { meshRefHashes } from './designerCutoutValidation.js';
 import { validateAssemblyEnvelope, validateAssemblyStructure } from './assemblyValidation.js';
 
 /** Design ids are generated as `design_{timestamp}_{suffix}`; 64 leaves room to spare. */
@@ -146,7 +147,10 @@ export function validateSharedDesigns(data: unknown): SharedDesignsResult {
     }
 
     const paramsBytes = JSON.stringify(params ?? null).length;
-    const result = validateDesignerShare({ type: 'designer', version: 1, params }, paramsBytes);
+    // Refs are checked for shape here; the endpoint checks the caller holds each file.
+    const result = validateDesignerShare({ type: 'designer', version: 1, params }, paramsBytes, {
+      meshRefs: true,
+    });
     if (!result.valid) {
       return validationError('VALIDATION_ERROR', `Invalid linked design: ${result.error.message}`);
     }
@@ -168,6 +172,10 @@ export function validateSharedDesigns(data: unknown): SharedDesignsResult {
   }
 
   return { valid: true, designs };
+}
+
+export function sharedDesignMeshHashes(designs: readonly SharedDesignShape[]): string[] {
+  return designs.flatMap((design) => meshRefHashes(design.params?.meshAssets));
 }
 
 /**

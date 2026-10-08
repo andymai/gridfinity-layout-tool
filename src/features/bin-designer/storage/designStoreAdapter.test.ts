@@ -100,4 +100,29 @@ describe('designStoreAdapter.loadDesign', () => {
 
     expect(isErr(await designStoreAdapter.loadDesign(id))).toBe(true);
   });
+
+  it('keeps refs, reading no file, for a payload whose files travel apart', async () => {
+    const id = designId('design_refs');
+    const ref = {
+      name: 'gone',
+      hash: '8'.repeat(64),
+      triangleCount: 1,
+      sizeMm: asset.sizeMm,
+      bytes: 1,
+    };
+    const design: SavedDesign = {
+      id,
+      name: 'd',
+      params: { ...DEFAULT_BIN_PARAMS, cutouts: [cutout], meshAssets: { m1: ref } },
+      thumbnail: null,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      exportFileNameConfig: null,
+    };
+    await (await getDb()).put(DESIGNS_STORE, design);
+
+    const loaded = unwrap(await designStoreAdapter.loadDesign(id, { meshRefs: true }));
+
+    expect((loaded.params as SavedDesign['params'])?.meshAssets).toEqual({ m1: ref });
+  });
 });

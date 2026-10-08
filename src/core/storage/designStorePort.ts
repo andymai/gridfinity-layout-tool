@@ -103,7 +103,14 @@ export interface DesignRegistryEntry extends DesignRegistryEdgeFields {
  * gave us.
  */
 export interface DesignStorePort {
-  loadDesign(id: DesignId): Promise<Result<LoadedDesignData, StorageError>>;
+  /**
+   * Mesh assets come back inline unless `meshRefs` is set, for a payload whose
+   * mesh files travel apart from it.
+   */
+  loadDesign(
+    id: DesignId,
+    options?: { readonly meshRefs?: boolean }
+  ): Promise<Result<LoadedDesignData, StorageError>>;
   saveDesign(input: SaveDesignInput): Promise<Result<SavedDesignData, StorageError>>;
   upsertRegistryEntry(entry: DesignRegistryEntry): Promise<Result<void, StorageError>>;
   registryEdgeFields(params: unknown): Promise<DesignRegistryEdgeFields>;

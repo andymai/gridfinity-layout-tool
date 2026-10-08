@@ -20,7 +20,7 @@ import { PAYLOAD_KEY as API_DESIGNS_PAYLOAD_KEY } from '../../../api/sync/design
 import { PAYLOAD_KEY as API_BASEPLATES_PAYLOAD_KEY } from '../../../api/sync/baseplates/[id].js';
 import { PAYLOAD_KEY as API_DESIGN_VERSIONS_PAYLOAD_KEY } from '../../../api/sync/designVersions/[id].js';
 import { PAYLOAD_KEY as API_FOLDERS_PAYLOAD_KEY } from '../../../api/sync/folders/[id].js';
-import { MESH_MISSING_STATUS } from '../../../api/sync/lib/resourceHandler.js';
+import { MESH_MISSING_STATUS } from '../../../api/lib/shared.js';
 
 const ALL_SYNC_KINDS: readonly SyncKind[] = [
   'layouts',

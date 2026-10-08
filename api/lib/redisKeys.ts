@@ -71,6 +71,11 @@ export function shareLastAccessedKey(shareId: string): string {
   return `share:lastAccessed:${shareId}`;
 }
 
+/** SET of every mesh file a share has named, so deleting it lets go of them all. */
+export function shareMeshesKey(shareId: string): string {
+  return `share:meshes:${shareId}`;
+}
+
 /** Permission written by the last share update, read ahead of the CDN-cached blob. */
 export function sharePermissionKey(shareId: string): string {
   return `share:permission:${shareId}`;
@@ -152,7 +157,7 @@ export function userMeshUsageKey(userId: string): string {
 
 /**
  * Every holder referencing a stored mesh file, one member each (`user:{uid}`
- * for an account). A SET rather than a counter, so a repeated acquire or
+ * for an account, `share:{id}` for a layout share). A SET rather than a counter, so a repeated acquire or
  * release is a no-op instead of drift, and SCARD is the refcount.
  */
 export function meshHoldersKey(hash: string): string {

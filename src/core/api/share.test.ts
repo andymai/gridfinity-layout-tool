@@ -15,6 +15,14 @@ import {
   type DesignStorePort,
   type LoadedDesignData,
 } from '@/core/storage/designStorePort';
+import { useSessionStore } from '@/core/sync/session/useSession';
+import { forgetHeldMeshes, meshCloudSession, uploadMeshFiles } from '@/shared/generation/meshCloud';
+
+vi.mock('@/shared/generation/meshCloud', () => ({
+  uploadMeshFiles: vi.fn(),
+  forgetHeldMeshes: vi.fn(),
+  meshCloudSession: vi.fn(() => 1),
+}));
 
 const mockLayout: Layout = {
   version: '1.0',
@@ -482,9 +490,206 @@ describe('linked designs over the server per-design cap', () => {
   });
 });
 
+describe('linked designs naming mesh files', () => {
+  const HASH = 'a'.repeat(64);
+  const ref = {
+    name: 'wrench',
+    hash: HASH,
+    triangleCount: 12,
+    sizeMm: { x: 1, y: 1, z: 1 },
+    bytes: 9,
+  };
+  const inline = {
+    name: 'wrench',
+    data: 'QUFBQQ==',
+    triangleCount: 12,
+    sizeMm: { x: 1, y: 1, z: 1 },
+  };
+  const meshBin = (meshAsset: unknown, extra: Record<string, unknown> = {}): LoadedDesignData => ({
+    id: designId('design_mesh'),
+    name: 'Mesh bin',
+    params: { ...extra, meshAssets: { m: meshAsset } },
+  });
+
+  const layout: Layout = {
+    ...mockLayout,
+    bins: [
+      {
+        id: binId('bin-0'),
+        layerId: layerId('layer1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('cat1'),
+        label: '',
+        notes: '',
+        linkedDesignId: designId('design_mesh'),
+      },
+    ],
+  };
+
+  /** The stored design names its mesh by ref; loading it inline swaps in the bytes. */
+  const installMeshBin = (extra: Record<string, unknown> = {}): void => {
+    registerDesignStorePort({
+      loadDesign: async (_id, options) => ok(meshBin(options?.meshRefs ? ref : inline, extra)),
+      saveDesign: () => Promise.reject(new Error('unused')),
+      upsertRegistryEntry: () => Promise.reject(new Error('unused')),
+      registryEdgeFields: async () => ({}),
+    });
+  };
+
+  const created = {
+    ok: true,
+    status: 201,
+    json: () =>
+      Promise.resolve({ id: 'abc123xyz789', url: '/l/x', deleteToken: 't', permission: 'view' }),
+  } as Response;
+
+  const sentAssets = (): unknown[] =>
+    vi.mocked(fetch).mock.calls.map(([, init]) => {
+      const body = JSON.parse(init?.body as string) as {
+        linkedDesigns: { params?: { meshAssets?: Record<string, unknown> } }[];
+      };
+      return body.linkedDesigns[0]?.params?.meshAssets?.m;
+    });
+
+  const signIn = (): void => {
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u1', provider: 'google', email: 'a@x' },
+    });
+  };
+
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+    vi.mocked(fetch).mockResolvedValue(created);
+    vi.mocked(uploadMeshFiles).mockResolvedValue({ status: 'held' });
+    vi.mocked(meshCloudSession).mockReturnValue(1);
+    installMeshBin();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.clearAllMocks();
+    resetDesignStorePort();
+    useSessionStore.setState({ status: 'unknown', user: null });
+  });
+
+  it('names the mesh by ref once the signed-in account holds its file', async () => {
+    signIn();
+
+    expectOk(await createShare('abc123xyz789', layout, 'view'));
+
+    expect(uploadMeshFiles).toHaveBeenCalledWith([HASH], 1);
+    expect(sentAssets()).toEqual([ref]);
+    const [, init] = vi.mocked(fetch).mock.calls[0];
+    expect(new Headers(init?.headers).get('X-Requested-With')).toBe('gflt');
+  });
+
+  it('sends the mesh inline for a signed-out sharer, uploading nothing', async () => {
+    useSessionStore.setState({ status: 'anonymous', user: null });
+
+    expectOk(await createShare('abc123xyz789', layout, 'view'));
+
+    expect(uploadMeshFiles).not.toHaveBeenCalled();
+    expect(sentAssets()).toEqual([inline]);
+  });
+
+  it('sends the mesh inline when the server has no mesh store', async () => {
+    signIn();
+    vi.mocked(uploadMeshFiles).mockResolvedValue({ status: 'unavailable' });
+
+    expectOk(await createShare('abc123xyz789', layout, 'view'));
+
+    expect(sentAssets()).toEqual([inline]);
+  });
+
+  it('sends again inline when the server finds a file unheld, forgetting it', async () => {
+    signIn();
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 424,
+        json: () => Promise.resolve({ code: 'MESH_MISSING', missing: [HASH] }),
+      } as Response)
+      .mockResolvedValueOnce(created);
+
+    expectOk(await createShare('abc123xyz789', layout, 'view'));
+
+    expect(sentAssets()).toEqual([ref, inline]);
+    expect(forgetHeldMeshes).toHaveBeenCalledWith([HASH]);
+  });
+
+  it('does the same on update', async () => {
+    signIn();
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 424,
+        json: () => Promise.resolve({ code: 'MESH_MISSING', missing: [HASH] }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ id: 'abc123xyz789', url: '/l/x', permission: 'view' }),
+      } as Response);
+
+    expectOk(await updateShare('abc123xyz789', 'token', layout));
+
+    expect(sentAssets()).toEqual([ref, inline]);
+  });
+
+  it('sends inline a bin the ref budget skips, since its inline mesh lifts the cap', async () => {
+    signIn();
+    installMeshBin({ notes: 'x'.repeat(110 * 1024) });
+
+    expectOk(await createShare('abc123xyz789', layout, 'view'));
+
+    expect(uploadMeshFiles).not.toHaveBeenCalled();
+    expect(sentAssets()).toEqual([inline]);
+  });
+
+  it('uploads under the session the share began in, though another starts meanwhile', async () => {
+    signIn();
+    registerDesignStorePort({
+      loadDesign: async (_id, options) => {
+        vi.mocked(meshCloudSession).mockReturnValue(2);
+        return ok(meshBin(options?.meshRefs ? ref : inline));
+      },
+      saveDesign: () => Promise.reject(new Error('unused')),
+      upsertRegistryEntry: () => Promise.reject(new Error('unused')),
+      registryEdgeFields: async () => ({}),
+    });
+
+    expectOk(await createShare('abc123xyz789', layout, 'view'));
+
+    expect(uploadMeshFiles).toHaveBeenCalledWith([HASH], 1);
+  });
+});
+
 describe('fetchShare', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn());
+  });
+
+  it('keeps the URL of each mesh file the share names, dropping malformed entries', async () => {
+    const hash = 'b'.repeat(64);
+    const url = `https://store.public.blob.vercel-storage.com/meshes/${hash}`;
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          layout: mockLayout,
+          metadata: { createdAt: '2026-01-01T00:00:00.000Z', permission: 'view' },
+          meshFiles: { [hash]: url, nothex: url, ['c'.repeat(64)]: 'http://insecure/x' },
+        }),
+    } as Response);
+
+    const value = expectOk(await fetchShare('abc123xyz789'));
+
+    expect(value.meshFiles).toEqual({ [hash]: url });
   });
 
   afterEach(() => {

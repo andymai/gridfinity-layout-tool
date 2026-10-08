@@ -221,8 +221,15 @@ export function SharedLayoutImporter() {
         return;
       }
 
-      const { metadata, linkedDesigns } = result.value;
+      const { metadata, linkedDesigns, meshFiles } = result.value;
       const permission = metadata.permission;
+      // The designs name their meshes by file; each pocket shows as pending
+      // until its file arrives.
+      if (meshFiles) {
+        void import('@/shared/generation/meshCloud').then(({ fetchSharedMeshFiles }) =>
+          fetchSharedMeshFiles(meshFiles)
+        );
+      }
 
       // Materialize the sharer's bin designs locally and repoint the bins at
       // them, so the recipient sees real geometry and can export each bin

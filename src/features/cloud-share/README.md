@@ -55,6 +55,8 @@ Delete token: random secret, hashed server-side, required for mutations.
    added explicitly to the server sanitizer (`api/lib/validation.ts`) AND both client import
    paths (`validationImport.ts`, `validationSalvage.ts`) — all three rebuild bins
    field-by-field and silently drop anything unlisted.
+   A signed-in sharer's designs name their meshes by file, and `meshFiles` gives each file's
+   CDN URL; otherwise the meshes travel inline, inside the 512KB.
 6. **Restored design ids are derived, not generated** - hashed from (share id, source design
    id) so re-opening a link updates the same records instead of duplicating them on
    every visit.
