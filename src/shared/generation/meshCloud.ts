@@ -19,6 +19,13 @@ let unavailableUntil = 0;
 const refusedUntil = new Map<string, number>();
 /** Bumped when the signed-in session ends; a reply from before it is ignored. */
 let sessionEpoch = 0;
+/**
+ * False from a session's end until the next one begins. A pull can still be
+ * finishing for the ended session (the sign-in claim runs on after sign-out
+ * cancels it), and what it asks for must not start under no account or the
+ * next one.
+ */
+let sessionOpen = true;
 
 export type MeshUpload =
   | { readonly status: 'held' }
@@ -77,8 +84,9 @@ function outcome(res: Response, hash: string): FileUpload {
 async function upload(hash: string): Promise<FileUpload> {
   const epoch = sessionEpoch;
   const current = (): void => {
-    if (epoch !== sessionEpoch) throw new Error('mesh upload: session ended');
+    if (epoch !== sessionEpoch || !sessionOpen) throw new Error('mesh upload: session ended');
   };
+  current();
   const now = Date.now();
   if (now < unavailableUntil) return UNAVAILABLE;
   if (now < (refusedUntil.get(hash) ?? 0)) return REFUSED;
@@ -251,9 +259,10 @@ function queueDownload(hash: string): Promise<void> {
  * caller; its arrival is announced like any stored file's. A file that fails
  * is tried again on a timer that backs off to half an hour, and a throttled
  * server is waited out; until then its pocket stays pending. Settles once each
- * file has been tried or put off. Never rejects.
+ * file has been tried or put off, and at once between sessions. Never rejects.
  */
 export function fetchMeshFiles(hashes: readonly string[]): Promise<void> {
+  if (!sessionOpen) return Promise.resolve();
   const wanted = [...new Set(hashes)].filter((hash) => !failedDownloads.has(hash));
   if (Date.now() < throttledUntil) {
     for (const hash of wanted) if (!downloadWaiters.has(hash)) failedDownloads.add(hash);
@@ -264,12 +273,19 @@ export function fetchMeshFiles(hashes: readonly string[]): Promise<void> {
   return Promise.all(tried).then(() => undefined);
 }
 
+/** Take uploads and downloads again, for the signed-in session starting now. */
+export function beginMeshCloudSession(): void {
+  sessionOpen = true;
+}
+
 /**
- * Forget what the ended session's account holds and refused, and drop every
- * queued download and the retry timer: a retry after it would ask the server
- * anonymously.
+ * Forget what the ended session's account holds and refused, drop every queued
+ * download and the retry timer (a retry after it would ask the server
+ * anonymously), and take no new upload or download until
+ * {@link beginMeshCloudSession}.
  */
 export function endMeshCloudSession(): void {
+  sessionOpen = false;
   sessionEpoch++;
   uploads.clear();
   unavailableUntil = 0;
@@ -288,4 +304,5 @@ export function endMeshCloudSession(): void {
 /** Test-only: forget every held file, upload and download, and the retry timer. */
 export function __resetMeshCloudForTests(): void {
   endMeshCloudSession();
+  beginMeshCloudSession();
 }

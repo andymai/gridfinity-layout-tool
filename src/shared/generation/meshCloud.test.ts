@@ -3,6 +3,7 @@ import { MESH_URL_HEADER as API_MESH_URL_HEADER } from '../../../api/meshes/[has
 import {
   MESH_URL_HEADER,
   __resetMeshCloudForTests,
+  beginMeshCloudSession,
   endMeshCloudSession,
   fetchMeshFiles,
   forgetHeldMeshes,
@@ -173,8 +174,21 @@ describe('uploadMeshFiles', () => {
     expect((await uploadMeshFiles([file.hash])).status).toBe('refused');
 
     endMeshCloudSession();
+    beginMeshCloudSession();
     fetchMock.mockImplementation(async () => new Response(null, { status: 200 }));
 
+    expect(await uploadMeshFiles([file.hash])).toEqual({ status: 'held' });
+  });
+
+  it('starts no upload between one session and the next', async () => {
+    const file = await storedFile(15);
+    fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
+
+    endMeshCloudSession();
+    await expect(uploadMeshFiles([file.hash])).rejects.toThrow('session ended');
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    beginMeshCloudSession();
     expect(await uploadMeshFiles([file.hash])).toEqual({ status: 'held' });
   });
 
@@ -366,6 +380,22 @@ describe('fetchMeshFiles', () => {
     await vi.advanceTimersByTimeAsync(60 * 60_000);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('starts nothing for a pull finishing after its session ended, until the next begins', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const file = await remoteFile(53);
+    serve(new Map());
+
+    endMeshCloudSession();
+    await fetchMeshFiles([file.hash]);
+    await vi.advanceTimersByTimeAsync(60 * 60_000);
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    beginMeshCloudSession();
+    serve(new Map([[file.hash, file.bytes]]));
+    await fetchMeshFiles([file.hash]);
+    expect(await hasMeshFile(file.hash)).toBe(true);
   });
 
   it('waits out a throttled server before asking for the rest', async () => {

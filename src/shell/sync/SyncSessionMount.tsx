@@ -14,6 +14,7 @@ import { usePeriodicPoll } from '@/core/sync/triggers/usePeriodicPoll';
 import { useSyncToasts } from '@/core/sync/useSyncToasts';
 import { AccountMismatchDialog } from '@/core/sync/dialogs/AccountMismatchDialog';
 import type { SyncAdapters } from '@/core/sync/adapters/types';
+import { beginMeshCloudSession, endMeshCloudSession } from '@/shared/generation/meshCloud';
 
 /**
  * Boot point for the sync feature. Owns:
@@ -75,6 +76,7 @@ export function SyncSessionMount() {
     if (!currentUser) return;
 
     let cancelled = false;
+    beginMeshCloudSession();
     // Run claim before start(): the engine drains outbox and polls
     // immediately, and we don't want the prior user's pending
     // pushes to flush under the new account before discard can
@@ -98,6 +100,10 @@ export function SyncSessionMount() {
     return () => {
       cancelled = true;
       stop();
+      // The claim's pulls start mesh downloads before the engine exists, so
+      // stopping the engine alone would leave them, and their retry timer, to
+      // run on under no account or the next one.
+      endMeshCloudSession();
     };
   }, [status, adapters, promptAccountMismatch]);
 
