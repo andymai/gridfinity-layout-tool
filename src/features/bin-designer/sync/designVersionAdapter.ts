@@ -162,13 +162,15 @@ export const designVersionAdapter: DesignVersionAdapter = {
   },
 
   async preparePush(id: string): Promise<PushPlan<DesignVersionPayload>> {
+    const session = meshCloudSession();
     const read = await readVersion(id);
     if (!read) return { status: 'skip' };
     return planMeshPush(
       toItem(read.version, read.content),
       read.content,
       (only) => inlineVersion(id, only),
-      missingMeshPushes
+      missingMeshPushes,
+      session
     );
   },
 

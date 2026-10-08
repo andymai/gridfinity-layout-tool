@@ -174,7 +174,11 @@ function uploadOnce(hash: string): Promise<FileUpload> {
  * one it lacks. Answers what stops the push from naming them all by ref, most
  * pressing first, and rejects when the server cannot be reached.
  */
-export async function uploadMeshFiles(hashes: readonly string[]): Promise<MeshUpload> {
+export async function uploadMeshFiles(
+  hashes: readonly string[],
+  session: number = sessionEpoch
+): Promise<MeshUpload> {
+  if (session !== sessionEpoch || !sessionOpen) throw new Error('mesh upload: session ended');
   const unique = [...new Set(hashes)];
   const results = await Promise.all(unique.map(uploadOnce));
   const missing = results.find(isStatus('missing'));

@@ -232,6 +232,16 @@ describe('uploadMeshFiles', () => {
     expect(await uploadMeshFiles([file.hash])).toEqual({ status: 'held' });
   });
 
+  it('refuses an upload for a push begun under an earlier session', async () => {
+    const file = await storedFile(16);
+    const earlier = meshCloudSession();
+    endMeshCloudSession();
+    beginMeshCloudSession();
+
+    await expect(uploadMeshFiles([file.hash], earlier)).rejects.toThrow('session ended');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('answers held without a request for a payload with no mesh', async () => {
     expect(await uploadMeshFiles([])).toEqual({ status: 'held' });
     expect(fetchMock).not.toHaveBeenCalled();

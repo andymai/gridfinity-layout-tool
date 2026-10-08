@@ -259,13 +259,15 @@ export const designAdapter: DesignAdapter = {
   },
 
   async preparePush(id: string): Promise<PushPlan<DesignSyncPayload>> {
+    const session = meshCloudSession();
     const result = await loadDesign(designId(id));
     if (!isOk(result) || !isSyncableDesign(result.value)) return { status: 'skip' };
     return planMeshPush(
       toItem(result.value),
       result.value,
       (only) => inlineDesign(id, only),
-      missingMeshPushes
+      missingMeshPushes,
+      session
     );
   },
 
