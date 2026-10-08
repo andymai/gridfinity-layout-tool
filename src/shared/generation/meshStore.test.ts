@@ -55,8 +55,9 @@ describe('putMeshFile', () => {
     const hash = await putMeshFile(bytesOf(9));
     await putMeshFile(bytesOf(9));
     stop();
-    await putMeshFile(bytesOf(10));
-    expect(heard.mock.calls).toEqual([[hash]]);
+    const unheard = await putMeshFile(bytesOf(10));
+    // Other test files' arrivals reach this thread too; count only these.
+    expect(heard.mock.calls.filter(([h]) => h === hash || h === unheard)).toEqual([[hash]]);
   });
 
   it('is idempotent: the same bytes keep one file', async () => {
@@ -118,6 +119,42 @@ describe('sweepMeshFiles', () => {
 
   it('is a no-op on an empty store', async () => {
     expect(await sweepMeshFiles(new Set())).toEqual([]);
+  });
+});
+
+describe('arrivals across tabs', () => {
+  const CHANNEL = 'gridfinity-mesh-file-arrivals';
+
+  it('hears a file another tab stores', async () => {
+    const heard = vi.fn();
+    const stop = subscribeMeshFileArrivals(heard);
+    const otherTab = new BroadcastChannel(CHANNEL);
+
+    otherTab.postMessage('f'.repeat(64));
+
+    await vi.waitFor(() => expect(heard).toHaveBeenCalledWith('f'.repeat(64)));
+    otherTab.close();
+    stop();
+  });
+
+  // Node delivers these across worker threads, so other test files' arrivals
+  // land here too; only this test's own hashes are counted.
+  it('tells other tabs of a file stored here, and hears it here once', async () => {
+    const otherTab = new BroadcastChannel(CHANNEL);
+    const told: unknown[] = [];
+    otherTab.onmessage = (event: MessageEvent<unknown>) => told.push(event.data);
+    const heard = vi.fn();
+    const stop = subscribeMeshFileArrivals(heard);
+    const count = (hash: string | null): number => told.filter((h) => h === hash).length;
+
+    const hash = await putMeshFile(bytesOf(21));
+
+    await vi.waitFor(() => expect(count(hash)).toBe(1));
+    expect(heard.mock.calls.filter(([h]) => h === hash)).toHaveLength(1);
+    stop();
+    const unheard = await putMeshFile(bytesOf(22));
+    await vi.waitFor(() => expect(count(unheard)).toBe(1));
+    otherTab.close();
   });
 });
 

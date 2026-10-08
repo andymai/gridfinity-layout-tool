@@ -7,8 +7,8 @@ import {
   hasMeshOutlines,
   setMeshOutlines,
 } from '@/shared/generation/meshOutlines';
-import { storeMeshAsset } from '@/shared/generation/meshRefs';
-import { __resetMeshStoreForTests } from '@/shared/generation/meshStore';
+import { meshAssetFile, storeMeshAsset } from '@/shared/generation/meshRefs';
+import { __resetMeshStoreForTests, putMeshFile } from '@/shared/generation/meshStore';
 import { useLoadedMeshAssets, useMeshAssetOutlines } from './useMeshOutlines';
 
 const asset: MeshAsset = {
@@ -79,6 +79,18 @@ describe('useMeshAssetOutlines', () => {
     const { result } = renderHook(() => useMeshAssetOutlines(absent));
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(result.current).toBeUndefined();
+  });
+
+  it('loads the outlines once a missing file arrives', async () => {
+    const file = await meshAssetFile({ ...asset, data: 'AAAE' });
+    if (!file) throw new Error('fixture');
+    const { result } = renderHook(() => useMeshAssetOutlines(file.ref));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(result.current).toBeUndefined();
+
+    await putMeshFile(file.bytes);
+
+    await waitFor(() => expect(result.current).toEqual(asset.outlines));
   });
 });
 

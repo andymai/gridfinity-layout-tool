@@ -97,11 +97,42 @@ function hasIndexedDb(): boolean {
 }
 
 const arrivalListeners = new Set<(hash: string) => void>();
+const ARRIVALS_CHANNEL = 'gridfinity-mesh-file-arrivals';
+// Every tab shares these files, so one stored in another tab has arrived here
+// too. Open only while this page listens; announcing through it keeps a tab
+// from hearing its own arrivals twice.
+let arrivalChannel: BroadcastChannel | null = null;
 
-/** Hear of each file that arrives on this device; answers the unsubscribe. */
+function hearArrival(hash: string): void {
+  for (const listener of arrivalListeners) listener(hash);
+}
+
+function announceArrival(hash: string): void {
+  hearArrival(hash);
+  if (arrivalChannel) {
+    arrivalChannel.postMessage(hash);
+  } else if (typeof BroadcastChannel !== 'undefined') {
+    const channel = new BroadcastChannel(ARRIVALS_CHANNEL);
+    channel.postMessage(hash);
+    channel.close();
+  }
+}
+
+/** Hear of each file that arrives on this device, from any tab; answers the unsubscribe. */
 export function subscribeMeshFileArrivals(listener: (hash: string) => void): () => void {
   arrivalListeners.add(listener);
-  return () => arrivalListeners.delete(listener);
+  if (!arrivalChannel && typeof BroadcastChannel !== 'undefined') {
+    arrivalChannel = new BroadcastChannel(ARRIVALS_CHANNEL);
+    arrivalChannel.onmessage = (event: MessageEvent<unknown>) => {
+      if (typeof event.data === 'string') hearArrival(event.data);
+    };
+  }
+  return () => {
+    arrivalListeners.delete(listener);
+    if (arrivalListeners.size > 0) return;
+    arrivalChannel?.close();
+    arrivalChannel = null;
+  };
 }
 
 /**
@@ -124,7 +155,7 @@ export async function putMeshFile(bytes: Uint8Array<ArrayBuffer>): Promise<strin
     await tx.done;
     lastUseWritten.set(hash, Date.now());
     remember(hash, bytes);
-    if (arrived) for (const listener of arrivalListeners) listener(hash);
+    if (arrived) announceArrival(hash);
     return hash;
   } catch (e) {
     logger.warn('Failed to store mesh file', { error: String(e) });
@@ -162,7 +193,7 @@ async function writeUse(hashes: readonly string[], now: number): Promise<void> {
   });
   await tx.done;
   for (const hash of hashes) lastUseWritten.set(hash, now);
-  for (const hash of restored) for (const listener of arrivalListeners) listener(hash);
+  for (const hash of restored) announceArrival(hash);
 }
 
 async function noteUse(hash: string): Promise<void> {
