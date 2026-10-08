@@ -77,38 +77,65 @@ function outcome(res: Response, hash: string): FileUpload {
   return { status: 'failed', reason: `mesh upload: HTTP ${res.status}` };
 }
 
+// A sign-in claim queues a push for every design at once, and each can carry a
+// whole mesh, so uploads share a few slots across every push.
+const UPLOADS_AT_ONCE = 4;
+let uploadsRunning = 0;
+const uploadSlotWaiters: (() => void)[] = [];
+
+function takeUploadSlot(): Promise<void> {
+  if (uploadsRunning < UPLOADS_AT_ONCE) {
+    uploadsRunning++;
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => uploadSlotWaiters.push(resolve));
+}
+
+// The session's end frees every slot, so a request of an ended session that
+// never settles cannot hold one into the next.
+function releaseUploadSlot(epoch: number): void {
+  if (epoch !== sessionEpoch) return;
+  const next = uploadSlotWaiters.shift();
+  if (next) next();
+  else uploadsRunning--;
+}
+
 // A request that never reaches the server rejects, as a push's own request
 // does, so being offline leaves the push queued without spending a retry. So
-// does an upload whose session ended mid-way: nothing of it may go on, or vouch
-// for a file, under the next account.
-async function upload(hash: string): Promise<FileUpload> {
-  const epoch = sessionEpoch;
+// does an upload whose session ended mid-way, or while it waited for a slot:
+// nothing of it may go on, or vouch for a file, under the next account.
+async function upload(hash: string, epoch: number): Promise<FileUpload> {
   const current = (): void => {
     if (epoch !== sessionEpoch || !sessionOpen) throw new Error('mesh upload: session ended');
   };
-  current();
-  const now = Date.now();
-  if (now < unavailableUntil) return UNAVAILABLE;
-  if (now < (refusedUntil.get(hash) ?? 0)) return REFUSED;
-  const head = await apiFetch(meshPath(hash), { method: 'HEAD' });
-  current();
-  if (head.status !== 404) return outcome(head, hash);
-  const bytes = await getMeshFile(hash);
-  current();
-  if (!bytes) return { status: 'missing', hash };
-  const put = await apiFetch(meshPath(hash), {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/octet-stream' },
-    body: bytes,
-  });
-  current();
-  return outcome(put, hash);
+  await takeUploadSlot();
+  try {
+    current();
+    const now = Date.now();
+    if (now < unavailableUntil) return UNAVAILABLE;
+    if (now < (refusedUntil.get(hash) ?? 0)) return REFUSED;
+    const head = await apiFetch(meshPath(hash), { method: 'HEAD' });
+    current();
+    if (head.status !== 404) return outcome(head, hash);
+    const bytes = await getMeshFile(hash);
+    current();
+    if (!bytes) return { status: 'missing', hash };
+    const put = await apiFetch(meshPath(hash), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/octet-stream' },
+      body: bytes,
+    });
+    current();
+    return outcome(put, hash);
+  } finally {
+    releaseUploadSlot(epoch);
+  }
 }
 
 function uploadOnce(hash: string): Promise<FileUpload> {
   let pending = uploads.get(hash);
   if (!pending) {
-    const started = upload(hash);
+    const started = upload(hash, sessionEpoch);
     uploads.set(hash, started);
     const settle = (held: boolean): void => {
       if (!held && uploads.get(hash) === started) uploads.delete(hash);
@@ -281,13 +308,15 @@ export function beginMeshCloudSession(): void {
 /**
  * Forget what the ended session's account holds and refused, drop every queued
  * download and the retry timer (a retry after it would ask the server
- * anonymously), and take no new upload or download until
- * {@link beginMeshCloudSession}.
+ * anonymously), refuse the uploads waiting for a slot, and take no new upload
+ * or download until {@link beginMeshCloudSession}.
  */
 export function endMeshCloudSession(): void {
   sessionOpen = false;
   sessionEpoch++;
   uploads.clear();
+  uploadsRunning = 0;
+  for (const wake of uploadSlotWaiters.splice(0)) wake();
   unavailableUntil = 0;
   refusedUntil.clear();
   for (const hash of downloadQueue.splice(0)) settleDownload(hash);

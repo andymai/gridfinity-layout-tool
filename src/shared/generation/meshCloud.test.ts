@@ -216,6 +216,51 @@ describe('uploadMeshFiles', () => {
     expect(await uploadMeshFiles([])).toEqual({ status: 'held' });
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it('uploads a few files at a time across every push', async () => {
+    const files = await Promise.all([60, 61, 62, 63, 64, 65, 66, 67].map(storedFile));
+    let open = 0;
+    let most = 0;
+    fetchMock.mockImplementation(async (_url, init) => {
+      open++;
+      most = Math.max(most, open);
+      await new Promise((resolve) => setTimeout(resolve, 1));
+      open--;
+      return new Response(null, { status: init?.method === 'HEAD' ? 404 : 200 });
+    });
+
+    const results = await Promise.all(files.map((f) => uploadMeshFiles([f.hash])));
+
+    expect(results.every((r) => r.status === 'held')).toBe(true);
+    expect(most).toBeLessThanOrEqual(4);
+    expect(calls().filter((c) => c.method === 'PUT')).toHaveLength(files.length);
+  });
+
+  it('refuses an upload that waited past its session, and frees every slot for the next', async () => {
+    const stalled = await Promise.all([70, 71, 72, 73, 74].map(storedFile));
+    const answers: ((res: Response) => void)[] = [];
+    fetchMock.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          answers.push(resolve);
+        })
+    );
+    const uploading = stalled.map((f) => uploadMeshFiles([f.hash]));
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4));
+
+    endMeshCloudSession();
+    beginMeshCloudSession();
+
+    await expect(uploading[4]).rejects.toThrow('session ended');
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    fetchMock.mockImplementation(async () => new Response(null, { status: 200 }));
+    const next = await Promise.all([75, 76, 77, 78].map(storedFile));
+    expect(await uploadMeshFiles(next.map((f) => f.hash))).toEqual({ status: 'held' });
+
+    for (const answer of answers) answer(new Response(null, { status: 404 }));
+    const settled = await Promise.allSettled(uploading.slice(0, 4));
+    expect(settled.every((s) => s.status === 'rejected')).toBe(true);
+  });
 });
 
 describe('fetchMeshFiles', () => {
