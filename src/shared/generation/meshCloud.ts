@@ -40,22 +40,20 @@ function outcome(res: Response): MeshUpload {
   return { status: 'failed', reason: `mesh upload: HTTP ${res.status}` };
 }
 
+// A request that never reaches the server rejects, as a push's own request
+// does, so being offline leaves the push queued without spending a retry.
 async function upload(hash: string): Promise<MeshUpload> {
-  try {
-    const head = await apiFetch(meshPath(hash), { method: 'HEAD' });
-    if (head.status !== 404) return outcome(head);
-    const bytes = await getMeshFile(hash);
-    if (!bytes) return { status: 'missing', hash };
-    return outcome(
-      await apiFetch(meshPath(hash), {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/octet-stream' },
-        body: bytes,
-      })
-    );
-  } catch (e) {
-    return { status: 'failed', reason: `mesh upload: ${String(e)}` };
-  }
+  const head = await apiFetch(meshPath(hash), { method: 'HEAD' });
+  if (head.status !== 404) return outcome(head);
+  const bytes = await getMeshFile(hash);
+  if (!bytes) return { status: 'missing', hash };
+  return outcome(
+    await apiFetch(meshPath(hash), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/octet-stream' },
+      body: bytes,
+    })
+  );
 }
 
 function uploadOnce(hash: string): Promise<MeshUpload> {
@@ -63,9 +61,13 @@ function uploadOnce(hash: string): Promise<MeshUpload> {
   if (!pending) {
     const started = upload(hash);
     uploads.set(hash, started);
-    void started.then((result) => {
-      if (result !== HELD && uploads.get(hash) === started) uploads.delete(hash);
-    });
+    const settle = (held: boolean): void => {
+      if (!held && uploads.get(hash) === started) uploads.delete(hash);
+    };
+    started.then(
+      (result) => settle(result === HELD),
+      () => settle(false)
+    );
     pending = started;
   }
   return pending;
@@ -73,7 +75,8 @@ function uploadOnce(hash: string): Promise<MeshUpload> {
 
 /**
  * Have the account hold every file in `hashes`, uploading from this device each
- * one it lacks; answers the first that it does not end up holding.
+ * one it lacks; answers the first that it does not end up holding, and rejects
+ * when the server cannot be reached.
  */
 export async function uploadMeshFiles(hashes: readonly string[]): Promise<MeshUpload> {
   const results = await Promise.all([...new Set(hashes)].map(uploadOnce));

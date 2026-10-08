@@ -120,10 +120,17 @@ describe('uploadMeshFiles', () => {
       reason: 'mesh upload: HTTP 500',
     });
 
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('rejects while offline, as a push does, and asks again next time', async () => {
+    const file = await storedFile(8);
     fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
-    const offline = await uploadMeshFiles([file.hash]);
-    expect(offline.status).toBe('failed');
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    await expect(uploadMeshFiles([file.hash])).rejects.toThrow('Failed to fetch');
+
+    fetchMock.mockImplementation(async () => new Response(null, { status: 200 }));
+    expect(await uploadMeshFiles([file.hash])).toEqual({ status: 'held' });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it('answers held without a request for a payload with no mesh', async () => {

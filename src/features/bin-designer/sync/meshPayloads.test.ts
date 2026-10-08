@@ -443,6 +443,13 @@ describe('pushes through the mesh store', () => {
     });
   });
 
+  it('reject the push while offline, as a push does, so no retry is spent', async () => {
+    await refDesign();
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    await expect(designAdapter.preparePush?.(DESIGN_ID)).rejects.toThrow('Failed to fetch');
+  });
+
   it('send the refs of a design whose files only the server has', async () => {
     await lateFileDesign(27);
     fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
