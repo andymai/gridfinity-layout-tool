@@ -1,5 +1,6 @@
 import { ErrorCode, isValidShareId, MAX_NAME_LENGTH } from '../../lib/shared.js';
 import { validateDesignerShare, sanitizeTags } from '../../lib/designerValidation.js';
+import { meshRefHashes } from '../../lib/designerCutoutValidation.js';
 import { validateAssemblyContent } from '../../lib/assemblyValidation.js';
 import { sanitizeString } from '../../lib/validation.js';
 import { createSyncResourceHandler } from '../lib/resourceHandler.js';
@@ -354,7 +355,9 @@ export default createSyncResourceHandler<DesignEnvelope>({
       JSON.stringify({ name, tags, publishedId, lineage, ...validationPayload }),
       'utf8'
     );
-    const validation = validateDesignerShare(validationPayload, preValidationBytes);
+    const validation = validateDesignerShare(validationPayload, preValidationBytes, {
+      meshRefs: true,
+    });
     if (!validation.valid) {
       return {
         ok: false,
@@ -396,6 +399,7 @@ export default createSyncResourceHandler<DesignEnvelope>({
       envelope: { design: stored, modifiedAt, schemaVersion: SCHEMA_VERSION },
       sizeBytes,
       tiebreakerCandidate: stored,
+      meshHashes: meshRefHashes(validation.payload.params.meshAssets),
     };
   },
   storedComparable: (stored) => stored.design,

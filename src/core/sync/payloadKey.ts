@@ -4,6 +4,13 @@ import type { SyncKind } from './adapters/types';
 export const LAYOUT_SCHEMA_VERSION = 2;
 
 /**
+ * A PUT refused for naming things the account has not put on the server, which
+ * the response lists as `missing`. Mirrors `MESH_MISSING_STATUS` in
+ * api/sync/lib/resourceHandler.ts.
+ */
+export const MISSING_DEPENDENCY_STATUS = 424;
+
+/**
  * The key each kind's payload travels under, in both directions: the `PUT` body
  * a client sends and the envelope field the server returns.
  *

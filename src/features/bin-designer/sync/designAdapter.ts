@@ -4,6 +4,7 @@ import type {
   AdapterChangeListener,
   DesignAdapter,
   DesignSyncPayload,
+  PushPlan,
   SyncableItem,
 } from '@/core/sync/adapters/types';
 import { designId } from '@/core/types';
@@ -25,9 +26,16 @@ import {
 } from '@/features/bin-designer/store/customBinRegistry';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { syncPersistError } from '@/core/sync/adapters/persistError';
-import { inlineHolderMeshes } from '@/shared/generation/meshRefs';
+import { holderMeshHashes, inlineHolderMeshes } from '@/shared/generation/meshRefs';
+import {
+  endMeshCloudSession,
+  fetchMeshFiles,
+  forgetHeldMeshes,
+} from '@/shared/generation/meshCloud';
+import { referencedMeshHashes } from '@/features/bin-designer/storage/designMeshFiles';
 import { subscribe as subscribeDesignerEvents } from './designerEvents';
 import { createMissingMeshPushes } from './missingMeshPushes';
+import { planMeshPush } from './meshPushPlan';
 
 // Lives in features/ because BinParams is feature-internal; core/ can't
 // import it. Registered with the engine at app-shell boot.
@@ -35,9 +43,9 @@ import { createMissingMeshPushes } from './missingMeshPushes';
 // SavedDesign stores `updatedAt` as ISO; the cloud envelope is ms. We
 // normalize at this boundary so the engine never sees ISO strings.
 //
-// Locally a design's meshes are refs into the mesh store, but the server and
-// other devices take inline meshes only: payloads are built inline, and
-// `saveDesign` turns a pulled payload's inline meshes back into refs.
+// A design's meshes are refs into the mesh store. A push sends the refs once
+// the account holds every file, or inline meshes (`get()`) to a server without
+// a mesh store. `saveDesign` turns a pulled payload's inline meshes into refs.
 
 // Held across the full `saveDesign`/`deleteDesign` await chain because
 // the `emit()` that needs suppression fires past internal await boundaries;
@@ -189,41 +197,57 @@ function buildPayload(d: SavedDesign): DesignSyncPayload {
   };
 }
 
+function toItem(d: SavedDesign): SyncableItem<DesignSyncPayload> {
+  return { id: d.id, payload: buildPayload(d), modifiedAt: toMs(d.updatedAt) };
+}
+
+/**
+ * The design with its meshes inline (only those naming a hash in `only`, when
+ * given). Non-syncable kinds answer null, which makes the engine drop the
+ * outbox entry as a no-op (it never tombstones on a null get). A design whose
+ * mesh file is missing is dropped the same way, so the copy on the server keeps
+ * its mesh, and queued again when the file arrives.
+ */
+async function inlineDesign(
+  id: string,
+  only?: ReadonlySet<string>
+): Promise<SyncableItem<DesignSyncPayload> | null> {
+  const result = await loadDesign(designId(id));
+  if (!isOk(result) || !isSyncableDesign(result.value)) return null;
+  const inline = await inlineHolderMeshes(result.value, only);
+  if (!isOk(inline)) {
+    missingMeshPushes.skip(inline.error.hash, id);
+    return null;
+  }
+  return toItem(inline.value);
+}
+
 export const designAdapter: DesignAdapter = {
   async list(): Promise<SyncableItem<DesignSyncPayload>[]> {
     const result = await listDesigns();
     if (!isOk(result)) return [];
     // Bins and assemblies sync; toolRack and importedMesh (base64 mesh
-    // blobs) stay local-only.
-    return result.value.filter(isSyncableDesign).map((d) => ({
-      id: d.id,
-      // Meshes stay refs: every caller of list() reads ids and mtimes only, and
-      // it runs on every poll. Only get(), which feeds a push, inlines them.
-      payload: buildPayload(d),
-      modifiedAt: toMs(d.updatedAt),
-    }));
+    // blobs) stay local-only. Meshes stay refs: every caller reads ids and
+    // mtimes only, and this runs on every poll.
+    return result.value.filter(isSyncableDesign).map(toItem);
   },
 
-  async get(id: string): Promise<SyncableItem<DesignSyncPayload> | null> {
-    const result = await loadDesign(designId(id));
-    if (!isOk(result)) return null;
-    // Non-syncable kinds: returning null makes the engine drop the outbox
-    // entry as a no-op (it never tombstones on a null get). A design whose mesh
-    // file is missing is dropped the same way, so the copy on the server keeps
-    // its mesh, and queued again when the file arrives.
-    if (!isSyncableDesign(result.value)) return null;
-    const inline = await inlineHolderMeshes(result.value);
-    if (!isOk(inline)) {
-      missingMeshPushes.skip(inline.error.hash, id);
-      return null;
-    }
-    const d = inline.value;
-    return {
-      id: d.id,
-      payload: buildPayload(d),
-      modifiedAt: toMs(d.updatedAt),
-    };
+  get(id: string): Promise<SyncableItem<DesignSyncPayload> | null> {
+    return inlineDesign(id);
   },
+
+  async preparePush(id: string): Promise<PushPlan<DesignSyncPayload>> {
+    const result = await loadDesign(designId(id));
+    if (!isOk(result) || !isSyncableDesign(result.value)) return { status: 'skip' };
+    return planMeshPush(
+      toItem(result.value),
+      result.value,
+      (only) => inlineDesign(id, only),
+      missingMeshPushes
+    );
+  },
+
+  onMissing: forgetHeldMeshes,
 
   async applyRemote(item: SyncableItem<DesignSyncPayload>): Promise<void> {
     suppressed.add(item.id);
@@ -307,6 +331,7 @@ export const designAdapter: DesignAdapter = {
       if (!isOk(result)) {
         throw syncPersistError('saveDesign', item.id, result.error);
       }
+      void fetchMeshFiles(holderMeshHashes(result.value));
       // saveDesign never registers, and the startup pass that backfills
       // assemblies runs once per page load, so a Workshop design pulled
       // mid-session would read as a parametric bin until the next reload.
@@ -337,6 +362,12 @@ export const designAdapter: DesignAdapter = {
   },
 
   subscribe(listener: AdapterChangeListener): () => void {
+    // The engine subscribes once a signed-in session starts: the moment to try
+    // again for files a pull could not fetch (offline, say) on an earlier page.
+    let subscribed = true;
+    void referencedMeshHashes()
+      .then((hashes) => (subscribed ? fetchMeshFiles([...hashes]) : undefined))
+      .catch(() => undefined);
     const stopEvents = subscribeDesignerEvents((event) => {
       missingMeshPushes.clear(event.id);
       if (suppressed.has(event.id)) return;
@@ -351,8 +382,10 @@ export const designAdapter: DesignAdapter = {
       return isOk(current) ? toMs(current.value.updatedAt) : null;
     });
     return () => {
+      subscribed = false;
       stopEvents();
       stopArrivals();
+      endMeshCloudSession();
     };
   },
 };

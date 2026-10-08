@@ -119,6 +119,34 @@ export async function getHeldMesh(
   return raw === null ? null : parseHeldMesh(raw);
 }
 
+export async function listHeldMeshes(redis: Redis, userId: string): Promise<Map<string, HeldMesh>> {
+  const held = new Map<string, HeldMesh>();
+  for (const [hash, raw] of Object.entries(await redis.hgetall(userMeshesKey(userId)))) {
+    const mesh = parseHeldMesh(raw);
+    if (mesh) held.set(hash, mesh);
+  }
+  return held;
+}
+
+export function meshStoreEnabled(): boolean {
+  return process.env.MESH_STORE_ENABLED === 'true';
+}
+
+/** The hashes this account does not hold: all of them while the mesh store is off. */
+export async function unheldMeshes(
+  redis: Redis,
+  userId: string,
+  hashes: readonly string[]
+): Promise<string[]> {
+  const unique = [...new Set(hashes)];
+  if (unique.length === 0 || !meshStoreEnabled()) return unique;
+  const held = await redis.hmget(userMeshesKey(userId), ...unique);
+  return unique.filter((_, i) => {
+    const raw = held[i];
+    return raw === null || parseHeldMesh(raw) === null;
+  });
+}
+
 export async function getMeshUsage(redis: Redis, userId: string): Promise<MeshUsage> {
   const [bytes, count] = await redis.hmget(userMeshUsageKey(userId), 'bytes', 'count');
   return { bytes: Number(bytes ?? 0), count: Number(count ?? 0) };

@@ -4,7 +4,12 @@
  * exports only stay in lockstep via these tests.
  */
 import { describe, expect, it } from 'vitest';
-import { LAYOUT_SCHEMA_VERSION, PAYLOAD_KEY, syncPutBody } from './payloadKey';
+import {
+  LAYOUT_SCHEMA_VERSION,
+  MISSING_DEPENDENCY_STATUS,
+  PAYLOAD_KEY,
+  syncPutBody,
+} from './payloadKey';
 import type { SyncKind } from './adapters/types';
 
 import {
@@ -15,6 +20,7 @@ import { PAYLOAD_KEY as API_DESIGNS_PAYLOAD_KEY } from '../../../api/sync/design
 import { PAYLOAD_KEY as API_BASEPLATES_PAYLOAD_KEY } from '../../../api/sync/baseplates/[id].js';
 import { PAYLOAD_KEY as API_DESIGN_VERSIONS_PAYLOAD_KEY } from '../../../api/sync/designVersions/[id].js';
 import { PAYLOAD_KEY as API_FOLDERS_PAYLOAD_KEY } from '../../../api/sync/folders/[id].js';
+import { MESH_MISSING_STATUS } from '../../../api/sync/lib/resourceHandler.js';
 
 const ALL_SYNC_KINDS: readonly SyncKind[] = [
   'layouts',
@@ -66,5 +72,11 @@ describe('syncPutBody', () => {
 
   it('leaves other kinds as they were', () => {
     expect(syncPutBody('designs', { v: 1 }, 1000)).toEqual({ design: { v: 1 }, modifiedAt: 1000 });
+  });
+});
+
+describe('MISSING_DEPENDENCY_STATUS', () => {
+  it('is the status the server refuses a write naming a mesh file it lacks with', () => {
+    expect(MISSING_DEPENDENCY_STATUS).toBe(MESH_MISSING_STATUS);
   });
 });

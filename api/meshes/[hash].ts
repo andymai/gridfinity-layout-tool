@@ -10,7 +10,12 @@ import {
 import { logger } from '../lib/logger.js';
 import { putContentAddressed } from '../lib/blobStore.js';
 import { checkMeshQuota, type QuotaError } from '../lib/quota.js';
-import { acquireAccountMesh, getHeldMesh, getMeshUsage } from '../lib/meshIndex.js';
+import {
+  acquireAccountMesh,
+  getHeldMesh,
+  getMeshUsage,
+  meshStoreEnabled,
+} from '../lib/meshIndex.js';
 import { readSessionCookie } from '../lib/cookies.js';
 import {
   MAX_MESH_UPLOAD_BYTES,
@@ -24,10 +29,6 @@ import { requireSyncContext } from '../sync/lib/requireSyncContext.js';
 export const MESH_URL_HEADER = 'X-Mesh-Url';
 
 const MESH_CONTENT_TYPE = 'application/octet-stream';
-
-function meshStoreEnabled(): boolean {
-  return process.env.MESH_STORE_ENABLED === 'true';
-}
 
 function isOctetStream(req: VercelRequest): boolean {
   return req.headers['content-type']?.split(';')[0].trim().toLowerCase() === MESH_CONTENT_TYPE;

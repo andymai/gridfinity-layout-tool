@@ -10,8 +10,14 @@ import {
 } from './outbox';
 import { parseRetryAfter, rateLimitedBackoffMs } from './retryAfter';
 import { useSyncStatusStore } from './status';
-import type { AdapterChange, SyncAdapter, SyncAdapters, SyncKind } from './adapters/types';
-import { PAYLOAD_KEY, syncPutBody } from './payloadKey';
+import type {
+  AdapterChange,
+  PushPlan,
+  SyncAdapter,
+  SyncAdapters,
+  SyncKind,
+} from './adapters/types';
+import { MISSING_DEPENDENCY_STATUS, PAYLOAD_KEY, syncPutBody } from './payloadKey';
 
 type ConflictReason = 'remote-newer' | 'deleted-elsewhere' | 'quota' | 'gave-up';
 
@@ -140,13 +146,22 @@ async function rehydrate(s: EngineState): Promise<void> {
 async function drain(s: EngineState): Promise<void> {
   if (s.stopping) return;
   const due = await outboxGetDue();
-  if (due.length === 0) {
-    await syncStatusFromOutbox();
-    return;
+  if (due.length > 0) {
+    useSyncStatusStore.getState().beginSync();
+    await Promise.all(due.map((entry) => pushOne(s, entry)));
   }
-  useSyncStatusStore.getState().beginSync();
-  await Promise.all(due.map((entry) => pushOne(s, entry)));
   await syncStatusFromOutbox();
+  await wakeForNextDue(s);
+}
+
+// A backoff can put an entry further out than the drain its failure asked for,
+// and a later drain replaces that timer, so a drain that leaves entries waiting
+// sleeps until the soonest rather than leaving them to the next edit.
+async function wakeForNextDue(s: EngineState): Promise<void> {
+  if (s.drainTimer !== null || s.stopping) return;
+  const waiting = await outboxGetAll();
+  if (waiting.length === 0) return;
+  scheduleDrain(s, Math.min(...waiting.map((entry) => entry.nextAttemptAt)) - Date.now());
 }
 
 async function pushOne(s: EngineState, entry: OutboxEntry): Promise<void> {
@@ -188,11 +203,20 @@ async function sendOne(
 
   // Read the latest snapshot at push time so a fresh edit during the
   // enqueue→push window goes out instead of a stale copy.
-  const latest = await adapter.get(entry.id);
-  if (!latest) {
+  const plan = await planPush(adapter, entry.id);
+  if (plan.status === 'skip') {
     await outboxMarkSuccess(entry.kind, entry.id, entry.modifiedAt);
     return;
   }
+  if (plan.status === 'defer') {
+    await backOff(kind, entry, s, plan.reason);
+    return;
+  }
+  if (plan.status === 'throttle') {
+    await waitOutThrottle(entry, s, plan.retryAfterMs);
+    return;
+  }
+  const latest = plan.item;
 
   const body = syncPutBody(kind, latest.payload, latest.modifiedAt);
 
@@ -236,7 +260,23 @@ async function sendOne(
     useSyncStatusStore.getState().reportError('Quota exceeded');
     return;
   }
+  if (res.status === MISSING_DEPENDENCY_STATUS) adapter.onMissing?.(await readMissing(res));
   await handleFailure(res, kind, entry, s);
+}
+
+async function planPush(adapter: SyncAdapter, id: string): Promise<PushPlan<unknown>> {
+  if (adapter.preparePush) return adapter.preparePush(id);
+  const item = await adapter.get(id);
+  return item ? { status: 'send', item } : { status: 'skip' };
+}
+
+async function readMissing(res: Response): Promise<string[]> {
+  try {
+    const { missing } = (await res.json()) as { missing?: unknown };
+    return Array.isArray(missing) ? missing.filter((m): m is string => typeof m === 'string') : [];
+  } catch {
+    return [];
+  }
 }
 
 async function handleConflict(
@@ -284,28 +324,20 @@ async function handleFailure(
   // per-(kind, id) counter on the engine state. `Retry-After` overrides
   // the counter entirely (server knows best).
   if (res.status === 429) {
-    const key = `${entry.kind}:${entry.id}`;
-    const retryAfter = parseRetryAfter(res.headers.get('Retry-After'));
-    // `Retry-After: 0` would otherwise pass through `??` and re-fire immediately.
-    let delayMs: number;
-    if (retryAfter !== null && retryAfter > 0) {
-      delayMs = retryAfter;
-    } else {
-      const prior = s.rateLimitedRetries.get(key) ?? 0;
-      delayMs = rateLimitedBackoffMs(prior);
-      s.rateLimitedRetries.set(key, prior + 1);
-    }
-    await outboxRescheduleWithoutAttempt(entry.kind, entry.id, delayMs);
-    useSyncStatusStore.getState().reportOffline('Rate limited');
-    scheduleDrain(s, delayMs);
+    await waitOutThrottle(entry, s, parseRetryAfter(res.headers.get('Retry-After')));
     return;
   }
   // Any non-429 outcome for this item resets the rate-limit counter so
   // an unrelated transient failure doesn't carry yesterday's exponent.
   s.rateLimitedRetries.delete(`${entry.kind}:${entry.id}`);
-  // 401 is handled by apiFetch (forced sign-out). Other 4xx gives up.
+  // 401 is handled by apiFetch (forced sign-out). Other 4xx gives up, except a
+  // missing dependency, which the adapter puts on the server before the retry.
   // 5xx / network retries with backoff.
-  const isClientError = res.status >= 400 && res.status < 500 && res.status !== 401;
+  const isClientError =
+    res.status >= 400 &&
+    res.status < 500 &&
+    res.status !== 401 &&
+    res.status !== MISSING_DEPENDENCY_STATUS;
   if (isClientError) {
     emitEngineEvent(s, {
       type: 'sync-error',
@@ -317,6 +349,35 @@ async function handleFailure(
     await outboxMarkSuccess(entry.kind, entry.id, entry.modifiedAt);
     return;
   }
+  await backOff(kind, entry, s, `HTTP ${res.status}`);
+}
+
+async function waitOutThrottle(
+  entry: OutboxEntry,
+  s: EngineState,
+  retryAfter: number | null
+): Promise<void> {
+  const key = `${entry.kind}:${entry.id}`;
+  // `Retry-After: 0` would otherwise pass through `??` and re-fire immediately.
+  let delayMs: number;
+  if (retryAfter !== null && retryAfter > 0) {
+    delayMs = retryAfter;
+  } else {
+    const prior = s.rateLimitedRetries.get(key) ?? 0;
+    delayMs = rateLimitedBackoffMs(prior);
+    s.rateLimitedRetries.set(key, prior + 1);
+  }
+  await outboxRescheduleWithoutAttempt(entry.kind, entry.id, delayMs);
+  useSyncStatusStore.getState().reportOffline('Rate limited');
+  scheduleDrain(s, delayMs);
+}
+
+async function backOff(
+  kind: SyncKind,
+  entry: OutboxEntry,
+  s: EngineState,
+  reason: string
+): Promise<void> {
   const result = await outboxMarkFailure(entry.kind, entry.id);
   if (result === 'gave-up') {
     emitEngineEvent(s, {
@@ -324,12 +385,12 @@ async function handleFailure(
       reason: 'gave-up',
       kind,
       id: entry.id,
-      message: `HTTP ${res.status}`,
+      message: reason,
     });
-    useSyncStatusStore.getState().reportError(`Push failed: HTTP ${res.status}`);
+    useSyncStatusStore.getState().reportError(`Push failed: ${reason}`);
     return;
   }
-  useSyncStatusStore.getState().reportOffline(`HTTP ${res.status}`);
+  useSyncStatusStore.getState().reportOffline(reason);
   scheduleDrain(s, 1_000);
 }
 

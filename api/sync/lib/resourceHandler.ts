@@ -29,8 +29,17 @@ import { deleteBlob, getJson, putJson } from '../../lib/blobStore.js';
 import { getEntry, tombstone, upsertEntry, type IndexEntry } from '../../lib/userIndex.js';
 import { checkQuota } from '../../lib/quota.js';
 import { compareForTiebreaker } from '../../lib/lwwTiebreaker.js';
+import { unheldMeshes } from '../../lib/meshIndex.js';
 
 type RedisClient = NonNullable<ReturnType<typeof getRedis>>;
+
+/**
+ * A write naming mesh files the account does not hold, its body listing them
+ * as `missing`. Not 409: the client's 409 handling takes the write as lost to
+ * a newer one and drops it, where this one succeeds once the files are up.
+ * MIRROR: `MISSING_DEPENDENCY_STATUS` in `src/core/sync/payloadKey.ts`.
+ */
+export const MESH_MISSING_STATUS = 424;
 
 export type SyncResourceKind = 'layouts' | 'designs' | 'baseplates' | 'designVersions' | 'folders';
 
@@ -47,6 +56,8 @@ export type BuildPutResult<TEnvelope> =
       sizeBytes: number;
       /** Candidate for the equal-ms tiebreaker; must mirror `storedComparable`. */
       tiebreakerCandidate: unknown;
+      /** Mesh files the payload names by hash, each of which the account must hold. */
+      meshHashes?: readonly string[];
     }
   | { ok: false; status: number; error: string; code: string };
 
@@ -170,6 +181,18 @@ export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
         error: config.deletedError,
         code: ErrorCode.NOT_FOUND,
         indexEntry: existing,
+      });
+      return;
+    }
+
+    // After the LWW gates, so a write that loses anyway is never sent off to
+    // upload files first.
+    const missing = await unheldMeshes(redis, userId, built.meshHashes ?? []);
+    if (missing.length > 0) {
+      sendJson(res, MESH_MISSING_STATUS, {
+        error: 'Upload the mesh files this item names, then retry.',
+        code: ErrorCode.MESH_MISSING,
+        missing,
       });
       return;
     }

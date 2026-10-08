@@ -8,6 +8,7 @@ import {
 } from './designerValidationConstants.js';
 import { HEX_COLOR_REGEX } from './designerColorValidation.js';
 import { validateTextStyleOverride, LABEL_TEXT_MAX_LENGTH } from './designerTextValidation.js';
+import { MAX_MESH_UPLOAD_BYTES, isMeshHash } from './meshFile.js';
 
 const VALID_CUTOUT_COLOR_SCOPES = ['floor', 'floorAndWalls'] as const;
 /** Mirrors the client `CUTOUT_OPEN_SIDES`. */
@@ -181,6 +182,8 @@ const BASE64_REGEX = /^[A-Za-z0-9+/]+={0,2}$/;
 const CONTROL_CHARS_REGEX = /[\u0000-\u001f\u007f]/;
 
 const ALLOWED_MESH_ASSET_KEYS = new Set(['name', 'data', 'triangleCount', 'sizeMm', 'outlines']);
+/** MIRROR: the fields of `MeshAssetRef` in `src/shared/generation/meshAsset.ts`. */
+const ALLOWED_MESH_REF_KEYS = new Set(['name', 'hash', 'triangleCount', 'sizeMm', 'bytes']);
 
 /**
  * Display names for cutout groups. Keyed by group id, so both halves are
@@ -208,13 +211,34 @@ export function validateCutoutGroupNames(value: unknown): string | null {
   return null;
 }
 
+/** Tells a ref from an inline asset the way the client's `isMeshAssetRef` does. */
+export function isMeshRef(asset: Record<string, unknown>): boolean {
+  return 'hash' in asset;
+}
+
+/** The hash of every ref in a `meshAssets` map that passed {@link validateMeshAssets}. */
+export function meshRefHashes(meshAssets: unknown): string[] {
+  if (!isObject(meshAssets)) return [];
+  return Object.values(meshAssets).flatMap((asset) =>
+    isObject(asset) && isMeshRef(asset) && isString(asset.hash) ? [asset.hash] : []
+  );
+}
+
 /**
  * Validate the mesh imprint asset map (STL imports). The mesh geometry itself
  * is regenerated client-side from the compressed data, but a crafted blob
  * could smuggle megabytes of junk or orphan references, so structure, caps,
  * and cutout cross-references are all enforced here.
+ *
+ * With `allowRefs`, an entry may instead name a stored mesh file by hash. This
+ * checks its shape only; whether the account holds the file is the caller's
+ * check, since it needs Redis.
  */
-export function validateMeshAssets(value: unknown, cutouts: unknown): string | null {
+export function validateMeshAssets(
+  value: unknown,
+  cutouts: unknown,
+  allowRefs = false
+): string | null {
   const meshCutoutIds: { index: number; meshId: unknown }[] = [];
   if (Array.isArray(cutouts)) {
     for (let i = 0; i < cutouts.length; i++) {
@@ -239,8 +263,10 @@ export function validateMeshAssets(value: unknown, cutouts: unknown): string | n
       return 'meshAssets keys must be non-empty strings (max 64 chars)';
     }
     if (!isObject(assetRaw)) return `meshAssets.${id} must be an object`;
+    const ref = allowRefs && isMeshRef(assetRaw);
+    const allowedKeys = ref ? ALLOWED_MESH_REF_KEYS : ALLOWED_MESH_ASSET_KEYS;
     for (const key of Object.keys(assetRaw)) {
-      if (!ALLOWED_MESH_ASSET_KEYS.has(key)) return `meshAssets.${id} has unknown key: ${key}`;
+      if (!allowedKeys.has(key)) return `meshAssets.${id} has unknown key: ${key}`;
     }
     const a = assetRaw;
     if (
@@ -251,7 +277,9 @@ export function validateMeshAssets(value: unknown, cutouts: unknown): string | n
     ) {
       return `meshAssets.${id}.name must be a clean string (max ${CONSTRAINTS.MAX_MESH_NAME_LENGTH} chars)`;
     }
-    if (
+    if (ref) {
+      if (!isMeshHash(a.hash)) return `meshAssets.${id}.hash must be a lowercase hex SHA-256`;
+    } else if (
       !isString(a.data) ||
       a.data.length === 0 ||
       a.data.length > CONSTRAINTS.MAX_MESH_DATA_LENGTH ||
@@ -272,6 +300,16 @@ export function validateMeshAssets(value: unknown, cutouts: unknown): string | n
       if (!isNumber(v) || v <= 0 || v > CONSTRAINTS.MAX_MESH_SIZE_MM) {
         return `meshAssets.${id}.sizeMm.${axis} must be in (0, ${CONSTRAINTS.MAX_MESH_SIZE_MM}]`;
       }
+    }
+    if (ref) {
+      if (
+        !isNumber(a.bytes) ||
+        !Number.isInteger(a.bytes) ||
+        !inRange(a.bytes, 1, MAX_MESH_UPLOAD_BYTES)
+      ) {
+        return `meshAssets.${id}.bytes must be an integer in [1, ${MAX_MESH_UPLOAD_BYTES}]`;
+      }
+      continue;
     }
     if (!Array.isArray(a.outlines) || a.outlines.length === 0) {
       return `meshAssets.${id}.outlines must be a non-empty array`;

@@ -2,7 +2,7 @@
  * The unit fake emulates the two Lua scripts in JS, which proves the intended
  * semantics only. `meshIndex.integration.test.ts` runs the scripts themselves.
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { Redis } from 'ioredis';
 import {
   accountMeshHolder,
@@ -11,6 +11,7 @@ import {
   getMeshUsage,
   releaseAccountMesh,
   releaseAllAccountMeshes,
+  unheldMeshes,
 } from './meshIndex';
 import type { MeshHold } from './meshIndex';
 import { MESH_QUOTA_BYTES, MESH_QUOTA_COUNT } from './quota';
@@ -282,5 +283,39 @@ describe('getHeldMesh / getMeshUsage', () => {
     fake.hashes.set(userMeshesKey('u1'), new Map([[HASH_B, '{"sizeBytes":"big"}']]));
     expect(await getHeldMesh(redis, 'u1', HASH_B)).toBeNull();
     expect(await getMeshUsage(redis, 'u2')).toEqual({ bytes: 0, count: 0 });
+  });
+});
+
+describe('unheldMeshes', () => {
+  beforeEach(() => {
+    vi.stubEnv('MESH_STORE_ENABLED', 'true');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('answers the hashes the account does not hold, once each', async () => {
+    await acquireAccountMesh(redis, hold('u1', HASH_A));
+    fake.hashes.get(userMeshesKey('u1'))?.set(HASH_B, '{"sizeBytes":"big"}');
+    const HASH_C = 'c'.repeat(64);
+
+    expect(await unheldMeshes(redis, 'u1', [HASH_A, HASH_B, HASH_C, HASH_C])).toEqual([
+      HASH_B,
+      HASH_C,
+    ]);
+    expect(await unheldMeshes(redis, 'u2', [HASH_A])).toEqual([HASH_A]);
+  });
+
+  it('answers every hash while the mesh store is off', async () => {
+    await acquireAccountMesh(redis, hold('u1', HASH_A));
+    vi.stubEnv('MESH_STORE_ENABLED', 'false');
+    expect(await unheldMeshes(redis, 'u1', [HASH_A])).toEqual([HASH_A]);
+  });
+
+  it('reads nothing for a payload that names no mesh', async () => {
+    const hmget = vi.spyOn(fake, 'hmget');
+    expect(await unheldMeshes(redis, 'u1', [])).toEqual([]);
+    expect(hmget).not.toHaveBeenCalled();
   });
 });
