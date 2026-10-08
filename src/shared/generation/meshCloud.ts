@@ -17,6 +17,8 @@ export const MESH_URL_HEADER = 'X-Mesh-Url';
 const INLINE_RECHECK_MS = 10 * 60_000;
 let unavailableUntil = 0;
 const refusedUntil = new Map<string, number>();
+/** Bumped when the signed-in session ends; a reply from before it is ignored. */
+let sessionEpoch = 0;
 
 export type MeshUpload =
   | { readonly status: 'held' }
@@ -52,17 +54,18 @@ function meshPath(hash: string): string {
   return `/api/meshes/${hash}`;
 }
 
-function outcome(res: Response, hash: string): FileUpload {
+function outcome(res: Response, hash: string, epoch: number): FileUpload {
   if (res.ok) return HELD;
+  const current = epoch === sessionEpoch;
   if (res.status === 503) {
-    unavailableUntil = Date.now() + INLINE_RECHECK_MS;
+    if (current) unavailableUntil = Date.now() + INLINE_RECHECK_MS;
     return UNAVAILABLE;
   }
   if (res.status === 429) {
     return { status: 'throttled', retryAfterMs: parseRetryAfter(res.headers.get('Retry-After')) };
   }
   if (res.status >= 400 && res.status < 500) {
-    refusedUntil.set(hash, Date.now() + INLINE_RECHECK_MS);
+    if (current) refusedUntil.set(hash, Date.now() + INLINE_RECHECK_MS);
     return REFUSED;
   }
   return { status: 'failed', reason: `mesh upload: HTTP ${res.status}` };
@@ -71,11 +74,12 @@ function outcome(res: Response, hash: string): FileUpload {
 // A request that never reaches the server rejects, as a push's own request
 // does, so being offline leaves the push queued without spending a retry.
 async function upload(hash: string): Promise<FileUpload> {
+  const epoch = sessionEpoch;
   const now = Date.now();
   if (now < unavailableUntil) return UNAVAILABLE;
   if (now < (refusedUntil.get(hash) ?? 0)) return REFUSED;
   const head = await apiFetch(meshPath(hash), { method: 'HEAD' });
-  if (head.status !== 404) return outcome(head, hash);
+  if (head.status !== 404) return outcome(head, hash, epoch);
   const bytes = await getMeshFile(hash);
   if (!bytes) return { status: 'missing', hash };
   return outcome(
@@ -84,7 +88,8 @@ async function upload(hash: string): Promise<FileUpload> {
       headers: { 'Content-Type': 'application/octet-stream' },
       body: bytes,
     }),
-    hash
+    hash,
+    epoch
   );
 }
 
@@ -149,7 +154,6 @@ let throttledUntil = 0;
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
 let retryAt = 0;
 let retryDelayMs = RETRY_FIRST_MS;
-let downloadEpoch = 0;
 
 async function download(hash: string): Promise<Download> {
   try {
@@ -199,9 +203,9 @@ function pumpDownloads(): void {
     const hash = downloadQueue.shift();
     if (hash === undefined) return;
     downloadsRunning++;
-    const epoch = downloadEpoch;
+    const epoch = sessionEpoch;
     void download(hash).then((result) => {
-      if (epoch !== downloadEpoch) return;
+      if (epoch !== sessionEpoch) return;
       downloadsRunning--;
       if (result === 'stored') {
         failedDownloads.delete(hash);
@@ -257,11 +261,15 @@ export function fetchMeshFiles(hashes: readonly string[]): Promise<void> {
 }
 
 /**
- * Drop every queued download and the retry timer. Called when the signed-in
- * session ends: a retry after it would ask the server anonymously.
+ * Forget what the ended session's account holds and refused, and drop every
+ * queued download and the retry timer: a retry after it would ask the server
+ * anonymously.
  */
-export function cancelMeshDownloads(): void {
-  downloadEpoch++;
+export function endMeshCloudSession(): void {
+  sessionEpoch++;
+  uploads.clear();
+  unavailableUntil = 0;
+  refusedUntil.clear();
   for (const hash of downloadQueue.splice(0)) settleDownload(hash);
   for (const hash of [...downloadWaiters.keys()]) settleDownload(hash);
   failedDownloads.clear();
@@ -275,8 +283,5 @@ export function cancelMeshDownloads(): void {
 
 /** Test-only: forget every held file, upload and download, and the retry timer. */
 export function __resetMeshCloudForTests(): void {
-  uploads.clear();
-  unavailableUntil = 0;
-  refusedUntil.clear();
-  cancelMeshDownloads();
+  endMeshCloudSession();
 }

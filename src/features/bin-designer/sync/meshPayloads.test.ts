@@ -432,6 +432,15 @@ describe('pushes through the mesh store', () => {
     expect(JSON.stringify(plan?.status === 'send' ? plan.item : null)).toBe(JSON.stringify(inline));
   });
 
+  it('start no download once sync has stopped', async () => {
+    await lateFileDesign(29);
+    const stop = designAdapter.subscribe(() => undefined);
+    stop();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(requests('HEAD')).toEqual([]);
+  });
+
   it('send a file the server refuses inline, and the rest as refs', async () => {
     const { hashes } = await refDesign();
     const [refused, held] = hashes;

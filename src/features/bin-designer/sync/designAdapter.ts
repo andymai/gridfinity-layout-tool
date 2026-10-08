@@ -28,7 +28,7 @@ import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { syncPersistError } from '@/core/sync/adapters/persistError';
 import { holderMeshHashes, inlineHolderMeshes } from '@/shared/generation/meshRefs';
 import {
-  cancelMeshDownloads,
+  endMeshCloudSession,
   fetchMeshFiles,
   forgetHeldMeshes,
 } from '@/shared/generation/meshCloud';
@@ -364,8 +364,9 @@ export const designAdapter: DesignAdapter = {
   subscribe(listener: AdapterChangeListener): () => void {
     // The engine subscribes once a signed-in session starts: the moment to try
     // again for files a pull could not fetch (offline, say) on an earlier page.
+    let subscribed = true;
     void referencedMeshHashes()
-      .then((hashes) => fetchMeshFiles([...hashes]))
+      .then((hashes) => (subscribed ? fetchMeshFiles([...hashes]) : undefined))
       .catch(() => undefined);
     const stopEvents = subscribeDesignerEvents((event) => {
       missingMeshPushes.clear(event.id);
@@ -381,9 +382,10 @@ export const designAdapter: DesignAdapter = {
       return isOk(current) ? toMs(current.value.updatedAt) : null;
     });
     return () => {
+      subscribed = false;
       stopEvents();
       stopArrivals();
-      cancelMeshDownloads();
+      endMeshCloudSession();
     };
   },
 };

@@ -3,7 +3,7 @@ import { MESH_URL_HEADER as API_MESH_URL_HEADER } from '../../../api/meshes/[has
 import {
   MESH_URL_HEADER,
   __resetMeshCloudForTests,
-  cancelMeshDownloads,
+  endMeshCloudSession,
   fetchMeshFiles,
   forgetHeldMeshes,
   uploadMeshFiles,
@@ -163,6 +163,19 @@ describe('uploadMeshFiles', () => {
     expect(await uploadMeshFiles([file.hash, held.hash])).toEqual(refused);
     expect(await uploadMeshFiles([file.hash, held.hash])).toEqual(refused);
     expect(calls().filter((c) => c.method === 'PUT')).toHaveLength(1);
+  });
+
+  it('forgets what the account refused when its session ends', async () => {
+    const file = await storedFile(13);
+    fetchMock.mockImplementation(
+      async (_url, init) => new Response(null, { status: init?.method === 'HEAD' ? 404 : 413 })
+    );
+    expect((await uploadMeshFiles([file.hash])).status).toBe('refused');
+
+    endMeshCloudSession();
+    fetchMock.mockImplementation(async () => new Response(null, { status: 200 }));
+
+    expect(await uploadMeshFiles([file.hash])).toEqual({ status: 'held' });
   });
 
   it('answers held without a request for a payload with no mesh', async () => {
@@ -329,7 +342,7 @@ describe('fetchMeshFiles', () => {
     await fetchMeshFiles([file.hash]);
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
-    cancelMeshDownloads();
+    endMeshCloudSession();
     await vi.advanceTimersByTimeAsync(60 * 60_000);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
