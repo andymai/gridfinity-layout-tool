@@ -13,7 +13,8 @@ import type { MeshAsset, MeshAssetRef } from '@/shared/generation/meshAsset';
 import type { ItemTypeDescriptor } from '@/shared/items/registry';
 import type { ImportedMeshStructure, ItemEnvelope } from '@/shared/types/item';
 
-export const MAX_IMPORTED_MESH_HEIGHT_UNITS = 20;
+/** The bin height cap: the import dialog offers that range for a claim. */
+export const MAX_IMPORTED_MESH_HEIGHT_UNITS = 50;
 
 /** Sanity ceiling for the base64 payload of one asset (mirrors server cap). */
 export const MAX_IMPORTED_MESH_DATA_LENGTH = 900_000;

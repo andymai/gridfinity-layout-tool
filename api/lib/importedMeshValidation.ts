@@ -12,7 +12,7 @@ import { isMeshRef, validateMeshAsset } from './designerCutoutValidation.js';
 import { ErrorCode, type ErrorCodeType } from './shared.js';
 
 /** MIRROR: `MAX_IMPORTED_MESH_HEIGHT_UNITS` in src/shared/items/importedMesh/descriptor.ts. */
-export const MAX_IMPORTED_MESH_HEIGHT_UNITS = 20;
+export const MAX_IMPORTED_MESH_HEIGHT_UNITS = 50;
 /** MIRROR: the `sourceFileName` bound of `importedMeshSchema`. */
 export const MAX_SOURCE_FILE_NAME_LENGTH = 255;
 

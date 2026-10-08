@@ -34,6 +34,15 @@ describe('importedMeshSchema', () => {
     expect(importedMeshSchema.safeParse(VALID_STRUCTURE).success).toBe(true);
   });
 
+  it('accepts a claim as tall as a bin can be', () => {
+    expect(
+      importedMeshSchema.safeParse({
+        ...VALID_STRUCTURE,
+        heightUnits: MAX_IMPORTED_MESH_HEIGHT_UNITS,
+      }).success
+    ).toBe(true);
+  });
+
   it('rejects non-integer or out-of-range heightUnits', () => {
     expect(importedMeshSchema.safeParse({ ...VALID_STRUCTURE, heightUnits: 2.5 }).success).toBe(
       false
