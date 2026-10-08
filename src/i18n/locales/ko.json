@@ -1566,6 +1566,7 @@
   "binDesigner.plates.blank": "빈 것",
   "binDesigner.plates.dialogDescription": "각 소켓에 해당 칸의 라벨 텍스트가 담긴 플레이트를 넣은 인쇄용 파일 하나입니다. 텍스트 깊이가 레이어 단위로 맞춰지므로, 필라멘트 한 번 교체로 두 가지 색 라벨을 인쇄합니다.",
   "binDesigner.plates.dialogTitle": "라벨 플레이트 내보내기",
+  "binDesigner.plates.downloadFormat": "라벨 플레이트 내려받기 ({format})",
   "binDesigner.plates.export": "플레이트 내보내기",
   "binDesigner.plates.exportComplete": "라벨 플레이트를 내보냈습니다",
   "binDesigner.plates.exportFailed": "라벨 플레이트 내보내기에 실패했습니다",

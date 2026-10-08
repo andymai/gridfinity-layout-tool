@@ -1566,6 +1566,7 @@
   "binDesigner.plates.blank": "pusta",
   "binDesigner.plates.dialogDescription": "Jeden plik do druku z płytką dla każdego gniazda, niosącą tekst etykiety jego przegrody. Głębokość tekstu przyciąga się do pełnych warstw, więc jedna zmiana filamentu drukuje dwukolorowe etykiety.",
   "binDesigner.plates.dialogTitle": "Eksportuj płytki etykiet",
+  "binDesigner.plates.downloadFormat": "Pobierz płytki etykiet ({format})",
   "binDesigner.plates.export": "Eksportuj płytki",
   "binDesigner.plates.exportComplete": "Płytki etykiet wyeksportowane",
   "binDesigner.plates.exportFailed": "Eksport płytek etykiet nieudany",

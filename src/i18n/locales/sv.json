@@ -1566,6 +1566,7 @@
   "binDesigner.plates.blank": "tom",
   "binDesigner.plates.dialogDescription": "En utskrivbar fil med en platta per fäste, med fackets etikettext. Textdjupet snäpper till hela lager — ett enda filamentbyte ger tvåfärgade etiketter.",
   "binDesigner.plates.dialogTitle": "Exportera etikettplattor",
+  "binDesigner.plates.downloadFormat": "Ladda ner etikettplattor ({format})",
   "binDesigner.plates.export": "Exportera plattor",
   "binDesigner.plates.exportComplete": "Etikettplattor exporterade",
   "binDesigner.plates.exportFailed": "Export av etikettplattor misslyckades",

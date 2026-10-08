@@ -277,8 +277,8 @@ export function LabelTabsSection() {
                   />
                 </div>
                 <LabelFitSampleButton />
-                <LabelPlatesControls />
               </Collapsible>
+              <LabelPlatesControls />
             </>
           )}
 

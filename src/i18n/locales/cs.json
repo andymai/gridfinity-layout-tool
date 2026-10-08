@@ -1566,6 +1566,7 @@
   "binDesigner.plates.blank": "prázdná",
   "binDesigner.plates.dialogDescription": "Jeden tisknutelný soubor s destičkou pro každou patici, nesoucí text štítku své přihrádky. Hloubka textu se zarovnává na celé vrstvy, takže jedinou výměnou filamentu vytiskneš dvoubarevné štítky.",
   "binDesigner.plates.dialogTitle": "Exportovat štítkové destičky",
+  "binDesigner.plates.downloadFormat": "Stáhnout štítkové destičky ({format})",
   "binDesigner.plates.export": "Exportovat destičky",
   "binDesigner.plates.exportComplete": "Štítkové destičky exportovány",
   "binDesigner.plates.exportFailed": "Export štítkové destičky selhal",

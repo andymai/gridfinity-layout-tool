@@ -1650,6 +1650,7 @@
   "binDesigner.plates.title": "ეტიკეტის ფირფიტები",
   "binDesigner.plates.blank": "ცარიელი",
   "binDesigner.plates.preview": "ფირფიტების გადახედვა",
+  "binDesigner.plates.downloadFormat": "ეტიკეტის ფირფიტების ჩამოტვირთვა ({format})",
   "binDesigner.plates.export": "ფირფიტების ექსპორტი",
   "binDesigner.plates.exportComplete": "ეტიკეტის ფირფიტები ექსპორტირებულია",
   "binDesigner.plates.exportFailed": "ეტიკეტის ფირფიტების ექსპორტი ვერ მოხერხდა",

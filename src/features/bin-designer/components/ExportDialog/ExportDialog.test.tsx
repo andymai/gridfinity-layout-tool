@@ -23,6 +23,9 @@ const mockLoadDesign = vi.fn();
 let mockShouldPromptSupport = false;
 /** Split state the mocked hook reports; reset to "fits the bed" per test. */
 let mockSplitState = { needsSplit: false, splitPieceCount: 1 };
+const mockDownloadPlates = vi.fn(async () => true);
+/** Label plates the mocked plate hook reports; none by default. */
+let mockPlates: { widthU: number; text: string }[] = [];
 
 vi.mock('@/core/store/toast', async (importOriginal) => {
   const actual = await importOriginal<typeof ToastStore>();
@@ -59,6 +62,16 @@ vi.mock('@/shared/components/ExportDialog', async (importOriginal) => {
 
 vi.mock('@/features/bin-designer/utils/designJson', () => ({
   downloadDesignAsFile: vi.fn(async () => ({ ok: true, value: undefined })),
+}));
+
+vi.mock('@/features/bin-designer/hooks/useLabelPlateExport', () => ({
+  useLabelPlateExport: () => ({
+    plates: mockPlates,
+    isExporting: false,
+    canExport: true,
+    downloadPlates: mockDownloadPlates,
+    fetchPreviewStl: vi.fn(),
+  }),
 }));
 
 vi.mock('@/features/bin-designer/hooks/useExport', () => ({
@@ -117,7 +130,23 @@ describe('ExportDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSplitState = { needsSplit: false, splitPieceCount: 1 };
+    mockPlates = [];
     setupStore();
+  });
+
+  it("offers the design's label plates beside the bin, in the chosen format", () => {
+    mockPlates = [{ widthU: 1, text: 'M3' }];
+    render(<ExportDialog />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Download label plates (STL)' }));
+
+    expect(mockDownloadPlates).toHaveBeenCalledWith('stl');
+  });
+
+  it('offers no plate download for a bin without label plates', () => {
+    render(<ExportDialog />);
+
+    expect(screen.queryByRole('button', { name: /Download label plates/ })).toBeNull();
   });
 
   it('does not render when dialog is closed', () => {

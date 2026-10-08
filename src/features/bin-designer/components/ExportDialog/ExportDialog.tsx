@@ -13,6 +13,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
+import { useLabelPlateExport } from '@/features/bin-designer/hooks/useLabelPlateExport';
 import { computeActiveZones, isSingleColor } from '@/features/bin-designer/types/featureColors';
 import { zoneLabel } from '@/features/bin-designer/utils/zoneLabels';
 import { anyCompartmentColored } from '@/features/bin-designer/utils/compartmentColorUnits';
@@ -90,6 +91,9 @@ export function ExportDialog() {
     splitPieceCount,
     downloadSplit,
   } = useExport();
+  // Plates print apart from the bin, so the bin's download never carries them;
+  // offering them here is what keeps a design's plates from going unnoticed.
+  const { plates, isExporting: isExportingPlates, downloadPlates } = useLabelPlateExport();
   const [splitEnabled, setSplitEnabled] = useState(true);
   const [justExported, setJustExported] = useState(false);
   const addToast = useToastStore((s) => s.addToast);
@@ -113,6 +117,13 @@ export function ExportDialog() {
 
   const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
   const useSplitExport = needsSplit && splitEnabled;
+
+  // Leaves the dialog open, like the source download: plates come with the bin.
+  const handleDownloadPlates = useCallback(() => {
+    void downloadPlates(activeFormat).then((succeeded) => {
+      if (succeeded) addToast(t('binDesigner.plates.exportComplete'), 'success', 3000);
+    });
+  }, [downloadPlates, activeFormat, addToast, t]);
 
   // Colored cutouts and compartments are multi-color on their own; zone colors
   // count only with the toggle on and a zone that differs from the body. STL
@@ -295,7 +306,7 @@ export function ExportDialog() {
       fileName={fileName}
       displayExtension={displayExtension}
       canExport={canExport && engineReady}
-      isExporting={isExporting}
+      isExporting={isExporting || isExportingPlates}
       exportProgress={
         isExportingBin
           ? {
@@ -307,6 +318,12 @@ export function ExportDialog() {
       }
       onDownload={() => void handleDownload()}
       downloadLabel={downloadLabel}
+      secondaryDownload={{
+        label: t('binDesigner.plates.downloadFormat', { format: activeFormat.toUpperCase() }),
+        isExporting: isExportingPlates,
+        onClick: handleDownloadPlates,
+        visible: plates.length > 0 && engineReady,
+      }}
       splitBanner={
         needsSplit
           ? {

@@ -1566,6 +1566,7 @@
   "binDesigner.plates.blank": "leeg",
   "binDesigner.plates.dialogDescription": "Eén printbaar bestand met per houder een plaatje, met de labeltekst van het vak. De tekstdiepte klikt vast op hele lagen — één filamentwissel print tweekleurige labels.",
   "binDesigner.plates.dialogTitle": "Labelplaatjes exporteren",
+  "binDesigner.plates.downloadFormat": "Labelplaatjes downloaden ({format})",
   "binDesigner.plates.export": "Plaatjes exporteren",
   "binDesigner.plates.exportComplete": "Labelplaatjes geëxporteerd",
   "binDesigner.plates.exportFailed": "Exporteren van labelplaatjes mislukt",
