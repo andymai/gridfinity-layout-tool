@@ -1,0 +1,21 @@
+src/shared/generation/meshCloud.test.ts
+  s_1606b97c1ea28d::t_ee1758eb646b4c 181-200
+src/shared/generation/meshCloud.ts
+  s_1606b97c1ea28d::t_ee1758eb646b4c 57,60,67,74-76,79-81,86-87,89,91-97,220
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "230b5819099d4c088c21557586676fe7d7294422",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
