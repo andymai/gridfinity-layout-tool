@@ -8,8 +8,11 @@ import {
   isValidationError,
   validateSharedDesigns,
   isSharedDesignsError,
+  sharedDesignMeshHashes,
   type SharedDesignShape,
 } from './lib/validation.js';
+import { holdShareMeshes } from './lib/meshIndex.js';
+import { resolveShareMeshFiles } from './lib/shareMeshes.js';
 import { validateDesignerShare } from './lib/designerValidation.js';
 import {
   filterDesignParamsContent,
@@ -82,6 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     let sharePayload: unknown;
     let sharedDesigns: SharedDesignShape[] = [];
+    let meshFiles: Record<string, string> = {};
 
     if (type === 'designer') {
       // Designer share: validate BinParams
@@ -161,6 +165,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           `Content blocked: ${designContent.reason}`
         );
       }
+
+      const resolved = await resolveShareMeshFiles(req, res, sharedDesignMeshHashes(sharedDesigns));
+      if (!resolved) return;
+      meshFiles = resolved;
     }
 
     // authorName is shown to every recipient in the "Shared with me" list, so
@@ -210,6 +218,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const shareData: ShareData = {
       layout: sharePayload,
       ...(sharedDesigns.length > 0 ? { linkedDesigns: sharedDesigns } : {}),
+      ...(Object.keys(meshFiles).length > 0 ? { meshFiles } : {}),
       metadata: {
         createdAt: nowIso,
         lastUpdatedAt: nowIso,
@@ -251,10 +260,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Persist delete-token hash now that we own the slot. If Redis fails here
     // we must roll back the blob, otherwise we'd leave an orphan share with
-    // no delete token (permanently unmodifiable).
+    // no delete token (permanently unmodifiable), or one whose mesh files
+    // nothing keeps once the sharer's account lets them go.
     if (redis) {
       try {
         await redis.set(shareHashKey(shareId), deleteTokenHash);
+        await holdShareMeshes(redis, shareId, Object.keys(meshFiles));
       } catch (redisErr) {
         await del(blobPath).catch((delErr: unknown) => {
           logger.error('Rollback failed: orphan blob left after Redis write failure', {

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { SharedLayoutImporter } from './SharedLayoutImporter';
 import { resetAllStores } from '@/test/testUtils';
 import { useLibraryStore } from '@/core/store/library';
@@ -16,6 +16,10 @@ vi.mock('@/core/storage', () => ({
 
 vi.mock('@/core/api/share', () => ({
   fetchShare: vi.fn(),
+}));
+
+vi.mock('@/shared/generation/meshCloud', () => ({
+  fetchSharedMeshFiles: vi.fn(async () => undefined),
 }));
 
 // Mock result helpers
@@ -100,5 +104,34 @@ describe('SharedLayoutImporter', () => {
 
     // Component should handle error silently
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+});
+
+describe('SharedLayoutImporter opening a cloud share', () => {
+  it('fetches the mesh files the share names straight from the CDN', async () => {
+    // The share id is read from the URL when the module loads.
+    vi.resetModules();
+    const storage = await import('@/core/storage');
+    vi.mocked(storage.getCloudShareIdFromURL).mockReturnValue('abc123xyz789');
+    (await import('@/core/store/library')).useLibraryStore.setState({ isLoaded: true });
+    (await import('@/core/store/sharedWithMe')).useSharedWithMeStore.setState({ isLoaded: true });
+    const { ok } = await import('@/core/result');
+    const { fetchShare } = await import('@/core/api/share');
+    const files = {
+      ['a'.repeat(64)]: `https://store.public.blob.vercel-storage.com/meshes/${'a'.repeat(64)}`,
+    };
+    vi.mocked(fetchShare).mockResolvedValue(
+      ok({
+        layout: { name: 'Shared', bins: [], layers: [], categories: [] } as never,
+        metadata: { createdAt: '2026-01-01T00:00:00.000Z', permission: 'view' },
+        meshFiles: files,
+      })
+    );
+    const { fetchSharedMeshFiles } = await import('@/shared/generation/meshCloud');
+    const { SharedLayoutImporter: Importer } = await import('./SharedLayoutImporter');
+
+    render(<Importer />);
+
+    await waitFor(() => expect(fetchSharedMeshFiles).toHaveBeenCalledWith(files));
   });
 });

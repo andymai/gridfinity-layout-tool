@@ -81,10 +81,11 @@ function isAssemblyStructureShape(value: unknown): value is AssemblyStructure {
  *
  * A design whose mesh file is missing fails the whole set instead: it exists,
  * so leaving it out would ship a bin that names a design the recipient never
- * gets.
+ * gets. With `meshRefs`, meshes stay refs and no file is read.
  */
 export async function collectLinkedDesigns(
-  layout: Layout
+  layout: Layout,
+  options: { readonly meshRefs?: boolean } = {}
 ): Promise<Result<LinkedDesignExport[], StorageMeshMissingError>> {
   const designIds = new Set<DesignId>();
   for (const bin of layout.bins) {
@@ -101,7 +102,7 @@ export async function collectLinkedDesigns(
 
   const linkedDesigns: LinkedDesignExport[] = [];
   for (const id of designIds) {
-    const result = await port.loadDesign(id);
+    const result = await port.loadDesign(id, options);
     if (!isOk(result)) {
       if (result.error.code === 'STORAGE_MESH_MISSING') return err(result.error);
       continue;

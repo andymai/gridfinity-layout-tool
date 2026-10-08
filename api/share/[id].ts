@@ -7,7 +7,10 @@ import {
   isValidationError,
   validateSharedDesigns,
   isSharedDesignsError,
+  sharedDesignMeshHashes,
 } from '../lib/validation.js';
+import { holdShareMeshes, releaseShareMeshes } from '../lib/meshIndex.js';
+import { resolveShareMeshFiles } from '../lib/shareMeshes.js';
 import { filterLayoutContent, filterSharedDesignsContent } from '../lib/contentFilter.js';
 import { logger } from '../lib/logger.js';
 import {
@@ -96,6 +99,7 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
     return res.status(200).json({
       layout: shareData.layout,
       linkedDesigns: shareData.linkedDesigns,
+      meshFiles: shareData.meshFiles,
       metadata: {
         createdAt: shareData.metadata.createdAt,
         lastUpdatedAt: shareData.metadata.lastUpdatedAt,
@@ -176,7 +180,8 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
         },
       };
 
-      return await writeShareAndRespond(res, id, blobPath, updatedData, newPermission);
+      await writeShare(id, blobPath, updatedData, newPermission);
+      return respondShare(res, id, newPermission);
     }
 
     // Full update with layout
@@ -219,11 +224,19 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       );
     }
 
+    const meshFiles = await resolveShareMeshFiles(
+      req,
+      res,
+      sharedDesignMeshHashes(designsResult.designs)
+    );
+    if (!meshFiles) return;
+
     // Update share data (preserve original deleteTokenHash and createdAt;
     // drop legacy lastAccessedAt — see note above).
     const updatedData: ShareData = {
       layout: withoutLibraryPlacement(validationResult.layout),
       ...(designsResult.designs.length > 0 ? { linkedDesigns: designsResult.designs } : {}),
+      ...(Object.keys(meshFiles).length > 0 ? { meshFiles } : {}),
       metadata: {
         ...metadataWithoutAccess,
         permission: newPermission,
@@ -231,7 +244,16 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       },
     };
 
-    return await writeShareAndRespond(res, id, blobPath, updatedData, newPermission);
+    // Held before the write and let go after it, so no file the share names
+    // goes unheld between the two.
+    const redis = getRedis();
+    if (redis) await holdShareMeshes(redis, id, Object.keys(meshFiles));
+    await writeShare(id, blobPath, updatedData, newPermission);
+    const dropped = Object.keys(existingData.meshFiles ?? {}).filter(
+      (hash) => !Object.hasOwn(meshFiles, hash)
+    );
+    if (redis) await releaseShareMeshes(redis, id, dropped).catch(logReleaseFailure(id));
+    return respondShare(res, id, newPermission);
   } catch (error) {
     logger.error('Share update error', {
       error: error instanceof Error ? error.message : String(error),
@@ -296,6 +318,9 @@ async function handleDelete(
         shareLastAccessedKey(_id),
         sharePermissionKey(_id)
       );
+      await releaseShareMeshes(redis, _id, Object.keys(existingData.meshFiles ?? {})).catch(
+        logReleaseFailure(_id)
+      );
     }
 
     return res.status(200).json({
@@ -324,13 +349,12 @@ async function verifyDeleteToken(
   return timingSafeCompare(await hashToken(deleteToken), storedHash) ? 'ok' : 'mismatch';
 }
 
-async function writeShareAndRespond(
-  res: VercelResponse,
+async function writeShare(
   id: string,
   blobPath: string,
   data: ShareData,
   permission: ShareData['metadata']['permission']
-) {
+): Promise<void> {
   await put(blobPath, JSON.stringify(data), {
     access: 'public',
     contentType: 'application/json',
@@ -338,5 +362,23 @@ async function writeShareAndRespond(
     allowOverwrite: true,
   });
   await recordSharePermission(getRedis(), id, permission);
+}
+
+function respondShare(
+  res: VercelResponse,
+  id: string,
+  permission: ShareData['metadata']['permission']
+) {
   return res.status(200).json({ id, url: `${getBaseUrl()}/l/${id}`, permission });
+}
+
+// A holder left behind only keeps a file longer than needed, so a failed
+// release is logged rather than failing a write that already landed.
+function logReleaseFailure(id: string): (error: unknown) => void {
+  return (error) => {
+    logger.warn('Failed to release share mesh holds', {
+      id,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  };
 }

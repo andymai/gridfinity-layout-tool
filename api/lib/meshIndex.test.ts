@@ -9,8 +9,12 @@ import {
   acquireAccountMesh,
   getHeldMesh,
   getMeshUsage,
+  heldMeshUrls,
+  holdShareMeshes,
   releaseAccountMesh,
   releaseAllAccountMeshes,
+  releaseShareMeshes,
+  shareMeshHolder,
   unheldMeshes,
 } from './meshIndex';
 import type { MeshHold } from './meshIndex';
@@ -49,6 +53,20 @@ class FakeRedis {
 
   async hmget(key: string, ...fields: string[]): Promise<(string | null)[]> {
     return fields.map((field) => this.hashes.get(key)?.get(field) ?? null);
+  }
+
+  async sadd(key: string, member: string): Promise<number> {
+    const set = this.sets.get(key) ?? new Set<string>();
+    const added = set.has(member) ? 0 : 1;
+    this.sets.set(key, set.add(member));
+    return added;
+  }
+
+  async srem(key: string, member: string): Promise<number> {
+    const set = this.sets.get(key);
+    const removed = set?.delete(member) ? 1 : 0;
+    if (set?.size === 0) this.sets.delete(key);
+    return removed;
   }
 
   /** Iterates a snapshot taken at cursor 0, as HSCAN may return deleted fields but never skips. */
@@ -317,5 +335,53 @@ describe('unheldMeshes', () => {
     const hmget = vi.spyOn(fake, 'hmget');
     expect(await unheldMeshes(redis, 'u1', [])).toEqual([]);
     expect(hmget).not.toHaveBeenCalled();
+  });
+});
+
+describe('holdShareMeshes / releaseShareMeshes', () => {
+  it('counts a share among the holders beside the account, once per file', async () => {
+    await acquireAccountMesh(redis, hold('u1', HASH_A));
+    await holdShareMeshes(redis, 'share1', [HASH_A, HASH_A, HASH_B]);
+
+    expect(fake.sets.get(meshHoldersKey(HASH_A))).toEqual(
+      new Set([accountMeshHolder('u1'), shareMeshHolder('share1')])
+    );
+    expect(fake.sets.get(meshHoldersKey(HASH_B))).toEqual(new Set([shareMeshHolder('share1')]));
+  });
+
+  it("lets go of the share's hold only, leaving the account's and its totals alone", async () => {
+    await acquireAccountMesh(redis, hold('u1', HASH_A));
+    await holdShareMeshes(redis, 'share1', [HASH_A, HASH_B]);
+    await releaseShareMeshes(redis, 'share1', [HASH_A, HASH_B]);
+
+    expect(fake.sets.get(meshHoldersKey(HASH_A))).toEqual(new Set([accountMeshHolder('u1')]));
+    expect(fake.sets.has(meshHoldersKey(HASH_B))).toBe(false);
+    expect(await getMeshUsage(redis, 'u1')).toEqual({ bytes: 1000, count: 1 });
+  });
+});
+
+describe('heldMeshUrls', () => {
+  beforeEach(() => {
+    vi.stubEnv('MESH_STORE_ENABLED', 'true');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('answers the CDN URL of each file the account holds, skipping the rest', async () => {
+    await acquireAccountMesh(redis, hold('u1', HASH_A));
+    fake.hashes.get(userMeshesKey('u1'))?.set(HASH_B, '{"sizeBytes":"big"}');
+    const HASH_C = 'c'.repeat(64);
+
+    expect(await heldMeshUrls(redis, 'u1', [HASH_A, HASH_B, HASH_C])).toEqual(
+      new Map([[HASH_A, `https://blob/meshes/${HASH_A}`]])
+    );
+  });
+
+  it('answers none while the mesh store is off', async () => {
+    await acquireAccountMesh(redis, hold('u1', HASH_A));
+    vi.stubEnv('MESH_STORE_ENABLED', 'false');
+    expect(await heldMeshUrls(redis, 'u1', [HASH_A])).toEqual(new Map());
   });
 });

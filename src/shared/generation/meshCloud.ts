@@ -217,6 +217,21 @@ let throttledUntil = 0;
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
 let retryAt = 0;
 let retryDelayMs = RETRY_FIRST_MS;
+/**
+ * CDN URLs a share named for its files. They are public and the bytes are
+ * checked against the hash, so they outlive any session, and a download
+ * through one needs no account to hold the file.
+ */
+const sharedUrls = new Map<string, string>();
+
+/** The file's bytes, or null when the CDN fails or sends bytes of another hash. */
+async function fetchVerified(hash: string, url: string): Promise<Uint8Array<ArrayBuffer> | null> {
+  const bytes = await withTimeout(async (signal) => {
+    const res = await fetch(url, { signal });
+    return res.ok ? new Uint8Array(await res.arrayBuffer()) : null;
+  });
+  return bytes && (await sha256Hex(bytes)) === hash ? bytes : null;
+}
 
 // A download whose session ended stops before its next request or store: a
 // HEAD sent signed out answers 401, which forces a sign-out that clears the
@@ -226,24 +241,21 @@ async function download(hash: string, epoch: number): Promise<Download> {
   try {
     if (await hasMeshFile(hash)) return 'stored';
     if (ended()) return 'ended';
-    const head = await withTimeout((signal) =>
-      apiFetch(meshPath(hash), { method: 'HEAD', signal })
-    );
-    if (ended()) return 'ended';
-    if (head.status === 429) {
-      return { retryAfterMs: parseRetryAfter(head.headers.get('Retry-After')) ?? RETRY_FIRST_MS };
+    let url = sharedUrls.get(hash) ?? null;
+    if (url === null) {
+      const head = await withTimeout((signal) =>
+        apiFetch(meshPath(hash), { method: 'HEAD', signal })
+      );
+      if (ended()) return 'ended';
+      if (head.status === 429) {
+        return { retryAfterMs: parseRetryAfter(head.headers.get('Retry-After')) ?? RETRY_FIRST_MS };
+      }
+      url = head.ok ? head.headers.get(MESH_URL_HEADER) : null;
+      if (!url) return 'failed';
     }
-    const url = head.ok ? head.headers.get(MESH_URL_HEADER) : null;
-    if (!url) return 'failed';
-    const bytes = await withTimeout(async (signal) => {
-      const res = await fetch(url, { signal });
-      return res.ok ? new Uint8Array(await res.arrayBuffer()) : null;
-    });
+    const bytes = await fetchVerified(hash, url);
     if (ended()) return 'ended';
-    if (!bytes) return 'failed';
-    const matches = (await sha256Hex(bytes)) === hash;
-    if (ended()) return 'ended';
-    return matches && (await putMeshFile(bytes)) !== null ? 'stored' : 'failed';
+    return bytes && (await putMeshFile(bytes)) !== null ? 'stored' : 'failed';
   } catch {
     return 'failed';
   }
@@ -341,6 +353,32 @@ export function fetchMeshFiles(
 }
 
 /**
+ * Store each file a share names that this device lacks, read straight from the
+ * CDN URL the share gives, a few at a time. No account is asked, so a
+ * signed-out recipient gets the files too, and a later download of one through
+ * {@link fetchMeshFiles} uses the URL as well. A file that fails leaves its
+ * pocket pending. Never rejects.
+ */
+export async function fetchSharedMeshFiles(files: Readonly<Record<string, string>>): Promise<void> {
+  const entries = Object.entries(files);
+  for (const [hash, url] of entries) sharedUrls.set(hash, url);
+  let next = 0;
+  const worker = async (): Promise<void> => {
+    while (next < entries.length) {
+      const [hash, url] = entries[next++];
+      try {
+        if (await hasMeshFile(hash)) continue;
+        const bytes = await fetchVerified(hash, url);
+        if (bytes) await putMeshFile(bytes);
+      } catch {
+        // Offline or a storage failure: the pocket stays pending.
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(DOWNLOADS_AT_ONCE, entries.length) }, worker));
+}
+
+/**
  * The session now running. Work begun under it passes this to
  * {@link fetchMeshFiles}, which ignores it once a later session has begun.
  */
@@ -380,6 +418,7 @@ export function endMeshCloudSession(): void {
 
 /** Test-only: forget every held file, upload and download, and the retry timer. */
 export function __resetMeshCloudForTests(): void {
+  sharedUrls.clear();
   endMeshCloudSession();
   beginMeshCloudSession();
 }

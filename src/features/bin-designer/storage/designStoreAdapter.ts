@@ -31,13 +31,17 @@ import type { BinParams } from '@/features/bin-designer/types';
 import type { ItemEnvelope } from '@/shared/types/item';
 
 export const designStoreAdapter: DesignStorePort = {
-  async loadDesign(id: DesignId): Promise<Result<LoadedDesignData, StorageError>> {
+  async loadDesign(
+    id: DesignId,
+    options: { readonly meshRefs?: boolean } = {}
+  ): Promise<Result<LoadedDesignData, StorageError>> {
     const [{ loadDesign }, { inlineHolderMeshes }] = await Promise.all([
       import('@/features/bin-designer/storage/DesignerStorage'),
       import('@/shared/generation/meshRefs'),
     ]);
     const loaded = await loadDesign(id);
-    return isOk(loaded) ? inlineHolderMeshes(loaded.value) : loaded;
+    if (!isOk(loaded) || options.meshRefs === true) return loaded;
+    return inlineHolderMeshes(loaded.value);
   },
 
   async saveDesign(input: SaveDesignInput): Promise<Result<SavedDesignData, StorageError>> {

@@ -197,6 +197,8 @@ export interface ShareData {
    * stays free of share-only fields. Absent on older shares.
    */
   linkedDesigns?: unknown;
+  /** CDN URL of each mesh file the linked designs name by ref, by hash. */
+  meshFiles?: Record<string, string>;
   metadata: ShareMetadata;
 }
 
@@ -236,6 +238,14 @@ export function sendError(
 ): VercelResponse {
   return res.status(status).json({ error: message ?? code, code });
 }
+
+/**
+ * A write naming mesh files the caller's account does not hold, its body
+ * listing them as `missing`. Not 409: the client's 409 handling takes a sync
+ * write as lost to a newer one and drops it, where this one succeeds once the
+ * files are up. MIRROR: `MISSING_DEPENDENCY_STATUS` in `src/core/sync/payloadKey.ts`.
+ */
+export const MESH_MISSING_STATUS = 424;
 
 export function sendJson(res: VercelResponse, status: number, body: unknown): VercelResponse {
   return res.status(status).json(body);

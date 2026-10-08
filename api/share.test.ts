@@ -29,7 +29,12 @@ const mocks = vi.hoisted(() => ({
   validateDesignerShare: vi.fn(),
   filterLayoutContent: vi.fn(),
   filterSharedDesignsContent: vi.fn(),
+  resolveShareMeshFiles: vi.fn(),
+  holdShareMeshes: vi.fn(),
 }));
+
+vi.mock('./lib/shareMeshes.js', () => ({ resolveShareMeshFiles: mocks.resolveShareMeshFiles }));
+vi.mock('./lib/meshIndex.js', () => ({ holdShareMeshes: mocks.holdShareMeshes }));
 
 vi.mock('./lib/rateLimit.js', () => ({
   checkRateLimit: mocks.checkRateLimit,
@@ -123,6 +128,8 @@ describe('share (create)', () => {
     mocks.validateDesignerShare.mockReturnValue({ valid: true, payload: { params: {} } });
     mocks.validateSharedDesigns.mockReturnValue({ valid: true, designs: [] });
     mocks.isSharedDesignsError.mockReturnValue(false);
+    mocks.resolveShareMeshFiles.mockResolvedValue({});
+    mocks.holdShareMeshes.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -377,6 +384,62 @@ describe('share (create)', () => {
 
     expect(res._status).toBe(400);
     expect(mocks.put).not.toHaveBeenCalled();
+  });
+
+  describe('linked designs that name mesh files', () => {
+    const HASH = 'a'.repeat(64);
+    const URL = `https://store.public.blob.vercel-storage.com/meshes/${HASH}`;
+    const designs = [
+      {
+        id: 'design_1',
+        name: 'Socket Tray',
+        params: {
+          meshAssets: {
+            m1: { name: 'socket.stl', hash: HASH, triangleCount: 12, sizeMm: [1, 1, 1], bytes: 9 },
+          },
+        },
+      },
+    ];
+
+    beforeEach(() => {
+      mocks.validateSharedDesigns.mockReturnValue({ valid: true, designs });
+    });
+
+    it('stores the CDN URL of each file and holds the files for the share', async () => {
+      mocks.resolveShareMeshFiles.mockResolvedValue({ [HASH]: URL });
+
+      const res = await handle(layoutBody({ linkedDesigns: [{ id: 'design_1' }] }));
+
+      expect(res._status).toBe(201);
+      expect(mocks.resolveShareMeshFiles.mock.calls[0][2]).toEqual([HASH]);
+      const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as Record<string, unknown>;
+      expect(written.meshFiles).toEqual({ [HASH]: URL });
+      expect(mocks.holdShareMeshes).toHaveBeenCalledWith(expect.anything(), VALID_ID, [HASH]);
+    });
+
+    it('writes nothing when the caller does not hold the files', async () => {
+      mocks.resolveShareMeshFiles.mockImplementation(async (_req, res: VercelResponse) => {
+        res.status(424).json({ code: 'MESH_MISSING', missing: [HASH] });
+        return null;
+      });
+
+      const res = await handle(layoutBody({ linkedDesigns: [{ id: 'design_1' }] }));
+
+      expect(res._status).toBe(424);
+      expect(mocks.put).not.toHaveBeenCalled();
+      expect(mocks.holdShareMeshes).not.toHaveBeenCalled();
+    });
+
+    it('rolls the blob back when holding the files fails', async () => {
+      mocks.resolveShareMeshFiles.mockResolvedValue({ [HASH]: URL });
+      mocks.holdShareMeshes.mockRejectedValue(new Error('redis write failed'));
+      mocks.del.mockResolvedValue(undefined);
+
+      const res = await handle(layoutBody({ linkedDesigns: [{ id: 'design_1' }] }));
+
+      expect(res._status).toBe(500);
+      expect(mocks.del).toHaveBeenCalledWith(`shares/${VALID_ID}.json`);
+    });
   });
 
   it('rolls the blob back when the Redis hash write fails after put', async () => {

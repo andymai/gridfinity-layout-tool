@@ -152,7 +152,7 @@ export function userMeshUsageKey(userId: string): string {
 
 /**
  * Every holder referencing a stored mesh file, one member each (`user:{uid}`
- * for an account). A SET rather than a counter, so a repeated acquire or
+ * for an account, `share:{id}` for a layout share). A SET rather than a counter, so a repeated acquire or
  * release is a no-op instead of drift, and SCARD is the refcount.
  */
 export function meshHoldersKey(hash: string): string {

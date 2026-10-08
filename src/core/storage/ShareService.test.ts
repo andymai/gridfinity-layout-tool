@@ -697,7 +697,7 @@ describe('storage-share', () => {
         name: 'Test Bin',
         params: DEFAULT_BIN_PARAMS,
       });
-      expect(mockLoadDesign).toHaveBeenCalledWith('design-1');
+      expect(mockLoadDesign).toHaveBeenCalledWith('design-1', {});
     });
 
     it('embeds an assembly design as kind + envelope + structure', async () => {
@@ -746,7 +746,7 @@ describe('storage-share', () => {
 
       // Should not include linkedDesigns key when no designs were found
       expect(parsed.linkedDesigns).toBeUndefined();
-      expect(mockLoadDesign).toHaveBeenCalledWith('design-1');
+      expect(mockLoadDesign).toHaveBeenCalledWith('design-1', {});
     });
 
     it('includes only found designs when some are missing', async () => {

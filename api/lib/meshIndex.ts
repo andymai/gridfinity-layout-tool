@@ -4,8 +4,10 @@ import { meshHoldersKey, sessionKey, userMeshesKey, userMeshUsageKey } from './r
 
 /**
  * The two scripts below are the only writers of `users:{uid}:meshes`, its
- * running totals in `users:{uid}:meshUsage`, and `mesh:holders:{hash}`. That is
- * what keeps the totals equal to the hash without ever scanning it.
+ * running totals in `users:{uid}:meshUsage`, and an account's members of
+ * `mesh:holders:{hash}`. That is what keeps the totals equal to the hash
+ * without ever scanning it. A share's members carry no totals, so plain set
+ * writes add and drop them.
  */
 
 export interface HeldMesh {
@@ -20,6 +22,10 @@ export interface MeshUsage {
 
 export function accountMeshHolder(userId: string): string {
   return `user:${userId}`;
+}
+
+export function shareMeshHolder(shareId: string): string {
+  return `share:${shareId}`;
 }
 
 /**
@@ -145,6 +151,46 @@ export async function unheldMeshes(
     const raw = held[i];
     return raw === null || parseHeldMesh(raw) === null;
   });
+}
+
+/** The CDN URL of each file in `hashes` this account holds: none while the mesh store is off. */
+export async function heldMeshUrls(
+  redis: Redis,
+  userId: string,
+  hashes: readonly string[]
+): Promise<Map<string, string>> {
+  const urls = new Map<string, string>();
+  const unique = [...new Set(hashes)];
+  if (unique.length === 0 || !meshStoreEnabled()) return urls;
+  const held = await redis.hmget(userMeshesKey(userId), ...unique);
+  unique.forEach((hash, i) => {
+    const raw = held[i];
+    const mesh = raw === null ? null : parseHeldMesh(raw);
+    if (mesh) urls.set(hash, mesh.url);
+  });
+  return urls;
+}
+
+/**
+ * Count a share among the holders of each file it names, so the files outlive
+ * the sharer's own account holding them for as long as the share exists.
+ */
+export async function holdShareMeshes(
+  redis: Redis,
+  shareId: string,
+  hashes: readonly string[]
+): Promise<void> {
+  const holder = shareMeshHolder(shareId);
+  await Promise.all([...new Set(hashes)].map((hash) => redis.sadd(meshHoldersKey(hash), holder)));
+}
+
+export async function releaseShareMeshes(
+  redis: Redis,
+  shareId: string,
+  hashes: readonly string[]
+): Promise<void> {
+  const holder = shareMeshHolder(shareId);
+  await Promise.all([...new Set(hashes)].map((hash) => redis.srem(meshHoldersKey(hash), holder)));
 }
 
 export async function getMeshUsage(redis: Redis, userId: string): Promise<MeshUsage> {

@@ -29,6 +29,15 @@ const mocks = vi.hoisted(() => ({
   isValidationError: vi.fn(),
   filterLayoutContent: vi.fn(),
   fetch: vi.fn(),
+  resolveShareMeshFiles: vi.fn(),
+  holdShareMeshes: vi.fn(),
+  releaseShareMeshes: vi.fn(),
+}));
+
+vi.mock('../lib/shareMeshes.js', () => ({ resolveShareMeshFiles: mocks.resolveShareMeshFiles }));
+vi.mock('../lib/meshIndex.js', () => ({
+  holdShareMeshes: mocks.holdShareMeshes,
+  releaseShareMeshes: mocks.releaseShareMeshes,
 }));
 
 vi.mock('../lib/rateLimit.js', () => ({
@@ -137,6 +146,9 @@ describe('share/[id]', () => {
     mocks.validateShareLayout.mockReturnValue({ layout: { name: 'Updated' } });
     mocks.isValidationError.mockReturnValue(false);
     mocks.filterLayoutContent.mockReturnValue({ passed: true });
+    mocks.resolveShareMeshFiles.mockResolvedValue({});
+    mocks.holdShareMeshes.mockResolvedValue(undefined);
+    mocks.releaseShareMeshes.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -320,6 +332,92 @@ describe('share/[id]', () => {
       expect(res._status).toBe(400);
       expect((res._body as { code: string }).code).toBe('CONTENT_BLOCKED');
       expect(mocks.put).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('mesh files', () => {
+    const [A, B, C] = ['a', 'b', 'c'].map((c) => c.repeat(64));
+    const url = (hash: string) => `https://store.public.blob.vercel-storage.com/meshes/${hash}`;
+    const sharedWith = (...hashes: string[]) => ({
+      ...shareBlob(),
+      meshFiles: Object.fromEntries(hashes.map((hash) => [hash, url(hash)])),
+    });
+
+    it('GET returns the CDN URL of each file the share names', async () => {
+      primeBlobFetch(sharedWith(A));
+      const res = await handle('GET');
+      expect((res._body as { meshFiles: unknown }).meshFiles).toEqual({ [A]: url(A) });
+    });
+
+    it('PUT holds the new files before the write and lets go of dropped ones after it', async () => {
+      primeBlobFetch(sharedWith(A, B));
+      mocks.redisGet.mockResolvedValue(correctHash);
+      mocks.resolveShareMeshFiles.mockResolvedValue({ [B]: url(B), [C]: url(C) });
+
+      const res = await handle('PUT', {
+        body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+      });
+
+      expect(res._status).toBe(200);
+      const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as { meshFiles: unknown };
+      expect(written.meshFiles).toEqual({ [B]: url(B), [C]: url(C) });
+      expect(mocks.holdShareMeshes).toHaveBeenCalledWith(expect.anything(), VALID_ID, [B, C]);
+      expect(mocks.releaseShareMeshes).toHaveBeenCalledWith(expect.anything(), VALID_ID, [A]);
+      const [held] = mocks.holdShareMeshes.mock.invocationCallOrder;
+      const [written_] = mocks.put.mock.invocationCallOrder;
+      const [released] = mocks.releaseShareMeshes.mock.invocationCallOrder;
+      expect(held).toBeLessThan(written_);
+      expect(written_).toBeLessThan(released);
+    });
+
+    it('PUT still answers 200 when letting go of a dropped file fails', async () => {
+      primeBlobFetch(sharedWith(A));
+      mocks.redisGet.mockResolvedValue(correctHash);
+      mocks.releaseShareMeshes.mockRejectedValue(new Error('redis down'));
+
+      const res = await handle('PUT', {
+        body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+      });
+
+      expect(res._status).toBe(200);
+    });
+
+    it('PUT writes nothing when the caller does not hold the files', async () => {
+      primeBlobFetch(sharedWith(A));
+      mocks.redisGet.mockResolvedValue(correctHash);
+      mocks.resolveShareMeshFiles.mockImplementation(async (_req, res: VercelResponse) => {
+        res.status(424).json({ code: 'MESH_MISSING', missing: [C] });
+        return null;
+      });
+
+      const res = await handle('PUT', {
+        body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+      });
+
+      expect(res._status).toBe(424);
+      expect(mocks.put).not.toHaveBeenCalled();
+      expect(mocks.releaseShareMeshes).not.toHaveBeenCalled();
+    });
+
+    it('a permission-only PUT keeps the files and their holds', async () => {
+      primeBlobFetch(sharedWith(A));
+      mocks.redisGet.mockResolvedValue(correctHash);
+
+      await handle('PUT', { body: { deleteToken: TOKEN, permission: 'edit' } });
+
+      const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as { meshFiles: unknown };
+      expect(written.meshFiles).toEqual({ [A]: url(A) });
+      expect(mocks.releaseShareMeshes).not.toHaveBeenCalled();
+    });
+
+    it('DELETE lets go of every file the share named', async () => {
+      primeBlobFetch(sharedWith(A, B));
+      mocks.redisGet.mockResolvedValue(correctHash);
+
+      const res = await handle('DELETE', { headers: { 'x-delete-token': TOKEN } });
+
+      expect(res._status).toBe(200);
+      expect(mocks.releaseShareMeshes).toHaveBeenCalledWith(expect.anything(), VALID_ID, [A, B]);
     });
   });
 
