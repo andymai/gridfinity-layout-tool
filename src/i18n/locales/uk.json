@@ -4450,6 +4450,7 @@
   "toast.stlImport.notManifold": "Сітка не герметична — виправте її у слайсері та експортуйте знову",
   "toast.stlImport.parseFailed": "Не вдалося прочитати файл STL",
   "toast.stlImport.success": "«{name}» розміщено як 3D-відбиток",
+  "toast.meshFileMissing": "Імпортованого STL, що використовується тут, немає на цьому пристрої, тому поділитися чи експортувати неможливо.",
   "toast.svgImport.fileTooLarge": "Файл SVG завеликий (макс. 5 МБ)",
   "toast.svgImport.noShapes": "У SVG не знайдено підтримуваних фігур",
   "toast.svgImport.parseFailed": "Не вдалося прочитати файл SVG",

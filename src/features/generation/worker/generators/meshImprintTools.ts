@@ -188,7 +188,10 @@ export function boundsOverlap(a: Bounds2D, b: Bounds2D): boolean {
   return a.minX <= b.maxX && a.maxX >= b.minX && a.minY <= b.maxY && a.maxY >= b.minY;
 }
 
-function outlinesToPolygons(asset: MeshAsset): Vec2[][] {
+/** The parts of a mesh asset a tool is built from. */
+type ToolSilhouette = Pick<MeshAsset, 'sizeMm' | 'outlines'>;
+
+function outlinesToPolygons(asset: ToolSilhouette): Vec2[][] {
   return asset.outlines.map((ring) => ring.map((p): Vec2 => [p.x, p.y]));
 }
 
@@ -381,7 +384,7 @@ const edgeCount = (section: CrossSection): number =>
 export function buildInstanceTool(
   module: ManifoldToplevel,
   prepared: PreparedTool | undefined,
-  asset: MeshAsset,
+  asset: ToolSilhouette,
   cutout: Cutout,
   frame: ImprintFrame
 ): Manifold | null {

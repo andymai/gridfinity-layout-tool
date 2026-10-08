@@ -4450,6 +4450,7 @@
   "toast.stlImport.notManifold": "Siatka nie jest szczelna — napraw ją w slicerze i wyeksportuj ponownie",
   "toast.stlImport.parseFailed": "Nie udało się odczytać pliku STL",
   "toast.stlImport.success": "Umieszczono \"{name}\" jako odcisk 3D",
+  "toast.meshFileMissing": "Na tym urządzeniu brakuje zaimportowanego pliku STL używanego tutaj, więc nie można go udostępnić ani wyeksportować.",
   "toast.svgImport.fileTooLarge": "Plik SVG jest za duży (maks 5 MB)",
   "toast.svgImport.noShapes": "Nie znaleziono obsługiwanych kształtów w SVG",
   "toast.svgImport.parseFailed": "Nie udało się odczytać pliku SVG",

@@ -1,4 +1,5 @@
 import type * as DesignSystem from '@/design-system';
+import type * as Storage from '@/core/storage';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RightPanel } from '@/shell/RightPanel';
@@ -121,7 +122,8 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
 
 // Mock storage utilities
 const mockExportPrintListTSV = vi.fn(() => 'Size\tHeight\tQty\n2×2\t3\t1');
-vi.mock('@/core/storage', () => ({
+vi.mock('@/core/storage', async (orig) => ({
+  ...(await orig<typeof Storage>()),
   exportPrintListTSV: () => mockExportPrintListTSV(),
   copyToClipboard: (text: string) => navigator.clipboard.writeText(text).then(() => true),
 }));

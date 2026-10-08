@@ -196,6 +196,35 @@ describe('migrateParams', () => {
     expect(Object.keys(result.meshAssets ?? {})).toEqual(['kept']);
   });
 
+  it('keeps a mesh cutout whose asset is a ref, file present or not', () => {
+    const ref = {
+      name: 'wrench',
+      hash: 'b'.repeat(64),
+      triangleCount: 12,
+      sizeMm: { x: 20, y: 10, z: 5 },
+      bytes: 512,
+    };
+    const meshCutout = {
+      id: 'mesh-1',
+      shape: 'mesh',
+      meshId: 'kept',
+      x: 0,
+      y: 0,
+      width: 20,
+      depth: 10,
+      cutDepth: 5,
+      rotation: 0,
+      cornerRadius: 0,
+      label: '',
+      groupId: null,
+    } as const;
+
+    const result = migrateParams({ cutouts: [meshCutout], meshAssets: { kept: ref } });
+
+    expect(result.cutouts.map((c) => c.id)).toEqual(['mesh-1']);
+    expect(result.meshAssets).toEqual({ kept: ref });
+  });
+
   it('clears meshAssets entirely when nothing references it', () => {
     const asset = {
       name: 'wrench',

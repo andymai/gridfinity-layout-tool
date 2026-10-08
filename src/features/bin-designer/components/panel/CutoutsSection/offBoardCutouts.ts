@@ -24,7 +24,7 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { LidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
@@ -48,7 +48,7 @@ export interface CutoutBoard {
   readonly mask?: CellMask;
   readonly cellSize?: MaskCellSize;
   readonly lidWindow?: LidCutoutWindow;
-  readonly meshAssets?: Readonly<Record<string, MeshAsset>>;
+  readonly meshAssets?: Readonly<Record<string, MeshAssetEntry>>;
 }
 
 /**
@@ -195,7 +195,7 @@ function maskOffset(
   instances: readonly Cutout[],
   mask: CellMask,
   cellSize: MaskCellSize,
-  meshAssets: Readonly<Record<string, MeshAsset>> | undefined
+  meshAssets: Readonly<Record<string, MeshAssetEntry>> | undefined
 ): { dx: number; dy: number } | null {
   const u = unionBounds(instances.map(getCutoutBounds));
   let best: { dx: number; dy: number } | null = null;

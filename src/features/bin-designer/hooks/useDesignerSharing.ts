@@ -7,7 +7,8 @@
 
 import { useState, useCallback } from 'react';
 import { withoutLowProfileBase } from '@/shared/generation/lowProfileBase';
-import { ok, err, isOk, type Result } from '@/core/result';
+import { inlineParamsMeshes } from '@/shared/generation/meshRefs';
+import { ok, err, isOk, getUserMessage, type Result } from '@/core/result';
 import { generateLayoutId } from '@/shared/utils/uuid';
 import type { BinParams } from '@/features/bin-designer/types';
 
@@ -55,6 +56,11 @@ export type ShareStatus = 'idle' | 'sharing' | 'loading' | 'success' | 'error';
 export async function createDesignerShare(
   params: BinParams
 ): Promise<Result<DesignerShareResponse, DesignerShareError>> {
+  // Shares take inline meshes only.
+  const shared = await inlineParamsMeshes(params);
+  if (!isOk(shared)) {
+    return err({ code: shared.error.code, message: getUserMessage(shared.error) });
+  }
   try {
     const shareId = generateLayoutId();
 
@@ -65,7 +71,7 @@ export async function createDesignerShare(
         type: 'designer',
         version: 1,
         // A share is opened outside this layout, so it carries standard feet.
-        params: withoutLowProfileBase(params),
+        params: withoutLowProfileBase(shared.value),
         layoutId: shareId,
         permission: 'view',
       }),

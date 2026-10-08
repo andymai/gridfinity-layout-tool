@@ -29,7 +29,7 @@ import { withLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
 import { overhangKey as resolvedOverhangKey, resolveOverhang } from '@/shared/utils/overhang';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import { hasMeshImprints } from '@/shared/generation/meshAsset';
 import { importedMeshDescriptor } from '@/shared/items/importedMesh/descriptor';
 import { assemblyDescriptor } from '@/shared/items/assembly/descriptor';
@@ -79,7 +79,7 @@ export interface LayoutExportable {
 /** An imported-mesh design to export: the stored asset IS the geometry —
  *  decoded and re-serialized on the main thread, no worker round-trip. */
 export interface LayoutMeshExportable {
-  readonly asset: MeshAsset;
+  readonly asset: MeshAssetEntry;
   /** ZIP path, e.g. `bins/widget_bin.stl`. */
   readonly path: string;
   readonly quantity: number;

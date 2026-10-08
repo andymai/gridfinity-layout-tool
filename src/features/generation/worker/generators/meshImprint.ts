@@ -21,10 +21,10 @@ import type { OpenSideChannel } from '@/shared/utils/cutoutOpenSides';
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import type { BinParams } from '@/shared/types/bin';
 import {
-  decodeMeshData,
   hasMeshImprints,
   visibleMeshImprintCutouts as visibleMeshCutouts,
 } from '@/shared/generation/meshAsset';
+import { meshAssetOutlines } from '@/shared/generation/meshOutlines';
 import { isOk } from '@/core/result';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import {
@@ -38,6 +38,7 @@ import { creaseEdges } from './utils/creaseEdges';
 import { computeCreaseNormals } from './meshImprintNormals';
 import type { NormalizedMesh } from './meshImprintNormals';
 import { getLoadedManifoldModule, getManifoldModule } from '../manifoldRuntime';
+import { decodeMeshEntry, meshEntryKey } from '../meshFiles';
 import {
   frameFromDimensions,
   instanceBounds,
@@ -51,7 +52,7 @@ import type { PreparedTool, ImprintFrame, Bounds2D } from './meshImprintTools';
 
 /** FeatureTag.UNKNOWN — faces with no recorded provenance. */
 const TAG_UNKNOWN = 255;
-/** Prepared tool manifolds kept per worker (content-keyed). */
+/** Prepared tool manifolds kept per worker, keyed by `meshEntryKey`. */
 const MAX_PREPARED_TOOLS = 16;
 
 const preparedTools = new Map<string, PreparedTool>();
@@ -81,7 +82,8 @@ export function clearMeshImprintCache(): void {
  * Async pre-pass: ensure the manifold module is loaded and every referenced
  * mesh asset is decoded into a cached `Manifold`. Must run before the
  * synchronous pipeline stage; a design without mesh imprints returns
- * immediately.
+ * immediately. A ref whose file has not reached this worker is skipped, and
+ * the imprint stage leaves its pocket uncut.
  */
 export async function prepareMeshImprints(
   params: BinParams,
@@ -94,11 +96,14 @@ export async function prepareMeshImprints(
 
   for (const cutout of cutouts) {
     const asset = params.meshAssets?.[cutout.meshId ?? ''];
-    if (!asset || preparedTools.has(asset.data)) continue;
+    if (!asset) continue;
+    const key = meshEntryKey(asset);
+    if (preparedTools.has(key)) continue;
 
     let manifold: Manifold | null = null;
     let topShoulder = 0;
-    const decoded = await decodeMeshData(asset.data);
+    const decoded = await decodeMeshEntry(asset);
+    if (decoded === null) continue;
     if (isOk(decoded)) {
       // Compute the shoulder first (pure JS): a throw here then can't strand an
       // already-allocated WASM manifold.
@@ -123,7 +128,7 @@ export async function prepareMeshImprints(
         preparedTools.delete(oldest);
       }
     }
-    preparedTools.set(asset.data, { manifold, topShoulder, dilations: new Map() });
+    preparedTools.set(key, { manifold, topShoulder, dilations: new Map() });
   }
 }
 
@@ -245,12 +250,14 @@ export function imprintArrays(
   try {
     for (const cutout of cutouts) {
       const asset = params.meshAssets?.[cutout.meshId ?? ''];
-      if (!asset) continue;
-      const prepared = preparedTools.get(asset.data);
+      const outlines = meshAssetOutlines(asset);
+      if (!asset || !outlines) continue;
+      const prepared = preparedTools.get(meshEntryKey(asset));
+      const silhouette = { sizeMm: asset.sizeMm, outlines };
       const cutoutParts: Manifold[] = [];
       for (const instance of expandCutoutArray(cutout)) {
         if (clip && !boundsOverlap(instanceBounds(instance, frame), clip)) continue;
-        const placed = buildInstanceTool(module, prepared, asset, instance, frame);
+        const placed = buildInstanceTool(module, prepared, silhouette, instance, frame);
         if (placed) cutoutParts.push(placed);
       }
       for (const ch of channelsByOwner.get(cutout.id) ?? []) {

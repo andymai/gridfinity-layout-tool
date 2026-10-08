@@ -10,7 +10,7 @@
 
 import { useCallback } from 'react';
 import type { Cutout, CutoutShape, PathPoint } from '@/features/bin-designer/types';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import type { CellMask } from '@/shared/utils/cellMask';
 import {
   handlePendingPlaceMove,
@@ -61,7 +61,7 @@ interface UseCutoutPointerHandlersOptions {
   readonly binDepth: number;
   readonly cellMask?: CellMask;
   readonly maskCellSize?: MaskCellSize;
-  readonly meshAssets?: Readonly<Record<string, MeshAsset>>;
+  readonly meshAssets?: Readonly<Record<string, MeshAssetEntry>>;
   readonly rulerSnapTargets: SnapModel;
   readonly rulerZoomRef: React.RefObject<number>;
   readonly pastDeadZoneRef: React.RefObject<boolean>;

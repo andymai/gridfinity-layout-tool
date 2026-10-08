@@ -4450,6 +4450,7 @@
   "toast.stlImport.notManifold": "Síť není vodotěsná — oprav ji ve svém sliceru a exportuj znovu",
   "toast.stlImport.parseFailed": "Soubor STL se nepodařilo přečíst",
   "toast.stlImport.success": "„{name}“ umístěno jako 3D otisk",
+  "toast.meshFileMissing": "Importovaný STL použitý zde v tomto zařízení chybí, proto nelze sdílet ani exportovat.",
   "toast.svgImport.fileTooLarge": "Soubor SVG je příliš velký (max 5 MB)",
   "toast.svgImport.noShapes": "V SVG nenalezeny žádné podporované tvary",
   "toast.svgImport.parseFailed": "Soubor SVG se nepodařilo přečíst",

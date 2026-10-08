@@ -7,7 +7,7 @@
  */
 
 import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { AlignmentGuide } from '../geometry';
 import type { MaskCellSize } from '../maskFit';
@@ -35,7 +35,7 @@ export interface BinBounds {
   readonly maskCellSize?: MaskCellSize;
   /** Mesh imprint silhouettes, so `mesh` cutouts validate against their outline
    *  rather than their footprint box on a custom footprint. */
-  readonly meshAssets?: Readonly<Record<string, MeshAsset>>;
+  readonly meshAssets?: Readonly<Record<string, MeshAssetEntry>>;
 }
 
 /** Snap function that respects the current snap-enabled state. */

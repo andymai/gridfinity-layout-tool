@@ -4450,6 +4450,7 @@
   "toast.stlImport.notManifold": "메시가 수밀(watertight)이 아닙니다 — 슬라이서에서 복구한 뒤 다시 내보내세요",
   "toast.stlImport.parseFailed": "STL 파일을 읽을 수 없습니다",
   "toast.stlImport.success": "\"{name}\"을(를) 3D 임프린트로 배치했습니다",
+  "toast.meshFileMissing": "여기에 사용된 가져온 STL이 이 기기에 없어 공유하거나 내보낼 수 없습니다.",
   "toast.svgImport.fileTooLarge": "SVG 파일이 너무 큽니다(최대 5MB)",
   "toast.svgImport.noShapes": "SVG에서 지원되는 도형을 찾을 수 없습니다",
   "toast.svgImport.parseFailed": "SVG 파일을 읽을 수 없습니다",

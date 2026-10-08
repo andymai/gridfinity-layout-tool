@@ -1,5 +1,5 @@
 import type { MagnetAnchor } from '@/core/types';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { BaseConfig, BinStyle } from './base';
 import type { SlotConfig, DividerPieceConfig } from './dividers';
@@ -83,9 +83,11 @@ export interface BinParams {
    * Imported STL imprint meshes, keyed by the id that `Cutout.meshId`
    * references (shape 'mesh' cutouts). Absent/empty for designs without mesh
    * imprints, so existing designs serialize byte-identically. Entries are
-   * GC'd by the store when the last referencing cutout is deleted.
+   * GC'd by the store when the last referencing cutout is deleted. A stored
+   * design holds refs into the local mesh store; an entry is inline until it
+   * has been stored, and everything that leaves the device is inline.
    */
-  readonly meshAssets?: Record<string, MeshAsset>;
+  readonly meshAssets?: Record<string, MeshAssetEntry>;
   /**
    * User-chosen names for cutout groups, keyed by group id. Unnamed groups are
    * simply absent and fall back to a derived "Group of N" row, so a design that

@@ -84,7 +84,7 @@ import {
   remixCommunityDesign,
 } from '@/shell/Modals/DesignGalleryModal/communityDesignerBridge';
 import { usePlaceBinFromURL } from '@/features/bin-designer/hooks/usePlaceBinInLayout';
-import { useBackgroundThumbnailRegen } from '@/features/bin-designer';
+import { useBackgroundThumbnailRegen, useMeshFileMaintenance } from '@/features/bin-designer';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useSpaceMouseDevice } from '@/shared/spacemouse/useSpaceMouseDevice';
 import { useCommunityPublishReturn } from '@/shared/hooks/useCommunityPublishReturn';
@@ -225,6 +225,7 @@ export default function App() {
   useStorageMigration();
   useSnapshotAutoSave();
   useLocalStorageCleanup();
+  useMeshFileMaintenance();
   usePrefetchChunks();
 
   const entranceClass = hasRenderedInitialLayout ? '' : 'animate-fade-in';

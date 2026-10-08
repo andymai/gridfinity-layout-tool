@@ -27,6 +27,12 @@ export interface GenerationResult {
   readonly timingMs: number;
   /** Optional fine-grained perf breakdown (present when worker emits one). */
   readonly perfSnapshot?: PerfSnapshot;
+  /**
+   * A mesh this design uses is not on this device yet, so its pockets are
+   * missing from this mesh. Show it, but cache it nowhere: the same params
+   * build the full mesh once the file arrives.
+   */
+  readonly meshesPending?: true;
 }
 
 /** Result from a successful BREP export */

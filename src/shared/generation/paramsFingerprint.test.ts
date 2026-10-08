@@ -12,6 +12,11 @@ describe('paramsFingerprint', () => {
     );
   });
 
+  it('tells mesh refs apart by hash alone', () => {
+    const ref = (hash: string) => ({ meshAssets: { m1: { name: 't', hash, bytes: 1 } } });
+    expect(paramsFingerprint(ref('a'.repeat(64)))).not.toBe(paramsFingerprint(ref('b'.repeat(64))));
+  });
+
   it('preserves array order — position is meaningful in cutouts and cut planes', () => {
     expect(paramsFingerprint([1, 2])).not.toBe(paramsFingerprint([2, 1]));
   });

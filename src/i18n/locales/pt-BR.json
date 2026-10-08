@@ -4450,6 +4450,7 @@
   "toast.stlImport.notManifold": "A malha não é estanque — repare no seu fatiador e exporte novamente",
   "toast.stlImport.parseFailed": "Não foi possível ler o arquivo STL",
   "toast.stlImport.success": "\"{name}\" posicionado como molde 3D",
+  "toast.meshFileMissing": "Um STL importado usado aqui não está neste dispositivo, então não é possível compartilhar nem exportar.",
   "toast.svgImport.fileTooLarge": "O arquivo SVG é muito grande (máx. 5 MB)",
   "toast.svgImport.noShapes": "Nenhuma forma compatível encontrada no SVG",
   "toast.svgImport.parseFailed": "Não foi possível ler o arquivo SVG",

@@ -22,7 +22,7 @@
 
 import polygonClipping, { type MultiPolygon } from 'polygon-clipping';
 import type { Cutout } from '@/features/bin-designer/types';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import type { LidCutoutKeepout, LidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import { getCutoutOutline } from './cutoutOutline';
 import { getCutoutBounds } from './maskFit';
@@ -134,7 +134,7 @@ function boundsClearOfKeepouts(b: Bounds, window: LidCutoutWindow): boolean {
 export function cutoutFitsInLidWindow(
   cutout: Cutout,
   window: LidCutoutWindow,
-  meshAssets?: Readonly<Record<string, MeshAsset>>
+  meshAssets?: Readonly<Record<string, MeshAssetEntry>>
 ): boolean {
   const bounds = getCutoutBounds(cutout);
   if (!boundsInSpan(bounds, window)) return false;
@@ -271,7 +271,7 @@ function candidateOffsets(
 export function lidWindowOffset(
   instances: readonly Cutout[],
   window: LidCutoutWindow,
-  meshAssets?: Readonly<Record<string, MeshAsset>>
+  meshAssets?: Readonly<Record<string, MeshAssetEntry>>
 ): { dx: number; dy: number } | null {
   if (instances.length === 0) return null;
   const union = instances.map(getCutoutBounds).reduce((acc, b) => ({

@@ -16,7 +16,7 @@
 
 import polygonClipping, { type MultiPolygon, type Polygon } from 'polygon-clipping';
 import type { Cutout } from '@/features/bin-designer/types';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { getCutoutOutline } from './cutoutOutline';
 import { getRotatedBounds, rotatePoint, type Bounds } from './geometry';
@@ -182,7 +182,7 @@ function outlineFitsInMask(
   cutout: Cutout,
   mask: CellMask,
   cellSize: MaskCellSize,
-  meshAssets: Readonly<Record<string, MeshAsset>> | undefined
+  meshAssets: Readonly<Record<string, MeshAssetEntry>> | undefined
 ): boolean {
   const rings = getCutoutOutline(cutout, meshAssets);
   if (!rings || rings.length === 0) return false;
@@ -217,7 +217,7 @@ export function cutoutFitsInMask(
   cutout: Cutout,
   mask: CellMask,
   cellSize: MaskCellSize,
-  meshAssets?: Readonly<Record<string, MeshAsset>>
+  meshAssets?: Readonly<Record<string, MeshAssetEntry>>
 ): boolean {
   const { minX, minY, maxX, maxY } = getCutoutBounds(cutout);
   if (rectFitsInMask(mask, minX, minY, maxX - minX, maxY - minY, cellSize)) return true;

@@ -16,14 +16,20 @@ import {
   deleteRemoteDesignVersion,
 } from '@/features/bin-designer/storage/DesignVersionService';
 import { isSyncableDesign } from '@/features/bin-designer/utils/designKind';
+import { inlineHolderMeshes, storeHolderMeshes } from '@/shared/generation/meshRefs';
+import type { MeshHolder } from '@/shared/generation/meshRefs';
 import { subscribe as subscribeVersionEvents } from './designVersionEvents';
+import { createMissingMeshPushes } from './missingMeshPushes';
+
+const missingMeshPushes = createMissingMeshPushes();
 
 // Lives in features/ for the same reason `designAdapter` does: the record type
 // is feature-internal and core/ cannot import it.
 //
 // The compressed body is the LOCAL representation only. On the wire `content`
 // travels as a plain object so the server can run the designer validator over
-// it, which it cannot do with an opaque LZ string.
+// it, which it cannot do with an opaque LZ string. Locally its meshes are refs
+// into the mesh store; on the wire they are inline, as the server expects.
 
 const ORIGINS: readonly DesignVersionOrigin[] = ['manual', 'pre-restore'];
 
@@ -45,21 +51,41 @@ function toMs(version: DesignVersion): number {
   return Number.isFinite(created) ? created : 0;
 }
 
-function toItem(version: DesignVersion): SyncableItem<DesignVersionPayload> | null {
+/**
+ * `forPush` inlines the body's meshes and refuses a body whose mesh file is
+ * missing, rather than push it without the mesh over the copy the server has;
+ * the file's arrival queues it again.
+ * list() leaves the refs: it runs on every poll, its callers read ids and
+ * mtimes only, and sign-out wipes by that list.
+ */
+async function toItem(
+  version: DesignVersion,
+  forPush: boolean
+): Promise<SyncableItem<DesignVersionPayload> | null> {
   const json = decompressString(version.content);
   // A row whose body will not decompress cannot be validated by the server and
   // would be rejected on every push forever. Skipping it leaves the local copy
   // readable in the history list and keeps the outbox from wedging.
   if (!json) return null;
-  let content: unknown;
+  let content: MeshHolder;
   try {
-    content = JSON.parse(json);
+    const parsed: unknown = JSON.parse(json);
+    // Keyed off the content rather than the owning design: the content is what
+    // the server validates, and it records the kind it was captured as.
+    if (typeof parsed !== 'object' || parsed === null || !isSyncableDesign(parsed)) {
+      return null;
+    }
+    if (forPush) {
+      const inline = await inlineHolderMeshes(parsed);
+      if (!isOk(inline)) {
+        missingMeshPushes.skip(inline.error.hash, version.id);
+        return null;
+      }
+      content = inline.value;
+    } else {
+      content = parsed;
+    }
   } catch {
-    return null;
-  }
-  // Keyed off the content rather than the owning design: the content is what
-  // the server validates, and it records the kind it was captured as.
-  if (typeof content !== 'object' || content === null || !isSyncableDesign(content)) {
     return null;
   }
   return {
@@ -76,13 +102,17 @@ function toItem(version: DesignVersion): SyncableItem<DesignVersionPayload> | nu
   };
 }
 
-function fromItem(item: SyncableItem<DesignVersionPayload>): DesignVersion {
+async function fromItem(item: SyncableItem<DesignVersionPayload>): Promise<DesignVersion> {
   const p = item.payload;
+  const content =
+    typeof p.content === 'object' && p.content !== null
+      ? await storeHolderMeshes(p.content)
+      : (p.content ?? {});
   return {
     id: item.id,
     designId: designId(p.designId),
     name: p.name,
-    content: compressString(JSON.stringify(p.content ?? {})),
+    content: compressString(JSON.stringify(content)),
     // Not synced. A pulled version renders a placeholder until the local
     // thumbnail regenerator fills one in from the params.
     thumbnail: null,
@@ -101,19 +131,18 @@ export const designVersionAdapter: DesignVersionAdapter = {
   async list(): Promise<SyncableItem<DesignVersionPayload>[]> {
     const result = await listAllDesignVersions();
     if (!isOk(result)) return [];
-    return result.value
-      .map(toItem)
-      .filter((item): item is SyncableItem<DesignVersionPayload> => item !== null);
+    const items = await Promise.all(result.value.map((version) => toItem(version, false)));
+    return items.filter((item): item is SyncableItem<DesignVersionPayload> => item !== null);
   },
 
   async get(id: string): Promise<SyncableItem<DesignVersionPayload> | null> {
     const result = await getDesignVersionRecord(id);
     if (!isOk(result) || result.value === null) return null;
-    return toItem(result.value);
+    return toItem(result.value, true);
   },
 
   async applyRemote(item: SyncableItem<DesignVersionPayload>): Promise<void> {
-    await putRemoteDesignVersion(fromItem(item));
+    await putRemoteDesignVersion(await fromItem(item));
   },
 
   async applyRemoteDelete(id: string): Promise<void> {
@@ -121,12 +150,21 @@ export const designVersionAdapter: DesignVersionAdapter = {
   },
 
   subscribe(listener: AdapterChangeListener): () => void {
-    return subscribeVersionEvents((event) => {
+    const stopEvents = subscribeVersionEvents((event) => {
+      missingMeshPushes.clear(event.id);
       const change: AdapterChange =
         event.type === 'put'
           ? { kind: 'put', id: event.id, modifiedAt: event.modifiedAt }
           : { kind: 'delete', id: event.id, modifiedAt: event.deletedAt };
       listener(change);
     });
+    const stopArrivals = missingMeshPushes.subscribe(listener, async (id) => {
+      const current = await getDesignVersionRecord(id);
+      return isOk(current) && current.value !== null ? toMs(current.value) : null;
+    });
+    return () => {
+      stopEvents();
+      stopArrivals();
+    };
   },
 };

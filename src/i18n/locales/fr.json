@@ -4450,6 +4450,7 @@
   "toast.stlImport.notManifold": "Le maillage n'est pas étanche — réparez-le dans votre slicer puis réexportez-le",
   "toast.stlImport.parseFailed": "Impossible de lire le fichier STL",
   "toast.stlImport.success": "\"{name}\" placé comme empreinte 3D",
+  "toast.meshFileMissing": "Un STL importé utilisé ici est absent de cet appareil, le partage et l'export sont donc impossibles.",
   "toast.svgImport.fileTooLarge": "Le fichier SVG est trop volumineux (max 5 Mo)",
   "toast.svgImport.noShapes": "Aucune forme prise en charge trouvée dans le SVG",
   "toast.svgImport.parseFailed": "Impossible de lire le fichier SVG",

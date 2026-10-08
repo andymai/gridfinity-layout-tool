@@ -8,6 +8,7 @@ import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useLoadedMeshAssets } from '@/shared/hooks/useMeshOutlines';
 import { ACCENT_COLOR_HEX, RENDER_ORDER } from './constants';
 import { loopToSegmentPositions } from './knifeSlotOverlayGeometry';
 import { openSideOverlayStrips } from './openSideOverlayGeometry';
@@ -25,11 +26,12 @@ interface OpenSideOverlayProps {
 
 export function OpenSideOverlay({ cutouts, binWidth, binDepth }: OpenSideOverlayProps) {
   const params = useDesignerStore((s) => s.params);
+  const meshAssets = useLoadedMeshAssets(params.meshAssets);
 
   const geometries = useMemo(() => {
     const outline: number[] = [];
     const fill: number[] = [];
-    const host = { ...params, cutouts };
+    const host = { ...params, cutouts, meshAssets };
     const frame = { binWidth, binDepth, wallThickness: params.wallThickness };
     for (const { loop, tunnel } of openSideOverlayStrips(host, frame)) {
       outline.push(...loopToSegmentPositions(loop, OVERLAY_Z));
@@ -44,7 +46,7 @@ export function OpenSideOverlay({ cutouts, binWidth, binDepth }: OpenSideOverlay
     const faces = new THREE.BufferGeometry();
     faces.setAttribute('position', new THREE.Float32BufferAttribute(fill, 3));
     return { lines, faces };
-  }, [cutouts, params, binWidth, binDepth]);
+  }, [cutouts, params, meshAssets, binWidth, binDepth]);
 
   const materials = useMemo(
     () => ({

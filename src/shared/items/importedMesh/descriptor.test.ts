@@ -87,6 +87,24 @@ describe('importedMeshDescriptor', () => {
     expect(importedMeshDescriptor.migrate(VALID_STRUCTURE, ENVELOPE)).toEqual(VALID_STRUCTURE);
   });
 
+  it('migrate() keeps a stored design whose asset is a ref into the mesh store', () => {
+    const stored: ImportedMeshStructure = {
+      ...VALID_STRUCTURE,
+      asset: {
+        name: 'widget_bin',
+        hash: 'a'.repeat(64),
+        triangleCount: 12,
+        sizeMm: { x: 83.5, y: 41.5, z: 21 },
+        bytes: 1234,
+      },
+    };
+    expect(importedMeshDescriptor.migrate(stored, ENVELOPE)).toEqual(stored);
+    expect(
+      importedMeshSchema.safeParse({ ...stored, asset: { ...stored.asset, hash: 'not-a-hash' } })
+        .success
+    ).toBe(false);
+  });
+
   it('migrate() falls back to the placeholder for garbage input', () => {
     const migrated = importedMeshDescriptor.migrate({ heightUnits: 'tall' }, ENVELOPE);
     expect(importedMeshSchema.safeParse(migrated).success).toBe(true);

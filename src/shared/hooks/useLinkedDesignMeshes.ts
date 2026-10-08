@@ -38,6 +38,8 @@ import {
   type SavedDesign,
 } from '@/features/bin-designer';
 import { decodeMeshData } from '@/shared/generation/meshAsset';
+import { holderMeshHashes, resolveMeshAsset } from '@/shared/generation/meshRefs';
+import { subscribeMeshFileArrivals } from '@/shared/generation/meshStore';
 import {
   binMeshCacheKey,
   itemMeshCacheKey,
@@ -88,11 +90,44 @@ const inFlight = new Map<string, Set<() => void>>();
 // uncached linked designs doesn't stampede the (single-flight) worker.
 let resolveChain: Promise<void> = Promise.resolve();
 
+// An entry built while a mesh file was not on this device (its pocket uncut,
+// or no mesh at all) is shown but never final. It waits on those files; when
+// one arrives the entry turns stale and mounted previews resolve it again,
+// showing the old entry until the new one lands.
+const waitingKeys = new Map<string, ReadonlySet<string>>();
+const staleKeys = new Set<string>();
+const staleListeners = new Set<() => void>();
+let stopHearingArrivals: (() => void) | null = null;
+// Files that arrived during the resolution in progress: one it found missing
+// can land before its entry starts waiting, and would otherwise go unheard.
+let arrivedWhileResolving: Set<string> | null = null;
+
+function markStale(keys: readonly string[]): void {
+  if (keys.length === 0) return;
+  for (const key of keys) {
+    waitingKeys.delete(key);
+    staleKeys.add(key);
+  }
+  for (const listener of staleListeners) listener();
+}
+
+function onMeshFileArrived(hash: string): void {
+  arrivedWhileResolving?.add(hash);
+  const staled: string[] = [];
+  for (const [key, hashes] of waitingKeys) if (hashes.has(hash)) staled.push(key);
+  markStale(staled);
+}
+
 /** Reset module state. @internal — for tests only. */
 export function clearLinkedDesignMeshCache(): void {
   meshCache.clear();
   inFlight.clear();
   pinnedKeys.clear();
+  waitingKeys.clear();
+  staleKeys.clear();
+  stopHearingArrivals?.();
+  stopHearingArrivals = null;
+  arrivedWhileResolving = null;
   resolveChain = Promise.resolve();
 }
 
@@ -116,6 +151,8 @@ function evictUnpinned(limit: number): void {
     if (unpinned <= limit) return;
     if (pinnedKeys.has(key)) continue;
     meshCache.delete(key);
+    waitingKeys.delete(key);
+    staleKeys.delete(key);
     unpinned--;
   }
 }
@@ -136,10 +173,20 @@ function scheduleTrim(): void {
 
 // Recency is refreshed on read by getCachedMesh (matches designGeometryCache's
 // LRU policy).
-function setCachedMesh(key: string, entry: LinkedDesignMesh | null): void {
+function setCachedMesh(
+  key: string,
+  entry: LinkedDesignMesh | null,
+  waitingFor: readonly string[] = []
+): void {
   meshCache.delete(key);
   evictUnpinned(pinnedKeys.has(key) ? MAX_CACHE_ENTRIES : MAX_CACHE_ENTRIES - 1);
   meshCache.set(key, entry);
+  staleKeys.delete(key);
+  if (waitingFor.length === 0) {
+    waitingKeys.delete(key);
+    return;
+  }
+  waitingKeys.set(key, new Set(waitingFor));
 }
 
 // Read a cached entry (including a cached null miss), promoting it to
@@ -193,16 +240,26 @@ interface MeshRequest {
   readonly stripOwnOverhang: boolean;
 }
 
+/**
+ * `waitingFor` collects the mesh files a result was built without, which makes
+ * the result provisional.
+ */
 async function resolveDesignMesh(
   design: SavedDesign,
   sig: string,
   nozzleSizeMm: number,
   lowProfileBase: boolean,
-  stripOwnOverhang: boolean
+  stripOwnOverhang: boolean,
+  waitingFor: string[]
 ): Promise<LinkedDesignMesh | null> {
   const structure = design.structure;
   if (structure?.kind === 'importedMesh' && design.envelope) {
-    const decoded = await decodeMeshData(structure.asset.data);
+    const asset = await resolveMeshAsset(structure.asset);
+    if (!asset) {
+      waitingFor.push(...holderMeshHashes(design));
+      return null;
+    }
+    const decoded = await decodeMeshData(asset.data);
     if (!isOk(decoded)) return null;
     const { positions, indices } = decoded.value;
     const mesh: MeshData = {
@@ -269,7 +326,8 @@ async function resolveDesignMesh(
     // designer result could alias in. Strip them rather than bake plate buffers
     // into every cross-session cache entry.
     const mesh = stripLabelPlates(result.mesh);
-    savePersistedBinMesh(persistKey, mesh);
+    if (result.meshesPending) waitingFor.push(...holderMeshHashes(design));
+    else savePersistedBinMesh(persistKey, mesh);
     return { sig, mesh, width: params.width, depth: params.depth, bodyBaseMm };
   } finally {
     bridgeManager.release();
@@ -290,26 +348,35 @@ function enqueueResolve(
   }
   inFlight.set(key, new Set([onSettled]));
   resolveChain = resolveChain.then(async () => {
+    stopHearingArrivals ??= subscribeMeshFileArrivals(onMeshFileArrived);
+    const arrived = new Set<string>();
+    arrivedWhileResolving = arrived;
+    let missedArrival = false;
     try {
       const designResult = await loadDesign(request.id);
+      const waitingFor: string[] = [];
       const entry = isOk(designResult)
         ? await resolveDesignMesh(
             designResult.value,
             key,
             nozzleSizeMm,
             lowProfileBase,
-            request.stripOwnOverhang
+            request.stripOwnOverhang,
+            waitingFor
           )
         : null;
-      setCachedMesh(key, entry);
+      setCachedMesh(key, entry, waitingFor);
+      missedArrival = waitingFor.some((hash) => arrived.has(hash));
     } catch {
       // Worker init/generation failure — cache the miss so we don't retry
       // every render; a design re-save (new updatedAt) retries naturally.
       setCachedMesh(key, null);
     } finally {
+      arrivedWhileResolving = null;
       const settled = inFlight.get(key);
       inFlight.delete(key);
       for (const waiter of settled ?? []) waiter();
+      if (missedArrival) markStale([key]);
     }
   });
 }
@@ -322,6 +389,14 @@ function enqueueResolve(
 export function useLinkedDesignMeshes(bins: Bin[]): Map<BinId, LinkedDesignMesh> {
   const registry = useCustomBins();
   const [loadTick, setLoadTick] = useState(0);
+  const [staleTick, setStaleTick] = useState(0);
+  useEffect(() => {
+    const onStale = (): void => setStaleTick((tick) => tick + 1);
+    staleListeners.add(onStale);
+    return () => {
+      staleListeners.delete(onStale);
+    };
+  }, []);
   // Part of the cache key so a nozzle change re-resolves socket-bin meshes at the
   // new pocket clearance. Non-socket designs re-resolve too but hit the persisted
   // mesh cache (their key is nozzle-invariant), so it stays cheap.
@@ -372,7 +447,7 @@ export function useLinkedDesignMeshes(bins: Bin[]): Map<BinId, LinkedDesignMesh>
     // reloads any evicted before this effect ran, between render and commit.
     for (const key of requests.keys()) pinKey(key);
     for (const [key, request] of requests) {
-      if (!meshCache.has(key))
+      if (!meshCache.has(key) || staleKeys.has(key))
         enqueueResolve(request, key, nozzleSizeMm, lowProfileBase, onSettled);
     }
     return () => {
@@ -380,7 +455,7 @@ export function useLinkedDesignMeshes(bins: Bin[]): Map<BinId, LinkedDesignMesh>
       for (const key of requests.keys()) unpinKey(key);
       scheduleTrim();
     };
-  }, [requests, nozzleSizeMm, lowProfileBase]);
+  }, [requests, nozzleSizeMm, lowProfileBase, staleTick]);
 
   return useMemo(() => {
     // loadTick re-runs this memo when async resolutions land in the cache

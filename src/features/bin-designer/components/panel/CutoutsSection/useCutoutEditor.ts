@@ -19,6 +19,7 @@ import {
 } from './geometry';
 import { useCutoutInteraction } from './useCutoutInteraction';
 import { useTranslation } from '@/i18n';
+import { useLoadedMeshAssets } from '@/shared/hooks/useMeshOutlines';
 import { useSvgImport } from './svgImport';
 import { useStlImport } from './stlImport';
 import type { FitCue } from './cutoutSectionVisibility';
@@ -118,6 +119,8 @@ export function useCutoutEditor() {
     ]
   );
 
+  const meshAssets = useLoadedMeshAssets(params.meshAssets);
+
   const {
     mode,
     setMode,
@@ -179,7 +182,7 @@ export function useCutoutEditor() {
     gridSize,
     cellMask: params.cellMask,
     maskCellSize,
-    meshAssets: params.meshAssets,
+    meshAssets,
   });
 
   const { triggerImport: triggerSvgImport } = useSvgImport();

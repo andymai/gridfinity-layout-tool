@@ -1,16 +1,20 @@
 /**
  * WebGL renderer for a mesh imprint cutout's silhouette footprint.
  *
- * Draws the imported tool's outline rings (stored on the MeshAsset, so no
- * mesh decode is needed) as a translucent fill + stroke. Shape-locked:
- * selectable, draggable, and rotatable like any cutout, but the outline
- * itself is derived from the mesh and never point-edited or resized.
+ * Draws the imported tool's outline rings (stored with the mesh, so no mesh
+ * decode is needed) as a translucent fill + stroke. Shape-locked: selectable,
+ * draggable, and rotatable like any cutout, but the outline itself is derived
+ * from the mesh and never point-edited or resized.
+ *
+ * A mesh whose file has not reached this device yet draws its footprint box,
+ * faded, so the pocket reads as pending and stays selectable.
  */
 
 import { memo, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useMeshAssetOutlines } from '@/shared/hooks/useMeshOutlines';
 import { RENDER_ORDER } from './constants';
 import { useShapePointerHandlers, useShapeColors, pickStrokeColor } from './shapeInteraction';
 import { shapePosZ, shapeRenderOrder } from './zLayer';
@@ -57,9 +61,25 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
   const asset = useDesignerStore((s) =>
     cutout.meshId !== undefined ? s.params.meshAssets?.[cutout.meshId] : undefined
   );
+  const outlines = useMeshAssetOutlines(asset);
+  const pending = asset !== undefined && outlines === undefined;
 
   const shapeColors = useShapeColors(binColor);
   const { cutFillColor } = shapeColors;
+
+  const rings = useMemo(() => {
+    if (!asset) return [];
+    if (outlines) return outlines.filter((ring) => ring.length >= 3);
+    const { x, y } = asset.sizeMm;
+    return [
+      [
+        { x: 0, y: 0 },
+        { x, y: 0 },
+        { x, y },
+        { x: 0, y },
+      ],
+    ];
+  }, [asset, outlines]);
 
   // Fill: one triangulated ShapeGeometry per outline ring, in a local frame
   // centered on the footprint (rings live in asset space [0..w]×[0..d]).
@@ -67,20 +87,18 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
     if (!asset) return null;
     const cx = asset.sizeMm.x / 2;
     const cy = asset.sizeMm.y / 2;
-    const shapes = asset.outlines
-      .filter((ring) => ring.length >= 3)
-      .map((ring) => {
-        const shape = new THREE.Shape();
-        ring.forEach((p, i) => {
-          if (i === 0) shape.moveTo(p.x - cx, p.y - cy);
-          else shape.lineTo(p.x - cx, p.y - cy);
-        });
-        shape.closePath();
-        return shape;
+    const shapes = rings.map((ring) => {
+      const shape = new THREE.Shape();
+      ring.forEach((p, i) => {
+        if (i === 0) shape.moveTo(p.x - cx, p.y - cy);
+        else shape.lineTo(p.x - cx, p.y - cy);
       });
+      shape.closePath();
+      return shape;
+    });
     if (shapes.length === 0) return null;
     return new THREE.ShapeGeometry(shapes);
-  }, [asset]);
+  }, [asset, rings]);
 
   useEffect(() => {
     return () => {
@@ -92,14 +110,12 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
     if (!asset) return [];
     const cx = asset.sizeMm.x / 2;
     const cy = asset.sizeMm.y / 2;
-    return asset.outlines
-      .filter((ring) => ring.length >= 3)
-      .map((ring) =>
-        new THREE.BufferGeometry().setFromPoints(
-          ring.map((p) => new THREE.Vector3(p.x - cx, p.y - cy, 0.02))
-        )
-      );
-  }, [asset]);
+    return rings.map((ring) =>
+      new THREE.BufferGeometry().setFromPoints(
+        ring.map((p) => new THREE.Vector3(p.x - cx, p.y - cy, 0.02))
+      )
+    );
+  }, [asset, rings]);
 
   useEffect(() => {
     return () => {
@@ -136,7 +152,7 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
         <meshBasicMaterial
           color={cutFillColor}
           transparent
-          opacity={isDragging ? 0.5 : 0.65}
+          opacity={pending ? 0.25 : isDragging ? 0.5 : 0.65}
           depthTest={false}
           side={THREE.DoubleSide}
         />

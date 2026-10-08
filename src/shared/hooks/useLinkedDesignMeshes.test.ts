@@ -20,6 +20,8 @@ import {
   type BinParams,
 } from '@/features/bin-designer';
 import { decodeMeshData } from '@/shared/generation/meshAsset';
+import { meshAssetFile, storeMeshAsset } from '@/shared/generation/meshRefs';
+import { putMeshFile } from '@/shared/generation/meshStore';
 import { loadPersistedBinMesh, savePersistedBinMesh } from '@/shared/generation/meshPersistence';
 import { bridgeManager } from '@/shared/generation/bridge';
 import type { KernelName } from '@/shared/generation/bridge';
@@ -35,7 +37,8 @@ vi.mock('@/features/bin-designer', () => ({
   binDimensions: vi.fn(() => ({ floorZ: BODY_BASE_MM })),
 }));
 
-vi.mock('@/shared/generation/meshAsset', () => ({
+vi.mock('@/shared/generation/meshAsset', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   decodeMeshData: vi.fn(),
 }));
 
@@ -238,6 +241,100 @@ describe('useLinkedDesignMeshes', () => {
     expect(mockRelease).toHaveBeenCalledTimes(1);
   });
 
+  it('shows a mesh built while a mesh file was missing without persisting it', async () => {
+    const mesh = makeMesh();
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(ok(makeBinDesign()));
+    mockAcquire.mockResolvedValue({
+      generateImmediate: vi.fn(async () => ({ mesh, meshesPending: true })),
+    } as unknown as Awaited<ReturnType<typeof bridgeManager.acquire>>);
+
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
+    const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+    await waitFor(() => {
+      expect(result.current.get(B1)?.mesh).toBe(mesh);
+    });
+    expect(mockSavePersistedBinMesh).not.toHaveBeenCalled();
+  });
+
+  /** A mesh file not yet on this device; `data` keeps each test's bytes distinct. */
+  async function absentMeshFile(
+    data: string
+  ): Promise<NonNullable<Awaited<ReturnType<typeof meshAssetFile>>>> {
+    const file = await meshAssetFile({
+      name: 'wrench',
+      data,
+      triangleCount: 1,
+      sizeMm: { x: 20, y: 10, z: 5 },
+      outlines: [
+        [
+          { x: 0, y: 0 },
+          { x: 20, y: 0 },
+          { x: 0, y: 10 },
+        ],
+      ],
+    });
+    if (!file) throw new Error('fixture');
+    return file;
+  }
+
+  it('rebuilds a mesh built without a file once that file arrives', async () => {
+    const file = await absentMeshFile('AAAB');
+    const uncut = makeMesh();
+    const cut = makeMesh();
+    const generateImmediate = vi
+      .fn()
+      .mockResolvedValueOnce({ mesh: uncut, meshesPending: true })
+      .mockResolvedValueOnce({ mesh: cut });
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(ok(makeBinDesign({ meshAssets: { m1: file.ref } })));
+    mockAcquire.mockResolvedValue({ generateImmediate } as unknown as Awaited<
+      ReturnType<typeof bridgeManager.acquire>
+    >);
+
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
+    const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+    await waitFor(() => {
+      expect(result.current.get(B1)?.mesh).toBe(uncut);
+    });
+
+    await putMeshFile(file.bytes);
+
+    await waitFor(() => {
+      expect(result.current.get(B1)?.mesh).toBe(cut);
+    });
+    expect(generateImmediate).toHaveBeenCalledTimes(2);
+    expect(mockSavePersistedBinMesh).toHaveBeenCalledTimes(1);
+    expect(mockSavePersistedBinMesh).toHaveBeenCalledWith('persist-key-occt-wasm', cut);
+  });
+
+  it('rebuilds a mesh whose file arrived while it was being built', async () => {
+    const file = await absentMeshFile('AAAC');
+    const uncut = makeMesh();
+    const cut = makeMesh();
+    const generateImmediate = vi
+      .fn()
+      .mockImplementationOnce(async () => {
+        await putMeshFile(file.bytes);
+        return { mesh: uncut, meshesPending: true };
+      })
+      .mockResolvedValueOnce({ mesh: cut });
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(ok(makeBinDesign({ meshAssets: { m1: file.ref } })));
+    mockAcquire.mockResolvedValue({ generateImmediate } as unknown as Awaited<
+      ReturnType<typeof bridgeManager.acquire>
+    >);
+
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
+    const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+    await waitFor(() => {
+      expect(result.current.get(B1)?.mesh).toBe(cut);
+    });
+    expect(generateImmediate).toHaveBeenCalledTimes(2);
+  });
+
   // This reader returns a persisted hit and stops, with no regeneration
   // behind it, so a key shared across engines would strand the other engine's
   // mesh in the layout preview until LRU eviction.
@@ -344,6 +441,41 @@ describe('useLinkedDesignMeshes', () => {
     expect(Array.from(entry?.mesh.vertices ?? [])).toEqual([-20, -20, 0, 20, 20, 28]);
     expect(entry?.width).toBe(1);
     expect(mockAcquire).not.toHaveBeenCalled();
+  });
+
+  it('decodes an imported STL design stored as a ref from its mesh file', async () => {
+    const ref = await storeMeshAsset({
+      name: 'holder',
+      data: 'AAAA',
+      triangleCount: 1,
+      sizeMm: { x: 40, y: 40, z: 28 },
+      outlines: [
+        [
+          { x: 0, y: 0 },
+          { x: 40, y: 0 },
+          { x: 0, y: 40 },
+        ],
+      ],
+    });
+    const design = makeImportedDesign();
+    const structure = design.structure;
+    if (!ref || structure?.kind !== 'importedMesh') throw new Error('fixture');
+    mockUseCustomBins.mockReturnValue([makeRegistryRef({ width: 1, depth: 1 })]);
+    mockLoadDesign.mockResolvedValue(ok({ ...design, structure: { ...structure, asset: ref } }));
+    mockDecodeMeshData.mockResolvedValue(
+      ok({
+        positions: new Float32Array([0, 0, 0, 40, 40, 28]),
+        indices: new Uint32Array([0, 1, 0]),
+      })
+    );
+
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
+    const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+    await waitFor(() => {
+      expect(result.current.get(B1)).toBeDefined();
+    });
+    expect(mockDecodeMeshData).toHaveBeenCalledWith('AAAA');
   });
 
   it('caches failures so a broken design does not retry every render', async () => {

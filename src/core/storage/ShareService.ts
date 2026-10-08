@@ -14,7 +14,7 @@ import { isValidLayoutId, isLegacyUUID } from '@/shared/utils/uuid';
 import { generateBinId, generateLayerId, generateCategoryId, STAGING_ID } from '@/core/constants';
 import type { Layout, LayerId, CategoryId, DesignId } from '@/core/types';
 import { designId as toDesignId } from '@/core/types';
-import type { Result, ValidationError } from '@/core/result';
+import type { Result, StorageMeshMissingError, ValidationError } from '@/core/result';
 import { ok, err, validationImportFailed, isOk } from '@/core/result';
 import { getDesignStorePort } from './designStorePort';
 import type { BinParams } from '@/shared/types/bin';
@@ -78,25 +78,34 @@ function isAssemblyStructureShape(value: unknown): value is AssemblyStructure {
  * references. Bin designs travel as `params`, assemblies as
  * `envelope`/`structure`; designs that fail to load (deleted) or cannot travel
  * (tool racks, imported meshes) are omitted rather than failing the whole set.
+ *
+ * A design whose mesh file is missing fails the whole set instead: it exists,
+ * so leaving it out would ship a bin that names a design the recipient never
+ * gets.
  */
-export async function collectLinkedDesigns(layout: Layout): Promise<LinkedDesignExport[]> {
+export async function collectLinkedDesigns(
+  layout: Layout
+): Promise<Result<LinkedDesignExport[], StorageMeshMissingError>> {
   const designIds = new Set<DesignId>();
   for (const bin of layout.bins) {
     if (bin.linkedDesignId) {
       designIds.add(bin.linkedDesignId);
     }
   }
-  if (designIds.size === 0) return [];
+  if (designIds.size === 0) return ok([]);
 
   // A missing port means the design feature has not registered its adapter
   // yet; treat it exactly like "no designs resolved" (empty result).
   const port = getDesignStorePort();
-  if (port === null) return [];
+  if (port === null) return ok([]);
 
   const linkedDesigns: LinkedDesignExport[] = [];
   for (const id of designIds) {
     const result = await port.loadDesign(id);
-    if (!isOk(result)) continue;
+    if (!isOk(result)) {
+      if (result.error.code === 'STORAGE_MESH_MISSING') return err(result.error);
+      continue;
+    }
     const design = result.value;
     if (design.params) {
       linkedDesigns.push({ id: design.id, name: design.name, params: design.params as BinParams });
@@ -110,7 +119,7 @@ export async function collectLinkedDesigns(layout: Layout): Promise<LinkedDesign
       });
     }
   }
-  return linkedDesigns;
+  return ok(linkedDesigns);
 }
 
 /**
@@ -132,8 +141,12 @@ export function exportLayoutJSON(layout: Layout): string {
  * Export layout as JSON string with linked bin designs embedded.
  * Async because it needs to look up designs from IndexedDB.
  */
-export async function exportLayoutJSONWithDesigns(layout: Layout): Promise<string> {
-  const linkedDesigns = await collectLinkedDesigns(layout);
+export async function exportLayoutJSONWithDesigns(
+  layout: Layout
+): Promise<Result<string, StorageMeshMissingError>> {
+  const collected = await collectLinkedDesigns(layout);
+  if (!isOk(collected)) return collected;
+  const linkedDesigns = collected.value;
 
   const exportData = {
     ...layout,
@@ -143,7 +156,7 @@ export async function exportLayoutJSONWithDesigns(layout: Layout): Promise<strin
       exportedAt: new Date().toISOString(),
     },
   };
-  return JSON.stringify(exportData, null, 2);
+  return ok(JSON.stringify(exportData, null, 2));
 }
 
 /**

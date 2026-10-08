@@ -26,6 +26,7 @@ import { withSocketNozzle } from '@/shared/generation/socketNozzle';
 // layout-export chunk (same rationale as planLabelPlateExport's deep imports).
 import { buildLabelPlateColorConfig } from '@/features/bin-designer/utils/labelPlateColors';
 import { decodeMeshData } from '@/shared/generation/meshAsset';
+import { resolveMeshAsset } from '@/shared/generation/meshRefs';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 // Deep import: the STL builder lives in the worker-adjacent export module; the
 // generation barrel would pull the whole bridge stack into this chunk.
@@ -257,8 +258,9 @@ export function useLayoutExport(): UseLayoutExportReturn {
         // needed). Plan already excludes these under STEP. A single corrupt
         // asset skips that design rather than aborting the whole archive.
         for (const m of plan.meshExportable) {
-          const decoded = await decodeMeshData(m.asset.data);
-          if (isOk(decoded)) {
+          const asset = await resolveMeshAsset(m.asset);
+          const decoded = asset ? await decodeMeshData(asset.data) : null;
+          if (decoded && isOk(decoded)) {
             const stl = buildSTLBufferFromIndexed(
               decoded.value.positions,
               new Float32Array(0),

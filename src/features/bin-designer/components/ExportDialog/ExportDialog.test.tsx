@@ -58,7 +58,7 @@ vi.mock('@/shared/components/ExportDialog', async (importOriginal) => {
 });
 
 vi.mock('@/features/bin-designer/utils/designJson', () => ({
-  downloadDesignAsFile: vi.fn(),
+  downloadDesignAsFile: vi.fn(async () => ({ ok: true, value: undefined })),
 }));
 
 vi.mock('@/features/bin-designer/hooks/useExport', () => ({

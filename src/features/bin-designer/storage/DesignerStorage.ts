@@ -32,6 +32,7 @@ import { emit as emitDesignerEvent } from '@/features/bin-designer/sync/designer
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { applyOverrides } from '@/shared/utils/applyOverrides';
 import { trackDesignCreated } from '@/shared/analytics/posthog';
+import { storeHolderMeshes } from '@/shared/generation/meshRefs';
 import { getDb, DESIGNS_STORE } from './designerDb';
 import {
   deleteVersionsForDesign,
@@ -42,6 +43,10 @@ import {
 // Re-exported so callers that treat this module as the designer's storage
 // surface keep one import site as the schema moves to `designerDb`.
 export { closeDesignerDb } from './designerDb';
+// Re-exported so the upkeep loads with this module's chunk rather than
+// splitting the designer database, compression and the mesh store out of it.
+export { maintainMeshFiles } from './designMeshFiles';
+export { refreshMeshFileUse } from '@/shared/generation/meshStore';
 
 /** localStorage key for tracking the active design ID across sessions */
 const ACTIVE_DESIGN_KEY = 'gridfinity-designer-active-v1';
@@ -53,12 +58,33 @@ function generateDesignId(): DesignId {
   return designId(`design_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
 }
 
+type SaveDesignInput = Omit<SavedDesign, 'id' | 'createdAt' | 'updatedAt'> & { id?: DesignId };
+
+const pendingSaves = new Map<DesignId, Promise<unknown>>();
+
 /**
  * Save a design to IndexedDB.
+ *
+ * Every inline mesh asset is stored in the mesh store first and saved as a ref,
+ * so copies, variants and versions of the design share one file. An asset whose
+ * file cannot be written is saved inline, so nothing is lost.
+ *
+ * Saves to one design land in the order they were made: storing a mesh can hold
+ * an older save past a newer one, which it would then overwrite.
  */
-export async function saveDesign(
-  design: Omit<SavedDesign, 'id' | 'createdAt' | 'updatedAt'> & { id?: DesignId }
-): Promise<Result<SavedDesign, StorageError>> {
+export function saveDesign(design: SaveDesignInput): Promise<Result<SavedDesign, StorageError>> {
+  const id = design.id;
+  if (id === undefined) return writeDesign(design);
+  const write = (): Promise<Result<SavedDesign, StorageError>> => writeDesign(design);
+  const saved = (pendingSaves.get(id) ?? Promise.resolve()).then(write, write);
+  pendingSaves.set(id, saved);
+  void saved.then(() => {
+    if (pendingSaves.get(id) === saved) pendingSaves.delete(id);
+  });
+  return saved;
+}
+
+async function writeDesign(design: SaveDesignInput): Promise<Result<SavedDesign, StorageError>> {
   try {
     const db = await getDb();
     const now = new Date().toISOString();
@@ -105,6 +131,7 @@ export async function saveDesign(
         storageCorrupted(design.id ?? 'new', [`${kind} design missing envelope/structure`])
       );
     }
+    const meshes = await storeHolderMeshes({ params: design.params, structure: design.structure });
 
     const savedDesign: SavedDesign = {
       id: design.id ?? generateDesignId(),
@@ -127,8 +154,8 @@ export async function saveDesign(
       // persist `kind` + `envelope` + `structure` and OMIT `params` so a stale
       // bin payload can never shadow the real structure.
       ...(kind === 'bin'
-        ? { params: design.params }
-        : { kind, envelope: design.envelope, structure: design.structure }),
+        ? { params: meshes.params }
+        : { kind, envelope: design.envelope, structure: meshes.structure }),
     };
 
     await db.put(DESIGNS_STORE, savedDesign);

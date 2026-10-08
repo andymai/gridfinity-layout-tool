@@ -13,6 +13,8 @@ import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useLatestRef } from '@/shared/hooks';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { useTranslation } from '@/i18n';
+import { isOk } from '@/core/result';
+import { useToastStore } from '@/core/store/toast';
 import { Button, IconButton, Input, XIcon } from '@/design-system';
 import type { Layout } from '@/core/types';
 
@@ -129,7 +131,11 @@ function ShareModalBody({ layout, onClose }: { layout: Layout; onClose: () => vo
   };
 
   const handleDownload = async () => {
-    await downloadLayoutAsFile(layout);
+    const downloaded = await downloadLayoutAsFile(layout);
+    if (!isOk(downloaded)) {
+      useToastStore.getState().addToast(t('toast.meshFileMissing'), 'error');
+      return;
+    }
     announceToScreenReader(t('share.file.downloaded'));
     trackEvent('ui.layoutExported', { format: 'json' });
     mlTracking.trackSnapshot('export_json');

@@ -11,6 +11,8 @@ import { useToastStore } from '@/core/store/toast';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { hashBinParams } from '@/shared/utils/binParamsHash';
 import { savePendingPublishAction } from '@/shared/utils/communityPendingAction';
+import type { MeshAsset } from '@/shared/generation/meshAsset';
+import { storeMeshAsset } from '@/shared/generation/meshRefs';
 import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '../constants';
 import { useDesignerStore } from '../store/designer';
 import type { SavedDesign } from '../types';
@@ -132,9 +134,68 @@ describe('useCommunityPublish', () => {
       );
     });
 
+    it('publishes a design whose meshes are refs with its meshes inline', async () => {
+      const asset: MeshAsset = {
+        name: 'wrench',
+        data: 'AAAA',
+        triangleCount: 1,
+        sizeMm: { x: 20, y: 10, z: 5 },
+        outlines: [
+          [
+            { x: 0, y: 0 },
+            { x: 20, y: 0 },
+            { x: 0, y: 10 },
+          ],
+        ],
+      };
+      const ref = await storeMeshAsset(asset);
+      const base = { ...DEFAULT_BIN_PARAMS, cutouts: [qualifyingCutout] };
+      useDesignerStore.setState({ params: { ...base, meshAssets: ref ? { m1: ref } : {} } });
+
+      await openCommunityPublish(null);
+
+      const context = useCommunityPublishStore.getState().context;
+      const published = context && 'params' in context ? context.params : undefined;
+      expect(published?.meshAssets).toEqual({ m1: asset });
+      expect(context?.paramsHash).toBe(hashBinParams({ ...base, meshAssets: { m1: asset } }));
+    });
+
+    it('does not open when a mesh file is missing', async () => {
+      const missing = {
+        name: 'gone',
+        hash: '4'.repeat(64),
+        triangleCount: 1,
+        sizeMm: { x: 1, y: 1, z: 1 },
+        bytes: 1,
+      };
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, cutouts: [qualifyingCutout], meshAssets: { m1: missing } },
+      });
+
+      await openCommunityPublish(null);
+
+      expect(useCommunityPublishStore.getState().isOpen).toBe(false);
+      expect(useToastStore.getState().toasts).toHaveLength(1);
+    });
+
     it('opens with assembly content and frames captures from the envelope', async () => {
       useDesignerStore.setState({
         itemKind: 'assembly',
+        // Left over from the last bin the designer showed, naming a mesh file
+        // this device lacks: an assembly publishes none of it.
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          cutouts: [qualifyingCutout],
+          meshAssets: {
+            m1: {
+              name: 'gone',
+              hash: '7'.repeat(64),
+              triangleCount: 1,
+              sizeMm: { x: 1, y: 1, z: 1 },
+              bytes: 1,
+            },
+          },
+        },
         envelope: {
           width: 2,
           depth: 2,
@@ -166,6 +227,7 @@ describe('useCommunityPublish', () => {
       expect(context?.envelope).toMatchObject({ width: 2, depth: 2 });
       expect(context?.structure).toMatchObject({ kind: 'assembly' });
       expect(context?.paramsHash).toMatch(/^[0-9a-f]{8}$/);
+      expect(useToastStore.getState().toasts).toEqual([]);
       // 40mm post + socket + 2mm floor = 7 units frames the capture height.
       expect(vi.mocked(captureCommunityThumbnails)).toHaveBeenCalledWith(
         expect.objectContaining({ width: 2, depth: 2, height: 7 })

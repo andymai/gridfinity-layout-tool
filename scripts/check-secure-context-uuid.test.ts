@@ -3,7 +3,20 @@ import { join, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const ROOT = join(import.meta.dirname, '..');
-const HELPER = 'shared/utils/uuid.ts';
+
+const sourceFiles = readdirSync(join(ROOT, 'src'), { recursive: true, encoding: 'utf8' })
+  .map((f) => f.split(sep).join('/'))
+  .filter((f) => /\.(ts|tsx)$/.test(f) && !/\.test\.tsx?$/.test(f));
+
+function callersOutside(helper: string, pattern: RegExp): string[] {
+  return sourceFiles.filter((file) => {
+    if (file === helper) return false;
+    const source = readFileSync(join(ROOT, 'src', file), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    return pattern.test(source);
+  });
+}
 
 // crypto.randomUUID is a secure-context API: absent over plain HTTP on a LAN
 // address, which is how a self-hosted instance is often first opened. Adding a
@@ -14,21 +27,32 @@ const HELPER = 'shared/utils/uuid.ts';
 // or a container, and the match is the bare identifier on comment-stripped
 // source, so destructuring, bracket access and line breaks cannot slip past.
 describe('randomUUID is only reached through generateUUID', () => {
-  const files = readdirSync(join(ROOT, 'src'), { recursive: true, encoding: 'utf8' })
-    .map((f) => f.split(sep).join('/'))
-    .filter((f) => /\.(ts|tsx)$/.test(f) && !/\.test\.tsx?$/.test(f) && f !== HELPER);
-
   it('finds the source tree', () => {
-    expect(files.length).toBeGreaterThan(500);
+    expect(sourceFiles.length).toBeGreaterThan(500);
   });
 
   it('has no direct caller outside the helper', () => {
-    const offenders = files.filter((file) => {
-      const source = readFileSync(join(ROOT, 'src', file), 'utf8')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/^\s*\/\/.*$/gm, '');
-      return /\brandomUUID\b/.test(source);
-    });
-    expect(offenders, 'use generateUUID() from @/shared/utils/uuid').toEqual([]);
+    expect(
+      callersOutside('shared/utils/uuid.ts', /\brandomUUID\b/),
+      'use generateUUID() from @/shared/utils/uuid'
+    ).toEqual([]);
+  });
+});
+
+// crypto.subtle is missing in the same contexts, and naming a mesh file there
+// would otherwise fail every STL import and stored design. "subtle" is also a
+// common design-token word, so the match is the member, bracket and
+// destructured forms rather than the bare identifier. An aliased or defaulted
+// key reads like a token object's `subtle:`, so that form only counts when it
+// destructures `crypto`.
+describe('crypto.subtle is only reached through sha256Hex', () => {
+  it('has no direct caller outside the helper', () => {
+    expect(
+      callersOutside(
+        'shared/generation/sha256.ts',
+        /\.\s*subtle\b|\[\s*['"]subtle['"]\s*\]|[{,]\s*subtle\s*[,}]|\{[^{}]*\bsubtle\b[^{}]*\}\s*=\s*(?:\w+\s*\.\s*)*crypto\b/
+      ),
+      'hash through sha256Hex() from @/shared/generation/sha256'
+    ).toEqual([]);
   });
 });

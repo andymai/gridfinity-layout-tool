@@ -30,6 +30,10 @@ import {
   computeSplitExportTimeoutMs,
   EXPORT_MAX_TIMEOUT_MS,
 } from './generationTimeout';
+import { isErr } from '@/core/result';
+import type { Result, StorageMeshMissingError } from '@/core/result';
+import { MeshUnavailableError } from './meshDelivery';
+import type { PreparedMeshes } from './meshDelivery';
 import type {
   ExportResult,
   DividersExportResult,
@@ -43,38 +47,54 @@ import type {
 } from './bridgeTypes';
 
 export interface BridgeExportContext {
+  /** Claim `slot` for a new call; the answer says whether that call is still the latest. */
+  claimExportSlot: (slot: ExportSlot) => () => boolean;
   prepareExport: (slot: ExportSlot) => Promise<string>;
   readonly pendingExports: PendingExportMap;
   startExportTimeout: (slot: ExportSlot, requestId: string, timeoutMs: number) => void;
-  postMessage: (message: WorkerMessage) => void;
+  prepareMeshes: (
+    message: WorkerMessage
+  ) => Promise<Result<PreparedMeshes, StorageMeshMissingError>>;
+  postPrepared: (prepared: PreparedMeshes, message: WorkerMessage) => void;
 }
 
 /**
- * Run an export request: prepare the slot, register the Promise callbacks,
- * start the timeout, and post the worker message. Returned Promise resolves
- * when the worker sends back the result (handled by the message handler).
+ * Run an export request: gather its mesh files, prepare the slot, register the
+ * Promise callbacks, start the timeout, and post the worker message. Returned
+ * Promise resolves when the worker sends back the result (handled by the
+ * message handler).
+ *
+ * The slot is claimed at call time, because gathering files takes a variable
+ * time: an older call that finishes gathering after a newer one must not
+ * cancel it and post its stale params, so it rejects as superseded instead. A
+ * design whose mesh file is missing rejects rather than export without its
+ * pocket.
  */
-function runExport<T>(
+async function runExport<T>(
   ctx: BridgeExportContext,
   slot: ExportSlot,
   timeoutMs: number,
   buildMessage: (requestId: string) => WorkerMessage,
   onProgress?: (progress: number) => void
 ): Promise<T> {
-  return ctx.prepareExport(slot).then(
-    (requestId) =>
-      new Promise<T>((resolve, reject) => {
-        ctx.pendingExports.set(slot, {
-          resolve: resolve as (result: unknown) => void,
-          reject,
-          requestId,
-          timer: null,
-          onProgress,
-        });
-        ctx.startExportTimeout(slot, requestId, timeoutMs);
-        ctx.postMessage(buildMessage(requestId));
-      })
-  );
+  const isLatest = ctx.claimExportSlot(slot);
+  const result = await ctx.prepareMeshes(buildMessage(''));
+  if (!isLatest()) throw new Error('Export superseded');
+  if (isErr(result) || result.value.pending) throw new MeshUnavailableError();
+  const prepared = result.value;
+  const requestId = await ctx.prepareExport(slot);
+  if (!isLatest()) throw new Error('Export superseded');
+  return new Promise<T>((resolve, reject) => {
+    ctx.pendingExports.set(slot, {
+      resolve: resolve as (result: unknown) => void,
+      reject,
+      requestId,
+      timer: null,
+      onProgress,
+    });
+    ctx.startExportTimeout(slot, requestId, timeoutMs);
+    ctx.postPrepared(prepared, buildMessage(requestId));
+  });
 }
 
 export function exportBin(

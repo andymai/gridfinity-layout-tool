@@ -6,6 +6,8 @@ import { useLayoutStore } from '@/core/store/layout';
 import { loadLayoutAsync, downloadLayoutAsFile } from '@/core/storage';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useTranslation } from '@/i18n';
+import { isOk } from '@/core/result';
+import { useToastStore } from '@/core/store/toast';
 import { ViewModeToggle } from '../ViewModeToggle';
 import type { ViewMode } from '../ViewModeToggle';
 import type { SortOption } from '../index';
@@ -189,11 +191,12 @@ export function LayoutList({
     async (entry: LayoutEntry) => {
       const layout = await getLayoutData(entry.id);
       if (layout) {
-        await downloadLayoutAsFile(
+        const downloaded = await downloadLayoutAsFile(
           layout,
           `${entry.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`
         );
-        announceToScreenReader(t('layouts.announce.downloaded'));
+        if (isOk(downloaded)) announceToScreenReader(t('layouts.announce.downloaded'));
+        else useToastStore.getState().addToast(t('toast.meshFileMissing'), 'error');
       }
     },
     [getLayoutData, announceToScreenReader, t]

@@ -16,7 +16,7 @@ import {
   type ShareResponse,
 } from '@/core/api/share';
 import { isOk, getUserMessage } from '@/core/result';
-import type { ApiError } from '@/core/result';
+import type { ApiError, StorageMeshMissingError } from '@/core/result';
 import { copyToClipboard } from '@/core/storage';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { useMutations } from '@/shared/contexts/MutationsContext';
@@ -130,8 +130,9 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
   );
 
   const handleError = useCallback(
-    (err: ApiError) => {
-      const message = getUserMessage(err);
+    (err: ApiError | StorageMeshMissingError) => {
+      const message =
+        err.code === 'STORAGE_MESH_MISSING' ? t('toast.meshFileMissing') : getUserMessage(err);
       trackEvent('ui.shareFailed', { layoutId: '', error: `${err.code}: ${message}` });
       setError({
         message,

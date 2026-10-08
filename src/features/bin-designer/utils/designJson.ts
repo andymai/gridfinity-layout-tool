@@ -7,10 +7,13 @@
 
 import type { BinParams } from '../types';
 import type { TFunction } from '@/i18n';
+import { isErr, OK } from '@/core/result';
+import type { Result, StorageMeshMissingError } from '@/core/result';
 import { BIN_STYLES } from '../types';
 import { DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import { migrateParams } from '../constants/paramMigration';
 import { withoutLowProfileBase } from '@/shared/generation/lowProfileBase';
+import { inlineParamsMeshes } from '@/shared/generation/meshRefs';
 import { sanitizeFileName } from './fileNaming';
 
 /**
@@ -66,17 +69,25 @@ export function exportDesignJSON(name: string, params: BinParams): string {
  * Download bin design as JSON file.
  * Creates a blob and triggers browser download.
  *
+ * The file is self-contained: mesh refs are written out as the inline assets
+ * they name. Fails, downloading nothing, when a mesh file is missing.
+ *
  * @param name - Design name (used for filename)
  * @param params - Complete bin parameters
  *
  * @example
  * ```ts
- * downloadDesignAsFile('My Bin', params);
+ * await downloadDesignAsFile('My Bin', params);
  * // Downloads: my-bin.json
  * ```
  */
-export function downloadDesignAsFile(name: string, params: BinParams): void {
-  const json = exportDesignJSON(name, params);
+export async function downloadDesignAsFile(
+  name: string,
+  params: BinParams
+): Promise<Result<void, StorageMeshMissingError>> {
+  const inline = await inlineParamsMeshes(params);
+  if (isErr(inline)) return inline;
+  const json = exportDesignJSON(name, inline.value);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -91,6 +102,7 @@ export function downloadDesignAsFile(name: string, params: BinParams): void {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  return OK;
 }
 
 /**

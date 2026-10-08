@@ -27,6 +27,8 @@ const ROTATION_STEP_DEG = 15;
 interface StlImportDialogProps {
   readonly pending: PendingStlImport | null;
   readonly importing: boolean;
+  /** Storing the mesh for placement: Place stays disabled, Cancel still cancels. */
+  readonly placing?: boolean;
   readonly onRotate: (axis: keyof MeshImportRotation, degrees: number) => void;
   readonly onPlace: () => void;
   readonly onCancel: () => void;
@@ -60,6 +62,7 @@ function ToolMesh({ pending }: { readonly pending: PendingStlImport }) {
 export function StlImportDialog({
   pending,
   importing,
+  placing = false,
   onRotate,
   onPlace,
   onCancel,
@@ -119,7 +122,7 @@ export function StlImportDialog({
                       max={360}
                       step={ROTATION_STEP_DEG}
                       inputDecimals={1}
-                      disabled={importing}
+                      disabled={importing || placing}
                       aria-label={t('binDesigner.cutouts.stlImport.rotateAxis', {
                         axis: axis.toUpperCase(),
                       })}
@@ -128,7 +131,7 @@ export function StlImportDialog({
                       type="button"
                       variant="secondary"
                       size="sm"
-                      disabled={importing}
+                      disabled={importing || placing}
                       onClick={() => onRotate(axis, degrees + 90)}
                       aria-label={t('binDesigner.cutouts.stlImport.flipAxis', {
                         axis: axis.toUpperCase(),
@@ -153,7 +156,7 @@ export function StlImportDialog({
         <Button type="button" variant="ghost" onClick={onCancel}>
           {t('common.cancel')}
         </Button>
-        <Button type="button" variant="primary" disabled={importing} onClick={onPlace}>
+        <Button type="button" variant="primary" disabled={importing || placing} onClick={onPlace}>
           {t('binDesigner.cutouts.stlImport.place')}
         </Button>
       </Dialog.Footer>

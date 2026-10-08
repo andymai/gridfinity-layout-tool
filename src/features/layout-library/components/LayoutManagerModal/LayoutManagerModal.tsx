@@ -272,7 +272,12 @@ function LayoutManagerModalContent({
     setIsExporting(true);
     try {
       const currentLibrary = useLibraryStore.getState().library;
-      const { exported, skipped } = await downloadArchive(currentLibrary);
+      const result = await downloadArchive(currentLibrary);
+      if (!isOk(result)) {
+        addToast(t('toast.meshFileMissing'), 'error');
+        return;
+      }
+      const { exported, skipped } = result.value;
       if (skipped > 0) {
         addToast(t('layouts.exportedAllWithSkipped', { count: exported, skipped }), 'info');
       } else {

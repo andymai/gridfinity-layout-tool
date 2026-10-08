@@ -1,6 +1,7 @@
 import type { Cutout, CutoutOpenSide, CutoutOpenSideSpec } from '@/features/bin-designer/types';
 import { CUTOUT_OPEN_SIDES, MIN_OPEN_SIDE_WIDTH_MM } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useLoadedMeshAssets } from '@/shared/hooks/useMeshOutlines';
 import { useTranslation } from '@/i18n';
 import { Button, NumberField } from '@/design-system';
 import {
@@ -63,15 +64,14 @@ export function CutoutOpenSidesControls({
 }: CutoutOpenSidesControlsProps) {
   const t = useTranslation();
   const params = useDesignerStore((s) => s.params);
+  const meshAssets = useLoadedMeshAssets(params.meshAssets);
   const blocker = openSideBlocker(cutout, params);
   const hintKey = blocker ? BLOCKER_HINT_KEY[blocker] : undefined;
   const specs = normalizeOpenSides(cutout.openSides) ?? [];
-  // A mesh whose asset is missing still has the footprint the editor drew,
-  // so its rows keep a real width rather than a zero.
+  // A mesh whose silhouette is missing or still loading has the footprint the
+  // editor drew, so its rows keep a real width rather than a zero.
   const meshRings =
-    cutout.shape === 'mesh'
-      ? meshOutlineRings(cutout, params.meshAssets?.[cutout.meshId ?? ''])
-      : [];
+    cutout.shape === 'mesh' ? meshOutlineRings(cutout, meshAssets?.[cutout.meshId ?? '']) : [];
   const rings =
     meshRings.length > 0
       ? meshRings

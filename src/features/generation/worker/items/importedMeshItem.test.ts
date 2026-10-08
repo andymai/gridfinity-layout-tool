@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { unwrap } from '@/core/result';
 import { encodeMeshData, MAX_MESH_ASSET_TRIANGLES } from '@/shared/generation/meshAsset';
+import type { MeshAsset } from '@/shared/generation/meshAsset';
+import { encodeMeshFile } from '@/shared/generation/meshFile';
 import { parseSTL } from '@/shared/generation/stlParser';
 import type { GridfinityItem, ImportedMeshStructure, ItemEnvelope } from '@/shared/types/item';
 
 import { clearImportedMeshCache, importedMeshGeneratorModule } from './importedMeshItem';
+import { __clearMeshFilesForTests, receiveMeshFile } from '../meshFiles';
 
 /** 40×20×10mm tetrahedron-ish solid: 4 triangles, bbox min at origin. */
 function fixtureMesh(): { positions: Float32Array; indices: Uint32Array } {
@@ -108,6 +111,39 @@ describe('importedMeshGeneratorModule', () => {
       minZ = Math.min(minZ, parsed.vertices[i]);
     }
     expect(minZ).toBeCloseTo(0, 2);
+  });
+
+  it('generates a ref from the file the bridge sent, and rejects one whose file never came', async () => {
+    const item = await fixtureItem();
+    const structure = item.structure as ImportedMeshStructure;
+    const asset = structure.asset as MeshAsset;
+    const hash = '1'.repeat(64);
+    const withRef = (refHash: string): GridfinityItem => ({
+      envelope: item.envelope,
+      structure: {
+        ...structure,
+        asset: {
+          name: asset.name,
+          hash: refHash,
+          triangleCount: asset.triangleCount,
+          sizeMm: asset.sizeMm,
+          bytes: 1,
+        },
+      },
+    });
+    receiveMeshFile(hash, unwrap(encodeMeshFile(asset)));
+    try {
+      await importedMeshGeneratorModule.prepare?.(withRef(hash));
+      await importedMeshGeneratorModule.prepare?.(item);
+      expect(importedMeshGeneratorModule.generate(withRef(hash), () => {}, false).vertices).toEqual(
+        importedMeshGeneratorModule.generate(item, () => {}, false).vertices
+      );
+      await expect(importedMeshGeneratorModule.prepare?.(withRef('2'.repeat(64)))).rejects.toThrow(
+        /has not reached the worker/
+      );
+    } finally {
+      __clearMeshFilesForTests();
+    }
   });
 
   it('prepare() surfaces a decode failure as a thrown error', async () => {

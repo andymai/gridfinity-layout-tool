@@ -10,6 +10,7 @@
  * - EXPORT -> EXPORT_RESULT | ERROR (uses cached solid or regenerates)
  * - CANCEL -> (silently aborts current generation)
  * - CLEANUP -> CLEANUP_DONE (dispose all caches)
+ * - PUT_MESH / DROP_MESH -> (keep or release a mesh file the next requests' refs name)
  */
 
 // Must be first import — polyfills Symbol.dispose before brepjs loads
@@ -59,6 +60,7 @@ import {
 import { handleImportMesh } from './handlers/importMeshHandler';
 import { clearMeshImprintCache } from './generators/meshImprint';
 import { clearImportedMeshCache } from './items/importedMeshItem';
+import { beginMeshRequest, dropMeshFile, receiveMeshFile } from './meshFiles';
 
 /** Initialize the geometry kernel selected by the INIT message. */
 async function initKernel(kernel: KernelName = 'occt-wasm'): Promise<void> {
@@ -78,9 +80,18 @@ async function initKernel(kernel: KernelName = 'occt-wasm'): Promise<void> {
 }
 
 self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
-  void (async () => {
-    const message = event.data;
+  const message = event.data;
+  if (message.type === 'PUT_MESH') {
+    receiveMeshFile(message.hash, message.bytes);
+    return;
+  }
+  if (message.type === 'DROP_MESH') {
+    dropMeshFile(message.hash);
+    return;
+  }
 
+  const endMeshRequest = beginMeshRequest();
+  void (async () => {
     switch (message.type) {
       case 'INIT':
         try {
@@ -209,5 +220,5 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
         respond({ type: 'CLEANUP_DONE' });
         break;
     }
-  })();
+  })().finally(endMeshRequest);
 });

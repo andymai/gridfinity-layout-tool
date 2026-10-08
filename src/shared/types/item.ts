@@ -11,7 +11,7 @@
  */
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import type { BinParams, FeatureColorConfig } from '@/shared/types/bin';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 
 export type ItemKind = 'bin' | 'toolRack' | 'importedMesh' | 'assembly';
 
@@ -93,8 +93,8 @@ export interface ImportedMeshStructure {
    * rescales the mesh.
    */
   readonly heightUnits: number;
-  /** Compressed GMA1 mesh + metadata (name, triangleCount, sizeMm, outlines). */
-  readonly asset: MeshAsset;
+  /** The mesh, inline or as a ref into the local mesh store (see `BinParams.meshAssets`). */
+  readonly asset: MeshAssetEntry;
   /** Solid volume in mm³ measured at import time; powers filament estimates. */
   readonly volumeMm3?: number;
   /** Original STL file name for provenance display. */

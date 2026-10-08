@@ -8,7 +8,8 @@
  */
 
 import type { Cutout } from '@/shared/types/bin';
-import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
+import { meshAssetOutlines } from '@/shared/generation/meshOutlines';
 import { DEFAULT_POLYGON_SIDES, MIN_PATH_POINTS } from '@/shared/types/bin';
 import { clampPolygonSides, regularPolygonPoints, slotCornerRadius } from './cutoutPolygon';
 import { flattenPath, type Point2D } from './pathGeometryBezier';
@@ -126,15 +127,17 @@ export function cutoutOutlineRing(c: Cutout): OutlineRing | null {
  * live in its own lay-flat frame spanning [0..sizeX]×[0..sizeY], so each is
  * centred on the footprint, turned by the cutout's rotation (clockwise
  * positive, the same `-rotation` the worker and `MeshFootprintMesh` apply)
- * and moved to the instance. Empty when the asset is missing.
+ * and moved to the instance. Empty when the asset is missing or its file has
+ * not arrived.
  */
-export function meshOutlineRings(c: Cutout, asset: MeshAsset | undefined): OutlineRing[] {
-  if (!asset) return [];
+export function meshOutlineRings(c: Cutout, asset: MeshAssetEntry | undefined): OutlineRing[] {
+  const outlines = meshAssetOutlines(asset);
+  if (!asset || !outlines) return [];
   const cx = c.x + c.width / 2;
   const cy = c.y + c.depth / 2;
   const hx = asset.sizeMm.x / 2;
   const hy = asset.sizeMm.y / 2;
-  return asset.outlines
+  return outlines
     .filter((ring) => ring.length >= 3)
     .map((ring) => ring.map((p) => rotateAbout(cx + p.x - hx, cy + p.y - hy, cx, cy, c.rotation)));
 }

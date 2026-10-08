@@ -12,6 +12,7 @@ const mockBridge = {
   init: vi.fn(),
   generate: vi.fn(),
   generateImmediate: vi.fn(),
+  generateItem: vi.fn(),
   estimateGenerate: vi.fn(),
   destroy: vi.fn(),
   cancel: vi.fn(),
@@ -56,6 +57,15 @@ vi.mock('@/shared/generation/meshPersistence', () => ({
   binMeshCacheKey: (p: { width: number }, kernel: KernelName) => `test-key-${kernel}-${p.width}`,
   loadPersistedBinMesh: () => mockLoadPersisted(),
   savePersistedBinMesh: (key: string, mesh: MeshData) => mockSavePersisted(key, mesh),
+}));
+
+const arrivalListeners = new Set<(hash: string) => void>();
+vi.mock('@/shared/generation/meshStore', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  subscribeMeshFileArrivals: (listener: (hash: string) => void) => {
+    arrivalListeners.add(listener);
+    return () => arrivalListeners.delete(listener);
+  },
 }));
 
 // Pristine default params, captured before any test mutates the store singleton.
@@ -118,6 +128,9 @@ describe('useGeneration', () => {
         progress: 0,
       },
       params: PRISTINE_PARAMS,
+      itemKind: 'bin',
+      envelope: null,
+      structure: null,
     });
   });
 
@@ -620,6 +633,91 @@ describe('useGeneration', () => {
     expect(key).toMatch(/^test-key-/);
     // The raw bridge mesh (not the store payload) is what gets persisted.
     expect(mesh.vertices).toEqual(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]));
+  });
+
+  it('shows but never persists a mesh built while a mesh file was missing', async () => {
+    const pendingResult = {
+      mesh: {
+        vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        indices: new Uint32Array([0, 1, 2]),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 1,
+      },
+      timingMs: 5,
+      meshesPending: true as const,
+    };
+    (mockBridge.generate as ReturnType<typeof vi.fn>).mockResolvedValue(pendingResult);
+    (mockBridge.generateImmediate as ReturnType<typeof vi.fn>).mockResolvedValue(pendingResult);
+    renderHook(() => useGeneration());
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+      await vi.advanceTimersByTimeAsync(201);
+    });
+
+    expect(useDesignerStore.getState().generation.status).toBe('complete');
+    expect(mockSavePersisted).not.toHaveBeenCalled();
+  });
+
+  it('builds again when a mesh file the design was missing arrives', async () => {
+    const hash = 'a'.repeat(64);
+    useDesignerStore.setState({
+      params: {
+        ...PRISTINE_PARAMS,
+        meshAssets: {
+          m1: { name: 'wrench', hash, triangleCount: 1, sizeMm: { x: 1, y: 1, z: 1 }, bytes: 10 },
+        },
+      },
+    });
+    const builds = (): number =>
+      (mockBridge.generate as ReturnType<typeof vi.fn>).mock.calls.length +
+      (mockBridge.generateImmediate as ReturnType<typeof vi.fn>).mock.calls.length;
+    const arrive = async (arrived: string): Promise<void> => {
+      await act(async () => {
+        for (const listener of arrivalListeners) listener(arrived);
+        await vi.advanceTimersByTimeAsync(201);
+      });
+    };
+    renderHook(() => useGeneration());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+      await vi.advanceTimersByTimeAsync(201);
+    });
+    const before = builds();
+
+    await arrive('b'.repeat(64));
+    expect(builds()).toBe(before);
+
+    await arrive(hash);
+    expect(builds()).toBe(before + 1);
+  });
+
+  it('builds an imported mesh again when its missing file arrives', async () => {
+    const hash = 'c'.repeat(64);
+    const generateItem = mockBridge.generateItem as ReturnType<typeof vi.fn>;
+    generateItem.mockRejectedValue(new Error('mesh file missing'));
+    useDesignerStore.setState({
+      itemKind: 'importedMesh',
+      envelope: { width: 1, depth: 1 } as never,
+      structure: {
+        kind: 'importedMesh',
+        asset: { name: 'wrench', hash, triangleCount: 1, sizeMm: { x: 1, y: 1, z: 1 }, bytes: 10 },
+      } as never,
+    });
+    renderHook(() => useGeneration());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+      await vi.advanceTimersByTimeAsync(201);
+    });
+    const before = generateItem.mock.calls.length;
+
+    await act(async () => {
+      for (const listener of arrivalListeners) listener(hash);
+      await vi.advanceTimersByTimeAsync(201);
+    });
+
+    expect(generateItem.mock.calls.length).toBe(before + 1);
   });
 
   // The persisted entry must be namespaced by the kernel that built it,

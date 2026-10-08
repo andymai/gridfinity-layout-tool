@@ -25,18 +25,25 @@ import {
 } from '@/features/bin-designer/store/customBinRegistry';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { syncPersistError } from '@/core/sync/adapters/persistError';
+import { inlineHolderMeshes } from '@/shared/generation/meshRefs';
 import { subscribe as subscribeDesignerEvents } from './designerEvents';
+import { createMissingMeshPushes } from './missingMeshPushes';
 
 // Lives in features/ because BinParams is feature-internal; core/ can't
 // import it. Registered with the engine at app-shell boot.
 //
 // SavedDesign stores `updatedAt` as ISO; the cloud envelope is ms. We
 // normalize at this boundary so the engine never sees ISO strings.
+//
+// Locally a design's meshes are refs into the mesh store, but the server and
+// other devices take inline meshes only: payloads are built inline, and
+// `saveDesign` turns a pulled payload's inline meshes back into refs.
 
 // Held across the full `saveDesign`/`deleteDesign` await chain because
 // the `emit()` that needs suppression fires past internal await boundaries;
 // a microtask cleanup would release too early.
 const suppressed = new Set<string>();
+const missingMeshPushes = createMissingMeshPushes();
 
 function toMs(iso: string): number {
   const ms = Date.parse(iso);
@@ -190,6 +197,8 @@ export const designAdapter: DesignAdapter = {
     // blobs) stay local-only.
     return result.value.filter(isSyncableDesign).map((d) => ({
       id: d.id,
+      // Meshes stay refs: every caller of list() reads ids and mtimes only, and
+      // it runs on every poll. Only get(), which feeds a push, inlines them.
       payload: buildPayload(d),
       modifiedAt: toMs(d.updatedAt),
     }));
@@ -198,10 +207,17 @@ export const designAdapter: DesignAdapter = {
   async get(id: string): Promise<SyncableItem<DesignSyncPayload> | null> {
     const result = await loadDesign(designId(id));
     if (!isOk(result)) return null;
-    const d = result.value;
     // Non-syncable kinds: returning null makes the engine drop the outbox
-    // entry as a no-op (it never tombstones on a null get).
-    if (!isSyncableDesign(d)) return null;
+    // entry as a no-op (it never tombstones on a null get). A design whose mesh
+    // file is missing is dropped the same way, so the copy on the server keeps
+    // its mesh, and queued again when the file arrives.
+    if (!isSyncableDesign(result.value)) return null;
+    const inline = await inlineHolderMeshes(result.value);
+    if (!isOk(inline)) {
+      missingMeshPushes.skip(inline.error.hash, id);
+      return null;
+    }
+    const d = inline.value;
     return {
       id: d.id,
       payload: buildPayload(d),
@@ -321,7 +337,8 @@ export const designAdapter: DesignAdapter = {
   },
 
   subscribe(listener: AdapterChangeListener): () => void {
-    return subscribeDesignerEvents((event) => {
+    const stopEvents = subscribeDesignerEvents((event) => {
+      missingMeshPushes.clear(event.id);
       if (suppressed.has(event.id)) return;
       const change: AdapterChange =
         event.type === 'put'
@@ -329,5 +346,13 @@ export const designAdapter: DesignAdapter = {
           : { kind: 'delete', id: event.id, modifiedAt: toMs(event.deletedAt) };
       listener(change);
     });
+    const stopArrivals = missingMeshPushes.subscribe(listener, async (id) => {
+      const current = await loadDesign(designId(id));
+      return isOk(current) ? toMs(current.value.updatedAt) : null;
+    });
+    return () => {
+      stopEvents();
+      stopArrivals();
+    };
   },
 };

@@ -41,6 +41,7 @@ export { designStoreAdapter } from './storage/designStoreAdapter';
 // This module is eagerly imported by App and the sync flows, so going through the
 // barrel would pull three core onto first paint.
 export { useBackgroundThumbnailRegen } from './hooks/useBackgroundThumbnailRegen';
+export { useMeshFileMaintenance } from './hooks/useMeshFileMaintenance';
 export { useCustomBins } from './hooks/useCustomBins';
 export {
   useDesignThumbnail,

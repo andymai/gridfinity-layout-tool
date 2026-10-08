@@ -21,6 +21,10 @@ import { computeBaseplateTimeoutMs, computeGenerationTimeoutMs } from './generat
 import { paramsFingerprint } from './bridgeHelpers';
 import type { GenerationResultCache } from './resultCache';
 import type { ProgressCallback, GenerationResult } from './bridgeTypes';
+import { MeshUnavailableError } from './meshDelivery';
+import type { PreparedMeshes } from './meshDelivery';
+import { isErr } from '@/core/result';
+import type { Result, StorageMeshMissingError } from '@/core/result';
 
 export interface BridgeGenerationContext {
   readonly isDestroyed: boolean;
@@ -40,6 +44,12 @@ export interface BridgeGenerationContext {
   nextRequestId: () => string;
   /** Ensure a worker is initialized; resolves once it is ready for requests. */
   init: () => Promise<void>;
+  /** Swap a request's inline mesh assets for refs and gather the files they name. */
+  prepareMeshes: (
+    message: WorkerMessage
+  ) => Promise<Result<PreparedMeshes, StorageMeshMissingError>>;
+  /** Send the worker the files it lacks, then the request. */
+  postPrepared: (prepared: PreparedMeshes, message: WorkerMessage) => void;
   /** Terminate the current worker and bring up a fresh one. */
   hardResetWorker: () => void;
 }
@@ -64,27 +74,47 @@ export interface BridgeGenerationContext {
  * itself exceed a trivial design's 30s `BASE_TIMEOUT_MS`, hard-resetting a
  * worker that was about to come up healthy and rejecting a request that had
  * not started generating anything yet.
+ *
+ * A design whose mesh file is not on this device yet still generates, without
+ * that mesh's pockets; the result says so and stays out of the dedup cache.
  */
 function sendWhenReady(
   ctx: BridgeGenerationContext,
   requestId: string,
   timeoutMs: number,
-  message: WorkerMessage
+  message: WorkerMessage,
+  cache: GenerationResultCache | undefined
 ): void {
-  void ctx.init().then(
-    () => {
-      // A newer request superseded this one while the worker was initializing.
-      if (ctx.currentRequestId !== requestId) return;
-      startGenerationTimeout(ctx, requestId, timeoutMs);
-      ctx.postMessage(message);
-    },
-    (err: unknown) => {
-      if (ctx.currentRequestId !== requestId) return;
-      const reject = ctx.pendingReject;
-      ctx.clearPending();
-      reject?.(err instanceof Error ? err : new Error(String(err)));
-    }
-  );
+  void ctx
+    .init()
+    .then(() => ctx.prepareMeshes(message))
+    .then(
+      (result) => {
+        // A newer request superseded this one while the worker was initializing
+        // or its mesh files were loading.
+        if (ctx.currentRequestId !== requestId) return;
+        if (isErr(result)) {
+          const reject = ctx.pendingReject;
+          ctx.clearPending();
+          reject?.(new MeshUnavailableError());
+          return;
+        }
+        const prepared = result.value;
+        const resolve = ctx.pendingResolve;
+        if (prepared.pending && resolve) {
+          cache?.clearPending();
+          ctx.pendingResolve = (generated) => resolve({ ...generated, meshesPending: true });
+        }
+        startGenerationTimeout(ctx, requestId, timeoutMs);
+        ctx.postPrepared(prepared, message);
+      },
+      (err: unknown) => {
+        if (ctx.currentRequestId !== requestId) return;
+        const reject = ctx.pendingReject;
+        ctx.clearPending();
+        reject?.(err instanceof Error ? err : new Error(String(err)));
+      }
+    );
 }
 
 export function generateBin(
@@ -217,7 +247,7 @@ function dispatchGeneration(
       const requestId = ctx.nextRequestId();
       ctx.currentRequestId = requestId;
       dedup?.cache.setPending(dedup.fingerprint);
-      sendWhenReady(ctx, requestId, dispatch.timeoutMs, dispatch.message(requestId));
+      sendWhenReady(ctx, requestId, dispatch.timeoutMs, dispatch.message(requestId), dedup?.cache);
     };
 
     if (dispatch.debounce) {
