@@ -1,0 +1,23 @@
+src/shared/generation/meshAsset.test.ts
+  s_1606b97c1ea28d::t_86e204fcdbbd7b 228-239
+src/shared/generation/meshAsset.ts
+  s_1606b97c1ea28d::t_86e204fcdbbd7b 163-169
+src/features/generation/bridge/generationTimeout.ts
+  s_1606b97c1ea28d::t_86e204fcdbbd7b 136-137
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9de36e856582f12c3a84ae44e354b186127aa1d8",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
