@@ -1,0 +1,36 @@
+src/features/community/api/client.test.ts
+  s_1606b97c1ea28d::t_f4fb88a35a39b4 309-340,343,345
+  s_1606b97c1ea28d::t_0be3cd71b2a930 341-342
+  s_1606b97c1ea28d::t_2bee8c7d5e3488 344
+  s_1606b97c1ea28d::t_4c33c2bcf21141 346-348
+api/lib/communityDesignMutations.ts
+  s_1606b97c1ea28d::t_e83debd9dd1dfb 103-114
+api/community/[id].test.ts
+  s_1606b97c1ea28d::t_f4fb88a35a39b4 821,823
+  s_1606b97c1ea28d::t_be7dd564efbfd0 828
+  s_1606b97c1ea28d::t_7cfdad2cecb38c 829-831
+api/lib/rateLimit.ts
+  s_1606b97c1ea28d::t_e83debd9dd1dfb 30,107-110
+src/features/community/api/client.ts
+  s_1606b97c1ea28d::t_e83debd9dd1dfb 19,215-219,223,227-230,232-234,236-239,248,253,276,300
+api/lib/communityPublish.ts
+  s_1606b97c1ea28d::t_e83debd9dd1dfb 183-197
+api/community.test.ts
+  s_1606b97c1ea28d::t_be7dd564efbfd0 620-633
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5b2798248dae5ad19ea90812c129b1397b0bbf85",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
