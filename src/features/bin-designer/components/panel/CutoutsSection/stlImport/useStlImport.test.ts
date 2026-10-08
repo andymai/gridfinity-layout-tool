@@ -4,7 +4,8 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useToastStore } from '@/core/store/toast';
 import { MAX_MESH_FILE_BYTES, isMeshAssetRef } from '@/shared/generation/meshAsset';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
-import { resolveMeshAsset } from '@/shared/generation/meshRefs';
+import { resolveMeshAsset, storeMeshAsset } from '@/shared/generation/meshRefs';
+import type * as MeshRefs from '@/shared/generation/meshRefs';
 
 const importMesh = vi.fn();
 vi.mock('@/shared/generation/bridge', () => ({
@@ -15,6 +16,11 @@ vi.mock('@/shared/generation/bridge', () => ({
 }));
 
 vi.mock('@/shared/analytics/posthog', () => ({ trackEvent: vi.fn() }));
+
+vi.mock('@/shared/generation/meshRefs', async (importOriginal) => {
+  const actual = await importOriginal<typeof MeshRefs>();
+  return { ...actual, storeMeshAsset: vi.fn(actual.storeMeshAsset) };
+});
 
 import { useStlImport } from './useStlImport';
 
@@ -209,5 +215,91 @@ describe('useStlImport', () => {
     expect(entry && isMeshAssetRef(entry)).toBe(true);
     expect(entry && (await resolveMeshAsset(entry))).toEqual(asset);
     expect(result.current.pending).toBeNull();
+  });
+});
+
+describe('useStlImport placement while the mesh is being stored', () => {
+  beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+    useToastStore.setState(useToastStore.getInitialState());
+    importMesh.mockResolvedValue({
+      ok: true,
+      asset,
+      positions: new Float32Array(9),
+      indices: new Uint32Array(3),
+      suggestedCutDepth: 5,
+    });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function holdNextStore(): () => void {
+    let release: () => void = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const real = vi.mocked(storeMeshAsset).getMockImplementation();
+    vi.mocked(storeMeshAsset).mockImplementationOnce(async (stored) => {
+      await held;
+      return real ? real(stored) : null;
+    });
+    return release;
+  }
+
+  async function openPending() {
+    const hook = renderHook(() => useStlImport());
+    act(() => {
+      feedFile(makeFile());
+    });
+    await waitFor(() => {
+      expect(hook.result.current.pending).not.toBeNull();
+    });
+    return hook;
+  }
+
+  it('places once when Place is pressed twice before the mesh is stored', async () => {
+    const release = holdNextStore();
+    const { result } = await openPending();
+
+    let first: Promise<void> = Promise.resolve();
+    let second: Promise<void> = Promise.resolve();
+    act(() => {
+      first = result.current.place();
+    });
+    expect(result.current.placing).toBe(true);
+    act(() => {
+      second = result.current.place();
+    });
+    release();
+    await act(async () => {
+      await Promise.all([first, second]);
+    });
+
+    expect(useDesignerStore.getState().params.cutouts).toHaveLength(1);
+    expect(result.current.placing).toBe(false);
+    expect(result.current.pending).toBeNull();
+  });
+
+  it('places nothing when cancelled while the mesh is being stored', async () => {
+    const release = holdNextStore();
+    const { result } = await openPending();
+
+    let placed: Promise<void> = Promise.resolve();
+    act(() => {
+      placed = result.current.place();
+    });
+    act(() => {
+      result.current.cancel();
+    });
+    release();
+    await act(async () => {
+      await placed;
+    });
+
+    expect(useDesignerStore.getState().params.cutouts).toHaveLength(0);
+    expect(result.current.pending).toBeNull();
+    expect(result.current.placing).toBe(false);
   });
 });
