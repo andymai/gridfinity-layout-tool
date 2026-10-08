@@ -76,6 +76,40 @@ redis.call('SREM', KEYS[3], ARGV[2])
 return redis.call('SCARD', KEYS[3])
 `;
 
+/**
+ * KEYS[1] is the share's own set, KEYS[2..] the holder sets of the files in
+ * ARGV[2..]; ARGV[1] is the share's holder name. One step, so a release can
+ * never see the share's set without the holds it records, or the reverse.
+ */
+const SHARE_HOLD_LUA = `
+for i = 2, #KEYS do
+  redis.call('SADD', KEYS[1], ARGV[i])
+  redis.call('SADD', KEYS[i], ARGV[1])
+end
+return #KEYS - 1
+`;
+
+/**
+ * Same keys and arguments, naming the files the caller read from the share's
+ * set. It lets go only while the set still lists exactly those, and answers 0
+ * otherwise: a hold landed since the read, and the caller reads again.
+ */
+const SHARE_RELEASE_LUA = `
+if redis.call('SCARD', KEYS[1]) ~= #KEYS - 1 then
+  return 0
+end
+for i = 2, #KEYS do
+  if redis.call('SISMEMBER', KEYS[1], ARGV[i]) == 0 then
+    return 0
+  end
+end
+for i = 2, #KEYS do
+  redis.call('SREM', KEYS[i], ARGV[1])
+end
+redis.call('DEL', KEYS[1])
+return 1
+`;
+
 interface MeshRedis extends Redis {
   meshAcquire(
     sessionKey: string,
@@ -96,6 +130,8 @@ interface MeshRedis extends Redis {
     hash: string,
     holder: string
   ): Promise<number>;
+  shareHold(numberOfKeys: number, ...keysAndArgs: string[]): Promise<number>;
+  shareRelease(numberOfKeys: number, ...keysAndArgs: string[]): Promise<number>;
 }
 
 // Registered lazily on whatever client `getRedis()` hands back, and per
@@ -105,6 +141,10 @@ function ensureMeshScripts(redis: Redis): MeshRedis {
   if (typeof client.meshAcquire !== 'function') {
     client.defineCommand('meshAcquire', { numberOfKeys: 4, lua: MESH_ACQUIRE_LUA });
     client.defineCommand('meshRelease', { numberOfKeys: 3, lua: MESH_RELEASE_LUA });
+  }
+  if (typeof client.shareHold !== 'function') {
+    client.defineCommand('shareHold', { lua: SHARE_HOLD_LUA });
+    client.defineCommand('shareRelease', { lua: SHARE_RELEASE_LUA });
   }
   return client;
 }
@@ -177,12 +217,22 @@ export async function heldMeshUrls(
   return urls;
 }
 
+function shareScriptArgs(shareId: string, hashes: readonly string[]): [number, ...string[]] {
+  return [
+    hashes.length + 1,
+    shareMeshesKey(shareId),
+    ...hashes.map(meshHoldersKey),
+    shareMeshHolder(shareId),
+    ...hashes,
+  ];
+}
+
 /**
  * Count a share among the holders of each file it names, so the files outlive
  * the sharer's own account holding them. A share keeps every file it has ever
  * named until it is deleted: holds that only grow cannot be left behind by
- * updates that interleave, or by a write that fails after holding. The share's
- * own set is written first, so whatever was held is let go at deletion.
+ * updates that interleave, or by a write that fails after holding, and the
+ * share's own set records each one for deletion to let go of.
  */
 export async function holdShareMeshes(
   redis: Redis,
@@ -191,16 +241,19 @@ export async function holdShareMeshes(
 ): Promise<void> {
   const unique = [...new Set(hashes)];
   if (unique.length === 0) return;
-  await redis.sadd(shareMeshesKey(shareId), ...unique);
-  const holder = shareMeshHolder(shareId);
-  await Promise.all(unique.map((hash) => redis.sadd(meshHoldersKey(hash), holder)));
+  await ensureMeshScripts(redis).shareHold(...shareScriptArgs(shareId, unique));
 }
 
+/** An update holding more files keeps the set moving only while it lands. */
+const SHARE_RELEASE_ATTEMPTS = 5;
+
 export async function releaseShareMeshes(redis: Redis, shareId: string): Promise<void> {
-  const holder = shareMeshHolder(shareId);
-  const hashes = await redis.smembers(shareMeshesKey(shareId));
-  await Promise.all(hashes.map((hash) => redis.srem(meshHoldersKey(hash), holder)));
-  await redis.del(shareMeshesKey(shareId));
+  const client = ensureMeshScripts(redis);
+  for (let attempt = 0; attempt < SHARE_RELEASE_ATTEMPTS; attempt++) {
+    const hashes = await redis.smembers(shareMeshesKey(shareId));
+    if ((await client.shareRelease(...shareScriptArgs(shareId, hashes))) === 1) return;
+  }
+  throw new Error(`Share ${shareId} kept taking holds while being deleted`);
 }
 
 export async function getMeshUsage(redis: Redis, userId: string): Promise<MeshUsage> {
