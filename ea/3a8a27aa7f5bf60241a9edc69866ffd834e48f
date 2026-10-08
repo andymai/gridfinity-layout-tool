@@ -1,0 +1,37 @@
+src/core/sync/poller.ts
+  s_1606b97c1ea28d::t_65e0a6ff646699 228-231
+src/core/sync/session/useSession.ts
+  s_1606b97c1ea28d::t_a50ca26c52b116 4
+  s_1606b97c1ea28d::t_65e0a6ff646699 64-66
+  s_1606b97c1ea28d::t_fe7b9aeecd0963 67
+src/core/sync/apiFetch.ts
+  s_1606b97c1ea28d::t_a50ca26c52b116 16-17,37-39,54
+  s_1606b97c1ea28d::t_65e0a6ff646699 50-53,55
+src/core/sync/apiFetch.test.ts
+  s_1606b97c1ea28d::t_a50ca26c52b116 4
+  s_1606b97c1ea28d::t_083b96ad9147cf 55-70
+  s_1606b97c1ea28d::t_8462827a2b00b6 71-73
+src/core/sync/session/useSession.test.ts
+  s_1606b97c1ea28d::t_083b96ad9147cf 5,230-260
+  s_1606b97c1ea28d::t_d488f96f2082ab 261
+src/core/sync/accountGeneration.ts
+  s_1606b97c1ea28d::t_bd312688488fb0 1-13
+package.json
+  s_1606b97c1ea28d::t_e9ec657a390697 118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ea3a8a27aa7f5bf60241a9edc69866ffd834e48f",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
