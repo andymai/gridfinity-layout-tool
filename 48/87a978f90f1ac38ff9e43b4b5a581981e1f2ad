@@ -1,0 +1,96 @@
+src/features/cloud-share/README.md
+  s_1606b97c1ea28d::t_2e36e0228958f9 58-59
+src/shared/generation/meshCloud.ts
+  s_1606b97c1ea28d::t_08c9ea5df40bbd 228
+  s_1606b97c1ea28d::t_92f4ae9c205ac9 220-227,229-234,244-254,256,258,355-380,421
+src/core/api/share.ts
+  s_1606b97c1ea28d::t_4dede932cb5851 20-23,57-58,62-67,78-80,90,97-98,109-110,113,128-177,268-283,366-381,395-398
+  s_1606b97c1ea28d::t_039e6c803f042f 94-96
+  s_1606b97c1ea28d::t_dde93fe3e02a6a 399
+src/core/storage/ShareService.test.ts
+  s_1606b97c1ea28d::t_67afa998650f1a 700,749
+.claude/skills/mesh-storage/SKILL.md
+  s_1606b97c1ea28d::t_2e36e0228958f9 20,23-26
+  s_1606b97c1ea28d::t_11af9ca68bb67c 27
+scripts/doc-budget.json
+  s_1606b97c1ea28d::t_8bc6675136b675 17
+api/lib/sharedDesignsValidation.ts
+  s_1606b97c1ea28d::t_f4e3e8d6111649 150-153
+  s_1606b97c1ea28d::t_bee1844f111b82 177-181
+  s_1606b97c1ea28d::t_edb7d2f72648eb 7
+api/lib/shareMeshes.ts
+  s_1606b97c1ea28d::t_af0787d5d4eb6d 1-38
+  s_1606b97c1ea28d::t_2c4a7d13ba01ae 39-40
+api/share.ts
+  s_1606b97c1ea28d::t_cd92c92b2de546 11,14-15,88,168-171,221,263-264,268
+api/share/[id].ts
+  s_1606b97c1ea28d::t_611ac9fc7773b4 10,12-13,102,183-184,227-233,239,247-256,321-323,352,357,365-371,374-384
+src/shared/generation/meshCloud.test.ts
+  s_1606b97c1ea28d::t_3bbd53b033e81d 9,580-657
+  s_1606b97c1ea28d::t_26d38ea082bffa 658-660
+api/lib/validation.test.ts
+  s_1606b97c1ea28d::t_b36dc5ab614e45 11,1098-1116
+  s_1606b97c1ea28d::t_e14454ff7ed915 1117-1118
+api/share/[id].test.ts
+  s_1606b97c1ea28d::t_8e4748f911e102 32-40,149-151,338-415,421-423
+  s_1606b97c1ea28d::t_b05da7aa5d7943 416-420
+src/core/sync/payloadKey.ts
+  s_1606b97c1ea28d::t_56cca37227e7c6 9
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.tsx
+  s_1606b97c1ea28d::t_82baa62fbaba4d 224,226-232
+api/lib/redisKeys.ts
+  s_1606b97c1ea28d::t_bbae6f776036c3 155
+src/core/api/share.test.ts
+  s_1606b97c1ea28d::t_9c2eeb573ec3ab 18-24,492-651,657-662,664-666
+  s_1606b97c1ea28d::t_0d91d0e8dbcd01 663
+  s_1606b97c1ea28d::t_4d287145ff4751 667-669
+api/lib/meshIndex.ts
+  s_1606b97c1ea28d::t_a507ab57c7c51d 7-10
+  s_1606b97c1ea28d::t_63b4674ec9562d 27-30
+  s_1606b97c1ea28d::t_b46504dbca32bf 156-195
+api/lib/validation.ts
+  s_1606b97c1ea28d::t_9dc3b099ea204e 17-21
+src/core/storage/ShareService.ts
+  s_1606b97c1ea28d::t_f5da8df22267d3 84,87-88,105
+src/features/bin-designer/storage/designStoreAdapter.ts
+  s_1606b97c1ea28d::t_f5da8df22267d3 43-44
+  s_1606b97c1ea28d::t_50fd8100626c92 34-37
+api/share.test.ts
+  s_1606b97c1ea28d::t_886d4dd1b0570f 32-33,36-38,131-132,389-442
+  s_1606b97c1ea28d::t_9879b8067c75a5 443-444
+api/lib/meshIndex.test.ts
+  s_1606b97c1ea28d::t_5a12ebe1831929 12-13,16-17,58-71,340-387
+src/core/sync/payloadKey.test.ts
+  s_1606b97c1ea28d::t_56cca37227e7c6 23
+api/sync/lib/resourceHandler.ts
+  s_1606b97c1ea28d::t_bbae6f776036c3 24,37
+api/lib/shareMeshes.test.ts
+  s_1606b97c1ea28d::t_caa6dd73912846 1-88
+src/features/bin-designer/storage/designStoreAdapter.test.ts
+  s_1606b97c1ea28d::t_f3ec0c140cf072 103-121
+  s_1606b97c1ea28d::t_2e4601c8038158 122-124
+src/core/storage/designStorePort.ts
+  s_1606b97c1ea28d::t_f5da8df22267d3 106-113
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.test.tsx
+  s_1606b97c1ea28d::t_a3b03e501d0c26 2,21-24,109-135
+  s_1606b97c1ea28d::t_7a7f420846615a 136-137
+api/lib/shared.ts
+  s_1606b97c1ea28d::t_611ac9fc7773b4 200-201
+  s_1606b97c1ea28d::t_bbae6f776036c3 242-249
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4887a978f90f1ac38ff9e43b4b5a581981e1f2ad",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
