@@ -39,7 +39,8 @@ import { useTranslation } from '@/i18n';
 import {
   ExportDialog as SharedExportDialog,
   ExportSupportPrompt,
-  recordExportAndShouldPromptSupport,
+  claimSupportPrompt,
+  recordExport,
 } from '@/shared/components/ExportDialog';
 import type { ExportFileFormat } from '@/features/bin-designer/types';
 
@@ -98,12 +99,16 @@ export function ExportDialog() {
   const [justExported, setJustExported] = useState(false);
   // With plates, the dialog finishes only once both files are taken, so the
   // first download never takes away the button for the other.
-  const [taken, setTaken] = useState({ bin: false, plates: false });
+  const taken = useRef({ bin: false, plates: false });
+  // Bumped on every open and close: a download that settles after its dialog
+  // closed must not steer the next one.
+  const session = useRef(0);
   const addToast = useToastStore((s) => s.addToast);
 
   const closeDialog = useCallback(() => {
+    session.current++;
+    taken.current = { bin: false, plates: false };
     setJustExported(false);
-    setTaken({ bin: false, plates: false });
     setExportDialogOpen(false);
   }, [setExportDialogOpen]);
 
@@ -148,8 +153,9 @@ export function ExportDialog() {
     prevOpenRef.current = exportDialogOpen;
     // Re-opening the dialog always returns to the form, never a stale success view.
     if (!justOpened) return;
+    session.current++;
+    taken.current = { bin: false, plates: false };
     setJustExported(false);
-    setTaken({ bin: false, plates: false });
     const format = exportFileNameConfig.format;
     if (isMultiColor && (format === 'stl' || format === 'step')) {
       setExportFileNameConfig({ ...exportFileNameConfig, format: '3mf' });
@@ -231,7 +237,7 @@ export function ExportDialog() {
   // once per cooldown; everyone else just gets the low-friction auto-close.
   const finishExport = useCallback(
     (toastComplete: boolean) => {
-      if (recordExportAndShouldPromptSupport()) {
+      if (claimSupportPrompt()) {
         setJustExported(true);
         return;
       }
@@ -244,14 +250,23 @@ export function ExportDialog() {
     [addToast, closeDialog, offerPublish, t]
   );
 
+  // A bin taken without its plates still earns the publish offer on close.
+  const dismissDialog = useCallback(() => {
+    const binOnly = taken.current.bin && !taken.current.plates;
+    closeDialog();
+    if (binOnly) void offerPublish();
+  }, [closeDialog, offerPublish]);
+
   const handleDownloadPlates = useCallback(() => {
+    const started = session.current;
     void downloadPlates(activeFormat).then((succeeded) => {
       if (!succeeded) return;
       addToast(t('binDesigner.plates.exportComplete'), 'success', 3000);
-      if (taken.bin) finishExport(false);
-      else setTaken((prev) => ({ ...prev, plates: true }));
+      if (started !== session.current) return;
+      taken.current.plates = true;
+      if (taken.current.bin) finishExport(false);
     });
-  }, [downloadPlates, activeFormat, addToast, t, taken.bin, finishExport]);
+  }, [downloadPlates, activeFormat, addToast, t, finishExport]);
 
   const handleDownload = useCallback(async () => {
     // The hook owns error handling end-to-end (telemetry + Retry/Report
@@ -259,11 +274,14 @@ export function ExportDialog() {
     // toast and dialog close on the boolean result instead of try/catch —
     // resolution alone does not imply success since the hook returns false
     // on caught failures and on engine-warmup queueing.
+    const started = session.current;
     const succeeded = useSplitExport
       ? await downloadSplit(activeFormat, exportFileNameConfig, designName)
       : await downloadBin(activeFormat, exportFileNameConfig, designName);
 
     if (!succeeded) return;
+    recordExport();
+    if (started !== session.current) return;
 
     // Split exports always surface their piece count, support view or not.
     if (useSplitExport) {
@@ -274,8 +292,8 @@ export function ExportDialog() {
       });
     }
 
-    if (plates.length > 0 && !taken.plates) {
-      setTaken((prev) => ({ ...prev, bin: true }));
+    taken.current.bin = true;
+    if (plates.length > 0 && !taken.current.plates) {
       if (!useSplitExport) {
         addToast({ message: t('export.complete'), type: 'success', duration: 3000 });
       }
@@ -292,7 +310,6 @@ export function ExportDialog() {
     splitPieceCount,
     addToast,
     plates.length,
-    taken.plates,
     finishExport,
     t,
   ]);
@@ -320,7 +337,7 @@ export function ExportDialog() {
   return (
     <SharedExportDialog
       open={exportDialogOpen}
-      onClose={closeDialog}
+      onClose={dismissDialog}
       activeFormat={activeFormat}
       fileNameConfig={exportFileNameConfig}
       onFileNameConfigChange={setExportFileNameConfig}

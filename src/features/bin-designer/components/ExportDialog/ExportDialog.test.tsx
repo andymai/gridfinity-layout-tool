@@ -21,6 +21,7 @@ const mockAddToast = vi.fn();
 const mockOpenPublish = vi.fn();
 const mockLoadDesign = vi.fn();
 let mockShouldPromptSupport = false;
+const mockRecordExport = vi.fn();
 /** Split state the mocked hook reports; reset to "fits the bed" per test. */
 let mockSplitState = { needsSplit: false, splitPieceCount: 1 };
 const mockDownloadPlates = vi.fn(async () => true);
@@ -55,7 +56,8 @@ vi.mock('@/shared/components/ExportDialog', async (importOriginal) => {
   const actual = await importOriginal<typeof SharedExportDialog>();
   return {
     ...actual,
-    recordExportAndShouldPromptSupport: () => mockShouldPromptSupport,
+    recordExport: () => mockRecordExport(),
+    claimSupportPrompt: () => mockShouldPromptSupport,
   };
 });
 
@@ -179,6 +181,46 @@ describe('ExportDialog', () => {
 
       await click(/download stl/i);
       expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(false);
+    });
+
+    it('counts a bin downloaded alone, and offers to publish when the dialog closes', async () => {
+      mockLoadDesign.mockResolvedValue(ok({ publishedId: undefined }));
+      localStorage.clear();
+      useDesignerStore.setState({ currentDesignId: 'design-1' });
+      render(<ExportDialog />);
+
+      await click(/download stl/i);
+      expect(mockRecordExport).toHaveBeenCalledTimes(1);
+      await click('Close dialog');
+
+      expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(false);
+      await vi.waitFor(() =>
+        expect(mockAddToast).toHaveBeenCalledWith(
+          expect.objectContaining({ message: 'Nice bin. Share it with the community?' })
+        )
+      );
+    });
+
+    it('lets a plate download settling after a reopen leave the new dialog alone', async () => {
+      let settle = (_ok: boolean): void => undefined;
+      mockDownloadPlates.mockImplementationOnce(
+        () =>
+          new Promise<boolean>((resolve) => {
+            settle = resolve;
+          })
+      );
+      render(<ExportDialog />);
+
+      await click('Download label plates (STL)');
+      await click('Close dialog');
+      act(() => useDesignerStore.getState().setExportDialogOpen(true));
+      await act(async () => settle(true));
+      await click(/download stl/i);
+
+      expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(true);
+      expect(
+        screen.getByRole('button', { name: 'Download label plates (STL)' })
+      ).toBeInTheDocument();
     });
 
     it('shows the support prompt only once both are downloaded', async () => {
