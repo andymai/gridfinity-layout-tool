@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { useEffect } from 'react';
 import { FORCED_SIGN_OUT_EVENT } from '../apiFetch';
+import { onAccountChanged } from '../accountGeneration';
 import { cancelClaims } from '../claim';
 import { clearAll as clearOutbox } from '../outbox';
 import { resetPullState } from '../pullState';
@@ -59,6 +60,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }
   },
 }));
+
+useSessionStore.subscribe((state, prev) => {
+  if (state.user?.userId !== prev.user?.userId) onAccountChanged();
+});
 
 /** Hits /api/auth/me and returns the resulting state, or null on transient error. */
 async function refreshFromServer(): Promise<{

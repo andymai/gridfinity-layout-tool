@@ -13,6 +13,8 @@
  * alone — if the user didn't ask to be signed out, we don't wipe their work.
  */
 
+import { accountGeneration } from './accountGeneration';
+
 export const FORCED_SIGN_OUT_EVENT = 'gflt:forced-sign-out';
 
 let forcedSignOutDispatched = false;
@@ -32,6 +34,9 @@ export async function apiFetch(input: string, init: ApiFetchOptions = {}): Promi
   const { csrf = true, suppressForcedSignOut = false, headers, ...rest } = init;
   const merged = new Headers(headers);
   if (csrf) merged.set('X-Requested-With', 'gflt');
+  // A 401 to a request sent under an earlier account says that account's
+  // session ended, not the current one's.
+  const generation = accountGeneration();
 
   const response = await fetch(input, {
     ...rest,
@@ -42,7 +47,12 @@ export async function apiFetch(input: string, init: ApiFetchOptions = {}): Promi
   // A suppressed call must not touch the `forcedSignOutDispatched` latch
   // either way: it shouldn't consume or reset the debounce a concurrent,
   // non-suppressed call relies on.
-  if (response.status === 401 && !forcedSignOutDispatched && !suppressForcedSignOut) {
+  if (
+    response.status === 401 &&
+    !forcedSignOutDispatched &&
+    !suppressForcedSignOut &&
+    generation === accountGeneration()
+  ) {
     forcedSignOutDispatched = true;
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent(FORCED_SIGN_OUT_EVENT));

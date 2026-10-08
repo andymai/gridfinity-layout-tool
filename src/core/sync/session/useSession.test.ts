@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useSessionLifecycle, useSessionStore } from './useSession';
+import { apiFetch, FORCED_SIGN_OUT_EVENT } from '../apiFetch';
 
 describe('useSessionStore', () => {
   let fetchMock: ReturnType<typeof vi.fn>;
@@ -224,5 +225,37 @@ describe('applyRemoteState (broadcast-receiver path)', () => {
     await new Promise((r) => setTimeout(r, 0));
     expect(received).toEqual([]);
     channel.close();
+  });
+});
+
+describe('account changes', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    useSessionStore.setState({ status: 'unknown', user: null });
+  });
+
+  it('keeps a 401 to a request sent under the previous account from signing out the next', async () => {
+    const user = { userId: 'u1', provider: 'google' as const, email: 'a@x' };
+    useSessionStore.setState({ status: 'authenticated', user });
+    let answer = (_res: Response): void => undefined;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          new Promise<Response>((resolve) => {
+            answer = resolve;
+          })
+      )
+    );
+    const handler = vi.fn();
+    window.addEventListener(FORCED_SIGN_OUT_EVENT, handler);
+
+    const pending = apiFetch('/api/sync/manifest');
+    useSessionStore.setState({ user: { ...user, userId: 'u2' } });
+    answer(new Response(null, { status: 401 }));
+    await pending;
+
+    expect(handler).not.toHaveBeenCalled();
+    window.removeEventListener(FORCED_SIGN_OUT_EVENT, handler);
   });
 });

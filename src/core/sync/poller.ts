@@ -225,7 +225,10 @@ async function diffKind(
 }
 
 function trackWrite(write: Promise<void>): Promise<void> {
-  pullState.writing = Promise.all([pullState.writing, write.catch(() => undefined)]);
+  // Settled to nothing, so a finished write's history can be collected.
+  pullState.writing = Promise.all([pullState.writing, write.catch(() => undefined)]).then(
+    () => undefined
+  );
   return write;
 }
 
