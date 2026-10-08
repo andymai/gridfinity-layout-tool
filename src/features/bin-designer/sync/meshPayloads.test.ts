@@ -22,7 +22,7 @@ import { compressString, decompressString } from '@/shared/utils/compression';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { AdapterChange } from '@/core/sync/adapters/types';
 import type { BinParams, Cutout, DesignVersion, SavedDesign } from '../types';
-import { closeDesignerDb, loadDesign } from '../storage/DesignerStorage';
+import { closeDesignerDb, deleteDesign, loadDesign } from '../storage/DesignerStorage';
 import { getDesignVersionRecord } from '../storage/DesignVersionService';
 import { DESIGNS_STORE, DESIGN_VERSIONS_STORE, getDb } from '../storage/designerDb';
 import { moveInlineMeshesToFiles } from '../storage/designMeshFiles';
@@ -188,8 +188,12 @@ describe('design sync payloads', () => {
     expect((await designAdapter.list()).map((i) => i.id)).toEqual([DESIGN_ID]);
   });
 
-  it('queue a design skipped for a missing mesh file again once the file arrives', async () => {
-    const file = await meshAssetFile(await makeAsset('late', 20));
+  async function skippedForLateFile(scale: number): Promise<{
+    bytes: Uint8Array<ArrayBuffer>;
+    changes: AdapterChange[];
+    stop: () => void;
+  }> {
+    const file = await meshAssetFile(await makeAsset('late', scale));
     if (!file) throw new Error('fixture');
     await writeRaw(
       rawDesign({
@@ -201,14 +205,70 @@ describe('design sync payloads', () => {
     const changes: AdapterChange[] = [];
     const stop = designAdapter.subscribe((change) => changes.push(change));
     expect(await designAdapter.get(DESIGN_ID)).toBeNull();
+    return { bytes: file.bytes, changes, stop };
+  }
 
-    await putMeshFile(file.bytes);
+  it('queue a design skipped for a missing mesh file again once the file arrives', async () => {
+    const { bytes, changes, stop } = await skippedForLateFile(20);
+
+    await putMeshFile(bytes);
+
+    await vi.waitFor(() =>
+      expect(changes).toEqual([
+        { kind: 'put', id: DESIGN_ID, modifiedAt: Date.parse('2026-01-02T00:00:00.000Z') },
+      ])
+    );
+    stop();
+    expect(await designAdapter.get(DESIGN_ID)).not.toBeNull();
+  });
+
+  it('queue it at the edit time the design has when the file arrives', async () => {
+    const { bytes, changes, stop } = await skippedForLateFile(22);
+    const design = unwrap(await loadDesign(DESIGN_ID));
+    await writeRaw({ ...design, updatedAt: '2026-01-05T00:00:00.000Z' });
+
+    await putMeshFile(bytes);
+
+    await vi.waitFor(() =>
+      expect(changes).toEqual([
+        { kind: 'put', id: DESIGN_ID, modifiedAt: Date.parse('2026-01-05T00:00:00.000Z') },
+      ])
+    );
+    stop();
+  });
+
+  it('queue a design whose file landed before its skip was noted', async () => {
+    const file = await meshAssetFile(await makeAsset('raced', 24));
+    if (!file) throw new Error('fixture');
+    await writeRaw(
+      rawDesign({
+        ...DEFAULT_BIN_PARAMS,
+        cutouts: [meshCutout('c1', 'm1')],
+        meshAssets: { m1: file.ref },
+      })
+    );
+    const changes: AdapterChange[] = [];
+    const stop = designAdapter.subscribe((change) => changes.push(change));
+    vi.mocked(getMeshFile).mockImplementationOnce(async () => {
+      await putMeshFile(file.bytes);
+      return null;
+    });
+
+    expect(await designAdapter.get(DESIGN_ID)).toBeNull();
+
+    await vi.waitFor(() => expect(changes.map((c) => c.kind)).toEqual(['put']));
+    stop();
+  });
+
+  it('leave a design deleted after its push was skipped deleted when the file arrives', async () => {
+    const { bytes, changes, stop } = await skippedForLateFile(23);
+    unwrap(await deleteDesign(DESIGN_ID));
+
+    await putMeshFile(bytes);
+    await new Promise((resolve) => setTimeout(resolve, 50));
     stop();
 
-    expect(changes).toEqual([
-      { kind: 'put', id: DESIGN_ID, modifiedAt: Date.parse('2026-01-02T00:00:00.000Z') },
-    ]);
-    expect(await designAdapter.get(DESIGN_ID)).not.toBeNull();
+    expect(changes.map((c) => c.kind)).toEqual(['delete']);
   });
 });
 
@@ -287,11 +347,13 @@ describe('design version sync payloads', () => {
     expect(await designVersionAdapter.get(VERSION_ID)).toBeNull();
 
     await putMeshFile(file.bytes);
-    stop();
 
-    expect(changes).toEqual([
-      { kind: 'put', id: VERSION_ID, modifiedAt: Date.parse('2026-01-01T00:00:00.000Z') },
-    ]);
+    await vi.waitFor(() =>
+      expect(changes).toEqual([
+        { kind: 'put', id: VERSION_ID, modifiedAt: Date.parse('2026-01-01T00:00:00.000Z') },
+      ])
+    );
+    stop();
     expect(await designVersionAdapter.get(VERSION_ID)).not.toBeNull();
   });
 });

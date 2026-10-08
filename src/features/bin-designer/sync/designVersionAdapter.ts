@@ -78,7 +78,7 @@ async function toItem(
     if (forPush) {
       const inline = await inlineHolderMeshes(parsed);
       if (!isOk(inline)) {
-        missingMeshPushes.skip(inline.error.hash, version.id, toMs(version));
+        missingMeshPushes.skip(inline.error.hash, version.id);
         return null;
       }
       content = inline.value;
@@ -151,13 +151,17 @@ export const designVersionAdapter: DesignVersionAdapter = {
 
   subscribe(listener: AdapterChangeListener): () => void {
     const stopEvents = subscribeVersionEvents((event) => {
+      missingMeshPushes.clear(event.id);
       const change: AdapterChange =
         event.type === 'put'
           ? { kind: 'put', id: event.id, modifiedAt: event.modifiedAt }
           : { kind: 'delete', id: event.id, modifiedAt: event.deletedAt };
       listener(change);
     });
-    const stopArrivals = missingMeshPushes.subscribe(listener);
+    const stopArrivals = missingMeshPushes.subscribe(listener, async (id) => {
+      const current = await getDesignVersionRecord(id);
+      return isOk(current) && current.value !== null ? toMs(current.value) : null;
+    });
     return () => {
       stopEvents();
       stopArrivals();

@@ -214,7 +214,7 @@ export const designAdapter: DesignAdapter = {
     if (!isSyncableDesign(result.value)) return null;
     const inline = await inlineHolderMeshes(result.value);
     if (!isOk(inline)) {
-      missingMeshPushes.skip(inline.error.hash, id, toMs(result.value.updatedAt));
+      missingMeshPushes.skip(inline.error.hash, id);
       return null;
     }
     const d = inline.value;
@@ -338,6 +338,7 @@ export const designAdapter: DesignAdapter = {
 
   subscribe(listener: AdapterChangeListener): () => void {
     const stopEvents = subscribeDesignerEvents((event) => {
+      missingMeshPushes.clear(event.id);
       if (suppressed.has(event.id)) return;
       const change: AdapterChange =
         event.type === 'put'
@@ -345,7 +346,10 @@ export const designAdapter: DesignAdapter = {
           : { kind: 'delete', id: event.id, modifiedAt: toMs(event.deletedAt) };
       listener(change);
     });
-    const stopArrivals = missingMeshPushes.subscribe(listener);
+    const stopArrivals = missingMeshPushes.subscribe(listener, async (id) => {
+      const current = await loadDesign(designId(id));
+      return isOk(current) ? toMs(current.value.updatedAt) : null;
+    });
     return () => {
       stopEvents();
       stopArrivals();
