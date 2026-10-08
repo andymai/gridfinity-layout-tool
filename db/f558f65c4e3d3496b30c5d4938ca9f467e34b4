@@ -1,0 +1,27 @@
+src/features/bin-designer/types/index.ts
+  s_1606b97c1ea28d::t_de8022c6bb0bf2 250
+src/features/bin-designer/types/cutout.ts
+  s_1606b97c1ea28d::t_de8022c6bb0bf2 364-369
+src/shared/utils/pathCutoutOutline.test.ts
+  s_1606b97c1ea28d::t_de8022c6bb0bf2 10,297,306
+src/shared/types/bin.ts
+  s_1606b97c1ea28d::t_de8022c6bb0bf2 122
+src/features/bin-designer/components/panel/CutoutsSection/pathGeometry.ts
+  s_1606b97c1ea28d::t_de8022c6bb0bf2 17,23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dbf558f65c4e3d3496b30c5d4938ca9f467e34b4",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
