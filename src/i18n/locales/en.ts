@@ -1443,7 +1443,8 @@ const en: Record<string, string> = {
   'toast.stlImport.fileTooLarge': 'STL file is too large (max 50MB)',
   'toast.stlImport.notManifold': 'Mesh is not watertight — repair it in your slicer and re-export',
   'toast.stlImport.empty': 'STL contains no printable geometry',
-  'toast.stlImport.assetLimit': 'A design can hold up to {count} imported meshes',
+  'toast.stlImport.budgetFull':
+    'Triangle limit reached. Nothing imported. Remove a mesh imprint to free triangles.',
   'toast.meshFileMissing':
     "An imported STL used here is missing from this device, so it can't be shared or exported.",
   'toast.svgImport.success': 'Imported {count} shape(s) from SVG',
@@ -3175,6 +3176,9 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.stlImport.rotateAxis': 'Rotate {axis} (degrees)',
   'binDesigner.cutouts.stlImport.oversizeWarning':
     'This model is larger than the bin interior. It will be placed anyway. Enlarge the bin or use a smaller model for a full pocket.',
+  'binDesigner.cutouts.stlImport.budget': 'With this mesh: {used} of {limit} triangles',
+  'binDesigner.cutouts.stlImport.overBudget':
+    'This mesh would exceed the design’s triangle limit. Remove a mesh imprint first.',
   'binDesigner.cutouts.stlImport.place': 'Place in bin',
   'binDesigner.importBin.title': 'Import STL as bin',
   'binDesigner.importBin.widthUnits': 'Width (units)',

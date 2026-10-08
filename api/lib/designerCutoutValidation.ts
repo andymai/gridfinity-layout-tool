@@ -341,15 +341,17 @@ export function validateMeshAssets(
   if (!isObject(value)) return 'meshAssets must be an object';
 
   const entries = Object.entries(value);
-  if (entries.length > CONSTRAINTS.MAX_MESH_ASSETS) {
-    return `max ${CONSTRAINTS.MAX_MESH_ASSETS} mesh assets`;
-  }
+  let totalTriangles = 0;
   for (const [id, assetRaw] of entries) {
     if (id.length === 0 || id.length > 64 || CONTROL_CHARS_REGEX.test(id)) {
       return 'meshAssets keys must be non-empty strings (max 64 chars)';
     }
     const assetError = validateMeshAsset(assetRaw, `meshAssets.${id}`, allowRefs);
     if (assetError) return assetError;
+    totalTriangles += (assetRaw as { triangleCount: number }).triangleCount;
+    if (totalTriangles > CONSTRAINTS.MAX_MESH_TRIANGLES_TOTAL) {
+      return `meshAssets declare more than ${CONSTRAINTS.MAX_MESH_TRIANGLES_TOTAL} triangles in total`;
+    }
   }
 
   for (const { index, meshId } of meshCutoutIds) {

@@ -53,9 +53,13 @@ description: 'Imported STL meshes stored once as content-addressed files (src/sh
 ## Worker delivery
 
 - Requests carry refs only. The bridge's `prepareMeshes` (`meshDelivery.ts`) swaps inline assets for refs and gathers each file's bytes. `MeshDelivery` sends each file once per worker as `PUT_MESH` (a transferred copy) and releases the least recently needed with `DROP_MESH` past 32 MB, never one the request needs. A replaced worker is sent everything again.
-- The worker's `meshFiles.ts` keeps geometry and outlines by hash and holds a drop until no request is in progress. `preparedTools` and the imported-mesh decode cache key on `meshEntryKey`.
+- The worker's `meshFiles.ts` keeps geometry and outlines by hash and holds a drop until no request is in progress. `preparedTools` and the imported-mesh decode cache key on `meshEntryKey`, which includes the declared count; `preparedTools` never evicts a tool the current design needs.
 - A ref whose file is missing: a preview leaves that mesh's cutouts out and is flagged `meshesPending`, which keeps it out of the bridge result cache and out of persisted meshes. Exports, split previews and imported-mesh items reject with `MeshUnavailableError`.
 - Exports claim their slot at call time (`claimExportSlot`), because gathering files takes a variable time: an older call that finishes late rejects as superseded instead of cancelling the newer one.
+
+## Triangle budget
+
+- A design's meshes may declare `MAX_MESH_TRIANGLES_PER_DESIGN` triangles in total (server mirror `MAX_MESH_TRIANGLES_TOTAL`); there is no count cap. The sum binds only because `decodeMeshBytes` holds every decode, inline or ref, to the entry's declared `triangleCount`: inflation stops at what that count can occupy and more triangles fail.
 
 ## Cache keys
 

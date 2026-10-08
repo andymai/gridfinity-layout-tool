@@ -195,11 +195,8 @@ export async function decodeMeshFile(
   if (isErr(parsed)) return parsed;
   const { triangleCount, geometry, outlines } = parsed.value;
 
-  const decoded = await decodeMeshBytes(geometry);
+  const decoded = await decodeMeshBytes(geometry, triangleCount);
   if (isErr(decoded)) return decoded;
-  if (decoded.value.indices.length / 3 > triangleCount) {
-    return invalid('geometry holds more triangles than the file declares');
-  }
 
   return ok({ data: bytesToBase64(geometry), triangleCount, outlines });
 }

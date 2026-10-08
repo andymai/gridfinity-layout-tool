@@ -48,6 +48,10 @@ export function dropMeshFile(hash: string): void {
   else forget(hash);
 }
 
+export function meshRequestsInProgress(): number {
+  return activeRequests;
+}
+
 /** Mark a request in progress; the returned function ends it. */
 export function beginMeshRequest(): () => void {
   activeRequests++;
@@ -68,16 +72,20 @@ export function __clearMeshFilesForTests(): void {
   deferredDrops.clear();
 }
 
-/** Cache key for an entry's geometry: the file hash, or an inline asset's data. */
+/**
+ * Cache key for an entry's geometry: the file hash, or an inline asset's data,
+ * with the declared triangle count. A decode is held to that count, so the same
+ * bytes declared differently must not share a cached result.
+ */
 export function meshEntryKey(entry: MeshAssetEntry): string {
-  return isMeshAssetRef(entry) ? entry.hash : entry.data;
+  return `${entry.triangleCount}:${isMeshAssetRef(entry) ? entry.hash : entry.data}`;
 }
 
 /** Decode an entry's geometry, or null while a ref's file has not been sent. */
 export async function decodeMeshEntry(
   entry: MeshAssetEntry
 ): Promise<Result<DecodedMeshData, ValidationError> | null> {
-  if (!isMeshAssetRef(entry)) return decodeMeshData(entry.data);
+  if (!isMeshAssetRef(entry)) return decodeMeshData(entry.data, entry.triangleCount);
   const geometry = geometryByHash.get(entry.hash);
-  return geometry ? decodeMeshBytes(geometry) : null;
+  return geometry ? decodeMeshBytes(geometry, entry.triangleCount) : null;
 }

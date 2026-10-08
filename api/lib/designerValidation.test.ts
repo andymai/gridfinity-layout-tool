@@ -1838,10 +1838,33 @@ describe('validateDesignerShare', () => {
       expect(result.error.code).toBe('SIZE_EXCEEDED');
     });
 
-    it('rejects more than the asset cap', () => {
+    function denseDesign(count: number, triangleCount: number) {
       const assets: Record<string, unknown> = {};
-      for (let i = 0; i <= CONSTRAINTS.MAX_MESH_ASSETS; i++) assets[`asset-${i}`] = validAsset();
-      expect(withMesh(assets, []).valid).toBe(false);
+      const cutouts: unknown[] = [];
+      for (let i = 0; i < count; i++) {
+        assets[`asset-${i}`] = { ...validAsset(), triangleCount };
+        cutouts.push({ id: `c${i}`, shape: 'mesh', meshId: `asset-${i}` });
+      }
+      return withMesh(assets, cutouts);
+    }
+
+    it('accepts assets that declare the whole triangle budget', () => {
+      const perAsset = CONSTRAINTS.MAX_MESH_ASSET_TRIANGLES;
+      const fit = CONSTRAINTS.MAX_MESH_TRIANGLES_TOTAL / perAsset;
+      expect(denseDesign(fit, perAsset).valid).toBe(true);
+    });
+
+    it('rejects assets that declare more than the triangle budget', () => {
+      const perAsset = CONSTRAINTS.MAX_MESH_ASSET_TRIANGLES;
+      const fit = CONSTRAINTS.MAX_MESH_TRIANGLES_TOTAL / perAsset;
+      const result = denseDesign(fit + 1, perAsset);
+      expect(result.valid).toBe(false);
+      if (result.valid) return;
+      expect(result.error.message).toMatch(/triangles in total/);
+    });
+
+    it('accepts more than 8 small assets', () => {
+      expect(denseDesign(20, 12).valid).toBe(true);
     });
 
     it('keeps the 100KB cap for designs without mesh assets', () => {

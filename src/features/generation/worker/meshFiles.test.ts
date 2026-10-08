@@ -52,8 +52,9 @@ describe('worker mesh files', () => {
     expect(decoded && isOk(decoded) && inline && isOk(inline)).toBe(true);
     expect(decoded && unwrap(decoded)).toEqual(inline && unwrap(inline));
     expect(meshAssetOutlines(refTo(asset))).toEqual(asset.outlines);
-    expect(meshEntryKey(refTo(asset))).toBe(HASH);
-    expect(meshEntryKey(asset)).toBe(asset.data);
+    expect(meshEntryKey(refTo(asset))).toBe(`${asset.triangleCount}:${HASH}`);
+    expect(meshEntryKey(asset)).toBe(`${asset.triangleCount}:${asset.data}`);
+    expect(meshEntryKey({ ...asset, triangleCount: 1 })).not.toBe(meshEntryKey(asset));
   });
 
   it('reads a ref whose file was never sent as pending', async () => {

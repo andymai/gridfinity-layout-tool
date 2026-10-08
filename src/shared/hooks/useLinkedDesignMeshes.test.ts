@@ -475,7 +475,7 @@ describe('useLinkedDesignMeshes', () => {
     await waitFor(() => {
       expect(result.current.get(B1)).toBeDefined();
     });
-    expect(mockDecodeMeshData).toHaveBeenCalledWith('AAAA');
+    expect(mockDecodeMeshData).toHaveBeenCalledWith('AAAA', 1);
   });
 
   it('caches failures so a broken design does not retry every render', async () => {

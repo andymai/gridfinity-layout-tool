@@ -221,7 +221,9 @@ describe('importMeshFromStl', () => {
     expect(isOk(result)).toBe(true);
     if (!isOk(result)) return;
 
-    const decoded = unwrap(await decodeMeshData(result.value.asset.data));
+    const decoded = unwrap(
+      await decodeMeshData(result.value.asset.data, result.value.asset.triangleCount)
+    );
     expect(decoded.indices).toEqual(result.value.indices);
     expect(decoded.positions).toHaveLength(result.value.positions.length);
     for (let i = 0; i < decoded.positions.length; i++) {

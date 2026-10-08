@@ -2,7 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useToastStore } from '@/core/store/toast';
-import { MAX_MESH_FILE_BYTES, isMeshAssetRef } from '@/shared/generation/meshAsset';
+import {
+  MAX_MESH_ASSET_TRIANGLES,
+  MAX_MESH_FILE_BYTES,
+  MAX_MESH_TRIANGLES_PER_DESIGN,
+  isMeshAssetRef,
+} from '@/shared/generation/meshAsset';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { resolveMeshAsset, storeMeshAsset } from '@/shared/generation/meshRefs';
 import type * as MeshRefs from '@/shared/generation/meshRefs';
@@ -41,6 +46,17 @@ const asset: MeshAsset = {
 function makeFile(size = 100, name = 'tool.stl'): File {
   const file = new File([new Uint8Array(size)], name, { type: 'model/stl' });
   return file;
+}
+
+/** Seeds the design with meshes that declare `triangles` in total. */
+function fillDesign(triangles: number): void {
+  const meshAssets: Record<string, MeshAsset> = {};
+  for (let i = 0, left = triangles; left > 0; i++) {
+    const triangleCount = Math.min(left, MAX_MESH_ASSET_TRIANGLES);
+    meshAssets[`held-${i}`] = { ...asset, triangleCount };
+    left -= triangleCount;
+  }
+  useDesignerStore.setState((state) => ({ params: { ...state.params, meshAssets } }));
 }
 
 /** The hook creates a hidden input; feed a file through it. */
@@ -96,6 +112,69 @@ describe('useStlImport', () => {
     });
     expect(result.current.pending?.asset.name).toBe('wrench');
     expect(result.current.pending?.suggestedCutDepth).toBe(5);
+    expect(result.current.pending?.designTriangles).toBe(0);
+  });
+
+  it('refuses a file before touching the worker when the design budget is full', async () => {
+    fillDesign(MAX_MESH_TRIANGLES_PER_DESIGN);
+    const { result } = renderHook(() => useStlImport());
+
+    act(() => {
+      feedFile(makeFile());
+    });
+
+    await waitFor(() => {
+      expect(useToastStore.getState().toasts.length).toBeGreaterThan(0);
+    });
+    expect(importMesh).not.toHaveBeenCalled();
+    expect(result.current.pending).toBeNull();
+  });
+
+  it('carries the triangles the design already holds into the pending import', async () => {
+    importMesh.mockResolvedValue({
+      ok: true,
+      asset,
+      positions: new Float32Array(9),
+      indices: new Uint32Array(3),
+      suggestedCutDepth: 5,
+    });
+    fillDesign(70_000);
+    const { result } = renderHook(() => useStlImport());
+
+    act(() => {
+      feedFile(makeFile());
+    });
+
+    await waitFor(() => {
+      expect(result.current.pending).not.toBeNull();
+    });
+    expect(result.current.pending?.designTriangles).toBe(70_000);
+  });
+
+  it('holds the dialog open when the design filled up before Place', async () => {
+    importMesh.mockResolvedValue({
+      ok: true,
+      asset,
+      positions: new Float32Array(9),
+      indices: new Uint32Array(3),
+      suggestedCutDepth: 5,
+    });
+    const { result } = renderHook(() => useStlImport());
+    act(() => {
+      feedFile(makeFile());
+    });
+    await waitFor(() => {
+      expect(result.current.pending).not.toBeNull();
+    });
+
+    fillDesign(MAX_MESH_TRIANGLES_PER_DESIGN);
+    await act(async () => {
+      await result.current.place();
+    });
+
+    expect(useDesignerStore.getState().params.cutouts).toHaveLength(0);
+    expect(result.current.pending?.designTriangles).toBe(MAX_MESH_TRIANGLES_PER_DESIGN);
+    expect(result.current.placing).toBe(false);
   });
 
   it('surfaces worker import errors as toasts', async () => {

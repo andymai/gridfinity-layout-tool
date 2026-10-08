@@ -21,7 +21,11 @@ import type {
   MeshImportErrorReason,
   MeshImportRotation,
 } from '@/shared/generation/meshAsset';
-import { MAX_MESH_ASSETS_PER_DESIGN, MAX_MESH_FILE_BYTES } from '@/shared/generation/meshAsset';
+import {
+  MAX_MESH_FILE_BYTES,
+  MAX_MESH_TRIANGLES_PER_DESIGN,
+  meshTrianglesTotal,
+} from '@/shared/generation/meshAsset';
 import { storeMeshAsset } from '@/shared/generation/meshRefs';
 import { defaultEntryChamfer } from '@/features/bin-designer/types';
 import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
@@ -47,6 +51,8 @@ export interface PendingStlImport {
   readonly rotation: MeshImportRotation;
   /** True when the footprint exceeds the bin interior (warn, never scale). */
   readonly oversized: boolean;
+  /** Triangles the design's meshes already declare, before this one. */
+  readonly designTriangles: number;
 }
 
 export interface UseStlImportReturn {
@@ -105,7 +111,8 @@ export function useStlImport(): UseStlImportReturn {
             return;
           }
           const { asset } = outcome;
-          const { innerW, innerD } = cutoutInterior(useDesignerStore.getState().params);
+          const current = useDesignerStore.getState().params;
+          const { innerW, innerD } = cutoutInterior(current);
           setPending({
             asset,
             positions: outcome.positions,
@@ -114,6 +121,7 @@ export function useStlImport(): UseStlImportReturn {
             fileName: fileNameRef.current,
             rotation,
             oversized: asset.sizeMm.x > innerW || asset.sizeMm.y > innerD,
+            designTriangles: meshTrianglesTotal(current.meshAssets),
           });
         } finally {
           bridgeManager.release();
@@ -138,12 +146,10 @@ export function useStlImport(): UseStlImportReturn {
         trackEvent('stl_import', { success: false, error_code: 'too_large' });
         return;
       }
-      const meshAssetCount = Object.keys(
-        useDesignerStore.getState().params.meshAssets ?? {}
-      ).length;
-      if (meshAssetCount >= MAX_MESH_ASSETS_PER_DESIGN) {
-        addToast(t('toast.stlImport.assetLimit', { count: MAX_MESH_ASSETS_PER_DESIGN }), 'error');
-        trackEvent('stl_import', { success: false, error_code: 'asset_limit' });
+      const used = meshTrianglesTotal(useDesignerStore.getState().params.meshAssets);
+      if (used >= MAX_MESH_TRIANGLES_PER_DESIGN) {
+        addToast(t('toast.stlImport.budgetFull'), 'error');
+        trackEvent('stl_import', { success: false, error_code: 'budget_full' });
         return;
       }
       void file.arrayBuffer().then((buffer) => {
@@ -191,6 +197,13 @@ export function useStlImport(): UseStlImportReturn {
     const meshId = generateUUID();
     const { asset, suggestedCutDepth } = claimed;
     const current = useDesignerStore.getState().params;
+    // The dialog holds Place back past the budget, but the design may have
+    // gained a mesh since it opened. Refreshing the count shows the user why.
+    const designTriangles = meshTrianglesTotal(current.meshAssets);
+    if (designTriangles + asset.triangleCount > MAX_MESH_TRIANGLES_PER_DESIGN) {
+      setPending({ ...claimed, designTriangles });
+      return;
+    }
     const { innerW, innerD } = cutoutInterior(current);
     addMeshCutout(
       {

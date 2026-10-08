@@ -105,7 +105,9 @@ export const CONSTRAINTS = {
   // `src/shared/generation/meshAsset.ts` — keep in sync. Designs carrying
   // meshAssets get the raised payload cap; everything else keeps 100KB.
   MESH_MAX_PAYLOAD_BYTES: 2_000_000,
-  MAX_MESH_ASSETS: 8,
+  // Declared triangles across a design's assets, inline or ref. The client
+  // decoder holds each asset to its declared count, which makes this binding.
+  MAX_MESH_TRIANGLES_TOTAL: 400_000,
   MAX_MESH_ASSET_TRIANGLES: 50_000,
   MAX_MESH_OUTLINE_POINTS: 4000,
   MAX_MESH_NAME_LENGTH: 64,
