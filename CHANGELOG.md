@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.508.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.507.0...gridfinity-layout-tool-v4.508.0) (2026-10-08)
+
+
+### Features
+
+* **share:** layout shares carry mesh files by reference ([#4542](https://github.com/andymai/gridfinity-layout-tool/issues/4542)) ([9563872](https://github.com/andymai/gridfinity-layout-tool/commit/956387278b5b953473e202e2e1fe2e586a0c0a5a))
+* **sync:** sync whole-STL designs across devices ([#4540](https://github.com/andymai/gridfinity-layout-tool/issues/4540)) ([f0a6468](https://github.com/andymai/gridfinity-layout-tool/commit/f0a6468dcde682205705b2ca5736eca15e388b1b))
+
+
+### Bug Fixes
+
+* **designer:** offer label plates where the bin is downloaded ([#4543](https://github.com/andymai/gridfinity-layout-tool/issues/4543)) ([9a34aea](https://github.com/andymai/gridfinity-layout-tool/commit/9a34aea0f5e701bceec7c38954692d1d31184cd9))
+
 ## [4.507.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.506.0...gridfinity-layout-tool-v4.507.0) (2026-10-08)
 
 
