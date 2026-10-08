@@ -6,14 +6,50 @@
  * files arrive (the main thread from the mesh store, the worker from the
  * bridge), so a ref whose file is not here yet reads as pending rather than
  * as missing.
+ *
+ * Outlines in use are held (by a mounted editor view, or by the worker for a
+ * file it keeps) and never let go; of the rest only the most recent
+ * {@link MAX_UNHELD_OUTLINES} stay.
  */
 
 import { isMeshAssetRef } from './meshAsset';
 import type { MeshAssetEntry, MeshOutlinePoint } from './meshAsset';
 
+/** Insertion order is recency order. */
 const outlinesByHash = new Map<string, MeshOutlinePoint[][]>();
+const holds = new Map<string, number>();
 const listeners = new Set<() => void>();
 let revision = 0;
+
+export const MAX_UNHELD_OUTLINES = 64;
+
+function trimUnheld(): void {
+  let unheld = 0;
+  for (const hash of outlinesByHash.keys()) if (!holds.has(hash)) unheld++;
+  for (const hash of outlinesByHash.keys()) {
+    if (unheld <= MAX_UNHELD_OUTLINES) return;
+    if (holds.has(hash)) continue;
+    outlinesByHash.delete(hash);
+    unheld--;
+  }
+}
+
+/** Keep these hashes' outlines while held; the returned function lets go. */
+export function holdMeshOutlines(hashes: Iterable<string>): () => void {
+  const held = [...hashes];
+  for (const hash of held) holds.set(hash, (holds.get(hash) ?? 0) + 1);
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    for (const hash of held) {
+      const count = holds.get(hash) ?? 0;
+      if (count <= 1) holds.delete(hash);
+      else holds.set(hash, count - 1);
+    }
+    trimUnheld();
+  };
+}
 
 function notify(): void {
   revision++;
@@ -24,6 +60,7 @@ function notify(): void {
 export function setMeshOutlines(hash: string, outlines: MeshOutlinePoint[][]): void {
   if (outlinesByHash.has(hash)) return;
   outlinesByHash.set(hash, outlines);
+  trimUnheld();
   notify();
 }
 
@@ -56,5 +93,6 @@ export function meshOutlinesRevision(): number {
 /** Test-only. */
 export function __clearMeshOutlinesForTests(): void {
   outlinesByHash.clear();
+  holds.clear();
   notify();
 }

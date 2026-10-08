@@ -1,7 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import type { MeshAsset, MeshAssetRef } from '@/shared/generation/meshAsset';
-import { __clearMeshOutlinesForTests } from '@/shared/generation/meshOutlines';
+import {
+  MAX_UNHELD_OUTLINES,
+  __clearMeshOutlinesForTests,
+  hasMeshOutlines,
+  setMeshOutlines,
+} from '@/shared/generation/meshOutlines';
 import { storeMeshAsset } from '@/shared/generation/meshRefs';
 import { __resetMeshStoreForTests } from '@/shared/generation/meshStore';
 import { useLoadedMeshAssets, useMeshAssetOutlines } from './useMeshOutlines';
@@ -55,6 +60,19 @@ describe('useMeshAssetOutlines', () => {
     const { result } = renderHook(() => useMeshAssetOutlines(ref));
     expect(result.current).toBeUndefined();
     await waitFor(() => expect(result.current).toEqual(asset.outlines));
+  });
+
+  it('holds the outlines it shows until it unmounts', async () => {
+    const ref = await storedRef();
+    const { result, unmount } = renderHook(() => useMeshAssetOutlines(ref));
+    await waitFor(() => expect(result.current).toEqual(asset.outlines));
+    const filler = (i: number): string => (i + 1).toString(16).padStart(64, '0');
+    for (let i = 0; i < MAX_UNHELD_OUTLINES; i++) setMeshOutlines(filler(i), asset.outlines);
+    expect(hasMeshOutlines(ref.hash)).toBe(true);
+
+    unmount();
+
+    expect(hasMeshOutlines(ref.hash)).toBe(false);
   });
 
   it('keeps a ref whose file is not on this device pending', async () => {

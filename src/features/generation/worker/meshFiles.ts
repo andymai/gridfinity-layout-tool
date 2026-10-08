@@ -12,14 +12,21 @@ import type { Result, ValidationError } from '@/core/result';
 import { decodeMeshBytes, decodeMeshData, isMeshAssetRef } from '@/shared/generation/meshAsset';
 import type { DecodedMeshData, MeshAssetEntry } from '@/shared/generation/meshAsset';
 import { parseMeshFile } from '@/shared/generation/meshFile';
-import { deleteMeshOutlines, setMeshOutlines } from '@/shared/generation/meshOutlines';
+import {
+  deleteMeshOutlines,
+  holdMeshOutlines,
+  setMeshOutlines,
+} from '@/shared/generation/meshOutlines';
 
 const geometryByHash = new Map<string, Uint8Array>();
+const outlineHolds = new Map<string, () => void>();
 const deferredDrops = new Set<string>();
 let activeRequests = 0;
 
 function forget(hash: string): void {
   geometryByHash.delete(hash);
+  outlineHolds.get(hash)?.();
+  outlineHolds.delete(hash);
   deleteMeshOutlines(hash);
 }
 
@@ -29,6 +36,7 @@ export function receiveMeshFile(hash: string, bytes: Uint8Array): void {
   if (isErr(parsed)) return;
   deferredDrops.delete(hash);
   geometryByHash.set(hash, parsed.value.geometry);
+  if (!outlineHolds.has(hash)) outlineHolds.set(hash, holdMeshOutlines([hash]));
   setMeshOutlines(hash, parsed.value.outlines);
 }
 

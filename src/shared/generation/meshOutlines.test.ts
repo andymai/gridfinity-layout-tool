@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MeshAsset, MeshAssetRef, MeshOutlinePoint } from './meshAsset';
 import {
+  MAX_UNHELD_OUTLINES,
   __clearMeshOutlinesForTests,
   deleteMeshOutlines,
+  hasMeshOutlines,
+  holdMeshOutlines,
   meshAssetOutlines,
   meshOutlinesRevision,
   setMeshOutlines,
@@ -63,5 +66,28 @@ describe('meshAssetOutlines', () => {
     deleteMeshOutlines(ref.hash);
     expect(listener).toHaveBeenCalledTimes(2);
     unsubscribe();
+  });
+});
+
+describe('outline retention', () => {
+  const hashOf = (i: number): string => i.toString(16).padStart(64, '0');
+
+  it('keeps only the most recent unheld outlines', () => {
+    for (let i = 0; i < MAX_UNHELD_OUTLINES + 3; i++) setMeshOutlines(hashOf(i), rings);
+
+    expect(hasMeshOutlines(hashOf(0))).toBe(false);
+    expect(hasMeshOutlines(hashOf(2))).toBe(false);
+    expect(hasMeshOutlines(hashOf(3))).toBe(true);
+    expect(hasMeshOutlines(hashOf(MAX_UNHELD_OUTLINES + 2))).toBe(true);
+  });
+
+  it('never lets go of held outlines, and trims them once released', () => {
+    const release = holdMeshOutlines([hashOf(0)]);
+    for (let i = 0; i < MAX_UNHELD_OUTLINES + 3; i++) setMeshOutlines(hashOf(i), rings);
+    expect(hasMeshOutlines(hashOf(0))).toBe(true);
+
+    release();
+    release();
+    expect(hasMeshOutlines(hashOf(0))).toBe(false);
   });
 });
