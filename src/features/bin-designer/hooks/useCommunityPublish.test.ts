@@ -13,6 +13,7 @@ import { hashBinParams } from '@/shared/utils/binParamsHash';
 import { savePendingPublishAction } from '@/shared/utils/communityPendingAction';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { storeMeshAsset } from '@/shared/generation/meshRefs';
+import { accountHoldsMeshFiles } from '@/shared/generation/meshCloud';
 import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '../constants';
 import { useDesignerStore } from '../store/designer';
 import type { SavedDesign } from '../types';
@@ -37,6 +38,11 @@ vi.mock('../storage/DesignerStorage', async (importOriginal) => {
     clearDesignPublishedId: vi.fn(),
   };
 });
+
+vi.mock('@/shared/generation/meshCloud', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  accountHoldsMeshFiles: vi.fn(async () => false),
+}));
 
 vi.mock('../utils', async (importOriginal) => {
   const actual = await importOriginal<object>();
@@ -158,6 +164,81 @@ describe('useCommunityPublish', () => {
       const published = context && 'params' in context ? context.params : undefined;
       expect(published?.meshAssets).toEqual({ m1: asset });
       expect(context?.paramsHash).toBe(hashBinParams({ ...base, meshAssets: { m1: asset } }));
+    });
+
+    it('publishes a signed-in design naming its mesh files once the account holds them', async () => {
+      const asset: MeshAsset = {
+        name: 'wrench',
+        data: 'AAAA',
+        triangleCount: 1,
+        sizeMm: { x: 20, y: 10, z: 5 },
+        outlines: [
+          [
+            { x: 0, y: 0 },
+            { x: 20, y: 0 },
+            { x: 0, y: 10 },
+          ],
+        ],
+      };
+      const ref = await storeMeshAsset(asset);
+      if (!ref) throw new Error('fixture');
+      const base = { ...DEFAULT_BIN_PARAMS, cutouts: [qualifyingCutout] };
+      useDesignerStore.setState({ params: { ...base, meshAssets: { m1: ref } } });
+      useSessionStore.setState({
+        status: 'authenticated',
+        user: { userId: 'u1', provider: 'google', email: 'a@x' },
+      });
+      vi.mocked(accountHoldsMeshFiles).mockResolvedValueOnce(true);
+
+      await openCommunityPublish(null);
+
+      expect(accountHoldsMeshFiles).toHaveBeenCalledWith([ref.hash], expect.any(Number));
+      const context = useCommunityPublishStore.getState().context;
+      const published = context && 'params' in context ? context.params : undefined;
+      expect(published?.meshAssets).toEqual({ m1: ref });
+      expect(context?.paramsHash).toBe(hashBinParams({ ...base, meshAssets: { m1: ref } }));
+    });
+
+    it('reopens with the edit when the design changes while its files upload', async () => {
+      const base = { ...DEFAULT_BIN_PARAMS, cutouts: [qualifyingCutout] };
+      useDesignerStore.setState({ params: base });
+      const edited = { ...base, height: base.height + 1 };
+      useSessionStore.setState({
+        status: 'authenticated',
+        user: { userId: 'u1', provider: 'google', email: 'a@x' },
+      });
+      vi.mocked(accountHoldsMeshFiles).mockImplementationOnce(async () => {
+        useDesignerStore.setState({ params: edited });
+        return false;
+      });
+
+      await openCommunityPublish(null);
+
+      const context = useCommunityPublishStore.getState().context;
+      const published = context && 'params' in context ? context.params : undefined;
+      expect(published?.height).toBe(edited.height);
+    });
+
+    it('does not open when a file the account holds is missing from this device', async () => {
+      const missing = {
+        name: 'gone',
+        hash: '5'.repeat(64),
+        triangleCount: 1,
+        sizeMm: { x: 1, y: 1, z: 1 },
+        bytes: 1,
+      };
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, cutouts: [qualifyingCutout], meshAssets: { m1: missing } },
+      });
+      useSessionStore.setState({
+        status: 'authenticated',
+        user: { userId: 'u1', provider: 'google', email: 'a@x' },
+      });
+      vi.mocked(accountHoldsMeshFiles).mockResolvedValueOnce(true);
+
+      await openCommunityPublish(null);
+
+      expect(useCommunityPublishStore.getState().isOpen).toBe(false);
     });
 
     it('does not open when a mesh file is missing', async () => {

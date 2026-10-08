@@ -71,6 +71,17 @@ beforeEach(() => {
 });
 
 describe('validateCommunityPublish', () => {
+  it('takes mesh refs in bin params, leaving the held-file check to the handler', () => {
+    validateCommunityPublish(validBody());
+    expect(mocks.validateDesignerShare).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.any(Number),
+      {
+        meshRefs: true,
+      }
+    );
+  });
+
   it('accepts a valid publish body and returns the sanitized payload', () => {
     const result = validateCommunityPublish(validBody({ name: '  Socket Organizer  ' }));
     expect(result.valid).toBe(true);

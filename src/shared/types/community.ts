@@ -209,6 +209,8 @@ export interface CommunityDesign {
   readonly techniques: readonly ExampleTechnique[];
   /** Bin params; absent on a Workshop assembly record. */
   readonly params?: BinParams;
+  /** CDN URL of each mesh file `params` names by ref, by hash. Untrusted until parsed. */
+  readonly meshFiles?: Readonly<Record<string, string>>;
   /** Workshop assembly content, mirrored from the server record. */
   readonly kind?: 'assembly';
   readonly envelope?: ItemEnvelope;

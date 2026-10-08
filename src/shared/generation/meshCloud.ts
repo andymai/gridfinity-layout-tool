@@ -199,6 +199,43 @@ export function forgetHeldMeshes(hashes: readonly string[]): void {
   for (const hash of hashes) uploads.delete(hash);
 }
 
+/**
+ * Whether a payload naming `hashes` can name them by ref: the account holds
+ * every file, uploading under `session` those it lacks. False sends the meshes
+ * inline, as does a payload with no file to name.
+ */
+export async function accountHoldsMeshFiles(
+  hashes: readonly string[],
+  session: number
+): Promise<boolean> {
+  if (hashes.length === 0) return false;
+  try {
+    return (await uploadMeshFiles(hashes, session)).status === 'held';
+  } catch {
+    return false;
+  }
+}
+
+export async function readMissingMeshes(response: Response): Promise<string[]> {
+  try {
+    const { missing } = (await response.json()) as { missing?: unknown };
+    return Array.isArray(missing) ? missing.filter((m): m is string => typeof m === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+const MESH_HASH = /^[0-9a-f]{64}$/;
+
+export function parseMeshFiles(raw: unknown): Record<string, string> | undefined {
+  if (typeof raw !== 'object' || raw === null) return undefined;
+  const files = Object.entries(raw).filter(
+    (entry): entry is [string, string] =>
+      MESH_HASH.test(entry[0]) && typeof entry[1] === 'string' && entry[1].startsWith('https://')
+  );
+  return files.length > 0 ? Object.fromEntries(files) : undefined;
+}
+
 // One queue for every caller, few at a time: a device new to an account can
 // lack thousands of files, more than the server answers per minute.
 const DOWNLOADS_AT_ONCE = 4;

@@ -14,6 +14,17 @@ const mocks = vi.hoisted(() => ({
   put: vi.fn(),
   head: vi.fn(),
   del: vi.fn(),
+  resolveHeldMeshFiles: vi.fn(),
+  holdCommunityMeshes: vi.fn(),
+}));
+
+vi.mock('./lib/shareMeshes.js', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  resolveHeldMeshFiles: mocks.resolveHeldMeshFiles,
+}));
+vi.mock('./lib/meshIndex.js', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  holdCommunityMeshes: mocks.holdCommunityMeshes,
 }));
 
 vi.mock('./lib/rateLimit.js', () => ({
@@ -444,6 +455,8 @@ beforeEach(() => {
   }));
   mocks.put.mockImplementation(async (path: string) => ({ url: `https://blob.test/${path}` }));
   mocks.del.mockResolvedValue(undefined);
+  mocks.resolveHeldMeshFiles.mockResolvedValue({});
+  mocks.holdCommunityMeshes.mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -560,6 +573,73 @@ describe('POST /api/community (publish)', () => {
     const body = res._body as { error: string };
     expect(body.error.toLowerCase()).not.toContain('deny');
     expect(mocks.put).not.toHaveBeenCalled();
+  });
+
+  describe('a design naming mesh files', () => {
+    const HASH = 'a'.repeat(64);
+    const URL = `https://store.public.blob.vercel-storage.com/meshes/${HASH}`;
+    const refParams = (): Record<string, unknown> => ({
+      ...(publishBody().params as Record<string, unknown>),
+      meshAssets: {
+        m1: { name: 'socket.stl', hash: HASH, triangleCount: 12, sizeMm: [1, 1, 1], bytes: 9 },
+      },
+    });
+
+    it('stores the CDN URL of each file and holds the files before the record', async () => {
+      mocks.resolveHeldMeshFiles.mockResolvedValue({ [HASH]: URL });
+
+      const res = await handle({ body: publishBody({ params: refParams() }) });
+
+      expect(res._status).toBe(201);
+      expect(mocks.resolveHeldMeshFiles.mock.calls[0].slice(2)).toEqual(['user-1', [HASH]]);
+      const [designCall] = designBlobCalls();
+      expect((JSON.parse(designCall[1]) as { meshFiles: unknown }).meshFiles).toEqual({
+        [HASH]: URL,
+      });
+      const id = (res._body as { id: string }).id;
+      expect(mocks.holdCommunityMeshes).toHaveBeenCalledWith(fake, id, [HASH]);
+      const [held] = mocks.holdCommunityMeshes.mock.invocationCallOrder;
+      const designWrite =
+        mocks.put.mock.invocationCallOrder[
+          mocks.put.mock.calls.findIndex((call) => call === designCall)
+        ];
+      expect(held).toBeLessThan(designWrite);
+    });
+
+    it('publishes nothing when the caller does not hold the files', async () => {
+      mocks.resolveHeldMeshFiles.mockImplementation(async (res: VercelResponse) => {
+        res.status(424).json({ code: 'MESH_MISSING', missing: [HASH] });
+        return null;
+      });
+
+      const res = await handle({ body: publishBody({ params: refParams() }) });
+
+      expect(res._status).toBe(424);
+      expect(mocks.put).not.toHaveBeenCalled();
+      expect(mocks.holdCommunityMeshes).not.toHaveBeenCalled();
+      expect(mocks.checkRateLimit).not.toHaveBeenCalledWith('user-1', 'community.publish');
+    });
+
+    it('throttles repeated held-file checks on their own short limit', async () => {
+      mocks.checkRateLimit.mockImplementation(async (_scope: string, action: string) =>
+        action === 'community.meshCheck'
+          ? { allowed: false, remaining: 0, resetAt: 0, retryAfterSeconds: 30 }
+          : { allowed: true, remaining: 10, resetAt: 0 }
+      );
+
+      const res = await handle({ body: publishBody({ params: refParams() }) });
+
+      expect(res._status).toBe(429);
+      expect(mocks.resolveHeldMeshFiles).not.toHaveBeenCalled();
+    });
+
+    it('stores no meshFiles for a design without refs', async () => {
+      const res = await handle({ body: publishBody() });
+
+      expect(res._status).toBe(201);
+      const [designCall] = designBlobCalls();
+      expect(JSON.parse(designCall[1])).not.toHaveProperty('meshFiles');
+    });
   });
 
   it('publishes: assets + CAS design blob + redis card, indexes, and sets', async () => {

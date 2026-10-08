@@ -138,6 +138,8 @@ export interface CommunityDesignRecord {
   techniques: CommunityTechnique[];
   /** Bin params; absent on a Workshop assembly record. */
   params?: Record<string, unknown>;
+  /** CDN URL of each mesh file `params` names by ref, by hash. */
+  meshFiles?: Record<string, string>;
   /** Workshop assembly content: envelope + part structure instead of params. */
   kind?: 'assembly';
   envelope?: Record<string, unknown>;

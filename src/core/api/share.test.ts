@@ -16,10 +16,16 @@ import {
   type LoadedDesignData,
 } from '@/core/storage/designStorePort';
 import { useSessionStore } from '@/core/sync/session/useSession';
-import { forgetHeldMeshes, meshCloudSession, uploadMeshFiles } from '@/shared/generation/meshCloud';
+import {
+  accountHoldsMeshFiles,
+  forgetHeldMeshes,
+  meshCloudSession,
+} from '@/shared/generation/meshCloud';
+import type * as MeshCloud from '@/shared/generation/meshCloud';
 
-vi.mock('@/shared/generation/meshCloud', () => ({
-  uploadMeshFiles: vi.fn(),
+vi.mock('@/shared/generation/meshCloud', async (importOriginal) => ({
+  ...(await importOriginal<typeof MeshCloud>()),
+  accountHoldsMeshFiles: vi.fn(),
   forgetHeldMeshes: vi.fn(),
   meshCloudSession: vi.fn(() => 1),
 }));
@@ -565,7 +571,7 @@ describe('linked designs naming mesh files', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn());
     vi.mocked(fetch).mockResolvedValue(created);
-    vi.mocked(uploadMeshFiles).mockResolvedValue({ status: 'held' });
+    vi.mocked(accountHoldsMeshFiles).mockResolvedValue(true);
     vi.mocked(meshCloudSession).mockReturnValue(1);
     installMeshBin();
   });
@@ -582,7 +588,7 @@ describe('linked designs naming mesh files', () => {
 
     expectOk(await createShare('abc123xyz789', layout, 'view'));
 
-    expect(uploadMeshFiles).toHaveBeenCalledWith([HASH], 1);
+    expect(accountHoldsMeshFiles).toHaveBeenCalledWith([HASH], 1);
     expect(sentAssets()).toEqual([ref]);
     const [, init] = vi.mocked(fetch).mock.calls[0];
     expect(new Headers(init?.headers).get('X-Requested-With')).toBe('gflt');
@@ -593,13 +599,13 @@ describe('linked designs naming mesh files', () => {
 
     expectOk(await createShare('abc123xyz789', layout, 'view'));
 
-    expect(uploadMeshFiles).not.toHaveBeenCalled();
+    expect(accountHoldsMeshFiles).not.toHaveBeenCalled();
     expect(sentAssets()).toEqual([inline]);
   });
 
   it('sends the mesh inline when the server has no mesh store', async () => {
     signIn();
-    vi.mocked(uploadMeshFiles).mockResolvedValue({ status: 'unavailable' });
+    vi.mocked(accountHoldsMeshFiles).mockResolvedValue(false);
 
     expectOk(await createShare('abc123xyz789', layout, 'view'));
 
@@ -647,7 +653,7 @@ describe('linked designs naming mesh files', () => {
 
     expectOk(await createShare('abc123xyz789', layout, 'view'));
 
-    expect(uploadMeshFiles).not.toHaveBeenCalled();
+    expect(accountHoldsMeshFiles).not.toHaveBeenCalled();
     expect(sentAssets()).toEqual([inline]);
   });
 
@@ -665,7 +671,7 @@ describe('linked designs naming mesh files', () => {
 
     expectOk(await createShare('abc123xyz789', layout, 'view'));
 
-    expect(uploadMeshFiles).toHaveBeenCalledWith([HASH], 1);
+    expect(accountHoldsMeshFiles).toHaveBeenCalledWith([HASH], 1);
   });
 });
 

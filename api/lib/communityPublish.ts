@@ -9,6 +9,9 @@ import {
   REMIX_UNCHANGED_RESPONSE,
 } from './communityRecord.js';
 import { requireSession } from './session.js';
+import { meshRefHashes } from './designerCutoutValidation.js';
+import { holdCommunityMeshes } from './meshIndex.js';
+import { resolveHeldMeshFiles, unvalidatedMeshRefHashes } from './shareMeshes.js';
 import { checkRateLimit, getRedis } from './rateLimit.js';
 import { logger } from './logger.js';
 import { ErrorCode, rateLimited, sendError, serviceUnavailable } from './shared.js';
@@ -175,6 +178,24 @@ export async function handlePublish(req: VercelRequest, res: VercelResponse): Pr
   if (!session) return;
 
   try {
+    // A design turned back for its mesh files is sent again inline, and the
+    // refusal must not spend a slot of the scarce daily publish budget.
+    const unvalidatedHashes = unvalidatedMeshRefHashes(req.body);
+    if (unvalidatedHashes.length > 0) {
+      const checkRate = await checkRateLimit(session.userId, 'community.meshCheck');
+      if (!checkRate.allowed) {
+        rateLimited(res, checkRate.retryAfterSeconds);
+        return;
+      }
+      const preCheck = await resolveHeldMeshFiles(
+        res,
+        getRedis(),
+        session.userId,
+        unvalidatedHashes
+      );
+      if (!preCheck) return;
+    }
+
     const rate = await checkRateLimit(session.userId, 'community.publish');
     if (!rate.allowed) {
       rateLimited(res, rate.retryAfterSeconds, 'Publish limit reached. Try again later.');
@@ -213,6 +234,14 @@ export async function handlePublish(req: VercelRequest, res: VercelResponse): Pr
       sendError(res, 403, ErrorCode.UNAUTHORIZED, 'Publishing is not available for this account.');
       return;
     }
+
+    const meshFiles = await resolveHeldMeshFiles(
+      res,
+      redis,
+      session.userId,
+      meshRefHashes(payload.params?.meshAssets)
+    );
+    if (!meshFiles) return;
 
     // A9: serialize one user's overlapping publishes so the check->write
     // sequence cannot interleave into a duplicate mint or a quota overshoot.
@@ -333,6 +362,7 @@ export async function handlePublish(req: VercelRequest, res: VercelResponse): Pr
         ...(payload.kind === 'assembly'
           ? { kind: 'assembly' as const, envelope: payload.envelope, structure: payload.structure }
           : { params: payload.params }),
+        ...(Object.keys(meshFiles).length > 0 ? { meshFiles } : {}),
         metrics:
           payload.kind === 'assembly'
             ? deriveAssemblyMetrics(payload.envelope ?? {}, payload.heightUnits ?? 1)
@@ -348,6 +378,9 @@ export async function handlePublish(req: VercelRequest, res: VercelResponse): Pr
       };
 
       try {
+        // Held before the record names them. Holds only grow, so the rollback
+        // below leaves them for the cleanup that finds the record gone.
+        await holdCommunityMeshes(redis, id, Object.keys(meshFiles));
         await writeCommunityDesignBlob(record);
         await writeCommunityCard(redis, cardFromRecord(record));
         await redis.hset(communityDesignKey(id), { contentHash });

@@ -1,6 +1,7 @@
 import type { Redis } from 'ioredis';
 import { MESH_QUOTA_BYTES, MESH_QUOTA_COUNT, checkMeshQuota, type QuotaError } from './quota.js';
 import {
+  communityMeshesKey,
   meshHoldersKey,
   sessionKey,
   shareMeshesKey,
@@ -32,6 +33,10 @@ export function accountMeshHolder(userId: string): string {
 
 export function shareMeshHolder(shareId: string): string {
   return `share:${shareId}`;
+}
+
+export function communityMeshHolder(designId: string): string {
+  return `community:${designId}`;
 }
 
 /**
@@ -77,11 +82,11 @@ return redis.call('SCARD', KEYS[3])
 `;
 
 /**
- * KEYS[1] is the share's own set, KEYS[2..] the holder sets of the files in
- * ARGV[2..]; ARGV[1] is the share's holder name. One step, so the share's set
- * never names a file without its hold, or the reverse.
+ * KEYS[1] is the record's own set of the files it named, KEYS[2..] the holder
+ * sets of the files in ARGV[2..]; ARGV[1] is the record's holder name. One
+ * step, so the record never names a file without its hold, or the reverse.
  */
-const SHARE_HOLD_LUA = `
+const RECORD_HOLD_LUA = `
 for i = 2, #KEYS do
   redis.call('SADD', KEYS[1], ARGV[i])
   redis.call('SADD', KEYS[i], ARGV[1])
@@ -109,7 +114,7 @@ interface MeshRedis extends Redis {
     hash: string,
     holder: string
   ): Promise<number>;
-  shareHold(numberOfKeys: number, ...keysAndArgs: string[]): Promise<number>;
+  recordHold(numberOfKeys: number, ...keysAndArgs: string[]): Promise<number>;
 }
 
 // Registered lazily on whatever client `getRedis()` hands back, and per
@@ -120,8 +125,8 @@ function ensureMeshScripts(redis: Redis): MeshRedis {
     client.defineCommand('meshAcquire', { numberOfKeys: 4, lua: MESH_ACQUIRE_LUA });
     client.defineCommand('meshRelease', { numberOfKeys: 3, lua: MESH_RELEASE_LUA });
   }
-  if (typeof client.shareHold !== 'function') {
-    client.defineCommand('shareHold', { lua: SHARE_HOLD_LUA });
+  if (typeof client.recordHold !== 'function') {
+    client.defineCommand('recordHold', { lua: RECORD_HOLD_LUA });
   }
   return client;
 }
@@ -194,31 +199,49 @@ export async function heldMeshUrls(
   return urls;
 }
 
-function shareScriptArgs(shareId: string, hashes: readonly string[]): [number, ...string[]] {
-  return [
-    hashes.length + 1,
-    shareMeshesKey(shareId),
-    ...hashes.map(meshHoldersKey),
-    shareMeshHolder(shareId),
-    ...hashes,
-  ];
-}
-
 /**
- * Count a share among the holders of each file it names, so the files outlive
- * the sharer's own account holding them. Holds only grow, deletion included:
- * an update racing another, or racing the share's deletion, can write the
- * share back, so letting go is left to a cleanup that finds the share's blob
- * gone. The share's own set records every hold for that cleanup.
+ * Count a record (a share, a published design) among the holders of each file
+ * it names, so the files outlive the owner's account holding them. Holds only
+ * grow, deletion included: an update racing another, or racing the record's
+ * deletion, can write the record back, so letting go is left to a cleanup that
+ * finds the record gone. The record's own set lists every hold for it.
  */
-export async function holdShareMeshes(
+async function holdRecordMeshes(
   redis: Redis,
-  shareId: string,
+  recordKey: string,
+  holder: string,
   hashes: readonly string[]
 ): Promise<void> {
   const unique = [...new Set(hashes)];
   if (unique.length === 0) return;
-  await ensureMeshScripts(redis).shareHold(...shareScriptArgs(shareId, unique));
+  await ensureMeshScripts(redis).recordHold(
+    unique.length + 1,
+    recordKey,
+    ...unique.map(meshHoldersKey),
+    holder,
+    ...unique
+  );
+}
+
+export function holdShareMeshes(
+  redis: Redis,
+  shareId: string,
+  hashes: readonly string[]
+): Promise<void> {
+  return holdRecordMeshes(redis, shareMeshesKey(shareId), shareMeshHolder(shareId), hashes);
+}
+
+export function holdCommunityMeshes(
+  redis: Redis,
+  designId: string,
+  hashes: readonly string[]
+): Promise<void> {
+  return holdRecordMeshes(
+    redis,
+    communityMeshesKey(designId),
+    communityMeshHolder(designId),
+    hashes
+  );
 }
 
 export async function getMeshUsage(redis: Redis, userId: string): Promise<MeshUsage> {

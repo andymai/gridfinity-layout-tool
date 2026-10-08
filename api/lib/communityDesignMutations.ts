@@ -22,6 +22,9 @@ import {
 } from './redisKeys.js';
 import { checkRateLimit, getClientIP, getRedis } from './rateLimit.js';
 import { requireSession } from './session.js';
+import { meshRefHashes } from './designerCutoutValidation.js';
+import { holdCommunityMeshes } from './meshIndex.js';
+import { resolveHeldMeshFiles, unvalidatedMeshRefHashes } from './shareMeshes.js';
 import { logger } from './logger.js';
 import {
   ErrorCode,
@@ -96,6 +99,20 @@ export async function handlePut(req: VercelRequest, res: VercelResponse, id: str
     const session = await requireSession(req, res);
     if (!session) return;
 
+    // As on publish: the refusal is resent inline, so it spends no budget.
+    const unvalidatedHashes = unvalidatedMeshRefHashes(req.body);
+    if (unvalidatedHashes.length > 0) {
+      const checkRate = await checkRateLimit(session.userId, 'community.meshCheck');
+      if (!checkRate.allowed) return rateLimited(res, checkRate.retryAfterSeconds);
+      const preCheck = await resolveHeldMeshFiles(
+        res,
+        getRedis(),
+        session.userId,
+        unvalidatedHashes
+      );
+      if (!preCheck) return;
+    }
+
     const rateLimit = await checkRateLimit(session.userId, 'community.manage');
     if (!rateLimit.allowed) {
       return rateLimited(res, rateLimit.retryAfterSeconds, 'Too many updates. Try again later.');
@@ -130,6 +147,14 @@ export async function handlePut(req: VercelRequest, res: VercelResponse, id: str
       });
     }
     const payload = result.payload;
+
+    const meshFiles = await resolveHeldMeshFiles(
+      res,
+      redis,
+      session.userId,
+      meshRefHashes(payload.params?.meshAssets)
+    );
+    if (!meshFiles) return;
 
     const existing = await readCommunityDesignBlob(id);
     if (!existing) {
@@ -198,8 +223,11 @@ export async function handlePut(req: VercelRequest, res: VercelResponse, id: str
     // Update in place: id, author identity, lineage, createdAt, featured, and
     // moderation status all survive the rewrite. Status in particular is
     // never client-writable.
+    // The previous files go with the previous params; this edit names its own.
+    const { meshFiles: _previousFiles, ...kept } = existing;
+    void _previousFiles;
     const updated: CommunityDesignRecord = {
-      ...existing,
+      ...kept,
       name: payload.name,
       description: payload.description,
       authorName: payload.authorName,
@@ -208,6 +236,7 @@ export async function handlePut(req: VercelRequest, res: VercelResponse, id: str
       ...(payload.kind === 'assembly'
         ? { kind: 'assembly' as const, envelope: payload.envelope, structure: payload.structure }
         : { params: payload.params }),
+      ...(Object.keys(meshFiles).length > 0 ? { meshFiles } : {}),
       metrics:
         payload.kind === 'assembly'
           ? deriveAssemblyMetrics(payload.envelope ?? {}, payload.heightUnits ?? 1)
@@ -217,6 +246,8 @@ export async function handlePut(req: VercelRequest, res: VercelResponse, id: str
       updatedAt: Date.now(),
     };
 
+    // Held before the record names them; holds only grow.
+    await holdCommunityMeshes(redis, id, Object.keys(meshFiles));
     await writeCommunityDesignBlob(updated, { allowOverwrite: true });
 
     // A4: re-read moderation status immediately before writing the card. A hide

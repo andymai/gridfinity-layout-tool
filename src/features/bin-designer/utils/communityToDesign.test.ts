@@ -23,6 +23,13 @@ vi.mock('@/core/store', () => ({
 }));
 
 import { communityToDesign, lineageFromParent } from './communityToDesign';
+import { fetchSharedMeshFiles } from '@/shared/generation/meshCloud';
+import type * as MeshCloud from '@/shared/generation/meshCloud';
+
+vi.mock('@/shared/generation/meshCloud', async (importOriginal) => ({
+  ...(await importOriginal<typeof MeshCloud>()),
+  fetchSharedMeshFiles: vi.fn(async () => undefined),
+}));
 
 const params = { width: 2, depth: 3, height: 6 } as unknown as BinParams;
 
@@ -104,6 +111,27 @@ describe('communityToDesign', () => {
     expect('publishedId' in arg).toBe(false);
     expect(setActiveDesignId).toHaveBeenCalledWith('design_new');
     expect(loadDesign).toHaveBeenCalledWith(saved);
+  });
+
+  it('fetches the mesh files the design names, keeping only well-formed URLs', async () => {
+    const hash = 'c'.repeat(64);
+    const url = `https://store.public.blob.vercel-storage.com/meshes/${hash}`;
+    saveDesign.mockResolvedValue({ ok: true, value: { id: 'design_new', name: 'x', params } });
+
+    await communityToDesign(
+      communityDesign({ meshFiles: { [hash]: url, nothex: url, ['d'.repeat(64)]: 'http://x/y' } })
+    );
+
+    expect(fetchSharedMeshFiles).toHaveBeenCalledWith({ [hash]: url });
+  });
+
+  it('fetches nothing for a design that names no mesh file', async () => {
+    vi.mocked(fetchSharedMeshFiles).mockClear();
+    saveDesign.mockResolvedValue({ ok: true, value: { id: 'design_new', name: 'x', params } });
+
+    await communityToDesign(communityDesign());
+
+    expect(fetchSharedMeshFiles).not.toHaveBeenCalled();
   });
 
   it('saves an assembly through the descriptor migration gate', async () => {
