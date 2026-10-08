@@ -54,43 +54,47 @@ function meshPath(hash: string): string {
   return `/api/meshes/${hash}`;
 }
 
-function outcome(res: Response, hash: string, epoch: number): FileUpload {
+function outcome(res: Response, hash: string): FileUpload {
   if (res.ok) return HELD;
-  const current = epoch === sessionEpoch;
   if (res.status === 503) {
-    if (current) unavailableUntil = Date.now() + INLINE_RECHECK_MS;
+    unavailableUntil = Date.now() + INLINE_RECHECK_MS;
     return UNAVAILABLE;
   }
   if (res.status === 429) {
     return { status: 'throttled', retryAfterMs: parseRetryAfter(res.headers.get('Retry-After')) };
   }
   if (res.status >= 400 && res.status < 500) {
-    if (current) refusedUntil.set(hash, Date.now() + INLINE_RECHECK_MS);
+    refusedUntil.set(hash, Date.now() + INLINE_RECHECK_MS);
     return REFUSED;
   }
   return { status: 'failed', reason: `mesh upload: HTTP ${res.status}` };
 }
 
 // A request that never reaches the server rejects, as a push's own request
-// does, so being offline leaves the push queued without spending a retry.
+// does, so being offline leaves the push queued without spending a retry. So
+// does an upload whose session ended mid-way: nothing of it may go on, or vouch
+// for a file, under the next account.
 async function upload(hash: string): Promise<FileUpload> {
   const epoch = sessionEpoch;
+  const current = (): void => {
+    if (epoch !== sessionEpoch) throw new Error('mesh upload: session ended');
+  };
   const now = Date.now();
   if (now < unavailableUntil) return UNAVAILABLE;
   if (now < (refusedUntil.get(hash) ?? 0)) return REFUSED;
   const head = await apiFetch(meshPath(hash), { method: 'HEAD' });
-  if (head.status !== 404) return outcome(head, hash, epoch);
+  current();
+  if (head.status !== 404) return outcome(head, hash);
   const bytes = await getMeshFile(hash);
+  current();
   if (!bytes) return { status: 'missing', hash };
-  return outcome(
-    await apiFetch(meshPath(hash), {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/octet-stream' },
-      body: bytes,
-    }),
-    hash,
-    epoch
-  );
+  const put = await apiFetch(meshPath(hash), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/octet-stream' },
+    body: bytes,
+  });
+  current();
+  return outcome(put, hash);
 }
 
 function uploadOnce(hash: string): Promise<FileUpload> {
@@ -213,7 +217,7 @@ function pumpDownloads(): void {
       } else {
         failedDownloads.add(hash);
         if (typeof result === 'object') {
-          throttledUntil = Date.now() + result.retryAfterMs;
+          throttledUntil = Math.max(throttledUntil, Date.now() + result.retryAfterMs);
           // The rest wait for the retry rather than ask a throttling server.
           for (const queued of downloadQueue.splice(0)) {
             failedDownloads.add(queued);

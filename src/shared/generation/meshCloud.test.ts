@@ -178,6 +178,26 @@ describe('uploadMeshFiles', () => {
     expect(await uploadMeshFiles([file.hash])).toEqual({ status: 'held' });
   });
 
+  it('takes an upload no further once its session ends', async () => {
+    const file = await storedFile(14);
+    let answerHead = (_res: Response): void => undefined;
+    fetchMock.mockImplementation((_url, init) =>
+      init?.method === 'HEAD'
+        ? new Promise((resolve) => {
+            answerHead = resolve;
+          })
+        : Promise.resolve(new Response(null, { status: 200 }))
+    );
+
+    const uploading = uploadMeshFiles([file.hash]);
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    endMeshCloudSession();
+    answerHead(new Response(null, { status: 404 }));
+
+    await expect(uploading).rejects.toThrow('session ended');
+    expect(calls().map((c) => c.method)).toEqual(['HEAD']);
+  });
+
   it('answers held without a request for a payload with no mesh', async () => {
     expect(await uploadMeshFiles([])).toEqual({ status: 'held' });
     expect(fetchMock).not.toHaveBeenCalled();
