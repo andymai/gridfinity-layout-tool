@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { timeLimitMs } from '@/test/timeLimit';
 import { COINCIDENT_POINT_EPSILON } from './polyline';
 import {
   HARD_MAX_OFFSET_POINTS,
@@ -455,7 +456,7 @@ describe('offsetClosedPolygonWithinReach', () => {
       const rim = offsetClosedPolygonWithinReach(refined, d);
       offsetClosedPolygonWithinReach(refined, 0.25, rim.reach);
     }
-    expect(performance.now() - started).toBeLessThan(750);
+    expect(performance.now() - started).toBeLessThan(timeLimitMs(750));
   });
 
   // Shared links and community designs run their paths in the viewer's worker,
@@ -472,7 +473,7 @@ describe('offsetClosedPolygonWithinReach', () => {
     for (const poly of [zigzagEdge(50000, 3), jitteredEdge(50000, 3), scribble(10000)]) {
       const { refined, ms } = chamferedPath(poly);
       expect(refined.length).toBeLessThanOrEqual(HARD_MAX_OFFSET_POINTS);
-      expect(ms).toBeLessThan(500);
+      expect(ms).toBeLessThan(timeLimitMs(500));
     }
   });
 
@@ -480,7 +481,7 @@ describe('offsetClosedPolygonWithinReach', () => {
     // The densest zigzag both ceilings let through untouched.
     const { refined, ms } = chamferedPath(zigzagEdge(4990, 320));
     expect(refined.length).toBeGreaterThan(4990);
-    expect(ms).toBeLessThan(1500);
+    expect(ms).toBeLessThan(timeLimitMs(1500));
   });
 
   it('leaves a large, finely toothed profile within the ceilings untouched', () => {
@@ -528,7 +529,7 @@ describe('offsetClosedPolygonWithinReach', () => {
     chamfer(bite(500));
     const sparse = fastest(bite(2500));
     const dense = fastest(bite(10000));
-    expect(dense).toBeLessThan(500);
+    expect(dense).toBeLessThan(timeLimitMs(500));
     expect(dense / Math.max(sparse, 1)).toBeLessThan(8);
   });
 });
