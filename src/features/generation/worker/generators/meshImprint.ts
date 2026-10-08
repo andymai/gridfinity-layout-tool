@@ -72,6 +72,16 @@ function disposeTool(tool: PreparedTool | undefined): void {
   tool.dilations.clear();
 }
 
+/** Drop the oldest tools `needed` does not name until at most `limit` remain. */
+function trimPreparedTools(needed: ReadonlySet<string>, limit: number): void {
+  for (const key of preparedTools.keys()) {
+    if (preparedTools.size <= limit) return;
+    if (needed.has(key)) continue;
+    disposeTool(preparedTools.get(key));
+    preparedTools.delete(key);
+  }
+}
+
 /** Drop all prepared tool manifolds (worker CLEANUP path). */
 export function clearMeshImprintCache(): void {
   for (const tool of preparedTools.values()) disposeTool(tool);
@@ -90,18 +100,20 @@ export async function prepareMeshImprints(
   moduleOverride?: ManifoldToplevel
 ): Promise<void> {
   const cutouts = visibleMeshCutouts(params);
-  if (cutouts.length === 0) return;
-  const module = moduleOverride ?? (await getManifoldModule());
-  activeModule = module;
-
   // A design can hold more meshes than the cache keeps across designs. Evicting
   // one of its own would cut that imprint as a flat outline prism and rebuild
-  // its clearance on every regeneration, so the cache grows to fit the design.
+  // its clearance on every regeneration, so the cache grows to fit the design
+  // and shrinks back once a smaller one is prepared.
   const needed = new Set<string>();
   for (const cutout of cutouts) {
     const asset = params.meshAssets?.[cutout.meshId ?? ''];
     if (asset) needed.add(meshEntryKey(asset));
   }
+  const keep = Math.max(MAX_PREPARED_TOOLS, needed.size);
+  trimPreparedTools(needed, keep);
+  if (cutouts.length === 0) return;
+  const module = moduleOverride ?? (await getManifoldModule());
+  activeModule = module;
 
   for (const cutout of cutouts) {
     const asset = params.meshAssets?.[cutout.meshId ?? ''];
@@ -130,14 +142,7 @@ export async function prepareMeshImprints(
       }
     }
 
-    if (preparedTools.size >= MAX_PREPARED_TOOLS) {
-      for (const oldKey of preparedTools.keys()) {
-        if (needed.has(oldKey)) continue;
-        disposeTool(preparedTools.get(oldKey));
-        preparedTools.delete(oldKey);
-        break;
-      }
-    }
+    trimPreparedTools(needed, keep - 1);
     preparedTools.set(key, { manifold, topShoulder, dilations: new Map() });
   }
 }

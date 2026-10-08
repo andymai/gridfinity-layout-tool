@@ -68,9 +68,13 @@ export function __clearMeshFilesForTests(): void {
   deferredDrops.clear();
 }
 
-/** Cache key for an entry's geometry: the file hash, or an inline asset's data. */
+/**
+ * Cache key for an entry's geometry: the file hash, or an inline asset's data,
+ * with the declared triangle count. A decode is held to that count, so the same
+ * bytes declared differently must not share a cached result.
+ */
 export function meshEntryKey(entry: MeshAssetEntry): string {
-  return isMeshAssetRef(entry) ? entry.hash : entry.data;
+  return `${entry.triangleCount}:${isMeshAssetRef(entry) ? entry.hash : entry.data}`;
 }
 
 /** Decode an entry's geometry, or null while a ref's file has not been sent. */

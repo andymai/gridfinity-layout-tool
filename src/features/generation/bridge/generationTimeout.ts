@@ -133,8 +133,8 @@ export const SCOOP_MS_PER_RAMP = 1_500;
  * Generous for the same reason as {@link SCOOP_MS_PER_RAMP}: a reloaded design
  * pays for every tool at once, before the device floor has seen a build.
  */
-export const MESH_IMPRINT_MS_PER_ASSET = 1_000;
-export const MESH_IMPRINT_MS_PER_TRIANGLE = 0.1;
+export const MESH_IMPRINT_MS_PER_ASSET = 100;
+export const MESH_IMPRINT_MS_PER_TRIANGLE = 0.05;
 
 /**
  * Bonus per 2 height units above the reference height.
