@@ -43,8 +43,9 @@ export async function runSignOut(ctx: SignOutContext): Promise<SignOutResult> {
     await cancelClaims(pulls ? () => pulls.ended : undefined);
 
     if (choice === 'wipe') {
-      // Stop the engine FIRST, so no push or flush runs during the wipe.
-      stopEngine();
+      // Stop the engine FIRST, so no push or flush runs during the wipe, and
+      // let a conflict write it had under way land before it.
+      await stopEngine();
       // Clear outbox before wipeLocal: if clearOutbox throws (IDB failure),
       // wipeLocal hasn't run yet so the engine has nothing to drain. Same
       // safety order as claim.ts's discard path.

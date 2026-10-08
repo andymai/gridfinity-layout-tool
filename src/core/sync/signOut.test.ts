@@ -307,6 +307,23 @@ describe('runSignOut — poller high-water reset', () => {
     expect(order).toEqual(['hold', 'cancel', 'wipe', 'anonymous', 'release']);
   });
 
+  it('wipe path waits for a write the engine had under way', async () => {
+    let landWrite = (): void => undefined;
+    stopEngineMock.mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        landWrite = resolve;
+      })
+    );
+    layouts.items.set('a', { id: 'a', payload: {}, modifiedAt: 1000 });
+    const signingOut = runSignOut({ adapters, promptKeepLocal: promptWipe, onAnonymous });
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(clearOutboxMock).not.toHaveBeenCalled();
+
+    landWrite();
+    await signingOut;
+    expect(layouts.items.size).toBe(0);
+  });
+
   it('releases held pulls when the wipe fails', async () => {
     const release = vi.fn();
     holdPullsMock.mockImplementationOnce(() => ({ ended: Promise.resolve(), release }));

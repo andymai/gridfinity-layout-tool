@@ -104,10 +104,10 @@ export function SyncSessionMount() {
     return () => {
       cancelled = true;
       // The periodic poll keeps running across an account switch, so its pulls
-      // end here, and the next claim waits for a write one had in progress.
-      const pulls = endPulls();
-      void cancelClaims(() => pulls);
-      stop();
+      // end here, and the next claim waits for a write one had in progress, or
+      // one the engine had under way.
+      const writes = Promise.all([endPulls(), stop()]).then(() => undefined);
+      void cancelClaims(() => writes);
       // The claim's pulls start mesh downloads before the engine exists, so
       // stopping the engine alone would leave them, and their retry timer, to
       // run on under no account or the next one.

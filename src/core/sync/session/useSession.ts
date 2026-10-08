@@ -68,13 +68,22 @@ useSessionStore.subscribe((state, prev) => {
   if (state.user?.userId !== prev.user?.userId) onAccountChanged();
 });
 
-/** Hits /api/auth/me and returns the resulting state, or null on transient error. */
+/** Bumped by each refresh, so one that a later refresh overtook drops its answer. */
+let refreshes = 0;
+
+/**
+ * Hits /api/auth/me and returns the resulting state, or null on transient
+ * error or when a later refresh started meanwhile: across rapid account
+ * switches, an older answer names an account the cookie no longer does.
+ */
 async function refreshFromServer(): Promise<{
   state: { status: SessionStatus; user: SessionUser | null };
   broadcastType: 'authenticated' | 'anonymous';
 } | null> {
+  const refresh = ++refreshes;
   try {
     const user = await getMe();
+    if (refresh !== refreshes) return null;
     return user
       ? { state: { status: 'authenticated', user }, broadcastType: 'authenticated' }
       : { state: { status: 'anonymous', user: null }, broadcastType: 'anonymous' };

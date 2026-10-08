@@ -50,6 +50,11 @@ interface EngineState {
 }
 
 let state: EngineState | null = null;
+/**
+ * Every conflict write in progress: a 409 puts the server's copy over the
+ * local one. `stop()` hands it back so a wipe can wait for it. Never rejects.
+ */
+let conflictWrites: Promise<unknown> = Promise.resolve();
 
 /** Idempotent. Boot site (PR 4d) calls this on sign-in, `stop()` on sign-out. */
 export function start(adapters: SyncAdapters): void {
@@ -80,7 +85,8 @@ export function start(adapters: SyncAdapters): void {
   rehydrate(s).catch((error: unknown) => reportUncaught('rehydrate', error));
 }
 
-export function stop(): void {
+/** Settles once a conflict write already under way has landed. */
+export function stop(): Promise<void> {
   if (state !== null) {
     state.stopping = true;
     for (const off of state.unsubscribers) off();
@@ -91,6 +97,7 @@ export function stop(): void {
   // Also with no engine: the sign-in claim marks the status syncing before the
   // engine starts, and a cancelled claim leaves it for this teardown to clear.
   useSyncStatusStore.getState().reset();
+  return conflictWrites.then(() => undefined);
 }
 
 export function onEngineEvent(listener: EngineEventListener): () => void {
@@ -323,10 +330,11 @@ async function handleConflict(
   } catch {
     stored = null;
   }
+  if (stopped(s)) return;
   if (stored && typeof stored.modifiedAt === 'number') {
     const payload = stored[PAYLOAD_KEY[kind]];
     if (payload !== undefined) {
-      await adapter.applyRemote({
+      const write = adapter.applyRemote({
         id: entry.id,
         payload,
         modifiedAt: stored.modifiedAt,
@@ -334,6 +342,10 @@ async function handleConflict(
           ? { schemaVersion: stored.schemaVersion }
           : {}),
       });
+      conflictWrites = Promise.all([conflictWrites, write.catch(() => undefined)]).then(
+        () => undefined
+      );
+      await write;
       emitEngineEvent(s, { type: 'remote-replaced-local', kind, id: entry.id });
     }
   }

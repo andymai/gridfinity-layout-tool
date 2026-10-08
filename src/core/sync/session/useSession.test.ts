@@ -259,6 +259,33 @@ describe('account changes', () => {
     window.removeEventListener(FORCED_SIGN_OUT_EVENT, handler);
   });
 
+  it('keeps the account of the newest refresh when two overlap', async () => {
+    const answers: ((res: Response) => void)[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          new Promise<Response>((resolve) => {
+            answers.push(resolve);
+          })
+      )
+    );
+    const me = (userId: string): Response =>
+      new Response(
+        JSON.stringify({ authenticated: true, user: { userId, provider: 'google', email: 'a@x' } }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+
+    const older = useSessionStore.getState().applyRemoteState('authenticated');
+    const newer = useSessionStore.getState().applyRemoteState('authenticated');
+    answers[1](me('u2'));
+    await newer;
+    answers[0](me('u1'));
+    await older;
+
+    expect(useSessionStore.getState().user?.userId).toBe('u2');
+  });
+
   it("keeps a stale 401 from signing out another tab's sign-in while its user loads", async () => {
     useSessionStore.setState({
       status: 'authenticated',

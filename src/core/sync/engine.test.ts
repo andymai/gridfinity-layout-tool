@@ -549,6 +549,74 @@ describe('push: preparePush', () => {
     expect(designsAdapter.applyRemote).not.toHaveBeenCalled();
   });
 
+  describe('a conflict around the stop', () => {
+    const conflictBody = { stored: { design: { v: 9 }, modifiedAt: 3000 } };
+
+    beforeEach(() => {
+      designsAdapter.preparePush = vi.fn(async (id: string) => ({
+        status: 'send' as const,
+        item: { id, payload: { v: 1 }, modifiedAt: 2000 },
+      }));
+    });
+
+    it('writes nothing for a 409 whose body is read after the stop', async () => {
+      let readBody = (): void => undefined;
+      fetchMock.mockImplementation((_url: string, init?: RequestInit) =>
+        Promise.resolve(
+          init?.method === 'PUT'
+            ? ({
+                ok: false,
+                status: 409,
+                json: () =>
+                  new Promise((resolve) => {
+                    readBody = () => resolve(conflictBody);
+                  }),
+              } as unknown as Response)
+            : new Response(null, { status: 200 })
+        )
+      );
+      engine.start(adapters);
+      designsAdapter.triggerChange({ kind: 'put', id: 'des-1', modifiedAt: 2000 });
+      await vi.waitFor(() => expect(puts()).toHaveLength(1));
+
+      void engine.stop();
+      readBody();
+      await flush();
+
+      expect(designsAdapter.applyRemote).not.toHaveBeenCalled();
+    });
+
+    it('settles a stop once a conflict write already under way has landed', async () => {
+      fetchMock.mockImplementation((_url: string, init?: RequestInit) =>
+        Promise.resolve(
+          new Response(init?.method === 'PUT' ? JSON.stringify(conflictBody) : null, {
+            status: init?.method === 'PUT' ? 409 : 200,
+          })
+        )
+      );
+      let landWrite = (): void => undefined;
+      designsAdapter.applyRemote = vi.fn(
+        () =>
+          new Promise<void>((resolve) => {
+            landWrite = resolve;
+          })
+      );
+      engine.start(adapters);
+      designsAdapter.triggerChange({ kind: 'put', id: 'des-1', modifiedAt: 2000 });
+      await vi.waitFor(() => expect(designsAdapter.applyRemote).toHaveBeenCalled());
+
+      let settled = false;
+      const stopping = engine.stop().then(() => {
+        settled = true;
+      });
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      expect(settled).toBe(false);
+
+      landWrite();
+      await stopping;
+    });
+  });
+
   it('still reports a plan that fails while the engine runs', async () => {
     designsAdapter.preparePush = vi.fn<NonNullable<SyncAdapter['preparePush']>>(async () => {
       throw new Error('idb closed');
