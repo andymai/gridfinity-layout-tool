@@ -98,16 +98,24 @@ const waitingKeys = new Map<string, ReadonlySet<string>>();
 const staleKeys = new Set<string>();
 const staleListeners = new Set<() => void>();
 let stopHearingArrivals: (() => void) | null = null;
+// Files that arrived during the resolution in progress: one it found missing
+// can land before its entry starts waiting, and would otherwise go unheard.
+let arrivedWhileResolving: Set<string> | null = null;
 
-function onMeshFileArrived(hash: string): void {
-  let staled = false;
-  for (const [key, hashes] of waitingKeys) {
-    if (!hashes.has(hash)) continue;
+function markStale(keys: readonly string[]): void {
+  if (keys.length === 0) return;
+  for (const key of keys) {
     waitingKeys.delete(key);
     staleKeys.add(key);
-    staled = true;
   }
-  if (staled) for (const listener of staleListeners) listener();
+  for (const listener of staleListeners) listener();
+}
+
+function onMeshFileArrived(hash: string): void {
+  arrivedWhileResolving?.add(hash);
+  const staled: string[] = [];
+  for (const [key, hashes] of waitingKeys) if (hashes.has(hash)) staled.push(key);
+  markStale(staled);
 }
 
 /** Reset module state. @internal — for tests only. */
@@ -119,6 +127,7 @@ export function clearLinkedDesignMeshCache(): void {
   staleKeys.clear();
   stopHearingArrivals?.();
   stopHearingArrivals = null;
+  arrivedWhileResolving = null;
   resolveChain = Promise.resolve();
 }
 
@@ -178,7 +187,6 @@ function setCachedMesh(
     return;
   }
   waitingKeys.set(key, new Set(waitingFor));
-  stopHearingArrivals ??= subscribeMeshFileArrivals(onMeshFileArrived);
 }
 
 // Read a cached entry (including a cached null miss), promoting it to
@@ -340,6 +348,10 @@ function enqueueResolve(
   }
   inFlight.set(key, new Set([onSettled]));
   resolveChain = resolveChain.then(async () => {
+    stopHearingArrivals ??= subscribeMeshFileArrivals(onMeshFileArrived);
+    const arrived = new Set<string>();
+    arrivedWhileResolving = arrived;
+    let missedArrival = false;
     try {
       const designResult = await loadDesign(request.id);
       const waitingFor: string[] = [];
@@ -354,14 +366,17 @@ function enqueueResolve(
           )
         : null;
       setCachedMesh(key, entry, waitingFor);
+      missedArrival = waitingFor.some((hash) => arrived.has(hash));
     } catch {
       // Worker init/generation failure — cache the miss so we don't retry
       // every render; a design re-save (new updatedAt) retries naturally.
       setCachedMesh(key, null);
     } finally {
+      arrivedWhileResolving = null;
       const settled = inFlight.get(key);
       inFlight.delete(key);
       for (const waiter of settled ?? []) waiter();
+      if (missedArrival) markStale([key]);
     }
   });
 }

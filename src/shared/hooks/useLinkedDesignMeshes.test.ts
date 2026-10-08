@@ -258,10 +258,13 @@ describe('useLinkedDesignMeshes', () => {
     expect(mockSavePersistedBinMesh).not.toHaveBeenCalled();
   });
 
-  it('rebuilds a mesh built without a file once that file arrives', async () => {
+  /** A mesh file not yet on this device; `data` keeps each test's bytes distinct. */
+  async function absentMeshFile(
+    data: string
+  ): Promise<NonNullable<Awaited<ReturnType<typeof meshAssetFile>>>> {
     const file = await meshAssetFile({
       name: 'wrench',
-      data: 'AAAB',
+      data,
       triangleCount: 1,
       sizeMm: { x: 20, y: 10, z: 5 },
       outlines: [
@@ -273,6 +276,11 @@ describe('useLinkedDesignMeshes', () => {
       ],
     });
     if (!file) throw new Error('fixture');
+    return file;
+  }
+
+  it('rebuilds a mesh built without a file once that file arrives', async () => {
+    const file = await absentMeshFile('AAAB');
     const uncut = makeMesh();
     const cut = makeMesh();
     const generateImmediate = vi
@@ -299,6 +307,32 @@ describe('useLinkedDesignMeshes', () => {
     expect(generateImmediate).toHaveBeenCalledTimes(2);
     expect(mockSavePersistedBinMesh).toHaveBeenCalledTimes(1);
     expect(mockSavePersistedBinMesh).toHaveBeenCalledWith('persist-key-occt-wasm', cut);
+  });
+
+  it('rebuilds a mesh whose file arrived while it was being built', async () => {
+    const file = await absentMeshFile('AAAC');
+    const uncut = makeMesh();
+    const cut = makeMesh();
+    const generateImmediate = vi
+      .fn()
+      .mockImplementationOnce(async () => {
+        await putMeshFile(file.bytes);
+        return { mesh: uncut, meshesPending: true };
+      })
+      .mockResolvedValueOnce({ mesh: cut });
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(ok(makeBinDesign({ meshAssets: { m1: file.ref } })));
+    mockAcquire.mockResolvedValue({ generateImmediate } as unknown as Awaited<
+      ReturnType<typeof bridgeManager.acquire>
+    >);
+
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
+    const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+    await waitFor(() => {
+      expect(result.current.get(B1)?.mesh).toBe(cut);
+    });
+    expect(generateImmediate).toHaveBeenCalledTimes(2);
   });
 
   // This reader returns a persisted hit and stops, with no regeneration
