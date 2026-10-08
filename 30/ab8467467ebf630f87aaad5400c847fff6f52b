@@ -1,0 +1,42 @@
+api/lib/shareMeshes.ts
+  s_1606b97c1ea28d::t_93df9d7f695d48 7-8,39-52
+  s_1606b97c1ea28d::t_7040dba0655490 53-54
+src/features/community/api/client.ts
+  s_1606b97c1ea28d::t_521f4e814e783b 16,194-213,218-227,229
+  s_1606b97c1ea28d::t_c25b78c276b6f9 228
+api/lib/communityPublish.ts
+  s_1606b97c1ea28d::t_93df9d7f695d48 14,181-190
+src/features/bin-designer/hooks/useCommunityPublish.ts
+  s_1606b97c1ea28d::t_521f4e814e783b 163-166,172-173
+src/features/community/api/client.test.ts
+  s_1606b97c1ea28d::t_113764bf310d81 5,298-319
+  s_1606b97c1ea28d::t_a788fcaec6519f 320
+.claude/skills/mesh-storage/SKILL.md
+  s_1606b97c1ea28d::t_521f4e814e783b 27
+api/lib/shareMeshes.test.ts
+  s_1606b97c1ea28d::t_e722e16b78b3bf 20-24,113-133
+  s_1606b97c1ea28d::t_5405a1ada28663 134
+api/community/[id].test.ts
+  s_1606b97c1ea28d::t_e722e16b78b3bf 67-70,827
+api/lib/communityDesignMutations.ts
+  s_1606b97c1ea28d::t_93df9d7f695d48 27,102-109
+  s_1606b97c1ea28d::t_dfeff47169233f 110
+api/community.test.ts
+  s_1606b97c1ea28d::t_e722e16b78b3bf 21-24,620
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "30ab8467467ebf630f87aaad5400c847fff6f52b",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
