@@ -23,7 +23,7 @@ const resetPullStateMock = vi.fn();
 
 vi.mock('./claim', async (importOriginal) => ({
   ...(await importOriginal<typeof Claim>()),
-  cancelClaims: vi.fn(),
+  cancelClaims: vi.fn(async () => undefined),
 }));
 
 vi.mock('./engine', () => ({
@@ -167,7 +167,7 @@ describe('runSignOut — outbox flush', () => {
 
   it('wipe path cancels a claim in flight first, so it cannot write back over the wipe', async () => {
     const order: string[] = [];
-    vi.mocked(cancelClaims).mockImplementation(() => {
+    vi.mocked(cancelClaims).mockImplementation(async () => {
       order.push('cancel');
     });
     stopEngineMock.mockImplementation(() => {

@@ -35,7 +35,7 @@ export async function runSignOut(ctx: SignOutContext): Promise<SignOutResult> {
   const localCount = await countLocalItems(ctx.adapters);
   const choice = await ctx.promptKeepLocal({ localCount });
   if (!isChoice(choice)) return { status: 'cancelled' };
-  cancelClaims();
+  await cancelClaims();
 
   if (choice === 'wipe') {
     // Stop the engine FIRST. Otherwise a periodic poll or visibility

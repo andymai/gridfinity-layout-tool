@@ -99,7 +99,7 @@ export function SyncSessionMount() {
     });
     return () => {
       cancelled = true;
-      cancelClaims();
+      void cancelClaims();
       stop();
       // The claim's pulls start mesh downloads before the engine exists, so
       // stopping the engine alone would leave them, and their retry timer, to

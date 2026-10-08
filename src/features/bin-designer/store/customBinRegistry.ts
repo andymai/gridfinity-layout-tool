@@ -283,7 +283,7 @@ export function registryAssemblyEntry(design: SavedDesign): CustomBinRef | null 
  * The full registry entry for a saved Workshop assembly or imported mesh, or
  * `null` for any other kind. `saveDesign` never registers a design, so the
  * paths that store one outside the designer (a sync pull, the startup pass)
- * build the entry here; an imported mesh's matches what its import wrote.
+ * build the entry here. An imported mesh's entry matches the one its import wrote.
  */
 export function registryItemEntry(design: SavedDesign): CustomBinRef | null {
   if (!design.envelope || design.structure?.kind !== 'importedMesh') {

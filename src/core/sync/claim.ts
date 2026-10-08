@@ -58,23 +58,35 @@ interface ItemFetchResponse {
 /** Stops a cancelled claim at its next local write or queued push. */
 class ClaimCancelled extends Error {}
 
-type CancelCheck = () => void;
+/**
+ * Every local write or queued push a claim makes goes through `write`, which
+ * refuses once the claim is cancelled and records the one in progress, so a
+ * cancel can wait for it to land before anything is wiped.
+ */
+interface ClaimGuard {
+  check(): void;
+  write<T>(op: () => Promise<T>): Promise<T>;
+}
 
 interface ClaimRun {
   readonly promise: Promise<ClaimResult>;
-  cancel(): void;
+  /** Stop the claim; settles once a write it had in progress has landed. */
+  cancel(): Promise<void>;
 }
 
 const inFlightByUser = new Map<string, ClaimRun>();
 
 /**
- * Stop every claim in flight before its next local write or queued push.
- * Called before local data is wiped or the account changes: a claim resuming
- * from a fetch would otherwise write the prior account's items back.
+ * Stop every claim in flight before its next local write or queued push, and
+ * settle once any write they had in progress has landed. Awaited before local
+ * data is wiped or another account's claim starts: a claim resuming from a
+ * fetch, or finishing a write, would otherwise put the prior account's items
+ * back. A claim waiting on the network is not waited for.
  */
-export function cancelClaims(): void {
-  for (const run of inFlightByUser.values()) run.cancel();
+export function cancelClaims(): Promise<void> {
+  const writes = [...inFlightByUser.values()].map((run) => run.cancel());
   inFlightByUser.clear();
+  return Promise.all(writes).then(() => undefined);
 }
 
 /**
@@ -91,18 +103,30 @@ export function cancelClaims(): void {
 export async function runClaim(ctx: ClaimContext): Promise<ClaimResult> {
   const existing = inFlightByUser.get(ctx.userId);
   if (existing) return existing.promise;
-  cancelClaims();
+  const earlier = cancelClaims();
   let cancelled = false;
-  const check: CancelCheck = () => {
-    if (cancelled) throw new ClaimCancelled();
+  let writing: Promise<unknown> = Promise.resolve();
+  const guard: ClaimGuard = {
+    check() {
+      if (cancelled) throw new ClaimCancelled();
+    },
+    async write(op) {
+      guard.check();
+      const pending = Promise.resolve(op());
+      writing = pending.catch(() => undefined);
+      return pending;
+    },
   };
-  const promise = execute(ctx, check).finally(() => {
-    if (inFlightByUser.get(ctx.userId)?.promise === promise) inFlightByUser.delete(ctx.userId);
-  });
+  const promise = earlier
+    .then(() => execute(ctx, guard))
+    .finally(() => {
+      if (inFlightByUser.get(ctx.userId)?.promise === promise) inFlightByUser.delete(ctx.userId);
+    });
   inFlightByUser.set(ctx.userId, {
     promise,
     cancel: () => {
       cancelled = true;
+      return writing.then(() => undefined);
     },
   });
   return promise;
@@ -112,11 +136,11 @@ export function __resetForTests(): void {
   inFlightByUser.clear();
 }
 
-async function execute(ctx: ClaimContext, check: CancelCheck): Promise<ClaimResult> {
+async function execute(ctx: ClaimContext, guard: ClaimGuard): Promise<ClaimResult> {
   const status = useSyncStatusStore.getState();
   status.beginSync();
   try {
-    return await executeInner(ctx, check);
+    return await executeInner(ctx, guard);
   } catch (e) {
     if (e instanceof ClaimCancelled) return { status: 'cancelled' };
     status.reportError(e instanceof Error ? e.message : 'claim failed');
@@ -124,7 +148,7 @@ async function execute(ctx: ClaimContext, check: CancelCheck): Promise<ClaimResu
   }
 }
 
-async function executeInner(ctx: ClaimContext, check: CancelCheck): Promise<ClaimResult> {
+async function executeInner(ctx: ClaimContext, guard: ClaimGuard): Promise<ClaimResult> {
   // Keyed by kind rather than one binding per kind: every step below iterates
   // this, so adding a SyncKind cannot silently skip the claim.
   const kinds = Object.keys(ctx.adapters) as SyncKind[];
@@ -140,15 +164,15 @@ async function executeInner(ctx: ClaimContext, check: CancelCheck): Promise<Clai
       newUserId: ctx.userId,
       newAccountLabel: ctx.newAccountLabel,
     });
-    check();
+    guard.check();
     if (choice === 'discard') {
       // Clear the outbox FIRST: if wipeLocal succeeds but clearOutbox
       // throws (IDB failure), the prior user's pending pushes survive
       // and would drain under the new account once the engine starts.
       // Reverse order makes the failure safe — clearing the outbox is
       // the only step that gates cross-account leakage.
-      await outboxClearAll();
-      await wipeLocal(ctx.adapters, local);
+      await guard.write(() => outboxClearAll());
+      await guard.write(() => wipeLocal(ctx.adapters, local));
       persistLastSignedInUserId(ctx.userId);
       useSyncStatusStore.getState().succeed();
       return { status: 'discarded' };
@@ -156,7 +180,7 @@ async function executeInner(ctx: ClaimContext, check: CancelCheck): Promise<Clai
   }
 
   const manifest = await fetchManifest();
-  check();
+  guard.check();
   if (manifest === null) {
     persistLastSignedInUserId(ctx.userId);
     useSyncStatusStore.getState().reportOffline('manifest fetch failed during claim');
@@ -179,13 +203,13 @@ async function executeInner(ctx: ClaimContext, check: CancelCheck): Promise<Clai
       kind,
       local[kind],
       manifest[kind] ?? {},
-      check
+      guard
     );
     pulled += counts.pulled;
     pushed += counts.pushed;
   }
 
-  check();
+  guard.check();
   persistLastSignedInUserId(ctx.userId);
   useSyncStatusStore.getState().succeed();
 
@@ -210,7 +234,7 @@ async function mergeKind(
   kind: SyncKind,
   local: SyncableItem[],
   remote: Record<string, IndexEntry>,
-  check: CancelCheck
+  guard: ClaimGuard
 ): Promise<MergeCounts> {
   const localById = new Map<string, SyncableItem>();
   for (const item of local) localById.set(item.id, item);
@@ -222,9 +246,8 @@ async function mergeKind(
     const localItem = localById.get(id);
 
     if (entry.deletedAt !== undefined) {
-      check();
       if (localItem && localItem.modifiedAt < entry.deletedAt) {
-        await adapter.applyRemoteDelete(id);
+        await guard.write(() => adapter.applyRemoteDelete(id));
         pulled++;
       } else if (localItem) {
         // Local edit is newer than a remote tombstone — the user
@@ -232,12 +255,9 @@ async function mergeKind(
         // Resurrect it by pushing; without this, the only-local loop
         // below skips the push (because the id is in `remote`) and
         // the local edit never reaches cloud.
-        await outboxEnqueue({
-          kind,
-          id,
-          modifiedAt: localItem.modifiedAt,
-          op: 'put',
-        });
+        await guard.write(() =>
+          outboxEnqueue({ kind, id, modifiedAt: localItem.modifiedAt, op: 'put' })
+        );
         pushed++;
       }
       continue;
@@ -248,13 +268,14 @@ async function mergeKind(
       if (fetched) {
         const payload = envelopePayload(kind, fetched);
         if (payload !== undefined) {
-          check();
-          await adapter.applyRemote({
-            id,
-            payload,
-            modifiedAt: fetched.envelope.modifiedAt,
-            schemaVersion: fetched.envelope.schemaVersion,
-          });
+          await guard.write(() =>
+            adapter.applyRemote({
+              id,
+              payload,
+              modifiedAt: fetched.envelope.modifiedAt,
+              schemaVersion: fetched.envelope.schemaVersion,
+            })
+          );
           pulled++;
         }
       }
@@ -266,13 +287,14 @@ async function mergeKind(
       if (fetched) {
         const payload = envelopePayload(kind, fetched);
         if (payload !== undefined) {
-          check();
-          await adapter.applyRemote({
-            id,
-            payload,
-            modifiedAt: fetched.envelope.modifiedAt,
-            schemaVersion: fetched.envelope.schemaVersion,
-          });
+          await guard.write(() =>
+            adapter.applyRemote({
+              id,
+              payload,
+              modifiedAt: fetched.envelope.modifiedAt,
+              schemaVersion: fetched.envelope.schemaVersion,
+            })
+          );
           pulled++;
         }
       }
@@ -280,8 +302,9 @@ async function mergeKind(
     }
 
     if (localItem.modifiedAt > entry.modifiedAt) {
-      check();
-      await outboxEnqueue({ kind, id, modifiedAt: localItem.modifiedAt, op: 'put' });
+      await guard.write(() =>
+        outboxEnqueue({ kind, id, modifiedAt: localItem.modifiedAt, op: 'put' })
+      );
       pushed++;
     }
   }
@@ -290,8 +313,9 @@ async function mergeKind(
     // hasOwn (not `in`) so an id like "constructor" or "toString" can't
     // be falsely treated as present via Object.prototype.
     if (Object.hasOwn(remote, item.id)) continue;
-    check();
-    await outboxEnqueue({ kind, id: item.id, modifiedAt: item.modifiedAt, op: 'put' });
+    await guard.write(() =>
+      outboxEnqueue({ kind, id: item.id, modifiedAt: item.modifiedAt, op: 'put' })
+    );
     pushed++;
   }
 

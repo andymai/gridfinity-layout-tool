@@ -166,6 +166,43 @@ describe('runClaim — cancellation', () => {
     expect(layouts.applyRemote).not.toHaveBeenCalled();
   });
 
+  it('settles a cancel only once the write it caught in progress has landed', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        manifestResponse({
+          layouts: { a: { modifiedAt: 1000, sizeBytes: 100 } },
+          designs: {},
+          indexUpdatedAt: 1000,
+        })
+      )
+      .mockResolvedValueOnce(envelopeResponse({ layout: { v: 1 }, modifiedAt: 1000 }));
+    let landWrite = (): void => undefined;
+    const written: string[] = [];
+    layouts.applyRemote = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          landWrite = () => {
+            written.push('a');
+            resolve();
+          };
+        })
+    );
+    const claim = runClaim(ctx());
+    await vi.waitFor(() => expect(layouts.applyRemote).toHaveBeenCalled());
+
+    let cancelSettled = false;
+    const cancelling = cancelClaims().then(() => {
+      cancelSettled = true;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(cancelSettled).toBe(false);
+
+    landWrite();
+    await cancelling;
+    expect(written).toEqual(['a']);
+    expect(await claim).toEqual({ status: 'cancelled' });
+  });
+
   it("cancels the previous account's claim when another account signs in", async () => {
     const { answer } = heldCloud();
     const first = runClaim(ctx({ userId: 'user-1' }));
