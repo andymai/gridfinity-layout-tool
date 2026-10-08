@@ -128,6 +128,7 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
+  __resetMeshCloudForTests();
   vi.unstubAllGlobals();
 });
 

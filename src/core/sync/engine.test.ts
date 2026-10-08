@@ -520,6 +520,22 @@ describe('push: preparePush', () => {
     expect(await outboxGetAll()).toEqual([]);
   });
 
+  it('waits out a throttled push without spending an attempt', async () => {
+    designsAdapter.preparePush = vi.fn(async () => ({
+      status: 'throttle' as const,
+      retryAfterMs: 30_000,
+    }));
+    engine.start(adapters);
+    designsAdapter.triggerChange({ kind: 'put', id: 'des-1', modifiedAt: 2000 });
+    await flush();
+
+    expect(puts()).toEqual([]);
+    const [entry] = await outboxGetAll();
+    expect(entry.attempts).toBe(0);
+    expect(entry.nextAttemptAt).toBeGreaterThanOrEqual(Date.now() + 29_000);
+    expect(useSyncStatusStore.getState().lastError).toContain('Rate limited');
+  });
+
   it('gives up on a push deferred past the attempt budget, like any failure', async () => {
     designsAdapter.preparePush = vi.fn(async () => ({
       status: 'defer' as const,

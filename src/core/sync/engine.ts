@@ -203,6 +203,10 @@ async function sendOne(
     await backOff(kind, entry, s, plan.reason);
     return;
   }
+  if (plan.status === 'throttle') {
+    await waitOutThrottle(entry, s, plan.retryAfterMs);
+    return;
+  }
   const latest = plan.item;
 
   const body = syncPutBody(kind, latest.payload, latest.modifiedAt);
@@ -311,20 +315,7 @@ async function handleFailure(
   // per-(kind, id) counter on the engine state. `Retry-After` overrides
   // the counter entirely (server knows best).
   if (res.status === 429) {
-    const key = `${entry.kind}:${entry.id}`;
-    const retryAfter = parseRetryAfter(res.headers.get('Retry-After'));
-    // `Retry-After: 0` would otherwise pass through `??` and re-fire immediately.
-    let delayMs: number;
-    if (retryAfter !== null && retryAfter > 0) {
-      delayMs = retryAfter;
-    } else {
-      const prior = s.rateLimitedRetries.get(key) ?? 0;
-      delayMs = rateLimitedBackoffMs(prior);
-      s.rateLimitedRetries.set(key, prior + 1);
-    }
-    await outboxRescheduleWithoutAttempt(entry.kind, entry.id, delayMs);
-    useSyncStatusStore.getState().reportOffline('Rate limited');
-    scheduleDrain(s, delayMs);
+    await waitOutThrottle(entry, s, parseRetryAfter(res.headers.get('Retry-After')));
     return;
   }
   // Any non-429 outcome for this item resets the rate-limit counter so
@@ -350,6 +341,26 @@ async function handleFailure(
     return;
   }
   await backOff(kind, entry, s, `HTTP ${res.status}`);
+}
+
+async function waitOutThrottle(
+  entry: OutboxEntry,
+  s: EngineState,
+  retryAfter: number | null
+): Promise<void> {
+  const key = `${entry.kind}:${entry.id}`;
+  // `Retry-After: 0` would otherwise pass through `??` and re-fire immediately.
+  let delayMs: number;
+  if (retryAfter !== null && retryAfter > 0) {
+    delayMs = retryAfter;
+  } else {
+    const prior = s.rateLimitedRetries.get(key) ?? 0;
+    delayMs = rateLimitedBackoffMs(prior);
+    s.rateLimitedRetries.set(key, prior + 1);
+  }
+  await outboxRescheduleWithoutAttempt(entry.kind, entry.id, delayMs);
+  useSyncStatusStore.getState().reportOffline('Rate limited');
+  scheduleDrain(s, delayMs);
 }
 
 async function backOff(

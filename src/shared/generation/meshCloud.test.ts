@@ -41,6 +41,8 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
+  __resetMeshCloudForTests();
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
@@ -136,6 +138,29 @@ describe('uploadMeshFiles', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it('answers throttled, with the delay the server gave, on a 429', async () => {
+    const file = await storedFile(10);
+    fetchMock.mockResolvedValue(
+      new Response(null, { status: 429, headers: { 'Retry-After': '30' } })
+    );
+
+    expect(await uploadMeshFiles([file.hash])).toEqual({
+      status: 'throttled',
+      retryAfterMs: 30_000,
+    });
+  });
+
+  it('sends inline, and stops offering for a while, a file the server refuses', async () => {
+    const file = await storedFile(11);
+    fetchMock.mockImplementation(
+      async (_url, init) => new Response(null, { status: init?.method === 'HEAD' ? 404 : 413 })
+    );
+
+    expect(await uploadMeshFiles([file.hash])).toEqual({ status: 'unavailable' });
+    expect(await uploadMeshFiles([file.hash])).toEqual({ status: 'unavailable' });
+    expect(calls().map((c) => c.method)).toEqual(['HEAD', 'PUT']);
+  });
+
   it('answers held without a request for a payload with no mesh', async () => {
     expect(await uploadMeshFiles([])).toEqual({ status: 'held' });
     expect(fetchMock).not.toHaveBeenCalled();
@@ -211,7 +236,8 @@ describe('fetchMeshFiles', () => {
     expect(calls().map((c) => c.method)).toEqual(['HEAD', undefined]);
   });
 
-  it('waits a minute after a failure before trying a file again', async () => {
+  it('tries a failed file again on its own a minute later, and not before', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     const file = await remoteFile(6);
     serve(new Map());
     await fetchMeshFiles([file.hash]);
@@ -221,14 +247,49 @@ describe('fetchMeshFiles', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     serve(new Map([[file.hash, file.bytes]]));
-    vi.useFakeTimers({ toFake: ['Date'] });
-    try {
-      vi.setSystemTime(Date.now() + 61_000);
-      await fetchMeshFiles([file.hash]);
-    } finally {
-      vi.useRealTimers();
-    }
-    expect(await hasMeshFile(file.hash)).toBe(true);
+    await vi.advanceTimersByTimeAsync(60_000);
+    await vi.waitFor(async () => expect(await hasMeshFile(file.hash)).toBe(true));
+  });
+
+  it('downloads a few files at a time', async () => {
+    const files = await Promise.all([20, 21, 22, 23, 24, 25, 26, 27].map(remoteFile));
+    serve(new Map(files.map((f) => [f.hash, f.bytes])));
+    const served = fetchMock.getMockImplementation();
+    let open = 0;
+    let most = 0;
+    fetchMock.mockImplementation(async (url, init) => {
+      open++;
+      most = Math.max(most, open);
+      await new Promise((resolve) => setTimeout(resolve, 1));
+      open--;
+      if (!served) throw new Error('fixture');
+      return served(url, init);
+    });
+
+    await fetchMeshFiles(files.map((f) => f.hash));
+
+    expect(most).toBeLessThanOrEqual(4);
+    for (const f of files) expect(await hasMeshFile(f.hash)).toBe(true);
+  });
+
+  it('waits out a throttled server before asking for the rest', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const files = await Promise.all([30, 31, 32, 33, 34, 35].map(remoteFile));
+    fetchMock.mockResolvedValue(
+      new Response(null, { status: 429, headers: { 'Retry-After': '30' } })
+    );
+
+    await fetchMeshFiles(files.map((f) => f.hash));
+    const asked = fetchMock.mock.calls.length;
+    expect(asked).toBeLessThanOrEqual(4);
+
+    serve(new Map(files.map((f) => [f.hash, f.bytes])));
+    await vi.advanceTimersByTimeAsync(29_000);
+    expect(fetchMock).toHaveBeenCalledTimes(asked);
+    await vi.advanceTimersByTimeAsync(1_000);
+    await vi.waitFor(async () => {
+      for (const f of files) expect(await hasMeshFile(f.hash)).toBe(true);
+    });
   });
 
   it('settles quietly when the network is down', async () => {

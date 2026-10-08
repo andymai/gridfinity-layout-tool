@@ -56,11 +56,15 @@ export type AdapterChangeListener = (change: AdapterChange) => void;
  * What a push sends, settled at push time. `skip` drops the entry, as a `get`
  * that finds nothing does. `defer` keeps it queued under the failure backoff:
  * the payload names something that could not be put on the server yet.
+ * `throttle` waits out a server that is rate limiting, as a 429 on the push
+ * itself does, without spending an attempt (`retryAfterMs` null when the
+ * server gave no delay).
  */
 export type PushPlan<T> =
   | { readonly status: 'send'; readonly item: SyncableItem<T> }
   | { readonly status: 'skip' }
-  | { readonly status: 'defer'; readonly reason: string };
+  | { readonly status: 'defer'; readonly reason: string }
+  | { readonly status: 'throttle'; readonly retryAfterMs: number | null };
 
 /**
  * Generic storage adapter contract. Implementations expose a small CRUD
