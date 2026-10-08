@@ -1,0 +1,27 @@
+src/shared/utils/outlineSegments.ts
+  s_1606b97c1ea28d::t_c91f69d9b51ae3 294-299,362,375-376,392-394
+  s_1606b97c1ea28d::t_9f78a185076223 300-301
+  s_1606b97c1ea28d::t_c988a0c6cbe105 302
+  s_1606b97c1ea28d::t_ef9bf021fb1d19 307-313
+src/shared/utils/pathCutoutOutline.test.ts
+  s_1606b97c1ea28d::t_349a2799aaeb43 3,207-213
+  s_1606b97c1ea28d::t_78e9f65b010eeb 294-304,307-308
+  s_1606b97c1ea28d::t_34a47240ac57ec 305-306
+  s_1606b97c1ea28d::t_919147e0c03e0f 214-215
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c766f7e14d64f06c558045adce81fd0c49cb6c0d",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
