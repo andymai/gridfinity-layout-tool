@@ -133,7 +133,14 @@ describe('useSessionLifecycle', () => {
     // edits into B's account.
     const outboxModule = await import('../outbox');
     const pollerModule = await import('../pullState');
-    const clearAllSpy = vi.spyOn(outboxModule, 'clearAll').mockResolvedValueOnce();
+    const claimModule = await import('../claim');
+    const order: string[] = [];
+    const cancelClaimsSpy = vi.spyOn(claimModule, 'cancelClaims').mockImplementation(async () => {
+      order.push('cancel');
+    });
+    const clearAllSpy = vi.spyOn(outboxModule, 'clearAll').mockImplementation(async () => {
+      order.push('clear');
+    });
     const resetPullStateSpy = vi.spyOn(pollerModule, 'resetPullState').mockImplementation(() => {});
 
     fetchMock.mockResolvedValueOnce(
@@ -154,8 +161,10 @@ describe('useSessionLifecycle', () => {
       window.dispatchEvent(new CustomEvent('gflt:forced-sign-out'));
     });
 
-    expect(clearAllSpy).toHaveBeenCalled();
+    await waitFor(() => expect(clearAllSpy).toHaveBeenCalled());
+    expect(order).toEqual(['cancel', 'clear']);
     expect(resetPullStateSpy).toHaveBeenCalled();
+    cancelClaimsSpy.mockRestore();
     clearAllSpy.mockRestore();
     resetPullStateSpy.mockRestore();
   });

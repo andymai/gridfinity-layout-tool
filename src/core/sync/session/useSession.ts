@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { useEffect } from 'react';
 import { FORCED_SIGN_OUT_EVENT } from '../apiFetch';
+import { cancelClaims } from '../claim';
 import { clearAll as clearOutbox } from '../outbox';
 import { resetPullState } from '../pullState';
 import { getMe, type SessionUser } from './sessionApi';
@@ -127,10 +128,14 @@ export function useSessionLifecycle(): void {
       // sign-in (especially as a different user via the mismatch flow's
       // 'merge' path) can't drain the prior user's queued PUTs under
       // the new account. Pending edits since the last successful push
-      // are sacrificed; cross-account leakage would be worse.
-      void clearOutbox().catch(() => {
-        /* IDB failure is non-blocking; setAnonymous below still flips UI */
-      });
+      // are sacrificed; cross-account leakage would be worse. A sign-in
+      // claim still running is cancelled first, and any push it was queueing
+      // lands before the clear, so nothing it queued survives it.
+      void cancelClaims()
+        .then(() => clearOutbox())
+        .catch(() => {
+          /* IDB failure is non-blocking; setAnonymous below still flips UI */
+        });
       resetPullState();
       useSessionStore.getState().setAnonymous();
     };
