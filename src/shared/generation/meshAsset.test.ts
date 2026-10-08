@@ -225,6 +225,18 @@ describe('hasOversizedMeshAsset', () => {
     expect(hasOversizedMeshAsset({ meshAssets: { ...atBudget, extra: declaring(1) } })).toBe(true);
   });
 
+  it('lets no declaration the decoder refuses offset the budget', () => {
+    const declaring = (triangleCount: number) => ({ data: 'A', triangleCount });
+    const meshAssets = {
+      ...Object.fromEntries(
+        Array.from({ length: 9 }, (_, i) => [`a${i}`, declaring(MAX_MESH_ASSET_TRIANGLES)])
+      ),
+      negative: declaring(-MAX_MESH_ASSET_TRIANGLES),
+      fraction: declaring(-0.5),
+    };
+    expect(hasOversizedMeshAsset({ meshAssets })).toBe(true);
+  });
+
   it('carries no count cap of its own', () => {
     const meshAssets = Object.fromEntries(
       Array.from({ length: 200 }, (_, i) => [`a${i}`, { data: 'A', triangleCount: 12 }])

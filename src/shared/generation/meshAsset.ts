@@ -160,7 +160,13 @@ export function hasOversizedMeshAsset(params: unknown): boolean {
     if (typeof asset !== 'object' || asset === null) continue;
     const { data, triangleCount } = asset as { data?: unknown; triangleCount?: unknown };
     if (typeof data === 'string' && data.length > MAX_MESH_ASSET_DATA_LENGTH) return true;
-    if (typeof triangleCount === 'number' && Number.isFinite(triangleCount)) {
+    // A count the decoder refuses adds no work, and must not offset one it takes.
+    if (
+      typeof triangleCount === 'number' &&
+      Number.isInteger(triangleCount) &&
+      triangleCount >= 1 &&
+      triangleCount <= MAX_MESH_ASSET_TRIANGLES
+    ) {
       triangles += triangleCount;
     }
   }
