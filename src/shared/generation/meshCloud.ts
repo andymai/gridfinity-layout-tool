@@ -12,6 +12,11 @@ export const MESH_URL_HEADER = 'X-Mesh-Url';
 
 const FETCH_RETRY_MS = 60_000;
 
+// A server without a mesh store is taken at its word for a while: asking again
+// per file would add a request for every mesh to every save.
+const UNAVAILABLE_RECHECK_MS = 10 * 60_000;
+let unavailableUntil = 0;
+
 export type MeshUpload =
   | { readonly status: 'held' }
   /** The server has no mesh store. */
@@ -36,13 +41,17 @@ function meshPath(hash: string): string {
 
 function outcome(res: Response): MeshUpload {
   if (res.ok) return HELD;
-  if (res.status === 503) return { status: 'unavailable' };
+  if (res.status === 503) {
+    unavailableUntil = Date.now() + UNAVAILABLE_RECHECK_MS;
+    return { status: 'unavailable' };
+  }
   return { status: 'failed', reason: `mesh upload: HTTP ${res.status}` };
 }
 
 // A request that never reaches the server rejects, as a push's own request
 // does, so being offline leaves the push queued without spending a retry.
 async function upload(hash: string): Promise<MeshUpload> {
+  if (Date.now() < unavailableUntil) return { status: 'unavailable' };
   const head = await apiFetch(meshPath(hash), { method: 'HEAD' });
   if (head.status !== 404) return outcome(head);
   const bytes = await getMeshFile(hash);
@@ -129,4 +138,5 @@ export async function fetchMeshFiles(hashes: readonly string[]): Promise<void> {
 export function __resetMeshCloudForTests(): void {
   uploads.clear();
   fetches.clear();
+  unavailableUntil = 0;
 }

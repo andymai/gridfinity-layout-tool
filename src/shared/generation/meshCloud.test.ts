@@ -95,11 +95,14 @@ describe('uploadMeshFiles', () => {
     expect(calls().map((c) => c.method)).toEqual(['HEAD', 'PUT']);
   });
 
-  it('answers unavailable when the server has no mesh store', async () => {
+  it('answers unavailable when the server has no mesh store, then stops asking', async () => {
     const file = await storedFile(6);
+    const other = await storedFile(9);
     fetchMock.mockResolvedValue(new Response(null, { status: 503 }));
 
     expect(await uploadMeshFiles([file.hash])).toEqual({ status: 'unavailable' });
+    expect(await uploadMeshFiles([other.hash])).toEqual({ status: 'unavailable' });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('answers missing for a file on neither the server nor this device', async () => {
