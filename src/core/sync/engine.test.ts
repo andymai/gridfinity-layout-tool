@@ -11,6 +11,7 @@ import {
   getAll as outboxGetAll,
   clearAll as clearOutbox,
   enqueue as outboxEnqueue,
+  markFailure as outboxMarkFailure,
   MAX_ATTEMPTS,
 } from './outbox';
 import type {
@@ -579,6 +580,76 @@ describe('push: preparePush', () => {
     );
     expect(await outboxGetAll()).toEqual([]);
   });
+});
+
+describe('drain timer', () => {
+  function putsTo(id: string): unknown[] {
+    return fetchMock.mock.calls.filter(
+      ([url, init]) =>
+        (url as string).endsWith(`/${id}`) && (init as RequestInit | undefined)?.method === 'PUT'
+    );
+  }
+
+  async function waitingIds(): Promise<string[]> {
+    return (await outboxGetAll()).map((entry) => entry.id).sort();
+  }
+
+  it("keeps an entry's earlier retry when a throttle asks for a later drain", async () => {
+    let failingStatus = 503;
+    fetchMock.mockImplementation(async (url: string) => {
+      if (url.endsWith('/throttled')) {
+        await vi.waitFor(async () => {
+          const failing = (await outboxGetAll()).find((entry) => entry.id === 'failing');
+          expect(failing?.attempts).toBe(1);
+        });
+        return new Response(null, { status: 429, headers: { 'Retry-After': '60' } });
+      }
+      return new Response(null, { status: failingStatus });
+    });
+    engine.start(adapters);
+
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'failing', modifiedAt: 1000 });
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'throttled', modifiedAt: 1000 });
+    await vi.waitFor(async () => {
+      const throttled = (await outboxGetAll()).find((entry) => entry.id === 'throttled');
+      expect(throttled?.nextAttemptAt).toBeGreaterThan(Date.now() + 50_000);
+    });
+    failingStatus = 200;
+
+    await vi.waitFor(async () => expect(await waitingIds()).toEqual(['throttled']), {
+      timeout: 4_000,
+      interval: 50,
+    });
+    expect(putsTo('failing')).toHaveLength(2);
+  }, 10_000);
+
+  it('wakes for an entry due before the drain already waiting', async () => {
+    designsAdapter.preparePush = vi.fn(async () => ({
+      status: 'throttle' as const,
+      retryAfterMs: 60_000,
+    }));
+    engine.start(adapters);
+    designsAdapter.triggerChange({ kind: 'put', id: 'des-1', modifiedAt: 2000 });
+    await vi.waitFor(async () => {
+      const [entry] = await outboxGetAll();
+      expect(entry?.nextAttemptAt).toBeGreaterThan(Date.now() + 50_000);
+    });
+
+    vi.mocked(layoutsAdapter.get).mockImplementation(async (id) => ({
+      id,
+      payload: { v: 1 },
+      modifiedAt: 1000,
+    }));
+    await outboxEnqueue({ kind: 'layouts', id: 'lay-1', modifiedAt: 1000, op: 'put' });
+    await outboxMarkFailure('layouts', 'lay-1');
+    await engine.flushNow();
+
+    await vi.waitFor(() => expect(putsTo('lay-1')).toHaveLength(1), {
+      timeout: 4_000,
+      interval: 50,
+    });
+    expect(await waitingIds()).toEqual(['des-1']);
+  }, 10_000);
 });
 
 describe('push: 424 missing dependency', () => {

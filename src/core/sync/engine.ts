@@ -35,6 +35,8 @@ interface EngineState {
   /** External listeners (toast surface installs one). */
   listeners: Set<EngineEventListener>;
   drainTimer: ReturnType<typeof setTimeout> | null;
+  /** When `drainTimer` fires, in ms since epoch; meaningless while it is null. */
+  drainDueAt: number;
   /** Set to true while `stop()` is tearing down — drainer skips its tail. */
   stopping: boolean;
   /**
@@ -58,6 +60,7 @@ export function start(adapters: SyncAdapters): void {
     inFlight: new Map(),
     listeners: new Set(),
     drainTimer: null,
+    drainDueAt: 0,
     stopping: false,
     rateLimitedRetries: new Map(),
   };
@@ -127,15 +130,22 @@ async function onLocalChange(s: EngineState, kind: SyncKind, change: AdapterChan
   scheduleDrain(s, 0);
 }
 
+// One timer serves every entry, so it keeps the earliest deadline asked of it:
+// a long throttle must not hold back an entry due sooner. Waking early costs a
+// drain that finds nothing due and sleeps until the soonest entry.
 function scheduleDrain(s: EngineState, delayMs: number): void {
-  if (s.drainTimer !== null) clearTimeout(s.drainTimer);
-  s.drainTimer = setTimeout(
-    () => {
-      s.drainTimer = null;
-      drain(s).catch((error: unknown) => reportUncaught('drain', error));
-    },
-    Math.max(0, delayMs)
-  );
+  if (s.stopping) return;
+  const wait = Math.max(0, delayMs);
+  const dueAt = Date.now() + wait;
+  if (s.drainTimer !== null) {
+    if (s.drainDueAt <= dueAt) return;
+    clearTimeout(s.drainTimer);
+  }
+  s.drainDueAt = dueAt;
+  s.drainTimer = setTimeout(() => {
+    s.drainTimer = null;
+    drain(s).catch((error: unknown) => reportUncaught('drain', error));
+  }, wait);
 }
 
 async function rehydrate(s: EngineState): Promise<void> {
@@ -155,10 +165,10 @@ async function drain(s: EngineState): Promise<void> {
 }
 
 // A backoff can put an entry further out than the drain its failure asked for,
-// and a later drain replaces that timer, so a drain that leaves entries waiting
-// sleeps until the soonest rather than leaving them to the next edit.
+// so a drain that leaves entries waiting sleeps until the soonest rather than
+// leaving them to the next edit, or to a pending timer set for a later one.
 async function wakeForNextDue(s: EngineState): Promise<void> {
-  if (s.drainTimer !== null || s.stopping) return;
+  if (s.stopping) return;
   const waiting = await outboxGetAll();
   if (waiting.length === 0) return;
   scheduleDrain(s, Math.min(...waiting.map((entry) => entry.nextAttemptAt)) - Date.now());
