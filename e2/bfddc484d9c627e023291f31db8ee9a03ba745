@@ -1,0 +1,33 @@
+api/share.test.ts
+  s_1606b97c1ea28d::t_97f0648c1dd027 37,433
+api/lib/meshIndex.test.ts
+  s_1606b97c1ea28d::t_97f0648c1dd027 262,368,379,383
+api/share.ts
+  s_1606b97c1ea28d::t_e568f378bdf95f 14
+api/lib/meshIndex.ts
+  s_1606b97c1ea28d::t_e568f378bdf95f 81-82,209-212
+api/share/[id].test.ts
+  s_1606b97c1ea28d::t_97f0648c1dd027 37,391,398
+api/share/[id].ts
+  s_1606b97c1ea28d::t_e568f378bdf95f 12,306-308
+api/lib/meshIndex.integration.test.ts
+  s_1606b97c1ea28d::t_97f0648c1dd027 87,94-97
+.claude/skills/mesh-storage/SKILL.md
+  s_1606b97c1ea28d::t_02b0b471fe648c 25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e2bfddc484d9c627e023291f31db8ee9a03ba745",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
