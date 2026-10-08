@@ -165,13 +165,27 @@ export function useStlImport(): UseStlImportReturn {
     [pending, importing, runImport]
   );
 
+  const cancel = useCallback(() => {
+    placingRef.current = null;
+    setPlacing(false);
+    bufferRef.current = null;
+    setPending(null);
+  }, []);
+
   const place = useCallback(async () => {
     if (!pending || placingRef.current) return;
     const claimed = pending;
+    const claimedFor = useDesignerStore.getState().currentDesignId;
     placingRef.current = claimed;
     setPlacing(true);
     const stored = await storeMeshAsset(claimed.asset);
     if (placingRef.current !== claimed) return;
+    // A new design gains its id when first saved and is still the same design.
+    const designNow = useDesignerStore.getState().currentDesignId;
+    if (claimedFor !== null && designNow !== claimedFor) {
+      cancel();
+      return;
+    }
     placingRef.current = null;
     setPlacing(false);
     const meshId = generateUUID();
@@ -208,14 +222,7 @@ export function useStlImport(): UseStlImportReturn {
     addToast(t('toast.stlImport.success', { name: asset.name }), 'success');
     bufferRef.current = null;
     setPending(null);
-  }, [pending, addMeshCutout, addToast, t]);
-
-  const cancel = useCallback(() => {
-    placingRef.current = null;
-    setPlacing(false);
-    bufferRef.current = null;
-    setPending(null);
-  }, []);
+  }, [pending, cancel, addMeshCutout, addToast, t]);
 
   // Hidden file input (mirrors useSvgImport)
   const handleFileRef = useRef<(file: File) => void>(() => {});

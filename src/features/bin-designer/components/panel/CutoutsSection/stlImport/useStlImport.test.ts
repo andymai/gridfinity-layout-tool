@@ -302,4 +302,34 @@ describe('useStlImport placement while the mesh is being stored', () => {
     expect(result.current.pending).toBeNull();
     expect(result.current.placing).toBe(false);
   });
+
+  async function placeWhileIdChanges(from: string | null, to: string) {
+    useDesignerStore.getState().setCurrentDesignId(from);
+    const release = holdNextStore();
+    const hook = await openPending();
+    let placed: Promise<void> = Promise.resolve();
+    act(() => {
+      placed = hook.result.current.place();
+    });
+    useDesignerStore.getState().setCurrentDesignId(to);
+    release();
+    await act(async () => {
+      await placed;
+    });
+    return hook;
+  }
+
+  it('places nothing when another design is loaded while the mesh is being stored', async () => {
+    const { result } = await placeWhileIdChanges('design-a', 'design-b');
+
+    expect(useDesignerStore.getState().params.cutouts).toHaveLength(0);
+    expect(result.current.pending).toBeNull();
+    expect(result.current.placing).toBe(false);
+  });
+
+  it('still places when a new design is first saved while the mesh is being stored', async () => {
+    await placeWhileIdChanges(null, 'design-a');
+
+    expect(useDesignerStore.getState().params.cutouts).toHaveLength(1);
+  });
 });
