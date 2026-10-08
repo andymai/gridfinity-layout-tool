@@ -20,7 +20,8 @@ import {
   type BinParams,
 } from '@/features/bin-designer';
 import { decodeMeshData } from '@/shared/generation/meshAsset';
-import { storeMeshAsset } from '@/shared/generation/meshRefs';
+import { meshAssetFile, storeMeshAsset } from '@/shared/generation/meshRefs';
+import { putMeshFile } from '@/shared/generation/meshStore';
 import { loadPersistedBinMesh, savePersistedBinMesh } from '@/shared/generation/meshPersistence';
 import { bridgeManager } from '@/shared/generation/bridge';
 import type { KernelName } from '@/shared/generation/bridge';
@@ -255,6 +256,49 @@ describe('useLinkedDesignMeshes', () => {
       expect(result.current.get(B1)?.mesh).toBe(mesh);
     });
     expect(mockSavePersistedBinMesh).not.toHaveBeenCalled();
+  });
+
+  it('rebuilds a mesh built without a file once that file arrives', async () => {
+    const file = await meshAssetFile({
+      name: 'wrench',
+      data: 'AAAB',
+      triangleCount: 1,
+      sizeMm: { x: 20, y: 10, z: 5 },
+      outlines: [
+        [
+          { x: 0, y: 0 },
+          { x: 20, y: 0 },
+          { x: 0, y: 10 },
+        ],
+      ],
+    });
+    if (!file) throw new Error('fixture');
+    const uncut = makeMesh();
+    const cut = makeMesh();
+    const generateImmediate = vi
+      .fn()
+      .mockResolvedValueOnce({ mesh: uncut, meshesPending: true })
+      .mockResolvedValueOnce({ mesh: cut });
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(ok(makeBinDesign({ meshAssets: { m1: file.ref } })));
+    mockAcquire.mockResolvedValue({ generateImmediate } as unknown as Awaited<
+      ReturnType<typeof bridgeManager.acquire>
+    >);
+
+    const bins = [createTestBin({ id: B1, linkedDesignId: D1 })];
+    const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+    await waitFor(() => {
+      expect(result.current.get(B1)?.mesh).toBe(uncut);
+    });
+
+    await putMeshFile(file.bytes);
+
+    await waitFor(() => {
+      expect(result.current.get(B1)?.mesh).toBe(cut);
+    });
+    expect(generateImmediate).toHaveBeenCalledTimes(2);
+    expect(mockSavePersistedBinMesh).toHaveBeenCalledTimes(1);
+    expect(mockSavePersistedBinMesh).toHaveBeenCalledWith('persist-key-occt-wasm', cut);
   });
 
   // This reader returns a persisted hit and stops, with no regeneration

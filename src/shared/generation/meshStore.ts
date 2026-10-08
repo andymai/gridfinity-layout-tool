@@ -87,6 +87,14 @@ function hasIndexedDb(): boolean {
   return typeof indexedDB !== 'undefined';
 }
 
+const arrivalListeners = new Set<(hash: string) => void>();
+
+/** Hear of each file that arrives on this device; answers the unsubscribe. */
+export function subscribeMeshFileArrivals(listener: (hash: string) => void): () => void {
+  arrivalListeners.add(listener);
+  return () => arrivalListeners.delete(listener);
+}
+
 /**
  * Store a mesh file and answer its hash, or null when it could not be written
  * (no IndexedDB, quota). A file already stored is only marked as used.
@@ -98,15 +106,16 @@ export async function putMeshFile(bytes: Uint8Array<ArrayBuffer>): Promise<strin
     const database = await db.get();
     if (!database) return null;
     const tx = database.transaction([FILES_STORE, META_STORE], 'readwrite');
-    const meta = tx.objectStore(META_STORE);
-    const existing = (await meta.get(hash)) as MeshFileMeta | undefined;
-    if (!existing) {
-      void tx.objectStore(FILES_STORE).put({ hash, bytes } satisfies StoredMeshFile);
-    }
-    void meta.put({ hash, size: bytes.byteLength, touchedAt: Date.now() } satisfies MeshFileMeta);
+    const files = tx.objectStore(FILES_STORE);
+    const arrived = (await files.getKey(hash)) === undefined;
+    if (arrived) void files.put({ hash, bytes } satisfies StoredMeshFile);
+    void tx
+      .objectStore(META_STORE)
+      .put({ hash, size: bytes.byteLength, touchedAt: Date.now() } satisfies MeshFileMeta);
     await tx.done;
     touchedThisSession.add(hash);
     remember(hash, bytes);
+    if (arrived) for (const listener of arrivalListeners) listener(hash);
     return hash;
   } catch (e) {
     logger.warn('Failed to store mesh file', { error: String(e) });

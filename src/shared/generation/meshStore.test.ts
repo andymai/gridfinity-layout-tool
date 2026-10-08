@@ -6,6 +6,7 @@ import {
   getMeshFile,
   hasMeshFile,
   putMeshFile,
+  subscribeMeshFileArrivals,
   sweepMeshFiles,
 } from './meshStore';
 
@@ -45,6 +46,16 @@ describe('putMeshFile', () => {
     expect(hash).toBe(sha(bytes));
     expect(await hasMeshFile(sha(bytes))).toBe(true);
     expect(await getMeshFile(sha(bytes))).toEqual(bytes);
+  });
+
+  it('announces a file the first time it arrives', async () => {
+    const heard = vi.fn();
+    const stop = subscribeMeshFileArrivals(heard);
+    const hash = await putMeshFile(bytesOf(9));
+    await putMeshFile(bytesOf(9));
+    stop();
+    await putMeshFile(bytesOf(10));
+    expect(heard.mock.calls).toEqual([[hash]]);
   });
 
   it('is idempotent: the same bytes keep one file', async () => {
