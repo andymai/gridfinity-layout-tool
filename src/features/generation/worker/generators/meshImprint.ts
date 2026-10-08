@@ -38,7 +38,7 @@ import { creaseEdges } from './utils/creaseEdges';
 import { computeCreaseNormals } from './meshImprintNormals';
 import type { NormalizedMesh } from './meshImprintNormals';
 import { getLoadedManifoldModule, getManifoldModule } from '../manifoldRuntime';
-import { decodeMeshEntry, meshEntryKey } from '../meshFiles';
+import { decodeMeshEntry, meshEntryKey, meshRequestsInProgress } from '../meshFiles';
 import {
   frameFromDimensions,
   instanceBounds,
@@ -72,8 +72,13 @@ function disposeTool(tool: PreparedTool | undefined): void {
   tool.dilations.clear();
 }
 
-/** Drop the oldest tools `needed` does not name until at most `limit` remain. */
+/**
+ * Drop the oldest tools `needed` does not name until at most `limit` remain.
+ * Waits while another request is in progress: it may have prepared tools this
+ * design does not name and not yet cut with them, and it never prepares again.
+ */
 function trimPreparedTools(needed: ReadonlySet<string>, limit: number): void {
+  if (meshRequestsInProgress() > 1) return;
   for (const key of preparedTools.keys()) {
     if (preparedTools.size <= limit) return;
     if (needed.has(key)) continue;

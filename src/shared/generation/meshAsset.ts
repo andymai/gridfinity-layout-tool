@@ -83,10 +83,9 @@ export const MAX_MESH_FILE_BYTES = 50 * 1024 * 1024;
 /** Triangle budget an imported mesh is decimated to fit. */
 export const MAX_MESH_ASSET_TRIANGLES = 50_000;
 /**
- * Declared triangles across one design's mesh assets: today's worst case of 8
- * assets at the per-asset ceiling, so a design never asks more of generation
- * than it could before. Each decode holds its asset to the declared count,
- * which makes the sum binding.
+ * Declared triangles across one design's mesh assets, eight meshes at
+ * `MAX_MESH_ASSET_TRIANGLES`. Each decode holds its asset to the declared
+ * count, which makes the sum binding.
  *
  * MIRROR: `CONSTRAINTS.MAX_MESH_TRIANGLES_TOTAL` in
  * `api/lib/designerValidationConstants.ts`.
@@ -280,6 +279,11 @@ export async function encodeMeshData(
     !Number.isInteger(triangleCount)
   ) {
     return err(validationImportFailed(['Mesh encode failed: empty or malformed arrays']));
+  }
+  // The decoder bounds inflation by the declared triangles, assuming at most 3
+  // vertices each; more would encode data that cannot decode.
+  if (vertexCount > triangleCount * 3) {
+    return err(validationImportFailed(['Mesh encode failed: more vertices than triangles use']));
   }
 
   const min = [Infinity, Infinity, Infinity];

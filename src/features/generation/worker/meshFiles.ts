@@ -48,6 +48,10 @@ export function dropMeshFile(hash: string): void {
   else forget(hash);
 }
 
+export function meshRequestsInProgress(): number {
+  return activeRequests;
+}
+
 /** Mark a request in progress; the returned function ends it. */
 export function beginMeshRequest(): () => void {
   activeRequests++;

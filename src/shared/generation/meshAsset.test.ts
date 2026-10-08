@@ -67,6 +67,18 @@ describe('meshAsset codec', () => {
     expect(isErr(result)).toBe(true);
   });
 
+  it('rejects more vertices than its triangles can use', async () => {
+    const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0]);
+    const result = await encodeMeshData(positions, new Uint32Array([0, 1, 2]));
+    expect(isErr(result)).toBe(true);
+  });
+
+  it('round-trips a triangle soup at 3 vertices per triangle', async () => {
+    const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0, 0, 3, 0, 0, 2, 1, 0]);
+    const encoded = unwrap(await encodeMeshData(positions, new Uint32Array([0, 1, 2, 3, 4, 5])));
+    expect(isOk(await decodeMeshData(encoded, 2))).toBe(true);
+  });
+
   it('rejects out-of-range indices on encode', async () => {
     const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
     const result = await encodeMeshData(positions, new Uint32Array([0, 1, 9]));

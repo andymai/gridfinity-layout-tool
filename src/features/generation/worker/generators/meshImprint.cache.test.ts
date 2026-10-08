@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll, vi } from 'vitest';
 import type { ManifoldToplevel } from 'manifold-3d';
 import { clearMeshImprintCache, prepareMeshImprints } from './meshImprint';
-import { decodeMeshEntry } from '../meshFiles';
+import { beginMeshRequest, decodeMeshEntry } from '../meshFiles';
 import type * as MeshFilesModule from '../meshFiles';
 import { encodeMeshData } from '@/shared/generation/meshAsset';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
@@ -79,9 +79,15 @@ function design(assets: readonly MeshAsset[]): BinParams {
   return { ...DEFAULT_BIN_PARAMS, style: 'solid', cutouts, meshAssets };
 }
 
+/** Prepares inside its own request, as the worker's message handler does. */
 async function decodes(params: BinParams): Promise<number> {
   vi.mocked(decodeMeshEntry).mockClear();
-  await prepareMeshImprints(params, module);
+  const end = beginMeshRequest();
+  try {
+    await prepareMeshImprints(params, module);
+  } finally {
+    end();
+  }
   return vi.mocked(decodeMeshEntry).mock.calls.length;
 }
 
@@ -110,6 +116,20 @@ describe('prepareMeshImprints cache', () => {
     const big = design(boxes);
     await decodes(big);
     await decodes(design(boxes.slice(0, 1)));
+    expect(await decodes(big)).toBe(boxes.length - 16);
+  }, 60_000);
+
+  it('evicts nothing while another request may still cut with its tools', async () => {
+    const big = design(boxes);
+    const endOther = beginMeshRequest();
+    try {
+      await decodes(big);
+      await decodes(design([]));
+      expect(await decodes(big)).toBe(0);
+    } finally {
+      endOther();
+    }
+    await decodes(design([]));
     expect(await decodes(big)).toBe(boxes.length - 16);
   }, 60_000);
 
