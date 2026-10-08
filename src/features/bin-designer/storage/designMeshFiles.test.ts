@@ -2,12 +2,29 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/shared/analytics/posthog', () => ({ trackDesignCreated: vi.fn() }));
 
+/** Runs after a holder's meshes are stored and before the pass rewrites the record. */
+const interleave = vi.hoisted(() => ({
+  after: null as null | ((holder: unknown) => Promise<void>),
+}));
+vi.mock('@/shared/generation/meshRefs', async (importOriginal) => {
+  const actual = await importOriginal<typeof MeshRefs>();
+  return {
+    ...actual,
+    storeHolderMeshes: vi.fn(async (holder: MeshRefs.MeshHolder) => {
+      const stored = await actual.storeHolderMeshes(holder);
+      await interleave.after?.(holder);
+      return stored;
+    }),
+  };
+});
+
 import { isOk, unwrap } from '@/core/result';
 import { designId } from '@/core/types';
 import { encodeMeshData, isMeshAssetRef } from '@/shared/generation/meshAsset';
 import type { MeshAsset, MeshAssetEntry } from '@/shared/generation/meshAsset';
 import { __clearMeshOutlinesForTests } from '@/shared/generation/meshOutlines';
 import { holderMeshHashes } from '@/shared/generation/meshRefs';
+import type * as MeshRefs from '@/shared/generation/meshRefs';
 import {
   MESH_SWEEP_GRACE_MS,
   __resetMeshStoreForTests,
@@ -27,7 +44,12 @@ import {
   loadDesign,
   saveDesign,
 } from './DesignerStorage';
-import { createDesignVersion, readDesignVersion } from './DesignVersionService';
+import {
+  createDesignVersion,
+  readDesignVersion,
+  renameDesignVersion,
+  setDesignVersionPinned,
+} from './DesignVersionService';
 import { DESIGNS_STORE, DESIGN_VERSIONS_STORE, getDb } from './designerDb';
 import {
   maintainMeshFiles,
@@ -97,6 +119,7 @@ beforeEach(async () => {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  interleave.after = null;
 });
 
 describe('saving designs', () => {
@@ -239,6 +262,43 @@ describe('moveInlineMeshesToFiles', () => {
     expect(holderMeshHashes(body)).toEqual(holderMeshHashes(stored));
     expect(storedVersion.createdAt).toBe(version.createdAt);
     expect(events).toEqual([]);
+  });
+
+  it('keeps a rename and a pin made while the version was being converted', async () => {
+    const { version } = await writeLegacy();
+    interleave.after = async (holder) => {
+      if (typeof holder === 'object' && holder !== null && 'id' in holder) return;
+      interleave.after = null;
+      unwrap(await renameDesignVersion(version.id, 'renamed'));
+      unwrap(await setDesignVersionPinned(version.id, true));
+    };
+    const edited = async (): Promise<DesignVersion> =>
+      (await (await getDb()).get(DESIGN_VERSIONS_STORE, version.id)) as DesignVersion;
+
+    await moveInlineMeshesToFiles();
+
+    const stored = await edited();
+    expect(stored.name).toBe('renamed');
+    expect(stored.pinned).toBe(true);
+    expect(stored.updatedAt).toBeDefined();
+    const body = JSON.parse(decompressString(stored.content) ?? '{}') as { params: BinParams };
+    expect(holderMeshHashes(body)).toHaveLength(1);
+  });
+
+  it('leaves a design that was saved while it was being converted', async () => {
+    const { design } = await writeLegacy();
+    interleave.after = async (holder) => {
+      if (typeof holder !== 'object' || holder === null || !('id' in holder)) return;
+      interleave.after = null;
+      unwrap(await saveDesign({ ...design, name: 'edited' }));
+    };
+
+    await moveInlineMeshesToFiles();
+
+    const stored = (await (await getDb()).get(DESIGNS_STORE, design.id)) as SavedDesign;
+    expect(stored.name).toBe('edited');
+    const entry = entryOf(stored);
+    expect(entry && isMeshAssetRef(entry)).toBe(true);
   });
 
   it('is idempotent', async () => {

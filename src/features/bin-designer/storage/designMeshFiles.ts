@@ -26,22 +26,31 @@ function versionBody(version: DesignVersion): MeshHolder | null {
 }
 
 /**
- * Write `next` over `previous` unless the record moved on in between: a save
- * that landed meanwhile stored its own meshes, and must not be undone.
+ * Re-read the record and swap in its mesh-carrying fields, but only while those
+ * fields still hold what the conversion started from. Everything else comes
+ * from the fresh read, so an edit that landed meanwhile (a rename, a pin) is
+ * kept, and a save that changed the meshes is left alone: it stored them.
  */
-async function replaceUnchanged<T extends { readonly id: string }>(
+async function rewriteMeshFields<T extends { readonly id: string }>(
   storeName: string,
   previous: T,
-  next: T,
-  same: (stored: T, previous: T) => boolean
+  meshFields: Partial<T>,
+  sameMeshes: (stored: T, previous: T) => boolean
 ): Promise<boolean> {
   const db = await getDb();
   const tx = db.transaction(storeName, 'readwrite');
   const stored = (await tx.store.get(previous.id)) as T | undefined;
-  const write = stored !== undefined && same(stored, previous);
-  if (write) void tx.store.put(next);
+  const write = stored !== undefined && sameMeshes(stored, previous);
+  if (write) void tx.store.put({ ...stored, ...meshFields });
   await tx.done;
   return write;
+}
+
+function sameDesignMeshes(stored: SavedDesign, previous: SavedDesign): boolean {
+  return (
+    JSON.stringify(stored.params) === JSON.stringify(previous.params) &&
+    JSON.stringify(stored.structure) === JSON.stringify(previous.structure)
+  );
 }
 
 /**
@@ -55,10 +64,12 @@ export async function moveInlineMeshesToFiles(): Promise<number> {
 
   for (const design of (await db.getAll(DESIGNS_STORE)) as SavedDesign[]) {
     const stored = await storeHolderMeshes(design);
-    if (
-      stored !== design &&
-      (await replaceUnchanged(DESIGNS_STORE, design, stored, (a, b) => a.updatedAt === b.updatedAt))
-    ) {
+    if (stored === design) continue;
+    const meshFields: Partial<SavedDesign> = {
+      ...(stored.params !== undefined ? { params: stored.params } : {}),
+      ...(stored.structure !== undefined ? { structure: stored.structure } : {}),
+    };
+    if (await rewriteMeshFields(DESIGNS_STORE, design, meshFields, sameDesignMeshes)) {
       rewritten++;
     }
   }
@@ -68,12 +79,12 @@ export async function moveInlineMeshesToFiles(): Promise<number> {
     if (!body) continue;
     const stored = await storeHolderMeshes(body);
     if (stored === body) continue;
-    const next: DesignVersion = { ...version, content: compressString(JSON.stringify(stored)) };
+    const content = compressString(JSON.stringify(stored));
     if (
-      await replaceUnchanged(
+      await rewriteMeshFields(
         DESIGN_VERSIONS_STORE,
         version,
-        next,
+        { content },
         (a, b) => a.content === b.content
       )
     ) {
