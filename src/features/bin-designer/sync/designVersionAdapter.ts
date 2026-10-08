@@ -19,6 +19,9 @@ import { isSyncableDesign } from '@/features/bin-designer/utils/designKind';
 import { inlineHolderMeshes, storeHolderMeshes } from '@/shared/generation/meshRefs';
 import type { MeshHolder } from '@/shared/generation/meshRefs';
 import { subscribe as subscribeVersionEvents } from './designVersionEvents';
+import { createMissingMeshPushes } from './missingMeshPushes';
+
+const missingMeshPushes = createMissingMeshPushes();
 
 // Lives in features/ for the same reason `designAdapter` does: the record type
 // is feature-internal and core/ cannot import it.
@@ -50,7 +53,8 @@ function toMs(version: DesignVersion): number {
 
 /**
  * `forPush` inlines the body's meshes and refuses a body whose mesh file is
- * missing, rather than push it without the mesh over the copy the server has.
+ * missing, rather than push it without the mesh over the copy the server has;
+ * the file's arrival queues it again.
  * list() leaves the refs: it runs on every poll, its callers read ids and
  * mtimes only, and sign-out wipes by that list.
  */
@@ -73,7 +77,10 @@ async function toItem(
     }
     if (forPush) {
       const inline = await inlineHolderMeshes(parsed);
-      if (!isOk(inline)) return null;
+      if (!isOk(inline)) {
+        missingMeshPushes.skip(inline.error.hash, version.id, toMs(version));
+        return null;
+      }
       content = inline.value;
     } else {
       content = parsed;
@@ -143,12 +150,17 @@ export const designVersionAdapter: DesignVersionAdapter = {
   },
 
   subscribe(listener: AdapterChangeListener): () => void {
-    return subscribeVersionEvents((event) => {
+    const stopEvents = subscribeVersionEvents((event) => {
       const change: AdapterChange =
         event.type === 'put'
           ? { kind: 'put', id: event.id, modifiedAt: event.modifiedAt }
           : { kind: 'delete', id: event.id, modifiedAt: event.deletedAt };
       listener(change);
     });
+    const stopArrivals = missingMeshPushes.subscribe(listener);
+    return () => {
+      stopEvents();
+      stopArrivals();
+    };
   },
 };

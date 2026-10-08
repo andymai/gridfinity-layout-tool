@@ -15,11 +15,12 @@ import { unwrap } from '@/core/result';
 import { designId } from '@/core/types';
 import { encodeMeshData, isMeshAssetRef } from '@/shared/generation/meshAsset';
 import type { MeshAsset, MeshAssetEntry, MeshAssetRef } from '@/shared/generation/meshAsset';
-import { holderMeshHashes } from '@/shared/generation/meshRefs';
-import { __resetMeshStoreForTests, getMeshFile } from '@/shared/generation/meshStore';
+import { holderMeshHashes, meshAssetFile } from '@/shared/generation/meshRefs';
+import { __resetMeshStoreForTests, getMeshFile, putMeshFile } from '@/shared/generation/meshStore';
 import type * as MeshStore from '@/shared/generation/meshStore';
 import { compressString, decompressString } from '@/shared/utils/compression';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
+import type { AdapterChange } from '@/core/sync/adapters/types';
 import type { BinParams, Cutout, DesignVersion, SavedDesign } from '../types';
 import { closeDesignerDb, loadDesign } from '../storage/DesignerStorage';
 import { getDesignVersionRecord } from '../storage/DesignVersionService';
@@ -186,6 +187,29 @@ describe('design sync payloads', () => {
     expect(await designAdapter.get(DESIGN_ID)).toBeNull();
     expect((await designAdapter.list()).map((i) => i.id)).toEqual([DESIGN_ID]);
   });
+
+  it('queue a design skipped for a missing mesh file again once the file arrives', async () => {
+    const file = await meshAssetFile(await makeAsset('late', 20));
+    if (!file) throw new Error('fixture');
+    await writeRaw(
+      rawDesign({
+        ...DEFAULT_BIN_PARAMS,
+        cutouts: [meshCutout('c1', 'm1')],
+        meshAssets: { m1: file.ref },
+      })
+    );
+    const changes: AdapterChange[] = [];
+    const stop = designAdapter.subscribe((change) => changes.push(change));
+    expect(await designAdapter.get(DESIGN_ID)).toBeNull();
+
+    await putMeshFile(file.bytes);
+    stop();
+
+    expect(changes).toEqual([
+      { kind: 'put', id: DESIGN_ID, modifiedAt: Date.parse('2026-01-02T00:00:00.000Z') },
+    ]);
+    expect(await designAdapter.get(DESIGN_ID)).not.toBeNull();
+  });
 });
 
 describe('design version sync payloads', () => {
@@ -247,5 +271,27 @@ describe('design version sync payloads', () => {
     );
     expect(await designVersionAdapter.get(VERSION_ID)).toBeNull();
     expect((await designVersionAdapter.list()).map((i) => i.id)).toEqual([VERSION_ID]);
+  });
+
+  it('queue a version skipped for a missing mesh file again once the file arrives', async () => {
+    const file = await meshAssetFile(await makeAsset('late', 21));
+    if (!file) throw new Error('fixture');
+    await (
+      await getDb()
+    ).put(
+      DESIGN_VERSIONS_STORE,
+      rawVersion({ name: 'Sync', params: { ...DEFAULT_BIN_PARAMS, meshAssets: { m1: file.ref } } })
+    );
+    const changes: AdapterChange[] = [];
+    const stop = designVersionAdapter.subscribe((change) => changes.push(change));
+    expect(await designVersionAdapter.get(VERSION_ID)).toBeNull();
+
+    await putMeshFile(file.bytes);
+    stop();
+
+    expect(changes).toEqual([
+      { kind: 'put', id: VERSION_ID, modifiedAt: Date.parse('2026-01-01T00:00:00.000Z') },
+    ]);
+    expect(await designVersionAdapter.get(VERSION_ID)).not.toBeNull();
   });
 });

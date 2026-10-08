@@ -27,6 +27,7 @@ import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { syncPersistError } from '@/core/sync/adapters/persistError';
 import { inlineHolderMeshes } from '@/shared/generation/meshRefs';
 import { subscribe as subscribeDesignerEvents } from './designerEvents';
+import { createMissingMeshPushes } from './missingMeshPushes';
 
 // Lives in features/ because BinParams is feature-internal; core/ can't
 // import it. Registered with the engine at app-shell boot.
@@ -42,6 +43,7 @@ import { subscribe as subscribeDesignerEvents } from './designerEvents';
 // the `emit()` that needs suppression fires past internal await boundaries;
 // a microtask cleanup would release too early.
 const suppressed = new Set<string>();
+const missingMeshPushes = createMissingMeshPushes();
 
 function toMs(iso: string): number {
   const ms = Date.parse(iso);
@@ -208,10 +210,13 @@ export const designAdapter: DesignAdapter = {
     // Non-syncable kinds: returning null makes the engine drop the outbox
     // entry as a no-op (it never tombstones on a null get). A design whose mesh
     // file is missing is dropped the same way, so the copy on the server keeps
-    // its mesh.
+    // its mesh, and queued again when the file arrives.
     if (!isSyncableDesign(result.value)) return null;
     const inline = await inlineHolderMeshes(result.value);
-    if (!isOk(inline)) return null;
+    if (!isOk(inline)) {
+      missingMeshPushes.skip(inline.error.hash, id, toMs(result.value.updatedAt));
+      return null;
+    }
     const d = inline.value;
     return {
       id: d.id,
@@ -332,7 +337,7 @@ export const designAdapter: DesignAdapter = {
   },
 
   subscribe(listener: AdapterChangeListener): () => void {
-    return subscribeDesignerEvents((event) => {
+    const stopEvents = subscribeDesignerEvents((event) => {
       if (suppressed.has(event.id)) return;
       const change: AdapterChange =
         event.type === 'put'
@@ -340,5 +345,10 @@ export const designAdapter: DesignAdapter = {
           : { kind: 'delete', id: event.id, modifiedAt: toMs(event.deletedAt) };
       listener(change);
     });
+    const stopArrivals = missingMeshPushes.subscribe(listener);
+    return () => {
+      stopEvents();
+      stopArrivals();
+    };
   },
 };
