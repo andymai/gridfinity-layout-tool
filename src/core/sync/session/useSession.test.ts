@@ -286,6 +286,38 @@ describe('account changes', () => {
     expect(useSessionStore.getState().user?.userId).toBe('u2');
   });
 
+  it('keeps a sign-out that lands while a refresh is under way', async () => {
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u1', provider: 'google', email: 'a@x' },
+    });
+    let answer = (_res: Response): void => undefined;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          new Promise<Response>((resolve) => {
+            answer = resolve;
+          })
+      )
+    );
+
+    const refreshing = useSessionStore.getState().applyRemoteState('authenticated');
+    useSessionStore.getState().setAnonymous();
+    answer(
+      new Response(
+        JSON.stringify({
+          authenticated: true,
+          user: { userId: 'u1', provider: 'google', email: 'a@x' },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    );
+    await refreshing;
+
+    expect(useSessionStore.getState().status).toBe('anonymous');
+  });
+
   it("keeps a stale 401 from signing out another tab's sign-in while its user loads", async () => {
     useSessionStore.setState({
       status: 'authenticated',

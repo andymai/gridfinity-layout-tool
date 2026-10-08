@@ -64,12 +64,17 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 }));
 
-useSessionStore.subscribe((state, prev) => {
-  if (state.user?.userId !== prev.user?.userId) onAccountChanged();
-});
-
-/** Bumped by each refresh, so one that a later refresh overtook drops its answer. */
+/**
+ * Bumped by each refresh and each account change, so a refresh that a later
+ * one or a sign-out overtook drops its answer.
+ */
 let refreshes = 0;
+
+useSessionStore.subscribe((state, prev) => {
+  if (state.user?.userId === prev.user?.userId) return;
+  onAccountChanged();
+  refreshes++;
+});
 
 /**
  * Hits /api/auth/me and returns the resulting state, or null on transient
