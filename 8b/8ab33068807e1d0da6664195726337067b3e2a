@@ -1,0 +1,44 @@
+src/core/api/share.ts
+  s_1606b97c1ea28d::t_e37cbb50187108 23,136-138,144-146,148
+src/shared/generation/meshCloud.test.ts
+  s_1606b97c1ea28d::t_1c77d98fd7a99a 658-671
+api/lib/meshIndex.ts
+  s_1606b97c1ea28d::t_7c7b4b5050f965 3-9,182-185,192-194,196,199,201-203
+api/share.ts
+  s_1606b97c1ea28d::t_7c7b4b5050f965 14,270
+api/lib/redisKeys.ts
+  s_1606b97c1ea28d::t_7c7b4b5050f965 74-78
+api/share.test.ts
+  s_1606b97c1ea28d::t_5177170b13ebad 34,38-41,137,438,447
+api/lib/meshIndex.test.ts
+  s_1606b97c1ea28d::t_5177170b13ebad 22-28,64,66-68,72-79,367,369-371,375
+api/share/[id].ts
+  s_1606b97c1ea28d::t_e37cbb50187108 310-313
+  s_1606b97c1ea28d::t_7c7b4b5050f965 247
+src/shared/generation/meshCloud.ts
+  s_1606b97c1ea28d::t_1c77d98fd7a99a 358-360,363-381,384-388,391-401,445-448
+api/share/[id].test.ts
+  s_1606b97c1ea28d::t_e37cbb50187108 399-408
+  s_1606b97c1ea28d::t_00ed7ce8e12969 352,368,409,416
+.claude/skills/mesh-storage/SKILL.md
+  s_1606b97c1ea28d::t_98668d3afd70cd 25-26
+src/core/api/share.test.ts
+  s_1606b97c1ea28d::t_1ceab5305ab9c5 569,656-664
+  s_1606b97c1ea28d::t_e37cbb50187108 19,24,585,644,650-655,665-668
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8b8ab33068807e1d0da6664195726337067b3e2a",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
