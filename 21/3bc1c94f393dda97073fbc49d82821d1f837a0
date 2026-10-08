@@ -1,0 +1,32 @@
+src/core/sync/engine.ts
+  s_1606b97c1ea28d::t_6e3b56c06f3edc 206-209,318,346-363
+  s_1606b97c1ea28d::t_bce5cadc4ff787 364-365
+src/core/sync/engine.test.ts
+  s_1606b97c1ea28d::t_6e3b56c06f3edc 523-538
+src/features/bin-designer/sync/meshPushPlan.ts
+  s_1606b97c1ea28d::t_9aa997e0ac5d2d 11-12,25-27
+src/core/sync/adapters/types.ts
+  s_1606b97c1ea28d::t_6e3b56c06f3edc 59-61,66-67
+src/features/bin-designer/sync/meshPayloads.test.ts
+  s_1606b97c1ea28d::t_9dc1fe29d5f0dd 131
+src/shared/generation/meshCloud.test.ts
+  s_1606b97c1ea28d::t_9dc1fe29d5f0dd 44-45,141-163,239-240,250-292
+src/shared/generation/meshCloud.ts
+  s_1606b97c1ea28d::t_b1df5324345b01 7,14-17,19,23,27-28,32,46,49-57,65-66,68,76-77,112-118,120-126,128,130-132,134,136,138-139,141-179,184-187,189-190,193,197-202
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "213bc1c94f393dda97073fbc49d82821d1f837a0",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
