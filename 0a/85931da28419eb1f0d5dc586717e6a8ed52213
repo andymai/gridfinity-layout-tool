@@ -1,0 +1,36 @@
+src/shared/generation/meshStore.ts
+  s_1606b97c1ea28d::t_570f72f1c53af6 13-17,20,50-52,72-73,125,135-193,199,209,253,266
+src/features/bin-designer/hooks/useMeshFileMaintenance.ts
+  s_1606b97c1ea28d::t_ca36591f5810ad 5-8,17-19,38-47
+  s_e119565ef49e3d::t_7adedf5e42743b 48
+src/features/bin-designer/hooks/useMeshFileMaintenance.test.ts
+  s_1606b97c1ea28d::t_8d699bc79f8650 1,7-9,16-20,33-43
+  s_e119565ef49e3d::t_eb16b46bf1aa9d 44
+src/shared/generation/meshStore.test.ts
+  s_1606b97c1ea28d::t_dd094980f2eb3c 9,123-180
+  s_1606b97c1ea28d::t_fb9bc969d11a55 181
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0a85931da28419eb1f0d5dc586717e6a8ed52213",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_e119565ef49e3d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "22771e2c-be53-48db-9fc0-f1734eda22ff",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
