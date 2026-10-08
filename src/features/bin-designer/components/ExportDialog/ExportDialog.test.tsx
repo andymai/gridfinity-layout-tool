@@ -24,7 +24,6 @@ let mockShouldPromptSupport = false;
 /** Split state the mocked hook reports; reset to "fits the bed" per test. */
 let mockSplitState = { needsSplit: false, splitPieceCount: 1 };
 const mockDownloadPlates = vi.fn(async () => true);
-/** Label plates the mocked plate hook reports; none by default. */
 let mockPlates: { widthU: number; text: string }[] = [];
 
 vi.mock('@/core/store/toast', async (importOriginal) => {
@@ -134,13 +133,67 @@ describe('ExportDialog', () => {
     setupStore();
   });
 
-  it("offers the design's label plates beside the bin, in the chosen format", () => {
+  it.each([
+    ['stl', 'STL'],
+    ['3mf', '3MF'],
+    ['step', 'STEP'],
+  ] as const)("offers the design's label plates beside the bin as %s", (format, label) => {
     mockPlates = [{ widthU: 1, text: 'M3' }];
+    setupStore({ exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, format } });
     render(<ExportDialog />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Download label plates (STL)' }));
+    fireEvent.click(screen.getByRole('button', { name: `Download label plates (${label})` }));
 
-    expect(mockDownloadPlates).toHaveBeenCalledWith('stl');
+    expect(mockDownloadPlates).toHaveBeenCalledWith(format);
+  });
+
+  describe('a design with label plates', () => {
+    beforeEach(() => {
+      mockPlates = [{ widthU: 1, text: 'M3' }];
+      mockShouldPromptSupport = false;
+      mockDownloadBin.mockResolvedValue(true);
+      mockLoadDesign.mockResolvedValue(ok({ publishedId: 'Pub123456789' }));
+    });
+
+    const click = async (name: string | RegExp): Promise<void> => {
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name }));
+      });
+    };
+
+    it('keeps the plates on offer after the bin downloads, then closes', async () => {
+      render(<ExportDialog />);
+
+      await click(/download stl/i);
+      expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(true);
+
+      await click('Download label plates (STL)');
+      expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(false);
+    });
+
+    it('keeps the bin on offer after the plates download, then closes', async () => {
+      render(<ExportDialog />);
+
+      await click('Download label plates (STL)');
+      expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(true);
+
+      await click(/download stl/i);
+      expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(false);
+    });
+
+    it('shows the support prompt only once both are downloaded', async () => {
+      mockShouldPromptSupport = true;
+      render(<ExportDialog />);
+
+      await click(/download stl/i);
+      expect(
+        screen.getByRole('button', { name: 'Download label plates (STL)' })
+      ).toBeInTheDocument();
+
+      await click('Download label plates (STL)');
+      expect(screen.queryByRole('button', { name: /download stl/i })).toBeNull();
+      expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(true);
+    });
   });
 
   it('offers no plate download for a bin without label plates', () => {

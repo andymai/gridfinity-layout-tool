@@ -96,10 +96,14 @@ export function ExportDialog() {
   const { plates, isExporting: isExportingPlates, downloadPlates } = useLabelPlateExport();
   const [splitEnabled, setSplitEnabled] = useState(true);
   const [justExported, setJustExported] = useState(false);
+  // With plates, the dialog finishes only once both files are taken, so the
+  // first download never takes away the button for the other.
+  const [taken, setTaken] = useState({ bin: false, plates: false });
   const addToast = useToastStore((s) => s.addToast);
 
   const closeDialog = useCallback(() => {
     setJustExported(false);
+    setTaken({ bin: false, plates: false });
     setExportDialogOpen(false);
   }, [setExportDialogOpen]);
 
@@ -117,13 +121,6 @@ export function ExportDialog() {
 
   const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
   const useSplitExport = needsSplit && splitEnabled;
-
-  // Leaves the dialog open, like the source download: plates come with the bin.
-  const handleDownloadPlates = useCallback(() => {
-    void downloadPlates(activeFormat).then((succeeded) => {
-      if (succeeded) addToast(t('binDesigner.plates.exportComplete'), 'success', 3000);
-    });
-  }, [downloadPlates, activeFormat, addToast, t]);
 
   // Colored cutouts and compartments are multi-color on their own; zone colors
   // count only with the toggle on and a zone that differs from the body. STL
@@ -152,6 +149,7 @@ export function ExportDialog() {
     // Re-opening the dialog always returns to the form, never a stale success view.
     if (!justOpened) return;
     setJustExported(false);
+    setTaken({ bin: false, plates: false });
     const format = exportFileNameConfig.format;
     if (isMultiColor && (format === 'stl' || format === 'step')) {
       setExportFileNameConfig({ ...exportFileNameConfig, format: '3mf' });
@@ -229,6 +227,32 @@ export function ExportDialog() {
     });
   }, [publishVisible, canPublish, addToast, openPublish, t]);
 
+  // The support view is reserved for returning makers (2nd+ export), at most
+  // once per cooldown; everyone else just gets the low-friction auto-close.
+  const finishExport = useCallback(
+    (toastComplete: boolean) => {
+      if (recordExportAndShouldPromptSupport()) {
+        setJustExported(true);
+        return;
+      }
+      if (toastComplete) {
+        addToast({ message: t('export.complete'), type: 'success', duration: 3000 });
+      }
+      closeDialog();
+      void offerPublish();
+    },
+    [addToast, closeDialog, offerPublish, t]
+  );
+
+  const handleDownloadPlates = useCallback(() => {
+    void downloadPlates(activeFormat).then((succeeded) => {
+      if (!succeeded) return;
+      addToast(t('binDesigner.plates.exportComplete'), 'success', 3000);
+      if (taken.bin) finishExport(false);
+      else setTaken((prev) => ({ ...prev, plates: true }));
+    });
+  }, [downloadPlates, activeFormat, addToast, t, taken.bin, finishExport]);
+
   const handleDownload = useCallback(async () => {
     // The hook owns error handling end-to-end (telemetry + Retry/Report
     // toast + captureException with rich bin context). We gate the success
@@ -250,18 +274,14 @@ export function ExportDialog() {
       });
     }
 
-    // The support view is reserved for returning makers (2nd+ export), at most
-    // once per cooldown; everyone else just gets the low-friction auto-close.
-    if (recordExportAndShouldPromptSupport()) {
-      setJustExported(true);
+    if (plates.length > 0 && !taken.plates) {
+      setTaken((prev) => ({ ...prev, bin: true }));
+      if (!useSplitExport) {
+        addToast({ message: t('export.complete'), type: 'success', duration: 3000 });
+      }
       return;
     }
-
-    if (!useSplitExport) {
-      addToast({ message: t('export.complete'), type: 'success', duration: 3000 });
-    }
-    closeDialog();
-    void offerPublish();
+    finishExport(!useSplitExport);
   }, [
     useSplitExport,
     downloadSplit,
@@ -271,8 +291,9 @@ export function ExportDialog() {
     designName,
     splitPieceCount,
     addToast,
-    closeDialog,
-    offerPublish,
+    plates.length,
+    taken.plates,
+    finishExport,
     t,
   ]);
 
