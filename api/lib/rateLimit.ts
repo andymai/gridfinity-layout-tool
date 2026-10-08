@@ -27,6 +27,7 @@ export type RateLimitAction =
   | 'supporters.edit'
   | 'community.read'
   | 'community.publish'
+  | 'community.meshCheck'
   | 'community.manage'
   | 'community.like'
   | 'community.action'
@@ -103,6 +104,10 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   // bigger budget pointless.
   'community.read': { limit: 240, windowSeconds: 60 }, // 240/minute per IP
   'community.publish': { limit: 10, windowSeconds: 24 * 60 * 60 }, // 10/day per user
+  // The held-file lookup a publish or update naming mesh files makes before its
+  // budget is charged, so a refusal the client resends inline costs no slot.
+  // Bounds how often it runs, since it skips the daily budgets.
+  'community.meshCheck': { limit: 30, windowSeconds: 60 }, // 30/minute per user
   // Remediation on existing designs (update, unpublish, admin purge) has its
   // own budget: sharing the scarce publish budget would lock a user who
   // published 10 times out of deleting their own designs, and cap an admin's

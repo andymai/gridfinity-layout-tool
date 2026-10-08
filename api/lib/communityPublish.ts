@@ -180,13 +180,21 @@ export async function handlePublish(req: VercelRequest, res: VercelResponse): Pr
   try {
     // A design turned back for its mesh files is sent again inline, and the
     // refusal must not spend a slot of the scarce daily publish budget.
-    const preCheck = await resolveHeldMeshFiles(
-      res,
-      getRedis(),
-      session.userId,
-      unvalidatedMeshRefHashes(req.body)
-    );
-    if (!preCheck) return;
+    const unvalidatedHashes = unvalidatedMeshRefHashes(req.body);
+    if (unvalidatedHashes.length > 0) {
+      const checkRate = await checkRateLimit(session.userId, 'community.meshCheck');
+      if (!checkRate.allowed) {
+        rateLimited(res, checkRate.retryAfterSeconds);
+        return;
+      }
+      const preCheck = await resolveHeldMeshFiles(
+        res,
+        getRedis(),
+        session.userId,
+        unvalidatedHashes
+      );
+      if (!preCheck) return;
+    }
 
     const rate = await checkRateLimit(session.userId, 'community.publish');
     if (!rate.allowed) {

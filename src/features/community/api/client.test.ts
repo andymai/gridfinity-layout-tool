@@ -306,6 +306,46 @@ describe('a design naming mesh files the server finds unheld', () => {
     expect(sentParams()).toEqual([inlineParams]);
   });
 
+  it('sends nothing once the account changed while an over-cap design was inlined', async () => {
+    vi.mocked(inlineParamsMeshes).mockImplementationOnce(async () => {
+      onAccountChanged();
+      return ok(inlineParams);
+    });
+
+    const result = await publishDesign({ ...refInput, description: 'x'.repeat(100_001) });
+
+    expect(isErr(result)).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('sends a design mixing inline meshes and refs as it is, over the ref cap or not', async () => {
+    const mixed = {
+      ...refInput,
+      description: 'x'.repeat(100_001),
+      params: {
+        ...(refInput.params as unknown as Record<string, unknown>),
+        meshAssets: {
+          ...(refInput.params as unknown as { meshAssets: Record<string, unknown> }).meshAssets,
+          m2: {
+            name: 'n',
+            data: 'AAAA',
+            triangleCount: 1,
+            sizeMm: { x: 1, y: 1, z: 1 },
+            outlines: [],
+          },
+        },
+      } as unknown as BinParams,
+    };
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(400, { error: 'too large', code: 'SIZE_EXCEEDED' })
+    );
+
+    const result = await publishDesign(mixed);
+
+    expect(isErr(result)).toBe(true);
+    expect(sentParams()).toEqual([mixed.params]);
+  });
+
   it('sends nothing more once the account changed after the first request', async () => {
     fetchMock.mockImplementationOnce(async () => {
       onAccountChanged();

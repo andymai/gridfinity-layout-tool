@@ -617,7 +617,20 @@ describe('POST /api/community (publish)', () => {
       expect(res._status).toBe(424);
       expect(mocks.put).not.toHaveBeenCalled();
       expect(mocks.holdCommunityMeshes).not.toHaveBeenCalled();
-      expect(mocks.checkRateLimit).not.toHaveBeenCalled();
+      expect(mocks.checkRateLimit).not.toHaveBeenCalledWith('user-1', 'community.publish');
+    });
+
+    it('throttles repeated held-file checks on their own short limit', async () => {
+      mocks.checkRateLimit.mockImplementation(async (_scope: string, action: string) =>
+        action === 'community.meshCheck'
+          ? { allowed: false, remaining: 0, resetAt: 0, retryAfterSeconds: 30 }
+          : { allowed: true, remaining: 10, resetAt: 0 }
+      );
+
+      const res = await handle({ body: publishBody({ params: refParams() }) });
+
+      expect(res._status).toBe(429);
+      expect(mocks.resolveHeldMeshFiles).not.toHaveBeenCalled();
     });
 
     it('stores no meshFiles for a design without refs', async () => {

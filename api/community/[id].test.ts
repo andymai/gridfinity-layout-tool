@@ -818,13 +818,17 @@ describe('community/[id]', () => {
           res.status(424).json({ code: 'MESH_MISSING', missing: [B] });
           return null;
         });
+        const params = { ...publishPayload().params, meshAssets: { m1: { hash: B } } };
 
-        const res = await handle('PUT', { body: publishPayload() });
+        const res = await handle('PUT', { body: publishPayload({ params }) });
 
         expect(res._status).toBe(424);
         expect(mocks.writeCommunityDesignBlob).not.toHaveBeenCalled();
         expect(mocks.put).not.toHaveBeenCalled();
-        expect(mocks.checkRateLimit).not.toHaveBeenCalled();
+        expect(mocks.checkRateLimit).not.toHaveBeenCalledWith(
+          expect.anything(),
+          'community.manage'
+        );
       });
     });
 

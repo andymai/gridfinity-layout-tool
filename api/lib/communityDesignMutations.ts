@@ -100,13 +100,18 @@ export async function handlePut(req: VercelRequest, res: VercelResponse, id: str
     if (!session) return;
 
     // As on publish: the refusal is resent inline, so it spends no budget.
-    const preCheck = await resolveHeldMeshFiles(
-      res,
-      getRedis(),
-      session.userId,
-      unvalidatedMeshRefHashes(req.body)
-    );
-    if (!preCheck) return;
+    const unvalidatedHashes = unvalidatedMeshRefHashes(req.body);
+    if (unvalidatedHashes.length > 0) {
+      const checkRate = await checkRateLimit(session.userId, 'community.meshCheck');
+      if (!checkRate.allowed) return rateLimited(res, checkRate.retryAfterSeconds);
+      const preCheck = await resolveHeldMeshFiles(
+        res,
+        getRedis(),
+        session.userId,
+        unvalidatedHashes
+      );
+      if (!preCheck) return;
+    }
 
     const rateLimit = await checkRateLimit(session.userId, 'community.manage');
     if (!rateLimit.allowed) {

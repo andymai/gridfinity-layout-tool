@@ -16,6 +16,7 @@ import { MISSING_DEPENDENCY_STATUS } from '@/core/sync/payloadKey';
 import { accountGeneration } from '@/core/sync/accountGeneration';
 import { forgetHeldMeshes, readMissingMeshes } from '@/shared/generation/meshCloud';
 import { holderMeshHashes, inlineParamsMeshes } from '@/shared/generation/meshRefs';
+import { isMeshAssetRef } from '@/shared/generation/meshAsset';
 import type { BinParams } from '@/shared/types/bin';
 import type { ItemEnvelope } from '@/shared/types/item';
 import type { AssemblyStructure } from '@/shared/types/assembly';
@@ -211,26 +212,31 @@ function overRefCap(input: CommunityPublishInput): boolean {
   return new TextEncoder().encode(measured).length > REF_DESIGN_MAX_BYTES;
 }
 
+/**
+ * Null when the account changed before the design could go out: every request
+ * must go under the account that started the publish, or an account switch in
+ * another tab would publish this design there.
+ */
 async function sendWithInlineFallback(
   input: CommunityPublishInput,
   send: (input: CommunityPublishInput) => Promise<Response>
-): Promise<Response> {
+): Promise<Response | null> {
   const params = input.params;
   if (params === undefined || holderMeshHashes({ params }).length === 0) return send(input);
-  // The retry must go out under the account that sent the first request: an
-  // account switch in another tab would otherwise publish this design there.
   const generation = accountGeneration();
-  const inlined = async (): Promise<CommunityPublishInput | null> => {
+  const sameAccount = (): boolean => accountGeneration() === generation;
+  // An inline mesh already lifts the cap, so only a design of refs alone has it.
+  const refsOnly = Object.values(params.meshAssets ?? {}).every(isMeshAssetRef);
+  if (refsOnly && overRefCap(input)) {
     const inline = await inlineParamsMeshes(params);
-    return isOk(inline) && accountGeneration() === generation
-      ? { ...input, params: inline.value }
-      : null;
-  };
-  if (overRefCap(input)) return send((await inlined()) ?? input);
+    if (!sameAccount()) return null;
+    return send(isOk(inline) ? { ...input, params: inline.value } : input);
+  }
   const response = await send(input);
-  if (accountGeneration() !== generation || !(await refusesMeshRefs(response))) return response;
-  const retry = await inlined();
-  return retry ? send(retry) : response;
+  if (!sameAccount() || !(await refusesMeshRefs(response, refsOnly))) return response;
+  const inline = await inlineParamsMeshes(params);
+  if (!sameAccount()) return null;
+  return isOk(inline) ? send({ ...input, params: inline.value }) : response;
 }
 
 /**
@@ -239,12 +245,12 @@ async function sendWithInlineFallback(
  * next upload starts over. A 400 `SIZE_EXCEEDED` is the tighter cap on a design
  * of refs, which inline meshes lift.
  */
-async function refusesMeshRefs(response: Response): Promise<boolean> {
+async function refusesMeshRefs(response: Response, refsOnly: boolean): Promise<boolean> {
   if (response.status === MISSING_DEPENDENCY_STATUS) {
     forgetHeldMeshes(await readMissingMeshes(response.clone()));
     return true;
   }
-  if (response.status !== 400) return false;
+  if (response.status !== 400 || !refsOnly) return false;
   try {
     const { code } = (await response.clone().json()) as { code?: unknown };
     return code === 'SIZE_EXCEEDED';
@@ -267,6 +273,7 @@ export async function publishDesign(
         signal,
       })
     );
+    if (!response) return err({ kind: 'network' });
     const data: unknown = await response.json();
     if (!response.ok) return err(errorFromResponse(response.status, data));
     if (isPublishResult(data)) return ok(data);
@@ -290,6 +297,7 @@ export async function updateDesign(
         signal,
       })
     );
+    if (!response) return err({ kind: 'network' });
     const data: unknown = await response.json();
     if (!response.ok) return err(errorFromResponse(response.status, data));
     if (isDesignResponse(data)) return ok(data.design);
