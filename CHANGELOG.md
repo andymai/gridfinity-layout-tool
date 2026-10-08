@@ -1,5 +1,25 @@
 # Changelog
 
+## [4.506.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.505.1...gridfinity-layout-tool-v4.506.0) (2026-10-08)
+
+
+### Features
+
+* **api:** store imported meshes once by content hash ([#4530](https://github.com/andymai/gridfinity-layout-tool/issues/4530)) ([4a59c8e](https://github.com/andymai/gridfinity-layout-tool/commit/4a59c8ecdd1634688f4f8123db61d1598c2e0253))
+* **bin-designer:** print a cutout fit test as outlines only ([#4522](https://github.com/andymai/gridfinity-layout-tool/issues/4522)) ([7d367ae](https://github.com/andymai/gridfinity-layout-tool/commit/7d367aed8f762eb6d2909b74184bc58bedc02d28)), closes [#4517](https://github.com/andymai/gridfinity-layout-tool/issues/4517)
+* **bin-designer:** show the layout's drawer-margin overhang read-only ([#4527](https://github.com/andymai/gridfinity-layout-tool/issues/4527)) ([c66d5cb](https://github.com/andymai/gridfinity-layout-tool/commit/c66d5cbd2929a8fdaec8fe45a8b3521fcd7506f4))
+* **generation:** chamfer a nested pocket where it opens onto the floor around it ([#4531](https://github.com/andymai/gridfinity-layout-tool/issues/4531)) ([d4b854f](https://github.com/andymai/gridfinity-layout-tool/commit/d4b854f2aa208362fe091d8a1932dc6faec962b2))
+
+
+### Bug Fixes
+
+* **bin-designer:** rename an imported or Workshop design without rewriting its size ([#4529](https://github.com/andymai/gridfinity-layout-tool/issues/4529)) ([6fd60f2](https://github.com/andymai/gridfinity-layout-tool/commit/6fd60f223b6801ec76cd855393bda600947de1bd))
+* **bin-inspector:** disable drawer-margin extension for imported-mesh and assembly designs ([#4523](https://github.com/andymai/gridfinity-layout-tool/issues/4523)) ([1a5b368](https://github.com/andymai/gridfinity-layout-tool/commit/1a5b368c87ec6f35c624d14dedbd4e219b80edf1))
+* **generation:** bound path cutout crossing checks ([#4534](https://github.com/andymai/gridfinity-layout-tool/issues/4534)) ([a52e9dd](https://github.com/andymai/gridfinity-layout-tool/commit/a52e9dd01a7599ee8969909c0f427ab982f31668))
+* **generation:** keep a path pocket's entry chamfer and clearance at tight curves ([#4525](https://github.com/andymai/gridfinity-layout-tool/issues/4525)) ([3432e72](https://github.com/andymai/gridfinity-layout-tool/commit/3432e7206b7c3b8a1feacd4ce1985a4d25e901e7))
+* **share:** send assembly designs with a shared layout ([#4524](https://github.com/andymai/gridfinity-layout-tool/issues/4524)) ([ffd6084](https://github.com/andymai/gridfinity-layout-tool/commit/ffd608407ab80dc5004fb880ca1e6e1d542f983e))
+* **sync:** keep imported-mesh design versions out of cloud sync ([#4526](https://github.com/andymai/gridfinity-layout-tool/issues/4526)) ([4bb89a7](https://github.com/andymai/gridfinity-layout-tool/commit/4bb89a78c903953deb30740665b0085143e8647d))
+
 ## [4.505.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.505.0...gridfinity-layout-tool-v4.505.1) (2026-10-07)
 
 
