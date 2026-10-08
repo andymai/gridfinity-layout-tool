@@ -104,6 +104,8 @@ All the caches above are **in-memory only** — they vanish on reload. `src/shar
 
 ## Worker Protocol
 
+Mesh files reach a worker once each as `PUT_MESH` (released with `DROP_MESH`) ahead of the requests whose refs name them; see the mesh-storage skill.
+
 | Message         | Purpose                                             |
 | --------------- | --------------------------------------------------- |
 | INIT            | Load WASM (~11MB, 2-4s)                             |

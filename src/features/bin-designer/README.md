@@ -466,7 +466,7 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
 
 ### Mesh imprint cutouts (STL import)
 
-`shape: 'mesh'` cutouts carve a contoured pocket from an uploaded STL. The compressed mesh lives in `BinParams.meshAssets` (content shared across duplicates/arrays; store GCs an asset when its last referencing cutout is deleted — see `cutoutSlice`). Import flow: `panel/CutoutsSection/stlImport/` (`useStlImport` → worker `IMPORT_MESH` → orientation dialog → `addMeshCutout`). The 2D editor renders the stored silhouette (`renderer/MeshFootprintMesh`) shape-locked: move/rotate/array yes; resize, point-edit, scoops, pathfinder groups no. Fit controls (clearance/chamfer) apply. Payload cap is 2MB only when `meshAssets` is non-empty (server mirror in `api/lib/designerValidation.ts`).
+`shape: 'mesh'` cutouts carve a contoured pocket from an uploaded STL. `BinParams.meshAssets` holds a ref per mesh into the local mesh file store (files, refs, cleanup and worker delivery: the mesh-storage skill); the store GCs an entry when its last referencing cutout is deleted (see `cutoutSlice`). Import flow: `panel/CutoutsSection/stlImport/` (`useStlImport` → worker `IMPORT_MESH` → orientation dialog → `addMeshCutout`). The 2D editor renders the stored silhouette (`renderer/MeshFootprintMesh`) shape-locked: move/rotate/array yes; resize, point-edit, scoops, pathfinder groups no. Fit controls (clearance/chamfer) apply. Payload cap is 2MB only when `meshAssets` is non-empty (server mirror in `api/lib/designerValidation.ts`).
 
 ### Imported bin designs (STL → design, `stl_bin_import` flag — graduated)
 
