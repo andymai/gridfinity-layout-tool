@@ -1,0 +1,29 @@
+.claude/skills/mesh-storage/SKILL.md
+  s_1606b97c1ea28d::t_f84ec5e9ce48d2 20-27
+  s_1606b97c1ea28d::t_86573591c81b38 3
+api/README.md
+  s_1606b97c1ea28d::t_4c98c92140d63d 80
+scripts/doc-budget.json
+  s_1606b97c1ea28d::t_9453258f8d7e21 17
+.claude/skills/auth-and-sync/SKILL.md
+  s_1606b97c1ea28d::t_2ec90fd7b89548 23
+  s_1606b97c1ea28d::t_9f532e6f89de30 3
+CLAUDE.md
+  s_1606b97c1ea28d::t_f25cac5f1a8e9b 105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "02f095a2bb323abbbaf8cbcc62b1e19702c579bf",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
