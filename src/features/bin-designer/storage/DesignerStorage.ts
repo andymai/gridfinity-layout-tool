@@ -44,8 +44,9 @@ import {
 // surface keep one import site as the schema moves to `designerDb`.
 export { closeDesignerDb } from './designerDb';
 // Re-exported so the upkeep loads with this module's chunk rather than
-// splitting the designer database and compression out of it.
+// splitting the designer database, compression and the mesh store out of it.
 export { maintainMeshFiles } from './designMeshFiles';
+export { refreshMeshFileUse } from '@/shared/generation/meshStore';
 
 /** localStorage key for tracking the active design ID across sessions */
 const ACTIVE_DESIGN_KEY = 'gridfinity-designer-active-v1';

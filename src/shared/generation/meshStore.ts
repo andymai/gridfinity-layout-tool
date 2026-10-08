@@ -10,9 +10,14 @@
  *
  * Every file read since the page loaded stays in a byte-budgeted memory cache:
  * the generation worker is sent the same few files on every edit.
+ *
+ * A file this page has used is marked used again at most once per
+ * {@link MESH_USE_REFRESH_MS}, on reads and through
+ * {@link refreshMeshFileUse}, so another tab's sweep never takes a file that a
+ * long-open tab still holds a ref to (in its undo history, say).
  */
 
-import { createDbAccessor } from '@/core/storage/backends/openSingleton';
+import { createDbAccessor } from '@/core/storage';
 import { createLogger } from '@/core/logger';
 import { sha256Hex } from './sha256';
 
@@ -42,6 +47,9 @@ interface MeshFileMeta {
  */
 export const MESH_SWEEP_GRACE_MS = 7 * 24 * 60 * 60 * 1000;
 
+/** How stale a used file's last use may get before this page writes it again. */
+export const MESH_USE_REFRESH_MS = 24 * 60 * 60 * 1000;
+
 const MEMORY_BUDGET_BYTES = 16 * 1024 * 1024;
 
 const db = createDbAccessor({
@@ -61,7 +69,8 @@ const db = createDbAccessor({
 /** Insertion order is recency order. */
 const memory = new Map<string, Uint8Array<ArrayBuffer>>();
 let memoryBytes = 0;
-const touchedThisSession = new Set<string>();
+/** Every file this page has used, and when it last wrote that use. */
+const lastUseWritten = new Map<string, number>();
 
 function remember(hash: string, bytes: Uint8Array<ArrayBuffer>): void {
   const existing = memory.get(hash);
@@ -113,7 +122,7 @@ export async function putMeshFile(bytes: Uint8Array<ArrayBuffer>): Promise<strin
       .objectStore(META_STORE)
       .put({ hash, size: bytes.byteLength, touchedAt: Date.now() } satisfies MeshFileMeta);
     await tx.done;
-    touchedThisSession.add(hash);
+    lastUseWritten.set(hash, Date.now());
     remember(hash, bytes);
     if (arrived) for (const listener of arrivalListeners) listener(hash);
     return hash;
@@ -123,11 +132,71 @@ export async function putMeshFile(bytes: Uint8Array<ArrayBuffer>): Promise<strin
   }
 }
 
+/**
+ * Write `now` as the last use of each hash. A file another tab has already
+ * swept is stored again from memory when this page still has its bytes.
+ */
+async function writeUse(hashes: readonly string[], now: number): Promise<void> {
+  if (hashes.length === 0 || !hasIndexedDb()) return;
+  const database = await db.get();
+  if (!database) return;
+  const [keys, metas] = await Promise.all([
+    Promise.all(hashes.map((hash) => database.getKey(FILES_STORE, hash))),
+    Promise.all(
+      hashes.map((hash) => database.get(META_STORE, hash) as Promise<MeshFileMeta | undefined>)
+    ),
+  ]);
+  const restored: string[] = [];
+  const tx = database.transaction([FILES_STORE, META_STORE], 'readwrite');
+  hashes.forEach((hash, i) => {
+    const bytes = memory.get(hash);
+    if (keys[i] === undefined) {
+      if (!bytes) return;
+      void tx.objectStore(FILES_STORE).put({ hash, bytes } satisfies StoredMeshFile);
+      restored.push(hash);
+    }
+    const size = bytes?.byteLength ?? metas[i]?.size ?? 0;
+    void tx.objectStore(META_STORE).put({ hash, size, touchedAt: now } satisfies MeshFileMeta);
+  });
+  await tx.done;
+  for (const hash of hashes) lastUseWritten.set(hash, now);
+  for (const hash of restored) for (const listener of arrivalListeners) listener(hash);
+}
+
+async function noteUse(hash: string): Promise<void> {
+  const now = Date.now();
+  const written = lastUseWritten.get(hash);
+  if (written !== undefined && now - written < MESH_USE_REFRESH_MS) return;
+  lastUseWritten.set(hash, now);
+  try {
+    await writeUse([hash], now);
+  } catch (e) {
+    logger.warn('Failed to mark a mesh file used', { error: String(e) });
+  }
+}
+
+/**
+ * Mark used again every file this page has used whose last use is going
+ * stale. Run on a timer by a long-open page; a no-op otherwise.
+ */
+export async function refreshMeshFileUse(now: number = Date.now()): Promise<void> {
+  const due = [...lastUseWritten].filter(([, at]) => now - at >= MESH_USE_REFRESH_MS);
+  try {
+    await writeUse(
+      due.map(([hash]) => hash),
+      now
+    );
+  } catch (e) {
+    logger.warn('Failed to refresh mesh file use', { error: String(e) });
+  }
+}
+
 /** The file's bytes, or null when this device does not have it. */
 export async function getMeshFile(hash: string): Promise<Uint8Array<ArrayBuffer> | null> {
   const cached = memory.get(hash);
   if (cached) {
     remember(hash, cached);
+    await noteUse(hash);
     return cached;
   }
   if (!hasIndexedDb()) return null;
@@ -136,12 +205,8 @@ export async function getMeshFile(hash: string): Promise<Uint8Array<ArrayBuffer>
     if (!database) return null;
     const stored = (await database.get(FILES_STORE, hash)) as StoredMeshFile | undefined;
     if (!stored) return null;
-    if (!touchedThisSession.has(hash)) {
-      touchedThisSession.add(hash);
-      const meta: MeshFileMeta = { hash, size: stored.bytes.byteLength, touchedAt: Date.now() };
-      await database.put(META_STORE, meta);
-    }
     remember(hash, stored.bytes);
+    await noteUse(hash);
     return stored.bytes;
   } catch (e) {
     logger.warn('Failed to read mesh file', { error: String(e) });
@@ -185,10 +250,7 @@ export async function sweepMeshFiles(
       void tx.objectStore(META_STORE).delete(hash);
     }
     await tx.done;
-    for (const hash of doomed) {
-      forget(hash);
-      touchedThisSession.delete(hash);
-    }
+    for (const hash of doomed) forget(hash);
     return doomed;
   } catch (e) {
     logger.warn('Mesh file sweep failed', { error: String(e) });
@@ -201,5 +263,5 @@ export function __resetMeshStoreForTests(): void {
   db.close();
   memory.clear();
   memoryBytes = 0;
-  touchedThisSession.clear();
+  lastUseWritten.clear();
 }

@@ -6,6 +6,7 @@ import {
   getMeshFile,
   hasMeshFile,
   putMeshFile,
+  refreshMeshFileUse,
   subscribeMeshFileArrivals,
   sweepMeshFiles,
 } from './meshStore';
@@ -117,5 +118,64 @@ describe('sweepMeshFiles', () => {
 
   it('is a no-op on an empty store', async () => {
     expect(await sweepMeshFiles(new Set())).toEqual([]);
+  });
+});
+
+describe('a long-open page keeps the files it uses', () => {
+  const day = 24 * 60 * 60 * 1000;
+  const start = 1_000_000_000_000;
+
+  /** Delete a file the way another tab's sweep would, behind this page's back. */
+  function deleteElsewhere(hash: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME);
+      req.onsuccess = () => {
+        const tx = req.result.transaction(['files', 'meta'], 'readwrite');
+        tx.objectStore('files').delete(hash);
+        tx.objectStore('meta').delete(hash);
+        tx.oncomplete = () => {
+          req.result.close();
+          resolve();
+        };
+        tx.onerror = () => reject(tx.error ?? new Error('delete failed'));
+      };
+      req.onerror = () => reject(req.error ?? new Error('open failed'));
+    });
+  }
+
+  it('marks a cached file used again when read a day or more later', async () => {
+    const now = vi.spyOn(Date, 'now').mockReturnValue(start);
+    const hash = (await putMeshFile(bytesOf(11))) ?? '';
+
+    now.mockReturnValue(start + 6 * day);
+    await getMeshFile(hash);
+
+    expect(await sweepMeshFiles(new Set(), start + 8 * day)).toEqual([]);
+    expect(await sweepMeshFiles(new Set(), start + 13 * day + 1)).toEqual([hash]);
+  });
+
+  it('renews every file it used when refreshed, read or not', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(start);
+    const hash = (await putMeshFile(bytesOf(12))) ?? '';
+
+    await refreshMeshFileUse(start + day / 2);
+    expect(await sweepMeshFiles(new Set(), start + 7 * day + 1)).toEqual([hash]);
+
+    const kept = (await putMeshFile(bytesOf(13))) ?? '';
+    await refreshMeshFileUse(start + 2 * day);
+    expect(await sweepMeshFiles(new Set(), start + 8 * day)).toEqual([]);
+    expect(await hasMeshFile(kept)).toBe(true);
+  });
+
+  it('stores again a file another tab swept while this page still holds it', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(start);
+    const bytes = bytesOf(14);
+    const hash = (await putMeshFile(bytes)) ?? '';
+    await deleteElsewhere(hash);
+
+    await refreshMeshFileUse(start + 2 * day);
+    __resetMeshStoreForTests();
+
+    expect(await getMeshFile(hash)).toEqual(bytes);
   });
 });
