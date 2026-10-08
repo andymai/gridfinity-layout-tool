@@ -1,0 +1,28 @@
+src/shared/utils/outlineSegments.test.ts
+  s_1606b97c1ea28d::t_da8fa47e949ab0 2,180
+src/shared/utils/pathCutoutOutline.test.ts
+  s_1606b97c1ea28d::t_da8fa47e949ab0 2,288,294,307
+vitest.config.ts
+  s_1606b97c1ea28d::t_206698d3239563 102-104
+src/shared/utils/polygonOffset.test.ts
+  s_1606b97c1ea28d::t_da8fa47e949ab0 2,476,484,532
+  s_1606b97c1ea28d::t_29951d2fbe502e 459
+src/test/timeLimit.ts
+  s_1606b97c1ea28d::t_206698d3239563 1-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "efa003deaed3a8a76c38cb06aaf72aa82d893206",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
