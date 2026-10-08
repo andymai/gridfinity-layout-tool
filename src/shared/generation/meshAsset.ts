@@ -82,8 +82,16 @@ export interface MeshImportRotation {
 export const MAX_MESH_FILE_BYTES = 50 * 1024 * 1024;
 /** Triangle budget an imported mesh is decimated to fit. */
 export const MAX_MESH_ASSET_TRIANGLES = 50_000;
-/** Max mesh assets per design. */
-export const MAX_MESH_ASSETS_PER_DESIGN = 8;
+/**
+ * Declared triangles across one design's mesh assets: today's worst case of 8
+ * assets at the per-asset ceiling, so a design never asks more of generation
+ * than it could before. Each decode holds its asset to the declared count,
+ * which makes the sum binding.
+ *
+ * MIRROR: `CONSTRAINTS.MAX_MESH_TRIANGLES_TOTAL` in
+ * `api/lib/designerValidationConstants.ts`.
+ */
+export const MAX_MESH_TRIANGLES_PER_DESIGN = 400_000;
 /** Max total silhouette points across all outlines of one asset. */
 export const MAX_MESH_OUTLINE_POINTS = 4000;
 
@@ -98,13 +106,6 @@ export const MAX_MESH_OUTLINE_POINTS = 4000;
  */
 export const MAX_MESH_ASSET_DATA_LENGTH = 900_000;
 
-/**
- * Whether a design's `meshAssets` carry more than the codec's budget allows.
- *
- * Deliberately checks the ENCODED length: it is the only bound available
- * without decompressing, which is the work we are trying not to do on hostile
- * input. `decodeMeshData` enforces the decompressed ceiling separately.
- */
 /**
  * A design's mesh-imprint cutouts that will actually be cut — visible, and
  * pointing at an asset that resolves.
@@ -134,19 +135,36 @@ export function hasMeshImprints(params: Pick<BinParams, 'cutouts' | 'meshAssets'
   return visibleMeshImprintCutouts(params).length > 0;
 }
 
+/** Declared triangles across a design's mesh assets, inline or ref. */
+export function meshTrianglesTotal(
+  assets: Readonly<Record<string, MeshAssetEntry>> | undefined
+): number {
+  return Object.values(assets ?? {}).reduce((sum, asset) => sum + asset.triangleCount, 0);
+}
+
+/**
+ * Whether a design's `meshAssets` carry more than the codec's budget allows.
+ *
+ * Deliberately checks the ENCODED length and the DECLARED triangle counts:
+ * they are the only bounds available without decompressing, which is the work
+ * we are trying not to do on hostile input. Each decode holds its asset to the
+ * declared count.
+ */
 export function hasOversizedMeshAsset(params: unknown): boolean {
   if (typeof params !== 'object' || params === null) return false;
   const assets = (params as { meshAssets?: unknown }).meshAssets;
   if (typeof assets !== 'object' || assets === null) return false;
 
-  const entries = Object.values(assets as Record<string, unknown>);
-  if (entries.length > MAX_MESH_ASSETS_PER_DESIGN) return true;
-
-  return entries.some((asset) => {
-    if (typeof asset !== 'object' || asset === null) return false;
-    const data = (asset as { data?: unknown }).data;
-    return typeof data === 'string' && data.length > MAX_MESH_ASSET_DATA_LENGTH;
-  });
+  let triangles = 0;
+  for (const asset of Object.values(assets as Record<string, unknown>)) {
+    if (typeof asset !== 'object' || asset === null) continue;
+    const { data, triangleCount } = asset as { data?: unknown; triangleCount?: unknown };
+    if (typeof data === 'string' && data.length > MAX_MESH_ASSET_DATA_LENGTH) return true;
+    if (typeof triangleCount === 'number' && Number.isFinite(triangleCount)) {
+      triangles += triangleCount;
+    }
+  }
+  return triangles > MAX_MESH_TRIANGLES_PER_DESIGN;
 }
 
 const MAGIC = 0x314d4741; // 'GMA1'
@@ -307,7 +325,8 @@ export async function encodeMeshData(
  * geometry downstream.
  */
 export async function decodeMeshData(
-  data: string
+  data: string,
+  declaredTriangles: number
 ): Promise<Result<DecodedMeshData, ValidationError>> {
   let compressed: Uint8Array;
   try {
@@ -315,15 +334,31 @@ export async function decodeMeshData(
   } catch {
     return err(validationImportFailed(['Mesh decode failed: corrupt asset data']));
   }
-  return decodeMeshBytes(compressed);
+  return decodeMeshBytes(compressed, declaredTriangles);
 }
 
+/**
+ * Held to `declaredTriangles`, the count the design carries for this mesh:
+ * inflation stops at what that many triangles can occupy, and geometry with
+ * more triangles fails, so a design's declared sum bounds the work it asks of
+ * whoever opens it. Deflate would otherwise pack a far bigger mesh into the
+ * same few bytes.
+ */
 export async function decodeMeshBytes(
-  compressed: Uint8Array
+  compressed: Uint8Array,
+  declaredTriangles: number
 ): Promise<Result<DecodedMeshData, ValidationError>> {
+  if (
+    !Number.isInteger(declaredTriangles) ||
+    declaredTriangles < 1 ||
+    declaredTriangles > MAX_MESH_ASSET_TRIANGLES
+  ) {
+    return err(validationImportFailed(['Mesh decode failed: bad declared triangle count']));
+  }
   let raw: Uint8Array;
   try {
-    raw = await inflateBounded(compressed, MAX_DECODED_MESH_BYTES);
+    // At most 3 vertices of 3 u16 coordinates and 3 u32 indices per triangle.
+    raw = await inflateBounded(compressed, HEADER_BYTES + declaredTriangles * (3 * 6 + 12));
   } catch {
     return err(validationImportFailed(['Mesh decode failed: corrupt asset data']));
   }
@@ -340,6 +375,9 @@ export async function decodeMeshBytes(
   const expected = HEADER_BYTES + vertexCount * 3 * 2 + triangleCount * 3 * 4;
   if (raw.byteLength !== expected || vertexCount === 0 || triangleCount === 0) {
     return err(validationImportFailed(['Mesh decode failed: size mismatch']));
+  }
+  if (triangleCount > declaredTriangles) {
+    return err(validationImportFailed(['Mesh decode failed: more triangles than declared']));
   }
 
   const min = [view.getFloat32(12, true), view.getFloat32(16, true), view.getFloat32(20, true)];

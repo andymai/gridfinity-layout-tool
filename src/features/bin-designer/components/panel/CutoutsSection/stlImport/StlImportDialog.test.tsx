@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import type { PendingStlImport } from './useStlImport';
+import { MAX_MESH_TRIANGLES_PER_DESIGN } from '@/shared/generation/meshAsset';
 
 // jsdom has no WebGL — stub the 3D viewer internals.
 vi.mock('@react-three/fiber', () => ({
@@ -36,6 +37,7 @@ const pending: PendingStlImport = {
   fileName: 'wrench.stl',
   rotation: { x: 0, y: 0, z: 30 },
   oversized: false,
+  designTriangles: 10_000,
 };
 
 const noop = () => undefined;
@@ -102,5 +104,41 @@ describe('StlImportDialog', () => {
       />
     );
     expect(screen.getByRole('alert')).toBeInTheDocument();
+  });
+
+  it('meters the design triangles with this mesh against the budget', () => {
+    render(
+      <StlImportDialog
+        pending={pending}
+        importing={false}
+        onRotate={noop}
+        onPlace={noop}
+        onCancel={noop}
+      />
+    );
+    expect(screen.getByText('With this mesh: 11,234 of 400,000 triangles')).toBeInTheDocument();
+    const meter = screen.getByRole('progressbar');
+    expect(Number(meter.getAttribute('aria-valuenow'))).toBeCloseTo(
+      (11_234 / MAX_MESH_TRIANGLES_PER_DESIGN) * 100
+    );
+    expect(screen.getByRole('button', { name: 'Place in bin' })).toBeEnabled();
+  });
+
+  it('holds Place back when the mesh would take the design past the budget', () => {
+    const onPlace = vi.fn();
+    render(
+      <StlImportDialog
+        pending={{ ...pending, designTriangles: MAX_MESH_TRIANGLES_PER_DESIGN - 1000 }}
+        importing={false}
+        onRotate={noop}
+        onPlace={onPlace}
+        onCancel={noop}
+      />
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent(/triangle limit/);
+    const place = screen.getByRole('button', { name: 'Place in bin' });
+    expect(place).toBeDisabled();
+    fireEvent.click(place);
+    expect(onPlace).not.toHaveBeenCalled();
   });
 });

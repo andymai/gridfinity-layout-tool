@@ -259,7 +259,7 @@ async function resolveDesignMesh(
       waitingFor.push(...holderMeshHashes(design));
       return null;
     }
-    const decoded = await decodeMeshData(asset.data);
+    const decoded = await decodeMeshData(asset.data, asset.triangleCount);
     if (!isOk(decoded)) return null;
     const { positions, indices } = decoded.value;
     const mesh: MeshData = {

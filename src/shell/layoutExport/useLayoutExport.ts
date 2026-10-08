@@ -259,7 +259,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
         // asset skips that design rather than aborting the whole archive.
         for (const m of plan.meshExportable) {
           const asset = await resolveMeshAsset(m.asset);
-          const decoded = asset ? await decodeMeshData(asset.data) : null;
+          const decoded = asset ? await decodeMeshData(asset.data, asset.triangleCount) : null;
           if (decoded && isOk(decoded)) {
             const stl = buildSTLBufferFromIndexed(
               decoded.value.positions,

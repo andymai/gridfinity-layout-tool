@@ -124,9 +124,10 @@ export function getQuotaCaps(kind: SyncItemKind): { maxCount: number; maxBytes: 
 export const MESH_QUOTA_BYTES = 100 * 1024 * 1024;
 
 /**
- * 100 designs at 8 meshes each is 800 files, and version history can keep older
- * imports alive, so 5000 leaves a real library room. Without a count cap, tiny
- * files could grow one account's hash past what account deletion can walk.
+ * A library of a hundred designs carrying several meshes each, with version
+ * history keeping older imports alive, stays well inside 5000. Without a count
+ * cap, tiny files could grow one account's hash past what account deletion can
+ * walk.
  */
 export const MESH_QUOTA_COUNT = 5000;
 

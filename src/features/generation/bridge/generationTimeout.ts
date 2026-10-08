@@ -18,6 +18,7 @@ import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { resolveOverhang } from '@/shared/utils/overhang';
 import { resolveScoopSides } from '@/shared/utils/scoopCalculations';
 import { isLiteFloorOpen } from '@/shared/utils/slotMath';
+import { visibleMeshImprintCutouts } from '@/shared/generation/meshAsset';
 
 /** Minimum timeout for trivial bins (no heavy features). */
 export const BASE_TIMEOUT_MS = 30_000;
@@ -124,6 +125,16 @@ export const TAPER_MS_PER_COMPARTMENT = 100;
  * on a slow device, has this budget alone.
  */
 export const SCOOP_MS_PER_RAMP = 1_500;
+
+/**
+ * Per distinct imported mesh a visible imprint cuts, plus a share per triangle.
+ * The first build of each tool unions it with 26 shifted copies for its
+ * clearance, which grows with the mesh, and only later builds reuse it.
+ * Generous for the same reason as {@link SCOOP_MS_PER_RAMP}: a reloaded design
+ * pays for every tool at once, before the device floor has seen a build.
+ */
+export const MESH_IMPRINT_MS_PER_ASSET = 1_000;
+export const MESH_IMPRINT_MS_PER_TRIANGLE = 0.1;
 
 /**
  * Bonus per 2 height units above the reference height.
@@ -360,6 +371,12 @@ function binRawBudgetMs(params: BinParams): number {
   if (hasDetachableFeet(params.base)) {
     timeout += DETACHABLE_FEET_BONUS_MS;
     timeout += resolveDetachableFeet(params).placements.length * DETACHABLE_FEET_MS_PER_FOOT;
+  }
+
+  const imprinted = new Set(visibleMeshImprintCutouts(params).map((c) => c.meshId ?? ''));
+  for (const meshId of imprinted) {
+    const triangles = params.meshAssets?.[meshId]?.triangleCount ?? 0;
+    timeout += MESH_IMPRINT_MS_PER_ASSET + triangles * MESH_IMPRINT_MS_PER_TRIANGLE;
   }
 
   const heightOverFloor = Math.max(0, safeHeight - HEIGHT_BONUS_FLOOR_UNITS);

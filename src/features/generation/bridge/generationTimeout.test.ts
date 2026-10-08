@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import { DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
-import type { ResolvedBaseplateParams, BinParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams, BinParams, Cutout } from '@/shared/types/bin';
 import {
   BASE_TIMEOUT_MS,
   BASEPLATE_CONNECTOR_BONUS_MS,
@@ -32,6 +32,8 @@ import {
   computeSplitExportTimeoutMs,
   SPLIT_PIECE_MS_PER_CELL,
   SCOOP_MS_PER_RAMP,
+  MESH_IMPRINT_MS_PER_ASSET,
+  MESH_IMPRINT_MS_PER_TRIANGLE,
 } from './generationTimeout';
 
 const HEX_ON = { enabled: true, pattern: 'honeycomb' } as const;
@@ -504,6 +506,47 @@ describe('computeGenerationTimeoutMs', () => {
       expect(
         computeGenerationTimeoutMs(params({ compartments, scoop: { ...scoop, enabled: false } }))
       ).toBe(baseline);
+    });
+  });
+
+  describe('mesh imprints', () => {
+    const asset = (triangleCount: number) => ({
+      name: 'tool',
+      data: 'AAAA',
+      triangleCount,
+      sizeMm: { x: 10, y: 10, z: 5 },
+      outlines: [],
+    });
+    const imprint = (id: string, meshId: string, hidden = false): Cutout => ({
+      id,
+      shape: 'mesh',
+      meshId,
+      x: 0,
+      y: 0,
+      width: 10,
+      depth: 10,
+      cutDepth: 5,
+      rotation: 0,
+      cornerRadius: 0,
+      label: '',
+      groupId: null,
+      hidden,
+    });
+
+    it('grants per distinct imprinted mesh, scaled by its triangles', () => {
+      const baseline = computeGenerationTimeoutMs(params());
+      const meshAssets = { a: asset(10_000), b: asset(2_000) };
+      const cutouts = [imprint('c1', 'a'), imprint('c2', 'a'), imprint('c3', 'b')];
+      expect(computeGenerationTimeoutMs(params({ meshAssets, cutouts }))).toBe(
+        baseline + 2 * MESH_IMPRINT_MS_PER_ASSET + 12_000 * MESH_IMPRINT_MS_PER_TRIANGLE
+      );
+    });
+
+    it('grants nothing for a hidden imprint or one whose mesh is missing', () => {
+      const baseline = computeGenerationTimeoutMs(params());
+      const meshAssets = { a: asset(10_000) };
+      const cutouts = [imprint('c1', 'a', true), imprint('c2', 'gone')];
+      expect(computeGenerationTimeoutMs(params({ meshAssets, cutouts }))).toBe(baseline);
     });
   });
 

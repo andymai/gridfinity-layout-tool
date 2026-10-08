@@ -20,7 +20,7 @@ import { DEFAULT_GROUP_OP, DEFAULT_CUTOUT_COLOR_SCOPE } from '../../types';
 import { canArray } from '@/shared/utils/cutoutArray';
 import { withTextFootprint } from '@/shared/utils/cutoutLabel';
 import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
-import { MAX_MESH_ASSETS_PER_DESIGN } from '@/shared/generation/meshAsset';
+import { MAX_MESH_TRIANGLES_PER_DESIGN, meshTrianglesTotal } from '@/shared/generation/meshAsset';
 import {
   adoptedGroupArray,
   dissolveSingletonGroups,
@@ -343,19 +343,18 @@ export function createCutoutSlice(rawSet: Set) {
 
     /**
      * Add a mesh imprint cutout together with its stored asset (one history
-     * entry, so undo removes both). No-ops when the design is already at the
-     * asset cap — callers surface that limit before invoking.
+     * entry, so undo removes both). No-ops when the asset would take the
+     * design past its triangle budget; callers surface that before invoking.
      */
     addMeshCutout: (cutout: Cutout, asset: MeshAssetEntry) => {
       const meshId = cutout.meshId;
       if (cutout.shape !== 'mesh' || meshId === undefined) return;
       set((state) => {
         const existing = state.params.meshAssets ?? {};
-        if (!(meshId in existing) && Object.keys(existing).length >= MAX_MESH_ASSETS_PER_DESIGN) {
-          return;
-        }
+        const next = { ...existing, [meshId]: asset };
+        if (meshTrianglesTotal(next) > MAX_MESH_TRIANGLES_PER_DESIGN) return;
         pushHistoryEntry(state);
-        state.params.meshAssets = { ...existing, [meshId]: asset };
+        state.params.meshAssets = next;
         // The bin's array regardless of the editor target: a lid cutout cannot be
         // a mesh imprint, and `gcMeshAssets` counts references there. The z-index
         // has to rank against that same array, or the imprint lands on the lid's

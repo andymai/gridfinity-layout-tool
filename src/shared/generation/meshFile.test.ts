@@ -150,7 +150,7 @@ describe('decodeMeshFile rejections', () => {
   it('rejects geometry that holds more triangles than declared', async () => {
     const asset = await tetrahedronAsset();
     const file = unwrap(encodeMeshFile({ ...asset, triangleCount: 3 }));
-    expect(reason(await decodeMeshFile(file))).toMatch('more triangles than the file declares');
+    expect(reason(await decodeMeshFile(file))).toMatch('more triangles than declared');
   });
 
   it('accepts geometry that holds fewer triangles than declared', async () => {

@@ -52,7 +52,7 @@ import type { PreparedTool, ImprintFrame, Bounds2D } from './meshImprintTools';
 
 /** FeatureTag.UNKNOWN — faces with no recorded provenance. */
 const TAG_UNKNOWN = 255;
-/** Prepared tool manifolds kept per worker, keyed by `meshEntryKey`. */
+/** Prepared tool manifolds kept across designs, keyed by `meshEntryKey`. */
 const MAX_PREPARED_TOOLS = 16;
 
 const preparedTools = new Map<string, PreparedTool>();
@@ -94,6 +94,15 @@ export async function prepareMeshImprints(
   const module = moduleOverride ?? (await getManifoldModule());
   activeModule = module;
 
+  // A design can hold more meshes than the cache keeps across designs. Evicting
+  // one of its own would cut that imprint as a flat outline prism and rebuild
+  // its clearance on every regeneration, so the cache grows to fit the design.
+  const needed = new Set<string>();
+  for (const cutout of cutouts) {
+    const asset = params.meshAssets?.[cutout.meshId ?? ''];
+    if (asset) needed.add(meshEntryKey(asset));
+  }
+
   for (const cutout of cutouts) {
     const asset = params.meshAssets?.[cutout.meshId ?? ''];
     if (!asset) continue;
@@ -122,10 +131,11 @@ export async function prepareMeshImprints(
     }
 
     if (preparedTools.size >= MAX_PREPARED_TOOLS) {
-      const oldest = preparedTools.keys().next().value;
-      if (oldest !== undefined) {
-        disposeTool(preparedTools.get(oldest));
-        preparedTools.delete(oldest);
+      for (const oldKey of preparedTools.keys()) {
+        if (needed.has(oldKey)) continue;
+        disposeTool(preparedTools.get(oldKey));
+        preparedTools.delete(oldKey);
+        break;
       }
     }
     preparedTools.set(key, { manifold, topShoulder, dilations: new Map() });

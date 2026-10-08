@@ -6,7 +6,8 @@
  * quarter-turn button (every change re-runs the worker pipeline on the
  * retained file buffer) — the footprint dimensions, and an oversize warning
  * when the tool won't fit the current bin interior. mm are physical — the
- * mesh is never scaled.
+ * mesh is never scaled. A meter shows the design's triangles with this mesh,
+ * and Place is held back when they would pass the design budget.
  */
 
 import { useEffect, useMemo } from 'react';
@@ -15,9 +16,10 @@ import { Center, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 // Side-effect: must run before any <Text> mounts under this Canvas.
 import '@/shared/webgl/configureTroikaText';
-import { Dialog, Button, Stepper } from '@/design-system';
+import { Dialog, Button, ProgressBar, Stepper } from '@/design-system';
 import { SpaceMouseController } from '@/shared/spacemouse/components/SpaceMouseController';
 import { useTranslation } from '@/i18n';
+import { MAX_MESH_TRIANGLES_PER_DESIGN } from '@/shared/generation/meshAsset';
 import type { MeshImportRotation } from '@/shared/generation/meshAsset';
 import type { PendingStlImport } from './useStlImport';
 
@@ -73,6 +75,12 @@ export function StlImportDialog({
   const { sizeMm } = pending.asset;
   const dims = `${sizeMm.x.toFixed(1)} × ${sizeMm.y.toFixed(1)} × ${sizeMm.z.toFixed(1)} mm`;
   const maxDim = Math.max(sizeMm.x, sizeMm.y, sizeMm.z);
+  const designTriangles = pending.designTriangles + pending.asset.triangleCount;
+  const overBudget = designTriangles > MAX_MESH_TRIANGLES_PER_DESIGN;
+  const budgetText = t('binDesigner.cutouts.stlImport.budget', {
+    used: designTriangles.toLocaleString(),
+    limit: MAX_MESH_TRIANGLES_PER_DESIGN.toLocaleString(),
+  });
 
   return (
     <Dialog.Root open onClose={onCancel} size="md">
@@ -145,6 +153,21 @@ export function StlImportDialog({
             </div>
           </div>
 
+          <div className="flex flex-col gap-1">
+            <ProgressBar
+              size="sm"
+              value={(designTriangles / MAX_MESH_TRIANGLES_PER_DESIGN) * 100}
+              label={budgetText}
+            />
+            <p className="text-xs text-content-secondary">{budgetText}</p>
+          </div>
+
+          {overBudget && (
+            <p className="text-sm text-warning" role="alert">
+              {t('binDesigner.cutouts.stlImport.overBudget')}
+            </p>
+          )}
+
           {pending.oversized && (
             <p className="text-sm text-warning" role="alert">
               {t('binDesigner.cutouts.stlImport.oversizeWarning')}
@@ -156,7 +179,12 @@ export function StlImportDialog({
         <Button type="button" variant="ghost" onClick={onCancel}>
           {t('common.cancel')}
         </Button>
-        <Button type="button" variant="primary" disabled={importing || placing} onClick={onPlace}>
+        <Button
+          type="button"
+          variant="primary"
+          disabled={importing || placing || overBudget}
+          onClick={onPlace}
+        >
           {t('binDesigner.cutouts.stlImport.place')}
         </Button>
       </Dialog.Footer>

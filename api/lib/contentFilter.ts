@@ -325,8 +325,9 @@ export function filterDesignParamsContent(params: unknown): ContentFilterResult 
   // with benign strings and park the blocked content past the cutoff — the
   // filter would report "passed" on text it never looked at. No legitimate
   // design comes close: the engraved-text fields are individually bounded
-  // (MAX_COMPARTMENT_GRID, MAX_INSERTS, MAX_MESH_ASSETS, five surfaceText
-  // fields), so reaching the cap means the params were built to reach it.
+  // (MAX_COMPARTMENT_GRID, MAX_INSERTS, five surfaceText fields). Mesh names
+  // and labels have no count cap of their own: a design needs a couple of
+  // hundred meshes, each far below the import detail, to reach this one.
   if (texts.length > MAX_TEXT_FIELDS) {
     return { passed: false, reason: 'contains too many text fields to moderate' };
   }

@@ -58,7 +58,7 @@ faqs:
   - q: What shapes can a cutout be?
     a: Rectangle, circle, slot, and polygon as presets, a freeform path drawn with the pen tool, or a mesh imprinted from an imported STL. Each one takes its own depth, position, and rotation.
   - q: What file types can I import for a cutout?
-    a: STL. Files up to 50 MB are accepted and a design can carry up to 8 imported meshes. The file is repaired, laid flat, and simplified in the browser before it becomes a cavity.
+    a: STL. Files up to 50 MB are accepted. Each imported mesh is simplified in the browser to at most 50,000 triangles, and a design's imported meshes may hold up to 400,000 triangles in total.
   - q: Does importing an STL add a Gridfinity base to my model?
     a: No, and this is the common mix-up. An imported STL becomes the shape of a cavity carved into a bin, not a model that gets a Gridfinity foot attached. If you want an existing model to sit on a baseplate, the bin is the part that provides the base.
   - q: Do cutouts need supports when printing?
@@ -98,7 +98,7 @@ Carve a cavity shaped like the thing you are storing, so it sits in its own rece
 
 Import a model and the generator repairs it, lays it flat, and simplifies it in the browser, then shows you an orientation step so you can rotate it before committing. The result is a cavity in that outline.
 
-Files up to 50 MB are accepted, and one design can carry up to 8 imported meshes — enough for a full driver set in a single bin.
+STL files up to 50 MB are accepted. A design can hold up to 400,000 triangles total, enough for at least 8 meshes at the most detailed setting and many more simpler ones.
 
 Worth being clear about a common mix-up: this makes an imported model into a **hole**, not into a Gridfinity-compatible part. If you have an STL you want sitting on a baseplate, the bin is what provides the base and the profile; the model goes in the cavity.
 

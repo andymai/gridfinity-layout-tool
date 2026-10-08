@@ -2,7 +2,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import type { Cutout, CutoutArrayConfig, PathPoint } from '@/features/bin-designer/types';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
-import { MAX_MESH_ASSETS_PER_DESIGN } from '@/shared/generation/meshAsset';
+import {
+  MAX_MESH_ASSET_TRIANGLES,
+  MAX_MESH_TRIANGLES_PER_DESIGN,
+} from '@/shared/generation/meshAsset';
 import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
 
 describe('cutoutSlice - consolidated actions', () => {
@@ -1762,17 +1765,38 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(params.meshAssets).toBeUndefined();
     });
 
-    it('addMeshCutout enforces the per-design asset cap', () => {
+    it('addMeshCutout refuses an asset past the design triangle budget', () => {
       const { addMeshCutout } = useDesignerStore.getState();
-      for (let i = 0; i < MAX_MESH_ASSETS_PER_DESIGN + 2; i++) {
+      const dense = { ...createMeshAsset(), triangleCount: MAX_MESH_ASSET_TRIANGLES };
+      const fit = MAX_MESH_TRIANGLES_PER_DESIGN / MAX_MESH_ASSET_TRIANGLES;
+      for (let i = 0; i <= fit; i++) {
+        addMeshCutout(createMeshCutout({ id: `mesh-${i}`, meshId: `asset-${i}` }), dense);
+      }
+      const { params } = useDesignerStore.getState();
+      expect(Object.keys(params.meshAssets ?? {})).toHaveLength(fit);
+      expect(params.cutouts).toHaveLength(fit);
+    });
+
+    it('addMeshCutout holds small meshes past the old count of 8', () => {
+      const { addMeshCutout } = useDesignerStore.getState();
+      for (let i = 0; i < 20; i++) {
         addMeshCutout(
           createMeshCutout({ id: `mesh-${i}`, meshId: `asset-${i}` }),
           createMeshAsset()
         );
       }
-      const { params } = useDesignerStore.getState();
-      expect(Object.keys(params.meshAssets ?? {})).toHaveLength(MAX_MESH_ASSETS_PER_DESIGN);
-      expect(params.cutouts).toHaveLength(MAX_MESH_ASSETS_PER_DESIGN);
+      expect(Object.keys(useDesignerStore.getState().params.meshAssets ?? {})).toHaveLength(20);
+    });
+
+    it('addMeshCutout counts a reused mesh id once against the budget', () => {
+      const { addMeshCutout } = useDesignerStore.getState();
+      const dense = { ...createMeshAsset(), triangleCount: MAX_MESH_ASSET_TRIANGLES };
+      const fit = MAX_MESH_TRIANGLES_PER_DESIGN / MAX_MESH_ASSET_TRIANGLES;
+      for (let i = 0; i < fit; i++) {
+        addMeshCutout(createMeshCutout({ id: `mesh-${i}`, meshId: `asset-${i}` }), dense);
+      }
+      addMeshCutout(createMeshCutout({ id: 'mesh-again', meshId: 'asset-0' }), dense);
+      expect(useDesignerStore.getState().params.cutouts).toHaveLength(fit + 1);
     });
 
     it('removeCutout GCs the asset when the last reference goes', () => {

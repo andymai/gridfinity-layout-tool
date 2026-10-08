@@ -77,7 +77,7 @@ export function meshEntryKey(entry: MeshAssetEntry): string {
 export async function decodeMeshEntry(
   entry: MeshAssetEntry
 ): Promise<Result<DecodedMeshData, ValidationError> | null> {
-  if (!isMeshAssetRef(entry)) return decodeMeshData(entry.data);
+  if (!isMeshAssetRef(entry)) return decodeMeshData(entry.data, entry.triangleCount);
   const geometry = geometryByHash.get(entry.hash);
-  return geometry ? decodeMeshBytes(geometry) : null;
+  return geometry ? decodeMeshBytes(geometry, entry.triangleCount) : null;
 }
