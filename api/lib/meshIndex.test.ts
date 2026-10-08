@@ -9,7 +9,9 @@ import {
   acquireAccountMesh,
   getHeldMesh,
   getMeshUsage,
+  communityMeshHolder,
   heldMeshUrls,
+  holdCommunityMeshes,
   holdShareMeshes,
   releaseAccountMesh,
   releaseAllAccountMeshes,
@@ -19,6 +21,7 @@ import {
 import type { MeshHold } from './meshIndex';
 import { MESH_QUOTA_BYTES, MESH_QUOTA_COUNT } from './quota';
 import {
+  communityMeshesKey,
   meshHoldersKey,
   sessionKey,
   shareMeshesKey,
@@ -39,7 +42,7 @@ class FakeRedis {
   private scans = new Map<string, string[]>();
   meshAcquire?: (...args: (string | number)[]) => Promise<(string | number)[]>;
   meshRelease?: (...args: string[]) => Promise<number>;
-  shareHold?: (numberOfKeys: number, ...keysAndArgs: string[]) => Promise<number>;
+  recordHold?: (numberOfKeys: number, ...keysAndArgs: string[]) => Promise<number>;
 
   private hash(key: string): Map<string, string> {
     const hash = this.hashes.get(key) ?? new Map<string, string>();
@@ -152,8 +155,8 @@ class FakeRedis {
         return this.sets.get(holders)?.size ?? 0;
       };
     }
-    if (name === 'shareHold') {
-      this.shareHold = async (numberOfKeys, ...rest) => {
+    if (name === 'recordHold') {
+      this.recordHold = async (numberOfKeys, ...rest) => {
         const keys = rest.slice(0, numberOfKeys);
         const [holder, ...hashes] = rest.slice(numberOfKeys);
         for (let i = 1; i < keys.length; i++) {
@@ -374,6 +377,13 @@ describe('holdShareMeshes', () => {
       new Set([accountMeshHolder('u1'), shareMeshHolder('share1')])
     );
     expect(fake.sets.get(meshHoldersKey(HASH_B))).toEqual(new Set([shareMeshHolder('share1')]));
+  });
+
+  it('holds a published design the same way, under its own name and record', async () => {
+    await holdCommunityMeshes(redis, 'Pub1', [HASH_A]);
+
+    expect(fake.sets.get(meshHoldersKey(HASH_A))).toEqual(new Set([communityMeshHolder('Pub1')]));
+    expect(fake.sets.get(communityMeshesKey('Pub1'))).toEqual(new Set([HASH_A]));
   });
 
   it('records each file the share holds, across updates', async () => {

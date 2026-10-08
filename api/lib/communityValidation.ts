@@ -542,7 +542,8 @@ export function validateCommunityPublish(body: unknown): CommunityValidationResu
       JSON.stringify({ name, description, category, ...designerPayload }),
       'utf8'
     );
-    const designResult = validateDesignerShare(designerPayload, sizeBytes);
+    // Refs are checked for shape here; the handler checks the caller holds each file.
+    const designResult = validateDesignerShare(designerPayload, sizeBytes, { meshRefs: true });
     if (!designResult.valid) {
       return { valid: false, error: designResult.error };
     }

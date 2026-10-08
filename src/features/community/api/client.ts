@@ -9,9 +9,12 @@ import {
 import type { CommunityListPage, CommunityCapabilities } from './clientGuards';
 export type { CommunityCapabilities } from './clientGuards';
 import type { Result } from '@/core/result';
-import { ok, err, isErr } from '@/core/result';
+import { ok, err, isErr, isOk } from '@/core/result';
 import { isApiErrorResponse } from '@/core/api/mapApiError';
 import { apiFetch } from '@/core/sync/apiFetch';
+import { MISSING_DEPENDENCY_STATUS } from '@/core/sync/payloadKey';
+import { forgetHeldMeshes, readMissingMeshes } from '@/shared/generation/meshCloud';
+import { inlineParamsMeshes } from '@/shared/generation/meshRefs';
 import type { BinParams } from '@/shared/types/bin';
 import type { ItemEnvelope } from '@/shared/types/item';
 import type { AssemblyStructure } from '@/shared/types/assembly';
@@ -187,18 +190,36 @@ export async function fetchCommunityCapabilities(
   }
 }
 
+/**
+ * A 424 lists mesh files the server found the account does not hold after all
+ * (an upload this page remembered from another account): the design goes again
+ * with its meshes inline, and the next upload of those files starts over.
+ */
+async function sendWithInlineFallback(
+  input: CommunityPublishInput,
+  send: (input: CommunityPublishInput) => Promise<Response>
+): Promise<Response> {
+  const response = await send(input);
+  if (response.status !== MISSING_DEPENDENCY_STATUS || input.params === undefined) return response;
+  forgetHeldMeshes(await readMissingMeshes(response.clone()));
+  const inline = await inlineParamsMeshes(input.params);
+  return isOk(inline) ? send({ ...input, params: inline.value }) : response;
+}
+
 export async function publishDesign(
   input: CommunityPublishInput,
   lineage: CommunityDesignLineage | null = null,
   signal?: AbortSignal
 ): Promise<Result<CommunityPublishResult, CommunityClientError>> {
   try {
-    const response = await communityFetch(COMMUNITY_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...input, lineage }),
-      signal,
-    });
+    const response = await sendWithInlineFallback(input, (body) =>
+      communityFetch(COMMUNITY_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...body, lineage }),
+        signal,
+      })
+    );
     const data: unknown = await response.json();
     if (!response.ok) return err(errorFromResponse(response.status, data));
     if (isPublishResult(data)) return ok(data);
@@ -214,12 +235,14 @@ export async function updateDesign(
   signal?: AbortSignal
 ): Promise<Result<CommunityDesign, CommunityClientError>> {
   try {
-    const response = await communityFetch(`${COMMUNITY_ENDPOINT}/${publishedId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
-      signal,
-    });
+    const response = await sendWithInlineFallback(input, (body) =>
+      communityFetch(`${COMMUNITY_ENDPOINT}/${publishedId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal,
+      })
+    );
     const data: unknown = await response.json();
     if (!response.ok) return err(errorFromResponse(response.status, data));
     if (isDesignResponse(data)) return ok(data.design);

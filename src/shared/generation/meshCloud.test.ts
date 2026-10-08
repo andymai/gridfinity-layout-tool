@@ -7,6 +7,7 @@ import {
   endMeshCloudSession,
   fetchMeshFiles,
   fetchSharedMeshFiles,
+  accountHoldsMeshFiles,
   meshCloudSession,
   forgetHeldMeshes,
   uploadMeshFiles,
@@ -675,5 +676,30 @@ describe('fetchSharedMeshFiles', () => {
 
     await expect(fetchSharedMeshFiles({ [file.hash]: CDN + file.hash })).resolves.toBeUndefined();
     expect(await hasMeshFile(file.hash)).toBe(false);
+  });
+});
+
+describe('accountHoldsMeshFiles', () => {
+  it('answers true once the account holds every file, uploading what it lacks', async () => {
+    const file = await storedFile(41);
+    fetchMock.mockImplementation(async (_url, init) =>
+      init?.method === 'HEAD'
+        ? new Response(null, { status: 404 })
+        : new Response('{}', { status: 200 })
+    );
+
+    expect(await accountHoldsMeshFiles([file.hash], meshCloudSession())).toBe(true);
+  });
+
+  it('answers false when the server has no mesh store', async () => {
+    const file = await storedFile(42);
+    fetchMock.mockResolvedValue(new Response(null, { status: 503 }));
+
+    expect(await accountHoldsMeshFiles([file.hash], meshCloudSession())).toBe(false);
+  });
+
+  it('answers false, asking nothing, for a payload with no file to name', async () => {
+    expect(await accountHoldsMeshFiles([], meshCloudSession())).toBe(false);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

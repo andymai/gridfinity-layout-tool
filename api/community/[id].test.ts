@@ -60,6 +60,14 @@ const mocks = vi.hoisted(() => ({
   deleteCommunityDesignBlob: vi.fn(),
   setCommunityDesignStatus: vi.fn(),
   toggleCommunityLike: vi.fn(),
+  resolveHeldMeshFiles: vi.fn(),
+  holdCommunityMeshes: vi.fn(),
+}));
+
+vi.mock('../lib/shareMeshes.js', () => ({ resolveHeldMeshFiles: mocks.resolveHeldMeshFiles }));
+vi.mock('../lib/meshIndex.js', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  holdCommunityMeshes: mocks.holdCommunityMeshes,
 }));
 
 vi.mock('../lib/rateLimit.js', () => ({
@@ -312,6 +320,8 @@ describe('community/[id]', () => {
     );
     mocks.del.mockResolvedValue(undefined);
     mocks.validateCommunityPublish.mockReturnValue({ valid: true, payload: publishPayload() });
+    mocks.resolveHeldMeshFiles.mockResolvedValue({});
+    mocks.holdCommunityMeshes.mockResolvedValue(undefined);
     mocks.setCommunityDesignStatus.mockResolvedValue(undefined);
     mocks.toggleCommunityLike.mockImplementation(async (...args: unknown[]) => ({
       likes: 13,
@@ -765,6 +775,53 @@ describe('community/[id]', () => {
       expect(design.name).toBe('Updated bin');
       // Millimetres, exactly like publish: 4u x 42 - 0.5, 2u x 42 - 0.5, 9u x 7.
       expect(design.metrics).toEqual({ width: 167.5, depth: 83.5, height: 63, gridUnitMm: 42 });
+    });
+
+    describe('mesh files', () => {
+      const [A, B] = ['a', 'b'].map((c) => c.repeat(64));
+      const url = (hash: string): string =>
+        `https://store.public.blob.vercel-storage.com/meshes/${hash}`;
+
+      it('replaces the files with the ones the edit names, held before the write', async () => {
+        mocks.readCommunityDesignBlob.mockResolvedValue(
+          designRecord({ meshFiles: { [A]: url(A) } })
+        );
+        mocks.resolveHeldMeshFiles.mockResolvedValue({ [B]: url(B) });
+
+        const res = await handle('PUT', { body: publishPayload() });
+
+        expect(res._status).toBe(200);
+        const design = (res._body as { design: CommunityDesignRecord }).design;
+        expect(design.meshFiles).toEqual({ [B]: url(B) });
+        expect(mocks.holdCommunityMeshes).toHaveBeenCalledWith(redis, VALID_ID, [B]);
+        const [held] = mocks.holdCommunityMeshes.mock.invocationCallOrder;
+        const [written] = mocks.writeCommunityDesignBlob.mock.invocationCallOrder;
+        expect(held).toBeLessThan(written);
+      });
+
+      it('drops the files of an edit sent inline', async () => {
+        mocks.readCommunityDesignBlob.mockResolvedValue(
+          designRecord({ meshFiles: { [A]: url(A) } })
+        );
+
+        const res = await handle('PUT', { body: publishPayload() });
+
+        const design = (res._body as { design: CommunityDesignRecord }).design;
+        expect(design).not.toHaveProperty('meshFiles');
+      });
+
+      it('writes nothing when the caller does not hold the files', async () => {
+        mocks.resolveHeldMeshFiles.mockImplementation(async (res: VercelResponse) => {
+          res.status(424).json({ code: 'MESH_MISSING', missing: [B] });
+          return null;
+        });
+
+        const res = await handle('PUT', { body: publishPayload() });
+
+        expect(res._status).toBe(424);
+        expect(mocks.writeCommunityDesignBlob).not.toHaveBeenCalled();
+        expect(mocks.put).not.toHaveBeenCalled();
+      });
     });
 
     it('refreshes the publish-idempotency content hash', async () => {

@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { isErr, isOk } from '@/core/result';
+import { err, isErr, isOk, ok } from '@/core/result';
+import { forgetHeldMeshes } from '@/shared/generation/meshCloud';
+import { inlineParamsMeshes } from '@/shared/generation/meshRefs';
 import type { BinParams } from '@/shared/types/bin';
 import type { CommunityCard, CommunityDesignLineage } from '@/shared/types/community';
 import {
@@ -15,6 +17,15 @@ import {
   updateDesign,
 } from './client';
 import type { CommunityPublishInput } from './client';
+
+vi.mock('@/shared/generation/meshRefs', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  inlineParamsMeshes: vi.fn(),
+}));
+vi.mock('@/shared/generation/meshCloud', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  forgetHeldMeshes: vi.fn(),
+}));
 
 const fetchMock = vi.fn();
 
@@ -223,6 +234,59 @@ describe('publishDesign', () => {
     const result = await publishDesign(input);
     expect(isErr(result)).toBe(true);
     if (isErr(result)) expect(result.error).toEqual({ kind: 'server' });
+  });
+});
+
+describe('a design naming mesh files the server finds unheld', () => {
+  const HASH = 'a'.repeat(64);
+  const refused = (): Response => jsonResponse(424, { code: 'MESH_MISSING', missing: [HASH] });
+  const inlineParams = {
+    width: 2,
+    depth: 3,
+    height: 6,
+    meshAssets: { m1: { data: 'AAAA' } },
+  } as unknown as BinParams;
+  const sentParams = (): unknown[] =>
+    fetchMock.mock.calls.map(
+      ([, init]) => (JSON.parse(init.body as string) as { params: unknown }).params
+    );
+
+  beforeEach(() => {
+    vi.mocked(inlineParamsMeshes).mockResolvedValue(ok(inlineParams));
+    vi.mocked(forgetHeldMeshes).mockClear();
+  });
+
+  it('publishes again with the meshes inline, forgetting the files', async () => {
+    fetchMock
+      .mockResolvedValueOnce(refused())
+      .mockResolvedValueOnce(
+        jsonResponse(201, { id: 'AbCdEf123456', url: '/community/d/AbCdEf123456' })
+      );
+
+    const result = await publishDesign(input);
+
+    expect(isOk(result)).toBe(true);
+    expect(sentParams()).toEqual([input.params, inlineParams]);
+    expect(forgetHeldMeshes).toHaveBeenCalledWith([HASH]);
+  });
+
+  it('updates again with the meshes inline', async () => {
+    fetchMock.mockResolvedValueOnce(refused()).mockResolvedValueOnce(jsonResponse(200, { design }));
+
+    const result = await updateDesign('AbCdEf123456', input);
+
+    expect(isOk(result)).toBe(true);
+    expect(sentParams()).toEqual([input.params, inlineParams]);
+  });
+
+  it('reports the refusal when the meshes cannot be inlined', async () => {
+    vi.mocked(inlineParamsMeshes).mockResolvedValue(err({ code: 'STORAGE_MESH_MISSING' } as never));
+    fetchMock.mockResolvedValueOnce(refused());
+
+    const result = await publishDesign(input);
+
+    expect(isErr(result)).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 

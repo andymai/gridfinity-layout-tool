@@ -17,7 +17,7 @@ vi.mock('./session.js', async (importOriginal) => ({
 vi.mock('./rateLimit.js', () => ({ getRedis: mocks.getRedis }));
 vi.mock('./meshIndex.js', () => ({ heldMeshUrls: mocks.heldMeshUrls }));
 
-import { resolveShareMeshFiles } from './shareMeshes.js';
+import { resolveHeldMeshFiles, resolveShareMeshFiles } from './shareMeshes.js';
 
 const [A, B] = ['a', 'b'].map((c) => c.repeat(64));
 const url = (hash: string): string => `https://store.public.blob.vercel-storage.com/meshes/${hash}`;
@@ -84,5 +84,25 @@ describe('resolveShareMeshFiles', () => {
     expect(await resolveShareMeshFiles(request({}), res, [A])).toBeNull();
     expect(res._status).toBe(403);
     expect(mocks.readOptionalSession).not.toHaveBeenCalled();
+  });
+});
+
+describe('resolveHeldMeshFiles', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.heldMeshUrls.mockResolvedValue(new Map([[A, url(A)]]));
+  });
+
+  it('answers for the given account, whose session the caller already checked', async () => {
+    const res = response();
+    expect(await resolveHeldMeshFiles(res, {} as never, 'u1', [A])).toEqual({ [A]: url(A) });
+    expect(mocks.heldMeshUrls).toHaveBeenCalledWith({}, 'u1', [A]);
+  });
+
+  it('answers 424 naming each file the account does not hold', async () => {
+    const res = response();
+    expect(await resolveHeldMeshFiles(res, {} as never, 'u1', [A, B])).toBeNull();
+    expect(res._status).toBe(424);
+    expect(res._body).toMatchObject({ code: 'MESH_MISSING', missing: [B] });
   });
 });

@@ -16,7 +16,8 @@ import { useSessionStore } from '@/core/sync/session/useSession';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { hashBinParams, hashDesignContent } from '@/shared/utils/binParamsHash';
 import { withoutLowProfileBase } from '@/shared/generation/lowProfileBase';
-import { inlineParamsMeshes } from '@/shared/generation/meshRefs';
+import { holderMeshHashes, inlineParamsMeshes } from '@/shared/generation/meshRefs';
+import { accountHoldsMeshFiles, meshCloudSession } from '@/shared/generation/meshCloud';
 import type { BinParams } from '@/shared/types/bin';
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import type { ItemEnvelope } from '@/shared/types/item';
@@ -154,12 +155,24 @@ function assemblyContent(assembly: { envelope: ItemEnvelope; structure: Assembly
 async function binContent(
   params: BinParams
 ): Promise<{ params: BinParams; paramsHash: string } | null> {
-  // The community store takes inline meshes only.
-  const inline = await inlineParamsMeshes(params);
-  if (!isOk(inline)) return null;
+  let resolved = params;
+  if (!(await meshesHeldByAccount(params))) {
+    const inline = await inlineParamsMeshes(params);
+    if (!isOk(inline)) return null;
+    resolved = inline.value;
+  }
   // A published design carries standard feet; the downloader's drawer decides.
-  const standard = withoutLowProfileBase(inline.value);
+  const standard = withoutLowProfileBase(resolved);
   return { params: standard, paramsHash: hashBinParams(standard) };
+}
+
+/**
+ * Whether the design can be published naming its mesh files: signed in, with
+ * every file held by the account. Otherwise its meshes go inline.
+ */
+async function meshesHeldByAccount(params: BinParams): Promise<boolean> {
+  if (useSessionStore.getState().status !== 'authenticated') return false;
+  return accountHoldsMeshFiles(holderMeshHashes({ params }), meshCloudSession());
 }
 
 export interface CommunityPublishEntry {

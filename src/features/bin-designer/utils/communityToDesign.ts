@@ -7,6 +7,7 @@ import { isOk } from '@/core/result';
 import type { Result, StorageError } from '@/core/result';
 import { useSettingsStore } from '@/core/store';
 import { recordCommunityOpen } from '@/shared/api/communityAttribution';
+import { fetchSharedMeshFiles, parseMeshFiles } from '@/shared/generation/meshCloud';
 import type { CommunityDesign, CommunityDesignLineage } from '@/shared/types/community';
 
 /**
@@ -52,6 +53,10 @@ export async function communityToDesign(
     lineage: lineageFromParent(design),
   });
   if (isOk(result)) {
+    // The design names its meshes by file; each pocket shows as pending until
+    // its file arrives. Remix and place both come through here.
+    const meshFiles = parseMeshFiles(design.meshFiles);
+    if (meshFiles) void fetchSharedMeshFiles(meshFiles);
     if (options?.ownDuplicate === true) {
       // Owner duplicating their own published design: lineage is still
       // recorded for provenance, but the remix banner would misread as

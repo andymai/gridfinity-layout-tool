@@ -20,7 +20,13 @@ import { isApiErrorResponse, mapApiErrorResponse } from './mapApiError';
 import { MISSING_DEPENDENCY_STATUS } from '@/core/sync/payloadKey';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { isMeshAssetRef, type MeshAssetEntry } from '@/shared/generation/meshAsset';
-import { forgetHeldMeshes, meshCloudSession, uploadMeshFiles } from '@/shared/generation/meshCloud';
+import {
+  accountHoldsMeshFiles,
+  forgetHeldMeshes,
+  meshCloudSession,
+  parseMeshFiles,
+  readMissingMeshes,
+} from '@/shared/generation/meshCloud';
 import { validateImport } from '@/shared/utils/validation';
 import { generateLayoutId } from '@/shared/utils/uuid';
 
@@ -144,11 +150,7 @@ async function designsWithMeshRefs(layout: Layout): Promise<SharedLinkedDesign[]
   // With no file to name, refs gain nothing, and a design the ref budget
   // skipped may still fit inline, where its mesh lifts the per-design cap.
   if (hashes.length === 0) return null;
-  try {
-    return (await uploadMeshFiles(hashes, session)).status === 'held' ? collected.value : null;
-  } catch {
-    return null;
-  }
+  return (await accountHoldsMeshFiles(hashes, session)) ? collected.value : null;
 }
 
 /**
@@ -165,19 +167,10 @@ async function sendLinkedDesigns(
   if (withRefs) {
     const response = await send(withRefs);
     if (response.status !== MISSING_DEPENDENCY_STATUS) return ok(response);
-    forgetHeldMeshes(await readMissing(response));
+    forgetHeldMeshes(await readMissingMeshes(response));
   }
   const inline = await collectDesignsForShare(layout);
   return isErr(inline) ? inline : ok(await send(inline.value));
-}
-
-async function readMissing(response: Response): Promise<string[]> {
-  try {
-    const { missing } = (await response.json()) as { missing?: unknown };
-    return Array.isArray(missing) ? missing.filter((m): m is string => typeof m === 'string') : [];
-  } catch {
-    return [];
-  }
 }
 
 export interface UpdateShareResponse {
@@ -272,20 +265,8 @@ function validateFetchShareResponse(
 
   return {
     valid: true,
-    data: { ...data, linkedDesigns, meshFiles: sharedMeshFiles(data.meshFiles) },
+    data: { ...data, linkedDesigns, meshFiles: parseMeshFiles(data.meshFiles) },
   };
-}
-
-const MESH_HASH = /^[0-9a-f]{64}$/;
-
-/** The share's mesh file URLs, keeping only an https URL named by a file hash. */
-function sharedMeshFiles(raw: unknown): Record<string, string> | undefined {
-  if (typeof raw !== 'object' || raw === null) return undefined;
-  const files = Object.entries(raw).filter(
-    (entry): entry is [string, string] =>
-      MESH_HASH.test(entry[0]) && typeof entry[1] === 'string' && entry[1].startsWith('https://')
-  );
-  return files.length > 0 ? Object.fromEntries(files) : undefined;
 }
 
 function isSuccessMessage(data: unknown): data is { success: true; message: string } {

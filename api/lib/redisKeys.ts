@@ -71,6 +71,11 @@ export function shareLastAccessedKey(shareId: string): string {
   return `share:lastAccessed:${shareId}`;
 }
 
+/** SET of every mesh file a published design has named, as `shareMeshesKey` is for a share. */
+export function communityMeshesKey(designId: string): string {
+  return `community:meshes:${designId}`;
+}
+
 /** SET of every mesh file a share has named, so deleting it lets go of them all. */
 export function shareMeshesKey(shareId: string): string {
   return `share:meshes:${shareId}`;
@@ -157,7 +162,8 @@ export function userMeshUsageKey(userId: string): string {
 
 /**
  * Every holder referencing a stored mesh file, one member each (`user:{uid}`
- * for an account, `share:{id}` for a layout share). A SET rather than a counter, so a repeated acquire or
+ * for an account, `share:{id}` for a layout share, `community:{id}` for a
+ * published design). A SET rather than a counter, so a repeated acquire or
  * release is a no-op instead of drift, and SCARD is the refcount.
  */
 export function meshHoldersKey(hash: string): string {
