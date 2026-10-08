@@ -197,22 +197,31 @@ export function holderMeshHashes(holder: MeshHolder): string[] {
 }
 
 const loadingOutlines = new Set<string>();
+// Asked for while a read of them ran, which may have found the file missing
+// just before it arrived: that read goes again.
+const outlinesAskedAgain = new Set<string>();
 
 /** Read the outlines of every ref not yet on this thread; a file this device lacks stays pending. */
 export async function loadMeshOutlines(entries: Iterable<MeshAssetEntry>): Promise<void> {
-  const wanted = [...entries].filter(
-    (e): e is MeshAssetRef =>
-      isEntry(e) && isMeshAssetRef(e) && !hasMeshOutlines(e.hash) && !loadingOutlines.has(e.hash)
-  );
+  const wanted = [...entries].filter((e): e is MeshAssetRef => {
+    if (!isEntry(e) || !isMeshAssetRef(e) || hasMeshOutlines(e.hash)) return false;
+    if (!loadingOutlines.has(e.hash)) return true;
+    outlinesAskedAgain.add(e.hash);
+    return false;
+  });
   await Promise.all(
     wanted.map(async ({ hash }) => {
       loadingOutlines.add(hash);
       try {
-        const bytes = await getMeshFile(hash);
-        const parsed = bytes ? parseMeshFile(bytes) : null;
-        if (parsed && !isErr(parsed)) setMeshOutlines(hash, parsed.value.outlines);
+        do {
+          outlinesAskedAgain.delete(hash);
+          const bytes = await getMeshFile(hash);
+          const parsed = bytes ? parseMeshFile(bytes) : null;
+          if (parsed && !isErr(parsed)) setMeshOutlines(hash, parsed.value.outlines);
+        } while (outlinesAskedAgain.has(hash) && !hasMeshOutlines(hash));
       } finally {
         loadingOutlines.delete(hash);
+        outlinesAskedAgain.delete(hash);
       }
     })
   );

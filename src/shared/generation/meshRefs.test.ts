@@ -9,11 +9,24 @@ import {
   holderMeshHashes,
   inlineHolderMeshes,
   loadMeshOutlines,
+  meshAssetFile,
   resolveMeshAsset,
   storeHolderMeshes,
   storeMeshAsset,
 } from './meshRefs';
-import { MESH_SWEEP_GRACE_MS, __resetMeshStoreForTests, sweepMeshFiles } from './meshStore';
+import {
+  MESH_SWEEP_GRACE_MS,
+  __resetMeshStoreForTests,
+  getMeshFile,
+  putMeshFile,
+  sweepMeshFiles,
+} from './meshStore';
+import type * as MeshStore from './meshStore';
+
+vi.mock('./meshStore', async (importOriginal) => {
+  const actual = await importOriginal<typeof MeshStore>();
+  return { ...actual, getMeshFile: vi.fn(actual.getMeshFile) };
+});
 
 function deleteDb(): Promise<void> {
   return new Promise((resolve) => {
@@ -195,5 +208,27 @@ describe('loadMeshOutlines', () => {
 
     expect(meshAssetOutlines(ref ?? undefined)).toEqual(asset.outlines);
     expect(meshAssetOutlines(missingRef())).toBeUndefined();
+  });
+
+  it('reads again a file that arrived while an earlier read found it missing', async () => {
+    const asset = await makeAsset('late', 30);
+    const file = await meshAssetFile(asset);
+    if (!file) throw new Error('fixture');
+    let release = (): void => undefined;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    vi.mocked(getMeshFile).mockImplementationOnce(async () => {
+      await held;
+      return null;
+    });
+
+    const first = loadMeshOutlines([file.ref]);
+    await putMeshFile(file.bytes);
+    const second = loadMeshOutlines([file.ref]);
+    release();
+    await Promise.all([first, second]);
+
+    expect(meshAssetOutlines(file.ref)).toEqual(asset.outlines);
   });
 });
