@@ -361,6 +361,12 @@ export const DEFAULT_SCOOP_EDGES: CutoutScoopEdges = {
  */
 export const MIN_PATH_POINTS = 2;
 
+/**
+ * Most anchors the path tool draws. A path cutout's crossing check compares
+ * every edge pair of a path this long before its pair budget can run out.
+ */
+export const MAX_PATH_POINTS = 200;
+
 /** A vertex in a bezier path with optional control handles */
 export interface PathPoint {
   /** X position in mm from bin interior left edge */

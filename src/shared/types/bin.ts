@@ -119,6 +119,7 @@ export type {
 
 export {
   MIN_PATH_POINTS,
+  MAX_PATH_POINTS,
   DEFAULT_KNIFE_SPEC,
   knifeSlotDimensions,
   knifeBlockTopZMm,

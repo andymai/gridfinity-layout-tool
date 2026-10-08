@@ -14,13 +14,13 @@
  *   - `pathGeometrySegments`       — segment hit-testing, split, self-intersection
  */
 
-import { MIN_PATH_POINTS } from '@/features/bin-designer/types';
+import { MAX_PATH_POINTS, MIN_PATH_POINTS } from '@/features/bin-designer/types';
 import type { PathPoint } from '@/features/bin-designer/types';
 import { pointsBounds } from '@/shared/utils/pointsBounds';
 import type { Bounds } from './geometry';
 import { flattenPath, type Point2D } from '@/shared/utils/pathGeometryBezier';
 
-export { MIN_PATH_POINTS };
+export { MAX_PATH_POINTS, MIN_PATH_POINTS };
 // DEFAULT_FLATTEN_TOLERANCE stays internal to pathGeometryBezier — it was
 // a private constant in the pre-split file and has no current consumers.
 export { cubicBezier, flattenPath, type Point2D } from '@/shared/utils/pathGeometryBezier';
@@ -32,9 +32,6 @@ export {
   splitBezierSegment,
   isSelfIntersecting,
 } from './pathGeometrySegments';
-
-/** Maximum number of path points to prevent performance issues */
-export const MAX_PATH_POINTS = 200;
 
 /** Distance threshold in mm for snapping to close a path */
 export const CLOSE_SNAP_THRESHOLD = 5;
