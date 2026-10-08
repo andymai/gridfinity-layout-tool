@@ -7,6 +7,11 @@ vi.mock('@/shared/analytics/posthog', () => ({
     trackDesignCreatedMock();
   },
 }));
+vi.mock('@/shared/generation/meshRefs', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return { ...actual, storeHolderMeshes: vi.fn(actual.storeHolderMeshes as () => unknown) };
+});
+import { storeHolderMeshes } from '@/shared/generation/meshRefs';
 import {
   saveDesign,
   loadDesign,
@@ -110,6 +115,34 @@ describe('DesignerStorage', () => {
       expect(secondValue.name).toBe('Updated');
       expect(secondValue.createdAt).toBe(firstCreatedAt);
       expect(secondValue.updatedAt).not.toBe(firstCreatedAt);
+    });
+
+    it('lands saves to one design in the order they were made', async () => {
+      const id = designId('save-order');
+      let release = (): void => undefined;
+      const storing = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      vi.mocked(storeHolderMeshes).mockImplementationOnce(async (holder) => {
+        await storing;
+        return holder;
+      });
+      const save = (name: string) =>
+        saveDesign({
+          id,
+          name,
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+        });
+
+      const older = save('Older, still storing its mesh');
+      const newer = save('Newer');
+      await Promise.race([newer, new Promise((r) => setTimeout(r, 50))]);
+      release();
+      await Promise.all([older, newer]);
+
+      expect(expectOk(await loadDesign(id)).name).toBe('Newer');
     });
   });
 

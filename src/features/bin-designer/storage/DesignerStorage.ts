@@ -58,16 +58,33 @@ function generateDesignId(): DesignId {
   return designId(`design_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
 }
 
+type SaveDesignInput = Omit<SavedDesign, 'id' | 'createdAt' | 'updatedAt'> & { id?: DesignId };
+
+const pendingSaves = new Map<DesignId, Promise<unknown>>();
+
 /**
  * Save a design to IndexedDB.
  *
  * Every inline mesh asset is stored in the mesh store first and saved as a ref,
  * so copies, variants and versions of the design share one file. An asset whose
  * file cannot be written is saved inline, so nothing is lost.
+ *
+ * Saves to one design land in the order they were made: storing a mesh can hold
+ * an older save past a newer one, which it would then overwrite.
  */
-export async function saveDesign(
-  design: Omit<SavedDesign, 'id' | 'createdAt' | 'updatedAt'> & { id?: DesignId }
-): Promise<Result<SavedDesign, StorageError>> {
+export function saveDesign(design: SaveDesignInput): Promise<Result<SavedDesign, StorageError>> {
+  const id = design.id;
+  if (id === undefined) return writeDesign(design);
+  const write = (): Promise<Result<SavedDesign, StorageError>> => writeDesign(design);
+  const saved = (pendingSaves.get(id) ?? Promise.resolve()).then(write, write);
+  pendingSaves.set(id, saved);
+  void saved.then(() => {
+    if (pendingSaves.get(id) === saved) pendingSaves.delete(id);
+  });
+  return saved;
+}
+
+async function writeDesign(design: SaveDesignInput): Promise<Result<SavedDesign, StorageError>> {
   try {
     const db = await getDb();
     const now = new Date().toISOString();
