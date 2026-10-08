@@ -96,9 +96,8 @@ interface LocaleContextValue {
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
 /**
- * Static translation lookup for use outside React context.
- * Currently uses English only - suitable for ErrorBoundary and other
- * edge cases where React context is unavailable.
+ * Static translation lookup for use outside React context. Follows the
+ * locale the provider has loaded, and English until it has one.
  *
  * @example
  * ```tsx
@@ -107,7 +106,8 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
  * ```
  */
 export function getStaticTranslation(key: string, vars?: TranslationVars): string {
-  const template = _loadedEn?.[key] ?? lookupKey(fallback, key) ?? key;
+  const template =
+    (_active && lookupKey(_active, key)) ?? _loadedEn?.[key] ?? lookupKey(fallback, key) ?? key;
   if (!vars) return template;
   let result = template;
   for (const [k, value] of Object.entries(vars)) {
@@ -125,6 +125,14 @@ let _loadedEn: Translations | null = null;
 /** @internal Test-only: seed the English translation cache */
 export function _setLoadedEn(translations: Translations | null): void {
   _loadedEn = translations;
+}
+
+/** The loaded locale's translations, for lookups outside React. */
+let _active: Translations | null = null;
+
+/** @internal Test-only: forget the loaded locale */
+export function _resetActiveTranslations(): void {
+  _active = null;
 }
 
 /**
@@ -212,6 +220,7 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
         _loadedEn = enModule.default;
       }
       if (latestLocaleRef.current === target) {
+        _active = module.default;
         setTranslations(module.default);
         setIsLoading(false);
         setHasLoadedInitial(true);
@@ -219,6 +228,7 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
     } catch {
       // Fall back to English (or fallback) on load failure
       if (latestLocaleRef.current === target) {
+        _active = null;
         setTranslations(_loadedEn ?? fallback);
         setIsLoading(false);
         setHasLoadedInitial(true);
