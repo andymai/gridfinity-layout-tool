@@ -1,6 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { __resetMeshCloudForTests, forgetHeldMeshes, uploadMeshFiles } from './meshCloud';
-import { __resetMeshStoreForTests, putMeshFile } from './meshStore';
+import { MESH_URL_HEADER as API_MESH_URL_HEADER } from '../../../api/meshes/[hash].js';
+import {
+  MESH_URL_HEADER,
+  __resetMeshCloudForTests,
+  fetchMeshFiles,
+  forgetHeldMeshes,
+  uploadMeshFiles,
+} from './meshCloud';
+import { __resetMeshStoreForTests, getMeshFile, hasMeshFile, putMeshFile } from './meshStore';
+import { sha256Hex } from './sha256';
 
 const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>();
 
@@ -21,7 +29,7 @@ async function storedFile(seed: number): Promise<{ hash: string; bytes: Uint8Arr
 }
 
 function calls(): { method: string | undefined; url: string }[] {
-  return fetchMock.mock.calls.map(([url, init]) => ({ method: init?.method, url: url }));
+  return fetchMock.mock.calls.map(([url, init]) => ({ method: init?.method, url }));
 }
 
 beforeEach(async () => {
@@ -121,5 +129,103 @@ describe('uploadMeshFiles', () => {
   it('answers held without a request for a payload with no mesh', async () => {
     expect(await uploadMeshFiles([])).toEqual({ status: 'held' });
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('fetchMeshFiles', () => {
+  const CDN = 'https://store.public.blob.vercel-storage.com/meshes/';
+
+  async function remoteFile(seed: number): Promise<{ hash: string; bytes: Uint8Array }> {
+    const bytes = new Uint8Array([seed, 9, 8, 7, 6, 5, 4, 3]);
+    return { hash: await sha256Hex(bytes), bytes };
+  }
+
+  /** The account holds `files`; the CDN answers each under its hash. */
+  function serve(files: ReadonlyMap<string, Uint8Array>): void {
+    fetchMock.mockImplementation(async (url, init) => {
+      if (init?.method === 'HEAD') {
+        const hash = url.slice('/api/meshes/'.length);
+        return files.has(hash)
+          ? new Response(null, { status: 200, headers: { [MESH_URL_HEADER]: CDN + hash } })
+          : new Response(null, { status: 404 });
+      }
+      const body = files.get(url.slice(CDN.length));
+      return body
+        ? new Response(body.slice(), { status: 200 })
+        : new Response(null, { status: 404 });
+    });
+  }
+
+  it('reads the header the server sends the file URL in', () => {
+    expect(MESH_URL_HEADER).toBe(API_MESH_URL_HEADER);
+  });
+
+  it('stores a file this device lacks from the URL the server gives', async () => {
+    const file = await remoteFile(1);
+    serve(new Map([[file.hash, file.bytes]]));
+
+    await fetchMeshFiles([file.hash]);
+
+    expect(calls()).toEqual([
+      { method: 'HEAD', url: `/api/meshes/${file.hash}` },
+      { method: undefined, url: CDN + file.hash },
+    ]);
+    expect(await getMeshFile(file.hash)).toEqual(file.bytes);
+  });
+
+  it('refuses bytes that are not the file their name says', async () => {
+    const file = await remoteFile(2);
+    const other = await remoteFile(3);
+    serve(new Map([[file.hash, other.bytes]]));
+
+    await fetchMeshFiles([file.hash]);
+
+    expect(await hasMeshFile(file.hash)).toBe(false);
+    expect(await hasMeshFile(other.hash)).toBe(false);
+  });
+
+  it('asks nothing for a file already on this device', async () => {
+    const file = await storedFile(4);
+
+    await fetchMeshFiles([file.hash]);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('fetches a file once however often it is asked for', async () => {
+    const file = await remoteFile(5);
+    serve(new Map([[file.hash, file.bytes]]));
+
+    await Promise.all([fetchMeshFiles([file.hash, file.hash]), fetchMeshFiles([file.hash])]);
+
+    expect(calls().map((c) => c.method)).toEqual(['HEAD', undefined]);
+  });
+
+  it('waits a minute after a failure before trying a file again', async () => {
+    const file = await remoteFile(6);
+    serve(new Map());
+    await fetchMeshFiles([file.hash]);
+    expect(calls()).toEqual([{ method: 'HEAD', url: `/api/meshes/${file.hash}` }]);
+
+    await fetchMeshFiles([file.hash]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    serve(new Map([[file.hash, file.bytes]]));
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(Date.now() + 61_000);
+      await fetchMeshFiles([file.hash]);
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(await hasMeshFile(file.hash)).toBe(true);
+  });
+
+  it('settles quietly when the network is down', async () => {
+    const file = await remoteFile(7);
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    await expect(fetchMeshFiles([file.hash])).resolves.toBeUndefined();
+    expect(await hasMeshFile(file.hash)).toBe(false);
   });
 });

@@ -110,11 +110,25 @@ function rawDesign(params: BinParams): SavedDesign {
   };
 }
 
+const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>();
+
+function requests(method: string): string[] {
+  return fetchMock.mock.calls.filter(([, init]) => init?.method === method).map(([url]) => url);
+}
+
 beforeEach(async () => {
   closeDesignerDb();
   __resetMeshStoreForTests();
+  __resetMeshCloudForTests();
   await deleteDb('gridfinity-designer-v1');
   await deleteDb('gridfinity-mesh-files');
+  fetchMock.mockReset();
+  fetchMock.mockResolvedValue(new Response(null, { status: 404 }));
+  vi.stubGlobal('fetch', fetchMock);
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
 describe('design sync payloads', () => {
@@ -361,12 +375,6 @@ describe('design version sync payloads', () => {
 });
 
 describe('pushes through the mesh store', () => {
-  const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>();
-
-  function requests(method: string): string[] {
-    return fetchMock.mock.calls.filter(([, init]) => init?.method === method).map(([url]) => url);
-  }
-
   function meshAssetsOf(params: unknown): MeshAssetEntry[] {
     return Object.values((params as BinParams).meshAssets ?? {});
   }
@@ -391,16 +399,6 @@ describe('pushes through the mesh store', () => {
     );
     return file.bytes;
   }
-
-  beforeEach(() => {
-    __resetMeshCloudForTests();
-    fetchMock.mockReset();
-    vi.stubGlobal('fetch', fetchMock);
-  });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
 
   it('send the refs once the files the account lacks are uploaded', async () => {
     const { hashes } = await refDesign();
@@ -508,5 +506,108 @@ describe('pushes through the mesh store', () => {
     const content = plan.item.payload.content as { params: BinParams };
     expect(meshAssetsOf(content.params).every((a) => isMeshAssetRef(a))).toBe(true);
     expect(requests('HEAD')).toHaveLength(2);
+  });
+});
+
+describe('pulls through the mesh store', () => {
+  const CDN = 'https://store.public.blob.vercel-storage.com/meshes/';
+
+  /** A ref the account holds, whose file is on the CDN but not on this device. */
+  async function remoteRef(scale: number): Promise<{ ref: MeshAssetRef; bytes: Uint8Array }> {
+    const file = await meshAssetFile(await makeAsset('remote', scale));
+    if (!file) throw new Error('fixture');
+    return file;
+  }
+
+  function serve(
+    files: ReadonlyMap<string, Uint8Array>,
+    cdn: (bytes: Uint8Array) => Promise<Response> = async (bytes) =>
+      new Response(bytes.slice(), { status: 200 })
+  ): void {
+    fetchMock.mockImplementation(async (url, init) => {
+      if (init?.method === 'HEAD') {
+        const hash = url.slice('/api/meshes/'.length);
+        return files.has(hash)
+          ? new Response(null, { status: 200, headers: { 'X-Mesh-Url': CDN + hash } })
+          : new Response(null, { status: 404 });
+      }
+      const bytes = files.get(url.slice(CDN.length));
+      return bytes ? cdn(bytes) : new Response(null, { status: 404 });
+    });
+  }
+
+  function refParams(ref: MeshAssetRef): BinParams {
+    return { ...DEFAULT_BIN_PARAMS, cutouts: [meshCutout('c1', 'm1')], meshAssets: { m1: ref } };
+  }
+
+  it('store a pulled design of refs as refs, and fetch its files without holding up the pull', async () => {
+    const { ref, bytes } = await remoteRef(41);
+    let release: () => void = () => {};
+    serve(
+      new Map([[ref.hash, bytes]]),
+      (body) =>
+        new Promise((resolve) => {
+          release = () => resolve(new Response(body.slice(), { status: 200 }));
+        })
+    );
+
+    await designAdapter.applyRemote({
+      id: DESIGN_ID,
+      payload: { name: 'Pulled', params: refParams(ref) },
+      modifiedAt: Date.parse('2026-02-01T00:00:00.000Z'),
+    });
+
+    const stored = unwrap(await loadDesign(DESIGN_ID));
+    expect(stored.params?.meshAssets).toEqual({ m1: ref });
+    await vi.waitFor(() => expect(requests('HEAD')).toEqual([`/api/meshes/${ref.hash}`]));
+    expect(await getMeshFile(ref.hash)).toBeNull();
+
+    release();
+    await vi.waitFor(async () => expect(await getMeshFile(ref.hash)).toEqual(bytes));
+  });
+
+  it('fetch the files a pulled version names', async () => {
+    const { ref, bytes } = await remoteRef(42);
+    serve(new Map([[ref.hash, bytes]]));
+
+    await designVersionAdapter.applyRemote({
+      id: 'version_pulled',
+      payload: {
+        designId: DESIGN_ID,
+        name: 'v1',
+        content: { name: 'Sync', params: refParams(ref) },
+        createdAt: '2026-01-01T00:00:00.000Z',
+        origin: 'manual',
+      },
+      modifiedAt: Date.parse('2026-01-03T00:00:00.000Z'),
+    });
+
+    await vi.waitFor(async () => expect(await getMeshFile(ref.hash)).toEqual(bytes));
+  });
+
+  it('keep a pulled design whose file cannot be fetched, its pocket pending', async () => {
+    const { ref } = await remoteRef(43);
+    serve(new Map());
+
+    await designAdapter.applyRemote({
+      id: DESIGN_ID,
+      payload: { name: 'Pulled', params: refParams(ref) },
+      modifiedAt: Date.parse('2026-02-01T00:00:00.000Z'),
+    });
+
+    await vi.waitFor(() => expect(requests('HEAD')).toHaveLength(1));
+    expect(unwrap(await loadDesign(DESIGN_ID)).params?.meshAssets).toEqual({ m1: ref });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('try again, once sync starts, for a file an earlier pull could not fetch', async () => {
+    const { ref, bytes } = await remoteRef(44);
+    await writeRaw(rawDesign(refParams(ref)));
+    serve(new Map([[ref.hash, bytes]]));
+
+    const stop = designAdapter.subscribe(() => {});
+
+    await vi.waitFor(async () => expect(await getMeshFile(ref.hash)).toEqual(bytes));
+    stop();
   });
 });

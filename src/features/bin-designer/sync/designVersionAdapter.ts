@@ -17,9 +17,13 @@ import {
   deleteRemoteDesignVersion,
 } from '@/features/bin-designer/storage/DesignVersionService';
 import { isSyncableDesign } from '@/features/bin-designer/utils/designKind';
-import { inlineHolderMeshes, storeHolderMeshes } from '@/shared/generation/meshRefs';
+import {
+  holderMeshHashes,
+  inlineHolderMeshes,
+  storeHolderMeshes,
+} from '@/shared/generation/meshRefs';
 import type { MeshHolder } from '@/shared/generation/meshRefs';
-import { forgetHeldMeshes } from '@/shared/generation/meshCloud';
+import { fetchMeshFiles, forgetHeldMeshes } from '@/shared/generation/meshCloud';
 import { subscribe as subscribeVersionEvents } from './designVersionEvents';
 import { createMissingMeshPushes } from './missingMeshPushes';
 import { planMeshPush } from './meshPushPlan';
@@ -162,6 +166,10 @@ export const designVersionAdapter: DesignVersionAdapter = {
 
   async applyRemote(item: SyncableItem<DesignVersionPayload>): Promise<void> {
     await putRemoteDesignVersion(await fromItem(item));
+    const { content } = item.payload;
+    if (typeof content === 'object' && content !== null) {
+      void fetchMeshFiles(holderMeshHashes(content));
+    }
   },
 
   async applyRemoteDelete(id: string): Promise<void> {

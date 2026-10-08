@@ -26,8 +26,9 @@ import {
 } from '@/features/bin-designer/store/customBinRegistry';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { syncPersistError } from '@/core/sync/adapters/persistError';
-import { inlineHolderMeshes } from '@/shared/generation/meshRefs';
-import { forgetHeldMeshes } from '@/shared/generation/meshCloud';
+import { holderMeshHashes, inlineHolderMeshes } from '@/shared/generation/meshRefs';
+import { fetchMeshFiles, forgetHeldMeshes } from '@/shared/generation/meshCloud';
+import { referencedMeshHashes } from '@/features/bin-designer/storage/designMeshFiles';
 import { subscribe as subscribeDesignerEvents } from './designerEvents';
 import { createMissingMeshPushes } from './missingMeshPushes';
 import { planMeshPush } from './meshPushPlan';
@@ -317,6 +318,7 @@ export const designAdapter: DesignAdapter = {
       if (!isOk(result)) {
         throw syncPersistError('saveDesign', item.id, result.error);
       }
+      void fetchMeshFiles(holderMeshHashes(result.value));
       // saveDesign never registers, and the startup pass that backfills
       // assemblies runs once per page load, so a Workshop design pulled
       // mid-session would read as a parametric bin until the next reload.
@@ -347,6 +349,11 @@ export const designAdapter: DesignAdapter = {
   },
 
   subscribe(listener: AdapterChangeListener): () => void {
+    // The engine subscribes once a signed-in session starts: the moment to try
+    // again for files a pull could not fetch (offline, say) on an earlier page.
+    void referencedMeshHashes()
+      .then((hashes) => fetchMeshFiles([...hashes]))
+      .catch(() => undefined);
     const stopEvents = subscribeDesignerEvents((event) => {
       missingMeshPushes.clear(event.id);
       if (suppressed.has(event.id)) return;

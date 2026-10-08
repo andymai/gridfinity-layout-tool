@@ -1,10 +1,16 @@
 /**
  * Mesh files between this device and the signed-in account's mesh store on the
- * server (`/api/meshes/{hash}`).
+ * server (`/api/meshes/{hash}`), whose files are read from the Blob CDN.
  */
 
 import { apiFetch } from '@/core/sync/apiFetch';
-import { getMeshFile } from './meshStore';
+import { getMeshFile, hasMeshFile, putMeshFile } from './meshStore';
+import { sha256Hex } from './sha256';
+
+/** MIRROR: `MESH_URL_HEADER` in `api/meshes/[hash].ts`. */
+export const MESH_URL_HEADER = 'X-Mesh-Url';
+
+const FETCH_RETRY_MS = 60_000;
 
 export type MeshUpload =
   | { readonly status: 'held' }
@@ -78,7 +84,46 @@ export function forgetHeldMeshes(hashes: readonly string[]): void {
   for (const hash of hashes) uploads.delete(hash);
 }
 
-/** Test-only: forget every held file and upload. */
+/** When each file last failed to arrive, or Infinity while it is on its way. */
+const fetches = new Map<string, number>();
+
+async function fetchMeshFile(hash: string): Promise<boolean> {
+  try {
+    if (await hasMeshFile(hash)) return true;
+    const head = await apiFetch(meshPath(hash), { method: 'HEAD' });
+    const url = head.ok ? head.headers.get(MESH_URL_HEADER) : null;
+    if (!url) return false;
+    const res = await fetch(url);
+    if (!res.ok) return false;
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    return (await sha256Hex(bytes)) === hash && (await putMeshFile(bytes)) !== null;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Fetch each file in `hashes` this device lacks; its arrival is announced like
+ * any stored file's. One that fails waits for a later call, a minute on at the
+ * soonest, and its pocket stays pending until then. Never rejects.
+ */
+export async function fetchMeshFiles(hashes: readonly string[]): Promise<void> {
+  const started: Promise<void>[] = [];
+  for (const hash of hashes) {
+    if (Date.now() - (fetches.get(hash) ?? -Infinity) < FETCH_RETRY_MS) continue;
+    fetches.set(hash, Infinity);
+    started.push(
+      fetchMeshFile(hash).then((stored) => {
+        if (stored) fetches.delete(hash);
+        else fetches.set(hash, Date.now());
+      })
+    );
+  }
+  await Promise.all(started);
+}
+
+/** Test-only: forget every held file, upload and fetch. */
 export function __resetMeshCloudForTests(): void {
   uploads.clear();
+  fetches.clear();
 }
