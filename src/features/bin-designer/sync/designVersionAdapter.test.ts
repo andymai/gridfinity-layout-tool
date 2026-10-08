@@ -79,23 +79,46 @@ describe('designVersionAdapter', () => {
     });
   });
 
-  describe('design kinds that stay local', () => {
+  describe('design kinds', () => {
     const envelope = { width: 2, depth: 2, gridUnitMm: 42, heightUnitMm: 7 };
 
     async function seedContent(content: DesignVersionContent) {
       return expectOk(await createDesignVersion(DESIGN, 'v', content, null)).version;
     }
 
-    it('keeps an imported-mesh version off the wire', async () => {
+    it('keeps a tool-rack version off the wire', async () => {
       const saved = await seedContent({
-        name: 'Scanned Part',
-        kind: 'importedMesh',
+        name: 'Old rack',
+        kind: 'toolRack',
         envelope,
-        structure: { kind: 'importedMesh', heightUnits: 3, mesh: 'AAAA' },
+        structure: { kind: 'toolRack', finAngleDeg: 20 },
       });
 
       expect(await designVersionAdapter.list()).toEqual([]);
       expect(await designVersionAdapter.get(saved.id)).toBeNull();
+    });
+
+    it('syncs an imported-mesh version', async () => {
+      const content = {
+        name: 'Scanned Part',
+        kind: 'importedMesh',
+        envelope,
+        structure: {
+          kind: 'importedMesh',
+          heightUnits: 3,
+          asset: {
+            name: 'part',
+            hash: 'f'.repeat(64),
+            triangleCount: 4,
+            sizeMm: { x: 40, y: 40, z: 21 },
+            bytes: 900,
+          },
+        },
+      };
+      const saved = await seedContent(content);
+
+      const listed = await designVersionAdapter.list();
+      expect(listed.map((item) => [item.id, item.payload.content])).toEqual([[saved.id, content]]);
     });
 
     it('still syncs an assembly version', async () => {

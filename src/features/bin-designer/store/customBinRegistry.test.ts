@@ -8,6 +8,7 @@ import {
   renameRegistryEntry,
   registryAssemblyEntry,
   registryAssemblyFields,
+  registryItemEntry,
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
@@ -426,6 +427,62 @@ describe('customBinRegistry', () => {
 
     it('is null for a parametric bin', () => {
       expect(registryAssemblyEntry({ ...saved, params: DEFAULT_BIN_PARAMS })).toBeNull();
+    });
+  });
+
+  describe('registryItemEntry', () => {
+    const envelope = { width: 2, depth: 1.5, gridUnitMm: 42, heightUnitMm: 7 } as ItemEnvelope;
+    const saved = {
+      id: designId('m'),
+      name: 'Parts bin',
+      thumbnail: null,
+      exportFileNameConfig: null,
+      createdAt: '2026-05-19T00:00:00.000Z',
+      updatedAt: '2026-05-20T00:00:00.000Z',
+    };
+
+    it('builds the entry an import writes for an imported mesh', () => {
+      const entry = registryItemEntry({
+        ...saved,
+        kind: 'importedMesh',
+        envelope,
+        structure: {
+          kind: 'importedMesh',
+          heightUnits: 4,
+          asset: {
+            name: 'parts_bin',
+            hash: 'e'.repeat(64),
+            triangleCount: 4,
+            sizeMm: { x: 83, y: 62, z: 28 },
+            bytes: 900,
+          },
+        },
+      });
+
+      expect(entry).toEqual({
+        id: 'm',
+        name: 'Parts bin',
+        width: 2,
+        depth: 1.5,
+        height: 4,
+        kind: 'importedMesh',
+        ...registryEdgeFields({}),
+        updatedAt: '2026-05-20T00:00:00.000Z',
+      });
+    });
+
+    it('builds the assembly entry for an assembly, and none for a bin', () => {
+      const structure = {
+        kind: 'assembly',
+        schemaVersion: 1,
+        base: { floorThickness: 2 },
+        mirrorAxis: 'x',
+        parts: [],
+      } as AssemblyStructure;
+      const assembly = { ...saved, kind: 'assembly' as const, envelope, structure };
+
+      expect(registryItemEntry(assembly)).toEqual(registryAssemblyEntry(assembly));
+      expect(registryItemEntry({ ...saved, params: DEFAULT_BIN_PARAMS })).toBeNull();
     });
   });
 

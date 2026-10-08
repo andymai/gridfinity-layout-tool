@@ -263,12 +263,7 @@ export function registryAssemblyFields(
   };
 }
 
-/**
- * The full registry entry for a saved Workshop assembly, or `null` for any
- * other kind. `saveDesign` never registers a design, so the paths that store
- * an assembly outside the designer (a sync pull, the startup pass) build the
- * entry here.
- */
+/** The full registry entry for a saved Workshop assembly, or `null` for any other kind. */
 export function registryAssemblyEntry(design: SavedDesign): CustomBinRef | null {
   if (!design.envelope || design.structure?.kind !== 'assembly') return null;
   const { width, depth, height } = designFootprint(design);
@@ -280,6 +275,29 @@ export function registryAssemblyEntry(design: SavedDesign): CustomBinRef | null 
     height,
     ...registryEdgeFields({}),
     ...registryAssemblyFields(design.envelope, design.structure),
+    updatedAt: design.updatedAt,
+  };
+}
+
+/**
+ * The full registry entry for a saved Workshop assembly or imported mesh, or
+ * `null` for any other kind. `saveDesign` never registers a design, so the
+ * paths that store one outside the designer (a sync pull, the startup pass)
+ * build the entry here; an imported mesh's matches what its import wrote.
+ */
+export function registryItemEntry(design: SavedDesign): CustomBinRef | null {
+  if (!design.envelope || design.structure?.kind !== 'importedMesh') {
+    return registryAssemblyEntry(design);
+  }
+  const { width, depth, height } = designFootprint(design);
+  return {
+    id: design.id,
+    name: design.name,
+    width,
+    depth,
+    height,
+    kind: 'importedMesh',
+    ...registryEdgeFields({}),
     updatedAt: design.updatedAt,
   };
 }

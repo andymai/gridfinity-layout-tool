@@ -21,6 +21,8 @@ import { __resetMeshCloudForTests } from '@/shared/generation/meshCloud';
 import { __resetMeshStoreForTests, getMeshFile, putMeshFile } from '@/shared/generation/meshStore';
 import type * as MeshStore from '@/shared/generation/meshStore';
 import { compressString, decompressString } from '@/shared/utils/compression';
+import { createDefaultEnvelope } from '@/shared/items/defaultEnvelope';
+import type { ImportedMeshStructure } from '@/shared/types/item';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { AdapterChange } from '@/core/sync/adapters/types';
 import type { BinParams, Cutout, DesignVersion, SavedDesign } from '../types';
@@ -644,5 +646,212 @@ describe('pulls through the mesh store', () => {
 
     await vi.waitFor(async () => expect(await getMeshFile(ref.hash)).toEqual(bytes));
     stop();
+  });
+});
+
+describe('whole-bin STL designs', () => {
+  const CDN = 'https://store.public.blob.vercel-storage.com/meshes/';
+  const ENVELOPE = {
+    ...createDefaultEnvelope(DEFAULT_BIN_PARAMS.featureColors),
+    width: 2,
+    depth: 1.5,
+  };
+
+  function structureOf(asset: MeshAssetEntry): ImportedMeshStructure {
+    return {
+      kind: 'importedMesh',
+      heightUnits: 4,
+      asset,
+      volumeMm3: 51_000,
+      sourceFileName: 'parts_bin.stl',
+    };
+  }
+
+  function rawImported(asset: MeshAssetEntry): SavedDesign {
+    return {
+      id: DESIGN_ID,
+      name: 'Parts bin',
+      kind: 'importedMesh',
+      envelope: ENVELOPE,
+      structure: structureOf(asset),
+      thumbnail: null,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-02T00:00:00.000Z',
+      exportFileNameConfig: null,
+    };
+  }
+
+  function assetOf(holder: { structure?: unknown }): MeshAssetEntry {
+    return (holder.structure as ImportedMeshStructure).asset;
+  }
+
+  function serve(files: ReadonlyMap<string, Uint8Array>): void {
+    fetchMock.mockImplementation(async (url, init) => {
+      if (init?.method === 'HEAD') {
+        const hash = url.slice('/api/meshes/'.length);
+        return files.has(hash)
+          ? new Response(null, { status: 200, headers: { 'X-Mesh-Url': CDN + hash } })
+          : new Response(null, { status: 404 });
+      }
+      const bytes = files.get(url.slice(CDN.length));
+      return bytes
+        ? new Response(bytes.slice(), { status: 200 })
+        : new Response(null, { status: 404 });
+    });
+  }
+
+  it('push the mesh by ref once the account holds its file', async () => {
+    await writeRaw(rawImported(await makeAsset('parts_bin', 61)));
+    await moveInlineMeshesToFiles();
+    const stored = unwrap(await loadDesign(DESIGN_ID));
+    const [hash] = holderMeshHashes(stored);
+    fetchMock.mockImplementation(
+      async (_url, init) => new Response(null, { status: init?.method === 'HEAD' ? 404 : 200 })
+    );
+
+    const plan = await designAdapter.preparePush?.(DESIGN_ID);
+
+    if (plan?.status !== 'send') throw new Error(`expected send, got ${plan?.status}`);
+    expect(plan.item.payload).toEqual({
+      name: 'Parts bin',
+      kind: 'importedMesh',
+      envelope: ENVELOPE,
+      structure: structureOf(assetOf(stored)),
+    });
+    expect(isMeshAssetRef(assetOf(plan.item.payload))).toBe(true);
+    expect(requests('PUT')).toEqual([`/api/meshes/${hash}`]);
+  });
+
+  it('push the mesh inline, as the inline design did, to a server without a mesh store', async () => {
+    await writeRaw(rawImported(await makeAsset('parts_bin', 62)));
+    const inline = await designAdapter.get(DESIGN_ID);
+    await moveInlineMeshesToFiles();
+    fetchMock.mockResolvedValue(new Response(null, { status: 503 }));
+
+    const plan = await designAdapter.preparePush?.(DESIGN_ID);
+
+    expect(inline && isMeshAssetRef(assetOf(inline.payload))).toBe(false);
+    expect(JSON.stringify(plan?.status === 'send' ? plan.item : null)).toBe(JSON.stringify(inline));
+  });
+
+  it('hold a push whose mesh file is on neither side until the file arrives', async () => {
+    const file = await meshAssetFile(await makeAsset('elsewhere_bin', 63));
+    if (!file) throw new Error('fixture');
+    await writeRaw(rawImported(file.ref));
+    fetchMock.mockResolvedValue(new Response(null, { status: 404 }));
+    const changes: AdapterChange[] = [];
+    const stop = designAdapter.subscribe((change) => changes.push(change));
+
+    expect(await designAdapter.preparePush?.(DESIGN_ID)).toEqual({ status: 'skip' });
+    expect(requests('PUT')).toEqual([]);
+    await putMeshFile(file.bytes);
+
+    await vi.waitFor(() =>
+      expect(changes).toEqual([
+        { kind: 'put', id: DESIGN_ID, modifiedAt: Date.parse('2026-01-02T00:00:00.000Z') },
+      ])
+    );
+    stop();
+  });
+
+  it('store a pulled design of refs as refs, and fetch its file', async () => {
+    const file = await meshAssetFile(await makeAsset('remote_bin', 64));
+    if (!file) throw new Error('fixture');
+    serve(new Map([[file.ref.hash, file.bytes]]));
+
+    await designAdapter.applyRemote({
+      id: DESIGN_ID,
+      payload: {
+        name: 'Parts bin',
+        kind: 'importedMesh',
+        envelope: ENVELOPE,
+        structure: structureOf(file.ref),
+      },
+      modifiedAt: Date.parse('2026-02-01T00:00:00.000Z'),
+    });
+
+    const stored = unwrap(await loadDesign(DESIGN_ID));
+    expect(stored.kind).toBe('importedMesh');
+    expect(stored.envelope).toEqual(ENVELOPE);
+    expect(stored.structure).toEqual(structureOf(file.ref));
+    await vi.waitFor(async () => expect(await getMeshFile(file.ref.hash)).toEqual(file.bytes));
+  });
+
+  it('store a pulled inline design as a ref, and push it back unchanged', async () => {
+    const asset = await makeAsset('inline_bin', 65);
+
+    await designAdapter.applyRemote({
+      id: DESIGN_ID,
+      payload: {
+        name: 'Parts bin',
+        kind: 'importedMesh',
+        envelope: ENVELOPE,
+        structure: structureOf(asset),
+      },
+      modifiedAt: Date.parse('2026-02-01T00:00:00.000Z'),
+    });
+
+    expect(isMeshAssetRef(assetOf(unwrap(await loadDesign(DESIGN_ID))))).toBe(true);
+    const pushed = await designAdapter.get(DESIGN_ID);
+    expect(JSON.stringify(pushed?.payload.structure)).toBe(JSON.stringify(structureOf(asset)));
+  });
+
+  it("send a version's mesh by ref, and store and fetch a pulled version's", async () => {
+    const asset = await makeAsset('versioned_bin', 66);
+    await (
+      await getDb()
+    ).put(DESIGN_VERSIONS_STORE, {
+      id: 'version_imported',
+      designId: DESIGN_ID,
+      name: 'v1',
+      content: compressString(
+        JSON.stringify({
+          name: 'Parts bin',
+          kind: 'importedMesh',
+          envelope: ENVELOPE,
+          structure: structureOf(asset),
+        })
+      ),
+      thumbnail: null,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      origin: 'manual',
+    } satisfies DesignVersion);
+    await moveInlineMeshesToFiles();
+    fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
+
+    const plan = await designVersionAdapter.preparePush?.('version_imported');
+
+    if (plan?.status !== 'send') throw new Error(`expected send, got ${plan?.status}`);
+    const content = plan.item.payload.content as { kind: string; structure: unknown };
+    expect(content.kind).toBe('importedMesh');
+    expect(isMeshAssetRef(assetOf(content))).toBe(true);
+    expect(requests('HEAD')).toHaveLength(1);
+
+    const remote = await meshAssetFile(await makeAsset('pulled_version_bin', 67));
+    if (!remote) throw new Error('fixture');
+    serve(new Map([[remote.ref.hash, remote.bytes]]));
+    await designVersionAdapter.applyRemote({
+      id: 'version_pulled_imported',
+      payload: {
+        designId: DESIGN_ID,
+        name: 'v2',
+        content: {
+          name: 'Parts bin',
+          kind: 'importedMesh',
+          envelope: ENVELOPE,
+          structure: structureOf(remote.ref),
+        },
+        createdAt: '2026-01-04T00:00:00.000Z',
+        origin: 'manual',
+      },
+      modifiedAt: Date.parse('2026-01-04T00:00:00.000Z'),
+    });
+
+    await vi.waitFor(async () => expect(await getMeshFile(remote.ref.hash)).toEqual(remote.bytes));
+    const listed = await designVersionAdapter.list();
+    expect(listed.map((item) => item.id).sort()).toEqual([
+      'version_imported',
+      'version_pulled_imported',
+    ]);
   });
 });

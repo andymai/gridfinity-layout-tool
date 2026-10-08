@@ -34,7 +34,7 @@ vi.mock('../store/customBinRegistry', async (importOriginal) => {
   return {
     upsertRegistryEntry: vi.fn(),
     loadRegistry: vi.fn(() => []),
-    registryAssemblyEntry: actual.registryAssemblyEntry,
+    registryItemEntry: actual.registryItemEntry,
     registryEdgeFields: vi.fn(() => ({})),
     registryHeightFields: vi.fn(() => ({})),
     registryOverhangFields: vi.fn(() => ({})),
@@ -422,6 +422,43 @@ describe('useBackgroundThumbnailRegen', () => {
         expect.objectContaining({ id: 'w', name: 'Workshop build', kind: 'assembly', width: 4 })
       );
       expect(regenerateThumbnail).not.toHaveBeenCalled();
+    });
+
+    it('registers a pulled imported mesh, which only its import would otherwise list', async () => {
+      const assembly = makeAssembly('m');
+      const imported: SavedDesign = {
+        ...assembly,
+        name: 'Parts bin',
+        kind: 'importedMesh',
+        structure: {
+          kind: 'importedMesh',
+          heightUnits: 5,
+          asset: {
+            name: 'parts_bin',
+            hash: 'd'.repeat(64),
+            triangleCount: 4,
+            sizeMm: { x: 83, y: 62, z: 33 },
+            bytes: 900,
+          },
+        },
+      };
+      vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(ok([imported]));
+
+      renderHook(() => useBackgroundThumbnailRegen());
+
+      await waitFor(() => {
+        expect(upsertRegistryEntry).toHaveBeenCalledTimes(1);
+      });
+      expect(upsertRegistryEntry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'm',
+          name: 'Parts bin',
+          kind: 'importedMesh',
+          width: 4,
+          depth: 2,
+          height: 5,
+        })
+      );
     });
 
     it('leaves an assembly that already has an entry alone, kind or not', async () => {

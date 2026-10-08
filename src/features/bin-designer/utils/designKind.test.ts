@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { designId } from '@/core/types';
 import type { BinParams, SavedDesign } from '../types';
-import { designFootprint, isBinDesign, isLayoutPlaceableDesign } from './designKind';
+import {
+  designFootprint,
+  isBinDesign,
+  isLayoutPlaceableDesign,
+  isSyncableDesign,
+} from './designKind';
 
 function baseDesign(): Omit<SavedDesign, 'params'> {
   return {
@@ -28,6 +33,27 @@ describe('isBinDesign', () => {
       structure: { kind: 'importedMesh', heightUnits: 3 } as SavedDesign['structure'],
     };
     expect(isBinDesign(design)).toBe(false);
+  });
+});
+
+describe('isSyncableDesign', () => {
+  const envelope = { width: 2, depth: 3 } as SavedDesign['envelope'];
+  const importedMesh = { kind: 'importedMesh', heightUnits: 3 } as SavedDesign['structure'];
+  const assembly = { kind: 'assembly', parts: [] } as unknown as SavedDesign['structure'];
+
+  it('carries bins, assemblies and imported meshes', () => {
+    expect(isSyncableDesign({ ...baseDesign(), params: { width: 2 } as BinParams })).toBe(true);
+    expect(isSyncableDesign({ kind: 'assembly', envelope, structure: assembly })).toBe(true);
+    expect(isSyncableDesign({ kind: 'importedMesh', envelope, structure: importedMesh })).toBe(
+      true
+    );
+  });
+
+  it('keeps tool racks local, and anything missing its envelope or naming another structure', () => {
+    const toolRack = { kind: 'toolRack' } as unknown as SavedDesign['structure'];
+    expect(isSyncableDesign({ kind: 'toolRack', envelope, structure: toolRack })).toBe(false);
+    expect(isSyncableDesign({ kind: 'importedMesh', structure: importedMesh })).toBe(false);
+    expect(isSyncableDesign({ kind: 'importedMesh', envelope, structure: assembly })).toBe(false);
   });
 });
 

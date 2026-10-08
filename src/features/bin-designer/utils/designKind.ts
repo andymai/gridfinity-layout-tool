@@ -17,15 +17,16 @@ export function isBinDesign<T extends DesignKindFields>(
 }
 
 /**
- * Kinds cloud sync carries: bins and Workshop assemblies (small JSON).
- * Imported meshes stay local — their structure embeds a base64 mesh blob.
+ * Kinds cloud sync carries: bins, Workshop assemblies and imported meshes,
+ * whose mesh travels as a ref to a stored file. Legacy tool racks stay local.
  */
 export function isSyncableDesign(design: DesignKindFields): boolean {
+  if (isBinDesign(design)) return true;
+  if (design.envelope === undefined) return false;
+  const structureKind = design.structure?.kind;
   return (
-    isBinDesign(design) ||
-    (design.kind === 'assembly' &&
-      design.envelope !== undefined &&
-      design.structure?.kind === 'assembly')
+    (design.kind === 'assembly' && structureKind === 'assembly') ||
+    (design.kind === 'importedMesh' && structureKind === 'importedMesh')
   );
 }
 
