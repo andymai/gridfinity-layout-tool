@@ -25,7 +25,10 @@ let activeRequests = 0;
 
 function forget(hash: string): void {
   geometryByHash.delete(hash);
-  outlineHolds.get(hash)?.();
+  // A typeof guard rather than `?.()`: CodeQL reads a lookup keyed by a worker
+  // message as a call that may not reach a function.
+  const release = outlineHolds.get(hash);
+  if (typeof release === 'function') release();
   outlineHolds.delete(hash);
   deleteMeshOutlines(hash);
 }
