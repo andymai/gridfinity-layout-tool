@@ -32,6 +32,7 @@ import {
   endMeshCloudSession,
   fetchMeshFiles,
   forgetHeldMeshes,
+  meshCloudSession,
 } from '@/shared/generation/meshCloud';
 import { referencedMeshHashes } from '@/features/bin-designer/storage/designMeshFiles';
 import { subscribe as subscribeDesignerEvents } from './designerEvents';
@@ -271,6 +272,7 @@ export const designAdapter: DesignAdapter = {
   onMissing: forgetHeldMeshes,
 
   async applyRemote(item: SyncableItem<DesignSyncPayload>): Promise<void> {
+    const session = meshCloudSession();
     suppressed.add(item.id);
     try {
       // Read existing first to preserve local-only fields (thumbnail,
@@ -332,7 +334,7 @@ export const designAdapter: DesignAdapter = {
       if (!isOk(result)) {
         throw syncPersistError('saveDesign', item.id, result.error);
       }
-      void fetchMeshFiles(holderMeshHashes(result.value));
+      void fetchMeshFiles(holderMeshHashes(result.value), session);
       // saveDesign never registers, and the startup pass that backfills
       // entries runs once per page load, so a Workshop design pulled
       // mid-session would read as a parametric bin, and an imported mesh would
@@ -366,9 +368,9 @@ export const designAdapter: DesignAdapter = {
   subscribe(listener: AdapterChangeListener): () => void {
     // The engine subscribes once a signed-in session starts: the moment to try
     // again for files a pull could not fetch (offline, say) on an earlier page.
-    let subscribed = true;
+    const session = meshCloudSession();
     void referencedMeshHashes()
-      .then((hashes) => (subscribed ? fetchMeshFiles([...hashes]) : undefined))
+      .then((hashes) => fetchMeshFiles([...hashes], session))
       .catch(() => undefined);
     const stopEvents = subscribeDesignerEvents((event) => {
       missingMeshPushes.clear(event.id);
@@ -384,7 +386,6 @@ export const designAdapter: DesignAdapter = {
       return isOk(current) ? toMs(current.value.updatedAt) : null;
     });
     return () => {
-      subscribed = false;
       stopEvents();
       stopArrivals();
       endMeshCloudSession();

@@ -6,6 +6,7 @@ import {
   beginMeshCloudSession,
   endMeshCloudSession,
   fetchMeshFiles,
+  meshCloudSession,
   forgetHeldMeshes,
   uploadMeshFiles,
 } from './meshCloud';
@@ -212,6 +213,25 @@ describe('uploadMeshFiles', () => {
     expect(calls().map((c) => c.method)).toEqual(['HEAD']);
   });
 
+  it('abandons an upload whose request hangs, freeing its slot', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const file = await storedFile(15);
+    fetchMock.mockImplementation(
+      (_url, init) =>
+        new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(new DOMException('', 'AbortError')));
+        })
+    );
+
+    const uploading = uploadMeshFiles([file.hash]);
+    const settled = expect(uploading).rejects.toThrow();
+    await vi.advanceTimersByTimeAsync(60_000);
+    await settled;
+
+    fetchMock.mockImplementation(async () => new Response(null, { status: 200 }));
+    expect(await uploadMeshFiles([file.hash])).toEqual({ status: 'held' });
+  });
+
   it('answers held without a request for a payload with no mesh', async () => {
     expect(await uploadMeshFiles([])).toEqual({ status: 'held' });
     expect(fetchMock).not.toHaveBeenCalled();
@@ -412,6 +432,19 @@ describe('fetchMeshFiles', () => {
     );
     await vi.advanceTimersByTimeAsync(1_740_000);
     await vi.waitFor(async () => expect(await hasMeshFile(throttled.hash)).toBe(true));
+  });
+
+  it('ignores downloads asked for under an earlier session', async () => {
+    const file = await remoteFile(53);
+    serve(new Map([[file.hash, file.bytes]]));
+    const earlier = meshCloudSession();
+    endMeshCloudSession();
+    beginMeshCloudSession();
+
+    await fetchMeshFiles([file.hash], earlier);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(await hasMeshFile(file.hash)).toBe(false);
   });
 
   it('drops the retry when the signed-in session ends', async () => {

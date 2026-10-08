@@ -23,7 +23,7 @@ import {
   storeHolderMeshes,
 } from '@/shared/generation/meshRefs';
 import type { MeshHolder } from '@/shared/generation/meshRefs';
-import { fetchMeshFiles, forgetHeldMeshes } from '@/shared/generation/meshCloud';
+import { fetchMeshFiles, forgetHeldMeshes, meshCloudSession } from '@/shared/generation/meshCloud';
 import { subscribe as subscribeVersionEvents } from './designVersionEvents';
 import { createMissingMeshPushes } from './missingMeshPushes';
 import { planMeshPush } from './meshPushPlan';
@@ -175,10 +175,11 @@ export const designVersionAdapter: DesignVersionAdapter = {
   onMissing: forgetHeldMeshes,
 
   async applyRemote(item: SyncableItem<DesignVersionPayload>): Promise<void> {
+    const session = meshCloudSession();
     await putRemoteDesignVersion(await fromItem(item));
     const { content } = item.payload;
     if (typeof content === 'object' && content !== null) {
-      void fetchMeshFiles(holderMeshHashes(content));
+      void fetchMeshFiles(holderMeshHashes(content), session);
     }
   },
 

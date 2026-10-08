@@ -104,6 +104,21 @@ function releaseUploadSlot(epoch: number): void {
 // does, so being offline leaves the push queued without spending a retry. So
 // does an upload whose session ended mid-way, or while it waited for a slot:
 // nothing of it may go on, or vouch for a file, under the next account.
+// A request that hangs would hold its slot, and every transfer queued behind
+// it, for as long as the browser allows; past this it is abandoned like a lost
+// connection.
+const REQUEST_TIMEOUT_MS = 60_000;
+
+async function withTimeout<T>(run: (signal: AbortSignal) => Promise<T>): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await run(controller.signal);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function upload(hash: string, epoch: number): Promise<FileUpload> {
   const current = (): void => {
     if (epoch !== sessionEpoch || !sessionOpen) throw new Error('mesh upload: session ended');
@@ -114,17 +129,22 @@ async function upload(hash: string, epoch: number): Promise<FileUpload> {
     const now = Date.now();
     if (now < unavailableUntil) return UNAVAILABLE;
     if (now < (refusedUntil.get(hash) ?? 0)) return REFUSED;
-    const head = await apiFetch(meshPath(hash), { method: 'HEAD' });
+    const head = await withTimeout((signal) =>
+      apiFetch(meshPath(hash), { method: 'HEAD', signal })
+    );
     current();
     if (head.status !== 404) return outcome(head, hash);
     const bytes = await getMeshFile(hash);
     current();
     if (!bytes) return { status: 'missing', hash };
-    const put = await apiFetch(meshPath(hash), {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/octet-stream' },
-      body: bytes,
-    });
+    const put = await withTimeout((signal) =>
+      apiFetch(meshPath(hash), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/octet-stream' },
+        body: bytes,
+        signal,
+      })
+    );
     current();
     return outcome(put, hash);
   } finally {
@@ -202,17 +222,21 @@ async function download(hash: string, epoch: number): Promise<Download> {
   try {
     if (await hasMeshFile(hash)) return 'stored';
     if (ended()) return 'ended';
-    const head = await apiFetch(meshPath(hash), { method: 'HEAD' });
+    const head = await withTimeout((signal) =>
+      apiFetch(meshPath(hash), { method: 'HEAD', signal })
+    );
     if (ended()) return 'ended';
     if (head.status === 429) {
       return { retryAfterMs: parseRetryAfter(head.headers.get('Retry-After')) ?? RETRY_FIRST_MS };
     }
     const url = head.ok ? head.headers.get(MESH_URL_HEADER) : null;
     if (!url) return 'failed';
-    const res = await fetch(url);
+    const bytes = await withTimeout(async (signal) => {
+      const res = await fetch(url, { signal });
+      return res.ok ? new Uint8Array(await res.arrayBuffer()) : null;
+    });
     if (ended()) return 'ended';
-    if (!res.ok) return 'failed';
-    const bytes = new Uint8Array(await res.arrayBuffer());
+    if (!bytes) return 'failed';
     const matches = (await sha256Hex(bytes)) === hash;
     if (ended()) return 'ended';
     return matches && (await putMeshFile(bytes)) !== null ? 'stored' : 'failed';
@@ -297,8 +321,11 @@ function queueDownload(hash: string): Promise<void> {
  * server is waited out; until then its pocket stays pending. Settles once each
  * file has been tried or put off, and at once between sessions. Never rejects.
  */
-export function fetchMeshFiles(hashes: readonly string[]): Promise<void> {
-  if (!sessionOpen) return Promise.resolve();
+export function fetchMeshFiles(
+  hashes: readonly string[],
+  session: number = sessionEpoch
+): Promise<void> {
+  if (!sessionOpen || session !== sessionEpoch) return Promise.resolve();
   const wanted = [...new Set(hashes)].filter((hash) => !failedDownloads.has(hash));
   if (Date.now() < throttledUntil) {
     for (const hash of wanted) if (!downloadWaiters.has(hash)) failedDownloads.add(hash);
@@ -307,6 +334,14 @@ export function fetchMeshFiles(hashes: readonly string[]): Promise<void> {
   const tried = wanted.map(queueDownload);
   pumpDownloads();
   return Promise.all(tried).then(() => undefined);
+}
+
+/**
+ * The session now running. Work begun under it passes this to
+ * {@link fetchMeshFiles}, which ignores it once a later session has begun.
+ */
+export function meshCloudSession(): number {
+  return sessionEpoch;
 }
 
 /** Take uploads and downloads again, for the signed-in session starting now. */
