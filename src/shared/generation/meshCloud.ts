@@ -181,7 +181,7 @@ const DOWNLOADS_AT_ONCE = 4;
 const RETRY_FIRST_MS = 60_000;
 const RETRY_LONGEST_MS = 30 * 60_000;
 
-type Download = 'stored' | 'failed' | { readonly retryAfterMs: number };
+type Download = 'stored' | 'failed' | 'ended' | { readonly retryAfterMs: number };
 
 const downloadQueue: string[] = [];
 /** Every file queued or downloading, with the calls waiting on its attempt. */
@@ -194,20 +194,28 @@ let retryTimer: ReturnType<typeof setTimeout> | null = null;
 let retryAt = 0;
 let retryDelayMs = RETRY_FIRST_MS;
 
-async function download(hash: string): Promise<Download> {
+// A download whose session ended stops before its next request or store: a
+// HEAD sent signed out answers 401, which forces a sign-out that clears the
+// outbox, and a file stored now would land under the next account.
+async function download(hash: string, epoch: number): Promise<Download> {
+  const ended = (): boolean => epoch !== sessionEpoch;
   try {
     if (await hasMeshFile(hash)) return 'stored';
+    if (ended()) return 'ended';
     const head = await apiFetch(meshPath(hash), { method: 'HEAD' });
+    if (ended()) return 'ended';
     if (head.status === 429) {
       return { retryAfterMs: parseRetryAfter(head.headers.get('Retry-After')) ?? RETRY_FIRST_MS };
     }
     const url = head.ok ? head.headers.get(MESH_URL_HEADER) : null;
     if (!url) return 'failed';
     const res = await fetch(url);
+    if (ended()) return 'ended';
     if (!res.ok) return 'failed';
     const bytes = new Uint8Array(await res.arrayBuffer());
-    const stored = (await sha256Hex(bytes)) === hash && (await putMeshFile(bytes)) !== null;
-    return stored ? 'stored' : 'failed';
+    const matches = (await sha256Hex(bytes)) === hash;
+    if (ended()) return 'ended';
+    return matches && (await putMeshFile(bytes)) !== null ? 'stored' : 'failed';
   } catch {
     return 'failed';
   }
@@ -243,8 +251,9 @@ function pumpDownloads(): void {
     if (hash === undefined) return;
     downloadsRunning++;
     const epoch = sessionEpoch;
-    void download(hash).then((result) => {
-      if (epoch !== sessionEpoch) return;
+    void download(hash, epoch).then((result) => {
+      // The session's end reset the counts and dropped the waiters.
+      if (result === 'ended' || epoch !== sessionEpoch) return;
       downloadsRunning--;
       if (result === 'stored') {
         failedDownloads.delete(hash);

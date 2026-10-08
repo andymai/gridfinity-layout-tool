@@ -427,6 +427,68 @@ describe('fetchMeshFiles', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('asks nothing more for a download whose session ended while it read this device', async () => {
+    const file = await remoteFile(54);
+    serve(new Map([[file.hash, file.bytes]]));
+
+    const fetching = fetchMeshFiles([file.hash]);
+    endMeshCloudSession();
+    beginMeshCloudSession();
+    await fetching;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(await hasMeshFile(file.hash)).toBe(false);
+  });
+
+  it('fetches and stores nothing once its session ends during the HEAD', async () => {
+    const file = await remoteFile(55);
+    serve(new Map([[file.hash, file.bytes]]));
+    const served = fetchMock.getMockImplementation();
+    let answerHead: () => void = () => undefined;
+    fetchMock.mockImplementationOnce((url, init) => {
+      if (!served) throw new Error('fixture');
+      return new Promise((resolve) => {
+        answerHead = () => resolve(served(url, init));
+      });
+    });
+
+    const fetching = fetchMeshFiles([file.hash]);
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    endMeshCloudSession();
+    beginMeshCloudSession();
+    answerHead();
+    await fetching;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(calls()).toEqual([{ method: 'HEAD', url: `/api/meshes/${file.hash}` }]);
+    expect(await hasMeshFile(file.hash)).toBe(false);
+  });
+
+  it('stores nothing once its session ends while the file downloads', async () => {
+    const file = await remoteFile(56);
+    serve(new Map([[file.hash, file.bytes]]));
+    const served = fetchMock.getMockImplementation();
+    let answerCdn: () => void = () => undefined;
+    fetchMock.mockImplementation((url, init) => {
+      if (!served) throw new Error('fixture');
+      if (init?.method === 'HEAD') return served(url, init);
+      return new Promise((resolve) => {
+        answerCdn = () => resolve(served(url, init));
+      });
+    });
+
+    const fetching = fetchMeshFiles([file.hash]);
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    endMeshCloudSession();
+    beginMeshCloudSession();
+    answerCdn();
+    await fetching;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(await hasMeshFile(file.hash)).toBe(false);
+  });
+
   it('starts nothing for a pull finishing after its session ended, until the next begins', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     const file = await remoteFile(53);
