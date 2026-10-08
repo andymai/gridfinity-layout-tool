@@ -42,13 +42,15 @@ describe('randomUUID is only reached through generateUUID', () => {
 // crypto.subtle is missing in the same contexts, and naming a mesh file there
 // would otherwise fail every STL import and stored design. "subtle" is also a
 // common design-token word, so the match is the member, bracket and
-// destructured forms rather than the bare identifier.
+// destructured forms rather than the bare identifier. An aliased or defaulted
+// key reads like a token object's `subtle:`, so that form only counts when it
+// destructures `crypto`.
 describe('crypto.subtle is only reached through sha256Hex', () => {
   it('has no direct caller outside the helper', () => {
     expect(
       callersOutside(
         'shared/generation/sha256.ts',
-        /\.\s*subtle\b|\[\s*['"]subtle['"]\s*\]|[{,]\s*subtle\s*[,}]/
+        /\.\s*subtle\b|\[\s*['"]subtle['"]\s*\]|[{,]\s*subtle\s*[,}]|\{[^{}]*\bsubtle\b[^{}]*\}\s*=\s*(?:\w+\s*\.\s*)*crypto\b/
       ),
       'hash through sha256Hex() from @/shared/generation/sha256'
     ).toEqual([]);
