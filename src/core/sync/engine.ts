@@ -81,12 +81,15 @@ export function start(adapters: SyncAdapters): void {
 }
 
 export function stop(): void {
-  if (state === null) return;
-  state.stopping = true;
-  for (const off of state.unsubscribers) off();
-  if (state.drainTimer !== null) clearTimeout(state.drainTimer);
-  state.listeners.clear();
-  state = null;
+  if (state !== null) {
+    state.stopping = true;
+    for (const off of state.unsubscribers) off();
+    if (state.drainTimer !== null) clearTimeout(state.drainTimer);
+    state.listeners.clear();
+    state = null;
+  }
+  // Also with no engine: the sign-in claim marks the status syncing before the
+  // engine starts, and a cancelled claim leaves it for this teardown to clear.
   useSyncStatusStore.getState().reset();
 }
 

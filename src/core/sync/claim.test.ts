@@ -61,6 +61,7 @@ const promptDiscardMock: AccountMismatchPrompt = vi.fn(async () => 'discard' as 
 
 beforeEach(() => {
   __resetForTests();
+  useSyncStatusStore.getState().reset();
   vi.clearAllMocks();
   localStorage.clear();
   layouts = makeAdapter();
@@ -127,8 +128,9 @@ describe('runClaim — single-flight', () => {
       runClaim(ctx({ userId: 'user-1' })),
       runClaim(ctx({ userId: 'user-2' })),
     ]);
-    expect(a).not.toBe(b);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(a).toEqual({ status: 'cancelled' });
+    expect(b.status).toBe('merged');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -165,7 +167,53 @@ describe('runClaim — cancellation', () => {
 
     expect(await claim).toEqual({ status: 'cancelled' });
     expect(layouts.applyRemote).not.toHaveBeenCalled();
+  });
+
+  it('leaves the status alone when cancelled before it begins', async () => {
+    const claim = runClaim(ctx());
+    void cancelClaims();
+
+    expect(await claim).toEqual({ status: 'cancelled' });
+    expect(fetchMock).not.toHaveBeenCalled();
     expect(useSyncStatusStore.getState().state).toBe('idle');
+  });
+
+  it('keeps the status of the claim that replaced it, after that claim finishes', async () => {
+    const { answer } = heldCloud();
+    const first = runClaim(ctx({ userId: 'user-1' }));
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    expect((await runClaim(ctx({ userId: 'user-2' }))).status).toBe('merged');
+    useSyncStatusStore.getState().reportError('push failed');
+    answer();
+
+    expect(await first).toEqual({ status: 'cancelled' });
+    expect(useSyncStatusStore.getState().state).toBe('error');
+  });
+
+  it('holds the next claim back until the cleanup after a cancel has run', async () => {
+    fetchMock.mockResolvedValue(manifestResponse({ layouts: {}, designs: {}, indexUpdatedAt: 0 }));
+    let finishCleanup = (): void => undefined;
+    void cancelClaims(
+      () =>
+        new Promise<void>((resolve) => {
+          finishCleanup = resolve;
+        })
+    );
+    const next = runClaim(ctx({ userId: 'user-2' }));
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    finishCleanup();
+    expect((await next).status).toBe('merged');
+  });
+
+  it('runs the next claim after a cleanup that failed', async () => {
+    fetchMock.mockResolvedValue(manifestResponse({ layouts: {}, designs: {}, indexUpdatedAt: 0 }));
+    const failed = cancelClaims(() => Promise.reject(new Error('idb closed')));
+
+    await expect(failed).rejects.toThrow('idb closed');
+    expect((await runClaim(ctx({ userId: 'user-2' }))).status).toBe('merged');
   });
 
   it('settles a cancel only once the write it caught in progress has landed', async () => {

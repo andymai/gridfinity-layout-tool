@@ -75,21 +75,27 @@ interface ClaimRun {
 }
 
 const inFlightByUser = new Map<string, ClaimRun>();
-/** Every cancelled claim's write in progress, so a later cancel waits for them too. */
+/**
+ * Every cancelled claim's write in progress and the cleanup run after it, so
+ * a later cancel or claim waits for them too. Never rejects.
+ */
 let cancelling: Promise<void> = Promise.resolve();
 
 /**
  * Stop every claim in flight before its next local write or queued push, and
- * settle once any write they had in progress has landed. Awaited before local
- * data is wiped or another account's claim starts: a claim resuming from a
- * fetch, or finishing a write, would otherwise put the prior account's items
- * back. A claim waiting on the network is not waited for.
+ * settle once any write they had in progress has landed and `cleanup` has run.
+ * Awaited before local data is wiped or another account's claim starts: a
+ * claim resuming from a fetch, or finishing a write, would otherwise put the
+ * prior account's items back. The next claim waits for `cleanup` too, so a
+ * clear passed here cannot delete what that claim queues. A claim waiting on
+ * the network is not waited for.
  */
-export function cancelClaims(): Promise<void> {
+export function cancelClaims(cleanup?: () => Promise<void>): Promise<void> {
   const writes = [...inFlightByUser.values()].map((run) => run.cancel());
   inFlightByUser.clear();
-  cancelling = Promise.all([cancelling, ...writes]).then(() => undefined);
-  return cancelling;
+  const settled = Promise.all([cancelling, ...writes]).then(() => cleanup?.());
+  cancelling = settled.catch(() => undefined);
+  return settled;
 }
 
 /**
@@ -142,16 +148,14 @@ export function __resetForTests(): void {
 
 async function execute(ctx: ClaimContext, guard: ClaimGuard): Promise<ClaimResult> {
   const status = useSyncStatusStore.getState();
-  status.beginSync();
   try {
+    guard.check();
+    status.beginSync();
     return await executeInner(ctx, guard);
   } catch (e) {
-    if (e instanceof ClaimCancelled) {
-      // A claim that replaced this one owns the status; with none, nothing is
-      // syncing any more.
-      if (inFlightByUser.size === 0) status.reset();
-      return { status: 'cancelled' };
-    }
+    // Once cancelled, the status belongs to the teardown that reset it or the
+    // claim that replaced this one, even after that claim has finished.
+    if (e instanceof ClaimCancelled) return { status: 'cancelled' };
     status.reportError(e instanceof Error ? e.message : 'claim failed');
     return { status: 'error', message: e instanceof Error ? e.message : undefined };
   }
@@ -183,6 +187,7 @@ async function executeInner(ctx: ClaimContext, guard: ClaimGuard): Promise<Claim
       // the only step that gates cross-account leakage.
       await guard.write(() => outboxClearAll());
       await guard.write(() => wipeLocal(ctx.adapters, local));
+      guard.check();
       persistLastSignedInUserId(ctx.userId);
       useSyncStatusStore.getState().succeed();
       return { status: 'discarded' };

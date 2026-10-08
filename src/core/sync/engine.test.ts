@@ -136,6 +136,12 @@ describe('engine.start / stop', () => {
     expect(useSyncStatusStore.getState().state).toBe('idle');
     expect(useSyncStatusStore.getState().lastError).toBeUndefined();
   });
+
+  it('stop resets the status left by a sign-in claim before any engine started', () => {
+    useSyncStatusStore.getState().beginSync();
+    engine.stop();
+    expect(useSyncStatusStore.getState().state).toBe('idle');
+  });
 });
 
 describe('push: PUT happy path', () => {

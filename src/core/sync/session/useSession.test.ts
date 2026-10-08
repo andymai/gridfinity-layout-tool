@@ -135,9 +135,12 @@ describe('useSessionLifecycle', () => {
     const pollerModule = await import('../pullState');
     const claimModule = await import('../claim');
     const order: string[] = [];
-    const cancelClaimsSpy = vi.spyOn(claimModule, 'cancelClaims').mockImplementation(async () => {
-      order.push('cancel');
-    });
+    const cancelClaimsSpy = vi
+      .spyOn(claimModule, 'cancelClaims')
+      .mockImplementation(async (cleanup) => {
+        order.push('cancel');
+        await cleanup?.();
+      });
     const clearAllSpy = vi.spyOn(outboxModule, 'clearAll').mockImplementation(async () => {
       order.push('clear');
     });

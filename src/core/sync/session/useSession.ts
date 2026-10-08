@@ -130,12 +130,12 @@ export function useSessionLifecycle(): void {
       // the new account. Pending edits since the last successful push
       // are sacrificed; cross-account leakage would be worse. A sign-in
       // claim still running is cancelled first, and any push it was queueing
-      // lands before the clear, so nothing it queued survives it.
-      void cancelClaims()
-        .then(() => clearOutbox())
-        .catch(() => {
-          /* IDB failure is non-blocking; setAnonymous below still flips UI */
-        });
+      // lands before the clear, so nothing it queued survives it. The next
+      // account's claim waits for the clear, so it cannot erase that claim's
+      // pushes.
+      void cancelClaims(clearOutbox).catch(() => {
+        /* IDB failure is non-blocking; setAnonymous below still flips UI */
+      });
       resetPullState();
       useSessionStore.getState().setAnonymous();
     };
