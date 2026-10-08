@@ -1,0 +1,19 @@
+src/shared/generation/meshStore.ts
+  s_1606b97c1ea28d::t_36bc5a61f2e024 20,22,57-75,154,180,245,262,282,304
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c215489205da7877ddffaad3898a032b3564d1a6",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
