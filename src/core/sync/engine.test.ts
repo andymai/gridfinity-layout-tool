@@ -521,6 +521,34 @@ describe('push: preparePush', () => {
     expect(puts()).toEqual([]);
   });
 
+  it('handles no reply that lands after the engine stopped', async () => {
+    let answer = (_res: Response): void => undefined;
+    fetchMock.mockImplementation((_url: string, init?: RequestInit) =>
+      init?.method === 'PUT'
+        ? new Promise<Response>((resolve) => {
+            answer = resolve;
+          })
+        : Promise.resolve(new Response(null, { status: 200 }))
+    );
+    designsAdapter.preparePush = vi.fn(async (id: string) => ({
+      status: 'send' as const,
+      item: { id, payload: { v: 1 }, modifiedAt: 2000 },
+    }));
+    engine.start(adapters);
+    designsAdapter.triggerChange({ kind: 'put', id: 'des-1', modifiedAt: 2000 });
+    await vi.waitFor(() => expect(puts()).toHaveLength(1));
+
+    engine.stop();
+    answer(
+      new Response(JSON.stringify({ stored: { design: { v: 9 }, modifiedAt: 3000 } }), {
+        status: 409,
+      })
+    );
+    await flush();
+
+    expect(designsAdapter.applyRemote).not.toHaveBeenCalled();
+  });
+
   it('still reports a plan that fails while the engine runs', async () => {
     designsAdapter.preparePush = vi.fn<NonNullable<SyncAdapter['preparePush']>>(async () => {
       throw new Error('idb closed');

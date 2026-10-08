@@ -258,4 +258,31 @@ describe('account changes', () => {
     expect(handler).not.toHaveBeenCalled();
     window.removeEventListener(FORCED_SIGN_OUT_EVENT, handler);
   });
+
+  it("keeps a stale 401 from signing out another tab's sign-in while its user loads", async () => {
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u1', provider: 'google', email: 'a@x' },
+    });
+    const answers = new Map<string, (res: Response) => void>();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (url: string) =>
+          new Promise<Response>((resolve) => {
+            answers.set(url, resolve);
+          })
+      )
+    );
+    const handler = vi.fn();
+    window.addEventListener(FORCED_SIGN_OUT_EVENT, handler);
+
+    const pending = apiFetch('/api/sync/manifest');
+    void useSessionStore.getState().applyRemoteState('authenticated');
+    answers.get('/api/sync/manifest')?.(new Response(null, { status: 401 }));
+    await pending;
+
+    expect(handler).not.toHaveBeenCalled();
+    window.removeEventListener(FORCED_SIGN_OUT_EVENT, handler);
+  });
 });

@@ -219,6 +219,28 @@ describe('designAdapter imported mesh kind', () => {
 
     expect(saveDesignMock).not.toHaveBeenCalled();
   });
+
+  it("applyRemote leaves a newer client's structure unapplied rather than drop its fields", async () => {
+    for (const newer of [
+      { ...structure(), finish: 'matte' },
+      { ...structure(), asset: { ...structure().asset, lod: 2 } },
+    ]) {
+      loadDesignMock.mockResolvedValueOnce(err(storageNotFound('missing')));
+
+      await designAdapter.applyRemote({
+        id: 'm',
+        payload: {
+          name: 'Parts bin',
+          kind: 'importedMesh',
+          envelope: envelope(),
+          structure: newer,
+        },
+        modifiedAt: 1,
+      });
+    }
+
+    expect(saveDesignMock).not.toHaveBeenCalled();
+  });
 });
 
 describe('designAdapter assembly kind', () => {

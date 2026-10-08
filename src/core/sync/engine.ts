@@ -205,6 +205,8 @@ async function sendOne(
 
   if (entry.op === 'delete') {
     const res = await apiFetch(url, { method: 'DELETE' });
+    // A reply landing after the stop belongs to no running session.
+    if (stopped(s)) return;
     if (res.ok || res.status === 404 || res.status === 410) {
       s.rateLimitedRetries.delete(`${entry.kind}:${entry.id}`);
       await markPushSucceeded(entry.kind, entry.id, entry.modifiedAt);
@@ -220,10 +222,10 @@ async function sendOne(
   // file, and teardown fails an upload under way). Once stopped, neither its
   // push nor its failure belongs to the next account.
   const plan = await planPush(adapter, entry.id).catch((error: unknown) => {
-    if (s.stopping) return null;
+    if (stopped(s)) return null;
     throw error;
   });
-  if (s.stopping || plan === null) return;
+  if (stopped(s) || plan === null) return;
   if (plan.status === 'skip') {
     await outboxMarkSuccess(entry.kind, entry.id, entry.modifiedAt);
     return;
@@ -245,6 +247,7 @@ async function sendOne(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+  if (stopped(s)) return;
 
   if (res.ok) {
     s.rateLimitedRetries.delete(`${entry.kind}:${entry.id}`);
@@ -282,6 +285,11 @@ async function sendOne(
   }
   if (res.status === MISSING_DEPENDENCY_STATUS) adapter.onMissing?.(await readMissing(res));
   await handleFailure(res, kind, entry, s);
+}
+
+/** Read through a call: an await can flip it, which narrowing cannot see. */
+function stopped(s: EngineState): boolean {
+  return s.stopping;
 }
 
 async function planPush(adapter: SyncAdapter, id: string): Promise<PushPlan<unknown>> {

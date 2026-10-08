@@ -180,7 +180,20 @@ function pulledContent(pulled: ReturnType<typeof unwrap>): PulledContent | null 
     return { kind, envelope, structure: assemblyDescriptor.migrate(structure, envelope) };
   }
   const parsed = importedMeshSchema.safeParse(structure);
-  return parsed.success ? { kind, envelope, structure: parsed.data } : null;
+  // Parsing drops keys the schema does not know, and storing what it kept
+  // would push a newer client's fields away on this device's next edit.
+  return parsed.success && keepsEveryKey(structure, parsed.data)
+    ? { kind, envelope, structure: parsed.data }
+    : null;
+}
+
+function keepsEveryKey(input: unknown, kept: unknown): boolean {
+  if (typeof input !== 'object' || input === null) return true;
+  if (typeof kept !== 'object' || kept === null) return false;
+  const keptRecord = kept as Record<string, unknown>;
+  return Object.entries(input).every(
+    ([key, value]) => key in keptRecord && keepsEveryKey(value, keptRecord[key])
+  );
 }
 
 /**

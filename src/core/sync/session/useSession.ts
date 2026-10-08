@@ -51,8 +51,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
   applyRemoteState: async (status) => {
     if (status === 'authenticated') {
-      // Another tab signed in. Fetch the user record (we don't trust the
-      // broadcast payload — the cookie is the source of truth).
+      // Another tab signed in, and the shared cookie may already name another
+      // account: a 401 to a request sent before now must not sign it out.
+      onAccountChanged();
+      // Fetch the user record (we don't trust the broadcast payload — the
+      // cookie is the source of truth).
       const next = await refreshFromServer();
       if (next) set(next.state);
     } else if (get().status !== 'anonymous') {
