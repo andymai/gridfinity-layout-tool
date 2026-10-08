@@ -1,0 +1,37 @@
+src/shared/generation/meshCloud.test.ts
+  s_1606b97c1ea28d::t_49eff2c402c8a6 177,183-191
+  s_1606b97c1ea28d::t_a2bf850ca66137 193,385-400
+  s_1606b97c1ea28d::t_ca6980d3adaa68 6
+  s_1606b97c1ea28d::t_242110a8a0e1eb 192
+  s_1606b97c1ea28d::t_9baec0d6ebc15e 194
+src/shell/sync/SyncSessionMount.tsx
+  s_1606b97c1ea28d::t_357b841e9c2ec4 17
+  s_1606b97c1ea28d::t_281df9dc302565 79
+  s_1606b97c1ea28d::t_c1f9c4f985ed53 103-106
+src/shared/generation/meshCloud.ts
+  s_1606b97c1ea28d::t_2ce73607fa403c 276-280,282-285,288
+  s_1606b97c1ea28d::t_e049d4a039a752 22-28
+  s_1606b97c1ea28d::t_d8545cbfb382bc 87,89
+  s_1606b97c1ea28d::t_2815e78b75fb5f 307
+  s_1606b97c1ea28d::t_f40b30c4c51189 262,265
+src/shell/sync/SyncSessionMount.test.tsx
+  s_1606b97c1ea28d::t_f7f11c0c6dbbb0 17,28
+  s_1606b97c1ea28d::t_5e1398304d7be4 1-16,18-27,29-59,63-88
+  s_1606b97c1ea28d::t_4060511b1e154f 60-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "28bb3d6b1cd309773ecde7e3de18193bb8f46b36",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}

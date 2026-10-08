@@ -1,0 +1,27 @@
+src/shared/items/importedMesh/descriptor.test.ts
+  s_1606b97c1ea28d::t_165ad585a60a55 39-42
+  s_1606b97c1ea28d::t_777465b3ec548c 37-38,43-45
+src/shared/items/importedMesh/descriptor.ts
+  s_1606b97c1ea28d::t_777465b3ec548c 16-17
+src/features/bin-designer/constants/gridfinity.test.ts
+  s_1606b97c1ea28d::t_165ad585a60a55 3,113-118
+  s_1606b97c1ea28d::t_cbd9e351c8746e 119-120
+api/lib/importedMeshValidation.ts
+  s_1606b97c1ea28d::t_777465b3ec548c 15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "67c0757dfea91619a1d761ff42ebc45e77e80360",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
