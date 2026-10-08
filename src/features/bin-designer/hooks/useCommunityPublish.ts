@@ -18,6 +18,8 @@ import { hashBinParams, hashDesignContent } from '@/shared/utils/binParamsHash';
 import { withoutLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { inlineParamsMeshes } from '@/shared/generation/meshRefs';
 import type { BinParams } from '@/shared/types/bin';
+import type { AssemblyStructure } from '@/shared/types/assembly';
+import type { ItemEnvelope } from '@/shared/types/item';
 import { assemblyHeightUnits } from '@/shared/types/assemblyPlacement';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { loadPendingPublishAction } from '@/shared/utils/communityPendingAction';
@@ -98,13 +100,11 @@ export async function openCommunityPublish(draft: CommunityPublishDraft | null):
   const currentId = state.currentDesignId;
   if (currentId === null) return;
 
-  // The community store takes inline meshes only.
-  const inline = await inlineParamsMeshes(state.params);
-  if (!isOk(inline)) {
+  const content = assembly !== null ? assemblyContent(assembly) : await binContent(state.params);
+  if (content === null) {
     useToastStore.getState().addToast(getStaticTranslation('toast.meshFileMissing'), 'error');
     return;
   }
-  const params = inline.value;
 
   let publishedId: string | null = null;
   let lineage = null;
@@ -118,9 +118,7 @@ export async function openCommunityPublish(draft: CommunityPublishDraft | null):
     {
       designId: currentId,
       designName: state.designName,
-      ...(assembly !== null
-        ? { kind: 'assembly' as const, ...assembly, paramsHash: hashDesignContent(assembly) }
-        : publishedParams(params)),
+      ...content,
       publishedId,
       lineage,
       draft,
@@ -144,9 +142,23 @@ export async function openCommunityPublish(draft: CommunityPublishDraft | null):
   void capturePublishAssets();
 }
 
-// A published design carries standard feet; the downloader's drawer decides.
-function publishedParams(params: BinParams): { params: BinParams; paramsHash: string } {
-  const standard = withoutLowProfileBase(params);
+function assemblyContent(assembly: { envelope: ItemEnvelope; structure: AssemblyStructure }) {
+  return { kind: 'assembly' as const, ...assembly, paramsHash: hashDesignContent(assembly) };
+}
+
+/**
+ * Only a bin's params are published, so only they are resolved: an assembly
+ * still holds the params of the last bin the designer showed, and a missing
+ * mesh there must not block it. Null when a mesh file is missing.
+ */
+async function binContent(
+  params: BinParams
+): Promise<{ params: BinParams; paramsHash: string } | null> {
+  // The community store takes inline meshes only.
+  const inline = await inlineParamsMeshes(params);
+  if (!isOk(inline)) return null;
+  // A published design carries standard feet; the downloader's drawer decides.
+  const standard = withoutLowProfileBase(inline.value);
   return { params: standard, paramsHash: hashBinParams(standard) };
 }
 

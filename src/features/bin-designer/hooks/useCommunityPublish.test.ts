@@ -181,6 +181,21 @@ describe('useCommunityPublish', () => {
     it('opens with assembly content and frames captures from the envelope', async () => {
       useDesignerStore.setState({
         itemKind: 'assembly',
+        // Left over from the last bin the designer showed, naming a mesh file
+        // this device lacks: an assembly publishes none of it.
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          cutouts: [qualifyingCutout],
+          meshAssets: {
+            m1: {
+              name: 'gone',
+              hash: '7'.repeat(64),
+              triangleCount: 1,
+              sizeMm: { x: 1, y: 1, z: 1 },
+              bytes: 1,
+            },
+          },
+        },
         envelope: {
           width: 2,
           depth: 2,
@@ -212,6 +227,7 @@ describe('useCommunityPublish', () => {
       expect(context?.envelope).toMatchObject({ width: 2, depth: 2 });
       expect(context?.structure).toMatchObject({ kind: 'assembly' });
       expect(context?.paramsHash).toMatch(/^[0-9a-f]{8}$/);
+      expect(useToastStore.getState().toasts).toEqual([]);
       // 40mm post + socket + 2mm floor = 7 units frames the capture height.
       expect(vi.mocked(captureCommunityThumbnails)).toHaveBeenCalledWith(
         expect.objectContaining({ width: 2, depth: 2, height: 7 })
