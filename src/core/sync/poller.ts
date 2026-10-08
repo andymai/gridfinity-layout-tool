@@ -42,16 +42,19 @@ export interface PullResult {
  * same promise so we never send two manifest fetches at once.
  */
 export async function pullNow(adapters: SyncAdapters): Promise<PullResult> {
+  if (pullState.held) return { status: 'unauthorized' };
   if (pullState.inFlight) return pullState.inFlight;
-  pullState.inFlight = run(adapters, pullState.generation).finally(() => {
-    pullState.inFlight = null;
+  // A pull ended by a reset can finish after a newer one took the slot.
+  const pull = run(adapters, pullState.generation).finally(() => {
+    if (pullState.inFlight === pull) pullState.inFlight = null;
   });
-  return pullState.inFlight;
+  pullState.inFlight = pull;
+  return pull;
 }
 
 /**
  * End this account's pulls: the next pull starts over, and one in flight makes
- * no further local write. Settles once the write it had in progress has landed.
+ * no further local write. Settles once every write in progress has landed.
  */
 export function endPulls(): Promise<void> {
   const writing = pullState.writing;
@@ -59,8 +62,21 @@ export function endPulls(): Promise<void> {
   return writing.then(() => undefined);
 }
 
+/** {@link endPulls}, and start no pull until `release`, so none races a wipe. */
+export function holdPulls(): { ended: Promise<void>; release: () => void } {
+  pullState.held = true;
+  return {
+    ended: endPulls(),
+    release: () => {
+      pullState.held = false;
+    },
+  };
+}
+
 export function __resetForTests(): void {
   resetPullState();
+  pullState.held = false;
+  pullState.writing = Promise.resolve();
 }
 
 async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<PullResult> {
@@ -209,7 +225,7 @@ async function diffKind(
 }
 
 function trackWrite(write: Promise<void>): Promise<void> {
-  pullState.writing = write.catch(() => undefined);
+  pullState.writing = Promise.all([pullState.writing, write.catch(() => undefined)]);
   return write;
 }
 

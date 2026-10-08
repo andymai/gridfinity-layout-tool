@@ -12,9 +12,17 @@ export const pullState: {
   // Prevents a pre-reset pull from re-installing the prior user's
   // `lastIndexUpdatedAt` after sign-out.
   generation: number;
-  /** The local write a pull has in progress. Never rejects. */
+  /** Every local write a pull has in progress, an ended pull's included. Never rejects. */
   writing: Promise<unknown>;
-} = { lastIndexUpdatedAt: 0, inFlight: null, generation: 0, writing: Promise.resolve() };
+  /** Set while a sign-out wipe runs; no pull starts. */
+  held: boolean;
+} = {
+  lastIndexUpdatedAt: 0,
+  inFlight: null,
+  generation: 0,
+  writing: Promise.resolve(),
+  held: false,
+};
 
 // Reset on sign-out: without this the next user's first poll would send
 // the prior user's `lastIndexUpdatedAt` as `If-Modified-Since`. Bumping

@@ -20,6 +20,10 @@ const apiSignOutMock = vi.fn();
 const clearOutboxMock = vi.fn();
 const stopEngineMock = vi.fn();
 const resetPullStateMock = vi.fn();
+const holdPullsMock = vi.fn((): { ended: Promise<void>; release: () => void } => ({
+  ended: Promise.resolve(),
+  release: () => undefined,
+}));
 
 vi.mock('./claim', async (importOriginal) => ({
   ...(await importOriginal<typeof Claim>()),
@@ -42,6 +46,7 @@ vi.mock('./outbox', () => ({
 
 vi.mock('./poller', () => ({
   resetPullState: () => resetPullStateMock(),
+  holdPulls: () => holdPullsMock(),
 }));
 
 interface MockAdapter extends SyncAdapter {
@@ -279,6 +284,42 @@ describe('runSignOut — poller high-water reset', () => {
   it('resets the poller high-water mark on the wipe path', async () => {
     await runSignOut({ adapters, promptKeepLocal: promptWipe, onAnonymous });
     expect(resetPullStateMock).toHaveBeenCalled();
+  });
+
+  it('wipe path holds pulls from before the cancel until the session has flipped', async () => {
+    const order: string[] = [];
+    holdPullsMock.mockImplementationOnce(() => {
+      order.push('hold');
+      return { ended: Promise.resolve(), release: () => order.push('release') };
+    });
+    vi.mocked(cancelClaims).mockImplementationOnce(async () => {
+      order.push('cancel');
+    });
+    layouts.applyRemoteDelete = vi.fn(async () => {
+      order.push('wipe');
+    });
+    layouts.items.set('a', { id: 'a', payload: {}, modifiedAt: 1000 });
+    await runSignOut({
+      adapters,
+      promptKeepLocal: promptWipe,
+      onAnonymous: () => order.push('anonymous'),
+    });
+    expect(order).toEqual(['hold', 'cancel', 'wipe', 'anonymous', 'release']);
+  });
+
+  it('releases held pulls when the wipe fails', async () => {
+    const release = vi.fn();
+    holdPullsMock.mockImplementationOnce(() => ({ ended: Promise.resolve(), release }));
+    clearOutboxMock.mockRejectedValueOnce(new Error('idb closed'));
+    await expect(
+      runSignOut({ adapters, promptKeepLocal: promptWipe, onAnonymous })
+    ).rejects.toThrow('idb closed');
+    expect(release).toHaveBeenCalled();
+  });
+
+  it('keep path leaves the poll running', async () => {
+    await runSignOut({ adapters, promptKeepLocal: promptKeep, onAnonymous });
+    expect(holdPullsMock).not.toHaveBeenCalled();
   });
 
   it('does not reset the poller on cancel (user is still signed in)', async () => {

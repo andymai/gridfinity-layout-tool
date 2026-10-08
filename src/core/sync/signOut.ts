@@ -1,7 +1,7 @@
 import { signOut as apiSignOut } from './session/sessionApi';
 import { flushNow, getPendingEntries, stop as stopEngine } from './engine';
 import { clearAll as clearOutbox } from './outbox';
-import { resetPullState } from './poller';
+import { holdPulls, resetPullState } from './poller';
 import { cancelClaims, clearLastSignedInUserId } from './claim';
 import type { SyncAdapters, SyncKind } from './adapters/types';
 
@@ -35,36 +35,41 @@ export async function runSignOut(ctx: SignOutContext): Promise<SignOutResult> {
   const localCount = await countLocalItems(ctx.adapters);
   const choice = await ctx.promptKeepLocal({ localCount });
   if (!isChoice(choice)) return { status: 'cancelled' };
-  await cancelClaims();
-
-  if (choice === 'wipe') {
-    // Stop the engine FIRST. Otherwise a periodic poll or visibility
-    // flush running in parallel can applyRemote() new items between
-    // wipeLocal's list() snapshot and its delete loop, leaving the
-    // prior user's data behind in storage.
-    stopEngine();
-    // Clear outbox before wipeLocal: if clearOutbox throws (IDB failure),
-    // wipeLocal hasn't run yet so the engine has nothing to drain. Same
-    // safety order as claim.ts's discard path.
-    await clearOutbox();
-    await wipeLocal(ctx.adapters);
-    clearLastSignedInUserId();
-  } else {
-    // Keep path: give in-flight pushes 5s to land before the cookie
-    // disappears. Anything still pending stays queued for next sign-in.
-    await flushOutboxBestEffort();
-  }
-
+  // The periodic poll runs until the session flips to anonymous, and a pull
+  // landing between wipeLocal's list() snapshot and its delete loop would
+  // leave the prior user's data behind, so the wipe holds pulls throughout.
+  const pulls = choice === 'wipe' ? holdPulls() : null;
   try {
-    await apiSignOut();
-  } catch {
-    /* server-side logout best-effort; client state still flips below */
+    await cancelClaims(pulls ? () => pulls.ended : undefined);
+
+    if (choice === 'wipe') {
+      // Stop the engine FIRST, so no push or flush runs during the wipe.
+      stopEngine();
+      // Clear outbox before wipeLocal: if clearOutbox throws (IDB failure),
+      // wipeLocal hasn't run yet so the engine has nothing to drain. Same
+      // safety order as claim.ts's discard path.
+      await clearOutbox();
+      await wipeLocal(ctx.adapters);
+      clearLastSignedInUserId();
+    } else {
+      // Keep path: give in-flight pushes 5s to land before the cookie
+      // disappears. Anything still pending stays queued for next sign-in.
+      await flushOutboxBestEffort();
+    }
+
+    try {
+      await apiSignOut();
+    } catch {
+      /* server-side logout best-effort; client state still flips below */
+    }
+
+    resetPullState();
+
+    ctx.onAnonymous();
+    return { status: choice === 'wipe' ? 'wiped' : 'kept' };
+  } finally {
+    pulls?.release();
   }
-
-  resetPullState();
-
-  ctx.onAnonymous();
-  return { status: choice === 'wipe' ? 'wiped' : 'kept' };
 }
 
 async function flushOutboxBestEffort(): Promise<void> {

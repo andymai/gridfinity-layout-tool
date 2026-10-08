@@ -16,6 +16,7 @@ import {
 } from './outbox';
 import type {
   AdapterChange,
+  PushPlan,
   SyncAdapter,
   SyncAdapters,
   LayoutAdapter,
@@ -479,6 +480,25 @@ describe('push: preparePush', () => {
     });
     expect(designsAdapter.get).not.toHaveBeenCalled();
     expect(await outboxGetAll()).toEqual([]);
+  });
+
+  it('sends nothing for a plan that settles after the engine stopped', async () => {
+    let settle = (_plan: PushPlan<unknown>): void => undefined;
+    designsAdapter.preparePush = vi.fn<NonNullable<SyncAdapter['preparePush']>>(
+      () =>
+        new Promise((resolve) => {
+          settle = resolve;
+        })
+    );
+    engine.start(adapters);
+    designsAdapter.triggerChange({ kind: 'put', id: 'des-1', modifiedAt: 2000 });
+    await vi.waitFor(() => expect(designsAdapter.preparePush).toHaveBeenCalled());
+
+    engine.stop();
+    settle({ status: 'send', item: { id: 'des-1', payload: {}, modifiedAt: 2000 } });
+    await flush();
+
+    expect(puts()).toEqual([]);
   });
 
   it('drops the entry when the plan skips it', async () => {

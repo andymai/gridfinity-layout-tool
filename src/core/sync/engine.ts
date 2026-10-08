@@ -217,6 +217,9 @@ async function sendOne(
   // Read the latest snapshot at push time so a fresh edit during the
   // enqueue→push window goes out instead of a stale copy.
   const plan = await planPush(adapter, entry.id);
+  // Planning can outlast the session (an inline fallback reads every mesh
+  // file), and its push must not go out under the next account's cookie.
+  if (s.stopping) return;
   if (plan.status === 'skip') {
     await outboxMarkSuccess(entry.kind, entry.id, entry.modifiedAt);
     return;
