@@ -4,8 +4,10 @@
  * focus here is the designer-specific validation contract.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { userIndexKey, userMeshesKey } from '../../lib/redisKeys';
+import { MESH_MISSING_STATUS } from '../lib/resourceHandler';
 
 let redisStore: Map<string, string>;
 let redisHashes: Map<string, Map<string, string>>;
@@ -28,6 +30,9 @@ const mockRedis = {
     const h = redisHashes.get(k);
     return h ? Object.fromEntries(h) : {};
   }),
+  hmget: vi.fn(async (k: string, ...fields: string[]) =>
+    fields.map((f) => redisHashes.get(k)?.get(f) ?? null)
+  ),
   pipeline: vi.fn(() => makePipeline()),
 };
 
@@ -835,6 +840,104 @@ describe('variant overrides passthrough', () => {
     const stored = (res._body as { envelope: { design: Record<string, unknown> } }).envelope.design;
     expect('variantOf' in stored).toBe(false);
     expect('overrides' in stored).toBe(false);
+  });
+});
+
+describe('PUT: mesh refs', () => {
+  const HELD = 'a'.repeat(64);
+  const UNHELD = 'b'.repeat(64);
+
+  function ref(hash: string) {
+    return { name: 'wrench', hash, triangleCount: 12, sizeMm: { x: 20, y: 10, z: 5 }, bytes: 4000 };
+  }
+
+  function withMeshes(meshAssets: Record<string, unknown>) {
+    return {
+      ...VALID_DESIGN,
+      cutouts: Object.keys(meshAssets).map((meshId, i) => ({
+        id: `c${i}`,
+        shape: 'mesh',
+        meshId,
+      })),
+      meshAssets,
+    };
+  }
+
+  async function put(params: unknown, modifiedAt = 1000): Promise<MockRes> {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    await handler(
+      makeReq({ method: 'PUT', body: { design: { name: 'Meshes', params }, modifiedAt } }),
+      res as unknown as VercelResponse
+    );
+    return res;
+  }
+
+  beforeEach(() => {
+    vi.stubEnv('MESH_STORE_ENABLED', 'true');
+    redisHashes.set(
+      userMeshesKey('user-1'),
+      new Map([[HELD, JSON.stringify({ sizeBytes: 4000, url: `https://blob/meshes/${HELD}` })]])
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('stores a design whose refs name files the account holds', async () => {
+    const res = await put(withMeshes({ m1: ref(HELD) }));
+
+    expect(res._status).toBe(200);
+    const stored = [...blobStore.values()][0] as { design: { params: { meshAssets: unknown } } };
+    expect(stored.design.params.meshAssets).toEqual({ m1: ref(HELD) });
+  });
+
+  it('answers 424 listing the files the account lacks, and stores nothing', async () => {
+    const res = await put(withMeshes({ m1: ref(HELD), m2: ref(UNHELD) }));
+
+    expect(res._status).toBe(MESH_MISSING_STATUS);
+    expect(res._body).toMatchObject({ code: 'MESH_MISSING', missing: [UNHELD] });
+    expect(blobStore.size).toBe(0);
+    expect(redisHashes.get(userIndexKey('user-1', 'designs'))).toBeUndefined();
+  });
+
+  it('refuses refs while the mesh store is off, and still takes inline meshes', async () => {
+    vi.stubEnv('MESH_STORE_ENABLED', 'false');
+    const refused = await put(withMeshes({ m1: ref(HELD) }));
+    expect(refused._status).toBe(MESH_MISSING_STATUS);
+    expect(refused._body).toMatchObject({ missing: [HELD] });
+
+    const inline = await put(
+      withMeshes({
+        m1: {
+          name: 'wrench',
+          data: 'QUFBQQ==',
+          triangleCount: 12,
+          sizeMm: { x: 20, y: 10, z: 5 },
+          outlines: [
+            [
+              { x: 0, y: 0 },
+              { x: 20, y: 0 },
+              { x: 20, y: 10 },
+            ],
+          ],
+        },
+      })
+    );
+    expect(inline._status).toBe(200);
+  });
+
+  it('lets a newer stored design win before asking for files', async () => {
+    expect((await put(VALID_DESIGN, 5000))._status).toBe(200);
+    expect((await put(withMeshes({ m1: ref(UNHELD) }), 1000))._status).toBe(409);
+  });
+
+  it('holds a design of refs to the size cap of a design without meshes', async () => {
+    const res = await put({ ...withMeshes({ m1: ref(HELD) }), garbage: 'x'.repeat(150_000) });
+
+    expect(res._status).toBe(400);
+    expect((res._body as { error: string }).error).toContain('100KB');
   });
 });
 

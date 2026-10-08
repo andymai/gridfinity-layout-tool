@@ -290,6 +290,41 @@ describe('analyze', () => {
     expect((m?.data as { listingSize: number }).listingSize).toBe(Buffer.byteLength(body) + 50);
   });
 
+  it('passes a stored design whose meshes are refs', async () => {
+    const params = {
+      width: 2,
+      depth: 2,
+      height: 6,
+      style: 'standard',
+      base: {
+        style: 'magnet',
+        magnetDiameter: 6.2,
+        magnetDepth: 2.4,
+        screwDiameter: 3,
+        stackingLip: true,
+      },
+      label: { enabled: false, support: 'bracket', depth: 12, width: 100, alignment: 'center' },
+      inserts: [],
+      cutouts: [{ id: 'c1', shape: 'mesh', meshId: 'm1' }],
+      meshAssets: {
+        m1: {
+          name: 'wrench',
+          hash: 'a'.repeat(64),
+          triangleCount: 12,
+          sizeMm: { x: 20, y: 10, z: 5 },
+          bytes: 4000,
+        },
+      },
+    };
+    const blob = designBlob('u1', 'd1', []);
+    const entry = designEntry('u1', 'd1', []);
+    mockPayload({ design: { name: 'Bin', params, tags: [] }, modifiedAt: T, schemaVersion: 1 });
+
+    const findings = await analyze(makeInventory([blob], [entry]));
+
+    expect(findings.filter((f) => f.kind === 'payload_invalid')).toEqual([]);
+  });
+
   it('skips payload fetching when fetchPayloads=false', async () => {
     const blob = layoutBlob('u1', 'a');
     const entry = layoutEntry('u1', 'a');

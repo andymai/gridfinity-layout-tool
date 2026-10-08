@@ -13,6 +13,8 @@ import {
   DESIGN_TAG_MAX_LENGTH,
 } from './designerValidation.js';
 import { CONSTRAINTS, VALID_LABEL_PLATE_ICONS } from './designerValidationConstants.js';
+import { meshRefHashes } from './designerCutoutValidation.js';
+import { MAX_MESH_UPLOAD_BYTES } from './meshFile.js';
 import { LABEL_PLATE_ICONS } from '../../src/shared/constants/labelPlates.js';
 
 function validPayload() {
@@ -1855,6 +1857,60 @@ describe('validateDesignerShare', () => {
       ];
       expect(validateDesignerShare(payload, 150_000).valid).toBe(true);
       expect(validateDesignerShare(payload, 2_000_001).valid).toBe(false);
+    });
+
+    describe('refs', () => {
+      function validRef() {
+        return {
+          name: 'wrench',
+          hash: 'a'.repeat(64),
+          triangleCount: 12,
+          sizeMm: { x: 20, y: 10, z: 5 },
+          bytes: 4_000,
+        };
+      }
+
+      function withRefs(meshAssets: unknown, sizeBytes = 500) {
+        const payload = validPayload();
+        (payload.params as Record<string, unknown>).meshAssets = meshAssets;
+        (payload.params as Record<string, unknown>).cutouts = [
+          { id: 'c1', shape: 'mesh', meshId: 'asset-1' },
+        ];
+        return validateDesignerShare(payload, sizeBytes, { meshRefs: true });
+      }
+
+      it('refuses a ref unless the caller takes them', () => {
+        expect(withMesh({ 'asset-1': validRef() }).valid).toBe(false);
+        const result = withRefs({ 'asset-1': validRef() });
+        expect(result.valid).toBe(true);
+        if (!result.valid) return;
+        expect(result.payload.params.meshAssets).toEqual({ 'asset-1': validRef() });
+      });
+
+      it('still takes an inline asset', () => {
+        expect(withRefs({ 'asset-1': validAsset() }).valid).toBe(true);
+      });
+
+      it('rejects a ref with a malformed hash, size or key', () => {
+        for (const hash of ['A'.repeat(64), 'a'.repeat(63), 42]) {
+          expect(withRefs({ 'asset-1': { ...validRef(), hash } }).valid).toBe(false);
+        }
+        for (const bytes of [0, 1.5, MAX_MESH_UPLOAD_BYTES + 1, '4000']) {
+          expect(withRefs({ 'asset-1': { ...validRef(), bytes } }).valid).toBe(false);
+        }
+        expect(withRefs({ 'asset-1': { ...validRef(), data: 'QUFBQQ==' } }).valid).toBe(false);
+        expect(withRefs({ 'asset-1': { ...validRef(), triangleCount: 0 } }).valid).toBe(false);
+      });
+
+      it('holds a design of refs to the 100KB cap', () => {
+        expect(withRefs({ 'asset-1': validRef() }, 150_000).valid).toBe(false);
+        expect(withRefs({ 'asset-1': validAsset() }, 150_000).valid).toBe(true);
+      });
+
+      it('lists the hash of each ref', () => {
+        expect(meshRefHashes({ a: validRef(), b: validAsset() })).toEqual(['a'.repeat(64)]);
+        expect(meshRefHashes(undefined)).toEqual([]);
+      });
     });
   });
 

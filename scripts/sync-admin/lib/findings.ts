@@ -332,7 +332,9 @@ async function validateBlob(
     } else {
       const wrapped = { type: 'designer' as const, version: 1 as const, params: u.params };
       const inner = JSON.stringify(wrapped);
-      const v = validateDesignerShare(wrapped, Buffer.byteLength(inner, 'utf8'));
+      const v = validateDesignerShare(wrapped, Buffer.byteLength(inner, 'utf8'), {
+        meshRefs: true,
+      });
       if (!v.valid) {
         out.push({
           kind: 'payload_invalid',
