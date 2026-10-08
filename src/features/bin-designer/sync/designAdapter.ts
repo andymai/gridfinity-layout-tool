@@ -23,6 +23,7 @@ import {
 import { isBinDesign, isSyncableDesign } from '@/features/bin-designer/utils/designKind';
 import {
   registryItemEntry,
+  removeRegistryEntry,
   upsertRegistryEntry,
 } from '@/features/bin-designer/store/customBinRegistry';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
@@ -362,6 +363,7 @@ export const designAdapter: DesignAdapter = {
       if (!isOk(result) && result.error.code !== 'STORAGE_NOT_FOUND') {
         throw syncPersistError('deleteDesign', id, result.error);
       }
+      removeRegistryEntry(id);
     } finally {
       suppressed.delete(id);
     }

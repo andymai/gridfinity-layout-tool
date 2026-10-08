@@ -20,7 +20,7 @@ vi.mock('@/features/bin-designer/storage/DesignerStorage', () => ({
 
 import { designAdapter } from './designAdapter';
 import { __resetForTests, emit } from './designerEvents';
-import { loadRegistry } from '@/features/bin-designer/store/customBinRegistry';
+import { loadRegistry, upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 
 const sampleParams = (): BinParams => ({}) as BinParams;
 const samplePayload = (name = 'D'): { name: string; params: BinParams } => ({
@@ -639,6 +639,26 @@ describe('designAdapter.applyRemoteDelete', () => {
   it('succeeds on normal delete', async () => {
     deleteDesignMock.mockResolvedValueOnce(ok(undefined));
     await expect(designAdapter.applyRemoteDelete('d1')).resolves.toBeUndefined();
+  });
+
+  it('takes the design off the layout palette, already gone locally or not', async () => {
+    const ref = {
+      name: 'Pulled',
+      width: 2,
+      depth: 2,
+      height: 3,
+      updatedAt: '2026-01-22T00:00:00.000Z',
+    };
+    upsertRegistryEntry({ ...ref, id: designId('d1') });
+    upsertRegistryEntry({ ...ref, id: designId('gone') });
+    deleteDesignMock
+      .mockResolvedValueOnce(ok(undefined))
+      .mockResolvedValueOnce(err(storageNotFound('gone')));
+
+    await designAdapter.applyRemoteDelete('d1');
+    await designAdapter.applyRemoteDelete('gone');
+
+    expect(loadRegistry().filter((r) => r.id === 'd1' || r.id === 'gone')).toEqual([]);
   });
 });
 

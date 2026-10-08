@@ -163,6 +163,7 @@ async function executeInner(ctx: ClaimContext, guard: ClaimGuard): Promise<Claim
   const lastUserId = readLastSignedInUserId();
   const accountMismatch = lastUserId !== null && lastUserId !== ctx.userId && localCount > 0;
   if (accountMismatch) {
+    guard.check();
     const choice = await ctx.promptAccountMismatch({
       localCount,
       newUserId: ctx.userId,
