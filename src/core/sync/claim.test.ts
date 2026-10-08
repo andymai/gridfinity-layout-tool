@@ -203,6 +203,37 @@ describe('runClaim — cancellation', () => {
     expect(await claim).toEqual({ status: 'cancelled' });
   });
 
+  it('holds back the next claim behind a cancelled write nobody awaited', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        manifestResponse({
+          layouts: { a: { modifiedAt: 1000, sizeBytes: 100 } },
+          designs: {},
+          indexUpdatedAt: 1000,
+        })
+      )
+      .mockResolvedValueOnce(envelopeResponse({ layout: { v: 1 }, modifiedAt: 1000 }))
+      .mockResolvedValue(manifestResponse({ layouts: {}, designs: {}, indexUpdatedAt: 0 }));
+    let landWrite = (): void => undefined;
+    layouts.applyRemote = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          landWrite = resolve;
+        })
+    );
+    void runClaim(ctx({ userId: 'user-1' }));
+    await vi.waitFor(() => expect(layouts.applyRemote).toHaveBeenCalled());
+
+    void cancelClaims();
+    const next = runClaim(ctx({ userId: 'user-2' }));
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    landWrite();
+    expect((await next).status).toBe('merged');
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
   it("cancels the previous account's claim when another account signs in", async () => {
     const { answer } = heldCloud();
     const first = runClaim(ctx({ userId: 'user-1' }));

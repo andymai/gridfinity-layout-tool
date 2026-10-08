@@ -41,6 +41,9 @@ export function SyncSessionMount() {
   );
 
   const status = useSessionStore((s) => s.status);
+  // An account switch can arrive without leaving 'authenticated' (another
+  // tab's sign-in), and must still end this account's session.
+  const userId = useSessionStore((s) => s.user?.userId ?? null);
 
   const [mismatchPrompt, setMismatchPrompt] = useState<{
     localCount: number;
@@ -106,7 +109,7 @@ export function SyncSessionMount() {
       // run on under no account or the next one.
       endMeshCloudSession();
     };
-  }, [status, adapters, promptAccountMismatch]);
+  }, [status, userId, adapters, promptAccountMismatch]);
 
   useDebouncedPush();
   useVisibilityFlush();

@@ -62,6 +62,17 @@ describe('SyncSessionMount', () => {
     expect(opened).toBeLessThan(claimed);
   });
 
+  it('restarts the session for an account switch that never leaves signed-in', () => {
+    claimSettlingLater();
+    render(<SyncSessionMount />);
+
+    act(() => useSessionStore.setState({ user: { ...USER, userId: 'u2', email: 'b@x' } }));
+
+    expect(cancelClaims).toHaveBeenCalledTimes(1);
+    expect(endMeshCloudSession).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(runClaim).mock.calls.map(([ctx]) => ctx.userId)).toEqual(['u1', 'u2']);
+  });
+
   it('ends the mesh cloud session when sign-out cancels the claim', async () => {
     const settleClaim = claimSettlingLater();
     render(<SyncSessionMount />);

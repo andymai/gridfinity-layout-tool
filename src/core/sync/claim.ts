@@ -75,6 +75,8 @@ interface ClaimRun {
 }
 
 const inFlightByUser = new Map<string, ClaimRun>();
+/** Every cancelled claim's write in progress, so a later cancel waits for them too. */
+let cancelling: Promise<void> = Promise.resolve();
 
 /**
  * Stop every claim in flight before its next local write or queued push, and
@@ -86,7 +88,8 @@ const inFlightByUser = new Map<string, ClaimRun>();
 export function cancelClaims(): Promise<void> {
   const writes = [...inFlightByUser.values()].map((run) => run.cancel());
   inFlightByUser.clear();
-  return Promise.all(writes).then(() => undefined);
+  cancelling = Promise.all([cancelling, ...writes]).then(() => undefined);
+  return cancelling;
 }
 
 /**
@@ -134,6 +137,7 @@ export async function runClaim(ctx: ClaimContext): Promise<ClaimResult> {
 
 export function __resetForTests(): void {
   inFlightByUser.clear();
+  cancelling = Promise.resolve();
 }
 
 async function execute(ctx: ClaimContext, guard: ClaimGuard): Promise<ClaimResult> {
