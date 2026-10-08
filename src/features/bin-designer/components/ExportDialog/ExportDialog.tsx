@@ -252,7 +252,6 @@ export function ExportDialog() {
     [addToast, closeDialog, offerPublish, t]
   );
 
-  // A bin taken without its plates still earns the publish offer on close.
   const dismissDialog = useCallback(() => {
     const binOnly = taken.current.bin && !taken.current.plates;
     closeDialog();
