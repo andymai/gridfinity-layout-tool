@@ -71,6 +71,11 @@ export function shareLastAccessedKey(shareId: string): string {
   return `share:lastAccessed:${shareId}`;
 }
 
+/** SET of every mesh file a share has named, so deleting it lets go of them all. */
+export function shareMeshesKey(shareId: string): string {
+  return `share:meshes:${shareId}`;
+}
+
 /** Permission written by the last share update, read ahead of the CDN-cached blob. */
 export function sharePermissionKey(shareId: string): string {
   return `share:permission:${shareId}`;

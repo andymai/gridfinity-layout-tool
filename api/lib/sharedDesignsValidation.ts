@@ -174,7 +174,6 @@ export function validateSharedDesigns(data: unknown): SharedDesignsResult {
   return { valid: true, designs };
 }
 
-/** The hash of every mesh file the validated designs name by ref. */
 export function sharedDesignMeshHashes(designs: readonly SharedDesignShape[]): string[] {
   return designs.flatMap((design) => meshRefHashes(design.params?.meshAssets));
 }

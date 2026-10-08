@@ -1,6 +1,12 @@
 import type { Redis } from 'ioredis';
 import { MESH_QUOTA_BYTES, MESH_QUOTA_COUNT, checkMeshQuota, type QuotaError } from './quota.js';
-import { meshHoldersKey, sessionKey, userMeshesKey, userMeshUsageKey } from './redisKeys.js';
+import {
+  meshHoldersKey,
+  sessionKey,
+  shareMeshesKey,
+  userMeshesKey,
+  userMeshUsageKey,
+} from './redisKeys.js';
 
 /**
  * The two scripts below are the only writers of `users:{uid}:meshes`, its
@@ -173,24 +179,28 @@ export async function heldMeshUrls(
 
 /**
  * Count a share among the holders of each file it names, so the files outlive
- * the sharer's own account holding them for as long as the share exists.
+ * the sharer's own account holding them. A share keeps every file it has ever
+ * named until it is deleted: holds that only grow cannot be left behind by
+ * updates that interleave, or by a write that fails after holding. The share's
+ * own set is written first, so whatever was held is let go at deletion.
  */
 export async function holdShareMeshes(
   redis: Redis,
   shareId: string,
   hashes: readonly string[]
 ): Promise<void> {
+  const unique = [...new Set(hashes)];
+  if (unique.length === 0) return;
+  await redis.sadd(shareMeshesKey(shareId), ...unique);
   const holder = shareMeshHolder(shareId);
-  await Promise.all([...new Set(hashes)].map((hash) => redis.sadd(meshHoldersKey(hash), holder)));
+  await Promise.all(unique.map((hash) => redis.sadd(meshHoldersKey(hash), holder)));
 }
 
-export async function releaseShareMeshes(
-  redis: Redis,
-  shareId: string,
-  hashes: readonly string[]
-): Promise<void> {
+export async function releaseShareMeshes(redis: Redis, shareId: string): Promise<void> {
   const holder = shareMeshHolder(shareId);
-  await Promise.all([...new Set(hashes)].map((hash) => redis.srem(meshHoldersKey(hash), holder)));
+  const hashes = await redis.smembers(shareMeshesKey(shareId));
+  await Promise.all(hashes.map((hash) => redis.srem(meshHoldersKey(hash), holder)));
+  await redis.del(shareMeshesKey(shareId));
 }
 
 export async function getMeshUsage(redis: Redis, userId: string): Promise<MeshUsage> {

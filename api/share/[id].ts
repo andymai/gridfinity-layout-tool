@@ -244,15 +244,10 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       },
     };
 
-    // Held before the write and let go after it, so no file the share names
-    // goes unheld between the two.
+    // Held before the write, so no file the share names goes unheld.
     const redis = getRedis();
     if (redis) await holdShareMeshes(redis, id, Object.keys(meshFiles));
     await writeShare(id, blobPath, updatedData, newPermission);
-    const dropped = Object.keys(existingData.meshFiles ?? {}).filter(
-      (hash) => !Object.hasOwn(meshFiles, hash)
-    );
-    if (redis) await releaseShareMeshes(redis, id, dropped).catch(logReleaseFailure(id));
     return respondShare(res, id, newPermission);
   } catch (error) {
     logger.error('Share update error', {
@@ -312,14 +307,15 @@ async function handleDelete(
     await del(blobPath);
     const redis = getRedis();
     if (redis) {
+      // Ahead of the key cleanup and apart from it, so a failure there cannot
+      // skip it. A release that fails keeps `share:meshes:{id}`, which still
+      // names what is held once the blob is gone.
+      await releaseShareMeshes(redis, _id).catch(logReleaseFailure(_id));
       await redis.del(
         shareHashKey(_id),
         shareReportKey(_id),
         shareLastAccessedKey(_id),
         sharePermissionKey(_id)
-      );
-      await releaseShareMeshes(redis, _id, Object.keys(existingData.meshFiles ?? {})).catch(
-        logReleaseFailure(_id)
       );
     }
 

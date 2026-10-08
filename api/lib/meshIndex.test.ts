@@ -19,7 +19,13 @@ import {
 } from './meshIndex';
 import type { MeshHold } from './meshIndex';
 import { MESH_QUOTA_BYTES, MESH_QUOTA_COUNT } from './quota';
-import { meshHoldersKey, sessionKey, userMeshesKey, userMeshUsageKey } from './redisKeys';
+import {
+  meshHoldersKey,
+  sessionKey,
+  shareMeshesKey,
+  userMeshesKey,
+  userMeshUsageKey,
+} from './redisKeys';
 
 const HASH_A = 'a'.repeat(64);
 const HASH_B = 'b'.repeat(64);
@@ -55,11 +61,20 @@ class FakeRedis {
     return fields.map((field) => this.hashes.get(key)?.get(field) ?? null);
   }
 
-  async sadd(key: string, member: string): Promise<number> {
+  async sadd(key: string, ...members: string[]): Promise<number> {
     const set = this.sets.get(key) ?? new Set<string>();
-    const added = set.has(member) ? 0 : 1;
-    this.sets.set(key, set.add(member));
+    const added = members.filter((member) => !set.has(member)).length;
+    for (const member of members) set.add(member);
+    this.sets.set(key, set);
     return added;
+  }
+
+  async smembers(key: string): Promise<string[]> {
+    return [...(this.sets.get(key) ?? [])];
+  }
+
+  async del(key: string): Promise<number> {
+    return this.sets.delete(key) ? 1 : 0;
   }
 
   async srem(key: string, member: string): Promise<number> {
@@ -349,13 +364,15 @@ describe('holdShareMeshes / releaseShareMeshes', () => {
     expect(fake.sets.get(meshHoldersKey(HASH_B))).toEqual(new Set([shareMeshHolder('share1')]));
   });
 
-  it("lets go of the share's hold only, leaving the account's and its totals alone", async () => {
+  it("lets go of every file the share ever named, and only the share's hold", async () => {
     await acquireAccountMesh(redis, hold('u1', HASH_A));
-    await holdShareMeshes(redis, 'share1', [HASH_A, HASH_B]);
-    await releaseShareMeshes(redis, 'share1', [HASH_A, HASH_B]);
+    await holdShareMeshes(redis, 'share1', [HASH_A]);
+    await holdShareMeshes(redis, 'share1', [HASH_B]);
+    await releaseShareMeshes(redis, 'share1');
 
     expect(fake.sets.get(meshHoldersKey(HASH_A))).toEqual(new Set([accountMeshHolder('u1')]));
     expect(fake.sets.has(meshHoldersKey(HASH_B))).toBe(false);
+    expect(fake.sets.has(shareMeshesKey('share1'))).toBe(false);
     expect(await getMeshUsage(redis, 'u1')).toEqual({ bytes: 1000, count: 1 });
   });
 });

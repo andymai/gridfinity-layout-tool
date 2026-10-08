@@ -349,7 +349,7 @@ describe('share/[id]', () => {
       expect((res._body as { meshFiles: unknown }).meshFiles).toEqual({ [A]: url(A) });
     });
 
-    it('PUT holds the new files before the write and lets go of dropped ones after it', async () => {
+    it('PUT holds the new files before the write and keeps holding dropped ones', async () => {
       primeBlobFetch(sharedWith(A, B));
       mocks.redisGet.mockResolvedValue(correctHash);
       mocks.resolveShareMeshFiles.mockResolvedValue({ [B]: url(B), [C]: url(C) });
@@ -362,24 +362,10 @@ describe('share/[id]', () => {
       const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as { meshFiles: unknown };
       expect(written.meshFiles).toEqual({ [B]: url(B), [C]: url(C) });
       expect(mocks.holdShareMeshes).toHaveBeenCalledWith(expect.anything(), VALID_ID, [B, C]);
-      expect(mocks.releaseShareMeshes).toHaveBeenCalledWith(expect.anything(), VALID_ID, [A]);
       const [held] = mocks.holdShareMeshes.mock.invocationCallOrder;
       const [written_] = mocks.put.mock.invocationCallOrder;
-      const [released] = mocks.releaseShareMeshes.mock.invocationCallOrder;
       expect(held).toBeLessThan(written_);
-      expect(written_).toBeLessThan(released);
-    });
-
-    it('PUT still answers 200 when letting go of a dropped file fails', async () => {
-      primeBlobFetch(sharedWith(A));
-      mocks.redisGet.mockResolvedValue(correctHash);
-      mocks.releaseShareMeshes.mockRejectedValue(new Error('redis down'));
-
-      const res = await handle('PUT', {
-        body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
-      });
-
-      expect(res._status).toBe(200);
+      expect(mocks.releaseShareMeshes).not.toHaveBeenCalled();
     });
 
     it('PUT writes nothing when the caller does not hold the files', async () => {
@@ -410,14 +396,24 @@ describe('share/[id]', () => {
       expect(mocks.releaseShareMeshes).not.toHaveBeenCalled();
     });
 
-    it('DELETE lets go of every file the share named', async () => {
+    it('DELETE lets go of the files even when the key cleanup fails', async () => {
+      primeBlobFetch(sharedWith(A));
+      mocks.redisGet.mockResolvedValue(correctHash);
+      mocks.redisDel.mockRejectedValue(new Error('redis down'));
+
+      await handle('DELETE', { headers: { 'x-delete-token': TOKEN } });
+
+      expect(mocks.releaseShareMeshes).toHaveBeenCalledWith(expect.anything(), VALID_ID);
+    });
+
+    it('DELETE lets go of every file the share ever named', async () => {
       primeBlobFetch(sharedWith(A, B));
       mocks.redisGet.mockResolvedValue(correctHash);
 
       const res = await handle('DELETE', { headers: { 'x-delete-token': TOKEN } });
 
       expect(res._status).toBe(200);
-      expect(mocks.releaseShareMeshes).toHaveBeenCalledWith(expect.anything(), VALID_ID, [A, B]);
+      expect(mocks.releaseShareMeshes).toHaveBeenCalledWith(expect.anything(), VALID_ID);
     });
   });
 

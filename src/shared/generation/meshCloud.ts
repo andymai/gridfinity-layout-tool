@@ -224,7 +224,6 @@ let retryDelayMs = RETRY_FIRST_MS;
  */
 const sharedUrls = new Map<string, string>();
 
-/** The file's bytes, or null when the CDN fails or sends bytes of another hash. */
 async function fetchVerified(hash: string, url: string): Promise<Uint8Array<ArrayBuffer> | null> {
   const bytes = await withTimeout(async (signal) => {
     const res = await fetch(url, { signal });
@@ -356,26 +355,50 @@ export function fetchMeshFiles(
  * Store each file a share names that this device lacks, read straight from the
  * CDN URL the share gives, a few at a time. No account is asked, so a
  * signed-out recipient gets the files too, and a later download of one through
- * {@link fetchMeshFiles} uses the URL as well. A file that fails leaves its
- * pocket pending. Never rejects.
+ * {@link fetchMeshFiles} uses the URL as well. A file that fails is tried
+ * again on a timer that backs off like the account's; until then its pocket
+ * stays pending. Never rejects.
  */
 export async function fetchSharedMeshFiles(files: Readonly<Record<string, string>>): Promise<void> {
-  const entries = Object.entries(files);
-  for (const [hash, url] of entries) sharedUrls.set(hash, url);
+  for (const [hash, url] of Object.entries(files)) sharedUrls.set(hash, url);
+  await downloadShared(Object.keys(files));
+}
+
+const sharedFailed = new Set<string>();
+let sharedRetryTimer: ReturnType<typeof setTimeout> | null = null;
+let sharedRetryDelayMs = RETRY_FIRST_MS;
+
+async function storeShared(hash: string, url: string): Promise<boolean> {
+  try {
+    if (await hasMeshFile(hash)) return true;
+    const bytes = await fetchVerified(hash, url);
+    return bytes !== null && (await putMeshFile(bytes)) !== null;
+  } catch {
+    return false;
+  }
+}
+
+async function downloadShared(hashes: readonly string[]): Promise<void> {
   let next = 0;
   const worker = async (): Promise<void> => {
-    while (next < entries.length) {
-      const [hash, url] = entries[next++];
-      try {
-        if (await hasMeshFile(hash)) continue;
-        const bytes = await fetchVerified(hash, url);
-        if (bytes) await putMeshFile(bytes);
-      } catch {
-        // Offline or a storage failure: the pocket stays pending.
-      }
+    while (next < hashes.length) {
+      const hash = hashes[next++];
+      const url = sharedUrls.get(hash);
+      if (url !== undefined && (await storeShared(hash, url))) sharedFailed.delete(hash);
+      else sharedFailed.add(hash);
     }
   };
-  await Promise.all(Array.from({ length: Math.min(DOWNLOADS_AT_ONCE, entries.length) }, worker));
+  await Promise.all(Array.from({ length: Math.min(DOWNLOADS_AT_ONCE, hashes.length) }, worker));
+  if (sharedFailed.size === 0) {
+    sharedRetryDelayMs = RETRY_FIRST_MS;
+    return;
+  }
+  if (sharedRetryTimer !== null) return;
+  sharedRetryTimer = setTimeout(() => {
+    sharedRetryTimer = null;
+    sharedRetryDelayMs = Math.min(RETRY_LONGEST_MS, sharedRetryDelayMs * 2);
+    void downloadShared([...sharedFailed]);
+  }, sharedRetryDelayMs);
 }
 
 /**
@@ -419,6 +442,10 @@ export function endMeshCloudSession(): void {
 /** Test-only: forget every held file, upload and download, and the retry timer. */
 export function __resetMeshCloudForTests(): void {
   sharedUrls.clear();
+  sharedFailed.clear();
+  if (sharedRetryTimer !== null) clearTimeout(sharedRetryTimer);
+  sharedRetryTimer = null;
+  sharedRetryDelayMs = RETRY_FIRST_MS;
   endMeshCloudSession();
   beginMeshCloudSession();
 }

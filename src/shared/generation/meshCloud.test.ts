@@ -655,6 +655,20 @@ describe('fetchSharedMeshFiles', () => {
     expect(await hasMeshFile(file.hash)).toBe(true);
   });
 
+  it('tries a failed file again on its own a minute later, with no account', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const file = await remoteFile(9);
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+    endMeshCloudSession();
+
+    await fetchSharedMeshFiles({ [file.hash]: CDN + file.hash });
+    expect(await hasMeshFile(file.hash)).toBe(false);
+
+    serveCdn(new Map([[file.hash, file.bytes]]));
+    await vi.advanceTimersByTimeAsync(60_000);
+    await vi.waitFor(async () => expect(await hasMeshFile(file.hash)).toBe(true));
+  });
+
   it('settles quietly when the network is down', async () => {
     const file = await remoteFile(8);
     fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));

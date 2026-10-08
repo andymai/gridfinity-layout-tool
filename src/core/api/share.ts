@@ -20,7 +20,7 @@ import { isApiErrorResponse, mapApiErrorResponse } from './mapApiError';
 import { MISSING_DEPENDENCY_STATUS } from '@/core/sync/payloadKey';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { isMeshAssetRef, type MeshAssetEntry } from '@/shared/generation/meshAsset';
-import { forgetHeldMeshes, uploadMeshFiles } from '@/shared/generation/meshCloud';
+import { forgetHeldMeshes, meshCloudSession, uploadMeshFiles } from '@/shared/generation/meshCloud';
 import { validateImport } from '@/shared/utils/validation';
 import { generateLayoutId } from '@/shared/utils/uuid';
 
@@ -133,14 +133,19 @@ async function collectDesignsForShare(
  */
 async function designsWithMeshRefs(layout: Layout): Promise<SharedLinkedDesign[] | null> {
   if (useSessionStore.getState().status !== 'authenticated') return null;
+  // Taken before the designs are read, so files read for this account are
+  // never uploaded under one that signs in meanwhile.
+  const session = meshCloudSession();
   const collected = await collectDesignsForShare(layout, { meshRefs: true });
   if (isErr(collected)) return null;
   const hashes = collected.value.flatMap((design) =>
     meshAssetsOf(design).flatMap((asset) => (isMeshAssetRef(asset) ? [asset.hash] : []))
   );
-  if (hashes.length === 0) return collected.value;
+  // With no file to name, refs gain nothing, and a design the ref budget
+  // skipped may still fit inline, where its mesh lifts the per-design cap.
+  if (hashes.length === 0) return null;
   try {
-    return (await uploadMeshFiles(hashes)).status === 'held' ? collected.value : null;
+    return (await uploadMeshFiles(hashes, session)).status === 'held' ? collected.value : null;
   } catch {
     return null;
   }
