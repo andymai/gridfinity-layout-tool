@@ -292,14 +292,25 @@ function edgesCrossInside(xs: Float64Array, ys: Float64Array, i: number, j: numb
 const CROSSING_LEAF = 16;
 
 /**
+ * Edge pairs a crossing check may compare before it stops and reports a
+ * crossing. The floor covers every pair of the longest drawn path
+ * (`MAX_PATH_POINTS` anchors, each flattened to `BEZIER_SEGMENTS` points), so
+ * only an imported outline can run out.
+ */
+const CROSSING_PAIRS_FLOOR = 1 << 23;
+const CROSSING_PAIRS_PER_EDGE = 512;
+
+/**
  * Whether any two non-adjacent edges of a closed polyline cross
  * ({@link edgesCrossInside}), checked over a tree of boxes round runs of
  * consecutive edges. Two edges that cross meet strictly inside both, so their
- * boxes overlap and the pair is always reached: the verdict is the all-pairs
- * one. Only runs whose boxes overlap are opened, which keeps a dense zigzag,
- * a jittered edge or a tight spiral near linear. Long edges that all pass one
- * point, like a fan of spikes, overlap in every box and are still compared
- * pair by pair.
+ * boxes overlap and the pair is always reached: within the pair budget, the
+ * verdict is the all-pairs one. Only runs whose boxes overlap are opened, which
+ * keeps a dense zigzag, a jittered edge or a tight spiral near linear. Long
+ * edges that all pass one point, like a fan of spikes, overlap in every box and
+ * would be compared pair by pair; an outline that crowded spends the budget and
+ * reads as crossing, so a crafted one is rejected rather than stalling whoever
+ * opens it.
  */
 export function polylineCrosses(poly: readonly Pt[]): boolean {
   const n = poly.length;
@@ -348,6 +359,7 @@ export function polylineCrosses(poly: readonly Pt[]): boolean {
     return node;
   };
   const root = build(0, n);
+  let pairsLeft = CROSSING_PAIRS_FLOOR + CROSSING_PAIRS_PER_EDGE * n;
 
   const overlap = (a: number, b: number): boolean =>
     box[4 * a] <= box[4 * b + 2] &&
@@ -360,6 +372,8 @@ export function polylineCrosses(poly: readonly Pt[]): boolean {
     const aLeaf = left[a] < 0;
     const bLeaf = left[b] < 0;
     if (aLeaf && bLeaf) {
+      pairsLeft -= (hi[a] - lo[a]) * (hi[b] - lo[b]);
+      if (pairsLeft < 0) return true;
       for (let i = lo[a]; i < hi[a]; i++) {
         const end = i === 0 && hi[b] === n ? n - 1 : hi[b];
         for (let j = Math.max(lo[b], i + 2); j < end; j++) {
@@ -375,6 +389,9 @@ export function polylineCrosses(poly: readonly Pt[]): boolean {
   };
   const within = (node: number): boolean => {
     if (left[node] < 0) {
+      const run = hi[node] - lo[node];
+      pairsLeft -= (run * run) >> 1;
+      if (pairsLeft < 0) return true;
       for (let i = lo[node]; i < hi[node]; i++) {
         const end = i === 0 && hi[node] === n ? n - 1 : hi[node];
         for (let j = i + 2; j < end; j++) {
