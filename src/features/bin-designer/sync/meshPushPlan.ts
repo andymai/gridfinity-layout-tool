@@ -17,9 +17,10 @@ export async function planMeshPush<T>(
   item: SyncableItem<T>,
   holder: MeshHolder,
   inline: (only?: ReadonlySet<string>) => Promise<SyncableItem<T> | null>,
-  waits: MissingMeshPushes
+  waits: MissingMeshPushes,
+  session: number
 ): Promise<PushPlan<T>> {
-  const upload = await uploadMeshFiles(holderMeshHashes(holder));
+  const upload = await uploadMeshFiles(holderMeshHashes(holder), session);
   if (upload.status === 'held') return { status: 'send', item };
   if (upload.status === 'failed') return { status: 'defer', reason: upload.reason };
   if (upload.status === 'throttled') {

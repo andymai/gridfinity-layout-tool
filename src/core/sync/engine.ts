@@ -35,6 +35,8 @@ interface EngineState {
   /** External listeners (toast surface installs one). */
   listeners: Set<EngineEventListener>;
   drainTimer: ReturnType<typeof setTimeout> | null;
+  /** When `drainTimer` fires, in ms since epoch; meaningless while it is null. */
+  drainDueAt: number;
   /** Set to true while `stop()` is tearing down — drainer skips its tail. */
   stopping: boolean;
   /**
@@ -48,6 +50,11 @@ interface EngineState {
 }
 
 let state: EngineState | null = null;
+/**
+ * Every conflict write in progress: a 409 puts the server's copy over the
+ * local one. `stop()` hands it back so a wipe can wait for it. Never rejects.
+ */
+let conflictWrites: Promise<unknown> = Promise.resolve();
 
 /** Idempotent. Boot site (PR 4d) calls this on sign-in, `stop()` on sign-out. */
 export function start(adapters: SyncAdapters): void {
@@ -58,6 +65,7 @@ export function start(adapters: SyncAdapters): void {
     inFlight: new Map(),
     listeners: new Set(),
     drainTimer: null,
+    drainDueAt: 0,
     stopping: false,
     rateLimitedRetries: new Map(),
   };
@@ -77,14 +85,19 @@ export function start(adapters: SyncAdapters): void {
   rehydrate(s).catch((error: unknown) => reportUncaught('rehydrate', error));
 }
 
-export function stop(): void {
-  if (state === null) return;
-  state.stopping = true;
-  for (const off of state.unsubscribers) off();
-  if (state.drainTimer !== null) clearTimeout(state.drainTimer);
-  state.listeners.clear();
-  state = null;
+/** Settles once a conflict write already under way has landed. */
+export function stop(): Promise<void> {
+  if (state !== null) {
+    state.stopping = true;
+    for (const off of state.unsubscribers) off();
+    if (state.drainTimer !== null) clearTimeout(state.drainTimer);
+    state.listeners.clear();
+    state = null;
+  }
+  // Also with no engine: the sign-in claim marks the status syncing before the
+  // engine starts, and a cancelled claim leaves it for this teardown to clear.
   useSyncStatusStore.getState().reset();
+  return conflictWrites.then(() => undefined);
 }
 
 export function onEngineEvent(listener: EngineEventListener): () => void {
@@ -127,15 +140,22 @@ async function onLocalChange(s: EngineState, kind: SyncKind, change: AdapterChan
   scheduleDrain(s, 0);
 }
 
+// One timer serves every entry, so it keeps the earliest deadline asked of it:
+// a long throttle must not hold back an entry due sooner. Waking early costs a
+// drain that finds nothing due and sleeps until the soonest entry.
 function scheduleDrain(s: EngineState, delayMs: number): void {
-  if (s.drainTimer !== null) clearTimeout(s.drainTimer);
-  s.drainTimer = setTimeout(
-    () => {
-      s.drainTimer = null;
-      drain(s).catch((error: unknown) => reportUncaught('drain', error));
-    },
-    Math.max(0, delayMs)
-  );
+  if (s.stopping) return;
+  const wait = Math.max(0, delayMs);
+  const dueAt = Date.now() + wait;
+  if (s.drainTimer !== null) {
+    if (s.drainDueAt <= dueAt) return;
+    clearTimeout(s.drainTimer);
+  }
+  s.drainDueAt = dueAt;
+  s.drainTimer = setTimeout(() => {
+    s.drainTimer = null;
+    drain(s).catch((error: unknown) => reportUncaught('drain', error));
+  }, wait);
 }
 
 async function rehydrate(s: EngineState): Promise<void> {
@@ -155,10 +175,10 @@ async function drain(s: EngineState): Promise<void> {
 }
 
 // A backoff can put an entry further out than the drain its failure asked for,
-// and a later drain replaces that timer, so a drain that leaves entries waiting
-// sleeps until the soonest rather than leaving them to the next edit.
+// so a drain that leaves entries waiting sleeps until the soonest rather than
+// leaving them to the next edit, or to a pending timer set for a later one.
 async function wakeForNextDue(s: EngineState): Promise<void> {
-  if (s.drainTimer !== null || s.stopping) return;
+  if (s.stopping) return;
   const waiting = await outboxGetAll();
   if (waiting.length === 0) return;
   scheduleDrain(s, Math.min(...waiting.map((entry) => entry.nextAttemptAt)) - Date.now());
@@ -192,6 +212,8 @@ async function sendOne(
 
   if (entry.op === 'delete') {
     const res = await apiFetch(url, { method: 'DELETE' });
+    // A reply landing after the stop belongs to no running session.
+    if (stopped(s)) return;
     if (res.ok || res.status === 404 || res.status === 410) {
       s.rateLimitedRetries.delete(`${entry.kind}:${entry.id}`);
       await markPushSucceeded(entry.kind, entry.id, entry.modifiedAt);
@@ -203,7 +225,14 @@ async function sendOne(
 
   // Read the latest snapshot at push time so a fresh edit during the
   // enqueue→push window goes out instead of a stale copy.
-  const plan = await planPush(adapter, entry.id);
+  // Planning can outlast the session (an inline fallback reads every mesh
+  // file, and teardown fails an upload under way). Once stopped, neither its
+  // push nor its failure belongs to the next account.
+  const plan = await planPush(adapter, entry.id).catch((error: unknown) => {
+    if (stopped(s)) return null;
+    throw error;
+  });
+  if (stopped(s) || plan === null) return;
   if (plan.status === 'skip') {
     await outboxMarkSuccess(entry.kind, entry.id, entry.modifiedAt);
     return;
@@ -225,6 +254,7 @@ async function sendOne(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+  if (stopped(s)) return;
 
   if (res.ok) {
     s.rateLimitedRetries.delete(`${entry.kind}:${entry.id}`);
@@ -264,6 +294,11 @@ async function sendOne(
   await handleFailure(res, kind, entry, s);
 }
 
+/** Read through a call: an await can flip it, which narrowing cannot see. */
+function stopped(s: EngineState): boolean {
+  return s.stopping;
+}
+
 async function planPush(adapter: SyncAdapter, id: string): Promise<PushPlan<unknown>> {
   if (adapter.preparePush) return adapter.preparePush(id);
   const item = await adapter.get(id);
@@ -295,10 +330,11 @@ async function handleConflict(
   } catch {
     stored = null;
   }
+  if (stopped(s)) return;
   if (stored && typeof stored.modifiedAt === 'number') {
     const payload = stored[PAYLOAD_KEY[kind]];
     if (payload !== undefined) {
-      await adapter.applyRemote({
+      const write = adapter.applyRemote({
         id: entry.id,
         payload,
         modifiedAt: stored.modifiedAt,
@@ -306,6 +342,10 @@ async function handleConflict(
           ? { schemaVersion: stored.schemaVersion }
           : {}),
       });
+      conflictWrites = Promise.all([conflictWrites, write.catch(() => undefined)]).then(
+        () => undefined
+      );
+      await write;
       emitEngineEvent(s, { type: 'remote-replaced-local', kind, id: entry.id });
     }
   }

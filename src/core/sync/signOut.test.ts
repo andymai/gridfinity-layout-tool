@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { runSignOut, type KeepLocalPrompt } from './signOut';
+import { cancelClaims } from './claim';
+import type * as Claim from './claim';
 import type {
   SyncAdapter,
   SyncAdapters,
@@ -18,6 +20,15 @@ const apiSignOutMock = vi.fn();
 const clearOutboxMock = vi.fn();
 const stopEngineMock = vi.fn();
 const resetPullStateMock = vi.fn();
+const holdPullsMock = vi.fn((): { ended: Promise<void>; release: () => void } => ({
+  ended: Promise.resolve(),
+  release: () => undefined,
+}));
+
+vi.mock('./claim', async (importOriginal) => ({
+  ...(await importOriginal<typeof Claim>()),
+  cancelClaims: vi.fn(async () => undefined),
+}));
 
 vi.mock('./engine', () => ({
   flushNow: () => flushNowMock(),
@@ -35,6 +46,7 @@ vi.mock('./outbox', () => ({
 
 vi.mock('./poller', () => ({
   resetPullState: () => resetPullStateMock(),
+  holdPulls: () => holdPullsMock(),
 }));
 
 interface MockAdapter extends SyncAdapter {
@@ -158,6 +170,22 @@ describe('runSignOut — outbox flush', () => {
     expect(order.indexOf('clearOutbox')).toBeLessThan(order.indexOf('wipe'));
   });
 
+  it('wipe path cancels a claim in flight first, so it cannot write back over the wipe', async () => {
+    const order: string[] = [];
+    vi.mocked(cancelClaims).mockImplementation(async () => {
+      order.push('cancel');
+    });
+    stopEngineMock.mockImplementation(() => {
+      order.push('stop');
+    });
+    layouts.applyRemoteDelete = vi.fn(async () => {
+      order.push('wipe');
+    });
+    layouts.items.set('a', { id: 'a', payload: {}, modifiedAt: 1000 });
+    await runSignOut({ adapters, promptKeepLocal: promptWipe, onAnonymous });
+    expect(order).toEqual(['cancel', 'stop', 'wipe']);
+  });
+
   it('wipe path stops the engine before wiping so a poll cannot race new items in', async () => {
     const order: string[] = [];
     stopEngineMock.mockImplementation(() => {
@@ -171,7 +199,6 @@ describe('runSignOut — outbox flush', () => {
     });
     layouts.items.set('a', { id: 'a', payload: {}, modifiedAt: 1000 });
     await runSignOut({ adapters, promptKeepLocal: promptWipe, onAnonymous });
-    expect(order[0]).toBe('stop');
     expect(order.indexOf('stop')).toBeLessThan(order.indexOf('wipe'));
   });
 
@@ -257,6 +284,59 @@ describe('runSignOut — poller high-water reset', () => {
   it('resets the poller high-water mark on the wipe path', async () => {
     await runSignOut({ adapters, promptKeepLocal: promptWipe, onAnonymous });
     expect(resetPullStateMock).toHaveBeenCalled();
+  });
+
+  it('wipe path holds pulls from before the cancel until the session has flipped', async () => {
+    const order: string[] = [];
+    holdPullsMock.mockImplementationOnce(() => {
+      order.push('hold');
+      return { ended: Promise.resolve(), release: () => order.push('release') };
+    });
+    vi.mocked(cancelClaims).mockImplementationOnce(async () => {
+      order.push('cancel');
+    });
+    layouts.applyRemoteDelete = vi.fn(async () => {
+      order.push('wipe');
+    });
+    layouts.items.set('a', { id: 'a', payload: {}, modifiedAt: 1000 });
+    await runSignOut({
+      adapters,
+      promptKeepLocal: promptWipe,
+      onAnonymous: () => order.push('anonymous'),
+    });
+    expect(order).toEqual(['hold', 'cancel', 'wipe', 'anonymous', 'release']);
+  });
+
+  it('wipe path waits for a write the engine had under way', async () => {
+    let landWrite = (): void => undefined;
+    stopEngineMock.mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        landWrite = resolve;
+      })
+    );
+    layouts.items.set('a', { id: 'a', payload: {}, modifiedAt: 1000 });
+    const signingOut = runSignOut({ adapters, promptKeepLocal: promptWipe, onAnonymous });
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(clearOutboxMock).not.toHaveBeenCalled();
+
+    landWrite();
+    await signingOut;
+    expect(layouts.items.size).toBe(0);
+  });
+
+  it('releases held pulls when the wipe fails', async () => {
+    const release = vi.fn();
+    holdPullsMock.mockImplementationOnce(() => ({ ended: Promise.resolve(), release }));
+    clearOutboxMock.mockRejectedValueOnce(new Error('idb closed'));
+    await expect(
+      runSignOut({ adapters, promptKeepLocal: promptWipe, onAnonymous })
+    ).rejects.toThrow('idb closed');
+    expect(release).toHaveBeenCalled();
+  });
+
+  it('keep path leaves the poll running', async () => {
+    await runSignOut({ adapters, promptKeepLocal: promptKeep, onAnonymous });
+    expect(holdPullsMock).not.toHaveBeenCalled();
   });
 
   it('does not reset the poller on cancel (user is still signed in)', async () => {

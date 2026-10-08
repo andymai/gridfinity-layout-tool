@@ -941,6 +941,129 @@ describe('PUT: mesh refs', () => {
   });
 });
 
+describe('PUT: imported mesh designs', () => {
+  const HELD = 'a'.repeat(64);
+  const UNHELD = 'b'.repeat(64);
+
+  const ENVELOPE = {
+    width: 2,
+    depth: 1.5,
+    gridUnitMm: 42,
+    heightUnitMm: 7,
+    attachment: {
+      magnetHoles: true,
+      magnetDiameter: 6.5,
+      magnetDepth: 2.4,
+      magnetCrushRibs: true,
+      screwHoles: false,
+      screwDiameter: 3,
+    },
+    featureColors: { enabled: false },
+  };
+
+  function ref(hash: string) {
+    return {
+      name: 'parts_bin',
+      hash,
+      triangleCount: 4,
+      sizeMm: { x: 83, y: 62, z: 28 },
+      bytes: 900,
+    };
+  }
+
+  const INLINE = {
+    name: 'parts_bin',
+    data: 'QUFBQQ==',
+    triangleCount: 4,
+    sizeMm: { x: 83, y: 62, z: 28 },
+    outlines: [
+      [
+        { x: 0, y: 0 },
+        { x: 83, y: 0 },
+        { x: 83, y: 62 },
+      ],
+    ],
+  };
+
+  function imported(asset: unknown, structureExtra: Record<string, unknown> = {}) {
+    return {
+      name: 'Parts bin',
+      kind: 'importedMesh',
+      envelope: ENVELOPE,
+      structure: {
+        kind: 'importedMesh',
+        heightUnits: 4,
+        asset,
+        volumeMm3: 51_000,
+        sourceFileName: 'parts_bin.stl',
+        ...structureExtra,
+      },
+      tags: ['stl'],
+    };
+  }
+
+  async function put(design: unknown): Promise<MockRes> {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    await handler(
+      makeReq({ method: 'PUT', body: { design, modifiedAt: 1000 } }),
+      res as unknown as VercelResponse
+    );
+    return res;
+  }
+
+  beforeEach(() => {
+    vi.stubEnv('MESH_STORE_ENABLED', 'true');
+    redisHashes.set(
+      userMeshesKey('user-1'),
+      new Map([[HELD, JSON.stringify({ sizeBytes: 900, url: `https://blob/meshes/${HELD}` })]])
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('stores a design of refs the account holds, every field intact, and serves it back', async () => {
+    const design = imported(ref(HELD));
+    expect((await put(design))._status).toBe(200);
+
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    await handler(makeReq({ method: 'GET' }), res as unknown as VercelResponse);
+
+    expect(res._status).toBe(200);
+    expect((res._body as { envelope: { design: unknown } }).envelope.design).toEqual(design);
+  });
+
+  it('answers 424 for a ref the account lacks, and stores nothing', async () => {
+    const res = await put(imported(ref(UNHELD)));
+
+    expect(res._status).toBe(MESH_MISSING_STATUS);
+    expect(res._body).toMatchObject({ code: 'MESH_MISSING', missing: [UNHELD] });
+    expect(blobStore.size).toBe(0);
+  });
+
+  it('takes the mesh inline while the mesh store is off, past the cap of a design without meshes', async () => {
+    vi.stubEnv('MESH_STORE_ENABLED', 'false');
+    const big = { ...INLINE, data: 'A'.repeat(600_000) };
+
+    const res = await put(imported(big));
+
+    expect(res._status).toBe(200);
+    const stored = [...blobStore.values()][0] as { design: { structure: { asset: unknown } } };
+    expect(stored.design.structure.asset).toEqual(big);
+  });
+
+  it('rejects a field the mirror does not know with 400', async () => {
+    const res = await put(imported(ref(HELD), { scale: 2 }));
+
+    expect(res._status).toBe(400);
+    expect((res._body as { error: string }).error).toBe('structure has unknown key: scale');
+    expect(blobStore.size).toBe(0);
+  });
+});
+
 interface StoredShape {
   dimensions?: Record<string, number>;
   cutouts?: Record<string, Record<string, number>>;

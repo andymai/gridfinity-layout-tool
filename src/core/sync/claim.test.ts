@@ -1,6 +1,13 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { __resetForTests, runClaim, type AccountMismatchPrompt, type ClaimResult } from './claim';
+import {
+  __resetForTests,
+  cancelClaims,
+  runClaim,
+  type AccountMismatchPrompt,
+  type ClaimResult,
+} from './claim';
+import { useSyncStatusStore } from './status';
 import type {
   SyncAdapter,
   SyncAdapters,
@@ -54,6 +61,7 @@ const promptDiscardMock: AccountMismatchPrompt = vi.fn(async () => 'discard' as 
 
 beforeEach(() => {
   __resetForTests();
+  useSyncStatusStore.getState().reset();
   vi.clearAllMocks();
   localStorage.clear();
   layouts = makeAdapter();
@@ -120,8 +128,201 @@ describe('runClaim — single-flight', () => {
       runClaim(ctx({ userId: 'user-1' })),
       runClaim(ctx({ userId: 'user-2' })),
     ]);
-    expect(a).not.toBe(b);
+    expect(a).toEqual({ status: 'cancelled' });
+    expect(b.status).toBe('merged');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('runClaim — cancellation', () => {
+  /** A cloud with one layout, whose first envelope fetch waits for `answer`. */
+  function heldCloud(): { answer: () => void } {
+    let release = (): void => undefined;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let envelopes = 0;
+    fetchMock.mockImplementation(async (url: string) => {
+      if (url === '/api/sync/manifest') {
+        return manifestResponse({
+          layouts: { a: { modifiedAt: 1000, sizeBytes: 100 } },
+          designs: {},
+          indexUpdatedAt: 1000,
+        });
+      }
+      envelopes++;
+      if (envelopes === 1) await held;
+      return envelopeResponse({ layout: { v: 1 }, modifiedAt: 1000 });
+    });
+    return { answer: release };
+  }
+
+  it('stops a claim cancelled during a fetch before it writes anything', async () => {
+    const { answer } = heldCloud();
+    const claim = runClaim(ctx());
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    cancelClaims();
+    answer();
+
+    expect(await claim).toEqual({ status: 'cancelled' });
+    expect(layouts.applyRemote).not.toHaveBeenCalled();
+  });
+
+  it('ends as cancelled, reporting nothing, when a write fails after the cancel', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        manifestResponse({
+          layouts: { a: { modifiedAt: 1000, sizeBytes: 100 } },
+          designs: {},
+          indexUpdatedAt: 1000,
+        })
+      )
+      .mockResolvedValueOnce(envelopeResponse({ layout: { v: 1 }, modifiedAt: 1000 }));
+    let failWrite = (): void => undefined;
+    layouts.applyRemote = vi.fn(
+      () =>
+        new Promise<void>((_, reject) => {
+          failWrite = () => reject(new Error('idb closed'));
+        })
+    );
+    const claim = runClaim(ctx());
+    await vi.waitFor(() => expect(layouts.applyRemote).toHaveBeenCalled());
+
+    const cancelling = cancelClaims();
+    failWrite();
+    await cancelling;
+
+    expect(await claim).toEqual({ status: 'cancelled' });
+    expect(useSyncStatusStore.getState().lastError).toBeUndefined();
+  });
+
+  it('leaves the status alone when cancelled before it begins', async () => {
+    const claim = runClaim(ctx());
+    void cancelClaims();
+
+    expect(await claim).toEqual({ status: 'cancelled' });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(useSyncStatusStore.getState().state).toBe('idle');
+  });
+
+  it('keeps the status of the claim that replaced it, after that claim finishes', async () => {
+    const { answer } = heldCloud();
+    const first = runClaim(ctx({ userId: 'user-1' }));
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    expect((await runClaim(ctx({ userId: 'user-2' }))).status).toBe('merged');
+    useSyncStatusStore.getState().reportError('push failed');
+    answer();
+
+    expect(await first).toEqual({ status: 'cancelled' });
+    expect(useSyncStatusStore.getState().state).toBe('error');
+  });
+
+  it('holds the next claim back until the cleanup after a cancel has run', async () => {
+    fetchMock.mockResolvedValue(manifestResponse({ layouts: {}, designs: {}, indexUpdatedAt: 0 }));
+    let finishCleanup = (): void => undefined;
+    void cancelClaims(
+      () =>
+        new Promise<void>((resolve) => {
+          finishCleanup = resolve;
+        })
+    );
+    const next = runClaim(ctx({ userId: 'user-2' }));
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    finishCleanup();
+    expect((await next).status).toBe('merged');
+  });
+
+  it('runs the next claim after a cleanup that failed', async () => {
+    fetchMock.mockResolvedValue(manifestResponse({ layouts: {}, designs: {}, indexUpdatedAt: 0 }));
+    const failed = cancelClaims(() => Promise.reject(new Error('idb closed')));
+
+    await expect(failed).rejects.toThrow('idb closed');
+    expect((await runClaim(ctx({ userId: 'user-2' }))).status).toBe('merged');
+  });
+
+  it('settles a cancel only once the write it caught in progress has landed', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        manifestResponse({
+          layouts: { a: { modifiedAt: 1000, sizeBytes: 100 } },
+          designs: {},
+          indexUpdatedAt: 1000,
+        })
+      )
+      .mockResolvedValueOnce(envelopeResponse({ layout: { v: 1 }, modifiedAt: 1000 }));
+    let landWrite = (): void => undefined;
+    const written: string[] = [];
+    layouts.applyRemote = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          landWrite = () => {
+            written.push('a');
+            resolve();
+          };
+        })
+    );
+    const claim = runClaim(ctx());
+    await vi.waitFor(() => expect(layouts.applyRemote).toHaveBeenCalled());
+
+    let cancelSettled = false;
+    const cancelling = cancelClaims().then(() => {
+      cancelSettled = true;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(cancelSettled).toBe(false);
+
+    landWrite();
+    await cancelling;
+    expect(written).toEqual(['a']);
+    expect(await claim).toEqual({ status: 'cancelled' });
+  });
+
+  it('holds back the next claim behind a cancelled write nobody awaited', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        manifestResponse({
+          layouts: { a: { modifiedAt: 1000, sizeBytes: 100 } },
+          designs: {},
+          indexUpdatedAt: 1000,
+        })
+      )
+      .mockResolvedValueOnce(envelopeResponse({ layout: { v: 1 }, modifiedAt: 1000 }))
+      .mockResolvedValue(manifestResponse({ layouts: {}, designs: {}, indexUpdatedAt: 0 }));
+    let landWrite = (): void => undefined;
+    layouts.applyRemote = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          landWrite = resolve;
+        })
+    );
+    void runClaim(ctx({ userId: 'user-1' }));
+    await vi.waitFor(() => expect(layouts.applyRemote).toHaveBeenCalled());
+
+    void cancelClaims();
+    const next = runClaim(ctx({ userId: 'user-2' }));
+    await new Promise((resolve) => setTimeout(resolve, 10));
     expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    landWrite();
+    expect((await next).status).toBe('merged');
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("cancels the previous account's claim when another account signs in", async () => {
+    const { answer } = heldCloud();
+    const first = runClaim(ctx({ userId: 'user-1' }));
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    const second = runClaim(ctx({ userId: 'user-2' }));
+    answer();
+
+    expect(await first).toEqual({ status: 'cancelled' });
+    expect((await second).status).toBe('merged');
+    expect(layouts.applyRemote).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -42,15 +42,41 @@ export interface PullResult {
  * same promise so we never send two manifest fetches at once.
  */
 export async function pullNow(adapters: SyncAdapters): Promise<PullResult> {
+  if (pullState.held) return { status: 'unauthorized' };
   if (pullState.inFlight) return pullState.inFlight;
-  pullState.inFlight = run(adapters, pullState.generation).finally(() => {
-    pullState.inFlight = null;
+  // A pull ended by a reset can finish after a newer one took the slot.
+  const pull = run(adapters, pullState.generation).finally(() => {
+    if (pullState.inFlight === pull) pullState.inFlight = null;
   });
-  return pullState.inFlight;
+  pullState.inFlight = pull;
+  return pull;
+}
+
+/**
+ * End this account's pulls: the next pull starts over, and one in flight makes
+ * no further local write. Settles once every write in progress has landed.
+ */
+export function endPulls(): Promise<void> {
+  const writing = pullState.writing;
+  resetPullState();
+  return writing.then(() => undefined);
+}
+
+/** {@link endPulls}, and start no pull until `release`, so none races a wipe. */
+export function holdPulls(): { ended: Promise<void>; release: () => void } {
+  pullState.held = true;
+  return {
+    ended: endPulls(),
+    release: () => {
+      pullState.held = false;
+    },
+  };
 }
 
 export function __resetForTests(): void {
   resetPullState();
+  pullState.held = false;
+  pullState.writing = Promise.resolve();
 }
 
 async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<PullResult> {
@@ -104,19 +130,36 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   const baseplateChanges = await diffKind(
     adapters.baseplates,
     'baseplates',
-    manifest.baseplates ?? {}
+    manifest.baseplates ?? {},
+    capturedGeneration
   );
   // Folders before layouts for the same reason: a layout names its folder,
   // and it should land somewhere that exists.
-  const folderChanges = await diffKind(adapters.folders, 'folders', manifest.folders ?? {});
-  const layoutChanges = await diffKind(adapters.layouts, 'layouts', manifest.layouts ?? {});
-  const designChanges = await diffKind(adapters.designs, 'designs', manifest.designs ?? {});
+  const folderChanges = await diffKind(
+    adapters.folders,
+    'folders',
+    manifest.folders ?? {},
+    capturedGeneration
+  );
+  const layoutChanges = await diffKind(
+    adapters.layouts,
+    'layouts',
+    manifest.layouts ?? {},
+    capturedGeneration
+  );
+  const designChanges = await diffKind(
+    adapters.designs,
+    'designs',
+    manifest.designs ?? {},
+    capturedGeneration
+  );
   // Versions last: a pulled version is only reachable through its design's
   // history list, so nothing breaks if it lands after the design it belongs to.
   const versionChanges = await diffKind(
     adapters.designVersions,
     'designVersions',
-    manifest.designVersions ?? {}
+    manifest.designVersions ?? {},
+    capturedGeneration
   );
   const applied = layoutChanges + designChanges + baseplateChanges + versionChanges + folderChanges;
 
@@ -137,11 +180,13 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
  * Returns the count of items applied.
  *
  * Locals not in the manifest aren't our problem — push handles those.
+ * A pull whose account's pulls have ended stops before its next write.
  */
 async function diffKind(
   adapter: SyncAdapter,
   kind: SyncKind,
-  remote: Record<string, IndexEntry>
+  remote: Record<string, IndexEntry>,
+  generation: number
 ): Promise<number> {
   const localItems = await adapter.list();
   const localByMtime = new Map<string, number>();
@@ -149,11 +194,12 @@ async function diffKind(
 
   let applied = 0;
   for (const [id, entry] of Object.entries(remote)) {
+    if (generation !== pullState.generation) break;
     const localMtime = localByMtime.get(id);
 
     if (entry.deletedAt !== undefined) {
       if (localMtime !== undefined && localMtime < entry.deletedAt) {
-        await adapter.applyRemoteDelete(id);
+        await trackWrite(adapter.applyRemoteDelete(id));
         applied++;
       }
       continue;
@@ -161,19 +207,29 @@ async function diffKind(
 
     if (localMtime === undefined || localMtime < entry.modifiedAt) {
       const fetched = await fetchEnvelope(kind, id);
-      if (!fetched) continue;
+      if (!fetched || generation !== pullState.generation) continue;
       const payload = fetched.envelope[PAYLOAD_KEY[kind]];
       if (payload === undefined) continue;
-      await adapter.applyRemote({
-        id,
-        payload,
-        modifiedAt: fetched.envelope.modifiedAt,
-        schemaVersion: fetched.envelope.schemaVersion,
-      });
+      await trackWrite(
+        adapter.applyRemote({
+          id,
+          payload,
+          modifiedAt: fetched.envelope.modifiedAt,
+          schemaVersion: fetched.envelope.schemaVersion,
+        })
+      );
       applied++;
     }
   }
   return applied;
+}
+
+function trackWrite(write: Promise<void>): Promise<void> {
+  // Settled to nothing, so a finished write's history can be collected.
+  pullState.writing = Promise.all([pullState.writing, write.catch(() => undefined)]).then(
+    () => undefined
+  );
+  return write;
 }
 
 async function fetchEnvelope(kind: SyncKind, id: string): Promise<ItemFetchResponse | null> {

@@ -4,8 +4,9 @@ import { folderAdapter } from '@/core/sync/adapters/folderAdapter';
 import { designAdapter } from '@/features/bin-designer';
 import { designVersionAdapter } from '@/features/bin-designer/sync/designVersionAdapter';
 import { baseplateAdapter } from '@/features/baseplate/sync/baseplateAdapter';
-import { runClaim, type AccountMismatchChoice } from '@/core/sync/claim';
+import { cancelClaims, runClaim, type AccountMismatchChoice } from '@/core/sync/claim';
 import { start, stop } from '@/core/sync/engine';
+import { endPulls } from '@/core/sync/poller';
 import { useSessionLifecycle, useSessionStore } from '@/core/sync/session/useSession';
 import { useDebouncedPush } from '@/core/sync/triggers/useDebouncedPush';
 import { useVisibilityFlush } from '@/core/sync/triggers/useVisibilityFlush';
@@ -14,6 +15,7 @@ import { usePeriodicPoll } from '@/core/sync/triggers/usePeriodicPoll';
 import { useSyncToasts } from '@/core/sync/useSyncToasts';
 import { AccountMismatchDialog } from '@/core/sync/dialogs/AccountMismatchDialog';
 import type { SyncAdapters } from '@/core/sync/adapters/types';
+import { beginMeshCloudSession, endMeshCloudSession } from '@/shared/generation/meshCloud';
 
 /**
  * Boot point for the sync feature. Owns:
@@ -40,6 +42,9 @@ export function SyncSessionMount() {
   );
 
   const status = useSessionStore((s) => s.status);
+  // An account switch can arrive without leaving 'authenticated' (another
+  // tab's sign-in), and must still end this account's session.
+  const userId = useSessionStore((s) => s.user?.userId ?? null);
 
   const [mismatchPrompt, setMismatchPrompt] = useState<{
     localCount: number;
@@ -75,6 +80,7 @@ export function SyncSessionMount() {
     if (!currentUser) return;
 
     let cancelled = false;
+    beginMeshCloudSession();
     // Run claim before start(): the engine drains outbox and polls
     // immediately, and we don't want the prior user's pending
     // pushes to flush under the new account before discard can
@@ -92,14 +98,22 @@ export function SyncSessionMount() {
       // immediately retrigger that path. Other terminal states
       // ('merged' | 'discarded' | 'error') start the engine —
       // 'error' relies on the engine's own retry/backoff to recover.
-      if (cancelled) return;
+      if (cancelled || result.status === 'cancelled') return;
       if (result.status !== 'unauthorized') start(adapters);
     });
     return () => {
       cancelled = true;
-      stop();
+      // The periodic poll keeps running across an account switch, so its pulls
+      // end here, and the next claim waits for a write one had in progress, or
+      // one the engine had under way.
+      const writes = Promise.all([endPulls(), stop()]).then(() => undefined);
+      void cancelClaims(() => writes);
+      // The claim's pulls start mesh downloads before the engine exists, so
+      // stopping the engine alone would leave them, and their retry timer, to
+      // run on under no account or the next one.
+      endMeshCloudSession();
     };
-  }, [status, adapters, promptAccountMismatch]);
+  }, [status, userId, adapters, promptAccountMismatch]);
 
   useDebouncedPush();
   useVisibilityFlush();

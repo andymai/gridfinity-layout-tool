@@ -20,7 +20,7 @@ vi.mock('@/features/bin-designer/storage/DesignerStorage', () => ({
 
 import { designAdapter } from './designAdapter';
 import { __resetForTests, emit } from './designerEvents';
-import { loadRegistry } from '@/features/bin-designer/store/customBinRegistry';
+import { loadRegistry, upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 
 const sampleParams = (): BinParams => ({}) as BinParams;
 const samplePayload = (name = 'D'): { name: string; params: BinParams } => ({
@@ -90,30 +90,156 @@ describe('designAdapter.get', () => {
   });
 });
 
-describe('designAdapter non-bin kinds (local-only)', () => {
-  function nonBinDesign(id: string): SavedDesign {
-    const base = savedDesign(id, '2026-04-01T00:00:00.000Z', 'Imported');
+describe('designAdapter kinds that stay local', () => {
+  function toolRackDesign(id: string): SavedDesign {
+    const base = savedDesign(id, '2026-04-01T00:00:00.000Z', 'Rack');
     // Non-bin kinds persist kind + envelope + structure and OMIT params.
     const { params: _params, ...rest } = base;
     return {
       ...rest,
-      kind: 'importedMesh',
+      kind: 'toolRack',
       envelope: { width: 2, depth: 1 } as SavedDesign['envelope'],
-      structure: { kind: 'importedMesh' } as SavedDesign['structure'],
+      structure: { kind: 'toolRack' } as SavedDesign['structure'],
     };
   }
 
-  it('list() excludes paramsless designs so they never upload', async () => {
+  it('list() excludes a legacy tool rack so it never uploads', async () => {
     listDesignsMock.mockResolvedValueOnce(
-      ok([savedDesign('a', '2026-01-01T00:00:00.000Z', 'Alpha'), nonBinDesign('m')])
+      ok([savedDesign('a', '2026-01-01T00:00:00.000Z', 'Alpha'), toolRackDesign('r')])
     );
     const items = await designAdapter.list();
     expect(items.map((i) => i.id)).toEqual(['a']);
   });
 
-  it('get() returns null for a paramsless design (engine drops the push)', async () => {
-    loadDesignMock.mockResolvedValueOnce(ok(nonBinDesign('m')));
-    expect(await designAdapter.get('m')).toBe(null);
+  it('get() returns null for a tool rack (engine drops the push)', async () => {
+    loadDesignMock.mockResolvedValueOnce(ok(toolRackDesign('r')));
+    expect(await designAdapter.get('r')).toBe(null);
+  });
+
+  it('applyRemote leaves a kind it cannot represent unapplied', async () => {
+    loadDesignMock.mockResolvedValueOnce(err(storageNotFound('missing')));
+    await designAdapter.applyRemote({
+      id: 'r',
+      payload: { name: 'Rack', kind: 'toolRack', envelope: {}, structure: { kind: 'toolRack' } },
+      modifiedAt: 1,
+    });
+    expect(saveDesignMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('designAdapter imported mesh kind', () => {
+  const envelope = () =>
+    ({
+      width: 2,
+      depth: 1.5,
+      gridUnitMm: 42,
+      heightUnitMm: 7,
+      attachment: {
+        magnetHoles: false,
+        magnetDiameter: 6.5,
+        magnetDepth: 2.4,
+        screwHoles: false,
+        screwDiameter: 3,
+      },
+      featureColors: { enabled: false },
+    }) as SavedDesign['envelope'];
+  const structure = () => ({
+    kind: 'importedMesh' as const,
+    heightUnits: 4,
+    asset: {
+      name: 'parts_bin',
+      hash: 'e'.repeat(64),
+      triangleCount: 4,
+      sizeMm: { x: 83, y: 62, z: 28 },
+      bytes: 900,
+    },
+    sourceFileName: 'parts_bin.stl',
+  });
+
+  function importedDesign(id: string): SavedDesign {
+    const { params: _params, ...rest } = savedDesign(id, '2026-04-01T00:00:00.000Z', 'Parts bin');
+    return { ...rest, kind: 'importedMesh', envelope: envelope(), structure: structure() };
+  }
+
+  it('list() carries it under its own kind, its mesh still a ref', async () => {
+    listDesignsMock.mockResolvedValueOnce(ok([importedDesign('m')]));
+
+    const [listed] = await designAdapter.list();
+
+    expect(listed?.payload).toEqual({
+      name: 'Parts bin',
+      kind: 'importedMesh',
+      envelope: envelope(),
+      structure: structure(),
+    });
+  });
+
+  it('applyRemote stores it as its kind and puts it in the layout palette', async () => {
+    localStorage.clear();
+    loadDesignMock.mockResolvedValueOnce(err(storageNotFound('missing')));
+    saveDesignMock.mockResolvedValueOnce(ok(importedDesign('m')));
+
+    await designAdapter.applyRemote({
+      id: 'm',
+      payload: {
+        name: 'Parts bin',
+        kind: 'importedMesh',
+        envelope: envelope(),
+        structure: structure(),
+      },
+      modifiedAt: 1,
+    });
+
+    const saved = saveDesignMock.mock.calls[0]?.[0] as SavedDesign;
+    expect(saved.kind).toBe('importedMesh');
+    expect(saved.params).toBeUndefined();
+    expect(saved.envelope).toEqual(envelope());
+    expect(saved.structure).toEqual(structure());
+    expect(loadRegistry().find((r) => r.id === 'm')).toMatchObject({
+      kind: 'importedMesh',
+      width: 2,
+      depth: 1.5,
+      height: 4,
+    });
+  });
+
+  it('applyRemote leaves a structure its schema refuses unapplied, not a placeholder', async () => {
+    loadDesignMock.mockResolvedValueOnce(err(storageNotFound('missing')));
+
+    await designAdapter.applyRemote({
+      id: 'm',
+      payload: {
+        name: 'Parts bin',
+        kind: 'importedMesh',
+        envelope: envelope(),
+        structure: { ...structure(), heightUnits: 0 },
+      },
+      modifiedAt: 1,
+    });
+
+    expect(saveDesignMock).not.toHaveBeenCalled();
+  });
+
+  it("applyRemote leaves a newer client's structure unapplied rather than drop its fields", async () => {
+    for (const newer of [
+      { ...structure(), finish: 'matte' },
+      { ...structure(), asset: { ...structure().asset, lod: 2 } },
+    ]) {
+      loadDesignMock.mockResolvedValueOnce(err(storageNotFound('missing')));
+
+      await designAdapter.applyRemote({
+        id: 'm',
+        payload: {
+          name: 'Parts bin',
+          kind: 'importedMesh',
+          envelope: envelope(),
+          structure: newer,
+        },
+        modifiedAt: 1,
+      });
+    }
+
+    expect(saveDesignMock).not.toHaveBeenCalled();
   });
 });
 
@@ -535,6 +661,26 @@ describe('designAdapter.applyRemoteDelete', () => {
   it('succeeds on normal delete', async () => {
     deleteDesignMock.mockResolvedValueOnce(ok(undefined));
     await expect(designAdapter.applyRemoteDelete('d1')).resolves.toBeUndefined();
+  });
+
+  it('takes the design off the layout palette, already gone locally or not', async () => {
+    const ref = {
+      name: 'Pulled',
+      width: 2,
+      depth: 2,
+      height: 3,
+      updatedAt: '2026-01-22T00:00:00.000Z',
+    };
+    upsertRegistryEntry({ ...ref, id: designId('d1') });
+    upsertRegistryEntry({ ...ref, id: designId('gone') });
+    deleteDesignMock
+      .mockResolvedValueOnce(ok(undefined))
+      .mockResolvedValueOnce(err(storageNotFound('gone')));
+
+    await designAdapter.applyRemoteDelete('d1');
+    await designAdapter.applyRemoteDelete('gone');
+
+    expect(loadRegistry().filter((r) => r.id === 'd1' || r.id === 'gone')).toEqual([]);
   });
 });
 

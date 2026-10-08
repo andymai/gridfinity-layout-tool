@@ -22,8 +22,10 @@ description: 'Imported STL meshes stored once as content-addressed files (src/sh
 
 ## Sync
 
-- Push: the bin-designer adapters' `preparePush` (`meshPushPlan.ts`) runs `uploadMeshFiles` (`meshCloud.ts`): HEAD `/api/meshes/{hash}`, PUT the bytes on a 404, held hashes kept for the page. All held: send refs. 503 (no mesh store): send `get()`. An upload failed: `defer`, under the engine's failure backoff. On neither side: skip.
+- Push: the bin-designer adapters' `preparePush` (`meshPushPlan.ts`) runs `uploadMeshFiles` (`meshCloud.ts`): HEAD `/api/meshes/{hash}`, PUT the bytes on a 404, four files at a time across every push, held hashes kept for the page. All held: send refs. 503 (no mesh store): send `get()`. An upload failed: `defer`, under the engine's failure backoff. On neither side: skip.
 - The server checks every ref after the LWW gates and answers `424 MESH_MISSING` with the hashes in `missing`. The engine passes them to `onMissing` (`forgetHeldMeshes`) and backs off, so the retry uploads them. Refs earn no 2 MB cap.
+- Whole-bin STL designs (`importedMesh`, the ref in `structure.asset`) sync like bins, versions included; `api/lib/importedMeshValidation.ts` mirrors their schema.
+- `SyncSessionMount` calls `beginMeshCloudSession` before the sign-in claim and `endMeshCloudSession` on teardown. Between sessions meshCloud starts no upload or download, so a claim still pulling after sign-out asks for nothing.
 - Pull: `applyRemote` saves refs, then `fetchMeshFiles` (never awaited) gets the CDN URL from HEAD's `X-Mesh-Url` and stores the bytes only if their SHA-256 is the hash. A failed file waits a minute and a later call; the design adapter's `subscribe` asks for every referenced file missing here, so sync start retries them.
 
 ## The database

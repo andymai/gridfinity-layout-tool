@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useSessionLifecycle, useSessionStore } from './useSession';
+import { apiFetch, FORCED_SIGN_OUT_EVENT } from '../apiFetch';
 
 describe('useSessionStore', () => {
   let fetchMock: ReturnType<typeof vi.fn>;
@@ -133,7 +134,17 @@ describe('useSessionLifecycle', () => {
     // edits into B's account.
     const outboxModule = await import('../outbox');
     const pollerModule = await import('../pullState');
-    const clearAllSpy = vi.spyOn(outboxModule, 'clearAll').mockResolvedValueOnce();
+    const claimModule = await import('../claim');
+    const order: string[] = [];
+    const cancelClaimsSpy = vi
+      .spyOn(claimModule, 'cancelClaims')
+      .mockImplementation(async (cleanup) => {
+        order.push('cancel');
+        await cleanup?.();
+      });
+    const clearAllSpy = vi.spyOn(outboxModule, 'clearAll').mockImplementation(async () => {
+      order.push('clear');
+    });
     const resetPullStateSpy = vi.spyOn(pollerModule, 'resetPullState').mockImplementation(() => {});
 
     fetchMock.mockResolvedValueOnce(
@@ -154,8 +165,10 @@ describe('useSessionLifecycle', () => {
       window.dispatchEvent(new CustomEvent('gflt:forced-sign-out'));
     });
 
-    expect(clearAllSpy).toHaveBeenCalled();
+    await waitFor(() => expect(clearAllSpy).toHaveBeenCalled());
+    expect(order).toEqual(['cancel', 'clear']);
     expect(resetPullStateSpy).toHaveBeenCalled();
+    cancelClaimsSpy.mockRestore();
     clearAllSpy.mockRestore();
     resetPullStateSpy.mockRestore();
   });
@@ -212,5 +225,123 @@ describe('applyRemoteState (broadcast-receiver path)', () => {
     await new Promise((r) => setTimeout(r, 0));
     expect(received).toEqual([]);
     channel.close();
+  });
+});
+
+describe('account changes', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    useSessionStore.setState({ status: 'unknown', user: null });
+  });
+
+  it('keeps a 401 to a request sent under the previous account from signing out the next', async () => {
+    const user = { userId: 'u1', provider: 'google' as const, email: 'a@x' };
+    useSessionStore.setState({ status: 'authenticated', user });
+    let answer = (_res: Response): void => undefined;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          new Promise<Response>((resolve) => {
+            answer = resolve;
+          })
+      )
+    );
+    const handler = vi.fn();
+    window.addEventListener(FORCED_SIGN_OUT_EVENT, handler);
+
+    const pending = apiFetch('/api/sync/manifest');
+    useSessionStore.setState({ user: { ...user, userId: 'u2' } });
+    answer(new Response(null, { status: 401 }));
+    await pending;
+
+    expect(handler).not.toHaveBeenCalled();
+    window.removeEventListener(FORCED_SIGN_OUT_EVENT, handler);
+  });
+
+  it('keeps the account of the newest refresh when two overlap', async () => {
+    const answers: ((res: Response) => void)[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          new Promise<Response>((resolve) => {
+            answers.push(resolve);
+          })
+      )
+    );
+    const me = (userId: string): Response =>
+      new Response(
+        JSON.stringify({ authenticated: true, user: { userId, provider: 'google', email: 'a@x' } }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+
+    const older = useSessionStore.getState().applyRemoteState('authenticated');
+    const newer = useSessionStore.getState().applyRemoteState('authenticated');
+    answers[1](me('u2'));
+    await newer;
+    answers[0](me('u1'));
+    await older;
+
+    expect(useSessionStore.getState().user?.userId).toBe('u2');
+  });
+
+  it('keeps a sign-out that lands while a refresh is under way', async () => {
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u1', provider: 'google', email: 'a@x' },
+    });
+    let answer = (_res: Response): void => undefined;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          new Promise<Response>((resolve) => {
+            answer = resolve;
+          })
+      )
+    );
+
+    const refreshing = useSessionStore.getState().applyRemoteState('authenticated');
+    useSessionStore.getState().setAnonymous();
+    answer(
+      new Response(
+        JSON.stringify({
+          authenticated: true,
+          user: { userId: 'u1', provider: 'google', email: 'a@x' },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    );
+    await refreshing;
+
+    expect(useSessionStore.getState().status).toBe('anonymous');
+  });
+
+  it("keeps a stale 401 from signing out another tab's sign-in while its user loads", async () => {
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u1', provider: 'google', email: 'a@x' },
+    });
+    const answers = new Map<string, (res: Response) => void>();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (url: string) =>
+          new Promise<Response>((resolve) => {
+            answers.set(url, resolve);
+          })
+      )
+    );
+    const handler = vi.fn();
+    window.addEventListener(FORCED_SIGN_OUT_EVENT, handler);
+
+    const pending = apiFetch('/api/sync/manifest');
+    void useSessionStore.getState().applyRemoteState('authenticated');
+    answers.get('/api/sync/manifest')?.(new Response(null, { status: 401 }));
+    await pending;
+
+    expect(handler).not.toHaveBeenCalled();
+    window.removeEventListener(FORCED_SIGN_OUT_EVENT, handler);
   });
 });

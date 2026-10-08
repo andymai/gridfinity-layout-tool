@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DESIGNER_CONSTRAINTS, GRIDFINITY, minHeightUnits } from './gridfinity';
+import { MAX_IMPORTED_MESH_HEIGHT_UNITS } from '@/shared/items/importedMesh/descriptor';
 
 describe('minHeightUnits', () => {
   it('holds an ordinary bin to the usable-cavity minimum', () => {
@@ -107,5 +108,13 @@ describe('mm ceilings derived from MAX_HEIGHT', () => {
 
   it('lets a taper band span the tallest bin', () => {
     expect(DESIGNER_CONSTRAINTS.MAX_TAPER_BAND).toBe(tallestInteriorMm);
+  });
+});
+
+describe('imported STL height', () => {
+  // The import dialog offers a claim up to the bin cap; a claim the imported
+  // schema rejects loads as a placeholder and never syncs.
+  it('allows any height a bin can have', () => {
+    expect(MAX_IMPORTED_MESH_HEIGHT_UNITS).toBe(DESIGNER_CONSTRAINTS.MAX_HEIGHT);
   });
 });

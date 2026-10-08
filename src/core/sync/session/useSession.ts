@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { useEffect } from 'react';
 import { FORCED_SIGN_OUT_EVENT } from '../apiFetch';
+import { onAccountChanged } from '../accountGeneration';
+import { cancelClaims } from '../claim';
 import { clearAll as clearOutbox } from '../outbox';
 import { resetPullState } from '../pullState';
 import { getMe, type SessionUser } from './sessionApi';
@@ -49,8 +51,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
   applyRemoteState: async (status) => {
     if (status === 'authenticated') {
-      // Another tab signed in. Fetch the user record (we don't trust the
-      // broadcast payload — the cookie is the source of truth).
+      // Another tab signed in, and the shared cookie may already name another
+      // account: a 401 to a request sent before now must not sign it out.
+      onAccountChanged();
+      // Fetch the user record (we don't trust the broadcast payload — the
+      // cookie is the source of truth).
       const next = await refreshFromServer();
       if (next) set(next.state);
     } else if (get().status !== 'anonymous') {
@@ -59,13 +64,31 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 }));
 
-/** Hits /api/auth/me and returns the resulting state, or null on transient error. */
+/**
+ * Bumped by each refresh and each account change, so a refresh that a later
+ * one or a sign-out overtook drops its answer.
+ */
+let refreshes = 0;
+
+useSessionStore.subscribe((state, prev) => {
+  if (state.user?.userId === prev.user?.userId) return;
+  onAccountChanged();
+  refreshes++;
+});
+
+/**
+ * Hits /api/auth/me and returns the resulting state, or null on transient
+ * error or when a later refresh started meanwhile: across rapid account
+ * switches, an older answer names an account the cookie no longer does.
+ */
 async function refreshFromServer(): Promise<{
   state: { status: SessionStatus; user: SessionUser | null };
   broadcastType: 'authenticated' | 'anonymous';
 } | null> {
+  const refresh = ++refreshes;
   try {
     const user = await getMe();
+    if (refresh !== refreshes) return null;
     return user
       ? { state: { status: 'authenticated', user }, broadcastType: 'authenticated' }
       : { state: { status: 'anonymous', user: null }, broadcastType: 'anonymous' };
@@ -127,8 +150,12 @@ export function useSessionLifecycle(): void {
       // sign-in (especially as a different user via the mismatch flow's
       // 'merge' path) can't drain the prior user's queued PUTs under
       // the new account. Pending edits since the last successful push
-      // are sacrificed; cross-account leakage would be worse.
-      void clearOutbox().catch(() => {
+      // are sacrificed; cross-account leakage would be worse. A sign-in
+      // claim still running is cancelled first, and any push it was queueing
+      // lands before the clear, so nothing it queued survives it. The next
+      // account's claim waits for the clear, so it cannot erase that claim's
+      // pushes.
+      void cancelClaims(clearOutbox).catch(() => {
         /* IDB failure is non-blocking; setAnonymous below still flips UI */
       });
       resetPullState();

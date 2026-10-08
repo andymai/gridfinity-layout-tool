@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { apiFetch, FORCED_SIGN_OUT_EVENT } from './apiFetch';
+import { onAccountChanged } from './accountGeneration';
 
 describe('apiFetch', () => {
   let fetchMock: ReturnType<typeof vi.fn>;
@@ -48,6 +49,25 @@ describe('apiFetch', () => {
     window.addEventListener(FORCED_SIGN_OUT_EVENT, handler);
     await apiFetch('/api/sync/manifest');
     expect(handler).toHaveBeenCalledTimes(1);
+    window.removeEventListener(FORCED_SIGN_OUT_EVENT, handler);
+  });
+
+  it('forces no sign-out for a 401 to a request sent under an earlier account', async () => {
+    let answer = (_res: Response): void => undefined;
+    fetchMock.mockReturnValueOnce(
+      new Promise<Response>((resolve) => {
+        answer = resolve;
+      })
+    );
+    const handler = vi.fn();
+    window.addEventListener(FORCED_SIGN_OUT_EVENT, handler);
+
+    const pending = apiFetch('/api/sync/manifest');
+    onAccountChanged();
+    answer(new Response(null, { status: 401 }));
+    await pending;
+
+    expect(handler).not.toHaveBeenCalled();
     window.removeEventListener(FORCED_SIGN_OUT_EVENT, handler);
   });
 

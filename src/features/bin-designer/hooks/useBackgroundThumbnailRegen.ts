@@ -5,7 +5,7 @@
  * or outdated thumbnails on idle time. Without this, fresh / imported / version-
  * bumped designs only get their thumbnail on the user's *next* modal open —
  * which is exactly when they notice it's missing. The same pass registers any
- * stored Workshop assembly that has no registry entry.
+ * stored Workshop assembly or imported mesh that has no registry entry.
  *
  * Coordination contract:
  *  - **Sync**: signed-in users wait for the sync store to leave `'syncing'`
@@ -33,7 +33,7 @@ import { listDesigns, updateDesignThumbnail } from '../storage/DesignerStorage';
 import {
   loadRegistry,
   upsertRegistryEntry,
-  registryAssemblyEntry,
+  registryItemEntry,
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
@@ -117,16 +117,17 @@ function readPreviewColor(): string {
 }
 
 /**
- * Register stored assemblies that have no registry entry. `saveDesign` never
- * registers, so an assembly stored with the designer closed (a sync pull) can
- * lack one and would read as a parametric bin in the layout. An existing entry
- * is left exactly as it is, which also makes a second pass a no-op.
+ * Register stored assemblies and imported meshes that have no registry entry.
+ * `saveDesign` never registers, so one stored with the designer closed (a sync
+ * pull) can lack one: an assembly would read as a parametric bin in the
+ * layout, and an imported mesh would be missing from its palette. An existing
+ * entry is left exactly as it is, which also makes a second pass a no-op.
  */
-function registerUnlistedAssemblies(designs: readonly SavedDesign[]): void {
+function registerUnlistedItems(designs: readonly SavedDesign[]): void {
   const registered = new Set(loadRegistry().map((ref) => ref.id));
   for (const design of designs) {
     if (registered.has(design.id)) continue;
-    const entry = registryAssemblyEntry(design);
+    const entry = registryItemEntry(design);
     if (entry) upsertRegistryEntry(entry);
   }
 }
@@ -276,7 +277,7 @@ export function useBackgroundThumbnailRegen(): void {
         const listResult = await listDesigns();
         if (!isOk(listResult)) return;
 
-        registerUnlistedAssemblies(listResult.value);
+        registerUnlistedItems(listResult.value);
 
         const stale = listResult.value.filter(needsRegen);
         if (stale.length === 0) return;

@@ -12,6 +12,7 @@ import type { CommunityDesignLineage } from '@/shared/types/community';
 import type { BinParams, SavedDesign } from '@/features/bin-designer/types';
 import type { ItemEnvelope } from '@/shared/types/item';
 import { assemblyDescriptor } from '@/shared/items/assembly/descriptor';
+import { importedMeshSchema } from '@/shared/items/importedMesh/descriptor';
 import {
   deleteDesign,
   detachVariant,
@@ -21,7 +22,8 @@ import {
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { isBinDesign, isSyncableDesign } from '@/features/bin-designer/utils/designKind';
 import {
-  registryAssemblyEntry,
+  registryItemEntry,
+  removeRegistryEntry,
   upsertRegistryEntry,
 } from '@/features/bin-designer/store/customBinRegistry';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
@@ -31,6 +33,7 @@ import {
   endMeshCloudSession,
   fetchMeshFiles,
   forgetHeldMeshes,
+  meshCloudSession,
 } from '@/shared/generation/meshCloud';
 import { referencedMeshHashes } from '@/features/bin-designer/storage/designMeshFiles';
 import { subscribe as subscribeDesignerEvents } from './designerEvents';
@@ -77,7 +80,7 @@ function isLineage(value: unknown): value is CommunityDesignLineage {
 function unwrap(payload: unknown): {
   name?: string;
   params?: BinParams;
-  kind?: 'assembly';
+  kind?: 'assembly' | 'importedMesh';
   envelope?: ItemEnvelope;
   structure?: unknown;
   tags?: string[];
@@ -96,8 +99,9 @@ function unwrap(payload: unknown): {
       publishedId?: unknown;
       lineage?: unknown;
     };
+    const kind = wrapper.kind;
     if (
-      wrapper.kind === 'assembly' &&
+      (kind === 'assembly' || kind === 'importedMesh') &&
       typeof wrapper.envelope === 'object' &&
       wrapper.envelope !== null &&
       typeof wrapper.structure === 'object' &&
@@ -106,7 +110,7 @@ function unwrap(payload: unknown): {
       const trimmed = typeof wrapper.name === 'string' ? wrapper.name.trim() : '';
       return {
         name: trimmed === '' ? undefined : trimmed,
-        kind: 'assembly',
+        kind,
         envelope: wrapper.envelope as ItemEnvelope,
         structure: wrapper.structure,
         tags: wrapper.tags === undefined ? undefined : normalizeTags(wrapper.tags),
@@ -122,8 +126,8 @@ function unwrap(payload: unknown): {
               : undefined,
       };
     }
-    // Any other kind-wrapped payload (a future kind, or an assembly wrapper
-    // missing its envelope/structure) must not fall through to the bare
+    // Any other kind-wrapped payload (a future kind, or a wrapper missing its
+    // envelope/structure) must not fall through to the bare
     // BinParams path — that would persist a corrupted bin row.
     return { invalid: true };
   }
@@ -159,6 +163,39 @@ function unwrap(payload: unknown): {
   return { params: payload as BinParams };
 }
 
+type PulledContent = Pick<SavedDesign, 'kind' | 'params' | 'envelope' | 'structure'>;
+
+/**
+ * The kind-specific half of a pulled design, or null when this client cannot
+ * represent it. An assembly's migration drops a newer client's unknown fields
+ * node by node rather than reject them. An imported mesh is checked against its
+ * schema instead: the descriptor's migration falls back to a placeholder, which
+ * would take the place of the mesh in the stored copy.
+ */
+function pulledContent(pulled: ReturnType<typeof unwrap>): PulledContent | null {
+  const { kind, envelope, structure, params } = pulled;
+  if (kind === undefined) return { params };
+  if (!envelope) return null;
+  if (kind === 'assembly') {
+    return { kind, envelope, structure: assemblyDescriptor.migrate(structure, envelope) };
+  }
+  const parsed = importedMeshSchema.safeParse(structure);
+  // Parsing drops keys the schema does not know, and storing what it kept
+  // would push a newer client's fields away on this device's next edit.
+  return parsed.success && keepsEveryKey(structure, parsed.data)
+    ? { kind, envelope, structure: parsed.data }
+    : null;
+}
+
+function keepsEveryKey(input: unknown, kept: unknown): boolean {
+  if (typeof input !== 'object' || input === null) return true;
+  if (typeof kept !== 'object' || kept === null) return false;
+  const keptRecord = kept as Record<string, unknown>;
+  return Object.entries(input).every(
+    ([key, value]) => key in keptRecord && keepsEveryKey(value, keptRecord[key])
+  );
+}
+
 /**
  * Spread conditionally rather than assigned: an explicit `undefined` key hashes
  * like `null` in the server's equal-ms tiebreaker, which would make an
@@ -187,7 +224,7 @@ function buildPayload(d: SavedDesign): DesignSyncPayload {
   }
   return {
     name: d.name,
-    kind: 'assembly',
+    kind: d.kind,
     envelope: d.envelope,
     structure: d.structure,
     tags: d.tags,
@@ -226,9 +263,8 @@ export const designAdapter: DesignAdapter = {
   async list(): Promise<SyncableItem<DesignSyncPayload>[]> {
     const result = await listDesigns();
     if (!isOk(result)) return [];
-    // Bins and assemblies sync; toolRack and importedMesh (base64 mesh
-    // blobs) stay local-only. Meshes stay refs: every caller reads ids and
-    // mtimes only, and this runs on every poll.
+    // Meshes stay refs: every caller reads ids and mtimes only, and this runs
+    // on every poll.
     return result.value.filter(isSyncableDesign).map(toItem);
   },
 
@@ -237,37 +273,37 @@ export const designAdapter: DesignAdapter = {
   },
 
   async preparePush(id: string): Promise<PushPlan<DesignSyncPayload>> {
+    const session = meshCloudSession();
     const result = await loadDesign(designId(id));
     if (!isOk(result) || !isSyncableDesign(result.value)) return { status: 'skip' };
     return planMeshPush(
       toItem(result.value),
       result.value,
       (only) => inlineDesign(id, only),
-      missingMeshPushes
+      missingMeshPushes,
+      session
     );
   },
 
   onMissing: forgetHeldMeshes,
 
   async applyRemote(item: SyncableItem<DesignSyncPayload>): Promise<void> {
+    const session = meshCloudSession();
     suppressed.add(item.id);
     try {
       // Read existing first to preserve local-only fields (thumbnail,
       // exportFileNameConfig) on update.
       const existing = await loadDesign(designId(item.id));
       const base = isOk(existing) ? existing.value : null;
+      const pulled = unwrap(item.payload);
+      const content = pulled.invalid ? null : pulledContent(pulled);
+      if (!content) return;
       const {
         name: remoteName,
-        params,
-        kind: remoteKind,
-        envelope: remoteEnvelope,
-        structure: remoteStructure,
         tags: remoteTags,
         publishedId: remotePublishedId,
         lineage: remoteLineage,
-        invalid,
-      } = unwrap(item.payload);
-      if (invalid) return;
+      } = pulled;
       // LWW: engine only calls applyRemote when remote is newer, so a
       // remote rename must win. Local name is only a fallback for legacy
       // payloads with no name; the literal covers a legacy fresh-device pull.
@@ -300,43 +336,27 @@ export const designAdapter: DesignAdapter = {
           ? { variantOf, overrides: (remote.overrides as SavedDesign['overrides']) ?? {} }
           : {}),
       };
-      const result =
-        remoteKind === 'assembly' && remoteEnvelope
-          ? await saveDesign({
-              id: designId(item.id),
-              name,
-              kind: 'assembly',
-              envelope: remoteEnvelope,
-              // Migration is the gate: a newer client's structure gets its
-              // unknown fields dropped node-by-node rather than rejected.
-              structure: assemblyDescriptor.migrate(remoteStructure, remoteEnvelope),
-              thumbnail: base?.thumbnail ?? null,
-              exportFileNameConfig: base?.exportFileNameConfig ?? null,
-              tags,
-              publishedId,
-              lineage,
-              ...branch,
-            })
-          : await saveDesign({
-              id: designId(item.id),
-              name,
-              params: params,
-              thumbnail: base?.thumbnail ?? null,
-              exportFileNameConfig: base?.exportFileNameConfig ?? null,
-              tags,
-              publishedId,
-              lineage,
-              ...branch,
-            });
+      const result = await saveDesign({
+        id: designId(item.id),
+        name,
+        ...content,
+        thumbnail: base?.thumbnail ?? null,
+        exportFileNameConfig: base?.exportFileNameConfig ?? null,
+        tags,
+        publishedId,
+        lineage,
+        ...branch,
+      });
       if (!isOk(result)) {
         throw syncPersistError('saveDesign', item.id, result.error);
       }
-      void fetchMeshFiles(holderMeshHashes(result.value));
+      void fetchMeshFiles(holderMeshHashes(result.value), session);
       // saveDesign never registers, and the startup pass that backfills
-      // assemblies runs once per page load, so a Workshop design pulled
-      // mid-session would read as a parametric bin until the next reload.
-      const assemblyEntry = registryAssemblyEntry(result.value);
-      if (assemblyEntry) upsertRegistryEntry(assemblyEntry);
+      // entries runs once per page load, so a Workshop design pulled
+      // mid-session would read as a parametric bin, and an imported mesh would
+      // be missing from the layout's palette, until the next reload.
+      const registryEntry = registryItemEntry(result.value);
+      if (registryEntry) upsertRegistryEntry(registryEntry);
       // `saveDesign` falls back to the STORED value for both variant fields, so
       // it cannot clear them; `detachVariant` writes through the store for
       // exactly that reason. Runs after the save so it keeps what was just
@@ -356,6 +376,7 @@ export const designAdapter: DesignAdapter = {
       if (!isOk(result) && result.error.code !== 'STORAGE_NOT_FOUND') {
         throw syncPersistError('deleteDesign', id, result.error);
       }
+      removeRegistryEntry(id);
     } finally {
       suppressed.delete(id);
     }
@@ -364,9 +385,9 @@ export const designAdapter: DesignAdapter = {
   subscribe(listener: AdapterChangeListener): () => void {
     // The engine subscribes once a signed-in session starts: the moment to try
     // again for files a pull could not fetch (offline, say) on an earlier page.
-    let subscribed = true;
+    const session = meshCloudSession();
     void referencedMeshHashes()
-      .then((hashes) => (subscribed ? fetchMeshFiles([...hashes]) : undefined))
+      .then((hashes) => fetchMeshFiles([...hashes], session))
       .catch(() => undefined);
     const stopEvents = subscribeDesignerEvents((event) => {
       missingMeshPushes.clear(event.id);
@@ -382,7 +403,6 @@ export const designAdapter: DesignAdapter = {
       return isOk(current) ? toMs(current.value.updatedAt) : null;
     });
     return () => {
-      subscribed = false;
       stopEvents();
       stopArrivals();
       endMeshCloudSession();

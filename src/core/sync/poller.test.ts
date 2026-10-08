@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { __resetForTests, pullNow } from './poller';
+import { __resetForTests, endPulls, holdPulls, pullNow } from './poller';
 import { useSessionStore } from './session/useSession';
 import { useSyncStatusStore } from './status';
 import type {
@@ -168,6 +168,120 @@ describe('diff: only-remote (live)', () => {
       modifiedAt: 5000,
       schemaVersion: 1,
     });
+  });
+});
+
+describe('endPulls', () => {
+  it('stops a pull in flight before its next write, once the running one lands', async () => {
+    fetchMock.mockImplementation(async (url: string) =>
+      url === '/api/sync/manifest'
+        ? manifestResponse({
+            layouts: {
+              'lay-1': { modifiedAt: 5000, sizeBytes: 100 },
+              'lay-2': { modifiedAt: 5000, sizeBytes: 100 },
+            },
+            designs: {},
+            indexUpdatedAt: 5000,
+          })
+        : envelopeResponse(
+            { layout: { v: 1 }, modifiedAt: 5000, schemaVersion: 1 },
+            { modifiedAt: 5000, sizeBytes: 100 }
+          )
+    );
+    let landWrite = (): void => undefined;
+    layouts.applyRemote = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          landWrite = resolve;
+        })
+    );
+    const pull = pullNow(adapters);
+    await vi.waitFor(() => expect(layouts.applyRemote).toHaveBeenCalledTimes(1));
+
+    let ended = false;
+    const ending = endPulls().then(() => {
+      ended = true;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(ended).toBe(false);
+
+    landWrite();
+    await ending;
+    expect((await pull).status).toBe('offline');
+    expect(layouts.applyRemote).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits, at a later end, for a write an earlier pull still has in progress', async () => {
+    fetchMock.mockImplementation(async (url: string) =>
+      url === '/api/sync/manifest'
+        ? manifestResponse({
+            layouts: { 'lay-1': { modifiedAt: 5000, sizeBytes: 100 } },
+            designs: {},
+            indexUpdatedAt: 5000,
+          })
+        : envelopeResponse(
+            { layout: { v: 1 }, modifiedAt: 5000, schemaVersion: 1 },
+            { modifiedAt: 5000, sizeBytes: 100 }
+          )
+    );
+    const landings: (() => void)[] = [];
+    layouts.applyRemote = vi.fn(() => new Promise<void>((resolve) => landings.push(resolve)));
+    void pullNow(adapters);
+    await vi.waitFor(() => expect(layouts.applyRemote).toHaveBeenCalledTimes(1));
+    void endPulls();
+    void pullNow(adapters);
+    await vi.waitFor(() => expect(layouts.applyRemote).toHaveBeenCalledTimes(2));
+
+    let ended = false;
+    const ending = endPulls().then(() => {
+      ended = true;
+    });
+    landings[1]();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(ended).toBe(false);
+
+    landings[0]();
+    await ending;
+  });
+
+  it('lets an ended pull finish without freeing the slot of the pull after it', async () => {
+    const answers: (() => void)[] = [];
+    fetchMock.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          answers.push(() =>
+            resolve(manifestResponse({ layouts: {}, designs: {}, indexUpdatedAt: 1 }))
+          );
+        })
+    );
+    const first = pullNow(adapters);
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    void endPulls();
+    const second = pullNow(adapters);
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    answers[0]();
+    await first;
+    void pullNow(adapters);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    answers[1]();
+    expect((await second).status).toBe('applied');
+  });
+
+  it('starts no pull while held, and pulls again once released', async () => {
+    fetchMock.mockImplementation(async () =>
+      manifestResponse({ layouts: {}, designs: {}, indexUpdatedAt: 1 })
+    );
+    const { ended, release } = holdPulls();
+    await ended;
+
+    expect((await pullNow(adapters)).status).toBe('unauthorized');
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    release();
+    expect((await pullNow(adapters)).status).toBe('applied');
   });
 });
 
