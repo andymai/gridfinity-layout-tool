@@ -1,0 +1,31 @@
+.claude/skills/mesh-storage/SKILL.md
+  s_1606b97c1ea28d::t_3dc6e8af83211c 56
+scripts/build-content.ts
+  s_1606b97c1ea28d::t_3ad247d7f7dc95 1031
+src/features/generation/bridge/generationTimeout.ts
+  s_1606b97c1ea28d::t_3ad247d7f7dc95 136-137
+src/features/generation/worker/meshFiles.ts
+  s_1606b97c1ea28d::t_078f53a11fae1f 71-75,77
+src/features/generation/worker/meshFiles.test.ts
+  s_1606b97c1ea28d::t_078f53a11fae1f 55-57
+src/features/generation/worker/generators/meshImprint.ts
+  s_1606b97c1ea28d::t_15179d3219f129 75-84,105-106,112-116,145
+src/features/generation/worker/generators/meshImprint.cache.test.ts
+  s_1606b97c1ea28d::t_bb0a3f3b224d12 2,11,56-87,89-93,95,97,99,101-121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "be71cbd8210261c316403cf68f0542040ce8a32a",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
