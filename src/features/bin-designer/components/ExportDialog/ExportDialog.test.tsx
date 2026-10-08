@@ -792,6 +792,18 @@ describe('ExportDialog', () => {
         expect.objectContaining({ message: 'Nice bin. Share it with the community?' })
       );
     });
+
+    it('offers nothing more when the support view is closed', async () => {
+      mockShouldPromptSupport = true;
+      await download();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Close dialog' }));
+      });
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      expect(mockAddToast).not.toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Nice bin. Share it with the community?' })
+      );
+    });
   });
 });
 

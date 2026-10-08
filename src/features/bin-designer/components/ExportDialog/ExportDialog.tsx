@@ -237,6 +237,8 @@ export function ExportDialog() {
   // once per cooldown; everyone else just gets the low-friction auto-close.
   const finishExport = useCallback(
     (toastComplete: boolean) => {
+      // Finished: closing the support view after this offers nothing more.
+      taken.current = { bin: false, plates: false };
       if (claimSupportPrompt()) {
         setJustExported(true);
         return;
