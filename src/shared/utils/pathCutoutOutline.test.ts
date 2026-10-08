@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { timeLimitMs } from '@/test/timeLimit';
 import {
   BEZIER_SEGMENTS,
   pathCutoutCut,
@@ -284,13 +285,13 @@ describe('polylineSelfIntersects', () => {
     for (const shape of [zigzag, jitter, spiral]) {
       const started = performance.now();
       expect(polylineSelfIntersects(shape)).toBe(false);
-      expect(performance.now() - started).toBeLessThan(300);
+      expect(performance.now() - started).toBeLessThan(timeLimitMs(300));
     }
     const swapped = [...spiral];
     [swapped[100], swapped[40000]] = [swapped[40000], swapped[100]];
     const started = performance.now();
     expect(polylineSelfIntersects(swapped)).toBe(true);
-    expect(performance.now() - started).toBeLessThan(300);
+    expect(performance.now() - started).toBeLessThan(timeLimitMs(300));
   });
 
   it('compares every pair of a fan as large as a drawn path flattens to', () => {
@@ -303,7 +304,7 @@ describe('polylineSelfIntersects', () => {
     const fan = spikeFan(50000);
     const started = performance.now();
     expect(polylineSelfIntersects(fan)).toBe(true);
-    expect(performance.now() - started).toBeLessThan(1000);
+    expect(performance.now() - started).toBeLessThan(timeLimitMs(1000));
     const path = fan.map((p) => ({ ...p, handleIn: null, handleOut: null, symmetric: false }));
     expect(pathCutoutOutline({ x: 0, y: 0, width: 100, depth: 100, path })).toBeNull();
   });

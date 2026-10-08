@@ -99,6 +99,9 @@ export default defineConfig({
     },
     pool: 'threads',
     maxWorkers: process.env.CI ? '100%' : '75%',
+    // Coverage instrumentation slows tight loops several times over; wall-clock
+    // limits read this through `timeLimitMs` (src/test/timeLimit.ts).
+    env: { VITEST_COVERAGE_RUN: process.argv.includes('--coverage') ? '1' : '' },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'text-summary', 'html'],

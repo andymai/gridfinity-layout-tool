@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { timeLimitMs } from '@/test/timeLimit';
 import {
   EdgeGrid,
   gapAcross,
@@ -176,7 +177,7 @@ describe('two dense outlines', () => {
       const started = performance.now();
       expect(outlinesTouch(inner, outer)).toBe(false);
       expect(outlinesComeWithin(inner, outer, 3.45)).toBe(false);
-      expect(performance.now() - started).toBeLessThan(300);
+      expect(performance.now() - started).toBeLessThan(timeLimitMs(300));
     }
   });
 });
