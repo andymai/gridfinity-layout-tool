@@ -1,0 +1,29 @@
+src/shared/hooks/useMeshOutlines.ts
+  s_1606b97c1ea28d::t_ca1a91223b4a3e 18,22-25,27-28,30-37
+  s_1606b97c1ea28d::t_26872e208b2b5d 5
+src/shared/hooks/useMeshOutlines.test.ts
+  s_1606b97c1ea28d::t_26872e208b2b5d 10-11,83-93
+  s_1606b97c1ea28d::t_d0482e665262a1 94
+src/shared/generation/meshStore.test.ts
+  s_1606b97c1ea28d::t_26872e208b2b5d 125-139,142-147,149-151,154-155,157-160
+  s_1606b97c1ea28d::t_eb04bd505f7821 140-141,148,152-153,156
+  s_1606b97c1ea28d::t_d898d4c7bf704f 58-60
+src/shared/generation/meshStore.ts
+  s_1606b97c1ea28d::t_ca1a91223b4a3e 100-108,110-121,124-135,158,196
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "22d7d7c07b2ed8e7feb6613d1531935d6ca9d024",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
