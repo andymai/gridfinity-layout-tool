@@ -1,0 +1,24 @@
+src/features/bin-designer/sync/designAdapter.ts
+  s_1606b97c1ea28d::t_1b19dd1a7cffbb 196
+  s_1606b97c1ea28d::t_f27eb2b69bc844 197-202
+src/features/bin-designer/sync/designVersionAdapter.ts
+  s_1606b97c1ea28d::t_f27eb2b69bc844 52-55,74-80
+src/features/bin-designer/sync/meshPayloads.test.ts
+  s_1606b97c1ea28d::t_5d1949288852bb 9-12,19-20,129-160
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4911362a243339d13f4633d927b416df0e02e7f1",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.ts
+  s_1606b97c1ea28d::t_10004efe3664bb 59-60,63-66,68,79-81,160,169-176,178,206,214-215,249
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.test.ts
+  s_1606b97c1ea28d::t_52f7cc4d15d397 7-8,20-24,220-237,238-305
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEditor.tsx
+  s_1606b97c1ea28d::t_10004efe3664bb 104
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_1606b97c1ea28d::t_10004efe3664bb 691
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/StlImportDialog.tsx
+  s_1606b97c1ea28d::t_26a20ed4e196ad 125,134
+  s_1606b97c1ea28d::t_10004efe3664bb 30-31,65,159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "941d56cd8127f048f78020da0fe73545c4297497",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}

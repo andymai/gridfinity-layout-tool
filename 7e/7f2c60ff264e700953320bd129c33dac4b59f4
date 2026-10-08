@@ -1,0 +1,104 @@
+src/shared/generation/meshFile.ts
+  s_900382acfc8cb3::t_2b4edb6bb75e9a 1-15,21-37,39-88,89-141,142-183,184-198
+  s_900382acfc8cb3::t_e0132ada0cb322 16-20
+src/shared/generation/meshFile.test.ts
+  s_900382acfc8cb3::t_f2a0991a574240 1-248
+api/lib/meshFile.ts
+  s_900382acfc8cb3::t_052bcec26191aa 85
+  s_900382acfc8cb3::t_b6f277422af4f0 37-40
+  s_900382acfc8cb3::t_dc081523d13c0e 1,2-36,41-84,86-111,112-140,144-184
+api/lib/meshFile.crossBoundary.test.ts
+  s_900382acfc8cb3::t_9764cb56734e21 1-158,160-167,169,172-173
+  s_900382acfc8cb3::t_e12fff4ed08305 159,168,170-171
+src/shared/generation/meshAsset.ts
+  s_900382acfc8cb3::t_60592aa00099fd 291-299,300-301,305
+  s_900382acfc8cb3::t_45630146041a46 214
+  s_a8677c67f85a06::t_6afbba56027bf9 290
+api/lib/meshFile.test.ts
+  s_900382acfc8cb3::t_1f77a9c7f19f51 1-244
+api/lib/redisKeys.test.ts
+  s_900382acfc8cb3::t_e1101325cb9b77 80-84,89-92,94,96
+  s_900382acfc8cb3::t_18c259df0b03fc 13,15
+  s_900382acfc8cb3::t_fdab3979bc844d 97-98
+api/lib/rateLimit.ts
+  s_900382acfc8cb3::t_509c38428cfe37 19-20
+  s_900382acfc8cb3::t_6d2848d3b14edc 76-78
+  s_900382acfc8cb3::t_52666afbc70a76 75
+api/lib/quota.test.ts
+  s_900382acfc8cb3::t_d6fc74b853ba59 175-178,181-182,185-194,206-207,211
+  s_900382acfc8cb3::t_2ac8975faddf1f 212
+api/lib/quota.ts
+  s_900382acfc8cb3::t_a811e6a43e5a17 123,124-126,130,140,144-145,154-156
+  s_900382acfc8cb3::t_1956a6859c3856 157
+api/meshes/[hash].test.ts
+  s_900382acfc8cb3::t_61d2acb4ec9ceb 330
+  s_900382acfc8cb3::t_235a566e582ea6 1-33,36,38-43,45,47-48,50-54,57-58,67-68,95,96-98,99-100,102-154,156-171,174-329,331-419,421,423-432,443-444,446-448,453-455,504-560
+api/lib/blobStore.test.ts
+  s_900382acfc8cb3::t_75a67e61729e34 179-228
+  s_900382acfc8cb3::t_1cef63f29e4f5d 21
+  s_900382acfc8cb3::t_76e633bea15ab1 229-230
+api/lib/blobStore.ts
+  s_900382acfc8cb3::t_cffe77e38ce85e 84-106
+  s_900382acfc8cb3::t_91e944e54e9bf1 80
+api/lib/meshIndex.test.ts
+  s_900382acfc8cb3::t_c3c9144a7bd3ec 5-10,12-14,18-20,22-23,25-26,32,34,35,37-38,43-44,47-48,51-52,67-68,121-126,145-147,149-151,162-164,193,198-199,206,211-212,217-220,228-230,233-237,241-243,245-246,252-254,256-259,265-267,269,273-279,283,285-286
+api/README.md
+  s_900382acfc8cb3::t_ac914d749765c5 59-60
+  s_900382acfc8cb3::t_cb82b302a93fa1 78-79
+  s_900382acfc8cb3::t_229251c0c71cb5 81
+api/lib/meshIndex.ts
+  s_900382acfc8cb3::t_bd11920fa493b5 4-5,9-15,21-24,100-121,125-126,132-133,137-138,144,167-171,179-180,184,197
+api/lib/redisKeys.ts
+  s_900382acfc8cb3::t_9edd5b1ce48753 154-156
+  s_900382acfc8cb3::t_e009f62df064d9 21,23
+  s_900382acfc8cb3::t_c4d5e92230bfd1 144-147,153,157-160
+  s_900382acfc8cb3::t_469bbbee039cfd 161
+api/sync/account.test.ts
+  s_900382acfc8cb3::t_06ea10a56aa3cb 331-337,339-340,343-350,357,359-362
+  s_900382acfc8cb3::t_5afda0428127c9 363-364
+api/sync/README.md
+  s_900382acfc8cb3::t_447608053a67ef 139
+CLAUDE.md
+  s_900382acfc8cb3::t_7e7786bf7803fe 105
+api/sync/account.ts
+  s_900382acfc8cb3::t_dd081b6fafe193 245-246,250-251
+  s_900382acfc8cb3::t_d7d6c7dfe7b6e8 263
+  s_900382acfc8cb3::t_22b14b5cc43971 25,31
+  s_900382acfc8cb3::t_21f18d10f0cba3 63,65-66
+api/meshes/[hash].ts
+  s_900382acfc8cb3::t_ecc297e904c3e9 28
+  s_900382acfc8cb3::t_473733e2f1a775 33
+  s_900382acfc8cb3::t_c5f66aabdedcae 1-11,15-23,24-27,29-32,34-35,45-102,104,112-114,122,138-140,144-180
+src/shared/generation/sha256.ts
+  s_900382acfc8cb3::t_1b80489afb2788 1-85,88-90
+  s_900382acfc8cb3::t_79f8ffff983189 86-87
+src/shared/generation/sha256.test.ts
+  s_900382acfc8cb3::t_0373d1a16a472a 1-82
+scripts/check-secure-context-uuid.test.ts
+  s_900382acfc8cb3::t_33891142da01c5 7-19,31,35-54
+  s_900382acfc8cb3::t_5a3c131d714f15 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7e7f2c60ff264e700953320bd129c33dac4b59f4",
+  "prompts": {},
+  "sessions": {
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_a8677c67f85a06": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85b17417-28bf-4293-9803-4c3b96f3617d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
