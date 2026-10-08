@@ -31,14 +31,10 @@ const mocks = vi.hoisted(() => ({
   fetch: vi.fn(),
   resolveShareMeshFiles: vi.fn(),
   holdShareMeshes: vi.fn(),
-  releaseShareMeshes: vi.fn(),
 }));
 
 vi.mock('../lib/shareMeshes.js', () => ({ resolveShareMeshFiles: mocks.resolveShareMeshFiles }));
-vi.mock('../lib/meshIndex.js', () => ({
-  holdShareMeshes: mocks.holdShareMeshes,
-  releaseShareMeshes: mocks.releaseShareMeshes,
-}));
+vi.mock('../lib/meshIndex.js', () => ({ holdShareMeshes: mocks.holdShareMeshes }));
 
 vi.mock('../lib/rateLimit.js', () => ({
   checkRateLimit: mocks.checkRateLimit,
@@ -148,7 +144,6 @@ describe('share/[id]', () => {
     mocks.filterLayoutContent.mockReturnValue({ passed: true });
     mocks.resolveShareMeshFiles.mockResolvedValue({});
     mocks.holdShareMeshes.mockResolvedValue(undefined);
-    mocks.releaseShareMeshes.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -365,7 +360,6 @@ describe('share/[id]', () => {
       const [held] = mocks.holdShareMeshes.mock.invocationCallOrder;
       const [written_] = mocks.put.mock.invocationCallOrder;
       expect(held).toBeLessThan(written_);
-      expect(mocks.releaseShareMeshes).not.toHaveBeenCalled();
     });
 
     it('PUT writes nothing when the caller does not hold the files', async () => {
@@ -382,7 +376,6 @@ describe('share/[id]', () => {
 
       expect(res._status).toBe(424);
       expect(mocks.put).not.toHaveBeenCalled();
-      expect(mocks.releaseShareMeshes).not.toHaveBeenCalled();
     });
 
     it('a permission-only PUT keeps the files and their holds', async () => {
@@ -393,27 +386,16 @@ describe('share/[id]', () => {
 
       const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as { meshFiles: unknown };
       expect(written.meshFiles).toEqual({ [A]: url(A) });
-      expect(mocks.releaseShareMeshes).not.toHaveBeenCalled();
     });
 
-    it('DELETE lets go of the files even when the key cleanup fails', async () => {
-      primeBlobFetch(sharedWith(A));
-      mocks.redisGet.mockResolvedValue(correctHash);
-      mocks.redisDel.mockRejectedValue(new Error('redis down'));
-
-      await handle('DELETE', { headers: { 'x-delete-token': TOKEN } });
-
-      expect(mocks.releaseShareMeshes).toHaveBeenCalledWith(expect.anything(), VALID_ID);
-    });
-
-    it('DELETE lets go of every file the share ever named', async () => {
+    it("DELETE keeps the share's holds and their record for a later cleanup", async () => {
       primeBlobFetch(sharedWith(A, B));
       mocks.redisGet.mockResolvedValue(correctHash);
 
       const res = await handle('DELETE', { headers: { 'x-delete-token': TOKEN } });
 
       expect(res._status).toBe(200);
-      expect(mocks.releaseShareMeshes).toHaveBeenCalledWith(expect.anything(), VALID_ID);
+      expect(mocks.redisDel.mock.calls[0]).not.toContain(`share:meshes:${VALID_ID}`);
     });
   });
 

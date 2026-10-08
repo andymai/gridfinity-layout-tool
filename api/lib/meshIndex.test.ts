@@ -13,7 +13,6 @@ import {
   holdShareMeshes,
   releaseAccountMesh,
   releaseAllAccountMeshes,
-  releaseShareMeshes,
   shareMeshHolder,
   unheldMeshes,
 } from './meshIndex';
@@ -41,7 +40,6 @@ class FakeRedis {
   meshAcquire?: (...args: (string | number)[]) => Promise<(string | number)[]>;
   meshRelease?: (...args: string[]) => Promise<number>;
   shareHold?: (numberOfKeys: number, ...keysAndArgs: string[]) => Promise<number>;
-  shareRelease?: (numberOfKeys: number, ...keysAndArgs: string[]) => Promise<number>;
 
   private hash(key: string): Map<string, string> {
     const hash = this.hashes.get(key) ?? new Map<string, string>();
@@ -165,17 +163,6 @@ class FakeRedis {
         return keys.length - 1;
       };
     }
-    if (name === 'shareRelease') {
-      this.shareRelease = async (numberOfKeys, ...rest) => {
-        const keys = rest.slice(0, numberOfKeys);
-        const [holder, ...hashes] = rest.slice(numberOfKeys);
-        const recorded = this.sets.get(keys[0]) ?? new Set<string>();
-        if (recorded.size !== hashes.length || hashes.some((h) => !recorded.has(h))) return 0;
-        for (let i = 1; i < keys.length; i++) await this.srem(keys[i], holder);
-        this.sets.delete(keys[0]);
-        return 1;
-      };
-    }
   }
 }
 
@@ -272,8 +259,7 @@ describe('acquireAccountMesh', () => {
     await acquireAccountMesh(redis, hold('u1', HASH_A));
     await releaseAccountMesh(redis, 'u1', HASH_A);
     await holdShareMeshes(redis, 'share1', [HASH_A]);
-    await releaseShareMeshes(redis, 'share1');
-    expect(fake.defineCommandCalls).toBe(4);
+    expect(fake.defineCommandCalls).toBe(3);
   });
 });
 
@@ -379,7 +365,7 @@ describe('unheldMeshes', () => {
   });
 });
 
-describe('holdShareMeshes / releaseShareMeshes', () => {
+describe('holdShareMeshes', () => {
   it('counts a share among the holders beside the account, once per file', async () => {
     await acquireAccountMesh(redis, hold('u1', HASH_A));
     await holdShareMeshes(redis, 'share1', [HASH_A, HASH_A, HASH_B]);
@@ -390,36 +376,11 @@ describe('holdShareMeshes / releaseShareMeshes', () => {
     expect(fake.sets.get(meshHoldersKey(HASH_B))).toEqual(new Set([shareMeshHolder('share1')]));
   });
 
-  it('reads again when a hold lands between its read and its release', async () => {
-    await holdShareMeshes(redis, 'share1', [HASH_A]);
-    const read = fake.smembers.bind(fake);
-    let raced = false;
-    fake.smembers = async (key: string) => {
-      const members = await read(key);
-      if (!raced) {
-        raced = true;
-        await holdShareMeshes(redis, 'share1', [HASH_B]);
-      }
-      return members;
-    };
-
-    await releaseShareMeshes(redis, 'share1');
-
-    expect(fake.sets.has(meshHoldersKey(HASH_A))).toBe(false);
-    expect(fake.sets.has(meshHoldersKey(HASH_B))).toBe(false);
-    expect(fake.sets.has(shareMeshesKey('share1'))).toBe(false);
-  });
-
-  it("lets go of every file the share ever named, and only the share's hold", async () => {
-    await acquireAccountMesh(redis, hold('u1', HASH_A));
+  it('records each file the share holds, across updates', async () => {
     await holdShareMeshes(redis, 'share1', [HASH_A]);
     await holdShareMeshes(redis, 'share1', [HASH_B]);
-    await releaseShareMeshes(redis, 'share1');
 
-    expect(fake.sets.get(meshHoldersKey(HASH_A))).toEqual(new Set([accountMeshHolder('u1')]));
-    expect(fake.sets.has(meshHoldersKey(HASH_B))).toBe(false);
-    expect(fake.sets.has(shareMeshesKey('share1'))).toBe(false);
-    expect(await getMeshUsage(redis, 'u1')).toEqual({ bytes: 1000, count: 1 });
+    expect(fake.sets.get(shareMeshesKey('share1'))).toEqual(new Set([HASH_A, HASH_B]));
   });
 });
 

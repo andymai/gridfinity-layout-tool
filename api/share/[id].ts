@@ -9,7 +9,7 @@ import {
   isSharedDesignsError,
   sharedDesignMeshHashes,
 } from '../lib/validation.js';
-import { holdShareMeshes, releaseShareMeshes } from '../lib/meshIndex.js';
+import { holdShareMeshes } from '../lib/meshIndex.js';
 import { resolveShareMeshFiles } from '../lib/shareMeshes.js';
 import { filterLayoutContent, filterSharedDesignsContent } from '../lib/contentFilter.js';
 import { logger } from '../lib/logger.js';
@@ -303,14 +303,12 @@ async function handleDelete(
       return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Invalid delete token');
     }
 
-    // Delete the blob and clean up Redis keys
+    // Delete the blob and clean up Redis keys. The share's mesh holds stay, with
+    // their record in `share:meshes:{id}`: an update already past its token
+    // check can still write the share back, and it must find its files held.
     await del(blobPath);
     const redis = getRedis();
     if (redis) {
-      // Ahead of the key cleanup and apart from it, so a failure there cannot
-      // skip it. A release that fails keeps `share:meshes:{id}`, which still
-      // names what is held once the blob is gone.
-      await releaseShareMeshes(redis, _id).catch(logReleaseFailure(_id));
       await redis.del(
         shareHashKey(_id),
         shareReportKey(_id),
@@ -366,15 +364,4 @@ function respondShare(
   permission: ShareData['metadata']['permission']
 ) {
   return res.status(200).json({ id, url: `${getBaseUrl()}/l/${id}`, permission });
-}
-
-// A holder left behind only keeps a file longer than needed, so a failed
-// release is logged rather than failing a write that already landed.
-function logReleaseFailure(id: string): (error: unknown) => void {
-  return (error) => {
-    logger.warn('Failed to release share mesh holds', {
-      id,
-      error: error instanceof Error ? error.message : String(error),
-    });
-  };
 }

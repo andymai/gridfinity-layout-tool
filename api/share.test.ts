@@ -31,14 +31,10 @@ const mocks = vi.hoisted(() => ({
   filterSharedDesignsContent: vi.fn(),
   resolveShareMeshFiles: vi.fn(),
   holdShareMeshes: vi.fn(),
-  releaseShareMeshes: vi.fn(),
 }));
 
 vi.mock('./lib/shareMeshes.js', () => ({ resolveShareMeshFiles: mocks.resolveShareMeshFiles }));
-vi.mock('./lib/meshIndex.js', () => ({
-  holdShareMeshes: mocks.holdShareMeshes,
-  releaseShareMeshes: mocks.releaseShareMeshes,
-}));
+vi.mock('./lib/meshIndex.js', () => ({ holdShareMeshes: mocks.holdShareMeshes }));
 
 vi.mock('./lib/rateLimit.js', () => ({
   checkRateLimit: mocks.checkRateLimit,
@@ -134,7 +130,6 @@ describe('share (create)', () => {
     mocks.isSharedDesignsError.mockReturnValue(false);
     mocks.resolveShareMeshFiles.mockResolvedValue({});
     mocks.holdShareMeshes.mockResolvedValue(undefined);
-    mocks.releaseShareMeshes.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -435,7 +430,7 @@ describe('share (create)', () => {
       expect(mocks.holdShareMeshes).not.toHaveBeenCalled();
     });
 
-    it('rolls the blob and any holds it took back when holding the files fails', async () => {
+    it('rolls the blob back when holding the files fails', async () => {
       mocks.resolveShareMeshFiles.mockResolvedValue({ [HASH]: URL });
       mocks.holdShareMeshes.mockRejectedValue(new Error('redis write failed'));
       mocks.del.mockResolvedValue(undefined);
@@ -444,7 +439,6 @@ describe('share (create)', () => {
 
       expect(res._status).toBe(500);
       expect(mocks.del).toHaveBeenCalledWith(`shares/${VALID_ID}.json`);
-      expect(mocks.releaseShareMeshes).toHaveBeenCalledWith(expect.anything(), VALID_ID);
     });
   });
 

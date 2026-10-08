@@ -22,7 +22,7 @@ description: 'Imported STL meshes stored once as content-addressed files (src/sh
 
 ## Layout shares
 
-- A signed-in sharer's linked designs go by ref once `uploadMeshFiles` answers held (`designsWithMeshRefs` in `src/core/api/share.ts`); otherwise, or on a 424, inline. The server's `resolveShareMeshFiles` takes refs only from a session holding every file, stores each file's CDN URL in the share as `meshFiles`, and adds `share:{id}` to the file's holders. Holds only grow until the share is deleted (`share:meshes:{id}` lists them all), so interleaved updates or a failed write cannot leave a named file unheld.
+- A signed-in sharer's linked designs go by ref once `uploadMeshFiles` answers held (`designsWithMeshRefs` in `src/core/api/share.ts`); otherwise, or on a 424, inline. The server's `resolveShareMeshFiles` takes refs only from a session holding every file, stores each file's CDN URL in the share as `meshFiles`, and adds `share:{id}` to the file's holders. Holds only grow, through deletion too, because an update racing the delete can write the share back; `share:meshes:{id}` records them for a cleanup that lets go once the share's blob is gone.
 - The importer calls `fetchSharedMeshFiles`, which reads each file from its URL with no account, retries a failed one on its own backoff timer, and remembers the URL, so a later sync download skips the HEAD.
 
 ## Sync

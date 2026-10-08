@@ -11,7 +11,7 @@ import {
   sharedDesignMeshHashes,
   type SharedDesignShape,
 } from './lib/validation.js';
-import { holdShareMeshes, releaseShareMeshes } from './lib/meshIndex.js';
+import { holdShareMeshes } from './lib/meshIndex.js';
 import { resolveShareMeshFiles } from './lib/shareMeshes.js';
 import { validateDesignerShare } from './lib/designerValidation.js';
 import {
@@ -267,7 +267,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         await redis.set(shareHashKey(shareId), deleteTokenHash);
         await holdShareMeshes(redis, shareId, Object.keys(meshFiles));
       } catch (redisErr) {
-        await releaseShareMeshes(redis, shareId).catch(() => undefined);
         await del(blobPath).catch((delErr: unknown) => {
           logger.error('Rollback failed: orphan blob left after Redis write failure', {
             id: shareId,
