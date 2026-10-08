@@ -159,6 +159,9 @@ export class GenerationBridge {
   /** The mesh files this bridge's worker holds. */
   private readonly meshDelivery = new MeshDelivery();
 
+  /** Latest call per export slot, counted at call time. */
+  private readonly exportCalls = new Map<ExportSlot, number>();
+
   constructor(kernel: KernelName = 'occt-wasm') {
     this.kernel = kernel;
   }
@@ -664,6 +667,12 @@ export class GenerationBridge {
   }
 
   // ── Internal helpers (used by sibling modules + this class) ───────
+
+  claimExportSlot(slot: ExportSlot): () => boolean {
+    const call = (this.exportCalls.get(slot) ?? 0) + 1;
+    this.exportCalls.set(slot, call);
+    return () => this.exportCalls.get(slot) === call;
+  }
 
   /**
    * Prepare an export slot: check destroyed state, ensure worker is initialized,

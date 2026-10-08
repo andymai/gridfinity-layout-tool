@@ -47,6 +47,8 @@ import type {
 } from './bridgeTypes';
 
 export interface BridgeExportContext {
+  /** Claim `slot` for a new call; the answer says whether that call is still the latest. */
+  claimExportSlot: (slot: ExportSlot) => () => boolean;
   prepareExport: (slot: ExportSlot) => Promise<string>;
   readonly pendingExports: PendingExportMap;
   startExportTimeout: (slot: ExportSlot, requestId: string, timeoutMs: number) => void;
@@ -62,9 +64,11 @@ export interface BridgeExportContext {
  * Promise resolves when the worker sends back the result (handled by the
  * message handler).
  *
- * The files are gathered before the slot is claimed, so a later export on the
- * same slot still supersedes this one. A design whose mesh file is missing
- * rejects rather than export without its pocket.
+ * The slot is claimed at call time, because gathering files takes a variable
+ * time: an older call that finishes gathering after a newer one must not
+ * cancel it and post its stale params, so it rejects as superseded instead. A
+ * design whose mesh file is missing rejects rather than export without its
+ * pocket.
  */
 async function runExport<T>(
   ctx: BridgeExportContext,
@@ -73,10 +77,13 @@ async function runExport<T>(
   buildMessage: (requestId: string) => WorkerMessage,
   onProgress?: (progress: number) => void
 ): Promise<T> {
+  const isLatest = ctx.claimExportSlot(slot);
   const result = await ctx.prepareMeshes(buildMessage(''));
+  if (!isLatest()) throw new Error('Export superseded');
   if (isErr(result) || result.value.pending) throw new MeshUnavailableError();
   const prepared = result.value;
   const requestId = await ctx.prepareExport(slot);
+  if (!isLatest()) throw new Error('Export superseded');
   return new Promise<T>((resolve, reject) => {
     ctx.pendingExports.set(slot, {
       resolve: resolve as (result: unknown) => void,

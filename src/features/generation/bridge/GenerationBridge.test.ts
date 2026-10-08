@@ -1128,6 +1128,39 @@ describe('GenerationBridge', () => {
       await expect(bridge.exportBin(params, 'stl')).rejects.toBeInstanceOf(MeshUnavailableError);
       expect(ofType('EXPORT')).toEqual([]);
     });
+
+    it('keeps the latest export when an older one finishes gathering its meshes last', async () => {
+      const prepare = bridge.prepareMeshes.bind(bridge);
+      let releaseOlder: () => void = () => {};
+      const olderGathered = new Promise<void>((resolve) => {
+        releaseOlder = resolve;
+      });
+      vi.spyOn(bridge, 'prepareMeshes')
+        .mockImplementationOnce(async (message) => {
+          await olderGathered;
+          return prepare(message);
+        })
+        .mockImplementation(prepare);
+
+      const older = bridge.exportBin({ ...DEFAULT_BIN_PARAMS, height: 3 }, 'stl');
+      const newer = bridge.exportBin({ ...DEFAULT_BIN_PARAMS, height: 4 }, 'stl');
+      await vi.waitFor(() => expect(ofType('EXPORT')).toHaveLength(1));
+      releaseOlder();
+
+      await expect(older).rejects.toThrow('Export superseded');
+      expect(ofType('EXPORT')).toHaveLength(1);
+      const posted = ofType('EXPORT')[0];
+      expect(posted.payload?.params.height).toBe(4);
+
+      getWorker().simulateResponse({
+        type: 'EXPORT_RESULT',
+        requestId: posted.payload?.requestId ?? '',
+        data: new ArrayBuffer(8),
+        format: 'stl',
+        fileName: 'bin.stl',
+      });
+      await expect(newer).resolves.toMatchObject({ fileName: 'bin.stl' });
+    });
   });
 
   describe('worker crash recovery', () => {
