@@ -1,0 +1,26 @@
+api/lib/meshIndex.ts
+  s_1606b97c1ea28d::t_b6e79a3bf0d0b3 79-112,133-134,145-148,220-229,234-235,244,247-249,251-256
+api/lib/meshIndex.integration.test.ts
+  s_1606b97c1ea28d::t_07b7cc083be076 18,21-22,26-32,88-101
+  s_1606b97c1ea28d::t_c4adc9af222434 102-103
+api/lib/meshIndex.test.ts
+  s_1606b97c1ea28d::t_55d82af70d1bbe 43-44,157-178,393-410
+  s_1606b97c1ea28d::t_945123b87fcb95 274-276
+  s_1606b97c1ea28d::t_bbda56005dd48e 411-412
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "66cd601fc5283815b00603b2fa14dc3b5d9470ce",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
