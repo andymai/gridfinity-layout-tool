@@ -1,0 +1,309 @@
+src/core/sync/engine.ts
+  s_1606b97c1ea28d::t_99ecff51fdb430 178-179,181
+  s_1606b97c1ea28d::t_1f95fb77afe630 38-39
+  s_1606b97c1ea28d::t_12825ee81b85ac 143-145,148-158
+  s_1606b97c1ea28d::t_e29b9783a361a1 68
+  s_1606b97c1ea28d::t_a53a938bbdecf1 147
+  s_1606b97c1ea28d::t_9e06c6360eee85 90-98
+  s_1606b97c1ea28d::t_489453d5f5ba39 228
+src/core/sync/engine.test.ts
+  s_1606b97c1ea28d::t_e5c5a55e44885d 14
+  s_1606b97c1ea28d::t_3d7c4b4a48d571 791-795
+  s_1606b97c1ea28d::t_12fa65c3ab0610 738-790,796-807
+  s_1606b97c1ea28d::t_727f955e72b5f4 140-145
+  s_1606b97c1ea28d::t_babb2ddc3f7633 19
+  s_1606b97c1ea28d::t_6e4e7cb226f5e7 485-503
+src/shared/generation/meshCloud.test.ts
+  s_1606b97c1ea28d::t_49eff2c402c8a6 179,185-193
+  s_1606b97c1ea28d::t_a2bf850ca66137 195,536-551
+  s_1606b97c1ea28d::t_ca6980d3adaa68 6
+  s_1606b97c1ea28d::t_242110a8a0e1eb 194
+  s_1606b97c1ea28d::t_9baec0d6ebc15e 196
+  s_1606b97c1ea28d::t_b75709c912ad92 250-294
+  s_1606b97c1ea28d::t_6efc79dba2b437 474-492,499-535
+  s_1606b97c1ea28d::t_fc89f14455efa9 493-498
+  s_1606b97c1ea28d::t_d2f2470c4ad121 10,217-235,448-459
+  s_1606b97c1ea28d::t_36f735b5b45d33 460
+  s_1606b97c1ea28d::t_8c4f45b11d8f7a 236-245
+  s_1606b97c1ea28d::t_3bbd53b033e81d 9,580-657
+  s_1606b97c1ea28d::t_26d38ea082bffa 658-660
+src/shell/sync/SyncSessionMount.tsx
+  s_1606b97c1ea28d::t_357b841e9c2ec4 18
+  s_1606b97c1ea28d::t_281df9dc302565 83
+  s_1606b97c1ea28d::t_c1f9c4f985ed53 111-114
+  s_1606b97c1ea28d::t_f47229c9a2c373 7
+  s_1606b97c1ea28d::t_a55701ce36bbad 101
+  s_1606b97c1ea28d::t_f556e543c2a7fd 45-47,116
+  s_1606b97c1ea28d::t_0862e5a8cbf163 106
+  s_1606b97c1ea28d::t_cbcd6fdeaf58e7 9
+src/shared/generation/meshCloud.ts
+  s_1606b97c1ea28d::t_2ce73607fa403c 389-393,395-396,401
+  s_1606b97c1ea28d::t_e049d4a039a752 22-28
+  s_1606b97c1ea28d::t_d8545cbfb382bc 124
+  s_1606b97c1ea28d::t_2815e78b75fb5f 423
+  s_1606b97c1ea28d::t_f40b30c4c51189 338
+  s_1606b97c1ea28d::t_bd41be54d5266f 80-102,105-106,122,126-131,135-139,148-152,158,397-398,405
+  s_1606b97c1ea28d::t_afd4c9566673c5 404
+  s_1606b97c1ea28d::t_b16b0b2e1e06c7 208,236-240,243,257,294-296
+  s_1606b97c1ea28d::t_53935f514d7c3c 107-121,132-134,140-147,340-344,381-387
+  s_1606b97c1ea28d::t_8775aed5117d41 388
+  s_1606b97c1ea28d::t_f556e543c2a7fd 177-181
+  s_1606b97c1ea28d::t_08c9ea5df40bbd 228
+  s_1606b97c1ea28d::t_92f4ae9c205ac9 220-227,229-234,244-254,256,258,355-380,421
+src/shell/sync/SyncSessionMount.test.tsx
+  s_1606b97c1ea28d::t_f7f11c0c6dbbb0 18,30
+  s_1606b97c1ea28d::t_5e1398304d7be4 1-8,10,12-17,19-25,27,29,31-61,65-66,79-87,89-103
+  s_1606b97c1ea28d::t_4060511b1e154f 62-64
+  s_1606b97c1ea28d::t_37ba79c1c61351 9,26,88
+  s_1606b97c1ea28d::t_8c4f45b11d8f7a 67-72,75-78
+  s_1606b97c1ea28d::t_21cd25516af073 28
+  s_1606b97c1ea28d::t_879422fca54854 73-74
+  s_1606b97c1ea28d::t_6d8568df991358 11
+api/sync/designs/[id].ts
+  s_1606b97c1ea28d::t_55079aeec229f9 350-375
+  s_1606b97c1ea28d::t_890f57d4993d91 220,227
+  s_1606b97c1ea28d::t_842b8869eac689 5
+  s_1606b97c1ea28d::t_e2403d32da8eb4 175
+api/lib/importedMeshValidation.test.ts
+  s_1606b97c1ea28d::t_93d6dbf971fcf8 1-192
+  s_1606b97c1ea28d::t_757e70e998f26d 193-195
+  s_623c5cf331b4f0::t_cfa5af3698948d 196-198
+api/lib/importedMeshValidation.crossBoundary.test.ts
+  s_1606b97c1ea28d::t_18619334967463 20,145,151-154,185-186
+  s_1606b97c1ea28d::t_c2ac7faf01e78b 146
+  s_1606b97c1ea28d::t_f7cc511b5d04dc 1-19,21-89,91-144,147-150,155-184,187-198
+api/sync/designVersions/[id].ts
+  s_1606b97c1ea28d::t_45fb7387c62047 97-125
+  s_1606b97c1ea28d::t_1be96232002dd7 5
+api/sync/README.md
+  s_1606b97c1ea28d::t_d7880d658a3c65 78
+api/sync/designs/[id].test.ts
+  s_1606b97c1ea28d::t_4c84c261c00299 944-1060
+  s_1606b97c1ea28d::t_c36ff18ad07c8f 1061-1063
+  s_623c5cf331b4f0::t_23d4e8a924b46a 1064-1066
+api/sync/designVersions/[id].test.ts
+  s_1606b97c1ea28d::t_7b29c578f7f613 389-466
+api/lib/designerCutoutValidation.ts
+  s_1606b97c1ea28d::t_1eb2c3ddab8eb7 228-313,320-321,351-352
+  s_1606b97c1ea28d::t_f8d731e6f2f0a4 227
+api/lib/importedMeshValidation.ts
+  s_1606b97c1ea28d::t_b00c7496801c44 1-14,16-59,62-67,71-72,75-95,97-130,132-144
+  s_1606b97c1ea28d::t_f4e379462623e5 60-61,68-70
+  s_1606b97c1ea28d::t_777465b3ec548c 15
+src/features/bin-designer/sync/designAdapter.ts
+  s_1606b97c1ea28d::t_a183d75947d834 15,25,83,102,104,113,129-130,166-182,197-198,227,266-267,298-300,306,339-349,355-359
+  s_1606b97c1ea28d::t_53935f514d7c3c 291,353,388,390
+  s_1606b97c1ea28d::t_382654e765076b 36
+  s_1606b97c1ea28d::t_f556e543c2a7fd 276,283-284
+  s_1606b97c1ea28d::t_f5ed83d2c93fcc 26,379
+src/features/bin-designer/hooks/useBackgroundThumbnailRegen.test.ts
+  s_1606b97c1ea28d::t_dec77c7fb1d068 427-463
+  s_1606b97c1ea28d::t_ab7830363ba3ef 37
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_1606b97c1ea28d::t_99220d56f77ab3 11,430-485
+src/features/bin-designer/sync/designAdapter.test.ts
+  s_1606b97c1ea28d::t_11e741cda98ab0 93-95,100,102,106,108,114-119,121-163,165-168,175-220
+  s_1606b97c1ea28d::t_e310f164e46ee0 120,164,169-174
+  s_1606b97c1ea28d::t_8799ae329bcefb 683
+  s_1606b97c1ea28d::t_c6e04c7895f76b 23
+  s_1606b97c1ea28d::t_f5ed83d2c93fcc 665-682,684
+src/features/bin-designer/sync/meshPayloads.test.ts
+  s_1606b97c1ea28d::t_e53ab0dbfd4ed9 24-25,651-736,738-741,744-746,755-856
+  s_1606b97c1ea28d::t_f9f054f26d7d76 737,742-743,747-754
+  s_1606b97c1ea28d::t_ad394752db4abd 857
+src/features/bin-designer/hooks/useBackgroundThumbnailRegen.ts
+  s_1606b97c1ea28d::t_a183d75947d834 8,36,120-124,126,130,280
+src/features/bin-designer/sync/designVersionAdapter.test.ts
+  s_1606b97c1ea28d::t_e310f164e46ee0 120-121
+  s_1606b97c1ea28d::t_11e741cda98ab0 82,89,91-92,94,101-119
+  s_1606b97c1ea28d::t_5b18fb354a3ab4 122-123
+src/features/bin-designer/utils/designKind.ts
+  s_1606b97c1ea28d::t_a183d75947d834 20-21,24-26,28-29
+src/features/bin-designer/store/customBinRegistry.ts
+  s_1606b97c1ea28d::t_a183d75947d834 277-284,286-299
+  s_1606b97c1ea28d::t_defec8c240ebf0 285
+src/features/bin-designer/utils/designKind.test.ts
+  s_1606b97c1ea28d::t_b313078f087992 4-9,39-57
+  s_1606b97c1ea28d::t_65c40f78a4d4a0 58-59
+.claude/skills/mesh-storage/SKILL.md
+  s_1606b97c1ea28d::t_7698b9e1464d63 32-33
+  s_1606b97c1ea28d::t_66f619fd99b6e1 30
+  s_1606b97c1ea28d::t_2e36e0228958f9 20,23-26
+  s_1606b97c1ea28d::t_11af9ca68bb67c 27
+src/shared/items/importedMesh/descriptor.test.ts
+  s_1606b97c1ea28d::t_165ad585a60a55 39-42
+  s_1606b97c1ea28d::t_777465b3ec548c 37-38,43-45
+src/shared/items/importedMesh/descriptor.ts
+  s_1606b97c1ea28d::t_777465b3ec548c 16-17
+src/features/bin-designer/constants/gridfinity.test.ts
+  s_1606b97c1ea28d::t_165ad585a60a55 3,113-118
+  s_1606b97c1ea28d::t_cbd9e351c8746e 119-120
+src/core/sync/claim.test.ts
+  s_1606b97c1ea28d::t_3fa9673c641641 3-9,137-171,315-326
+  s_1606b97c1ea28d::t_bc0a06ba9e2ac5 327-328
+  s_1606b97c1ea28d::t_9940eae2529c9b 247-283
+  s_1606b97c1ea28d::t_8c4f45b11d8f7a 284-314
+  s_1606b97c1ea28d::t_c6544b5068f3c7 10
+  s_1606b97c1ea28d::t_08f365a53b39ba 206
+  s_1606b97c1ea28d::t_b8392183ddb901 131-133
+  s_1606b97c1ea28d::t_efef1c279fb891 170-171,200-205,209-245
+  s_1606b97c1ea28d::t_f8ba73340fd69a 64
+  s_1606b97c1ea28d::t_047ce8854c9f98 246
+  s_1606b97c1ea28d::t_a1fa7e4e1fae75 172-199
+src/core/sync/signOut.ts
+  s_1606b97c1ea28d::t_a55701ce36bbad 5
+  s_1606b97c1ea28d::t_c867cd6711318f 38-43,45,49-59,61-65,67,69-73
+  s_1606b97c1ea28d::t_be47246196d94c 4
+src/core/sync/signOut.test.ts
+  s_1606b97c1ea28d::t_50bfaa94876943 4-5,28-29,31-32,173-174,176-186
+  s_1606b97c1ea28d::t_ea938566e26e0a 187-188
+  s_1606b97c1ea28d::t_9940eae2529c9b 30,175
+  s_1606b97c1ea28d::t_9c5a508cb7044d 23-26
+  s_1606b97c1ea28d::t_7e7713e4f555a4 49
+  s_1606b97c1ea28d::t_563a3ce22a4c91 289-309,327-341
+src/core/sync/claim.ts
+  s_1606b97c1ea28d::t_b0a599796e0430 20-21,58-60,71-73,76-78,84-85,93,96,100,115,117,132,138-141,143,145,221-225,227,256
+  s_1606b97c1ea28d::t_99c6c7e919b526 128
+  s_1606b97c1ea28d::t_5d4e34b6d2e409 61-66,68-70,74-75,86,95,116,118-119,123-127,129-131,133-137,142,153,158,169,186,193-194,203,226,232,257,270,278-280,291-298,310-317,325-327,336-338
+  s_1606b97c1ea28d::t_f556e543c2a7fd 83,150
+  s_1606b97c1ea28d::t_f5ed83d2c93fcc 180
+  s_1606b97c1ea28d::t_5b6444a8b283e0 195
+  s_1606b97c1ea28d::t_f9041001d88e18 156-157,160
+  s_1606b97c1ea28d::t_a35835030267f1 79-82,87-92,94,97-99
+  s_1606b97c1ea28d::t_0a42b89d56866b 120-122
+  s_1606b97c1ea28d::t_78ccc91d463d6d 67
+  s_1606b97c1ea28d::t_d0ba695f45165d 161-163
+src/features/bin-designer/sync/designVersionAdapter.ts
+  s_1606b97c1ea28d::t_382654e765076b 26,180,184
+  s_1606b97c1ea28d::t_f556e543c2a7fd 165,172-173
+src/core/sync/deleteAccount.ts
+  s_1606b97c1ea28d::t_5d4e34b6d2e409 4
+src/core/sync/session/useSession.test.ts
+  s_1606b97c1ea28d::t_4eab7512981821 137-138,145-147,168-169,171
+  s_1606b97c1ea28d::t_de4eb7322311c9 139-144
+src/core/sync/session/useSession.ts
+  s_1606b97c1ea28d::t_fb1dfde6da805f 5
+  s_1606b97c1ea28d::t_4eab7512981821 153-154
+  s_1606b97c1ea28d::t_914f88d518f67b 155-158
+  s_2fb0424f1c7a72::t_46082710af1a6e 159-160
+src/features/bin-designer/sync/meshPushPlan.ts
+  s_1606b97c1ea28d::t_f556e543c2a7fd 20-21,23
+src/core/sync/poller.ts
+  s_1606b97c1ea28d::t_548291b9a07981 55-56,58-64,233
+  s_1606b97c1ea28d::t_553790aba67ff2 183,188-189,197,202,210,213-220,227,232
+  s_1606b97c1ea28d::t_9ccca8b43cf91c 133-134,138-155,161-162
+  s_1606b97c1ea28d::t_8171c9f935ddac 234
+  s_1606b97c1ea28d::t_b82b1e6650217e 45,47-49,51-52,57,65-73
+  s_1606b97c1ea28d::t_d78d002c9b4496 78-79
+  s_1606b97c1ea28d::t_20952c3054f6ae 74-75
+src/core/sync/pullState.ts
+  s_1606b97c1ea28d::t_74c5ca3559e015 16
+  s_1606b97c1ea28d::t_6885e100c9e68d 15,17-25
+src/core/sync/poller.test.ts
+  s_1606b97c1ea28d::t_af25001023ebe7 174-212,286-287
+  s_1606b97c1ea28d::t_902578d7c8cf7a 213,215-246,248-285
+  s_1606b97c1ea28d::t_2d2bb8364eb482 3
+  s_2fb0424f1c7a72::t_b3bd2d35652c24 214,247
+src/features/cloud-share/README.md
+  s_1606b97c1ea28d::t_2e36e0228958f9 58-59
+src/core/api/share.ts
+  s_1606b97c1ea28d::t_4dede932cb5851 20-23,57-58,62-67,78-80,90,97-98,109-110,113,128-177,268-283,366-381,395-398
+  s_1606b97c1ea28d::t_039e6c803f042f 94-96
+  s_1606b97c1ea28d::t_dde93fe3e02a6a 399
+src/core/storage/ShareService.test.ts
+  s_1606b97c1ea28d::t_67afa998650f1a 700,749
+scripts/doc-budget.json
+  s_1606b97c1ea28d::t_8bc6675136b675 17
+api/lib/sharedDesignsValidation.ts
+  s_1606b97c1ea28d::t_f4e3e8d6111649 150-153
+  s_1606b97c1ea28d::t_bee1844f111b82 177-181
+  s_1606b97c1ea28d::t_edb7d2f72648eb 7
+api/lib/shareMeshes.ts
+  s_1606b97c1ea28d::t_af0787d5d4eb6d 1-38
+  s_1606b97c1ea28d::t_2c4a7d13ba01ae 39-40
+api/share.ts
+  s_1606b97c1ea28d::t_cd92c92b2de546 11,14-15,88,168-171,221,263-264,268
+api/share/[id].ts
+  s_1606b97c1ea28d::t_611ac9fc7773b4 10,12-13,102,183-184,227-233,239,247-256,321-323,352,357,365-371,374-384
+api/lib/validation.test.ts
+  s_1606b97c1ea28d::t_b36dc5ab614e45 11,1098-1116
+  s_1606b97c1ea28d::t_e14454ff7ed915 1117-1118
+api/share/[id].test.ts
+  s_1606b97c1ea28d::t_8e4748f911e102 32-40,149-151,338-415,421-423
+  s_1606b97c1ea28d::t_b05da7aa5d7943 416-420
+src/core/sync/payloadKey.ts
+  s_1606b97c1ea28d::t_56cca37227e7c6 9
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.tsx
+  s_1606b97c1ea28d::t_82baa62fbaba4d 224,226-232
+api/lib/redisKeys.ts
+  s_1606b97c1ea28d::t_bbae6f776036c3 155
+src/core/api/share.test.ts
+  s_1606b97c1ea28d::t_9c2eeb573ec3ab 18-24,492-651,657-662,664-666
+  s_1606b97c1ea28d::t_0d91d0e8dbcd01 663
+  s_1606b97c1ea28d::t_4d287145ff4751 667-669
+api/lib/meshIndex.ts
+  s_1606b97c1ea28d::t_a507ab57c7c51d 7-10
+  s_1606b97c1ea28d::t_63b4674ec9562d 27-30
+  s_1606b97c1ea28d::t_b46504dbca32bf 156-195
+api/lib/validation.ts
+  s_1606b97c1ea28d::t_9dc3b099ea204e 17-21
+src/core/storage/ShareService.ts
+  s_1606b97c1ea28d::t_f5da8df22267d3 84,87-88,105
+src/features/bin-designer/storage/designStoreAdapter.ts
+  s_1606b97c1ea28d::t_f5da8df22267d3 43-44
+  s_1606b97c1ea28d::t_50fd8100626c92 34-37
+api/share.test.ts
+  s_1606b97c1ea28d::t_886d4dd1b0570f 32-33,36-38,131-132,389-442
+  s_1606b97c1ea28d::t_9879b8067c75a5 443-444
+api/lib/meshIndex.test.ts
+  s_1606b97c1ea28d::t_5a12ebe1831929 12-13,16-17,58-71,340-387
+src/core/sync/payloadKey.test.ts
+  s_1606b97c1ea28d::t_56cca37227e7c6 23
+api/sync/lib/resourceHandler.ts
+  s_1606b97c1ea28d::t_bbae6f776036c3 24,37
+api/lib/shareMeshes.test.ts
+  s_1606b97c1ea28d::t_caa6dd73912846 1-88
+src/features/bin-designer/storage/designStoreAdapter.test.ts
+  s_1606b97c1ea28d::t_f3ec0c140cf072 103-121
+  s_1606b97c1ea28d::t_2e4601c8038158 122-124
+src/core/storage/designStorePort.ts
+  s_1606b97c1ea28d::t_f5da8df22267d3 106-113
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.test.tsx
+  s_1606b97c1ea28d::t_a3b03e501d0c26 2,21-24,109-135
+  s_1606b97c1ea28d::t_7a7f420846615a 136-137
+api/lib/shared.ts
+  s_1606b97c1ea28d::t_611ac9fc7773b4 200-201
+  s_1606b97c1ea28d::t_bbae6f776036c3 242-249
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "896971dd5016cabc01fe9b6067e9194defcd2161",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_2fb0424f1c7a72": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c92563ef-8abd-4df3-a9be-fa69c6091639",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_623c5cf331b4f0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a8846805486e8fb97",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
