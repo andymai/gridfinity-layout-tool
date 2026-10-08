@@ -17,7 +17,9 @@
  * long-open tab still holds a ref to (in its undo history, say).
  */
 
+import type { IDBPDatabase } from 'idb';
 import { createDbAccessor } from '@/core/storage';
+import type { DbAccessor } from '@/core/storage/backends/openSingleton';
 import { createLogger } from '@/core/logger';
 import { sha256Hex } from './sha256';
 
@@ -52,19 +54,25 @@ export const MESH_USE_REFRESH_MS = 24 * 60 * 60 * 1000;
 
 const MEMORY_BUDGET_BYTES = 16 * 1024 * 1024;
 
-const db = createDbAccessor({
-  name: DB_NAME,
-  version: DB_VERSION,
-  upgrade(database) {
-    if (!database.objectStoreNames.contains(FILES_STORE)) {
-      database.createObjectStore(FILES_STORE, { keyPath: 'hash' });
-    }
-    if (!database.objectStoreNames.contains(META_STORE)) {
-      database.createObjectStore(META_STORE, { keyPath: 'hash' });
-    }
-  },
-  onUnavailable: () => null,
-});
+let accessor: DbAccessor<IDBPDatabase | null> | null = null;
+
+// Made on first use: the storage barrel reaches this module again through the
+// share and archive services, so the factory may be unbound while it loads.
+function db(): DbAccessor<IDBPDatabase | null> {
+  return (accessor ??= createDbAccessor({
+    name: DB_NAME,
+    version: DB_VERSION,
+    upgrade(database) {
+      if (!database.objectStoreNames.contains(FILES_STORE)) {
+        database.createObjectStore(FILES_STORE, { keyPath: 'hash' });
+      }
+      if (!database.objectStoreNames.contains(META_STORE)) {
+        database.createObjectStore(META_STORE, { keyPath: 'hash' });
+      }
+    },
+    onUnavailable: () => null,
+  }));
+}
 
 /** Insertion order is recency order. */
 const memory = new Map<string, Uint8Array<ArrayBuffer>>();
@@ -143,7 +151,7 @@ export async function putMeshFile(bytes: Uint8Array<ArrayBuffer>): Promise<strin
   if (!hasIndexedDb()) return null;
   try {
     const hash = await sha256Hex(bytes);
-    const database = await db.get();
+    const database = await db().get();
     if (!database) return null;
     const tx = database.transaction([FILES_STORE, META_STORE], 'readwrite');
     const files = tx.objectStore(FILES_STORE);
@@ -169,7 +177,7 @@ export async function putMeshFile(bytes: Uint8Array<ArrayBuffer>): Promise<strin
  */
 async function writeUse(hashes: readonly string[], now: number): Promise<void> {
   if (hashes.length === 0 || !hasIndexedDb()) return;
-  const database = await db.get();
+  const database = await db().get();
   if (!database) return;
   // Read and write in one transaction, so another tab's sweep lands wholly
   // before it (the file reads as missing and is stored again) or after it.
@@ -234,7 +242,7 @@ export async function getMeshFile(hash: string): Promise<Uint8Array<ArrayBuffer>
   }
   if (!hasIndexedDb()) return null;
   try {
-    const database = await db.get();
+    const database = await db().get();
     if (!database) return null;
     const stored = (await database.get(FILES_STORE, hash)) as StoredMeshFile | undefined;
     if (!stored) return null;
@@ -251,7 +259,7 @@ export async function hasMeshFile(hash: string): Promise<boolean> {
   if (memory.has(hash)) return true;
   if (!hasIndexedDb()) return false;
   try {
-    const database = await db.get();
+    const database = await db().get();
     if (!database) return false;
     return (await database.getKey(FILES_STORE, hash)) !== undefined;
   } catch {
@@ -271,7 +279,7 @@ export async function sweepMeshFiles(
 ): Promise<string[]> {
   if (!hasIndexedDb()) return [];
   try {
-    const database = await db.get();
+    const database = await db().get();
     if (!database) return [];
     const tx = database.transaction([FILES_STORE, META_STORE], 'readwrite');
     const metas = (await tx.objectStore(META_STORE).getAll()) as MeshFileMeta[];
@@ -293,7 +301,7 @@ export async function sweepMeshFiles(
 
 /** Test-only: drop the connection and every in-memory record. */
 export function __resetMeshStoreForTests(): void {
-  db.close();
+  accessor?.close();
   memory.clear();
   memoryBytes = 0;
   lastUseWritten.clear();
