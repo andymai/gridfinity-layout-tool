@@ -1566,6 +1566,7 @@
   "binDesigner.plates.blank": "leer",
   "binDesigner.plates.dialogDescription": "Eine druckbare Datei mit einer Platte pro Aufnahme, jeweils mit dem Beschriftungstext des Fachs. Die Texttiefe rastet auf ganze Schichten ein — ein einziger Filamentwechsel druckt zweifarbige Etiketten.",
   "binDesigner.plates.dialogTitle": "Etikettenplatten exportieren",
+  "binDesigner.plates.downloadFormat": "Etikettenplatten herunterladen ({format})",
   "binDesigner.plates.export": "Platten exportieren",
   "binDesigner.plates.exportComplete": "Etikettenplatten exportiert",
   "binDesigner.plates.exportFailed": "Export der Etikettenplatten fehlgeschlagen",

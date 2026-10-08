@@ -50,6 +50,18 @@ describe('LabelTabsSection', () => {
     expect(screen.getByRole('button', { name: 'Solid', pressed: false })).toBeInTheDocument();
   });
 
+  it('shows the plate export for swappable labels without opening Plate fit', () => {
+    useDesignerStore.setState((s) => ({
+      params: {
+        ...s.params,
+        label: { ...s.params.label, enabled: true, mode: 'socket', depth: 14 },
+      },
+    }));
+    render(<LabelTabsSection />);
+
+    expect(screen.getByRole('button', { name: 'Export plates' })).toBeInTheDocument();
+  });
+
   it('offers the removal hole on click-in sockets only, and stores it only when on', () => {
     useDesignerStore.setState((s) => ({
       params: {

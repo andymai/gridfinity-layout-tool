@@ -1566,6 +1566,7 @@
   "binDesigner.plates.blank": "tom",
   "binDesigner.plates.dialogDescription": "Én utskriftsklar fil med en plate per sokkel, med rommets etikettekst. Tekstdybden festes til hele lag — ett filamentbytte gir tofargede etiketter.",
   "binDesigner.plates.dialogTitle": "Eksporter etikettplater",
+  "binDesigner.plates.downloadFormat": "Last ned etikettplater ({format})",
   "binDesigner.plates.export": "Eksporter plater",
   "binDesigner.plates.exportComplete": "Etikettplater eksportert",
   "binDesigner.plates.exportFailed": "Eksport av etikettplater mislyktes",

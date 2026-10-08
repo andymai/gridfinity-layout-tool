@@ -13,6 +13,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
+import { useLabelPlateExport } from '@/features/bin-designer/hooks/useLabelPlateExport';
 import { computeActiveZones, isSingleColor } from '@/features/bin-designer/types/featureColors';
 import { zoneLabel } from '@/features/bin-designer/utils/zoneLabels';
 import { anyCompartmentColored } from '@/features/bin-designer/utils/compartmentColorUnits';
@@ -38,7 +39,8 @@ import { useTranslation } from '@/i18n';
 import {
   ExportDialog as SharedExportDialog,
   ExportSupportPrompt,
-  recordExportAndShouldPromptSupport,
+  claimSupportPrompt,
+  recordExport,
 } from '@/shared/components/ExportDialog';
 import type { ExportFileFormat } from '@/features/bin-designer/types';
 
@@ -90,11 +92,22 @@ export function ExportDialog() {
     splitPieceCount,
     downloadSplit,
   } = useExport();
+  // Plates print apart from the bin, so the bin's download never carries them;
+  // offering them here is what keeps a design's plates from going unnoticed.
+  const { plates, isExporting: isExportingPlates, downloadPlates } = useLabelPlateExport();
   const [splitEnabled, setSplitEnabled] = useState(true);
   const [justExported, setJustExported] = useState(false);
+  // With plates, the dialog finishes only once both files are taken, so the
+  // first download never takes away the button for the other.
+  const taken = useRef({ bin: false, plates: false });
+  // Bumped on every open and close: a download that settles after its dialog
+  // closed must not steer the next one.
+  const session = useRef(0);
   const addToast = useToastStore((s) => s.addToast);
 
   const closeDialog = useCallback(() => {
+    session.current++;
+    taken.current = { bin: false, plates: false };
     setJustExported(false);
     setExportDialogOpen(false);
   }, [setExportDialogOpen]);
@@ -140,6 +153,8 @@ export function ExportDialog() {
     prevOpenRef.current = exportDialogOpen;
     // Re-opening the dialog always returns to the form, never a stale success view.
     if (!justOpened) return;
+    session.current++;
+    taken.current = { bin: false, plates: false };
     setJustExported(false);
     const format = exportFileNameConfig.format;
     if (isMultiColor && (format === 'stl' || format === 'step')) {
@@ -218,17 +233,56 @@ export function ExportDialog() {
     });
   }, [publishVisible, canPublish, addToast, openPublish, t]);
 
+  // The support view is reserved for returning makers (2nd+ export), at most
+  // once per cooldown; everyone else just gets the low-friction auto-close.
+  const finishExport = useCallback(
+    (toastComplete: boolean) => {
+      // Finished: closing the support view after this offers nothing more.
+      taken.current = { bin: false, plates: false };
+      if (claimSupportPrompt()) {
+        setJustExported(true);
+        return;
+      }
+      if (toastComplete) {
+        addToast({ message: t('export.complete'), type: 'success', duration: 3000 });
+      }
+      closeDialog();
+      void offerPublish();
+    },
+    [addToast, closeDialog, offerPublish, t]
+  );
+
+  const dismissDialog = useCallback(() => {
+    const binOnly = taken.current.bin && !taken.current.plates;
+    closeDialog();
+    if (binOnly) void offerPublish();
+  }, [closeDialog, offerPublish]);
+
+  const handleDownloadPlates = useCallback(() => {
+    const started = session.current;
+    void downloadPlates(activeFormat).then((succeeded) => {
+      if (!succeeded) return;
+      addToast(t('binDesigner.plates.exportComplete'), 'success', 3000);
+      if (started !== session.current) return;
+      taken.current.plates = true;
+      if (taken.current.bin) finishExport(false);
+    });
+  }, [downloadPlates, activeFormat, addToast, t, finishExport]);
+
   const handleDownload = useCallback(async () => {
     // The hook owns error handling end-to-end (telemetry + Retry/Report
     // toast + captureException with rich bin context). We gate the success
     // toast and dialog close on the boolean result instead of try/catch —
     // resolution alone does not imply success since the hook returns false
     // on caught failures and on engine-warmup queueing.
+    const started = session.current;
     const succeeded = useSplitExport
       ? await downloadSplit(activeFormat, exportFileNameConfig, designName)
       : await downloadBin(activeFormat, exportFileNameConfig, designName);
 
     if (!succeeded) return;
+    recordExport();
+    if (started !== session.current) return;
 
     // Split exports always surface their piece count, support view or not.
     if (useSplitExport) {
@@ -239,18 +293,14 @@ export function ExportDialog() {
       });
     }
 
-    // The support view is reserved for returning makers (2nd+ export), at most
-    // once per cooldown; everyone else just gets the low-friction auto-close.
-    if (recordExportAndShouldPromptSupport()) {
-      setJustExported(true);
+    taken.current.bin = true;
+    if (plates.length > 0 && !taken.current.plates) {
+      if (!useSplitExport) {
+        addToast({ message: t('export.complete'), type: 'success', duration: 3000 });
+      }
       return;
     }
-
-    if (!useSplitExport) {
-      addToast({ message: t('export.complete'), type: 'success', duration: 3000 });
-    }
-    closeDialog();
-    void offerPublish();
+    finishExport(!useSplitExport);
   }, [
     useSplitExport,
     downloadSplit,
@@ -260,8 +310,8 @@ export function ExportDialog() {
     designName,
     splitPieceCount,
     addToast,
-    closeDialog,
-    offerPublish,
+    plates.length,
+    finishExport,
     t,
   ]);
 
@@ -288,14 +338,14 @@ export function ExportDialog() {
   return (
     <SharedExportDialog
       open={exportDialogOpen}
-      onClose={closeDialog}
+      onClose={dismissDialog}
       activeFormat={activeFormat}
       fileNameConfig={exportFileNameConfig}
       onFileNameConfigChange={setExportFileNameConfig}
       fileName={fileName}
       displayExtension={displayExtension}
       canExport={canExport && engineReady}
-      isExporting={isExporting}
+      isExporting={isExporting || isExportingPlates}
       exportProgress={
         isExportingBin
           ? {
@@ -307,6 +357,12 @@ export function ExportDialog() {
       }
       onDownload={() => void handleDownload()}
       downloadLabel={downloadLabel}
+      secondaryDownload={{
+        label: t('binDesigner.plates.downloadFormat', { format: activeFormat.toUpperCase() }),
+        isExporting: isExportingPlates,
+        onClick: handleDownloadPlates,
+        visible: plates.length > 0 && engineReady,
+      }}
       splitBanner={
         needsSplit
           ? {

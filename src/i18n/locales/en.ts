@@ -1950,6 +1950,7 @@ const en: Record<string, string> = {
   'binDesigner.plates.blank': 'blank',
   'binDesigner.plates.preview': 'Preview plates',
   'binDesigner.plates.export': 'Export plates',
+  'binDesigner.plates.downloadFormat': 'Download label plates ({format})',
   'binDesigner.plates.exportComplete': 'Label plates exported',
   'binDesigner.plates.exportFailed': 'Label plate export failed',
   'binDesigner.plates.dialogTitle': 'Export label plates',

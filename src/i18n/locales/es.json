@@ -1566,6 +1566,7 @@
   "binDesigner.plates.blank": "vacía",
   "binDesigner.plates.dialogDescription": "Un archivo imprimible con una placa por alojamiento, con el texto de etiqueta de su compartimento. La profundidad del texto se ajusta a capas completas: un solo cambio de filamento imprime etiquetas a dos colores.",
   "binDesigner.plates.dialogTitle": "Exportar placas de etiqueta",
+  "binDesigner.plates.downloadFormat": "Descargar placas de etiqueta ({format})",
   "binDesigner.plates.export": "Exportar placas",
   "binDesigner.plates.exportComplete": "Placas de etiqueta exportadas",
   "binDesigner.plates.exportFailed": "Error al exportar las placas de etiqueta",

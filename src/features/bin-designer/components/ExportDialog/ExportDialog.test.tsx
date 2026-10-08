@@ -21,8 +21,11 @@ const mockAddToast = vi.fn();
 const mockOpenPublish = vi.fn();
 const mockLoadDesign = vi.fn();
 let mockShouldPromptSupport = false;
+const mockRecordExport = vi.fn();
 /** Split state the mocked hook reports; reset to "fits the bed" per test. */
 let mockSplitState = { needsSplit: false, splitPieceCount: 1 };
+const mockDownloadPlates = vi.fn(async () => true);
+let mockPlates: { widthU: number; text: string }[] = [];
 
 vi.mock('@/core/store/toast', async (importOriginal) => {
   const actual = await importOriginal<typeof ToastStore>();
@@ -53,12 +56,23 @@ vi.mock('@/shared/components/ExportDialog', async (importOriginal) => {
   const actual = await importOriginal<typeof SharedExportDialog>();
   return {
     ...actual,
-    recordExportAndShouldPromptSupport: () => mockShouldPromptSupport,
+    recordExport: () => mockRecordExport(),
+    claimSupportPrompt: () => mockShouldPromptSupport,
   };
 });
 
 vi.mock('@/features/bin-designer/utils/designJson', () => ({
   downloadDesignAsFile: vi.fn(async () => ({ ok: true, value: undefined })),
+}));
+
+vi.mock('@/features/bin-designer/hooks/useLabelPlateExport', () => ({
+  useLabelPlateExport: () => ({
+    plates: mockPlates,
+    isExporting: false,
+    canExport: true,
+    downloadPlates: mockDownloadPlates,
+    fetchPreviewStl: vi.fn(),
+  }),
 }));
 
 vi.mock('@/features/bin-designer/hooks/useExport', () => ({
@@ -117,7 +131,117 @@ describe('ExportDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSplitState = { needsSplit: false, splitPieceCount: 1 };
+    mockPlates = [];
     setupStore();
+  });
+
+  it.each([
+    ['stl', 'STL'],
+    ['3mf', '3MF'],
+    ['step', 'STEP'],
+  ] as const)("offers the design's label plates beside the bin as %s", (format, label) => {
+    mockPlates = [{ widthU: 1, text: 'M3' }];
+    setupStore({ exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, format } });
+    render(<ExportDialog />);
+
+    fireEvent.click(screen.getByRole('button', { name: `Download label plates (${label})` }));
+
+    expect(mockDownloadPlates).toHaveBeenCalledWith(format);
+  });
+
+  describe('a design with label plates', () => {
+    beforeEach(() => {
+      mockPlates = [{ widthU: 1, text: 'M3' }];
+      mockShouldPromptSupport = false;
+      mockDownloadBin.mockResolvedValue(true);
+      mockLoadDesign.mockResolvedValue(ok({ publishedId: 'Pub123456789' }));
+    });
+
+    const click = async (name: string | RegExp): Promise<void> => {
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name }));
+      });
+    };
+
+    it('keeps the plates on offer after the bin downloads, then closes', async () => {
+      render(<ExportDialog />);
+
+      await click(/download stl/i);
+      expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(true);
+
+      await click('Download label plates (STL)');
+      expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(false);
+    });
+
+    it('keeps the bin on offer after the plates download, then closes', async () => {
+      render(<ExportDialog />);
+
+      await click('Download label plates (STL)');
+      expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(true);
+
+      await click(/download stl/i);
+      expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(false);
+    });
+
+    it('counts a bin downloaded alone, and offers to publish when the dialog closes', async () => {
+      mockLoadDesign.mockResolvedValue(ok({ publishedId: undefined }));
+      localStorage.clear();
+      useDesignerStore.setState({ currentDesignId: 'design-1' });
+      render(<ExportDialog />);
+
+      await click(/download stl/i);
+      expect(mockRecordExport).toHaveBeenCalledTimes(1);
+      await click('Close dialog');
+
+      expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(false);
+      await vi.waitFor(() =>
+        expect(mockAddToast).toHaveBeenCalledWith(
+          expect.objectContaining({ message: 'Nice bin. Share it with the community?' })
+        )
+      );
+    });
+
+    it('lets a plate download settling after a reopen leave the new dialog alone', async () => {
+      let settle = (_ok: boolean): void => undefined;
+      mockDownloadPlates.mockImplementationOnce(
+        () =>
+          new Promise<boolean>((resolve) => {
+            settle = resolve;
+          })
+      );
+      render(<ExportDialog />);
+
+      await click('Download label plates (STL)');
+      await click('Close dialog');
+      act(() => useDesignerStore.getState().setExportDialogOpen(true));
+      await act(async () => settle(true));
+      await click(/download stl/i);
+
+      expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(true);
+      expect(
+        screen.getByRole('button', { name: 'Download label plates (STL)' })
+      ).toBeInTheDocument();
+    });
+
+    it('shows the support prompt only once both are downloaded', async () => {
+      mockShouldPromptSupport = true;
+      render(<ExportDialog />);
+
+      await click(/download stl/i);
+      expect(
+        screen.getByRole('button', { name: 'Download label plates (STL)' })
+      ).toBeInTheDocument();
+
+      await click('Download label plates (STL)');
+      expect(screen.queryByRole('button', { name: /download stl/i })).toBeNull();
+      expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(true);
+    });
+  });
+
+  it('offers no plate download for a bin without label plates', () => {
+    render(<ExportDialog />);
+
+    expect(screen.queryByRole('button', { name: /Download label plates/ })).toBeNull();
   });
 
   it('does not render when dialog is closed', () => {
@@ -664,6 +788,18 @@ describe('ExportDialog', () => {
     it('yields to the support prompt rather than stacking two asks', async () => {
       mockShouldPromptSupport = true;
       await download();
+      expect(mockAddToast).not.toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Nice bin. Share it with the community?' })
+      );
+    });
+
+    it('offers nothing more when the support view is closed', async () => {
+      mockShouldPromptSupport = true;
+      await download();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Close dialog' }));
+      });
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(mockAddToast).not.toHaveBeenCalledWith(
         expect.objectContaining({ message: 'Nice bin. Share it with the community?' })
       );

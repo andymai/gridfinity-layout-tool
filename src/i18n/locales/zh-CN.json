@@ -1566,6 +1566,7 @@
   "binDesigner.plates.blank": "空白",
   "binDesigner.plates.dialogDescription": "一个可打印文件，为每个卡槽包含一块标签板，携带其隔间的标签文字。文字深度对齐到整层，因此只需换一次耗材即可打印双色标签。",
   "binDesigner.plates.dialogTitle": "导出标签板",
+  "binDesigner.plates.downloadFormat": "下载标签板 ({format})",
   "binDesigner.plates.export": "导出标签板",
   "binDesigner.plates.exportComplete": "标签板已导出",
   "binDesigner.plates.exportFailed": "标签板导出失败",

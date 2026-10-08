@@ -1566,6 +1566,7 @@
   "binDesigner.plates.blank": "vuota",
   "binDesigner.plates.dialogDescription": "Un file stampabile con una targhetta per ogni sede, con il testo di etichetta del suo scomparto. La profondità del testo si allinea a layer interi: un solo cambio filamento stampa etichette bicolore.",
   "binDesigner.plates.dialogTitle": "Esporta targhette etichetta",
+  "binDesigner.plates.downloadFormat": "Scarica targhette etichetta ({format})",
   "binDesigner.plates.export": "Esporta targhette",
   "binDesigner.plates.exportComplete": "Targhette etichetta esportate",
   "binDesigner.plates.exportFailed": "Esportazione delle targhette non riuscita",

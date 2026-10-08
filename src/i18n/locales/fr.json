@@ -1566,6 +1566,7 @@
   "binDesigner.plates.blank": "vide",
   "binDesigner.plates.dialogDescription": "Un fichier imprimable avec une plaque par logement, portant le texte d'étiquette de son compartiment. La profondeur du texte s'aligne sur des couches entières : un seul changement de filament imprime des étiquettes bicolores.",
   "binDesigner.plates.dialogTitle": "Exporter les plaques d'étiquette",
+  "binDesigner.plates.downloadFormat": "Télécharger les plaques d'étiquette ({format})",
   "binDesigner.plates.export": "Exporter les plaques",
   "binDesigner.plates.exportComplete": "Plaques d'étiquette exportées",
   "binDesigner.plates.exportFailed": "Échec de l'export des plaques d'étiquette",

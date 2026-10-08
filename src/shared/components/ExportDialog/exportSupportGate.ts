@@ -53,18 +53,29 @@ function cooledDown(lastShown: string | undefined): boolean {
   return Date.now() - last >= COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
 }
 
-/**
- * Record a successful export and return whether to show the support ask now.
- * Call exactly once per successful export. Has a side effect: increments the
- * stored export count and, when it returns true, stamps the cooldown.
- */
-export function recordExportAndShouldPromptSupport(): boolean {
+/** Count a successful export. Call exactly once per successful export. */
+export function recordExport(): void {
   const state = load();
   state.exportCount += 1;
-
-  const show = state.exportCount >= MIN_EXPORTS_BEFORE_ASK && cooledDown(state.lastShown);
-  if (show) state.lastShown = new Date().toISOString();
-
   save(state);
+}
+
+/**
+ * Whether to show the support ask now. Answering true stamps the cooldown, so
+ * call it only at the moment the ask would be shown.
+ */
+export function claimSupportPrompt(): boolean {
+  const state = load();
+  const show = state.exportCount >= MIN_EXPORTS_BEFORE_ASK && cooledDown(state.lastShown);
+  if (show) {
+    state.lastShown = new Date().toISOString();
+    save(state);
+  }
   return show;
+}
+
+/** Record a successful export and return whether to show the support ask now. */
+export function recordExportAndShouldPromptSupport(): boolean {
+  recordExport();
+  return claimSupportPrompt();
 }
