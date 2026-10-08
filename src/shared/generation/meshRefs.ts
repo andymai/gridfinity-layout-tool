@@ -167,15 +167,17 @@ function holderRefs(holder: MeshHolder): MeshAssetRef[] {
 }
 
 /**
- * Swap every ref in `holder` for its inline asset. Fails when a ref's file is
- * not on this device: a payload missing a mesh must not go out in place of the
- * one that has it.
+ * Swap every ref in `holder` (or only those naming a hash in `only`) for its
+ * inline asset. Fails when such a ref's file is not on this device: a payload
+ * missing a mesh must not go out in place of the one that has it.
  */
 export async function inlineHolderMeshes<T extends MeshHolder>(
-  holder: T
+  holder: T,
+  only?: ReadonlySet<string>
 ): Promise<Result<T, StorageMeshMissingError>> {
   const inline = new Map<MeshAssetEntry, MeshAsset>();
   for (const ref of holderRefs(holder)) {
+    if (only && !only.has(ref.hash)) continue;
     const asset = await resolveMeshAsset(ref);
     if (!asset) return err(storageMeshMissing(ref.hash));
     inline.set(ref, asset);

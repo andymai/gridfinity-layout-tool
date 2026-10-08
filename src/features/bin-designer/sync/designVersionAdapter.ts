@@ -125,6 +125,26 @@ async function readVersion(
   return version && content ? { version, content } : null;
 }
 
+/**
+ * The version with its meshes inline (only those naming a hash in `only`, when
+ * given), refusing a body whose mesh file is missing rather than push it
+ * without the mesh over the copy the server has; the file's arrival queues it
+ * again.
+ */
+async function inlineVersion(
+  id: string,
+  only?: ReadonlySet<string>
+): Promise<SyncableItem<DesignVersionPayload> | null> {
+  const read = await readVersion(id);
+  if (!read) return null;
+  const inline = await inlineHolderMeshes(read.content, only);
+  if (!isOk(inline)) {
+    missingMeshPushes.skip(inline.error.hash, id);
+    return null;
+  }
+  return toItem(read.version, inline.value);
+}
+
 export const designVersionAdapter: DesignVersionAdapter = {
   // Leaves the refs: this runs on every poll, its callers read ids and mtimes
   // only, and sign-out wipes by this list.
@@ -137,18 +157,8 @@ export const designVersionAdapter: DesignVersionAdapter = {
     });
   },
 
-  // Every mesh inline, refusing a body whose mesh file is missing rather than
-  // push it without the mesh over the copy the server has; the file's arrival
-  // queues it again.
-  async get(id: string): Promise<SyncableItem<DesignVersionPayload> | null> {
-    const read = await readVersion(id);
-    if (!read) return null;
-    const inline = await inlineHolderMeshes(read.content);
-    if (!isOk(inline)) {
-      missingMeshPushes.skip(inline.error.hash, id);
-      return null;
-    }
-    return toItem(read.version, inline.value);
+  get(id: string): Promise<SyncableItem<DesignVersionPayload> | null> {
+    return inlineVersion(id);
   },
 
   async preparePush(id: string): Promise<PushPlan<DesignVersionPayload>> {
@@ -157,7 +167,7 @@ export const designVersionAdapter: DesignVersionAdapter = {
     return planMeshPush(
       toItem(read.version, read.content),
       read.content,
-      () => designVersionAdapter.get(id),
+      (only) => inlineVersion(id, only),
       missingMeshPushes
     );
   },

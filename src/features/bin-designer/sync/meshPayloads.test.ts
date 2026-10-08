@@ -432,6 +432,24 @@ describe('pushes through the mesh store', () => {
     expect(JSON.stringify(plan?.status === 'send' ? plan.item : null)).toBe(JSON.stringify(inline));
   });
 
+  it('send a file the server refuses inline, and the rest as refs', async () => {
+    const { hashes } = await refDesign();
+    const [refused, held] = hashes;
+    fetchMock.mockImplementation(async (url, init) => {
+      if (init?.method !== 'HEAD') return new Response(null, { status: 413 });
+      return new Response(null, { status: url.endsWith(held) ? 200 : 404 });
+    });
+
+    const plan = await designAdapter.preparePush?.(DESIGN_ID);
+
+    if (plan?.status !== 'send') throw new Error(`expected send, got ${plan?.status}`);
+    const sent = meshAssetsOf(plan.item.payload.params).map((a) =>
+      isMeshAssetRef(a) ? a.hash : 'inline'
+    );
+    expect(sent.sort()).toEqual([held, 'inline'].sort());
+    expect(requests('PUT')).toEqual([`/api/meshes/${refused}`]);
+  });
+
   it('defer the push when an upload fails', async () => {
     await refDesign();
     fetchMock.mockImplementation(

@@ -27,7 +27,11 @@ import {
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { syncPersistError } from '@/core/sync/adapters/persistError';
 import { holderMeshHashes, inlineHolderMeshes } from '@/shared/generation/meshRefs';
-import { fetchMeshFiles, forgetHeldMeshes } from '@/shared/generation/meshCloud';
+import {
+  cancelMeshDownloads,
+  fetchMeshFiles,
+  forgetHeldMeshes,
+} from '@/shared/generation/meshCloud';
 import { referencedMeshHashes } from '@/features/bin-designer/storage/designMeshFiles';
 import { subscribe as subscribeDesignerEvents } from './designerEvents';
 import { createMissingMeshPushes } from './missingMeshPushes';
@@ -197,6 +201,27 @@ function toItem(d: SavedDesign): SyncableItem<DesignSyncPayload> {
   return { id: d.id, payload: buildPayload(d), modifiedAt: toMs(d.updatedAt) };
 }
 
+/**
+ * The design with its meshes inline (only those naming a hash in `only`, when
+ * given). Non-syncable kinds answer null, which makes the engine drop the
+ * outbox entry as a no-op (it never tombstones on a null get). A design whose
+ * mesh file is missing is dropped the same way, so the copy on the server keeps
+ * its mesh, and queued again when the file arrives.
+ */
+async function inlineDesign(
+  id: string,
+  only?: ReadonlySet<string>
+): Promise<SyncableItem<DesignSyncPayload> | null> {
+  const result = await loadDesign(designId(id));
+  if (!isOk(result) || !isSyncableDesign(result.value)) return null;
+  const inline = await inlineHolderMeshes(result.value, only);
+  if (!isOk(inline)) {
+    missingMeshPushes.skip(inline.error.hash, id);
+    return null;
+  }
+  return toItem(inline.value);
+}
+
 export const designAdapter: DesignAdapter = {
   async list(): Promise<SyncableItem<DesignSyncPayload>[]> {
     const result = await listDesigns();
@@ -207,20 +232,8 @@ export const designAdapter: DesignAdapter = {
     return result.value.filter(isSyncableDesign).map(toItem);
   },
 
-  async get(id: string): Promise<SyncableItem<DesignSyncPayload> | null> {
-    const result = await loadDesign(designId(id));
-    if (!isOk(result)) return null;
-    // Non-syncable kinds: returning null makes the engine drop the outbox
-    // entry as a no-op (it never tombstones on a null get). A design whose mesh
-    // file is missing is dropped the same way, so the copy on the server keeps
-    // its mesh, and queued again when the file arrives.
-    if (!isSyncableDesign(result.value)) return null;
-    const inline = await inlineHolderMeshes(result.value);
-    if (!isOk(inline)) {
-      missingMeshPushes.skip(inline.error.hash, id);
-      return null;
-    }
-    return toItem(inline.value);
+  get(id: string): Promise<SyncableItem<DesignSyncPayload> | null> {
+    return inlineDesign(id);
   },
 
   async preparePush(id: string): Promise<PushPlan<DesignSyncPayload>> {
@@ -229,7 +242,7 @@ export const designAdapter: DesignAdapter = {
     return planMeshPush(
       toItem(result.value),
       result.value,
-      () => designAdapter.get(id),
+      (only) => inlineDesign(id, only),
       missingMeshPushes
     );
   },
@@ -370,6 +383,7 @@ export const designAdapter: DesignAdapter = {
     return () => {
       stopEvents();
       stopArrivals();
+      cancelMeshDownloads();
     };
   },
 };

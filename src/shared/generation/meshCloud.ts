@@ -20,16 +20,25 @@ const refusedUntil = new Map<string, number>();
 
 export type MeshUpload =
   | { readonly status: 'held' }
-  /** Send the mesh inline: the server has no mesh store, or will not take the file. */
+  /** The server has no mesh store: send every mesh inline. */
   | { readonly status: 'unavailable' }
+  /** The server will not take these files: send them inline, the rest as refs. */
+  | { readonly status: 'refused'; readonly hashes: readonly string[] }
   /** On neither the server nor this device. */
   | { readonly status: 'missing'; readonly hash: string }
   /** The server is rate limiting; `retryAfterMs` is null when it gave no delay. */
   | { readonly status: 'throttled'; readonly retryAfterMs: number | null }
   | { readonly status: 'failed'; readonly reason: string };
 
-const HELD: MeshUpload = { status: 'held' };
-const UNAVAILABLE: MeshUpload = { status: 'unavailable' };
+type FileUpload = Exclude<MeshUpload, { status: 'refused' }> | { readonly status: 'refused-file' };
+
+const HELD = { status: 'held' } as const;
+const UNAVAILABLE = { status: 'unavailable' } as const;
+const REFUSED = { status: 'refused-file' } as const;
+
+function isStatus<S extends FileUpload['status']>(status: S) {
+  return (r: FileUpload): r is Extract<FileUpload, { status: S }> => r.status === status;
+}
 
 /**
  * Files the account holds, and uploads in flight. Only a shortcut: the server
@@ -37,13 +46,13 @@ const UNAVAILABLE: MeshUpload = { status: 'unavailable' };
  * {@link forgetHeldMeshes}, so an entry gone stale (another account's, after a
  * sign-in on this page) costs one deferred push.
  */
-const uploads = new Map<string, Promise<MeshUpload>>();
+const uploads = new Map<string, Promise<FileUpload>>();
 
 function meshPath(hash: string): string {
   return `/api/meshes/${hash}`;
 }
 
-function outcome(res: Response, hash: string): MeshUpload {
+function outcome(res: Response, hash: string): FileUpload {
   if (res.ok) return HELD;
   if (res.status === 503) {
     unavailableUntil = Date.now() + INLINE_RECHECK_MS;
@@ -54,16 +63,17 @@ function outcome(res: Response, hash: string): MeshUpload {
   }
   if (res.status >= 400 && res.status < 500) {
     refusedUntil.set(hash, Date.now() + INLINE_RECHECK_MS);
-    return UNAVAILABLE;
+    return REFUSED;
   }
   return { status: 'failed', reason: `mesh upload: HTTP ${res.status}` };
 }
 
 // A request that never reaches the server rejects, as a push's own request
 // does, so being offline leaves the push queued without spending a retry.
-async function upload(hash: string): Promise<MeshUpload> {
+async function upload(hash: string): Promise<FileUpload> {
   const now = Date.now();
-  if (now < unavailableUntil || now < (refusedUntil.get(hash) ?? 0)) return UNAVAILABLE;
+  if (now < unavailableUntil) return UNAVAILABLE;
+  if (now < (refusedUntil.get(hash) ?? 0)) return REFUSED;
   const head = await apiFetch(meshPath(hash), { method: 'HEAD' });
   if (head.status !== 404) return outcome(head, hash);
   const bytes = await getMeshFile(hash);
@@ -78,7 +88,7 @@ async function upload(hash: string): Promise<MeshUpload> {
   );
 }
 
-function uploadOnce(hash: string): Promise<MeshUpload> {
+function uploadOnce(hash: string): Promise<FileUpload> {
   let pending = uploads.get(hash);
   if (!pending) {
     const started = upload(hash);
@@ -97,31 +107,49 @@ function uploadOnce(hash: string): Promise<MeshUpload> {
 
 /**
  * Have the account hold every file in `hashes`, uploading from this device each
- * one it lacks; answers the first that it does not end up holding, and rejects
- * when the server cannot be reached.
+ * one it lacks. Answers what stops the push from naming them all by ref, most
+ * pressing first, and rejects when the server cannot be reached.
  */
 export async function uploadMeshFiles(hashes: readonly string[]): Promise<MeshUpload> {
-  const results = await Promise.all([...new Set(hashes)].map(uploadOnce));
-  return results.find((result) => result !== HELD) ?? HELD;
+  const unique = [...new Set(hashes)];
+  const results = await Promise.all(unique.map(uploadOnce));
+  const missing = results.find(isStatus('missing'));
+  if (missing) return missing;
+  const waits = results.flatMap((r) => (r.status === 'throttled' ? [r.retryAfterMs] : []));
+  if (waits.length > 0) {
+    const known = waits.filter((ms): ms is number => ms !== null);
+    return { status: 'throttled', retryAfterMs: known.length > 0 ? Math.max(...known) : null };
+  }
+  const failed = results.find(isStatus('failed'));
+  if (failed) return failed;
+  if (results.some((r) => r.status === 'unavailable')) return UNAVAILABLE;
+  const refused = unique.filter((_, i) => results[i].status === 'refused-file');
+  return refused.length > 0 ? { status: 'refused', hashes: refused } : HELD;
 }
 
 export function forgetHeldMeshes(hashes: readonly string[]): void {
   for (const hash of hashes) uploads.delete(hash);
 }
 
-// Few at a time: a device new to an account can lack thousands of files, more
-// than the server answers per minute.
+// One queue for every caller, few at a time: a device new to an account can
+// lack thousands of files, more than the server answers per minute.
 const DOWNLOADS_AT_ONCE = 4;
 const RETRY_FIRST_MS = 60_000;
 const RETRY_LONGEST_MS = 30 * 60_000;
 
 type Download = 'stored' | 'failed' | { readonly retryAfterMs: number };
 
-const downloading = new Set<string>();
+const downloadQueue: string[] = [];
+/** Every file queued or downloading, with the calls waiting on its attempt. */
+const downloadWaiters = new Map<string, (() => void)[]>();
 /** Files whose download failed; only the scheduled retry asks for them again. */
 const failedDownloads = new Set<string>();
+let downloadsRunning = 0;
+let throttledUntil = 0;
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
+let retryAt = 0;
 let retryDelayMs = RETRY_FIRST_MS;
+let downloadEpoch = 0;
 
 async function download(hash: string): Promise<Download> {
   try {
@@ -142,52 +170,107 @@ async function download(hash: string): Promise<Download> {
   }
 }
 
-function retryFailedDownloads(delayMs: number): void {
-  if (retryTimer !== null) return;
+function settleDownload(hash: string): void {
+  for (const waiter of downloadWaiters.get(hash) ?? []) waiter();
+  downloadWaiters.delete(hash);
+}
+
+// A throttle may only push the retry later: an earlier timer would ask again
+// before the server said to.
+function scheduleRetry(delayMs: number, throttle: boolean): void {
+  const at = Date.now() + delayMs;
+  if (retryTimer !== null && (!throttle || at <= retryAt)) return;
+  if (retryTimer !== null) clearTimeout(retryTimer);
+  retryAt = at;
   retryTimer = setTimeout(() => {
     retryTimer = null;
-    void downloadAll([...failedDownloads], true);
+    // Only a throttle can move this timer later, so its wait is over.
+    throttledUntil = 0;
+    retryDelayMs = Math.min(RETRY_LONGEST_MS, retryDelayMs * 2);
+    const due = [...failedDownloads];
+    failedDownloads.clear();
+    for (const hash of due) void queueDownload(hash);
+    pumpDownloads();
   }, delayMs);
 }
 
-async function downloadAll(hashes: readonly string[], retrying: boolean): Promise<void> {
-  const queue = [...new Set(hashes)].filter(
-    (hash) => !downloading.has(hash) && (retrying || !failedDownloads.has(hash))
-  );
-  for (const hash of queue) downloading.add(hash);
-  let throttledMs = 0;
-  const work = async (): Promise<void> => {
-    for (let hash = queue.shift(); hash !== undefined; hash = queue.shift()) {
-      // Once the server throttles, the rest of the batch waits for the retry.
-      const result = throttledMs > 0 ? 'failed' : await download(hash);
-      downloading.delete(hash);
+function pumpDownloads(): void {
+  while (downloadsRunning < DOWNLOADS_AT_ONCE && Date.now() >= throttledUntil) {
+    const hash = downloadQueue.shift();
+    if (hash === undefined) return;
+    downloadsRunning++;
+    const epoch = downloadEpoch;
+    void download(hash).then((result) => {
+      if (epoch !== downloadEpoch) return;
+      downloadsRunning--;
       if (result === 'stored') {
         failedDownloads.delete(hash);
-        continue;
+        if (failedDownloads.size === 0) retryDelayMs = RETRY_FIRST_MS;
+      } else {
+        failedDownloads.add(hash);
+        if (typeof result === 'object') {
+          throttledUntil = Date.now() + result.retryAfterMs;
+          // The rest wait for the retry rather than ask a throttling server.
+          for (const queued of downloadQueue.splice(0)) {
+            failedDownloads.add(queued);
+            settleDownload(queued);
+          }
+          scheduleRetry(result.retryAfterMs, true);
+        } else {
+          scheduleRetry(retryDelayMs, false);
+        }
       }
-      failedDownloads.add(hash);
-      if (typeof result === 'object') throttledMs = Math.max(throttledMs, result.retryAfterMs);
-    }
-  };
-  await Promise.all(Array.from({ length: DOWNLOADS_AT_ONCE }, work));
-  if (failedDownloads.size === 0) {
-    retryDelayMs = RETRY_FIRST_MS;
-  } else if (throttledMs > 0) {
-    retryFailedDownloads(throttledMs);
-  } else {
-    if (retrying) retryDelayMs = Math.min(RETRY_LONGEST_MS, retryDelayMs * 2);
-    retryFailedDownloads(retryDelayMs);
+      settleDownload(hash);
+      pumpDownloads();
+    });
   }
 }
 
+function queueDownload(hash: string): Promise<void> {
+  return new Promise((resolve) => {
+    const waiters = downloadWaiters.get(hash);
+    if (waiters) {
+      waiters.push(resolve);
+      return;
+    }
+    downloadWaiters.set(hash, [resolve]);
+    downloadQueue.push(hash);
+  });
+}
+
 /**
- * Fetch each file in `hashes` this device lacks, a few at a time; its arrival
- * is announced like any stored file's. A file that fails is tried again on a
- * timer that backs off to half an hour, and a throttled server is waited out;
- * until then its pocket stays pending. Never rejects.
+ * Fetch each file in `hashes` this device lacks, a few at a time across every
+ * caller; its arrival is announced like any stored file's. A file that fails
+ * is tried again on a timer that backs off to half an hour, and a throttled
+ * server is waited out; until then its pocket stays pending. Settles once each
+ * file has been tried or put off. Never rejects.
  */
 export function fetchMeshFiles(hashes: readonly string[]): Promise<void> {
-  return downloadAll(hashes, false);
+  const wanted = [...new Set(hashes)].filter((hash) => !failedDownloads.has(hash));
+  if (Date.now() < throttledUntil) {
+    for (const hash of wanted) if (!downloadWaiters.has(hash)) failedDownloads.add(hash);
+    return Promise.resolve();
+  }
+  const tried = wanted.map(queueDownload);
+  pumpDownloads();
+  return Promise.all(tried).then(() => undefined);
+}
+
+/**
+ * Drop every queued download and the retry timer. Called when the signed-in
+ * session ends: a retry after it would ask the server anonymously.
+ */
+export function cancelMeshDownloads(): void {
+  downloadEpoch++;
+  for (const hash of downloadQueue.splice(0)) settleDownload(hash);
+  for (const hash of [...downloadWaiters.keys()]) settleDownload(hash);
+  failedDownloads.clear();
+  downloadsRunning = 0;
+  if (retryTimer !== null) clearTimeout(retryTimer);
+  retryTimer = null;
+  retryAt = 0;
+  throttledUntil = 0;
+  retryDelayMs = RETRY_FIRST_MS;
 }
 
 /** Test-only: forget every held file, upload and download, and the retry timer. */
@@ -195,9 +278,5 @@ export function __resetMeshCloudForTests(): void {
   uploads.clear();
   unavailableUntil = 0;
   refusedUntil.clear();
-  downloading.clear();
-  failedDownloads.clear();
-  if (retryTimer !== null) clearTimeout(retryTimer);
-  retryTimer = null;
-  retryDelayMs = RETRY_FIRST_MS;
+  cancelMeshDownloads();
 }
