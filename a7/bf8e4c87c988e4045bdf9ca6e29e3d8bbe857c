@@ -1,0 +1,19 @@
+.claude/skills/mesh-storage/SKILL.md
+  s_1606b97c1ea28d::t_fdaa80dfce7606 21,26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a7bf8e4c87c988e4045bdf9ca6e29e3d8bbe857c",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
