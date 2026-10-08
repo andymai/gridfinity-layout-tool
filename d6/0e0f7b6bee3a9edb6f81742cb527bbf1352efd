@@ -1,0 +1,117 @@
+api/lib/designerValidation.crossBoundary.test.ts
+  s_1606b97c1ea28d::t_1c73647cb696f6 279
+  s_1606b97c1ea28d::t_cd6d443abf49ba 107
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/StlImportDialog.test.tsx
+  s_1606b97c1ea28d::t_f691823d054c4d 4,40,108-143
+src/features/generation/worker/meshFiles.ts
+  s_1606b97c1ea28d::t_393c50daac5e02 80,82
+src/shell/layoutExport/useLayoutExport.ts
+  s_1606b97c1ea28d::t_393c50daac5e02 262
+src/features/generation/worker/generators/meshImprint.ts
+  s_1606b97c1ea28d::t_e126e3ba275d88 55,97-105,134-138
+api/lib/designerValidationConstants.ts
+  s_1606b97c1ea28d::t_cd6d443abf49ba 108-110
+src/features/bin-designer/store/slices/cutoutSlice.test.ts
+  s_1606b97c1ea28d::t_4b540ea6161773 5-8,1768,1770-1782,1788-1799
+src/i18n/locales/fr.json
+  s_1606b97c1ea28d::t_79480acac6f6fb 945-946,4450
+src/i18n/locales/uk.json
+  s_1606b97c1ea28d::t_79480acac6f6fb 945-946,4450
+scripts/doc-budget.json
+  s_1606b97c1ea28d::t_40de94b3c6de7b 17
+content/gridfinity-cutout-generator.md
+  s_1606b97c1ea28d::t_2a1ae0bf095ed7 61,101
+src/shared/generation/meshAsset.ts
+  s_1606b97c1ea28d::t_af56f45354cd4f 85-94,138-152,158-167,328-329,337,340-346,348-349,351-357,360-361,379-381
+src/i18n/locales/sv.json
+  s_1606b97c1ea28d::t_79480acac6f6fb 945-946,4450
+package.json
+  s_1606b97c1ea28d::t_c2d660607fe165 118
+src/i18n/locales/ko.json
+  s_1606b97c1ea28d::t_79480acac6f6fb 945-946,4450
+src/i18n/locales/en.ts
+  s_1606b97c1ea28d::t_1c73647cb696f6 1446-1447
+  s_1606b97c1ea28d::t_356006b73ae431 3179-3181
+src/shared/hooks/useLinkedDesignMeshes.test.ts
+  s_1606b97c1ea28d::t_4fe063cd722405 478
+api/lib/quota.ts
+  s_1606b97c1ea28d::t_cd6d443abf49ba 127-130
+api/lib/designerValidation.test.ts
+  s_1606b97c1ea28d::t_c55d1b5bd9fc69 1841,1843-1867
+src/i18n/locales/es.json
+  s_1606b97c1ea28d::t_79480acac6f6fb 945-946,4450
+src/i18n/locales/it.json
+  s_1606b97c1ea28d::t_79480acac6f6fb 945-946,4450
+src/i18n/locales/ja.json
+  s_1606b97c1ea28d::t_79480acac6f6fb 945-946,4450
+src/features/generation/bridge/generationTimeout.test.ts
+  s_1606b97c1ea28d::t_c61e5f088f20c2 4,35-36,512-550
+  s_1606b97c1ea28d::t_d6ac0ae222ca5d 551-552
+src/shared/generation/meshFile.test.ts
+  s_1606b97c1ea28d::t_800e3f052f1fde 153
+api/lib/contentFilter.ts
+  s_1606b97c1ea28d::t_cd6d443abf49ba 328-330
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_1606b97c1ea28d::t_393c50daac5e02 23,346-347,354-355,357
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_1606b97c1ea28d::t_393c50daac5e02 262
+src/i18n/locales/nl.json
+  s_1606b97c1ea28d::t_79480acac6f6fb 945-946,4450
+src/features/generation/bridge/generationTimeout.ts
+  s_1606b97c1ea28d::t_e126e3ba275d88 21,129-138,376-379
+  s_1606b97c1ea28d::t_fccb0950dc52c5 380-381
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.test.ts
+  s_1606b97c1ea28d::t_57f3e9ed0de375 5-10,51-61,115-177
+src/i18n/locales/ka.json
+  s_1606b97c1ea28d::t_79480acac6f6fb 1208,2700-2701
+src/i18n/locales/pl.json
+  s_1606b97c1ea28d::t_79480acac6f6fb 945-946,4450
+src/shared/generation/meshFile.ts
+  s_1606b97c1ea28d::t_393c50daac5e02 198
+src/features/generation/worker/generators/meshImport.test.ts
+  s_1606b97c1ea28d::t_12a32576cfb250 224-226
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.ts
+  s_1606b97c1ea28d::t_d555ccaef9d9e9 200-204
+  s_1606b97c1ea28d::t_6692a124ddf729 24-28,54-55,114-115,124,149-152,205-206
+src/i18n/locales/pt-BR.json
+  s_1606b97c1ea28d::t_79480acac6f6fb 945-946,4450
+src/i18n/locales/cs.json
+  s_1606b97c1ea28d::t_79480acac6f6fb 945-946,4450
+src/i18n/locales/de.json
+  s_1606b97c1ea28d::t_79480acac6f6fb 945-946,4450
+src/i18n/locales/nb.json
+  s_1606b97c1ea28d::t_79480acac6f6fb 945-946,4450
+.claude/skills/mesh-storage/SKILL.md
+  s_1606b97c1ea28d::t_130fd5d458f319 56,60-62
+  s_1606b97c1ea28d::t_e83507448a9516 63
+api/lib/designerCutoutValidation.ts
+  s_1606b97c1ea28d::t_cd6d443abf49ba 344,351-354
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/StlImportDialog.tsx
+  s_1606b97c1ea28d::t_b4303f0e82be81 9-10
+  s_1606b97c1ea28d::t_bc972f4ea22f58 19,22,78-83,156-170,182-187
+src/shared/generation/meshAsset.test.ts
+  s_1606b97c1ea28d::t_525b46eb0222c6 140
+  s_1606b97c1ea28d::t_01bb2f346dfb18 7,9-10,28,40-42,51-53,77,88,126-139,144-155,174,188-198,200-202,219-228,230,232
+  s_1606b97c1ea28d::t_412cad1f18a19c 199
+  s_1606b97c1ea28d::t_1d89ce7360ceff 141-143
+src/i18n/locales/zh-CN.json
+  s_1606b97c1ea28d::t_79480acac6f6fb 945-946,4450
+src/features/generation/worker/generators/meshImprint.cache.test.ts
+  s_1606b97c1ea28d::t_0c72be2fd54801 1-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d60e0f7b6bee3a9edb6f81742cb527bbf1352efd",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
