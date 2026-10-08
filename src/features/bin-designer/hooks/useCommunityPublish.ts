@@ -102,6 +102,11 @@ export async function openCommunityPublish(draft: CommunityPublishDraft | null):
   if (currentId === null) return;
 
   const content = assembly !== null ? assemblyContent(assembly) : await binContent(state.params);
+  // Reading and uploading mesh files takes time, and the preview is captured
+  // after it: an edit meanwhile would publish params the preview no longer shows.
+  const now = useDesignerStore.getState();
+  if (now.currentDesignId !== currentId) return;
+  if (assembly === null && now.params !== state.params) return openCommunityPublish(draft);
   if (content === null) {
     useToastStore.getState().addToast(getStaticTranslation('toast.meshFileMissing'), 'error');
     return;
@@ -155,21 +160,17 @@ function assemblyContent(assembly: { envelope: ItemEnvelope; structure: Assembly
 async function binContent(
   params: BinParams
 ): Promise<{ params: BinParams; paramsHash: string } | null> {
-  let resolved = params;
-  if (!(await meshesHeldByAccount(params))) {
-    const inline = await inlineParamsMeshes(params);
-    if (!isOk(inline)) return null;
-    resolved = inline.value;
-  }
+  // Read even when the files go by ref: the preview and GLB captured for the
+  // listing need every file on this device, and an account can hold one whose
+  // download here has not finished.
+  const inline = await inlineParamsMeshes(params);
+  if (!isOk(inline)) return null;
+  const resolved = (await meshesHeldByAccount(params)) ? params : inline.value;
   // A published design carries standard feet; the downloader's drawer decides.
   const standard = withoutLowProfileBase(resolved);
   return { params: standard, paramsHash: hashBinParams(standard) };
 }
 
-/**
- * Whether the design can be published naming its mesh files: signed in, with
- * every file held by the account. Otherwise its meshes go inline.
- */
 async function meshesHeldByAccount(params: BinParams): Promise<boolean> {
   if (useSessionStore.getState().status !== 'authenticated') return false;
   return accountHoldsMeshFiles(holderMeshHashes({ params }), meshCloudSession());

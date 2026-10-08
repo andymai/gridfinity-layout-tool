@@ -14,7 +14,7 @@ import { isApiErrorResponse } from '@/core/api/mapApiError';
 import { apiFetch } from '@/core/sync/apiFetch';
 import { MISSING_DEPENDENCY_STATUS } from '@/core/sync/payloadKey';
 import { forgetHeldMeshes, readMissingMeshes } from '@/shared/generation/meshCloud';
-import { inlineParamsMeshes } from '@/shared/generation/meshRefs';
+import { holderMeshHashes, inlineParamsMeshes } from '@/shared/generation/meshRefs';
 import type { BinParams } from '@/shared/types/bin';
 import type { ItemEnvelope } from '@/shared/types/item';
 import type { AssemblyStructure } from '@/shared/types/assembly';
@@ -190,20 +190,38 @@ export async function fetchCommunityCapabilities(
   }
 }
 
-/**
- * A 424 lists mesh files the server found the account does not hold after all
- * (an upload this page remembered from another account): the design goes again
- * with its meshes inline, and the next upload of those files starts over.
- */
+/** A design that names mesh files goes again with them inline when the server turns the refs down. */
 async function sendWithInlineFallback(
   input: CommunityPublishInput,
   send: (input: CommunityPublishInput) => Promise<Response>
 ): Promise<Response> {
   const response = await send(input);
-  if (response.status !== MISSING_DEPENDENCY_STATUS || input.params === undefined) return response;
-  forgetHeldMeshes(await readMissingMeshes(response.clone()));
+  if (input.params === undefined || holderMeshHashes({ params: input.params }).length === 0) {
+    return response;
+  }
+  if (!(await refusesMeshRefs(response))) return response;
   const inline = await inlineParamsMeshes(input.params);
   return isOk(inline) ? send({ ...input, params: inline.value }) : response;
+}
+
+/**
+ * A 424 lists files the server found the account does not hold after all (an
+ * upload this page remembered from another account), forgotten here so their
+ * next upload starts over. A 400 `SIZE_EXCEEDED` is the tighter cap on a design
+ * of refs, which inline meshes lift.
+ */
+async function refusesMeshRefs(response: Response): Promise<boolean> {
+  if (response.status === MISSING_DEPENDENCY_STATUS) {
+    forgetHeldMeshes(await readMissingMeshes(response.clone()));
+    return true;
+  }
+  if (response.status !== 400) return false;
+  try {
+    const { code } = (await response.clone().json()) as { code?: unknown };
+    return code === 'SIZE_EXCEEDED';
+  } catch {
+    return false;
+  }
 }
 
 export async function publishDesign(

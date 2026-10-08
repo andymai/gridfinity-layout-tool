@@ -250,6 +250,17 @@ describe('a design naming mesh files the server finds unheld', () => {
     fetchMock.mock.calls.map(
       ([, init]) => (JSON.parse(init.body as string) as { params: unknown }).params
     );
+  const refInput: CommunityPublishInput = {
+    ...input,
+    params: {
+      width: 2,
+      depth: 3,
+      height: 6,
+      meshAssets: {
+        m1: { name: 'm', hash: HASH, triangleCount: 1, sizeMm: { x: 1, y: 1, z: 1 }, bytes: 9 },
+      },
+    } as unknown as BinParams,
+  };
 
   beforeEach(() => {
     vi.mocked(inlineParamsMeshes).mockResolvedValue(ok(inlineParams));
@@ -263,27 +274,51 @@ describe('a design naming mesh files the server finds unheld', () => {
         jsonResponse(201, { id: 'AbCdEf123456', url: '/community/d/AbCdEf123456' })
       );
 
-    const result = await publishDesign(input);
+    const result = await publishDesign(refInput);
 
     expect(isOk(result)).toBe(true);
-    expect(sentParams()).toEqual([input.params, inlineParams]);
+    expect(sentParams()).toEqual([refInput.params, inlineParams]);
     expect(forgetHeldMeshes).toHaveBeenCalledWith([HASH]);
+  });
+
+  it('publishes again inline when a design of refs is over its tighter size cap', async () => {
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse(400, { error: 'too large', code: 'SIZE_EXCEEDED' }))
+      .mockResolvedValueOnce(
+        jsonResponse(201, { id: 'AbCdEf123456', url: '/community/d/AbCdEf123456' })
+      );
+
+    const result = await publishDesign(refInput);
+
+    expect(isOk(result)).toBe(true);
+    expect(sentParams()).toEqual([refInput.params, inlineParams]);
+  });
+
+  it('sends a design with no refs once, whatever the refusal', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(400, { error: 'too large', code: 'SIZE_EXCEEDED' })
+    );
+
+    const result = await publishDesign(input);
+
+    expect(isErr(result)).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('updates again with the meshes inline', async () => {
     fetchMock.mockResolvedValueOnce(refused()).mockResolvedValueOnce(jsonResponse(200, { design }));
 
-    const result = await updateDesign('AbCdEf123456', input);
+    const result = await updateDesign('AbCdEf123456', refInput);
 
     expect(isOk(result)).toBe(true);
-    expect(sentParams()).toEqual([input.params, inlineParams]);
+    expect(sentParams()).toEqual([refInput.params, inlineParams]);
   });
 
   it('reports the refusal when the meshes cannot be inlined', async () => {
     vi.mocked(inlineParamsMeshes).mockResolvedValue(err({ code: 'STORAGE_MESH_MISSING' } as never));
     fetchMock.mockResolvedValueOnce(refused());
 
-    const result = await publishDesign(input);
+    const result = await publishDesign(refInput);
 
     expect(isErr(result)).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(1);

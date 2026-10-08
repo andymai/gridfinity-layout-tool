@@ -199,6 +199,48 @@ describe('useCommunityPublish', () => {
       expect(context?.paramsHash).toBe(hashBinParams({ ...base, meshAssets: { m1: ref } }));
     });
 
+    it('reopens with the edit when the design changes while its files upload', async () => {
+      const base = { ...DEFAULT_BIN_PARAMS, cutouts: [qualifyingCutout] };
+      useDesignerStore.setState({ params: base });
+      const edited = { ...base, height: base.height + 1 };
+      useSessionStore.setState({
+        status: 'authenticated',
+        user: { userId: 'u1', provider: 'google', email: 'a@x' },
+      });
+      vi.mocked(accountHoldsMeshFiles).mockImplementationOnce(async () => {
+        useDesignerStore.setState({ params: edited });
+        return false;
+      });
+
+      await openCommunityPublish(null);
+
+      const context = useCommunityPublishStore.getState().context;
+      const published = context && 'params' in context ? context.params : undefined;
+      expect(published?.height).toBe(edited.height);
+    });
+
+    it('does not open when a file the account holds is missing from this device', async () => {
+      const missing = {
+        name: 'gone',
+        hash: '5'.repeat(64),
+        triangleCount: 1,
+        sizeMm: { x: 1, y: 1, z: 1 },
+        bytes: 1,
+      };
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, cutouts: [qualifyingCutout], meshAssets: { m1: missing } },
+      });
+      useSessionStore.setState({
+        status: 'authenticated',
+        user: { userId: 'u1', provider: 'google', email: 'a@x' },
+      });
+      vi.mocked(accountHoldsMeshFiles).mockResolvedValueOnce(true);
+
+      await openCommunityPublish(null);
+
+      expect(useCommunityPublishStore.getState().isOpen).toBe(false);
+    });
+
     it('does not open when a mesh file is missing', async () => {
       const missing = {
         name: 'gone',
