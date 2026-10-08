@@ -225,14 +225,100 @@ export function meshRefHashes(meshAssets: unknown): string[] {
 }
 
 /**
+ * One mesh asset, its errors reported under `path`. With `allowRefs` it may
+ * instead name a stored mesh file by hash. This checks a ref's shape only;
+ * whether the account holds the file is the caller's check, since it needs
+ * Redis.
+ */
+export function validateMeshAsset(
+  assetRaw: unknown,
+  path: string,
+  allowRefs: boolean
+): string | null {
+  if (!isObject(assetRaw)) return `${path} must be an object`;
+  const ref = allowRefs && isMeshRef(assetRaw);
+  const allowedKeys = ref ? ALLOWED_MESH_REF_KEYS : ALLOWED_MESH_ASSET_KEYS;
+  for (const key of Object.keys(assetRaw)) {
+    if (!allowedKeys.has(key)) return `${path} has unknown key: ${key}`;
+  }
+  const a = assetRaw;
+  if (
+    !isString(a.name) ||
+    a.name.length === 0 ||
+    a.name.length > CONSTRAINTS.MAX_MESH_NAME_LENGTH ||
+    CONTROL_CHARS_REGEX.test(a.name)
+  ) {
+    return `${path}.name must be a clean string (max ${CONSTRAINTS.MAX_MESH_NAME_LENGTH} chars)`;
+  }
+  if (ref) {
+    if (!isMeshHash(a.hash)) return `${path}.hash must be a lowercase hex SHA-256`;
+  } else if (
+    !isString(a.data) ||
+    a.data.length === 0 ||
+    a.data.length > CONSTRAINTS.MAX_MESH_DATA_LENGTH ||
+    !BASE64_REGEX.test(a.data)
+  ) {
+    return `${path}.data must be base64 (max ${CONSTRAINTS.MAX_MESH_DATA_LENGTH} chars)`;
+  }
+  if (
+    !isNumber(a.triangleCount) ||
+    !Number.isInteger(a.triangleCount) ||
+    !inRange(a.triangleCount, 1, CONSTRAINTS.MAX_MESH_ASSET_TRIANGLES)
+  ) {
+    return `${path}.triangleCount must be an integer in [1, ${CONSTRAINTS.MAX_MESH_ASSET_TRIANGLES}]`;
+  }
+  if (!isObject(a.sizeMm)) return `${path}.sizeMm must be an object`;
+  for (const axis of ['x', 'y', 'z'] as const) {
+    const v = a.sizeMm[axis];
+    if (!isNumber(v) || v <= 0 || v > CONSTRAINTS.MAX_MESH_SIZE_MM) {
+      return `${path}.sizeMm.${axis} must be in (0, ${CONSTRAINTS.MAX_MESH_SIZE_MM}]`;
+    }
+  }
+  if (ref) {
+    if (
+      !isNumber(a.bytes) ||
+      !Number.isInteger(a.bytes) ||
+      !inRange(a.bytes, 1, MAX_MESH_UPLOAD_BYTES)
+    ) {
+      return `${path}.bytes must be an integer in [1, ${MAX_MESH_UPLOAD_BYTES}]`;
+    }
+    return null;
+  }
+  if (!Array.isArray(a.outlines) || a.outlines.length === 0) {
+    return `${path}.outlines must be a non-empty array`;
+  }
+  let totalPoints = 0;
+  for (const ring of a.outlines) {
+    if (!Array.isArray(ring) || ring.length < 3) {
+      return `${path}.outlines rings need at least 3 points`;
+    }
+    totalPoints += ring.length;
+    for (const point of ring) {
+      if (
+        !isObject(point) ||
+        !isNumber(point.x) ||
+        !isNumber(point.y) ||
+        Math.abs(point.x) > CONSTRAINTS.MAX_MESH_SIZE_MM ||
+        Math.abs(point.y) > CONSTRAINTS.MAX_MESH_SIZE_MM
+      ) {
+        return `${path}.outlines points must be finite {x, y} within ±${CONSTRAINTS.MAX_MESH_SIZE_MM}mm`;
+      }
+    }
+  }
+  if (totalPoints > CONSTRAINTS.MAX_MESH_OUTLINE_POINTS) {
+    return `${path}.outlines exceed ${CONSTRAINTS.MAX_MESH_OUTLINE_POINTS} total points`;
+  }
+  return null;
+}
+
+/**
  * Validate the mesh imprint asset map (STL imports). The mesh geometry itself
  * is regenerated client-side from the compressed data, but a crafted blob
  * could smuggle megabytes of junk or orphan references, so structure, caps,
  * and cutout cross-references are all enforced here.
  *
- * With `allowRefs`, an entry may instead name a stored mesh file by hash. This
- * checks its shape only; whether the account holds the file is the caller's
- * check, since it needs Redis.
+ * With `allowRefs`, an entry may instead name a stored mesh file by hash
+ * ({@link validateMeshAsset}).
  */
 export function validateMeshAssets(
   value: unknown,
@@ -262,79 +348,8 @@ export function validateMeshAssets(
     if (id.length === 0 || id.length > 64 || CONTROL_CHARS_REGEX.test(id)) {
       return 'meshAssets keys must be non-empty strings (max 64 chars)';
     }
-    if (!isObject(assetRaw)) return `meshAssets.${id} must be an object`;
-    const ref = allowRefs && isMeshRef(assetRaw);
-    const allowedKeys = ref ? ALLOWED_MESH_REF_KEYS : ALLOWED_MESH_ASSET_KEYS;
-    for (const key of Object.keys(assetRaw)) {
-      if (!allowedKeys.has(key)) return `meshAssets.${id} has unknown key: ${key}`;
-    }
-    const a = assetRaw;
-    if (
-      !isString(a.name) ||
-      a.name.length === 0 ||
-      a.name.length > CONSTRAINTS.MAX_MESH_NAME_LENGTH ||
-      CONTROL_CHARS_REGEX.test(a.name)
-    ) {
-      return `meshAssets.${id}.name must be a clean string (max ${CONSTRAINTS.MAX_MESH_NAME_LENGTH} chars)`;
-    }
-    if (ref) {
-      if (!isMeshHash(a.hash)) return `meshAssets.${id}.hash must be a lowercase hex SHA-256`;
-    } else if (
-      !isString(a.data) ||
-      a.data.length === 0 ||
-      a.data.length > CONSTRAINTS.MAX_MESH_DATA_LENGTH ||
-      !BASE64_REGEX.test(a.data)
-    ) {
-      return `meshAssets.${id}.data must be base64 (max ${CONSTRAINTS.MAX_MESH_DATA_LENGTH} chars)`;
-    }
-    if (
-      !isNumber(a.triangleCount) ||
-      !Number.isInteger(a.triangleCount) ||
-      !inRange(a.triangleCount, 1, CONSTRAINTS.MAX_MESH_ASSET_TRIANGLES)
-    ) {
-      return `meshAssets.${id}.triangleCount must be an integer in [1, ${CONSTRAINTS.MAX_MESH_ASSET_TRIANGLES}]`;
-    }
-    if (!isObject(a.sizeMm)) return `meshAssets.${id}.sizeMm must be an object`;
-    for (const axis of ['x', 'y', 'z'] as const) {
-      const v = a.sizeMm[axis];
-      if (!isNumber(v) || v <= 0 || v > CONSTRAINTS.MAX_MESH_SIZE_MM) {
-        return `meshAssets.${id}.sizeMm.${axis} must be in (0, ${CONSTRAINTS.MAX_MESH_SIZE_MM}]`;
-      }
-    }
-    if (ref) {
-      if (
-        !isNumber(a.bytes) ||
-        !Number.isInteger(a.bytes) ||
-        !inRange(a.bytes, 1, MAX_MESH_UPLOAD_BYTES)
-      ) {
-        return `meshAssets.${id}.bytes must be an integer in [1, ${MAX_MESH_UPLOAD_BYTES}]`;
-      }
-      continue;
-    }
-    if (!Array.isArray(a.outlines) || a.outlines.length === 0) {
-      return `meshAssets.${id}.outlines must be a non-empty array`;
-    }
-    let totalPoints = 0;
-    for (const ring of a.outlines) {
-      if (!Array.isArray(ring) || ring.length < 3) {
-        return `meshAssets.${id}.outlines rings need at least 3 points`;
-      }
-      totalPoints += ring.length;
-      for (const point of ring) {
-        if (
-          !isObject(point) ||
-          !isNumber(point.x) ||
-          !isNumber(point.y) ||
-          Math.abs(point.x) > CONSTRAINTS.MAX_MESH_SIZE_MM ||
-          Math.abs(point.y) > CONSTRAINTS.MAX_MESH_SIZE_MM
-        ) {
-          return `meshAssets.${id}.outlines points must be finite {x, y} within ±${CONSTRAINTS.MAX_MESH_SIZE_MM}mm`;
-        }
-      }
-    }
-    if (totalPoints > CONSTRAINTS.MAX_MESH_OUTLINE_POINTS) {
-      return `meshAssets.${id}.outlines exceed ${CONSTRAINTS.MAX_MESH_OUTLINE_POINTS} total points`;
-    }
+    const assetError = validateMeshAsset(assetRaw, `meshAssets.${id}`, allowRefs);
+    if (assetError) return assetError;
   }
 
   for (const { index, meshId } of meshCutoutIds) {

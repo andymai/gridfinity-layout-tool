@@ -2,6 +2,7 @@ import { ErrorCode, isValidShareId, MAX_NAME_LENGTH } from '../../lib/shared.js'
 import { validateDesignerShare, sanitizeTags } from '../../lib/designerValidation.js';
 import { meshRefHashes } from '../../lib/designerCutoutValidation.js';
 import { validateAssemblyContent } from '../../lib/assemblyValidation.js';
+import { validateImportedMeshContent } from '../../lib/importedMeshValidation.js';
 import { sanitizeString } from '../../lib/validation.js';
 import { createSyncResourceHandler } from '../lib/resourceHandler.js';
 
@@ -171,7 +172,7 @@ function sanitizeBranch(
 function unwrapDesignPayload(design: unknown): {
   name: string | null;
   params: unknown;
-  kind?: 'assembly';
+  kind?: 'assembly' | 'importedMesh';
   envelope?: unknown;
   structure?: unknown;
   tags: unknown;
@@ -216,14 +217,14 @@ function unwrapDesignPayload(design: unknown): {
     variantOf,
     overrides
   );
-  if (kind === 'assembly') {
+  if (kind === 'assembly' || kind === 'importedMesh') {
     if (name !== undefined && typeof name !== 'string') return null;
     if (typeof envelope !== 'object' || envelope === null) return null;
     if (typeof structure !== 'object' || structure === null) return null;
     return {
       name: name ?? null,
       params: null,
-      kind: 'assembly',
+      kind,
       envelope,
       structure,
       tags,
@@ -343,6 +344,32 @@ export default createSyncResourceHandler<DesignEnvelope>({
         envelope: { design: stored, modifiedAt, schemaVersion: SCHEMA_VERSION },
         sizeBytes: Buffer.byteLength(JSON.stringify(stored), 'utf8'),
         tiebreakerCandidate: stored,
+      };
+    }
+
+    if (unwrapped.kind === 'importedMesh') {
+      const preBytes = Buffer.byteLength(JSON.stringify({ ...unwrapped, name, tags }), 'utf8');
+      const mesh = validateImportedMeshContent(
+        { envelope: unwrapped.envelope, structure: unwrapped.structure },
+        { preBytes, sizeLabel: 'imported mesh design' }
+      );
+      if (!mesh.ok) return mesh;
+      const stored = {
+        name,
+        kind: 'importedMesh' as const,
+        envelope: mesh.envelope,
+        structure: mesh.structure,
+        tags,
+        ...(publishedId !== undefined ? { publishedId } : {}),
+        ...(lineage !== undefined ? { lineage } : {}),
+        ...unwrapped.branch,
+      };
+      return {
+        ok: true,
+        envelope: { design: stored, modifiedAt, schemaVersion: SCHEMA_VERSION },
+        sizeBytes: Buffer.byteLength(JSON.stringify(stored), 'utf8'),
+        tiebreakerCandidate: stored,
+        meshHashes: mesh.meshHashes,
       };
     }
 
