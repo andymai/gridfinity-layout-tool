@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.507.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.506.0...gridfinity-layout-tool-v4.507.0) (2026-10-08)
+
+
+### Features
+
+* **mesh:** store imported meshes once on the device and share them by reference ([#4532](https://github.com/andymai/gridfinity-layout-tool/issues/4532)) ([e600923](https://github.com/andymai/gridfinity-layout-tool/commit/e600923d0aead4f4cba0d4b91114808610d2c1c3))
+* **sync:** sync mesh files by reference when server store is enabled ([#4538](https://github.com/andymai/gridfinity-layout-tool/issues/4538)) ([9ce9a2c](https://github.com/andymai/gridfinity-layout-tool/commit/9ce9a2c33b5ddb6141a875915526f7aac58a9ff9))
+
+
+### Bug Fixes
+
+* **ci:** restore main coverage tests and build ([#4539](https://github.com/andymai/gridfinity-layout-tool/issues/4539)) ([d3eb3ee](https://github.com/andymai/gridfinity-layout-tool/commit/d3eb3eefd77519ed32bae9bbe36682f30e33417e))
+
 ## [4.506.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.505.1...gridfinity-layout-tool-v4.506.0) (2026-10-08)
 
 
