@@ -1,0 +1,154 @@
+src/features/bin-designer/sync/designVersionAdapter.ts
+  s_900382acfc8cb3::t_374c67983807c1 73-76
+src/i18n/locales/ja.json
+  s_900382acfc8cb3::t_a1a6900c63dc60 4453
+src/features/generation/bridge/meshDelivery.ts
+  s_900382acfc8cb3::t_d9f081205156ae 8,77-80,83,85,89,91,105-107,141-143
+  s_900382acfc8cb3::t_1b2f7d9e913fa1 9,119-120,122-124,135,140,152,154
+src/shared/generation/meshRefs.test.ts
+  s_900382acfc8cb3::t_12f3c0abcfcb35 3,174-175,178-183
+src/i18n/locales/ka.json
+  s_900382acfc8cb3::t_a1a6900c63dc60 1203
+src/i18n/locales/ko.json
+  s_900382acfc8cb3::t_a1a6900c63dc60 4453
+src/features/bin-designer/components/ExportDialog/ExportDialog.test.tsx
+  s_900382acfc8cb3::t_8f24e1a9d0a22c 61
+src/i18n/locales/en.ts
+  s_900382acfc8cb3::t_a1a6900c63dc60 1447-1448
+src/i18n/locales/de.json
+  s_900382acfc8cb3::t_a1a6900c63dc60 4453
+src/features/bin-designer/utils/designJson.ts
+  s_900382acfc8cb3::t_cea395b6a2fc74 10-11,73,84-90,105
+src/features/bin-designer/sync/designAdapter.ts
+  s_900382acfc8cb3::t_374c67983807c1 167-171,206,220-222
+src/features/bin-designer/storage/designStoreAdapter.ts
+  s_900382acfc8cb3::t_374c67983807c1 16,27,40
+src/i18n/locales/es.json
+  s_900382acfc8cb3::t_a1a6900c63dc60 4453
+src/core/result/index.ts
+  s_900382acfc8cb3::t_929134fa761931 106,156
+src/core/result/errors.ts
+  s_900382acfc8cb3::t_929134fa761931 33,150-159,168-169
+src/core/result/catalog.ts
+  s_900382acfc8cb3::t_929134fa761931 92-99
+src/i18n/locales/cs.json
+  s_900382acfc8cb3::t_a1a6900c63dc60 4453
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_900382acfc8cb3::t_2bd3276d69fe82 11
+  s_900382acfc8cb3::t_ef81f5ef365d4f 138-139,145-146,148,483-485
+src/i18n/locales/nl.json
+  s_900382acfc8cb3::t_a1a6900c63dc60 4453
+src/i18n/locales/it.json
+  s_900382acfc8cb3::t_a1a6900c63dc60 4453
+src/i18n/locales/zh-CN.json
+  s_900382acfc8cb3::t_a1a6900c63dc60 4453
+src/features/generation/bridge/bridgeExports.ts
+  s_900382acfc8cb3::t_579caa116cdc3d 53-55,76-78
+  s_900382acfc8cb3::t_bb5613a08b416e 33-34
+src/features/bin-designer/utils/designJson.test.ts
+  s_900382acfc8cb3::t_12f3c0abcfcb35 13-14,134-135
+src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
+  s_900382acfc8cb3::t_ef81f5ef365d4f 105-106,108-109,111
+src/features/bin-designer/hooks/useCommunityPublish.ts
+  s_900382acfc8cb3::t_d9ff9daedbe896 101-104,107
+src/features/bin-designer/hooks/useDesignerSharing.ts
+  s_900382acfc8cb3::t_54f5794ac02b37 11,62
+  s_900382acfc8cb3::t_2bd3276d69fe82 59-61,74
+src/features/generation/bridge/meshDelivery.test.ts
+  s_900382acfc8cb3::t_d9840eed4f2342 3,12,82,99,123,133,154,167-174,179
+src/i18n/locales/nb.json
+  s_900382acfc8cb3::t_a1a6900c63dc60 4453
+src/i18n/locales/uk.json
+  s_900382acfc8cb3::t_a1a6900c63dc60 4453
+src/features/bin-designer/hooks/useDesignerSharing.test.ts
+  s_900382acfc8cb3::t_12f3c0abcfcb35 97
+src/i18n/locales/sv.json
+  s_900382acfc8cb3::t_a1a6900c63dc60 4453
+src/features/generation/bridge/GenerationBridge.ts
+  s_900382acfc8cb3::t_579caa116cdc3d 67-68,328-330,377-381,781
+src/shared/generation/meshRefs.ts
+  s_900382acfc8cb3::t_6eb3352ad62498 11-12,161-168,170-172,174-182,187-191,196
+  s_900382acfc8cb3::t_540bf2d6ddf25a 183
+src/i18n/locales/fr.json
+  s_900382acfc8cb3::t_a1a6900c63dc60 4453
+src/features/generation/bridge/bridgeGeneration.ts
+  s_900382acfc8cb3::t_579caa116cdc3d 24,26-27,48-50,92,96-102,106
+src/i18n/locales/pt-BR.json
+  s_900382acfc8cb3::t_a1a6900c63dc60 4453
+src/core/result/constructors.ts
+  s_900382acfc8cb3::t_929134fa761931 31,133-134,135-136
+src/i18n/locales/pl.json
+  s_900382acfc8cb3::t_a1a6900c63dc60 4453
+src/core/storage/ShareService.ts
+  s_1606b97c1ea28d::t_afd92f6fca90cd 17,81-84,86-88,95,100,105-108,122,144-149,159
+src/features/cloud-share/hooks/useCloudShare.test.ts
+  s_1606b97c1ea28d::t_3a588134e13625 12,190-204
+  s_1606b97c1ea28d::t_43adbf436ea783 205-207
+src/core/storage/BulkArchiveService.ts
+  s_1606b97c1ea28d::t_5276e813e3e768 12-18,87-90,95,130-133,175,179,183-184,189-192,204
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx
+  s_1606b97c1ea28d::t_636546ec049273 28
+  s_1606b97c1ea28d::t_e500ece4ff3cf1 260,264-265
+src/core/storage/ShareService.test.ts
+  s_1606b97c1ea28d::t_d4f4fd5c1ff1e3 665,689,725,744,779,1250
+  s_1606b97c1ea28d::t_6c850c780bbbbe 20-28,786-793
+  s_1606b97c1ea28d::t_a1d65a47627288 401-412,794
+src/features/cloud-share/components/ShareModal/ShareModal.tsx
+  s_1606b97c1ea28d::t_e500ece4ff3cf1 134-138
+  s_1606b97c1ea28d::t_636546ec049273 16-17
+src/features/cloud-share/hooks/useCloudShare.ts
+  s_1606b97c1ea28d::t_4f5977c4292846 19,133-135
+src/features/cloud-share/components/ShareModal/ShareModal.test.tsx
+  s_1606b97c1ea28d::t_2ce3a33787bd09 16
+  s_1606b97c1ea28d::t_a85d11d6b730ef 226-227
+  s_1606b97c1ea28d::t_6e8ab3b53d6969 6-7,212-225
+src/shell/ErrorBoundary/ErrorBoundary.test.tsx
+  s_1606b97c1ea28d::t_2ce3a33787bd09 23-25
+src/features/layout-library/components/LayoutManagerModal/LayoutManagerModal.tsx
+  s_1606b97c1ea28d::t_995c1eee26328f 275-280
+src/core/storage/utils.ts
+  s_1606b97c1ea28d::t_afd92f6fca90cd 10-11,31-32,34-40,50
+src/shell/ErrorBoundary/ErrorBoundary.tsx
+  s_1606b97c1ea28d::t_e500ece4ff3cf1 6,88
+src/shared/hooks/useAppWindowEvents.ts
+  s_1606b97c1ea28d::t_636546ec049273 4,7-8,31,83-85
+  s_1606b97c1ea28d::t_8ca8dd6162401f 86
+  s_1606b97c1ea28d::t_c9ca5b01003a09 90
+src/core/api/share.ts
+  s_1606b97c1ea28d::t_872401216eacc3 283,314
+  s_1606b97c1ea28d::t_d675def438323b 10,92-94,97,101,108,282,284-286,313,315-317
+src/features/layout-library/components/LayoutManagerModal/LayoutList/LayoutList.tsx
+  s_1606b97c1ea28d::t_e500ece4ff3cf1 194,198-199
+  s_1606b97c1ea28d::t_636546ec049273 9-10
+src/features/layout-library/components/LayoutManagerModal/LayoutList/LayoutList.test.tsx
+  s_1606b97c1ea28d::t_2ce3a33787bd09 24
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.test.tsx
+  s_1606b97c1ea28d::t_2ce3a33787bd09 42
+src/core/storage/BulkArchiveService.test.ts
+  s_1606b97c1ea28d::t_995c1eee26328f 19
+  s_1606b97c1ea28d::t_64879e933ed05a 192,222,234,248,256-265,270
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dfbd7aa29cfc7c40e7481ed8e7e0f5e6d704a4c3",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_900382acfc8cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be78da35-89aa-4eb2-be8c-776bc3871d49",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}

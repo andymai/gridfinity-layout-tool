@@ -1,0 +1,28 @@
+src/features/bin-designer/README.md
+  s_1606b97c1ea28d::t_e545103739cdc7 469
+.claude/skills/mesh-storage/SKILL.md
+  s_1606b97c1ea28d::t_31fbee0eeabd11 1-53
+src/features/generation/README.md
+  s_1606b97c1ea28d::t_e545103739cdc7 107-108
+scripts/doc-budget.json
+  s_1606b97c1ea28d::t_f7bee337cc3a54 17
+src/shell/RightPanel/RightPanel.test.tsx
+  s_1606b97c1ea28d::t_2ca012c3fa9356 125-126
+  s_1606b97c1ea28d::t_2bd07a4b51ce27 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3293e61d73c8ec3d68174e416624bc3480172dad",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
