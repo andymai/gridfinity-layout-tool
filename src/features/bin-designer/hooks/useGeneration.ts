@@ -17,6 +17,8 @@ import { generateBinDirect, canBinUseDirectMesh } from '@/shared/generation/dire
 import { handleWasmLoadFailure } from '@/shared/generation/captureWasmLoadFailure';
 import { isUnsupportedWasmError } from '@/shared/generation/wasmLoadError';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
+import { holderMeshHashes } from '@/shared/generation/meshRefs';
+import { subscribeMeshFileArrivals } from '@/shared/generation/meshStore';
 import {
   binMeshCacheKey,
   loadPersistedBinMesh,
@@ -554,6 +556,17 @@ export function useGeneration(): void {
       void runGeneration(params);
     }
   }, [epoch, params, itemKind, structure, envelope, runGeneration, runItemGeneration]);
+
+  // A mesh built while one of the design's files was not on this device shows
+  // that pocket uncut, and nothing else would rebuild it once the file arrives.
+  useEffect(() => {
+    if (itemKind !== 'bin') return;
+    const hashes = new Set(holderMeshHashes({ params }));
+    if (hashes.size === 0) return;
+    return subscribeMeshFileArrivals((hash) => {
+      if (initializedRef.current && hashes.has(hash)) void runGeneration(params);
+    });
+  }, [itemKind, params, runGeneration]);
 
   // Re-generate when the print nozzle changes. Nozzle is not part of the design
   // (so it doesn't bump the epoch), but a socket bin's pocket clearance scales
