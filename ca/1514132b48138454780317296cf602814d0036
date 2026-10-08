@@ -1,0 +1,44 @@
+src/features/bin-designer/sync/meshPushPlan.ts
+  s_1606b97c1ea28d::t_75d492e4149419 1-30
+src/shared/generation/meshCloud.test.ts
+  s_1606b97c1ea28d::t_4c656d7d598977 1-4,6-23,25-44,46-125
+  s_1606b97c1ea28d::t_bc8ff06c264261 5,24,45
+src/features/bin-designer/sync/designAdapter.ts
+  s_1606b97c1ea28d::t_32d4ef49d08e9d 7
+  s_1606b97c1ea28d::t_fa027f84494ce8 30,33,41-43
+  s_1606b97c1ea28d::t_1c7bcdf3d7ae83 195-198,204-206,222,225-236
+  s_1606b97c1ea28d::t_5f4fdadf85ac3f 237
+api/lib/meshFile.crossBoundary.test.ts
+  s_1606b97c1ea28d::t_8ef31cc16f2add 27-28,176-189
+  s_1606b97c1ea28d::t_d09fb91c8339fc 190-191
+src/features/bin-designer/sync/meshPayloads.test.ts
+  s_1606b97c1ea28d::t_ae29822c0bb53e 2-5,7
+  s_1606b97c1ea28d::t_bc80a051806170 20
+  s_1606b97c1ea28d::t_878d8f800cc924 362-363,365-368,370-410,412-512
+  s_1606b97c1ea28d::t_bc8ff06c264261 364,369,411
+src/shared/generation/meshCloud.ts
+  s_1606b97c1ea28d::t_25c80e64c95a31 51
+  s_1606b97c1ea28d::t_bf7b3054e5ad50 1-50,52-84
+src/features/bin-designer/sync/designVersionAdapter.ts
+  s_1606b97c1ea28d::t_7928c38c92c042 7
+  s_1606b97c1ea28d::t_b597c9024405c5 115-123,125-126,130-133,136-138,140-147,150-161
+  s_1606b97c1ea28d::t_1c6f92fa172cd0 22,25,34-35
+  s_1606b97c1ea28d::t_766ade8b53ca59 57,67-69,73-75
+  s_1606b97c1ea28d::t_0c333bc4dd692b 162
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ca1514132b48138454780317296cf602814d0036",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
