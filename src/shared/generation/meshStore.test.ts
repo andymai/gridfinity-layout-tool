@@ -178,4 +178,48 @@ describe('a long-open page keeps the files it uses', () => {
 
     expect(await getMeshFile(hash)).toEqual(bytes);
   });
+
+  it('keeps a file another tab sweeps while the refresh is reading it', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(start);
+    const bytes = bytesOf(15);
+    const hash = (await putMeshFile(bytes)) ?? '';
+    const elsewhere = await new Promise<IDBDatabase>((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error ?? new Error('open failed'));
+    });
+    const sweepAt = start + 8 * day;
+    // Queued the moment the refresh reads, so it commits before any
+    // transaction the refresh opens after that read.
+    const sweepElsewhere = (): Promise<void> =>
+      new Promise((resolve) => {
+        const tx = elsewhere.transaction(['files', 'meta'], 'readwrite');
+        const meta = tx.objectStore('meta').get(hash);
+        meta.onsuccess = () => {
+          const touchedAt = (meta.result as { touchedAt: number } | undefined)?.touchedAt ?? 0;
+          if (sweepAt - touchedAt <= MESH_SWEEP_GRACE_MS) return;
+          tx.objectStore('files').delete(hash);
+          tx.objectStore('meta').delete(hash);
+        };
+        tx.oncomplete = () => resolve();
+      });
+    const sweeps: Promise<void>[] = [];
+    const getKey = IDBObjectStore.prototype.getKey;
+    vi.spyOn(IDBObjectStore.prototype, 'getKey').mockImplementation(function (
+      this: IDBObjectStore,
+      query: IDBValidKey | IDBKeyRange
+    ) {
+      const request = getKey.call(this, query);
+      if (sweeps.length === 0) sweeps.push(sweepElsewhere());
+      return request;
+    });
+
+    await refreshMeshFileUse(sweepAt);
+    await Promise.all(sweeps);
+    expect(sweeps).toHaveLength(1);
+    elsewhere.close();
+    __resetMeshStoreForTests();
+
+    expect(await getMeshFile(hash)).toEqual(bytes);
+  });
 });

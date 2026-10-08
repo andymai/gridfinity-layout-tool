@@ -140,23 +140,25 @@ async function writeUse(hashes: readonly string[], now: number): Promise<void> {
   if (hashes.length === 0 || !hasIndexedDb()) return;
   const database = await db.get();
   if (!database) return;
+  // Read and write in one transaction, so another tab's sweep lands wholly
+  // before it (the file reads as missing and is stored again) or after it.
+  const tx = database.transaction([FILES_STORE, META_STORE], 'readwrite');
+  const files = tx.objectStore(FILES_STORE);
+  const meta = tx.objectStore(META_STORE);
   const [keys, metas] = await Promise.all([
-    Promise.all(hashes.map((hash) => database.getKey(FILES_STORE, hash))),
-    Promise.all(
-      hashes.map((hash) => database.get(META_STORE, hash) as Promise<MeshFileMeta | undefined>)
-    ),
+    Promise.all(hashes.map((hash) => files.getKey(hash))),
+    Promise.all(hashes.map((hash) => meta.get(hash) as Promise<MeshFileMeta | undefined>)),
   ]);
   const restored: string[] = [];
-  const tx = database.transaction([FILES_STORE, META_STORE], 'readwrite');
   hashes.forEach((hash, i) => {
     const bytes = memory.get(hash);
     if (keys[i] === undefined) {
       if (!bytes) return;
-      void tx.objectStore(FILES_STORE).put({ hash, bytes } satisfies StoredMeshFile);
+      void files.put({ hash, bytes } satisfies StoredMeshFile);
       restored.push(hash);
     }
     const size = bytes?.byteLength ?? metas[i]?.size ?? 0;
-    void tx.objectStore(META_STORE).put({ hash, size, touchedAt: now } satisfies MeshFileMeta);
+    void meta.put({ hash, size, touchedAt: now } satisfies MeshFileMeta);
   });
   await tx.done;
   for (const hash of hashes) lastUseWritten.set(hash, now);
