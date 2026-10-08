@@ -1,0 +1,24 @@
+src/shared/generation/meshCloud.test.ts
+  s_1606b97c1ea28d::t_b75709c912ad92 219-263
+src/shared/generation/meshCloud.ts
+  s_1606b97c1ea28d::t_bd41be54d5266f 80-102,105-107,111-132,138,311-312,319
+  s_1606b97c1ea28d::t_afd4c9566673c5 318
+.claude/skills/mesh-storage/SKILL.md
+  s_1606b97c1ea28d::t_66f619fd99b6e1 25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "af0ad9a636dc3e42361b44057f5a001c33074c31",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
