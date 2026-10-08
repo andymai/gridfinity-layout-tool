@@ -1,0 +1,55 @@
+api/sync/designs/[id].ts
+  s_1606b97c1ea28d::t_55079aeec229f9 350-375
+  s_1606b97c1ea28d::t_890f57d4993d91 220,227
+  s_1606b97c1ea28d::t_842b8869eac689 5
+  s_1606b97c1ea28d::t_e2403d32da8eb4 175
+api/lib/importedMeshValidation.test.ts
+  s_1606b97c1ea28d::t_93d6dbf971fcf8 1-192
+  s_1606b97c1ea28d::t_757e70e998f26d 193-195
+  s_623c5cf331b4f0::t_cfa5af3698948d 196-198
+api/lib/importedMeshValidation.crossBoundary.test.ts
+  s_1606b97c1ea28d::t_18619334967463 20,145,151-154,185-186
+  s_1606b97c1ea28d::t_c2ac7faf01e78b 146
+  s_1606b97c1ea28d::t_f7cc511b5d04dc 1-19,21-144,147-150,155-184,187-198
+api/sync/designVersions/[id].ts
+  s_1606b97c1ea28d::t_45fb7387c62047 97-125
+  s_1606b97c1ea28d::t_1be96232002dd7 5
+api/sync/README.md
+  s_1606b97c1ea28d::t_d7880d658a3c65 78
+api/sync/designs/[id].test.ts
+  s_1606b97c1ea28d::t_4c84c261c00299 944-1060
+  s_1606b97c1ea28d::t_c36ff18ad07c8f 1061-1063
+  s_623c5cf331b4f0::t_23d4e8a924b46a 1064-1066
+api/sync/designVersions/[id].test.ts
+  s_1606b97c1ea28d::t_7b29c578f7f613 389-466
+api/lib/designerCutoutValidation.ts
+  s_1606b97c1ea28d::t_1eb2c3ddab8eb7 228-313,320-321,351-352
+  s_1606b97c1ea28d::t_f8d731e6f2f0a4 227
+api/lib/importedMeshValidation.ts
+  s_1606b97c1ea28d::t_b00c7496801c44 1-59,62-67,71-147
+  s_1606b97c1ea28d::t_f4e379462623e5 60-61,68-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9b25108ab049cef9ea29c2c38a29a19f7010cbd5",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_623c5cf331b4f0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a8846805486e8fb97",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
