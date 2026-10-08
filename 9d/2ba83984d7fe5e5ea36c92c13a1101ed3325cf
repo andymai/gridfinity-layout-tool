@@ -1,0 +1,92 @@
+src/features/bin-designer/utils/communityToDesign.ts
+  s_1606b97c1ea28d::t_89ca9d54c199b8 10,56-59
+src/features/bin-designer/hooks/useCommunityPublish.ts
+  s_1606b97c1ea28d::t_e564a623f6d0e6 19-20,158-163,165,169-175
+  s_1606b97c1ea28d::t_909354ed96cefa 176-177
+api/lib/communityValidation.test.ts
+  s_1606b97c1ea28d::t_6e7be39ff521ed 74-80
+  s_2fb0424f1c7a72::t_3f69c0e7b2d0e3 81-84
+api/lib/meshIndex.test.ts
+  s_1606b97c1ea28d::t_df5293c865be66 12,14,24,45,158-159,382-386
+  s_1606b97c1ea28d::t_65364bbb3e3254 387-388
+api/lib/communityValidation.ts
+  s_1606b97c1ea28d::t_70eb3ca6d73157 545-546
+api/lib/shareMeshes.test.ts
+  s_1606b97c1ea28d::t_6e7be39ff521ed 20,89-107
+  s_2fb0424f1c7a72::t_981e1ac28a2c95 108
+api/lib/shareMeshes.ts
+  s_1606b97c1ea28d::t_8d184922afc3ac 2,9-13,15,17-18,24,28,36-49
+  s_a91121211c2710::t_3321dd963f091d 50
+src/shared/types/community.ts
+  s_1606b97c1ea28d::t_89ca9d54c199b8 212-213
+src/features/bin-designer/hooks/useCommunityPublish.test.ts
+  s_1606b97c1ea28d::t_3551aa6606367e 16,42-46,169-199
+  s_1606b97c1ea28d::t_faa6aefda7a241 200-201
+.claude/skills/mesh-storage/SKILL.md
+  s_1606b97c1ea28d::t_6911228a0a6544 20,23,27
+src/shared/generation/meshCloud.test.ts
+  s_1606b97c1ea28d::t_b8d94719d9ae3a 10,681-702
+  s_2fb0424f1c7a72::t_c9c8b8ec74b250 703-705
+src/features/bin-designer/utils/communityToDesign.test.ts
+  s_1606b97c1ea28d::t_25198c7aee7116 26-32,116-135
+  s_1606b97c1ea28d::t_8d7331d6da7160 136
+src/core/api/share.test.ts
+  s_1606b97c1ea28d::t_e94b4d59938dfe 19-28,574,591,602,608,656,674
+api/lib/communityStore.ts
+  s_1606b97c1ea28d::t_70eb3ca6d73157 141-142
+api/community/[id].test.ts
+  s_1606b97c1ea28d::t_95aa77856be155 63-70,323-324,780-820
+  s_2fb0424f1c7a72::t_f5a296aa9d18b3 821-826
+api/lib/communityPublish.ts
+  s_1606b97c1ea28d::t_70eb3ca6d73157 12-14,220-227,347,363-365
+api/community.test.ts
+  s_1606b97c1ea28d::t_4cdf9933f495bb 17-24,455-456,575-624
+  s_2fb0424f1c7a72::t_b70865afc55f72 625-627
+src/core/api/share.ts
+  s_1606b97c1ea28d::t_8ef26c00341c15 23-29,153,170,268
+api/lib/communityDesignMutations.ts
+  s_1606b97c1ea28d::t_e9d925bb95e50a 25-27,137-144,212-214,216,225,235-236
+src/shared/generation/meshCloud.ts
+  s_1606b97c1ea28d::t_8ef26c00341c15 202-243
+src/features/community/api/client.ts
+  s_1606b97c1ea28d::t_e564a623f6d0e6 12,15-17,193-208,215-222,238-245
+src/features/community/api/client.test.ts
+  s_1606b97c1ea28d::t_29645b593b0e67 2-4,21-29,240-286,292
+  s_2fb0424f1c7a72::t_e77fe0042aefbf 287-291
+api/lib/meshIndex.ts
+  s_1606b97c1ea28d::t_19685a894a6318 4,38-41,85-87,89,117,128-129,203-207,209,211-212,217-244
+api/lib/redisKeys.ts
+  s_1606b97c1ea28d::t_17aa838d4aa8ad 74-78,165-166
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9d2ba83984d7fe5e5ea36c92c13a1101ed3325cf",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_2fb0424f1c7a72": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c92563ef-8abd-4df3-a9be-fa69c6091639",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_a91121211c2710": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9c333764-38cf-44c3-99a9-538371777c59",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
