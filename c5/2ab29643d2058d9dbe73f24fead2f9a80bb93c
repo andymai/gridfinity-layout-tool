@@ -1,0 +1,23 @@
+src/features/bin-designer/hooks/useGeneration.test.ts
+  s_1606b97c1ea28d::t_9fb5f45ce8ef23 61-69,659-689
+  s_1606b97c1ea28d::t_e50d9ff54d3c1f 690-691
+src/features/bin-designer/hooks/useGeneration.ts
+  s_1606b97c1ea28d::t_b5d8f0a760395e 20-21,560-569
+  s_1606b97c1ea28d::t_55802db6eb42ed 570
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c52ab29643d2058d9dbe73f24fead2f9a80bb93c",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
