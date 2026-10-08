@@ -1,0 +1,48 @@
+src/shared/generation/meshStore.ts
+  s_1606b97c1ea28d::t_570f72f1c53af6 13-17,20,50-52,72-73,125,135-193,199,209,253,266
+src/features/bin-designer/hooks/useMeshFileMaintenance.ts
+  s_1606b97c1ea28d::t_ca36591f5810ad 5-8,17-19,38-40,42-47
+  s_e119565ef49e3d::t_7adedf5e42743b 48
+src/features/bin-designer/hooks/useMeshFileMaintenance.test.ts
+  s_1606b97c1ea28d::t_8d699bc79f8650 1,5,7,14-18,31-41
+  s_e119565ef49e3d::t_eb16b46bf1aa9d 42
+src/shared/generation/meshStore.test.ts
+  s_1606b97c1ea28d::t_dd094980f2eb3c 9,123-180
+  s_1606b97c1ea28d::t_fb9bc969d11a55 181
+src/shared/generation/meshOutlines.test.ts
+  s_1606b97c1ea28d::t_77500cb8d5ecdf 4,7-8,71-92
+  s_1606b97c1ea28d::t_d9e8c10bcff41e 93
+src/features/generation/worker/meshFiles.ts
+  s_1606b97c1ea28d::t_c0198f2aa14c46 15-19,22,28-29,39
+src/shared/hooks/useMeshOutlines.test.ts
+  s_1606b97c1ea28d::t_170620c6756ee7 4-9,65-75
+  s_1606b97c1ea28d::t_6af3f584584895 76-77
+src/shared/generation/meshOutlines.ts
+  s_1606b97c1ea28d::t_c0198f2aa14c46 9-12,18,20,24-53,63,96
+src/shared/hooks/useMeshOutlines.ts
+  s_1606b97c1ea28d::t_c0198f2aa14c46 10,12,21-27,33,45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d7b2d4321569498627c0ec856b0868af1c00963d",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_e119565ef49e3d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "22771e2c-be53-48db-9fc0-f1734eda22ff",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
