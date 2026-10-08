@@ -560,13 +560,14 @@ export function useGeneration(): void {
   // A mesh built while one of the design's files was not on this device shows
   // that pocket uncut, and nothing else would rebuild it once the file arrives.
   useEffect(() => {
-    if (itemKind !== 'bin') return;
-    const hashes = new Set(holderMeshHashes({ params }));
+    const item = itemKind !== 'bin' && structure && envelope ? { envelope, structure } : null;
+    const hashes = new Set(holderMeshHashes(item ? { structure } : { params }));
     if (hashes.size === 0) return;
     return subscribeMeshFileArrivals((hash) => {
-      if (initializedRef.current && hashes.has(hash)) void runGeneration(params);
+      if (!initializedRef.current || !hashes.has(hash)) return;
+      void (item ? runItemGeneration(item) : runGeneration(params));
     });
-  }, [itemKind, params, runGeneration]);
+  }, [itemKind, params, structure, envelope, runGeneration, runItemGeneration]);
 
   // Re-generate when the print nozzle changes. Nozzle is not part of the design
   // (so it doesn't bump the epoch), but a socket bin's pocket clearance scales
