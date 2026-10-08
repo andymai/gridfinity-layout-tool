@@ -24,6 +24,8 @@ import {
   encodeMeshFile,
 } from '../../src/shared/generation/meshFile.js';
 import type { MeshFileContent } from '../../src/shared/generation/meshFile.js';
+import { meshAssetFile } from '../../src/shared/generation/meshRefs.js';
+import { validateMeshAssets } from './designerCutoutValidation.js';
 import { CONSTRAINTS } from './designerValidationConstants.js';
 import {
   MAX_DECODED_MESH_BYTES,
@@ -169,5 +171,21 @@ describe('client and server agree on every file', () => {
     }
     expect(seen.accepted).toBeGreaterThan(0);
     expect(seen.rejected).toBeGreaterThan(0);
+  });
+});
+
+describe('mesh refs', () => {
+  it('takes the ref the client keeps in a design, naming the file it uploads', async () => {
+    const file = await meshAssetFile({
+      ...(await asset()),
+      name: 'wrench',
+      sizeMm: { x: 40, y: 40, z: 40 },
+    });
+    if (!file) throw new Error('fixture');
+    const cutouts = [{ id: 'c1', shape: 'mesh', meshId: 'm1' }];
+
+    expect(validateMeshAssets({ m1: file.ref }, cutouts, true)).toBeNull();
+    expect(file.ref.hash).toBe(meshFileHash(file.bytes));
+    expect(file.ref.bytes).toBe(file.bytes.byteLength);
   });
 });
