@@ -1,0 +1,21 @@
+src/features/bin-designer/components/ExportDialog/ExportDialog.test.tsx
+  s_1606b97c1ea28d::t_cec050d77b7677 795-806
+src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
+  s_1606b97c1ea28d::t_cec050d77b7677 240-241
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "397492df6f0e86e1888d9bedb94c7b940a9368a3",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
