@@ -216,10 +216,14 @@ async function sendOne(
 
   // Read the latest snapshot at push time so a fresh edit during the
   // enqueue→push window goes out instead of a stale copy.
-  const plan = await planPush(adapter, entry.id);
   // Planning can outlast the session (an inline fallback reads every mesh
-  // file), and its push must not go out under the next account's cookie.
-  if (s.stopping) return;
+  // file, and teardown fails an upload under way). Once stopped, neither its
+  // push nor its failure belongs to the next account.
+  const plan = await planPush(adapter, entry.id).catch((error: unknown) => {
+    if (s.stopping) return null;
+    throw error;
+  });
+  if (s.stopping || plan === null) return;
   if (plan.status === 'skip') {
     await outboxMarkSuccess(entry.kind, entry.id, entry.modifiedAt);
     return;

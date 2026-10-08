@@ -501,6 +501,37 @@ describe('push: preparePush', () => {
     expect(puts()).toEqual([]);
   });
 
+  it('reports nothing for a plan that fails after the engine stopped', async () => {
+    let fail = (): void => undefined;
+    designsAdapter.preparePush = vi.fn<NonNullable<SyncAdapter['preparePush']>>(
+      () =>
+        new Promise((_, reject) => {
+          fail = () => reject(new Error('mesh upload: session ended'));
+        })
+    );
+    engine.start(adapters);
+    designsAdapter.triggerChange({ kind: 'put', id: 'des-1', modifiedAt: 2000 });
+    await vi.waitFor(() => expect(designsAdapter.preparePush).toHaveBeenCalled());
+
+    engine.stop();
+    fail();
+    await flush();
+
+    expect(useSyncStatusStore.getState().lastError).toBeUndefined();
+    expect(puts()).toEqual([]);
+  });
+
+  it('still reports a plan that fails while the engine runs', async () => {
+    designsAdapter.preparePush = vi.fn<NonNullable<SyncAdapter['preparePush']>>(async () => {
+      throw new Error('idb closed');
+    });
+    engine.start(adapters);
+    designsAdapter.triggerChange({ kind: 'put', id: 'des-1', modifiedAt: 2000 });
+    await flush();
+
+    expect(useSyncStatusStore.getState().lastError).toContain('idb closed');
+  });
+
   it('drops the entry when the plan skips it', async () => {
     designsAdapter.preparePush = vi.fn(async () => ({ status: 'skip' as const }));
     engine.start(adapters);
