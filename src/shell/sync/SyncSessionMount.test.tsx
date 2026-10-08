@@ -6,7 +6,7 @@ vi.mock('@/core/sync/adapters/folderAdapter', () => ({ folderAdapter: {} }));
 vi.mock('@/features/bin-designer', () => ({ designAdapter: {} }));
 vi.mock('@/features/bin-designer/sync/designVersionAdapter', () => ({ designVersionAdapter: {} }));
 vi.mock('@/features/baseplate/sync/baseplateAdapter', () => ({ baseplateAdapter: {} }));
-vi.mock('@/core/sync/claim', () => ({ runClaim: vi.fn() }));
+vi.mock('@/core/sync/claim', () => ({ runClaim: vi.fn(), cancelClaims: vi.fn() }));
 vi.mock('@/core/sync/engine', () => ({ start: vi.fn(), stop: vi.fn() }));
 vi.mock('@/core/sync/triggers/useDebouncedPush', () => ({ useDebouncedPush: () => undefined }));
 vi.mock('@/core/sync/triggers/useVisibilityFlush', () => ({ useVisibilityFlush: () => undefined }));
@@ -22,7 +22,7 @@ vi.mock('@/shared/generation/meshCloud', () => ({
   endMeshCloudSession: vi.fn(),
 }));
 
-import { runClaim, type ClaimResult } from '@/core/sync/claim';
+import { cancelClaims, runClaim, type ClaimResult } from '@/core/sync/claim';
 import { start, stop } from '@/core/sync/engine';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import type * as UseSession from '@/core/sync/session/useSession';
@@ -71,6 +71,7 @@ describe('SyncSessionMount', () => {
     await act(async () => settleClaim({ status: 'merged', pulled: 1, pushed: 0 }));
 
     expect(endMeshCloudSession).toHaveBeenCalledTimes(1);
+    expect(cancelClaims).toHaveBeenCalledTimes(1);
     expect(start).not.toHaveBeenCalled();
   });
 

@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { runSignOut, type KeepLocalPrompt } from './signOut';
+import { cancelClaims } from './claim';
+import type * as Claim from './claim';
 import type {
   SyncAdapter,
   SyncAdapters,
@@ -18,6 +20,11 @@ const apiSignOutMock = vi.fn();
 const clearOutboxMock = vi.fn();
 const stopEngineMock = vi.fn();
 const resetPullStateMock = vi.fn();
+
+vi.mock('./claim', async (importOriginal) => ({
+  ...(await importOriginal<typeof Claim>()),
+  cancelClaims: vi.fn(),
+}));
 
 vi.mock('./engine', () => ({
   flushNow: () => flushNowMock(),
@@ -158,6 +165,22 @@ describe('runSignOut — outbox flush', () => {
     expect(order.indexOf('clearOutbox')).toBeLessThan(order.indexOf('wipe'));
   });
 
+  it('wipe path cancels a claim in flight first, so it cannot write back over the wipe', async () => {
+    const order: string[] = [];
+    vi.mocked(cancelClaims).mockImplementation(() => {
+      order.push('cancel');
+    });
+    stopEngineMock.mockImplementation(() => {
+      order.push('stop');
+    });
+    layouts.applyRemoteDelete = vi.fn(async () => {
+      order.push('wipe');
+    });
+    layouts.items.set('a', { id: 'a', payload: {}, modifiedAt: 1000 });
+    await runSignOut({ adapters, promptKeepLocal: promptWipe, onAnonymous });
+    expect(order).toEqual(['cancel', 'stop', 'wipe']);
+  });
+
   it('wipe path stops the engine before wiping so a poll cannot race new items in', async () => {
     const order: string[] = [];
     stopEngineMock.mockImplementation(() => {
@@ -171,7 +194,6 @@ describe('runSignOut — outbox flush', () => {
     });
     layouts.items.set('a', { id: 'a', payload: {}, modifiedAt: 1000 });
     await runSignOut({ adapters, promptKeepLocal: promptWipe, onAnonymous });
-    expect(order[0]).toBe('stop');
     expect(order.indexOf('stop')).toBeLessThan(order.indexOf('wipe'));
   });
 

@@ -17,7 +17,8 @@ export type ClaimResult =
   | { status: 'merged'; pulled: number; pushed: number }
   | { status: 'discarded' }
   | { status: 'unauthorized' }
-  | { status: 'error'; message?: string };
+  | { status: 'error'; message?: string }
+  | { status: 'cancelled' };
 
 interface ClaimContext {
   adapters: SyncAdapters;
@@ -54,7 +55,27 @@ interface ItemFetchResponse {
   };
 }
 
-const inFlightByUser = new Map<string, Promise<ClaimResult>>();
+/** Stops a cancelled claim at its next local write or queued push. */
+class ClaimCancelled extends Error {}
+
+type CancelCheck = () => void;
+
+interface ClaimRun {
+  readonly promise: Promise<ClaimResult>;
+  cancel(): void;
+}
+
+const inFlightByUser = new Map<string, ClaimRun>();
+
+/**
+ * Stop every claim in flight before its next local write or queued push.
+ * Called before local data is wiped or the account changes: a claim resuming
+ * from a fetch would otherwise write the prior account's items back.
+ */
+export function cancelClaims(): void {
+  for (const run of inFlightByUser.values()) run.cancel();
+  inFlightByUser.clear();
+}
 
 /**
  * Merge local + cloud state once at sign-in. Single-flight per userId:
@@ -69,30 +90,41 @@ const inFlightByUser = new Map<string, Promise<ClaimResult>>();
  */
 export async function runClaim(ctx: ClaimContext): Promise<ClaimResult> {
   const existing = inFlightByUser.get(ctx.userId);
-  if (existing) return existing;
-  const run = execute(ctx).finally(() => {
-    inFlightByUser.delete(ctx.userId);
+  if (existing) return existing.promise;
+  cancelClaims();
+  let cancelled = false;
+  const check: CancelCheck = () => {
+    if (cancelled) throw new ClaimCancelled();
+  };
+  const promise = execute(ctx, check).finally(() => {
+    if (inFlightByUser.get(ctx.userId)?.promise === promise) inFlightByUser.delete(ctx.userId);
   });
-  inFlightByUser.set(ctx.userId, run);
-  return run;
+  inFlightByUser.set(ctx.userId, {
+    promise,
+    cancel: () => {
+      cancelled = true;
+    },
+  });
+  return promise;
 }
 
 export function __resetForTests(): void {
   inFlightByUser.clear();
 }
 
-async function execute(ctx: ClaimContext): Promise<ClaimResult> {
+async function execute(ctx: ClaimContext, check: CancelCheck): Promise<ClaimResult> {
   const status = useSyncStatusStore.getState();
   status.beginSync();
   try {
-    return await executeInner(ctx);
+    return await executeInner(ctx, check);
   } catch (e) {
+    if (e instanceof ClaimCancelled) return { status: 'cancelled' };
     status.reportError(e instanceof Error ? e.message : 'claim failed');
     return { status: 'error', message: e instanceof Error ? e.message : undefined };
   }
 }
 
-async function executeInner(ctx: ClaimContext): Promise<ClaimResult> {
+async function executeInner(ctx: ClaimContext, check: CancelCheck): Promise<ClaimResult> {
   // Keyed by kind rather than one binding per kind: every step below iterates
   // this, so adding a SyncKind cannot silently skip the claim.
   const kinds = Object.keys(ctx.adapters) as SyncKind[];
@@ -108,6 +140,7 @@ async function executeInner(ctx: ClaimContext): Promise<ClaimResult> {
       newUserId: ctx.userId,
       newAccountLabel: ctx.newAccountLabel,
     });
+    check();
     if (choice === 'discard') {
       // Clear the outbox FIRST: if wipeLocal succeeds but clearOutbox
       // throws (IDB failure), the prior user's pending pushes survive
@@ -123,6 +156,7 @@ async function executeInner(ctx: ClaimContext): Promise<ClaimResult> {
   }
 
   const manifest = await fetchManifest();
+  check();
   if (manifest === null) {
     persistLastSignedInUserId(ctx.userId);
     useSyncStatusStore.getState().reportOffline('manifest fetch failed during claim');
@@ -140,11 +174,18 @@ async function executeInner(ctx: ClaimContext): Promise<ClaimResult> {
   let pushed = 0;
   for (const kind of kinds) {
     // `?? {}` covers a manifest predating this kind's key (schema skew).
-    const counts = await mergeKind(ctx.adapters[kind], kind, local[kind], manifest[kind] ?? {});
+    const counts = await mergeKind(
+      ctx.adapters[kind],
+      kind,
+      local[kind],
+      manifest[kind] ?? {},
+      check
+    );
     pulled += counts.pulled;
     pushed += counts.pushed;
   }
 
+  check();
   persistLastSignedInUserId(ctx.userId);
   useSyncStatusStore.getState().succeed();
 
@@ -168,7 +209,8 @@ async function mergeKind(
   adapter: SyncAdapter,
   kind: SyncKind,
   local: SyncableItem[],
-  remote: Record<string, IndexEntry>
+  remote: Record<string, IndexEntry>,
+  check: CancelCheck
 ): Promise<MergeCounts> {
   const localById = new Map<string, SyncableItem>();
   for (const item of local) localById.set(item.id, item);
@@ -180,6 +222,7 @@ async function mergeKind(
     const localItem = localById.get(id);
 
     if (entry.deletedAt !== undefined) {
+      check();
       if (localItem && localItem.modifiedAt < entry.deletedAt) {
         await adapter.applyRemoteDelete(id);
         pulled++;
@@ -205,6 +248,7 @@ async function mergeKind(
       if (fetched) {
         const payload = envelopePayload(kind, fetched);
         if (payload !== undefined) {
+          check();
           await adapter.applyRemote({
             id,
             payload,
@@ -222,6 +266,7 @@ async function mergeKind(
       if (fetched) {
         const payload = envelopePayload(kind, fetched);
         if (payload !== undefined) {
+          check();
           await adapter.applyRemote({
             id,
             payload,
@@ -235,6 +280,7 @@ async function mergeKind(
     }
 
     if (localItem.modifiedAt > entry.modifiedAt) {
+      check();
       await outboxEnqueue({ kind, id, modifiedAt: localItem.modifiedAt, op: 'put' });
       pushed++;
     }
@@ -244,6 +290,7 @@ async function mergeKind(
     // hasOwn (not `in`) so an id like "constructor" or "toString" can't
     // be falsely treated as present via Object.prototype.
     if (Object.hasOwn(remote, item.id)) continue;
+    check();
     await outboxEnqueue({ kind, id: item.id, modifiedAt: item.modifiedAt, op: 'put' });
     pushed++;
   }

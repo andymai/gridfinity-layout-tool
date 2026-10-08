@@ -4,7 +4,7 @@ import { folderAdapter } from '@/core/sync/adapters/folderAdapter';
 import { designAdapter } from '@/features/bin-designer';
 import { designVersionAdapter } from '@/features/bin-designer/sync/designVersionAdapter';
 import { baseplateAdapter } from '@/features/baseplate/sync/baseplateAdapter';
-import { runClaim, type AccountMismatchChoice } from '@/core/sync/claim';
+import { cancelClaims, runClaim, type AccountMismatchChoice } from '@/core/sync/claim';
 import { start, stop } from '@/core/sync/engine';
 import { useSessionLifecycle, useSessionStore } from '@/core/sync/session/useSession';
 import { useDebouncedPush } from '@/core/sync/triggers/useDebouncedPush';
@@ -94,11 +94,12 @@ export function SyncSessionMount() {
       // immediately retrigger that path. Other terminal states
       // ('merged' | 'discarded' | 'error') start the engine —
       // 'error' relies on the engine's own retry/backoff to recover.
-      if (cancelled) return;
+      if (cancelled || result.status === 'cancelled') return;
       if (result.status !== 'unauthorized') start(adapters);
     });
     return () => {
       cancelled = true;
+      cancelClaims();
       stop();
       // The claim's pulls start mesh downloads before the engine exists, so
       // stopping the engine alone would leave them, and their retry timer, to

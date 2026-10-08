@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { __resetForTests, runClaim, type AccountMismatchPrompt, type ClaimResult } from './claim';
+import {
+  __resetForTests,
+  cancelClaims,
+  runClaim,
+  type AccountMismatchPrompt,
+  type ClaimResult,
+} from './claim';
 import type {
   SyncAdapter,
   SyncAdapters,
@@ -122,6 +128,55 @@ describe('runClaim — single-flight', () => {
     ]);
     expect(a).not.toBe(b);
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('runClaim — cancellation', () => {
+  /** A cloud with one layout, whose first envelope fetch waits for `answer`. */
+  function heldCloud(): { answer: () => void } {
+    let release = (): void => undefined;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let envelopes = 0;
+    fetchMock.mockImplementation(async (url: string) => {
+      if (url === '/api/sync/manifest') {
+        return manifestResponse({
+          layouts: { a: { modifiedAt: 1000, sizeBytes: 100 } },
+          designs: {},
+          indexUpdatedAt: 1000,
+        });
+      }
+      envelopes++;
+      if (envelopes === 1) await held;
+      return envelopeResponse({ layout: { v: 1 }, modifiedAt: 1000 });
+    });
+    return { answer: release };
+  }
+
+  it('stops a claim cancelled during a fetch before it writes anything', async () => {
+    const { answer } = heldCloud();
+    const claim = runClaim(ctx());
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    cancelClaims();
+    answer();
+
+    expect(await claim).toEqual({ status: 'cancelled' });
+    expect(layouts.applyRemote).not.toHaveBeenCalled();
+  });
+
+  it("cancels the previous account's claim when another account signs in", async () => {
+    const { answer } = heldCloud();
+    const first = runClaim(ctx({ userId: 'user-1' }));
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    const second = runClaim(ctx({ userId: 'user-2' }));
+    answer();
+
+    expect(await first).toEqual({ status: 'cancelled' });
+    expect((await second).status).toBe('merged');
+    expect(layouts.applyRemote).toHaveBeenCalledTimes(1);
   });
 });
 

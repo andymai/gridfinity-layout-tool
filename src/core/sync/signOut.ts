@@ -2,7 +2,7 @@ import { signOut as apiSignOut } from './session/sessionApi';
 import { flushNow, getPendingEntries, stop as stopEngine } from './engine';
 import { clearAll as clearOutbox } from './outbox';
 import { resetPullState } from './poller';
-import { clearLastSignedInUserId } from './claim';
+import { cancelClaims, clearLastSignedInUserId } from './claim';
 import type { SyncAdapters, SyncKind } from './adapters/types';
 
 const FLUSH_TIMEOUT_MS = 5_000;
@@ -35,6 +35,7 @@ export async function runSignOut(ctx: SignOutContext): Promise<SignOutResult> {
   const localCount = await countLocalItems(ctx.adapters);
   const choice = await ctx.promptKeepLocal({ localCount });
   if (!isChoice(choice)) return { status: 'cancelled' };
+  cancelClaims();
 
   if (choice === 'wipe') {
     // Stop the engine FIRST. Otherwise a periodic poll or visibility

@@ -1,7 +1,7 @@
 import { deleteAccount as apiDeleteAccount } from './session/sessionApi';
 import { stop as stopEngine } from './engine';
 import { clearAll as clearOutbox } from './outbox';
-import { clearLastSignedInUserId } from './claim';
+import { cancelClaims, clearLastSignedInUserId } from './claim';
 import type { SyncAdapters, SyncKind } from './adapters/types';
 
 export type DeleteAccountConfirmResult = 'confirm' | 'cancel';
@@ -38,6 +38,7 @@ export async function runDeleteAccount(ctx: DeleteAccountContext): Promise<Delet
   const choice = await ctx.promptConfirm({ localCount });
   if (choice !== 'confirm') return { status: 'cancelled' };
 
+  cancelClaims();
   stopEngine();
   await clearOutbox();
 
