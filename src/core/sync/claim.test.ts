@@ -7,6 +7,7 @@ import {
   type AccountMismatchPrompt,
   type ClaimResult,
 } from './claim';
+import { useSyncStatusStore } from './status';
 import type {
   SyncAdapter,
   SyncAdapters,
@@ -164,6 +165,7 @@ describe('runClaim — cancellation', () => {
 
     expect(await claim).toEqual({ status: 'cancelled' });
     expect(layouts.applyRemote).not.toHaveBeenCalled();
+    expect(useSyncStatusStore.getState().state).toBe('idle');
   });
 
   it('settles a cancel only once the write it caught in progress has landed', async () => {

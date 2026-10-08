@@ -146,7 +146,12 @@ async function execute(ctx: ClaimContext, guard: ClaimGuard): Promise<ClaimResul
   try {
     return await executeInner(ctx, guard);
   } catch (e) {
-    if (e instanceof ClaimCancelled) return { status: 'cancelled' };
+    if (e instanceof ClaimCancelled) {
+      // A claim that replaced this one owns the status; with none, nothing is
+      // syncing any more.
+      if (inFlightByUser.size === 0) status.reset();
+      return { status: 'cancelled' };
+    }
     status.reportError(e instanceof Error ? e.message : 'claim failed');
     return { status: 'error', message: e instanceof Error ? e.message : undefined };
   }
