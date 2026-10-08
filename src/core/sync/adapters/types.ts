@@ -53,6 +53,16 @@ export interface AdapterChange {
 export type AdapterChangeListener = (change: AdapterChange) => void;
 
 /**
+ * What a push sends, settled at push time. `skip` drops the entry, as a `get`
+ * that finds nothing does. `defer` keeps it queued under the failure backoff:
+ * the payload names something that could not be put on the server yet.
+ */
+export type PushPlan<T> =
+  | { readonly status: 'send'; readonly item: SyncableItem<T> }
+  | { readonly status: 'skip' }
+  | { readonly status: 'defer'; readonly reason: string };
+
+/**
  * Generic storage adapter contract. Implementations expose a small CRUD
  * surface plus a `subscribe` method the engine uses to observe local
  * mutations.
@@ -63,6 +73,16 @@ export interface SyncAdapter<T = unknown> {
 
   /** Read one item by id. Returns `null` if absent. */
   get(id: string): Promise<SyncableItem<T> | null>;
+
+  /** Settle what a push of `id` sends. Without it a push sends `get(id)`. */
+  preparePush?(id: string): Promise<PushPlan<T>>;
+
+  /**
+   * The server refused a push for naming `missing`, which this account has not
+   * put on the server. The push is deferred, and the next `preparePush` must
+   * put them there first.
+   */
+  onMissing?(missing: readonly string[]): void;
 
   /**
    * Apply a remote change locally without firing the change listener

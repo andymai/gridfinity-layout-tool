@@ -11,6 +11,7 @@ import {
   getAll as outboxGetAll,
   clearAll as clearOutbox,
   enqueue as outboxEnqueue,
+  MAX_ATTEMPTS,
 } from './outbox';
 import type {
   AdapterChange,
@@ -446,5 +447,142 @@ describe('push: get returns null', () => {
       ([, init]) => (init as RequestInit | undefined)?.method === 'PUT'
     );
     expect(puts.length).toBe(0);
+  });
+});
+
+describe('push: preparePush', () => {
+  function puts(): RequestInit[] {
+    return fetchMock.mock.calls
+      .map(([, init]) => init as RequestInit)
+      .filter((init) => init.method === 'PUT');
+  }
+
+  it('sends the item the plan settles on, not the one get reads', async () => {
+    designsAdapter.preparePush = vi.fn(async (id: string) => ({
+      status: 'send' as const,
+      item: { id, payload: { planned: true }, modifiedAt: 2000 },
+    }));
+    engine.start(adapters);
+    designsAdapter.triggerChange({ kind: 'put', id: 'des-1', modifiedAt: 2000 });
+    await flush();
+
+    expect(JSON.parse(puts()[0].body as string)).toEqual({
+      design: { planned: true },
+      modifiedAt: 2000,
+    });
+    expect(designsAdapter.get).not.toHaveBeenCalled();
+    expect(await outboxGetAll()).toEqual([]);
+  });
+
+  it('drops the entry when the plan skips it', async () => {
+    designsAdapter.preparePush = vi.fn(async () => ({ status: 'skip' as const }));
+    engine.start(adapters);
+    designsAdapter.triggerChange({ kind: 'put', id: 'des-1', modifiedAt: 2000 });
+    await flush();
+
+    expect(puts()).toEqual([]);
+    expect(await outboxGetAll()).toEqual([]);
+  });
+
+  it('keeps a deferred entry under the failure backoff, then sends it on a later drain', async () => {
+    const preparePush = vi
+      .fn<NonNullable<SyncAdapter['preparePush']>>()
+      .mockResolvedValueOnce({ status: 'defer', reason: 'mesh upload: HTTP 500' })
+      .mockImplementation(async (id) => ({
+        status: 'send',
+        item: { id, payload: { v: 2 }, modifiedAt: 2000 },
+      }));
+    designsAdapter.preparePush = preparePush;
+    engine.start(adapters);
+    const events: engine.EngineEvent[] = [];
+    engine.onEngineEvent((e) => events.push(e));
+    designsAdapter.triggerChange({ kind: 'put', id: 'des-1', modifiedAt: 2000 });
+    await flush();
+
+    expect(puts()).toEqual([]);
+    const [entry] = await outboxGetAll();
+    expect(entry.attempts).toBe(1);
+    expect(entry.nextAttemptAt).toBeGreaterThan(Date.now());
+    expect(useSyncStatusStore.getState().state).toBe('offline');
+    expect(useSyncStatusStore.getState().lastError).toContain('mesh upload: HTTP 500');
+    expect(events).toEqual([]);
+
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(entry.nextAttemptAt + 1);
+      await engine.flushNow();
+    } finally {
+      vi.useRealTimers();
+    }
+
+    expect(preparePush).toHaveBeenCalledTimes(2);
+    expect(puts()).toHaveLength(1);
+    expect(await outboxGetAll()).toEqual([]);
+  });
+
+  it('gives up on a push deferred past the attempt budget, like any failure', async () => {
+    designsAdapter.preparePush = vi.fn(async () => ({
+      status: 'defer' as const,
+      reason: 'mesh upload: HTTP 500',
+    }));
+    engine.start(adapters);
+    await new Promise((r) => setTimeout(r, 10));
+    const events: engine.EngineEvent[] = [];
+    engine.onEngineEvent((e) => events.push(e));
+    await outboxEnqueue({ kind: 'designs', id: 'des-1', modifiedAt: 2000, op: 'put' });
+
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      for (let i = 0; i < MAX_ATTEMPTS; i++) {
+        vi.setSystemTime(Date.now() + 10 * 60 * 1000);
+        await engine.flushNow();
+      }
+    } finally {
+      vi.useRealTimers();
+    }
+
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: 'sync-error', reason: 'gave-up', id: 'des-1' })
+    );
+    expect(await outboxGetAll()).toEqual([]);
+  });
+});
+
+describe('push: 424 missing dependency', () => {
+  function missingResponse(missing: unknown): Response {
+    return new Response(JSON.stringify({ error: 'missing', code: 'MESH_MISSING', missing }), {
+      status: 424,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  it('hands the adapter what is missing and keeps the entry for a retry', async () => {
+    const onMissing = vi.fn();
+    designsAdapter.onMissing = onMissing;
+    fetchMock.mockResolvedValueOnce(missingResponse(['a'.repeat(64), 7]));
+    engine.start(adapters);
+    const events: engine.EngineEvent[] = [];
+    engine.onEngineEvent((e) => events.push(e));
+
+    designsAdapter.triggerChange({ kind: 'put', id: 'des-1', modifiedAt: 2000 });
+    await flush();
+
+    expect(onMissing).toHaveBeenCalledWith(['a'.repeat(64)]);
+    expect(designsAdapter.applyRemote).not.toHaveBeenCalled();
+    const entries = await outboxGetAll();
+    expect(entries).toHaveLength(1);
+    expect(entries[0].attempts).toBe(1);
+    expect(events).toEqual([]);
+    expect(useSyncStatusStore.getState().state).toBe('offline');
+  });
+
+  it('retries an adapter without the hook all the same', async () => {
+    fetchMock.mockResolvedValueOnce(missingResponse('not a list'));
+    engine.start(adapters);
+
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 2000 });
+    await flush();
+
+    expect(await outboxGetAll()).toHaveLength(1);
   });
 });

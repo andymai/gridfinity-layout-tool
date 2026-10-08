@@ -37,6 +37,7 @@ type RedisClient = NonNullable<ReturnType<typeof getRedis>>;
  * A write naming mesh files the account does not hold, its body listing them
  * as `missing`. Not 409: the client's 409 handling takes the write as lost to
  * a newer one and drops it, where this one succeeds once the files are up.
+ * MIRROR: `MISSING_DEPENDENCY_STATUS` in `src/core/sync/payloadKey.ts`.
  */
 export const MESH_MISSING_STATUS = 424;
 
