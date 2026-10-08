@@ -263,7 +263,6 @@ export function registryAssemblyFields(
   };
 }
 
-/** The full registry entry for a saved Workshop assembly, or `null` for any other kind. */
 export function registryAssemblyEntry(design: SavedDesign): CustomBinRef | null {
   if (!design.envelope || design.structure?.kind !== 'assembly') return null;
   const { width, depth, height } = designFootprint(design);

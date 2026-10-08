@@ -169,6 +169,34 @@ describe('runClaim — cancellation', () => {
     expect(layouts.applyRemote).not.toHaveBeenCalled();
   });
 
+  it('ends as cancelled, reporting nothing, when a write fails after the cancel', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        manifestResponse({
+          layouts: { a: { modifiedAt: 1000, sizeBytes: 100 } },
+          designs: {},
+          indexUpdatedAt: 1000,
+        })
+      )
+      .mockResolvedValueOnce(envelopeResponse({ layout: { v: 1 }, modifiedAt: 1000 }));
+    let failWrite = (): void => undefined;
+    layouts.applyRemote = vi.fn(
+      () =>
+        new Promise<void>((_, reject) => {
+          failWrite = () => reject(new Error('idb closed'));
+        })
+    );
+    const claim = runClaim(ctx());
+    await vi.waitFor(() => expect(layouts.applyRemote).toHaveBeenCalled());
+
+    const cancelling = cancelClaims();
+    failWrite();
+    await cancelling;
+
+    expect(await claim).toEqual({ status: 'cancelled' });
+    expect(useSyncStatusStore.getState().lastError).toBeUndefined();
+  });
+
   it('leaves the status alone when cancelled before it begins', async () => {
     const claim = runClaim(ctx());
     void cancelClaims();

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { __resetForTests, pullNow } from './poller';
+import { __resetForTests, endPulls, pullNow } from './poller';
 import { useSessionStore } from './session/useSession';
 import { useSyncStatusStore } from './status';
 import type {
@@ -168,6 +168,47 @@ describe('diff: only-remote (live)', () => {
       modifiedAt: 5000,
       schemaVersion: 1,
     });
+  });
+});
+
+describe('endPulls', () => {
+  it('stops a pull in flight before its next write, once the running one lands', async () => {
+    fetchMock.mockImplementation(async (url: string) =>
+      url === '/api/sync/manifest'
+        ? manifestResponse({
+            layouts: {
+              'lay-1': { modifiedAt: 5000, sizeBytes: 100 },
+              'lay-2': { modifiedAt: 5000, sizeBytes: 100 },
+            },
+            designs: {},
+            indexUpdatedAt: 5000,
+          })
+        : envelopeResponse(
+            { layout: { v: 1 }, modifiedAt: 5000, schemaVersion: 1 },
+            { modifiedAt: 5000, sizeBytes: 100 }
+          )
+    );
+    let landWrite = (): void => undefined;
+    layouts.applyRemote = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          landWrite = resolve;
+        })
+    );
+    const pull = pullNow(adapters);
+    await vi.waitFor(() => expect(layouts.applyRemote).toHaveBeenCalledTimes(1));
+
+    let ended = false;
+    const ending = endPulls().then(() => {
+      ended = true;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(ended).toBe(false);
+
+    landWrite();
+    await ending;
+    expect((await pull).status).toBe('offline');
+    expect(layouts.applyRemote).toHaveBeenCalledTimes(1);
   });
 });
 

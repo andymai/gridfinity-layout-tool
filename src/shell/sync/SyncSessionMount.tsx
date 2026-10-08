@@ -6,6 +6,7 @@ import { designVersionAdapter } from '@/features/bin-designer/sync/designVersion
 import { baseplateAdapter } from '@/features/baseplate/sync/baseplateAdapter';
 import { cancelClaims, runClaim, type AccountMismatchChoice } from '@/core/sync/claim';
 import { start, stop } from '@/core/sync/engine';
+import { endPulls } from '@/core/sync/poller';
 import { useSessionLifecycle, useSessionStore } from '@/core/sync/session/useSession';
 import { useDebouncedPush } from '@/core/sync/triggers/useDebouncedPush';
 import { useVisibilityFlush } from '@/core/sync/triggers/useVisibilityFlush';
@@ -102,7 +103,10 @@ export function SyncSessionMount() {
     });
     return () => {
       cancelled = true;
-      void cancelClaims();
+      // The periodic poll keeps running across an account switch, so its pulls
+      // end here, and the next claim waits for a write one had in progress.
+      const pulls = endPulls();
+      void cancelClaims(() => pulls);
       stop();
       // The claim's pulls start mesh downloads before the engine exists, so
       // stopping the engine alone would leave them, and their retry timer, to

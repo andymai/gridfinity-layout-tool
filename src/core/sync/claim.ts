@@ -64,6 +64,7 @@ class ClaimCancelled extends Error {}
  * cancel can wait for it to land before anything is wiped.
  */
 interface ClaimGuard {
+  readonly cancelled: boolean;
   check(): void;
   write<T>(op: () => Promise<T>): Promise<T>;
 }
@@ -116,6 +117,9 @@ export async function runClaim(ctx: ClaimContext): Promise<ClaimResult> {
   let cancelled = false;
   let writing: Promise<unknown> = Promise.resolve();
   const guard: ClaimGuard = {
+    get cancelled() {
+      return cancelled;
+    },
     check() {
       if (cancelled) throw new ClaimCancelled();
     },
@@ -154,8 +158,9 @@ async function execute(ctx: ClaimContext, guard: ClaimGuard): Promise<ClaimResul
     return await executeInner(ctx, guard);
   } catch (e) {
     // Once cancelled, the status belongs to the teardown that reset it or the
-    // claim that replaced this one, even after that claim has finished.
-    if (e instanceof ClaimCancelled) return { status: 'cancelled' };
+    // claim that replaced this one, even after that claim has finished. A
+    // write already running at the cancel can still fail with its own error.
+    if (guard.cancelled) return { status: 'cancelled' };
     status.reportError(e instanceof Error ? e.message : 'claim failed');
     return { status: 'error', message: e instanceof Error ? e.message : undefined };
   }

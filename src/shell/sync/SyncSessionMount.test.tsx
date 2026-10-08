@@ -8,6 +8,7 @@ vi.mock('@/features/bin-designer/sync/designVersionAdapter', () => ({ designVers
 vi.mock('@/features/baseplate/sync/baseplateAdapter', () => ({ baseplateAdapter: {} }));
 vi.mock('@/core/sync/claim', () => ({ runClaim: vi.fn(), cancelClaims: vi.fn() }));
 vi.mock('@/core/sync/engine', () => ({ start: vi.fn(), stop: vi.fn() }));
+vi.mock('@/core/sync/poller', () => ({ endPulls: vi.fn(() => Promise.resolve()) }));
 vi.mock('@/core/sync/triggers/useDebouncedPush', () => ({ useDebouncedPush: () => undefined }));
 vi.mock('@/core/sync/triggers/useVisibilityFlush', () => ({ useVisibilityFlush: () => undefined }));
 vi.mock('@/core/sync/triggers/useBeaconFlush', () => ({ useBeaconFlush: () => undefined }));
@@ -24,6 +25,7 @@ vi.mock('@/shared/generation/meshCloud', () => ({
 
 import { cancelClaims, runClaim, type ClaimResult } from '@/core/sync/claim';
 import { start, stop } from '@/core/sync/engine';
+import { endPulls } from '@/core/sync/poller';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import type * as UseSession from '@/core/sync/session/useSession';
 import { beginMeshCloudSession, endMeshCloudSession } from '@/shared/generation/meshCloud';
@@ -68,7 +70,8 @@ describe('SyncSessionMount', () => {
 
     act(() => useSessionStore.setState({ user: { ...USER, userId: 'u2', email: 'b@x' } }));
 
-    expect(cancelClaims).toHaveBeenCalledTimes(1);
+    expect(endPulls).toHaveBeenCalledTimes(1);
+    expect(cancelClaims).toHaveBeenCalledWith(expect.any(Function));
     expect(endMeshCloudSession).toHaveBeenCalledTimes(1);
     expect(vi.mocked(runClaim).mock.calls.map(([ctx]) => ctx.userId)).toEqual(['u1', 'u2']);
   });
