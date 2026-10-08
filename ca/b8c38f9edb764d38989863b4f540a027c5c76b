@@ -1,0 +1,25 @@
+src/shared/generation/meshCloud.ts
+  s_1606b97c1ea28d::t_98dbf07fb2ea44 20-21,57,59,61,68,77,82,91-92,206,208,264-266,268-272,286
+src/features/bin-designer/sync/meshPayloads.test.ts
+  s_1606b97c1ea28d::t_3e992caa2aa1f6 435-443
+src/shared/generation/meshCloud.test.ts
+  s_1606b97c1ea28d::t_98dbf07fb2ea44 6,168-180,345
+src/features/bin-designer/sync/designAdapter.ts
+  s_1606b97c1ea28d::t_98dbf07fb2ea44 31,367,369,385,388
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cab8c38f9edb764d38989863b4f540a027c5c76b",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
