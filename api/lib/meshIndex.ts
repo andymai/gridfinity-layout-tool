@@ -119,7 +119,6 @@ export async function getHeldMesh(
   return raw === null ? null : parseHeldMesh(raw);
 }
 
-/** Every mesh file this account holds, by hash. */
 export async function listHeldMeshes(redis: Redis, userId: string): Promise<Map<string, HeldMesh>> {
   const held = new Map<string, HeldMesh>();
   for (const [hash, raw] of Object.entries(await redis.hgetall(userMeshesKey(userId)))) {

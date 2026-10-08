@@ -190,18 +190,26 @@ async function streamEnvelopes(
   }
 }
 
-// One file at a time, so an account at the mesh quota never holds every file
-// in memory at once. A file gone from the store is skipped like a missing blob.
+// A few files at a time: an account at the mesh quota holds thousands, too many
+// to fetch one by one within the function's time, or all at once in memory.
+// A file gone from the store is skipped like a missing blob.
+const MESH_FETCHES_AT_ONCE = 6;
+
 async function streamMeshFiles(
   addFile: AddFile,
   meshes: ReadonlyMap<string, HeldMesh>
 ): Promise<void> {
-  for (const [hash, { url }] of meshes) {
-    const response = await fetch(url);
-    if (response.status === 404) continue;
-    if (!response.ok) throw new Error(`sync/export mesh fetch failed: ${response.status}`);
-    addFile(`meshes/${hash}`, new Uint8Array(await response.arrayBuffer()));
-  }
+  const queue = [...meshes];
+  const work = async (): Promise<void> => {
+    for (let next = queue.shift(); next !== undefined; next = queue.shift()) {
+      const [hash, { url }] = next;
+      const response = await fetch(url);
+      if (response.status === 404) continue;
+      if (!response.ok) throw new Error(`sync/export mesh fetch failed: ${response.status}`);
+      addFile(`meshes/${hash}`, new Uint8Array(await response.arrayBuffer()));
+    }
+  };
+  await Promise.all(Array.from({ length: MESH_FETCHES_AT_ONCE }, work));
 }
 
 async function streamCommunityRecords(addFile: AddFile, ids: string[]): Promise<void> {
