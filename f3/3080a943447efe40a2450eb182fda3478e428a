@@ -1,0 +1,22 @@
+src/features/bin-designer/storage/DesignerStorage.ts
+  s_1606b97c1ea28d::t_b6ae593d69dcad 61-64,71-73,75-87
+src/features/bin-designer/storage/DesignerStorage.test.ts
+  s_1606b97c1ea28d::t_b20e6562a5f452 10-14,119-145
+  s_1606b97c1ea28d::t_dc7921440e7e26 146
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f33080a943447efe40a2450eb182fda3478e428a",
+  "prompts": {},
+  "sessions": {
+    "s_1606b97c1ea28d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d76791a8-c075-4932-ba77-edea38dbcdd7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
