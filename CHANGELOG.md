@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.509.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.509.0...gridfinity-layout-tool-v4.509.1) (2026-10-09)
+
+
+### Bug Fixes
+
+* **deps:** raise handlebars past its template-injection advisories ([#4551](https://github.com/andymai/gridfinity-layout-tool/issues/4551)) ([d8fb345](https://github.com/andymai/gridfinity-layout-tool/commit/d8fb3458166366508baf46b1b3e1128507a5dc25))
+* **export:** keep the slicer's own print settings for multi-color 3MFs ([#4549](https://github.com/andymai/gridfinity-layout-tool/issues/4549)) ([a597d46](https://github.com/andymai/gridfinity-layout-tool/commit/a597d4674ec129051c83bf05d6f5f0b5155441b8))
+* **layout-export:** tell users to Arrange a multi-plate project file ([#4550](https://github.com/andymai/gridfinity-layout-tool/issues/4550)) ([e731329](https://github.com/andymai/gridfinity-layout-tool/commit/e7313297a4c0e7a29b5a104c1bbd3028b426395f))
+
 ## [4.509.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.508.0...gridfinity-layout-tool-v4.509.0) (2026-10-09)
 
 
