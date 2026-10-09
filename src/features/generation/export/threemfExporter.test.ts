@@ -271,11 +271,8 @@ describe('threemfExporter', () => {
       const buffer = build3MFBuffer(vertices, normals, { name: 'test' });
       const xml = extractModelXML(buffer);
 
-      // Build item always carries a transform now — the bbox centroid is
-      // translated to PLATE_CENTER_MM so the bin opens centered on the bed
-      // rather than at the world origin (= bed corner). Claiming BambuStudio
-      // identity flips need_arrange = false, so OrcaSlicer's From_Other
-      // classifier no longer auto-arranges on import.
+      // The bbox centroid is translated to PLATE_CENTER_MM so the bin opens
+      // centered on the bed rather than at the world origin (= bed corner).
       expect(xml).toContain('<build>');
       expect(xml).toMatch(/<item objectid="1" transform="1 0 0 0 1 0 0 0 1 [^"]+" \/>/);
     });
@@ -584,112 +581,64 @@ describe('threemfExporter', () => {
     });
   });
 
-  // Metadata/project_settings.config primes the slicer's filament palette
-  // via ConfigBase::load_from_json. OrcaSlicer loads it unconditionally and
-  // applies filament_colour to the AMS slots. BambuStudio gates loading on
-  // an "Application=BambuStudio-X.Y.Z" metadata claim we deliberately don't
-  // make (claiming BambuStudio identity caused OrcaSlicer's CLI to reject
-  // the file with a version-check error and the GUI to load a degraded
-  // placeholder). Net effect: Orca users get the AMS palette pre-filled;
-  // Bambu users dismiss a "not from Bambu Lab" dialog once but paint_color
-  // still applies because it lives on triangles in the model XML.
-  describe('project_settings.config (Orca AMS palette seeding)', () => {
-    it('emits Metadata/project_settings.config when colorConfig has materials', () => {
-      const { vertices, normals } = createTwoTriangles();
-      const buffer = build3MFBuffer(vertices, normals, {
-        name: 'palette-test',
-        colorConfig: {
-          materials: [{ color: '#aaaaaa' }, { color: '#FF0000' }],
-          triangleMaterialIndices: [0, 1],
-        },
-      });
+  // Any Metadata/project_settings.config replaces the user's process profile
+  // in BambuStudio and OrcaSlicer: they build a preset from it and fill every
+  // key it omits from their slow hardcoded defaults. The BambuStudio identity
+  // claim only gates reading that file. paint_color and model_settings.config
+  // carry the colors without either.
+  describe('slicer settings stay with the user', () => {
+    function expectNoSlicerSettings(buffer: Uint8Array): void {
       const files = unzipSync(buffer);
-      expect(files['Metadata/project_settings.config']).toBeDefined();
+      expect(files['Metadata/project_settings.config']).toBeUndefined();
+      const model = strFromU8(files['3D/3dmodel.model']);
+      expect(model).toContain('paint_color=');
+      expect(model).not.toContain('<metadata name="Application">');
+      expect(model).not.toContain('BambuStudio:3mfVersion');
+      expect(model).not.toContain('xmlns:BambuStudio');
+    }
 
-      const config = JSON.parse(strFromU8(files['Metadata/project_settings.config']));
-      expect(config.name).toBe('project_settings');
-      expect(config.from).toBe('Gridfinity Layout Tool');
-      expect(typeof config.version).toBe('string');
-      // Hex codes lowercased — BambuStudio's color comparator is case-sensitive.
-      expect(config.filament_colour).toEqual(['#aaaaaa', '#ff0000']);
-    });
-
-    // Print.cpp:1683-1689 — OrcaSlicer's slice validation rejects
-    // multi-material prints on non-Bambu Marlin printers unless the project
-    // has relative extruder addressing AND a G92 E0 reset in the layer
-    // gcode. Setting both here makes multi-color exports slice on first try
-    // without surfacing the validation error to the user.
-    it('includes multi-material slice requirements (relative E + G92 E0)', () => {
+    it('ships no slicer settings or identity claim in a colored export', () => {
       const { vertices, normals } = createTwoTriangles();
       const buffer = build3MFBuffer(vertices, normals, {
-        name: 'mm-slice',
+        name: 'colored',
         colorConfig: {
           materials: [{ color: '#aaaaaa' }, { color: '#ff0000' }],
           triangleMaterialIndices: [0, 1],
         },
       });
-      const config = JSON.parse(strFromU8(unzipSync(buffer)['Metadata/project_settings.config']));
-      expect(config.use_relative_e_distances).toBe('1');
-      // Must match the regex slicer uses to detect the reset:
-      // ^[ \t]*[gG]92[ \t]*[eE](0(\.0*)?|\.0+)[ \t]*(;.*)?$
-      expect(config.layer_change_gcode).toMatch(/^\s*G92\s*E0\b/);
+      expectNoSlicerSettings(buffer);
     });
 
-    // BambuStudio 2.8.2 `check_project_config` treats a missing
-    // nozzle_diameter as invalid and loads geometry only: no palette, so the
-    // text and lip zones open in arbitrary filament colours.
-    it('declares one nozzle_diameter so BambuStudio 2.8.2 accepts the config', () => {
-      const { vertices, normals } = createTwoTriangles();
-      const buffer = build3MFBuffer(vertices, normals, {
-        name: 'nozzle',
-        colorConfig: {
-          materials: [{ color: '#aaaaaa' }, { color: '#ff0000' }, { color: '#00ff00' }],
-          triangleMaterialIndices: [0, 2],
-        },
-      });
-      const config = JSON.parse(strFromU8(unzipSync(buffer)['Metadata/project_settings.config']));
-      expect(config.nozzle_diameter).toEqual(['0.4']);
-      expect(config.extruder_type).toBeUndefined();
-    });
-
-    // Regression: pinning acceleration hid the user's tuned profile
-    // and inflated multi-color print time (see buildProjectSettingsConfig).
-    it('does not pin acceleration (would strip the user profile and slow the print)', () => {
-      const { vertices, normals } = createTwoTriangles();
-      const buffer = build3MFBuffer(vertices, normals, {
-        name: 'accel',
-        colorConfig: {
-          materials: [{ color: '#aaaaaa' }, { color: '#ff0000' }],
-          triangleMaterialIndices: [0, 1],
-        },
-      });
-      const config = JSON.parse(strFromU8(unzipSync(buffer)['Metadata/project_settings.config']));
-      expect(config.default_acceleration).toBeUndefined();
-      expect(config.travel_acceleration).toBeUndefined();
-    });
-
-    it('omits project_settings.config when no colorConfig is provided', () => {
-      const { vertices, normals } = createSingleTriangle();
-      const buffer = build3MFBuffer(vertices, normals, { name: 'plain' });
-      const files = unzipSync(buffer);
-      expect(files['Metadata/project_settings.config']).toBeUndefined();
-    });
-
-    it('omits project_settings.config when colorConfig has empty materials', () => {
-      const { vertices, normals } = createSingleTriangle();
-      const buffer = build3MFBuffer(vertices, normals, {
-        name: 'empty-palette',
-        colorConfig: { materials: [], triangleMaterialIndices: [] },
-      });
-      const files = unzipSync(buffer);
-      expect(files['Metadata/project_settings.config']).toBeUndefined();
+    it('multi-object: ships no slicer settings or identity claim in a colored export', () => {
+      const tri = createSingleTriangle();
+      const buffer = build3MFMultiObjectBuffer(
+        [
+          {
+            vertices: tri.vertices,
+            normals: tri.normals,
+            name: 'colored',
+            colorConfig: {
+              materials: [{ color: '#aaaaaa' }, { color: '#ff0000' }],
+              triangleMaterialIndices: [1],
+            },
+            placement: { plate: 0, x: 128, y: 128 },
+          },
+          {
+            vertices: tri.vertices,
+            normals: tri.normals,
+            name: 'plain',
+            placement: { plate: 1, x: 435.2, y: 128 },
+          },
+        ],
+        { name: 'multi' }
+      );
+      expectNoSlicerSettings(buffer);
+      expect(unzipSync(buffer)['Metadata/model_settings.config']).toBeDefined();
     });
 
     it('multi-object: accepts identical material arrays across colored objects', () => {
       // Same materials list shared across objects (mixed-case to confirm
-      // the comparator is case-insensitive). Per-object paint_color slots
-      // resolve to the same filament in the unified palette, so the
-      // emitted filament_colour list matches the shared array (lowercased).
+      // the comparator is case-insensitive), so no slot is remapped.
       const tri = createSingleTriangle();
       const shared = [{ color: '#111111' }, { color: '#FF0000' }];
       const objects = [
@@ -707,17 +656,15 @@ describe('threemfExporter', () => {
         },
       ];
       const buffer = build3MFMultiObjectBuffer(objects, { name: 'multi' });
-      const config = JSON.parse(strFromU8(unzipSync(buffer)['Metadata/project_settings.config']));
-      expect(config.filament_colour).toEqual(['#111111', '#ff0000']);
+      const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
+      const codes = model.match(/paint_color="([^"]+)"/g) ?? [];
+      expect(codes).toEqual(['paint_color="8"', 'paint_color="4"']);
     });
 
     it('multi-object: merges mismatched palettes and remaps paint codes', () => {
-      // Per-triangle paint_color codes are object-local slot references, so
-      // objects with different palettes can't share one filament_colour list
-      // as-is. The exporter merges distinct colors (first-seen order, shared
-      // colors deduped to one filament) and remaps each object's triangle
-      // slots into the merged space — two bins with different zone palettes
-      // in one project file is a normal layout export.
+      // Two bins with different zone palettes in one project file is a
+      // normal layout export. Shared colors collapse onto one filament and
+      // the union keeps first-seen order: #111111, #ff0000, #00ff00.
       const tri = createSingleTriangle();
       const objects = [
         {
@@ -740,10 +687,6 @@ describe('threemfExporter', () => {
         },
       ];
       const files = unzipSync(build3MFMultiObjectBuffer(objects, { name: 'multi' }));
-
-      // Shared #111111 collapses to one filament; the union keeps first-seen order.
-      const config = JSON.parse(strFromU8(files['Metadata/project_settings.config']));
-      expect(config.filament_colour).toEqual(['#111111', '#ff0000', '#00ff00']);
 
       // Bin slot 1 keeps filament 2 ("8"); lid slot 1 remaps to merged
       // slot 2 → filament 3 ("0C") instead of colliding on filament 2.
@@ -810,18 +753,6 @@ describe('threemfExporter', () => {
       expect(() => build3MFMultiObjectBuffer(objects, { name: 'multi' })).toThrow(/filament cap/);
     });
 
-    it('multi-object: omits project_settings.config when no object has a colorConfig', () => {
-      const tri = createSingleTriangle();
-      const buffer = build3MFMultiObjectBuffer(
-        [
-          { vertices: tri.vertices, normals: tri.normals, name: 'a' },
-          { vertices: tri.vertices, normals: tri.normals, name: 'b' },
-        ],
-        { name: 'multi-plain' }
-      );
-      expect(unzipSync(buffer)['Metadata/project_settings.config']).toBeUndefined();
-    });
-
     // discussion: a uniform-color secondary object (the lid) ships every
     // triangle with one paint_color code, but BambuStudio colors a whole
     // object by its assigned extruder — with none assigned it defaults to
@@ -864,108 +795,6 @@ describe('threemfExporter', () => {
         { name: 'multi-plain' }
       );
       expect(unzipSync(buffer)['Metadata/model_settings.config']).toBeUndefined();
-    });
-
-    // 3MF Core: a prefixed metadata name must name a namespace declared on
-    // <model>. lib3mf in strict mode rejects the package otherwise.
-    function expectPrefixedMetadataDeclared(model: string): void {
-      const modelTag = /<model\b[^>]*>/.exec(model)?.[0] ?? '';
-      const prefixes = [...model.matchAll(/<metadata name="([A-Za-z]\w*):/g)].map((m) => m[1]);
-      expect(prefixes.length).toBeGreaterThan(0);
-      for (const prefix of prefixes) {
-        expect(modelTag).toContain(`xmlns:${prefix}="`);
-      }
-    }
-
-    // BambuStudio gates `Metadata/project_settings.config` loading on the
-    // `Application` metadata starting with "BambuStudio-X.Y.Z"
-    // (bbs_3mf.cpp:1898-1908). Claim a version Orca won't reject so both
-    // slicers load our sidecar and pre-fill the AMS palette automatically.
-    //
-    // Version choice (`02.00.00.00`) was empirically derived against
-    // OrcaSlicer 2.3.1 and BambuStudio 2.6.0 CLIs: 01.x.x.x → rejected,
-    // 02.06.x.x+ → rejected, 02.00.00.00 → accepted by both. See the
-    // BAMBU_COMPAT_APPLICATION docstring in threemfExporter.ts for the
-    // full failure modes I ruled out.
-
-    it('claims BambuStudio identity for multi-color exports', () => {
-      const { vertices, normals } = createTwoTriangles();
-      const model = strFromU8(
-        unzipSync(
-          build3MFBuffer(vertices, normals, {
-            name: 'multi',
-            colorConfig: {
-              materials: [{ color: '#aaaaaa' }, { color: '#ff0000' }],
-              triangleMaterialIndices: [0, 1],
-            },
-          })
-        )['3D/3dmodel.model']
-      );
-      // Must start with "BambuStudio-" per the gate, and stay at 02.00.x.x
-      // or lower so Orca's CLI version check doesn't reject.
-      expect(model).toMatch(
-        /<metadata name="Application">BambuStudio-02\.00\.\d+\.\d+<\/metadata>/
-      );
-      expect(model).toContain('<metadata name="BambuStudio:3mfVersion">1</metadata>');
-      expect(model).toContain('<metadata name="Designer">Gridfinity Layout Tool</metadata>');
-      expectPrefixedMetadataDeclared(model);
-    });
-
-    it('does NOT claim BambuStudio identity for single-color exports', () => {
-      // No sidecar to gate, so no reason to claim identity. Avoids changing
-      // classification for users who don't need multi-material.
-      const { vertices, normals } = createSingleTriangle();
-      const model = strFromU8(
-        unzipSync(build3MFBuffer(vertices, normals, { name: 'plain' }))['3D/3dmodel.model']
-      );
-      expect(model).not.toContain('<metadata name="Application">');
-      expect(model).not.toContain('BambuStudio:3mfVersion');
-      expect(model).not.toContain('xmlns:BambuStudio');
-    });
-
-    it('multi-object: claims BambuStudio identity when any object has colorConfig', () => {
-      const tri = createSingleTriangle();
-      const objects = [
-        {
-          vertices: tri.vertices,
-          normals: tri.normals,
-          name: 'colored',
-          colorConfig: {
-            materials: [{ color: '#aaaaaa' }, { color: '#ff0000' }],
-            triangleMaterialIndices: [1],
-          },
-        },
-        { vertices: tri.vertices, normals: tri.normals, name: 'plain' },
-      ];
-      const model = strFromU8(
-        unzipSync(build3MFMultiObjectBuffer(objects, { name: 'multi-bambu' }))['3D/3dmodel.model']
-      );
-      // Pin the safe version range — same regex as the single-object test
-      // so a future bump to e.g. 02.06.x.x doesn't slip through and break
-      // OrcaSlicer's CLI version check.
-      expect(model).toMatch(
-        /<metadata name="Application">BambuStudio-02\.00\.\d+\.\d+<\/metadata>/
-      );
-      expect(model).toContain('<metadata name="BambuStudio:3mfVersion">1</metadata>');
-      expectPrefixedMetadataDeclared(model);
-    });
-
-    it('multi-object: skips BambuStudio identity when no object has colorConfig', () => {
-      const tri = createSingleTriangle();
-      const model = strFromU8(
-        unzipSync(
-          build3MFMultiObjectBuffer(
-            [
-              { vertices: tri.vertices, normals: tri.normals, name: 'a' },
-              { vertices: tri.vertices, normals: tri.normals, name: 'b' },
-            ],
-            { name: 'multi-plain' }
-          )
-        )['3D/3dmodel.model']
-      );
-      expect(model).not.toContain('<metadata name="Application">');
-      expect(model).not.toContain('BambuStudio:3mfVersion');
-      expect(model).not.toContain('xmlns:BambuStudio');
     });
   });
 
@@ -1252,15 +1081,9 @@ describe('threemfExporter', () => {
     });
   });
 
-  // Issue — auto-stack copies in 3MF. The exporter uses 3MF instancing
-  // (single object, multiple <item> entries with Z translation) so file size
-  // stays constant regardless of copy count.
-  // Older we shipped no Application metadata so OrcaSlicer classified
-  // our file as `From_Other` and auto-arranged on import. Claiming
-  // BambuStudio identity flipped need_arrange=false, so the bin
-  // appeared at world origin (bed corner) instead of centered. Centering
-  // via a build-item transform restores the prior visual behavior while
-  // keeping the AMS-palette-loading benefit of the Bambu identity claim.
+  // The exporter uses 3MF instancing for auto-stack copies (single object,
+  // multiple <item> entries with Z translation) so file size stays constant
+  // regardless of copy count.
   describe('build item centering (positioning regression fix)', () => {
     it('centers a 42mm gridfinity bin around PLATE_CENTER_MM (128,128)', () => {
       // Synthesize a 42x42x42mm cube positioned at origin (the gridfinity

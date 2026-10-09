@@ -6,25 +6,12 @@ import type {
   ThreeMFPlacement,
 } from './threemfTypes';
 import { centeringTranslation, computeBBox, mergeBBoxes } from './threemfGeometry';
-import {
-  activeColorConfig,
-  assertColorConfigShape,
-  BAMBU_COMPAT_APPLICATION,
-  FILAMENT_PAINT_CODES,
-} from './threemfColor';
+import { activeColorConfig, assertColorConfigShape, FILAMENT_PAINT_CODES } from './threemfColor';
 
 const CORE_NS = 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02';
-// 3MF Core requires a prefixed metadata name (`BambuStudio:3mfVersion`) to
-// name a namespace declared on <model>. This is the URI BambuStudio writes.
-const BAMBU_NS = 'http://schemas.bambulab.com/package/2021';
 
-interface ModelFlags {
-  bambuCompat: boolean;
-}
-
-function openModelElement(flags: ModelFlags): string {
-  const bambuNs = flags.bambuCompat ? ` xmlns:BambuStudio="${BAMBU_NS}"` : '';
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="${CORE_NS}"${bambuNs}>\n`;
+function openModelElement(): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="${CORE_NS}">\n`;
 }
 
 export function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
@@ -36,9 +23,8 @@ export function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): strin
   const objectId = 1;
   const offset = centeringTranslation(computeBBox(mesh.vertices));
 
-  const flags: ModelFlags = { bambuCompat: !!colorConfig };
-  let xml = openModelElement(flags);
-  xml += buildMetadataXml(options, flags);
+  let xml = openModelElement();
+  xml += buildMetadataXml(options);
   xml += '  <resources>\n';
   xml += buildObjectXml(objectId, options.name, mesh, colorConfig?.triangleMaterialIndices);
   xml += '  </resources>\n';
@@ -93,7 +79,6 @@ export function buildMultiObjectModelXML(
     return { ...obj, colorConfig };
   });
 
-  const anyHasColors = resolved.some((obj) => obj.colorConfig !== undefined);
   const placed = resolved.some((obj) => obj.placement !== undefined);
 
   // Single shared offset across all objects so the bin + dividers + lid keep
@@ -103,9 +88,8 @@ export function buildMultiObjectModelXML(
   const combinedBBox = mergeBBoxes(resolved.map((obj) => computeBBox(obj.mesh.vertices)));
   const offset = centeringTranslation(combinedBBox);
 
-  const flags: ModelFlags = { bambuCompat: anyHasColors };
-  let xml = openModelElement(flags);
-  xml += buildMetadataXml(options, flags);
+  let xml = openModelElement();
+  xml += buildMetadataXml(options);
   xml += '  <resources>\n';
 
   const objectIds: number[] = [];
@@ -152,14 +136,10 @@ function placedTranslation(obj: { mesh: IndexedMesh; placement?: ThreeMFPlacemen
   return `${formatFloat(x)} ${formatFloat(y)} ${formatFloat(-bbox.min.z)}`;
 }
 
-function buildMetadataXml(options: ThreeMFOptions, flags: ModelFlags): string {
+function buildMetadataXml(options: ThreeMFOptions): string {
   let xml = `  <metadata name="Title">${escapeXml(options.name)}</metadata>\n`;
   xml += '  <metadata name="Designer">Gridfinity Layout Tool</metadata>\n';
   xml += `  <metadata name="CreationDate">${new Date().toISOString().split('T')[0]}</metadata>\n`;
-  if (flags.bambuCompat) {
-    xml += `  <metadata name="Application">${BAMBU_COMPAT_APPLICATION}</metadata>\n`;
-    xml += '  <metadata name="BambuStudio:3mfVersion">1</metadata>\n';
-  }
   const ps = options.printSettings;
   if (!ps) return xml;
   // 3MF Core §3.7: custom metadata names without a registered namespace prefix

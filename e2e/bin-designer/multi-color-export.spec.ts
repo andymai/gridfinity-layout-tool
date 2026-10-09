@@ -2,8 +2,8 @@
  * Pins the multi-color 3MF export contract end-to-end through the current
  * export dialog: faces tagged via `collectOrigins` (body + lip-grid cells)
  * must reach the final 3MF as distinct filament materials. Failure mode if
- * this regresses: `filament_colour` is missing a zone color, or every
- * `<triangle>` carries the same `paint_color` — i.e. one color for the bin.
+ * this regresses: every `<triangle>` carries the same `paint_color`, i.e. one
+ * color for the bin.
  *
  * Exercises two mechanisms in one export, because the kernel warmup makes a
  * second export prohibitively slow: the lip color grid (a single corner split
@@ -120,27 +120,18 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
     expect(entries['3D/3dmodel.model']).toBeDefined();
     const xml = strFromU8(entries['3D/3dmodel.model']);
 
-    // The three zone colors must each surface as a filament. Lower-cased: the
-    // exporter's hex case is not part of the contract.
-    const config = JSON.parse(strFromU8(entries['Metadata/project_settings.config']));
-    const filamentColours = (config.filament_colour as string[]).map((c) => c.toLowerCase());
-    expect(filamentColours).toEqual(
-      expect.arrayContaining([BODY_HEX, BAND1_HEX, BAND2_HEX, BOTTOM_ACCENT_HEX])
-    );
+    // A settings file would replace the user's slicer profile on import.
+    expect(entries['Metadata/project_settings.config']).toBeUndefined();
 
-    expect(xml).toMatch(/<metadata name="Application">BambuStudio-/);
     const triangleMatches = xml.match(/<triangle\b[^/]*paint_color="([^"]+)"/g) ?? [];
     expect(triangleMatches.length).toBeGreaterThan(0);
     const distinctCodes = new Set(triangleMatches.map((m) => /paint_color="([^"]+)"/.exec(m)?.[1]));
-    // Body + two lip bands + the accent paint distinctly (body may ride the base
-    // material, so ≥3 painted codes proves the lip grid and the accent band each
-    // split into their own materials).
-    expect(distinctCodes.size).toBeGreaterThanOrEqual(3);
+    // Every triangle carries an explicit code, so body + two lip bands + the
+    // accent band are four filaments.
+    expect(distinctCodes.size).toBe(4);
 
     // Build item must carry a centering transform so the bin opens on the
-    // plate, not at the bed corner (regression introduced when we claimed
-    // BambuStudio identity flipped Orca's auto-arrange off — see
-    // BAMBU_COMPAT_APPLICATION JSDoc in threemfExporter.ts).
+    // plate, not at the bed corner.
     expect(xml).toMatch(/<item objectid="\d+" transform="1 0 0 0 1 0 0 0 1 [^"]+" \/>/);
   });
 });

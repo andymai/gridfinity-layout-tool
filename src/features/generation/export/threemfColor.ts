@@ -7,39 +7,30 @@ export function activeColorConfig(
   return c && c.materials.length > 0 ? c : undefined;
 }
 
-export interface UnifiedColorConfigs {
-  /** `filament_colour` list, or undefined when no object carries colors. */
-  readonly palette: readonly string[] | undefined;
-  /** Per input config, remapped into the merged palette's slot space. */
-  readonly configs: readonly (ThreeMFColorConfig | undefined)[];
-}
-
 /**
- * Resolve one shared palette from the objects' colorConfigs. Per-triangle
- * `paint_color` codes are object-local references into the object's own slot
- * list, so objects with different palettes cannot share the file's single
- * `filament_colour` list as-is: the same code would resolve to different
- * filaments per object. When palettes differ (two bins with different zone
- * colors in one layout project file), the distinct colors are merged in
- * first-seen order — shared colors collapse onto one filament — and each
- * config's triangle slots are rewritten to reference the merged palette.
+ * Rewrite the objects' colorConfigs into one shared slot space. A
+ * `paint_color` code names a filament number, not a color, so two objects
+ * with different palettes (two bins with different zone colors in one layout
+ * project file) would otherwise paint different colors onto the same
+ * filament. Distinct colors are merged in first-seen order, shared colors
+ * collapse onto one filament, and each config's triangle slots are rewritten
+ * to reference the merged list.
  *
- * Returns an undefined palette when no object carries colors, so uncolored
- * exports skip the sidecar entirely. Throws only when the merged union
- * exceeds the slicer's filament cap, which no remapping can represent.
+ * Throws only when the merged union exceeds the slicer's filament cap, which
+ * no remapping can represent.
  */
 export function unifyColorConfigs(
   configs: readonly (ThreeMFColorConfig | undefined)[]
-): UnifiedColorConfigs {
+): readonly (ThreeMFColorConfig | undefined)[] {
   const actives = configs.map(activeColorConfig);
   const present = actives.filter((c): c is ThreeMFColorConfig => c !== undefined);
-  if (present.length === 0) return { palette: undefined, configs: actives };
+  if (present.length === 0) return actives;
 
   // Identical arrays need no remap; pass them through untouched so a palette
   // that deliberately repeats a color keeps its slot layout.
   const first = present[0].materials;
   if (present.every((c) => materialsMatch(first, c.materials))) {
-    return { palette: first.map((m) => m.color.toLowerCase()), configs: actives };
+    return actives;
   }
 
   const slotByColor = new Map<string, number>();
@@ -58,9 +49,8 @@ export function unifyColorConfigs(
     );
   }
 
-  const palette = [...slotByColor.keys()];
-  const mergedMaterials = palette.map((color) => ({ color }));
-  const remapped = actives.map((config, i) => {
+  const mergedMaterials = [...slotByColor.keys()].map((color) => ({ color }));
+  return actives.map((config, i) => {
     const slotMap = slotMaps[i];
     if (!config || !slotMap) return undefined;
     return {
@@ -68,7 +58,6 @@ export function unifyColorConfigs(
       triangleMaterialIndices: config.triangleMaterialIndices.map((slot) => slotMap[slot]),
     };
   });
-  return { palette, configs: remapped };
 }
 
 function materialsMatch(
@@ -80,73 +69,6 @@ function materialsMatch(
     if (a[i].color.toLowerCase() !== b[i].color.toLowerCase()) return false;
   }
   return true;
-}
-
-/**
- * Minimal Bambu/Orca `project_settings.config` JSON. The slicer parses this
- * via `ConfigBase::load_from_json` (Config.cpp:807); any recognized key
- * flips `DynamicPrintConfig.empty()` to false, which is what gates the
- * "geometry only" warning. `filament_colour` is the right key for our use
- * case — `coStrings` per PrintConfig.cpp, displayed as the AMS slot colors.
- *
- * Headers (`version`, `name="project_settings"`, `from`) are read into a
- * key_values map but are advisory: the loader doesn't gate on them.
- */
-export function buildProjectSettingsConfig(palette: readonly string[]): string {
-  return JSON.stringify(
-    {
-      // Headers are advisory — Bambu's load_from_json stores them in a
-      // key_values map but doesn't gate on them. Aligned with the Application
-      // metadata version (BAMBU_COMPAT_APPLICATION) for human consistency.
-      version: '2.0.0.0',
-      name: 'project_settings',
-      from: 'Gridfinity Layout Tool',
-
-      filament_colour: palette,
-
-      // BambuStudio 2.8.2's `check_project_config` rejects a project config
-      // with no `nozzle_diameter`, dropping the palette and warning "invalid
-      // config, load geometry data only". One entry passes its per-extruder
-      // size check, and 0.4 is the FullPrintConfig default every other
-      // version already fills the missing key with.
-      nozzle_diameter: ['0.4'],
-
-      // Multi-material printing on non-Bambu Marlin-based printers
-      // (OrcaSlicer's `is_BBL_printer() == false` branch in Print.cpp:1679)
-      // imposes two coupled requirements that the user hits as validation
-      // errors during slice:
-      //
-      //   1. Print.cpp:1434 — the wipe tower (needed to clean the nozzle
-      //      between filament swaps) "is currently only supported with
-      //      relative extruder addressing (use_relative_e_distances=1)".
-      //   2. Print.cpp:1683-1689 — relative extruder addressing then
-      //      requires a `G92 E0` reset in `before_layer_change_gcode` or
-      //      `layer_change_gcode`, because "relative extruder addressing
-      //      requires resetting the extruder position at each layer to
-      //      prevent loss of floating point accuracy."
-      //
-      // Set both so multi-color exports slice without surfacing this
-      // validation error to the user. Bambu users skip the check entirely
-      // (Bambu printers have native multi-material handling) so the
-      // settings are harmless there. Users with a custom layer_change_gcode
-      // will see ours override theirs on import — a small price for the
-      // alternative of every multi-color export failing to slice on first try.
-      use_relative_e_distances: '1',
-      layer_change_gcode: 'G92 E0 ; Reset extruder for accurate multi-material\n',
-
-      // Deliberately no acceleration keys. Do not re-add
-      // `default_acceleration` / `travel_acceleration`: pinning them to '0'
-      // (to silence Orca's "travel acceleration exceeds
-      // machine_max_acceleration_extruding" warning) trips Orca's
-      // `have_default_acceleration = default_acceleration > 0` gate, which
-      // hides every per-feature acceleration override in the loaded profile.
-      // On import (Bambu included) that drops the user's tuned accelerations
-      // to machine defaults and inflates multi-color print time several-fold
-      //. The warning it silenced is non-blocking.
-    },
-    null,
-    2
-  );
 }
 
 /**
@@ -308,34 +230,6 @@ export const FILAMENT_PAINT_CODES = [
 ] as const;
 // One fewer than the table size because we index `[slot + 1]` (slot 0 = filament 1).
 const MAX_COLOR_SLOTS = FILAMENT_PAINT_CODES.length - 1;
-
-/**
- * Version we claim in the `Application` metadata, gated to multi-color
- * exports. The claim has to start with "BambuStudio-" because BambuStudio's
- * `dont_load_config` gate at bbs_3mf.cpp:1898-1908 only loads our
- * `project_settings.config` sidecar when that prefix matches — without it
- * the AMS palette isn't pre-filled and Bambu shows a "not from Bambu Lab"
- * dialog.
- *
- * Picking the exact version was empirically constrained:
- *
- *   - `01.x.x.x` is rejected outright by OrcaSlicer's CLI version check
- *     (`Version Check: File Version 1.x.x.x not supported by current cli
- *     version 2.3.1`, exit -24). The check has a hidden minimum beyond the
- *     maj/min compare in OrcaSlicer.cpp:1589 — I couldn't reproduce the
- *     reject from reading the source, but it fires reliably for any 1.x.
- *   - `02.06.x.x` and higher trip Orca 2.3's "file is newer than cli"
- *     branch and also reject.
- *   - `02.00.00.00` lands in the sweet spot: Bambu's gate accepts it,
- *     Orca's version check accepts it, and the file_version stays under
- *     every Bambu release we'd care about so the slicer doesn't run the
- *     "translate old project" migration path.
- *
- * If beginners are running Orca 1.x (unlikely — it's the 2023 series and
- * mostly unmaintained) the file will reject. The trade-off is favorable
- * for the modern install base.
- */
-export const BAMBU_COMPAT_APPLICATION = 'BambuStudio-02.00.00.00';
 
 const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/;
 
