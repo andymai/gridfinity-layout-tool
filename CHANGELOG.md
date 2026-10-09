@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.509.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.508.0...gridfinity-layout-tool-v4.509.0) (2026-10-09)
+
+
+### Features
+
+* **bin-designer:** budget imported meshes by triangle count ([#4546](https://github.com/andymai/gridfinity-layout-tool/issues/4546)) ([14d0d72](https://github.com/andymai/gridfinity-layout-tool/commit/14d0d7221be70339596f98269087cc1c0047934a))
+* **community:** publish designs naming mesh files by reference ([#4544](https://github.com/andymai/gridfinity-layout-tool/issues/4544)) ([44c756f](https://github.com/andymai/gridfinity-layout-tool/commit/44c756f80c55bafaf0f1967a46164589a86ffa61))
+
 ## [4.508.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.507.0...gridfinity-layout-tool-v4.508.0) (2026-10-08)
 
 
