@@ -168,19 +168,24 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
   lines.push('');
 
   if (project) {
-    lines.push(
-      '─── Project file ────────────────────────────────',
-      '',
-      `  ${project.fileName}`,
-      `    ${project.partCount} ${plural(project.partCount, 'part')} arranged on ` +
-        `${project.plateCount} build ${plural(project.plateCount, 'plate')}.`,
-      '    Open it in Bambu Studio or OrcaSlicer and every plate is ready to slice.',
-      '    PrusaSlicer has no multi-plate concept and will load the parts onto one plate.'
-    );
-    if (project.oversizeNames.length > 0) {
+    const parts = `${project.partCount} ${plural(project.partCount, 'part')}`;
+    lines.push('─── Project file ────────────────────────────────', '', `  ${project.fileName}`);
+    // A slicer applies a file's build plates only alongside a project config,
+    // which this file never carries (it would replace the user's print
+    // profile), so anything past one plate needs the slicer's own Arrange.
+    if (project.plateCount <= 1) {
+      const ready = project.oversizeNames.length === 0 ? ', ready to slice' : '';
+      lines.push(`    ${parts} on one build plate${ready}.`);
+    } else {
       lines.push(
-        `    Too large for the bed, each on its own plate: ${project.oversizeNames.join(', ')}`
+        `    ${parts}, about ${project.plateCount} build plates on your bed.`,
+        '    Bambu Studio and OrcaSlicer load them as one group on the first plate.',
+        '    Press A (Arrange all objects) to spread them across plates.',
+        '    PrusaSlicer has no multi-plate concept and will load the parts onto one plate.'
       );
+    }
+    if (project.oversizeNames.length > 0) {
+      lines.push(`    Larger than the print bed: ${project.oversizeNames.join(', ')}`);
     }
     lines.push('');
   }

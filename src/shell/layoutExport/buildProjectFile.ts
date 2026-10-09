@@ -7,10 +7,11 @@
  * `buildLabelPlateColorConfig`). Re-deriving colour here would duplicate the
  * zone/cutout logic; dropping it would silently flatten multi-colour designs.
  *
- * Bambu Studio and OrcaSlicer read the plate assignment from
- * `model_settings.config` while drawing each part at its world transform in
- * `3dmodel.model`. Both come from the same `packOntoPlates` result here, so
- * they cannot disagree.
+ * The Bambu Studio and OrcaSlicer desktop apps apply the plates declared in
+ * `model_settings.config` only when the file also carries a project config,
+ * which would replace the user's print profile, so they load every part as one
+ * group on the current plate and the manifest tells the user to Arrange. The
+ * plate count still sizes that instruction.
  */
 
 import { isOk } from '@/core/result';

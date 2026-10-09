@@ -229,4 +229,39 @@ describe('buildLayoutManifest', () => {
   it('omits the position line for a plain (non-extended) bin', () => {
     expect(buildLayoutManifest(base())).not.toContain('Position:');
   });
+
+  describe('project file', () => {
+    function project(plateCount: number, oversizeNames: string[] = []) {
+      return buildLayoutManifest(
+        base({
+          format: '3mf',
+          project: { fileName: 'My Drawer.3mf', plateCount, partCount: 7, oversizeNames },
+        })
+      );
+    }
+
+    it('calls a one-plate project ready to slice without asking for Arrange', () => {
+      const text = project(1);
+      expect(text).toContain('7 parts on one build plate, ready to slice.');
+      expect(text).not.toContain('Arrange');
+    });
+
+    it('tells the reader to arrange a multi-plate project in the slicer', () => {
+      const text = project(3);
+      expect(text).toContain('7 parts, about 3 build plates on your bed.');
+      expect(text).toContain('Press A (Arrange all objects) to spread them across plates.');
+      expect(text).not.toContain('ready to slice');
+    });
+
+    it('names parts larger than the bed', () => {
+      expect(project(2, ['Baseplate'])).toContain('Larger than the print bed: Baseplate');
+    });
+
+    it('never calls a lone oversized part ready to slice', () => {
+      const text = project(1, ['Baseplate']);
+      expect(text).toContain('7 parts on one build plate.');
+      expect(text).not.toContain('ready to slice');
+      expect(text).toContain('Larger than the print bed: Baseplate');
+    });
+  });
 });
