@@ -1,0 +1,41 @@
+src/features/generation/worker/generators/binGenerator.scenario.labelTabTextColor.test.ts
+  s_bc42aa58ebb0ce::t_400736f054657b 163,205
+src/features/generation/export/threemfXml.ts
+  s_bc42aa58ebb0ce::t_3106079b990e0d 9,13-14,26-27,91-92,139
+src/features/generation/export/threemfExporter.ts
+  s_bc42aa58ebb0ce::t_0bad907ce59736 4,42,46,64
+src/features/generation/export/threemfColor.ts
+  s_bc42aa58ebb0ce::t_814b54cbf5613f 11-17,19-20,24,27,33,52-53
+e2e/bin-designer/multi-color-export.spec.ts
+  s_bc42aa58ebb0ce::t_6618cea8d38461 5-6,123-124,129-131,134
+.claude/skills/print-export/SKILL.md
+  s_bc42aa58ebb0ce::t_bf525d2141f4a7 3,32,42-43,45-46,84
+  s_bc42aa58ebb0ce::t_395a027f2a0ea8 85-86
+src/features/generation/export/threemfExporter.test.ts
+  s_bc42aa58ebb0ce::t_cf802cad59615b 589-590,592-598,600,603,609,612-636,641,659-661,665-667
+  s_bc42aa58ebb0ce::t_da772578065286 274-275,1084-1086
+  s_bc42aa58ebb0ce::t_68967af4bf3f8e 584-588
+src/features/generation/README.md
+  s_bc42aa58ebb0ce::t_227e57e27e6f6d 295,297-298
+  s_bc42aa58ebb0ce::t_e369cd4afe528b 299
+src/features/generation/export/threemfGeometry.ts
+  s_bc42aa58ebb0ce::t_6a1a54c4ed1ae8 46-47
+src/features/bin-designer/utils/multicolorRoundTrip.test.ts
+  s_bc42aa58ebb0ce::t_6618cea8d38461 528-530
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9bb213e8de97d0cab6d83133d00ebda07e6510c5",
+  "prompts": {},
+  "sessions": {
+    "s_bc42aa58ebb0ce": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e572cfda-6982-47da-b5cf-14272e37212b",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
