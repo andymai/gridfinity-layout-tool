@@ -1,0 +1,21 @@
+src/shell/layoutExport/buildLayoutManifest.ts
+  s_85c3cd359a1825::t_5c4270b5ace672 177-178
+src/shell/layoutExport/buildLayoutManifest.test.ts
+  s_85c3cd359a1825::t_ab5ce25f802dd8 259-265
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3275b6f39b7ad21a8606b775d55dcaf0e6fc212c",
+  "prompts": {},
+  "sessions": {
+    "s_85c3cd359a1825": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e858c822-dc07-4e5e-bf22-e212b8a5ed44",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
