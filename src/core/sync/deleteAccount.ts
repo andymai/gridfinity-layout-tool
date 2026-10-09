@@ -38,7 +38,7 @@ export async function runDeleteAccount(ctx: DeleteAccountContext): Promise<Delet
   const choice = await ctx.promptConfirm({ localCount });
   if (choice !== 'confirm') return { status: 'cancelled' };
 
-  stopEngine();
+  await stopEngine();
   await clearOutbox();
 
   try {

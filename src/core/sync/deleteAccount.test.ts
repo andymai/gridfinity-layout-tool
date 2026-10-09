@@ -140,4 +140,30 @@ describe('runDeleteAccount', () => {
     await runDeleteAccount({ adapters, promptConfirm, onAnonymous });
     expect(order).toEqual(['stop', 'outbox', 'api']);
   });
+
+  it('waits for a conflict write the engine had under way before clearing the outbox', async () => {
+    const order: string[] = [];
+    let landWrite = (): void => {};
+    stopEngineMock.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          landWrite = () => {
+            order.push('write landed');
+            resolve();
+          };
+        })
+    );
+    clearOutboxMock.mockImplementationOnce(async () => {
+      order.push('outbox');
+    });
+    apiDeleteAccountMock.mockImplementationOnce(async () => {
+      order.push('api');
+    });
+    const run = runDeleteAccount({ adapters, promptConfirm, onAnonymous });
+    await vi.waitFor(() => expect(stopEngineMock).toHaveBeenCalled());
+    expect(order).toEqual([]);
+    landWrite();
+    await run;
+    expect(order).toEqual(['write landed', 'outbox', 'api']);
+  });
 });
