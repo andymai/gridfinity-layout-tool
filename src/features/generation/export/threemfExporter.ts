@@ -1,11 +1,7 @@
 import type { ThreeMFObject, ThreeMFOptions } from './threemfTypes';
 import { validateMeshData } from './validation';
 import { deduplicateVertices } from './threemfGeometry';
-import {
-  buildModelSettingsConfig,
-  buildProjectSettingsConfig,
-  unifyColorConfigs,
-} from './threemfColor';
+import { buildModelSettingsConfig, unifyColorConfigs } from './threemfColor';
 import { buildModelXML, buildMultiObjectModelXML } from './threemfXml';
 import { packageFiles, THREEMF_MIME, toArrayBuffer } from './threemfPackage';
 
@@ -43,18 +39,17 @@ export function build3MFMultiObjectBuffer(
     validateMeshData(obj.vertices, obj.normals);
   }
 
-  const unified = unifyColorConfigs(objects.map((obj) => obj.colorConfig));
+  const colorConfigs = unifyColorConfigs(objects.map((obj) => obj.colorConfig));
   const meshes = objects.map((obj, i) => ({
     mesh: deduplicateVertices(obj.vertices),
     name: obj.name,
-    colorConfig: unified.configs[i],
+    colorConfig: colorConfigs[i],
     placement: obj.placement,
   }));
 
   return packageFiles(
     buildMultiObjectModelXML(meshes, options),
     options.thumbnail,
-    unified.palette && buildProjectSettingsConfig(unified.palette),
     buildModelSettingsConfig(meshes)
   );
 }
@@ -66,12 +61,7 @@ export function build3MFBuffer(
 ): Uint8Array {
   validateMeshData(vertices, normals);
   const mesh = deduplicateVertices(vertices);
-  const { palette } = unifyColorConfigs([options.colorConfig]);
-  return packageFiles(
-    buildModelXML(mesh, options),
-    options.thumbnail,
-    palette && buildProjectSettingsConfig(palette)
-  );
+  return packageFiles(buildModelXML(mesh, options), options.thumbnail);
 }
 
 export function estimate3MFFileSize(triangleCount: number): number {

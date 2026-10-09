@@ -160,9 +160,7 @@ describe('label-tab text color tag', () => {
     });
     const files = unzipSync(buffer);
 
-    const palette: string[] = JSON.parse(
-      strFromU8(files['Metadata/project_settings.config'])
-    ).filament_colour;
+    const palette = mapping.config.materials.map((mat) => mat.color.toLowerCase());
     const textCode = FILAMENT_PAINT_CODES[palette.indexOf(TEXT_HEX) + 1];
     const tabCode = FILAMENT_PAINT_CODES[palette.indexOf(TAB_HEX) + 1];
 
@@ -204,9 +202,7 @@ function paintCodes(p: BinParams): {
       colorConfig: mapping.config,
     })
   );
-  const palette: string[] = JSON.parse(
-    strFromU8(files['Metadata/project_settings.config'])
-  ).filament_colour;
+  const palette = mapping.config.materials.map((mat) => mat.color.toLowerCase());
   const model = strFromU8(files['3D/3dmodel.model']);
   return {
     tris: triangles(m),

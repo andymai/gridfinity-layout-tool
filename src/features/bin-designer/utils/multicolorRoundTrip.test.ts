@@ -525,9 +525,9 @@ describe('multicolor 3MF round-trip', () => {
     it('emits no paint_color anywhere when featureColors.enabled but every active zone equals body', async () => {
       // Edge case Greptile flagged: enabled=true but the bin's
       // buildTriangleMaterialIndices short-circuits to null (single color).
-      // Ancillary pieces must short-circuit in lockstep or BambuStudio
-      // compatibility metadata + filament_colour sidecar would land on a
-      // functionally single-color file.
+      // Ancillary pieces must short-circuit in lockstep or paint_color and
+      // per-object extruder metadata would land on a functionally
+      // single-color file.
       const params = withColors({ body: '#aaaaaa' });
       const pieces = [
         { data: buildBinarySTL([...tri(0, 0)]), label: 'bin' },

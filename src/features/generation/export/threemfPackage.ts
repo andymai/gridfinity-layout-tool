@@ -5,7 +5,6 @@ export const THREEMF_MIME = 'application/vnd.ms-package.3dmanufacturing-3dmodel+
 export function packageFiles(
   modelXml: string,
   thumbnail: Uint8Array | undefined,
-  projectSettingsJson: string | undefined,
   modelSettingsXml?: string
 ): Uint8Array {
   const hasThumbnail = !!thumbnail;
@@ -23,16 +22,6 @@ export function packageFiles(
     // uniform secondary object — the lid — by filament; `paint_color` alone
     // leaves it on the default extruder (body). See `buildModelSettingsConfig`.
     files['Metadata/model_settings.config'] = strToU8(modelSettingsXml);
-  }
-  if (projectSettingsJson) {
-    // Both OrcaSlicer and BambuStudio read this via
-    // `_extract_project_config_from_archive` and apply `filament_colour` to
-    // their AMS slots, so the user opens the file with the bin's zone
-    // palette already pre-filled. BambuStudio additionally gates the loader
-    // on an `Application=BambuStudio-X.Y.Z` metadata claim — see
-    // BAMBU_COMPAT_APPLICATION in threemfColor — without which Bambu silently
-    // skips the sidecar and shows a "not from Bambu Lab" dialog instead.
-    files['Metadata/project_settings.config'] = strToU8(projectSettingsJson);
   }
   return zipSync(files, { level: 6 });
 }
