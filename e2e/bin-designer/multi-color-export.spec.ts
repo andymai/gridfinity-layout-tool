@@ -64,6 +64,7 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
     await setZoneColor(page, /^Body: /i, BODY_HEX);
 
     // Split the lip into two Z bands and color each distinctly.
+    await page.getByRole('checkbox', { name: 'Split into color zones' }).click();
     await page.getByRole('radiogroup', { name: 'Bands' }).getByRole('radio', { name: '2' }).click();
     await setZoneColor(page, /^Stacking Lip · Band 1: /i, BAND1_HEX);
     await setZoneColor(page, /^Stacking Lip · Band 2: /i, BAND2_HEX);
@@ -107,7 +108,7 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
 
     // The download button reads "Preparing engine…" until the kernel is warm,
     // then becomes "Download 3MF" — wait for that enabled state.
-    const downloadButton = dialog.getByRole('button', { name: /download/i });
+    const downloadButton = dialog.getByRole('button', { name: 'Download 3MF' });
     await expect(downloadButton).toBeEnabled({ timeout: 90_000 });
     const downloadPromise = page.waitForEvent('download', { timeout: 90_000 });
     await downloadButton.click();
@@ -126,9 +127,10 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
     const triangleMatches = xml.match(/<triangle\b[^/]*paint_color="([^"]+)"/g) ?? [];
     expect(triangleMatches.length).toBeGreaterThan(0);
     const distinctCodes = new Set(triangleMatches.map((m) => /paint_color="([^"]+)"/.exec(m)?.[1]));
-    // Every triangle carries an explicit code, so body + two lip bands + the
-    // accent band are four filaments.
-    expect(distinctCodes.size).toBe(4);
+    // Every triangle carries an explicit code. Body, two lip bands and the
+    // accent band are four filaments; the zones left at the default grey
+    // (the base, at least) share a fifth.
+    expect(distinctCodes.size).toBe(5);
 
     // Build item must carry a centering transform so the bin opens on the
     // plate, not at the bed corner.
