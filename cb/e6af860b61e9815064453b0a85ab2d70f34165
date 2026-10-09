@@ -1,0 +1,21 @@
+e2e/bin-designer/multi-color-export.spec.ts
+  s_85c3cd359a1825::t_f450e6b4310e5f 67
+  s_85c3cd359a1825::t_f41f99c564138c 130-133
+  s_85c3cd359a1825::t_c3e8000bda5771 111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cbe6af860b61e9815064453b0a85ab2d70f34165",
+  "prompts": {},
+  "sessions": {
+    "s_85c3cd359a1825": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e858c822-dc07-4e5e-bf22-e212b8a5ed44",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
