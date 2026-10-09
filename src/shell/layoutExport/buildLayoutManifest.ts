@@ -174,7 +174,8 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
     // which this file never carries (it would replace the user's print
     // profile), so anything past one plate needs the slicer's own Arrange.
     if (project.plateCount <= 1) {
-      lines.push(`    ${parts} on one build plate, ready to slice.`);
+      const ready = project.oversizeNames.length === 0 ? ', ready to slice' : '';
+      lines.push(`    ${parts} on one build plate${ready}.`);
     } else {
       lines.push(
         `    ${parts}, about ${project.plateCount} build plates on your bed.`,

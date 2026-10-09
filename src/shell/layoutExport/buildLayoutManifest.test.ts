@@ -256,5 +256,12 @@ describe('buildLayoutManifest', () => {
     it('names parts larger than the bed', () => {
       expect(project(2, ['Baseplate'])).toContain('Larger than the print bed: Baseplate');
     });
+
+    it('never calls a lone oversized part ready to slice', () => {
+      const text = project(1, ['Baseplate']);
+      expect(text).toContain('7 parts on one build plate.');
+      expect(text).not.toContain('ready to slice');
+      expect(text).toContain('Larger than the print bed: Baseplate');
+    });
   });
 });
