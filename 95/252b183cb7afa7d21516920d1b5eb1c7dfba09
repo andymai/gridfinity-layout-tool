@@ -1,0 +1,21 @@
+pnpm-workspace.yaml
+  s_85c3cd359a1825::t_fb96369eff53b2 32-36,134-136
+pnpm-lock.yaml
+  s_85c3cd359a1825::t_0c5cbefdba6af5 35,4113-4114,6959,9447,9799
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "95252b183cb7afa7d21516920d1b5eb1c7dfba09",
+  "prompts": {},
+  "sessions": {
+    "s_85c3cd359a1825": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e858c822-dc07-4e5e-bf22-e212b8a5ed44",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
