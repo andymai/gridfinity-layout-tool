@@ -111,7 +111,8 @@ function dominantSlot(triangleMaterialIndices: readonly number[]): number {
  * mechanism: the part's world transform decides where it is drawn, this decides
  * which plate owns it, and a slicer renders a part floating off its plate if
  * the two disagree. Note the key is `plater_name`, not `plate_name` (an
- * upstream spelling that stuck).
+ * upstream spelling that stuck). The desktop apps apply these plates only
+ * alongside a project config, which this exporter never writes.
  *
  * Returns undefined when no object carries colors AND no plates are declared
  * (single-color single-plate assemblies need no sidecar at all).
