@@ -16,6 +16,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useLineMaterialResolution } from '../useLineMaterialResolution';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { cellIndex } from '@/features/bin-designer/utils/compartments';
+import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 
 /** Amber color for merge preview */
 const MERGE_COLOR = '#f59e0b';
@@ -30,39 +31,22 @@ export function GhostCompartmentPreview() {
   const { invalidate } = useThree();
   const lineRef = useRef<LineSegments2 | null>(null);
 
-  const {
-    width,
-    depth,
-    height,
-    gridUnitMm,
-    gridUnitMmY,
-    heightUnitMm,
-    wallThickness,
-    cols,
-    rows,
-    previewCompartments,
-    previewSelection,
-  } = useDesignerStore(
-    useShallow((s) => ({
-      width: s.params.width,
-      depth: s.params.depth,
-      height: s.params.height,
-      gridUnitMm: s.params.gridUnitMm,
-      gridUnitMmY: s.params.gridUnitMmY,
-      heightUnitMm: s.params.heightUnitMm,
-      wallThickness: s.params.wallThickness,
-      cols: s.params.compartments.cols,
-      rows: s.params.compartments.rows,
-      previewCompartments: s.ui.previewCompartments,
-      previewSelection: s.ui.previewSelection,
-    }))
-  );
+  const { params, height, heightUnitMm, cols, rows, previewCompartments, previewSelection } =
+    useDesignerStore(
+      useShallow((s) => ({
+        params: s.params,
+        height: s.params.height,
+        heightUnitMm: s.params.heightUnitMm,
+        cols: s.params.compartments.cols,
+        rows: s.params.compartments.rows,
+        previewCompartments: s.ui.previewCompartments,
+        previewSelection: s.ui.previewSelection,
+      }))
+    );
 
-  // Calculate bin dimensions
-  const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
-  const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
-  const innerW = outerW - 2 * wallThickness;
-  const innerD = outerD - 2 * wallThickness;
+  const { innerW, innerD, offsetX, offsetY } = cutoutInterior(params);
+  const left = offsetX - innerW / 2;
+  const front = offsetY - innerD / 2;
   const totalH = height * heightUnitMm;
   const floorZ = GRIDFINITY.BASE_HEIGHT;
   const wallHeight = totalH - floorZ;
@@ -80,10 +64,10 @@ export function GhostCompartmentPreview() {
     const cellD = innerD / rows;
 
     // Calculate rectangle bounds
-    const x1 = -innerW / 2 + minCol * cellW;
-    const x2 = -innerW / 2 + (maxCol + 1) * cellW;
-    const y1 = -innerD / 2 + minRow * cellD;
-    const y2 = -innerD / 2 + (maxRow + 1) * cellD;
+    const x1 = left + minCol * cellW;
+    const x2 = left + (maxCol + 1) * cellW;
+    const y1 = front + minRow * cellD;
+    const y2 = front + (maxRow + 1) * cellD;
 
     const rectW = x2 - x1;
     const rectD = y2 - y1;
@@ -93,7 +77,7 @@ export function GhostCompartmentPreview() {
     const geo = new THREE.PlaneGeometry(rectW, rectD);
     geo.translate(centerX, centerY, 0);
     return geo;
-  }, [shouldShow, isMerge, previewSelection, innerW, innerD, cols, rows]);
+  }, [shouldShow, isMerge, previewSelection, innerW, innerD, left, front, cols, rows]);
 
   // Create split preview line geometry
   const splitGeometry = useMemo(() => {
@@ -116,9 +100,9 @@ export function GhostCompartmentPreview() {
         if (col < pCols - 1) {
           const rightId = cells[cellIndex(pCols, col + 1, row)];
           if (currentId !== rightId) {
-            const x = -innerW / 2 + (col + 1) * cellW;
-            const y1 = -innerD / 2 + row * cellD;
-            const y2 = -innerD / 2 + (row + 1) * cellD;
+            const x = left + (col + 1) * cellW;
+            const y1 = front + row * cellD;
+            const y2 = front + (row + 1) * cellD;
             positions.push(x, y1, topZ, x, y2, topZ);
           }
         }
@@ -127,9 +111,9 @@ export function GhostCompartmentPreview() {
         if (row < pRows - 1) {
           const topId = cells[cellIndex(pCols, col, row + 1)];
           if (currentId !== topId) {
-            const y = -innerD / 2 + (row + 1) * cellD;
-            const x1 = -innerW / 2 + col * cellW;
-            const x2 = -innerW / 2 + (col + 1) * cellW;
+            const y = front + (row + 1) * cellD;
+            const x1 = left + col * cellW;
+            const x2 = left + (col + 1) * cellW;
             positions.push(x1, y, topZ, x2, y, topZ);
           }
         }
@@ -141,7 +125,7 @@ export function GhostCompartmentPreview() {
     const geo = new LineSegmentsGeometry();
     geo.setPositions(positions);
     return geo;
-  }, [shouldShow, isMerge, previewCompartments, innerW, innerD, topZ]);
+  }, [shouldShow, isMerge, previewCompartments, innerW, innerD, left, front, topZ]);
 
   // Create materials
   const mergeMaterial = useMemo(() => {

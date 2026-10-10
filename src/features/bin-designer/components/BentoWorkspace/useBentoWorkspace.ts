@@ -26,6 +26,7 @@ export const isEditableTarget = (target: EventTarget | null): boolean =>
 export function useBentoWorkspace() {
   const t = useTranslation();
   const {
+    params,
     compartments,
     width,
     depth,
@@ -57,6 +58,7 @@ export function useBentoWorkspace() {
     clearBentoCompartments,
   } = useDesignerStore(
     useShallow((s) => ({
+      params: s.params,
       compartments: s.params.compartments,
       width: s.params.width,
       depth: s.params.depth,
@@ -93,13 +95,7 @@ export function useBentoWorkspace() {
   const previewColor = usePreviewColor();
   const { quickstartSeen, markQuickstartSeen } = useBentoQuickstart();
 
-  const { innerW: interiorW, innerD: interiorD } = getInteriorDims({
-    width,
-    depth,
-    gridUnitMm,
-    gridUnitMmY,
-    wallThickness,
-  });
+  const { innerW: interiorW, innerD: interiorD } = getInteriorDims(params);
   const { cols, rows } = compartments;
   const cellW = interiorW / cols;
   const cellH = interiorD / rows;

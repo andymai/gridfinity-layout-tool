@@ -9,6 +9,7 @@ import {
   minUniformCavity,
   solveCountForMinCavity,
 } from '@/features/bin-designer/utils/compartmentDimensions';
+import { DEFAULT_PULL_TAB } from '@/shared/utils/pullTabPlan';
 import { CompartmentEditor } from './CompartmentEditor';
 
 const TWO_BY_TWO = {
@@ -17,12 +18,7 @@ const TWO_BY_TWO = {
 };
 
 /** Interior dimensions for the default bin, used to predict solver output. */
-const interior = getInteriorDims({
-  width: DEFAULT_BIN_PARAMS.width,
-  depth: DEFAULT_BIN_PARAMS.depth,
-  gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm,
-  wallThickness: DEFAULT_BIN_PARAMS.wallThickness,
-});
+const interior = (): { innerW: number; innerD: number } => getInteriorDims(DEFAULT_BIN_PARAMS);
 const { thickness } = DEFAULT_BIN_PARAMS.compartments;
 
 describe('CompartmentEditor', () => {
@@ -45,12 +41,22 @@ describe('CompartmentEditor', () => {
   it('always shows the resulting compartment size without hovering or expanding', () => {
     useDesignerStore.setState({ params: TWO_BY_TWO });
     render(<CompartmentEditor />);
-    const w = Math.round(minUniformCavity(interior.innerW, 2, thickness) * 10) / 10;
-    const d = Math.round(minUniformCavity(interior.innerD, 2, thickness) * 10) / 10;
+    const w = Math.round(minUniformCavity(interior().innerW, 2, thickness) * 10) / 10;
+    const d = Math.round(minUniformCavity(interior().innerD, 2, thickness) * 10) / 10;
     const readout = screen.getByText(/≈/);
     expect(readout.textContent).toContain(String(w));
     expect(readout.textContent).toContain(String(d));
     expect(readout.textContent).toMatch(/mm/);
+  });
+
+  it("reports the depth a pull tab's thicker front wall leaves", () => {
+    const tabbed = { ...TWO_BY_TWO, pullTab: { ...DEFAULT_PULL_TAB, enabled: true } };
+    useDesignerStore.setState({ params: tabbed });
+    render(<CompartmentEditor />);
+    const plain = Math.round(minUniformCavity(interior().innerD, 2, thickness) * 10) / 10;
+    const d = Math.round(minUniformCavity(getInteriorDims(tabbed).innerD, 2, thickness) * 10) / 10;
+    expect(d).toBeLessThan(plain);
+    expect(screen.getByText(/≈/).textContent).toContain(`× ${d}`);
   });
 
   it('surfaces the grid-cap hint in the readout when an axis hits the max grid', () => {
@@ -104,7 +110,7 @@ describe('CompartmentEditor', () => {
     fireEvent.blur(widthInput);
 
     const expectedCols = solveCountForMinCavity(
-      interior.innerW,
+      interior().innerW,
       thickness,
       20,
       DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID,

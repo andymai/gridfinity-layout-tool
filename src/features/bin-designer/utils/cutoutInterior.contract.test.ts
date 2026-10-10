@@ -11,6 +11,7 @@ import { createInitialContext } from '@/features/generation/worker/generators/pi
 import { cutoutInterior } from './binDimensions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams } from '@/features/bin-designer/types';
+import { DEFAULT_PULL_TAB } from '@/shared/utils/pullTabPlan';
 
 function withOverhang(overhang: BinParams['overhang']): BinParams {
   return { ...DEFAULT_BIN_PARAMS, overhang };
@@ -39,6 +40,13 @@ describe('cutoutInterior matches the generator pipeline dimensions', () => {
       expectMatchesGenerator(withOverhang(overhang));
     });
   }
+
+  it.each(['width', 'depth'] as const)('narrows for a pull tab on the %s wall', (wall) => {
+    expectMatchesGenerator({
+      ...DEFAULT_BIN_PARAMS,
+      pullTab: { ...DEFAULT_PULL_TAB, enabled: true, wall, thickness: 3.5 },
+    });
+  });
 
   it('suppresses overhang for a partial cell mask (matches the generator)', () => {
     // Default bin is 2×2 grid units → 4×4 half-bin mask; one empty cell makes

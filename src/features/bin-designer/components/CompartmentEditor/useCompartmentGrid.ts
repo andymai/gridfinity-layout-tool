@@ -45,9 +45,6 @@ export function useCompartmentGrid() {
     compartments,
     width,
     depth,
-    gridUnitMm,
-    gridUnitMmY,
-    wallThickness,
     style,
     dividerTiltPreview,
     selectedDividerKey,
@@ -67,9 +64,6 @@ export function useCompartmentGrid() {
       compartments: s.params.compartments,
       width: s.params.width,
       depth: s.params.depth,
-      gridUnitMm: s.params.gridUnitMm,
-      gridUnitMmY: s.params.gridUnitMmY,
-      wallThickness: s.params.wallThickness,
       params: s.params,
       style: s.params.style,
       dividerTiltPreview: s.ui.dividerTiltPreview,
@@ -106,13 +100,7 @@ export function useCompartmentGrid() {
     [angledDividersEnabled, updateSetting, setSelectedDividerKey]
   );
 
-  const { innerW: interiorW, innerD: interiorD } = getInteriorDims({
-    width,
-    depth,
-    gridUnitMm,
-    gridUnitMmY,
-    wallThickness,
-  });
+  const { innerW: interiorW, innerD: interiorD } = getInteriorDims(params);
 
   // Height of the divider walls, which is what turns a lean angle into the foot
   // travel the overlay draws. Resolved through the pair the worker uses.

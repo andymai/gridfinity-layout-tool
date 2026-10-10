@@ -14,6 +14,7 @@ import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeome
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useGhostLineSegments } from '../useGhostLineSegments';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 
 /** Ghost line color (matches selection ring yellow used in 2D grid editor) */
 const GHOST_COLOR = '#fbbf24';
@@ -22,37 +23,18 @@ const GHOST_OPACITY = 0.75;
 const LINE_WIDTH = 2;
 
 export function GhostDividers() {
-  const {
-    width,
-    depth,
-    height,
-    gridUnitMm,
-    gridUnitMmY,
-    heightUnitMm,
-    wallThickness,
-    cols,
-    rows,
-    generationStatus,
-  } = useDesignerStore(
+  const { params, height, heightUnitMm, cols, rows, generationStatus } = useDesignerStore(
     useShallow((s) => ({
-      width: s.params.width,
-      depth: s.params.depth,
+      params: s.params,
       height: s.params.height,
-      gridUnitMm: s.params.gridUnitMm,
-      gridUnitMmY: s.params.gridUnitMmY,
       heightUnitMm: s.params.heightUnitMm,
-      wallThickness: s.params.wallThickness,
       cols: s.params.compartments.cols,
       rows: s.params.compartments.rows,
       generationStatus: s.generation.status,
     }))
   );
 
-  // Calculate bin dimensions
-  const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
-  const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
-  const innerW = outerW - 2 * wallThickness;
-  const innerD = outerD - 2 * wallThickness;
+  const { innerW, innerD, offsetX, offsetY } = cutoutInterior(params);
   const totalH = height * heightUnitMm;
   const floorZ = GRIDFINITY.BASE_HEIGHT;
   const wallHeight = totalH - floorZ;
@@ -68,19 +50,21 @@ export function GhostDividers() {
     const positions: number[] = [];
     const cellW = innerW / cols;
     const cellD = innerD / rows;
+    const left = offsetX - innerW / 2;
+    const front = offsetY - innerD / 2;
 
     // Vertical divider lines (between columns) - top edges only
     for (let col = 1; col < cols; col++) {
-      const x = -innerW / 2 + col * cellW;
+      const x = left + col * cellW;
       // Draw line from front to back at top Z
-      positions.push(x, -innerD / 2, topZ, x, innerD / 2, topZ);
+      positions.push(x, front, topZ, x, front + innerD, topZ);
     }
 
     // Horizontal divider lines (between rows) - top edges only
     for (let row = 1; row < rows; row++) {
-      const y = -innerD / 2 + row * cellD;
+      const y = front + row * cellD;
       // Draw line from left to right at top Z
-      positions.push(-innerW / 2, y, topZ, innerW / 2, y, topZ);
+      positions.push(left, y, topZ, left + innerW, y, topZ);
     }
 
     if (positions.length === 0) return null;
@@ -88,7 +72,7 @@ export function GhostDividers() {
     const geo = new LineSegmentsGeometry();
     geo.setPositions(positions);
     return geo;
-  }, [shouldShow, cols, rows, innerW, innerD, topZ]);
+  }, [shouldShow, cols, rows, innerW, innerD, offsetX, offsetY, topZ]);
 
   const lineSegments = useGhostLineSegments(geometry, {
     color: GHOST_COLOR,

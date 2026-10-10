@@ -19,25 +19,16 @@
  * angle would be unitless and physically meaningless.
  */
 
-import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
-import type { CompartmentConfig } from '@/features/bin-designer/types';
+import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
+import type { BinParams, CompartmentConfig } from '@/features/bin-designer/types';
 import { clamp } from '@/shared/utils/math';
+import { cutoutInterior } from './binDimensions';
 import { getCompartmentBounds, type EligibleDivider } from './compartments';
 
-/** The subset of bin parameters needed to derive interior dimensions in mm. */
-export interface BinInteriorParams {
-  readonly width: number;
-  readonly depth: number;
-  readonly gridUnitMm: number;
-  /** Y-axis pitch for non-square grids; defaults to `gridUnitMm` (square). */
-  readonly gridUnitMmY?: number;
-  readonly wallThickness: number;
-}
-
-/** Interior dims plus the divider height a lean pivots about. Resolved by the
+/** Bin params plus the divider height a lean pivots about. Resolved by the
  *  caller through `labelTabInteriorDims` + `resolveCompartmentDividerHeight`,
  *  so this module never restates that chain. */
-export interface DividerEnvelopeParams extends BinInteriorParams {
+export interface DividerEnvelopeParams extends BinParams {
   readonly dividerHeightMm: number;
 }
 
@@ -81,16 +72,8 @@ export interface DividerGeometry {
   readonly pitchMm: number;
 }
 
-/**
- * Interior cavity dimensions in mm. Mirrors boxBuilder: outer = units·gridUnitMm
- * − TOLERANCE, inner = outer − 2·wall. The depth axis uses `gridUnitMmY` when
- * set (non-square grid); otherwise it equals the X pitch, so square bins are
- * unchanged.
- */
-export function getInteriorDims(params: BinInteriorParams): { innerW: number; innerD: number } {
-  const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
-  const innerW = params.width * params.gridUnitMm - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
-  const innerD = params.depth * gridUnitMmY - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
+export function getInteriorDims(params: BinParams): { innerW: number; innerD: number } {
+  const { innerW, innerD } = cutoutInterior(params);
   return { innerW, innerD };
 }
 

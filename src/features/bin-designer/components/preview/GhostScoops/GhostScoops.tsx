@@ -9,7 +9,11 @@
  */
 
 import { useMemo } from 'react';
-import { baseFloorZ, baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
+import {
+  baseFloorZ,
+  baseWallHeight,
+  cutoutInterior,
+} from '@/features/bin-designer/utils/binDimensions';
 import * as THREE from 'three';
 import { useGhostMeshMaterial } from '../useGhostMeshMaterial';
 import { useShallow } from 'zustand/react/shallow';
@@ -22,9 +26,12 @@ import {
   resolveScoopSides,
   computeLipOffset,
   computeInteriorHeight,
+  scoopArcAnchors,
   scoopFaceOffset,
   scoopFrameHeights,
 } from '@/shared/utils/scoopCalculations';
+import { isPartialMask } from '@/shared/utils/cellMask';
+import { resolveOverhang, taperInsetAt } from '@/shared/utils/overhang';
 import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 
 const GHOST_COLOR = '#f97316';
@@ -33,11 +40,8 @@ const ARC_SEGMENTS = 16;
 
 export function GhostScoops() {
   const {
-    width,
-    depth,
+    params,
     height,
-    gridUnitMm,
-    gridUnitMmY,
     heightUnitMm,
     wallThickness,
     style,
@@ -45,16 +49,14 @@ export function GhostScoops() {
     scoop,
     base,
     cellMask,
+    overhang,
     lid,
     floorThickness,
     generationStatus,
   } = useDesignerStore(
     useShallow((s) => ({
-      width: s.params.width,
-      depth: s.params.depth,
+      params: s.params,
       height: s.params.height,
-      gridUnitMm: s.params.gridUnitMm,
-      gridUnitMmY: s.params.gridUnitMmY,
       heightUnitMm: s.params.heightUnitMm,
       wallThickness: s.params.wallThickness,
       style: s.params.style,
@@ -62,6 +64,7 @@ export function GhostScoops() {
       scoop: s.params.scoop,
       base: s.params.base,
       cellMask: s.params.cellMask,
+      overhang: s.params.overhang,
       lid: s.params.lid,
       floorThickness: resolveBinFloorMm(s.params),
       generationStatus: s.generation.status,
@@ -69,10 +72,7 @@ export function GhostScoops() {
   );
   const { cols, rows, cells } = compartments;
 
-  const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
-  const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
-  const innerW = outerW - 2 * wallThickness;
-  const innerD = outerD - 2 * wallThickness;
+  const { innerW, innerD, offsetX, offsetY } = cutoutInterior(params);
 
   const hasLip = base.stackingLip;
   const totalH = height * heightUnitMm;
@@ -96,6 +96,7 @@ export function GhostScoops() {
     if (!shouldShow) return null;
 
     const sides = resolveScoopSides(scoop);
+    const { taper } = resolveOverhang(isPartialMask(cellMask) ? undefined : overhang);
     const processedCompartments = new Set<number>();
     const allPositions: number[] = [];
     const allIndices: number[] = [];
@@ -129,8 +130,18 @@ export function GhostScoops() {
           );
           if (!profile) continue;
           const { height, style } = profile;
-          const arcTop = Math.max(lipOffset, scoopFaceOffset(isOuter, compartments.thickness));
-          const run = Math.min(profile.run, depth - 0.5 - arcTop);
+          const wallAt = (zAboveFloor: number): number =>
+            taper && isOuter
+              ? taperInsetAt(taper, taper[side], floorThickness + zAboveFloor, boxWallHeight)
+              : 0;
+          const wallAtTop = wallAt(height);
+          const { arcTop, floorStart } = scoopArcAnchors(
+            lipOffset,
+            wallAtTop,
+            wallAt(0),
+            scoopFaceOffset(isOuter, compartments.thickness)
+          );
+          const run = Math.min(profile.run, depth - 0.5 - floorStart);
           if (run < 1) continue;
 
           // Build the ramp surface as a triangle strip: two rows of vertices, one
@@ -145,25 +156,23 @@ export function GhostScoops() {
           if (style === 'curved') {
             for (let i = 0; i <= ARC_SEGMENTS; i++) {
               const angle = (Math.PI / 2) * (i / ARC_SEGMENTS);
-              profilePoints.push([
-                arcTop + run * (1 - Math.cos(angle)),
-                height * (1 - Math.sin(angle)),
-              ]);
+              const z = height * (1 - Math.sin(angle));
+              profilePoints.push([arcTop + wallAt(z) - wallAtTop + run * (1 - Math.cos(angle)), z]);
             }
           } else {
             profilePoints.push([arcTop, height]);
-            profilePoints.push([arcTop + run, 0]);
+            profilePoints.push([floorStart + run, 0]);
           }
 
           for (const [dRun, dz] of profilePoints) {
             const runCoord = edge + runSign * dRun;
             const z = floorThickness + dz;
             if (runsAlongY) {
-              allPositions.push(alongMin, runCoord, z);
-              allPositions.push(alongMax, runCoord, z);
+              allPositions.push(offsetX + alongMin, offsetY + runCoord, z);
+              allPositions.push(offsetX + alongMax, offsetY + runCoord, z);
             } else {
-              allPositions.push(runCoord, alongMin, z);
-              allPositions.push(runCoord, alongMax, z);
+              allPositions.push(offsetX + runCoord, offsetY + alongMin, z);
+              allPositions.push(offsetX + runCoord, offsetY + alongMax, z);
             }
           }
 
@@ -193,8 +202,11 @@ export function GhostScoops() {
     shouldShow,
     innerW,
     innerD,
+    offsetX,
+    offsetY,
     interiorHeight,
     wallHeight,
+    boxWallHeight,
     floorThickness,
     wallThickness,
     hasLip,
@@ -204,6 +216,8 @@ export function GhostScoops() {
     rows,
     cells,
     scoop,
+    overhang,
+    cellMask,
   ]);
 
   const material = useGhostMeshMaterial(geometry, { color: GHOST_COLOR, opacity: GHOST_OPACITY });
