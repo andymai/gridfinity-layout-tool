@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useSplitOptionsSection } from './useSplitOptionsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 
@@ -20,6 +21,7 @@ describe('useSplitOptionsSection', () => {
         defaultHeightUnitMm: 7,
       },
     });
+    useLayoutStore.getState().setPrintBedSize(256);
   });
 
   it('reports needsSplit=false for small bin', () => {
@@ -37,12 +39,24 @@ describe('useSplitOptionsSection', () => {
     expect(result.current.pieceCount).toBe(2);
   });
 
+  it("splits against the layout's bed, not the default for new layouts", () => {
+    // A 6x2 bin is 252mm long: whole on the 256mm default, two 3x2 halves on a
+    // 220mm bed set in the planner.
+    useLayoutStore.getState().setPrintBedSize(220);
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 6, depth: 2 },
+    });
+    const { result } = renderHook(() => useSplitOptionsSection());
+    expect(result.current.printBedSize).toEqual({ width: 220, depth: 220 });
+    expect(result.current.needsSplit).toBe(true);
+    expect(result.current.splitAxis).toBe('width');
+    expect(result.current.pieceCount).toBe(2);
+  });
+
   it('offers a split for a bin whose overhang overruns the bed', () => {
     // 4 x 42mm is 168mm of grid, inside a 180mm bed — but the overhang makes the
     // real part 271.5mm wide, and the panel used to report no split at all.
-    useSettingsStore.setState({
-      settings: { ...useSettingsStore.getState().settings, defaultPrintBedSize: 180 },
-    });
+    useLayoutStore.getState().setPrintBedSize(180);
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -58,9 +72,7 @@ describe('useSplitOptionsSection', () => {
   });
 
   it('leaves a bin the overhang still fits unsplit', () => {
-    useSettingsStore.setState({
-      settings: { ...useSettingsStore.getState().settings, defaultPrintBedSize: 180 },
-    });
+    useLayoutStore.getState().setPrintBedSize(180);
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,

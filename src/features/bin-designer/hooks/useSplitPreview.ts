@@ -34,6 +34,7 @@ import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/spl
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { BinParams } from '@/shared/types/bin';
 import type { SplitPieceMeshEntry } from '../types';
+import { useLayoutPrintBed } from './useLayoutPrintBed';
 
 interface SplitInputs {
   readonly cutPlanesX: number[];
@@ -78,13 +79,8 @@ export function useSplitPreview(): void {
     }))
   );
 
-  const { defaultPrintBedSize, defaultPrintBedDepth, nozzleSizeMm } = useSettingsStore(
-    useShallow((s) => ({
-      defaultPrintBedSize: s.settings.defaultPrintBedSize,
-      defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
-      nozzleSizeMm: s.settings.printSettings.nozzleSizeMm,
-    }))
-  );
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+  const { printBedSize, printBedDepth } = useLayoutPrintBed();
 
   // Reads the bin's own grid unit rather than defaultGridUnitMm from settings,
   // which may be stale, and charges its overhang against the bed. Memoized on
@@ -92,8 +88,8 @@ export function useSplitPreview(): void {
   // object each render would re-run the effects (and re-dispatch split work)
   // below.
   const maxGrid = useMemo(
-    () => binSplitChunkUnits(params, defaultPrintBedSize, defaultPrintBedDepth),
-    [defaultPrintBedSize, defaultPrintBedDepth, params]
+    () => binSplitChunkUnits(params, printBedSize, printBedDepth),
+    [printBedSize, printBedDepth, params]
   );
   const needsSplit = params.width > maxGrid.width || params.depth > maxGrid.depth;
 

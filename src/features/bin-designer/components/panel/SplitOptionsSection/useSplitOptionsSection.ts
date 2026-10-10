@@ -7,6 +7,7 @@ import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constant
 import { getSplitPieceCount } from '@/shared/utils/splitPositions';
 import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
+import { useLayoutPrintBed } from '@/features/bin-designer/hooks/useLayoutPrintBed';
 
 export type SplitAxis = 'width' | 'depth' | 'both';
 
@@ -39,13 +40,8 @@ export function useSplitOptionsSection() {
     }))
   );
 
-  const { defaultPrintBedSize, defaultPrintBedDepth, nozzleSizeMm } = useSettingsStore(
-    useShallow((s) => ({
-      defaultPrintBedSize: s.settings.defaultPrintBedSize,
-      defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
-      nozzleSizeMm: s.settings.printSettings.nozzleSizeMm,
-    }))
-  );
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+  const { printBedSize, printBedDepth } = useLayoutPrintBed();
 
   // Uses the bin's actual grid unit rather than defaultGridUnitMm from settings,
   // and charges the bin's overhang against the bed: an overhang grows the outer
@@ -55,19 +51,10 @@ export function useSplitOptionsSection() {
     () =>
       binSplitChunkUnits(
         { width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask },
-        defaultPrintBedSize,
-        defaultPrintBedDepth
+        printBedSize,
+        printBedDepth
       ),
-    [
-      width,
-      depth,
-      gridUnitMm,
-      gridUnitMmY,
-      overhang,
-      cellMask,
-      defaultPrintBedSize,
-      defaultPrintBedDepth,
-    ]
+    [width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask, printBedSize, printBedDepth]
   );
 
   const needsSplit = width > maxGrid.width || depth > maxGrid.depth;
@@ -124,8 +111,8 @@ export function useSplitOptionsSection() {
   return {
     needsSplit,
     printBedSize: {
-      width: defaultPrintBedSize,
-      depth: defaultPrintBedDepth ?? defaultPrintBedSize,
+      width: printBedSize,
+      depth: printBedDepth ?? printBedSize,
     },
     pieceCount,
     splitAxis,

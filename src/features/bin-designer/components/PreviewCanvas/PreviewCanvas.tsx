@@ -66,6 +66,7 @@ import { FootprintGrid } from '../preview/FootprintGrid';
 import { useDesignerKeyboard } from '../../hooks/useDesignerKeyboard';
 import { useDoubleTapReset } from '../../hooks/useDoubleTapReset';
 import { useSplitPreview } from '../../hooks/useSplitPreview';
+import { useLayoutPrintBed } from '../../hooks/useLayoutPrintBed';
 import { setPreviewCanvas, setPreviewContext, clearPreviewCanvas } from '../../utils/thumbnail';
 import { describeBin, getStatusAnnouncement } from '../../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
@@ -75,7 +76,6 @@ import { hasDetachableFeet } from '@/features/bin-designer/types/base';
 import { planKnifeRest } from '@/shared/utils/knifeRestPlan';
 import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 import { useToastStore } from '@/core/store/toast';
-import { useSettingsStore } from '@/core/store/settings';
 import {
   CameraController,
   usePresetTransition,
@@ -274,12 +274,7 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
     wasRestEnabledRef.current = showRestSlider;
   }, [showRestSlider]);
 
-  const { defaultPrintBedSize: bedSize, defaultPrintBedDepth: bedDepth } = useSettingsStore(
-    useShallow((s) => ({
-      defaultPrintBedSize: s.settings.defaultPrintBedSize,
-      defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
-    }))
-  );
+  const { printBedSize: bedSize, printBedDepth: bedDepth } = useLayoutPrintBed();
   const maxGrid = useMemo(
     () => binSplitChunkUnits(params, bedSize, bedDepth),
     [bedSize, bedDepth, params]

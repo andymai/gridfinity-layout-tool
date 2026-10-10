@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { FitTestButton } from './FitTestButton';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { useSettingsStore } from '@/core/store/settings';
+import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, Cutout } from '@/shared/types/bin';
 import { resetAllStores } from '@/test/testUtils';
@@ -99,9 +99,7 @@ describe('FitTestButton', () => {
 
   it('passes the configured print bed so an oversize card is split', async () => {
     setDesign({ width: 8 });
-    useSettingsStore.setState((s) => ({
-      settings: { ...s.settings, defaultPrintBedSize: 180, defaultPrintBedDepth: 180 },
-    }));
+    useLayoutStore.getState().setPrintBedSize(180, 180);
     render(<FitTestButton />);
     fireEvent.click(screen.getByRole('button', { name: BUTTON }));
     fireEvent.click(await screen.findByRole('button', { name: /download/i }));
@@ -112,9 +110,7 @@ describe('FitTestButton', () => {
 
   it('warns before export when the card will not fit the bed', async () => {
     setDesign({ width: 8 });
-    useSettingsStore.setState((s) => ({
-      settings: { ...s.settings, defaultPrintBedSize: 180, defaultPrintBedDepth: 180 },
-    }));
+    useLayoutStore.getState().setPrintBedSize(180, 180);
     render(<FitTestButton />);
     fireEvent.click(screen.getByRole('button', { name: BUTTON }));
     // The split is planned client-side from the same plan the worker cuts from,
@@ -192,9 +188,7 @@ describe('FitTestButton', () => {
 
   it('keeps an outline whole on a bed its card would overflow', async () => {
     setDesign({ width: 8 });
-    useSettingsStore.setState((s) => ({
-      settings: { ...s.settings, defaultPrintBedSize: 180, defaultPrintBedDepth: 180 },
-    }));
+    useLayoutStore.getState().setPrintBedSize(180, 180);
     render(<FitTestButton />);
     fireEvent.click(screen.getByRole('button', { name: BUTTON }));
     expect(await screen.findByText(/fitTest.warnSplit/)).toBeInTheDocument();
@@ -214,9 +208,7 @@ describe('FitTestButton', () => {
         openSides: [{ side: 'right' }],
       }),
     ]);
-    useSettingsStore.setState((s) => ({
-      settings: { ...s.settings, defaultPrintBedSize: 100, defaultPrintBedDepth: 100 },
-    }));
+    useLayoutStore.getState().setPrintBedSize(100, 100);
     render(<FitTestButton />);
     fireEvent.click(screen.getByRole('button', { name: BUTTON }));
     fireEvent.click(await screen.findByRole('radio', { name: OUTLINE }));
