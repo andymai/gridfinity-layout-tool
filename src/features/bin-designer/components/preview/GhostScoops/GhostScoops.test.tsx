@@ -5,7 +5,8 @@ import * as THREE from 'three';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '@/features/bin-designer/constants';
 import type { BinParams } from '@/features/bin-designer/types';
-import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
+import { baseWallHeight, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
+import { resolveOverhang, taperInsetAt } from '@/shared/utils/overhang';
 import { DEFAULT_PULL_TAB } from '@/shared/utils/pullTabPlan';
 import { GhostScoops } from './GhostScoops';
 
@@ -148,4 +149,40 @@ describe('GhostScoops', () => {
     expect((Math.min(...xs) + Math.max(...xs)) / 2).toBeCloseTo(offsetX);
     expect((Math.min(...ys) + Math.max(...ys)) / 2).toBeCloseTo(offsetY);
   });
+
+  it.each(['chamfer', 'fillet'] as const)(
+    'keeps a ramp inside a %s-tapered outer wall at every height',
+    (profile) => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        overhang: {
+          left: 0,
+          right: 8,
+          front: 0,
+          back: 0,
+          taper: { profile, bandHeight: 30, left: 0, right: 8, front: 0, back: 0 },
+        },
+        scoop: { enabled: true, radius: 'auto', sides: ['right'] },
+      };
+      useDesignerStore.setState({
+        params,
+        generation: { ...DEFAULT_GENERATION_STATE, status: 'generating' },
+      });
+      const { innerW, offsetX } = cutoutInterior(params);
+      const taper = resolveOverhang(params.overhang).taper;
+      if (!taper) throw new Error('expected a taper');
+      const wallHeight = baseWallHeight(params.base, params.height * params.heightUnitMm);
+
+      render(<GhostScoops />);
+
+      const positions = vi.mocked(THREE.Float32BufferAttribute).mock.calls[0]?.[0] as number[];
+      let deepest = -Infinity;
+      for (let i = 0; i < positions.length; i += 3) {
+        const [x, z] = [positions[i], positions[i + 2]];
+        const wall = offsetX + innerW / 2 - taperInsetAt(taper, taper.right, z, wallHeight);
+        deepest = Math.max(deepest, x - wall);
+      }
+      expect(deepest).toBeLessThanOrEqual(1e-6);
+    }
+  );
 });
