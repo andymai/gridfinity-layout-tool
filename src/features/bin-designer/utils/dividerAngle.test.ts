@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import type { BinParams } from '@/features/bin-designer/types';
+import { DEFAULT_PULL_TAB } from '@/shared/utils/pullTabPlan';
 import { createUniformGrid, getEligibleDividers } from './compartments';
 import {
   ANGLE_UI_MAX_DEG,
@@ -98,6 +99,17 @@ describe('dividerAngle', () => {
       // innerD = 1·22 − 0.5 − 2·1.2 = 19.1 (vs 39.1 for the default 42 pitch).
       const geom = getDividerGeometry(envelope({ ...params, gridUnitMmY: 22 }), config, divider);
       expect(geom?.segmentLengthMm).toBeCloseTo(19.1, 1);
+    });
+
+    it("loses the depth a pull tab's thicker front wall takes from the cavity", () => {
+      const tabbed: BinParams = { ...params, pullTab: { ...DEFAULT_PULL_TAB, enabled: true } };
+      const lost = DEFAULT_PULL_TAB.thickness - params.wallThickness;
+      expect(geomFor(tabbed).segmentLengthMm).toBeCloseTo(SEG_LEN - lost, 6);
+    });
+
+    it('spans the cells an overhang widens', () => {
+      const wide: BinParams = { ...params, overhang: { left: 0, right: 8, front: 0, back: 0 } };
+      expect(geomFor(wide).offsetMax).toBeCloseTo(40.55 + 4 - 5, 6);
     });
   });
 

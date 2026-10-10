@@ -9,7 +9,11 @@
  */
 
 import { useMemo } from 'react';
-import { baseFloorZ, baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
+import {
+  baseFloorZ,
+  baseWallHeight,
+  cutoutInterior,
+} from '@/features/bin-designer/utils/binDimensions';
 import * as THREE from 'three';
 import { useGhostMeshMaterial } from '../useGhostMeshMaterial';
 import { useShallow } from 'zustand/react/shallow';
@@ -33,11 +37,8 @@ const ARC_SEGMENTS = 16;
 
 export function GhostScoops() {
   const {
-    width,
-    depth,
+    params,
     height,
-    gridUnitMm,
-    gridUnitMmY,
     heightUnitMm,
     wallThickness,
     style,
@@ -50,11 +51,8 @@ export function GhostScoops() {
     generationStatus,
   } = useDesignerStore(
     useShallow((s) => ({
-      width: s.params.width,
-      depth: s.params.depth,
+      params: s.params,
       height: s.params.height,
-      gridUnitMm: s.params.gridUnitMm,
-      gridUnitMmY: s.params.gridUnitMmY,
       heightUnitMm: s.params.heightUnitMm,
       wallThickness: s.params.wallThickness,
       style: s.params.style,
@@ -69,10 +67,7 @@ export function GhostScoops() {
   );
   const { cols, rows, cells } = compartments;
 
-  const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
-  const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
-  const innerW = outerW - 2 * wallThickness;
-  const innerD = outerD - 2 * wallThickness;
+  const { innerW, innerD, offsetX, offsetY } = cutoutInterior(params);
 
   const hasLip = base.stackingLip;
   const totalH = height * heightUnitMm;
@@ -159,11 +154,11 @@ export function GhostScoops() {
             const runCoord = edge + runSign * dRun;
             const z = floorThickness + dz;
             if (runsAlongY) {
-              allPositions.push(alongMin, runCoord, z);
-              allPositions.push(alongMax, runCoord, z);
+              allPositions.push(offsetX + alongMin, offsetY + runCoord, z);
+              allPositions.push(offsetX + alongMax, offsetY + runCoord, z);
             } else {
-              allPositions.push(runCoord, alongMin, z);
-              allPositions.push(runCoord, alongMax, z);
+              allPositions.push(offsetX + runCoord, offsetY + alongMin, z);
+              allPositions.push(offsetX + runCoord, offsetY + alongMax, z);
             }
           }
 
@@ -193,6 +188,8 @@ export function GhostScoops() {
     shouldShow,
     innerW,
     innerD,
+    offsetX,
+    offsetY,
     interiorHeight,
     wallHeight,
     floorThickness,

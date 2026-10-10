@@ -1,8 +1,12 @@
 import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
+import * as THREE from 'three';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '@/features/bin-designer/constants';
+import type { BinParams } from '@/features/bin-designer/types';
+import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
+import { DEFAULT_PULL_TAB } from '@/shared/utils/pullTabPlan';
 import { GhostScoops } from './GhostScoops';
 
 vi.mock('@react-three/fiber', () => ({
@@ -118,5 +122,30 @@ describe('GhostScoops', () => {
     });
     const { container } = render(<GhostScoops />);
     expect(container.firstChild).toBeNull();
+  });
+
+  it.each([
+    ['a pull tab thickens the front wall', { pullTab: { ...DEFAULT_PULL_TAB, enabled: true } }],
+    ['an asymmetric overhang', { overhang: { left: 0, right: 8, front: 4, back: 0 } }],
+  ])('centres ramps on all four walls on the cavity when %s', (_, change) => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      ...change,
+      scoop: { enabled: true, radius: 'auto', sides: ['front', 'back', 'left', 'right'] },
+    };
+    useDesignerStore.setState({
+      params,
+      generation: { ...DEFAULT_GENERATION_STATE, status: 'generating' },
+    });
+    const { offsetX, offsetY } = cutoutInterior(params);
+    expect(offsetX !== 0 || offsetY !== 0).toBe(true);
+
+    render(<GhostScoops />);
+
+    const positions = vi.mocked(THREE.Float32BufferAttribute).mock.calls[0]?.[0] as number[];
+    const xs = positions.filter((_, i) => i % 3 === 0);
+    const ys = positions.filter((_, i) => i % 3 === 1);
+    expect((Math.min(...xs) + Math.max(...xs)) / 2).toBeCloseTo(offsetX);
+    expect((Math.min(...ys) + Math.max(...ys)) / 2).toBeCloseTo(offsetY);
   });
 });

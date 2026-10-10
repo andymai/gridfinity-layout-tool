@@ -84,11 +84,6 @@ export interface TiltRow extends EligibleDivider {
 
 export function useDividerTiltSubsection() {
   const {
-    width,
-    depth,
-    gridUnitMm,
-    gridUnitMmY,
-    wallThickness,
     params,
     compartments,
     scoopEnabled,
@@ -106,11 +101,6 @@ export function useDividerTiltSubsection() {
     setDividerTiltPreview,
   } = useDesignerStore(
     useShallow((s) => ({
-      width: s.params.width,
-      depth: s.params.depth,
-      gridUnitMm: s.params.gridUnitMm,
-      gridUnitMmY: s.params.gridUnitMmY,
-      wallThickness: s.params.wallThickness,
       params: s.params,
       compartments: s.params.compartments,
       scoopEnabled: s.params.scoop.enabled,
@@ -139,16 +129,13 @@ export function useDividerTiltSubsection() {
   }, [params, compartments.dividerHeight]);
 
   const dims = useMemo<DividerEnvelopeParams>(
-    () => ({ width, depth, gridUnitMm, gridUnitMmY, wallThickness, dividerHeightMm }),
-    [width, depth, gridUnitMm, gridUnitMmY, wallThickness, dividerHeightMm]
+    () => ({ ...params, dividerHeightMm }),
+    [params, dividerHeightMm]
   );
 
   // Interior footprint in mm, for projecting divider offsets into the panel's
   // plan diagram the same way the canvas overlay does.
-  const interiorDims = useMemo(
-    () => getInteriorDims({ width, depth, gridUnitMm, gridUnitMmY, wallThickness }),
-    [width, depth, gridUnitMm, gridUnitMmY, wallThickness]
-  );
+  const interiorDims = useMemo(() => getInteriorDims(params), [params]);
 
   const displayNumbers = useMemo(() => {
     const map = new Map<number, number>();

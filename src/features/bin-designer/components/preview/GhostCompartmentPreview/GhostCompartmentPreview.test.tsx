@@ -1,8 +1,12 @@
 import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
+import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import type { BinParams } from '@/features/bin-designer/types';
+import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
+import { DEFAULT_PULL_TAB } from '@/shared/utils/pullTabPlan';
 import { GhostCompartmentPreview } from './GhostCompartmentPreview';
 
 vi.mock('@react-three/fiber', () => ({
@@ -22,10 +26,15 @@ vi.mock('@react-three/fiber', () => ({
   extend: vi.fn(),
 }));
 
+const planes = vi.hoisted(() => [] as { args: number[]; translate: ReturnType<typeof vi.fn> }[]);
+
 vi.mock('three', () => {
   class MockPlaneGeometry {
     translate = vi.fn();
     dispose = vi.fn();
+    constructor(...args: number[]) {
+      planes.push({ args, translate: this.translate });
+    }
   }
 
   class MockMeshBasicMaterial {
@@ -143,5 +152,56 @@ describe('GhostCompartmentPreview', () => {
     });
     const { container } = render(<GhostCompartmentPreview />);
     expect(container.firstChild).not.toBeNull();
+  });
+
+  describe('in the cavity the worker cuts', () => {
+    const changes: [string, Partial<BinParams>][] = [
+      ['a pull tab thickens the front wall', { pullTab: { ...DEFAULT_PULL_TAB, enabled: true } }],
+      ['an asymmetric overhang', { overhang: { left: 0, right: 8, front: 4, back: 0 } }],
+    ];
+    const grid = { cols: 2, rows: 2, cells: [0, 1, 2, 3] };
+    const whole = { minCol: 0, maxCol: 1, minRow: 0, maxRow: 1 };
+
+    function show(change: Partial<BinParams>, action: 'merge' | 'split'): BinParams {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        ...change,
+        compartments: { ...DEFAULT_BIN_PARAMS.compartments, ...grid },
+      };
+      useDesignerStore.setState({
+        params,
+        ui: {
+          ...DEFAULT_UI_STATE,
+          previewCompartments: action === 'split' ? { ...grid, thickness: 1.2 } : null,
+          previewSelection: { action, ...whole },
+        },
+      });
+      planes.length = 0;
+      render(<GhostCompartmentPreview />);
+      return params;
+    }
+
+    it.each(changes)('covers the merged cells when %s', (_, change) => {
+      const { innerW, innerD, offsetX, offsetY } = cutoutInterior(show(change, 'merge'));
+      expect(planes).toHaveLength(1);
+      expect(planes[0].args[0]).toBeCloseTo(innerW);
+      expect(planes[0].args[1]).toBeCloseTo(innerD);
+      const [x, y] = planes[0].translate.mock.calls[0] as number[];
+      expect(x).toBeCloseTo(offsetX);
+      expect(y).toBeCloseTo(offsetY);
+    });
+
+    it.each(changes)('crosses at the cavity centre when %s', (_, change) => {
+      const { innerD, offsetX, offsetY } = cutoutInterior(show(change, 'split'));
+      const geometry = vi.mocked(LineSegments2).mock.calls[0]?.[0] as unknown as {
+        setPositions: ReturnType<typeof vi.fn>;
+      };
+      const positions = geometry.setPositions.mock.calls[0]?.[0] as number[];
+      const xs = positions.filter((_, i) => i % 3 === 0);
+      const ys = positions.filter((_, i) => i % 3 === 1);
+      expect(Math.min(...ys)).toBeCloseTo(offsetY - innerD / 2);
+      expect(Math.max(...ys)).toBeCloseTo(offsetY + innerD / 2);
+      expect(xs).toContainEqual(expect.closeTo(offsetX));
+    });
   });
 });
