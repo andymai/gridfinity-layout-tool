@@ -1,0 +1,67 @@
+src/features/bin-designer/components/panel/PhysicalUnitsSection/usePhysicalUnitsSection.ts
+  s_7a26129351fc03::t_d709cd88432b2e 59-61
+  s_7a26129351fc03::t_fbf63458664b05 6
+  s_7a26129351fc03::t_914178115b0067 87
+  s_7a26129351fc03::t_ca04f78d4c85bf 30-36
+src/features/bin-designer/hooks/useLayoutPrintBed.ts
+  s_7a26129351fc03::t_770c0a3ec39a1e 1-20
+src/features/bin-designer/hooks/useSplitPreview.ts
+  s_7a26129351fc03::t_afffc5ce619164 37
+  s_7a26129351fc03::t_558ce4b957cc76 82-83,91-92
+src/features/bin-designer/hooks/useExport.ts
+  s_7a26129351fc03::t_69e2a9d5ff6f59 167-168
+  s_7a26129351fc03::t_995e348d6607f7 132-133
+  s_7a26129351fc03::t_14f46bd612cb34 64
+src/features/bin-designer/hooks/useLayoutPrintBed.test.ts
+  s_7a26129351fc03::t_96c1e518192ee1 1-29
+src/features/bin-designer/components/panel/SplitOptionsSection/useSplitOptionsSection.ts
+  s_7a26129351fc03::t_b48b730ff9b384 43-44,54-55,57
+  s_7a26129351fc03::t_06588934d2e944 114-115
+  s_7a26129351fc03::t_ac8f0096d97ad8 10
+src/features/bin-designer/components/panel/SplitOptionsSection/useSplitOptionsSection.test.ts
+  s_7a26129351fc03::t_5d8aa14f445657 6,24,42-55,59,75
+src/features/bin-designer/components/panel/PhysicalUnitsSection/usePhysicalUnitsSection.test.ts
+  s_7a26129351fc03::t_bff627fe0b3f7e 82-84,87-88,91-92,95-96,99-100,103-108,112,119-120,130-131,140-141
+src/features/bin-designer/components/CutoutWorkspace/FitTestButton.test.tsx
+  s_7a26129351fc03::t_a5c8e7dda54971 5,102,113,191,211
+src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
+  s_7a26129351fc03::t_2b37721f037e16 60-61
+  s_7a26129351fc03::t_5d7ea1a585d0f1 16
+  s_7a26129351fc03::t_85b0cb2a67bfe6 367
+src/features/bin-designer/README.md
+  s_7a26129351fc03::t_cbf6c558b276b8 617-621
+src/features/bin-designer/components/panel/SplitOptionsSection/SplitOptionsSection.test.tsx
+  s_7a26129351fc03::t_9bca9d79b754e5 7,24
+src/features/bin-designer/components/CutoutWorkspace/FitTestButton.tsx
+  s_7a26129351fc03::t_e865bb1407c515 29
+  s_7a26129351fc03::t_f4fe4b48d46e33 90-91
+src/features/bin-designer/components/preview/BinSplitLines/BinSplitLines.test.tsx
+  s_7a26129351fc03::t_c56137e72c618f 67
+  s_7a26129351fc03::t_d530356d6363ca 5
+  s_7a26129351fc03::t_9d2742efe7bd32 131-133
+src/features/bin-designer/components/preview/BinSplitLines/BinSplitLines.tsx
+  s_7a26129351fc03::t_20506f643ae383 16
+  s_7a26129351fc03::t_6b6cce7d72a125 49,58-59,61
+src/features/bin-designer/hooks/useSplitPreview.test.ts
+  s_7a26129351fc03::t_34763d3b2d60d8 6
+  s_7a26129351fc03::t_da22815211c122 143
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_7a26129351fc03::t_565cf27ebff95a 277
+  s_7a26129351fc03::t_1a1d11944713ed 69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6782f1c9f2eb9382732b58a9877f3b9f97b46bb0",
+  "prompts": {},
+  "sessions": {
+    "s_7a26129351fc03": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c12aca75-5bd0-49be-9750-66f33a55839f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
