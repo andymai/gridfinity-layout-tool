@@ -1,3 +1,4 @@
+import { resolvePullTab } from '@/shared/utils/pullTabPlan';
 /**
  * Backward-compat migration for persisted bin designs.
  *
@@ -442,6 +443,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   return {
     ...DEFAULT_BIN_PARAMS,
     ...rest,
+    pullTab: params.pullTab ? resolvePullTab(params.pullTab) : undefined,
     style,
     base: baseConfig,
     compartments: compartmentsConfig,

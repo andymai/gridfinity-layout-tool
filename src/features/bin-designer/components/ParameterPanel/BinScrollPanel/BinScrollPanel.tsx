@@ -20,6 +20,7 @@ import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest'
 import { binHasText } from '@/features/bin-designer/utils/binText';
 
 import { StickyGroupHeader } from '../../panel/StickyGroupHeader';
+import { PullTabSection } from '../../panel/PullTabSection';
 import { PanelSection } from '../../panel/PanelSection';
 import { FeatureGate } from '../../panel/FeatureGate';
 import { DependencyHint } from '../../panel/shared';
@@ -166,6 +167,9 @@ export function BinScrollPanel({
         <div className="divide-y divide-stroke-subtle/50">
           <PanelSection helpTarget="bd-lid">
             <LidSection />
+          </PanelSection>
+          <PanelSection helpTarget="bd-pull-tab">
+            <PullTabSection />
           </PanelSection>
           <PanelSection helpTarget="bd-handles">
             <HandleSection />

@@ -68,6 +68,7 @@ export type {
   SplitConnectorConfig,
   WallConnectorStyle,
   HandleConfig,
+  PullTabConfig,
   HandleCutoutShape,
   HandleSide,
   HandleWallSide,

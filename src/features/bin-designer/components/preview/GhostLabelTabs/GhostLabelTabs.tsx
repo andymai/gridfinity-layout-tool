@@ -20,7 +20,6 @@ import * as THREE from 'three';
 import { useGhostMeshMaterial } from '../useGhostMeshMaterial';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import {
   effectiveLabelSocketClearance,
   labelLipReservationMm,
@@ -39,13 +38,8 @@ const GHOST_OPACITY = 0.45;
 
 export function GhostLabelTabs() {
   const {
-    width,
-    depth,
     height,
-    gridUnitMm,
-    gridUnitMmY,
     heightUnitMm,
-    wallThickness,
     style,
     base,
     lid,
@@ -56,13 +50,8 @@ export function GhostLabelTabs() {
     generationStatus,
   } = useDesignerStore(
     useShallow((s) => ({
-      width: s.params.width,
-      depth: s.params.depth,
       height: s.params.height,
-      gridUnitMm: s.params.gridUnitMm,
-      gridUnitMmY: s.params.gridUnitMmY,
       heightUnitMm: s.params.heightUnitMm,
-      wallThickness: s.params.wallThickness,
       style: s.params.style,
       base: s.params.base,
       lid: s.params.lid,
@@ -90,10 +79,7 @@ export function GhostLabelTabs() {
   );
   const { cols, rows, cells } = compartments;
 
-  const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
-  const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
-  const innerW = outerW - 2 * wallThickness;
-  const innerD = outerD - 2 * wallThickness;
+  const { innerW, innerD, offsetX, offsetY } = cutoutInterior(params);
   const totalH = height * heightUnitMm;
   // Floor sits at SOCKET_HEIGHT for socketed bins, at z=0 for flat. The wall
   // top is at totalH in both cases (the socket extends below the floor).
@@ -347,7 +333,7 @@ export function GhostLabelTabs() {
     <mesh
       geometry={geometry}
       material={material}
-      position={[0, 0, shelfTopWorldZ + 0.2]}
+      position={[offsetX, offsetY, shelfTopWorldZ + 0.2]}
       renderOrder={2}
     />
   );

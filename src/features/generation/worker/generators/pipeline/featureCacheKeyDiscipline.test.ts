@@ -135,6 +135,8 @@ const PERTURBATIONS: Record<string, unknown> = {
   'walls.right.alignment': 'left',
   'walls.interior.alignment': 'left',
   'handles.shape': 'oval',
+  'pullTab.wall': (wall: unknown) => (wall === 'width' ? 'depth' : 'width'),
+  'pullTab.widthMode': (mode: unknown) => (mode === 'mm' ? 'percent' : 'mm'),
   'slotConfig.crossStyle': 'notch',
   'slotConfig.longAxis': 'x',
   'slotConfig.partialStyle': 'partial',

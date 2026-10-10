@@ -16,6 +16,7 @@ import { insertCutsFeature } from '../insertBuilder';
 import { slotCutsFeature } from '../slotBuilder';
 import { labelTabsFeature } from '../labelTabBuilder';
 import { handlesFeature } from '../handleBuilder';
+import { pullTabFeature, pullTabRecessFeature, pullTabBackRecessFeature } from '../pullTabBuilder';
 import { scoopRampsFeature } from '../scoopRampBuilder';
 import { interiorFilletFeature } from '../interiorFilletBuilder';
 import { floorRaiseFeature } from '../floorRaiseBuilder';
@@ -32,6 +33,9 @@ export const BIN_FEATURE_BUILDERS: readonly FeatureBuilder[] = [
   slotCutsFeature,
   labelTabsFeature,
   handlesFeature,
+  pullTabFeature,
+  pullTabRecessFeature,
+  pullTabBackRecessFeature,
   scoopRampsFeature,
   interiorFilletFeature,
   wallCutoutsFeature,

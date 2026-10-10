@@ -21,6 +21,7 @@ import type {
   TrayBottomConfig,
   WallPatternType,
 } from '@/features/bin-designer/types';
+import { maxBinRimFilletRadius, rimFilletAvailable } from '@/shared/utils/rimFillet';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { isFractional } from '@/core/constants';
 import {
@@ -354,6 +355,16 @@ export function useBaseSection() {
     [params, commit]
   );
 
+  const toggleRimFillet = useCallback(() => {
+    updateBase({ rimFillet: !base.rimFillet });
+  }, [base.rimFillet, updateBase]);
+  const setRimFilletRadius = useCallback(
+    (radius: number) => {
+      updateBase({ rimFilletRadius: radius });
+    },
+    [updateBase]
+  );
+
   const toggleLightweight = useCallback(() => {
     if (!base.lightweight && !lightweightStatus.available) return;
     const { params: resolved } = resolveConstraints(params, {
@@ -633,6 +644,9 @@ export function useBaseSection() {
       lowProfile: base.lowProfile === true,
       lightweightMode: base.lightweightMode ?? DEFAULT_LIGHTWEIGHT_MODE,
       lipTip: resolveLipTip(base),
+      rimFilletAvailable: rimFilletAvailable(params) && !base.tile,
+      rimFilletRadius: Math.min(base.rimFilletRadius ?? 0.4, maxBinRimFilletRadius(params)),
+      rimFilletMax: maxBinRimFilletRadius(params),
       undersideReliefUnblocks,
       // Which families of controls this body actually has. A hidden one is
       // never hiding a live setting: the engine clears what it disables.
@@ -678,6 +692,8 @@ export function useBaseSection() {
       toggleScrew,
       toggleStackingLip,
       setLipTip,
+      toggleRimFillet,
+      setRimFilletRadius,
       toggleLightweight,
       setLightweightMode,
       toggleHalfSockets,

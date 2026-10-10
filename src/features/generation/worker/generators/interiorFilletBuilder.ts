@@ -28,6 +28,7 @@ import type { DisposalScope, Edge, Shape3D, ValidSolid } from 'brepjs';
 import { isNestingBase } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
+import { effectiveRimFilletRadius } from '@/shared/utils/rimFillet';
 import type { BinParams } from '@/shared/types/bin';
 import { COPLANAR_MARGIN } from './generatorConstants';
 import { planInteriorFillets } from './interiorFilletPlan';
@@ -394,13 +395,20 @@ export function interiorFilletApplies(params: BinParams, dim: BinDimensions): bo
   );
 }
 
+/** Its full-height bonding skin would refill a rim rounded before this fuse. */
+export function interiorFilletInRimShell(params: BinParams, dim: BinDimensions): boolean {
+  return effectiveRimFilletRadius(params) > 0 && !dim.isTile && interiorFilletApplies(params, dim);
+}
+
 export const interiorFilletFeature: FeatureBuilder = {
   name: 'interiorFillet',
   tag: FeatureTag.BASE,
   target: 'fuse',
   supportsCellMask: true,
   tagsOwnFaces: true,
-  shouldBuild: (ctx) => interiorFilletApplies(ctx.params, ctx.dimensions),
+  shouldBuild: (ctx) =>
+    interiorFilletApplies(ctx.params, ctx.dimensions) &&
+    !interiorFilletInRimShell(ctx.params, ctx.dimensions),
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;
     return compactKey(

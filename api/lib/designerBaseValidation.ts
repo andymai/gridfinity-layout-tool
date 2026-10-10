@@ -61,11 +61,16 @@ export function validateBase(base: unknown): string | null {
   if (!isNumber(base.screwDiameter) || !inRange(base.screwDiameter, 1, 10)) {
     return 'base.screwDiameter must be 1-10';
   }
-  for (const key of ['magnetCrushRibs', 'magnetChamfer', 'lowProfile'] as const) {
+  for (const key of ['magnetCrushRibs', 'magnetChamfer', 'lowProfile', 'rimFillet'] as const) {
     if (base[key] !== undefined && !isBoolean(base[key])) {
       return `base.${key} must be boolean`;
     }
   }
+  if (
+    base.rimFilletRadius !== undefined &&
+    (!isNumber(base.rimFilletRadius) || !inRange(base.rimFilletRadius, 0.1, 5))
+  )
+    return 'base.rimFilletRadius must be between 0.1 and 5 mm';
   if (!isBoolean(base.stackingLip)) return 'base.stackingLip must be boolean';
   // Spacer changes the shell (a floorless riser), so a shared payload has to
   // declare it honestly rather than smuggle a truthy non-boolean past the client.

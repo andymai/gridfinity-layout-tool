@@ -377,7 +377,9 @@ const DIRECT_MESH_BASE_STYLES: ReadonlySet<BinParams['base']['style']> = new Set
  * instant draft, never correctness.
  */
 export function canBinUseDirectMesh(params: BinParams): boolean {
+  if (params.pullTab?.enabled) return false;
   const { base } = params;
+  if (base.rimFillet && !base.stackingLip) return false;
 
   // Base style: magnet/screw/magnet_and_screw share the same body + feet as
   // standard — they only add holes to the foot UNDERSIDE, which the preview

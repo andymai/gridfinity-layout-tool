@@ -17,6 +17,8 @@ import { meshRefHashes } from './designerCutoutValidation.js';
 import { MAX_MESH_UPLOAD_BYTES } from './meshFile.js';
 import { LABEL_PLATE_ICONS } from '../../src/shared/constants/labelPlates.js';
 
+import { DEFAULT_PULL_TAB } from '../../src/shared/utils/pullTabPlan.js';
+
 function validPayload() {
   return {
     type: 'designer' as const,
@@ -51,6 +53,95 @@ function validPayload() {
     },
   };
 }
+
+describe('pull-tab validation', () => {
+  const check = (pullTab: Record<string, unknown>) => {
+    const p = validPayload();
+    const payload = { ...p, params: { ...p.params, pullTab } };
+    return validateDesignerShare(payload, Buffer.byteLength(JSON.stringify(payload), 'utf8'));
+  };
+  it('preserves every pull-tab setting through the share allowlist', () => {
+    const tab = {
+      ...DEFAULT_PULL_TAB,
+      enabled: true,
+      backRecess: true,
+      widthMode: 'percent',
+      widthPercent: 80,
+    };
+    const result = check(JSON.parse(JSON.stringify(tab)) as Record<string, unknown>);
+    expect(result.valid).toBe(true);
+    if (result.valid) expect(result.payload.params.pullTab).toEqual(tab);
+  });
+  it.each([
+    { wall: ['width'] },
+    { wall: 'back' },
+    { enabled: 'yes' },
+    { thickness: Infinity },
+    { height: NaN },
+    { recessDepth: 3.3 },
+    { unexpected: true },
+  ])('rejects malformed or unsupported settings: %j', (patch) => {
+    expect(check({ ...DEFAULT_PULL_TAB, ...patch }).valid).toBe(false);
+  });
+  it('accepts the new border and older designs without that setting', () => {
+    expect(check({ ...DEFAULT_PULL_TAB, recessBorder: 2 }).valid).toBe(true);
+    expect(
+      check(
+        Object.fromEntries(
+          Object.entries(DEFAULT_PULL_TAB).filter(([key]) => key !== 'recessBorder')
+        )
+      ).valid
+    ).toBe(true);
+  });
+  it('rejects a border outside the supported range', () => {
+    expect(check({ ...DEFAULT_PULL_TAB, recessBorder: -1 }).valid).toBe(false);
+    expect(check({ ...DEFAULT_PULL_TAB, recessBorder: 30 }).valid).toBe(false);
+  });
+  it('accepts an optional inside fillet and rejects invalid radii', () => {
+    expect(check({ ...DEFAULT_PULL_TAB, recessInsideRadius: 0 }).valid).toBe(true);
+    expect(
+      check(
+        Object.fromEntries(
+          Object.entries(DEFAULT_PULL_TAB).filter(([key]) => key !== 'recessInsideRadius')
+        )
+      ).valid
+    ).toBe(true);
+    expect(check({ ...DEFAULT_PULL_TAB, recessInsideRadius: -1 }).valid).toBe(false);
+    expect(check({ ...DEFAULT_PULL_TAB, recessInsideRadius: 10 }).valid).toBe(false);
+  });
+  it('accepts back recesses and older settings, and rejects non-boolean values', () => {
+    expect(check({ ...DEFAULT_PULL_TAB, backRecess: true }).valid).toBe(true);
+    expect(
+      check(
+        Object.fromEntries(Object.entries(DEFAULT_PULL_TAB).filter(([key]) => key !== 'backRecess'))
+      ).valid
+    ).toBe(true);
+    expect(check({ ...DEFAULT_PULL_TAB, backRecess: 'yes' }).valid).toBe(false);
+  });
+  it('accepts broad blends and percentage widths, but rejects invalid values', () => {
+    expect(
+      check({
+        ...DEFAULT_PULL_TAB,
+        recessEdgeRadius: 6,
+        recessInsideRadius: 6,
+        widthMode: 'percent',
+        widthPercent: 80,
+      }).valid
+    ).toBe(true);
+    expect(check({ ...DEFAULT_PULL_TAB, recessEdgeRadius: 6.1 }).valid).toBe(false);
+    expect(check({ ...DEFAULT_PULL_TAB, widthPercent: 101 }).valid).toBe(false);
+    expect(check({ ...DEFAULT_PULL_TAB, widthMode: 'unknown' }).valid).toBe(false);
+    expect(
+      check(
+        Object.fromEntries(
+          Object.entries(DEFAULT_PULL_TAB).filter(
+            ([key]) => key !== 'widthMode' && key !== 'widthPercent'
+          )
+        )
+      ).valid
+    ).toBe(true);
+  });
+});
 
 // Corner radii drive a blend the generator has to build, so an unbounded one is
 // a crafted payload that turns into an unbounded boolean. Null is a real value

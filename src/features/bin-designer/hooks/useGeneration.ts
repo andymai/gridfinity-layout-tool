@@ -288,7 +288,8 @@ export function useGeneration(): void {
       // a heavy design, and skipping the draft there strands a multi-second
       // exact with no interim feedback.
       const lastExactSlow = lastExactMsRef.current >= FORCE_DRAFT_AFTER_EXACT_MS;
-      const preview = previewBridgeRef.current;
+      const preview =
+        genParams.base.rimFillet && !genParams.base.stackingLip ? null : previewBridgeRef.current;
 
       // Draft-only fallback: when the device-aware estimate says the exact would
       // blow the preview time ceiling on THIS device, running it just burns the

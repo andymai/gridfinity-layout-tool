@@ -500,6 +500,9 @@ export interface BaseConfig {
    * Inert while {@link stackingLip} is off: there is no peak to finish.
    */
   readonly lipTip?: LipTipStyle;
+  /** Optional rounding of the plain wall rim, independent of the stacking lip. */
+  readonly rimFillet?: boolean;
+  readonly rimFilletRadius?: number;
   /** When true, the bin body is a solid block (no cavity). Used by cutouts feature. */
   readonly solid: boolean;
   /** When true, subdivides the base into 0.5u half sockets per {@link halfSocketMode}. */

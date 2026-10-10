@@ -318,6 +318,7 @@ export * from './compartments';
 export * from './interior';
 export * from './labelTabs';
 export * from './handles';
+export * from './pullTab';
 export * from './walls';
 export * from './slide';
 export * from './floor';

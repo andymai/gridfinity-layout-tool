@@ -26,6 +26,8 @@ graph TB
 
 ## Key Files
 
+- `worker/generators/pullTabBuilder.ts` — raises one inward-thickened wall and cuts matched blind recesses, keeping at least 0.8 mm between them. `rimFilletBuilder.ts` rounds the shell before label clearance cuts; rounded tabs join it with short overlapping wings. The interior bonding skin is fused before rounding so it cannot fill the rounded edges back in.
+
 - `worker/generators/nestingFloorBuilder.ts` — bed-supported floor for the Nesting body. Called inside `trayBottomStage` before retention pockets are drilled, so the floor cannot cap the magnet openings. Drainage tools run after the replacement slab and preserve retention-boss and divider-foot keep-outs. Keeps divider supports down to the slab and reuses the lid's mating profile and magnet positions. `nestingFloor.geometry.test.ts` checks floor height, pocket openings, watertightness, and sampled stack interference for the 6×5×12u case, including deep magnets.
 - `worker/generators/retentionMagnetBoss.ts` — Shared lid and Nesting corner supports with straight wall tangents and a rounded inward corner. Clips the wall-facing footprint to the mating shell; fills the gap between each corner pocket and the cavity walls without moving the magnet. Mid-edge magnets and raised Lid bases retain cylindrical bosses.
 

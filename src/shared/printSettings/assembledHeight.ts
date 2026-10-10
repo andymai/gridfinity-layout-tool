@@ -46,13 +46,19 @@ import {
   baseplateSeatDepthMm,
   type BaseplateHeightParams,
 } from '@/shared/printSettings/baseplateHeight';
+import {
+  resolvePullTab,
+  pullTabUnavailableReason,
+  type PullTabHost,
+} from '@/shared/utils/pullTabPlan';
 import type { CellMask } from '@/shared/utils/cellMask';
 
 /**
  * Which physical component a band belongs to. Drives both the 3D segment
  * labels and the sidebar rows, so the two can never list different parts.
  */
-export type AssembledSegmentKind = 'baseplate' | 'bin' | 'stackingLip' | 'lid' | 'lidStackGrid';
+export type AssembledSegmentKind =
+  'baseplate' | 'bin' | 'stackingLip' | 'lid' | 'lidStackGrid' | 'pullTab';
 
 /**
  * i18n key per band. Lives beside the type so the sidebar rows and the 3D
@@ -62,6 +68,7 @@ export type AssembledSegmentKind = 'baseplate' | 'bin' | 'stackingLip' | 'lid' |
 export const ASSEMBLED_SEGMENT_LABEL_KEYS: Record<AssembledSegmentKind, string> = {
   baseplate: 'assembledHeight.baseplate',
   bin: 'assembledHeight.bin',
+  pullTab: 'binDesigner.pullTab.title',
   stackingLip: 'assembledHeight.stackingLip',
   lid: 'assembledHeight.lid',
   lidStackGrid: 'assembledHeight.lidStackGrid',
@@ -96,7 +103,7 @@ export interface AssembledHeight {
  * tests can build minimal fixtures and so nothing here depends on the full
  * params barrel. `BinParams` satisfies it.
  */
-export interface AssembledHeightSource {
+export interface AssembledHeightSource extends PullTabHost {
   readonly height: number;
   readonly heightUnitMm: number;
   /** Read only for a base-only bin, whose whole body is a floor slab this thick. */
@@ -230,6 +237,11 @@ export function assembledHeight(
   if (lipMm > 0) push('stackingLip', lipMm);
   if (lidMm > 0) push('lid', lidMm);
   if (gridMm > 0) push('lidStackGrid', gridMm);
+  const tab = resolvePullTab(params.pullTab);
+  if (tab.enabled && !pullTabUnavailableReason(params)) {
+    const extra = Math.max(0, tab.height - lipMm - lidMm - gridMm);
+    if (extra > 0) push('pullTab', extra);
+  }
 
   return { segments, totalMm: z, baseplatePrintedMm, nestedMm };
 }

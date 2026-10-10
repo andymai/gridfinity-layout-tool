@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { designId } from '@/core/types';
+import { DEFAULT_PULL_TAB } from '@/shared/utils/pullTabPlan';
 import type { SavedDesign } from '../types';
 import {
   DEFAULT_BIN_PARAMS,
@@ -40,6 +41,22 @@ describe('useDesignerStore', () => {
   });
 
   describe('setParam', () => {
+    it('regenerates pull tabs and restores their settings through undo and redo', () => {
+      const tab = {
+        ...DEFAULT_PULL_TAB,
+        enabled: true,
+        backRecess: true,
+        widthMode: 'percent' as const,
+        widthPercent: 80,
+      };
+      const before = useDesignerStore.getState().generation.epoch;
+      useDesignerStore.getState().setParam('pullTab', tab);
+      expect(useDesignerStore.getState().generation.epoch).toBeGreaterThan(before);
+      useDesignerStore.getState().undo();
+      expect(useDesignerStore.getState().params.pullTab).toBeUndefined();
+      useDesignerStore.getState().redo();
+      expect(useDesignerStore.getState().params.pullTab).toEqual(tab);
+    });
     it('should update a single param', () => {
       useDesignerStore.getState().setParam('width', 4);
       expect(useDesignerStore.getState().params.width).toBe(4);

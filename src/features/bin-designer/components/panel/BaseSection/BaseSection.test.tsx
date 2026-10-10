@@ -6,6 +6,34 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 
 describe('BaseSection', () => {
+  it('offers plain-rim rounding, stores its toggle, and limits radius for thinner walls', async () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        wallThickness: 2,
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false, rimFilletRadius: 0.8 },
+      },
+    });
+    const user = userEvent.setup();
+    render(<BaseSection />);
+    const toggle = screen.getByRole('switch', { name: 'Round top rim' });
+    expect(toggle).not.toBeChecked();
+    await user.click(toggle);
+    expect(useDesignerStore.getState().params.base.rimFillet).toBe(true);
+    expect(screen.getByRole('slider', { name: 'Rim fillet radius' })).toHaveAttribute(
+      'aria-valuenow',
+      '0.8'
+    );
+    act(() => useDesignerStore.setState((s) => ({ params: { ...s.params, wallThickness: 1.2 } })));
+    expect(screen.getByRole('slider', { name: 'Rim fillet radius' })).toHaveAttribute(
+      'aria-valuemax',
+      '0.59'
+    );
+    await user.click(toggle);
+    expect(useDesignerStore.getState().params.base.rimFillet).toBe(false);
+    expect(useDesignerStore.getState().params.base.rimFilletRadius).toBe(0.8);
+  });
+
   beforeEach(() => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS },

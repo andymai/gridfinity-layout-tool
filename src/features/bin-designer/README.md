@@ -25,6 +25,8 @@ graph TB
 
 ## Key Files
 
+- `components/panel/PullTabSection/` — raised grips on the width or depth wall, with millimetre/percentage width and optional mirrored recess. `src/shared/utils/pullTabPlan.ts` resolves dimensions and safe blends; `setParam` preserves undo/redo. Missing `pullTab` stays absent on legacy designs. Unsupported wall features disable the tab without clearing its saved settings.
+
 - `components/DesignerPage/DesignerQuickstartCard.tsx` — one-time orientation card for first-visit
   /designer landers (desktop/tablet only). Dismissed by "Got it", Escape, or the first edit;
   state in `hooks/useDesignerFirstRun.ts`. `hooks/usePlannerBridge.ts` shows the one-time

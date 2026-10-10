@@ -1,3 +1,4 @@
+import { PullTabSection } from '../../PullTabSection';
 import { PanelSection } from '../../PanelSection';
 import { LidSection } from '../../LidSection';
 import { WallCutoutsSection } from '../../WallCutoutsSection';
@@ -10,6 +11,9 @@ export function FeaturesPage() {
     <div className="divide-y divide-stroke-subtle/50">
       <PanelSection helpTarget="bd-lid">
         <LidSection />
+      </PanelSection>
+      <PanelSection helpTarget="bd-pull-tab">
+        <PullTabSection />
       </PanelSection>
       <PanelSection helpTarget="bd-handles">
         <HandleSection />
