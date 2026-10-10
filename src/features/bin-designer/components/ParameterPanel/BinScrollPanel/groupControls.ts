@@ -28,6 +28,7 @@ export const GROUP_OF_CONTROL: Readonly<Record<string, PanelGroup>> = {
   'bd-lid': 'lid',
   'bd-lid-grip': 'lid',
   'bd-handles': 'lid',
+  'bd-pull-tab': 'lid',
   'bd-interior': 'interior',
   'bd-label-tabs': 'interior',
   'bd-interior-fillet': 'interior',

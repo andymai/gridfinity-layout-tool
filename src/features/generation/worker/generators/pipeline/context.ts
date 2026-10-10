@@ -5,6 +5,8 @@
  * PipelineContext that flows through all pipeline stages.
  */
 
+import { activePullTab, pullTabWallInset, pullTabInRimShell } from '@/shared/utils/pullTabPlan';
+
 import type { BinParams } from '@/shared/types/bin';
 import {
   hasDetachableFeet,
@@ -16,6 +18,8 @@ import {
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
 import { dividerGrooveDepth, resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { isSlottedBody } from '@/shared/utils/slotFreeWalls';
+import { effectiveRimFilletRadius } from '@/shared/utils/rimFillet';
+import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 import { isFractional } from '@/core/constants';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import {
@@ -42,7 +46,7 @@ import { planSpanningDividerClips, spanningDividerClipsKey } from '../labelTabBu
 // callers (or serialized designs) that predate heightUnitMm. The grid-unit
 // fallback now lives in `pitchFromParams` (gridPitch.ts).
 import type { ProgressFn } from '../meshUtils';
-import { buildCacheKey, quantize, compactKey } from '../cacheKeyUtils';
+import { buildCacheKey, quantize, compactKey, stableSerialize } from '../cacheKeyUtils';
 import { resolveSocketCellPlan, socketCellPlanKey } from '../socketBuilder';
 import type { BinDimensions, PipelineContext } from './types';
 import type { PerfCollector } from './perfCollector';
@@ -194,10 +198,11 @@ export function deriveDimensions(
   const overhang = resolveOverhang(isPartialMask(cellMask) ? undefined : params.overhang);
   const ovhExp = hasOverhang(overhang) ? overhangExpansion(overhang) : null;
 
-  const innerW = outerW + (ovhExp?.addW ?? 0) - 2 * params.wallThickness;
-  const innerD = outerD + (ovhExp?.addD ?? 0) - 2 * params.wallThickness;
-  const innerOffsetX = ovhExp?.offsetX ?? 0;
-  const innerOffsetY = ovhExp?.offsetY ?? 0;
+  const inset = pullTabWallInset(params);
+  const innerW = outerW + (ovhExp?.addW ?? 0) - 2 * params.wallThickness - inset.x;
+  const innerD = outerD + (ovhExp?.addD ?? 0) - 2 * params.wallThickness - inset.y;
+  const innerOffsetX = (ovhExp?.offsetX ?? 0) - inset.x / 2;
+  const innerOffsetY = (ovhExp?.offsetY ?? 0) + inset.y / 2;
   const isSlotted = isSlottedBody(params);
   const grooveDepth = liteFloorOpen ? 0 : dividerGrooveDepth(params);
 
@@ -322,9 +327,39 @@ export function deriveDimensions(
       )
     : '';
 
+  const rimTab = pullTabInRimShell(params) ? activePullTab(params) : null;
   const shellKey = compactKey(
     buildCacheKey(
       'v7',
+      ...(inset.x || inset.y ? [`pull-wall:${inset.x}:${inset.y}`] : []),
+      ...(effectiveRimFilletRadius(params) > 0
+        ? [
+            `rim-v7-${quantize(effectiveRimFilletRadius(params))}`,
+            ...(rimTab
+              ? [
+                  stableSerialize([
+                    rimTab.wall,
+                    rimTab.thickness,
+                    rimTab.width,
+                    rimTab.widthMode,
+                    rimTab.widthPercent,
+                    rimTab.height,
+                    rimTab.topRadius,
+                    rimTab.rootRadius,
+                  ]),
+                ]
+              : []),
+            ...(interiorFilletRadiusMm(params) > 0
+              ? [
+                  quantize(interiorFilletRadiusMm(params)),
+                  params.style,
+                  stableSerialize(params.compartments),
+                  stableSerialize(params.scoop),
+                  stableSerialize(params.walls),
+                ]
+              : []),
+          ]
+        : []),
       quantize(params.width),
       quantize(params.depth),
       quantize(gridUnitX),

@@ -191,7 +191,8 @@ export function buildBinBox(
    * Interior floor thickness (mm) when it exceeds `wallThickness`. Applied after
    * the body is built, so all five hollowing paths get it from one place.
    */
-  floorThickness?: number
+  floorThickness?: number,
+  cavityOverride?: { width: number; depth: number; x: number; y: number }
 ): Shape3D {
   const polygon = isPartialMask(cellMask);
   const ov = polygon ? undefined : overhang;
@@ -204,6 +205,7 @@ export function buildBinBox(
   const pitch = resolvePitch(gridUnitMm);
   const boxKey = buildCacheKey(
     'v3',
+    ...(cavityOverride ? [JSON.stringify(cavityOverride)] : []),
     quantize(gridW),
     quantize(gridD),
     quantize(pitch.x),
@@ -252,6 +254,14 @@ export function buildBinBox(
 
   const makeInnerFootprint = (): Drawing => {
     if (polygon) return buildMaskDrawingInset(cellMask, gridUnitMm, wallThickness);
+    if (cavityOverride) {
+      const { width, depth, x, y } = cavityOverride;
+      return drawRoundedRectangle(
+        width,
+        depth,
+        capSectionRadius(width, depth, Math.max(BOX_CORNER_RADIUS - wallThickness, 0))
+      ).translate(x, y);
+    }
     const w = Math.max(outerW - 2 * wallThickness, 0.1);
     const d = Math.max(outerD - 2 * wallThickness, 0.1);
     return recenter(
@@ -569,6 +579,16 @@ export function buildBinBox(
           cavities: compartmentCavityDrawings.length,
         });
       }
+    }
+
+    if (cavityOverride) {
+      const cavity = scope.register(
+        sketch(makeInnerFootprint(), 'XY', wallThickness).extrude(
+          wallHeight - wallThickness + COPLANAR_MARGIN
+        )
+      );
+      scope.register(box);
+      return finish(unwrap(cut(box as ValidSolid, cavity as ValidSolid)));
     }
 
     if (polygon) {

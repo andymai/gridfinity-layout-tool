@@ -97,6 +97,12 @@ export const DESIGNER_CONTROL_SEARCH: readonly DesignerControlSearchEntry[] = [
   // common no-lid case. The lid itself (bd-lid) stays searchable and lands the
   // user on the section where the grip lives.
   {
+    controlId: 'bd-pull-tab',
+    titleKey: 'help.target.binDesigner.pullTab.title',
+    descriptionKey: 'help.target.binDesigner.pullTab.description',
+    keywordsKey: 'help.target.binDesigner.pullTab.keywords',
+  },
+  {
     controlId: 'bd-handles',
     titleKey: 'help.target.binDesigner.handles.title',
     descriptionKey: 'help.target.binDesigner.handles.description',

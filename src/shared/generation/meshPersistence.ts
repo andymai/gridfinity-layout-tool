@@ -102,7 +102,7 @@ const MESH_CACHE_VERSION = 'v27';
  * `bin1`: a lipless bin's sliding-lid entry window no longer ramps through the
  * rim, so its entry corners keep their full wall height.
  */
-const BIN_MESH_REVISION = 'bin7';
+const BIN_MESH_REVISION = 'bin8';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for

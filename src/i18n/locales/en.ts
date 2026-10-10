@@ -1773,6 +1773,53 @@ const en: Record<string, string> = {
   'toolSwitcher.switchToBaseplate': 'Switch to Baseplate Generator',
 
   // Bin Designer
+  'help.target.binDesigner.pullTab.keywords':
+    'pull tab, grip, handle, finger recess, raised wall, shoulder',
+  'help.target.binDesigner.pullTab.title': 'Pull tab',
+  'binDesigner.pullTab.title': 'Pull tab',
+  'help.target.binDesigner.pullTab.description':
+    'A raised grip on one wall. Wall and tab share the chosen thickness; extra material grows inward.',
+  'binDesigner.pullTab.description':
+    'A raised grip on one wall. Wall and tab share the chosen thickness; extra material grows inward.',
+  'binDesigner.pullTab.wall': 'Pull tab wall',
+  'binDesigner.pullTab.widthWall': 'Width wall',
+  'binDesigner.pullTab.depthWall': 'Depth wall',
+  'binDesigner.pullTab.thickness': 'Wall & tab thickness',
+  'binDesigner.pullTab.width': 'Tab width',
+  'binDesigner.pullTab.widthUnit': 'Tab width unit',
+  'binDesigner.pullTab.percentHint':
+    'Current tab width: {width} mm. 100% fills the usable wall width between the corner clearances.',
+  'binDesigner.pullTab.outlineHint':
+    'Larger radii make broad, sloping shoulders while keeping the tab height. Radii are limited by the available width.',
+  'binDesigner.pullTab.height': 'Height above rim',
+  'binDesigner.pullTab.topRadius': 'Top corner radius',
+  'binDesigner.pullTab.rootRadius': 'Wall transition radius',
+  'binDesigner.pullTab.recessHeight': 'Recess height',
+  'binDesigner.pullTab.recessBorder': 'Recess border width',
+  'binDesigner.pullTab.backRecess': 'Back recess',
+  'binDesigner.pullTab.backRecessHint':
+    'Mirrors the grip on the outside of the wall, using the same size and fillets. Depth is limited to leave at least 0.8 mm between the two recesses.',
+  'binDesigner.pullTab.recessDepth': 'Recess depth',
+  'binDesigner.pullTab.recessRadius': 'Recess corner radius',
+  'binDesigner.pullTab.recessEdgeRadius': 'Recess outside fillet',
+  'binDesigner.pullTab.recessInsideRadius': 'Recess inside fillet',
+  'binDesigner.pullTab.filletDescription':
+    'Outside rounds the lip; inside rounds into the recessed back face. Larger radii meet in a smooth slope without increasing recess depth. Up to 6 mm each, limited by recess width and height. Set either to 0 for a sharp edge.',
+  'binDesigner.pullTab.recessDescription':
+    'Border width sets the top and side margins; sloping shoulders can leave wider side margins. Smaller values widen the recess. Increasing recess height can extend it below the rim; depth leaves at least 0.8 mm of wall behind it.',
+  'binDesigner.pullTab.recessSize':
+    'Recess width: {width} mm \u00b7 Extends below rim: {below} mm. Border and corner radius adjust when needed to stay inside the tab.',
+  'binDesigner.pullTab.rectangularOnly': 'Pull tabs need a rectangular bin.',
+  'binDesigner.pullTab.hollowOnly': 'Pull tabs need a standard hollow bin with walls.',
+  'binDesigner.pullTab.noLid': 'Turn off the lid to make room for the raised pull tab.',
+  'binDesigner.pullTab.noOverhang': 'Turn off overhang to use a straight pull-tab wall.',
+  'binDesigner.pullTab.solidWall':
+    'Turn off wall cutouts, handles, wall patterns, wall text and wall label slots to give the pull tab an uninterrupted wall.',
+  'binDesigner.base.rimFillet': 'Round top rim',
+  'binDesigner.base.rimFillet.radius': 'Rim fillet radius',
+  'binDesigner.base.rimFillet.hint':
+    'Rounds the outer wall rim, raised pull tab and full-height grid dividers. Radius is limited by the thinner wall or divider. Lowered or tilted divider tops are not rounded. Label retaining rails keep their shape.',
+  'binDesigner.base.rimFillet.unavailable': 'Available for rectangular hollow bins with walls.',
   'binDesigner.exportSTL': 'Export bin as STL',
   'binDesigner.clickToRename': 'Click to rename design',
   'binDesigner.openDesignList': 'Open design list',

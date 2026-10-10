@@ -91,7 +91,11 @@ function planPlateSeats(
         dim.innerD,
         dim.interiorHeight,
         params.wallThickness
-      ),
+      ).map((seat) => ({
+        ...seat,
+        x: seat.x + dim.innerOffsetX,
+        y: seat.y + dim.innerOffsetY,
+      })),
       ...wallSeats,
     ];
   }

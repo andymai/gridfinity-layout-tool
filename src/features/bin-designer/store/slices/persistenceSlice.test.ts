@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { DEFAULT_PULL_TAB } from '@/shared/utils/pullTabPlan';
 import {
   saveDefaultParams,
   clearDefaultParams,
@@ -31,6 +32,20 @@ function buildMask(rows: (0 | 1)[][]): CellMask {
 describe('persistenceSlice.loadDesign — UI derivation from params', () => {
   beforeEach(() => {
     useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  it('reloads pull-tab settings and mirrored recesses from a saved design', () => {
+    const pullTab = {
+      ...DEFAULT_PULL_TAB,
+      enabled: true,
+      backRecess: true,
+      widthMode: 'percent' as const,
+      widthPercent: 80,
+      recessInsideRadius: 2,
+    };
+    const saved = JSON.parse(JSON.stringify(makeSaved({ pullTab }))) as SavedDesign;
+    useDesignerStore.getState().loadDesign(saved);
+    expect(useDesignerStore.getState().params.pullTab).toEqual(pullTab);
   });
 
   it('enables halfGridMode when loading a design with fractional dimensions', () => {

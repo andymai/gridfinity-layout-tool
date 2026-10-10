@@ -155,6 +155,30 @@ export function BaseSection() {
           onChange={handlers.toggleStackingLip}
         />
         <Hint>{t('binDesigner.base.stackingLip.hint')}</Hint>
+        {!state.base.stackingLip && (
+          <FeatureToggle
+            label={t('binDesigner.base.rimFillet')}
+            checked={state.base.rimFillet ?? false}
+            onChange={handlers.toggleRimFillet}
+            disabledReason={
+              state.rimFilletAvailable ? undefined : t('binDesigner.base.rimFillet.unavailable')
+            }
+            primaryControls={
+              <>
+                <SliderInput
+                  label={t('binDesigner.base.rimFillet.radius')}
+                  value={state.rimFilletRadius}
+                  onChange={handlers.setRimFilletRadius}
+                  min={0.1}
+                  max={state.rimFilletMax}
+                  step={0.05}
+                  unit="mm"
+                />
+                <Hint>{t('binDesigner.base.rimFillet.hint')}</Hint>
+              </>
+            }
+          />
+        )}
         {/* Only while there IS a lip. The finish is a property of its peak, and
             offering it on a lipless bin would be a control with nothing to act
             on. */}

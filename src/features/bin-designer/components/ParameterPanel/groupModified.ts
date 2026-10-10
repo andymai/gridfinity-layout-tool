@@ -25,6 +25,7 @@ export type PanelGroup = 'shape' | 'lid' | 'interior' | 'base' | 'finishing';
 const GROUP_OF: Partial<Record<keyof BinParams, PanelGroup>> = {
   lid: 'lid',
   handles: 'lid',
+  pullTab: 'lid',
   base: 'base',
   style: 'interior',
   compartments: 'interior',

@@ -68,6 +68,7 @@ import { cutoutLean } from './cutoutLean';
 import { variantOverrides } from './variantOverrides';
 import { lowProfile } from './lowProfile';
 import { nestedChamfers } from './nestedChamfers';
+import { pullTab } from './pullTab';
 
 export type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
@@ -135,4 +136,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...interiorFilletScoops,
   ...lowProfile,
   ...nestedChamfers,
+  ...pullTab,
 ];

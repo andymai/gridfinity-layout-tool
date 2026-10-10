@@ -36,6 +36,7 @@ const CATEGORY_OF: Partial<Record<keyof BinParams, PageCategory>> = {
   lid: 'features',
   walls: 'features',
   handles: 'features',
+  pullTab: 'features',
   slide: 'features',
   wallPattern: 'style',
   floorPattern: 'style',

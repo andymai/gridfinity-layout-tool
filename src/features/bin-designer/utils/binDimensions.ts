@@ -13,6 +13,8 @@
  * helper mirrors that contract so previews and validators don't drift.
  */
 
+import { pullTabWallInset } from '@/shared/utils/pullTabPlan';
+
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { socketHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { DEFAULT_FEET_MODE, hasDetachableFeet } from '@/features/bin-designer/types/base';
@@ -164,8 +166,9 @@ export function binDimensions(params: BinParams): BinDimensions {
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
   const outerW = params.width * params.gridUnitMm - GRIDFINITY.TOLERANCE;
   const outerD = params.depth * gridUnitMmY - GRIDFINITY.TOLERANCE;
-  const innerW = outerW - 2 * params.wallThickness;
-  const innerD = outerD - 2 * params.wallThickness;
+  const inset = pullTabWallInset(params);
+  const innerW = outerW - 2 * params.wallThickness - inset.x;
+  const innerD = outerD - 2 * params.wallThickness - inset.y;
   const totalH = params.height * params.heightUnitMm;
   const isFlat = params.base.style === 'flat';
   // Mirrors the worker's `deriveDimensions`. A tray bin is socketless
@@ -224,7 +227,13 @@ export interface CutoutInterior {
  */
 export function cutoutInterior(params: BinParams): CutoutInterior {
   const { innerW, innerD } = binDimensions(params);
-  return expandInteriorForOverhang(innerW, innerD, params.overhang, params.cellMask);
+  const cavity = expandInteriorForOverhang(innerW, innerD, params.overhang, params.cellMask);
+  const inset = pullTabWallInset(params);
+  return {
+    ...cavity,
+    offsetX: cavity.offsetX - inset.x / 2,
+    offsetY: cavity.offsetY + inset.y / 2,
+  };
 }
 
 /**

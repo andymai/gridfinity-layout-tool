@@ -30,6 +30,7 @@ export const DESIGNER_SETTINGS: readonly DesignerSettingEntry[] = [
   { controlId: 'bd-lid', category: 'features' },
   { controlId: 'bd-lid-grip', category: 'features' },
   { controlId: 'bd-handles', category: 'features' },
+  { controlId: 'bd-pull-tab', category: 'features' },
   { controlId: 'bd-wall-cutouts', category: 'features' },
   { controlId: 'bd-slide-tray', category: 'features' },
   { controlId: 'bd-type', category: 'style' },

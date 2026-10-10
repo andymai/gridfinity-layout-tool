@@ -156,7 +156,7 @@ export function useSplitPreview(): void {
   // Draft path: render a fast Manifold split on the leading edge of each edit,
   // without waiting for the exact main generation to finish.
   useEffect(() => {
-    if (!needsSplit) return;
+    if (!needsSplit || (params.base.rimFillet && !params.base.stackingLip)) return;
     const preview = previewBridgeRef.current;
     if (!preview || preview.isDestroyed) return;
 

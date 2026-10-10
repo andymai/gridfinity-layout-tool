@@ -125,6 +125,14 @@
           },
           "description": "Screw hole diameter in mm."
         },
+        "rimFillet": {
+          "type": "boolean"
+        },
+        "rimFilletRadius": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 5
+        },
         "stackingLip": {
           "type": "boolean",
           "description": "Add the Gridfinity stacking lip at the rim so another bin can sit on top."
@@ -234,6 +242,9 @@
         "compartments"
       ],
       "properties": {
+        "pullTab": {
+          "$ref": "#/$defs/PullTabConfig"
+        },
         "width": {
           "type": "number",
           "minimum": 0.5,
@@ -688,7 +699,9 @@
         },
         "parentGroups": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "maxItems": 9,
           "x-constant": {
             "maxItems": "MAX_PARENT_GROUPS"
@@ -718,7 +731,9 @@
               },
               {
                 "enum": ["front", "back", "left", "right"],
-                "x-constant": { "enum": "CUTOUT_OPEN_SIDES" },
+                "x-constant": {
+                  "enum": "CUTOUT_OPEN_SIDES"
+                },
                 "description": "A bare wall name, as the first release wrote it: the same as a spec with no width and no tunnel."
               }
             ]
@@ -963,13 +978,17 @@
       "properties": {
         "side": {
           "enum": ["front", "back", "left", "right"],
-          "x-constant": { "enum": "CUTOUT_OPEN_SIDES" },
+          "x-constant": {
+            "enum": "CUTOUT_OPEN_SIDES"
+          },
           "description": "The bin wall, in the bin's frame."
         },
         "widthMm": {
           "type": "number",
           "minimum": 1,
-          "x-constant": { "minimum": "MIN_OPEN_SIDE_WIDTH_MM" },
+          "x-constant": {
+            "minimum": "MIN_OPEN_SIDE_WIDTH_MM"
+          },
           "description": "Channel width across the exit in mm. Absent means the pocket's own width at that wall."
         },
         "tunnel": {
@@ -2853,6 +2872,107 @@
           "description": "Magnitude on +Y in mm."
         }
       }
+    },
+    "PullTabConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "wall": {
+          "enum": ["width", "depth"]
+        },
+        "backRecess": {
+          "type": "boolean",
+          "default": false,
+          "description": "Mirror the finger recess on the outside face. Each pocket uses the same depth, limited to leave 0.8 mm between them."
+        },
+        "thickness": {
+          "type": "number",
+          "minimum": 0.4,
+          "maximum": 4
+        },
+        "width": {
+          "type": "number",
+          "minimum": 12,
+          "maximum": 500
+        },
+        "height": {
+          "type": "number",
+          "minimum": 3,
+          "maximum": 40
+        },
+        "topRadius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "rootRadius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "recessHeight": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 80
+        },
+        "recessBorder": {
+          "type": "number",
+          "minimum": 0.8,
+          "maximum": 20,
+          "default": 1.2,
+          "description": "Equal top and side border in mm; smaller values widen the finger recess. Omitted in older designs."
+        },
+        "recessDepth": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3.2
+        },
+        "recessRadius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "recessEdgeRadius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 6,
+          "description": "Circular blend radius in mm. Larger radii meet at a shallow angle without deepening the recess; limited by its height and width."
+        },
+        "recessInsideRadius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 6,
+          "default": 0.4,
+          "description": "Circular blend radius in mm. Larger radii meet at a shallow angle without deepening the recess; limited by its height and width."
+        },
+        "widthMode": {
+          "enum": ["mm", "percent"],
+          "default": "mm"
+        },
+        "widthPercent": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 75,
+          "description": "Percentage of usable wall width when widthMode is percent. 100 fills the width between corner clearances."
+        }
+      },
+      "required": [
+        "enabled",
+        "wall",
+        "thickness",
+        "width",
+        "height",
+        "topRadius",
+        "rootRadius",
+        "recessHeight",
+        "recessDepth",
+        "recessRadius",
+        "recessEdgeRadius"
+      ]
     }
   }
 }
