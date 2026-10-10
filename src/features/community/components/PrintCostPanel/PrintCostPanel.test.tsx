@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { useSettingsStore } from '@/core/store/settings';
 import type { BinParams } from '@/shared/types/bin';
 import type { CommunityPrintSummary } from '@/shared/types/communityPrint';
 import { PrintCostPanel } from './PrintCostPanel';
@@ -13,12 +14,13 @@ vi.mock('@/shared/utils/communityPrintCost', async (importOriginal) => {
   return { ...actual, estimateCommunityPrint: estimate };
 });
 
-const bed = vi.hoisted(() => ({ width: 256, depth: 256 }));
-vi.mock('@/core/store/settings', () => ({
-  useSettingsStore: (selector: (s: unknown) => unknown) =>
-    selector({
-      settings: { defaultPrintBedSize: bed.width, defaultPrintBedDepth: bed.depth },
-    }),
+const bed = vi.hoisted((): { width: number; depth: number | undefined } => ({
+  width: 256,
+  depth: 256,
+}));
+vi.mock('@/core/store/layout', () => ({
+  useLayoutStore: (selector: (s: unknown) => unknown) =>
+    selector({ layout: { printBedSize: bed.width, printBedDepth: bed.depth } }),
 }));
 
 const PARAMS = { width: 2, depth: 3, height: 6 } as unknown as BinParams;
@@ -42,6 +44,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   bed.width = 256;
   bed.depth = 256;
+  useSettingsStore.getState().updateSetting('defaultPrintBedSize', 256);
   estimate.mockReturnValue({ grams: 20, meters: 6.7, minutes: 100 });
 });
 
@@ -97,6 +100,19 @@ describe('PrintCostPanel', () => {
     expect(screen.getByTestId('cost-bed-too-large')).toBeInTheDocument();
     // Answers the obvious "but what if I turn it?" before it is asked.
     expect(screen.getByText('community.cost.bedHint')).toBeInTheDocument();
+  });
+
+  it('treats a layout with no bed depth as a square bed', () => {
+    bed.width = 100;
+    bed.depth = undefined;
+    render(<PrintCostPanel params={PARAMS} metrics={METRICS} summary={null} />);
+    expect(screen.getByTestId('cost-bed-too-large')).toBeInTheDocument();
+  });
+
+  it("checks the layout's bed, not the default for new layouts", () => {
+    useSettingsStore.getState().updateSetting('defaultPrintBedSize', 100);
+    render(<PrintCostPanel params={PARAMS} metrics={METRICS} summary={null} />);
+    expect(screen.getByTestId('cost-bed-fits')).toBeInTheDocument();
   });
 
   it('omits the rotation note when the design already fits', () => {

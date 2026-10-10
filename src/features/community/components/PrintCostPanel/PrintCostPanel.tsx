@@ -10,7 +10,7 @@
 import { useMemo } from 'react';
 import { Badge } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { useSettingsStore } from '@/core/store/settings';
+import { useLayoutStore } from '@/core/store/layout';
 import type { BinParams } from '@/shared/types/bin';
 import type { CommunityDesignMetrics } from '@/shared/types/community';
 import type { CommunityPrintSummary } from '@/shared/types/communityPrint';
@@ -76,10 +76,10 @@ export function PrintCostPanel({
   gapContext = null,
 }: PrintCostPanelProps) {
   const t = useTranslation();
-  const bedWidth = useSettingsStore((s) => s.settings.defaultPrintBedSize);
-  const bedDepth = useSettingsStore(
-    (s) => s.settings.defaultPrintBedDepth ?? s.settings.defaultPrintBedSize
-  );
+  // The active layout's bed, the one every split and fit check in the app uses.
+  // `settings.defaultPrintBedSize` only seeds new layouts.
+  const bedWidth = useLayoutStore((s) => s.layout.printBedSize);
+  const bedDepth = useLayoutStore((s) => s.layout.printBedDepth ?? s.layout.printBedSize);
 
   // The estimator walks the whole param tree, so it is memoised against the
   // params rather than recomputed on every summary refresh.

@@ -249,6 +249,6 @@ Observed data only displaces the model at `OBSERVED_MIN_SAMPLE` (2) reports: one
 
 The estimator itself is bin-designer internal, so the wrapper lives in `shared/` (the sanctioned bridge, as in `shared/items/bin/descriptor.ts`) rather than being imported across slices. `estimateCommunityPrint` propagates whatever the estimator throws; `PrintCostPanel` is what catches it, because a design published by an older client can carry params this build cannot read, and that must not take the detail view down. Other callers need their own handling.
 
-Bed fit compares the footprint against the viewer's configured bed and allows rotation, since every slicer will rotate it for you.
+Bed fit compares the footprint against the active layout's bed and allows rotation, since every slicer will rotate it for you.
 
 Note that `counts.exports` means file downloads, not prints. The two are different signals and the UI must not conflate them — the detail's stats row did exactly that, labelling `counts.exports` "Prints", which put a hard `Prints 0` beside a design whose own print list was rendering directly below it. It now reads "Downloads", and prints are a separate stat sourced from `counts.prints`, rendered only when someone has actually reported one: an absent count means the card snapshot predates the field, and must not read as a measured zero.
