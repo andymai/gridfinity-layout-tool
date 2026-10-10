@@ -614,14 +614,11 @@ estimates), and the source file name.
     to identity — a single uniform scalar would distort circles and rotated
     shapes. Path bounds use `getPathBounds` (flattened bezier) so curves that
     bow outward beyond their anchors aren't clipped.
-14. **Physical-units print bed is dual-axis** — the section uses the shared
-    `PrintBedInput`, so width and depth round-trip independently when the
-    link toggle is off. The linked state is encoded by
-    `settings.defaultPrintBedDepth === undefined` (`undefined` = "follow
-    width", not "0" or "missing"). `usePhysicalUnitsSection.handlePrintBedChange`
-    must call the setter with `depth: undefined` when relinking — otherwise
-    a stale depth lingers in localStorage and the bed silently stays
-    non-square on the next load.
+14. **The print bed is the layout's** — every designer reader goes through
+    `useLayoutPrintBed`, the same bed the planner, baseplate and layout ZIP
+    split against; `settings.defaultPrintBedSize` only seeds new layouts.
+    `layout.printBedDepth === undefined` is a square bed, so relinking passes
+    no depth to `setPrintBedSize`.
 15. **`BinMesh` multi↔single material switch needs distinct keys** — the
     multi-color branch passes `material` as a `<mesh>` **prop** (array of
     `MeshStandardMaterial`), the single-color branch declares the material as

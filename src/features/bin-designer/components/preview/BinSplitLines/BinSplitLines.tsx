@@ -12,8 +12,8 @@ import { memo, useMemo } from 'react';
 import { Line } from '@react-three/drei';
 import { Color } from 'three';
 import { useShallow } from 'zustand/react/shallow';
-import { useSettingsStore } from '@/core/store';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useLayoutPrintBed } from '@/features/bin-designer/hooks/useLayoutPrintBed';
 import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
 import { getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
@@ -46,12 +46,7 @@ export const BinSplitLines = memo(function BinSplitLines() {
   // Y axis uses gridUnitMmY when set (non-square grid); equals X for square.
   const gridUnitMmYEff = gridUnitMmY ?? gridUnitMm;
 
-  const { defaultPrintBedSize, defaultPrintBedDepth } = useSettingsStore(
-    useShallow((s) => ({
-      defaultPrintBedSize: s.settings.defaultPrintBedSize,
-      defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
-    }))
-  );
+  const { printBedSize, printBedDepth } = useLayoutPrintBed();
 
   // Built here rather than by selecting the whole `params`: this draws inside
   // the R3F scene, and a subscription to every parameter would re-render it on
@@ -60,19 +55,10 @@ export const BinSplitLines = memo(function BinSplitLines() {
     () =>
       binSplitChunkUnits(
         { width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask },
-        defaultPrintBedSize,
-        defaultPrintBedDepth
+        printBedSize,
+        printBedDepth
       ),
-    [
-      width,
-      depth,
-      gridUnitMm,
-      gridUnitMmY,
-      overhang,
-      cellMask,
-      defaultPrintBedSize,
-      defaultPrintBedDepth,
-    ]
+    [width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask, printBedSize, printBedDepth]
   );
 
   const needsSplit = width > maxGrid.width || depth > maxGrid.depth;

@@ -61,6 +61,7 @@ import { recordCommunityExport } from '@/shared/api/communityAttribution';
 import { isMultiColorDesign } from '@/features/bin-designer/utils/multiColorDesign';
 import { useTranslation } from '@/i18n';
 import { usePlannerBridge } from './usePlannerBridge';
+import { useLayoutPrintBed } from './useLayoutPrintBed';
 
 interface UseExportReturn {
   /** Whether a main bin or split export is currently in progress */
@@ -128,13 +129,8 @@ export function useExport(): UseExportReturn {
     }))
   );
 
-  const { printSettings, defaultPrintBedSize, defaultPrintBedDepth } = useSettingsStore(
-    useShallow((s) => ({
-      printSettings: s.settings.printSettings,
-      defaultPrintBedSize: s.settings.defaultPrintBedSize,
-      defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
-    }))
-  );
+  const printSettings = useSettingsStore((s) => s.settings.printSettings);
+  const { printBedSize, printBedDepth } = useLayoutPrintBed();
 
   const addToast = useToastStore((s) => s.addToast);
 
@@ -168,8 +164,8 @@ export function useExport(): UseExportReturn {
   // defaultGridUnitMm from settings, which may be stale, and charges the bin's
   // overhang against the bed.
   const chunkLimit = useMemo(
-    () => binSplitChunkUnits(params, defaultPrintBedSize, defaultPrintBedDepth),
-    [defaultPrintBedSize, defaultPrintBedDepth, params]
+    () => binSplitChunkUnits(params, printBedSize, printBedDepth),
+    [printBedSize, printBedDepth, params]
   );
 
   const needsSplit = params.width > chunkLimit.width || params.depth > chunkLimit.depth;

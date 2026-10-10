@@ -79,44 +79,45 @@ describe('usePhysicalUnitsSection', () => {
     expect(result.current.meta.summary).toBe('42mm grid, 7mm height');
   });
 
-  it('returns print bed width and depth from settings store', () => {
+  it("returns the layout's print bed, not the default for new layouts", () => {
+    useSettingsStore.getState().updateSettings({ defaultPrintBedSize: 256 });
+    useLayoutStore.getState().setPrintBedSize(220);
     const { result } = renderHook(() => usePhysicalUnitsSection());
 
-    expect(result.current.state.printBedSize).toBe(256);
-    expect(result.current.state.printBedDepth).toBe(256);
-  });
-
-  it('printBedDepth falls back to printBedSize when unset (linked)', () => {
-    useSettingsStore.getState().updateSettings({
-      defaultPrintBedSize: 256,
-      defaultPrintBedDepth: undefined,
-    });
-    const { result } = renderHook(() => usePhysicalUnitsSection());
-
-    expect(result.current.state.printBedDepth).toBe(256);
+    expect(result.current.state.printBedSize).toBe(220);
+    expect(result.current.state.printBedDepth).toBe(220);
   });
 
   it('printBedDepth reflects independent depth when unlinked', () => {
-    useSettingsStore.getState().updateSettings({
-      defaultPrintBedSize: 256,
-      defaultPrintBedDepth: 180,
-    });
+    useLayoutStore.getState().setPrintBedSize(256, 180);
     const { result } = renderHook(() => usePhysicalUnitsSection());
 
     expect(result.current.state.printBedSize).toBe(256);
     expect(result.current.state.printBedDepth).toBe(180);
   });
 
+  it('handlePrintBedChange writes the layout bed and leaves the default alone', () => {
+    useSettingsStore.getState().updateSettings({ defaultPrintBedSize: 256 });
+    const { result } = renderHook(() => usePhysicalUnitsSection());
+
+    act(() => {
+      result.current.handlers.handlePrintBedChange(220);
+    });
+
+    expect(useLayoutStore.getState().layout.printBedSize).toBe(220);
+    expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(256);
+  });
+
   it('handlePrintBedChange with single arg clears depth (linked)', () => {
-    useSettingsStore.getState().updateSettings({ defaultPrintBedDepth: 180 });
+    useLayoutStore.getState().setPrintBedSize(256, 180);
     const { result } = renderHook(() => usePhysicalUnitsSection());
 
     act(() => {
       result.current.handlers.handlePrintBedChange(300);
     });
 
-    expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(300);
-    expect(useSettingsStore.getState().settings.defaultPrintBedDepth).toBeUndefined();
+    expect(useLayoutStore.getState().layout.printBedSize).toBe(300);
+    expect(useLayoutStore.getState().layout.printBedDepth).toBeUndefined();
   });
 
   it('handlePrintBedChange with both args stores independent depth', () => {
@@ -126,8 +127,8 @@ describe('usePhysicalUnitsSection', () => {
       result.current.handlers.handlePrintBedChange(300, 180);
     });
 
-    expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(300);
-    expect(useSettingsStore.getState().settings.defaultPrintBedDepth).toBe(180);
+    expect(useLayoutStore.getState().layout.printBedSize).toBe(300);
+    expect(useLayoutStore.getState().layout.printBedDepth).toBe(180);
   });
 
   it('handlePrintBedChange clamps both dimensions to valid range', () => {
@@ -136,17 +137,7 @@ describe('usePhysicalUnitsSection', () => {
     act(() => {
       result.current.handlers.handlePrintBedChange(10, 99999);
     });
-    expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(
-      CONSTRAINTS.PRINT_BED_MM_MIN
-    );
-    expect(useSettingsStore.getState().settings.defaultPrintBedDepth).toBe(
-      CONSTRAINTS.PRINT_BED_MM_MAX
-    );
-
-    act(() => {
-      result.current.handlers.handlePrintBedChange(1000);
-    });
-    expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(1000);
-    expect(useSettingsStore.getState().settings.defaultPrintBedDepth).toBeUndefined();
+    expect(useLayoutStore.getState().layout.printBedSize).toBe(CONSTRAINTS.PRINT_BED_MM_MIN);
+    expect(useLayoutStore.getState().layout.printBedDepth).toBe(CONSTRAINTS.PRINT_BED_MM_MAX);
   });
 });

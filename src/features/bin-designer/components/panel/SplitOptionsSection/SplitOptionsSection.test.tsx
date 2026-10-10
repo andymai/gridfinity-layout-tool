@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { SplitOptionsSection } from './SplitOptionsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 
@@ -16,11 +17,11 @@ describe('SplitOptionsSection', () => {
     useSettingsStore.setState({
       settings: {
         ...useSettingsStore.getState().settings,
-        defaultPrintBedSize: 256,
         defaultGridUnitMm: 42,
         defaultHeightUnitMm: 7,
       },
     });
+    useLayoutStore.getState().setPrintBedSize(256);
   });
 
   it('returns null when bin fits on print bed', () => {

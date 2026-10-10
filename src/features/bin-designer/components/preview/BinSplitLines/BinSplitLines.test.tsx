@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { useSettingsStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { BinSplitLines } from './BinSplitLines';
 
@@ -64,6 +64,7 @@ describe('BinSplitLines', () => {
     useDesignerStore.setState({
       params: DEFAULT_BIN_PARAMS,
     });
+    useLayoutStore.getState().setPrintBedSize(256);
   });
 
   it('renders nothing when bin fits print bed', () => {
@@ -127,14 +128,9 @@ describe('BinSplitLines', () => {
     }
   });
 
-  it('respects custom print bed size from settings', () => {
-    // Set a very small print bed so a normal bin needs splitting
-    useSettingsStore.setState({
-      settings: {
-        ...useSettingsStore.getState().settings,
-        defaultPrintBedSize: 80, // Only fits 1 grid unit
-      },
-    });
+  it("respects the layout's print bed size", () => {
+    // Only fits 1 grid unit
+    useLayoutStore.getState().setPrintBedSize(80);
 
     useDesignerStore.setState({
       params: {

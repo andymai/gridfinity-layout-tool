@@ -13,7 +13,6 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { useShallow } from 'zustand/react/shallow';
 import { Button } from '@/design-system/Button';
 import { SegmentedControl, Stepper } from '@/design-system';
 import { ExportDialog } from '@/shared/components/ExportDialog';
@@ -27,6 +26,7 @@ import {
   FIT_TEST_OUTLINE_BASE_NAME,
 } from '../../hooks/useFitTestExport';
 import { FIT_TEST_THICKNESS_STEP, useFitTestOptions } from '../../hooks/useFitTestOptions';
+import { useLayoutPrintBed } from '../../hooks/useLayoutPrintBed';
 import { estimateFromVolume, estimatePrint, formatPrintTime } from '../../utils/printEstimates';
 import {
   FIT_TEST_STAMP_MIN_THICKNESS_MM,
@@ -87,13 +87,8 @@ export function FitTestButton() {
   const { isExporting, canExport, downloadCard } = useFitTestExport();
 
   const params = useDesignerStore((s) => s.params);
-  const { printSettings, bedWidth, bedDepth } = useSettingsStore(
-    useShallow((s) => ({
-      printSettings: s.settings.printSettings,
-      bedWidth: s.settings.defaultPrintBedSize,
-      bedDepth: s.settings.defaultPrintBedDepth,
-    }))
-  );
+  const printSettings = useSettingsStore((s) => s.settings.printSettings);
+  const { printBedSize: bedWidth, printBedDepth: bedDepth } = useLayoutPrintBed();
 
   const [open, setOpen] = useState(false);
   const [fileNameConfig, setFileNameConfig] = useState<ExportFileNameConfig>({

@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useSplitPreview } from './useSplitPreview';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
+import { useLayoutStore } from '@/core/store/layout';
 import {
   DEFAULT_BIN_PARAMS,
   DEFAULT_UI_STATE,
@@ -136,10 +137,10 @@ function resetStores() {
   useSettingsStore.setState((state) => ({
     settings: {
       ...state.settings,
-      defaultPrintBedSize: 256,
       defaultGridUnitMm: 42,
     },
   }));
+  useLayoutStore.getState().setPrintBedSize(256);
 }
 
 // ── Tests ────────────────────────────────────────────────────────────────────

@@ -13,6 +13,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
+import { useLayoutPrintBed } from '@/features/bin-designer/hooks/useLayoutPrintBed';
 import { useLabelPlateExport } from '@/features/bin-designer/hooks/useLabelPlateExport';
 import { computeActiveZones, isSingleColor } from '@/features/bin-designer/types/featureColors';
 import { zoneLabel } from '@/features/bin-designer/utils/zoneLabels';
@@ -56,12 +57,8 @@ const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
 
 export function ExportDialog() {
   const t = useTranslation();
-  const { printSettings, defaultPrintBedSize } = useSettingsStore(
-    useShallow((s) => ({
-      printSettings: s.settings.printSettings,
-      defaultPrintBedSize: s.settings.defaultPrintBedSize,
-    }))
-  );
+  const printSettings = useSettingsStore((s) => s.settings.printSettings);
+  const { printBedSize } = useLayoutPrintBed();
 
   const { exportDialogOpen, params, triangleCount, designName, exportFileNameConfig } =
     useDesignerStore(
@@ -367,7 +364,7 @@ export function ExportDialog() {
         needsSplit
           ? {
               message: t('binDesigner.splitExport.exceedsPrintBed', {
-                size: defaultPrintBedSize,
+                size: printBedSize,
                 count: splitPieceCount,
               }),
               checkboxLabel: t('binDesigner.splitExport.enableSplit'),
