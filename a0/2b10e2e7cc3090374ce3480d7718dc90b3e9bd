@@ -1,0 +1,28 @@
+src/features/generation/worker/generators/pipeline/stages/tessellateStage.ts
+  s_d46917bb25a11e::t_8f58c1d4628810 11-23,33,36-69,73-81,83-92,94-110
+  s_d46917bb25a11e::t_64031fbcc3daf3 82
+  s_d46917bb25a11e::t_682b7ca5d25fc5 70-72
+  s_d46917bb25a11e::t_cf1841b478e9eb 93
+  s_d46917bb25a11e::t_733bc0a165a90c 129-130,132-135,142-143,145,151
+  s_d46917bb25a11e::t_1cc0c9bbc38524 111
+src/features/generation/worker/generators/pipeline/stages/tessellateStage.test.ts
+  s_d46917bb25a11e::t_329d278c7fe0f8 82-99,101-148
+  s_d46917bb25a11e::t_cf1841b478e9eb 100
+  s_d46917bb25a11e::t_78cef2555204fc 13-14,18,20,23,25,29-30,36-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a02b10e2e7cc3090374ce3480d7718dc90b3e9bd",
+  "prompts": {},
+  "sessions": {
+    "s_d46917bb25a11e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cc283d69-46aa-4579-b320-03de8c85d8ac",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
