@@ -64,49 +64,75 @@ function covers(outer: Bounds3D, inner: Bounds3D): boolean {
 }
 
 /**
- * A union reaches every operand and holds at least as much as the larger one.
- * The kernel's fuse can report success while breaking both: handed a body that
- * is a compound it cannot union, it returns one of the body's solids with the
- * socket gone, or nothing at all, which no exporter can write. Measuring volume
- * is slow on a patterned body, so only a multi-solid body, the operand that
- * loses geometry this way, pays for it.
+ * Collapse an export body to its outer shell. Additive feature fuses can leave
+ * interior void shells inside an otherwise valid solid, which STL tessellates
+ * as doubled (non-manifold) faces.
  */
-function isWholeUnion(fused: Shape3D, body: Shape3D, socket: Shape3D): boolean {
+function collapseForExport(shape: Shape3D): Shape3D {
+  setLastExportShellCount(getShells(shape).length);
+  const outer = keepOuterShell(shape);
+  if (outer !== shape) shape.delete();
+  return outer;
+}
+
+/**
+ * Whether `fused` still holds all of the body and the socket. The kernel's fuse
+ * can report success without that: handed a body it cannot union, it returns
+ * one of the body's solids with the socket gone, or nothing at all, which no
+ * exporter can write. Body and socket only touch, so the union's volume is
+ * their sum. Measuring volume is slow on a patterned body, so it runs only
+ * where geometry can go missing without moving the bounds: a multi-solid body,
+ * or a fuse that came back in several shells.
+ */
+function holdsBodyAndSocket(fused: Shape3D, body: Shape3D, socket: Shape3D): boolean {
   if (getSolids(fused).length === 0) return false;
   const fusedBounds = boundsOrNull(fused);
-  if (!fusedBounds) return false;
-  for (const operand of [body, socket]) {
-    const b = boundsOrNull(operand);
-    if (b && !covers(fusedBounds, b)) return false;
-  }
-  if (getSolids(body).length <= 1) return true;
-  const largest = Math.max(volumeOrNaN(body), volumeOrNaN(socket));
-  return !(volumeOrNaN(fused) < largest * (1 - VOLUME_SLACK));
+  const bodyBounds = boundsOrNull(body);
+  const socketBounds = boundsOrNull(socket);
+  if (!fusedBounds || !bodyBounds || !socketBounds) return false;
+  if (!covers(fusedBounds, bodyBounds) || !covers(fusedBounds, socketBounds)) return false;
+  if (getSolids(body).length <= 1 && getShells(fused).length <= 1) return true;
+  const expected = volumeOrNaN(body) + volumeOrNaN(socket);
+  const actual = volumeOrNaN(fused);
+  return (
+    Number.isFinite(expected) && Number.isFinite(actual) && actual >= expected * (1 - VOLUME_SLACK)
+  );
 }
 
 /**
  * Fuse the deferred socket into the body for export. When the kernel cannot,
  * export the two side by side in one compound: they meet only at the floor, so
  * the file carries the whole bin, seam and all, instead of a body without feet.
+ * A socket the fuse leaves unjoined is a shell of its own, which the
+ * outer-shell collapse would throw away, so the collapsed result has to still
+ * reach the socket too.
  */
-function fuseSocketForExport(body: Shape3D, socket: Shape3D): { shape: Shape3D; fused: boolean } {
+function fuseSocketForExport(body: Shape3D, socket: Shape3D): Shape3D {
   let fused: Shape3D | null;
   try {
     fused = unwrap(fuse(body, socket));
   } catch {
     fused = null;
   }
-  if (fused && isWholeUnion(fused, body, socket)) {
-    body.delete();
-    socket.delete();
-    return { shape: fused, fused: true };
+  if (fused && holdsBodyAndSocket(fused, body, socket)) {
+    const socketBounds = getBounds(socket);
+    const outer = collapseForExport(fused);
+    const outerBounds = boundsOrNull(outer);
+    if (outerBounds && covers(outerBounds, socketBounds)) {
+      body.delete();
+      socket.delete();
+      return outer;
+    }
+    outer.delete();
+  } else {
+    fused?.delete();
   }
-  fused?.delete();
   const both = compound([body, socket]) as Shape3D;
   copyFaceOrigins(both, [body, socket]);
   body.delete();
   socket.delete();
-  return { shape: both, fused: false };
+  setLastExportShellCount(getShells(both).length);
+  return both;
 }
 
 export const tessellateStage: PipelineStage = {
@@ -118,7 +144,7 @@ export const tessellateStage: PipelineStage = {
   },
 
   execute(ctx: PipelineContext): PipelineContext {
-    let rawSolid = ctx.solid;
+    const rawSolid = ctx.solid;
     const { dimensions: dim, forExport } = ctx;
     if (!rawSolid) return ctx;
 
@@ -126,24 +152,15 @@ export const tessellateStage: PipelineStage = {
     // watertight solid. The socket is deferred past the feature stage (see
     // shellStage) so feature fuses run on the socket-less body — fusing it
     // earlier made additive features like the label bracket non-manifold
-    // (GH). PREVIEW keeps the socket deferred and meshes it separately.
-    let socketFused = true;
+    // (GH). PREVIEW keeps the socket deferred and meshes it separately, and
+    // never feeds this solid to an exporter.
+    let solid = rawSolid;
     if (forExport && ctx.deferredSolid) {
-      const merged = fuseSocketForExport(rawSolid, ctx.deferredSolid);
-      rawSolid = merged.shape;
-      socketFused = merged.fused;
-      ctx = { ...ctx, solid: rawSolid, deferredSolid: null };
+      solid = fuseSocketForExport(rawSolid, ctx.deferredSolid);
+      ctx = { ...ctx, solid, deferredSolid: null };
+    } else if (forExport) {
+      solid = collapseForExport(rawSolid);
     }
-
-    // Additive feature fuses can leave interior void shells inside an otherwise
-    // valid export solid; STL tessellates them as doubled (non-manifold) faces.
-    // Collapse to the single outer shell so the exported mesh is watertight.
-    // Export only — the preview path meshes the body and deferred socket
-    // separately and never feeds this solid to an exporter. An unfused socket
-    // is a shell of its own, which the collapse would throw away.
-    if (forExport) setLastExportShellCount(getShells(rawSolid).length);
-    const solid = forExport && socketFused ? keepOuterShell(rawSolid) : rawSolid;
-    if (solid !== rawSolid) rawSolid.delete();
 
     // Stamping the params lets `exportBin` tell this solid apart from one left
     // behind by a different design on the same worker (GH). Only meaningful

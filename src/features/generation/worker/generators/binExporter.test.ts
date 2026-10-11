@@ -22,7 +22,10 @@ import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { exportBin } from './binExporter';
 import { generateBin } from './binOrchestrator';
-import { clearAllCaches, getLastSolid, isLastSolidExportQuality } from './shapeCache';
+import { box, compound, translate } from 'brepjs';
+import type { Shape3D } from 'brepjs';
+import { paramsFingerprint } from '@/shared/generation/paramsFingerprint';
+import { clearAllCaches, getLastSolid, isLastSolidExportQuality, setLastSolid } from './shapeCache';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -139,6 +142,27 @@ describe('exportBin: full-fidelity regeneration guard', () => {
     expect(spanOf(smallStl.data)).toEqual({ x: 1, y: 1 });
     expect(spanOf(largeStl.data)).toEqual({ x: 3, y: 2 });
   }, 90000);
+
+  it('writes every solid of an export shape that is more than one solid', async () => {
+    // The tessellate stage exports body and socket side by side when it cannot
+    // fuse them. brepkit's STL writer would keep only the first.
+    const a = box(10, 10, 10);
+    const b = translate(box(10, 10, 10), [100, 0, 0]);
+    const pair = compound([a, b]) as Shape3D;
+    a.delete();
+    b.delete();
+    setLastSolid(pair, true, paramsFingerprint(DEFAULT_BIN_PARAMS));
+
+    const result = await exportBin(DEFAULT_BIN_PARAMS, 'stl');
+
+    const parsed = parseSTLBinary(result.data);
+    if (!isOk(parsed)) throw new Error('exported STL did not parse');
+    let maxX = -Infinity;
+    for (let i = 0; i < parsed.value.vertices.length; i += 3) {
+      maxX = Math.max(maxX, parsed.value.vertices[i]);
+    }
+    expect(maxX).toBeCloseTo(110, 3);
+  }, 60000);
 
   it('STEP export also regenerates when cache is preview-quality', async () => {
     generateBin(DEFAULT_BIN_PARAMS, undefined, false);

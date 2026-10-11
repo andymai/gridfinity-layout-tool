@@ -2,7 +2,7 @@
  * Bin export — converts the last generated solid to STL or STEP format.
  */
 
-import { exportSTEP, mesh } from 'brepjs';
+import { exportSTEP, getSolids, mesh } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { ExportFormat, FaceGroupData } from '../../bridge/types';
 
@@ -12,7 +12,7 @@ import { getLastSolid, isLastSolidReusableFor, setLastSolid } from './shapeCache
 import { paramsFingerprint } from '@/shared/generation/paramsFingerprint';
 import { EXPORT_ANGULAR_TOLERANCE_RAD, EXPORT_TOLERANCE } from './utils/tolerances';
 import { unwrapExportBlob } from './utils/exportUnwrap';
-import { exportSolidToStl } from './utils/stlMeshFallback';
+import { exportSolidMeshToStl, exportSolidToStl } from './utils/stlMeshFallback';
 import { hasMeshImprints, prepareMeshImprints } from './meshImprint';
 import { buildSTLBufferFromIndexed } from '../../export/stlExporter';
 import { isWasmTrap } from '@/shared/generation/wasmTrap';
@@ -105,7 +105,13 @@ async function runExportAttempt(
   onProgress?.(0.92);
   // `faceGroups` above indexes into the same mesh() tessellation the fallback
   // writes from, so 3MF material alignment survives an OCCT-writer failure.
-  const data = await exportSolidToStl(solid, name, EXPORT_TOLERANCE, EXPORT_ANGULAR_TOLERANCE_RAD);
+  // brepkit's STL writer keeps only a compound's first solid and still reports
+  // success, so a body exported beside an unfused socket goes straight to the
+  // mesh writer.
+  const data =
+    getSolids(solid).length > 1
+      ? exportSolidMeshToStl(solid, name, EXPORT_TOLERANCE, EXPORT_ANGULAR_TOLERANCE_RAD)
+      : await exportSolidToStl(solid, name, EXPORT_TOLERANCE, EXPORT_ANGULAR_TOLERANCE_RAD);
   onProgress?.(1);
   return { data, fileName: `${name}.stl`, faceGroups };
 }

@@ -79,11 +79,6 @@ async function exportDefects(
 const magnet = { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' as const, stackingLip: false };
 const bracket = { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' as const };
 
-/**
- * Runs the export pass on a hand-built body and socket and returns what
- * `exportBin` would write. The socket spans z -5..0 under a body above z 0, so a
- * socket that went missing shows as the solid's floor rising to 0.
- */
 function exportSolidFor(body: Shape3D): {
   bounds: Brepjs.Bounds3D;
   volume: number;
@@ -128,6 +123,20 @@ describe('export fuse keeps both the body and the socket', () => {
     expect(result.volume).toBeGreaterThanOrEqual(1500 + 750 - 1e-3);
     expect(result.reusable).toBe(true);
     expect(result.triangles).toBeGreaterThan(0);
+  });
+
+  it('keeps a socket the fuse leaves unjoined', () => {
+    const { box, translate } = brepjs;
+    // A gap under the body leaves the socket a separate shell after the fuse,
+    // and the outer-shell collapse keeps only the larger one.
+    const body = translate(box(15, 10, 10), [0, 0, 1]);
+
+    const result = exportSolidFor(body);
+
+    expect(result.bounds.zMin).toBeCloseTo(-5, 3);
+    expect(result.bounds.zMax).toBeCloseTo(11, 3);
+    expect(result.volume).toBeCloseTo(1500 + 750, 0);
+    expect(result.reusable).toBe(true);
   });
 
   it('exports the socket with the body when the fuse throws', () => {
