@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/pipeline/stages/tessellateStage.ts
+  s_d46917bb25a11e::t_f454266a86530e 35,122-125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "439e617fd63e570edb0cfbf9bbf62e8b47d81553",
+  "prompts": {},
+  "sessions": {
+    "s_d46917bb25a11e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cc283d69-46aa-4579-b320-03de8c85d8ac",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
