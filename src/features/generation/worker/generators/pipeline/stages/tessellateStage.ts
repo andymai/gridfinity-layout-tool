@@ -32,6 +32,7 @@ import { getSocketMesh, setSocketMesh, socketMeshKey } from '../../socketMeshCac
 import { keepOuterShell } from '../../utils/outerShell';
 import { copyFaceOrigins } from '../collectOrigins';
 import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
+import { isWasmTrap } from '@/shared/generation/wasmTrap';
 
 const BOUNDS_SLACK_MM = 0.01;
 const VOLUME_SLACK = 1e-3;
@@ -118,7 +119,10 @@ function fuseWhole(body: Shape3D, socket: Shape3D): Shape3D | null {
     if (covers(getBounds(result), socketBounds)) return result;
     result.delete();
     return null;
-  } catch {
+  } catch (e) {
+    // A trap leaves the kernel unusable; the worker has to see it to replace
+    // itself, and nothing built after it can be trusted.
+    if (isWasmTrap(e)) throw e;
     try {
       result?.delete();
     } catch {
