@@ -100,32 +100,45 @@ function holdsBodyAndSocket(fused: Shape3D, body: Shape3D, socket: Shape3D): boo
 }
 
 /**
+ * The fused, collapsed body, or null when any step fails or loses part of
+ * either operand. A socket the fuse leaves unjoined is a shell of its own,
+ * which the outer-shell collapse would throw away, so the collapsed result
+ * has to still reach the socket too. Leaves both operands alive.
+ */
+function fuseWhole(body: Shape3D, socket: Shape3D): Shape3D | null {
+  let result: Shape3D | null = null;
+  try {
+    result = unwrap(fuse(body, socket));
+    if (!holdsBodyAndSocket(result, body, socket)) {
+      result.delete();
+      return null;
+    }
+    const socketBounds = getBounds(socket);
+    result = collapseForExport(result);
+    if (covers(getBounds(result), socketBounds)) return result;
+    result.delete();
+    return null;
+  } catch {
+    try {
+      result?.delete();
+    } catch {
+      // Already unusable; the compound below does not depend on it.
+    }
+    return null;
+  }
+}
+
+/**
  * Fuse the deferred socket into the body for export. When the kernel cannot,
  * export the two side by side in one compound: they meet only at the floor, so
  * the file carries the whole bin, seam and all, instead of a body without feet.
- * A socket the fuse leaves unjoined is a shell of its own, which the
- * outer-shell collapse would throw away, so the collapsed result has to still
- * reach the socket too.
  */
 function fuseSocketForExport(body: Shape3D, socket: Shape3D): Shape3D {
-  let fused: Shape3D | null;
-  try {
-    fused = unwrap(fuse(body, socket));
-  } catch {
-    fused = null;
-  }
-  if (fused && holdsBodyAndSocket(fused, body, socket)) {
-    const socketBounds = getBounds(socket);
-    const outer = collapseForExport(fused);
-    const outerBounds = boundsOrNull(outer);
-    if (outerBounds && covers(outerBounds, socketBounds)) {
-      body.delete();
-      socket.delete();
-      return outer;
-    }
-    outer.delete();
-  } else {
-    fused?.delete();
+  const fused = fuseWhole(body, socket);
+  if (fused) {
+    body.delete();
+    socket.delete();
+    return fused;
   }
   const both = compound([body, socket]) as Shape3D;
   copyFaceOrigins(both, [body, socket]);
