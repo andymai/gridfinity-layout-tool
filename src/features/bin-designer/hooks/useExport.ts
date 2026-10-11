@@ -34,7 +34,7 @@ import { withSocketNozzle } from '@/shared/generation/socketNozzle';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
 import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
-import { getErrorCode } from '@/shared/utils/errors';
+import { getErrorCauses, getErrorCode } from '@/shared/utils/errors';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { triggerDownload } from '@/shared/generation/exportUtils';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
@@ -283,10 +283,7 @@ export function useExport(): UseExportReturn {
         handles_enabled: params.handles.enabled,
         cutout_count: params.cutouts.length,
         insert_count: params.inserts.length,
-        // Original error chain — binExporter's retry path attaches `cause`
-        // to the first-attempt error, which is invaluable when the surfaced
-        // error masks a more diagnostic earlier failure.
-        first_attempt_message: error.cause instanceof Error ? error.cause.message : undefined,
+        error_causes: getErrorCauses(error),
         retry_count: retryCount,
         restart_count: restartCount,
       });

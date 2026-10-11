@@ -13,6 +13,15 @@ export function getErrorCode(err: unknown): string | undefined {
   return undefined;
 }
 
+/** The `causes` a worker error carried across `postMessage`, joined outermost first. */
+export function getErrorCauses(err: unknown): string | undefined {
+  if (typeof err !== 'object' || err === null || !('causes' in err)) return undefined;
+  const causes: unknown = err.causes;
+  if (!Array.isArray(causes)) return undefined;
+  const messages = causes.filter((c): c is string => typeof c === 'string');
+  return messages.length > 0 ? messages.join(' <- ') : undefined;
+}
+
 /** The error's message when it's an `Error`, else `fallback`. */
 export function getErrorMessage(err: unknown, fallback: string): string {
   return err instanceof Error ? err.message : fallback;

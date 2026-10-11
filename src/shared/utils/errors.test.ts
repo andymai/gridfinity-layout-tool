@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getErrorCode, getErrorMessage } from './errors';
+import { getErrorCauses, getErrorCode, getErrorMessage } from './errors';
 
 describe('getErrorCode', () => {
   it('returns the code from an object with a string code', () => {
@@ -28,6 +28,21 @@ describe('getErrorCode', () => {
 
   it('returns undefined for an object missing a code field', () => {
     expect(getErrorCode({ message: 'no code here' })).toBeUndefined();
+  });
+});
+
+describe('getErrorCauses', () => {
+  it('joins the string causes outermost first', () => {
+    const err = Object.assign(new Error('export failed'), { causes: ['first attempt', 'kernel'] });
+    expect(getErrorCauses(err)).toBe('first attempt <- kernel');
+  });
+
+  it('returns undefined when there are no usable causes', () => {
+    expect(getErrorCauses(new Error('plain'))).toBeUndefined();
+    expect(getErrorCauses({ causes: [] })).toBeUndefined();
+    expect(getErrorCauses({ causes: [1, null] })).toBeUndefined();
+    expect(getErrorCauses({ causes: 'not an array' })).toBeUndefined();
+    expect(getErrorCauses(null)).toBeUndefined();
   });
 });
 

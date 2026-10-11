@@ -170,9 +170,11 @@ export class ExportTimeoutError extends Error {
  */
 export class WorkerRequestError extends Error {
   readonly code: ExportErrorCode | undefined;
-  constructor(message: string, code?: ExportErrorCode) {
+  readonly causes: readonly string[];
+  constructor(message: string, code?: ExportErrorCode, causes: readonly string[] = []) {
     super(message);
     this.name = 'WorkerRequestError';
     this.code = code;
+    this.causes = causes;
   }
 }

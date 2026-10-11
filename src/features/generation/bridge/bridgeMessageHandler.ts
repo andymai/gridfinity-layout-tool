@@ -282,7 +282,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
         break;
 
       case 'ERROR': {
-        const error = new WorkerRequestError(response.error, response.errorCode);
+        const error = new WorkerRequestError(response.error, response.errorCode, response.causes);
         if (response.requestId === ctx.currentRequestId && ctx.pendingReject) {
           const reject = ctx.pendingReject;
           ctx.clearPending();

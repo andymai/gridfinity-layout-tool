@@ -341,6 +341,8 @@ export interface ErrorResponse {
   readonly error: string;
   /** Optional taxonomy code attached by export handlers; absent for generic errors. */
   readonly errorCode?: ExportErrorCode;
+  /** Messages behind `error`, outermost first. See `describeErrorCauses`. */
+  readonly causes?: readonly string[];
 }
 /** Stages of geometry generation for progress reporting */
 export type GenerationStage = 'base' | 'shell' | 'features' | 'merge' | 'splitting';

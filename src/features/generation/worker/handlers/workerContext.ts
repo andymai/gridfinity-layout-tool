@@ -15,6 +15,7 @@ import { isAbortError } from '../generators/utils/abort';
 import { isWasmTrap } from '@/shared/generation/wasmTrap';
 import { PerfCollector } from '../generators/pipeline/perfCollector';
 import { recordCompletedGeneration } from '../generators/estimateBin';
+import { describeErrorCauses } from './errorCauses';
 
 /** Mutable worker state */
 let activeRequestId: string | null = null;
@@ -535,11 +536,13 @@ export async function runExport<TPayload extends Record<string, unknown>>(
     maybeRecoverPoisonedKernel(formatError(e));
     const crash = noteKernelCrash(e);
     const errorCode = crash ?? classifyError?.(e);
+    const causes = describeErrorCauses(e);
     respond({
       type: 'ERROR',
       requestId,
       error: `${errorPrefix}: ${crash ? describeCrash(crash, e) : formatError(e)}`,
       ...(errorCode ? { errorCode } : {}),
+      ...(causes.length > 0 ? { causes } : {}),
     });
   }
 }
