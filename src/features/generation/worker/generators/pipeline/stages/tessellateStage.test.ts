@@ -10,22 +10,31 @@
  * as a single watertight shell.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
+import type { Shape3D } from 'brepjs';
+import type * as Brepjs from 'brepjs';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
+import { paramsFingerprint } from '@/shared/generation/paramsFingerprint';
 import { buildParams } from '../../__kernel-tests__/scenarioTypes';
-import { setLastSolid, getLastSolid } from '../../shapeCache';
+import { setLastSolid, getLastSolid, isLastSolidReusableFor } from '../../shapeCache';
 import { exportSolidToStl } from '../../utils/stlMeshFallback';
 import { EXPORT_ANGULAR_TOLERANCE_RAD, EXPORT_TOLERANCE } from '../../utils/tolerances';
+import { createInitialContext } from '../context';
 import type { BinParams } from '@/shared/types/bin';
+import type { PipelineStage } from '../types';
 import type * as BinOrchestratorModule from '../../binOrchestrator';
 
 let generateBin: typeof BinOrchestratorModule.generateBin;
+let tessellateStage: PipelineStage;
+let brepjs: typeof Brepjs;
 
 beforeAll(async () => {
   const { initBrepjs } = await import('../../__kernel-tests__/wasmInit');
   await initBrepjs();
   generateBin = (await import('../../binOrchestrator')).generateBin;
+  tessellateStage = (await import('./tessellateStage')).tessellateStage;
+  brepjs = await import('brepjs');
 }, 60_000);
 
 /** Count STL edges shared by >2 triangles (non-manifold) and by exactly 1 (boundary). */
@@ -69,6 +78,73 @@ async function exportDefects(
 
 const magnet = { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' as const, stackingLip: false };
 const bracket = { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' as const };
+
+/**
+ * Runs the export pass on a hand-built body and socket and returns what
+ * `exportBin` would write. The socket spans z -5..0 under a body above z 0, so a
+ * socket that went missing shows as the solid's floor rising to 0.
+ */
+function exportSolidFor(body: Shape3D): {
+  bounds: Brepjs.Bounds3D;
+  volume: number;
+  reusable: boolean;
+  triangles: number;
+} {
+  const { box, translate, getBounds, measureVolume, unwrap } = brepjs;
+  setLastSolid(null);
+  const params = buildParams({ width: 1, depth: 1, height: 3 });
+  const ctx = createInitialContext(params, undefined, true);
+  const out = tessellateStage.execute({
+    ...ctx,
+    solid: body,
+    deferredSolid: translate(box(15, 10, 5), [0, 0, -5]),
+    deferredSolidKey: null,
+  });
+  const solid = getLastSolid();
+  if (!solid) throw new Error('no export solid');
+  return {
+    bounds: getBounds(solid),
+    volume: unwrap(measureVolume(solid)),
+    reusable: isLastSolidReusableFor(paramsFingerprint(params)),
+    triangles: out.mesh?.triangleCount ?? 0,
+  };
+}
+
+describe('export fuse keeps both the body and the socket', () => {
+  it('falls back when the kernel reports a fuse that dropped an operand', () => {
+    const { box, translate, compound } = brepjs;
+    // Two overlapping solids in one compound are an operand the kernel cannot
+    // union: its fuse reports success and returns the first box alone.
+    const a = box(10, 10, 10);
+    const b = translate(box(10, 10, 10), [5, 0, 0]);
+    const body = compound([a, b]) as Shape3D;
+    a.delete();
+    b.delete();
+
+    const result = exportSolidFor(body);
+
+    expect(result.bounds.xMax).toBeCloseTo(15, 3);
+    expect(result.bounds.zMin).toBeCloseTo(-5, 3);
+    expect(result.volume).toBeGreaterThanOrEqual(1500 + 750 - 1e-3);
+    expect(result.reusable).toBe(true);
+    expect(result.triangles).toBeGreaterThan(0);
+  });
+
+  it('exports the socket with the body when the fuse throws', () => {
+    const { box, getShells } = brepjs;
+    // A bare shell is not a valid fuse operand, so the kernel throws.
+    const solidBox = box(15, 10, 10);
+    const shell = getShells(solidBox)[0] as unknown as Shape3D;
+
+    const result = exportSolidFor(shell);
+    solidBox.delete();
+
+    expect(result.bounds.zMin).toBeCloseTo(-5, 3);
+    expect(result.bounds.zMax).toBeCloseTo(10, 3);
+    expect(result.reusable).toBe(true);
+    expect(result.triangles).toBeGreaterThan(0);
+  });
+});
 
 describe('deferred-socket export fuse → watertight', () => {
   it('magnet base + label bracket exports watertight', async () => {
