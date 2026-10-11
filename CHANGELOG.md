@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.510.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.509.1...gridfinity-layout-tool-v4.510.0) (2026-10-11)
+
+
+### Features
+
+* **bin-designer:** add adjustable pull tabs with a back recess ([#4553](https://github.com/andymai/gridfinity-layout-tool/issues/4553)) ([33fdf1d](https://github.com/andymai/gridfinity-layout-tool/commit/33fdf1dcbb6919d0c24a7d47960556945628f060))
+
+
+### Bug Fixes
+
+* **bin-designer:** align previews with compartment space ([#4554](https://github.com/andymai/gridfinity-layout-tool/issues/4554)) ([2d28d22](https://github.com/andymai/gridfinity-layout-tool/commit/2d28d2229b5138432b88d862886044560ff983af))
+* **bin-designer:** split bins against the layout's print bed ([#4556](https://github.com/andymai/gridfinity-layout-tool/issues/4556)) ([a651f8e](https://github.com/andymai/gridfinity-layout-tool/commit/a651f8e80e9a78d70bd0888073b11861e4b724a3))
+* **community:** check print cost bed fit against the layout's bed ([#4557](https://github.com/andymai/gridfinity-layout-tool/issues/4557)) ([513750d](https://github.com/andymai/gridfinity-layout-tool/commit/513750d80c1537dffb3f45bd350100121742e406))
+
 ## [4.509.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.509.0...gridfinity-layout-tool-v4.509.1) (2026-10-09)
 
 
