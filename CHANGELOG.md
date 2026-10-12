@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.510.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.510.0...gridfinity-layout-tool-v4.510.1) (2026-10-12)
+
+
+### Bug Fixes
+
+* **generation:** export the whole bin when the socket fuse misbehaves ([#4560](https://github.com/andymai/gridfinity-layout-tool/issues/4560)) ([ffacf5a](https://github.com/andymai/gridfinity-layout-tool/commit/ffacf5aa8dde9d961f2b721335d913ce881dc372))
+
 ## [4.510.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.509.1...gridfinity-layout-tool-v4.510.0) (2026-10-11)
 
 
