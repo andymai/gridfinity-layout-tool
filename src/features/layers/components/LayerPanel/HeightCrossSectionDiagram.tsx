@@ -10,6 +10,9 @@ const HEIGHT_EXPONENT = 0.55;
 const ACCENT_STRIPE_WIDTH = 2.5;
 const TRANSITION = '0.2s ease-out';
 const HEIGHT_DEBOUNCE_MS = 400;
+// The active segment hosts its own stepper and delete button and hides them below 20px. Without a
+// floor a minimum-height layer in a tall drawer shrinks past that and can't be grown back.
+const MIN_SEGMENT_PX = 24;
 
 interface LayerStat {
   coverage: number;
@@ -125,7 +128,7 @@ export function HeightCrossSectionDiagram({
 
   const layerSegments = layers.reduce<{ layer: Layer; y: number; height: number }[]>(
     (acc, layer) => {
-      const segmentHeight = compress(layer.height) * pxPerCompressedUnit;
+      const segmentHeight = Math.max(MIN_SEGMENT_PX, compress(layer.height) * pxPerCompressedUnit);
       const segmentY =
         acc.length === 0 ? unusedPx : acc[acc.length - 1].y + acc[acc.length - 1].height;
       acc.push({ layer, y: segmentY, height: segmentHeight });
@@ -133,6 +136,7 @@ export function HeightCrossSectionDiagram({
     },
     []
   );
+  const stackHeight = layerSegments.reduce((sum, s) => sum + s.height, unusedPx);
 
   const hasMultipleLayers = layers.length > 1;
 
@@ -199,7 +203,7 @@ export function HeightCrossSectionDiagram({
     <div className="w-full">
       <div
         className="flex-1 relative overflow-hidden"
-        style={{ height: diagramHeight }}
+        style={{ height: stackHeight }}
         data-testid="content-area"
       >
         <div
