@@ -1824,6 +1824,9 @@ const en: Record<string, string> = {
   'binDesigner.clickToRename': 'Click to rename design',
   'binDesigner.openDesignList': 'Open design list',
   'binDesigner.dimensions': 'Dimensions',
+  'binDesigner.interiorDimensions': 'Inside',
+  'binDesigner.interiorDimensionsTooltip':
+    'Empty cavity, floor to wall top. Dividers, scoops and label tabs take space from it, and the stacking lip rises above it.',
   'binDesigner.downloadJSON': 'Download JSON',
   'binDesigner.downloadDesignJson': 'Download Design JSON',
   'binDesigner.export.jsonHint':

@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS, minHeightUnits } from '@/features/bin-designer/constants';
 import type { BinParams } from '@/features/bin-designer/types';
+import { binInteriorDimensions } from '@/features/bin-designer/utils/interiorDimensions';
 import { isFractional } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 
@@ -46,6 +47,7 @@ export function useDimensionsSection() {
       toggleHalfGridMode: s.toggleHalfGridMode,
     }))
   );
+  const interior = useDesignerStore(useShallow((s) => binInteriorDimensions(s.params)));
   const t = useTranslation();
 
   const dimensionStep = halfGridMode ? 0.5 : 1;
@@ -155,6 +157,7 @@ export function useDimensionsSection() {
       widthMm,
       depthMm,
       heightMm,
+      interior,
       halfGridMode,
       dimensionStep,
       dimensionFloor,

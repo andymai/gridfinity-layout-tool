@@ -28,6 +28,37 @@ describe('DimensionsSection', () => {
     expect(screen.getByText('8 mm')).toBeInTheDocument();
   });
 
+  it('shows the inside size under the outside size', () => {
+    render(<DimensionsSection />);
+    expect(screen.getByText('84 × 84 × 21 mm')).toBeInTheDocument();
+    // 2x2x3 default: 83.5 - 2 x 1.2 wall wide, and the 7mm base below the floor.
+    expect(screen.getByText('Inside')).toBeInTheDocument();
+    expect(screen.getByText('81.1 × 81.1 × 14 mm')).toBeInTheDocument();
+  });
+
+  it('gives a flat base more inside height than a socketed one', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+      },
+    });
+    render(<DimensionsSection />);
+    // 21mm body less the 1.2mm floor.
+    expect(screen.getByText('81.1 × 81.1 × 19.8 mm')).toBeInTheDocument();
+  });
+
+  it('hides the inside size for a solid block, which has no cavity', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      },
+    });
+    render(<DimensionsSection />);
+    expect(screen.queryByText('Inside')).not.toBeInTheDocument();
+  });
+
   it('hides the half-unit edge controls for whole-unit bins', () => {
     render(<DimensionsSection />);
     expect(screen.queryByText('Half-unit edge position')).not.toBeInTheDocument();

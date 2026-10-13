@@ -1048,6 +1048,8 @@
   "binDesigner.detachableFeet.unplaceable": "Ingen hel rutenettcelle å sette en fot i ved denne størrelsen",
   "binDesigner.detachableFeetNeedsThickerWall": "Så tynne vegger gir for lite gulv til å holde en pinne",
   "binDesigner.dimensions": "Dimensjoner",
+  "binDesigner.interiorDimensions": "Innvendig",
+  "binDesigner.interiorDimensionsTooltip": "Tomt rom fra bunn til toppen av veggene. Skillevegger, skrå og etikettfaner tar plass fra det, og stablekanten stikker opp over.",
   "binDesigner.dismissTouchHints": "Avvis berøringshintet",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerHeightLipCeiling": "Auto er den høyeste en skillevegg kan være når bins skal kunne stables, fordi føttene til en stablet bin står rett over. Uten stablekant når skilleveggene helt opp til kanten.",

@@ -1048,6 +1048,8 @@
   "binDesigner.detachableFeet.unplaceable": "За цього розміру немає цілої комірки сітки для ніжки",
   "binDesigner.detachableFeetNeedsThickerWall": "Такі тонкі стінки залишають замало дна, щоб утримати штифт",
   "binDesigner.dimensions": "Розміри",
+  "binDesigner.interiorDimensions": "Всередині",
+  "binDesigner.interiorDimensionsTooltip": "Порожня порожнина від дна до верху стінок. Перегородки, скоси та виступи для міток забирають її простір, а бортик для штабелювання виступає над нею.",
   "binDesigner.dismissTouchHints": "Закрити сенсорні підказки",
   "binDesigner.dividerAutoHeight": "Авто",
   "binDesigner.dividerHeightLipCeiling": "Авто означає найбільшу висоту розділювача, за якої bins можна штабелювати, бо ніжки bin, поставленого зверху, стоять одразу над ним. Без бортика для штабелювання розділювачі сягають краю.",

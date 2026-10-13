@@ -1048,6 +1048,8 @@
   "binDesigner.detachableFeet.unplaceable": "이 크기에서는 발을 놓을 온전한 그리드 칸이 없습니다",
   "binDesigner.detachableFeetNeedsThickerWall": "이렇게 얇은 벽은 핀을 잡아줄 바닥이 부족합니다",
   "binDesigner.dimensions": "치수",
+  "binDesigner.interiorDimensions": "내부",
+  "binDesigner.interiorDimensionsTooltip": "빈 내부 공간으로, 바닥에서 벽 상단까지입니다. 칸막이, 손가락 홈, 라벨 탭이 이 공간을 차지하며, 적층 립은 이보다 위로 올라옵니다.",
   "binDesigner.dismissTouchHints": "터치 힌트 닫기",
   "binDesigner.dividerAutoHeight": "자동",
   "binDesigner.dividerHeightLipCeiling": "자동은 bin을 쌓을 수 있는 칸막이의 최대 높이입니다. 위에 쌓은 bin의 발이 바로 그 위에 놓이기 때문입니다. 적층 립을 끄면 칸막이가 테두리까지 올라갑니다.",

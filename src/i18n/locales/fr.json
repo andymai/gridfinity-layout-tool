@@ -1048,6 +1048,8 @@
   "binDesigner.detachableFeet.unplaceable": "Aucune cellule entière de la grille ne peut accueillir un pied à cette taille",
   "binDesigner.detachableFeetNeedsThickerWall": "Des parois aussi fines laissent trop peu de fond pour tenir un ergot",
   "binDesigner.dimensions": "Dimensions",
+  "binDesigner.interiorDimensions": "Intérieur",
+  "binDesigner.interiorDimensionsTooltip": "Cavité vide, du fond au haut des parois. Les cloisons, les rampes et les onglets d'étiquette y prennent de la place, et le rebord d'empilage dépasse au-dessus.",
   "binDesigner.dismissTouchHints": "Masquer les indications tactiles",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerHeightLipCeiling": "Auto est la hauteur maximale d'un séparateur pour que les bins restent empilables, car les pieds d'un bin empilé se posent juste au-dessus. Sans rebord d'empilage, les séparateurs montent jusqu'au bord.",

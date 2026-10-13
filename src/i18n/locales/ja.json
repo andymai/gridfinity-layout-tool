@@ -1048,6 +1048,8 @@
   "binDesigner.detachableFeet.unplaceable": "このサイズでは脚を置けるグリッドのマス目がありません",
   "binDesigner.detachableFeetNeedsThickerWall": "これほど薄い壁ではピンを保持する床が足りません",
   "binDesigner.dimensions": "寸法",
+  "binDesigner.interiorDimensions": "内寸",
+  "binDesigner.interiorDimensionsTooltip": "空の内部。底面から壁の上端までの寸法です。仕切り板、スクープ、ラベルタブはこの空間を占め、スタッキングリップはこの上にさらに立ち上がります。",
   "binDesigner.dismissTouchHints": "タッチヒントを閉じる",
   "binDesigner.dividerAutoHeight": "自動",
   "binDesigner.dividerHeightLipCeiling": "自動は、ビンを積み重ねられる仕切り板の最大の高さです。積み重ねたビンの脚がそのすぐ上に来るためです。スタッキングリップをオフにすると、仕切り板は縁まで届きます。",
