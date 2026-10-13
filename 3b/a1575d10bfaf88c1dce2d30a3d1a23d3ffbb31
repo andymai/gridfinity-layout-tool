@@ -1,0 +1,24 @@
+src/features/layers/components/LayerPanel/HeightCrossSectionDiagram.test.tsx
+  s_21b11ae1c16386::t_cfdce81aec4b1b 479
+  s_21b11ae1c16386::t_91a7e38f50f181 458-478,480-483
+src/features/layers/components/LayerPanel/HeightCrossSectionDiagram.tsx
+  s_21b11ae1c16386::t_a7636e0d89db56 206
+  s_21b11ae1c16386::t_db3cf342d30a27 13-15
+  s_21b11ae1c16386::t_2dec73a6db90db 131,139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3ba1575d10bfaf88c1dce2d30a3d1a23d3ffbb31",
+  "prompts": {},
+  "sessions": {
+    "s_21b11ae1c16386": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2e1b7999-d3aa-4c24-b74a-7545b5314d9e",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
