@@ -1,0 +1,19 @@
+src/features/layers/components/LayerPanel/HeightCrossSectionDiagram.test.tsx
+  s_21b11ae1c16386::t_fc0a32fd085af8 481-486
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "eff15cea272ac5566580abae1a9f0ab84bb9f633",
+  "prompts": {},
+  "sessions": {
+    "s_21b11ae1c16386": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2e1b7999-d3aa-4c24-b74a-7545b5314d9e",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
