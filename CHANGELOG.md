@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.510.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.510.1...gridfinity-layout-tool-v4.510.2) (2026-10-13)
+
+
+### Bug Fixes
+
+* **layers:** keep active layer controls reachable at minimum height ([#4565](https://github.com/andymai/gridfinity-layout-tool/issues/4565)) ([d50dcf8](https://github.com/andymai/gridfinity-layout-tool/commit/d50dcf82a97903d78582b777a93cda942085ef4f))
+
 ## [4.510.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.510.0...gridfinity-layout-tool-v4.510.1) (2026-10-12)
 
 
