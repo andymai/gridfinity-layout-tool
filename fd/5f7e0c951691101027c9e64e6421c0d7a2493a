@@ -1,0 +1,66 @@
+src/i18n/locales/de.json
+  s_c88b22bf0c9431::t_a50349309a1359 1051-1052
+src/features/bin-designer/components/panel/DimensionsSection/useDimensionsSection.ts
+  s_c88b22bf0c9431::t_09c3d892820d83 50
+  s_c88b22bf0c9431::t_517827ec920740 6
+  s_c88b22bf0c9431::t_05b1daddaebcbb 160
+src/i18n/locales/en.ts
+  s_c88b22bf0c9431::t_a50349309a1359 1827-1829
+src/i18n/locales/ko.json
+  s_c88b22bf0c9431::t_a50349309a1359 1051-1052
+src/features/bin-designer/utils/interiorDimensions.ts
+  s_c88b22bf0c9431::t_f963151b650583 18,30-31
+  s_c88b22bf0c9431::t_f6bcdb879e9ea0 1-17,19-29,32-36
+src/i18n/locales/pl.json
+  s_c88b22bf0c9431::t_a50349309a1359 1051-1052
+src/i18n/locales/sv.json
+  s_c88b22bf0c9431::t_a50349309a1359 1051-1052
+src/i18n/locales/ja.json
+  s_c88b22bf0c9431::t_a50349309a1359 1051-1052
+src/i18n/locales/zh-CN.json
+  s_c88b22bf0c9431::t_a50349309a1359 1051-1052
+src/features/bin-designer/components/panel/DimensionsSection/DimensionsSection.test.tsx
+  s_c88b22bf0c9431::t_ea7a3d9f5c2933 31-61
+src/i18n/locales/nl.json
+  s_c88b22bf0c9431::t_a50349309a1359 1051-1052
+src/i18n/locales/cs.json
+  s_c88b22bf0c9431::t_a50349309a1359 1051-1052
+src/i18n/locales/pt-BR.json
+  s_c88b22bf0c9431::t_a50349309a1359 1051-1052
+src/i18n/locales/it.json
+  s_c88b22bf0c9431::t_a50349309a1359 1051-1052
+src/features/generation/worker/generators/interiorDimensions.scenario.test.ts
+  s_c88b22bf0c9431::t_86d0dce39539fe 1-5,7-23,28-83
+  s_c88b22bf0c9431::t_7b010703be583c 6,24-27
+src/i18n/locales/fr.json
+  s_c88b22bf0c9431::t_a50349309a1359 1051-1052
+src/features/bin-designer/components/panel/DimensionsSection/DimensionsSection.tsx
+  s_c88b22bf0c9431::t_6a5a5fdb756de6 85-97
+  s_c88b22bf0c9431::t_a41be19b3b451d 14
+src/i18n/locales/nb.json
+  s_c88b22bf0c9431::t_a50349309a1359 1051-1052
+src/i18n/locales/es.json
+  s_c88b22bf0c9431::t_a50349309a1359 1051-1052
+src/i18n/locales/uk.json
+  s_c88b22bf0c9431::t_a50349309a1359 1051-1052
+src/features/bin-designer/utils/interiorDimensions.contract.test.ts
+  s_c88b22bf0c9431::t_8601e8e4e44930 1-100
+src/i18n/locales/ka.json
+  s_c88b22bf0c9431::t_a50349309a1359 1525-1526
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fd5f7e0c951691101027c9e64e6421c0d7a2493a",
+  "prompts": {},
+  "sessions": {
+    "s_c88b22bf0c9431": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "918ddf58-ae4d-44bf-abb7-35667fbad91f",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
