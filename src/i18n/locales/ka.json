@@ -1523,7 +1523,7 @@
   "binDesigner.openDesignList": "დიზაინების სიის გახსნა",
   "binDesigner.dimensions": "ზომები",
   "binDesigner.interiorDimensions": "შიგნით",
-  "binDesigner.interiorDimensionsTooltip": "ცარიელი ღრუ, ფსკერიდან კედლების ზედა კიდემდე. გამყოფები, ჩაღრმავებები და ეტიკეტის ჩანართები მისგან ადგილს იკავებს, დასაწყობი რგოლი კი მასზე მაღლა ამოდის.",
+  "binDesigner.interiorDimensionsHint": "ფსკერიდან კედლების ზედა კიდემდე, გამყოფების, ჩაღრმავებებისა და ეტიკეტის ჩანართების გარეშე. დასაწყობი რგოლი მასზე მაღლა ამოდის.",
   "binDesigner.downloadJSON": "JSON-ის ჩამოტვირთვა",
   "binDesigner.downloadDesignJson": "დიზაინის JSON-ის ჩამოტვირთვა",
   "binDesigner.export.jsonHint": "რედაქტირებადი დიზაინი ხელახალი იმპორტის ან გაზიარებისთვის. დასაბეჭდი მოდელი არ არის.",

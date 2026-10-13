@@ -83,15 +83,17 @@ export function DimensionsSection() {
       </div>
 
       {state.interior && (
-        <div
-          className="flex items-center justify-center gap-1.5 text-xs text-content-tertiary"
-          title={t('binDesigner.interiorDimensionsTooltip')}
-        >
-          <span>{t('binDesigner.interiorDimensions')}</span>
-          <span className="tabular-nums">
-            {formatCompactMm(state.interior.widthMm)} × {formatCompactMm(state.interior.depthMm)} ×{' '}
-            {formatCompactMm(state.interior.heightMm)} mm
-          </span>
+        <div className="space-y-0.5 text-center">
+          <div className="flex items-center justify-center gap-1.5 text-xs text-content-tertiary">
+            <span>{t('binDesigner.interiorDimensions')}</span>
+            <span className="tabular-nums">
+              {formatCompactMm(state.interior.widthMm)} × {formatCompactMm(state.interior.depthMm)}{' '}
+              × {formatCompactMm(state.interior.heightMm)} mm
+            </span>
+          </div>
+          <p className="text-micro text-content-tertiary/70">
+            {t('binDesigner.interiorDimensionsHint')}
+          </p>
         </div>
       )}
 

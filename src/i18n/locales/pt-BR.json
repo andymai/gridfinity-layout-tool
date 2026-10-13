@@ -1049,7 +1049,7 @@
   "binDesigner.detachableFeetNeedsThickerWall": "Paredes tão finas deixam pouco piso para segurar um pino",
   "binDesigner.dimensions": "Dimensões",
   "binDesigner.interiorDimensions": "Interno",
-  "binDesigner.interiorDimensionsTooltip": "Cavidade vazia, do fundo ao topo das paredes. Divisórias, rampas e abas de etiqueta ocupam espaço dela, e a borda de empilhamento fica acima.",
+  "binDesigner.interiorDimensionsHint": "Do fundo ao topo das paredes, sem divisórias, rampas e abas de etiqueta. A borda de empilhamento fica acima.",
   "binDesigner.dismissTouchHints": "Dispensar dicas de toque",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerHeightLipCeiling": "Auto é a altura máxima de um divisor para que os bins continuem empilháveis, pois os pés de um bin empilhado ficam logo acima. Sem a borda de empilhamento, os divisores chegam até a borda.",

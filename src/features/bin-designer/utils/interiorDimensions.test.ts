@@ -7,13 +7,28 @@
 
 import { describe, it, expect } from 'vitest';
 import { createInitialContext } from '@/features/generation/worker/generators/pipeline/context';
+import { resolveTrayBottomInputs } from '@/features/generation/worker/generators/trayBottomInputs';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { DEFAULT_TRAY_BOTTOM } from '@/features/bin-designer/types';
 import type { BaseConfig, BinParams } from '@/features/bin-designer/types';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { isNestingBase } from '@/shared/types/bin';
 import { binInteriorDimensions } from './interiorDimensions';
 
 function withBase(base: Partial<BaseConfig>, rest: Partial<BinParams> = {}): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...rest, base: { ...DEFAULT_BIN_PARAMS.base, ...base } };
+}
+
+function nesting(attachment: 'friction' | 'magnetic'): BinParams {
+  return withBase({
+    style: 'lid',
+    trayBottom: {
+      ...DEFAULT_TRAY_BOTTOM,
+      floorAtBed: true,
+      attachment,
+      retentionMagnet: DEFAULT_BIN_PARAMS.lid.retentionMagnet,
+    },
+  });
 }
 
 describe('binInteriorDimensions matches the generator pipeline', () => {
@@ -23,6 +38,15 @@ describe('binInteriorDimensions matches the generator pipeline', () => {
     ['flat base', withBase({ style: 'flat' })],
     ['flat base with a divider floor groove', withBase({ style: 'flat' }, { style: 'slotted' })],
     ['tray base', withBase({ style: 'lid' })],
+    ['nesting body, friction fit', nesting('friction')],
+    ['nesting body, magnets', nesting('magnetic')],
+    [
+      'nesting body with an overhang',
+      {
+        ...nesting('friction'),
+        overhang: { left: 3, right: 5, front: 2, back: 4, feet: false },
+      },
+    ],
     ['low-profile feet', withBase({ lowProfile: true })],
     ['detachable feet', withBase({ feet: 'detachable' })],
     ['exterior-wall collar', { ...DEFAULT_BIN_PARAMS, extraWallHeightMm: 8 }],
@@ -35,10 +59,31 @@ describe('binInteriorDimensions matches the generator pipeline', () => {
     const dim = createInitialContext(params).dimensions;
     const inside = binInteriorDimensions(params);
 
+    // A nesting body opens its floor through a mouth cut into the lid-mating plug.
+    const mouth = isNestingBase(params.base) ? resolveTrayBottomInputs(params) : null;
+    const mouthW = mouth ? mouth.lidOuterW - 2 * mouth.cavityInset : Infinity;
+    const mouthD = mouth ? mouth.lidOuterD - 2 * mouth.cavityInset : Infinity;
+
+    // The narrowest cavity is the one without an overhang's extra width.
+    const nominal = createInitialContext({
+      ...params,
+      overhang: DEFAULT_BIN_PARAMS.overhang,
+    }).dimensions;
+
     expect(inside).not.toBeNull();
-    expect(inside?.widthMm).toBeCloseTo(dim.innerW, 6);
-    expect(inside?.depthMm).toBeCloseTo(dim.innerD, 6);
-    expect(inside?.heightMm).toBeCloseTo(dim.wallTopZ - dim.baseOffsetZ - dim.floorThickness, 6);
+    expect(inside?.widthMm).toBeCloseTo(Math.min(nominal.innerW, mouthW), 6);
+    expect(inside?.depthMm).toBeCloseTo(Math.min(nominal.innerD, mouthD), 6);
+    // A nesting body's floor sits on the bed, not on the skirt the others seat on.
+    const floorTopZ = isNestingBase(params.base)
+      ? dim.floorThickness
+      : dim.baseOffsetZ + dim.floorThickness;
+    expect(inside?.heightMm).toBeCloseTo(dim.wallTopZ - floorTopZ, 6);
+  });
+
+  it('gives a nesting body the skirt depth back that a raised tray floor gives up', () => {
+    const raised = binInteriorDimensions(withBase({ style: 'lid' }));
+    const lowered = binInteriorDimensions(nesting('friction'));
+    expect(lowered?.heightMm).toBeGreaterThan(raised?.heightMm ?? Infinity);
   });
 
   it('reads (height - 1) units for a plain socketed bin, as the spec says', () => {

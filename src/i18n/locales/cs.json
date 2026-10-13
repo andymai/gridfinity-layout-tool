@@ -1049,7 +1049,7 @@
   "binDesigner.detachableFeetNeedsThickerWall": "Tak tenké stěny nenechají dost podlahy pro udržení kolíku",
   "binDesigner.dimensions": "Rozměry",
   "binDesigner.interiorDimensions": "Uvnitř",
-  "binDesigner.interiorDimensionsTooltip": "Prázdný vnitřní prostor od dna po horní okraj stěn. Přepážky, naběráky a štítkové jazýčky z něj ubírají místo a stohovací lem vyčnívá nad něj.",
+  "binDesigner.interiorDimensionsHint": "Od dna po horní okraj stěn, bez přepážek, naběráků a štítkových jazýčků. Stohovací lem vyčnívá nad to.",
   "binDesigner.dismissTouchHints": "Zavřít dotykové rady",
   "binDesigner.dividerAutoHeight": "Automaticky",
   "binDesigner.dividerHeightLipCeiling": "Automaticky je nejvyšší výška přepážky, při které lze biny stohovat, protože nožky bin postaveného nahoře sedí těsně nad ní. Bez stohovacího lemu sahají přepážky až k okraji.",

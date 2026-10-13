@@ -1049,7 +1049,7 @@
   "binDesigner.detachableFeetNeedsThickerWall": "Zulke dunne wanden laten te weinig bodem over om een pen vast te houden",
   "binDesigner.dimensions": "Afmetingen",
   "binDesigner.interiorDimensions": "Binnenmaat",
-  "binDesigner.interiorDimensionsTooltip": "Lege ruimte van de bodem tot de bovenkant van de wanden. Tussenschotten, schepvormen en labeltabs nemen hier ruimte van in, en de stapelrand steekt erboven uit.",
+  "binDesigner.interiorDimensionsHint": "Van de bodem tot de bovenkant van de wanden, zonder tussenschotten, schepvormen en labeltabs. De stapelrand steekt erboven uit.",
   "binDesigner.dismissTouchHints": "Aanraaktips sluiten",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerHeightLipCeiling": "Auto is de hoogste stand van een scheidingswand waarbij bins stapelbaar blijven, omdat de voetjes van een gestapelde bin er vlak boven staan. Zonder stapelrand reiken de scheidingswanden tot aan de rand.",

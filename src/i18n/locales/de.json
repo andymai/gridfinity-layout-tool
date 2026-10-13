@@ -1049,7 +1049,7 @@
   "binDesigner.detachableFeetNeedsThickerWall": "So dünne Wände lassen zu wenig Boden, um einen Stift zu halten",
   "binDesigner.dimensions": "Abmessungen",
   "binDesigner.interiorDimensions": "Innen",
-  "binDesigner.interiorDimensionsTooltip": "Leerer Innenraum vom Boden bis zur Oberkante der Wände. Trennwände, Auslaufschrägen und Etikettenhalter nehmen davon Platz weg, und der Stapelrand ragt darüber hinaus.",
+  "binDesigner.interiorDimensionsHint": "Vom Boden bis zur Wandoberkante, ohne Trennwände, Auslaufschrägen und Etikettenhalter. Der Stapelrand ragt darüber hinaus.",
   "binDesigner.dismissTouchHints": "Touch-Hinweise schließen",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerHeightLipCeiling": "Auto ist die größte Trennwandhöhe, bei der sich Bins noch stapeln lassen, denn die Füße eines gestapelten Bins sitzen direkt darüber. Ohne Stapelrand reichen die Trennwände bis zum Rand.",

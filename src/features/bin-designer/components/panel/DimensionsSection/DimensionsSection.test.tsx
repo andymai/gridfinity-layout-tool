@@ -31,9 +31,13 @@ describe('DimensionsSection', () => {
   it('shows the inside size under the outside size', () => {
     render(<DimensionsSection />);
     expect(screen.getByText('84 × 84 × 21 mm')).toBeInTheDocument();
-    // 2x2x3 default: 83.5 - 2 x 1.2 wall wide, and the 7mm base below the floor.
     expect(screen.getByText('Inside')).toBeInTheDocument();
     expect(screen.getByText('81.1 × 81.1 × 14 mm')).toBeInTheDocument();
+  });
+
+  it('explains what the inside size leaves out in text a touch screen can read', () => {
+    render(<DimensionsSection />);
+    expect(screen.getByText(/before dividers, scoops and label tabs/)).toBeVisible();
   });
 
   it('gives a flat base more inside height than a socketed one', () => {
@@ -44,7 +48,6 @@ describe('DimensionsSection', () => {
       },
     });
     render(<DimensionsSection />);
-    // 21mm body less the 1.2mm floor.
     expect(screen.getByText('81.1 × 81.1 × 19.8 mm')).toBeInTheDocument();
   });
 

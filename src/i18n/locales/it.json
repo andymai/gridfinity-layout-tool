@@ -1049,7 +1049,7 @@
   "binDesigner.detachableFeetNeedsThickerWall": "Pareti così sottili lasciano troppo poco fondo per trattenere un perno",
   "binDesigner.dimensions": "Dimensioni",
   "binDesigner.interiorDimensions": "Interno",
-  "binDesigner.interiorDimensionsTooltip": "Cavità vuota, dal fondo al bordo superiore delle pareti. Divisori, rampe e linguette etichetta le tolgono spazio, e il bordo di impilamento si alza sopra di essa.",
+  "binDesigner.interiorDimensionsHint": "Dal fondo al bordo superiore delle pareti, senza divisori, rampe e linguette etichetta. Il bordo di impilamento sporge sopra.",
   "binDesigner.dismissTouchHints": "Ignora i suggerimenti touch",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerHeightLipCeiling": "Auto è l'altezza massima di un divisore perché i bin restino impilabili, dato che i piedini di un bin impilato poggiano subito sopra. Senza bordo di impilamento, i divisori arrivano fino al bordo.",

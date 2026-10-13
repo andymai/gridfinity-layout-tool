@@ -1049,7 +1049,7 @@
   "binDesigner.detachableFeetNeedsThickerWall": "Tak cienkie ścianki zostawiają za mało dna, by utrzymać kołek",
   "binDesigner.dimensions": "Wymiary",
   "binDesigner.interiorDimensions": "Wewnątrz",
-  "binDesigner.interiorDimensionsTooltip": "Pusta komora od dna do góry ścianek. Przegródki, podbieranie i zakładki etykiet zabierają z niej miejsce, a kołnierz sztaplujący wystaje ponad nią.",
+  "binDesigner.interiorDimensionsHint": "Od dna do góry ścianek, bez przegródek, podbierania i zakładek etykiet. Kołnierz sztaplujący wystaje ponad.",
   "binDesigner.dismissTouchHints": "Odrzuć wskazówki dotykowe",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerHeightLipCeiling": "Auto to największa wysokość przegródki, przy której biny dają się sztaplować, bo stopki bina postawionego wyżej opierają się tuż nad nią. Bez kołnierza sztaplującego przegródki sięgają do krawędzi.",

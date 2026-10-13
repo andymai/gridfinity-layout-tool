@@ -14,6 +14,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { boundingBox, columnCrossings } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { DEFAULT_TRAY_BOTTOM } from '@/features/bin-designer/types';
 import type { BinParams } from '@/features/bin-designer/types';
 import { binInteriorDimensions } from '@/features/bin-designer/utils/interiorDimensions';
 
@@ -25,7 +26,7 @@ beforeAll(async () => {
 // the diagonals planar faces are fan-triangulated along.
 const PROBE_X = 9.7;
 const PROBE_Y = 6.1;
-// A column this far above the floor is standing in a wall, not in a corner fillet.
+// A column this far above the floor is standing in a wall or a step, not a corner fillet.
 const WALL_RISE_MM = 5;
 const STEP_MM = 0.02;
 
@@ -61,12 +62,30 @@ function measureInside(p: BinParams): { widthMm: number; heightMm: number } {
   return { widthMm: 2 * wallX, heightMm: wallTop - floorTop };
 }
 
+function nesting(attachment: 'friction' | 'magnetic'): BinParams {
+  return params(
+    {},
+    {
+      style: 'lid',
+      trayBottom: {
+        ...DEFAULT_TRAY_BOTTOM,
+        floorAtBed: true,
+        attachment,
+        retentionMagnet: DEFAULT_BIN_PARAMS.lid.retentionMagnet,
+      },
+    }
+  );
+}
+
 describe('inside dimensions match generated geometry', () => {
   const cases: Array<[string, BinParams]> = [
     ['socketed bin', params()],
     ['flat base', params({}, { style: 'flat' })],
     ['low-profile feet', params({}, { lowProfile: true })],
     ['detachable feet', params({}, { feet: 'detachable' })],
+    ['tray base with a raised floor', params({}, { style: 'lid' })],
+    ['nesting body, friction fit', nesting('friction')],
+    ['nesting body, magnets', nesting('magnetic')],
     ['exterior-wall collar', params({ extraWallHeightMm: 9 })],
     ['wall thicker than the spec floor', params({ wallThickness: 3 })],
     ['taller height unit', params({ heightUnitMm: 9 })],

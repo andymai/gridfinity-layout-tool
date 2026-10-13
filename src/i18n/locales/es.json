@@ -1049,7 +1049,7 @@
   "binDesigner.detachableFeetNeedsThickerWall": "Con paredes tan finas queda muy poco suelo para sujetar un pasador",
   "binDesigner.dimensions": "Dimensiones",
   "binDesigner.interiorDimensions": "Interior",
-  "binDesigner.interiorDimensionsTooltip": "Cavidad vacía, del suelo al borde superior de las paredes. Los divisores, las rampas y las pestañas de etiqueta le quitan espacio, y el borde apilable sobresale por encima.",
+  "binDesigner.interiorDimensionsHint": "Del suelo al borde superior de la pared, sin divisores, rampas ni pestañas de etiqueta. El borde apilable sobresale por encima.",
   "binDesigner.dismissTouchHints": "Ocultar indicaciones táctiles",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerHeightLipCeiling": "Auto es la altura máxima de un divisor para que los bins se puedan apilar, ya que las patas de un bin apilado quedan justo encima. Sin el borde apilable, los divisores llegan hasta el borde superior.",

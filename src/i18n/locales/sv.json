@@ -1049,7 +1049,7 @@
   "binDesigner.detachableFeetNeedsThickerWall": "Så tunna väggar lämnar för lite golv för att hålla ett stift",
   "binDesigner.dimensions": "Mått",
   "binDesigner.interiorDimensions": "Invändigt",
-  "binDesigner.interiorDimensionsTooltip": "Tomt utrymme från botten till väggarnas överkant. Skiljeväggar, sluttningar och etikettflikar tar plats från det, och staplingskanten sticker upp ovanför.",
+  "binDesigner.interiorDimensionsHint": "Från botten till väggarnas överkant, utan skiljeväggar, sluttningar och etikettflikar. Staplingskanten sticker upp ovanför.",
   "binDesigner.dismissTouchHints": "Avfärda pektips",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerHeightLipCeiling": "Auto är den högsta en avdelare kan vara när bins ska kunna staplas, eftersom fötterna på en staplad bin står precis ovanför. Utan staplingskant når avdelarna ända upp till kanten.",

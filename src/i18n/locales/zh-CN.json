@@ -1049,7 +1049,7 @@
   "binDesigner.detachableFeetNeedsThickerWall": "这么薄的壁面剩下的底板不足以固定销钉",
   "binDesigner.dimensions": "尺寸",
   "binDesigner.interiorDimensions": "内部",
-  "binDesigner.interiorDimensionsTooltip": "空腔，从底面到壁顶。隔板、取物斜面和标签片会占用其中的空间，堆叠边缘则高出其上。",
+  "binDesigner.interiorDimensionsHint": "从底面到壁顶，不含隔板、取物斜面和标签片。堆叠边缘高出其上。",
   "binDesigner.dismissTouchHints": "关闭触控提示",
   "binDesigner.dividerAutoHeight": "自动",
   "binDesigner.dividerHeightLipCeiling": "自动是 bin 仍可堆叠时隔板的最大高度，因为叠放在上方的 bin 的底脚正好位于其上方。关闭堆叠边缘后，隔板可一直延伸到顶边。",
