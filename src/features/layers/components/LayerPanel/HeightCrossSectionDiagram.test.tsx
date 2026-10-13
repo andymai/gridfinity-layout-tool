@@ -478,6 +478,12 @@ describe('HeightCrossSectionDiagram', () => {
         if (heights.length > 1) {
           expect(screen.getByLabelText('Delete Layer 1 layer')).toBeInTheDocument();
         }
+
+        const area = screen.getByTestId('content-area');
+        const segments = area.querySelectorAll<HTMLElement>('[data-layer-id]');
+        const last = segments[segments.length - 1];
+        const stackBottom = parseFloat(last.style.top) + parseFloat(last.style.height);
+        expect(parseFloat(area.style.height)).toBeCloseTo(stackBottom, 5);
       }
     );
 
