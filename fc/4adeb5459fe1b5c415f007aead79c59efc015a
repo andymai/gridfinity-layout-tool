@@ -1,0 +1,36 @@
+src/features/generation/worker/generators/__kernel-tests__/hingeSwing.ts
+  s_0ede90d0838d1c::t_6e52de81ff2e5b 99
+src/features/generation/worker/generators/hingeBarrel.ts
+  s_0ede90d0838d1c::t_16abf2633c7ff5 379-384,401-406,419-421,434-475
+  s_0ede90d0838d1c::t_271d97ae40d319 40,154,176
+src/features/bin-designer/types/lid.ts
+  s_0ede90d0838d1c::t_b5f97cceb4b8d1 799-810,814-816,819,821,830-831
+  s_0ede90d0838d1c::t_e3c3249302ce1a 798
+src/features/generation/worker/generators/hingeSwing.scenario.test.ts
+  s_0ede90d0838d1c::t_6e52de81ff2e5b 408
+src/features/generation/worker/generators/pipeline/stages/lidHingeStage.ts
+  s_0ede90d0838d1c::t_c868d9c8e59bcf 28,30,33-34,80-90,95,105-111,128,138-167
+src/shared/utils/hingeLidPlan.ts
+  s_0ede90d0838d1c::t_c7ecaef957739a 58,66-69
+  s_0ede90d0838d1c::t_16abf2633c7ff5 250-251,538
+  s_0ede90d0838d1c::t_bae33968dd29fe 526,552
+  s_0ede90d0838d1c::t_481887e3b85111 238-249,269-271,275-276,281,287-288,290,294-297,310-311
+  s_0ede90d0838d1c::t_6e52de81ff2e5b 141,523,525,536-537,541
+  s_0ede90d0838d1c::t_3a8aee0014ee39 544
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fc4adeb5459fe1b5c415f007aead79c59efc015a",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
