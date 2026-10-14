@@ -1,0 +1,21 @@
+src/features/bin-designer/components/panel/shared/ModeTiles.test.tsx
+  s_0ede90d0838d1c::t_31d2f95a618408 52-57
+src/features/bin-designer/components/panel/shared/ModeTiles.tsx
+  s_0ede90d0838d1c::t_ee2cd5f091ab46 49-53,66,94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5e9ed5194205db6a0b3de77dee084ccbe6d44b07",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
