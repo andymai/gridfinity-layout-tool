@@ -1,0 +1,20 @@
+src/features/generation/worker/generators/hingeSwing.scenario.test.ts
+  s_0ede90d0838d1c::t_1f5c234b9d3c55 36,1005-1019
+  s_0ede90d0838d1c::t_8a0b6be4d9f873 1020-1022
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6c06ec75b42b6c13dc55f390ff8c268b34456676",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
