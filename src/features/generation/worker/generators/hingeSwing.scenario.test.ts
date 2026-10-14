@@ -33,7 +33,7 @@ import {
   swingAxis,
 } from './__kernel-tests__/hingeSwing';
 import { binLipTopZ, lidZOffset } from './__kernel-tests__/lidSeating';
-import { boundingBox } from './__kernel-tests__/meshAssertions';
+import { boundingBox, meshVolume } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import {
   DEFAULT_LID_HINGE_CONFIG,
@@ -1000,6 +1000,24 @@ describe('hinged lid', () => {
     const face = geometry.raisedWallMm - 0.5;
     expect(await share(face - 0.3, face - 0.1, lipBase - 0.5)).toBeGreaterThan(0.99);
     expect(await share(face + 0.1, face + 0.3, lipBase - 0.5)).toBeLessThan(0.001);
+  }, 600_000);
+
+  it('exports the raised wall and its knuckles with a tall lid', async () => {
+    // The export keeps only the outer shell, so anything the wall or a root
+    // failed to weld to would drop out of the file while the preview showed it.
+    const params = tallHingeParams();
+    const { geometry } = planHingeLid(params);
+    if (!geometry) throw new Error('expected hinge geometry');
+    const exported = (p: BinParams): MeshData => getGenerateBin()(p, undefined, true);
+    const tall = exported(params);
+    const plain = exported(control(params));
+    const along =
+      params.width * params.gridUnitMm - GRIDFINITY_SPEC.TOLERANCE - 2 * LID_CORNER_RADIUS;
+    const wall = geometry.raisedWallMm * geometry.wallRiseMm * along;
+    expect(Math.abs(meshVolume(tall)) - Math.abs(meshVolume(plain))).toBeGreaterThan(wall / 2);
+    expect(boundingBox(tall.vertices).maxZ - boundingBox(plain.vertices).maxZ).toBeGreaterThan(
+      geometry.wallRiseMm
+    );
   }, 600_000);
 
   it('stops on every wall, not just the one the frame was written for', async () => {
