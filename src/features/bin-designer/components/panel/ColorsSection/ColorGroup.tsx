@@ -8,9 +8,8 @@
  * active zone isn't trapped behind a stale collapsed header.
  */
 
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { ChevronDownIcon } from '@/design-system/Icon';
-import { Button } from '@/design-system';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 
 interface ColorGroupProps {
   title: string;
@@ -33,7 +32,6 @@ export function ColorGroup({
   children,
 }: ColorGroupProps) {
   const [open, setOpen] = useState(defaultOpen);
-  const regionId = useId();
   const prevTickRef = useRef(growthTick);
 
   useEffect(() => {
@@ -46,26 +44,8 @@ export function ColorGroup({
   if (!visible) return null;
 
   return (
-    <div>
-      <Button
-        variant="ghost"
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between text-label font-semibold uppercase tracking-wide text-content-secondary py-1 -mx-1 px-1 rounded hover:bg-surface-hover transition-colors"
-        aria-expanded={open}
-        aria-controls={regionId}
-      >
-        <span>{title}</span>
-        <ChevronDownIcon size="sm" className={`transition-transform ${open ? '' : '-rotate-90'}`} />
-      </Button>
-      <div
-        id={regionId}
-        className={`grid transition-[grid-template-rows] duration-150 ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
-      >
-        <div className="overflow-hidden">
-          <div className="space-y-0.5 pt-1">{children}</div>
-        </div>
-      </div>
-    </div>
+    <MoreDisclosure label={title} open={open} onOpenChange={setOpen}>
+      <div className="space-y-0.5">{children}</div>
+    </MoreDisclosure>
   );
 }

@@ -92,7 +92,7 @@ export function MoreDisclosure({
           type="button"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
-          className="flex h-auto items-center gap-1.5 px-0 py-0 text-label font-normal text-content-tertiary transition-colors hover:bg-transparent hover:text-content-secondary"
+          className="flex h-auto shrink-0 items-center gap-1.5 whitespace-nowrap px-0 py-0 text-label font-normal text-content-tertiary transition-colors hover:bg-transparent hover:text-content-secondary"
         >
           <ChevronDownIcon
             size="xs"
@@ -111,7 +111,9 @@ export function MoreDisclosure({
         </Button>
         {/* Outside the button so the summary never pollutes its accessible name. */}
         {!open && summary && (
-          <span className="truncate text-label font-medium text-content-secondary">{summary}</span>
+          <span className="min-w-0 truncate text-label font-medium text-content-secondary">
+            {summary}
+          </span>
         )}
       </div>
       {/* Children stay mounted while closed so a help-jump can find its
