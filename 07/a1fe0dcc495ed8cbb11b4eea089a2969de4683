@@ -1,0 +1,24 @@
+src/shared/utils/hingeLidPlan.ts
+  s_0ede90d0838d1c::t_cc3b5eb684e7b8 250-251
+src/features/generation/worker/generators/hingeSwing.scenario.test.ts
+  s_0ede90d0838d1c::t_3514f8c07067e7 873-874,876-884,886,888-889,891-974,977-978,980-984,998-1000
+  s_0ede90d0838d1c::t_603717d4cc4ca5 1001-1002
+src/shared/utils/hingeLidPlan.test.ts
+  s_0ede90d0838d1c::t_a76d21c8853516 315-320
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "07a1fe0dcc495ed8cbb11b4eea089a2969de4683",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
