@@ -18,14 +18,14 @@ export function PlacementOverhangNotice() {
       icon={<InfoIcon size="xs" className="mt-0.5" />}
     >
       <p className="text-label leading-relaxed text-content-secondary">
-        {t('binDesigner.overhang.placement.prints')}{' '}
-        {t('binDesigner.overhang.placement.changeInLayout')}
+        {t('binDesigner.overhang.placement.prints')}
         <span className="ml-1 inline-flex align-middle">
           <InfoDot aria-label={t('binDesigner.infoButton')}>
             <p>
               {placement.source === 'expandToFit'
                 ? t('binDesigner.overhang.placement.expandToFitHint')
-                : t('binDesigner.overhang.placement.marginHint')}
+                : t('binDesigner.overhang.placement.marginHint')}{' '}
+              {t('binDesigner.overhang.placement.changeInLayout')}
             </p>
           </InfoDot>
         </span>

@@ -129,15 +129,40 @@ function inlineCopy(path: string): InlineCopy[] {
 
   const collect = (node: ts.Node): void => {
     if (onDemand(node)) return;
-    if (
-      ts.isCallExpression(node) &&
-      ts.isIdentifier(node.expression) &&
-      node.expression.text === 't' &&
-      node.arguments.length > 0
-    ) {
+    if (isT(node)) {
       for (const key of keysFor(node.arguments[0], source)) record(node, key);
     }
     ts.forEachChild(node, collect);
+  };
+
+  const isT = (node: ts.Node): node is ts.CallExpression =>
+    ts.isCallExpression(node) &&
+    ts.isIdentifier(node.expression) &&
+    node.expression.text === 't' &&
+    node.arguments.length > 0;
+
+  // The longest text a node can render: alternatives count once, siblings add up.
+  const rendered = (node: ts.Node): number => {
+    if (onDemand(node)) return 0;
+    if (ts.isJsxText(node)) return node.text.trim().length;
+    if (ts.isStringLiteral(node)) return node.text.length;
+    if (ts.isJsxExpression(node)) return node.expression ? rendered(node.expression) : 0;
+    if (ts.isParenthesizedExpression(node)) return rendered(node.expression);
+    if (ts.isConditionalExpression(node)) {
+      return Math.max(rendered(node.whenTrue), rendered(node.whenFalse));
+    }
+    if (ts.isBinaryExpression(node)) {
+      return node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken
+        ? rendered(node.right)
+        : Math.max(rendered(node.left), rendered(node.right));
+    }
+    if (isT(node)) {
+      return Math.max(0, ...keysFor(node.arguments[0], source).map((key) => en[key]?.length ?? 0));
+    }
+    if (ts.isJsxElement(node)) {
+      return node.children.reduce((sum, child) => sum + rendered(child), 0);
+    }
+    return 0;
   };
 
   const visit = (node: ts.Node): void => {
@@ -146,6 +171,13 @@ function inlineCopy(path: string): InlineCopy[] {
       const name = tagName(node);
       if (ts.isJsxElement(node) && INLINE_ELEMENTS.has(name)) {
         node.children.forEach(collect);
+        const length = node.children.reduce((sum, child) => sum + rendered(child), 0);
+        const { line } = source.getLineAndCharacterOfPosition(node.getStart());
+        found.push({
+          at: `${relative(process.cwd(), path)}:${line + 1}`,
+          key: `<${name}>`,
+          length,
+        });
       }
       const attributes = ts.isJsxElement(node) ? node.openingElement.attributes : node.attributes;
       for (const attribute of attributes.properties) {

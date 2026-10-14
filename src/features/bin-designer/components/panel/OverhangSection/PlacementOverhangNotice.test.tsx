@@ -54,6 +54,7 @@ describe('PlacementOverhangNotice', () => {
     expect(screen.getByText(/This bin prints with the overhang below/)).toBeDefined();
     fireEvent.click(screen.getByRole('button', { name: 'More information' }));
     expect(screen.getByText(/extends into the drawer margin/)).toBeDefined();
+    expect(screen.getByText(/Change it in the layout/)).toBeDefined();
     expect(screen.getByText('Left')).toBeDefined();
     expect(screen.getByText('4.5 mm')).toBeDefined();
     // Only the sides the placement extends; the bin abuts no padded right edge.
