@@ -118,6 +118,8 @@
  */
 
 import {
+  LID_CORNER_RADIUS,
+  LID_FIT_CLEARANCE,
   LID_HINGE_AXIS_INSET_MM,
   LID_HINGE_BARREL_RADIUS_MM,
   LID_HINGE_BORE_MM,
@@ -241,6 +243,19 @@ export interface HingeGeometry {
    * the lid in its own without either restating the other's origin.
    */
   readonly axisInsetMm: number;
+  /**
+   * How far inboard of the axis (mm) the lid's swing trim may cut: to the lid's
+   * own cavity face, so it takes the hinge wall's shell and nothing past it.
+   *
+   * Inboard of that face the side walls only slide along the bin's side lips
+   * as the lid turns, so the trim has no clearance reason to go further; the
+   * latch wall, which they swing toward, has its own relief
+   * ({@link latchReliefRadiusMm}). Unbounded, a lid with extra height loses a
+   * long wedge from both side walls, because its stop corner sits far below
+   * the axis and that tilts the trim plane toward flat. Without extra height
+   * the plane never reaches this far.
+   */
+  readonly trimInboardMm: number;
   /**
    * Depth (mm) below the lip top that a bin knuckle's root reaches for.
    *
@@ -501,6 +516,7 @@ export function planHingeLid(params: BinParams): HingePlan {
       axisCrossMm,
       axisAboveLipTopMm,
       axisInsetMm,
+      trimInboardMm: LID_CORNER_RADIUS - LID_FIT_CLEARANCE - axisInsetMm,
       rootDepthBelowLipTopMm: GRIDFINITY_SPEC.LIP_BIG_TAPER,
       barrelRadiusMm: LID_HINGE_BARREL_RADIUS_MM,
       trimTiltDeg:
@@ -522,6 +538,33 @@ export function planHingeLid(params: BinParams): HingePlan {
       catchMode: hinge.catchMode,
     },
   };
+}
+
+/**
+ * Radius (mm) about the axis that lid material below the rim must stay inside
+ * to swing clear of the stacking lip on the latch wall.
+ *
+ * Opening lifts every point of the plug, so it can only meet lip material no
+ * deeper than itself: the top outer corner, the 45° taper, and the corner
+ * where the taper meets the vertical face. The plug's deepest point sits above
+ * the lip's small bottom taper, so nothing below that corner matters. A plug
+ * point that starts outside this radius moves outward faster than it rises
+ * whenever the axis sits well above the rim, and drags across the lip.
+ *
+ * @param axisToLatchFaceMm Horizontal distance from the axis to the latch
+ *   wall's outer face.
+ */
+export function latchReliefRadiusMm(
+  axisToLatchFaceMm: number,
+  axisAboveLipTopMm: number,
+  clearanceMm: number
+): number {
+  const a = axisToLatchFaceMm;
+  const d = axisAboveLipTopMm;
+  const taper = GRIDFINITY_SPEC.LIP_BIG_TAPER;
+  const along = (a - d) / 2;
+  const onTaper = along > 0 && along < taper ? (a + d) / Math.SQRT2 : Infinity;
+  return Math.min(Math.hypot(a, d), Math.hypot(a - taper, d + taper), onTaper) - clearanceMm;
 }
 
 /**

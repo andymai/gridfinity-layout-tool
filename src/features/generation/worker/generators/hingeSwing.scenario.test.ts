@@ -32,12 +32,14 @@ import {
   sweepSwing,
   swingAxis,
 } from './__kernel-tests__/hingeSwing';
-import { lidZOffset } from './__kernel-tests__/lidSeating';
+import { binLipTopZ, lidZOffset } from './__kernel-tests__/lidSeating';
 import { boundingBox } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import {
   DEFAULT_LID_HINGE_CONFIG,
   hingeOppositeSide,
+  LID_CORNER_RADIUS,
+  LID_FIT_CLEARANCE,
   LID_HINGE_DETENT_COVERAGE,
   LID_HINGE_FACE_RELIEF_MM,
   LID_HINGE_PIN_MM,
@@ -100,6 +102,14 @@ function hingeParams(
       hinge: { ...DEFAULT_LID_HINGE_CONFIG, ...hinge },
     },
   };
+}
+
+/** A lid whose skirt reaches well below the axis, where the trim plane runs shallow. */
+function tallHingeParams(): BinParams {
+  return hingeParams(
+    { height: 8, lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm: 20 } },
+    { side: 'back', catchMode: 'none' }
+  );
 }
 
 /** The same design with the hinge swapped for a plain friction lid. */
@@ -593,6 +603,99 @@ describe('hinged lid', () => {
       expect(contact).toBeLessThan(geometry.stopAngleDeg + 10);
     } finally {
       lid.delete();
+    }
+  }, 600_000);
+
+  it("keeps a tall lid's side walls whole inboard of the hinge wall", async () => {
+    // Extra height drops the stop corner far below the axis, which tilts the
+    // trim plane toward flat; unbounded, it took a wedge ~50mm long out of both
+    // side walls. The probe is everything inboard of the lid's cavity face,
+    // above the rim and below the barrels, against the same lid with no hinge.
+    const { box } = await import('brepjs');
+    const { buildLid } = await import('./lidBuilder');
+    const params = tallHingeParams();
+    const axis = swingAxis(params, 0, 0);
+    if (!axis) throw new Error('expected an axis');
+    const outer = (params.depth * params.gridUnitMm - GRIDFINITY_SPEC.TOLERANCE) / 2;
+    const yHi = outer - (LID_CORNER_RADIUS - LID_FIT_CLEARANCE) - 0.05;
+    const yLo = yHi - 30;
+    const zLo = binLipTopZ(params) + 1;
+    const zHi = axis.z - 3.5;
+    const xSpan = params.width * params.gridUnitMm + 2;
+    const probe = box(xSpan, yHi - yLo, zHi - zLo, {
+      at: [0, (yLo + yHi) / 2, (zLo + zHi) / 2],
+    });
+    const inProbe = async (p: BinParams): Promise<number> => {
+      const lid = buildLid(p);
+      try {
+        return await seatedOverlapMm3(probe, lid, lidZOffset(p));
+      } finally {
+        lid.delete();
+      }
+    };
+    try {
+      const plain = await inProbe(control(params));
+      expect(plain).toBeGreaterThan(1000);
+      expect(Math.abs((await inProbe(params)) - plain)).toBeLessThan(CONTACT_FLOOR_MM3);
+    } finally {
+      probe.delete();
+    }
+  }, 600_000);
+
+  it('swings clear and stops at the designed stop with extra lid height', async () => {
+    const params = tallHingeParams();
+    const { geometry } = planHingeLid(params);
+    if (!geometry) throw new Error('expected hinge geometry');
+    const { bin, lid, dz } = await buildSolids(params);
+    const axis = swingAxis(params, 0, 0);
+    if (!axis) throw new Error('expected an axis');
+    try {
+      const worst = (
+        await sweepSwing(bin, lid, axis, dz, [0, 5, 10, 20, 40, 60, 80, 95, 100])
+      ).reduce((a, b) => (b.mm3 > a.mm3 ? b : a));
+      expect(worst.mm3).toBeLessThan(CONTACT_FLOOR_MM3);
+
+      const corner = (
+        await sweepSwing(bin, lid, axis, dz, [2, 5, 8, 10, 12, 15, 18, 20, 25, 30])
+      ).reduce((a, b) => (b.mm3 > a.mm3 ? b : a));
+      expect(corner.mm3).toBeLessThan(CORNER_CONTACT_FLOOR_MM3);
+
+      const contact = await firstContactAngle(
+        bin,
+        lid,
+        axis,
+        dz,
+        [100, 102, 104, 106, 108, 110, 112, 115, 120, 130],
+        STOP_CONTACT_FLOOR_MM3
+      );
+      expect(contact).not.toBeNull();
+      if (contact === null) return;
+      expect(contact).toBeGreaterThanOrEqual(geometry.stopAngleDeg);
+      expect(contact).toBeLessThan(geometry.stopAngleDeg + 10);
+    } finally {
+      lid.delete();
+    }
+  }, 600_000);
+
+  it('lifts a tall lid out of the latch-side lip instead of dragging across it', async () => {
+    // With the axis well above the rim, the plug on the latch wall moves out
+    // nearly as fast as it rises and crosses the lip's vertical face within
+    // the first two degrees. Sampled finely here because the sweeps above
+    // start at 2°, past the whole event. A one-unit-deep bin is the worst
+    // case: its latch wall is closest to the axis.
+    for (const depth of [2, 1]) {
+      const params = { ...tallHingeParams(), depth };
+      const { bin, lid, dz } = await buildSolids(params);
+      const axis = swingAxis(params, 0, 0);
+      if (!axis) throw new Error('expected an axis');
+      try {
+        const worst = (
+          await sweepSwing(bin, lid, axis, dz, [0.25, 0.5, 0.75, 1, 1.5, 2, 3])
+        ).reduce((a, b) => (b.mm3 > a.mm3 ? b : a));
+        expect(worst.mm3, `depth ${depth}`).toBeLessThan(CORNER_CONTACT_FLOOR_MM3);
+      } finally {
+        lid.delete();
+      }
     }
   }, 600_000);
 

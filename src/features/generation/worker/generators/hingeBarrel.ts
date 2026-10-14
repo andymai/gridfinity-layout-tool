@@ -37,7 +37,9 @@
 
 import { clone, cutAll, cylinder, draw, fuse, rotate, translate, unwrap, withScope } from 'brepjs';
 import type { DisposalScope, Shape3D, ValidSolid } from 'brepjs';
+import { LIP_BIG_TAPER } from './generatorConstants';
 import { sketch } from './meshUtils';
+import { latchReliefRadiusMm } from '@/shared/utils/hingeLidPlan';
 import type { HingeGeometry, HingeRun } from '@/shared/utils/hingeLidPlan';
 
 /**
@@ -254,7 +256,8 @@ function boresFor(
  * that feature's author knowing the hinge exists.
  *
  * The plane is TILTED, and the tilt is aimed at the stop angle — though it does
- * not by itself arrest the lid; see the plan's note on why not.
+ * not by itself arrest the lid; see the plan's note on why not. It stops
+ * {@link HingeGeometry.trimInboardMm} inboard of the axis.
  */
 function trimHalfSpace(
   scope: DisposalScope,
@@ -268,7 +271,18 @@ function trimHalfSpace(
   // about -28°, not 0° — deriving the tilt from the stop alone stops the lid
   // ~28° early and leaves material outboard of the axis that swings straight
   // down into the rim. The plan owns that derivation; this only reads it.
-  return halfSpaceThroughAxis(scope, g, frame, g.trimTiltDeg, lo, hi);
+  const half = halfSpaceThroughAxis(scope, g, frame, g.trimTiltDeg, lo, hi);
+  const bound = axisCross(g, frame) - g.trimInboardMm;
+  const cz = frame.axisZ;
+  const R = TRIM_REACH_MM;
+  const section = draw([bound - R, cz - R])
+    .lineTo([bound, cz - R])
+    .lineTo([bound, cz + R])
+    .lineTo([bound - R, cz + R])
+    .close();
+  const prism = scope.register(sketch(section, 'YZ').extrude(hi - lo + 4 * COPLANAR_MARGIN));
+  const inboard = scope.register(translate(prism, [lo - 2 * COPLANAR_MARGIN, 0, 0]));
+  return scope.register(unwrap(cutAll(half as ValidSolid, [inboard] as ValidSolid[])));
 }
 
 /**
@@ -404,6 +418,81 @@ export function buildBinHingeParts(g: HingeGeometry, frame: HingeFrame): BinHing
   });
 
   return { notches, additions, bores };
+}
+
+/** Where the lid's latch wall is, for {@link relieveLatchPlug}. */
+export interface LatchWall {
+  /** Horizontal distance from the axis to the latch wall's outer face. */
+  readonly axisToFaceMm: number;
+  /**
+   * The plug's straight run along the axis, in canonical coordinates. Beyond
+   * it the plug and the lip curve back toward the axis around the corners, by
+   * up to {@link cornerRecessMm}.
+   */
+  readonly straightLo: number;
+  readonly straightHi: number;
+  readonly cornerRecessMm: number;
+}
+
+/**
+ * Cut the lid's plug back to {@link latchReliefRadiusMm} about the axis,
+ * below the rim, so on the latch wall it lifts out of the stacking lip
+ * instead of dragging across it.
+ *
+ * Only the plug near the latch wall lies far enough from the axis for the cut
+ * to reach. At the corners the lip curves back toward the axis, so there the
+ * radius is taken at the deepest recess; the corners are solid pillars that
+ * never engage the lip, so cutting them deeper costs no fit.
+ */
+export function relieveLatchPlug(
+  scope: DisposalScope,
+  lid: Shape3D,
+  g: HingeGeometry,
+  frame: HingeFrame,
+  latch: LatchWall
+): Shape3D {
+  const straight = latchReliefRadiusMm(latch.axisToFaceMm, g.axisAboveLipTopMm, g.fitMm);
+  const corner = latchReliefRadiusMm(
+    latch.axisToFaceMm - latch.cornerRecessMm,
+    g.axisAboveLipTopMm,
+    g.fitMm
+  );
+  const cy = axisCross(g, frame);
+  const rimZ = frame.axisZ - g.axisAboveLipTopMm;
+  // While the axis sits farther from the latch wall than above the taper's
+  // foot, the plug's 45° face rises off the lip's faster than it moves out, so
+  // the cut can start at the foot and the lid keeps seating on the taper.
+  const taperClears =
+    latch.axisToFaceMm - latch.cornerRecessMm - LIP_BIG_TAPER > g.axisAboveLipTopMm + LIP_BIG_TAPER;
+  const top = taperClears ? rimZ - LIP_BIG_TAPER : rimZ;
+  const R = TRIM_REACH_MM;
+  const section = draw([cy - R, top - R])
+    .lineTo([cy + R, top - R])
+    .lineTo([cy + R, top])
+    .lineTo([cy - R, top])
+    .close();
+  const prism = scope.register(sketch(section, 'YZ').extrude(2 * R));
+  const cutZone = scope.register(translate(prism, [-R, 0, 0]));
+  // Inset from the straight run's ends rather than flush with them: those are
+  // the side walls' cavity faces, and a coplanar cutter face there is a sliver.
+  const keep = [
+    onAxis(scope, g, frame, corner, -R - COPLANAR_MARGIN, R + COPLANAR_MARGIN),
+    onAxis(
+      scope,
+      g,
+      frame,
+      straight,
+      latch.straightLo + COPLANAR_MARGIN,
+      latch.straightHi - COPLANAR_MARGIN
+    ),
+  ];
+  const cutter = scope.register(unwrap(cutAll(cutZone as ValidSolid, keep as ValidSolid[])));
+  // Same ownership contract as `applyLidHinge`: the scope frees the body this
+  // replaces, never the one it returns.
+  scope.register(lid);
+  return unwrap(
+    cutAll(lid as ValidSolid, [orient(scope, cutter, frame.rotationDeg)] as ValidSolid[])
+  );
 }
 
 /**

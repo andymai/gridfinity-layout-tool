@@ -43,6 +43,8 @@ const META_STORE = 'binMeshMeta';
  * instead, so the other kernel's users keep their warm cache; for one that
  * only moves bins, bump {@link BIN_MESH_REVISION}.
  *
+ * `v28`: a hinged lid with extra height keeps its side walls whole past the
+ * hinge wall, and its latch-side plug is relieved to an arc about the axis.
  * `v26`: lid text and label plates lay `flat` text flush, where they engraved
  * and debossed it; plate meshes carry face groups for the two-tone preview.
  * `v25`: the `flat` text mode. A client that predates it keeps the mode in
@@ -80,7 +82,7 @@ const META_STORE = 'binMeshMeta';
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v27';
+const MESH_CACHE_VERSION = 'v28';
 
 /**
  * Bumped when only BIN output moves for unchanged params, so the persisted
