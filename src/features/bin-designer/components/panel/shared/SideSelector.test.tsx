@@ -87,5 +87,24 @@ describe('SideSelector', () => {
       expect(onSelect).toHaveBeenCalledTimes(1);
       expect(screen.getByRole('radio', { name: 'Left' })).toHaveFocus();
     });
+
+    it('leaves the chosen wall alone when it is picked again', async () => {
+      const user = userEvent.setup();
+      const onSelect = vi.fn();
+      render(
+        <SideSelector
+          mode="single"
+          sides={OPTIONS}
+          value="right"
+          onSelect={onSelect}
+          ariaLabel="Hinge"
+        />
+      );
+      const right = screen.getByRole('radio', { name: 'Right' });
+      await user.click(right);
+      await user.keyboard('{ArrowRight}');
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(right).toHaveFocus();
+    });
   });
 });

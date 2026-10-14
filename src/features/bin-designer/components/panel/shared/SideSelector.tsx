@@ -108,12 +108,17 @@ function Cross({
 
 function SingleSide({ sides, value, onSelect, ariaLabel }: SingleSideSelectorProps) {
   const buttons = useRef<Partial<Record<Side, HTMLButtonElement | null>>>({});
+  // Re-picking the chosen wall would still be a store write: an undo entry
+  // that changes nothing, and a cleared redo stack.
+  const choose = (side: Side): void => {
+    if (side !== value) onSelect(side);
+  };
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
     const side = ARROW_SIDE[event.key];
     if (side === undefined) return;
     event.preventDefault();
     if (sides.some((option) => option.side === side && !option.disabled)) {
-      onSelect(side);
+      choose(side);
       buttons.current[side]?.focus();
     }
   };
@@ -134,7 +139,7 @@ function SingleSide({ sides, value, onSelect, ariaLabel }: SingleSideSelectorPro
             tabIndex={isOn ? 0 : -1}
             disabled={disabled}
             title={title}
-            onClick={() => onSelect(side)}
+            onClick={() => choose(side)}
             className={`${SIDE_CELL[side]} ${CHIP_BASE} ${isOn ? CHIP_ON : CHIP_OFF}`}
           >
             {label}
