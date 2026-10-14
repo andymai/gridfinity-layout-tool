@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/hingeBarrel.ts
+  s_0ede90d0838d1c::t_15235334384020 275-277
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7d83bf214bb9ce4e0c2260dfb716a74ec4c37d9a",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
