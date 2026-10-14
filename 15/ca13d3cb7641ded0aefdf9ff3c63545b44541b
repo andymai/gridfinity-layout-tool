@@ -1,0 +1,469 @@
+src/features/bin-designer/components/panel/KnifeRestSection/KnifeRestSection.tsx
+  s_0ede90d0838d1c::t_baea55ee62ccb5 53-56,58-62,64,116
+  s_0ede90d0838d1c::t_af2d99a21f70e7 27
+  s_0ede90d0838d1c::t_f6e800f0def817 57
+src/shared/components/InfoDot/index.ts
+  s_0ede90d0838d1c::t_fc2b2a771b7265 1
+src/i18n/locales/ka.json
+  s_0ede90d0838d1c::t_9fe63cf20d0319 10-11,26-27,1840-1841,1852-1853,1937-1938,1966-1967,2030-2032,2262,2270,2426-2427,2472,2478,2481,2486,2768-2769,2957,3051,3162-3163,3233,3364-3365
+  s_0ede90d0838d1c::t_0dfa018767a4f0 110
+  s_0ede90d0838d1c::t_de176a174c5d38 1836
+  s_0ede90d0838d1c::t_df93c344aadf86 2275-2276
+  s_0ede90d0838d1c::t_835fd3b534afa6 1585
+  s_0ede90d0838d1c::t_b7b1d694972d2c 1737-1738,2542-2543,3199-3200,3202-3205
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 2033
+  s_0ede90d0838d1c::t_bba4573f867bef 32
+src/features/bin-designer/components/panel/OverhangSection/useOverhangSection.ts
+  s_0ede90d0838d1c::t_3f4865d90aa49e 186
+src/features/bin-designer/components/panel/LidGripControls/LidGripControls.tsx
+  s_0ede90d0838d1c::t_408cf52bcc720c 89-93,157-162
+  s_0ede90d0838d1c::t_df93c344aadf86 174
+  s_0ede90d0838d1c::t_d4d61e069505e1 9-10,15,168-173
+  s_0ede90d0838d1c::t_9dfba9fc962f0d 39-47
+src/i18n/locales/ja.json
+  s_0ede90d0838d1c::t_0dfa018767a4f0 2409
+  s_0ede90d0838d1c::t_de176a174c5d38 1458
+  s_0ede90d0838d1c::t_9fe63cf20d0319 10-11,26-27,412,478-479,542-543,993,1204-1205,1334-1335,1355,1363,1405-1406,1445-1446,1462-1463,1537-1538,1540,1728,1844,1846,2019,2044-2045,2085
+  s_0ede90d0838d1c::t_df93c344aadf86 1345-1346
+  s_0ede90d0838d1c::t_835fd3b534afa6 1062
+  s_0ede90d0838d1c::t_b7b1d694972d2c 371-372,856-857,1130-1133,1137-1138
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 1539
+  s_0ede90d0838d1c::t_bba4573f867bef 32
+src/i18n/locales/de.json
+  s_0ede90d0838d1c::t_9fe63cf20d0319 10-11,26-27,412,478-479,542-543,993,1204-1205,1334-1335,1355,1363,1405-1406,1445-1446,1462-1463,1537-1538,1540,1728,1844,1846,2019,2044-2045,2085
+  s_0ede90d0838d1c::t_0dfa018767a4f0 2409
+  s_0ede90d0838d1c::t_86de0dc9ea8732 1458
+  s_0ede90d0838d1c::t_df93c344aadf86 1345-1346
+  s_0ede90d0838d1c::t_835fd3b534afa6 1062
+  s_0ede90d0838d1c::t_b7b1d694972d2c 371-372,856-857,1130-1133,1137-1138
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 1539
+  s_0ede90d0838d1c::t_bba4573f867bef 32
+src/i18n/locales/uk.json
+  s_0ede90d0838d1c::t_de176a174c5d38 1458
+  s_0ede90d0838d1c::t_9fe63cf20d0319 10-11,26-27,412,478-479,542-543,993,1204-1205,1334-1335,1355,1363,1405-1406,1445-1446,1462-1463,1537-1538,1540,1728,1844,1846,2019,2044-2045,2085
+  s_0ede90d0838d1c::t_0dfa018767a4f0 2409
+  s_0ede90d0838d1c::t_df93c344aadf86 1345-1346
+  s_0ede90d0838d1c::t_b7b1d694972d2c 371-372,856-857,1130-1133,1137-1138
+  s_0ede90d0838d1c::t_835fd3b534afa6 1062
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 1539
+  s_0ede90d0838d1c::t_bba4573f867bef 32
+src/i18n/locales/zh-CN.json
+  s_0ede90d0838d1c::t_9fe63cf20d0319 10-11,26-27,412,478-479,542-543,993,1204-1205,1334-1335,1355,1363,1405-1406,1445-1446,1462-1463,1537-1538,1540,1728,1844,1846,2019,2044-2045,2085
+  s_0ede90d0838d1c::t_de176a174c5d38 1458
+  s_0ede90d0838d1c::t_0dfa018767a4f0 2409
+  s_0ede90d0838d1c::t_df93c344aadf86 1345-1346
+  s_0ede90d0838d1c::t_835fd3b534afa6 1062
+  s_0ede90d0838d1c::t_b7b1d694972d2c 371-372,856-857,1130-1133,1137-1138
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 1539
+  s_0ede90d0838d1c::t_bba4573f867bef 32
+src/features/bin-designer/components/panel/shared/index.ts
+  s_0ede90d0838d1c::t_97b64d80e4f47b 7
+  s_0ede90d0838d1c::t_fc2b2a771b7265 5
+  s_0ede90d0838d1c::t_97564364cd8a1a 8
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.tsx
+  s_0ede90d0838d1c::t_3f4865d90aa49e 119
+src/i18n/locales/nb.json
+  s_0ede90d0838d1c::t_de176a174c5d38 1458
+  s_0ede90d0838d1c::t_9fe63cf20d0319 10-11,26-27,412,478-479,542-543,993,1204-1205,1334-1335,1355,1363,1405-1406,1445-1446,1462-1463,1537-1538,1540,1728,1844,1846,2019,2044-2045,2085
+  s_0ede90d0838d1c::t_0dfa018767a4f0 2409
+  s_0ede90d0838d1c::t_df93c344aadf86 1345-1346
+  s_0ede90d0838d1c::t_b7b1d694972d2c 371-372,856-857,1130-1133,1137-1138
+  s_0ede90d0838d1c::t_835fd3b534afa6 1062
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 1539
+  s_0ede90d0838d1c::t_bba4573f867bef 32
+src/features/bin-designer/components/panel/shared/panelText.test.tsx
+  s_0ede90d0838d1c::t_736b9a4000b4c9 1,3-6,18,20-45
+  s_0ede90d0838d1c::t_3f9662923deffa 19
+src/features/bin-designer/components/panel/PullTabSection/PullTabSection.tsx
+  s_0ede90d0838d1c::t_96cfd33ea02944 16-21,47,51,70,106,110,140,145
+  s_0ede90d0838d1c::t_d4d61e069505e1 5,117-122
+src/i18n/locales/ko.json
+  s_0ede90d0838d1c::t_0dfa018767a4f0 2409
+  s_0ede90d0838d1c::t_de176a174c5d38 1458
+  s_0ede90d0838d1c::t_9fe63cf20d0319 10-11,26-27,412,478-479,542-543,993,1204-1205,1334-1335,1355,1363,1405-1406,1445-1446,1462-1463,1537-1538,1540,1728,1844,1846,2019,2044-2045,2085
+  s_0ede90d0838d1c::t_df93c344aadf86 1345-1346
+  s_0ede90d0838d1c::t_b7b1d694972d2c 371-372,856-857,1130-1133,1137-1138
+  s_0ede90d0838d1c::t_835fd3b534afa6 1062
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 1539
+  s_0ede90d0838d1c::t_bba4573f867bef 32
+src/features/bin-designer/components/panel/HingeControls/HingeControls.tsx
+  s_0ede90d0838d1c::t_3f48a13c59dcfc 40,42,56-65,67
+  s_0ede90d0838d1c::t_9dfba9fc962f0d 22,43-45,47-49
+src/features/bin-designer/components/panel/OverhangSection/PlacementOverhangNotice.tsx
+  s_0ede90d0838d1c::t_12ebf408fa167e 4,22-26,29-31
+  s_0ede90d0838d1c::t_d00552f4ad85b5 21,27-28
+src/i18n/locales/en.ts
+  s_0ede90d0838d1c::t_86de0dc9ea8732 2172
+  s_0ede90d0838d1c::t_0dfa018767a4f0 114
+  s_0ede90d0838d1c::t_9fe63cf20d0319 1791-1793,1814-1815,2177-2178,2194-2195,2304-2306,2351-2353,2444,2446-2447,2685-2686,2696,2877-2879,2930,2939,2943,2950-2951,3274-3275,3496,3610,3735-3737,3830,3987-3989
+  s_0ede90d0838d1c::t_df93c344aadf86 1813,2704-2706
+  s_0ede90d0838d1c::t_835fd3b534afa6 1893-1894
+  s_0ede90d0838d1c::t_b7b1d694972d2c 2062-2063,3010-3012,3778-3780,3783-3788
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 2448-2449
+  s_0ede90d0838d1c::t_bba4573f867bef 1820-1821
+src/i18n/locales/fr.json
+  s_0ede90d0838d1c::t_de176a174c5d38 1458
+  s_0ede90d0838d1c::t_0dfa018767a4f0 2409
+  s_0ede90d0838d1c::t_9fe63cf20d0319 10-11,26-27,412,478-479,542-543,993,1204-1205,1334-1335,1355,1363,1405-1406,1445-1446,1462-1463,1537-1538,1540,1728,1844,1846,2019,2044-2045,2085
+  s_0ede90d0838d1c::t_df93c344aadf86 1345-1346
+  s_0ede90d0838d1c::t_835fd3b534afa6 1062
+  s_0ede90d0838d1c::t_b7b1d694972d2c 371-372,856-857,1130-1133,1137-1138
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 1539
+  s_0ede90d0838d1c::t_bba4573f867bef 32
+src/features/bin-designer/components/panel/ShapeSection/ShapeSection.tsx
+  s_0ede90d0838d1c::t_3f4865d90aa49e 34
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.tsx
+  s_0ede90d0838d1c::t_6409c6e014fd57 160,218
+  s_0ede90d0838d1c::t_82e85c1da57efb 25
+  s_0ede90d0838d1c::t_184066082015a6 102-106
+  s_0ede90d0838d1c::t_6960431ba8f0b6 139,141-144,146
+  s_0ede90d0838d1c::t_3c3829a51b7e87 6
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.test.tsx
+  s_0ede90d0838d1c::t_29ca23bc86855c 223-224
+  s_0ede90d0838d1c::t_d5623c80f186f5 34
+src/features/bin-designer/components/panel/CutoutsSection/CutoutsSection.tsx
+  s_0ede90d0838d1c::t_e1ce9a039177f2 14
+  s_0ede90d0838d1c::t_8c0efb2328106d 33-35,40-42
+src/shared/components/FeatureToggle/FeatureToggle.test.tsx
+  s_0ede90d0838d1c::t_3f156770504927 125-132
+  s_0ede90d0838d1c::t_95e722abcdaafa 133-139
+src/i18n/locales/it.json
+  s_0ede90d0838d1c::t_9fe63cf20d0319 10-11,26-27,412,478-479,542-543,993,1204-1205,1334-1335,1355,1363,1405-1406,1445-1446,1462-1463,1537-1538,1540,1728,1844,1846,2019,2044-2045,2085
+  s_0ede90d0838d1c::t_de176a174c5d38 1458
+  s_0ede90d0838d1c::t_0dfa018767a4f0 2409
+  s_0ede90d0838d1c::t_df93c344aadf86 1345-1346
+  s_0ede90d0838d1c::t_b7b1d694972d2c 371-372,856-857,1130-1133,1137-1138
+  s_0ede90d0838d1c::t_835fd3b534afa6 1062
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 1539
+  s_0ede90d0838d1c::t_bba4573f867bef 32
+src/features/bin-designer/components/panel/InteriorSection/InteriorModes.tsx
+  s_0ede90d0838d1c::t_688e6808b18153 42-46
+  s_0ede90d0838d1c::t_79d32688fc197e 1,4-19,21-129,140
+  s_0ede90d0838d1c::t_a70a9604e4bb90 2-3,20,130-139
+src/features/bin-designer/components/panel/SlideControls/SlideControls.tsx
+  s_0ede90d0838d1c::t_d7a92a609ecbe1 16
+  s_0ede90d0838d1c::t_9b2a6e0c30db8e 36-45,47,63,65,79-88,90,105-110
+  s_0ede90d0838d1c::t_fa30e56ee1502d 17,66-68,70-72
+src/features/bin-designer/components/panel/VariantSection/VariantSection.tsx
+  s_0ede90d0838d1c::t_40d3fa2187e54f 5,91-95
+src/features/bin-designer/components/panel/HingeControls/HingeControls.test.tsx
+  s_0ede90d0838d1c::t_f8ea2891ddadcf 113,115
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_0ede90d0838d1c::t_3451ed55826528 210-228,232-237,273,275,278-280,299,342-344,377-379,382-384,416-418,424-426
+src/i18n/locales/cs.json
+  s_0ede90d0838d1c::t_0dfa018767a4f0 2409
+  s_0ede90d0838d1c::t_86de0dc9ea8732 1458
+  s_0ede90d0838d1c::t_9fe63cf20d0319 10-11,26-27,412,478-479,542-543,993,1204-1205,1334-1335,1355,1363,1405-1406,1445-1446,1462-1463,1537-1538,1540,1728,1844,1846,2019,2044-2045,2085
+  s_0ede90d0838d1c::t_df93c344aadf86 1345-1346
+  s_0ede90d0838d1c::t_835fd3b534afa6 1062
+  s_0ede90d0838d1c::t_b7b1d694972d2c 371-372,856-857,1130-1133,1137-1138
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 1539
+  s_0ede90d0838d1c::t_bba4573f867bef 32
+src/i18n/locales/es.json
+  s_0ede90d0838d1c::t_de176a174c5d38 1458
+  s_0ede90d0838d1c::t_0dfa018767a4f0 2409
+  s_0ede90d0838d1c::t_9fe63cf20d0319 10-11,26-27,412,478-479,542-543,993,1204-1205,1334-1335,1355,1363,1405-1406,1445-1446,1462-1463,1537-1538,1540,1728,1844,1846,2019,2044-2045,2085
+  s_0ede90d0838d1c::t_df93c344aadf86 1345-1346
+  s_0ede90d0838d1c::t_b7b1d694972d2c 371-372,856-857,1130-1133,1137-1138
+  s_0ede90d0838d1c::t_835fd3b534afa6 1062
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 1539
+  s_0ede90d0838d1c::t_bba4573f867bef 32
+src/features/bin-designer/components/panel/TypeSection/TypeSection.tsx
+  s_0ede90d0838d1c::t_40d3fa2187e54f 39,133-140
+  s_0ede90d0838d1c::t_757e4853720f49 15
+  s_0ede90d0838d1c::t_6960431ba8f0b6 221-222,225,227,230,265,268
+  s_0ede90d0838d1c::t_3c3829a51b7e87 38
+src/design-system/SliderInput/SliderInput.tsx
+  s_0ede90d0838d1c::t_5f4c4a51d33cdb 32-33,49
+  s_0ede90d0838d1c::t_10b6f5c66ba516 10,59-63,76-83
+src/shared/components/FeatureToggle/FeatureToggle.tsx
+  s_0ede90d0838d1c::t_12ebf408fa167e 38,87
+  s_0ede90d0838d1c::t_8f0fe32ba9e924 11,37,52,85-86,88-89
+  s_0ede90d0838d1c::t_95e722abcdaafa 8,56,79-84,98
+  s_0ede90d0838d1c::t_a7e0774e776814 31-32,53,58
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_0ede90d0838d1c::t_11b749921305e9 23,138,140,149,179,181-190
+  s_0ede90d0838d1c::t_dbfbcc329eeabd 141-148
+  s_0ede90d0838d1c::t_d4d61e069505e1 216-221
+  s_0ede90d0838d1c::t_7ab523f151d9eb 243-244,246-247,285,299-300,302-303,388,415-418,421
+  s_0ede90d0838d1c::t_e2a1441b8aede4 10,14
+src/features/bin-designer/components/panel/SplitOptionsSection/SplitOptionsSection.tsx
+  s_0ede90d0838d1c::t_40d3fa2187e54f 2,52-54
+src/i18n/locales/pl.json
+  s_0ede90d0838d1c::t_de176a174c5d38 1458
+  s_0ede90d0838d1c::t_9fe63cf20d0319 10-11,26-27,412,478-479,542-543,993,1204-1205,1334-1335,1355,1363,1405-1406,1445-1446,1462-1463,1537-1538,1540,1728,1844,1846,2019,2044-2045,2085
+  s_0ede90d0838d1c::t_0dfa018767a4f0 2409
+  s_0ede90d0838d1c::t_df93c344aadf86 1345-1346
+  s_0ede90d0838d1c::t_b7b1d694972d2c 371-372,856-857,1130-1133,1137-1138
+  s_0ede90d0838d1c::t_835fd3b534afa6 1062
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 1539
+  s_0ede90d0838d1c::t_bba4573f867bef 32
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_0ede90d0838d1c::t_0cf137ad462c4d 335-337,411,471-472
+  s_0ede90d0838d1c::t_df93c344aadf86 913-914
+  s_0ede90d0838d1c::t_d5623c80f186f5 909
+src/features/bin-designer/components/panel/ImportedMeshSection/ImportedMeshPanel.tsx
+  s_0ede90d0838d1c::t_688e6808b18153 23,160-164
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.tsx
+  s_0ede90d0838d1c::t_732f023670737f 23
+  s_0ede90d0838d1c::t_12ebf408fa167e 55-68
+  s_0ede90d0838d1c::t_3cf8270c84b864 100-108,112-134,136,139-142,144-146,148-174
+src/features/bin-designer/components/panel/DimensionsSection/DimensionsSection.test.tsx
+  s_0ede90d0838d1c::t_f4eeb321879da7 2,38,40-41
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.tsx
+  s_0ede90d0838d1c::t_3f4865d90aa49e 40
+  s_0ede90d0838d1c::t_9b0b17b17848dd 63
+  s_0ede90d0838d1c::t_a70a9604e4bb90 15-16,69-71
+  s_0ede90d0838d1c::t_b9c96b98d2ac0b 14,18,54-60,62,64-68,72-82
+src/features/bin-designer/components/panel/CutoutsSection/CutoutsSection.test.tsx
+  s_0ede90d0838d1c::t_f4eeb321879da7 38-39
+src/i18n/locales/sv.json
+  s_0ede90d0838d1c::t_de176a174c5d38 1458
+  s_0ede90d0838d1c::t_0dfa018767a4f0 2409
+  s_0ede90d0838d1c::t_9fe63cf20d0319 10-11,26-27,412,478-479,542-543,993,1204-1205,1334-1335,1355,1363,1405-1406,1445-1446,1462-1463,1537-1538,1540,1728,1844,1846,2019,2044-2045,2085
+  s_0ede90d0838d1c::t_df93c344aadf86 1345-1346
+  s_0ede90d0838d1c::t_835fd3b534afa6 1062
+  s_0ede90d0838d1c::t_b7b1d694972d2c 371-372,856-857,1130-1133,1137-1138
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 1539
+  s_0ede90d0838d1c::t_bba4573f867bef 32
+src/i18n/locales/nl.json
+  s_0ede90d0838d1c::t_de176a174c5d38 1458
+  s_0ede90d0838d1c::t_9fe63cf20d0319 10-11,26-27,412,478-479,542-543,993,1204-1205,1334-1335,1355,1363,1405-1406,1445-1446,1462-1463,1537-1538,1540,1728,1844,1846,2019,2044-2045,2085
+  s_0ede90d0838d1c::t_0dfa018767a4f0 2409
+  s_0ede90d0838d1c::t_df93c344aadf86 1345-1346
+  s_0ede90d0838d1c::t_835fd3b534afa6 1062
+  s_0ede90d0838d1c::t_b7b1d694972d2c 371-372,856-857,1130-1133,1137-1138
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 1539
+  s_0ede90d0838d1c::t_bba4573f867bef 32
+src/features/bin-designer/components/panel/panelCopyLength.test.ts
+  s_0ede90d0838d1c::t_0d6d12762192c5 1-4,11-20,31,32,33,38-42,46-60,86-87,88,92-94,98-104,109,128-133,136-139,170-175,183-185,191-201,219
+  s_0ede90d0838d1c::t_97b64d80e4f47b 37
+  s_0ede90d0838d1c::t_cc423416ca551d 43-44
+  s_0ede90d0838d1c::t_12f380ecb37791 36,105-106,108,127
+  s_0ede90d0838d1c::t_b36a322bbfb748 225-229
+  s_0ede90d0838d1c::t_5d77eefd674169 5-10,21-27,34-35,45,61-62,63-84,85,89-91,95-97,110-116,117-126,135,186-190
+  s_0ede90d0838d1c::t_3825221dc5ebca 134,140-169,176-178
+  s_0ede90d0838d1c::t_a7d5ac96674429 179-181
+  s_0ede90d0838d1c::t_6daeeddf7f6c57 107,202-218
+  s_0ede90d0838d1c::t_879a219c54fb1f 224
+  s_0ede90d0838d1c::t_bba4573f867bef 29-31,220-223
+src/features/bin-designer/components/panel/LidSection/LidAdvancedFields.tsx
+  s_0ede90d0838d1c::t_7f6f6016f5f4db 73-81,102-110,129,152,209,234-235,237-239
+  s_0ede90d0838d1c::t_e2a1441b8aede4 3,43
+  s_0ede90d0838d1c::t_7ab523f151d9eb 273
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.tsx
+  s_0ede90d0838d1c::t_6409c6e014fd57 14,471-473
+  s_0ede90d0838d1c::t_ed6c647282814b 12,478-479,482-505
+src/features/bin-designer/components/panel/OverhangSection/PlacementOverhangNotice.test.tsx
+  s_0ede90d0838d1c::t_29ca23bc86855c 2,55,73
+  s_0ede90d0838d1c::t_080024bed92f82 54
+  s_0ede90d0838d1c::t_d00552f4ad85b5 57
+src/features/bin-designer/components/panel/shared/panelText.tsx
+  s_0ede90d0838d1c::t_97b64d80e4f47b 27-36,46,86
+  s_0ede90d0838d1c::t_3451ed55826528 11,19
+  s_0ede90d0838d1c::t_736b9a4000b4c9 1,3-4,25-26,37-45,47-66,88
+  s_0ede90d0838d1c::t_08387d42eff75d 6-10,12-18,20-24,76-77,82-85,87
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_0ede90d0838d1c::t_da5c71d9e0b7b2 337-341,375-377,482-493
+  s_0ede90d0838d1c::t_44df6eab56ddeb 26-33,175,185,206-215,217,294-298
+  s_0ede90d0838d1c::t_d7a92a609ecbe1 71-77,144-155,159
+  s_0ede90d0838d1c::t_53195450276a69 25
+  s_0ede90d0838d1c::t_184066082015a6 402-404,451
+  s_0ede90d0838d1c::t_cf1053767453ad 23
+  s_0ede90d0838d1c::t_d4d61e069505e1 272-284
+  s_0ede90d0838d1c::t_f22bb5f1e0379c 6,47,156
+src/features/bin-designer/components/panel/pages/InteriorPage/InteriorPage.tsx
+  s_0ede90d0838d1c::t_3f4865d90aa49e 23
+src/i18n/locales/pt-BR.json
+  s_0ede90d0838d1c::t_0dfa018767a4f0 2409
+  s_0ede90d0838d1c::t_9fe63cf20d0319 10-11,26-27,412,478-479,542-543,993,1204-1205,1334-1335,1355,1363,1405-1406,1445-1446,1462-1463,1537-1538,1540,1728,1844,1846,2019,2044-2045,2085
+  s_0ede90d0838d1c::t_de176a174c5d38 1458
+  s_0ede90d0838d1c::t_df93c344aadf86 1345-1346
+  s_0ede90d0838d1c::t_b7b1d694972d2c 371-372,856-857,1130-1133,1137-1138
+  s_0ede90d0838d1c::t_835fd3b534afa6 1062
+  s_0ede90d0838d1c::t_45fdc7e1edd7a8 1539
+  s_0ede90d0838d1c::t_bba4573f867bef 32
+src/features/bin-designer/components/panel/ColorsSection/ColorsHintBanner.tsx
+  s_0ede90d0838d1c::t_688e6808b18153 34-41
+  s_0ede90d0838d1c::t_c405f2ca173c01 12
+src/features/bin-designer/components/panel/shared/StepperField.tsx
+  s_0ede90d0838d1c::t_fc2b2a771b7265 11
+  s_0ede90d0838d1c::t_144554c6a6b1d7 10,19,24,33
+src/features/bin-designer/components/panel/DimensionsSection/DimensionsSection.tsx
+  s_0ede90d0838d1c::t_c405f2ca173c01 17
+  s_0ede90d0838d1c::t_688e6808b18153 90-92
+  s_0ede90d0838d1c::t_b5a3d9e6b205cd 10-11,188-192
+src/features/bin-designer/components/panel/LidSection/LidAdvancedFields.test.tsx
+  s_0ede90d0838d1c::t_94ee05eaacc55d 39
+package.json
+  s_0ede90d0838d1c::t_3a82c0bc122a34 118
+src/i18n/locales/en.test.ts
+  s_0ede90d0838d1c::t_d83198c0071153 1-11
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_0ede90d0838d1c::t_184066082015a6 94-100,150-151,679-682,716-718
+src/features/bin-designer/components/panel/CutoutsSection/CutoutArrayControls.tsx
+  s_0ede90d0838d1c::t_bc25aab5439db4 22
+  s_0ede90d0838d1c::t_184066082015a6 44-47,107-113,115
+  s_0ede90d0838d1c::t_3a56b5f13120bd 21,23
+  s_0ede90d0838d1c::t_ed6c647282814b 238-243
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.test.tsx
+  s_0ede90d0838d1c::t_d984f3c4b1f312 86
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.tsx
+  s_0ede90d0838d1c::t_184066082015a6 116-120
+  s_0ede90d0838d1c::t_0f0ad093ece809 5
+  s_0ede90d0838d1c::t_d3808bed260b1b 6
+  s_0ede90d0838d1c::t_ed6c647282814b 61-63,66
+  s_0ede90d0838d1c::t_7ab523f151d9eb 290,313
+  s_0ede90d0838d1c::t_e2a1441b8aede4 2
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_0ede90d0838d1c::t_184066082015a6 303-307
+  s_0ede90d0838d1c::t_0f0ad093ece809 10-11
+  s_0ede90d0838d1c::t_3a56b5f13120bd 12
+  s_0ede90d0838d1c::t_ed6c647282814b 388-395
+src/features/bin-designer/components/CompartmentEditor/DividerHeightControl.tsx
+  s_0ede90d0838d1c::t_bc25aab5439db4 19-20
+  s_0ede90d0838d1c::t_184066082015a6 93-97
+src/shared/utils/pullTabPlan.ts
+  s_0ede90d0838d1c::t_bba4573f867bef 109
+src/shared/components/InfoDot/InfoDot.test.tsx
+  s_0ede90d0838d1c::t_cd4d0a08b7f70f 17-34
+  s_0ede90d0838d1c::t_b70a8c840838c2 35-56
+src/shared/components/InfoDot/InfoDot.tsx
+  s_0ede90d0838d1c::t_6641261a2af965 6-8,14,28-29,31,32-36,71,81,83-84,86-88
+  s_0ede90d0838d1c::t_da2f0ebabe75ec 72-74
+  s_0ede90d0838d1c::t_b70a8c840838c2 9-11,19-20
+  s_0ede90d0838d1c::t_c258fbe89bf2f0 37-58
+  s_0ede90d0838d1c::t_af95fd4c38506d 59
+src/features/bin-designer/components/panel/ColorsSection/AccentBandsEditor.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 56-57,64
+  s_0ede90d0838d1c::t_6a5505eeeade5f 42-47
+src/features/bin-designer/components/panel/ColorsSection/LipColorEditor.test.tsx
+  s_0ede90d0838d1c::t_757e4853720f49 82
+  s_0ede90d0838d1c::t_d5623c80f186f5 35,45
+src/features/bin-designer/components/panel/shared/SideSelector.test.tsx
+  s_0ede90d0838d1c::t_8b31561b9c2b47 75-77
+  s_0ede90d0838d1c::t_757e4853720f49 78-79,83,87,108-109
+  s_0ede90d0838d1c::t_c3e73503ed37a2 47-67,70-74
+  s_0ede90d0838d1c::t_e7cf000af9da93 3,68-69,80-82,84-86,88
+  s_0ede90d0838d1c::t_847ad2f8f85a4f 90-108
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 75,83
+src/features/bin-designer/components/panel/ToolRackSection/ToolRackParameterPanel.tsx
+  s_0ede90d0838d1c::t_6960431ba8f0b6 162-170,187-198
+  s_0ede90d0838d1c::t_3c3829a51b7e87 7-8
+src/features/bin-designer/components/panel/LabelTabsSection/LabelPlatesControls.tsx
+  s_0ede90d0838d1c::t_d6c3f3ce5a0c4e 14-15,146-152
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.test.tsx
+  s_0ede90d0838d1c::t_6a5505eeeade5f 225,233,262
+  s_0ede90d0838d1c::t_757e4853720f49 216
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.tsx
+  s_0ede90d0838d1c::t_d6c3f3ce5a0c4e 14,103-114
+src/features/bin-designer/components/panel/LidGripControls/LidGripControls.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 52,58
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 259
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 73
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.test.tsx
+  s_0ede90d0838d1c::t_6a5505eeeade5f 235,253
+  s_0ede90d0838d1c::t_d5623c80f186f5 266
+src/features/bin-designer/components/panel/shared/SideSelector.tsx
+  s_0ede90d0838d1c::t_038d9fba65f75a 12-14,17-18,33-34,41-58,78-110,116-120,122-124,126-141,143-155,177
+  s_0ede90d0838d1c::t_847ad2f8f85a4f 111-115,121,142
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabShapeControls.tsx
+  s_0ede90d0838d1c::t_d6c3f3ce5a0c4e 4,177,180-181
+  s_0ede90d0838d1c::t_7ab523f151d9eb 37-38,40-41,226
+  s_0ede90d0838d1c::t_e2a1441b8aede4 3,6
+src/features/bin-designer/components/panel/HandleSection/HandleSection.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 45
+src/features/bin-designer/components/panel/ColorsSection/AccentBandsEditor.tsx
+  s_0ede90d0838d1c::t_ed6c647282814b 115,119
+  s_0ede90d0838d1c::t_3a56b5f13120bd 13
+src/features/bin-designer/components/panel/LabelTabsSection/LabelPlatesControls.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 49
+src/features/bin-designer/components/panel/PullTabSection/PullTabSection.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 44
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 320,334,344
+  s_0ede90d0838d1c::t_0b82ee21b222a7 80-82,84,100,102
+src/features/bin-designer/components/panel/HandleSection/HandleSection.tsx
+  s_0ede90d0838d1c::t_ceef7974493b15 15,256-258,264-265
+src/features/bin-designer/components/panel/ColorsSection/LipColorEditor.tsx
+  s_0ede90d0838d1c::t_d6c3f3ce5a0c4e 16,177,179-180
+src/features/bin-designer/components/panel/panelIdioms.test.ts
+  s_0ede90d0838d1c::t_f5f75d7b51871f 1-104
+src/features/bin-designer/components/panel/CutoutsSection/handlers/index.ts
+  s_0ede90d0838d1c::t_e053907d43222c 15
+src/features/bin-designer/components/CutoutWorkspace/useCutoutWorkspacePointer.ts
+  s_0ede90d0838d1c::t_e053907d43222c 20
+  s_0ede90d0838d1c::t_7a8d5504bfb9f5 85
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.ts
+  s_0ede90d0838d1c::t_e053907d43222c 61-63,67,71-73
+  s_0ede90d0838d1c::t_7a8d5504bfb9f5 64-66,68-70,81
+  s_0ede90d0838d1c::t_d69e6fa9ec473a 60
+src/features/bin-designer/components/CutoutWorkspace/useCutoutWorkspacePointer.test.tsx
+  s_0ede90d0838d1c::t_35498425cdba68 1-46
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.test.ts
+  s_0ede90d0838d1c::t_35498425cdba68 89,93,100,119-126
+  s_0ede90d0838d1c::t_c34cbe12147ebf 127
+src/features/bin-designer/components/panel/InteriorSection/index.ts
+  s_0ede90d0838d1c::t_a70a9604e4bb90 2-3
+src/features/bin-designer/components/panel/InteriorSection/InteriorModes.test.tsx
+  s_0ede90d0838d1c::t_a70a9604e4bb90 3-4,61,63,65,67
+  s_0ede90d0838d1c::t_cd2116823f746a 1-2,5-60,62,64,66,68-141
+src/features/bin-designer/components/panel/BaseSection/BodyTypeTiles.test.tsx
+  s_0ede90d0838d1c::t_f22bb5f1e0379c 1-66
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.test.tsx
+  s_0ede90d0838d1c::t_a70a9604e4bb90 9
+  s_0ede90d0838d1c::t_cd2116823f746a 10-11,31,34-35,38,41-46,49,52,73,76,107-109,126-128
+  s_0ede90d0838d1c::t_57d768ba6aa0c4 57-66,70
+  s_0ede90d0838d1c::t_057073a5a024a5 82-96
+src/features/bin-designer/components/panel/shared/ModeTiles.tsx
+  s_0ede90d0838d1c::t_41ebe48817d469 1-3,5-10,12-43,53-63,69-76,78-92,94-95,100-104,106-110,121,122-124
+  s_0ede90d0838d1c::t_fd8cc6f10b04ef 77
+  s_0ede90d0838d1c::t_57d768ba6aa0c4 11,105
+  s_0ede90d0838d1c::t_ee2cd5f091ab46 48-52,68,96
+  s_0ede90d0838d1c::t_59436aec24df0d 4,44-47,64-67,93,111-120
+  s_0ede90d0838d1c::t_c0afbe3b18f9bd 97
+  s_0ede90d0838d1c::t_2fad64a8926d01 98-99
+src/features/bin-designer/components/panel/BaseSection/BodyTypeTiles.tsx
+  s_0ede90d0838d1c::t_f22bb5f1e0379c 1-78
+src/features/bin-designer/components/panel/shared/ModeTiles.test.tsx
+  s_0ede90d0838d1c::t_55b730005c55a4 1-8,16-42,44-52,74
+  s_0ede90d0838d1c::t_97564364cd8a1a 9-15
+  s_0ede90d0838d1c::t_31d2f95a618408 53,69-73
+  s_0ede90d0838d1c::t_59436aec24df0d 54-68
+  s_0ede90d0838d1c::t_c0afbe3b18f9bd 43
+src/features/baseplate/components/BaseplatePanel/ConnectorPicker.tsx
+  s_0ede90d0838d1c::t_c0e89a7bb824b5 2-5
+src/features/bin-designer/components/panel/InteriorSection/interiorModeMeta.tsx
+  s_0ede90d0838d1c::t_a70a9604e4bb90 1-32
+src/shared/components/MoreDisclosure/MoreDisclosure.tsx
+  s_0ede90d0838d1c::t_b0e9b99cf49a90 33-37,47-49,55,93,103
+  s_0ede90d0838d1c::t_47893b00c7c5ae 15,56-62,69,85
+  s_0ede90d0838d1c::t_7ab523f151d9eb 31-32,46,54
+src/features/bin-designer/components/panel/CutoutsSection/CutoutPropertyPanel.tsx
+  s_0ede90d0838d1c::t_e2a1441b8aede4 9-10,62,134,169
+  s_0ede90d0838d1c::t_7ab523f151d9eb 132,162,167-168,189,192-193,206
+src/shared/components/MoreDisclosure/MoreDisclosure.test.tsx
+  s_0ede90d0838d1c::t_eb839304a8b3ce 92-125
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabTextStyleControls.tsx
+  s_0ede90d0838d1c::t_7ab523f151d9eb 48,133
+  s_0ede90d0838d1c::t_e2a1441b8aede4 3-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "15ca13d3cb7641ded0aefdf9ff3c63545b44541b",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
