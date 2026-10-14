@@ -34,9 +34,10 @@ import {
 } from '../shared';
 import type { SideState } from '../shared';
 import type { TextSurface } from '@/features/bin-designer/utils/flatTextContrast';
-import type {
-  LidCompatibilityId,
-  LidCompatibilityIssue,
+import {
+  LID_ISSUES_WITHOUT_DETAIL,
+  type LidCompatibilityId,
+  type LidCompatibilityIssue,
 } from '@/features/bin-designer/utils/lidCompatibility';
 import { LID_RAIL_SIDES, LID_ATTACHMENTS } from '@/features/bin-designer/types';
 import type { TextMode } from '@/features/bin-designer/types';
@@ -57,36 +58,6 @@ type Translator = ReturnType<typeof useTranslation>;
  *  optional one-click Fix button. The button is only shown for issues
  *  whose ID appears in `fixableIds` — issues like `shortBin` or
  *  `cellMaskHoles` need user judgment and don't get an automatic fix. */
-/** Issues whose note keeps its explanation behind an info dot. */
-const ISSUES_WITH_DETAIL: ReadonlySet<LidCompatibilityId> = new Set<LidCompatibilityId>([
-  'wallCutouts',
-  'wallCutoutsAllSides',
-  'knifeSlots',
-  'openSides',
-  'compartmentDividers',
-  'labelTabs',
-  'handles',
-  'handlesAllSides',
-  'magnetTooDeepForBin',
-  'magnetBinTooSmall',
-  'slideFlushNeedsNoLip',
-  'slideInteriorBlocked',
-  'slideLongSpan',
-  'slideRimInterrupted',
-  'slideChannelInterrupted',
-  'hingeStackableTop',
-  'tallLidShortBin',
-  'tallDividerPieces',
-  'cellMaskHoles',
-  'scoopFillsLip',
-  'magnetsPolygonUnsupported',
-  'slideUnbuildable',
-  'slideCatchThin',
-  'hingeUnbuildable',
-  'hingeSnapTooTall',
-  'hingeGripOnHinge',
-]);
-
 function CompatibilityIssue({
   issue,
   fixable,
@@ -116,7 +87,7 @@ function CompatibilityIssue({
       <span className={`mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full ${dotColor}`} />
       <p className="flex-1">
         {t(`binDesigner.lid.compat.${issue.id}`, { sides })}
-        {ISSUES_WITH_DETAIL.has(issue.id) && (
+        {!LID_ISSUES_WITHOUT_DETAIL.has(issue.id) && (
           <span className="ml-1 inline-flex align-middle">
             <InfoDot aria-label={t('binDesigner.infoButton')}>
               <p>{t(`binDesigner.lid.compat.${issue.id}Detail`, { sides })}</p>

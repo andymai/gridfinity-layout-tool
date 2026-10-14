@@ -4,12 +4,15 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { BinParams, LidSlideConfig } from '../types';
 import { DEFAULT_LID_HINGE_CONFIG, DEFAULT_LID_SLIDE_CONFIG } from '../types/lid';
 import type { CellMask } from '@/shared/utils/cellMask';
+import en from '@/i18n/locales/en';
 import {
+  LID_ISSUES_WITHOUT_DETAIL,
   checkLidCompatibility,
   computeDisabledRails,
   hasLidBlocker,
   isLidBlockedBySection,
 } from './lidCompatibility';
+import type { LidCompatibilityId } from './lidCompatibility';
 
 function withOverrides(overrides: Partial<BinParams>): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...overrides };
@@ -1285,5 +1288,48 @@ describe('checkLidCompatibility — hinged attachment', () => {
     for (const params of [hinged(2, 20, 'detent'), hinged(1, 100, 'none')]) {
       expect(checkLidCompatibility(params).map((i) => i.id)).not.toContain('hingeSnapTooTall');
     }
+  });
+});
+
+/** Every issue, so a new one fails to type-check here until it is listed. */
+const ALL_ISSUES: Record<LidCompatibilityId, true> = {
+  wallCutouts: true,
+  wallCutoutsAllSides: true,
+  knifeSlots: true,
+  openSides: true,
+  wallPattern: true,
+  shortBin: true,
+  tallLidShortBin: true,
+  tallDividerPieces: true,
+  cellMaskHoles: true,
+  compartmentDividers: true,
+  labelTabs: true,
+  handles: true,
+  handlesAllSides: true,
+  topDownCutoutsAtLip: true,
+  scoopFillsLip: true,
+  magnetsPolygonUnsupported: true,
+  magnetTooDeepForBin: true,
+  magnetBinTooSmall: true,
+  slideFlushNeedsNoLip: true,
+  slideUnbuildable: true,
+  slideInteriorBlocked: true,
+  slideLongSpan: true,
+  slideRimInterrupted: true,
+  slideCatchThin: true,
+  slideChannelInterrupted: true,
+  slideWallPattern: true,
+  hingeUnbuildable: true,
+  hingeStackableTop: true,
+  hingeSnapTooTall: true,
+  hingeGripOnHinge: true,
+};
+
+describe('lid compatibility notes', () => {
+  it('has a detail behind the dot for every note but the one-line ones', () => {
+    const ids = Object.keys(ALL_ISSUES) as LidCompatibilityId[];
+    expect(ids.map((id) => [id, `binDesigner.lid.compat.${id}Detail` in en])).toEqual(
+      ids.map((id) => [id, !LID_ISSUES_WITHOUT_DETAIL.has(id)])
+    );
   });
 });

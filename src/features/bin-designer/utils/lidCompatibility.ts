@@ -124,6 +124,15 @@ export type LidCompatibilityId =
   /** A lid grip sits on the hinge wall, which never lifts. */
   | 'hingeGripOnHinge';
 
+/** Notes already said in one line, so they have no `{id}Detail` behind a dot. */
+export const LID_ISSUES_WITHOUT_DETAIL: ReadonlySet<LidCompatibilityId> =
+  new Set<LidCompatibilityId>([
+    'wallPattern',
+    'shortBin',
+    'topDownCutoutsAtLip',
+    'slideWallPattern',
+  ]);
+
 export interface LidCompatibilityIssue {
   readonly id: LidCompatibilityId;
   readonly severity: LidCompatibilitySeverity;
