@@ -1,6 +1,7 @@
 src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.tsx
   s_0ede90d0838d1c::t_d3808bed260b1b 6
   s_0ede90d0838d1c::t_ed6c647282814b 61-63,66
+  s_0ede90d0838d1c::t_0f0ad093ece809 5
 src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.test.tsx
   s_0ede90d0838d1c::t_d5623c80f186f5 75,83
 src/shared/components/FeatureToggle/FeatureToggle.tsx
@@ -30,6 +31,7 @@ src/features/bin-designer/components/panel/LidGripControls/LidGripControls.test.
 src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
   s_0ede90d0838d1c::t_3a56b5f13120bd 12
   s_0ede90d0838d1c::t_ed6c647282814b 388-395
+  s_0ede90d0838d1c::t_0f0ad093ece809 10-11
 src/features/bin-designer/components/panel/OverhangSection/OverhangSection.test.tsx
   s_0ede90d0838d1c::t_d5623c80f186f5 259
 src/shared/components/FeatureToggle/FeatureToggle.test.tsx
