@@ -685,7 +685,8 @@ describe('hinged lid', () => {
     // case: its latch wall is closest to the axis, and with 50mm of extra
     // height the axis sits higher above the rim than that, so the cut starts
     // at the rim. A taller height unit raises the axis the same way extra
-    // height does.
+    // height does. A ten-unit-deep lid puts the latch wall further from the
+    // axis than the hinge's trim cutters reach.
     const over = { enabled: true, left: 0, right: 2, front: 0, back: 3 };
     const cases: ReadonlyArray<readonly [string, BinParams]> = [
       ['2 deep', { ...tallHingeParams(), depth: 2 }],
@@ -698,6 +699,13 @@ describe('hinged lid', () => {
         ),
       ],
       ['10mm unit', hingeParams({ heightUnitMm: 10, height: 6 }, { catchMode: 'none' })],
+      [
+        '10 deep',
+        hingeParams(
+          { height: 8, width: 2, depth: 10, lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm: 20 } },
+          { catchMode: 'none' }
+        ),
+      ],
       ...(['front', 'left', 'right'] as const).map(
         (side) =>
           [

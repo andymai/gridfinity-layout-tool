@@ -37,7 +37,7 @@
 
 import { clone, cutAll, cylinder, draw, fuse, rotate, translate, unwrap, withScope } from 'brepjs';
 import type { DisposalScope, Shape3D, ValidSolid } from 'brepjs';
-import { LIP_BIG_TAPER } from './generatorConstants';
+import { LIP_BIG_TAPER, LIP_HEIGHT } from './generatorConstants';
 import { sketch } from './meshUtils';
 import { latchReliefRadiusMm } from '@/shared/utils/hingeLidPlan';
 import type { HingeGeometry, HingeRun } from '@/shared/utils/hingeLidPlan';
@@ -465,18 +465,22 @@ export function relieveLatchPlug(
   const taperClears =
     latch.axisToFaceMm - latch.cornerRecessMm - LIP_BIG_TAPER > g.axisAboveLipTopMm + LIP_BIG_TAPER;
   const top = taperClears ? rimZ - LIP_BIG_TAPER : rimZ;
-  const R = TRIM_REACH_MM;
-  const section = draw([cy - R, top - R])
-    .lineTo([cy + R, top - R])
-    .lineTo([cy + R, top])
-    .lineTo([cy - R, top])
+  // Sized from this lid, not the trim's fixed reach: the latch wall of a deep
+  // lid lies further from the axis than that reach.
+  const reach = latch.axisToFaceMm + g.axisAboveLipTopMm + LIP_HEIGHT;
+  const half =
+    Math.max(Math.abs(latch.straightLo), Math.abs(latch.straightHi)) + latch.cornerRecessMm + 1;
+  const section = draw([cy - reach, top - reach])
+    .lineTo([cy + reach, top - reach])
+    .lineTo([cy + reach, top])
+    .lineTo([cy - reach, top])
     .close();
-  const prism = scope.register(sketch(section, 'YZ').extrude(2 * R));
-  const cutZone = scope.register(translate(prism, [-R, 0, 0]));
+  const prism = scope.register(sketch(section, 'YZ').extrude(2 * half));
+  const cutZone = scope.register(translate(prism, [-half, 0, 0]));
   // Inset from the straight run's ends rather than flush with them: those are
   // the side walls' cavity faces, and a coplanar cutter face there is a sliver.
   const keep = [
-    onAxis(scope, g, frame, corner, -R - COPLANAR_MARGIN, R + COPLANAR_MARGIN),
+    onAxis(scope, g, frame, corner, -half - COPLANAR_MARGIN, half + COPLANAR_MARGIN),
     onAxis(
       scope,
       g,
