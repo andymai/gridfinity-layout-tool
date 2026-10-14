@@ -11,7 +11,7 @@ import { useTranslation } from '@/i18n';
 import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import { Button, Checkbox } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
-import { ShapePicker, SideSelector, StepperField, LinkIcon, type SideState } from '../shared';
+import { Hint, ShapePicker, SideSelector, StepperField, LinkIcon, type SideState } from '../shared';
 import { useWallCutoutsSection } from './useWallCutoutsSection';
 import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import type {
@@ -468,9 +468,9 @@ export function WallCutoutsSection() {
 
           {/* Density expectation hint (issue #1882) — contextual */}
           {showDensityHint && (
-            <p className="text-xs leading-snug text-content-tertiary">
-              {t('binDesigner.wallCutouts.densityHint')}
-            </p>
+            <Hint info={t('binDesigner.wallCutouts.densityHint')}>
+              {t('binDesigner.wallCutouts.densityHintShort')}
+            </Hint>
           )}
 
           {/* Interior walls */}

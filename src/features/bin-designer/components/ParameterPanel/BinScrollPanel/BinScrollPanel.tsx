@@ -116,7 +116,7 @@ export function BinScrollPanel({
   const markIf = (isModified: boolean): string | undefined =>
     isModified ? modifiedLabel : undefined;
 
-  const customShapeReason = t('binDesigner.shape.custom.hint');
+  const customShapeReason = t('binDesigner.shape.custom.unavailable');
   const footprintFix = isCustomShape ? (
     <DependencyHint
       reason={customShapeReason}

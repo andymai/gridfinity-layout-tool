@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Alert, Button, NumberField } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { PanelSection } from '../PanelSection';
+import { InfoDot } from '../shared';
 import type {
   BinParams,
   CutoutOverride,
@@ -87,6 +88,11 @@ export function VariantSection({
       </h3>
       <p className="mb-3 text-xs text-content-secondary">
         {t('binDesigner.variants.panelLocked', { name: parentName })}
+        <span className="ml-1 inline-flex align-middle">
+          <InfoDot aria-label={t('binDesigner.infoButton')}>
+            <p>{t('binDesigner.variants.panelLockedDetail')}</p>
+          </InfoDot>
+        </span>
       </p>
 
       {orphans.length > 0 && (

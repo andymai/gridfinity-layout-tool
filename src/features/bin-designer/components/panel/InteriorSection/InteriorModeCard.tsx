@@ -10,7 +10,7 @@
 
 import { useTranslation } from '@/i18n';
 import { Badge } from '@/design-system';
-import { ModeCard } from '../shared';
+import { Hint, ModeCard } from '../shared';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -83,9 +83,11 @@ function BentoModeContent() {
   if (!isDesktop) {
     return (
       <div className="space-y-3">
-        <p className="rounded-md bg-surface/60 px-2 py-1.5 text-label leading-relaxed text-content-tertiary">
-          {t('binDesigner.bento.smallScreenNote')}
-        </p>
+        <div className="rounded-md bg-surface/60 px-2 py-1.5">
+          <Hint info={t('binDesigner.bento.smallScreenNoteDetail')}>
+            {t('binDesigner.bento.smallScreenNote')}
+          </Hint>
+        </div>
         <CompartmentEditor />
       </div>
     );

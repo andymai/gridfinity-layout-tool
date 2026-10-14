@@ -13,8 +13,8 @@
  */
 
 import { SegmentedControl } from '@/design-system';
-import { Switch } from '@/design-system/Switch';
-import { Hint, Readout } from '../shared';
+import { FeatureToggle } from '../FeatureToggle';
+import { FieldLabel, OptionNotes, Readout } from '../shared';
 import { SLIDE_SAG_SPAN_MM } from '@/shared/utils/slideLidPlan';
 import type { useTranslation } from '@/i18n';
 import type { useLidSection } from '../LidSection/useLidSection';
@@ -33,9 +33,18 @@ export function SlideControls({
   return (
     <div className="space-y-2">
       <div>
-        <span className="mb-1 block text-xs font-medium text-content-secondary">
+        <FieldLabel
+          info={
+            <OptionNotes
+              options={state.slidePlacements.map((mode) => ({
+                label: t(`binDesigner.lid.slide.placement.${mode}`),
+                note: t(`binDesigner.lid.slide.placement.${mode}Hint`),
+              }))}
+            />
+          }
+        >
           {t('binDesigner.lid.slide.placement')}
-        </span>
+        </FieldLabel>
         <SegmentedControl
           aria-label={t('binDesigner.lid.slide.placement')}
           activeStyle="accent"
@@ -48,13 +57,12 @@ export function SlideControls({
             label: t(`binDesigner.lid.slide.placement.${mode}`),
           }))}
         />
-        <Hint>{t(`binDesigner.lid.slide.placement.${state.slide.placement}Hint`)}</Hint>
       </div>
 
       <div>
-        <span className="mb-1 block text-xs font-medium text-content-secondary">
+        <FieldLabel info={t('binDesigner.lid.slide.entrySideHint')}>
           {t('binDesigner.lid.slide.entrySide')}
-        </span>
+        </FieldLabel>
         <SegmentedControl
           aria-label={t('binDesigner.lid.slide.entrySide')}
           activeStyle="accent"
@@ -67,13 +75,21 @@ export function SlideControls({
             label: t(`binDesigner.lid.side.${side}`),
           }))}
         />
-        <Hint>{t('binDesigner.lid.slide.entrySideHint')}</Hint>
       </div>
 
       <div>
-        <span className="mb-1 block text-xs font-medium text-content-secondary">
+        <FieldLabel
+          info={
+            <OptionNotes
+              options={state.slidePulls.map((mode) => ({
+                label: t(`binDesigner.lid.slide.pull.${mode}`),
+                note: t(`binDesigner.lid.slide.pull.${mode}Hint`),
+              }))}
+            />
+          }
+        >
           {t('binDesigner.lid.slide.pull')}
-        </span>
+        </FieldLabel>
         <SegmentedControl
           aria-label={t('binDesigner.lid.slide.pull')}
           activeStyle="accent"
@@ -86,17 +102,14 @@ export function SlideControls({
             label: t(`binDesigner.lid.slide.pull.${mode}`),
           }))}
         />
-        <Hint>{t(`binDesigner.lid.slide.pull.${state.slide.pull}Hint`)}</Hint>
       </div>
 
-      <div className="space-y-1">
-        <Switch
-          label={t('binDesigner.lid.slide.detent')}
-          checked={state.slide.detent}
-          onChange={handlers.toggleSlideDetent}
-        />
-        <Hint>{t('binDesigner.lid.slide.detentHint')}</Hint>
-      </div>
+      <FeatureToggle
+        label={t('binDesigner.lid.slide.detent')}
+        checked={state.slide.detent}
+        onChange={handlers.toggleSlideDetent}
+        info={t('binDesigner.lid.slide.detentHint')}
+      />
 
       {/* The plan's own account of the span, so the sag advice names a real
           number rather than a rule of thumb. */}

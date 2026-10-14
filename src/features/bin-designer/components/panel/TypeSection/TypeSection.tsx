@@ -43,7 +43,7 @@ import { resolveEffectiveFont } from '@/shared/utils/typePlan';
 import { useTypeMeasurer } from '@/features/bin-designer/hooks/useTypeMeasurer';
 import { AnchorPicker } from '../../controls/AnchorPicker';
 import { TypeSpecimen } from '../../controls/TypeSpecimen';
-import { Hint, SubHeader, TextColorControl, TextFinishGrid } from '../shared';
+import { Hint, InfoDot, SubHeader, TextColorControl, TextFinishGrid } from '../shared';
 import { useTypeSection, TYPE_BOUNDS } from './useTypeSection';
 
 const TEXT_MODE_OPTIONS: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'] as const;
@@ -137,7 +137,14 @@ export function TypeSection() {
       {state.stemWarning && (
         <Alert intent="warning">
           <div className="space-y-1.5">
-            <p className="text-label leading-relaxed">{t('binDesigner.type.stemWarning')}</p>
+            <p className="text-label leading-relaxed">
+              {t('binDesigner.type.stemWarningShort')}
+              <span className="ml-1 inline-flex align-middle">
+                <InfoDot aria-label={t('binDesigner.infoButton')}>
+                  <p>{t('binDesigner.type.stemWarning')}</p>
+                </InfoDot>
+              </span>
+            </p>
             {/* The measurement, not just the verdict: it is what tells the user
                 how far they have to move, and it came from the built geometry. */}
             <p className="text-label leading-relaxed text-content-tertiary">

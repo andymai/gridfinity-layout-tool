@@ -2,7 +2,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { FeatureToggle } from '../FeatureToggle';
-import { ShapePicker, StepperField } from '../shared';
+import { Hint, LabelInfo, ShapePicker, StepperField } from '../shared';
 import { CheckboxRow } from '@/design-system';
 import {
   resolvePullTab,
@@ -13,6 +13,12 @@ import {
 } from '@/shared/utils/pullTabPlan';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import type { PullTabConfig } from '@/features/bin-designer/types';
+
+const FIELD_INFO: Partial<Record<keyof typeof PULL_TAB_LIMITS, string>> = {
+  topRadius: 'binDesigner.pullTab.outlineHint',
+  recessBorder: 'binDesigner.pullTab.recessDescription',
+  recessEdgeRadius: 'binDesigner.pullTab.filletDescription',
+};
 
 export function PullTabSection() {
   const t = useTranslation();
@@ -39,9 +45,11 @@ export function PullTabSection() {
     const value = Math.round((effective?.[key] ?? tab[key]) * 100) / 100;
     const label = t(`binDesigner.pullTab.${key === 'widthPercent' ? 'width' : key}`);
     const set = (v: number) => update({ [key]: Math.min(max, Math.max(min, v)) });
+    const infoKey = FIELD_INFO[key];
     return (
       <StepperField
         label={label}
+        info={infoKey === undefined ? undefined : t(infoKey)}
         unit={key === 'widthPercent' ? '%' : 'mm'}
         aria-label={label}
         value={value}
@@ -60,9 +68,9 @@ export function PullTabSection() {
       checked={tab.enabled}
       onChange={() => update({ enabled: !tab.enabled })}
       disabledReason={reason ? t(reason) : undefined}
+      info={t('binDesigner.pullTab.description')}
       primaryControls={
         <div className="space-y-3">
-          <p className="text-xs text-content-tertiary">{t('binDesigner.pullTab.description')}</p>
           <ShapePicker
             value={tab.wall}
             onChange={(wall) => update({ wall })}
@@ -96,31 +104,27 @@ export function PullTabSection() {
             {field('height', 3, 40, 1)}
           </div>
           {tab.widthMode === 'percent' && (
-            <p className="text-xs text-content-tertiary">
+            <Hint info={t('binDesigner.pullTab.percentHintDetail')}>
               {t('binDesigner.pullTab.percentHint', {
                 width: (effective?.width ?? tab.width).toFixed(1),
               })}
-            </p>
+            </Hint>
           )}
           <div className="flex gap-2">
             {field('topRadius')}
             {field('rootRadius')}
           </div>
-          <p className="text-xs text-content-tertiary">{t('binDesigner.pullTab.outlineHint')}</p>
-          <p className="text-xs text-content-tertiary">
-            {t('binDesigner.pullTab.recessDescription')}
-          </p>
           {field('recessBorder')}
-          <CheckboxRow
-            label={t('binDesigner.pullTab.backRecess')}
-            checked={tab.backRecess}
-            onChange={(backRecess) => update({ backRecess })}
-          />
-          {tab.backRecess && (
-            <p className="text-xs text-content-tertiary">
+          <div className="flex items-center gap-1.5">
+            <CheckboxRow
+              label={t('binDesigner.pullTab.backRecess')}
+              checked={tab.backRecess}
+              onChange={(backRecess) => update({ backRecess })}
+            />
+            <LabelInfo label={t('binDesigner.pullTab.backRecess')}>
               {t('binDesigner.pullTab.backRecessHint')}
-            </p>
-          )}
+            </LabelInfo>
+          </div>
           <div className="flex gap-2">
             {field('recessHeight', 1, Math.min(80, rim + tab.height - params.wallThickness - 2), 1)}
             {field(
@@ -137,16 +141,13 @@ export function PullTabSection() {
             {field('recessEdgeRadius')}
             {field('recessInsideRadius')}
           </div>
-          <p className="text-xs text-content-tertiary">
-            {t('binDesigner.pullTab.filletDescription')}
-          </p>
           {effective && (
-            <p className="text-xs text-content-tertiary">
+            <Hint info={t('binDesigner.pullTab.recessSizeDetail')}>
               {t('binDesigner.pullTab.recessSize', {
                 width: effective.recessWidth.toFixed(1),
                 below: Math.max(0, rim - effective.recessTop + effective.recessHeight).toFixed(1),
               })}
-            </p>
+            </Hint>
           )}
         </div>
       }

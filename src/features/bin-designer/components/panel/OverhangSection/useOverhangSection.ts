@@ -183,7 +183,7 @@ export function useOverhangSection() {
 
   // Overhang is suppressed for custom-shape (mask) bins in the generator, so
   // surface that as a disabled state rather than silently ignoring input.
-  const disabledReason = isCustomShape ? t('binDesigner.shape.custom.hint') : undefined;
+  const disabledReason = isCustomShape ? t('binDesigner.shape.custom.unavailable') : undefined;
 
   // The one-line row shrinks the track to ~84px, below a comfortable touch
   // target; anything touch-driven keeps the stacked full-width slider.

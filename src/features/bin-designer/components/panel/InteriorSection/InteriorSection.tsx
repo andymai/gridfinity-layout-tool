@@ -35,7 +35,7 @@ export function InteriorSection() {
   const hasAngledDividers = useDesignerStore(
     (s) => (s.params.compartments.dividerOverrides?.length ?? 0) > 0
   );
-  const customShapeReason = t('binDesigner.shape.custom.hint');
+  const customShapeReason = t('binDesigner.shape.custom.unavailable');
   // Only the base can make slot mode unreachable. The solid/slotted exclusion
   // also reports here, but selecting the card resolves that one, so gating on
   // it would strand a Solid bin with no way back to Removable.

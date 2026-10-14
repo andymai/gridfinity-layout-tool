@@ -24,7 +24,7 @@ import {
   KNIFE_REST_MAX_GROOVE_DEPTH_MM,
 } from '@/features/bin-designer/types';
 import { FeatureToggle } from '../FeatureToggle';
-import { StepperField } from '../shared';
+import { FieldLabel, OptionNotes, StepperField } from '../shared';
 import { useKnifeRestSection } from './useKnifeRestSection';
 
 const GAP_STEP_MM = 1;
@@ -50,9 +50,18 @@ export function KnifeRestSection() {
       primaryControls={
         <>
           <div>
-            <span className="mb-1 block text-xs text-content-tertiary">
+            <FieldLabel
+              info={
+                <OptionNotes
+                  options={styleOptions.map((option) => ({
+                    label: t(`binDesigner.knifeRest.style.${option.value}`),
+                    note: t(`binDesigner.knifeRest.styleHint.${option.value}`),
+                  }))}
+                />
+              }
+            >
               {t('binDesigner.knifeRest.style')}
-            </span>
+            </FieldLabel>
             <SegmentedControl
               options={styleOptions}
               value={state.style}
@@ -61,9 +70,6 @@ export function KnifeRestSection() {
               size="sm"
               fullWidth
             />
-            <p className="mt-1 text-label leading-relaxed text-content-tertiary">
-              {t(`binDesigner.knifeRest.styleHint.${state.style}`)}
-            </p>
           </div>
           {state.style === 'companion' && (
             <div className="flex gap-2">
@@ -107,10 +113,8 @@ export function KnifeRestSection() {
         step={GROOVE_STEP_MM}
         size="md"
         aria-label={t('binDesigner.knifeRest.grooveDepthAria')}
+        info={t('binDesigner.knifeRest.grooveDepthHint')}
       />
-      <p className="text-label leading-relaxed text-content-tertiary">
-        {t('binDesigner.knifeRest.grooveDepthHint')}
-      </p>
     </FeatureToggle>
   );
 }

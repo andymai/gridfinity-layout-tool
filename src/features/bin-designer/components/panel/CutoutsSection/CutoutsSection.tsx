@@ -11,6 +11,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
+import { Hint } from '../shared';
 import { CutoutEditor } from './CutoutEditor';
 import { cutoutTaperBand } from '@/features/bin-designer/utils/binDimensions';
 
@@ -29,21 +30,16 @@ export function CutoutsSection() {
 
   return (
     <div className="space-y-3">
-      <div className="space-y-1">
-        <p className="text-label text-content-tertiary leading-relaxed">
-          {t('binDesigner.cutouts.instructions')}
-        </p>
-        <p className="text-micro text-content-disabled leading-relaxed">
-          {t('binDesigner.cutouts.instructionsWorkspaceHint')}
-        </p>
-      </div>
+      <Hint info={t('binDesigner.cutouts.instructions')}>
+        {t('binDesigner.cutouts.instructionsWorkspaceHint')}
+      </Hint>
 
       <CutoutEditor />
 
       {taperBand && (
-        <p className="text-micro text-content-disabled leading-relaxed">
-          {t('binDesigner.cutouts.taperBandHint')}
-        </p>
+        <Hint info={t('binDesigner.cutouts.taperBandHint')}>
+          {t('binDesigner.cutouts.taperBandHintShort')}
+        </Hint>
       )}
 
       {cutoutCount > 0 && (

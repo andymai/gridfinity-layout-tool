@@ -20,7 +20,7 @@ export function InteriorPage() {
       isCustomShape: isPartialMask(s.params.cellMask),
     }))
   );
-  const customShapeReason = t('binDesigner.shape.custom.hint');
+  const customShapeReason = t('binDesigner.shape.custom.unavailable');
   const footprintFix = isCustomShape ? (
     <DependencyHint
       reason={customShapeReason}

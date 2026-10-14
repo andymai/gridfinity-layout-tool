@@ -220,6 +220,8 @@ describe('WallCutoutsSection', () => {
     });
 
     render(<WallCutoutsSection />);
+    expect(screen.getByText(/try Interior walls below/)).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'More information' }));
     expect(screen.getByText(/stack of slats/)).toBeDefined();
   });
 

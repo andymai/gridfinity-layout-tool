@@ -8,6 +8,7 @@
 import { type ReactNode } from 'react';
 import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
+import { InfoDot } from '@/shared/components/InfoDot';
 import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 
 interface FeatureToggleProps {
@@ -31,6 +32,8 @@ interface FeatureToggleProps {
   customizeLabel?: string;
   /** Optional badge rendered next to the label (e.g., an "Experimental" pill). */
   badge?: ReactNode;
+  /** Evergreen explanation behind an info dot beside the label. */
+  info?: ReactNode;
 }
 
 export function FeatureToggle({
@@ -44,6 +47,7 @@ export function FeatureToggle({
   disabledReason,
   customizeLabel,
   badge,
+  info,
 }: FeatureToggleProps) {
   const t = useTranslation();
 
@@ -69,6 +73,11 @@ export function FeatureToggle({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-xs text-content-secondary">{label}</span>
+          {info !== undefined && (
+            <InfoDot aria-label={t('common.aboutLabel', { label })}>
+              {typeof info === 'string' ? <p>{info}</p> : info}
+            </InfoDot>
+          )}
           {!disabledReason && comingSoon && (
             <span className="rounded-full bg-surface-tertiary px-1.5 py-0.5 text-micro font-medium text-content-tertiary">
               {t('common.soon')}

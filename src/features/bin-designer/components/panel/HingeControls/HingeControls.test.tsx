@@ -110,9 +110,8 @@ describe('HingeControls', () => {
     // hardware, and magnets that hold hardest but have to be bought — and the
     // picker's labels alone do not carry it.
     renderControls({ catchMode: 'magnets' });
+    fireEvent.click(screen.getByRole('button', { name: /About Holds shut with/ }));
     expect(screen.getByText(/two magnets/)).toBeInTheDocument();
-
-    renderControls({ catchMode: 'detent' });
-    expect(screen.getAllByText(/no hardware/).at(-1)).toBeInTheDocument();
+    expect(screen.getByText(/no hardware/)).toBeInTheDocument();
   });
 });

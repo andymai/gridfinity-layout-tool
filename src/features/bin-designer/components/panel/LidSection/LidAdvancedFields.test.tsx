@@ -36,6 +36,7 @@ describe('LidAdvancedFields', () => {
     const field = screen.getByLabelText('Lid top plate thickness in millimeters');
     expect(field).toHaveValue(3.2);
     expect(field).toHaveAttribute('min', '3.2');
+    fireEvent.click(screen.getByRole('button', { name: /About Lid thickness/ }));
     expect(screen.getByText(/Hinged lids start at 3\.2 mm/)).toBeInTheDocument();
   });
 

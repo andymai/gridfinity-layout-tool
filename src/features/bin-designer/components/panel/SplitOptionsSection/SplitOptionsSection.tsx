@@ -1,4 +1,5 @@
 import { FeatureToggle } from '../FeatureToggle';
+import { Hint } from '../shared';
 import { useTranslation } from '@/i18n';
 import { useSplitOptionsSection } from './useSplitOptionsSection';
 
@@ -48,9 +49,9 @@ export function SplitOptionsSection() {
       />
 
       {showNozzleNotice && (
-        <p className="text-label leading-relaxed text-content-tertiary">
-          {t('binDesigner.splitConnectorNozzleNotice', { nozzle: nozzleSizeMm })}
-        </p>
+        <Hint info={t('binDesigner.splitConnectorNozzleNotice', { nozzle: nozzleSizeMm })}>
+          {t('binDesigner.splitConnectorNozzleNoticeShort', { nozzle: nozzleSizeMm })}
+        </Hint>
       )}
     </div>
   );

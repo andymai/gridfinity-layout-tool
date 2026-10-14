@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { DimensionsSection } from './DimensionsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
@@ -35,8 +35,10 @@ describe('DimensionsSection', () => {
     expect(screen.getByText('81.1 × 81.1 × 14 mm')).toBeInTheDocument();
   });
 
-  it('explains what the inside size leaves out in text a touch screen can read', () => {
+  it('explains what the inside size leaves out behind a dot a touch screen can open', () => {
     render(<DimensionsSection />);
+    expect(screen.queryByText(/before dividers, scoops and label tabs/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /About Inside/ }));
     expect(screen.getByText(/before dividers, scoops and label tabs/)).toBeVisible();
   });
 

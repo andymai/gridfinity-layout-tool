@@ -35,6 +35,8 @@ describe('CutoutsSection', () => {
 
   it('renders instructions and editor', () => {
     render(<CutoutsSection />);
+    expect(screen.getByText('binDesigner.cutouts.instructionsWorkspaceHint')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.infoButton' }));
     expect(screen.getByText('binDesigner.cutouts.instructions')).toBeInTheDocument();
     expect(screen.getByTestId('cutout-editor')).toBeInTheDocument();
   });

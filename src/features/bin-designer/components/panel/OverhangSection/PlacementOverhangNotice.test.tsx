@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { PlacementOverhangNotice } from './PlacementOverhangNotice';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
@@ -51,6 +51,8 @@ describe('PlacementOverhangNotice', () => {
     render(<PlacementOverhangNotice />);
     expect(screen.getByRole('status')).toBeDefined();
     expect(screen.getByText('Overhang from the layout')).toBeDefined();
+    expect(screen.getByText(/Change it in the layout/)).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'More information' }));
     expect(screen.getByText(/extends into the drawer margin/)).toBeDefined();
     expect(screen.getByText('Left')).toBeDefined();
     expect(screen.getByText('4.5 mm')).toBeDefined();
@@ -67,6 +69,7 @@ describe('PlacementOverhangNotice', () => {
       })
     );
     render(<PlacementOverhangNotice />);
+    fireEvent.click(screen.getByRole('button', { name: 'More information' }));
     expect(screen.getByText(/was expanded to fit/)).toBeDefined();
     expect(screen.getByText('Right')).toBeDefined();
     expect(screen.getByText('6 mm')).toBeDefined();

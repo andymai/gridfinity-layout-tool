@@ -7,6 +7,7 @@
  */
 
 import { useId, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Slider } from '../Slider';
 import { cn } from '../cn';
 import { EditableValueBadge } from './EditableValueBadge';
@@ -28,6 +29,8 @@ export interface SliderInputProps {
   unit?: string;
   /** Secondary info shown below the label */
   info?: string;
+  /** Rendered beside the label, e.g. an info button. */
+  labelAddon?: ReactNode;
   /** Whether the control is disabled */
   disabled?: boolean;
   /** Transient emphasis ring — e.g. flashed when a preset sets this value. */
@@ -43,6 +46,7 @@ export function SliderInput({
   step = 1,
   unit,
   info,
+  labelAddon,
   disabled = false,
   highlight = false,
 }: SliderInputProps) {
@@ -52,6 +56,11 @@ export function SliderInput({
   const [isEditing, setIsEditing] = useState(false);
 
   const infoId = `${id}-info`;
+  const labelElement = (
+    <label htmlFor={isEditing ? id : undefined} className="text-label text-content-secondary">
+      {label}
+    </label>
+  );
   const valueText = unit ? `${value} ${unit}` : String(value);
 
   return (
@@ -64,9 +73,14 @@ export function SliderInput({
     >
       {/* Label row with editable value badge */}
       <div className="flex items-center justify-between mb-1">
-        <label htmlFor={isEditing ? id : undefined} className="text-label text-content-secondary">
-          {label}
-        </label>
+        {labelAddon === undefined ? (
+          labelElement
+        ) : (
+          <span className="flex items-center gap-1.5">
+            {labelElement}
+            {labelAddon}
+          </span>
+        )}
 
         <EditableValueBadge
           label={label}

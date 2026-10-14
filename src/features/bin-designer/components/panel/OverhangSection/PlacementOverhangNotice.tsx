@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { Alert, InfoIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { InfoDot } from '@/shared/components/InfoDot';
 import { formatMm } from '@/shared/utils/format';
 import { usePlacementOverhang } from './usePlacementOverhang';
 
@@ -17,9 +18,16 @@ export function PlacementOverhangNotice() {
       icon={<InfoIcon size="xs" className="mt-0.5" />}
     >
       <p className="text-label leading-relaxed text-content-secondary">
-        {placement.source === 'expandToFit'
-          ? t('binDesigner.overhang.placement.expandToFitHint')
-          : t('binDesigner.overhang.placement.marginHint')}
+        {t('binDesigner.overhang.placement.changeInLayout')}
+        <span className="ml-1 inline-flex align-middle">
+          <InfoDot aria-label={t('binDesigner.infoButton')}>
+            <p>
+              {placement.source === 'expandToFit'
+                ? t('binDesigner.overhang.placement.expandToFitHint')
+                : t('binDesigner.overhang.placement.marginHint')}
+            </p>
+          </InfoDot>
+        </span>
       </p>
       <dl className="mt-1.5 grid grid-cols-[auto_auto] justify-start gap-x-3 gap-y-0.5 text-label">
         {placement.sides.map(({ side, mm }) => (

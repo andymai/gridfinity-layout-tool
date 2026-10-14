@@ -21,6 +21,7 @@ import { useId } from 'react';
 import { Checkbox } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { FeatureToggle } from '../FeatureToggle';
+import { OptionNotes } from '../shared';
 import { OverhangSliderRow } from './OverhangSliderRow';
 import { PlacementOverhangNotice } from './PlacementOverhangNotice';
 import { TaperProfileCards } from './TaperProfileCards';
@@ -52,11 +53,22 @@ export function OverhangSection() {
         checked={state.enabled}
         onChange={handlers.toggle}
         disabledReason={meta.disabledReason}
+        info={
+          <div className="space-y-2">
+            <p>{t('binDesigner.overhang.hint')}</p>
+            <OptionNotes
+              options={[
+                { label: t('binDesigner.overhang.feet'), note: t('binDesigner.overhang.feetHint') },
+                {
+                  label: t('binDesigner.overhang.taper.title'),
+                  note: t('binDesigner.overhang.taper.hint'),
+                },
+              ]}
+            />
+          </div>
+        }
         primaryControls={
           <>
-            <p className="text-label leading-relaxed text-content-tertiary">
-              {t('binDesigner.overhang.hint')}
-            </p>
             {sides.map(({ side, label }) => (
               // Wrapper relays hover + keyboard focus to the 3D wall highlight
               // without touching the shared slider primitives (onFocus/onBlur
@@ -106,11 +118,11 @@ export function OverhangSection() {
               </span>
               <Checkbox checked={state.feet} disabled={!feetEnabled} />
             </div>
-            <p className="text-label leading-relaxed text-content-tertiary">
-              {state.feetSuperseded
-                ? t('binDesigner.detachableFeet.supersedes')
-                : t('binDesigner.overhang.feetHint')}
-            </p>
+            {state.feetSuperseded && (
+              <p className="text-label leading-relaxed text-content-tertiary">
+                {t('binDesigner.detachableFeet.supersedes')}
+              </p>
+            )}
 
             <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
               <div
@@ -132,9 +144,6 @@ export function OverhangSection() {
                 </span>
                 <Checkbox checked={taper.enabled} />
               </div>
-              <p className="text-label leading-relaxed text-content-tertiary">
-                {t('binDesigner.overhang.taper.hint')}
-              </p>
 
               {taper.enabled && (
                 <>

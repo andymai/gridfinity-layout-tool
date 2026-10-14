@@ -19,6 +19,7 @@ import {
   LABEL_PLATE_FIT_OFFSET_STEP,
 } from '@/shared/constants/labelPlates';
 import type { LabelSocketStyle } from '@/shared/constants/labelPlates';
+import { LabelInfo, OptionNotes } from '../shared';
 import { LabelTextList } from './LabelTextList';
 import { LabelSectionWarnings } from './LabelSectionWarnings';
 import { LabelColorControls } from './LabelColorControls';
@@ -133,8 +134,18 @@ export function LabelTabsSection() {
               cut into the bin, or engraved on separately printed plates (#2666)
               — which in socket mode also gives each row a plate to size. */}
           <div>
-            <span className="mb-1 block text-label text-content-tertiary">
+            <span className="mb-1 flex items-center gap-1.5 text-label text-content-tertiary">
               {t('binDesigner.tabMode')}
+              <LabelInfo label={t('binDesigner.tabMode')}>
+                <OptionNotes
+                  options={[
+                    {
+                      label: t('binDesigner.tabMode.socket'),
+                      note: t('binDesigner.tabMode.socketHint'),
+                    },
+                  ]}
+                />
+              </LabelInfo>
             </span>
             <div role="group" aria-label={t('binDesigner.tabMode')} className={SEGMENT_GROUP_CLASS}>
               {TAB_MODE_OPTIONS.map((option) => {
@@ -157,12 +168,6 @@ export function LabelTabsSection() {
                 );
               })}
             </div>
-            {state.isSocketMode && (
-              <p className="mt-1 flex items-start gap-1 text-xs text-content-tertiary">
-                <InfoIcon size="xs" className="mt-0.5 shrink-0" />
-                <span>{t('binDesigner.tabMode.socketHint')}</span>
-              </p>
-            )}
           </div>
 
           {labelText}
@@ -170,8 +175,18 @@ export function LabelTabsSection() {
           {state.isSocketMode && (
             <>
               <div>
-                <span className="mb-1 block text-label text-content-tertiary">
+                <span className="mb-1 flex items-center gap-1.5 text-label text-content-tertiary">
                   {t('binDesigner.socketStyle')}
+                  <LabelInfo label={t('binDesigner.socketStyle')}>
+                    <OptionNotes
+                      options={[
+                        {
+                          label: t('binDesigner.socketStyle.slideChannel'),
+                          note: t('binDesigner.socketStyle.slideHint'),
+                        },
+                      ]}
+                    />
+                  </LabelInfo>
                 </span>
                 <div
                   role="group"
@@ -195,23 +210,17 @@ export function LabelTabsSection() {
                     );
                   })}
                 </div>
-                {(state.label.socketStyle ?? 'clickIn') === 'slideChannel' && (
-                  <p className="mt-1 flex items-start gap-1 text-xs text-content-tertiary">
-                    <InfoIcon size="xs" className="mt-0.5 shrink-0" />
-                    <span>{t('binDesigner.socketStyle.slideHint')}</span>
-                  </p>
-                )}
               </div>
               {(state.label.socketStyle ?? 'clickIn') === 'clickIn' && (
-                <div>
+                <div className="flex items-center gap-1.5">
                   <CheckboxRow
                     label={t('binDesigner.socketRemovalHole')}
                     checked={state.label.removalHole === true}
                     onChange={handlers.setRemovalHole}
                   />
-                  <p className="mt-0.5 pl-7 text-label leading-snug text-content-tertiary">
+                  <LabelInfo label={t('binDesigner.socketRemovalHole')}>
                     {t('binDesigner.socketRemovalHoleHint')}
-                  </p>
+                  </LabelInfo>
                 </div>
               )}
               {state.rowsForced && (

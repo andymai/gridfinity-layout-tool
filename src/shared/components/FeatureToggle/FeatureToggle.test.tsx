@@ -122,4 +122,12 @@ describe('FeatureToggle', () => {
     fireEvent.click(screen.getByText('common.customize'));
     expect(screen.queryByText('6.5mm x 2mm')).not.toBeInTheDocument();
   });
+  it('keeps its explanation behind an info dot until asked', () => {
+    render(
+      <FeatureToggle label="Test Feature" checked={false} onChange={vi.fn()} info="Explained." />
+    );
+    expect(screen.queryByText('Explained.')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'common.aboutLabel' }));
+    expect(screen.getByText('Explained.')).toBeInTheDocument();
+  });
 });

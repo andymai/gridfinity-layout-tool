@@ -9,6 +9,7 @@ import { IconButton } from '@/design-system';
 import { InfoIcon, XIcon } from '@/design-system/Icon';
 import { useSettingsStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
+import { InfoDot } from '@/shared/components/InfoDot';
 
 const HINT_ID = 'multi-color-export';
 
@@ -30,7 +31,14 @@ export function ColorsHintBanner() {
       className="flex items-start gap-2 rounded-lg border border-info/40 bg-info-muted/40 p-2.5 text-label text-content-secondary"
     >
       <InfoIcon size="sm" className="mt-0.5 shrink-0 text-info" />
-      <p className="flex-1 leading-snug">{t('binDesigner.colors.firstTimeHint')}</p>
+      <p className="flex-1 leading-snug">
+        {t('binDesigner.colors.firstTimeHint')}
+        <span className="ml-1 inline-flex align-middle">
+          <InfoDot aria-label={t('binDesigner.infoButton')}>
+            <p>{t('binDesigner.colors.firstTimeHintDetail')}</p>
+          </InfoDot>
+        </span>
+      </p>
       <IconButton
         variant="ghost"
         size="sm"

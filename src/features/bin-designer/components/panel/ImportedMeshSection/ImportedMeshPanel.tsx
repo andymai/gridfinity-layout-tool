@@ -20,6 +20,7 @@ import { MAX_IMPORTED_MESH_HEIGHT_UNITS } from '@/shared/items/importedMesh/desc
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { PanelSection } from '../PanelSection';
 import { StickyGroupHeader } from '../StickyGroupHeader';
+import { Hint } from '../shared';
 
 interface FieldProps {
   readonly label: string;
@@ -156,9 +157,11 @@ export function ImportedMeshPanel() {
                   }
                 />
               </div>
-              <p className="mt-2 text-xs text-content-tertiary">
-                {t('binDesigner.importedMesh.footprintHelp')}
-              </p>
+              <div className="mt-2">
+                <Hint info={t('binDesigner.importedMesh.footprintHelpDetail')}>
+                  {t('binDesigner.importedMesh.footprintHelp')}
+                </Hint>
+              </div>
             </PanelSection>
           </div>
         </StickyGroupHeader>

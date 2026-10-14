@@ -13,6 +13,7 @@ import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { formatCompactMm } from '@/features/bin-designer/utils/compartmentDimensions';
 import { AssembledHeightBreakdown } from '../AssembledHeightBreakdown';
+import { LabelInfo } from '../shared';
 import { useDimensionsSection } from './useDimensionsSection';
 
 export function DimensionsSection() {
@@ -86,14 +87,14 @@ export function DimensionsSection() {
         <div className="space-y-0.5 text-center">
           <div className="flex items-center justify-center gap-1.5 text-xs text-content-tertiary">
             <span>{t('binDesigner.interiorDimensions')}</span>
+            <LabelInfo label={t('binDesigner.interiorDimensions')}>
+              {t('binDesigner.interiorDimensionsHint')}
+            </LabelInfo>
             <span className="tabular-nums">
               {formatCompactMm(state.interior.widthMm)} × {formatCompactMm(state.interior.depthMm)}{' '}
               × {formatCompactMm(state.interior.heightMm)} mm
             </span>
           </div>
-          <p className="text-micro text-content-tertiary/70">
-            {t('binDesigner.interiorDimensionsHint')}
-          </p>
         </div>
       )}
 

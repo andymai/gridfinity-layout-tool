@@ -7,7 +7,8 @@
 
 import type { ComponentProps } from 'react';
 import { Stepper } from '@/design-system';
-import { InfoDot } from './InfoDot';
+import { useTranslation } from '@/i18n';
+import { InfoDot } from '@/shared/components/InfoDot';
 
 type StepperFieldProps = ComponentProps<typeof Stepper> & {
   label: string;
@@ -15,11 +16,12 @@ type StepperFieldProps = ComponentProps<typeof Stepper> & {
   unit?: string;
   /** Explanatory prose offered behind an info dot beside the label. */
   info?: string;
-  /** Accessible name for the info dot; required when `info` is set. */
+  /** Accessible name for the info dot; defaults to "About {label}". */
   infoLabel?: string;
 };
 
 export function StepperField({ label, unit, info, infoLabel, ...stepper }: StepperFieldProps) {
+  const t = useTranslation();
   return (
     <div className="min-w-0 flex-1">
       <span className="mb-1 flex items-center gap-1.5 text-label text-content-tertiary">
@@ -28,7 +30,7 @@ export function StepperField({ label, unit, info, infoLabel, ...stepper }: Stepp
           {unit ? <span className="text-content-tertiary/70">{` (${unit})`}</span> : null}
         </span>
         {info !== undefined && (
-          <InfoDot aria-label={infoLabel ?? label}>
+          <InfoDot aria-label={infoLabel ?? t('common.aboutLabel', { label })}>
             <p>{info}</p>
           </InfoDot>
         )}

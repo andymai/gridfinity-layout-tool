@@ -11,7 +11,7 @@ import { LID_RAIL_SIDES, lidGripHeightAdjustable } from '@/features/bin-designer
 import type { LidGripSides, LidRailSide } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
 import { SnappingSlider } from '../../controls/SnappingSlider';
-import { Hint, Readout, SegmentGrid, StepperField } from '../shared';
+import { Hint, LabelInfo, Readout, SegmentGrid, StepperField } from '../shared';
 import type { useLidSection } from '../LidSection/useLidSection';
 
 type Translator = ReturnType<typeof useTranslation>;
@@ -98,7 +98,11 @@ export function LidGripControls({
           disabled: !state.gripModeAllowed(mode),
         }))}
       />
-      {modeSelected && !modeAllowed && <Hint>{t('binDesigner.lid.gripModeStackConflict')}</Hint>}
+      {modeSelected && !modeAllowed && (
+        <Hint info={t('binDesigner.lid.gripModeStackConflict')}>
+          {t('binDesigner.lid.gripModeStackConflictShort')}
+        </Hint>
+      )}
 
       {modeSelected && modeAllowed && (
         <>
@@ -162,25 +166,26 @@ export function LidGripControls({
           {/* Only the skirt bound gets its own line: a chamfer cut short by the
               depth clamp is already explained by the hint above it. */}
           {state.gripActive && gripHeight.limitedBy === 'skirt' && (
-            <Hint>
-              {t('binDesigner.lid.gripHeightClamped', {
+            <Hint
+              info={t('binDesigner.lid.gripHeightClamped', {
+                skirt: gripHeight.skirtMm.toFixed(1),
+              })}
+            >
+              {t('binDesigner.lid.gripHeightClampedShort', {
                 skirt: gripHeight.skirtMm.toFixed(1),
               })}
             </Hint>
           )}
 
-          <div>
-            {/* `items-start` overrides the component's centring: this label is long
-                enough to wrap, and centring would put the box beside the middle
-                line. No nudge needed — text-xs and the box are both 16px tall. */}
+          <div className="flex items-center gap-1.5">
             <Checkbox
-              className="items-start"
               checked={grip.binDip}
               onChange={handlers.toggleGripBinDip}
               label={t('binDesigner.lid.gripBinDip')}
             />
-            {/* Outside the label: `Hint` is a <p>, which cannot nest in a <span>. */}
-            <Hint>{t('binDesigner.lid.gripBinDipWarning')}</Hint>
+            <LabelInfo label={t('binDesigner.lid.gripBinDip')}>
+              {t('binDesigner.lid.gripBinDipWarning')}
+            </LabelInfo>
           </div>
         </>
       )}
