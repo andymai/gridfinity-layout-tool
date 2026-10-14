@@ -136,24 +136,32 @@ export async function getDue(now: number = Date.now()): Promise<OutboxEntry[]> {
 }
 
 /**
- * Mark a successful push. Removes the entry from the outbox. If a
- * newer enqueue arrived between our read and now (e.g. user edited
- * again while we were pushing), the second enqueue's `key` is the
- * same and our delete here would erase it — so callers MUST pass the
- * `modifiedAt` they pushed, and we only delete if the stored entry
- * still matches that mtime. Otherwise the newer enqueue stays.
+ * Mark a successful push. Callers pass the `modifiedAt` and op they
+ * pushed, so a newer enqueue that arrived during the push stays.
+ *
+ * A put sends the item's latest snapshot, which covers any queued put
+ * stamped at or before it. Matching only the exact mtime would leave an
+ * entry queued before a change the engine never heard (a save during the
+ * sign-in claim, before it subscribes) due forever, and the drainer would
+ * re-send the same snapshot back to back. A delete clears only its own
+ * entry: a remote-stamped `modifiedAt` can run ahead of a local delete.
  */
 export async function markSuccess(
   kind: SyncKind,
   id: string,
-  pushedModifiedAt: number
+  pushedModifiedAt: number,
+  pushedOp: OutboxEntry['op']
 ): Promise<void> {
   const db = await outboxDb.get();
   const tx = db.transaction(STORE_NAME, 'readwrite');
   const store = tx.objectStore(STORE_NAME);
   const current = (await store.get(entryKey(kind, id))) as OutboxEntry | undefined;
-  if (current && current.modifiedAt === pushedModifiedAt) {
-    await store.delete(entryKey(kind, id));
+  if (current && current.op === pushedOp) {
+    const covered =
+      pushedOp === 'put'
+        ? current.modifiedAt <= pushedModifiedAt
+        : current.modifiedAt === pushedModifiedAt;
+    if (covered) await store.delete(entryKey(kind, id));
   }
   await tx.done;
 }

@@ -110,7 +110,7 @@ describe('getDue', () => {
 describe('markSuccess', () => {
   it('removes the entry on matching modifiedAt', async () => {
     await enqueue({ kind: 'layouts', id: 'lay-1', modifiedAt: 1000, op: 'put' });
-    await markSuccess('layouts', 'lay-1', 1000);
+    await markSuccess('layouts', 'lay-1', 1000, 'put');
     expect(await getAll()).toEqual([]);
   });
 
@@ -121,10 +121,30 @@ describe('markSuccess', () => {
     await enqueue({ kind: 'layouts', id: 'lay-1', modifiedAt: 2000, op: 'put' });
     // Our PUT for 1000 succeeds. We mark success — but the stored entry
     // is now for 2000 and shouldn't be deleted.
-    await markSuccess('layouts', 'lay-1', 1000);
+    await markSuccess('layouts', 'lay-1', 1000, 'put');
     const entries = await getAll();
     expect(entries).toHaveLength(1);
     expect(entries[0].modifiedAt).toBe(2000);
+  });
+
+  it('removes a put entry older than the snapshot the push sent', async () => {
+    await enqueue({ kind: 'layouts', id: 'lay-1', modifiedAt: 1000, op: 'put' });
+    await markSuccess('layouts', 'lay-1', 2000, 'put');
+    expect(await getAll()).toEqual([]);
+  });
+
+  it('keeps a delete queued at an earlier mtime than a put that succeeded', async () => {
+    await enqueue({ kind: 'layouts', id: 'lay-1', modifiedAt: 1000, op: 'delete' });
+    await markSuccess('layouts', 'lay-1', 2000, 'put');
+    expect(await getAll()).toHaveLength(1);
+  });
+
+  it('removes a delete only on its exact mtime', async () => {
+    await enqueue({ kind: 'layouts', id: 'lay-1', modifiedAt: 1000, op: 'delete' });
+    await markSuccess('layouts', 'lay-1', 2000, 'delete');
+    expect(await getAll()).toHaveLength(1);
+    await markSuccess('layouts', 'lay-1', 1000, 'delete');
+    expect(await getAll()).toEqual([]);
   });
 });
 

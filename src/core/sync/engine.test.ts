@@ -182,6 +182,21 @@ describe('push: PUT happy path', () => {
     expect(s.pendingCount).toBe(0);
     expect(s.lastSyncedAt).toBeGreaterThan(0);
   });
+
+  it('sends a newer snapshot than the entry once, then clears the entry', async () => {
+    // The sign-in claim queues an item before the engine subscribes, so a save
+    // landing in between moves the item past its entry without a re-enqueue.
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 2000 });
+    await outboxEnqueue({ kind: 'layouts', id: 'lay-1', modifiedAt: 1000, op: 'put' });
+
+    engine.start(adapters);
+    await flush();
+
+    const puts = fetchMock.mock.calls.filter(([, init]) => init?.method === 'PUT');
+    expect(puts).toHaveLength(1);
+    expect(JSON.parse(puts[0][1].body as string).modifiedAt).toBe(2000);
+    expect(await outboxGetAll()).toEqual([]);
+  });
 });
 
 describe('push: DELETE', () => {
