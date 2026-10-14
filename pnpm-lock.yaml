@@ -229,8 +229,8 @@ importers:
         specifier: 7.0.0-dev.20260707.2
         version: 7.0.0-dev.20260707.2
       '@vercel/node':
-        specifier: ^13.0.2
-        version: 13.0.2(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.10.2)(rollup@4.64.0)
+        specifier: ^16.0.2
+        version: 16.0.2(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.13.2)(rollup@4.64.0)
       '@vitejs/plugin-react':
         specifier: ^6.1.2
         version: 6.1.2(vite@8.3.3(@types/node@26.6.4)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
@@ -3072,8 +3072,8 @@ packages:
     resolution: {integrity: sha512-QFX17sMRoBnPuNyHsQsY5GsYRg9HoE8yGKKbfB/V/JK9QuyQp10R5qeNntT6EgUJ4cQ3R+sH26n5l/LacfzzEw==}
     engines: {node: '>=20.0.0'}
 
-  '@vercel/build-utils@14.10.2':
-    resolution: {integrity: sha512-qDzvm8uKLtLA87i6/e51TAu0eEEO92TUHqCT2w3bDoce7q9BP/xwqp9HA9ZXvlDKEJ4kMsZ1FMDBnxl0kzJXAA==}
+  '@vercel/build-utils@14.13.2':
+    resolution: {integrity: sha512-BX3Byi0MRHRKnEQiHKfslTy8zM2vuLXCcEiIWyFahnlvO4lqLK1Hke5bfB0DMUMU+2+jehmQF6zKSHQZG28WaQ==}
 
   '@vercel/cli-config@0.3.1':
     resolution: {integrity: sha512-sISbygqlFXYb8qfPu/+2Cf/A8IjrlAuZePdag3EDQr2PRA455s7UZtl9Ro674CWsB/saBRmz3jEkw0YsQs8OoQ==}
@@ -3090,17 +3090,17 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@vercel/node@13.0.2':
-    resolution: {integrity: sha512-I9SLeVk1GOLqXd1GClb5FcA0nqZ7nTNeLSZp+lIJ5gUFrCTV833kogicoW8hhLXQ5/LSV0Bi0J0S7aNWlmgv6g==}
+  '@vercel/node@16.0.2':
+    resolution: {integrity: sha512-96QPNY0D2hCL2aYWMAnAz6ElhxYW0nE7husjVVbJvnT7oBG8GaigkBQUm4/dxL+IbYHA7S1IXPvhJfPZQcwDNA==}
     peerDependencies:
-      '@vercel/build-utils': 14.10.2
+      '@vercel/build-utils': 14.13.2
 
   '@vercel/oidc@3.8.10':
     resolution: {integrity: sha512-sPw1kIfQEA6/2dB+zlAJHnhhNBRJ8t/t4HfFvKO+g0EPBA7NbCKyGovuhgAV6Mnl865ka7HqCEguIy596czdAw==}
     engines: {node: '>= 20'}
 
-  '@vercel/static-config@3.4.3':
-    resolution: {integrity: sha512-BY1sL8rNJvIm3TK/8TQ+Q6jIx7NpO5xckQzv7s6c1ypHvRnTl+vf6rmgY5WFXmoYDeGm3tMy4jiy/5M/5jGr/g==}
+  '@vercel/static-config@3.4.4':
+    resolution: {integrity: sha512-WppaPyEKQhO8qo5gVee3mSo1QSCgDZaUcUDHrqICSlt90oYeC/SHTmKCPWY1x1NB9hU+kR2oDzJwAeRKKv5NIw==}
 
   '@vitejs/plugin-react@4.7.0':
     resolution: {integrity: sha512-gUu9hwfWvvEDBBmgtAowQCojwZmJ5mcLn3aufeCsitijs3+f2NsrPtlAWIR6OPiqljl96GVCUbLe0HyqIpVaoA==}
@@ -3183,11 +3183,6 @@ packages:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
       acorn: ^6.0.0 || ^7.0.0 || ^8.0.0
-
-  acorn@8.18.0:
-    resolution: {integrity: sha512-lGq+9yr1/GuAWaVYIHRjvvySG5/4VfKIvC8EWxStPdcDh/Ka7FG3twP6v4d5BkravUilhIAsG4Qj83t02LWUPQ==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
 
   acorn@8.19.0:
     resolution: {integrity: sha512-oJlA3XiRm7Cyk6qFD2Jn8ak9B7jSy0qy00ADO3+8dpT0LSjFihQYv4C02LFCSYJV3Q37xYwwRy5m+IpIiUzqWw==}
@@ -8624,7 +8619,7 @@ snapshots:
       throttleit: 2.1.0
       undici: 6.29.0
 
-  '@vercel/build-utils@14.10.2':
+  '@vercel/build-utils@14.13.2':
     dependencies:
       cjs-module-lexer: 1.2.3
       es-module-lexer: 1.5.0
@@ -8644,8 +8639,8 @@ snapshots:
     dependencies:
       '@mapbox/node-pre-gyp': 2.0.3
       '@rollup/pluginutils': 5.4.0(rollup@4.64.0)
-      acorn: 8.18.0
-      acorn-import-attributes: 1.9.5(acorn@8.18.0)
+      acorn: 8.19.0
+      acorn-import-attributes: 1.9.5(acorn@8.19.0)
       async-sema: 3.1.1
       bindings: 1.5.0
       estree-walker: 2.0.2
@@ -8659,16 +8654,16 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vercel/node@13.0.2(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.10.2)(rollup@4.64.0)':
+  '@vercel/node@16.0.2(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.13.2)(rollup@4.64.0)':
     dependencies:
       '@edge-runtime/node-utils': 2.3.0
       '@edge-runtime/primitives': 4.1.0
       '@edge-runtime/vm': 3.2.0
       '@types/node': 20.11.0
-      '@vercel/build-utils': 14.10.2
+      '@vercel/build-utils': 14.13.2
       '@vercel/error-utils': 2.2.1
       '@vercel/nft': 1.10.0(rollup@4.64.0)
-      '@vercel/static-config': 3.4.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)
+      '@vercel/static-config': 3.4.4(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)
       async-listen: 3.0.0
       cjs-module-lexer: 1.2.3
       edge-runtime: 2.5.9
@@ -8696,7 +8691,7 @@ snapshots:
       '@vercel/cli-exec': 1.0.1
       jose: 5.10.0
 
-  '@vercel/static-config@3.4.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)':
+  '@vercel/static-config@3.4.4(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)':
     dependencies:
       ajv: 8.20.0
       json-schema-to-ts: 1.6.4
@@ -8776,15 +8771,13 @@ snapshots:
 
   abbrev@3.0.1: {}
 
-  acorn-import-attributes@1.9.5(acorn@8.18.0):
+  acorn-import-attributes@1.9.5(acorn@8.19.0):
     dependencies:
-      acorn: 8.18.0
+      acorn: 8.19.0
 
   acorn-jsx@5.3.2(acorn@8.19.0):
     dependencies:
       acorn: 8.19.0
-
-  acorn@8.18.0: {}
 
   acorn@8.19.0: {}
 
