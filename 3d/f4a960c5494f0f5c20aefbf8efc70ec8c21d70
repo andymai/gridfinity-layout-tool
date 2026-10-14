@@ -1,0 +1,153 @@
+src/features/generation/worker/generators/lidBuilder.ts
+  s_0ede90d0838d1c::t_3117db6b567e9e 47,50
+  s_0ede90d0838d1c::t_96b02161ff023f 231
+  s_0ede90d0838d1c::t_4d618fd847ffeb 109
+  s_0ede90d0838d1c::t_944287783cda90 48
+  s_0ede90d0838d1c::t_bb6d5b069dabaf 195-196,218-229
+  s_0ede90d0838d1c::t_9ef66b032a5196 102,106-107,110-111
+  s_0ede90d0838d1c::t_eaa90e94a43c61 35
+  s_0ede90d0838d1c::t_8dda2bff2b34a6 203,204-210,212-217,230
+  s_0ede90d0838d1c::t_38c4aa66c52614 108
+  s_0ede90d0838d1c::t_f031c6257341e9 29,37,103-105,109,211
+src/shared/generation/meshPersistence.ts
+  s_0ede90d0838d1c::t_46006f3b12429d 48-49
+  s_0ede90d0838d1c::t_f49d22bb79d382 46-47,87
+src/features/generation/worker/generators/hingeSwing.scenario.test.ts
+  s_0ede90d0838d1c::t_d47500e7420a7c 35,41-42
+  s_0ede90d0838d1c::t_0262ea879b1e23 107-114
+  s_0ede90d0838d1c::t_e2f71cc5f42fcb 609-610,614-679
+  s_0ede90d0838d1c::t_c28a776b78f86c 680-684,721,724-728,730-733,868-869
+  s_0ede90d0838d1c::t_9c54a9ac732891 611-613,685-687,690-701,709-720,722-723,729,734-735,740-741,745,812,844-845
+  s_0ede90d0838d1c::t_e09a9908094bac 846
+  s_0ede90d0838d1c::t_9526599ab7b286 736-739,742-744,746-797
+  s_0ede90d0838d1c::t_65dc825bcc3d7f 688-689,702-708
+  s_0ede90d0838d1c::t_7c6a153918fb85 800-820,822-869
+  s_0ede90d0838d1c::t_748e6424294dbe 52,821
+  s_0ede90d0838d1c::t_6e52de81ff2e5b 408
+src/shared/utils/hingeLidPlan.test.ts
+  s_0ede90d0838d1c::t_46177257f6432a 275,319-340,342
+  s_0ede90d0838d1c::t_21b83b0f1af69f 404-440
+  s_0ede90d0838d1c::t_9f17566cff9bd6 21
+  s_0ede90d0838d1c::t_628c465f1b996d 2-7
+  s_0ede90d0838d1c::t_9e81bd2d3a1622 298-307
+  s_0ede90d0838d1c::t_cdc33cd3bbb613 308-318
+  s_0ede90d0838d1c::t_a7e56473254ff8 276-297,341
+src/features/generation/README.md
+  s_0ede90d0838d1c::t_bcf8fe3a625e83 274
+  s_0ede90d0838d1c::t_f49d22bb79d382 272
+src/shared/utils/hingeLidPlan.ts
+  s_0ede90d0838d1c::t_125f993bb2118e 122-123
+  s_0ede90d0838d1c::t_2573202e7a4140 588-613
+  s_42784a523d96c0::t_7cf2dcc40b76ef 263,587
+  s_0ede90d0838d1c::t_667456166c472c 267-269
+  s_0ede90d0838d1c::t_deaf85c7605fb0 264-266,273-274
+  s_0ede90d0838d1c::t_08715c25b8d248 559
+  s_0ede90d0838d1c::t_bf7d9d721cec79 143,275-277,280-281
+  s_0ede90d0838d1c::t_13aa9b09dc76e9 278-279,282-290,543-545,560-565,577,614-635
+  s_0ede90d0838d1c::t_7c662cb9a716ca 636-637
+  s_0ede90d0838d1c::t_82571f35047c2e 542
+  s_0ede90d0838d1c::t_3a8aee0014ee39 569
+  s_0ede90d0838d1c::t_c7ecaef957739a 58,66-69
+  s_0ede90d0838d1c::t_6e52de81ff2e5b 141,540,555-556,566
+  s_0ede90d0838d1c::t_481887e3b85111 239-250,270-272,292-293,298,304-305,307,311-314,327-328
+  s_0ede90d0838d1c::t_16abf2633c7ff5 251-252,557
+src/features/generation/worker/generators/hingeBarrel.ts
+  s_0ede90d0838d1c::t_6c64d00f2ecceb 537-539,541-549
+  s_0ede90d0838d1c::t_deec6bc9abccfd 495-498,503-508,510,517-518,534,551-558
+  s_0ede90d0838d1c::t_306641d6beda0d 259-260,274,278-287
+  s_0ede90d0838d1c::t_fdbf697d55f1ae 42
+  s_0ede90d0838d1c::t_3a90b062400e99 480-493,499-502,509,511-516
+  s_0ede90d0838d1c::t_20559488f59fce 494
+  s_0ede90d0838d1c::t_5491d9eb1c4f83 519-524
+  s_0ede90d0838d1c::t_6132b8237b76ac 550
+  s_0ede90d0838d1c::t_f031c6257341e9 509,554-556
+  s_0ede90d0838d1c::t_65dc825bcc3d7f 40,525-533,535-536,540
+  s_0ede90d0838d1c::t_15235334384020 275-277
+  s_0ede90d0838d1c::t_271d97ae40d319 40,154,176
+  s_0ede90d0838d1c::t_16abf2633c7ff5 381-386,403-408,421-423,436-477
+package.json
+  s_0ede90d0838d1c::t_fc36f78a4a2e2e 118
+src/features/bin-designer/types/lid.ts
+  s_0ede90d0838d1c::t_fedbd1645292a0 799-805
+  s_42784a523d96c0::t_04c93d0482cd62 798
+  s_0ede90d0838d1c::t_e3c3249302ce1a 806
+  s_0ede90d0838d1c::t_b5f97cceb4b8d1 807-809,815,818-819,823-825,830,839-840
+  s_0ede90d0838d1c::t_7bd6ef62b06ef5 810-814,816-817
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_0ede90d0838d1c::t_daaa505b55b721 120-122,669,683-684
+  s_0ede90d0838d1c::t_5c918c5962e340 686-688
+  s_0ede90d0838d1c::t_f36d475e568d42 685
+src/i18n/locales/it.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/i18n/locales/pl.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/i18n/locales/fr.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/i18n/locales/de.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/i18n/locales/es.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/i18n/locales/ko.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/i18n/locales/nl.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/i18n/locales/pt-BR.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/i18n/locales/sv.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/i18n/locales/zh-CN.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/i18n/locales/ka.json
+  s_0ede90d0838d1c::t_413a307273ed02 1988
+src/features/generation/worker/generators/lidInputs.ts
+  s_0ede90d0838d1c::t_2949237e174e33 456-458
+src/i18n/locales/uk.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/i18n/locales/nb.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_0ede90d0838d1c::t_cdc33cd3bbb613 5,1240-1270
+  s_0ede90d0838d1c::t_3319910c21727b 1271
+src/i18n/locales/cs.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/i18n/locales/ja.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/i18n/locales/en.ts
+  s_0ede90d0838d1c::t_413a307273ed02 2390-2391
+src/features/bin-designer/components/panel/LidSection/LidAdvancedFields.test.tsx
+  s_0ede90d0838d1c::t_a7e56473254ff8 42,47-48
+src/features/bin-designer/README.md
+  s_0ede90d0838d1c::t_f49d22bb79d382 132
+src/features/generation/worker/generators/pipeline/stages/lidHingeStage.ts
+  s_0ede90d0838d1c::t_c868d9c8e59bcf 28,30,33-34,80-90,95,105-111,128,138-167
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_0ede90d0838d1c::t_a7e56473254ff8 466-467
+src/features/generation/worker/generators/__kernel-tests__/hingeSwing.ts
+  s_0ede90d0838d1c::t_6e52de81ff2e5b 99
+src/features/bin-designer/types/lid.test.ts
+  s_0ede90d0838d1c::t_a7e56473254ff8 288-290
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3df4a960c5494f0f5c20aefbf8efc70ec8c21d70",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    },
+    "s_42784a523d96c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "50f300b6-eb91-416b-b1eb-b6762f14d3e6",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
