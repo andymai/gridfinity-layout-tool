@@ -206,6 +206,9 @@ export function buildTaperedLofts(
  *
  * This is the whole body for a solid bin: there is no cavity to cut, so
  * the loft that {@link buildTaperedLofts} would discard is never built.
+ *
+ * `zTop` may exceed the wall, which makes it a clip for anything that has to
+ * stay inside the body's outline below the rim and inside the rim above it.
  */
 export function buildTaperedOuter(
   scope: DisposalScope,
@@ -215,7 +218,8 @@ export function buildTaperedOuter(
   wallThickness: number,
   taper: ResolvedTaper,
   offX: number,
-  offY: number
+  offY: number,
+  zTop = wallHeight
 ): Shape3D {
   const { bandLevels, loft } = taperSampler(
     outerW,
@@ -226,7 +230,7 @@ export function buildTaperedOuter(
     offX,
     offY
   );
-  return scope.register(loft([...bandLevels, wallHeight], 0));
+  return scope.register(loft([...bandLevels, zTop], 0));
 }
 
 /**

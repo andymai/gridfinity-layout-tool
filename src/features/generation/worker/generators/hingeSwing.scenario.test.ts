@@ -1002,6 +1002,66 @@ describe('hinged lid', () => {
     expect(await share(face + 0.1, face + 0.3, lipBase - 0.5)).toBeLessThan(0.001);
   }, 600_000);
 
+  it('keeps the raised wall inside a taper that leans in under the lip', async () => {
+    // A wall too short to carry the lip's support skirt leans in from right
+    // under the lip, where the raised wall's 45° foot hangs: on the hinge wall,
+    // and on the side wall its ends run into. Every slice of the bin down there
+    // has to stay inside the same bin without the hinge, or the foot prints
+    // over air.
+    const { box, getBounds, intersect } = await import('brepjs');
+    const taper = {
+      enabled: true,
+      profile: 'chamfer' as const,
+      bandHeight: 9,
+      left: 8,
+      right: 0,
+      front: 0,
+      back: 8,
+    };
+    const params = hingeParams(
+      {
+        height: 1,
+        overhang: { enabled: true, left: 8, right: 0, front: 0, back: 8, taper },
+        lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm: 20 },
+      },
+      { side: 'back', catchMode: 'none' }
+    );
+    const { geometry } = planHingeLid(params);
+    if (!geometry) throw new Error('expected hinge geometry');
+    expect(geometry.wallRiseMm).toBeGreaterThan(0);
+    const lipBase = binLipTopZ(params) - GRIDFINITY_SPEC.LIP_HEIGHT;
+    const depths = [0.3, 0.7, 1.1, 1.5, 1.9];
+    const slices = async (p: BinParams): Promise<{ minX: number; maxY: number }[]> => {
+      const { bin, lid } = await buildSolids(p);
+      lid.delete();
+      const out: { minX: number; maxY: number }[] = [];
+      for (const d of depths) {
+        const slab = box(400, 400, 0.1, { at: [0, 0, lipBase - d] });
+        try {
+          const shared = intersect(bin as ValidSolid, slab);
+          if (!shared.ok) throw new Error(`no bin at ${d}mm under the lip`);
+          try {
+            const b = getBounds(shared.value);
+            out.push({ minX: b.xMin, maxY: b.yMax });
+          } finally {
+            shared.value.delete();
+          }
+        } finally {
+          slab.delete();
+        }
+      }
+      return out;
+    };
+    const hinged = await slices(params);
+    const plain = await slices(control(params));
+    hinged.forEach((s, i) => {
+      expect(s.maxY, `back wall, ${depths[i]}mm under the lip`).toBeLessThan(plain[i].maxY + 0.01);
+      expect(s.minX, `left wall, ${depths[i]}mm under the lip`).toBeGreaterThan(
+        plain[i].minX - 0.01
+      );
+    });
+  }, 600_000);
+
   it('exports the raised wall and its knuckles with a tall lid', async () => {
     // The export keeps only the outer shell, so anything the wall or a root
     // failed to weld to would drop out of the file while the preview showed it.

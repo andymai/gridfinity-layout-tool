@@ -25,13 +25,22 @@
  * exist. `lidRetentionStage` takes exactly the same pair.
  */
 
-import { cutAll, drawRoundedRectangle, fuseAll, intersect, unwrap } from 'brepjs';
-import type { Shape3D, ValidSolid } from 'brepjs';
+import {
+  cutAll,
+  drawRoundedRectangle,
+  fuseAll,
+  intersect,
+  translate,
+  unwrap,
+  withScope,
+} from 'brepjs';
+import type { DisposalScope, Shape3D, ValidSolid } from 'brepjs';
 import type { BinDimensions, PipelineContext, PipelineStage } from '../types';
 import { checkCancelled } from '../../utils/abort';
 import { buildBinHingeParts } from '../../hingeBarrel';
 import { BOX_CORNER_RADIUS, LIP_HEIGHT, safeSectionRect } from '../../generatorConstants';
 import { hasOverhang, overhangExpansion } from '../../overhang';
+import { buildTaperedOuter } from '../../taperedOuter';
 import { collectOrigins } from '../collectOrigins';
 import { FeatureTag } from '../../featureTags';
 import { planHingeLid } from '@/shared/utils/hingeLidPlan';
@@ -95,7 +104,7 @@ export const lidHingeStage: PipelineStage = {
     let walls: Shape3D[] = [];
     const scratch: Shape3D[] = [];
     try {
-      walls = raw.walls.length > 0 ? clipToFootprint(raw.walls, dim) : [];
+      walls = raw.walls.length > 0 ? clipToFootprint(raw.walls, dim, ctx.params.wallThickness) : [];
 
       // Tag the PARTS, never the result: `setShapeOrigin` replaces a shape's
       // whole face-origin map, so tagging the post-boolean solid would stamp the
@@ -142,32 +151,58 @@ export const lidHingeStage: PipelineStage = {
 
 /**
  * Trim each raised wall to the bin's outer outline, the same rounded rectangle
- * the stacking lip is built on, so its ends follow the corners. The caller
- * keeps ownership of the walls it passes in.
+ * the stacking lip is built on, so its ends follow the corners. A tapered body
+ * leans in below the rim, so there the clip is the body's own loft instead, or
+ * the wall's foot would stand proud of it and print over air. The caller keeps
+ * ownership of the walls it passes in.
  */
-function clipToFootprint(walls: readonly Shape3D[], dim: BinDimensions): Shape3D[] {
+function clipToFootprint(
+  walls: readonly Shape3D[],
+  dim: BinDimensions,
+  wallThickness: number
+): Shape3D[] {
   const exp = hasOverhang(dim.overhang) ? overhangExpansion(dim.overhang) : null;
+  const outerW = dim.outerW + (exp?.addW ?? 0);
+  const outerD = dim.outerD + (exp?.addD ?? 0);
+  const offX = exp?.offsetX ?? 0;
+  const offY = exp?.offsetY ?? 0;
   const zLo = dim.wallTopZ - 2 * LIP_HEIGHT;
   const zHi = dim.lipTopZ + 1000;
-  const { width, depth, radius } = safeSectionRect(
-    dim.outerW + (exp?.addW ?? 0),
-    dim.outerD + (exp?.addD ?? 0),
-    BOX_CORNER_RADIUS
-  );
-  const footprint = drawRoundedRectangle(width, depth, radius)
-    .translate(exp?.offsetX ?? 0, exp?.offsetY ?? 0)
-    .sketchOnPlane('XY', zLo)
-    .extrude(zHi - zLo);
-  const clipped: Shape3D[] = [];
-  try {
-    for (const wall of walls) {
-      clipped.push(unwrap(intersect(wall as ValidSolid, footprint as ValidSolid)));
+  const { taper } = dim.overhang;
+
+  return withScope((scope: DisposalScope) => {
+    let footprint: Shape3D;
+    if (taper) {
+      const loft = buildTaperedOuter(
+        scope,
+        outerW,
+        outerD,
+        dim.wallTopZ - dim.baseOffsetZ,
+        wallThickness,
+        taper,
+        offX,
+        offY,
+        zHi - dim.baseOffsetZ
+      );
+      footprint = scope.register(translate(loft, [0, 0, dim.baseOffsetZ]));
+    } else {
+      const { width, depth, radius } = safeSectionRect(outerW, outerD, BOX_CORNER_RADIUS);
+      footprint = scope.register(
+        drawRoundedRectangle(width, depth, radius)
+          .translate(offX, offY)
+          .sketchOnPlane('XY', zLo)
+          .extrude(zHi - zLo)
+      );
     }
-    return clipped;
-  } catch (error) {
-    for (const piece of clipped) piece.delete();
-    throw error;
-  } finally {
-    footprint.delete();
-  }
+    const clipped: Shape3D[] = [];
+    try {
+      for (const wall of walls) {
+        clipped.push(unwrap(intersect(wall as ValidSolid, footprint as ValidSolid)));
+      }
+      return clipped;
+    } catch (error) {
+      for (const piece of clipped) piece.delete();
+      throw error;
+    }
+  });
 }

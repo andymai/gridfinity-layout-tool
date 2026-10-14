@@ -469,8 +469,8 @@ function raisedWallSolid(
   const top = frame.axisZ - g.axisAboveStopMm;
   const base = frame.axisZ - g.axisAboveLipTopMm - LIP_HEIGHT;
   // Below the lip only the 45° support, reaching back to the wall's inner face:
-  // outboard of that face the body is already solid, and a tapered overhang
-  // sets the body's outer face in there, where more material would stick out.
+  // outboard of that face the body is already solid. A tapered wall leans in
+  // below the rim, past where this foot reaches; the stage clips it to the loft.
   const drop = Math.max(0, g.raisedWallMm - binWallMm);
   let outline = draw([outer, base]).lineTo([outer, top]).lineTo([inner, top]).lineTo([inner, base]);
   if (drop > 0) {
