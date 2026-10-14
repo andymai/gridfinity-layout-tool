@@ -17,7 +17,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { Stepper } from '@/design-system';
-import { Hint } from '../panel/shared';
+import { FieldLabel, Hint } from '../panel/shared';
 import {
   calculateDividerHeight,
   resolveCompartmentDividerHeight,
@@ -54,9 +54,7 @@ export function DividerHeightControl() {
 
   return (
     <div>
-      <span className="mb-1 block text-xs text-content-tertiary">
-        {t('binDesigner.dividerHeight')}
-      </span>
+      <FieldLabel>{t('binDesigner.dividerHeight')}</FieldLabel>
       <Stepper
         value={currentValue}
         displayValue={

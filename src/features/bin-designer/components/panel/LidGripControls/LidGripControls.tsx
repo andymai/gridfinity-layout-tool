@@ -12,7 +12,7 @@ import { LID_RAIL_SIDES, lidGripHeightAdjustable } from '@/features/bin-designer
 import type { LidGripSides, LidRailSide } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
 import { SnappingSlider } from '../../controls/SnappingSlider';
-import { Hint, Readout, SegmentGrid, SideSelector, StepperField } from '../shared';
+import { FieldLabel, Hint, Readout, SegmentGrid, SideSelector, StepperField } from '../shared';
 import type { useLidSection } from '../LidSection/useLidSection';
 
 type Translator = ReturnType<typeof useTranslation>;
@@ -33,9 +33,7 @@ function GripSides({
 }) {
   return (
     <div>
-      <span className="mb-1 block text-label text-content-tertiary">
-        {t('binDesigner.lid.gripSides')}
-      </span>
+      <FieldLabel>{t('binDesigner.lid.gripSides')}</FieldLabel>
       <SideSelector
         ariaLabel={t('binDesigner.lid.gripSides')}
         onToggle={onToggle}
@@ -73,9 +71,7 @@ export function LidGripControls({
   const heightAdjustable = lidGripHeightAdjustable(grip.mode);
   return (
     <div className="space-y-2">
-      <span className="mb-1 block text-label text-content-tertiary">
-        {t('binDesigner.lid.gripMode')}
-      </span>
+      <FieldLabel>{t('binDesigner.lid.gripMode')}</FieldLabel>
       <SegmentGrid
         aria-label={t('binDesigner.lid.gripMode')}
         value={grip.mode}

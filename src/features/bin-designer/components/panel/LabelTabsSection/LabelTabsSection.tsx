@@ -20,7 +20,7 @@ import {
   LABEL_PLATE_FIT_OFFSET_STEP,
 } from '@/shared/constants/labelPlates';
 import type { LabelSocketStyle } from '@/shared/constants/labelPlates';
-import { LabelInfo, OptionNotes } from '../shared';
+import { FieldLabel, LabelInfo, OptionNotes } from '../shared';
 import { LabelTextList } from './LabelTextList';
 import { LabelSectionWarnings } from './LabelSectionWarnings';
 import { LabelColorControls } from './LabelColorControls';
@@ -305,9 +305,7 @@ export function LabelTabsSection() {
           >
             <div className="space-y-3">
               <div>
-                <span className="mb-1 block text-label text-content-tertiary">
-                  {t('binDesigner.tabEdges')}
-                </span>
+                <FieldLabel>{t('binDesigner.tabEdges')}</FieldLabel>
                 <div
                   role="group"
                   aria-label={t('binDesigner.tabEdges')}

@@ -6,7 +6,7 @@ import { LabelSizeControl } from '../../controls';
 import type { SelectOption } from '@/design-system';
 import type { TextFontFamily, TextMode } from '../../../types';
 import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest';
-import { DependencyHint, TextColorControl, TextFinishGrid } from '../shared';
+import { DependencyHint, FieldLabel, TextColorControl, TextFinishGrid } from '../shared';
 import type { TextSurface } from '@/features/bin-designer/utils/flatTextContrast';
 import type { useLabelTabsSection } from './useLabelTabsSection';
 import type { useTranslation } from '@/i18n';
@@ -66,9 +66,7 @@ export function LabelTabTextStyleControls({
         {/* Font + (conditional) depth, side by side when both visible */}
         <div className="flex items-end gap-2">
           <div className="min-w-0 flex-1">
-            <span className="mb-1 block text-xs text-content-tertiary">
-              {t('binDesigner.textFont')}
-            </span>
+            <FieldLabel>{t('binDesigner.textFont')}</FieldLabel>
             <Select
               size="sm"
               fullWidth
@@ -92,9 +90,7 @@ export function LabelTabTextStyleControls({
           </div>
           {state.textDefaults.mode !== 'through-cut' && state.textDefaults.mode !== 'flat' && (
             <div className="min-w-0 flex-1">
-              <span className="mb-1 block text-xs text-content-tertiary">
-                {t('binDesigner.textDepth')}
-              </span>
+              <FieldLabel>{t('binDesigner.textDepth')}</FieldLabel>
               <Stepper
                 value={state.textDefaults.depth}
                 onChange={handlers.setTextDepth}

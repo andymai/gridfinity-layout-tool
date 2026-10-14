@@ -862,8 +862,8 @@ describe('LidSection grip relief (#3272)', () => {
   it('toggles a wall', () => {
     enabled({ mode: 'scallop' });
     render(<LidSection />);
-    const gripWalls = screen.getByText('Walls').parentElement;
-    const left = within(gripWalls as HTMLElement).getByRole('switch', { name: 'Left' });
+    const gripWalls = screen.getByRole('group', { name: 'Walls' });
+    const left = within(gripWalls).getByRole('switch', { name: 'Left' });
     fireEvent.click(left);
     expect(useDesignerStore.getState().params.lid.grip.sides.left).toBe(true);
   });

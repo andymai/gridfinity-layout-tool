@@ -21,6 +21,7 @@ import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
 import { LabelPlatesControls } from '../LabelTabsSection/LabelPlatesControls';
 import { AnchorPicker } from '../../controls/AnchorPicker';
 import {
+  FieldLabel,
   Hint,
   LabelInfo,
   Readout,
@@ -64,7 +65,7 @@ export function WallSurfaceSection() {
 
   return (
     <div className="space-y-4">
-      <SubHeader>{t('binDesigner.style.section.walls')}</SubHeader>
+      <SubHeader>{t('binDesigner.style.section.wallSurface')}</SubHeader>
       <div>
         <PatternSelector
           selectedPattern={state.patternEnabled ? state.pattern : null}
@@ -117,9 +118,7 @@ export function WallSurfaceSection() {
               </p>
             ) : (
               <div className="mt-3">
-                <span className="mb-1 block text-label text-content-tertiary">
-                  {t('binDesigner.walls.pattern.sides')}
-                </span>
+                <FieldLabel>{t('binDesigner.walls.pattern.sides')}</FieldLabel>
                 <SideSelector
                   sides={patternSideStates}
                   onToggle={handlers.togglePatternSide}
@@ -163,9 +162,7 @@ export function WallSurfaceSection() {
             <div className="grid grid-cols-2 gap-2">
               {WALL_TEXT_SIDES.map((side, index) => (
                 <div key={side}>
-                  <span className="mb-1 block text-label text-content-tertiary">
-                    {t(`binDesigner.lid.side.${side}`)}
-                  </span>
+                  <FieldLabel>{t(`binDesigner.lid.side.${side}`)}</FieldLabel>
                   <CompartmentTextInput
                     multiline
                     committedValue={state.wallTexts[side] ?? ''}
@@ -219,9 +216,7 @@ export function WallSurfaceSection() {
         primaryControls={
           <>
             <div>
-              <span className="mb-1 block text-label text-content-tertiary">
-                {t('binDesigner.walls.labelSlots.sides')}
-              </span>
+              <FieldLabel>{t('binDesigner.walls.labelSlots.sides')}</FieldLabel>
               <SideSelector
                 sides={labelSlotSideStates}
                 onToggle={handlers.toggleLabelSlotSide}
@@ -234,9 +229,7 @@ export function WallSurfaceSection() {
               )}
             </div>
             <div>
-              <span className="mb-1 block text-label text-content-tertiary">
-                {t('binDesigner.walls.labelSlots.spacing')}
-              </span>
+              <FieldLabel>{t('binDesigner.walls.labelSlots.spacing')}</FieldLabel>
               <Stepper
                 aria-label={t('binDesigner.walls.labelSlots.spacing')}
                 value={state.labelSlotEveryCells}

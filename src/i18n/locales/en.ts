@@ -1828,6 +1828,7 @@ const en: Record<string, string> = {
   'binDesigner.clickToRename': 'Click to rename design',
   'binDesigner.openDesignList': 'Open design list',
   'binDesigner.dimensions': 'Dimensions',
+  'binDesigner.shape.section.footprint': 'Footprint',
   'binDesigner.interiorDimensions': 'Inside',
   'binDesigner.interiorDimensionsHint':
     'Floor to wall top, before dividers, scoops and label tabs. The stacking lip rises above it.',
@@ -3434,6 +3435,7 @@ const en: Record<string, string> = {
   'binDesigner.walls.pattern.groupKumiko': 'Kumiko',
   'binDesigner.style.section.color': 'Color',
   'binDesigner.style.section.walls': 'Walls',
+  'binDesigner.style.section.wallSurface': 'Wall surface',
   'binDesigner.walls.pattern.scale': 'Pattern scale',
   'binDesigner.walls.pattern.scaleHint': 'Finer holes to the left, bolder to the right',
   'binDesigner.walls.pattern.strutWidth': 'Strut width',
@@ -3861,6 +3863,7 @@ const en: Record<string, string> = {
     'This layout uses a low-profile base: feet are 1.1mm shorter and the floor sits 1.1mm lower. Change it in the baseplate settings.',
   'binDesigner.base.lowProfileNoteShort': 'This layout uses a low-profile base.',
   'binDesigner.base.section.floor': 'Floor',
+  'binDesigner.base.section.floorPattern': 'Floor pattern',
   'binDesigner.base.stackingLip.hint': "Lets another bin's feet sit on top of this one",
   'binDesigner.base.lipTip': 'Lip peak',
   'binDesigner.base.lipTip.sharp': 'Sharp',

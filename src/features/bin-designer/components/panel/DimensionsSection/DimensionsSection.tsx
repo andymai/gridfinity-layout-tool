@@ -14,7 +14,7 @@ import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { formatCompactMm } from '@/features/bin-designer/utils/compartmentDimensions';
 import { AssembledHeightBreakdown } from '../AssembledHeightBreakdown';
-import { LabelInfo } from '../shared';
+import { FieldLabel, LabelInfo, SubHeader } from '../shared';
 import { useDimensionsSection } from './useDimensionsSection';
 
 export function DimensionsSection() {
@@ -24,11 +24,12 @@ export function DimensionsSection() {
 
   return (
     <div className="space-y-3">
+      <SubHeader>{t('binDesigner.dimensions')}</SubHeader>
       {/* Width and Depth on same row with swap button */}
       <div className="flex items-end gap-2">
         {/* Width */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <span className="mb-1 block text-xs text-content-tertiary">{t('common.width')}</span>
+          <FieldLabel>{t('common.width')}</FieldLabel>
           <Stepper
             value={state.width}
             onChange={(v) => handlers.setParam('width', v)}
@@ -58,7 +59,7 @@ export function DimensionsSection() {
 
         {/* Depth */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <span className="mb-1 block text-xs text-content-tertiary">{t('common.depth')}</span>
+          <FieldLabel>{t('common.depth')}</FieldLabel>
           <Stepper
             value={state.depth}
             onChange={(v) => handlers.setParam('depth', v)}

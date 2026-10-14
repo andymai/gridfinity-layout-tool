@@ -31,7 +31,7 @@ export function FloorPatternSection() {
 
   return (
     <div className="space-y-2">
-      <SubHeader>{t('binDesigner.base.section.floor')}</SubHeader>
+      <SubHeader>{t('binDesigner.base.section.floorPattern')}</SubHeader>
       <FeatureToggle
         label={t('binDesigner.base.floorPattern')}
         checked={state.floorPatternEnabled}

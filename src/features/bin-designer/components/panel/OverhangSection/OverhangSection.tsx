@@ -20,7 +20,7 @@
 import { useId } from 'react';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { FeatureToggle } from '../FeatureToggle';
-import { OptionNotes } from '../shared';
+import { OptionNotes, SubHeader } from '../shared';
 import { OverhangSliderRow } from './OverhangSliderRow';
 import { PlacementOverhangNotice } from './PlacementOverhangNotice';
 import { TaperProfileCards } from './TaperProfileCards';
@@ -46,6 +46,7 @@ export function OverhangSection() {
 
   return (
     <div className="space-y-3">
+      <SubHeader>{t('binDesigner.shape.section.footprint')}</SubHeader>
       <PlacementOverhangNotice />
       <FeatureToggle
         label={t('binDesigner.overhang.title')}

@@ -6,6 +6,7 @@
  * colour sits under the finish picker in the tab text group instead.
  */
 
+import { FieldLabel } from '../shared';
 import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -81,9 +82,7 @@ export function LabelColorControls() {
 
   return (
     <div>
-      <span className="mb-1 block text-xs font-medium text-content-secondary">
-        {t('binDesigner.labelColor')}
-      </span>
+      <FieldLabel>{t('binDesigner.labelColor')}</FieldLabel>
       <div>
         <ColorZoneRow
           zone="labelTab"

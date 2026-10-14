@@ -42,7 +42,7 @@ export function LabelInfo({ label, children }: { label: string; children: ReactN
 export function FieldLabel({ children, info }: { children: string; info?: ReactNode }) {
   return (
     <div className="mb-1 flex items-center gap-1.5">
-      <span className="text-xs font-medium text-content-secondary">{children}</span>
+      <span className="text-label text-content-tertiary">{children}</span>
       {info !== undefined && <LabelInfo label={children}>{info}</LabelInfo>}
     </div>
   );

@@ -12,6 +12,7 @@
  * generic setParam('slotConfig', …) with the pure merge/split utils.
  */
 
+import { FieldLabel } from '../panel/shared';
 import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -153,9 +154,7 @@ export function CustomGridEditor() {
       {/* Grid dimensions */}
       <div className="flex items-center gap-2">
         <div className="flex-1">
-          <span className="mb-1 block text-xs text-content-tertiary">
-            {t('binDesigner.customCols')}
-          </span>
+          <FieldLabel>{t('binDesigner.customCols')}</FieldLabel>
           <Stepper
             value={cols}
             onChange={(v) => setDims(Math.min(MAX_DIM, Math.max(MIN_DIM, Math.round(v))), rows)}
@@ -168,9 +167,7 @@ export function CustomGridEditor() {
           />
         </div>
         <div className="flex-1">
-          <span className="mb-1 block text-xs text-content-tertiary">
-            {t('binDesigner.customRows')}
-          </span>
+          <FieldLabel>{t('binDesigner.customRows')}</FieldLabel>
           <Stepper
             value={rows}
             onChange={(v) => setDims(cols, Math.min(MAX_DIM, Math.max(MIN_DIM, Math.round(v))))}

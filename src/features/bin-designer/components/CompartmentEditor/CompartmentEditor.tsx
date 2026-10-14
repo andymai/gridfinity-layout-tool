@@ -19,6 +19,7 @@
  * Cell and ghost sub-components live in `CompartmentEditorParts.tsx`.
  */
 
+import { FieldLabel } from '../panel/shared';
 import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
@@ -189,9 +190,7 @@ export function CompartmentEditor() {
       <section className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <span className="mb-1 block text-xs text-content-tertiary">
-              {t('binDesigner.columns')}
-            </span>
+            <FieldLabel>{t('binDesigner.columns')}</FieldLabel>
             <Stepper
               value={cols}
               onChange={handleColsChange}
@@ -204,9 +203,7 @@ export function CompartmentEditor() {
             />
           </div>
           <div>
-            <span className="mb-1 block text-xs text-content-tertiary">
-              {t('binDesigner.rows')}
-            </span>
+            <FieldLabel>{t('binDesigner.rows')}</FieldLabel>
             <Stepper
               value={rows}
               onChange={handleRowsChange}
@@ -243,9 +240,7 @@ export function CompartmentEditor() {
               </span>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <span className="mb-1 block text-xs text-content-tertiary">
-                    {t('binDesigner.compartmentEditor.openingWidth')}
-                  </span>
+                  <FieldLabel>{t('binDesigner.compartmentEditor.openingWidth')}</FieldLabel>
                   <DeferredNumberInput
                     value={achievedMinW}
                     onChange={applyTargetWidth}
@@ -258,9 +253,7 @@ export function CompartmentEditor() {
                   />
                 </div>
                 <div>
-                  <span className="mb-1 block text-xs text-content-tertiary">
-                    {t('binDesigner.compartmentEditor.openingDepth')}
-                  </span>
+                  <FieldLabel>{t('binDesigner.compartmentEditor.openingDepth')}</FieldLabel>
                   <DeferredNumberInput
                     value={achievedMinD}
                     onChange={applyTargetDepth}

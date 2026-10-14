@@ -8,7 +8,7 @@
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { Button, Stepper } from '@/design-system';
-import { Hint } from '../panel/shared';
+import { FieldLabel, Hint } from '../panel/shared';
 import { FeatureToggle } from '../panel/FeatureToggle';
 import { RulerIcon } from '@/design-system/Icon';
 import {
@@ -258,9 +258,7 @@ export function SlotConfigurator() {
 
       {/* Height */}
       <div>
-        <span className="mb-1 block text-xs text-content-tertiary">
-          {t('binDesigner.dividerHeight')}
-        </span>
+        <FieldLabel>{t('binDesigner.dividerHeight')}</FieldLabel>
         <Stepper
           value={dividerPieces.height === 'auto' ? maxDividerHeight : dividerPieces.height}
           displayValue={
@@ -311,9 +309,7 @@ export function SlotConfigurator() {
       {/* Thickness + Fit tolerance side by side */}
       <div className="flex items-end gap-2">
         <div className="flex-1 min-w-0">
-          <span className="mb-1 block text-xs text-content-tertiary">
-            {t('binDesigner.dividerThickness')}
-          </span>
+          <FieldLabel>{t('binDesigner.dividerThickness')}</FieldLabel>
           <Stepper
             value={dividerPieces.thickness}
             onChange={(v) =>
@@ -347,9 +343,7 @@ export function SlotConfigurator() {
           />
         </div>
         <div className="flex-1 min-w-0">
-          <span className="mb-1 block text-xs text-content-tertiary">
-            {t('binDesigner.dividerClearance')}
-          </span>
+          <FieldLabel>{t('binDesigner.dividerClearance')}</FieldLabel>
           <Stepper
             value={dividerPieces.clearance}
             onChange={(v) =>

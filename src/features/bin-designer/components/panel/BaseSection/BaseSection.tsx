@@ -120,9 +120,7 @@ export function BaseSection() {
 
       {state.trayBottom.attachment === 'clickRails' && (
         <div>
-          <span className="mb-1 block text-label text-content-tertiary">
-            {t('binDesigner.lid.clickRails')}
-          </span>
+          <FieldLabel>{t('binDesigner.lid.clickRails')}</FieldLabel>
           <SideSelector
             sides={LID_RAIL_SIDES.map((side) => ({
               side,

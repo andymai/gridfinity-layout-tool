@@ -22,13 +22,14 @@ import { SlideControls } from '../SlideControls';
 import { HingeControls } from '../HingeControls';
 import { StepperField } from '../shared/StepperField';
 import {
-  Hint,
-  Readout,
-  SubHeader,
   DependencyHint,
-  SegmentGrid,
+  FieldLabel,
+  Hint,
   InfoDot,
+  Readout,
+  SegmentGrid,
   SideSelector,
+  SubHeader,
   TextColorControl,
   TextFinishGrid,
 } from '../shared';
@@ -139,9 +140,7 @@ function RailSides({
   });
   return (
     <div>
-      <span className="mb-1 block text-label text-content-tertiary">
-        {t('binDesigner.lid.clickRails')}
-      </span>
+      <FieldLabel>{t('binDesigner.lid.clickRails')}</FieldLabel>
       <SideSelector sides={sides} onToggle={onToggle} ariaLabel={t('binDesigner.lid.clickRails')} />
     </div>
   );
