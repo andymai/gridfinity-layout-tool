@@ -10,6 +10,7 @@ src/features/bin-designer/components/panel/PullTabSection/PullTabSection.tsx
   s_0ede90d0838d1c::t_d4d61e069505e1 5,117-122
 src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.test.tsx
   s_0ede90d0838d1c::t_6a5505eeeade5f 225,233,262
+  s_0ede90d0838d1c::t_757e4853720f49 216
 src/features/bin-designer/components/panel/SlideControls/SlideControls.tsx
   s_0ede90d0838d1c::t_fa30e56ee1502d 17,66-68,70-72
 src/features/bin-designer/components/panel/OverhangSection/OverhangSection.tsx
@@ -49,8 +50,10 @@ src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.tsx
 src/features/bin-designer/components/panel/TypeSection/TypeSection.tsx
   s_0ede90d0838d1c::t_6960431ba8f0b6 221-222,225,227,230,265,268
   s_0ede90d0838d1c::t_3c3829a51b7e87 38
+  s_0ede90d0838d1c::t_757e4853720f49 15
 src/features/bin-designer/components/panel/ColorsSection/LipColorEditor.test.tsx
   s_0ede90d0838d1c::t_d5623c80f186f5 35,45
+  s_0ede90d0838d1c::t_757e4853720f49 82
 src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.test.tsx
   s_0ede90d0838d1c::t_d5623c80f186f5 34
 src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
@@ -70,6 +73,7 @@ src/features/bin-designer/components/panel/PullTabSection/PullTabSection.test.ts
 src/features/bin-designer/components/panel/shared/SideSelector.test.tsx
   s_0ede90d0838d1c::t_c3e73503ed37a2 46-72
   s_0ede90d0838d1c::t_8b31561b9c2b47 73-75
+  s_0ede90d0838d1c::t_757e4853720f49 76-84
 src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
   s_0ede90d0838d1c::t_d5623c80f186f5 909
 src/features/bin-designer/components/panel/HandleSection/HandleSection.test.tsx
