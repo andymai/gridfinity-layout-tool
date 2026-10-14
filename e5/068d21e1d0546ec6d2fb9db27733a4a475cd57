@@ -1,0 +1,25 @@
+src/core/sync/engine.ts
+  s_0ede90d0838d1c::t_064f4362a04911 219,237,261,278,289,352,389,442-448
+src/core/sync/engine.test.ts
+  s_0ede90d0838d1c::t_eb1d021aef5863 185-199
+src/core/sync/outbox.ts
+  s_0ede90d0838d1c::t_8dfe94d3ea5b65 139-147,152-153,159-164
+src/core/sync/outbox.test.ts
+  s_0ede90d0838d1c::t_6913ccab4ddf67 113,124,129-148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e5068d21e1d0546ec6d2fb9db27733a4a475cd57",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
