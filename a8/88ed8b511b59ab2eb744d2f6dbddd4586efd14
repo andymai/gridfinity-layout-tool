@@ -1,55 +1,55 @@
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_0ede90d0838d1c::t_daaa505b55b721 120-122,669,683-684
+  s_0ede90d0838d1c::t_5c918c5962e340 686-688
+  s_0ede90d0838d1c::t_f36d475e568d42 685
+src/i18n/locales/it.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/i18n/locales/pl.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
 src/i18n/locales/fr.json
   s_0ede90d0838d1c::t_413a307273ed02 1296
-src/features/generation/worker/generators/lidBuilder.ts
-  s_0ede90d0838d1c::t_f031c6257341e9 29,37,103-105,109,211
-src/i18n/locales/uk.json
+src/i18n/locales/de.json
   s_0ede90d0838d1c::t_413a307273ed02 1296
-src/i18n/locales/zh-CN.json
+src/i18n/locales/es.json
   s_0ede90d0838d1c::t_413a307273ed02 1296
-src/features/generation/worker/generators/lidInputs.ts
-  s_0ede90d0838d1c::t_2949237e174e33 456-458
-src/i18n/locales/pt-BR.json
-  s_0ede90d0838d1c::t_413a307273ed02 1296
-src/i18n/locales/cs.json
-  s_0ede90d0838d1c::t_413a307273ed02 1296
-src/shared/utils/hingeLidPlan.test.ts
-  s_0ede90d0838d1c::t_cdc33cd3bbb613 286-296
-src/features/bin-designer/utils/lidCompatibility.test.ts
-  s_0ede90d0838d1c::t_cdc33cd3bbb613 5,1240-1270
-  s_0ede90d0838d1c::t_dd0722571cf13b 1271
-src/features/generation/worker/generators/hingeBarrel.ts
-  s_0ede90d0838d1c::t_f031c6257341e9 452,493-495
 src/i18n/locales/ko.json
   s_0ede90d0838d1c::t_413a307273ed02 1296
 src/i18n/locales/nl.json
   s_0ede90d0838d1c::t_413a307273ed02 1296
-src/shared/utils/hingeLidPlan.ts
-  s_0ede90d0838d1c::t_13aa9b09dc76e9 263-264,267-275,526-528,540-545,559,596-617
-  s_0ede90d0838d1c::t_f26fdde56c5eec 618-619
-src/features/generation/worker/generators/hingeSwing.scenario.test.ts
-  s_0ede90d0838d1c::t_9526599ab7b286 728-731,734-736,738-789
-src/i18n/locales/it.json
+src/features/generation/worker/generators/lidBuilder.ts
+  s_0ede90d0838d1c::t_f031c6257341e9 29,37,103-105,109,211
+src/i18n/locales/pt-BR.json
   s_0ede90d0838d1c::t_413a307273ed02 1296
 src/i18n/locales/sv.json
   s_0ede90d0838d1c::t_413a307273ed02 1296
-src/i18n/locales/de.json
+src/i18n/locales/zh-CN.json
   s_0ede90d0838d1c::t_413a307273ed02 1296
+src/shared/utils/hingeLidPlan.test.ts
+  s_0ede90d0838d1c::t_cdc33cd3bbb613 286-296
+src/features/generation/worker/generators/hingeBarrel.ts
+  s_0ede90d0838d1c::t_f031c6257341e9 452,493-495
+src/features/generation/worker/generators/hingeSwing.scenario.test.ts
+  s_0ede90d0838d1c::t_9526599ab7b286 728-731,734-736,738-789
+src/shared/utils/hingeLidPlan.ts
+  s_0ede90d0838d1c::t_13aa9b09dc76e9 263-264,267-275,526-528,540-545,559,596-617
+  s_0ede90d0838d1c::t_7c662cb9a716ca 618-619
 src/i18n/locales/ka.json
   s_0ede90d0838d1c::t_413a307273ed02 1988
+src/features/generation/worker/generators/lidInputs.ts
+  s_0ede90d0838d1c::t_2949237e174e33 456-458
+src/i18n/locales/uk.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
 src/i18n/locales/nb.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_0ede90d0838d1c::t_cdc33cd3bbb613 5,1240-1270
+  s_0ede90d0838d1c::t_3319910c21727b 1271
+src/i18n/locales/cs.json
+  s_0ede90d0838d1c::t_413a307273ed02 1296
+src/i18n/locales/ja.json
   s_0ede90d0838d1c::t_413a307273ed02 1296
 src/i18n/locales/en.ts
   s_0ede90d0838d1c::t_413a307273ed02 2390-2391
-src/i18n/locales/es.json
-  s_0ede90d0838d1c::t_413a307273ed02 1296
-src/i18n/locales/pl.json
-  s_0ede90d0838d1c::t_413a307273ed02 1296
-src/features/bin-designer/utils/lidCompatibility.ts
-  s_0ede90d0838d1c::t_5c918c5962e340 686-688
-  s_0ede90d0838d1c::t_daaa505b55b721 120-122,669,683-684
-  s_0ede90d0838d1c::t_9245a8e2b98715 685
-src/i18n/locales/ja.json
-  s_0ede90d0838d1c::t_413a307273ed02 1296
 ---
 {
   "schema_version": "authorship/3.0.0",
