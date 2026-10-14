@@ -1,7 +1,8 @@
 /**
  * The sidebar says each kind of thing one way: an on/off setting is a toggle
- * row (`FeatureToggle`), and a choice of wall is the spatial cross
- * (`SideSelector`). A second idiom for either reads as a different kind of
+ * row (`FeatureToggle`), a choice of wall is the spatial cross
+ * (`SideSelector`), and a fold is the label-and-summary row
+ * (`MoreDisclosure`). A second idiom for either reads as a different kind of
  * control, which is how the panel drifted before.
  */
 
@@ -77,6 +78,9 @@ function violations(path: string): string[] {
       const name = tagName(node);
       if (BOOLEAN_PRIMITIVES.has(name)) {
         found.push(`${at(node)} <${name}>: use FeatureToggle for an on/off setting`);
+      }
+      if (name === 'Collapsible') {
+        found.push(`${at(node)} <Collapsible>: use MoreDisclosure for a fold`);
       }
       if (CHOICE_CONTROLS.has(name) && namesAWall(node)) {
         found.push(`${at(node)} <${name}> lists walls: use SideSelector`);
