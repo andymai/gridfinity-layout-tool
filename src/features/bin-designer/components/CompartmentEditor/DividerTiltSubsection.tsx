@@ -3,7 +3,7 @@ import { Slider } from '@/design-system/Slider';
 import { Switch } from '@/design-system/Switch';
 import { Collapsible } from '@/design-system/Collapsible';
 import { Button, Stepper } from '@/design-system';
-import { InfoDot } from '../panel/shared';
+import { Hint, InfoDot } from '../panel/shared';
 import { useSettingsStore } from '@/core/store/settings';
 import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
@@ -121,9 +121,11 @@ function Teaser({ t }: { readonly t: Translate }) {
   return (
     <div className="mt-2 flex items-start gap-2.5">
       <TeaserDiagram />
-      <p className="flex-1 text-label leading-relaxed text-content-tertiary">
-        {t('binDesigner.angledDividers.teaser')}
-      </p>
+      <div className="flex-1">
+        <Hint info={t('binDesigner.angledDividers.teaserDetail')}>
+          {t('binDesigner.angledDividers.teaser')}
+        </Hint>
+      </div>
     </div>
   );
 }

@@ -83,7 +83,7 @@ describe('SlotConfigurator', () => {
     useDesignerStore.setState({ setParam });
 
     render(<SlotConfigurator />);
-    fireEvent.click(screen.getByLabelText(/floor groove/i));
+    fireEvent.click(screen.getByRole('switch', { name: /^floor groove$/i }));
 
     expect(setParam).toHaveBeenCalledWith(
       'dividerPieces',

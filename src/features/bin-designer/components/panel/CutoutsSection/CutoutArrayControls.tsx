@@ -19,6 +19,7 @@ import {
 } from '@/shared/utils/cutoutArray';
 import { useTranslation } from '@/i18n';
 import { Button, Checkbox, Stepper, NumberField } from '@/design-system';
+import { Hint } from '../shared';
 import { clamp } from '@/shared/utils/math';
 import { cn } from '@/design-system/cn';
 import { trackEvent } from '@/shared/analytics/posthog';
@@ -37,6 +38,10 @@ const BLOCKED_REASON_KEYS: Record<RepeatBlockedReason, string> = {
   grouped: 'binDesigner.cutouts.repeat.blockedGrouped',
   descendantRepeat: 'binDesigner.cutouts.repeat.blockedDescendant',
   path: 'binDesigner.cutouts.repeat.blockedPath',
+};
+
+const BLOCKED_REASON_DETAIL_KEYS: Partial<Record<RepeatBlockedReason, string>> = {
+  descendantRepeat: 'binDesigner.cutouts.repeat.blockedDescendantDetail',
 };
 
 interface CutoutArrayControlsProps {
@@ -98,9 +103,15 @@ export function CutoutArrayControls({
   if (blockedReason) {
     return (
       <div className="space-y-1.5">
-        <p className="text-label leading-snug text-content-tertiary">
+        <Hint
+          info={
+            BLOCKED_REASON_DETAIL_KEYS[blockedReason] === undefined
+              ? undefined
+              : t(BLOCKED_REASON_DETAIL_KEYS[blockedReason])
+          }
+        >
           {t(BLOCKED_REASON_KEYS[blockedReason])}
-        </p>
+        </Hint>
         {blockedReason === 'grouped' && onUngroup && (
           <Button
             type="button"

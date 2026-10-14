@@ -22,6 +22,7 @@ import { LabelPlatesControls } from '../LabelTabsSection/LabelPlatesControls';
 import { AnchorPicker } from '../../controls/AnchorPicker';
 import {
   Hint,
+  LabelInfo,
   Readout,
   SideSelector,
   SubHeader,
@@ -98,7 +99,11 @@ export function WallSurfaceSection() {
                   max={PATTERN_WEB_THICKNESS_MAX}
                   step={PATTERN_WEB_THICKNESS_STEP}
                   unit="mm"
-                  info={t('binDesigner.walls.pattern.strutWidthHint')}
+                  labelAddon={
+                    <LabelInfo label={t('binDesigner.walls.pattern.strutWidth')}>
+                      {t('binDesigner.walls.pattern.strutWidthHint')}
+                    </LabelInfo>
+                  }
                 />
               </div>
             )}

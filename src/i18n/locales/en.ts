@@ -1890,6 +1890,8 @@ const en: Record<string, string> = {
   'binDesigner.dividerAutoHeight': 'Auto',
   'binDesigner.dividerHeightLipCeiling':
     "Auto is the tallest a divider can be while bins stack, since a stacked bin's feet sit just above it. With the stacking lip off, dividers reach the rim.",
+  'binDesigner.dividerHeightLipCeilingShort':
+    "Auto stops dividers just below a stacked bin's feet.",
   'binDesigner.dividerDimensions': '{length} × {height}mm',
   'binDesigner.dividerHeightOnly': '{height}mm tall',
   'binDesigner.labelTabs': 'Label tabs',
@@ -2059,7 +2061,8 @@ const en: Record<string, string> = {
   'binDesigner.angledDividers.slotIncompatible':
     "Slots aren't supported on diagonal dividers (coming in v2).",
   'binDesigner.angledDividers.teaser':
-    'Tilt or lean interior walls to create wedge-shaped compartments. Click a divider on the grid to start.',
+    'Tilt or lean interior walls to create wedge-shaped compartments.',
+  'binDesigner.angledDividers.teaserDetail': 'Click a divider on the grid to start.',
   'binDesigner.compartmentNumberLabel': 'Comp. {n}',
   'binDesigner.labelText': 'Label text',
   'binDesigner.labelTextUseBinName': 'Use bin name “{name}”',
@@ -3004,8 +3007,9 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.repeat.presetRing': 'Ring of {count}',
   'binDesigner.cutouts.repeat.presetNoFit': 'Not enough room from this position',
   'binDesigner.cutouts.repeat.blockedGrouped': 'Select the whole group to repeat it as one piece.',
-  'binDesigner.cutouts.repeat.blockedDescendant':
-    'Something inside this group already repeats. Remove that repeat to repeat the whole group as one piece.',
+  'binDesigner.cutouts.repeat.blockedDescendant': 'Something inside this group already repeats.',
+  'binDesigner.cutouts.repeat.blockedDescendantDetail':
+    'Remove that repeat to repeat the whole group as one piece.',
   'binDesigner.cutouts.repeat.groupNoRotate':
     'A group repeats as one piece, so every copy keeps the same angle.',
   'binDesigner.cutouts.repeat.blockedPath': 'Repeat is not available for pen paths.',
@@ -3772,14 +3776,17 @@ const en: Record<string, string> = {
   'binDesigner.footLattice.axis.y': 'Depth axis',
   'binDesigner.footLattice.grid': 'On grid',
   'binDesigner.footLattice.half': 'Half offset',
-  'binDesigner.footLattice.hint':
-    'Where the feet fall. Use half offset on an axis where the bin sits half a unit off the grid: a foot must land inside one baseplate pocket, and a full foot centered on a pocket edge will not drop in.',
+  'binDesigner.footLattice.hint': 'Where the feet fall.',
+  'binDesigner.footLattice.hintDetail':
+    'Use half offset on an axis where the bin sits half a unit off the grid: a foot must land inside one baseplate pocket, and a full foot centered on a pocket edge will not drop in.',
   'binDesigner.footLattice.halfSocketsHint':
     'Half sockets already seat at either offset, so the lattice has no effect.',
-  'binDesigner.footLattice.customShapeHint':
-    'Custom-shape bins keep the on-grid lattice: a half offset would not line up with the shape you drew.',
-  'binDesigner.footLattice.fractionalHint':
-    'A fractional axis keeps the on-grid lattice: its half cell already handles both placements, and the half-unit edge setting decides which end it sits on.',
+  'binDesigner.footLattice.customShapeHint': 'Custom-shape bins keep the on-grid lattice.',
+  'binDesigner.footLattice.customShapeHintDetail':
+    'A half offset would not line up with the shape you drew.',
+  'binDesigner.footLattice.fractionalHint': 'A fractional axis keeps the on-grid lattice.',
+  'binDesigner.footLattice.fractionalHintDetail':
+    'Its half cell already handles both placements, and the half-unit edge setting decides which end it sits on.',
   'binDesigner.lightweight': 'Lightweight floor',
   'binDesigner.lightweightMode': 'Lightweight mode',
   // 'Inside', not 'Interior': the panel already has an Interior GROUP tab, and

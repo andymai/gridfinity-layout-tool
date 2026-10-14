@@ -407,7 +407,9 @@ export function BaseSection() {
           {/* Why the lattice below is missing, in the slot it would occupy. The
               control that caused it is usually the toggle directly above, so
               this still reads as an explanation at its cause. */}
-          {state.footLatticeInertReason && <Hint>{state.footLatticeInertReason}</Hint>}
+          {state.footLatticeInertReason && (
+            <Hint info={state.footLatticeInertDetail}>{state.footLatticeInertReason}</Hint>
+          )}
 
           {/* Foot lattice (#3467). A foot has to land inside one baseplate
               pocket, so which layout seats depends on where the bin sits, per
@@ -454,7 +456,7 @@ export function BaseSection() {
                   />
                 </div>
               ))}
-              <Hint>{handlers.footLatticeLockReason}</Hint>
+              <Hint info={handlers.footLatticeLockDetail}>{handlers.footLatticeLockReason}</Hint>
             </MoreDisclosure>
           )}
         </section>

@@ -91,6 +91,13 @@ function isFloorPatternType(pattern: WallPatternType): pattern is FloorPatternTy
   return (FLOOR_PATTERN_TYPES as readonly WallPatternType[]).includes(pattern);
 }
 
+/** The rest of each foot-lattice note, shown behind its info dot. */
+const FOOT_LATTICE_DETAIL: Partial<Record<string, string>> = {
+  'binDesigner.footLattice.hint': 'binDesigner.footLattice.hintDetail',
+  'binDesigner.footLattice.customShapeHint': 'binDesigner.footLattice.customShapeHintDetail',
+  'binDesigner.footLattice.fractionalHint': 'binDesigner.footLattice.fractionalHintDetail',
+};
+
 export function useBaseSection() {
   const t = useTranslation();
   const { params, updateBase, updateFloorPattern, setParams } = useDesignerStore(
@@ -140,6 +147,8 @@ export function useBaseSection() {
   // lattice below, so there is never a stored customisation behind this that is
   // in force.
   const footLatticeInert = footLatticeLockedX && footLatticeLockedY;
+  const footLatticeNoteKey = footLatticeLockReason ?? 'binDesigner.footLattice.hint';
+  const footLatticeDetailKey = FOOT_LATTICE_DETAIL[footLatticeNoteKey];
   const footLatticeX = footLatticeLockedX
     ? DEFAULT_FOOT_LATTICE
     : (base.footLatticeX ?? DEFAULT_FOOT_LATTICE);
@@ -667,9 +676,10 @@ export function useBaseSection() {
       // there is nothing local to hang it off, so this note is the whole
       // explanation the user gets and must not be limited to the half-socket
       // case.
-      footLatticeInertReason:
-        hasFeet && footLatticeInert
-          ? t(footLatticeLockReason ?? 'binDesigner.footLattice.hint')
+      footLatticeInertReason: hasFeet && footLatticeInert ? t(footLatticeNoteKey) : undefined,
+      footLatticeInertDetail:
+        hasFeet && footLatticeInert && footLatticeDetailKey !== undefined
+          ? t(footLatticeDetailKey)
           : undefined,
       floorPatternEnabled: floorPattern.enabled,
       floorPatternType: floorPattern.pattern,
@@ -703,7 +713,9 @@ export function useBaseSection() {
       // seats a half-offset bin, detachable or not, so labelling it inert would
       // hide the one control that fixes a bin perching on the pocket ridges.
       // Half sockets and lightweight really are ignored and stay locked.
-      footLatticeLockReason: t(footLatticeLockReason ?? 'binDesigner.footLattice.hint'),
+      footLatticeLockReason: t(footLatticeNoteKey),
+      footLatticeLockDetail:
+        footLatticeDetailKey === undefined ? undefined : t(footLatticeDetailKey),
       setBodyType,
       enableUndersideRelief,
       setTrayAttachment,

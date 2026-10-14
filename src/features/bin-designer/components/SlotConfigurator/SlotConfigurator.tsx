@@ -7,7 +7,8 @@
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import { Button, InfoIcon, Stepper, Switch } from '@/design-system';
+import { Button, Stepper, Switch } from '@/design-system';
+import { Hint, LabelInfo } from '../panel/shared';
 import { RulerIcon } from '@/design-system/Icon';
 import {
   DIVIDER_FLOOR_GROOVE_DEPTH,
@@ -298,10 +299,11 @@ export function SlotConfigurator() {
           aria-label={t('binDesigner.dividerHeight')}
         />
         {dividerPieces.height === 'auto' && stackingLip && (
-          <p className="mt-1 flex items-start gap-1 text-xs text-content-tertiary">
-            <InfoIcon size="xs" className="mt-0.5 shrink-0" />
-            <span>{t('binDesigner.dividerHeightLipCeiling')}</span>
-          </p>
+          <div className="mt-1">
+            <Hint info={t('binDesigner.dividerHeightLipCeiling')}>
+              {t('binDesigner.dividerHeightLipCeilingShort')}
+            </Hint>
+          </div>
         )}
       </div>
 
@@ -383,15 +385,15 @@ export function SlotConfigurator() {
 
       {/* Floor groove */}
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <span className="block text-xs text-content-tertiary">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <span className="text-xs text-content-tertiary">
             {t('binDesigner.dividerFloorGroove')}
           </span>
-          <p className="mt-0.5 text-xs text-content-tertiary">
+          <LabelInfo label={t('binDesigner.dividerFloorGroove')}>
             {t('binDesigner.dividerFloorGrooveHint', {
               depth: String(DIVIDER_FLOOR_GROOVE_DEPTH),
             })}
-          </p>
+          </LabelInfo>
         </div>
         <Switch
           checked={dividerPieces.floorGroove}
