@@ -1,0 +1,21 @@
+src/features/bin-designer/components/panel/ColorsSection/ColorGroup.tsx
+  s_0ede90d0838d1c::t_97fdfc82e1539d 11-12,47-49
+src/shared/components/MoreDisclosure/MoreDisclosure.tsx
+  s_0ede90d0838d1c::t_3e793bc51caef4 95,114-116
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8d4d58f6c4731c59ee8166f4d7d651b4c9ccbaf7",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}

@@ -1,0 +1,54 @@
+src/features/bin-designer/components/panel/InteriorSection/index.ts
+  s_0ede90d0838d1c::t_a70a9604e4bb90 2-3
+src/features/bin-designer/components/panel/InteriorSection/InteriorModes.test.tsx
+  s_0ede90d0838d1c::t_a70a9604e4bb90 3-4,61,63,65,67
+  s_0ede90d0838d1c::t_cd2116823f746a 1-2,5-60,62,64,66,68-141
+src/features/bin-designer/components/panel/shared/index.ts
+  s_0ede90d0838d1c::t_97564364cd8a1a 8
+src/features/bin-designer/components/panel/BaseSection/BodyTypeTiles.test.tsx
+  s_0ede90d0838d1c::t_f22bb5f1e0379c 1-66
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_0ede90d0838d1c::t_0b82ee21b222a7 80-82,84,100,102
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.test.tsx
+  s_0ede90d0838d1c::t_a70a9604e4bb90 9
+  s_0ede90d0838d1c::t_cd2116823f746a 10-11,31,34-35,38,41-46,49,52,73,76,92-94,111-113
+  s_0ede90d0838d1c::t_57d768ba6aa0c4 57-66,70
+src/features/bin-designer/components/panel/InteriorSection/InteriorModes.tsx
+  s_0ede90d0838d1c::t_79d32688fc197e 1,4-19,21-129,140
+  s_0ede90d0838d1c::t_a70a9604e4bb90 2-3,20,130-139
+src/features/bin-designer/components/panel/shared/ModeTiles.tsx
+  s_0ede90d0838d1c::t_41ebe48817d469 1-15,17-69,71-95,97-101,103-107
+  s_0ede90d0838d1c::t_fd8cc6f10b04ef 70
+  s_0ede90d0838d1c::t_57d768ba6aa0c4 16,96,102
+src/features/bin-designer/components/panel/BaseSection/BodyTypeTiles.tsx
+  s_0ede90d0838d1c::t_f22bb5f1e0379c 1-78
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_0ede90d0838d1c::t_f22bb5f1e0379c 6,47,156
+src/features/bin-designer/components/panel/shared/ModeTiles.test.tsx
+  s_0ede90d0838d1c::t_55b730005c55a4 1-8,16-52
+  s_0ede90d0838d1c::t_97564364cd8a1a 9-15
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.tsx
+  s_0ede90d0838d1c::t_9b0b17b17848dd 63
+  s_0ede90d0838d1c::t_a70a9604e4bb90 15-16,69-71
+  s_0ede90d0838d1c::t_b9c96b98d2ac0b 14,18,54-60,62,64-68,72-82
+src/features/baseplate/components/BaseplatePanel/ConnectorPicker.tsx
+  s_0ede90d0838d1c::t_c0e89a7bb824b5 2-5
+src/features/bin-designer/components/panel/InteriorSection/interiorModeMeta.tsx
+  s_0ede90d0838d1c::t_a70a9604e4bb90 1-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "088b781bd58ef3c08d12d3a329e1c764db377a30",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
