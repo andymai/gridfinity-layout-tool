@@ -468,12 +468,14 @@ function raisedWallSolid(
   const inner = outer - g.raisedWallMm;
   const top = frame.axisZ - g.axisAboveStopMm;
   const base = frame.axisZ - g.axisAboveLipTopMm - LIP_HEIGHT;
+  // Below the lip only the 45° support, reaching back to the wall's inner face:
+  // outboard of that face the body is already solid, and a tapered overhang
+  // sets the body's outer face in there, where more material would stick out.
   const drop = Math.max(0, g.raisedWallMm - binWallMm);
-  let outline = draw([outer, base - drop])
-    .lineTo([outer, top])
-    .lineTo([inner, top])
-    .lineTo([inner, base]);
-  if (drop > 0) outline = outline.lineTo([outer - binWallMm, base - drop]);
+  let outline = draw([outer, base]).lineTo([outer, top]).lineTo([inner, top]).lineTo([inner, base]);
+  if (drop > 0) {
+    outline = outline.lineTo([outer - binWallMm, base - drop]).lineTo([outer - binWallMm, base]);
+  }
   const prism = scope.register(sketch(outline.close(), 'YZ').extrude(hi - lo));
   const block = scope.register(translate(prism, [lo, 0, 0]));
   const tilt = (g.trimTiltDeg * Math.PI) / 180;
