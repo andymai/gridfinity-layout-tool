@@ -49,4 +49,10 @@ describe('ModeTiles', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Tray' }));
     expect(onChange).toHaveBeenCalledWith('tray');
   });
+
+  it('leaves the chosen mode alone when it is picked again', () => {
+    const { onChange } = renderTiles('standard');
+    fireEvent.click(screen.getByRole('radio', { name: 'Standard' }));
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });

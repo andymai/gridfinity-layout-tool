@@ -46,6 +46,11 @@ export function ModeTiles<T extends string>({
   const tiles = useRef<Partial<Record<string, HTMLButtonElement | null>>>({});
   const chosen = options.find((option) => option.value === value);
   const choosable = options.filter((option) => option.disabledReason === undefined);
+  // Re-picking the chosen mode would still be a store write: an undo entry
+  // that changes nothing, and a cleared redo stack.
+  const choose = (next: T): void => {
+    if (next !== value) onChange(next);
+  };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
     const step =
@@ -58,7 +63,7 @@ export function ModeTiles<T extends string>({
     event.preventDefault();
     const index = choosable.findIndex((option) => option.value === value);
     const next = choosable[(index + step + choosable.length) % choosable.length];
-    onChange(next.value);
+    choose(next.value);
     tiles.current[next.value]?.focus();
   };
 
@@ -86,7 +91,7 @@ export function ModeTiles<T extends string>({
               tabIndex={isOn ? 0 : -1}
               disabled={option.disabledReason !== undefined}
               title={option.disabledReason}
-              onClick={() => onChange(option.value)}
+              onClick={() => choose(option.value)}
               className={`flex h-auto min-w-0 flex-col items-center justify-start gap-1 rounded-lg border px-1.5 py-2 text-center font-normal transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                 isOn ? TILE_ON : TILE_OFF
               }`}
