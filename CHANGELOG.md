@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.511.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.511.0...gridfinity-layout-tool-v4.511.1) (2026-10-14)
+
+
+### Bug Fixes
+
+* **sync:** clear an outbox entry older than the snapshot a push sent ([#4578](https://github.com/andymai/gridfinity-layout-tool/issues/4578)) ([dd880cc](https://github.com/andymai/gridfinity-layout-tool/commit/dd880cc7f5ffb9a59affd8d645fd8b82e639ed84))
+
 ## [4.511.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.510.2...gridfinity-layout-tool-v4.511.0) (2026-10-14)
 
 
