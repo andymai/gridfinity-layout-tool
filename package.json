@@ -127,9 +127,9 @@
   "dependencies": {
     "@3dconnexion/3dconnexionjs": "^0.8.1",
     "@gridfinity/branded-types": "workspace:*",
-    "@liveblocks/client": "^3.24.2",
-    "@liveblocks/node": "^3.24.2",
-    "@liveblocks/react": "^3.24.2",
+    "@liveblocks/client": "^3.24.3",
+    "@liveblocks/node": "^3.24.3",
+    "@liveblocks/react": "^3.24.3",
     "@mediapipe/tasks-vision": "1.1.0",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.1",
