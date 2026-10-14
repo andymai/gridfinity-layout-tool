@@ -1,0 +1,112 @@
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.tsx
+  s_0ede90d0838d1c::t_d3808bed260b1b 5
+  s_0ede90d0838d1c::t_ed6c647282814b 60-62,65
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 75,83
+src/shared/components/FeatureToggle/FeatureToggle.tsx
+  s_0ede90d0838d1c::t_95e722abcdaafa 8,56,79-84,98
+  s_0ede90d0838d1c::t_a7e0774e776814 31-32,53,58
+src/features/bin-designer/components/panel/PullTabSection/PullTabSection.tsx
+  s_0ede90d0838d1c::t_d4d61e069505e1 5,117-122
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.test.tsx
+  s_0ede90d0838d1c::t_6a5505eeeade5f 225,233,262
+src/features/bin-designer/components/panel/SlideControls/SlideControls.tsx
+  s_0ede90d0838d1c::t_fa30e56ee1502d 17,66-68,70-72
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.tsx
+  s_0ede90d0838d1c::t_3cf8270c84b864 100-108,112-134,136,139-142,144-146,148-174
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.tsx
+  s_0ede90d0838d1c::t_ed6c647282814b 12,478-479,482-505
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_0ede90d0838d1c::t_d4d61e069505e1 272-284
+  s_0ede90d0838d1c::t_cf1053767453ad 23
+src/features/bin-designer/components/panel/ToolRackSection/ToolRackParameterPanel.tsx
+  s_0ede90d0838d1c::t_6960431ba8f0b6 162-170,187-198
+  s_0ede90d0838d1c::t_3c3829a51b7e87 7-8
+src/features/bin-designer/components/panel/panelIdioms.test.ts
+  s_0ede90d0838d1c::t_f5f75d7b51871f 1-106
+src/features/bin-designer/components/panel/LidGripControls/LidGripControls.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 52,58
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_0ede90d0838d1c::t_3a56b5f13120bd 10-11
+  s_0ede90d0838d1c::t_ed6c647282814b 386-393
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 259
+src/shared/components/FeatureToggle/FeatureToggle.test.tsx
+  s_0ede90d0838d1c::t_95e722abcdaafa 133-139
+src/features/bin-designer/components/panel/LidGripControls/LidGripControls.tsx
+  s_0ede90d0838d1c::t_d4d61e069505e1 9-10,15,168-173
+  s_0ede90d0838d1c::t_9dfba9fc962f0d 39-47
+src/features/bin-designer/components/panel/ColorsSection/AccentBandsEditor.tsx
+  s_0ede90d0838d1c::t_ed6c647282814b 115,119
+  s_0ede90d0838d1c::t_3a56b5f13120bd 13
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 320,334,344
+src/features/bin-designer/components/panel/ColorsSection/LipColorEditor.tsx
+  s_0ede90d0838d1c::t_d6c3f3ce5a0c4e 16,177,179-180
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.tsx
+  s_0ede90d0838d1c::t_3c3829a51b7e87 6
+  s_0ede90d0838d1c::t_6960431ba8f0b6 134,136-139,141
+src/features/bin-designer/components/panel/TypeSection/TypeSection.tsx
+  s_0ede90d0838d1c::t_6960431ba8f0b6 221-222,225,227,230,265,268
+  s_0ede90d0838d1c::t_3c3829a51b7e87 38
+src/features/bin-designer/components/panel/ColorsSection/LipColorEditor.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 35,45
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 34
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_0ede90d0838d1c::t_d4d61e069505e1 13,215-220
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.test.tsx
+  s_0ede90d0838d1c::t_6a5505eeeade5f 86
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabShapeControls.tsx
+  s_0ede90d0838d1c::t_d6c3f3ce5a0c4e 3,177,180-181
+src/features/bin-designer/components/panel/HandleSection/HandleSection.tsx
+  s_0ede90d0838d1c::t_ceef7974493b15 15,256-258,264-265
+src/features/bin-designer/components/panel/LabelTabsSection/LabelPlatesControls.tsx
+  s_0ede90d0838d1c::t_d6c3f3ce5a0c4e 14-15,146-152
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.tsx
+  s_0ede90d0838d1c::t_d6c3f3ce5a0c4e 14,103-114
+src/features/bin-designer/components/panel/PullTabSection/PullTabSection.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 44
+src/features/bin-designer/components/panel/shared/SideSelector.test.tsx
+  s_0ede90d0838d1c::t_c3e73503ed37a2 46-72
+  s_0ede90d0838d1c::t_8b31561b9c2b47 73-75
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 909
+src/features/bin-designer/components/panel/HandleSection/HandleSection.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 45
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.test.tsx
+  s_0ede90d0838d1c::t_6a5505eeeade5f 235,253
+  s_0ede90d0838d1c::t_d5623c80f186f5 266
+src/features/bin-designer/components/panel/shared/SideSelector.tsx
+  s_0ede90d0838d1c::t_038d9fba65f75a 12-14,17-18,33-34,41-58,78-119,121-150,172
+src/features/bin-designer/components/panel/HingeControls/HingeControls.tsx
+  s_0ede90d0838d1c::t_9dfba9fc962f0d 22,43-45,47-49
+src/features/bin-designer/components/panel/DimensionsSection/DimensionsSection.tsx
+  s_0ede90d0838d1c::t_b5a3d9e6b205cd 10-11,188-192
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 73
+src/features/bin-designer/components/panel/CutoutsSection/CutoutArrayControls.tsx
+  s_0ede90d0838d1c::t_ed6c647282814b 227-232
+  s_0ede90d0838d1c::t_3a56b5f13120bd 21-22
+src/features/bin-designer/components/panel/ColorsSection/AccentBandsEditor.test.tsx
+  s_0ede90d0838d1c::t_6a5505eeeade5f 42-47
+  s_0ede90d0838d1c::t_d5623c80f186f5 56-57,64
+src/features/bin-designer/components/panel/LabelTabsSection/LabelPlatesControls.test.tsx
+  s_0ede90d0838d1c::t_d5623c80f186f5 49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4f23ce11c36893d30a1ef68d7e094e1b0bfe06bf",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
