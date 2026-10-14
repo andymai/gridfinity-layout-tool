@@ -29,7 +29,7 @@
   "binDesigner.pullTab.hollowOnly": "Trekkfliker krever en vanlig hul boks med vegger.",
   "binDesigner.pullTab.noLid": "Slå av lokket for å gi plass til trekkfliken.",
   "binDesigner.pullTab.noOverhang": "Slå av overheng for å bruke en rett vegg.",
-  "binDesigner.pullTab.solidWall": "Slå av veggutskjæringer, håndtak, veggmønstre, veggtekst og etikettspor for å få en ubrutt vegg.",
+  "binDesigner.pullTab.needsPlainWall": "Trenger en ubrutt vegg: ingen utskjæringer, håndtak, mønstre, tekst eller etikettspor.",
   "binDesigner.base.rimFillet": "Rund av toppkanten",
   "binDesigner.base.rimFillet.radius": "Radius på toppkant",
   "binDesigner.base.rimFillet.hint": "Runder ytterveggen, trekkfliken og skillevegger i full høyde. Den tynneste veggen begrenser radien. Senkede eller skrå skilleveggtopper avrundes ikke. Etikettskinner beholder formen.",

@@ -106,7 +106,7 @@ export function pullTabUnavailableReason(p: PullTabHost): string | undefined {
     p.wallLabelSlots?.enabled ||
     Object.values(p.surfaceText?.walls ?? {}).some((text) => text.trim())
   )
-    return 'binDesigner.pullTab.solidWall';
+    return 'binDesigner.pullTab.needsPlainWall';
   return undefined;
 }
 

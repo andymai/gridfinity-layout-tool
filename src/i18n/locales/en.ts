@@ -1817,8 +1817,8 @@ const en: Record<string, string> = {
   'binDesigner.pullTab.hollowOnly': 'Pull tabs need a standard hollow bin with walls.',
   'binDesigner.pullTab.noLid': 'Turn off the lid to make room for the raised pull tab.',
   'binDesigner.pullTab.noOverhang': 'Turn off overhang to use a straight pull-tab wall.',
-  'binDesigner.pullTab.solidWall':
-    'Turn off wall cutouts, handles, wall patterns, wall text and wall label slots to give the pull tab an uninterrupted wall.',
+  'binDesigner.pullTab.needsPlainWall':
+    'Needs an unbroken wall: no cutouts, handles, patterns, text or label slots.',
   'binDesigner.base.rimFillet': 'Round top rim',
   'binDesigner.base.rimFillet.radius': 'Rim fillet radius',
   'binDesigner.base.rimFillet.hint':

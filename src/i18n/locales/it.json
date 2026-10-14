@@ -29,7 +29,7 @@
   "binDesigner.pullTab.hollowOnly": "Le linguette richiedono un contenitore standard cavo con pareti.",
   "binDesigner.pullTab.noLid": "Disattiva il coperchio per lasciare spazio alla linguetta.",
   "binDesigner.pullTab.noOverhang": "Disattiva la sporgenza per ottenere una parete diritta.",
-  "binDesigner.pullTab.solidWall": "Disattiva aperture, maniglie, motivi, testo e fessure per etichette sulle pareti per avere una parete continua.",
+  "binDesigner.pullTab.needsPlainWall": "Serve una parete continua: senza aperture, maniglie, motivi, testo o fessure per etichette.",
   "binDesigner.base.rimFillet": "Arrotonda bordo superiore",
   "binDesigner.base.rimFillet.radius": "Raggio del bordo",
   "binDesigner.base.rimFillet.hint": "Arrotonda bordo esterno, linguetta e divisori a piena altezza. Il raggio dipende dalla parete più sottile. Le sommità abbassate o inclinate restano invariate. Le guide delle etichette mantengono la forma.",

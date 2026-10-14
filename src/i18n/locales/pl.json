@@ -29,7 +29,7 @@
   "binDesigner.pullTab.hollowOnly": "Uchwyty wymagają standardowego pustego pojemnika ze ściankami.",
   "binDesigner.pullTab.noLid": "Wyłącz pokrywkę, aby zrobić miejsce na uchwyt.",
   "binDesigner.pullTab.noOverhang": "Wyłącz nawis, aby użyć prostej ścianki.",
-  "binDesigner.pullTab.solidWall": "Wyłącz wycięcia, rączki, wzory, tekst i szczeliny na etykiety w ściankach, aby uzyskać ciągłą ściankę.",
+  "binDesigner.pullTab.needsPlainWall": "Wymaga ciągłej ścianki: bez wycięć, rączek, wzorów, tekstu i szczelin na etykiety.",
   "binDesigner.base.rimFillet": "Zaokrąglij górną krawędź",
   "binDesigner.base.rimFillet.radius": "Promień górnej krawędzi",
   "binDesigner.base.rimFillet.hint": "Zaokrągla zewnętrzny brzeg, uchwyt i przegrody pełnej wysokości. Cieńsza ścianka ogranicza promień. Obniżone lub pochylone szczyty przegród pozostają niezmienione. Prowadnice etykiet zachowują kształt.",

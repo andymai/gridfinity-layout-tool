@@ -29,7 +29,7 @@
   "binDesigner.pullTab.hollowOnly": "Las lengüetas requieren un contenedor estándar hueco con paredes.",
   "binDesigner.pullTab.noLid": "Desactiva la tapa para dejar espacio a la lengüeta.",
   "binDesigner.pullTab.noOverhang": "Desactiva el voladizo para usar una pared recta.",
-  "binDesigner.pullTab.solidWall": "Desactiva recortes, asas, patrones, texto y ranuras de etiquetas en paredes para dejar una pared continua.",
+  "binDesigner.pullTab.needsPlainWall": "Necesita una pared continua: sin recortes, asas, patrones, texto ni ranuras de etiquetas.",
   "binDesigner.base.rimFillet": "Redondear borde superior",
   "binDesigner.base.rimFillet.radius": "Radio del borde",
   "binDesigner.base.rimFillet.hint": "Redondea el borde exterior, la lengüeta y los divisores de altura completa. El radio depende de la pared más fina. Los bordes de divisores bajos o inclinados no se redondean. Los rieles de etiquetas conservan su forma.",

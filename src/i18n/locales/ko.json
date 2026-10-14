@@ -29,7 +29,7 @@
   "binDesigner.pullTab.hollowOnly": "당김 탭에는 벽이 있는 표준 중공 빈이 필요합니다.",
   "binDesigner.pullTab.noLid": "돌출 탭 공간을 확보하려면 뚜껑을 끄세요.",
   "binDesigner.pullTab.noOverhang": "곧은 벽을 사용하려면 돌출부를 끄세요.",
-  "binDesigner.pullTab.solidWall": "연속된 벽을 만들려면 벽 절개, 손잡이, 벽 패턴, 벽 텍스트 및 라벨 슬롯을 끄세요.",
+  "binDesigner.pullTab.needsPlainWall": "연속된 벽이 필요합니다. 벽 절개, 손잡이, 패턴, 텍스트, 라벨 슬롯은 쓸 수 없습니다.",
   "binDesigner.base.rimFillet": "상단 테두리 둥글게",
   "binDesigner.base.rimFillet.radius": "테두리 라운딩 반지름",
   "binDesigner.base.rimFillet.hint": "외벽 테두리, 탭 및 전체 높이 칸막이를 둥글게 합니다. 얇은 벽이나 칸막이가 반지름을 제한합니다. 낮거나 기울어진 칸막이 상단은 둥글게 하지 않습니다. 라벨 고정 레일은 모양을 유지합니다.",

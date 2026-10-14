@@ -29,7 +29,7 @@
   "binDesigner.pullTab.hollowOnly": "Les languettes nécessitent un bac standard creux avec des parois.",
   "binDesigner.pullTab.noLid": "Désactivez le couvercle pour laisser place à la languette.",
   "binDesigner.pullTab.noOverhang": "Désactivez le débord pour obtenir une paroi droite.",
-  "binDesigner.pullTab.solidWall": "Désactivez les découpes, poignées, motifs, textes et fentes d’étiquettes de paroi pour obtenir une paroi continue.",
+  "binDesigner.pullTab.needsPlainWall": "Nécessite une paroi continue : sans découpes, poignées, motifs, textes ni fentes d’étiquettes.",
   "binDesigner.base.rimFillet": "Arrondir le bord supérieur",
   "binDesigner.base.rimFillet.radius": "Rayon du bord",
   "binDesigner.base.rimFillet.hint": "Arrondit le bord extérieur, la languette et les cloisons de pleine hauteur. Le rayon dépend de la paroi la plus fine. Les sommets abaissés ou inclinés restent inchangés. Les rails d’étiquettes gardent leur forme.",

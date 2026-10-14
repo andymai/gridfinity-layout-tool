@@ -26,6 +26,9 @@ const ROOTS = [
   'src/shared/components/FeatureToggle',
 ];
 
+/** Modules outside the sidebar whose keys it renders inline as blocked reasons. */
+const PRODUCERS = ['src/shared/utils/pullTabPlan.ts', 'src/shared/constraints'];
+
 const INLINE_ELEMENTS = new Set(['Hint', 'p', 'DependencyHint']);
 const INLINE_PROPS = new Set(['disabledReason', 'hint']);
 /** Components whose `info` prints as a line under the label rather than a dot. */
@@ -214,7 +217,10 @@ describe('panel copy length', () => {
   });
 
   it(`keeps inline prose to ${MAX_INLINE_CHARS} characters`, () => {
-    const tooLong = ROOTS.flatMap(sourceFiles)
+    const producers = PRODUCERS.flatMap((path) =>
+      statSync(path).isDirectory() ? sourceFiles(path) : [path]
+    );
+    const tooLong = [...ROOTS.flatMap(sourceFiles), ...producers]
       .flatMap((path) => inlineCopy(path))
       .filter((copy) => copy.length > MAX_INLINE_CHARS)
       .map((copy) => `${copy.at} ${copy.key} (${copy.length})`);

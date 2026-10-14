@@ -29,7 +29,7 @@
   "binDesigner.pullTab.hollowOnly": "提拉片需要有壁的标准中空盒体。",
   "binDesigner.pullTab.noLid": "请关闭盖子，为凸起的提拉片留出空间。",
   "binDesigner.pullTab.noOverhang": "请关闭外伸，使用笔直的拉片壁。",
-  "binDesigner.pullTab.solidWall": "请关闭壁开口、把手、壁纹样、壁文字和壁标签槽，以提供连续的壁面。",
+  "binDesigner.pullTab.needsPlainWall": "需要连续的壁面：不能有开口、把手、纹样、文字或标签槽。",
   "binDesigner.base.rimFillet": "圆滑顶部边缘",
   "binDesigner.base.rimFillet.radius": "顶部边缘圆角半径",
   "binDesigner.base.rimFillet.hint": "圆滑外壁边缘、提拉片及全高隔板。半径受较薄的壁或隔板限制。降低或倾斜的隔板顶部不会倒圆。标签固定导轨保留原有形状。",

@@ -29,7 +29,7 @@
   "binDesigner.pullTab.hollowOnly": "Treklippen vereisen een standaard holle bak met wanden.",
   "binDesigner.pullTab.noLid": "Schakel het deksel uit om ruimte te maken voor de treklip.",
   "binDesigner.pullTab.noOverhang": "Schakel overhang uit voor een rechte wand.",
-  "binDesigner.pullTab.solidWall": "Schakel wanduitsparingen, handgrepen, wandpatronen, wandtekst en etiketsleuven uit voor een ononderbroken wand.",
+  "binDesigner.pullTab.needsPlainWall": "Vereist een ononderbroken wand: geen uitsparingen, handgrepen, patronen, tekst of etiketsleuven.",
   "binDesigner.base.rimFillet": "Bovenrand afronden",
   "binDesigner.base.rimFillet.radius": "Radius van bovenrand",
   "binDesigner.base.rimFillet.hint": "Rondt de buitenwand, treklip en scheidingswanden op volle hoogte af. De dunste wand begrenst de radius. Verlaagde of gekantelde scheidingsranden blijven ongewijzigd. Etiketrails behouden hun vorm.",

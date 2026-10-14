@@ -29,7 +29,7 @@
   "binDesigner.pullTab.hollowOnly": "Úchyty vyžadují standardní dutý box se stěnami.",
   "binDesigner.pullTab.noLid": "Vypněte víko, aby vznikl prostor pro úchyt.",
   "binDesigner.pullTab.noOverhang": "Vypněte přesah, aby byla stěna rovná.",
-  "binDesigner.pullTab.solidWall": "Vypněte výřezy, madla, vzory, text a drážky na štítky ve stěnách, aby stěna zůstala souvislá.",
+  "binDesigner.pullTab.needsPlainWall": "Potřebuje souvislou stěnu: bez výřezů, madel, vzorů, textu a drážek na štítky.",
   "binDesigner.base.rimFillet": "Zaoblit horní okraj",
   "binDesigner.base.rimFillet.radius": "Poloměr horního okraje",
   "binDesigner.base.rimFillet.hint": "Zaobluje vnější okraj, úchyt a přepážky v plné výšce. Poloměr omezuje tenčí stěna. Snížené nebo nakloněné vršky přepážek se nezaoblují. Vodicí lišty štítků si zachovají tvar.",

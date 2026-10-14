@@ -29,7 +29,7 @@
   "binDesigner.pullTab.hollowOnly": "Abas exigem um recipiente padrão oco com paredes.",
   "binDesigner.pullTab.noLid": "Desative a tampa para dar espaço à aba elevada.",
   "binDesigner.pullTab.noOverhang": "Desative a saliência para usar uma parede reta.",
-  "binDesigner.pullTab.solidWall": "Desative recortes, alças, padrões, texto e ranhuras de etiquetas nas paredes para obter uma parede contínua.",
+  "binDesigner.pullTab.needsPlainWall": "Precisa de uma parede contínua: sem recortes, alças, padrões, texto ou ranhuras de etiquetas.",
   "binDesigner.base.rimFillet": "Arredondar borda superior",
   "binDesigner.base.rimFillet.radius": "Raio da borda",
   "binDesigner.base.rimFillet.hint": "Arredonda a borda externa, a aba e as divisórias de altura total. O raio depende da parede mais fina. Topos rebaixados ou inclinados não são arredondados. Os trilhos das etiquetas mantêm a forma.",
