@@ -86,17 +86,18 @@ interface KeyOptions {
   ctrlKey?: boolean;
   shiftKey?: boolean;
   tagName?: string;
+  role?: string;
 }
 
 function press(key: string, options: KeyOptions = {}): KeyboardEvent {
-  const { tagName = 'DIV', ...flags } = options;
+  const { tagName = 'DIV', role, ...flags } = options;
   const event = {
     key,
     metaKey: false,
     ctrlKey: false,
     shiftKey: false,
     ...flags,
-    target: { tagName },
+    target: { tagName, getAttribute: (name: string) => (name === 'role' ? (role ?? null) : null) },
     preventDefault: vi.fn(),
     stopImmediatePropagation: vi.fn(),
   };
@@ -114,6 +115,15 @@ describe('handleCutoutKeyDown — typing guard', () => {
     expect(ctx.onUpdate).not.toHaveBeenCalled();
     expect(ctx.nudgeSelected).not.toHaveBeenCalled();
     expect(ctx.setMode).not.toHaveBeenCalled();
+  });
+
+  it('leaves a focused switch its Space and Tab', () => {
+    const ctx = makeCtx({ selection: new Set(['c1']), cutouts: [makeCutout()] });
+    const tab = press('Tab', { tagName: 'BUTTON', role: 'switch' });
+    handleCutoutKeyDown(tab, ctx);
+    handleCutoutKeyDown(press(' ', { tagName: 'BUTTON', role: 'switch' }), ctx);
+    expect(tab.preventDefault).not.toHaveBeenCalled();
+    expect(ctx.setSelection).not.toHaveBeenCalled();
   });
 });
 
