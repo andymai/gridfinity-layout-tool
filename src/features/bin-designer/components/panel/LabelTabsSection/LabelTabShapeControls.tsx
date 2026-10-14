@@ -1,8 +1,9 @@
 /** The collapsed "tab shape & size" group: support style, tab dimensions and the label lip. */
 
+import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import { FeatureToggle } from '../FeatureToggle';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
-import { Button, Stepper, InfoIcon, Collapsible } from '@/design-system';
+import { Button, Stepper, InfoIcon } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import type { LabelTabSupport } from '../../../types';
 import type { useLabelTabsSection } from './useLabelTabsSection';
@@ -33,12 +34,11 @@ export function LabelTabShapeControls({
   badge,
 }: LabelTabShapeControlsProps) {
   return (
-    <Collapsible
-      title={title}
+    <MoreDisclosure
+      label={title}
       summary={summary}
-      expanded={expanded}
-      onExpandedChange={onExpandedChange}
-      size="sm"
+      open={expanded}
+      onOpenChange={onExpandedChange}
       badge={badge}
     >
       <div className="space-y-3">
@@ -223,6 +223,6 @@ export function LabelTabShapeControls({
           </div>
         )}
       </div>
-    </Collapsible>
+    </MoreDisclosure>
   );
 }

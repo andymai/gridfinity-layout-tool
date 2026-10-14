@@ -1,6 +1,6 @@
 import { ArrowLeftIcon, RotateCcwIcon } from '@/design-system/Icon';
+import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import { Slider } from '@/design-system/Slider';
-import { Collapsible } from '@/design-system/Collapsible';
 import { Button, Stepper } from '@/design-system';
 import { Hint } from '../panel/shared';
 import { FeatureToggle } from '../panel/FeatureToggle';
@@ -287,11 +287,7 @@ function InspectorView({
         </Button>
       )}
 
-      <Collapsible
-        title={t('binDesigner.angledDividers.fineTune')}
-        size="sm"
-        defaultExpanded={false}
-      >
+      <MoreDisclosure label={t('binDesigner.angledDividers.fineTune')}>
         <div className="flex items-center justify-between">
           <span className="text-label text-content-tertiary">
             {t('binDesigner.angledDividers.shiftLabel')}
@@ -314,7 +310,7 @@ function InspectorView({
             disabled={disabled}
           />
         </div>
-      </Collapsible>
+      </MoreDisclosure>
 
       {row.hasTilt && conflicts.length > 0 && (
         <p className="rounded bg-warning-muted px-2 py-1.5 text-label text-content-secondary">

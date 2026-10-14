@@ -7,10 +7,11 @@
  * the text and little else.
  */
 
+import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import { useCallback, useState } from 'react';
 import { FeatureToggle } from '../FeatureToggle';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
-import { Button, Stepper, InfoIcon, Collapsible } from '@/design-system';
+import { Button, Stepper, InfoIcon } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import type { LabelTabAlignment, LabelTabEdges } from '../../../types';
 import {
@@ -239,12 +240,11 @@ export function LabelTabsSection() {
                   </span>
                 </p>
               )}
-              <Collapsible
-                title={t('binDesigner.plateFitGroup')}
+              <MoreDisclosure
+                label={t('binDesigner.plateFitGroup')}
                 summary={plateFitReadout}
-                expanded={expandedGroups.has('plateFit')}
-                onExpandedChange={(open) => setGroupExpanded('plateFit', open)}
-                size="sm"
+                open={expandedGroups.has('plateFit')}
+                onOpenChange={(open) => setGroupExpanded('plateFit', open)}
               >
                 <div className="min-w-0">
                   <span className="mb-1 flex items-center gap-1 text-xs font-medium text-content-secondary">
@@ -282,7 +282,7 @@ export function LabelTabsSection() {
                   />
                 </div>
                 <LabelFitSampleButton />
-              </Collapsible>
+              </MoreDisclosure>
               <LabelPlatesControls />
             </>
           )}
@@ -296,12 +296,11 @@ export function LabelTabsSection() {
 
           {/* Placement: which edges carry a tab, and where the tab sits across
               its compartment. Both answer "where does the label go". */}
-          <Collapsible
-            title={groupTitles.placement}
+          <MoreDisclosure
+            label={groupTitles.placement}
             summary={placementReadout}
-            expanded={expandedGroups.has('placement')}
-            onExpandedChange={(open) => setGroupExpanded('placement', open)}
-            size="sm"
+            open={expandedGroups.has('placement')}
+            onOpenChange={(open) => setGroupExpanded('placement', open)}
             badge={warningBadge('placement')}
           >
             <div className="space-y-3">
@@ -386,7 +385,7 @@ export function LabelTabsSection() {
                 </div>
               )}
             </div>
-          </Collapsible>
+          </MoreDisclosure>
 
           <LabelTabShapeControls
             state={state}
@@ -413,14 +412,13 @@ export function LabelTabsSection() {
             />
           )}
 
-          <Collapsible
-            title={groupTitles.colors}
-            expanded={expandedGroups.has('colors')}
-            onExpandedChange={(open) => setGroupExpanded('colors', open)}
-            size="sm"
+          <MoreDisclosure
+            label={groupTitles.colors}
+            open={expandedGroups.has('colors')}
+            onOpenChange={(open) => setGroupExpanded('colors', open)}
           >
             <LabelColorControls />
-          </Collapsible>
+          </MoreDisclosure>
         </>
       }
     />

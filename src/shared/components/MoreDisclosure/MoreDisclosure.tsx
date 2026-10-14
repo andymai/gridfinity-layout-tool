@@ -12,7 +12,7 @@
  * descendant.
  */
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button, ChevronDownIcon, cn } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import {
@@ -28,6 +28,13 @@ export interface MoreDisclosureProps {
   readonly summary?: string;
   /** Values inside differ from their defaults: auto-open and dot the row. */
   readonly nonDefault?: boolean;
+  /** Starts open. Non-default values open it regardless. */
+  readonly defaultOpen?: boolean;
+  /** Controlled open state, for a parent that coordinates several folds. */
+  readonly open?: boolean;
+  readonly onOpenChange?: (open: boolean) => void;
+  /** Beside the label, e.g. a warning marker. */
+  readonly badge?: ReactNode;
   readonly children: ReactNode;
   readonly className?: string;
 }
@@ -36,18 +43,30 @@ export function MoreDisclosure({
   label,
   summary,
   nonDefault = false,
+  defaultOpen = false,
+  open: controlledOpen,
+  onOpenChange,
+  badge,
   children,
   className,
 }: MoreDisclosureProps) {
   const t = useTranslation();
-  const [open, setOpen] = useState(nonDefault);
+  const [ownOpen, setOwnOpen] = useState(defaultOpen || nonDefault);
+  const open = controlledOpen ?? ownOpen;
+  const setOpen = useCallback(
+    (next: boolean): void => {
+      if (controlledOpen === undefined) setOwnOpen(next);
+      onOpenChange?.(next);
+    },
+    [controlledOpen, onOpenChange]
+  );
   const contentRef = useRef<HTMLDivElement>(null);
   const prevNonDefault = useRef(nonDefault);
 
   useEffect(() => {
     if (nonDefault && !prevNonDefault.current) setOpen(true);
     prevNonDefault.current = nonDefault;
-  }, [nonDefault]);
+  }, [nonDefault, setOpen]);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -63,7 +82,7 @@ export function MoreDisclosure({
     };
     window.addEventListener(HELP_JUMP_ANY_EVENT, handler);
     return () => window.removeEventListener(HELP_JUMP_ANY_EVENT, handler);
-  }, []);
+  }, [setOpen]);
 
   return (
     <div className={className}>
@@ -71,7 +90,7 @@ export function MoreDisclosure({
         <Button
           variant="ghost"
           type="button"
-          onClick={() => setOpen((prev) => !prev)}
+          onClick={() => setOpen(!open)}
           aria-expanded={open}
           className="flex h-auto items-center gap-1.5 px-0 py-0 text-label font-normal text-content-tertiary transition-colors hover:bg-transparent hover:text-content-secondary"
         >
@@ -81,6 +100,7 @@ export function MoreDisclosure({
             aria-hidden="true"
           />
           <span>{label ?? t('common.more')}</span>
+          {badge}
           {!open && nonDefault && (
             <span
               aria-hidden="true"

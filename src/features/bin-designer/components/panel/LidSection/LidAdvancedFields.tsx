@@ -1,7 +1,6 @@
 /** The lid's millimetre fine-tuning disclosure: plate thickness, mode-specific clearances, seam relief, tray dims. */
 
-import { useState } from 'react';
-import { Collapsible } from '@/design-system';
+import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import { SnappingSlider } from '../../controls/SnappingSlider';
 import { StepperField } from '../shared/StepperField';
 import { Hint, Readout } from '../shared';
@@ -20,8 +19,6 @@ export function LidAdvancedFields({
   handlers: ReturnType<typeof useLidSection>['handlers'];
   t: Translator;
 }) {
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-
   // Which mode-specific knobs the Advanced disclosure holds depends on the
   // current mode; the floor-plate thickness applies to every lid, so the
   // disclosure is always present now and never renders empty.
@@ -43,12 +40,7 @@ export function LidAdvancedFields({
     : Math.max(state.topThicknessMm, state.topThicknessMin);
 
   return (
-    <Collapsible
-      title={t('binDesigner.lid.advanced')}
-      size="sm"
-      expanded={advancedOpen}
-      onExpandedChange={setAdvancedOpen}
-    >
+    <MoreDisclosure label={t('binDesigner.lid.advanced')}>
       <div className="space-y-3 pt-2">
         <div className="space-y-1">
           <StepperField
@@ -278,6 +270,6 @@ export function LidAdvancedFields({
           </div>
         )}
       </div>
-    </Collapsible>
+    </MoreDisclosure>
   );
 }

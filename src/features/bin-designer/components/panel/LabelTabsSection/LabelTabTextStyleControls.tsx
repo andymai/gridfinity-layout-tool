@@ -1,6 +1,7 @@
 /** The collapsed "tab text" group: finish, Text colour, font, depth and the shared size control. */
 
-import { Select, Stepper, InfoIcon, Collapsible } from '@/design-system';
+import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
+import { Select, Stepper, InfoIcon } from '@/design-system';
 import { LabelSizeControl } from '../../controls';
 import type { SelectOption } from '@/design-system';
 import type { TextFontFamily, TextMode } from '../../../types';
@@ -44,13 +45,7 @@ export function LabelTabTextStyleControls({
   onExpandedChange,
 }: LabelTabTextStyleControlsProps) {
   return (
-    <Collapsible
-      title={title}
-      summary={summary}
-      expanded={expanded}
-      onExpandedChange={onExpandedChange}
-      size="sm"
-    >
+    <MoreDisclosure label={title} summary={summary} open={expanded} onOpenChange={onExpandedChange}>
       <div className="space-y-2">
         <div className="space-y-1">
           <span className="block text-xs text-content-tertiary">{t('binDesigner.textMode')}</span>
@@ -135,6 +130,6 @@ export function LabelTabTextStyleControls({
           onAction={() => jumpToDesignerControl('bd-type')}
         />
       </div>
-    </Collapsible>
+    </MoreDisclosure>
   );
 }

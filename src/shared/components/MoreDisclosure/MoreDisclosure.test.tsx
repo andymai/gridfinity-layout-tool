@@ -89,4 +89,38 @@ describe('MoreDisclosure', () => {
     fireEvent(window, new CustomEvent('help-jump:any', { detail: { controlId: 'bd-other' } }));
     expect(screen.getByRole('button')).toHaveAttribute('aria-expanded', 'false');
   });
+
+  it('follows a parent that controls it, and asks the parent to change', () => {
+    const onOpenChange = vi.fn();
+    const { rerender } = render(
+      <MoreDisclosure label="Placement" open={false} onOpenChange={onOpenChange}>
+        <div>Inside</div>
+      </MoreDisclosure>
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Placement' }));
+    expect(onOpenChange).toHaveBeenCalledWith(true);
+    expect(screen.getByRole('button', { name: 'Placement' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+
+    rerender(
+      <MoreDisclosure label="Placement" open onOpenChange={onOpenChange}>
+        <div>Inside</div>
+      </MoreDisclosure>
+    );
+    expect(screen.getByRole('button', { name: 'Placement' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+  });
+
+  it('shows a badge beside its label', () => {
+    render(
+      <MoreDisclosure label="Placement" badge={<span>2 warnings</span>}>
+        <div>Inside</div>
+      </MoreDisclosure>
+    );
+    expect(screen.getByText('2 warnings')).toBeInTheDocument();
+  });
 });
