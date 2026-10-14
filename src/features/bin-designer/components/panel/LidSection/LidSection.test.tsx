@@ -909,8 +909,9 @@ describe('LidSection grip relief (#3272)', () => {
     const dip = screen.getByRole('checkbox', { name: /dip the bin/i });
     fireEvent.click(dip);
     expect(useDesignerStore.getState().params.lid.grip.binDip).toBe(true);
-    fireEvent.click(screen.getByRole('button', { name: /About .*dip the bin/i }));
     expect(screen.getByText(/nothing to locate against/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /About .*dip the bin/i }));
+    expect(screen.getByText(/so a fingertip gets under the lid/)).toBeInTheDocument();
   });
 });
 

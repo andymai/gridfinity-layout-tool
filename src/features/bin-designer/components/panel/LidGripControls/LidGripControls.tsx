@@ -187,6 +187,7 @@ export function LidGripControls({
               {t('binDesigner.lid.gripBinDipWarning')}
             </LabelInfo>
           </div>
+          {grip.binDip && <Hint>{t('binDesigner.lid.gripBinDipStacking')}</Hint>}
         </>
       )}
     </div>

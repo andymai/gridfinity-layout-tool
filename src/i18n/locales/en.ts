@@ -1810,7 +1810,7 @@ const en: Record<string, string> = {
   'binDesigner.pullTab.recessDescription':
     'Border width sets the top and side margins; sloping shoulders can leave wider side margins. Smaller values widen the recess. Increasing recess height can extend it below the rim; depth leaves at least 0.8 mm of wall behind it.',
   'binDesigner.pullTab.recessSize':
-    'Recess width: {width} mm \\u00b7 Extends below rim: {below} mm.',
+    'Recess width: {width} mm \u00b7 Extends below rim: {below} mm.',
   'binDesigner.pullTab.recessSizeDetail':
     'Border and corner radius adjust when needed to stay inside the tab.',
   'binDesigner.pullTab.rectangularOnly': 'Pull tabs need a rectangular bin.',
@@ -2698,7 +2698,9 @@ const en: Record<string, string> = {
   'binDesigner.lid.gripClamped.edgeMagnet': 'Limited by the edge magnets sitting behind this wall.',
   'binDesigner.lid.gripBinDip': "Also dip the bin's lip",
   'binDesigner.lid.gripBinDipWarning':
-    'Removes the stacking lip across the same span so a fingertip gets under the lid, and eases the click rails there. A bin stacked on top has nothing to locate against along that stretch.',
+    'Removes the stacking lip across the same span so a fingertip gets under the lid, and eases the click rails there.',
+  'binDesigner.lid.gripBinDipStacking':
+    'A bin stacked on top has nothing to locate against along that stretch.',
   'binDesigner.lid.section.tray': 'Organizer tray',
   'binDesigner.lid.matchingTrayHint':
     'A lid keeps dust out; a tray keeps things from sliding. This starts a new design sized to this bin, with a lid base already set up.',
