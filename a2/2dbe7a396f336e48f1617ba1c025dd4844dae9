@@ -1,0 +1,66 @@
+src/features/generation/worker/generators/lidBuilder.ts
+  s_0ede90d0838d1c::t_3117db6b567e9e 47,50
+  s_0ede90d0838d1c::t_96b02161ff023f 233
+  s_0ede90d0838d1c::t_4d618fd847ffeb 110
+  s_0ede90d0838d1c::t_944287783cda90 48
+  s_0ede90d0838d1c::t_bb6d5b069dabaf 196-197,220-231
+  s_0ede90d0838d1c::t_9ef66b032a5196 102-109,111-112
+  s_0ede90d0838d1c::t_eaa90e94a43c61 35
+  s_0ede90d0838d1c::t_8dda2bff2b34a6 204-219,232
+src/shared/generation/meshPersistence.ts
+  s_0ede90d0838d1c::t_46006f3b12429d 46-47,85
+src/features/generation/worker/generators/hingeSwing.scenario.test.ts
+  s_0ede90d0838d1c::t_d47500e7420a7c 35,41-42
+  s_0ede90d0838d1c::t_0262ea879b1e23 107-114
+  s_0ede90d0838d1c::t_e2f71cc5f42fcb 609-679
+  s_0ede90d0838d1c::t_c28a776b78f86c 680-694,696-701
+  s_0ede90d0838d1c::t_ca2aaedd1c31fa 695
+src/shared/utils/hingeLidPlan.test.ts
+  s_0ede90d0838d1c::t_46177257f6432a 275-299
+  s_0ede90d0838d1c::t_21b83b0f1af69f 361-397
+  s_0ede90d0838d1c::t_9f17566cff9bd6 21
+  s_0ede90d0838d1c::t_628c465f1b996d 2-7
+src/features/generation/README.md
+  s_0ede90d0838d1c::t_bcf8fe3a625e83 274
+src/shared/utils/hingeLidPlan.ts
+  s_0ede90d0838d1c::t_125f993bb2118e 121-122
+  s_0ede90d0838d1c::t_2573202e7a4140 544-569
+  s_42784a523d96c0::t_7cf2dcc40b76ef 246,543
+  s_0ede90d0838d1c::t_667456166c472c 250-256
+  s_0ede90d0838d1c::t_deaf85c7605fb0 247-249,257-258
+  s_0ede90d0838d1c::t_08715c25b8d248 519
+src/features/generation/worker/generators/hingeBarrel.ts
+  s_0ede90d0838d1c::t_6c64d00f2ecceb 476-488
+  s_0ede90d0838d1c::t_deec6bc9abccfd 438-441,446-451,453,460-461,468,473-474,490-497
+  s_0ede90d0838d1c::t_306641d6beda0d 259-260,274-285
+  s_0ede90d0838d1c::t_fdbf697d55f1ae 42
+  s_0ede90d0838d1c::t_3a90b062400e99 423-436,442-445,452,454-459
+  s_0ede90d0838d1c::t_20559488f59fce 437
+  s_0ede90d0838d1c::t_a24f4fe43a182b 40
+  s_0ede90d0838d1c::t_5491d9eb1c4f83 462-467,469-472
+  s_0ede90d0838d1c::t_6132b8237b76ac 475,489
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a22dbe7a396f336e48f1617ba1c025dd4844dae9",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    },
+    "s_42784a523d96c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "50f300b6-eb91-416b-b1eb-b6762f14d3e6",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
