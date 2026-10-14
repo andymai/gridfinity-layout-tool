@@ -6,6 +6,7 @@ src/features/generation/worker/generators/hingeBarrel.ts
 src/features/bin-designer/types/lid.ts
   s_0ede90d0838d1c::t_b5f97cceb4b8d1 807-809,815,818-819,823-825,830,839-840
   s_0ede90d0838d1c::t_e3c3249302ce1a 806
+  s_0ede90d0838d1c::t_7bd6ef62b06ef5 810-814,816-817
 src/features/generation/worker/generators/hingeSwing.scenario.test.ts
   s_0ede90d0838d1c::t_6e52de81ff2e5b 408
 src/features/generation/worker/generators/pipeline/stages/lidHingeStage.ts
