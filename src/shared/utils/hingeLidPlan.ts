@@ -151,7 +151,6 @@ import type { LidCompatibilitySide } from '@/features/bin-designer/utils/lidComp
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { hasOverhang, overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
-import { pullTabWallInset } from '@/shared/utils/pullTabPlan';
 import { labelTabInteriorDims, subtractSpan } from '@/shared/utils/labelTabPlan';
 import type { RailSegment, WallSpanBlock } from '@/shared/utils/labelTabPlan';
 import { lipGapRailBlocks, lipGaps } from '@/shared/utils/lipGapPlan';
@@ -286,9 +285,9 @@ export interface HingeGeometry {
   readonly axisToLatchFaceMm: number;
   /**
    * Where the cavity's centre sits along the axis (mm), in the canonical frame.
-   * An asymmetric overhang or a pull tab moves it off the bin's origin, and the
-   * runs are measured from it, as every wall feature is, so both parts' hinge
-   * solids shift by it.
+   * An asymmetric overhang moves it off the bin's origin, and the runs are
+   * measured from it, as every wall feature is, so both parts' hinge solids
+   * shift by it.
    */
   readonly alongOffsetMm: number;
   /**
@@ -555,11 +554,9 @@ export function planHingeLid(params: BinParams): HingePlan {
   const axisToLatchFaceMm = crossSpan + 2 * params.wallThickness - axisInsetMm;
   const overhang = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
   const expansion = hasOverhang(overhang) ? overhangExpansion(overhang) : null;
-  const tab = pullTabWallInset(params);
   const turn = (rotationForSide(side) * Math.PI) / 180;
   const alongOffsetMm =
-    ((expansion?.offsetX ?? 0) - tab.x / 2) * Math.cos(turn) +
-    ((expansion?.offsetY ?? 0) + tab.y / 2) * Math.sin(turn);
+    (expansion?.offsetX ?? 0) * Math.cos(turn) + (expansion?.offsetY ?? 0) * Math.sin(turn);
 
   return {
     rejection: null,
