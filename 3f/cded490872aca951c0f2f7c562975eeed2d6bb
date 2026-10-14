@@ -1,0 +1,41 @@
+src/features/generation/worker/generators/hingeSwing.scenario.test.ts
+  s_0ede90d0838d1c::t_9c54a9ac732891 611-613,685-712,714-715,721,726-748
+  s_0ede90d0838d1c::t_e09a9908094bac 749
+src/features/generation/worker/generators/hingeBarrel.ts
+  s_0ede90d0838d1c::t_38c4aa66c52614 446-447,454-455,495-498,500
+src/features/generation/worker/generators/lidBuilder.ts
+  s_0ede90d0838d1c::t_0b116224d54034 208-209
+  s_0ede90d0838d1c::t_38c4aa66c52614 29,37-38,104-106,109-111,205-207,210-211
+  s_42784a523d96c0::t_e945450a333b92 212-213
+src/shared/utils/hingeLidPlan.ts
+  s_0ede90d0838d1c::t_bf7d9d721cec79 141,260-267,529
+src/shared/utils/hingeLidPlan.test.ts
+  s_0ede90d0838d1c::t_9e81bd2d3a1622 276-285
+src/features/bin-designer/types/lid.ts
+  s_0ede90d0838d1c::t_fedbd1645292a0 799-805
+  s_42784a523d96c0::t_04c93d0482cd62 798
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3fcded490872aca951c0f2f7c562975eeed2d6bb",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_42784a523d96c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "50f300b6-eb91-416b-b1eb-b6762f14d3e6",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
