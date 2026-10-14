@@ -26,15 +26,11 @@ const ROOTS = [
   'src/shared/components/FeatureToggle',
 ];
 
-/** Elements whose text renders inline in the panel. */
 const INLINE_ELEMENTS = new Set(['Hint', 'p', 'DependencyHint']);
-/** Props whose string renders inline under the control. */
 const INLINE_PROPS = new Set(['disabledReason', 'hint']);
 /** Components whose `info` prints as a line under the label rather than a dot. */
 const INLINE_INFO = new Set(['SliderInput']);
-/** A prop holding prose shown on demand, behind an info dot. */
 const ON_DEMAND_PROP = 'info';
-/** Containers whose prose is shown on demand, not inline. */
 const ON_DEMAND = new Set([
   'InfoDot',
   'LabelInfo',
@@ -43,7 +39,6 @@ const ON_DEMAND = new Set([
   'Popover',
   'FieldLabel',
 ]);
-/** The convention for a key whose text sits behind an info dot. */
 const DETAIL_KEY = /Detail$/;
 
 function sourceFiles(dir: string): string[] {
@@ -62,7 +57,6 @@ function tagName(node: ts.JsxElement | ts.JsxSelfClosingElement): string {
 
 const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-/** String values of a same-file `const NAME = { … }` lookup table. */
 function tableValues(source: ts.SourceFile, name: string): string[] {
   const values: string[] = [];
   const find = (node: ts.Node): void => {
@@ -85,7 +79,6 @@ function tableValues(source: ts.SourceFile, name: string): string[] {
   return values;
 }
 
-/** The en keys a `t(...)` argument can name. */
 function keysFor(arg: ts.Expression, source: ts.SourceFile): string[] {
   if (ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg)) return [arg.text];
   if (ts.isTemplateExpression(arg)) {
@@ -119,7 +112,6 @@ function inlineCopy(path: string): InlineCopy[] {
     found.push({ at: `${relative(process.cwd(), path)}:${line + 1}`, key, length: value.length });
   };
 
-  // A hook hands its keys over as state, which the panel renders inline.
   if (path.endsWith('.ts')) {
     const literal = (node: ts.Node): void => {
       if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {

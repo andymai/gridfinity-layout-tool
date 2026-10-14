@@ -1539,6 +1539,7 @@
   "binDesigner.overhang.hint": "Erweitert die Wände nach außen, um einen Schubladenspalt zu füllen. Die Basisfüße bleiben an Ort und Stelle, sodass unter dem Überstand ein flacher Boden entsteht.",
   "binDesigner.overhang.placement.expandToFitHint": "Dieser Behälter im Layout wurde passend vergrößert und wird daher mit dem Überstand unten statt mit dem eigenen dieses Designs gedruckt.",
   "binDesigner.overhang.placement.changeInLayout": "Ändere ihn im Layout, nicht hier.",
+  "binDesigner.overhang.placement.prints": "Dieser Behälter wird mit dem Überstand unten statt mit dem eigenen dieses Designs gedruckt.",
   "binDesigner.overhang.placement.marginHint": "Dieser Behälter im Layout reicht in den Schubladenrand und wird daher mit dem Überstand unten statt mit dem eigenen dieses Designs gedruckt.",
   "binDesigner.overhang.placement.title": "Überstand aus dem Layout",
   "binDesigner.overhang.side.back": "Hinten",

@@ -2032,6 +2032,7 @@
   "binDesigner.overhang.placement.marginHint": "განლაგების ეს ყუთი უჯრის ნაპირში ვრცელდება, ამიტომ იბეჭდება ქვემოთ მოცემული გადმონაშვერით ამ დიზაინის საკუთარის ნაცვლად.",
   "binDesigner.overhang.placement.expandToFitHint": "განლაგების ეს ყუთი მოსარგებად გაფართოვდა, ამიტომ იბეჭდება ქვემოთ მოცემული გადმონაშვერით ამ დიზაინის საკუთარის ნაცვლად.",
   "binDesigner.overhang.placement.changeInLayout": "შეცვალეთ ის განლაგებაში და არა აქ.",
+  "binDesigner.overhang.placement.prints": "ეს ყუთი იბეჭდება ქვემოთ მოცემული გადმონაშვერით ამ დიზაინის საკუთარის ნაცვლად.",
   "binDesigner.itemKind.bin": "ყუთი",
   "binDesigner.itemKind.bin.description": "მორგებული Gridfinity შესანახი ყუთი",
   "binDesigner.itemKind.toolRack": "ხელსაწყოების სადგამი",

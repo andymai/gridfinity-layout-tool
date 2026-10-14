@@ -1539,6 +1539,7 @@
   "binDesigner.overhang.hint": "Rozšiř stěny ven, abys vyplnil mezeru v zásuvce. Nožky základny zůstanou na místě a pod přesahem nechají ploché dno.",
   "binDesigner.overhang.placement.expandToFitHint": "Tento box z rozvržení byl roztažen na míru, takže se tiskne s níže uvedeným přesahem místo vlastního přesahu tohoto návrhu.",
   "binDesigner.overhang.placement.changeInLayout": "Změňte ho v rozvržení, ne zde.",
+  "binDesigner.overhang.placement.prints": "Tento box se tiskne s níže uvedeným přesahem místo vlastního přesahu tohoto návrhu.",
   "binDesigner.overhang.placement.marginHint": "Tento box z rozvržení zasahuje do okraje zásuvky, takže se tiskne s níže uvedeným přesahem místo vlastního přesahu tohoto návrhu.",
   "binDesigner.overhang.placement.title": "Přesah z rozvržení",
   "binDesigner.overhang.side.back": "Zadní",

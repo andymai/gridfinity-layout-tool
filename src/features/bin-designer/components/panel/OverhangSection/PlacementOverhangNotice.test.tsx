@@ -51,7 +51,7 @@ describe('PlacementOverhangNotice', () => {
     render(<PlacementOverhangNotice />);
     expect(screen.getByRole('status')).toBeDefined();
     expect(screen.getByText('Overhang from the layout')).toBeDefined();
-    expect(screen.getByText(/Change it in the layout/)).toBeDefined();
+    expect(screen.getByText(/This bin prints with the overhang below/)).toBeDefined();
     fireEvent.click(screen.getByRole('button', { name: 'More information' }));
     expect(screen.getByText(/extends into the drawer margin/)).toBeDefined();
     expect(screen.getByText('Left')).toBeDefined();

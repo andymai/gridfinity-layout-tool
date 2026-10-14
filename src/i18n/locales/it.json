@@ -1539,6 +1539,7 @@
   "binDesigner.overhang.hint": "Estende le pareti verso l'esterno per riempire uno spazio del cassetto. I piedi della base restano fermi, lasciando un fondo piatto sotto la sporgenza.",
   "binDesigner.overhang.placement.expandToFitHint": "Questo contenitore della disposizione è stato espanso per riempire lo spazio, quindi viene stampato con la sporgenza qui sotto invece di quella propria di questo design.",
   "binDesigner.overhang.placement.changeInLayout": "Modificala nella disposizione, non qui.",
+  "binDesigner.overhang.placement.prints": "Questo contenitore viene stampato con la sporgenza qui sotto invece di quella propria di questo design.",
   "binDesigner.overhang.placement.marginHint": "Questo contenitore della disposizione si estende nel margine del cassetto, quindi viene stampato con la sporgenza qui sotto invece di quella propria di questo design.",
   "binDesigner.overhang.placement.title": "Sporgenza dalla disposizione",
   "binDesigner.overhang.side.back": "Retro",

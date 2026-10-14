@@ -1539,6 +1539,7 @@
   "binDesigner.overhang.hint": "壁を外側に広げて引き出しの隙間を埋めます。ベースの脚はそのままで、オーバーハングの下は平らな底になります。",
   "binDesigner.overhang.placement.expandToFitHint": "このレイアウトのビンは隙間に合わせて拡張されているため、このデザイン自体のオーバーハングではなく、下記のオーバーハングで印刷されます。",
   "binDesigner.overhang.placement.changeInLayout": "ここではなくレイアウトで変更してください。",
+  "binDesigner.overhang.placement.prints": "このビンは、このデザイン自体のオーバーハングではなく、下記のオーバーハングで印刷されます。",
   "binDesigner.overhang.placement.marginHint": "このレイアウトのビンはドロワーの余白まで拡張されているため、このデザイン自体のオーバーハングではなく、下記のオーバーハングで印刷されます。",
   "binDesigner.overhang.placement.title": "レイアウトのオーバーハング",
   "binDesigner.overhang.side.back": "後",

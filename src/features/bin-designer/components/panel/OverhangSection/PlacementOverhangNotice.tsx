@@ -18,6 +18,7 @@ export function PlacementOverhangNotice() {
       icon={<InfoIcon size="xs" className="mt-0.5" />}
     >
       <p className="text-label leading-relaxed text-content-secondary">
+        {t('binDesigner.overhang.placement.prints')}{' '}
         {t('binDesigner.overhang.placement.changeInLayout')}
         <span className="ml-1 inline-flex align-middle">
           <InfoDot aria-label={t('binDesigner.infoButton')}>

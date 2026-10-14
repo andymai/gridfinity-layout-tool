@@ -1539,6 +1539,7 @@
   "binDesigner.overhang.hint": "Utvidgar väggarna utåt för att fylla en lådspringa. Basfötterna stannar kvar, vilket ger en plan botten under överhänget.",
   "binDesigner.overhang.placement.expandToFitHint": "Den här lådinsatsen i layouten har expanderats till passform, så den skrivs ut med överhänget nedan i stället för designens eget.",
   "binDesigner.overhang.placement.changeInLayout": "Ändra det i layouten, inte här.",
+  "binDesigner.overhang.placement.prints": "Den här lådinsatsen skrivs ut med överhänget nedan i stället för designens eget.",
   "binDesigner.overhang.placement.marginHint": "Den här lådinsatsen i layouten sträcker sig in i lådmarginalen, så den skrivs ut med överhänget nedan i stället för designens eget.",
   "binDesigner.overhang.placement.title": "Överhäng från layouten",
   "binDesigner.overhang.side.back": "Bak",

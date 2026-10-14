@@ -1539,6 +1539,7 @@
   "binDesigner.overhang.hint": "Utvider veggene utover for å fylle en skuffeåpning. Basisføttene blir værende, slik at det blir en flat bunn under overhenget.",
   "binDesigner.overhang.placement.expandToFitHint": "Denne beholderen i oppsettet er utvidet til å passe, så den skrives ut med overhenget nedenfor i stedet for designens eget.",
   "binDesigner.overhang.placement.changeInLayout": "Endre det i oppsettet, ikke her.",
+  "binDesigner.overhang.placement.prints": "Denne beholderen skrives ut med overhenget nedenfor i stedet for designens eget.",
   "binDesigner.overhang.placement.marginHint": "Denne beholderen i oppsettet strekker seg inn i skuffemargen, så den skrives ut med overhenget nedenfor i stedet for designens eget.",
   "binDesigner.overhang.placement.title": "Overheng fra oppsettet",
   "binDesigner.overhang.side.back": "Bak",

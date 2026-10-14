@@ -1539,6 +1539,7 @@
   "binDesigner.overhang.hint": "Extiende las paredes hacia afuera para rellenar el hueco del cajón. Los pies de la base no se mueven, dejando una base plana bajo el voladizo.",
   "binDesigner.overhang.placement.expandToFitHint": "Este contenedor de la disposición se ajustó al espacio, así que se imprime con el voladizo de abajo en lugar del propio de este diseño.",
   "binDesigner.overhang.placement.changeInLayout": "Cámbialo en la disposición, no aquí.",
+  "binDesigner.overhang.placement.prints": "Este contenedor se imprime con el voladizo de abajo en lugar del propio de este diseño.",
   "binDesigner.overhang.placement.marginHint": "Este contenedor de la disposición se extiende hasta el margen del cajón, así que se imprime con el voladizo de abajo en lugar del propio de este diseño.",
   "binDesigner.overhang.placement.title": "Voladizo de la disposición",
   "binDesigner.overhang.side.back": "Atrás",

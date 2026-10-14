@@ -2447,6 +2447,8 @@ const en: Record<string, string> = {
   'binDesigner.overhang.placement.expandToFitHint':
     "This layout bin was expanded to fit, so it prints with the overhang below instead of this design's own.",
   'binDesigner.overhang.placement.changeInLayout': 'Change it in the layout, not here.',
+  'binDesigner.overhang.placement.prints':
+    "This bin prints with the overhang below instead of this design's own.",
   'binDesigner.itemKind.bin': 'Bin',
   'binDesigner.itemKind.bin.description': 'Custom Gridfinity storage bin',
   'binDesigner.itemKind.toolRack': 'Tool rack',

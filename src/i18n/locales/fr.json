@@ -1539,6 +1539,7 @@
   "binDesigner.overhang.hint": "Étend les parois vers l'extérieur pour combler un espace de tiroir. Les pieds de la base ne bougent pas, laissant un fond plat sous le débord.",
   "binDesigner.overhang.placement.expandToFitHint": "Ce bac de la disposition a été ajusté à l'espace : il est donc imprimé avec le débord ci-dessous au lieu de celui de ce modèle.",
   "binDesigner.overhang.placement.changeInLayout": "Modifiez-le dans la disposition, pas ici.",
+  "binDesigner.overhang.placement.prints": "Ce bac est imprimé avec le débord ci-dessous au lieu de celui de ce modèle.",
   "binDesigner.overhang.placement.marginHint": "Ce bac de la disposition s'étend dans la marge du tiroir : il est donc imprimé avec le débord ci-dessous au lieu de celui de ce modèle.",
   "binDesigner.overhang.placement.title": "Débord défini par la disposition",
   "binDesigner.overhang.side.back": "Arrière",
