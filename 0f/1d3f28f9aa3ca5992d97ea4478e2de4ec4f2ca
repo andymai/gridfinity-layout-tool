@@ -1,0 +1,23 @@
+src/shared/components/InfoDot/InfoDot.tsx
+  s_0ede90d0838d1c::t_b70a8c840838c2 9-11,19-20
+  s_0ede90d0838d1c::t_c258fbe89bf2f0 37-58
+  s_0ede90d0838d1c::t_af95fd4c38506d 59
+src/shared/components/InfoDot/InfoDot.test.tsx
+  s_0ede90d0838d1c::t_b70a8c840838c2 35-56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0f1d3f28f9aa3ca5992d97ea4478e2de4ec4f2ca",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
