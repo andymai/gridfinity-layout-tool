@@ -136,34 +136,31 @@ export async function getDue(now: number = Date.now()): Promise<OutboxEntry[]> {
 }
 
 /**
- * Mark a successful push. Callers pass the `modifiedAt` and op they
- * pushed, so a newer enqueue that arrived during the push stays.
+ * Mark a successful push of `drained`, the entry the engine read before
+ * sending, which carried the item's state as of send time.
  *
- * A put sends the item's latest snapshot, which covers any queued put
- * stamped at or before it. Matching only the exact mtime would leave an
- * entry queued before a change the engine never heard (a save during the
- * sign-in claim, before it subscribes) due forever, and the drainer would
- * re-send the same snapshot back to back. A delete clears only its own
- * entry: a remote-stamped `modifiedAt` can run ahead of a local delete.
+ * That covers `drained` whatever its mtime. An entry queued before a change
+ * the engine never heard (a save during the sign-in claim, before it
+ * subscribes) is older than what gets pushed, and matching on mtime alone
+ * would leave it due forever, re-sent back to back.
+ *
+ * An entry that replaced `drained` during the push stays unless it carries
+ * the pushed mtime. Replacement is told by identity, not mtime order: a clock
+ * that steps back can stamp a later save below the pushed snapshot.
  */
-export async function markSuccess(
-  kind: SyncKind,
-  id: string,
-  pushedModifiedAt: number,
-  pushedOp: OutboxEntry['op']
-): Promise<void> {
+export async function markSuccess(drained: OutboxEntry, pushedModifiedAt: number): Promise<void> {
   const db = await outboxDb.get();
   const tx = db.transaction(STORE_NAME, 'readwrite');
   const store = tx.objectStore(STORE_NAME);
-  const current = (await store.get(entryKey(kind, id))) as OutboxEntry | undefined;
-  if (current && current.op === pushedOp) {
-    const covered =
-      pushedOp === 'put'
-        ? current.modifiedAt <= pushedModifiedAt
-        : current.modifiedAt === pushedModifiedAt;
-    if (covered) await store.delete(entryKey(kind, id));
+  const current = (await store.get(drained.key)) as OutboxEntry | undefined;
+  if (current && (isSameEntry(current, drained) || current.modifiedAt === pushedModifiedAt)) {
+    await store.delete(drained.key);
   }
   await tx.done;
+}
+
+function isSameEntry(a: OutboxEntry, b: OutboxEntry): boolean {
+  return a.enqueuedAt === b.enqueuedAt && a.modifiedAt === b.modifiedAt && a.op === b.op;
 }
 
 /**

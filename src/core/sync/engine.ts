@@ -216,7 +216,7 @@ async function sendOne(
     if (stopped(s)) return;
     if (res.ok || res.status === 404 || res.status === 410) {
       s.rateLimitedRetries.delete(`${entry.kind}:${entry.id}`);
-      await markPushSucceeded(entry.kind, entry.id, entry.modifiedAt, entry.op);
+      await markPushSucceeded(entry, entry.modifiedAt);
       return;
     }
     await handleFailure(res, kind, entry, s);
@@ -234,7 +234,7 @@ async function sendOne(
   });
   if (stopped(s) || plan === null) return;
   if (plan.status === 'skip') {
-    await outboxMarkSuccess(entry.kind, entry.id, entry.modifiedAt, entry.op);
+    await outboxMarkSuccess(entry, entry.modifiedAt);
     return;
   }
   if (plan.status === 'defer') {
@@ -258,7 +258,7 @@ async function sendOne(
 
   if (res.ok) {
     s.rateLimitedRetries.delete(`${entry.kind}:${entry.id}`);
-    await markPushSucceeded(entry.kind, entry.id, latest.modifiedAt, entry.op);
+    await markPushSucceeded(entry, latest.modifiedAt);
     return;
   }
   if (res.status === 409) {
@@ -275,7 +275,7 @@ async function sendOne(
       kind,
       id: entry.id,
     });
-    await outboxMarkSuccess(entry.kind, entry.id, latest.modifiedAt, entry.op);
+    await outboxMarkSuccess(entry, latest.modifiedAt);
     return;
   }
   if (res.status === 413) {
@@ -286,7 +286,7 @@ async function sendOne(
       id: entry.id,
       message: await safeReadError(res),
     });
-    await outboxMarkSuccess(entry.kind, entry.id, latest.modifiedAt, entry.op);
+    await outboxMarkSuccess(entry, latest.modifiedAt);
     useSyncStatusStore.getState().reportError('Quota exceeded');
     return;
   }
@@ -349,7 +349,7 @@ async function handleConflict(
       emitEngineEvent(s, { type: 'remote-replaced-local', kind, id: entry.id });
     }
   }
-  await outboxMarkSuccess(entry.kind, entry.id, entry.modifiedAt, entry.op);
+  await outboxMarkSuccess(entry, entry.modifiedAt);
 }
 
 async function handleFailure(
@@ -386,7 +386,7 @@ async function handleFailure(
       id: entry.id,
       message: await safeReadError(res),
     });
-    await outboxMarkSuccess(entry.kind, entry.id, entry.modifiedAt, entry.op);
+    await outboxMarkSuccess(entry, entry.modifiedAt);
     return;
   }
   await backOff(kind, entry, s, `HTTP ${res.status}`);
@@ -439,13 +439,8 @@ async function backOff(
  * idle/syncing transition reads pendingCount, and without this it would
  * see a stale count and stick on 'syncing' after the last item drains.
  */
-async function markPushSucceeded(
-  kind: SyncKind,
-  id: string,
-  modifiedAt: number,
-  op: OutboxEntry['op']
-): Promise<void> {
-  await outboxMarkSuccess(kind, id, modifiedAt, op);
+async function markPushSucceeded(entry: OutboxEntry, pushedModifiedAt: number): Promise<void> {
+  await outboxMarkSuccess(entry, pushedModifiedAt);
   await syncStatusFromOutbox();
   useSyncStatusStore.getState().succeed();
 }
