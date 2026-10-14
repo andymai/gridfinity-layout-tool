@@ -65,6 +65,22 @@ features surface it through `DependencyHint`. Rail dots come from
 `categoryModified` (params keyed to categories; unlisted keys read as Shape)
 and the Print icon's warning dot from `needsSplit`.
 
+### Panel idioms
+
+Each kind of control has one primitive, enforced by `panelIdioms.test.ts`: an
+on/off setting is a `FeatureToggle`, a choice of wall a `SideSelector`
+(`mode: 'single'` for one wall), a mode that opens its own controls a
+`ModeTiles` group, and a fold a `MoreDisclosure` (pass `open`/`onOpenChange`
+when a jump must open it). Captions are `FieldLabel`; group headings are
+`SubHeader`, unique within a page.
+
+Inline prose is one line, at most 90 characters (`panelCopyLength.test.ts`).
+An evergreen explanation goes behind an info dot (`info` on `Hint`,
+`FieldLabel`, `SubHeader` or `FeatureToggle`) under a key ending in `Detail`.
+A blocked reason or warning stays inline, or the state it reports disappears.
+A picker must skip `onChange` when the chosen value is picked again: the store
+write still pushes an undo entry and clears redo.
+
 ## Verification
 
 ```bash
