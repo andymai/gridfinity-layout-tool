@@ -1,0 +1,19 @@
+src/shared/utils/hingeLidPlan.ts
+  s_0ede90d0838d1c::t_a9fa2e85785e20 288-290,559
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ba5eb0d1736ab9d55e933ae567be1205a80b9107",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
