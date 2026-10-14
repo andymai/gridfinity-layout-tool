@@ -7,6 +7,7 @@
 import { useRef } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { Button } from '@/design-system';
+import { FeatureGate } from '../FeatureGate';
 
 export interface ModeTileOption<T extends string> {
   readonly value: T;
@@ -46,6 +47,10 @@ export function ModeTiles<T extends string>({
   const tiles = useRef<Partial<Record<string, HTMLButtonElement | null>>>({});
   const chosen = options.find((option) => option.value === value);
   const choosable = options.filter((option) => option.disabledReason === undefined);
+  const blockedReason = chosen?.disabledReason;
+  // A disabled tile takes no focus, so a blocked mode passes the group's tab
+  // stop to the first mode that can be chosen, or Tab would skip the picker.
+  const tabStop = blockedReason === undefined ? value : choosable[0]?.value;
   // Re-picking the chosen mode would still be a store write: an undo entry
   // that changes nothing, and a cleared redo stack.
   const choose = (next: T): void => {
@@ -62,7 +67,10 @@ export function ModeTiles<T extends string>({
     if (step === 0 || choosable.length === 0) return;
     event.preventDefault();
     const index = choosable.findIndex((option) => option.value === value);
-    const next = choosable[(index + step + choosable.length) % choosable.length];
+    const next =
+      index < 0
+        ? choosable[step > 0 ? 0 : choosable.length - 1]
+        : choosable[(index + step + choosable.length) % choosable.length];
     choose(next.value);
     tiles.current[next.value]?.focus();
   };
@@ -88,7 +96,7 @@ export function ModeTiles<T extends string>({
               type="button"
               role="radio"
               aria-checked={isOn}
-              tabIndex={isOn ? 0 : -1}
+              tabIndex={option.value === tabStop ? 0 : -1}
               disabled={option.disabledReason !== undefined}
               title={option.disabledReason}
               onClick={() => choose(option.value)}
@@ -104,9 +112,17 @@ export function ModeTiles<T extends string>({
         })}
       </div>
       {chosen && (
-        <p className="text-label leading-relaxed text-content-tertiary">{chosen.caption}</p>
+        <p className="text-label leading-relaxed text-content-tertiary">
+          {blockedReason ?? chosen.caption}
+        </p>
       )}
-      {children}
+      {blockedReason === undefined ? (
+        children
+      ) : (
+        <FeatureGate disabled reason={blockedReason}>
+          {children}
+        </FeatureGate>
+      )}
     </div>
   );
 }

@@ -50,6 +50,21 @@ describe('ModeTiles', () => {
     expect(onChange).toHaveBeenCalledWith('tray');
   });
 
+  it('says why the chosen mode is blocked, and holds its controls', () => {
+    renderTiles('spacer');
+    expect(screen.getByText('Blocked')).toBeInTheDocument();
+    expect(screen.queryByText('An open riser')).toBeNull();
+    expect(screen.getByText('Chosen controls').closest('[inert]')).not.toBeNull();
+  });
+
+  it('passes the tab stop on when the chosen mode is blocked', () => {
+    const { onChange } = renderTiles('spacer');
+    expect(screen.getByRole('radio', { name: 'Standard' })).toHaveAttribute('tabindex', '0');
+    expect(screen.getByRole('radio', { name: 'Tray' })).toHaveAttribute('tabindex', '-1');
+    fireEvent.keyDown(screen.getByRole('radiogroup'), { key: 'ArrowLeft' });
+    expect(onChange).toHaveBeenLastCalledWith('tray');
+  });
+
   it('leaves the chosen mode alone when it is picked again', () => {
     const { onChange } = renderTiles('standard');
     fireEvent.click(screen.getByRole('radio', { name: 'Standard' }));

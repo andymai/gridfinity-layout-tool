@@ -79,6 +79,21 @@ describe('InteriorSection', () => {
       useDesignerStore.setState({ params: initial });
     });
 
+    it('holds the chosen editor and says why when a custom shape blocks it', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] } },
+      });
+      render(<InteriorSection />);
+
+      expect(screen.getByRole('radio', { name: 'Grid Dividers' })).toBeDisabled();
+      expect(screen.getByText('Needs a rectangular footprint.')).toBeInTheDocument();
+      expect(screen.getByTestId('content-standard').closest('[inert]')).not.toBeNull();
+      expect(screen.getByRole('radio', { name: 'Custom Cutouts' })).toHaveAttribute(
+        'tabindex',
+        '0'
+      );
+    });
+
     it('stays clickable while Solid is the current style', () => {
       useDesignerStore.setState({
         params: {
