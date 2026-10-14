@@ -159,7 +159,12 @@ function inlineCopy(path: string, text = readFileSync(path, 'utf-8')): InlineCop
         : Math.max(rendered(node.left), rendered(node.right));
     }
     if (isT(node)) {
-      return Math.max(0, ...keysFor(node.arguments[0], source).map((key) => en[key]?.length ?? 0));
+      return Math.max(
+        0,
+        ...keysFor(node.arguments[0], source)
+          .filter((key) => !DETAIL_KEY.test(key))
+          .map((key) => en[key]?.length ?? 0)
+      );
     }
     if (ts.isJsxElement(node)) {
       return node.children.reduce((sum, child) => sum + rendered(child), 0);

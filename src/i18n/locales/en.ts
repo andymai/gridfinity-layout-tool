@@ -2313,23 +2313,32 @@ const en: Record<string, string> = {
   'binDesigner.lid.trayWall': 'Tray rim',
   'binDesigner.lid.trayWallAria': 'Tray rim wall thickness in millimeters',
   'binDesigner.lid.compat.heading': 'Compatibility notes',
-  'binDesigner.lid.compat.wallCutouts':
-    'Wall cutouts remove the lip they cut through. The click rail on {sides} stops short of each window and takes whatever wall is left.',
+  'binDesigner.lid.compat.wallCutouts': 'Wall cutouts remove the lip they cut through.',
+  'binDesigner.lid.compat.wallCutoutsDetail':
+    'The click rail on {sides} stops short of each window and takes whatever wall is left.',
   'binDesigner.lid.compat.wallCutoutsAllSides':
-    'The wall cutouts leave no lip on any wall, so the lid has nothing to mate with. Narrow them, or turn some off.',
+    'The wall cutouts leave no lip on any wall, so the lid has nothing to mate with.',
+  'binDesigner.lid.compat.wallCutoutsAllSidesDetail': 'Narrow them, or turn some off.',
   'binDesigner.lid.compat.knifeSlots':
-    'Each knife exit notches the lip where the blade leaves the block. The click rail on {sides} goes around every notch and takes the wall that is left.',
+    'Each knife exit notches the lip where the blade leaves the block.',
+  'binDesigner.lid.compat.knifeSlotsDetail':
+    'The click rail on {sides} goes around every notch and takes the wall that is left.',
   'binDesigner.lid.compat.openSides':
-    'An open-sided pocket takes its whole span out of the lip where it leaves the bin. The click rail on {sides} goes around every opening and takes the wall that is left.',
+    'An open-sided pocket takes its whole span out of the lip where it leaves the bin.',
+  'binDesigner.lid.compat.openSidesDetail':
+    'The click rail on {sides} goes around every opening and takes the wall that is left.',
   'binDesigner.lid.compat.wallPattern':
     'Wall pattern can perforate the lip, so the lid may sit loosely.',
   'binDesigner.lid.compat.shortBin':
     'Bin is 1U tall: the lid still seats but the grip is marginal.',
-  'binDesigner.lid.compat.tallLidShortBin':
+  'binDesigner.lid.compat.tallLidShortBin': 'A tall lid on a 1U bin can be knocked off.',
+  'binDesigner.lid.compat.tallLidShortBinDetail':
     'A tall lid on a 1U bin has a long lever arm on that marginal grip, so a knock may pop it off. Consider a taller bin or more snap-fit sides.',
-  'binDesigner.lid.compat.tallDividerPieces':
+  'binDesigner.lid.compat.tallDividerPieces': 'Divider pieces are taller than the bin interior.',
+  'binDesigner.lid.compat.tallDividerPiecesDetail':
     'Divider pieces are taller than the bin interior, so the lid will not seat with them inserted.',
-  'binDesigner.lid.compat.cellMaskHoles':
+  'binDesigner.lid.compat.cellMaskHoles': 'Inner edges of the custom shape get no rails.',
+  'binDesigner.lid.compat.cellMaskHolesDetail':
     'Custom shape has interior holes: those inner edges have lip but no rails (asymmetric grip).',
   'binDesigner.lid.relieveInterior': 'Relieve interior at the lid seam',
   'binDesigner.lid.relieveInteriorHint':
@@ -2352,24 +2361,35 @@ const en: Record<string, string> = {
   'binDesigner.lid.editCutoutsBlockedDetail':
     'A full stack grid covers the top face; a lip-only grid leaves it usable.',
   'binDesigner.lid.compat.compartmentDividers':
-    'Compartment dividers reach the top of the cavity, where the click rail drops in. The rail on {sides} is notched around each one so the lid can still seat.',
-  'binDesigner.lid.compat.labelTabs':
-    'Label tabs take the wall they hang from. The click rail on {sides} fills only the gaps they leave, and rails on the other walls stop short of them.',
-  'binDesigner.lid.compat.handles':
-    'Handles on {sides} reach up into the lip. The click rail on those walls stops short of each hole and takes whatever wall is left.',
+    'Compartment dividers reach the top of the cavity, where the click rail drops in.',
+  'binDesigner.lid.compat.compartmentDividersDetail':
+    'The rail on {sides} is notched around each one so the lid can still seat.',
+  'binDesigner.lid.compat.labelTabs': 'Label tabs take the wall they hang from.',
+  'binDesigner.lid.compat.labelTabsDetail':
+    'The click rail on {sides} fills only the gaps they leave, and rails on the other walls stop short of them.',
+  'binDesigner.lid.compat.handles': 'Handles on {sides} reach up into the lip.',
+  'binDesigner.lid.compat.handlesDetail':
+    'The click rail on those walls stops short of each hole and takes whatever wall is left.',
   'binDesigner.lid.compat.handlesAllSides':
-    'The handle holes leave no usable lip on any wall, so nothing is left for the lid to grip. Narrow them, or turn some off.',
+    'The handle holes leave no usable lip on any wall, so nothing is left for the lid to grip.',
+  'binDesigner.lid.compat.handlesAllSidesDetail': 'Narrow them, or turn some off.',
   'binDesigner.lid.compat.topDownCutoutsAtLip':
     'A solid-bin cutout reaches up into the lip, so the lid may sit loosely above it.',
   'binDesigner.lid.compat.scoopFillsLip':
+    'The finger scoop fills the rail recess on {sides}, so that rail is skipped.',
+  'binDesigner.lid.compat.scoopFillsLipDetail':
     'The finger scoop reaches the top of the wall on {sides}, filling the recess the click rail hooks under, so that rail is auto-skipped. Lower the scoop height, or switch it to Auto, to keep it.',
   'binDesigner.lid.compat.magnetsPolygonUnsupported':
+    'Custom shapes take no corner magnets, so the lid fits by friction.',
+  'binDesigner.lid.compat.magnetsPolygonUnsupportedDetail':
     'Custom shapes can’t place corner magnets, so the lid falls back to friction-fit with no magnets.',
   'binDesigner.lid.compat.magnetTooDeepForBin':
-    'The retention magnet is deeper than the bin interior can hold. Reduce its depth or use a taller bin.',
+    'The retention magnet is deeper than the bin interior can hold.',
+  'binDesigner.lid.compat.magnetTooDeepForBinDetail': 'Reduce its depth or use a taller bin.',
   'binDesigner.lid.compat.fix.magnetTooDeepForBin': 'reduce retention magnet depth',
-  'binDesigner.lid.compat.magnetBinTooSmall':
-    'The bin is too small to fit corner magnets. Use a larger bin or a smaller magnet diameter.',
+  'binDesigner.lid.compat.magnetBinTooSmall': 'The bin is too small to fit corner magnets.',
+  'binDesigner.lid.compat.magnetBinTooSmallDetail':
+    'Use a larger bin or a smaller magnet diameter.',
   'binDesigner.lid.compat.fix.magnetBinTooSmall': 'use a larger bin or a smaller magnet',
   'binDesigner.lid.compat.disabledOne': 'Resolve the conflict to enable lid: {detail}',
   'binDesigner.lid.compat.disabledMany': 'Resolve {count} conflicts to enable lid',
@@ -2377,29 +2397,41 @@ const en: Record<string, string> = {
   'binDesigner.lid.compat.fix.tallDividerPieces': 'reduce divider piece height',
   'binDesigner.lid.compat.fix.handlesAllSides': 'disable some handles',
   'binDesigner.lid.compat.slideFlushNeedsNoLip':
-    'A rim-height channel leaves no room for the stacking lip. Turn the lip off, or move the channel under it.',
+    'A rim-height channel leaves no room for the stacking lip.',
+  'binDesigner.lid.compat.slideFlushNeedsNoLipDetail':
+    'Turn the lip off, or move the channel under it.',
   'binDesigner.lid.compat.fix.slideFlushNeedsNoLip': 'turn off the stacking lip',
-  'binDesigner.lid.compat.slideUnbuildable':
+  'binDesigner.lid.compat.slideUnbuildable': 'This bin can’t take a sliding lid.',
+  'binDesigner.lid.compat.slideUnbuildableDetail':
     'This bin can’t take a sliding lid: it’s too small or too shallow for the channel, or its style has no cavity to cover.',
   'binDesigner.lid.compat.slideInteriorBlocked':
-    'Dividers, label tabs or a scoop reach into the lid’s path and will stop it sliding. Turn on “Relieve interior” under Advanced to cut them clear.',
-  'binDesigner.lid.compat.slideLongSpan':
-    'The lid is wide enough to bow between its runners. Increase its thickness under Advanced.',
+    'Dividers, label tabs or a scoop reach into the lid’s path and will stop it sliding.',
+  'binDesigner.lid.compat.slideInteriorBlockedDetail':
+    'Turn on “Relieve interior” under Advanced to cut them clear.',
+  'binDesigner.lid.compat.slideLongSpan': 'The lid is wide enough to bow between its runners.',
+  'binDesigner.lid.compat.slideLongSpanDetail': 'Increase its thickness under Advanced.',
   'binDesigner.lid.compat.slideRimInterrupted':
-    'The stacking lip is cut away on the {sides} wall so the lid can slide in. Bins still stack on the other three.',
-  'binDesigner.lid.compat.slideCatchThin':
+    'The stacking lip is cut away on the {sides} wall so the lid can slide in.',
+  'binDesigner.lid.compat.slideRimInterruptedDetail': 'Bins still stack on the other three.',
+  'binDesigner.lid.compat.slideCatchThin': 'The finger catch is too thin to print well here.',
+  'binDesigner.lid.compat.slideCatchThinDetail':
     'The finger catch is the entry wall less the sliding clearance, which leaves it too thin to print well here. Reduce the clearance under Fine tuning, or use a thicker wall.',
   'binDesigner.lid.compat.slideChannelInterrupted':
-    'A cutout or handle opens the {sides} wall the lid runs along. The runner will bridge that opening, blocking part of it and standing unsupported across it.',
+    'A cutout or handle opens the {sides} wall the lid runs along.',
+  'binDesigner.lid.compat.slideChannelInterruptedDetail':
+    'The runner will bridge that opening, blocking part of it and standing unsupported across it.',
   'binDesigner.lid.compat.slideWallPattern':
     'The wall pattern perforates the walls the runners weld to, which weakens them.',
-  'binDesigner.lid.compat.hingeUnbuildable':
+  'binDesigner.lid.compat.hingeUnbuildable': 'This bin can’t take a hinged lid.',
+  'binDesigner.lid.compat.hingeUnbuildableDetail':
     'This bin can’t take a hinged lid: the hinge wall is too short, or cutouts and handles have left no unbroken stretch of rim for the knuckles.',
-  'binDesigner.lid.compat.hingeStackableTop':
-    'A hinged lid can’t carry a stackable top. Turn off the stackable top.',
-  'binDesigner.lid.compat.hingeSnapTooTall':
+  'binDesigner.lid.compat.hingeStackableTop': 'A hinged lid can’t carry a stackable top.',
+  'binDesigner.lid.compat.hingeStackableTopDetail': 'Turn off the stackable top.',
+  'binDesigner.lid.compat.hingeSnapTooTall': 'The snap catch is left off at this lid height.',
+  'binDesigner.lid.compat.hingeSnapTooTallDetail':
     'At this lid height the snap catch can’t clear the rim as the lid opens, so the lid is built without it. Pick Magnets or Nothing under “Holds shut with”, or lower the extra lid height.',
-  'binDesigner.lid.compat.hingeGripOnHinge':
+  'binDesigner.lid.compat.hingeGripOnHinge': 'A grip on the hinge wall can’t help lift the lid.',
+  'binDesigner.lid.compat.hingeGripOnHingeDetail':
     'A lid grip on the hinge wall can’t help lift a hinged lid, which only opens at the opposite wall. Move the grip to that wall.',
   'binDesigner.lid.compat.fix.hingeStackableTop': 'turn off the stackable top',
   'binDesigner.lid.compat.fix.hingeUnbuildable':
