@@ -46,7 +46,9 @@ export function InfoDot({ 'aria-label': ariaLabel, children }: InfoDotProps) {
         aria-label={ariaLabel}
         aria-expanded={open}
         aria-controls={open ? contentId : undefined}
-        className="h-4 w-4 rounded-full text-content-tertiary hover:bg-transparent hover:text-content-secondary"
+        // A 24px hit area around the 16px glyph: the dot sits inline in text,
+        // where a full touch target would push the line apart.
+        className="relative h-4 w-4 rounded-full text-content-tertiary before:absolute before:-inset-1 before:content-[''] hover:bg-transparent hover:text-content-secondary"
       >
         <InfoIcon size="xs" />
       </IconButton>
