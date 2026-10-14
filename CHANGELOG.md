@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.511.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.510.2...gridfinity-layout-tool-v4.511.0) (2026-10-14)
+
+
+### Features
+
+* **bin-designer:** show a bin's inside size in the Dimensions panel ([#4573](https://github.com/andymai/gridfinity-layout-tool/issues/4573)) ([727dfd8](https://github.com/andymai/gridfinity-layout-tool/commit/727dfd8dee378a1b493d78df9e0930fece27afbb))
+
 ## [4.510.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.510.1...gridfinity-layout-tool-v4.510.2) (2026-10-13)
 
 
