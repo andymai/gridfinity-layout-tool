@@ -312,6 +312,12 @@ describe('planHingeLid — the axis', () => {
       ).geometry?.alongOffsetMm;
     expect(along('back')).toBeCloseTo(2, 9);
     expect(along('front')).toBeCloseTo(-2, 9);
+    const acrossDepth = (side: LidRailSide): number | undefined =>
+      planHingeLid(
+        params({ overhang: { enabled: true, left: 0, right: 0, front: 0, back: 4 } }, { side })
+      ).geometry?.alongOffsetMm;
+    expect(acrossDepth('left')).toBeCloseTo(2, 9);
+    expect(acrossDepth('right')).toBeCloseTo(-2, 9);
     expect(planHingeLid(params()).geometry?.alongOffsetMm).toBe(0);
   });
 

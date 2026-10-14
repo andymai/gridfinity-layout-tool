@@ -247,7 +247,8 @@ export interface HingeGeometry {
    * How far (mm) the bin's hinge wall rises above its lip to meet a lid with
    * extra height: it closes the hinge wall up to the knuckles, and it carries
    * the stop corner up with the axis, so everything sized from that corner
-   * stays at its stock size. Zero without extra height.
+   * stays at its stock size. Zero unless extra height or a taller height unit
+   * lifts the axis above a stock lid's.
    */
   readonly wallRiseMm: number;
   /** Thickness (mm) of that raised wall. */
