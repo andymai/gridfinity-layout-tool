@@ -1,20 +1,13 @@
 /**
- * The base's archetype, as one exclusive choice.
- *
- * Cards rather than a `SegmentedControl`: this is the most consequential
- * control in the section. It decides whether the bin has walls, a floor or
- * feet at all, and which of the subsections below it even apply, and five
- * labels short enough to fit across the sidebar could not say that. The
- * description is the control's real payload; the label alone does not
- * distinguish a spacer from a base-only plate.
- *
- * Each card holds its own options while selected, so the tray's mating
- * controls live inside the choice that produces them rather than trailing it.
+ * The base's archetype, as one exclusive choice: the most consequential control
+ * in the section, since it decides whether the bin has walls, a floor or feet
+ * at all. The chosen type's caption says what it is, and the tray's mating
+ * controls sit under the choice that produces them.
  */
 
 import type { ReactNode } from 'react';
 import { useTranslation } from '@/i18n';
-import { ModeCard } from '../shared';
+import { ModeTiles } from '../shared';
 import { BODY_TYPES } from './bodyType';
 import type { BodyType } from './bodyType';
 import {
@@ -57,30 +50,29 @@ const ICON: Record<BodyType, ReactNode> = {
   tray: <LidBaseIcon className="text-content-secondary" />,
 };
 
-interface BodyTypeCardsProps {
+interface BodyTypeTilesProps {
   value: BodyType;
   onChange: (next: BodyType) => void;
-  /** Controls and explanations belonging to a type, shown while it is chosen. */
+  /** Controls belonging to a type, shown while it is chosen. */
   options?: Partial<Record<BodyType, ReactNode>>;
 }
 
-export function BodyTypeCards({ value, onChange, options }: BodyTypeCardsProps) {
+export function BodyTypeTiles({ value, onChange, options }: BodyTypeTilesProps) {
   const t = useTranslation();
 
   return (
-    <div role="group" aria-label={t('binDesigner.base.bodyType')} className="space-y-2">
-      {BODY_TYPES.map((type) => (
-        <ModeCard
-          key={type}
-          icon={ICON[type]}
-          title={t(TITLE_KEY[type])}
-          description={t(DESCRIPTION_KEY[type])}
-          selected={value === type}
-          onSelect={() => onChange(type)}
-        >
-          {options?.[type]}
-        </ModeCard>
-      ))}
-    </div>
+    <ModeTiles
+      ariaLabel={t('binDesigner.base.bodyType')}
+      value={value}
+      onChange={onChange}
+      options={BODY_TYPES.map((type) => ({
+        value: type,
+        icon: ICON[type],
+        label: t(TITLE_KEY[type]),
+        caption: t(DESCRIPTION_KEY[type]),
+      }))}
+    >
+      {options?.[value]}
+    </ModeTiles>
   );
 }

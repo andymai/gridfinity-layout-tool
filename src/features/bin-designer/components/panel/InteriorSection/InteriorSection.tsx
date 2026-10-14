@@ -11,9 +11,11 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
-import { InteriorModeCard } from './InteriorModeCard';
+import { Badge } from '@/design-system';
+import { InteriorModeContent } from './InteriorModes';
+import { INTERIOR_MODE_META } from './interiorModeMeta';
 import { useInteriorSection } from './useInteriorSection';
-import { FeatureGate } from '../FeatureGate';
+import { ModeTiles } from '../shared';
 import { INTERIOR_CARDS } from '../../../types';
 import type { InteriorCard } from '../../../types';
 
@@ -49,40 +51,34 @@ export function InteriorSection() {
   // instead of silently losing their tilts.
   const slottedAngledReason = t('binDesigner.angledDividers.slotIncompatible');
 
+  const disabledReason = (card: InteriorCard): string | undefined => {
+    if (isCustomShape && CARDS_REQUIRING_RECTANGULAR_SHAPE.has(card)) return customShapeReason;
+    if (card === 'slotted' && hasAngledDividers) return slottedAngledReason;
+    if (card === 'slotted' && slottedBlockedReason) return t(slottedBlockedReason);
+    return undefined;
+  };
+
   return (
-    <div className="space-y-2">
-      {INTERIOR_CARDS.map((card) => {
-        const element = (
-          <InteriorModeCard
-            key={card}
-            card={card}
-            isExpanded={state.card === card}
-            onSelect={() => handlers.selectCard(card)}
-          />
-        );
-        if (isCustomShape && CARDS_REQUIRING_RECTANGULAR_SHAPE.has(card)) {
-          return (
-            <FeatureGate key={card} disabled reason={customShapeReason}>
-              {element}
-            </FeatureGate>
-          );
-        }
-        if (card === 'slotted' && hasAngledDividers) {
-          return (
-            <FeatureGate key={card} disabled reason={slottedAngledReason}>
-              {element}
-            </FeatureGate>
-          );
-        }
-        if (card === 'slotted' && slottedBlockedReason) {
-          return (
-            <FeatureGate key={card} disabled reason={t(slottedBlockedReason)}>
-              {element}
-            </FeatureGate>
-          );
-        }
-        return element;
-      })}
-    </div>
+    <ModeTiles
+      ariaLabel={t('binDesigner.group.interior')}
+      value={state.card}
+      onChange={handlers.selectCard}
+      columns={2}
+      options={INTERIOR_CARDS.map((card) => ({
+        value: card,
+        icon: INTERIOR_MODE_META[card].icon,
+        label: t(INTERIOR_MODE_META[card].titleKey),
+        caption: t(INTERIOR_MODE_META[card].descriptionKey),
+        disabledReason: disabledReason(card),
+        badge:
+          card === 'bento' ? (
+            <Badge tone="info" title={t('binDesigner.bento.experimentalHint')}>
+              {t('common.experimental')}
+            </Badge>
+          ) : undefined,
+      }))}
+    >
+      <InteriorModeContent card={state.card} />
+    </ModeTiles>
   );
 }

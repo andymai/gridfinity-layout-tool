@@ -3,7 +3,7 @@
  *
  * Organised as one exclusive choice followed by the families of settings that
  * choice admits:
- *   1. Body type: feet, floor and walls, or some of them (`BodyTypeCards`)
+ *   1. Body type: feet, floor and walls, or some of them (`BodyTypeTiles`)
  *   2. Stacking:  the lip, which is the base's mating partner one bin up
  *   3. Mounting:  magnet and screw pockets
  *   4. Feet:      how the feet are laid out under the bin
@@ -44,7 +44,7 @@ import {
 } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
-import { BodyTypeCards } from './BodyTypeCards';
+import { BodyTypeTiles } from './BodyTypeTiles';
 import { useBaseSection } from './useBaseSection';
 
 /** Axis key suffixes for the foot-lattice translation keys. */
@@ -153,7 +153,7 @@ export function BaseSection() {
         >
           {t('binDesigner.base.bodyType')}
         </SubHeader>
-        <BodyTypeCards
+        <BodyTypeTiles
           value={state.bodyType}
           onChange={handlers.setBodyType}
           options={{ tray: trayOptions }}

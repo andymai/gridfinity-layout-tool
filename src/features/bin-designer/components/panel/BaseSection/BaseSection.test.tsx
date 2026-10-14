@@ -77,11 +77,11 @@ describe('BaseSection', () => {
     it('offers the archetypes as one exclusive choice', () => {
       render(<BaseSection />);
 
-      const group = screen.getByRole('group', { name: 'Body type' });
-      const cards = within(group).getAllByRole('button');
-      const chosen = cards.filter((c) => c.getAttribute('aria-pressed') === 'true');
+      const group = screen.getByRole('radiogroup', { name: 'Body type' });
+      const tiles = within(group).getAllByRole('radio');
+      const chosen = tiles.filter((tile) => tile.getAttribute('aria-checked') === 'true');
 
-      expect(cards).toHaveLength(6);
+      expect(tiles).toHaveLength(6);
       expect(chosen).toHaveLength(1);
     });
 
@@ -97,9 +97,9 @@ describe('BaseSection', () => {
     it('unlocks Mounting outside the Nesting body card without enabling hardware', async () => {
       const user = userEvent.setup();
       render(<BaseSection />);
-      await user.click(screen.getByRole('button', { name: /^Nesting One continuous/ }));
+      await user.click(screen.getByRole('radio', { name: 'Nesting' }));
       expect(useDesignerStore.getState().params.base.trayBottom?.floorAtBed).toBe(true);
-      const bodyTypes = screen.getByRole('group', { name: 'Body type' });
+      const bodyTypes = screen.getByRole('radiogroup', { name: 'Body type' });
       expect(
         within(bodyTypes).queryByRole('switch', { name: 'Magnet holes' })
       ).not.toBeInTheDocument();

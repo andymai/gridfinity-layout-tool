@@ -1,8 +1,8 @@
 /**
- * Connector-style picker: a vertical list of selectable cards, mirroring the bin
- * designer's Interior section (InteriorModeCard). Each card shows an icon, title,
- * and description; the selected card expands inline to reveal that style's
- * controls (via `renderExpanded`). Single-select, rendered as a radiogroup.
+ * Connector-style picker: a vertical list of selectable cards. Each card shows
+ * an icon, title, and description; the selected card expands inline to reveal
+ * that style's controls (via `renderExpanded`). Single-select, rendered as a
+ * radiogroup.
  */
 
 import { useCallback, useRef, type KeyboardEvent, type ReactNode } from 'react';

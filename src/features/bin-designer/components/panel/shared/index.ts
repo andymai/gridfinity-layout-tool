@@ -5,7 +5,7 @@ export { SegmentGrid } from './SegmentGrid';
 export { InfoDot } from '@/shared/components/InfoDot';
 export { LinkIcon, ChevronIcon } from './icons';
 export { FieldLabel, Hint, LabelInfo, OptionNotes, Readout, SubHeader } from './panelText';
-export { ModeCard } from './ModeCard';
+export { ModeTiles, type ModeTileOption } from './ModeTiles';
 export { DependencyHint } from './DependencyHint';
 export { FlatTextClashWarning } from './FlatTextClashWarning';
 export { TextColorControl } from './TextColorControl';

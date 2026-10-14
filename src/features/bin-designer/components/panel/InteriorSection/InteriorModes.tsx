@@ -1,16 +1,13 @@
 /**
- * Interior mode selection card component.
- *
- * Displays mode icon, title, description, and optional summary.
- * Expands inline to show mode-specific editor when selected.
+ * The editor each interior mode opens. Its name and icon live in
+ * `interiorModeMeta`.
  *
  * Keyed by {@link InteriorCard}, not `BinStyle`: Bento and Grid Dividers are
  * two authoring surfaces over the same `standard` style.
  */
 
 import { useTranslation } from '@/i18n';
-import { Badge } from '@/design-system';
-import { Hint, ModeCard } from '../shared';
+import { Hint } from '../shared';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -20,49 +17,8 @@ import { CompartmentEditor } from '../../CompartmentEditor';
 import { SlotConfigurator } from '../../SlotConfigurator/SlotConfigurator';
 import { WorkspaceLaunchButton } from './WorkspaceLaunchButton';
 import { BentoMiniPreview } from './BentoMiniPreview';
-import { Grid3x3Icon, BentoIcon, DividerIcon, ScissorsIcon } from './icons';
+import { BentoIcon } from './icons';
 import type { InteriorCard } from '../../../types';
-import type { ReactNode } from 'react';
-
-interface InteriorModeCardProps {
-  card: InteriorCard;
-  isExpanded: boolean;
-  onSelect: () => void;
-}
-
-interface ModeConfig {
-  icon: ReactNode;
-  titleKey: string;
-  descriptionKey: string;
-  content: ReactNode;
-}
-
-const MODE_CONFIG: Record<InteriorCard, ModeConfig> = {
-  standard: {
-    icon: <Grid3x3Icon size={20} className="text-content-secondary" />,
-    titleKey: 'binDesigner.interior.standard.title',
-    descriptionKey: 'binDesigner.interior.standard.description',
-    content: <CompartmentEditor />,
-  },
-  bento: {
-    icon: <BentoIcon size={20} className="text-content-secondary" />,
-    titleKey: 'binDesigner.interior.bento.title',
-    descriptionKey: 'binDesigner.interior.bento.description',
-    content: <BentoModeContent />,
-  },
-  slotted: {
-    icon: <DividerIcon size={20} className="text-content-secondary" />,
-    titleKey: 'binDesigner.interior.slotted.title',
-    descriptionKey: 'binDesigner.interior.slotted.description',
-    content: <SlotConfigurator />,
-  },
-  solid: {
-    icon: <ScissorsIcon size={20} className="text-content-secondary" />,
-    titleKey: 'binDesigner.interior.solid.title',
-    descriptionKey: 'binDesigner.interior.solid.description',
-    content: <SolidModeContent />,
-  },
-};
 
 function BentoModeContent() {
   const setBentoWorkspaceOpen = useDesignerStore((s) => s.setBentoWorkspaceOpen);
@@ -170,26 +126,15 @@ function SolidModeContent() {
   );
 }
 
-export function InteriorModeCard({ card, isExpanded, onSelect }: InteriorModeCardProps) {
-  const t = useTranslation();
-  const config = MODE_CONFIG[card];
-
-  return (
-    <ModeCard
-      icon={config.icon}
-      title={t(config.titleKey)}
-      description={t(config.descriptionKey)}
-      selected={isExpanded}
-      onSelect={onSelect}
-      badge={
-        card === 'bento' ? (
-          <Badge tone="info" title={t('binDesigner.bento.experimentalHint')}>
-            {t('common.experimental')}
-          </Badge>
-        ) : undefined
-      }
-    >
-      {config.content}
-    </ModeCard>
-  );
+export function InteriorModeContent({ card }: { card: InteriorCard }) {
+  switch (card) {
+    case 'standard':
+      return <CompartmentEditor />;
+    case 'bento':
+      return <BentoModeContent />;
+    case 'slotted':
+      return <SlotConfigurator />;
+    case 'solid':
+      return <SolidModeContent />;
+  }
 }
