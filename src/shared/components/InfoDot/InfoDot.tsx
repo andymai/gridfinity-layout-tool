@@ -6,13 +6,17 @@
  *
  * The explanation renders in a portal, far from the dot in the document, so
  * opening it moves focus there for a keyboard or screen-reader user, and
- * closing it hands focus back.
+ * closing it hands focus back. Tabbing out of it closes it from the dot, so
+ * the browser carries on from the dot's place in the sidebar rather than from
+ * the end of the document.
  */
 
 import { useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { IconButton, Popover } from '@/design-system';
 import { InfoIcon } from '@/design-system/Icon';
+
+const TABBABLE = 'a[href], button:not([disabled]), input, select, textarea, [tabindex="0"]';
 
 interface InfoDotProps {
   readonly 'aria-label': string;
@@ -25,14 +29,33 @@ export function InfoDot({ 'aria-label': ariaLabel, children }: InfoDotProps) {
   const contentId = useId();
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    if (open) contentRef.current?.focus();
-  }, [open]);
-
   const close = (): void => {
     setOpen(false);
     buttonRef.current?.focus();
   };
+
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!open || !content) return;
+    content.focus();
+    // Runs before the browser's own Tab move, which then starts from the dot.
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key !== 'Tab') return;
+      const tabbable = content.querySelectorAll<HTMLElement>(TABBABLE);
+      const active = document.activeElement;
+      const leaving =
+        tabbable.length === 0 ||
+        (event.shiftKey
+          ? active === tabbable[0] || active === content
+          : active === tabbable[tabbable.length - 1]);
+      if (leaving) {
+        setOpen(false);
+        buttonRef.current?.focus();
+      }
+    };
+    content.addEventListener('keydown', onKeyDown);
+    return () => content.removeEventListener('keydown', onKeyDown);
+  }, [open]);
 
   return (
     <>

@@ -32,4 +32,26 @@ describe('InfoDot', () => {
     expect(screen.queryByText('Feet explained.')).toBeNull();
     expect(dot).toHaveFocus();
   });
+
+  it('carries Tab on from the dot, in both directions, and closes behind it', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <button type="button">Before</button>
+        <InfoDot aria-label="About feet">
+          <p>Feet explained.</p>
+        </InfoDot>
+        <button type="button">After</button>
+      </>
+    );
+    await user.click(screen.getByRole('button', { name: 'About feet' }));
+    await user.tab();
+    expect(screen.queryByText('Feet explained.')).toBeNull();
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+
+    await user.click(screen.getByRole('button', { name: 'About feet' }));
+    await user.tab({ shift: true });
+    expect(screen.queryByText('Feet explained.')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Before' })).toHaveFocus();
+  });
 });
