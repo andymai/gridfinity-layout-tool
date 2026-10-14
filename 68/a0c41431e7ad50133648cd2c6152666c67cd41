@@ -1,0 +1,103 @@
+src/features/bin-designer/components/CompartmentEditor/CompartmentEditor.tsx
+  s_0ede90d0838d1c::t_414f3171343358 22
+  s_0ede90d0838d1c::t_51192189a1ba0a 193,206,243,256
+src/i18n/locales/pl.json
+  s_0ede90d0838d1c::t_493a79de3c3ae5 414,1058,2175
+src/features/bin-designer/components/SlotConfigurator/CustomGridEditor.tsx
+  s_0ede90d0838d1c::t_414f3171343358 15
+  s_0ede90d0838d1c::t_51192189a1ba0a 157,170
+src/i18n/locales/nb.json
+  s_0ede90d0838d1c::t_493a79de3c3ae5 414,1058,2175
+src/i18n/locales/pt-BR.json
+  s_0ede90d0838d1c::t_493a79de3c3ae5 414,1058,2175
+src/i18n/locales/ja.json
+  s_0ede90d0838d1c::t_493a79de3c3ae5 414,1058,2175
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_0ede90d0838d1c::t_414f3171343358 25-26,28,32
+  s_0ede90d0838d1c::t_51192189a1ba0a 172
+src/i18n/locales/nl.json
+  s_0ede90d0838d1c::t_493a79de3c3ae5 414,1058,2175
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_0ede90d0838d1c::t_7e3604957d20b1 865-866
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.tsx
+  s_0ede90d0838d1c::t_414f3171343358 9
+  s_0ede90d0838d1c::t_51192189a1ba0a 85
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabTextStyleControls.tsx
+  s_0ede90d0838d1c::t_51192189a1ba0a 69,93
+  s_0ede90d0838d1c::t_414f3171343358 9
+src/i18n/locales/fr.json
+  s_0ede90d0838d1c::t_493a79de3c3ae5 414,1058,2175
+src/i18n/locales/ka.json
+  s_0ede90d0838d1c::t_493a79de3c3ae5 1528,2906,3263
+src/features/bin-designer/components/panel/DimensionsSection/DimensionsSection.tsx
+  s_0ede90d0838d1c::t_51192189a1ba0a 32,62
+  s_0ede90d0838d1c::t_6ec33b6f68881f 17
+  s_0ede90d0838d1c::t_ef9dab7f68b65f 27
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_0ede90d0838d1c::t_51192189a1ba0a 308
+  s_0ede90d0838d1c::t_414f3171343358 23
+src/i18n/locales/cs.json
+  s_0ede90d0838d1c::t_493a79de3c3ae5 414,1058,2175
+src/i18n/locales/en.ts
+  s_0ede90d0838d1c::t_493a79de3c3ae5 1831,3438,3866
+src/i18n/locales/zh-CN.json
+  s_0ede90d0838d1c::t_493a79de3c3ae5 414,1058,2175
+src/i18n/locales/it.json
+  s_0ede90d0838d1c::t_493a79de3c3ae5 414,1058,2175
+src/i18n/locales/sv.json
+  s_0ede90d0838d1c::t_493a79de3c3ae5 414,1058,2175
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabShapeControls.tsx
+  s_0ede90d0838d1c::t_414f3171343358 3
+  s_0ede90d0838d1c::t_51192189a1ba0a 48,72,95,118,141,176
+src/i18n/locales/de.json
+  s_0ede90d0838d1c::t_493a79de3c3ae5 414,1058,2175
+src/features/bin-designer/components/CompartmentEditor/DividerHeightControl.tsx
+  s_0ede90d0838d1c::t_414f3171343358 20
+  s_0ede90d0838d1c::t_51192189a1ba0a 57
+src/i18n/locales/uk.json
+  s_0ede90d0838d1c::t_493a79de3c3ae5 414,1058,2175
+src/features/bin-designer/components/panel/shared/panelText.tsx
+  s_0ede90d0838d1c::t_51192189a1ba0a 45
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_0ede90d0838d1c::t_51192189a1ba0a 261,312,346
+  s_0ede90d0838d1c::t_414f3171343358 11
+src/features/bin-designer/components/panel/BaseSection/FloorPatternSection.tsx
+  s_0ede90d0838d1c::t_ef9dab7f68b65f 34
+src/features/bin-designer/components/panel/ScoopSection/ScoopSection.tsx
+  s_0ede90d0838d1c::t_51192189a1ba0a 51,70,100,120,138
+  s_0ede90d0838d1c::t_414f3171343358 15
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_0ede90d0838d1c::t_51192189a1ba0a 123
+src/i18n/locales/es.json
+  s_0ede90d0838d1c::t_493a79de3c3ae5 414,1058,2175
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.tsx
+  s_0ede90d0838d1c::t_51192189a1ba0a 121,165,219,232
+  s_0ede90d0838d1c::t_414f3171343358 24
+  s_0ede90d0838d1c::t_ef9dab7f68b65f 68
+src/features/bin-designer/components/panel/LidGripControls/LidGripControls.tsx
+  s_0ede90d0838d1c::t_414f3171343358 15
+  s_0ede90d0838d1c::t_51192189a1ba0a 36,74
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.tsx
+  s_0ede90d0838d1c::t_6ec33b6f68881f 23
+  s_0ede90d0838d1c::t_ef9dab7f68b65f 49
+src/i18n/locales/ko.json
+  s_0ede90d0838d1c::t_493a79de3c3ae5 414,1058,2175
+src/features/bin-designer/components/panel/WallsSection/WallThicknessSection.tsx
+  s_0ede90d0838d1c::t_ef9dab7f68b65f 8,14-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "68a0c41431e7ad50133648cd2c6152666c67cd41",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
