@@ -7,8 +7,9 @@
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import { Button, Stepper, Switch } from '@/design-system';
-import { Hint, LabelInfo } from '../panel/shared';
+import { Button, Stepper } from '@/design-system';
+import { Hint } from '../panel/shared';
+import { FeatureToggle } from '../panel/FeatureToggle';
 import { RulerIcon } from '@/design-system/Icon';
 import {
   DIVIDER_FLOOR_GROOVE_DEPTH,
@@ -384,24 +385,14 @@ export function SlotConfigurator() {
       </div>
 
       {/* Floor groove */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <span className="text-xs text-content-tertiary">
-            {t('binDesigner.dividerFloorGroove')}
-          </span>
-          <LabelInfo label={t('binDesigner.dividerFloorGroove')}>
-            {t('binDesigner.dividerFloorGrooveHint', {
-              depth: String(DIVIDER_FLOOR_GROOVE_DEPTH),
-            })}
-          </LabelInfo>
-        </div>
-        <Switch
-          checked={dividerPieces.floorGroove}
-          onChange={(next) => updateDividerPieces({ floorGroove: next })}
-          size="sm"
-          aria-label={t('binDesigner.dividerFloorGroove')}
-        />
-      </div>
+      <FeatureToggle
+        label={t('binDesigner.dividerFloorGroove')}
+        checked={dividerPieces.floorGroove}
+        onChange={() => updateDividerPieces({ floorGroove: !dividerPieces.floorGroove })}
+        info={t('binDesigner.dividerFloorGrooveHint', {
+          depth: String(DIVIDER_FLOOR_GROOVE_DEPTH),
+        })}
+      />
 
       {/* Calculated divider dimensions (parametric readout; custom shows its own) */}
       {layout === 'even' && (

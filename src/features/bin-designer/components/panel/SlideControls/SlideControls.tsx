@@ -14,7 +14,7 @@
 
 import { SegmentedControl } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
-import { FieldLabel, OptionNotes, Readout } from '../shared';
+import { FieldLabel, OptionNotes, Readout, SideSelector } from '../shared';
 import { SLIDE_SAG_SPAN_MM } from '@/shared/utils/slideLidPlan';
 import type { useTranslation } from '@/i18n';
 import type { useLidSection } from '../LidSection/useLidSection';
@@ -63,15 +63,13 @@ export function SlideControls({
         <FieldLabel info={t('binDesigner.lid.slide.entrySideHint')}>
           {t('binDesigner.lid.slide.entrySide')}
         </FieldLabel>
-        <SegmentedControl
-          aria-label={t('binDesigner.lid.slide.entrySide')}
-          activeStyle="accent"
-          fullWidth
-          size="sm"
+        <SideSelector
+          mode="single"
+          ariaLabel={t('binDesigner.lid.slide.entrySide')}
           value={state.slide.entrySide}
-          onChange={handlers.setSlideEntrySide}
-          options={state.slideEntrySides.map((side) => ({
-            value: side,
+          onSelect={handlers.setSlideEntrySide}
+          sides={state.slideEntrySides.map((side) => ({
+            side,
             label: t(`binDesigner.lid.side.${side}`),
           }))}
         />

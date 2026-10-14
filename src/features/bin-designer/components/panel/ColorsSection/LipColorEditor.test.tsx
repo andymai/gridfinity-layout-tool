@@ -32,7 +32,7 @@ function renderEditor(overrides: Partial<Parameters<typeof LipColorEditor>[0]> =
 }
 
 const revealGrid = () =>
-  fireEvent.click(screen.getByRole('checkbox', { name: 'binDesigner.colors.lip.splitZones' }));
+  fireEvent.click(screen.getByRole('switch', { name: 'binDesigner.colors.lip.splitZones' }));
 
 describe('LipColorEditor', () => {
   it('defaults to a single lip color with the grid controls hidden', () => {
@@ -42,7 +42,7 @@ describe('LipColorEditor', () => {
       screen.queryByRole('radiogroup', { name: 'binDesigner.colors.lip.cornersLabel' })
     ).toBeNull();
     expect(
-      screen.getByRole('checkbox', { name: 'binDesigner.colors.lip.splitZones' })
+      screen.getByRole('switch', { name: 'binDesigner.colors.lip.splitZones' })
     ).not.toBeChecked();
   });
 
@@ -79,9 +79,7 @@ describe('LipColorEditor', () => {
       screen.getByRole('radiogroup', { name: 'binDesigner.colors.lip.cornersLabel' })
     ).toBeDefined();
     expect(screen.getAllByText(/binDesigner\.colors\.lip\.bandN/)).toHaveLength(4);
-    expect(
-      screen.getByRole('checkbox', { name: 'binDesigner.colors.lip.splitZones' })
-    ).toBeChecked();
+    expect(screen.getByRole('switch', { name: 'binDesigner.colors.lip.splitZones' })).toBeChecked();
   });
 
   it('collapsing the split resets the lip to a single color', () => {

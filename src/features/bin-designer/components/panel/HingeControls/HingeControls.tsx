@@ -19,7 +19,7 @@
  */
 
 import { SegmentedControl } from '@/design-system';
-import { FieldLabel, OptionNotes, Readout } from '../shared';
+import { FieldLabel, OptionNotes, Readout, SideSelector } from '../shared';
 import type { useTranslation } from '@/i18n';
 import type { useLidSection } from '../LidSection/useLidSection';
 
@@ -40,15 +40,13 @@ export function HingeControls({
         <FieldLabel info={t('binDesigner.lid.hinge.sideHint')}>
           {t('binDesigner.lid.hinge.side')}
         </FieldLabel>
-        <SegmentedControl
-          aria-label={t('binDesigner.lid.hinge.side')}
-          activeStyle="accent"
-          fullWidth
-          size="sm"
+        <SideSelector
+          mode="single"
+          ariaLabel={t('binDesigner.lid.hinge.side')}
           value={state.hinge.side}
-          onChange={handlers.setHingeSide}
-          options={state.hingeSides.map((side) => ({
-            value: side,
+          onSelect={handlers.setHingeSide}
+          sides={state.hingeSides.map((side) => ({
+            side,
             label: t(`binDesigner.lid.side.${side}`),
           }))}
         />

@@ -13,7 +13,7 @@
  */
 
 import { useState } from 'react';
-import { CheckboxRow } from '@/design-system';
+import { FeatureToggle } from '../FeatureToggle';
 import { SegmentedControl } from '@/design-system/SegmentedControl/SegmentedControl';
 import { useTranslation } from '@/i18n';
 import {
@@ -174,10 +174,10 @@ export function LipColorEditor({
         })}
       </div>
 
-      <CheckboxRow
-        checked={showGrid}
-        onChange={handleToggleSplit}
+      <FeatureToggle
         label={t('binDesigner.colors.lip.splitZones')}
+        checked={showGrid}
+        onChange={() => handleToggleSplit(!showGrid)}
       />
     </div>
   );

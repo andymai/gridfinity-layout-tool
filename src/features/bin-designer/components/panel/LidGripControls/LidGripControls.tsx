@@ -6,12 +6,13 @@
  * trio plus the effective readout is a block of its own, and folding it back
  * in pushed that file well past the 500-line ceiling.
  */
-import { Button, Checkbox } from '@/design-system';
+import { Button } from '@/design-system';
+import { FeatureToggle } from '../FeatureToggle';
 import { LID_RAIL_SIDES, lidGripHeightAdjustable } from '@/features/bin-designer/types';
 import type { LidGripSides, LidRailSide } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
 import { SnappingSlider } from '../../controls/SnappingSlider';
-import { Hint, LabelInfo, Readout, SegmentGrid, StepperField } from '../shared';
+import { Hint, Readout, SegmentGrid, SideSelector, StepperField } from '../shared';
 import type { useLidSection } from '../LidSection/useLidSection';
 
 type Translator = ReturnType<typeof useTranslation>;
@@ -35,28 +36,15 @@ function GripSides({
       <span className="mb-1 block text-label text-content-tertiary">
         {t('binDesigner.lid.gripSides')}
       </span>
-      <div className="flex gap-1">
-        {LID_RAIL_SIDES.map((side) => {
-          const isActive = sides[side];
-          return (
-            <Button
-              key={side}
-              type="button"
-              variant="ghost"
-              role="switch"
-              aria-checked={isActive}
-              onClick={() => onToggle(side)}
-              className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                isActive
-                  ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
-                  : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-              }`}
-            >
-              {t(`binDesigner.lid.side.${side}`)}
-            </Button>
-          );
-        })}
-      </div>
+      <SideSelector
+        ariaLabel={t('binDesigner.lid.gripSides')}
+        onToggle={onToggle}
+        sides={LID_RAIL_SIDES.map((side) => ({
+          side,
+          label: t(`binDesigner.lid.side.${side}`),
+          active: sides[side],
+        }))}
+      />
     </div>
   );
 }
@@ -177,16 +165,12 @@ export function LidGripControls({
             </Hint>
           )}
 
-          <div className="flex items-center gap-1.5">
-            <Checkbox
-              checked={grip.binDip}
-              onChange={handlers.toggleGripBinDip}
-              label={t('binDesigner.lid.gripBinDip')}
-            />
-            <LabelInfo label={t('binDesigner.lid.gripBinDip')}>
-              {t('binDesigner.lid.gripBinDipWarning')}
-            </LabelInfo>
-          </div>
+          <FeatureToggle
+            label={t('binDesigner.lid.gripBinDip')}
+            checked={grip.binDip}
+            onChange={handlers.toggleGripBinDip}
+            info={t('binDesigner.lid.gripBinDipWarning')}
+          />
           {grip.binDip && <Hint>{t('binDesigner.lid.gripBinDipStacking')}</Hint>}
         </>
       )}

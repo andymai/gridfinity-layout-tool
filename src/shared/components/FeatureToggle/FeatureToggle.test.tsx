@@ -130,4 +130,11 @@ describe('FeatureToggle', () => {
     fireEvent.click(screen.getByRole('button', { name: 'common.aboutLabel' }));
     expect(screen.getByText('Explained.')).toBeInTheDocument();
   });
+
+  it('toggles from its label text, not just the switch', () => {
+    const onChange = vi.fn();
+    render(<FeatureToggle label="Test Feature" checked={false} onChange={onChange} />);
+    fireEvent.click(screen.getByText('Test Feature'));
+    expect(onChange).toHaveBeenCalledOnce();
+  });
 });

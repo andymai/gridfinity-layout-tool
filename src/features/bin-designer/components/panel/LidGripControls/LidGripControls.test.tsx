@@ -49,13 +49,13 @@ describe('LidGripControls', () => {
   it('shows nothing beyond the mode picker while the relief is off', () => {
     renderControls({ mode: 'none' });
     expect(screen.queryByText('Walls')).not.toBeInTheDocument();
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
   });
 
   it("toggles the bin's lip dip through the store", () => {
     renderControls({ mode: 'scallop', binDip: false });
 
-    fireEvent.click(screen.getByRole('checkbox', { name: "Also dip the bin's lip" }));
+    fireEvent.click(screen.getByRole('switch', { name: "Also dip the bin's lip" }));
 
     expect(useDesignerStore.getState().params.lid.grip.binDip).toBe(true);
   });

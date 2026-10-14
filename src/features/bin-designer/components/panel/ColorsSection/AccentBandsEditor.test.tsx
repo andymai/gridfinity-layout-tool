@@ -39,8 +39,12 @@ function setup(overrides: Partial<React.ComponentProps<typeof AccentBandsEditor>
 
 /** The height slider for the named band's expanded block. */
 function heightSliderFor(bandLabel: string): HTMLElement {
-  const header = screen.getByRole('checkbox', { name: bandLabel });
-  const block = header.parentElement;
+  // The smallest block around the band's toggle that holds a slider is that
+  // band's own expanded block.
+  let block = screen.getByRole('switch', { name: bandLabel }).parentElement;
+  while (block && within(block).queryAllByRole('slider').length === 0) {
+    block = block.parentElement;
+  }
   if (!block) throw new Error(`no block for ${bandLabel}`);
   return within(block).getByRole('slider');
 }
@@ -49,15 +53,15 @@ describe('AccentBandsEditor', () => {
   it('offers both bands under one header', () => {
     setup();
     expect(screen.getByText('Accent bands')).toBeDefined();
-    expect(screen.getByRole('checkbox', { name: 'Top accent' })).toBeDefined();
-    expect(screen.getByRole('checkbox', { name: 'Bottom accent' })).toBeDefined();
+    expect(screen.getByRole('switch', { name: 'Top accent' })).toBeDefined();
+    expect(screen.getByRole('switch', { name: 'Bottom accent' })).toBeDefined();
   });
 
   // Absent means "no band", so the row must read as off rather than crash or
   // render a half-built config.
   it('shows an absent bottom band as disabled, and enables it on click', () => {
     const { onChangeBottom } = setup();
-    const toggle = screen.getByRole('checkbox', { name: 'Bottom accent' });
+    const toggle = screen.getByRole('switch', { name: 'Bottom accent' });
     expect(toggle.getAttribute('aria-checked')).toBe('false');
     fireEvent.click(toggle);
     expect(onChangeBottom).toHaveBeenCalledWith({ enabled: true });

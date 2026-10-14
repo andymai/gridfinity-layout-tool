@@ -70,7 +70,7 @@ describe('LabelColorControls', () => {
 
   it('prints the support in the body colour by default, and stores only the opt-out', () => {
     render(<LabelColorControls />);
-    const box = screen.getByRole('checkbox', { name: 'Supports in body color' });
+    const box = screen.getByRole('switch', { name: 'Supports in body color' });
     expect(box).toBeChecked();
 
     fireEvent.click(box);

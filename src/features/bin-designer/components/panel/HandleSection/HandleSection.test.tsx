@@ -42,7 +42,7 @@ describe('HandleSection', () => {
     });
     render(<HandleSection />);
 
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Chamfer edges' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Chamfer edges' }));
 
     expect(useDesignerStore.getState().params.handles.chamfer).toBe(true);
   });

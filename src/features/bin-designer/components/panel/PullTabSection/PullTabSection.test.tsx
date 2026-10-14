@@ -41,7 +41,7 @@ describe('PullTabSection', () => {
   });
   it('enables the optional back recess and constrains its shared depth', () => {
     render(<PullTabSection />);
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Back recess' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Back recess' }));
     expect(useDesignerStore.getState().params.pullTab?.backRecess).toBe(true);
     expect(screen.getByLabelText('Recess depth').getAttribute('max')).toBe('1.1');
     expect(useDesignerStore.getState().params.pullTab?.recessDepth).toBe(1);

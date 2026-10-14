@@ -18,7 +18,6 @@
  */
 
 import { useId } from 'react';
-import { Checkbox } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { FeatureToggle } from '../FeatureToggle';
 import { OptionNotes } from '../shared';
@@ -93,116 +92,86 @@ export function OverhangSection() {
               </div>
             ))}
             <div
-              className="group flex cursor-pointer items-center justify-between"
               onMouseEnter={feetEnabled ? () => handlers.setHovered('feet') : undefined}
               onMouseLeave={feetEnabled ? () => handlers.setHovered(null) : undefined}
               onFocus={feetEnabled ? () => handlers.setHovered('feet') : undefined}
               onBlur={feetEnabled ? () => handlers.setHovered(null) : undefined}
-              onClick={feetEnabled ? handlers.toggleFeet : undefined}
-              onKeyDown={(e) => {
-                if (feetEnabled && (e.key === 'Enter' || e.key === ' ')) {
-                  e.preventDefault();
-                  handlers.toggleFeet();
-                }
-              }}
-              role="checkbox"
-              aria-checked={state.feet}
-              aria-disabled={!feetEnabled}
-              aria-label={t('binDesigner.overhang.feet')}
-              tabIndex={feetEnabled ? 0 : -1}
             >
-              <span
-                className={`text-xs leading-none ${feetEnabled ? 'text-content-secondary' : 'text-content-disabled'}`}
-              >
-                {t('binDesigner.overhang.feet')}
-              </span>
-              <Checkbox checked={state.feet} disabled={!feetEnabled} />
+              <FeatureToggle
+                label={t('binDesigner.overhang.feet')}
+                checked={state.feet}
+                onChange={handlers.toggleFeet}
+                disabled={!feetEnabled}
+                disabledReason={
+                  state.feetSuperseded ? t('binDesigner.detachableFeet.supersedes') : undefined
+                }
+              />
             </div>
-            {state.feetSuperseded && (
-              <p className="text-label leading-relaxed text-content-tertiary">
-                {t('binDesigner.detachableFeet.supersedes')}
-              </p>
-            )}
 
             <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
-              <div
-                className="group flex cursor-pointer items-center justify-between"
-                onClick={handlers.toggleTaper}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handlers.toggleTaper();
-                  }
-                }}
-                role="checkbox"
-                aria-checked={taper.enabled}
-                aria-label={t('binDesigner.overhang.taper.title')}
-                tabIndex={0}
-              >
-                <span className="text-xs leading-none text-content-secondary">
-                  {t('binDesigner.overhang.taper.title')}
-                </span>
-                <Checkbox checked={taper.enabled} />
-              </div>
+              <FeatureToggle
+                label={t('binDesigner.overhang.taper.title')}
+                checked={taper.enabled}
+                onChange={handlers.toggleTaper}
+                primaryControls={
+                  <>
+                    <TaperProfileCards
+                      value={taper.profile}
+                      onChange={handlers.setTaperProfile}
+                      chamferLabel={t('binDesigner.overhang.taper.profileChamfer')}
+                      filletLabel={t('binDesigner.overhang.taper.profileFillet')}
+                      groupLabel={t('binDesigner.overhang.taper.profile')}
+                    />
+                    <OverhangSliderRow
+                      label={t('binDesigner.overhang.taper.bandHeight')}
+                      value={taper.bandHeight}
+                      onChange={handlers.setBandHeight}
+                      min={DESIGNER_CONSTRAINTS.MIN_TAPER_BAND}
+                      max={taper.maxBand}
+                      step={DESIGNER_CONSTRAINTS.TAPER_BAND_STEP}
+                      unit="mm"
+                      stacked={stacked}
+                    />
 
-              {taper.enabled && (
-                <>
-                  <TaperProfileCards
-                    value={taper.profile}
-                    onChange={handlers.setTaperProfile}
-                    chamferLabel={t('binDesigner.overhang.taper.profileChamfer')}
-                    filletLabel={t('binDesigner.overhang.taper.profileFillet')}
-                    groupLabel={t('binDesigner.overhang.taper.profile')}
-                  />
-                  <OverhangSliderRow
-                    label={t('binDesigner.overhang.taper.bandHeight')}
-                    value={taper.bandHeight}
-                    onChange={handlers.setBandHeight}
-                    min={DESIGNER_CONSTRAINTS.MIN_TAPER_BAND}
-                    max={taper.maxBand}
-                    step={DESIGNER_CONSTRAINTS.TAPER_BAND_STEP}
-                    unit="mm"
-                    stacked={stacked}
-                  />
-
-                  {/* Labelled group: the four side names repeat the overhang
+                    {/* Labelled group: the four side names repeat the overhang
                     block above, so the heading has to be programmatically
                     attached, not just visually adjacent. */}
-                  <div
-                    role="group"
-                    aria-labelledby={taperSidesHeadingId}
-                    className="flex flex-col gap-2"
-                  >
-                    <p
-                      id={taperSidesHeadingId}
-                      className="mt-1 text-label font-medium text-content-tertiary"
+                    <div
+                      role="group"
+                      aria-labelledby={taperSidesHeadingId}
+                      className="flex flex-col gap-2"
                     >
-                      {t('binDesigner.overhang.taper.sidesHeading')}
-                    </p>
-                    {sides.map(({ side, label }) => (
-                      <div
-                        key={side}
-                        onMouseEnter={() => handlers.setHovered(side)}
-                        onMouseLeave={() => handlers.setHovered(null)}
-                        onFocus={() => handlers.setHovered(side)}
-                        onBlur={() => handlers.setHovered(null)}
+                      <p
+                        id={taperSidesHeadingId}
+                        className="mt-1 text-label font-medium text-content-tertiary"
                       >
-                        <OverhangSliderRow
-                          label={label}
-                          srLabel={t('binDesigner.overhang.taper.sideAria', { side: label })}
-                          value={taper.sides[side]}
-                          onChange={(v) => handlers.setTaperSide(side, v)}
-                          min={DESIGNER_CONSTRAINTS.MIN_TAPER}
-                          max={taper.maxPerSide}
-                          step={DESIGNER_CONSTRAINTS.TAPER_STEP}
-                          unit="mm"
-                          stacked={stacked}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
+                        {t('binDesigner.overhang.taper.sidesHeading')}
+                      </p>
+                      {sides.map(({ side, label }) => (
+                        <div
+                          key={side}
+                          onMouseEnter={() => handlers.setHovered(side)}
+                          onMouseLeave={() => handlers.setHovered(null)}
+                          onFocus={() => handlers.setHovered(side)}
+                          onBlur={() => handlers.setHovered(null)}
+                        >
+                          <OverhangSliderRow
+                            label={label}
+                            srLabel={t('binDesigner.overhang.taper.sideAria', { side: label })}
+                            value={taper.sides[side]}
+                            onChange={(v) => handlers.setTaperSide(side, v)}
+                            min={DESIGNER_CONSTRAINTS.MIN_TAPER}
+                            max={taper.maxPerSide}
+                            step={DESIGNER_CONSTRAINTS.TAPER_STEP}
+                            unit="mm"
+                            stacked={stacked}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                }
+              />
             </div>
           </>
         }

@@ -43,4 +43,43 @@ describe('SideSelector', () => {
     fireEvent.click(screen.getByRole('switch', { name: 'Right' }));
     expect(onToggle).toHaveBeenCalledWith('right');
   });
+
+  describe('single', () => {
+    const OPTIONS = SIDES.map(({ side, label, disabled }) => ({ side, label, disabled }));
+
+    it('checks exactly the chosen wall, and only it takes the tab stop', () => {
+      render(
+        <SideSelector
+          mode="single"
+          sides={OPTIONS}
+          value="right"
+          onSelect={() => {}}
+          ariaLabel="Hinge"
+        />
+      );
+      expect(screen.getByRole('radiogroup', { name: 'Hinge' })).toBeInTheDocument();
+      const right = screen.getByRole('radio', { name: 'Right' });
+      expect(right.getAttribute('aria-checked')).toBe('true');
+      expect(right.tabIndex).toBe(0);
+      expect(screen.getByRole('radio', { name: 'Left' }).tabIndex).toBe(-1);
+    });
+
+    it('picks the wall an arrow key points at, and skips a disabled one', () => {
+      const onSelect = vi.fn();
+      render(
+        <SideSelector
+          mode="single"
+          sides={OPTIONS}
+          value="right"
+          onSelect={onSelect}
+          ariaLabel="Hinge"
+        />
+      );
+      const group = screen.getByRole('radiogroup');
+      fireEvent.keyDown(group, { key: 'ArrowLeft' });
+      expect(onSelect).toHaveBeenLastCalledWith('left');
+      fireEvent.keyDown(group, { key: 'ArrowUp' });
+      expect(onSelect).toHaveBeenCalledTimes(1);
+    });
+  });
 });

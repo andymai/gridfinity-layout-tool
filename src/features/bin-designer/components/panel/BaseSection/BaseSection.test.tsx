@@ -317,7 +317,7 @@ describe('BaseSection magnet press-fit options', () => {
     const user = userEvent.setup();
     render(<BaseSection />);
     await user.click(customizeNextTo('ø6.5mm × 2mm deep'));
-    const ribs = screen.getByRole('checkbox', { name: 'Crush ribs' });
+    const ribs = screen.getByRole('switch', { name: 'Crush ribs' });
     expect(ribs).not.toBeChecked();
 
     await user.click(ribs);
@@ -331,7 +331,7 @@ describe('BaseSection magnet press-fit options', () => {
     const user = userEvent.setup();
     render(<BaseSection />);
     await user.click(customizeNextTo('ø6.5mm × 2mm deep'));
-    const chamfer = screen.getByRole('checkbox', { name: 'Chamfered mouth' });
+    const chamfer = screen.getByRole('switch', { name: 'Chamfered mouth' });
     expect(chamfer).toBeEnabled();
     await user.click(chamfer);
     expect(useDesignerStore.getState().params.base.magnetChamfer).toBe(true);
@@ -341,7 +341,7 @@ describe('BaseSection magnet press-fit options', () => {
         params: { ...s.params, base: { ...s.params.base, lightweight: true } },
       }));
     });
-    expect(screen.getByRole('checkbox', { name: 'Chamfered mouth' })).toBeDisabled();
+    expect(screen.getByRole('switch', { name: 'Chamfered mouth' })).toBeDisabled();
     expect(screen.getByText(/too little wall around each hole/)).toBeInTheDocument();
   });
 });

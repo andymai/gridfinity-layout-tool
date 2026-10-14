@@ -256,7 +256,7 @@ describe('OverhangSection', () => {
       },
     });
     render(<OverhangSection />);
-    const feet = screen.getByRole('checkbox', { name: 'Feet under overhang' });
+    const feet = screen.getByRole('switch', { name: 'Feet under overhang' });
     expect(feet.getAttribute('aria-disabled')).not.toBe('true');
     fireEvent.click(feet);
     expect(useDesignerStore.getState().params.overhang?.feet).toBe(false);

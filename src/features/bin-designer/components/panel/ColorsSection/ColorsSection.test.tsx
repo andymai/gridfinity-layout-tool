@@ -232,7 +232,7 @@ describe('ColorsSection', () => {
         params: { ...DEFAULT_BIN_PARAMS, featureColors: colors({ enabled: false }) },
       });
       render(<ColorsSection />);
-      const sw = screen.getByRole('switch');
+      const [sw] = screen.getAllByRole('switch');
       expect(sw.getAttribute('aria-checked')).toBe('false');
     });
 
@@ -250,7 +250,7 @@ describe('ColorsSection', () => {
         },
       });
       render(<ColorsSection />);
-      fireEvent.click(screen.getByRole('switch'));
+      fireEvent.click(screen.getAllByRole('switch')[0]);
       const after = useDesignerStore.getState().params.featureColors;
       expect(after.enabled).toBe(false);
       expect(after.body).toBe('#3b82f6');
@@ -263,7 +263,7 @@ describe('ColorsSection', () => {
   it('seeds a complete bottom band the first time it is enabled', () => {
     render(<ColorsSection />);
     expect(useDesignerStore.getState().params.featureColors.bottomAccent).toBeUndefined();
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Bottom accent' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Bottom accent' }));
     expect(useDesignerStore.getState().params.featureColors.bottomAccent).toEqual({
       enabled: true,
       heightMm: 2,

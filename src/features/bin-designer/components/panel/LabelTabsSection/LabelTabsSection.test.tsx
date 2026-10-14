@@ -72,7 +72,7 @@ describe('LabelTabsSection', () => {
     render(<LabelTabsSection />);
     fireEvent.click(screen.getByRole('button', { name: /Plate fit/ }));
 
-    const hole = screen.getByRole('checkbox', { name: 'Removal hole' });
+    const hole = screen.getByRole('switch', { name: 'Removal hole' });
     expect(hole).not.toBeChecked();
     fireEvent.click(hole);
     expect(useDesignerStore.getState().params.label.removalHole).toBe(true);
@@ -80,7 +80,7 @@ describe('LabelTabsSection', () => {
     expect(useDesignerStore.getState().params.label.removalHole).toBeUndefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'Slide-in' }));
-    expect(screen.queryByRole('checkbox', { name: 'Removal hole' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('switch', { name: 'Removal hole' })).not.toBeInTheDocument();
   });
 
   it('plate fit offset steps and displays in 0.05 increments', () => {

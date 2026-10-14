@@ -213,9 +213,7 @@ describe('DividerTiltSubsection', () => {
       disableAngledDividers();
       setGrid(2, 2); // 4 eligible dividers
       render(<DividerTiltSubsection />);
-      expect(
-        screen.getByRole('switch', { name: /enable diagonal divider editing/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('switch', { name: 'Diagonal dividers' })).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /Edit divider between Comp/i })).toBeNull();
     });
 
@@ -224,7 +222,7 @@ describe('DividerTiltSubsection', () => {
       setGrid(2, 2);
       render(<DividerTiltSubsection />);
       expect(screen.getByText(/wedge-shaped compartments/i)).toBeInTheDocument();
-      fireEvent.click(screen.getByRole('switch', { name: /enable diagonal divider editing/i }));
+      fireEvent.click(screen.getByRole('switch', { name: 'Diagonal dividers' }));
       expect(screen.queryByText(/wedge-shaped compartments/i)).toBeNull();
     });
 
@@ -232,7 +230,7 @@ describe('DividerTiltSubsection', () => {
       disableAngledDividers();
       setGrid(2, 2);
       render(<DividerTiltSubsection />);
-      fireEvent.click(screen.getByRole('switch', { name: /enable diagonal divider editing/i }));
+      fireEvent.click(screen.getByRole('switch', { name: 'Diagonal dividers' }));
       expect(useSettingsStore.getState().settings.angledDividersEnabled).toBe(true);
       expect(screen.getAllByRole('button', { name: /Edit divider between Comp/i })).toHaveLength(4);
     });
@@ -261,7 +259,7 @@ describe('DividerTiltSubsection', () => {
         },
       }));
       expect(useDesignerStore.getState().ui.selectedDividerKey).not.toBeNull();
-      fireEvent.click(screen.getByRole('switch', { name: /enable diagonal divider editing/i }));
+      fireEvent.click(screen.getByRole('switch', { name: 'Diagonal dividers' }));
       const ui = useDesignerStore.getState().ui;
       expect(ui.selectedDividerKey).toBeNull();
       expect(ui.hoveredDividerKey).toBeNull();

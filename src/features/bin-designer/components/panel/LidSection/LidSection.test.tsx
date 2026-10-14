@@ -906,7 +906,7 @@ describe('LidSection grip relief (#3272)', () => {
   it('toggles the bin lip dip and states what it costs', () => {
     enabled({ mode: 'scallop' });
     render(<LidSection />);
-    const dip = screen.getByRole('checkbox', { name: /dip the bin/i });
+    const dip = screen.getByRole('switch', { name: /dip the bin/i });
     fireEvent.click(dip);
     expect(useDesignerStore.getState().params.lid.grip.binDip).toBe(true);
     expect(screen.getByText(/nothing to locate against/)).toBeInTheDocument();

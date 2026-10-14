@@ -1,6 +1,6 @@
 /** The collapsed "tab shape & size" group: support style, tab dimensions and the label lip. */
 
-import { CheckboxRow } from '@/design-system';
+import { FeatureToggle } from '../FeatureToggle';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 import { Button, Stepper, InfoIcon, Collapsible } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
@@ -174,14 +174,12 @@ export function LabelTabShapeControls({
               Text-mode only — socket plates retain themselves. */}
         {state.lipAvailable && (
           <div className="mt-3 border-t border-border-subtle pt-3">
-            <CheckboxRow
+            <FeatureToggle
               label={t('binDesigner.tabLip')}
               checked={state.lipEnabled}
-              onChange={handlers.toggleLabelLip}
+              onChange={() => handlers.toggleLabelLip(!state.lipEnabled)}
+              info={t('binDesigner.tabLipHint')}
             />
-            <p className="mt-0.5 pl-7 text-label leading-snug text-content-tertiary">
-              {t('binDesigner.tabLipHint')}
-            </p>
             {state.lipEnabled && (
               <div className="mt-2 min-w-0 pl-7">
                 <span className="mb-1 block text-xs text-content-tertiary">

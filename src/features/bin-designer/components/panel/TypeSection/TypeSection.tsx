@@ -12,15 +12,7 @@
  */
 
 import { useState } from 'react';
-import {
-  Alert,
-  Button,
-  Checkbox,
-  SegmentedControl,
-  Select,
-  Slider,
-  Stepper,
-} from '@/design-system';
+import { Alert, Button, SegmentedControl, Select, Slider, Stepper } from '@/design-system';
 import type { ReactNode } from 'react';
 import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import type { SegmentedControlOption } from '@/design-system';
@@ -43,6 +35,7 @@ import { resolveEffectiveFont } from '@/shared/utils/typePlan';
 import { useTypeMeasurer } from '@/features/bin-designer/hooks/useTypeMeasurer';
 import { AnchorPicker } from '../../controls/AnchorPicker';
 import { TypeSpecimen } from '../../controls/TypeSpecimen';
+import { FeatureToggle } from '../FeatureToggle';
 import { Hint, InfoDot, SubHeader, TextColorControl, TextFinishGrid } from '../shared';
 import { useTypeSection, TYPE_BOUNDS } from './useTypeSection';
 
@@ -225,16 +218,16 @@ export function TypeSection() {
           <Hint>{t('binDesigner.type.fixedSizeHint')}</Hint>
         </>
       ) : (
-        <div className="flex flex-col items-start gap-2">
-          <Checkbox
+        <div className="flex flex-col gap-2">
+          <FeatureToggle
             label={t('binDesigner.type.snapToScale')}
             checked={style.snapToScale}
-            onChange={handlers.setSnapToScale}
+            onChange={() => handlers.setSnapToScale(!style.snapToScale)}
           />
-          <Checkbox
+          <FeatureToggle
             label={t('binDesigner.type.uniformAcrossWalls')}
             checked={style.uniformAcrossWalls}
-            onChange={handlers.setUniformAcrossWalls}
+            onChange={() => handlers.setUniformAcrossWalls(!style.uniformAcrossWalls)}
           />
         </div>
       )}
@@ -269,10 +262,10 @@ export function TypeSection() {
               step={TYPE_BOUNDS.tracking.step}
               aria-label={t('binDesigner.type.tracking')}
             />
-            <Checkbox
+            <FeatureToggle
               label={t('binDesigner.type.autoTracking')}
               checked={style.autoTracking}
-              onChange={handlers.setAutoTracking}
+              onChange={() => handlers.setAutoTracking(!style.autoTracking)}
             />
           </div>
           <Field label={t('binDesigner.type.lineScale')}>

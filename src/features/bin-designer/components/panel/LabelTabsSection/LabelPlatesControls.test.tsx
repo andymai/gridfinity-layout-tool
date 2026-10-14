@@ -46,7 +46,7 @@ describe('LabelPlatesControls', () => {
     const paramsBefore = useDesignerStore.getState().params;
     render(<LabelPlatesControls />);
 
-    const toggle = screen.getByRole('checkbox', { name: 'Show in 3D preview' });
+    const toggle = screen.getByRole('switch', { name: 'Show in 3D preview' });
     expect(toggle).toBeChecked();
     fireEvent.click(toggle);
 

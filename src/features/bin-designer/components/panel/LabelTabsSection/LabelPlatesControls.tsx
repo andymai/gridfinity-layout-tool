@@ -11,7 +11,8 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 // Side-effect: must run before any <Text> mounts under this Canvas.
 import '@/shared/webgl/configureTroikaText';
-import { Badge, Button, CheckboxRow, Dialog } from '@/design-system';
+import { Badge, Button, Dialog } from '@/design-system';
+import { FeatureToggle } from '../FeatureToggle';
 import { ExportDialog } from '@/shared/components/ExportDialog';
 import { SpaceMouseController } from '@/shared/spacemouse/components/SpaceMouseController';
 import { useToastStore } from '@/core/store/toast';
@@ -142,12 +143,13 @@ export function LabelPlatesControls() {
           );
         })}
       </ul>
-      <CheckboxRow
-        className="mb-2"
-        label={t('binDesigner.plates.showInPreview')}
-        checked={showInPreview}
-        onChange={setShowInPreview}
-      />
+      <div className="mb-2">
+        <FeatureToggle
+          label={t('binDesigner.plates.showInPreview')}
+          checked={showInPreview}
+          onChange={() => setShowInPreview(!showInPreview)}
+        />
+      </div>
       <div className="flex gap-2">
         <Button variant="secondary" size="sm" fullWidth onClick={openPreview} disabled={!canExport}>
           {t('binDesigner.plates.preview')}

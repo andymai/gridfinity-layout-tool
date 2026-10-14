@@ -3,7 +3,7 @@
  * walls. Lives on the Style page; thickness stays with Shape.
  */
 
-import { SliderInput, Checkbox, Stepper } from '@/design-system';
+import { SliderInput, Stepper } from '@/design-system';
 import type { TextMode } from '@/features/bin-designer/types';
 import {
   MAX_WALL_LABEL_SLOT_PITCH_CELLS,
@@ -136,17 +136,14 @@ export function WallSurfaceSection() {
                 through the compartment dividers, so a patterned bin doesn't
                 read as hollow walls around solid dividers. */}
             <div className="mt-3 border-t border-stroke-subtle/50 pt-2">
-              <Checkbox
-                checked={state.dividersEnabled}
-                onChange={handlers.handleDividersChange}
-                disabled={state.dividersAvailableReason !== undefined}
+              <FeatureToggle
                 label={t('binDesigner.walls.pattern.dividers')}
+                checked={state.dividersEnabled}
+                onChange={() => handlers.handleDividersChange(!state.dividersEnabled)}
+                disabledReason={state.dividersAvailableReason}
+                info={t('binDesigner.walls.pattern.dividersHint')}
               />
-              <p className="ml-6 mt-1 text-label leading-relaxed text-content-tertiary">
-                {state.dividersAvailableReason ??
-                  state.dividersNote ??
-                  t('binDesigner.walls.pattern.dividersHint')}
-              </p>
+              {state.dividersNote !== undefined && <Hint>{state.dividersNote}</Hint>}
             </div>
           </>
         )}

@@ -9,8 +9,8 @@
  * `accentBandUnits.ts`) and never reaches the design.
  */
 
-import { Checkbox } from '@/design-system';
 import { SliderInput } from '@/design-system';
+import { FeatureToggle } from '../FeatureToggle';
 import { SegmentedControl } from '@/design-system/SegmentedControl/SegmentedControl';
 import { useTranslation } from '@/i18n';
 import type { AccentBandUnit } from '@/core/store/settings.types';
@@ -112,23 +112,11 @@ export function AccentBandsEditor({
     return (
       <div className={divided ? 'mt-1 border-t border-stroke-subtle/60 pt-1' : undefined}>
         <div
-          className="group flex cursor-pointer items-center justify-between py-1"
-          role="checkbox"
-          aria-checked={enabled}
-          aria-label={label}
-          tabIndex={0}
-          onClick={toggle}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              toggle();
-            }
-          }}
+          className="py-1"
           onMouseEnter={enabled ? () => onHover(zone) : undefined}
           onMouseLeave={enabled ? () => onHover(null) : undefined}
         >
-          <span className="text-label font-medium text-content-secondary">{label}</span>
-          <Checkbox checked={enabled} />
+          <FeatureToggle label={label} checked={enabled} onChange={toggle} />
         </div>
         {enabled && (
           <div className="space-y-2 pb-1">

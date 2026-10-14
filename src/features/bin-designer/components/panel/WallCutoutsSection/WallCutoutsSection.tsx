@@ -9,7 +9,7 @@
 
 import { useTranslation } from '@/i18n';
 import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
-import { Button, Checkbox } from '@/design-system';
+import { Button } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
 import { Hint, ShapePicker, SideSelector, StepperField, LinkIcon, type SideState } from '../shared';
 import { useWallCutoutsSection } from './useWallCutoutsSection';
@@ -475,34 +475,35 @@ export function WallCutoutsSection() {
 
           {/* Interior walls */}
           <div className="border-t border-stroke-subtle/50 pt-2">
-            <Checkbox
-              size="sm"
+            <FeatureToggle
+              label={t('binDesigner.wallCutouts.interior')}
               checked={walls.interior.enabled}
               onChange={() => handlers.toggleSide('interior')}
-              label={t('binDesigner.wallCutouts.interior')}
+              primaryControls={
+                linked ? undefined : (
+                  <>
+                    <SizeControls
+                      side="interior"
+                      cfg={walls.interior}
+                      hideDepth={hideDepth}
+                      handlers={handlers}
+                      spanLabel={t('binDesigner.wallCutouts.span')}
+                      heightLabel={t('binDesigner.wallCutouts.height')}
+                      step={STEP}
+                    />
+                    <CornersDisclosure
+                      side="interior"
+                      walls={walls}
+                      cfg={walls.interior}
+                      handlers={handlers}
+                      t={t}
+                      step={CORNER_STEP}
+                      seed={CORNER_SEED}
+                    />
+                  </>
+                )
+              }
             />
-            {walls.interior.enabled && !linked && (
-              <div className="ml-6 mt-2">
-                <SizeControls
-                  side="interior"
-                  cfg={walls.interior}
-                  hideDepth={hideDepth}
-                  handlers={handlers}
-                  spanLabel={t('binDesigner.wallCutouts.span')}
-                  heightLabel={t('binDesigner.wallCutouts.height')}
-                  step={STEP}
-                />
-                <CornersDisclosure
-                  side="interior"
-                  walls={walls}
-                  cfg={walls.interior}
-                  handlers={handlers}
-                  t={t}
-                  step={CORNER_STEP}
-                  seed={CORNER_SEED}
-                />
-              </div>
-            )}
           </div>
         </div>
       }

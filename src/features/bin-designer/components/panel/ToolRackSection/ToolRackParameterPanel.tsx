@@ -4,7 +4,8 @@
  * store's `updateEnvelope` / `updateStructure` actions.
  */
 import { useShallow } from 'zustand/react/shallow';
-import { Button, Stepper, Switch } from '@/design-system';
+import { Button, Stepper } from '@/design-system';
+import { FeatureToggle } from '../FeatureToggle';
 import { clamp } from '@/shared/utils/math';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -158,16 +159,15 @@ export function ToolRackParameterPanel() {
               </div>
             </PanelSection>
             <PanelSection>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-content">{t('binDesigner.rack.backRail')}</span>
-                <Switch
-                  checked={structure.backRail.enabled}
-                  onChange={(enabled) =>
-                    updateStructure({ backRail: { ...structure.backRail, enabled } })
-                  }
-                  aria-label={t('binDesigner.rack.backRail')}
-                />
-              </div>
+              <FeatureToggle
+                label={t('binDesigner.rack.backRail')}
+                checked={structure.backRail.enabled}
+                onChange={() =>
+                  updateStructure({
+                    backRail: { ...structure.backRail, enabled: !structure.backRail.enabled },
+                  })
+                }
+              />
               {structure.backRail.enabled && (
                 <div className="mt-3">
                   <NumberField
@@ -184,16 +184,18 @@ export function ToolRackParameterPanel() {
               )}
             </PanelSection>
             <PanelSection>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-content">{t('binDesigner.rack.magnetHoles')}</span>
-                <Switch
-                  checked={envelope.attachment.magnetHoles}
-                  onChange={(magnetHoles) =>
-                    updateEnvelope({ attachment: { ...envelope.attachment, magnetHoles } })
-                  }
-                  aria-label={t('binDesigner.rack.magnetHoles')}
-                />
-              </div>
+              <FeatureToggle
+                label={t('binDesigner.rack.magnetHoles')}
+                checked={envelope.attachment.magnetHoles}
+                onChange={() =>
+                  updateEnvelope({
+                    attachment: {
+                      ...envelope.attachment,
+                      magnetHoles: !envelope.attachment.magnetHoles,
+                    },
+                  })
+                }
+              />
             </PanelSection>
           </div>
         </StickyGroupHeader>

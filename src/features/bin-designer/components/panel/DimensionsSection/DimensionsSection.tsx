@@ -7,7 +7,8 @@
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import { Checkbox, IconButton, Stepper } from '@/design-system';
+import { IconButton, Stepper } from '@/design-system';
+import { FeatureToggle } from '../FeatureToggle';
 import { ArrowLeftRightIcon, RulerIcon } from '@/design-system/Icon';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { useResponsive } from '@/shared/hooks/useResponsive';
@@ -19,7 +20,6 @@ import { useDimensionsSection } from './useDimensionsSection';
 export function DimensionsSection() {
   const { state, handlers, t } = useDimensionsSection();
   const { isMobile } = useResponsive();
-  const checkboxSize = isMobile ? 'lg' : 'md';
   const stepperSize = isMobile ? 'lg' : 'md';
 
   return (
@@ -185,28 +185,11 @@ export function DimensionsSection() {
         />
       </div>
 
-      {/* Half-bin mode toggle */}
-      <div
-        className="group flex items-center justify-between cursor-pointer rounded-md px-1 -mx-1 py-1 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-        onClick={handlers.toggleHalfGridMode}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handlers.toggleHalfGridMode();
-          }
-        }}
-        role="checkbox"
-        aria-checked={state.halfGridMode}
-        aria-label={t('binDesigner.halfBinModeEnable05Grid')}
-        tabIndex={0}
-      >
-        <span
-          className={`text-xs leading-none transition-colors ${state.halfGridMode ? 'text-content' : 'text-content-tertiary group-hover:text-content-secondary'}`}
-        >
-          {t('binDesigner.halfBinMode')}
-        </span>
-        <Checkbox checked={state.halfGridMode} size={checkboxSize} />
-      </div>
+      <FeatureToggle
+        label={t('binDesigner.halfBinMode')}
+        checked={state.halfGridMode}
+        onChange={handlers.toggleHalfGridMode}
+      />
     </div>
   );
 }

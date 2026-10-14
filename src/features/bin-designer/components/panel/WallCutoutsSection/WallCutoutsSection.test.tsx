@@ -31,7 +31,7 @@ describe('WallCutoutsSection', () => {
     });
     render(<WallCutoutsSection />);
 
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Interior walls' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Interior walls' }));
 
     expect(useDesignerStore.getState().params.walls.interior.enabled).toBe(true);
   });

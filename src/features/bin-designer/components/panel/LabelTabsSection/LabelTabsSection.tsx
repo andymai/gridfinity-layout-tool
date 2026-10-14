@@ -10,7 +10,7 @@
 import { useCallback, useState } from 'react';
 import { FeatureToggle } from '../FeatureToggle';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
-import { Button, CheckboxRow, Stepper, InfoIcon, Collapsible } from '@/design-system';
+import { Button, Stepper, InfoIcon, Collapsible } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import type { LabelTabAlignment, LabelTabEdges } from '../../../types';
 import {
@@ -212,16 +212,12 @@ export function LabelTabsSection() {
                 </div>
               </div>
               {(state.label.socketStyle ?? 'clickIn') === 'clickIn' && (
-                <div className="flex items-center gap-1.5">
-                  <CheckboxRow
-                    label={t('binDesigner.socketRemovalHole')}
-                    checked={state.label.removalHole === true}
-                    onChange={handlers.setRemovalHole}
-                  />
-                  <LabelInfo label={t('binDesigner.socketRemovalHole')}>
-                    {t('binDesigner.socketRemovalHoleHint')}
-                  </LabelInfo>
-                </div>
+                <FeatureToggle
+                  label={t('binDesigner.socketRemovalHole')}
+                  checked={state.label.removalHole === true}
+                  onChange={() => handlers.setRemovalHole(state.label.removalHole !== true)}
+                  info={t('binDesigner.socketRemovalHoleHint')}
+                />
               )}
               {state.rowsForced && (
                 <p className="flex items-start gap-1 text-xs text-content-tertiary">

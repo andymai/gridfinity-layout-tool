@@ -2,8 +2,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { FeatureToggle } from '../FeatureToggle';
-import { Hint, LabelInfo, ShapePicker, StepperField } from '../shared';
-import { CheckboxRow } from '@/design-system';
+import { Hint, ShapePicker, StepperField } from '../shared';
 import {
   resolvePullTab,
   planPullTab,
@@ -115,16 +114,12 @@ export function PullTabSection() {
             {field('rootRadius')}
           </div>
           {field('recessBorder')}
-          <div className="flex items-center gap-1.5">
-            <CheckboxRow
-              label={t('binDesigner.pullTab.backRecess')}
-              checked={tab.backRecess}
-              onChange={(backRecess) => update({ backRecess })}
-            />
-            <LabelInfo label={t('binDesigner.pullTab.backRecess')}>
-              {t('binDesigner.pullTab.backRecessHint')}
-            </LabelInfo>
-          </div>
+          <FeatureToggle
+            label={t('binDesigner.pullTab.backRecess')}
+            checked={tab.backRecess}
+            onChange={() => update({ backRecess: !tab.backRecess })}
+            info={t('binDesigner.pullTab.backRecessHint')}
+          />
           <div className="flex gap-2">
             {field('recessHeight', 1, Math.min(80, rim + tab.height - params.wallThickness - 2), 1)}
             {field(

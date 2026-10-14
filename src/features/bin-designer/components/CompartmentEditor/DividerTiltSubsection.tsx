@@ -1,9 +1,9 @@
 import { ArrowLeftIcon, RotateCcwIcon } from '@/design-system/Icon';
 import { Slider } from '@/design-system/Slider';
-import { Switch } from '@/design-system/Switch';
 import { Collapsible } from '@/design-system/Collapsible';
 import { Button, Stepper } from '@/design-system';
-import { Hint, InfoDot } from '../panel/shared';
+import { Hint } from '../panel/shared';
+import { FeatureToggle } from '../panel/FeatureToggle';
 import { useSettingsStore } from '@/core/store/settings';
 import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
@@ -58,20 +58,12 @@ export function DividerTiltSubsection() {
 
   return (
     <div className="mt-3 border-t border-stroke-subtle/40 pt-3">
-      <div className={`flex items-center justify-between ${enabled ? 'mb-2' : ''}`}>
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs font-medium uppercase tracking-wide text-content-tertiary">
-            {t('binDesigner.angledDividers.title')}
-          </span>
-          <InfoDot aria-label={t('binDesigner.angledDividers.helpButtonLabel')}>
-            <p>{t('binDesigner.angledDividers.infoBody')}</p>
-          </InfoDot>
-        </div>
-        <Switch
+      <div className={enabled ? 'mb-2' : undefined}>
+        <FeatureToggle
+          label={t('binDesigner.angledDividers.title')}
           checked={enabled}
           onChange={toggleEnabled}
-          size="sm"
-          aria-label={t('binDesigner.angledDividers.toggleLabel')}
+          info={t('binDesigner.angledDividers.infoBody')}
         />
       </div>
 

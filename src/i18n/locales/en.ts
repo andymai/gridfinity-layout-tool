@@ -2029,7 +2029,6 @@ const en: Record<string, string> = {
     'Click the included plate (or any Cullenect / gflabel plate you already own) into each socket, and pick the one that snaps in firmly and releases cleanly.',
   'binDesigner.fitSample.tip3': 'Enter that socket’s embossed value in the plate fit offset field.',
   'binDesigner.angledDividers.title': 'Diagonal dividers',
-  'binDesigner.angledDividers.toggleLabel': 'Enable diagonal divider editing',
   'binDesigner.angledDividers.rowLabel': 'Comp {a} ↔ Comp {b}',
   'binDesigner.angledDividers.editRowLabel': 'Edit divider between Comp {a} and Comp {b}',
   'binDesigner.angledDividers.resetAll': 'Reset all',
@@ -2055,7 +2054,6 @@ const en: Record<string, string> = {
   'binDesigner.angledDividers.applyLeanToAxis': 'Apply lean to all parallel dividers',
   'binDesigner.angledDividers.conflictNotice':
     'Scoops, label tabs, and inserts are removed along tilted dividers.',
-  'binDesigner.angledDividers.helpButtonLabel': 'About diagonal dividers',
   'binDesigner.angledDividers.infoBody':
     'Tilt interior walls to create wedge-shaped compartments. Select a divider, then set Angle to turn it in plan, or Lean to stand it over so contents slide in at a slope.',
   'binDesigner.angledDividers.slotIncompatible':
@@ -3771,7 +3769,6 @@ const en: Record<string, string> = {
   'binDesigner.gridUnit': 'Grid unit',
   'binDesigner.gridUnitTooltip': 'Size of one grid cell in mm (standard Gridfinity = 42mm)',
   'binDesigner.halfBinMode': 'Half-grid mode',
-  'binDesigner.halfBinModeEnable05Grid': 'Half-grid mode: enable 0.5 grid unit precision',
   'binDesigner.halfSockets': 'Half sockets',
   'binDesigner.footLattice': 'Foot lattice',
   'binDesigner.footLattice.axis.x': 'Width axis',

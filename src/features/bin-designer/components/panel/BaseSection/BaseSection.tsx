@@ -20,7 +20,7 @@
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import { Button, Checkbox, SegmentedControl, SliderInput } from '@/design-system';
+import { Button, SegmentedControl, SliderInput } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
 import {
   FieldLabel,
@@ -269,27 +269,19 @@ export function BaseSection() {
               step={state.magnetDepthStep}
               unit="mm"
             />
-            <div className="flex items-center gap-1.5">
-              <Checkbox
-                checked={state.magnetCrushRibs}
-                onChange={handlers.setMagnetCrushRibs}
-                label={t('binDesigner.base.magnetCrushRibs')}
-              />
-              <LabelInfo label={t('binDesigner.base.magnetCrushRibs')}>
-                {t('binDesigner.base.magnetCrushRibsHint')}
-              </LabelInfo>
-            </div>
-            <div className="space-y-1">
-              <Checkbox
-                checked={state.magnetChamfer}
-                disabled={state.magnetChamferUnavailable !== undefined}
-                onChange={handlers.setMagnetChamfer}
-                label={t('binDesigner.base.magnetChamfer')}
-              />
-              <Hint>
-                {state.magnetChamferUnavailable ?? t('binDesigner.base.magnetChamferHint')}
-              </Hint>
-            </div>
+            <FeatureToggle
+              label={t('binDesigner.base.magnetCrushRibs')}
+              checked={state.magnetCrushRibs}
+              onChange={() => handlers.setMagnetCrushRibs(!state.magnetCrushRibs)}
+              info={t('binDesigner.base.magnetCrushRibsHint')}
+            />
+            <FeatureToggle
+              label={t('binDesigner.base.magnetChamfer')}
+              checked={state.magnetChamfer}
+              onChange={() => handlers.setMagnetChamfer(!state.magnetChamfer)}
+              disabledReason={state.magnetChamferUnavailable}
+              info={t('binDesigner.base.magnetChamferHint')}
+            />
             {state.bodyType === 'nesting' && (
               <>
                 <SliderInput
