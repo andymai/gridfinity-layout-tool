@@ -154,6 +154,14 @@ describe('markSuccess', () => {
     await markSuccess(pushing, 2000);
     expect((await getAll()).map((e) => e.op)).toEqual(['delete']);
   });
+
+  it('keeps a delete queued during a put push at the pushed mtime', async () => {
+    await enqueue({ kind: 'layouts', id: 'lay-1', modifiedAt: 2000, op: 'put' });
+    const pushing = await drained();
+    await enqueue({ kind: 'layouts', id: 'lay-1', modifiedAt: 2000, op: 'delete' });
+    await markSuccess(pushing, 2000);
+    expect((await getAll()).map((e) => e.op)).toEqual(['delete']);
+  });
 });
 
 describe('markFailure', () => {

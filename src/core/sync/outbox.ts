@@ -144,18 +144,21 @@ export async function getDue(now: number = Date.now()): Promise<OutboxEntry[]> {
  * subscribes) is older than what gets pushed, and matching on mtime alone
  * would leave it due forever, re-sent back to back.
  *
- * An entry that replaced `drained` during the push stays unless it carries
- * the pushed mtime. Replacement is told by identity, not mtime order: a clock
- * that steps back can stamp a later save below the pushed snapshot.
+ * An entry that replaced `drained` during the push stays unless it is the
+ * same op at the pushed mtime. Replacement is told by identity, not mtime
+ * order: a clock that steps back can stamp a later save below the pushed
+ * snapshot, and a delete can land on the very millisecond of one.
  */
 export async function markSuccess(drained: OutboxEntry, pushedModifiedAt: number): Promise<void> {
   const db = await outboxDb.get();
   const tx = db.transaction(STORE_NAME, 'readwrite');
   const store = tx.objectStore(STORE_NAME);
   const current = (await store.get(drained.key)) as OutboxEntry | undefined;
-  if (current && (isSameEntry(current, drained) || current.modifiedAt === pushedModifiedAt)) {
-    await store.delete(drained.key);
-  }
+  const covered =
+    current !== undefined &&
+    (isSameEntry(current, drained) ||
+      (current.op === drained.op && current.modifiedAt === pushedModifiedAt));
+  if (covered) await store.delete(drained.key);
   await tx.done;
 }
 
