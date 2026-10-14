@@ -7,6 +7,7 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin, getGenerateSplitPreview } from './__kernel-tests__/wasmInit';
+import { DEFAULT_LID_HINGE_CONFIG } from '@/features/bin-designer/types/lid';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
@@ -164,6 +165,44 @@ describe('custom gridUnitMm', () => {
     expect(extent(aniso, 0)).toBeCloseTo(extent(square, 0), 0);
     expect(extent(aniso, 1)).toBeCloseTo(2 * 22 - CLEARANCE, 0); // 41.5mm
     expect(extent(aniso, 1)).toBeLessThan(extent(square, 1) - 10);
+  });
+
+  it('raises a tall hinged lid’s hinge wall on a side shorter than two corner radii', () => {
+    // The raised wall is clipped to the bin's outline, which has to cap its
+    // corner radius the way the body's does on a pitch this small.
+    const generateBin = getGenerateBin();
+    const hinged = (extraHeightMm: number): BinParams => ({
+      ...DEFAULT_BIN_PARAMS,
+      width: 3,
+      depth: 1,
+      height: 3,
+      gridUnitMm: 42,
+      gridUnitMmY: 7,
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        enabled: true,
+        attachment: 'hinge',
+        extraHeightMm,
+        hinge: { ...DEFAULT_LID_HINGE_CONFIG, side: 'back', catchMode: 'none' },
+      },
+    });
+    const bounds = (mesh: ReturnType<typeof generateBin>): number[] => {
+      const v = mesh.vertices;
+      const out = [Infinity, Infinity, -Infinity, -Infinity, -Infinity];
+      for (let i = 0; i < v.length; i += 3) {
+        out[0] = Math.min(out[0], v[i]);
+        out[1] = Math.min(out[1], v[i + 1]);
+        out[2] = Math.max(out[2], v[i]);
+        out[3] = Math.max(out[3], v[i + 1]);
+        out[4] = Math.max(out[4], v[i + 2]);
+      }
+      return out;
+    };
+    const tall = bounds(generateBin(hinged(20)));
+    const stock = bounds(generateBin(hinged(0)));
+    expect(tall[2] - tall[0]).toBeCloseTo(3 * 42 - CLEARANCE, 1);
+    expect(tall[3] - tall[1]).toBeCloseTo(7 - CLEARANCE, 1);
+    expect(tall[4] - stock[4]).toBeCloseTo(20, 1);
   });
 
   it('split preview pieces should use custom gridUnitMm', () => {

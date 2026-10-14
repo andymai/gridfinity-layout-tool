@@ -30,7 +30,7 @@ import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinDimensions, PipelineContext, PipelineStage } from '../types';
 import { checkCancelled } from '../../utils/abort';
 import { buildBinHingeParts } from '../../hingeBarrel';
-import { BOX_CORNER_RADIUS, LIP_HEIGHT } from '../../generatorConstants';
+import { BOX_CORNER_RADIUS, LIP_HEIGHT, safeSectionRect } from '../../generatorConstants';
 import { hasOverhang, overhangExpansion } from '../../overhang';
 import { collectOrigins } from '../collectOrigins';
 import { FeatureTag } from '../../featureTags';
@@ -149,11 +149,12 @@ function clipToFootprint(walls: readonly Shape3D[], dim: BinDimensions): Shape3D
   const exp = hasOverhang(dim.overhang) ? overhangExpansion(dim.overhang) : null;
   const zLo = dim.wallTopZ - 2 * LIP_HEIGHT;
   const zHi = dim.lipTopZ + 1000;
-  const footprint = drawRoundedRectangle(
+  const { width, depth, radius } = safeSectionRect(
     dim.outerW + (exp?.addW ?? 0),
     dim.outerD + (exp?.addD ?? 0),
     BOX_CORNER_RADIUS
-  )
+  );
+  const footprint = drawRoundedRectangle(width, depth, radius)
     .translate(exp?.offsetX ?? 0, exp?.offsetY ?? 0)
     .sketchOnPlane('XY', zLo)
     .extrude(zHi - zLo);
