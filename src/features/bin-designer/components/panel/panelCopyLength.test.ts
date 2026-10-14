@@ -101,8 +101,7 @@ interface InlineCopy {
   readonly length: number;
 }
 
-function inlineCopy(path: string): InlineCopy[] {
-  const text = readFileSync(path, 'utf-8');
+function inlineCopy(path: string, text = readFileSync(path, 'utf-8')): InlineCopy[] {
   const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const found: InlineCopy[] = [];
   const record = (node: ts.Node, key: string): void => {
@@ -197,9 +196,26 @@ function inlineCopy(path: string): InlineCopy[] {
 }
 
 describe('panel copy length', () => {
+  it('adds up a paragraph built from several strings, counting a choice once', () => {
+    const paragraph = (extra: string): string => `
+      export const Notice = ({ t, on }) => (
+        <p>
+          {t('binDesigner.overhang.placement.prints')}${extra}
+          {on ? t('binDesigner.lid.fill') : t('binDesigner.lid.magnetHoles')}
+        </p>
+      );`;
+    const measured = (extra: string): number =>
+      inlineCopy('Notice.tsx', paragraph(extra)).find((copy) => copy.key === '<p>')?.length ?? 0;
+
+    expect(measured('')).toBeLessThanOrEqual(MAX_INLINE_CHARS);
+    expect(measured(" {t('binDesigner.overhang.placement.changeInLayout')}")).toBeGreaterThan(
+      MAX_INLINE_CHARS
+    );
+  });
+
   it(`keeps inline prose to ${MAX_INLINE_CHARS} characters`, () => {
     const tooLong = ROOTS.flatMap(sourceFiles)
-      .flatMap(inlineCopy)
+      .flatMap((path) => inlineCopy(path))
       .filter((copy) => copy.length > MAX_INLINE_CHARS)
       .map((copy) => `${copy.at} ${copy.key} (${copy.length})`);
     expect(tooLong).toEqual([]);
