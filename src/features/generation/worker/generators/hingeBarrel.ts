@@ -272,7 +272,9 @@ function trimHalfSpace(
   // ~28° early and leaves material outboard of the axis that swings straight
   // down into the rim. The plan owns that derivation; this only reads it.
   const half = halfSpaceThroughAxis(scope, g, frame, g.trimTiltDeg, lo, hi);
-  const bound = axisCross(g, frame) - g.trimInboardMm;
+  // A margin past the cavity face, into the cavity, so the cutter never shares
+  // that face with the shell it cuts.
+  const bound = axisCross(g, frame) - g.trimInboardMm - COPLANAR_MARGIN;
   const cz = frame.axisZ;
   const R = TRIM_REACH_MM;
   const section = draw([bound - R, cz - R])
