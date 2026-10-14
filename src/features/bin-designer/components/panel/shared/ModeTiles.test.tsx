@@ -40,6 +40,7 @@ describe('ModeTiles', () => {
     const spacer = screen.getByRole('radio', { name: 'Spacer' });
     expect((spacer as HTMLButtonElement).disabled).toBe(true);
     expect(spacer.getAttribute('title')).toBe('Blocked');
+    expect(spacer.className).toContain('disabled:pointer-events-auto');
     fireEvent.keyDown(screen.getByRole('radiogroup'), { key: 'ArrowRight' });
     expect(onChange).toHaveBeenLastCalledWith('tray');
   });

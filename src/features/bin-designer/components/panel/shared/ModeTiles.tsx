@@ -1,9 +1,3 @@
-/**
- * A one-of-N choice as a grid of icon tiles, with the chosen mode's one-line
- * caption and its own controls below. The tiles say what each mode is; only
- * the chosen one spends height on explaining itself.
- */
-
 import { useRef } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { Button } from '@/design-system';
@@ -100,7 +94,9 @@ export function ModeTiles<T extends string>({
               disabled={option.disabledReason !== undefined}
               title={option.disabledReason}
               onClick={() => choose(option.value)}
-              className={`flex h-auto min-w-0 flex-col items-center justify-start gap-1 rounded-lg border px-1.5 py-2 text-center font-normal transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+              // A disabled Button drops pointer events, which would also drop
+              // the hover that shows an unchosen mode's reason in its title.
+              className={`flex h-auto min-w-0 flex-col items-center justify-start gap-1 rounded-lg border px-1.5 py-2 text-center font-normal transition-colors disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-50 ${
                 isOn ? TILE_ON : TILE_OFF
               }`}
             >
