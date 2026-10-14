@@ -1,0 +1,41 @@
+src/shared/components/MoreDisclosure/MoreDisclosure.tsx
+  s_0ede90d0838d1c::t_b0e9b99cf49a90 33-37,47-49,55,93,103
+  s_0ede90d0838d1c::t_47893b00c7c5ae 15,56-62,69,85
+  s_0ede90d0838d1c::t_7ab523f151d9eb 31-32,46,54
+src/features/bin-designer/components/panel/LidSection/LidAdvancedFields.tsx
+  s_0ede90d0838d1c::t_e2a1441b8aede4 3,43
+  s_0ede90d0838d1c::t_7ab523f151d9eb 273
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabShapeControls.tsx
+  s_0ede90d0838d1c::t_7ab523f151d9eb 37-38,40-41,226
+  s_0ede90d0838d1c::t_e2a1441b8aede4 3,6
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.tsx
+  s_0ede90d0838d1c::t_7ab523f151d9eb 290,313
+  s_0ede90d0838d1c::t_e2a1441b8aede4 2
+src/features/bin-designer/components/panel/CutoutsSection/CutoutPropertyPanel.tsx
+  s_0ede90d0838d1c::t_e2a1441b8aede4 9-10,62,134,169
+  s_0ede90d0838d1c::t_7ab523f151d9eb 132,162,167-168,189,192-193,206
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_0ede90d0838d1c::t_7ab523f151d9eb 243-244,246-247,285,299-300,302-303,388,415-418,421
+  s_0ede90d0838d1c::t_e2a1441b8aede4 10,14
+src/shared/components/MoreDisclosure/MoreDisclosure.test.tsx
+  s_0ede90d0838d1c::t_eb839304a8b3ce 92-125
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabTextStyleControls.tsx
+  s_0ede90d0838d1c::t_7ab523f151d9eb 48,133
+  s_0ede90d0838d1c::t_e2a1441b8aede4 3-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "441437d7439516f38d05ee4c291a15aa06d92d1f",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
