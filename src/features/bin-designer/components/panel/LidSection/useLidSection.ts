@@ -463,8 +463,8 @@ export function useLidSection() {
       ? Math.max(LID_TRAY_FLOOR, ceilToThicknessStep(hingeFloor - lid.tray.depthMm))
       : Math.max(LID_TOP_THICKNESS_MIN_MM, hingeFloor);
   // The persisted value stays within LID_TOP_THICKNESS_MAX_MM (the server
-  // bound); a hinge floor past it pins the stepper at the built value rather
-  // than handing it a minimum above its maximum.
+  // bound); a minimum past it pins the stepper at the built value rather than
+  // handing it a minimum above its maximum.
   const topThicknessMax = Math.max(LID_TOP_THICKNESS_MAX_MM, topThicknessMin);
 
   const setTopThickness = useCallback(

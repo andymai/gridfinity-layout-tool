@@ -55,7 +55,7 @@
  *
  * That is the room the knuckle's root lives in, and it needs room because the
  * barrel reaches no bin material at all. See
- * {@link HingeGeometry.rootDepthBelowLipTopMm}.
+ * {@link HingeGeometry.rootDepthBelowStopMm}.
  *
  * ── THE STOP ─────────────────────────────────────────────────────────────
  *
@@ -63,9 +63,10 @@
  * do so, and it is worth writing down why it takes both.
  *
  * Rotated by θ, the trim face sweeps a ray at `ψ₀ − θ`. The only bin material
- * anywhere along that ray is ONE point — the lip-top outer corner, `axisInsetMm`
- * outboard of the axis and `axisAboveLipTopMm` below it. Inboard of the corner
- * the ray is above the rim (air); outboard of it, past the wall (air). The face
+ * anywhere along that ray is ONE point — the stop corner, the hinge wall's top
+ * outer corner, `axisInsetMm` outboard of the axis and `axisAboveStopMm` below
+ * it. Inboard of the corner the ray is above the rim (air); outboard of it,
+ * past the wall (air). The face
  * reaches that point at exactly `ψ₀ − ψ_corner`, which is
  * {@link LID_HINGE_STOP_ANGLE_DEG} — and that is what `trimTiltDeg` is solved
  * for.
@@ -137,6 +138,7 @@ import {
   LID_HINGE_STOP_ANGLE_DEG,
   LID_HINGE_STOP_SECTOR_DEG,
   hingeAxisAboveLipTopMm,
+  hingeAxisAboveStopMm,
   hingeOppositeSide,
   hingeStockAxisAboveLipTopMm,
   hingeStopRadiusMm,
@@ -234,6 +236,20 @@ export interface HingeGeometry {
    * copy of the chain CLAUDE.md gotcha #14 warns about.
    */
   readonly axisAboveLipTopMm: number;
+  /**
+   * Height of the axis above the stop corner, the top outer corner of the
+   * bin's hinge wall. See {@link hingeAxisAboveStopMm}.
+   */
+  readonly axisAboveStopMm: number;
+  /**
+   * How far (mm) the bin's hinge wall rises above its lip to meet a lid with
+   * extra height: it closes the hinge wall up to the knuckles, and it carries
+   * the stop corner up with the axis, so everything sized from that corner
+   * stays at its stock size. Zero without extra height.
+   */
+  readonly wallRiseMm: number;
+  /** Thickness (mm) of that raised wall. */
+  readonly raisedWallMm: number;
   readonly barrelRadiusMm: number;
   /**
    * Distance the axis sits inboard of the wall's OUTER face.
@@ -251,10 +267,9 @@ export interface HingeGeometry {
    * Inboard of that face the side walls only slide along the bin's side lips
    * as the lid turns, so the trim has no clearance reason to go further; the
    * latch wall, which they swing toward, has its own relief
-   * ({@link latchReliefRadiusMm}). Unbounded, a lid with extra height loses a
-   * long wedge from both side walls, because its stop corner sits far below
-   * the axis and that tilts the trim plane toward flat. Without extra height
-   * the plane never reaches this far.
+   * ({@link latchReliefRadiusMm}). Unbounded, the plane carves a wedge out of
+   * both side walls that grows with how far the lid's skirt hangs below the
+   * axis. Without extra height it never reaches this far.
    */
   readonly trimInboardMm: number;
   /**
@@ -274,27 +289,29 @@ export interface HingeGeometry {
    */
   readonly detentFits: boolean;
   /**
-   * Depth (mm) below the lip top that a bin knuckle's root reaches for.
+   * Depth (mm) below the stop corner's height that a bin knuckle's root
+   * reaches for.
    *
    * The barrel touches the bin NOWHERE. Inset from the outer face by its radius
    * plus a relief and raised to the plate's underside, it clears the lip's top
    * chamfer entirely: that chamfer recedes inboard as it rises, so the nearest
-   * lip material lies `(axisInsetMm + axisAboveLipTopMm)/√2` from the axis,
+   * lip material lies `(axisInsetMm + axisAboveStopMm)/√2` from the axis,
    * further than {@link barrelRadiusMm} on every lip this app builds. Anything
    * that has to be ATTACHED must reach past that, not merely to the rim.
    *
    * The chamfer stops receding once it meets the lip's vertical section, which
    * is how deep a root has to go to stand on full-thickness material and no
-   * deeper.
+   * deeper. A raised hinge wall is solid up to its top, so there the root
+   * only has to stand on it.
    */
-  readonly rootDepthBelowLipTopMm: number;
+  readonly rootDepthBelowStopMm: number;
   /**
    * Tilt (deg) of the plane that trims the lid's material outboard of the axis.
    *
-   * DERIVED, not chosen. The trim face comes to rest against the bin's lip-top
-   * outer corner, and that corner is not at the axis's height — it sits
-   * `axisAboveLipTopMm` below it, `axisInsetMm` outboard, so it subtends
-   * `atan2(-axisAboveLipTopMm, axisInsetMm)` — about -28° on a stock bin.
+   * DERIVED, not chosen. The trim face comes to rest against the stop corner,
+   * and that corner is not at the axis's height — it sits `axisAboveStopMm`
+   * below it, `axisInsetMm` outboard, so it subtends
+   * `atan2(-axisAboveStopMm, axisInsetMm)` — about -28° on a stock bin.
    * Tilting the trim by the stop angle alone would therefore stop the lid
    * ~28° early, and the first version of this did exactly that.
    *
@@ -307,8 +324,8 @@ export interface HingeGeometry {
    * Radius (mm) the stop lobe reaches, measured from the axis.
    *
    * The lid's trim face is what butts against the bin, and the only bin
-   * material along the ray it sweeps is ONE point: the lip-top outer corner,
-   * `axisInsetMm` outboard and `axisAboveLipTopMm` below. At a knuckle the face
+   * material along the ray it sweeps is ONE point: the stop corner,
+   * `axisInsetMm` outboard and `axisAboveStopMm` below. At a knuckle the face
    * reaches only `barrelRadiusMm` — about half a millimetre short — so the stop
    * is not a missing mechanism but a missing half-millimetre of reach.
    */
@@ -520,9 +537,9 @@ export function planHingeLid(params: BinParams): HingePlan {
   const axisCrossMm = crossSpan / 2 + params.wallThickness - axisInsetMm;
 
   // The plate's underside, expressed in the bin's frame; the plate's own
-  // thickness cancels out of it, which is what lets `hingePlateFloorMm` size
-  // the plate from the same number.
+  // thickness cancels out of it.
   const axisAboveLipTopMm = hingeAxisAboveLipTopMm(params);
+  const axisAboveStopMm = hingeAxisAboveStopMm(params);
   const fitMm = resolveHingeFitMm(hinge.fitClearanceMm);
   const relievesLatch = axisAboveLipTopMm > hingeStockAxisAboveLipTopMm() + 1e-6;
   const axisToLatchFaceMm = crossSpan + 2 * params.wallThickness - axisInsetMm;
@@ -535,6 +552,9 @@ export function planHingeLid(params: BinParams): HingePlan {
       rotationDeg: rotationForSide(side),
       axisCrossMm,
       axisAboveLipTopMm,
+      axisAboveStopMm,
+      wallRiseMm: Math.max(0, axisAboveLipTopMm - axisAboveStopMm),
+      raisedWallMm: LID_CORNER_RADIUS - LID_FIT_CLEARANCE - fitMm,
       axisInsetMm,
       trimInboardMm: LID_CORNER_RADIUS - LID_FIT_CLEARANCE - axisInsetMm,
       relievesLatch,
@@ -543,12 +563,10 @@ export function planHingeLid(params: BinParams): HingePlan {
         hinge.catchMode !== 'detent' ||
         !relievesLatch ||
         detentRootSurvives(axisToLatchFaceMm, axisAboveLipTopMm, fitMm),
-      rootDepthBelowLipTopMm: GRIDFINITY_SPEC.LIP_BIG_TAPER,
+      rootDepthBelowStopMm: GRIDFINITY_SPEC.LIP_BIG_TAPER,
       barrelRadiusMm: LID_HINGE_BARREL_RADIUS_MM,
       trimTiltDeg:
-        LID_HINGE_STOP_ANGLE_DEG -
-        90 +
-        (Math.atan2(-axisAboveLipTopMm, axisInsetMm) * 180) / Math.PI,
+        LID_HINGE_STOP_ANGLE_DEG - 90 + (Math.atan2(-axisAboveStopMm, axisInsetMm) * 180) / Math.PI,
       // The corner's ANGLE sets the stop and is already folded into
       // `trimTiltDeg`; its DISTANCE only says how far the lobe has to stick out
       // to touch it, and the plate floor is sized from the same reach.

@@ -49,7 +49,7 @@ import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { BinParams, LidHingeConfig, LidRailSide } from '@/features/bin-designer/types';
 import type { MeshData } from '@/features/generation/bridge/types';
-import type { Shape3D } from 'brepjs';
+import type { Shape3D, ValidSolid } from 'brepjs';
 
 /**
  * Shared-volume floor (mm³).
@@ -405,7 +405,7 @@ describe('hinged lid', () => {
     // here can see: a knuckle welded to the lip and one hanging clear of it
     // bound the same box, carry the same triangles and displace the same
     // volume. The barrel reaches no bin material on its own — the plan's
-    // `rootDepthBelowLipTopMm` has the arithmetic — so this is not a margin
+    // `rootDepthBelowStopMm` has the arithmetic — so this is not a margin
     // being checked, it is the whole joint.
     //
     // The export height asks whether it SURVIVES. The pass that makes a bin
@@ -795,6 +795,76 @@ describe('hinged lid', () => {
       { catchMode: 'none' }
     );
     expect(await taperBand(rimStart)).toBeLessThan((await taperBand(control(rimStart))) / 2);
+  }, 600_000);
+
+  it('closes a tall lid on a raised hinge wall, inside the footprint and lying flat', async () => {
+    // The bin's hinge wall rises with the lid so the stop corner, the lobe
+    // and the plate keep their stock size. Without it the wall stands open up
+    // to the knuckles and the lobes, sized to reach the rim far below, jut out
+    // past the back of the bin.
+    const { box, intersect } = await import('brepjs');
+    const params = tallHingeParams();
+    const { geometry } = planHingeLid(params);
+    if (!geometry) throw new Error('expected hinge geometry');
+    const axis = swingAxis(params, 0, 0);
+    if (!axis) throw new Error('expected an axis');
+    const { bin, lid, dz } = await buildSolids(params);
+    try {
+      const outer = (params.depth * params.gridUnitMm - GRIDFINITY_SPEC.TOLERANCE) / 2;
+      const run = geometry.runs[0];
+      const zLo = binLipTopZ(params) + 0.5;
+      const zHi = axis.z - geometry.barrelRadiusMm - geometry.fitMm - 0.2;
+      const probe = box(run.hi - run.lo, 2.5, zHi - zLo, {
+        at: [(run.lo + run.hi) / 2, outer - 1.25, (zLo + zHi) / 2],
+      });
+      try {
+        const filled = intersect(bin as ValidSolid, probe);
+        if (!filled.ok) throw new Error('expected the wall to fill the probe');
+        try {
+          const share = (await solidVolumeMm3(filled.value)) / (await solidVolumeMm3(probe));
+          expect(share).toBeGreaterThan(0.99);
+        } finally {
+          filled.value.delete();
+        }
+      } finally {
+        probe.delete();
+      }
+
+      expect(await seatedOverlapMm3(bin, lid, dz)).toBeLessThan(CONTACT_FLOOR_MM3);
+      const blocked = await pinObstructionMm3(
+        bin,
+        lid,
+        axis,
+        dz,
+        LID_HINGE_PIN_MM / 2,
+        run.lo,
+        run.hi
+      );
+      expect(blocked).toBeLessThan(CONTACT_FLOOR_MM3);
+    } finally {
+      lid.delete();
+    }
+
+    const hinged = await meshes(params);
+    const plain = await meshes(control(params));
+    const spec = {
+      x: params.width * params.gridUnitMm - GRIDFINITY_SPEC.TOLERANCE,
+      y: params.depth * params.gridUnitMm - GRIDFINITY_SPEC.TOLERANCE,
+    };
+    for (const [what, mesh, relief] of [
+      ['bin', hinged.bin, 0],
+      ['lid', hinged.lid, LID_HINGE_FACE_RELIEF_MM],
+    ] as const) {
+      const bb = boundingBox(mesh.vertices);
+      expect({ what, x: +(bb.maxX - bb.minX).toFixed(3) }).toEqual({ what, x: spec.x });
+      expect({ what, y: +(bb.maxY - bb.minY).toFixed(3) }).toEqual({
+        what,
+        y: +(spec.y - relief).toFixed(3),
+      });
+    }
+    expect(+boundingBox(hinged.lid.vertices).maxZ.toFixed(3)).toBe(
+      +boundingBox(plain.lid.vertices).maxZ.toFixed(3)
+    );
   }, 600_000);
 
   it('stops on every wall, not just the one the frame was written for', async () => {

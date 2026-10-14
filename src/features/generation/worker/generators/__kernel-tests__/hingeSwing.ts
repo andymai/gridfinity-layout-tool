@@ -96,7 +96,7 @@ export async function knuckleRootMm3(binSolid: Shape3D, params: BinParams): Prom
 
   const r = geometry.barrelRadiusMm;
   const lipTop = binLipTopZ(params);
-  const zLo = lipTop - geometry.rootDepthBelowLipTopMm;
+  const zLo = lipTop + geometry.wallRiseMm - geometry.rootDepthBelowStopMm;
   const zHi = lipTop + geometry.axisAboveLipTopMm;
   const len = band.hi - band.lo;
   // Built canonically — band along X, wall at +Y — and rotated onto the chosen

@@ -25,11 +25,13 @@
  * exist. `lidRetentionStage` takes exactly the same pair.
  */
 
-import { cutAll, fuseAll, unwrap } from 'brepjs';
+import { cutAll, drawRoundedRectangle, fuseAll, intersect, unwrap } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
-import type { PipelineContext, PipelineStage } from '../types';
+import type { BinDimensions, PipelineContext, PipelineStage } from '../types';
 import { checkCancelled } from '../../utils/abort';
 import { buildBinHingeParts } from '../../hingeBarrel';
+import { BOX_CORNER_RADIUS, LIP_HEIGHT } from '../../generatorConstants';
+import { hasOverhang, overhangExpansion } from '../../overhang';
 import { collectOrigins } from '../collectOrigins';
 import { FeatureTag } from '../../featureTags';
 import { planHingeLid } from '@/shared/utils/hingeLidPlan';
@@ -75,16 +77,22 @@ export const lidHingeStage: PipelineStage = {
     const offset = alongX ? dim.innerOffsetY : dim.innerOffsetX;
     const outward = geometry.side === 'back' || geometry.side === 'right' ? 1 : -1;
 
-    const { notches, additions, bores } = buildBinHingeParts(geometry, {
-      outerFaceCrossMm: crossSpan / 2 + ctx.params.wallThickness + outward * offset,
-      axisZ: dim.lipTopZ + geometry.axisAboveLipTopMm,
-      rotationDeg: geometry.rotationDeg,
-    });
+    const raw = buildBinHingeParts(
+      geometry,
+      {
+        outerFaceCrossMm: crossSpan / 2 + ctx.params.wallThickness + outward * offset,
+        axisZ: dim.lipTopZ + geometry.axisAboveLipTopMm,
+        rotationDeg: geometry.rotationDeg,
+      },
+      ctx.params.wallThickness
+    );
+    const walls = raw.walls.length > 0 ? clipToFootprint(raw.walls, dim) : [];
+    const { notches, additions, bores } = raw;
 
     // Tag the PARTS, never the result: `setShapeOrigin` replaces a shape's
     // whole face-origin map, so tagging the post-boolean solid would stamp the
     // entire bin — the same trap `slideLidChannelStage` documents.
-    for (const part of [...notches, ...additions, ...bores]) {
+    for (const part of [...walls, ...notches, ...additions, ...bores]) {
       collectOrigins(part, FeatureTag.LID_HINGE, ctx.originToTag);
     }
 
@@ -94,8 +102,13 @@ export const lidHingeStage: PipelineStage = {
     let solid: Shape3D = ctx.solid;
     const scratch: Shape3D[] = [];
     try {
-      // Pockets, then knuckles, then bores — see `BinHingeSolids`. Boring
-      // before the fuse drills through air and leaves the knuckles solid.
+      // Wall, pockets, knuckles, bores — see `BinHingeSolids`. Boring before
+      // the fuse drills through air and leaves the knuckles solid.
+      if (walls.length > 0) {
+        const raised = unwrap(fuseAll([solid, ...walls] as ValidSolid[]));
+        scratch.push(raised);
+        solid = raised;
+      }
       if (notches.length > 0) {
         const pocketed = unwrap(cutAll(solid as ValidSolid, notches as ValidSolid[]));
         scratch.push(pocketed);
@@ -112,7 +125,7 @@ export const lidHingeStage: PipelineStage = {
         solid = drilled;
       }
     } finally {
-      for (const part of [...notches, ...additions, ...bores]) part.delete();
+      for (const part of [...walls, ...notches, ...additions, ...bores]) part.delete();
       for (const s of scratch) {
         if (s !== solid) s.delete();
       }
@@ -122,3 +135,33 @@ export const lidHingeStage: PipelineStage = {
     return { ...ctx, solid };
   },
 };
+
+/**
+ * Trim each raised wall to the bin's outer outline, the same rounded rectangle
+ * the stacking lip is built on, so its ends follow the corners. Consumes the
+ * walls it is given.
+ */
+function clipToFootprint(walls: readonly Shape3D[], dim: BinDimensions): Shape3D[] {
+  const exp = hasOverhang(dim.overhang) ? overhangExpansion(dim.overhang) : null;
+  const zLo = dim.wallTopZ - 2 * LIP_HEIGHT;
+  const zHi = dim.lipTopZ + 1000;
+  const footprint = drawRoundedRectangle(
+    dim.outerW + (exp?.addW ?? 0),
+    dim.outerD + (exp?.addD ?? 0),
+    BOX_CORNER_RADIUS
+  )
+    .translate(exp?.offsetX ?? 0, exp?.offsetY ?? 0)
+    .sketchOnPlane('XY', zLo)
+    .extrude(zHi - zLo);
+  try {
+    return walls.map((wall) => {
+      try {
+        return unwrap(intersect(wall as ValidSolid, footprint as ValidSolid));
+      } finally {
+        wall.delete();
+      }
+    });
+  } finally {
+    footprint.delete();
+  }
+}

@@ -273,6 +273,28 @@ describe('planHingeLid — the axis', () => {
     expect(geometry?.axisAboveLipTopMm).toBeGreaterThan(0);
   });
 
+  it('raises the hinge wall by however far the axis sits above a stock lid', () => {
+    const plan = (over: Partial<BinParams>, extraHeightMm = 0) => {
+      const { geometry } = planHingeLid(
+        params({ ...over, lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm } })
+      );
+      if (!geometry) throw new Error('expected hinge geometry');
+      return geometry;
+    };
+    const stock = plan({});
+    expect(stock.wallRiseMm).toBe(0);
+    expect(stock.axisAboveStopMm).toBe(stock.axisAboveLipTopMm);
+    for (const g of [plan({}, 20), plan({ heightUnitMm: 10 })]) {
+      expect(g.wallRiseMm).toBeCloseTo(g.axisAboveLipTopMm - stock.axisAboveLipTopMm, 9);
+      expect(g.axisAboveStopMm).toBeCloseTo(stock.axisAboveStopMm, 9);
+      expect(g.trimTiltDeg).toBeCloseTo(stock.trimTiltDeg, 9);
+      expect(g.stopRadiusMm).toBeCloseTo(stock.stopRadiusMm, 9);
+    }
+    const short = plan({ heightUnitMm: 6 });
+    expect(short.wallRiseMm).toBe(0);
+    expect(short.axisAboveStopMm).toBe(short.axisAboveLipTopMm);
+  });
+
   it('relieves the latch plug whenever the axis sits above a stock lid, and only then', () => {
     const relieves = (over: Partial<BinParams>, extraHeightMm = 0): boolean | undefined =>
       planHingeLid(params({ ...over, lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm } })).geometry
@@ -316,7 +338,7 @@ describe('planHingeLid — the axis', () => {
     const stock = reach(0);
     expect(stock.reach).toBeLessThan(stock.bound);
     const tall = reach(20);
-    expect(tall.reach).toBeGreaterThan(10 * tall.bound);
+    expect(tall.reach).toBeGreaterThan(tall.bound);
   });
 });
 

@@ -804,16 +804,30 @@ export function hingeStockAxisAboveLipTopMm(): number {
 }
 
 /**
+ * Height (mm) of the hinge axis above the corner the lid stops against: the
+ * top outer corner of the bin's hinge wall.
+ *
+ * Wherever the axis sits higher above the rim than on a stock lid, from extra
+ * height or a taller height unit, the bin's hinge wall rises to make up the
+ * difference, so this never exceeds the stock height. Keeping it there keeps
+ * the stop lobe, the plate floor and the trim plane as small and as steep as
+ * on a stock lid.
+ */
+export function hingeAxisAboveStopMm(params: HingeAxisSource): number {
+  return Math.min(hingeAxisAboveLipTopMm(params), hingeStockAxisAboveLipTopMm());
+}
+
+/**
  * Radius (mm) of the stop lobe, measured from the axis.
  *
- * The lid comes to rest when its trim face meets the bin's lip-top outer
- * corner, `LID_HINGE_AXIS_INSET_MM` outboard of the axis and
- * {@link hingeAxisAboveLipTopMm} below it. The lobe only has to REACH that
+ * The lid comes to rest when its trim face meets the stop corner,
+ * `LID_HINGE_AXIS_INSET_MM` outboard of the axis and
+ * {@link hingeAxisAboveStopMm} below it. The lobe only has to REACH that
  * corner: its angle is the trim plane's business.
  */
 export function hingeStopRadiusMm(params: HingeAxisSource): number {
   return (
-    Math.hypot(LID_HINGE_AXIS_INSET_MM, hingeAxisAboveLipTopMm(params)) + LID_HINGE_STOP_MARGIN_MM
+    Math.hypot(LID_HINGE_AXIS_INSET_MM, hingeAxisAboveStopMm(params)) + LID_HINGE_STOP_MARGIN_MM
   );
 }
 
@@ -822,9 +836,8 @@ export function hingeStopRadiusMm(params: HingeAxisSource): number {
  *
  * The export lays the lid on its top face, so the plate has to be the tallest
  * thing on it: the stop lobe, which points up at rest, has to sit under that
- * face or the plate balances on it and prints on supports. Grows with the
- * extra-height knob, because the axis does and the corner the lobe reaches for
- * does not. Rounded up to the thickness step so the stepper can land on it.
+ * face or the plate balances on it and prints on supports. Rounded up to the
+ * thickness step so the stepper can land on it.
  */
 export function hingePlateFloorMm(params: HingeAxisSource): number {
   const need = hingeStopRadiusMm(params) + LID_HINGE_PLATE_CLEARANCE_MM;

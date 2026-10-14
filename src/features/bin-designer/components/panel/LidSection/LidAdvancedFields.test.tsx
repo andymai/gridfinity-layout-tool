@@ -39,15 +39,13 @@ describe('LidAdvancedFields', () => {
     expect(screen.getByText(/Hinged lids start at 3\.2 mm/)).toBeInTheDocument();
   });
 
-  it('pins the stepper at the floor when extra height lifts it past the persisted maximum', () => {
+  it('keeps the hinge floor where it is when extra height lifts the lid', () => {
     seed({ attachment: 'hinge', extraHeightMm: 20, topThicknessMm: 0.8 });
     render(<Harness />);
     fireEvent.click(screen.getByRole('button', { name: /fine tuning/i }));
     const field = screen.getByLabelText('Lid top plate thickness in millimeters');
-    const min = Number(field.getAttribute('min'));
-    expect(min).toBeGreaterThan(10);
-    expect(Number(field.getAttribute('max'))).toBe(min);
-    expect(field).toHaveValue(min);
+    expect(field).toHaveAttribute('min', '3.2');
+    expect(field).toHaveValue(3.2);
   });
 
   it('shares the hinge floor with a tray, so the floor knob cannot undercut the plate', () => {

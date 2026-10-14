@@ -285,11 +285,9 @@ describe('resolveLidPlateThickness', () => {
       expect(resolveLidPlateThickness(params({ attachment: 'hinge', topThicknessMm: 5 }))).toBe(5);
     });
 
-    it('rises with the extra-height knob, because the axis does', () => {
-      const tall = params({ attachment: 'hinge', extraHeightMm: 3 });
-      expect(hingePlateFloorMm(tall)).toBeGreaterThan(
-        hingePlateFloorMm(params({ attachment: 'hinge' }))
-      );
+    it('holds still as extra height lifts the axis, because the hinge wall rises with it', () => {
+      const tall = params({ attachment: 'hinge', extraHeightMm: 40 });
+      expect(hingePlateFloorMm(tall)).toBe(hingePlateFloorMm(params({ attachment: 'hinge' })));
       expect(resolveLidPlateThickness(tall)).toBe(hingePlateFloorMm(tall));
     });
 
