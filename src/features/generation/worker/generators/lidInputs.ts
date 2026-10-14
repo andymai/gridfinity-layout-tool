@@ -453,7 +453,9 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // a state where the bin skips its matching posts, so the pair couldn't mate.
   const hingePlan = planHingeLid(params).geometry;
   const hingeDetentSide =
-    hingePlan !== null && hingePlan.catchMode === 'detent' ? hingePlan.catchSide : null;
+    hingePlan !== null && hingePlan.catchMode === 'detent' && hingePlan.detentFits
+      ? hingePlan.catchSide
+      : null;
   const hingeMagnetCatch = hingePlan !== null && hingePlan.catchMode === 'magnets';
   const retentionMagnetSide = hingePlan?.catchMode === 'magnets' ? hingePlan.catchSide : null;
   // Magnetic attachment OR a hinged lid's magnet catch. Both put the same

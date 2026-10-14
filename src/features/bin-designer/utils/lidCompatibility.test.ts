@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '../constants';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { BinParams, LidSlideConfig } from '../types';
-import { DEFAULT_LID_SLIDE_CONFIG } from '../types/lid';
+import { DEFAULT_LID_HINGE_CONFIG, DEFAULT_LID_SLIDE_CONFIG } from '../types/lid';
 import type { CellMask } from '@/shared/utils/cellMask';
 import {
   checkLidCompatibility,
@@ -1235,5 +1235,37 @@ describe('checkLidCompatibility — sliding attachment', () => {
     const p = slideParams({ walls: allFourCutouts(50) }, { entrySide: 'front' });
     const issue = checkLidCompatibility(p).find((i) => i.id === 'slideChannelInterrupted');
     expect(issue?.sides).toEqual(['left', 'right']);
+  });
+});
+
+describe('checkLidCompatibility — hinged attachment', () => {
+  const hinged = (
+    depth: number,
+    extraHeightMm: number,
+    catchMode: 'none' | 'detent' | 'magnets'
+  ): BinParams =>
+    withOverrides({
+      width: 2,
+      depth,
+      height: 6,
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        enabled: true,
+        attachment: 'hinge',
+        extraHeightMm,
+        hinge: { ...DEFAULT_LID_HINGE_CONFIG, catchMode },
+      },
+    });
+
+  it('warns when the lid is too tall for its snap rail to stay on', () => {
+    const issues = checkLidCompatibility(hinged(1, 100, 'detent'));
+    expect(issues).toContainEqual({ id: 'hingeSnapTooTall', severity: 'warning' });
+    expect(hasLidBlocker(issues)).toBe(false);
+  });
+
+  it('stays quiet where the snap rail still fits, or there is none', () => {
+    for (const params of [hinged(2, 20, 'detent'), hinged(1, 100, 'none')]) {
+      expect(checkLidCompatibility(params).map((i) => i.id)).not.toContain('hingeSnapTooTall');
+    }
   });
 });

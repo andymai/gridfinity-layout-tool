@@ -1293,6 +1293,7 @@
   "binDesigner.lid.compat.handlesAllSides": "Les poignées sur les quatre côtés atteignent la lèvre — le couvercle n’a aucune paroi à laquelle s’accrocher.",
   "binDesigner.lid.compat.heading": "Notes de compatibilité",
   "binDesigner.lid.compat.hingeStackableTop": "Un couvercle à charnière ne peut pas avoir de dessus empilable. Désactivez le dessus empilable.",
+  "binDesigner.lid.compat.hingeSnapTooTall": "À cette hauteur de couvercle, le clip ne peut pas franchir le bord à l’ouverture : le couvercle est donc construit sans. Choisissez Aimants ou Rien dans « Maintenu fermé par », ou réduisez la hauteur de couvercle supplémentaire.",
   "binDesigner.lid.compat.hingeUnbuildable": "Ce bac ne peut pas recevoir de couvercle à charnière — la paroi de charnière est trop courte, ou des découpes et poignées ne laissent aucune portion de bord continue pour les nœuds.",
   "binDesigner.lid.compat.knifeSlots": "Chaque sortie de couteau entaille la lèvre à l'endroit où la lame quitte le bloc. La glissière de verrouillage sur {sides} contourne chaque entaille et utilise la paroi restante.",
   "binDesigner.lid.compat.openSides": "Une poche à côté ouvert retire toute sa largeur de la lèvre là où elle sort du bin. Le rail à clip sur {sides} contourne chaque ouverture et utilise la paroi restante.",

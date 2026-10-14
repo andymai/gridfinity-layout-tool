@@ -26,7 +26,7 @@
  * in unfilled cells.
  */
 
-import { box, rotate, translate, unwrap, fuse, withScope } from 'brepjs';
+import { unwrap, fuse, withScope } from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { FeatureTag } from './featureTags';
@@ -34,8 +34,7 @@ import { collectOrigins } from './pipeline/collectOrigins';
 import { resolveLidInputs } from './lidInputs';
 import type { LidInputs } from './lidInputs';
 import { buildLidFloor, buildMatingShell } from './lidProfile';
-import { addClickRails, railPlacements } from './lidClickRail';
-import type { RailPlacement } from './lidClickRail';
+import { addClickRails } from './lidClickRail';
 import { addGripRelief } from './lidGripRelief';
 import { buildStackGrid } from './lidStackGrid';
 import { cutMagnetHoles } from './lidMagnets';
@@ -101,14 +100,13 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
     }
 
     // 1c. The hinge's latch-side relief, before the rails and magnet bosses:
-    //     the bosses land on the bin's posts rather than on the lip. The detent
-    //     rail is meant to snap past the lip and hangs from the plug, so the
-    //     plug above it is left whole.
+    //     the bosses land on the bin's posts rather than on the lip, and the
+    //     snap rail is meant to snap past it. The plan drops a rail the relief
+    //     would leave without a plug to hang from (`detentFits`).
     const hinge = planHingeLid(params).geometry;
     const hingeFrame = hinge ? lidHingeFrame(inputs, hinge) : null;
     if (hinge && hingeFrame && hinge.relievesLatch) {
-      const spared = railPlacements(inputs).map((rail) => railKeepout(scope, inputs, rail));
-      body = relieveLatchPlug(scope, body, hinge, hingeFrame, lidLatchWall(inputs, hinge), spared);
+      body = relieveLatchPlug(scope, body, hinge, hingeFrame, lidLatchWall(inputs, hinge));
     }
 
     // 2. Click rails — fuse onto the mating shell from outside (tags rails).
@@ -202,17 +200,7 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
   });
 }
 
-/** A box over a click rail's stretch of its wall, reaching through the plug above it. */
-function railKeepout(scope: DisposalScope, inputs: LidInputs, rail: RailPlacement): Shape3D {
-  const across = 2 * (inputs.cavityInset + 1);
-  // Centred on the plate and taller than any lid, so it spans the whole plug.
-  const block = scope.register(box(rail.length, across, 1000, { at: [0, 0, 0] }));
-  const turned = scope.register(rotate(block, rail.rotationDeg, { axis: [0, 0, 1] }));
-  return scope.register(translate(turned, [rail.centerX, rail.centerY, 0]));
-}
-
 function lidLatchWall(inputs: LidInputs, hinge: HingeGeometry): LatchWall {
-  const across = hinge.alongX ? inputs.lidOuterD : inputs.lidOuterW;
   const along = hinge.alongX ? inputs.lidOuterW : inputs.lidOuterD;
   // The lid's centre along the axis, in the canonical frame the cutter is
   // built in: the overhang offset turned back through the wall's rotation.
@@ -220,7 +208,7 @@ function lidLatchWall(inputs: LidInputs, hinge: HingeGeometry): LatchWall {
   const centre = inputs.outerOffsetX * Math.cos(r) + inputs.outerOffsetY * Math.sin(r);
   const half = along / 2 - inputs.cavityInset;
   return {
-    axisToFaceMm: across - hinge.axisInsetMm,
+    axisToFaceMm: hinge.axisToLatchFaceMm,
     straightLo: centre - half,
     straightHi: centre + half,
     cornerRecessMm: inputs.cavityInset,

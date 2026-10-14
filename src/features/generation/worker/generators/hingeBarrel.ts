@@ -443,16 +443,13 @@ export interface LatchWall {
  * to reach. At the corners the lip curves back toward the axis, so there the
  * radius is taken at the deepest recess; the corners are solid pillars that
  * never engage the lip, so cutting them deeper costs no fit.
- *
- * `spared` are world-frame regions the cut leaves alone.
  */
 export function relieveLatchPlug(
   scope: DisposalScope,
   lid: Shape3D,
   g: HingeGeometry,
   frame: HingeFrame,
-  latch: LatchWall,
-  spared: readonly Shape3D[]
+  latch: LatchWall
 ): Shape3D {
   const straight = latchReliefRadiusMm(latch.axisToFaceMm, g.axisAboveLipTopMm, g.fitMm);
   const corner = latchReliefRadiusMm(
@@ -492,12 +489,10 @@ export function relieveLatchPlug(
   const cutter = scope.register(unwrap(cutAll(cutZone as ValidSolid, keep as ValidSolid[])));
   // Same ownership contract as `applyLidHinge`: the scope frees the body this
   // replaces, never the one it returns.
-  let placed = orient(scope, cutter, frame.rotationDeg);
-  if (spared.length > 0) {
-    placed = scope.register(unwrap(cutAll(placed as ValidSolid, spared as ValidSolid[])));
-  }
   scope.register(lid);
-  return unwrap(cutAll(lid as ValidSolid, [placed] as ValidSolid[]));
+  return unwrap(
+    cutAll(lid as ValidSolid, [orient(scope, cutter, frame.rotationDeg)] as ValidSolid[])
+  );
 }
 
 /**

@@ -283,6 +283,17 @@ describe('planHingeLid — the axis', () => {
     expect(relieves({ heightUnitMm: 6 })).toBe(false);
   });
 
+  it('keeps a snap rail only while the relief leaves a plug to hang it from', () => {
+    const fits = (depth: number, extraHeightMm: number, catchMode: 'none' | 'detent') =>
+      planHingeLid(
+        params({ depth, lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm } }, { catchMode })
+      ).geometry?.detentFits;
+    expect(fits(2, 0, 'detent')).toBe(true);
+    expect(fits(2, 20, 'detent')).toBe(true);
+    expect(fits(1, 100, 'detent')).toBe(false);
+    expect(fits(1, 100, 'none')).toBe(true);
+  });
+
   it('bounds the trim only where its plane would reach past the cavity face', () => {
     // How far inboard the plane runs by the time it reaches the lid's lowest
     // material, the bottom of the mating wall. Inside the bound with no extra

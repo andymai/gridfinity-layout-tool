@@ -1293,6 +1293,7 @@
   "binDesigner.lid.compat.handlesAllSides": "4辺すべてのハンドルがリップに達しています — 蓋を支える壁が残っていません。",
   "binDesigner.lid.compat.heading": "互換性に関する注意点",
   "binDesigner.lid.compat.hingeStackableTop": "ヒンジ付きの蓋には積み重ね対応の天面を付けられません。積み重ね対応の天面をオフにしてください。",
+  "binDesigner.lid.compat.hingeSnapTooTall": "このふたの高さでは、開けるときにスナップが縁を越えられないため、スナップなしで作成されます。「閉じたまま保つ方法」でマグネットかなしを選ぶか、ふたの追加の高さを下げてください。",
   "binDesigner.lid.compat.hingeUnbuildable": "このビンにはヒンジ付きのフタを付けられません。ヒンジ側の壁が短すぎるか、切り欠きや取っ手のせいでナックルを付けられる連続した縁が残っていません。",
   "binDesigner.lid.compat.knifeSlots": "刃がブロックから出る位置で、各ナイフの出口がリップに切り欠きを作ります。{sides}のクリックレールは各切り欠きを迂回し、残った壁を使います。",
   "binDesigner.lid.compat.openSides": "側面が開いたポケットは、bin から出る位置でリップの全幅を取り除きます。{sides} のクリックレールは各開口部を避け、残った壁を使います。",

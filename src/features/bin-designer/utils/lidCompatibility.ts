@@ -117,7 +117,9 @@ export type LidCompatibilityId =
   /** The plan refused this design outright; the message names the reason. */
   | 'hingeUnbuildable'
   /** Knuckles stand proud of the lid's top, so nothing sits level on it. */
-  | 'hingeStackableTop';
+  | 'hingeStackableTop'
+  /** The lid is too tall for its snap rail to clear the rim; it is built without one. */
+  | 'hingeSnapTooTall';
 
 export interface LidCompatibilityIssue {
   readonly id: LidCompatibilityId;
@@ -664,7 +666,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
 
   // 12. Hinged retention.
   if (isHinge) {
-    const { rejection } = planHingeLid(params);
+    const { rejection, geometry } = planHingeLid(params);
     // `disabled` is the resolver saying there is nothing to do, not a fault —
     // and it cannot occur here anyway, since `isHinge` is how we got in.
     if (rejection !== null && rejection !== 'disabled') {
@@ -678,11 +680,12 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
       if (params.lid.stackableTop) {
         issues.push({ id: 'hingeStackableTop', severity: 'blocker' });
       }
-      // Nothing to warn about here any more: `detent` is a click rail on the
-      // wall opposite the axis, `magnets` is the corner-boss geometry filtered
-      // to that same wall, and `none` is a deliberate choice the panel's own
-      // hint already describes. The magnet SIZE limits are checked above,
-      // through the shared `magnetBosses` gate.
+      if (geometry && !geometry.detentFits) {
+        issues.push({ id: 'hingeSnapTooTall', severity: 'warning' });
+      }
+      // `magnets` is the corner-boss geometry filtered to the latch wall, and
+      // its SIZE limits are checked above through the shared `magnetBosses`
+      // gate; `none` is a deliberate choice the panel's own hint describes.
     }
   }
 

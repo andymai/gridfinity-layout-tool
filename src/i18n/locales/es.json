@@ -1293,6 +1293,7 @@
   "binDesigner.lid.compat.handlesAllSides": "Las asas en los cuatro lados alcanzan el labio — la tapa no tiene pared a la que agarrarse.",
   "binDesigner.lid.compat.heading": "Notas de compatibilidad",
   "binDesigner.lid.compat.hingeStackableTop": "Una tapa con bisagra no puede tener parte superior apilable. Desactiva la parte superior apilable.",
+  "binDesigner.lid.compat.hingeSnapTooTall": "Con esta altura de tapa, el clic no puede pasar el borde al abrir, así que la tapa se crea sin él. Elige Imanes o Nada en «Se cierra con», o reduce la altura extra de la tapa.",
   "binDesigner.lid.compat.hingeUnbuildable": "Este cajetín no admite tapa con bisagra: la pared de la bisagra es demasiado corta, o los recortes y las asas no dejan ningún tramo de borde continuo para los nudillos.",
   "binDesigner.lid.compat.knifeSlots": "Cada salida de cuchillo entalla el labio por donde la hoja abandona el bloque. La guía de clic en {sides} rodea cada entalla y aprovecha la pared que queda.",
   "binDesigner.lid.compat.openSides": "Un hueco con lado abierto elimina todo su ancho del labio por donde sale del bin. El riel de clic en {sides} rodea cada abertura y usa la pared restante.",

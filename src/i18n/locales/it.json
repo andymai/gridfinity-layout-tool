@@ -1293,6 +1293,7 @@
   "binDesigner.lid.compat.handlesAllSides": "Le maniglie su tutti e quattro i lati arrivano nel labbro; non resta alcuna parete su cui il coperchio possa fare presa.",
   "binDesigner.lid.compat.heading": "Note di compatibilità",
   "binDesigner.lid.compat.hingeStackableTop": "Un coperchio a cerniera non può avere una sommità impilabile. Disattiva la sommità impilabile.",
+  "binDesigner.lid.compat.hingeSnapTooTall": "Con questa altezza del coperchio lo scatto non riesce a superare il bordo in apertura, quindi il coperchio viene creato senza. Scegli Magneti o Niente in «Si chiude con», oppure riduci l’altezza extra del coperchio.",
   "binDesigner.lid.compat.hingeUnbuildable": "Questo contenitore non può avere un coperchio a cerniera: la parete della cerniera è troppo corta, oppure intagli e maniglie non lasciano alcun tratto di bordo continuo per le maglie.",
   "binDesigner.lid.compat.knifeSlots": "Ogni uscita del coltello intacca il labbro dove la lama esce dal ceppo. La guida a incastro su {sides} aggira ogni intaglio e sfrutta la parete che resta.",
   "binDesigner.lid.compat.openSides": "Una tasca con lato aperto toglie tutta la sua larghezza dal labbro dove esce dal bin. La guida a scatto su {sides} aggira ogni apertura e usa la parete rimasta.",

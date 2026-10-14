@@ -725,28 +725,68 @@ describe('hinged lid', () => {
     }
   }, 900_000);
 
-  it("keeps a tall lid's detent rail welded to the plug the relief cuts back", async () => {
-    // The rail hangs from the latch-side plug. Where the axis sits far above
-    // the rim the relief would take the whole plug, and the export drops a
-    // rail left floating as a stray shell.
+  it('builds a snap catch only where the relief leaves its rail a plug to hang from', async () => {
+    // The rail hangs from the latch-side plug. Where the axis sits far enough
+    // above the rim, the relief takes the plug from under it, and the plan
+    // drops the rail rather than leave a loose piece for the export to discard.
     const { getSolids } = await import('brepjs');
     const { buildLid } = await import('./lidBuilder');
-    const params = hingeParams(
-      { height: 8, depth: 1, lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm: 100 } },
-      { catchMode: 'detent' }
-    );
-    const lid = buildLid(params);
-    const bare = buildLid({
-      ...params,
-      lid: { ...params.lid, hinge: { ...DEFAULT_LID_HINGE_CONFIG, catchMode: 'none' } },
+    const withCatch = (p: BinParams, catchMode: 'none' | 'detent'): BinParams => ({
+      ...p,
+      lid: { ...p.lid, hinge: { ...DEFAULT_LID_HINGE_CONFIG, catchMode } },
     });
-    try {
-      expect(getSolids(lid)).toHaveLength(1);
-      expect(await solidVolumeMm3(lid)).toBeGreaterThan(await solidVolumeMm3(bare));
-    } finally {
-      lid.delete();
-      bare.delete();
-    }
+    const volumes = async (p: BinParams): Promise<{ snap: number; bare: number }> => {
+      const snap = buildLid(withCatch(p, 'detent'));
+      const bare = buildLid(withCatch(p, 'none'));
+      try {
+        expect(getSolids(snap)).toHaveLength(1);
+        return { snap: await solidVolumeMm3(snap), bare: await solidVolumeMm3(bare) };
+      } finally {
+        snap.delete();
+        bare.delete();
+      }
+    };
+    const fits = await volumes(tallHingeParams());
+    expect(fits.snap).toBeGreaterThan(fits.bare + CONTACT_FLOOR_MM3);
+    const tooTall = await volumes(
+      hingeParams({ height: 8, depth: 1, lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm: 100 } })
+    );
+    expect(Math.abs(tooTall.snap - tooTall.bare)).toBeLessThan(CONTACT_FLOOR_MM3);
+  }, 600_000);
+
+  it('keeps the latch plug seated on the taper unless the cut has to start at the rim', async () => {
+    // The relief starts below the taper's foot while the taper face lifts off
+    // the lip faster than it moves out, so the lid still seats on it. Measured
+    // as the lid inside the lip's taper band on the latch wall, against the
+    // same lid with no hinge.
+    const { box } = await import('brepjs');
+    const { buildLid } = await import('./lidBuilder');
+    const taperBand = async (p: BinParams): Promise<number> => {
+      const outer = (p.depth * p.gridUnitMm - GRIDFINITY_SPEC.TOLERANCE) / 2;
+      const half = (p.width * p.gridUnitMm - GRIDFINITY_SPEC.TOLERANCE) / 2 - 2 * LID_CORNER_RADIUS;
+      const top = binLipTopZ(p);
+      const band = GRIDFINITY_SPEC.LIP_BIG_TAPER;
+      const probe = box(2 * half, band, band - 0.1, {
+        at: [0, -outer + band / 2, top - band / 2],
+      });
+      const lid = buildLid(p);
+      try {
+        return await seatedOverlapMm3(probe, lid, lidZOffset(p));
+      } finally {
+        lid.delete();
+        probe.delete();
+      }
+    };
+    const footStart = tallHingeParams();
+    const kept = await taperBand(footStart);
+    expect(kept).toBeGreaterThan(50);
+    expect(Math.abs(kept - (await taperBand(control(footStart))))).toBeLessThan(CONTACT_FLOOR_MM3);
+
+    const rimStart = hingeParams(
+      { height: 8, depth: 1, lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm: 50 } },
+      { catchMode: 'none' }
+    );
+    expect(await taperBand(rimStart)).toBeLessThan((await taperBand(control(rimStart))) / 2);
   }, 600_000);
 
   it('stops on every wall, not just the one the frame was written for', async () => {

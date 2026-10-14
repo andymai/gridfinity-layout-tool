@@ -1293,6 +1293,7 @@
   "binDesigner.lid.compat.handlesAllSides": "Griffe an allen vier Seiten reichen in den Stapelrand — der Deckel hat keine Wand zum Greifen.",
   "binDesigner.lid.compat.heading": "Kompatibilitätshinweise",
   "binDesigner.lid.compat.hingeStackableTop": "Ein Klappdeckel kann keine stapelbare Oberseite tragen. Schalten Sie die stapelbare Oberseite ab.",
+  "binDesigner.lid.compat.hingeSnapTooTall": "Bei dieser Deckelhöhe kommt die Rastung beim Öffnen nicht am Rand vorbei, daher wird der Deckel ohne sie gebaut. Wählen Sie unter „Hält zu durch“ Magnete oder Nichts, oder verringern Sie die zusätzliche Deckelhöhe.",
   "binDesigner.lid.compat.hingeUnbuildable": "Diese Box kann keinen Klappdeckel aufnehmen — die Scharnierwand ist zu kurz, oder Ausschnitte und Griffe lassen keinen durchgehenden Randabschnitt für die Scharnierhülsen übrig.",
   "binDesigner.lid.compat.knifeSlots": "Jeder Messeraustritt kerbt den Stapelrand dort ein, wo die Klinge den Block verlässt. Die Klemmleiste an {sides} führt um jede Kerbe herum und nutzt die verbleibende Wand.",
   "binDesigner.lid.compat.openSides": "Eine seitlich offene Tasche nimmt ihre gesamte Breite aus der Lippe, wo sie den Bin verlässt. Die Rastschiene an {sides} umgeht jede Öffnung und nutzt die verbleibende Wand.",

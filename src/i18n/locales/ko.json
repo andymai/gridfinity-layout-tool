@@ -1293,6 +1293,7 @@
   "binDesigner.lid.compat.handlesAllSides": "네 면 모두의 손잡이가 립까지 뻗습니다 — 뚜껑이 잡을 벽이 남지 않습니다.",
   "binDesigner.lid.compat.heading": "호환성 참고",
   "binDesigner.lid.compat.hingeStackableTop": "경첩 뚜껑에는 쌓기용 상단을 붙일 수 없습니다. 쌓기용 상단을 끄세요.",
+  "binDesigner.lid.compat.hingeSnapTooTall": "이 뚜껑 높이에서는 열 때 스냅이 테두리를 넘어가지 못해 스냅 없이 만들어집니다. ‘닫힘 유지’에서 자석이나 없음을 고르거나 추가 뚜껑 높이를 낮추세요.",
   "binDesigner.lid.compat.hingeUnbuildable": "이 통에는 경첩 뚜껑을 달 수 없습니다. 경첩 쪽 벽이 너무 짧거나, 컷아웃과 손잡이 때문에 너클을 붙일 연속된 테두리가 남지 않았습니다.",
   "binDesigner.lid.compat.knifeSlots": "칼날이 블록을 빠져나가는 자리에서 각 칼 출구가 립을 파냅니다. {sides}의 딸깍 레일은 모든 홈을 돌아가고 남은 벽을 사용합니다.",
   "binDesigner.lid.compat.openSides": "측면이 열린 포켓은 bin을 빠져나가는 위치에서 립의 전체 폭을 제거합니다. {sides}의 클릭 레일은 각 개구부를 피하고 남은 벽을 사용합니다.",
