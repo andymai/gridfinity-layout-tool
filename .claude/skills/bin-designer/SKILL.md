@@ -67,12 +67,13 @@ and the Print icon's warning dot from `needsSplit`.
 
 ### Panel idioms
 
-Each kind of control has one primitive, enforced by `panelIdioms.test.ts`: an
-on/off setting is a `FeatureToggle`, a choice of wall a `SideSelector`
-(`mode: 'single'` for one wall), a mode that opens its own controls a
-`ModeTiles` group, and a fold a `MoreDisclosure` (pass `open`/`onOpenChange`
-when a jump must open it). Captions are `FieldLabel`; group headings are
-`SubHeader`, unique within a page.
+Each kind of control has one primitive: an on/off setting is a
+`FeatureToggle`, a choice of wall a `SideSelector` (`mode: 'single'` for one
+wall), a mode that opens its own controls a `ModeTiles` group, and a fold a
+`MoreDisclosure` (pass `open`/`onOpenChange` when a jump must open it).
+`panelIdioms.test.ts` holds the toggles, wall pickers and folds to theirs; the
+rest is review. Captions are `FieldLabel`; group headings are `SubHeader`,
+unique within a page.
 
 Inline prose is one line, at most 90 characters (`panelCopyLength.test.ts`).
 An evergreen explanation goes behind an info dot (`info` on `Hint`,
