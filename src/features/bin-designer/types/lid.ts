@@ -796,6 +796,14 @@ export function hingeAxisAboveLipTopMm(params: HingeAxisSource): number {
 }
 
 /**
+ * Axis height (mm) above the lip top on a stock hinged lid: no extra height
+ * and the standard height unit.
+ */
+export function hingeStockAxisAboveLipTopMm(): number {
+  return -LID_TOP_THICKNESS_BASE - lidAnchorZ(GRIDFINITY_SPEC.HEIGHT_UNIT, LID_FIT_CLEARANCE);
+}
+
+/**
  * Radius (mm) of the stop lobe, measured from the axis.
  *
  * The lid comes to rest when its trim face meets the bin's lip-top outer

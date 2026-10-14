@@ -608,9 +608,9 @@ describe('hinged lid', () => {
 
   it("keeps a tall lid's side walls whole inboard of the hinge wall", async () => {
     // Extra height drops the stop corner far below the axis, which tilts the
-    // trim plane toward flat; unbounded, it took a wedge ~50mm long out of both
-    // side walls. The probe is everything inboard of the lid's cavity face,
-    // above the rim and below the barrels, against the same lid with no hinge.
+    // trim plane toward flat, so unbounded it carves a wedge out of both side
+    // walls. The probe is everything inboard of the lid's cavity face, above the
+    // rim and below the barrels, against the same lid with no hinge.
     const { box } = await import('brepjs');
     const { buildLid } = await import('./lidBuilder');
     const params = tallHingeParams();
@@ -682,20 +682,70 @@ describe('hinged lid', () => {
     // nearly as fast as it rises and crosses the lip's vertical face within
     // the first two degrees. Sampled finely here because the sweeps above
     // start at 2°, past the whole event. A one-unit-deep bin is the worst
-    // case: its latch wall is closest to the axis.
-    for (const depth of [2, 1]) {
-      const params = { ...tallHingeParams(), depth };
+    // case: its latch wall is closest to the axis, and with 50mm of extra
+    // height the axis sits higher above the rim than that, so the cut starts
+    // at the rim. A taller height unit raises the axis the same way extra
+    // height does.
+    const over = { enabled: true, left: 0, right: 2, front: 0, back: 3 };
+    const cases: ReadonlyArray<readonly [string, BinParams]> = [
+      ['2 deep', { ...tallHingeParams(), depth: 2 }],
+      ['1 deep', { ...tallHingeParams(), depth: 1 }],
+      [
+        '1 deep, 50mm',
+        hingeParams(
+          { height: 8, depth: 1, lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm: 50 } },
+          { catchMode: 'none' }
+        ),
+      ],
+      ['10mm unit', hingeParams({ heightUnitMm: 10, height: 6 }, { catchMode: 'none' })],
+      ...(['front', 'left', 'right'] as const).map(
+        (side) =>
+          [
+            `${side}, overhung`,
+            hingeParams(
+              { height: 8, overhang: over, lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm: 20 } },
+              { side, catchMode: 'none' }
+            ),
+          ] as const
+      ),
+    ];
+    for (const [name, params] of cases) {
       const { bin, lid, dz } = await buildSolids(params);
-      const axis = swingAxis(params, 0, 0);
+      const shift = overhangExpansion(resolveOverhang(params.overhang));
+      const axis = swingAxis(params, shift.offsetX, shift.offsetY);
       if (!axis) throw new Error('expected an axis');
       try {
         const worst = (
           await sweepSwing(bin, lid, axis, dz, [0.25, 0.5, 0.75, 1, 1.5, 2, 3])
         ).reduce((a, b) => (b.mm3 > a.mm3 ? b : a));
-        expect(worst.mm3, `depth ${depth}`).toBeLessThan(CORNER_CONTACT_FLOOR_MM3);
+        expect(worst.mm3, name).toBeLessThan(CORNER_CONTACT_FLOOR_MM3);
       } finally {
         lid.delete();
       }
+    }
+  }, 900_000);
+
+  it("keeps a tall lid's detent rail welded to the plug the relief cuts back", async () => {
+    // The rail hangs from the latch-side plug. Where the axis sits far above
+    // the rim the relief would take the whole plug, and the export drops a
+    // rail left floating as a stray shell.
+    const { getSolids } = await import('brepjs');
+    const { buildLid } = await import('./lidBuilder');
+    const params = hingeParams(
+      { height: 8, depth: 1, lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm: 100 } },
+      { catchMode: 'detent' }
+    );
+    const lid = buildLid(params);
+    const bare = buildLid({
+      ...params,
+      lid: { ...params.lid, hinge: { ...DEFAULT_LID_HINGE_CONFIG, catchMode: 'none' } },
+    });
+    try {
+      expect(getSolids(lid)).toHaveLength(1);
+      expect(await solidVolumeMm3(lid)).toBeGreaterThan(await solidVolumeMm3(bare));
+    } finally {
+      lid.delete();
+      bare.delete();
     }
   }, 600_000);
 

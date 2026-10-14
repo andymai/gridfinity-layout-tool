@@ -138,6 +138,7 @@ import {
   LID_HINGE_STOP_SECTOR_DEG,
   hingeAxisAboveLipTopMm,
   hingeOppositeSide,
+  hingeStockAxisAboveLipTopMm,
   hingeStopRadiusMm,
   isHingeLid,
   resolveLidHinge,
@@ -256,6 +257,14 @@ export interface HingeGeometry {
    * the plane never reaches this far.
    */
   readonly trimInboardMm: number;
+  /**
+   * Whether the lid's latch-side plug is cut back to
+   * {@link latchReliefRadiusMm}: whenever the axis sits higher above the rim
+   * than on a stock lid, from extra height or a taller height unit. A stock
+   * lid's plug brushes the lip by about a tenth of a millimetre, the order of
+   * its own friction fit, and keeps its exact geometry.
+   */
+  readonly relievesLatch: boolean;
   /**
    * Depth (mm) below the lip top that a bin knuckle's root reaches for.
    *
@@ -517,6 +526,7 @@ export function planHingeLid(params: BinParams): HingePlan {
       axisAboveLipTopMm,
       axisInsetMm,
       trimInboardMm: LID_CORNER_RADIUS - LID_FIT_CLEARANCE - axisInsetMm,
+      relievesLatch: axisAboveLipTopMm > hingeStockAxisAboveLipTopMm() + 1e-6,
       rootDepthBelowLipTopMm: GRIDFINITY_SPEC.LIP_BIG_TAPER,
       barrelRadiusMm: LID_HINGE_BARREL_RADIUS_MM,
       trimTiltDeg:

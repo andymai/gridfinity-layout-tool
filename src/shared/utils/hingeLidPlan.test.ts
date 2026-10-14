@@ -273,6 +273,16 @@ describe('planHingeLid — the axis', () => {
     expect(geometry?.axisAboveLipTopMm).toBeGreaterThan(0);
   });
 
+  it('relieves the latch plug whenever the axis sits above a stock lid, and only then', () => {
+    const relieves = (over: Partial<BinParams>, extraHeightMm = 0): boolean | undefined =>
+      planHingeLid(params({ ...over, lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm } })).geometry
+        ?.relievesLatch;
+    expect(relieves({})).toBe(false);
+    expect(relieves({}, 1)).toBe(true);
+    expect(relieves({ heightUnitMm: 10 })).toBe(true);
+    expect(relieves({ heightUnitMm: 6 })).toBe(false);
+  });
+
   it('bounds the trim only where its plane would reach past the cavity face', () => {
     // How far inboard the plane runs by the time it reaches the lid's lowest
     // material, the bottom of the mating wall. Inside the bound with no extra
