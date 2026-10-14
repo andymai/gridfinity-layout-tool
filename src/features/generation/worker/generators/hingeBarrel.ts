@@ -326,10 +326,20 @@ function halfSpaceThroughAxis(
   return scope.register(translate(prism, [lo - COPLANAR_MARGIN, 0, 0]));
 }
 
-/** Apply the canonical→chosen-wall rotation, if there is one. */
-function orient(scope: DisposalScope, shape: Shape3D, rotationDeg: number): Shape3D {
-  if (rotationDeg === 0) return shape;
-  return scope.register(rotate(shape, rotationDeg, { axis: [0, 0, 1] }));
+/**
+ * Carry a canonical solid onto the chosen wall: along the axis to the cavity's
+ * centre, then through the wall's rotation.
+ */
+function orient(
+  scope: DisposalScope,
+  shape: Shape3D,
+  g: HingeGeometry,
+  frame: HingeFrame
+): Shape3D {
+  const shifted =
+    g.alongOffsetMm === 0 ? shape : scope.register(translate(shape, [g.alongOffsetMm, 0, 0]));
+  if (frame.rotationDeg === 0) return shifted;
+  return scope.register(rotate(shifted, frame.rotationDeg, { axis: [0, 0, 1] }));
 }
 
 /**
@@ -414,7 +424,7 @@ export function buildBinHingeParts(
     // Cloned out of the scope: it releases every intermediate when it closes,
     // and these have to outlive it.
     const put = (built: Shape3D, into: Shape3D[]): void => {
-      into.push(unwrap(clone(orient(scope, built, frame.rotationDeg))));
+      into.push(unwrap(clone(orient(scope, built, g, frame))));
     };
 
     for (const run of g.runs) {
@@ -551,9 +561,7 @@ export function relieveLatchPlug(
   // Same ownership contract as `applyLidHinge`: the scope frees the body this
   // replaces, never the one it returns.
   scope.register(lid);
-  return unwrap(
-    cutAll(lid as ValidSolid, [orient(scope, cutter, frame.rotationDeg)] as ValidSolid[])
-  );
+  return unwrap(cutAll(lid as ValidSolid, [orient(scope, cutter, g, frame)] as ValidSolid[]));
 }
 
 /**
@@ -575,11 +583,9 @@ export function applyLidHinge(
   const bores: Shape3D[] = [];
 
   for (const run of g.runs) {
-    cutters.push(
-      orient(scope, trimHalfSpace(scope, g, frame, run.trimLo, run.trimHi), frame.rotationDeg)
-    );
+    cutters.push(orient(scope, trimHalfSpace(scope, g, frame, run.trimLo, run.trimHi), g, frame));
     for (const cutter of slotCutters(scope, g, frame, run, 'bin')) {
-      cutters.push(orient(scope, cutter, frame.rotationDeg));
+      cutters.push(orient(scope, cutter, g, frame));
     }
     for (const [lo, hi] of bandsFor(run, 'lid')) {
       const knuckle = knuckleSolid(scope, g, frame, lo, hi);
@@ -588,11 +594,12 @@ export function applyLidHinge(
         orient(
           scope,
           scope.register(unwrap(fuse(knuckle as ValidSolid, lobe as ValidSolid))),
-          frame.rotationDeg
+          g,
+          frame
         )
       );
     }
-    bores.push(...boresFor(scope, g, frame, run).map((b) => orient(scope, b, frame.rotationDeg)));
+    bores.push(...boresFor(scope, g, frame, run).map((b) => orient(scope, b, g, frame)));
   }
 
   // The trim reaches `run.trimLo/trimHi`, not `run.lo/hi`: those only bound

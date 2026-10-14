@@ -1294,6 +1294,7 @@
   "binDesigner.lid.compat.heading": "Notas de compatibilidade",
   "binDesigner.lid.compat.hingeStackableTop": "Uma tampa com dobradiça não pode ter topo empilhável. Desligue o topo empilhável.",
   "binDesigner.lid.compat.hingeSnapTooTall": "Com esta altura de tampa, o encaixe não passa pela borda ao abrir, então a tampa é gerada sem ele. Escolha Ímãs ou Nada em “Fecha com” ou reduza a altura extra da tampa.",
+  "binDesigner.lid.compat.hingeGripOnHinge": "Uma pega na parede da dobradiça não ajuda a levantar uma tampa com dobradiça, que só abre pela parede oposta. Mova a pega para essa parede.",
   "binDesigner.lid.compat.hingeUnbuildable": "Esta caixa não aceita tampa com dobradiça — a parede da dobradiça é curta demais, ou recortes e puxadores não deixam nenhum trecho contínuo de borda para os elos.",
   "binDesigner.lid.compat.knifeSlots": "Cada saída de faca entalha o lábio onde a lâmina deixa o bloco. A guia de clique em {sides} contorna cada entalhe e aproveita a parede que sobra.",
   "binDesigner.lid.compat.openSides": "Um rebaixo com lado aberto remove toda a sua largura do lábio onde sai do bin. O trilho de encaixe em {sides} contorna cada abertura e usa a parede restante.",

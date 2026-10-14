@@ -202,10 +202,12 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
 
 function lidLatchWall(inputs: LidInputs, hinge: HingeGeometry): LatchWall {
   const along = hinge.alongX ? inputs.lidOuterW : inputs.lidOuterD;
-  // The lid's centre along the axis, in the canonical frame the cutter is
-  // built in: the overhang offset turned back through the wall's rotation.
+  // The lid's centre along the axis, relative to the cavity's centre the
+  // cutter is shifted to: the overhang offset turned back through the wall's
+  // rotation, less the plan's own shift.
   const r = (hinge.rotationDeg * Math.PI) / 180;
-  const centre = inputs.outerOffsetX * Math.cos(r) + inputs.outerOffsetY * Math.sin(r);
+  const centre =
+    inputs.outerOffsetX * Math.cos(r) + inputs.outerOffsetY * Math.sin(r) - hinge.alongOffsetMm;
   const half = along / 2 - inputs.cavityInset;
   return {
     axisToFaceMm: hinge.axisToLatchFaceMm,

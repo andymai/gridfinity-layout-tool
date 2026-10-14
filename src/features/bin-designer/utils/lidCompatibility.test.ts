@@ -1263,6 +1263,24 @@ describe('checkLidCompatibility — hinged attachment', () => {
     expect(hasLidBlocker(issues)).toBe(false);
   });
 
+  it('warns about a grip on the hinge wall, which never lifts', () => {
+    const base = hinged(2, 0, 'none');
+    const gripOn = (back: boolean, front: boolean): BinParams => ({
+      ...base,
+      lid: {
+        ...base.lid,
+        grip: {
+          ...base.lid.grip,
+          mode: 'scallop',
+          sides: { front, back, left: false, right: false },
+        },
+      },
+    });
+    const ids = (p: BinParams) => checkLidCompatibility(p).map((i) => i.id);
+    expect(ids(gripOn(true, false))).toContain('hingeGripOnHinge');
+    expect(ids(gripOn(false, true))).not.toContain('hingeGripOnHinge');
+  });
+
   it('stays quiet where the snap rail still fits, or there is none', () => {
     for (const params of [hinged(2, 20, 'detent'), hinged(1, 100, 'none')]) {
       expect(checkLidCompatibility(params).map((i) => i.id)).not.toContain('hingeSnapTooTall');

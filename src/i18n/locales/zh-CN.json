@@ -1294,6 +1294,7 @@
   "binDesigner.lid.compat.heading": "兼容性说明",
   "binDesigner.lid.compat.hingeStackableTop": "铰链盖不能带可堆叠顶面。请关闭可堆叠顶面。",
   "binDesigner.lid.compat.hingeSnapTooTall": "在这个盖子高度下，卡扣在开盖时无法越过边沿，因此盖子不带卡扣。请在“扣合方式”中选择磁铁或无，或降低额外盖子高度。",
+  "binDesigner.lid.compat.hingeGripOnHinge": "铰链一侧侧壁上的盖子抓手无法帮助掀起铰链盖，因为铰链盖只从对面一侧打开。请把抓手移到那一侧。",
   "binDesigner.lid.compat.hingeUnbuildable": "这个收纳盒装不了合页盖——合页那面墙太短，或者开口和把手没有留下可供合页节焊接的连续边沿。",
   "binDesigner.lid.compat.knifeSlots": "每个出刀口都会在刀身离开刀架处切出唇边缺口。{sides} 上的卡扣导轨会绕开每个缺口，并利用剩余的壁。",
   "binDesigner.lid.compat.openSides": "带开口侧的凹槽会在离开 bin 的位置移除整段唇边。{sides} 上的卡扣轨会绕开每个开口，仅使用剩余的壁面。",

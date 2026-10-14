@@ -86,22 +86,24 @@ export const lidHingeStage: PipelineStage = {
       },
       ctx.params.wallThickness
     );
-    const walls = raw.walls.length > 0 ? clipToFootprint(raw.walls, dim) : [];
     const { notches, additions, bores } = raw;
-
-    // Tag the PARTS, never the result: `setShapeOrigin` replaces a shape's
-    // whole face-origin map, so tagging the post-boolean solid would stamp the
-    // entire bin — the same trap `slideLidChannelStage` documents.
-    for (const part of [...walls, ...notches, ...additions, ...bores]) {
-      collectOrigins(part, FeatureTag.LID_HINGE, ctx.originToTag);
-    }
 
     // This stage runs outside a DisposalScope, so every intermediate has to be
     // freed by hand or it leaks on each regeneration — and the designer
     // regenerates on every parameter change.
     let solid: Shape3D = ctx.solid;
+    let walls: Shape3D[] = [];
     const scratch: Shape3D[] = [];
     try {
+      walls = raw.walls.length > 0 ? clipToFootprint(raw.walls, dim) : [];
+
+      // Tag the PARTS, never the result: `setShapeOrigin` replaces a shape's
+      // whole face-origin map, so tagging the post-boolean solid would stamp the
+      // entire bin — the same trap `slideLidChannelStage` documents.
+      for (const part of [...walls, ...notches, ...additions, ...bores]) {
+        collectOrigins(part, FeatureTag.LID_HINGE, ctx.originToTag);
+      }
+
       // Wall, pockets, knuckles, bores — see `BinHingeSolids`. Boring before
       // the fuse drills through air and leaves the knuckles solid.
       if (walls.length > 0) {
@@ -125,7 +127,9 @@ export const lidHingeStage: PipelineStage = {
         solid = drilled;
       }
     } finally {
-      for (const part of [...walls, ...notches, ...additions, ...bores]) part.delete();
+      for (const part of [...raw.walls, ...walls, ...notches, ...additions, ...bores]) {
+        part.delete();
+      }
       for (const s of scratch) {
         if (s !== solid) s.delete();
       }
@@ -138,8 +142,8 @@ export const lidHingeStage: PipelineStage = {
 
 /**
  * Trim each raised wall to the bin's outer outline, the same rounded rectangle
- * the stacking lip is built on, so its ends follow the corners. Consumes the
- * walls it is given.
+ * the stacking lip is built on, so its ends follow the corners. The caller
+ * keeps ownership of the walls it passes in.
  */
 function clipToFootprint(walls: readonly Shape3D[], dim: BinDimensions): Shape3D[] {
   const exp = hasOverhang(dim.overhang) ? overhangExpansion(dim.overhang) : null;
@@ -153,14 +157,15 @@ function clipToFootprint(walls: readonly Shape3D[], dim: BinDimensions): Shape3D
     .translate(exp?.offsetX ?? 0, exp?.offsetY ?? 0)
     .sketchOnPlane('XY', zLo)
     .extrude(zHi - zLo);
+  const clipped: Shape3D[] = [];
   try {
-    return walls.map((wall) => {
-      try {
-        return unwrap(intersect(wall as ValidSolid, footprint as ValidSolid));
-      } finally {
-        wall.delete();
-      }
-    });
+    for (const wall of walls) {
+      clipped.push(unwrap(intersect(wall as ValidSolid, footprint as ValidSolid)));
+    }
+    return clipped;
+  } catch (error) {
+    for (const piece of clipped) piece.delete();
+    throw error;
   } finally {
     footprint.delete();
   }

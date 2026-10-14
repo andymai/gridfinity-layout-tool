@@ -54,6 +54,7 @@ import {
 import type { BinParams, ScoopSide } from '../types';
 import { isUndersideRelief } from '../types/base';
 import {
+  hasLidGrip,
   isHingeLid,
   LID_CLICK_RAIL_BAND_BELOW_WALL_TOP,
   LID_MAGNET_LIP_CLEARANCE,
@@ -119,7 +120,9 @@ export type LidCompatibilityId =
   /** Knuckles stand proud of the lid's top, so nothing sits level on it. */
   | 'hingeStackableTop'
   /** The lid is too tall for its snap rail to clear the rim; it is built without one. */
-  | 'hingeSnapTooTall';
+  | 'hingeSnapTooTall'
+  /** A lid grip sits on the hinge wall, which never lifts. */
+  | 'hingeGripOnHinge';
 
 export interface LidCompatibilityIssue {
   readonly id: LidCompatibilityId;
@@ -682,6 +685,9 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
       }
       if (geometry && !geometry.detentFits) {
         issues.push({ id: 'hingeSnapTooTall', severity: 'warning' });
+      }
+      if (geometry && hasLidGrip(params) && params.lid.grip.sides[geometry.side]) {
+        issues.push({ id: 'hingeGripOnHinge', severity: 'warning' });
       }
       // `magnets` is the corner-boss geometry filtered to the latch wall, and
       // its SIZE limits are checked above through the shared `magnetBosses`

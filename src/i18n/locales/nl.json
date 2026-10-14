@@ -1294,6 +1294,7 @@
   "binDesigner.lid.compat.heading": "Compatibiliteitsnotities",
   "binDesigner.lid.compat.hingeStackableTop": "Een scharnierdeksel kan geen stapelbare bovenkant hebben. Zet de stapelbare bovenkant uit.",
   "binDesigner.lid.compat.hingeSnapTooTall": "Bij deze dekselhoogte komt de klik bij het openen niet over de rand, dus wordt het deksel zonder klik gemaakt. Kies Magneten of Niets bij ‘Blijft dicht met’, of verlaag de extra dekselhoogte.",
+  "binDesigner.lid.compat.hingeGripOnHinge": "Een dekselgreep op de scharnierwand helpt niet om een scharnierdeksel op te tillen, dat alleen aan de tegenoverliggende wand opengaat. Verplaats de greep naar die wand.",
   "binDesigner.lid.compat.hingeUnbuildable": "Deze bak kan geen scharnierend deksel dragen — de scharnierwand is te kort, of uitsparingen en handgrepen laten geen aaneengesloten stuk rand over voor de scharnieroren.",
   "binDesigner.lid.compat.knifeSlots": "Elke mesuitgang kerft de stapelrand in waar het lemmet het blok verlaat. De kliklat op {sides} loopt om elke kerf heen en gebruikt de wand die overblijft.",
   "binDesigner.lid.compat.openSides": "Een uitsparing met open zijde haalt zijn volledige breedte uit de lip waar hij de bin verlaat. De kliklijst op {sides} gaat om elke opening heen en gebruikt de resterende wand.",

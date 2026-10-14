@@ -2389,6 +2389,8 @@ const en: Record<string, string> = {
     'A hinged lid can’t carry a stackable top. Turn off the stackable top.',
   'binDesigner.lid.compat.hingeSnapTooTall':
     'At this lid height the snap catch can’t clear the rim as the lid opens, so the lid is built without it. Pick Magnets or Nothing under “Holds shut with”, or lower the extra lid height.',
+  'binDesigner.lid.compat.hingeGripOnHinge':
+    'A lid grip on the hinge wall can’t help lift a hinged lid, which only opens at the opposite wall. Move the grip to that wall.',
   'binDesigner.lid.compat.fix.hingeStackableTop': 'turn off the stackable top',
   'binDesigner.lid.compat.fix.hingeUnbuildable':
     'free up the hinge wall or pick another attachment',

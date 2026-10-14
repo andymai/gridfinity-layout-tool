@@ -1294,6 +1294,7 @@
   "binDesigner.lid.compat.heading": "Kompatibilitetsanmärkningar",
   "binDesigner.lid.compat.hingeStackableTop": "Ett gångjärnslock kan inte ha en stapelbar ovansida. Stäng av den stapelbara ovansidan.",
   "binDesigner.lid.compat.hingeSnapTooTall": "Med den här lockhöjden kommer snäppet inte förbi kanten när locket öppnas, så locket byggs utan det. Välj Magneter eller Ingenting under ”Hålls stängt av”, eller sänk den extra lockhöjden.",
+  "binDesigner.lid.compat.hingeGripOnHinge": "Ett lockgrepp på gångjärnsväggen hjälper inte till att lyfta ett gångjärnslock, som bara öppnas vid motsatt vägg. Flytta greppet till den väggen.",
   "binDesigner.lid.compat.hingeUnbuildable": "Den här lådan kan inte få ett gångjärnslock — gångjärnsväggen är för kort, eller så lämnar urtag och handtag ingen obruten kantsträcka för öglorna.",
   "binDesigner.lid.compat.knifeSlots": "Varje knivöppning skär ett jack i läppen där bladet lämnar blocket. Klickskenan på {sides} går runt varje jack och tar den vägg som blir kvar.",
   "binDesigner.lid.compat.openSides": "En ficka med öppen sida tar bort hela sin bredd ur läppen där den lämnar bin. Klickskenan på {sides} går runt varje öppning och använder väggen som är kvar.",

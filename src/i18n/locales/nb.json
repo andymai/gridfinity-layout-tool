@@ -1294,6 +1294,7 @@
   "binDesigner.lid.compat.heading": "Kompatibilitetsnotater",
   "binDesigner.lid.compat.hingeStackableTop": "Et hengslet lokk kan ikke ha stablbar overside. Slå av den stablbare oversiden.",
   "binDesigner.lid.compat.hingeSnapTooTall": "Med denne lokkhøyden kommer ikke kneppet forbi kanten når lokket åpnes, så lokket lages uten det. Velg Magneter eller Ingenting under «Holdes lukket av», eller senk den ekstra lokkhøyden.",
+  "binDesigner.lid.compat.hingeGripOnHinge": "Et lokkgrep på hengselveggen hjelper ikke med å løfte et hengslet lokk, som bare åpnes ved motsatt vegg. Flytt grepet til den veggen.",
   "binDesigner.lid.compat.hingeUnbuildable": "Denne boksen kan ikke få hengslet lokk — hengselveggen er for kort, eller utsparinger og håndtak etterlater ingen sammenhengende kantstrekning for øynene.",
   "binDesigner.lid.compat.knifeSlots": "Hver knivåpning lager et hakk i stablekanten der bladet forlater blokken. Klikkrennen på {sides} går rundt hvert hakk og bruker veggen som er igjen.",
   "binDesigner.lid.compat.openSides": "En lomme med åpen side fjerner hele bredden sin fra leppen der den forlater bin. Klikkskinnen på {sides} går rundt hver åpning og bruker veggen som er igjen.",

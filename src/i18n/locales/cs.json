@@ -1294,6 +1294,7 @@
   "binDesigner.lid.compat.heading": "Poznámky ke kompatibilitě",
   "binDesigner.lid.compat.hingeStackableTop": "Víko s pantem nemůže mít stohovatelný vršek. Vypněte stohovatelný vršek.",
   "binDesigner.lid.compat.hingeSnapTooTall": "Při této výšce víka cvaknutí při otevírání nepřejde přes okraj, proto se víko vyrobí bez něj. V části „Drží zavřené“ zvolte Magnety nebo Nic, nebo snižte přídavnou výšku víka.",
+  "binDesigner.lid.compat.hingeGripOnHinge": "Úchop víka na stěně s pantem nepomůže víko zvednout, protože se otevírá jen na protější straně. Přesuňte úchop na tu stěnu.",
   "binDesigner.lid.compat.hingeUnbuildable": "Tahle přihrádka nemůže mít víko na pantu — stěna pantu je příliš krátká, nebo výřezy a úchyty nenechávají žádný souvislý úsek okraje pro oka.",
   "binDesigner.lid.compat.knifeSlots": "Každý výstup nože zařízne lem v místě, kde čepel opouští blok. Zaskakovací kolejnice na {sides} každý zářez obejde a využije zbývající stěnu.",
   "binDesigner.lid.compat.openSides": "Kapsa s otevřenou stranou odebere celou svou šířku z okraje v místě, kde opouští bin. Zacvakávací lišta na straně {sides} obchází každý otvor a využije zbývající stěnu.",

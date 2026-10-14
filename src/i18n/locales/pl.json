@@ -1294,6 +1294,7 @@
   "binDesigner.lid.compat.heading": "Uwagi o zgodności",
   "binDesigner.lid.compat.hingeStackableTop": "Pokrywa na zawiasie nie może mieć wierzchu do sztaplowania. Wyłącz wierzch do sztaplowania.",
   "binDesigner.lid.compat.hingeSnapTooTall": "Przy tej wysokości pokrywy zatrzask nie przejdzie przez krawędź podczas otwierania, więc pokrywa powstanie bez niego. W polu „Zamknięcie” wybierz Magnesy lub Brak albo zmniejsz dodatkową wysokość pokrywy.",
+  "binDesigner.lid.compat.hingeGripOnHinge": "Uchwyt pokrywy na ścianie z zawiasem nie pomoże unieść pokrywy na zawiasie, która otwiera się tylko przy przeciwległej ścianie. Przenieś uchwyt na tę ścianę.",
   "binDesigner.lid.compat.hingeUnbuildable": "Ten pojemnik nie przyjmie pokrywy na zawiasie — ścianka zawiasu jest za krótka albo wycięcia i uchwyty nie zostawiają ciągłego odcinka krawędzi na oczka.",
   "binDesigner.lid.compat.knifeSlots": "Każde wyjście noża nacina kołnierz tam, gdzie ostrze opuszcza blok. Szyna zatrzaskowa na {sides} omija każde nacięcie i wykorzystuje pozostałą ściankę.",
   "binDesigner.lid.compat.openSides": "Kieszeń z otwartym bokiem usuwa całą swoją szerokość z wargi w miejscu, gdzie opuszcza bin. Listwa zatrzaskowa na {sides} omija każdy otwór i wykorzystuje pozostałą ścianę.",

@@ -867,6 +867,86 @@ describe('hinged lid', () => {
     );
   }, 600_000);
 
+  it('raises the hinge wall only where the rim is, beside a cutout the overhang moved', async () => {
+    // An overhang on one end of the hinge wall moves the cavity, and the
+    // cutout with it, along the axis. The raised wall has to stop at the
+    // cutout's real edges, not where they would be without the overhang.
+    const { box, intersect } = await import('brepjs');
+    const params = hingeParams(
+      {
+        height: 8,
+        overhang: { enabled: true, left: 0, right: 4, front: 0, back: 0 },
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          back: {
+            enabled: true,
+            width: 30,
+            depth: 50,
+            alignment: 'center',
+            offset: 0,
+            widthMm: null,
+          },
+        },
+        lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm: 20 },
+      },
+      { side: 'back', catchMode: 'none' }
+    );
+    const { geometry } = planHingeLid(params);
+    if (!geometry) throw new Error('expected hinge geometry');
+    expect(geometry.runs).toHaveLength(2);
+    // The cutout's real edges: its offsets in the cavity frame, moved by the
+    // overhang itself rather than by the plan's own reading of it.
+    const shift = overhangExpansion(resolveOverhang(params.overhang));
+    const edgeLo = geometry.runs[0].trimHi + shift.offsetX;
+    const edgeHi = geometry.runs[1].trimLo + shift.offsetX;
+    const axis = swingAxis(params, shift.offsetX, shift.offsetY);
+    if (!axis) throw new Error('expected an axis');
+    const { bin, lid, dz } = await buildSolids(params);
+    const outer = (params.depth * params.gridUnitMm - GRIDFINITY_SPEC.TOLERANCE) / 2;
+    const zLo = binLipTopZ(params) + 0.5;
+    const zHi = binLipTopZ(params) + geometry.wallRiseMm - 0.5;
+    const filled = async (lo: number, hi: number): Promise<number> => {
+      const probe = box(hi - lo, 3, zHi - zLo, {
+        at: [(lo + hi) / 2, outer - 1.6, (zLo + zHi) / 2],
+      });
+      try {
+        const shared = intersect(bin as ValidSolid, probe);
+        if (!shared.ok) return 0;
+        try {
+          return (await solidVolumeMm3(shared.value)) / (await solidVolumeMm3(probe));
+        } finally {
+          shared.value.delete();
+        }
+      } finally {
+        probe.delete();
+      }
+    };
+    try {
+      expect(await filled(edgeLo + 0.3, edgeHi - 0.3)).toBeLessThan(0.001);
+      expect(await filled(edgeLo - 2.3, edgeLo - 0.3)).toBeGreaterThan(0.99);
+      expect(await filled(edgeHi + 0.3, edgeHi + 2.3)).toBeGreaterThan(0.99);
+      const worst = (await sweepSwing(bin, lid, axis, dz, [0.5, 2, 10, 40, 80, 100])).reduce(
+        (a, b) => (b.mm3 > a.mm3 ? b : a)
+      );
+      expect(worst.mm3).toBeLessThan(CONTACT_FLOOR_MM3);
+      for (const run of geometry.runs) {
+        const blocked = await pinObstructionMm3(
+          bin,
+          lid,
+          axis,
+          dz,
+          LID_HINGE_PIN_MM / 2,
+          run.lo + shift.offsetX,
+          run.hi + shift.offsetX
+        );
+        expect(blocked).toBeLessThan(CONTACT_FLOOR_MM3);
+      }
+    } finally {
+      lid.delete();
+    }
+  }, 600_000);
+
   it('stops on every wall, not just the one the frame was written for', async () => {
     // The stop is built from two planes through the axis, and both are rotated
     // onto the chosen wall by the same canonical mapping the barrel uses. A

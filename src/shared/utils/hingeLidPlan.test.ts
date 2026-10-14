@@ -305,6 +305,16 @@ describe('planHingeLid — the axis', () => {
     expect(relieves({ heightUnitMm: 6 })).toBe(false);
   });
 
+  it('shifts the hinge along the axis with the cavity, on whichever wall it runs', () => {
+    const along = (side: LidRailSide): number | undefined =>
+      planHingeLid(
+        params({ overhang: { enabled: true, left: 0, right: 4, front: 0, back: 0 } }, { side })
+      ).geometry?.alongOffsetMm;
+    expect(along('back')).toBeCloseTo(2, 9);
+    expect(along('front')).toBeCloseTo(-2, 9);
+    expect(planHingeLid(params()).geometry?.alongOffsetMm).toBe(0);
+  });
+
   it('keeps a snap rail only while the relief leaves a plug to hang it from', () => {
     const fits = (depth: number, extraHeightMm: number, catchMode: 'none' | 'detent') =>
       planHingeLid(

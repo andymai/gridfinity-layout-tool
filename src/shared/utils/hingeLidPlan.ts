@@ -150,6 +150,8 @@ import type { LidHingeCatch, LidRailSide } from '@/features/bin-designer/types/l
 import type { LidCompatibilitySide } from '@/features/bin-designer/utils/lidCompatibility';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { hasOverhang, overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
+import { pullTabWallInset } from '@/shared/utils/pullTabPlan';
 import { labelTabInteriorDims, subtractSpan } from '@/shared/utils/labelTabPlan';
 import type { RailSegment, WallSpanBlock } from '@/shared/utils/labelTabPlan';
 import { lipGapRailBlocks, lipGaps } from '@/shared/utils/lipGapPlan';
@@ -281,6 +283,13 @@ export interface HingeGeometry {
   readonly relievesLatch: boolean;
   /** Horizontal distance (mm) from the axis to the latch wall's outer face. */
   readonly axisToLatchFaceMm: number;
+  /**
+   * Where the cavity's centre sits along the axis (mm), in the canonical frame.
+   * An asymmetric overhang or a pull tab moves it off the bin's origin, and the
+   * runs are measured from it, as every wall feature is, so both parts' hinge
+   * solids shift by it.
+   */
+  readonly alongOffsetMm: number;
   /**
    * Whether a snap catch's rail stays welded to the lid. The rail hangs from
    * the latch-side plug, and where the axis sits high enough above the rim the
@@ -543,6 +552,13 @@ export function planHingeLid(params: BinParams): HingePlan {
   const fitMm = resolveHingeFitMm(hinge.fitClearanceMm);
   const relievesLatch = axisAboveLipTopMm > hingeStockAxisAboveLipTopMm() + 1e-6;
   const axisToLatchFaceMm = crossSpan + 2 * params.wallThickness - axisInsetMm;
+  const overhang = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
+  const expansion = hasOverhang(overhang) ? overhangExpansion(overhang) : null;
+  const tab = pullTabWallInset(params);
+  const turn = (rotationForSide(side) * Math.PI) / 180;
+  const alongOffsetMm =
+    ((expansion?.offsetX ?? 0) - tab.x / 2) * Math.cos(turn) +
+    ((expansion?.offsetY ?? 0) + tab.y / 2) * Math.sin(turn);
 
   return {
     rejection: null,
@@ -559,6 +575,7 @@ export function planHingeLid(params: BinParams): HingePlan {
       trimInboardMm: LID_CORNER_RADIUS - LID_FIT_CLEARANCE - axisInsetMm,
       relievesLatch,
       axisToLatchFaceMm,
+      alongOffsetMm,
       detentFits:
         hinge.catchMode !== 'detent' ||
         !relievesLatch ||
