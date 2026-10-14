@@ -1,0 +1,73 @@
+src/i18n/locales/sv.json
+  s_0ede90d0838d1c::t_dd9baa695dc166 1297
+src/i18n/locales/nl.json
+  s_0ede90d0838d1c::t_dd9baa695dc166 1297
+src/i18n/locales/pl.json
+  s_0ede90d0838d1c::t_dd9baa695dc166 1297
+src/features/generation/worker/generators/hingeSwing.scenario.test.ts
+  s_0ede90d0838d1c::t_8373f179f89e3b 870-887,889-897,900,903-913,915-939,942-949
+  s_0ede90d0838d1c::t_97409e0dcf383c 898-899,901-902,940-941
+  s_0ede90d0838d1c::t_459df6c833ad0f 914
+  s_0ede90d0838d1c::t_7a9f66e11c8a30 888
+src/i18n/locales/ko.json
+  s_0ede90d0838d1c::t_dd9baa695dc166 1297
+src/i18n/locales/pt-BR.json
+  s_0ede90d0838d1c::t_dd9baa695dc166 1297
+src/i18n/locales/fr.json
+  s_0ede90d0838d1c::t_dd9baa695dc166 1297
+src/features/generation/worker/generators/hingeBarrel.ts
+  s_0ede90d0838d1c::t_a9da1d522f9395 333-338,341-342,427,564,586,588,597-598,602
+  s_0ede90d0838d1c::t_a0d92bdc1d40a2 329-332,339-340
+src/features/generation/worker/generators/lidBuilder.ts
+  s_0ede90d0838d1c::t_a9da1d522f9395 205-207,209-210
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_0ede90d0838d1c::t_dd9baa695dc166 123-125,689-690
+  s_0ede90d0838d1c::t_e2f8e2bc54d281 57
+  s_0ede90d0838d1c::t_f87b6f73f322ac 691
+src/i18n/locales/ka.json
+  s_0ede90d0838d1c::t_dd9baa695dc166 1989
+src/i18n/locales/zh-CN.json
+  s_0ede90d0838d1c::t_dd9baa695dc166 1297
+src/shared/utils/hingeLidPlan.test.ts
+  s_0ede90d0838d1c::t_ba5c1457768968 308-317
+src/features/generation/README.md
+  s_0ede90d0838d1c::t_1ad08f0c7caa84 274
+src/features/generation/worker/generators/pipeline/stages/lidHingeStage.ts
+  s_0ede90d0838d1c::t_1ad08f0c7caa84 95,98-106,130-132,145-146,160,162-168
+src/shared/utils/hingeLidPlan.ts
+  s_0ede90d0838d1c::t_a0d92bdc1d40a2 153-154,286-292,555-561,578
+src/i18n/locales/es.json
+  s_0ede90d0838d1c::t_dd9baa695dc166 1297
+src/i18n/locales/it.json
+  s_0ede90d0838d1c::t_dd9baa695dc166 1297
+src/i18n/locales/cs.json
+  s_0ede90d0838d1c::t_dd9baa695dc166 1297
+src/i18n/locales/en.ts
+  s_0ede90d0838d1c::t_dd9baa695dc166 2392-2393
+src/i18n/locales/nb.json
+  s_0ede90d0838d1c::t_dd9baa695dc166 1297
+src/i18n/locales/uk.json
+  s_0ede90d0838d1c::t_dd9baa695dc166 1297
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_0ede90d0838d1c::t_ba5c1457768968 1266-1283
+src/i18n/locales/de.json
+  s_0ede90d0838d1c::t_dd9baa695dc166 1297
+src/i18n/locales/ja.json
+  s_0ede90d0838d1c::t_dd9baa695dc166 1297
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f82e4147c51d709c3472205d36ab7234efbd9360",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
