@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { SideSelector, type SideState } from './SideSelector';
 
 const SIDES: SideState[] = [
@@ -64,7 +65,8 @@ describe('SideSelector', () => {
       expect(screen.getByRole('radio', { name: 'Left' }).tabIndex).toBe(-1);
     });
 
-    it('picks the wall an arrow key points at, and skips a disabled one', () => {
+    it('moves the choice and focus to the wall an arrow points at, and stays put on a blocked one', async () => {
+      const user = userEvent.setup();
       const onSelect = vi.fn();
       render(
         <SideSelector
@@ -75,11 +77,15 @@ describe('SideSelector', () => {
           ariaLabel="Hinge"
         />
       );
-      const group = screen.getByRole('radiogroup');
-      fireEvent.keyDown(group, { key: 'ArrowLeft' });
+      screen.getByRole('radio', { name: 'Right' }).focus();
+
+      await user.keyboard('{ArrowLeft}');
       expect(onSelect).toHaveBeenLastCalledWith('left');
-      fireEvent.keyDown(group, { key: 'ArrowUp' });
+      expect(screen.getByRole('radio', { name: 'Left' })).toHaveFocus();
+
+      await user.keyboard('{ArrowUp}');
       expect(onSelect).toHaveBeenCalledTimes(1);
+      expect(screen.getByRole('radio', { name: 'Left' })).toHaveFocus();
     });
   });
 });
