@@ -117,6 +117,16 @@ describe('buildDrawerLinkLayout', () => {
     expect(layout.baseplateParams?.paddingFront).toBe(5);
   });
 
+  it('never pads below zero when a decimal pitch fits exactly', () => {
+    const decimal = createTestLayout({ gridUnitMm: mm(41.6) });
+    const layout = expectOk(
+      buildDrawerLinkLayout(decimal, { widthMm: 124.8, depthMm: 124.8 }, 'X')
+    );
+    expect(layout.drawer.width).toBe(3);
+    expect(layout.baseplateParams?.paddingLeft).toBe(0);
+    expect(layout.baseplateParams?.paddingFront).toBe(0);
+  });
+
   it('sets the drawer height from a measured height and caps the first layer to it', () => {
     const layout = expectOk(
       buildDrawerLinkLayout(base, { widthMm: 297, depthMm: 525, heightMm: 18 }, 'X')

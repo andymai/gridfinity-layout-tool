@@ -198,6 +198,33 @@ describe('useDrawerLinkImport', () => {
     expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(design);
   });
 
+  it('drops a link that arrived while disabled instead of applying it after a route change', async () => {
+    seed(false, 1);
+    window.history.replaceState(null, '', '/designer?drawer=297x525');
+    const { result, rerender } = renderHook(
+      ({ disabled }: { disabled: boolean }) =>
+        useDrawerLinkImport({ disabled, syncLayoutUrl: true }),
+      { initialProps: { disabled: true } }
+    );
+    window.history.replaceState(null, '', '/');
+    rerender({ disabled: false });
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(result.current).toBe(false);
+    expect(useLibraryStore.getState().library.entries).toHaveLength(1);
+  });
+
+  it('saves the outgoing layout before switching, so an unsaved edit survives', async () => {
+    seed(false, 1);
+    const edited = { ...useLayoutStore.getState().layout, name: 'Edited, not yet saved' };
+    useLayoutStore.getState().importLayout(edited, EXISTING, 'init');
+    open('/?drawer=297x525');
+
+    await waitFor(() => expect(useLibraryStore.getState().library.entries).toHaveLength(2));
+    await opened();
+    expect((await loadLayoutAsync(EXISTING))?.name).toBe('Edited, not yet saved');
+  });
+
   it('yields the URL to a share link or collaboration session', () => {
     seed(false, 1);
     open('/?drawer=297x525', { disabled: true });

@@ -73,7 +73,9 @@ export function parseDrawerLink(search: string): Result<DrawerLinkSpec, Validati
   });
 }
 
-const halfOf = (slackMm: number): number => Math.floor((slackMm / 2) * 100) / 100;
+// Clamped because an exact fit at a decimal pitch leaves float slack just under
+// zero, which would floor to a negative padding.
+const halfOf = (slackMm: number): number => Math.max(0, Math.floor((slackMm / 2) * 100) / 100);
 
 /**
  * The layout a drawer link opens: whole grid units that fit inside the drawer,

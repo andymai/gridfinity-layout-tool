@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { createLayoutWithSettings } from '@/core/constants';
+import { createLayoutWithSettings, isRealLayoutId } from '@/core/constants';
 import { isErr } from '@/core/result';
 import { useLayoutStore, useLibraryStore, useSettingsStore, useToastStore } from '@/core/store';
 import {
@@ -22,7 +22,10 @@ import { setLayoutURL } from '@/shared/utils/url';
 import { useLocale, useTranslation } from '@/i18n';
 
 export interface DrawerLinkImportOptions {
-  /** Share links and collaboration sessions own the URL; a drawer link yields to them. */
+  /**
+   * Share links, collaboration sessions and other routes own the URL. A link
+   * that arrives while disabled is dropped, not kept for a later route change.
+   */
   readonly disabled: boolean;
   /** Rewrite the address to the planner's `/l/{id}` form once the layout opens. */
   readonly syncLayoutUrl: boolean;
@@ -41,7 +44,7 @@ const formatMm = (value: number): string => String(Math.round(value * 10) / 10);
 export function useDrawerLinkImport({ disabled, syncLayoutUrl }: DrawerLinkImportOptions): boolean {
   const t = useTranslation();
   const { isReady } = useLocale();
-  const [link] = useState(() => parseDrawerLink(window.location.search));
+  const [link] = useState(() => (disabled ? null : parseDrawerLink(window.location.search)));
   const handled = useRef(false);
   const { activateLayout } = useLayoutActivation();
 
@@ -114,9 +117,24 @@ async function openDrawerLink(
     return { id, layout };
   }
 
-  const created = await createLayoutEntry(layout, library, {
+  // Flush the outgoing layout first: activation would cancel an autosave still
+  // inside its debounce, losing the last edit.
+  let fresh = library;
+  const outgoingId = useLayoutStore.getState().activeLayoutId;
+  if (isRealLayoutId(outgoingId)) {
+    const flushed = await saveLayoutWithMetadata(
+      outgoingId,
+      useLayoutStore.getState().layout,
+      useLibraryStore.getState().library
+    );
+    if (isErr(flushed)) return 'failed';
+    fresh = flushed.value.library;
+    useLibraryStore.getState().setLibrary(fresh);
+  }
+
+  const created = await createLayoutEntry(layout, fresh, {
     name: layout.name,
-    author: library.settings.authorName,
+    author: fresh.settings.authorName,
     activate: true,
   });
   if (isErr(created)) return 'failed';
