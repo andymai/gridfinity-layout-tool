@@ -98,7 +98,7 @@ Any leftover millimeters become baseplate edge padding. By default, that padding
 
 The baseplate generator automatically splits the baseplate into pieces that fit your print bed.
 
-Measure the drawer's inside surfaces, not its front panel. Add the inside height when you want the calculator to show how tall a bin can be while allowing about 5 mm for the baseplate.
+Measure the drawer's inside surfaces, not its front panel. Add the inside height when you want the calculator to show how tall a bin can be while allowing about 5 mm for the baseplate. Magnet holes in the baseplate raise bins by about 2.5 mm. That extra height can cost one full height unit, so include it when checking clearance.
 
 ## More Gridfinity guides
 

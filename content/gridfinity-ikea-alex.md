@@ -40,7 +40,7 @@ faqs:
   - q: What grid fits the 9-drawer Alex?
     a: Its different drawer shape fits almost exactly a 7 by 10 grid, measuring 294 by 420 mm. The drawer is measured at 423 mm long inside.
   - q: How tall can Gridfinity bins be in an Alex drawer?
-    a: Measure the inside height, subtract about 5 mm for the baseplate, then divide by 7. The drawer calculator does this for you.
+    a: Measure the inside height, subtract about 5 mm, and divide by 7 for the tallest bin on a plain baseplate. Magnet holes raise bins about 2.5 mm and can cost one height unit.
   - q: Will the baseplate fit my printer?
     a: The generator automatically splits the baseplate into pieces using the print bed size set in the tool.
 ---
@@ -89,9 +89,11 @@ For the smaller Alex drawer shape, [plan the 9-drawer Alex](/?drawer=295x422&nam
 
 ## Choose bin heights that clear the drawer
 
-Measure the drawer's inside height before choosing your tallest bin. Subtract about 5 mm for the baseplate, then divide the remaining height by 7 to get the maximum height in Gridfinity units.
+Measure the drawer's inside height before choosing your tallest bin. For a plain baseplate, subtract about 5 mm from the drawer's inside height, then divide the result by Gridfinity's 7 mm height unit.
 
-Gridfinity height units are 7 mm each. The [drawer calculator](/gridfinity-calculator) handles the calculation for you, so you can enter the measured height and use its result when choosing bins.
+Magnet holes in the baseplate raise bins by about 2.5 mm. That extra height can cost one full height unit, so include it when checking clearance.
+
+The [drawer calculator](/gridfinity-calculator) does the plain-baseplate calculation for you.
 
 ## Plan the rest of your drawer
 
