@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.513.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.512.0...gridfinity-layout-tool-v4.513.0) (2026-10-15)
+
+
+### Features
+
+* **bin-designer:** let an overhang reach one full grid unit per side ([#4589](https://github.com/andymai/gridfinity-layout-tool/issues/4589)) ([b823277](https://github.com/andymai/gridfinity-layout-tool/commit/b8232775e91ff4413ecc810a89cd7312341209d7))
+* **bin-designer:** size a lid in whole height units ([#4590](https://github.com/andymai/gridfinity-layout-tool/issues/4590)) ([96aecd7](https://github.com/andymai/gridfinity-layout-tool/commit/96aecd7e7e6154e39223af2273df5b32f36cc1d5))
+
 ## [4.512.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.511.1...gridfinity-layout-tool-v4.512.0) (2026-10-15)
 
 
