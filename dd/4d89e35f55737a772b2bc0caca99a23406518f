@@ -1,0 +1,33 @@
+src/features/bin-designer/hooks/useSyncPhysicalUnits.test.ts
+  s_0ede90d0838d1c::t_8b3a22893dc3f7 95-115
+src/features/bin-designer/store/helpers.ts
+  s_0ede90d0838d1c::t_68447ff43f113e 88-90
+src/features/bin-designer/components/panel/LidSection/LidHeightField.tsx
+  s_0ede90d0838d1c::t_68447ff43f113e 11-15,31-32,51,53-54,60,64,66,107-108
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_0ede90d0838d1c::t_8b3a22893dc3f7 1393
+src/features/bin-designer/utils/lidHeightUnits.ts
+  s_0ede90d0838d1c::t_68447ff43f113e 19-20,75-78,85-86,108-109
+src/features/bin-designer/store/designer.scenario.lid.test.ts
+  s_0ede90d0838d1c::t_8b3a22893dc3f7 492-493,496,508
+  s_0ede90d0838d1c::t_489cefad4e59d0 506-507
+src/features/bin-designer/utils/lidHeightUnits.test.ts
+  s_0ede90d0838d1c::t_8b3a22893dc3f7 88-97
+  s_0ede90d0838d1c::t_3604c1166e0ab9 98-100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dd4d89e35f55737a772b2bc0caca99a23406518f",
+  "prompts": {},
+  "sessions": {
+    "s_0ede90d0838d1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93fbf7ca-97a1-43c6-a320-714efea16121",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
