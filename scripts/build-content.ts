@@ -875,7 +875,6 @@ ${items}
 `;
 }
 
-/** Images rendered so far on the page being parsed; reset per page. */
 let imagesOnPage = 0;
 
 function configureMarked(): void {

@@ -17,14 +17,12 @@ export interface ContentImage {
   readonly href: string;
   readonly title: string | null;
   readonly alt: string;
-  /** Whether this is the first image rendered on the page. */
   readonly first: boolean;
 }
 
 const escapeAttr = (value: string): string =>
   value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-/** The WebP variant paths for a landing PNG, or null for any other image. */
 export function webpVariants(href: string): readonly string[] | null {
   const match = /^(\/images\/landing\/[\w-]+)\.png$/.exec(href);
   if (match === null) return null;
