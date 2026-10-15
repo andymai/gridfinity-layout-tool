@@ -1,0 +1,47 @@
+docker/nginx.conf
+  s_4c3c2daba3f861::t_5527f605bcb430 34
+  s_4c3c2daba3f861::t_337fc103c97efb 39,140-141
+scripts/vite-plugin-content-routes.ts
+  s_4c3c2daba3f861::t_337fc103c97efb 27-29
+content/gridfinity-drawers.md
+  s_4c3c2daba3f861::t_337fc103c97efb 1-88
+  s_4c3c2daba3f861::t_946bc16555a033 89-109
+content/gridfinity-ikea-alex.md
+  s_4c3c2daba3f861::t_337fc103c97efb 1-104
+content/gridfinity-tool-drawer.md
+  s_4c3c2daba3f861::t_eb3b3e6c76596b 89
+vercel.json
+  s_4c3c2daba3f861::t_337fc103c97efb 181-207,457
+scripts/gen-seo-images.ts
+  s_4c3c2daba3f861::t_ee54100fbd8435 354-363,366-368,371-393,401-413,535-551,555,724
+  s_4c3c2daba3f861::t_3f405e7e324db7 364-365,370,394-400,723
+  s_4c3c2daba3f861::t_f25ad26a9558d0 369
+  s_4c3c2daba3f861::t_5440b45d8f4214 552-554,619-620,623,725
+.gitignore
+  s_4c3c2daba3f861::t_337fc103c97efb 75-77
+scripts/contentRoutes.ts
+  s_4c3c2daba3f861::t_7cc4dae11b18d8 33-35
+scripts/build-content.ts
+  s_4c3c2daba3f861::t_337fc103c97efb 1031,1057-1059
+.claude/skills/content-and-seo/SKILL.md
+  s_4c3c2daba3f861::t_fc6fd057588cc7 44
+  s_4c3c2daba3f861::t_1d14da4bf0cc84 29,43
+content/gridfinity-milwaukee-packout.md
+  s_4c3c2daba3f861::t_337fc103c97efb 1-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "75c8d7ad9cb9ba5800a9a697f58afa377f8c9d9c",
+  "prompts": {},
+  "sessions": {
+    "s_4c3c2daba3f861": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fdd9d737-3e13-40e1-bd09-90226688050e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
