@@ -3,7 +3,7 @@ title: Як спланувати шухляду Gridfinity — Посібник
 description: Практичний посібник із планування лейаутів шухляд Gridfinity. Виміряйте шухляду, визначте потрібні bins і експортуйте список для друку.
 lastmod: 2026-05-18
 keywords: gridfinity планувальник, gridfinity лейаут, як спланувати gridfinity, планування органайзера, gridfinity посібник
-schema: HowTo
+schema: Article
 breadcrumbs:
   - name: Головна
     url: https://gridfinitylayouttool.com/

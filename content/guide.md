@@ -1,9 +1,9 @@
 ---
 title: How to Plan a Gridfinity Drawer Layout
 description: A practical guide to planning Gridfinity drawer layouts. Measure your drawer, figure out what bins you need, and export a print list.
-lastmod: 2026-08-09
+lastmod: 2026-10-15
 keywords: gridfinity planner, gridfinity layout, how to plan gridfinity, drawer organizer planning, gridfinity guide
-schema: HowTo
+schema: Article
 breadcrumbs:
   - name: Home
     url: https://gridfinitylayouttool.com/
@@ -39,6 +39,8 @@ Get the inside dimensions in millimeters. You need:
 - **Width** - left to right
 - **Depth** - front to back
 - **Height** - bottom to top (clearance when closed)
+
+Use the preset grids for IKEA Alex, Kallax, Malm, Helmer and Milwaukee Packout 3-drawer from [named drawer sizes](/gridfinity-drawers).
 
 Measure at a few spots. Drawers are rarely perfect rectangles, especially older furniture. Use the smallest measurements to be safe.
 

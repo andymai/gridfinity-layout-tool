@@ -121,7 +121,7 @@ const ROUTES: RouteEntry[] = [
     slug: 'designer',
     title: 'Gridfinity Bin Designer — Free Custom Bin Builder',
     description:
-      'Design custom Gridfinity bins in your browser: dimensions, compartments, label tabs, wall cutouts, and base styles with a real-time 3D preview. Export STL, STEP, or 3MF. Free, no account.',
+      'Design Gridfinity bins in your browser with a real-time 3D preview. Set dimensions and compartments. Export STL, STEP, or 3MF. Free, no account.',
     keywords:
       'gridfinity designer, gridfinity bin designer, gridfinity bin generator, custom gridfinity bin, gridfinity bin maker, gridfinity STL generator, gridfinity creator',
     ogImage: `${SITE_URL}/og/designer.png`,
@@ -150,7 +150,7 @@ const ROUTES: RouteEntry[] = [
     slug: 'baseplate',
     title: 'Gridfinity Baseplate Maker — Free Custom Baseplate Builder',
     description:
-      'Make custom Gridfinity baseplates in your browser: any grid size, magnet holes, edge padding, and automatic print-bed splitting. Export STL, STEP, or 3MF. Free, no account.',
+      'Build Gridfinity baseplates in-browser. Set grid size and magnet holes. Auto-split for print beds. Export STL, STEP, or 3MF. Free, no account.',
     keywords:
       'gridfinity baseplate maker, gridfinity baseplate generator, custom gridfinity baseplate, gridfinity base maker, gridfinity baseplate STL, gridfinity grid maker',
     ogImage: `${SITE_URL}/og/baseplate.png`,
@@ -178,7 +178,7 @@ const ROUTES: RouteEntry[] = [
     slug: 'community',
     title: 'Community Gridfinity Designs — Free to Remix and Print',
     description:
-      'Browse Gridfinity bin designs shared by other makers. Filter by category, size, and technique, see real print reports, then remix any design or drop it straight into your drawer layout. Free, no account.',
+      'Browse Gridfinity bin designs from other makers. Preview them in 3D, remix an editable copy, and export for printing. Free, no account.',
     keywords:
       'gridfinity community designs, gridfinity bin library, shared gridfinity bins, gridfinity remix, community gridfinity models, free gridfinity STL',
     ogImage: `${SITE_URL}/og/community.png`,

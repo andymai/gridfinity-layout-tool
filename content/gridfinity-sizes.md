@@ -1,7 +1,7 @@
 ---
 title: 'Gridfinity Sizes & Dimensions: Full Tables in mm and Inches'
 description: Every Gridfinity bin and baseplate dimension in millimeters and inches, plus height units, common bin sizes, and how to convert a drawer to grid units.
-lastmod: 2026-08-09
+lastmod: 2026-10-15
 keywords: gridfinity sizes, gridfinity dimensions, gridfinity bin sizes, gridfinity height units, gridfinity 42mm, gridfinity grid size, standard gridfinity size, why is gridfinity 42mm
 schema: Article
 breadcrumbs:
@@ -53,7 +53,7 @@ For tighter fits, half-bin mode uses **0.5-unit increments (21mm)**. A 1.5×2.5 
 
 The 42mm grid is the single standard that makes every Gridfinity bin and baseplate interchangeable. Zack Freedman chose 42mm when he designed Gridfinity in 2022 because it hits a sweet spot: small enough that a 1×1 bin holds individual screws or SD cards without wasting space, but large enough that bins print quickly and stay strong.
 
-42mm also divides cleanly into common drawer and print-bed sizes, and it leaves room for the wall thickness, tolerance gap, and the interlocking base profile that lets bins lift out easily while still resisting sliding when you open a drawer. Because the number is fixed, a bin you print today fits a baseplate someone else designed years ago — that universal compatibility is the whole point of the standard.
+42mm also divides cleanly into [common drawer](/gridfinity-drawers) and print-bed sizes, and it leaves room for the wall thickness, tolerance gap, and the interlocking base profile that lets bins lift out easily while still resisting sliding when you open a drawer. Because the number is fixed, a bin you print today fits a baseplate someone else designed years ago — that universal compatibility is the whole point of the standard.
 
 **The standard Gridfinity size is one 42mm × 42mm grid unit, with heights measured in 7mm increments.** Everything else is a multiple of those two numbers.
 

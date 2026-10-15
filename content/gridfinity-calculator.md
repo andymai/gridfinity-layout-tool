@@ -48,7 +48,7 @@ faqs:
 
 # Gridfinity Calculator
 
-Convert your drawer measurements to Gridfinity grid units. Enter the interior dimensions in millimeters; the calculator shows the grid size, the half-grid size, leftover edge space, and the tallest bin the drawer can take.
+Convert your drawer measurements to Gridfinity grid units. Enter the interior dimensions in millimeters; the calculator shows the grid size, the half-grid size, leftover edge space, and the tallest bin the drawer can take. Precomputed grids for IKEA Alex, Kallax, Malm, Helmer and Milwaukee Packout 3-drawer are at [named drawer sizes](/gridfinity-drawers).
 
 <div class="calc" id="gridfinity-calculator">
   <div class="calc__grid">

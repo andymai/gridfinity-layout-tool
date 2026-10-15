@@ -3,7 +3,7 @@ title: Comment planifier un tiroir Gridfinity
 description: Guide pratique pour planifier des layouts de tiroir Gridfinity. Mesurez votre tiroir, déterminez les bins nécessaires et exportez une liste d’impression.
 lastmod: 2026-05-18
 keywords: gridfinity planificateur, gridfinity layout, comment planifier gridfinity, organiser tiroir, guide gridfinity
-schema: HowTo
+schema: Article
 breadcrumbs:
   - name: Accueil
     url: https://gridfinitylayouttool.com/

@@ -1,7 +1,7 @@
 ---
 title: Gridfinity Generator — Free Online Bin & Baseplate Generator
 description: Free Gridfinity generator for bins and baseplates. Set the size, preview in 3D, and export STL, STEP, or 3MF. No install, no account, works offline.
-lastmod: 2026-08-15
+lastmod: 2026-10-15
 keywords: gridfinity generator, gridfinity bin generator, gridfinity baseplate generator, gridfinity STL generator, online gridfinity generator, free gridfinity generator, custom gridfinity, gridfinity 3MF, gridfinity STEP
 schema: HowTo
 breadcrumbs:
@@ -76,7 +76,7 @@ faqs:
   - q: Does the Gridfinity Generator work on mobile?
     a: Yes. The generator works on iPhone, iPad, Android phones and tablets. You can configure a bin on your phone, save it to your device, and email or AirDrop the STL to a desktop slicer.
   - q: What file formats does the Gridfinity Generator export?
-    a: STL for direct slicing, STEP for editing in CAD applications like Fusion 360 or FreeCAD, and 3MF for slicers that benefit from richer metadata such as color or material assignments. Most modern slicers accept all three formats.
+    a: STL for direct slicing, STEP for editing in CAD applications like Fusion 360 or FreeCAD, and 3MF for slicers that benefit from richer metadata such as color or material assignments. Most modern slicers accept all three formats. Layouts and bin designs also save as JSON files, documented in [file formats](/schema).
   - q: Will bins from the generator fit my existing Gridfinity baseplates?
     a: Yes. The generator follows the standard Gridfinity 42mm grid and the standard socket profile, so bins fit any official or community-made Gridfinity baseplate. The same applies in reverse — baseplates from the generator accept any standard Gridfinity bin.
   - q: Can the Gridfinity Generator make baseplates with magnet holes?
@@ -107,14 +107,14 @@ faqs:
     a: It depends on what you're making. For a single one-off bin, any parametric generator with a real-time 3D preview does the job, and OpenSCAD-based scripts offer the deepest configurability if you're comfortable editing code. For organizing a whole drawer, this generator is the strongest choice — it's built into a drawer layout planner, so bins, baseplates, and the drawer plan share one set of measurements and export together as a print list, a combination standalone bin generators don't offer.
 navCta:
   label: Open Generator
-  href: /designer?utm_source=gridfinity-generator&utm_medium=nav&utm_campaign=bin
+  href: /designer
 ---
 
 # Gridfinity Generator
 
 A free online Gridfinity generator for bins and baseplates, built into a [drawer layout planner](/). Set the size, download STL, STEP, or 3MF. No account. Everything runs in your browser, nothing to install, and it works offline once loaded. Measure the drawer once, plan the whole layout, and generate every bin to fit: a combination standalone bin makers don't offer.
 
-[CTA: Open Bin Generator](/designer?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=bin) &nbsp; [CTA: Open Baseplate Generator](/baseplate?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=baseplate)
+[CTA: Open Bin Generator](/designer) &nbsp; [CTA: Open Baseplate Generator](/baseplate)
 
 ![Custom Gridfinity organizer bin with compartments, label tabs, and scoop ramps rendered in the generator's 3D preview](/images/landing/multicolor-organizer-bin.png '1200x675')
 
@@ -287,6 +287,6 @@ Most Gridfinity bins from the generator print with default slicer settings, but 
 
 Two starting points. Pick the one you need first — you can switch between them any time.
 
-[CTA: Open Bin Generator](/designer?utm_source=gridfinity-generator&utm_medium=footer&utm_campaign=bin) &nbsp; [CTA: Open Baseplate Generator](/baseplate?utm_source=gridfinity-generator&utm_medium=footer&utm_campaign=baseplate)
+[CTA: Open Bin Generator](/designer) &nbsp; [CTA: Open Baseplate Generator](/baseplate)
 
 New to Gridfinity? Start with [What is Gridfinity?](/what-is-gridfinity) for the basics, or jump to the [drawer planning guide](/guide) if you already know what you want and need to lay it out. The [sizes reference](/gridfinity-sizes) covers grid units and standard dimensions.

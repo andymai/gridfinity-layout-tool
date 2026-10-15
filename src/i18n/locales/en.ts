@@ -26,16 +26,16 @@ const en: Record<string, string> = {
   // and /gridfinity-baseplate-generator, which own the "Generator" queries.
   'seo.designer.title': 'Gridfinity Bin Designer — Free Custom Bin Builder',
   'seo.designer.description':
-    'Design custom Gridfinity bins in your browser: dimensions, compartments, label tabs, wall cutouts, and base styles with a real-time 3D preview. Export STL, STEP, or 3MF. Free, no account.',
+    'Design Gridfinity bins in your browser with a real-time 3D preview. Set dimensions and compartments. Export STL, STEP, or 3MF. Free, no account.',
   'seo.baseplate.title': 'Gridfinity Baseplate Maker — Free Custom Baseplate Builder',
   'seo.baseplate.description':
-    'Make custom Gridfinity baseplates in your browser: any grid size, magnet holes, edge padding, and automatic print-bed splitting. Export STL, STEP, or 3MF. Free, no account.',
+    'Build Gridfinity baseplates in-browser. Set grid size and magnet holes. Auto-split for print beds. Export STL, STEP, or 3MF. Free, no account.',
   'seo.supporters.title': 'Supporters — Gridfinity Layout Tool',
   'seo.supporters.description':
     'The people whose support keeps the Gridfinity Layout Tool free, ad-free, and independent.',
   'seo.community.title': 'Community Designs — Gridfinity Layout Tool',
   'seo.community.description':
-    'Browse Gridfinity bin designs published by the community. Preview any design in 3D, remix it into your own editable copy, and export it for printing. Free, no account.',
+    'Browse Gridfinity bin designs from other makers. Preview them in 3D, remix an editable copy, and export for printing. Free, no account.',
 
   // Supporters page
   'supporters.back': 'Back to the app',

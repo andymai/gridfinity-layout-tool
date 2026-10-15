@@ -3,7 +3,7 @@ title: Een Gridfinity-lade plannen — Handleiding
 description: Praktische gids voor het plannen van Gridfinity-lade-layouts. Meet je lade op, bepaal welke bins je nodig hebt en exporteer een printlijst.
 lastmod: 2026-05-18
 keywords: gridfinity planner, gridfinity layout, gridfinity plannen, lade-organizer plannen, gridfinity gids
-schema: HowTo
+schema: Article
 breadcrumbs:
   - name: Start
     url: https://gridfinitylayouttool.com/
