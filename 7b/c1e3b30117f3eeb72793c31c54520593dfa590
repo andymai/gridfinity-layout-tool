@@ -1,0 +1,38 @@
+src/shared/utils/drawerLink.test.ts
+  s_4c3c2daba3f861::t_eec7e02ce43e50 64-75
+src/i18n/context.test.tsx
+  s_4c3c2daba3f861::t_eec7e02ce43e50 168-184
+public/calculator.js
+  s_4c3c2daba3f861::t_84a9369fd03d5c 9-15,26-28,30-35,44,50,57-64,69-71
+src/shared/utils/drawerLink.ts
+  s_4c3c2daba3f861::t_029cd1349362a8 55-60
+  s_4c3c2daba3f861::t_14fd63157a2365 61-63
+src/features/layout-library/hooks/useDrawerLinkImport.ts
+  s_4c3c2daba3f861::t_029cd1349362a8 61-62,89-90,102-107,110,120-122
+src/i18n/context.tsx
+  s_4c3c2daba3f861::t_b57d066832f774 37-42
+scripts/calculator-script.test.ts
+  s_4c3c2daba3f861::t_eec7e02ce43e50 56-60
+src/features/layout-library/hooks/useDrawerLinkImport.test.ts
+  s_4c3c2daba3f861::t_68f82cf136b9b1 93-95,170
+  s_4c3c2daba3f861::t_eec7e02ce43e50 6-7,155-162,164-169,171-179,181-182
+  s_4c3c2daba3f861::t_a39c45cfeffd5d 41-43,96,163,180
+  s_4c3c2daba3f861::t_683b8d2f602113 92
+  s_4c3c2daba3f861::t_8048ddf542d74f 183-185
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7bc1e3b30117f3eeb72793c31c54520593dfa590",
+  "prompts": {},
+  "sessions": {
+    "s_4c3c2daba3f861": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fdd9d737-3e13-40e1-bd09-90226688050e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
