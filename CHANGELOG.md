@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.512.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.511.1...gridfinity-layout-tool-v4.512.0) (2026-10-15)
+
+
+### Features
+
+* **bin-designer:** keep sidebar prose to one line and move explanations behind info dots ([#4583](https://github.com/andymai/gridfinity-layout-tool/issues/4583)) ([c5bea53](https://github.com/andymai/gridfinity-layout-tool/commit/c5bea53546fe4c0af3b8cb9f363a4e0f75f428f2))
+* **bin-designer:** one caption style and unique group headings across the sidebar ([#4587](https://github.com/andymai/gridfinity-layout-tool/issues/4587)) ([e2eca22](https://github.com/andymai/gridfinity-layout-tool/commit/e2eca222544c3e74d275a9fbd905659bcc4f0dbe))
+* **bin-designer:** one fold row across the sidebar and one-line lid notes ([#4586](https://github.com/andymai/gridfinity-layout-tool/issues/4586)) ([456243e](https://github.com/andymai/gridfinity-layout-tool/commit/456243e91997fb11bba2bac3bf16d9eee03eedc6))
+* **bin-designer:** one toggle row for every sidebar setting and one wall picker ([#4584](https://github.com/andymai/gridfinity-layout-tool/issues/4584)) ([2c500d9](https://github.com/andymai/gridfinity-layout-tool/commit/2c500d97b45a77ccc042ba45c387a073247a64bf))
+* **bin-designer:** pick the body type and interior mode from icon tiles ([#4585](https://github.com/andymai/gridfinity-layout-tool/issues/4585)) ([471db9c](https://github.com/andymai/gridfinity-layout-tool/commit/471db9cd03e7fd3e028e90c06ef3fb1d0c9c5514))
+
+
+### Bug Fixes
+
+* **lid:** keep a tall hinged lid's side walls and lift its latch plug clear ([#4579](https://github.com/andymai/gridfinity-layout-tool/issues/4579)) ([1cc1eb8](https://github.com/andymai/gridfinity-layout-tool/commit/1cc1eb86d1bfb5b395c8101f5e592269c03ab1e8))
+* **lid:** raise a hinged bin's hinge wall to meet a tall lid ([#4581](https://github.com/andymai/gridfinity-layout-tool/issues/4581)) ([493ce2e](https://github.com/andymai/gridfinity-layout-tool/commit/493ce2eb9b0cbcbb1243ce5971067b74ba8f4ad9))
+
 ## [4.511.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.511.0...gridfinity-layout-tool-v4.511.1) (2026-10-14)
 
 
