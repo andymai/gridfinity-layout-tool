@@ -489,10 +489,11 @@ describe('DesignerStore - lid actions', () => {
       updateLid({ stackableTop: true });
       expect(lidTopUnits()).toBeCloseTo(1, 6);
 
-      // A 6 mm plate under a stack grid cannot be as short as one unit.
+      // A 6 mm plate under a stack grid cannot be as short as one unit, but
+      // the 1u choice is kept for when it can be again.
       updateLid({ topThicknessMm: 6 });
-      expect(useDesignerStore.getState().params.lid.heightUnits).toBe(2);
       expect(lidTopUnits()).toBeCloseTo(2, 6);
+      expect(useDesignerStore.getState().params.lid.heightUnits).toBe(1);
 
       updateLid({ attachment: 'hinge', stackableTop: false });
       expect(lidTopUnits()).toBeCloseTo(2, 6);
@@ -502,6 +503,9 @@ describe('DesignerStore - lid actions', () => {
 
       setParams({ heightUnitMm: 10 });
       expect(lidTopUnits()).toBeCloseTo(2, 6);
+
+      updateLid({ topThicknessMm: 0.8 });
+      expect(lidTopUnits()).toBeCloseTo(1, 6);
     });
 
     it('undoes a setting change together with the lid height it moved', () => {

@@ -8,7 +8,11 @@ import {
   LID_EXTRA_HEIGHT_MIN_MM,
   LID_EXTRA_HEIGHT_STEP_MM,
 } from '@/features/bin-designer/types/lid';
-import { lidHeightUnitRange, lidUnitsCovering } from '@/features/bin-designer/utils/lidHeightUnits';
+import {
+  lidHeightUnitRange,
+  lidUnitsCovering,
+  syncedLidHeight,
+} from '@/features/bin-designer/utils/lidHeightUnits';
 import { useTranslation } from '@/i18n';
 import { StepperField } from '../shared/StepperField';
 import { Hint } from '../shared';
@@ -24,7 +28,8 @@ export function LidHeightField() {
   );
   const { extraHeightMm, heightUnits } = params.lid;
   const range = lidHeightUnitRange(params);
-  const mode: HeightMode = heightUnits !== undefined && range ? 'u' : 'mm';
+  const units = syncedLidHeight(params)?.effectiveUnits;
+  const mode: HeightMode = units !== undefined && range ? 'u' : 'mm';
 
   const setMode = (next: HeightMode): void => {
     if (next === 'mm') {
@@ -43,22 +48,22 @@ export function LidHeightField() {
       extraHeightMm: clamp(mm, LID_EXTRA_HEIGHT_MIN_MM, LID_EXTRA_HEIGHT_MAX_MM),
     });
 
-  const setUnits = (units: number): void => {
+  const setUnits = (next: number): void => {
     if (!range) return;
-    const next = clamp(Math.round(units), range.min, range.max);
-    if (next !== heightUnits) updateLid({ heightUnits: next });
+    const clamped = clamp(Math.round(next), range.min, range.max);
+    if (clamped !== heightUnits) updateLid({ heightUnits: clamped });
   };
 
   return (
     <div className="space-y-1">
       <div className="flex items-end gap-2">
-        {mode === 'u' && range && heightUnits !== undefined ? (
+        {mode === 'u' && range && units !== undefined ? (
           <StepperField
             label={t('binDesigner.lid.heightUnits')}
             unit="u"
-            value={heightUnits}
+            value={units}
             onChange={setUnits}
-            onStep={(delta) => setUnits(heightUnits + delta)}
+            onStep={(delta) => setUnits(units + delta)}
             min={range.min}
             max={range.max}
             step={1}
@@ -99,8 +104,8 @@ export function LidHeightField() {
           </div>
         )}
       </div>
-      {mode === 'u' && heightUnits !== undefined && (
-        <Hint>{t('binDesigner.lid.heightUnitsHint', { units: heightUnits })}</Hint>
+      {mode === 'u' && units !== undefined && (
+        <Hint>{t('binDesigner.lid.heightUnitsHint', { units })}</Hint>
       )}
     </div>
   );

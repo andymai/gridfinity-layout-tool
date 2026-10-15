@@ -16,7 +16,8 @@ export interface LidUnitRange {
 }
 
 export interface SyncedLidHeight {
-  readonly heightUnits: number;
+  /** The stored units pulled into reach; the stored value itself is kept. */
+  readonly effectiveUnits: number;
   readonly extraHeightMm: number;
 }
 
@@ -71,14 +72,18 @@ export function extraHeightForLidUnits(params: AssembledHeightSource, units: num
  * The stored `heightUnits` pulled into reach, and the `extraHeightMm` it
  * implies. Null when units are off, or when no lid seats on the rim: the knob is
  * then left alone and the units apply again once a lid seats.
+ *
+ * Only the millimetres are ever written back. Keeping the stored units as
+ * chosen makes the result independent of the order settings change in: a lid
+ * pushed to 2u by a thick plate returns to 1u when the plate does.
  */
 export function syncedLidHeight(params: AssembledHeightSource): SyncedLidHeight | null {
   const units = params.lid.heightUnits;
   if (units === undefined) return null;
   const range = lidHeightUnitRange(params);
   if (!range) return null;
-  const heightUnits = Math.min(Math.max(Math.round(units), range.min), range.max);
-  return { heightUnits, extraHeightMm: extraHeightForLidUnits(params, heightUnits) };
+  const effectiveUnits = Math.min(Math.max(Math.round(units), range.min), range.max);
+  return { effectiveUnits, extraHeightMm: extraHeightForLidUnits(params, effectiveUnits) };
 }
 
 /**
@@ -100,12 +105,6 @@ export function lidUnitsCovering(params: AssembledHeightSource): number | null {
  */
 export function withSyncedLidHeight<P extends AssembledHeightSource>(params: P): P {
   const synced = syncedLidHeight(params);
-  if (
-    !synced ||
-    (synced.heightUnits === params.lid.heightUnits &&
-      synced.extraHeightMm === params.lid.extraHeightMm)
-  ) {
-    return params;
-  }
-  return { ...params, lid: { ...params.lid, ...synced } };
+  if (!synced || synced.extraHeightMm === params.lid.extraHeightMm) return params;
+  return { ...params, lid: { ...params.lid, extraHeightMm: synced.extraHeightMm } };
 }

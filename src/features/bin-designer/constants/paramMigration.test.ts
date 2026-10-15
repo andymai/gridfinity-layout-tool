@@ -1390,7 +1390,7 @@ describe('migrateParams', () => {
       }).lid.heightUnits;
     expect(units(2.4)).toBe(2);
     expect(units(-3)).toBe(1);
-    expect(units(999)).toBe(14);
+    expect(units(999)).toBe(50);
     expect(units('tall')).toBeUndefined();
     expect(units(undefined)).toBeUndefined();
   });

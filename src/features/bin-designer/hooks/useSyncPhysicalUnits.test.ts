@@ -92,6 +92,27 @@ describe('useSyncPhysicalUnits', () => {
 
     beforeEach(() => setLayoutLowProfile(false));
 
+    it('keeps a unit-sized lid when the profile and height unit change together', () => {
+      useLayoutStore.getState().setHeightUnitMm(9);
+      useDesignerStore.setState((state) => ({
+        params: {
+          ...state.params,
+          heightUnitMm: 9,
+          lid: { ...state.params.lid, enabled: true, stackableTop: true, heightUnits: 12 },
+        },
+      }));
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => {
+        setLayoutLowProfile(true);
+        useLayoutStore.getState().setHeightUnitMm(7);
+      });
+
+      const { params } = useDesignerStore.getState();
+      expect(params.lid.heightUnits).toBe(12);
+      expect(lidTopAboveRimMm(params)).toBeCloseTo(12 * 7, 6);
+    });
+
     it('marks the open design low profile when the layout turns it on', () => {
       renderHook(() => useSyncPhysicalUnits());
       act(() => setLayoutLowProfile(true));

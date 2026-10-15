@@ -85,10 +85,19 @@ describe('lid height in units', () => {
     ).toBeNull();
   });
 
-  it('pulls a stored height the lid cannot reach back into range', () => {
-    const thickGrid = params({ topThicknessMm: 6, stackableTop: true, heightUnits: 1 });
-    expect(syncedLidHeight(thickGrid)?.heightUnits).toBe(2);
-    expect(syncedLidHeight(params({ heightUnits: 50 }))?.heightUnits).toBe(14);
+  it('sizes to the nearest reachable height without forgetting the one chosen', () => {
+    const thickGrid = withSyncedLidHeight(
+      params({ topThicknessMm: 6, stackableTop: true, heightUnits: 1 })
+    );
+    expect(syncedLidHeight(thickGrid)?.effectiveUnits).toBe(2);
+    expect(thickGrid.lid.heightUnits).toBe(1);
+    expect(syncedLidHeight(params({ heightUnits: 50 }))?.effectiveUnits).toBe(14);
+
+    const thin = withSyncedLidHeight({
+      ...thickGrid,
+      lid: { ...thickGrid.lid, topThicknessMm: 0.8 },
+    });
+    expect(lidTopAboveRimMm(thin)).toBeCloseTo(thin.heightUnitMm, 6);
   });
 
   it('leaves the millimetre knob alone when units are off or nothing seats', () => {

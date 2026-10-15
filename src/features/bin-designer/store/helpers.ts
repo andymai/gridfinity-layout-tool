@@ -85,9 +85,9 @@ export function paramsNeedHalfGridMode(params: BinParams): boolean {
 export function syncLidHeightUnits(state: Draft<DesignerState>): void {
   const synced = syncedLidHeight(state.params);
   if (!synced) return;
-  const lid = state.params.lid;
-  if (lid.heightUnits !== synced.heightUnits) lid.heightUnits = synced.heightUnits;
-  if (lid.extraHeightMm !== synced.extraHeightMm) lid.extraHeightMm = synced.extraHeightMm;
+  if (state.params.lid.extraHeightMm !== synced.extraHeightMm) {
+    state.params.lid.extraHeightMm = synced.extraHeightMm;
+  }
 }
 
 export function getPendingMeshCache(): CachedMesh | null {
