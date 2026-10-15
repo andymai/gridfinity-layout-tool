@@ -524,7 +524,7 @@ describe('handler', () => {
   it('leaves every executable inline script byte-identical', async () => {
     // These are pinned by CSP hashes in vercel.json; one changed byte and the
     // app does not boot on a design page.
-    const scripts = INDEX_HTML.match(/<script>[\s\S]*?<\/script>/g) ?? [];
+    const scripts = INDEX_HTML.match(/<script>[\s\S]*?<\/script>/gi) ?? [];
     expect(scripts.length).toBeGreaterThan(0);
     const res = await serve(DESIGN_ID);
     for (const script of scripts) expect(res._body).toContain(script);
@@ -563,6 +563,22 @@ describe('handler', () => {
       expect(res._body).toContain('<meta name="robots" content="noindex">');
     }
     expect(mocks.readCommunityCards).not.toHaveBeenCalled();
+  });
+
+  it('keeps a design page up when Redis fails to initialize', async () => {
+    mocks.getRedis.mockImplementation(() => {
+      throw new TypeError('Invalid URL');
+    });
+    const res = await serve(DESIGN_ID);
+    expect(res._status).toBe(200);
+    expect(res._body).not.toContain('content="noindex');
+  });
+
+  it('keeps a design page up when the store read fails', async () => {
+    mocks.readCommunityCards.mockRejectedValue(new Error('ECONNRESET'));
+    const res = await serve(DESIGN_ID);
+    expect(res._status).toBe(200);
+    expect(res._body).not.toContain('content="noindex');
   });
 
   it('keeps a design page up while Redis is unavailable', async () => {

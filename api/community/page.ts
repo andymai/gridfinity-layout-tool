@@ -386,7 +386,7 @@ export function injectDesignMeta(shell: string, design: DesignMeta, siteUrl: str
   // The shell's structured data describes the homepage (its FAQ, its how-to,
   // the app itself). Schema has to match what the page shows, so none of it
   // survives onto a design page, indexable or not.
-  html = html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>\s*/g, '');
+  html = html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>\s*/gi, '');
 
   // Schema only for pages Google is allowed to keep. Advertising structured
   // data on a noindex page spends nothing and claims something.
@@ -455,15 +455,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const redis = getRedis();
-  if (!redis) {
-    // Without Redis a live design cannot be told from a missing one, and a
-    // 404 here would drop every design from the index for the outage.
-    send(200, shell);
-    return;
-  }
-
   try {
+    // getRedis throws on a malformed REDIS_URL, so it stays inside the try.
+    const redis = getRedis();
+    if (!redis) {
+      // Without Redis a live design cannot be told from a missing one, and a
+      // 404 here would drop every design from the index for the outage.
+      send(200, shell);
+      return;
+    }
     const design = await readDesignMeta(redis, designId);
     if (design === null) {
       sendNotFound();
