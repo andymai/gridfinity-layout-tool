@@ -1,0 +1,30 @@
+api/community/page.test.ts
+  s_4c3c2daba3f861::t_b0a30808aaadef 494
+  s_4c3c2daba3f861::t_3d894ca657b990 1-4,13-25
+  s_4c3c2daba3f861::t_fe96c9aeb54b03 415-493,495-576
+api/community/page.ts
+  s_4c3c2daba3f861::t_3afe07e360178b 381,386-389
+  s_4c3c2daba3f861::t_4823b9bc36adf2 445,448,450,454-462,467-472,475
+  s_4c3c2daba3f861::t_c62791bda54461 341-349
+  s_4c3c2daba3f861::t_3365f94763ff05 30-35
+  s_4c3c2daba3f861::t_7ed0cb737e3bc5 39
+  s_4c3c2daba3f861::t_e91335addbfbbd 272-289
+  s_4c3c2daba3f861::t_66b35feb20de18 399,401-402
+  s_4c3c2daba3f861::t_191c2cd2ecad62 271,390
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "696281eae2dd20ba9adcf3cf085fb764a73b45d1",
+  "prompts": {},
+  "sessions": {
+    "s_4c3c2daba3f861": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fdd9d737-3e13-40e1-bd09-90226688050e",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
