@@ -1,6 +1,7 @@
 ---
 title: Gridfinity 서랍 레이아웃 계획하는 법
 description: Gridfinity 서랍 레이아웃을 계획하는 실용 가이드예요. 서랍을 측정하고, 어떤 수납통이 필요한지 파악하고, 프린트 목록을 내보내세요.
+lastmod: 2026-07-26
 keywords: gridfinity 플래너, gridfinity 레이아웃, gridfinity 계획하는 법, 서랍 정리함 계획, gridfinity 가이드
 schema: HowTo
 breadcrumbs:

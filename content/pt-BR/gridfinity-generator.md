@@ -1,6 +1,7 @@
 ---
 title: 'Gerador Gridfinity: bins e placas-base grátis online'
 description: Gerador Gridfinity gratuito. Crie bins e placas-base no navegador, visualize em 3D e exporte para STL, STEP ou 3MF. Sem instalar e sem conta.
+lastmod: 2026-08-15
 keywords: gerador gridfinity, gridfinity bin generator, gerador placa gridfinity, gridfinity STL, gridfinity online, gridfinity grátis
 schema: HowTo
 breadcrumbs:

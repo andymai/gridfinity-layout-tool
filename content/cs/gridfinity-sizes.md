@@ -1,6 +1,7 @@
 ---
 title: Rozměry Gridfinity — mřížka 42 mm a výšky 7 mm
 description: Jak velká je jednotka Gridfinity? Mřížka 42 mm, výšky 7 mm. Rychlý přehled rozměrů Binů, převodu zásuvky a toho, co kam pasuje.
+lastmod: 2026-07-26
 keywords: rozměry gridfinity, velikosti gridfinity, velikosti binů gridfinity, výškové jednotky gridfinity, gridfinity 42mm, velikost mřížky gridfinity, standardní velikost gridfinity, proč má gridfinity 42mm
 schema: Article
 breadcrumbs:

@@ -1,6 +1,7 @@
 ---
 title: Gridfinity 生成器 — 免费在线收纳盒和底板生成器
 description: 免费 Gridfinity 生成器。在浏览器中制作自定义收纳盒和底板，3D 预览，并导出 STL、STEP 或 3MF。无需安装、无需账户、可离线运行。
+lastmod: 2026-08-15
 keywords: gridfinity 生成器, gridfinity 收纳盒生成器, gridfinity 底板生成器, gridfinity STL 生成器, 在线 gridfinity 生成器, 免费 gridfinity 生成器, 自定义 gridfinity, gridfinity 3MF, gridfinity STEP
 schema: HowTo
 breadcrumbs:

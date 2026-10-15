@@ -1,6 +1,7 @@
 ---
 title: Gridfinity grunnplate-generator — Gratis STL-skaper på nett
 description: Gridfinity grunnplate-generator med 3D-forhåndsvisning. Sett rutenettstørrelse, magnethull og kantmargin. Eksporter som STL, STEP eller 3MF. Gratis.
+lastmod: 2026-08-09
 keywords: gridfinity grunnplate-generator, gridfinity baseplate, egen gridfinity-grunnplate, gridfinity STL, skuffegrunnplate, magnetgrunnplate
 schema: HowTo
 breadcrumbs:

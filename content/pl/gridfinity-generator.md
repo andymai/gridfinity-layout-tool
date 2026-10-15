@@ -1,6 +1,7 @@
 ---
 title: Generator Gridfinity — Biny i płyty bazowe online
 description: Darmowy generator Gridfinity. Twórz własne Biny i płyty bazowe w przeglądarce, podglądaj w 3D i eksportuj STL, STEP lub 3MF. Bez instalacji i konta.
+lastmod: 2026-08-15
 keywords: gridfinity generator, gridfinity bin generator, generator płyt bazowych gridfinity, gridfinity STL generator, generator gridfinity online, darmowy generator gridfinity, własne gridfinity, gridfinity 3MF, gridfinity STEP
 schema: HowTo
 breadcrumbs:

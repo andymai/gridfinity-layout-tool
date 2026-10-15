@@ -1,6 +1,7 @@
 ---
 title: Cómo planificar un cajón Gridfinity
 description: Guía práctica para planificar layouts de cajón Gridfinity. Mide tu cajón, decide qué bins necesitas y exporta una lista de impresión.
+lastmod: 2026-05-18
 keywords: planificador gridfinity, layout gridfinity, cómo planificar gridfinity, organizar cajón, guía gridfinity
 schema: HowTo
 breadcrumbs:

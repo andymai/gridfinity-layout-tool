@@ -1,6 +1,7 @@
 ---
 title: Gridfinity-størrelser — Bin-mål og enhetsveiledning
 description: Hvor stor er en Gridfinity-enhet? 42-mm-rutenett, høydeintervaller på 7 mm. Raske referansetabeller for bins, skuffeomregning og hva som passer hvor.
+lastmod: 2026-07-16
 keywords: gridfinity størrelser, gridfinity mål, gridfinity bin-størrelser, gridfinity høydeenheter, gridfinity 42mm, gridfinity rutenett
 schema: Article
 breadcrumbs:

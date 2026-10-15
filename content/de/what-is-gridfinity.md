@@ -1,6 +1,7 @@
 ---
 title: Was ist Gridfinity? Modulares 42-mm-System
 description: Wie Gridfinity funktioniert, was du zum Start brauchst und wie du eine Schublade planst, die passt. Praxisanleitung für das gedruckte Ordnungssystem.
+lastmod: 2026-08-09
 keywords: gridfinity, was ist gridfinity, schubladeneinsatz, 3D-Druck, modulares Ordnungssystem, Zack Freedman
 schema: Article
 breadcrumbs:

@@ -1,6 +1,7 @@
 ---
 title: 什么是 Gridfinity？42mm 模块化收纳系统
 description: Gridfinity 是免费开源的模块化收纳系统，在 42mm 网格上 3D 打印。了解收纳盒、底板与 7mm 高度的原理，然后免费设计属于你的方案。
+lastmod: 2026-07-26
 keywords: gridfinity, 什么是 gridfinity, 抽屉收纳盒, 3D 打印, 模块化收纳系统, Zack Freedman
 schema: Article
 breadcrumbs:

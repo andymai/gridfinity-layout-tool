@@ -1,6 +1,7 @@
 ---
 title: Hva er Gridfinity? Modulært 42 mm-system
 description: Gridfinity er et gratis, modulært system med åpen kildekode, 3D-printet på et 42 mm-rutenett. Bokser, bunnplater og 7 mm-høyder — lag ditt eget gratis.
+lastmod: 2026-07-16
 keywords: gridfinity, hva er gridfinity, skuffeorganisator, 3D-utskrift, modulær oppbevaring, Zack Freedman
 schema: Article
 breadcrumbs:

@@ -1,6 +1,7 @@
 ---
 title: Gridfinity Drawer Sizes and Planner
 description: Find Gridfinity drawer layouts for common drawer units, or measure any drawer to size the planner and baseplate generator.
+lastmod: 2026-10-15
 keywords: gridfinity drawers, gridfinity drawer sizes, gridfinity drawer organizer, gridfinity ikea, gridfinity ikea drawer, gridfinity tool chest, gridfinity toolbox, gridfinity drawer planner
 schema: Article
 breadcrumbs:

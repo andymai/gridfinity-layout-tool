@@ -1,6 +1,7 @@
 ---
 title: 'Gridfinity Cutout Generator: Shaped Cavities for Any Tool'
 description: Cut a cavity shaped like the thing you are storing. Draw it, pick a shape, or import an STL and imprint it. Export STL, STEP, or 3MF.
+lastmod: 2026-10-08
 keywords: gridfinity cutout generator, gridfinity custom cutout, gridfinity tool cutout, gridfinity cutout maker, tool cutout generator, gridfinity shadow board, gridfinity mesh imprint, gridfinity stl cutout
 schema: HowTo
 breadcrumbs:

@@ -1,6 +1,7 @@
 ---
 title: Gridfinity-bin-generator — Gratis online STL-maker
 description: Gridfinity-bin-generator met visuele editor en realtime 3D-preview. Stel afmetingen in, voeg vakken en uitsparingen toe, exporteer als STL of 3MF.
+lastmod: 2026-08-09
 keywords: gridfinity generator, gridfinity bin generator, gridfinity STL, eigen gridfinity bins, gridfinity ontwerper, gridfinity online
 schema: HowTo
 breadcrumbs:

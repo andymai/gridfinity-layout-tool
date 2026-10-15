@@ -1,6 +1,7 @@
 ---
 title: 'Gridfinity-generator: gratis bins og grunnplater på nett'
 description: Gratis Gridfinity-generator. Lag egne bins og grunnplater i nettleseren, forhåndsvis i 3D og eksporter som STL, STEP eller 3MF. Uten konto.
+lastmod: 2026-08-15
 keywords: gridfinity generator, gridfinity bin-generator, gridfinity grunnplate-generator, gridfinity STL, gridfinity online, gridfinity gratis
 schema: HowTo
 breadcrumbs:

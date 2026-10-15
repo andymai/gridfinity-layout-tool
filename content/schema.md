@@ -1,6 +1,7 @@
 ---
 title: 'Gridfinity File Formats: Layout and Bin Design JSON'
 description: The JSON formats behind Gridfinity Layout Tool exports, with published schemas you can validate against and edit by hand or with an AI assistant.
+lastmod: 2026-08-22
 keywords: gridfinity json schema, gridfinity layout file format, gridfinity bin design json, edit gridfinity layout file, gridfinity file format, json schema gridfinity
 schema: Article
 breadcrumbs:

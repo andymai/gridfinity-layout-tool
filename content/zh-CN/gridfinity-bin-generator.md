@@ -1,6 +1,7 @@
 ---
 title: Gridfinity 收纳盒生成器 — 免费在线 STL 创建器
 description: Gridfinity 收纳盒生成器，带可视化编辑器和实时 3D 预览。设置尺寸，添加隔间和挖槽，导出 STL、STEP 或 3MF。免费浏览器工具。
+lastmod: 2026-07-26
 keywords: gridfinity 生成器, gridfinity 收纳盒生成器, gridfinity STL 生成器, 自定义 gridfinity 收纳盒, gridfinity 设计器, 在线 gridfinity 生成器
 schema: HowTo
 breadcrumbs:

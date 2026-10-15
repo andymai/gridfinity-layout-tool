@@ -1,6 +1,7 @@
 ---
 title: 'Plan Gridfinity for an IKEA Helmer'
 description: 'Measure your Helmer drawer, choose the matching layout, and generate bins and a baseplate sized for your drawer and printer.'
+lastmod: 2026-10-15
 keywords: gridfinity helmer, gridfinity ikea helmer, ikea helmer gridfinity, helmer drawer organizer gridfinity, gridfinity helmer drawer
 schema: HowTo
 breadcrumbs:

@@ -1,6 +1,7 @@
 ---
 title: Розміри Gridfinity — Габарити bin і довідник одиниць
 description: Який розмір одиниці Gridfinity? Сітка 42 мм, кроки висоти по 7 мм. Швидкі довідкові таблиці для bins, перерахунку шухляди і того, що куди вміщається.
+lastmod: 2026-07-16
 keywords: розміри gridfinity, габарити gridfinity, розміри bin gridfinity, одиниці висоти gridfinity, gridfinity 42мм, сітка gridfinity
 schema: Article
 breadcrumbs:

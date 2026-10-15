@@ -1,6 +1,7 @@
 ---
 title: Eine Gridfinity-Schublade planen — Anleitung
 description: Praktischer Leitfaden zum Planen von Gridfinity-Schubladenlayouts. Schublade ausmessen, passende Bins bestimmen und eine Druckliste exportieren.
+lastmod: 2026-05-18
 keywords: gridfinity planer, gridfinity layout, gridfinity planen, schubladeneinsatz planen, gridfinity anleitung
 schema: HowTo
 breadcrumbs:

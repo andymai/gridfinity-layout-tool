@@ -1,6 +1,7 @@
 ---
 title: Darmowy generator Binów Gridfinity — STL online
 description: Generator Binów Gridfinity z edytorem wizualnym i podglądem 3D na żywo. Ustaw wymiary, dodaj przegródki i wycięcia, eksportuj STL, STEP lub 3MF.
+lastmod: 2026-07-26
 keywords: gridfinity generator, gridfinity bin generator, gridfinity STL generator, własne biny gridfinity, gridfinity designer, generator gridfinity online
 schema: HowTo
 breadcrumbs:

@@ -1,6 +1,7 @@
 ---
 title: Generator płyt bazowych Gridfinity — STL online
 description: Generator płyt bazowych Gridfinity z podglądem 3D na żywo. Ustaw siatkę, dodaj otwory na magnesy, a duże płyty podzielą się na stół drukarki.
+lastmod: 2026-07-26
 keywords: generator płyt bazowych gridfinity, gridfinity baseplate, własna płyta bazowa gridfinity, gridfinity STL, płyta bazowa do szuflady, płyta z magnesami
 schema: HowTo
 breadcrumbs:

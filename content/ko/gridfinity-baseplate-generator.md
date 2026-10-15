@@ -1,6 +1,7 @@
 ---
 title: Gridfinity 베이스플레이트 생성기 — 무료 온라인 STL 제작기
 description: 서랍에 맞춘 맞춤 Gridfinity 베이스플레이트를 생성하세요 — 그리드를 설정하고 자석 홀과 커넥터를 추가하면 프린트 베드에 맞게 자동 분할돼요. 3D 미리보기, 무료 STL/STEP/3MF 내보내기, 계정 불필요.
+lastmod: 2026-07-26
 keywords: gridfinity 베이스플레이트 생성기, gridfinity 베이스플레이트, 맞춤 gridfinity 베이스플레이트, gridfinity STL, 서랍 베이스플레이트, 자석 베이스플레이트
 schema: HowTo
 breadcrumbs:

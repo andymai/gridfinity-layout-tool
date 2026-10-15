@@ -1,6 +1,7 @@
 ---
 title: Gridfinity 尺寸与规格 — 42mm 网格 + 7mm 高度
 description: 所有 Gridfinity 尺寸一处汇总 — 42mm 网格、7mm 高度单位，以及以 mm 和英寸表示的完整收纳盒尺寸表，还有如何把抽屉测量值换算成网格单位。免费速查参考。
+lastmod: 2026-07-26
 keywords: gridfinity 尺寸, gridfinity 规格, gridfinity 收纳盒尺寸, gridfinity 高度单位, gridfinity 42mm, gridfinity 网格尺寸, 标准 gridfinity 尺寸, 为什么 gridfinity 是 42mm
 schema: Article
 breadcrumbs:

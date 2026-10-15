@@ -1,6 +1,7 @@
 ---
 title: Gridfinity Calculator — Drawer Size to Grid Units
 description: Convert drawer measurements in millimeters to Gridfinity grid units. See leftover space and the tallest bin that fits. Free, and no account needed.
+lastmod: 2026-10-15
 keywords: gridfinity calculator, gridfinity drawer calculator, gridfinity size calculator, gridfinity bin calculator, gridfinity base calculator, gridfinity grid units, gridfinity rechner, 42mm grid calculator
 schema: Article
 breadcrumbs:

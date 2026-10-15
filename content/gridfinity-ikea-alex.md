@@ -1,6 +1,7 @@
 ---
 title: Gridfinity for IKEA Alex Drawers
 description: Measure your IKEA Alex drawer, open a sized layout, and generate a split baseplate that fits your printer.
+lastmod: 2026-10-15
 keywords: gridfinity ikea alex, gridfinity alex drawer, ikea alex gridfinity baseplate, gridfinity for alex drawers, ikea alex 9 drawer gridfinity, gridfinity alex drawers
 schema: HowTo
 breadcrumbs:

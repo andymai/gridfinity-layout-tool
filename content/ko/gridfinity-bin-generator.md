@@ -1,6 +1,7 @@
 ---
 title: Gridfinity 수납통 생성기 — 무료 온라인 STL 제작기
 description: 시각적 편집기와 실시간 3D 미리보기를 갖춘 Gridfinity 수납통 생성기예요. 치수를 설정하고, 칸과 컷아웃을 추가하고, STL, STEP, 3MF로 내보내세요. 무료 브라우저 도구.
+lastmod: 2026-07-26
 keywords: gridfinity 생성기, gridfinity 수납통 생성기, gridfinity STL 생성기, 맞춤 gridfinity 수납통, gridfinity 디자이너, 온라인 gridfinity 생성기
 schema: HowTo
 breadcrumbs:

@@ -1,6 +1,7 @@
 ---
 title: Gridfinity bottenplatta-generator — Gratis STL-skapare online
 description: Gridfinity bottenplatta-generator med 3D-förhandsgranskning. Ställ in rutnätsstorlek, magnethål och kantmarginal. Exportera som STL, STEP eller 3MF.
+lastmod: 2026-08-09
 keywords: gridfinity bottenplatta-generator, gridfinity baseplate, egen gridfinity-bottenplatta, gridfinity STL, lådbottenplatta, magnet-bottenplatta
 schema: HowTo
 breadcrumbs:

@@ -1,6 +1,7 @@
 ---
 title: Co je Gridfinity? Modulární systém 42 mm
 description: Gridfinity je bezplatný, otevřený modulární systém tištěný 3D na mřížce 42 mm. Poznej Biny, základní desky a výšky po 7 mm — a navrhni si vlastní zdarma.
+lastmod: 2026-07-26
 keywords: gridfinity, co je gridfinity, organizér do zásuvky, 3D tisk, modulární úložný systém, Zack Freedman
 schema: Article
 breadcrumbs:

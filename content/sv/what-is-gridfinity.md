@@ -1,6 +1,7 @@
 ---
 title: Vad är Gridfinity? Modulärt 42 mm-system
 description: Hur Gridfinity fungerar, vad du behöver för att börja och hur du planerar en låda som passar. Praktisk guide till det 3D-utskrivna systemet.
+lastmod: 2026-08-09
 keywords: gridfinity, vad är gridfinity, lådorganisatör, 3D-utskrift, modulär förvaring, Zack Freedman
 schema: Article
 breadcrumbs:

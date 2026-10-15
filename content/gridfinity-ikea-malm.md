@@ -1,6 +1,7 @@
 ---
 title: Gridfinity Layout for IKEA Malm Drawers
 description: Size a Gridfinity planner, bins, and a printable split baseplate for your IKEA Malm chest of drawers.
+lastmod: 2026-10-15
 keywords: gridfinity malm, gridfinity ikea malm, ikea malm gridfinity, malm drawer organizer gridfinity, gridfinity malm drawer
 schema: HowTo
 breadcrumbs:

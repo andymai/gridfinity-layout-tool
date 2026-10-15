@@ -1,6 +1,7 @@
 ---
 title: Gridfinity for Milwaukee Packout Drawers
 description: Plan bins and a printable baseplate for your Milwaukee Packout 3-Drawer Tool Box with a free browser-based Gridfinity tool.
+lastmod: 2026-10-15
 keywords: gridfinity packout, gridfinity milwaukee packout, packout drawer gridfinity, gridfinity packout drawer, milwaukee packout 3 drawer gridfinity, gridfinity for milwaukee packout
 schema: HowTo
 breadcrumbs:

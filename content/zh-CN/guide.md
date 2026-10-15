@@ -1,6 +1,7 @@
 ---
 title: 如何规划 Gridfinity 抽屉布局
 description: 一份规划 Gridfinity 抽屉布局的实用指南。测量你的抽屉，确定需要哪些收纳盒，然后导出打印清单。
+lastmod: 2026-07-26
 keywords: gridfinity 规划器, gridfinity 布局, 如何规划 gridfinity, 抽屉收纳规划, gridfinity 指南
 schema: HowTo
 breadcrumbs:

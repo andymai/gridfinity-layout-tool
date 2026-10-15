@@ -1,6 +1,7 @@
 ---
 title: Gridfinity 생성기 — 무료 온라인 수납통 & 베이스플레이트 생성기
 description: 무료 Gridfinity 생성기. 브라우저에서 맞춤 수납통과 베이스플레이트를 만들고, 3D로 미리보고, STL, STEP, 3MF로 내보내세요. 설치 없음, 계정 없음, 오프라인 실행.
+lastmod: 2026-08-15
 keywords: gridfinity 생성기, gridfinity 수납통 생성기, gridfinity 베이스플레이트 생성기, gridfinity STL 생성기, 온라인 gridfinity 생성기, 무료 gridfinity 생성기, 맞춤 gridfinity, gridfinity 3MF, gridfinity STEP
 schema: HowTo
 breadcrumbs:

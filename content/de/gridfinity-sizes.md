@@ -1,6 +1,7 @@
 ---
 title: Gridfinity-Größen — Bin-Maße und Einheiten-Übersicht
 description: 'Alle Maße für Gridfinity-Bins und Grundplatten: Tabellen für Rastereinheiten und Höhen, gängige Größen und die Umrechnung deiner Schublade.'
+lastmod: 2026-08-09
 keywords: gridfinity größen, gridfinity maße, gridfinity bin größen, gridfinity höheneinheiten, gridfinity 42mm, gridfinity rastergröße
 schema: Article
 breadcrumbs:

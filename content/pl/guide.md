@@ -1,6 +1,7 @@
 ---
 title: Jak zaplanować układ szuflady Gridfinity
 description: Praktyczny przewodnik po planowaniu układów szuflad Gridfinity. Zmierz szufladę, dobierz potrzebne Biny i wyeksportuj listę druku.
+lastmod: 2026-07-26
 keywords: gridfinity planer, gridfinity układ, jak zaplanować gridfinity, planowanie organizera do szuflady, gridfinity przewodnik
 schema: HowTo
 breadcrumbs:

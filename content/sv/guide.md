@@ -1,6 +1,7 @@
 ---
 title: Planera en Gridfinity-låda — Handledning
 description: Praktisk guide för att planera Gridfinity-lådlayouts. Mät din låda, bestäm vilka bins du behöver och exportera en utskriftslista.
+lastmod: 2026-05-18
 keywords: gridfinity planerare, gridfinity layout, gridfinity planera, lådorganisatör planera, gridfinity guide
 schema: HowTo
 breadcrumbs:

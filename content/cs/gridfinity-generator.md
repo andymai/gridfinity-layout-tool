@@ -1,6 +1,7 @@
 ---
 title: Generátor Gridfinity — Biny a základní desky
 description: Bezplatný generátor Gridfinity. Vytvářej vlastní Biny a základní desky v prohlížeči, prohlížej ve 3D a exportuj STL, STEP nebo 3MF. Bez instalace a účtu.
+lastmod: 2026-08-15
 keywords: gridfinity generátor, gridfinity bin generator, generátor základních desek gridfinity, gridfinity STL generátor, online generátor gridfinity, bezplatný generátor gridfinity, vlastní gridfinity, gridfinity 3MF, gridfinity STEP
 schema: HowTo
 breadcrumbs:

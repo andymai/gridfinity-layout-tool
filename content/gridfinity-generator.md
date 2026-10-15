@@ -1,6 +1,7 @@
 ---
 title: Gridfinity Generator — Free Online Bin & Baseplate Generator
 description: Free Gridfinity generator for bins and baseplates. Set the size, preview in 3D, and export STL, STEP, or 3MF. No install, no account, works offline.
+lastmod: 2026-08-15
 keywords: gridfinity generator, gridfinity bin generator, gridfinity baseplate generator, gridfinity STL generator, online gridfinity generator, free gridfinity generator, custom gridfinity, gridfinity 3MF, gridfinity STEP
 schema: HowTo
 breadcrumbs:

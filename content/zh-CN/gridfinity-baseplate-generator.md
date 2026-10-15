@@ -1,6 +1,7 @@
 ---
 title: Gridfinity 底板生成器 — 免费在线 STL 创建器
 description: 生成一块按你抽屉定尺寸的自定义 Gridfinity 底板 — 设置网格，添加磁铁孔和连接件，它会自动拆分以适配打印床。3D 预览，免费导出 STL/STEP/3MF，无需账户。
+lastmod: 2026-07-26
 keywords: gridfinity 底板生成器, gridfinity 底板, 自定义 gridfinity 底板, gridfinity STL, 抽屉底板, 磁铁底板
 schema: HowTo
 breadcrumbs:

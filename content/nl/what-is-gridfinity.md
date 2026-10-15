@@ -1,6 +1,7 @@
 ---
 title: Wat is Gridfinity? Modulair 42mm-systeem
 description: Hoe Gridfinity werkt, wat je nodig hebt om te beginnen en hoe je een lade plant die past. Praktische gids voor het geprinte opbergsysteem.
+lastmod: 2026-08-09
 keywords: gridfinity, wat is gridfinity, lade-organizer, 3D-print, modulaire opslag, Zack Freedman
 schema: Article
 breadcrumbs:

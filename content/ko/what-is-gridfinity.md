@@ -1,6 +1,7 @@
 ---
 title: Gridfinity란? 42mm 모듈형 수납 시스템
 description: Gridfinity는 42mm 그리드 위에 직접 3D 프린트하는 무료 오픈소스 모듈형 수납 시스템이에요. 수납통과 베이스플레이트, 7mm 높이의 원리를 알아보고 무료로 설계해 보세요.
+lastmod: 2026-07-26
 keywords: gridfinity, gridfinity란, 서랍 정리함, 3D 프린팅, 모듈형 수납 시스템, Zack Freedman
 schema: Article
 breadcrumbs:

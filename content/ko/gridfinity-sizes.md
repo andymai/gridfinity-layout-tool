@@ -1,6 +1,7 @@
 ---
 title: Gridfinity 사이즈와 치수 — 42mm 그리드 + 7mm 높이
 description: 모든 Gridfinity 치수를 한곳에 — 42mm 그리드, 7mm 높이 단위, mm와 인치로 된 완전한 수납통 크기 표, 그리고 서랍 치수를 그리드 단위로 환산하는 법까지. 무료 빠른 참고 자료예요.
+lastmod: 2026-07-26
 keywords: gridfinity 사이즈, gridfinity 치수, gridfinity 수납통 크기, gridfinity 높이 단위, gridfinity 42mm, gridfinity 그리드 크기, 표준 gridfinity 크기, gridfinity가 42mm인 이유
 schema: Article
 breadcrumbs:

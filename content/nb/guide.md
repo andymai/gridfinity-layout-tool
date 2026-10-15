@@ -1,6 +1,7 @@
 ---
 title: Planlegge en Gridfinity-skuff — Veiledning
 description: Praktisk veiledning for å planlegge Gridfinity-skuffeoppsett. Mål skuffen, finn ut hvilke bins du trenger og eksporter en utskriftsliste.
+lastmod: 2026-05-18
 keywords: gridfinity planlegger, gridfinity layout, gridfinity planlegge, skuffeorganisator planlegge, gridfinity veiledning
 schema: HowTo
 breadcrumbs:

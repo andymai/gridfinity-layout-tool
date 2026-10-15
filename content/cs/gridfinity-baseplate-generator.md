@@ -1,6 +1,7 @@
 ---
 title: Generátor základních desek Gridfinity — STL online
 description: Generátor základních desek Gridfinity s živým náhledem 3D. Nastav mřížku, přidej otvory na magnety a velké desky se rozdělí podle podložky tiskárny.
+lastmod: 2026-07-26
 keywords: generátor základních desek gridfinity, gridfinity baseplate, vlastní základní deska gridfinity, gridfinity STL, základní deska do zásuvky, magnetická základní deska
 schema: HowTo
 breadcrumbs:

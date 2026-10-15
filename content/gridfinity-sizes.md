@@ -1,6 +1,7 @@
 ---
 title: 'Gridfinity Sizes & Dimensions: Full Tables in mm and Inches'
 description: Every Gridfinity bin and baseplate dimension in millimeters and inches, plus height units, common bin sizes, and how to convert a drawer to grid units.
+lastmod: 2026-08-09
 keywords: gridfinity sizes, gridfinity dimensions, gridfinity bin sizes, gridfinity height units, gridfinity 42mm, gridfinity grid size, standard gridfinity size, why is gridfinity 42mm
 schema: Article
 breadcrumbs:

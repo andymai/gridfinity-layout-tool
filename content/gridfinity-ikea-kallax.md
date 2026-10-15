@@ -1,6 +1,7 @@
 ---
 title: Gridfinity Layout for IKEA Kallax Drawers
 description: Measure your IKEA Kallax insert drawer, open a correctly sized planner, and make a split baseplate that fits your printer.
+lastmod: 2026-10-15
 keywords: gridfinity kallax, gridfinity ikea kallax, gridfinity kallax drawer, ikea kallax gridfinity insert, kallax drawer organizer gridfinity
 schema: HowTo
 breadcrumbs:

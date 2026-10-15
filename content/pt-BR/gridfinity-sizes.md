@@ -1,6 +1,7 @@
 ---
 title: Tamanhos Gridfinity — Dimensões dos bins e guia de unidades
 description: Qual é o tamanho de uma unidade Gridfinity? Tabelas completas de bins e placas-base em mm e polegadas, mais um conversor de medidas de gaveta.
+lastmod: 2026-08-09
 keywords: tamanhos gridfinity, dimensões gridfinity, tamanhos bin gridfinity, unidades altura gridfinity, gridfinity 42mm, grade gridfinity
 schema: Article
 breadcrumbs:

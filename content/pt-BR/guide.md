@@ -1,6 +1,7 @@
 ---
 title: Como planejar uma gaveta Gridfinity
 description: Guia prático para planejar layouts de gaveta Gridfinity. Meça a gaveta, escolha os bins certos e exporte uma lista de impressão.
+lastmod: 2026-05-18
 keywords: planejador gridfinity, layout gridfinity, como planejar gridfinity, organizar gaveta, guia gridfinity
 schema: HowTo
 breadcrumbs:

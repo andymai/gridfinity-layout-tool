@@ -1,6 +1,7 @@
 ---
 title: Qu’est-ce que Gridfinity ? Système modulaire 42 mm
 description: Gridfinity est un système modulaire libre et gratuit imprimé en 3D sur grille de 42 mm. Bacs, plaques et hauteurs de 7 mm — créez le vôtre gratuitement.
+lastmod: 2026-07-16
 keywords: gridfinity, qu’est-ce que gridfinity, organisateur tiroir, impression 3D, rangement modulaire, Zack Freedman
 schema: Article
 breadcrumbs:

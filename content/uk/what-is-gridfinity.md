@@ -1,6 +1,7 @@
 ---
 title: Що таке Gridfinity? Модульна система 42 мм
 description: Gridfinity — безкоштовна модульна система з відкритим кодом для 3D-друку на сітці 42 мм. Контейнери, основи та висоти 7 мм — створіть власну безкоштовно.
+lastmod: 2026-07-16
 keywords: gridfinity, що таке gridfinity, органайзер для шухляд, 3D-друк, модульне зберігання, Zack Freedman
 schema: Article
 breadcrumbs:

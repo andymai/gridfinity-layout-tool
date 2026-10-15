@@ -1,6 +1,7 @@
 ---
 title: 'Generador de placas base Gridfinity: STL gratis en línea'
 description: Generador de placas base Gridfinity con vista previa 3D. Configura la cuadrícula, orificios para imanes y márgenes. Exporta a STL, STEP o 3MF. Gratis.
+lastmod: 2026-08-09
 keywords: generador placa gridfinity, gridfinity baseplate, placa gridfinity personalizada, gridfinity STL, placa para cajón, placa con imanes
 schema: HowTo
 breadcrumbs:

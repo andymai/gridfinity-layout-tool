@@ -1,6 +1,7 @@
 ---
 title: 'What Is Gridfinity? Free Guide and Drawer Planner'
 description: Learn how the pieces fit and what to print first, then use the free planner to size a layout to your drawer.
+lastmod: 2026-10-15
 keywords: gridfinity, what is gridfinity, gridfinity system, gridfinity storage, gridfinity bins, gridfinity explained, drawer organizer, 3D printing, modular storage, Zack Freedman
 schema: Article
 breadcrumbs:

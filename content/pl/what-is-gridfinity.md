@@ -1,6 +1,7 @@
 ---
 title: Czym jest Gridfinity? System modułowy 42 mm
 description: Jak działa Gridfinity, co jest potrzebne na start i jak zaplanować szufladę, która pasuje. Praktyczny przewodnik po drukowanym systemie.
+lastmod: 2026-08-09
 keywords: gridfinity, czym jest gridfinity, organizer do szuflady, druk 3D, modułowy system przechowywania, Zack Freedman
 schema: Article
 breadcrumbs:

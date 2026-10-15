@@ -12,6 +12,7 @@ import { marked } from 'marked';
 import { load as loadYaml } from 'js-yaml';
 import { composeSerpTitle, estimateTitlePx, SERP_TITLE_MAX_PX } from './serpTitle';
 import { renderContentImage } from './contentImage';
+import { resolvePageLastmod } from './contentLastmod';
 
 const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
 
@@ -465,6 +466,7 @@ interface Frontmatter {
   howTo?: HowToFrontmatter;
   softwareApplication?: SoftwareApplicationFrontmatter;
   navCta?: NavCta;
+  lastmod?: string;
 }
 
 function generateHtml(
@@ -472,7 +474,8 @@ function generateHtml(
   frontmatter: Frontmatter,
   slug: string,
   locale: Locale,
-  availableLocales: ReadonlySet<Locale>
+  availableLocales: ReadonlySet<Locale>,
+  dateModified: string | undefined
 ): string {
   const {
     title,
@@ -561,6 +564,7 @@ function generateHtml(
           description,
           image,
           url: canonicalUrl,
+          ...(dateModified ? { dateModified } : {}),
           author: {
             '@type': 'Person',
             name: 'Andy Aragon',
@@ -926,7 +930,7 @@ function processFile(
   slug: string,
   locale: Locale,
   availableLocales: ReadonlySet<Locale>
-): void {
+): string {
   const fileContent = fs.readFileSync(filePath, 'utf-8');
   let parsed: { data: Record<string, unknown>; content: string };
   try {
@@ -955,9 +959,23 @@ function processFile(
     }
   }
 
+  const lastmod = resolvePageLastmod(frontmatter.lastmod, CONTENT_LASTMOD);
+  if (lastmod.invalid) {
+    console.warn(
+      `⚠ ${path.relative(process.cwd(), filePath)}: lastmod ${JSON.stringify(frontmatter.lastmod)} is not a valid YYYY-MM-DD date; sitemap falls back to ${CONTENT_LASTMOD}`
+    );
+  }
+
   imagesOnPage = 0;
   const htmlContent = marked(content);
-  const fullHtml = generateHtml(htmlContent as string, frontmatter, slug, locale, availableLocales);
+  const fullHtml = generateHtml(
+    htmlContent as string,
+    frontmatter,
+    slug,
+    locale,
+    availableLocales,
+    lastmod.own
+  );
 
   const outputPath = getOutputDir(slug, locale);
   fs.mkdirSync(outputPath, { recursive: true });
@@ -965,6 +983,7 @@ function processFile(
   fs.writeFileSync(outputFile, fullHtml);
 
   console.log(`✓ Generated ${path.relative(process.cwd(), outputFile)}`);
+  return lastmod.sitemap;
 }
 
 interface DiscoveredEntry {
@@ -1031,9 +1050,10 @@ interface SitemapPage {
   changefreq: string;
 }
 
-// Bump CONTENT_LASTMOD when shipping a substantive content change so search
-// engines re-crawl the affected URLs. Hardcoded (not `new Date()`) to avoid
-// every build advertising the entire sitemap as updated.
+// Sitemap date for `/`, APP_ROUTES, and any content page without its own
+// frontmatter `lastmod`. Hardcoded (not `new Date()`) so a build does not
+// advertise every URL as updated; one shared date re-dates every page it
+// covers when bumped, which is why content pages carry their own.
 const CONTENT_LASTMOD = '2026-10-15';
 
 // SPA routes with their own static HTML entry (see scripts/build-route-entries.ts).
@@ -1076,7 +1096,10 @@ function sitemapImageXml(slug: string): string {
     : '';
 }
 
-function writeSitemap(localesBySlug: Map<string, Set<Locale>>): void {
+function writeSitemap(
+  localesBySlug: Map<string, Set<Locale>>,
+  lastmodByUrl: ReadonlyMap<string, string>
+): void {
   const out: string[] = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
@@ -1116,13 +1139,14 @@ ${sitemapImageXml(slug)}  </url>`);
     ].join('\n');
 
     for (const locale of sortedLocales) {
+      const url = getUrl(slug, locale);
       const priority =
         locale === DEFAULT_LOCALE
           ? config.basePriority.toFixed(1)
           : (config.basePriority - 0.1).toFixed(1);
       out.push(`  <url>
-    <loc>${getUrl(slug, locale)}</loc>
-    <lastmod>${CONTENT_LASTMOD}</lastmod>
+    <loc>${url}</loc>
+    <lastmod>${lastmodByUrl.get(url) ?? CONTENT_LASTMOD}</lastmod>
     <changefreq>${config.changefreq}</changefreq>
     <priority>${priority}</priority>
 ${hreflang}
@@ -1164,12 +1188,14 @@ function build(): void {
     locales.add(entry.locale);
   }
 
+  const lastmodByUrl = new Map<string, string>();
   for (const entry of entries) {
     const locales = localesBySlug.get(entry.slug) ?? new Set<Locale>();
-    processFile(entry.filePath, entry.slug, entry.locale, locales);
+    const lastmod = processFile(entry.filePath, entry.slug, entry.locale, locales);
+    lastmodByUrl.set(getUrl(entry.slug, entry.locale), lastmod);
   }
 
-  writeSitemap(localesBySlug);
+  writeSitemap(localesBySlug, lastmodByUrl);
 
   console.log(`\n✓ Built ${entries.length} content page(s) across ${localesBySlug.size} slug(s)`);
 }

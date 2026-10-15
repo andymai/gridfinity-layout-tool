@@ -1,6 +1,7 @@
 ---
 title: How to Plan a Gridfinity Drawer Layout
 description: A practical guide to planning Gridfinity drawer layouts. Measure your drawer, figure out what bins you need, and export a print list.
+lastmod: 2026-08-09
 keywords: gridfinity planner, gridfinity layout, how to plan gridfinity, drawer organizer planning, gridfinity guide
 schema: HowTo
 breadcrumbs:

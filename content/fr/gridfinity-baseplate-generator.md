@@ -1,6 +1,7 @@
 ---
 title: 'Générateur de plaques de base Gridfinity : STL gratuit'
 description: Générateur de plaques de base Gridfinity avec aperçu 3D. Configurez la grille, les trous d’aimants et les marges. Export en STL, STEP ou 3MF. Gratuit.
+lastmod: 2026-08-09
 keywords: gridfinity générateur plaque, gridfinity baseplate, plaque gridfinity personnalisée, gridfinity STL, plaque pour tiroir, plaque magnétique
 schema: HowTo
 breadcrumbs:

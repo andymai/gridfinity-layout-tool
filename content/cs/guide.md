@@ -1,6 +1,7 @@
 ---
 title: Jak naplánovat rozvržení zásuvky Gridfinity
 description: Praktický průvodce plánováním rozvržení zásuvek Gridfinity. Změř zásuvku, urči, jaké Biny potřebuješ, a vyexportuj seznam pro tisk.
+lastmod: 2026-07-26
 keywords: gridfinity plánovač, gridfinity rozvržení, jak naplánovat gridfinity, plánování organizéru do zásuvky, gridfinity průvodce
 schema: HowTo
 breadcrumbs:

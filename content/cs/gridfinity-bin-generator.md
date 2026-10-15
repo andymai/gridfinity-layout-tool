@@ -1,6 +1,7 @@
 ---
 title: Bezplatný generátor Binů Gridfinity — STL online
 description: Generátor Binů Gridfinity s vizuálním editorem a náhledem 3D v reálném čase. Nastav rozměry, přidej přihrádky a výřezy, exportuj STL, STEP nebo 3MF.
+lastmod: 2026-07-26
 keywords: gridfinity generátor, gridfinity bin generator, gridfinity STL generátor, vlastní biny gridfinity, gridfinity designer, online generátor gridfinity
 schema: HowTo
 breadcrumbs:
