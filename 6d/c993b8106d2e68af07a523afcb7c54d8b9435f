@@ -1,0 +1,33 @@
+src/core/storage/index.ts
+  s_4c3c2daba3f861::t_9a2b48e3aa6508 53
+src/features/layout-library/hooks/useDrawerLinkImport.ts
+  s_4c3c2daba3f861::t_9a2b48e3aa6508 5-9,98
+src/core/storage/LayoutService.ts
+  s_4c3c2daba3f861::t_9a2b48e3aa6508 534-548,603
+src/shared/utils/drawerLink.ts
+  s_4c3c2daba3f861::t_9a2b48e3aa6508 143-144,149,151,154
+src/features/layout-library/hooks/useDrawerLinkImport.test.ts
+  s_4c3c2daba3f861::t_d1ce593d8872c0 16-18,20-21,26-28,59,66,93,117,127,141,150,170,186,202
+  s_4c3c2daba3f861::t_21251aa31ed5b5 106-115
+  s_4c3c2daba3f861::t_531ccaeaa17f78 6,19
+src/core/storage/LayoutService.scenario.library.test.ts
+  s_4c3c2daba3f861::t_21251aa31ed5b5 20,403-428
+src/shared/utils/drawerLink.test.ts
+  s_4c3c2daba3f861::t_d1ce593d8872c0 159,173,176-177,181,186
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6dc993b8106d2e68af07a523afcb7c54d8b9435f",
+  "prompts": {},
+  "sessions": {
+    "s_4c3c2daba3f861": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fdd9d737-3e13-40e1-bd09-90226688050e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
