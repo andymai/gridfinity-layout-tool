@@ -32,9 +32,10 @@ import type { OverhangConfig } from '@/core/types';
  *  units would mis-detect a bin already parked at x.5 from an earlier run. */
 const STEP = 0.5;
 
-/** Outward-only per-side ceiling (mm) — half a 42mm grid unit. Mirrors the
- *  designer's `MAX_OVERHANG`; beyond it the honest answer is "your bins are too
- *  small for this span", not a larger cantilever. */
+/** Outward-only per-side ceiling (mm), half a 42mm grid unit. Deliberately below
+ *  the designer's `MAX_OVERHANG`: a layout bin can grow by half a unit instead,
+ *  so beyond this the honest answer is "your bins are too small for this span",
+ *  not a longer cantilever. */
 const MAX_SIDE_MM = 21;
 
 /** Grid-unit slack for boundary comparisons. */

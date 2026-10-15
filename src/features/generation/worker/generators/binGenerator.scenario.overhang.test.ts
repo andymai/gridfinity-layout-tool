@@ -71,6 +71,39 @@ describe('bin overhang geometry', () => {
     expect(bb.maxY - bb.minY).toBeCloseTo(base.maxY - base.minY, 1);
   });
 
+  it('builds an overhang just short of a full grid unit, with or without feet under it', () => {
+    const generateBin = getGenerateBin();
+    const base = boundingBox(
+      generateBin(buildParams({ width: 2, depth: 2 }), undefined, true).vertices
+    );
+    const footVerticesUnderOverhang = (vertices: Float32Array, minZ: number): number => {
+      let n = 0;
+      for (let i = 0; i < vertices.length; i += 3) {
+        if (vertices[i] > base.maxX + 20 && Math.abs(vertices[i + 2] - minZ) < 0.01) n++;
+      }
+      return n;
+    };
+
+    for (const feet of [false, true]) {
+      const result = generateBin(
+        buildParams({
+          width: 2,
+          depth: 2,
+          overhang: { left: 0, right: 41, front: 0, back: 0, feet },
+        }),
+        undefined,
+        true
+      );
+      assertStructurallyValid(result, `41mm overhang, feet ${feet}`);
+      const bb = boundingBox(result.vertices);
+      expect(bb.maxX).toBeCloseTo(base.maxX + 41, 1);
+      expect(bb.minX).toBeCloseTo(base.minX, 1);
+      expect(bb.minZ).toBeCloseTo(base.minZ, 1);
+      if (feet) expect(footVerticesUnderOverhang(result.vertices, bb.minZ)).toBeGreaterThan(0);
+      else expect(footVerticesUnderOverhang(result.vertices, bb.minZ)).toBe(0);
+    }
+  });
+
   it('clamps negative overhang to zero (no change)', () => {
     const generateBin = getGenerateBin();
     const base = boundingBox(

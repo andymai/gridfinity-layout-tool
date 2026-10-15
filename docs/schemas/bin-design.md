@@ -647,10 +647,10 @@ the overhang region has a flat bottom unless `feet` is set. Ignored for
 | Field     | Type                                  | Required | Default | Constraint  | Notes                                                                                                           |
 | --------- | ------------------------------------- | -------- | ------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
 | `enabled` | `boolean`                             |          |         |             | Absent means enabled is inferred from any non-zero side.                                                        |
-| `left`    | `number`                              | yes      |         | >= 0, <= 21 | Outward expansion on -X in mm.                                                                                  |
-| `right`   | `number`                              | yes      |         | >= 0, <= 21 | Outward expansion on +X in mm.                                                                                  |
-| `front`   | `number`                              | yes      |         | >= 0, <= 21 | Outward expansion on -Y in mm.                                                                                  |
-| `back`    | `number`                              | yes      |         | >= 0, <= 21 | Outward expansion on +Y in mm.                                                                                  |
+| `left`    | `number`                              | yes      |         | >= 0, <= 42 | Outward expansion on -X in mm.                                                                                  |
+| `right`   | `number`                              | yes      |         | >= 0, <= 42 | Outward expansion on +X in mm.                                                                                  |
+| `front`   | `number`                              | yes      |         | >= 0, <= 42 | Outward expansion on -Y in mm.                                                                                  |
+| `back`    | `number`                              | yes      |         | >= 0, <= 42 | Outward expansion on +Y in mm.                                                                                  |
 | `feet`    | `boolean`                             |          | `false` |             | Add grid-aligned feet under the overhang region. False leaves a flat bottom with feet at the nominal footprint. |
 | `taper`   | [`WallTaperConfig`](#walltaperconfig) |          |         |             |                                                                                                                 |
 

@@ -61,7 +61,7 @@ bounded at 0 and 100, fractions at 0 and 1, and counts at 1.
 | `MAX_LABEL_TAB_WIDTH`          | `100` | `LabelTabConfig.width` (maximum)                                                                                                                                        |
 | `MAX_MAGNET_DIAMETER`          | `10`  | `BaseConfig.magnetDiameter` (maximum), `BaseplateParams.magnetDiameter` (maximum), `LidMagnetConfig.diameter` (maximum)                                                 |
 | `MAX_MAGNET_HEIGHT`            | `4`   | `BaseConfig.magnetDepth` (maximum), `BaseplateParams.magnetDepth` (maximum), `LidMagnetConfig.depth` (maximum)                                                          |
-| `MAX_OVERHANG`                 | `21`  | `OverhangConfig.back` (maximum), `OverhangConfig.front` (maximum), `OverhangConfig.left` (maximum), `OverhangConfig.right` (maximum)                                    |
+| `MAX_OVERHANG`                 | `42`  | `OverhangConfig.back` (maximum), `OverhangConfig.front` (maximum), `OverhangConfig.left` (maximum), `OverhangConfig.right` (maximum)                                    |
 | `MAX_SCOOP_RADIUS`             | `25`  | `ScoopConfig.radius` (maximum)                                                                                                                                          |
 | `MAX_SCOOP_RUN`                | `140` | `ScoopConfig.run` (maximum)                                                                                                                                             |
 | `MAX_SCREW_DIAMETER`           | `6`   | `BaseConfig.screwDiameter` (maximum)                                                                                                                                    |

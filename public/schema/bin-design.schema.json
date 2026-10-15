@@ -1885,7 +1885,7 @@
         "left": {
           "type": "number",
           "minimum": 0,
-          "maximum": 21,
+          "maximum": 42,
           "x-constant": {
             "minimum": "DESIGNER_CONSTRAINTS.MIN_OVERHANG",
             "maximum": "DESIGNER_CONSTRAINTS.MAX_OVERHANG"
@@ -1895,7 +1895,7 @@
         "right": {
           "type": "number",
           "minimum": 0,
-          "maximum": 21,
+          "maximum": 42,
           "x-constant": {
             "minimum": "DESIGNER_CONSTRAINTS.MIN_OVERHANG",
             "maximum": "DESIGNER_CONSTRAINTS.MAX_OVERHANG"
@@ -1905,7 +1905,7 @@
         "front": {
           "type": "number",
           "minimum": 0,
-          "maximum": 21,
+          "maximum": 42,
           "x-constant": {
             "minimum": "DESIGNER_CONSTRAINTS.MIN_OVERHANG",
             "maximum": "DESIGNER_CONSTRAINTS.MAX_OVERHANG"
@@ -1915,7 +1915,7 @@
         "back": {
           "type": "number",
           "minimum": 0,
-          "maximum": 21,
+          "maximum": 42,
           "x-constant": {
             "minimum": "DESIGNER_CONSTRAINTS.MIN_OVERHANG",
             "maximum": "DESIGNER_CONSTRAINTS.MAX_OVERHANG"

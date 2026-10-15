@@ -36,8 +36,7 @@ interface ExtendToMarginToggleProps {
 // height, so an approximate cap here only bounds the slider range.
 const HEIGHT_UNIT_MM = 7;
 const TAPER_BAND_STEP = 0.5;
-// One full grid unit: the flare sits above the drawer's curve, where no extra
-// grid cell could fit, so the half-unit overhang ceiling doesn't bound it.
+// One full grid unit, matching the designer's flare cap.
 const MAX_FLARE_MM = 42;
 
 export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginToggleProps) {
