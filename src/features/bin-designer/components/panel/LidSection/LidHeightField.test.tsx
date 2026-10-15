@@ -72,6 +72,25 @@ describe('LidHeightField', () => {
     expect(lid().extraHeightMm).toBe(sized);
   });
 
+  it('leaves a lid at the millimetre cap in millimetres', () => {
+    seed({ extraHeightMm: 100 });
+    render(<LidHeightField />);
+    fireEvent.click(within(unitSwitch()).getByRole('radio', { name: 'u' }));
+    expect(lid().heightUnits).toBeUndefined();
+    expect(lid().extraHeightMm).toBe(100);
+  });
+
+  it('drops stored units when millimetres are edited while no lid seats', () => {
+    seed({ heightUnits: 2 }, { stackingLip: false });
+    render(<LidHeightField />);
+    const input = screen.getByRole('spinbutton', { name: 'Extra lid height in millimeters' });
+    fireEvent.change(input, { target: { value: '12' } });
+    fireEvent.blur(input);
+    expect(lid().heightUnits).toBeUndefined();
+    useDesignerStore.getState().updateBase({ stackingLip: true });
+    expect(lid().extraHeightMm).toBe(12);
+  });
+
   it('offers no units when no lid seats on the rim', () => {
     seed({}, { stackingLip: false });
     render(<LidHeightField />);

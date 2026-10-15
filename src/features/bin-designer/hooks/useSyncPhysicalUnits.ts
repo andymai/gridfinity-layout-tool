@@ -65,8 +65,9 @@ export function useSyncPhysicalUnits(): void {
     () =>
       useDesignerStore.subscribe((state, prev) => {
         if (state.params === prev.params) return;
-        const synced = withSyncedLidHeight(
-          withLowProfileBase(state.params, useLayoutStore.getState().layout.lowProfileBase)
+        const synced = withLowProfileBase(
+          state.params,
+          useLayoutStore.getState().layout.lowProfileBase
         );
         if (synced === state.params) return;
         setPendingMeshCache(null);

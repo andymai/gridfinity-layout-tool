@@ -35,8 +35,13 @@ export function LidHeightField() {
     if (covering !== null) updateLid({ heightUnits: covering });
   };
 
+  // Clears the units too: the field also shows while units are stored but no
+  // lid seats, and those units would otherwise overwrite this edit once one does.
   const setExtraHeight = (mm: number): void =>
-    updateLid({ extraHeightMm: clamp(mm, LID_EXTRA_HEIGHT_MIN_MM, LID_EXTRA_HEIGHT_MAX_MM) });
+    updateLid({
+      heightUnits: undefined,
+      extraHeightMm: clamp(mm, LID_EXTRA_HEIGHT_MIN_MM, LID_EXTRA_HEIGHT_MAX_MM),
+    });
 
   const setUnits = (units: number): void => {
     if (!range) return;

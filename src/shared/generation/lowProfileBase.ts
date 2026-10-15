@@ -8,19 +8,22 @@
  * {@link withoutLowProfileBase}, so it always leaves with standard feet.
  *
  * Both return the input unchanged — same reference — when there is nothing to
- * do, so a standard design keeps its existing cache keys and fingerprint.
+ * do, so a standard design keeps its existing cache keys and fingerprint. A lid
+ * sized in height units is re-derived on the way, since the profile moves the
+ * stack grid's top.
  */
 
 import type { BinParams } from '@/shared/types/bin';
+import { withSyncedLidHeight } from '@/features/bin-designer/utils/lidHeightUnits';
 
 export function withLowProfileBase(params: BinParams, lowProfile: boolean | undefined): BinParams {
   if (lowProfile !== true) return withoutLowProfileBase(params);
   if (params.base.lowProfile === true) return params;
-  return { ...params, base: { ...params.base, lowProfile: true } };
+  return withSyncedLidHeight({ ...params, base: { ...params.base, lowProfile: true } });
 }
 
 export function withoutLowProfileBase(params: BinParams): BinParams {
   if (!('lowProfile' in params.base)) return params;
   const { lowProfile: _drop, ...base } = params.base;
-  return { ...params, base };
+  return withSyncedLidHeight({ ...params, base });
 }

@@ -153,8 +153,8 @@ describe('assembled height matches generated geometry', () => {
         // raised hinge wall, not the stacking lip the lid seats on.
         const lipTop = boundingBox(getGenerateBin()(makeParams()).vertices).maxZ;
         const lidMesh = generateLid(params);
-        expect(lidMesh).not.toBeNull();
-        const lidTop = lidGroupZ(params, lipTop) + boundingBox(lidMesh!.vertices).maxZ;
+        if (!lidMesh) throw new Error('no lid generated');
+        const lidTop = lidGroupZ(params, lipTop) + boundingBox(lidMesh.vertices).maxZ;
 
         const taller = makeParams({ height: params.height + 1 });
         expect(lidTop).toBeCloseTo(boundingBox(getGenerateBin()(taller).vertices).maxZ, 1);

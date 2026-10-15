@@ -1377,7 +1377,7 @@ describe('migrateParams', () => {
 
   it('re-derives a units-sized lid height on load, over a stale millimetre value', () => {
     const result = migrateParams({
-      lid: { enabled: true, stackableTop: true, heightUnits: 2, extraHeightMm: 0 } as any,
+      lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true, heightUnits: 2 },
     });
     expect(result.lid.heightUnits).toBe(2);
     expect(lidTopAboveRimMm(result)).toBeCloseTo(2 * result.heightUnitMm, 6);
@@ -1385,7 +1385,9 @@ describe('migrateParams', () => {
 
   it('keeps lid height units whole and in bounds, and drops corrupt ones', () => {
     const units = (heightUnits: unknown): number | undefined =>
-      migrateParams({ lid: { enabled: true, heightUnits } as any }).lid.heightUnits;
+      migrateParams({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, heightUnits } as unknown as LidConfig,
+      }).lid.heightUnits;
     expect(units(2.4)).toBe(2);
     expect(units(-3)).toBe(1);
     expect(units(999)).toBe(14);

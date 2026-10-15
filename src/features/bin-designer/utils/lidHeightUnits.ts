@@ -1,4 +1,5 @@
 import {
+  hasSeatedLid,
   lidTopAboveRimMm,
   type AssembledHeightSource,
 } from '@/shared/printSettings/assembledHeight';
@@ -27,13 +28,14 @@ function topAtMm(params: AssembledHeightSource, extraHeightMm: number): number {
 
 /**
  * The whole-unit lid heights the extra-height knob can reach, or null when no
- * lid seats on the rim. The low end is the stock lid rounded up: a hinged lid
- * with a stack grid already stands more than one unit tall.
+ * lid seats on the rim. The low end is the stock lid rounded up: a thick plate
+ * under a stack grid already stands more than one unit tall. Under a short
+ * height unit the stock lid can sit below the rim, so its rise may be negative.
  */
 export function lidHeightUnitRange(params: AssembledHeightSource): LidUnitRange | null {
   const unit = params.heightUnitMm;
+  if (!(unit > 0) || !hasSeatedLid(params)) return null;
   const lowest = topAtMm(params, LID_EXTRA_HEIGHT_MIN_MM);
-  if (!(unit > 0) || lowest <= 0) return null;
   const min = Math.max(LID_HEIGHT_UNITS_MIN, Math.ceil(lowest / unit - EPS));
   const max = Math.min(
     LID_HEIGHT_UNITS_MAX,
@@ -81,13 +83,14 @@ export function syncedLidHeight(params: AssembledHeightSource): SyncedLidHeight 
 
 /**
  * The smallest whole-unit height at or above the lid as it stands, so
- * switching a lid to units never shrinks the space it encloses.
+ * switching a lid to units never shrinks the space it encloses. Null when no
+ * reachable unit covers it: a lid near the millimetre cap stays in millimetres.
  */
 export function lidUnitsCovering(params: AssembledHeightSource): number | null {
   const range = lidHeightUnitRange(params);
   if (!range) return null;
   const units = Math.ceil(lidTopAboveRimMm(params) / params.heightUnitMm - EPS);
-  return Math.min(Math.max(units, range.min), range.max);
+  return units > range.max ? null : Math.max(units, range.min);
 }
 
 /**

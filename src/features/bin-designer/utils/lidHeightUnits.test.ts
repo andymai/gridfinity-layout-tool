@@ -103,6 +103,16 @@ describe('lid height in units', () => {
     expect(withSyncedLidHeight(synced)).toBe(synced);
   });
 
+  it('follows a short height unit even where the stock lid sits below the rim', () => {
+    // Under a 3 mm unit the stock lid's top is 1.9 mm below the rim.
+    const short = withSyncedLidHeight(params({ heightUnits: 2 }, { heightUnitMm: 3 }));
+    expect(lidTopAboveRimMm(short)).toBeCloseTo(6, 6);
+  });
+
+  it('will not switch a lid at the millimetre cap down to a shorter unit', () => {
+    expect(lidUnitsCovering(params({ extraHeightMm: 100 }))).toBeNull();
+  });
+
   it('switches to units at or above the lid as it stands', () => {
     expect(lidUnitsCovering(params({}))).toBe(1);
     expect(lidUnitsCovering(params({ extraHeightMm: extraHeightForLidUnits(params({}), 1) }))).toBe(
