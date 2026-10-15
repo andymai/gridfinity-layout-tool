@@ -1,0 +1,39 @@
+.gitignore
+  s_4c3c2daba3f861::t_760a48f791c872 78-80
+docker/nginx.conf
+  s_4c3c2daba3f861::t_760a48f791c872 35,40,141-142
+vercel.json
+  s_4c3c2daba3f861::t_760a48f791c872 208-234,484
+scripts/gen-seo-images.ts
+  s_4c3c2daba3f861::t_51cc2725b415c7 375-377,584-604
+content/gridfinity-drawers.md
+  s_4c3c2daba3f861::t_34f845dd7d1fc7 16,33-42
+content/gridfinity-ikea-helmer.md
+  s_4c3c2daba3f861::t_760a48f791c872 1-105
+content/gridfinity-ikea-kallax.md
+  s_4c3c2daba3f861::t_760a48f791c872 1-100
+scripts/contentRoutes.ts
+  s_4c3c2daba3f861::t_760a48f791c872 36-38
+scripts/vite-plugin-content-routes.ts
+  s_4c3c2daba3f861::t_760a48f791c872 30-32
+scripts/build-content.ts
+  s_4c3c2daba3f861::t_760a48f791c872 1060-1062
+content/gridfinity-ikea-malm.md
+  s_4c3c2daba3f861::t_760a48f791c872 1-100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8795495a6386ab115b052f053911b142ccca41f6",
+  "prompts": {},
+  "sessions": {
+    "s_4c3c2daba3f861": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fdd9d737-3e13-40e1-bd09-90226688050e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
