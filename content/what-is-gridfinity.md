@@ -1,6 +1,6 @@
 ---
-title: What is Gridfinity? How the 3D-Printed Storage System Works
-description: How Gridfinity works, what you need to start, and how to plan a drawer that fits. A practical guide to the 3D-printed modular storage system.
+title: 'What Is Gridfinity? Free Guide and Drawer Planner'
+description: Learn how the pieces fit and what to print first, then use the free planner to size a layout to your drawer.
 keywords: gridfinity, what is gridfinity, gridfinity system, gridfinity storage, gridfinity bins, gridfinity explained, drawer organizer, 3D printing, modular storage, Zack Freedman
 schema: Article
 breadcrumbs:
@@ -41,9 +41,9 @@ faqs:
 
 # What is Gridfinity?
 
-A practical walkthrough of the 3D-printed storage system: what Gridfinity is, what you need to print your first drawer, and how to plan one that fits. Start here if you own a 3D printer and a drawer that has got away from you.
+Gridfinity is a free, open-source 3D-printed storage system: bins rest on a 42 mm baseplate grid, so any maker's bin fits any Gridfinity baseplate. This guide shows how the pieces fit and what to print first, then points you to the free planner that sizes a layout to your drawer.
 
-Gridfinity is a free, open-source storage system you 3D print: bins rest on a 42mm baseplate grid, so every maker's design fits. Standard bin sizes mean anything you print is interchangeable with anything anyone else prints. Zack Freedman, a maker and YouTuber, created it in 2022, and there are now over 10,000 free designs on Printables alone.
+Standard bin sizes mean anything you print is interchangeable with anything anyone else prints. Zack Freedman, a maker and YouTuber, created it in 2022, and there are now over 10,000 free designs on Printables alone.
 
 The idea is simple: everything uses a 42mm grid. Bins rest on baseplates. Baseplates tile to fill any drawer. When you need to reorganize, pick up the bins and move them.
 
