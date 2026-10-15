@@ -28,6 +28,7 @@
     "build": "pnpm run build:content && pnpm run build:en-locale && tsgo -b && vite build && tsx scripts/build-route-entries.ts",
     "build:content": "tsx scripts/build-content.ts",
     "gen:seo-images": "tsx scripts/gen-seo-images.ts",
+    "gen:webp": "tsx scripts/gen-webp-variants.ts",
     "gen:supporters-meshes": "tsx --tsconfig tsconfig.app.json scripts/gen-supporters-meshes.ts",
     "build:en-locale": "tsx scripts/build-en-locale.ts",
     "lint": "NODE_OPTIONS=--max-old-space-size=8192 eslint . --cache --cache-strategy content --cache-location node_modules/.cache/eslint/",

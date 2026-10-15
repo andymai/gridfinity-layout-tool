@@ -11,6 +11,7 @@ import crypto from 'node:crypto';
 import { marked } from 'marked';
 import { load as loadYaml } from 'js-yaml';
 import { composeSerpTitle, estimateTitlePx, SERP_TITLE_MAX_PX } from './serpTitle';
+import { renderContentImage } from './contentImage';
 
 const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
 
@@ -874,6 +875,9 @@ ${items}
 `;
 }
 
+/** Images rendered so far on the page being parsed; reset per page. */
+let imagesOnPage = 0;
+
 function configureMarked(): void {
   marked.use({
     renderer: {
@@ -905,12 +909,14 @@ function configureMarked(): void {
         const content = this.parser.parse(tokens);
         return `<div class="content-callout">${content}</div>\n`;
       },
-      // `![alt](src "WxH")` — the title slot carries intrinsic dimensions so the
+      // `![alt](src "WxH")`: the title slot carries intrinsic dimensions so the
       // browser reserves space before the image loads (no CLS).
       image({ href, title, text }) {
-        const dims = title?.match(/^(\d+)x(\d+)$/);
-        const sizeAttrs = dims ? ` width="${dims[1]}" height="${dims[2]}"` : '';
-        return `<img class="content-img" src="${escapeHtml(href)}" alt="${escapeHtml(text)}"${sizeAttrs} loading="lazy" decoding="async">`;
+        const first = imagesOnPage === 0;
+        imagesOnPage += 1;
+        return renderContentImage({ href, title, alt: text, first }, (publicPath) =>
+          fs.existsSync(path.join(OUTPUT_DIR, publicPath))
+        );
       },
     },
   });
@@ -950,6 +956,7 @@ function processFile(
     }
   }
 
+  imagesOnPage = 0;
   const htmlContent = marked(content);
   const fullHtml = generateHtml(htmlContent as string, frontmatter, slug, locale, availableLocales);
 

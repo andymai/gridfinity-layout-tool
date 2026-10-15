@@ -44,7 +44,7 @@ ONLY=og pnpm run gen:seo-images     # steps: planner, renders, serp, baseplate, 
 ONLY=og OG_SLUGS=a,b pnpm run gen:seo-images   # only these cards
 ```
 
-Outputs are committed: `public/images/landing/` (in-page screenshots) and `public/og/` (1200x630 cards). OG cards embed the landing screenshots as insets, so when a screenshot changes run its step **before** `ONLY=og`. Designer renders use the dev-only `?devThumbnails=1` route (`src/features/bin-designer/components/DevThumbnailRoute/`).
+Outputs are committed: `public/images/landing/` (in-page screenshots) and `public/og/` (1200x630 cards). After changing a landing image a page uses, run `pnpm run gen:webp` (needs `cwebp`): it writes the 720w/1440w WebP variants that `scripts/contentImage.ts` serves through `<picture>`; a page whose image lacks them falls back to the PNG. OG cards embed the landing screenshots as insets, so when a screenshot changes run its step **before** `ONLY=og`. Designer renders use the dev-only `?devThumbnails=1` route (`src/features/bin-designer/components/DevThumbnailRoute/`).
 
 Gallery thumbnails are the same workflow: `pnpm run gen:example-thumbnails` (filter with `EXAMPLE_ID=<id>,<id>`) writes committed PNGs and draco-compressed meshes into `src/features/bin-designer/data/examples/thumbnails/` and `meshes/`.
 
