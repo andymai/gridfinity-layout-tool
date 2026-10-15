@@ -1028,7 +1028,7 @@ interface SitemapPage {
 // Bump CONTENT_LASTMOD when shipping a substantive content change so search
 // engines re-crawl the affected URLs. Hardcoded (not `new Date()`) to avoid
 // every build advertising the entire sitemap as updated.
-const CONTENT_LASTMOD = '2026-10-08';
+const CONTENT_LASTMOD = '2026-10-15';
 
 // SPA routes with their own static HTML entry (see scripts/build-route-entries.ts).
 // English-only, no locale variants.
@@ -1054,6 +1054,9 @@ const SITEMAP_PAGES: Record<string, SitemapPage> = {
   'gridfinity-calculator': { basePriority: 0.8, changefreq: 'monthly' },
   'gridfinity-cutout-generator': { basePriority: 0.8, changefreq: 'monthly' },
   'gridfinity-software': { basePriority: 0.7, changefreq: 'monthly' },
+  'gridfinity-drawers': { basePriority: 0.8, changefreq: 'monthly' },
+  'gridfinity-ikea-alex': { basePriority: 0.7, changefreq: 'monthly' },
+  'gridfinity-milwaukee-packout': { basePriority: 0.7, changefreq: 'monthly' },
   schema: { basePriority: 0.5, changefreq: 'monthly' },
 };
 

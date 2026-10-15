@@ -352,6 +352,66 @@ async function captureBaseplate(browser: Browser, outFile: string): Promise<void
 }
 
 // ---------------------------------------------------------------------------
+// Named-drawer baseplates, opened through the drawer link the pages use
+// ---------------------------------------------------------------------------
+
+interface DrawerRender {
+  /** Output file is `drawer-<slug>-baseplate.png`. */
+  slug: string;
+  /** Interior mm as the content page links it, `WxD` or `WxDxH`. */
+  drawer: string;
+  name: string;
+  /** Wheel steps toward the plate; long thin plates sit small in the iso preset. */
+  zoomSteps: number;
+}
+
+const DRAWER_RENDERS: DrawerRender[] = [
+  { slug: 'ikea-alex', drawer: '295x522', name: 'IKEA Alex drawer', zoomSteps: 4 },
+  {
+    slug: 'milwaukee-packout',
+    drawer: '414x317.5x76',
+    name: 'Milwaukee Packout drawer',
+    zoomSteps: 0,
+  },
+];
+
+async function captureDrawerBaseplate(browser: Browser, render: DrawerRender): Promise<void> {
+  const page = await browser.newPage({ viewport: SHOT_VIEWPORT, deviceScaleFactor: 2 });
+  try {
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem('gridfinity-settings-v1', JSON.stringify({ theme: 'dark' }));
+        window.localStorage.setItem('gridfinity-onboarding-welcome-seen', 'true');
+        window.localStorage.setItem('gridfinity-onboarding-draw-tutorial-seen', 'true');
+        window.localStorage.setItem('gridfinity-onboarding-sidebar-pulse-dismissed', 'true');
+        window.localStorage.setItem('gridfinity-onboarding-chose-blank', 'true');
+      } catch (e) {
+        console.error('[gen-seo-images] localStorage seed failed', e);
+      }
+    });
+    await page.goto(
+      `${BASE}/baseplate?drawer=${render.drawer}&name=${encodeURIComponent(render.name)}`
+    );
+    await page.waitForSelector('canvas', { timeout: 60000 });
+    await page.getByRole('button', { name: /Iso/ }).click();
+    // The split pieces generate one by one in the worker.
+    await page.waitForTimeout(20000);
+    // Centre of the 3D view, right of the settings panel.
+    await page.mouse.move(SHOT_VIEWPORT.width * 0.6, SHOT_VIEWPORT.height * 0.55);
+    for (let i = 0; i < render.zoomSteps; i++) {
+      await page.mouse.wheel(0, -240);
+      await page.waitForTimeout(120);
+    }
+    await page.waitForTimeout(900);
+    const outFile = resolve(LANDING_OUT, `drawer-${render.slug}-baseplate.png`);
+    writeFileSync(outFile, await page.screenshot({ type: 'png' }));
+    console.log(`wrote ${outFile}`);
+  } finally {
+    await page.close();
+  }
+}
+
+// ---------------------------------------------------------------------------
 // OG cards
 // ---------------------------------------------------------------------------
 
@@ -473,6 +533,27 @@ const OG_CARDS: OgCard[] = [
     inset: 'tool-drawer-layout.png',
   },
   {
+    slug: 'gridfinity-drawers',
+    title: 'Gridfinity Drawer Sizes',
+    subtitle: 'Find Gridfinity layouts for common drawers, or measure your own',
+    style: 'light',
+    inset: 'drawer-ikea-alex-baseplate.png',
+  },
+  {
+    slug: 'gridfinity-ikea-alex',
+    title: 'Gridfinity for IKEA Alex Drawers',
+    subtitle: 'Measure your Alex drawer, open a sized layout, and generate a split baseplate',
+    style: 'light',
+    inset: 'drawer-ikea-alex-baseplate.png',
+  },
+  {
+    slug: 'gridfinity-milwaukee-packout',
+    title: 'Gridfinity for Milwaukee Packout Drawers',
+    subtitle: 'Size a Packout drawer layout, choose bin heights, and generate a split baseplate',
+    style: 'light',
+    inset: 'drawer-milwaukee-packout-baseplate.png',
+  },
+  {
     slug: 'gridfinity-software',
     title: 'Gridfinity Software Compared',
     subtitle: 'Online generators vs OpenSCAD vs CAD plugins — what to use when',
@@ -535,9 +616,11 @@ function ogCardHtml(card: OgCard, insetDataUrl: string): string {
 }
 
 async function renderOgCards(browser: Browser): Promise<void> {
+  // OG_SLUGS=a,b renders only those cards, so adding one leaves the rest untouched.
+  const slugs = process.env.OG_SLUGS?.split(',').map((s) => s.trim());
   const page = await browser.newPage({ viewport: OG_VIEWPORT, deviceScaleFactor: 1 });
   try {
-    for (const card of OG_CARDS) {
+    for (const card of OG_CARDS.filter((c) => !slugs || slugs.includes(c.slug))) {
       const insetPath = resolve(LANDING_OUT, card.inset);
       const insetDataUrl = `data:image/png;base64,${readFileSync(insetPath).toString('base64')}`;
       await page.setContent(ogCardHtml(card, insetDataUrl), { waitUntil: 'networkidle' });
@@ -636,6 +719,9 @@ async function main(): Promise<void> {
     }
     if (want('baseplate')) {
       await captureBaseplate(browser, resolve(LANDING_OUT, 'baseplate-preview.png'));
+    }
+    if (want('drawers')) {
+      for (const render of DRAWER_RENDERS) await captureDrawerBaseplate(browser, render);
     }
     if (want('og')) {
       await renderOgCards(browser);

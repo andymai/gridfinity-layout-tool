@@ -86,7 +86,7 @@ Generic bins handle most tools, but some deserve fitted storage. The [bin genera
 
 ## Works With Your Tool Chest
 
-Gridfinity baseplates can be sized to any drawer that fits a 42 mm grid — workshop benches, kitchen tool drawers, Husky and Milwaukee chests, IKEA Alex units, or a Packout drawer in the van. Measure the interior, [generate a baseplate](/gridfinity-baseplate-generator) with per-side edge padding to absorb the leftover millimeters, and the planner handles the rest.
+Gridfinity baseplates can be sized to any drawer that fits a 42 mm grid — workshop benches, kitchen tool drawers, Husky and Milwaukee chests, [IKEA Alex units](/gridfinity-ikea-alex), or a [Packout drawer](/gridfinity-milwaukee-packout) in the van. Measure the interior, [generate a baseplate](/gridfinity-baseplate-generator) with per-side edge padding to absorb the leftover millimeters, and the planner handles the rest.
 
 ## Next Steps
 
