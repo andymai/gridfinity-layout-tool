@@ -356,7 +356,6 @@ async function captureBaseplate(browser: Browser, outFile: string): Promise<void
 // ---------------------------------------------------------------------------
 
 interface DrawerRender {
-  /** Output file is `drawer-<slug>-baseplate.png`. */
   slug: string;
   /** Interior mm as the content page links it, `WxD` or `WxDxH`. */
   drawer: string;
@@ -394,8 +393,16 @@ async function captureDrawerBaseplate(browser: Browser, render: DrawerRender): P
     );
     await page.waitForSelector('canvas', { timeout: 60000 });
     await page.getByRole('button', { name: /Iso/ }).click();
-    // The split pieces generate one by one in the worker.
-    await page.waitForTimeout(20000);
+    // The worker refines the split pieces one at a time behind a "Refining"
+    // status; capture only once it clears, and fail rather than save a draft.
+    const refining = (): boolean => document.body.innerText.includes('Refining');
+    await page
+      .waitForFunction(refining, undefined, { timeout: 60000, polling: 250 })
+      .catch(() => {});
+    await page.waitForFunction(() => !document.body.innerText.includes('Refining'), undefined, {
+      timeout: 180000,
+      polling: 500,
+    });
     // Centre of the 3D view, right of the settings panel.
     await page.mouse.move(SHOT_VIEWPORT.width * 0.6, SHOT_VIEWPORT.height * 0.55);
     for (let i = 0; i < render.zoomSteps; i++) {
@@ -616,7 +623,6 @@ function ogCardHtml(card: OgCard, insetDataUrl: string): string {
 }
 
 async function renderOgCards(browser: Browser): Promise<void> {
-  // OG_SLUGS=a,b renders only those cards, so adding one leaves the rest untouched.
   const slugs = process.env.OG_SLUGS?.split(',').map((s) => s.trim());
   const page = await browser.newPage({ viewport: OG_VIEWPORT, deviceScaleFactor: 1 });
   try {

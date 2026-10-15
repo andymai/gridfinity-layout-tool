@@ -63,7 +63,7 @@ A measured 5-drawer Alex fits a 7 by 12 Gridfinity grid. That is 294 by 504 mm, 
 | 9-drawer 36x116 cm | 423 mm deep, with 7 units fitting across | 7 by 10, or 294 by 420 mm                       | About 3 mm across the depth                              |
 | Wide 67x66 cm      | Width: measure yours. 420 mm deep        | 10 units deep; use the calculator for the width | Depends on your measured width                           |
 
-IKEA lists the 5-drawer unit's inside depth as 52 cm. Measured drawers run slightly larger at 522 to 525 mm deep. The 9-drawer and wide Alex are listed with 42 cm inside depth.
+[IKEA lists](https://www.ikea.com/gb/en/p/alex-drawer-unit-white-00473546/) the 5-drawer unit's inside depth as 52 cm. Measured drawers run slightly larger at 522 to 525 mm deep. The [9-drawer](https://www.ikea.com/gb/en/p/alex-drawer-unit-with-9-drawers-white-90486139/) and [wide Alex](https://www.ikea.com/au/en/p/alex-drawer-unit-on-castors-white-30485425/) are listed with 42 cm inside depth.
 
 The 9-drawer has a different drawer shape from the other Alex units. Its 423 mm inside length fits almost exactly 10 Gridfinity units. The wide 67 cm unit is 10 units deep, but you need to measure its width because no reliable inside width is published.
 

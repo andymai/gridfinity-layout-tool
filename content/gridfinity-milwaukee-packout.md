@@ -1,6 +1,6 @@
 ---
-title: 'Gridfinity for Milwaukee Packout Drawers'
-description: 'Size a Milwaukee Packout drawer layout, choose bin heights, and generate a printable split baseplate in your browser.'
+title: Gridfinity for Milwaukee Packout Drawers
+description: Plan bins and a printable baseplate for your Milwaukee Packout 3-Drawer Tool Box with a free browser-based Gridfinity tool.
 keywords: gridfinity packout, gridfinity milwaukee packout, packout drawer gridfinity, gridfinity packout drawer, milwaukee packout 3 drawer gridfinity, gridfinity for milwaukee packout
 schema: HowTo
 breadcrumbs:
@@ -11,11 +11,11 @@ breadcrumbs:
   - name: Milwaukee Packout
     url: https://gridfinitylayouttool.com/gridfinity-milwaukee-packout
 navCta:
-  label: Plan Packout drawer
+  label: Plan this drawer
   href: /?drawer=414x317.5x76&name=Milwaukee%20Packout%20drawer
 howTo:
-  name: 'Plan Gridfinity for a Milwaukee Packout drawer'
-  description: 'Measure your drawer, arrange your bins, generate a split baseplate, and export the parts for printing.'
+  name: Plan a Gridfinity Milwaukee Packout drawer
+  description: Measure your drawer, arrange your bins, generate a split baseplate, and print the parts.
   totalTime: PT15M
   tools:
     - Web browser
@@ -24,79 +24,81 @@ howTo:
   supplies:
     - PLA or PETG filament
   steps:
-    - name: Measure the drawer
-      text: Measure the usable width, depth, and height inside your drawer. Check these measurements before printing.
+    - name: Measure your drawer
+      text: Measure the inside width, depth, and height of your drawer before printing. Use your measurements if they differ from 414 by 317.5 by about 76 mm.
     - name: Open the sized planner
-      text: Open the Packout layout to start with a drawer sized to 414 by 317.5 by 76 mm.
-    - name: Lay out the bins
-      text: Drag bins onto the 9 by 7 grid, stack layers, and use colors to separate categories.
+      text: Open the planner with a 414 by 317.5 by 76 mm drawer already set up, giving you a 9 by 7 Gridfinity grid.
+    - name: Lay out your bins
+      text: Drag bins onto the grid, stack layers, and color-code categories. Check the print list when the layout is ready.
     - name: Make the split baseplate
-      text: Open the baseplate generator, set your print bed size, and choose where the spare space should sit.
+      text: Open the baseplate generator, set your print bed size, choose the padding position, and decide whether to add magnet holes.
     - name: Print the parts
-      text: Add magnet holes if wanted, export the bins, and use the print list to keep track of the parts.
+      text: Export your bins as STL, STEP, or 3MF, then print the bins and automatically split baseplate pieces.
 faqs:
-  - q: 'What Gridfinity grid fits a Milwaukee Packout drawer?'
-    a: 'A measured Milwaukee PACKOUT 3-Drawer Tool Box drawer takes a 9 by 7 grid, which is 378 by 294 mm.'
-  - q: 'How tall can Gridfinity bins be in the Packout drawer?'
-    a: 'The drawer is about 76 mm high according to one published spec. After allowing about 5 mm for the baseplate, bins up to 10 units, or 70 mm, fit if your drawer measures the same.'
-  - q: 'What about the Milwaukee Packout 2-drawer and 4-drawer boxes?'
-    a: 'Those boxes differ from the 3-drawer box. Measure your own drawer before choosing a grid or printing parts.'
-  - q: 'Will the bins stay put when the box is carried?'
-    a: 'Add magnet holes to the baseplate and bins. Magnets are worth adding in a box that gets carried around because they hold the bins to the baseplate.'
+  - q: What Gridfinity grid fits a Packout drawer?
+    a: A measured Milwaukee PACKOUT 3-Drawer Tool Box drawer takes a 9 by 7 grid, measuring 378 by 294 mm.
+  - q: How tall can Gridfinity bins be in the drawer?
+    a: If your drawer measures about 76 mm high, the tallest standard bin is 10 units on a plain baseplate or 9 units with magnet holes.
+  - q: What about the 2-drawer and 4-drawer Packout boxes?
+    a: Those boxes differ from the 3-drawer box. Measure your own drawer and enter its dimensions in the drawer calculator.
+  - q: Will the bins stay put when the box is carried?
+    a: Add magnet holes to the baseplate and bins so magnets hold them together. Magnets are worth adding in a box that gets carried around, but they reduce the tallest standard bin from 10 units to 9.
 ---
 
 # Gridfinity for Milwaukee Packout Drawers
 
-This page sizes a Gridfinity planner and split baseplate to a Milwaukee Packout 3-drawer tool box drawer. The measured fit is a 9 by 7 grid, with room for bins up to 10 height units if your drawer measures about 76 mm high.
+This page sizes a planner and split baseplate to a Milwaukee Packout 3-drawer tool box drawer. You can arrange bins, generate printable parts, and export them for free in your browser, with no account.
 
-[CTA: Plan your Packout drawer](/?drawer=414x317.5x76&name=Milwaukee%20Packout%20drawer)
+[CTA: Plan this drawer](/?drawer=414x317.5x76&name=Milwaukee%20Packout%20drawer)
 
-![Milwaukee Packout drawer baseplate split into six printable pieces in the 3D generator view](/images/landing/drawer-milwaukee-packout-baseplate.png '1200x675')
+![Milwaukee Packout drawer baseplate split into six printable pieces in the 3D baseplate generator](/images/landing/drawer-milwaukee-packout-baseplate.png '1200x675')
 
-## What fits in the Packout 3-drawer box
+## What Gridfinity layout fits a Packout drawer?
 
-A Milwaukee PACKOUT 3-Drawer Tool Box drawer takes a 9 by 7 Gridfinity layout. Gridfinity uses a 42 mm grid, so this layout covers 378 by 294 mm inside the drawer.
+A Milwaukee PACKOUT 3-Drawer Tool Box drawer takes a 9 by 7 Gridfinity grid. Gridfinity uses a 42 mm grid, so 9 units measure 378 mm and 7 units measure 294 mm.
 
-| Drawer                                 | Inside size           | Grid                     | Spare                       |
-| -------------------------------------- | --------------------- | ------------------------ | --------------------------- |
-| PACKOUT 3-Drawer Tool Box (48-22-8443) | 414 by 317.5 by 76 mm | 9 by 7, or 378 by 294 mm | 36 mm wide and 23.5 mm deep |
+| Drawer                                           | Inside size           | Grid                     | Spare space                 |
+| ------------------------------------------------ | --------------------- | ------------------------ | --------------------------- |
+| Milwaukee PACKOUT 3-Drawer Tool Box (48-22-8443) | 414 by 317.5 by 76 mm | 9 by 7, or 378 by 294 mm | 36 mm wide and 23.5 mm deep |
 
-The baseplate generator turns the spare space into padding around the full Gridfinity grid.
+The planner link opens a new layout already sized to 414 by 317.5 by 76 mm. A first-time visitor gets these dimensions in the empty starting layout instead of receiving a second layout. If you already have layouts, the tool keeps them.
 
-The planner link opens a new layout already sized to 414 by 317.5 by 76 mm. That produces the 9 by 7 grid automatically. For a first-time visitor, the empty starting layout is sized instead of adding a second layout. If you already have layouts, they stay in place.
-
-Inside the planner, drag bins onto the grid, stack layers, and color-code bins by category. The planner also gives you a print list. Bins are generated in your browser and can be exported as STL, STEP, or 3MF. The tool is free and does not require an account.
+In the planner, you can drag bins onto the grid, stack layers, color-code bins by category, and get a print list. Bins are generated in your browser and export as STL, STEP, or 3MF.
 
 ## Measure your drawer before printing
 
-Measure your own drawer before printing. The 414 by 317.5 by 76 mm interior comes from one published spec, while Milwaukee's product page for the PACKOUT 3-Drawer Tool Box (48-22-8443) does not list drawer dimensions.
+Measure your own drawer before printing. The 414 by 317.5 by about 76 mm interior comes from one published spec, while Milwaukee's product page for the PACKOUT 3-Drawer Tool Box does not list drawer dimensions.
 
-Measured 3-drawer boxes take the 9 by 7 grid, and that fit agrees with the published interior size. Your tape measure is still the final check. Measure the clear inside width, depth, and height where the baseplate and bins will sit.
+Measured 3-drawer boxes accept the 9 by 7 grid, which agrees with that published interior size. Still, checking takes less time than reprinting a baseplate. Measure the clear inside width, depth, and height with a ruler or tape measure.
 
-The Milwaukee Packout 2-drawer and 4-drawer boxes differ from the 3-drawer box. Do not reuse the 3-drawer dimensions for them. Enter their measurements in the drawer calculator to find the grid that fits each box.
+The Packout 2-drawer and 4-drawer boxes differ from the 3-drawer box. Use the [drawer calculator](/gridfinity-calculator) with your own measurements when planning either one.
 
-## Use bins up to 10 units tall if your height matches
+## How tall can the bins be?
 
-The drawer is about 76 mm high, based on that one published spec. Gridfinity height units are 7 mm each, so a 10-unit bin is 70 mm tall.
+If your drawer measures about 76 mm high, use bins up to 10 units on a plain baseplate or 9 units with magnet holes. Gridfinity height units are 7 mm, so a 10-unit bin is 70 mm tall.
 
-Allow about 5 mm of the drawer height for the baseplate. With a 76 mm drawer, that leaves enough room for bins up to 10 units. This height applies if your drawer measures the same. Check the usable height with a ruler before committing to a full batch of bins.
+A bin's base sits down inside the baseplate pockets, so a plain baseplate adds no height beneath it. The bin's stacking lip adds 4.4 mm above its listed height. That makes a 10-unit bin 74.4 mm tall, which fits under a 76 mm drawer ceiling.
 
-Also check anything that rises above the bin itself. The key measurement is the clear space available when the drawer closes.
+Magnet holes add 2.5 mm of floor beneath the bins. That comes from a 2 mm magnet over a 0.5 mm retaining floor. A 10-unit bin with magnet holes would stand 76.9 mm tall, which is too tall for this drawer. The tallest standard bin with magnet holes is therefore 9 units.
 
-## Make a baseplate sized and split for the drawer
+These limits apply if your drawer measures the same. Check its height with a ruler before choosing and printing the tallest bins.
 
-[Make the Packout baseplate](/baseplate?drawer=414x317.5x76&name=Milwaukee%20Packout%20drawer) to open the generator at 414 by 317.5 by 76 mm. The 9 by 7 grid leaves 36 mm across the width and 23.5 mm across the depth.
+## Make a baseplate that fits your printer
 
-With centered padding, that spare space is split into 18 mm on each side and 11.75 mm at the front and back. The padding anchor can move the bins to the back, the front, either side, or the center. Use it when you want the spare space collected into one strip instead of divided around the grid.
+The sized baseplate leaves 18 mm of padding on each side and 11.75 mm at the front and back. That evenly centers the 378 by 294 mm grid within the 414 by 317.5 mm drawer.
 
-Set your print bed size in the tool. The generator automatically divides the baseplate into pieces that fit that bed. On a 256 mm print bed, this Packout plate splits into 6 pieces and prints in 3 build-plate loads.
+You can change the padding anchor to move the bins to the back, front, either side, or center. This lets you collect the spare space into one strip instead of dividing it around the grid.
 
-Add magnet holes to the baseplate and bins. Magnets are worth adding in a box that gets carried around because they hold the bins to the baseplate.
+The generator automatically splits the baseplate into pieces that fit the print bed size set in the tool. On a 256 mm print bed, this Packout baseplate splits into 6 pieces printed in 3 build-plate loads.
 
-## Choose your next Gridfinity parts
+Magnets are worth adding in a box that gets carried around because they hold bins to the baseplate. Add magnet holes to both the baseplate and bins. The trade is one height unit in this drawer, so use bins up to 9 units instead of 10.
 
-Start with the [named drawer sizes hub](/gridfinity-drawers) when you want dimensions for another drawer. For a Packout 2-drawer box, 4-drawer box, or any drawer with different measurements, use the [drawer calculator](/gridfinity-calculator).
+[Make the Packout baseplate](/baseplate?drawer=414x317.5x76&name=Milwaukee%20Packout%20drawer)
 
-Create standard storage with the [bin generator](/gridfinity-bin-generator). For tools that need shaped cavities, use the [cutout generator](/gridfinity-cutout-generator). The [Gridfinity tool drawer guide](/gridfinity-tool-drawer) covers the wider job of organizing a tool drawer with printable bins and holders.
+## Choose your next step
 
-[CTA: Plan your Packout drawer](/?drawer=414x317.5x76&name=Milwaukee%20Packout%20drawer)
+Browse the [named drawer sizes](/gridfinity-drawers) for more ready-sized layouts, or enter another drawer in the [drawer calculator](/gridfinity-calculator).
+
+Use the [bin generator](/gridfinity-bin-generator) to create standard bins. For hand tools and other specific shapes, use the [cutout generator](/gridfinity-cutout-generator) to make shaped cavities. The [tool drawer guide](/gridfinity-tool-drawer) covers the full process for organizing a tool drawer.
+
+[CTA: Plan this drawer](/?drawer=414x317.5x76&name=Milwaukee%20Packout%20drawer)
