@@ -27,6 +27,7 @@ import {
   resolveLidCavityExtraMm,
 } from '@/features/bin-designer/types/lid';
 import type { BinParams, LidConfig } from '@/features/bin-designer/types';
+import { withSyncedLidHeight } from '@/features/bin-designer/utils/lidHeightUnits';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -136,5 +137,28 @@ describe('assembled height matches generated geometry', () => {
 
       expect(measuredTop).toBeCloseTo(assembledHeight(params).totalMm, 1);
     });
+
+    const unitCases: [string, Partial<LidConfig>][] = [
+      ['plain lid', { enabled: true }],
+      ['stackable lid', { enabled: true, stackableTop: true }],
+      ['hinged lid', { enabled: true, attachment: 'hinge' }],
+    ];
+
+    it.each(unitCases)(
+      'stands a %s sized at 1u level with the rim of a bin one unit taller',
+      async (_label, lid) => {
+        const { generateLid } = await import('./lidOrchestrator');
+        const params = withSyncedLidHeight(makeParams({}, { ...lid, heightUnits: 1 }));
+        // From the same bin without its lid: a hinged bin's mesh peaks at the
+        // raised hinge wall, not the stacking lip the lid seats on.
+        const lipTop = boundingBox(getGenerateBin()(makeParams()).vertices).maxZ;
+        const lidMesh = generateLid(params);
+        expect(lidMesh).not.toBeNull();
+        const lidTop = lidGroupZ(params, lipTop) + boundingBox(lidMesh!.vertices).maxZ;
+
+        const taller = makeParams({ height: params.height + 1 });
+        expect(lidTop).toBeCloseTo(boundingBox(getGenerateBin()(taller).vertices).maxZ, 1);
+      }
+    );
   });
 });

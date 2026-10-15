@@ -300,7 +300,7 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
     id: 'opt-lid-extra-height',
     labelKey: 'binDesigner.lid.extraHeight',
     section: 'bd-lid',
-    keywords: ['extra lid height', 'deeper lid', 'cavity', 'headroom'],
+    keywords: ['extra lid height', 'deeper lid', 'cavity', 'headroom', 'lid height units', 'level'],
   },
   // Walls
   {

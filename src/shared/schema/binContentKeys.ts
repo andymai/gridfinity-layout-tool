@@ -115,6 +115,7 @@ export const LID_CONFIG_KEYS = [
   'clickRails',
   'clickRailCoverage',
   'extraHeightMm',
+  'heightUnits',
   'topThicknessMm',
   'retentionMagnet',
   'tray',

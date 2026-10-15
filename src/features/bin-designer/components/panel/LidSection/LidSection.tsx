@@ -20,7 +20,6 @@ import { Button, SegmentedControl } from '@/design-system';
 import { LidGripControls } from '../LidGripControls';
 import { SlideControls } from '../SlideControls';
 import { HingeControls } from '../HingeControls';
-import { StepperField } from '../shared/StepperField';
 import {
   DependencyHint,
   FieldLabel,
@@ -47,6 +46,7 @@ import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
 import { FeatureToggle } from '../FeatureToggle';
 import { useLidSection, LID_TOP_SURFACES } from './useLidSection';
 import { LidAdvancedFields } from './LidAdvancedFields';
+import { LidHeightField } from './LidHeightField';
 import { LidTextRotation } from './LidTextRotation';
 
 /** Mode options for the lid-text picker, in the shared textMode order. */
@@ -393,24 +393,8 @@ export function LidSection() {
             )}
           </div>
 
-          {/* ── Extra height (folded in) ─────────────────────────────── */}
-          <div className={`space-y-1 ${state.isSlide ? 'hidden' : ''}`}>
-            <StepperField
-              label={t('binDesigner.lid.extraHeight')}
-              unit="mm"
-              value={state.extraHeightMm}
-              onChange={handlers.setExtraHeight}
-              onStep={(delta) =>
-                handlers.setExtraHeight(state.extraHeightMm + delta * state.extraHeightStep)
-              }
-              min={state.extraHeightMin}
-              max={state.extraHeightMax}
-              step={state.extraHeightStep}
-              size="md"
-              aria-label={t('binDesigner.lid.extraHeightAria')}
-              commitMode="deferred"
-              info={t('binDesigner.lid.extraHeightHint')}
-            />
+          <div className={state.isSlide ? 'hidden' : ''}>
+            <LidHeightField />
           </div>
 
           {/* ── Advanced (millimetre fine-tuning) ────────────────────── */}

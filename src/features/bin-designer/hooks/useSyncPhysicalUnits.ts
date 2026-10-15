@@ -15,6 +15,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { withLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { useDesignerStore } from '../store';
 import { setPendingMeshCache } from '../store/helpers';
+import { withSyncedLidHeight } from '../utils/lidHeightUnits';
 
 export function useSyncPhysicalUnits(): void {
   const { gridUnitMm, heightUnitMm, magnetAnchor, lowProfileBase } = useLayoutStore(
@@ -43,12 +44,12 @@ export function useSyncPhysicalUnits(): void {
 
     // Update params without history push — epoch increments to trigger regeneration
     useDesignerStore.setState((state) => ({
-      params: {
+      params: withSyncedLidHeight({
         ...withLowProfileBase(state.params, lowProfileBase),
         gridUnitMm,
         heightUnitMm,
         magnetAnchor,
-      },
+      }),
       generation: {
         ...state.generation,
         epoch: state.generation.epoch + 1,
@@ -64,9 +65,8 @@ export function useSyncPhysicalUnits(): void {
     () =>
       useDesignerStore.subscribe((state, prev) => {
         if (state.params === prev.params) return;
-        const synced = withLowProfileBase(
-          state.params,
-          useLayoutStore.getState().layout.lowProfileBase
+        const synced = withSyncedLidHeight(
+          withLowProfileBase(state.params, useLayoutStore.getState().layout.lowProfileBase)
         );
         if (synced === state.params) return;
         setPendingMeshCache(null);

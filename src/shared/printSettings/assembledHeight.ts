@@ -174,6 +174,17 @@ export function hasSeatedLid(params: AssembledHeightSource): boolean {
 }
 
 /**
+ * How far the lid's highest flat face stands above the bin's stacking-lip top,
+ * in mm: the stack grid's top when the lid carries one, since that is the face
+ * the next bin up sits in. Zero without a seated lid.
+ */
+export function lidTopAboveRimMm(params: AssembledHeightSource): number {
+  if (!hasSeatedLid(params)) return 0;
+  const grid = params.lid.stackableTop ? lidStackGridHeightMm(params.base.lowProfile) : 0;
+  return lidRiseMm(params) + grid;
+}
+
+/**
  * Break the assembled stack into bottom-to-top bands.
  *
  * @param params  The design being measured.

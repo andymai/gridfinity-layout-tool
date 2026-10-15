@@ -1622,6 +1622,16 @@
           },
           "description": "Extra lid height in mm. The lid mirror of BinParams.extraWallHeightMm."
         },
+        "heightUnits": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50,
+          "x-constant": {
+            "minimum": "LID_HEIGHT_UNITS_MIN",
+            "maximum": "LID_HEIGHT_UNITS_MAX"
+          },
+          "description": "Lid height in whole height units: the lid's top (its stack grid's top, when it has one) sits this many units above the bin's stacking-lip top, level with the rim of a bin that many units taller. When set, extraHeightMm is recomputed from it on load. Omit to size the lid by extraHeightMm alone."
+        },
         "topThicknessMm": {
           "type": "number",
           "minimum": 0.8,

@@ -195,6 +195,10 @@ export const LID_EXTRA_HEIGHT_MIN_MM = 0;
 export const LID_EXTRA_HEIGHT_MAX_MM = 100;
 export const LID_EXTRA_HEIGHT_STEP_MM = 1;
 
+/** Bounds for {@link LidConfig.heightUnits}; the reachable range is narrower. */
+export const LID_HEIGHT_UNITS_MIN = 1;
+export const LID_HEIGHT_UNITS_MAX = 50;
+
 /**
  * Available click-rail coverage options as a percentage of edge length.
  * Lower values save filament; higher values give more grip surface.
@@ -1207,6 +1211,15 @@ export interface LidConfig {
    * this only lengthens the plain wall above the lip.
    */
   readonly extraHeightMm: number;
+  /**
+   * Lid height in whole height units. When set, `extraHeightMm` is derived
+   * from it so the lid's top (its stack grid's top, when it has one) stands
+   * exactly this many units above the bin's stacking-lip top: level with the
+   * rim of a bin that many units taller. The store re-derives it after every
+   * edit and `paramMigration` on every load, so `extraHeightMm` stays the one
+   * field geometry reads. Absent means the millimetre knob is authoritative.
+   */
+  readonly heightUnits?: number;
   /**
    * Floor plate thickness (mm) — the solid slab between the lid's top face
    * and its mating cavity. A FLOOR, not a cap: magnet pockets

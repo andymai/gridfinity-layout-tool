@@ -24,9 +24,16 @@ import {
   createUISlice,
   createPersistenceSlice,
 } from './slices';
+import type { Set } from './slices/paramSlice/types';
+import { syncLidHeightUnits } from './helpers';
 
 export const useDesignerStore = create<DesignerState>()(
-  immer((set, get) => {
+  immer((rawSet, get) => {
+    const set: Set = (fn) =>
+      rawSet((state) => {
+        fn(state);
+        syncLidHeightUnits(state);
+      });
     // Wrapped at composition time (not per call site) so every path that
     // turns a SavedDesign into the current design (including programmatic
     // getState().loadDesign callers that mount no hook) reconciles a

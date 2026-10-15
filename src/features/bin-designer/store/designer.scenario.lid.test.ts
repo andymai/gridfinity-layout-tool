@@ -6,6 +6,7 @@ import {
   hasLidBlocker,
 } from '@/features/bin-designer/utils/lidCompatibility';
 import { DEFAULT_LID_CONFIG } from '@/features/bin-designer/types/lid';
+import { lidTopAboveRimMm } from '@/shared/printSettings/assembledHeight';
 
 describe('DesignerStore - lid actions', () => {
   beforeEach(() => {
@@ -471,6 +472,54 @@ describe('DesignerStore - lid actions', () => {
         updateLid({ clickRailCoverage: cov });
         expect(useDesignerStore.getState().params.lid.clickRailCoverage).toBe(cov);
       }
+    });
+  });
+
+  describe('lid height in units', () => {
+    const lidTopUnits = (): number => {
+      const { params } = useDesignerStore.getState();
+      return lidTopAboveRimMm(params) / params.heightUnitMm;
+    };
+
+    it('keeps the lid on its unit line as settings under it change', () => {
+      const { updateLid, updateBase, setParams } = useDesignerStore.getState();
+      updateLid({ enabled: true, heightUnits: 1 });
+      expect(lidTopUnits()).toBeCloseTo(1, 6);
+
+      updateLid({ stackableTop: true });
+      expect(lidTopUnits()).toBeCloseTo(1, 6);
+
+      // A 6 mm plate under a stack grid cannot be as short as one unit.
+      updateLid({ topThicknessMm: 6 });
+      expect(useDesignerStore.getState().params.lid.heightUnits).toBe(2);
+      expect(lidTopUnits()).toBeCloseTo(2, 6);
+
+      updateLid({ attachment: 'hinge', stackableTop: false });
+      expect(lidTopUnits()).toBeCloseTo(2, 6);
+
+      updateBase({ lowProfile: true });
+      expect(lidTopUnits()).toBeCloseTo(2, 6);
+
+      setParams({ heightUnitMm: 10 });
+      expect(lidTopUnits()).toBeCloseTo(2, 6);
+    });
+
+    it('undoes a setting change together with the lid height it moved', () => {
+      const { updateLid, undo } = useDesignerStore.getState();
+      updateLid({ enabled: true, heightUnits: 1 });
+      const before = useDesignerStore.getState().params.lid.extraHeightMm;
+      updateLid({ stackableTop: true });
+      expect(useDesignerStore.getState().params.lid.extraHeightMm).not.toBe(before);
+      undo();
+      expect(useDesignerStore.getState().params.lid.stackableTop).toBe(false);
+      expect(useDesignerStore.getState().params.lid.extraHeightMm).toBe(before);
+    });
+
+    it('leaves the millimetre knob alone with units off', () => {
+      const { updateLid } = useDesignerStore.getState();
+      updateLid({ enabled: true, extraHeightMm: 3 });
+      updateLid({ stackableTop: true });
+      expect(useDesignerStore.getState().params.lid.extraHeightMm).toBe(3);
     });
   });
 });

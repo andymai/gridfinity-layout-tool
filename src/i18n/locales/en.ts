@@ -2206,6 +2206,12 @@ const en: Record<string, string> = {
   'binDesigner.lid.extraHeightAria': 'Extra lid height in millimeters',
   'binDesigner.lid.extraHeightHint':
     'Raises the lid so contents that stick out of a short bin (e.g. toothpicks) are enclosed. 0 = standard lid.',
+  'binDesigner.lid.heightUnits': 'Lid height',
+  'binDesigner.lid.heightUnitsAria': 'Lid height in height units',
+  'binDesigner.lid.heightUnitToggle': 'Lid height unit',
+  'binDesigner.lid.heightUnitsHint': 'Level with the rim of a bin {units}u taller',
+  'binDesigner.lid.heightUnitsDetail':
+    'Sizes the lid in whole height units, so its top lines up with the rim of a taller bin beside it. With a stackable top, the top of its grid lines up. The lid keeps that height when other settings change.',
   'binDesigner.lid.topThickness': 'Lid thickness',
   'binDesigner.lid.topThicknessAria': 'Lid top plate thickness in millimeters',
   'binDesigner.lid.topThicknessHint':

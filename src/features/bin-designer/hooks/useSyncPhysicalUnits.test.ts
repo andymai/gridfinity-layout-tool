@@ -4,6 +4,7 @@ import { useSyncPhysicalUnits } from './useSyncPhysicalUnits';
 import { useDesignerStore } from '../store';
 import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '../constants';
+import { lidTopAboveRimMm } from '@/shared/printSettings/assembledHeight';
 
 describe('useSyncPhysicalUnits', () => {
   beforeEach(() => {
@@ -54,6 +55,20 @@ describe('useSyncPhysicalUnits', () => {
 
     expect(useDesignerStore.getState().params.heightUnitMm).toBe(10);
     expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore + 1);
+  });
+
+  it('keeps a lid sized in units on its unit line when the height unit changes', () => {
+    useDesignerStore.setState((state) => ({
+      params: { ...state.params, lid: { ...state.params.lid, enabled: true, heightUnits: 1 } },
+    }));
+    renderHook(() => useSyncPhysicalUnits());
+
+    act(() => {
+      useLayoutStore.getState().setHeightUnitMm(10);
+    });
+
+    const { params } = useDesignerStore.getState();
+    expect(lidTopAboveRimMm(params)).toBeCloseTo(10, 6);
   });
 
   it('does not push undo history', () => {

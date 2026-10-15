@@ -125,6 +125,12 @@ export function validateLid(lid: unknown): string | null {
   ) {
     return 'lid.extraHeightMm must be 0-100';
   }
+  if (
+    lid.heightUnits !== undefined &&
+    (!Number.isInteger(lid.heightUnits) || !inRange(lid.heightUnits as number, 1, 50))
+  ) {
+    return 'lid.heightUnits must be a whole number 1-50';
+  }
   // Range only, not the stop list: `migrateClickRailCoverage` snaps a stored
   // value to the nearest supported option on load, so an off-stop number is
   // legal input. What it cannot absorb is a value outside the range, which

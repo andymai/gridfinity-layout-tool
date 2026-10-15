@@ -28,6 +28,7 @@ import { hasHalfBinDetail, isPartialMask } from '@/shared/utils/cellMask';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { trackToolActivated } from '@/shared/analytics/posthog/conversionEvents';
 import { findAssemblyPart } from '@/features/bin-designer/utils/assemblyTree';
+import { syncedLidHeight } from '@/features/bin-designer/utils/lidHeightUnits';
 
 /**
  * Resolve the parameters a fresh bin starts from.
@@ -76,6 +77,19 @@ export function paramsNeedHalfGridMode(params: BinParams): boolean {
 }
 
 /** Get the current pending mesh cache. */
+/**
+ * Re-derive `lid.extraHeightMm` from `lid.heightUnits`. Runs after every store
+ * write, because a lid's rise moves with settings nowhere near the lid's height
+ * control: the stack grid, the plate, the hinge, the height unit.
+ */
+export function syncLidHeightUnits(state: Draft<DesignerState>): void {
+  const synced = syncedLidHeight(state.params);
+  if (!synced) return;
+  const lid = state.params.lid;
+  if (lid.heightUnits !== synced.heightUnits) lid.heightUnits = synced.heightUnits;
+  if (lid.extraHeightMm !== synced.extraHeightMm) lid.extraHeightMm = synced.extraHeightMm;
+}
+
 export function getPendingMeshCache(): CachedMesh | null {
   return pendingMeshCache;
 }

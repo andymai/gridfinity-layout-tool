@@ -18,6 +18,7 @@ import { LID_TOP_THICKNESS_MAX_MM } from '../types';
 import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import { validateBinParams } from '../utils/validation';
 import { makeUniformLipCells } from '../types/featureColors';
+import { lidTopAboveRimMm } from '@/shared/printSettings/assembledHeight';
 import { DEFAULT_SLIDE_CONFIG } from '../types/slide';
 import { DEFAULT_DETACHABLE_PIN_DIAMETER_MM, DEFAULT_TRAY_BOTTOM } from '../types/base';
 import { expectOk } from '@/test/testUtils';
@@ -1372,6 +1373,24 @@ describe('migrateParams', () => {
     expect(migrateParams({ lid: { extraHeightMm: -50 } as any }).lid.extraHeightMm).toBe(0);
     // Non-numeric / corrupt values fall back to the default.
     expect(migrateParams({ lid: { extraHeightMm: 'tall' } as any }).lid.extraHeightMm).toBe(0);
+  });
+
+  it('re-derives a units-sized lid height on load, over a stale millimetre value', () => {
+    const result = migrateParams({
+      lid: { enabled: true, stackableTop: true, heightUnits: 2, extraHeightMm: 0 } as any,
+    });
+    expect(result.lid.heightUnits).toBe(2);
+    expect(lidTopAboveRimMm(result)).toBeCloseTo(2 * result.heightUnitMm, 6);
+  });
+
+  it('keeps lid height units whole and in bounds, and drops corrupt ones', () => {
+    const units = (heightUnits: unknown): number | undefined =>
+      migrateParams({ lid: { enabled: true, heightUnits } as any }).lid.heightUnits;
+    expect(units(2.4)).toBe(2);
+    expect(units(-3)).toBe(1);
+    expect(units(999)).toBe(14);
+    expect(units('tall')).toBeUndefined();
+    expect(units(undefined)).toBeUndefined();
   });
 
   it('defaults topThicknessMm to the 0.8mm baseline for legacy lid configs', () => {

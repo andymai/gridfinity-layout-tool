@@ -2220,6 +2220,17 @@ describe('validateDesignerShare', () => {
       expect(validateDesignerShare(withLid({ topThicknessMm: 'thick' }), 1000).valid).toBe(false);
     });
 
+    it('keeps a whole-unit lid height and rejects one out of range or fractional', () => {
+      const kept = validateDesignerShare(withLid({ heightUnits: 2 }), 1000);
+      expect(kept.valid).toBe(true);
+      if (kept.valid) {
+        expect((kept.payload.params.lid as Record<string, unknown>).heightUnits).toBe(2);
+      }
+      for (const heightUnits of [0, 51, 1.5, 'two']) {
+        expect(validateDesignerShare(withLid({ heightUnits }), 1000).valid).toBe(false);
+      }
+    });
+
     // A fractional count is not merely untidy: the placement loop divides the
     // span by `count + 1`, so 2.5 emits two magnets spaced for 3.5 and lands
     // them off-centre.

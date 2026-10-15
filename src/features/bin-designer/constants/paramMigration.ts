@@ -38,6 +38,8 @@ import {
   DEFAULT_LID_CONFIG,
   LID_EXTRA_HEIGHT_MIN_MM,
   LID_EXTRA_HEIGHT_MAX_MM,
+  LID_HEIGHT_UNITS_MAX,
+  LID_HEIGHT_UNITS_MIN,
   LID_TOP_THICKNESS_MIN_MM,
   LID_TOP_THICKNESS_MAX_MM,
 } from '../types/lid';
@@ -45,6 +47,7 @@ import type { LidConfig } from '../types/lid';
 import { DEFAULT_TEXT_STYLE_DEFAULTS } from '../types/text';
 import type { TextStyleDefaults } from '../types/text';
 import { MAX_CUTOUT_TOP_OFFSET_MM } from '../utils/cutoutFill';
+import { withSyncedLidHeight } from '../utils/lidHeightUnits';
 import {
   DEFAULT_BIN_PARAMS,
   DEFAULT_CUTOUT_CONFIG,
@@ -105,6 +108,12 @@ function migrateExtraHeightMm(raw: unknown): number {
     return DEFAULT_LID_CONFIG.extraHeightMm;
   }
   return Math.min(LID_EXTRA_HEIGHT_MAX_MM, Math.max(LID_EXTRA_HEIGHT_MIN_MM, raw));
+}
+
+/** Whole units within bounds, or absent; the store narrows it to what the lid can reach. */
+function migrateLidHeightUnits(raw: unknown): number | undefined {
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) return undefined;
+  return Math.min(LID_HEIGHT_UNITS_MAX, Math.max(LID_HEIGHT_UNITS_MIN, Math.round(raw)));
 }
 
 /**
@@ -440,7 +449,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
       )
     : undefined;
 
-  return {
+  return withSyncedLidHeight({
     ...DEFAULT_BIN_PARAMS,
     ...rest,
     pullTab: params.pullTab ? resolvePullTab(params.pullTab) : undefined,
@@ -481,6 +490,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         clickRails: rawClickRails,
         clickRailCoverage: rawCoverage,
         extraHeightMm: rawExtraHeight,
+        heightUnits: rawHeightUnits,
         topThicknessMm: rawTopThickness,
         retentionMagnet: rawRetentionMagnet,
         tray: rawTray,
@@ -507,6 +517,8 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         attachment: migrateAttachment(rawAttachment, clickRails),
         // Clamp the mm cavity boost so a corrupt design can't blow up the lid.
         extraHeightMm: migrateExtraHeightMm(rawExtraHeight),
+        // Spread `undefined` deliberately: millimetre mode is an absent key.
+        heightUnits: migrateLidHeightUnits(rawHeightUnits),
         // Older designs have no floor-plate knob — they fall back to the
         // 0.8mm baseline and so regenerate byte-identically.
         topThicknessMm: clampNumber(
@@ -555,7 +567,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     ),
     // Spread rather than assigned: an absent radius must stay an absent key.
     ...optionalInteriorFillet(rawInteriorFillet),
-  };
+  });
 }
 
 function optionalInteriorFillet(raw: unknown): Pick<BinParams, 'interiorFilletMm'> {

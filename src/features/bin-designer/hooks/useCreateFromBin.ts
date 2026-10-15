@@ -27,6 +27,7 @@ import {
 } from '@/features/bin-designer/store/customBinRegistry';
 import { useLayoutStore } from '@/core/store/layout';
 import { defaultsForNewDesign } from '@/features/bin-designer/store/helpers';
+import { withSyncedLidHeight } from '@/features/bin-designer/utils/lidHeightUnits';
 
 interface CreateFromBinParams {
   createFrom: 'bin';
@@ -160,7 +161,7 @@ export function useCreateFromBin(): void {
     // The half-unit edge arrives on the URL, already resolved from where the
     // source bin's half cell lands in the drawer. Left as a
     // non-manual choice so moving the bin later surfaces a mismatch warning.
-    const binParams = {
+    const binParams = withSyncedLidHeight({
       ...defaultsForNewDesign(),
       width: urlParams.width,
       depth: urlParams.depth,
@@ -175,7 +176,7 @@ export function useCreateFromBin(): void {
       fractionalEdgeManualY: false,
       gridUnitMm: layoutState.layout.gridUnitMm,
       heightUnitMm: layoutState.layout.heightUnitMm,
-    };
+    });
 
     // Set the dimensions (don't use setParams as it pushes to history)
     // We want a clean slate, not an undo state with default params

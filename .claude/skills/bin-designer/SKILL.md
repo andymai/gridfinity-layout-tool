@@ -21,6 +21,7 @@ Read `src/features/bin-designer/README.md` first — it covers the store/worker/
 3. **Divider walls are derived, never stored** — `deriveWallSegments` computes them from ID boundaries. Cells sharing an ID must form a filled rectangle (`isRectangularSelection` / `validateCompartmentGrid`); the server does NOT enforce this, so a hand-crafted share can violate it.
 4. **Every client constraint has a hand-maintained server mirror.** `constants/gridfinity.ts` `DESIGNER_CONSTRAINTS` ↔ `api/lib/designerValidationConstants.ts` `CONSTRAINTS`; type unions in `types/index.ts` ↔ `VALID_BIN_STYLES` / `VALID_LABEL_TAB_SUPPORTS` in `api/lib/designerValidation.ts`; top-level param keys ↔ `ALLOWED_PARAM_KEYS` there. Divergence means 400s on sync or params silently stripped from shares. `sanitizeTags` (server) must stay behaviorally identical to `normalizeTags` (`utils/tags.ts`).
 5. **Wall-feature units are mixed by design.** `WallCutout` width/depth are percentages (0–100 of wall span / wall height); `widthMm: null` means "use the % field". Handle width is % of span but handle height is mm. See the JSDoc on each field in `types/index.ts` — mixing these passes typecheck and produces silently wrong geometry.
+6. **`lid.extraHeightMm` is derived while `lid.heightUnits` is set** (`utils/lidHeightUnits.ts`): the store's composed `set` re-derives it after every write, and `migrateParams` on load. A direct `useDesignerStore.setState` skips that `set`, so pass its params through `withSyncedLidHeight`.
 
 ## Recipes
 

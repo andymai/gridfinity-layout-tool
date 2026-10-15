@@ -4,9 +4,6 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import {
   LID_CLICK_RAIL_COVERAGE_OPTIONS,
-  LID_EXTRA_HEIGHT_MIN_MM,
-  LID_EXTRA_HEIGHT_MAX_MM,
-  LID_EXTRA_HEIGHT_STEP_MM,
   LID_FIT_CLEARANCE,
   LID_TOP_THICKNESS_MIN_MM,
   LID_TRAY_FLOOR,
@@ -435,19 +432,6 @@ export function useLidSection() {
   const setClickRailCoverage = useCallback(
     (clickRailCoverage: number) => {
       updateLid({ clickRailCoverage });
-    },
-    [updateLid]
-  );
-
-  const setExtraHeight = useCallback(
-    (extraHeightMm: number) => {
-      // Clamp defensively; the stepper already bounds input but a keyboard
-      // entry could exceed the range.
-      const clamped = Math.min(
-        LID_EXTRA_HEIGHT_MAX_MM,
-        Math.max(LID_EXTRA_HEIGHT_MIN_MM, extraHeightMm)
-      );
-      updateLid({ extraHeightMm: clamped });
     },
     [updateLid]
   );
@@ -979,10 +963,6 @@ export function useLidSection() {
       gripHeightMax: LID_GRIP_HEIGHT_MAX_MM,
       gripHeightStep: LID_GRIP_HEIGHT_STEP_MM,
       gripCoverageOptions,
-      extraHeightMm: lid.extraHeightMm,
-      extraHeightMin: LID_EXTRA_HEIGHT_MIN_MM,
-      extraHeightMax: LID_EXTRA_HEIGHT_MAX_MM,
-      extraHeightStep: LID_EXTRA_HEIGHT_STEP_MM,
       // Floor-plate thickness knob. `topThicknessEffective` reflects
       // what the worker will actually build: magnet pockets raise the plate
       // above the user's value, and on a tray lid the value IS the floor under
@@ -1051,7 +1031,6 @@ export function useLidSection() {
       setGripCoverage,
       setGripHeight,
       toggleGripBinDip,
-      setExtraHeight,
       setTopThickness,
       setRetentionMagnetDiameter,
       setRetentionMagnetDepth,
