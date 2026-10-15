@@ -38,6 +38,7 @@ badge, so these render both modes themselves rather than using `InlineEditText`.
 ### Hooks
 
 - `hooks/useLayoutRouting.ts` — URL sync for bookmarkable layouts (`/l/{id}/{slug}`)
+- `hooks/useDrawerLinkImport.ts` — opens a layout sized to a `?drawer=` link from the calculator and drawer pages; waits for translations because it stores a translated name
 
 ## Storage Keys
 
