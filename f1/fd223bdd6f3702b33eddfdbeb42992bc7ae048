@@ -1,0 +1,92 @@
+src/App.tsx
+  s_4c3c2daba3f861::t_1898d01afee370 29,150-153,223
+src/i18n/locales/fr.json
+  s_4c3c2daba3f861::t_90364daaeff512 3674,4492-4493
+src/shared/utils/drawerLink.test.ts
+  s_4c3c2daba3f861::t_cff6c58fa95e9b 1-177
+  s_4c3c2daba3f861::t_3390388d6e652a 178-179
+src/features/layout-library/index.ts
+  s_4c3c2daba3f861::t_1898d01afee370 9
+src/i18n/locales/ko.json
+  s_4c3c2daba3f861::t_90364daaeff512 3674,4492-4493
+src/i18n/locales/cs.json
+  s_4c3c2daba3f861::t_90364daaeff512 3674,4492-4493
+src/i18n/locales/it.json
+  s_4c3c2daba3f861::t_90364daaeff512 3674,4492-4493
+src/i18n/locales/uk.json
+  s_4c3c2daba3f861::t_90364daaeff512 3674,4493
+  s_4c3c2daba3f861::t_5e1f9f1b8787e9 4492
+src/i18n/locales/ja.json
+  s_4c3c2daba3f861::t_90364daaeff512 3674,4492-4493
+src/features/layout-library/hooks/useDrawerLinkImport.test.ts
+  s_4c3c2daba3f861::t_44db29d1cc11eb 1,4-10,12-45,47-123,138-146
+  s_4c3c2daba3f861::t_c4454023bf87fb 2-3,46,124-137
+  s_4c3c2daba3f861::t_d7ec74cdd0e23d 11,147-151
+src/i18n/context.tsx
+  s_4c3c2daba3f861::t_7cdd8f8ab1d937 286-287
+  s_4c3c2daba3f861::t_594be0244419f4 94-99
+public/terms/index.html
+  s_4c3c2daba3f861::t_e99032b810f394 62
+src/i18n/locales/nl.json
+  s_4c3c2daba3f861::t_90364daaeff512 3674,4492-4493
+src/i18n/context.test.tsx
+  s_4c3c2daba3f861::t_8887011ce8ff85 168-171
+  s_4c3c2daba3f861::t_ad203e14be1703 172-185
+  s_4c3c2daba3f861::t_f53db8ba0960fe 186-187
+src/features/layout-library/hooks/useDrawerLinkImport.ts
+  s_4c3c2daba3f861::t_2e2691cf030f32 18
+  s_4c3c2daba3f861::t_d9c6a77ad25589 82
+  s_4c3c2daba3f861::t_462ccd9c8084e8 39,45-46
+  s_4c3c2daba3f861::t_bf065106933307 1-17,19-38,40-44,47-81,83-115
+src/i18n/locales/de.json
+  s_4c3c2daba3f861::t_90364daaeff512 3674,4492-4493
+src/i18n/locales/zh-CN.json
+  s_4c3c2daba3f861::t_90364daaeff512 3674,4492-4493
+src/i18n/locales/ka.json
+  s_4c3c2daba3f861::t_90364daaeff512 1235-1236,3804
+src/i18n/locales/pl.json
+  s_4c3c2daba3f861::t_90364daaeff512 3674,4492-4493
+src/shared/utils/drawerLink.ts
+  s_4c3c2daba3f861::t_193152e663bc7f 53-54
+  s_4c3c2daba3f861::t_2808a6ff2608a3 143-144
+  s_4c3c2daba3f861::t_673c182bef82b7 1-52,55-142,145-159
+src/i18n/locales/en.ts
+  s_4c3c2daba3f861::t_2578d88afe4875 1439-1440,4540
+src/i18n/locales/es.json
+  s_4c3c2daba3f861::t_90364daaeff512 3674,4492-4493
+src/i18n/locales/sv.json
+  s_4c3c2daba3f861::t_90364daaeff512 3674,4492-4493
+content/gridfinity-calculator.md
+  s_4c3c2daba3f861::t_ca30025e49474f 88-91
+src/i18n/locales/pt-BR.json
+  s_4c3c2daba3f861::t_90364daaeff512 3674,4492-4493
+public/content.css
+  s_4c3c2daba3f861::t_ca30025e49474f 705-720
+scripts/calculator-script.test.ts
+  s_4c3c2daba3f861::t_ecf541403d8b24 1-79
+public/privacy/index.html
+  s_4c3c2daba3f861::t_e99032b810f394 62
+src/test/setup.ts
+  s_4c3c2daba3f861::t_e5c199bf957c26 114
+src/i18n/locales/nb.json
+  s_4c3c2daba3f861::t_90364daaeff512 3674,4492-4493
+public/calculator.js
+  s_4c3c2daba3f861::t_9f2c0fdd0a83a0 44-61
+  s_4c3c2daba3f861::t_8b632ebcae51e6 13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f1fd223bdd6f3702b33eddfdbeb42992bc7ae048",
+  "prompts": {},
+  "sessions": {
+    "s_4c3c2daba3f861": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fdd9d737-3e13-40e1-bd09-90226688050e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
