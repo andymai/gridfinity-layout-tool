@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as i18n from '@/i18n';
 import { useLayoutStore, useLibraryStore, useToastStore } from '@/core/store';
 import { loadLayoutAsync } from '@/core/storage';
+import type * as Storage from '@/core/storage';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { baseplateDesignId, layoutId } from '@/core/types';
 import {
@@ -12,16 +13,19 @@ import {
   resetAllStores,
 } from '@/test/testUtils';
 import { useDrawerLinkImport } from './useDrawerLinkImport';
+
+const seeded = vi.hoisted(() => ({ value: false }));
+vi.mock('@/core/storage', async (importOriginal) => ({
+  ...(await importOriginal<typeof Storage>()),
+  wasLibrarySeededThisLoad: () => seeded.value,
+}));
 import type { DrawerLinkImportOptions } from './useDrawerLinkImport';
 
 const EXISTING = layoutId('existing-layout');
 
-function seed(createdAt: number, bins = 0): void {
-  const library = createTestLibrary(EXISTING);
-  useLibraryStore.getState().initLibrary({
-    ...library,
-    entries: library.entries.map((entry) => ({ ...entry, createdAt })),
-  });
+function seed(firstVisit: boolean, bins = 0): void {
+  seeded.value = firstVisit;
+  useLibraryStore.getState().initLibrary(createTestLibrary(EXISTING));
   const bin = createTestBin();
   useLayoutStore
     .getState()
@@ -52,14 +56,14 @@ describe('useDrawerLinkImport', () => {
   });
 
   it('reports no drawer link and leaves everything alone on a plain URL', () => {
-    seed(0);
+    seed(false);
     const { result } = open('/');
     expect(result.current).toBe(false);
     expect(useLibraryStore.getState().library.entries).toHaveLength(1);
   });
 
   it('opens a new layout sized to the drawer, keeping existing work', async () => {
-    seed(0, 1);
+    seed(false, 1);
     const { result } = open('/?drawer=297x525x60&name=IKEA%20Alex');
     expect(result.current).toBe(true);
 
@@ -86,7 +90,7 @@ describe('useDrawerLinkImport', () => {
   });
 
   it('sizes the empty layout a first visit seeded instead of adding a second one', async () => {
-    seed(Date.now());
+    seed(true);
     open('/?drawer=297x525');
 
     await waitFor(() =>
@@ -99,8 +103,18 @@ describe('useDrawerLinkImport', () => {
     expect(useLayoutStore.getState().activeLayoutId).toBe(EXISTING);
   });
 
+  it('leaves an empty layout this load did not seed, such as a migrated one, untouched', async () => {
+    seed(false);
+    open('/?drawer=297x525');
+
+    await waitFor(() => expect(useLibraryStore.getState().library.entries).toHaveLength(2));
+    await opened();
+    expect(useLibraryStore.getState().library.entries[0]?.name).toBe('Test Layout');
+    expect(useLayoutStore.getState().activeLayoutId).not.toBe(EXISTING);
+  });
+
   it('stays on /baseplate and only drops the query when the planner URL is not wanted', async () => {
-    seed(0, 1);
+    seed(false, 1);
     open('/baseplate?drawer=414x318', { syncLayoutUrl: false });
 
     await waitFor(() => expect(useLibraryStore.getState().library.entries).toHaveLength(2));
@@ -110,7 +124,7 @@ describe('useDrawerLinkImport', () => {
   });
 
   it('warns and changes nothing for a size the planner cannot open', async () => {
-    seed(0, 1);
+    seed(false, 1);
     open('/?drawer=30x525');
 
     await waitFor(() =>
@@ -124,7 +138,7 @@ describe('useDrawerLinkImport', () => {
   });
 
   it('warns about a malformed size', () => {
-    seed(0, 1);
+    seed(false, 1);
     open('/?drawer=wide');
     expect(toasts()).toContainEqual({
       message: "That drawer link has a size the planner can't open",
@@ -133,7 +147,7 @@ describe('useDrawerLinkImport', () => {
   });
 
   it('waits for translations before naming and opening the layout', async () => {
-    seed(0, 1);
+    seed(false, 1);
     const locale = {
       locale: 'en' as const,
       setLocale: vi.fn(),
@@ -153,7 +167,7 @@ describe('useDrawerLinkImport', () => {
   });
 
   it('keeps a baseplate design linked before the link applies, and pads it', async () => {
-    seed(Date.now());
+    seed(true);
     const design = baseplateDesignId('design-before');
     useLayoutStore.getState().setActiveBaseplateLocal(design, DEFAULT_BASEPLATE_PARAMS);
     open('/baseplate?drawer=297x525', { syncLayoutUrl: false });
@@ -169,7 +183,7 @@ describe('useDrawerLinkImport', () => {
   });
 
   it('does not undo a baseplate design the initializer links while the layout saves', async () => {
-    seed(Date.now());
+    seed(true);
     open('/baseplate?drawer=297x525', { syncLayoutUrl: false });
 
     expect(useLayoutStore.getState().layout.drawer.width).toBe(7);
@@ -185,7 +199,7 @@ describe('useDrawerLinkImport', () => {
   });
 
   it('yields the URL to a share link or collaboration session', () => {
-    seed(0, 1);
+    seed(false, 1);
     open('/?drawer=297x525', { disabled: true });
     expect(window.location.search).toBe('?drawer=297x525');
     expect(useLibraryStore.getState().library.entries).toHaveLength(1);

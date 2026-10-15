@@ -156,9 +156,7 @@ describe('buildDrawerLinkLayout', () => {
 });
 
 describe('isFirstVisitLayout', () => {
-  const loadedAt = 1_000;
-
-  function library(createdAt: number, entries = 1) {
+  function library(entries = 1) {
     const lib = createTestLibrary();
     const [first] = lib.entries;
     if (first === undefined) throw new Error('test library has no entry');
@@ -167,25 +165,24 @@ describe('isFirstVisitLayout', () => {
       entries: Array.from({ length: entries }, (_, i) => ({
         ...first,
         id: i === 0 ? first.id : (`other-${i}` as typeof first.id),
-        createdAt,
       })),
     };
   }
 
   it('is true for the lone empty layout this page load seeded', () => {
-    expect(isFirstVisitLayout(library(loadedAt + 5), createTestLayout(), loadedAt)).toBe(true);
+    expect(isFirstVisitLayout(library(), createTestLayout(), true)).toBe(true);
   });
 
-  it('is false for a layout from an earlier visit', () => {
-    expect(isFirstVisitLayout(library(loadedAt - 5), createTestLayout(), loadedAt)).toBe(false);
+  it('is false for a library this load found or migrated rather than seeded', () => {
+    expect(isFirstVisitLayout(library(), createTestLayout(), false)).toBe(false);
   });
 
   it('is false once there is a second layout', () => {
-    expect(isFirstVisitLayout(library(loadedAt + 5, 2), createTestLayout(), loadedAt)).toBe(false);
+    expect(isFirstVisitLayout(library(2), createTestLayout(), true)).toBe(false);
   });
 
   it('is false once a bin is placed', () => {
     const layout = createTestLayout({ bins: [createTestBin()] });
-    expect(isFirstVisitLayout(library(loadedAt + 5), layout, loadedAt)).toBe(false);
+    expect(isFirstVisitLayout(library(), layout, true)).toBe(false);
   });
 });

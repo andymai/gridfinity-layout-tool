@@ -17,6 +17,7 @@ import type { Layout, LayoutLibrary, LayoutEntry } from '@/core/types';
 import { layoutId, binId, gridUnits, heightUnits } from '@/core/types';
 import { clearAllData as clearIndexedDB, closeDatabase } from '@/core/storage/backends/indexedDB';
 import { resetStorageBackendCache } from '@/core/storage/backend';
+import { _setLibrarySeededThisLoad, wasLibrarySeededThisLoad } from './LayoutService';
 
 const LIBRARY_STORAGE_KEY = 'gridfinity-library-v1';
 const LEGACY_STORAGE_KEY = 'gridfinity-layout-v1';
@@ -399,6 +400,32 @@ describe('storage-library', () => {
   });
 
   describe('initializeLayoutLibrary', () => {
+    beforeEach(() => {
+      _setLibrarySeededThisLoad(false);
+    });
+
+    it('reports a seeded library only when it created the starting layout', async () => {
+      await initializeLayoutLibrary();
+      expect(wasLibrarySeededThisLoad()).toBe(true);
+    });
+
+    it('does not report an existing library as seeded', async () => {
+      const library = createTestLibrary(1);
+      library.entries.forEach((entry) => saveLayoutSync(entry.id, createTestLayout(entry.name)));
+      window.localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(library));
+
+      await initializeLayoutLibrary();
+      expect(wasLibrarySeededThisLoad()).toBe(false);
+    });
+
+    it('does not report a library migrated from legacy storage as seeded', async () => {
+      localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(createTestLayout('Legacy Layout')));
+
+      const result = await initializeLayoutLibrary();
+      expect(result.library.entries[0]?.name).toBe('Legacy Layout');
+      expect(wasLibrarySeededThisLoad()).toBe(false);
+    });
+
     it('returns existing library if present', async () => {
       const library = createTestLibrary(2);
       library.entries.forEach((entry) => {

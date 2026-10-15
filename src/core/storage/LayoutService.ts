@@ -531,6 +531,21 @@ async function persistNewLayoutAsync(
   }
 }
 
+let seededThisLoad = false;
+
+/**
+ * Whether this page load created the starting layout because no library existed.
+ * A migrated library also gets fresh timestamps, so `createdAt` cannot tell.
+ */
+export function wasLibrarySeededThisLoad(): boolean {
+  return seededThisLoad;
+}
+
+/** @internal Test-only. */
+export function _setLibrarySeededThisLoad(value: boolean): void {
+  seededThisLoad = value;
+}
+
 /**
  * Initialize the layout library system.
  * Handles migration from legacy storage if needed.
@@ -585,6 +600,7 @@ export async function initializeLayoutLibrary(): Promise<{
 
     library = createLibraryWithLayout(layoutId, defaultLayout);
     await persistNewLayoutAsync(layoutId, defaultLayout, library);
+    seededThisLoad = true;
   }
 
   // Load active layout from IndexedDB, then localStorage fallback

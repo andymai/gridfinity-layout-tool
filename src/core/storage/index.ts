@@ -50,6 +50,7 @@ export {
   loadLibrary,
   loadLibraryAsync,
   initializeLayoutLibrary,
+  wasLibrarySeededThisLoad,
   reconcileLibraryAsync,
   getLayoutStorageKey,
   getStorageUsage,

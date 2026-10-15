@@ -140,21 +140,18 @@ export function buildDrawerLinkLayout(
 
 /**
  * True for the empty layout a first visit seeds: the library's only entry,
- * created during this page load, still without bins. A drawer link sizes that
- * layout instead of leaving it behind as an empty extra.
+ * created by this page load's initialization, still without bins. A drawer
+ * link sizes that layout instead of leaving it behind as an empty extra.
  */
 export function isFirstVisitLayout(
   library: LayoutLibrary,
   layout: Layout,
-  pageLoadedAtMs: number
+  seededThisLoad: boolean
 ): boolean {
-  if (library.entries.length !== 1) return false;
+  if (!seededThisLoad || library.entries.length !== 1) return false;
   const [only] = library.entries;
   return (
-    only.id === library.activeLayoutId &&
-    only.createdAt >= pageLoadedAtMs &&
-    layout.bins.length === 0 &&
-    layout.layers.length === 1
+    only.id === library.activeLayoutId && layout.bins.length === 0 && layout.layers.length === 1
   );
 }
 

@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { createLayoutWithSettings } from '@/core/constants';
 import { isErr } from '@/core/result';
 import { useLayoutStore, useLibraryStore, useSettingsStore, useToastStore } from '@/core/store';
-import { createLayoutEntry, saveLayoutWithMetadata } from '@/core/storage';
+import {
+  createLayoutEntry,
+  saveLayoutWithMetadata,
+  wasLibrarySeededThisLoad,
+} from '@/core/storage';
 import type { Layout, LayoutId } from '@/core/types';
 import { layoutId as toLayoutId } from '@/core/types';
 import { trackLayoutAction } from '@/shared/analytics/posthog';
@@ -91,7 +95,7 @@ async function openDrawerLink(
 ): Promise<{ id: LayoutId; layout: Layout } | 'invalid' | 'failed'> {
   const library = useLibraryStore.getState().library;
   const current = useLayoutStore.getState().layout;
-  const reuse = isFirstVisitLayout(library, current, performance.timeOrigin);
+  const reuse = isFirstVisitLayout(library, current, wasLibrarySeededThisLoad());
   const base = reuse ? current : createLayoutWithSettings(useSettingsStore.getState().settings);
 
   const built = buildDrawerLinkLayout(base, spec, fallbackName);
