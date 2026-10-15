@@ -111,6 +111,7 @@ vi.mock('@/i18n', async () => {
       locale: 'en' as const,
       setLocale: vi.fn(),
       isLoading: false,
+      isReady: true,
     }),
     useCurrentLocale: () => 'en' as const,
     useFormatting: () => ({

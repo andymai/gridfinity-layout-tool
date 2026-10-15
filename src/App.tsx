@@ -26,7 +26,7 @@ import {
   useCollabMode,
 } from '@/shared/hooks';
 import { useKeyboard } from '@/shell/keyboard';
-import { useLayoutRouting } from '@/features/layout-library';
+import { useDrawerLinkImport, useLayoutRouting } from '@/features/layout-library';
 import { useOwnedShareSync } from '@/features/cloud-share/hooks/useOwnedShareSync';
 import { reconcileLibraryAsync, isShareURL } from '@/core/storage';
 import {
@@ -147,6 +147,10 @@ export default function App() {
   const hasSharedLayoutPreview = useSharedPreviewStore((state) => state.sharedPreview !== null);
 
   const [hasShareUrl] = useState(isShareURL);
+  const hasDrawerLink = useDrawerLinkImport({
+    disabled: hasShareUrl || isCollaborative || (isNonLayoutRoute && !isBaseplateRoute),
+    syncLayoutUrl: !isNonLayoutRoute,
+  });
 
   usePlaceBinFromURL();
   useOwnedShareSync();
@@ -216,6 +220,7 @@ export default function App() {
   useWhatsNewAutoOpen({
     allowed:
       !hasShareUrl &&
+      !hasDrawerLink &&
       !isCollaborative &&
       !isCommunityRoute &&
       !isSupportersRoute &&

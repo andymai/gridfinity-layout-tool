@@ -10,6 +10,7 @@
   var HALF_GRID_MM = 21;
   var HEIGHT_UNIT_MM = 7;
   var BASEPLATE_MM = 5;
+  var MAX_GRID_UNITS = 50;
 
   function $(id) {
     return document.getElementById(id);
@@ -40,6 +41,24 @@
 
     var hUnits = height > 0 ? Math.floor((height - BASEPLATE_MM) / HEIGHT_UNIT_MM) : 0;
     $('calc-height-units').textContent = hUnits > 0 ? hUnits + 'U (' + hUnits * HEIGHT_UNIT_MM + ' mm)' : '—';
+
+    updateDrawerLinks(width, depth, height);
+  }
+
+  // Mirrors the range parseDrawerLink/buildDrawerLinkLayout accept in the app;
+  // outside it the buttons fall back to opening the plain tool.
+  function fitsGrid(sizeMm) {
+    return sizeMm >= GRID_MM && sizeMm <= MAX_GRID_UNITS * GRID_MM;
+  }
+
+  function updateDrawerLinks(width, depth, height) {
+    var size = fitsGrid(width) && fitsGrid(depth) ? width + 'x' + depth : null;
+    if (size !== null && height > 0) size += 'x' + height;
+    var links = document.querySelectorAll('[data-drawer-link]');
+    for (var i = 0; i < links.length; i++) {
+      var path = links[i].getAttribute('data-drawer-link') === 'baseplate' ? '/baseplate' : '/';
+      links[i].setAttribute('href', size === null ? path : path + '?drawer=' + size);
+    }
   }
 
   function init() {

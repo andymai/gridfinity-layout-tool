@@ -1436,6 +1436,8 @@ const en: Record<string, string> = {
   'toast.baseplateReset': 'Baseplate settings reset to defaults',
   'toast.baseplateSaveFailed': 'Failed to save baseplate',
   'toast.layoutCreated': 'New layout created',
+  'toast.drawerLinkOpened': 'Layout sized to your drawer: a {width} × {depth} grid',
+  'toast.drawerLinkInvalid': "That drawer link has a size the planner can't open",
   'toast.layoutDuplicated': 'Layout duplicated',
   'toast.layoutDeleted': 'Layout deleted',
   'toast.layoutImported': 'Imported "{name}"',
@@ -4535,6 +4537,7 @@ const en: Record<string, string> = {
 
   // Layout (Collaboration)
   'layout.collaborativeEditingIsNotActive': 'Collaborative editing is not active',
+  'layout.drawerLinkName': 'Drawer {width} × {depth} mm',
 
   'common.dismiss': 'Dismiss',
 

@@ -91,6 +91,12 @@ interface LocaleContextValue {
   t: TFunction;
   /** Whether a locale is currently being loaded */
   isLoading: boolean;
+  /**
+   * Whether the first locale load has settled. Until then `t` answers from a
+   * small fallback map and returns most keys verbatim, so text that outlives
+   * the moment (a saved name, a toast) must wait for this.
+   */
+  isReady: boolean;
 }
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
@@ -277,8 +283,8 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
   );
 
   const value = useMemo<LocaleContextValue>(
-    () => ({ locale, setLocale, t, isLoading }),
-    [locale, setLocale, t, isLoading]
+    () => ({ locale, setLocale, t, isLoading, isReady: hasLoadedInitial }),
+    [locale, setLocale, t, isLoading, hasLoadedInitial]
   );
 
   // Show minimal loading state only during explicit locale switches (not initial load).

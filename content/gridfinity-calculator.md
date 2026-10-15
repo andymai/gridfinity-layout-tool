@@ -85,10 +85,12 @@ Convert your drawer measurements to Gridfinity grid units. Enter the interior di
     </div>
   </div>
   <p class="calc__note">Measure the drawer's interior, not the front panel. Grid units round down; the baseplate generator's edge padding absorbs the leftover millimeters.</p>
+  <div class="calc__actions">
+    <a class="content-cta" href="/" data-drawer-link="planner">Plan this drawer &rarr;</a>
+    <a class="calc__secondary" href="/baseplate" data-drawer-link="baseplate">Make its baseplate &rarr;</a>
+  </div>
 </div>
 <script src="/calculator.js" defer></script>
-
-[CTA: Plan This Drawer in the Layout Tool](/)
 
 ## The Math Behind It
 

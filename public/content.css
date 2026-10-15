@@ -702,6 +702,22 @@ body {
   color: var(--color-content-tertiary);
 }
 
+.calc__actions {
+  margin-top: var(--space-lg);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md) var(--space-xl);
+}
+
+.content-body .calc__actions .content-cta {
+  margin: 0;
+}
+
+.calc__secondary {
+  font-weight: 600;
+}
+
 @media (max-width: 600px) {
   .calc__grid,
   .calc__results {
