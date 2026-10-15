@@ -372,6 +372,9 @@ const DRAWER_RENDERS: DrawerRender[] = [
     name: 'Milwaukee Packout drawer',
     zoomSteps: 0,
   },
+  { slug: 'ikea-kallax', drawer: '273x304', name: 'IKEA Kallax drawer', zoomSteps: 3 },
+  { slug: 'ikea-malm', drawer: '720x430', name: 'IKEA Malm drawer', zoomSteps: 1 },
+  { slug: 'ikea-helmer', drawer: '231x388', name: 'IKEA Helmer drawer', zoomSteps: 4 },
 ];
 
 async function captureDrawerBaseplate(browser: Browser, render: DrawerRender): Promise<void> {
@@ -577,6 +580,27 @@ const OG_CARDS: OgCard[] = [
     subtitle: 'Size a Packout drawer layout, choose bin heights, and generate a split baseplate',
     style: 'light',
     inset: 'drawer-milwaukee-packout-baseplate.png',
+  },
+  {
+    slug: 'gridfinity-ikea-kallax',
+    title: 'Gridfinity for IKEA Kallax Drawers',
+    subtitle: 'Measure your Kallax insert drawer, open a sized planner, and make a split baseplate',
+    style: 'light',
+    inset: 'drawer-ikea-kallax-baseplate.png',
+  },
+  {
+    slug: 'gridfinity-ikea-malm',
+    title: 'Gridfinity for IKEA Malm Drawers',
+    subtitle: 'Size a Gridfinity planner, bins, and a split baseplate for your Malm chest',
+    style: 'light',
+    inset: 'drawer-ikea-malm-baseplate.png',
+  },
+  {
+    slug: 'gridfinity-ikea-helmer',
+    title: 'Gridfinity for IKEA Helmer Drawers',
+    subtitle: 'Measure your Helmer drawer, choose the matching layout, and size a baseplate',
+    style: 'light',
+    inset: 'drawer-ikea-helmer-baseplate.png',
   },
   {
     slug: 'gridfinity-software',

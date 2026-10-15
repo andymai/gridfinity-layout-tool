@@ -1057,6 +1057,9 @@ const SITEMAP_PAGES: Record<string, SitemapPage> = {
   'gridfinity-drawers': { basePriority: 0.8, changefreq: 'monthly' },
   'gridfinity-ikea-alex': { basePriority: 0.7, changefreq: 'monthly' },
   'gridfinity-milwaukee-packout': { basePriority: 0.7, changefreq: 'monthly' },
+  'gridfinity-ikea-kallax': { basePriority: 0.7, changefreq: 'monthly' },
+  'gridfinity-ikea-malm': { basePriority: 0.7, changefreq: 'monthly' },
+  'gridfinity-ikea-helmer': { basePriority: 0.7, changefreq: 'monthly' },
   schema: { basePriority: 0.5, changefreq: 'monthly' },
 };
 

@@ -27,6 +27,9 @@ const SLUGS = [
   'gridfinity-drawers',
   'gridfinity-ikea-alex',
   'gridfinity-milwaukee-packout',
+  'gridfinity-ikea-kallax',
+  'gridfinity-ikea-malm',
+  'gridfinity-ikea-helmer',
 ];
 
 // Localized variants exist only for the original content set. privacy/terms are

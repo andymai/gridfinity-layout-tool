@@ -13,7 +13,7 @@ navCta:
   href: /
 faqs:
   - q: Is my drawer listed?
-    a: IKEA Alex 5-drawer, IKEA Alex 9-drawer, IKEA Alex on castors, and Milwaukee Packout 3-drawer tool box are listed. For anything else, measure the drawer and use the calculator.
+    a: IKEA Alex 5-drawer, IKEA Alex 9-drawer, IKEA Alex on castors, the IKEA Kallax 2-drawer insert, the IKEA Malm 4-drawer chest, IKEA Helmer (28x69 and 28x65), and Milwaukee Packout 3-drawer tool box are listed. For anything else, measure the drawer and use the calculator.
   - q: How do I measure a drawer for Gridfinity?
     a: Measure the inside width and depth in millimeters, not the front panel. Measure the inside height too if you want to find the tallest bin that fits.
   - q: What happens to the leftover space?
@@ -30,12 +30,16 @@ Find the Gridfinity grid for common named drawers, or measure any drawer to size
 
 These common drawers have dedicated pages with the details needed to plan a Gridfinity drawer organizer.
 
-| Drawer                              | Grid                             | Page                                                                |
-| ----------------------------------- | -------------------------------- | ------------------------------------------------------------------- |
-| IKEA Alex 5-drawer (36x70 cm)       | 7 by 12                          | [IKEA Alex Gridfinity guide](/gridfinity-ikea-alex)                 |
-| IKEA Alex 9-drawer (36x116 cm)      | 7 by 10                          | [IKEA Alex Gridfinity guide](/gridfinity-ikea-alex)                 |
-| IKEA Alex on castors (67x66 cm)     | 10 units deep, measure the width | [IKEA Alex Gridfinity guide](/gridfinity-ikea-alex)                 |
-| Milwaukee Packout 3-drawer tool box | 9 by 7                           | [Milwaukee Packout Gridfinity guide](/gridfinity-milwaukee-packout) |
+| Drawer                                   | Grid                             | Page                                                                |
+| ---------------------------------------- | -------------------------------- | ------------------------------------------------------------------- |
+| IKEA Alex 5-drawer (36x70 cm)            | 7 by 12                          | [IKEA Alex Gridfinity guide](/gridfinity-ikea-alex)                 |
+| IKEA Alex 9-drawer (36x116 cm)           | 7 by 10                          | [IKEA Alex Gridfinity guide](/gridfinity-ikea-alex)                 |
+| IKEA Alex on castors (67x66 cm)          | 10 units deep, measure the width | [IKEA Alex Gridfinity guide](/gridfinity-ikea-alex)                 |
+| IKEA Kallax insert with 2 drawers        | 6 by 7                           | [IKEA Kallax Gridfinity guide](/gridfinity-ikea-kallax)             |
+| IKEA Malm chest of 4 drawers (80x100 cm) | 17 by 10                         | [IKEA Malm Gridfinity guide](/gridfinity-ikea-malm)                 |
+| IKEA Helmer (28x69 cm)                   | 5 by 9                           | [IKEA Helmer Gridfinity guide](/gridfinity-ikea-helmer)             |
+| IKEA Helmer (28x65 cm)                   | 5 by 8                           | [IKEA Helmer Gridfinity guide](/gridfinity-ikea-helmer)             |
+| Milwaukee Packout 3-drawer tool box      | 9 by 7                           | [Milwaukee Packout Gridfinity guide](/gridfinity-milwaukee-packout) |
 
 Listed drawers link to their own page, where the measurements and caveats live. Measure the inside of your own drawer anyway, because units vary.
 
