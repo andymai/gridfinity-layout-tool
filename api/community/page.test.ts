@@ -1,5 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import {
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import handler, {
   designJsonLd,
   escapeAttr,
   injectDesignMeta,
@@ -8,6 +10,19 @@ import {
   truncate,
 } from './page.js';
 import type { DesignMeta } from './page.js';
+import type { CommunityCardRecord } from '../lib/communityStore.js';
+
+const mocks = vi.hoisted(() => ({
+  getRedis: vi.fn(),
+  readCommunityCards: vi.fn(),
+  readCommunityDesignBlob: vi.fn(),
+}));
+
+vi.mock('../lib/rateLimit.js', () => ({ getRedis: mocks.getRedis }));
+vi.mock('../lib/communityStore.js', () => ({
+  readCommunityCards: mocks.readCommunityCards,
+  readCommunityDesignBlob: mocks.readCommunityDesignBlob,
+}));
 
 const SITE = 'https://gridfinitylayouttool.com';
 
@@ -395,5 +410,167 @@ describe('escapeAttr', () => {
 
   it('escapes the ampersand first so entities are not double-built', () => {
     expect(escapeAttr('&quot;')).toBe('&amp;quot;');
+  });
+});
+
+describe('handler', () => {
+  // The real shell, so a change to its head tags that the handler can no longer
+  // match fails here rather than silently shipping the homepage's tags.
+  const INDEX_HTML = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+  const DESIGN_ID = 'Abc123456789';
+  const DESIGN_URL = `${SITE}/community/d/${DESIGN_ID}`;
+
+  function card(overrides: Partial<CommunityCardRecord> = {}): CommunityCardRecord {
+    return {
+      id: DESIGN_ID,
+      name: 'Hex Driver Nest',
+      authorPublicId: 'author-1',
+      authorName: 'ada',
+      category: 'tools',
+      techniques: [],
+      width: 83.5,
+      depth: 41.5,
+      height: 21,
+      gridUnitMm: 42,
+      thumbnailUrl: 'https://blob.test/thumb.webp',
+      isRemix: false,
+      parentId: '',
+      featured: false,
+      createdAt: 1000,
+      updatedAt: 1000,
+      status: 'live',
+      likes: 3,
+      remixes: 0,
+      exports: 0,
+      prints: 1,
+      ...overrides,
+    };
+  }
+
+  function createResponse() {
+    const res = {
+      _status: 0,
+      _body: '',
+      status(code: number) {
+        res._status = code;
+        return res;
+      },
+      send(body: string) {
+        res._body = body;
+        return res;
+      },
+      setHeader() {
+        return res;
+      },
+    };
+    return res as unknown as VercelResponse & { _status: number; _body: string };
+  }
+
+  async function serve(id: string | undefined) {
+    const res = createResponse();
+    const req = { method: 'GET', query: id === undefined ? {} : { id }, headers: {} };
+    await handler(req as unknown as VercelRequest, res);
+    return res;
+  }
+
+  function jsonLdTypes(html: string): unknown[] {
+    return [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(
+      (match) => (JSON.parse(match[1]) as { '@type'?: unknown })['@type']
+    );
+  }
+
+  beforeEach(() => {
+    vi.stubEnv('VERCEL_PROJECT_PRODUCTION_URL', 'gridfinitylayouttool.com');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(INDEX_HTML, { status: 200 }))
+    );
+    mocks.getRedis.mockReturnValue({});
+    mocks.readCommunityCards.mockResolvedValue([card()]);
+    mocks.readCommunityDesignBlob.mockResolvedValue({ description: 'Holds hex drivers upright.' });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it('serves a live design 200 under its own canonical and hreflang', async () => {
+    const res = await serve(DESIGN_ID);
+    expect(res._status).toBe(200);
+    expect(res._body).toContain(`<link rel="canonical" href="${DESIGN_URL}">`);
+    expect(res._body).toContain(`<link rel="alternate" hreflang="en" href="${DESIGN_URL}">`);
+    expect(res._body).toContain(`<link rel="alternate" hreflang="x-default" href="${DESIGN_URL}">`);
+    expect(res._body).not.toMatch(/hreflang="[^"]*" href="https:\/\/gridfinitylayouttool\.com\/"/);
+  });
+
+  it('carries the design’s own schema and none of the homepage’s', async () => {
+    expect(jsonLdTypes(INDEX_HTML)).toEqual(
+      expect.arrayContaining(['FAQPage', 'HowTo', 'SoftwareApplication'])
+    );
+    const res = await serve(DESIGN_ID);
+    expect(jsonLdTypes(res._body)).toEqual(['CreativeWork']);
+  });
+
+  it('carries no schema at all on a design below the indexing bar', async () => {
+    mocks.readCommunityCards.mockResolvedValue([card({ likes: 0, prints: 0 })]);
+    const res = await serve(DESIGN_ID);
+    expect(res._status).toBe(200);
+    expect(res._body).toContain('<meta name="robots" content="noindex, follow">');
+    expect(jsonLdTypes(res._body)).toEqual([]);
+  });
+
+  it('leaves every executable inline script byte-identical', async () => {
+    // These are pinned by CSP hashes in vercel.json; one changed byte and the
+    // app does not boot on a design page.
+    const scripts = INDEX_HTML.match(/<script>[\s\S]*?<\/script>/g) ?? [];
+    expect(scripts.length).toBeGreaterThan(0);
+    const res = await serve(DESIGN_ID);
+    for (const script of scripts) expect(res._body).toContain(script);
+  });
+
+  it('answers an unknown design 404 with noindex, still as the app shell', async () => {
+    mocks.readCommunityCards.mockResolvedValue([null]);
+    const res = await serve(DESIGN_ID);
+    expect(res._status).toBe(404);
+    expect(res._body).toContain('<meta name="robots" content="noindex">');
+    expect(res._body).toContain('<meta name="googlebot" content="noindex">');
+    expect(res._body).toContain('<meta name="bingbot" content="noindex">');
+    // The SPA still boots and shows its own not-found state to a person.
+    expect(res._body).toContain('<div id="root">');
+  });
+
+  it.each(['hidden', 'removed'] as const)(
+    'answers a %s design exactly as it answers a missing one',
+    async (status) => {
+      mocks.readCommunityCards.mockResolvedValue([null]);
+      const missing = await serve(DESIGN_ID);
+      mocks.readCommunityCards.mockResolvedValue([card({ status })]);
+      const res = await serve(DESIGN_ID);
+      expect(res._status).toBe(404);
+      expect(res._body).toContain('<meta name="robots" content="noindex">');
+      expect(res._body).not.toContain('Hex Driver Nest');
+      // Any difference would tell a prober which designs were taken down.
+      expect(res._body).toBe(missing._body);
+    }
+  );
+
+  it('answers a malformed or absent id 404 without reading the store', async () => {
+    for (const id of ['not-an-id', undefined]) {
+      const res = await serve(id);
+      expect(res._status).toBe(404);
+      expect(res._body).toContain('<meta name="robots" content="noindex">');
+    }
+    expect(mocks.readCommunityCards).not.toHaveBeenCalled();
+  });
+
+  it('keeps a design page up while Redis is unavailable', async () => {
+    // A live design cannot be told from a missing one here, and a 404 would
+    // drop every design from the index for the length of the outage.
+    mocks.getRedis.mockReturnValue(null);
+    const res = await serve(DESIGN_ID);
+    expect(res._status).toBe(200);
+    expect(res._body).not.toContain('content="noindex');
   });
 });

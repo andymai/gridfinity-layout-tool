@@ -27,9 +27,16 @@
  * Any failure serves the unmodified shell. A design that cannot be read is a
  * reason to lose the preview, never the page: the SPA still boots and renders
  * the detail (or its own not-found state) client-side.
+ *
+ * A design that is known not to be live (missing, hidden or removed) is not a
+ * failure: it answers 404 with `noindex`, so a dead link is not a soft 404 that
+ * crawlers fold into the homepage. The body is still the shell, so a person
+ * following that link gets the SPA's own not-found state. The three cases are
+ * byte-identical, or the response would reveal which designs were taken down.
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { Redis } from 'ioredis';
 import { requireMethod } from '../lib/method.js';
 import { getRedis } from '../lib/rateLimit.js';
 import { logger } from '../lib/logger.js';
@@ -262,6 +269,25 @@ function replaceOne(html: string, pattern: RegExp, replacement: string): string 
 }
 
 /**
+ * Sets every robots directive in the shell, not just the generic one: a
+ * bot-specific `googlebot`/`bingbot` meta OVERRIDES `robots` for that crawler,
+ * so leaving those at index would let exactly the two crawlers that matter
+ * index a page meant to be excluded. No-ops if the shell drops them, since
+ * replaceOne leaves a pattern it cannot find alone.
+ */
+function setRobots(html: string, content: string): string {
+  let out = html;
+  for (const bot of ['robots', 'googlebot', 'bingbot']) {
+    out = replaceOne(
+      out,
+      new RegExp(`<meta name="${bot}" content="[^"]*">`),
+      `<meta name="${bot}" content="${content}">`
+    );
+  }
+  return out;
+}
+
+/**
  * Swaps the SEO fallback's contents, finding the block's end by balancing
  * nested `<div>`s rather than assuming the first `</div>` closes it.
  *
@@ -312,6 +338,15 @@ export function injectDesignMeta(shell: string, design: DesignMeta, siteUrl: str
     /<link rel="canonical" href="[^"]*">/,
     `<link rel="canonical" href="${escapeAttr(url)}">`
   );
+  // English-only pages self-reference, as the static route and content pages
+  // do. Left at `/`, they would declare the homepage this page's English version.
+  for (const lang of ['en', 'x-default']) {
+    html = replaceOne(
+      html,
+      new RegExp(`<link rel="alternate" hreflang="${lang}" href="[^"]*">`),
+      `<link rel="alternate" hreflang="${lang}" href="${escapeAttr(url)}">`
+    );
+  }
 
   const swaps: Array<[string, string]> = [
     ['og:url', url],
@@ -343,21 +378,15 @@ export function injectDesignMeta(shell: string, design: DesignMeta, siteUrl: str
 
   const indexable = isIndexable(design);
   if (!indexable) {
-    // Every robots directive in the shell, not just the generic one: a
-    // bot-specific `googlebot`/`bingbot` meta OVERRIDES `robots` for that
-    // crawler, so leaving those at index would let exactly the two crawlers
-    // that matter index a page the gate rejected. No-ops if the shell drops
-    // them, since replaceOne leaves a pattern it cannot find alone.
-    for (const bot of ['robots', 'googlebot', 'bingbot']) {
-      html = replaceOne(
-        html,
-        new RegExp(`<meta name="${bot}" content="[^"]*">`),
-        `<meta name="${bot}" content="noindex, follow">`
-      );
-    }
+    html = setRobots(html, 'noindex, follow');
   }
 
   html = replaceFallbackContent(html, renderDesignFallback(design, url));
+
+  // The shell's structured data describes the homepage (its FAQ, its how-to,
+  // the app itself). Schema has to match what the page shows, so none of it
+  // survives onto a design page, indexable or not.
+  html = html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>\s*/g, '');
 
   // Schema only for pages Google is allowed to keep. Advertising structured
   // data on a noindex page spends nothing and claims something.
@@ -367,12 +396,10 @@ export function injectDesignMeta(shell: string, design: DesignMeta, siteUrl: str
   return html;
 }
 
-async function readDesignMeta(designId: string): Promise<DesignMeta | null> {
-  const redis = getRedis();
-  if (!redis) return null;
+async function readDesignMeta(redis: Redis, designId: string): Promise<DesignMeta | null> {
   const card = (await readCommunityCards(redis, [designId]))[0] ?? null;
-  // Hidden and removed designs get the generic shell: a moderated design must
-  // not keep unfurling its name and picture from every link that points at it.
+  // Hidden and removed designs read as missing: a moderated design must not
+  // keep unfurling its name and picture from every link that points at it.
   if (card === null || card.status !== 'live') return null;
   const record = await readCommunityDesignBlob(designId);
   return {
@@ -415,23 +442,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const send = (html: string): void => {
+  const send = (status: number, html: string): void => {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', CACHE_CONTROL);
-    res.status(200).send(html);
+    res.status(status).send(html);
   };
+  const sendNotFound = (): void => send(404, setRobots(shell, 'noindex'));
 
   const designId = singleParam(req.query.id);
   if (designId === undefined || !DESIGN_ID_REGEX.test(designId)) {
-    send(shell);
+    sendNotFound();
+    return;
+  }
+
+  const redis = getRedis();
+  if (!redis) {
+    // Without Redis a live design cannot be told from a missing one, and a
+    // 404 here would drop every design from the index for the outage.
+    send(200, shell);
     return;
   }
 
   try {
-    const design = await readDesignMeta(designId);
-    send(design === null ? shell : injectDesignMeta(shell, design, getBaseUrl()));
+    const design = await readDesignMeta(redis, designId);
+    if (design === null) {
+      sendNotFound();
+      return;
+    }
+    send(200, injectDesignMeta(shell, design, getBaseUrl()));
   } catch (error) {
     logger.error('community page meta injection failed', { designId, error: String(error) });
-    send(shell);
+    send(200, shell);
   }
 }
