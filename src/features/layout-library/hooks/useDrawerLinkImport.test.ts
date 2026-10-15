@@ -225,6 +225,22 @@ describe('useDrawerLinkImport', () => {
     expect((await loadLayoutAsync(EXISTING))?.name).toBe('Edited, not yet saved');
   });
 
+  it('leaves the address alone if the user moves off the planner while the layout saves', async () => {
+    seed(false, 1);
+    window.history.replaceState(null, '', '/?drawer=297x525');
+    const { rerender } = renderHook(
+      ({ sync }: { sync: boolean }) =>
+        useDrawerLinkImport({ disabled: false, syncLayoutUrl: sync }),
+      { initialProps: { sync: true } }
+    );
+    window.history.replaceState(null, '', '/designer');
+    rerender({ sync: false });
+
+    await waitFor(() => expect(useLibraryStore.getState().library.entries).toHaveLength(2));
+    await opened();
+    expect(window.location.pathname).toBe('/designer');
+  });
+
   it('yields the URL to a share link or collaboration session', () => {
     seed(false, 1);
     open('/?drawer=297x525', { disabled: true });

@@ -47,6 +47,12 @@ export function useDrawerLinkImport({ disabled, syncLayoutUrl }: DrawerLinkImpor
   const [link] = useState(() => (disabled ? null : parseDrawerLink(window.location.search)));
   const handled = useRef(false);
   const { activateLayout } = useLayoutActivation();
+  // Read when the save settles, not when it starts: the user may have left the
+  // planner meanwhile, and rewriting the address then would strand that route.
+  const syncLayoutUrlNow = useRef(syncLayoutUrl);
+  useEffect(() => {
+    syncLayoutUrlNow.current = syncLayoutUrl;
+  }, [syncLayoutUrl]);
 
   useEffect(() => {
     // The layout name is stored, so it has to wait for real translations.
@@ -76,7 +82,7 @@ export function useDrawerLinkImport({ disabled, syncLayoutUrl }: DrawerLinkImpor
         addToast(t('toast.layoutCreateFailed'), 'error');
         return;
       }
-      if (syncLayoutUrl) setLayoutURL(opened.id, opened.layout.name, false);
+      if (syncLayoutUrlNow.current) setLayoutURL(opened.id, opened.layout.name, false);
       trackLayoutAction('created', 'drawer_link');
       addToast(
         t('toast.drawerLinkOpened', {
@@ -86,7 +92,7 @@ export function useDrawerLinkImport({ disabled, syncLayoutUrl }: DrawerLinkImpor
         'success'
       );
     });
-  }, [link, disabled, isReady, syncLayoutUrl, activateLayout, t]);
+  }, [link, disabled, isReady, activateLayout, t]);
 
   return link !== null;
 }
