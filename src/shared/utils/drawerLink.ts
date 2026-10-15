@@ -52,8 +52,16 @@ export function parseDrawerLink(search: string): Result<DrawerLinkSpec, Validati
   const depthMm = Number(depth);
   // An unmatched optional group is undefined at runtime though typed string.
   const heightMm = height ? Number(height) : undefined;
-  if (widthMm <= 0 || depthMm <= 0 || heightMm === 0) {
-    return err(validationImportFailed([`Drawer size "${raw}" has a zero dimension`]));
+  // The sync and share servers reject a measurement outside these bounds, so
+  // a layout built from one could never leave this device.
+  const measurable = (value: number): boolean =>
+    value >= CONSTRAINTS.MEASURED_MM_MIN && value <= CONSTRAINTS.MEASURED_MM_MAX;
+  if (
+    !measurable(widthMm) ||
+    !measurable(depthMm) ||
+    (heightMm !== undefined && !measurable(heightMm))
+  ) {
+    return err(validationImportFailed([`Drawer size "${raw}" is outside the measurable range`]));
   }
 
   const name = cleanName(params.get(DRAWER_LINK_NAME_PARAM));

@@ -61,6 +61,18 @@ describe('parseDrawerLink', () => {
     expect(isErr(parsed('?drawer=0x525'))).toBe(true);
     expect(isErr(parsed('?drawer=297x525x0'))).toBe(true);
   });
+
+  it.each(['297x525x0.5', '297x525x6000', '6000x525', '297x0.9'])(
+    'rejects %s, outside the 1 to 5000 mm a synced layout may hold',
+    (size) => {
+      expect(isErr(parsed(`?drawer=${size}`))).toBe(true);
+    }
+  );
+
+  it('accepts the measurable bounds themselves', () => {
+    expect(expectOk(parsed('?drawer=297x525x1')).heightMm).toBe(1);
+    expect(expectOk(parsed('?drawer=297x525x5000')).heightMm).toBe(5000);
+  });
 });
 
 describe('buildDrawerLinkLayout', () => {

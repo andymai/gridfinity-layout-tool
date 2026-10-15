@@ -58,7 +58,8 @@ export function useDrawerLinkImport({ disabled, syncLayoutUrl }: DrawerLinkImpor
       t('layout.drawerLinkName', {
         width: formatMm(link.value.widthMm),
         depth: formatMm(link.value.depthMm),
-      })
+      }),
+      activateLayout
     ).then((opened) => {
       if (opened === 'invalid') {
         addToast(t('toast.drawerLinkInvalid'), 'error');
@@ -68,7 +69,6 @@ export function useDrawerLinkImport({ disabled, syncLayoutUrl }: DrawerLinkImpor
         addToast(t('toast.layoutCreateFailed'), 'error');
         return;
       }
-      activateLayout(opened.layout, opened.id);
       if (syncLayoutUrl) setLayoutURL(opened.id, opened.layout.name, false);
       trackLayoutAction('created', 'drawer_link');
       addToast(
@@ -86,7 +86,8 @@ export function useDrawerLinkImport({ disabled, syncLayoutUrl }: DrawerLinkImpor
 
 async function openDrawerLink(
   spec: DrawerLinkSpec,
-  fallbackName: string
+  fallbackName: string,
+  activate: (layout: Layout, id: LayoutId) => void
 ): Promise<{ id: LayoutId; layout: Layout } | 'invalid' | 'failed'> {
   const library = useLibraryStore.getState().library;
   const current = useLayoutStore.getState().layout;
@@ -98,10 +99,15 @@ async function openDrawerLink(
   const layout = built.value;
 
   if (reuse) {
-    const saved = await saveLayoutWithMetadata(library.activeLayoutId, layout, library);
+    // On /baseplate the library initializer may link a design to this layout
+    // while it saves. Activating before any await, then saving what the store
+    // holds, keeps that link instead of restoring a copy taken before it.
+    const id = library.activeLayoutId;
+    activate(layout, id);
+    const saved = await saveLayoutWithMetadata(id, useLayoutStore.getState().layout, library);
     if (isErr(saved)) return 'failed';
     useLibraryStore.getState().setLibrary(saved.value.library);
-    return { id: library.activeLayoutId, layout };
+    return { id, layout };
   }
 
   const created = await createLayoutEntry(layout, library, {
@@ -111,5 +117,7 @@ async function openDrawerLink(
   });
   if (isErr(created)) return 'failed';
   useLibraryStore.getState().setLibrary(created.value.library);
-  return { id: toLayoutId(created.value.layoutId), layout: created.value.layout };
+  const id = toLayoutId(created.value.layoutId);
+  activate(created.value.layout, id);
+  return { id, layout: created.value.layout };
 }

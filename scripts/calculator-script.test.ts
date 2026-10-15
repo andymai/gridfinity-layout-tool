@@ -53,6 +53,11 @@ describe('calculator drawer links', () => {
     expect(href('planner')).toBe('/?drawer=297.5x525');
   });
 
+  it.each(['0.5', '6000'])('leaves off a height of %s mm, which the app would reject', (height) => {
+    enter('297', '525', height);
+    expect(href('planner')).toBe('/?drawer=297x525');
+  });
+
   it.each([
     ['41', '525'],
     ['297', '2101'],

@@ -3,7 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as i18n from '@/i18n';
 import { useLayoutStore, useLibraryStore, useToastStore } from '@/core/store';
 import { loadLayoutAsync } from '@/core/storage';
-import { layoutId } from '@/core/types';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
+import { baseplateDesignId, layoutId } from '@/core/types';
 import {
   createTestBin,
   createTestLayout,
@@ -37,6 +38,9 @@ function open(url: string, options: Partial<DrawerLinkImportOptions> = {}) {
 const toasts = () =>
   useToastStore.getState().toasts.map((t) => ({ message: t.message, type: t.type }));
 
+/** The success toast is the hook's last step, after the URL rewrite. */
+const opened = () => waitFor(() => expect(toasts().some((t) => t.type === 'success')).toBe(true));
+
 describe('useDrawerLinkImport', () => {
   beforeEach(() => {
     resetAllStores();
@@ -60,6 +64,7 @@ describe('useDrawerLinkImport', () => {
     expect(result.current).toBe(true);
 
     await waitFor(() => expect(useLibraryStore.getState().library.entries).toHaveLength(2));
+    await opened();
     const { layout, activeLayoutId } = useLayoutStore.getState();
     expect(activeLayoutId).not.toBe(EXISTING);
     expect(layout.name).toBe('IKEA Alex');
@@ -84,10 +89,13 @@ describe('useDrawerLinkImport', () => {
     seed(Date.now());
     open('/?drawer=297x525');
 
-    await waitFor(() => expect(useLayoutStore.getState().layout.drawer.width).toBe(7));
+    await waitFor(() =>
+      expect(useLibraryStore.getState().library.entries[0]?.name).toBe('Drawer 297 × 525 mm')
+    );
+    await opened();
+    expect(useLayoutStore.getState().layout.drawer.width).toBe(7);
     const { entries } = useLibraryStore.getState().library;
     expect(entries).toHaveLength(1);
-    expect(entries[0]?.name).toBe('Drawer 297 × 525 mm');
     expect(useLayoutStore.getState().activeLayoutId).toBe(EXISTING);
   });
 
@@ -96,6 +104,7 @@ describe('useDrawerLinkImport', () => {
     open('/baseplate?drawer=414x318', { syncLayoutUrl: false });
 
     await waitFor(() => expect(useLibraryStore.getState().library.entries).toHaveLength(2));
+    await opened();
     expect(window.location.pathname).toBe('/baseplate');
     expect(window.location.search).toBe('');
   });
@@ -139,7 +148,40 @@ describe('useDrawerLinkImport', () => {
     useLocale.mockReturnValue({ ...locale, isReady: true });
     rerender();
     await waitFor(() => expect(useLibraryStore.getState().library.entries).toHaveLength(2));
+    await opened();
     expect(useLayoutStore.getState().layout.name).toBe('Drawer 297 × 525 mm');
+  });
+
+  it('keeps a baseplate design linked before the link applies, and pads it', async () => {
+    seed(Date.now());
+    const design = baseplateDesignId('design-before');
+    useLayoutStore.getState().setActiveBaseplateLocal(design, DEFAULT_BASEPLATE_PARAMS);
+    open('/baseplate?drawer=297x525', { syncLayoutUrl: false });
+
+    await waitFor(() =>
+      expect(useLibraryStore.getState().library.entries[0]?.name).toBe('Drawer 297 × 525 mm')
+    );
+    await opened();
+    const { layout } = useLayoutStore.getState();
+    expect(layout.activeBaseplateId).toBe(design);
+    expect(layout.baseplateParams).toMatchObject({ paddingLeft: 1.5, paddingFront: 10.5 });
+    expect((await loadLayoutAsync(EXISTING))?.activeBaseplateId).toBe(design);
+  });
+
+  it('does not undo a baseplate design the initializer links while the layout saves', async () => {
+    seed(Date.now());
+    open('/baseplate?drawer=297x525', { syncLayoutUrl: false });
+
+    expect(useLayoutStore.getState().layout.drawer.width).toBe(7);
+    const design = baseplateDesignId('design-during');
+    const padded = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+    useLayoutStore.getState().setActiveBaseplateLocal(design, padded);
+
+    await waitFor(() =>
+      expect(useLibraryStore.getState().library.entries[0]?.name).toBe('Drawer 297 × 525 mm')
+    );
+    await opened();
+    expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(design);
   });
 
   it('yields the URL to a share link or collaboration session', () => {

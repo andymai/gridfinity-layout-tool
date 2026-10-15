@@ -165,6 +165,23 @@ describe('LocaleProvider + useLocale', () => {
   });
 });
 
+describe('fallback strings', () => {
+  afterEach(() => {
+    _setLoadedEn(en);
+  });
+
+  it.each([
+    'layout.drawerLinkName',
+    'toast.drawerLinkOpened',
+    'toast.drawerLinkInvalid',
+    'toast.layoutCreateFailed',
+  ])('resolves %s exactly as en.ts does before any locale loads', (key) => {
+    _setLoadedEn(null);
+    _resetActiveTranslations();
+    expect(getStaticTranslation(key)).toBe(en[key]);
+  });
+});
+
 describe('LocaleProvider readiness', () => {
   afterEach(() => {
     _resetActiveTranslations();

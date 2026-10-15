@@ -34,6 +34,12 @@ import type { ReactNode } from 'react';
 import type { Locale, Translations, TranslationVars } from './types';
 
 const fallback: Translations = {
+  // A drawer link stores its layout name once the first locale load settles,
+  // including a failed one, so these must resolve without any locale.
+  'layout.drawerLinkName': 'Drawer {width} × {depth} mm',
+  'toast.drawerLinkOpened': 'Layout sized to your drawer: a {width} × {depth} grid',
+  'toast.drawerLinkInvalid': "That drawer link has a size the planner can't open",
+  'toast.layoutCreateFailed': 'Failed to create layout',
   'errorBoundary.heading': 'Something went wrong',
   'errorBoundary.description': 'The app encountered an unexpected error. Your layout data is safe.',
   'errorBoundary.hint':
