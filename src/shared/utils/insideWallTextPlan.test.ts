@@ -1,16 +1,9 @@
 // @vitest-environment node
 import { describe, it, expect } from 'vitest';
-import {
-  insideWallBounds,
-  insideWallObstacles,
-  insideWallSegments,
-  insideWallTextBlock,
-  type InsideWallDims,
-} from './insideWallTextPlan';
-import { maximalClearRects, type WallRect } from './maximalClearRects';
+import { insideWallBounds, insideWallSegments, insideWallTextBlock } from './insideWallTextPlan';
+import type { InsideWallDims } from './insideWallObstacles';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
-import { resolveLidHinge } from '@/shared/types/bin';
 import { resolveBinFloorMm } from './slotMath';
 import { planHingeLid } from './hingeLidPlan';
 
@@ -28,8 +21,6 @@ const params = (over: Partial<BinParams> = {}): BinParams => ({
   height: 4,
   ...over,
 });
-
-const area = (r: WallRect): number => (r.maxU - r.minU) * (r.maxZ - r.minZ);
 
 describe('insideWallTextBlock', () => {
   it('blocks a solid bin, which has no cavity', () => {
@@ -152,66 +143,5 @@ describe('insideWallSegments', () => {
     const sideBounds = insideWallBounds(p, DIMS, 'left');
     if (!sideBounds) throw new Error('no bounds');
     expect(insideWallSegments(p, DIMS, 'left', sideBounds)).toHaveLength(1);
-  });
-});
-
-describe('insideWallObstacles', () => {
-  it('blocks the label shelf on the back wall only', () => {
-    const p = params({ label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } });
-    const back = insideWallObstacles(p, DIMS, 'back');
-    expect(back.length).toBeGreaterThan(0);
-    for (const o of back) expect(o.maxZ).toBeGreaterThan(DIMS.interiorHeight - 3);
-    expect(insideWallObstacles(p, DIMS, 'front')).toEqual([]);
-  });
-
-  it("places a hinge's magnet catch pads on its catch side only", () => {
-    const p = params({
-      lid: {
-        ...DEFAULT_BIN_PARAMS.lid,
-        enabled: true,
-        attachment: 'hinge',
-        hinge: { ...resolveLidHinge(DEFAULT_BIN_PARAMS.lid), catchMode: 'magnets' },
-      },
-    });
-    const catchSide = planHingeLid(p).geometry?.catchSide;
-    expect(catchSide).toBe('front');
-    expect(insideWallObstacles(p, DIMS, 'front').length).toBeGreaterThan(0);
-    expect(insideWallObstacles(p, DIMS, 'back')).toEqual([]);
-    for (const o of insideWallObstacles(p, DIMS, 'left')) expect(o.maxU).toBeLessThan(0);
-  });
-
-  it('blocks both ends of every wall for magnet pads', () => {
-    const p = params({
-      lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'magnetic' },
-    });
-    for (const side of ['front', 'back', 'left', 'right'] as const) {
-      const pads = insideWallObstacles(p, DIMS, side);
-      expect(pads.some((o) => o.minU === -Infinity)).toBe(true);
-      expect(pads.some((o) => o.maxU === Infinity)).toBe(true);
-    }
-  });
-
-  it('blocks the corner a front scoop buries into on the side walls', () => {
-    const p = params({ scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, side: 'front' } });
-    const left = insideWallObstacles(p, DIMS, 'left');
-    expect(left).toHaveLength(1);
-    expect(left[0].minU).toBeCloseTo(-DIMS.innerD / 2, 6);
-    expect(left[0].maxU).toBeGreaterThan(-DIMS.innerD / 2 + 5);
-    expect(insideWallObstacles(p, DIMS, 'back')).toEqual([]);
-  });
-
-  it('keeps clear area on a bin with nothing inside', () => {
-    expect(insideWallObstacles(params(), DIMS, 'back')).toEqual([]);
-  });
-
-  it('leaves a usable region below a full-width shelf between magnet pads', () => {
-    const p = params({
-      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
-      lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'magnetic' },
-    });
-    const bounds = insideWallBounds(p, DIMS, 'back');
-    if (!bounds) throw new Error('no bounds');
-    const rects = maximalClearRects(bounds, insideWallObstacles(p, DIMS, 'back'));
-    expect(Math.max(...rects.map(area))).toBeGreaterThan(100);
   });
 });

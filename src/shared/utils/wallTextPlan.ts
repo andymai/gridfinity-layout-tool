@@ -32,12 +32,12 @@ import { WALL_TEXT_SIDES, resolveWallTextStyle, wallTextFace } from '@/shared/ty
 import { isPartialMask } from '@/shared/utils/cellMask';
 import {
   insideWallBounds,
-  insideWallObstacles,
   insideWallSegments,
   insideWallTextBlock,
   taperBandTop,
 } from '@/shared/utils/insideWallTextPlan';
 import { maximalClearRects, type WallRect } from '@/shared/utils/maximalClearRects';
+import { insideWallObstacles } from '@/shared/utils/insideWallObstacles';
 import {
   computeCutoutCenter,
   resolveCutoutDrop,
@@ -383,7 +383,10 @@ function collectSides(params: BinParams, dim: WallTextDims): SideInput[] {
       if (dim.solid || insideWallTextBlock(params, side) !== null) continue;
       const bounds = insideWallBounds(params, dim, side);
       if (!bounds) continue;
-      const obstacles = [...throughWall, ...insideWallObstacles(params, dim, side)].map(
+      // An embossed caption stands into the cavity, so features set just off
+      // the wall are in its way too.
+      const reach = style.mode === 'emboss' ? depth : 0;
+      const obstacles = [...throughWall, ...insideWallObstacles(params, dim, side, reach)].map(
         (o): Rect => ({
           minU: o.minU - CUTOUT_BORDER_WIDTH,
           maxU: o.maxU + CUTOUT_BORDER_WIDTH,

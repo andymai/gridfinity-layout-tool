@@ -224,6 +224,23 @@ describe('WallSurfaceSection', () => {
       expect(within(frontFace).getByRole('radio', { name: 'Inside' })).toBeDisabled();
     });
 
+    it('keeps a scooped inside wall reachable from the keyboard to move it back outside', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, side: 'front' },
+          surfaceText: { walls: { front: 'BITS' }, wallFaces: { front: 'inside' } },
+        },
+        ui: { ...DEFAULT_UI_STATE },
+      });
+      render(<WallSurfaceSection />);
+      const face = screen.getByRole('radiogroup', { name: 'Front wall text face' });
+      const inside = within(face).getByRole('radio', { name: 'Inside' });
+      expect(inside).toHaveAttribute('aria-checked', 'true');
+      expect(inside).toBeDisabled();
+      expect(within(face).getByRole('radio', { name: 'Outside' })).toHaveAttribute('tabindex', '0');
+    });
+
     it('disables the inside face only on a scooped wall', () => {
       useDesignerStore.setState({
         params: {

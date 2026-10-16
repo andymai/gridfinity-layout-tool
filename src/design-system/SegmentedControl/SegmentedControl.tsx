@@ -366,6 +366,12 @@ export function SegmentedControl<T extends string>({
     [options, value, selectIndex]
   );
 
+  // Roving tab stop: the selected segment, unless it is disabled (a value the
+  // caller can no longer offer), in which case the first enabled one, so the
+  // group stays reachable from the keyboard without changing the value.
+  const selectedEnabled = options.some((option) => option.value === value && !option.disabled);
+  const tabStop = selectedEnabled ? value : options.find((option) => !option.disabled)?.value;
+
   const renderSegment = (option: SegmentedControlOption<T>, stretch: boolean): ReactNode => {
     const isSelected = option.value === value;
     return (
@@ -377,7 +383,7 @@ export function SegmentedControl<T extends string>({
         aria-label={option['aria-label']}
         title={option.title}
         disabled={option.disabled}
-        tabIndex={isSelected ? 0 : -1}
+        tabIndex={option.value === tabStop ? 0 : -1}
         onClick={() => {
           if (!isSelected) onChange(option.value);
         }}

@@ -38,6 +38,23 @@ describe('SegmentedControl', () => {
     expect(screen.getByRole('radio', { name: 'Table' })).toHaveAttribute('tabindex', '-1');
   });
 
+  it('moves the tab stop to the first enabled radio when the selected one is disabled', () => {
+    render(
+      <SegmentedControl
+        {...defaultProps}
+        value="grid"
+        options={[
+          { value: 'list', label: 'List' },
+          { value: 'grid', label: 'Grid', disabled: true },
+          { value: 'table', label: 'Table' },
+        ]}
+      />
+    );
+    expect(screen.getByRole('radio', { name: 'List' })).toHaveAttribute('tabindex', '0');
+    expect(screen.getByRole('radio', { name: 'Grid' })).toHaveAttribute('tabindex', '-1');
+    expect(screen.getByRole('radio', { name: 'Grid' })).toHaveAttribute('aria-checked', 'true');
+  });
+
   it('calls onChange with the clicked value', () => {
     const onChange = vi.fn();
     render(<SegmentedControl {...defaultProps} onChange={onChange} />);
