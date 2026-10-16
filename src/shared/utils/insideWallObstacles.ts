@@ -490,7 +490,9 @@ function cutoutShoulderObstacles(
     cornerSlackFor(wallSpan, cutWidth, centerU)
   );
   if (topLeft <= 0 && topRight <= 0) return [];
-  const rim = dims.wallHeight + collarHeightMm(params) + lipRoom;
+  // The cutout builder stands on the uncollared wall height; a collar does not
+  // lift the cut.
+  const rim = dims.wallHeight + lipRoom;
   return [
     {
       minU: centerU - cutWidth / 2 - topLeft,

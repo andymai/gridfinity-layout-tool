@@ -205,4 +205,20 @@ describe('insideWallObstacles, features beyond the corner', () => {
     const [leaning] = insideWallObstacles(tapered, DIMS, 'left', 0);
     expect(leaning.maxU).toBeGreaterThan(plain.maxU);
   });
+
+  it('places cutout shoulders where the builder cuts them, whatever the collar', () => {
+    const walls = {
+      ...DEFAULT_BIN_PARAMS.walls,
+      enabled: true,
+      back: { ...DEFAULT_BIN_PARAMS.walls.left, cornerRadiusTop: 10 },
+    };
+    const [plain] = insideWallObstacles(params({ walls }), DIMS, 'back', 0);
+    const [collared] = insideWallObstacles(
+      params({ walls, extraWallHeightMm: 7 }),
+      DIMS,
+      'back',
+      0
+    );
+    expect(collared.minZ).toBeCloseTo(plain.minZ, 6);
+  });
 });
