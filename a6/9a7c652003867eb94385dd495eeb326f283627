@@ -1,0 +1,24 @@
+src/shared/utils/wallTextPlan.test.ts
+  s_2734dd355ac6f2::t_011d8ce4f1b4c9 244-251
+  s_2734dd355ac6f2::t_41abf537da0531 210-243
+src/shared/utils/wallTextPlan.ts
+  s_2734dd355ac6f2::t_2ed8f0a7aefa9c 59,283-289,299,323-324
+  s_2734dd355ac6f2::t_011d8ce4f1b4c9 251-258,260,262-282,290-297,300
+  s_2734dd355ac6f2::t_fe484ff783a397 317
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a69a7c652003867eb94385dd495eeb326f283627",
+  "prompts": {},
+  "sessions": {
+    "s_2734dd355ac6f2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "abe22951-158a-43ff-bfb0-2549305b6eb3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
