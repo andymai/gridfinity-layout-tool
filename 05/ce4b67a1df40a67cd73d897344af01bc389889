@@ -1,0 +1,27 @@
+src/design-system/SegmentedControl/SegmentedControl.tsx
+  s_2734dd355ac6f2::t_cb85ca4983262f 348-354
+src/shared/utils/insideWallObstacles.ts
+  s_2734dd355ac6f2::t_cb85ca4983262f 23-28,37-38,97-101,111-112,178,188-189,207-221,230
+src/design-system/SegmentedControl/SegmentedControl.test.tsx
+  s_2734dd355ac6f2::t_4e3776946b68b7 58-76
+src/shared/utils/insideWallObstacles.test.ts
+  s_2734dd355ac6f2::t_4e3776946b68b7 180-205
+src/shared/utils/insideWallTextPlan.test.ts
+  s_2734dd355ac6f2::t_4e3776946b68b7 114-122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "05ce4b67a1df40a67cd73d897344af01bc389889",
+  "prompts": {},
+  "sessions": {
+    "s_2734dd355ac6f2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "abe22951-158a-43ff-bfb0-2549305b6eb3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
