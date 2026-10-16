@@ -157,4 +157,24 @@ describe('insideWallObstacles, features beyond the corner', () => {
     const nominal = 0.7 * DIMS.innerW;
     expect(shoulders[0].maxU - shoulders[0].minU).toBeGreaterThan(nominal + 19);
   });
+
+  it('holds a large shoulder radius to what the cutout builder can fit', () => {
+    const walls = {
+      ...DEFAULT_BIN_PARAMS.walls,
+      enabled: true,
+      back: { ...DEFAULT_BIN_PARAMS.walls.left, width: 40, depth: 20, cornerRadiusTop: 25 },
+    };
+    const short = { ...DIMS, wallHeight: 9.25, interiorHeight: 8.55 };
+    const [shoulders] = insideWallObstacles(params({ height: 2, walls }), short, 'back', 0);
+    expect(shoulders.maxU - shoulders.minU).toBeLessThan(DIMS.innerW);
+    expect(shoulders.minZ).toBeGreaterThan(short.wallHeight - 9.25 * 0.2);
+  });
+
+  it('skips the ramp end of a compartment the worker builds no ramp for', () => {
+    const p = params({
+      compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 2, cells: [0, 0, 0, 1] },
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, side: 'front' },
+    });
+    expect(insideWallObstacles(p, DIMS, 'left', 0)).toEqual([]);
+  });
 });

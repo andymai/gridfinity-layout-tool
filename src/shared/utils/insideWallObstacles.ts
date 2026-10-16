@@ -13,6 +13,7 @@ import {
   MIN_RAISED_CAVITY_MM,
   compartmentHasTiltedEdge,
   isNestingBase,
+  isRectangularCompartment,
   retentionBossRadius,
   retentionMagnetInset,
 } from '@/shared/types/bin';
@@ -40,9 +41,11 @@ import { isLiteFloorOpen, resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { planWallLabelSlots, resolveWallLabelSlots } from '@/shared/utils/wallLabelSlotPlan';
 import {
   computeCutoutCenter,
+  cornerSlackFor,
   resolveCutoutCornerRadii,
   resolveCutoutDrop,
   resolveCutoutSpan,
+  safeCutoutCornerRadii,
 } from '@/shared/utils/wallCutoutPosition';
 import type { WallRect } from '@/shared/utils/maximalClearRects';
 
@@ -147,8 +150,9 @@ function touchesWall(params: BinParams, b: ScoopCompartmentBounds, side: WallTex
 /**
  * Where a compartment's scoop ramp buries into this wall at a right angle to
  * the scooped one: from the ramp's wall out along its run, past any lip chute.
- * Every compartment against this wall has one, not only the corner ones. An
- * outer ramp's chute climbs to the wall top; an inner ramp stops at its rise.
+ * Every compartment against this wall that `planScoopRamps` builds a ramp for,
+ * not only the corner ones. An outer ramp's chute climbs to the wall top; an
+ * inner ramp stops at its rise.
  */
 function scoopEndObstacles(
   params: BinParams,
@@ -169,6 +173,8 @@ function scoopEndObstacles(
     if (!PERPENDICULAR[scooped].includes(side)) continue;
     for (const { id, bounds } of compartmentBounds(params)) {
       if (!touchesWall(params, bounds, side)) continue;
+      if (compartmentHasTiltedEdge(params.compartments, id)) continue;
+      if (!isRectangularCompartment(params.compartments, id)) continue;
       const placement = resolveScoopPlacement(scooped, bounds, grid);
       const lipOffset = computeLipOffset(
         hasLip,
@@ -416,7 +422,7 @@ function taperCornerObstacles(
 
 /**
  * A wall cutout's rounded top shoulders, which widen the opening past its
- * nominal span near the rim. The requested radius bounds the built one.
+ * nominal span near the rim, at the radii the cutout builder settles on.
  */
 function cutoutShoulderObstacles(
   params: BinParams,
@@ -429,8 +435,6 @@ function cutoutShoulderObstacles(
   const cutWidth = resolveCutoutSpan(cutout, wallSpan);
   const cutHeight = resolveCutoutDrop(cutout, dims.wallHeight - params.wallThickness);
   if (cutWidth < 0.1 || cutHeight < 0.1) return [];
-  const top = resolveCutoutCornerRadii(params.walls, cutout, cutWidth).top;
-  if (top <= 0) return [];
   const centerU = computeCutoutCenter(
     wallSpan,
     cutWidth,
@@ -438,15 +442,21 @@ function cutoutShoulderObstacles(
     cutout.alignment,
     cutout.offset
   );
-  const rim =
-    dims.wallHeight +
-    collarHeightMm(params) +
-    (params.base.stackingLip ? GRIDFINITY_SPEC.LIP_HEIGHT : 0);
+  const lipRoom = params.base.stackingLip ? GRIDFINITY_SPEC.LIP_HEIGHT : 0;
+  const { topLeft, topRight } = safeCutoutCornerRadii(
+    resolveCutoutCornerRadii(params.walls, cutout, cutWidth),
+    cutWidth,
+    cutHeight,
+    lipRoom,
+    cornerSlackFor(wallSpan, cutWidth, centerU)
+  );
+  if (topLeft <= 0 && topRight <= 0) return [];
+  const rim = dims.wallHeight + collarHeightMm(params) + lipRoom;
   return [
     {
-      minU: centerU - cutWidth / 2 - top,
-      maxU: centerU + cutWidth / 2 + top,
-      minZ: rim - top,
+      minU: centerU - cutWidth / 2 - topLeft,
+      maxU: centerU + cutWidth / 2 + topRight,
+      minZ: rim - Math.max(topLeft, topRight),
       maxZ: Infinity,
     },
   ];
