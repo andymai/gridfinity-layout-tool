@@ -61,7 +61,7 @@ graph TB
   relief depth, edge profile), plus a specimen drawn from the REAL glyph outlines via
   `@/shared/utils/typePlan`. The style lives on `params.textDefaults`, so this one section governs
   wall text, the lid, label tabs, plates and cutout labels alike; per-surface refinements layer on
-  top through `surfaceText.lidStyle` / `surfaceText.wallStyles`. The active preset is DERIVED from
+  top through `surfaceText.lidStyle` / `surfaceText.insideStyle` / `surfaceText.wallStyles`. The active preset is DERIVED from
   the fields (`matchTextPreset`), never stored, so the chip cannot claim a look the geometry does
   not have. New designs start on `TEXT_PRESETS.engineering` while `migrateParams` backfills the
   NEUTRAL defaults, so a design saved before the type system renders as it always did.

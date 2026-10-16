@@ -107,6 +107,7 @@ export type {
   TextStyleOverride,
   SurfaceTextConfig,
   WallTextSide,
+  WallTextFace,
   WallTextVerticalAlign,
   TextQuarterTurn,
   DividerOverride,
@@ -275,6 +276,7 @@ export {
   matchTextPreset,
   normalizeTextInput,
   resolveTextStyle,
+  resolveWallTextStyle,
   snapToTypeScale,
   splitTextLines,
   MIN_POLYGON_SIDES,
@@ -300,8 +302,11 @@ export {
   FLOOR_PATTERN_TYPES,
   DEFAULT_FLOOR_PATTERN_CONFIG,
   WALL_TEXT_SIDES,
+  WALL_TEXT_FACES,
   WALL_TEXT_ALIGNS,
   isTextQuarterTurn,
+  topRowAnchor,
+  wallTextFace,
   // A base-only bin's body IS this slab, so the worker and the height readout
   // have to resolve its thickness through the same function.
   resolveTileFloorThickness,

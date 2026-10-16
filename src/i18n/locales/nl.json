@@ -2194,7 +2194,7 @@
   "binDesigner.walls.text.anchor": "Positie van wandtekst",
   "binDesigner.walls.text.disabledPolygon": "Niet beschikbaar voor bakken met aangepaste vorm.",
   "binDesigner.walls.text.heading": "Wandtekst",
-  "binDesigner.walls.text.hint": "De tekst komt in het vrije vlak van elke wand, langs uitsparingen en grepen. Het wandpatroon wordt erachter weggehaald.",
+  "binDesigner.walls.text.hint": "De tekst komt in het vrije vlak van elke wand, langs uitsparingen en grepen, en aan de binnenkant ook langs tussenschotten, schepvormen en labeltabs. Het wandpatroon wordt erachter weggehaald. Tekst aan de binnenkant lees je vanuit het bakje.",
   "binDesigner.walls.text.placeholder": "bijv. Kabels",
   "binDesigner.walls.text.sideAria": "Wandtekst {side}",
   "binDesigner.walls.labelSlots.heading": "Labelsleuven",
@@ -4864,5 +4864,12 @@
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "Treklip",
   "help.target.binDesigner.pullTab.description": "Verhoogde greep op één wand. Wand en lip hebben dezelfde dikte; extra materiaal groeit naar binnen.",
-  "help.target.binDesigner.pullTab.keywords": "treklip, greep, handvat, vingergroef, verhoogde wand"
+  "help.target.binDesigner.pullTab.keywords": "treklip, greep, handvat, vingergroef, verhoogde wand",
+  "binDesigner.walls.text.anchorOutside": "Positie van wandtekst buiten",
+  "binDesigner.walls.text.anchorInside": "Positie van wandtekst binnen",
+  "binDesigner.walls.text.faceAria": "Zijde van wandtekst {side}",
+  "binDesigner.walls.text.face.outside": "Buiten",
+  "binDesigner.walls.text.face.inside": "Binnen",
+  "binDesigner.walls.text.face.solidNote": "Een massief bakje heeft geen binnenkant.",
+  "binDesigner.walls.text.face.scoopNote": "De schepvorm bedekt de binnenkant van deze wand."
 }

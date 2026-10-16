@@ -1538,6 +1538,26 @@ describe('validateDesignerShare', () => {
       ).toBe(true);
     });
 
+    it('validates wall faces and the inside style', () => {
+      expect(
+        withSurfaceText({
+          walls: { back: 'ok' },
+          wallFaces: { back: 'inside', front: 'outside' },
+          insideStyle: { anchor: 'top-left' },
+        }).valid
+      ).toBe(true);
+      expect(withSurfaceText({ walls: { back: 'ok' }, wallFaces: { back: 'inner' } }).valid).toBe(
+        false
+      );
+      expect(withSurfaceText({ walls: { back: 'ok' }, wallFaces: { lid: 'inside' } }).valid).toBe(
+        false
+      );
+      expect(withSurfaceText({ walls: { back: 'ok' }, wallFaces: 'inside' }).valid).toBe(false);
+      expect(withSurfaceText({ walls: { back: 'ok' }, insideStyle: { depth: -1 } }).valid).toBe(
+        false
+      );
+    });
+
     it('rejects an invalid wallAlign', () => {
       const result = withSurfaceText({ walls: { front: 'ok' }, wallAlign: 'middle' });
       expect(result.valid).toBe(false);

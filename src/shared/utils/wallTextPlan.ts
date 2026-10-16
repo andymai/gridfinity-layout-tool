@@ -1,8 +1,10 @@
 /**
  * Wall-text placement solver.
  *
- * Chooses which clear region of each outer wall face carries that wall's
- * caption, then hands the region to the shared type plan
+ * Chooses which clear region of each wall face carries that wall's caption,
+ * on the outer face or, per `surfaceText.wallFaces`, the inner one (whose
+ * regions come from `insideWallTextPlan`), then hands the region to the shared
+ * type plan
  * (`@/shared/utils/typePlan`) to resolve size, tracking, line breaking and the
  * anchored position inside it. Shared by `wallTextBuilder` (which builds the
  * glyph solids) and `wallPatternBuilder` (which clears the hex pattern behind
@@ -18,10 +20,24 @@
  * slot-occupied walls, mirrored in the WallsSection UI gating.
  */
 
-import type { BinParams, TextMode, TextStyleDefaults, WallTextSide } from '@/shared/types/bin';
-import { WALL_TEXT_SIDES, resolveTextStyle } from '@/shared/types/bin';
+import type {
+  BinParams,
+  TextMode,
+  TextStyleDefaults,
+  WallTextFace,
+  WallTextSide,
+} from '@/shared/types/bin';
+import { WALL_TEXT_SIDES, resolveWallTextStyle, wallTextFace } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
-import { resolveOverhang } from '@/shared/utils/overhang';
+import {
+  insideWallBounds,
+  insideWallObstacles,
+  insideWallSegments,
+  insideWallTextBlock,
+  maximalClearRects,
+  taperBandTop,
+  type WallRect,
+} from '@/shared/utils/insideWallTextPlan';
 import {
   computeCutoutCenter,
   resolveCutoutDrop,
@@ -61,22 +77,19 @@ export const WALL_TEXT_MAX_EMBOSS = 1.5;
 const MIN_ENGRAVE_DEPTH = 0.05;
 
 /** Reading-direction sign: converts a clip-frame `u` into the glyph-run
- *  coordinate `buildTextSolid` sees before the per-wall yaw. A viewer facing
+ *  coordinate `buildTextSolid` sees before the per-wall yaw. A viewer outside
  *  each wall reads left-to-right along +X (front), −X (back), −Y (left),
- *  +Y (right). */
-export function wallTextReadingSign(side: WallTextSide): 1 | -1 {
-  return side === 'back' || side === 'left' ? -1 : 1;
+ *  +Y (right); a viewer inside faces the other way. */
+export function wallTextReadingSign(side: WallTextSide, face: WallTextFace = 'outside'): 1 | -1 {
+  const outside = side === 'back' || side === 'left' ? -1 : 1;
+  return face === 'inside' ? (-outside as 1 | -1) : outside;
 }
 
-interface Rect {
-  readonly minU: number;
-  readonly maxU: number;
-  readonly minZ: number;
-  readonly maxZ: number;
-}
+type Rect = WallRect;
 
 export interface WallTextLayout {
   readonly side: WallTextSide;
+  readonly face: WallTextFace;
   readonly mode: TextMode;
   /** Effective depth after the per-mode clamp (unused for through-cut). */
   readonly depth: number;
@@ -213,15 +226,6 @@ function candidateRects(bounds: Rect, obstacles: readonly Rect[]): Rect[] {
   return candidates.filter((r) => r.maxU - r.minU > 0 && r.maxZ - r.minZ > 0);
 }
 
-/** Per-wall resolved style, layering the wall's own override over the shared one. */
-function wallStyle(params: BinParams, side: WallTextSide): ResolvedTextStyle {
-  return resolveTextStyle(
-    params.textDefaults,
-    params.surfaceText?.style,
-    params.surfaceText?.wallStyles?.[side]
-  );
-}
-
 /** Effective engrave/emboss depth, or null when the cut would be unprintable. */
 function clampDepth(style: ResolvedTextStyle, wallThickness: number): number | null {
   // Engraving must leave solid wall behind the glyphs; emboss is capped so the
@@ -236,62 +240,68 @@ function clampDepth(style: ResolvedTextStyle, wallThickness: number): number | n
 
 interface Candidate {
   readonly rect: Rect;
+  /** Index of the stretch of wall between dividers the rect lies in. */
+  readonly segment: number;
   readonly availW: number;
   readonly availD: number;
   readonly plan: TypeBlockPlan;
 }
 
 /**
- * Fit into each candidate rect, then pick by the anchor's vertical zone: a
- * caption anchored to the top wants the highest region that holds it, one
- * anchored to the bottom the lowest, and a centred one the largest. Choosing
- * the region and then anchoring INSIDE it is what lets a bottom-left caption
- * still find its way around a handle row.
+ * Fit into each candidate rect, then pick by the anchor. A left or right
+ * anchor first narrows to the leftmost or rightmost stretch between dividers
+ * that holds the caption, as read from the caption's face. Then the vertical
+ * zone: a caption anchored to the top wants the highest region that holds it,
+ * one anchored to the bottom the lowest, and a centred one the largest.
+ * Choosing the region and then anchoring INSIDE it is what lets a bottom-left
+ * caption still find its way around a handle row.
  */
 function chooseCandidate(
-  text: string,
-  style: ResolvedTextStyle,
-  rects: readonly Rect[],
+  input: SideInput,
   sharedSizeMm: number | undefined,
   measurer: TypeMeasurer
 ): Candidate | null {
+  const { text, style } = input;
   const fitted: Candidate[] = [];
-  for (const rect of rects) {
-    const availW = rect.maxU - rect.minU;
-    const availD = rect.maxZ - rect.minZ;
-    const plan = planTypeBlock(
-      {
-        text,
-        style,
-        host: { width: availW, depth: availD },
-        ...(sharedSizeMm !== undefined ? { sharedSizeMm } : {}),
-      },
-      measurer
-    );
-    if (plan) fitted.push({ rect, availW, availD, plan });
-  }
+  input.segments.forEach((rects, segment) => {
+    for (const rect of rects) {
+      const availW = rect.maxU - rect.minU;
+      const availD = rect.maxZ - rect.minZ;
+      const plan = planTypeBlock(
+        {
+          text,
+          style,
+          host: { width: availW, depth: availD },
+          ...(sharedSizeMm !== undefined ? { sharedSizeMm } : {}),
+        },
+        measurer
+      );
+      if (plan) fitted.push({ rect, segment, availW, availD, plan });
+    }
+  });
   if (fitted.length === 0) return null;
+
+  const wantsLeft = style.anchor === 'left' || style.anchor.endsWith('-left');
+  const wantsRight = style.anchor === 'right' || style.anchor.endsWith('-right');
+  let pool = fitted;
+  if (input.segments.length > 1 && (wantsLeft || wantsRight)) {
+    const sign = wallTextReadingSign(input.side, input.face);
+    const readingOrder = (c: Candidate): number => sign * c.segment;
+    const orders = pool.map(readingOrder);
+    const target = wantsLeft ? Math.min(...orders) : Math.max(...orders);
+    pool = pool.filter((c) => readingOrder(c) === target);
+  }
 
   const area = (c: Candidate): number => c.availW * c.availD;
   const centerOf = (c: Candidate): number => (c.rect.minZ + c.rect.maxZ) / 2;
   const wantsTop = style.anchor.startsWith('top');
   const wantsBottom = style.anchor.startsWith('bottom');
-  return fitted.reduce((best, c) => {
+  return pool.reduce((best, c) => {
     if (wantsTop && centerOf(c) !== centerOf(best)) return centerOf(c) > centerOf(best) ? c : best;
     if (wantsBottom && centerOf(c) !== centerOf(best))
       return centerOf(c) < centerOf(best) ? c : best;
     return area(c) > area(best) ? c : best;
   });
-}
-
-/**
- * Top of a tapered side's flared band. Below it the real face sits inboard of
- * the rim plane every caption is built on, so flat text there would stand
- * proud of the wall instead of lying in it.
- */
-function taperBandTop(params: BinParams, side: WallTextSide, wallHeight: number): number {
-  const taper = resolveOverhang(params.overhang).taper;
-  return taper && taper[side] > 1e-6 ? Math.min(taper.bandHeight, wallHeight) : 0;
 }
 
 /** The band a wall's text may occupy, before obstacles. */
@@ -317,10 +327,12 @@ function wallBounds(
 
 interface SideInput {
   readonly side: WallTextSide;
+  readonly face: WallTextFace;
   readonly text: string;
   readonly style: ResolvedTextStyle;
   readonly depth: number;
-  readonly rects: readonly Rect[];
+  /** Candidate rects per stretch of wall between dividers, ordered by u. */
+  readonly segments: readonly (readonly Rect[])[];
 }
 
 /** Walls carrying text, with their styles, depths and candidate regions. */
@@ -335,16 +347,13 @@ function collectSides(params: BinParams, dim: WallTextDims): SideInput[] {
     if (text === '') continue;
     if (!slotFree[side]) continue;
 
-    const style = wallStyle(params, side);
+    const face = wallTextFace(params.surfaceText, side);
+    const style = resolveWallTextStyle(params.textDefaults, params.surfaceText, side);
     const depth = clampDepth(style, params.wallThickness);
     if (depth === null) continue;
 
     const wallSpan = side === 'front' || side === 'back' ? dim.innerW : dim.innerD;
-    const floorZ = style.mode === 'flat' ? taperBandTop(params, side, dim.wallHeight) : 0;
-    const bounds = wallBounds(params, dim, wallSpan, floorZ);
-    if (!bounds) continue;
-
-    const obstacles = obstacleRects(
+    const throughWall = obstacleRects(
       params,
       side,
       wallSpan,
@@ -352,7 +361,37 @@ function collectSides(params: BinParams, dim: WallTextDims): SideInput[] {
       dim.isSlotted,
       dim.solid
     );
-    out.push({ side, text, style, depth, rects: candidateRects(bounds, obstacles) });
+
+    if (face === 'inside') {
+      if (dim.solid || insideWallTextBlock(params, side) !== null) continue;
+      const bounds = insideWallBounds(params, dim, side);
+      if (!bounds) continue;
+      const obstacles = [...throughWall, ...insideWallObstacles(params, dim, side)].map(
+        (o): Rect => ({
+          minU: o.minU - CUTOUT_BORDER_WIDTH,
+          maxU: o.maxU + CUTOUT_BORDER_WIDTH,
+          minZ: o.minZ - CUTOUT_BORDER_WIDTH,
+          maxZ: o.maxZ + CUTOUT_BORDER_WIDTH,
+        })
+      );
+      const segments = insideWallSegments(params, dim, side, bounds).map((segment) =>
+        maximalClearRects(segment, obstacles)
+      );
+      out.push({ side, face, text, style, depth, segments });
+      continue;
+    }
+
+    const floorZ = style.mode === 'flat' ? taperBandTop(params, side, dim.wallHeight) : 0;
+    const bounds = wallBounds(params, dim, wallSpan, floorZ);
+    if (!bounds) continue;
+    out.push({
+      side,
+      face,
+      text,
+      style,
+      depth,
+      segments: [candidateRects(bounds, throughWall)],
+    });
   }
   return out;
 }
@@ -365,9 +404,10 @@ function toLayout(input: SideInput, candidate: Candidate): WallTextLayout {
   // through the same sign the builder applies. Getting this wrong mirrors the
   // pattern clip to the opposite side of a left-anchored caption on the back
   // and left walls, where nothing would clear the glyphs.
-  const sign = wallTextReadingSign(input.side);
+  const sign = wallTextReadingSign(input.side, input.face);
   return {
     side: input.side,
+    face: input.face,
     mode: input.style.mode,
     depth: input.depth,
     style: input.style,
@@ -402,7 +442,7 @@ export function computeWallTextLayouts(
   const first = sides
     .map((input) => ({
       input,
-      candidate: chooseCandidate(input.text, input.style, input.rects, undefined, measurer),
+      candidate: chooseCandidate(input, undefined, measurer),
     }))
     .filter(
       (entry): entry is { input: SideInput; candidate: Candidate } => entry.candidate !== null
@@ -422,7 +462,7 @@ export function computeWallTextLayouts(
   const layouts: WallTextLayout[] = [];
   for (const { input, candidate } of first) {
     const unified = input.style.uniformAcrossWalls
-      ? chooseCandidate(input.text, input.style, input.rects, shared, measurer)
+      ? chooseCandidate(input, shared, measurer)
       : null;
     layouts.push(toLayout(input, unified ?? candidate));
   }

@@ -2194,7 +2194,7 @@
   "binDesigner.walls.text.anchor": "Posição do texto na parede",
   "binDesigner.walls.text.disabledPolygon": "Indisponível para caixas de formato personalizado.",
   "binDesigner.walls.text.heading": "Texto na parede",
-  "binDesigner.walls.text.hint": "O texto é posicionado na área livre de cada parede, desviando de recortes e alças. O padrão da parede é removido atrás dele.",
+  "binDesigner.walls.text.hint": "O texto é posicionado na área livre de cada parede, desviando de recortes e alças, e por dentro também de divisórias, rampas e abas de etiqueta. O padrão da parede é removido atrás dele. O texto interno é lido de dentro da caixa.",
   "binDesigner.walls.text.placeholder": "ex.: Cabos",
   "binDesigner.walls.text.sideAria": "Texto da parede {side}",
   "binDesigner.walls.labelSlots.heading": "Fendas para rótulos",
@@ -4864,5 +4864,12 @@
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "Aba de puxar",
   "help.target.binDesigner.pullTab.description": "Pega elevada em uma parede. Parede e aba têm a mesma espessura; o material adicional cresce para dentro.",
-  "help.target.binDesigner.pullTab.keywords": "aba de puxar, pega, alça, rebaixo para dedos, parede elevada"
+  "help.target.binDesigner.pullTab.keywords": "aba de puxar, pega, alça, rebaixo para dedos, parede elevada",
+  "binDesigner.walls.text.anchorOutside": "Posição do texto na parede externa",
+  "binDesigner.walls.text.anchorInside": "Posição do texto na parede interna",
+  "binDesigner.walls.text.faceAria": "Face do texto da parede {side}",
+  "binDesigner.walls.text.face.outside": "Fora",
+  "binDesigner.walls.text.face.inside": "Dentro",
+  "binDesigner.walls.text.face.solidNote": "Uma caixa sólida não tem face interna.",
+  "binDesigner.walls.text.face.scoopNote": "A rampa cobre a face interna desta parede."
 }

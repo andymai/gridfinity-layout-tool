@@ -40,6 +40,7 @@ import {
   VALID_WALL_TEXT_SIDES,
   validateDesignerShare,
 } from './designerValidation.js';
+import { VALID_WALL_TEXT_FACES } from './designerTextValidation.js';
 import { SOCKET_HEIGHT_MM } from './assemblyValidation.js';
 import {
   CONSTRAINTS,
@@ -93,6 +94,7 @@ import {
   TEXT_MODES,
   TEXT_QUARTER_TURNS,
   WALL_TEXT_ALIGNS,
+  WALL_TEXT_FACES,
   WALL_TEXT_SIDES,
 } from '../../src/features/bin-designer/types/text.js';
 import { MAX_TAGS, MAX_TAG_LENGTH } from '../../src/features/bin-designer/utils/tags.js';
@@ -153,6 +155,7 @@ const ALLOWLIST_MIRRORS: readonly (readonly [string, Allowlist, Allowlist])[] = 
   ['VALID_TEXT_CUT_PROFILES / TEXT_CUT_PROFILES', VALID_TEXT_CUT_PROFILES, TEXT_CUT_PROFILES],
   ['VALID_WALL_TEXT_SIDES / WALL_TEXT_SIDES', VALID_WALL_TEXT_SIDES, WALL_TEXT_SIDES],
   ['VALID_WALL_TEXT_ALIGNS / WALL_TEXT_ALIGNS', VALID_WALL_TEXT_ALIGNS, WALL_TEXT_ALIGNS],
+  ['VALID_WALL_TEXT_FACES / WALL_TEXT_FACES', VALID_WALL_TEXT_FACES, WALL_TEXT_FACES],
   ['VALID_TEXT_QUARTER_TURNS / TEXT_QUARTER_TURNS', VALID_TEXT_QUARTER_TURNS, TEXT_QUARTER_TURNS],
   [
     'VALID_CUTOUT_FILL_REFERENCES / CUTOUT_FILL_REFERENCES',

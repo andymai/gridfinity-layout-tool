@@ -2194,7 +2194,7 @@
   "binDesigner.walls.text.anchor": "Umístění textu na stěně",
   "binDesigner.walls.text.disabledPolygon": "Není dostupné pro biny s vlastním tvarem.",
   "binDesigner.walls.text.heading": "Text na stěně",
-  "binDesigner.walls.text.hint": "Text se umístí do volné plochy každé stěny, mimo výřezy a úchyty. Vzor stěny se za ním odstraní.",
+  "binDesigner.walls.text.hint": "Text se umístí do volné plochy každé stěny, mimo výřezy a úchyty, uvnitř také mimo přepážky, naběráky a štítkové jazýčky. Vzor stěny se za ním odstraní. Vnitřní text se čte zevnitř binu.",
   "binDesigner.walls.text.placeholder": "např. Kabely",
   "binDesigner.walls.text.sideAria": "Text stěny {side}",
   "binDesigner.walls.labelSlots.heading": "Drážky na štítky",
@@ -4864,5 +4864,12 @@
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "Úchyt pro vytažení",
   "help.target.binDesigner.pullTab.description": "Zvýšený úchyt na jedné stěně. Stěna a úchyt mají stejnou tloušťku; materiál navíc roste dovnitř.",
-  "help.target.binDesigner.pullTab.keywords": "úchyt, madlo, prohlubeň pro prsty, zvýšená stěna"
+  "help.target.binDesigner.pullTab.keywords": "úchyt, madlo, prohlubeň pro prsty, zvýšená stěna",
+  "binDesigner.walls.text.anchorOutside": "Umístění textu na vnější stěně",
+  "binDesigner.walls.text.anchorInside": "Umístění textu na vnitřní stěně",
+  "binDesigner.walls.text.faceAria": "Strana textu stěny {side}",
+  "binDesigner.walls.text.face.outside": "Venku",
+  "binDesigner.walls.text.face.inside": "Uvnitř",
+  "binDesigner.walls.text.face.solidNote": "Plný bin nemá vnitřní stranu.",
+  "binDesigner.walls.text.face.scoopNote": "Naběrák zakrývá vnitřní stranu této stěny."
 }

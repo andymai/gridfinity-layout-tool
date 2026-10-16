@@ -19,6 +19,7 @@ import type {
   TextStyleDefaults,
   TextStyleOverride,
   WallTextSide,
+  WallTextFace,
   TextAnchor,
   TextQuarterTurn,
 } from './text';
@@ -274,8 +275,11 @@ export interface DesignerState {
   // Surface text actions (lid top + outer walls)
   setLidText: (text: string) => void;
   setWallText: (side: WallTextSide, text: string) => void;
-  /** Remove text from every wall in one history entry (drops per-wall styles too). */
+  /** Remove text from every wall in one history entry (drops per-wall styles and faces too). */
   clearWallText: () => void;
+  setWallTextFace: (side: WallTextSide, face: WallTextFace) => void;
+  /** Anchor for inside-facing wall text, written onto `insideStyle`. */
+  setInsideTextAnchor: (anchor: TextAnchor) => void;
   setSurfaceTextStyle: (overrides: TextStyleOverride | null) => void;
   /** Anchor for every surface, written onto the shared surface style. */
   setSurfaceTextAnchor: (anchor: TextAnchor) => void;

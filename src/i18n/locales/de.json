@@ -2194,7 +2194,7 @@
   "binDesigner.walls.text.anchor": "Position des Wandtexts",
   "binDesigner.walls.text.disabledPolygon": "Für Sonderformen nicht verfügbar.",
   "binDesigner.walls.text.heading": "Wandtext",
-  "binDesigner.walls.text.hint": "Der Text wird in die freie Fläche jeder Wand gesetzt, an Ausschnitten und Griffen vorbei. Das Wandmuster wird dahinter entfernt.",
+  "binDesigner.walls.text.hint": "Der Text wird in die freie Fläche jeder Wand gesetzt, an Ausschnitten und Griffen vorbei, innen auch an Trennwänden, Auslaufschrägen und Etikettenhaltern. Das Wandmuster wird dahinter entfernt. Innentext ist von innen lesbar.",
   "binDesigner.walls.text.placeholder": "z. B. Kabel",
   "binDesigner.walls.text.sideAria": "Wandtext {side}",
   "binDesigner.walls.labelSlots.heading": "Etikettenschlitze",
@@ -4864,5 +4864,12 @@
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "Zuglasche",
   "help.target.binDesigner.pullTab.description": "Erhöhter Griff an einer Wand. Wand und Lasche haben dieselbe Dicke; zusätzliches Material wächst nach innen.",
-  "help.target.binDesigner.pullTab.keywords": "Zuglasche, Griff, Griffmulde, erhöhte Wand, Übergang"
+  "help.target.binDesigner.pullTab.keywords": "Zuglasche, Griff, Griffmulde, erhöhte Wand, Übergang",
+  "binDesigner.walls.text.anchorOutside": "Position des Wandtexts außen",
+  "binDesigner.walls.text.anchorInside": "Position des Wandtexts innen",
+  "binDesigner.walls.text.faceAria": "Seite des Wandtexts {side}",
+  "binDesigner.walls.text.face.outside": "Außen",
+  "binDesigner.walls.text.face.inside": "Innen",
+  "binDesigner.walls.text.face.solidNote": "Ein Vollkörper hat keine Innenseite.",
+  "binDesigner.walls.text.face.scoopNote": "Die Auslaufschräge bedeckt die Innenseite dieser Wand."
 }

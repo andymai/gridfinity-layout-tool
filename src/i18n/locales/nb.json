@@ -2194,7 +2194,7 @@
   "binDesigner.walls.text.anchor": "Plassering av veggtekst",
   "binDesigner.walls.text.disabledPolygon": "Ikke tilgjengelig for bokser med tilpasset form.",
   "binDesigner.walls.text.heading": "Veggtekst",
-  "binDesigner.walls.text.hint": "Teksten plasseres i det ledige feltet på hver vegg, utenom utskjæringer og håndtak. Veggmønsteret fjernes bak den.",
+  "binDesigner.walls.text.hint": "Teksten plasseres i det ledige feltet på hver vegg, utenom utskjæringer og håndtak, og på innsiden også utenom skillevegger, skrå og etikettfaner. Veggmønsteret fjernes bak den. Tekst på innsiden leses fra innsiden av bingen.",
   "binDesigner.walls.text.placeholder": "f.eks. Kabler",
   "binDesigner.walls.text.sideAria": "Veggtekst {side}",
   "binDesigner.walls.labelSlots.heading": "Etikettspor",
@@ -4864,5 +4864,12 @@
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "Trekkflik",
   "help.target.binDesigner.pullTab.description": "Forhøyet grep på én vegg. Vegg og flik har samme tykkelse; ekstra materiale bygges innover.",
-  "help.target.binDesigner.pullTab.keywords": "trekkflik, grep, håndtak, fingergrop, forhøyet vegg"
+  "help.target.binDesigner.pullTab.keywords": "trekkflik, grep, håndtak, fingergrop, forhøyet vegg",
+  "binDesigner.walls.text.anchorOutside": "Plassering av veggtekst utvendig",
+  "binDesigner.walls.text.anchorInside": "Plassering av veggtekst innvendig",
+  "binDesigner.walls.text.faceAria": "Side for veggtekst {side}",
+  "binDesigner.walls.text.face.outside": "Utside",
+  "binDesigner.walls.text.face.inside": "Innside",
+  "binDesigner.walls.text.face.solidNote": "En solid binge har ingen innside.",
+  "binDesigner.walls.text.face.scoopNote": "Skråen dekker innsiden av denne veggen."
 }

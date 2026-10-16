@@ -3,14 +3,15 @@
  * walls. Lives on the Style page; thickness stays with Shape.
  */
 
-import { SliderInput, Stepper } from '@/design-system';
-import type { TextMode } from '@/features/bin-designer/types';
+import { SegmentedControl, SliderInput, Stepper } from '@/design-system';
+import type { TextMode, WallTextFace } from '@/features/bin-designer/types';
 import {
   MAX_WALL_LABEL_SLOT_PITCH_CELLS,
   PATTERN_WEB_THICKNESS_MAX,
   PATTERN_WEB_THICKNESS_MIN,
   PATTERN_WEB_THICKNESS_STEP,
   WALL_PATTERN_SIDES,
+  WALL_TEXT_FACES,
   WALL_TEXT_SIDES,
   isKumikoPattern,
 } from '@/features/bin-designer/types';
@@ -160,21 +161,40 @@ export function WallSurfaceSection() {
         primaryControls={
           <>
             <div className="grid grid-cols-2 gap-2">
-              {WALL_TEXT_SIDES.map((side, index) => (
-                <div key={side}>
-                  <FieldLabel>{t(`binDesigner.lid.side.${side}`)}</FieldLabel>
-                  <CompartmentTextInput
-                    multiline
-                    committedValue={state.wallTexts[side] ?? ''}
-                    compartmentId={index}
-                    placeholder={t('binDesigner.walls.text.placeholder')}
-                    ariaLabel={t('binDesigner.walls.text.sideAria', {
-                      side: t(`binDesigner.lid.side.${side}`),
-                    })}
-                    onCommit={handlers.commitWallTextAt}
-                  />
-                </div>
-              ))}
+              {WALL_TEXT_SIDES.map((side, index) => {
+                const sideName = t(`binDesigner.lid.side.${side}`);
+                // Picks a face, not a wall, so the wall name stays out of the
+                // control's own subtree.
+                const faceAria = t('binDesigner.walls.text.faceAria', { side: sideName });
+                const insideBlocked = state.insideFaceDisabledReasons[side];
+                return (
+                  <div key={side} className="space-y-1">
+                    <FieldLabel>{sideName}</FieldLabel>
+                    <CompartmentTextInput
+                      multiline
+                      committedValue={state.wallTexts[side] ?? ''}
+                      compartmentId={index}
+                      placeholder={t('binDesigner.walls.text.placeholder')}
+                      ariaLabel={t('binDesigner.walls.text.sideAria', { side: sideName })}
+                      onCommit={handlers.commitWallTextAt}
+                    />
+                    <SegmentedControl<WallTextFace>
+                      aria-label={faceAria}
+                      fullWidth
+                      size="sm"
+                      value={state.wallTextFaces[side]}
+                      onChange={(face) => handlers.setWallTextFace(side, face)}
+                      options={WALL_TEXT_FACES.map((face) => ({
+                        value: face,
+                        label: t(`binDesigner.walls.text.face.${face}`),
+                        ...(face === 'inside' && insideBlocked !== undefined
+                          ? { disabled: true, title: insideBlocked }
+                          : {}),
+                      }))}
+                    />
+                  </div>
+                );
+              })}
             </div>
             {state.hasAnyWallText && (
               <>
@@ -193,11 +213,36 @@ export function WallSurfaceSection() {
                   <span className="block text-label text-content-tertiary">
                     {t('binDesigner.type.anchor')}
                   </span>
-                  <AnchorPicker
-                    value={state.wallTextAnchor}
-                    onChange={handlers.setSurfaceTextAnchor}
-                    label={t('binDesigner.walls.text.anchor')}
-                  />
+                  {state.anyWallTextInside ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <span className="block text-label text-content-tertiary">
+                          {t('binDesigner.walls.text.face.outside')}
+                        </span>
+                        <AnchorPicker
+                          value={state.wallTextAnchor}
+                          onChange={handlers.setSurfaceTextAnchor}
+                          label={t('binDesigner.walls.text.anchorOutside')}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <span className="block text-label text-content-tertiary">
+                          {t('binDesigner.walls.text.face.inside')}
+                        </span>
+                        <AnchorPicker
+                          value={state.insideTextAnchor}
+                          onChange={handlers.setInsideTextAnchor}
+                          label={t('binDesigner.walls.text.anchorInside')}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <AnchorPicker
+                      value={state.wallTextAnchor}
+                      onChange={handlers.setSurfaceTextAnchor}
+                      label={t('binDesigner.walls.text.anchor')}
+                    />
+                  )}
                 </div>
                 <p className="text-label leading-relaxed text-content-tertiary">
                   {t('binDesigner.type.secondLineHint')}

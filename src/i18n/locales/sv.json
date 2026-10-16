@@ -2194,7 +2194,7 @@
   "binDesigner.walls.text.anchor": "Placering av väggtext",
   "binDesigner.walls.text.disabledPolygon": "Inte tillgängligt för lådor med anpassad form.",
   "binDesigner.walls.text.heading": "Väggtext",
-  "binDesigner.walls.text.hint": "Texten placeras i den lediga ytan på varje vägg, förbi urtag och handtag. Väggmönstret tas bort bakom den.",
+  "binDesigner.walls.text.hint": "Texten placeras i den lediga ytan på varje vägg, förbi urtag och handtag, och på insidan även förbi skiljeväggar, sluttningar och etikettflikar. Väggmönstret tas bort bakom den. Text på insidan läses inifrån facket.",
   "binDesigner.walls.text.placeholder": "t.ex. Kablar",
   "binDesigner.walls.text.sideAria": "Väggtext {side}",
   "binDesigner.walls.labelSlots.heading": "Etikettspår",
@@ -4864,5 +4864,12 @@
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "Dragflik",
   "help.target.binDesigner.pullTab.description": "Upphöjt grepp på en vägg. Vägg och flik har samma tjocklek; extra material byggs inåt.",
-  "help.target.binDesigner.pullTab.keywords": "dragflik, grepp, handtag, fingergrop, upphöjd vägg"
+  "help.target.binDesigner.pullTab.keywords": "dragflik, grepp, handtag, fingergrop, upphöjd vägg",
+  "binDesigner.walls.text.anchorOutside": "Placering av väggtext utvändigt",
+  "binDesigner.walls.text.anchorInside": "Placering av väggtext invändigt",
+  "binDesigner.walls.text.faceAria": "Sida för väggtext {side}",
+  "binDesigner.walls.text.face.outside": "Utsida",
+  "binDesigner.walls.text.face.inside": "Insida",
+  "binDesigner.walls.text.face.solidNote": "Ett solitt fack har ingen insida.",
+  "binDesigner.walls.text.face.scoopNote": "Sluttningen täcker insidan av den här väggen."
 }

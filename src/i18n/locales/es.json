@@ -2194,7 +2194,7 @@
   "binDesigner.walls.text.anchor": "Posición del texto en la pared",
   "binDesigner.walls.text.disabledPolygon": "No disponible para contenedores de forma personalizada.",
   "binDesigner.walls.text.heading": "Texto en la pared",
-  "binDesigner.walls.text.hint": "El texto se sitúa en la zona libre de cada pared, esquivando recortes y asas. El patrón de la pared se retira detrás.",
+  "binDesigner.walls.text.hint": "El texto se sitúa en la zona libre de cada pared, esquivando recortes y asas, y por dentro también divisores, rampas y pestañas de etiqueta. El patrón de la pared se retira detrás. El texto interior se lee desde dentro.",
   "binDesigner.walls.text.placeholder": "p. ej. Cables",
   "binDesigner.walls.text.sideAria": "Texto de la pared {side}",
   "binDesigner.walls.labelSlots.heading": "Ranuras para etiquetas",
@@ -4864,5 +4864,12 @@
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "Lengüeta de agarre",
   "help.target.binDesigner.pullTab.description": "Agarre elevado en una pared. Pared y lengüeta comparten grosor; el material adicional crece hacia dentro.",
-  "help.target.binDesigner.pullTab.keywords": "lengüeta, agarre, asa, hueco para dedos, pared elevada"
+  "help.target.binDesigner.pullTab.keywords": "lengüeta, agarre, asa, hueco para dedos, pared elevada",
+  "binDesigner.walls.text.anchorOutside": "Posición del texto en la pared exterior",
+  "binDesigner.walls.text.anchorInside": "Posición del texto en la pared interior",
+  "binDesigner.walls.text.faceAria": "Cara del texto de la pared {side}",
+  "binDesigner.walls.text.face.outside": "Fuera",
+  "binDesigner.walls.text.face.inside": "Dentro",
+  "binDesigner.walls.text.face.solidNote": "Una caja sólida no tiene cara interior.",
+  "binDesigner.walls.text.face.scoopNote": "La rampa cubre la cara interior de esta pared."
 }

@@ -2194,7 +2194,7 @@
   "binDesigner.walls.text.anchor": "Posizione del testo sulla parete",
   "binDesigner.walls.text.disabledPolygon": "Non disponibile per contenitori con forma personalizzata.",
   "binDesigner.walls.text.heading": "Testo sulla parete",
-  "binDesigner.walls.text.hint": "Il testo viene collocato nell’area libera di ogni parete, evitando intagli e maniglie. Il motivo della parete viene rimosso dietro.",
+  "binDesigner.walls.text.hint": "Il testo viene collocato nell’area libera di ogni parete, evitando intagli e maniglie, e all’interno anche divisori, rampe e linguette etichetta. Il motivo della parete viene rimosso dietro. Il testo interno si legge dall’interno del bin.",
   "binDesigner.walls.text.placeholder": "es. Cavi",
   "binDesigner.walls.text.sideAria": "Testo della parete {side}",
   "binDesigner.walls.labelSlots.heading": "Fessure per etichette",
@@ -4864,5 +4864,12 @@
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "Linguetta di presa",
   "help.target.binDesigner.pullTab.description": "Presa rialzata su una parete. Parete e linguetta hanno lo stesso spessore; il rinforzo cresce verso l’interno.",
-  "help.target.binDesigner.pullTab.keywords": "linguetta, presa, maniglia, incavo per dita, parete rialzata"
+  "help.target.binDesigner.pullTab.keywords": "linguetta, presa, maniglia, incavo per dita, parete rialzata",
+  "binDesigner.walls.text.anchorOutside": "Posizione del testo sulla parete esterna",
+  "binDesigner.walls.text.anchorInside": "Posizione del testo sulla parete interna",
+  "binDesigner.walls.text.faceAria": "Lato del testo della parete {side}",
+  "binDesigner.walls.text.face.outside": "Fuori",
+  "binDesigner.walls.text.face.inside": "Dentro",
+  "binDesigner.walls.text.face.solidNote": "Un bin pieno non ha un lato interno.",
+  "binDesigner.walls.text.face.scoopNote": "La rampa copre il lato interno di questa parete."
 }

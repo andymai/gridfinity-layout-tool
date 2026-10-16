@@ -100,6 +100,8 @@ export const SURFACE_TEXT_KEYS = [
   'style',
   'lidStyle',
   'wallStyles',
+  'wallFaces',
+  'insideStyle',
 ] as const;
 export type _SurfaceTextKeys = Assert<
   KeysMatch<keyof SurfaceTextConfig, (typeof SURFACE_TEXT_KEYS)[number]>

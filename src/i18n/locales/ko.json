@@ -2194,7 +2194,7 @@
   "binDesigner.walls.text.anchor": "벽면 문구 위치",
   "binDesigner.walls.text.disabledPolygon": "맞춤 모양 수납통에는 사용할 수 없습니다.",
   "binDesigner.walls.text.heading": "벽 텍스트",
-  "binDesigner.walls.text.hint": "문구는 각 벽면의 빈 영역에 배치되며 컷아웃과 손잡이를 피합니다. 뒤쪽 벽면 패턴은 제거됩니다.",
+  "binDesigner.walls.text.hint": "문구는 각 벽면의 빈 영역에 배치되며 컷아웃과 손잡이를 피하고, 안쪽에서는 칸막이, 손가락 홈, 라벨 탭도 피합니다. 뒤쪽 벽면 패턴은 제거됩니다. 안쪽 문구는 수납통 안에서 읽힙니다.",
   "binDesigner.walls.text.placeholder": "예: 케이블",
   "binDesigner.walls.text.sideAria": "{side} 벽 텍스트",
   "binDesigner.walls.labelSlots.heading": "라벨 슬롯",
@@ -4864,5 +4864,12 @@
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "당김 탭",
   "help.target.binDesigner.pullTab.description": "한쪽 벽에 돌출 손잡이를 만듭니다. 벽과 탭은 같은 두께이며 추가 재료는 안쪽으로 늘어납니다.",
-  "help.target.binDesigner.pullTab.keywords": "당김 탭, 손잡이, 손가락 홈, 높인 벽"
+  "help.target.binDesigner.pullTab.keywords": "당김 탭, 손잡이, 손가락 홈, 높인 벽",
+  "binDesigner.walls.text.anchorOutside": "바깥 벽면 문구 위치",
+  "binDesigner.walls.text.anchorInside": "안쪽 벽면 문구 위치",
+  "binDesigner.walls.text.faceAria": "{side} 벽 텍스트 면",
+  "binDesigner.walls.text.face.outside": "바깥",
+  "binDesigner.walls.text.face.inside": "안쪽",
+  "binDesigner.walls.text.face.solidNote": "솔리드 수납통에는 안쪽 면이 없습니다.",
+  "binDesigner.walls.text.face.scoopNote": "손가락 홈이 이 벽의 안쪽 면을 덮습니다."
 }

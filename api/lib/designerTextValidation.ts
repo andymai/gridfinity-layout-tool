@@ -192,6 +192,8 @@ const ALLOWED_SURFACE_TEXT_KEYS = new Set([
   'style',
   'lidStyle',
   'wallStyles',
+  'wallFaces',
+  'insideStyle',
 ]);
 
 /**
@@ -218,6 +220,9 @@ function checkCaption(text: string, label: string): string | null {
 export const VALID_WALL_TEXT_SIDES = ['front', 'back', 'left', 'right'] as const;
 
 export const VALID_WALL_TEXT_ALIGNS = ['top', 'center', 'bottom'] as const;
+
+/** Mirrors the client `WALL_TEXT_FACES`. */
+export const VALID_WALL_TEXT_FACES = ['outside', 'inside'] as const;
 
 /** Mirrors the client `TEXT_QUARTER_TURNS`. */
 export const VALID_TEXT_QUARTER_TURNS = [0, 90, 180, 270] as const;
@@ -287,6 +292,21 @@ export function validateSurfaceText(value: unknown): string | null {
       );
       if (styleErr) return styleErr;
     }
+  }
+  if (value.wallFaces !== undefined) {
+    if (!isObject(value.wallFaces)) return 'surfaceText.wallFaces must be an object';
+    for (const key of Object.keys(value.wallFaces)) {
+      if (!(VALID_WALL_TEXT_SIDES as readonly string[]).includes(key)) {
+        return `surfaceText.wallFaces has unknown key: ${key}`;
+      }
+      if (!(VALID_WALL_TEXT_FACES as readonly unknown[]).includes(value.wallFaces[key])) {
+        return `surfaceText.wallFaces.${key} must be one of: ${VALID_WALL_TEXT_FACES.join(', ')}`;
+      }
+    }
+  }
+  if (value.insideStyle !== undefined) {
+    const styleErr = validateTextStyleOverride(value.insideStyle, 'surfaceText.insideStyle');
+    if (styleErr) return styleErr;
   }
   return null;
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, within } from '@testing-library/react';
 import { WallSurfaceSection } from './WallSurfaceSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
@@ -185,6 +185,66 @@ describe('WallSurfaceSection', () => {
       render(<WallSurfaceSection />);
       expect(screen.getByRole('textbox', { name: 'Front wall text' })).toHaveValue('BITS');
       expect(screen.queryByText('Not available for solid bins.')).not.toBeInTheDocument();
+    });
+
+    it('flips one wall to its inside face and shows a separate inside anchor', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          surfaceText: { walls: { front: 'Cables', back: 'Spoons' } },
+        },
+        ui: { ...DEFAULT_UI_STATE },
+      });
+      render(<WallSurfaceSection />);
+      expect(screen.queryByRole('radiogroup', { name: 'Inside wall text position' })).toBeNull();
+
+      const backFace = screen.getByRole('radiogroup', { name: 'Back wall text face' });
+      fireEvent.click(within(backFace).getByRole('radio', { name: 'Inside' }));
+      expect(useDesignerStore.getState().params.surfaceText?.wallFaces).toEqual({ back: 'inside' });
+
+      const inside = screen.getByRole('radiogroup', { name: 'Inside wall text position' });
+      fireEvent.click(within(inside).getByRole('radio', { name: 'Center' }));
+      const st = useDesignerStore.getState().params.surfaceText;
+      expect(st?.insideStyle?.anchor).toBe('center');
+      expect(st?.style?.anchor).toBeUndefined();
+    });
+
+    it('disables the inside face on a solid bin', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          style: 'solid',
+          base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+          surfaceText: { walls: { front: 'BITS' } },
+        },
+        ui: { ...DEFAULT_UI_STATE },
+      });
+      render(<WallSurfaceSection />);
+      const frontFace = screen.getByRole('radiogroup', { name: 'Front wall text face' });
+      expect(within(frontFace).getByRole('radio', { name: 'Inside' })).toBeDisabled();
+    });
+
+    it('disables the inside face only on a scooped wall', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, side: 'front' },
+          surfaceText: { walls: { front: 'BITS' } },
+        },
+        ui: { ...DEFAULT_UI_STATE },
+      });
+      render(<WallSurfaceSection />);
+      const inside = (wall: string): HTMLElement =>
+        within(screen.getByRole('radiogroup', { name: `${wall} wall text face` })).getByRole(
+          'radio',
+          { name: 'Inside' }
+        );
+      expect(inside('Front')).toBeDisabled();
+      expect(inside('Front')).toHaveAttribute(
+        'title',
+        "The finger scoop covers this wall's inside face."
+      );
+      expect(inside('Back')).toBeEnabled();
     });
   });
 

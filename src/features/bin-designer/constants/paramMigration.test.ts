@@ -339,6 +339,31 @@ describe('migrateParams', () => {
     }
   });
 
+  it('keeps only inside wall faces, and the inside style only alongside one', () => {
+    expect(
+      migrateParams({
+        surfaceText: {
+          walls: { back: 'Spoons' },
+          wallFaces: { back: 'inside', front: 'outside', diagonal: 'inside' } as never,
+          insideStyle: { anchor: 'top-left' },
+        },
+      }).surfaceText
+    ).toEqual({
+      walls: { back: 'Spoons' },
+      wallFaces: { back: 'inside' },
+      insideStyle: { anchor: 'top-left' },
+    });
+    expect(
+      migrateParams({
+        surfaceText: {
+          walls: { back: 'Spoons' },
+          wallFaces: { back: 'outside' },
+          insideStyle: { anchor: 'top-left' },
+        },
+      }).surfaceText
+    ).toEqual({ walls: { back: 'Spoons' } });
+  });
+
   it('trims persisted lid text so store, worker, and geometry agree', () => {
     const result = migrateParams({ surfaceText: { lidText: '  Cables  ' } });
     expect(result.surfaceText?.lidText).toBe('Cables');

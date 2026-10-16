@@ -109,6 +109,7 @@ import {
   TEXT_FONT_FAMILIES,
   TEXT_MAX_LENGTH,
   TEXT_QUARTER_TURNS,
+  WALL_TEXT_FACES,
 } from '@/features/bin-designer/types/text';
 import {
   DEFAULT_PATTERN_SCALE,
@@ -155,6 +156,7 @@ const SOURCES: Record<string, unknown> = {
   TEXT_FONT_FAMILIES,
   TEXT_MAX_LENGTH,
   TEXT_QUARTER_TURNS,
+  WALL_TEXT_FACES,
   WALL_PATTERN_TYPES,
   ACCENT_BAND_DEFAULT_MM,
   ACCENT_BAND_MIN_MM,

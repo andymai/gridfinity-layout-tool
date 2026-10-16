@@ -384,6 +384,20 @@ export type WallTextSide = 'front' | 'back' | 'left' | 'right';
 export const WALL_TEXT_SIDES: readonly WallTextSide[] = ['front', 'back', 'left', 'right'] as const;
 
 /**
+ * Face of an outer wall a caption is cut into, and so the side it reads from.
+ * A through-cut caption reads mirrored from the face it was not set on.
+ */
+export type WallTextFace = 'outside' | 'inside';
+export const WALL_TEXT_FACES: readonly WallTextFace[] = ['outside', 'inside'] as const;
+
+/** Top-row anchor with the same horizontal alignment. */
+export function topRowAnchor(anchor: TextAnchor): TextAnchor {
+  if (anchor.endsWith('left')) return 'top-left';
+  if (anchor.endsWith('right')) return 'top-right';
+  return 'top';
+}
+
+/**
  * Legacy vertical alignment of wall text, one knob shared by all four walls.
  * Superseded by {@link TextAnchor}; retained so `migrateSurfaceText` can fold a
  * persisted value into `style.anchor` (horizontal was always centered, so the
@@ -453,8 +467,40 @@ export interface SurfaceTextConfig {
   readonly style?: TextStyleOverride;
   /** Lid-only refinement, merged over {@link style}. */
   readonly lidStyle?: TextStyleOverride;
-  /** Per-wall refinement, merged over {@link style}. */
+  /** Per-wall refinement, merged over {@link style} and {@link insideStyle}. */
   readonly wallStyles?: Partial<Record<WallTextSide, TextStyleOverride>>;
+  /**
+   * Walls whose caption sits on the inner face. Only `'inside'` is stored: an
+   * absent side faces outside, so a design that never used this serializes
+   * byte-identically.
+   */
+  readonly wallFaces?: Partial<Record<WallTextSide, WallTextFace>>;
+  /**
+   * Refinement for inside-facing captions, merged over {@link style}. Present
+   * only while some wall faces inside, for the same fingerprint reason.
+   */
+  readonly insideStyle?: TextStyleOverride;
+}
+
+export function wallTextFace(
+  surfaceText: SurfaceTextConfig | undefined,
+  side: WallTextSide
+): WallTextFace {
+  return surfaceText?.wallFaces?.[side] === 'inside' ? 'inside' : 'outside';
+}
+
+/** The one place a wall caption's style layers are ordered. */
+export function resolveWallTextStyle(
+  defaults: TextStyleDefaults,
+  surfaceText: SurfaceTextConfig | undefined,
+  side: WallTextSide
+): TextStyleDefaults & { readonly fontSizeOverride?: number } {
+  return resolveTextStyle(
+    defaults,
+    surfaceText?.style,
+    wallTextFace(surfaceText, side) === 'inside' ? surfaceText?.insideStyle : undefined,
+    surfaceText?.wallStyles?.[side]
+  );
 }
 
 /**

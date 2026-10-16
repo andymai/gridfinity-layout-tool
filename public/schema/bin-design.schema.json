@@ -2259,7 +2259,7 @@
     },
     "SurfaceTextConfig": {
       "type": "object",
-      "description": "Text on exterior surfaces: the lid top and the outer walls. Omit for designs without surface text so they serialize byte-identically.",
+      "description": "Text on the lid top and on either face of the outer walls. Omit for designs without surface text so they serialize byte-identically.",
       "properties": {
         "lidText": {
           "type": "string",
@@ -2298,7 +2298,21 @@
           "additionalProperties": {
             "$ref": "#/$defs/TextStyleOverride"
           },
-          "description": "Per-wall style overrides keyed by side."
+          "description": "Per-wall style overrides keyed by side. Applied over insideStyle."
+        },
+        "wallFaces": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": ["outside", "inside"],
+            "x-constant": {
+              "enum": "WALL_TEXT_FACES"
+            }
+          },
+          "description": "Which face each wall's text is cut into, keyed by side. Inside text reads from inside the bin. Omit a side for outside."
+        },
+        "insideStyle": {
+          "$ref": "#/$defs/TextStyleOverride",
+          "description": "Style for inside-facing wall text, applied over style. Dropped on load when no wall faces inside."
         }
       }
     },

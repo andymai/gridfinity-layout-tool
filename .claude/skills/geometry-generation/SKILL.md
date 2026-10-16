@@ -229,6 +229,12 @@ it, and the designer's ghost overlay draws it in 3D. Font access arrives through
 injected `TypeMeasurer` (opentype via `brepjs/text`), which is what lets the main thread
 run the same solver the kernel does.
 
+An inside-face caption (`surfaceText.wallFaces`) takes its regions from
+`insideWallTextPlan`. The inner face carries dividers, shelves, rails, magnet pads and
+scoop ends, which one obstacle union swallows whole, so its regions are maximal empty
+rectangles per divider stretch. `wallTextBuilder` keys it on the solved placement,
+because no list of inputs stays complete.
+
 Four traps, each invisible to the obvious check:
 
 1. `sketchText` NEGATES `startX` and does not negate `startY`, so every pen position is

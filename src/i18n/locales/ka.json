@@ -2999,7 +2999,7 @@
   "binDesigner.walls.text.placeholder": "მაგ. კაბელები",
   "binDesigner.walls.text.sideAria": "{side} კედლის ტექსტი",
   "binDesigner.walls.text.disabledPolygon": "მორგებული ფორმის ყუთებისთვის მიუწვდომელია.",
-  "binDesigner.walls.text.hint": "ტექსტი თავსდება თითოეული კედლის თავისუფალ ნაწილში, ამონაჭრებისა და სახელურების გვერდის ავლით. მის უკან კედლის ნიმუში იშლება.",
+  "binDesigner.walls.text.hint": "ტექსტი თავსდება თითოეული კედლის თავისუფალ ნაწილში, ამონაჭრებისა და სახელურების გვერდის ავლით, შიგნით კი გამყოფების, ჩაღრმავებებისა და ეტიკეტის ჩანართების გვერდის ავლითაც. მის უკან კედლის ნიმუში იშლება. შიდა ტექსტი იკითხება ყუთის შიგნიდან.",
   "binDesigner.walls.labelSlots.heading": "ეტიკეტის ჭრილები",
   "binDesigner.walls.labelSlots.hint": "არჩეული კედლის თითოეულ უჯრაში ვერტიკალური ჭრილი 1u ეტიკეტის ფირფიტას იტევს, იმავეს, რომელსაც ჩასაკლიკი ბუდე იყენებს. ფირფიტა ზემოდან ჩადის და კედლის სარკმელში ჩანს.",
   "binDesigner.walls.labelSlots.sides": "კედლები ეტიკეტის ჭრილებით",
@@ -4864,5 +4864,12 @@
   "spacemouse.driverManaged": "სიჩქარე და ღერძების მიმართულება 3Dconnexion-ის მართვის პანელში განისაზღვრება.",
   "help.target.binDesigner.pullTab.title": "გამოსაწევი ენა",
   "help.target.binDesigner.pullTab.description": "ამაღლებული სახელური ერთ კედელზე. კედელსა და ენას ერთნაირი სისქე აქვთ; დამატებითი მასალა შიგნით ემატება.",
-  "help.target.binDesigner.pullTab.keywords": "გამოსაწევი ენა, სახელური, თითის ჩაღრმავება, ამაღლებული კედელი"
+  "help.target.binDesigner.pullTab.keywords": "გამოსაწევი ენა, სახელური, თითის ჩაღრმავება, ამაღლებული კედელი",
+  "binDesigner.walls.text.anchorOutside": "გარე კედლის ტექსტის მდებარეობა",
+  "binDesigner.walls.text.anchorInside": "შიდა კედლის ტექსტის მდებარეობა",
+  "binDesigner.walls.text.faceAria": "{side} კედლის ტექსტის მხარე",
+  "binDesigner.walls.text.face.outside": "გარეთ",
+  "binDesigner.walls.text.face.inside": "შიგნით",
+  "binDesigner.walls.text.face.solidNote": "მყარ ყუთს შიდა მხარე არ აქვს.",
+  "binDesigner.walls.text.face.scoopNote": "ჩაღრმავება ფარავს ამ კედლის შიდა მხარეს."
 }

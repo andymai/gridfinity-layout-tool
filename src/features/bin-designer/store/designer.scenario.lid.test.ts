@@ -311,6 +311,56 @@ describe('DesignerStore - lid actions', () => {
       expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
     });
 
+    it('setWallTextFace stores only inside faces and seeds a top-row inside anchor', () => {
+      const { setWallText, setSurfaceTextAnchor, setWallTextFace, undo } =
+        useDesignerStore.getState();
+      setWallText('back', 'Spoons');
+      setSurfaceTextAnchor('bottom-left');
+      setWallTextFace('back', 'inside');
+      expect(useDesignerStore.getState().params.surfaceText).toMatchObject({
+        wallFaces: { back: 'inside' },
+        insideStyle: { anchor: 'top-left' },
+      });
+
+      setWallTextFace('back', 'outside');
+      const back = useDesignerStore.getState().params.surfaceText;
+      expect(back?.wallFaces).toBeUndefined();
+      expect(back?.insideStyle).toBeUndefined();
+
+      undo();
+      expect(useDesignerStore.getState().params.surfaceText?.wallFaces).toEqual({
+        back: 'inside',
+      });
+    });
+
+    it('setWallTextFace keeps a chosen inside anchor while another wall flips', () => {
+      const { setWallTextFace, setInsideTextAnchor } = useDesignerStore.getState();
+      setWallTextFace('back', 'inside');
+      setInsideTextAnchor('center');
+      setWallTextFace('left', 'inside');
+      expect(useDesignerStore.getState().params.surfaceText).toMatchObject({
+        wallFaces: { back: 'inside', left: 'inside' },
+        insideStyle: { anchor: 'center' },
+      });
+    });
+
+    it('setWallTextFace and setInsideTextAnchor are no-ops when nothing changes', () => {
+      const { setWallTextFace, setInsideTextAnchor, undo } = useDesignerStore.getState();
+      setWallTextFace('front', 'outside');
+      setInsideTextAnchor('top');
+      expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
+      undo();
+      expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
+    });
+
+    it('clearWallText drops wall faces and the inside style', () => {
+      const { setWallText, setWallTextFace, clearWallText } = useDesignerStore.getState();
+      setWallText('back', 'Spoons');
+      setWallTextFace('back', 'inside');
+      clearWallText();
+      expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
+    });
+
     it('clearWallText drops per-wall styles even with no wall strings left', () => {
       const { clearWallText } = useDesignerStore.getState();
       // Reach the styles-without-strings state a programmatic caller can

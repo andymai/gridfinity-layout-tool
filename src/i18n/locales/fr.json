@@ -2194,7 +2194,7 @@
   "binDesigner.walls.text.anchor": "Position du texte sur la paroi",
   "binDesigner.walls.text.disabledPolygon": "Indisponible pour les bacs de forme personnalisée.",
   "binDesigner.walls.text.heading": "Texte mural",
-  "binDesigner.walls.text.hint": "Le texte est placé dans la zone libre de chaque paroi, en évitant découpes et poignées. Le motif de paroi est retiré derrière.",
+  "binDesigner.walls.text.hint": "Le texte est placé dans la zone libre de chaque paroi, en évitant découpes et poignées, et à l'intérieur aussi cloisons, rampes et languettes d'étiquette. Le motif de paroi est retiré derrière. Le texte intérieur se lit depuis l'intérieur du bac.",
   "binDesigner.walls.text.placeholder": "p. ex. Câbles",
   "binDesigner.walls.text.sideAria": "Texte de la paroi {side}",
   "binDesigner.walls.labelSlots.heading": "Fentes d'étiquette",
@@ -4864,5 +4864,12 @@
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "Languette de préhension",
   "help.target.binDesigner.pullTab.description": "Prise surélevée sur une paroi. La paroi et la languette ont la même épaisseur ; le renfort se développe vers l’intérieur.",
-  "help.target.binDesigner.pullTab.keywords": "languette, prise, poignée, creux pour les doigts, paroi surélevée"
+  "help.target.binDesigner.pullTab.keywords": "languette, prise, poignée, creux pour les doigts, paroi surélevée",
+  "binDesigner.walls.text.anchorOutside": "Position du texte sur la paroi extérieure",
+  "binDesigner.walls.text.anchorInside": "Position du texte sur la paroi intérieure",
+  "binDesigner.walls.text.faceAria": "Face du texte de la paroi {side}",
+  "binDesigner.walls.text.face.outside": "Extérieur",
+  "binDesigner.walls.text.face.inside": "Intérieur",
+  "binDesigner.walls.text.face.solidNote": "Un bac plein n'a pas de face intérieure.",
+  "binDesigner.walls.text.face.scoopNote": "La rampe recouvre la face intérieure de cette paroi."
 }

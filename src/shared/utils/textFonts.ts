@@ -21,6 +21,7 @@ export function collectTextFontFamilies(params: BinParams): Set<TextFontFamily> 
 
   add(params.surfaceText?.style);
   add(params.surfaceText?.lidStyle);
+  add(params.surfaceText?.insideStyle);
   for (const style of Object.values(params.surfaceText?.wallStyles ?? {})) add(style);
   add(params.label.textStyle);
   for (const cutout of params.cutouts) add(cutout.textStyle);

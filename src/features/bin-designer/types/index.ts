@@ -31,6 +31,7 @@ export type {
   TextStyleOverride,
   SurfaceTextConfig,
   WallTextSide,
+  WallTextFace,
   WallTextVerticalAlign,
   TextQuarterTurn,
 } from './text';
@@ -60,14 +61,18 @@ export {
   matchTextPreset,
   normalizeTextInput,
   resolveTextStyle,
+  resolveWallTextStyle,
   snapToTypeScale,
   splitTextLines,
   withExactLabelSize,
   withFontSizeOverride,
   WALL_TEXT_SIDES,
+  WALL_TEXT_FACES,
   WALL_TEXT_ALIGNS,
   TEXT_QUARTER_TURNS,
   isTextQuarterTurn,
+  topRowAnchor,
+  wallTextFace,
 } from './text';
 
 export type {

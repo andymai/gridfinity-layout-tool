@@ -2194,7 +2194,7 @@
   "binDesigner.walls.text.anchor": "Położenie napisu na ściance",
   "binDesigner.walls.text.disabledPolygon": "Niedostępne dla binów o własnym kształcie.",
   "binDesigner.walls.text.heading": "Tekst na ściance",
-  "binDesigner.walls.text.hint": "Tekst trafia w wolny obszar każdej ścianki, omijając wycięcia i uchwyty. Wzór ścianki jest za nim usuwany.",
+  "binDesigner.walls.text.hint": "Tekst trafia w wolny obszar każdej ścianki, omijając wycięcia i uchwyty, a od środka także przegródki, podbierania i zakładki etykiet. Wzór ścianki jest za nim usuwany. Napis wewnętrzny czyta się z wnętrza binu.",
   "binDesigner.walls.text.placeholder": "np. Kable",
   "binDesigner.walls.text.sideAria": "Tekst ścianki {side}",
   "binDesigner.walls.labelSlots.heading": "Szczeliny na etykiety",
@@ -4864,5 +4864,12 @@
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "Uchwyt do wyciągania",
   "help.target.binDesigner.pullTab.description": "Podwyższony uchwyt na jednej ściance. Ścianka i uchwyt mają wspólną grubość; dodatkowy materiał rośnie do wewnątrz.",
-  "help.target.binDesigner.pullTab.keywords": "uchwyt, wypustka, zagłębienie na palce, podwyższona ścianka"
+  "help.target.binDesigner.pullTab.keywords": "uchwyt, wypustka, zagłębienie na palce, podwyższona ścianka",
+  "binDesigner.walls.text.anchorOutside": "Położenie napisu na zewnętrznej ściance",
+  "binDesigner.walls.text.anchorInside": "Położenie napisu na wewnętrznej ściance",
+  "binDesigner.walls.text.faceAria": "Strona tekstu ścianki {side}",
+  "binDesigner.walls.text.face.outside": "Na zewnątrz",
+  "binDesigner.walls.text.face.inside": "Wewnątrz",
+  "binDesigner.walls.text.face.solidNote": "Pełny bin nie ma strony wewnętrznej.",
+  "binDesigner.walls.text.face.scoopNote": "Podbieranie zakrywa wewnętrzną stronę tej ścianki."
 }

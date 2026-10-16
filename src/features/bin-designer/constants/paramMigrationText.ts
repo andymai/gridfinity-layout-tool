@@ -102,7 +102,17 @@ function migrateTextStyleOverride(raw: unknown): TextStyleOverride | undefined {
 
 export function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined {
   if (typeof raw !== 'object' || raw === null) return undefined;
-  const { lidText, lidTextRotation, walls, wallAlign, style, lidStyle, wallStyles } = raw as {
+  const {
+    lidText,
+    lidTextRotation,
+    walls,
+    wallAlign,
+    style,
+    lidStyle,
+    wallStyles,
+    wallFaces,
+    insideStyle,
+  } = raw as {
     lidText?: unknown;
     lidTextRotation?: unknown;
     walls?: unknown;
@@ -110,6 +120,8 @@ export function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined 
     style?: unknown;
     lidStyle?: unknown;
     wallStyles?: unknown;
+    wallFaces?: unknown;
+    insideStyle?: unknown;
   };
   // Trimmed on write (store setters) — trim again here so the worker (which
   // trims before generating) and persisted state can't disagree.
@@ -163,13 +175,23 @@ export function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined 
   }
   const hasWallStyles = Object.keys(migratedWallStyles).length > 0;
 
+  const migratedFaces: Partial<Record<WallTextSide, 'inside'>> = {};
+  if (isObj(wallFaces)) {
+    for (const side of WALL_TEXT_SIDES) {
+      if (wallFaces[side] === 'inside') migratedFaces[side] = 'inside';
+    }
+  }
+  const hasFaces = Object.keys(migratedFaces).length > 0;
+  const migratedInsideStyle = hasFaces ? migrateTextStyleOverride(insideStyle) : undefined;
+
   if (
     !hasText &&
     rotation === undefined &&
     !hasWalls &&
     migratedStyle === undefined &&
     migratedLidStyle === undefined &&
-    !hasWallStyles
+    !hasWallStyles &&
+    !hasFaces
   ) {
     return undefined;
   }
@@ -180,6 +202,8 @@ export function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined 
     ...(migratedStyle !== undefined ? { style: migratedStyle } : {}),
     ...(migratedLidStyle !== undefined ? { lidStyle: migratedLidStyle } : {}),
     ...(hasWallStyles ? { wallStyles: migratedWallStyles } : {}),
+    ...(hasFaces ? { wallFaces: migratedFaces } : {}),
+    ...(migratedInsideStyle !== undefined ? { insideStyle: migratedInsideStyle } : {}),
   };
 }
 

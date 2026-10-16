@@ -2194,7 +2194,7 @@
   "binDesigner.walls.text.anchor": "侧壁文字位置",
   "binDesigner.walls.text.disabledPolygon": "自定义形状收纳盒不可用。",
   "binDesigner.walls.text.heading": "壁文字",
-  "binDesigner.walls.text.hint": "文字会放在每面侧壁的空白区域，避开缺口和把手，并清除其后的侧壁纹样。",
+  "binDesigner.walls.text.hint": "文字会放在每面侧壁的空白区域，避开缺口和把手；在内侧还会避开隔板、取物斜面和标签片，并清除其后的侧壁纹样。内侧文字从收纳盒内部阅读。",
   "binDesigner.walls.text.placeholder": "例如 Cables",
   "binDesigner.walls.text.sideAria": "{side} 壁文字",
   "binDesigner.walls.labelSlots.heading": "标签插槽",
@@ -4864,5 +4864,12 @@
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "提拉片",
   "help.target.binDesigner.pullTab.description": "在一面壁上添加凸起握把。壁和拉片厚度相同，增加的材料向内延伸。",
-  "help.target.binDesigner.pullTab.keywords": "拉片, 握把, 把手, 手指凹槽, 加高壁"
+  "help.target.binDesigner.pullTab.keywords": "拉片, 握把, 把手, 手指凹槽, 加高壁",
+  "binDesigner.walls.text.anchorOutside": "外侧壁文字位置",
+  "binDesigner.walls.text.anchorInside": "内侧壁文字位置",
+  "binDesigner.walls.text.faceAria": "{side} 壁文字所在面",
+  "binDesigner.walls.text.face.outside": "外侧",
+  "binDesigner.walls.text.face.inside": "内侧",
+  "binDesigner.walls.text.face.solidNote": "实心收纳盒没有内侧面。",
+  "binDesigner.walls.text.face.scoopNote": "取物斜面覆盖了这面侧壁的内侧面。"
 }

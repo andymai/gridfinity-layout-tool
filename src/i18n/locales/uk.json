@@ -2194,7 +2194,7 @@
   "binDesigner.walls.text.anchor": "Розташування напису на стінці",
   "binDesigner.walls.text.disabledPolygon": "Недоступно для контейнерів довільної форми.",
   "binDesigner.walls.text.heading": "Текст на стінці",
-  "binDesigner.walls.text.hint": "Текст розміщується у вільній зоні кожної стінки, оминаючи вирізи та ручки. Візерунок стінки за ним прибирається.",
+  "binDesigner.walls.text.hint": "Текст розміщується у вільній зоні кожної стінки, оминаючи вирізи та ручки, а всередині також перегородки, скоси та виступи для міток. Візерунок стінки за ним прибирається. Внутрішній напис читається зсередини біна.",
   "binDesigner.walls.text.placeholder": "напр. Кабелі",
   "binDesigner.walls.text.sideAria": "Текст стінки: {side}",
   "binDesigner.walls.labelSlots.heading": "Пази для етикеток",
@@ -4864,5 +4864,12 @@
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "Язичок для витягування",
   "help.target.binDesigner.pullTab.description": "Піднятий захват на одній стінці. Стінка й язичок мають однакову товщину; додатковий матеріал наростає всередину.",
-  "help.target.binDesigner.pullTab.keywords": "язичок, захват, ручка, заглиблення для пальців, піднята стінка"
+  "help.target.binDesigner.pullTab.keywords": "язичок, захват, ручка, заглиблення для пальців, піднята стінка",
+  "binDesigner.walls.text.anchorOutside": "Розташування напису на зовнішній стінці",
+  "binDesigner.walls.text.anchorInside": "Розташування напису на внутрішній стінці",
+  "binDesigner.walls.text.faceAria": "Бік тексту стінки: {side}",
+  "binDesigner.walls.text.face.outside": "Ззовні",
+  "binDesigner.walls.text.face.inside": "Всередині",
+  "binDesigner.walls.text.face.solidNote": "Суцільний бін не має внутрішнього боку.",
+  "binDesigner.walls.text.face.scoopNote": "Скіс закриває внутрішній бік цієї стінки."
 }

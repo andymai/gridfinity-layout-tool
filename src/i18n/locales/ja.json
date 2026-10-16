@@ -2194,7 +2194,7 @@
   "binDesigner.walls.text.anchor": "側面文字の配置",
   "binDesigner.walls.text.disabledPolygon": "カスタム形状のビンでは使用できません。",
   "binDesigner.walls.text.heading": "壁面テキスト",
-  "binDesigner.walls.text.hint": "文字は各側面の空きスペースに配置され、切り欠きや取っ手を避けます。背後の側面パターンは取り除かれます。",
+  "binDesigner.walls.text.hint": "文字は各側面の空きスペースに配置され、切り欠きや取っ手を避けます。内側では仕切り板、スクープ、ラベルタブも避けます。背後の側面パターンは取り除かれます。内側の文字はビンの内側から読めます。",
   "binDesigner.walls.text.placeholder": "例: ケーブル",
   "binDesigner.walls.text.sideAria": "{side}の壁面テキスト",
   "binDesigner.walls.labelSlots.heading": "ラベルスロット",
@@ -4864,5 +4864,12 @@
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "プルタブ",
   "help.target.binDesigner.pullTab.description": "壁の一面に持ち上げ用のグリップを追加します。壁とタブは同じ厚さになり、増えた材料は内側に広がります。",
-  "help.target.binDesigner.pullTab.keywords": "プルタブ, グリップ, 取っ手, 指掛かり, 高い壁"
+  "help.target.binDesigner.pullTab.keywords": "プルタブ, グリップ, 取っ手, 指掛かり, 高い壁",
+  "binDesigner.walls.text.anchorOutside": "外側の側面文字の配置",
+  "binDesigner.walls.text.anchorInside": "内側の側面文字の配置",
+  "binDesigner.walls.text.faceAria": "{side}の壁面テキストの面",
+  "binDesigner.walls.text.face.outside": "外側",
+  "binDesigner.walls.text.face.inside": "内側",
+  "binDesigner.walls.text.face.solidNote": "無垢ビンには内側の面がありません。",
+  "binDesigner.walls.text.face.scoopNote": "スクープがこの壁の内側の面を覆っています。"
 }

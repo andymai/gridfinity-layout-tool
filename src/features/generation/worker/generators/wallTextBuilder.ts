@@ -1,17 +1,18 @@
 /**
- * Outer-wall surface text.
+ * Wall surface text, on either face of each outer wall.
  *
- * Builds engraved/embossed/through-cut glyph solids on the bin's outer wall
- * faces at the positions computed by `wallTextLayout.ts` (which also drives
- * the wall-pattern clearing behind the same rect — keep both in sync by
- * changing the layout, never the two consumers).
+ * Builds engraved/embossed/through-cut glyph solids at the positions computed
+ * by `wallTextLayout.ts` (which also drives the wall-pattern clearing behind
+ * the same rect — keep both in sync by changing the layout, never the two
+ * consumers).
  *
  * Geometry: each wall's text is built flat via `buildTextSolid` (XY frame,
  * glyph run +X, up +Y, sketch plane at Z=0), then stood up against its wall:
- * rotate +90° about X (up → +Z, engrave direction → +Y = inward), yaw about Z
- * to face the wall outward, and translate to the outer face. The builders run
- * through the generic feature runner, which applies the overhang interior
- * offset and tags faces `FeatureTag.TEXT`.
+ * rotate +90° about X (up → +Z, engrave direction → +Y), yaw about Z so the
+ * engrave direction points into the wall, and translate to the face. An inside
+ * face looks the way the opposite wall's outside face does, so it takes that
+ * wall's yaw. The builders run through the generic feature runner, which
+ * applies the overhang interior offset and tags faces `FeatureTag.TEXT`.
  *
  * Registered as TWO builders because a FeatureBuilder has one static boolean
  * target: engrave/through-cut solids join the cut pile, embossed and flat text
@@ -21,8 +22,8 @@
 
 import { rotate, translate, withScope, clone, unwrap, fuseAll } from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
-import type { BinParams, WallTextSide } from '@/shared/types/bin';
-import { WALL_TEXT_SIDES, resolveTextStyle } from '@/shared/types/bin';
+import type { BinParams, WallTextFace, WallTextSide } from '@/shared/types/bin';
+import { WALL_TEXT_SIDES, resolveWallTextStyle } from '@/shared/types/bin';
 import type { FeatureBuilder } from './pipeline/featureBuilder';
 import type { PipelineContext } from './pipeline/types';
 import { FeatureTag } from './featureTags';
@@ -39,21 +40,34 @@ const WALL_YAW: Record<WallTextSide, number> = {
   right: 90,
 };
 
+const OPPOSITE_WALL: Record<WallTextSide, WallTextSide> = {
+  front: 'back',
+  back: 'front',
+  left: 'right',
+  right: 'left',
+};
+
+function wallFaceYaw(side: WallTextSide, face: WallTextFace): number {
+  return WALL_YAW[face === 'inside' ? OPPOSITE_WALL[side] : side];
+}
+
 function wallFaceTranslation(
   side: WallTextSide,
+  face: WallTextFace,
   innerW: number,
   innerD: number,
   wallThickness: number
 ): [number, number, number] {
+  const out = face === 'inside' ? 0 : wallThickness;
   switch (side) {
     case 'front':
-      return [0, -(innerD / 2 + wallThickness), 0];
+      return [0, -(innerD / 2 + out), 0];
     case 'back':
-      return [0, innerD / 2 + wallThickness, 0];
+      return [0, innerD / 2 + out, 0];
     case 'left':
-      return [-(innerW / 2 + wallThickness), 0, 0];
+      return [-(innerW / 2 + out), 0, 0];
     case 'right':
-      return [innerW / 2 + wallThickness, 0, 0];
+      return [innerW / 2 + out, 0, 0];
   }
 }
 
@@ -64,7 +78,7 @@ function buildOneWallText(
   innerW: number,
   innerD: number
 ): Shape3D | null {
-  const sign = wallTextReadingSign(layout.side);
+  const sign = wallTextReadingSign(layout.side, layout.face);
   const result = buildTextSolid(scope, {
     text: layout.plan.lines.map((line) => line.text).join('\n'),
     style: layout.style,
@@ -85,10 +99,13 @@ function buildOneWallText(
   if (!result) return null;
 
   const stood = scope.register(rotate(result.solid, 90, { axis: [1, 0, 0] }));
-  const yaw = WALL_YAW[layout.side];
+  const yaw = wallFaceYaw(layout.side, layout.face);
   const faced = yaw === 0 ? stood : scope.register(rotate(stood, yaw, { axis: [0, 0, 1] }));
   return scope.register(
-    translate(faced, wallFaceTranslation(layout.side, innerW, innerD, params.wallThickness))
+    translate(
+      faced,
+      wallFaceTranslation(layout.side, layout.face, innerW, innerD, params.wallThickness)
+    )
   );
 }
 
@@ -131,13 +148,33 @@ function hasWallTextMode(params: BinParams, wantFuse: boolean): boolean {
   if (!walls) return false;
   return WALL_TEXT_SIDES.some((side) => {
     if ((walls[side]?.trim() ?? '') === '') return false;
-    const mode = resolveTextStyle(
-      params.textDefaults,
-      params.surfaceText?.style,
-      params.surfaceText?.wallStyles?.[side]
-    ).mode;
+    const mode = resolveWallTextStyle(params.textDefaults, params.surfaceText, side).mode;
     return (textOpForMode(mode) === 'fuse') === wantFuse;
   });
+}
+
+/**
+ * An inside caption's placement depends on most of the interior (dividers,
+ * shelves, rails, lid parts, scoops), so the key carries the solved placement
+ * rather than a list of inputs that would drift from it. Empty for a design
+ * with no inside text, which keeps every earlier key unchanged.
+ */
+function insidePlacementKey(ctx: PipelineContext): string[] {
+  if (!ctx.params.surfaceText?.wallFaces) return [];
+  return [
+    stableSerialize(
+      computeWallTextLayouts(ctx.params, ctx.dimensions)
+        .filter((l) => l.face === 'inside')
+        .map((l) => [
+          l.side,
+          quantize(l.rectCenterU),
+          quantize(l.rectCenterZ),
+          quantize(l.availW),
+          quantize(l.availD),
+          quantize(l.plan.fontSize),
+        ])
+    ),
+  ];
 }
 
 function wallTextCacheKey(ctx: PipelineContext): string {
@@ -162,7 +199,8 @@ function wallTextCacheKey(ctx: PipelineContext): string {
       quantize(dim.innerD),
       quantize(dim.wallHeight),
       quantize(params.wallThickness),
-      dim.hasLip
+      dim.hasLip,
+      ...insidePlacementKey(ctx)
     )
   );
 }
