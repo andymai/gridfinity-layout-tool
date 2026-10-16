@@ -15,10 +15,13 @@
  */
 
 import type { BinParams, WallTextSide } from '@/shared/types/bin';
-import { slideLidPlanForParams } from '@/shared/types/bin';
 import {
   LID_CLICK_RAIL_BAND_BELOW_WALL_TOP,
+  isHingeLid,
   isSlideLid,
+  resolveLidHinge,
+  resolveLidPlateThickness,
+  resolveLidSlide,
   retentionBossRadius,
   retentionMagnetInset,
 } from '@/features/bin-designer/types/lid';
@@ -39,7 +42,6 @@ import { hasOverhang, overhangExpansion, resolveOverhang } from '@/shared/utils/
 import { interiorFilletCornerMm, interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 import { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
 import { labelTabFootprints } from '@/shared/utils/labelTabPlan';
-import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
 import {
   computeLipOffset,
@@ -49,7 +51,11 @@ import {
   scoopFrameHeights,
 } from '@/shared/utils/scoopCalculations';
 import type { ScoopCompartmentBounds } from '@/shared/utils/scoopCalculations';
-import { SLIDE_BEARING_MM, SLIDE_SHELF_TIP_MM } from '@/shared/utils/slideLidPlan';
+import {
+  SLIDE_BEARING_MM,
+  SLIDE_SHELF_TIP_MM,
+  slidePlateTopBelowWallTopMm,
+} from '@/shared/utils/slideLidPlan';
 import {
   resolveSlideGeometry,
   slideInputFromDims,
@@ -124,15 +130,16 @@ function lidBandBelowWallTopMm(params: BinParams): number {
   if (!params.lid.enabled) return 0;
   const ring = LID_CLICK_RAIL_BAND_BELOW_WALL_TOP + LID_KEEPOUT_CLEARANCE;
   if (isSlideLid(params.lid)) {
-    const { geometry } = slideLidPlanForParams(params);
-    if (!geometry) return 0;
     // The shelf the plate rests on hangs lowest: plate thickness, the shelf
-    // tip, then a 45° underside as deep as the shelf's reach.
+    // tip, then a 45° underside as deep as the shelf's reach. Stated from params
+    // rather than the resolved channel, which would bring the whole slide plan
+    // into the preview for one depth.
+    const { placement, clearanceMm } = resolveLidSlide(params.lid);
     return (
-      geometry.plateTopBelowWallTopMm +
-      geometry.plate.thicknessMm +
+      slidePlateTopBelowWallTopMm(placement, clearanceMm, params.base.stackingLip) +
+      resolveLidPlateThickness(params) +
       SLIDE_SHELF_TIP_MM +
-      geometry.clearanceMm +
+      clearanceMm +
       SLIDE_BEARING_MM +
       LID_KEEPOUT_CLEARANCE
     );
@@ -446,7 +453,7 @@ function usesRetentionMagnets(params: BinParams): boolean {
     return false;
   }
   if (params.lid.attachment === 'magnetic') return true;
-  return planHingeLid(params).geometry?.catchMode === 'magnets';
+  return isHingeLid(params.lid) && resolveLidHinge(params.lid).catchMode === 'magnets';
 }
 
 /**

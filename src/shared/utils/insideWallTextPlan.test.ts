@@ -93,6 +93,11 @@ describe('insideWallBounds', () => {
     expect(insideWallBounds(p, DIMS, 'back')?.maxZ).toBeCloseTo(DIMS.wallHeight - 4.05, 6);
   });
 
+  it("drops below a sliding lid's shelf, which hangs deeper than a rail", () => {
+    const p = params({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'slide' } });
+    expect(insideWallBounds(p, DIMS, 'back')?.maxZ).toBeLessThan(DIMS.wallHeight - 4.05);
+  });
+
   it('rises above the highest raised compartment floor and its fillet', () => {
     const p = params({
       interiorFilletMm: 2,
