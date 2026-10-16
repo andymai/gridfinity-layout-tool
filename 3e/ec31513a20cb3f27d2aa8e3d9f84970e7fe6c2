@@ -1,0 +1,27 @@
+src/shared/utils/insideWallTextPlan.test.ts
+  s_2734dd355ac6f2::t_635a8f94b81741 133,135-150,155-173,176
+  s_2734dd355ac6f2::t_4c151ec1a75546 7,151-154,174-175
+  s_2734dd355ac6f2::t_eb17aaa8dbefd4 134
+src/shared/utils/insideWallFloor.ts
+  s_2734dd355ac6f2::t_635a8f94b81741 69,157-162
+src/shared/utils/insideWallFloor.test.ts
+  s_2734dd355ac6f2::t_635a8f94b81741 96,100,102-104,107,109-117
+src/shared/utils/insideWallTextPlan.ts
+  s_2734dd355ac6f2::t_635a8f94b81741 173,175-176,199-207,209-210
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3eec31513a20cb3f27d2aa8e3d9f84970e7fe6c2",
+  "prompts": {},
+  "sessions": {
+    "s_2734dd355ac6f2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "abe22951-158a-43ff-bfb0-2549305b6eb3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
