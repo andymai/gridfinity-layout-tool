@@ -40,6 +40,7 @@ import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 import { resolveScoopSides } from '@/shared/utils/scoopCalculations';
 import { SLIDE_BEARING_MM, SLIDE_SHELF_TIP_MM } from '@/shared/utils/slideLidPlan';
 import { resolveBinFloorMm, resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
+import { interiorFilletBuilt } from '@/shared/utils/insideWallFloor';
 import {
   cavityCornerRadiusMm,
   scoopRampsApply,
@@ -149,7 +150,8 @@ function crossingHalfSpan(thickness: number, segLen: number, drift: number): num
 function dividerCrossings(
   params: BinParams,
   dims: InsideWallDims,
-  side: WallTextSide
+  side: WallTextSide,
+  reachMm: number
 ): { readonly lo: number; readonly hi: number }[] {
   const { cols, rows, cells, thickness } = params.compartments;
   if (isPartialMask(params.cellMask)) return [];
@@ -165,16 +167,27 @@ function dividerCrossings(
     dims.interiorHeight
   );
   // A filleted junction flares the divider's foot out along the wall.
-  const flare = interiorFilletCornerMm(params);
+  const flare = interiorFilletBuilt(params) ? interiorFilletCornerMm(params) : 0;
   const cellW = innerW / cols;
   const cellD = innerD / rows;
   const lookup = buildOverrideLookup(params.compartments.dividerOverrides);
   const out: { lo: number; hi: number }[] = [];
-  const push = (at: number, halfSpan: number, sweep: number, reach: number): void => {
+  const push = (at: number, halfSpan: number, sweep: number, lo: number, hi: number): void => {
     out.push({
-      lo: at - halfSpan - reach + Math.min(0, sweep),
-      hi: at + halfSpan + reach + Math.max(0, sweep),
+      lo: at - halfSpan - lo + Math.min(0, sweep),
+      hi: at + halfSpan + hi + Math.max(0, sweep),
     });
+  };
+  // Clearance either side of a joint whose divider, walking into the cavity,
+  // moves `lean` (+1 toward +u) at `tilt` off square. A fillet of radius r runs
+  // r / tan(angle / 2) along the wall in each corner, longer in the acute one,
+  // and a caption standing `reachMm` proud meets the divider further along it.
+  const sides = (tilt: number, lean: number): { lo: number; hi: number } => {
+    const along = (angle: number): number => (flare > 0 ? flare / Math.tan(angle / 2) : 0);
+    const acute = along(Math.PI / 2 - tilt) + reachMm * Math.tan(tilt);
+    const obtuse = along(Math.PI / 2 + tilt);
+    if (lean === 0) return { lo: flare, hi: flare };
+    return lean > 0 ? { lo: obtuse, hi: acute } : { lo: acute, hi: obtuse };
   };
 
   const alongX = side === 'front' || side === 'back';
@@ -201,13 +214,12 @@ function dividerCrossings(
       // horizontal section, and the joint it leaves on the wall, is wider.
       const rake = ((ov?.rakeDeg ?? 0) * Math.PI) / 180;
       const halfSpan = crossingHalfSpan(thickness, segLen, end - start) / Math.cos(rake);
-      // In the acute corner a tilted divider makes with the wall, a fillet of
-      // radius r runs r / tan(angle / 2) along the wall, not r.
-      const acute = Math.PI / 2 - Math.atan2(Math.abs(end - start), segLen);
-      const reach = flare > 0 ? flare / Math.tan(acute / 2) : 0;
+      const tilt = Math.atan2(Math.abs(end - start), segLen);
+      const lean = (atStart ? 1 : -1) * Math.sign(end - start);
+      const { lo, hi } = sides(tilt, lean);
       const sweep = dividerFootDrift(ov, dividerTopZ);
-      if (atStart && run.start === 0) push(start, halfSpan, sweep, reach);
-      if (!atStart && run.end === runLength) push(end, halfSpan, sweep, reach);
+      if (atStart && run.start === 0) push(start, halfSpan, sweep, lo, hi);
+      if (!atStart && run.end === runLength) push(end, halfSpan, sweep, lo, hi);
     }
   }
   return out;
@@ -221,9 +233,10 @@ export function insideWallSegments(
   params: BinParams,
   dims: InsideWallDims,
   side: WallTextSide,
-  bounds: WallRect
+  bounds: WallRect,
+  reachMm = 0
 ): WallRect[] {
-  const cuts = dividerCrossings(params, dims, side)
+  const cuts = dividerCrossings(params, dims, side, reachMm)
     .map((c) => ({ lo: c.lo - CUTOUT_BORDER_WIDTH, hi: c.hi + CUTOUT_BORDER_WIDTH }))
     .sort((a, b) => a.lo - b.lo);
   const out: WallRect[] = [];

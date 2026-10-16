@@ -202,6 +202,11 @@ describe('inside-facing wall text', () => {
     expect(computeWallTextLayouts(inside(), { ...DIMS, solid: true }, measurer)).toEqual([]);
   });
 
+  it('keeps a zero-margin caption whose first letter hangs past the margin', () => {
+    const flush = inside({ insideStyle: { anchor: 'left', margin: 0 } });
+    expect(computeWallTextLayouts(flush, DIMS, measurer)).toHaveLength(1);
+  });
+
   it('drops an inside caption an offset pushes out of every clear region', () => {
     const shoved = inside({ insideStyle: { anchor: 'top-left', offset: { x: 500, y: 0 } } });
     expect(computeWallTextLayouts(shoved, DIMS, measurer)).toEqual([]);

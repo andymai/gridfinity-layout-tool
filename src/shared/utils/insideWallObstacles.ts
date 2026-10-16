@@ -54,7 +54,11 @@ import {
   safeCutoutCornerRadii,
 } from '@/shared/utils/wallCutoutPosition';
 import type { WallRect } from '@/shared/utils/maximalClearRects';
-import { builtFloorRaises, floorObstacles } from '@/shared/utils/insideWallFloor';
+import {
+  builtFloorRaises,
+  floorObstacles,
+  interiorFilletBuilt,
+} from '@/shared/utils/insideWallFloor';
 
 const LIP_TAPER_WIDTH = GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER;
 
@@ -86,7 +90,7 @@ const alongX = (side: WallTextSide): boolean => side === 'front' || side === 'ba
 export function cavityCornerRadiusMm(params: BinParams): number {
   return Math.max(
     GRIDFINITY_SPEC.BOX_CORNER_RADIUS - params.wallThickness,
-    interiorFilletCornerMm(params)
+    interiorFilletBuilt(params) ? interiorFilletCornerMm(params) : 0
   );
 }
 

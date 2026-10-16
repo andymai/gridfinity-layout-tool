@@ -56,7 +56,11 @@ import {
   BOTTOM_SOLID_SKIRT,
   CUTOUT_BORDER_WIDTH,
 } from '@/shared/constants/wallBands';
-import { planTypeBlock, type TypeMeasurer } from '@/shared/utils/typePlan';
+import {
+  OPTICAL_OVERSHOOT_MAX_EM,
+  planTypeBlock,
+  type TypeMeasurer,
+} from '@/shared/utils/typePlan';
 
 const BOX_CORNER_RADIUS = GRIDFINITY.BOX_CORNER_RADIUS;
 
@@ -254,9 +258,13 @@ interface Candidate {
  */
 function inkFits(plan: TypeBlockPlan, availW: number, availD: number): boolean {
   const eps = 1e-6;
+  // Optical alignment hangs a round or pointed first or last letter slightly
+  // past the margin on purpose; the region's border more than covers it.
+  const largest = Math.max(...plan.lines.map((line) => line.fontSize));
+  const overshoot = OPTICAL_OVERSHOOT_MAX_EM * largest + eps;
   return (
-    plan.minX >= -availW / 2 - eps &&
-    plan.maxX <= availW / 2 + eps &&
+    plan.minX >= -availW / 2 - overshoot &&
+    plan.maxX <= availW / 2 + overshoot &&
     plan.minY >= -availD / 2 - eps &&
     plan.maxY <= availD / 2 + eps
   );
@@ -411,7 +419,7 @@ function collectSides(params: BinParams, dim: WallTextDims): SideInput[] {
           maxZ: o.maxZ + CUTOUT_BORDER_WIDTH,
         })
       );
-      const segments = insideWallSegments(params, dim, side, bounds).map((segment) =>
+      const segments = insideWallSegments(params, dim, side, bounds, reach).map((segment) =>
         maximalClearRects(segment, obstacles)
       );
       out.push({ side, face, text, style, depth, segments });

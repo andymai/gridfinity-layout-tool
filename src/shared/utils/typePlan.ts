@@ -111,6 +111,13 @@ const ROUND_OVERSHOOT_EM = 0.012;
 const POINTED_OVERSHOOT_EM = 0.016;
 const HANGING_OVERSHOOT_EM = 0.05;
 
+/** The furthest any letter is hung past its margin, in em. */
+export const OPTICAL_OVERSHOOT_MAX_EM = Math.max(
+  ROUND_OVERSHOOT_EM,
+  POINTED_OVERSHOOT_EM,
+  HANGING_OVERSHOOT_EM
+);
+
 function opticalOvershootEm(char: string | undefined): number {
   if (char === undefined) return 0;
   if (HANGING_CHARS.has(char)) return HANGING_OVERSHOOT_EM;

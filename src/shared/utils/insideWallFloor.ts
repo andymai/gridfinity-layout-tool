@@ -79,6 +79,17 @@ function hasShiftedDivider(params: BinParams): boolean {
  * it: held below the compartment's own top (a divider's, when it has one) and
  * to half its narrowest span. Empty when the fillet feature does not run.
  */
+/** Mirrors the worker's `interiorFilletApplies`: whether any fillet is built. */
+export function interiorFilletBuilt(params: BinParams): boolean {
+  return (
+    interiorFilletRadiusMm(params) > 0 &&
+    params.style === 'standard' &&
+    !params.base.solid &&
+    !isNestingBase(params.base) &&
+    !isLiteFloorOpen(params)
+  );
+}
+
 function builtFilletRadii(
   params: BinParams,
   dims: FloorDims,
@@ -86,9 +97,8 @@ function builtFilletRadii(
   raises: ReadonlyMap<number, number>
 ): Map<number, number> {
   const out = new Map<number, number>();
+  if (!interiorFilletBuilt(params)) return out;
   const requested = interiorFilletRadiusMm(params);
-  if (requested === 0 || params.style !== 'standard' || params.base.solid) return out;
-  if (isNestingBase(params.base) || isLiteFloorOpen(params)) return out;
   const ids = new Set(params.compartments.cells);
   const zTop =
     ids.size > 1

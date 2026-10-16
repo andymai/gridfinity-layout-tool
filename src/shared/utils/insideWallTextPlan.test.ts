@@ -97,6 +97,12 @@ describe('insideWallBounds', () => {
     expect(insideWallBounds(p, DIMS, 'back')?.maxZ).toBeLessThan(DIMS.wallHeight - 4.5);
   });
 
+  it('ignores a saved fillet radius on a body that builds no fillet', () => {
+    const p = params({ style: 'slotted', interiorFilletMm: 15 });
+    const bounds = insideWallBounds(p, DIMS, 'back');
+    expect(bounds?.maxU).toBeCloseTo(DIMS.innerW / 2 - (3.75 - 1.2), 6);
+  });
+
   it('starts at the base floor, leaving raised floors and the fillet to the obstacles', () => {
     const p = params({
       interiorFilletMm: 2,
@@ -171,7 +177,32 @@ describe('insideWallSegments', () => {
       const [left, right] = insideWallSegments(p, DIMS, 'back', bounds);
       return right.minU - left.maxU;
     };
-    const acute = Math.PI / 2 - Math.atan2(40, DIMS.innerD);
-    expect(tilted(4) - tilted(0)).toBeCloseTo((2 * 4) / Math.tan(acute / 2), 6);
+    // Each corner gets its own reach: longer in the acute one, shorter in the
+    // obtuse one.
+    const tilt = Math.atan2(40, DIMS.innerD);
+    const along = (angle: number): number => 4 / Math.tan(angle / 2);
+    expect(tilted(4) - tilted(0)).toBeCloseTo(
+      along(Math.PI / 2 - tilt) + along(Math.PI / 2 + tilt),
+      6
+    );
+  });
+
+  it('moves a tilted joint by how far the divider travels across an embossed caption', () => {
+    const p = params({
+      compartments: {
+        ...DEFAULT_BIN_PARAMS.compartments,
+        cols: 2,
+        rows: 1,
+        cells: [0, 1],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: -20, offsetEnd: 20 }],
+      },
+    });
+    const bounds = insideWallBounds(p, DIMS, 'back');
+    if (!bounds) throw new Error('no bounds');
+    const gap = (reach: number): number => {
+      const [left, right] = insideWallSegments(p, DIMS, 'back', bounds, reach);
+      return right.minU - left.maxU;
+    };
+    expect(gap(1.5) - gap(0)).toBeCloseTo((1.5 * 40) / DIMS.innerD, 6);
   });
 });
