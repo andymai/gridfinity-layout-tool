@@ -92,4 +92,21 @@ describe('floorObstacles', () => {
     );
     expect(overhung.maxZ).toBeGreaterThan(nominal.maxZ + 5);
   });
+
+  it('covers the whole wall at full fillet height when a divider is shifted', () => {
+    const p = params({
+      interiorFilletMm: 15,
+      compartments: grid({
+        cols: 2,
+        rows: 1,
+        cells: [0, 1],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 30, offsetEnd: 30 }],
+      }),
+    });
+    const front = floorObstacles(p, { ...DIMS, interiorHeight: 35 }, 'front');
+    expect(front).toHaveLength(1);
+    expect(front[0].minU).toBeCloseTo(-DIMS.innerW / 2, 6);
+    expect(front[0].maxU).toBeCloseTo(DIMS.innerW / 2, 6);
+    expect(front[0].maxZ).toBeGreaterThanOrEqual(resolveBinFloorMm(p) + 14.9);
+  });
 });

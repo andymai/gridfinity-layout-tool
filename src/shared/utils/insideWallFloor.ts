@@ -63,7 +63,17 @@ export function builtFloorRaises(
   return out;
 }
 
-/** Every compartment with its cell bounds. */
+/**
+ * A divider shifted off its grid line moves compartment edges along the wall
+ * and grows one neighbour past its cells, which the cell-based spans below do
+ * not see. Such bins fall back to bounds that cover any shift.
+ */
+function hasShiftedDivider(params: BinParams): boolean {
+  return (params.compartments.dividerOverrides ?? []).some(
+    (o) => o.offsetStart !== 0 || o.offsetEnd !== 0 || (o.rakeDeg ?? 0) !== 0
+  );
+}
+
 /**
  * Each compartment's floor fillet radius, no larger than `finishPlan` builds
  * it: held below the compartment's own top (a divider's, when it has one) and
@@ -95,12 +105,13 @@ function builtFilletRadii(
     width: (dims.innerW + walls) / params.gridUnitMm,
     depth: (dims.innerD + walls) / (params.gridUnitMmY ?? params.gridUnitMm),
   });
+  const shifted = hasShiftedDivider(params);
   for (const id of ids) {
     const zFloor = floorZ + (raises.get(id) ?? 0);
     const radius = Math.min(
       requested,
       zTop - zFloor - INTERIOR_FILLET_HEADROOM_MM,
-      (spans.get(id) ?? Infinity) / 2
+      shifted ? Infinity : (spans.get(id) ?? Infinity) / 2
     );
     if (radius > 0) out.set(id, radius);
   }
@@ -129,17 +140,25 @@ export function floorObstacles(params: BinParams, dims: FloorDims, side: WallTex
     if (side === 'left') return cells[i * cols];
     return cells[i * cols + cols - 1];
   };
-  const out: WallRect[] = [];
-  for (let i = 0; i < count; i++) {
+  const rises = Array.from({ length: count }, (_, i) => {
     const id = idAt(i);
-    const rise = (raises.get(id) ?? 0) + (fillets.get(id) ?? 0);
-    if (rise <= 0) continue;
+    return (raises.get(id) ?? 0) + (fillets.get(id) ?? 0);
+  });
+  if (hasShiftedDivider(params)) {
+    const highest = Math.max(...rises);
+    return highest > 0
+      ? [{ minU: -span / 2, maxU: span / 2, minZ: -Infinity, maxZ: floorZ + highest }]
+      : [];
+  }
+  const out: WallRect[] = [];
+  rises.forEach((rise, i) => {
+    if (rise <= 0) return;
     out.push({
       minU: -span / 2 + i * pitch,
       maxU: -span / 2 + (i + 1) * pitch,
       minZ: -Infinity,
       maxZ: floorZ + rise,
     });
-  }
+  });
   return out;
 }
