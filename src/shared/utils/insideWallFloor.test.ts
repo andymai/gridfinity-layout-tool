@@ -79,4 +79,17 @@ describe('floorObstacles', () => {
     );
     expect(clamped.maxZ).toBeLessThan(DIMS.interiorHeight);
   });
+
+  it('sizes the fillet from the cavity an overhang widens, not the nominal grid', () => {
+    const fillet = { interiorFilletMm: 15, width: 0.5, depth: 2, height: 6 };
+    const narrow = { innerW: 21 - 0.5 - 2.4, innerD: DIMS.innerD, interiorHeight: 35 };
+    const wide = { ...narrow, innerW: narrow.innerW + 20 };
+    const [nominal] = floorObstacles(params(fillet), narrow, 'front');
+    const [overhung] = floorObstacles(
+      params({ ...fillet, overhang: { left: 10, right: 10, front: 0, back: 0, feet: false } }),
+      wide,
+      'front'
+    );
+    expect(overhung.maxZ).toBeGreaterThan(nominal.maxZ + 5);
+  });
 });

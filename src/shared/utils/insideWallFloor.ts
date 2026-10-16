@@ -11,6 +11,7 @@ import {
   compartmentHasTiltedEdge,
   isNestingBase,
 } from '@/shared/types/bin';
+import { GRIDFINITY } from '@/shared/constants/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import {
   INTERIOR_FILLET_HEADROOM_MM,
@@ -86,7 +87,14 @@ function builtFilletRadii(
           resolveCompartmentDividerHeight(params.compartments.dividerHeight, dims.interiorHeight)
         )
       : dims.interiorHeight;
-  const spans = narrowestCavitySpansMm(params);
+  // The span helper sizes cells from the grid; hand it the cavity this bin
+  // really has, which an overhang widens.
+  const walls = 2 * params.wallThickness + GRIDFINITY.TOLERANCE;
+  const spans = narrowestCavitySpansMm({
+    ...params,
+    width: (dims.innerW + walls) / params.gridUnitMm,
+    depth: (dims.innerD + walls) / (params.gridUnitMmY ?? params.gridUnitMm),
+  });
   for (const id of ids) {
     const zFloor = floorZ + (raises.get(id) ?? 0);
     const radius = Math.min(
