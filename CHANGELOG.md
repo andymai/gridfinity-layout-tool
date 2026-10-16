@@ -1,5 +1,27 @@
 # Changelog
 
+## [4.514.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.513.0...gridfinity-layout-tool-v4.514.0) (2026-10-16)
+
+
+### Features
+
+* **seo:** add drawer size pages for IKEA Alex and Milwaukee Packout ([#4594](https://github.com/andymai/gridfinity-layout-tool/issues/4594)) ([c206559](https://github.com/andymai/gridfinity-layout-tool/commit/c20655914165c8800b24d47297e352ca6df231a5))
+* **seo:** add drawer size pages for IKEA Kallax, Malm and Helmer ([#4595](https://github.com/andymai/gridfinity-layout-tool/issues/4595)) ([7353f04](https://github.com/andymai/gridfinity-layout-tool/commit/7353f0495ae408df4be42e267d8bf0ecfa961014))
+* **seo:** date each content page in the sitemap by its own last edit ([#4599](https://github.com/andymai/gridfinity-layout-tool/issues/4599)) ([1efa8a2](https://github.com/andymai/gridfinity-layout-tool/commit/1efa8a2d710ce5a38a57ec59c54e81f99ea96811))
+* **seo:** open the planner sized to a drawer from a link ([#4593](https://github.com/andymai/gridfinity-layout-tool/issues/4593)) ([1fc7a2a](https://github.com/andymai/gridfinity-layout-tool/commit/1fc7a2a950630148ce9c3406124fb9dd5b27c74f))
+* **seo:** promise the guide and free planner in the what-is-gridfinity snippet ([#4596](https://github.com/andymai/gridfinity-layout-tool/issues/4596)) ([88a0c5f](https://github.com/andymai/gridfinity-layout-tool/commit/88a0c5f805305dc9cb455416b5516c58d4878f02))
+
+
+### Bug Fixes
+
+* **community:** return 404 for missing design pages and drop homepage SEO tags ([#4598](https://github.com/andymai/gridfinity-layout-tool/issues/4598)) ([515e666](https://github.com/andymai/gridfinity-layout-tool/commit/515e6663d8e5b180fdf9d4421ff39f730ff294d6))
+* **seo:** tidy structured data, descriptions and internal links ([#4600](https://github.com/andymai/gridfinity-layout-tool/issues/4600)) ([a9bdc9d](https://github.com/andymai/gridfinity-layout-tool/commit/a9bdc9db5b4a6cc8ea0ce774a08bd171e360ceed))
+
+
+### Performance
+
+* **seo:** load content-page hero images eagerly, as WebP ([#4597](https://github.com/andymai/gridfinity-layout-tool/issues/4597)) ([5da8694](https://github.com/andymai/gridfinity-layout-tool/commit/5da86944293caa91dc3314fd5dffcc8c176267c6))
+
 ## [4.513.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.512.0...gridfinity-layout-tool-v4.513.0) (2026-10-15)
 
 
