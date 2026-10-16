@@ -1,0 +1,23 @@
+src/shared/utils/insideWallFloor.test.ts
+  s_2734dd355ac6f2::t_f437db43f1c5fa 95-111
+src/shared/utils/insideWallFloor.ts
+  s_2734dd355ac6f2::t_f437db43f1c5fa 67-72,74-76,108,114,143,145-155,162
+  s_2734dd355ac6f2::t_35b88763da875d 73
+  s_2734dd355ac6f2::t_010c9582a2eb4f 66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "511dda996af24dda1dffb15a378887b661daa20e",
+  "prompts": {},
+  "sessions": {
+    "s_2734dd355ac6f2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "abe22951-158a-43ff-bfb0-2549305b6eb3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
