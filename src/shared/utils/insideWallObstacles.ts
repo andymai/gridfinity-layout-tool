@@ -27,7 +27,7 @@ import {
   taperInsetAt,
 } from '@/shared/utils/overhang';
 import { labelTabFootprints } from '@/shared/utils/labelTabPlan';
-import { interiorFilletCornerMm } from '@/shared/utils/interiorFillet';
+import { interiorFilletCornerMm, interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
 import {
@@ -113,7 +113,7 @@ export function scoopRampsApply(params: BinParams): boolean {
  * longer exists or has a tilted edge are dropped, and the rest are held below
  * the ceiling.
  */
-export function builtFloorRaises(
+function builtFloorRaises(
   params: BinParams,
   floorZ: number,
   interiorHeight: number
@@ -243,6 +243,38 @@ function scoopEndObstacles(
         maxZ: placement.isOuter && hasLip ? Infinity : compFloorZ + profile.height,
       });
     }
+  }
+  return out;
+}
+
+/**
+ * A raised compartment floor, and the fillet on it, along the stretch of this
+ * wall that compartment occupies. The slab is built within its own cells.
+ */
+function raisedFloorObstacles(
+  params: BinParams,
+  dims: InsideWallDims,
+  side: WallTextSide
+): WallRect[] {
+  const floorZ = resolveBinFloorMm(params);
+  const raises = builtFloorRaises(params, floorZ, dims.interiorHeight);
+  if (raises.size === 0) return [];
+  const { cols, rows } = params.compartments;
+  const fillet = interiorFilletRadiusMm(params);
+  const out: WallRect[] = [];
+  for (const { id, bounds } of compartmentBounds(params)) {
+    const raise = raises.get(id);
+    if (raise === undefined || !touchesWall(params, bounds, side)) continue;
+    const [first, last, count, span] = alongX(side)
+      ? [bounds.minCol, bounds.maxCol, cols, dims.innerW]
+      : [bounds.minRow, bounds.maxRow, rows, dims.innerD];
+    const pitch = span / count;
+    out.push({
+      minU: -span / 2 + first * pitch,
+      maxU: -span / 2 + (last + 1) * pitch,
+      minZ: -Infinity,
+      maxZ: floorZ + raise + fillet,
+    });
   }
   return out;
 }
@@ -514,6 +546,7 @@ export function insideWallObstacles(
   reachMm: number
 ): WallRect[] {
   return [
+    ...raisedFloorObstacles(params, dims, side),
     ...labelTabObstacles(params, dims, side, reachMm),
     ...slideRailObstacles(params, dims, side),
     ...labelSlotObstacles(params, dims, side),

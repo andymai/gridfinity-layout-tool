@@ -166,7 +166,7 @@ export function WallSurfaceSection() {
                 // Picks a face, not a wall, so the wall name stays out of the
                 // control's own subtree.
                 const faceAria = t('binDesigner.walls.text.faceAria', { side: sideName });
-                const insideBlocked = state.insideFaceDisabledReasons[side];
+                const insideBlock = state.insideFaceBlocks[side];
                 return (
                   <div key={side} className="space-y-1">
                     <FieldLabel>{sideName}</FieldLabel>
@@ -187,15 +187,15 @@ export function WallSurfaceSection() {
                       options={WALL_TEXT_FACES.map((face) => ({
                         value: face,
                         label: t(`binDesigner.walls.text.face.${face}`),
-                        ...(face === 'inside' && insideBlocked !== undefined
-                          ? { disabled: true, title: insideBlocked }
-                          : {}),
+                        disabled: face === 'inside' && insideBlock !== null,
                       }))}
                     />
+                    {insideBlock === 'scoop' && <Hint>{state.insideFaceScoopNote}</Hint>}
                   </div>
                 );
               })}
             </div>
+            {state.insideFaceSolidNote !== undefined && <Hint>{state.insideFaceSolidNote}</Hint>}
             {state.hasAnyWallText && (
               <>
                 <TextFinishGrid

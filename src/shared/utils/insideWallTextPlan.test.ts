@@ -97,35 +97,12 @@ describe('insideWallBounds', () => {
     expect(insideWallBounds(p, DIMS, 'back')?.maxZ).toBeLessThan(DIMS.wallHeight - 4.5);
   });
 
-  it('ignores floor raises the generator would not build, and clamps the rest', () => {
-    const floor = (over: Partial<BinParams['compartments']>): number | undefined =>
-      insideWallBounds(
-        params({ compartments: { ...DEFAULT_BIN_PARAMS.compartments, ...over } }),
-        DIMS,
-        'back'
-      )?.minZ;
-    const bare = floor({});
-    expect(bare).toBeDefined();
-    expect(floor({ floorRaises: [0, 12] })).toBeCloseTo(bare ?? 0, 6);
-    const clamped = floor({ floorRaises: [100] });
-    expect(clamped).toBeLessThan(DIMS.wallHeight - 2.6);
-  });
-
-  it('ignores floor raises kept on a body that builds no raised floors', () => {
-    const compartments = { ...DEFAULT_BIN_PARAMS.compartments, floorRaises: [6] };
-    const slotted = params({ style: 'slotted', compartments });
-    expect(insideWallBounds(slotted, DIMS, 'back')?.minZ).toBeCloseTo(
-      resolveBinFloorMm(slotted),
-      6
-    );
-  });
-
-  it('rises above the highest raised compartment floor and its fillet', () => {
+  it('rises above the floor fillet, leaving raised floors to the obstacles', () => {
     const p = params({
       interiorFilletMm: 2,
       compartments: { ...DEFAULT_BIN_PARAMS.compartments, floorRaises: [3] },
     });
-    expect(insideWallBounds(p, DIMS, 'back')?.minZ).toBeCloseTo(resolveBinFloorMm(p) + 5, 6);
+    expect(insideWallBounds(p, DIMS, 'back')?.minZ).toBeCloseTo(resolveBinFloorMm(p) + 2, 6);
   });
 });
 

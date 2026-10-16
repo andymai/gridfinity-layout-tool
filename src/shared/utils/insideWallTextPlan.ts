@@ -41,7 +41,6 @@ import { resolveScoopSides } from '@/shared/utils/scoopCalculations';
 import { SLIDE_BEARING_MM, SLIDE_SHELF_TIP_MM } from '@/shared/utils/slideLidPlan';
 import { resolveBinFloorMm, resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import {
-  builtFloorRaises,
   cavityCornerRadiusMm,
   scoopRampsApply,
   type InsideWallDims,
@@ -126,9 +125,8 @@ export function insideWallBounds(
   const wallSpan = side === 'front' || side === 'back' ? dims.innerW : dims.innerD;
   const uLimit = wallSpan / 2 - cavityCornerRadiusMm(params);
 
-  const floorZ = resolveBinFloorMm(params);
-  const raises = builtFloorRaises(params, floorZ, dims.interiorHeight);
-  const floorTop = floorZ + Math.max(0, ...raises.values()) + interiorFilletRadiusMm(params);
+  // Raised compartment floors are obstacles along their own stretch of wall.
+  const floorTop = resolveBinFloorMm(params) + interiorFilletRadiusMm(params);
   const minZ = Math.max(floorTop, taperBandTop(params, side, dims.wallHeight));
 
   const lipKeepOut = params.base.stackingLip ? LIP_TAPER_WIDTH : TOP_KEEP_OUT;

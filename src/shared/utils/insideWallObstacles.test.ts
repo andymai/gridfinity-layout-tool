@@ -7,6 +7,7 @@ import { planHingeLid } from './hingeLidPlan';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 import { resolveLidHinge } from '@/shared/types/bin';
+import { resolveBinFloorMm } from './slotMath';
 
 const DIMS: InsideWallDims = {
   innerW: 81.1,
@@ -220,5 +221,38 @@ describe('insideWallObstacles, features beyond the corner', () => {
       0
     );
     expect(collared.minZ).toBeCloseTo(plain.minZ, 6);
+  });
+
+  it('keeps a raised floor and its fillet clear only along its own compartment', () => {
+    const p = params({
+      interiorFilletMm: 2,
+      compartments: {
+        ...DEFAULT_BIN_PARAMS.compartments,
+        cols: 1,
+        rows: 2,
+        cells: [0, 1],
+        floorRaises: [3],
+      },
+    });
+    const floor = resolveBinFloorMm(p);
+    expect(insideWallObstacles(p, DIMS, 'back', 0)).toEqual([]);
+    const [front] = insideWallObstacles(p, DIMS, 'front', 0);
+    expect(front.maxZ).toBeCloseTo(floor + 5, 6);
+    const [left] = insideWallObstacles(p, DIMS, 'left', 0);
+    expect(left.minU).toBeCloseTo(-DIMS.innerD / 2, 6);
+    expect(left.maxU).toBeCloseTo(0, 6);
+  });
+
+  it('ignores floor raises the generator would not build, and clamps the rest', () => {
+    const raised = (over: Partial<BinParams>): WallRect[] =>
+      insideWallObstacles(params(over), DIMS, 'back', 0);
+    const compartments = (floorRaises: number[]) => ({
+      ...DEFAULT_BIN_PARAMS.compartments,
+      floorRaises,
+    });
+    expect(raised({ compartments: compartments([0, 12]) })).toEqual([]);
+    expect(raised({ style: 'slotted', compartments: compartments([6]) })).toEqual([]);
+    const [clamped] = raised({ compartments: compartments([100]) });
+    expect(clamped.maxZ).toBeLessThan(DIMS.wallHeight - 2.6);
   });
 });

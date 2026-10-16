@@ -268,19 +268,15 @@ export function useWallsSection() {
   ) as Record<WallTextSide, WallTextFace>;
   const anyWallTextInside = WALL_TEXT_SIDES.some((side) => wallTextFaces[side] === 'inside');
   const insideTextAnchor: TextAnchor = params.surfaceText?.insideStyle?.anchor ?? wallTextAnchor;
-  const insideFaceDisabledReasons = Object.fromEntries(
-    WALL_TEXT_SIDES.map((side) => {
-      const block = insideWallTextBlock(params, side);
-      return [
-        side,
-        block === 'solid'
-          ? t('binDesigner.walls.text.face.solidNote')
-          : block === 'scoop'
-            ? t('binDesigner.walls.text.face.scoopNote')
-            : undefined,
-      ];
-    })
-  ) as Record<WallTextSide, string | undefined>;
+  const insideFaceBlocks = Object.fromEntries(
+    WALL_TEXT_SIDES.map((side) => [side, insideWallTextBlock(params, side)])
+  ) as Record<WallTextSide, ReturnType<typeof insideWallTextBlock>>;
+  // Solid blocks every wall at once, so it is said once for the section; a
+  // scoop blocks its own wall and is said under that wall.
+  const insideFaceSolidNote = WALL_TEXT_SIDES.some((side) => insideFaceBlocks[side] === 'solid')
+    ? t('binDesigner.walls.text.face.solidNote')
+    : undefined;
+  const insideFaceScoopNote = t('binDesigner.walls.text.face.scoopNote');
 
   // Wall-text is gated behind a toggle (matching the sibling cutout/handle
   // sections). The open state is UI-only — deriving it as `local || hasText`
@@ -441,7 +437,9 @@ export function useWallsSection() {
       wallTextFaces,
       anyWallTextInside,
       insideTextAnchor,
-      insideFaceDisabledReasons,
+      insideFaceBlocks,
+      insideFaceSolidNote,
+      insideFaceScoopNote,
       isWallTextOpen,
       labelSlotsEnabled: labelSlots.enabled,
       labelSlotSides: labelSlots.sides,

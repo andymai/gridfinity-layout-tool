@@ -222,6 +222,7 @@ describe('WallSurfaceSection', () => {
       render(<WallSurfaceSection />);
       const frontFace = screen.getByRole('radiogroup', { name: 'Front wall text face' });
       expect(within(frontFace).getByRole('radio', { name: 'Inside' })).toBeDisabled();
+      expect(screen.getAllByText('A solid bin has no inside face.')).toHaveLength(1);
     });
 
     it('keeps a scooped inside wall reachable from the keyboard to move it back outside', () => {
@@ -257,11 +258,11 @@ describe('WallSurfaceSection', () => {
           { name: 'Inside' }
         );
       expect(inside('Front')).toBeDisabled();
-      expect(inside('Front')).toHaveAttribute(
-        'title',
-        "The finger scoop covers this wall's inside face."
-      );
       expect(inside('Back')).toBeEnabled();
+      // Said inline: a disabled segment takes no pointer, so a hover title would never show.
+      expect(screen.getAllByText("The finger scoop covers this wall's inside face.")).toHaveLength(
+        1
+      );
     });
   });
 
