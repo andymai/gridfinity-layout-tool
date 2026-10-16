@@ -97,12 +97,12 @@ describe('insideWallBounds', () => {
     expect(insideWallBounds(p, DIMS, 'back')?.maxZ).toBeLessThan(DIMS.wallHeight - 4.5);
   });
 
-  it('rises above the floor fillet, leaving raised floors to the obstacles', () => {
+  it('starts at the base floor, leaving raised floors and the fillet to the obstacles', () => {
     const p = params({
       interiorFilletMm: 2,
       compartments: { ...DEFAULT_BIN_PARAMS.compartments, floorRaises: [3] },
     });
-    expect(insideWallBounds(p, DIMS, 'back')?.minZ).toBeCloseTo(resolveBinFloorMm(p) + 2, 6);
+    expect(insideWallBounds(p, DIMS, 'back')?.minZ).toBeCloseTo(resolveBinFloorMm(p), 6);
   });
 });
 

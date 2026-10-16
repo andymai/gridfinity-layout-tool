@@ -202,6 +202,11 @@ describe('inside-facing wall text', () => {
     expect(computeWallTextLayouts(inside(), { ...DIMS, solid: true }, measurer)).toEqual([]);
   });
 
+  it('drops an inside caption an offset pushes out of every clear region', () => {
+    const shoved = inside({ insideStyle: { anchor: 'top-left', offset: { x: 500, y: 0 } } });
+    expect(computeWallTextLayouts(shoved, DIMS, measurer)).toEqual([]);
+  });
+
   it('uses the inside style only for walls that face inside', () => {
     const layouts = computeWallTextLayouts(
       params({

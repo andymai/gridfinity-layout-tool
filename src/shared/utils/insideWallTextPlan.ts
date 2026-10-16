@@ -34,7 +34,7 @@ import { CUTOUT_BORDER_WIDTH, TOP_KEEP_OUT } from '@/shared/constants/wallBands'
 import { LID_KEEPOUT_CLEARANCE } from '@/shared/constants/lidKeepout';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { resolveOverhang } from '@/shared/utils/overhang';
-import { interiorFilletCornerMm, interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
+import { interiorFilletCornerMm } from '@/shared/utils/interiorFillet';
 import { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
 import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 import { resolveScoopSides } from '@/shared/utils/scoopCalculations';
@@ -125,9 +125,8 @@ export function insideWallBounds(
   const wallSpan = side === 'front' || side === 'back' ? dims.innerW : dims.innerD;
   const uLimit = wallSpan / 2 - cavityCornerRadiusMm(params);
 
-  // Raised compartment floors are obstacles along their own stretch of wall.
-  const floorTop = resolveBinFloorMm(params) + interiorFilletRadiusMm(params);
-  const minZ = Math.max(floorTop, taperBandTop(params, side, dims.wallHeight));
+  // Raised floors and the fillet are obstacles along their own cells.
+  const minZ = Math.max(resolveBinFloorMm(params), taperBandTop(params, side, dims.wallHeight));
 
   const lipKeepOut = params.base.stackingLip ? LIP_TAPER_WIDTH : TOP_KEEP_OUT;
   const maxZ = dims.wallHeight - Math.max(lipKeepOut, lidBandBelowWallTopMm(params, side));

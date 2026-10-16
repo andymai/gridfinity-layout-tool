@@ -9,8 +9,6 @@
 
 import type { BinParams, WallTextSide } from '@/shared/types/bin';
 import {
-  MAX_COMPARTMENT_FLOOR_RAISE_MM,
-  MIN_RAISED_CAVITY_MM,
   compartmentHasTiltedEdge,
   isNestingBase,
   isRectangularCompartment,
@@ -27,7 +25,7 @@ import {
   taperInsetAt,
 } from '@/shared/utils/overhang';
 import { labelTabFootprints } from '@/shared/utils/labelTabPlan';
-import { interiorFilletCornerMm, interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
+import { interiorFilletCornerMm } from '@/shared/utils/interiorFillet';
 import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
 import {
@@ -56,6 +54,7 @@ import {
   safeCutoutCornerRadii,
 } from '@/shared/utils/wallCutoutPosition';
 import type { WallRect } from '@/shared/utils/maximalClearRects';
+import { builtFloorRaises, floorObstacles } from '@/shared/utils/insideWallFloor';
 
 const LIP_TAPER_WIDTH = GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER;
 
@@ -106,38 +105,6 @@ export function scoopRampsApply(params: BinParams): boolean {
   );
 }
 
-/**
- * Each compartment's floor raise as the generator builds it. Nothing on a body
- * the raised-floor feature skips (a raise survives a style change), and
- * otherwise as `resolveFloorRaises` does: requests for a compartment that no
- * longer exists or has a tilted edge are dropped, and the rest are held below
- * the ceiling.
- */
-function builtFloorRaises(
-  params: BinParams,
-  floorZ: number,
-  interiorHeight: number
-): Map<number, number> {
-  const out = new Map<number, number>();
-  const raises = params.compartments.floorRaises;
-  if (!raises || isPartialMask(params.cellMask)) return out;
-  if (params.style !== 'standard' || params.base.solid || params.base.tile === true) return out;
-  if (isLiteFloorOpen(params) || isNestingBase(params.base)) return out;
-  const ceiling = Math.min(
-    MAX_COMPARTMENT_FLOOR_RAISE_MM,
-    interiorHeight - floorZ - MIN_RAISED_CAVITY_MM
-  );
-  if (ceiling <= 0) return out;
-  const ids = new Set(params.compartments.cells);
-  raises.forEach((raise, id) => {
-    if (typeof raise !== 'number' || !Number.isFinite(raise) || raise <= 0) return;
-    if (!ids.has(id) || compartmentHasTiltedEdge(params.compartments, id)) return;
-    out.set(id, Math.min(raise, ceiling));
-  });
-  return out;
-}
-
-/** Every compartment with its cell bounds. */
 function compartmentBounds(params: BinParams): { id: number; bounds: ScoopCompartmentBounds }[] {
   const { cols, rows, cells } = params.compartments;
   if (cells.length !== cols * rows) {
@@ -243,38 +210,6 @@ function scoopEndObstacles(
         maxZ: placement.isOuter && hasLip ? Infinity : compFloorZ + profile.height,
       });
     }
-  }
-  return out;
-}
-
-/**
- * A raised compartment floor, and the fillet on it, along the stretch of this
- * wall that compartment occupies. The slab is built within its own cells.
- */
-function raisedFloorObstacles(
-  params: BinParams,
-  dims: InsideWallDims,
-  side: WallTextSide
-): WallRect[] {
-  const floorZ = resolveBinFloorMm(params);
-  const raises = builtFloorRaises(params, floorZ, dims.interiorHeight);
-  if (raises.size === 0) return [];
-  const { cols, rows } = params.compartments;
-  const fillet = interiorFilletRadiusMm(params);
-  const out: WallRect[] = [];
-  for (const { id, bounds } of compartmentBounds(params)) {
-    const raise = raises.get(id);
-    if (raise === undefined || !touchesWall(params, bounds, side)) continue;
-    const [first, last, count, span] = alongX(side)
-      ? [bounds.minCol, bounds.maxCol, cols, dims.innerW]
-      : [bounds.minRow, bounds.maxRow, rows, dims.innerD];
-    const pitch = span / count;
-    out.push({
-      minU: -span / 2 + first * pitch,
-      maxU: -span / 2 + (last + 1) * pitch,
-      minZ: -Infinity,
-      maxZ: floorZ + raise + fillet,
-    });
   }
   return out;
 }
@@ -546,7 +481,7 @@ export function insideWallObstacles(
   reachMm: number
 ): WallRect[] {
   return [
-    ...raisedFloorObstacles(params, dims, side),
+    ...floorObstacles(params, dims, side),
     ...labelTabObstacles(params, dims, side, reachMm),
     ...slideRailObstacles(params, dims, side),
     ...labelSlotObstacles(params, dims, side),

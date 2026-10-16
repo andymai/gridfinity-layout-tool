@@ -248,6 +248,21 @@ interface Candidate {
 }
 
 /**
+ * Whether the placed glyphs stay inside their region. An offset nudges them
+ * after the fit, and an inside region is bounded by real features (a divider,
+ * a shelf, the lid's parts) rather than by a margin.
+ */
+function inkFits(plan: TypeBlockPlan, availW: number, availD: number): boolean {
+  const eps = 1e-6;
+  return (
+    plan.minX >= -availW / 2 - eps &&
+    plan.maxX <= availW / 2 + eps &&
+    plan.minY >= -availD / 2 - eps &&
+    plan.maxY <= availD / 2 + eps
+  );
+}
+
+/**
  * Fit into each candidate rect, then pick by the anchor. A left or right
  * anchor first narrows to the leftmost or rightmost stretch between dividers
  * that holds the caption, as read from the caption's face. Then the vertical
@@ -276,7 +291,9 @@ function chooseCandidate(
         },
         measurer
       );
-      if (plan) fitted.push({ rect, segment, availW, availD, plan });
+      if (plan && (input.face === 'outside' || inkFits(plan, availW, availD))) {
+        fitted.push({ rect, segment, availW, availD, plan });
+      }
     }
   });
   if (fitted.length === 0) return null;
