@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'inside-wall-text',
+    date: '2026-10-16',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Wall text on the inside of a bin' },
+    body: {
+      en: 'Each wall’s text now has an Outside or Inside choice. Inside text reads from inside the bin, so a label on the back wall faces you when you open the drawer, and through-cut letters no longer read backwards. It starts near the rim and works around dividers, label tabs and lid parts. Find it under Wall text on the Style page.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'baseplate-per-layout',
     date: '2026-10-05',
     kind: 'improved',
