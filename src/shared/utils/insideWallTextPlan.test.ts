@@ -4,7 +4,7 @@ import { insideWallBounds, insideWallSegments, insideWallTextBlock } from './ins
 import type { InsideWallDims } from './insideWallObstacles';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
-import { resolveBinFloorMm } from './slotMath';
+import { resolveBinFloorMm, resolveCompartmentDividerHeight } from './slotMath';
 import { planHingeLid } from './hingeLidPlan';
 
 const DIMS: InsideWallDims = {
@@ -129,5 +129,49 @@ describe('insideWallSegments', () => {
     const sideBounds = insideWallBounds(p, DIMS, 'left');
     if (!sideBounds) throw new Error('no bounds');
     expect(insideWallSegments(p, DIMS, 'left', sideBounds)).toHaveLength(1);
+  });
+
+  it("widens a leaning divider's joint by its horizontal section", () => {
+    const grid = { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 1, cells: [0, 1] };
+    const gapAt = (rakeDeg: number): number => {
+      const p = params({
+        compartments: {
+          ...grid,
+          dividerHeight: 2,
+          dividerOverrides: [
+            { compartmentA: 0, compartmentB: 1, offsetStart: 0, offsetEnd: 0, rakeDeg },
+          ],
+        },
+      });
+      const bounds = insideWallBounds(p, DIMS, 'back');
+      if (!bounds) throw new Error('no bounds');
+      const [left, right] = insideWallSegments(p, DIMS, 'back', bounds);
+      return right.minU - left.maxU;
+    };
+    // The foot sweeps by the lean over the divider's height; on top of that the
+    // 1.2mm section doubles at 60 degrees.
+    const sweep = resolveCompartmentDividerHeight(2, DIMS.interiorHeight) * Math.tan(Math.PI / 3);
+    expect(gapAt(60) - gapAt(0)).toBeCloseTo(sweep + 1.2, 6);
+  });
+
+  it('keeps clear of the long reach of a fillet in an acute divider junction', () => {
+    const tilted = (interiorFilletMm: number): number => {
+      const p = params({
+        interiorFilletMm,
+        compartments: {
+          ...DEFAULT_BIN_PARAMS.compartments,
+          cols: 2,
+          rows: 1,
+          cells: [0, 1],
+          dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: -20, offsetEnd: 20 }],
+        },
+      });
+      const bounds = insideWallBounds(p, DIMS, 'back');
+      if (!bounds) throw new Error('no bounds');
+      const [left, right] = insideWallSegments(p, DIMS, 'back', bounds);
+      return right.minU - left.maxU;
+    };
+    const acute = Math.PI / 2 - Math.atan2(40, DIMS.innerD);
+    expect(tilted(4) - tilted(0)).toBeCloseTo((2 * 4) / Math.tan(acute / 2), 6);
   });
 });

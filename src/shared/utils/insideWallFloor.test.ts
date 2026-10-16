@@ -93,20 +93,27 @@ describe('floorObstacles', () => {
     expect(overhung.maxZ).toBeGreaterThan(nominal.maxZ + 5);
   });
 
-  it('covers the whole wall at full fillet height when a divider is shifted', () => {
+  it('spreads only the fillet along the wall when a divider is shifted', () => {
     const p = params({
       interiorFilletMm: 15,
       compartments: grid({
-        cols: 2,
+        cols: 3,
         rows: 1,
-        cells: [0, 1],
-        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 30, offsetEnd: 30 }],
+        cells: [0, 1, 2],
+        floorRaises: [0, 0, 4],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 6, offsetEnd: 6 }],
       }),
     });
+    const floor = resolveBinFloorMm(p);
     const front = floorObstacles(p, { ...DIMS, interiorHeight: 35 }, 'front');
-    expect(front).toHaveLength(1);
-    expect(front[0].minU).toBeCloseTo(-DIMS.innerW / 2, 6);
-    expect(front[0].maxU).toBeCloseTo(DIMS.innerW / 2, 6);
-    expect(front[0].maxZ).toBeGreaterThanOrEqual(resolveBinFloorMm(p) + 14.9);
+    const whole = front.filter(
+      (o) => o.minU <= -DIMS.innerW / 2 + 1e-6 && o.maxU >= DIMS.innerW / 2 - 1e-6
+    );
+    expect(whole).toHaveLength(1);
+    expect(whole[0].maxZ).toBeGreaterThanOrEqual(floor + 14.9);
+    expect(whole[0].maxZ).toBeLessThan(floor + 4 + 14.9);
+    const raised = front.filter((o) => o.maxZ > whole[0].maxZ + 1e-6);
+    expect(raised).toHaveLength(1);
+    expect(raised[0].minU).toBeCloseTo(DIMS.innerW / 6, 6);
   });
 });

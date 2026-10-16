@@ -170,10 +170,10 @@ function dividerCrossings(
   const cellD = innerD / rows;
   const lookup = buildOverrideLookup(params.compartments.dividerOverrides);
   const out: { lo: number; hi: number }[] = [];
-  const push = (at: number, halfSpan: number, sweep: number): void => {
+  const push = (at: number, halfSpan: number, sweep: number, reach: number): void => {
     out.push({
-      lo: at - halfSpan - flare + Math.min(0, sweep),
-      hi: at + halfSpan + flare + Math.max(0, sweep),
+      lo: at - halfSpan - reach + Math.min(0, sweep),
+      hi: at + halfSpan + reach + Math.max(0, sweep),
     });
   };
 
@@ -196,10 +196,18 @@ function dividerCrossings(
       const ov = lookup.get(run.pairKey);
       const start = pos + (ov?.offsetStart ?? 0);
       const end = pos + (ov?.offsetEnd ?? 0);
-      const halfSpan = crossingHalfSpan(thickness, (run.end - run.start) * runPitch, end - start);
+      const segLen = (run.end - run.start) * runPitch;
+      // A leaning divider keeps its thickness square to its own face, so its
+      // horizontal section, and the joint it leaves on the wall, is wider.
+      const rake = ((ov?.rakeDeg ?? 0) * Math.PI) / 180;
+      const halfSpan = crossingHalfSpan(thickness, segLen, end - start) / Math.cos(rake);
+      // In the acute corner a tilted divider makes with the wall, a fillet of
+      // radius r runs r / tan(angle / 2) along the wall, not r.
+      const acute = Math.PI / 2 - Math.atan2(Math.abs(end - start), segLen);
+      const reach = flare > 0 ? flare / Math.tan(acute / 2) : 0;
       const sweep = dividerFootDrift(ov, dividerTopZ);
-      if (atStart && run.start === 0) push(start, halfSpan, sweep);
-      if (!atStart && run.end === runLength) push(end, halfSpan, sweep);
+      if (atStart && run.start === 0) push(start, halfSpan, sweep, reach);
+      if (!atStart && run.end === runLength) push(end, halfSpan, sweep, reach);
     }
   }
   return out;

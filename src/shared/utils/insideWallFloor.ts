@@ -66,7 +66,7 @@ export function builtFloorRaises(
 /**
  * A divider shifted off its grid line moves compartment edges along the wall
  * and grows one neighbour past its cells, which the cell-based spans below do
- * not see. Such bins fall back to bounds that cover any shift.
+ * not see. Such bins fall back to a fillet bound that covers any shift.
  */
 function hasShiftedDivider(params: BinParams): boolean {
   return (params.compartments.dividerOverrides ?? []).some(
@@ -144,12 +144,6 @@ export function floorObstacles(params: BinParams, dims: FloorDims, side: WallTex
     const id = idAt(i);
     return (raises.get(id) ?? 0) + (fillets.get(id) ?? 0);
   });
-  if (hasShiftedDivider(params)) {
-    const highest = Math.max(...rises);
-    return highest > 0
-      ? [{ minU: -span / 2, maxU: span / 2, minZ: -Infinity, maxZ: floorZ + highest }]
-      : [];
-  }
   const out: WallRect[] = [];
   rises.forEach((rise, i) => {
     if (rise <= 0) return;
@@ -160,5 +154,11 @@ export function floorObstacles(params: BinParams, dims: FloorDims, side: WallTex
       maxZ: floorZ + rise,
     });
   });
+  // Only a compartment an override touches grows past its cells, and those
+  // carry no raise, so only the fillet has to spread along the wall.
+  const fillet = Math.max(0, ...fillets.values());
+  if (hasShiftedDivider(params) && fillet > 0) {
+    out.push({ minU: -span / 2, maxU: span / 2, minZ: -Infinity, maxZ: floorZ + fillet });
+  }
   return out;
 }
