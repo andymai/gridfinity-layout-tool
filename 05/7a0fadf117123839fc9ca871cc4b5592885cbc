@@ -1,0 +1,23 @@
+src/shared/utils/insideWallObstacles.test.ts
+  s_2734dd355ac6f2::t_210c8250ebdbf7 145-147
+src/shared/utils/insideWallTextPlan.ts
+  s_2734dd355ac6f2::t_210c8250ebdbf7 45,127
+src/shared/utils/insideWallObstacles.ts
+  s_2734dd355ac6f2::t_210c8250ebdbf7 30,82-93,434-435,446,453-454
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "057a0fadf117123839fc9ca871cc4b5592885cbc",
+  "prompts": {},
+  "sessions": {
+    "s_2734dd355ac6f2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "abe22951-158a-43ff-bfb0-2549305b6eb3",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
