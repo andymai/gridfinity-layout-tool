@@ -56,11 +56,7 @@ import {
   BOTTOM_SOLID_SKIRT,
   CUTOUT_BORDER_WIDTH,
 } from '@/shared/constants/wallBands';
-import {
-  OPTICAL_OVERSHOOT_MAX_EM,
-  planTypeBlock,
-  type TypeMeasurer,
-} from '@/shared/utils/typePlan';
+import { planTypeBlock, type TypeMeasurer } from '@/shared/utils/typePlan';
 
 const BOX_CORNER_RADIUS = GRIDFINITY.BOX_CORNER_RADIUS;
 
@@ -252,22 +248,56 @@ interface Candidate {
 }
 
 /**
- * Whether the placed glyphs stay inside their region. An offset nudges them
- * after the fit, and an inside region is bounded by real features (a divider,
- * a shelf, the lid's parts) rather than by a margin.
+ * The placed glyphs moved wholly inside their region, or null when they are
+ * wider or taller than it.
+ *
+ * An inside region is bounded by real features (a divider, a shelf, the lid's
+ * parts) rather than by a margin, so nothing may cross it. Two things carry
+ * glyphs past it after the fit: optical alignment, which hangs a round or
+ * pointed end letter past the margin on purpose, and an offset. Sliding the
+ * block back keeps the caption flush against the edge it was reaching for.
  */
-function inkFits(plan: TypeBlockPlan, availW: number, availD: number): boolean {
+function settleInside(plan: TypeBlockPlan, availW: number, availD: number): TypeBlockPlan | null {
   const eps = 1e-6;
-  // Optical alignment hangs a round or pointed first or last letter slightly
-  // past the margin on purpose; the region's border more than covers it.
-  const largest = Math.max(...plan.lines.map((line) => line.fontSize));
-  const overshoot = OPTICAL_OVERSHOOT_MAX_EM * largest + eps;
-  return (
-    plan.minX >= -availW / 2 - overshoot &&
-    plan.maxX <= availW / 2 + overshoot &&
-    plan.minY >= -availD / 2 - eps &&
-    plan.maxY <= availD / 2 + eps
+  if (plan.maxX - plan.minX > availW + eps || plan.maxY - plan.minY > availD + eps) return null;
+  const dx = Math.max(0, -availW / 2 - plan.minX) - Math.max(0, plan.maxX - availW / 2);
+  const dy = Math.max(0, -availD / 2 - plan.minY) - Math.max(0, plan.maxY - availD / 2);
+  if (dx === 0 && dy === 0) return plan;
+  return {
+    ...plan,
+    minX: plan.minX + dx,
+    maxX: plan.maxX + dx,
+    minY: plan.minY + dy,
+    maxY: plan.maxY + dy,
+    lines: plan.lines.map((line) => ({
+      ...line,
+      x: line.x + dx,
+      baselineY: line.baselineY + dy,
+      inkMinX: line.inkMinX + dx,
+      inkMaxX: line.inkMaxX + dx,
+    })),
+  };
+}
+
+/** Fit a caption into one region; inside, wholly within it. */
+function fitRegion(
+  input: SideInput,
+  availW: number,
+  availD: number,
+  sharedSizeMm: number | undefined,
+  measurer: TypeMeasurer
+): TypeBlockPlan | null {
+  const plan = planTypeBlock(
+    {
+      text: input.text,
+      style: input.style,
+      host: { width: availW, depth: availD },
+      ...(sharedSizeMm !== undefined ? { sharedSizeMm } : {}),
+    },
+    measurer
   );
+  if (!plan || input.face === 'outside') return plan;
+  return settleInside(plan, availW, availD);
 }
 
 /**
@@ -284,24 +314,14 @@ function chooseCandidate(
   sharedSizeMm: number | undefined,
   measurer: TypeMeasurer
 ): Candidate | null {
-  const { text, style } = input;
+  const { style } = input;
   const fitted: Candidate[] = [];
   input.segments.forEach((rects, segment) => {
     for (const rect of rects) {
       const availW = rect.maxU - rect.minU;
       const availD = rect.maxZ - rect.minZ;
-      const plan = planTypeBlock(
-        {
-          text,
-          style,
-          host: { width: availW, depth: availD },
-          ...(sharedSizeMm !== undefined ? { sharedSizeMm } : {}),
-        },
-        measurer
-      );
-      if (plan && (input.face === 'outside' || inkFits(plan, availW, availD))) {
-        fitted.push({ rect, segment, availW, availD, plan });
-      }
+      const plan = fitRegion(input, availW, availD, sharedSizeMm, measurer);
+      if (plan) fitted.push({ rect, segment, availW, availD, plan });
     }
   });
   if (fitted.length === 0) return null;

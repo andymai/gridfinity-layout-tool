@@ -207,9 +207,48 @@ describe('inside-facing wall text', () => {
     expect(computeWallTextLayouts(flush, DIMS, measurer)).toHaveLength(1);
   });
 
-  it('drops an inside caption an offset pushes out of every clear region', () => {
-    const shoved = inside({ insideStyle: { anchor: 'top-left', offset: { x: 500, y: 0 } } });
-    expect(computeWallTextLayouts(shoved, DIMS, measurer)).toEqual([]);
+  const contained = (l: { plan: { minX: number; maxX: number }; availW: number }): boolean =>
+    l.plan.minX >= -l.availW / 2 - 1e-6 && l.plan.maxX <= l.availW / 2 + 1e-6;
+
+  it('pulls a caption an offset pushes past its edge back inside the region', () => {
+    const [layout] = computeWallTextLayouts(
+      inside({ insideStyle: { anchor: 'left', margin: 0, offset: { x: -5, y: 0 } } }),
+      DIMS,
+      measurer
+    );
+    expect(contained(layout)).toBe(true);
+  });
+
+  it('keeps hanging punctuation inside a region that ends at a divider', () => {
+    const [layout] = computeWallTextLayouts(
+      inside(
+        {
+          walls: { back: 'AB-' },
+          insideStyle: { anchor: 'right', margin: 0, sizeMode: 'fixed', fixedSize: 20 },
+        },
+        {
+          compartments: {
+            ...DEFAULT_BIN_PARAMS.compartments,
+            cols: 2,
+            rows: 1,
+            cells: [0, 1],
+          },
+        }
+      ),
+      DIMS,
+      measurer
+    );
+    expect(contained(layout)).toBe(true);
+  });
+
+  it('slides a caption a large offset shoves off the wall back to its edge', () => {
+    const [layout] = computeWallTextLayouts(
+      inside({ insideStyle: { anchor: 'top-left', offset: { x: 500, y: 0 } } }),
+      DIMS,
+      measurer
+    );
+    expect(contained(layout)).toBe(true);
+    expect(layout.plan.maxX).toBeCloseTo(layout.availW / 2, 6);
   });
 
   it('uses the inside style only for walls that face inside', () => {
