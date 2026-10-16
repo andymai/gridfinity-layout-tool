@@ -111,6 +111,15 @@ describe('insideWallBounds', () => {
     expect(clamped).toBeLessThan(DIMS.wallHeight - 2.6);
   });
 
+  it('ignores floor raises kept on a body that builds no raised floors', () => {
+    const compartments = { ...DEFAULT_BIN_PARAMS.compartments, floorRaises: [6] };
+    const slotted = params({ style: 'slotted', compartments });
+    expect(insideWallBounds(slotted, DIMS, 'back')?.minZ).toBeCloseTo(
+      resolveBinFloorMm(slotted),
+      6
+    );
+  });
+
   it('rises above the highest raised compartment floor and its fillet', () => {
     const p = params({
       interiorFilletMm: 2,

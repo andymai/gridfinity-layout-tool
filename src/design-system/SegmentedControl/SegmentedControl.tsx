@@ -345,7 +345,13 @@ export function SegmentedControl<T extends string>({
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
       if (options.length === 0) return;
-      const currentIndex = options.findIndex((option) => option.value === value);
+      // Step from the tab stop: the selected segment, or the first enabled one
+      // when the selected segment is disabled.
+      const selected = options.findIndex((option) => option.value === value);
+      const currentIndex =
+        selected >= 0 && !options[selected].disabled
+          ? selected
+          : options.findIndex((option) => !option.disabled);
       let nextIndex: number;
 
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {

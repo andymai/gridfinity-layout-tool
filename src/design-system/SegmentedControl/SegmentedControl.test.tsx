@@ -55,6 +55,25 @@ describe('SegmentedControl', () => {
     expect(screen.getByRole('radio', { name: 'Grid' })).toHaveAttribute('aria-checked', 'true');
   });
 
+  it('steps arrow keys from the fallback tab stop when the selected radio is disabled', () => {
+    const onChange = vi.fn();
+    render(
+      <SegmentedControl
+        aria-label="Letters"
+        value="c"
+        onChange={onChange}
+        options={[
+          { value: 'a', label: 'A' },
+          { value: 'b', label: 'B' },
+          { value: 'c', label: 'C', disabled: true },
+          { value: 'd', label: 'D' },
+        ]}
+      />
+    );
+    fireEvent.keyDown(screen.getByRole('radiogroup'), { key: 'ArrowRight' });
+    expect(onChange).toHaveBeenCalledWith('b');
+  });
+
   it('calls onChange with the clicked value', () => {
     const onChange = vi.fn();
     render(<SegmentedControl {...defaultProps} onChange={onChange} />);

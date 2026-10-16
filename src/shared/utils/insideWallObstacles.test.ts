@@ -177,4 +177,30 @@ describe('insideWallObstacles, features beyond the corner', () => {
     });
     expect(insideWallObstacles(p, DIMS, 'left', 0)).toEqual([]);
   });
+
+  it('reaches further where a tapered scooped wall carries the ramp inboard', () => {
+    const scoop = { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, side: 'front' as const };
+    const tapered = params({
+      scoop,
+      overhang: {
+        left: 0,
+        right: 0,
+        front: 6,
+        back: 0,
+        feet: false,
+        taper: {
+          enabled: true,
+          profile: 'chamfer',
+          bandHeight: 12,
+          left: 0,
+          right: 0,
+          front: 6,
+          back: 0,
+        },
+      },
+    });
+    const [plain] = insideWallObstacles(params({ scoop }), DIMS, 'left', 0);
+    const [leaning] = insideWallObstacles(tapered, DIMS, 'left', 0);
+    expect(leaning.maxU).toBeGreaterThan(plain.maxU);
+  });
 });

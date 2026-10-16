@@ -20,7 +20,12 @@ import {
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { effectiveLabelSocketClearance } from '@/shared/constants/labelPlates';
 import { isPartialMask } from '@/shared/utils/cellMask';
-import { hasOverhang, overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
+import {
+  hasOverhang,
+  overhangExpansion,
+  resolveOverhang,
+  taperInsetAt,
+} from '@/shared/utils/overhang';
 import { labelTabFootprints } from '@/shared/utils/labelTabPlan';
 import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
@@ -29,6 +34,8 @@ import {
   resolveScoopPlacement,
   resolveScoopProfile,
   resolveScoopSides,
+  scoopArcAnchors,
+  scoopFaceOffset,
   scoopFrameHeights,
 } from '@/shared/utils/scoopCalculations';
 import type { ScoopCompartmentBounds } from '@/shared/utils/scoopCalculations';
@@ -87,9 +94,11 @@ export function scoopRampsApply(params: BinParams): boolean {
 }
 
 /**
- * Each compartment's floor raise as the generator builds it: requests for a
- * compartment that no longer exists or has a tilted edge are dropped, and the
- * rest are held below the ceiling, exactly as `resolveFloorRaises` does.
+ * Each compartment's floor raise as the generator builds it. Nothing on a body
+ * the raised-floor feature skips (a raise survives a style change), and
+ * otherwise as `resolveFloorRaises` does: requests for a compartment that no
+ * longer exists or has a tilted edge are dropped, and the rest are held below
+ * the ceiling.
  */
 export function builtFloorRaises(
   params: BinParams,
@@ -99,6 +108,8 @@ export function builtFloorRaises(
   const out = new Map<number, number>();
   const raises = params.compartments.floorRaises;
   if (!raises || isPartialMask(params.cellMask)) return out;
+  if (params.style !== 'standard' || params.base.solid || params.base.tile === true) return out;
+  if (isLiteFloorOpen(params) || isNestingBase(params.base)) return out;
   const ceiling = Math.min(
     MAX_COMPARTMENT_FLOOR_RAISE_MM,
     interiorHeight - floorZ - MIN_RAISED_CAVITY_MM
@@ -163,10 +174,8 @@ function scoopEndObstacles(
   const { cols, rows } = params.compartments;
   const hasLip = params.base.stackingLip;
   const floorZ = resolveBinFloorMm(params);
-  // Sized against the base floor: a raise only shortens the auto rise, so this
-  // is the largest ramp any compartment builds.
-  const frame = scoopFrameHeights(dims.wallHeight, dims.interiorHeight, floorZ);
   const raises = builtFloorRaises(params, floorZ, dims.interiorHeight);
+  const taper = resolveOverhang(params.overhang).taper;
   const grid = { cols, rows, innerW: dims.innerW, innerD: dims.innerD };
   const out: WallRect[] = [];
   for (const scooped of resolveScoopSides(params.scoop)) {
@@ -176,6 +185,8 @@ function scoopEndObstacles(
       if (compartmentHasTiltedEdge(params.compartments, id)) continue;
       if (!isRectangularCompartment(params.compartments, id)) continue;
       const placement = resolveScoopPlacement(scooped, bounds, grid);
+      const compFloorZ = floorZ + (raises.get(id) ?? 0);
+      const frame = scoopFrameHeights(dims.wallHeight, dims.interiorHeight, compFloorZ);
       const lipOffset = computeLipOffset(
         hasLip,
         placement.isOuter,
@@ -193,7 +204,21 @@ function scoopEndObstacles(
         lipOffset
       );
       if (!profile) continue;
-      const reach = lipOffset + profile.run;
+      // Where the arc meets the floor, as `planScoopRamps` places it: a tapered
+      // outer wall leans inboard toward the floor and carries the ramp with it.
+      const wallAt = (zAboveFloor: number): number =>
+        taper && placement.isOuter
+          ? taperInsetAt(taper, taper[scooped], compFloorZ + zAboveFloor, dims.wallHeight)
+          : 0;
+      const { floorStart } = scoopArcAnchors(
+        lipOffset,
+        wallAt(profile.height),
+        wallAt(0),
+        scoopFaceOffset(placement.isOuter, params.compartments.thickness)
+      );
+      const run = Math.min(profile.run, placement.depth - 0.5 - floorStart);
+      if (run < 1) continue;
+      const reach = floorStart + run;
       const [minU, maxU] =
         placement.runSign > 0
           ? [placement.edge, placement.edge + reach]
@@ -202,8 +227,7 @@ function scoopEndObstacles(
         minU,
         maxU,
         minZ: -Infinity,
-        maxZ:
-          placement.isOuter && hasLip ? Infinity : floorZ + (raises.get(id) ?? 0) + profile.height,
+        maxZ: placement.isOuter && hasLip ? Infinity : compFloorZ + profile.height,
       });
     }
   }
