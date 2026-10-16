@@ -5,13 +5,14 @@ import {
   insideWallObstacles,
   insideWallSegments,
   insideWallTextBlock,
-  maximalClearRects,
   type InsideWallDims,
-  type WallRect,
 } from './insideWallTextPlan';
+import { maximalClearRects, type WallRect } from './maximalClearRects';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
+import { resolveLidHinge } from '@/shared/types/bin';
 import { resolveBinFloorMm } from './slotMath';
+import { planHingeLid } from './hingeLidPlan';
 
 const DIMS: InsideWallDims = {
   innerW: 81.1,
@@ -28,39 +29,7 @@ const params = (over: Partial<BinParams> = {}): BinParams => ({
   ...over,
 });
 
-const BOX: WallRect = { minU: 0, maxU: 100, minZ: 0, maxZ: 50 };
-
 const area = (r: WallRect): number => (r.maxU - r.minU) * (r.maxZ - r.minZ);
-
-describe('maximalClearRects', () => {
-  it('returns the bounds when nothing is in the way', () => {
-    expect(maximalClearRects(BOX, [])).toEqual([BOX]);
-  });
-
-  it('returns the four regions around a central obstacle, none inside another', () => {
-    const rects = maximalClearRects(BOX, [{ minU: 40, maxU: 60, minZ: 20, maxZ: 30 }]);
-    expect(rects).toHaveLength(4);
-    expect(rects).toContainEqual({ minU: 0, maxU: 40, minZ: 0, maxZ: 50 });
-    expect(rects).toContainEqual({ minU: 60, maxU: 100, minZ: 0, maxZ: 50 });
-    expect(rects).toContainEqual({ minU: 0, maxU: 100, minZ: 0, maxZ: 20 });
-    expect(rects).toContainEqual({ minU: 0, maxU: 100, minZ: 30, maxZ: 50 });
-  });
-
-  // A shelf across the top and a pad down each end: a union of the three
-  // covers the whole wall, though the area under the shelf is clear.
-  it('finds the region boxed in by separate obstacles', () => {
-    const rects = maximalClearRects(BOX, [
-      { minU: 0, maxU: 100, minZ: 35, maxZ: 50 },
-      { minU: -Infinity, maxU: 10, minZ: -Infinity, maxZ: Infinity },
-      { minU: 90, maxU: Infinity, minZ: -Infinity, maxZ: Infinity },
-    ]);
-    expect(rects).toEqual([{ minU: 10, maxU: 90, minZ: 0, maxZ: 35 }]);
-  });
-
-  it('ignores obstacles outside the bounds', () => {
-    expect(maximalClearRects(BOX, [{ minU: 120, maxU: 130, minZ: 0, maxZ: 50 }])).toEqual([BOX]);
-  });
-});
 
 describe('insideWallTextBlock', () => {
   it('blocks a solid bin, which has no cavity', () => {
@@ -96,6 +65,59 @@ describe('insideWallBounds', () => {
   it("drops below a sliding lid's shelf, which hangs deeper than a rail", () => {
     const p = params({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'slide' } });
     expect(insideWallBounds(p, DIMS, 'back')?.maxZ).toBeLessThan(DIMS.wallHeight - 4.05);
+  });
+
+  it('leaves the bin its captions when a sliding lid cannot be built', () => {
+    const p = params({
+      height: 2,
+      lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'slide' },
+    });
+    const dims = { ...DIMS, wallHeight: 9.25, interiorHeight: 8.55 };
+    expect(insideWallBounds(p, dims, 'back')?.maxZ).toBeCloseTo(dims.wallHeight - 2.6, 6);
+  });
+
+  it("keeps clear of a hinged lid's detent on the catch wall only, with no interior relief", () => {
+    const p = params({
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        enabled: true,
+        attachment: 'hinge',
+        relieveInterior: false,
+      },
+    });
+    const catchSide = planHingeLid(p).geometry?.catchSide;
+    if (!catchSide) throw new Error('hinge not buildable');
+    const other = catchSide === 'front' ? 'back' : 'front';
+    expect(insideWallBounds(p, DIMS, catchSide)?.maxZ).toBeCloseTo(DIMS.wallHeight - 4.05, 6);
+    expect(insideWallBounds(p, DIMS, other)?.maxZ).toBeCloseTo(DIMS.wallHeight - 2.6, 6);
+  });
+
+  it("drops below a lid fill plug seated deeper than the lip's support", () => {
+    const p = params({
+      heightUnitMm: 3,
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        enabled: true,
+        attachment: 'magnetic',
+        fill: true,
+        retentionMagnet: { ...DEFAULT_BIN_PARAMS.lid.retentionMagnet, depth: 6 },
+      },
+    });
+    expect(insideWallBounds(p, DIMS, 'back')?.maxZ).toBeLessThan(DIMS.wallHeight - 4.5);
+  });
+
+  it('ignores floor raises the generator would not build, and clamps the rest', () => {
+    const floor = (over: Partial<BinParams['compartments']>): number | undefined =>
+      insideWallBounds(
+        params({ compartments: { ...DEFAULT_BIN_PARAMS.compartments, ...over } }),
+        DIMS,
+        'back'
+      )?.minZ;
+    const bare = floor({});
+    expect(bare).toBeDefined();
+    expect(floor({ floorRaises: [0, 12] })).toBeCloseTo(bare ?? 0, 6);
+    const clamped = floor({ floorRaises: [100] });
+    expect(clamped).toBeLessThan(DIMS.wallHeight - 2.6);
   });
 
   it('rises above the highest raised compartment floor and its fillet', () => {
@@ -140,6 +162,22 @@ describe('insideWallObstacles', () => {
     expect(back.length).toBeGreaterThan(0);
     for (const o of back) expect(o.maxZ).toBeGreaterThan(DIMS.interiorHeight - 3);
     expect(insideWallObstacles(p, DIMS, 'front')).toEqual([]);
+  });
+
+  it("places a hinge's magnet catch pads on its catch side only", () => {
+    const p = params({
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        enabled: true,
+        attachment: 'hinge',
+        hinge: { ...resolveLidHinge(DEFAULT_BIN_PARAMS.lid), catchMode: 'magnets' },
+      },
+    });
+    const catchSide = planHingeLid(p).geometry?.catchSide;
+    expect(catchSide).toBe('front');
+    expect(insideWallObstacles(p, DIMS, 'front').length).toBeGreaterThan(0);
+    expect(insideWallObstacles(p, DIMS, 'back')).toEqual([]);
+    for (const o of insideWallObstacles(p, DIMS, 'left')) expect(o.maxU).toBeLessThan(0);
   });
 
   it('blocks both ends of every wall for magnet pads', () => {

@@ -22,6 +22,7 @@
 
 import type {
   BinParams,
+  TextAnchor,
   TextMode,
   TextStyleDefaults,
   WallTextFace,
@@ -34,10 +35,9 @@ import {
   insideWallObstacles,
   insideWallSegments,
   insideWallTextBlock,
-  maximalClearRects,
   taperBandTop,
-  type WallRect,
 } from '@/shared/utils/insideWallTextPlan';
+import { maximalClearRects, type WallRect } from '@/shared/utils/maximalClearRects';
 import {
   computeCutoutCenter,
   resolveCutoutDrop,
@@ -292,14 +292,31 @@ function chooseCandidate(
     pool = pool.filter((c) => readingOrder(c) === target);
   }
 
-  const area = (c: Candidate): number => c.availW * c.availD;
-  const centerOf = (c: Candidate): number => (c.rect.minZ + c.rect.maxZ) / 2;
-  const wantsTop = style.anchor.startsWith('top');
-  const wantsBottom = style.anchor.startsWith('bottom');
+  return pickByVerticalAnchor(pool, style.anchor, input.face);
+}
+
+/**
+ * The region a caption anchored at `anchor` sits in: the highest for a top
+ * anchor, the lowest for a bottom one, and otherwise the largest.
+ *
+ * Inside regions overlap, so a tall region and a short gap near its top share a
+ * top edge; ranking them by centre would pick the gap. They rank by reach
+ * instead. Outside regions are disjoint bands and keep ranking by centre.
+ */
+export function pickByVerticalAnchor<
+  T extends { readonly rect: Rect; readonly availW: number; readonly availD: number },
+>(pool: readonly T[], anchor: TextAnchor, face: WallTextFace): T {
+  const area = (c: T): number => c.availW * c.availD;
+  const centerOf = (c: T): number => (c.rect.minZ + c.rect.maxZ) / 2;
+  const inside = face === 'inside';
+  const topOf = (c: T): number => (inside ? c.rect.maxZ : centerOf(c));
+  const bottomOf = (c: T): number => (inside ? c.rect.minZ : centerOf(c));
+  const wantsTop = anchor.startsWith('top');
+  const wantsBottom = anchor.startsWith('bottom');
   return pool.reduce((best, c) => {
-    if (wantsTop && centerOf(c) !== centerOf(best)) return centerOf(c) > centerOf(best) ? c : best;
-    if (wantsBottom && centerOf(c) !== centerOf(best))
-      return centerOf(c) < centerOf(best) ? c : best;
+    if (wantsTop && topOf(c) !== topOf(best)) return topOf(c) > topOf(best) ? c : best;
+    if (wantsBottom && bottomOf(c) !== bottomOf(best))
+      return bottomOf(c) < bottomOf(best) ? c : best;
     return area(c) > area(best) ? c : best;
   });
 }

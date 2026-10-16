@@ -17,21 +17,23 @@
 import type { BinParams, WallTextSide } from '@/shared/types/bin';
 import {
   LID_CLICK_RAIL_BAND_BELOW_WALL_TOP,
-  isHingeLid,
-  isSlideLid,
-  resolveLidHinge,
-  resolveLidPlateThickness,
-  resolveLidSlide,
-  retentionBossRadius,
-  retentionMagnetInset,
-} from '@/features/bin-designer/types/lid';
-import { isNestingBase } from '@/features/bin-designer/types/base';
-import {
+  LID_FIT_CLEARANCE,
+  MAX_COMPARTMENT_FLOOR_RAISE_MM,
+  MIN_RAISED_CAVITY_MM,
   buildOverrideLookup,
+  compartmentHasTiltedEdge,
   dividerFootDrift,
   findPairAwareRuns,
+  isNestingBase,
+  isSlideLid,
+  lidAnchorZ,
+  lidFillBottomZ,
   overrideKey,
-} from '@/features/bin-designer/utils/compartments';
+  resolveLidCavityExtraMm,
+  retentionBossRadius,
+  retentionMagnetInset,
+  slideLidPlanForParams,
+} from '@/shared/types/bin';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { CUTOUT_BORDER_WIDTH, TOP_KEEP_OUT } from '@/shared/constants/wallBands';
@@ -42,6 +44,7 @@ import { hasOverhang, overhangExpansion, resolveOverhang } from '@/shared/utils/
 import { interiorFilletCornerMm, interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 import { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
 import { labelTabFootprints } from '@/shared/utils/labelTabPlan';
+import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
 import {
   computeLipOffset,
@@ -51,11 +54,7 @@ import {
   scoopFrameHeights,
 } from '@/shared/utils/scoopCalculations';
 import type { ScoopCompartmentBounds } from '@/shared/utils/scoopCalculations';
-import {
-  SLIDE_BEARING_MM,
-  SLIDE_SHELF_TIP_MM,
-  slidePlateTopBelowWallTopMm,
-} from '@/shared/utils/slideLidPlan';
+import { SLIDE_BEARING_MM, SLIDE_SHELF_TIP_MM } from '@/shared/utils/slideLidPlan';
 import {
   resolveSlideGeometry,
   slideInputFromDims,
@@ -67,16 +66,9 @@ import {
   resolveCompartmentDividerHeight,
 } from '@/shared/utils/slotMath';
 import { planWallLabelSlots, resolveWallLabelSlots } from '@/shared/utils/wallLabelSlotPlan';
+import type { WallRect } from '@/shared/utils/maximalClearRects';
 
 const LIP_TAPER_WIDTH = GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER;
-
-/** A region of one wall face, in the clip frame. */
-export interface WallRect {
-  readonly minU: number;
-  readonly maxU: number;
-  readonly minZ: number;
-  readonly maxZ: number;
-}
 
 /** What the inside path reads beyond params, as the caller already resolved it. */
 export interface InsideWallDims {
@@ -123,29 +115,68 @@ export function taperBandTop(params: BinParams, side: WallTextSide, wallHeight: 
 }
 
 /**
- * How far below the wall top lid parts reach into the cavity (mm), or 0 when no
- * lid puts anything on the inner face.
+ * How far below the wall top lid parts reach into the cavity on `side` (mm), or
+ * 0 when no lid puts anything on that inner face.
  */
-function lidBandBelowWallTopMm(params: BinParams): number {
+function lidBandBelowWallTopMm(params: BinParams, side: WallTextSide): number {
   if (!params.lid.enabled) return 0;
   const ring = LID_CLICK_RAIL_BAND_BELOW_WALL_TOP + LID_KEEPOUT_CLEARANCE;
   if (isSlideLid(params.lid)) {
+    // A plan that refuses the bin builds no channel, so it claims nothing.
+    const { geometry } = slideLidPlanForParams(params);
+    if (!geometry) return 0;
     // The shelf the plate rests on hangs lowest: plate thickness, the shelf
-    // tip, then a 45° underside as deep as the shelf's reach. Stated from params
-    // rather than the resolved channel, which would bring the whole slide plan
-    // into the preview for one depth.
-    const { placement, clearanceMm } = resolveLidSlide(params.lid);
+    // tip, then a 45° underside as deep as the shelf's reach.
     return (
-      slidePlateTopBelowWallTopMm(placement, clearanceMm, params.base.stackingLip) +
-      resolveLidPlateThickness(params) +
+      geometry.plateTopBelowWallTopMm +
+      geometry.plate.thicknessMm +
       SLIDE_SHELF_TIP_MM +
-      clearanceMm +
+      geometry.clearanceMm +
       SLIDE_BEARING_MM +
       LID_KEEPOUT_CLEARANCE
     );
   }
-  if (params.lid.attachment === 'clickRails') return ring;
-  return interiorReliefActive(params) ? ring : 0;
+
+  let band = interiorReliefActive(params) ? ring : 0;
+  if (params.lid.attachment === 'clickRails' && params.lid.clickRails[side]) band = ring;
+  // A hinged lid's detent is a click rail on the catch wall alone.
+  const hinge = planHingeLid(params).geometry;
+  if (hinge?.catchMode === 'detent' && hinge.detentFits && hinge.catchSide === side) band = ring;
+  // A fill plug seats inside the mouth, below the lip on deep magnets.
+  const fillBottom = lidFillBottomZ(params);
+  if (fillBottom !== null) {
+    const anchor = lidAnchorZ(
+      params.heightUnitMm,
+      LID_FIT_CLEARANCE,
+      resolveLidCavityExtraMm(params)
+    );
+    const plugDepth = anchor - fillBottom - GRIDFINITY_SPEC.LIP_HEIGHT;
+    band = Math.max(band, plugDepth + LID_KEEPOUT_CLEARANCE);
+  }
+  return band;
+}
+
+/**
+ * Highest compartment floor raise the generator actually builds: requests for
+ * a compartment that no longer exists or has a tilted edge are dropped, and the
+ * rest are held below the ceiling, exactly as `resolveFloorRaises` does.
+ */
+function builtFloorRaiseMm(params: BinParams, floorZ: number, interiorHeight: number): number {
+  const raises = params.compartments.floorRaises;
+  if (!raises || isPartialMask(params.cellMask)) return 0;
+  const ceiling = Math.min(
+    MAX_COMPARTMENT_FLOOR_RAISE_MM,
+    interiorHeight - floorZ - MIN_RAISED_CAVITY_MM
+  );
+  if (ceiling <= 0) return 0;
+  const ids = new Set(params.compartments.cells);
+  let highest = 0;
+  raises.forEach((raise, id) => {
+    if (typeof raise !== 'number' || !Number.isFinite(raise) || raise <= 0) return;
+    if (!ids.has(id) || compartmentHasTiltedEdge(params.compartments, id)) return;
+    highest = Math.max(highest, Math.min(raise, ceiling));
+  });
+  return highest;
 }
 
 /** The band an inside caption may occupy, before obstacles. */
@@ -163,15 +194,15 @@ export function insideWallBounds(
   );
   const uLimit = wallSpan / 2 - cornerR;
 
-  const raises = (params.compartments.floorRaises ?? []).filter(
-    (raise): raise is number => typeof raise === 'number' && Number.isFinite(raise) && raise > 0
-  );
+  const floorZ = resolveBinFloorMm(params);
   const floorTop =
-    resolveBinFloorMm(params) + Math.max(0, ...raises) + interiorFilletRadiusMm(params);
+    floorZ +
+    builtFloorRaiseMm(params, floorZ, dims.interiorHeight) +
+    interiorFilletRadiusMm(params);
   const minZ = Math.max(floorTop, taperBandTop(params, side, dims.wallHeight));
 
   const lipKeepOut = params.base.stackingLip ? LIP_TAPER_WIDTH : TOP_KEEP_OUT;
-  const maxZ = dims.wallHeight - Math.max(lipKeepOut, lidBandBelowWallTopMm(params));
+  const maxZ = dims.wallHeight - Math.max(lipKeepOut, lidBandBelowWallTopMm(params, side));
 
   const bounds: WallRect = { minU: -uLimit, maxU: uLimit, minZ, maxZ };
   return bounds.maxU > bounds.minU && bounds.maxZ > bounds.minZ ? bounds : null;
@@ -448,21 +479,38 @@ function labelSlotObstacles(
     }));
 }
 
-function usesRetentionMagnets(params: BinParams): boolean {
+/**
+ * Which magnet positions the bin carries pads at, or null for none. A hinge's
+ * magnet catch keeps only its catch side, as `retentionMagnetPlacementsFor`
+ * does; positions here are cavity-centred, so the split is at zero.
+ */
+function retentionPadFilter(params: BinParams): ((x: number, y: number) => boolean) | null {
   if (!params.lid.enabled || !params.base.stackingLip || isPartialMask(params.cellMask)) {
-    return false;
+    return null;
   }
-  if (params.lid.attachment === 'magnetic') return true;
-  return isHingeLid(params.lid) && resolveLidHinge(params.lid).catchMode === 'magnets';
+  if (params.lid.attachment === 'magnetic') return () => true;
+  const hinge = planHingeLid(params).geometry;
+  if (hinge?.catchMode !== 'magnets') return null;
+  switch (hinge.catchSide) {
+    case 'back':
+      return (_x, y) => y > 0;
+    case 'front':
+      return (_x, y) => y < 0;
+    case 'right':
+      return (x) => x > 0;
+    case 'left':
+      return (x) => x < 0;
+  }
 }
 
 /**
  * The bin's magnet pads, full height: their 45° gussets run a long way down
  * the corner, and a pad only a few millimetres wide costs little height to
- * clear entirely. A hinge catch uses a subset of these positions.
+ * clear entirely.
  */
 function magnetPadObstacles(params: BinParams, side: WallTextSide): WallRect[] {
-  if (!usesRetentionMagnets(params)) return [];
+  const padded = retentionPadFilter(params);
+  if (!padded) return [];
   const { diameter, edgeMagnets } = params.lid.retentionMagnet;
   const bossR = retentionBossRadius(diameter);
   const overhang = resolveOverhang(params.overhang);
@@ -485,7 +533,7 @@ function magnetPadObstacles(params: BinParams, side: WallTextSide): WallRect[] {
     const across = alongX ? p.y : p.x;
     const along = alongX ? p.x : p.y;
     const reaches = p.anchor === 'corner' || p.anchor === (alongX ? 'y' : 'x');
-    if (!reaches || !onSide(across)) continue;
+    if (!reaches || !onSide(across) || !padded(p.x, p.y)) continue;
     const corner = p.anchor === 'corner';
     out.push({
       minU: corner && along < 0 ? -Infinity : along - bossR,
@@ -533,61 +581,4 @@ export function insideWallSegments(
   }
   if (bounds.maxU > start) out.push({ ...bounds, minU: start });
   return out.filter((r) => r.maxU - r.minU > 0);
-}
-
-/**
- * Every maximal empty rectangle of `bounds` clear of `obstacles` (already
- * border-expanded). Sweeps the strips between obstacle edges: a run of strips
- * contributes each z interval free in all of them, kept only when neither
- * neighbouring strip is also free there, so nothing returned sits inside
- * another.
- */
-export function maximalClearRects(bounds: WallRect, obstacles: readonly WallRect[]): WallRect[] {
-  const inside = obstacles.filter(
-    (o) =>
-      o.maxU > bounds.minU && o.minU < bounds.maxU && o.maxZ > bounds.minZ && o.minZ < bounds.maxZ
-  );
-  const edges = [
-    bounds.minU,
-    bounds.maxU,
-    ...inside.flatMap((o) => [o.minU, o.maxU]).filter((u) => u > bounds.minU && u < bounds.maxU),
-  ];
-  const us = [...new Set(edges)].sort((a, b) => a - b);
-
-  type Interval = readonly [number, number];
-  const freeIn = (lo: number, hi: number): Interval[] => {
-    const blocked = inside
-      .filter((o) => o.minU < hi && o.maxU > lo)
-      .map((o): Interval => [Math.max(o.minZ, bounds.minZ), Math.min(o.maxZ, bounds.maxZ)])
-      .sort((a, b) => a[0] - b[0]);
-    const free: Interval[] = [];
-    let z = bounds.minZ;
-    for (const [a, b] of blocked) {
-      if (a > z) free.push([z, a]);
-      z = Math.max(z, b);
-    }
-    if (bounds.maxZ > z) free.push([z, bounds.maxZ]);
-    return free;
-  };
-  const strips = us.slice(0, -1).map((lo, i) => freeIn(lo, us[i + 1]));
-  const covers = (set: readonly Interval[], [a, b]: Interval): boolean =>
-    set.some(([c, d]) => c <= a && d >= b);
-  const intersect = (x: readonly Interval[], y: readonly Interval[]): Interval[] =>
-    x.flatMap(([a, b]) =>
-      y.map(([c, d]): Interval => [Math.max(a, c), Math.min(b, d)]).filter(([lo, hi]) => hi > lo)
-    );
-
-  const out: WallRect[] = [];
-  for (let i = 0; i < strips.length; i++) {
-    let common: Interval[] = strips[i];
-    for (let j = i; j < strips.length && common.length > 0; j++) {
-      if (j > i) common = intersect(common, strips[j]);
-      for (const interval of common) {
-        if (i > 0 && covers(strips[i - 1], interval)) continue;
-        if (j < strips.length - 1 && covers(strips[j + 1], interval)) continue;
-        out.push({ minU: us[i], maxU: us[j + 1], minZ: interval[0], maxZ: interval[1] });
-      }
-    }
-  }
-  return out;
 }

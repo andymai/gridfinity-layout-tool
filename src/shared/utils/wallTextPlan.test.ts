@@ -13,7 +13,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadFont, getFont } from 'brepjs/text';
-import { computeWallTextLayouts, wallTextReadingSign } from './wallTextPlan';
+import { computeWallTextLayouts, pickByVerticalAnchor, wallTextReadingSign } from './wallTextPlan';
 import type { WallTextDims } from './wallTextPlan';
 import { createTypeMeasurer, type GlyphFont, type TypeMeasurer } from './typePlan';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
@@ -217,5 +217,28 @@ describe('inside-facing wall text', () => {
     const bySide = Object.fromEntries(layouts.map((l) => [l.side, l]));
     expect(bySide.back.mode).toBe('emboss');
     expect(bySide.front.mode).not.toBe('emboss');
+  });
+});
+
+describe('pickByVerticalAnchor', () => {
+  const region = (minZ: number, maxZ: number, width = 10) => ({
+    rect: { minU: 0, maxU: width, minZ, maxZ },
+    availW: width,
+    availD: maxZ - minZ,
+  });
+  const tall = region(0, 50);
+  const gap = region(35, 40);
+
+  it('ranks overlapping inside regions by reach, so a short gap cannot outrank a tall one', () => {
+    expect(pickByVerticalAnchor([tall, gap], 'top', 'inside')).toBe(tall);
+    expect(pickByVerticalAnchor([gap, tall], 'bottom', 'inside')).toBe(tall);
+  });
+
+  it('keeps ranking the disjoint outside bands by centre', () => {
+    expect(pickByVerticalAnchor([tall, gap], 'top', 'outside')).toBe(gap);
+  });
+
+  it('takes the largest region for a centred anchor', () => {
+    expect(pickByVerticalAnchor([gap, tall], 'center', 'inside')).toBe(tall);
   });
 });
