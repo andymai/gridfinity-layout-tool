@@ -29,7 +29,6 @@ import {
   resolveLidCavityExtraMm,
   slideLidPlanForParams,
 } from '@/shared/types/bin';
-import { GRIDFINITY } from '@/shared/constants/bin';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { CUTOUT_BORDER_WIDTH, TOP_KEEP_OUT } from '@/shared/constants/wallBands';
 import { LID_KEEPOUT_CLEARANCE } from '@/shared/constants/lidKeepout';
@@ -43,6 +42,7 @@ import { SLIDE_BEARING_MM, SLIDE_SHELF_TIP_MM } from '@/shared/utils/slideLidPla
 import { resolveBinFloorMm, resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import {
   builtFloorRaises,
+  cavityCornerRadiusMm,
   scoopRampsApply,
   type InsideWallDims,
 } from '@/shared/utils/insideWallObstacles';
@@ -124,13 +124,7 @@ export function insideWallBounds(
   side: WallTextSide
 ): WallRect | null {
   const wallSpan = side === 'front' || side === 'back' ? dims.innerW : dims.innerD;
-  // The cavity's vertical corner arcs, widened by an interior fillet when one
-  // rounds them further.
-  const cornerR = Math.max(
-    GRIDFINITY.BOX_CORNER_RADIUS - params.wallThickness,
-    interiorFilletCornerMm(params)
-  );
-  const uLimit = wallSpan / 2 - cornerR;
+  const uLimit = wallSpan / 2 - cavityCornerRadiusMm(params);
 
   const floorZ = resolveBinFloorMm(params);
   const raises = builtFloorRaises(params, floorZ, dims.interiorHeight);

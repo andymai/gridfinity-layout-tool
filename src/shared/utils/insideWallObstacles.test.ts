@@ -142,7 +142,9 @@ describe('insideWallObstacles, features beyond the corner', () => {
     const back = insideWallObstacles(p, DIMS, 'back', 0);
     expect(back).toHaveLength(1);
     expect(back[0].maxU).toBe(Infinity);
-    expect(back[0].minU).toBeCloseTo(DIMS.innerW / 2 - 6, 6);
+    // The leaning wall carries the cavity's rounded corner in with it.
+    const corner = 3.75 - DEFAULT_BIN_PARAMS.wallThickness;
+    expect(back[0].minU).toBeCloseTo(DIMS.innerW / 2 - 6 - corner, 6);
     expect(back[0].maxZ).toBeCloseTo(12, 6);
   });
 

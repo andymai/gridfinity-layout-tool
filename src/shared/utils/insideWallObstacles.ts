@@ -27,6 +27,7 @@ import {
   taperInsetAt,
 } from '@/shared/utils/overhang';
 import { labelTabFootprints } from '@/shared/utils/labelTabPlan';
+import { interiorFilletCornerMm } from '@/shared/utils/interiorFillet';
 import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
 import {
@@ -77,6 +78,18 @@ const PERPENDICULAR: Record<WallTextSide, readonly WallTextSide[]> = {
 };
 
 const alongX = (side: WallTextSide): boolean => side === 'front' || side === 'back';
+
+/**
+ * Radius of the cavity's vertical corners, widened by an interior fillet when
+ * one rounds them further. A wall's flat inner face stops this far short of
+ * the face it meets.
+ */
+export function cavityCornerRadiusMm(params: BinParams): number {
+  return Math.max(
+    GRIDFINITY_SPEC.BOX_CORNER_RADIUS - params.wallThickness,
+    interiorFilletCornerMm(params)
+  );
+}
 
 /** Half the span of `side` along its own u axis. */
 const halfSpan = (side: WallTextSide, dims: InsideWallDims): number =>
@@ -418,7 +431,8 @@ function magnetPadObstacles(params: BinParams, side: WallTextSide): WallRect[] {
 /**
  * Where a tapered neighbour leans in over this wall's ends. Below the taper
  * band its inner face sits inboard of the rim plane by up to the side's inset,
- * so a caption at that end would run into it.
+ * and carries the rounded corner in with it, so a caption at that end would
+ * run into either.
  */
 function taperCornerObstacles(
   params: BinParams,
@@ -429,14 +443,15 @@ function taperCornerObstacles(
   if (!taper) return [];
   const half = halfSpan(side, dims);
   const band = Math.min(taper.bandHeight, dims.wallHeight);
+  const corner = cavityCornerRadiusMm(params);
   const out: WallRect[] = [];
   for (const neighbour of PERPENDICULAR[side]) {
     const inset = taper[neighbour];
     if (inset <= 1e-6) continue;
     const atStart = neighbour === 'front' || neighbour === 'left';
     out.push({
-      minU: atStart ? -Infinity : half - inset,
-      maxU: atStart ? -half + inset : Infinity,
+      minU: atStart ? -Infinity : half - inset - corner,
+      maxU: atStart ? -half + inset + corner : Infinity,
       minZ: -Infinity,
       maxZ: band,
     });
