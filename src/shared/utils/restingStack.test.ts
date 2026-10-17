@@ -521,6 +521,38 @@ describe('getBlockedZones', () => {
     expect(getBlockedZones(L2, bins, layers)).toHaveLength(1);
   });
 
+  it('clips a partly covered zone to the clearance still exposed', () => {
+    // The bridge on layer 2 covers the right half of the 2×1 clearance bin, so
+    // a bin on layer 3 can rest on the bridge there; only x 0..1 is blocked.
+    const bins = [
+      bin('tools', L1, 0, 0, 2, 1, 3, { clearanceHeight: heightUnits(2) }),
+      bin('solid', L1, 2, 0, 1, 1, 6),
+      bin('bridge', L2, 1, 0, 2, 1, 2),
+    ];
+    expect(getBlockedZones(L3, bins, layers)).toEqual([
+      {
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        sourceBinId: binId('tools'),
+        sourceLayerId: L1,
+      },
+    ]);
+  });
+
+  it('splits an exposed region that is not a rectangle into rectangles', () => {
+    const bins = [
+      bin('tools', L1, 0, 0, 2, 2, 3, { clearanceHeight: heightUnits(2) }),
+      bin('solid', L1, 1, 1, 1, 1, 6),
+      bin('corner', L2, 1, 1, 1, 1, 2),
+    ];
+    const zones = getBlockedZones(L3, bins, layers);
+    const area = zones.reduce((sum, z) => sum + z.width * z.depth, 0);
+    expect(area).toBe(3);
+    expect(zones.every((z) => !(z.x >= 1 && z.y >= 1))).toBe(true);
+  });
+
   it('ignores staging bins and unknown layers', () => {
     const stashed = bin('s', STAGING_ID, 0, 0, 1, 1, 3, { clearanceHeight: heightUnits(2) });
     expect(getBlockedZones(L2, [stashed], layers)).toEqual([]);

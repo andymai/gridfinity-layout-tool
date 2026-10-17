@@ -11,6 +11,7 @@
  */
 
 import type { Bin, BinId, BlockedZone, Layer, LayerId } from '@/core/types';
+import { gridUnits } from '@/core/types';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { footprintsOverlap, linkedExcessUnits, linkedExcessCacheKey } from './collision';
 
@@ -372,6 +373,55 @@ function coverage(
   return total === 0 ? 0 : covered / total;
 }
 
+interface Area {
+  x: number;
+  y: number;
+  width: number;
+  depth: number;
+}
+
+/**
+ * The parts of `rect` no cover overlaps, as rectangles on the half-unit
+ * lattice: runs of open cells per row, merged down while the next row has
+ * the same run.
+ */
+function uncoveredAreas(rect: Area, covers: readonly Bin[]): Area[] {
+  const cols = Math.round(rect.width / COVERAGE_STEP);
+  const rows = Math.round(rect.depth / COVERAGE_STEP);
+  const open = (i: number, j: number): boolean => {
+    const cx = rect.x + (i + 0.5) * COVERAGE_STEP;
+    const cy = rect.y + (j + 0.5) * COVERAGE_STEP;
+    return !covers.some((c) => cx > c.x && cx < c.x + c.width && cy > c.y && cy < c.y + c.depth);
+  };
+  const active = new Map<string, { i0: number; i1: number; j0: number }>();
+  const areas: Area[] = [];
+  for (let j = 0; j <= rows; j++) {
+    const runs = new Set<string>();
+    for (let i = 0; j < rows && i < cols; i++) {
+      if (!open(i, j)) continue;
+      const i0 = i;
+      while (i + 1 < cols && open(i + 1, j)) i++;
+      runs.add(`${String(i0)}:${String(i + 1)}`);
+    }
+    for (const [key, run] of active) {
+      if (runs.has(key)) continue;
+      areas.push({
+        x: rect.x + run.i0 * COVERAGE_STEP,
+        y: rect.y + run.j0 * COVERAGE_STEP,
+        width: (run.i1 - run.i0) * COVERAGE_STEP,
+        depth: (j - run.j0) * COVERAGE_STEP,
+      });
+      active.delete(key);
+    }
+    for (const key of runs) {
+      if (active.has(key)) continue;
+      const [i0, i1] = key.split(':').map(Number);
+      active.set(key, { i0, i1, j0: j });
+    }
+  }
+  return areas;
+}
+
 /**
  * Bins lifted off the plate whose base is not fully carried at their resting
  * height: they lean on a taller neighbour or overhang empty space. Placement
@@ -411,10 +461,10 @@ export function getUnevenlySupported(
 }
 
 /**
- * Footprints a bin on `targetLayerId` cannot use because a lower bin reserves
+ * Areas a bin on `targetLayerId` cannot use because a lower bin reserves
  * clearance above itself there. A tall bin blocks nothing: a bin above rests
- * on it. A clearance zone stops mattering once bins on intermediate layers
- * cover it completely, since anything higher rests on them instead.
+ * on it. Where bins on intermediate layers cover the clearance, anything
+ * higher rests on them instead, so each zone is only the part left exposed.
  */
 export function getBlockedZones(
   targetLayerId: LayerId,
@@ -436,15 +486,16 @@ export function getBlockedZones(
       const i = layerIndex.get(b.layerId);
       return i !== undefined && i > index && i < targetIndex && footprintsOverlap(b, bin);
     });
-    if (coverage(bin, between) >= 1 - EPSILON) continue;
-    zones.push({
-      x: bin.x,
-      y: bin.y,
-      width: bin.width,
-      depth: bin.depth,
-      sourceBinId: bin.id,
-      sourceLayerId: bin.layerId,
-    });
+    for (const area of uncoveredAreas(bin, between)) {
+      zones.push({
+        x: gridUnits(area.x),
+        y: gridUnits(area.y),
+        width: gridUnits(area.width),
+        depth: gridUnits(area.depth),
+        sourceBinId: bin.id,
+        sourceLayerId: bin.layerId,
+      });
+    }
   }
   return zones;
 }

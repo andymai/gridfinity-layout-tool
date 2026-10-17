@@ -392,7 +392,7 @@ export function GridCanvas({
 
           return (
             <div
-              key={zone.sourceBinId}
+              key={`${zone.sourceBinId}:${String(zone.x)}:${String(zone.y)}`}
               className="blocked-zone relative cursor-pointer transition-all duration-150 hover:opacity-50 hover:ring-2 hover:ring-white/60"
               style={{
                 gridColumn: `${gridCol} / span ${gridColSpan}`,
