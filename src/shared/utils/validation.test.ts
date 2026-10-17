@@ -747,6 +747,32 @@ describe('salvageImport', () => {
     expect(stashed).toMatchObject(positionFree);
     expect(stashed).not.toHaveProperty('overhang');
   });
+
+  it('drops a malformed drawer-fit value from a salvaged bin and keeps the rest', () => {
+    const layout = createTestLayout();
+    const healthy = {
+      ...createTestBin({ id: binId('healthy'), width: gridUnits(3), depth: gridUnits(3) }),
+      clearanceHeight: 'bad',
+      overhang: { left: -1, right: 0, front: 0, back: 0 },
+      marginTaper: { profile: 'bevel', bandHeight: 4 },
+      extendToMargin: true,
+      locked: 'yes',
+    };
+    const collides = createTestBin({
+      id: binId('collides'),
+      x: gridUnits(1),
+      y: gridUnits(1),
+      width: gridUnits(3),
+      depth: gridUnits(3),
+    });
+    const result = salvageImport({ ...layout, bins: [healthy, collides] });
+    if (!result.valid) throw new Error('expected the salvage to succeed');
+    const kept = result.layout.bins.find((b) => b.id === 'healthy');
+    expect(kept).toMatchObject({ extendToMargin: true });
+    for (const key of ['clearanceHeight', 'overhang', 'marginTaper', 'locked']) {
+      expect(kept).not.toHaveProperty(key);
+    }
+  });
 });
 
 describe('truncate', () => {

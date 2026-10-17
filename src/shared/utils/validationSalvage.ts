@@ -34,6 +34,65 @@ export type SalvageSuccess = { valid: true; layout: Layout; salvaged: string[] }
 export type SalvageFailure = { valid: false; salvaged?: undefined; layout?: undefined };
 export type SalvageResult = SalvageSuccess | SalvageFailure;
 
+const FIT_FIELDS = [
+  'clearanceHeight',
+  'extendToMargin',
+  'marginTaper',
+  'overhang',
+  'locked',
+] as const satisfies readonly (keyof Bin)[];
+
+type FitFields = Pick<Bin, (typeof FIT_FIELDS)[number]>;
+
+const isNonNegative = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0;
+
+const isOptionalBoolean = (value: unknown): boolean =>
+  value === undefined || typeof value === 'boolean';
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isMarginTaper(value: unknown): value is NonNullable<Bin['marginTaper']> {
+  return (
+    isRecord(value) &&
+    (value.profile === 'chamfer' || value.profile === 'fillet') &&
+    isNonNegative(value.bandHeight) &&
+    isOptionalBoolean(value.enabled) &&
+    (value.flare === undefined || isNonNegative(value.flare))
+  );
+}
+
+function isOverhang(value: unknown): value is NonNullable<Bin['overhang']> {
+  return (
+    isRecord(value) &&
+    [value.left, value.right, value.front, value.back].every(isNonNegative) &&
+    isOptionalBoolean(value.enabled) &&
+    isOptionalBoolean(value.feet)
+  );
+}
+
+const FIT_FIELD_SET: ReadonlySet<string> = new Set(FIT_FIELDS);
+
+function withoutFitFields(bin: object): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(bin).filter(([key]) => !FIT_FIELD_SET.has(key)));
+}
+
+/** The structural guard never looks at these, so a damaged bin's malformed one is dropped alone. */
+function wellFormedFitFields(bin: object): Partial<FitFields> {
+  const raw: Record<string, unknown> = { ...bin };
+  return {
+    ...(isNonNegative(raw.clearanceHeight)
+      ? { clearanceHeight: heightUnits(raw.clearanceHeight) }
+      : {}),
+    ...(typeof raw.extendToMargin === 'boolean' ? { extendToMargin: raw.extendToMargin } : {}),
+    ...(isMarginTaper(raw.marginTaper) ? { marginTaper: raw.marginTaper } : {}),
+    ...(isOverhang(raw.overhang) ? { overhang: raw.overhang } : {}),
+    ...(raw.locked === true ? { locked: true } : {}),
+  };
+}
+
 /** A stashed bin has left the position its explicit overhang was computed for. */
 function toStaging({ overhang: _overhang, ...bin }: Bin): Bin {
   return { ...bin, layerId: STAGING_ID };
@@ -111,7 +170,8 @@ export function salvageImport(data: unknown): SalvageResult {
     // Spread first, as the strict path keeps each bin whole: a fixed field list
     // here strips every field it does not name from all the healthy bins.
     const typedBin: Bin = {
-      ...bin,
+      ...withoutFitFields(bin),
+      ...wellFormedFitFields(bin),
       id: toBinId(bin.id),
       layerId: toLayerId(bin.layerId),
       x: gridUnits(bin.x),
