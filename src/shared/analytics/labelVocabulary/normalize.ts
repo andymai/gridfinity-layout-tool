@@ -12,7 +12,7 @@ let longestAliasWords = 1;
 for (const [canonical, aliases] of Object.entries(VOCABULARY)) {
   for (const alias of aliases) {
     ALIAS_MAP.set(alias.toLowerCase(), canonical);
-    longestAliasWords = Math.max(longestAliasWords, alias.split(/\s+/).length);
+    longestAliasWords = Math.max(longestAliasWords, alias.match(/[\p{L}\p{N}]+/gu)?.length ?? 1);
   }
 }
 
@@ -229,19 +229,22 @@ export function getCanonicalTerms(): string[] {
 /**
  * Canonical terms that `text` names with a whole alias on word boundaries.
  * Unlike `processLabel`, a word that merely contains an alias names nothing:
- * "Snail shells" holds "nail" but is not about nails.
+ * "Snail shells" holds "nail" but is not about nails. Each run of words is
+ * tried as written, for aliases like "usb-c", and joined by spaces, so
+ * "screws,nuts" and "socket  wrench" still name their terms.
  */
 export function conceptsNamedIn(text: string): string[] {
-  const words = text
-    .toLowerCase()
-    .split(/\s+/)
-    .map((word) => word.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ''))
-    .filter((word) => word !== '');
+  const lower = text.toLowerCase();
+  const words = [...lower.matchAll(/[\p{L}\p{N}]+/gu)];
   const found = new Set<string>();
   for (let start = 0; start < words.length; start++) {
     const last = Math.min(words.length, start + longestAliasWords);
     for (let end = start + 1; end <= last; end++) {
-      const canonical = ALIAS_MAP.get(words.slice(start, end).join(' '));
+      const run = words.slice(start, end);
+      const final = run[run.length - 1];
+      const asWritten = lower.slice(run[0].index, final.index + final[0].length);
+      const canonical =
+        ALIAS_MAP.get(asWritten) ?? ALIAS_MAP.get(run.map((word) => word[0]).join(' '));
       if (canonical) found.add(canonical);
     }
   }

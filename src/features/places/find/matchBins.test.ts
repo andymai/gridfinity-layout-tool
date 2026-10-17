@@ -59,6 +59,8 @@ describe('matchBins', () => {
 
   it('finds a bin by the vocabulary term behind another language’s word', () => {
     expect(ids('Schrauben', [screws, tape])).toEqual(['screws']);
+    const mixed = record('mixed', [searchField('label', 'screws,nuts')], 'screws,nuts');
+    expect(ids('Schrauben', [mixed])).toEqual(['mixed']);
   });
 
   it('never reaches a concept through part of a word', () => {

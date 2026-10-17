@@ -263,5 +263,12 @@ describe('labelVocabulary', () => {
         processLabel('socket wrench').normalized
       );
     });
+
+    it('splits words joined by punctuation, and keeps punctuated aliases whole', () => {
+      const screws = processLabel('screws').normalized;
+      expect(conceptsNamedIn('screws,nuts')).toContain(screws);
+      expect(conceptsNamedIn('screws/bolts')).toContain(screws);
+      expect(conceptsNamedIn('USB-C cables')).toContain(processLabel('usb-c').normalized);
+    });
   });
 });
