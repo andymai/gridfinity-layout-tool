@@ -65,6 +65,9 @@ function KindMenu({ folder, topLevel, onSetKind }: KindMenuProps) {
         size="sm"
         touchTarget={false}
         onClick={(e) => {
+          // Safari does not focus a clicked button, and the menu hands focus
+          // back to whatever held it when it opened.
+          e.currentTarget.focus();
           const rect = e.currentTarget.getBoundingClientRect();
           setAt({ x: rect.left, y: rect.bottom + 4 });
         }}

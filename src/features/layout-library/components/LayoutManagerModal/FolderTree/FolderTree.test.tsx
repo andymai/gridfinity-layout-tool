@@ -160,6 +160,24 @@ describe('FolderTree', () => {
       expect(screen.getByRole('menuitem', { name: /Make it a storage unit/ })).toBeInTheDocument();
     });
 
+    it('returns focus to the kind button after a choice, even when a click did not focus it', () => {
+      render(
+        <FolderTree
+          library={library}
+          selectedId={null}
+          onSelect={noop}
+          onCreate={noop}
+          onRename={noop}
+          onDelete={noop}
+          onSetKind={noop}
+        />
+      );
+      const button = screen.getByRole('button', { name: 'Change kind: Study' });
+      fireEvent.click(button);
+      fireEvent.click(screen.getByRole('menuitem', { name: /Make it a storage unit/ }));
+      expect(document.activeElement).toBe(button);
+    });
+
     it('creates a place at the top, whatever is selected', () => {
       const onCreate = vi.fn();
       render(
