@@ -17,7 +17,7 @@ import {
   MobileInspector,
   MobilePrintList,
   MobileSettingsPanel,
-  MobileLayoutsPanel,
+  MobileLayoutsFind,
   BinContextMenuWrapper,
   MobileAboutStrip,
 } from '@/shell/Mobile';
@@ -129,7 +129,7 @@ function MobilePanelContent({ panel }: { panel: string }) {
       case 'settings':
         return <MobileSettingsPanel />;
       case 'layouts':
-        return <MobileLayoutsPanel />;
+        return <MobileLayoutsFind />;
       case 'participants':
         return (
           <Suspense fallback={null}>

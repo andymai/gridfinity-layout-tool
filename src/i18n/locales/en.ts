@@ -4577,6 +4577,9 @@ const en: Record<string, string> = {
   'commandPalette.category.preview': '3D Preview',
   'commandPalette.category.bins': 'Bins',
   'places.find.indexing': 'Searching your layouts…',
+  'places.find.label': 'Find a bin',
+  'places.find.placeholder': 'Find a bin by what it holds',
+  'places.find.noMatch': 'No bins match “{query}”',
   'commandPalette.category.tools': 'Tools',
   'commandPalette.category.export': 'Export',
 

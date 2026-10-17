@@ -6,9 +6,9 @@ Find what a bin holds across every layout, behind the `places` labs flag.
 
 - `find/matchBins.ts`: word matching over item names, labels and notes (prefixes, a trailing plural, the label vocabulary's canonical terms)
 - `find/findIndex.ts`: per-session search records for stored layouts, re-read when a library entry's `modifiedAt` changes
-- `hooks/useFindBins.ts`: results with their folder, layout and layer path; the active layout is read live from the store
+- `hooks/useFindBins.ts`: results with their folder, layout and layer path; the active layout is read live
 - `hooks/useFocusBin.ts`: opens the bin's layout and selects it on its layer
-- `components/PlacesFindGroup/`: the bin group the shell hands the command palette
+- `components/`: `PlacesFindGroup` for the command palette, `PlacesFindList` for the mobile layouts sheet
 
 ## Gotchas
 
