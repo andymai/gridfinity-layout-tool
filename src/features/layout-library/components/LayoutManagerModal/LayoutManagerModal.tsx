@@ -11,6 +11,7 @@ import { FolderTree } from './FolderTree';
 import { FolderBreadcrumb } from './FolderBreadcrumb';
 import { MoveToFolderDialog } from './MoveToFolderDialog';
 import { useLayoutFolders } from '@/shared/hooks/useLayoutFolders';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { childFolders, entriesInFolder, entryFolderId, folderPath } from '@/core/storage';
 import type { ViewMode } from './ViewModeToggle';
 import type { Layout } from '@/core/types';
@@ -96,6 +97,7 @@ function LayoutManagerModalContent({
   const setLibrary = useLibraryStore((state) => state.setLibrary);
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
   const folderOps = useLayoutFolders();
+  const placesEnabled = useFeatureFlag('places');
   const hasFolders = folderOps.folders.length > 0;
   // A folder that vanished under the selection (deleted here, or elsewhere and
   // pulled) falls back to every layout rather than an empty, unnamed view.
@@ -385,9 +387,16 @@ function LayoutManagerModalContent({
                     library={library}
                     selectedId={currentFolderId}
                     onSelect={setFolderId}
-                    onCreate={(name, parentId) => void folderOps.createFolder(name, parentId)}
+                    onCreate={(name, parentId, kind) =>
+                      void folderOps.createFolder(name, parentId, kind)
+                    }
                     onRename={(id, name) => void folderOps.renameFolder(id, name)}
                     onDelete={(id) => void handleDeleteFolder(id)}
+                    onSetKind={
+                      placesEnabled
+                        ? (id, kind) => void folderOps.setFolderKind(id, kind)
+                        : undefined
+                    }
                   />
                 </aside>
               )}

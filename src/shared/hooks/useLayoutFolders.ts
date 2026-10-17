@@ -9,8 +9,8 @@ import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLibraryStore } from '@/core/store/library';
 import { useToastStore } from '@/core/store/toast';
-import type { LayoutFolder, LayoutId, LayoutLibrary } from '@/core/types';
-import { getUserMessage, isErr } from '@/core/result';
+import type { FolderKind, LayoutFolder, LayoutId, LayoutLibrary } from '@/core/types';
+import { getUserMessage, isErr, ok } from '@/core/result';
 import type { LayoutError, Result } from '@/core/result';
 import {
   createFolder as createFolderIn,
@@ -19,10 +19,26 @@ import {
   renameFolder as renameFolderIn,
   saveLibrary,
   setEntryFolder,
+  setFolderKind as setFolderKindIn,
 } from '@/core/storage';
 import { useTranslation } from '@/i18n';
 
 const EMPTY_FOLDERS: readonly LayoutFolder[] = [];
+
+type Created = { library: LayoutLibrary; folder: LayoutFolder };
+
+function createKinded(
+  library: LayoutLibrary,
+  name: string,
+  parentId: string | null,
+  kind: FolderKind | undefined
+): Result<Created, LayoutError> {
+  const created = createFolderIn(library, name, parentId);
+  if (kind === undefined || isErr(created)) return created;
+  const { folder } = created.value;
+  const kinded = setFolderKindIn(created.value.library, folder.id, kind, folder.createdAt);
+  return isErr(kinded) ? kinded : ok({ library: kinded.value, folder: { ...folder, kind } });
+}
 
 export function useLayoutFolders() {
   const t = useTranslation();
@@ -59,8 +75,12 @@ export function useLayoutFolders() {
   const current = (): LayoutLibrary => useLibraryStore.getState().library;
 
   const createFolder = useCallback(
-    async (name: string, parentId: string | null = null): Promise<LayoutFolder | null> => {
-      const created = await commit(createFolderIn(current(), name, parentId), (v) => v.library);
+    async (
+      name: string,
+      parentId: string | null = null,
+      kind?: FolderKind
+    ): Promise<LayoutFolder | null> => {
+      const created = await commit(createKinded(current(), name, parentId, kind), (v) => v.library);
       return created?.folder ?? null;
     },
     [commit]
@@ -88,5 +108,18 @@ export function useLayoutFolders() {
     [commit]
   );
 
-  return { folders, createFolder, renameFolder, moveFolder, deleteFolder, moveLayout };
+  const setFolderKind = useCallback(
+    (id: string, kind: FolderKind) => commit(setFolderKindIn(current(), id, kind), (v) => v),
+    [commit]
+  );
+
+  return {
+    folders,
+    createFolder,
+    renameFolder,
+    moveFolder,
+    deleteFolder,
+    moveLayout,
+    setFolderKind,
+  };
 }

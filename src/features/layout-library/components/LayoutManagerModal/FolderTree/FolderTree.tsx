@@ -1,24 +1,27 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { KeyboardEvent } from 'react';
-import type { LayoutFolder, LayoutLibrary } from '@/core/types';
-import { childFolders, entriesInFolder, folderPath } from '@/core/storage';
+import type { FolderKind, LayoutFolder, LayoutLibrary } from '@/core/types';
+import { childFolders, entriesInFolder, folderKind, folderPath } from '@/core/storage';
 import { useTranslation } from '@/i18n';
-import { Button, IconButton, Input, useInlineEdit } from '@/design-system';
+import { Button, IconButton, Input, Menu, useInlineEdit } from '@/design-system';
 import { useTwoClickDelete } from '@/shared/components';
+import { FOLDER_KIND_ICON } from '@/shared/constants/iconPaths';
+import { FOLDER_KIND_ACTION, offeredKinds } from '@/shared/utils/folderKinds';
 
 interface FolderTreeProps {
   readonly library: LayoutLibrary;
   /** The folder whose layouts the list shows; null for every layout. */
   readonly selectedId: string | null;
   readonly onSelect: (folderId: string | null) => void;
-  readonly onCreate: (name: string, parentId: string | null) => void;
+  readonly onCreate: (name: string, parentId: string | null, kind?: FolderKind) => void;
   readonly onRename: (id: string, name: string) => void;
   readonly onDelete: (id: string) => void;
+  /** Present while the `places` flag is on: kinds get their icons and can be changed. */
+  readonly onSetKind?: (id: string, kind: FolderKind) => void;
 }
 
 const ICON = {
   chevron: 'M9 5l7 7-7 7',
-  folder: 'M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z',
   layouts:
     'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z',
   pencil:
@@ -26,13 +29,66 @@ const ICON = {
   trash:
     'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16',
   plus: 'M12 4v16m8-8H4',
+  swap: 'M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4',
 } as const;
 
-function Glyph({ d, className = 'h-4 w-4' }: { d: string; className?: string }) {
+function Glyph({
+  d,
+  className = 'h-4 w-4',
+}: {
+  d: string | readonly string[];
+  className?: string;
+}) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+      {(typeof d === 'string' ? [d] : d).map((path) => (
+        <path key={path} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={path} />
+      ))}
     </svg>
+  );
+}
+
+interface KindMenuProps {
+  readonly folder: LayoutFolder;
+  readonly topLevel: boolean;
+  readonly onSetKind: (id: string, kind: FolderKind) => void;
+}
+
+function KindMenu({ folder, topLevel, onSetKind }: KindMenuProps) {
+  const t = useTranslation();
+  const [at, setAt] = useState<{ x: number; y: number } | null>(null);
+  const current = folderKind(folder);
+
+  return (
+    <>
+      <IconButton
+        size="sm"
+        touchTarget={false}
+        onClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          setAt({ x: rect.left, y: rect.bottom + 4 });
+        }}
+        aria-label={`${t('places.kind.change')}: ${folder.name}`}
+        aria-haspopup="menu"
+        className="h-6 w-6 text-content-tertiary hover:text-content"
+      >
+        <Glyph d={ICON.swap} className="h-3.5 w-3.5" />
+      </IconButton>
+      <Menu.Root open={at !== null} onClose={() => setAt(null)} position={at ?? { x: 0, y: 0 }}>
+        {offeredKinds(current, topLevel).map((kind) => (
+          <Menu.Item
+            key={kind}
+            icon={<Glyph d={FOLDER_KIND_ICON[kind]} />}
+            onClick={() => {
+              setAt(null);
+              onSetKind(folder.id, kind);
+            }}
+          >
+            {t(FOLDER_KIND_ACTION[kind])}
+          </Menu.Item>
+        ))}
+      </Menu.Root>
+    </>
   );
 }
 
@@ -51,6 +107,7 @@ interface FolderRowProps {
   readonly onSelect: (id: string) => void;
   readonly onRename: (id: string, name: string) => void;
   readonly onDelete: (id: string) => void;
+  readonly onSetKind?: (id: string, kind: FolderKind) => void;
 }
 
 function FolderRow({
@@ -63,6 +120,7 @@ function FolderRow({
   onSelect,
   onRename,
   onDelete,
+  onSetKind,
 }: FolderRowProps) {
   const t = useTranslation();
   const children = childFolders(library, folder.id);
@@ -134,7 +192,10 @@ function FolderRow({
             aria-label={t('layouts.folders.open', { name: folder.name })}
             className="h-6 min-w-0 flex-1 justify-start gap-1.5 px-1 font-normal hover:bg-transparent"
           >
-            <Glyph d={ICON.folder} className="h-4 w-4 shrink-0 text-content-tertiary" />
+            <Glyph
+              d={onSetKind ? FOLDER_KIND_ICON[folderKind(folder)] : FOLDER_KIND_ICON.area}
+              className="h-4 w-4 shrink-0 text-content-tertiary"
+            />
             <span className="truncate">{folder.name}</span>
             {count > 0 && (
               <span className="ml-auto shrink-0 text-xs tabular-nums text-content-tertiary">
@@ -151,6 +212,7 @@ function FolderRow({
                 : 'opacity-0 focus-within:opacity-100 group-hover:opacity-100'
             }`}
           >
+            {onSetKind && <KindMenu folder={folder} topLevel={depth === 1} onSetKind={onSetKind} />}
             <IconButton
               size="sm"
               touchTarget={false}
@@ -192,6 +254,7 @@ function FolderRow({
               onSelect={onSelect}
               onRename={onRename}
               onDelete={onDelete}
+              onSetKind={onSetKind}
             />
           ))}
         </ul>
@@ -212,10 +275,12 @@ export function FolderTree({
   onCreate,
   onRename,
   onDelete,
+  onSetKind,
 }: FolderTreeProps) {
   const t = useTranslation();
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
   const [draft, setDraft] = useState<string | null>(null);
+  const [draftPlace, setDraftPlace] = useState(false);
 
   // Ancestors of the selection are always open, so a selection made elsewhere
   // (a breadcrumb, a move) is never hidden inside a collapsed row.
@@ -241,12 +306,18 @@ export function FolderTree({
 
   const commitDraft = useCallback(() => {
     const name = draft?.trim() ?? '';
-    if (name !== '') {
+    if (name !== '' && draftPlace) onCreate(name, null, 'place');
+    else if (name !== '') {
       onCreate(name, selectedId);
       if (selectedId !== null) setExpanded((prev) => new Set([...prev, selectedId]));
     }
     setDraft(null);
-  }, [draft, onCreate, selectedId]);
+  }, [draft, draftPlace, onCreate, selectedId]);
+
+  const startDraft = (place: boolean) => {
+    setDraftPlace(place);
+    setDraft('');
+  };
 
   const onDraftKey = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') commitDraft();
@@ -290,6 +361,7 @@ export function FolderTree({
             onSelect={onSelect}
             onRename={onRename}
             onDelete={onDelete}
+            onSetKind={onSetKind}
           />
         ))}
       </ul>
@@ -302,8 +374,12 @@ export function FolderTree({
             size="sm"
             fullWidth
             maxLength={32}
-            placeholder={t('layouts.folders.namePlaceholder')}
-            aria-label={t('layouts.folders.namePlaceholder')}
+            placeholder={t(
+              draftPlace ? 'places.namePlaceholder' : 'layouts.folders.namePlaceholder'
+            )}
+            aria-label={t(
+              draftPlace ? 'places.namePlaceholder' : 'layouts.folders.namePlaceholder'
+            )}
             // eslint-disable-next-line jsx-a11y/no-autofocus -- the row exists only to be typed into
             autoFocus
           />
@@ -312,18 +388,31 @@ export function FolderTree({
           </Button>
         </div>
       ) : (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setDraft('')}
-          leftIcon={<Glyph d={ICON.plus} />}
-          className="mt-2 justify-start text-content-secondary"
-          title={
-            selectedName ? t('layouts.folders.newSubfolder', { name: selectedName }) : undefined
-          }
-        >
-          {t('layouts.folders.newFolder')}
-        </Button>
+        <div className="mt-2 flex flex-wrap items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => startDraft(false)}
+            leftIcon={<Glyph d={ICON.plus} />}
+            className="justify-start text-content-secondary"
+            title={
+              selectedName ? t('layouts.folders.newSubfolder', { name: selectedName }) : undefined
+            }
+          >
+            {t('layouts.folders.newFolder')}
+          </Button>
+          {onSetKind && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => startDraft(true)}
+              leftIcon={<Glyph d={FOLDER_KIND_ICON.place} />}
+              className="justify-start text-content-secondary"
+            >
+              {t('places.newPlace')}
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );

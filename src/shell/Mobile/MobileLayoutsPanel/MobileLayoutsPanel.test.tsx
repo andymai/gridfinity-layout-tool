@@ -3,6 +3,7 @@ import type * as Storage from '@/core/storage';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { MobileLayoutsPanel } from '@/shell/Mobile/MobileLayoutsPanel';
 import { useLibraryStore } from '@/core/store/library';
+import { useLabsStore } from '@/core/store';
 import { useLayoutStore } from '@/core/store/layout';
 import { useMobileStore } from '@/core/store/mobile';
 import { useInteractionStore } from '@/core/store/interaction';
@@ -881,5 +882,38 @@ describe('MobileLayoutsPanel folders', () => {
       expect(useLibraryStore.getState().library.folders).toHaveLength(0);
     });
     expect(screen.getByText('Second Layout')).toBeInTheDocument();
+  });
+
+  describe('with places on', () => {
+    beforeEach(() => useLabsStore.getState().enableFeature('places'));
+    afterEach(() => useLabsStore.getState().disableFeature('places'));
+
+    it('creates a place at the top from the sheet', async () => {
+      render(<MobileLayoutsPanel />);
+      fireEvent.click(screen.getByRole('button', { name: 'New place' }));
+      const input = screen.getByRole('textbox', { name: 'Place name, like Home or Shop' });
+      fireEvent.change(input, { target: { value: 'Shop' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+      await waitFor(() => {
+        const shop = useLibraryStore.getState().library.folders?.find((f) => f.name === 'Shop');
+        expect(shop).toMatchObject({ kind: 'place', parentId: null });
+      });
+    });
+
+    it('changes a folder’s kind from its menu', async () => {
+      render(<MobileLayoutsPanel />);
+      fireEvent.click(screen.getByRole('button', { name: 'Folder actions for Study' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Make it a storage unit' }));
+      await waitFor(() => {
+        expect(useLibraryStore.getState().library.folders?.[0]?.kind).toBe('unit');
+      });
+    });
+
+    it('offers no new place inside a folder', () => {
+      render(<MobileLayoutsPanel />);
+      expect(screen.getByRole('button', { name: 'New place' })).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Open folder Study' }));
+      expect(screen.queryByRole('button', { name: 'New place' })).toBeNull();
+    });
   });
 });

@@ -5,7 +5,16 @@ import { useInteractionStore } from '@/core/store/interaction';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLayoutSwitcher } from '@/shared/hooks';
 import { useLayoutFolders } from '@/shared/hooks/useLayoutFolders';
-import { childFolders, entriesInFolder, entryFolderId, folderPath } from '@/core/storage';
+import {
+  childFolders,
+  entriesInFolder,
+  entryFolderId,
+  folderKind,
+  folderPath,
+} from '@/core/storage';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { FOLDER_KIND_ICON } from '@/shared/constants/iconPaths';
+import { FOLDER_KIND_ACTION, offeredKinds } from '@/shared/utils/folderKinds';
 import { FolderBreadcrumb, FolderPickList } from '@/features/layout-library';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
@@ -62,6 +71,7 @@ export function MobileLayoutsPanel() {
   // Drill-down: the root shows the top-level folders and the unfiled layouts.
   const [folderId, setFolderId] = useState<string | null>(null);
   const [newFolderName, setNewFolderName] = useState<string | null>(null);
+  const [newFolderIsPlace, setNewFolderIsPlace] = useState(false);
   const [folderMenuId, setFolderMenuId] = useState<string | null>(null);
   const [renameFolderId, setRenameFolderId] = useState<string | null>(null);
   const [renameFolderValue, setRenameFolderValue] = useState('');
@@ -91,6 +101,7 @@ export function MobileLayoutsPanel() {
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
   const folderOps = useLayoutFolders();
+  const placesEnabled = useFeatureFlag('places');
 
   const entries = library.entries;
   const hasFolders = folderOps.folders.length > 0;
@@ -125,9 +136,18 @@ export function MobileLayoutsPanel() {
     const name = newFolderName?.trim() ?? '';
     setNewFolderName(null);
     if (name === '') return;
-    const created = await folderOps.createFolder(name, currentFolderId);
-    if (created) announceToScreenReader(t('layouts.folders.newFolder'));
-  }, [newFolderName, folderOps, currentFolderId, announceToScreenReader, t]);
+    const created = newFolderIsPlace
+      ? await folderOps.createFolder(name, null, 'place')
+      : await folderOps.createFolder(name, currentFolderId);
+    if (created) {
+      announceToScreenReader(t(newFolderIsPlace ? 'places.newPlace' : 'layouts.folders.newFolder'));
+    }
+  }, [newFolderName, newFolderIsPlace, folderOps, currentFolderId, announceToScreenReader, t]);
+
+  const startNewFolder = (isPlace: boolean) => {
+    setNewFolderIsPlace(isPlace);
+    setNewFolderName('');
+  };
 
   const handleRenameFolderConfirm = useCallback(() => {
     if (!renameFolderId) return;
@@ -344,15 +364,28 @@ export function MobileLayoutsPanel() {
             ? t('mobile.layouts.layoutCountOne')
             : t('mobile.layouts.layoutCount', { count: entries.length })}
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setNewFolderName('')}
-          leftIcon={<SvgIcon path={ICON_PATHS.folder} className="w-4 h-4" />}
-          className="h-8 px-2 text-content-secondary"
-        >
-          {t('layouts.folders.newFolder')}
-        </Button>
+        <div className="flex items-center gap-1">
+          {placesEnabled && currentFolderId === null && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => startNewFolder(true)}
+              leftIcon={<SvgIcon path={FOLDER_KIND_ICON.place} className="w-4 h-4" />}
+              className="h-8 px-2 text-content-secondary"
+            >
+              {t('places.newPlace')}
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => startNewFolder(false)}
+            leftIcon={<SvgIcon path={ICON_PATHS.folder} className="w-4 h-4" />}
+            className="h-8 px-2 text-content-secondary"
+          >
+            {t('layouts.folders.newFolder')}
+          </Button>
+        </div>
       </div>
 
       {hasFolders && (
@@ -376,7 +409,10 @@ export function MobileLayoutsPanel() {
                   aria-label={t('layouts.folders.open', { name: folder.name })}
                   className="min-w-0 flex-1 justify-start gap-3 rounded-none p-4 text-left hover:bg-transparent"
                 >
-                  <SvgIcon path={ICON_PATHS.folder} className="w-5 h-5 shrink-0 text-accent" />
+                  <SvgIcon
+                    path={placesEnabled ? FOLDER_KIND_ICON[folderKind(folder)] : ICON_PATHS.folder}
+                    className="w-5 h-5 shrink-0 text-accent"
+                  />
                   <span className="min-w-0 flex-1 truncate text-base font-medium text-content">
                     {folder.name}
                   </span>
@@ -560,7 +596,7 @@ export function MobileLayoutsPanel() {
       {newFolderName !== null && (
         <ActionSheet onClose={() => setNewFolderName(null)}>
           <h3 className="text-lg font-semibold text-content mb-4">
-            {t('layouts.folders.newFolder')}
+            {t(newFolderIsPlace ? 'places.newPlace' : 'layouts.folders.newFolder')}
           </h3>
           <Input
             value={newFolderName}
@@ -572,8 +608,12 @@ export function MobileLayoutsPanel() {
             fullWidth
             size="lg"
             className="text-base"
-            placeholder={t('layouts.folders.namePlaceholder')}
-            aria-label={t('layouts.folders.namePlaceholder')}
+            placeholder={t(
+              newFolderIsPlace ? 'places.namePlaceholder' : 'layouts.folders.namePlaceholder'
+            )}
+            aria-label={t(
+              newFolderIsPlace ? 'places.namePlaceholder' : 'layouts.folders.namePlaceholder'
+            )}
             maxLength={32}
             // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
             autoFocus
@@ -616,6 +656,21 @@ export function MobileLayoutsPanel() {
             >
               {t('layouts.folders.rename')}
             </Button>
+            {placesEnabled &&
+              offeredKinds(folderKind(folderMenu), currentFolderId === null).map((kind) => (
+                <Button
+                  key={kind}
+                  variant="secondary"
+                  fullWidth
+                  onClick={() => {
+                    void folderOps.setFolderKind(folderMenu.id, kind);
+                    setFolderMenuId(null);
+                  }}
+                  className="h-12 justify-start"
+                >
+                  {t(FOLDER_KIND_ACTION[kind])}
+                </Button>
+              ))}
             <Button
               variant="secondary"
               fullWidth

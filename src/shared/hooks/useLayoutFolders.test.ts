@@ -57,6 +57,25 @@ describe('useLayoutFolders', () => {
     expect(storage.saveLibrary).toHaveBeenCalledTimes(1);
   });
 
+  it('creates a place at the top and changes a folder’s kind', async () => {
+    const { result } = renderHook(() => useLayoutFolders());
+    let shop: Awaited<ReturnType<typeof result.current.createFolder>> = null;
+    await act(async () => {
+      shop = await result.current.createFolder('Shop', null, 'place');
+      await result.current.setFolderKind('study', 'unit');
+    });
+    expect(shop).toMatchObject({ name: 'Shop', kind: 'place' });
+    expect(result.current.folders.find((f) => f.name === 'Shop')?.kind).toBe('place');
+    expect(result.current.folders.find((f) => f.id === 'study')?.kind).toBe('unit');
+
+    let nested: Awaited<ReturnType<typeof result.current.createFolder>> = null;
+    await act(async () => {
+      nested = await result.current.createFolder('Cellar', 'study', 'place');
+    });
+    expect(nested).toBeNull();
+    expect(result.current.folders.some((f) => f.name === 'Cellar')).toBe(false);
+  });
+
   it('moves a layout and bumps it so the change syncs', async () => {
     const { result } = renderHook(() => useLayoutFolders());
     await act(async () => {

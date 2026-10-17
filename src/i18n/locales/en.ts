@@ -4580,6 +4580,12 @@ const en: Record<string, string> = {
   'places.find.label': 'Find a bin',
   'places.find.placeholder': 'Find a bin by what it holds',
   'places.find.noMatch': 'No bins match “{query}”',
+  'places.kind.change': 'Change kind',
+  'places.kind.makePlace': 'Make it a place',
+  'places.kind.makeArea': 'Make it an area',
+  'places.kind.makeUnit': 'Make it a storage unit',
+  'places.newPlace': 'New place',
+  'places.namePlaceholder': 'Place name, like Home or Shop',
   'commandPalette.category.tools': 'Tools',
   'commandPalette.category.export': 'Export',
 

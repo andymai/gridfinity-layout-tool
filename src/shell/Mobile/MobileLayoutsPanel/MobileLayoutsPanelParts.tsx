@@ -37,14 +37,16 @@ export const ICON_PATHS = {
 } as const;
 
 interface SvgIconProps {
-  readonly path: string;
+  readonly path: string | readonly string[];
   readonly className?: string;
 }
 
 export function SvgIcon({ path, className = 'w-5 h-5' }: SvgIconProps) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={path} />
+      {(typeof path === 'string' ? [path] : path).map((d) => (
+        <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+      ))}
     </svg>
   );
 }

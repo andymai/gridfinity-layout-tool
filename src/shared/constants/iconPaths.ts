@@ -1,3 +1,5 @@
+import type { FolderKind } from '@/core/types';
+
 export const ICON_PATHS = {
   search: ['M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'],
   close: ['M6 18L18 6M6 6l12 12'],
@@ -74,9 +76,21 @@ export const ICON_PATHS = {
   brush: [
     'M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42',
   ],
+  folder: ['M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z'],
+  cabinet: [
+    'M5 3h14a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1V4a1 1 0 011-1z',
+    'M4 9h16M4 15h16',
+    'M10 6h4M10 12h4M10 18h4',
+  ],
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;
+
+export const FOLDER_KIND_ICON: Record<FolderKind, readonly string[]> = {
+  place: ICON_PATHS.home,
+  area: ICON_PATHS.folder,
+  unit: ICON_PATHS.cabinet,
+};
 
 /**
  * Brand glyphs are filled single-path marks with their own viewBoxes, so they
