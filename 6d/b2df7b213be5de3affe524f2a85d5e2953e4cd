@@ -1,0 +1,151 @@
+src/i18n/locales/pt-BR.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/features/places/find/searchText.ts
+  s_078fc63cde22ff::t_6e6d6a561d791d 1-16
+src/i18n/locales/ka.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 3831
+  s_078fc63cde22ff::t_0041f2be4fb7fd 444-451
+src/features/places/find/findIndex.test.ts
+  s_078fc63cde22ff::t_9134078d93c829 1-2,4-16,18-72
+  s_078fc63cde22ff::t_35b26dca112949 3,17
+  s_078fc63cde22ff::t_b3b775902a4e55 73-87,107-129
+src/i18n/locales/ja.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/features/places/index.ts
+  s_078fc63cde22ff::t_549d8a0f9e25d2 1
+src/i18n/locales/nb.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/i18n/locales/nl.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/App.tsx
+  s_078fc63cde22ff::t_b6635cecdcefa1 93
+  s_078fc63cde22ff::t_58c78b141afc86 546
+src/shell/hooks/usePlacesFindResults.tsx
+  s_078fc63cde22ff::t_b6635cecdcefa1 1-11,18-26,28
+src/features/places/README.md
+  s_078fc63cde22ff::t_549d8a0f9e25d2 1-16
+src/i18n/locales/it.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/i18n/locales/ko.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/features/places/hooks/useFindBins.ts
+  s_078fc63cde22ff::t_5815044acbb796 1-69,71,75-82,84-86,88-90
+  s_078fc63cde22ff::t_8f66ecf8f26f47 70,83
+src/core/labs/features.ts
+  s_078fc63cde22ff::t_13dcddf8193272 276-285
+src/features/places/find/matchBins.ts
+  s_078fc63cde22ff::t_9134078d93c829 36
+  s_078fc63cde22ff::t_9988e4f671437c 75-76
+  s_078fc63cde22ff::t_f724768d02924e 1,4-10,12-29,35,37-39,41-67,70-74,83-90
+  s_078fc63cde22ff::t_747314d7d1e547 34
+src/features/places/components/index.ts
+  s_078fc63cde22ff::t_549d8a0f9e25d2 1
+src/features/command-palette/components/CommandPalette/CommandPalette.test.tsx
+  s_078fc63cde22ff::t_eb6d18db2e7848 4,141
+  s_078fc63cde22ff::t_a529ebe9ebd285 137-140,142-154,178
+src/shell/hooks/usePlacesFindResults.test.tsx
+  s_078fc63cde22ff::t_a6098a5b770705 10,19
+  s_078fc63cde22ff::t_b6635cecdcefa1 1-3,5-8,11-13,15-18,21-22,29
+src/i18n/locales/fr.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/features/places/components/PlacesFindGroup/index.ts
+  s_078fc63cde22ff::t_549d8a0f9e25d2 1-2
+src/features/places/components/PlacesFindGroup/PlacesFindGroup.test.tsx
+  s_078fc63cde22ff::t_45a125cf2b2dfb 2-4,8-9,11-16,23-31,33-56,63-73,89-91,93-94,96-103,120-124
+  s_078fc63cde22ff::t_c769473063c436 1,57-58,60-61,74-88
+  s_078fc63cde22ff::t_d4beb00cf16352 6,32
+  s_078fc63cde22ff::t_81ff951c11ea81 125-136
+src/i18n/locales/cs.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/features/places/hooks/useFocusBin.test.ts
+  s_078fc63cde22ff::t_8878ab4b07e958 1-7,9-80,94-101
+src/i18n/locales/zh-CN.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/features/places/find/matchBins.test.ts
+  s_078fc63cde22ff::t_8bcd773659bf28 1-48,60-61,70-79
+src/i18n/locales/en.ts
+  s_078fc63cde22ff::t_8f66ecf8f26f47 4579
+  s_078fc63cde22ff::t_0041f2be4fb7fd 498-505
+src/i18n/locales/sv.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/features/places/find/findIndex.ts
+  s_078fc63cde22ff::t_c425adbbf91861 86
+  s_078fc63cde22ff::t_2e59a2401efc7f 1-47,61-85,87,89
+src/i18n/locales/es.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/i18n/locales/pl.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/i18n/locales/uk.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/features/places/hooks/useFocusBin.ts
+  s_078fc63cde22ff::t_ffdbe64108831b 1-5,7-28,30-33
+src/features/places/components/PlacesFindGroup/PlacesFindGroup.tsx
+  s_078fc63cde22ff::t_1facfbc9004ce7 1-2,4-6,9-15,21-26,41-47,49-52,69-71
+  s_078fc63cde22ff::t_549d8a0f9e25d2 16
+  s_078fc63cde22ff::t_f66424c213dcff 27-28,31,39-40,53-55,57-68
+  s_078fc63cde22ff::t_8f66ecf8f26f47 48
+  s_078fc63cde22ff::t_58c78b141afc86 7-8
+src/i18n/locales/de.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/features/command-palette/components/CommandPalette/CommandPalette.tsx
+  s_078fc63cde22ff::t_8f66ecf8f26f47 11,32-33,36-41,201
+  s_078fc63cde22ff::t_681d7560b97779 202
+scripts/doc-budget.json
+  s_078fc63cde22ff::t_c42fe549afc419 3-7,70
+src/features/bin-inspector/components/Inspector/BinItemsEditor/BinItemsEditor.tsx
+  s_078fc63cde22ff::t_66621a7c5bbd6f 1-4,6-53,56-64,67-68,70,73,75,79-165,174-185,188-196
+  s_078fc63cde22ff::t_7ee29ba8dd77ee 69,71-72,74,76-78,166-170,172-173
+  s_078fc63cde22ff::t_a2f3c4ece038d1 5,54-55,65-66,171,186-187
+src/features/bin-inspector/hooks/binInspectorTypes.ts
+  s_078fc63cde22ff::t_6d25254c5a216c 9,45
+src/features/bin-inspector/components/Inspector/BinItemsEditor/index.ts
+  s_078fc63cde22ff::t_7ee29ba8dd77ee 1
+src/shell/RightPanel/RightPanel.test.tsx
+  s_078fc63cde22ff::t_890ba757117e4e 191
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_078fc63cde22ff::t_c3431c8fabb25c 21-22,64,78,415-422
+  s_078fc63cde22ff::t_f2bafa281ea705 423
+src/features/bin-inspector/components/Inspector/MultiBinInspector/MultiBinInspector.test.tsx
+  s_078fc63cde22ff::t_890ba757117e4e 71
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_078fc63cde22ff::t_6d25254c5a216c 280-289,543
+  s_078fc63cde22ff::t_661f1ffc6d1c49 28
+src/features/bin-inspector/components/Inspector/BinItemsEditor/BinItemsEditor.test.tsx
+  s_078fc63cde22ff::t_fa78306a400f90 1-12,14-17,19-23,25-63,65-72,74-82,87-88
+  s_078fc63cde22ff::t_7aaa4625967853 13,18,24,64,73,83-86
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.test.tsx
+  s_078fc63cde22ff::t_16ce7def244dd4 106,110
+  s_078fc63cde22ff::t_cd0e3b1926ba6e 6,103-105,107-109,111-123
+  s_078fc63cde22ff::t_890ba757117e4e 76
+  s_078fc63cde22ff::t_25c53acf41429d 124-125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6db2df7b213be5de3affe524f2a85d5e2953e4cd",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
