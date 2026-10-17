@@ -1,0 +1,71 @@
+src/shared/schema/layoutKeys.ts
+  s_078fc63cde22ff::t_7461c3477b4d91 10
+  s_078fc63cde22ff::t_fae024ead3b85f 82,93-94
+  s_078fc63cde22ff::t_db542618db1d62 95
+api/sync/layouts/[id].ts
+  s_078fc63cde22ff::t_4263a573a043f9 8-9,13,15,18
+api/lib/shareConstraints.ts
+  s_078fc63cde22ff::t_a69de69521dfdd 28-33
+api/lib/validation.test.ts
+  s_078fc63cde22ff::t_1d6a751b928892 30,86-98
+src/core/types/layout.ts
+  s_078fc63cde22ff::t_c9c053e4afa075 114-124,138
+src/core/sync/adapters/layoutAdapter.ts
+  s_078fc63cde22ff::t_4263a573a043f9 24-27,31,50-60,69-70
+src/core/cqrs/validation/binItems.ts
+  s_078fc63cde22ff::t_99d09e82739cc6 1-17
+src/shared/utils/validationSalvage.ts
+  s_078fc63cde22ff::t_a35c24b8350f7b 19,38,44,47,78,80-81,85,87,96,177-178
+src/shared/schema/keys.ts
+  s_078fc63cde22ff::t_fae024ead3b85f 21,206
+api/lib/binItemsValidation.crossBoundary.test.ts
+  s_078fc63cde22ff::t_1d6a751b928892 1-18
+src/core/sync/adapters/layoutAdapter.test.ts
+  s_078fc63cde22ff::t_5752a45acd4675 307,313-366
+  s_078fc63cde22ff::t_24d64f2df79e34 367-368
+docs/schemas/constraints.md
+  s_078fc63cde22ff::t_7461c3477b4d91 15-42
+src/core/sync/payloadKey.ts
+  s_078fc63cde22ff::t_4263a573a043f9 4
+src/shared/utils/layoutMigration.ts
+  s_078fc63cde22ff::t_a35c24b8350f7b 2,25
+docs/schemas/layout.md
+  s_078fc63cde22ff::t_7461c3477b4d91 160
+api/sync/README.md
+  s_078fc63cde22ff::t_4263a573a043f9 38
+api/sync/layouts/[id].test.ts
+  s_078fc63cde22ff::t_f30d4a8a024acc 227,234,259,270,274,279,286-288
+src/shared/utils/binItems.ts
+  s_078fc63cde22ff::t_ad7a081faa8fc2 1-55
+api/lib/binItemsValidation.test.ts
+  s_078fc63cde22ff::t_1d6a751b928892 1-77
+src/core/constants.ts
+  s_078fc63cde22ff::t_c9c053e4afa075 17-20
+src/core/cqrs/validation/schemas.ts
+  s_078fc63cde22ff::t_99d09e82739cc6 13,112
+public/schema/layout.schema.json
+  s_078fc63cde22ff::t_7461c3477b4d91 539-549,1096-1133
+  s_078fc63cde22ff::t_3a8c25ea7ff337 1134
+src/core/cqrs/v2/domain/bin/updateBin.ts
+  s_078fc63cde22ff::t_99d09e82739cc6 25,52,93-95
+api/lib/binItemsValidation.ts
+  s_078fc63cde22ff::t_a69de69521dfdd 1-61
+api/lib/validation.ts
+  s_078fc63cde22ff::t_a69de69521dfdd 15-16,48,300
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c1839fcd38ffe011fe566a7f5206a67592c172af",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
