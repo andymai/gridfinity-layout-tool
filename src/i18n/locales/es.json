@@ -2376,6 +2376,8 @@
   "places.kind.makeArea": "Convertir en zona",
   "places.kind.makeUnit": "Convertir en mueble de almacenaje",
   "places.newPlace": "Nuevo lugar",
+  "places.myPlace": "Mi lugar",
+  "places.path": "Dónde está este diseño",
   "places.namePlaceholder": "Nombre del lugar, como Casa o Taller",
   "commandPalette.category.edit": "Editar",
   "commandPalette.category.export": "Exportar",

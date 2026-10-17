@@ -2376,6 +2376,8 @@
   "places.kind.makeArea": "Maak er een ruimte van",
   "places.kind.makeUnit": "Maak er een opbergmeubel van",
   "places.newPlace": "Nieuwe plek",
+  "places.myPlace": "Mijn plek",
+  "places.path": "Waar deze layout staat",
   "places.namePlaceholder": "Naam van de plek, zoals Thuis of Werkplaats",
   "commandPalette.category.edit": "Bewerken",
   "commandPalette.category.export": "Export",

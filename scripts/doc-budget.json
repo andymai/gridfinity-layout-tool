@@ -1,10 +1,6 @@
 {
   "tolerance": "1.1",
-  "allowedMissingRefs": [
-    "b17779575",
-    "components/Foo.tsx",
-    "diffProps"
-  ],
+  "allowedMissingRefs": ["b17779575", "components/Foo.tsx", "diffProps"],
   "words": {
     ".claude/skills/analytics-and-labs/SKILL.md": 1268,
     ".claude/skills/auth-and-sync/SKILL.md": 1320,
@@ -19,6 +15,7 @@
     ".claude/skills/json-schemas/SKILL.md": 872,
     ".claude/skills/manual-deploy/SKILL.md": 463,
     ".claude/skills/mesh-storage/SKILL.md": 1512,
+    ".claude/skills/places/SKILL.md": 768,
     ".claude/skills/print-export/SKILL.md": 1587,
     ".claude/skills/quality-gates/SKILL.md": 1761,
     ".claude/skills/release-and-ci/SKILL.md": 1579,
@@ -67,7 +64,7 @@
     "src/features/layers/README.md": 208,
     "src/features/layout-library/README.md": 403,
     "src/features/onboarding/README.md": 267,
-    "src/features/places/README.md": 129,
+    "src/features/places/README.md": 128,
     "src/features/print-export/README.md": 227,
     "src/features/scan-capture/README.md": 1702,
     "src/features/snapshots/README.md": 140,

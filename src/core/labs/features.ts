@@ -277,7 +277,7 @@ export const FEATURE_FLAGS = [
     id: 'places',
     name: 'Find What Your Bins Hold',
     description:
-      'Search bin labels and notes across every layout from the command palette (Ctrl/Cmd+K), and jump straight to the bin.',
+      'Say what each bin holds, then find it in any layout from the command palette (Ctrl/Cmd+K) or the layouts sheet on a phone, and jump straight to it. Folders become places, areas and storage units.',
     status: 'experimental',
     risk: 'low',
     addedAt: '2026-10',

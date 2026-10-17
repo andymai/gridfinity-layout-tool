@@ -2376,6 +2376,8 @@
   "places.kind.makeArea": "设为区域",
   "places.kind.makeUnit": "设为收纳家具",
   "places.newPlace": "新建地点",
+  "places.myPlace": "我的地点",
+  "places.path": "此布局所在位置",
   "places.namePlaceholder": "地点名称，如家或工作间",
   "commandPalette.category.edit": "编辑",
   "commandPalette.category.export": "导出",

@@ -2376,6 +2376,8 @@
   "places.kind.makeArea": "Zrób z tego strefę",
   "places.kind.makeUnit": "Zrób z tego mebel do przechowywania",
   "places.newPlace": "Nowe miejsce",
+  "places.myPlace": "Moje miejsce",
+  "places.path": "Gdzie jest ten układ",
   "places.namePlaceholder": "Nazwa miejsca, np. Dom lub Warsztat",
   "commandPalette.category.edit": "Edycja",
   "commandPalette.category.export": "Eksport",

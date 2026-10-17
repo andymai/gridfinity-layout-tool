@@ -2376,6 +2376,8 @@
   "places.kind.makeArea": "Zu einem Bereich machen",
   "places.kind.makeUnit": "Zu einem Stauraum machen",
   "places.newPlace": "Neuer Ort",
+  "places.myPlace": "Mein Ort",
+  "places.path": "Wo dieses Layout liegt",
   "places.namePlaceholder": "Name des Orts, z. B. Zuhause oder Werkstatt",
   "commandPalette.category.edit": "Bearbeiten",
   "commandPalette.category.export": "Export",

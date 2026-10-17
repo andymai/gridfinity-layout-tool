@@ -2376,6 +2376,8 @@
   "places.kind.makeArea": "Зробити зоною",
   "places.kind.makeUnit": "Зробити меблями для зберігання",
   "places.newPlace": "Нове місце",
+  "places.myPlace": "Моє місце",
+  "places.path": "Де ця розкладка",
   "places.namePlaceholder": "Назва місця, наприклад Дім або Майстерня",
   "commandPalette.category.edit": "Редагування",
   "commandPalette.category.export": "Експорт",

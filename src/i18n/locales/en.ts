@@ -4588,6 +4588,8 @@ const en: Record<string, string> = {
   'places.kind.makeArea': 'Make it an area',
   'places.kind.makeUnit': 'Make it a storage unit',
   'places.newPlace': 'New place',
+  'places.myPlace': 'My place',
+  'places.path': 'Where this layout is',
   'places.namePlaceholder': 'Place name, like Home or Shop',
   'commandPalette.category.tools': 'Tools',
   'commandPalette.category.export': 'Export',

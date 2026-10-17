@@ -2376,6 +2376,8 @@
   "places.kind.makeArea": "En faire une zone",
   "places.kind.makeUnit": "En faire un rangement",
   "places.newPlace": "Nouveau lieu",
+  "places.myPlace": "Mon lieu",
+  "places.path": "Où se trouve ce layout",
   "places.namePlaceholder": "Nom du lieu, comme Maison ou Atelier",
   "commandPalette.category.edit": "Édition",
   "commandPalette.category.export": "Export",

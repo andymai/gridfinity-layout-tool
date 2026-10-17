@@ -2376,6 +2376,8 @@
   "places.kind.makeArea": "Gör till ett område",
   "places.kind.makeUnit": "Gör till en förvaringsenhet",
   "places.newPlace": "Ny plats",
+  "places.myPlace": "Min plats",
+  "places.path": "Var den här layouten finns",
   "places.namePlaceholder": "Platsens namn, till exempel Hemma eller Verkstad",
   "commandPalette.category.edit": "Redigera",
   "commandPalette.category.export": "Exportera",

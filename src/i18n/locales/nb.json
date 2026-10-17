@@ -2376,6 +2376,8 @@
   "places.kind.makeArea": "Gjør det til et område",
   "places.kind.makeUnit": "Gjør det til en oppbevaringsenhet",
   "places.newPlace": "Nytt sted",
+  "places.myPlace": "Mitt sted",
+  "places.path": "Hvor denne layouten er",
   "places.namePlaceholder": "Navn på stedet, som Hjemme eller Verksted",
   "commandPalette.category.edit": "Rediger",
   "commandPalette.category.export": "Eksport",

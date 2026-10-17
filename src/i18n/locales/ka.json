@@ -3840,6 +3840,8 @@
   "places.kind.makeArea": "ზონად გადაქცევა",
   "places.kind.makeUnit": "შესანახ ავეჯად გადაქცევა",
   "places.newPlace": "ახალი ადგილი",
+  "places.myPlace": "ჩემი ადგილი",
+  "places.path": "სად არის ეს განლაგება",
   "places.namePlaceholder": "ადგილის სახელი, მაგ. სახლი ან სახელოსნო",
   "commandPalette.category.tools": "ხელსაწყოები",
   "commandPalette.category.export": "ექსპორტი",

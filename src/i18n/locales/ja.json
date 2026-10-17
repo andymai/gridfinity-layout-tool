@@ -2376,6 +2376,8 @@
   "places.kind.makeArea": "エリアにする",
   "places.kind.makeUnit": "収納家具にする",
   "places.newPlace": "新しい場所",
+  "places.myPlace": "自分の場所",
+  "places.path": "このレイアウトの場所",
   "places.namePlaceholder": "場所の名前（例：自宅、作業場）",
   "commandPalette.category.edit": "編集",
   "commandPalette.category.export": "エクスポート",

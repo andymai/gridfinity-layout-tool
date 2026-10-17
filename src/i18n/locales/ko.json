@@ -2376,6 +2376,8 @@
   "places.kind.makeArea": "구역으로 만들기",
   "places.kind.makeUnit": "수납장으로 만들기",
   "places.newPlace": "새 장소",
+  "places.myPlace": "내 장소",
+  "places.path": "이 레이아웃의 위치",
   "places.namePlaceholder": "장소 이름 (예: 집, 작업실)",
   "commandPalette.category.edit": "편집",
   "commandPalette.category.export": "내보내기",

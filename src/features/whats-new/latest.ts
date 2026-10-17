@@ -6,4 +6,4 @@
  * `latest.test.ts` asserts this matches `WHATS_NEW_ENTRIES[0]`, so the
  * duplication cannot drift past CI or the pre-commit check.
  */
-export const LATEST_ENTRY_ID = 'bins-rest-on-bins-below';
+export const LATEST_ENTRY_ID = 'places-labs';

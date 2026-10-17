@@ -2376,6 +2376,8 @@
   "places.kind.makeArea": "Udělat z ní oblast",
   "places.kind.makeUnit": "Udělat z ní úložný nábytek",
   "places.newPlace": "Nové místo",
+  "places.myPlace": "Moje místo",
+  "places.path": "Kde toto rozvržení je",
   "places.namePlaceholder": "Název místa, třeba Domov nebo Dílna",
   "commandPalette.category.edit": "Úpravy",
   "commandPalette.category.export": "Export",

@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'places-labs',
+    date: '2026-10-17',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Find what your bins hold' },
+    body: {
+      en: 'List what each bin holds in the inspector, or paste a whole list at once. Then search for any of it from the command palette (Ctrl/Cmd+K) or the layouts sheet on a phone, and jump straight to the bin, in whichever drawer it sits. Folders can become places, areas and storage units, and the header shows where the open drawer lives. Turn it on under Labs.',
+    },
+    labs: 'places',
+  },
+  {
     id: 'bins-rest-on-bins-below',
     date: '2026-10-16',
     kind: 'improved',

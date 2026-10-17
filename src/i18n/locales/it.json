@@ -2376,6 +2376,8 @@
   "places.kind.makeArea": "Rendilo un’area",
   "places.kind.makeUnit": "Rendilo un mobile contenitore",
   "places.newPlace": "Nuovo luogo",
+  "places.myPlace": "Il mio luogo",
+  "places.path": "Dove si trova questo layout",
   "places.namePlaceholder": "Nome del luogo, come Casa o Officina",
   "commandPalette.category.edit": "Modifica",
   "commandPalette.category.export": "Esporta",
