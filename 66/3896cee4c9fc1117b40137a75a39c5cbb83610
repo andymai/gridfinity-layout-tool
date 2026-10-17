@@ -1,0 +1,110 @@
+src/i18n/locales/pt-BR.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+src/features/places/find/searchText.ts
+  s_078fc63cde22ff::t_6e6d6a561d791d 1-24
+src/i18n/locales/ka.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 3823
+src/features/places/find/findIndex.test.ts
+  s_078fc63cde22ff::t_9134078d93c829 1-2,4-16,18-72
+  s_078fc63cde22ff::t_35b26dca112949 3,17
+  s_078fc63cde22ff::t_b3b775902a4e55 73-110
+src/i18n/locales/ja.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+src/features/places/index.ts
+  s_078fc63cde22ff::t_549d8a0f9e25d2 1-2
+src/i18n/locales/nb.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+src/i18n/locales/nl.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+src/App.tsx
+  s_078fc63cde22ff::t_b6635cecdcefa1 93
+  s_078fc63cde22ff::t_58c78b141afc86 129,546
+src/shell/hooks/usePlacesFindResults.tsx
+  s_078fc63cde22ff::t_b6635cecdcefa1 1-24
+src/features/places/README.md
+  s_078fc63cde22ff::t_549d8a0f9e25d2 1-16
+src/i18n/locales/it.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+src/i18n/locales/ko.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+src/features/places/hooks/useFindBins.ts
+  s_078fc63cde22ff::t_5815044acbb796 1-69,71-80,82-88
+  s_078fc63cde22ff::t_8f66ecf8f26f47 70,81
+src/core/labs/features.ts
+  s_078fc63cde22ff::t_13dcddf8193272 276-285
+src/features/places/find/matchBins.ts
+  s_078fc63cde22ff::t_9134078d93c829 32
+  s_078fc63cde22ff::t_9988e4f671437c 70-72
+  s_078fc63cde22ff::t_f724768d02924e 1-28,31,33-69,74-81
+  s_078fc63cde22ff::t_747314d7d1e547 29-30,73
+src/features/places/components/index.ts
+  s_078fc63cde22ff::t_549d8a0f9e25d2 1
+src/features/command-palette/components/CommandPalette/CommandPalette.test.tsx
+  s_078fc63cde22ff::t_eb6d18db2e7848 3,139
+  s_078fc63cde22ff::t_a529ebe9ebd285 135-138,140-153
+src/shell/hooks/usePlacesFindResults.test.tsx
+  s_078fc63cde22ff::t_a6098a5b770705 8,17
+  s_078fc63cde22ff::t_b6635cecdcefa1 1-7,9-16,18-21
+src/i18n/locales/fr.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+src/features/places/components/PlacesFindGroup/index.ts
+  s_078fc63cde22ff::t_549d8a0f9e25d2 1-2
+src/features/places/components/PlacesFindGroup/PlacesFindGroup.test.tsx
+  s_078fc63cde22ff::t_45a125cf2b2dfb 2-5,7-23,25-48,54-64,80-98
+  s_078fc63cde22ff::t_c769473063c436 1,49-53,65-79
+  s_078fc63cde22ff::t_d4beb00cf16352 6,24
+  s_078fc63cde22ff::t_81ff951c11ea81 99-110
+src/i18n/locales/cs.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+src/features/places/hooks/useFocusBin.test.ts
+  s_078fc63cde22ff::t_8878ab4b07e958 1-87
+src/i18n/locales/zh-CN.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+src/features/places/find/matchBins.test.ts
+  s_078fc63cde22ff::t_8bcd773659bf28 1-60
+src/i18n/locales/en.ts
+  s_078fc63cde22ff::t_8f66ecf8f26f47 4571
+src/i18n/locales/sv.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+src/features/places/find/findIndex.ts
+  s_078fc63cde22ff::t_c425adbbf91861 75
+  s_078fc63cde22ff::t_2e59a2401efc7f 1-74,76-77
+src/i18n/locales/es.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+src/i18n/locales/pl.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+src/i18n/locales/uk.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+src/features/places/hooks/useFocusBin.ts
+  s_078fc63cde22ff::t_ffdbe64108831b 1-31
+src/features/places/components/PlacesFindGroup/PlacesFindGroup.tsx
+  s_078fc63cde22ff::t_1facfbc9004ce7 1-5,8-14,20-25,36-42,44-47,65-67
+  s_078fc63cde22ff::t_549d8a0f9e25d2 15
+  s_078fc63cde22ff::t_f66424c213dcff 16,19,26-35,48-50,52-64
+  s_078fc63cde22ff::t_c591373c1860d9 17-18,51
+  s_078fc63cde22ff::t_8f66ecf8f26f47 43
+  s_078fc63cde22ff::t_58c78b141afc86 6-7
+src/i18n/locales/de.json
+  s_078fc63cde22ff::t_8f66ecf8f26f47 2367
+src/features/command-palette/components/CommandPalette/CommandPalette.tsx
+  s_078fc63cde22ff::t_8f66ecf8f26f47 11,31-32,35-40,199
+  s_078fc63cde22ff::t_681d7560b97779 200
+scripts/doc-budget.json
+  s_078fc63cde22ff::t_c42fe549afc419 3-7,70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "663896cee4c9fc1117b40137a75a39c5cbb83610",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
