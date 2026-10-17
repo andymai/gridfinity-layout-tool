@@ -1,0 +1,104 @@
+api/lib/binFitValidation.test.ts
+  s_078fc63cde22ff::t_29315e97528c78 1-5,24-45,46-68,87-94,96-103
+  s_078fc63cde22ff::t_5e3314ee165a2b 95
+src/core/sync/adapters/layoutAdapter.test.ts
+  s_078fc63cde22ff::t_ed0c372aad1bf2 202,229-230,232-260,265-269,271-289,291-293,299-311,313-315
+  s_078fc63cde22ff::t_e4e58e26da4f52 8,27,108,261-264
+  s_078fc63cde22ff::t_9f5b74abc6de0b 29,231,270,290
+  s_078fc63cde22ff::t_0269d46f6d3399 316-317
+  s_078fc63cde22ff::t_5752a45acd4675 312,318-371
+  s_078fc63cde22ff::t_24d64f2df79e34 372-373
+src/shared/utils/validationSalvage.ts
+  s_078fc63cde22ff::t_ea44d0033d4a04 122-123,125-126,196-197,226,266
+  s_078fc63cde22ff::t_336a8c1c252f28 124
+  s_078fc63cde22ff::t_f23eafb93fb97b 100
+  s_078fc63cde22ff::t_66d0069370313c 39-43,45-46,48-68,74-75,80-82,103-105,107,110-115,117,119-121
+  s_078fc63cde22ff::t_a35c24b8350f7b 19,38,44,47,99,101-102,106,109,118,199-200
+src/core/sync/engine.test.ts
+  s_078fc63cde22ff::t_8a311b9905b7e7 36
+  s_078fc63cde22ff::t_e4e58e26da4f52 160-164
+src/shared/utils/validation.test.ts
+  s_078fc63cde22ff::t_402fb54c507862 717-749
+  s_078fc63cde22ff::t_b874e4f15de492 750-775
+api/lib/binFitValidation.crossBoundary.test.ts
+  s_078fc63cde22ff::t_9026623029a1df 1-34
+api/sync/layouts/[id].test.ts
+  s_078fc63cde22ff::t_62f66079abb06e 228-233,235-239,258,260-269,271-273,275-278,280-285,289-299,301-302,304-305
+  s_078fc63cde22ff::t_3abacf8d28c857 240-257
+  s_078fc63cde22ff::t_cdf8298f29b31b 303
+  s_078fc63cde22ff::t_15a9493c14909a 300
+  s_078fc63cde22ff::t_f30d4a8a024acc 227,234,259,270,274,279,286-288
+api/sync/layouts/[id].ts
+  s_078fc63cde22ff::t_691eb7a050c7be 6-7,10-11,14,16-17,19,27,71
+  s_078fc63cde22ff::t_4263a573a043f9 8-9,13,15,18
+src/core/sync/adapters/layoutAdapter.ts
+  s_078fc63cde22ff::t_3155ca76674573 29-30,32-49,61-68,71-76,163-164,166
+  s_078fc63cde22ff::t_4263a573a043f9 24-27,31,50-60,69-70
+api/lib/validation.test.ts
+  s_078fc63cde22ff::t_330e87fa379569 29,31-33,99-126
+  s_078fc63cde22ff::t_1d6a751b928892 30,86-98
+api/lib/validation.ts
+  s_078fc63cde22ff::t_8c42e4fa7f151e 14,17,34,313
+  s_078fc63cde22ff::t_a69de69521dfdd 15-16,48,300
+api/lib/binFitValidation.ts
+  s_078fc63cde22ff::t_10bbede50e72bd 111-113
+  s_078fc63cde22ff::t_80867a5e9406a1 1-6,8-23,34-40,42-45,47-54,57-59,64-65,68-71,80-81,103,108-110,114-115,124
+  s_078fc63cde22ff::t_fa264249c336ac 7,55-56,60-63,66-67,79,104,106,116-119,121-123
+scripts/doc-budget.json
+  s_078fc63cde22ff::t_2e850517027118 63
+src/shared/schema/layoutKeys.ts
+  s_078fc63cde22ff::t_7461c3477b4d91 10
+  s_078fc63cde22ff::t_fae024ead3b85f 82,93-94
+  s_078fc63cde22ff::t_db542618db1d62 95
+api/lib/shareConstraints.ts
+  s_078fc63cde22ff::t_a69de69521dfdd 28-33
+src/core/types/layout.ts
+  s_078fc63cde22ff::t_c9c053e4afa075 114-124,138
+src/core/cqrs/validation/binItems.ts
+  s_078fc63cde22ff::t_99d09e82739cc6 1-17
+src/shared/schema/keys.ts
+  s_078fc63cde22ff::t_fae024ead3b85f 21,206
+api/lib/binItemsValidation.crossBoundary.test.ts
+  s_078fc63cde22ff::t_1d6a751b928892 1-18
+docs/schemas/constraints.md
+  s_078fc63cde22ff::t_7461c3477b4d91 15-42
+src/core/sync/payloadKey.ts
+  s_078fc63cde22ff::t_4263a573a043f9 4
+src/shared/utils/layoutMigration.ts
+  s_078fc63cde22ff::t_a35c24b8350f7b 2,25
+docs/schemas/layout.md
+  s_078fc63cde22ff::t_7461c3477b4d91 160
+api/sync/README.md
+  s_078fc63cde22ff::t_4263a573a043f9 38
+src/shared/utils/binItems.ts
+  s_078fc63cde22ff::t_ad7a081faa8fc2 1-55
+api/lib/binItemsValidation.test.ts
+  s_078fc63cde22ff::t_1d6a751b928892 1-77
+src/core/constants.ts
+  s_078fc63cde22ff::t_c9c053e4afa075 17-20
+src/core/cqrs/validation/schemas.ts
+  s_078fc63cde22ff::t_99d09e82739cc6 13,112
+public/schema/layout.schema.json
+  s_078fc63cde22ff::t_7461c3477b4d91 539-549,1096-1133
+  s_078fc63cde22ff::t_3a8c25ea7ff337 1134
+src/core/cqrs/v2/domain/bin/updateBin.ts
+  s_078fc63cde22ff::t_99d09e82739cc6 25,52,93-95
+api/lib/binItemsValidation.ts
+  s_078fc63cde22ff::t_a69de69521dfdd 1-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2fb13316c2e37ad0846635bcec2d35b9679889d5",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
