@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, createEvent } from '@testing-library/react';
+import { act, render, screen, fireEvent, createEvent } from '@testing-library/react';
 import { Button } from '../Button';
 import { Menu } from './Menu';
 
@@ -43,6 +43,30 @@ describe('Menu', () => {
       fireEvent.keyDown(screen.getByRole('menu'), { key: 'Tab', shiftKey: true });
       expect(screen.queryByRole('menu')).toBeNull();
       expect(document.activeElement).toBe(opener);
+    });
+
+    it('closes when focus moves somewhere else, such as a dialog opening', () => {
+      render(<Opener onPick={vi.fn()} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Options' }));
+      screen.getByRole('menuitem', { name: 'Pick' }).focus();
+      act(() => screen.getByLabelText('Elsewhere').focus());
+      expect(screen.queryByRole('menu')).toBeNull();
+      expect(document.activeElement).toBe(screen.getByLabelText('Elsewhere'));
+    });
+
+    it('stays open while focus moves between its items', () => {
+      const onClose = vi.fn();
+      render(
+        <Menu.Root open onClose={onClose} position={{ x: 0, y: 0 }}>
+          <Menu.Item onClick={vi.fn()}>Edit</Menu.Item>
+          <Menu.Item onClick={vi.fn()}>Delete</Menu.Item>
+        </Menu.Root>
+      );
+      screen.getByRole('menuitem', { name: 'Edit' }).focus();
+      screen.getByRole('menuitem', { name: 'Delete' }).focus();
+      // Safari blurs a clicked item without focusing anything.
+      fireEvent.blur(screen.getByRole('menuitem', { name: 'Delete' }), { relatedTarget: null });
+      expect(onClose).not.toHaveBeenCalled();
     });
 
     it('leaves focus where an item’s action moved it', () => {

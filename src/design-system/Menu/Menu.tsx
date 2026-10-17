@@ -8,6 +8,7 @@ import {
   useContext,
   type ReactNode,
   type KeyboardEvent as ReactKeyboardEvent,
+  type FocusEvent as ReactFocusEvent,
   type MouseEvent as ReactMouseEvent,
 } from 'react';
 import { createPortal } from 'react-dom';
@@ -278,6 +279,18 @@ function MenuRoot({
     onClose();
   }, [onClose]);
 
+  // Anything that takes focus away (the command palette, a dialog) closes the
+  // menu, which stacks above dialogs and would otherwise sit over the new one.
+  // A blur to nowhere is ignored: Safari does not focus a clicked button, so
+  // clicking an item blurs the menu before the click lands.
+  const handleBlur = useCallback(
+    (e: ReactFocusEvent<HTMLDivElement>) => {
+      const next = e.relatedTarget;
+      if (next instanceof Node && !e.currentTarget.contains(next)) onClose();
+    },
+    [onClose]
+  );
+
   if (!open) return null;
 
   return createPortal(
@@ -300,6 +313,7 @@ function MenuRoot({
           visibility: 'hidden',
         }}
         onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
       >
         {children}
       </div>
