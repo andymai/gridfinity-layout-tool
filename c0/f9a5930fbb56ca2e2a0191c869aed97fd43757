@@ -1,0 +1,24 @@
+src/features/bin-inspector/components/Inspector/BinItemsEditor/BinItemsEditor.test.tsx
+  s_078fc63cde22ff::t_adcf50511fcd7e 77-89
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.test.tsx
+  s_078fc63cde22ff::t_adcf50511fcd7e 138-149
+  s_078fc63cde22ff::t_172f298efd985b 150-152
+src/features/bin-inspector/components/Inspector/BinItemsEditor/BinItemsEditor.tsx
+  s_078fc63cde22ff::t_adcf50511fcd7e 1,54,59-61,63,65,69-78,81-92,94,98-99,111-112,152,154-157,162,199
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c0f9a5930fbb56ca2e2a0191c869aed97fd43757",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
