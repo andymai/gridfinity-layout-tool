@@ -1,0 +1,22 @@
+src/shared/utils/validation.test.ts
+  s_078fc63cde22ff::t_b874e4f15de492 750-775
+src/shared/utils/validationSalvage.ts
+  s_078fc63cde22ff::t_f23eafb93fb97b 76-77,79
+  s_078fc63cde22ff::t_66d0069370313c 37-75,78,80-95,173-174
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7557aded9c6d48f0184feb933eeb5cf902315a5b",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
