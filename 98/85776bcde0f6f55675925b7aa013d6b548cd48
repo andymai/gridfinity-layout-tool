@@ -1,0 +1,82 @@
+src/features/layout-library/components/LayoutManagerModal/FolderTree/FolderTree.test.tsx
+  s_078fc63cde22ff::t_1c56ea746f3212 137-196
+src/i18n/locales/fr.json
+  s_078fc63cde22ff::t_3c248b7b09f982 2371-2376
+src/shared/utils/folderKinds.ts
+  s_078fc63cde22ff::t_9bec35dd32f39d 1-14
+src/i18n/locales/en.ts
+  s_078fc63cde22ff::t_3c248b7b09f982 4583-4588
+src/i18n/locales/ko.json
+  s_078fc63cde22ff::t_3c248b7b09f982 2371-2376
+src/i18n/locales/cs.json
+  s_078fc63cde22ff::t_3c248b7b09f982 2371-2376
+src/i18n/locales/it.json
+  s_078fc63cde22ff::t_3c248b7b09f982 2371-2376
+src/i18n/locales/pl.json
+  s_078fc63cde22ff::t_3c248b7b09f982 2371-2376
+src/i18n/locales/de.json
+  s_078fc63cde22ff::t_3c248b7b09f982 2371-2376
+src/i18n/locales/es.json
+  s_078fc63cde22ff::t_3c248b7b09f982 2371-2376
+src/i18n/locales/nl.json
+  s_078fc63cde22ff::t_3c248b7b09f982 2371-2376
+src/features/layout-library/components/LayoutManagerModal/FolderTree/FolderTree.tsx
+  s_078fc63cde22ff::t_6682f82194c9ba 3-4,6,8,16,19-20,35-41,44-46,51-68,70-71,73-80,82-94,110,123,195-198,215,257,278,283,309-310,315-320,364,377-382,391-402,407,410-411
+  s_078fc63cde22ff::t_9bec35dd32f39d 9,72,81
+  s_078fc63cde22ff::t_a7750c3e5100a0 32,69
+  s_078fc63cde22ff::t_56892d66eaab2a 403-406,408-409,412-415
+src/i18n/locales/pt-BR.json
+  s_078fc63cde22ff::t_3c248b7b09f982 2371-2376
+src/shared/hooks/useLayoutFolders.ts
+  s_078fc63cde22ff::t_484fd84142aece 78-83,111-124
+  s_078fc63cde22ff::t_4356007b3a6813 12-13,22,28-41
+  s_078fc63cde22ff::t_adf8a28ffc9557 42
+src/i18n/locales/ka.json
+  s_078fc63cde22ff::t_3c248b7b09f982 3835-3840
+src/features/layout-library/components/LayoutManagerModal/LayoutManagerModal.tsx
+  s_078fc63cde22ff::t_a7496f77adec81 14,100,390-392,395-399
+src/i18n/locales/sv.json
+  s_078fc63cde22ff::t_3c248b7b09f982 2371-2376
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.test.tsx
+  s_078fc63cde22ff::t_ce3e6baafa95d2 886-918
+  s_078fc63cde22ff::t_f33d35e1ee5826 6
+src/features/layout-library/README.md
+  s_078fc63cde22ff::t_9e2438541cc7eb 60-64
+src/shared/hooks/useLayoutFolders.test.ts
+  s_078fc63cde22ff::t_484fd84142aece 60-78
+src/i18n/locales/zh-CN.json
+  s_078fc63cde22ff::t_3c248b7b09f982 2371-2376
+src/i18n/locales/ja.json
+  s_078fc63cde22ff::t_3c248b7b09f982 2371-2376
+src/shared/utils/folderKinds.test.ts
+  s_078fc63cde22ff::t_9bec35dd32f39d 1-11
+src/shared/constants/iconPaths.ts
+  s_078fc63cde22ff::t_6719c8d0930eb1 1-2,79-84,89-93
+  s_078fc63cde22ff::t_b8c7b470f6e011 94
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx
+  s_078fc63cde22ff::t_74463ae91afd47 8-17,74,104,139-150,367-381,672
+  s_078fc63cde22ff::t_5c26c1a483008d 659-661
+  s_078fc63cde22ff::t_dd2c7b7cc8c27c 382-388,412-415,599,611-616,662-671,673
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanelParts.tsx
+  s_078fc63cde22ff::t_74463ae91afd47 40,47-49
+src/i18n/locales/nb.json
+  s_078fc63cde22ff::t_3c248b7b09f982 2371-2376
+src/i18n/locales/uk.json
+  s_078fc63cde22ff::t_3c248b7b09f982 2371-2376
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9885776bcde0f6f55675925b7aa013d6b548cd48",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
