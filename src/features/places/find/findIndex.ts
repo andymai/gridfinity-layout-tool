@@ -45,8 +45,19 @@ export function recordsForLayout(layoutId: LayoutId, layout: Layout): BinSearchR
   return records;
 }
 
-/** Search records for every stored layout but the active one, which the caller reads live. */
-export async function reconcileFindIndex(
+/** Runs one at a time: an older read finishing late would overwrite a newer layout's records. */
+let pending: Promise<unknown> = Promise.resolve();
+
+export function reconcileFindIndex(
+  library: LayoutLibrary,
+  activeLayoutId: LayoutId | null
+): Promise<BinSearchRecord[]> {
+  const run = pending.then(() => reconcile(library, activeLayoutId));
+  pending = run.catch(() => undefined);
+  return run;
+}
+
+async function reconcile(
   library: LayoutLibrary,
   activeLayoutId: LayoutId | null
 ): Promise<BinSearchRecord[]> {
@@ -74,4 +85,5 @@ export async function reconcileFindIndex(
 
 export function __resetForTests(): void {
   indexed.clear();
+  pending = Promise.resolve();
 }

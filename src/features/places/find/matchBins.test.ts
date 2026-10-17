@@ -46,6 +46,11 @@ describe('matchBins', () => {
     expect(ids('tape', [tape, labelled])[0]).toBe('labelled');
   });
 
+  it('keeps every qualifier, so a size never falls back to the bare concept', () => {
+    expect(ids('M8 screws', [screws])).toEqual([]);
+    expect(ids('wood screws', [screws])).toEqual([]);
+  });
+
   it('finds a bin by the vocabulary term behind another language’s word', () => {
     expect(ids('Schrauben', [screws, tape])).toEqual(['screws']);
   });

@@ -61,7 +61,8 @@ export function matchBins(
 ): BinMatch[] {
   const words = tokenize(query);
   if (words.length === 0) return [];
-  const concept = conceptOf(query);
+  // A concept stands for the whole query, so a qualifier ("m3 screws") would be dropped.
+  const concept = words.length === 1 ? conceptOf(query) : null;
 
   const matches: BinMatch[] = [];
   for (const record of records) {

@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { act, render, screen, fireEvent } from '@testing-library/react';
 import { Staging } from '@/features/staging/components/Staging';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
+import { useSettingsStore } from '@/core/store/settings';
 import { resetAllStores } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
 import { binId, categoryId, gridUnits, heightUnits } from '@/core/types';
@@ -72,6 +73,24 @@ describe('Staging', () => {
     });
     return fullBins;
   }
+
+  describe('revealing a bin selected elsewhere', () => {
+    it('opens a collapsed stash for its selected bin, and lets it close again', async () => {
+      useSettingsStore.getState().updateSetting('lastStashCollapsed', true);
+      const [spare] = addStagedBins([{ label: 'Spare' }]);
+      const { container } = render(<Staging />);
+      const toggle = (): Element | null => container.querySelector('[aria-expanded]');
+      expect(toggle()?.getAttribute('aria-expanded')).toBe('false');
+
+      act(() => useSelectionStore.getState().setSelectedBins([spare.id]));
+      await vi.waitFor(() => expect(toggle()?.getAttribute('aria-expanded')).toBe('true'));
+
+      act(() => {
+        if (toggle()) fireEvent.click(toggle() as Element);
+      });
+      expect(toggle()?.getAttribute('aria-expanded')).toBe('false');
+    });
+  });
 
   describe('rendering', () => {
     it('shows empty hint when no staged bins and not dragging', () => {

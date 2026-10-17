@@ -85,6 +85,25 @@ describe('findIndex', () => {
     expect(loadLayoutAsyncMock).toHaveBeenLastCalledWith('a');
   });
 
+  it('applies overlapping reconciles in order, so a slow older read never wins', async () => {
+    let releaseOld: (layout: Layout) => void = () => {};
+    loadLayoutAsyncMock
+      .mockImplementationOnce(
+        () =>
+          new Promise<Layout>((resolve) => {
+            releaseOld = resolve;
+          })
+      )
+      .mockImplementationOnce(() => Promise.resolve(layoutWith('new')));
+    const older = reconcileFindIndex(library([['a', 1]]), null);
+    const newer = reconcileFindIndex(library([['a', 2]]), null);
+    await vi.waitFor(() => expect(loadLayoutAsyncMock).toHaveBeenCalledTimes(1));
+    releaseOld(layoutWith('old'));
+    await older;
+    expect(labels(await newer)).toEqual(['new']);
+    expect(labels(await reconcileFindIndex(library([['a', 2]]), null))).toEqual(['new']);
+  });
+
   it('leaves out the active layout and drops a removed one', async () => {
     loadLayoutAsyncMock.mockImplementation((id: LayoutId) => Promise.resolve(layoutWith(id)));
     await reconcileFindIndex(

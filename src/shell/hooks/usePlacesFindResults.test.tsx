@@ -1,10 +1,12 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useLabsStore } from '@/core/store';
+import { resetAllStores } from '@/test/testUtils';
 import { usePlacesFindResults } from './usePlacesFindResults';
 
 describe('usePlacesFindResults', () => {
   beforeEach(() => {
+    resetAllStores();
     useLabsStore.getState().disableFeature('places');
   });
 

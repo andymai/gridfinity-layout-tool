@@ -298,6 +298,25 @@ export function Staging() {
     prevBinCountRef.current = currentCount;
   }, [stagingBins.length, isExpanded]);
 
+  // A stashed bin selected from outside the stash (Find) is only visible with it
+  // open. Keyed on the selection alone, so collapsing it afterwards still holds.
+  const selectedStashedId = stagingBins.find((bin) => selectedBinIds.includes(bin.id))?.id ?? null;
+  const revealedRef = useRef<BinId | null>(null);
+  useEffect(() => {
+    if (selectedStashedId === revealedRef.current) return;
+    revealedRef.current = selectedStashedId;
+    if (!selectedStashedId) return;
+    requestAnimationFrame(() => {
+      setIsExpanded(true);
+      setHasToggled(true);
+      requestAnimationFrame(() => {
+        document
+          .querySelector(`[data-staging-bin-id="${selectedStashedId}"]`)
+          ?.scrollIntoView({ block: 'nearest' });
+      });
+    });
+  }, [selectedStashedId]);
+
   // Toggle handler that persists to settings
   const handleToggleExpand = useCallback(() => {
     setHasToggled(true);
