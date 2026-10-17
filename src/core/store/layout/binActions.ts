@@ -47,7 +47,8 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
       // Strip id to prevent identity corruption
       const { id: _stripId, ...safeUpdates } = updates;
 
-      // Validate placement when spatial properties change for on-grid bins
+      // Validate placement when the bin moves, resizes, or changes how tall
+      // it stands (which moves everything resting on it), as `bin.update` does.
       const merged = { ...bin, ...safeUpdates };
       if (
         merged.layerId !== STAGING_ID &&
@@ -55,11 +56,18 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
           updates.y !== undefined ||
           updates.width !== undefined ||
           updates.depth !== undefined ||
-          updates.layerId !== undefined)
+          updates.layerId !== undefined ||
+          updates.height !== undefined ||
+          'clearanceHeight' in updates)
       ) {
         const rect = { x: merged.x, y: merged.y, width: merged.width, depth: merged.depth };
         const validationResult = canPlaceBin(
-          { ...rect, height: merged.height, linkedDesignId: merged.linkedDesignId },
+          {
+            ...rect,
+            height: merged.height,
+            clearanceHeight: merged.clearanceHeight,
+            linkedDesignId: merged.linkedDesignId,
+          },
           merged.layerId,
           layout,
           id

@@ -190,6 +190,31 @@ describe('layout store', () => {
       expect(bin.notes).toBe('New notes');
     });
 
+    it('refuses a height that lifts the bin on top past the drawer', () => {
+      const { addBin, addLayer, updateDrawer, layout } = useLayoutStore.getState();
+      updateDrawer({ height: heightUnits(7) });
+      const upper = expectOk(addLayer());
+      const place = (layer: typeof upper, height: number) =>
+        expectOk(
+          addBin({
+            layerId: layer,
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(1),
+            depth: gridUnits(1),
+            height: heightUnits(height),
+            category: layout.categories[0].id,
+            label: '',
+            notes: '',
+          })
+        );
+      const low = place(layout.layers[0].id, 3);
+      place(upper, 4);
+
+      expect(useLayoutStore.getState().updateBin(low, { height: heightUnits(4) }).ok).toBe(false);
+      expect(useLayoutStore.getState().updateBin(low, { height: heightUnits(2) }).ok).toBe(true);
+    });
+
     it('rejects width that exceeds drawer bounds', () => {
       const { addBin, updateBin, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;
