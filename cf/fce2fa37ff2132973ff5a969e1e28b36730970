@@ -1,0 +1,45 @@
+src/features/grid-editor/components/Grid/Grid.test.tsx
+  s_078fc63cde22ff::t_03aaa087e2180b 89
+src/features/staging/components/Staging/Staging.tsx
+  s_078fc63cde22ff::t_5d9144c043debd 11,302-320
+src/features/grid-editor/hooks/useRevealGridBin.test.ts
+  s_078fc63cde22ff::t_5d9144c043debd 1-27
+src/features/grid-editor/hooks/useRevealGridBin.ts
+  s_078fc63cde22ff::t_5d9144c043debd 1-17
+src/features/places/hooks/useFocusBin.test.ts
+  s_078fc63cde22ff::t_465cdff5d70d39 8,81-91
+  s_078fc63cde22ff::t_4f40bc4b3ca068 92-93
+src/shared/events/revealBin.ts
+  s_078fc63cde22ff::t_5d9144c043debd 1-21
+src/features/grid-editor/components/Grid/Grid.tsx
+  s_078fc63cde22ff::t_9c4cb8827593c5 13,196
+  s_078fc63cde22ff::t_d10507b0b79bc0 197
+src/features/places/find/matchBins.test.ts
+  s_078fc63cde22ff::t_d225404771a98f 49-54
+src/features/staging/components/Staging/Staging.test.tsx
+  s_078fc63cde22ff::t_465cdff5d70d39 10,83-87,91,94-95,101-113
+src/features/grid-editor/hooks/index.ts
+  s_078fc63cde22ff::t_5d9144c043debd 6
+src/features/places/hooks/useFocusBin.ts
+  s_078fc63cde22ff::t_5d9144c043debd 6,29
+src/features/places/find/matchBins.ts
+  s_078fc63cde22ff::t_5d9144c043debd 29-32,77
+src/shared/events/revealBin.test.ts
+  s_078fc63cde22ff::t_5d9144c043debd 1-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cffce2fa37ff2132973ff5a969e1e28b36730970",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
