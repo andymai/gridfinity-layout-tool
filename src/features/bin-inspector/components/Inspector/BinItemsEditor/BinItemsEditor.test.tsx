@@ -74,6 +74,19 @@ describe('BinItemsEditor', () => {
     expect(last()[0]).not.toHaveProperty('qty');
   });
 
+  it('saves an edited row before a press elsewhere, which may not blur it', () => {
+    const { onChange, last } = setup([{ id: 'i1', name: 'Nuts', qty: 3 }]);
+    fireEvent.change(screen.getByLabelText('Nuts'), { target: { value: 'M3 nuts' } });
+    fireEvent.change(screen.getByLabelText('Quantity of Nuts'), { target: { value: '9' } });
+
+    fireEvent.pointerDown(screen.getByLabelText('Quantity of Nuts'));
+    expect(onChange).not.toHaveBeenCalled();
+
+    fireEvent.pointerDown(document.body);
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(last()).toEqual([{ id: 'i1', name: 'M3 nuts', qty: 9 }]);
+  });
+
   it('reads a quantity typed with an exponent as the whole number', () => {
     const { last } = setup([{ id: 'i1', name: 'Nuts' }]);
     const qty = screen.getByLabelText('Quantity of Nuts');

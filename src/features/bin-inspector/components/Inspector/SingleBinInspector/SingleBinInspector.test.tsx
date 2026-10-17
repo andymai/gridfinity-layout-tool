@@ -135,6 +135,21 @@ describe('SingleBinInspector', () => {
       expect(screen.getByLabelText('Add an item')).toHaveValue('');
     });
 
+    it('saves an edited item to its own bin when another bin is pressed', () => {
+      useLabsStore.getState().enableFeature('places');
+      const bin = { ...mockBin, items: [{ id: 'i1', name: 'Nuts' }] };
+      const updateItems = vi.fn();
+      render(
+        <SingleBinInspector
+          inspector={createMockInspector({ bin, updateItems })}
+          variant="desktop"
+        />
+      );
+      fireEvent.change(screen.getByLabelText('Nuts'), { target: { value: 'Wing nuts' } });
+      fireEvent.pointerDown(document.body);
+      expect(updateItems).toHaveBeenCalledWith([{ id: 'i1', name: 'Wing nuts' }]);
+    });
+
     it('leaves the section out while the flag is off', () => {
       useLabsStore.getState().disableFeature('places');
       render(<SingleBinInspector inspector={createMockInspector()} variant="desktop" />);

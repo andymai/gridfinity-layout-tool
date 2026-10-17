@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ClipboardEvent, KeyboardEvent } from 'react';
 import { CONSTRAINTS, generateId } from '@/core/constants';
 import type { BinItem } from '@/core/types';
@@ -51,39 +51,52 @@ interface ItemRowProps {
   item: BinItem;
   inputHeight: string;
   isMobile: boolean;
-  onRename: (name: string) => void;
-  onQuantity: (qty: number | undefined) => void;
+  onCommit: (name: string, qty: number | undefined) => void;
   onRemove: () => void;
 }
 
 /**
- * Both fields commit on blur or Enter, not per keystroke, so an edit is one
- * undo step. A blank name is refused by the bin update schema, and clearing a
- * name is how a row goes away.
+ * The row commits on blur or Enter, not per keystroke, so an edit is one undo
+ * step. A blank name is refused by the bin update schema, and clearing a name
+ * is how a row goes away.
  */
-function ItemRow({ item, inputHeight, isMobile, onRename, onQuantity, onRemove }: ItemRowProps) {
+function ItemRow({ item, inputHeight, isMobile, onCommit, onRemove }: ItemRowProps) {
   const t = useTranslation();
+  const rowRef = useRef<HTMLLIElement>(null);
   const savedQty = item.qty === undefined ? '' : String(item.qty);
   const [name, setName] = useDraft(item.name);
   const [qty, setQty] = useDraft(savedQty);
+  const dirty = name !== item.name || qty !== savedQty;
 
-  const commitName = () => {
-    if (cleanName(name) !== item.name) onRename(name);
-    else setName(item.name);
+  const commit = () => {
+    const nextQty = parseQuantity(qty);
+    if (cleanName(name) !== item.name || nextQty !== item.qty) {
+      onCommit(name, nextQty);
+      return;
+    }
+    setName(item.name);
+    setQty(savedQty);
   };
-  const commitQuantity = () => {
-    const next = parseQuantity(qty);
-    if (next !== item.qty) onQuantity(next);
-    else setQty(savedQty);
-  };
+
+  // Selecting another bin acts on pointerdown and cancels its default, so an
+  // edited field never blurs; capture runs first and saves to this bin.
+  useEffect(() => {
+    if (!dirty) return;
+    const saveFirst = (e: Event) => {
+      if (e.target instanceof Node && rowRef.current?.contains(e.target)) return;
+      commit();
+    };
+    document.addEventListener('pointerdown', saveFirst, true);
+    return () => document.removeEventListener('pointerdown', saveFirst, true);
+  });
 
   return (
-    <li className="flex items-center gap-1.5">
+    <li ref={rowRef} className="flex items-center gap-1.5">
       <Input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        onBlur={commitName}
-        onKeyDown={onEnter(commitName)}
+        onBlur={commit}
+        onKeyDown={onEnter(commit)}
         maxLength={CONSTRAINTS.ITEM_NAME_MAX_LENGTH}
         aria-label={item.name}
         className={inputHeight}
@@ -95,8 +108,8 @@ function ItemRow({ item, inputHeight, isMobile, onRename, onQuantity, onRemove }
         max={CONSTRAINTS.ITEM_QTY_MAX}
         value={qty}
         onChange={(e) => setQty(e.target.value)}
-        onBlur={commitQuantity}
-        onKeyDown={onEnter(commitQuantity)}
+        onBlur={commit}
+        onKeyDown={onEnter(commit)}
         placeholder={t('inspector.contents.qtyPlaceholder')}
         aria-label={t('inspector.contents.quantity', { name: item.name })}
         className={inputHeight}
@@ -136,21 +149,17 @@ export function BinItemsEditor({ items = [], label, onChange, variant }: BinItem
     if (fresh.length > 0) onChange([...items, ...fresh]);
   };
 
-  const rename = (id: string, name: string) => {
+  const commitRow = (id: string, name: string, qty: number | undefined) => {
     const clean = cleanName(name);
-    onChange(
-      clean === ''
-        ? items.filter((item) => item.id !== id)
-        : items.map((item) => (item.id === id ? { ...item, name: clean } : item))
-    );
-  };
-
-  const setQuantity = (id: string, qty: number | undefined) => {
+    if (clean === '') {
+      onChange(items.filter((item) => item.id !== id));
+      return;
+    }
     onChange(
       items.map((item) => {
         if (item.id !== id) return item;
         const { qty: _previous, ...rest } = item;
-        return qty === undefined ? rest : { ...rest, qty };
+        return qty === undefined ? { ...rest, name: clean } : { ...rest, name: clean, qty };
       })
     );
   };
@@ -187,8 +196,7 @@ export function BinItemsEditor({ items = [], label, onChange, variant }: BinItem
               item={item}
               inputHeight={inputHeight}
               isMobile={isMobile}
-              onRename={(name) => rename(item.id, name)}
-              onQuantity={(qty) => setQuantity(item.id, qty)}
+              onCommit={(name, qty) => commitRow(item.id, name, qty)}
               onRemove={() => onChange(items.filter((other) => other.id !== item.id))}
             />
           ))}
