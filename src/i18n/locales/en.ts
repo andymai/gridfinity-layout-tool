@@ -2478,7 +2478,7 @@ const en: Record<string, string> = {
   'binDesigner.overhang.side.back': 'Back',
   'binDesigner.overhang.feet': 'Feet under overhang',
   'binDesigner.overhang.feetHint':
-    'Add grid-aligned feet beneath the overhang where they fit to print, so it reaches the bed instead of needing supports.',
+    'Add grid-aligned feet beneath the overhang where it is wide enough to print them, so that part reaches the bed. A narrower overhang still needs supports.',
   'binDesigner.overhang.taper.title': 'Taper walls',
   'binDesigner.overhang.taper.hint':
     "Angle the wall outward above the base so the bin reaches into a drawer's curved sides. The base keeps its overhang width, so the bin still sits flat.",

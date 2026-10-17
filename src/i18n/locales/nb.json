@@ -1565,7 +1565,7 @@
   "binDesigner.openBentoWorkspaceSubtitle": "Dra for å tegne rom i den størrelsen du vil",
   "binDesigner.openDesignList": "Åpne designliste",
   "binDesigner.overhang.feet": "Føtter under overhenget",
-  "binDesigner.overhang.feetHint": "Legg til rutejusterte føtter under overhenget der det er plass til å skrive dem ut, så det når ned til platen uten støtte.",
+  "binDesigner.overhang.feetHint": "Legg til rutejusterte føtter under overhenget der det er bredt nok til å skrive dem ut, så den delen når ned til platen. Et smalere overheng trenger fortsatt støtte.",
   "binDesigner.overhang.hint": "Utvider veggene utover for å fylle en skuffeåpning. Basisføttene blir værende, så bunnen under overhenget er flat i høyde med toppen av basen og trenger støtte for å skrives ut. Med flat bunn ligger den på platen.",
   "binDesigner.overhang.placement.expandToFitHint": "Denne beholderen i oppsettet er utvidet til å passe, så den skrives ut med overhenget nedenfor i stedet for designens eget.",
   "binDesigner.overhang.placement.changeInLayout": "Endre det i oppsettet, ikke her.",

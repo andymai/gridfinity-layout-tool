@@ -1565,7 +1565,7 @@
   "binDesigner.openBentoWorkspaceSubtitle": "Sleep om vakken te tekenen in elk formaat dat je wilt",
   "binDesigner.openDesignList": "Designlijst openen",
   "binDesigner.overhang.feet": "Voetjes onder de overhang",
-  "binDesigner.overhang.feetHint": "Voeg rasteruitgelijnde voetjes onder de overhang toe waar ze printbaar zijn, zodat hij tot het printbed reikt zonder support.",
+  "binDesigner.overhang.feetHint": "Voeg rasteruitgelijnde voetjes onder de overhang toe waar die breed genoeg is om ze te printen, zodat dat deel tot het printbed reikt. Een smallere overhang heeft nog steeds support nodig.",
   "binDesigner.overhang.hint": "Laat de wanden naar buiten groeien om een ladekier te vullen. De basisvoeten blijven staan, dus de bodem onder de overhang is vlak op de hoogte van de bovenkant van de basis en heeft support nodig bij het printen. Op een vlakke basis ligt hij op het printbed.",
   "binDesigner.overhang.placement.expandToFitHint": "Deze bak in de layout is passend vergroot en wordt daarom geprint met de overhang hieronder in plaats van die van dit ontwerp.",
   "binDesigner.overhang.placement.changeInLayout": "Wijzig deze in de layout, niet hier.",

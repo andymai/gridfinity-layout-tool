@@ -1565,7 +1565,7 @@
   "binDesigner.openBentoWorkspaceSubtitle": "Trascina per disegnare scomparti della dimensione che vuoi",
   "binDesigner.openDesignList": "Apri l'elenco dei design",
   "binDesigner.overhang.feet": "Piedi sotto la sporgenza",
-  "binDesigner.overhang.feetHint": "Aggiunge piedi allineati alla griglia sotto la sporgenza dove ci stanno per la stampa, così arriva al piano senza bisogno di supporti.",
+  "binDesigner.overhang.feetHint": "Aggiunge piedi allineati alla griglia sotto la sporgenza dove è abbastanza larga per stamparli, così quella parte arriva al piano. Una sporgenza più stretta richiede ancora supporti.",
   "binDesigner.overhang.hint": "Estende le pareti verso l'esterno per riempire uno spazio del cassetto. I piedi della base restano fermi, quindi il fondo sotto la sporgenza è piatto all'altezza della parte superiore della base e richiede supporti per la stampa. Con una base piatta poggia sul piano.",
   "binDesigner.overhang.placement.expandToFitHint": "Questo contenitore della disposizione è stato espanso per riempire lo spazio, quindi viene stampato con la sporgenza qui sotto invece di quella propria di questo design.",
   "binDesigner.overhang.placement.changeInLayout": "Modificala nella disposizione, non qui.",

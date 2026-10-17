@@ -1565,7 +1565,7 @@
   "binDesigner.openBentoWorkspaceSubtitle": "ドラッグして好きな大きさの仕切りを描きます",
   "binDesigner.openDesignList": "デザイン一覧を開く",
   "binDesigner.overhang.feet": "オーバーハング下の脚",
-  "binDesigner.overhang.feetHint": "印刷可能な箇所にグリッド整列した脚をオーバーハングの下に追加し、サポートなしでベッドまで届くようにします。",
+  "binDesigner.overhang.feetHint": "オーバーハングが脚を印刷できる幅の箇所にグリッド整列した脚を追加し、その部分をベッドまで届かせます。それより狭いオーバーハングには引き続きサポートが必要です。",
   "binDesigner.overhang.hint": "壁を外側に広げて引き出しの隙間を埋めます。ベースの脚はそのままなので、オーバーハングの下はベース上面の高さで平らになり、印刷にはサポートが必要です。フラットベースではベッドに接します。",
   "binDesigner.overhang.placement.expandToFitHint": "このレイアウトのビンは隙間に合わせて拡張されているため、このデザイン自体のオーバーハングではなく、下記のオーバーハングで印刷されます。",
   "binDesigner.overhang.placement.changeInLayout": "ここではなくレイアウトで変更してください。",

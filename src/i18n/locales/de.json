@@ -1565,7 +1565,7 @@
   "binDesigner.openBentoWorkspaceSubtitle": "Ziehen, um Fächer in beliebiger Größe zu zeichnen",
   "binDesigner.openDesignList": "Design-Liste öffnen",
   "binDesigner.overhang.feet": "Füße unter dem Überstand",
-  "binDesigner.overhang.feetHint": "Füge unter dem Überstand rasterausgerichtete Füße hinzu, wo sie druckbar sind, damit er bis zum Druckbett reicht und keine Stützen braucht.",
+  "binDesigner.overhang.feetHint": "Füge unter dem Überstand rasterausgerichtete Füße hinzu, wo er breit genug ist, um sie zu drucken, damit dieser Teil bis zum Druckbett reicht. Ein schmalerer Überstand braucht weiterhin Stützen.",
   "binDesigner.overhang.hint": "Erweitert die Wände nach außen, um einen Schubladenspalt zu füllen. Die Basisfüße bleiben an Ort und Stelle, sodass der Boden unter dem Überstand flach auf Höhe der Basisoberkante liegt und zum Drucken Stützen braucht. Auf einer flachen Basis liegt er auf dem Druckbett auf.",
   "binDesigner.overhang.placement.expandToFitHint": "Dieser Behälter im Layout wurde passend vergrößert und wird daher mit dem Überstand unten statt mit dem eigenen dieses Designs gedruckt.",
   "binDesigner.overhang.placement.changeInLayout": "Ändere ihn im Layout, nicht hier.",
