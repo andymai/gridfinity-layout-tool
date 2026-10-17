@@ -147,6 +147,7 @@ export {
   entriesInFolder,
   entryFolderId,
   folderById,
+  folderKind,
   folderPath,
   generateFolderId,
   isDescendantFolder,
@@ -154,5 +155,6 @@ export {
   moveFolder,
   renameFolder,
   setEntryFolder,
+  setFolderKind,
   wouldLoop,
 } from './libraryFolders';

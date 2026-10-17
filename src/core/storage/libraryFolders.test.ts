@@ -16,6 +16,8 @@ import {
   renameFolder,
   wouldLoop,
   setEntryFolder,
+  setFolderKind,
+  folderKind,
 } from './libraryFolders';
 
 function entry(id: string, folderId: string | null = null): LayoutEntry {
@@ -142,6 +144,28 @@ describe('moveFolder', () => {
     expectErr(moveFolder(library(), 'study', 'study', 9));
     expectErr(moveFolder(library(), 'study', 'top', 9));
     expectErr(moveFolder(library(), 'study', 'nope', 9));
+  });
+});
+
+describe('setFolderKind', () => {
+  it('marks a folder as a place, an area or a storage unit', () => {
+    expect(folderKind(library().folders?.[0] as LayoutFolder)).toBe('area');
+    const lib = expectOk(setFolderKind(library(), 'study', 'place', 9));
+    expect(lib.folders?.find((f) => f.id === 'study')).toMatchObject({
+      kind: 'place',
+      modifiedAt: 9,
+    });
+    const unit = expectOk(setFolderKind(lib, 'cupboard', 'unit', 10));
+    expect(unit.folders?.find((f) => f.id === 'cupboard')?.kind).toBe('unit');
+  });
+
+  it('keeps a place at the top of the tree', () => {
+    expectErr(setFolderKind(library(), 'desk', 'place', 9));
+    expectErr(setFolderKind(library(), 'nope', 'unit', 9));
+    const placed = expectOk(setFolderKind(library(), 'study', 'place', 9));
+    const { library: withGarage } = expectOk(createFolder(placed, 'Garage', null, 10, 'garage'));
+    expectErr(moveFolder(withGarage, 'study', 'garage', 11));
+    expectOk(moveFolder(withGarage, 'garage', 'study', 11));
   });
 });
 

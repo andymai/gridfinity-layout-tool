@@ -8,7 +8,7 @@
  * held to its parent rather than losing it.
  */
 
-import type { LayoutEntry, LayoutFolder, LayoutId, LayoutLibrary } from '@/core/types';
+import type { FolderKind, LayoutEntry, LayoutFolder, LayoutId, LayoutLibrary } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import type { LayoutError, Result } from '@/core/result';
 import { err, layoutInvalidOperation, ok } from '@/core/result';
@@ -27,6 +27,10 @@ export function folderById(library: LayoutLibrary, id: string): LayoutFolder | u
 
 function parentOf(folder: LayoutFolder): string | null {
   return folder.parentId ?? null;
+}
+
+export function folderKind(folder: LayoutFolder): FolderKind {
+  return folder.kind ?? 'area';
 }
 
 /**
@@ -159,12 +163,37 @@ export function moveFolder(
   }
   const missingParent = requireParent(library, parentId, 'moveFolder');
   if (missingParent) return missingParent;
+  if (parentId !== null && folderById(library, id)?.kind === 'place') {
+    return err(layoutInvalidOperation('moveFolder', 'A place sits at the top of the tree'));
+  }
   if (wouldLoop(library, id, parentId)) {
     return err(layoutInvalidOperation('moveFolder', 'A folder cannot move into itself'));
   }
   return ok({
     ...library,
     folders: folders(library).map((f) => (f.id === id ? { ...f, parentId, modifiedAt: now } : f)),
+  });
+}
+
+/**
+ * What a folder stands for: a place (a home, a shop), an area in one, or a
+ * storage unit. A place sits at the top of the tree; the root itself is the
+ * user's own place, so nothing is moved when the first place appears.
+ */
+export function setFolderKind(
+  library: LayoutLibrary,
+  id: string,
+  kind: FolderKind,
+  now: number = Date.now()
+): Result<LayoutLibrary, LayoutError> {
+  const folder = folderById(library, id);
+  if (!folder) return err(layoutInvalidOperation('setFolderKind', 'Folder not found'));
+  if (kind === 'place' && resolvedParent(library, parentOf(folder)) !== null) {
+    return err(layoutInvalidOperation('setFolderKind', 'A place sits at the top of the tree'));
+  }
+  return ok({
+    ...library,
+    folders: folders(library).map((f) => (f.id === id ? { ...f, kind, modifiedAt: now } : f)),
   });
 }
 
