@@ -31,7 +31,7 @@ export function TallestStackMeter({ tallest, drawerHeight }: TallestStackMeterPr
         aria-label={t('layers.tallestStack')}
         aria-valuemin={0}
         aria-valuemax={drawerHeight}
-        aria-valuenow={tallest}
+        aria-valuenow={Math.min(tallest, drawerHeight)}
         aria-valuetext={summary}
         className="h-1 rounded-full overflow-hidden bg-surface-elevated"
       >

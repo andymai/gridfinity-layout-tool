@@ -12,8 +12,7 @@ import { commandBus } from '@/core/cqrs';
 import { createCqrsMutations } from '@/core/cqrs/integration/mutationsAdapter';
 import { getRestingStack } from '@/shared/utils/restingStack';
 import { STAGING_ID } from '@/core/constants';
-import { isErr } from '@/core/result';
-import { resetAllStores, expectOk } from '@/test/testUtils';
+import { resetAllStores, expectErr, expectOk } from '@/test/testUtils';
 import type { Mutations } from '@/shared/contexts/MutationsContext';
 import type { BinId, LayerId } from '@/core/types';
 import { gridUnits, heightUnits } from '@/core/types';
@@ -88,20 +87,20 @@ describe('stacking mixed-height bins across layers', () => {
     place(bottom, 0, 0, 2, 2, 6);
     place(middle, 0, 0, 2, 2, 4);
 
-    // 6 + 4 + 2 = 12 fits exactly; 6 + 4 + 3 does not.
-    place(top, 0, 0, 2, 2, 2);
-    const result = mutations.addBin({
+    // 6 + 4 + 3 passes the 12u drawer; 6 + 4 + 2 fits exactly.
+    const tooTall = mutations.addBin({
       layerId: top,
-      x: gridUnits(1),
-      y: gridUnits(1),
-      width: gridUnits(1),
-      depth: gridUnits(1),
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
       height: heightUnits(3),
       category: useLayoutStore.getState().layout.categories[0].id,
       label: '',
       notes: '',
     });
-    expect(isErr(result)).toBe(true);
+    expect(expectErr(tooTall)).toMatchObject({ reason: 'exceeds_height' });
+    place(top, 0, 0, 2, 2, 2);
   });
 
   it('keeps a bin’s own height when it comes back from the stash', () => {

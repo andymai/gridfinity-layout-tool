@@ -689,7 +689,8 @@ describe('GridCanvas', () => {
       const { container } = renderGridCanvas();
 
       const blockedZone = container.querySelector('[role="button"][aria-label*="Blocked"]');
-      fireEvent.click(blockedZone!);
+      if (!blockedZone) throw new Error('expected a blocked zone');
+      fireEvent.click(blockedZone);
 
       // Should switch to layer 1 and select the bin
       expect(useSelectionStore.getState().activeLayerId).toBe('layer-1');
@@ -724,15 +725,17 @@ describe('GridCanvas', () => {
       useSelectionStore.setState({ activeLayerId: layerId('layer-2'), selectedBinIds: [] });
       const { container } = renderGridCanvas();
       const blockedZone = container.querySelector('[role="button"][aria-label*="Blocked"]');
+      const grid = blockedZone?.parentElement;
+      if (!blockedZone || !grid) throw new Error('expected a blocked zone on the grid');
       const press = { button: 0, isPrimary: true, pointerId: 1 };
 
       // A draw captures the pointer on document.body, so the click that
       // follows would land there instead of on the zone.
-      fireEvent.pointerDown(blockedZone!, press);
+      fireEvent.pointerDown(blockedZone, press);
       expect(mockStartDraw).not.toHaveBeenCalled();
 
       // The same press on the grid itself does start one, so the check above means something.
-      fireEvent.pointerDown(blockedZone!.parentElement!, press);
+      fireEvent.pointerDown(grid, press);
       expect(mockStartDraw).toHaveBeenCalled();
     });
   });

@@ -17,6 +17,9 @@ describe('TallestStackMeter', () => {
     render(<TallestStackMeter tallest={13.5} drawerHeight={12} />);
     expect(screen.getByText('1.5u taller than the drawer')).toBeInTheDocument();
     expect(screen.getByText('13.5/12u')).toHaveClass('text-warning');
+    const bar = screen.getByRole('progressbar', { name: 'Tallest stack' });
+    expect(bar).toHaveAttribute('aria-valuenow', '12');
+    expect(bar).toHaveAttribute('aria-valuetext', '13.5/12u');
   });
 
   it('rounds a measured drawer height for display', () => {

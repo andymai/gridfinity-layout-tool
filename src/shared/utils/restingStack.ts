@@ -331,7 +331,8 @@ export function maxBinHeight(
 /**
  * The most clearance `bin` can reserve: up to the drawer top, and no higher
  * than the base of any bin above it, which would otherwise end up resting on
- * the clearance.
+ * the clearance. Never below what it reserves now, so a bin in a stack that
+ * is already over the drawer can still give its clearance back.
  */
 export function maxClearanceHeight(
   bin: Bin,
@@ -350,7 +351,7 @@ export function maxClearanceHeight(
     if (index === undefined || index <= own || !footprintsOverlap(bin, other)) continue;
     ceiling = Math.min(ceiling, stack.bins.get(other.id)?.zStart ?? ceiling);
   }
-  return Math.max(0, ceiling - self.zStart - bin.height);
+  return Math.max(bin.clearanceHeight ?? 0, ceiling - self.zStart - bin.height);
 }
 
 function coverage(
@@ -386,7 +387,11 @@ export function findUnevenlySupported(
     if (rest.restsOn.length === 0) continue;
     const bin = byId.get(binId);
     if (!bin) continue;
-    const supporters = rest.restsOn.flatMap((id) => byId.get(id) ?? []);
+    // A supporter that only meets the base with its clearance carries nothing.
+    const supporters = rest.restsOn.flatMap((id) => {
+      const supporter = stack.bins.get(id);
+      return supporter && !hasClearance(supporter) ? (byId.get(id) ?? []) : [];
+    });
     if (coverage(bin, supporters) < 1 - EPSILON) uneven.add(binId);
   }
   return uneven;

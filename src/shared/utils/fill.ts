@@ -129,10 +129,11 @@ function unrestableCells(
 
 /**
  * Whether a fill bin over a rect would lift any bin from a higher layer, and
- * everything resting on it, past the drawer top. A lift raises a bin's whole
- * upward chain by at most the same amount, so each higher bin has a budget:
- * the drawer minus the highest top in that chain. Lifts from several fill
- * bins do not add up, since a bin rests on the highest of them.
+ * everything resting on it, past the drawer top. Each higher bin gets a
+ * budget, how far it can rise: up to the drawer, and no further than the gap
+ * to each bin above it plus that bin's own budget, since a lift only reaches
+ * a bin above once it closes the gap. Lifts from several fill bins do not add
+ * up, since a bin rests on the highest of them.
  */
 function liftGuard(
   bins: readonly Bin[],
@@ -149,13 +150,15 @@ function liftGuard(
     .sort((a, b) => (indexOf.get(b.layerId) ?? 0) - (indexOf.get(a.layerId) ?? 0));
   const budget = new Map<BinId, number>();
   for (const bin of higher) {
-    let reach = (stack.bins.get(bin.id) as RestingBin).stackTop;
+    const top = (stack.bins.get(bin.id) as RestingBin).stackTop;
+    let room = layout.drawer.height - top;
     for (const above of higher) {
       const aboveIndex = indexOf.get(above.layerId) ?? 0;
       if (aboveIndex <= (indexOf.get(bin.layerId) ?? 0) || !footprintsOverlap(bin, above)) continue;
-      reach = Math.max(reach, layout.drawer.height - (budget.get(above.id) ?? 0));
+      const gap = (stack.bins.get(above.id) as RestingBin).zStart - top;
+      room = Math.min(room, gap + (budget.get(above.id) ?? 0));
     }
-    budget.set(bin.id, layout.drawer.height - reach);
+    budget.set(bin.id, room);
   }
   const tops = lowerTops(bins, layout, layerIndex, step);
 

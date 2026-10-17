@@ -433,6 +433,13 @@ describe('maxClearanceHeight', () => {
     ).toEqual([]);
   });
 
+  it('never drops below the clearance a bin reserves now', () => {
+    // 5u + 1u clearance on a 5u bin is already over a 10u drawer.
+    const b = bin('a', L2, 0, 0, 1, 1, 5, { clearanceHeight: heightUnits(1) });
+    const bins = [bin('under', L1, 0, 0, 1, 1, 5), b];
+    expect(maxClearanceHeight(b, bins, layers, 10)).toBe(1);
+  });
+
   it('stops at the base of the lowest bin above', () => {
     const b = bin('a', L1, 0, 0, 2, 2, 3);
     const bins = [b, bin('up', L2, 1, 1, 1, 1, 2)];
@@ -465,6 +472,17 @@ describe('findUnevenlySupported', () => {
     ];
     const uneven = findUnevenlySupported(bins, resolveRestingStack(bins, layers));
     expect([...uneven].sort()).toEqual([binId('leaning'), binId('overhang')].sort());
+  });
+
+  it('does not count a supporter that meets the base only with its clearance', () => {
+    const bins = [
+      bin('tools', L1, 0, 0, 1, 1, 3, { clearanceHeight: heightUnits(2) }),
+      bin('solid', L1, 1, 0, 1, 1, 5),
+      bin('bridge', L2, 0, 0, 2, 1, 2),
+    ];
+    const stack = resolveRestingStack(bins, layers);
+    expect(stack.onClearance).toEqual([]);
+    expect([...findUnevenlySupported(bins, stack)]).toEqual([binId('bridge')]);
   });
 
   it('measures half-unit footprints exactly', () => {

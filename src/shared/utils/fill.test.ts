@@ -554,6 +554,26 @@ describe('fill and the resting stack', () => {
     expect(result.bins.map((b) => [b.x, b.width])).toEqual([[2, 2]]);
   });
 
+  it('lifts a bin that does not carry the bin above it', () => {
+    // The bridge rests on the 8u bin. Raising the 2u bin by 3u leaves it at
+    // 5u, still under the bridge, so that cell is safe; raising the 8u bin is not.
+    const three: Layout = {
+      ...layout([
+        bin('short', 'layer2', 0, 2),
+        bin('tall', 'layer2', 2, 8),
+        { ...bin('bridge', 'layer3', 0, 4), width: gridUnits(4) },
+      ]),
+      drawer: { width: gridUnits(4), depth: gridUnits(2), height: heightUnits(12) },
+      layers: [
+        { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
+        { id: layerId('layer3'), name: 'Layer 3', height: heightUnits(3) },
+      ],
+    };
+    const result = fillAllWithSize(three, layerId('layer1'), 2, 2, categoryId('cat1'));
+    expect(result.bins.map((b) => b.x)).toEqual([0]);
+  });
+
   it('applies the same lift rule to filling gaps', () => {
     const result = fillGaps(
       layout([bin('high', 'layer2', 0, 6), bin('low', 'layer2', 2, 2)]),
