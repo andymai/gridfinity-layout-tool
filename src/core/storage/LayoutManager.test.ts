@@ -702,6 +702,20 @@ describe('switchActiveLayout', () => {
     expect(value.targetLayout.name).toBe('Target Layout');
   });
 
+  it('backfills a print bed size the stored target layout lacks', async () => {
+    const stored: Record<string, unknown> = { ...createTestLayout('Imported') };
+    delete stored.printBedSize;
+    vi.mocked(backend.loadAsync).mockResolvedValue(stored as unknown as Layout);
+    const library = createTestLibrary([
+      createTestEntry('from-id', 'From'),
+      createTestEntry('to-id', 'To'),
+    ]);
+
+    const result = await switchActiveLayout('from-id', createTestLayout(), 'to-id', library);
+
+    expect(expectOk(result).targetLayout.printBedSize).toBe(CONSTRAINTS.PRINT_BED_MM_DEFAULT);
+  });
+
   it('updates activeLayoutId in library', async () => {
     const fromLayout = createTestLayout();
     const library = createTestLibrary([

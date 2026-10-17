@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent, waitFor, act } from '@testing-library/react';
 import { ImportModal } from '@/shell/Modals/ImportModal';
-import { createDefaultLayout } from '@/core/constants';
+import { CONSTRAINTS, createDefaultLayout } from '@/core/constants';
 import { encodeLayoutForURL } from '@/core/storage';
 import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
 
@@ -250,6 +250,27 @@ describe('ImportModal', () => {
         })
       );
       expect(mockOnClose).toHaveBeenCalled();
+    });
+
+    it('imports a file without a print bed size at the default size', async () => {
+      const { getByLabelText, getByText } = renderModal();
+      const { printBedSize: _omitted, ...withoutPrintBed } = createDefaultLayout();
+
+      await act(async () => {
+        fireEvent.change(getByLabelText(/paste a share link/i), {
+          target: { value: JSON.stringify(withoutPrintBed) },
+        });
+      });
+      await waitFor(() => {
+        expect((getByText('Import') as HTMLButtonElement).disabled).toBe(false);
+      });
+      await act(async () => {
+        fireEvent.click(getByText('Import'));
+      });
+
+      expect(mockOnImport).toHaveBeenCalledWith(
+        expect.objectContaining({ printBedSize: CONSTRAINTS.PRINT_BED_MM_DEFAULT })
+      );
     });
 
     it('shows error when importing empty textarea', async () => {

@@ -465,6 +465,32 @@ describe('validateImport', () => {
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('Category 0 is invalid'))).toBe(true);
   });
+
+  it('fills the print bed and unit sizes a hand-written file omits', () => {
+    const layout: Record<string, unknown> = { ...createTestLayout() };
+    delete layout.printBedSize;
+    delete layout.gridUnitMm;
+    delete layout.heightUnitMm;
+
+    const result = validateImport(layout);
+
+    if (!result.valid) throw new Error(result.errors.join(', '));
+    expect(result.layout.printBedSize).toBe(CONSTRAINTS.PRINT_BED_MM_DEFAULT);
+    expect(result.layout.gridUnitMm).toBe(CONSTRAINTS.GRID_UNIT_MM_DEFAULT);
+    expect(result.layout.heightUnitMm).toBe(CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT);
+    expect(result.layout.printBedDepth).toBeUndefined();
+  });
+
+  it('keeps the print bed and unit sizes a file provides', () => {
+    const layout = { ...createTestLayout(), gridUnitMm: mm(40), heightUnitMm: mm(6) };
+
+    const result = validateImport(layout);
+
+    if (!result.valid) throw new Error(result.errors.join(', '));
+    expect(result.layout.printBedSize).toBe(168);
+    expect(result.layout.gridUnitMm).toBe(40);
+    expect(result.layout.heightUnitMm).toBe(6);
+  });
 });
 
 describe('salvageImport', () => {

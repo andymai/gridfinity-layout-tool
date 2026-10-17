@@ -10,7 +10,7 @@
  * both pathways speak with the same vocabulary.
  */
 
-import type { Bin, Layout, ValidationReason } from '@/core/types';
+import type { Bin, Layout, Mm, ValidationReason } from '@/core/types';
 import { normalizeDrawerOutline } from './drawerOutline';
 import { dropOrphanedPairs } from './binPairs';
 import {
@@ -234,7 +234,14 @@ export function validateImport(data: unknown): ImportValidationResult {
     errors: [],
     layout: normalizeDrawerOutline({
       ...typedLayout,
+      gridUnitMm: mmOrDefault(layout.gridUnitMm, CONSTRAINTS.GRID_UNIT_MM_DEFAULT),
+      heightUnitMm: mmOrDefault(layout.heightUnitMm, CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT),
+      printBedSize: mmOrDefault(layout.printBedSize, CONSTRAINTS.PRINT_BED_MM_DEFAULT),
       bins: [...dropOrphanedPairs<Bin>(typedLayout.bins)],
     }),
   };
+}
+
+function mmOrDefault(value: unknown, fallback: number): Mm {
+  return mm(typeof value === 'number' ? value : fallback);
 }

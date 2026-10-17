@@ -72,7 +72,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
       const validation = validateImport(data);
 
       if (validation.valid) {
-        const layout = data as Layout;
+        const { layout } = validation;
         setPreview({
           drawerSize: `${layout.drawer.width}×${layout.drawer.depth}×${layout.drawer.height}`,
           layerCount: layout.layers.length,
@@ -126,7 +126,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
       const validation = validateImport(data);
 
       if (validation.valid) {
-        onImport(data as Layout);
+        onImport(validation.layout);
         onClose();
       } else {
         setErrors(validation.errors);

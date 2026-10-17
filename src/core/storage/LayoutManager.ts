@@ -23,7 +23,6 @@
 import * as backend from './backend';
 import { deleteSnapshotsForLayout } from './SnapshotService';
 import * as indexedDB from './backends/indexedDB';
-import { salvageImport } from '@/shared/utils/validation';
 import { generateLayoutId } from '@/shared/utils';
 import { CONSTRAINTS, SHARED_PREVIEW_ID } from '@/core/constants';
 import { computePreview } from './preview';
@@ -50,7 +49,7 @@ import { classifyStorageError } from './errorUtils';
 import { findLibraryEntry, updateLibraryEntryAtIndex } from './libraryUtils';
 import { notifyLibraryChanged } from './librarySync';
 import { ACTIVE_ID_STORAGE_KEY } from './storageKeys';
-import { getLayoutStorageKey } from './LayoutService';
+import { getLayoutStorageKey, loadLayoutResult } from './LayoutService';
 /** Options for saving a layout */
 export interface SaveLayoutOptions {
   /** Custom name (defaults to layout.name) */
@@ -158,39 +157,6 @@ async function saveLayoutInternal(
 ): Promise<Result<void, StorageError>> {
   const key = getLayoutStorageKey(layoutId);
   return backend.saveAsync(key, layout);
-}
-
-/**
- * Load layout from storage (IndexedDB with localStorage fallback).
- */
-async function loadLayoutInternal(layoutId: string): Promise<Result<Layout, StorageError>> {
-  const key = getLayoutStorageKey(layoutId);
-
-  let data: Layout | null;
-  try {
-    data = await backend.loadAsync(key);
-  } catch (error) {
-    return err(storageUnavailable('indexedDB', error));
-  }
-
-  if (!data) {
-    return err(storageNotFound(key));
-  }
-
-  // Validate the loaded layout (lenient: moves problematic bins to staging)
-  const validation = salvageImport(data);
-  if (!validation.valid) {
-    return err(storageCorrupted(key, ['Layout structure is invalid']));
-  }
-
-  if (validation.salvaged.length > 0) {
-    console.warn(
-      `[LayoutManager] Layout ${layoutId} loaded with ${validation.salvaged.length} bin(s) moved to staging:`,
-      validation.salvaged
-    );
-  }
-
-  return ok(validation.layout);
 }
 
 /**
@@ -464,7 +430,7 @@ export async function duplicateLayoutEntry(
     return err(storageNotFound(getLayoutStorageKey(sourceId)));
   }
 
-  const loadResult = await loadLayoutInternal(sourceId);
+  const loadResult = await loadLayoutResult(sourceId);
   if (isErr(loadResult)) {
     return loadResult;
   }
@@ -533,7 +499,7 @@ export async function switchActiveLayout(
     updatedLibrary = saveResult.value.library;
   }
 
-  const loadResult = await loadLayoutInternal(toId);
+  const loadResult = await loadLayoutResult(toId);
   if (isErr(loadResult)) {
     return loadResult;
   }
