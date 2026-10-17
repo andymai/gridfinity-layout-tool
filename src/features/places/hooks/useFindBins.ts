@@ -69,7 +69,9 @@ export function useFindBins(query: string): FindBinsState {
   const results = useMemo(() => {
     const stashLabel = t('staging.stash');
     const found: FoundBin[] = [];
-    for (const match of matchBins(query, [...active, ...(stored ?? [])])) {
+    // A layout made active since the last reconcile is still in the stored records.
+    const others = (stored ?? []).filter((record) => record.layoutId !== activeLayoutId);
+    for (const match of matchBins(query, [...active, ...others])) {
       const path = pathOf(match, library, stashLabel);
       if (!path) continue;
       const { record, field } = match;
@@ -82,7 +84,7 @@ export function useFindBins(query: string): FindBinsState {
       });
     }
     return found;
-  }, [query, active, stored, library, t]);
+  }, [query, active, stored, activeLayoutId, library, t]);
 
   return { results, indexing: stored === null };
 }

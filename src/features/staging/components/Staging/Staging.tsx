@@ -310,9 +310,10 @@ export function Staging() {
         setHasToggled(true);
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            document
-              .querySelector(`[data-staging-bin-id="${CSS.escape(id)}"]`)
-              ?.scrollIntoView({ block: 'nearest' });
+            const element = document.querySelector(`[data-staging-bin-id="${CSS.escape(id)}"]`);
+            if (!(element instanceof HTMLElement)) return;
+            element.scrollIntoView({ block: 'nearest' });
+            element.focus({ preventScroll: true });
           });
         });
       }),

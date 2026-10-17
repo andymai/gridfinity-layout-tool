@@ -4,6 +4,7 @@ import { Command } from 'cmdk';
 import { useLayoutStore, useLibraryStore, useSelectionStore } from '@/core/store';
 import type { LayoutEntry } from '@/core/types';
 import { binId, gridUnits, layoutId } from '@/core/types';
+import { commandPaletteFilter } from '@/shared/utils/commandPaletteFilter';
 import { createTestBin, createTestLayout, resetAllStores } from '@/test/testUtils';
 import type * as SharedHooks from '@/shared/hooks';
 
@@ -48,7 +49,7 @@ function seed(): void {
 
 function renderGroup(query: string, onDone = vi.fn()) {
   return render(
-    <Command>
+    <Command filter={commandPaletteFilter}>
       <Command.Input value={query} onValueChange={() => {}} />
       <Command.List>
         <PlacesFindGroup query={query} onDone={onDone} />
@@ -80,7 +81,7 @@ describe('PlacesFindGroup', () => {
     const { rerender } = renderGroup('m');
     expect(await screen.findByText('M3 screws')).toBeInTheDocument();
     rerender(
-      <Command>
+      <Command filter={commandPaletteFilter}>
         <Command.Input value="m3" onValueChange={() => {}} />
         <Command.List>
           <PlacesFindGroup query="m3" onDone={vi.fn()} />

@@ -9,8 +9,12 @@ const PlacesFindGroup = lazyWithRetry(() =>
 
 type RenderResults = (query: string, close: () => void) => ReactNode;
 
-/** The command palette's bin results while the `places` flag is on; the palette cannot import the slice. */
-export function usePlacesFindResults(): RenderResults | undefined {
+/**
+ * The command palette's bin results while the `places` flag is on; the palette
+ * cannot import the slice. Off the layout planner a result has nowhere to land,
+ * and Help can open the palette there.
+ */
+export function usePlacesFindResults(onLayoutRoute: boolean): RenderResults | undefined {
   const enabled = useFeatureFlag('places');
   const render = useCallback<RenderResults>(
     (query, close) => (
@@ -20,5 +24,5 @@ export function usePlacesFindResults(): RenderResults | undefined {
     ),
     []
   );
-  return enabled ? render : undefined;
+  return enabled && onLayoutRoute ? render : undefined;
 }

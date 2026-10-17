@@ -15,6 +15,7 @@ import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../../comm
 import { useRecentCommandsStore } from '../../store/recentStore';
 import { CommandPaletteFooter } from '../CommandPaletteFooter';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
+import { commandPaletteFilter } from '@/shared/utils/commandPaletteFilter';
 import { useActionHandlers, type ActionHandler } from './commandPaletteActionHandlers';
 import { useContextBoosts } from './commandPaletteContextBoosts';
 import { CategoryIcon, CommandItem } from './commandPaletteParts';
@@ -143,6 +144,7 @@ export function CommandPalette({
         <Command
           className="rounded-xl border border-stroke bg-surface-secondary shadow-xl animate-scale-in overflow-hidden"
           onClick={(e) => e.stopPropagation()}
+          filter={commandPaletteFilter}
           loop
           onValueChange={(value) => {
             // Extract command ID from composite value (id::label keywords)

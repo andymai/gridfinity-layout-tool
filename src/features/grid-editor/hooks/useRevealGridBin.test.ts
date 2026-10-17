@@ -9,8 +9,9 @@ describe('useRevealGridBin', () => {
     document.body.innerHTML = '';
   });
 
-  it('scrolls the revealed bin into view while mounted', async () => {
+  it('scrolls the revealed bin into view and focuses it while mounted', async () => {
     const element = document.createElement('div');
+    element.tabIndex = 0;
     element.dataset.binId = 'found';
     element.scrollIntoView = vi.fn();
     document.body.append(element);
@@ -18,6 +19,7 @@ describe('useRevealGridBin', () => {
     const { unmount } = renderHook(() => useRevealGridBin());
     revealBin(binId('found'));
     await vi.waitFor(() => expect(element.scrollIntoView).toHaveBeenCalledTimes(1));
+    expect(document.activeElement).toBe(element);
 
     unmount();
     revealBin(binId('found'));

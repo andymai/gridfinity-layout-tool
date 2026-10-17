@@ -1,5 +1,6 @@
 import { Command } from 'cmdk';
 import { useTranslation } from '@/i18n';
+import { PRE_RANKED_VALUE_PREFIX } from '@/shared/utils/commandPaletteFilter';
 import { useFindBins } from '../../hooks/useFindBins';
 import { useFocusBin } from '../../hooks/useFocusBin';
 
@@ -13,10 +14,10 @@ export interface PlacesFindGroupProps {
 
 /**
  * Bin results for the command palette, rendered inside its `Command`. The
- * ranking is ours, so each item carries the query as a keyword to pass cmdk's
- * filter, and in its value too: cmdk re-reads keywords only when the value
- * changes. Nothing here may be force-mounted: cmdk only counts items that
- * register, a forced one never does, and "No results" would stay up.
+ * matching and ranking are ours, so each value carries the pre-ranked prefix
+ * the palette's filter keeps in order above commands. Nothing here may be
+ * force-mounted: cmdk only counts items that register, a forced one never
+ * does, and "No results" would stay up.
  */
 export function PlacesFindGroup({ query, onDone }: PlacesFindGroupProps) {
   const t = useTranslation();
@@ -48,8 +49,7 @@ export function PlacesFindGroup({ query, onDone }: PlacesFindGroupProps) {
       {results.map((result) => (
         <Command.Item
           key={result.key}
-          value={`${result.key}::${query}`}
-          keywords={[query]}
+          value={`${PRE_RANKED_VALUE_PREFIX}${result.key}`}
           onSelect={() => {
             onDone();
             requestAnimationFrame(() => void focusBin(result.layoutId, result.binId));

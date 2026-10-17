@@ -126,7 +126,7 @@ export default function App() {
   const closeBinExampleGallery = useBinExampleGalleryStore((s) => s.close);
   const communityPublishOpen = useCommunityPublishStore((s) => s.isOpen);
   const communityShowcaseEnabled = useFeatureFlag('community_showcase');
-  const placesFindResults = usePlacesFindResults();
+  const placesFindResults = usePlacesFindResults(!isNonLayoutRoute);
   const [commandPaletteInitialQuery, setCommandPaletteInitialQuery] = useState('');
 
   useRouteMeta({
