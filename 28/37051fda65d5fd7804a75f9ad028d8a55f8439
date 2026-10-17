@@ -1,0 +1,24 @@
+src/features/bin-inspector/hooks/useBinInspector.test.ts
+  s_e0423b67d48e77::t_1e4d8aaeaed690 161-180,512-540
+  s_e0423b67d48e77::t_dd66b26d4d4eba 541
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_e0423b67d48e77::t_0876e8621ec491 131-133,135-139
+src/features/bin-inspector/hooks/useBinInspectorMultiActions.ts
+  s_e0423b67d48e77::t_0876e8621ec491 108-109,113-116
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2837051fda65d5fd7804a75f9ad028d8a55f8439",
+  "prompts": {},
+  "sessions": {
+    "s_e0423b67d48e77": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1be01c49-0263-437a-80cd-4ce6249d6f74",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
