@@ -5,6 +5,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import {
+  FOLDER_SCHEMA_VERSION,
   LAYOUT_SCHEMA_VERSION,
   MISSING_DEPENDENCY_STATUS,
   PAYLOAD_KEY,
@@ -19,7 +20,12 @@ import {
 import { PAYLOAD_KEY as API_DESIGNS_PAYLOAD_KEY } from '../../../api/sync/designs/[id].js';
 import { PAYLOAD_KEY as API_BASEPLATES_PAYLOAD_KEY } from '../../../api/sync/baseplates/[id].js';
 import { PAYLOAD_KEY as API_DESIGN_VERSIONS_PAYLOAD_KEY } from '../../../api/sync/designVersions/[id].js';
-import { PAYLOAD_KEY as API_FOLDERS_PAYLOAD_KEY } from '../../../api/sync/folders/[id].js';
+import {
+  FOLDER_KINDS as API_FOLDER_KINDS,
+  PAYLOAD_KEY as API_FOLDERS_PAYLOAD_KEY,
+  SCHEMA_VERSION as API_FOLDERS_SCHEMA_VERSION,
+} from '../../../api/sync/folders/[id].js';
+import { FOLDER_KINDS } from '@/core/types';
 import { MESH_MISSING_STATUS } from '../../../api/lib/shared.js';
 
 const ALL_SYNC_KINDS: readonly SyncKind[] = [
@@ -67,6 +73,16 @@ describe('syncPutBody', () => {
       layout: { v: 1 },
       modifiedAt: 1000,
       schemaVersion: LAYOUT_SCHEMA_VERSION,
+    });
+  });
+
+  it('declares the folder schema the server stamps, and the kinds it keeps', () => {
+    expect(FOLDER_SCHEMA_VERSION).toBe(API_FOLDERS_SCHEMA_VERSION);
+    expect([...FOLDER_KINDS]).toEqual([...API_FOLDER_KINDS]);
+    expect(syncPutBody('folders', { name: 'A' }, 1000)).toEqual({
+      folder: { name: 'A' },
+      modifiedAt: 1000,
+      schemaVersion: FOLDER_SCHEMA_VERSION,
     });
   });
 

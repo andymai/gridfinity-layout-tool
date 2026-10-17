@@ -10,7 +10,8 @@ vi.mock('@/core/storage', async (importOriginal) => ({
 }));
 
 import { folderAdapter } from './folderAdapter';
-import type { AdapterChange } from './types';
+import { FOLDER_SCHEMA_VERSION } from '../payloadKey';
+import type { AdapterChange, LayoutFolderPayload } from './types';
 
 function folder(id: string, modifiedAt: number, over: Partial<LayoutFolder> = {}): LayoutFolder {
   return { id, name: id, parentId: null, createdAt: 1, modifiedAt, ...over };
@@ -47,6 +48,12 @@ describe('folderAdapter.list / get', () => {
     expect(await folderAdapter.get('nope')).toBeNull();
   });
 
+  it('sends a folder’s kind when it has one', async () => {
+    setFolders([folder('folder_1_a', 1000, { name: 'Shop', kind: 'place' })]);
+    const [item] = await folderAdapter.list();
+    expect(item.payload.kind).toBe('place');
+  });
+
   it('lists nothing for a library without folders', async () => {
     setFolders(undefined);
     expect(await folderAdapter.list()).toEqual([]);
@@ -80,6 +87,54 @@ describe('folderAdapter.applyRemote', () => {
     const folders = useLibraryStore.getState().library.folders ?? [];
     expect(folders).toHaveLength(1);
     expect(folders[0]).toMatchObject({ name: 'Office', createdAt: 1, modifiedAt: 3000 });
+  });
+
+  it('takes the kind a current copy carries, and drops one it does not know', async () => {
+    await folderAdapter.applyRemote({
+      id: 'folder_2_b',
+      payload: { name: 'Shop', parentId: null, kind: 'place', createdAt: 5 },
+      modifiedAt: 2000,
+      schemaVersion: FOLDER_SCHEMA_VERSION,
+    });
+    await folderAdapter.applyRemote({
+      id: 'folder_3_c',
+      payload: {
+        name: 'Odd',
+        parentId: null,
+        kind: 'warehouse',
+        createdAt: 5,
+      } as unknown as LayoutFolderPayload,
+      modifiedAt: 2000,
+      schemaVersion: FOLDER_SCHEMA_VERSION,
+    });
+    const folders = useLibraryStore.getState().library.folders ?? [];
+    expect(folders.find((f) => f.id === 'folder_2_b')?.kind).toBe('place');
+    expect(folders.find((f) => f.id === 'folder_3_c')).not.toHaveProperty('kind');
+  });
+
+  it('keeps this device’s kind when an older copy arrives without one', async () => {
+    setFolders([folder('folder_1_a', 1000, { name: 'Study', kind: 'unit' })]);
+    await folderAdapter.applyRemote({
+      id: 'folder_1_a',
+      payload: { name: 'Office', parentId: null, createdAt: 1 },
+      modifiedAt: 3000,
+      schemaVersion: 1,
+    });
+    expect(useLibraryStore.getState().library.folders?.[0]).toMatchObject({
+      name: 'Office',
+      kind: 'unit',
+    });
+  });
+
+  it('clears the kind when a current copy arrives without one', async () => {
+    setFolders([folder('folder_1_a', 1000, { name: 'Study', kind: 'unit' })]);
+    await folderAdapter.applyRemote({
+      id: 'folder_1_a',
+      payload: { name: 'Study', parentId: null, createdAt: 1 },
+      modifiedAt: 3000,
+      schemaVersion: FOLDER_SCHEMA_VERSION,
+    });
+    expect(useLibraryStore.getState().library.folders?.[0]).not.toHaveProperty('kind');
   });
 
   it('roots a folder whose wire parent would close a loop', async () => {

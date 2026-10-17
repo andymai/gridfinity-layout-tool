@@ -1,6 +1,7 @@
 import { isErr } from '@/core/result';
 import { useLibraryStore } from '@/core/store';
-import type { LayoutFolder, LayoutLibrary } from '@/core/types';
+import { FOLDER_KINDS } from '@/core/types';
+import type { FolderKind, LayoutFolder, LayoutLibrary } from '@/core/types';
 import { liftContents, saveLibrary, wouldLoop } from '@/core/storage';
 import { CONSTRAINTS } from '@/core/constants';
 import type {
@@ -11,6 +12,7 @@ import type {
   SyncableItem,
 } from './types';
 import { syncPersistError } from './persistError';
+import { FOLDER_SCHEMA_VERSION } from '../payloadKey';
 
 /**
  * `FolderAdapter` over the library store's folder tree. Same shape as the
@@ -32,10 +34,15 @@ function toItem(folder: LayoutFolder): SyncableItem<LayoutFolderPayload> {
       name: folder.name,
       parentId: folder.parentId ?? null,
       ...(folder.color !== undefined ? { color: folder.color } : {}),
+      ...(folder.kind !== undefined ? { kind: folder.kind } : {}),
       createdAt: folder.createdAt,
     },
     modifiedAt: folder.modifiedAt,
   };
+}
+
+function isFolderKind(value: unknown): value is FolderKind {
+  return FOLDER_KINDS.some((kind) => kind === value);
 }
 
 /** A remote payload is trusted only as far as its shape goes; a bad one is dropped. */
@@ -48,6 +55,7 @@ function unwrap(payload: unknown): LayoutFolderPayload | null {
     name: name.slice(0, CONSTRAINTS.FOLDER_NAME_MAX_LENGTH),
     parentId: typeof raw.parentId === 'string' ? raw.parentId : null,
     ...(typeof raw.color === 'string' ? { color: raw.color } : {}),
+    ...(isFolderKind(raw.kind) ? { kind: raw.kind } : {}),
     createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : 0,
   };
 }
@@ -79,11 +87,17 @@ export const folderAdapter: FolderAdapter = {
     // this folder or sits below it would close a loop and hide the subtree,
     // so it lands at the root instead.
     const parentId = wouldLoop(library, item.id, payload.parentId) ? null : payload.parentId;
+    // Before schema 2 the server stored folders without a kind, so an older
+    // copy's missing kind says nothing about this device's.
+    const kind =
+      payload.kind ??
+      ((item.schemaVersion ?? 1) < FOLDER_SCHEMA_VERSION ? existing?.kind : undefined);
     const folder: LayoutFolder = {
       id: item.id,
       name: payload.name,
       parentId,
       ...(payload.color !== undefined ? { color: payload.color } : {}),
+      ...(kind !== undefined ? { kind } : {}),
       createdAt: existing?.createdAt ?? (payload.createdAt || item.modifiedAt),
       modifiedAt: item.modifiedAt,
     };

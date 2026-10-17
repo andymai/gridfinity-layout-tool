@@ -174,6 +174,34 @@ describe('PUT', () => {
     });
   });
 
+  it('keeps a known kind in a schema-2 envelope when the client declares 2', async () => {
+    const res = await put({
+      folder: { name: 'Shop', parentId: null, kind: 'place', createdAt: 900 },
+      modifiedAt: 1000,
+      schemaVersion: 2,
+    });
+    expect(res._status).toBe(200);
+    const body = res._body as { envelope: { schemaVersion: number; folder: unknown } };
+    expect(body.envelope.schemaVersion).toBe(2);
+    expect(body.envelope.folder).toEqual({
+      name: 'Shop',
+      parentId: null,
+      kind: 'place',
+      createdAt: 900,
+    });
+  });
+
+  it('drops an unknown kind and keeps the folder', async () => {
+    const res = await put({
+      folder: { name: 'Shop', kind: 'warehouse' },
+      modifiedAt: 1000,
+      schemaVersion: 2,
+    });
+    expect(res._status).toBe(200);
+    const body = res._body as { envelope: { folder: Record<string, unknown> } };
+    expect(body.envelope.folder).not.toHaveProperty('kind');
+  });
+
   it('caps the name at 32 characters and falls back to modifiedAt for a missing createdAt', async () => {
     const res = await put({ folder: { name: 'x'.repeat(40) }, modifiedAt: 1000 });
     expect(res._status).toBe(200);

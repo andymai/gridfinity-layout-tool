@@ -14,7 +14,7 @@
  * boundary rule (`src/core/` cannot import `src/features/`).
  */
 
-import type { Layout } from '@/core/types';
+import type { FolderKind, Layout } from '@/core/types';
 import type { CommunityDesignLineage } from '@/shared/types/community';
 
 /**
@@ -197,6 +197,7 @@ export interface LayoutFolderPayload {
   name: string;
   parentId: string | null;
   color?: string;
+  kind?: FolderKind;
   createdAt: number;
 }
 

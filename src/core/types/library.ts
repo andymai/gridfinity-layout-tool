@@ -22,6 +22,10 @@ export interface LayoutEntry {
   folderId?: string | null;
 }
 
+/** What a folder stands for in the Places tree. Absent reads as an area. */
+export const FOLDER_KINDS = ['place', 'area', 'unit'] as const;
+export type FolderKind = (typeof FOLDER_KINDS)[number];
+
 /**
  * A folder in the layout library. Folders nest through `parentId`; the tree
  * is the user's rooms, units and drawers, so a layout's place in it is part
@@ -31,6 +35,7 @@ export interface LayoutFolder {
   id: string;
   name: string; // max FOLDER_NAME_MAX_LENGTH chars
   color?: string; // optional accent color
+  kind?: FolderKind;
   /** Parent folder; absent or null at the root. */
   parentId?: string | null;
   createdAt: number;
