@@ -116,6 +116,25 @@ describe('SingleBinInspector', () => {
       expect(updateItems).toHaveBeenCalledWith([]);
     });
 
+    it('keeps an unsaved item with the bin it was typed for', () => {
+      useLabsStore.getState().enableFeature('places');
+      const updateItems = vi.fn();
+      const { rerender } = render(
+        <SingleBinInspector
+          inspector={createMockInspector({ bin: mockBin, updateItems })}
+          variant="desktop"
+        />
+      );
+      fireEvent.change(screen.getByLabelText('Add an item'), { target: { value: 'Washers' } });
+      rerender(
+        <SingleBinInspector
+          inspector={createMockInspector({ bin: { ...mockBin, id: binId('other') }, updateItems })}
+          variant="desktop"
+        />
+      );
+      expect(screen.getByLabelText('Add an item')).toHaveValue('');
+    });
+
     it('leaves the section out while the flag is off', () => {
       useLabsStore.getState().disableFeature('places');
       render(<SingleBinInspector inspector={createMockInspector()} variant="desktop" />);

@@ -74,6 +74,26 @@ describe('BinItemsEditor', () => {
     expect(last()[0]).not.toHaveProperty('qty');
   });
 
+  it('reads a quantity typed with an exponent as the whole number', () => {
+    const { last } = setup([{ id: 'i1', name: 'Nuts' }]);
+    const qty = screen.getByLabelText('Quantity of Nuts');
+    fireEvent.change(qty, { target: { value: '1e3' } });
+    fireEvent.blur(qty);
+    expect(last()[0].qty).toBe(1000);
+    fireEvent.change(qty, { target: { value: '1e5' } });
+    fireEvent.blur(qty);
+    expect(last()[0].qty).toBe(CONSTRAINTS.ITEM_QTY_MAX);
+  });
+
+  it('leaves the Enter that confirms an IME candidate alone', () => {
+    const { onChange } = setup();
+    fireEvent.change(addField(), { target: { value: 'ねじ' } });
+    fireEvent.keyDown(addField(), { key: 'Enter', isComposing: true });
+    fireEvent.keyDown(addField(), { key: 'Enter', keyCode: 229 });
+    expect(onChange).not.toHaveBeenCalled();
+    expect(addField()).toHaveValue('ねじ');
+  });
+
   it('leaves an unchanged row alone, and follows a saved change made elsewhere', () => {
     const onChange = vi.fn<(items: BinItem[]) => void>();
     const { rerender } = render(

@@ -10,7 +10,6 @@ interface BinItemsEditorProps {
   /** Offered as the first item while the bin has none. */
   label: string;
   onChange: (items: BinItem[]) => void;
-  /** Platform variant affects touch targets and sizing */
   variant: 'desktop' | 'mobile';
 }
 
@@ -18,10 +17,11 @@ function cleanName(name: string): string {
   return name.trim().slice(0, CONSTRAINTS.ITEM_NAME_MAX_LENGTH);
 }
 
-/** Blank or unreadable clears the quantity; anything above the cap is held to it. */
+/** A number input also accepts exponents, so "1e3" must read as 1000, not 1. */
 function parseQuantity(raw: string): number | undefined {
-  const qty = Number.parseInt(raw, 10);
-  return Number.isInteger(qty) && qty >= 0 ? Math.min(qty, CONSTRAINTS.ITEM_QTY_MAX) : undefined;
+  const qty = raw.trim() === '' ? Number.NaN : Number(raw);
+  if (Number.isNaN(qty) || qty < 0) return undefined;
+  return Math.min(Math.trunc(qty), CONSTRAINTS.ITEM_QTY_MAX);
 }
 
 /** A field's unsaved text, reset whenever the saved value changes under it (undo, sync). */
@@ -37,7 +37,11 @@ function useDraft(saved: string): [string, (next: string) => void] {
 
 function onEnter(commit: () => void) {
   return (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== 'Enter') return;
+    // The Enter that confirms an IME candidate is not a commit. Safari reports
+    // it with keyCode 229 and isComposing already false.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- no standard replacement for the 229 signal
+    const composing = e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229;
+    if (e.key !== 'Enter' || composing) return;
     e.preventDefault();
     commit();
   };
@@ -113,7 +117,6 @@ function ItemRow({ item, inputHeight, isMobile, onRename, onQuantity, onRemove }
   );
 }
 
-/** What a bin holds, for Find: one row per item, plus a line that adds one or a pasted list. */
 export function BinItemsEditor({ items = [], label, onChange, variant }: BinItemsEditorProps) {
   const t = useTranslation();
   const [draft, setDraft] = useState('');

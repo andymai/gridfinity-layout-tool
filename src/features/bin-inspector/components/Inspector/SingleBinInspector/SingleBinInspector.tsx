@@ -414,6 +414,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
         {placesEnabled && (
           <BinItemsEditor
+            key={bin.id}
             items={bin.items}
             label={bin.label}
             onChange={updateItems}
