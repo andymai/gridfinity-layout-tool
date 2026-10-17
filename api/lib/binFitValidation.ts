@@ -21,6 +21,16 @@ export interface MarginTaperShape {
   flare?: number;
 }
 
+export interface WallTaperShape {
+  enabled?: boolean;
+  profile: TaperProfile;
+  bandHeight: number;
+  left: number;
+  right: number;
+  front: number;
+  back: number;
+}
+
 export interface BinOverhangShape {
   enabled?: boolean;
   left: number;
@@ -28,11 +38,12 @@ export interface BinOverhangShape {
   front: number;
   back: number;
   feet?: boolean;
+  taper?: WallTaperShape;
 }
 
 export interface BinFitFields {
   clearanceHeight?: number;
-  extendToMargin?: true;
+  extendToMargin?: boolean;
   marginTaper?: MarginTaperShape;
   overhang?: BinOverhangShape;
 }
@@ -58,22 +69,42 @@ function sanitizeMarginTaper(value: unknown): MarginTaperShape | undefined {
   };
 }
 
-function sanitizeOverhang(value: unknown): BinOverhangShape | undefined {
-  if (!isObject(value)) return undefined;
-  const left = mmWithin(value.left, BIN_OVERHANG_MM_MAX);
-  const right = mmWithin(value.right, BIN_OVERHANG_MM_MAX);
-  const front = mmWithin(value.front, BIN_OVERHANG_MM_MAX);
-  const back = mmWithin(value.back, BIN_OVERHANG_MM_MAX);
+type Sides = Pick<BinOverhangShape, 'left' | 'right' | 'front' | 'back'>;
+
+function sides(value: Record<string, unknown>, max: number): Sides | undefined {
+  const left = mmWithin(value.left, max);
+  const right = mmWithin(value.right, max);
+  const front = mmWithin(value.front, max);
+  const back = mmWithin(value.back, max);
   if (left === undefined || right === undefined || front === undefined || back === undefined) {
     return undefined;
   }
+  return { left, right, front, back };
+}
+
+function sanitizeWallTaper(value: unknown): WallTaperShape | undefined {
+  if (!isObject(value) || !isTaperProfile(value.profile)) return undefined;
+  const bandHeight = mmWithin(value.bandHeight, TAPER_BAND_MM_MAX);
+  const taperSides = sides(value, TAPER_FLARE_MM_MAX);
+  if (bandHeight === undefined || !taperSides) return undefined;
   return {
     ...(isBoolean(value.enabled) ? { enabled: value.enabled } : {}),
-    left,
-    right,
-    front,
-    back,
+    profile: value.profile,
+    bandHeight,
+    ...taperSides,
+  };
+}
+
+function sanitizeOverhang(value: unknown): BinOverhangShape | undefined {
+  if (!isObject(value)) return undefined;
+  const overhangSides = sides(value, BIN_OVERHANG_MM_MAX);
+  if (!overhangSides) return undefined;
+  const taper = sanitizeWallTaper(value.taper);
+  return {
+    ...(isBoolean(value.enabled) ? { enabled: value.enabled } : {}),
+    ...overhangSides,
     ...(isBoolean(value.feet) ? { feet: value.feet } : {}),
+    ...(taper ? { taper } : {}),
   };
 }
 
@@ -86,7 +117,7 @@ export function sanitizeBinFitFields(value: unknown): BinFitFields {
     ...(isNumber(bin.clearanceHeight) && bin.clearanceHeight >= 0
       ? { clearanceHeight: bin.clearanceHeight }
       : {}),
-    ...(bin.extendToMargin === true ? { extendToMargin: true as const } : {}),
+    ...(isBoolean(bin.extendToMargin) ? { extendToMargin: bin.extendToMargin } : {}),
     ...(marginTaper ? { marginTaper } : {}),
     ...(overhang ? { overhang } : {}),
   };

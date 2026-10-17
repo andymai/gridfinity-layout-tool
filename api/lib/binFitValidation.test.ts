@@ -3,7 +3,24 @@ import { describe, expect, it } from 'vitest';
 import { sanitizeBinFitFields } from './binFitValidation.js';
 
 const taper = { profile: 'fillet', bandHeight: 12, enabled: true, flare: 3 };
-const overhang = { enabled: true, left: 4.5, right: 0, front: 0, back: 21, feet: false };
+const wallTaper = {
+  enabled: true,
+  profile: 'fillet',
+  bandHeight: 9,
+  left: 0,
+  right: 3,
+  front: 0,
+  back: 0,
+};
+const overhang = {
+  enabled: true,
+  left: 4.5,
+  right: 0,
+  front: 0,
+  back: 21,
+  feet: false,
+  taper: wallTaper,
+};
 
 describe('sanitizeBinFitFields', () => {
   it('keeps well-formed values exactly', () => {
@@ -26,7 +43,6 @@ describe('sanitizeBinFitFields', () => {
     ['a non-finite clearance', { clearanceHeight: Number.POSITIVE_INFINITY }],
     ['a string clearance', { clearanceHeight: '2' }],
     ['a truthy non-boolean margin flag', { extendToMargin: 'yes' }],
-    ['a false margin flag', { extendToMargin: false }],
     ['an unknown taper profile', { marginTaper: { ...taper, profile: 'bevel' } }],
     ['a taper band past the ceiling', { marginTaper: { ...taper, bandHeight: 351 } }],
     ['a taper without a band', { marginTaper: { profile: 'chamfer' } }],
@@ -48,6 +64,24 @@ describe('sanitizeBinFitFields', () => {
       marginTaper: { profile: 'chamfer', bandHeight: 8 },
       overhang: { left: 1, right: 2, front: 3, back: 4 },
     });
+  });
+
+  it('keeps a false margin flag, which is how a bin turns the margin off', () => {
+    expect(sanitizeBinFitFields({ extendToMargin: false })).toEqual({ extendToMargin: false });
+  });
+
+  it('drops a malformed overhang taper and keeps the overhang under it', () => {
+    const { taper: _taper, ...plain } = overhang;
+    for (const taper of [
+      { ...wallTaper, profile: 'bevel' },
+      { ...wallTaper, right: 43 },
+      { ...wallTaper, bandHeight: -1 },
+      'fillet',
+    ]) {
+      expect(sanitizeBinFitFields({ overhang: { ...overhang, taper } })).toEqual({
+        overhang: plain,
+      });
+    }
   });
 
   it('keeps one field when its neighbour is malformed', () => {

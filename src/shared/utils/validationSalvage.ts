@@ -64,13 +64,34 @@ function isMarginTaper(value: unknown): value is NonNullable<Bin['marginTaper']>
   );
 }
 
-function isOverhang(value: unknown): value is NonNullable<Bin['overhang']> {
+function hasSides(value: Record<string, unknown>): boolean {
+  return [value.left, value.right, value.front, value.back].every(isNonNegative);
+}
+
+function isWallTaper(value: unknown): boolean {
   return (
     isRecord(value) &&
-    [value.left, value.right, value.front, value.back].every(isNonNegative) &&
-    isOptionalBoolean(value.enabled) &&
-    isOptionalBoolean(value.feet)
+    (value.profile === 'chamfer' || value.profile === 'fillet') &&
+    isNonNegative(value.bandHeight) &&
+    hasSides(value) &&
+    isOptionalBoolean(value.enabled)
   );
+}
+
+/** A malformed taper goes alone; the overhang under it still holds. */
+function wellFormedOverhang(value: unknown): Bin['overhang'] {
+  if (
+    !isRecord(value) ||
+    !hasSides(value) ||
+    !isOptionalBoolean(value.enabled) ||
+    !isOptionalBoolean(value.feet)
+  ) {
+    return undefined;
+  }
+  const { taper, ...overhang } = value;
+  return (isWallTaper(taper) ? { ...overhang, taper } : overhang) as unknown as NonNullable<
+    Bin['overhang']
+  >;
 }
 
 const FIT_FIELD_SET: ReadonlySet<string> = new Set(FIT_FIELDS);
@@ -82,13 +103,14 @@ function withoutFitFields(bin: object): Record<string, unknown> {
 /** The structural guard never looks at these, so a damaged bin's malformed one is dropped alone. */
 function wellFormedFitFields(bin: object): Partial<FitFields> {
   const raw: Record<string, unknown> = { ...bin };
+  const overhang = wellFormedOverhang(raw.overhang);
   return {
     ...(isNonNegative(raw.clearanceHeight)
       ? { clearanceHeight: heightUnits(raw.clearanceHeight) }
       : {}),
     ...(typeof raw.extendToMargin === 'boolean' ? { extendToMargin: raw.extendToMargin } : {}),
     ...(isMarginTaper(raw.marginTaper) ? { marginTaper: raw.marginTaper } : {}),
-    ...(isOverhang(raw.overhang) ? { overhang: raw.overhang } : {}),
+    ...(overhang ? { overhang } : {}),
     ...(raw.locked === true ? { locked: true } : {}),
   };
 }

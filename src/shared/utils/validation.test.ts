@@ -773,6 +773,25 @@ describe('salvageImport', () => {
       expect(kept).not.toHaveProperty(key);
     }
   });
+
+  it('drops a salvaged bin’s malformed overhang taper and keeps the overhang', () => {
+    const layout = createTestLayout();
+    const overhang = { left: 0, right: 7, front: 0, back: 0 };
+    const healthy = {
+      ...createTestBin({ id: binId('healthy'), width: gridUnits(3), depth: gridUnits(3) }),
+      overhang: { ...overhang, taper: { profile: 'fillet', bandHeight: 'tall' } },
+    };
+    const collides = createTestBin({
+      id: binId('collides'),
+      x: gridUnits(1),
+      y: gridUnits(1),
+      width: gridUnits(3),
+      depth: gridUnits(3),
+    });
+    const result = salvageImport({ ...layout, bins: [healthy, collides] });
+    if (!result.valid) throw new Error('expected the salvage to succeed');
+    expect(result.layout.bins.find((b) => b.id === 'healthy')?.overhang).toEqual(overhang);
+  });
 });
 
 describe('truncate', () => {

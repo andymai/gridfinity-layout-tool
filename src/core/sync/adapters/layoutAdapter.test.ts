@@ -291,6 +291,11 @@ describe('layoutAdapter.applyRemote — copies the server stored before schema 3
     expect(savedBins()[0]).toMatchObject({ clearanceHeight: 5 });
   });
 
+  it('lets a schema-2 copy that turned the margin off win over this device’s', async () => {
+    await pull([bin('a', 0, { extendToMargin: false })], 2);
+    expect(savedBins()[0]).toMatchObject({ extendToMargin: false });
+  });
+
   it('leaves a bin this device has never seen alone', async () => {
     await pull([bin('new', 8)], 2);
     expect(savedBins()[0]).not.toHaveProperty('clearanceHeight');
