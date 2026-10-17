@@ -191,6 +191,24 @@ describe('useBento', () => {
       );
     });
 
+    it('carries everything the source bins held into the replacement', async () => {
+      seed([
+        { ...bin('a', 0), items: [{ id: 'i1', name: 'Phillips' }] },
+        { ...bin('b', 1), items: [{ id: 'i2', name: 'Flat' }] },
+      ]);
+
+      await commit({ name: 'Screwdrivers', replaceBins: true });
+
+      expect(addBin).toHaveBeenCalledWith(
+        expect.objectContaining({
+          items: [
+            { id: 'i1', name: 'Phillips' },
+            { id: 'i2', name: 'Flat' },
+          ],
+        })
+      );
+    });
+
     it('anchors the replacement at the selection origin, not the drawer origin', async () => {
       seed([bin('a', 3), bin('b', 4)]);
 

@@ -90,6 +90,7 @@ const binAddSchema = z.object({
   label: labelStr,
   notes: notesStr,
   customProperties: z.record(z.string(), z.string()).optional(),
+  items: binItemsSchema.optional(),
   linkedDesignId: z.string().optional(),
   pairId: z.string().min(1).optional(),
   pairRole: z.enum(['block', 'rest']).optional(),

@@ -57,7 +57,12 @@ export interface ContentFilterResult {
  */
 export function filterLayoutContent(layout: {
   name: string;
-  bins: Array<{ label?: string; notes?: string; customProperties?: Record<string, string> }>;
+  bins: Array<{
+    label?: string;
+    notes?: string;
+    customProperties?: Record<string, string>;
+    items?: Array<{ name: string; note?: string }>;
+  }>;
   categories: Array<{ name: string }>;
 }): ContentFilterResult {
   const nameResult = checkText(layout.name);
@@ -96,6 +101,15 @@ export function filterLayoutContent(layout: {
         const valueResult = checkText(value);
         if (!valueResult.passed) {
           return { passed: false, reason: `Custom property value: ${valueResult.reason}` };
+        }
+      }
+    }
+    for (const item of bin.items ?? []) {
+      for (const text of [item.name, item.note]) {
+        if (!text) continue;
+        const itemResult = checkText(text);
+        if (!itemResult.passed) {
+          return { passed: false, reason: `Bin item: ${itemResult.reason}` };
         }
       }
     }

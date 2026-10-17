@@ -157,7 +157,7 @@ instead of placing it on the grid.
 | `label`            | `string`                                         |          |         | length <= 24         | Short bin label. The exporter always writes one; omitted backfills to an empty string.                                                                                                     |
 | `notes`            | `string`                                         |          |         | length <= 256        | Longer note. The exporter always writes one; omitted backfills to an empty string.                                                                                                         |
 | `customProperties` | [`CustomProperties`](#customproperties)          |          |         |                      |                                                                                                                                                                                            |
-| `items`            | [`BinItem`](#binitem)[]                          |          |         | items <= 50          | What the bin holds, for finding it later. A malformed item is dropped on import while the rest load. Omit when empty.                                                                      |
+| `items`            | [`BinItem`](#binitem)[]                          |          |         | items <= 100         | What the bin holds, for finding it later. A malformed item is dropped on import while the rest load. Omit when empty.                                                                      |
 | `linkedDesignId`   | `string`                                         |          |         |                      | Id of a saved bin design. Should match a linkedDesigns[].id in the same file, otherwise the reference dangles after import.                                                                |
 | `extendToMargin`   | `boolean`                                        |          | `false` |                      | Let this bin's walls extend into the baseplate's drawer-fit margin on every drawer edge it abuts. A flag, not a distance: the per-side reach is derived live from baseplateParams padding. |
 | `marginTaper`      | [`MarginTaper`](#margintaper)                    |          |         |                      |                                                                                                                                                                                            |
@@ -177,6 +177,27 @@ instead of placing it on the grid.
 A map of user metadata with no fixed keys, so there is nothing to enumerate.
 Keys and values are strings, bounded by `validateCustomProperties` in
 `src/shared/utils/validationProperties.ts`.
+
+### BinItem
+
+One thing a bin holds, so it can be found later. Ids are unique within a bin;
+on import a malformed item, or a second item reusing an id, is dropped while
+the rest load.
+
+<!-- schema:BinItem -->
+
+<a id="binitem"></a>
+
+<!-- generated:start -->
+
+| Field  | Type      | Required | Default | Constraint                | Notes                                        |
+| ------ | --------- | -------- | ------- | ------------------------- | -------------------------------------------- |
+| `id`   | `string`  | yes      |         | length >= 1, length <= 64 | Unique within its bin.                       |
+| `name` | `string`  | yes      |         | length >= 1, length <= 48 | What it is, as the user would search for it. |
+| `qty`  | `integer` |          |         | >= 0, <= 99999            | How many, if the user said.                  |
+| `note` | `string`  |          |         | length <= 120             | A short note about the item.                 |
+
+<!-- generated:end -->
 
 ### MarginTaper
 

@@ -492,6 +492,14 @@ describe('storage-share', () => {
       expect(value.drawer).toEqual(layout.drawer);
     });
 
+    it('keeps what each bin holds through a JSON export and import', () => {
+      const layout = createTestLayout();
+      const items = [{ id: 'i1', name: 'M3 screws', qty: 40 }];
+      layout.bins = [{ ...layout.bins[0], items }];
+      const value = expectOk(importLayoutResult(exportLayoutJSON(layout)));
+      expect(value.bins[0].items).toEqual(items);
+    });
+
     it('returns Err with ValidationImportError on invalid JSON', () => {
       const result = importLayoutResult('not valid json{{{');
 

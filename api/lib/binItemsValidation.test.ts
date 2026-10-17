@@ -64,9 +64,9 @@ describe('sanitizeBinItems', () => {
     ).toEqual([{ id: 'a', name: 'First' }]);
   });
 
-  it('caps a bin at fifty items', () => {
-    const many = Array.from({ length: 60 }, (_, i) => ({ id: `i${i}`, name: `Item ${i}` }));
-    expect(sanitizeBinItems(many)).toHaveLength(50);
+  it('caps a bin at a hundred items', () => {
+    const many = Array.from({ length: 120 }, (_, i) => ({ id: `i${i}`, name: `Item ${i}` }));
+    expect(sanitizeBinItems(many)).toHaveLength(100);
   });
 
   it('drops keys an item does not define', () => {

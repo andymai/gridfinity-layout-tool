@@ -587,3 +587,35 @@ describe('layout.setBaseplateParams schema', () => {
     expect(result.success).toBe(false);
   });
 });
+
+describe('bin item schemas match the commands', () => {
+  const items = [{ id: 'i1', name: 'M3 screws', qty: 40 }];
+  const binPayload = {
+    layerId: 'layer_1',
+    x: 0,
+    y: 0,
+    width: 1,
+    depth: 1,
+    height: 3,
+    category: 'cat_1',
+    label: '',
+    notes: '',
+  };
+
+  it('accepts items on bin.update and bin.add, so the registry never rejects a valid edit', () => {
+    expect(
+      getCommandSchema('bin.update')?.safeParse({ id: 'b1', updates: { items } }).success
+    ).toBe(true);
+    expect(getCommandSchema('bin.add')?.safeParse({ ...binPayload, items }).success).toBe(true);
+  });
+
+  it('rejects two items sharing an id on both', () => {
+    const clash = [items[0], { id: 'i1', name: 'Nuts' }];
+    expect(
+      getCommandSchema('bin.update')?.safeParse({ id: 'b1', updates: { items: clash } }).success
+    ).toBe(false);
+    expect(getCommandSchema('bin.add')?.safeParse({ ...binPayload, items: clash }).success).toBe(
+      false
+    );
+  });
+});

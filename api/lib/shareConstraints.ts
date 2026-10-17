@@ -26,7 +26,7 @@ export const SHARE_CONSTRAINTS = {
   CUSTOM_PROPERTY_VALUE_MAX_LENGTH: 256,
   CUSTOM_PROPERTY_MAX_TOTAL_SIZE: 20480, // 20KB total per bin
   // Mirror the client's `CONSTRAINTS.ITEMS_PER_BIN_MAX` and item caps; pinned by binItemsValidation.crossBoundary.test.ts.
-  ITEMS_PER_BIN_MAX: 50,
+  ITEMS_PER_BIN_MAX: 100,
   ITEM_ID_MAX_LENGTH: 64,
   ITEM_NAME_MAX_LENGTH: 48,
   ITEM_NOTE_MAX_LENGTH: 120,

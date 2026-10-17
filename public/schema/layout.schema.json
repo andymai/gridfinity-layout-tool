@@ -538,7 +538,7 @@
         },
         "items": {
           "type": "array",
-          "maxItems": 50,
+          "maxItems": 100,
           "x-constant": {
             "maxItems": "CONSTRAINTS.ITEMS_PER_BIN_MAX"
           },

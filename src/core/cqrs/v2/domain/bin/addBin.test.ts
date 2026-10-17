@@ -152,4 +152,23 @@ describe('v2 bin.add', () => {
       expect(addBin.schemaVersion).toBe(1);
     });
   });
+
+  describe('items', () => {
+    it('keeps the items a re-added bin carries', () => {
+      const items = [{ id: 'i1', name: 'M3 screws' }];
+      const parsed = addBin.payload.parse({ ...validPayload, items });
+      const result = addBin.handle(parsed, { aggregate: makeLayout() });
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.bin.items).toEqual(items);
+    });
+
+    it('leaves the field off for an empty list', () => {
+      const parsed = addBin.payload.parse({ ...validPayload, items: [] });
+      const result = addBin.handle(parsed, { aggregate: makeLayout() });
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.bin).not.toHaveProperty('items');
+    });
+  });
 });

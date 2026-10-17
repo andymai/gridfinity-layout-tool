@@ -2,6 +2,7 @@ import type { RefObject } from 'react';
 import type {
   Bin,
   BinId,
+  BinItem,
   GridUnits,
   HeightUnits,
   LayerId,
@@ -82,6 +83,7 @@ export interface AddBinParams {
   notes: string;
   clearanceHeight?: HeightUnits;
   customProperties?: Record<string, string>;
+  items?: BinItem[];
 }
 
 /**

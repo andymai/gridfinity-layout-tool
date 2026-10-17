@@ -96,6 +96,32 @@ describe('filterLayoutContent', () => {
     });
   });
 
+  describe('offensive content in bin items', () => {
+    it.each([
+      ['name', { name: 'This is some cunt text' }],
+      ['note', { name: 'Screws', note: 'This is some cunt text' }],
+    ])('blocks an item with a slur in its %s', (_field, item) => {
+      const result = filterLayoutContent({
+        name: 'My Layout',
+        bins: [{ label: 'Tools', notes: '', items: [item] }],
+        categories: [{ name: 'Default' }],
+      });
+
+      expect(result.passed).toBe(false);
+      expect(result.reason).toContain('Bin item');
+    });
+
+    it('passes ordinary item names and notes', () => {
+      const result = filterLayoutContent({
+        name: 'My Layout',
+        bins: [{ label: 'Tools', items: [{ name: 'M3 screws', note: '8 mm' }] }],
+        categories: [{ name: 'Default' }],
+      });
+
+      expect(result.passed).toBe(true);
+    });
+  });
+
   describe('offensive content in categories', () => {
     it('blocks categories with slurs', () => {
       const result = filterLayoutContent({

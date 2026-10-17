@@ -1,5 +1,5 @@
-import { CONSTRAINTS } from '@/core/constants';
-import type { BinItem } from '@/core/types';
+import { CONSTRAINTS, generateId } from '@/core/constants';
+import type { Bin, BinItem } from '@/core/types';
 
 const ITEM_ID_MAX_LENGTH = 64;
 
@@ -52,4 +52,20 @@ export function withSanitizedItems(bin: unknown): unknown {
   const { items, ...rest } = bin as Record<string, unknown>;
   const clean = sanitizeBinItems(items);
   return clean ? { ...rest, items: clean } : rest;
+}
+
+/**
+ * What a bin merged from `bins` holds: everything they held, in order, up to the
+ * per-bin cap. Ids are unique only within a bin, so a clash gets a fresh one.
+ */
+export function mergeBinItems(bins: readonly Pick<Bin, 'items'>[]): BinItem[] | undefined {
+  const seen = new Set<string>();
+  const merged: BinItem[] = [];
+  for (const item of bins.flatMap((bin) => bin.items ?? [])) {
+    if (merged.length >= CONSTRAINTS.ITEMS_PER_BIN_MAX) break;
+    const id = seen.has(item.id) ? generateId() : item.id;
+    seen.add(id);
+    merged.push({ ...item, id });
+  }
+  return merged.length > 0 ? merged : undefined;
 }

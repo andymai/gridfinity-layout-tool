@@ -53,4 +53,14 @@ describe('migrateLayoutFields', () => {
     expect(result).toEqual({ gridUnitMm: 40, heightUnitMm: 6, printBedSize: 180 });
     expect(input).toHaveProperty('maxPrintSize', 3);
   });
+
+  it('sanitizes bin items and leaves bins without them untouched', () => {
+    const plain = { id: 'b0', label: 'x' };
+    const result = migrate({
+      bins: [plain, { id: 'b1', items: [{ id: 'i1', name: 'Screws' }, { id: '' }] }],
+    });
+    const bins = result.bins as Record<string, unknown>[];
+    expect(bins[0]).toBe(plain);
+    expect(bins[1].items).toEqual([{ id: 'i1', name: 'Screws' }]);
+  });
 });

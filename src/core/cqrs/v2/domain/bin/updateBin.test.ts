@@ -309,4 +309,40 @@ describe('v2 bin.update', () => {
       expect(next.bins[0].locked).toBe(true);
     });
   });
+
+  describe('items', () => {
+    const items = [{ id: 'i1', name: 'M3 screws', qty: 40 }];
+
+    it('sets a bin’s items and records the previous list', () => {
+      const layout = makeLayout({ bins: [makeBin('bin_1')] });
+      const result = updateBin.handle({ id: 'bin_1', updates: { items } }, { aggregate: layout });
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.changes.items).toEqual(items);
+      expect(result.value.event.payload.previous.items).toBeUndefined();
+    });
+
+    it('clears them with an empty list', () => {
+      const layout = makeLayout({ bins: [makeBin('bin_1', { items })] });
+      const result = updateBin.handle(
+        { id: 'bin_1', updates: { items: [] } },
+        { aggregate: layout }
+      );
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect('items' in result.value.event.payload.changes).toBe(true);
+      expect(result.value.event.payload.changes.items).toBeUndefined();
+    });
+
+    it.each([
+      ['two items sharing an id', [items[0], { ...items[0], name: 'Nuts' }]],
+      ['an empty name', [{ id: 'i1', name: '  ' }]],
+      ['a fractional quantity', [{ id: 'i1', name: 'Screws', qty: 1.5 }]],
+      ['a name past the cap', [{ id: 'i1', name: 'x'.repeat(49) }]],
+    ])('rejects %s', (_name, list) => {
+      expect(updateBin.payload.safeParse({ id: 'bin_1', updates: { items: list } }).success).toBe(
+        false
+      );
+    });
+  });
 });

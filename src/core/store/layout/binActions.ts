@@ -125,6 +125,7 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
         label: bin.label,
         notes: bin.notes,
         customProperties: bin.customProperties,
+        items: bin.items,
         layerId,
         x,
         y,

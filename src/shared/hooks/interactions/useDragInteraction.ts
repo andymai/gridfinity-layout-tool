@@ -405,6 +405,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
                 label: bin.label,
                 notes: bin.notes,
                 customProperties: bin.customProperties,
+                items: bin.items,
               });
               if (isOk(addResult)) {
                 newBinIds.push(addResult.value);
