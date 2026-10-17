@@ -1,0 +1,21 @@
+src/shared/hooks/interactions/useDrawInteraction.ts
+  s_e0423b67d48e77::t_383ee199dd03ff 180,196-199,203-210
+src/shared/hooks/interactions/useDrawInteraction.test.ts
+  s_e0423b67d48e77::t_1afd67b4b79c18 352-397
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "06ce37f0d727fe52b4a4d5893d1385c8b6845cb2",
+  "prompts": {},
+  "sessions": {
+    "s_e0423b67d48e77": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1be01c49-0263-437a-80cd-4ce6249d6f74",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
