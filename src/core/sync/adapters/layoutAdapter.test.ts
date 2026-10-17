@@ -309,9 +309,65 @@ describe('layoutAdapter.applyRemote — copies the server stored before schema 3
     expect(savedBins()[0]).toMatchObject(fit);
   });
 
-  it('takes a current copy as it is, so a field cleared elsewhere stays cleared', async () => {
+  it('takes a schema-3 copy’s drawer-fit fields as they are, so one cleared elsewhere stays cleared', async () => {
     await pull([bin('a', 0)], 3);
     for (const key of Object.keys(fit)) expect(savedBins()[0]).not.toHaveProperty(key);
+  });
+});
+
+describe('layoutAdapter.applyRemote — copies the server stored before schema 4', () => {
+  const items = [{ id: 'i1', name: 'M3 screws', qty: 40 }];
+  const bin = (id: string, extra: Partial<Bin> = {}): Bin =>
+    ({
+      id,
+      layerId: 'layer-1',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'cat-1',
+      label: '',
+      notes: '',
+      ...extra,
+    }) as unknown as Bin;
+  const local = {
+    ...minimalLayout('Mine'),
+    drawer: { width: 12, depth: 12, height: 12 },
+    bins: [bin('a', { items, clearanceHeight: heightUnits(2) })],
+  };
+
+  beforeEach(() => {
+    computePreviewMock.mockReturnValue({ binCount: 1 });
+    saveLayoutAsyncMock.mockResolvedValue({ ok: true });
+    saveLibraryMock.mockResolvedValue({ ok: true });
+    loadLayoutAsyncMock.mockResolvedValue(local);
+  });
+
+  afterEach(() => {
+    loadLayoutAsyncMock.mockReset();
+  });
+
+  const pull = (bins: Bin[], schemaVersion: number): Promise<void> =>
+    layoutAdapter.applyRemote({
+      id: 'lay-1',
+      payload: { ...minimalLayout('Mine'), drawer: local.drawer, bins } as unknown as Layout,
+      modifiedAt: 2000,
+      schemaVersion,
+    });
+
+  const savedBin = (): Record<string, unknown> =>
+    (saveLayoutAsyncMock.mock.calls[0][1] as { bins: Record<string, unknown>[] }).bins[0];
+
+  it('keeps this device’s items that a schema-3 copy lost, and nothing else', async () => {
+    await pull([bin('a')], 3);
+    expect(savedBin()).toMatchObject({ items });
+    expect(savedBin()).not.toHaveProperty('clearanceHeight');
+  });
+
+  it('takes a current copy as it is, so items cleared elsewhere stay cleared', async () => {
+    await pull([bin('a')], LAYOUT_SCHEMA_VERSION);
+    expect(savedBin()).not.toHaveProperty('items');
   });
 });
 

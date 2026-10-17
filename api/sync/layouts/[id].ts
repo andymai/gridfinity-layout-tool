@@ -5,16 +5,17 @@ import { createSyncResourceHandler } from '../lib/resourceHandler.js';
 /**
  * A field the server kept only from version N on is unknown, not cleared, in an
  * envelope below N: version 2 added the measured drawer and plate settings,
- * version 3 the per-bin drawer-fit fields. A write keeps the version its client
+ * version 3 the per-bin drawer-fit fields, version 4 bin items. A write keeps
+ * the version its client
  * declares, since an older tab still sends layouts that lost those fields and
  * stamping them current would read as clears elsewhere.
  */
-export const SCHEMA_VERSION = 3 as const;
+export const SCHEMA_VERSION = 4 as const;
 
-type LayoutSchemaVersion = 1 | 2 | typeof SCHEMA_VERSION;
+type LayoutSchemaVersion = 1 | 2 | 3 | typeof SCHEMA_VERSION;
 
 function declaredSchemaVersion(value: unknown): LayoutSchemaVersion {
-  return value === 2 || value === SCHEMA_VERSION ? value : 1;
+  return value === 2 || value === 3 || value === SCHEMA_VERSION ? value : 1;
 }
 
 /** The PUT body / GET envelope key for this resource; mirrors `PAYLOAD_KEY.layouts` in src/core/sync/payloadKey.ts. */

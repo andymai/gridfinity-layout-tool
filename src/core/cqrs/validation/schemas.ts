@@ -10,6 +10,7 @@
 
 import * as z from 'zod';
 import { CONSTRAINTS } from '@/core/constants';
+import { binItemsSchema } from './binItems';
 import {
   SOLID_FLOOR_MIN_MM,
   SOLID_FLOOR_MAX_MM,
@@ -108,6 +109,7 @@ const binPartialSchema = z
     label: labelStr,
     notes: notesStr,
     customProperties: z.record(z.string(), z.string()),
+    items: binItemsSchema,
     linkedDesignId: z.string().nullable(),
     extendToMargin: z.boolean(),
     marginTaper: z.object({

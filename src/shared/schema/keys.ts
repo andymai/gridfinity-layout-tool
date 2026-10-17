@@ -18,6 +18,7 @@ export * from './binContentKeys';
 
 import {
   BASEPLATE_PARAMS_KEYS,
+  BIN_ITEM_KEYS,
   BIN_KEYS,
   CATEGORY_KEYS,
   CORNER_CUT_PARAMS_KEYS,
@@ -202,6 +203,7 @@ export const SCHEMA_KEYS = {
   BezierHandle: BEZIER_HANDLE_KEYS,
   BaseplateParams: BASEPLATE_PARAMS_KEYS,
   Bin: BIN_KEYS,
+  BinItem: BIN_ITEM_KEYS,
   BinParams: BIN_PARAMS_KEYS,
   Category: CATEGORY_KEYS,
   CellMask: CELL_MASK_KEYS,

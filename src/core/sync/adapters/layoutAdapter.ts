@@ -21,13 +21,14 @@ type IncomingLayout = Omit<Layout, 'bins'> & { bins: IncomingBin[] };
 
 /**
  * Before schema 2 the server rebuilt layouts without `drawer.measuredMm`,
- * `baseplateParams` and `activeBaseplateId`, and before schema 3 it rebuilt
- * bins without their drawer-fit fields, so their absence in an older copy says
- * nothing about the other device. This device's values stand in for them.
+ * `baseplateParams` and `activeBaseplateId`, before schema 3 it rebuilt bins
+ * without their drawer-fit fields, and before schema 4 without their items, so
+ * their absence in an older copy says nothing about the other device. This
+ * device's values stand in for them.
  */
 function restoreStrippedFields(remote: Layout, local: Layout, schemaVersion: number): Layout {
   const withDrawer = schemaVersion < 2 ? restoreDrawerFields(remote, local) : remote;
-  return schemaVersion < 3 ? restoreBinFitFields(withDrawer, local) : withDrawer;
+  return schemaVersion < 4 ? restoreBinFields(withDrawer, local, schemaVersion) : withDrawer;
 }
 
 function keepLocal<K extends keyof Bin>(remote: Bin, local: Bin, key: K): Partial<Pick<Bin, K>> {
@@ -46,7 +47,17 @@ function samePlacement(a: Bin, b: Bin): boolean {
   );
 }
 
-function restoreBinFitFields(remote: Layout, local: Layout): Layout {
+function restoredFitFields(remote: Bin, local: Bin): Partial<Bin> {
+  return {
+    ...keepLocal(remote, local, 'clearanceHeight'),
+    ...keepLocal(remote, local, 'extendToMargin'),
+    ...keepLocal(remote, local, 'marginTaper'),
+    // An overhang holds only where it was computed, so a bin moved elsewhere goes without.
+    ...(samePlacement(remote, local) ? keepLocal(remote, local, 'overhang') : {}),
+  };
+}
+
+function restoreBinFields(remote: Layout, local: Layout, schemaVersion: number): Layout {
   const localBins = new Map(local.bins.map((bin) => [bin.id, bin]));
   return {
     ...remote,
@@ -55,11 +66,8 @@ function restoreBinFitFields(remote: Layout, local: Layout): Layout {
       if (!mine) return bin;
       return {
         ...bin,
-        ...keepLocal(bin, mine, 'clearanceHeight'),
-        ...keepLocal(bin, mine, 'extendToMargin'),
-        ...keepLocal(bin, mine, 'marginTaper'),
-        // An overhang holds only where it was computed, so a bin moved elsewhere goes without.
-        ...(samePlacement(bin, mine) ? keepLocal(bin, mine, 'overhang') : {}),
+        ...(schemaVersion < 3 ? restoredFitFields(bin, mine) : {}),
+        ...keepLocal(bin, mine, 'items'),
       };
     }),
   };

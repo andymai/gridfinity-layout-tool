@@ -224,13 +224,14 @@ describe('GET', () => {
     });
   });
 
-  it('round-trips per-bin drawer-fit fields at schema 3', async () => {
+  it('round-trips per-bin drawer-fit fields and items at schema 4', async () => {
     const { default: handler } = await import('./[id]');
     const fit = {
       clearanceHeight: 1,
       extendToMargin: true,
       marginTaper: { profile: 'fillet', bandHeight: 14 },
       overhang: { left: 0, right: 7, front: 0, back: 0 },
+      items: [{ id: 'i1', name: 'M3 screws', qty: 40 }],
     };
     await handler(
       makeReq({
@@ -255,7 +256,7 @@ describe('GET', () => {
             ],
           },
           modifiedAt: 1000,
-          schemaVersion: 3,
+          schemaVersion: 4,
         },
       }),
       makeRes() as unknown as VercelResponse
@@ -266,23 +267,25 @@ describe('GET', () => {
     const body = res._body as {
       envelope: { schemaVersion: number; layout: { bins: Record<string, unknown>[] } };
     };
-    expect(body.envelope.schemaVersion).toBe(3);
+    expect(body.envelope.schemaVersion).toBe(4);
     expect(body.envelope.layout.bins[0]).toMatchObject(fit);
   });
 
-  it('keeps the version an older client declares', async () => {
+  it.each([2, 3])('keeps version %i when an older client declares it', async (declared) => {
     const { default: handler } = await import('./[id]');
     await handler(
       makeReq({
         method: 'PUT',
-        body: { layout: VALID_LAYOUT, modifiedAt: 1000, schemaVersion: 2 },
+        body: { layout: VALID_LAYOUT, modifiedAt: 1000, schemaVersion: declared },
       }),
       makeRes() as unknown as VercelResponse
     );
 
     const res = makeRes();
     await handler(makeReq({ method: 'GET' }), res as unknown as VercelResponse);
-    expect((res._body as { envelope: { schemaVersion: number } }).envelope.schemaVersion).toBe(2);
+    expect((res._body as { envelope: { schemaVersion: number } }).envelope.schemaVersion).toBe(
+      declared
+    );
   });
 
   it('stores an unknown declared version as version 1', async () => {

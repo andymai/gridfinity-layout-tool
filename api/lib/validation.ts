@@ -12,6 +12,8 @@ import type { DrawerShape } from './drawerValidation.js';
 import { DESIGN_ID_MAX_LENGTH, RESERVED_PROPERTY_KEYS } from './sharedDesignsValidation.js';
 import { SHARE_CONSTRAINTS } from './shareConstraints.js';
 import { sanitizeBinFitFields } from './binFitValidation.js';
+import { sanitizeBinItems } from './binItemsValidation.js';
+import type { BinItemShape } from './binItemsValidation.js';
 import type { BinFitFields } from './binFitValidation.js';
 import type { ValidExpiration, ValidationError } from './shareConstraints.js';
 export { SHARE_CONSTRAINTS } from './shareConstraints.js';
@@ -43,6 +45,7 @@ interface BinShape extends BinFitFields {
   label: string;
   notes: string;
   customProperties?: Record<string, string>;
+  items?: BinItemShape[];
   linkedDesignId?: string;
   locked?: boolean;
   pairId?: string;
@@ -294,6 +297,7 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
       label: bin.label ? sanitizeString(bin.label, SHARE_CONSTRAINTS.LABEL_MAX_LENGTH) : '',
       notes: bin.notes ? sanitizeString(bin.notes, SHARE_CONSTRAINTS.NOTES_MAX_LENGTH) : '',
       customProperties: validatedCustomProperties,
+      items: sanitizeBinItems(bin.items),
       // Dropping this stripped the recipient's only handle on the bin's design
       //; the payload it points at travels alongside as `linkedDesigns`.
       linkedDesignId: bin.linkedDesignId

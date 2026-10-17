@@ -16,6 +16,7 @@ import type { Bin, Layout } from '@/core/types';
 import { normalizeDrawerOutline } from './drawerOutline';
 import { dropOrphanedPairs } from './binPairs';
 import { migrateLayoutFields } from './layoutMigration';
+import { sanitizeBinItems } from './binItems';
 import {
   binId as toBinId,
   layerId as toLayerId,
@@ -34,15 +35,16 @@ export type SalvageSuccess = { valid: true; layout: Layout; salvaged: string[] }
 export type SalvageFailure = { valid: false; salvaged?: undefined; layout?: undefined };
 export type SalvageResult = SalvageSuccess | SalvageFailure;
 
-const FIT_FIELDS = [
+const CHECKED_FIELDS = [
   'clearanceHeight',
   'extendToMargin',
   'marginTaper',
   'overhang',
   'locked',
+  'items',
 ] as const satisfies readonly (keyof Bin)[];
 
-type FitFields = Pick<Bin, (typeof FIT_FIELDS)[number]>;
+type CheckedFields = Pick<Bin, (typeof CHECKED_FIELDS)[number]>;
 
 const isNonNegative = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0;
@@ -94,16 +96,17 @@ function wellFormedOverhang(value: unknown): Bin['overhang'] {
   >;
 }
 
-const FIT_FIELD_SET: ReadonlySet<string> = new Set(FIT_FIELDS);
+const CHECKED_FIELD_SET: ReadonlySet<string> = new Set(CHECKED_FIELDS);
 
-function withoutFitFields(bin: object): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(bin).filter(([key]) => !FIT_FIELD_SET.has(key)));
+function withoutCheckedFields(bin: object): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(bin).filter(([key]) => !CHECKED_FIELD_SET.has(key)));
 }
 
 /** The structural guard never looks at these, so a damaged bin's malformed one is dropped alone. */
-function wellFormedFitFields(bin: object): Partial<FitFields> {
+function wellFormedCheckedFields(bin: object): Partial<CheckedFields> {
   const raw: Record<string, unknown> = { ...bin };
   const overhang = wellFormedOverhang(raw.overhang);
+  const items = sanitizeBinItems(raw.items);
   return {
     ...(isNonNegative(raw.clearanceHeight)
       ? { clearanceHeight: heightUnits(raw.clearanceHeight) }
@@ -112,6 +115,7 @@ function wellFormedFitFields(bin: object): Partial<FitFields> {
     ...(isMarginTaper(raw.marginTaper) ? { marginTaper: raw.marginTaper } : {}),
     ...(overhang ? { overhang } : {}),
     ...(raw.locked === true ? { locked: true } : {}),
+    ...(items ? { items } : {}),
   };
 }
 
@@ -192,8 +196,8 @@ export function salvageImport(data: unknown): SalvageResult {
     // Spread first, as the strict path keeps each bin whole: a fixed field list
     // here strips every field it does not name from all the healthy bins.
     const typedBin: Bin = {
-      ...withoutFitFields(bin),
-      ...wellFormedFitFields(bin),
+      ...withoutCheckedFields(bin),
+      ...wellFormedCheckedFields(bin),
       id: toBinId(bin.id),
       layerId: toLayerId(bin.layerId),
       x: gridUnits(bin.x),

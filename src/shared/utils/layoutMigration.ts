@@ -1,4 +1,5 @@
 import { CONSTRAINTS } from '@/core/constants';
+import { withSanitizedItems } from './binItems';
 
 export function migrateLayoutFields(data: Record<string, unknown>): unknown {
   const { maxPrintSize, ...migrated } = data;
@@ -21,5 +22,6 @@ export function migrateLayoutFields(data: Record<string, unknown>): unknown {
     printBedSize *= unitScale;
   }
   migrated.printBedSize = printBedSize;
+  if (Array.isArray(data.bins)) migrated.bins = data.bins.map(withSanitizedItems);
   return migrated;
 }

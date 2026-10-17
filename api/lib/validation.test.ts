@@ -27,6 +27,7 @@ interface TestBin {
   linkedDesignId?: string;
   locked?: boolean;
   clearanceHeight?: unknown;
+  items?: unknown;
   extendToMargin?: unknown;
   marginTaper?: unknown;
   overhang?: unknown;
@@ -82,6 +83,19 @@ function createValidLayout() {
 }
 
 describe('validateShareLayout', () => {
+  it('keeps a bin’s items and drops a malformed one alone', () => {
+    const layout = createValidLayout();
+    layout.bins[0] = {
+      ...layout.bins[0],
+      items: [{ id: 'i1', name: 'M3 screws', qty: 40 }, { id: 'i2' }],
+    };
+    const result = validateShareLayout(layout, 1000);
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.layout.bins[0].items).toEqual([{ id: 'i1', name: 'M3 screws', qty: 40 }]);
+    }
+  });
+
   describe('per-bin drawer-fit fields', () => {
     const fit = {
       clearanceHeight: 2,

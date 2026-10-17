@@ -22,6 +22,7 @@ import {
   heightUnits,
 } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
+import { binItemsSchema } from '../../../validation/binItems';
 
 /** Explicit per-placement overhang (mm). `null` clears it (inspector Reset). */
 const overhangSchema = z
@@ -48,6 +49,7 @@ const updatesSchema = z
     label: z.string().max(CONSTRAINTS.LABEL_MAX_LENGTH),
     notes: z.string().max(CONSTRAINTS.NOTES_MAX_LENGTH),
     customProperties: z.record(z.string(), z.string()),
+    items: binItemsSchema,
     linkedDesignId: z.string().nullable(),
     extendToMargin: z.boolean(),
     marginTaper: z.object({
@@ -88,6 +90,9 @@ function brandUpdates(updates: z.infer<typeof updatesSchema>): Partial<Bin> {
   if (updates.label !== undefined) result.label = updates.label;
   if (updates.notes !== undefined) result.notes = updates.notes;
   if (updates.customProperties !== undefined) result.customProperties = updates.customProperties;
+  if (updates.items !== undefined) {
+    result.items = updates.items.length > 0 ? updates.items : undefined;
+  }
   if (updates.linkedDesignId !== undefined)
     result.linkedDesignId =
       updates.linkedDesignId === null ? undefined : toDesignId(updates.linkedDesignId);

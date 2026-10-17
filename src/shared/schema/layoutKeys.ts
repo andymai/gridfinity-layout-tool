@@ -7,6 +7,7 @@
 import type { LinkedDesignExport } from '@/core/storage';
 import type {
   Bin,
+  BinItem,
   Category,
   CornerCutParams,
   Drawer,
@@ -78,6 +79,7 @@ export const BIN_KEYS = [
   'label',
   'notes',
   'customProperties',
+  'items',
   'linkedDesignId',
   'extendToMargin',
   'marginTaper',
@@ -87,6 +89,9 @@ export const BIN_KEYS = [
   'pairRole',
 ] as const;
 export type _BinKeys = Assert<KeysMatch<keyof Bin, (typeof BIN_KEYS)[number]>>;
+
+export const BIN_ITEM_KEYS = ['id', 'name', 'qty', 'note'] as const;
+export type _BinItemKeys = Assert<KeysMatch<keyof BinItem, (typeof BIN_ITEM_KEYS)[number]>>;
 
 export const MARGIN_TAPER_KEYS = ['profile', 'bandHeight', 'enabled', 'flare'] as const;
 export type _MarginTaperKeys = Assert<

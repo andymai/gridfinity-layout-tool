@@ -536,6 +536,17 @@
         "customProperties": {
           "$ref": "#/$defs/CustomProperties"
         },
+        "items": {
+          "type": "array",
+          "maxItems": 50,
+          "x-constant": {
+            "maxItems": "CONSTRAINTS.ITEMS_PER_BIN_MAX"
+          },
+          "description": "What the bin holds, for finding it later. A malformed item is dropped on import while the rest load. Omit when empty.",
+          "items": {
+            "$ref": "#/$defs/BinItem"
+          }
+        },
         "linkedDesignId": {
           "type": "string",
           "description": "Id of a saved bin design. Should match a linkedDesigns[].id in the same file, otherwise the reference dangles after import."
@@ -1081,6 +1092,45 @@
       "description": "Free-form user metadata as string-to-string pairs. No fixed keys.",
       "additionalProperties": {
         "type": "string"
+      }
+    },
+    "BinItem": {
+      "type": "object",
+      "description": "One thing a bin holds. A map, not an inventory: qty is only what the user typed.",
+      "required": ["id", "name"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Unique within its bin."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 48,
+          "x-constant": {
+            "maxLength": "CONSTRAINTS.ITEM_NAME_MAX_LENGTH"
+          },
+          "description": "What it is, as the user would search for it."
+        },
+        "qty": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99999,
+          "x-constant": {
+            "maximum": "CONSTRAINTS.ITEM_QTY_MAX"
+          },
+          "description": "How many, if the user said."
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 120,
+          "x-constant": {
+            "maxLength": "CONSTRAINTS.ITEM_NOTE_MAX_LENGTH"
+          },
+          "description": "A short note about the item."
+        }
       }
     }
   }
