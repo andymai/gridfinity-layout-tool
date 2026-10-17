@@ -29,10 +29,12 @@ function useMenuContext() {
   }
   return context;
 }
-const overlayVariants = cva(['fixed inset-0 z-40', 'bg-overlay-light']);
+// Above modal dialogs (z-50), so a menu opened inside one also catches the
+// click that dismisses it; below the command palette and Labs drawer.
+const overlayVariants = cva(['fixed inset-0 z-[60]', 'bg-overlay-light']);
 
 const contentVariants = cva([
-  'fixed z-50',
+  'fixed z-[61]',
   'min-w-[180px]',
   'bg-surface-elevated',
   'border border-stroke-subtle',
@@ -160,6 +162,7 @@ function MenuRoot({
   // Use ref for focusedIndex - it only tracks position for keyboard nav calculations
   // and doesn't need to trigger re-renders (actual focus is managed imperatively)
   const focusedIndexRef = useRef(-1);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
 
   // Register menu items for keyboard navigation
   const registerItem = useCallback((element: HTMLElement) => {
@@ -172,6 +175,8 @@ function MenuRoot({
   // Focus first item when menu opens, reset when closed
   useEffect(() => {
     if (open) {
+      returnFocusRef.current =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
       focusedIndexRef.current = 0;
       requestAnimationFrame(() => {
         itemsRef.current[0]?.focus();
@@ -179,6 +184,12 @@ function MenuRoot({
     } else {
       focusedIndexRef.current = -1;
       itemsRef.current = [];
+      // Closing removes the focused item. Hand focus back to what opened the
+      // menu, unless an item's action already moved it (a dialog it opened).
+      const opener = returnFocusRef.current;
+      returnFocusRef.current = null;
+      const lost = document.activeElement === null || document.activeElement === document.body;
+      if (opener?.isConnected && lost) opener.focus();
     }
   }, [open]);
 

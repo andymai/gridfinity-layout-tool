@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, createEvent } from '@testing-library/react';
+import { Button } from '../Button';
 import { Menu } from './Menu';
 
 const defaultProps = {
@@ -8,7 +10,41 @@ const defaultProps = {
   position: { x: 100, y: 100 },
 };
 
+function Opener({ onPick }: { onPick: () => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Options</Button>
+      <input aria-label="Elsewhere" />
+      <Menu.Root open={open} onClose={() => setOpen(false)} position={{ x: 0, y: 0 }}>
+        <Menu.Item onClick={onPick}>Pick</Menu.Item>
+      </Menu.Root>
+    </>
+  );
+}
+
 describe('Menu', () => {
+  describe('focus on close', () => {
+    it('returns focus to what opened the menu', () => {
+      render(<Opener onPick={vi.fn()} />);
+      const opener = screen.getByRole('button', { name: 'Options' });
+      opener.focus();
+      fireEvent.click(opener);
+      screen.getByRole('menuitem', { name: 'Pick' }).focus();
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Pick' }));
+      expect(document.activeElement).toBe(opener);
+    });
+
+    it('leaves focus where an item’s action moved it', () => {
+      render(<Opener onPick={() => screen.getByLabelText('Elsewhere').focus()} />);
+      const opener = screen.getByRole('button', { name: 'Options' });
+      opener.focus();
+      fireEvent.click(opener);
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Pick' }));
+      expect(document.activeElement).toBe(screen.getByLabelText('Elsewhere'));
+    });
+  });
+
   describe('rendering', () => {
     it('returns null when closed', () => {
       render(
