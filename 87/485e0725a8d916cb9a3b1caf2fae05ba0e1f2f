@@ -1,0 +1,35 @@
+src/shared/utils/restingStack.test.ts
+  s_e0423b67d48e77::t_0cb6e95ef04078 304-323,339-345,374-402
+  s_e0423b67d48e77::t_9a40e38a99487b 403
+src/shared/utils/restingStack.ts
+  s_e0423b67d48e77::t_ea9b93365e17c9 239-240,242,250-255,275-282,288-289,298,304-307,309,319,322-323
+src/shared/utils/fill.ts
+  s_e0423b67d48e77::t_ea9b93365e17c9 127-131,133-134
+src/shared/utils/fill.test.ts
+  s_e0423b67d48e77::t_838d7fcf82cfb3 508-510,512-535,537-540,542-544
+  s_e0423b67d48e77::t_016e73c40fcd7a 511,536
+  s_e0423b67d48e77::t_51f49ad61f5ea0 541
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_e0423b67d48e77::t_ea9b93365e17c9 122-125
+  s_e0423b67d48e77::t_5e21d018fad19e 19,128
+src/shared/utils/validationPlacement.test.ts
+  s_e0423b67d48e77::t_838d7fcf82cfb3 230-274
+src/shared/utils/validationPlacement.ts
+  s_e0423b67d48e77::t_ea9b93365e17c9 105-106,146-148,150,165
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "87485e0725a8d916cb9a3b1caf2fae05ba0e1f2f",
+  "prompts": {},
+  "sessions": {
+    "s_e0423b67d48e77": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1be01c49-0263-437a-80cd-4ce6249d6f74",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
