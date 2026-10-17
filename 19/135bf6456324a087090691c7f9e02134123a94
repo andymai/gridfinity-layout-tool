@@ -1,0 +1,37 @@
+src/core/sync/adapters/types.ts
+  s_078fc63cde22ff::t_a908f0697a7505 200
+  s_078fc63cde22ff::t_8b9aae90a7a1b7 17
+api/sync/folders/[id].test.ts
+  s_078fc63cde22ff::t_ee95413615d2da 177-204
+src/core/sync/adapters/folderAdapter.ts
+  s_078fc63cde22ff::t_8b9aae90a7a1b7 3-4,15,37,44-47,58,90-94,100
+api/sync/folders/[id].ts
+  s_078fc63cde22ff::t_5e0ec9a5bb5648 5-10,19-26,32,39,44,58,107-114,117-121
+src/core/types/library.ts
+  s_078fc63cde22ff::t_a908f0697a7505 25-28,38
+src/core/sync/payloadKey.ts
+  s_078fc63cde22ff::t_8b9aae90a7a1b7 6-8,46
+src/core/sync/adapters/folderAdapter.test.ts
+  s_078fc63cde22ff::t_ee95413615d2da 13,51-56,92-100,107-138
+  s_078fc63cde22ff::t_8588c3acd0784f 14,101-106
+  s_078fc63cde22ff::t_257110095eb56e 139
+src/core/sync/payloadKey.test.ts
+  s_078fc63cde22ff::t_ee95413615d2da 8,23-28,79-85
+  s_078fc63cde22ff::t_6e22d6390b4d5d 86-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "19135bf6456324a087090691c7f9e02134123a94",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
