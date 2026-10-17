@@ -155,14 +155,13 @@ export function drawerCeilingFit(input: DrawerCeilingInput): DrawerCeilingFit | 
     // and the SUPPORTER's lip to sink into. A bin resting on a lipless design
     // sits on its flat top and nests nothing, and one resting on reserved
     // clearance sits on the contents, nowhere near the lip.
-    let supportTopMm: number | undefined;
-    let supportNests = true;
+    // A bin sits at the highest base its supporters give it, which is the
+    // support top less any nesting that supporter allows.
+    let baseMm: number | undefined;
     for (const under of supports) {
       if (!footprintsOverlap(bin, under.bin)) continue;
-      if (supportTopMm === undefined || under.restMm > supportTopMm) {
-        supportTopMm = under.restMm;
-        supportNests = under.nests;
-      }
+      const base = under.restMm - (under.nests ? nestMm : 0);
+      if (baseMm === undefined || base > baseMm) baseMm = base;
     }
 
     // A socketless design has no foot to drop into the plate's pockets, so it
@@ -172,9 +171,9 @@ export function drawerCeilingFit(input: DrawerCeilingInput): DrawerCeilingFit | 
     // always has one (socketed columns are credited its pockets on the same
     // assumption), so the two rules agree on the premise and differ on the face.
     const topMm =
-      supportTopMm === undefined
+      baseMm === undefined
         ? (linked?.socketless === true ? baseplateTotalHeight(plate) : plateRiseMm) + riseMm
-        : supportTopMm - (supportNests ? nestMm : 0) + riseMm;
+        : baseMm + riseMm;
 
     const clearanceMm = (bin.clearanceHeight ?? 0) * heightUnitMm;
     const contentsTopMm = topMm + clearanceMm;

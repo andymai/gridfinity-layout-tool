@@ -9,6 +9,7 @@ import { getBinTextColors, getBinPatternColor } from '@/shared/utils';
 import { isBinLocked } from '@/shared/utils/binLocation';
 import { formatHeightUnits } from '@/shared/utils/heightUnits';
 import { getRestingStack, getUnevenlySupported } from '@/shared/utils/restingStack';
+import { useLinkedRiseKey } from '@/shared/hooks/useLinkedRiseKey';
 import { getCategoryPatternIndex, getCategoryPatternStyle } from './categoryPatterns';
 import { ResizeHandles } from '../ResizeHandles';
 import { calculateBinLayout } from './calculateBinLayout';
@@ -114,11 +115,16 @@ function BinComponent({
     gridUnitMmY
   );
   const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
+  const riseKey = useLinkedRiseKey();
   const restingZ = useLayoutStore(
-    (state) => getRestingStack(state.layout.bins, state.layout.layers).bins.get(bin.id)?.zStart ?? 0
+    (state) =>
+      getRestingStack(state.layout.bins, state.layout.layers, riseKey).bins.get(bin.id)?.zStart ?? 0
   );
   const unevenlySupported = useLayoutStore((state) =>
-    getUnevenlySupported(state.layout.bins, state.layout.layers).has(bin.id)
+    getUnevenlySupported(
+      state.layout.bins,
+      getRestingStack(state.layout.bins, state.layout.layers, riseKey)
+    ).has(bin.id)
   );
   const restingHeight = formatHeightUnits(restingZ);
 

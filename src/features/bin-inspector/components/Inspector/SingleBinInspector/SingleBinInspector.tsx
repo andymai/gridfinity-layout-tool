@@ -5,7 +5,8 @@ import { Button, IconButton, Select, Stepper, XIcon } from '@/design-system';
 import { ArrowLeftRightIcon, LockIcon, LockOpenIcon, RulerIcon } from '@/design-system/Icon';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { getBinLocationContext, isBinLocked } from '@/shared/utils/binLocation';
-import { getRestingStack, getUnevenlySupported } from '@/shared/utils/restingStack';
+import { getUnevenlySupported } from '@/shared/utils/restingStack';
+import { useRestingStack } from '@/shared/hooks/useRestingStack';
 import {
   formatHeightUnits,
   isStandardStackHeight,
@@ -70,6 +71,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
   const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
   const ceiling = useDrawerCeiling();
+  const restingStack = useRestingStack(layout.bins, layout.layers);
   const t = useTranslation();
 
   if (!bin) return null;
@@ -78,9 +80,8 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
   const ceilingOverflowMm =
     ceiling?.overflowing.find((entry) => entry.binId === bin.id)?.overflowMm ?? null;
 
-  const rest = getRestingStack(layout.bins, layout.layers).bins.get(bin.id);
-  const restingZ = rest?.zStart ?? 0;
-  const unevenlySupported = getUnevenlySupported(layout.bins, layout.layers).has(bin.id);
+  const restingZ = restingStack.bins.get(bin.id)?.zStart ?? 0;
+  const unevenlySupported = getUnevenlySupported(layout.bins, restingStack).has(bin.id);
 
   const isMobile = variant === 'mobile';
   const locationContext = getBinLocationContext(bin);

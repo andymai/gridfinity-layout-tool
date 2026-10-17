@@ -4,9 +4,8 @@
  * footprint overlaps, or on the plate. Layers are only the stacking order.
  *
  * Clearance a bin reserves for tall contents counts as part of its stack: a
- * bin above lands on top of it, never inside it, but landing on it at all
- * (rather than on a taller neighbour) is a violation, since it presses on
- * the contents.
+ * bin above lands on top of it, never inside it, but a bin carried by
+ * clearance alone is a violation, since it presses on the contents.
  *
  * All values are height units above the plate.
  */
@@ -92,10 +91,11 @@ function restOne(
     }
   }
 
-  for (const id of restsOn) {
-    if (hasClearance(resolved.get(id) as RestingBin)) {
-      onClearance.push({ binId: bin.id, clearanceOf: id });
-    }
+  // Contents that reach exactly the base of a bin held up by something solid
+  // are not pressed on; only a bin carried by clearance alone is.
+  const supporters = restsOn.map((id) => resolved.get(id) as RestingBin);
+  if (supporters.length > 0 && supporters.every(hasClearance)) {
+    for (const id of restsOn) onClearance.push({ binId: bin.id, clearanceOf: id });
   }
 
   const excess = linkedExcessUnits(bin);
@@ -207,8 +207,11 @@ let cache: {
  * design re-save can move bins without touching either array. The length
  * check catches an array grown in place, which would otherwise read stale.
  */
-export function getRestingStack(bins: readonly Bin[], layers: readonly Layer[]): RestingStack {
-  const key = linkedExcessCacheKey();
+export function getRestingStack(
+  bins: readonly Bin[],
+  layers: readonly Layer[],
+  key: string = linkedExcessCacheKey()
+): RestingStack {
   if (
     cache?.bins === bins &&
     cache.length === bins.length &&
@@ -278,17 +281,17 @@ export function drawerHeightFloor(
  * `clearanceGivesWay` is for an edit that keeps height plus clearance fixed,
  * as the inspector's height field does: the bin can then grow into its own
  * clearance without raising anything. Otherwise the clearance rides on top.
- * A linked design's extra rise always gives way, since it shrinks as the
- * nominal height grows.
+ * A linked design's extra rise always rides on top: resizing the bin resizes
+ * the design, which keeps its lid or extra wall above the new height.
  */
 export function maxBinHeight(
   candidate: Bin,
   bins: readonly Bin[],
   layers: readonly Layer[],
   drawerHeight: number,
-  options: { clearanceGivesWay?: boolean } = {}
+  options: { clearanceGivesWay?: boolean; stack?: RestingStack } = {}
 ): number {
-  const current = getRestingStack(bins, layers);
+  const current = options.stack ?? getRestingStack(bins, layers);
   const stack = bins.includes(candidate)
     ? current
     : restack(current, bins, layers, new Set([candidate.id]), [candidate]);
@@ -320,7 +323,9 @@ export function maxBinHeight(
   }
 
   const room = drawerHeight - self.zStart - chain;
-  return options.clearanceGivesWay ? room : room - (candidate.clearanceHeight ?? 0);
+  const excess = self.materialTop - self.zStart - candidate.height;
+  const clearance = options.clearanceGivesWay ? 0 : (candidate.clearanceHeight ?? 0);
+  return room - Math.max(excess, clearance);
 }
 
 /**
@@ -332,9 +337,9 @@ export function maxClearanceHeight(
   bin: Bin,
   bins: readonly Bin[],
   layers: readonly Layer[],
-  drawerHeight: number
+  drawerHeight: number,
+  stack: RestingStack = getRestingStack(bins, layers)
 ): number {
-  const stack = getRestingStack(bins, layers);
   const self = stack.bins.get(bin.id);
   if (!self) return Math.max(0, drawerHeight - bin.height);
   const layerIndex = new Map(layers.map((l, i) => [l.id, i]));
@@ -389,12 +394,11 @@ export function findUnevenlySupported(
 
 let unevenCache: { stack: RestingStack; result: ReadonlySet<BinId> } | null = null;
 
-/** `findUnevenlySupported` for the current layout, cached on its resting stack. */
+/** `findUnevenlySupported`, cached on the resting stack it was given. */
 export function getUnevenlySupported(
   bins: readonly Bin[],
-  layers: readonly Layer[]
+  stack: RestingStack
 ): ReadonlySet<BinId> {
-  const stack = getRestingStack(bins, layers);
   if (unevenCache?.stack !== stack) {
     unevenCache = { stack, result: findUnevenlySupported(bins, stack) };
   }
@@ -410,11 +414,11 @@ export function getUnevenlySupported(
 export function getBlockedZones(
   targetLayerId: LayerId,
   bins: readonly Bin[],
-  layers: readonly Layer[]
+  layers: readonly Layer[],
+  stack: RestingStack = getRestingStack(bins, layers)
 ): BlockedZone[] {
   const targetIndex = layers.findIndex((l) => l.id === targetLayerId);
   if (targetIndex === -1) return [];
-  const stack = getRestingStack(bins, layers);
   const layerIndex = new Map(layers.map((l, i) => [l.id, i]));
   const zones: BlockedZone[] = [];
 

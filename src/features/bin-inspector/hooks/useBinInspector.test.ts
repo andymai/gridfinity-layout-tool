@@ -7,6 +7,7 @@ import { useToastStore } from '@/core/store/toast';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
 import { resetAllStores } from '@/test/testUtils';
 import { connectSelectionPruning, eventBus } from '@/core/cqrs';
+import { registerLinkedExcessResolver } from '@/shared/utils/collision';
 import type { Bin } from '@/core/types';
 import {
   binId,
@@ -133,6 +134,28 @@ describe('useBinInspector', () => {
       expect(result.current.constraints.minHeight).toBe(2);
       expect(result.current.constraints.maxHeight).toBe(12);
       expect(result.current.constraints.maxHeightReason).toBe('drawer_height');
+    });
+
+    it('floors a fractional stack limit to what the height field can write', () => {
+      registerLinkedExcessResolver((b) => (b.linkedDesignId === undefined ? 0 : 4 / 7));
+      const layout = useLayoutStore.getState().layout;
+      layout.layers = [
+        { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: toLayerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
+      ];
+      layout.bins = [
+        { ...createBin('lidded', 'layer1'), linkedDesignId: toDesignId('lid') },
+        createBin('upper', 'layer2'),
+      ];
+      layout.drawer.height = heightUnits(12);
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('upper')] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      // Rests at 3 + 4/7u, so 8.42857…u of room; 8.4286 would be refused.
+      expect(result.current.constraints.maxHeight).toBe(8.4285);
+      registerLinkedExcessResolver(null);
     });
 
     it('limits max height and clearance by the bin resting on it', () => {

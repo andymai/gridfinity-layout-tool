@@ -17,6 +17,7 @@ import { useMobileStore } from '@/core/store/mobile';
 import { useMutations } from '@/shared/contexts';
 import { calcBedCapacityForBin, CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { maxBinHeight, maxClearanceHeight } from '@/shared/utils/restingStack';
+import { useRestingStack } from '@/shared/hooks/useRestingStack';
 import { isErr, getUserMessage } from '@/core/result';
 import { canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
 import { clamp } from '@/shared/utils/math';
@@ -29,6 +30,7 @@ import {
   categoryId as toCategoryId,
   roundHeightUnits,
   effectiveGridUnitMmY,
+  HEIGHT_UNIT_STEP,
 } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import {
@@ -78,6 +80,7 @@ export function useBinInspector(): UseBinInspectorReturn {
   const layer = bin ? (layout.layers.find((l) => l.id === bin.layerId) ?? null) : null;
 
   const gridUnitMmY = effectiveGridUnitMmY(layout);
+  const restingStack = useRestingStack(layout.bins, layout.layers);
   const constraints = useMemo<BinConstraints>(() => {
     if (!bin) {
       return {
@@ -122,9 +125,19 @@ export function useBinInspector(): UseBinInspectorReturn {
     // The height field keeps height plus clearance fixed, so clearance gives way.
     const stackLimit = maxBinHeight(bin, layout.bins, layout.layers, layout.drawer.height, {
       clearanceGivesWay: true,
+      stack: restingStack,
     });
-    const maxHeight = Math.max(minHeight, stackLimit);
-    const maxClearance = maxClearanceHeight(bin, layout.bins, layout.layers, layout.drawer.height);
+    // Floored to the input's precision: the height field rounds what it
+    // writes, and rounding up past the limit would be refused.
+    const steps = Math.round(1 / HEIGHT_UNIT_STEP);
+    const maxHeight = Math.max(minHeight, Math.floor(stackLimit * steps + 1e-6) / steps);
+    const maxClearance = maxClearanceHeight(
+      bin,
+      layout.bins,
+      layout.layers,
+      layout.drawer.height,
+      restingStack
+    );
     const limitedByStack = stackLimit < layout.drawer.height - 1e-9;
 
     return {
@@ -142,6 +155,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     layout.drawer.height,
     layout.layers,
     layout.bins,
+    restingStack,
     layout.printBedSize,
     layout.printBedDepth,
     layout.gridUnitMm,

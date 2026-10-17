@@ -247,4 +247,26 @@ describe('drawerCeilingFit', () => {
       5
     );
   });
+
+  it('rests on the highest base after nesting, whatever the order of supporters', () => {
+    // A 4u bin and a 3u bin with 1u clearance reach the same height, but only
+    // the solid one lets a bin nest into its lip, so the clearance sets the base.
+    const solid = bin({ id: binId('solid'), x: gridUnits(0), height: heightUnits(4) });
+    const reserved = bin({
+      id: binId('reserved'),
+      x: gridUnits(1),
+      height: heightUnits(3),
+      clearanceHeight: heightUnits(1),
+    });
+    const over = bin({
+      id: binId('over'),
+      x: gridUnits(0),
+      width: gridUnits(2),
+      height: heightUnits(2),
+      layerId: layerId('l2'),
+    });
+    const expected = 4 * 7 + LIP_PROTRUSION_MM + (2 * 7 + LIP_PROTRUSION_MM);
+    expect(fit([solid, reserved, over], 200)?.tallestMm).toBeCloseTo(expected, 5);
+    expect(fit([reserved, solid, over], 200)?.tallestMm).toBeCloseTo(expected, 5);
+  });
 });

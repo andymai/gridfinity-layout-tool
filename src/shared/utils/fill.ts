@@ -1,6 +1,8 @@
 import type { Bin, BinId, GridUnits, Layout, LayerId, CategoryId } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { generateBinId, CONSTRAINTS } from '@/core/constants';
+import { footprintsOverlap } from './collision';
+import type { RestingBin } from './restingStack';
 import { getRestingStack, newViolations, resolveRestingStack } from './restingStack';
 import { getOutsideCellSet } from './drawerOutlineCells';
 import { drawerFrameOutline } from './outlineFrame';
@@ -57,11 +59,47 @@ export function createOccupiedCellSet(
   return occupied;
 }
 
+interface CellTop {
+  height: number;
+  /** A bin's material, not only its reserved clearance, reaches `height`. */
+  solid: boolean;
+}
+
+/** The highest stack top under each cell from the layers below `layerIndex`. */
+function lowerTops(
+  bins: readonly Bin[],
+  layout: Layout,
+  layerIndex: number,
+  step: number
+): Map<string, CellTop> {
+  const lowerLayers = new Set(layout.layers.slice(0, layerIndex).map((l) => l.id));
+  const stack = getRestingStack(bins, layout.layers);
+  const tops = new Map<string, CellTop>();
+  for (const bin of bins) {
+    if (!lowerLayers.has(bin.layerId)) continue;
+    const rest = stack.bins.get(bin.id);
+    if (!rest) continue;
+    const solid = rest.stackTop <= rest.materialTop + HEIGHT_EPSILON;
+    for (let bx: number = bin.x; bx < bin.x + bin.width; bx += step) {
+      for (let by: number = bin.y; by < bin.y + bin.depth; by += step) {
+        const key = `${bx},${by}`;
+        const prev = tops.get(key);
+        if (!prev || rest.stackTop > prev.height + HEIGHT_EPSILON) {
+          tops.set(key, { height: rest.stackTop, solid });
+        } else if (Math.abs(rest.stackTop - prev.height) <= HEIGHT_EPSILON && solid) {
+          prev.solid = true;
+        }
+      }
+    }
+  }
+  return tops;
+}
+
 /**
  * Cells where a new bin could not rest: the top of what is below plus the
- * bin would pass the drawer, or the highest thing below is clearance a lower
- * bin reserves. Judged cell by cell, which is conservative for a multi-cell
- * bin, since it rests on the highest of its cells.
+ * bin would pass the drawer, or the highest thing below is only clearance a
+ * lower bin reserves. Judged cell by cell, which is conservative for a
+ * multi-cell bin, since it rests on the highest of its cells.
  */
 function unrestableCells(
   bins: Bin[],
@@ -83,37 +121,65 @@ function unrestableCells(
     return keys;
   }
 
-  const lowerLayers = new Set(layout.layers.slice(0, layerIndex).map((l) => l.id));
-  const stack = getRestingStack(bins, layout.layers);
-  const top = new Map<string, { height: number; onClearance: boolean }>();
-  for (const bin of bins) {
-    if (!lowerLayers.has(bin.layerId)) continue;
-    const rest = stack.bins.get(bin.id);
-    if (!rest) continue;
-    const clearance = rest.stackTop > rest.materialTop + HEIGHT_EPSILON;
-    for (let bx: number = bin.x; bx < bin.x + bin.width; bx += step) {
-      for (let by: number = bin.y; by < bin.y + bin.depth; by += step) {
-        const key = `${bx},${by}`;
-        const prev = top.get(key);
-        if (!prev || rest.stackTop > prev.height + HEIGHT_EPSILON) {
-          top.set(key, { height: rest.stackTop, onClearance: clearance });
-        } else if (Math.abs(rest.stackTop - prev.height) <= HEIGHT_EPSILON && clearance) {
-          prev.onClearance = true;
-        }
-      }
-    }
-  }
-  for (const [key, cell] of top) {
-    if (cell.onClearance || cell.height + binHeight > ceiling + HEIGHT_EPSILON) keys.push(key);
+  for (const [key, cell] of lowerTops(bins, layout, layerIndex, step)) {
+    if (!cell.solid || cell.height + binHeight > ceiling + HEIGHT_EPSILON) keys.push(key);
   }
   return keys;
 }
 
 /**
- * Fill bins pass the cell check on their own, but one landing under a bin
- * from a higher layer lifts that bin and everything on it. Resolves the
- * filled layout once and drops the fill bins carrying any stack that ends up
- * past the drawer or on clearance, repeating until nothing new breaks.
+ * Whether a fill bin over a rect would lift any bin from a higher layer, and
+ * everything resting on it, past the drawer top. A lift raises a bin's whole
+ * upward chain by at most the same amount, so each higher bin has a budget:
+ * the drawer minus the highest top in that chain. Lifts from several fill
+ * bins do not add up, since a bin rests on the highest of them.
+ */
+function liftGuard(
+  bins: readonly Bin[],
+  layerId: LayerId,
+  layout: Layout,
+  step: number
+): (x: number, y: number, width: number, depth: number) => boolean {
+  const layerIndex = layout.layers.findIndex((l) => l.id === layerId);
+  const height = layout.layers[layerIndex]?.height ?? 0;
+  const stack = getRestingStack(bins, layout.layers);
+  const indexOf = new Map(layout.layers.map((l, i) => [l.id, i]));
+  const higher = bins
+    .filter((b) => (indexOf.get(b.layerId) ?? -1) > layerIndex && stack.bins.has(b.id))
+    .sort((a, b) => (indexOf.get(b.layerId) ?? 0) - (indexOf.get(a.layerId) ?? 0));
+  const budget = new Map<BinId, number>();
+  for (const bin of higher) {
+    let reach = (stack.bins.get(bin.id) as RestingBin).stackTop;
+    for (const above of higher) {
+      const aboveIndex = indexOf.get(above.layerId) ?? 0;
+      if (aboveIndex <= (indexOf.get(bin.layerId) ?? 0) || !footprintsOverlap(bin, above)) continue;
+      reach = Math.max(reach, layout.drawer.height - (budget.get(above.id) ?? 0));
+    }
+    budget.set(bin.id, layout.drawer.height - reach);
+  }
+  const tops = lowerTops(bins, layout, layerIndex, step);
+
+  return (x, y, width, depth) => {
+    let base = 0;
+    for (let bx = x; bx < x + width; bx += step) {
+      for (let by = y; by < y + depth; by += step) {
+        base = Math.max(base, tops.get(`${bx},${by}`)?.height ?? 0);
+      }
+    }
+    const rect = { x, y, width, depth };
+    return higher.every((bin) => {
+      if (!footprintsOverlap(bin, rect)) return true;
+      const lift = base + height - (stack.bins.get(bin.id) as RestingBin).zStart;
+      return lift <= (budget.get(bin.id) ?? 0) + HEIGHT_EPSILON;
+    });
+  };
+}
+
+/**
+ * The final word on a packed fill: resolves the filled layout once and drops
+ * the fill bins carrying any stack that ends up past the drawer or on
+ * clearance, repeating until nothing new breaks. The packing's cell and lift
+ * checks are estimates for a multi-cell bin, which rests on its highest cell.
  */
 function withoutLifts(layout: Layout, fill: Bin[]): Bin[] {
   const before = getRestingStack(layout.bins, layout.layers);
@@ -200,6 +266,7 @@ export function fillAllWithSize(
   const step: 0.5 | 1 = halfGridMode ? 0.5 : 1;
 
   const occupied = createOccupiedCellSet(layout.bins, layerId, layout, step);
+  const liftsSafely = liftGuard(layout.bins, layerId, layout, step);
 
   const newBins: Bin[] = [];
   let skippedCells = 0;
@@ -217,7 +284,10 @@ export function fillAllWithSize(
       }
 
       // O(1) check for each cell in the bin footprint
-      if (canPlaceRect(x, y, binWidth, binDepth, occupied, step)) {
+      if (
+        canPlaceRect(x, y, binWidth, binDepth, occupied, step) &&
+        liftsSafely(x, y, binWidth, binDepth)
+      ) {
         const newBin: Bin = {
           id: generateBinId(),
           layerId,
@@ -265,6 +335,7 @@ export function fillGaps(
   const minSize = halfGridMode ? 0.5 : 1;
 
   const occupied = createOccupiedCellSet(layout.bins, layerId, layout, step);
+  const liftsSafely = liftGuard(layout.bins, layerId, layout, step);
 
   const newBins: Bin[] = [];
 
@@ -303,7 +374,10 @@ export function fillGaps(
           }
 
           // O(1) check for each cell in the bin footprint
-          if (canPlaceRect(x, y, size.w, size.d, occupied, step)) {
+          if (
+            canPlaceRect(x, y, size.w, size.d, occupied, step) &&
+            liftsSafely(x, y, size.w, size.d)
+          ) {
             newBins.push({
               id: generateBinId(),
               layerId,

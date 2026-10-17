@@ -542,6 +542,18 @@ describe('fill and the resting stack', () => {
     expect(result.bins).toHaveLength(0);
   });
 
+  it('packs around a lift it cannot make instead of leaving the region empty', () => {
+    // A 4×2 gap bin would lift the 6u bin to 9u in the 8u drawer; the right
+    // 2×2 lifts nothing and still gets filled.
+    const result = fillGaps(
+      layout([bin('high', 'layer2', 0, 6)]),
+      layerId('layer1'),
+      categoryId('cat1'),
+      4
+    );
+    expect(result.bins.map((b) => [b.x, b.width])).toEqual([[2, 2]]);
+  });
+
   it('applies the same lift rule to filling gaps', () => {
     const result = fillGaps(
       layout([bin('high', 'layer2', 0, 6), bin('low', 'layer2', 2, 2)]),

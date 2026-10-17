@@ -25,7 +25,7 @@ import { getLayerBins } from '@/shared/utils';
 import { getDisplayLayers } from '@/shared/utils/collision';
 import { isOk, isErr, getUserMessage } from '@/core/result';
 import { useResultToast } from '@/shared/hooks';
-import { getRestingStack } from '@/shared/utils/restingStack';
+import { useRestingStack } from '@/shared/hooks/useRestingStack';
 import type { HeightUnits, Layer, LayerId } from '@/core/types';
 import { batch } from '@/core/cqrs';
 
@@ -73,7 +73,7 @@ export function useLayerListController(options?: {
   const layers = layout.layers;
   const activeLayer = layers.find((l) => l.id === activeLayerId);
   const drawerHeight = layout.drawer.height;
-  const tallestStack = getRestingStack(layout.bins, layers).tallest;
+  const tallestStack = useRestingStack(layout.bins, layers).tallest;
   const canAddLayer = layers.length < CONSTRAINTS.LAYERS_MAX;
 
   const displayToArrayIndex = (displayIndex: number) => layers.length - 1 - displayIndex;

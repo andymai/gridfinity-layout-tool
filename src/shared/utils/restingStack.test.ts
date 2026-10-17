@@ -168,6 +168,19 @@ describe('resolveRestingStack', () => {
     expect(stack.onClearance).toEqual([{ binId: binId('up'), clearanceOf: binId('tools') }]);
   });
 
+  it('does not flag a bin that something solid holds level with the clearance top', () => {
+    const stack = resolveRestingStack(
+      [
+        bin('tools', L1, 0, 0, 1, 1, 3, { clearanceHeight: heightUnits(2) }),
+        bin('solid', L1, 1, 0, 1, 1, 5),
+        bin('bridge', L2, 0, 0, 2, 1, 2),
+      ],
+      layers
+    );
+    expect(zOf(stack, 'bridge')).toBe(5);
+    expect(stack.onClearance).toEqual([]);
+  });
+
   it('does not flag a bin that spans clearance while resting on a taller neighbour', () => {
     const stack = resolveRestingStack(
       [
@@ -407,6 +420,19 @@ describe('maxBinHeight', () => {
 });
 
 describe('maxClearanceHeight', () => {
+  it('allows clearance up to an upper bin that a taller neighbour holds', () => {
+    const b = bin('a', L1, 0, 0, 1, 1, 3);
+    const bins = [b, bin('tall', L1, 1, 0, 1, 1, 5), bin('up', L2, 0, 0, 2, 1, 2)];
+    const limit = maxClearanceHeight(b, bins, layers, 12);
+    expect(limit).toBe(2);
+    const withLimit = bins.map((x) =>
+      x.id === b.id ? { ...x, clearanceHeight: heightUnits(limit) } : x
+    );
+    expect(
+      newViolations(resolveRestingStack(bins, layers), resolveRestingStack(withLimit, layers), 12)
+    ).toEqual([]);
+  });
+
   it('stops at the base of the lowest bin above', () => {
     const b = bin('a', L1, 0, 0, 2, 2, 3);
     const bins = [b, bin('up', L2, 1, 1, 1, 1, 2)];

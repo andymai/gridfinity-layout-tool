@@ -1,4 +1,4 @@
-import { registerLinkedExcessResolver } from '@/shared/utils/collision';
+import { notifyLinkedExcessChanged, registerLinkedExcessResolver } from '@/shared/utils/collision';
 import { linkedStackExcessUnits, stackJunctionMm } from '@/shared/utils/heightUnits';
 import { loadRegistry, subscribeToRegistry } from '@/features/bin-designer';
 import type { CustomBinRef } from '@/features/bin-designer';
@@ -27,6 +27,7 @@ function refs(): Map<DesignId, CustomBinRef> {
 function invalidate(): void {
   refsById = null;
   registryTick += 1;
+  notifyLinkedExcessChanged();
 }
 
 subscribeToRegistry(invalidate);

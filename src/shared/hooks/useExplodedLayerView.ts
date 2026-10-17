@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { Bin, Layer, Category, LayerId, DesignId } from '@/core/types';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
-import { getRestingStack } from '@/shared/utils/restingStack';
+import { useRestingStack } from './useRestingStack';
 import type { BinDividersSpec } from '@/shared/hooks/useBinGeometry';
 
 /** Gap between layers in grid units when exploded. */
@@ -64,6 +64,7 @@ export function useExplodedLayerView({
   designDividers,
 }: UseExplodedLayerViewOptions): LayerRenderGroup[] | null {
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
+  const stack = useRestingStack(bins, layers);
 
   // Keep groups mounted during exit animation (offsets → 0) so useFrame can lerp back
   const shouldRender = isExplodedView || isExitAnimating;
@@ -72,7 +73,6 @@ export function useExplodedLayerView({
     if (!shouldRender) return null;
 
     const layerIndexMap = new Map(layers.map((l, idx) => [l.id, idx]));
-    const stack = getRestingStack(bins, layers);
 
     const groups: LayerRenderGroup[] = layers.map((layer, idx) => {
       const isActive = layer.id === activeLayerId;
@@ -145,6 +145,7 @@ export function useExplodedLayerView({
     isExplodedView,
     bins,
     layers,
+    stack,
     categoryMap,
     heightToGridScale,
     activeLayerId,

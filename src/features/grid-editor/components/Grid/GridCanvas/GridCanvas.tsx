@@ -9,6 +9,7 @@ import { toPixels } from '@/features/grid-editor/utils/fractionalPixels';
 import { Bin } from '../Bin';
 import { BrushHoverGhost } from '../BrushHoverGhost';
 import { getBlockedZones } from '@/shared/utils/restingStack';
+import { useRestingStack } from '@/shared/hooks/useRestingStack';
 import { getLayerBins } from '@/shared/utils/bins';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
@@ -99,9 +100,10 @@ export function GridCanvas({
     return bins.filter((b) => layersBelowIds.includes(b.layerId));
   }, [bins, layers, activeLayerId, showOtherLayers]);
 
+  const restingStack = useRestingStack(bins, layers);
   const blockedZones = useMemo(
-    () => getBlockedZones(activeLayerId, bins, layers),
-    [activeLayerId, bins, layers]
+    () => getBlockedZones(activeLayerId, bins, layers, restingStack),
+    [activeLayerId, bins, layers, restingStack]
   );
 
   // Performance: Create O(1) lookup maps to avoid O(n²) .find() calls in render loops

@@ -20,6 +20,7 @@ export type LinkedExcessResolver = (bin: Bin) => number;
 let linkedExcessResolver: LinkedExcessResolver | null = null;
 let linkedExcessVersion: () => unknown = () => 0;
 let registrations = 0;
+const excessListeners = new Set<() => void>();
 
 export function registerLinkedExcessResolver(
   resolver: LinkedExcessResolver | null,
@@ -28,6 +29,19 @@ export function registerLinkedExcessResolver(
   linkedExcessResolver = resolver;
   linkedExcessVersion = version ?? ((): unknown => 0);
   registrations += 1;
+  notifyLinkedExcessChanged();
+}
+
+/** For the registrant: a design's rise may have changed outside the layout store. */
+export function notifyLinkedExcessChanged(): void {
+  for (const listener of excessListeners) listener();
+}
+
+export function subscribeLinkedExcess(listener: () => void): () => void {
+  excessListeners.add(listener);
+  return () => {
+    excessListeners.delete(listener);
+  };
 }
 
 /** Changes whenever the linked excess of an unchanged bin could have changed. */

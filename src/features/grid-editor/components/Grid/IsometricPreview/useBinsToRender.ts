@@ -4,7 +4,7 @@ import type { LayerViewMode } from '@/core/store/view';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
 import type { BinDividersSpec } from '@/shared/hooks/useBinGeometry';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
-import { getRestingStack } from '@/shared/utils/restingStack';
+import { useRestingStack } from '@/shared/hooks/useRestingStack';
 
 interface UseBinsToRenderOptions {
   bins: Bin[];
@@ -33,10 +33,10 @@ export function useBinsToRender({
   // Performance: Create O(1) lookup maps to avoid O(n^2) .findIndex()/.find() calls in render loop
   const layerIndexMap = useMemo(() => new Map(layers.map((l, idx) => [l.id, idx])), [layers]);
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
+  const stack = useRestingStack(bins, layers);
 
   return useMemo(() => {
     const result: BinRenderData[] = [];
-    const stack = getRestingStack(bins, layers);
 
     for (const bin of bins) {
       if (bin.layerId === STAGING_ID) continue;
@@ -107,7 +107,7 @@ export function useBinsToRender({
     return result;
   }, [
     bins,
-    layers,
+    stack,
     categoryMap,
     layerIndexMap,
     activeLayerIndex,
