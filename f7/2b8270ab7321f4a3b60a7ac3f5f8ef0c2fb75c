@@ -1,0 +1,33 @@
+src/shared/utils/validationImport.ts
+  s_2ab1632d1b2e4d::t_d1e58f31d553ce 232
+  s_2ab1632d1b2e4d::t_a6acec26d0156e 13,15
+src/shared/utils/validationSalvage.ts
+  s_2ab1632d1b2e4d::t_7a0c6388f3f062 184
+  s_2ab1632d1b2e4d::t_06ba826311b1f7 18
+src/shared/utils/layoutMigration.ts
+  s_2ab1632d1b2e4d::t_4e2c000ad9e3d4 1-2,4-25
+  s_2ab1632d1b2e4d::t_bff28dde341b42 3
+src/shared/utils/layoutMigration.test.ts
+  s_2ab1632d1b2e4d::t_5cef031fa8c96b 1-56
+src/shared/utils/validation.test.ts
+  s_2ab1632d1b2e4d::t_260d04ecbdabe7 571-593
+  s_2ab1632d1b2e4d::t_dfdc8f3d9b2ed3 484-494
+src/core/storage/LayoutService.ts
+  s_2ab1632d1b2e4d::t_8e925bbb4170ec 77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f72b8270ab7321f4a3b60a7ac3f5f8ef0c2fb75c",
+  "prompts": {},
+  "sessions": {
+    "s_2ab1632d1b2e4d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fecd921-016b-4494-95c7-d27061aaf36a",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
