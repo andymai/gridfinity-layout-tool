@@ -19,19 +19,36 @@ describe('v2 drawer.update', () => {
     expect(result.value.event.payload.changes.width).toBe(gridUnits(CONSTRAINTS.GRID_MAX));
   });
 
-  it('clamps height to >= total layer height', () => {
+  it('clamps height to the tallest stack, not the sum of layer heights', () => {
     const layout = makeLayout({
       layers: [
-        { id: 'layer_1' as never, name: 'L1', height: heightUnits(3) },
-        { id: 'layer_2' as never, name: 'L2', height: heightUnits(3) },
+        { id: 'layer_1' as never, name: 'L1', height: heightUnits(6) },
+        { id: 'layer_2' as never, name: 'L2', height: heightUnits(6) },
       ],
+      bins: [makeBin('low', 0, 0), { ...makeBin('high', 0, 0, 'layer_2'), height: heightUnits(2) }],
     });
     const result = updateDrawer.handle({ height: 1 }, { aggregate: layout });
 
     expect(isOk(result)).toBe(true);
     if (!isOk(result)) return;
-    // Total layer height = 6, requested = 1, clamped up to 6.
-    expect(result.value.event.payload.changes.height).toBe(heightUnits(6));
+    // Layers sum to 12u, but the only stack is 3u + 2u.
+    expect(result.value.event.payload.changes.height).toBe(heightUnits(5));
+  });
+
+  it('never raises a drawer already shorter than its tallest stack', () => {
+    const layout = makeLayout({
+      drawer: { width: gridUnits(6), depth: gridUnits(4), height: heightUnits(4) },
+      layers: [
+        { id: 'layer_1' as never, name: 'L1', height: heightUnits(3) },
+        { id: 'layer_2' as never, name: 'L2', height: heightUnits(3) },
+      ],
+      bins: [makeBin('low', 0, 0), makeBin('high', 0, 0, 'layer_2')],
+    });
+    const result = updateDrawer.handle({ height: 2 }, { aggregate: layout });
+
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.event.payload.changes.height).toBe(heightUnits(4));
   });
 
   it('captures displacedBinIds when shrinking the drawer', () => {

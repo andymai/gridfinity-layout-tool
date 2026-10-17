@@ -84,8 +84,7 @@ test.describe('Exploded Layer View', () => {
     await expect(explodeButton).toBeVisible();
 
     // Layer labels should appear (drei Html renders DOM elements)
-    // Labels contain the layer name and height in mm format
-    const labels = page.locator('button').filter({ hasText: /mm$/ });
+    const labels = page.getByTestId('exploded-layer-label');
     await expect(labels.first()).toBeVisible({ timeout: 3000 });
 
     // Click again to toggle off
@@ -112,7 +111,7 @@ test.describe('Exploded Layer View', () => {
     await page.keyboard.press('e');
 
     // Layer labels should appear
-    const labels = page.locator('button').filter({ hasText: /mm$/ });
+    const labels = page.getByTestId('exploded-layer-label');
     await expect(labels.first()).toBeVisible({ timeout: 3000 });
 
     // Press E again to toggle off
@@ -139,7 +138,7 @@ test.describe('Exploded Layer View', () => {
     await page.keyboard.press('e');
 
     // Wait for labels to appear
-    const labels = page.locator('button').filter({ hasText: /mm$/ });
+    const labels = page.getByTestId('exploded-layer-label');
     await expect(labels.first()).toBeVisible({ timeout: 3000 });
 
     // Click the second layer label (should change active layer)
@@ -169,7 +168,7 @@ test.describe('Exploded Layer View', () => {
     await explodeButton.click();
 
     // Labels should appear
-    const labels = page.locator('button').filter({ hasText: /mm$/ });
+    const labels = page.getByTestId('exploded-layer-label');
     await expect(labels.first()).toBeVisible({ timeout: 3000 });
 
     // Switch to Focus mode — should disable exploded view
@@ -195,7 +194,7 @@ test.describe('Exploded Layer View', () => {
     await expect(canvas).toBeVisible();
 
     // No layer labels should exist in normal mode
-    const labels = page.locator('button').filter({ hasText: /mm$/ });
+    const labels = page.getByTestId('exploded-layer-label');
     await expect(labels).toHaveCount(0);
   });
 });

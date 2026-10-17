@@ -70,7 +70,7 @@ export const addBin = defineCommand({
 
       const rect = { x, y, width, depth };
       const validationResult = canPlaceBin(
-        { ...rect, height, linkedDesignId },
+        { ...rect, height, clearanceHeight, linkedDesignId },
         layerId,
         ctx.aggregate
       );

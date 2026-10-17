@@ -70,7 +70,6 @@ describe('Mobile Touch Interactions', () => {
         <Bin
           bin={testBin}
           category={testCategory}
-          layer={testLayer}
           drawer={testDrawer}
           cellSize={32}
           isGhost={false}
@@ -118,7 +117,6 @@ describe('Mobile Touch Interactions', () => {
         <Bin
           bin={testBin}
           category={testCategory}
-          layer={testLayer}
           drawer={testDrawer}
           cellSize={32}
           isGhost={false}
@@ -154,7 +152,6 @@ describe('Mobile Touch Interactions', () => {
         <Bin
           bin={testBin}
           category={testCategory}
-          layer={testLayer}
           drawer={testDrawer}
           cellSize={32}
           isGhost={false}
@@ -203,7 +200,6 @@ describe('Mobile Touch Interactions', () => {
         <Bin
           bin={testBin}
           category={testCategory}
-          layer={testLayer}
           drawer={testDrawer}
           cellSize={32}
           isGhost={false}
@@ -247,7 +243,6 @@ describe('Mobile Touch Interactions', () => {
         <Bin
           bin={testBin}
           category={testCategory}
-          layer={testLayer}
           drawer={testDrawer}
           cellSize={32}
           isGhost={false}
@@ -278,7 +273,6 @@ describe('Mobile Touch Interactions', () => {
         <Bin
           bin={testBin}
           category={testCategory}
-          layer={testLayer}
           drawer={testDrawer}
           cellSize={32}
           isGhost={false}
@@ -311,7 +305,6 @@ describe('Mobile Touch Interactions', () => {
         <Bin
           bin={testBin}
           category={testCategory}
-          layer={testLayer}
           drawer={testDrawer}
           cellSize={32}
           isGhost={false}
@@ -363,7 +356,6 @@ describe('Mobile Touch Interactions', () => {
         <Bin
           bin={testBin}
           category={testCategory}
-          layer={testLayer}
           drawer={testDrawer}
           cellSize={32}
           isGhost={false}
@@ -414,7 +406,6 @@ describe('Mobile Touch Interactions', () => {
         <Bin
           bin={testBin}
           category={testCategory}
-          layer={testLayer}
           drawer={testDrawer}
           cellSize={32}
           isGhost={false}
@@ -444,7 +435,6 @@ describe('Mobile Touch Interactions', () => {
         <Bin
           bin={testBin}
           category={testCategory}
-          layer={testLayer}
           drawer={testDrawer}
           cellSize={32}
           isGhost={false}
@@ -476,7 +466,6 @@ describe('Mobile Touch Interactions', () => {
         <Bin
           bin={testBin}
           category={testCategory}
-          layer={testLayer}
           drawer={testDrawer}
           cellSize={32}
           isGhost={true}

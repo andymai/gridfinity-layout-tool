@@ -1,8 +1,4 @@
-import type { Bin, HeightUnits, Layer, Rect3D, BlockedZone, LayerId } from '@/core/types';
-import type { Result, ValidationError } from '@/core/result';
-import { ok, err, isOk, validationInvalidLayer } from '@/core/result';
-import { STAGING_ID } from '@/core/constants';
-import { getGridBins } from '@/shared/utils/bins';
+import type { Bin, BlockedZone } from '@/core/types';
 
 /**
  * Reverse layers for display purposes.
@@ -13,32 +9,17 @@ export function getDisplayLayers<T>(layers: T[]): T[] {
 }
 
 /**
- * Calculate the Z-axis start position for a layer with Result-based error handling.
- * Use this when layer existence is not guaranteed (e.g., during user interactions).
- */
-export function getLayerZStartResult(
-  layerId: LayerId,
-  layers: Layer[]
-): Result<number, ValidationError> {
-  let z = 0;
-  for (const layer of layers) {
-    if (layer.id === layerId) return ok(z);
-    z += layer.height;
-  }
-  return err(validationInvalidLayer(layerId));
-}
-
-/**
- * Resolves how far a bin's linked design protrudes past `height + clearance`,
+ * Resolves how far a bin's linked design stands above its nominal `height`,
  * in height units (see `linkedStackExcessUnits`). Registered from the shell
  * composition root because the data lives in the bin-designer registry, which
  * this module must not import. Unregistered (or a bin without a link) means
- * zero excess — the pre-registration unit model.
+ * zero excess.
  */
 export type LinkedExcessResolver = (bin: Bin) => number;
 
 let linkedExcessResolver: LinkedExcessResolver | null = null;
 let linkedExcessVersion: () => unknown = () => 0;
+let registrations = 0;
 
 export function registerLinkedExcessResolver(
   resolver: LinkedExcessResolver | null,
@@ -46,43 +27,21 @@ export function registerLinkedExcessResolver(
 ): void {
   linkedExcessResolver = resolver;
   linkedExcessVersion = version ?? ((): unknown => 0);
-  blockedZonesCache = null;
+  registrations += 1;
 }
 
-function linkedExcess(bin: Bin): number {
+/** Changes whenever the linked excess of an unchanged bin could have changed. */
+export function linkedExcessCacheKey(): string {
+  return `${registrations}:${String(linkedExcessVersion())}`;
+}
+
+export function linkedExcessUnits(bin: Bin): number {
   if (bin.linkedDesignId === undefined || linkedExcessResolver === null) return 0;
   const excess = linkedExcessResolver(bin);
   // The resolver is pluggable, so its output is not trusted: a NaN here would
-  // flow into zEnd and make every vertical-overlap comparison false, silently
-  // disabling collisions and blocked zones.
+  // flow into every stack height above the bin and make each drawer and
+  // clearance comparison false, silently disabling both limits.
   return Number.isFinite(excess) && excess > 0 ? excess : 0;
-}
-
-/**
- * Get the 3D bounding box for a bin with Result-based error handling.
- * Use this when layer existence is not guaranteed.
- *
- * The vertical charge is `height` plus the larger of the user-reserved
- * clearance and the linked design's real excess rise: clearance reserves
- * airspace for contents, the excess is material above the nominal height (a
- * lid, extra wall height, a diverged design), and whichever reaches higher is
- * the obstruction.
- */
-export function getBin3DRectResult(bin: Bin, layers: Layer[]): Result<Rect3D, ValidationError> {
-  const zStartResult = getLayerZStartResult(bin.layerId, layers);
-  if (!isOk(zStartResult)) {
-    return zStartResult;
-  }
-  const zStart = zStartResult.value;
-  const above = Math.max(bin.clearanceHeight || 0, linkedExcess(bin));
-  return ok({
-    x: bin.x,
-    y: bin.y,
-    width: bin.width,
-    depth: bin.depth,
-    zStart: zStart as HeightUnits,
-    zEnd: (zStart + bin.height + above) as HeightUnits,
-  });
 }
 
 /**
@@ -93,120 +52,6 @@ export function footprintsOverlap(
   b: { x: number; y: number; width: number; depth: number }
 ): boolean {
   return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.depth && b.y < a.y + a.depth;
-}
-
-/**
- * Check if two vertical ranges overlap.
- */
-export function verticalRangesOverlap(
-  a: { zStart: number; zEnd: number },
-  b: { zStart: number; zEnd: number }
-): boolean {
-  return a.zStart < b.zEnd && b.zStart < a.zEnd;
-}
-
-/**
- * Check if two bins collide in 3D space with Result-based error handling.
- * Returns Ok(false) for staging bins or non-overlapping footprints.
- * Returns Err if either bin's layer is invalid.
- */
-export function binsCollideResult(
-  binA: Bin,
-  binB: Bin,
-  layers: Layer[]
-): Result<boolean, ValidationError> {
-  // Staging bins don't collide with anything
-  if (binA.layerId === STAGING_ID || binB.layerId === STAGING_ID) {
-    return ok(false);
-  }
-
-  // Check footprint overlap first (cheaper)
-  if (!footprintsOverlap(binA, binB)) {
-    return ok(false);
-  }
-
-  const rectAResult = getBin3DRectResult(binA, layers);
-  if (!isOk(rectAResult)) {
-    return rectAResult;
-  }
-
-  const rectBResult = getBin3DRectResult(binB, layers);
-  if (!isOk(rectBResult)) {
-    return rectBResult;
-  }
-
-  return ok(verticalRangesOverlap(rectAResult.value, rectBResult.value));
-}
-
-// Simple cache for getBlockedZones - avoids recomputation when called repeatedly
-// with same inputs (common during drag/resize interactions)
-let blockedZonesCache: {
-  targetLayerId: LayerId;
-  bins: Bin[];
-  layers: Layer[];
-  riseVersion: unknown;
-  result: BlockedZone[];
-} | null = null;
-
-/**
- * Find all blocked zones for a given layer.
- * A blocked zone is where a bin from a lower layer protrudes upward.
- * Results are cached by reference equality for performance during interactions.
- */
-export function getBlockedZones(
-  targetLayerId: LayerId,
-  bins: Bin[],
-  layers: Layer[]
-): BlockedZone[] {
-  if (!targetLayerId) return [];
-
-  // Check cache - use reference equality for arrays (Zustand returns same refs
-  // when unchanged). The rise version covers linked-design excess: a design
-  // re-save or unit change can move zones without touching bins/layers identity.
-  const riseVersion = linkedExcessVersion();
-  if (
-    blockedZonesCache &&
-    blockedZonesCache.targetLayerId === targetLayerId &&
-    blockedZonesCache.bins === bins &&
-    blockedZonesCache.layers === layers &&
-    blockedZonesCache.riseVersion === riseVersion
-  ) {
-    return blockedZonesCache.result;
-  }
-
-  const targetLayerIndex = layers.findIndex((l) => l.id === targetLayerId);
-  if (targetLayerIndex === -1) return [];
-
-  const targetZStartResult = getLayerZStartResult(targetLayerId, layers);
-  if (!isOk(targetZStartResult)) return [];
-  const targetZStart = targetZStartResult.value;
-
-  const blocked: BlockedZone[] = [];
-
-  for (const bin of bins) {
-    if (bin.layerId === STAGING_ID) continue;
-
-    const binLayerIndex = layers.findIndex((l) => l.id === bin.layerId);
-    if (binLayerIndex >= targetLayerIndex) continue;
-
-    const binRectResult = getBin3DRectResult(bin, layers);
-    if (!isOk(binRectResult)) continue;
-    const binRect = binRectResult.value;
-    if (binRect.zEnd > targetZStart) {
-      blocked.push({
-        x: bin.x,
-        y: bin.y,
-        width: bin.width,
-        depth: bin.depth,
-        sourceBinId: bin.id,
-        sourceLayerId: bin.layerId,
-      });
-    }
-  }
-
-  blockedZonesCache = { targetLayerId, bins, layers, riseVersion, result: blocked };
-
-  return blocked;
 }
 
 /**
@@ -223,37 +68,4 @@ export function isInBlockedZone(
     }
   }
   return null;
-}
-
-/**
- * Check if reordering layers would cause any bin collisions.
- * Returns list of colliding bin pairs if invalid, empty array if valid.
- */
-export function checkLayerReorderCollisions(
-  bins: Bin[],
-  _currentLayers: Layer[],
-  newLayers: Layer[]
-): Array<{ binA: Bin; binB: Bin }> {
-  const collisions: Array<{ binA: Bin; binB: Bin }> = [];
-  const placedBins = getGridBins(bins);
-
-  for (let i = 0; i < placedBins.length; i++) {
-    for (let j = i + 1; j < placedBins.length; j++) {
-      const binA = placedBins[i];
-      const binB = placedBins[j];
-
-      if (!footprintsOverlap(binA, binB)) continue;
-
-      const rectAResult = getBin3DRectResult(binA, newLayers);
-      if (!isOk(rectAResult)) continue;
-      const rectBResult = getBin3DRectResult(binB, newLayers);
-      if (!isOk(rectBResult)) continue;
-
-      if (verticalRangesOverlap(rectAResult.value, rectBResult.value)) {
-        collisions.push({ binA, binB });
-      }
-    }
-  }
-
-  return collisions;
 }

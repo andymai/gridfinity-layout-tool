@@ -7,6 +7,8 @@ import { calcBedCapacityForBin, getCellSizeY, DEFAULT_CATEGORY_COLOR } from '@/c
 import { effectiveGridUnitMmY } from '@/core/types';
 import { getBinTextColors, getBinPatternColor } from '@/shared/utils';
 import { isBinLocked } from '@/shared/utils/binLocation';
+import { formatHeightUnits } from '@/shared/utils/heightUnits';
+import { getRestingStack, getUnevenlySupported } from '@/shared/utils/restingStack';
 import { getCategoryPatternIndex, getCategoryPatternStyle } from './categoryPatterns';
 import { ResizeHandles } from '../ResizeHandles';
 import { calculateBinLayout } from './calculateBinLayout';
@@ -29,7 +31,6 @@ export type { BinProps } from './binPropsAreEqual';
 function BinComponent({
   bin,
   category,
-  layer,
   drawer,
   cellSize,
   gap = 1,
@@ -113,7 +114,13 @@ function BinComponent({
     gridUnitMmY
   );
   const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
-  const isTall = layer && bin.height > layer.height;
+  const restingZ = useLayoutStore(
+    (state) => getRestingStack(state.layout.bins, state.layout.layers).bins.get(bin.id)?.zStart ?? 0
+  );
+  const unevenlySupported = useLayoutStore((state) =>
+    getUnevenlySupported(state.layout.bins, state.layout.layers).has(bin.id)
+  );
+  const restingHeight = formatHeightUnits(restingZ);
 
   // All heavy grid positioning and pixel sizing calculations are memoized together
   // to prevent recalculation when only UI state (hover, focus, etc.) changes.
@@ -193,6 +200,16 @@ function BinComponent({
     secondaryText,
     letterSpacing,
   } = textCalcs;
+
+  const restingTitle = unevenlySupported
+    ? t('grid.unevenSupportTitle', { height: restingHeight })
+    : restingZ > 0
+      ? t('grid.restsAtTitle', { height: restingHeight })
+      : '';
+  const binTitle =
+    [bin.label !== '' ? `${dimensionsText} - ${bin.label}` : '', restingTitle]
+      .filter(Boolean)
+      .join('\n') || undefined;
 
   // Visibility thresholds (depends on isGhost which changes frequently)
   const showAnyText = binPixelMin >= 24 && !isGhost;
@@ -328,13 +345,13 @@ function BinComponent({
         t('grid.bin.ariaLabel', { width: bin.width, depth: bin.depth }) +
         (bin.label !== '' ? t('grid.bin.ariaLabelLabeled', { label: bin.label }) : '') +
         (category ? t('grid.bin.ariaLabelCategory', { category: category.name }) : '') +
+        (restingZ > 0 ? t('grid.bin.ariaLabelRestsAt', { height: restingHeight }) : '') +
+        (unevenlySupported ? t('grid.bin.ariaLabelUneven') : '') +
         (isLocked ? t('grid.bin.ariaLabelLocked') : '')
       }
       aria-pressed={isSelected}
       tabIndex={isGhost ? -1 : 0}
-      title={
-        isGhost ? undefined : bin.label !== '' ? `${dimensionsText} - ${bin.label}` : undefined
-      }
+      title={isGhost ? undefined : binTitle}
     >
       {/* Overhang extension — drawn behind the bin's own fill so only the
           extended slice shows; never affects the interactive box. */}
@@ -352,20 +369,21 @@ function BinComponent({
         />
       )}
 
-      {/* Tall bin indicator badge */}
-      {isTall && !isGhost && (
+      {restingZ > 0 && !isGhost && (
         <div
-          className="absolute top-0.5 right-0.5 px-1.5 py-0.5 rounded-sm flex items-center gap-0.5 pointer-events-none bg-surface text-xs font-medium"
+          data-testid="resting-badge"
+          className="absolute top-0.5 right-0.5 px-1 py-px rounded-sm flex items-center gap-0.5 pointer-events-none bg-surface/80 text-micro font-medium tabular-nums"
           style={{
-            color: 'var(--color-warning)',
+            color: unevenlySupported ? 'var(--color-warning)' : 'var(--text-tertiary)',
             boxShadow: 'var(--shadow-sm)',
           }}
-          title={`Spans multiple layers (${bin.height}u)`}
+          aria-hidden="true"
         >
-          <span>{bin.height}u</span>
+          {unevenlySupported && <span>{WARNING_ICON}</span>}
           <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d={ICON_PATHS.tallArrow} clipRule="evenodd" />
           </svg>
+          <span>{t('grid.restsAtBadge', { height: restingHeight })}</span>
         </div>
       )}
 

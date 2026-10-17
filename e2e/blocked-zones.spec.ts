@@ -10,15 +10,27 @@ import {
   resetViewport,
   getActiveDialog,
 } from './fixtures';
+import type { Page } from '@playwright/test';
 
 /**
  * Blocked Zone UX Tests
  *
- * Tests the improved UX for layer blocking scenarios:
- * - When bins on lower layers extend upward, they create "blocked zones" on upper layers
+ * Bins rest on whatever is below them, so a tall bin never blocks a layer
+ * above. A bin that reserves clearance for tall contents does: nothing may
+ * rest on that space, and it shows as a striped "blocked zone" on upper layers.
  * - Users see visual feedback when trying to place bins in blocked areas
  * - Clicking blocked zones switches to the blocking layer
  */
+
+/** Gives the selected bin 2u (14mm) of clearance through the inspector. */
+async function reserveClearance(page: Page): Promise<void> {
+  const inspector = page.locator('[data-testid="inspector"]').or(page.locator('aside').last());
+  const clearanceInput = inspector.getByRole('spinbutton', { name: 'Bin clearance', exact: true });
+  if (await clearanceInput.isVisible()) {
+    await clearanceInput.fill('14');
+    await clearanceInput.press('Enter');
+  }
+}
 test.describe('Blocked Zone UX', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
@@ -39,28 +51,21 @@ test.describe('Blocked Zone UX', () => {
     }
   });
 
-  test('blocked zone is visible when tall bin extends to upper layer', async ({ page }) => {
+  test('blocked zone is visible above a bin that reserves clearance', async ({ page }) => {
     const sidebar = getSidebar(page);
 
-    // Create a tall bin on Layer 1 (height > 3 extends to Layer 2)
-    // First, we need to increase the bin height
+    // Create a bin on Layer 1 that reserves clearance above itself
     const bin = await drawBinOnGrid(page, 50, 50, 120, 120);
     await waitForBinCount(page, 1);
 
-    // Select the bin and increase its height to extend to Layer 2
+    // Select the bin and reserve clearance above it
     await bin.click();
 
     // Increase height using the inspector
-    const inspector = page.locator('[data-testid="inspector"]').or(page.locator('aside').last());
-    const heightInput = inspector.locator('input[type="number"]').nth(2); // Height is usually 3rd input
-
-    if (await heightInput.isVisible()) {
-      await heightInput.fill('6'); // 6 units = extends 2 layers
-      await heightInput.press('Enter');
-    }
+    await reserveClearance(page);
 
     // Add a second layer
-    const addLayerButton = sidebar.getByRole('button', { name: /add layer/i });
+    const addLayerButton = sidebar.getByRole('button', { name: /add (new )?layer/i });
     if (await addLayerButton.isVisible()) {
       await addLayerButton.click();
       await expect(sidebar.getByText('Layer 2')).toBeVisible();
@@ -78,22 +83,16 @@ test.describe('Blocked Zone UX', () => {
   test('blocked zone shows tooltip with layer info', async ({ page }) => {
     const sidebar = getSidebar(page);
 
-    // Create a tall bin on Layer 1
+    // Create a bin with clearance on Layer 1
     const bin = await drawBinOnGrid(page, 50, 50, 120, 120);
     await waitForBinCount(page, 1);
 
-    // Select and increase height
+    // Select it and reserve clearance
     await bin.click();
-    const inspector = page.locator('[data-testid="inspector"]').or(page.locator('aside').last());
-    const heightInput = inspector.locator('input[type="number"]').nth(2);
-
-    if (await heightInput.isVisible()) {
-      await heightInput.fill('6');
-      await heightInput.press('Enter');
-    }
+    await reserveClearance(page);
 
     // Add Layer 2 and switch to it
-    const addLayerButton = sidebar.getByRole('button', { name: /add layer/i });
+    const addLayerButton = sidebar.getByRole('button', { name: /add (new )?layer/i });
     if (await addLayerButton.isVisible()) {
       await addLayerButton.click();
       const layer2Button = sidebar.getByRole('button', { name: /layer 2/i }).first();
@@ -113,22 +112,16 @@ test.describe('Blocked Zone UX', () => {
   test('clicking blocked zone switches to the blocking layer', async ({ page }) => {
     const sidebar = getSidebar(page);
 
-    // Create a tall bin on Layer 1
+    // Create a bin with clearance on Layer 1
     const bin = await drawBinOnGrid(page, 50, 50, 120, 120);
     await waitForBinCount(page, 1);
 
-    // Increase height to extend to Layer 2
+    // Reserve clearance above it
     await bin.click();
-    const inspector = page.locator('[data-testid="inspector"]').or(page.locator('aside').last());
-    const heightInput = inspector.locator('input[type="number"]').nth(2);
-
-    if (await heightInput.isVisible()) {
-      await heightInput.fill('6');
-      await heightInput.press('Enter');
-    }
+    await reserveClearance(page);
 
     // Add Layer 2 and switch to it
-    const addLayerButton = sidebar.getByRole('button', { name: /add layer/i });
+    const addLayerButton = sidebar.getByRole('button', { name: /add (new )?layer/i });
     if (await addLayerButton.isVisible()) {
       await addLayerButton.click();
       const layer2Button = sidebar.getByRole('button', { name: /layer 2/i }).first();
@@ -153,22 +146,16 @@ test.describe('Blocked Zone UX', () => {
     const sidebar = getSidebar(page);
     const bounds = await getGridBounds(page);
 
-    // Create a tall bin on Layer 1
-    const tallBin = await drawBinOnGrid(page, 50, 50, 120, 120);
+    // Create a bin with clearance on Layer 1
+    const clearanceBin = await drawBinOnGrid(page, 50, 50, 120, 120);
     await waitForBinCount(page, 1);
 
-    // Increase height
-    await tallBin.click();
-    const inspector = page.locator('[data-testid="inspector"]').or(page.locator('aside').last());
-    const heightInput = inspector.locator('input[type="number"]').nth(2);
-
-    if (await heightInput.isVisible()) {
-      await heightInput.fill('6');
-      await heightInput.press('Enter');
-    }
+    // Reserve clearance
+    await clearanceBin.click();
+    await reserveClearance(page);
 
     // Add Layer 2 and switch to it
-    const addLayerButton = sidebar.getByRole('button', { name: /add layer/i });
+    const addLayerButton = sidebar.getByRole('button', { name: /add (new )?layer/i });
     if (await addLayerButton.isVisible()) {
       await addLayerButton.click();
       const layer2Button = sidebar.getByRole('button', { name: /layer 2/i }).first();
@@ -184,7 +171,7 @@ test.describe('Blocked Zone UX', () => {
         await page.mouse.move(binBox.x + binBox.width / 2, binBox.y + binBox.height / 2);
         await page.mouse.down();
 
-        // Move toward the blocked zone (where the tall bin is)
+        // Move toward the blocked zone (over the clearance bin)
         await page.mouse.move(bounds.x + 70, bounds.y + 70, { steps: 10 });
 
         // During drag over blocked zone, the preview should show error color
@@ -204,22 +191,16 @@ test.describe('Blocked Zone UX', () => {
   test('blocked zone has breathing animation', async ({ page }) => {
     const sidebar = getSidebar(page);
 
-    // Create a tall bin on Layer 1
+    // Create a bin with clearance on Layer 1
     const bin = await drawBinOnGrid(page, 50, 50, 120, 120);
     await waitForBinCount(page, 1);
 
-    // Increase height
+    // Reserve clearance
     await bin.click();
-    const inspector = page.locator('[data-testid="inspector"]').or(page.locator('aside').last());
-    const heightInput = inspector.locator('input[type="number"]').nth(2);
-
-    if (await heightInput.isVisible()) {
-      await heightInput.fill('6');
-      await heightInput.press('Enter');
-    }
+    await reserveClearance(page);
 
     // Add Layer 2 and switch to it
-    const addLayerButton = sidebar.getByRole('button', { name: /add layer/i });
+    const addLayerButton = sidebar.getByRole('button', { name: /add (new )?layer/i });
     if (await addLayerButton.isVisible()) {
       await addLayerButton.click();
       const layer2Button = sidebar.getByRole('button', { name: /layer 2/i }).first();

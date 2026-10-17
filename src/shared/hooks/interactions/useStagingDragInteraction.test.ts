@@ -374,7 +374,7 @@ describe('useStagingDragInteraction', () => {
     });
 
     it('snaps when blocked_zone detected', () => {
-      // Create a tall bin on layer 0 that protrudes into layer 1
+      // A bin on layer 0 reserves clearance that a bin on layer 1 cannot rest on
       const { addBin, layout, addLayer } = useLayoutStore.getState();
       const categoryId = layout.categories[0].id;
       const layer0Id = layout.layers[0].id;
@@ -384,14 +384,14 @@ describe('useStagingDragInteraction', () => {
       const updatedLayout = useLayoutStore.getState().layout;
       const layer1Id = updatedLayout.layers[1].id;
 
-      // Tall bin on layer 0 that protrudes into layer 1
       addBin({
         layerId: layer0Id,
         x: gridUnits(4),
         y: gridUnits(2),
         width: gridUnits(2),
         depth: gridUnits(2),
-        height: heightUnits(updatedLayout.layers[0].height + 1), // protrudes
+        height: heightUnits(3),
+        clearanceHeight: heightUnits(2),
         category: categoryId,
         label: '',
         notes: '',

@@ -5,7 +5,6 @@ import type { LayerId } from '@/core/types';
 interface LayerLabelProps {
   layerId: LayerId;
   layerName: string;
-  layerHeightMm: number;
   isActive: boolean;
   drawerWidth: number;
   layerCenterZ: number;
@@ -20,7 +19,6 @@ interface LayerLabelProps {
 export function LayerLabel({
   layerId,
   layerName,
-  layerHeightMm,
   isActive,
   drawerWidth,
   layerCenterZ,
@@ -34,6 +32,7 @@ export function LayerLabel({
     >
       <Button
         variant="ghost"
+        data-testid="exploded-layer-label"
         onClick={(e) => {
           e.stopPropagation();
           onLayerClick(layerId);
@@ -49,7 +48,7 @@ export function LayerLabel({
           backdropFilter: 'blur(4px)',
         }}
       >
-        {layerName} · {layerHeightMm}mm
+        {layerName}
       </Button>
     </Html>
   );

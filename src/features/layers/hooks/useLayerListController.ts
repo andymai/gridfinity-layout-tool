@@ -1,7 +1,12 @@
 /**
  * Layer-list state and actions shared by the desktop LayerPanel and the
- * mobile LayersTab: add-with-auto-expansion, delete with active-layer
- * reassignment, rename, height stepping, and display-order reordering.
+ * mobile LayersTab: add, delete with active-layer reassignment, rename,
+ * new-bin height stepping, display-order reordering, and the tallest stack
+ * measured against the drawer.
+ *
+ * A layer's height is only the default for bins drawn on it. Bins rest on
+ * whatever is below them, so the drawer limit applies to stacks, not to a
+ * sum of layer heights.
  *
  * Display order is REVERSED from array order (layers[0] is the bottom layer,
  * display index 0 is the top) — `reorderByDisplayIndex` owns that mapping so
@@ -19,10 +24,8 @@ import { CONSTRAINTS } from '@/core/constants';
 import { getLayerBins } from '@/shared/utils';
 import { getDisplayLayers } from '@/shared/utils/collision';
 import { isOk, isErr, getUserMessage } from '@/core/result';
-import { useToastStore } from '@/core/store';
 import { useResultToast } from '@/shared/hooks';
-import { useTranslation } from '@/i18n';
-import { calculateLayerAutoExpansion } from '@/features/layers/utils/layerAutoExpansion';
+import { getRestingStack } from '@/shared/utils/restingStack';
 import type { HeightUnits, Layer, LayerId } from '@/core/types';
 import { batch } from '@/core/cqrs';
 
@@ -32,10 +35,11 @@ export interface LayerListController {
   activeLayerId: LayerId;
   activeLayer: Layer | undefined;
   setActiveLayer: (id: LayerId) => void;
-  totalLayerHeight: number;
+  /** Highest point any stack reaches, clearance included, in height units. */
+  tallestStack: number;
+  drawerHeight: number;
   canAddLayer: boolean;
-  heightFull: boolean;
-  addLayerWithAutoExpand: () => void;
+  addNewLayer: () => void;
   deleteLayerId: LayerId | null;
   layerToDelete: Layer | null;
   deletedLayerBinCount: number;
@@ -51,7 +55,6 @@ export interface LayerListController {
 export function useLayerListController(options?: {
   onReorderError?: (message: string) => void;
 }): LayerListController {
-  const t = useTranslation();
   const onReorderError = options?.onReorderError;
   const [deleteLayerId, setDeleteLayerId] = useState<LayerId | null>(null);
 
@@ -65,64 +68,26 @@ export function useLayerListController(options?: {
     }))
   );
 
-  const addToast = useToastStore((state) => state.addToast);
   const { showErrorToast } = useResultToast();
 
   const layers = layout.layers;
   const activeLayer = layers.find((l) => l.id === activeLayerId);
-  const totalLayerHeight = layers.reduce((sum, l) => sum + l.height, 0);
   const drawerHeight = layout.drawer.height;
-  const canAddLayer = layers.length < CONSTRAINTS.LAYERS_MAX && totalLayerHeight < drawerHeight;
-  const heightFull = totalLayerHeight > drawerHeight;
+  const tallestStack = getRestingStack(layout.bins, layers).tallest;
+  const canAddLayer = layers.length < CONSTRAINTS.LAYERS_MAX;
 
   const displayToArrayIndex = (displayIndex: number) => layers.length - 1 - displayIndex;
   const displayLayers = getDisplayLayers(layers);
 
-  const addLayerWithAutoExpand = () => {
-    const topLayer = layers[layers.length - 1];
-
-    const expansion = calculateLayerAutoExpansion(
-      topLayer,
-      layout.bins,
-      totalLayerHeight,
-      drawerHeight
-    );
-
-    if (expansion.wouldExceedCapacity && expansion.smallestExceedingHeight !== undefined) {
-      addToast(
-        t('layers.cannotAddLayerTallBins', {
-          layerName: topLayer.name,
-          binHeight: expansion.smallestExceedingHeight,
-          layerHeight: topLayer.height,
-        }),
-        'error'
-      );
-      return;
-    }
-
-    if (expansion.needsExpansion && expansion.newHeight !== undefined) {
-      const newHeight = expansion.newHeight;
-      batch(() => {
-        const expandResult = updateLayer(topLayer.id, { height: newHeight as HeightUnits });
-        if (isErr(expandResult)) {
-          showErrorToast(expandResult.error);
-          return;
-        }
-        const addResult = addLayer();
-        if (isOk(addResult)) {
-          setActiveLayer(addResult.value);
-        } else {
-          showErrorToast(addResult.error);
-        }
-      });
-    } else {
-      batch(() => {
-        const result = addLayer();
-        if (isOk(result)) {
-          setActiveLayer(result.value);
-        }
-      });
-    }
+  const addNewLayer = () => {
+    batch(() => {
+      const result = addLayer();
+      if (isOk(result)) {
+        setActiveLayer(result.value);
+      } else {
+        showErrorToast(result.error);
+      }
+    });
   };
 
   const requestDelete = (id: LayerId) => {
@@ -196,10 +161,10 @@ export function useLayerListController(options?: {
     activeLayerId,
     activeLayer,
     setActiveLayer,
-    totalLayerHeight,
+    tallestStack,
+    drawerHeight,
     canAddLayer,
-    heightFull,
-    addLayerWithAutoExpand,
+    addNewLayer,
     deleteLayerId,
     layerToDelete,
     deletedLayerBinCount,

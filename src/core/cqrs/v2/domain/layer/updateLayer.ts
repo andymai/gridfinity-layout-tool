@@ -1,8 +1,7 @@
 /**
- * Update layer fields. height is clamped against the remaining drawer
- * space (drawer.height minus other layers' heights) inside handle() so
+ * Update layer fields. height is clamped to the drawer inside handle() so
  * the event payload's `changes.height` always equals the value that
- * lands.
+ * lands. It is only the default for new bins, so no placed bin moves.
  */
 
 import { z } from 'zod';
@@ -62,12 +61,12 @@ export const updateLayer = defineCommand({
     const changes: Partial<Layer> = {};
     if (payload.updates.name !== undefined) changes.name = payload.updates.name;
     if (payload.updates.height !== undefined) {
-      const othersHeight = layout.layers
-        .filter((l) => l.id !== id)
-        .reduce((sum, l) => sum + (l.height as number), 0);
-      const maxHeight = (layout.drawer.height as number) - othersHeight;
       changes.height = heightUnits(
-        clamp(payload.updates.height, CONSTRAINTS.MIN_LAYER_HEIGHT, maxHeight)
+        clamp(
+          payload.updates.height,
+          CONSTRAINTS.MIN_LAYER_HEIGHT,
+          Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, layout.drawer.height)
+        )
       );
     }
 

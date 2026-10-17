@@ -115,7 +115,6 @@ describe('useBinInspector', () => {
         maxGridUnits: { width: 5, depth: 5 },
         needsSplit: false,
         heightRange: '2u',
-        minHeightReason: 'global_minimum',
         maxHeightReason: 'drawer_height',
       });
     });
@@ -130,8 +129,31 @@ describe('useBinInspector', () => {
 
       const { result } = renderHook(() => useBinInspector());
 
-      expect(result.current.constraints.minHeight).toBe(3); // Layer height
-      expect(result.current.constraints.maxHeight).toBe(12); // Drawer height
+      // The layer's 3u is only the default for new bins, not a floor.
+      expect(result.current.constraints.minHeight).toBe(2);
+      expect(result.current.constraints.maxHeight).toBe(12);
+      expect(result.current.constraints.maxHeightReason).toBe('drawer_height');
+    });
+
+    it('limits max height and clearance by the bin resting on it', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.layers = [
+        { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: toLayerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
+      ];
+      layout.bins = [
+        createBin('bin1', 'layer1'),
+        { ...createBin('bin2', 'layer2'), height: heightUnits(4) },
+      ];
+      layout.drawer.height = heightUnits(12);
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      expect(result.current.constraints.maxHeight).toBe(8);
+      expect(result.current.constraints.maxHeightReason).toBe('remaining_space');
+      expect(result.current.constraints.maxClearance).toBe(0);
     });
 
     it('detects when bin needs split', () => {

@@ -21,9 +21,10 @@
  */
 
 import type { Bin, BinId, Layout, StoredBaseplateParams } from '@/core/types';
-import { effectiveGridUnitMmY } from '@/core/types';
+import { effectiveGridUnitMmY, gridUnits } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { createOccupiedCellSet } from '@/shared/utils/fill';
+import { getRestingStack, newViolations, resolveRestingStack } from '@/shared/utils/restingStack';
 import { isBinLocked } from '@/shared/utils/binLocation';
 import type { OverhangConfig } from '@/core/types';
 
@@ -56,7 +57,9 @@ export type ExpandBlockedReason =
    * Reachable with sub-millimetre baseplate padding on an exactly-filled grid:
    * the span starts off-grid and the share is a fraction of a half-unit.
    */
-  | 'no-grid-alignment';
+  | 'no-grid-alignment'
+  /** A shifted socket would lift a bin stacked above past the drawer or into clearance. */
+  | 'lifts-stack';
 
 export interface ExpandPlacement {
   readonly binId: BinId;
@@ -227,10 +230,17 @@ export function resolveExpandToFit(
     return { ok: false, reason: 'ragged' };
   }
 
-  // Obstacles: same-layer bins (excluding the selection), blocked zones from
-  // lower layers, and cells outside a non-rectangular drawer outline.
+  // Obstacles: same-layer bins (excluding the selection), cells where the
+  // tallest selected bin could not rest, and cells outside a non-rectangular
+  // drawer outline.
   const others = bins.filter((b) => !selectedSet.has(b.id));
-  const occupied = createOccupiedCellSet(others, layerId, layout, STEP);
+  const occupied = createOccupiedCellSet(
+    others,
+    layerId,
+    layout,
+    STEP,
+    Math.max(...selected.map((b) => b.height))
+  );
 
   const selLoX = Math.min(...selected.map((b) => b.x));
   const selHiX = Math.max(...selected.map((b) => b.x + b.width));
@@ -303,6 +313,18 @@ export function resolveExpandToFit(
       },
     });
   }
+
+  const shifted = new Map(placements.map((p) => [p.binId, p]));
+  const after = bins.map((b) => {
+    const p = shifted.get(b.id);
+    return p ? { ...b, x: gridUnits(p.x), y: gridUnits(p.y) } : b;
+  });
+  const restacked = newViolations(
+    getRestingStack(bins, layout.layers),
+    resolveRestingStack(after, layout.layers),
+    layout.drawer.height
+  );
+  if (restacked.length > 0) return { ok: false, reason: 'lifts-stack' };
 
   return { ok: true, placements };
 }

@@ -304,8 +304,9 @@ describe('validateRotationInPlace linked-design excess rise', () => {
       depth: gridUnits(3),
       linkedDesignId: designId('lidded'),
     });
-    // Overlaps only the ROTATED footprint, one layer up; the rotated rect
-    // reaches it vertically only when its linked excess is charged.
+    // Overlaps only the ROTATED footprint, one layer up; lifting it onto the
+    // rotated bin passes the 12u drawer only when its linked excess is
+    // charged (3 + 2 + 8).
     const upper = createTestBin({
       id: binId('upper'),
       layerId: layerId('layer2'),
@@ -313,6 +314,7 @@ describe('validateRotationInPlace linked-design excess rise', () => {
       y: gridUnits(0),
       width: gridUnits(1),
       depth: gridUnits(1),
+      height: heightUnits(8),
     });
     layout.bins = [bin, upper];
 

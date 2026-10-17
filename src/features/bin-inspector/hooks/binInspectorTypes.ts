@@ -12,7 +12,6 @@ import { emitSyncEvent } from '@/shared/events/syncEventBus';
 export type BinField =
   'width' | 'depth' | 'height' | 'clearanceHeight' | 'category' | 'label' | 'notes';
 
-export type MinHeightReason = 'layer_height' | 'global_minimum';
 export type MaxHeightReason = 'remaining_space' | 'drawer_height';
 
 export interface BinConstraints {
@@ -22,8 +21,6 @@ export interface BinConstraints {
   maxGridUnits: { width: number; depth: number };
   needsSplit: boolean;
   heightRange: string;
-  /** Why the minimum height is what it is */
-  minHeightReason: MinHeightReason;
   /** Why the maximum height is what it is */
   maxHeightReason: MaxHeightReason;
 }

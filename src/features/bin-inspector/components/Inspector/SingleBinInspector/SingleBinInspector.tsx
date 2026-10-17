@@ -5,6 +5,7 @@ import { Button, IconButton, Select, Stepper, XIcon } from '@/design-system';
 import { ArrowLeftRightIcon, LockIcon, LockOpenIcon, RulerIcon } from '@/design-system/Icon';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { getBinLocationContext, isBinLocked } from '@/shared/utils/binLocation';
+import { getRestingStack, getUnevenlySupported } from '@/shared/utils/restingStack';
 import {
   formatHeightUnits,
   isStandardStackHeight,
@@ -77,6 +78,10 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
   const ceilingOverflowMm =
     ceiling?.overflowing.find((entry) => entry.binId === bin.id)?.overflowMm ?? null;
 
+  const rest = getRestingStack(layout.bins, layout.layers).bins.get(bin.id);
+  const restingZ = rest?.zStart ?? 0;
+  const unevenlySupported = getUnevenlySupported(layout.bins, layout.layers).has(bin.id);
+
   const isMobile = variant === 'mobile';
   const locationContext = getBinLocationContext(bin);
   const canMoveToStaging = locationContext.canMoveToStash;
@@ -96,13 +101,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
   // Height meta: unit equivalent + mm limits, shown as one consolidated line.
   const heightEquiv = t('inspector.heightUnitsEquiv', { units: formatHeightUnits(bin.height) });
-  const minHeightHint =
-    constraints.minHeightReason === 'layer_height'
-      ? t('inspector.minHeightHint', {
-          min: heightMmAt(constraints.minHeight),
-          reason: t('inspector.heightReasonLayerHeight'),
-        })
-      : t('inspector.minHeightHintNoReason', { min: heightMmAt(constraints.minHeight) });
+  const minHeightHint = t('inspector.minHeightHintNoReason', {
+    min: heightMmAt(constraints.minHeight),
+  });
   const maxHeightHint = t('inspector.maxHeightHint', {
     max: heightMmAt(constraints.maxHeight),
     reason:
@@ -317,6 +318,12 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             </div>
             {!isStandardStackHeight(bin.height, layout.heightUnitMm) && (
               <div className="text-warning">{t('inspector.nonStandardStackWarning')}</div>
+            )}
+            {restingZ > 0 && (
+              <div>{t('inspector.restsAt', { height: formatHeightUnits(restingZ) })}</div>
+            )}
+            {unevenlySupported && (
+              <div className="text-warning">{t('inspector.unevenSupport')}</div>
             )}
             {ceilingOverflowMm !== null && (
               <div className="text-warning">

@@ -64,7 +64,6 @@ describe('MultiBinInspector', () => {
       maxGridUnits: { width: 6, depth: 6 },
       needsSplit: false,
       heightRange: '3-12u',
-      minHeightReason: 'layer_height',
       maxHeightReason: 'remaining_space',
     },
     updateField: vi.fn(),

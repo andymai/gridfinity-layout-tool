@@ -30,12 +30,12 @@ vi.mock('@/design-system', async () => ({
   ),
 }));
 
-// Capture props passed to diagram for testing callback wiring
+// Capture props passed to the rows for testing callback wiring
 let capturedProps: Record<string, unknown> = {};
-vi.mock('./HeightCrossSectionDiagram', () => ({
-  HeightCrossSectionDiagram: (props: Record<string, unknown>) => {
+vi.mock('./LayerRows', () => ({
+  LayerRows: (props: Record<string, unknown>) => {
     capturedProps = props;
-    return <div data-testid="cross-section-diagram" />;
+    return <div data-testid="layer-rows" />;
   },
 }));
 
@@ -92,15 +92,15 @@ describe('LayerPanel', () => {
       expect(screen.getByLabelText('Add new layer')).toBeInTheDocument();
     });
 
-    it('renders cross-section diagram as primary layer UI', () => {
+    it('renders layer rows as the primary layer UI', () => {
       render(<LayerPanel />);
 
       const sections = screen.getAllByTestId('collapsible-section');
       expect(sections).toHaveLength(1);
-      expect(screen.getByTestId('cross-section-diagram')).toBeInTheDocument();
+      expect(screen.getByTestId('layer-rows')).toBeInTheDocument();
     });
 
-    it('passes editingLayerId to diagram', () => {
+    it('passes editingLayerId to the rows', () => {
       render(<LayerPanel />);
 
       expect(capturedProps.editingLayerId).toBeNull();
@@ -118,10 +118,41 @@ describe('LayerPanel', () => {
       expect(screen.getByText(/0 bins/)).toBeInTheDocument();
     });
 
-    it('shows height total in aggregate stats', () => {
+    it('shows the tallest stack against the drawer, not the sum of layer heights', () => {
+      const layout = useLayoutStore.getState().layout;
+      const l1 = layout.layers[0].id;
+      const l2 = toLayerId('layer-2');
+      useLayoutStore.setState({
+        layout: {
+          ...layout,
+          layers: [...layout.layers, { id: l2, name: 'Layer 2', height: heightUnits(9) }],
+          bins: [
+            createTestBin({ id: binId('low'), layerId: l1, height: heightUnits(3) }),
+            createTestBin({ id: binId('high'), layerId: l2, height: heightUnits(2) }),
+          ],
+        },
+      });
+
       render(<LayerPanel />);
 
-      expect(screen.getByText(/\d+\/\d+u/)).toBeInTheDocument();
+      expect(screen.getByText('Tallest stack')).toBeInTheDocument();
+      expect(screen.getByText(`5/${String(layout.drawer.height)}u`)).toBeInTheDocument();
+      expect(screen.queryByText(/taller than the drawer/)).not.toBeInTheDocument();
+    });
+
+    it('warns when the tallest stack passes the drawer', () => {
+      const layout = useLayoutStore.getState().layout;
+      useLayoutStore.setState({
+        layout: {
+          ...layout,
+          drawer: { ...layout.drawer, height: heightUnits(4) },
+          bins: [createTestBin({ layerId: layout.layers[0].id, height: heightUnits(6) })],
+        },
+      });
+
+      render(<LayerPanel />);
+
+      expect(screen.getByText('2u taller than the drawer')).toBeInTheDocument();
     });
 
     it('returns null when no active layer', () => {
@@ -167,7 +198,7 @@ describe('LayerPanel', () => {
       expect(screen.getByLabelText('Add new layer')).toBeDisabled();
     });
 
-    it('disables add button when drawer height is full', () => {
+    it('keeps add enabled when layer heights already fill the drawer', () => {
       const layout = useLayoutStore.getState().layout;
       useLayoutStore.setState({
         layout: {
@@ -180,7 +211,7 @@ describe('LayerPanel', () => {
 
       render(<LayerPanel />);
 
-      expect(screen.getByLabelText('Add new layer')).toBeDisabled();
+      expect(screen.getByLabelText('Add new layer')).toBeEnabled();
     });
 
     it('sets new layer as active', () => {

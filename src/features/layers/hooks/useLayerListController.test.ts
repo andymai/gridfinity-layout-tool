@@ -4,9 +4,9 @@ import { renderHook, act } from '@testing-library/react';
 import { useLayerListController } from './useLayerListController';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
-import { resetAllStores } from '@/test/testUtils';
+import { createTestBin, resetAllStores } from '@/test/testUtils';
 import { ok, err } from '@/core/result';
-import { layerId } from '@/core/types';
+import { binId, heightUnits, layerId } from '@/core/types';
 import type { Layer } from '@/core/types';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -51,10 +51,32 @@ describe('useLayerListController', () => {
   it('adds a layer and activates it', () => {
     const { result } = renderHook(() => useLayerListController());
     act(() => {
-      result.current.addLayerWithAutoExpand();
+      result.current.addNewLayer();
     });
     expect(mutations.addLayer).toHaveBeenCalledTimes(1);
     expect(useSelectionStore.getState().activeLayerId).toBe(layerId('new-layer'));
+  });
+
+  it('measures the tallest stack and never gates adding on layer heights', () => {
+    const state = useLayoutStore.getState();
+    useLayoutStore.setState({
+      layout: {
+        ...state.layout,
+        drawer: { ...state.layout.drawer, height: 6 as Layer['height'] },
+        layers: [
+          { ...layerA, height: 6 as Layer['height'] },
+          { ...layerB, height: 6 as Layer['height'] },
+        ],
+        bins: [
+          createTestBin({ id: binId('low'), layerId: layerA.id, height: heightUnits(3) }),
+          createTestBin({ id: binId('high'), layerId: layerB.id, height: heightUnits(2) }),
+        ],
+      },
+    });
+    const { result } = renderHook(() => useLayerListController());
+    expect(result.current.tallestStack).toBe(5);
+    expect(result.current.drawerHeight).toBe(6);
+    expect(result.current.canAddLayer).toBe(true);
   });
 
   it('maps display indices to array indices when reordering', () => {

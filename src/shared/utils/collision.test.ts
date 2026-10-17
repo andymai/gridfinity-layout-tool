@@ -1,20 +1,15 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import {
-  getLayerZStartResult,
-  getBin3DRectResult,
   footprintsOverlap,
-  binsCollideResult,
-  getBlockedZones,
   getDisplayLayers,
-  checkLayerReorderCollisions,
   isInBlockedZone,
+  linkedExcessCacheKey,
+  linkedExcessUnits,
   registerLinkedExcessResolver,
 } from '@/shared/utils/collision';
-import { isOk } from '@/core/result';
 import type { BlockedZone, Layer } from '@/core/types';
 import { binId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
-import { STAGING_ID } from '@/core/constants';
-import { createTestBin, expectOk, expectErr } from '@/test/testUtils';
+import { createTestBin } from '@/test/testUtils';
 
 const LAYER_1 = layerId('layer1');
 const LAYER_2 = layerId('layer2');
@@ -26,68 +21,48 @@ const layers: Layer[] = [
   { id: LAYER_3, name: 'Layer 3', height: heightUnits(3) },
 ];
 
-describe('getLayerZStartResult', () => {
-  it('returns Ok(0) for first layer', () => {
-    expect(expectOk(getLayerZStartResult(LAYER_1, layers))).toBe(0);
+describe('linkedExcessUnits', () => {
+  afterEach(() => {
+    registerLinkedExcessResolver(null);
   });
 
-  it('sums heights for subsequent layers', () => {
-    expect(expectOk(getLayerZStartResult(LAYER_2, layers))).toBe(3);
-    expect(expectOk(getLayerZStartResult(LAYER_3, layers))).toBe(9);
+  const linked = createTestBin({ id: binId('1'), linkedDesignId: designId('lidded') });
+
+  it('reads the registered resolver for a linked bin', () => {
+    registerLinkedExcessResolver(() => 2);
+    expect(linkedExcessUnits(linked)).toBe(2);
+    expect(linkedExcessUnits(createTestBin({ id: binId('2') }))).toBe(0);
   });
 
-  it('returns Err for unknown layer', () => {
-    expect(expectErr(getLayerZStartResult(layerId('unknown'), layers)).code).toBe(
-      'VALIDATION_INVALID_LAYER'
+  it('ignores the resolver once unregistered', () => {
+    registerLinkedExcessResolver(() => 2);
+    registerLinkedExcessResolver(null);
+    expect(linkedExcessUnits(linked)).toBe(0);
+  });
+
+  it('treats a non-finite or negative resolver value as zero excess', () => {
+    for (const value of [Number.NaN, Infinity, -2]) {
+      registerLinkedExcessResolver(() => value);
+      expect(linkedExcessUnits(linked)).toBe(0);
+    }
+  });
+
+  it('changes its cache key on re-registration and on a version bump', () => {
+    let version = 0;
+    registerLinkedExcessResolver(
+      () => 0,
+      () => version
     );
-  });
-
-  it('returns Err for empty string layer ID', () => {
-    expectErr(getLayerZStartResult(layerId(''), layers));
-  });
-});
-
-describe('getBin3DRectResult', () => {
-  it('returns Ok with correct 3D rect for valid bin', () => {
-    const bin = createTestBin({
-      id: binId('1'),
-      x: gridUnits(2),
-      y: gridUnits(3),
-      width: gridUnits(4),
-      depth: gridUnits(5),
-    });
-    expect(expectOk(getBin3DRectResult(bin, layers))).toEqual({
-      x: 2,
-      y: 3,
-      width: 4,
-      depth: 5,
-      zStart: 0,
-      zEnd: 3, // height only, no clearance
-    });
-  });
-
-  it('includes clearanceHeight in zEnd', () => {
-    const bin = createTestBin({
-      id: binId('1'),
-      layerId: LAYER_2,
-      width: gridUnits(2),
-      depth: gridUnits(2),
-      height: heightUnits(4),
-      clearanceHeight: heightUnits(2),
-    });
-    const value = expectOk(getBin3DRectResult(bin, layers));
-    expect(value.zStart).toBe(3); // layer2 starts at z=3
-    expect(value.zEnd).toBe(9); // 3 + 4 + 2 = 9
-  });
-
-  it('returns Err for bin with invalid layer', () => {
-    const bin = createTestBin({
-      id: binId('1'),
-      layerId: layerId('nonexistent'),
-      width: gridUnits(2),
-      depth: gridUnits(2),
-    });
-    expect(expectErr(getBin3DRectResult(bin, layers)).code).toBe('VALIDATION_INVALID_LAYER');
+    const first = linkedExcessCacheKey();
+    expect(linkedExcessCacheKey()).toBe(first);
+    version = 1;
+    const bumped = linkedExcessCacheKey();
+    expect(bumped).not.toBe(first);
+    registerLinkedExcessResolver(
+      () => 0,
+      () => version
+    );
+    expect(linkedExcessCacheKey()).not.toBe(bumped);
   });
 });
 
@@ -108,237 +83,6 @@ describe('footprintsOverlap', () => {
     const a = { x: 0, y: 0, width: 2, depth: 2 };
     const b = { x: 5, y: 5, width: 2, depth: 2 };
     expect(footprintsOverlap(a, b)).toBe(false);
-  });
-});
-
-describe('binsCollideResult', () => {
-  it('returns Ok(true) for overlapping bins on same layer', () => {
-    const binA = createTestBin({ id: binId('1'), width: gridUnits(2), depth: gridUnits(2) });
-    const binB = createTestBin({
-      id: binId('2'),
-      x: gridUnits(1),
-      y: gridUnits(1),
-      width: gridUnits(2),
-      depth: gridUnits(2),
-    });
-    expect(expectOk(binsCollideResult(binA, binB, layers))).toBe(true);
-  });
-
-  it('returns Ok(false) for bins on different layers with no vertical overlap', () => {
-    const binA = createTestBin({ id: binId('1'), width: gridUnits(2), depth: gridUnits(2) });
-    const binB = createTestBin({
-      id: binId('2'),
-      layerId: LAYER_2,
-      width: gridUnits(2),
-      depth: gridUnits(2),
-    });
-    expect(expectOk(binsCollideResult(binA, binB, layers))).toBe(false);
-  });
-
-  it('returns Ok(false) for staging bins', () => {
-    const binA = createTestBin({
-      id: binId('1'),
-      layerId: STAGING_ID,
-      width: gridUnits(2),
-      depth: gridUnits(2),
-    });
-    const binB = createTestBin({ id: binId('2'), width: gridUnits(2), depth: gridUnits(2) });
-    expect(expectOk(binsCollideResult(binA, binB, layers))).toBe(false);
-  });
-
-  it('returns Ok(false) for non-overlapping footprints', () => {
-    const binA = createTestBin({ id: binId('1'), width: gridUnits(2), depth: gridUnits(2) });
-    const binB = createTestBin({
-      id: binId('2'),
-      x: gridUnits(5),
-      y: gridUnits(5),
-      width: gridUnits(2),
-      depth: gridUnits(2),
-    });
-    expect(expectOk(binsCollideResult(binA, binB, layers))).toBe(false);
-  });
-
-  it('returns Err when binA has invalid layer', () => {
-    const binA = createTestBin({
-      id: binId('1'),
-      layerId: layerId('nonexistent'),
-      width: gridUnits(2),
-      depth: gridUnits(2),
-    });
-    const binB = createTestBin({ id: binId('2'), width: gridUnits(2), depth: gridUnits(2) });
-    expect(expectErr(binsCollideResult(binA, binB, layers)).code).toBe('VALIDATION_INVALID_LAYER');
-  });
-
-  it('returns Err when binB has invalid layer', () => {
-    const binA = createTestBin({ id: binId('1'), width: gridUnits(2), depth: gridUnits(2) });
-    const binB = createTestBin({
-      id: binId('2'),
-      layerId: layerId('nonexistent'),
-      width: gridUnits(2),
-      depth: gridUnits(2),
-    });
-    expect(expectErr(binsCollideResult(binA, binB, layers)).code).toBe('VALIDATION_INVALID_LAYER');
-  });
-});
-
-describe('linked-design excess rise', () => {
-  afterEach(() => {
-    registerLinkedExcessResolver(null);
-  });
-
-  const linkedBin = (height: number) =>
-    createTestBin({
-      id: binId('1'),
-      width: gridUnits(2),
-      depth: gridUnits(2),
-      height: heightUnits(height),
-      linkedDesignId: designId('lidded'),
-    });
-
-  it('charges the resolved excess into zEnd when it beats clearance', () => {
-    registerLinkedExcessResolver(() => 2);
-    const rect = expectOk(getBin3DRectResult(linkedBin(3), layers));
-    expect(rect.zEnd).toBe(5);
-  });
-
-  it('keeps the larger of clearance and excess', () => {
-    registerLinkedExcessResolver(() => 1);
-    const bin = { ...linkedBin(3), clearanceHeight: heightUnits(4) };
-    expect(expectOk(getBin3DRectResult(bin, layers)).zEnd).toBe(7);
-  });
-
-  it('creates a blocked zone in the layer above for a protruding linked design', () => {
-    registerLinkedExcessResolver((bin) => (bin.linkedDesignId === 'lidded' ? 2 : 0));
-    const zones = getBlockedZones(LAYER_2, [linkedBin(3)], layers);
-    expect(zones).toHaveLength(1);
-    expect(zones[0]).toMatchObject({ sourceBinId: '1', sourceLayerId: LAYER_1 });
-  });
-
-  it('leaves zero-excess linked bins and unlinked bins unblocked', () => {
-    registerLinkedExcessResolver(() => 0);
-    const plain = createTestBin({ id: binId('2'), x: gridUnits(4) });
-    expect(getBlockedZones(LAYER_2, [linkedBin(3), plain], layers)).toEqual([]);
-  });
-
-  it('ignores the resolver once unregistered', () => {
-    registerLinkedExcessResolver(() => 2);
-    registerLinkedExcessResolver(null);
-    expect(expectOk(getBin3DRectResult(linkedBin(3), layers)).zEnd).toBe(3);
-  });
-
-  it('treats a non-finite or negative resolver value as zero excess', () => {
-    registerLinkedExcessResolver(() => Number.NaN);
-    expect(expectOk(getBin3DRectResult(linkedBin(3), layers)).zEnd).toBe(3);
-    registerLinkedExcessResolver(() => Infinity);
-    expect(expectOk(getBin3DRectResult(linkedBin(3), layers)).zEnd).toBe(3);
-    registerLinkedExcessResolver(() => -2);
-    expect(expectOk(getBin3DRectResult(linkedBin(3), layers)).zEnd).toBe(3);
-  });
-
-  it('recomputes cached blocked zones when the rise version changes', () => {
-    let excess = 0;
-    let version = 0;
-    registerLinkedExcessResolver(
-      () => excess,
-      () => version
-    );
-    const bins = [linkedBin(3)];
-    expect(getBlockedZones(LAYER_2, bins, layers)).toEqual([]);
-    excess = 2;
-    version = 1;
-    expect(getBlockedZones(LAYER_2, bins, layers)).toHaveLength(1);
-  });
-
-  it('keeps serving the cache while the version is unchanged', () => {
-    let calls = 0;
-    registerLinkedExcessResolver(() => {
-      calls += 1;
-      return 2;
-    });
-    const bins = [linkedBin(3)];
-    const first = getBlockedZones(LAYER_2, bins, layers);
-    expect(getBlockedZones(LAYER_2, bins, layers)).toBe(first);
-    expect(calls).toBe(1);
-  });
-});
-
-describe('getBlockedZones', () => {
-  it('returns empty array when no protrusions', () => {
-    const bins = [createTestBin({ id: binId('1'), width: gridUnits(2), depth: gridUnits(2) })];
-    expect(getBlockedZones(LAYER_2, bins, layers)).toEqual([]);
-  });
-
-  it('returns blocked zone for protruding bin', () => {
-    const bins = [
-      // protrudes 3u into layer2
-      createTestBin({
-        id: binId('1'),
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(6),
-      }),
-    ];
-    const zones = getBlockedZones(LAYER_2, bins, layers);
-    expect(zones).toHaveLength(1);
-    expect(zones[0]).toMatchObject({ x: 0, y: 0, width: 2, depth: 2, sourceBinId: '1' });
-  });
-
-  it('returns empty array for empty targetLayerId', () => {
-    const bins = [
-      createTestBin({
-        id: binId('1'),
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(6),
-      }),
-    ];
-    expect(getBlockedZones(layerId(''), bins, layers)).toEqual([]);
-  });
-
-  it('returns empty array for invalid targetLayerId', () => {
-    const bins = [
-      createTestBin({
-        id: binId('1'),
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(6),
-      }),
-    ];
-    expect(getBlockedZones(layerId('nonexistent'), bins, layers)).toEqual([]);
-  });
-
-  it('ignores staging bins', () => {
-    const bins = [
-      createTestBin({
-        id: binId('1'),
-        layerId: STAGING_ID,
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(20),
-      }),
-    ];
-    expect(getBlockedZones(LAYER_2, bins, layers)).toEqual([]);
-  });
-
-  it('ignores bins on same or higher layer', () => {
-    const bins = [
-      createTestBin({
-        id: binId('1'),
-        layerId: LAYER_2,
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(6),
-      }),
-      createTestBin({
-        id: binId('2'),
-        layerId: LAYER_3,
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(6),
-      }),
-    ];
-    // Checking layer2 - bins on layer2 or layer3 should not create blocked zones
-    expect(getBlockedZones(LAYER_2, bins, layers)).toEqual([]);
   });
 });
 
@@ -408,180 +152,5 @@ describe('isInBlockedZone', () => {
 
   it('returns null for empty zones array', () => {
     expect(isInBlockedZone(0, 0, [])).toBeNull();
-  });
-});
-
-describe('checkLayerReorderCollisions', () => {
-  it('returns empty array when no collisions', () => {
-    const bins = [
-      createTestBin({ id: binId('1'), width: gridUnits(2), depth: gridUnits(2) }),
-      createTestBin({
-        id: binId('2'),
-        layerId: LAYER_2,
-        width: gridUnits(2),
-        depth: gridUnits(2),
-      }),
-    ];
-    // Swapping layers - bins still fit because they don't overlap vertically
-    const newLayers: Layer[] = [
-      { id: LAYER_2, name: 'Layer 2', height: heightUnits(6) },
-      { id: LAYER_1, name: 'Layer 1', height: heightUnits(3) },
-      { id: LAYER_3, name: 'Layer 3', height: heightUnits(3) },
-    ];
-    expect(checkLayerReorderCollisions(bins, layers, newLayers)).toEqual([]);
-  });
-
-  it('detects collisions when bins overlap after reorder', () => {
-    const bins = [
-      createTestBin({
-        id: binId('1'),
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(6),
-      }),
-      createTestBin({
-        id: binId('2'),
-        layerId: LAYER_2,
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(6),
-      }),
-    ];
-    // With same positions and tall heights, they will collide
-    const result = checkLayerReorderCollisions(bins, layers, layers);
-    expect(result.length).toBeGreaterThan(0);
-    expect(result[0].binA.id).toBe('1');
-    expect(result[0].binB.id).toBe('2');
-  });
-
-  it('ignores staging bins', () => {
-    const bins = [
-      createTestBin({
-        id: binId('1'),
-        layerId: STAGING_ID,
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(6),
-      }),
-      createTestBin({
-        id: binId('2'),
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(6),
-      }),
-    ];
-    expect(checkLayerReorderCollisions(bins, layers, layers)).toEqual([]);
-  });
-
-  it('returns empty when bins have no footprint overlap', () => {
-    const bins = [
-      createTestBin({
-        id: binId('1'),
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(6),
-      }),
-      createTestBin({
-        id: binId('2'),
-        x: gridUnits(5),
-        y: gridUnits(5),
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(6),
-      }),
-    ];
-    expect(checkLayerReorderCollisions(bins, layers, layers)).toEqual([]);
-  });
-});
-
-describe('clearanceHeight', () => {
-  it('causes collision when clearance extends into upper layer bin', () => {
-    // Bin on layer1 with height 3 (fits exactly) but clearance 3 (extends into layer2)
-    const binA = createTestBin({
-      id: binId('1'),
-      width: gridUnits(2),
-      depth: gridUnits(2),
-      clearanceHeight: heightUnits(3),
-    });
-    // Bin on layer2 at same footprint
-    const binB = createTestBin({
-      id: binId('2'),
-      layerId: LAYER_2,
-      width: gridUnits(2),
-      depth: gridUnits(2),
-    });
-    // Layer2 starts at z=3, binA extends to z=3+3=6 (height + clearance), binB is at z=3-6
-    // They should collide because clearance from binA extends into binB's space
-    const result = binsCollideResult(binA, binB, layers);
-    expect(isOk(result) && result.value).toBe(true);
-  });
-
-  it('does not cause collision when clearance does not reach upper layer', () => {
-    // Bin on layer1 with height 2 and clearance 1 (total 3, exactly at layer boundary)
-    const binA = createTestBin({
-      id: binId('1'),
-      width: gridUnits(2),
-      depth: gridUnits(2),
-      height: heightUnits(2),
-      clearanceHeight: heightUnits(1),
-    });
-    // Bin on layer2 at same footprint
-    const binB = createTestBin({
-      id: binId('2'),
-      layerId: LAYER_2,
-      width: gridUnits(2),
-      depth: gridUnits(2),
-    });
-    // binA: z=0-3 (height 2 + clearance 1), binB: z=3-6
-    // They touch but don't overlap (exclusive boundary)
-    const result = binsCollideResult(binA, binB, layers);
-    expect(isOk(result) && result.value).toBe(false);
-  });
-
-  it('creates blocked zone when clearance extends into upper layer', () => {
-    // Bin on layer1 with height 2 and clearance 2 (extends 1 unit into layer2)
-    const bins = [
-      createTestBin({
-        id: binId('1'),
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(2),
-        clearanceHeight: heightUnits(2),
-      }),
-    ];
-    // Layer2 starts at z=3, bin extends to z=4 (height 2 + clearance 2)
-    const zones = getBlockedZones(LAYER_2, bins, layers);
-    expect(zones).toHaveLength(1);
-    expect(zones[0]).toMatchObject({ x: 0, y: 0, width: 2, depth: 2, sourceBinId: '1' });
-  });
-
-  it('does not create blocked zone when clearance stays within layer', () => {
-    // Bin on layer1 with height 2 and clearance 1 (total 3, exactly at layer boundary)
-    const bins = [
-      createTestBin({
-        id: binId('1'),
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(2),
-        clearanceHeight: heightUnits(1),
-      }),
-    ];
-    // Layer2 starts at z=3, bin extends to z=3 exactly - no protrusion
-    const zones = getBlockedZones(LAYER_2, bins, layers);
-    expect(zones).toHaveLength(0);
-  });
-
-  it('defaults to 0 clearance when not specified', () => {
-    // Bin without clearanceHeight should behave same as clearanceHeight: 0
-    const binA = createTestBin({ id: binId('1'), width: gridUnits(2), depth: gridUnits(2) });
-    const binB = createTestBin({
-      id: binId('2'),
-      layerId: LAYER_2,
-      width: gridUnits(2),
-      depth: gridUnits(2),
-    });
-    // Without clearance, layer1 bin (z=0-3) doesn't overlap with layer2 bin (z=3-6)
-    const result = binsCollideResult(binA, binB, layers);
-    expect(isOk(result) && result.value).toBe(false);
   });
 });

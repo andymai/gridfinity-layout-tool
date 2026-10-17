@@ -201,9 +201,7 @@ export function useSelectionActions() {
             y: bin.y,
             width: bin.width,
             depth: bin.depth,
-            // Must match the height the write below actually sends, or a locked
-            // bin is judged against a height it will never take.
-            height: isBinLocked(bin) ? bin.height : targetLayer.height,
+            height: bin.height,
             clearanceHeight: bin.clearanceHeight,
             linkedDesignId: bin.linkedDesignId,
           },
@@ -235,17 +233,7 @@ export function useSelectionActions() {
       let moved = 0;
       batch(() => {
         for (const bin of movable) {
-          // A locked bin keeps its own height, exactly as the single-bin
-          // inspector already does. Sending the layer's default height with it
-          // would make `bin.update` reject the whole write, so the bin would
-          // not move at all.
-          const result = updateBin(
-            bin.id,
-            isBinLocked(bin)
-              ? { layerId: targetLayerId }
-              : { layerId: targetLayerId, height: targetLayer.height }
-          );
-          if (isOk(result)) moved += 1;
+          if (isOk(updateBin(bin.id, { layerId: targetLayerId }))) moved += 1;
         }
       });
 

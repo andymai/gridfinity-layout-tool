@@ -70,7 +70,7 @@ behaviour and `InlineEditText` for the styled preset over it, both from
 
 | File                       | Purpose                                                                                                                                                                                                                                                                                                         |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `collision.ts`             | 3D spatial collision: `binsCollideResult()`, `getBlockedZones()`, `getDisplayLayers()`                                                                                                                                                                                                                          |
+| `restingStack.ts`          | Where each bin rests, stack limits: `resolveRestingStack()`, `getBlockedZones()`                                                                                                                                                                                                                                |
 | `validation.ts`            | Type guards (`isValidBin`), `canPlaceBin()`, `validateImport()`                                                                                                                                                                                                                                                 |
 | `bins.ts`                  | Bin filtering: `getGridBins()`, `getStagingBins()`, `getLayerBins()`, `splitBinsByLocation()`                                                                                                                                                                                                                   |
 | `fill.ts`                  | Auto-fill algorithms: `fillAllWithSize()`, `fillGaps()`                                                                                                                                                                                                                                                         |
@@ -102,7 +102,7 @@ behaviour and `InlineEditText` for the styled preset over it, both from
 
 1. **No domain coupling** — shared components must not import from `features/`; use `types/` and `constants/` re-exports for bin-designer types
 2. **PostHog import path** — import directly from `@/shared/analytics/posthog`, not from the barrel `index.ts` (naming collisions)
-3. **Collision returns Result** — `binsCollideResult()` and friends return `Result<T, E>`, not booleans
+3. **Resting stack is cached by reference** — `getRestingStack()` keys on the bins and layers arrays; only appending in place is safe
 4. **getDisplayLayers reverses** — UI display order is the reverse of array order; always use this for rendering
 5. **useAutoSave debounce** — 1000ms debounce + 2000ms idle callback; saves skip if no changes detected
 6. **MutationsContext fallback** — `useMutations()` returns store mutations directly when no provider is present (safe default)

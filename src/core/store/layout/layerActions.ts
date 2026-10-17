@@ -11,7 +11,7 @@ import {
 } from '@/core/result';
 import { generateLayerId, CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/math';
-import { checkLayerReorderCollisions } from '@/shared/utils/collision';
+import { getRestingStack, newViolations, resolveRestingStack } from '@/shared/utils/restingStack';
 import { useSettingsStore } from '../settings';
 import { requireLayer } from './helpers';
 import type { SetLocal, GetState } from './types';
@@ -24,19 +24,16 @@ export function createLayerActions(setLocal: SetLocal, get: GetState) {
         return err(layoutLayerLimit(layout.layers.length, CONSTRAINTS.LAYERS_MAX));
       }
 
-      const totalHeight = layout.layers.reduce((sum, l) => sum + l.height, 0);
-      const remaining = layout.drawer.height - totalHeight;
-      if (remaining < CONSTRAINTS.MIN_LAYER_HEIGHT) {
-        return err(layoutInvalidOperation('addLayer', 'No remaining height in drawer'));
-      }
-
       const defaultLayerHeight = useSettingsStore.getState().settings.defaultLayerHeight;
 
       const id = generateLayerId();
       const newLayer: Layer = {
         id,
         name: `Layer ${layout.layers.length + 1}`,
-        height: Math.min(remaining, defaultLayerHeight) as HeightUnits,
+        height: Math.max(
+          CONSTRAINTS.MIN_LAYER_HEIGHT,
+          Math.min(layout.drawer.height, defaultLayerHeight)
+        ) as HeightUnits,
       };
 
       setLocal((state) => {
@@ -55,14 +52,10 @@ export function createLayerActions(setLocal: SetLocal, get: GetState) {
         const l = state.layout.layers.find((l) => l.id === id);
         if (l) {
           if (updates.height !== undefined) {
-            const othersHeight = state.layout.layers
-              .filter((layer) => layer.id !== id)
-              .reduce((sum, layer) => sum + layer.height, 0);
-            const maxHeight = state.layout.drawer.height - othersHeight;
             updates.height = clamp(
               updates.height,
               CONSTRAINTS.MIN_LAYER_HEIGHT,
-              maxHeight
+              Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, state.layout.drawer.height)
             ) as HeightUnits;
           }
           const { id: _stripId, ...safeUpdates } = updates;
@@ -107,12 +100,18 @@ export function createLayerActions(setLocal: SetLocal, get: GetState) {
       const [moved] = newLayers.splice(fromIndex, 1);
       newLayers.splice(toIndex, 0, moved);
 
-      const collisions = checkLayerReorderCollisions(layout.bins, layout.layers, newLayers);
-      if (collisions.length > 0) {
+      const violations = newViolations(
+        getRestingStack(layout.bins, layout.layers),
+        resolveRestingStack(layout.bins, newLayers),
+        layout.drawer.height
+      );
+      if (violations.length > 0) {
         return err(
           layoutInvalidOperation(
             'reorderLayers',
-            `Reordering would cause ${collisions.length} bin collision${collisions.length > 1 ? 's' : ''}`
+            violations[0].kind === 'exceeds_height'
+              ? 'Reordering would stack bins past the drawer top'
+              : "Reordering would rest a bin inside another bin's clearance"
           )
         );
       }

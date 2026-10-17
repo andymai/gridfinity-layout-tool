@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterAll } from 'vitest';
-import { getBin3DRectResult, registerLinkedExcessResolver } from '@/shared/utils/collision';
+import { registerLinkedExcessResolver } from '@/shared/utils/collision';
+import { getRestingStack } from '@/shared/utils/restingStack';
 import { LIP_PROTRUSION_MM } from '@/shared/utils/heightUnits';
 import { createTestBin } from '@/test/testUtils';
 import type { Layer } from '@/core/types';
@@ -29,9 +30,14 @@ const linkedBin = createTestBin({
   height: heightUnits(4),
   linkedDesignId: designId('lidded'),
 });
+// One array throughout, so each read also proves the registry tick reaches the
+// resting stack's cache key.
+const bins = [linkedBin];
+const stackTop = (): number | undefined =>
+  getRestingStack(bins, layers).bins.get(linkedBin.id)?.stackTop;
 
 describe('LinkedRiseRegistration', () => {
-  it('wires registry rise data into collision on import', async () => {
+  it('wires registry rise data into the resting stack on import', async () => {
     registry.push({
       id: designId('lidded'),
       name: 'Lidded',
@@ -43,8 +49,7 @@ describe('LinkedRiseRegistration', () => {
     });
     await import('@/shell/registrations/LinkedRiseRegistration');
 
-    const rect = getBin3DRectResult(linkedBin, layers);
-    expect(rect.ok && rect.value.zEnd).toBeCloseTo(6, 6);
+    expect(stackTop()).toBeCloseTo(6, 6);
   });
 
   it('re-reads the registry after a change notification', async () => {
@@ -52,8 +57,7 @@ describe('LinkedRiseRegistration', () => {
     registry.length = 0;
     subscribers.forEach((cb) => cb());
 
-    const rect = getBin3DRectResult(linkedBin, layers);
-    expect(rect.ok && rect.value.zEnd).toBe(4);
+    expect(stackTop()).toBe(4);
   });
 
   it('re-reads the registry after a cross-tab storage event', async () => {
@@ -69,8 +73,7 @@ describe('LinkedRiseRegistration', () => {
     });
     window.dispatchEvent(new StorageEvent('storage', { key: 'gridfinity-custom-bins-v1' }));
 
-    const rect = getBin3DRectResult(linkedBin, layers);
-    expect(rect.ok && rect.value.zEnd).toBeCloseTo(6, 6);
+    expect(stackTop()).toBeCloseTo(6, 6);
   });
 
   it('renders nothing', async () => {

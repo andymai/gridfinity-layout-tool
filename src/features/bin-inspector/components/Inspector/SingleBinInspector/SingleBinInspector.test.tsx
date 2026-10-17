@@ -63,13 +63,12 @@ describe('SingleBinInspector', () => {
     layout: mockLayout,
     categories: mockLayout.categories,
     constraints: {
-      minHeight: 3,
+      minHeight: 2,
       maxHeight: 12,
       maxClearance: 5,
       maxGridUnits: { width: 6, depth: 6 },
       needsSplit: false,
-      heightRange: '3-12u',
-      minHeightReason: 'layer_height',
+      heightRange: '2-12u',
       maxHeightReason: 'remaining_space',
     },
     updateField: vi.fn(),
@@ -145,8 +144,8 @@ describe('SingleBinInspector', () => {
       const inspector = createMockInspector();
       const { container } = render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      // min 3u * 7mm = 21mm, max 12u * 7mm = 84mm on one full-width line.
-      const limits = screen.getByText(/Min 21mm: layer height · Max 84mm: remaining space/);
+      // min 2u * 7mm = 14mm, max 12u * 7mm = 84mm on one full-width line.
+      const limits = screen.getByText(/Min 14mm · Max 84mm: remaining space/);
       expect(limits).toBeInTheDocument();
 
       // Keeping these out of the grid is what stops the Clearance cell from
@@ -154,6 +153,31 @@ describe('SingleBinInspector', () => {
       const grid = container.querySelector('.grid-cols-2');
       expect(grid).toBeInTheDocument();
       expect(grid).not.toContainElement(limits);
+    });
+
+    it('says where a stacked bin rests and when part of its base is unsupported', () => {
+      const upper = { ...mockBin, layerId: layerId('layer2') };
+      const support = createTestBin({
+        id: binId('support'),
+        width: gridUnits(1),
+        depth: gridUnits(3),
+        height: heightUnits(3),
+      });
+      const layout = { ...mockLayout, bins: [support, upper] };
+      render(
+        <SingleBinInspector
+          inspector={createMockInspector({ bin: upper, selectedBins: [upper], layout })}
+          variant="desktop"
+        />
+      );
+
+      expect(screen.getByText('Rests 3u above the plate')).toBeInTheDocument();
+      expect(screen.getByText('Part of its base is unsupported')).toBeInTheDocument();
+    });
+
+    it('says nothing about resting for a bin on the plate', () => {
+      render(<SingleBinInspector inspector={createMockInspector()} variant="desktop" />);
+      expect(screen.queryByText(/above the plate/)).not.toBeInTheDocument();
     });
 
     it('renders clearance control in mm when maxClearance > 0', () => {
@@ -168,13 +192,12 @@ describe('SingleBinInspector', () => {
     it('hides clearance control when maxClearance is 0', () => {
       const inspector = createMockInspector({
         constraints: {
-          minHeight: 3,
+          minHeight: 2,
           maxHeight: 12,
           maxClearance: 0,
           maxGridUnits: { width: 6, depth: 6 },
           needsSplit: false,
-          heightRange: '3-12u',
-          minHeightReason: 'layer_height' as const,
+          heightRange: '2-12u',
           maxHeightReason: 'remaining_space' as const,
         },
       });
@@ -310,7 +333,7 @@ describe('SingleBinInspector', () => {
 
     it('disables height decrease at min', () => {
       const inspector = createMockInspector({
-        bin: { ...mockBin, height: heightUnits(3) },
+        bin: { ...mockBin, height: heightUnits(2) },
       });
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 

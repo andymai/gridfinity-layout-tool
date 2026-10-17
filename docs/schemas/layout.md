@@ -50,7 +50,7 @@ designs".
 ## Drawer
 
 The drawer envelope, in grid units. `height` is in height **units**, not mm,
-and must be at least the sum of the layer heights.
+and every stack of bins must fit under it.
 
 <!-- schema:Drawer -->
 
@@ -62,7 +62,7 @@ and must be at least the sum of the layer heights.
 | ----------------- | --------------------------------------- | -------- | ------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `width`           | `number`                                | yes      |         | >= 0.5, <= 50, step 0.5 | Drawer width in grid units. 0.5 increments allowed (half-bin mode).                                                                                                                                                                                                         |
 | `depth`           | `number`                                | yes      |         | >= 0.5, <= 50, step 0.5 | Drawer depth in grid units. 0.5 increments allowed.                                                                                                                                                                                                                         |
-| `height`          | `number`                                | yes      |         | >= 1                    | Drawer height in HEIGHT units, not mm. Must be at least the sum of layer heights.                                                                                                                                                                                           |
+| `height`          | `number`                                | yes      |         | >= 1                    | Drawer height in HEIGHT units, not mm. Every stack of bins must fit under it.                                                                                                                                                                                               |
 | `fractionalEdgeX` | `"start"` \| `"end"`                    |          | `"end"` |                         | Which side carries the half-unit column when width is fractional. 'start' = left, 'end' = right.                                                                                                                                                                            |
 | `fractionalEdgeY` | `"start"` \| `"end"`                    |          | `"end"` |                         | Which side carries the half-unit row when depth is fractional. 'start' = front/bottom, 'end' = back/top.                                                                                                                                                                    |
 | `outline`         | [`DrawerOutline`](#draweroutline)       |          |         |                         |                                                                                                                                                                                                                                                                             |
@@ -102,11 +102,11 @@ after you commit, and so the baseplate panel can pre-fill padding from it.
 
 <!-- generated:start -->
 
-| Field    | Type     | Required | Default | Constraint   | Notes                                                                             |
-| -------- | -------- | -------- | ------- | ------------ | --------------------------------------------------------------------------------- |
-| `id`     | `string` | yes      |         | length >= 1  | Unique id, referenced by Bin.layerId. Regenerated on import.                      |
-| `name`   | `string` | yes      |         | length <= 24 | Display name.                                                                     |
-| `height` | `number` | yes      |         | >= 2         | Layer height in height units. 1u is socket base only, so 2 is the minimum usable. |
+| Field    | Type     | Required | Default | Constraint   | Notes                                                                                                             |
+| -------- | -------- | -------- | ------- | ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `id`     | `string` | yes      |         | length >= 1  | Unique id, referenced by Bin.layerId. Regenerated on import.                                                      |
+| `name`   | `string` | yes      |         | length <= 24 | Display name.                                                                                                     |
+| `height` | `number` | yes      |         | >= 2         | Default height, in height units, for new bins drawn on this layer; it positions nothing. 2 is the minimum usable. |
 
 <!-- generated:end -->
 
@@ -151,7 +151,7 @@ instead of placing it on the grid.
 | `y`                | `number`                                         | yes      |         | >= 0, step 0.5       | Bottom edge in grid units, 0-based, measured from the BOTTOM.                                                                                                                              |
 | `width`            | `number`                                         | yes      |         | > 0, <= 50, step 0.5 | Width in grid units. 0.5 increments allowed.                                                                                                                                               |
 | `depth`            | `number`                                         | yes      |         | > 0, <= 50, step 0.5 | Depth in grid units. 0.5 increments allowed.                                                                                                                                               |
-| `height`           | `number`                                         | yes      |         | >= 2                 | Height in height units. Must be at least the owning layer's height and must fit the space to the drawer top. The schema cannot check that; the importer does.                              |
+| `height`           | `number`                                         | yes      |         | >= 2                 | Height in height units. The bin rests on the tallest lower-layer bin under it, or the plate, and its stack should fit under the drawer top.                                                |
 | `clearanceHeight`  | `number`                                         |          |         | >= 0                 | Extra blocked space above the bin in height units, for contents taller than the bin.                                                                                                       |
 | `category`         | `string`                                         |          |         | length >= 1          | Category id. The exporter always writes one, and it MUST match an id in the categories array; a dangling reference fails import. Omitted is tolerated and backfills to an empty id.        |
 | `label`            | `string`                                         |          |         | length <= 24         | Short bin label. The exporter always writes one; omitted backfills to an empty string.                                                                                                     |
@@ -519,8 +519,8 @@ involved, not the one you just wrote.
 }
 ```
 
-`label` and `notes` are required but may be empty strings. `height` must be at
-least the layer's height and must not exceed the space to the drawer top.
+`label` and `notes` are required but may be empty strings. `height` must keep
+the bin's stack under the drawer top.
 
 ### Stash a bin off-grid
 

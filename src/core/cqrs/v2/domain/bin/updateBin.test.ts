@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { produce } from 'immer';
 import { isOk } from '@/core/result';
 import { STAGING_ID } from '@/core/constants';
-import { binId, designId, gridUnits } from '@/core/types';
+import { binId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
 import { updateBin } from './updateBin';
 import { makeLayout, makeBin } from './_testHelpers';
 
@@ -42,6 +42,59 @@ describe('v2 bin.update', () => {
       { aggregate: layout }
     );
     expect(result.ok).toBe(false);
+  });
+
+  describe('restacking', () => {
+    const twoLayers = {
+      layers: [
+        { id: layerId('layer_1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: layerId('layer_2'), name: 'Layer 2', height: heightUnits(3) },
+      ],
+    };
+
+    it('refuses a height that lifts the bin on top past the drawer', () => {
+      const layout = makeLayout({
+        ...twoLayers,
+        bins: [
+          makeBin('low', { height: heightUnits(3) }),
+          makeBin('top', { layerId: layerId('layer_2'), height: heightUnits(4) }),
+        ],
+      });
+      // drawer.height = 7: 3 + 4 fits, 4 + 4 does not.
+      expect(
+        updateBin.handle({ id: 'low', updates: { height: 4 } }, { aggregate: layout }).ok
+      ).toBe(false);
+      expect(
+        updateBin.handle({ id: 'low', updates: { height: 2 } }, { aggregate: layout }).ok
+      ).toBe(true);
+    });
+
+    it('refuses clearance that the bin on top would rest on', () => {
+      const layout = makeLayout({
+        ...twoLayers,
+        bins: [
+          makeBin('low', { height: heightUnits(3) }),
+          makeBin('top', { layerId: layerId('layer_2'), height: heightUnits(2) }),
+        ],
+      });
+      const result = updateBin.handle(
+        { id: 'low', updates: { clearanceHeight: 1 } },
+        { aggregate: layout }
+      );
+      expect(result.ok).toBe(false);
+    });
+
+    it('never refuses linking or unlinking a design', () => {
+      const layout = makeLayout({
+        drawer: { width: gridUnits(6), depth: gridUnits(4), height: heightUnits(2) },
+        bins: [makeBin('over', { height: heightUnits(5), linkedDesignId: designId('d') })],
+      });
+      const result = updateBin.handle(
+        { id: 'over', updates: { linkedDesignId: null } },
+        { aggregate: layout }
+      );
+      expect(isOk(result)).toBe(true);
+    });
   });
 
   it('skips placement validation for staging bins', () => {

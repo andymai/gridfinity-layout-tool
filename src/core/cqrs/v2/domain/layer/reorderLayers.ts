@@ -1,6 +1,6 @@
 /**
- * Reorder layers. Validates indices and runs the collision check against
- * the layout snapshot before emitting; apply() does the splice on the
+ * Reorder layers. Validates indices and checks the restacked layout against
+ * the drawer and clearance limits before emitting; apply() does the splice on the
  * draft. Self-move (`fromIndex === toIndex`) succeeds and emits but
  * apply() short-circuits — the event in the audit log records that the
  * user attempted a reorder.
@@ -9,7 +9,7 @@
 import { z } from 'zod';
 import type { Result, LayoutError } from '@/core/result';
 import { ok, err, layoutInvalidOperation } from '@/core/result';
-import { checkLayerReorderCollisions } from '@/shared/utils/collision';
+import { getRestingStack, newViolations, resolveRestingStack } from '@/shared/utils/restingStack';
 import { defineCommand } from '../../defineCommand';
 
 const payloadSchema = z.object({
@@ -49,12 +49,18 @@ export const reorderLayers = defineCommand({
     const [moved] = newLayers.splice(fromIndex, 1);
     newLayers.splice(toIndex, 0, moved);
 
-    const collisions = checkLayerReorderCollisions(layout.bins, layout.layers, newLayers);
-    if (collisions.length > 0) {
+    const violations = newViolations(
+      getRestingStack(layout.bins, layout.layers),
+      resolveRestingStack(layout.bins, newLayers),
+      layout.drawer.height
+    );
+    if (violations.length > 0) {
       return err(
         layoutInvalidOperation(
           'reorderLayers',
-          `Reordering would cause ${String(collisions.length)} bin collision${collisions.length > 1 ? 's' : ''}`
+          violations[0].kind === 'exceeds_height'
+            ? 'Reordering would stack bins past the drawer top'
+            : "Reordering would rest a bin inside another bin's clearance"
         )
       );
     }

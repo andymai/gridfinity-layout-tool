@@ -31,13 +31,12 @@ describe('layerActions', () => {
       expect(isErr(result)).toBe(true);
     });
 
-    it('returns error when no remaining height in drawer', () => {
-      // Set drawer height equal to existing layer height
+    it('adds a layer even when the existing layer heights fill the drawer', () => {
       const layerHeight = useLayoutStore.getState().layout.layers[0].height;
       useLayoutStore.getState().updateDrawer({ height: layerHeight });
 
       const result = useLayoutStore.getState().addLayer();
-      expect(isErr(result)).toBe(true);
+      expect(isOk(result)).toBe(true);
     });
   });
 

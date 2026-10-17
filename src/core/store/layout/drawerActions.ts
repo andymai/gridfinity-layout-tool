@@ -3,6 +3,7 @@ import { effectiveGridUnitMmY } from '@/core/types';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/math';
 import { drawerSizeFloors, isOutlineFullRectangle } from '@/shared/utils/drawerOutline';
+import { drawerHeightFloor } from '@/shared/utils/restingStack';
 import { computeDisplacedBins } from '@/core/cqrs/v2/domain/drawer/displacement';
 import type { SetLocal } from './types';
 
@@ -28,8 +29,10 @@ export function createDrawerActions(setLocal: SetLocal) {
           drawer.depth = clamp(updates.depth, floors.depth, CONSTRAINTS.GRID_MAX) as GridUnits;
         }
         if (updates.height !== undefined) {
-          const totalLayerHeight = state.layout.layers.reduce((sum, l) => sum + l.height, 0);
-          drawer.height = Math.max(totalLayerHeight, updates.height) as HeightUnits;
+          drawer.height = Math.max(
+            updates.height,
+            drawerHeightFloor(state.layout.bins, state.layout.layers, drawer.height)
+          ) as HeightUnits;
         }
         if (updates.fractionalEdgeX !== undefined) {
           drawer.fractionalEdgeX = updates.fractionalEdgeX;

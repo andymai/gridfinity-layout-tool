@@ -101,5 +101,8 @@ export function getPlacementErrorMessage(
   if (reason === 'outside_drawer') {
     return t('grid.outsideDrawerShape');
   }
+  if (reason === 'exceeds_height') {
+    return t('grid.exceedsDrawerHeight');
+  }
   return t('grid.outOfBounds');
 }

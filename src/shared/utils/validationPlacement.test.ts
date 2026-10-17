@@ -3,7 +3,7 @@ import { canPlaceBin } from './validationPlacement';
 import { registerLinkedExcessResolver } from './collision';
 import { createTestLayout, createTestBin } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
-import type { HeightUnits, Layout, Rect } from '@/core/types';
+import type { Bin, HeightUnits, Layout, Rect } from '@/core/types';
 import { binId, designId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
 
 const LAYER_1 = layerId('layer1');
@@ -118,15 +118,153 @@ describe('canPlaceBin', () => {
     expect(result).toEqual({ valid: false, reason: 'invalid_layer' });
   });
 
-  it('returns exceeds_height when bin height exceeds remaining drawer capacity', () => {
-    const layout = makeTwoLayerLayout();
-    // layer2 starts at z = layer1.height = 3; drawer.height = 12; maxHeight = 9
-    const result = canPlaceBin(
-      placementRect({ x: 0, y: 0, width: 2, depth: 2, height: 10 }),
-      LAYER_2,
-      layout
-    );
-    expect(result).toEqual({ valid: false, reason: 'exceeds_height' });
+  describe('resting stack', () => {
+    const lower = (height: number, extra: Partial<Bin> = {}): Bin =>
+      createTestBin({
+        id: binId('lower'),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+        height: heightUnits(height),
+        ...extra,
+      });
+
+    it('rests an upper-layer bin with nothing below on the plate', () => {
+      const layout = makeTwoLayerLayout();
+      const result = canPlaceBin(
+        placementRect({ x: 0, y: 0, width: 2, depth: 2, height: 10 }),
+        LAYER_2,
+        layout
+      );
+      expect(result).toEqual({ valid: true });
+    });
+
+    it('lets a bin rest on a lower bin taller than its layer', () => {
+      const layout = makeTwoLayerLayout();
+      layout.bins = [lower(5)];
+      const result = canPlaceBin(
+        placementRect({ x: 1, y: 1, width: 2, depth: 2, height: 7 }),
+        LAYER_2,
+        layout
+      );
+      expect(result).toEqual({ valid: true });
+    });
+
+    it('returns exceeds_height when the stack under the bin leaves too little room', () => {
+      const layout = makeTwoLayerLayout();
+      layout.bins = [lower(5)];
+      const result = canPlaceBin(
+        placementRect({ x: 1, y: 1, width: 2, depth: 2, height: 8 }),
+        LAYER_2,
+        layout
+      );
+      expect(result).toEqual({ valid: false, reason: 'exceeds_height' });
+    });
+
+    it('returns exceeds_height for a bin taller than the drawer on its own', () => {
+      const layout = makeSingleLayerLayout();
+      const result = canPlaceBin(
+        placementRect({ x: 0, y: 0, width: 2, depth: 2, height: 13 }),
+        LAYER_1,
+        layout
+      );
+      expect(result).toEqual({ valid: false, reason: 'exceeds_height' });
+    });
+
+    it('refuses growing a lower bin when it lifts a stack past the drawer', () => {
+      const layout = makeTwoLayerLayout();
+      layout.bins = [
+        lower(3),
+        createTestBin({ id: binId('upper'), layerId: LAYER_2, height: heightUnits(8) }),
+      ];
+      const grow = canPlaceBin(
+        placementRect({ x: 0, y: 0, width: 3, depth: 3, height: 5 }),
+        LAYER_1,
+        layout,
+        binId('lower')
+      );
+      expect(grow).toMatchObject({
+        valid: false,
+        reason: 'exceeds_height',
+        blockingInfo: { binId: 'upper', layerName: 'Layer 2' },
+      });
+      const fits = canPlaceBin(
+        placementRect({ x: 0, y: 0, width: 3, depth: 3, height: 4 }),
+        LAYER_1,
+        layout,
+        binId('lower')
+      );
+      expect(fits).toEqual({ valid: true });
+    });
+
+    it('does not let an existing overflow block unrelated edits', () => {
+      const layout = makeTwoLayerLayout();
+      layout.drawer = { ...layout.drawer, height: heightUnits(6) };
+      layout.bins = [
+        lower(3),
+        createTestBin({ id: binId('upper'), layerId: LAYER_2, height: heightUnits(5) }),
+      ];
+      const elsewhere = canPlaceBin(
+        placementRect({ x: 6, y: 6, width: 1, depth: 1, height: 3 }),
+        LAYER_1,
+        layout
+      );
+      expect(elsewhere).toEqual({ valid: true });
+
+      const lowered = canPlaceBin(
+        placementRect({ x: 0, y: 0, width: 1, depth: 1, height: 4 }),
+        LAYER_2,
+        layout,
+        binId('upper')
+      );
+      expect(lowered).toEqual({ valid: true });
+
+      const raised = canPlaceBin(
+        placementRect({ x: 0, y: 0, width: 1, depth: 1, height: 6 }),
+        LAYER_2,
+        layout,
+        binId('upper')
+      );
+      expect(raised).toEqual({ valid: false, reason: 'exceeds_height' });
+    });
+
+    it('returns blocked_zone for a bin that would rest on reserved clearance', () => {
+      const layout = makeTwoLayerLayout();
+      layout.bins = [lower(3, { clearanceHeight: heightUnits(2) })];
+      const result = canPlaceBin(
+        placementRect({ x: 1, y: 1, width: 2, depth: 2, height: 3 }),
+        LAYER_2,
+        layout
+      );
+      expect(result).toMatchObject({
+        valid: false,
+        reason: 'blocked_zone',
+        blockingInfo: { binId: 'lower', layerId: 'layer1', layerName: 'Layer 1' },
+      });
+    });
+
+    it('carries a moved bin’s own clearance when the caller omits it', () => {
+      const layout = makeTwoLayerLayout();
+      layout.bins = [
+        lower(3, { clearanceHeight: heightUnits(2) }),
+        createTestBin({
+          id: binId('upper'),
+          layerId: LAYER_2,
+          x: gridUnits(5),
+          height: heightUnits(2),
+        }),
+      ];
+      const slideUnder = canPlaceBin(
+        placementRect({ x: 4, y: 0, width: 3, depth: 3, height: 3 }),
+        LAYER_1,
+        layout,
+        binId('lower')
+      );
+      expect(slideUnder).toMatchObject({
+        valid: false,
+        reason: 'blocked_zone',
+        blockingInfo: { binId: 'upper' },
+      });
+    });
   });
 
   describe('linked-design excess rise', () => {
@@ -134,10 +272,9 @@ describe('canPlaceBin', () => {
       registerLinkedExcessResolver(null);
     });
 
-    it('returns blocked_zone when a lower linked design rises past its bin height', () => {
+    it('stacks an upper bin on top of a lower design’s rise', () => {
       registerLinkedExcessResolver((bin) => (bin.linkedDesignId === 'lidded' ? 2 : 0));
       const layout = makeTwoLayerLayout();
-      // layer1 height = 3; bin height 3 + 2u design excess extends to z = 5 > layer2 start (3)
       layout.bins = [
         createTestBin({
           id: binId('lidded-bin'),
@@ -147,15 +284,21 @@ describe('canPlaceBin', () => {
           linkedDesignId: designId('lidded'),
         }),
       ];
-      const result = canPlaceBin(
-        placementRect({ x: 1, y: 1, width: 2, depth: 2, height: 3 }),
+      const fits = canPlaceBin(
+        placementRect({ x: 1, y: 1, width: 2, depth: 2, height: 7 }),
         LAYER_2,
         layout
       );
-      expect(result).toMatchObject({ valid: false, reason: 'blocked_zone' });
+      expect(fits).toEqual({ valid: true });
+      const tooTall = canPlaceBin(
+        placementRect({ x: 1, y: 1, width: 2, depth: 2, height: 8 }),
+        LAYER_2,
+        layout
+      );
+      expect(tooTall).toEqual({ valid: false, reason: 'exceeds_height' });
     });
 
-    it("counts the candidate's own excess against bins in the layer above", () => {
+    it("counts the candidate's own excess against the bins it lifts", () => {
       registerLinkedExcessResolver((bin) => (bin.linkedDesignId === 'lidded' ? 2 : 0));
       const layout = makeTwoLayerLayout();
       layout.bins = [
@@ -164,7 +307,7 @@ describe('canPlaceBin', () => {
           layerId: LAYER_2,
           width: gridUnits(2),
           depth: gridUnits(2),
-          height: heightUnits(3),
+          height: heightUnits(8),
         }),
       ];
       const result = canPlaceBin(
@@ -175,7 +318,7 @@ describe('canPlaceBin', () => {
         LAYER_1,
         layout
       );
-      expect(result).toMatchObject({ valid: false, reason: 'collision' });
+      expect(result).toMatchObject({ valid: false, reason: 'exceeds_height' });
 
       const withoutLink = canPlaceBin(
         placementRect({ x: 0, y: 0, width: 2, depth: 2, height: 3 }),
@@ -183,33 +326,6 @@ describe('canPlaceBin', () => {
         layout
       );
       expect(withoutLink).toEqual({ valid: true });
-    });
-  });
-
-  it('returns blocked_zone when a tall lower-layer bin protrudes into the target layer', () => {
-    const layout = makeTwoLayerLayout();
-    // layer1 height = 3; bin with height = 5 extends to z = 5 > layer2 start (3)
-    layout.bins = [
-      createTestBin({
-        id: binId('tall'),
-        x: gridUnits(0),
-        y: gridUnits(0),
-        width: gridUnits(3),
-        depth: gridUnits(3),
-        height: heightUnits(5),
-      }),
-    ];
-    const result = canPlaceBin(
-      placementRect({ x: 1, y: 1, width: 2, depth: 2, height: 3 }),
-      LAYER_2,
-      layout
-    );
-    expect(result).toMatchObject({ valid: false, reason: 'blocked_zone' });
-    if (result.valid) throw new Error('expected the placement to be rejected');
-    expect(result.blockingInfo).toMatchObject({
-      binId: 'tall',
-      layerId: 'layer1',
-      layerName: 'Layer 1',
     });
   });
 

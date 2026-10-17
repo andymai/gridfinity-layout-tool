@@ -500,12 +500,12 @@ const en: Record<string, string> = {
   'inspector.heightUnitsEquiv': '= {units}u',
   'inspector.nonStandardStackWarning': "Won't stack with standard bins",
   'inspector.printedAndStackHint': 'Prints {printed}mm · stacks +{pitch}mm each',
-  'inspector.minHeightHint': 'Min {min}mm: {reason}',
   'inspector.minHeightHintNoReason': 'Min {min}mm',
   'inspector.maxHeightHint': 'Max {max}mm: {reason}',
-  'inspector.heightReasonLayerHeight': 'layer height',
   'inspector.heightReasonDrawerHeight': 'drawer height',
   'inspector.heightReasonRemainingSpace': 'remaining space',
+  'inspector.restsAt': 'Rests {height}u above the plate',
+  'inspector.unevenSupport': 'Part of its base is unsupported',
   'inspector.customProperties': 'Custom Properties',
   'inspector.deleteAll': 'Delete All',
   'inspector.deselectAllBins': 'Deselect all bins',
@@ -565,10 +565,7 @@ const en: Record<string, string> = {
   'layers.fillGapsTitle': 'Fill {count} empty cells with 1×1 bins',
   'layers.fillTitle': 'Fill empty space with {width}×{depth} bins',
   'layers.fillWith': 'Fill with ',
-  'layers.maxHeightFull': 'Drawer height full ({current}/{max}u)',
   'layers.maxLayersReached': 'Maximum {max} layers reached',
-  'layers.cannotAddLayerTallBins':
-    'Cannot add layer: bins on {layerName} are {binHeight}u tall but layer is only {layerHeight}u. Adjusting would exceed drawer height. Try reducing bin heights or increasing drawer height.',
   'layers.clearLayerLabel': 'Clear layer',
   'layers.noBinsToClear': 'No bins to clear',
   'layers.noGaps': 'No gaps',
@@ -586,8 +583,10 @@ const en: Record<string, string> = {
   'layers.statsTotal': '{coverage}% filled · {count} bins total',
   'layers.segmentTooltip': '{name} — {coverage}% filled, {count} bins',
   'layers.deleteLayerAria': 'Delete {name} layer',
-  'layers.unusedSpace': '{height}u headroom',
   'layers.heightTotal': '{used}/{total}u',
+  'layers.binCount': '{count} bins',
+  'layers.tallestStack': 'Tallest stack',
+  'layers.stackOverDrawer': '{over}u taller than the drawer',
   'layers.switchToTall': 'Switch to tall',
   'layers.switchToWide': 'Switch to wide',
   'layers.tall': 'Tall',
@@ -1324,9 +1323,9 @@ const en: Record<string, string> = {
 
   // Blocked zones explanation
   'help.blockedZonesDescription':
-    'When a bin is taller than its layer height, it extends into layers above. These areas appear as striped cells and cannot have new bins placed on them.',
+    'Bins rest on whatever sits under them on lower layers, so a tall bin simply lifts the bins above it. Striped cells mark clearance another bin reserves for tall contents. Nothing can rest there.',
   'help.blockedZonesExample':
-    'A 5u tall bin on Layer 1 (3u) extends 2u into Layer 2. Those cells on Layer 2 are blocked because the physical bin occupies that space.',
+    'A 3u bin on Layer 1 with 2u of clearance stripes its cells on Layer 2. A bin placed there would press on the contents below.',
 
   // Bin clearance explanation
   'help.clearanceDescription':
@@ -1598,6 +1597,7 @@ const en: Record<string, string> = {
   'toast.expandToFitNoGridAlignment':
     'The space cannot be divided onto the grid — try adjusting the drawer padding',
   'toast.expandToFitLocked': 'Unlock the size-locked bins in the selection to expand them',
+  'toast.expandToFitLiftsStack': 'Expanding would push a bin stacked on top past the drawer top',
   'toast.binSizeLocked': "This bin's size is locked",
   'toast.matchHeightComplete': 'Set {count} bin(s) to height {height}u',
   'toast.moveToLayerComplete': 'Moved {count} bin(s) to {name}',
@@ -1634,6 +1634,10 @@ const en: Record<string, string> = {
   'grid.invalidLayer': 'Invalid layer',
   'grid.outOfBounds': 'Out of bounds',
   'grid.outsideDrawerShape': 'Outside the drawer shape',
+  'grid.exceedsDrawerHeight': 'Stack would be taller than the drawer',
+  'grid.restsAtBadge': 'on {height}u',
+  'grid.restsAtTitle': 'Rests {height}u above the plate',
+  'grid.unevenSupportTitle': 'Rests {height}u above the plate, part of its base unsupported',
   'grid.drawerOutlineAria': 'Drawer shape boundary',
   'grid.collapse': 'Collapse',
   'grid.dragToAddRemoveColumns': 'Drag to add/remove columns',
@@ -1677,6 +1681,8 @@ const en: Record<string, string> = {
   'grid.bin.ariaLabelLabeled': ', labeled {label}',
   'grid.bin.ariaLabelCategory': ', category {category}',
   'grid.bin.ariaLabelLocked': ', size locked',
+  'grid.bin.ariaLabelRestsAt': ', resting {height}u above the plate',
+  'grid.bin.ariaLabelUneven': ', part of its base unsupported',
   'grid.announce.movedTo': 'Moved to {label} at column {col}, row {row}',
   'grid.announce.binDimensions': '{width} by {depth} bin',
 
@@ -5639,7 +5645,7 @@ const en: Record<string, string> = {
 
   // Bin move blocked toasts (useBinInspector)
   'toast.binBlocked.collision': 'Another bin occupies this position',
-  'toast.binBlocked.clearance': 'Blocked by a taller bin below',
+  'toast.binBlocked.clearance': 'Would rest on clearance reserved above another bin',
   'toast.binBlocked.exceedsHeight': 'Bin would exceed drawer height',
   'toast.binBlocked.default': 'Cannot move bin here',
 

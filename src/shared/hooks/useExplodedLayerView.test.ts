@@ -36,7 +36,6 @@ const defaultBins = [
 ];
 
 const heightToGridScale = 7 / 42; // 0.1667
-const heightUnitMm = 7;
 
 describe('useExplodedLayerView', () => {
   it('returns null when not in exploded mode', () => {
@@ -46,7 +45,6 @@ describe('useExplodedLayerView', () => {
         layers: defaultLayers,
         categories: defaultCategories,
         heightToGridScale,
-        heightUnitMm,
         activeLayerId: layerId('layer0'),
         isExplodedView: false,
       })
@@ -62,7 +60,6 @@ describe('useExplodedLayerView', () => {
         layers: defaultLayers,
         categories: defaultCategories,
         heightToGridScale,
-        heightUnitMm,
         activeLayerId: layerId('layer0'),
         isExplodedView: true,
       })
@@ -81,7 +78,6 @@ describe('useExplodedLayerView', () => {
         layers: defaultLayers,
         categories: defaultCategories,
         heightToGridScale,
-        heightUnitMm,
         activeLayerId: layerId('layer0'),
         isExplodedView: true,
       })
@@ -103,7 +99,6 @@ describe('useExplodedLayerView', () => {
         layers: defaultLayers,
         categories: defaultCategories,
         heightToGridScale,
-        heightUnitMm,
         activeLayerId: layerId('layer0'),
         isExplodedView: true,
       })
@@ -120,7 +115,6 @@ describe('useExplodedLayerView', () => {
         layers: defaultLayers,
         categories: defaultCategories,
         heightToGridScale,
-        heightUnitMm,
         activeLayerId: layerId('layer0'),
         isExplodedView: true,
       })
@@ -140,7 +134,6 @@ describe('useExplodedLayerView', () => {
         layers: defaultLayers,
         categories: defaultCategories,
         heightToGridScale,
-        heightUnitMm,
         activeLayerId: layerId('layer0'),
         isExplodedView: true,
       })
@@ -161,7 +154,6 @@ describe('useExplodedLayerView', () => {
         layers: defaultLayers,
         categories: defaultCategories,
         heightToGridScale,
-        heightUnitMm,
         activeLayerId: layerId('layer0'),
         isExplodedView: true,
       })
@@ -171,21 +163,32 @@ describe('useExplodedLayerView', () => {
     expect(allBins).toHaveLength(3); // excludes the staged bin
   });
 
-  it('computes labelHeightMm from layer height and heightUnitMm', () => {
+  it('rests each bin at its own height and anchors the layer at its lowest bin', () => {
+    const stacked = makeBin({
+      id: binId('bin4'),
+      layerId: layerId('layer1'),
+      x: gridUnits(0),
+      y: gridUnits(0),
+      height: heightUnits(2),
+    });
     const { result } = renderHook(() =>
       useExplodedLayerView({
-        bins: defaultBins,
+        bins: [...defaultBins, stacked],
         layers: defaultLayers,
         categories: defaultCategories,
         heightToGridScale,
-        heightUnitMm,
         activeLayerId: layerId('layer0'),
         isExplodedView: true,
       })
     );
 
-    // layer0 height = 3 height units * 7mm = 21mm
-    expect(result.current![0].labelHeightMm).toBe(21);
+    const top = result.current![1];
+    const z = (id: string) => top.bins.find((b) => b.bin.id === binId(id))?.z ?? NaN;
+    expect(z('bin4')).toBeCloseTo(3 * heightToGridScale, 3);
+    expect(z('bin2')).toBeCloseTo(0, 3);
+    expect(top.floorZ).toBe(0);
+    // Lowest base 0, highest top 3 + 2 = 5.
+    expect(top.labelZ).toBeCloseTo(2.5 * heightToGridScale, 6);
   });
 
   it('applies category colors to bins', () => {
@@ -195,7 +198,6 @@ describe('useExplodedLayerView', () => {
         layers: defaultLayers,
         categories: defaultCategories,
         heightToGridScale,
-        heightUnitMm,
         activeLayerId: layerId('layer0'),
         isExplodedView: true,
       })
@@ -213,7 +215,6 @@ describe('useExplodedLayerView', () => {
         layers: threeLayers,
         categories: defaultCategories,
         heightToGridScale,
-        heightUnitMm,
         activeLayerId: layerId('layer0'),
         isExplodedView: true,
       })
@@ -231,7 +232,6 @@ describe('useExplodedLayerView', () => {
         layers: defaultLayers,
         categories: defaultCategories,
         heightToGridScale,
-        heightUnitMm,
         activeLayerId: layerId('layer0'),
         isExplodedView: false,
         isExitAnimating: true,
@@ -255,7 +255,6 @@ describe('useExplodedLayerView', () => {
         layers: defaultLayers,
         categories: defaultCategories,
         heightToGridScale,
-        heightUnitMm,
         activeLayerId: layerId('layer0'),
         isExplodedView: false,
         isExitAnimating: false,

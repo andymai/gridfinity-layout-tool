@@ -198,9 +198,3 @@ export interface Rect {
   width: GridUnits;
   depth: GridUnits;
 }
-
-/** 3D bounding box extending a grid rect with a vertical range (in height units). */
-export interface Rect3D extends Rect {
-  zStart: HeightUnits;
-  zEnd: HeightUnits;
-}

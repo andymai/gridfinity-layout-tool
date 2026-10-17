@@ -206,7 +206,7 @@
         "height": {
           "type": "number",
           "minimum": 1,
-          "description": "Drawer height in HEIGHT units, not mm. Must be at least the sum of layer heights."
+          "description": "Drawer height in HEIGHT units, not mm. Every stack of bins must fit under it."
         },
         "fractionalEdgeX": {
           "enum": ["start", "end"],
@@ -448,7 +448,7 @@
           "x-constant": {
             "minimum": "CONSTRAINTS.MIN_LAYER_HEIGHT"
           },
-          "description": "Layer height in height units. 1u is socket base only, so 2 is the minimum usable."
+          "description": "Default height, in height units, for new bins drawn on this layer; it positions nothing. 2 is the minimum usable."
         }
       }
     },
@@ -505,7 +505,7 @@
           "x-constant": {
             "minimum": "CONSTRAINTS.MIN_BIN_HEIGHT"
           },
-          "description": "Height in height units. Must be at least the owning layer's height and must fit the space to the drawer top. The schema cannot check that; the importer does."
+          "description": "Height in height units. The bin rests on the tallest lower-layer bin under it, or the plate, and its stack should fit under the drawer top."
         },
         "clearanceHeight": {
           "type": "number",

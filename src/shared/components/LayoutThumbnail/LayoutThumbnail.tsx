@@ -108,7 +108,7 @@ export function LayoutThumbnail({
       )}
 
       {/* Bins with optional labels - flip Y axis since grid y=0 is bottom, SVG y=0 is top */}
-      {binMap?.map((bin) => {
+      {binMap?.map((bin, index) => {
         const binX = padding + bin.x * scaleX;
         const binY = padding + innerHeight - (bin.y + bin.d) * scaleY;
         const binWidth = Math.max(bin.w * scaleX - binGap, binMinPx);
@@ -129,7 +129,8 @@ export function LayoutThumbnail({
         }
 
         return (
-          <g key={`${bin.x}-${bin.y}`}>
+          // Stacked bins on different layers can share an origin.
+          <g key={`${bin.x}-${bin.y}-${index}`}>
             <rect
               x={binX}
               y={binY}

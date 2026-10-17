@@ -48,6 +48,7 @@ function findAdjacentPlacement(
         width: bin.width,
         depth: bin.depth,
         height: bin.height,
+        clearanceHeight: bin.clearanceHeight,
         linkedDesignId: bin.linkedDesignId,
       },
       bin.layerId,

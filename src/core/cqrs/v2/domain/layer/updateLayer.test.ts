@@ -19,19 +19,19 @@ describe('v2 layer.update', () => {
     expect(result.value.event.payload.changes).toEqual({ name: 'Renamed' });
   });
 
-  it('clamps height against remaining drawer space', () => {
-    // drawer.height = 7, layer_1 height=2, layer_2 height=2 -> max for layer_1 = 7 - 2 = 5
+  it('clamps height to the drawer, regardless of other layers', () => {
+    // drawer.height = 7; the other layer's 6u does not shrink the cap.
     const layout = makeLayout({
-      layers: [makeLayer('layer_1', 2), makeLayer('layer_2', 2)],
+      layers: [makeLayer('layer_1', 2), makeLayer('layer_2', 6)],
     });
     const result = updateLayer.handle(
-      { id: 'layer_1', updates: { height: 99 } }, // way above the cap
+      { id: 'layer_1', updates: { height: 99 } },
       { aggregate: layout }
     );
 
     expect(isOk(result)).toBe(true);
     if (!isOk(result)) return;
-    expect(result.value.event.payload.changes.height).toBe(heightUnits(5));
+    expect(result.value.event.payload.changes.height).toBe(heightUnits(7));
   });
 
   it('errors when the layer does not exist', () => {

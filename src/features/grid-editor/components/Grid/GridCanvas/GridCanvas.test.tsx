@@ -580,21 +580,21 @@ describe('GridCanvas', () => {
   });
 
   describe('Blocked zones', () => {
-    it('renders blocked zones from tall bins in lower layers', () => {
+    it('renders blocked zones from clearance a lower-layer bin reserves', () => {
       // Create two layers
       const layers = [
         { id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) },
         { id: layerId('layer-2'), name: 'Layer 2', height: heightUnits(3) },
       ];
 
-      // Tall bin in layer 1 that extends into layer 2
       const tallBin: Bin = {
         id: binId('tall-bin'),
         x: gridUnits(1),
         y: gridUnits(1),
         width: gridUnits(2),
         depth: gridUnits(2),
-        height: heightUnits(6), // Taller than layer height, extends into layer 2
+        height: heightUnits(3),
+        clearanceHeight: heightUnits(2),
         layerId: layerId('layer-1'),
         category: defaultLayout.categories[0].id,
         label: '',
@@ -621,6 +621,37 @@ describe('GridCanvas', () => {
       expect(blockedZone).not.toBeNull();
     });
 
+    it('draws no blocked zone over a tall bin without clearance', () => {
+      useLayoutStore.setState({
+        layout: {
+          ...defaultLayout,
+          layers: [
+            { id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) },
+            { id: layerId('layer-2'), name: 'Layer 2', height: heightUnits(3) },
+          ],
+          bins: [
+            {
+              id: binId('tall-bin'),
+              x: gridUnits(1),
+              y: gridUnits(1),
+              width: gridUnits(2),
+              depth: gridUnits(2),
+              height: heightUnits(6),
+              layerId: layerId('layer-1'),
+              category: defaultLayout.categories[0].id,
+              label: '',
+              notes: '',
+            },
+          ],
+        },
+      });
+      useSelectionStore.setState({ activeLayerId: layerId('layer-2') });
+
+      const { container } = renderGridCanvas();
+
+      expect(container.querySelector('[role="button"][aria-label*="Blocked"]')).toBeNull();
+    });
+
     it('clicking blocked zone switches to source layer and selects bin', () => {
       // Create two layers
       const layers = [
@@ -628,14 +659,14 @@ describe('GridCanvas', () => {
         { id: layerId('layer-2'), name: 'Layer 2', height: heightUnits(3) },
       ];
 
-      // Tall bin in layer 1
       const tallBin: Bin = {
         id: binId('tall-bin'),
         x: gridUnits(1),
         y: gridUnits(1),
         width: gridUnits(2),
         depth: gridUnits(2),
-        height: heightUnits(6),
+        height: heightUnits(3),
+        clearanceHeight: heightUnits(2),
         layerId: layerId('layer-1'),
         category: defaultLayout.categories[0].id,
         label: '',
@@ -663,6 +694,46 @@ describe('GridCanvas', () => {
       // Should switch to layer 1 and select the bin
       expect(useSelectionStore.getState().activeLayerId).toBe('layer-1');
       expect(useSelectionStore.getState().selectedBinIds).toContain('tall-bin');
+    });
+
+    it('keeps a press on a blocked zone from starting a draw on the grid', () => {
+      useLayoutStore.setState({
+        layout: {
+          ...defaultLayout,
+          layers: [
+            { id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) },
+            { id: layerId('layer-2'), name: 'Layer 2', height: heightUnits(3) },
+          ],
+          bins: [
+            {
+              id: binId('tools'),
+              x: gridUnits(1),
+              y: gridUnits(1),
+              width: gridUnits(2),
+              depth: gridUnits(2),
+              height: heightUnits(3),
+              clearanceHeight: heightUnits(2),
+              layerId: layerId('layer-1'),
+              category: defaultLayout.categories[0].id,
+              label: '',
+              notes: '',
+            },
+          ],
+        },
+      });
+      useSelectionStore.setState({ activeLayerId: layerId('layer-2'), selectedBinIds: [] });
+      const { container } = renderGridCanvas();
+      const blockedZone = container.querySelector('[role="button"][aria-label*="Blocked"]');
+      const press = { button: 0, isPrimary: true, pointerId: 1 };
+
+      // A draw captures the pointer on document.body, so the click that
+      // follows would land there instead of on the zone.
+      fireEvent.pointerDown(blockedZone!, press);
+      expect(mockStartDraw).not.toHaveBeenCalled();
+
+      // The same press on the grid itself does start one, so the check above means something.
+      fireEvent.pointerDown(blockedZone!.parentElement!, press);
+      expect(mockStartDraw).toHaveBeenCalled();
     });
   });
 

@@ -166,19 +166,35 @@ describe('bin displacement logic', () => {
   });
 
   describe('drawer height changes', () => {
-    it('clamps drawer height to minimum of layer heights', () => {
-      const { updateDrawer, addLayer } = useLayoutStore.getState();
+    it('clamps drawer height to the tallest stack, not the sum of layer heights', () => {
+      const { updateDrawer, addLayer, addBin } = useLayoutStore.getState();
+      const upper = addLayer();
+      if (!upper.ok) throw new Error('addLayer failed');
+      const { layers, categories } = useLayoutStore.getState().layout;
+      const place = (layer: typeof upper.value, x: number) =>
+        addBin({
+          layerId: layer,
+          x: gridUnits(x),
+          y: gridUnits(0),
+          width: gridUnits(1),
+          depth: gridUnits(1),
+          height: heightUnits(3),
+          category: categories[0].id,
+          label: '',
+          notes: '',
+        });
 
-      // Add a second layer (each starts with height 3)
-      addLayer();
-
-      // Total layer height is now 6
-      // Try to set drawer height below this
+      // Side by side, nothing stacks: the tallest stack is one 3u bin.
+      place(layers[0].id, 0);
+      place(upper.value, 2);
       updateDrawer({ height: heightUnits(4) });
+      expect(useLayoutStore.getState().layout.drawer.height).toBe(4);
 
-      // Drawer height should be clamped to at least 6
-      const drawer = useLayoutStore.getState().layout.drawer;
-      expect(drawer.height).toBeGreaterThanOrEqual(6);
+      // A second bin on top of the first makes a 6u stack.
+      updateDrawer({ height: heightUnits(12) });
+      place(upper.value, 0);
+      updateDrawer({ height: heightUnits(4) });
+      expect(useLayoutStore.getState().layout.drawer.height).toBe(6);
     });
 
     it('allows increasing drawer height freely', () => {

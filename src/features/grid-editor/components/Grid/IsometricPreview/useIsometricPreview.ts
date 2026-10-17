@@ -255,7 +255,6 @@ export function useIsometricPreview({ inline = false }: IsometricPreviewProps) {
     layers,
     categories,
     heightToGridScale,
-    heightUnitMm,
     activeLayerId,
     isExplodedView,
     isExitAnimating: isExplodeExiting,

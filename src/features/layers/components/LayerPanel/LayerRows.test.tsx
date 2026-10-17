@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { HeightCrossSectionDiagram } from './HeightCrossSectionDiagram';
+import { LayerRows } from './LayerRows';
 import type { Layer } from '@/core/types';
 import { heightUnits, layerId } from '@/core/types';
 
@@ -13,10 +13,8 @@ const makeLayers = (...heights: number[]): Layer[] =>
 
 const defaultProps = {
   hoveredLayerId: null,
-  canAddLayer: true,
   editingLayerId: null,
   onLayerHover: vi.fn(),
-  onAddLayer: vi.fn(),
   onReorder: vi.fn(),
   onNameChange: vi.fn(),
   onHeightChange: vi.fn(),
@@ -26,13 +24,12 @@ const defaultProps = {
   layerStats: {} as Record<string, { coverage: number; binCount: number }>,
 };
 
-describe('HeightCrossSectionDiagram', () => {
+describe('LayerRows', () => {
   it('renders content area', () => {
     const layers = makeLayers(3);
     render(
-      <HeightCrossSectionDiagram
+      <LayerRows
         layers={layers}
-        drawerHeight={10}
         activeLayerId={layerId('layer-1')}
         onLayerClick={vi.fn()}
         {...defaultProps}
@@ -45,9 +42,8 @@ describe('HeightCrossSectionDiagram', () => {
   it('renders all layer segments with names and heights', () => {
     const layers = makeLayers(3, 2);
     render(
-      <HeightCrossSectionDiagram
+      <LayerRows
         layers={layers}
-        drawerHeight={10}
         activeLayerId={layerId('layer-1')}
         onLayerClick={vi.fn()}
         {...defaultProps}
@@ -62,9 +58,8 @@ describe('HeightCrossSectionDiagram', () => {
     const onLayerClick = vi.fn();
     const layers = makeLayers(3, 2);
     const { container } = render(
-      <HeightCrossSectionDiagram
+      <LayerRows
         layers={layers}
-        drawerHeight={10}
         activeLayerId={layerId('layer-1')}
         onLayerClick={onLayerClick}
         {...defaultProps}
@@ -78,42 +73,11 @@ describe('HeightCrossSectionDiagram', () => {
     expect(onLayerClick).toHaveBeenCalledWith('layer-2');
   });
 
-  it('shows headroom when drawer has spare capacity', () => {
-    const layers = makeLayers(3);
-    render(
-      <HeightCrossSectionDiagram
-        layers={layers}
-        drawerHeight={10}
-        activeLayerId={layerId('layer-1')}
-        onLayerClick={vi.fn()}
-        {...defaultProps}
-      />
-    );
-
-    expect(screen.getByText(/7u headroom/)).toBeInTheDocument();
-  });
-
-  it('hides headroom when drawer is fully used', () => {
-    const layers = makeLayers(5, 5);
-    render(
-      <HeightCrossSectionDiagram
-        layers={layers}
-        drawerHeight={10}
-        activeLayerId={layerId('layer-1')}
-        onLayerClick={vi.fn()}
-        {...defaultProps}
-      />
-    );
-
-    expect(screen.queryByText(/headroom/i)).not.toBeInTheDocument();
-  });
-
   it('renders segments as accessible buttons', () => {
     const layers = makeLayers(4, 3);
     render(
-      <HeightCrossSectionDiagram
+      <LayerRows
         layers={layers}
-        drawerHeight={10}
         activeLayerId={layerId('layer-1')}
         onLayerClick={vi.fn()}
         {...defaultProps}
@@ -127,13 +91,31 @@ describe('HeightCrossSectionDiagram', () => {
     expect(screen.getByRole('button', { name: 'Select Layer 2' })).toBeInTheDocument();
   });
 
+  it('marks only the active row as pressed', () => {
+    render(
+      <LayerRows
+        layers={makeLayers(3, 3)}
+        activeLayerId={layerId('layer-2')}
+        onLayerClick={vi.fn()}
+        {...defaultProps}
+      />
+    );
+    expect(screen.getByRole('button', { name: 'Select Layer 2' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(screen.getByRole('button', { name: 'Select Layer 1' })).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    );
+  });
+
   it('activates layer on Enter key', () => {
     const onLayerClick = vi.fn();
     const layers = makeLayers(4);
     render(
-      <HeightCrossSectionDiagram
+      <LayerRows
         layers={layers}
-        drawerHeight={10}
         activeLayerId={layerId('layer-1')}
         onLayerClick={onLayerClick}
         {...defaultProps}
@@ -146,48 +128,41 @@ describe('HeightCrossSectionDiagram', () => {
     expect(onLayerClick).toHaveBeenCalledWith('layer-1');
   });
 
-  it('scales diagram height dynamically based on segment count', () => {
-    // Single layer, no headroom (height fills drawer) → compact
-    const { container: c1 } = render(
-      <HeightCrossSectionDiagram
-        layers={makeLayers(10)}
-        drawerHeight={10}
+  it('gives every layer the same row, whatever its height', () => {
+    render(
+      <LayerRows
+        layers={makeLayers(2, 9, 4)}
         activeLayerId={layerId('layer-1')}
         onLayerClick={vi.fn()}
         {...defaultProps}
       />
     );
-    const singleH = parseInt(
-      c1
-        .querySelector('[data-testid="content-area"]')
-        ?.getAttribute('style')
-        ?.match(/height:\s*(\d+)/)?.[1] ?? '0'
-    );
+    const rows = screen
+      .getByTestId('content-area')
+      .querySelectorAll<HTMLElement>('[data-layer-id]');
+    expect(rows).toHaveLength(3);
+    expect(new Set([...rows].map((r) => r.style.height))).toEqual(new Set(['32px']));
+  });
 
-    // 3 layers + headroom = 4 segments → taller diagram
-    const { container: c2 } = render(
-      <HeightCrossSectionDiagram
-        layers={makeLayers(2, 2, 2)}
-        drawerHeight={10}
+  it('shows each layer’s bin count and labels its height as the new-bin default', () => {
+    render(
+      <LayerRows
+        layers={makeLayers(3, 4)}
         activeLayerId={layerId('layer-1')}
         onLayerClick={vi.fn()}
         {...defaultProps}
+        layerStats={{
+          'layer-1': { coverage: 50, binCount: 7 },
+          'layer-2': { coverage: 10, binCount: 2 },
+        }}
       />
     );
-    const multiH = parseInt(
-      c2
-        .querySelector('[data-testid="content-area"]')
-        ?.getAttribute('style')
-        ?.match(/height:\s*(\d+)/)?.[1] ?? '0'
+    expect(screen.getByText('7 bins')).toBeInTheDocument();
+    expect(screen.getByText('2 bins')).toBeInTheDocument();
+    expect(screen.getByText('4u')).toHaveAttribute(
+      'title',
+      'Height for new bins placed on this layer'
     );
-
-    // Single layer (1 segment, no headroom) should be compact
-    expect(singleH).toBeGreaterThanOrEqual(48);
-    expect(singleH).toBeLessThanOrEqual(100);
-
-    // Multi-layer should be taller
-    expect(multiH).toBeGreaterThan(singleH);
-    expect(multiH).toBeLessThanOrEqual(240);
   });
 
   describe('hover interaction', () => {
@@ -195,9 +170,8 @@ describe('HeightCrossSectionDiagram', () => {
       const onLayerHover = vi.fn();
       const layers = makeLayers(4, 3);
       const { container } = render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -217,9 +191,8 @@ describe('HeightCrossSectionDiagram', () => {
       const onLayerHover = vi.fn();
       const layers = makeLayers(4, 3);
       const { container } = render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -238,9 +211,8 @@ describe('HeightCrossSectionDiagram', () => {
     it('shows hover highlight for hovered non-active layer', () => {
       const layers = makeLayers(4, 3);
       const { container } = render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -256,9 +228,8 @@ describe('HeightCrossSectionDiagram', () => {
     it('does not show hover highlight for active layer', () => {
       const layers = makeLayers(4, 3);
       const { container } = render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -277,9 +248,8 @@ describe('HeightCrossSectionDiagram', () => {
       const onEditingStart = vi.fn();
       const layers = makeLayers(4);
       render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -296,9 +266,8 @@ describe('HeightCrossSectionDiagram', () => {
     it('shows name input when editing', () => {
       const layers = makeLayers(4);
       render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -313,9 +282,8 @@ describe('HeightCrossSectionDiagram', () => {
       const onNameChange = vi.fn();
       const layers = makeLayers(4);
       render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -334,9 +302,8 @@ describe('HeightCrossSectionDiagram', () => {
       const onEditingEnd = vi.fn();
       const layers = makeLayers(4);
       render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -355,9 +322,8 @@ describe('HeightCrossSectionDiagram', () => {
       const onEditingEnd = vi.fn();
       const layers = makeLayers(4);
       render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -375,9 +341,8 @@ describe('HeightCrossSectionDiagram', () => {
     it('shows height stepper on active segment', () => {
       const layers = makeLayers(4);
       render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -393,9 +358,8 @@ describe('HeightCrossSectionDiagram', () => {
       const onHeightChange = vi.fn();
       const layers = makeLayers(4);
       render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -421,9 +385,8 @@ describe('HeightCrossSectionDiagram', () => {
       vi.useFakeTimers();
       const layers = makeLayers(4);
       render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -443,9 +406,8 @@ describe('HeightCrossSectionDiagram', () => {
     it('disables decrease button at minimum layer height', () => {
       const layers = makeLayers(2);
       render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={3}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -455,44 +417,11 @@ describe('HeightCrossSectionDiagram', () => {
       expect(screen.getByLabelText('Decrease Layer 1 height')).toBeDisabled();
     });
 
-    it.each([
-      { drawerHeight: 15, heights: [2] },
-      { drawerHeight: 20, heights: [2] },
-      { drawerHeight: 30, heights: [2] },
-      { drawerHeight: 40, heights: [2, 2] },
-    ])(
-      'keeps the active layer controls reachable at minimum height in a $drawerHeight u drawer',
-      ({ drawerHeight, heights }) => {
-        render(
-          <HeightCrossSectionDiagram
-            layers={makeLayers(...heights)}
-            drawerHeight={drawerHeight}
-            activeLayerId={layerId('layer-1')}
-            onLayerClick={vi.fn()}
-            {...defaultProps}
-          />
-        );
-
-        expect(screen.getByLabelText('Increase Layer 1 height')).toBeInTheDocument();
-        expect(screen.getByLabelText('Decrease Layer 1 height')).toBeInTheDocument();
-        if (heights.length > 1) {
-          expect(screen.getByLabelText('Delete Layer 1 layer')).toBeInTheDocument();
-        }
-
-        const area = screen.getByTestId('content-area');
-        const segments = area.querySelectorAll<HTMLElement>('[data-layer-id]');
-        const last = segments[segments.length - 1];
-        const stackBottom = parseFloat(last.style.top) + parseFloat(last.style.height);
-        expect(parseFloat(area.style.height)).toBeCloseTo(stackBottom, 5);
-      }
-    );
-
     it('shows delete button when multiple layers', () => {
       const layers = makeLayers(4, 3);
       render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -506,9 +435,8 @@ describe('HeightCrossSectionDiagram', () => {
       const onDeleteLayer = vi.fn();
       const layers = makeLayers(4, 3);
       render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -524,9 +452,8 @@ describe('HeightCrossSectionDiagram', () => {
     it('hides delete button for single layer', () => {
       const layers = makeLayers(4);
       render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -539,9 +466,8 @@ describe('HeightCrossSectionDiagram', () => {
     it('disables drag when editing', () => {
       const layers = makeLayers(4, 3);
       const { container } = render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -557,9 +483,8 @@ describe('HeightCrossSectionDiagram', () => {
       const onLayerClick = vi.fn();
       const layers = makeLayers(4);
       render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={onLayerClick}
           {...defaultProps}
@@ -574,36 +499,11 @@ describe('HeightCrossSectionDiagram', () => {
     });
   });
 
-  describe('headroom click-to-add', () => {
-    it('calls onAddLayer when headroom is clicked', () => {
-      const onAddLayer = vi.fn();
-      const layers = makeLayers(3);
-      const { container } = render(
-        <HeightCrossSectionDiagram
-          layers={layers}
-          drawerHeight={10}
-          activeLayerId={layerId('layer-1')}
-          onLayerClick={vi.fn()}
-          {...defaultProps}
-          canAddLayer={true}
-          onAddLayer={onAddLayer}
-        />
-      );
-
-      const headroom = container.querySelector('[data-testid="headroom-area"]');
-      expect(headroom).toBeInTheDocument();
-      fireEvent.click(headroom as Element);
-
-      expect(onAddLayer).toHaveBeenCalled();
-    });
-  });
-
   describe('tooltip with stats', () => {
     it('shows layer stats in tooltip when provided', () => {
       const { container } = render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={makeLayers(4)}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -619,9 +519,8 @@ describe('HeightCrossSectionDiagram', () => {
 
     it('shows only layer name in tooltip when no stats', () => {
       const { container } = render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={makeLayers(4)}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -638,9 +537,8 @@ describe('HeightCrossSectionDiagram', () => {
     it('shows grip icon when multiple layers exist', () => {
       const layers = makeLayers(4, 3);
       const { container } = render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
@@ -654,9 +552,8 @@ describe('HeightCrossSectionDiagram', () => {
     it('hides grip icon for single layer', () => {
       const layers = makeLayers(4);
       const { container } = render(
-        <HeightCrossSectionDiagram
+        <LayerRows
           layers={layers}
-          drawerHeight={10}
           activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}

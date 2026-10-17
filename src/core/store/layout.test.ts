@@ -616,8 +616,7 @@ describe('layout store', () => {
       expect(layers[1].height).toBe(5);
     });
 
-    it('addLayer respects remaining height over default setting', () => {
-      // Set default to 5, but only 2 units remaining
+    it('addLayer caps the default height at the drawer, not at the space left', () => {
       useSettingsStore.setState({
         settings: {
           ...useSettingsStore.getState().settings,
@@ -625,16 +624,13 @@ describe('layout store', () => {
         },
       });
 
-      // Set drawer height to 5, first layer already uses 3 (leaving 2 remaining)
+      // The first layer's 3u leaves 1u, but layers no longer share the drawer out.
       const { updateDrawer, addLayer } = useLayoutStore.getState();
-      updateDrawer({ height: heightUnits(5) });
+      updateDrawer({ height: heightUnits(4) });
 
-      const result = addLayer();
-      expectOk(result);
+      expectOk(addLayer());
 
-      const layers = useLayoutStore.getState().layout.layers;
-      // New layer should be 2 (remaining) not 5 (default)
-      expect(layers[1].height).toBe(2);
+      expect(useLayoutStore.getState().layout.layers[1].height).toBe(4);
     });
 
     it('deleteLayer removes layer and stages its bins', () => {
@@ -1055,66 +1051,41 @@ describe('layout store', () => {
       expect(expectErr(result).code).toBe('LAYOUT_INVALID_OPERATION');
     });
 
-    it('returns Err when reorder would cause collisions', () => {
-      const { addBin, addLayer, updateDrawer, layout } = useLayoutStore.getState();
-      const categoryId = layout.categories[0].id;
-
-      // Set up drawer to accommodate two layers
-      updateDrawer({ height: heightUnits(12) });
-
-      // Add second layer
-      const layer2Result = addLayer();
-      const layer2ResultValue = expectOk(layer2Result);
-      const layer2Id = layer2ResultValue;
-
-      // Layer 1 height = 3, layer 2 height = 3
-      const layer1Id = useLayoutStore.getState().layout.layers[0].id;
-
-      // Add a bin on layer 1 at (0,0) with height 3 (fills layer 1)
-      const bin1Result = addBin({
-        layerId: layer1Id,
-        x: gridUnits(0),
+    it('returns Err when a reorder would stack bins past the drawer', () => {
+      // B spans A and C, which do not overlap each other. With B on top it
+      // rests on the taller of the two (9u); with B in the middle, C lands on
+      // it and the stack reaches 4 + 4 + 5 = 13u in a 12u drawer.
+      const [l1, l2, l3] = [layerId('l1'), layerId('l2'), layerId('l3')];
+      const cat = categoryId('cat');
+      const bin = (id: string, layer: typeof l1, x: number, width: number, height: number) => ({
+        id: binId(id),
+        layerId: layer,
+        x: gridUnits(x),
         y: gridUnits(0),
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(3),
-        category: categoryId,
+        width: gridUnits(width),
+        depth: gridUnits(1),
+        height: heightUnits(height),
+        category: cat,
         label: '',
         notes: '',
       });
-      expectOk(bin1Result);
-
-      // Add a bin on layer 2 at same (0,0) position with height 4 (spans into next space)
-      // Before swap: layers = [Layer1(h=3), Layer2(h=3)]
-      //   Bin1: zStart=0, zEnd=3
-      //   Bin2: zStart=3, zEnd=7
-      //   No overlap (3 < 3 is false)
-      //
-      // After swap: layers = [Layer2(h=3), Layer1(h=3)]
-      //   Bin2: zStart=0, zEnd=4 (Layer2 is now first)
-      //   Bin1: zStart=3, zEnd=6 (Layer1 starts at z=3)
-      //   Overlap check: 0 < 6 && 3 < 4 = true && true = collision!
-      const bin2Result = addBin({
-        layerId: layer2Id,
-        x: gridUnits(0),
-        y: gridUnits(0),
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(4),
-        category: categoryId,
-        label: '',
-        notes: '',
+      useLayoutStore.setState({
+        layout: {
+          ...useLayoutStore.getState().layout,
+          drawer: { width: gridUnits(6), depth: gridUnits(4), height: heightUnits(12) },
+          layers: [
+            { id: l1, name: 'A', height: heightUnits(3) },
+            { id: l2, name: 'C', height: heightUnits(3) },
+            { id: l3, name: 'B', height: heightUnits(3) },
+          ],
+          bins: [bin('a', l1, 0, 1, 4), bin('c', l2, 2, 1, 5), bin('b', l3, 0, 3, 4)],
+        },
       });
-      expectOk(bin2Result);
 
-      // Verify bins were added
-      const bins = useLayoutStore.getState().layout.bins;
-      expect(bins.length).toBe(2);
-
-      // Reordering should cause collision since bins would vertically overlap
-      const result = useLayoutStore.getState().reorderLayers(0, 1);
+      const result = useLayoutStore.getState().reorderLayers(2, 1);
 
       expect(expectErr(result).code).toBe('LAYOUT_INVALID_OPERATION');
+      expectOk(useLayoutStore.getState().reorderLayers(0, 1));
     });
   });
 
@@ -1226,24 +1197,30 @@ describe('layout store', () => {
       expect(useLayoutStore.getState().layout.drawer.fractionalEdgeY).toBe('end');
     });
 
-    it('updateDrawer clamps height to total layer heights', () => {
-      const { updateDrawer, addLayer } = useLayoutStore.getState();
+    it('updateDrawer clamps height to the tallest stack', () => {
+      const { updateDrawer, addLayer, addBin } = useLayoutStore.getState();
+      const upper = expectOk(addLayer());
+      const { layers, categories } = useLayoutStore.getState().layout;
+      const place = (layer: typeof upper, height: number) =>
+        expectOk(
+          addBin({
+            layerId: layer,
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(1),
+            depth: gridUnits(1),
+            height: heightUnits(height),
+            category: categories[0].id,
+            label: '',
+            notes: '',
+          })
+        );
+      place(layers[0].id, 3);
+      place(upper, 4);
 
-      // Add multiple layers (each uses height from remaining)
-      addLayer();
-      addLayer();
-
-      const totalLayerHeight = useLayoutStore
-        .getState()
-        .layout.layers.reduce((sum, l) => sum + l.height, 0);
-
-      // Try to set height below total layer heights
       updateDrawer({ height: heightUnits(1) });
 
-      // Should be clamped to at least total layer height
-      expect(useLayoutStore.getState().layout.drawer.height).toBeGreaterThanOrEqual(
-        totalLayerHeight
-      );
+      expect(useLayoutStore.getState().layout.drawer.height).toBe(7);
     });
   });
 
@@ -1533,17 +1510,14 @@ describe('layout store', () => {
       }
     });
 
-    it('returns Err with LAYOUT_INVALID_OPERATION when no height remaining', () => {
+    it('adds a layer even when layer heights already fill the drawer', () => {
       const { addLayer, updateDrawer, updateLayer, layout } = useLayoutStore.getState();
-
-      // Set drawer height to match first layer height (no room for more)
       updateLayer(layout.layers[0].id, { height: heightUnits(12) });
       updateDrawer({ height: heightUnits(12) });
 
-      // First layer now takes all height
-      const result = addLayer();
+      expectOk(addLayer());
 
-      expect(expectErr(result).code).toBe('LAYOUT_INVALID_OPERATION');
+      expect(useLayoutStore.getState().layout.layers).toHaveLength(2);
     });
   });
 

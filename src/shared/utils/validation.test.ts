@@ -133,15 +133,15 @@ describe('canPlaceBin', () => {
     expect(result.valid).toBe(true);
   });
 
-  it('rejects placement in blocked zone', () => {
+  it('rejects placement on clearance a lower bin reserves', () => {
     const layout = createTestLayout();
     layout.bins = [
-      // Tall bin on layer 1 that protrudes into layer 2
       createTestBin({
         id: binId('tall'),
         width: gridUnits(3),
         depth: gridUnits(3),
-        height: heightUnits(6),
+        height: heightUnits(3),
+        clearanceHeight: heightUnits(2),
       }),
     ];
     const result = canPlaceBin(
@@ -154,9 +154,8 @@ describe('canPlaceBin', () => {
     expect(result.blockingInfo).toMatchObject({ binId: 'tall', layerId: 'layer1' });
   });
 
-  it('rejects placement overlapping fractional blocked zone', () => {
+  it('rejects placement overlapping fractional clearance', () => {
     const layout = createTestLayout();
-    // Small fractional bin on layer 1 that protrudes into layer 2
     layout.bins = [
       createTestBin({
         id: binId('small-tall'),
@@ -164,10 +163,11 @@ describe('canPlaceBin', () => {
         y: gridUnits(1.5),
         width: gridUnits(0.5),
         depth: gridUnits(0.5),
-        height: heightUnits(6),
+        height: heightUnits(3),
+        clearanceHeight: heightUnits(2),
       }),
     ];
-    // Bin on layer 2 that covers the blocked zone area
+    // Bin on layer 2 that covers the clearance footprint
     const result = canPlaceBin(
       placementRect({ x: 0, y: 0, width: 3, depth: 3, height: 6 }),
       LAYER_2,
@@ -178,17 +178,18 @@ describe('canPlaceBin', () => {
     expect(result.blockingInfo).toMatchObject({ binId: 'small-tall', layerId: 'layer1' });
   });
 
-  it('allows placement adjacent to fractional blocked zone', () => {
+  it('allows placement adjacent to fractional clearance', () => {
     const layout = createTestLayout();
     layout.bins = [
       createTestBin({
         id: binId('small-tall'),
         width: gridUnits(0.5),
         depth: gridUnits(0.5),
-        height: heightUnits(6),
+        height: heightUnits(3),
+        clearanceHeight: heightUnits(2),
       }),
     ];
-    // Bin placed at (1, 0) doesn't overlap the 0.5x0.5 blocked zone at (0, 0)
+    // Bin placed at (1, 0) doesn't overlap the 0.5x0.5 clearance at (0, 0)
     const result = canPlaceBin(
       placementRect({ x: 1, y: 0, width: 2, depth: 2, height: 6 }),
       LAYER_2,
@@ -399,15 +400,30 @@ describe('validateImport', () => {
     expect(result.errors[0]).toContain('Bin 0');
   });
 
-  it('rejects total layer height exceeding drawer', () => {
+  it('accepts layer heights that add up past the drawer', () => {
     const layout = createTestLayout();
     layout.layers = [
       { id: LAYER_1, name: 'Layer 1', height: heightUnits(10) },
       { id: LAYER_2, name: 'Layer 2', height: heightUnits(10) },
     ];
+    expect(validateImport(layout).valid).toBe(true);
+  });
+
+  it('accepts a stack taller than the drawer for the editor to flag', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      createTestBin({ id: binId('low'), height: heightUnits(8) }),
+      createTestBin({ id: binId('high'), layerId: LAYER_2, height: heightUnits(8) }),
+    ];
+    expect(validateImport(layout).valid).toBe(true);
+  });
+
+  it('rejects a bin taller than the drawer on its own', () => {
+    const layout = createTestLayout();
+    layout.bins = [createTestBin({ id: binId('giant'), height: heightUnits(13) })];
     const result = validateImport(layout);
     expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.includes('exceeds drawer height'))).toBe(true);
+    expect(result.errors).toEqual(['Bin 0 is taller than the drawer']);
   });
 
   it('rejects drawer depth out of range', () => {

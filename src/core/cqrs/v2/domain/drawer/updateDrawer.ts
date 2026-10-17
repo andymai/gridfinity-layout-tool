@@ -4,7 +4,7 @@
  * Clamping (width/depth in [GRID_MIN, GRID_MAX] and, with a custom outline
  * active, no smaller than the outline's bounding half-unit grid on an axis the
  * recorded measurement does not already hold — a resize must never mutate the
- * user's shape; height >= sum of layer heights)
+ * user's shape; height >= the tallest stack)
  * happens in handle() so the event's `changes` always reflects the value
  * that lands. The displaced bin set is also precomputed in handle() and
  * goes into the event as `displacedBinIds`, so apply() applies the drawer
@@ -26,6 +26,7 @@ import {
   GRID_PITCH_MM_MAX,
 } from '@/shared/utils/drawerOutline';
 import { drawerFrameShiftLimits } from '@/shared/utils/outlineFrame';
+import { drawerHeightFloor } from '@/shared/utils/restingStack';
 import type { BinId, Drawer, GridUnits, MeasuredDrawerMm } from '@/core/types';
 import { effectiveGridUnitMmY, gridUnits, heightUnits, mm } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
@@ -145,8 +146,9 @@ export const updateDrawer = defineCommand({
       changes.depth = gridUnits(clamp(payload.depth, floors.depth, CONSTRAINTS.GRID_MAX));
     }
     if (payload.height !== undefined) {
-      const totalLayerHeight = layout.layers.reduce((sum, l) => sum + (l.height as number), 0);
-      changes.height = heightUnits(Math.max(totalLayerHeight, payload.height));
+      changes.height = heightUnits(
+        Math.max(payload.height, drawerHeightFloor(layout.bins, layout.layers, drawer.height))
+      );
     }
     if (payload.fractionalEdgeX !== undefined) changes.fractionalEdgeX = payload.fractionalEdgeX;
     if (payload.fractionalEdgeY !== undefined) changes.fractionalEdgeY = payload.fractionalEdgeY;

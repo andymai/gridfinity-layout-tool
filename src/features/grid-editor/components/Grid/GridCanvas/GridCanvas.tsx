@@ -8,7 +8,7 @@ import { useGridCoords, useGridTemplate } from '@/features/grid-editor/hooks';
 import { toPixels } from '@/features/grid-editor/utils/fractionalPixels';
 import { Bin } from '../Bin';
 import { BrushHoverGhost } from '../BrushHoverGhost';
-import { getBlockedZones } from '@/shared/utils/collision';
+import { getBlockedZones } from '@/shared/utils/restingStack';
 import { getLayerBins } from '@/shared/utils/bins';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
@@ -99,7 +99,6 @@ export function GridCanvas({
     return bins.filter((b) => layersBelowIds.includes(b.layerId));
   }, [bins, layers, activeLayerId, showOtherLayers]);
 
-  // Memoized: Get blocked zones for current layer
   const blockedZones = useMemo(
     () => getBlockedZones(activeLayerId, bins, layers),
     [activeLayerId, bins, layers]
@@ -343,7 +342,6 @@ export function GridCanvas({
             key={bin.id}
             bin={bin}
             category={categoryMap.get(bin.category)}
-            layer={layerMap.get(bin.layerId)}
             drawer={drawer}
             cellSize={cellSize}
             gap={gap}
@@ -354,7 +352,7 @@ export function GridCanvas({
           />
         ))}
 
-        {/* Blocked zones - bins from lower layers extending into this layer */}
+        {/* Clearance that lower-layer bins reserve above themselves */}
         {blockedZones.map((zone) => {
           const sourceBin = binMap.get(zone.sourceBinId);
           const category = sourceBin ? categoryMap.get(sourceBin.category) : undefined;
@@ -410,6 +408,9 @@ export function GridCanvas({
                 opacity: 0.3,
                 zIndex: 8,
               }}
+              // A press that reached the grid would start a draw, whose pointer
+              // capture on document.body steals the click from this zone.
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={() => sourceBin && handleBlockedZoneClick(sourceBin.id, sourceBin.layerId)}
               onKeyDown={(e) => {
                 if ((e.key === 'Enter' || e.key === ' ') && sourceBin) {
@@ -462,7 +463,6 @@ export function GridCanvas({
             key={bin.id}
             bin={bin}
             category={categoryMap.get(bin.category)}
-            layer={layerMap.get(bin.layerId)}
             drawer={drawer}
             cellSize={cellSize}
             gap={gap}

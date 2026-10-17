@@ -16,8 +16,8 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useMobileStore } from '@/core/store/mobile';
 import { useMutations } from '@/shared/contexts';
 import { calcBedCapacityForBin, CONSTRAINTS, STAGING_ID } from '@/core/constants';
-import { getLayerZStartResult } from '@/shared/utils/collision';
-import { isOk, isErr, getUserMessage } from '@/core/result';
+import { getRestingStack, maxBinHeight, maxClearanceHeight } from '@/shared/utils/restingStack';
+import { isErr, getUserMessage } from '@/core/result';
 import { canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
 import { clamp } from '@/shared/utils/math';
 import { isBinLocked, validateBinRotation } from '@/shared/utils/binLocation';
@@ -45,7 +45,6 @@ export type {
   BinField,
   ConfirmDeleteState,
   MaxHeightReason,
-  MinHeightReason,
   UseBinInspectorReturn,
 } from './binInspectorTypes';
 
@@ -88,7 +87,6 @@ export function useBinInspector(): UseBinInspectorReturn {
         maxGridUnits: { width: 5, depth: 5 },
         needsSplit: false,
         heightRange: `${CONSTRAINTS.MIN_BIN_HEIGHT}u`,
-        minHeightReason: 'global_minimum',
         maxHeightReason: 'drawer_height',
       };
     }
@@ -116,16 +114,17 @@ export function useBinInspector(): UseBinInspectorReturn {
         maxGridUnits: maxGrid,
         needsSplit,
         heightRange: `${minHeight}u – ${maxHeight}u`,
-        minHeightReason: 'global_minimum',
         maxHeightReason: 'drawer_height',
       };
     }
 
-    const minHeight = Math.max(CONSTRAINTS.MIN_BIN_HEIGHT, layer.height);
-    const zStartResult = getLayerZStartResult(bin.layerId, layout.layers);
-    const maxHeight =
-      layout.drawer.height - (isOk(zStartResult) ? zStartResult.value : layout.drawer.height);
-    const maxClearance = maxHeight - bin.height;
+    const minHeight = CONSTRAINTS.MIN_BIN_HEIGHT;
+    const stackLimit = maxBinHeight(bin, layout.bins, layout.layers, layout.drawer.height);
+    const maxHeight = Math.max(minHeight, stackLimit);
+    const maxClearance = maxClearanceHeight(bin, layout.bins, layout.layers, layout.drawer.height);
+    const rest = getRestingStack(layout.bins, layout.layers).bins.get(bin.id);
+    const ownCharge = rest ? rest.stackTop - rest.zStart - bin.height : 0;
+    const limitedByStack = stackLimit < layout.drawer.height - ownCharge - 1e-9;
 
     return {
       minHeight,
@@ -134,15 +133,14 @@ export function useBinInspector(): UseBinInspectorReturn {
       maxGridUnits: maxGrid,
       needsSplit,
       heightRange: `${minHeight}u – ${maxHeight}u`,
-      minHeightReason:
-        layer.height > CONSTRAINTS.MIN_BIN_HEIGHT ? 'layer_height' : 'global_minimum',
-      maxHeightReason: 'remaining_space',
+      maxHeightReason: limitedByStack ? 'remaining_space' : 'drawer_height',
     };
   }, [
     bin,
     layer,
     layout.drawer.height,
     layout.layers,
+    layout.bins,
     layout.printBedSize,
     layout.printBedDepth,
     layout.gridUnitMm,

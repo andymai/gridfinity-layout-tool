@@ -368,8 +368,8 @@ describe('canSwapBins linked-design excess rise', () => {
       width: gridUnits(2),
       depth: gridUnits(2),
     });
-    // Sits directly above B's spot; A swapped there rises into it only when
-    // its linked excess is charged.
+    // Rests on B's spot; A swapped in lifts it past the 12u drawer only when
+    // its linked excess is charged (3 + 2 + 8).
     const upper = createTestBin({
       id: binId('upper'),
       layerId: layerId('layer2'),
@@ -377,6 +377,7 @@ describe('canSwapBins linked-design excess rise', () => {
       y: gridUnits(0),
       width: gridUnits(2),
       depth: gridUnits(2),
+      height: heightUnits(8),
     });
     layout.bins = [binA, binB, upper];
 

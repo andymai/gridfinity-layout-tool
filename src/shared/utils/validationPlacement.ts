@@ -13,6 +13,7 @@
 
 import type {
   Bin,
+  BlockingInfo,
   DesignId,
   HeightUnits,
   Layout,
@@ -24,27 +25,27 @@ import type {
 import { isFootprintInsideOutline } from './drawerOutlineGeometry';
 import { drawerFrameOutline } from './outlineFrame';
 import { binId as toBinId, categoryId as toCategoryId, effectiveGridUnitMmY } from '@/core/types';
-import { STAGING_ID } from '@/core/constants';
-import { isOk } from '@/core/result';
-import {
-  binsCollideResult,
-  getLayerZStartResult,
-  getBlockedZones,
-  footprintsOverlap,
-} from './collision';
+import { footprintsOverlap } from './collision';
+import { getRestingStack, newViolations, restack } from './restingStack';
+
+const HEIGHT_EPSILON = 1e-9;
+
+function blockingInfoFor(bin: Bin, layers: Layout['layers']): BlockingInfo {
+  return {
+    binId: bin.id,
+    layerId: bin.layerId,
+    layerName: layers.find((l) => l.id === bin.layerId)?.name ?? bin.layerId,
+  };
+}
 
 /**
- * Validate if a bin can be placed at the given position.
- * @param excludeBinId - Single bin ID to exclude from collision checks
- * @param excludeBinIds - Set of bin IDs to exclude (for multi-select operations)
+ * Everything about a placement that does not depend on what else is
+ * stacked: bounds, the drawer shape, the layer, and same-layer overlap.
+ * Loading a saved or shared layout checks only this; a stack past the drawer
+ * or on clearance is shown and fixed in the editor, not refused or stashed.
  */
-export function canPlaceBin(
-  rect: Rect & {
-    height: HeightUnits;
-    clearanceHeight?: HeightUnits;
-    /** Lets the candidate's own linked-design excess rise count against bins above. */
-    linkedDesignId?: DesignId;
-  },
+export function canPlaceFootprint(
+  rect: Rect,
   layerId: LayerId,
   layout: Layout,
   excludeBinId?: BinId,
@@ -86,35 +87,50 @@ export function canPlaceBin(
     return { valid: false, reason: 'invalid_layer' };
   }
 
-  // Height check - only validate max height (bin can't exceed drawer)
-  // Layer height is a default for new bins, not a constraint for existing bins
-  const zStartResult = getLayerZStartResult(layerId, layers);
-  if (!isOk(zStartResult)) {
-    return { valid: false, reason: 'invalid_layer' };
-  }
-  const maxHeight = drawer.height - zStartResult.value;
-  if (rect.height > maxHeight) {
-    return { valid: false, reason: 'exceeds_height' };
-  }
-
-  const blockedZones = getBlockedZones(layerId, bins, layers);
-  for (const zone of blockedZones) {
-    if (footprintsOverlap(rect, zone)) {
-      // Find the layer name for the blocking bin
-      const sourceLayer = layers.find((l) => l.id === zone.sourceLayerId);
-      return {
-        valid: false,
-        reason: 'blocked_zone',
-        blockingInfo: {
-          binId: zone.sourceBinId,
-          layerId: zone.sourceLayerId,
-          layerName: sourceLayer?.name ?? zone.sourceLayerId,
-        },
-      };
+  // Only bins sharing a layer can collide; across layers the upper one rests
+  // on the lower one instead.
+  for (const other of bins) {
+    if (other.layerId !== layerId || other.id === excludeBinId || excludeBinIds?.has(other.id)) {
+      continue;
+    }
+    if (footprintsOverlap(rect, other)) {
+      return { valid: false, reason: 'collision', blockingInfo: blockingInfoFor(other, layers) };
     }
   }
 
-  // Collision check with other bins
+  return { valid: true };
+}
+
+/**
+ * Validate if a bin can be placed at the given position: its footprint, and
+ * where it would rest along with everything that would rest on it.
+ * @param excludeBinId - Single bin ID to exclude from collision checks
+ * @param excludeBinIds - Set of bin IDs to exclude (for multi-select operations)
+ */
+export function canPlaceBin(
+  rect: Rect & {
+    height: HeightUnits;
+    /**
+     * These two keys, when present (even as undefined), override the excluded
+     * bin's own values; when absent, the candidate inherits them.
+     */
+    clearanceHeight?: HeightUnits;
+    linkedDesignId?: DesignId;
+  },
+  layerId: LayerId,
+  layout: Layout,
+  excludeBinId?: BinId,
+  excludeBinIds?: Set<BinId>
+): ValidationResult {
+  const footprint = canPlaceFootprint(rect, layerId, layout, excludeBinId, excludeBinIds);
+  if (!footprint.valid) return footprint;
+
+  const { drawer, layers, bins } = layout;
+  const isExcluded = (id: BinId): boolean => id === excludeBinId || excludeBinIds?.has(id) === true;
+
+  // A caller moving or resizing an existing bin usually passes only the new
+  // footprint and height; the bin's clearance and linked rise travel with it.
+  const existing = excludeBinId !== undefined ? bins.find((b) => b.id === excludeBinId) : undefined;
   const testBin: Bin = {
     id: excludeBinId ?? toBinId('__test__'),
     layerId,
@@ -123,32 +139,53 @@ export function canPlaceBin(
     width: rect.width,
     depth: rect.depth,
     height: rect.height,
-    clearanceHeight: rect.clearanceHeight,
-    linkedDesignId: rect.linkedDesignId,
+    clearanceHeight: 'clearanceHeight' in rect ? rect.clearanceHeight : existing?.clearanceHeight,
+    linkedDesignId: 'linkedDesignId' in rect ? rect.linkedDesignId : existing?.linkedDesignId,
     category: toCategoryId(''),
     label: '',
     notes: '',
   };
 
-  for (const other of bins) {
-    // Skip excluded bins (single ID or set of IDs)
-    if (other.id === excludeBinId) continue;
-    if (excludeBinIds?.has(other.id)) continue;
-    if (other.layerId === STAGING_ID) continue;
-    const collisionResult = binsCollideResult(testBin, other, layers);
-    if (isOk(collisionResult) && collisionResult.value) {
-      // Find the layer name for the colliding bin
-      const otherLayer = layers.find((l) => l.id === other.layerId);
-      return {
-        valid: false,
-        reason: 'collision',
-        blockingInfo: {
-          binId: other.id,
-          layerId: other.layerId,
-          layerName: otherLayer?.name ?? other.layerId,
-        },
-      };
-    }
+  const before = getRestingStack(bins, layers);
+  const removed = new Set(bins.filter((b) => isExcluded(b.id)).map((b) => b.id));
+  const after = restack(before, bins, layers, removed, [testBin]);
+  const fresh = newViolations(before, after, drawer.height);
+  const infoFor = (id: BinId): BlockingInfo | undefined => {
+    const bin = bins.find((b) => b.id === id);
+    return bin && blockingInfoFor(bin, layers);
+  };
+
+  const onClearance = fresh.find((v) => v.kind === 'clearance' && v.binId === testBin.id);
+  if (onClearance?.kind === 'clearance') {
+    return {
+      valid: false,
+      reason: 'blocked_zone',
+      blockingInfo: infoFor(onClearance.clearanceOf),
+    };
+  }
+
+  // Compared against where the bin stood, so lowering a bin that already
+  // overflows is allowed even when it still does.
+  const own = after.bins.get(testBin.id);
+  const ownBefore = excludeBinId !== undefined ? before.bins.get(excludeBinId) : undefined;
+  if (
+    own !== undefined &&
+    own.stackTop > drawer.height + HEIGHT_EPSILON &&
+    (ownBefore === undefined || own.stackTop > ownBefore.stackTop + HEIGHT_EPSILON)
+  ) {
+    return { valid: false, reason: 'exceeds_height' };
+  }
+
+  // Lifting this bin lifts everything resting on it, and moving it away lets
+  // that drop: either can push another stack past the drawer or onto
+  // clearance reserved above some other bin.
+  const knockOn = fresh.find((v) => v.binId !== testBin.id);
+  if (knockOn !== undefined) {
+    return {
+      valid: false,
+      reason: knockOn.kind === 'clearance' ? 'blocked_zone' : 'exceeds_height',
+      blockingInfo: infoFor(knockOn.binId),
+    };
   }
 
   return { valid: true };

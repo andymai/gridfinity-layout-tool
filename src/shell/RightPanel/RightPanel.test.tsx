@@ -184,7 +184,6 @@ describe('RightPanel', () => {
       maxGridUnits: { width: 6, depth: 6 },
       needsSplit: false,
       heightRange: '2u – 12u',
-      minHeightReason: 'global_minimum',
       maxHeightReason: 'drawer_height',
     },
     updateField: vi.fn(),

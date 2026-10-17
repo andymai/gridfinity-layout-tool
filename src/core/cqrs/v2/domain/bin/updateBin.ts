@@ -173,10 +173,20 @@ export const updateBin = defineCommand({
 
     const merged: Bin = { ...existing, ...changes };
 
-    if (spatial && merged.layerId !== STAGING_ID) {
+    // A new height or clearance moves every bin resting on this one, so it is
+    // validated like a move. Linking is not: the rise it brings is derived from
+    // the design, and unlinking a deleted design must never be refused.
+    const restacks = changes.height !== undefined || 'clearanceHeight' in changes;
+
+    if ((spatial || restacks) && merged.layerId !== STAGING_ID) {
       const rect = { x: merged.x, y: merged.y, width: merged.width, depth: merged.depth };
       const validationResult = canPlaceBin(
-        { ...rect, height: merged.height, linkedDesignId: merged.linkedDesignId },
+        {
+          ...rect,
+          height: merged.height,
+          clearanceHeight: merged.clearanceHeight,
+          linkedDesignId: merged.linkedDesignId,
+        },
         merged.layerId,
         ctx.aggregate,
         id

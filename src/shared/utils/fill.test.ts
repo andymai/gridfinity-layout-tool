@@ -192,12 +192,9 @@ describe('fillAllWithSize with blocked zones', () => {
     bins: [],
   });
 
-  it('skips blocked zones from protruding lower layer bins', () => {
+  it('skips cells over clearance a lower-layer bin reserves', () => {
     const layout = createMultiLayerLayout();
-    // Add a bin on layer 1 with clearanceHeight that protrudes into layer 2
-    // Layer 1 starts at z=0, has height=3
-    // Bin has height=3 and clearanceHeight=2, so it extends to z=5
-    // Layer 2 starts at z=3, so the protruding bin blocks footprint on layer 2
+    // A fill bin there would rest on the contents the clearance protects.
     layout.bins = [
       {
         id: binId('protruding'),
@@ -207,7 +204,7 @@ describe('fillAllWithSize with blocked zones', () => {
         width: gridUnits(2),
         depth: gridUnits(2),
         height: heightUnits(3),
-        clearanceHeight: heightUnits(2), // Protrudes into layer 2
+        clearanceHeight: heightUnits(2),
         category: categoryId('cat1'),
         label: '',
         notes: '',
@@ -217,9 +214,7 @@ describe('fillAllWithSize with blocked zones', () => {
     // Fill layer 2 with 2x2 bins
     const result = fillAllWithSize(layout, layerId('layer2'), 2, 2, categoryId('cat1'));
 
-    // 6×6 grid with 2×2 bins = 9 positions normally
-    // But (0,0) is blocked by protruding bin
-    // So we should get 8 bins
+    // 6×6 grid with 2×2 bins = 9 positions; the clearance takes (0,0)
     expect(result.bins).toHaveLength(8);
 
     // Verify none of the bins overlap with the blocked zone (0,0 to 2,2)
@@ -230,9 +225,8 @@ describe('fillAllWithSize with blocked zones', () => {
     }
   });
 
-  it('handles multiple blocked zones from multiple protruding bins', () => {
+  it('handles clearance from several lower-layer bins', () => {
     const layout = createMultiLayerLayout();
-    // Add two bins on layer 1 that protrude into layer 2
     layout.bins = [
       {
         id: binId('protruding1'),
@@ -268,9 +262,8 @@ describe('fillAllWithSize with blocked zones', () => {
     expect(result.bins).toHaveLength(7);
   });
 
-  it('allows filling when lower layer bins do not protrude', () => {
+  it('fills on top of lower-layer bins without clearance', () => {
     const layout = createMultiLayerLayout();
-    // Bin without clearanceHeight - doesn't protrude
     layout.bins = [
       {
         id: binId('nonprotruding'),
@@ -280,7 +273,6 @@ describe('fillAllWithSize with blocked zones', () => {
         width: gridUnits(2),
         depth: gridUnits(2),
         height: heightUnits(3),
-        // No clearanceHeight, so doesn't protrude
         category: categoryId('cat1'),
         label: '',
         notes: '',
@@ -456,5 +448,71 @@ describe('fillGaps with blocked zones', () => {
     // 36 cells - 4 blocked - 4 existing = 28 cells to fill
     const totalBinCells = result.bins.reduce((sum, b) => sum + b.width * b.depth, 0);
     expect(totalBinCells).toBe(28);
+  });
+});
+
+describe('fill and the resting stack', () => {
+  const layout = (bins: Layout['bins']): Layout => ({
+    version: '1.0',
+    name: 'Test',
+    drawer: { width: gridUnits(4), depth: gridUnits(2), height: heightUnits(8) },
+    printBedSize: mm(168),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    categories: [{ id: categoryId('cat1'), name: 'Test', color: '#000' }],
+    layers: [
+      { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+      { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
+    ],
+    bins,
+  });
+  const bin = (id: string, layer: string, x: number, height: number): Layout['bins'][number] => ({
+    id: binId(id),
+    layerId: layerId(layer),
+    x: gridUnits(x),
+    y: gridUnits(0),
+    width: gridUnits(2),
+    depth: gridUnits(2),
+    height: heightUnits(height),
+    category: categoryId('cat1'),
+    label: '',
+    notes: '',
+  });
+
+  it('skips cells where a layer-height bin would rest past the drawer top', () => {
+    // 6u + 3u passes the 8u drawer; the plate beside it leaves room.
+    const result = fillAllWithSize(
+      layout([bin('tall', 'layer1', 0, 6)]),
+      layerId('layer2'),
+      2,
+      2,
+      categoryId('cat1')
+    );
+    expect(result.bins.map((b) => b.x)).toEqual([2]);
+  });
+
+  it('drops fill bins that would lift a bin above past the drawer', () => {
+    // Filling layer 1 lifts the 6u layer-2 bin onto a 3u fill bin: 9u > 8u.
+    // The 2u one beside it ends at 5u and stays.
+    const result = fillAllWithSize(
+      layout([bin('high', 'layer2', 0, 6), bin('low', 'layer2', 2, 2)]),
+      layerId('layer1'),
+      2,
+      2,
+      categoryId('cat1')
+    );
+    expect(result.bins.map((b) => b.x)).toEqual([2]);
+    expect(result.skippedCells).toBe(1);
+  });
+
+  it('applies the same lift rule to filling gaps', () => {
+    const result = fillGaps(
+      layout([bin('high', 'layer2', 0, 6), bin('low', 'layer2', 2, 2)]),
+      layerId('layer1'),
+      categoryId('cat1'),
+      2
+    );
+    expect(result.bins.every((b) => b.x >= 2)).toBe(true);
+    expect(result.addedCount).toBeGreaterThan(0);
   });
 });

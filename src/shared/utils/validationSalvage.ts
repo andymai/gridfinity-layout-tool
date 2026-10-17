@@ -26,7 +26,7 @@ import {
 } from '@/core/types';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { isValidDrawer, isValidLayer, isValidBin, isValidCategory } from './validationGuards';
-import { canPlaceBin } from './validationPlacement';
+import { canPlaceFootprint } from './validationPlacement';
 import { validateImport, PLACEMENT_REASON_MESSAGE } from './validationImport';
 
 export type SalvageSuccess = { valid: true; layout: Layout; salvaged: string[] };
@@ -83,9 +83,6 @@ export function salvageImport(data: unknown): SalvageResult {
   const layerIds = new Set(validLayers.map((l) => l.id));
   layerIds.add(STAGING_ID);
 
-  const totalHeight = validLayers.reduce((sum, layer) => sum + layer.height, 0);
-  if (totalHeight > drawer.height) return { valid: false };
-
   // Validate categories (fatal if structurally invalid)
   const categories = raw.categories as unknown[];
   for (const cat of categories) {
@@ -135,7 +132,7 @@ export function salvageImport(data: unknown): SalvageResult {
       return;
     }
 
-    // Check placement (bounds, height, collisions, blocked zones)
+    // Check the footprint (bounds, drawer shape, same-layer collisions)
     const partialLayout: Layout = {
       version: '1.0',
       name: 'salvage-validation',
@@ -155,20 +152,21 @@ export function salvageImport(data: unknown): SalvageResult {
       heightUnitMm: mm(7),
     };
 
-    const placementResult = canPlaceBin(
+    const placementResult = canPlaceFootprint(
       {
         x: gridUnits(bin.x),
         y: gridUnits(bin.y),
         width: gridUnits(bin.width),
         depth: gridUnits(bin.depth),
-        height: heightUnits(bin.height),
       },
       toLayerId(bin.layerId),
       partialLayout
     );
 
-    if (!placementResult.valid) {
-      const message = PLACEMENT_REASON_MESSAGE[placementResult.reason] || 'has invalid placement';
+    if (!placementResult.valid || bin.height > drawer.height) {
+      const message = !placementResult.valid
+        ? PLACEMENT_REASON_MESSAGE[placementResult.reason] || 'has invalid placement'
+        : 'is taller than the drawer';
       salvaged.push(`Bin ${i} ${message} and was moved to staging`);
       resultBins.push({ ...typedBin, layerId: STAGING_ID });
       return;

@@ -8,33 +8,25 @@ graph TB
     ALP[ActiveLayerPanel] --> FL[fillLayer] & CLR[clearLayer] & SAL[setActiveLayer]
     SAL --> SEL[(selection)]
     DL -->|bins to staging| LAY[(layout)]
-    AL --> AE[layerAutoExpansion]
 ```
 
 ## Key Files
 
 - `components/LayerPanel.tsx` — layer list with add/delete/reorder, drag-and-drop reordering
 - `components/ActiveLayerPanel.tsx` — active layer controls (fill, clear, paint mode)
-- `utils/layerAutoExpansion.ts` — auto-expand layer height for tall bins
 
 ## Z-Axis Model (CRITICAL)
 
-```
-layers[0] is BOTTOM - array order = physical stack order
-UI displays reversed via getDisplayLayers() from @/shared/utils/collision
-
-Layer 0: z = 0 to h0
-Layer 1: z = h0 to (h0 + h1)
-Layer 2: z = (h0 + h1) to ...
-```
-
-Z-axis calculations (getLayerZStart, getLayerZEnd) are in `@/shared/utils/collision`.
+`layers[0]` is the bottom; the UI reverses via `getDisplayLayers()`. A layer is
+stacking order only: each bin rests on the tallest lower-layer bin under its
+footprint, or the plate (`resolveRestingStack()` in `@/shared/utils/restingStack`).
+Layer height is the default for new bins and moves nothing.
 
 ## Gotchas
 
 1. **Bottom-left coordinate system** - Y=0 is bottom, layers[0] is bottom
-2. **Blocked zones** - bins from lower layers protrude into higher layers
-3. **Reorder validation** - checks for vertical collisions before allowing
+2. **Blocked zones** - only clearance a lower bin reserves; tall bins just carry what is above
+3. **Reorder validation** - refuses a reorder that stacks past the drawer top
 4. **Can't delete last layer** - minimum 1 required
 5. **Layer deletion** - bins move to staging
 

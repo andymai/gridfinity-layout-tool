@@ -35,7 +35,7 @@ not sufficient.
 ### What only the importer can catch
 
 - `bin.category` must name a category that exists in the same file.
-- A bin must actually fit: inside the drawer, within its layer's height, not
+- A bin must actually fit: inside the drawer, no taller than the drawer, not
   overlapping another bin on the same layer.
 - `compartments.cells.length` must equal `cols * rows`.
 - `cellMask.cells.length` must equal `cols * rows`, at half-bin resolution.

@@ -1,9 +1,8 @@
-import type { Bin as BinType, Category, Layer, Drawer, ResizeHandle, BinId } from '@/core/types';
+import type { Bin as BinType, Category, Drawer, ResizeHandle, BinId } from '@/core/types';
 
 export interface BinProps {
   bin: BinType;
   category?: Category;
-  layer?: Layer;
   drawer: Drawer;
   cellSize: number;
   gap?: number;
@@ -25,8 +24,8 @@ export interface BinProps {
  * Only re-render if props that affect visual appearance change.
  */
 export function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): boolean {
-  const { bin: prevBin, category: prevCat, layer: prevLayer, drawer: prevDrawer } = prevProps;
-  const { bin: nextBin, category: nextCat, layer: nextLayer, drawer: nextDrawer } = nextProps;
+  const { bin: prevBin, category: prevCat, drawer: prevDrawer } = prevProps;
+  const { bin: nextBin, category: nextCat, drawer: nextDrawer } = nextProps;
 
   // Selection/ghost state
   if (prevProps.isSelected !== nextProps.isSelected) return false;
@@ -85,9 +84,8 @@ export function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): bool
     }
   }
 
-  // Category/layer/drawer - only compare visual-affecting properties
+  // Category/drawer - only compare visual-affecting properties
   if (prevCat?.id !== nextCat?.id || prevCat?.color !== nextCat?.color) return false;
-  if (prevLayer?.id !== nextLayer?.id || prevLayer?.height !== nextLayer?.height) return false;
   if (
     prevDrawer.width !== nextDrawer.width ||
     prevDrawer.depth !== nextDrawer.depth ||

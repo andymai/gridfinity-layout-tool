@@ -54,16 +54,10 @@ export {
   formatDimension,
 } from './validation';
 
-export {
-  getDisplayLayers,
-  getLayerZStartResult,
-  getBin3DRectResult,
-  footprintsOverlap,
-  binsCollideResult,
-  getBlockedZones,
-  isInBlockedZone,
-  checkLayerReorderCollisions,
-} from './collision';
+export { getDisplayLayers, footprintsOverlap, isInBlockedZone } from './collision';
+
+export { resolveRestingStack, getRestingStack, getBlockedZones } from './restingStack';
+export type { RestingBin, RestingStack } from './restingStack';
 
 export { fillAllWithSize, fillGaps } from './fill';
 

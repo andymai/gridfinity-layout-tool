@@ -16,8 +16,8 @@ import { batch } from '@/core/cqrs';
 import type { Bin, BinId, CategoryId, HeightUnits, LayerId, Layout } from '@/core/types';
 import { categoryId as toCategoryId, layerId as toLayerId } from '@/core/types';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
-import { getLayerZStartResult } from '@/shared/utils/collision';
-import { isErr, isOk, type Result } from '@/core/result';
+import { maxBinHeight, maxClearanceHeight } from '@/shared/utils/restingStack';
+import { isErr, type Result } from '@/core/result';
 import type { LayoutError } from '@/core/result';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { clamp } from '@/shared/utils/math';
@@ -105,17 +105,15 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
       const updates = selectedBins
         .filter((b) => !isBinLocked(b))
         .map((b) => {
-          const binLayer = layout.layers.find((l) => l.id === b.layerId);
-          const minHeight = Math.max(
+          const binMaxHeight =
+            b.layerId === STAGING_ID
+              ? layout.drawer.height
+              : maxBinHeight(b, layout.bins, layout.layers, layout.drawer.height);
+          const newHeight = clamp(
+            b.height + delta,
             CONSTRAINTS.MIN_BIN_HEIGHT,
-            binLayer?.height || CONSTRAINTS.MIN_BIN_HEIGHT
-          );
-          let binMaxHeight = layout.drawer.height as number;
-          if (b.layerId !== STAGING_ID && binLayer) {
-            const zR = getLayerZStartResult(b.layerId, layout.layers);
-            binMaxHeight = layout.drawer.height - (isOk(zR) ? zR.value : layout.drawer.height);
-          }
-          const newHeight = clamp(b.height + delta, minHeight, binMaxHeight) as HeightUnits;
+            Math.max(CONSTRAINTS.MIN_BIN_HEIGHT, binMaxHeight)
+          ) as HeightUnits;
           return { bin: b, newHeight };
         });
 
@@ -144,7 +142,7 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
         emitLinkedBinResize(b, { width: b.width, depth: b.depth, height: newHeight });
       }
     },
-    [selectedBins, layout.drawer.height, layout.layers, updateBin, addToast, t]
+    [selectedBins, layout.drawer.height, layout.layers, layout.bins, updateBin, addToast, t]
   );
 
   const updateMultiClearance = useCallback(
@@ -153,14 +151,10 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
 
       batch(() => {
         for (const b of selectedBins) {
-          const binLayer = layout.layers.find((l) => l.id === b.layerId);
-          // For staging bins, use full drawer height; for placed bins, account for layer position
-          let binMaxHeight = layout.drawer.height as number;
-          if (b.layerId !== STAGING_ID && binLayer) {
-            const zR = getLayerZStartResult(b.layerId, layout.layers);
-            binMaxHeight = layout.drawer.height - (isOk(zR) ? zR.value : layout.drawer.height);
-          }
-          const maxClearance = binMaxHeight - b.height;
+          const maxClearance =
+            b.layerId === STAGING_ID
+              ? layout.drawer.height - b.height
+              : maxClearanceHeight(b, layout.bins, layout.layers, layout.drawer.height);
           const newClearance = clamp(
             (b.clearanceHeight || 0) + delta,
             0,
@@ -170,7 +164,7 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
         }
       });
     },
-    [selectedBins, layout.drawer.height, layout.layers, updateBin]
+    [selectedBins, layout.drawer.height, layout.layers, layout.bins, updateBin]
   );
 
   const updateMultiLayer = useCallback(
@@ -199,7 +193,6 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
             width: b.width,
             depth: b.depth,
             height: b.height,
-            linkedDesignId: b.linkedDesignId,
           },
           targetLayerId,
           layout,

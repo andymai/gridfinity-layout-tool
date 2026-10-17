@@ -74,7 +74,6 @@ describe('Bin', () => {
   const defaultProps = {
     bin: defaultBin,
     category: defaultCategory,
-    layer: defaultLayer,
     drawer: defaultDrawer,
     cellSize: 32,
     gap: 2,
@@ -280,18 +279,44 @@ describe('Bin', () => {
     });
   });
 
-  describe('tall bins', () => {
-    it('shows tall bin indicator when height exceeds layer height', () => {
-      const tallBin = { ...defaultBin, height: heightUnits(6) };
-      const shortLayer = { ...defaultLayer, height: heightUnits(3) };
-      render(<Bin {...defaultProps} bin={tallBin} layer={shortLayer} />);
-      expect(screen.getByText('6u')).toBeInTheDocument();
+  describe('resting badge', () => {
+    const upperLayer: Layer = { id: layerId('layer-2'), name: 'Layer 2', height: heightUnits(3) };
+    const upperBin: BinType = { ...defaultBin, id: binId('upper'), layerId: upperLayer.id };
+    const seed = (bins: BinType[]): void => {
+      const { layout } = useLayoutStore.getState();
+      useLayoutStore.setState({ layout: { ...layout, layers: [defaultLayer, upperLayer], bins } });
+    };
+
+    it('marks a bin resting on another with its height above the plate', () => {
+      seed([defaultBin, upperBin]);
+      render(<Bin {...defaultProps} bin={upperBin} />);
+      expect(screen.getByTestId('resting-badge')).toHaveTextContent('on 3u');
+      expect(
+        screen.getByRole('button', { name: /resting 3u above the plate/ })
+      ).toBeInTheDocument();
     });
 
-    it('does not show tall indicator when height equals layer height', () => {
-      const normalBin = { ...defaultBin, height: heightUnits(3) };
-      render(<Bin {...defaultProps} bin={normalBin} />);
-      expect(screen.queryByText('3u')).not.toBeInTheDocument();
+    it('shows no badge for a bin on the plate, whatever its height', () => {
+      const tallBin = { ...defaultBin, height: heightUnits(9) };
+      seed([tallBin]);
+      render(<Bin {...defaultProps} bin={tallBin} />);
+      expect(screen.queryByTestId('resting-badge')).not.toBeInTheDocument();
+    });
+
+    it('flags a bin whose base is only partly supported', () => {
+      const narrow = { ...defaultBin, width: gridUnits(1) };
+      seed([narrow, upperBin]);
+      render(<Bin {...defaultProps} bin={upperBin} />);
+      expect(screen.getByTestId('resting-badge')).toHaveTextContent('⚠');
+      expect(
+        screen.getByRole('button', { name: /part of its base unsupported/ })
+      ).toBeInTheDocument();
+    });
+
+    it('leaves ghost bins unbadged', () => {
+      seed([defaultBin, upperBin]);
+      render(<Bin {...defaultProps} bin={upperBin} isGhost={true} />);
+      expect(screen.queryByTestId('resting-badge')).not.toBeInTheDocument();
     });
   });
 

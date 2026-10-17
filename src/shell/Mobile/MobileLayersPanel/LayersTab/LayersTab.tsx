@@ -9,6 +9,7 @@ import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useTranslation } from '@/i18n';
 import { Button, IconButton, Input, PlusIcon, MinusIcon } from '@/design-system';
 import { useLayerListController } from '@/features/layers/hooks/useLayerListController';
+import { TallestStackMeter } from '@/features/layers/components/TallestStackMeter';
 
 /**
  * Layers tab content - layer list with selection, height controls, reordering, and deletion.
@@ -43,9 +44,10 @@ export function LayersTab() {
     displayLayers,
     activeLayerId,
     setActiveLayer,
-    totalLayerHeight,
+    tallestStack,
+    drawerHeight,
     canAddLayer,
-    addLayerWithAutoExpand,
+    addNewLayer,
     deleteLayerId,
     layerToDelete,
     deletedLayerBinCount,
@@ -108,26 +110,9 @@ export function LayersTab() {
 
   return (
     <div className="pb-4">
-      {/* Layer usage indicator - only show for multiple layers */}
-      {hasMultipleLayers && (
-        <div className="flex items-center gap-2 mb-3 px-1">
-          <div className="flex-1 h-2 rounded-full overflow-hidden bg-surface-elevated">
-            <div
-              className="h-full rounded-full transition-all"
-              style={{
-                width: `${Math.min(100, (totalLayerHeight / drawer.height) * 100)}%`,
-                backgroundColor:
-                  totalLayerHeight >= drawer.height ? 'var(--color-warning)' : 'var(--color-info)',
-              }}
-            />
-          </div>
-          <span
-            className={`text-xs ${totalLayerHeight >= drawer.height ? 'text-warning' : 'text-content-tertiary'}`}
-          >
-            {totalLayerHeight}/{drawer.height}u
-          </span>
-        </div>
-      )}
+      <div className="mb-3 px-1">
+        <TallestStackMeter tallest={tallestStack} drawerHeight={drawerHeight} />
+      </div>
 
       {/* Reorder error message */}
       {reorderError && (
@@ -315,7 +300,7 @@ export function LayersTab() {
       <Button
         variant="primary"
         fullWidth
-        onClick={addLayerWithAutoExpand}
+        onClick={addNewLayer}
         disabled={!canAddLayer}
         leftIcon={<PlusIcon />}
       >

@@ -41,7 +41,7 @@ Two legs are reported separately, and a file is only importable when both pass:
 
 Schema-green does not mean importable. JSON Schema cannot express: a
 `bin.category` referencing a category that exists, a bin fitting inside the
-drawer and its layer without colliding, `compartments.cells.length === cols * rows`,
+drawer without colliding on its layer, `compartments.cells.length === cols * rows`,
 `cellMask.cells.length === cols * rows`, or `splitOverride` sums matching the
 plate. `docs/schemas/examples/invalid/importer/` holds files that pass the schema
 and fail the importer, kept as proof of that gap.

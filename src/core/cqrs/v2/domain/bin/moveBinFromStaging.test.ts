@@ -7,7 +7,7 @@ import { moveBinFromStaging } from './moveBinFromStaging';
 import { makeLayout, makeBin } from './_testHelpers';
 
 describe('v2 bin.moveFromStaging', () => {
-  it('emits an event whose payload includes the resolved layer height', () => {
+  it('keeps the bin’s own height, not the target layer’s', () => {
     const bin = makeBin('bin_1', { layerId: STAGING_ID, height: heightUnits(5) });
     const layout = makeLayout({
       layers: [{ id: layerId('layer_1'), name: 'L1', height: heightUnits(3) }],
@@ -21,7 +21,7 @@ describe('v2 bin.moveFromStaging', () => {
 
     expect(isOk(result)).toBe(true);
     if (!isOk(result)) return;
-    expect(result.value.event.payload.height).toBe(heightUnits(3));
+    expect(result.value.event.payload.height).toBe(heightUnits(5));
     expect(result.value.event.payload.layerId).toBe(layerId('layer_1'));
   });
 
@@ -68,7 +68,7 @@ describe('v2 bin.moveFromStaging', () => {
     expect(result.ok).toBe(false);
   });
 
-  it('apply() round-trip: layerId, x, y, AND height are restored', () => {
+  it('apply() round-trip: layerId, x, y land and the height is unchanged', () => {
     const bin = makeBin('bin_1', { layerId: STAGING_ID, height: heightUnits(5) });
     const layout = makeLayout({
       layers: [{ id: layerId('layer_1'), name: 'L1', height: heightUnits(3) }],
@@ -88,6 +88,6 @@ describe('v2 bin.moveFromStaging', () => {
     });
 
     expect(applied.bins[0].layerId).toBe(layerId('layer_1'));
-    expect(applied.bins[0].height).toBe(heightUnits(3));
+    expect(applied.bins[0].height).toBe(heightUnits(5));
   });
 });

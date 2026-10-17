@@ -8,9 +8,9 @@ import {
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useGapFitStore } from '@/core/store/gapFit';
 import { canPlaceBin, getPlacementErrorMessage } from '@/shared/utils/validation';
-import { getLayerZStartResult } from '@/shared/utils/collision';
-import { snapToGrid } from '@/core/constants';
-import { effectiveGridUnitMmY } from '@/core/types';
+import { maxBinHeight } from '@/shared/utils/restingStack';
+import { CONSTRAINTS, snapToGrid } from '@/core/constants';
+import { binId, effectiveGridUnitMmY, heightUnits } from '@/core/types';
 import { snapDrawRect } from '@/shared/utils/snap';
 import { capturePointer } from './interaction';
 import { isOk } from '@/core/result';
@@ -170,25 +170,32 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
             layout,
             minSizeNow
           );
-          const zStartResult = getLayerZStartResult(activeLayerId, layout.layers);
-          if (!isOk(zStartResult)) return;
-          const maxHeight = (layout.drawer.height - zStartResult.value) as HeightUnits;
+          const gap = {
+            x: x1 as GridUnits,
+            y: y1 as GridUnits,
+            width: snapped.width as GridUnits,
+            depth: snapped.depth as GridUnits,
+          };
+          const maxHeight = maxBinHeight(
+            {
+              ...gap,
+              id: binId('__gap__'),
+              layerId: activeLayerId,
+              height: heightUnits(0),
+              category: activeCategoryId,
+              label: '',
+              notes: '',
+            },
+            layout.bins,
+            layout.layers,
+            layout.drawer.height
+          ) as HeightUnits;
           // Probe with the full remaining stack budget: confirms the clamped
-          // footprint itself is placeable (blocked zones included) before the
-          // gallery ever opens.
+          // footprint itself is placeable (clearance zones included) before
+          // the gallery ever opens.
           const probe: ValidationResult =
-            maxHeight > 0
-              ? canPlaceBin(
-                  {
-                    x: x1 as GridUnits,
-                    y: y1 as GridUnits,
-                    width: snapped.width as GridUnits,
-                    depth: snapped.depth as GridUnits,
-                    height: maxHeight,
-                  },
-                  activeLayerId,
-                  layout
-                )
+            maxHeight >= CONSTRAINTS.MIN_BIN_HEIGHT
+              ? canPlaceBin({ ...gap, height: maxHeight }, activeLayerId, layout)
               : { valid: false, reason: 'exceeds_height' };
           if (!probe.valid) {
             addToast(getPlacementErrorMessage(t, probe.reason, probe.blockingInfo), 'error');

@@ -40,13 +40,11 @@ describe('drawerActions', () => {
       expect(useLayoutStore.getState().layout.drawer.depth).toBe(CONSTRAINTS.GRID_MIN);
     });
 
-    it('updates drawer height, clamped to at least total layer height', () => {
+    it('clamps an empty drawer to the minimum layer height, ignoring layer heights', () => {
       const { updateDrawer } = useLayoutStore.getState();
-      // Default layout has 1 layer with height 3
+      // The default layer is 3u, but with no bins nothing has to fit.
       updateDrawer({ height: heightUnits(1) });
-      const h = useLayoutStore.getState().layout.drawer.height;
-      // Should be at least the total layer height (3)
-      expect(h).toBeGreaterThanOrEqual(3);
+      expect(useLayoutStore.getState().layout.drawer.height).toBe(CONSTRAINTS.MIN_LAYER_HEIGHT);
     });
 
     it('moves out-of-bounds bins to staging when shrinking', () => {

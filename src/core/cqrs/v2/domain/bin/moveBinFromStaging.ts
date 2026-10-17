@@ -1,9 +1,7 @@
 /**
- * Move a bin out of staging into a layer. handle() resolves the target
- * layer's height (the bin's new height) and includes it in the event
- * payload so apply() doesn't need to consult layout state. Tightens
- * v1 by rejecting non-staging source bins (v1 silently re-stamped
- * height — a footgun).
+ * Move a bin out of staging into a layer. The bin keeps its own height; the
+ * event payload still records one because events from before that rule
+ * carry the target layer's height, and replay must reproduce them.
  */
 
 import { z } from 'zod';
@@ -53,10 +51,9 @@ export const moveBinFromStaging = defineCommand({
     }
 
     // Tighten v2 vs v1: the command name implies the source is in staging.
-    // v1 silently re-moved bins regardless of source layer, which would
-    // also re-stamp the bin's height to the target layer's height — a
-    // footgun. Reject explicitly so the caller picks a more appropriate
-    // command (e.g. bin.update for cross-layer moves).
+    // v1 silently re-moved bins regardless of source layer. Reject
+    // explicitly so the caller picks a more appropriate command (e.g.
+    // bin.update for cross-layer moves).
     if (bin.layerId !== STAGING_ID) {
       return err(
         layoutInvalidOperation(
@@ -74,12 +71,9 @@ export const moveBinFromStaging = defineCommand({
     const x = gridUnits(payload.x);
     const y = gridUnits(payload.y);
 
-    // Use the layer's height for collision checks (and on the bin itself
-    // after the move) — staging bins keep their original height while in
-    // staging, but a grid placement must fit the layer's slot.
     const rect = { x, y, width: bin.width, depth: bin.depth };
     const validationResult = canPlaceBin(
-      { ...rect, height: layer.height, linkedDesignId: bin.linkedDesignId },
+      { ...rect, height: bin.height },
       layerId,
       ctx.aggregate,
       id
@@ -90,7 +84,7 @@ export const moveBinFromStaging = defineCommand({
 
     return ok({
       value: undefined,
-      event: { payload: { id, layerId, x, y, height: layer.height } },
+      event: { payload: { id, layerId, x, y, height: bin.height } },
     });
   },
   apply: (event, draft) => {

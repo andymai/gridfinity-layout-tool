@@ -1,0 +1,426 @@
+import { useState, useCallback, useRef, useEffect } from 'react';
+import type { KeyboardEvent } from 'react';
+import type { Layer, LayerId } from '@/core/types';
+import { CONSTRAINTS } from '@/core/constants';
+import { IconButton, Input } from '@/design-system';
+import { useTranslation } from '@/i18n';
+
+const ACCENT_STRIPE_WIDTH = 2.5;
+const TRANSITION = '0.2s ease-out';
+const HEIGHT_DEBOUNCE_MS = 400;
+const ROW_PX = 32;
+
+interface LayerStat {
+  coverage: number;
+  binCount: number;
+}
+
+interface LayerRowsProps {
+  /** Display order: top layer first. */
+  layers: Layer[];
+  activeLayerId: LayerId | null;
+  hoveredLayerId: LayerId | null;
+  editingLayerId: LayerId | null;
+  onLayerClick: (layerId: LayerId) => void;
+  onLayerHover: (layerId: LayerId | null) => void;
+  onReorder: (fromDisplayIndex: number, toDisplayIndex: number) => void;
+  onNameChange: (layerId: LayerId, name: string) => void;
+  onHeightChange: (layerId: LayerId, delta: number) => void;
+  onDeleteLayer: (layerId: LayerId) => void;
+  onEditingStart: (layerId: LayerId) => void;
+  onEditingEnd: () => void;
+  layerStats: Partial<Record<string, LayerStat>>;
+}
+
+function GripIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="10"
+      height="14"
+      viewBox="0 0 10 14"
+      data-testid="grip-icon"
+      aria-hidden="true"
+      className={className}
+    >
+      {[3, 7, 11].map((cy) => (
+        <g key={cy} fill="var(--text-disabled)">
+          <circle cx={2.5} cy={cy} r={1.2} />
+          <circle cx={7.5} cy={cy} r={1.2} />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/**
+ * One equal-height row per layer, top layer first. A layer's height is the
+ * default for bins drawn on it, not a slice of the drawer, so rows are not
+ * sized by it.
+ */
+export function LayerRows({
+  layers,
+  activeLayerId,
+  hoveredLayerId,
+  editingLayerId,
+  onLayerClick,
+  onLayerHover,
+  onReorder,
+  onNameChange,
+  onHeightChange,
+  onDeleteLayer,
+  onEditingStart,
+  onEditingEnd,
+  layerStats,
+}: LayerRowsProps) {
+  const t = useTranslation();
+  const [dragSourceIndex, setDragSourceIndex] = useState<number | null>(null);
+  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  const [pendingDeltas, setPendingDeltas] = useState<Record<string, number>>({});
+  const flushTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  const handleDebouncedHeightChange = useCallback(
+    (layerId: LayerId, delta: number) => {
+      setPendingDeltas((prev) => ({ ...prev, [layerId]: (prev[layerId] ?? 0) + delta }));
+      clearTimeout(flushTimers.current[layerId]);
+      flushTimers.current[layerId] = setTimeout(() => {
+        setPendingDeltas((prev) => {
+          const accumulated = prev[layerId] ?? 0;
+          if (accumulated !== 0) onHeightChange(layerId, accumulated);
+          const { [layerId]: _, ...rest } = prev;
+          return rest;
+        });
+        const { [layerId]: _, ...restTimers } = flushTimers.current;
+        flushTimers.current = restTimers;
+      }, HEIGHT_DEBOUNCE_MS);
+    },
+    [onHeightChange]
+  );
+
+  useEffect(() => {
+    const timers = flushTimers.current;
+    return () => Object.values(timers).forEach(clearTimeout);
+  }, []);
+
+  const hasMultipleLayers = layers.length > 1;
+
+  const handleKeyDown = (layerId: LayerId) => (e: KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onLayerClick(layerId);
+    }
+  };
+
+  const handleMouseLeave = useCallback(() => onLayerHover(null), [onLayerHover]);
+
+  useEffect(() => {
+    if (editingLayerId !== null && nameInputRef.current) {
+      nameInputRef.current.focus();
+      nameInputRef.current.select();
+    }
+  }, [editingLayerId]);
+
+  const handleDragStart = (e: React.DragEvent, displayIndex: number) => {
+    setDragSourceIndex(displayIndex);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(displayIndex));
+    if (e.currentTarget instanceof HTMLElement) {
+      e.dataTransfer.setDragImage(e.currentTarget, 0, 0);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent, displayIndex: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragSourceIndex === null || displayIndex === dragSourceIndex) {
+      setDropTargetIndex(null);
+      return;
+    }
+    setDropTargetIndex(displayIndex);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (
+      dragSourceIndex !== null &&
+      dropTargetIndex !== null &&
+      dragSourceIndex !== dropTargetIndex
+    ) {
+      onReorder(dragSourceIndex, dropTargetIndex);
+    }
+    setDragSourceIndex(null);
+    setDropTargetIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDragSourceIndex(null);
+    setDropTargetIndex(null);
+  };
+
+  const getFill = (isActive: boolean, isHovered: boolean) => {
+    if (isActive) return 'var(--color-accent-muted)';
+    if (isHovered) return 'var(--bg-active)';
+    return 'var(--bg-elevated)';
+  };
+
+  return (
+    <div className="w-full">
+      <div
+        className="relative flex flex-col overflow-hidden border"
+        style={{ borderColor: 'var(--border-subtle)' }}
+        data-testid="content-area"
+      >
+        {layers.map((layer, displayIndex) => {
+          const isActive = layer.id === activeLayerId;
+          const isHovered = !isActive && layer.id === hoveredLayerId;
+          const isDragging = dragSourceIndex === displayIndex;
+          const isDropTarget = dropTargetIndex === displayIndex;
+          const isEditing = editingLayerId === layer.id;
+          const isLastRow = displayIndex === layers.length - 1;
+          const pendingDelta = pendingDeltas[layer.id] ?? 0;
+          const previewHeight = Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, layer.height + pendingDelta);
+          const stat = layerStats[layer.id];
+          const tooltipText = stat
+            ? t('layers.segmentTooltip', {
+                name: layer.name,
+                coverage: stat.coverage,
+                count: stat.binCount,
+              })
+            : layer.name;
+          const showGrip = hasMultipleLayers;
+
+          return (
+            <div
+              key={layer.id}
+              role="button"
+              tabIndex={0}
+              aria-label={t('layers.selectLayer', { name: layer.name })}
+              aria-pressed={isActive}
+              title={tooltipText}
+              data-layer-id={layer.id}
+              data-testid={isHovered ? 'hover-highlight' : undefined}
+              draggable={hasMultipleLayers && !isEditing}
+              onClick={() => onLayerClick(layer.id)}
+              onDoubleClick={() => onEditingStart(layer.id)}
+              onKeyDown={handleKeyDown(layer.id)}
+              onMouseEnter={() => onLayerHover(layer.id)}
+              onMouseLeave={handleMouseLeave}
+              onDragStart={(e) => handleDragStart(e, displayIndex)}
+              onDragOver={(e) => handleDragOver(e, displayIndex)}
+              onDrop={handleDrop}
+              onDragEnd={handleDragEnd}
+              className={`relative ${hasMultipleLayers && !isEditing ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
+              style={{
+                height: ROW_PX,
+                backgroundColor: getFill(isActive, isHovered),
+                opacity: isDragging ? 0.4 : 1,
+                borderBottom: isLastRow ? 'none' : '1px solid var(--border-strong)',
+                transition: `opacity ${TRANSITION}`,
+              }}
+            >
+              {isActive && (
+                <div
+                  className="absolute left-0 top-0 h-full"
+                  style={{
+                    width: ACCENT_STRIPE_WIDTH,
+                    backgroundColor: 'var(--color-accent)',
+                  }}
+                />
+              )}
+
+              <div className="flex items-center justify-between h-full pl-3 pr-2">
+                {isActive ? (
+                  <>
+                    {isEditing ? (
+                      <Input
+                        ref={nameInputRef}
+                        value={layer.name}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          onNameChange(layer.id, e.target.value);
+                        }}
+                        onBlur={onEditingEnd}
+                        onKeyDown={(e) => {
+                          e.stopPropagation();
+                          if (e.key === 'Enter') onEditingEnd();
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        size="sm"
+                        wrapperClassName="min-w-0 flex-1"
+                        className="px-1 text-xs font-medium"
+                        aria-label={t('layers.layerNamePlaceholder')}
+                      />
+                    ) : (
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        className="truncate text-xs font-medium cursor-text"
+                        style={{ color: 'var(--text-primary)' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditingStart(layer.id);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onEditingStart(layer.id);
+                          }
+                        }}
+                        title={t('layers.clickToRename')}
+                      >
+                        {layer.name}
+                      </span>
+                    )}
+
+                    <div
+                      className="flex items-center gap-1 ml-1 flex-shrink-0"
+                      onDoubleClick={(e) => e.stopPropagation()}
+                    >
+                      {stat && (
+                        <span className="mr-1 text-micro tabular-nums text-content-disabled">
+                          {t('layers.binCount', { count: stat.binCount })}
+                        </span>
+                      )}
+                      <IconButton
+                        variant="ghost"
+                        size="sm"
+                        touchTarget={false}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDebouncedHeightChange(layer.id, -1);
+                        }}
+                        disabled={previewHeight <= CONSTRAINTS.MIN_LAYER_HEIGHT}
+                        className="w-5 h-5 !px-0 !py-0 rounded text-content-disabled hover:text-content hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        aria-label={t('layers.decreaseHeight', { name: layer.name })}
+                      >
+                        <svg
+                          className="w-3 h-3"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M20 12H4"
+                          />
+                        </svg>
+                      </IconButton>
+                      <span
+                        className="text-micro tabular-nums min-w-[20px] text-center"
+                        style={{
+                          fontFamily: 'ui-monospace, monospace',
+                          color: 'var(--text-tertiary)',
+                        }}
+                        title={t('layers.heightTooltip')}
+                      >
+                        {previewHeight}u
+                      </span>
+                      <IconButton
+                        variant="ghost"
+                        size="sm"
+                        touchTarget={false}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDebouncedHeightChange(layer.id, 1);
+                        }}
+                        className="w-5 h-5 !px-0 !py-0 rounded text-content-disabled hover:text-content hover:bg-surface-hover transition-colors"
+                        aria-label={t('layers.increaseHeight', { name: layer.name })}
+                      >
+                        <svg
+                          className="w-3 h-3"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                      </IconButton>
+
+                      {hasMultipleLayers && (
+                        <IconButton
+                          variant="dangerGhost"
+                          size="sm"
+                          touchTarget={false}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteLayer(layer.id);
+                          }}
+                          className="w-5 h-5 !px-0 !py-0 rounded text-content-disabled transition-colors ml-1"
+                          title={t('layers.deleteTooltip')}
+                          aria-label={t('layers.deleteLayerAria', { name: layer.name })}
+                        >
+                          <svg
+                            className="w-3 h-3"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </IconButton>
+                      )}
+
+                      {showGrip && !isEditing && <GripIcon className="ml-0.5" />}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <span
+                      className="truncate text-xs font-medium"
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
+                      {layer.name}
+                    </span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {stat && (
+                        <span className="text-micro tabular-nums text-content-disabled">
+                          {t('layers.binCount', { count: stat.binCount })}
+                        </span>
+                      )}
+                      <span
+                        className="text-label"
+                        style={{
+                          fontFamily: 'ui-monospace, monospace',
+                          color: 'var(--text-disabled)',
+                        }}
+                        title={t('layers.heightTooltip')}
+                      >
+                        {layer.height}u
+                      </span>
+                      {showGrip && <GripIcon />}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {isDropTarget && dragSourceIndex !== null && (
+                <div
+                  className="absolute left-0 right-0"
+                  style={{
+                    [dragSourceIndex < displayIndex ? 'bottom' : 'top']: -1,
+                    height: 2,
+                    backgroundColor: 'var(--color-accent)',
+                  }}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

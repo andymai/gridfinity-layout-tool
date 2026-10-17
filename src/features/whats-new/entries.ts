@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'bins-rest-on-bins-below',
+    date: '2026-10-16',
+    kind: 'improved',
+    featured: true,
+    title: { en: 'Stacked bins rest on the bins below' },
+    body: {
+      en: 'Bins on an upper layer now sit on whatever is under them, as they would in a real drawer, instead of floating at a fixed layer height. You can stack bins of different heights without raising the drawer height: only the tallest stack has to fit, and the Layers panel shows it against the drawer. A layer’s height now only sets the height of new bins you draw on it. A small tag such as "on 6u" marks a bin resting on another, and turns amber when part of its base has nothing under it.',
+    },
+    action: { kind: 'openTool', tool: 'layout' },
+  },
+  {
     id: 'inside-wall-text',
     date: '2026-10-16',
     kind: 'new',

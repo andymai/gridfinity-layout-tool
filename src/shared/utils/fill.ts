@@ -1,20 +1,24 @@
-import type { Bin, GridUnits, Layout, LayerId, CategoryId } from '@/core/types';
+import type { Bin, BinId, GridUnits, Layout, LayerId, CategoryId } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { generateBinId, CONSTRAINTS } from '@/core/constants';
-import { getBlockedZones } from './collision';
+import { getRestingStack, newViolations, resolveRestingStack } from './restingStack';
 import { getOutsideCellSet } from './drawerOutlineCells';
 import { drawerFrameOutline } from './outlineFrame';
+
+const HEIGHT_EPSILON = 1e-9;
 
 /**
  * Create a Set of blocked cell keys for O(1) lookup.
  * Key format: "x,y"
  * @param step - Iteration step size (0.5 for half-bin mode, 1 for normal)
+ * @param height - Height of the bin to be placed; defaults to the layer's.
  */
 export function createOccupiedCellSet(
   bins: Bin[],
   layerId: LayerId,
   layout: Layout,
-  step: 0.5 | 1 = 1
+  step: 0.5 | 1 = 1,
+  height?: number
 ): Set<string> {
   const occupied = new Set<string>();
 
@@ -48,17 +52,86 @@ export function createOccupiedCellSet(
     }
   }
 
-  // Add cells from blocked zones (bins protruding from lower layers)
-  const blockedZones = getBlockedZones(layerId, bins, layout.layers);
-  for (const zone of blockedZones) {
-    for (let zx: number = zone.x; zx < zone.x + zone.width; zx += step) {
-      for (let zy: number = zone.y; zy < zone.y + zone.depth; zy += step) {
-        occupied.add(`${zx},${zy}`);
+  for (const key of unrestableCells(bins, layerId, layout, step, height)) occupied.add(key);
+
+  return occupied;
+}
+
+/**
+ * Cells where a new bin could not rest: the top of what is below plus the
+ * bin would pass the drawer, or the highest thing below is clearance a lower
+ * bin reserves. Judged cell by cell, which is conservative for a multi-cell
+ * bin, since it rests on the highest of its cells.
+ */
+function unrestableCells(
+  bins: Bin[],
+  layerId: LayerId,
+  layout: Layout,
+  step: number,
+  height: number | undefined
+): string[] {
+  const layerIndex = layout.layers.findIndex((l) => l.id === layerId);
+  if (layerIndex === -1) return [];
+  const binHeight = height ?? layout.layers[layerIndex].height;
+  const ceiling = layout.drawer.height;
+  const keys: string[] = [];
+
+  if (binHeight > ceiling + HEIGHT_EPSILON) {
+    for (let x = 0; x < layout.drawer.width; x += step) {
+      for (let y = 0; y < layout.drawer.depth; y += step) keys.push(`${x},${y}`);
+    }
+    return keys;
+  }
+
+  const lowerLayers = new Set(layout.layers.slice(0, layerIndex).map((l) => l.id));
+  const stack = getRestingStack(bins, layout.layers);
+  const top = new Map<string, { height: number; onClearance: boolean }>();
+  for (const bin of bins) {
+    if (!lowerLayers.has(bin.layerId)) continue;
+    const rest = stack.bins.get(bin.id);
+    if (!rest) continue;
+    const clearance = rest.stackTop > rest.materialTop + HEIGHT_EPSILON;
+    for (let bx: number = bin.x; bx < bin.x + bin.width; bx += step) {
+      for (let by: number = bin.y; by < bin.y + bin.depth; by += step) {
+        const key = `${bx},${by}`;
+        const prev = top.get(key);
+        if (!prev || rest.stackTop > prev.height + HEIGHT_EPSILON) {
+          top.set(key, { height: rest.stackTop, onClearance: clearance });
+        } else if (Math.abs(rest.stackTop - prev.height) <= HEIGHT_EPSILON && clearance) {
+          prev.onClearance = true;
+        }
       }
     }
   }
+  for (const [key, cell] of top) {
+    if (cell.onClearance || cell.height + binHeight > ceiling + HEIGHT_EPSILON) keys.push(key);
+  }
+  return keys;
+}
 
-  return occupied;
+/**
+ * Fill bins pass the cell check on their own, but one landing under a bin
+ * from a higher layer lifts that bin and everything on it. Resolves the
+ * filled layout once and drops the fill bins carrying any stack that ends up
+ * past the drawer or on clearance, repeating until nothing new breaks.
+ */
+function withoutLifts(layout: Layout, fill: Bin[]): Bin[] {
+  const before = getRestingStack(layout.bins, layout.layers);
+  let kept = fill;
+  for (;;) {
+    const after = resolveRestingStack([...layout.bins, ...kept], layout.layers);
+    const broken = newViolations(before, after, layout.drawer.height);
+    if (broken.length === 0) return kept;
+    const fillIds = new Set(kept.map((b) => b.id));
+    const carriers = new Set<BinId>();
+    const visit = (id: BinId): void => {
+      if (fillIds.has(id)) carriers.add(id);
+      for (const under of after.bins.get(id)?.restsOn ?? []) visit(under);
+    };
+    for (const v of broken) visit(v.binId);
+    if (carriers.size === 0) return kept;
+    kept = kept.filter((b) => !carriers.has(b.id));
+  }
 }
 
 /**
@@ -104,8 +177,7 @@ function markOccupied(
 
 /**
  * Fill empty cells with bins of specified size.
- * Skips occupied cells and blocked zones.
- * Optimized: Pre-computes blocked zones and uses Set for O(1) cell lookup.
+ * Skips occupied cells and cells where a bin of the layer's height cannot rest.
  * @param halfGridMode - When true, uses 0.5 step for iteration and collision detection
  */
 export function fillAllWithSize(
@@ -124,7 +196,6 @@ export function fillAllWithSize(
   // Step size for collision detection (0.5 in half-bin mode, 1 in normal)
   const step: 0.5 | 1 = halfGridMode ? 0.5 : 1;
 
-  // Pre-compute occupied cells (existing bins + blocked zones)
   const occupied = createOccupiedCellSet(layout.bins, layerId, layout, step);
 
   const newBins: Bin[] = [];
@@ -165,13 +236,13 @@ export function fillAllWithSize(
     }
   }
 
-  return { bins: newBins, skippedCells };
+  const kept = withoutLifts(layout, newBins);
+  return { bins: kept, skippedCells: skippedCells + newBins.length - kept.length };
 }
 
 /**
  * Fill gaps with optimally-sized bins.
  * Tries to use bins that don't require splitting.
- * Optimized: Pre-computes blocked zones and uses Set for O(1) cell lookup.
  * @param halfGridMode - When true, uses 0.5 step for iteration and collision detection
  */
 export function fillGaps(
@@ -190,7 +261,6 @@ export function fillGaps(
   const step: 0.5 | 1 = halfGridMode ? 0.5 : 1;
   const minSize = halfGridMode ? 0.5 : 1;
 
-  // Pre-compute occupied cells (existing bins + blocked zones)
   const occupied = createOccupiedCellSet(layout.bins, layerId, layout, step);
 
   const newBins: Bin[] = [];
@@ -253,5 +323,6 @@ export function fillGaps(
     }
   }
 
-  return { bins: newBins, addedCount: newBins.length };
+  const kept = withoutLifts(layout, newBins);
+  return { bins: kept, addedCount: kept.length };
 }

@@ -6,13 +6,13 @@ import { addLayer } from './addLayer';
 import { makeLayout, makeLayer } from './_testHelpers';
 
 describe('v2 layer.add', () => {
-  it('emits an event with a generated layer fitting the remaining height', () => {
-    const layout = makeLayout(); // drawer.height = 7, one layer of height 3 -> 4 remaining
+  it('emits an event with a generated layer no taller than the drawer', () => {
+    const layout = makeLayout(); // drawer.height = 7
     const result = addLayer.handle(undefined, { aggregate: layout });
 
     expect(isOk(result)).toBe(true);
     if (!isOk(result)) return;
-    expect(result.value.event.payload.layer.height).toBeLessThanOrEqual(4);
+    expect(result.value.event.payload.layer.height).toBeLessThanOrEqual(7);
     expect(result.value.event.payload.layer.height).toBeGreaterThanOrEqual(
       CONSTRAINTS.MIN_LAYER_HEIGHT
     );
@@ -28,11 +28,11 @@ describe('v2 layer.add', () => {
     expect(result.ok).toBe(false);
   });
 
-  it('errors when no remaining drawer height', () => {
-    // drawer.height = 7, layer fills it
+  it('adds a layer when existing layer heights already fill the drawer', () => {
+    // Layer heights are defaults for new bins, so they never share out the drawer.
     const layout = makeLayout({ layers: [makeLayer('layer_1', 7)] });
     const result = addLayer.handle(undefined, { aggregate: layout });
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBe(true);
   });
 
   it('apply() pushes the new layer onto the draft', () => {

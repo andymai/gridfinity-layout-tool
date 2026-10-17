@@ -13,16 +13,15 @@ describe('LayerLabel', () => {
   const defaultProps = {
     layerId: layerId('layer-1'),
     layerName: 'Bottom',
-    layerHeightMm: 21,
     isActive: false,
     drawerWidth: 6,
     layerCenterZ: 0.5,
     onLayerClick: vi.fn(),
   };
 
-  it('renders layer name and height', () => {
+  it('renders only the layer name, since a layer no longer has one height', () => {
     render(<LayerLabel {...defaultProps} />);
-    expect(screen.getByRole('button')).toHaveTextContent('Bottom · 21mm');
+    expect(screen.getByRole('button')).toHaveTextContent(/^Bottom$/);
   });
 
   it('calls onLayerClick with layer id when clicked', () => {
