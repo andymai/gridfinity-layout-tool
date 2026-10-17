@@ -11,6 +11,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  ALLOWED_PARAM_KEYS,
   DESIGN_TAG_MAX_COUNT,
   DESIGN_TAG_MAX_LENGTH,
   LIP_CORNERS as API_LIP_CORNERS,
@@ -113,6 +114,7 @@ import {
 } from '../../src/shared/generation/meshAsset.js';
 import { GRIDFINITY_SPEC } from '../../src/shared/printSettings/gridfinityGeometry.js';
 import { MAX_MASK_DIMENSION } from '../../src/shared/utils/cellMask.js';
+import { BIN_PARAMS_KEYS } from '../../src/shared/schema/binDesignKeys.js';
 import { MAX_CUTOUT_CORNER_RADIUS } from '../../src/shared/utils/wallCutoutPosition.js';
 
 type Allowlist = readonly (string | number)[];
@@ -377,4 +379,30 @@ describe('minimum bin height (cross-boundary mirror)', () => {
       });
     }
   );
+});
+
+/**
+ * Keys the share allowlist leaves out on purpose. Anything else in `BinParams`
+ * that is not allowlisted is stripped from every share, synced design and
+ * version without a sound, which is how `overhang` was lost.
+ */
+const PARAM_KEYS_NOT_PERSISTED: ReadonlyMap<string, string> = new Map([
+  ['gridUnitMmY', 'community card metrics measure one pitch; see communityStore.crossBoundary'],
+  ['nozzleSizeMm', 'injected from the live print setting at generation, never stored'],
+]);
+
+describe('designer param allowlist covers BinParams', () => {
+  it('allowlists every top-level BinParams key except the deliberate exclusions', () => {
+    const missing = BIN_PARAMS_KEYS.filter(
+      (key) => !ALLOWED_PARAM_KEYS.has(key) && !PARAM_KEYS_NOT_PERSISTED.has(key)
+    );
+    expect(missing).toEqual([]);
+  });
+
+  it('excludes only keys that BinParams has and the allowlist really leaves out', () => {
+    for (const key of PARAM_KEYS_NOT_PERSISTED.keys()) {
+      expect(BIN_PARAMS_KEYS).toContain(key);
+      expect(ALLOWED_PARAM_KEYS.has(key)).toBe(false);
+    }
+  });
 });

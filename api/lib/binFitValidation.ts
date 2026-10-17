@@ -122,3 +122,10 @@ export function sanitizeBinFitFields(value: unknown): BinFitFields {
     ...(overhang ? { overhang } : {}),
   };
 }
+
+/** Bin design params with their overhang sanitized, or without it when malformed. */
+export function withSanitizedOverhang(params: Record<string, unknown>): Record<string, unknown> {
+  const { overhang, ...rest } = params;
+  const clean = sanitizeOverhang(overhang);
+  return clean ? { ...rest, overhang: clean } : rest;
+}

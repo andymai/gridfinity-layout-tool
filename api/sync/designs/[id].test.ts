@@ -182,6 +182,29 @@ describe('PUT', () => {
     expect((body.envelope.design.params as { width: number }).width).toBe(2);
   });
 
+  it('keeps a design’s overhang in a schema-2 envelope when the client declares 2', async () => {
+    const { default: handler } = await import('./[id]');
+    const overhang = { left: 0, right: 14, front: 0, back: 0, feet: true };
+    const res = makeRes();
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: { name: 'Wide bin', params: { ...VALID_DESIGN, overhang } },
+          modifiedAt: 1000,
+          schemaVersion: 2,
+        },
+      }),
+      res as unknown as VercelResponse
+    );
+    expect(res._status).toBe(200);
+    const body = res._body as {
+      envelope: { schemaVersion: number; design: { params: Record<string, unknown> } };
+    };
+    expect(body.envelope.schemaVersion).toBe(2);
+    expect(body.envelope.design.params.overhang).toEqual(overhang);
+  });
+
   it('records sizeBytes for the post-sanitization payload, not the raw request', async () => {
     const { default: handler } = await import('./[id]');
     // Extra params field the share validator strips. Without the

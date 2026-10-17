@@ -13,6 +13,7 @@ import { describe, expect, it } from 'vitest';
 import { EXAMPLE_DESIGNS } from '@/features/bin-designer/data/examples';
 import { validateDesignerShare } from '../../../api/lib/designerValidation.js';
 import { communityParamsFingerprint } from '../../../api/lib/communityStore.js';
+import { publishableParams } from '../../../api/lib/communityValidation.js';
 import { COMMUNITY_EXAMPLE_PARAM_HASHES } from '../../../api/lib/communityExampleParamHashes.js';
 
 function recomputeExampleHashes(): string[] {
@@ -24,7 +25,7 @@ function recomputeExampleHashes(): string[] {
     // An example that the sanitizer rejects can never be published verbatim
     // either, so it is not a possible duplicate and is skipped.
     if (!result.valid) continue;
-    hashes.add(communityParamsFingerprint(result.payload.params));
+    hashes.add(communityParamsFingerprint(publishableParams(result.payload.params)));
   }
   return [...hashes].sort();
 }

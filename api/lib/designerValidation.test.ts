@@ -54,6 +54,35 @@ function validPayload() {
   };
 }
 
+describe('overhang through the share allowlist', () => {
+  const check = (overhang: unknown) => {
+    const p = validPayload();
+    const payload = { ...p, params: { ...p.params, overhang } };
+    return validateDesignerShare(payload, Buffer.byteLength(JSON.stringify(payload), 'utf8'));
+  };
+
+  it('keeps a design’s overhang, wall taper included', () => {
+    const overhang = {
+      enabled: true,
+      left: 0,
+      right: 14,
+      front: 0,
+      back: 0,
+      feet: true,
+      taper: { profile: 'chamfer', bandHeight: 6, left: 0, right: 3, front: 0, back: 0 },
+    };
+    const result = check(overhang);
+    expect(result.valid).toBe(true);
+    if (result.valid) expect(result.payload.params.overhang).toEqual(overhang);
+  });
+
+  it('drops a malformed overhang and keeps the design', () => {
+    const result = check({ left: 0, right: 99, front: 0, back: 0 });
+    expect(result.valid).toBe(true);
+    if (result.valid) expect(result.payload.params).not.toHaveProperty('overhang');
+  });
+});
+
 describe('pull-tab validation', () => {
   const check = (pullTab: Record<string, unknown>) => {
     const p = validPayload();

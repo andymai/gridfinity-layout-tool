@@ -6,7 +6,18 @@ import { validateImportedMeshContent } from '../../lib/importedMeshValidation.js
 import { sanitizeString } from '../../lib/validation.js';
 import { createSyncResourceHandler } from '../lib/resourceHandler.js';
 
-export const SCHEMA_VERSION = 1 as const;
+/**
+ * A version-1 envelope predates the server keeping `params.overhang`, so a
+ * missing overhang there is unknown, not cleared. A write keeps the version its
+ * client declares: a tab on the previous build still sends designs without it.
+ */
+export const SCHEMA_VERSION = 2 as const;
+
+type DesignSchemaVersion = 1 | typeof SCHEMA_VERSION;
+
+function declaredSchemaVersion(body: Record<string, unknown>): DesignSchemaVersion {
+  return body.schemaVersion === SCHEMA_VERSION ? SCHEMA_VERSION : 1;
+}
 
 /** The PUT body / GET envelope key for this resource; mirrors `PAYLOAD_KEY.designs` in src/core/sync/payloadKey.ts. */
 export const PAYLOAD_KEY = 'design' as const;
@@ -18,7 +29,7 @@ interface DesignEnvelope {
   /** `{ name, params, tags, publishedId?, lineage? }` wrapper; readers parse with `unwrapDesignPayload`. */
   design: unknown;
   modifiedAt: number;
-  schemaVersion: typeof SCHEMA_VERSION;
+  schemaVersion: DesignSchemaVersion;
 }
 
 interface StoredLineage {
@@ -269,7 +280,7 @@ export default createSyncResourceHandler<DesignEnvelope>({
   isValidId: (id) => /^design_\d+_[a-z0-9]{6}$/.test(id) || isValidShareId(id),
   invalidIdError: 'Invalid design id',
   deletedError: 'Design was deleted on another device. Save again to restore.',
-  buildPut: (design, modifiedAt) => {
+  buildPut: (design, modifiedAt, _id, body) => {
     const unwrapped = unwrapDesignPayload(design);
     if (!unwrapped) {
       return {
@@ -341,7 +352,7 @@ export default createSyncResourceHandler<DesignEnvelope>({
       };
       return {
         ok: true,
-        envelope: { design: stored, modifiedAt, schemaVersion: SCHEMA_VERSION },
+        envelope: { design: stored, modifiedAt, schemaVersion: declaredSchemaVersion(body) },
         sizeBytes: Buffer.byteLength(JSON.stringify(stored), 'utf8'),
         tiebreakerCandidate: stored,
       };
@@ -366,7 +377,7 @@ export default createSyncResourceHandler<DesignEnvelope>({
       };
       return {
         ok: true,
-        envelope: { design: stored, modifiedAt, schemaVersion: SCHEMA_VERSION },
+        envelope: { design: stored, modifiedAt, schemaVersion: declaredSchemaVersion(body) },
         sizeBytes: Buffer.byteLength(JSON.stringify(stored), 'utf8'),
         tiebreakerCandidate: stored,
         meshHashes: mesh.meshHashes,
@@ -423,7 +434,7 @@ export default createSyncResourceHandler<DesignEnvelope>({
     };
     return {
       ok: true,
-      envelope: { design: stored, modifiedAt, schemaVersion: SCHEMA_VERSION },
+      envelope: { design: stored, modifiedAt, schemaVersion: declaredSchemaVersion(body) },
       sizeBytes,
       tiebreakerCandidate: stored,
       meshHashes: meshRefHashes(validation.payload.params.meshAssets),

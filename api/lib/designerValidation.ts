@@ -5,6 +5,7 @@
  * These constraints mirror DESIGNER_CONSTRAINTS from the client.
  */
 
+import { withSanitizedOverhang } from './binFitValidation.js';
 import {
   isNumber,
   inRange,
@@ -130,7 +131,7 @@ const VALID_ROTATIONS = [0, 90, 180, 270] as const;
  * `src/features/bin-designer/types/index.ts`. Update both together when
  * adding a new generator-level parameter.
  */
-const ALLOWED_PARAM_KEYS = new Set<string>([
+export const ALLOWED_PARAM_KEYS: ReadonlySet<string> = new Set<string>([
   // Dimensions & units
   'width',
   'depth',
@@ -146,6 +147,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'extraWallHeightMm',
   'interiorFilletMm',
   'style',
+  'overhang',
   // Sub-objects (deep-validated below)
   'base',
   'compartments',
@@ -188,7 +190,7 @@ function pickAllowedParams(params: Record<string, unknown>): Record<string, unkn
       out[key] = params[key];
     }
   }
-  return out;
+  return withSanitizedOverhang(out);
 }
 
 export interface DesignerSharePayload {

@@ -6,6 +6,9 @@ export const LAYOUT_SCHEMA_VERSION = 4;
 /** Mirrors `SCHEMA_VERSION` in api/sync/folders/[id].ts; declared on every folder PUT. */
 export const FOLDER_SCHEMA_VERSION = 2;
 
+/** Mirrors `SCHEMA_VERSION` in api/sync/designs/[id].ts; declared on every design PUT. */
+export const DESIGN_SCHEMA_VERSION = 2;
+
 /**
  * A PUT refused for naming things the account has not put on the server, which
  * the response lists as `missing`. Mirrors `MESH_MISSING_STATUS` in
@@ -44,5 +47,6 @@ export function syncPutBody(
     modifiedAt,
     ...(kind === 'layouts' ? { schemaVersion: LAYOUT_SCHEMA_VERSION } : {}),
     ...(kind === 'folders' ? { schemaVersion: FOLDER_SCHEMA_VERSION } : {}),
+    ...(kind === 'designs' ? { schemaVersion: DESIGN_SCHEMA_VERSION } : {}),
   };
 }

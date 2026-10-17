@@ -82,6 +82,17 @@ describe('validateCommunityPublish', () => {
     );
   });
 
+  it('publishes a design without its overhang, which card metrics do not measure', () => {
+    const result = validateCommunityPublish(
+      validBody({
+        params: { width: 1, depth: 1, overhang: { left: 0, right: 14, front: 0, back: 0 } },
+      })
+    );
+    expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error('expected valid');
+    expect(result.payload.params).toEqual({ width: 1, depth: 1 });
+  });
+
   it('accepts a valid publish body and returns the sanitized payload', () => {
     const result = validateCommunityPublish(validBody({ name: '  Socket Organizer  ' }));
     expect(result.valid).toBe(true);

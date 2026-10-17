@@ -42,7 +42,7 @@ Rate limits are keyed by `userId`, not IP — each authenticated user gets their
 {
   design: BinParams,        // sanitized via validateDesignerShare
   modifiedAt: number,
-  schemaVersion: 1,
+  schemaVersion: 2,
 }
 
 // users/{uid}/designVersions/{id}.json

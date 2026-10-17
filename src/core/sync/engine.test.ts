@@ -33,7 +33,7 @@ vi.mock('./apiFetch', () => ({
 }));
 
 import * as engine from './engine';
-import { LAYOUT_SCHEMA_VERSION } from './payloadKey';
+import { DESIGN_SCHEMA_VERSION, LAYOUT_SCHEMA_VERSION } from './payloadKey';
 
 interface MockAdapter extends SyncAdapter {
   triggerChange: (change: AdapterChange) => void;
@@ -175,7 +175,11 @@ describe('push: PUT happy path', () => {
       expect.objectContaining({ method: 'PUT' })
     );
     const body = JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string);
-    expect(body).toEqual({ design: { v: 1 }, modifiedAt: 2000 });
+    expect(body).toEqual({
+      design: { v: 1 },
+      modifiedAt: 2000,
+      schemaVersion: DESIGN_SCHEMA_VERSION,
+    });
   });
 
   it('after success, status returns to idle and lastSyncedAt is set', async () => {
@@ -497,6 +501,7 @@ describe('push: preparePush', () => {
     expect(JSON.parse(puts()[0].body as string)).toEqual({
       design: { planned: true },
       modifiedAt: 2000,
+      schemaVersion: DESIGN_SCHEMA_VERSION,
     });
     expect(designsAdapter.get).not.toHaveBeenCalled();
     expect(await outboxGetAll()).toEqual([]);

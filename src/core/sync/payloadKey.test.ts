@@ -5,6 +5,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import {
+  DESIGN_SCHEMA_VERSION,
   FOLDER_SCHEMA_VERSION,
   LAYOUT_SCHEMA_VERSION,
   MISSING_DEPENDENCY_STATUS,
@@ -17,7 +18,10 @@ import {
   PAYLOAD_KEY as API_LAYOUTS_PAYLOAD_KEY,
   SCHEMA_VERSION as API_LAYOUTS_SCHEMA_VERSION,
 } from '../../../api/sync/layouts/[id].js';
-import { PAYLOAD_KEY as API_DESIGNS_PAYLOAD_KEY } from '../../../api/sync/designs/[id].js';
+import {
+  PAYLOAD_KEY as API_DESIGNS_PAYLOAD_KEY,
+  SCHEMA_VERSION as API_DESIGNS_SCHEMA_VERSION,
+} from '../../../api/sync/designs/[id].js';
 import { PAYLOAD_KEY as API_BASEPLATES_PAYLOAD_KEY } from '../../../api/sync/baseplates/[id].js';
 import { PAYLOAD_KEY as API_DESIGN_VERSIONS_PAYLOAD_KEY } from '../../../api/sync/designVersions/[id].js';
 import {
@@ -86,8 +90,20 @@ describe('syncPutBody', () => {
     });
   });
 
+  it('declares the design schema the server stamps', () => {
+    expect(DESIGN_SCHEMA_VERSION).toBe(API_DESIGNS_SCHEMA_VERSION);
+    expect(syncPutBody('designs', { v: 1 }, 1000)).toEqual({
+      design: { v: 1 },
+      modifiedAt: 1000,
+      schemaVersion: DESIGN_SCHEMA_VERSION,
+    });
+  });
+
   it('leaves other kinds as they were', () => {
-    expect(syncPutBody('designs', { v: 1 }, 1000)).toEqual({ design: { v: 1 }, modifiedAt: 1000 });
+    expect(syncPutBody('baseplates', { v: 1 }, 1000)).toEqual({
+      baseplate: { v: 1 },
+      modifiedAt: 1000,
+    });
   });
 });
 

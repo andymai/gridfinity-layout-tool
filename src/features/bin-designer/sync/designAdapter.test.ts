@@ -19,6 +19,7 @@ vi.mock('@/features/bin-designer/storage/DesignerStorage', () => ({
 }));
 
 import { designAdapter } from './designAdapter';
+import { DESIGN_SCHEMA_VERSION } from '@/core/sync/payloadKey';
 import { __resetForTests, emit } from './designerEvents';
 import { loadRegistry, upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 
@@ -124,6 +125,36 @@ describe('designAdapter kinds that stay local', () => {
       modifiedAt: 1,
     });
     expect(saveDesignMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('designAdapter.applyRemote — copies the server stored before schema 2', () => {
+  const overhang = { left: 0, right: 14, front: 0, back: 0, feet: true };
+  const local = (): SavedDesign => ({
+    ...savedDesign('d1', '2026-10-01T00:00:00.000Z'),
+    params: { overhang } as unknown as BinParams,
+  });
+  const pull = async (schemaVersion: number): Promise<SavedDesign> => {
+    loadDesignMock.mockResolvedValueOnce(ok(local()));
+    saveDesignMock.mockResolvedValueOnce(ok(savedDesign('d1', '2026-10-02T00:00:00.000Z')));
+    await designAdapter.applyRemote({
+      id: 'd1',
+      payload: samplePayload('Renamed'),
+      modifiedAt: 2,
+      schemaVersion,
+    });
+    return saveDesignMock.mock.calls[0]?.[0] as SavedDesign;
+  };
+
+  it('keeps this device’s overhang that a schema-1 copy lost', async () => {
+    const saved = await pull(1);
+    expect(saved.name).toBe('Renamed');
+    expect(saved.params?.overhang).toEqual(overhang);
+  });
+
+  it('takes a current copy as it is, so an overhang cleared elsewhere stays cleared', async () => {
+    const saved = await pull(DESIGN_SCHEMA_VERSION);
+    expect(saved.params?.overhang).toBeUndefined();
   });
 });
 

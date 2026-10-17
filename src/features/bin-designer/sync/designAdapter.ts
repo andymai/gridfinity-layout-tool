@@ -28,6 +28,7 @@ import {
 } from '@/features/bin-designer/store/customBinRegistry';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { syncPersistError } from '@/core/sync/adapters/persistError';
+import { DESIGN_SCHEMA_VERSION } from '@/core/sync/payloadKey';
 import { holderMeshHashes, inlineHolderMeshes } from '@/shared/generation/meshRefs';
 import {
   endMeshCloudSession,
@@ -166,6 +167,28 @@ function unwrap(payload: unknown): {
 type PulledContent = Pick<SavedDesign, 'kind' | 'params' | 'envelope' | 'structure'>;
 
 /**
+ * Before schema 2 the server stored designs without `params.overhang`, so an
+ * older copy's missing overhang says nothing about the other device; this
+ * device's stands in for it.
+ */
+function keepStrippedOverhang(
+  content: PulledContent,
+  base: SavedDesign | null,
+  schemaVersion: number
+): PulledContent {
+  const localOverhang = base?.params?.overhang;
+  if (
+    schemaVersion >= DESIGN_SCHEMA_VERSION ||
+    !content.params ||
+    content.params.overhang !== undefined ||
+    localOverhang === undefined
+  ) {
+    return content;
+  }
+  return { ...content, params: { ...content.params, overhang: localOverhang } };
+}
+
+/**
  * The kind-specific half of a pulled design, or null when this client cannot
  * represent it. An assembly's migration drops a newer client's unknown fields
  * node by node rather than reject them. An imported mesh is checked against its
@@ -296,8 +319,9 @@ export const designAdapter: DesignAdapter = {
       const existing = await loadDesign(designId(item.id));
       const base = isOk(existing) ? existing.value : null;
       const pulled = unwrap(item.payload);
-      const content = pulled.invalid ? null : pulledContent(pulled);
-      if (!content) return;
+      const pulledParts = pulled.invalid ? null : pulledContent(pulled);
+      if (!pulledParts) return;
+      const content = keepStrippedOverhang(pulledParts, base, item.schemaVersion ?? 1);
       const {
         name: remoteName,
         tags: remoteTags,
