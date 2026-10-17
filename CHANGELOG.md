@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.515.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.514.0...gridfinity-layout-tool-v4.515.0) (2026-10-17)
+
+
+### Features
+
+* **bin-designer:** put wall text on the inside face of a wall ([#4603](https://github.com/andymai/gridfinity-layout-tool/issues/4603)) ([e2d9453](https://github.com/andymai/gridfinity-layout-tool/commit/e2d9453416b9e3874760ac9b68301b44e96f21b8))
+
 ## [4.514.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.513.0...gridfinity-layout-tool-v4.514.0) (2026-10-16)
 
 
