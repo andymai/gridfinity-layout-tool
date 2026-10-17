@@ -49,10 +49,10 @@ layers[0] is BOTTOM layer (UI displays reversed via getDisplayLayers())
 
 Uses `canPlaceBin` from `@/shared/utils/validation`:
 
-1. **Bounds** - within drawer dimensions
-2. **Height** - fits remaining drawer height
-3. **Blocked zones** - no overlap with lower-layer protrusions
-4. **Collisions** - 3D overlap (footprint + vertical range)
+1. **Bounds** - within drawer dimensions and shape
+2. **Collisions** - footprint overlap with a bin on the same layer
+3. **Clearance** - not resting on clearance a lower bin reserves
+4. **Height** - its stack, and every stack it lifts, fits under the drawer top
 
 ## Gotchas
 
