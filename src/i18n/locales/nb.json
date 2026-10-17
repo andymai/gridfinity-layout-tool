@@ -4482,6 +4482,7 @@
   "toast.expandToFitComplete": "{count} beholder(e) utvidet til å passe",
   "toast.expandToFitLocked": "Lås opp beholderne med låst størrelse i utvalget for å utvide dem",
   "toast.expandToFitLiftsStack": "Utvidelsen ville skjøvet en bin stablet oppå forbi toppen av skuffen",
+  "toast.expandToFitRestsOnClearance": "Utvidelsen ville satt en stablet bin ned på klaring en annen bin reserverer",
   "toast.expandToFitNoGridAlignment": "Plassen kan ikke deles opp på rutenettet — prøv å justere skuffemargen",
   "toast.expandToFitNoSlack": "Ingenting å fylle — utvalget møter allerede naboene",
   "toast.expandToFitRagged": "Velg beholdere som danner en rad, en kolonne eller et fullt rutenett på ett lag",

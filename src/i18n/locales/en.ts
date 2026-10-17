@@ -1598,6 +1598,8 @@ const en: Record<string, string> = {
     'The space cannot be divided onto the grid — try adjusting the drawer padding',
   'toast.expandToFitLocked': 'Unlock the size-locked bins in the selection to expand them',
   'toast.expandToFitLiftsStack': 'Expanding would push a bin stacked on top past the drawer top',
+  'toast.expandToFitRestsOnClearance':
+    'Expanding would set a stacked bin down on clearance another bin reserves',
   'toast.binSizeLocked': "This bin's size is locked",
   'toast.matchHeightComplete': 'Set {count} bin(s) to height {height}u',
   'toast.moveToLayerComplete': 'Moved {count} bin(s) to {name}',

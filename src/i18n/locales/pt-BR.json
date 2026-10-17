@@ -4482,6 +4482,7 @@
   "toast.expandToFitComplete": "{count} bin(s) expandido(s) para preencher",
   "toast.expandToFitLocked": "Desbloqueie os bins com tamanho bloqueado na seleção para expandi-los",
   "toast.expandToFitLiftsStack": "Expandir empurraria um bin empilhado em cima para além do topo da gaveta",
+  "toast.expandToFitRestsOnClearance": "Expandir deixaria um bin empilhado apoiado na clearance reservada por outro bin",
   "toast.expandToFitNoGridAlignment": "O espaço não pode ser dividido na grade — tente ajustar a margem da gaveta",
   "toast.expandToFitNoSlack": "Nada a preencher — a seleção já encosta nos vizinhos",
   "toast.expandToFitRagged": "Selecione bins que formem uma linha, uma coluna ou uma grade completa em uma camada",

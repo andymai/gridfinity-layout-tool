@@ -4482,6 +4482,7 @@
   "toast.expandToFitComplete": "{count}個のビンを隙間に合わせて拡張しました",
   "toast.expandToFitLocked": "選択内のサイズがロックされたビンを解除すると拡張できます",
   "toast.expandToFitLiftsStack": "拡張すると、上に積んだビンが引き出しの上端を超えてしまいます",
+  "toast.expandToFitRestsOnClearance": "拡張すると、積み重ねたビンが別のビンのクリアランスの上に載ってしまいます",
   "toast.expandToFitNoGridAlignment": "スペースをグリッドに分割できません — 引き出しの余白を調整してみてください",
   "toast.expandToFitNoSlack": "埋める隙間がありません — 選択したビンはすでに隣に接しています",
   "toast.expandToFitRagged": "1つのレイヤー上で行・列または完全なグリッドを構成するビンを選択してください",

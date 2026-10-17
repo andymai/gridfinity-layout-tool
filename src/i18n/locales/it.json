@@ -4482,6 +4482,7 @@
   "toast.expandToFitComplete": "Espansi {count} bin per riempire",
   "toast.expandToFitLocked": "Sblocca i bin con dimensioni bloccate nella selezione per espanderli",
   "toast.expandToFitLiftsStack": "L'espansione spingerebbe un bin impilato sopra oltre il bordo del cassetto",
+  "toast.expandToFitRestsOnClearance": "L’espansione appoggerebbe un bin impilato sullo spazio libero riservato da un altro bin",
   "toast.expandToFitNoGridAlignment": "Lo spazio non può essere diviso sulla griglia: prova a regolare il margine del cassetto",
   "toast.expandToFitNoSlack": "Niente da riempire: la selezione tocca già i vicini",
   "toast.expandToFitRagged": "Seleziona bin che formino una riga, una colonna o una griglia completa su un solo livello",

@@ -4482,6 +4482,7 @@
   "toast.expandToFitComplete": "{count} bac(s) ajusté(s) à l'espace",
   "toast.expandToFitLocked": "Déverrouillez les bacs à taille verrouillée de la sélection pour les agrandir",
   "toast.expandToFitLiftsStack": "L'agrandissement ferait dépasser le haut du tiroir à un bac empilé dessus",
+  "toast.expandToFitRestsOnClearance": "L'agrandissement poserait un bac empilé sur le dégagement réservé par un autre bac",
   "toast.expandToFitNoGridAlignment": "L'espace ne peut pas être réparti sur la grille : essayez d'ajuster la marge du tiroir",
   "toast.expandToFitNoSlack": "Rien à combler : la sélection touche déjà ses voisins",
   "toast.expandToFitRagged": "Sélectionnez des bacs formant une ligne, une colonne ou une grille complète sur un seul calque",

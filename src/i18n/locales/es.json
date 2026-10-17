@@ -4482,6 +4482,7 @@
   "toast.expandToFitComplete": "{count} bin(s) ajustados al espacio",
   "toast.expandToFitLocked": "Desbloquea los bins con tamaño bloqueado de la selección para expandirlos",
   "toast.expandToFitLiftsStack": "Expandir empujaría un bin apilado encima por encima del borde del cajón",
+  "toast.expandToFitRestsOnClearance": "Expandir dejaría un bin apilado sobre la holgura que reserva otro bin",
   "toast.expandToFitNoGridAlignment": "El espacio no se puede dividir en la cuadrícula: prueba a ajustar el margen del cajón",
   "toast.expandToFitNoSlack": "Nada que rellenar: la selección ya toca sus vecinos",
   "toast.expandToFitRagged": "Selecciona bins que formen una fila, una columna o una cuadrícula completa en una capa",

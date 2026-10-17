@@ -4482,6 +4482,7 @@
   "toast.expandToFitComplete": "{count} bin(s) passend vergroot",
   "toast.expandToFitLocked": "Ontgrendel de bins met vergrendelde afmetingen in de selectie om ze te vergroten",
   "toast.expandToFitLiftsStack": "Uitbreiden zou een bin die erop gestapeld staat boven de lade uit duwen",
+  "toast.expandToFitRestsOnClearance": "Uitbreiden zou een gestapelde bin neerzetten op vrijloop die een andere bin reserveert",
   "toast.expandToFitNoGridAlignment": "De ruimte kan niet over het raster worden verdeeld — probeer de lademarge aan te passen",
   "toast.expandToFitNoSlack": "Niets te vullen — de selectie raakt de buren al",
   "toast.expandToFitRagged": "Selecteer bins die een rij, een kolom of een volledig raster op één laag vormen",

@@ -4482,6 +4482,7 @@
   "toast.expandToFitComplete": "Roztaženo {count} binů na míru",
   "toast.expandToFitLocked": "Odemkněte zamčené biny ve výběru, abyste je mohli roztáhnout",
   "toast.expandToFitLiftsStack": "Rozšíření by vytlačilo bin položený nahoře nad okraj zásuvky",
+  "toast.expandToFitRestsOnClearance": "Rozšíření by položilo stohovaný bin na rezervu, kterou vyhrazuje jiný bin",
   "toast.expandToFitNoGridAlignment": "Prostor nelze rozdělit na mřížku — zkuste upravit okraj zásuvky",
   "toast.expandToFitNoSlack": "Není co vyplnit — výběr už na sousedy dosahuje",
   "toast.expandToFitRagged": "Vyberte biny tvořící řádek, sloupec nebo úplnou mřížku v jedné vrstvě",

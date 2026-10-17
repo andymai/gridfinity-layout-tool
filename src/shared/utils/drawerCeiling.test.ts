@@ -269,4 +269,22 @@ describe('drawerCeilingFit', () => {
     expect(fit([solid, reserved, over], 200)?.tallestMm).toBeCloseTo(expected, 5);
     expect(fit([reserved, solid, over], 200)?.tallestMm).toBeCloseTo(expected, 5);
   });
+
+  it('lets a linked design that stands taller cover its own clearance', () => {
+    // Clearance is measured from the bin's nominal top; a 60mm design over a
+    // 4u bin already reaches past 4u plus 1u of clearance, and still has a lip.
+    const linked = bin({ id: binId('linked'), height: heightUnits(4) });
+    const reserved = { ...linked, clearanceHeight: heightUnits(1) };
+    const over = bin({ id: binId('over'), height: heightUnits(2), layerId: layerId('l2') });
+    const run = (lower: Bin) =>
+      drawerCeilingFit({
+        bins: [lower, over],
+        layers: LAYERS,
+        heightUnitMm: 7,
+        plate: PLAIN_PLATE,
+        ceilingMm: 200,
+        linkedRise: (b) => (b.id === linked.id ? { riseMm: 60, socketless: false } : undefined),
+      })?.tallestMm;
+    expect(run(reserved)).toBeCloseTo(run(linked) ?? NaN, 5);
+  });
 });

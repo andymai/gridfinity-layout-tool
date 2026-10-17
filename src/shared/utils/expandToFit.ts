@@ -58,8 +58,10 @@ export type ExpandBlockedReason =
    * the span starts off-grid and the share is a fraction of a half-unit.
    */
   | 'no-grid-alignment'
-  /** A shifted socket would lift a bin stacked above past the drawer or into clearance. */
-  | 'lifts-stack';
+  /** A shifted socket would lift a bin stacked above past the drawer top. */
+  | 'lifts-stack'
+  /** A shift would leave a bin stacked above resting on another bin's clearance. */
+  | 'rests-on-clearance';
 
 export interface ExpandPlacement {
   readonly binId: BinId;
@@ -324,7 +326,10 @@ export function resolveExpandToFit(
     resolveRestingStack(after, layout.layers),
     layout.drawer.height
   );
-  if (restacked.length > 0) return { ok: false, reason: 'lifts-stack' };
+  if (restacked.length > 0) {
+    const overflows = restacked.some((v) => v.kind === 'exceeds_height');
+    return { ok: false, reason: overflows ? 'lifts-stack' : 'rests-on-clearance' };
+  }
 
   return { ok: true, placements };
 }

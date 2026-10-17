@@ -1381,6 +1381,7 @@
   "toast.expandToFitNoGridAlignment": "სივრცე ბადეზე ვერ იყოფა — სცადეთ უჯრის შემავსებლის მორგება",
   "toast.expandToFitLocked": "გასაფართოებლად განბლოკეთ არჩეული, ზომაჩაკეტილი ყუთები",
   "toast.expandToFitLiftsStack": "გაფართოება ზემოთ დადებულ ყუთს უჯრის ზედა კიდეს გადააცილებდა",
+  "toast.expandToFitRestsOnClearance": "გაფართოება დაწყობილ ყუთს სხვა ყუთის მიერ დატოვებულ თავისუფალ სივრცეზე დადებდა",
   "toast.binSizeLocked": "ამ ყუთის ზომა ჩაკეტილია",
   "toast.matchHeightComplete": "{count} ყუთის სიმაღლე დაყენდა {height}u-ზე",
   "toast.moveToLayerComplete": "{count} ყუთი გადატანილია {name}-ზე",

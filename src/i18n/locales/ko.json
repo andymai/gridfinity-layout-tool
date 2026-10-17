@@ -4482,6 +4482,7 @@
   "toast.expandToFitComplete": "수납통 {count}개를 빈틈에 맞춰 확장했습니다",
   "toast.expandToFitLocked": "선택 항목에서 크기가 잠긴 수납통을 잠금 해제하면 확장할 수 있습니다",
   "toast.expandToFitLiftsStack": "확장하면 위에 쌓인 수납통이 서랍 윗면을 넘어갑니다",
+  "toast.expandToFitRestsOnClearance": "확장하면 쌓인 수납통이 다른 수납통이 확보한 여유 공간 위에 놓이게 됩니다",
   "toast.expandToFitNoGridAlignment": "공간을 격자에 맞게 나눌 수 없습니다 — 서랍 여백을 조정해 보세요",
   "toast.expandToFitNoSlack": "채울 공간이 없습니다 — 선택한 수납통이 이미 옆에 맞닿아 있습니다",
   "toast.expandToFitRagged": "한 레이어에서 행, 열 또는 완전한 격자를 이루는 수납통을 선택하세요",

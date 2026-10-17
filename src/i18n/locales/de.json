@@ -4482,6 +4482,7 @@
   "toast.expandToFitComplete": "{count} Bin(s) passend vergrößert",
   "toast.expandToFitLocked": "Entsperre die größengesperrten Bins in der Auswahl, um sie zu vergrößern",
   "toast.expandToFitLiftsStack": "Das Vergrößern würde einen darauf gestapelten Bin über die Oberkante der Schublade schieben",
+  "toast.expandToFitRestsOnClearance": "Das Vergrößern würde einen gestapelten Bin auf den Freigang setzen, den ein anderer Bin reserviert",
   "toast.expandToFitNoGridAlignment": "Der Platz lässt sich nicht auf das Raster aufteilen — passe den Schubladenrand an",
   "toast.expandToFitNoSlack": "Nichts zu füllen — die Auswahl grenzt bereits an ihre Nachbarn",
   "toast.expandToFitRagged": "Wähle Bins, die eine Zeile, eine Spalte oder ein vollständiges Raster auf einer Ebene bilden",

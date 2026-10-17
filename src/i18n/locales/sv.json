@@ -4482,6 +4482,7 @@
   "toast.expandToFitComplete": "Expanderade {count} fack till passform",
   "toast.expandToFitLocked": "Lås upp facken med låst storlek i markeringen för att expandera dem",
   "toast.expandToFitLiftsStack": "Att expandera skulle skjuta ett fack som är staplat ovanpå förbi lådans överkant",
+  "toast.expandToFitRestsOnClearance": "Att expandera skulle ställa ett staplat fack på frigång som ett annat fack reserverar",
   "toast.expandToFitNoGridAlignment": "Utrymmet kan inte delas upp på rutnätet — prova att justera lådmarginalen",
   "toast.expandToFitNoSlack": "Inget att fylla — markeringen möter redan sina grannar",
   "toast.expandToFitRagged": "Välj fack som bildar en rad, en kolumn eller ett fullt rutnät på ett lager",

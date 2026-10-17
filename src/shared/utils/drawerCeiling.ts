@@ -154,9 +154,8 @@ export function drawerCeilingFit(input: DrawerCeilingInput): DrawerCeilingFit | 
     // The junction credit needs both halves: the upper bin's socket to sink,
     // and the SUPPORTER's lip to sink into. A bin resting on a lipless design
     // sits on its flat top and nests nothing, and one resting on reserved
-    // clearance sits on the contents, nowhere near the lip.
-    // A bin sits at the highest base its supporters give it, which is the
-    // support top less any nesting that supporter allows.
+    // clearance sits on the contents, nowhere near the lip. So each supporter
+    // gives a base of its top less the nesting it allows, and the highest wins.
     let baseMm: number | undefined;
     for (const under of supports) {
       if (!footprintsOverlap(bin, under.bin)) continue;
@@ -170,17 +169,20 @@ export function drawerCeilingFit(input: DrawerCeilingInput): DrawerCeilingFit | 
     // the designer measures a bare bin with an OPTIONAL plate; here the model
     // always has one (socketed columns are credited its pockets on the same
     // assumption), so the two rules agree on the premise and differ on the face.
-    const topMm =
-      baseMm === undefined
-        ? (linked?.socketless === true ? baseplateTotalHeight(plate) : plateRiseMm) + riseMm
-        : baseMm + riseMm;
+    const floorMm =
+      baseMm ?? (linked?.socketless === true ? baseplateTotalHeight(plate) : plateRiseMm);
+    const topMm = floorMm + riseMm;
 
+    // Clearance counts from the bin's nominal top, so a linked design that
+    // already stands taller covers it, as `resolveRestingStack` takes the
+    // larger of the two.
     const clearanceMm = (bin.clearanceHeight ?? 0) * heightUnitMm;
-    const contentsTopMm = topMm + clearanceMm;
+    const nominalTopMm = floorMm + bin.height * heightUnitMm + (hasLip ? LIP_PROTRUSION_MM : 0);
+    const contentsTopMm = clearanceMm > 0 ? Math.max(topMm, nominalTopMm + clearanceMm) : topMm;
     supports.push({
       bin,
       restMm: contentsTopMm,
-      nests: hasLip && clearanceMm === 0,
+      nests: hasLip && contentsTopMm <= topMm + CEILING_EPSILON_MM,
     });
     measured.push({
       binId: bin.id,

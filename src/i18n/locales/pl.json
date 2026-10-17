@@ -4482,6 +4482,7 @@
   "toast.expandToFitComplete": "Rozszerzono {count} bin(ów) do wypełnienia",
   "toast.expandToFitLocked": "Odblokuj biny z zablokowanym rozmiarem w zaznaczeniu, aby je rozszerzyć",
   "toast.expandToFitLiftsStack": "Rozszerzenie wypchnęłoby bin ustawiony na górze ponad krawędź szuflady",
+  "toast.expandToFitRestsOnClearance": "Rozszerzenie postawiłoby bin ze stosu na zapasie zarezerwowanym przez inny bin",
   "toast.expandToFitNoGridAlignment": "Nie można podzielić przestrzeni na siatkę — spróbuj dostosować margines szuflady",
   "toast.expandToFitNoSlack": "Nie ma czego wypełniać — zaznaczenie już styka się z sąsiadami",
   "toast.expandToFitRagged": "Zaznacz biny tworzące wiersz, kolumnę lub pełną siatkę w jednej warstwie",

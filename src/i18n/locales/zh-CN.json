@@ -4482,6 +4482,7 @@
   "toast.expandToFitComplete": "已扩展 {count} 个收纳盒以填满空间",
   "toast.expandToFitLocked": "解锁所选中已锁定尺寸的收纳盒后才能扩展",
   "toast.expandToFitLiftsStack": "扩展会把叠在上面的收纳盒推出抽屉顶部",
+  "toast.expandToFitRestsOnClearance": "扩展会让叠放的收纳盒压在另一个收纳盒预留的净空上",
   "toast.expandToFitNoGridAlignment": "无法按网格划分该空间 — 请尝试调整抽屉边距",
   "toast.expandToFitNoSlack": "无需填充 — 所选收纳盒已与相邻部分相接",
   "toast.expandToFitRagged": "请选择在同一层中构成一行、一列或完整网格的收纳盒",

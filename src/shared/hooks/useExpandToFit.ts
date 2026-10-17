@@ -18,6 +18,7 @@ const BLOCKED_MESSAGE_KEY: Record<ExpandBlockedReason, string> = {
   'slack-exceeds-overhang': 'toast.expandToFitTooMuchSlack',
   'no-grid-alignment': 'toast.expandToFitNoGridAlignment',
   'lifts-stack': 'toast.expandToFitLiftsStack',
+  'rests-on-clearance': 'toast.expandToFitRestsOnClearance',
 };
 
 /**
