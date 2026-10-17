@@ -1,0 +1,75 @@
+src/i18n/locales/uk.json
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/features/bin-inspector/components/Inspector/BinItemsEditor/BinItemsEditor.tsx
+  s_078fc63cde22ff::t_66621a7c5bbd6f 1-4,6-53,56-64,67-68,70,73,75,79-165,174-185,188-196
+  s_078fc63cde22ff::t_7ee29ba8dd77ee 69,71-72,74,76-78,166-170,172-173
+  s_078fc63cde22ff::t_a2f3c4ece038d1 5,54-55,65-66,171,186-187
+src/i18n/locales/nb.json
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/features/bin-inspector/hooks/binInspectorTypes.ts
+  s_078fc63cde22ff::t_6d25254c5a216c 9,45
+src/features/bin-inspector/components/Inspector/BinItemsEditor/index.ts
+  s_078fc63cde22ff::t_7ee29ba8dd77ee 1
+src/shell/RightPanel/RightPanel.test.tsx
+  s_078fc63cde22ff::t_890ba757117e4e 191
+src/i18n/locales/de.json
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/i18n/locales/es.json
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/i18n/locales/it.json
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/i18n/locales/pt-BR.json
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_078fc63cde22ff::t_c3431c8fabb25c 21-22,64,78,415-422
+  s_078fc63cde22ff::t_f2bafa281ea705 423
+src/i18n/locales/sv.json
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/features/bin-inspector/components/Inspector/MultiBinInspector/MultiBinInspector.test.tsx
+  s_078fc63cde22ff::t_890ba757117e4e 71
+src/i18n/locales/ko.json
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_078fc63cde22ff::t_6d25254c5a216c 280-289,543
+  s_078fc63cde22ff::t_661f1ffc6d1c49 28
+src/i18n/locales/ka.json
+  s_078fc63cde22ff::t_0041f2be4fb7fd 444-451
+src/features/bin-inspector/components/Inspector/BinItemsEditor/BinItemsEditor.test.tsx
+  s_078fc63cde22ff::t_fa78306a400f90 1-12,14-17,19-23,25-63,65-72,74-82,87-88
+  s_078fc63cde22ff::t_7aaa4625967853 13,18,24,64,73,83-86
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.test.tsx
+  s_078fc63cde22ff::t_16ce7def244dd4 106,110
+  s_078fc63cde22ff::t_cd0e3b1926ba6e 6,103-105,107-109,111-123
+  s_078fc63cde22ff::t_890ba757117e4e 76
+  s_078fc63cde22ff::t_25c53acf41429d 124-125
+src/i18n/locales/zh-CN.json
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/i18n/locales/ja.json
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/i18n/locales/nl.json
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/i18n/locales/cs.json
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/i18n/locales/pl.json
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/i18n/locales/fr.json
+  s_078fc63cde22ff::t_0041f2be4fb7fd 3514-3521
+src/i18n/locales/en.ts
+  s_078fc63cde22ff::t_0041f2be4fb7fd 498-505
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b46d8ec502930faf2e6c0685744e3147df993f54",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
