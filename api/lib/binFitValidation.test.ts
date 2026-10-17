@@ -84,6 +84,18 @@ describe('sanitizeBinFitFields', () => {
     }
   });
 
+  it('keeps a rim past one grid unit when that side’s flare accounts for it', () => {
+    const flared = {
+      left: 0,
+      right: 60,
+      front: 0,
+      back: 0,
+      taper: { ...wallTaper, right: 30 },
+    };
+    expect(sanitizeBinFitFields({ overhang: flared })).toEqual({ overhang: flared });
+    expect(sanitizeBinFitFields({ overhang: { ...flared, right: 73 } })).toEqual({});
+  });
+
   it('keeps one field when its neighbour is malformed', () => {
     expect(sanitizeBinFitFields({ clearanceHeight: 1.5, overhang: { left: 'wide' } })).toEqual({
       clearanceHeight: 1.5,

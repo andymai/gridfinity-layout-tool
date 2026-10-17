@@ -76,6 +76,27 @@ describe('overhang through the share allowlist', () => {
     if (result.valid) expect(result.payload.params.overhang).toEqual(overhang);
   });
 
+  it('keeps a base overhang plus flare past one grid unit, as the designer stores it', () => {
+    const overhang = {
+      left: 0,
+      right: 60,
+      front: 0,
+      back: 0,
+      taper: {
+        enabled: true,
+        profile: 'fillet',
+        bandHeight: 9,
+        left: 0,
+        right: 30,
+        front: 0,
+        back: 0,
+      },
+    };
+    const result = check(overhang);
+    expect(result.valid).toBe(true);
+    if (result.valid) expect(result.payload.params.overhang).toEqual(overhang);
+  });
+
   it('drops a malformed overhang and keeps the design', () => {
     const result = check({ left: 0, right: 99, front: 0, back: 0 });
     expect(result.valid).toBe(true);

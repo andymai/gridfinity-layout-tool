@@ -95,11 +95,28 @@ function sanitizeWallTaper(value: unknown): WallTaperShape | undefined {
   };
 }
 
+/** A stored side is the rim: the base overhang plus that side's flare, each up to its own ceiling. */
+function rimSides(
+  value: Record<string, unknown>,
+  taper: WallTaperShape | undefined
+): Sides | undefined {
+  const side = (name: keyof Sides): number | undefined =>
+    mmWithin(value[name], BIN_OVERHANG_MM_MAX + (taper?.[name] ?? 0));
+  const left = side('left');
+  const right = side('right');
+  const front = side('front');
+  const back = side('back');
+  if (left === undefined || right === undefined || front === undefined || back === undefined) {
+    return undefined;
+  }
+  return { left, right, front, back };
+}
+
 function sanitizeOverhang(value: unknown): BinOverhangShape | undefined {
   if (!isObject(value)) return undefined;
-  const overhangSides = sides(value, BIN_OVERHANG_MM_MAX);
-  if (!overhangSides) return undefined;
   const taper = sanitizeWallTaper(value.taper);
+  const overhangSides = rimSides(value, taper);
+  if (!overhangSides) return undefined;
   return {
     ...(isBoolean(value.enabled) ? { enabled: value.enabled } : {}),
     ...overhangSides,
@@ -123,7 +140,6 @@ export function sanitizeBinFitFields(value: unknown): BinFitFields {
   };
 }
 
-/** Bin design params with their overhang sanitized, or without it when malformed. */
 export function withSanitizedOverhang(params: Record<string, unknown>): Record<string, unknown> {
   const { overhang, ...rest } = params;
   const clean = sanitizeOverhang(overhang);
