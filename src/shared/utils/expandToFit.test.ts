@@ -388,6 +388,23 @@ describe('resolveExpandToFit and the resting stack', () => {
     expect(run({}, 3).ok).toBe(true);
   });
 
+  it('still expands a bin in a stack that is already over the drawer', () => {
+    // A 5u bin under a 4u one is 9u in an 8u drawer. Expanding the upper bin
+    // keeps its socket where it is, so the overflow does not change.
+    const lower = bin(0, 0, 2, 1, { height: heightUnits(5) });
+    const upper = bin(0.5, 0, 1, 1, { layerId: UPPER, height: heightUnits(4) });
+    const l = layout(2, 1, {
+      bins: [lower, upper],
+      drawer: { width: gridUnits(2), depth: gridUnits(1), height: heightUnits(8) },
+      layers: [
+        { id: LAYER, name: 'L1', height: heightUnits(3) },
+        { id: UPPER, name: 'L2', height: heightUnits(3) },
+      ],
+    });
+    const result = resolveExpandToFit(l.bins, [upper.id], l, undefined);
+    expect(result.ok).toBe(true);
+  });
+
   it('refuses a shift that sets a stacked bin down on reserved clearance', () => {
     // It would land on the third bin's 2u of clearance, still inside the drawer.
     expect(run({ clearanceHeight: heightUnits(2) }, 1)).toEqual({

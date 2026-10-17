@@ -23,7 +23,7 @@
 import type { Bin, BinId, Layout, StoredBaseplateParams } from '@/core/types';
 import { effectiveGridUnitMmY, gridUnits } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
-import { createOccupiedCellSet } from '@/shared/utils/fill';
+import { createFootprintCellSet } from '@/shared/utils/fill';
 import { getRestingStack, newViolations, resolveRestingStack } from '@/shared/utils/restingStack';
 import { isBinLocked } from '@/shared/utils/binLocation';
 import type { OverhangConfig } from '@/core/types';
@@ -232,17 +232,12 @@ export function resolveExpandToFit(
     return { ok: false, reason: 'ragged' };
   }
 
-  // Obstacles: same-layer bins (excluding the selection), cells where the
-  // tallest selected bin could not rest, and cells outside a non-rectangular
-  // drawer outline.
+  // Obstacles: same-layer bins (excluding the selection) and cells outside a
+  // non-rectangular drawer outline. Where the shifted bins rest is checked
+  // once the plan exists, against the stack as it stands, so a stack that is
+  // already over the drawer can still expand without rising.
   const others = bins.filter((b) => !selectedSet.has(b.id));
-  const occupied = createOccupiedCellSet(
-    others,
-    layerId,
-    layout,
-    STEP,
-    Math.max(...selected.map((b) => b.height))
-  );
+  const occupied = createFootprintCellSet(others, layerId, layout, STEP);
 
   const selLoX = Math.min(...selected.map((b) => b.x));
   const selHiX = Math.max(...selected.map((b) => b.x + b.width));

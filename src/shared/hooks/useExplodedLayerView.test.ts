@@ -182,7 +182,8 @@ describe('useExplodedLayerView', () => {
       })
     );
 
-    const top = result.current![1];
+    if (!result.current) throw new Error('expected layer groups');
+    const top = result.current[1];
     const z = (id: string) => top.bins.find((b) => b.bin.id === binId(id))?.z ?? NaN;
     expect(z('bin4')).toBeCloseTo(3 * heightToGridScale, 3);
     expect(z('bin2')).toBeCloseTo(0, 3);

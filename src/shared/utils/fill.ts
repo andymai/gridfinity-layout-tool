@@ -10,17 +10,15 @@ import { drawerFrameOutline } from './outlineFrame';
 const HEIGHT_EPSILON = 1e-9;
 
 /**
- * Create a Set of blocked cell keys for O(1) lookup.
- * Key format: "x,y"
+ * Cells a bin on `layerId` cannot cover: outside a non-rectangular drawer, or
+ * taken by a bin on the same layer. Key format: "x,y".
  * @param step - Iteration step size (0.5 for half-bin mode, 1 for normal)
- * @param height - Height of the bin to be placed; defaults to the layer's.
  */
-export function createOccupiedCellSet(
+export function createFootprintCellSet(
   bins: Bin[],
   layerId: LayerId,
   layout: Layout,
-  step: 0.5 | 1 = 1,
-  height?: number
+  step: 0.5 | 1 = 1
 ): Set<string> {
   const occupied = new Set<string>();
 
@@ -54,8 +52,21 @@ export function createOccupiedCellSet(
     }
   }
 
-  for (const key of unrestableCells(bins, layerId, layout, step, height)) occupied.add(key);
+  return occupied;
+}
 
+/**
+ * The footprint cells plus those where a new bin of the layer's height could
+ * not rest.
+ */
+export function createOccupiedCellSet(
+  bins: Bin[],
+  layerId: LayerId,
+  layout: Layout,
+  step: 0.5 | 1 = 1
+): Set<string> {
+  const occupied = createFootprintCellSet(bins, layerId, layout, step);
+  for (const key of unrestableCells(bins, layerId, layout, step)) occupied.add(key);
   return occupied;
 }
 
@@ -101,16 +112,10 @@ function lowerTops(
  * lower bin reserves. Judged cell by cell, which is conservative for a
  * multi-cell bin, since it rests on the highest of its cells.
  */
-function unrestableCells(
-  bins: Bin[],
-  layerId: LayerId,
-  layout: Layout,
-  step: number,
-  height: number | undefined
-): string[] {
+function unrestableCells(bins: Bin[], layerId: LayerId, layout: Layout, step: number): string[] {
   const layerIndex = layout.layers.findIndex((l) => l.id === layerId);
   if (layerIndex === -1) return [];
-  const binHeight = height ?? layout.layers[layerIndex].height;
+  const binHeight = layout.layers[layerIndex].height;
   const ceiling = layout.drawer.height;
   const keys: string[] = [];
 
@@ -158,7 +163,9 @@ function liftGuard(
       const gap = (stack.bins.get(above.id) as RestingBin).zStart - top;
       room = Math.min(room, gap + (budget.get(above.id) ?? 0));
     }
-    budget.set(bin.id, room);
+    // A stack already over the drawer must only not rise; the final check
+    // refuses anything that makes it worse.
+    budget.set(bin.id, Math.max(0, room));
   }
   const tops = lowerTops(bins, layout, layerIndex, step);
 

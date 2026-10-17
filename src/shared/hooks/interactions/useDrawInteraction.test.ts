@@ -9,7 +9,7 @@ import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useGapFitStore } from '@/core/store/gapFit';
 import { createTestBin, resetAllStores } from '@/test/testUtils';
 import { ok } from '@/core/result';
-import { binId, gridUnits, heightUnits } from '@/core/types';
+import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
 import type { Coord } from '@/core/types';
 import type { RefObject } from 'react';
 import type {
@@ -305,6 +305,48 @@ describe('useDrawInteraction', () => {
         targetPosition: { x: 2, y: 3, layerId: layout.layers[0].id },
       });
       expect(useBinExampleGalleryStore.getState().isOpen).toBe(true);
+    });
+
+    it('shrinks onto a gap that only a bin shorter than the layer default fits', () => {
+      // The 2×1 gap on layer 2 sits over a 10u bin in a 12u drawer: a 3u
+      // default would not fit there, but a 2u bin would.
+      const { layout } = useLayoutStore.getState();
+      const upper = layerId('upper');
+      const make = (id: string, layer: typeof upper, x: number, w: number, h: number) =>
+        createTestBin({
+          id: binId(id),
+          layerId: layer,
+          category: layout.categories[0].id,
+          x: gridUnits(x),
+          y: gridUnits(0),
+          width: gridUnits(w),
+          depth: gridUnits(1),
+          height: heightUnits(h),
+        });
+      useLayoutStore.setState({
+        layout: {
+          ...layout,
+          drawer: { ...layout.drawer, height: heightUnits(12) },
+          layers: [...layout.layers, { id: upper, name: 'Upper', height: heightUnits(3) }],
+          bins: [make('tall', layout.layers[0].id, 0, 2, 10), make('neighbour', upper, 2, 1, 2)],
+        },
+      });
+      useSelectionStore.setState({ activeLayerId: upper });
+      useInteractionStore.setState({
+        interaction: {
+          type: 'draw',
+          start: coord(0, 0),
+          current: coord(2, 0),
+          fitsGap: 'right-drag',
+        },
+      });
+
+      const { result } = renderHook(() => useDrawInteraction(createContext()));
+      act(() => {
+        result.current.handleUp();
+      });
+
+      expect(useGapFitStore.getState().constraint).toMatchObject({ maxWidth: 2, maxHeight: 2 });
     });
 
     it('derives half-grid constraints at 0.5 steps', () => {

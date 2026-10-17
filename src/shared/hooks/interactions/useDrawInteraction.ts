@@ -159,13 +159,14 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
           }
           // Gap selection: hand the drawn empty region to the community
           // gallery instead of creating a bin. Clamp to the empty area first
-          // so dragging across a bin still yields a usable gap.
+          // so dragging across a bin still yields a usable gap. Snapped at the
+          // shortest bin, since the gallery picks a height to fit the gap.
           const snapped = snapDrawRect(
             x1,
             y1,
             width,
             depth,
-            layer.height,
+            heightUnits(CONSTRAINTS.MIN_BIN_HEIGHT),
             activeLayerId,
             layout,
             minSizeNow

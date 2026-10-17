@@ -574,6 +574,25 @@ describe('fill and the resting stack', () => {
     expect(result.bins.map((b) => b.x)).toEqual([0]);
   });
 
+  it('fills under a stack that is already over without raising it', () => {
+    // A 5u bin carries a 5u bin spanning two cells: 10u in an 8u drawer. A 4u
+    // bin in the other cell of the middle layer stays below the top bin.
+    const three: Layout = {
+      ...layout([
+        { ...bin('base', 'layer1', 0, 5), width: gridUnits(1) },
+        { ...bin('top', 'layer3', 0, 5), width: gridUnits(2) },
+      ]),
+      drawer: { width: gridUnits(2), depth: gridUnits(2), height: heightUnits(8) },
+      layers: [
+        { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(4) },
+        { id: layerId('layer3'), name: 'Layer 3', height: heightUnits(3) },
+      ],
+    };
+    const result = fillAllWithSize(three, layerId('layer2'), 1, 2, categoryId('cat1'));
+    expect(result.bins.map((b) => b.x)).toEqual([1]);
+  });
+
   it('applies the same lift rule to filling gaps', () => {
     const result = fillGaps(
       layout([bin('high', 'layer2', 0, 6), bin('low', 'layer2', 2, 2)]),
