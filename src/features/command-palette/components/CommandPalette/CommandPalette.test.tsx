@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from '@testing-library/react';
+import { Button } from '@/design-system';
 import { CommandPalette } from './CommandPalette';
 import {
   useLayoutStore,
@@ -129,6 +130,25 @@ describe('CommandPalette', () => {
       const { container } = render(<CommandPalette open={false} onOpenChange={mockOnOpenChange} />);
 
       expect(container).toBeInTheDocument();
+    });
+  });
+
+  describe('extra results', () => {
+    it('hands them the typed query and a way to close the palette', () => {
+      const extraResults = vi.fn((query: string, close: () => void) => (
+        <Button onClick={close}>{`found ${query}`}</Button>
+      ));
+      const { getByText } = render(
+        <CommandPalette
+          open
+          onOpenChange={mockOnOpenChange}
+          initialQuery="screws"
+          extraResults={extraResults}
+        />
+      );
+      expect(extraResults).toHaveBeenCalledWith('screws', expect.any(Function));
+      getByText('found screws').click();
+      expect(mockOnOpenChange).toHaveBeenCalledWith(false);
     });
   });
 });

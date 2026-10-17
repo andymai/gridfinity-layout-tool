@@ -2364,6 +2364,7 @@
   "commandPalette.alignRight": "오른쪽 정렬",
   "commandPalette.alignTop": "위쪽 정렬",
   "commandPalette.category.bins": "수납통",
+  "places.find.indexing": "레이아웃을 검색하는 중…",
   "commandPalette.category.edit": "편집",
   "commandPalette.category.export": "내보내기",
   "commandPalette.category.layers": "레이어",

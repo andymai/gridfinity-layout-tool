@@ -90,6 +90,7 @@ import { useSpaceMouseDevice } from '@/shared/spacemouse/useSpaceMouseDevice';
 import { useCommunityPublishReturn } from '@/shared/hooks/useCommunityPublishReturn';
 import { useCommunityLikeReturn } from '@/shell/hooks/useCommunityLikeReturn';
 import { useCommunityDigestCheck } from '@/shell/hooks/useCommunityDigestCheck';
+import { usePlacesFindResults } from '@/shell/hooks/usePlacesFindResults';
 
 let hasRenderedInitialLayout = false;
 
@@ -125,6 +126,7 @@ export default function App() {
   const closeBinExampleGallery = useBinExampleGalleryStore((s) => s.close);
   const communityPublishOpen = useCommunityPublishStore((s) => s.isOpen);
   const communityShowcaseEnabled = useFeatureFlag('community_showcase');
+  const placesFindResults = usePlacesFindResults();
   const [commandPaletteInitialQuery, setCommandPaletteInitialQuery] = useState('');
 
   useRouteMeta({
@@ -541,6 +543,7 @@ export default function App() {
               if (!open) setCommandPaletteInitialQuery('');
             }}
             initialQuery={commandPaletteInitialQuery}
+            extraResults={placesFindResults}
           />
         </Suspense>
       )}

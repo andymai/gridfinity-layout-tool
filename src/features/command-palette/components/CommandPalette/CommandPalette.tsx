@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Command } from 'cmdk';
 import { useTranslation } from '@/i18n';
 import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../../commands';
@@ -27,9 +28,16 @@ interface CommandPaletteProps {
    * their query already typed.
    */
   initialQuery?: string;
+  /** Results another feature contributes for the typed query, shown above the commands. */
+  extraResults?: (query: string, close: () => void) => ReactNode;
 }
 
-export function CommandPalette({ open, onOpenChange, initialQuery = '' }: CommandPaletteProps) {
+export function CommandPalette({
+  open,
+  onOpenChange,
+  initialQuery = '',
+  extraResults,
+}: CommandPaletteProps) {
   const t = useTranslation();
   // App.tsx unmounts this component when closed (`{commandPaletteOpen && <CommandPalette/>}`),
   // so the initial state runs fresh on every open — no need to re-seed via effect.
@@ -187,6 +195,8 @@ export function CommandPalette({ open, onOpenChange, initialQuery = '' }: Comman
                 <p className="text-sm text-content-secondary">{t('commandPalette.noResults')}</p>
               </div>
             </Command.Empty>
+
+            {extraResults?.(searchValue, () => onOpenChange(false))}
 
             {recentCommands.length > 0 && (
               <Command.Group

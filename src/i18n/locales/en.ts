@@ -4568,6 +4568,7 @@ const en: Record<string, string> = {
   'commandPalette.category.view': 'View',
   'commandPalette.category.preview': '3D Preview',
   'commandPalette.category.bins': 'Bins',
+  'places.find.indexing': 'Searching your layouts…',
   'commandPalette.category.tools': 'Tools',
   'commandPalette.category.export': 'Export',
 

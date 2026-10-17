@@ -273,6 +273,16 @@ export const FEATURE_FLAGS = [
     addedAt: '2026-08',
     requiresRefresh: false,
   },
+  {
+    id: 'places',
+    name: 'Find What Your Bins Hold',
+    description:
+      'Search bin labels and notes across every layout from the command palette (Ctrl/Cmd+K), and jump straight to the bin.',
+    status: 'experimental',
+    risk: 'low',
+    addedAt: '2026-10',
+    requiresRefresh: false,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];
