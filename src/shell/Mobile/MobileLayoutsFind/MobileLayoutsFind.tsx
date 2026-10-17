@@ -10,7 +10,6 @@ const PlacesFindList = lazyWithRetry(() =>
   import('@/features/places/components/PlacesFindList').then(namedExport('PlacesFindList'))
 );
 
-/** The layouts sheet, with a bin search above it while the `places` flag is on. */
 export function MobileLayoutsFind() {
   const t = useTranslation();
   const enabled = useFeatureFlag('places');

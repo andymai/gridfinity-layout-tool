@@ -11,7 +11,6 @@ export interface PlacesFindListProps {
   readonly onDone: () => void;
 }
 
-/** Bin results as a plain list, for touch screens, where there is no command palette. */
 export function PlacesFindList({ query, onDone }: PlacesFindListProps) {
   const t = useTranslation();
   const { results, indexing } = useFindBins(query);
