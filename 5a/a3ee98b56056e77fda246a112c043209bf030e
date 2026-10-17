@@ -1,0 +1,71 @@
+scripts/doc-budget.json
+  s_078fc63cde22ff::t_79c672c2bce66a 35
+src/core/cqrs/v2/domain/bin/updateBin.test.ts
+  s_078fc63cde22ff::t_005ebfa36c56a5 312-347
+src/core/constants.ts
+  s_078fc63cde22ff::t_1d189e51e65bc8 17
+src/shared/hooks/interactions/types.ts
+  s_078fc63cde22ff::t_53d5d58952c61d 5
+  s_078fc63cde22ff::t_7cd09d0ece0378 86
+docs/schemas/layout.md
+  s_078fc63cde22ff::t_2eddcd1ae7dc4c 160,181-200
+  s_078fc63cde22ff::t_3fe1df5eb4d7d2 201
+public/schema/layout.schema.json
+  s_078fc63cde22ff::t_1d189e51e65bc8 541
+src/core/cqrs/validation/schemas.test.ts
+  s_078fc63cde22ff::t_0ffde73ad419f5 590-621
+src/core/cqrs/v2/domain/bin/addBin.test.ts
+  s_078fc63cde22ff::t_b970a24203d08b 155-173
+src/core/cqrs/v2/domain/bin/addBin.ts
+  s_078fc63cde22ff::t_7fb3ebbbdc4ccd 21,86,88-89
+  s_078fc63cde22ff::t_1d189e51e65bc8 35
+src/features/design-linking/hooks/useBento.ts
+  s_078fc63cde22ff::t_2bfa55ae96b4fc 24
+  s_078fc63cde22ff::t_0389b1e3af4558 105-107,119
+api/lib/contentFilter.ts
+  s_078fc63cde22ff::t_807bad2cb46f8f 60-65,107-112
+  s_078fc63cde22ff::t_08ba99c8a23ce8 113-115
+src/features/design-linking/hooks/useBento.test.ts
+  s_078fc63cde22ff::t_0ffde73ad419f5 194-211
+src/core/storage/ShareService.test.ts
+  s_078fc63cde22ff::t_b79a429caca4c4 495-502
+docs/schemas/constraints.md
+  s_078fc63cde22ff::t_2eddcd1ae7dc4c 30
+src/core/store/layout/binActions.ts
+  s_078fc63cde22ff::t_7fb3ebbbdc4ccd 128
+src/shared/hooks/interactions/useDragInteraction.ts
+  s_078fc63cde22ff::t_7fb3ebbbdc4ccd 408
+api/lib/binItemsValidation.test.ts
+  s_078fc63cde22ff::t_1d189e51e65bc8 67-69
+src/core/cqrs/validation/schemas.ts
+  s_078fc63cde22ff::t_7fb3ebbbdc4ccd 93
+api/lib/shareConstraints.ts
+  s_078fc63cde22ff::t_1d189e51e65bc8 29
+src/shared/utils/binItems.ts
+  s_078fc63cde22ff::t_0389b1e3af4558 1-2,56-70
+  s_078fc63cde22ff::t_ac8b71dd61e07c 71
+src/shared/utils/binItems.test.ts
+  s_078fc63cde22ff::t_005ebfa36c56a5 1-80
+  s_078fc63cde22ff::t_6d9ed3fdd5d9f8 81-83
+src/shared/utils/layoutMigration.test.ts
+  s_078fc63cde22ff::t_005ebfa36c56a5 56-65
+api/lib/contentFilter.test.ts
+  s_078fc63cde22ff::t_9136adadb23722 99-100,103-116,118-124
+  s_078fc63cde22ff::t_abb2111e7e3a7b 101-102,117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5aa3ee98b56056e77fda246a112c043209bf030e",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
