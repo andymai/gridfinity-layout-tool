@@ -1,0 +1,60 @@
+src/i18n/locales/en.ts
+  s_e0423b67d48e77::t_87a1dc47d54997 1601-1602
+src/i18n/locales/nl.json
+  s_e0423b67d48e77::t_87a1dc47d54997 4485
+src/shared/utils/expandToFit.test.ts
+  s_e0423b67d48e77::t_21c2991b095f8f 362-398
+src/i18n/locales/pt-BR.json
+  s_e0423b67d48e77::t_87a1dc47d54997 4485
+src/i18n/locales/sv.json
+  s_e0423b67d48e77::t_87a1dc47d54997 4485
+src/i18n/locales/uk.json
+  s_e0423b67d48e77::t_87a1dc47d54997 4485
+src/i18n/locales/es.json
+  s_e0423b67d48e77::t_87a1dc47d54997 4485
+src/i18n/locales/pl.json
+  s_e0423b67d48e77::t_87a1dc47d54997 4485
+src/shared/utils/drawerCeiling.test.ts
+  s_e0423b67d48e77::t_929f8c97064526 272-289
+src/shared/hooks/useExpandToFit.ts
+  s_e0423b67d48e77::t_87a1dc47d54997 21
+src/i18n/locales/ko.json
+  s_e0423b67d48e77::t_87a1dc47d54997 4485
+src/i18n/locales/nb.json
+  s_e0423b67d48e77::t_87a1dc47d54997 4485
+src/i18n/locales/zh-CN.json
+  s_e0423b67d48e77::t_87a1dc47d54997 4485
+src/i18n/locales/cs.json
+  s_e0423b67d48e77::t_87a1dc47d54997 4485
+src/i18n/locales/ja.json
+  s_e0423b67d48e77::t_87a1dc47d54997 4485
+src/i18n/locales/de.json
+  s_e0423b67d48e77::t_87a1dc47d54997 4485
+src/i18n/locales/ka.json
+  s_e0423b67d48e77::t_87a1dc47d54997 1384
+src/shared/utils/drawerCeiling.ts
+  s_e0423b67d48e77::t_3ae159d517f5fb 180-181
+  s_e0423b67d48e77::t_be0d261ad13a90 157-158,172-174,176-178,185
+src/i18n/locales/fr.json
+  s_e0423b67d48e77::t_87a1dc47d54997 4485
+src/shared/utils/expandToFit.ts
+  s_e0423b67d48e77::t_87a1dc47d54997 61-64,329-332
+src/i18n/locales/it.json
+  s_e0423b67d48e77::t_87a1dc47d54997 4485
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4973832df9467e0762a510a66cc02afadf3df3cb",
+  "prompts": {},
+  "sessions": {
+    "s_e0423b67d48e77": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1be01c49-0263-437a-80cd-4ce6249d6f74",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
