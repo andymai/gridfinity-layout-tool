@@ -384,7 +384,7 @@ describe('minimum bin height (cross-boundary mirror)', () => {
 /**
  * Keys the share allowlist leaves out on purpose. Anything else in `BinParams`
  * that is not allowlisted is stripped from every share, synced design and
- * version without a sound, which is how `overhang` was lost.
+ * version without a sound.
  */
 const PARAM_KEYS_NOT_PERSISTED: ReadonlyMap<string, string> = new Map([
   ['gridUnitMmY', 'community card metrics measure one pitch; see communityStore.crossBoundary'],
