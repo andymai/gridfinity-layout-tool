@@ -177,7 +177,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
             width: snapped.width as GridUnits,
             depth: snapped.depth as GridUnits,
           };
-          const maxHeight = maxBinHeight(
+          let maxHeight = maxBinHeight(
             {
               ...gap,
               id: binId('__gap__'),
@@ -193,11 +193,21 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
           ) as HeightUnits;
           // Probe with the full remaining stack budget: confirms the clamped
           // footprint itself is placeable (clearance zones included) before
-          // the gallery ever opens.
-          const probe: ValidationResult =
+          // the gallery ever opens. The budget only knows the drawer: a tall
+          // gap bin can also lift another bin's clearance up under a bin
+          // above, so step down a unit at a time while that is the problem.
+          let probe: ValidationResult =
             maxHeight >= CONSTRAINTS.MIN_BIN_HEIGHT
               ? canPlaceBin({ ...gap, height: maxHeight }, activeLayerId, layout)
               : { valid: false, reason: 'exceeds_height' };
+          while (
+            !probe.valid &&
+            (probe.reason === 'blocked_zone' || probe.reason === 'exceeds_height') &&
+            Math.ceil(maxHeight) - 1 >= CONSTRAINTS.MIN_BIN_HEIGHT
+          ) {
+            maxHeight = heightUnits(Math.ceil(maxHeight) - 1);
+            probe = canPlaceBin({ ...gap, height: maxHeight }, activeLayerId, layout);
+          }
           if (!probe.valid) {
             addToast(getPlacementErrorMessage(t, probe.reason, probe.blockingInfo), 'error');
             return;

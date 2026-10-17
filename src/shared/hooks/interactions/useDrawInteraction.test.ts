@@ -349,6 +349,52 @@ describe('useDrawInteraction', () => {
       expect(useGapFitStore.getState().constraint).toMatchObject({ maxWidth: 2, maxHeight: 2 });
     });
 
+    it('lowers the gap height until a bin there no longer lifts clearance under a bin above', () => {
+      // Layer 2: a 2u bin with 1u clearance beside a 6u bin; layer 3: a 2u
+      // bridge over both, held by the 6u bin. The drawer allows 5u in the
+      // gap under the clearance bin, but above 3u its clearance would rise
+      // past the 6u bin and carry the bridge.
+      const { layout } = useLayoutStore.getState();
+      const [middle, top] = [layerId('middle'), layerId('top')];
+      const make = (id: string, layer: typeof middle, x: number, w: number, h: number) =>
+        createTestBin({
+          id: binId(id),
+          layerId: layer,
+          category: layout.categories[0].id,
+          x: gridUnits(x),
+          y: gridUnits(0),
+          width: gridUnits(w),
+          depth: gridUnits(1),
+          height: heightUnits(h),
+        });
+      useLayoutStore.setState({
+        layout: {
+          ...layout,
+          drawer: { ...layout.drawer, height: heightUnits(10) },
+          layers: [
+            ...layout.layers,
+            { id: middle, name: 'Middle', height: heightUnits(3) },
+            { id: top, name: 'Top', height: heightUnits(3) },
+          ],
+          bins: [
+            { ...make('tools', middle, 0, 1, 2), clearanceHeight: heightUnits(1) },
+            make('solid', middle, 1, 1, 6),
+            make('bridge', top, 0, 2, 2),
+          ],
+        },
+      });
+      useInteractionStore.setState({
+        interaction: { type: 'draw', start: coord(0, 0), current: coord(0, 0), fitsGap: 'armed' },
+      });
+
+      const { result } = renderHook(() => useDrawInteraction(createContext()));
+      act(() => {
+        result.current.handleUp();
+      });
+
+      expect(useGapFitStore.getState().constraint).toMatchObject({ maxWidth: 1, maxHeight: 3 });
+    });
+
     it('derives half-grid constraints at 0.5 steps', () => {
       useHalfGridModeStore.setState({ halfGridMode: true });
       useInteractionStore.setState({
