@@ -188,6 +188,7 @@ describe('RightPanel', () => {
     },
     updateField: vi.fn(),
     updateCustomProperties: vi.fn(),
+    updateItems: vi.fn(),
     updateMultiCustomProperty: vi.fn(),
     updateMultiCategory: vi.fn(),
     updateMultiHeight: vi.fn(),

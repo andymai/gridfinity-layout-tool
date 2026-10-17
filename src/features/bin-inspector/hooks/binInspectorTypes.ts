@@ -6,7 +6,7 @@
  * lets the multi-action hook import only what it needs.
  */
 
-import type { Bin, Category, Layer, Layout } from '@/core/types';
+import type { Bin, BinItem, Category, Layer, Layout } from '@/core/types';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
 
 export type BinField =
@@ -42,6 +42,7 @@ export interface UseBinInspectorReturn {
 
   updateField: (field: BinField, value: string | number) => void;
   updateCustomProperties: (properties: Record<string, string>) => void;
+  updateItems: (items: BinItem[]) => void;
   updateMultiCustomProperty: (key: string, value: string) => void;
   updateMultiCategory: (categoryId: string) => void;
   updateMultiHeight: (delta: number) => void;

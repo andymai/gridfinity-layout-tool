@@ -18,6 +18,8 @@ import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBi
 import { SplitWarning } from '../SplitWarning';
 import { BinLabelField } from '../BinLabelField';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
+import { BinItemsEditor } from '../BinItemsEditor';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { ExtendToMarginToggle } from '../ExtendToMarginToggle';
 import { ExpandedFootprint } from '../ExpandedFootprint';
 import { STLSearchDropdown } from '@/shared/components/STLSearchDropdown';
@@ -59,6 +61,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
     categories,
     updateField,
     updateCustomProperties,
+    updateItems,
     moveToLayer,
     requestDelete,
     moveToStaging,
@@ -72,6 +75,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
   const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
   const ceiling = useDrawerCeiling();
   const restingStack = useRestingStack(layout.bins, layout.layers);
+  const placesEnabled = useFeatureFlag('places');
   const t = useTranslation();
 
   if (!bin) return null;
@@ -407,6 +411,15 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             />
           </Suspense>
         </div>
+
+        {placesEnabled && (
+          <BinItemsEditor
+            items={bin.items}
+            label={bin.label}
+            onChange={updateItems}
+            variant={variant}
+          />
+        )}
 
         {/* Find STL */}
         <STLSearchDropdown

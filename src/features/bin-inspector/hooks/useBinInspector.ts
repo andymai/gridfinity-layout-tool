@@ -25,7 +25,7 @@ import { clamp } from '@/shared/utils/math';
 import { isBinLocked, validateBinRotation } from '@/shared/utils/binLocation';
 import { expandPairIds } from '@/shared/utils/binPairs';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
-import type { GridUnits, HeightUnits, Bin, LayerId } from '@/core/types';
+import type { GridUnits, HeightUnits, Bin, BinItem, LayerId } from '@/core/types';
 import {
   layerId as toLayerId,
   categoryId as toCategoryId,
@@ -275,6 +275,16 @@ export function useBinInspector(): UseBinInspectorReturn {
       });
     },
     [bin, updateBin, addToast]
+  );
+
+  const updateItems = useCallback(
+    (items: BinItem[]) => {
+      if (!bin) return;
+      batch(() => {
+        updateBin(bin.id, { items });
+      });
+    },
+    [bin, updateBin]
   );
 
   const {
@@ -530,6 +540,7 @@ export function useBinInspector(): UseBinInspectorReturn {
 
     updateField,
     updateCustomProperties,
+    updateItems,
     updateMultiCustomProperty,
     updateMultiCategory,
     updateMultiHeight,
