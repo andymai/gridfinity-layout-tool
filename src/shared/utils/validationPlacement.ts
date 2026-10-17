@@ -28,6 +28,7 @@ import {
   binId as toBinId,
   categoryId as toCategoryId,
   effectiveGridUnitMmY,
+  HEIGHT_UNIT_STEP,
   heightUnits,
 } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
@@ -223,8 +224,23 @@ export function maxPlaceableHeight(
 
   const limit = maxBinHeight(bin, layout.bins, layout.layers, layout.drawer.height, options);
   if (limit < CONSTRAINTS.MIN_BIN_HEIGHT || fits(limit)) return limit;
+  let failing = limit;
   for (let height = Math.ceil(limit) - 1; height >= CONSTRAINTS.MIN_BIN_HEIGHT; height--) {
-    if (fits(height)) return height;
+    if (!fits(height)) {
+      failing = height;
+      continue;
+    }
+    // A clearance stops being a support conflict exactly where it ties a
+    // solid top, which can fall between whole units.
+    const perUnit = Math.round(1 / HEIGHT_UNIT_STEP);
+    let lo = height * perUnit;
+    let hi = Math.ceil(failing * perUnit - 1e-6);
+    while (hi - lo > 1) {
+      const mid = Math.floor((lo + hi) / 2);
+      if (fits(mid / perUnit)) lo = mid;
+      else hi = mid;
+    }
+    return lo / perUnit;
   }
   return CONSTRAINTS.MIN_BIN_HEIGHT - 1;
 }

@@ -627,6 +627,14 @@ describe('maxPlaceableHeight', () => {
     expect(maxPlaceableHeight(bottom, layout)).toBe(3);
   });
 
+  it('finds a limit that falls between whole units', () => {
+    const { layout, bottom } = make();
+    layout.bins = layout.bins.map((b) =>
+      b.id === binId('solid') ? { ...b, height: heightUnits(6.5) } : b
+    );
+    expect(maxPlaceableHeight(bottom, layout)).toBe(3.5);
+  });
+
   it('sizes a candidate that is not in the layout yet', () => {
     const { layout, bottom } = make();
     layout.bins = layout.bins.filter((b) => b.id !== bottom.id);
