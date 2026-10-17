@@ -59,13 +59,46 @@ describe('BinItemsEditor', () => {
     expect(last().map((i) => i.id)).toEqual(['i1']);
   });
 
-  it('sets, caps and clears a quantity', () => {
-    const { last } = setup([{ id: 'i1', name: 'Nuts', qty: 3 }]);
+  it('commits a quantity once, on blur or Enter, capped, and clears it', () => {
+    const { onChange, last } = setup([{ id: 'i1', name: 'Nuts', qty: 3 }]);
     const qty = screen.getByLabelText('Quantity of Nuts');
+    fireEvent.change(qty, { target: { value: '25' } });
     fireEvent.change(qty, { target: { value: '250000' } });
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.blur(qty);
+    expect(onChange).toHaveBeenCalledTimes(1);
     expect(last()[0].qty).toBe(CONSTRAINTS.ITEM_QTY_MAX);
+
     fireEvent.change(qty, { target: { value: '' } });
+    fireEvent.keyDown(qty, { key: 'Enter' });
     expect(last()[0]).not.toHaveProperty('qty');
+  });
+
+  it('leaves an unchanged row alone, and follows a saved change made elsewhere', () => {
+    const onChange = vi.fn<(items: BinItem[]) => void>();
+    const { rerender } = render(
+      <BinItemsEditor
+        items={[{ id: 'i1', name: 'Nuts', qty: 3 }]}
+        label=""
+        onChange={onChange}
+        variant="desktop"
+      />
+    );
+    fireEvent.change(screen.getByLabelText('Nuts'), { target: { value: ' Nuts ' } });
+    fireEvent.blur(screen.getByLabelText('Nuts'));
+    fireEvent.blur(screen.getByLabelText('Quantity of Nuts'));
+    expect(onChange).not.toHaveBeenCalled();
+
+    rerender(
+      <BinItemsEditor
+        items={[{ id: 'i1', name: 'Hex nuts', qty: 8 }]}
+        label=""
+        onChange={onChange}
+        variant="desktop"
+      />
+    );
+    expect(screen.getByLabelText('Hex nuts')).toHaveValue('Hex nuts');
+    expect(screen.getByLabelText('Quantity of Hex nuts')).toHaveValue(8);
   });
 
   it('removes an item', () => {

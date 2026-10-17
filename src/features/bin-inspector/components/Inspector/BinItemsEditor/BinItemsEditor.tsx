@@ -18,23 +18,59 @@ function cleanName(name: string): string {
   return name.trim().slice(0, CONSTRAINTS.ITEM_NAME_MAX_LENGTH);
 }
 
+/** Blank or unreadable clears the quantity; anything above the cap is held to it. */
+function parseQuantity(raw: string): number | undefined {
+  const qty = Number.parseInt(raw, 10);
+  return Number.isInteger(qty) && qty >= 0 ? Math.min(qty, CONSTRAINTS.ITEM_QTY_MAX) : undefined;
+}
+
+/** A field's unsaved text, reset whenever the saved value changes under it (undo, sync). */
+function useDraft(saved: string): [string, (next: string) => void] {
+  const [draft, setDraft] = useState(saved);
+  const [lastSaved, setLastSaved] = useState(saved);
+  if (saved !== lastSaved) {
+    setLastSaved(saved);
+    setDraft(saved);
+  }
+  return [draft, setDraft];
+}
+
+function onEnter(commit: () => void) {
+  return (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    commit();
+  };
+}
+
 interface ItemRowProps {
   item: BinItem;
   inputHeight: string;
+  isMobile: boolean;
   onRename: (name: string) => void;
-  onQuantity: (raw: string) => void;
+  onQuantity: (qty: number | undefined) => void;
   onRemove: () => void;
 }
 
 /**
- * The name commits on blur or Enter, not per keystroke: a blank name is
- * refused by the bin update schema, and clearing a name is how a row goes away.
+ * Both fields commit on blur or Enter, not per keystroke, so an edit is one
+ * undo step. A blank name is refused by the bin update schema, and clearing a
+ * name is how a row goes away.
  */
-function ItemRow({ item, inputHeight, onRename, onQuantity, onRemove }: ItemRowProps) {
+function ItemRow({ item, inputHeight, isMobile, onRename, onQuantity, onRemove }: ItemRowProps) {
   const t = useTranslation();
-  const [name, setName] = useState(item.name);
-  const commit = () => {
-    if (name !== item.name) onRename(name);
+  const savedQty = item.qty === undefined ? '' : String(item.qty);
+  const [name, setName] = useDraft(item.name);
+  const [qty, setQty] = useDraft(savedQty);
+
+  const commitName = () => {
+    if (cleanName(name) !== item.name) onRename(name);
+    else setName(item.name);
+  };
+  const commitQuantity = () => {
+    const next = parseQuantity(qty);
+    if (next !== item.qty) onQuantity(next);
+    else setQty(savedQty);
   };
 
   return (
@@ -42,13 +78,8 @@ function ItemRow({ item, inputHeight, onRename, onQuantity, onRemove }: ItemRowP
       <Input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            commit();
-          }
-        }}
+        onBlur={commitName}
+        onKeyDown={onEnter(commitName)}
         maxLength={CONSTRAINTS.ITEM_NAME_MAX_LENGTH}
         aria-label={item.name}
         className={inputHeight}
@@ -58,8 +89,10 @@ function ItemRow({ item, inputHeight, onRename, onQuantity, onRemove }: ItemRowP
         type="number"
         min={0}
         max={CONSTRAINTS.ITEM_QTY_MAX}
-        value={item.qty ?? ''}
-        onChange={(e) => onQuantity(e.target.value)}
+        value={qty}
+        onChange={(e) => setQty(e.target.value)}
+        onBlur={commitQuantity}
+        onKeyDown={onEnter(commitQuantity)}
         placeholder={t('inspector.contents.qtyPlaceholder')}
         aria-label={t('inspector.contents.quantity', { name: item.name })}
         className={inputHeight}
@@ -68,7 +101,7 @@ function ItemRow({ item, inputHeight, onRename, onQuantity, onRemove }: ItemRowP
       <IconButton
         variant="dangerGhost"
         size="sm"
-        touchTarget={false}
+        touchTarget={isMobile}
         type="button"
         onClick={onRemove}
         className="text-content-tertiary"
@@ -109,25 +142,20 @@ export function BinItemsEditor({ items = [], label, onChange, variant }: BinItem
     );
   };
 
-  const setQuantity = (id: string, raw: string) => {
-    const qty = Number.parseInt(raw, 10);
+  const setQuantity = (id: string, qty: number | undefined) => {
     onChange(
       items.map((item) => {
         if (item.id !== id) return item;
         const { qty: _previous, ...rest } = item;
-        return Number.isInteger(qty) && qty >= 0
-          ? { ...rest, qty: Math.min(qty, CONSTRAINTS.ITEM_QTY_MAX) }
-          : rest;
+        return qty === undefined ? rest : { ...rest, qty };
       })
     );
   };
 
-  const onDraftKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== 'Enter') return;
-    e.preventDefault();
+  const onDraftKeyDown = onEnter(() => {
     add([draft]);
     setDraft('');
-  };
+  });
 
   const onDraftPaste = (e: ClipboardEvent<HTMLInputElement>) => {
     const text = e.clipboardData.getData('text');
@@ -152,11 +180,12 @@ export function BinItemsEditor({ items = [], label, onChange, variant }: BinItem
         <ul className="mb-2 space-y-1.5">
           {items.map((item) => (
             <ItemRow
-              key={`${item.id}:${item.name}`}
+              key={item.id}
               item={item}
               inputHeight={inputHeight}
+              isMobile={isMobile}
               onRename={(name) => rename(item.id, name)}
-              onQuantity={(raw) => setQuantity(item.id, raw)}
+              onQuantity={(qty) => setQuantity(item.id, qty)}
               onRemove={() => onChange(items.filter((other) => other.id !== item.id))}
             />
           ))}
