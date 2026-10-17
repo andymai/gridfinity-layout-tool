@@ -1,0 +1,32 @@
+src/shared/hooks/useExplodedLayerView.test.ts
+  s_e0423b67d48e77::t_74112d105b2f2f 185-186
+src/shared/utils/expandToFit.ts
+  s_e0423b67d48e77::t_e57e30eefae20c 26,235-238,240
+src/shared/utils/expandToFit.test.ts
+  s_e0423b67d48e77::t_74112d105b2f2f 391-407
+src/shared/hooks/interactions/useDrawInteraction.ts
+  s_e0423b67d48e77::t_e57e30eefae20c 162-163,169
+src/shared/utils/fill.ts
+  s_e0423b67d48e77::t_e57e30eefae20c 13-14,17,21,55-56,58-69,115,118,166-168
+src/shared/hooks/interactions/useDrawInteraction.test.ts
+  s_e0423b67d48e77::t_74112d105b2f2f 310-351
+  s_e0423b67d48e77::t_894f806f7d14bd 12
+src/shared/utils/fill.test.ts
+  s_e0423b67d48e77::t_74112d105b2f2f 577-595
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6566654d4fb57ca37fe1302f5281e457a7f0876a",
+  "prompts": {},
+  "sessions": {
+    "s_e0423b67d48e77": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1be01c49-0263-437a-80cd-4ce6249d6f74",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
