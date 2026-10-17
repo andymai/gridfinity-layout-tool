@@ -10,6 +10,7 @@ import type { Result, ValidationError, LayoutError } from '@/core/result';
 import { ok, err } from '@/core/result';
 import { STAGING_ID, CONSTRAINTS } from '@/core/constants';
 import { canPlaceBin } from '@/shared/utils/validation';
+import { sanitizeBinItems } from '@/shared/utils/binItems';
 import { toPlacementError } from '@/core/store/layout/helpers';
 import { layoutInvalidOperation } from '@/core/result';
 import type { Bin, BinId } from '@/core/types';
@@ -90,9 +91,7 @@ function brandUpdates(updates: z.infer<typeof updatesSchema>): Partial<Bin> {
   if (updates.label !== undefined) result.label = updates.label;
   if (updates.notes !== undefined) result.notes = updates.notes;
   if (updates.customProperties !== undefined) result.customProperties = updates.customProperties;
-  if (updates.items !== undefined) {
-    result.items = updates.items.length > 0 ? updates.items : undefined;
-  }
+  if (updates.items !== undefined) result.items = sanitizeBinItems(updates.items);
   if (updates.linkedDesignId !== undefined)
     result.linkedDesignId =
       updates.linkedDesignId === null ? undefined : toDesignId(updates.linkedDesignId);

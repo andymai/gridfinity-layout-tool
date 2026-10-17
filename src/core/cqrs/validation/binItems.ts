@@ -1,9 +1,15 @@
 import * as z from 'zod';
 import { CONSTRAINTS } from '@/core/constants';
 
+// The pipeline only checks a payload against this schema and hands the handler
+// the original, so nothing here may transform: bounds apply to the raw values,
+// and the handlers store items through `sanitizeBinItems`.
 const binItemSchema = z.object({
   id: z.string().min(1).max(64),
-  name: z.string().trim().min(1).max(CONSTRAINTS.ITEM_NAME_MAX_LENGTH),
+  name: z
+    .string()
+    .max(CONSTRAINTS.ITEM_NAME_MAX_LENGTH)
+    .refine((name) => name.trim() !== '', { message: 'Item name is blank' }),
   qty: z.number().int().min(0).max(CONSTRAINTS.ITEM_QTY_MAX).optional(),
   note: z.string().max(CONSTRAINTS.ITEM_NOTE_MAX_LENGTH).optional(),
 });

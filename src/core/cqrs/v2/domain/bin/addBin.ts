@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { ok, err } from '@/core/result';
 import { generateBinId, STAGING_ID, CONSTRAINTS } from '@/core/constants';
 import { canPlaceBin } from '@/shared/utils/validation';
+import { sanitizeBinItems } from '@/shared/utils/binItems';
 import { toPlacementError } from '@/core/store/layout/helpers';
 import { validationInvalidLayer } from '@/core/result';
 import type { Bin } from '@/core/types';
@@ -83,10 +84,11 @@ export const addBin = defineCommand({
 
     // Generate the BinId only after validation passes so rejected commands
     // don't burn an id.
-    const { items, ...fields } = payload;
+    const { items: rawItems, ...fields } = payload;
+    const items = sanitizeBinItems(rawItems);
     const bin: Bin = {
       ...fields,
-      ...(items && items.length > 0 ? { items } : {}),
+      ...(items ? { items } : {}),
       id: generateBinId(),
       layerId,
       category,
