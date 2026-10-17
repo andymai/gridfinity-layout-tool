@@ -4,7 +4,6 @@ import { placePath } from '../../utils/placePath';
 
 const SEPARATOR = ' › ';
 
-/** The open layout's place, area and unit, as one line above its name. */
 export function PlacePath() {
   const t = useTranslation();
   const library = useLibraryStore((state) => state.library);

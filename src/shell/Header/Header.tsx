@@ -108,8 +108,7 @@ export function Header({ saveStatus }: HeaderProps) {
         {/* Divider */}
         <div className="w-px h-6 bg-stroke-subtle" />
 
-        {/* Layout name, with its place above it while Places is on */}
-        <div className="flex min-w-0 flex-col items-start justify-center">
+        <div className="flex min-w-0 flex-col justify-center">
           {showPlacePath && <PlacePath />}
           <InlineEditText
             value={layout.name}
@@ -117,7 +116,9 @@ export function Header({ saveStatus }: HeaderProps) {
             fallback={DEFAULT_LAYOUT_NAME}
             maxLength={CONSTRAINTS.NAME_MAX_LENGTH}
             aria-label={t('header.editLayoutName')}
-            displayClassName={showPlacePath ? 'h-7 max-w-[200px] py-0' : 'h-8 max-w-[200px]'}
+            displayClassName={
+              showPlacePath ? 'h-7 max-w-[200px] py-0 text-left' : 'h-8 max-w-[200px]'
+            }
           />
         </div>
 
