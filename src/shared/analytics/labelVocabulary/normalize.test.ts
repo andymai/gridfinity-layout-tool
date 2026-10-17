@@ -272,6 +272,10 @@ describe('labelVocabulary', () => {
       expect(conceptsNamedIn('M3-screws')).toContain(screws);
     });
 
+    it('gives a shared alias the same term processLabel does', () => {
+      expect(conceptsNamedIn('ring')).toEqual([processLabel('ring').normalized]);
+    });
+
     it('folds accents on both sides, in any Unicode form', () => {
       const nuts = processLabel('écrous').normalized;
       expect(nuts).not.toBeNull();

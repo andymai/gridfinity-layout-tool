@@ -18,13 +18,16 @@ function foldForConcepts(text: string): string {
   return text.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase();
 }
 
-/** Accent-folded aliases for `conceptsNamedIn`; `processLabel` keeps the exact map. */
+/**
+ * Accent-folded aliases for `conceptsNamedIn`; `processLabel` keeps the exact
+ * map. A shared alias keeps the later term, as `ALIAS_MAP` does.
+ */
 const FOLDED_ALIAS_MAP = new Map<string, string>();
 let longestAliasWords = 1;
 for (const [canonical, aliases] of Object.entries(VOCABULARY)) {
   for (const alias of aliases) {
     const folded = foldForConcepts(alias);
-    if (!FOLDED_ALIAS_MAP.has(folded)) FOLDED_ALIAS_MAP.set(folded, canonical);
+    FOLDED_ALIAS_MAP.set(folded, canonical);
     longestAliasWords = Math.max(longestAliasWords, folded.match(/[\p{L}\p{N}]+/gu)?.length ?? 1);
   }
 }
