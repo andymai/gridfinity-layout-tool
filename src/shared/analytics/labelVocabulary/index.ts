@@ -4,6 +4,7 @@ export type { LabelDomain } from './vocabulary';
 export {
   clearLabelCache,
   processLabel,
+  conceptsNamedIn,
   getCanonicalTerms,
   isKnownTerm,
   getTermDomain,

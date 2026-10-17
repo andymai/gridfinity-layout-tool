@@ -61,6 +61,12 @@ describe('matchBins', () => {
     expect(ids('Schrauben', [screws, tape])).toEqual(['screws']);
   });
 
+  it('never reaches a concept through part of a word', () => {
+    const shells = record('shells', [searchField('label', 'Snail shells')], 'Snail shells');
+    expect(ids('nail', [shells])).toEqual([]);
+    expect(ids('M8screws', [screws])).toEqual([]);
+  });
+
   it('caps the list and returns nothing for an empty query', () => {
     const many = Array.from({ length: 12 }, (_, i) =>
       record(`b${i}`, [searchField('label', `Bit ${i}`)], `Bit ${i}`)

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   processLabel,
+  conceptsNamedIn,
   getCanonicalTerms,
   isKnownTerm,
   getTermDomain,
@@ -247,6 +248,20 @@ describe('labelVocabulary', () => {
       // Cache should still work after eviction
       const result = processLabel('screwdriver');
       expect(result.normalized).toBe('screwdriver');
+    });
+  });
+
+  describe('conceptsNamedIn', () => {
+    it('names a concept only by a whole alias', () => {
+      expect(conceptsNamedIn('M3x8 screws')).toEqual([processLabel('screws').normalized]);
+      expect(conceptsNamedIn('Snail shells')).not.toContain(processLabel('nail').normalized);
+      expect(conceptsNamedIn('M8screws')).toEqual([]);
+    });
+
+    it('finds a multiword alias inside a longer text, past punctuation', () => {
+      expect(conceptsNamedIn('Big socket wrench, metric')).toContain(
+        processLabel('socket wrench').normalized
+      );
     });
   });
 });

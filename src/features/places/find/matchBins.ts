@@ -1,5 +1,6 @@
 import type { BinId, LayerId, LayoutId } from '@/core/types';
-import { conceptOf, tokenize } from './searchText';
+import { conceptsNamedIn } from '@/shared/analytics/labelVocabulary';
+import { tokenize } from './searchText';
 
 export type SearchFieldKind = 'item' | 'label' | 'note';
 
@@ -7,7 +8,7 @@ export interface SearchField {
   readonly kind: SearchFieldKind;
   readonly text: string;
   readonly tokens: readonly string[];
-  readonly concept: string | null;
+  readonly concepts: readonly string[];
 }
 
 export interface BinSearchRecord {
@@ -36,7 +37,7 @@ const FIELD_BONUS: Record<SearchFieldKind, number> = { item: 0.3, label: 0.3, no
 const CONCEPT_SCORE = 0.4;
 
 export function searchField(kind: SearchFieldKind, text: string): SearchField {
-  return { kind, text, tokens: tokenize(text), concept: conceptOf(text) };
+  return { kind, text, tokens: tokenize(text), concepts: conceptsNamedIn(text) };
 }
 
 /** Every query word must start some field word; whole words score above prefixes. 0 when one does not. */
@@ -65,7 +66,7 @@ export function matchBins(
   const words = tokenize(query);
   if (words.length === 0) return [];
   // A concept stands for the whole query, so a qualifier ("m3 screws") would be dropped.
-  const concept = words.length === 1 ? conceptOf(query) : null;
+  const concept = words.length === 1 ? (conceptsNamedIn(query)[0] ?? null) : null;
 
   const matches: BinMatch[] = [];
   for (const record of records) {
@@ -73,7 +74,11 @@ export function matchBins(
     for (const field of record.fields) {
       const wordHit = wordScore(words, field.tokens);
       const raw =
-        wordHit > 0 ? wordHit : concept !== null && field.concept === concept ? CONCEPT_SCORE : 0;
+        wordHit > 0
+          ? wordHit
+          : concept !== null && field.concepts.includes(concept)
+            ? CONCEPT_SCORE
+            : 0;
       const score = raw > 0 ? raw + FIELD_BONUS[field.kind] / words.length : 0;
       if (score > 0 && (!best || score > best.score)) best = { record, field, score };
     }
