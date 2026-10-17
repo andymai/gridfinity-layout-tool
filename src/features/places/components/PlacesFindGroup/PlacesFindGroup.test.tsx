@@ -2,15 +2,22 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { Command } from 'cmdk';
 import { useLayoutStore, useLibraryStore, useSelectionStore } from '@/core/store';
-import type { LayoutEntry } from '@/core/types';
+import type { Layout, LayoutEntry } from '@/core/types';
 import { binId, gridUnits, layoutId } from '@/core/types';
 import { commandPaletteFilter } from '@/shared/utils/commandPaletteFilter';
 import { createTestBin, createTestLayout, resetAllStores } from '@/test/testUtils';
 import type * as SharedHooks from '@/shared/hooks';
+import type * as Storage from '@/core/storage';
 
 vi.mock('@/shared/hooks', async (orig) => ({
   ...(await orig<typeof SharedHooks>()),
   useLayoutSwitcher: () => ({ switchLayout: vi.fn() }),
+}));
+
+const loadLayoutAsync = vi.fn((_id: string): Promise<Layout | null> => Promise.resolve(null));
+vi.mock('@/core/storage', async (orig) => ({
+  ...(await orig<typeof Storage>()),
+  loadLayoutAsync: (id: string) => loadLayoutAsync(id),
 }));
 
 import { __resetForTests } from '../../find/findIndex';
@@ -52,6 +59,7 @@ function renderGroup(query: string, onDone = vi.fn()) {
     <Command filter={commandPaletteFilter}>
       <Command.Input value={query} onValueChange={() => {}} />
       <Command.List>
+        <Command.Empty>No results</Command.Empty>
         <PlacesFindGroup query={query} onDone={onDone} />
       </Command.List>
     </Command>
@@ -84,12 +92,29 @@ describe('PlacesFindGroup', () => {
       <Command filter={commandPaletteFilter}>
         <Command.Input value="m3" onValueChange={() => {}} />
         <Command.List>
+          <Command.Empty>No results</Command.Empty>
           <PlacesFindGroup query="m3" onDone={vi.fn()} />
         </Command.List>
       </Command>
     );
     expect(await screen.findByText('M3 screws')).toBeInTheDocument();
     expect(document.querySelector('[cmdk-empty]')).toBeNull();
+  });
+
+  it('holds off "No results" until the stored layouts have been searched', async () => {
+    let release: (layout: Layout | null) => void = () => {};
+    loadLayoutAsync.mockImplementationOnce(() => new Promise((resolve) => (release = resolve)));
+    const { library } = useLibraryStore.getState();
+    const stored = { ...library.entries[0], id: layoutId('garage'), name: 'Garage' };
+    useLibraryStore.setState({ library: { ...library, entries: [...library.entries, stored] } });
+
+    renderGroup('anchors');
+    expect(await screen.findByText('Searching your layouts…')).toBeInTheDocument();
+    expect(screen.queryByText('No results')).not.toBeInTheDocument();
+
+    release(null);
+    expect(await screen.findByText('No results')).toBeInTheDocument();
+    expect(screen.queryByText('Searching your layouts…')).not.toBeInTheDocument();
   });
 
   it('renders nothing for an empty query', () => {

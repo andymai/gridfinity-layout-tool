@@ -26,12 +26,16 @@ export function PlacesFindGroup({ query, onDone }: PlacesFindGroupProps) {
 
   if (query.trim() === '') return null;
   if (results.length === 0) {
+    // A disabled item rather than `Command.Loading`: cmdk counts it, so the
+    // palette does not say "No results" before the stored layouts are searched.
     return indexing ? (
-      <Command.Loading>
-        <p className="mx-2 px-2.5 py-2 text-label text-content-tertiary">
-          {t('places.find.indexing')}
-        </p>
-      </Command.Loading>
+      <Command.Item
+        disabled
+        value={`${PRE_RANKED_VALUE_PREFIX}indexing`}
+        className="mx-2 px-2.5 py-2 text-label text-content-tertiary"
+      >
+        {t('places.find.indexing')}
+      </Command.Item>
     ) : null;
   }
 

@@ -8,11 +8,24 @@ import type { LabelDomain } from './vocabulary';
  * Maps each alias to its canonical term.
  */
 const ALIAS_MAP = new Map<string, string>();
-let longestAliasWords = 1;
 for (const [canonical, aliases] of Object.entries(VOCABULARY)) {
   for (const alias of aliases) {
     ALIAS_MAP.set(alias.toLowerCase(), canonical);
-    longestAliasWords = Math.max(longestAliasWords, alias.match(/[\p{L}\p{N}]+/gu)?.length ?? 1);
+  }
+}
+
+function foldForConcepts(text: string): string {
+  return text.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase();
+}
+
+/** Accent-folded aliases for `conceptsNamedIn`; `processLabel` keeps the exact map. */
+const FOLDED_ALIAS_MAP = new Map<string, string>();
+let longestAliasWords = 1;
+for (const [canonical, aliases] of Object.entries(VOCABULARY)) {
+  for (const alias of aliases) {
+    const folded = foldForConcepts(alias);
+    if (!FOLDED_ALIAS_MAP.has(folded)) FOLDED_ALIAS_MAP.set(folded, canonical);
+    longestAliasWords = Math.max(longestAliasWords, folded.match(/[\p{L}\p{N}]+/gu)?.length ?? 1);
   }
 }
 
@@ -229,12 +242,12 @@ export function getCanonicalTerms(): string[] {
 /**
  * Canonical terms that `text` names with a whole alias on word boundaries.
  * Unlike `processLabel`, a word that merely contains an alias names nothing:
- * "Snail shells" holds "nail" but is not about nails. Each run of words is
- * tried as written, for aliases like "usb-c", and joined by spaces, so
- * "screws,nuts" and "socket  wrench" still name their terms.
+ * "Snail shells" holds "nail" but is not about nails. Accents fold away on
+ * both sides, and each run of words is tried as written, for aliases like
+ * "usb-c", and joined by spaces, so "screws,nuts" still names screws.
  */
 export function conceptsNamedIn(text: string): string[] {
-  const lower = text.toLowerCase();
+  const lower = foldForConcepts(text);
   const words = [...lower.matchAll(/[\p{L}\p{N}]+/gu)];
   const found = new Set<string>();
   for (let start = 0; start < words.length; start++) {
@@ -244,7 +257,8 @@ export function conceptsNamedIn(text: string): string[] {
       const final = run[run.length - 1];
       const asWritten = lower.slice(run[0].index, final.index + final[0].length);
       const canonical =
-        ALIAS_MAP.get(asWritten) ?? ALIAS_MAP.get(run.map((word) => word[0]).join(' '));
+        FOLDED_ALIAS_MAP.get(asWritten) ??
+        FOLDED_ALIAS_MAP.get(run.map((word) => word[0]).join(' '));
       if (canonical) found.add(canonical);
     }
   }

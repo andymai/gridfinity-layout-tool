@@ -269,6 +269,15 @@ describe('labelVocabulary', () => {
       expect(conceptsNamedIn('screws,nuts')).toContain(screws);
       expect(conceptsNamedIn('screws/bolts')).toContain(screws);
       expect(conceptsNamedIn('USB-C cables')).toContain(processLabel('usb-c').normalized);
+      expect(conceptsNamedIn('M3-screws')).toContain(screws);
+    });
+
+    it('folds accents on both sides, in any Unicode form', () => {
+      const nuts = processLabel('écrous').normalized;
+      expect(nuts).not.toBeNull();
+      expect(conceptsNamedIn('ecrous')).toContain(nuts);
+      expect(conceptsNamedIn('e\u0301crous')).toContain(nuts);
+      expect(conceptsNamedIn('Écrous M3')).toContain(nuts);
     });
   });
 });
