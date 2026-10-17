@@ -24,6 +24,16 @@ function Opener({ onPick }: { onPick: () => void }) {
 }
 
 describe('Menu', () => {
+  describe('focus on open', () => {
+    it('moves focus to the first item as the menu opens, without waiting a frame', () => {
+      render(<Opener onPick={vi.fn()} />);
+      const opener = screen.getByRole('button', { name: 'Options' });
+      opener.focus();
+      fireEvent.click(opener);
+      expect(document.activeElement).toBe(screen.getByRole('menuitem', { name: 'Pick' }));
+    });
+  });
+
   describe('focus on close', () => {
     it('returns focus to what opened the menu', () => {
       render(<Opener onPick={vi.fn()} />);

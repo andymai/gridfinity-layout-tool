@@ -14,7 +14,7 @@ import {
 import { createPortal } from 'react-dom';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../cn';
-import { focusRing, interactiveTransition } from '../variants';
+import { focusRing } from '../variants';
 
 interface MenuContextValue {
   onClose: () => void;
@@ -54,7 +54,9 @@ const itemVariants = cva(
     'text-sm',
     'cursor-pointer',
     'outline-none',
-    interactiveTransition,
+    // Colors only: the menu stays visibility:hidden until placed, and an item
+    // transitioning visibility stays hidden a moment longer, too long to focus.
+    'transition-colors duration-(--motion-fast) ease-(--ease-out-quart)',
   ],
   {
     variants: {
@@ -173,15 +175,10 @@ function MenuRoot({
     };
   }, []);
 
-  // Focus first item when menu opens, reset when closed
+  // Reset keyboard position when the menu opens; on close, return focus.
   useEffect(() => {
     if (open) {
-      returnFocusRef.current =
-        document.activeElement instanceof HTMLElement ? document.activeElement : null;
       focusedIndexRef.current = 0;
-      requestAnimationFrame(() => {
-        itemsRef.current[0]?.focus();
-      });
     } else {
       focusedIndexRef.current = -1;
       itemsRef.current = [];
@@ -225,6 +222,18 @@ function MenuRoot({
     menu.style.top = `${y}px`;
     menu.style.visibility = 'visible';
   }, [open, position, align]);
+
+  // Runs after the menu is made visible, which focus needs. Items register from
+  // a callback ref a render later, so the first one is found in the DOM. Focus
+  // moves here, synchronously, rather than in a later frame.
+  useLayoutEffect(() => {
+    if (!open) return;
+    returnFocusRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    menuRef.current
+      ?.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')
+      ?.focus();
+  }, [open]);
 
   const handleKeyDown = useCallback(
     (e: ReactKeyboardEvent) => {
