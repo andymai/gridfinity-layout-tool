@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import { act, render, screen, fireEvent } from '@testing-library/react';
 import { Staging } from '@/features/staging/components/Staging';
 import { useLayoutStore } from '@/core/store';
@@ -41,6 +41,11 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
 }));
 
 describe('Staging', () => {
+  beforeAll(() => {
+    // Revealing a selected stashed bin scrolls it into view, which jsdom lacks.
+    Element.prototype.scrollIntoView = vi.fn();
+  });
+
   beforeEach(() => {
     resetAllStores();
     vi.clearAllMocks();
