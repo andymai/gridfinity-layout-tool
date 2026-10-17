@@ -1,0 +1,298 @@
+src/features/bin-inspector/hooks/useBinInspectorMultiActions.ts
+  s_e0423b67d48e77::t_66d057f84ea80e 19,108-113,115-116,145,154-157,167
+  s_e0423b67d48e77::t_14b5695056a16e 20
+.claude/skills/grid-editor/SKILL.md
+  s_e0423b67d48e77::t_a6658925bfaa04 69-82
+  s_e0423b67d48e77::t_2fa03102bb904b 22-23
+src/shared/hooks/useSelectionActions.ts
+  s_e0423b67d48e77::t_74b2a502b04f46 204,236
+src/features/grid-editor/components/Grid/IsometricPreview/ExplodedLayerGroup/ExplodedLayerGroup.tsx
+  s_e0423b67d48e77::t_278cab6377d956 35,57,91
+src/core/cqrs/v2/domain/drawer/updateDrawer.ts
+  s_e0423b67d48e77::t_ff8c41805e0559 7,29,149-151
+src/features/grid-editor/components/Grid/GridCanvas/GridCanvas.tsx
+  s_e0423b67d48e77::t_aa5d9fede6bad0 11
+  s_e0423b67d48e77::t_40f74268abec11 355
+  s_e0423b67d48e77::t_2ea7dd8c763e84 411-413
+src/features/layers/hooks/useLayerListController.ts
+  s_e0423b67d48e77::t_738df1a97708fa 3-9,28,38-40,42,76-77,82-90,164-165,167
+src/shared/utils/drawerCeiling.ts
+  s_e0423b67d48e77::t_e394bc61f6d33e 125-128,148,156-157,159,162-164,177,181-185
+src/i18n/locales/nb.json
+  s_e0423b67d48e77::t_287f77edafddf4 3207-3208,3241-3244,3306-3307,3543-3544,3654-3656,4459,4484
+src/i18n/locales/zh-CN.json
+  s_e0423b67d48e77::t_287f77edafddf4 3207-3208,3241-3244,3306-3307,3543-3544,3654-3656,4459,4484
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.test.tsx
+  s_e0423b67d48e77::t_9e835553310d22 66,71,147-148,158-182,195,200
+  s_e0423b67d48e77::t_54711e6e88faf5 336
+src/shared/utils/validationImport.ts
+  s_e0423b67d48e77::t_32c1f69fb24b5f 42
+  s_e0423b67d48e77::t_ff62d596e873a4 171-173
+  s_e0423b67d48e77::t_38e1c754bf11e4 34,44,131-133,155
+  s_e0423b67d48e77::t_ceb4307accdc83 174
+src/core/cqrs/v2/domain/bin/moveBinFromStaging.ts
+  s_e0423b67d48e77::t_da1b6a8700552c 54-56,76,87
+  s_e0423b67d48e77::t_ec1c16aefca4c1 2-4
+src/i18n/locales/cs.json
+  s_e0423b67d48e77::t_287f77edafddf4 3207-3208,3241-3244,3306-3307,3543-3544,3654-3656,4459,4484
+src/i18n/locales/pl.json
+  s_e0423b67d48e77::t_287f77edafddf4 3207-3208,3241-3244,3306-3307,3543-3544,3654-3656,4459,4484
+src/features/grid-editor/components/Grid/Bin/binPropsAreEqual.ts
+  s_e0423b67d48e77::t_8643278d15a301 1,27-28,87
+src/i18n/locales/ka.json
+  s_e0423b67d48e77::t_cb6af17080fcdb 453-454,527-529,1140-1141,1383,1413-1416,1457-1458,4682
+src/features/whats-new/entries.ts
+  s_e0423b67d48e77::t_5c0219f5f3005a 17-22,24-26
+  s_e0423b67d48e77::t_c9717927fc16c5 23
+  s_e0423b67d48e77::t_c0df68deb93cf0 16
+docs/schemas/README.md
+  s_e0423b67d48e77::t_840e95d0fdbec6 38
+src/core/cqrs/v2/domain/bin/moveBinFromStaging.test.ts
+  s_e0423b67d48e77::t_8fd47795a8cb85 10,24,71,91
+src/features/layers/hooks/useLayerListController.test.ts
+  s_e0423b67d48e77::t_623a66f37d29b8 54
+  s_e0423b67d48e77::t_61510f6b3c9fdb 7,9,60-79
+  s_e0423b67d48e77::t_f431312f4e860a 80-81
+docs/schemas/layout.md
+  s_e0423b67d48e77::t_840e95d0fdbec6 53,65
+  s_e0423b67d48e77::t_38e4bebc72d38c 105-109,154,522-523
+src/shell/Mobile/MobileLayersPanel/LayersTab/LayersTab.test.tsx
+  s_e0423b67d48e77::t_623a66f37d29b8 1-2,19-22
+  s_e0423b67d48e77::t_1a825ae3d6790b 23
+src/features/grid-editor/components/Grid/IsometricPreview/ExplodedLayerGroup/LayerLabel.test.tsx
+  s_e0423b67d48e77::t_e9af35df99bda7 22,24
+src/i18n/locales/pt-BR.json
+  s_e0423b67d48e77::t_287f77edafddf4 3207-3208,3241-3244,3306-3307,3543-3544,3654-3656,4459,4484
+src/shared/hooks/interactions/useStagingDragInteraction.test.ts
+  s_e0423b67d48e77::t_e2e99bd03f713f 377,393-394
+src/core/store/layout.scenario.resting-stack.test.ts
+  s_e0423b67d48e77::t_5693382a78849f 1-16,18-20,22-51,53-136
+  s_e0423b67d48e77::t_118a22c51ce1cd 17,21,52
+e2e/blocked-zones.spec.ts
+  s_e0423b67d48e77::t_a0d80b0cf38949 150,154
+  s_e0423b67d48e77::t_065d1be8972938 13,18-20,24-27,29-33,54,57,61,65,86,90,92,115,119,121,149,153,155,174,194,198,200
+  s_e0423b67d48e77::t_dac3272a6434e6 68,95,124,158,203
+  s_e0423b67d48e77::t_64d53ee84247b9 28
+src/features/layers/components/LayerPanel/LayerRows.test.tsx
+  s_e0423b67d48e77::t_623c35f8ce885a 1-93,113-567
+  s_e0423b67d48e77::t_f7d7378b82ac7f 94-112
+src/shared/utils/restingStack.test.ts
+  s_e0423b67d48e77::t_bd663292a4b7ba 1-32,34-194,196-250,252-299,303-428
+  s_e0423b67d48e77::t_0c9c41ae67267b 251
+  s_e0423b67d48e77::t_118a22c51ce1cd 33,195,300-302
+src/shared/utils/index.ts
+  s_e0423b67d48e77::t_47c2db761a9ec4 57-58
+  s_e0423b67d48e77::t_8f09d5f2794ace 59-60
+src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreview.tsx
+  s_e0423b67d48e77::t_278cab6377d956 144-145
+src/shared/hooks/useExpandToFit.ts
+  s_e0423b67d48e77::t_f90d37f0c1285f 20
+src/features/layers/components/TallestStackMeter/index.ts
+  s_e0423b67d48e77::t_22fca68683fe92 1
+src/i18n/locales/ko.json
+  s_e0423b67d48e77::t_287f77edafddf4 3207-3208,3241-3244,3306-3307,3543-3544,3654-3656,4459,4484
+src/shared/utils/position.test.ts
+  s_e0423b67d48e77::t_8180f2414fe760 371-372,380
+src/i18n/locales/uk.json
+  s_e0423b67d48e77::t_287f77edafddf4 3207-3208,3241-3244,3306-3307,3543-3544,3654-3656,4459,4484
+src/core/store/layout/drawerActions.test.ts
+  s_e0423b67d48e77::t_8fd47795a8cb85 43,45,47
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_e0423b67d48e77::t_a6658925bfaa04 19
+  s_e0423b67d48e77::t_91063998a6e715 121,124,143
+  s_e0423b67d48e77::t_7c36cc0a50d58f 20
+  s_e0423b67d48e77::t_9721e406a09cdf 122-123,125-127,136
+src/i18n/locales/de.json
+  s_e0423b67d48e77::t_287f77edafddf4 3207-3208,3241-3244,3306-3307,3543-3544,3654-3656,4459,4484
+src/shared/utils/fill.test.ts
+  s_e0423b67d48e77::t_28dd0e00dec6dc 195,197,207,217,228,265,453-517
+  s_e0423b67d48e77::t_064e61ce100ab1 518
+src/shared/utils/collision.ts
+  s_e0423b67d48e77::t_91bd961e02474b 1,22,30-35,38
+  s_e0423b67d48e77::t_fbf0172bb7fc38 12,16,42-43
+src/shared/utils/validation.ts
+  s_e0423b67d48e77::t_9e026123d0fb0e 104-106
+src/core/cqrs/v2/domain/layer/addLayer.test.ts
+  s_e0423b67d48e77::t_cd142cad294787 9-10,15,31-32,35
+src/shared/utils/collision.test.ts
+  s_e0423b67d48e77::t_7fdb7c349c193e 6-7,12,24-26,29,31-34,37-40,43-47,50-65
+src/core/cqrs/v2/domain/bin/duplicateBin.ts
+  s_e0423b67d48e77::t_da1b6a8700552c 51
+src/i18n/locales/it.json
+  s_e0423b67d48e77::t_287f77edafddf4 3207-3208,3241-3244,3306-3307,3543-3544,3654-3656,4459,4484
+src/features/layers/components/TallestStackMeter/TallestStackMeter.test.tsx
+  s_e0423b67d48e77::t_61510f6b3c9fdb 1-26
+src/shared/hooks/useExplodedLayerView.ts
+  s_e0423b67d48e77::t_600efda4d62981 4,30-33,75,82-83,90,97-98,103-105,113,123-128
+  s_e0423b67d48e77::t_fde7907315da31 129
+src/features/whats-new/latest.ts
+  s_e0423b67d48e77::t_5c0219f5f3005a 9
+src/features/layers/components/LayerPanel/LayerPanel.tsx
+  s_e0423b67d48e77::t_f0e70b4203641d 10-11,26-27,29,75,78-82,93,113-122,134-137
+e2e/exploded-layer-view.spec.ts
+  s_e0423b67d48e77::t_a0d80b0cf38949 87
+  s_e0423b67d48e77::t_403a7115496c44 114,141,171,197
+src/features/layers/components/TallestStackMeter/TallestStackMeter.tsx
+  s_e0423b67d48e77::t_22fca68683fe92 1-53
+src/shared/README.md
+  s_e0423b67d48e77::t_e9ebbbca40e300 73
+  s_e0423b67d48e77::t_2fa03102bb904b 105
+src/features/layers/README.md
+  s_e0423b67d48e77::t_2c4f09123b0a1c 20-23,28-29
+src/features/layers/components/index.ts
+  s_e0423b67d48e77::t_22fca68683fe92 4
+src/shared/utils/validationPlacement.ts
+  s_e0423b67d48e77::t_ff62d596e873a4 32
+  s_e0423b67d48e77::t_e02f497752c6e1 33-39,42-45,47-48,93-95,97,101-129,155
+  s_e0423b67d48e77::t_78ea92bbeaedf1 29,150-151
+  s_e0423b67d48e77::t_9b1b03db83048a 149,152-154,156-157,165-168,170-175,182-183,187
+  s_e0423b67d48e77::t_7a48f48cb69b4c 158-164,180
+  s_e0423b67d48e77::t_102c3b2c1f8e98 16,28,31,90-92,96,131-133,142-143,169,176-179,181,184-186,188
+  s_e0423b67d48e77::t_f9b4f5d3241692 30,130
+src/core/cqrs/v2/domain/layer/updateLayer.test.ts
+  s_e0423b67d48e77::t_cd142cad294787 22-23,25,28,34
+src/shared/hooks/interactions/useDrawInteraction.ts
+  s_e0423b67d48e77::t_c0018d6d84aeaa 12-13
+  s_e0423b67d48e77::t_f5b16e5a4ddf73 11,173-192,194-195,197-198
+src/i18n/locales/nl.json
+  s_e0423b67d48e77::t_287f77edafddf4 3207-3208,3241-3244,3306-3307,3543-3544,3654-3656,4459,4484
+src/features/layers/components/LayerPanel/LayerPanel.test.tsx
+  s_e0423b67d48e77::t_d9377868fe2d5f 33,35-36,38,95,100,103,121-152,155,201,214
+src/core/cqrs/v2/domain/layer/reorderLayers.ts
+  s_e0423b67d48e77::t_ab4b863de609b5 2-3,53-56,62-63
+  s_e0423b67d48e77::t_118a22c51ce1cd 52,57,61
+  s_e0423b67d48e77::t_9b1b03db83048a 12
+src/core/cqrs/v2/domain/bin/addBin.ts
+  s_e0423b67d48e77::t_da1b6a8700552c 73
+src/features/grid-editor/components/Grid/Bin/Bin.test.tsx
+  s_e0423b67d48e77::t_73bff47e8a9d6d 282-319
+src/shared/utils/validation.test.ts
+  s_e0423b67d48e77::t_a02edbd6f89b71 136,143-144,157,166-167,170,403,409-423,426
+  s_e0423b67d48e77::t_5fe3157ae86ddc 181,188-189,192
+src/features/layers/components/LayerPanel/LayerRows.tsx
+  s_e0423b67d48e77::t_a5244fe9816410 281-285
+  s_e0423b67d48e77::t_f7d7378b82ac7f 199
+  s_e0423b67d48e77::t_b5d67aad4ad240 1-198,200-231,267-268,276,297,303,338,349,351-354,356,360-370,372-374,376,394,401,403,409-426
+  s_e0423b67d48e77::t_845d2d87808505 232-266,269-275,277-280,286-296,298-302,304-337,339-348,350,355,357-359,371,375,377-393,395-400,402,404-408
+public/schema/layout.schema.json
+  s_e0423b67d48e77::t_38e4bebc72d38c 451,508
+  s_e0423b67d48e77::t_840e95d0fdbec6 209
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_e0423b67d48e77::t_fd87d11ed6660e 8,81-84,322-327
+  s_e0423b67d48e77::t_9721e406a09cdf 104-106
+src/shared/utils/fill.ts
+  s_e0423b67d48e77::t_e505131b869cce 1,4,108,113-116,118-134
+  s_e0423b67d48e77::t_cc0f510476a05c 180
+  s_e0423b67d48e77::t_cdfd7259bcb249 239-240,326-327
+  s_e0423b67d48e77::t_84eaf1b737c29b 8-9,14,20-21,55-61,65-87,89-92,94-96,109-110,112,117
+  s_e0423b67d48e77::t_7a48f48cb69b4c 62-64,88,93,97-102,106-107
+src/i18n/locales/en.ts
+  s_e0423b67d48e77::t_c8456c0ff30c76 507-508,587-589,1326,1328,1600,1637-1640,1684-1685,5648
+src/features/grid-editor/components/Grid/IsometricPreview/useBinsToRender.ts
+  s_e0423b67d48e77::t_aa5d9fede6bad0 7,39,63-65,92
+src/shell/Mobile/MobileLayersPanel/LayersTab/LayersTab.tsx
+  s_e0423b67d48e77::t_76fa3634b7a7c5 47-48,50,113-115,303
+  s_e0423b67d48e77::t_623a66f37d29b8 12
+src/features/bin-inspector/hooks/useBinInspector.test.ts
+  s_e0423b67d48e77::t_11ddf213660fcb 132-156
+src/features/grid-editor/components/Grid/GridCanvas/GridCanvas.test.tsx
+  s_e0423b67d48e77::t_e16621da91a452 698-726,728,737
+  s_e0423b67d48e77::t_1288ce438f486a 583,596-597,624-654,668-669
+  s_e0423b67d48e77::t_f2bb1c0e7cfeb4 727,731-732,735-736
+  s_e0423b67d48e77::t_a2dcec7e1125d2 729-730,733-734
+src/features/grid-editor/components/Grid/Bin/Bin.tsx
+  s_e0423b67d48e77::t_a6658925bfaa04 118
+  s_e0423b67d48e77::t_a306a87f166135 10-11,117,119-123,348-349,354,372,374-375,377,380,382,386
+  s_e0423b67d48e77::t_8fdeb558a66480 204-213
+src/shared/utils/validationSalvage.ts
+  s_e0423b67d48e77::t_38e1c754bf11e4 29,135,155,166-167
+  s_e0423b67d48e77::t_ff62d596e873a4 168-169
+src/shared/utils/rotation.test.ts
+  s_e0423b67d48e77::t_8180f2414fe760 307-309,317
+src/core/cqrs/v2/domain/bin/updateBin.test.ts
+  s_e0423b67d48e77::t_26edc05b7af89b 5,47-97
+  s_e0423b67d48e77::t_883686ad4df045 98-99
+src/core/store/layout/layerActions.ts
+  s_e0423b67d48e77::t_80717fdfe5c6a1 33-36,58
+  s_e0423b67d48e77::t_118a22c51ce1cd 103,108,112
+  s_e0423b67d48e77::t_9b1b03db83048a 14
+  s_e0423b67d48e77::t_ab4b863de609b5 104-107,113-114
+src/shared/utils/validationPlacement.test.ts
+  s_e0423b67d48e77::t_f466104451769f 6,121-267,275,287-294,298,301,310,321
+src/core/store/layout.scenario.displacement.test.ts
+  s_e0423b67d48e77::t_8fd47795a8cb85 169-189,191,193-197
+src/core/cqrs/v2/domain/drawer/updateDrawer.test.ts
+  s_e0423b67d48e77::t_cd142cad294787 22,24-40,45,47,51
+src/core/cqrs/v2/domain/layer/updateLayer.ts
+  s_e0423b67d48e77::t_ca601b55bfb7f3 2,4
+  s_e0423b67d48e77::t_80717fdfe5c6a1 65-69
+src/shared/components/LayoutThumbnail/LayoutThumbnail.tsx
+  s_e0423b67d48e77::t_5b7925c38d1e1d 111,132-133
+src/shared/utils/restingStack.ts
+  s_e0423b67d48e77::t_0c9c41ae67267b 207-208,212-218
+  s_e0423b67d48e77::t_91063998a6e715 315-316,319-339
+  s_e0423b67d48e77::t_72bd4771c482ce 70-73,75-76,80,84,114-121,124-127,132-142,149-153,181,278-281,288-303,305-309,395-397
+  s_e0423b67d48e77::t_9b1b03db83048a 239-241,243,247,249
+  s_e0423b67d48e77::t_c3bded1dc11dfa 6-10,25-27,29,33,35-36,43,47-48,50-53,78,86-88,90,95-97,99,104,131,144,171,188-191,194,230,235,317-318,414
+  s_e0423b67d48e77::t_a306a87f166135 379-392
+  s_e0423b67d48e77::t_40ffaf966ba729 1-5,11-14,16-24,28,30-32,34,37-42,44-46,49,54-69,128-130,173,184,186,192-193,195-198,200-206,209-211,219-220,222-229,231-234,236-238,242,244-246,248,264-277,282-287,304,310-314,340-349,351-378,393-394,398-413,415-420,425-430
+  s_e0423b67d48e77::t_78ea92bbeaedf1 74,77,79,81-83,85,89,91-94,98,100-103,105-113,122-123,143,145-148,154-170,172,174-180,182-183,185,187,199,221
+  s_e0423b67d48e77::t_c3364ba5dc89a2 350,421-424
+  s_e0423b67d48e77::t_ff8c41805e0559 15,250-263
+src/core/cqrs/v2/domain/layer/addLayer.ts
+  s_e0423b67d48e77::t_80717fdfe5c6a1 43-45
+  s_e0423b67d48e77::t_ca601b55bfb7f3 2-4,11
+src/shared/utils/expandToFit.ts
+  s_e0423b67d48e77::t_e3b4912fb84fb8 233-235,237-243
+  s_e0423b67d48e77::t_f90d37f0c1285f 27,60-62,317-319,321-327
+  s_e0423b67d48e77::t_487a3de21ca159 24,320
+  s_e0423b67d48e77::t_0fa9efd3c6aa50 328
+src/shared/hooks/useExplodedLayerView.test.ts
+  s_e0423b67d48e77::t_5ca34bd58af121 166-173,176,185-191
+src/core/store/layout.test.ts
+  s_e0423b67d48e77::t_f0f9a01ae3d4ed 619,627,629,631,633,1054-1063,1065-1068,1072-1082,1085
+  s_e0423b67d48e77::t_560539cfbed876 1088,1200-1219,1223,1513,1518,1520
+src/shell/registrations/LinkedRiseRegistration.test.tsx
+  s_e0423b67d48e77::t_b369c6cdf8d71f 2-3,33-37,40,52,60,76
+src/features/grid-editor/components/Grid/IsometricPreview/ExplodedLayerGroup/LayerLabel.tsx
+  s_e0423b67d48e77::t_a0d80b0cf38949 35
+  s_e0423b67d48e77::t_278cab6377d956 51
+.claude/skills/json-schemas/SKILL.md
+  s_e0423b67d48e77::t_840e95d0fdbec6 44
+src/core/cqrs/v2/domain/bin/updateBin.ts
+  s_e0423b67d48e77::t_82b473624a057e 176-179
+  s_e0423b67d48e77::t_617e1dbd7ebff1 180-181,184-189
+src/i18n/locales/es.json
+  s_e0423b67d48e77::t_287f77edafddf4 3207-3208,3241-3244,3306-3307,3543-3544,3654-3656,4459,4484
+src/i18n/locales/ja.json
+  s_e0423b67d48e77::t_287f77edafddf4 3207-3208,3241-3244,3306-3307,3543-3544,3654-3656,4459,4484
+src/i18n/locales/sv.json
+  s_e0423b67d48e77::t_287f77edafddf4 3207-3208,3241-3244,3306-3307,3543-3544,3654-3656,4459,4484
+src/core/store/layout/drawerActions.ts
+  s_e0423b67d48e77::t_ff8c41805e0559 32-35
+  s_e0423b67d48e77::t_d0f501de7fa74c 6
+src/i18n/locales/fr.json
+  s_e0423b67d48e77::t_287f77edafddf4 3207-3208,3241-3244,3306-3307,3543-3544,3654-3656,4459,4484
+src/core/store/layout/layerActions.test.ts
+  s_e0423b67d48e77::t_8fd47795a8cb85 34,39
+src/core/cqrs/v2/domain/layer/reorderLayers.test.ts
+  s_e0423b67d48e77::t_26edc05b7af89b 42
+  s_e0423b67d48e77::t_202a54f924805b 4-5,20-41
+  s_e0423b67d48e77::t_1b0bbcb670f777 43-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5a0b3763874a3c3f8b1ee9a6464fb7a4ba0d6c2a",
+  "prompts": {},
+  "sessions": {
+    "s_e0423b67d48e77": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1be01c49-0263-437a-80cd-4ce6249d6f74",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
