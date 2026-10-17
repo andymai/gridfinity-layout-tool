@@ -1,0 +1,49 @@
+src/core/store/layout/drawerActions.ts
+  s_e0423b67d48e77::t_eff26782a1c187 43-64,66-73,75
+  s_e0423b67d48e77::t_8bba680b55d45c 74,76-80
+src/features/bin-inspector/hooks/useBinInspectorMultiActions.ts
+  s_e0423b67d48e77::t_43d1d003c84a7f 19,23,114
+  s_e0423b67d48e77::t_2a1dd6f76647fb 148
+src/core/cqrs/v2/domain/drawer/updateDrawer.test.ts
+  s_e0423b67d48e77::t_b6e8cbb74e5689 38-50
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_e0423b67d48e77::t_43a0eebaf2cdb7 19-20,127
+  s_e0423b67d48e77::t_2a1dd6f76647fb 159
+src/shared/hooks/interactions/useDrawInteraction.ts
+  s_e0423b67d48e77::t_43d1d003c84a7f 11,172-188,191,193-195
+  s_e0423b67d48e77::t_2a1dd6f76647fb 21
+src/features/bin-inspector/hooks/useBinInspector.test.ts
+  s_e0423b67d48e77::t_b6e8cbb74e5689 181-207
+  s_e0423b67d48e77::t_80aa98cd71c3f7 569-600
+src/shared/utils/validationPlacement.test.ts
+  s_e0423b67d48e77::t_b6e8cbb74e5689 2,585-634
+  s_e0423b67d48e77::t_5d2156be371742 635
+src/core/store/layout/drawerActions.test.ts
+  s_e0423b67d48e77::t_b6e8cbb74e5689 43-64
+src/core/cqrs/v2/domain/drawer/updateDrawer.ts
+  s_e0423b67d48e77::t_8bba680b55d45c 211-220
+  s_e0423b67d48e77::t_8cedb45d8a4ced 221
+src/shared/utils/restingStack.ts
+  s_e0423b67d48e77::t_756eec6b7aa5c2 280-281,303-308,328
+src/shared/utils/restingStack.test.ts
+  s_e0423b67d48e77::t_b6e8cbb74e5689 359-371
+src/shared/utils/validationPlacement.ts
+  s_e0423b67d48e77::t_756eec6b7aa5c2 27-33,35-36,190-229
+  s_e0423b67d48e77::t_c61a2160ef443d 230
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ad9767563ad019a3ac2a589f002d60c676e87785",
+  "prompts": {},
+  "sessions": {
+    "s_e0423b67d48e77": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1be01c49-0263-437a-80cd-4ce6249d6f74",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
