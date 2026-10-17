@@ -5,7 +5,7 @@
  * PR 4b's engine tests, where the integration is meaningful.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useLibraryStore } from '@/core/store';
 import type { LayoutEntry, LayoutId, LayoutLibrary } from '@/core/types';
 
@@ -24,8 +24,9 @@ vi.mock('@/core/storage', () => ({
 }));
 
 import { layoutAdapter, normalizeIncomingLayout } from './layoutAdapter';
+import { LAYOUT_SCHEMA_VERSION } from '../payloadKey';
 import type { Bin, Layout } from '@/core/types';
-import { gridUnits, categoryId } from '@/core/types';
+import { gridUnits, categoryId, heightUnits } from '@/core/types';
 import type { AdapterChange } from './types';
 
 const minimalLayout = (name: string): { name: string } => ({ name });
@@ -104,7 +105,7 @@ describe('layoutAdapter placement', () => {
         folderId: 'folder_1_abc',
       } as unknown as Layout,
       modifiedAt: 2000,
-      schemaVersion: 2,
+      schemaVersion: LAYOUT_SCHEMA_VERSION,
     });
     const saved = useLibraryStore.getState().library.entries.find((e) => e.id === 'lay-1');
     expect(saved?.folderId).toBe('folder_1_abc');
@@ -198,7 +199,7 @@ describe('layoutAdapter.applyRemote — copies the server stored before schema 2
     expect(savedLayout()).toMatchObject({ baseplateParams: plate });
   });
 
-  it('takes a current copy as it is, so a measurement cleared elsewhere stays cleared', async () => {
+  it('takes a schema-2 copy’s drawer fields as they are, so a measurement cleared elsewhere stays cleared', async () => {
     loadLayoutAsyncMock.mockResolvedValue(local);
     await layoutAdapter.applyRemote({
       id: 'lay-1',
@@ -222,6 +223,90 @@ describe('layoutAdapter.applyRemote — copies the server stored before schema 2
     });
 
     expect(savedLayout()).not.toHaveProperty('baseplateParams');
+  });
+});
+
+describe('layoutAdapter.applyRemote — copies the server stored before schema 3', () => {
+  const fit = {
+    clearanceHeight: heightUnits(2),
+    extendToMargin: true,
+    marginTaper: { profile: 'chamfer' as const, bandHeight: 10 },
+    overhang: { left: 0, right: 10.5, front: 0, back: 0 },
+  };
+  const bin = (id: string, x: number, extra: Partial<Bin> = {}): Bin =>
+    ({
+      id,
+      layerId: 'layer-1',
+      x,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'cat-1',
+      label: '',
+      notes: '',
+      ...extra,
+    }) as unknown as Bin;
+  const local = {
+    ...minimalLayout('Mine'),
+    drawer: { width: 12, depth: 12, height: 12, measuredMm: { width: 520, depth: 510 } },
+    bins: [bin('a', 0, fit), bin('b', 4, fit)],
+  };
+
+  beforeEach(() => {
+    computePreviewMock.mockReturnValue({ binCount: 2 });
+    saveLayoutAsyncMock.mockResolvedValue({ ok: true });
+    saveLibraryMock.mockResolvedValue({ ok: true });
+    loadLayoutAsyncMock.mockResolvedValue(local);
+  });
+
+  afterEach(() => {
+    loadLayoutAsyncMock.mockReset();
+  });
+
+  const savedBins = (): Record<string, unknown>[] =>
+    (saveLayoutAsyncMock.mock.calls[0][1] as { bins: Record<string, unknown>[] }).bins;
+
+  const pull = (bins: Bin[], schemaVersion: number, drawer: object = local.drawer): Promise<void> =>
+    layoutAdapter.applyRemote({
+      id: 'lay-1',
+      payload: { ...minimalLayout('Mine'), drawer, bins } as unknown as Layout,
+      modifiedAt: 2000,
+      schemaVersion,
+    });
+
+  it('keeps this device’s drawer-fit fields that a schema-2 copy lost, matched by bin id', async () => {
+    await pull([bin('a', 0)], 2);
+    expect(savedBins()[0]).toMatchObject(fit);
+  });
+
+  it('drops the overhang of a bin the copy moved, since it held only where it was', async () => {
+    await pull([bin('b', 6)], 2);
+    expect(savedBins()[0]).not.toHaveProperty('overhang');
+    expect(savedBins()[0]).toMatchObject({ clearanceHeight: 2, extendToMargin: true });
+  });
+
+  it('lets a value the copy carries win over this device’s', async () => {
+    await pull([bin('a', 0, { clearanceHeight: heightUnits(5) })], 2);
+    expect(savedBins()[0]).toMatchObject({ clearanceHeight: 5 });
+  });
+
+  it('leaves a bin this device has never seen alone', async () => {
+    await pull([bin('new', 8)], 2);
+    expect(savedBins()[0]).not.toHaveProperty('clearanceHeight');
+    expect(savedBins()[0]).not.toHaveProperty('overhang');
+  });
+
+  it('restores both drawer and bin fields from a schema-1 copy', async () => {
+    await pull([bin('a', 0)], 1, { width: 12, depth: 12, height: 12 });
+    const saved = saveLayoutAsyncMock.mock.calls[0][1] as { drawer: Record<string, unknown> };
+    expect(saved.drawer).toHaveProperty('measuredMm');
+    expect(savedBins()[0]).toMatchObject(fit);
+  });
+
+  it('takes a current copy as it is, so a field cleared elsewhere stays cleared', async () => {
+    await pull([bin('a', 0)], 3);
+    for (const key of Object.keys(fit)) expect(savedBins()[0]).not.toHaveProperty(key);
   });
 });
 

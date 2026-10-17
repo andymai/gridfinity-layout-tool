@@ -11,6 +11,8 @@ import { isValidBaseplateId, validateBaseplateShare } from './baseplateValidatio
 import type { DrawerShape } from './drawerValidation.js';
 import { DESIGN_ID_MAX_LENGTH, RESERVED_PROPERTY_KEYS } from './sharedDesignsValidation.js';
 import { SHARE_CONSTRAINTS } from './shareConstraints.js';
+import { sanitizeBinFitFields } from './binFitValidation.js';
+import type { BinFitFields } from './binFitValidation.js';
 import type { ValidExpiration, ValidationError } from './shareConstraints.js';
 export { SHARE_CONSTRAINTS } from './shareConstraints.js';
 export type { ValidExpiration, ValidationError } from './shareConstraints.js';
@@ -27,7 +29,7 @@ interface LayerShape {
   height: number;
 }
 
-interface BinShape {
+interface BinShape extends BinFitFields {
   id: string;
   layerId: string;
   x: number;
@@ -304,6 +306,7 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
       // rest and every pair-expanding operation stops working on it.
       pairId: typeof bin.pairId === 'string' ? sanitizeString(bin.pairId, 64) : undefined,
       pairRole: bin.pairRole === 'block' || bin.pairRole === 'rest' ? bin.pairRole : undefined,
+      ...sanitizeBinFitFields(bin),
     });
   }
 

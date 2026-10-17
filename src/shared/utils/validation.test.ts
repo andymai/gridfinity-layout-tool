@@ -714,6 +714,39 @@ describe('salvageImport', () => {
     expect(stagedBins).toHaveLength(1);
     expect(stagedBins[0].id).toBe('staged');
   });
+
+  it('keeps every field of the healthy bins when it has to salvage another', () => {
+    const fit = {
+      clearanceHeight: heightUnits(1),
+      extendToMargin: true,
+      marginTaper: { profile: 'fillet' as const, bandHeight: 12 },
+      overhang: { left: 0, right: 7, front: 0, back: 0 },
+      locked: true,
+    };
+    const layout = createTestLayout();
+    layout.bins = [
+      createTestBin({ id: binId('healthy'), width: gridUnits(3), depth: gridUnits(3), ...fit }),
+      createTestBin({
+        id: binId('collides'),
+        x: gridUnits(1),
+        y: gridUnits(1),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+        ...fit,
+      }),
+    ];
+    expect(validateImport(layout).valid).toBe(false);
+
+    const result = salvageImport(layout);
+    if (!result.valid) throw new Error('expected the salvage to succeed');
+    const healthy = result.layout.bins.find((b) => b.id === 'healthy');
+    const stashed = result.layout.bins.find((b) => b.id === 'collides');
+    expect(healthy).toMatchObject(fit);
+    expect(stashed?.layerId).toBe(STAGING_ID);
+    const { overhang: _overhang, ...positionFree } = fit;
+    expect(stashed).toMatchObject(positionFree);
+    expect(stashed).not.toHaveProperty('overhang');
+  });
 });
 
 describe('truncate', () => {

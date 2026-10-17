@@ -26,6 +26,10 @@ interface TestBin {
   customProperties?: Record<string, string>;
   linkedDesignId?: string;
   locked?: boolean;
+  clearanceHeight?: unknown;
+  extendToMargin?: unknown;
+  marginTaper?: unknown;
+  overhang?: unknown;
 }
 
 /**
@@ -78,6 +82,34 @@ function createValidLayout() {
 }
 
 describe('validateShareLayout', () => {
+  describe('per-bin drawer-fit fields', () => {
+    const fit = {
+      clearanceHeight: 2,
+      extendToMargin: true,
+      marginTaper: { profile: 'chamfer', bandHeight: 10, flare: 2 },
+      overhang: { enabled: true, left: 0, right: 10.5, front: 0, back: 0 },
+    };
+
+    it('keeps them on every bin they arrive on', () => {
+      const layout = createValidLayout();
+      layout.bins[0] = { ...layout.bins[0], ...fit };
+      const result = validateShareLayout(layout, 1000);
+      expect(result.valid).toBe(true);
+      if (result.valid) expect(result.layout.bins[0]).toMatchObject(fit);
+    });
+
+    it('drops a malformed one and keeps the bin and its other fields', () => {
+      const layout = createValidLayout();
+      layout.bins[0] = { ...layout.bins[0], ...fit, overhang: { left: 99 } };
+      const result = validateShareLayout(layout, 1000);
+      expect(result.valid).toBe(true);
+      if (!result.valid) return;
+      expect(result.layout.bins).toHaveLength(1);
+      expect(result.layout.bins[0]).not.toHaveProperty('overhang');
+      expect(result.layout.bins[0]).toMatchObject({ clearanceHeight: 2, extendToMargin: true });
+    });
+  });
+
   describe('folder placement', () => {
     it('carries a well-formed folder id through for sync', () => {
       const layout = { ...createValidLayout(), folderId: 'folder_1700000000000_ab12cd' };

@@ -1,7 +1,7 @@
 import type { SyncKind } from './adapters/types';
 
 /** Mirrors `SCHEMA_VERSION` in api/sync/layouts/[id].ts; declared on every layout PUT. */
-export const LAYOUT_SCHEMA_VERSION = 2;
+export const LAYOUT_SCHEMA_VERSION = 3;
 
 /**
  * A PUT refused for naming things the account has not put on the server, which

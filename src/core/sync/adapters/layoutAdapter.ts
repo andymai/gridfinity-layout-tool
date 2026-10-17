@@ -21,10 +21,51 @@ type IncomingLayout = Omit<Layout, 'bins'> & { bins: IncomingBin[] };
 
 /**
  * Before schema 2 the server rebuilt layouts without `drawer.measuredMm`,
- * `baseplateParams` and `activeBaseplateId`, so their absence in an older copy
- * says nothing about the other device. This device's values stand in for them.
+ * `baseplateParams` and `activeBaseplateId`, and before schema 3 it rebuilt
+ * bins without their drawer-fit fields, so their absence in an older copy says
+ * nothing about the other device. This device's values stand in for them.
  */
-function restoreStrippedFields(remote: Layout, local: Layout): Layout {
+function restoreStrippedFields(remote: Layout, local: Layout, schemaVersion: number): Layout {
+  const withDrawer = schemaVersion < 2 ? restoreDrawerFields(remote, local) : remote;
+  return schemaVersion < 3 ? restoreBinFitFields(withDrawer, local) : withDrawer;
+}
+
+function keepLocal<K extends keyof Bin>(remote: Bin, local: Bin, key: K): Partial<Pick<Bin, K>> {
+  return remote[key] === undefined && local[key] !== undefined
+    ? ({ [key]: local[key] } as Pick<Bin, K>)
+    : {};
+}
+
+function samePlacement(a: Bin, b: Bin): boolean {
+  return (
+    a.layerId === b.layerId &&
+    a.x === b.x &&
+    a.y === b.y &&
+    a.width === b.width &&
+    a.depth === b.depth
+  );
+}
+
+function restoreBinFitFields(remote: Layout, local: Layout): Layout {
+  const localBins = new Map(local.bins.map((bin) => [bin.id, bin]));
+  return {
+    ...remote,
+    bins: remote.bins.map((bin) => {
+      const mine = localBins.get(bin.id);
+      if (!mine) return bin;
+      return {
+        ...bin,
+        ...keepLocal(bin, mine, 'clearanceHeight'),
+        ...keepLocal(bin, mine, 'extendToMargin'),
+        ...keepLocal(bin, mine, 'marginTaper'),
+        // An overhang holds only where it was computed, so a bin moved elsewhere goes without.
+        ...(samePlacement(bin, mine) ? keepLocal(bin, mine, 'overhang') : {}),
+      };
+    }),
+  };
+}
+
+function restoreDrawerFields(remote: Layout, local: Layout): Layout {
   const measuredMm = remote.drawer.measuredMm ?? local.drawer.measuredMm;
   return {
     ...remote,
@@ -111,9 +152,10 @@ export const layoutAdapter: LayoutAdapter = {
     // Restored before normalizing: the outline is clipped to an extent the
     // measured drawer widens, so clipping first would cut it to the grid.
     let incoming = item.payload;
-    if ((item.schemaVersion ?? 1) < LAYOUT_SCHEMA_VERSION) {
+    const schemaVersion = item.schemaVersion ?? 1;
+    if (schemaVersion < LAYOUT_SCHEMA_VERSION) {
       const local = await loadLayoutAsync(item.id);
-      if (local) incoming = restoreStrippedFields(incoming, local);
+      if (local) incoming = restoreStrippedFields(incoming, local, schemaVersion);
     }
     // The folder rides on the wire only; locally the entry holds it.
     const { folderId, ...document } = normalizeIncomingLayout(incoming);

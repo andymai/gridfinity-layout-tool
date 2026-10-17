@@ -3,11 +3,19 @@ import { isValidationError, validateShareLayout } from '../../lib/validation.js'
 import { createSyncResourceHandler } from '../lib/resourceHandler.js';
 
 /**
- * Fields missing from a version-1 envelope are unknown, not cleared. A write is
- * stamped 2 only when its client declares it: an older tab still sends layouts
- * that lost those fields, and stamping them 2 would read as clears elsewhere.
+ * A field the server kept only from version N on is unknown, not cleared, in an
+ * envelope below N: version 2 added the measured drawer and plate settings,
+ * version 3 the per-bin drawer-fit fields. A write keeps the version its client
+ * declares, since an older tab still sends layouts that lost those fields and
+ * stamping them current would read as clears elsewhere.
  */
-export const SCHEMA_VERSION = 2 as const;
+export const SCHEMA_VERSION = 3 as const;
+
+type LayoutSchemaVersion = 1 | 2 | typeof SCHEMA_VERSION;
+
+function declaredSchemaVersion(value: unknown): LayoutSchemaVersion {
+  return value === 2 || value === SCHEMA_VERSION ? value : 1;
+}
 
 /** The PUT body / GET envelope key for this resource; mirrors `PAYLOAD_KEY.layouts` in src/core/sync/payloadKey.ts. */
 export const PAYLOAD_KEY = 'layout' as const;
@@ -15,7 +23,7 @@ export const PAYLOAD_KEY = 'layout' as const;
 interface LayoutEnvelope {
   layout: unknown;
   modifiedAt: number;
-  schemaVersion: 1 | typeof SCHEMA_VERSION;
+  schemaVersion: LayoutSchemaVersion;
 }
 
 /**
@@ -59,7 +67,7 @@ export default createSyncResourceHandler<LayoutEnvelope>({
       envelope: {
         layout: validation.layout,
         modifiedAt,
-        schemaVersion: body.schemaVersion === SCHEMA_VERSION ? SCHEMA_VERSION : 1,
+        schemaVersion: declaredSchemaVersion(body.schemaVersion),
       },
       sizeBytes,
       tiebreakerCandidate: validation.layout,

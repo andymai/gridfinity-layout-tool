@@ -224,6 +224,82 @@ describe('GET', () => {
     });
   });
 
+  it('round-trips per-bin drawer-fit fields at schema 3', async () => {
+    const { default: handler } = await import('./[id]');
+    const fit = {
+      clearanceHeight: 1,
+      extendToMargin: true,
+      marginTaper: { profile: 'fillet', bandHeight: 14 },
+      overhang: { left: 0, right: 7, front: 0, back: 0 },
+    };
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          layout: {
+            ...VALID_LAYOUT,
+            bins: [
+              {
+                id: 'bin-1',
+                layerId: 'layer-1',
+                x: 0,
+                y: 0,
+                width: 2,
+                depth: 2,
+                height: 2,
+                category: 'cat-1',
+                label: 'Screws',
+                notes: '',
+                ...fit,
+              },
+            ],
+          },
+          modifiedAt: 1000,
+          schemaVersion: 3,
+        },
+      }),
+      makeRes() as unknown as VercelResponse
+    );
+
+    const res = makeRes();
+    await handler(makeReq({ method: 'GET' }), res as unknown as VercelResponse);
+    const body = res._body as {
+      envelope: { schemaVersion: number; layout: { bins: Record<string, unknown>[] } };
+    };
+    expect(body.envelope.schemaVersion).toBe(3);
+    expect(body.envelope.layout.bins[0]).toMatchObject(fit);
+  });
+
+  it('keeps the version an older client declares', async () => {
+    const { default: handler } = await import('./[id]');
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: { layout: VALID_LAYOUT, modifiedAt: 1000, schemaVersion: 2 },
+      }),
+      makeRes() as unknown as VercelResponse
+    );
+
+    const res = makeRes();
+    await handler(makeReq({ method: 'GET' }), res as unknown as VercelResponse);
+    expect((res._body as { envelope: { schemaVersion: number } }).envelope.schemaVersion).toBe(2);
+  });
+
+  it('stores an unknown declared version as version 1', async () => {
+    const { default: handler } = await import('./[id]');
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: { layout: VALID_LAYOUT, modifiedAt: 1000, schemaVersion: 9 },
+      }),
+      makeRes() as unknown as VercelResponse
+    );
+
+    const res = makeRes();
+    await handler(makeReq({ method: 'GET' }), res as unknown as VercelResponse);
+    expect((res._body as { envelope: { schemaVersion: number } }).envelope.schemaVersion).toBe(1);
+  });
+
   it('stores a write from a client that declares no schema as version 1', async () => {
     const { default: handler } = await import('./[id]');
     await handler(

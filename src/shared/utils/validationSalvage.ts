@@ -34,6 +34,11 @@ export type SalvageSuccess = { valid: true; layout: Layout; salvaged: string[] }
 export type SalvageFailure = { valid: false; salvaged?: undefined; layout?: undefined };
 export type SalvageResult = SalvageSuccess | SalvageFailure;
 
+/** A stashed bin has left the position its explicit overhang was computed for. */
+function toStaging({ overhang: _overhang, ...bin }: Bin): Bin {
+  return { ...bin, layerId: STAGING_ID };
+}
+
 export function salvageImport(data: unknown): SalvageResult {
   // Run strict validation first — if it passes, no salvaging needed
   const strict = validateImport(data);
@@ -103,7 +108,10 @@ export function salvageImport(data: unknown): SalvageResult {
       return;
     }
 
+    // Spread first, as the strict path keeps each bin whole: a fixed field list
+    // here strips every field it does not name from all the healthy bins.
     const typedBin: Bin = {
+      ...bin,
       id: toBinId(bin.id),
       layerId: toLayerId(bin.layerId),
       x: gridUnits(bin.x),
@@ -129,7 +137,7 @@ export function salvageImport(data: unknown): SalvageResult {
     // Check if layer exists
     if (!layerIds.has(bin.layerId)) {
       salvaged.push(`Bin ${i} references invalid layer and was moved to staging`);
-      resultBins.push({ ...typedBin, layerId: STAGING_ID });
+      resultBins.push(toStaging(typedBin));
       return;
     }
 
@@ -169,7 +177,7 @@ export function salvageImport(data: unknown): SalvageResult {
         ? PLACEMENT_REASON_MESSAGE[placementResult.reason] || 'has invalid placement'
         : 'is taller than the drawer';
       salvaged.push(`Bin ${i} ${message} and was moved to staging`);
-      resultBins.push({ ...typedBin, layerId: STAGING_ID });
+      resultBins.push(toStaging(typedBin));
       return;
     }
 
