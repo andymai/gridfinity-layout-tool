@@ -15,6 +15,7 @@
 import type { Bin, Layout } from '@/core/types';
 import { normalizeDrawerOutline } from './drawerOutline';
 import { dropOrphanedPairs } from './binPairs';
+import { migrateLayoutFields } from './layoutMigration';
 import {
   binId as toBinId,
   layerId as toLayerId,
@@ -180,7 +181,7 @@ export function salvageImport(data: unknown): SalvageResult {
   // Build salvaged layout. A salvage that dropped one half of a pair must
   // unpair the survivor, or its pair expansion dangles forever.
   const salvageLayout: Layout = {
-    ...(data as Layout),
+    ...(migrateLayoutFields(raw) as Layout),
     bins: [...dropOrphanedPairs(resultBins)],
   };
 

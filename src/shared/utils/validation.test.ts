@@ -481,6 +481,17 @@ describe('validateImport', () => {
     expect(result.layout.printBedDepth).toBeUndefined();
   });
 
+  it('imports a legacy maxPrintSize as the print bed size', () => {
+    const layout: Record<string, unknown> = { ...createTestLayout(), maxPrintSize: 10 };
+    delete layout.printBedSize;
+
+    const result = validateImport(layout);
+
+    if (!result.valid) throw new Error(result.errors.join(', '));
+    expect(result.layout.printBedSize).toBe(420);
+    expect(result.layout).not.toHaveProperty('maxPrintSize');
+  });
+
   it('keeps the print bed and unit sizes a file provides', () => {
     const layout = { ...createTestLayout(), gridUnitMm: mm(40), heightUnitMm: mm(6) };
 
@@ -555,6 +566,29 @@ describe('salvageImport', () => {
     expect(gridBins).toHaveLength(1);
     expect(stagedBins).toHaveLength(1);
     expect(stagedBins[0].id).toBe('bin2');
+  });
+
+  it('fills a missing print bed size on a layout it had to salvage', () => {
+    const layout: Record<string, unknown> = {
+      ...createTestLayout(),
+      bins: [
+        createTestBin({ id: binId('bin1'), width: gridUnits(3), depth: gridUnits(3) }),
+        createTestBin({
+          id: binId('bin2'),
+          x: gridUnits(1),
+          y: gridUnits(1),
+          width: gridUnits(3),
+          depth: gridUnits(3),
+        }),
+      ],
+    };
+    delete layout.printBedSize;
+
+    const result = salvageImport(layout);
+
+    if (!result.valid) throw new Error('expected the salvage to succeed');
+    expect(result.salvaged).toHaveLength(1);
+    expect(result.layout.printBedSize).toBe(CONSTRAINTS.PRINT_BED_MM_DEFAULT);
   });
 
   it('moves out-of-bounds bins to staging', () => {

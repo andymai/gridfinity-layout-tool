@@ -10,8 +10,9 @@
  * both pathways speak with the same vocabulary.
  */
 
-import type { Bin, Layout, Mm, ValidationReason } from '@/core/types';
+import type { Bin, Layout, ValidationReason } from '@/core/types';
 import { normalizeDrawerOutline } from './drawerOutline';
+import { migrateLayoutFields } from './layoutMigration';
 import { dropOrphanedPairs } from './binPairs';
 import {
   binId as toBinId,
@@ -228,20 +229,13 @@ export function validateImport(data: unknown): ImportValidationResult {
   // old client may have resized the drawer without adapting the shape) and
   // drop it when invalid or rectangle-equivalent. Half-pairs are unpaired for
   // the same reason: a dangling pairId makes every pair expansion a no-op.
-  const typedLayout = data as Layout;
+  const typedLayout = migrateLayoutFields(layout) as Layout;
   return {
     valid: true,
     errors: [],
     layout: normalizeDrawerOutline({
       ...typedLayout,
-      gridUnitMm: mmOrDefault(layout.gridUnitMm, CONSTRAINTS.GRID_UNIT_MM_DEFAULT),
-      heightUnitMm: mmOrDefault(layout.heightUnitMm, CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT),
-      printBedSize: mmOrDefault(layout.printBedSize, CONSTRAINTS.PRINT_BED_MM_DEFAULT),
       bins: [...dropOrphanedPairs<Bin>(typedLayout.bins)],
     }),
   };
-}
-
-function mmOrDefault(value: unknown, fallback: number): Mm {
-  return mm(typeof value === 'number' ? value : fallback);
 }
