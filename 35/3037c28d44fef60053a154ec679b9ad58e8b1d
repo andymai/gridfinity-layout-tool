@@ -1,0 +1,23 @@
+src/shared/utils/restingStack.test.ts
+  s_e0423b67d48e77::t_e03d02d49bcc68 524-555
+src/shared/utils/restingStack.ts
+  s_e0423b67d48e77::t_4de9b8b4497e69 14,376-424,464,466-467,489-498
+src/features/grid-editor/components/Grid/GridCanvas/GridCanvas.tsx
+  s_e0423b67d48e77::t_4de9b8b4497e69 395
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "353037c28d44fef60053a154ec679b9ad58e8b1d",
+  "prompts": {},
+  "sessions": {
+    "s_e0423b67d48e77": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1be01c49-0263-437a-80cd-4ce6249d6f74",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
