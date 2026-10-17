@@ -2949,6 +2949,7 @@
   "designLinking.bento.title": "Fusionner en un bento",
   "designLinking.bento.toast.created": "Bento créé avec {count} compartiments.",
   "designLinking.bento.toast.replaceFailed": "Bento créé, mais il ne tiendrait pas là où étaient ces bacs : ils ont été laissés en place.",
+  "designLinking.bento.toast.tooManyItems": "Bento créé, mais ces bacs contiennent plus de {max} objets à eux tous : ils ont été laissés en place.",
   "designLinking.bento.toast.saveFailed": "Impossible d'enregistrer le bento.",
   "designLinking.bento.trapped": "{count} bac(s) hors de votre sélection se trouvent dans le bento. Il serait imprimé au travers.",
   "designLinking.bento.trappedBlocks": "Réglez d'abord les bacs enfermés",

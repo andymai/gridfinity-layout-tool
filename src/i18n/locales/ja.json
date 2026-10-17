@@ -2949,6 +2949,7 @@
   "designLinking.bento.title": "弁当箱に統合",
   "designLinking.bento.toast.created": "{count} 個の仕切りで弁当箱を作成しました。",
   "designLinking.bento.toast.replaceFailed": "弁当箱を作成しましたが、元のビンの場所には収まらないため、ビンはそのまま残しました。",
+  "designLinking.bento.toast.tooManyItems": "弁当箱を作成しましたが、元のビンの中身が合わせて{max}個を超えるため、ビンはそのまま残しました。",
   "designLinking.bento.toast.saveFailed": "弁当箱を保存できませんでした。",
   "designLinking.bento.trapped": "選択外の {count} 個のビンが弁当箱の中にあります。そのまま貫通して印刷されます。",
   "designLinking.bento.trappedBlocks": "先に重なっているビンを解決してください",

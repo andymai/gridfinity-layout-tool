@@ -5441,6 +5441,8 @@ const en: Record<string, string> = {
   'designLinking.bento.toast.created': 'Bento created with {count} compartments.',
   'designLinking.bento.toast.replaceFailed':
     'Bento created, but it would not fit where those bins were, so they were left in place.',
+  'designLinking.bento.toast.tooManyItems':
+    'Bento created, but those bins hold more than {max} items between them, so they were left in place.',
   'designLinking.bento.toast.saveFailed': 'Could not save the bento.',
 
   // Designer-updated dialog (shown when bin resize pushes to open designer)

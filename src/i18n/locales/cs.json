@@ -2949,6 +2949,7 @@
   "designLinking.bento.title": "Sloučit do benta",
   "designLinking.bento.toast.created": "Bento vytvořeno s {count} přihrádkami.",
   "designLinking.bento.toast.replaceFailed": "Bento vytvořeno, ale nevešlo by se tam, kde byly ty přihrádky, takže zůstaly na místě.",
+  "designLinking.bento.toast.tooManyItems": "Bento vytvořeno, ale ty přihrádky dohromady obsahují víc než {max} položek, takže zůstaly na místě.",
   "designLinking.bento.toast.saveFailed": "Bento se nepodařilo uložit.",
   "designLinking.bento.trapped": "{count} přihrádek mimo výběr leží uvnitř benta. Bylo by přes ně vytištěno.",
   "designLinking.bento.trappedBlocks": "Nejdřív vyřešte uvězněné přihrádky",

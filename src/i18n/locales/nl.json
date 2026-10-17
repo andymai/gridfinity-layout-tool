@@ -2949,6 +2949,7 @@
   "designLinking.bento.title": "Samenvoegen tot een bento",
   "designLinking.bento.toast.created": "Bento gemaakt met {count} vakken.",
   "designLinking.bento.toast.replaceFailed": "Bento gemaakt, maar hij past niet waar die bakjes stonden, dus die zijn blijven staan.",
+  "designLinking.bento.toast.tooManyItems": "Bento gemaakt, maar die bakjes bevatten samen meer dan {max} spullen, dus die zijn blijven staan.",
   "designLinking.bento.toast.saveFailed": "Kon de bento niet opslaan.",
   "designLinking.bento.trapped": "{count} bakje(s) buiten je selectie liggen in de bento. Die zou er dwars doorheen geprint worden.",
   "designLinking.bento.trappedBlocks": "Los eerst de ingesloten bakjes op",

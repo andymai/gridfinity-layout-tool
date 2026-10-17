@@ -2949,6 +2949,7 @@
   "designLinking.bento.title": "도시락으로 병합",
   "designLinking.bento.toast.created": "칸 {count}개로 도시락을 만들었습니다.",
   "designLinking.bento.toast.replaceFailed": "도시락을 만들었지만 기존 빈 자리에 들어가지 않아 빈은 그대로 두었습니다.",
+  "designLinking.bento.toast.tooManyItems": "도시락을 만들었지만 기존 빈에 담긴 물건이 모두 {max}개를 넘어 빈은 그대로 두었습니다.",
   "designLinking.bento.toast.saveFailed": "도시락을 저장하지 못했습니다.",
   "designLinking.bento.trapped": "선택하지 않은 빈 {count}개가 도시락 안에 있습니다. 그대로 관통해 출력됩니다.",
   "designLinking.bento.trappedBlocks": "겹치는 빈을 먼저 해결하세요",

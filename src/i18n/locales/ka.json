@@ -4508,6 +4508,7 @@
   "designLinking.bento.blocked.tooLarge": "გაერთიანებული ყუთის თითოეული მხარე არაუმეტეს {max} ბადის ერთეულისა შეიძლება იყოს. გააერთიანეთ პატარა ჯგუფი.",
   "designLinking.bento.toast.created": "ბენტო შეიქმნა {count} განყოფილებით.",
   "designLinking.bento.toast.replaceFailed": "ბენტო შეიქმნა, მაგრამ წინა ყუთების ადგილას ვერ ჩაეტეოდა, ამიტომ ისინი ადგილზე დარჩა.",
+  "designLinking.bento.toast.tooManyItems": "ბენტო შეიქმნა, მაგრამ ამ ყუთებში ჯამში {max}-ზე მეტი ნივთია, ამიტომ ისინი ადგილზე დარჩა.",
   "designLinking.bento.toast.saveFailed": "ბენტოს შენახვა ვერ მოხერხდა.",
   "designLinking.designerUpdated.title": "დიზაინერი განახლდა",
   "designLinking.designerUpdated.description": "დიზაინერში „{name}“-ის ზომები ყუთის ახალ ზომას შეუსაბამდა. ცვლილებების გადახედვა დიზაინერში შეგიძლიათ.",

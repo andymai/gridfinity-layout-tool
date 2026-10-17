@@ -209,6 +209,23 @@ describe('useBento', () => {
       );
     });
 
+    it('leaves the source bins in place when they hold more than one bin can', async () => {
+      const many = (prefix: string) =>
+        Array.from({ length: 60 }, (_, i) => ({ id: `${prefix}${i}`, name: `Item ${i}` }));
+      seed([
+        { ...bin('a', 0), items: many('a') },
+        { ...bin('b', 1), items: many('b') },
+      ]);
+
+      await commit({ name: 'Screwdrivers', replaceBins: true });
+
+      expect(deleteBins).not.toHaveBeenCalled();
+      expect(addBin).not.toHaveBeenCalled();
+      expect(addToast).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'designLinking.bento.toast.tooManyItems' })
+      );
+    });
+
     it('anchors the replacement at the selection origin, not the drawer origin', async () => {
       seed([bin('a', 3), bin('b', 4)]);
 

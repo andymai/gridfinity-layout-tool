@@ -2949,6 +2949,7 @@
   "designLinking.bento.title": "合并为便当",
   "designLinking.bento.toast.created": "已创建含 {count} 个隔层的便当。",
   "designLinking.bento.toast.replaceFailed": "已创建便当，但它放不进那些收纳盒原来的位置，因此收纳盒保持原样。",
+  "designLinking.bento.toast.tooManyItems": "已创建便当，但那些收纳盒里的物品合计超过 {max} 件，因此收纳盒保持原样。",
   "designLinking.bento.toast.saveFailed": "无法保存便当。",
   "designLinking.bento.trapped": "所选之外的 {count} 个收纳盒位于便当内部，打印时会直接穿过它们。",
   "designLinking.bento.trappedBlocks": "请先处理被圈住的收纳盒",

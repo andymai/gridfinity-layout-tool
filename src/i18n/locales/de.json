@@ -2949,6 +2949,7 @@
   "designLinking.bento.title": "Zu einem Bento zusammenführen",
   "designLinking.bento.toast.created": "Bento mit {count} Fächern erstellt.",
   "designLinking.bento.toast.replaceFailed": "Bento erstellt, aber es passt nicht dorthin, wo die Bins waren, also blieben sie stehen.",
+  "designLinking.bento.toast.tooManyItems": "Bento erstellt, aber die Bins enthalten zusammen mehr als {max} Gegenstände, also blieben sie stehen.",
   "designLinking.bento.toast.saveFailed": "Bento konnte nicht gespeichert werden.",
   "designLinking.bento.trapped": "{count} Bin(s) außerhalb deiner Auswahl liegen im Bento. Es würde durch sie hindurch gedruckt.",
   "designLinking.bento.trappedBlocks": "Erst die eingeschlossenen Bins klären",

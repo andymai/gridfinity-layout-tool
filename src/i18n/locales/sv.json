@@ -2949,6 +2949,7 @@
   "designLinking.bento.title": "Slå ihop till en bento",
   "designLinking.bento.toast.created": "Bento skapad med {count} fack.",
   "designLinking.bento.toast.replaceFailed": "Bento skapad, men den får inte plats där facken stod, så de lämnades kvar.",
+  "designLinking.bento.toast.tooManyItems": "Bento skapad, men facken rymmer tillsammans fler än {max} saker, så de lämnades kvar.",
   "designLinking.bento.toast.saveFailed": "Det gick inte att spara bentot.",
   "designLinking.bento.trapped": "{count} fack utanför ditt urval ligger inuti bentot. Det skulle skrivas ut rakt igenom dem.",
   "designLinking.bento.trappedBlocks": "Lös de instängda facken först",

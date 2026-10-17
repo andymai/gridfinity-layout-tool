@@ -2949,6 +2949,7 @@
   "designLinking.bento.title": "Scal w bento",
   "designLinking.bento.toast.created": "Utworzono bento z {count} przegrodami.",
   "designLinking.bento.toast.replaceFailed": "Utworzono bento, ale nie zmieściłoby się tam, gdzie były te pojemniki, więc zostały na miejscu.",
+  "designLinking.bento.toast.tooManyItems": "Utworzono bento, ale te pojemniki mieszczą łącznie ponad {max} przedmiotów, więc zostały na miejscu.",
   "designLinking.bento.toast.saveFailed": "Nie udało się zapisać bento.",
   "designLinking.bento.trapped": "{count} pojemnik(ów) spoza zaznaczenia znajduje się wewnątrz bento. Zostałoby wydrukowane przez nie.",
   "designLinking.bento.trappedBlocks": "Najpierw rozwiąż uwięzione pojemniki",

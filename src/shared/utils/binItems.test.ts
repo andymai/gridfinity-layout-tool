@@ -80,4 +80,11 @@ describe('mergeBinItems', () => {
   it('is absent when no source held anything', () => {
     expect(mergeBinItems([{}, { items: [] }])).toBeUndefined();
   });
+
+  it('refuses rather than trims when the sources hold more than one bin can', () => {
+    const half = CONSTRAINTS.ITEMS_PER_BIN_MAX / 2 + 1;
+    const many = (prefix: string): BinItem[] =>
+      Array.from({ length: half }, (_, i) => item(`${prefix}${i}`, `Item ${i}`));
+    expect(mergeBinItems([{ items: many('a') }, { items: many('b') }])).toBeNull();
+  });
 });

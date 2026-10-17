@@ -2949,6 +2949,7 @@
   "designLinking.bento.title": "Slå sammen til en bento",
   "designLinking.bento.toast.created": "Bento laget med {count} rom.",
   "designLinking.bento.toast.replaceFailed": "Bento laget, men den passer ikke der binsene sto, så de ble stående.",
+  "designLinking.bento.toast.tooManyItems": "Bento laget, men binsene inneholder til sammen mer enn {max} ting, så de ble stående.",
   "designLinking.bento.toast.saveFailed": "Kunne ikke lagre bentoen.",
   "designLinking.bento.trapped": "{count} bins utenfor utvalget ligger inne i bentoen. Den ville blitt skrevet ut tvers gjennom dem.",
   "designLinking.bento.trappedBlocks": "Løs de innestengte binsene først",

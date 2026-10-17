@@ -2949,6 +2949,7 @@
   "designLinking.bento.title": "Обʼєднати в бенто",
   "designLinking.bento.toast.created": "Бенто створено з {count} відділеннями.",
   "designLinking.bento.toast.replaceFailed": "Бенто створено, але воно не вміщується там, де були ті контейнери, тож їх залишено на місці.",
+  "designLinking.bento.toast.tooManyItems": "Бенто створено, але в тих контейнерах разом понад {max} предметів, тож їх залишено на місці.",
   "designLinking.bento.toast.saveFailed": "Не вдалося зберегти бенто.",
   "designLinking.bento.trapped": "{count} контейнер(ів) поза вибором розташовані всередині бенто. Його б надрукувало крізь них.",
   "designLinking.bento.trappedBlocks": "Спершу владнайте затиснуті контейнери",

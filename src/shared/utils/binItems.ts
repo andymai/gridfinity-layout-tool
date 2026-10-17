@@ -55,14 +55,16 @@ export function withSanitizedItems(bin: unknown): unknown {
 }
 
 /**
- * What a bin merged from `bins` holds: everything they held, in order, up to the
- * per-bin cap. Ids are unique only within a bin, so a clash gets a fresh one.
+ * What a bin merged from `bins` holds: everything they held, in order, or null
+ * when that is more than one bin can hold, so a caller never trims saved items.
+ * Ids are unique only within a bin, so a clash gets a fresh one.
  */
-export function mergeBinItems(bins: readonly Pick<Bin, 'items'>[]): BinItem[] | undefined {
+export function mergeBinItems(bins: readonly Pick<Bin, 'items'>[]): BinItem[] | undefined | null {
+  const all = bins.flatMap((bin) => bin.items ?? []);
+  if (all.length > CONSTRAINTS.ITEMS_PER_BIN_MAX) return null;
   const seen = new Set<string>();
   const merged: BinItem[] = [];
-  for (const item of bins.flatMap((bin) => bin.items ?? [])) {
-    if (merged.length >= CONSTRAINTS.ITEMS_PER_BIN_MAX) break;
+  for (const item of all) {
     const id = seen.has(item.id) ? generateId() : item.id;
     seen.add(id);
     merged.push({ ...item, id });

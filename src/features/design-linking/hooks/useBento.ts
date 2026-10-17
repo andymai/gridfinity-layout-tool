@@ -15,6 +15,7 @@ import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import type { Bin } from '@/core/types';
 import { gridUnits, heightUnits } from '@/core/types';
+import { CONSTRAINTS } from '@/core/constants';
 import type { Result } from '@/core/result';
 import { isOk } from '@/core/result';
 import { useLayoutStore, useSelectionStore, useToastStore, useSelectedBins } from '@/core/store';
@@ -95,7 +96,11 @@ export function useBento(): UseBento {
       }
 
       let replaceFailed = false;
-      if (replaceBins) {
+      let tooManyItems = false;
+      const items = replaceBins ? mergeBinItems(mergeableBins) : undefined;
+      if (items === null) {
+        tooManyItems = true;
+      } else if (replaceBins) {
         const sources = mergeableBins;
         const minX = Math.min(...sources.map((b) => b.x));
         const minY = Math.min(...sources.map((b) => b.y));
@@ -104,7 +109,6 @@ export function useBento(): UseBento {
         // overhang, lock) describes bins that no longer exist and carrying an
         // arbitrary one of them forward would be a coin toss. What the sources
         // held is the exception: it all lands in the bento.
-        const items = mergeBinItems(sources);
         const replacement: Omit<Bin, 'id'> = {
           layerId: sources[0].layerId,
           x: gridUnits(minX),
@@ -144,13 +148,25 @@ export function useBento(): UseBento {
       // toast alongside a failure toast would leave the user guessing which
       // half happened.
       addToast(
-        replaceFailed
-          ? { message: t('designLinking.bento.toast.replaceFailed'), type: 'error', duration: 6000 }
-          : {
-              message: t('designLinking.bento.toast.created', { count: plan.compartmentCount }),
-              type: 'success',
-              duration: 4000,
+        tooManyItems
+          ? {
+              message: t('designLinking.bento.toast.tooManyItems', {
+                max: CONSTRAINTS.ITEMS_PER_BIN_MAX,
+              }),
+              type: 'error',
+              duration: 6000,
             }
+          : replaceFailed
+            ? {
+                message: t('designLinking.bento.toast.replaceFailed'),
+                type: 'error',
+                duration: 6000,
+              }
+            : {
+                message: t('designLinking.bento.toast.created', { count: plan.compartmentCount }),
+                type: 'success',
+                duration: 4000,
+              }
       );
       return true;
     },

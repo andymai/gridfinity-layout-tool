@@ -2949,6 +2949,7 @@
   "designLinking.bento.title": "Combinar en un bento",
   "designLinking.bento.toast.created": "Bento creado con {count} compartimentos.",
   "designLinking.bento.toast.replaceFailed": "Bento creado, pero no cabría donde estaban esos contenedores, así que se dejaron en su sitio.",
+  "designLinking.bento.toast.tooManyItems": "Bento creado, pero esos contenedores guardan más de {max} artículos entre todos, así que se dejaron en su sitio.",
   "designLinking.bento.toast.saveFailed": "No se pudo guardar el bento.",
   "designLinking.bento.trapped": "{count} contenedor(es) fuera de tu selección están dentro del bento. Se imprimiría atravesándolos.",
   "designLinking.bento.trappedBlocks": "Resuelve primero los contenedores atrapados",
