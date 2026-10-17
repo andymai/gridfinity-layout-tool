@@ -356,6 +356,19 @@ describe('maxBinHeight', () => {
     expect(maxBinHeight(b, [b], layers, 6, { clearanceGivesWay: true })).toBe(6);
   });
 
+  it('lets a bin rise under a stack that is already over, while that stack stays put', () => {
+    // 8u middle bridge on an 8u support, an 8u bin on top: 24u in 12u. The
+    // 2u bin beside the support can reach 8u without moving the bridge.
+    const b = bin('short', L1, 0, 0, 1, 1, 2);
+    const bins = [
+      b,
+      bin('support', L1, 1, 0, 1, 1, 8),
+      bin('bridge', L2, 0, 0, 2, 1, 8),
+      bin('top', L3, 0, 0, 1, 1, 8),
+    ];
+    expect(maxBinHeight(b, bins, layers, 12)).toBe(8);
+  });
+
   it('starts from where the bin rests', () => {
     const under = bin('under', L1, 0, 0, 1, 1, 4);
     const b = bin('b', L2, 0, 0, 1, 1, 2);

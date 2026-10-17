@@ -145,11 +145,6 @@ export const updateDrawer = defineCommand({
     if (payload.depth !== undefined) {
       changes.depth = gridUnits(clamp(payload.depth, floors.depth, CONSTRAINTS.GRID_MAX));
     }
-    if (payload.height !== undefined) {
-      changes.height = heightUnits(
-        Math.max(payload.height, drawerHeightFloor(layout.bins, layout.layers, drawer.height))
-      );
-    }
     if (payload.fractionalEdgeX !== undefined) changes.fractionalEdgeX = payload.fractionalEdgeX;
     if (payload.fractionalEdgeY !== undefined) changes.fractionalEdgeY = payload.fractionalEdgeY;
     // Zero offset is stored as an absent key (same dance as outline /
@@ -212,6 +207,17 @@ export const updateDrawer = defineCommand({
       layout.gridUnitMm,
       gridUnitMmY
     );
+
+    // The floor counts only bins still placed after this same update stashes
+    // the ones that no longer fit.
+    if (payload.height !== undefined) {
+      const displaced = new Set(displacedBinIds);
+      const placed =
+        displaced.size === 0 ? layout.bins : layout.bins.filter((b) => !displaced.has(b.id));
+      changes.height = heightUnits(
+        Math.max(payload.height, drawerHeightFloor(placed, layout.layers, drawer.height))
+      );
+    }
 
     const previous = capturePrevious(drawer, changes);
 

@@ -277,7 +277,8 @@ export function drawerHeightFloor(
  * The tallest `candidate` can be before it, or anything stacked on it,
  * passes the drawer top. The candidate replaces any bin with the same id.
  * Every chain of bins resting on the candidate rises one-for-one with its
- * top, so the room is the drawer minus the longest such chain.
+ * top, so the room is the drawer minus the longest such chain. This only
+ * knows the drawer; `maxPlaceableHeight` also respects clearance.
  *
  * `clearanceGivesWay` is for an edit that keeps height plus clearance fixed,
  * as the inspector's height field does: the bin can then grow into its own
@@ -299,7 +300,12 @@ export function maxBinHeight(
   const self = stack.bins.get(candidate.id);
   if (!self) return drawerHeight;
 
-  // How far above the candidate's stack top the highest chain resting on it reaches.
+  // Each stack may reach the drawer top, or stay where it already stands if
+  // that is higher: an existing overflow is allowed as long as it does not
+  // rise. `rise` is how far above the candidate's stack top a chain reaches.
+  const ceilingOf = (id: BinId): number =>
+    Math.max(drawerHeight, current.bins.get(id)?.stackTop ?? 0);
+  let room = ceilingOf(candidate.id) - self.zStart;
   const placed = placedInStackOrder(
     [...bins.filter((b) => b.id !== candidate.id), candidate],
     layers
@@ -308,7 +314,6 @@ export function maxBinHeight(
   const reached: { entry: Placed; rise: number }[] = selfEntry
     ? [{ entry: selfEntry, rise: 0 }]
     : [];
-  let chain = 0;
   for (const entry of placed) {
     if (!selfEntry || entry.layer <= selfEntry.layer) continue;
     let base = -Infinity;
@@ -320,10 +325,9 @@ export function maxBinHeight(
     const rest = stack.bins.get(entry.bin.id) as RestingBin;
     const rise = base + rest.stackTop - rest.zStart;
     reached.push({ entry, rise });
-    chain = Math.max(chain, rise);
+    room = Math.min(room, ceilingOf(entry.bin.id) - self.zStart - rise);
   }
 
-  const room = drawerHeight - self.zStart - chain;
   const excess = self.materialTop - self.zStart - candidate.height;
   const clearance = options.clearanceGivesWay ? 0 : (candidate.clearanceHeight ?? 0);
   return room - Math.max(excess, clearance);

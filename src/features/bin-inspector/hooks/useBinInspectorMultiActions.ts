@@ -16,10 +16,11 @@ import { batch } from '@/core/cqrs';
 import type { Bin, BinId, CategoryId, HeightUnits, LayerId, Layout } from '@/core/types';
 import { categoryId as toCategoryId, layerId as toLayerId } from '@/core/types';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
-import { maxBinHeight, maxClearanceHeight } from '@/shared/utils/restingStack';
+import { maxClearanceHeight } from '@/shared/utils/restingStack';
 import { isErr, type Result } from '@/core/result';
 import type { LayoutError } from '@/core/result';
 import { canPlaceBin } from '@/shared/utils/validation';
+import { maxPlaceableHeight } from '@/shared/utils/validationPlacement';
 import { clamp } from '@/shared/utils/math';
 import { isBinLocked } from '@/shared/utils/binLocation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -110,10 +111,7 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
           const binMaxHeight =
             b.layerId === STAGING_ID
               ? layout.drawer.height
-              : Math.max(
-                  b.height,
-                  maxBinHeight(b, layout.bins, layout.layers, layout.drawer.height)
-                );
+              : Math.max(b.height, maxPlaceableHeight(b, layout));
           const newHeight = clamp(
             b.height + delta,
             CONSTRAINTS.MIN_BIN_HEIGHT,
@@ -147,7 +145,7 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
         emitLinkedBinResize(b, { width: b.width, depth: b.depth, height: newHeight });
       }
     },
-    [selectedBins, layout.drawer.height, layout.layers, layout.bins, updateBin, addToast, t]
+    [selectedBins, layout, updateBin, addToast, t]
   );
 
   const updateMultiClearance = useCallback(

@@ -8,7 +8,7 @@ import {
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useGapFitStore } from '@/core/store/gapFit';
 import { canPlaceBin, getPlacementErrorMessage } from '@/shared/utils/validation';
-import { maxBinHeight } from '@/shared/utils/restingStack';
+import { maxPlaceableHeight } from '@/shared/utils/validationPlacement';
 import { CONSTRAINTS, snapToGrid } from '@/core/constants';
 import { binId, effectiveGridUnitMmY, heightUnits } from '@/core/types';
 import { snapDrawRect } from '@/shared/utils/snap';
@@ -18,15 +18,7 @@ import { useTranslation } from '@/i18n';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { trackBinCreated, trackPaintMode } from '@/shared/analytics/posthog';
 import type { InteractionContext, ModeHandlers, DrawStartArgs } from './types';
-import type {
-  BinId,
-  Coord,
-  FitsGapSource,
-  GridUnits,
-  HeightUnits,
-  Bin,
-  ValidationResult,
-} from '@/core/types';
+import type { BinId, Coord, FitsGapSource, GridUnits, Bin, ValidationResult } from '@/core/types';
 
 /**
  * Hook for draw mode interactions: creating new bins by dragging a rectangle.
@@ -177,37 +169,30 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
             width: snapped.width as GridUnits,
             depth: snapped.depth as GridUnits,
           };
-          let maxHeight = maxBinHeight(
+          // The gallery sizes the bin to fit, so the gap only needs the
+          // tallest height that still places there, clearance included.
+          const maxHeight = heightUnits(
+            maxPlaceableHeight(
+              {
+                ...gap,
+                id: binId('__gap__'),
+                layerId: activeLayerId,
+                height: heightUnits(CONSTRAINTS.MIN_BIN_HEIGHT),
+                category: activeCategoryId,
+                label: '',
+                notes: '',
+              },
+              layout
+            )
+          );
+          const probe: ValidationResult = canPlaceBin(
             {
               ...gap,
-              id: binId('__gap__'),
-              layerId: activeLayerId,
-              height: heightUnits(0),
-              category: activeCategoryId,
-              label: '',
-              notes: '',
+              height: heightUnits(Math.max(maxHeight, CONSTRAINTS.MIN_BIN_HEIGHT)),
             },
-            layout.bins,
-            layout.layers,
-            layout.drawer.height
-          ) as HeightUnits;
-          // Probe with the full remaining stack budget: confirms the clamped
-          // footprint itself is placeable (clearance zones included) before
-          // the gallery ever opens. The budget only knows the drawer: a tall
-          // gap bin can also lift another bin's clearance up under a bin
-          // above, so step down a unit at a time while that is the problem.
-          let probe: ValidationResult =
-            maxHeight >= CONSTRAINTS.MIN_BIN_HEIGHT
-              ? canPlaceBin({ ...gap, height: maxHeight }, activeLayerId, layout)
-              : { valid: false, reason: 'exceeds_height' };
-          while (
-            !probe.valid &&
-            (probe.reason === 'blocked_zone' || probe.reason === 'exceeds_height') &&
-            Math.ceil(maxHeight) - 1 >= CONSTRAINTS.MIN_BIN_HEIGHT
-          ) {
-            maxHeight = heightUnits(Math.ceil(maxHeight) - 1);
-            probe = canPlaceBin({ ...gap, height: maxHeight }, activeLayerId, layout);
-          }
+            activeLayerId,
+            layout
+          );
           if (!probe.valid) {
             addToast(getPlacementErrorMessage(t, probe.reason, probe.blockingInfo), 'error');
             return;

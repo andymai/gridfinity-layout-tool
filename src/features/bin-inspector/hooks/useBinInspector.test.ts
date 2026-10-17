@@ -178,6 +178,33 @@ describe('useBinInspector', () => {
       expect(result.current.constraints.maxHeight).toBe(8);
     });
 
+    it('caps the height below a clearance conflict higher in the stack', () => {
+      const layout = useLayoutStore.getState().layout;
+      const l3 = toLayerId('layer3');
+      layout.layers = [
+        { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: toLayerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
+        { id: l3, name: 'Layer 3', height: heightUnits(3) },
+      ];
+      layout.bins = [
+        { ...createBin('bottom', 'layer1', 0, 0, 1, 1), height: heightUnits(2) },
+        {
+          ...createBin('tools', 'layer2', 0, 0, 1, 1),
+          height: heightUnits(2),
+          clearanceHeight: heightUnits(1),
+        },
+        { ...createBin('solid', 'layer2', 1, 0, 1, 1), height: heightUnits(6) },
+        { ...createBin('bridge', 'layer3', 0, 0, 2, 1), height: heightUnits(2) },
+      ];
+      layout.drawer.height = heightUnits(10);
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('bottom')] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      expect(result.current.constraints.maxHeight).toBe(3);
+    });
+
     it('limits max height and clearance by the bin resting on it', () => {
       const layout = useLayoutStore.getState().layout;
       layout.layers = [
@@ -537,6 +564,38 @@ describe('useBinInspector', () => {
         result.current.updateMultiHeight(-1);
       });
       expect(lowHeight()).toBe(7);
+    });
+
+    it('clamps a step below a clearance conflict higher in the stack', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.layers = [
+        { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: toLayerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
+        { id: toLayerId('layer3'), name: 'Layer 3', height: heightUnits(3) },
+      ];
+      layout.bins = [
+        { ...createBin('bottom', 'layer1', 0, 0, 1, 1), height: heightUnits(2) },
+        { ...createBin('other', 'layer1', 3, 0, 1, 1), height: heightUnits(2) },
+        {
+          ...createBin('tools', 'layer2', 0, 0, 1, 1),
+          height: heightUnits(2),
+          clearanceHeight: heightUnits(1),
+        },
+        { ...createBin('solid', 'layer2', 1, 0, 1, 1), height: heightUnits(6) },
+        { ...createBin('bridge', 'layer3', 0, 0, 2, 1), height: heightUnits(2) },
+      ];
+      layout.drawer.height = heightUnits(10);
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('bottom'), binId('other')] });
+
+      const { result } = renderHook(() => useBinInspector());
+      act(() => {
+        result.current.updateMultiHeight(3);
+      });
+
+      const heights = new Map(useLayoutStore.getState().layout.bins.map((b) => [b.id, b.height]));
+      expect(heights.get(binId('bottom'))).toBe(3);
+      expect(heights.get(binId('other'))).toBe(5);
     });
 
     it('clamps height to constraints', () => {

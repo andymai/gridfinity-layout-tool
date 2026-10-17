@@ -24,9 +24,16 @@ import type {
 } from '@/core/types';
 import { isFootprintInsideOutline } from './drawerOutlineGeometry';
 import { drawerFrameOutline } from './outlineFrame';
-import { binId as toBinId, categoryId as toCategoryId, effectiveGridUnitMmY } from '@/core/types';
+import {
+  binId as toBinId,
+  categoryId as toCategoryId,
+  effectiveGridUnitMmY,
+  heightUnits,
+} from '@/core/types';
+import { CONSTRAINTS } from '@/core/constants';
 import { footprintsOverlap } from './collision';
-import { getRestingStack, newViolations, restack } from './restingStack';
+import type { RestingStack } from './restingStack';
+import { getRestingStack, maxBinHeight, newViolations, restack } from './restingStack';
 
 function blockingInfoFor(bin: Bin, layers: Layout['layers']): BlockingInfo {
   return {
@@ -179,4 +186,45 @@ export function canPlaceBin(
   }
 
   return { valid: true };
+}
+
+/**
+ * The tallest `bin` can be made and still pass `canPlaceBin`, from the
+ * drawer-only `maxBinHeight` down a unit at a time: lifting a bin can also
+ * carry another bin's clearance up under a bin above, which only placement
+ * checks. `clearanceGivesWay` matches an edit that keeps height plus
+ * clearance fixed. Returns below the minimum height when nothing fits.
+ */
+export function maxPlaceableHeight(
+  bin: Bin,
+  layout: Layout,
+  options: { clearanceGivesWay?: boolean; stack?: RestingStack } = {}
+): number {
+  const inLayout = layout.bins.some((b) => b.id === bin.id);
+  const total = bin.height + (bin.clearanceHeight ?? 0);
+  const fits = (height: number): boolean =>
+    canPlaceBin(
+      {
+        x: bin.x,
+        y: bin.y,
+        width: bin.width,
+        depth: bin.depth,
+        height: heightUnits(height),
+        clearanceHeight:
+          options.clearanceGivesWay && (bin.clearanceHeight ?? 0) > 0
+            ? heightUnits(Math.max(0, total - height))
+            : bin.clearanceHeight,
+        linkedDesignId: bin.linkedDesignId,
+      },
+      bin.layerId,
+      layout,
+      inLayout ? bin.id : undefined
+    ).valid;
+
+  const limit = maxBinHeight(bin, layout.bins, layout.layers, layout.drawer.height, options);
+  if (limit < CONSTRAINTS.MIN_BIN_HEIGHT || fits(limit)) return limit;
+  for (let height = Math.ceil(limit) - 1; height >= CONSTRAINTS.MIN_BIN_HEIGHT; height--) {
+    if (fits(height)) return height;
+  }
+  return CONSTRAINTS.MIN_BIN_HEIGHT - 1;
 }

@@ -40,6 +40,28 @@ describe('drawerActions', () => {
       expect(useLayoutStore.getState().layout.drawer.depth).toBe(CONSTRAINTS.GRID_MIN);
     });
 
+    it('floors the height on the bins left after a resize stashes the rest', () => {
+      const { layout } = useLayoutStore.getState();
+      useLayoutStore.setState({
+        layout: {
+          ...layout,
+          drawer: { ...layout.drawer, width: gridUnits(6), height: heightUnits(12) },
+          bins: [
+            createTestBin({
+              layerId: layout.layers[0].id,
+              x: gridUnits(5),
+              height: heightUnits(8),
+            }),
+          ],
+        },
+      });
+      useLayoutStore.getState().updateDrawer({ width: gridUnits(4), height: heightUnits(2) });
+
+      const after = useLayoutStore.getState().layout;
+      expect(after.bins[0].layerId).toBe(STAGING_ID);
+      expect(after.drawer.height).toBe(2);
+    });
+
     it('clamps an empty drawer to the minimum layer height, ignoring layer heights', () => {
       const { updateDrawer } = useLayoutStore.getState();
       // The default layer is 3u, but with no bins nothing has to fit.

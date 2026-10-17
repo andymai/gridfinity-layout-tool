@@ -28,12 +28,6 @@ export function createDrawerActions(setLocal: SetLocal) {
         if (updates.depth !== undefined) {
           drawer.depth = clamp(updates.depth, floors.depth, CONSTRAINTS.GRID_MAX) as GridUnits;
         }
-        if (updates.height !== undefined) {
-          drawer.height = Math.max(
-            updates.height,
-            drawerHeightFloor(state.layout.bins, state.layout.layers, drawer.height)
-          ) as HeightUnits;
-        }
         if (updates.fractionalEdgeX !== undefined) {
           drawer.fractionalEdgeX = updates.fractionalEdgeX;
         }
@@ -46,36 +40,44 @@ export function createDrawerActions(setLocal: SetLocal) {
         // height/fractional-edge updates (this action runs per pointermove).
         const planarChanged =
           (drawer.width as number) !== oldWidth || (drawer.depth as number) !== oldDepth;
-        if (!planarChanged) return;
-
-        // A shrink can land exactly on the outline's bounding rectangle;
-        // rectangle-equivalent outlines normalize to "no outline" everywhere
-        // else, so drop it here too (same rule as the CQRS command).
-        if (
-          drawer.outline !== undefined &&
-          isOutlineFullRectangle(
-            drawer.outline,
-            drawer.width * state.layout.gridUnitMm,
-            drawer.depth * gridUnitMmY
-          )
-        ) {
-          delete drawer.outline;
-        }
-        const displaced = new Set(
-          computeDisplacedBins(
-            state.layout.bins,
-            drawer,
-            state.layout.baseplateParams,
-            state.layout.gridUnitMm,
-            gridUnitMmY
-          )
-        );
-        if (displaced.size > 0) {
-          state.layout.bins = state.layout.bins.map((bin) =>
-            displaced.has(bin.id) && bin.layerId !== STAGING_ID
-              ? { ...bin, layerId: STAGING_ID }
-              : bin
+        if (planarChanged) {
+          // A shrink can land exactly on the outline's bounding rectangle;
+          // rectangle-equivalent outlines normalize to "no outline" everywhere
+          // else, so drop it here too (same rule as the CQRS command).
+          if (
+            drawer.outline !== undefined &&
+            isOutlineFullRectangle(
+              drawer.outline,
+              drawer.width * state.layout.gridUnitMm,
+              drawer.depth * gridUnitMmY
+            )
+          ) {
+            delete drawer.outline;
+          }
+          const displaced = new Set(
+            computeDisplacedBins(
+              state.layout.bins,
+              drawer,
+              state.layout.baseplateParams,
+              state.layout.gridUnitMm,
+              gridUnitMmY
+            )
           );
+          if (displaced.size > 0) {
+            state.layout.bins = state.layout.bins.map((bin) =>
+              displaced.has(bin.id) && bin.layerId !== STAGING_ID
+                ? { ...bin, layerId: STAGING_ID }
+                : bin
+            );
+          }
+        }
+
+        // The floor counts only bins still placed after any displacement above.
+        if (updates.height !== undefined) {
+          drawer.height = Math.max(
+            updates.height,
+            drawerHeightFloor(state.layout.bins, state.layout.layers, drawer.height)
+          ) as HeightUnits;
         }
       });
     },

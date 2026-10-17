@@ -35,6 +35,19 @@ describe('v2 drawer.update', () => {
     expect(result.value.event.payload.changes.height).toBe(heightUnits(5));
   });
 
+  it('floors the height on the bins left after a resize stashes the rest', () => {
+    const layout = makeLayout({
+      drawer: { width: gridUnits(6), depth: gridUnits(4), height: heightUnits(12) },
+      bins: [{ ...makeBin('far', 5, 0), height: heightUnits(8) }],
+    });
+    const result = updateDrawer.handle({ width: 4, height: 2 }, { aggregate: layout });
+
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.event.payload.displacedBinIds).toEqual([binId('far')]);
+    expect(result.value.event.payload.changes.height).toBe(heightUnits(2));
+  });
+
   it('never raises a drawer already shorter than its tallest stack', () => {
     const layout = makeLayout({
       drawer: { width: gridUnits(6), depth: gridUnits(4), height: heightUnits(4) },

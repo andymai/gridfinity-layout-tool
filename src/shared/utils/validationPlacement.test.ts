@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { canPlaceBin } from './validationPlacement';
+import { canPlaceBin, maxPlaceableHeight } from './validationPlacement';
 import { registerLinkedExcessResolver } from './collision';
 import { createTestLayout, createTestBin } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
@@ -580,5 +580,56 @@ describe('canPlaceBin with a drawer outline', () => {
     expect(
       canPlaceBin(placementRect({ x: 7, y: 5, width: 1, depth: 1, height: 3 }), LAYER_1, layout)
     ).toMatchObject({ valid: false, reason: 'outside_drawer' });
+  });
+});
+
+describe('maxPlaceableHeight', () => {
+  // 10u drawer. Layer 2: a 2u bin with 1u clearance on a 2u bottom bin,
+  // beside a 6u bin; layer 3: a 2u bridge held by the 6u bin. Above 3u, the
+  // bottom bin lifts the clearance past the 6u bin and the bridge rests on it.
+  const L3 = layerId('layer3');
+  const make = (): { layout: Layout; bottom: Bin } => {
+    const layout = createTestLayout({
+      drawer: { width: gridUnits(4), depth: gridUnits(2), height: heightUnits(10) },
+      layers: [
+        { id: LAYER_1, name: 'Layer 1', height: heightUnits(3) },
+        { id: LAYER_2, name: 'Layer 2', height: heightUnits(3) },
+        { id: L3, name: 'Layer 3', height: heightUnits(3) },
+      ],
+    });
+    const bottom = createTestBin({ id: binId('bottom'), height: heightUnits(2) });
+    layout.bins = [
+      bottom,
+      createTestBin({
+        id: binId('tools'),
+        layerId: LAYER_2,
+        height: heightUnits(2),
+        clearanceHeight: heightUnits(1),
+      }),
+      createTestBin({
+        id: binId('solid'),
+        layerId: LAYER_2,
+        x: gridUnits(1),
+        height: heightUnits(6),
+      }),
+      createTestBin({
+        id: binId('bridge'),
+        layerId: L3,
+        width: gridUnits(2),
+        height: heightUnits(2),
+      }),
+    ];
+    return { layout, bottom };
+  };
+
+  it('stops below the height at which a lifted clearance would carry a bin', () => {
+    const { layout, bottom } = make();
+    expect(maxPlaceableHeight(bottom, layout)).toBe(3);
+  });
+
+  it('sizes a candidate that is not in the layout yet', () => {
+    const { layout, bottom } = make();
+    layout.bins = layout.bins.filter((b) => b.id !== bottom.id);
+    expect(maxPlaceableHeight({ ...bottom, id: binId('gap') }, layout)).toBe(3);
   });
 });
