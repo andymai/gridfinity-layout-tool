@@ -35,6 +35,16 @@ describe('Menu', () => {
       expect(document.activeElement).toBe(opener);
     });
 
+    it('closes on Tab and returns focus to what opened it', () => {
+      render(<Opener onPick={vi.fn()} />);
+      const opener = screen.getByRole('button', { name: 'Options' });
+      opener.focus();
+      fireEvent.click(opener);
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Tab', shiftKey: true });
+      expect(screen.queryByRole('menu')).toBeNull();
+      expect(document.activeElement).toBe(opener);
+    });
+
     it('leaves focus where an item’s action moved it', () => {
       render(<Opener onPick={() => screen.getByLabelText('Elsewhere').focus()} />);
       const opener = screen.getByRole('button', { name: 'Options' });

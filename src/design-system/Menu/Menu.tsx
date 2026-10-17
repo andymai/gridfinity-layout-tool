@@ -260,7 +260,10 @@ function MenuRoot({
           items[lastIndex]?.focus();
           break;
         }
-        case 'Escape': {
+        // The menu is portalled out of any dialog it opened from, so a Tab would
+        // leave that dialog's focus trap; it closes the menu and focus returns.
+        case 'Escape':
+        case 'Tab': {
           e.preventDefault();
           onClose();
           break;
