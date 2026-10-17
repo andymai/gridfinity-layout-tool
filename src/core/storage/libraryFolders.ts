@@ -193,7 +193,14 @@ export function setFolderKind(
   }
   return ok({
     ...library,
-    folders: folders(library).map((f) => (f.id === id ? { ...f, kind, modifiedAt: now } : f)),
+    folders: folders(library).map((f) => {
+      if (f.id !== id) return f;
+      // A parent that has not synced yet reads as the root; a place must stay
+      // there once it lands, so the dangling reference goes.
+      return kind === 'place'
+        ? { ...f, kind, parentId: null, modifiedAt: now }
+        : { ...f, kind, modifiedAt: now };
+    }),
   });
 }
 

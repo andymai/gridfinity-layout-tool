@@ -912,7 +912,7 @@ describe('MobileLayoutsPanel folders', () => {
     it('offers no new place inside a folder', () => {
       render(<MobileLayoutsPanel />);
       expect(screen.getByRole('button', { name: 'New place' })).toBeInTheDocument();
-      fireEvent.click(screen.getByRole('button', { name: 'Open folder Study' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Open folder Study, Area' }));
       expect(screen.queryByRole('button', { name: 'New place' })).toBeNull();
     });
   });

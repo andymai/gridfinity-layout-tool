@@ -159,6 +159,16 @@ describe('setFolderKind', () => {
     expect(unit.folders?.find((f) => f.id === 'cupboard')?.kind).toBe('unit');
   });
 
+  it('drops a parent that has not synced yet from a new place', () => {
+    const lib = library();
+    lib.folders = [...(lib.folders ?? []), folder('orphan', 'Garage', 'not-here-yet')];
+    const placed = expectOk(setFolderKind(lib, 'orphan', 'place', 9));
+    expect(placed.folders?.find((f) => f.id === 'orphan')).toMatchObject({
+      kind: 'place',
+      parentId: null,
+    });
+  });
+
   it('keeps a place at the top of the tree', () => {
     expectErr(setFolderKind(library(), 'desk', 'place', 9));
     expectErr(setFolderKind(library(), 'nope', 'unit', 9));

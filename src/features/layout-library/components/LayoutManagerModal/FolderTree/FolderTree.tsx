@@ -6,7 +6,7 @@ import { useTranslation } from '@/i18n';
 import { Button, IconButton, Input, Menu, useInlineEdit } from '@/design-system';
 import { useTwoClickDelete } from '@/shared/components';
 import { FOLDER_KIND_ICON } from '@/shared/constants/iconPaths';
-import { FOLDER_KIND_ACTION, offeredKinds } from '@/shared/utils/folderKinds';
+import { FOLDER_KIND_ACTION, FOLDER_KIND_NAME, offeredKinds } from '@/shared/utils/folderKinds';
 
 interface FolderTreeProps {
   readonly library: LayoutLibrary;
@@ -189,7 +189,11 @@ function FolderRow({
             variant="ghost"
             onClick={() => onSelect(folder.id)}
             onDoubleClick={startEditing}
-            aria-label={t('layouts.folders.open', { name: folder.name })}
+            aria-label={
+              onSetKind
+                ? `${t('layouts.folders.open', { name: folder.name })}, ${t(FOLDER_KIND_NAME[folderKind(folder)])}`
+                : t('layouts.folders.open', { name: folder.name })
+            }
             className="h-6 min-w-0 flex-1 justify-start gap-1.5 px-1 font-normal hover:bg-transparent"
           >
             <Glyph

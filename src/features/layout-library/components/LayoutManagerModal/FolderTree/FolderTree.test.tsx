@@ -149,6 +149,7 @@ describe('FolderTree', () => {
           onSetKind={onSetKind}
         />
       );
+      expect(screen.getByRole('button', { name: 'Open folder Study, Area' })).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: 'Change kind: Study' }));
       expect(screen.getByRole('menuitem', { name: /Make it a place/ })).toBeInTheDocument();
       fireEvent.click(screen.getByRole('menuitem', { name: /Make it a storage unit/ }));

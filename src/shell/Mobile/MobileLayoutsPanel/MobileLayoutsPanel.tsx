@@ -14,7 +14,7 @@ import {
 } from '@/core/storage';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { FOLDER_KIND_ICON } from '@/shared/constants/iconPaths';
-import { FOLDER_KIND_ACTION, offeredKinds } from '@/shared/utils/folderKinds';
+import { FOLDER_KIND_ACTION, FOLDER_KIND_NAME, offeredKinds } from '@/shared/utils/folderKinds';
 import { FolderBreadcrumb, FolderPickList } from '@/features/layout-library';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
@@ -406,7 +406,11 @@ export function MobileLayoutsPanel() {
                 <Button
                   variant="ghost"
                   onClick={() => setFolderId(folder.id)}
-                  aria-label={t('layouts.folders.open', { name: folder.name })}
+                  aria-label={
+                    placesEnabled
+                      ? `${t('layouts.folders.open', { name: folder.name })}, ${t(FOLDER_KIND_NAME[folderKind(folder)])}`
+                      : t('layouts.folders.open', { name: folder.name })
+                  }
                   className="min-w-0 flex-1 justify-start gap-3 rounded-none p-4 text-left hover:bg-transparent"
                 >
                   <SvgIcon
