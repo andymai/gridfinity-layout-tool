@@ -16,7 +16,7 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useMobileStore } from '@/core/store/mobile';
 import { useMutations } from '@/shared/contexts';
 import { calcBedCapacityForBin, CONSTRAINTS, STAGING_ID } from '@/core/constants';
-import { getRestingStack, maxBinHeight, maxClearanceHeight } from '@/shared/utils/restingStack';
+import { maxBinHeight, maxClearanceHeight } from '@/shared/utils/restingStack';
 import { isErr, getUserMessage } from '@/core/result';
 import { canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
 import { clamp } from '@/shared/utils/math';
@@ -119,12 +119,13 @@ export function useBinInspector(): UseBinInspectorReturn {
     }
 
     const minHeight = CONSTRAINTS.MIN_BIN_HEIGHT;
-    const stackLimit = maxBinHeight(bin, layout.bins, layout.layers, layout.drawer.height);
+    // The height field keeps height plus clearance fixed, so clearance gives way.
+    const stackLimit = maxBinHeight(bin, layout.bins, layout.layers, layout.drawer.height, {
+      clearanceGivesWay: true,
+    });
     const maxHeight = Math.max(minHeight, stackLimit);
     const maxClearance = maxClearanceHeight(bin, layout.bins, layout.layers, layout.drawer.height);
-    const rest = getRestingStack(layout.bins, layout.layers).bins.get(bin.id);
-    const ownCharge = rest ? rest.stackTop - rest.zStart - bin.height : 0;
-    const limitedByStack = stackLimit < layout.drawer.height - ownCharge - 1e-9;
+    const limitedByStack = stackLimit < layout.drawer.height - 1e-9;
 
     return {
       minHeight,

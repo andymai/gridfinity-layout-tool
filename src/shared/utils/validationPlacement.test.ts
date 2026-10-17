@@ -227,6 +227,51 @@ describe('canPlaceBin', () => {
       expect(raised).toEqual({ valid: false, reason: 'exceeds_height' });
     });
 
+    it('refuses growing a bin under a stack that is already over the drawer', () => {
+      const layout = makeTwoLayerLayout();
+      layout.drawer = { ...layout.drawer, height: heightUnits(6) };
+      layout.bins = [
+        lower(3),
+        createTestBin({ id: binId('upper'), layerId: LAYER_2, height: heightUnits(5) }),
+      ];
+      const grow = canPlaceBin(
+        placementRect({ x: 0, y: 0, width: 3, depth: 3, height: 4 }),
+        LAYER_1,
+        layout,
+        binId('lower')
+      );
+      expect(grow).toMatchObject({ valid: false, reason: 'exceeds_height' });
+    });
+
+    it('keeps the other bins of a group drag where they are while checking one', () => {
+      // A bridge on layer 2 spans clearance and a taller bin, carrying a bin on
+      // layer 3. Checking a second selected bin must not treat the bridge as gone.
+      const layout = createTestLayout({
+        drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(20) },
+        layers: [
+          { id: LAYER_1, name: 'Layer 1', height: heightUnits(3) },
+          { id: LAYER_2, name: 'Layer 2', height: heightUnits(3) },
+          { id: layerId('layer3'), name: 'Layer 3', height: heightUnits(3) },
+        ],
+      });
+      layout.bins = [
+        createTestBin({ id: binId('tools'), clearanceHeight: heightUnits(2) }),
+        createTestBin({ id: binId('tall'), x: gridUnits(1), height: heightUnits(6) }),
+        createTestBin({ id: binId('bridge'), layerId: LAYER_2, width: gridUnits(2) }),
+        createTestBin({ id: binId('top'), layerId: layerId('layer3') }),
+        createTestBin({ id: binId('other'), layerId: LAYER_2, x: gridUnits(5) }),
+      ];
+      const group = new Set([binId('bridge'), binId('other')]);
+      const result = canPlaceBin(
+        placementRect({ x: 6, y: 0, width: 1, depth: 1, height: 3 }),
+        LAYER_2,
+        layout,
+        binId('other'),
+        group
+      );
+      expect(result).toEqual({ valid: true });
+    });
+
     it('returns blocked_zone for a bin that would rest on reserved clearance', () => {
       const layout = makeTwoLayerLayout();
       layout.bins = [lower(3, { clearanceHeight: heightUnits(2) })];

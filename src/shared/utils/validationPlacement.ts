@@ -28,8 +28,6 @@ import { binId as toBinId, categoryId as toCategoryId, effectiveGridUnitMmY } fr
 import { footprintsOverlap } from './collision';
 import { getRestingStack, newViolations, restack } from './restingStack';
 
-const HEIGHT_EPSILON = 1e-9;
-
 function blockingInfoFor(bin: Bin, layers: Layout['layers']): BlockingInfo {
   return {
     binId: bin.id,
@@ -104,8 +102,8 @@ export function canPlaceFootprint(
 /**
  * Validate if a bin can be placed at the given position: its footprint, and
  * where it would rest along with everything that would rest on it.
- * @param excludeBinId - Single bin ID to exclude from collision checks
- * @param excludeBinIds - Set of bin IDs to exclude (for multi-select operations)
+ * @param excludeBinId - The bin being moved or resized, replaced by the candidate
+ * @param excludeBinIds - Other bins moving with it, ignored for same-layer overlap
  */
 export function canPlaceBin(
   rect: Rect & {
@@ -126,7 +124,6 @@ export function canPlaceBin(
   if (!footprint.valid) return footprint;
 
   const { drawer, layers, bins } = layout;
-  const isExcluded = (id: BinId): boolean => id === excludeBinId || excludeBinIds?.has(id) === true;
 
   // A caller moving or resizing an existing bin usually passes only the new
   // footprint and height; the bin's clearance and linked rise travel with it.
@@ -146,9 +143,11 @@ export function canPlaceBin(
     notes: '',
   };
 
+  // Other bins of a group move are checked where they stand, as the commit
+  // applies one move at a time: removing them here would drop whatever they
+  // carry and refuse a move that is safe.
   const before = getRestingStack(bins, layers);
-  const removed = new Set(bins.filter((b) => isExcluded(b.id)).map((b) => b.id));
-  const after = restack(before, bins, layers, removed, [testBin]);
+  const after = restack(before, bins, layers, new Set(), [testBin]);
   const fresh = newViolations(before, after, drawer.height);
   const infoFor = (id: BinId): BlockingInfo | undefined => {
     const bin = bins.find((b) => b.id === id);
@@ -163,16 +162,7 @@ export function canPlaceBin(
       blockingInfo: infoFor(onClearance.clearanceOf),
     };
   }
-
-  // Compared against where the bin stood, so lowering a bin that already
-  // overflows is allowed even when it still does.
-  const own = after.bins.get(testBin.id);
-  const ownBefore = excludeBinId !== undefined ? before.bins.get(excludeBinId) : undefined;
-  if (
-    own !== undefined &&
-    own.stackTop > drawer.height + HEIGHT_EPSILON &&
-    (ownBefore === undefined || own.stackTop > ownBefore.stackTop + HEIGHT_EPSILON)
-  ) {
+  if (fresh.some((v) => v.kind === 'exceeds_height' && v.binId === testBin.id)) {
     return { valid: false, reason: 'exceeds_height' };
   }
 

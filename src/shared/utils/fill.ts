@@ -124,11 +124,14 @@ function withoutLifts(layout: Layout, fill: Bin[]): Bin[] {
     if (broken.length === 0) return kept;
     const fillIds = new Set(kept.map((b) => b.id));
     const carriers = new Set<BinId>();
-    const visit = (id: BinId): void => {
+    const seen = new Set<BinId>();
+    const pending = broken.map((v) => v.binId);
+    for (let id = pending.pop(); id !== undefined; id = pending.pop()) {
+      if (seen.has(id)) continue;
+      seen.add(id);
       if (fillIds.has(id)) carriers.add(id);
-      for (const under of after.bins.get(id)?.restsOn ?? []) visit(under);
-    };
-    for (const v of broken) visit(v.binId);
+      pending.push(...(after.bins.get(id)?.restsOn ?? []));
+    }
     if (carriers.size === 0) return kept;
     kept = kept.filter((b) => !carriers.has(b.id));
   }

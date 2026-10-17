@@ -236,9 +236,10 @@ function violationKey(v: StackViolation): string {
 }
 
 /**
- * Violations `after` has that `before` did not. A layout that already
+ * Violations `after` has that `before` did not, counting a stack that was
+ * already over the drawer only if it rose further. A layout that already
  * overflows (a shrunk drawer, a re-saved linked design) must not freeze every
- * unrelated edit, so only what the change itself causes counts.
+ * unrelated edit, nor let one push it further over.
  */
 export function newViolations(
   before: RestingStack,
@@ -246,7 +247,12 @@ export function newViolations(
   drawerHeight: number
 ): StackViolation[] {
   const existing = new Set(findStackViolations(before, drawerHeight).map(violationKey));
-  return findStackViolations(after, drawerHeight).filter((v) => !existing.has(violationKey(v)));
+  return findStackViolations(after, drawerHeight).filter((v) => {
+    if (!existing.has(violationKey(v))) return true;
+    if (v.kind !== 'exceeds_height') return false;
+    const was = before.bins.get(v.binId)?.stackTop ?? 0;
+    return (after.bins.get(v.binId)?.stackTop ?? 0) > was + EPSILON;
+  });
 }
 
 /**
@@ -266,14 +272,21 @@ export function drawerHeightFloor(
 /**
  * The tallest `candidate` can be before it, or anything stacked on it,
  * passes the drawer top. The candidate replaces any bin with the same id.
- * Every chain of bins resting on the candidate grows one-for-one with its
- * height, so the limit is the drawer minus the longest such chain.
+ * Every chain of bins resting on the candidate rises one-for-one with its
+ * top, so the room is the drawer minus the longest such chain.
+ *
+ * `clearanceGivesWay` is for an edit that keeps height plus clearance fixed,
+ * as the inspector's height field does: the bin can then grow into its own
+ * clearance without raising anything. Otherwise the clearance rides on top.
+ * A linked design's extra rise always gives way, since it shrinks as the
+ * nominal height grows.
  */
 export function maxBinHeight(
   candidate: Bin,
   bins: readonly Bin[],
   layers: readonly Layer[],
-  drawerHeight: number
+  drawerHeight: number,
+  options: { clearanceGivesWay?: boolean } = {}
 ): number {
   const current = getRestingStack(bins, layers);
   const stack = bins.includes(candidate)
@@ -282,21 +295,18 @@ export function maxBinHeight(
   const self = stack.bins.get(candidate.id);
   if (!self) return drawerHeight;
 
-  const charge = self.stackTop - self.zStart - candidate.height;
-  let limit = drawerHeight - self.zStart - charge;
-
-  // Bins whose stack top a taller candidate would lift, with how far that top
-  // sits above the candidate's own stack top along the longest chain.
+  // How far above the candidate's stack top the highest chain resting on it reaches.
   const placed = placedInStackOrder(
     [...bins.filter((b) => b.id !== candidate.id), candidate],
     layers
   );
   const selfEntry = placed.find((p) => p.bin === candidate);
-  if (!selfEntry) return limit;
-  const reached: { entry: Placed; rise: number }[] = [{ entry: selfEntry, rise: 0 }];
-
+  const reached: { entry: Placed; rise: number }[] = selfEntry
+    ? [{ entry: selfEntry, rise: 0 }]
+    : [];
+  let chain = 0;
   for (const entry of placed) {
-    if (entry.layer <= selfEntry.layer) continue;
+    if (!selfEntry || entry.layer <= selfEntry.layer) continue;
     let base = -Infinity;
     for (const r of reached) {
       if (r.entry.layer >= entry.layer || !footprintsOverlap(entry.bin, r.entry.bin)) continue;
@@ -306,10 +316,11 @@ export function maxBinHeight(
     const rest = stack.bins.get(entry.bin.id) as RestingBin;
     const rise = base + rest.stackTop - rest.zStart;
     reached.push({ entry, rise });
-    limit = Math.min(limit, drawerHeight - self.zStart - charge - rise);
+    chain = Math.max(chain, rise);
   }
 
-  return limit;
+  const room = drawerHeight - self.zStart - chain;
+  return options.clearanceGivesWay ? room : room - (candidate.clearanceHeight ?? 0);
 }
 
 /**

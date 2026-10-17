@@ -301,6 +301,26 @@ describe('stack violations', () => {
       { kind: 'exceeds_height', binId: binId('up') },
     ]);
   });
+
+  it('counts a stack that was already over and rises further', () => {
+    // 3u + 5u is already 2u over a 6u drawer; growing the lower bin lifts it more.
+    const before = resolveRestingStack(
+      [bin('low', L1, 0, 0, 1, 1, 3), bin('up', L2, 0, 0, 1, 1, 5)],
+      layers
+    );
+    const raised = resolveRestingStack(
+      [bin('low', L1, 0, 0, 1, 1, 4), bin('up', L2, 0, 0, 1, 1, 5)],
+      layers
+    );
+    const lowered = resolveRestingStack(
+      [bin('low', L1, 0, 0, 1, 1, 2), bin('up', L2, 0, 0, 1, 1, 5)],
+      layers
+    );
+    expect(newViolations(before, raised, 6)).toEqual([
+      { kind: 'exceeds_height', binId: binId('up') },
+    ]);
+    expect(newViolations(before, lowered, 6)).toEqual([]);
+  });
 });
 
 describe('maxBinHeight', () => {
@@ -314,6 +334,13 @@ describe('maxBinHeight', () => {
     const bins = [b, bin('mid', L2, 0, 0, 1, 1, 4), bin('top', L3, 0, 0, 1, 1, 2)];
     // The stack above rests on the clearance top: 12 - 1 - 4 - 2.
     expect(maxBinHeight(b, bins, layers, 12)).toBe(5);
+  });
+
+  it('lets clearance give way when the edit keeps height plus clearance fixed', () => {
+    // 3u + 3u clearance fills a 6u drawer; growing to 4u leaves 2u of clearance.
+    const b = bin('a', L1, 0, 0, 1, 1, 3, { clearanceHeight: heightUnits(3) });
+    expect(maxBinHeight(b, [b], layers, 6)).toBe(3);
+    expect(maxBinHeight(b, [b], layers, 6, { clearanceGivesWay: true })).toBe(6);
   });
 
   it('starts from where the bin rests', () => {
@@ -343,6 +370,36 @@ describe('maxBinHeight', () => {
           (v) => v.kind === 'exceeds_height'
         );
       if (limit < 0) continue;
+      expect(overflows(limit), `seed ${seed}`).toBe(false);
+      expect(overflows(limit + 0.5), `seed ${seed}`).toBe(true);
+    }
+  });
+
+  it('matches the first overflowing height when clearance gives way', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const rand = rng(seed);
+      const bins = randomBins(rand, 10, 'b');
+      const target = bins[Math.floor(rand() * bins.length)];
+      const drawer = 30;
+      const clearance = target.clearanceHeight ?? 0;
+      const total = target.height + clearance;
+      const limit = maxBinHeight(target, bins, layers, drawer, { clearanceGivesWay: true });
+      const edited = (h: number): Bin[] =>
+        bins.map((b) =>
+          b.id === target.id
+            ? {
+                ...b,
+                height: heightUnits(h),
+                clearanceHeight: heightUnits(clearance > 0 ? Math.max(0, total - h) : 0),
+              }
+            : b
+        );
+      const before = resolveRestingStack(bins, layers);
+      const overflows = (h: number): boolean =>
+        newViolations(before, resolveRestingStack(edited(h), layers), drawer).some(
+          (v) => v.kind === 'exceeds_height'
+        );
+      if (limit < target.height) continue;
       expect(overflows(limit), `seed ${seed}`).toBe(false);
       expect(overflows(limit + 0.5), `seed ${seed}`).toBe(true);
     }

@@ -505,6 +505,43 @@ describe('fill and the resting stack', () => {
     expect(result.skippedCells).toBe(1);
   });
 
+  it('stays fast when every upper bin rests on many shared supporters', () => {
+    // Alternating rows and columns on many layers give each bin several
+    // supporters below it; an unremembered walk revisits them exponentially.
+    const layers = Array.from({ length: 13 }, (_, i) => ({
+      id: layerId(`l${String(i)}`),
+      name: `Layer ${String(i)}`,
+      height: heightUnits(2),
+    }));
+    const bins: Layout['bins'] = [];
+    for (let i = 1; i < layers.length; i++) {
+      for (let k = 0; k < 4; k++) {
+        const vertical = i % 2 === 0;
+        bins.push({
+          id: binId(`b${String(i)}-${String(k)}`),
+          layerId: layers[i].id,
+          x: gridUnits(vertical ? k : 0),
+          y: gridUnits(vertical ? 0 : k),
+          width: gridUnits(vertical ? 1 : 4),
+          depth: gridUnits(vertical ? 4 : 1),
+          height: heightUnits(2),
+          category: categoryId('cat1'),
+          label: '',
+          notes: '',
+        });
+      }
+    }
+    const tall: Layout = {
+      ...layout(bins),
+      drawer: { width: gridUnits(4), depth: gridUnits(4), height: heightUnits(25) },
+      layers,
+    };
+    const started = performance.now();
+    const result = fillAllWithSize(tall, layers[0].id, 1, 1, categoryId('cat1'));
+    expect(performance.now() - started).toBeLessThan(1000);
+    expect(result.bins).toHaveLength(0);
+  });
+
   it('applies the same lift rule to filling gaps', () => {
     const result = fillGaps(
       layout([bin('high', 'layer2', 0, 6), bin('low', 'layer2', 2, 2)]),
