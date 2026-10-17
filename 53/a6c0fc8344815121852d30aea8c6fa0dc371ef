@@ -1,0 +1,64 @@
+src/i18n/locales/cs.json
+  s_078fc63cde22ff::t_116340fdb39ca5 2372-2374
+src/i18n/locales/it.json
+  s_078fc63cde22ff::t_116340fdb39ca5 2372-2374
+src/i18n/locales/ko.json
+  s_078fc63cde22ff::t_116340fdb39ca5 2372-2374
+src/core/storage/libraryFolders.test.ts
+  s_078fc63cde22ff::t_116340fdb39ca5 162-168
+  s_078fc63cde22ff::t_b50e80bb7e5b60 169-171
+src/i18n/locales/nb.json
+  s_078fc63cde22ff::t_116340fdb39ca5 2372-2374
+src/i18n/locales/zh-CN.json
+  s_078fc63cde22ff::t_116340fdb39ca5 2372-2374
+src/i18n/locales/ja.json
+  s_078fc63cde22ff::t_116340fdb39ca5 2372-2374
+src/i18n/locales/fr.json
+  s_078fc63cde22ff::t_116340fdb39ca5 2372-2374
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx
+  s_078fc63cde22ff::t_116340fdb39ca5 17,409-413
+src/shared/utils/folderKinds.ts
+  s_078fc63cde22ff::t_116340fdb39ca5 5-10
+src/i18n/locales/nl.json
+  s_078fc63cde22ff::t_116340fdb39ca5 2372-2374
+src/i18n/locales/de.json
+  s_078fc63cde22ff::t_116340fdb39ca5 2372-2374
+src/i18n/locales/pt-BR.json
+  s_078fc63cde22ff::t_116340fdb39ca5 2372-2374
+src/i18n/locales/uk.json
+  s_078fc63cde22ff::t_116340fdb39ca5 2372-2374
+src/features/layout-library/components/LayoutManagerModal/FolderTree/FolderTree.test.tsx
+  s_078fc63cde22ff::t_116340fdb39ca5 152
+src/i18n/locales/ka.json
+  s_078fc63cde22ff::t_116340fdb39ca5 3836-3838
+src/i18n/locales/en.ts
+  s_078fc63cde22ff::t_116340fdb39ca5 4584-4586
+src/i18n/locales/sv.json
+  s_078fc63cde22ff::t_116340fdb39ca5 2372-2374
+src/i18n/locales/pl.json
+  s_078fc63cde22ff::t_116340fdb39ca5 2372-2374
+src/i18n/locales/es.json
+  s_078fc63cde22ff::t_116340fdb39ca5 2372-2374
+src/features/layout-library/components/LayoutManagerModal/FolderTree/FolderTree.tsx
+  s_078fc63cde22ff::t_116340fdb39ca5 9,192-196
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.test.tsx
+  s_078fc63cde22ff::t_116340fdb39ca5 915
+src/core/storage/libraryFolders.ts
+  s_078fc63cde22ff::t_116340fdb39ca5 196-203
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "53a6c0fc8344815121852d30aea8c6fa0dc371ef",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
