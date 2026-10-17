@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.516.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.515.0...gridfinity-layout-tool-v4.516.0) (2026-10-17)
+
+
+### Features
+
+* **layers:** rest stacked bins on the bins below them ([#4607](https://github.com/andymai/gridfinity-layout-tool/issues/4607)) ([00876b7](https://github.com/andymai/gridfinity-layout-tool/commit/00876b7a14d6d01963e5a2858629cdd9ecd3d2d7))
+
+
+### Bug Fixes
+
+* **import:** default the print bed size a layout file omits ([#4609](https://github.com/andymai/gridfinity-layout-tool/issues/4609)) ([b48b82f](https://github.com/andymai/gridfinity-layout-tool/commit/b48b82f71b1c9985f6c2be2c65df1d3aadb7a54c))
+
 ## [4.515.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.514.0...gridfinity-layout-tool-v4.515.0) (2026-10-17)
 
 
