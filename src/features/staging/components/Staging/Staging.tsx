@@ -8,6 +8,7 @@ import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
+import { onRevealBin } from '@/shared/events/revealBin';
 import { useResponsive } from '@/shared/hooks';
 import { BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { getStagingBins } from '@/shared/utils';
@@ -298,24 +299,25 @@ export function Staging() {
     prevBinCountRef.current = currentCount;
   }, [stagingBins.length, isExpanded]);
 
-  // A stashed bin selected from outside the stash (Find) is only visible with it
-  // open. Keyed on the selection alone, so collapsing it afterwards still holds.
-  const selectedStashedId = stagingBins.find((bin) => selectedBinIds.includes(bin.id))?.id ?? null;
-  const revealedRef = useRef<BinId | null>(null);
-  useEffect(() => {
-    if (selectedStashedId === revealedRef.current) return;
-    revealedRef.current = selectedStashedId;
-    if (!selectedStashedId) return;
-    requestAnimationFrame(() => {
-      setIsExpanded(true);
-      setHasToggled(true);
-      requestAnimationFrame(() => {
-        document
-          .querySelector(`[data-staging-bin-id="${selectedStashedId}"]`)
-          ?.scrollIntoView({ block: 'nearest' });
-      });
-    });
-  }, [selectedStashedId]);
+  // A revealed stashed bin is only visible with the stash open; the second frame
+  // lets the expanded list render before scrolling to it.
+  useEffect(
+    () =>
+      onRevealBin((id) => {
+        const bins = useLayoutStore.getState().layout.bins;
+        if (!getStagingBins(bins).some((bin) => bin.id === id)) return;
+        setIsExpanded(true);
+        setHasToggled(true);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            document
+              .querySelector(`[data-staging-bin-id="${CSS.escape(id)}"]`)
+              ?.scrollIntoView({ block: 'nearest' });
+          });
+        });
+      }),
+    []
+  );
 
   // Toggle handler that persists to settings
   const handleToggleExpand = useCallback(() => {

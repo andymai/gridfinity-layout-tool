@@ -86,6 +86,7 @@ vi.mock('@/shared/components/PanelErrorBoundary', () => ({
 }));
 
 vi.mock('@/features/grid-editor/hooks', () => ({
+  useRevealGridBin: () => undefined,
   useInteraction: () => ({
     startDraw: vi.fn(),
     startDrag: vi.fn(),

@@ -5,6 +5,7 @@ import { err, layoutInvalidOperation, OK } from '@/core/result';
 import { useLayoutStore, useSelectionStore } from '@/core/store';
 import type { Layout, LayoutId } from '@/core/types';
 import { binId, layerId, layoutId } from '@/core/types';
+import { onRevealBin } from '@/shared/events/revealBin';
 import { createTestBin, createTestLayout, resetAllStores } from '@/test/testUtils';
 import type * as SharedHooks from '@/shared/hooks';
 
@@ -75,6 +76,19 @@ describe('useFocusBin', () => {
       activeLayerId: LOWER,
       selectedBinIds: ['stashed'],
     });
+  });
+
+  it('reveals the bin after selecting it, every time it is chosen', async () => {
+    open(layoutId('here'), drawer());
+    const revealed: string[] = [];
+    const stop = onRevealBin((id) => {
+      revealed.push(`${id}:${useSelectionStore.getState().selectedBinIds.join()}`);
+    });
+    const { result } = renderHook(() => useFocusBin());
+    await act(() => result.current(layoutId('here'), binId('stashed')));
+    await act(() => result.current(layoutId('here'), binId('stashed')));
+    stop();
+    expect(revealed).toEqual(['stashed:stashed', 'stashed:stashed']);
   });
 
   it('selects nothing when the layout fails to open', async () => {

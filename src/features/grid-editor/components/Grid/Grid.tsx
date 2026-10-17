@@ -10,6 +10,7 @@ import {
   useInteraction,
   useGridResize,
   useGridZoom,
+  useRevealGridBin,
   useGridAxisLabels,
   useGridRowColumnSelection,
   useAlignBins,
@@ -191,6 +192,8 @@ export function Grid({
     cellSizeY: getCellSizeY(zoomedCellSize, gridUnitMm, gridUnitMmY),
     gap,
   });
+
+  useRevealGridBin();
 
   // Grid zoom hook - encapsulates zoom controls
   const zoomState = useGridZoom({

@@ -46,6 +46,12 @@ describe('matchBins', () => {
     expect(ids('tape', [tape, labelled])[0]).toBe('labelled');
   });
 
+  it('keeps a whole-word note above a label prefix for a longer query too', () => {
+    const driver = record('driver', [searchField('label', 'Wood screwdriver')], 'Wood screwdriver');
+    const note = record('note', [searchField('note', 'wood screws, 40 mm')]);
+    expect(ids('wood screw', [driver, note])).toEqual(['note', 'driver']);
+  });
+
   it('keeps every qualifier, so a size never falls back to the bare concept', () => {
     expect(ids('M8 screws', [screws])).toEqual([]);
     expect(ids('wood screws', [screws])).toEqual([]);

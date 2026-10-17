@@ -3,6 +3,7 @@ export { useGridAxisLabels } from './useGridAxisLabels';
 export { useGridCoords } from './useGridCoords';
 export { useGridNavigation } from './useGridNavigation';
 export { useGridResize } from './useGridResize';
+export { useRevealGridBin } from './useRevealGridBin';
 export { useGridRowColumnSelection } from './useGridRowColumnSelection';
 // Re-export from shared (useGridTemplate moved to shared layer)
 export { useGridTemplate } from '@/shared/hooks';

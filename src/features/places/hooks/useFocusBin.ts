@@ -3,6 +3,7 @@ import { STAGING_ID } from '@/core/constants';
 import { isErr } from '@/core/result';
 import { useLayoutStore, useSelectionStore } from '@/core/store';
 import type { BinId, LayoutId } from '@/core/types';
+import { revealBin } from '@/shared/events/revealBin';
 import { useLayoutSwitcher } from '@/shared/hooks';
 
 /**
@@ -25,6 +26,7 @@ export function useFocusBin(): (layoutId: LayoutId, binId: BinId) => Promise<voi
       // Activating a layer clears the selection, so the layer comes first.
       if (bin.layerId !== STAGING_ID) selection.setActiveLayer(bin.layerId);
       selection.setSelectedBins([binId]);
+      revealBin(binId);
     },
     [switchLayout]
   );

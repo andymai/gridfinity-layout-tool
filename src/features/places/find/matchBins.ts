@@ -26,7 +26,10 @@ export interface BinMatch {
   readonly score: number;
 }
 
-/** Small enough that a whole word in a note still beats a prefix in a label. */
+/**
+ * Divided by the query's word count, it stays below the 1/(2n) one more whole
+ * word adds, so a whole word in a note still beats a prefix in a label.
+ */
 const FIELD_BONUS: Record<SearchFieldKind, number> = { item: 0.3, label: 0.3, note: 0 };
 
 /** Below any word hit, prefixes included, in the same kind of field. */
@@ -71,7 +74,7 @@ export function matchBins(
       const wordHit = wordScore(words, field.tokens);
       const raw =
         wordHit > 0 ? wordHit : concept !== null && field.concept === concept ? CONCEPT_SCORE : 0;
-      const score = raw > 0 ? raw + FIELD_BONUS[field.kind] : 0;
+      const score = raw > 0 ? raw + FIELD_BONUS[field.kind] / words.length : 0;
       if (score > 0 && (!best || score > best.score)) best = { record, field, score };
     }
     if (best) matches.push(best);
