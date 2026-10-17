@@ -105,10 +105,15 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
       const updates = selectedBins
         .filter((b) => !isBinLocked(b))
         .map((b) => {
+          // Never below the bin's own height: a step must not shrink a bin in
+          // an over-full stack down to the stack limit in one go.
           const binMaxHeight =
             b.layerId === STAGING_ID
               ? layout.drawer.height
-              : maxBinHeight(b, layout.bins, layout.layers, layout.drawer.height);
+              : Math.max(
+                  b.height,
+                  maxBinHeight(b, layout.bins, layout.layers, layout.drawer.height)
+                );
           const newHeight = clamp(
             b.height + delta,
             CONSTRAINTS.MIN_BIN_HEIGHT,

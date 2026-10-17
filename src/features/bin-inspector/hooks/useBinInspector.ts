@@ -128,9 +128,15 @@ export function useBinInspector(): UseBinInspectorReturn {
       stack: restingStack,
     });
     // Floored to the input's precision: the height field rounds what it
-    // writes, and rounding up past the limit would be refused.
+    // writes, and rounding up past the limit would be refused. Never below
+    // the bin's own height, so a bin in a stack that is already over the
+    // drawer can come down a step at a time.
     const steps = Math.round(1 / HEIGHT_UNIT_STEP);
-    const maxHeight = Math.max(minHeight, Math.floor(stackLimit * steps + 1e-6) / steps);
+    const maxHeight = Math.max(
+      minHeight,
+      bin.height,
+      Math.floor(stackLimit * steps + 1e-6) / steps
+    );
     const maxClearance = maxClearanceHeight(
       bin,
       layout.bins,

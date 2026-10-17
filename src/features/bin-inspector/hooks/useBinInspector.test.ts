@@ -158,6 +158,26 @@ describe('useBinInspector', () => {
       registerLinkedExcessResolver(null);
     });
 
+    it('keeps an over-full bin reducible one step at a time', () => {
+      // 8u + 8u is already over a 12u drawer; the stack leaves the lower bin 4u.
+      const layout = useLayoutStore.getState().layout;
+      layout.layers = [
+        { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: toLayerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
+      ];
+      layout.bins = [
+        { ...createBin('low', 'layer1'), height: heightUnits(8) },
+        { ...createBin('high', 'layer2'), height: heightUnits(8) },
+      ];
+      layout.drawer.height = heightUnits(12);
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('low')] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      expect(result.current.constraints.maxHeight).toBe(8);
+    });
+
     it('limits max height and clearance by the bin resting on it', () => {
       const layout = useLayoutStore.getState().layout;
       layout.layers = [
@@ -487,6 +507,36 @@ describe('useBinInspector', () => {
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins[0].height).toBe(5);
       expect(bins[1].height).toBe(6);
+    });
+
+    it('steps an over-full bin down one unit instead of jumping to the stack limit', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.layers = [
+        { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: toLayerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
+      ];
+      layout.bins = [
+        { ...createBin('low', 'layer1'), height: heightUnits(8) },
+        { ...createBin('high', 'layer2'), height: heightUnits(8) },
+        { ...createBin('other', 'layer1', 4, 0), height: heightUnits(3) },
+      ];
+      layout.drawer.height = heightUnits(12);
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('low'), binId('other')] });
+
+      const { result } = renderHook(() => useBinInspector());
+      const lowHeight = () =>
+        useLayoutStore.getState().layout.bins.find((b) => b.id === binId('low'))?.height;
+
+      act(() => {
+        result.current.updateMultiHeight(1);
+      });
+      expect(lowHeight()).toBe(8);
+
+      act(() => {
+        result.current.updateMultiHeight(-1);
+      });
+      expect(lowHeight()).toBe(7);
     });
 
     it('clamps height to constraints', () => {
