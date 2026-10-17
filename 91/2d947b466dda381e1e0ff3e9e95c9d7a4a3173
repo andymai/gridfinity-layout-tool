@@ -1,0 +1,47 @@
+src/features/places/components/PlacesFindGroup/PlacesFindGroup.tsx
+  s_078fc63cde22ff::t_90040b3a6e90a8 3,17-20,52
+src/shared/utils/commandPaletteFilter.ts
+  s_078fc63cde22ff::t_73ff7fd79fc3dc 1-12
+src/App.tsx
+  s_078fc63cde22ff::t_537d039451146f 129
+src/shared/utils/commandPaletteFilter.test.ts
+  s_078fc63cde22ff::t_73ff7fd79fc3dc 1-16
+src/features/grid-editor/hooks/useRevealGridBin.ts
+  s_078fc63cde22ff::t_537d039451146f 4-8,14-17
+src/features/grid-editor/hooks/useRevealGridBin.test.ts
+  s_078fc63cde22ff::t_537d039451146f 12,14,22
+src/shell/hooks/usePlacesFindResults.test.tsx
+  s_078fc63cde22ff::t_537d039451146f 14,20,23-27
+  s_078fc63cde22ff::t_b579e128002d35 28
+src/features/staging/components/Staging/Staging.tsx
+  s_078fc63cde22ff::t_537d039451146f 313-316
+src/features/places/hooks/useFindBins.ts
+  s_078fc63cde22ff::t_537d039451146f 72-74,87
+src/shell/hooks/usePlacesFindResults.tsx
+  s_078fc63cde22ff::t_537d039451146f 12-17,27
+src/features/places/components/PlacesFindGroup/PlacesFindGroup.test.tsx
+  s_078fc63cde22ff::t_537d039451146f 7,52,84
+src/features/command-palette/components/CommandPalette/CommandPalette.test.tsx
+  s_078fc63cde22ff::t_b6024c20c08d86 3,5,155-156,159-176
+  s_078fc63cde22ff::t_ae3e8cec889f68 157-158
+  s_078fc63cde22ff::t_265c1d17bfc7dc 177
+src/features/command-palette/components/CommandPalette/CommandPalette.tsx
+  s_078fc63cde22ff::t_90040b3a6e90a8 18
+  s_078fc63cde22ff::t_73ff7fd79fc3dc 147
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "912d947b466dda381e1e0ff3e9e95c9d7a4a3173",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
