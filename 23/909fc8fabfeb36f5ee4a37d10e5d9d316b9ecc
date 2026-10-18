@@ -1,0 +1,27 @@
+src/design-system/Stepper/Stepper.tsx
+  s_078fc63cde22ff::t_80e868a6366a15 489-490
+  s_078fc63cde22ff::t_23abeb73eefd6c 178-179,199-200,202,333-338,437
+src/features/bin-inspector/components/Inspector/BinSlantSection/BinSlantSection.test.tsx
+  s_078fc63cde22ff::t_80e868a6366a15 119,122-127,131-139
+  s_078fc63cde22ff::t_86b77bfd2a0108 140-141
+src/features/bin-inspector/components/Inspector/BinSlantSection/BinSlantSection.tsx
+  s_078fc63cde22ff::t_80e868a6366a15 74
+src/design-system/Stepper/Stepper.test.tsx
+  s_078fc63cde22ff::t_c19e847c46cd14 54-66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "23909fc8fabfeb36f5ee4a37d10e5d9d316b9ecc",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
