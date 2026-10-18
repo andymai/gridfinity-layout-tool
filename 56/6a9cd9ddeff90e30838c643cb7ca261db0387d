@@ -1,0 +1,75 @@
+src/core/cqrs/validation/schemas.test.ts
+  s_078fc63cde22ff::t_811e530d6d1c27 86-104,260-267
+  s_078fc63cde22ff::t_3e1efb251f220e 268
+src/shared/utils/layoutMigration.ts
+  s_078fc63cde22ff::t_d780a62f114c58 3,26-28,31-37
+  s_078fc63cde22ff::t_9ac69778839ad1 38
+src/core/sync/adapters/layoutAdapter.test.ts
+  s_078fc63cde22ff::t_1979e765801560 374-429
+src/features/print-export/utils/split.test.ts
+  s_078fc63cde22ff::t_63cc39591e406e 157-181
+src/shared/utils/validation.test.ts
+  s_078fc63cde22ff::t_a2c1e982692d2b 761
+  s_078fc63cde22ff::t_d06adbb4c403e4 725,774
+api/lib/validation.ts
+  s_078fc63cde22ff::t_d780a62f114c58 19-20,55-64,326
+src/core/types/layout.ts
+  s_078fc63cde22ff::t_5f82fc720532e9 14,166-169,197,200
+src/shared/utils/validationSalvage.ts
+  s_078fc63cde22ff::t_d780a62f114c58 33,46,112,122
+docs/schemas/layout.md
+  s_078fc63cde22ff::t_466013f89f583c 165
+src/shared/utils/layoutMigration.test.ts
+  s_078fc63cde22ff::t_47286795428486 66-79
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_078fc63cde22ff::t_96ec917388d82a 753-795
+src/shared/schema/layoutKeys.ts
+  s_078fc63cde22ff::t_d780a62f114c58 87
+api/sync/layouts/[id].ts
+  s_078fc63cde22ff::t_c715136979d444 8-9,14,16,19
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_078fc63cde22ff::t_2b5f7c46f4959a 47
+  s_078fc63cde22ff::t_c6189979e2c95b 154-157,301,304-308
+src/core/cqrs/v2/domain/bin/updateBin.ts
+  s_078fc63cde22ff::t_93e3d3d0f99096 27,68,107
+src/core/sync/payloadKey.ts
+  s_078fc63cde22ff::t_c715136979d444 4
+src/features/print-export/utils/split.ts
+  s_078fc63cde22ff::t_0841f1c7c1cb21 177-186
+src/core/sync/adapters/layoutAdapter.ts
+  s_078fc63cde22ff::t_d780a62f114c58 25-27
+  s_078fc63cde22ff::t_c715136979d444 32,71-72
+public/schema/layout.schema.json
+  s_078fc63cde22ff::t_d780a62f114c58 565-568
+src/core/cqrs/v2/domain/bin/addBin.ts
+  s_078fc63cde22ff::t_5f82fc720532e9 23,41
+src/features/grid-editor/components/Grid/Bin/binPropsAreEqual.ts
+  s_078fc63cde22ff::t_f98310086502ad 47-50
+src/core/cqrs/validation/slant.ts
+  s_078fc63cde22ff::t_5f82fc720532e9 1-9
+api/lib/validation.test.ts
+  s_078fc63cde22ff::t_1979e765801560 128-130,135-147
+  s_078fc63cde22ff::t_63cc39591e406e 131-134
+  s_078fc63cde22ff::t_0b19b5270a80b9 34
+src/core/cqrs/validation/schemas.ts
+  s_078fc63cde22ff::t_5f82fc720532e9 49,98,138
+src/core/cqrs/v2/domain/bin/updateBin.test.ts
+  s_078fc63cde22ff::t_a8fdf8d3bd6cbd 193-197,202-223
+  s_078fc63cde22ff::t_63cc39591e406e 198-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "566a9cd9ddeff90e30838c643cb7ca261db0387d",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
