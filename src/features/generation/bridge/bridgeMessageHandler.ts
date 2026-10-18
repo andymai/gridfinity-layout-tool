@@ -247,6 +247,20 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
                   triangleCount: response.knifeRestTriangleCount,
                 }
               : undefined;
+          const slantSupportMesh =
+            response.slantSupportVertices &&
+            response.slantSupportNormals &&
+            response.slantSupportIndices &&
+            response.slantSupportEdgeVertices &&
+            response.slantSupportTriangleCount !== undefined
+              ? {
+                  vertices: response.slantSupportVertices,
+                  normals: response.slantSupportNormals,
+                  indices: response.slantSupportIndices,
+                  edgeVertices: response.slantSupportEdgeVertices,
+                  triangleCount: response.slantSupportTriangleCount,
+                }
+              : undefined;
           const result: GenerationResult = {
             mesh: {
               vertices: response.vertices,
@@ -262,6 +276,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
               connectorKeyMesh,
               detachableFeetMesh,
               knifeRestMesh,
+              slantSupportMesh,
               labelPlates: response.labelPlates,
               labelTextOverflow: response.labelTextOverflow,
               typeStemWarning: response.typeStemWarning,

@@ -38,6 +38,7 @@ export function meshDataByteSize(mesh: MeshData): number {
   if (mesh.lidMesh) bytes += partBytes(mesh.lidMesh);
   if (mesh.detachableFeetMesh) bytes += partBytes(mesh.detachableFeetMesh);
   if (mesh.knifeRestMesh) bytes += partBytes(mesh.knifeRestMesh);
+  if (mesh.slantSupportMesh) bytes += partBytes(mesh.slantSupportMesh);
   if (mesh.stackPlateMesh) bytes += partBytes(mesh.stackPlateMesh);
   if (mesh.slideTrayMesh) bytes += partBytes(mesh.slideTrayMesh);
   if (mesh.connectorKeyMesh) bytes += partBytes(mesh.connectorKeyMesh);

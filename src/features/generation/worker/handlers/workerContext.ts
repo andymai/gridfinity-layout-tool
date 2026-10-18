@@ -262,6 +262,16 @@ export function runGeneration(
         }
       : undefined;
 
+    const slantSupport = meshData.slantSupportMesh
+      ? {
+          vertices: maybeCopy(meshData.slantSupportMesh.vertices),
+          normals: maybeCopy(meshData.slantSupportMesh.normals),
+          indices: maybeCopy(meshData.slantSupportMesh.indices),
+          edgeVertices: maybeCopy(meshData.slantSupportMesh.edgeVertices),
+          triangleCount: meshData.slantSupportMesh.triangleCount,
+        }
+      : undefined;
+
     // Plates are a variable-length set, unlike the fixed lid/stack/connector
     // companions — each carries its own buffers plus its seated pose.
     const labelPlates = meshData.labelPlates
@@ -352,6 +362,15 @@ export function runGeneration(
             knifeRestTriangleCount: knifeRest.triangleCount,
           }
         : {}),
+      ...(slantSupport
+        ? {
+            slantSupportVertices: slantSupport.vertices,
+            slantSupportNormals: slantSupport.normals,
+            slantSupportIndices: slantSupport.indices,
+            slantSupportEdgeVertices: slantSupport.edgeVertices,
+            slantSupportTriangleCount: slantSupport.triangleCount,
+          }
+        : {}),
       ...(labelPlates ? { labelPlates } : {}),
       ...(meshData.labelTextOverflow ? { labelTextOverflow: meshData.labelTextOverflow } : {}),
     };
@@ -398,6 +417,14 @@ export function runGeneration(
         knifeRest.normals.buffer,
         knifeRest.indices.buffer,
         knifeRest.edgeVertices.buffer
+      );
+    }
+    if (slantSupport) {
+      transfer.push(
+        slantSupport.vertices.buffer,
+        slantSupport.normals.buffer,
+        slantSupport.indices.buffer,
+        slantSupport.edgeVertices.buffer
       );
     }
     if (connectorKey) {

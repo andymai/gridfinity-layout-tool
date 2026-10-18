@@ -177,6 +177,12 @@ export interface MeshResultResponse {
   readonly knifeRestIndices?: Uint32Array;
   readonly knifeRestEdgeVertices?: Float32Array;
   readonly knifeRestTriangleCount?: number;
+  /** A slanted bin's end support, in the bin's frame. All five fields land or are absent together. */
+  readonly slantSupportVertices?: Float32Array;
+  readonly slantSupportNormals?: Float32Array;
+  readonly slantSupportIndices?: Uint32Array;
+  readonly slantSupportEdgeVertices?: Float32Array;
+  readonly slantSupportTriangleCount?: number;
   /**
    * Swappable label plates with their seated poses (preview only). A set
    * rather than flat fields because the count varies with the design; the
