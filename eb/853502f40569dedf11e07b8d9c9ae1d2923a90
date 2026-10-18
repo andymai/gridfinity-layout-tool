@@ -413,6 +413,8 @@ src/shared/utils/placedSlant.ts
   s_078fc63cde22ff::t_f11056fae11961 168,175,179-181,193,195-196,199
   s_078fc63cde22ff::t_1d14c2bfcf1cea 58-59,62,64,66,68
   s_078fc63cde22ff::t_6e0a740c23561f 1-3,5-10,17,50-51,56-57,60,113-114,128-134,136,138-142,144-146
+  s_078fc63cde22ff::t_39a65c03c350a8 135,137,143
+  s_078fc63cde22ff::t_47b59533e879fd 4
 src/features/bin-designer/hooks/useBackgroundThumbnailRegen.test.ts
   s_078fc63cde22ff::t_a50ccda0efef0f 42
 src/features/bin-designer/hooks/useBackgroundThumbnailRegen.ts
