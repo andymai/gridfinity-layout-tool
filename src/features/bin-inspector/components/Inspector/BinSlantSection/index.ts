@@ -1,0 +1,1 @@
+export { BinSlantSection } from './BinSlantSection';

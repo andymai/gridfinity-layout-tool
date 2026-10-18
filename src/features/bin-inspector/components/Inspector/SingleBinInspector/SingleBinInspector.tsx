@@ -22,6 +22,7 @@ import { BinItemsEditor } from '../BinItemsEditor';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { ExtendToMarginToggle } from '../ExtendToMarginToggle';
 import { ExpandedFootprint } from '../ExpandedFootprint';
+import { BinSlantSection } from '../BinSlantSection';
 import { STLSearchDropdown } from '@/shared/components/STLSearchDropdown';
 import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
 import { useTranslation } from '@/i18n';
@@ -443,6 +444,8 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
         {/* Explicit per-placement overhang, when the bin carries one */}
         <ExpandedFootprint bin={bin} layout={layout} />
+
+        <BinSlantSection key={`slant:${bin.id}`} bin={bin} layout={layout} variant={variant} />
 
         {/* Notes */}
         <div>

@@ -320,6 +320,38 @@ describe('Bin', () => {
     });
   });
 
+  describe('slant badge', () => {
+    const SLANT = { angleDeg: 45, side: 'back' as const };
+    const seed = (bins: BinType[]): void => {
+      const { layout } = useLayoutStore.getState();
+      useLayoutStore.setState({ layout: { ...layout, layers: [defaultLayer], bins } });
+    };
+    const slanted = (endSupport?: true): BinType => ({
+      ...defaultBin,
+      height: heightUnits(6),
+      slant: { ...SLANT, ...(endSupport ? { endSupport } : {}) },
+    });
+
+    it('flags a slanted bin whose row needs attention', () => {
+      seed([slanted()]);
+      render(<Bin {...defaultProps} bin={slanted()} />);
+      expect(screen.getByLabelText('Slant needs attention')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /slant needs attention/ })).toBeInTheDocument();
+    });
+
+    it('leaves a row that ends on its support unbadged', () => {
+      seed([slanted(true)]);
+      render(<Bin {...defaultProps} bin={slanted(true)} />);
+      expect(screen.queryByLabelText('Slant needs attention')).not.toBeInTheDocument();
+    });
+
+    it('leaves ghost bins unbadged', () => {
+      seed([slanted()]);
+      render(<Bin {...defaultProps} bin={slanted()} isGhost={true} />);
+      expect(screen.queryByLabelText('Slant needs attention')).not.toBeInTheDocument();
+    });
+  });
+
   describe('print split indicator', () => {
     it('shows split badge when bin exceeds print bed size', () => {
       // Set up a bin larger than max grid units (256mm / 42mm ≈ 6 units)

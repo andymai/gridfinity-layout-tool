@@ -9,12 +9,14 @@ import { getBinTextColors, getBinPatternColor } from '@/shared/utils';
 import { isBinLocked } from '@/shared/utils/binLocation';
 import { formatHeightUnits } from '@/shared/utils/heightUnits';
 import { getRestingStack, getUnevenlySupported } from '@/shared/utils/restingStack';
+import { slantIssue } from '@/shared/utils/slantRow';
 import { useLinkedRiseKey } from '@/shared/hooks/useLinkedRiseKey';
 import { getCategoryPatternIndex, getCategoryPatternStyle } from './categoryPatterns';
 import { ResizeHandles } from '../ResizeHandles';
 import { calculateBinLayout } from './calculateBinLayout';
 import { calculateBinText } from './calculateBinText';
 import { BinBadge } from './BinBadge';
+import { BinSlantBadge } from './BinSlantBadge';
 import { BinOverhangExtension } from './BinOverhangExtension';
 import { ICON_PATHS, WARNING_ICON } from './binConstants';
 import type { BinProps } from './binPropsAreEqual';
@@ -127,6 +129,9 @@ function BinComponent({
     ).has(bin.id)
   );
   const restingHeight = formatHeightUnits(restingZ);
+  const slantNeedsAttention = useLayoutStore(
+    (state) => !isGhost && slantIssue(bin, state.layout) !== null
+  );
 
   // All heavy grid positioning and pixel sizing calculations are memoized together
   // to prevent recalculation when only UI state (hover, focus, etc.) changes.
@@ -353,7 +358,8 @@ function BinComponent({
         (category ? t('grid.bin.ariaLabelCategory', { category: category.name }) : '') +
         (restingZ > 0 ? t('grid.bin.ariaLabelRestsAt', { height: restingHeight }) : '') +
         (unevenlySupported ? t('grid.bin.ariaLabelUneven') : '') +
-        (isLocked ? t('grid.bin.ariaLabelLocked') : '')
+        (isLocked ? t('grid.bin.ariaLabelLocked') : '') +
+        (slantNeedsAttention ? t('grid.bin.ariaLabelSlantIssue') : '')
       }
       aria-pressed={isSelected}
       tabIndex={isGhost ? -1 : 0}
@@ -393,9 +399,18 @@ function BinComponent({
         </div>
       )}
 
-      {isLocked && showBadges && (
-        <div className="absolute top-0.5 left-0.5 pointer-events-none" title={t('grid.sizeLocked')}>
-          <BinBadge small={useSmallBadges} label={t('grid.sizeLocked')} path={ICON_PATHS.lock} />
+      {(isLocked || slantNeedsAttention) && showBadges && (
+        <div className="absolute top-0.5 left-0.5 flex items-center gap-0.5 pointer-events-none">
+          {isLocked && (
+            <div title={t('grid.sizeLocked')}>
+              <BinBadge
+                small={useSmallBadges}
+                label={t('grid.sizeLocked')}
+                path={ICON_PATHS.lock}
+              />
+            </div>
+          )}
+          {slantNeedsAttention && <BinSlantBadge small={useSmallBadges} />}
         </div>
       )}
 
