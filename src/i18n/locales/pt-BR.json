@@ -4889,7 +4889,7 @@
   "binDesigner.slant.endSupport": "Apoio final",
   "binDesigner.slant.endSupportHint": "Uma cunha onde o último bin de uma fileira se apoia, exportada como segunda peça.",
   "binDesigner.slant.topOffset": "A borda superior passa {mm} mm além da base",
-  "binDesigner.slant.longestItem": "Cabe itens retos de até {mm} mm",
+  "binDesigner.slant.longestItem": "Cabem itens retos de até {mm} mm",
   "binDesigner.slant.steep": "Acima de 45° a parede inclinada é impressa como uma saliência sem suporte.",
   "binDesigner.slant.steepDetail": "As paredes também ficam mais finas no sentido da inclinação: a espessura vale na horizontal, não perpendicular à parede.",
   "binDesigner.slant.unavailable": "Indisponível com {feature}.",
