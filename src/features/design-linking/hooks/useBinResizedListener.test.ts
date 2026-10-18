@@ -14,7 +14,6 @@ import { createTestBin, createTestLayout } from '@/test/testUtils';
 import { registerLinkedSlantResolver } from '@/shared/utils/placedSlant';
 import { loadDesign, updateDesignParams } from '@/features/bin-designer/storage';
 import { loadRegistry, upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
-import { err } from '@/core/result';
 import type * as StorageModule from '@/features/bin-designer/storage';
 
 vi.mock('@/shared/contexts/MutationsContext', () => ({
@@ -119,27 +118,43 @@ describe('useBinResizedListener', () => {
     }
   );
 
-  it('holds the new size in the registry while the design saves, and puts it back if the save fails', async () => {
+  it('checks again once the design has saved, and puts it back if a bin took the cells meanwhile', async () => {
     useDesignerStore.setState({ currentDesignId: null });
     useToastStore.setState({ toasts: [] });
     localStorage.clear();
-    const previous = { id: DESIGN, name: 'Pens', width: 2, depth: 1, height: 6, updatedAt: 'then' };
-    upsertRegistryEntry(previous);
+    upsertRegistryEntry({
+      id: DESIGN,
+      name: 'Pens',
+      width: 2,
+      depth: 1,
+      height: 6,
+      updatedAt: 'then',
+    });
+    registerLinkedSlantResolver(() => ({
+      config: { angleDeg: 45, side: 'back', endSupport: true },
+      width: 2,
+      depth: 1,
+      height: 6,
+    }));
+    const params = { ...DEFAULT_BIN_PARAMS };
     vi.mocked(loadDesign).mockResolvedValue(
-      ok({
-        id: DESIGN,
-        name: 'Pens',
-        updatedAt: 'then',
-        params: { ...DEFAULT_BIN_PARAMS },
-      }) as never
+      ok({ id: DESIGN, name: 'Pens', updatedAt: 'then', params }) as never
     );
     let finishSave: (result: unknown) => void = () => undefined;
-    vi.mocked(updateDesignParams).mockReturnValue(
-      new Promise((resolve) => {
-        finishSave = resolve;
-      }) as never
-    );
-    useLayoutStore.setState({ layout: createTestLayout() });
+    vi.mocked(updateDesignParams)
+      .mockReturnValueOnce(
+        new Promise((resolve) => {
+          finishSave = resolve;
+        }) as never
+      )
+      .mockResolvedValue(ok({ id: DESIGN, name: 'Pens', updatedAt: 'now' }) as never);
+    const resizedBin = createTestBin({
+      id: binId('bin-7'),
+      width: gridUnits(2),
+      height: heightUnits(12),
+      linkedDesignId: DESIGN,
+    });
+    useLayoutStore.setState({ layout: createTestLayout({ bins: [resizedBin] }) });
     const { unmount } = renderHook(() => useBinResizedListener());
 
     emitSyncEvent({
@@ -149,11 +164,16 @@ describe('useBinResizedListener', () => {
       newDimensions: { width: 2, depth: 1, height: 12 },
     });
 
-    await vi.waitFor(() => expect(updateDesignParams).toHaveBeenCalled());
-    expect(loadRegistry()[0]).toMatchObject({ height: 12, updatedAt: 'then' });
-    finishSave(err({ code: 'STORAGE_WRITE_FAILED', message: 'full' }));
-    await vi.waitFor(() => expect(useToastStore.getState().toasts).toHaveLength(1));
-    expect(loadRegistry()[0]).toMatchObject({ height: 6 });
+    await vi.waitFor(() => expect(updateDesignParams).toHaveBeenCalledTimes(1));
+    const late = createTestBin({ id: binId('late'), y: gridUnits(2), width: gridUnits(2) });
+    useLayoutStore.setState({ layout: createTestLayout({ bins: [resizedBin, late] }) });
+    finishSave(ok({ id: DESIGN, name: 'Pens', updatedAt: 'now' }));
+
+    await vi.waitFor(() => expect(updateDesignParams).toHaveBeenCalledTimes(2));
+    expect(vi.mocked(updateDesignParams).mock.calls[1][1]).toBe(params);
+    expect(loadRegistry()[0]).toMatchObject({ height: 6, updatedAt: 'then' });
+    expect(useToastStore.getState().toasts).toHaveLength(1);
+    registerLinkedSlantResolver(null);
     unmount();
   });
 });
