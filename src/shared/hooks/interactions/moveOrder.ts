@@ -1,11 +1,41 @@
 import type { Bin } from '@/core/types';
+import { gridUnits } from '@/core/types';
+import { footprintsOverlap } from '@/shared/utils/collision';
+import { slantZone, type SlantLayout } from '@/shared/utils/placedSlant';
 
 /**
- * A group move's bins with those furthest along the move first. Each move is
- * checked against the layout as it stands, so a follower must not be checked
- * against the spot its leader has yet to leave.
+ * A group move's bins in an order where none is checked against a spot
+ * another has yet to leave: each move is checked against the layout as it
+ * stands, so a bin whose new cells (its support's included) cover another
+ * bin's current ones goes after it. Bins that block each other in a ring keep
+ * the order of how far along the move they start.
  */
-export function leadingFirst(bins: readonly Bin[], deltaX: number, deltaY: number): Bin[] {
+export function moveOrder(
+  bins: readonly Bin[],
+  deltaX: number,
+  deltaY: number,
+  layout: SlantLayout
+): Bin[] {
   const along = (bin: Bin): number => bin.x * deltaX + bin.y * deltaY;
-  return [...bins].sort((a, b) => along(b) - along(a));
+  const remaining = [...bins]
+    .sort((a, b) => along(b) - along(a))
+    .map((bin) => ({
+      bin,
+      from: slantZone(bin, layout),
+      to: slantZone({ ...bin, x: gridUnits(bin.x + deltaX), y: gridUnits(bin.y + deltaY) }, layout),
+    }));
+  type Entry = (typeof remaining)[number];
+  const waitsFor = (mover: Entry, other: Entry): boolean =>
+    (mover.bin.layerId === other.bin.layerId || mover.to.slanted || other.from.slanted) &&
+    mover.to.rects.some((r) => other.from.rects.some((s) => footprintsOverlap(r, s)));
+
+  const ordered: Bin[] = [];
+  while (remaining.length > 0) {
+    const free = remaining.findIndex(
+      (entry) => !remaining.some((other) => other !== entry && waitsFor(entry, other))
+    );
+    const [next] = remaining.splice(Math.max(free, 0), 1);
+    ordered.push(next.bin);
+  }
+  return ordered;
 }
