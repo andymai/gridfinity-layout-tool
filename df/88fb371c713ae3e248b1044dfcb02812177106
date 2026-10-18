@@ -1,0 +1,62 @@
+src/features/generation/worker/handlers/generateHandler.ts
+  s_078fc63cde22ff::t_52fd7320c4b309 21,120-128,138
+src/features/bin-designer/components/preview/index.ts
+  s_078fc63cde22ff::t_b311b962e1dc9e 7
+src/features/bin-designer/components/preview/SlantSupportMesh/SlantSupportMesh.test.tsx
+  s_078fc63cde22ff::t_b311b962e1dc9e 1-109
+src/features/bin-designer/components/preview/SlantSupportMesh/SlantSupportMesh.tsx
+  s_078fc63cde22ff::t_9091076cf2bfc5 28-32,35-38
+  s_078fc63cde22ff::t_2e608f40ec44ad 1-10,12,14-27,33,43-69,71-84
+  s_078fc63cde22ff::t_b311b962e1dc9e 11,13,34,39-42,70
+src/features/generation/worker/handlers/exportHandler.ts
+  s_078fc63cde22ff::t_9091076cf2bfc5 59-60,319,321,372-374,399,416,470-472
+  s_078fc63cde22ff::t_d48c44de182285 473-474
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_078fc63cde22ff::t_9091076cf2bfc5 32,554
+src/shared/utils/slantPlan.ts
+  s_078fc63cde22ff::t_fff3a822e5d8ef 5,112,114-124,127-132,134-139,161-175,177-191,193
+  s_078fc63cde22ff::t_005d3e829d92a1 192
+src/features/bin-designer/components/preview/SlantSupportMesh/index.ts
+  s_078fc63cde22ff::t_2e608f40ec44ad 1
+src/features/generation/worker/generators/slantSupportBuilder.ts
+  s_078fc63cde22ff::t_6694ecb5621da6 79-80,89-90
+  s_078fc63cde22ff::t_a1c11994ebc13a 1-78,81-82,87-88,91-101,103-165,173-211
+  s_078fc63cde22ff::t_bb159a157ebeff 83-86,102,166-172
+src/features/generation/worker/generators/slantSupport.scenario.test.ts
+  s_078fc63cde22ff::t_3eae40ac9bc2dc 1-74,78-93,96-103,107-133
+  s_078fc63cde22ff::t_cc9e5c9649742e 75-77,94-95,104-106
+src/shared/utils/slantPlan.test.ts
+  s_078fc63cde22ff::t_5a4b7170304969 4-9,11-12,161,163-178,193-215
+  s_078fc63cde22ff::t_dd343fa211dd15 216
+src/features/bin-designer/utils/binDownloadNaming.ts
+  s_078fc63cde22ff::t_9091076cf2bfc5 23-24
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_078fc63cde22ff::t_9091076cf2bfc5 47,147
+src/features/bin-designer/hooks/useGeneration.ts
+  s_078fc63cde22ff::t_52fd7320c4b309 62,94
+src/features/generation/bridge/meshData.ts
+  s_078fc63cde22ff::t_52fd7320c4b309 36-37
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_078fc63cde22ff::t_9091076cf2bfc5 130,146-147
+src/features/generation/worker/generators/binExporter.slantSupport.test.ts
+  s_078fc63cde22ff::t_9aa139e09777f6 1-135
+  s_078fc63cde22ff::t_32867bfc587c15 136-137
+src/features/bin-designer/types/generation.ts
+  s_078fc63cde22ff::t_52fd7320c4b309 68-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "df88fb371c713ae3e248b1044dfcb02812177106",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
