@@ -573,6 +573,14 @@ const en: Record<string, string> = {
   'layers.binPaletteInstruction': 'Pick a size, then drag on the grid to paint bins.',
   'layers.binPaletteHint': 'Shift+click to add to stash.',
   'layers.brushStatus': 'Painting {width}×{depth} — drag to fill, Esc to exit',
+  'layers.slantedRow.title': 'Slanted row',
+  'layers.slantedRow.hint':
+    'Rows lean this way and end on a support. Every bin links to one design.',
+  'layers.slantedRow.status':
+    'Slanted {width}×{depth} rows ({angle}°, {side}): drag to fill, Esc to exit',
+  'layers.slantedRow.designName': 'Slanted {size} · {angle}°',
+  'layers.slantedRow.noRoom': 'No room for a slanted row there.',
+  'layers.slantedRow.saveFailed': "Couldn't save the row's bin design.",
   'layers.decreaseHeight': 'Decrease {name} height',
   'layers.increaseHeight': 'Increase {name} height',
   'layers.addNewLayer': 'Add new layer',

@@ -11,6 +11,7 @@ import {
 import { useTranslation } from '@/i18n';
 import { getPlacementErrorMessage } from '@/shared/utils/validation';
 import type { ValidationReason, BlockingInfo } from '@/core/types';
+import { SlantedRowPreview } from './SlantedRowPreview';
 
 interface OverlayProps {
   cellSize: number;
@@ -511,6 +512,18 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         );
       }
     }
+  } else if (interaction.slant) {
+    previews.push(
+      <SlantedRowPreview
+        key="paint-slanted-rows"
+        start={interaction.start}
+        current={interaction.current}
+        paintSize={interaction.paintSize}
+        slant={interaction.slant}
+        minUnit={halfGridMode ? 0.5 : 1}
+        place={{ left: calcLeft, top: calcTop, px: calcPixels, pxY: calcPixelsY }}
+      />
+    );
   } else {
     const { start, current, paintSize } = interaction;
     const x1 = Math.min(start.x, current.x);

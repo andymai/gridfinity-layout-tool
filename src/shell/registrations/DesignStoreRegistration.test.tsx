@@ -13,7 +13,10 @@ const { fakeAdapter } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('@/features/bin-designer', () => ({ designStoreAdapter: fakeAdapter }));
+vi.mock('@/features/bin-designer', () => ({
+  designStoreAdapter: fakeAdapter,
+  ensureSlantRowDesign: vi.fn(),
+}));
 
 afterEach(() => {
   resetDesignStorePort();

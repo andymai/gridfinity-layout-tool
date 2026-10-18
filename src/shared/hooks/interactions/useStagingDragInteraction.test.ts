@@ -48,6 +48,7 @@ describe('useStagingDragInteraction', () => {
       activeLayerId,
       activeCategoryId,
       paintSize: null,
+      paintSlant: null,
       selectedBinIds,
       setInteraction: mockSetInteraction,
       setDropTarget: mockSetDropTarget,

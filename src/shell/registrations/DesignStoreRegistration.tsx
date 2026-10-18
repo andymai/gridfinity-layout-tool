@@ -1,5 +1,6 @@
 import { registerDesignStorePort } from '@/core/storage/designStorePort';
-import { designStoreAdapter } from '@/features/bin-designer';
+import { registerSlantRowDesigner } from '@/shared/utils/slantRowDesign';
+import { designStoreAdapter, ensureSlantRowDesign } from '@/features/bin-designer';
 
 /**
  * Composition root wiring the bin-designer's concrete `DesignStorePort` into
@@ -12,6 +13,8 @@ import { designStoreAdapter } from '@/features/bin-designer';
  * between mount and the first effect flush.
  */
 registerDesignStorePort(designStoreAdapter);
+// The layout's slanted row tool saves the design its bins share the same way.
+registerSlantRowDesigner(ensureSlantRowDesign);
 
 /**
  * Eager mount anchor. Renders nothing; its only job is to keep this module in

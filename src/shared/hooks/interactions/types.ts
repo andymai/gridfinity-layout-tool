@@ -8,11 +8,13 @@ import type {
   LayerId,
   CategoryId,
   Coord,
+  DesignId,
   Layout,
   Rect,
   ResizeHandle,
   Interaction,
   FitsGapSource,
+  SlantConfig,
 } from '@/core/types';
 import type { Result } from '@/core/result';
 import type { ValidationError, LayoutError } from '@/core/result';
@@ -44,6 +46,8 @@ export interface InteractionContext {
   activeLayerId: LayerId;
   activeCategoryId: CategoryId;
   paintSize: PaintSize | null;
+  /** While set, paint fills with slanted rows. */
+  paintSlant: SlantConfig | null;
   selectedBinIds: BinId[];
 
   // Store actions (from useInteractionStore and useSelectionStore)
@@ -84,6 +88,8 @@ export interface AddBinParams {
   clearanceHeight?: HeightUnits;
   customProperties?: Record<string, string>;
   items?: BinItem[];
+  linkedDesignId?: DesignId;
+  slant?: SlantConfig;
 }
 
 /**

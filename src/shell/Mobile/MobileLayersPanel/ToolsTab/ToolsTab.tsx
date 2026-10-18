@@ -6,6 +6,7 @@ import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { SQUARE_SIZES, RECTANGLE_SIZES } from '@/features/layers/paintSizes';
 import { useLayerFillActions } from '@/features/layers/hooks/useLayerFillActions';
+import { SlantedRowControls } from '@/features/layers';
 
 /**
  * Tools tab content - bin palette for paint mode and layer fill actions.
@@ -122,6 +123,10 @@ export function ToolsTab() {
           const dims = getRectDims(w, d);
           return <SizeButton key={`${w}×${d}`} w={dims.w} d={dims.d} />;
         })}
+      </div>
+
+      <div className="mt-4">
+        <SlantedRowControls size="lg" />
       </div>
 
       {/* Action buttons */}

@@ -22,9 +22,10 @@ export function ActiveLayerPanel() {
   const { addBin } = useMutations();
   const activeCategoryId = useSelectionStore((state) => state.activeCategoryId);
 
-  const { paintSize, togglePaintSize } = useInteractionStore(
+  const { paintSize, paintSlant, togglePaintSize } = useInteractionStore(
     useShallow((state) => ({
       paintSize: state.paintSize,
+      paintSlant: state.paintSlant,
       togglePaintSize: state.togglePaintSize,
     }))
   );
@@ -137,7 +138,14 @@ export function ActiveLayerPanel() {
               ))}
             </svg>
             <span>
-              {t('layers.brushStatus', { width: paintSize.width, depth: paintSize.depth })}
+              {paintSlant
+                ? t('layers.slantedRow.status', {
+                    width: paintSize.width,
+                    depth: paintSize.depth,
+                    angle: paintSlant.angleDeg,
+                    side: t(`binDesigner.overhang.side.${paintSlant.side}`),
+                  })
+                : t('layers.brushStatus', { width: paintSize.width, depth: paintSize.depth })}
             </span>
           </div>
         )}

@@ -30,6 +30,7 @@ export {
 // must persist a full BinParams (compartment cells, texts) before navigating.
 // The `createFrom=bin` query-string handoff cannot carry that payload.
 export { loadDesign, deleteDesign, listDesigns, updateDesignParams, saveDesign } from './storage';
+export { ensureSlantRowDesign } from './utils/slantRowDesign';
 
 // Concrete DesignStorePort. Exposed for `shared/storage/` to register with the
 // core-owned port so core/storage can persist/read designs without a

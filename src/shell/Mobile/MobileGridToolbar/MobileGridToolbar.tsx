@@ -25,9 +25,10 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
     }))
   );
   const activeLayerId = useSelectionStore((state) => state.activeLayerId);
-  const { paintSize, setPaintSize } = useInteractionStore(
+  const { paintSize, paintSlant, setPaintSize } = useInteractionStore(
     useShallow((state) => ({
       paintSize: state.paintSize,
+      paintSlant: state.paintSlant,
       setPaintSize: state.setPaintSize,
     }))
   );
@@ -91,6 +92,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
             />
           </svg>
           {paintSize.width}×{paintSize.depth}
+          {paintSlant && <span>{` · ${String(paintSlant.angleDeg)}°`}</span>}
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"

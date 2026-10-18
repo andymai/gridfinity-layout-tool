@@ -25,6 +25,7 @@ function context(layout: Layout, updateBin: InteractionContext['updateBin']): In
     activeLayerId: L1,
     activeCategoryId: layout.categories[0].id,
     paintSize: null,
+    paintSlant: null,
     selectedBinIds: [],
     setInteraction: vi.fn(),
     setDropTarget: vi.fn(),

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useDrawInteraction } from '@/shared/hooks/interactions/useDrawInteraction';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
@@ -9,8 +9,11 @@ import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useGapFitStore } from '@/core/store/gapFit';
 import { createTestBin, resetAllStores } from '@/test/testUtils';
 import { ok } from '@/core/result';
-import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
-import type { Coord } from '@/core/types';
+import { binId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
+import { registerSlantRowDesigner } from '@/shared/utils/slantRowDesign';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { trackPaintMode } from '@/shared/analytics/posthog';
+import type { Coord, SlantConfig } from '@/core/types';
 import type { RefObject } from 'react';
 import type {
   InteractionContext,
@@ -48,7 +51,7 @@ describe('useDrawInteraction', () => {
   const mockCtrlKeyRef: RefObject<boolean> = { current: false };
   const mockGridRef: RefObject<HTMLDivElement | null> = { current: null };
 
-  const createContext = (paintSize?: PaintSize): InteractionContext => {
+  const createContext = (paintSize?: PaintSize, paintSlant?: SlantConfig): InteractionContext => {
     const { layout } = useLayoutStore.getState();
     const { activeLayerId, activeCategoryId } = useSelectionStore.getState();
 
@@ -61,6 +64,7 @@ describe('useDrawInteraction', () => {
       activeLayerId,
       activeCategoryId,
       paintSize: paintSize ?? null,
+      paintSlant: paintSlant ?? null,
       selectedBinIds: [],
       setInteraction: mockSetInteraction,
       setDropTarget: vi.fn(),
@@ -271,6 +275,39 @@ describe('useDrawInteraction', () => {
 
       expect(mockAddBin).toHaveBeenCalledTimes(1);
       expect(mockSetSelectedBin).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('slanted rows', () => {
+    const slant = { angleDeg: 45, side: 'back' as const };
+
+    afterEach(() => registerSlantRowDesigner(null));
+
+    it('starts a paint drag carrying the slant', () => {
+      const paintSize = { width: 2, depth: 1 };
+      const { result } = renderHook(() => useDrawInteraction(createContext(paintSize, slant)));
+      act(() => result.current.start(coord(1, 0)));
+      expect(mockSetInteraction).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'paint', slant })
+      );
+    });
+
+    it('fills the drag with rows linked to one design, the lead carrying the support', async () => {
+      const paintSize = { width: 2, depth: 1 };
+      registerSlantRowDesigner(async () => designId('row-design'));
+      mockAddBin.mockReturnValue(ok('new-bin-id'));
+      useInteractionStore.setState({
+        interaction: { type: 'paint', paintSize, start: coord(1, 0), current: coord(2, 7), slant },
+      });
+      const { result } = renderHook(() => useDrawInteraction(createContext(paintSize, slant)));
+      act(() => result.current.handleUp());
+
+      await waitFor(() => expect(mockSetSelectedBins).toHaveBeenCalled());
+      const placed = mockAddBin.mock.calls.map(([bin]) => bin);
+      expect(placed.every((bin) => bin.linkedDesignId === 'row-design')).toBe(true);
+      expect(placed.filter((bin) => bin.slant?.endSupport)).toHaveLength(1);
+      expect(mlTracking.trackBulkCreation).toHaveBeenCalledWith(expect.any(Array), 'paint');
+      expect(trackPaintMode).toHaveBeenCalledWith('exited', placed.length);
     });
   });
 

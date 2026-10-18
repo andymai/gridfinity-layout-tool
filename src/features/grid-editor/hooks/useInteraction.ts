@@ -99,6 +99,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   const setInteraction = useInteractionStore((state) => state.setInteraction);
   const setDropTarget = useInteractionStore((state) => state.setDropTarget);
   const paintSize = useInteractionStore((state) => state.paintSize);
+  const paintSlant = useInteractionStore((state) => state.paintSlant);
   const selectedBinIds = useSelectionStore((state) => state.selectedBinIds);
   const setSelectedBin = useSelectionStore((state) => state.setSelectedBin);
   const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
@@ -118,6 +119,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       activeLayerId,
       activeCategoryId,
       paintSize,
+      paintSlant,
       selectedBinIds,
       setInteraction,
       setDropTarget,
@@ -140,6 +142,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       activeLayerId,
       activeCategoryId,
       paintSize,
+      paintSlant,
       selectedBinIds,
       setInteraction,
       setDropTarget,

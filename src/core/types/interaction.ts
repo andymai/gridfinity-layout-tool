@@ -1,6 +1,7 @@
 import type { BinId } from '@gridfinity/branded-types';
 import type { Coord, Rect } from './layout';
 import type { ValidationReason, BlockingInfo } from './validation';
+import type { SlantConfig } from './slant';
 export type ResizeHandle = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
 /** Handle placement mode for resize handles */
@@ -113,4 +114,11 @@ export type Interaction =
       /** Details about what's blocking placement */
       blockingInfo?: BlockingInfo;
     }
-  | { type: 'paint'; paintSize: { width: number; depth: number }; start: Coord; current: Coord };
+  | {
+      type: 'paint';
+      paintSize: { width: number; depth: number };
+      start: Coord;
+      current: Coord;
+      /** Fill with slanted rows instead of a grid of upright bins. */
+      slant?: SlantConfig;
+    };

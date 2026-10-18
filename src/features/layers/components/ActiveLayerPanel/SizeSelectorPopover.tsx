@@ -3,6 +3,7 @@ import { Button, Popover } from '@/design-system';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { useTranslation } from '@/i18n';
 import { SQUARE_SIZES, RECTANGLE_SIZES } from '../../paintSizes';
+import { SlantedRowControls } from '../SlantedRowControls';
 
 interface SizeSelectorPopoverProps {
   anchorRef: RefObject<HTMLElement | null>;
@@ -163,6 +164,10 @@ export function SizeSelectorPopover({
             );
           })}
         </div>
+      </div>
+
+      <div className="px-3 pb-3">
+        <SlantedRowControls />
       </div>
 
       {/* Help text footer */}
