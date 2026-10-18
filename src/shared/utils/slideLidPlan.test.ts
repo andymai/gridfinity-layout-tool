@@ -14,6 +14,7 @@ import { describe, expect, it } from 'vitest';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import {
   resolveSlideLidPlan,
+  slideJointDepthBelowWallTopMm,
   slidePlateTopBelowWallTopMm,
   slideSagSafeThicknessMm,
   slideTravelsAlongX,
@@ -105,7 +106,7 @@ function sectionBottomAt(bar: SlideLidBar, y: number): number | null {
 describe('resolveSlideLidPlan', () => {
   describe('style and shape gates', () => {
     it.each([
-      ['no-cavity', { isSolid: true }],
+      ['no-cavity', { isSolid: true, cavityDepthMm: 0 }],
       ['no-walls', { isTile: true }],
       ['slot-conflict', { isSlotted: true }],
       ['unsupported-shape', { isPolygon: true }],
@@ -125,6 +126,18 @@ describe('resolveSlideLidPlan', () => {
 
     it('refuses a bin too shallow to hold the channel', () => {
       expect(resolveSlideLidPlan(input({ cavityDepthMm: 3 })).rejection).toBe('bin-too-shallow');
+    });
+
+    it('builds in a solid bin’s recess exactly when it is deeper than the joint', () => {
+      const joint = slideJointDepthBelowWallTopMm(
+        DEFAULT_LID_SLIDE_CONFIG,
+        LID_SLIDE_PLATE_MIN_MM,
+        true
+      );
+      const solid = (cavityDepthMm: number) =>
+        resolveSlideLidPlan(input({ isSolid: true, cavityDepthMm }));
+      expect(solid(joint).rejection).toBe('bin-too-shallow');
+      expect(solid(joint + 0.01).geometry).not.toBeNull();
     });
 
     it('refuses a bin too narrow for a usable plate', () => {
@@ -727,7 +740,7 @@ describe('slideWallThicknessMm', () => {
     innerOffsetY: 0,
     wallHeight: 40,
     hasLip: true,
-    isSolid: false,
+    solidRecessMm: null,
     isSlotted: false,
     isTile: false,
   };
@@ -786,7 +799,7 @@ describe('overhang on the entry wall', () => {
       innerOffsetY: -front / 2,
       wallHeight: 6 * 7 - 5,
       hasLip: true,
-      isSolid: false,
+      solidRecessMm: null,
       isSlotted: false,
       isTile: false,
     };

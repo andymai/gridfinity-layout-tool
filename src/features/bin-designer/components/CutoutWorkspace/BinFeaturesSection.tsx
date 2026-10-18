@@ -13,15 +13,17 @@
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { isSlideLid } from '@/features/bin-designer/types/lid';
 import { useTranslation } from '@/i18n';
 import { FeatureToggle } from '../panel/FeatureToggle';
 
 export function BinFeaturesSection() {
   const t = useTranslation();
-  const { stackingLip, lidEnabled, updateBase } = useDesignerStore(
+  const { stackingLip, lidNeedsLip, updateBase } = useDesignerStore(
     useShallow((s) => ({
       stackingLip: s.params.base.stackingLip,
-      lidEnabled: s.params.lid.enabled,
+      // A sliding lid runs in its own channel and is built with or without one.
+      lidNeedsLip: s.params.lid.enabled && !isSlideLid(s.params.lid),
       updateBase: s.updateBase,
     }))
   );
@@ -47,7 +49,7 @@ export function BinFeaturesSection() {
           `lid.enabled` stays persisted (useLidSection's `effectiveEnabled`).
           The Lid section carries that warning in the main panel; it is off
           screen here, so the lid would otherwise vanish unexplained. */}
-      {lidEnabled && !stackingLip && (
+      {lidNeedsLip && !stackingLip && (
         <p className="text-label leading-relaxed text-content-tertiary">
           {t('binDesigner.cutoutEditor.lipOffPausesLid')}
         </p>

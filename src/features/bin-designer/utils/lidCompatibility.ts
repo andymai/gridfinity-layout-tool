@@ -64,7 +64,7 @@ import {
   resolveLidSlide,
 } from '../types/lid';
 import { SLIDE_CATCH_MIN_DEPTH_MM, SLIDE_SAG_SPAN_MM } from '@/shared/utils/slideLidPlan';
-import { slideLidPlanForParams } from './slideLidPlanForParams';
+import { slideLidFillOffsetMm, slideLidPlanForParams } from './slideLidPlanForParams';
 import { compartmentHasTiltedEdge, getCompartmentBounds } from './compartments';
 import { binDimensions } from './binDimensions';
 
@@ -105,6 +105,8 @@ export type LidCompatibilityId =
   | 'slideFlushNeedsNoLip'
   /** The plan refused this design outright; the message names the reason. */
   | 'slideUnbuildable'
+  /** A solid bin's fill leaves too little room above it for the channel. Carries a one-click fix. */
+  | 'slideFillTooHigh'
   /** The plate's travel is blocked because the interior relief is switched off. */
   | 'slideInteriorBlocked'
   /** The plate is wide enough to bow between its two bearing edges. */
@@ -297,7 +299,8 @@ function checkSlideLidCompatibility(params: BinParams): LidCompatibilityIssue[] 
   if (!geometry) {
     // `not-slide` cannot reach here; every other rejection is a real refusal.
     if (rejection !== null && rejection !== 'not-slide') {
-      issues.push({ id: 'slideUnbuildable', severity: 'blocker' });
+      const id = slideLidFillOffsetMm(params) === null ? 'slideUnbuildable' : 'slideFillTooHigh';
+      issues.push({ id, severity: 'blocker' });
     }
     return issues;
   }

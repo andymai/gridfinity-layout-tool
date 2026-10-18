@@ -17,6 +17,7 @@ import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { CUTOUT_FILL_REFERENCES } from '@/features/bin-designer/types';
 import {
+  CUTOUT_FILL_STEP_MM,
   MIN_CUTOUT_FILL_MM,
   cutoutFillHeightMm,
   cutoutWallHeightMm,
@@ -24,8 +25,6 @@ import {
   topOffsetForFillHeight,
 } from '@/features/bin-designer/utils/cutoutFill';
 import { getSegmentClass } from '@/shared/components/segmentedControlClasses';
-
-const STEP_MM = 0.5;
 
 function fmt(mm: number): string {
   return `${Math.round(mm * 100) / 100}mm`;
@@ -84,7 +83,7 @@ export function CutoutFillControls() {
           }
           min={MIN_CUTOUT_FILL_MM}
           max={wallHeight}
-          step={STEP_MM}
+          step={CUTOUT_FILL_STEP_MM}
           unit="mm"
           info={t('binDesigner.cutouts.fillBelowRim', { mm: fmt(topOffset) })}
         />
@@ -95,7 +94,7 @@ export function CutoutFillControls() {
           onChange={(next) => updateCutoutConfig({ topOffset: next })}
           min={0}
           max={maxCutoutTopOffsetMm(wallHeight)}
-          step={STEP_MM}
+          step={CUTOUT_FILL_STEP_MM}
           unit="mm"
           info={t('binDesigner.cutouts.fillAboveFloor', { mm: fmt(fillHeight) })}
         />

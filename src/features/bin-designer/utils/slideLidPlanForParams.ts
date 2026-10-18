@@ -17,6 +17,7 @@ import { wallOpenings } from '@/shared/utils/lipGapPlan';
 import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 import {
   resolveSlideLidPlan,
+  slideJointDepthBelowWallTopMm,
   slideLidPlanInput,
   type SlideLidPlan,
 } from '@/shared/utils/slideLidPlan';
@@ -25,6 +26,7 @@ import type { BinParams } from '../types';
 import { isSlideLid, resolveLidPlateThickness, resolveLidSlide } from '../types/lid';
 import { resolveLipTip } from '../types/base';
 import { binDimensions } from './binDimensions';
+import { CUTOUT_FILL_STEP_MM, cutoutWallHeightMm, maxCutoutTopOffsetMm } from './cutoutFill';
 
 /**
  * Resolve this design's sliding-lid geometry, or say why it has none.
@@ -62,7 +64,7 @@ export function slideLidPlanForParams(params: BinParams): SlideLidPlan {
         innerOffsetY: expansion.offsetY,
         wallHeight: base.wallHeight,
         hasLip: params.base.stackingLip,
-        isSolid: params.style === 'solid',
+        solidRecessMm: params.style === 'solid' ? params.cutoutConfig.topOffset : null,
         isSlotted: params.style === 'slotted',
         isTile: params.base.tile === true,
         lipTip: resolveLipTip(params.base),
@@ -74,4 +76,26 @@ export function slideLidPlanForParams(params: BinParams): SlideLidPlan {
   if (!geometry?.wallLining) return plan;
   const gaps = wallOpenings(params, liningBand(geometry, geometry.wallLining));
   return { ...plan, geometry: withLiningOpenings(geometry, gaps) };
+}
+
+/**
+ * The fill offset (`cutoutConfig.topOffset`) that leaves a solid bin just room
+ * for its sliding lid's channel, or null when lowering the fill would not get
+ * one built: the bin is too short for any fill to clear the joint, or the plan
+ * refuses it for a reason the fill does not touch.
+ *
+ * Rounded up to the next fill step strictly past the joint, since the plan
+ * refuses a cavity exactly as deep as the joint.
+ */
+export function slideLidFillOffsetMm(params: BinParams): number | null {
+  if (!isSlideLid(params.lid) || params.style !== 'solid') return null;
+  const joint = slideJointDepthBelowWallTopMm(
+    resolveLidSlide(params.lid),
+    resolveLidPlateThickness(params),
+    params.base.stackingLip
+  );
+  const offset = (Math.floor(joint / CUTOUT_FILL_STEP_MM) + 1) * CUTOUT_FILL_STEP_MM;
+  if (offset > maxCutoutTopOffsetMm(cutoutWallHeightMm(params))) return null;
+  const lowered = { ...params, cutoutConfig: { ...params.cutoutConfig, topOffset: offset } };
+  return slideLidPlanForParams(lowered).geometry ? offset : null;
 }

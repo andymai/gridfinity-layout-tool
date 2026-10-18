@@ -2458,6 +2458,12 @@ const en: Record<string, string> = {
   'binDesigner.lid.compat.slideUnbuildable': 'This bin can’t take a sliding lid.',
   'binDesigner.lid.compat.slideUnbuildableDetail':
     'This bin can’t take a sliding lid: it’s too small or too shallow for the channel, or its style has no cavity to cover.',
+  'binDesigner.lid.compat.fix.slideUnbuildable': 'pick another attachment',
+  'binDesigner.lid.compat.slideFillTooHigh':
+    'The solid fill sits too close to the rim for the lid’s channel.',
+  'binDesigner.lid.compat.slideFillTooHighDetail':
+    'Lowering the fill makes room for the channel. Pockets are cut from the top of the fill, so they move down with it.',
+  'binDesigner.lid.compat.fix.slideFillTooHigh': 'lower the solid fill',
   'binDesigner.lid.compat.slideInteriorBlocked':
     'Dividers, label tabs or a scoop reach into the lid’s path and will stop it sliding.',
   'binDesigner.lid.compat.slideInteriorBlockedDetail':

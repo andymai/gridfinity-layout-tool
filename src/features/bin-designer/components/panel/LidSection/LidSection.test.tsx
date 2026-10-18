@@ -758,6 +758,47 @@ describe('LidSection', () => {
       expect(screen.getByRole('switch', { name: ENABLE })).toBeEnabled();
     });
 
+    it('offers a one-click Fix that lowers a solid bin’s fill just enough for a sliding lid', () => {
+      resetStore({
+        width: 1,
+        depth: 2,
+        height: 5,
+        style: 'solid',
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        lid: {
+          ...DEFAULT_BIN_PARAMS.lid,
+          enabled: true,
+          attachment: 'slide',
+          slide: DEFAULT_LID_SLIDE_CONFIG,
+        },
+      });
+      render(<LidSection />);
+      expect(
+        screen.getByText('Resolve the conflict to enable lid: lower the solid fill')
+      ).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /^Fix: The solid fill/ }));
+      const { params } = useDesignerStore.getState();
+      expect(params.cutoutConfig.topOffset).toBeGreaterThan(0);
+      expect(slideLidPlanForParams(params).geometry).not.toBeNull();
+      expect(screen.getByRole('switch', { name: ENABLE })).toBeEnabled();
+    });
+
+    it('names a way out for a sliding lid the bin cannot take at all', () => {
+      resetStore({
+        height: 1,
+        lid: {
+          ...DEFAULT_BIN_PARAMS.lid,
+          enabled: true,
+          attachment: 'slide',
+          slide: DEFAULT_LID_SLIDE_CONFIG,
+        },
+      });
+      render(<LidSection />);
+      expect(
+        screen.getByText('Resolve the conflict to enable lid: pick another attachment')
+      ).toBeInTheDocument();
+    });
+
     it('lets the attachment be changed away from a blocked hinge', () => {
       resetStore({
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'hinge', stackableTop: true },

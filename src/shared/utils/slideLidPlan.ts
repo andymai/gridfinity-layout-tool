@@ -206,7 +206,7 @@ export function slideSagSafeThicknessMm(spanMm: number): number {
 export type SlideLidRejection =
   /** The design's lid is not a sliding one. */
   | 'not-slide'
-  /** A solid bin has no cavity for the plate to cover. */
+  /** A solid bin filled to its rim has no cavity for the plate to cover. */
   | 'no-cavity'
   /** A base-only tile has no cavity either, and no walls to carry a channel. */
   | 'no-walls'
@@ -482,7 +482,8 @@ export interface SlideLidPlanInput {
   /** Thickness (mm) of the entry wall, which overhang can make uneven. */
   readonly entryWallThicknessMm: number;
   /**
-   * Cavity floor to wall top (mm) — the budget the joint has to fit inside.
+   * Cavity floor to wall top (mm) — the budget the joint has to fit inside. On
+   * a solid bin the floor is the fill's top face.
    *
    * Stated as `wallHeight - wallThickness` so both sides of the worker boundary
    * can compute it from fields they already hold, rather than one of them
@@ -532,7 +533,11 @@ export interface SlideLidBinDims {
   /** Floor bottom to wall top. */
   readonly wallHeight: number;
   readonly hasLip: boolean;
-  readonly isSolid: boolean;
+  /**
+   * How far a solid bin's fill sits below the wall top (`cutoutConfig.topOffset`),
+   * or null for a hollow bin. The recess above the fill is a solid bin's only cavity.
+   */
+  readonly solidRecessMm: number | null;
   readonly isSlotted: boolean;
   readonly isTile: boolean;
   readonly lipTip?: LipTipStyle;
@@ -577,10 +582,10 @@ export function slideLidPlanInput(
     innerD: dims.innerD,
     wallThickness,
     entryWallThicknessMm: slideWallThicknessMm(slide.entrySide, dims),
-    cavityDepthMm: dims.wallHeight - wallThickness,
+    cavityDepthMm: dims.solidRecessMm ?? dims.wallHeight - wallThickness,
     hasLip: dims.hasLip,
     isPolygon,
-    isSolid: dims.isSolid,
+    isSolid: dims.solidRecessMm !== null,
     isSlotted: dims.isSlotted,
     isTile: dims.isTile,
     lipTip: dims.lipTip,
@@ -634,6 +639,25 @@ export function slidePlateTopBelowWallTopMm(
 }
 
 /**
+ * How far below the wall top the joint reaches: the plate's top plane, then the
+ * plate, the shelf's tip and its gusset. A cavity has to be deeper than this.
+ */
+export function slideJointDepthBelowWallTopMm(
+  slide: Pick<LidSlideConfig, 'placement' | 'clearanceMm'>,
+  plateThicknessMm: number,
+  hasLip: boolean
+): number {
+  const c = slide.clearanceMm;
+  const shelfReach = c + SLIDE_BEARING_MM;
+  return (
+    slidePlateTopBelowWallTopMm(slide.placement, c, hasLip) +
+    plateThicknessMm +
+    SLIDE_SHELF_TIP_MM +
+    shelfReach
+  );
+}
+
+/**
  * Resolve the sliding-lid geometry, or say why there is none.
  *
  * Every rejection is a real refusal to build, not a clamp: a channel that
@@ -649,7 +673,7 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
   // cuts divider slots into two opposite walls, which is exactly where the
   // channel runs, and the pipeline cuts after it fuses — so the slots would
   // notch the bearing faces.
-  if (input.isSolid) return NO_GEOMETRY('no-cavity');
+  if (input.isSolid && input.cavityDepthMm <= 0) return NO_GEOMETRY('no-cavity');
   if (input.isTile) return NO_GEOMETRY('no-walls');
   if (input.isSlotted) return NO_GEOMETRY('slot-conflict');
   if (input.isPolygon) return NO_GEOMETRY('unsupported-shape');
@@ -688,11 +712,9 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
   if (plateSpan - 2 * shelfReach < MIN_PLATE_SPAN_MM / 2) return NO_GEOMETRY('bin-too-narrow');
 
   const plateTopBelowWallTop = slidePlateTopBelowWallTopMm(slide.placement, c, input.hasLip);
-  // Everything the joint occupies below the plate's top plane: the plate, the
-  // shelf's tip and its gusset. Checked against the interior so a 1U bin is
-  // refused rather than shipped with a channel through its floor.
-  const jointDepth = t + SLIDE_SHELF_TIP_MM + shelfReach;
-  if (plateTopBelowWallTop + jointDepth >= input.cavityDepthMm) {
+  // Checked against the interior so a 1U bin is refused rather than shipped with
+  // a channel through its floor.
+  if (slideJointDepthBelowWallTopMm(slide, t, input.hasLip) >= input.cavityDepthMm) {
     return NO_GEOMETRY('bin-too-shallow');
   }
 

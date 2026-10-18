@@ -32,9 +32,11 @@ import {
   type SlidePair,
 } from './__kernel-tests__/slideLidSeating';
 import { columnCrossings, isSolidThrough } from './__kernel-tests__/meshAssertions';
+import { makeCutout } from './__kernel-tests__/scenarioTypes';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { DEFAULT_LID_SLIDE_CONFIG } from '@/features/bin-designer/types/lid';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
+import { slideLidFillOffsetMm } from '@/features/bin-designer/utils/slideLidPlanForParams';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { slideLidPlanForParams } from '@/shared/types/bin';
 import type { BinParams, LidSlideConfig } from '@/features/bin-designer/types';
@@ -738,4 +740,72 @@ describe('sliding lid seating', () => {
       { front: 10, open: true },
     ]);
   }, 900000);
+});
+
+describe('sliding lid on a solid bin', () => {
+  beforeAll(async () => {
+    await initBrepjs();
+  }, 120000);
+
+  // Interior frame: x and y measured from the cavity's bottom-left corner.
+  const pocket = makeCutout({
+    id: 'pocket',
+    shape: 'circle',
+    x: 5,
+    y: 25,
+    width: 20,
+    depth: 20,
+    cutDepth: 10,
+  });
+
+  function solidParams(topOffset: number): BinParams {
+    return slideParams(
+      {
+        width: 1,
+        depth: 2,
+        height: 5,
+        style: 'solid',
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutouts: [pocket],
+        cutoutConfig: { ...DEFAULT_BIN_PARAMS.cutoutConfig, topOffset },
+      },
+      { detent: false }
+    );
+  }
+
+  /** The fill the panel's one-click fix lowers to: the least room the joint takes. */
+  function lowestFill(): BinParams {
+    const offset = slideLidFillOffsetMm(solidParams(0));
+    if (offset === null) throw new Error('expected a fill level that fits the channel');
+    return solidParams(offset);
+  }
+
+  it('travels clear of the fill at the shallowest recess the panel offers', async () => {
+    expect(await travelOverlap(lowestFill())).toBeLessThan(CONTACT_FLOOR_MM3);
+  }, 300000);
+
+  it('holds the plate, keeps the fill and still cuts the pocket', async () => {
+    const params = lowestFill();
+    expect(newCrossingsAbovePlate(await build(params), bareBin(params))).toBeGreaterThan(8);
+
+    // The export mesh: the preview concatenates the socket and leaves a
+    // coincident face that breaks span pairing.
+    const exported = getGenerateBin()(params, undefined, true);
+    if (!exported) throw new Error('expected the export mesh to build');
+    const { innerW, innerD } = binDimensions(params);
+    const fillTopZ = binWallTopZ(params) - params.cutoutConfig.topOffset;
+    const toBin = (x: number, y: number): readonly [number, number] => [
+      x - innerW / 2 + 0.13,
+      y - innerD / 2 + 0.17,
+    ];
+
+    // Clear of the pocket and the channel: fill up to its own top, nothing above.
+    const [fx, fy] = toBin(innerW / 2, innerD - 15);
+    expect(isSolidThrough(exported, fx, fy, 0, fillTopZ - 0.05)).toBe(true);
+    expect(isSolidThrough(exported, fx, fy, fillTopZ + 0.05, fillTopZ + 0.5)).toBe(false);
+
+    const [px, py] = toBin(pocket.x + pocket.width / 2, pocket.y + pocket.depth / 2);
+    expect(isSolidThrough(exported, px, py, 0, fillTopZ - pocket.cutDepth - 0.05)).toBe(true);
+    expect(isSolidThrough(exported, px, py, fillTopZ - 1, fillTopZ - 0.5)).toBe(false);
+  }, 300000);
 });

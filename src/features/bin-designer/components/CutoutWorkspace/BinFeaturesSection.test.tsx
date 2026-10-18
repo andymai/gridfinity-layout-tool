@@ -85,6 +85,16 @@ describe('BinFeaturesSection', () => {
     expect(screen.queryByText(LID_PAUSED)).not.toBeInTheDocument();
   });
 
+  it('stays quiet about a sliding lid, which needs no lip', () => {
+    setParams({
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+      lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'slide' },
+    });
+    render(<BinFeaturesSection />);
+
+    expect(screen.queryByText(LID_PAUSED)).not.toBeInTheDocument();
+  });
+
   it('stays quiet when there is no lid to pause', () => {
     setParams({
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
