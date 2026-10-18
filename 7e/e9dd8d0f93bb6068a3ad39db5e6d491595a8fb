@@ -1,0 +1,31 @@
+src/features/grid-editor/components/Grid/Bin/Bin.tsx
+  s_078fc63cde22ff::t_a8a3aa4a46ac86 12,133
+src/features/bin-inspector/components/Inspector/BinSlantSection/useBinSlantSection.ts
+  s_078fc63cde22ff::t_72bcb3f0966b93 10,89
+src/features/bin-inspector/components/Inspector/BinSlantSection/BinSlantSection.tsx
+  s_078fc63cde22ff::t_72bcb3f0966b93 101-106,117
+  s_078fc63cde22ff::t_35a97fc931137a 98-100
+src/shared/utils/slantRow.ts
+  s_078fc63cde22ff::t_a8a3aa4a46ac86 4,54-61,64,68-98
+src/shared/utils/slantRow.test.ts
+  s_078fc63cde22ff::t_88f62c57575384 6,135-157
+  s_078fc63cde22ff::t_9a05badb3b18bc 158-160
+src/features/bin-inspector/components/Inspector/BinSlantSection/BinSlantSection.test.tsx
+  s_078fc63cde22ff::t_88f62c57575384 142-161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7ee9dd8d0f93bb6068a3ad39db5e6d491595a8fb",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}

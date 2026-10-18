@@ -1,0 +1,588 @@
+pnpm-lock.yaml
+  s_078fc63cde22ff::t_75baada74eb166 97,135-136,4912-4913,8968,8974,10510
+package.json
+  s_078fc63cde22ff::t_c0b30aba54b5e6 153
+src/shared/generation/meshPersistence.ts
+  s_078fc63cde22ff::t_b8264c575c09b0 133
+src/core/types/index.ts
+  s_078fc63cde22ff::t_d6f6115b06082d 33
+src/features/bin-designer/types/binParams.ts
+  s_078fc63cde22ff::t_d6f6115b06082d 1,180
+  s_078fc63cde22ff::t_166e9b709cfc84 179
+src/features/generation/worker/generators/binGenerator.scenario.slant.test.ts
+  s_078fc63cde22ff::t_4179713378d1e3 14,76-82,95-96,142-145,148-151,218
+  s_078fc63cde22ff::t_caa2a71deec9d1 1-13,15-56,83-94,97-141,146-147,152-153,156-167,174-217,219-222
+  s_078fc63cde22ff::t_1d9028f9703b43 57-75,154-155,168-173
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_078fc63cde22ff::t_130e236991cd83 37,121-123
+docs/schemas/constraints.md
+  s_078fc63cde22ff::t_f203d8e845bdfd 180-181
+src/shared/schema/binDesignKeys.ts
+  s_078fc63cde22ff::t_fd48533cf2916c 107
+src/features/generation/worker/generators/pipeline/stages/slantStage.ts
+  s_078fc63cde22ff::t_d1b41bf9c5ab98 1-69
+src/features/bin-designer/constants/paramMigration.ts
+  s_078fc63cde22ff::t_e8f8b144faa4d8 97,453,571,573
+api/lib/designerValidation.ts
+  s_078fc63cde22ff::t_7f614b2ead3a9f 9,152,195
+src/core/types/slant.ts
+  s_078fc63cde22ff::t_ef195713cc864a 1-22
+  s_078fc63cde22ff::t_adc1cb82a2d510 23-33,38
+  s_078fc63cde22ff::t_f47e24369fe3cd 34-37
+src/shared/schema/binContentKeys.ts
+  s_078fc63cde22ff::t_90661a8d81a198 169
+  s_078fc63cde22ff::t_fd48533cf2916c 34,167-168
+docs/schemas/bin-design.md
+  s_078fc63cde22ff::t_f203d8e845bdfd 114
+  s_078fc63cde22ff::t_87e8049892d718 683-703
+src/shared/utils/slantPlan.ts
+  s_078fc63cde22ff::t_88f24ff6fc08fe 13-15,21-28,36-44,67-70
+  s_078fc63cde22ff::t_e8f8b144faa4d8 2,106-121
+  s_078fc63cde22ff::t_d4ceffeb4b2417 1,3-4,6-12,20,33,35,47-66,74-76,79-80,81-91,98-105,122
+  s_078fc63cde22ff::t_6b4bae64e32b43 127-128,131-135
+  s_078fc63cde22ff::t_4b3913ea84b461 5,16-17,29,34,71,123-126,136-137,155-157,169-193
+  s_078fc63cde22ff::t_6e7cffac4352b1 18-19,30-32,45-46,72-73
+  s_078fc63cde22ff::t_fff3a822e5d8ef 5,123,125-128,131-137,155-157,169,171-176,198-202,204-206,214-215,222-225,227,238-240,251-257,261
+  s_078fc63cde22ff::t_005d3e829d92a1 260
+  s_078fc63cde22ff::t_3f14007a0cc3c9 129-130,203,207-213,241-250,258-259
+  s_078fc63cde22ff::t_2b626514786fb2 77-78,92-97,138-154,158-168,216-221,228-237
+api/lib/slantValidation.test.ts
+  s_078fc63cde22ff::t_7f614b2ead3a9f 1-11,16-42
+  s_078fc63cde22ff::t_e8f8b144faa4d8 12-15
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_078fc63cde22ff::t_70e3d6fbf0abba 30
+  s_078fc63cde22ff::t_645727186e8885 82-83,133,372-374
+src/shared/schema/keys.ts
+  s_078fc63cde22ff::t_fd48533cf2916c 80,230
+public/schema/bin-design.schema.json
+  s_078fc63cde22ff::t_bc3c4c105fa9e4 2075,2080,2093
+  s_078fc63cde22ff::t_507fed7ce5598e 469-471,2068-2069,2071-2074,2076-2079,2081-2092
+  s_078fc63cde22ff::t_55998353f77d47 2094
+  s_078fc63cde22ff::t_6e7cffac4352b1 2070
+src/features/generation/worker/generators/binDirectMesh.ts
+  s_078fc63cde22ff::t_e2de6b1f1a6062 382
+  s_078fc63cde22ff::t_15abc044c1f572 41
+src/shared/utils/slantPlan.test.ts
+  s_078fc63cde22ff::t_02e4ae9143d4a6 20-22,44-47,52-55,62-66,69,77-82,107-111,114-117,152-162
+  s_078fc63cde22ff::t_d9fde165f257a7 1-2,4,14-19,23-43,48-51,56-61,67-68,70-76,83-90,98-106,112-113,118-151,163
+  s_078fc63cde22ff::t_d60c0c8ad4179a 5-7,9-13,164-169,174-190
+  s_078fc63cde22ff::t_4fe67e07b4d7e0 91-95,170-173
+  s_078fc63cde22ff::t_492c4aabeede33 191
+  s_078fc63cde22ff::t_70cd39addfad1b 3,96-97
+  s_078fc63cde22ff::t_5a4b7170304969 5-10,12-13,164,166-181,196-218
+  s_078fc63cde22ff::t_dd343fa211dd15 219
+  s_078fc63cde22ff::t_37a6cbdae493e5 192-195
+src/features/generation/worker/generators/binOrchestrator.ts
+  s_078fc63cde22ff::t_e2de6b1f1a6062 23,30,53,68-70,102
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_078fc63cde22ff::t_17207d2e9cfe44 2161-2194
+scripts/schema/bounds.test.ts
+  s_078fc63cde22ff::t_507fed7ce5598e 38-39,152-153
+api/lib/slantValidation.ts
+  s_078fc63cde22ff::t_7f614b2ead3a9f 1-37
+api/lib/slantValidation.crossBoundary.test.ts
+  s_078fc63cde22ff::t_7f614b2ead3a9f 1-19
+src/features/bin-designer/components/preview/BinSplitLines/BinSplitLines.tsx
+  s_078fc63cde22ff::t_439eefc9d151b6 20,34,37,66
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.tsx
+  s_078fc63cde22ff::t_3e4bb80a22a089 84,166-167
+  s_078fc63cde22ff::t_cbdf21e46f33a4 169-170
+  s_078fc63cde22ff::t_c384168df88c02 49,168
+  s_078fc63cde22ff::t_39a5988b4bcdaf 50,85,149-153
+src/shared/utils/binSplitFit.test.ts
+  s_078fc63cde22ff::t_19f78c54dc25e7 150-171
+src/features/bin-designer/components/panel/SplitOptionsSection/useSplitOptionsSection.test.ts
+  s_078fc63cde22ff::t_4fe67e07b4d7e0 33-55
+src/features/bin-designer/components/panel/pages/PrintPage/PrintPage.test.tsx
+  s_078fc63cde22ff::t_4fe67e07b4d7e0 24-38
+src/features/bin-designer/components/panel/SplitOptionsSection/useSplitOptionsSection.ts
+  s_078fc63cde22ff::t_439eefc9d151b6 9,16-27,29,38-45
+  s_078fc63cde22ff::t_9e1e0b45977552 101
+src/shared/utils/binSplitFit.ts
+  s_078fc63cde22ff::t_6b4bae64e32b43 22-23,25-29,33-37,41,88
+  s_078fc63cde22ff::t_3fa89ddd8c7d0b 38-40
+src/i18n/locales/en.ts
+  s_078fc63cde22ff::t_362baadcaf0dbd 2895
+  s_078fc63cde22ff::t_c384168df88c02 2896,2913-2914
+  s_078fc63cde22ff::t_88ec94e1bb5874 2908-2910
+  s_078fc63cde22ff::t_60da3e846f5d2b 1192-1196,2377,2897-2907,2911-2912
+  s_078fc63cde22ff::t_ad6c49b2c3a657 537-547,1710
+  s_078fc63cde22ff::t_df071aa477ef7f 1711
+src/features/bin-designer/components/panel/pages/PrintPage/PrintPage.tsx
+  s_078fc63cde22ff::t_362baadcaf0dbd 18,30,32
+  s_078fc63cde22ff::t_c384168df88c02 9,31
+src/features/bin-designer/components/panel/shared/SlantTooLargeNotice.tsx
+  s_078fc63cde22ff::t_c384168df88c02 1-17
+src/features/bin-designer/components/panel/shared/index.ts
+  s_078fc63cde22ff::t_c384168df88c02 11
+src/i18n/locales/pl.json
+  s_078fc63cde22ff::t_c384168df88c02 4895,4909
+  s_078fc63cde22ff::t_88ec94e1bb5874 4905-4906
+  s_078fc63cde22ff::t_60da3e846f5d2b 1334,3468-3470,4896-4904,4907-4908
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/uk.json
+  s_078fc63cde22ff::t_c384168df88c02 4895,4909
+  s_078fc63cde22ff::t_88ec94e1bb5874 4905-4906
+  s_078fc63cde22ff::t_60da3e846f5d2b 1334,3468-3470,4896-4904,4907-4908
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/nl.json
+  s_078fc63cde22ff::t_c384168df88c02 4895,4909
+  s_078fc63cde22ff::t_88ec94e1bb5874 4905-4906
+  s_078fc63cde22ff::t_60da3e846f5d2b 1334,3468-3470,4896-4904,4907-4908
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/sv.json
+  s_078fc63cde22ff::t_c384168df88c02 4895,4909
+  s_078fc63cde22ff::t_60da3e846f5d2b 1334,3468-3470,4896-4904,4907-4908
+  s_078fc63cde22ff::t_88ec94e1bb5874 4905-4906
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/es.json
+  s_078fc63cde22ff::t_c384168df88c02 4895,4909
+  s_078fc63cde22ff::t_88ec94e1bb5874 4905-4906
+  s_078fc63cde22ff::t_60da3e846f5d2b 1334,3468-3470,4896-4904,4907-4908
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/ja.json
+  s_078fc63cde22ff::t_c384168df88c02 4895,4909
+  s_078fc63cde22ff::t_60da3e846f5d2b 1334,3468-3470,4896-4904,4907-4908
+  s_078fc63cde22ff::t_88ec94e1bb5874 4905-4906
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/cs.json
+  s_078fc63cde22ff::t_c384168df88c02 4895,4909
+  s_078fc63cde22ff::t_60da3e846f5d2b 1334,3468-3470,4896-4904,4907-4908
+  s_078fc63cde22ff::t_88ec94e1bb5874 4905-4906
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/de.json
+  s_078fc63cde22ff::t_c384168df88c02 4895,4909
+  s_078fc63cde22ff::t_88ec94e1bb5874 4905-4906
+  s_078fc63cde22ff::t_60da3e846f5d2b 1334,3468-3470,4896-4904,4907-4908
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/ka.json
+  s_078fc63cde22ff::t_c384168df88c02 2437,2451
+  s_078fc63cde22ff::t_60da3e846f5d2b 1038-1040,1996,2438-2446,2449-2450
+  s_078fc63cde22ff::t_88ec94e1bb5874 2447-2448
+  s_078fc63cde22ff::t_eb8d17b94fe925 480-489,1479-1480
+src/i18n/locales/pt-BR.json
+  s_078fc63cde22ff::t_c384168df88c02 4895,4909
+  s_078fc63cde22ff::t_60da3e846f5d2b 1334,3468-3470,4896-4903,4907-4908
+  s_078fc63cde22ff::t_88ec94e1bb5874 4905-4906
+  s_078fc63cde22ff::t_023066c9fe6f01 4904
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/fr.json
+  s_078fc63cde22ff::t_c384168df88c02 4895,4909
+  s_078fc63cde22ff::t_60da3e846f5d2b 1334,3468-3470,4896-4904,4907-4908
+  s_078fc63cde22ff::t_88ec94e1bb5874 4905-4906
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/zh-CN.json
+  s_078fc63cde22ff::t_c384168df88c02 4895,4909
+  s_078fc63cde22ff::t_88ec94e1bb5874 4905-4906
+  s_078fc63cde22ff::t_60da3e846f5d2b 1334,3468-3470,4896-4904,4907-4908
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/nb.json
+  s_078fc63cde22ff::t_c384168df88c02 4895,4909
+  s_078fc63cde22ff::t_60da3e846f5d2b 1334,3468-3470,4896-4904,4907-4908
+  s_078fc63cde22ff::t_88ec94e1bb5874 4905-4906
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/it.json
+  s_078fc63cde22ff::t_c384168df88c02 4895,4909
+  s_078fc63cde22ff::t_60da3e846f5d2b 1334,3468-3470,4896-4904,4907-4908
+  s_078fc63cde22ff::t_88ec94e1bb5874 4905-4906
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/ko.json
+  s_078fc63cde22ff::t_c384168df88c02 4895,4909
+  s_078fc63cde22ff::t_88ec94e1bb5874 4905-4906
+  s_078fc63cde22ff::t_60da3e846f5d2b 1334,3468-3470,4896-4904,4907-4908
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/features/bin-designer/components/panel/shared/SlantTooLargeNotice.test.tsx
+  s_078fc63cde22ff::t_c384168df88c02 1-13
+src/features/bin-designer/store/helpers.ts
+  s_078fc63cde22ff::t_6e7cffac4352b1 32,94-100
+  s_078fc63cde22ff::t_15f0b8a46643ae 101-103
+  s_078fc63cde22ff::t_80bded735c8b11 328
+src/shared/utils/lidInteriorRelief.test.ts
+  s_078fc63cde22ff::t_0150ed65412646 58-65
+src/shared/utils/lidInteriorRelief.ts
+  s_078fc63cde22ff::t_6e7cffac4352b1 28,33-34
+src/features/bin-designer/store/designer.ts
+  s_078fc63cde22ff::t_6e7cffac4352b1 28,36
+src/features/bin-designer/store/designer.test.ts
+  s_078fc63cde22ff::t_0150ed65412646 458-482
+  s_078fc63cde22ff::t_5faecefec2d91c 221-247
+src/features/generation/worker/handlers/generateHandler.ts
+  s_078fc63cde22ff::t_52fd7320c4b309 21,120-128,138
+src/features/bin-designer/components/preview/index.ts
+  s_078fc63cde22ff::t_b311b962e1dc9e 7
+src/features/bin-designer/components/preview/SlantSupportMesh/SlantSupportMesh.test.tsx
+  s_078fc63cde22ff::t_b311b962e1dc9e 1-13,16-27,28-87
+  s_078fc63cde22ff::t_621f378e56db7c 14-15
+src/features/bin-designer/components/preview/SlantSupportMesh/SlantSupportMesh.tsx
+  s_078fc63cde22ff::t_9091076cf2bfc5 28-32,35-38
+  s_078fc63cde22ff::t_2e608f40ec44ad 1-10,12,14-27,33,43-69,71-84
+  s_078fc63cde22ff::t_b311b962e1dc9e 11,13,34,39-42,70
+src/features/generation/worker/handlers/exportHandler.ts
+  s_078fc63cde22ff::t_9091076cf2bfc5 59-60,319,321,372-374,399,416,470-472
+  s_078fc63cde22ff::t_d48c44de182285 473-474
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_078fc63cde22ff::t_9091076cf2bfc5 32,554
+src/features/bin-designer/components/preview/SlantSupportMesh/index.ts
+  s_078fc63cde22ff::t_2e608f40ec44ad 1
+src/features/generation/worker/generators/slantSupportBuilder.ts
+  s_078fc63cde22ff::t_6694ecb5621da6 94-95,104-105
+  s_078fc63cde22ff::t_a1c11994ebc13a 1-37,39-65,80-93,96-97,102-103,106-116,118,121-125,129-141,143,145-181,189-227
+  s_078fc63cde22ff::t_bb159a157ebeff 98-101,117,182-188
+  s_078fc63cde22ff::t_3f14007a0cc3c9 119,126-128,142,144
+  s_078fc63cde22ff::t_7c7aa9fd686def 38,66-79,120
+src/features/generation/worker/generators/slantSupport.scenario.test.ts
+  s_078fc63cde22ff::t_3eae40ac9bc2dc 1-11,17-78,82-97,100,102-107,111-136,189
+  s_078fc63cde22ff::t_cc9e5c9649742e 79-81,98-99,108-110
+  s_078fc63cde22ff::t_bcbbccb05a8a47 12-16,138
+  s_078fc63cde22ff::t_7c7aa9fd686def 101,137,139-166
+  s_078fc63cde22ff::t_0e5ede0d558afd 168-188
+  s_078fc63cde22ff::t_1aa99f4b71332b 167
+src/features/bin-designer/utils/binDownloadNaming.ts
+  s_078fc63cde22ff::t_9091076cf2bfc5 23-24
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_078fc63cde22ff::t_9091076cf2bfc5 148
+  s_078fc63cde22ff::t_2b5f7c46f4959a 47
+  s_078fc63cde22ff::t_c6189979e2c95b 155-158,302,305-306
+  s_078fc63cde22ff::t_dbe0bfcf34cd57 48,307-314
+src/features/bin-designer/hooks/useGeneration.ts
+  s_078fc63cde22ff::t_52fd7320c4b309 62,94
+src/features/generation/bridge/meshData.ts
+  s_078fc63cde22ff::t_52fd7320c4b309 36-37
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_078fc63cde22ff::t_9091076cf2bfc5 130,146-147
+src/features/generation/worker/generators/binExporter.slantSupport.test.ts
+  s_078fc63cde22ff::t_9aa139e09777f6 1-135
+  s_078fc63cde22ff::t_32867bfc587c15 136-137
+src/features/bin-designer/types/generation.ts
+  s_078fc63cde22ff::t_52fd7320c4b309 68-69
+  s_078fc63cde22ff::t_80bded735c8b11 111-112
+src/features/generation/bridge/bridgeMessageHandler.ts
+  s_078fc63cde22ff::t_1464b6a41f5574 250-263,279
+src/features/generation/bridge/responses.ts
+  s_078fc63cde22ff::t_1464b6a41f5574 180-185
+src/shared/generation/meshBytes.ts
+  s_078fc63cde22ff::t_1464b6a41f5574 41
+src/features/generation/worker/handlers/workerContext.test.ts
+  s_078fc63cde22ff::t_a0e4c0bfb58bd2 51-59,62-82
+  s_078fc63cde22ff::t_6fbb6d1d41818c 60-61
+  s_078fc63cde22ff::t_e3caec6c8e43bd 1,15-16
+src/features/generation/worker/handlers/workerContext.ts
+  s_078fc63cde22ff::t_1464b6a41f5574 265-274,365-373,422-427
+  s_078fc63cde22ff::t_8336f948dced74 428-429
+src/features/bin-designer/store/slices/historySlice.ts
+  s_078fc63cde22ff::t_80bded735c8b11 156-157
+src/features/bin-designer/store/meshCacheManager.ts
+  s_078fc63cde22ff::t_80bded735c8b11 8,33-34,42-43,47-59
+  s_078fc63cde22ff::t_763439d12ec175 60-61
+src/core/labs/features.ts
+  s_078fc63cde22ff::t_773b0e750e5f6c 276
+  s_078fc63cde22ff::t_39a5988b4bcdaf 277-285
+src/features/bin-designer/components/panel/SlantSection/SlantSection.tsx
+  s_078fc63cde22ff::t_dd025695df5383 84-85,91
+  s_078fc63cde22ff::t_c3c19052aafd51 1-8,10-60,62-64,66-73,81-83,92-98
+  s_078fc63cde22ff::t_a11b0f753d6d54 61,65
+  s_078fc63cde22ff::t_88ec94e1bb5874 9,86-90
+  s_078fc63cde22ff::t_bfe72efa427b5b 74-80
+src/features/bin-designer/components/panel/pages/ShapePage/ShapePage.tsx
+  s_078fc63cde22ff::t_39a5988b4bcdaf 7,11,25-29
+src/features/bin-designer/settingsManifest.ts
+  s_078fc63cde22ff::t_39a5988b4bcdaf 23
+src/features/bin-designer/components/panel/SlantSection/SlantSection.test.tsx
+  s_078fc63cde22ff::t_8fcedb6fe60fee 1-4,7-48,81-82,106-144,108-144,159-183
+  s_078fc63cde22ff::t_401240f5313efb 6
+  s_078fc63cde22ff::t_d57963ebd6fa36 49-53,73-80
+  s_078fc63cde22ff::t_2636836ed5a0ef 54-69,71-72
+  s_078fc63cde22ff::t_c9290b27dbe895 70
+  s_078fc63cde22ff::t_3a08cc64fbc7ea 83-88,101-104
+  s_078fc63cde22ff::t_a6332035a98b65 105-107
+  s_078fc63cde22ff::t_8b0663d2a99fef 5,145-157
+  s_078fc63cde22ff::t_981bf42ec0d18e 89-90
+  s_078fc63cde22ff::t_97ab964f9eb281 158
+  s_078fc63cde22ff::t_1588553285bde8 91-100
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_078fc63cde22ff::t_645727186e8885 56,611
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_078fc63cde22ff::t_645727186e8885 1326
+src/features/bin-designer/components/panel/SlantSection/useSlantSection.ts
+  s_078fc63cde22ff::t_c3c19052aafd51 1-14,21-45,75-125,130,132-136,151-172
+  s_078fc63cde22ff::t_bfe72efa427b5b 15-16,20,46,52-53,62-74,137,144-148
+  s_078fc63cde22ff::t_707a367a177f3d 18,138-139,142,149-150
+  s_078fc63cde22ff::t_2636836ed5a0ef 140-141,143
+  s_078fc63cde22ff::t_3a08cc64fbc7ea 19,47
+  s_078fc63cde22ff::t_981bf42ec0d18e 17,126-129,131
+  s_078fc63cde22ff::t_1588553285bde8 48-51,54-61
+src/features/bin-designer/components/panel/SlantSection/index.ts
+  s_078fc63cde22ff::t_c3c19052aafd51 1-2
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/groupControls.ts
+  s_078fc63cde22ff::t_39a5988b4bcdaf 25
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_078fc63cde22ff::t_645727186e8885 174
+src/features/bin-designer/search/designerControlRegistry.ts
+  s_078fc63cde22ff::t_ccff3a2e385515 46
+  s_078fc63cde22ff::t_39a5988b4bcdaf 47-51
+  s_078fc63cde22ff::t_bfe72efa427b5b 484-485,506-507
+src/features/bin-designer/components/ParameterPanel/DesignerSearchBar/DesignerSearchBar.tsx
+  s_078fc63cde22ff::t_8ca23bad9daab6 14,52,56-57
+src/features/bin-designer/search/useDesignerSettingsSearch.test.tsx
+  s_078fc63cde22ff::t_f7fef95a51b008 15,24
+src/features/bin-designer/search/searchCoverage.test.tsx
+  s_078fc63cde22ff::t_f7fef95a51b008 19
+src/features/bin-designer/search/designerControlRegistry.test.ts
+  s_078fc63cde22ff::t_f7fef95a51b008 18,65,94-96
+  s_078fc63cde22ff::t_ea0920dc3cb203 97-98
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.test.ts
+  s_078fc63cde22ff::t_d05115c80e88bb 173-176
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_078fc63cde22ff::t_d05115c80e88bb 83-84
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_078fc63cde22ff::t_d05115c80e88bb 226-228
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_078fc63cde22ff::t_d05115c80e88bb 36-51
+src/core/cqrs/validation/schemas.test.ts
+  s_078fc63cde22ff::t_811e530d6d1c27 86-104,260-267
+  s_078fc63cde22ff::t_3e1efb251f220e 268
+src/shared/utils/layoutMigration.ts
+  s_078fc63cde22ff::t_d780a62f114c58 3,26-28,31-37
+  s_078fc63cde22ff::t_9ac69778839ad1 38
+src/core/sync/adapters/layoutAdapter.test.ts
+  s_078fc63cde22ff::t_1979e765801560 374-429
+src/features/print-export/utils/split.test.ts
+  s_078fc63cde22ff::t_63cc39591e406e 163-176,178-179,181-186,194-195
+  s_078fc63cde22ff::t_e682120e49996c 187,189-190,192-193
+  s_078fc63cde22ff::t_051b5185156e36 20-24,32,177,180,188,191
+  s_078fc63cde22ff::t_fce4dbb9c4da38 17
+src/shared/utils/validation.test.ts
+  s_078fc63cde22ff::t_a2c1e982692d2b 761
+  s_078fc63cde22ff::t_d06adbb4c403e4 725,774
+api/lib/validation.ts
+  s_078fc63cde22ff::t_d780a62f114c58 19-20,55-64,326
+src/core/types/layout.ts
+  s_078fc63cde22ff::t_5f82fc720532e9 14,166-169,197,200
+src/shared/utils/validationSalvage.ts
+  s_078fc63cde22ff::t_d780a62f114c58 33,46,112,122
+docs/schemas/layout.md
+  s_078fc63cde22ff::t_466013f89f583c 165
+src/shared/utils/layoutMigration.test.ts
+  s_078fc63cde22ff::t_47286795428486 66-79
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_078fc63cde22ff::t_96ec917388d82a 753-794,810
+  s_078fc63cde22ff::t_2929455af175a6 795-809
+src/shared/schema/layoutKeys.ts
+  s_078fc63cde22ff::t_d780a62f114c58 87
+api/sync/layouts/[id].ts
+  s_078fc63cde22ff::t_c715136979d444 8-9,14,16,19
+src/core/cqrs/v2/domain/bin/updateBin.ts
+  s_078fc63cde22ff::t_93e3d3d0f99096 27,68,107
+  s_078fc63cde22ff::t_64daac3b9c56aa 191,199-200
+  s_078fc63cde22ff::t_6a568160c8ee92 201
+  s_078fc63cde22ff::t_f11b2478d7be26 183-187,189
+src/core/sync/payloadKey.ts
+  s_078fc63cde22ff::t_c715136979d444 4
+src/features/print-export/utils/split.ts
+  s_078fc63cde22ff::t_0841f1c7c1cb21 186-188,190-191
+  s_078fc63cde22ff::t_7c3093c0780db1 17-18,170-174,183-185,189
+src/core/sync/adapters/layoutAdapter.ts
+  s_078fc63cde22ff::t_d780a62f114c58 25-27
+  s_078fc63cde22ff::t_c715136979d444 32,71-72
+public/schema/layout.schema.json
+  s_078fc63cde22ff::t_d780a62f114c58 565-568
+src/core/cqrs/v2/domain/bin/addBin.ts
+  s_078fc63cde22ff::t_5f82fc720532e9 23,41
+  s_078fc63cde22ff::t_64daac3b9c56aa 78
+src/features/grid-editor/components/Grid/Bin/binPropsAreEqual.ts
+  s_078fc63cde22ff::t_f98310086502ad 47-50
+src/core/cqrs/validation/slant.ts
+  s_078fc63cde22ff::t_5f82fc720532e9 1-3,4-8
+api/lib/validation.test.ts
+  s_078fc63cde22ff::t_1979e765801560 128-130,135-147
+  s_078fc63cde22ff::t_63cc39591e406e 131-134
+  s_078fc63cde22ff::t_0b19b5270a80b9 34
+src/core/cqrs/validation/schemas.ts
+  s_078fc63cde22ff::t_5f82fc720532e9 49,98,138
+src/core/cqrs/v2/domain/bin/updateBin.test.ts
+  s_078fc63cde22ff::t_a8fdf8d3bd6cbd 194-198,203-214,270-279
+  s_078fc63cde22ff::t_63cc39591e406e 199-202
+  s_078fc63cde22ff::t_1a7bea2d92bbd0 215-236
+  s_078fc63cde22ff::t_164300a96a1540 1,7,237-267
+  s_078fc63cde22ff::t_3cdb4ba7cd1205 268-269
+src/shared/utils/placementTurn.test.ts
+  s_078fc63cde22ff::t_dbe0bfcf34cd57 1-26
+src/shared/utils/placementTurn.ts
+  s_078fc63cde22ff::t_dbe0bfcf34cd57 1-43
+src/shared/utils/validationPlacement.ts
+  s_078fc63cde22ff::t_4cdbbd953818e6 24,62-85,87,132,137-138,153,155-157,166-169,196-197,200-201,215
+  s_078fc63cde22ff::t_2fda34b1e5919f 185-187,199
+  s_078fc63cde22ff::t_f11056fae11961 35,37,122-124,202-205,209-210,213-214
+  s_078fc63cde22ff::t_1c4284b24fab65 188,198,206-208,211-212
+  s_078fc63cde22ff::t_ec37e3367480ba 216-218
+  s_078fc63cde22ff::t_6a568160c8ee92 139-140,170-179
+  s_078fc63cde22ff::t_6e0a740c23561f 86
+src/features/bin-designer/components/DesignerPage/useDesignNameEditor.ts
+  s_078fc63cde22ff::t_255a5cc4e2b7a6 25,110,137
+src/features/design-linking/hooks/useBinLinking.ts
+  s_078fc63cde22ff::t_255a5cc4e2b7a6 23,393
+src/features/bin-designer/hooks/useAutoSave.ts
+  s_078fc63cde22ff::t_255a5cc4e2b7a6 23,154
+src/shared/utils/expandToFit.test.ts
+  s_078fc63cde22ff::t_a1df70cf9babef 164-165,166-182
+src/features/bin-designer/hooks/useThumbnailRegeneration.ts
+  s_078fc63cde22ff::t_255a5cc4e2b7a6 21,92
+src/shared/utils/fill.test.ts
+  s_078fc63cde22ff::t_f5d4cdd080c6d8 607-608,609-652,654-658
+  s_078fc63cde22ff::t_a8e64e763785a0 653
+  s_078fc63cde22ff::t_f49d9a8678ef7d 659-661
+src/core/cqrs/v2/domain/bin/duplicateBin.ts
+  s_078fc63cde22ff::t_64daac3b9c56aa 53-54
+  s_078fc63cde22ff::t_f11b2478d7be26 55
+src/core/cqrs/v2/domain/bin/addBin.test.ts
+  s_078fc63cde22ff::t_ebb96295b75eab 95-113
+src/features/bin-designer/index.ts
+  s_078fc63cde22ff::t_b4dd5778def8bf 23
+src/features/bin-designer/hooks/useCreateFromBin.ts
+  s_078fc63cde22ff::t_255a5cc4e2b7a6 26,232
+src/shared/utils/placedSlant.ts
+  s_078fc63cde22ff::t_4cf9e68cb80b7c 24-25
+  s_078fc63cde22ff::t_b7da5dfc28f176 208-211,219-223,227,232-233,238-242
+  s_078fc63cde22ff::t_60e4690f589646 11,13-15,18-19,18,19,26-42,58-64,67-70,76,78,80,82,84-86,120-124,135-138,139,153-155,161-162,165-174,177,197-207,212-217,224,226,228,234-237,244,247-248,250
+  s_078fc63cde22ff::t_f11056fae11961 218,225,229-231,243,245-246,249
+  s_078fc63cde22ff::t_adc1cb82a2d510 16,20-23,87-91,93,102-110,117-119,134
+  s_078fc63cde22ff::t_8e0f964e835817 12,111-116,140-152,160,175-176
+  s_078fc63cde22ff::t_1d14c2bfcf1cea 73-74,77,79,81,83
+  s_078fc63cde22ff::t_6e0a740c23561f 1-3,5-10,17,65-66,71-72,75,163-164,178-184,186,188-192,194-196
+  s_078fc63cde22ff::t_39a65c03c350a8 185,187,193
+  s_078fc63cde22ff::t_47b59533e879fd 4
+src/features/bin-designer/hooks/useBackgroundThumbnailRegen.test.ts
+  s_078fc63cde22ff::t_a50ccda0efef0f 42
+src/features/bin-designer/hooks/useBackgroundThumbnailRegen.ts
+  s_078fc63cde22ff::t_255a5cc4e2b7a6 40,241
+src/features/design-linking/hooks/useBinLinking.test.ts
+  s_078fc63cde22ff::t_a50ccda0efef0f 34
+src/features/bin-designer/store/index.ts
+  s_078fc63cde22ff::t_b4dd5778def8bf 11
+src/features/bin-designer/hooks/usePlaceBinInLayout.ts
+  s_078fc63cde22ff::t_255a5cc4e2b7a6 34,58
+src/features/bin-designer/hooks/useDesignerInit.ts
+  s_078fc63cde22ff::t_255a5cc4e2b7a6 34,144
+src/shared/utils/placedSlant.test.ts
+  s_078fc63cde22ff::t_7e5e309a9b4261 1-43,44-99,138-204
+  s_078fc63cde22ff::t_85f44e86935959 112-132
+  s_078fc63cde22ff::t_164300a96a1540 133,134-137
+src/core/store/layout/binActions.ts
+  s_078fc63cde22ff::t_893158ad3dfe04 46,58,70-71
+  s_078fc63cde22ff::t_6a568160c8ee92 72
+  s_078fc63cde22ff::t_f11b2478d7be26 47-48,59-61
+src/features/bin-designer/store/customBinRegistry.ts
+  s_078fc63cde22ff::t_7565a2364584fa 146-147
+  s_078fc63cde22ff::t_94a59e17774e03 25,143-145,148-149,228-239,247-250,365,443-446,451-452,461,464-466,471-474,564
+  s_078fc63cde22ff::t_4aa2adfb045d38 10
+  s_078fc63cde22ff::t_763b82979db984 575,577-578,580-583,594-599
+  s_078fc63cde22ff::t_a14577d6caa8a5 568
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_078fc63cde22ff::t_535a0cb70ca358 15,569-580,586-608,645-656
+  s_078fc63cde22ff::t_f8a21a670abf1c 657
+  s_078fc63cde22ff::t_aa2906946ed1e4 16,610-611,613,615-616
+  s_078fc63cde22ff::t_6818a205396bf8 617-618
+  s_078fc63cde22ff::t_164300a96a1540 581-585
+src/shell/registrations/LinkedRiseRegistration.test.tsx
+  s_078fc63cde22ff::t_8027cf5e75336a 3,6,25,41-49,90-105
+  s_078fc63cde22ff::t_9da72455d3e450 106-107
+src/features/design-linking/hooks/useBinResizedListener.ts
+  s_078fc63cde22ff::t_255a5cc4e2b7a6 28
+src/shared/utils/fill.ts
+  s_078fc63cde22ff::t_41cf0d32e7f68f 14-16
+  s_078fc63cde22ff::t_8842802eaec878 1,3,5,57-65,69-74
+  s_078fc63cde22ff::t_ed5d8034250894 75-76
+src/shared/utils/validationPlacement.test.ts
+  s_078fc63cde22ff::t_4a7c8b91e13773 645-646,651-731,787
+  s_078fc63cde22ff::t_1f9e612dbdd572 788-790
+  s_078fc63cde22ff::t_6a568160c8ee92 732-748
+src/shell/registrations/LinkedRiseRegistration.tsx
+  s_078fc63cde22ff::t_e22b9b423c8862 3,13-14,71-77,81-85
+  s_078fc63cde22ff::t_e4764f1636f8dc 86
+  s_078fc63cde22ff::t_4aa2adfb045d38 78-80
+src/features/print-export/hooks/usePrintList.ts
+  s_078fc63cde22ff::t_06a0848bc8dda6 146-147
+  s_078fc63cde22ff::t_62db35f07f2bd6 153
+  s_078fc63cde22ff::t_0ebd00d4a673bf 126,149-152,154-156,165
+  s_078fc63cde22ff::t_7c3093c0780db1 14,148,166-167
+src/features/print-export/hooks/usePrintList.test.ts
+  s_078fc63cde22ff::t_fce4dbb9c4da38 1,21,665-666,667-692
+  s_078fc63cde22ff::t_e94a3bf5a82bd0 693
+src/core/storage/ShareService.test.ts
+  s_078fc63cde22ff::t_78ecf69749a578 1194,1196-1197,1202-1207,1211-1213
+src/features/bin-designer/storage/designStoreAdapter.ts
+  s_078fc63cde22ff::t_4e659b03e0abfd 83,91
+src/features/bin-designer/sync/designAdapter.test.ts
+  s_078fc63cde22ff::t_dad2a43384a17c 25,399
+  s_078fc63cde22ff::t_aa2906946ed1e4 383-398,400-406,408
+  s_078fc63cde22ff::t_4cab232db5e60b 407
+  s_078fc63cde22ff::t_3d336a66fc0b1d 409
+src/features/bin-designer/sync/designAdapter.ts
+  s_078fc63cde22ff::t_763b82979db984 25,385
+src/core/storage/designStorePort.ts
+  s_078fc63cde22ff::t_8865f0912f26ba 96
+  s_078fc63cde22ff::t_4e659b03e0abfd 19,106
+src/shared/hooks/interactions/moveOrder.test.ts
+  s_078fc63cde22ff::t_ed5efe4cd461fc 1,7,30,32-34,58-59,76-77
+  s_078fc63cde22ff::t_0f125b4f662e21 2-3,8-16,31,35-42,46-47,50-52
+  s_078fc63cde22ff::t_3bd95a0ba51aa6 4-5,17-21,24-29,43-45,55-57
+  s_078fc63cde22ff::t_bb6d22114233d5 48-49,53-54,72-75
+src/shared/hooks/interactions/useDragInteraction.ts
+  s_078fc63cde22ff::t_7d7a24ba1ab587 451
+  s_078fc63cde22ff::t_ed5efe4cd461fc 450
+src/core/cqrs/v2/domain/bin/duplicateBin.test.ts
+  s_078fc63cde22ff::t_318b0da8d46f82 35-48
+src/shared/hooks/interactions/moveOrder.ts
+  s_078fc63cde22ff::t_ed5efe4cd461fc 8-9,15,22,45
+  s_078fc63cde22ff::t_8a9b1d109824fd 5-7,10-14,16-21,23-24,31-44
+src/shared/utils/slantRow.test.ts
+  s_078fc63cde22ff::t_810d7caab089cc 1-63,65-103,105-134
+  s_078fc63cde22ff::t_ff7d0370f00b76 64
+  s_078fc63cde22ff::t_2567fb1ca3136e 104
+src/features/grid-editor/components/Grid/Bin/Bin.tsx
+  s_078fc63cde22ff::t_13468cbb88ced8 19,409
+  s_078fc63cde22ff::t_a120a154757bab 12,132-134,361-362,402-408
+  s_078fc63cde22ff::t_4124fdc96371c5 410-413
+src/features/grid-editor/components/Grid/Bin/Bin.test.tsx
+  s_078fc63cde22ff::t_00874db3b208f2 323-354
+src/features/grid-editor/components/Grid/Bin/binConstants.ts
+  s_078fc63cde22ff::t_a036365b213f79 13-14
+src/features/bin-inspector/components/Inspector/BinSlantSection/useBinSlantSection.ts
+  s_078fc63cde22ff::t_bace7d071b70c7 1-93
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_078fc63cde22ff::t_a036365b213f79 25
+  s_078fc63cde22ff::t_378715945ebbb5 448
+  s_078fc63cde22ff::t_87542f832b781a 449
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.test.tsx
+  s_078fc63cde22ff::t_776ab5ac3e5c9a 160-178
+src/features/grid-editor/components/Grid/Bin/BinSlantBadge.tsx
+  s_078fc63cde22ff::t_13468cbb88ced8 1-14
+src/features/bin-inspector/components/Inspector/BinSlantSection/BinSlantSection.tsx
+  s_078fc63cde22ff::t_bace7d071b70c7 1-122
+src/shared/utils/slantRow.ts
+  s_078fc63cde22ff::t_6e4fb62d641c6a 1-56,59-79,81-85,87-115
+  s_078fc63cde22ff::t_1ac7b4372291f9 57-58,80,86
+src/features/bin-inspector/components/Inspector/BinSlantSection/index.ts
+  s_078fc63cde22ff::t_bace7d071b70c7 1
+src/features/grid-editor/components/Grid/Bin/BinSlantBadge.test.tsx
+  s_078fc63cde22ff::t_13468cbb88ced8 1-11
+src/features/bin-inspector/components/Inspector/BinSlantSection/BinSlantSection.test.tsx
+  s_078fc63cde22ff::t_ebff1e65cd078a 1-107,109-147
+  s_078fc63cde22ff::t_730e5b8df25655 108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e2494fc133cc3eaec0a72b8207f835d452efe228",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
