@@ -79,6 +79,8 @@ export type LidCompatibilitySeverity = 'blocker' | 'warning';
  * `binDesigner.lid.compat.{id}` for the user-facing message.
  */
 export type LidCompatibilityId =
+  /** A slanted bin's rim has moved sideways off its socket; no lid is built. */
+  | 'slanted'
   | 'wallCutouts'
   | 'wallCutoutsAllSides'
   | 'knifeSlots'
@@ -128,6 +130,7 @@ export type LidCompatibilityId =
 /** Notes already said in one line, so they have no `{id}Detail` behind a dot. */
 export const LID_ISSUES_WITHOUT_DETAIL: ReadonlySet<LidCompatibilityId> =
   new Set<LidCompatibilityId>([
+    'slanted',
     'wallPattern',
     'shortBin',
     'topDownCutoutsAtLip',
@@ -366,6 +369,9 @@ function isPolygonMask(params: BinParams): boolean {
 }
 
 export function checkLidCompatibility(params: BinParams): readonly LidCompatibilityIssue[] {
+  // Every other answer is moot: a lid would sit on a rim that has moved off the
+  // socket, and a bin stacked on top would lean further still.
+  if (resolveSlant(params)) return [{ id: 'slanted', severity: 'blocker' }];
   // A sliding lid answers a different set of questions entirely. Branching
   // here — rather than threading `isSlide` through fifteen checks — is what
   // keeps each list readable and stops a cap-lid rule quietly applying to a
@@ -736,9 +742,6 @@ export function shouldGenerateLid(params: BinParams): boolean {
   // lid would be emitted for a plate with no cavity to close. Gated here rather
   // than in the constraint engine because the lid is not a `FeatureKey`.
   if (params.base.tile === true) return false;
-  // A lid would sit on a rim that has moved sideways off the socket, and a bin
-  // stacked on top would lean further still.
-  if (resolveSlant(params)) return false;
   return !hasLidBlocker(checkLidCompatibility(params));
 }
 

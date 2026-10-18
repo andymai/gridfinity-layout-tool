@@ -20,6 +20,7 @@ export const DESIGNER_SETTINGS: readonly DesignerSettingEntry[] = [
   { controlId: 'bd-dimensions', category: 'shape' },
   { controlId: 'bd-overhang', category: 'shape' },
   { controlId: 'bd-shape', category: 'shape' },
+  { controlId: 'bd-slant', category: 'shape' },
   { controlId: 'bd-walls', category: 'shape' },
   { controlId: 'bd-base', category: 'shape' },
   { controlId: 'bd-interior', category: 'interior' },

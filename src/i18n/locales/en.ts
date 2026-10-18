@@ -1178,6 +1178,11 @@ const en: Record<string, string> = {
     'Expand the bin body outward on any side by a few millimeters so it fills a drawer snugly. Advanced — leave at zero for standard Gridfinity fit.',
   'help.target.binDesigner.overhang.keywords':
     'overhang|drawer fit|expand|outward|oversize|snug|fill drawer|clearance|tolerance',
+  'help.target.binDesigner.slant.title': 'Slant',
+  'help.target.binDesigner.slant.description':
+    'Lean the bin toward one side so tall items such as pens fit a drawer too shallow to stand them upright.',
+  'help.target.binDesigner.slant.keywords':
+    'slant|slanted|lean|tilt|angled|diagonal|pens|markers|shallow drawer',
   'help.target.binDesigner.labelTabs.title': 'Label tabs',
   'help.target.binDesigner.labelTabs.description':
     'Add the sloped tab along a compartment edge where a printed or written label sits. Pick the edge, width, and support style. Standard bins only.',
@@ -2356,6 +2361,7 @@ const en: Record<string, string> = {
     'Wall pattern can perforate the lip, so the lid may sit loosely.',
   'binDesigner.lid.compat.shortBin':
     'Bin is 1U tall: the lid still seats but the grip is marginal.',
+  'binDesigner.lid.compat.slanted': 'A slanted bin has no lid.',
   'binDesigner.lid.compat.tallLidShortBin': 'A tall lid on a 1U bin can be knocked off.',
   'binDesigner.lid.compat.tallLidShortBinDetail':
     'A tall lid on a 1U bin has a long lever arm on that marginal grip, so a knock may pop it off. Consider a taller bin or more snap-fit sides.',
@@ -2875,6 +2881,22 @@ const en: Record<string, string> = {
   'binDesigner.printFit.fits': 'Fits your {width} × {depth} mm print bed.',
   'binDesigner.printFit.slantTooLarge':
     'This slanted bin is too big for your {width} \u00d7 {depth} mm print bed.',
+  'binDesigner.slant.title': 'Slant',
+  'binDesigner.slant.hint':
+    'Leans the bin toward one side so tall items fit a shallow drawer, while its base stays flat on the grid. Bins in a row lean on each other.',
+  'binDesigner.slant.angle': 'Angle',
+  'binDesigner.slant.angleAria': 'Slant angle in degrees',
+  'binDesigner.slant.side': 'Leans toward',
+  'binDesigner.slant.endSupport': 'End support',
+  'binDesigner.slant.endSupportHint':
+    'A wedge for the last bin in a row to rest on, exported as a second part.',
+  'binDesigner.slant.topOffset': 'Top reaches {mm} mm past the base',
+  'binDesigner.slant.longestItem': 'Fits straight items up to {mm} mm long',
+  'binDesigner.slant.steep': 'Past 45\u00b0 the leaning wall prints as an unsupported overhang.',
+  'binDesigner.slant.steepDetail':
+    'The walls are also thinner across the slope: they keep their thickness level with the bed, not square to the wall.',
+  'binDesigner.slant.unavailable': 'Unavailable with {feature}.',
+  'binDesigner.slant.noStackingLip': 'A slanted bin has no stacking lip.',
   'binDesigner.printFit.slantTooLargeDetail':
     "A slanted bin can't be split, so lower the angle or make the bin smaller.",
   'binDesigner.dependency.enableStackingLip': 'Enable stacking lip',

@@ -44,6 +44,12 @@ export const DESIGNER_CONTROL_SEARCH: readonly DesignerControlSearchEntry[] = [
     keywordsKey: 'help.target.binDesigner.shape.keywords',
   },
   {
+    controlId: 'bd-slant',
+    titleKey: 'help.target.binDesigner.slant.title',
+    descriptionKey: 'help.target.binDesigner.slant.description',
+    keywordsKey: 'help.target.binDesigner.slant.keywords',
+  },
+  {
     controlId: 'bd-walls',
     titleKey: 'help.target.binDesigner.walls.title',
     descriptionKey: 'help.target.binDesigner.walls.description',

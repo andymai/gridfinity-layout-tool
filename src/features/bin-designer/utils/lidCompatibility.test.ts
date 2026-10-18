@@ -1323,6 +1323,7 @@ const ALL_ISSUES: Record<LidCompatibilityId, true> = {
   hingeStackableTop: true,
   hingeSnapTooTall: true,
   hingeGripOnHinge: true,
+  slanted: true,
 };
 
 describe('lid compatibility notes', () => {

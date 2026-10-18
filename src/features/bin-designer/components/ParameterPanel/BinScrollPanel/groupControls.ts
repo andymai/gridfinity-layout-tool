@@ -22,6 +22,7 @@ export const GROUP_OF_CONTROL: Readonly<Record<string, PanelGroup>> = {
   'bd-dimensions': 'shape',
   'bd-overhang': 'shape',
   'bd-shape': 'shape',
+  'bd-slant': 'shape',
   'bd-walls': 'shape',
   'bd-wall-cutouts': 'shape',
   'bd-print-fit': 'shape',

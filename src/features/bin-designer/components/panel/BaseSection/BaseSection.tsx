@@ -171,6 +171,7 @@ export function BaseSection() {
           checked={state.base.stackingLip}
           onChange={handlers.toggleStackingLip}
           info={t('binDesigner.base.stackingLip.hint')}
+          disabledReason={state.slanted ? t('binDesigner.slant.noStackingLip') : undefined}
         />
         {!state.base.stackingLip && (
           <FeatureToggle

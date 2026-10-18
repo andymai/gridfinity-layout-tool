@@ -53,6 +53,7 @@ import {
 import { bodyTypeParams, deriveBodyType } from './bodyType';
 import type { BodyType } from './bodyType';
 import { useMagnetPressFit } from './useMagnetPressFit';
+import { resolveSlant } from '@/shared/utils/slantPlan';
 
 /** Drop the `tile` key entirely — absent is the off state, never `false`. */
 function omitTile(base: BinParams['base']): BinParams['base'] {
@@ -607,6 +608,7 @@ export function useBaseSection() {
   return {
     state: {
       base,
+      slanted: resolveSlant(params) !== null,
       hasDetachableFeet,
       pinDiameter: base.feetPinDiameter ?? DEFAULT_DETACHABLE_PIN_DIAMETER_MM,
       detachableFootCount: detachablePlan?.placements.length ?? 0,
