@@ -11,6 +11,7 @@ import { calcMaxGridUnits } from '@/core/constants';
 import { generateEnhancedPrintList } from '@/features/print-export/utils/split';
 import type { PrintSplitFit } from '@/features/print-export/utils/split';
 import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
+import { placedSlant } from '@/shared/utils/placedSlant';
 import { effectiveGridUnitMmY } from '@/core/types';
 import {
   applyFiltersAndSort,
@@ -122,6 +123,7 @@ export function usePrintList(): UsePrintListReturn {
   const designKinds = useLinkedDesignKinds();
   const gridUnitMmY = effectiveGridUnitMmY(layout);
   const { printBedSize, printBedDepth, gridUnitMm, baseplateParams } = layout;
+  const { drawer: layoutDrawer, heightUnitMm, lowProfileBase } = layout;
   const drawerWidth = layout.drawer.width;
   const drawerDepth = layout.drawer.depth;
   const splitFit = useMemo(
@@ -141,6 +143,17 @@ export function usePrintList(): UsePrintListReturn {
           (linkedId === undefined ? undefined : designOverhangs.get(linkedId))
         );
       },
+      // `placedSlant` reads the same registry `designOverhangs` follows, so a
+      // re-saved design's slant refreshes this through that dependency.
+      slantFor: (bin) =>
+        placedSlant(bin, {
+          drawer: layoutDrawer,
+          baseplateParams,
+          gridUnitMm,
+          gridUnitMmY,
+          heightUnitMm,
+          lowProfileBase,
+        })?.plan ?? null,
     }),
     [
       printBedSize,
@@ -149,6 +162,9 @@ export function usePrintList(): UsePrintListReturn {
       gridUnitMmY,
       drawerWidth,
       drawerDepth,
+      layoutDrawer,
+      heightUnitMm,
+      lowProfileBase,
       baseplateParams,
       designOverhangs,
       designKinds,

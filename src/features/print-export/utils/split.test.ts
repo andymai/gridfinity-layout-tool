@@ -14,9 +14,14 @@ import { binId, layerId, categoryId, designId, gridUnits, heightUnits } from '@/
 import { STAGING_ID } from '@/core/constants';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 import type { OverhangConfig } from '@/shared/types/bin';
+import { slantPlanFor } from '@/shared/utils/slantPlan';
 
 /** A print-bed fit expressed as "N grid units fit each axis". */
-function fitAt(maxUnits: number, overhangFor?: PrintSplitFit['overhangFor']): PrintSplitFit {
+function fitAt(
+  maxUnits: number,
+  overhangFor?: PrintSplitFit['overhangFor'],
+  slantFor?: PrintSplitFit['slantFor']
+): PrintSplitFit {
   const gridUnitMm = 42;
   return {
     bedWidthMm: maxUnits * gridUnitMm,
@@ -24,6 +29,7 @@ function fitAt(maxUnits: number, overhangFor?: PrintSplitFit['overhangFor']): Pr
     gridUnitMm,
     gridUnitMmY: gridUnitMm,
     ...(overhangFor ? { overhangFor } : {}),
+    ...(slantFor ? { slantFor } : {}),
   };
 }
 
@@ -168,9 +174,10 @@ describe('generatePrintList', () => {
       notes: '',
       ...extra,
     });
+    const slantFor = (b: Bin) => slantPlanFor(b.slant);
     const rows = generatePrintList(
       [bin('1', 0), bin('2', 6, { slant: { angleDeg: 40, side: 'back' } })],
-      fitAt(4)
+      fitAt(4, undefined, slantFor)
     );
     expect(rows).toHaveLength(2);
     const slanted = rows.find((r) => r.totalPieces === 1);
@@ -178,11 +185,10 @@ describe('generatePrintList', () => {
     expect(slanted?.binCount).toBe(1);
     expect(upright?.binCount).toBe(1);
 
-    // An overhang keeps the slant off, so that bin splits like an upright one.
-    const overhang = { left: 5, right: 0, front: 0, back: 0 };
+    // A slant the export does not apply leaves the bin to split.
     const kept = generatePrintList(
       [bin('2', 6, { slant: { angleDeg: 40, side: 'back' } })],
-      fitAt(4, () => overhang)
+      fitAt(4, undefined, () => null)
     );
     expect(kept[0].totalPieces).toBeGreaterThan(1);
   });

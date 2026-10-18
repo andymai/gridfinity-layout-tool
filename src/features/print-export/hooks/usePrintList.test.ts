@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { usePrintList } from '@/features/print-export/hooks/usePrintList';
 import { useLayoutStore } from '@/core/store/layout';
@@ -18,6 +18,7 @@ import type { Layout, Bin } from '@/core/types';
 import { useLabelPlateCounts } from '@/shared/hooks/useLabelPlateCounts';
 import { useLinkedDesignOverhangs } from '@/shared/hooks/useLinkedDesignOverhangs';
 import { useLinkedDesignKinds } from '@/shared/hooks/useLinkedDesignKinds';
+import { registerLinkedSlantResolver } from '@/shared/utils/placedSlant';
 
 vi.mock('@/shared/hooks/useLabelPlateCounts', () => ({
   useLabelPlateCounts: vi.fn(() => new Map()),
@@ -659,6 +660,36 @@ describe('usePrintList', () => {
 
       const { result } = renderHook(() => usePrintList());
       expect(result.current.rows[0].needsSplit).toBe(false);
+    });
+  });
+  describe('slanted bins', () => {
+    const SLANT = { angleDeg: 40, side: 'back' as const };
+    // 4 units fit the 180mm bed, so an upright 6-unit bin splits.
+    const wide = (overrides: Partial<Bin> = {}): Bin =>
+      createTestBin({ width: gridUnits(6), depth: gridUnits(1), ...overrides });
+    const onBed = (bins: Bin[]): Layout => ({ ...createTestLayout(bins), printBedSize: mm(180) });
+    const pieces = (bins: Bin[]): number => {
+      useLayoutStore.setState({ layout: onBed(bins) });
+      const { result } = renderHook(() => usePrintList());
+      return result.current.rows[0].totalPieces;
+    };
+
+    afterEach(() => registerLinkedSlantResolver(null));
+
+    it('never splits a bin with a placed slant', () => {
+      expect(pieces([wide()])).toBeGreaterThan(1);
+      expect(pieces([wide({ slant: SLANT })])).toBe(1);
+    });
+
+    it('never splits a bin whose linked design slants', () => {
+      const DESIGN = designId('d-slanted');
+      registerLinkedSlantResolver((id) => (id === DESIGN ? { config: SLANT } : undefined));
+      expect(pieces([wide({ linkedDesignId: DESIGN })])).toBe(1);
+    });
+
+    it('splits a slanted bin whose own overhang keeps it upright, as the export does', () => {
+      const overhang = { left: 5, right: 0, front: 0, back: 0 };
+      expect(pieces([wide({ slant: SLANT, overhang })])).toBeGreaterThan(1);
     });
   });
 });

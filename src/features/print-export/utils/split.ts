@@ -14,7 +14,8 @@ import type { OverhangConfig } from '@/shared/types/bin';
 import { getGridBins } from '@/shared/utils';
 import { getSplitPositions } from '@/shared/utils/splitPositions';
 import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
-import { hasOverhang, overhangKey, resolveOverhang } from '@/shared/utils/overhang';
+import { overhangKey, resolveOverhang } from '@/shared/utils/overhang';
+import type { SlantPlan } from '@/shared/utils/slantPlan';
 import {
   calcFilamentCost,
   calcSpoolPercentage,
@@ -166,6 +167,11 @@ export interface PrintSplitFit {
    * Omit for a plain capacity check.
    */
   readonly overhangFor?: (bin: Bin) => OverhangConfig | undefined;
+  /**
+   * The slant the exporter applies to a placed bin (`placedSlant`), its
+   * design's own included. A slanted bin is never split. Omit for upright bins.
+   */
+  readonly slantFor?: (bin: Bin) => SlantPlan | null;
 }
 
 /** Chunk limit and grouping key for one bin's split. */
@@ -174,12 +180,13 @@ function fitForBin(
   fit: PrintSplitFit
 ): { maxWidth: number; maxDepth: number; key: string } {
   const overhang = fit.overhangFor?.(bin);
-  if (bin.slant && !hasOverhang(resolveOverhang(overhang))) {
-    const { angleDeg, side, endSupport } = bin.slant;
+  const slant = fit.slantFor?.(bin);
+  if (slant) {
+    const { angleDeg, side, endSupport } = slant;
     return {
       maxWidth: bin.width,
       maxDepth: bin.depth,
-      key: `${overhangKey(resolveOverhang(overhang))}|slant:${angleDeg}:${side}:${endSupport === true ? 's' : ''}`,
+      key: `${overhangKey(resolveOverhang(overhang))}|slant:${angleDeg}:${side}:${endSupport ? 's' : ''}`,
     };
   }
   const limit = binSplitChunkUnits(
