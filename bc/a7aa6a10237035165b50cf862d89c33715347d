@@ -1,0 +1,89 @@
+src/i18n/locales/nb.json
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/ja.json
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/features/grid-editor/components/Grid/Bin/Bin.tsx
+  s_078fc63cde22ff::t_a120a154757bab 12,132-134,361-362,402-408
+  s_078fc63cde22ff::t_13468cbb88ced8 19,409
+  s_078fc63cde22ff::t_001ead6dac12d1 410-413
+src/i18n/locales/fr.json
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/shared/utils/slantRow.test.ts
+  s_078fc63cde22ff::t_810d7caab089cc 1-63,65-103,105-134
+  s_078fc63cde22ff::t_f70294f2ff656d 64
+  s_078fc63cde22ff::t_916994d0c4b6ef 104
+src/i18n/locales/es.json
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/features/grid-editor/components/Grid/Bin/Bin.test.tsx
+  s_078fc63cde22ff::t_00874db3b208f2 323-354
+src/i18n/locales/uk.json
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/cs.json
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/it.json
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/zh-CN.json
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/ka.json
+  s_078fc63cde22ff::t_eb8d17b94fe925 480-489,1479-1480
+src/i18n/locales/nl.json
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/features/grid-editor/components/Grid/Bin/BinSlantBadge.test.tsx
+  s_078fc63cde22ff::t_13468cbb88ced8 1-11
+src/i18n/locales/ko.json
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_078fc63cde22ff::t_a036365b213f79 25
+  s_078fc63cde22ff::t_378715945ebbb5 448
+  s_078fc63cde22ff::t_7bc80572f83cb6 449
+src/i18n/locales/sv.json
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.test.tsx
+  s_078fc63cde22ff::t_776ab5ac3e5c9a 160-178
+src/i18n/locales/pl.json
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/shared/utils/validationPlacement.ts
+  s_078fc63cde22ff::t_6e0a740c23561f 86-87
+src/i18n/locales/de.json
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/i18n/locales/en.ts
+  s_078fc63cde22ff::t_ad6c49b2c3a657 537-547,1710
+  s_078fc63cde22ff::t_63ba6a45fcef6f 1711
+src/i18n/locales/pt-BR.json
+  s_078fc63cde22ff::t_eb8d17b94fe925 3224-3225,3630-3639
+src/shared/utils/slantRow.ts
+  s_078fc63cde22ff::t_1ac7b4372291f9 57-58,80,86
+  s_078fc63cde22ff::t_6e4fb62d641c6a 1-56,59-79,81-85,87-115
+src/features/grid-editor/components/Grid/Bin/binConstants.ts
+  s_078fc63cde22ff::t_a036365b213f79 13-14
+src/features/grid-editor/components/Grid/Bin/BinSlantBadge.tsx
+  s_078fc63cde22ff::t_13468cbb88ced8 1-14
+src/features/bin-inspector/components/Inspector/BinSlantSection/BinSlantSection.tsx
+  s_078fc63cde22ff::t_bace7d071b70c7 1-122
+src/features/bin-inspector/components/Inspector/BinSlantSection/useBinSlantSection.ts
+  s_078fc63cde22ff::t_bace7d071b70c7 1-93
+src/features/bin-inspector/components/Inspector/BinSlantSection/BinSlantSection.test.tsx
+  s_078fc63cde22ff::t_ebff1e65cd078a 1-107,109-147
+  s_078fc63cde22ff::t_730e5b8df25655 108
+src/features/bin-inspector/components/Inspector/BinSlantSection/index.ts
+  s_078fc63cde22ff::t_bace7d071b70c7 1
+src/shared/utils/placedSlant.ts
+  s_078fc63cde22ff::t_6e0a740c23561f 1-9,15,56-57,62-63,66,98-99,113-134
+  s_078fc63cde22ff::t_1d14c2bfcf1cea 64-65,68,70,72,74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bca7aa6a10237035165b50cf862d89c33715347d",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
