@@ -1,0 +1,23 @@
+src/shared/utils/slantRow.test.ts
+  s_078fc63cde22ff::t_22cdf8805534b3 5-6,150-167
+  s_078fc63cde22ff::t_c28d6f25dcf596 168
+src/shared/utils/slantRow.ts
+  s_078fc63cde22ff::t_22cdf8805534b3 5-11
+  s_078fc63cde22ff::t_5cecee9b372dcd 97-100,106-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7221163456e71ece3180f63ebf5381de67b38833",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
