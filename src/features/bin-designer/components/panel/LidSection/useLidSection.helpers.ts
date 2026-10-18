@@ -3,7 +3,6 @@ import {
   LID_CORNER_RADIUS,
   LID_FIT_CLEARANCE,
   LID_MIN_RAIL_LENGTH,
-  DEFAULT_POLYGON_SIDES,
   resolveCutoutLeanDeg,
   type BinParams,
   type Cutout,
@@ -13,10 +12,14 @@ import {
 } from '@/features/bin-designer/types';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { slideLidFillOffsetMm } from '@/features/bin-designer/utils/slideLidPlanForParams';
-import { clearedProfile, entryChamferWidth, MIN_LOFTED_CHAMFER } from '@/shared/utils/cutoutFit';
+import {
+  clearedProfile,
+  entryChamferWidth,
+  MIN_LOFTED_CHAMFER,
+  MIN_STRAIGHT_WALL_MM,
+} from '@/shared/utils/cutoutFit';
 import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
-import { clampPolygonSides } from '@/shared/utils/cutoutPolygon';
 import { hasTaper, resolveOverhang } from '@/shared/utils/overhang';
 import type { useTranslation } from '@/i18n';
 import {
@@ -270,90 +273,77 @@ const FIXABLE_IDS_WITHOUT_FILL: ReadonlySet<LidCompatibilityId> = new Set(
   [...FIXABLE_IDS].filter((id) => id !== 'slideFillTooHigh')
 );
 
-interface YSpan {
-  readonly min: number;
-  readonly max: number;
+/**
+ * A pocket's wall and chamfer-rim outlines as local Y coordinates, vertex for
+ * vertex, in the frame the lean turns. A path is cut from its own cleared
+ * outline, whose mitered corners can grow past the clearance; the straight cut
+ * and the bounding box the builder falls back to count toward its wall too.
+ */
+function pocketSections(cutout: Cutout, chamfer: number): { wall: number[]; rim: number[] } {
+  const { clearance, d } = clearedProfile(cutout);
+  if (cutout.shape !== 'path')
+    return { wall: [-d / 2, d / 2], rim: [-d / 2 - chamfer, d / 2 + chamfer] };
+  const cut = pathCutoutCut(cutout, clearance, chamfer);
+  const straight = chamfer > 0 ? pathCutoutCut(cutout, clearance, 0) : null;
+  const box = [-cutout.depth / 2, cutout.depth / 2];
+  if (!cut) return { wall: box, rim: box };
+  const extra = [...(straight?.base ?? []).map((pt) => pt.y), ...box];
+  return {
+    wall: [...cut.base.map((pt) => pt.y), ...extra],
+    rim: [...cut.rim.map((pt) => pt.y), ...extra],
+  };
 }
 
-const spanOf = (ys: readonly number[]): YSpan => ({ min: Math.min(...ys), max: Math.max(...ys) });
-
-/**
- * Local Y extents of a pocket's floor and of its entry chamfer's rim, in the
- * frame the lean turns. A path is cut from its own cleared outline, whose
- * mitered corners can grow past the clearance, falling back to a straight cut
- * and then to its bounding box. The rim lofted at the mouth grows by the
- * chamfer; a polygon's flare at a shallower pocket's floor is offset with
- * mitered corners, which reach past it.
- */
-function pocketSpans(
-  cutout: Cutout,
-  chamfer: number,
-  atFloor: boolean
-): { floor: YSpan; rim: YSpan } {
-  const { clearance, d } = clearedProfile(cutout);
-  if (cutout.shape !== 'path') {
-    const n = clampPolygonSides(cutout.sides ?? DEFAULT_POLYGON_SIDES);
-    const miter =
-      atFloor && cutout.shape === 'polygon' ? 1 / Math.sin(((n - 2) * Math.PI) / (2 * n)) : 1;
-    const reach = d / 2 + chamfer * miter;
-    return { floor: { min: -d / 2, max: d / 2 }, rim: { min: -reach, max: reach } };
-  }
-  const straight = pathCutoutCut(cutout, clearance, 0);
-  const lofted = chamfer > 0 ? pathCutoutCut(cutout, clearance, chamfer) : null;
-  const box = [-cutout.depth / 2, cutout.depth / 2];
-  const floorYs = [...(straight?.base ?? []), ...(lofted?.base ?? [])].map((pt) => pt.y);
-  const rimYs = (lofted?.rim ?? []).map((pt) => pt.y);
-  return {
-    floor: spanOf(floorYs.length > 0 ? floorYs : box),
-    rim: spanOf([...floorYs, ...rimYs, ...box]),
+/** Depths of the level, shallower pockets this one's mouth might open onto. */
+function floorDepthsUnder(cutout: Cutout, pockets: readonly Cutout[]): number[] {
+  const circles = (c: Cutout): { x: number; y: number; r: number }[] => {
+    const grow = Math.max(0, c.clearance ?? 0) + Math.max(0, c.chamferWidth ?? 0);
+    return expandCutoutArray(c).map((i) => ({
+      x: i.x + i.width / 2,
+      y: i.y + i.depth / 2,
+      r: Math.hypot(i.width, i.depth) / 2 + grow,
+    }));
   };
+  const own = circles(cutout);
+  return pockets
+    .filter(
+      (o) =>
+        o !== cutout &&
+        o.shape !== 'mesh' &&
+        resolveCutoutLeanDeg(o) === 0 &&
+        o.cutDepth < cutout.cutDepth &&
+        circles(o).some((a) => own.some((b) => Math.hypot(a.x - b.x, a.y - b.y) < a.r + b.r))
+    )
+    .map((o) => o.cutDepth);
 }
 
 /**
  * Fill height a pocket needs to keep its depth. The worker clamps the drawn
- * depth to the fill whatever the lean, then turns the tool about local X
- * through its mouth, which puts a point `h` below the mouth at local `y` at
- * `h·cos − y·sin` below it. The floor sits at the drawn depth; a chamfer's
- * wider rim at the mouth, or at the floor of a shallower pocket it opens onto.
+ * depth to the fill, then turns the tool about local X through its mouth, so a
+ * point `h` down the axis at local `y` lands `h·cos − y·sin` below the fill.
+ * The floor is `h = D`; the chamfer's rim is at the mouth; and a leaned pocket
+ * crossing a shallower pocket's floor `f` gets a flare of its own at
+ * `h = f / cos`, as wide as the room under it allows, lerped from wall to rim.
  */
-function pocketReachMm(cutout: Cutout, rimDepthMm: number): number {
+function pocketReachMm(cutout: Cutout, floors: readonly number[]): number {
   const lean = (resolveCutoutLeanDeg(cutout) * Math.PI) / 180;
   const cos = Math.cos(lean);
   const sin = Math.sin(lean);
-  const below = (h: number, span: YSpan): number =>
-    h * cos + Math.max(-span.min * sin, -span.max * sin);
+  const dip = (ys: readonly number[]): number => Math.max(...ys.map((y) => -y * sin));
+  const depth = cutout.cutDepth;
   const chamfer = entryChamferWidth(cutout);
   const lofted = chamfer > MIN_LOFTED_CHAMFER;
-  const { floor, rim } = pocketSpans(cutout, lofted ? chamfer : 0, rimDepthMm > 0);
-  const reach = Math.max(cutout.cutDepth, below(cutout.cutDepth, floor));
-  return lofted ? Math.max(reach, below(rimDepthMm, rim)) : reach;
-}
-
-/** Mouth footprints as circles, one per repeat copy, generous enough to never miss an overlap. */
-function mouthCircles(cutout: Cutout): { x: number; y: number; r: number }[] {
-  const grow = Math.max(0, cutout.clearance ?? 0) + Math.max(0, cutout.chamferWidth ?? 0);
-  return expandCutoutArray(cutout).map((c) => ({
-    x: c.x + c.width / 2,
-    y: c.y + c.depth / 2,
-    r: Math.hypot(c.width, c.depth) / 2 + grow,
-  }));
-}
-
-/**
- * Deepest a pocket's chamfer rim can sit: on the floor of the deepest shallower
- * pocket its mouth might open onto, or at the mouth when there is none.
- */
-function rimDepthBoundMm(cutout: Cutout, pockets: readonly Cutout[]): number {
-  const own = mouthCircles(cutout);
-  let depth = 0;
-  for (const other of pockets) {
-    if (other === cutout || other.cutDepth >= cutout.cutDepth) continue;
-    const overlaps = mouthCircles(other).some((o) =>
-      own.some((c) => Math.hypot(o.x - c.x, o.y - c.y) < o.r + c.r)
-    );
-    if (overlaps) depth = Math.max(depth, other.cutDepth);
+  const { wall, rim } = pocketSections(cutout, lofted ? chamfer : 0);
+  let reach = Math.max(depth, depth * cos + dip(wall));
+  if (!lofted) return reach;
+  reach = Math.max(reach, dip(rim));
+  for (const floor of floors) {
+    const flare = Math.min(chamfer, depth - floor / cos - MIN_STRAIGHT_WALL_MM);
+    if (flare <= MIN_LOFTED_CHAMFER) continue;
+    const t = flare / chamfer;
+    reach = Math.max(reach, floor + dip(wall.map((y, i) => y + ((rim[i] ?? y) - y) * t)));
   }
-  return depth;
+  return reach;
 }
 
 /**
@@ -374,7 +364,7 @@ function fillShortensPockets(params: BinParams, topOffset: number): boolean {
   return pockets.some((c) =>
     c.shape === 'mesh'
       ? c.cutDepth > floorZ + fill + 1e-6
-      : pocketReachMm(c, rimDepthBoundMm(c, pockets)) > fill + 1e-6
+      : pocketReachMm(c, floorDepthsUnder(c, pockets)) > fill + 1e-6
   );
 }
 

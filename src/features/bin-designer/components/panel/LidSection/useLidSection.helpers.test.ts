@@ -351,50 +351,52 @@ describe('fixableIdsFor', () => {
     expect(fixableIdsFor(narrow(0)).has('slideFillTooHigh')).toBe(true);
   });
 
-  it('tips a chamfer sunk to a shallower pocket’s floor from there', () => {
-    // The inner pocket's floor reaches 21.2mm; its rim, opening on the outer
-    // pocket's floor, reaches 21.9mm from 15mm down but 14.8mm from 5mm.
-    const nested = (outerDepth: number): BinParams => {
-      const base = solidWithPocket(20, { leanDeg: 45, chamferWidth: 6 });
-      const outer: Cutout = {
-        ...base.cutouts[0],
-        id: 'outer',
-        x: 0,
-        y: 15,
-        width: 39,
-        depth: 50,
-        cutDepth: outerDepth,
-        leanDeg: 0,
-        chamferWidth: 0,
-      };
-      return { ...base, cutouts: [outer, ...base.cutouts] };
+  /** `inner` with a level `outerDepth`-deep pocket around its mouth. */
+  const withFloor = (inner: BinParams, outerDepth: number): BinParams => {
+    const outer: Cutout = {
+      id: 'outer',
+      shape: 'rectangle',
+      x: 0,
+      y: 15,
+      width: 39,
+      depth: 50,
+      cutDepth: outerDepth,
+      rotation: 0,
+      cornerRadius: 0,
+      label: '',
+      groupId: null,
     };
-    expect(fixableIdsFor(nested(15)).has('slideFillTooHigh')).toBe(false);
-    expect(fixableIdsFor(nested(5)).has('slideFillTooHigh')).toBe(true);
+    return { ...inner, cutouts: [outer, ...inner.cutouts] };
+  };
+
+  it('counts no flare where the worker has no room for one', () => {
+    // 15mm down a 45° axis is 21.2mm, past the 20mm pocket's floor, so the
+    // worker cuts no flare there and the floor's 21.2mm is the whole reach.
+    const inner = solidWithPocket(20, { leanDeg: 45, chamferWidth: 6 });
+    expect(fixableIdsFor(withFloor(inner, 15)).has('slideFillTooHigh')).toBe(true);
   });
 
-  it('widens a sunk polygon flare by its mitered corners', () => {
-    // A triangle's flare miters out twice its width at a corner: a 5mm flare
-    // sunk 12mm on a 16mm-deep polygon reaches 22.6mm, where a flare grown by
-    // its width alone would reach 19.1mm.
-    const sunkPolygon = (sides: number): BinParams => {
-      const base = solidWithPocket(16, { shape: 'polygon', sides, leanDeg: 45, chamferWidth: 5 });
-      const outer: Cutout = {
-        ...base.cutouts[0],
-        id: 'outer',
-        shape: 'rectangle',
-        x: 0,
-        y: 15,
-        width: 39,
-        depth: 50,
-        cutDepth: 12,
-        leanDeg: 0,
-        chamferWidth: 0,
-      };
-      return { ...base, cutouts: [outer, ...base.cutouts] };
-    };
-    expect(fixableIdsFor(sunkPolygon(3)).has('slideFillTooHigh')).toBe(false);
-    expect(fixableIdsFor(sunkPolygon(12)).has('slideFillTooHigh')).toBe(true);
+  it('tips a path’s flare at a shallower pocket’s floor from that floor', () => {
+    // The triangle's 2mm chamfer miters its tip 20mm out. On the surface the
+    // rim reaches 14.1mm and the floor 19.8mm, but a flare at an 8mm floor
+    // reaches 22.1mm; at a 5mm floor, 19.1mm.
+    const inner = solidWithPocket(16, {
+      shape: 'path',
+      x: 5,
+      y: 25,
+      width: 6,
+      depth: 24,
+      leanDeg: 45,
+      chamferWidth: 2,
+      path: [
+        { x: 8, y: 25, handleIn: null, handleOut: null, symmetric: false },
+        { x: 11, y: 49, handleIn: null, handleOut: null, symmetric: false },
+        { x: 5, y: 49, handleIn: null, handleOut: null, symmetric: false },
+      ],
+    });
+    expect(fixableIdsFor(inner).has('slideFillTooHigh')).toBe(true);
+    expect(fixableIdsFor(withFloor(inner, 8)).has('slideFillTooHigh')).toBe(false);
+    expect(fixableIdsFor(withFloor(inner, 5)).has('slideFillTooHigh')).toBe(true);
   });
 
   it('tips a leaned floor along the tilt axis only', () => {
