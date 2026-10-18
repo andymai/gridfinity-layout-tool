@@ -206,7 +206,9 @@ export function canPlaceBin(
   const conflicts = slantConflicts(testBin, slant, layout, skip);
   if (conflicts.length > 0) {
     const had = placed ? slantConflicts(placed, priorSlant ?? null, layout, skip) : [];
-    const newConflict = conflicts.find((c) => !had.some((h) => h.with.id === c.with.id));
+    const newConflict = conflicts.find(
+      (c) => !had.some((h) => h.with.id === c.with.id && h.kind === c.kind)
+    );
     if (newConflict) {
       return {
         valid: false,

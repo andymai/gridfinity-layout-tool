@@ -784,6 +784,24 @@ describe('canPlaceBin with slanted bins', () => {
     });
   });
 
+  it('lets a loaded overlap stay, but not turn into a stack on another layer', () => {
+    const layout = makeTwoLayerLayout();
+    layout.bins = [
+      slanted({ layerId: LAYER_1 }),
+      createTestBin({
+        id: binId('onSupport'),
+        layerId: LAYER_1,
+        y: gridUnits(1),
+        width: gridUnits(2),
+      }),
+    ];
+    expect(canPlaceBin(at(0, 0, 5), LAYER_1, layout, binId('slanted'))).toEqual({ valid: true });
+    expect(canPlaceBin(at(0, 0), LAYER_2, layout, binId('slanted'))).toMatchObject({
+      valid: false,
+      reason: 'blocked_zone',
+    });
+  });
+
   it('does not freeze edits to a bin whose support already leaves the drawer', () => {
     const layout = makeSingleLayerLayout();
     layout.bins = [slanted({ y: gridUnits(7) })];

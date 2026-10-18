@@ -53,7 +53,9 @@ export function resizeBlockedBySupport(
   for (const [id, now] of after) {
     const was = before.get(id);
     if (now.outside && !was?.outside) return { bin: now.bin, result: now.outside };
-    const fresh = now.conflicts.find((c) => !was?.conflicts.some((w) => w.with.id === c.with.id));
+    const fresh = now.conflicts.find(
+      (c) => !was?.conflicts.some((w) => w.with.id === c.with.id && w.kind === c.kind)
+    );
     if (fresh) {
       return {
         bin: now.bin,
