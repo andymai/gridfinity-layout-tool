@@ -225,14 +225,15 @@ export function slantConflicts(
   candidate: Bin,
   own: PlacedSlant | null,
   layout: SlantLayout & Pick<Layout, 'bins'>,
-  skip: (other: Bin) => boolean = () => false
+  skip: (other: Bin) => boolean = () => false,
+  zoneOf: (other: Bin) => ReturnType<typeof slantZone> = (other) => slantZone(other, layout)
 ): SlantConflict[] {
   const conflicts: SlantConflict[] = [];
   const ownSupport = own?.support ? [own.support] : [];
   const ownZone = [candidate, ...ownSupport];
   for (const other of layout.bins) {
     if (other.layerId === STAGING_ID || other.id === candidate.id || skip(other)) continue;
-    const zone = slantZone(other, layout);
+    const zone = zoneOf(other);
     if (other.layerId === candidate.layerId) {
       const theirSupport = zone.rects.slice(1);
       if (

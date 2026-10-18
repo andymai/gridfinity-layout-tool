@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
 import type { Bin, Layout, SlantConfig } from '@/core/types';
@@ -166,6 +166,40 @@ describe('rowCanMatch', () => {
     ]);
     expect(rowCanMatch(held.bins[0], held)).toBe(false);
   });
+
+  it('cannot match a row with a bin held upright past the reach of the top', () => {
+    const layout = layoutOf([
+      bin('a', 0, { slant: BACK }),
+      bin('b', 1),
+      bin('c', 2, { overhang: { left: 0, right: 0, front: 0, back: 5 } }),
+    ]);
+    expect(slantIssue(layout.bins[0], layout)).toBe('mismatch');
+    expect(rowCanMatch(layout.bins[0], layout)).toBe(false);
+  });
+});
+
+describe('slantIssue in a shaped drawer', () => {
+  const U = 42;
+  // 10x8 with the back right 4x4 notched out.
+  const L_OUTLINE = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 10 * U, y: 0 },
+      { x: 10 * U, y: 4 * U },
+      { x: 6 * U, y: 4 * U },
+      { x: 6 * U, y: 8 * U },
+      { x: 0, y: 8 * U },
+    ],
+  };
+
+  it('finds the wall of a notch, not only the bounding box', () => {
+    const base = createTestLayout();
+    const drawer = { ...base.drawer, outline: L_OUTLINE };
+    const leaning = (x: number) =>
+      bin('a', 3, { x: gridUnits(x), width: gridUnits(1), slant: BACK });
+    expect(issueOf('a', [leaning(7)], { drawer })).toBe('pastDrawer');
+    expect(issueOf('a', [leaning(2)], { drawer })).toBe('unsupported');
+  });
 });
 
 describe('getSlantIssues', () => {
@@ -175,5 +209,19 @@ describe('getSlantIssues', () => {
     expect([...issues]).toEqual([['a', 'mismatch']]);
     expect(getSlantIssues(layout, 'k')).toBe(issues);
     expect(getSlantIssues(layout, 'other')).not.toBe(issues);
+  });
+
+  it("resolves each bin's slant once per pass, however many bins lean", () => {
+    const resolver = vi.fn(() => ({ config: BACK, width: 2, depth: 1, height: 6 }));
+    registerLinkedSlantResolver(resolver);
+    try {
+      const row = Array.from({ length: 12 }, (_, i) =>
+        bin(`b${String(i)}`, i, { linkedDesignId: designId('pens') })
+      );
+      getSlantIssues(layoutOf(row), 'fresh');
+      expect(resolver.mock.calls.length).toBeLessThanOrEqual(row.length);
+    } finally {
+      registerLinkedSlantResolver(null);
+    }
   });
 });

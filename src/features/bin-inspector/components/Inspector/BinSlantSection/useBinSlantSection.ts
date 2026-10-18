@@ -6,7 +6,7 @@ import type { Bin, Layout, SlantConfig, SlantSide } from '@/core/types';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useLinkedRiseKey } from '@/shared/hooks/useLinkedRiseKey';
-import { linkedDesignSlant, placedSlant, slantHeldUprightBy } from '@/shared/utils/placedSlant';
+import { linkedDesignSlant, slantHeldUprightBy } from '@/shared/utils/placedSlant';
 import { matchRowSlants, rowCanMatch, slantIssue } from '@/shared/utils/slantRow';
 
 export const SLANT_DEFAULT: SlantConfig = { angleDeg: 45, side: 'back' };
@@ -26,7 +26,7 @@ export function useBinSlantSection(bin: Bin, layout: Layout) {
   const designSlant = linkedDesignSlant(bin);
   const config = bin.slant ?? designSlant;
   const heldBy = slantHeldUprightBy(bin, layout);
-  const issue = slantIssue(bin, layout, placedSlant(bin, layout));
+  const issue = slantIssue(bin, layout);
 
   const write = useCallback(
     (next: SlantConfig | null) => {

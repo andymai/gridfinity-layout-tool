@@ -1,5 +1,5 @@
-import type { Bin, BinId, Layout, SlantConfig } from '@/core/types';
-import { effectiveGridUnitMmY } from '@/core/types';
+import type { Bin, BinId, Layout, Rect, SlantConfig } from '@/core/types';
+import { effectiveGridUnitMmY, gridUnits } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { footprintsOverlap, linkedExcessCacheKey } from './collision';
 import {
@@ -8,6 +8,7 @@ import {
   slantConflicts,
   slantHeldUprightBy,
   type PlacedSlant,
+  type slantZone,
 } from './placedSlant';
 import type { SlantPlan } from './slantPlan';
 import { insideDrawer } from './validationPlacement';
@@ -47,26 +48,66 @@ function roomPastMm(bin: Bin, plan: SlantPlan, layout: Layout): number {
   }
 }
 
+/** The part of `rect` inside the drawer's bounding grid, if any. */
+function withinGrid(rect: Rect, layout: Layout): Rect | null {
+  const x = Math.max(0, rect.x);
+  const y = Math.max(0, rect.y);
+  const width = Math.min(layout.drawer.width, rect.x + rect.width) - x;
+  const depth = Math.min(layout.drawer.depth, rect.y + rect.depth) - y;
+  if (width <= EPS || depth <= EPS) return null;
+  return { x: gridUnits(x), y: gridUnits(y), width: gridUnits(width), depth: gridUnits(depth) };
+}
+
+/** Slant lookups for one pass over a layout, so each bin's slant is resolved once. */
+interface SlantLookup {
+  readonly slantOf: (bin: Bin) => PlacedSlant | null;
+  readonly zoneOf: (bin: Bin) => ReturnType<typeof slantZone>;
+}
+
+function lookupFor(layout: Layout): SlantLookup {
+  const slants = new Map<BinId, PlacedSlant | null>();
+  const slantOf = (bin: Bin): PlacedSlant | null => {
+    if (!slants.has(bin.id)) slants.set(bin.id, placedSlant(bin, layout));
+    return slants.get(bin.id) ?? null;
+  };
+  return {
+    slantOf,
+    zoneOf: (bin) => {
+      const slant = slantOf(bin);
+      return { slanted: slant !== null, rects: slant?.support ? [bin, slant.support] : [bin] };
+    },
+  };
+}
+
 export function slantIssue(
   bin: Bin,
   layout: Layout,
-  own: PlacedSlant | null = placedSlant(bin, layout)
+  lookup: SlantLookup = lookupFor(layout)
 ): SlantIssue | null {
+  const own = lookup.slantOf(bin);
   if (!own || bin.layerId === STAGING_ID) return null;
   if (own.support && !insideDrawer(own.support, layout).valid) return 'blocked';
-  if (slantConflicts(bin, own, layout).length > 0) return 'blocked';
+  if (slantConflicts(bin, own, layout, undefined, lookup.zoneOf).length > 0) return 'blocked';
   if (own.support) return null;
 
   const { plan, topOffsetMm } = own;
   const ahead = binsLeanedOver(bin, own, layout);
-  if (ahead.some((other) => !leansAlike(placedSlant(other, layout)?.plan, plan))) return 'mismatch';
+  if (ahead.some((other) => !leansAlike(lookup.slantOf(other)?.plan, plan))) return 'mismatch';
   if (ahead.length > 0) return null;
-  return roomPastMm(bin, plan, layout) + EPS < topOffsetMm ? 'pastDrawer' : 'unsupported';
+  // A shaped drawer's wall can stand inside its bounding box, where no padding reaches.
+  const inGrid = withinGrid(leanStrip(bin, own, layout), layout);
+  const pastWall =
+    roomPastMm(bin, plan, layout) + EPS < topOffsetMm ||
+    (inGrid !== null && !insideDrawer(inGrid, layout).valid);
+  return pastWall ? 'pastDrawer' : 'unsupported';
+}
+
+function leanStrip(bin: Bin, own: PlacedSlant, layout: Layout): Rect {
+  return rectPastSide(bin, own.plan.side, own.topOffsetMm / pitchAlong(own.plan, layout));
 }
 
 function binsLeanedOver(bin: Bin, own: PlacedSlant, layout: Layout): Bin[] {
-  const { plan, topOffsetMm } = own;
-  const lean = rectPastSide(bin, plan.side, topOffsetMm / pitchAlong(plan, layout));
+  const lean = leanStrip(bin, own, layout);
   return layout.bins.filter(
     (other) =>
       other.id !== bin.id && other.layerId === bin.layerId && footprintsOverlap(other, lean)
@@ -86,8 +127,9 @@ export function getSlantIssues(
 ): ReadonlyMap<BinId, SlantIssue> {
   if (issueCache?.layout === layout && issueCache.key === key) return issueCache.issues;
   const issues = new Map<BinId, SlantIssue>();
+  const lookup = lookupFor(layout);
   for (const bin of layout.bins) {
-    const issue = slantIssue(bin, layout);
+    const issue = slantIssue(bin, layout, lookup);
     if (issue) issues.set(bin.id, issue);
   }
   issueCache = { layout, key, issues };
@@ -96,16 +138,16 @@ export function getSlantIssues(
 
 /**
  * Match row settles a mismatch only when every bin leaning differently stands
- * in the bin's row and can take a slant at all.
+ * in the bin's row, and every bin of the row it slants can take a slant at all.
  */
 export function rowCanMatch(bin: Bin, layout: Layout): boolean {
   const own = placedSlant(bin, layout);
   if (!own) return false;
-  const row = new Set(slantRowOf(bin, own.plan.axis, layout).map((b) => b.id));
+  const rowBins = slantRowOf(bin, own.plan.axis, layout);
+  if (rowBins.some((b) => b.id !== bin.id && slantHeldUprightBy(b, layout) !== null)) return false;
+  const row = new Set(rowBins.map((b) => b.id));
   return binsLeanedOver(bin, own, layout).every(
-    (other) =>
-      leansAlike(placedSlant(other, layout)?.plan, own.plan) ||
-      (row.has(other.id) && slantHeldUprightBy(other, layout) === null)
+    (other) => leansAlike(placedSlant(other, layout)?.plan, own.plan) || row.has(other.id)
   );
 }
 
