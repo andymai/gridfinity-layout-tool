@@ -722,6 +722,7 @@ describe('salvageImport', () => {
       marginTaper: { profile: 'fillet' as const, bandHeight: 12 },
       overhang: { left: 0, right: 7, front: 0, back: 0 },
       locked: true,
+      slant: { angleDeg: 40, side: 'back' as const, endSupport: true },
     };
     const layout = createTestLayout();
     layout.bins = [
@@ -757,6 +758,7 @@ describe('salvageImport', () => {
       marginTaper: { profile: 'bevel', bandHeight: 4 },
       extendToMargin: true,
       locked: 'yes',
+      slant: { angleDeg: 40, side: 'up' },
     };
     const collides = createTestBin({
       id: binId('collides'),
@@ -769,7 +771,7 @@ describe('salvageImport', () => {
     if (!result.valid) throw new Error('expected the salvage to succeed');
     const kept = result.layout.bins.find((b) => b.id === 'healthy');
     expect(kept).toMatchObject({ extendToMargin: true });
-    for (const key of ['clearanceHeight', 'overhang', 'marginTaper', 'locked']) {
+    for (const key of ['clearanceHeight', 'overhang', 'marginTaper', 'locked', 'slant']) {
       expect(kept).not.toHaveProperty(key);
     }
   });

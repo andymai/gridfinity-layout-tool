@@ -83,6 +83,25 @@ describe('bin.add schema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('keeps a slant on an added bin', () => {
+    const result = z.safeParse(schema, {
+      layerId: 'layer-1',
+      x: 0,
+      y: 0,
+      width: 1,
+      depth: 2,
+      height: 6,
+      category: 'cat-1',
+      label: '',
+      notes: '',
+      slant: { angleDeg: 45, side: 'right' },
+    });
+    expect(result.success && (result.data as { slant?: unknown }).slant).toEqual({
+      angleDeg: 45,
+      side: 'right',
+    });
+  });
+
   it('accepts payload with optional fields', () => {
     const result = z.safeParse(schema, {
       layerId: 'layer-1',
@@ -236,6 +255,15 @@ describe('bin.update schema', () => {
   it('accepts null to clear the overhang', () => {
     const result = z.safeParse(schema, { id: 'bin-1', updates: { overhang: null } });
     expect(result.success).toBe(true);
+  });
+
+  it('accepts a placed slant, null to clear it, and refuses one past the ceiling', () => {
+    const update = (slant: unknown) =>
+      z.safeParse(schema, { id: 'bin-1', updates: { slant } }).success;
+    expect(update({ angleDeg: 40, side: 'back', endSupport: true })).toBe(true);
+    expect(update(null)).toBe(true);
+    expect(update({ angleDeg: 75, side: 'back' })).toBe(false);
+    expect(update({ angleDeg: 30, side: 'up' })).toBe(false);
   });
 
   it('rejects an inward (negative) overhang side', () => {

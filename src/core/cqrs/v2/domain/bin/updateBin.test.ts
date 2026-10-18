@@ -190,6 +190,37 @@ describe('v2 bin.update', () => {
     });
   });
 
+  describe('slant', () => {
+    const SLANT = { angleDeg: 40, side: 'back' as const, endSupport: true };
+
+    it('sets a placed slant and clears it with null, keeping the previous for undo', () => {
+      const layout = makeLayout({ bins: [makeBin('bin_1')] });
+      const set = updateBin.handle(
+        { id: 'bin_1', updates: { slant: SLANT } },
+        { aggregate: layout }
+      );
+      expect(isOk(set) && set.value.event.payload.changes.slant).toEqual(SLANT);
+      const slanted = makeLayout({ bins: [makeBin('bin_1', { slant: SLANT })] });
+      const cleared = updateBin.handle(
+        { id: 'bin_1', updates: { slant: null } },
+        { aggregate: slanted }
+      );
+      expect(isOk(cleared)).toBe(true);
+      if (!isOk(cleared)) return;
+      expect(cleared.value.event.payload.changes.slant).toBeUndefined();
+      expect(cleared.value.event.payload.previous.slant).toEqual(SLANT);
+    });
+
+    // Nothing in a slant depends on where the bin stands, unlike an overhang.
+    it('keeps the slant when the bin moves', () => {
+      const layout = makeLayout({ bins: [makeBin('bin_1', { slant: SLANT })] });
+      const result = updateBin.handle({ id: 'bin_1', updates: { x: 3 } }, { aggregate: layout });
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect('slant' in result.value.event.payload.changes).toBe(false);
+    });
+  });
+
   describe('linkedDesignId', () => {
     const DESIGN = designId('design_1');
 

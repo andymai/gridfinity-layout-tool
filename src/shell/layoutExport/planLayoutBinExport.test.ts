@@ -750,4 +750,47 @@ describe('planLayoutBinExport', () => {
       expect(planFor({}).exportable[0]?.companions).not.toContain('feet');
     });
   });
+
+  describe('placed slant', () => {
+    const designSlant = { angleDeg: 40, side: 'back' as const };
+    const plan = (bins: Bin[]) =>
+      planLayoutBinExport({
+        bins,
+        loaded: [
+          {
+            id: designId('d1'),
+            design: design('d1', 'Pens', { width: 1, depth: 2, height: 6, slant: designSlant }),
+          },
+        ],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
+
+    it('exports the last bin of a row apart, with its end support and no lip', () => {
+      const result = plan([
+        linkedBin('d1'),
+        {
+          ...linkedBin('d1'),
+          id: createTestBin({ x: gridUnits(1) }).id,
+          x: gridUnits(1),
+          slant: { ...designSlant, endSupport: true },
+        },
+      ]);
+      expect(result.exportable).toHaveLength(2);
+      const last = result.exportable.find((g) => g.params.slant?.endSupport === true);
+      expect(last?.companions).toContain('slant-support');
+      expect(last?.params.base.stackingLip).toBe(false);
+      const rest = result.exportable.find((g) => g.params.slant?.endSupport !== true);
+      expect(rest?.params.slant).toEqual(designSlant);
+      expect(rest?.companions).not.toContain('slant-support');
+    });
+
+    it('keeps the design slant for a bin with none of its own', () => {
+      expect(plan([linkedBin('d1')]).exportable[0]?.params.slant).toEqual(designSlant);
+    });
+  });
 });

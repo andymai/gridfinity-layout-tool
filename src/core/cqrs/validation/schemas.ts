@@ -46,6 +46,7 @@ import {
 } from './librarySchemas';
 import { designerSaveSchema } from './designerSchemas';
 import { drawerOutlineSchema } from './outlineSchema';
+import { slantSchema } from './slant';
 /** Branded string IDs are strings at runtime */
 const binIdSchema = z.string().min(1);
 const layerIdSchema = z.string().min(1);
@@ -94,6 +95,7 @@ const binAddSchema = z.object({
   linkedDesignId: z.string().optional(),
   pairId: z.string().min(1).optional(),
   pairRole: z.enum(['block', 'rest']).optional(),
+  slant: slantSchema.optional(),
 });
 
 /** Partial bin fields for updates */
@@ -133,6 +135,7 @@ const binPartialSchema = z
     locked: z.boolean(),
     pairId: z.string().min(1).nullable(),
     pairRole: z.enum(['block', 'rest']).nullable(),
+    slant: slantSchema.nullable(),
     id: binIdSchema,
   })
   .partial();

@@ -24,6 +24,7 @@ import {
 } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 import { binItemsSchema } from '../../../validation/binItems';
+import { slantSchema } from '../../../validation/slant';
 
 /** Explicit per-placement overhang (mm). `null` clears it (inspector Reset). */
 const overhangSchema = z
@@ -64,6 +65,7 @@ const updatesSchema = z
     // `null` unpairs (the wire form of "clear", like overhang).
     pairId: z.string().min(1).nullable(),
     pairRole: z.enum(['block', 'rest']).nullable(),
+    slant: slantSchema.nullable(),
   })
   .partial();
 
@@ -102,6 +104,7 @@ function brandUpdates(updates: z.infer<typeof updatesSchema>): Partial<Bin> {
   if (updates.locked !== undefined) result.locked = updates.locked;
   if (updates.pairId !== undefined) result.pairId = updates.pairId ?? undefined;
   if (updates.pairRole !== undefined) result.pairRole = updates.pairRole ?? undefined;
+  if (updates.slant !== undefined) result.slant = updates.slant ?? undefined;
   return result;
 }
 

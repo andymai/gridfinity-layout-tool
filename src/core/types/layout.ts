@@ -11,6 +11,7 @@ import type {
 import type { StoredBaseplateParams } from './baseplate';
 import type { DrawerOutline, FractionalEdge, MeasuredDrawerMm } from './drawerOutline';
 import type { OverhangConfig, WallTaperProfile } from './overhang';
+import type { SlantConfig } from './slant';
 /**
  * Where magnet holes anchor within each grid cell.
  * - `edge` (default): a constant 8mm from the cell edge, so holes track the
@@ -162,6 +163,10 @@ export interface Bin {
   // moves or is resized, since the values only hold for the position they were
   // computed for.
   overhang?: OverhangConfig;
+  // A per-placement slant. Wins over the linked design's own, so the last bin
+  // of a slanted row can carry the end support its design does not. Unlike
+  // `overhang` it survives a move: nothing in it depends on the position.
+  slant?: SlantConfig;
   // Freezes the bin's size: while set, `width`, `depth` and `height`
   // are rejected by `bin.update`, and the bin is skipped by every flow that
   // resizes on the user's behalf (rotation, linked-design dimension sync,
@@ -189,9 +194,10 @@ export interface Bin {
  * indistinguishable from omission once it crosses the command boundary.
  */
 export type BinUpdates = Partial<
-  Omit<Bin, 'overhang' | 'pairId' | 'pairRole' | 'linkedDesignId'>
+  Omit<Bin, 'overhang' | 'slant' | 'pairId' | 'pairRole' | 'linkedDesignId'>
 > & {
   overhang?: OverhangConfig | null;
+  slant?: SlantConfig | null;
   pairId?: string | null;
   pairRole?: 'block' | 'rest' | null;
   linkedDesignId?: DesignId | null;

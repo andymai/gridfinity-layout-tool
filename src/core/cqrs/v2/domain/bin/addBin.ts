@@ -20,6 +20,7 @@ import {
 } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 import { binItemsSchema } from '../../../validation/binItems';
+import { slantSchema } from '../../../validation/slant';
 
 const payloadSchema = z.object({
   layerId: z.string().min(1),
@@ -37,6 +38,7 @@ const payloadSchema = z.object({
   linkedDesignId: z.string().optional(),
   pairId: z.string().min(1).optional(),
   pairRole: z.enum(['block', 'rest']).optional(),
+  slant: slantSchema.optional(),
 });
 
 export const addBin = defineCommand({

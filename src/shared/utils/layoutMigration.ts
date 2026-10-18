@@ -1,5 +1,6 @@
 import { CONSTRAINTS } from '@/core/constants';
 import { withSanitizedItems } from './binItems';
+import { migrateSlant } from './slantPlan';
 
 export function migrateLayoutFields(data: Record<string, unknown>): unknown {
   const { maxPrintSize, ...migrated } = data;
@@ -22,6 +23,16 @@ export function migrateLayoutFields(data: Record<string, unknown>): unknown {
     printBedSize *= unitScale;
   }
   migrated.printBedSize = printBedSize;
-  if (Array.isArray(data.bins)) migrated.bins = data.bins.map(withSanitizedItems);
+  if (Array.isArray(data.bins)) {
+    migrated.bins = data.bins.map((bin: unknown) => withSanitizedSlant(withSanitizedItems(bin)));
+  }
   return migrated;
+}
+
+/** A malformed or upright slant leaves no key, like a design's. */
+function withSanitizedSlant(bin: unknown): unknown {
+  if (typeof bin !== 'object' || bin === null || !('slant' in bin)) return bin;
+  const { slant, ...rest } = bin as Record<string, unknown>;
+  const clean = migrateSlant(slant);
+  return clean ? { ...rest, slant: clean } : rest;
 }

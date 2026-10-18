@@ -174,6 +174,16 @@ function fitForBin(
   fit: PrintSplitFit
 ): { maxWidth: number; maxDepth: number; key: string } {
   const overhang = fit.overhangFor?.(bin);
+  // A slanted bin is never split, and is a different printed part from an
+  // upright one of the same size.
+  if (bin.slant) {
+    const { angleDeg, side, endSupport } = bin.slant;
+    return {
+      maxWidth: bin.width,
+      maxDepth: bin.depth,
+      key: `${overhangKey(resolveOverhang(overhang))}|slant:${angleDeg}:${side}:${endSupport === true ? 's' : ''}`,
+    };
+  }
   const limit = binSplitChunkUnits(
     {
       width: bin.width,

@@ -371,6 +371,62 @@ describe('layoutAdapter.applyRemote — copies the server stored before schema 4
   });
 });
 
+describe('layoutAdapter.applyRemote — copies the server stored before schema 5', () => {
+  const slant = { angleDeg: 40, side: 'back' as const, endSupport: true };
+  const bin = (id: string, extra: Partial<Bin> = {}): Bin =>
+    ({
+      id,
+      layerId: 'layer-1',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'cat-1',
+      label: '',
+      notes: '',
+      ...extra,
+    }) as unknown as Bin;
+  const local = {
+    ...minimalLayout('Mine'),
+    drawer: { width: 12, depth: 12, height: 12 },
+    bins: [bin('a', { slant, items: [{ id: 'i1', name: 'Pens' }] })],
+  };
+
+  beforeEach(() => {
+    computePreviewMock.mockReturnValue({ binCount: 1 });
+    saveLayoutAsyncMock.mockResolvedValue({ ok: true });
+    saveLibraryMock.mockResolvedValue({ ok: true });
+    loadLayoutAsyncMock.mockResolvedValue(local);
+  });
+
+  afterEach(() => {
+    loadLayoutAsyncMock.mockReset();
+  });
+
+  const pull = (bins: Bin[], schemaVersion: number): Promise<void> =>
+    layoutAdapter.applyRemote({
+      id: 'lay-1',
+      payload: { ...minimalLayout('Mine'), drawer: local.drawer, bins } as unknown as Layout,
+      modifiedAt: 2000,
+      schemaVersion,
+    });
+
+  const savedBin = (): Record<string, unknown> =>
+    (saveLayoutAsyncMock.mock.calls[0][1] as { bins: Record<string, unknown>[] }).bins[0];
+
+  it('keeps this device’s slant that a schema-4 copy lost, but not the items it carried', async () => {
+    await pull([bin('a')], 4);
+    expect(savedBin()).toMatchObject({ slant });
+    expect(savedBin()).not.toHaveProperty('items');
+  });
+
+  it('takes a current copy as it is, so a slant cleared elsewhere stays cleared', async () => {
+    await pull([bin('a')], LAYOUT_SCHEMA_VERSION);
+    expect(savedBin()).not.toHaveProperty('slant');
+  });
+});
+
 describe('layoutAdapter.get', () => {
   it('returns null when the entry is absent', async () => {
     expect(await layoutAdapter.get('not-here')).toBe(null);

@@ -154,6 +154,31 @@ describe('generatePrintList', () => {
     expect(rows[0].totalPieces).toBe(2);
   });
 
+  it('never splits a slanted bin, and lists it apart from an upright one', () => {
+    const bin = (id: string, x: number, extra: Partial<Bin> = {}): Bin => ({
+      id: binId(id),
+      layerId: layerId('l1'),
+      x: gridUnits(x),
+      y: gridUnits(0),
+      width: gridUnits(6),
+      depth: gridUnits(2),
+      height: heightUnits(6),
+      category: categoryId('c1'),
+      label: '',
+      notes: '',
+      ...extra,
+    });
+    const rows = generatePrintList(
+      [bin('1', 0), bin('2', 6, { slant: { angleDeg: 40, side: 'back' } })],
+      fitAt(4)
+    );
+    expect(rows).toHaveLength(2);
+    const slanted = rows.find((r) => r.totalPieces === 1);
+    const upright = rows.find((r) => r.totalPieces > 1);
+    expect(slanted?.binCount).toBe(1);
+    expect(upright?.binCount).toBe(1);
+  });
+
   it('does not merge bins linked to different designs even with identical dims', () => {
     const base = {
       layerId: layerId('l1'),

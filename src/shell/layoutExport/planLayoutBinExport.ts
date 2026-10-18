@@ -44,7 +44,7 @@ import {
 } from '@/shared/printSettings/standardBinVolume';
 import { dedupeFileNames } from './dedupeFileNames';
 import type { ManifestBinEntry, ManifestSkipped } from './buildLayoutManifest';
-import { planSlantSupport } from '@/shared/utils/slantPlan';
+import { normalizeSlant, planSlantSupport } from '@/shared/utils/slantPlan';
 
 /** A linked design id resolved against storage; `design` is null when it failed to load. */
 export interface LoadedDesign {
@@ -149,6 +149,10 @@ function binCompanions(params: BinParams): string[] {
     companions.push('dividers');
   }
   return companions;
+}
+
+function placedSlantKey(slant: Bin['slant']): string {
+  return slant ? `${slant.angleDeg}:${slant.side}:${slant.endSupport === true ? 's' : ''}` : '';
 }
 
 /** Stable identity for a resolved overhang so bins with identical extension
@@ -294,10 +298,14 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
     // overriding any value saved on the design, so exported bins mate with the
     // baseplate.
     const layoutParams = withLowProfileBase(design.params, lowProfileBase);
-    const params: BinParams = overhang
+    const fitted: BinParams = overhang
       ? { ...layoutParams, overhang, magnetAnchor }
       : { ...layoutParams, magnetAnchor };
-    const key = `${b.linkedDesignId}|${overhangKey(overhang)}`;
+    // A placed slant replaces the design's own, so the last bin of a row can
+    // carry the end support its design does not; then the lip goes, as it
+    // does for any slanted design.
+    const params = normalizeSlant(b.slant ? { ...fitted, slant: b.slant } : fitted);
+    const key = `${b.linkedDesignId}|${overhangKey(overhang)}|${placedSlantKey(b.slant)}`;
     const existing = groups.get(key);
     if (existing) {
       existing.quantity++;

@@ -1,7 +1,7 @@
 import type { SyncKind } from './adapters/types';
 
 /** Mirrors `SCHEMA_VERSION` in api/sync/layouts/[id].ts; declared on every layout PUT. */
-export const LAYOUT_SCHEMA_VERSION = 4;
+export const LAYOUT_SCHEMA_VERSION = 5;
 
 /** Mirrors `SCHEMA_VERSION` in api/sync/folders/[id].ts; declared on every folder PUT. */
 export const FOLDER_SCHEMA_VERSION = 2;

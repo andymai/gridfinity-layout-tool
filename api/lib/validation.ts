@@ -16,6 +16,8 @@ import { sanitizeBinItems } from './binItemsValidation.js';
 import type { BinItemShape } from './binItemsValidation.js';
 import type { BinFitFields } from './binFitValidation.js';
 import type { ValidExpiration, ValidationError } from './shareConstraints.js';
+import { sanitizeSlant } from './slantValidation.js';
+import type { SlantShape } from './slantValidation.js';
 export { SHARE_CONSTRAINTS } from './shareConstraints.js';
 export type { ValidExpiration, ValidationError } from './shareConstraints.js';
 export {
@@ -50,6 +52,16 @@ interface BinShape extends BinFitFields {
   locked?: boolean;
   pairId?: string;
   pairRole?: 'block' | 'rest';
+  slant?: SlantShape;
+}
+
+/** Dropped alone when malformed, like the drawer-fit fields. */
+function binSlant(bin: unknown): { slant?: SlantShape } {
+  const slant =
+    typeof bin === 'object' && bin !== null
+      ? sanitizeSlant((bin as { slant?: unknown }).slant)
+      : null;
+  return slant ? { slant } : {};
 }
 
 interface CategoryShape {
@@ -311,6 +323,7 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
       pairId: typeof bin.pairId === 'string' ? sanitizeString(bin.pairId, 64) : undefined,
       pairRole: bin.pairRole === 'block' || bin.pairRole === 'rest' ? bin.pairRole : undefined,
       ...sanitizeBinFitFields(bin),
+      ...binSlant(bin),
     });
   }
 

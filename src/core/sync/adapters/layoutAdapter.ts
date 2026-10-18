@@ -22,13 +22,14 @@ type IncomingLayout = Omit<Layout, 'bins'> & { bins: IncomingBin[] };
 /**
  * Before schema 2 the server rebuilt layouts without `drawer.measuredMm`,
  * `baseplateParams` and `activeBaseplateId`, before schema 3 it rebuilt bins
- * without their drawer-fit fields, and before schema 4 without their items, so
- * their absence in an older copy says nothing about the other device. This
+ * without their drawer-fit fields, before schema 4 without their items, and
+ * before schema 5 without their slant, so their absence in an older copy says
+ * nothing about the other device. This
  * device's values stand in for them.
  */
 function restoreStrippedFields(remote: Layout, local: Layout, schemaVersion: number): Layout {
   const withDrawer = schemaVersion < 2 ? restoreDrawerFields(remote, local) : remote;
-  return schemaVersion < 4 ? restoreBinFields(withDrawer, local, schemaVersion) : withDrawer;
+  return schemaVersion < 5 ? restoreBinFields(withDrawer, local, schemaVersion) : withDrawer;
 }
 
 function keepLocal<K extends keyof Bin>(remote: Bin, local: Bin, key: K): Partial<Pick<Bin, K>> {
@@ -67,7 +68,8 @@ function restoreBinFields(remote: Layout, local: Layout, schemaVersion: number):
       return {
         ...bin,
         ...(schemaVersion < 3 ? restoredFitFields(bin, mine) : {}),
-        ...keepLocal(bin, mine, 'items'),
+        ...(schemaVersion < 4 ? keepLocal(bin, mine, 'items') : {}),
+        ...keepLocal(bin, mine, 'slant'),
       };
     }),
   };

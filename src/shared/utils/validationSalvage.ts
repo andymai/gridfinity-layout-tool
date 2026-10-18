@@ -30,6 +30,7 @@ import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { isValidDrawer, isValidLayer, isValidBin, isValidCategory } from './validationGuards';
 import { canPlaceFootprint } from './validationPlacement';
 import { validateImport, PLACEMENT_REASON_MESSAGE } from './validationImport';
+import { migrateSlant } from './slantPlan';
 
 export type SalvageSuccess = { valid: true; layout: Layout; salvaged: string[] };
 export type SalvageFailure = { valid: false; salvaged?: undefined; layout?: undefined };
@@ -42,6 +43,7 @@ const CHECKED_FIELDS = [
   'overhang',
   'locked',
   'items',
+  'slant',
 ] as const satisfies readonly (keyof Bin)[];
 
 type CheckedFields = Pick<Bin, (typeof CHECKED_FIELDS)[number]>;
@@ -107,6 +109,7 @@ function wellFormedCheckedFields(bin: object): Partial<CheckedFields> {
   const raw: Record<string, unknown> = { ...bin };
   const overhang = wellFormedOverhang(raw.overhang);
   const items = sanitizeBinItems(raw.items);
+  const slant = migrateSlant(raw.slant);
   return {
     ...(isNonNegative(raw.clearanceHeight)
       ? { clearanceHeight: heightUnits(raw.clearanceHeight) }
@@ -116,6 +119,7 @@ function wellFormedCheckedFields(bin: object): Partial<CheckedFields> {
     ...(overhang ? { overhang } : {}),
     ...(raw.locked === true ? { locked: true } : {}),
     ...(items ? { items } : {}),
+    ...(slant ? { slant } : {}),
   };
 }
 

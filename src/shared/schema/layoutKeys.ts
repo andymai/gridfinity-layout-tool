@@ -84,6 +84,7 @@ export const BIN_KEYS = [
   'extendToMargin',
   'marginTaper',
   'overhang',
+  'slant',
   'locked',
   'pairId',
   'pairRole',

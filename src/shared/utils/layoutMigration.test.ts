@@ -63,4 +63,18 @@ describe('migrateLayoutFields', () => {
     expect(bins[0]).toBe(plain);
     expect(bins[1].items).toEqual([{ id: 'i1', name: 'Screws' }]);
   });
+
+  it('keeps a well-formed placed slant and drops a malformed one alone', () => {
+    const result = migrate({
+      bins: [
+        { id: 'b0', slant: { angleDeg: 80, side: 'back', endSupport: true } },
+        { id: 'b1', label: 'kept', slant: { angleDeg: 0, side: 'back' } },
+        { id: 'b2', slant: 'tilted' },
+      ],
+    });
+    const bins = result.bins as Record<string, unknown>[];
+    expect(bins[0].slant).toEqual({ angleDeg: 60, side: 'back', endSupport: true });
+    expect(bins[1]).toEqual({ id: 'b1', label: 'kept' });
+    expect('slant' in bins[2]).toBe(false);
+  });
 });

@@ -31,6 +31,7 @@ interface TestBin {
   extendToMargin?: unknown;
   marginTaper?: unknown;
   overhang?: unknown;
+  slant?: unknown;
 }
 
 /**
@@ -121,6 +122,26 @@ describe('validateShareLayout', () => {
       expect(result.layout.bins).toHaveLength(1);
       expect(result.layout.bins[0]).not.toHaveProperty('overhang');
       expect(result.layout.bins[0]).toMatchObject({ clearanceHeight: 2, extendToMargin: true });
+    });
+  });
+
+  describe('per-bin slant', () => {
+    it('keeps a well-formed slant and drops a malformed one alone', () => {
+      const layout = createValidLayout();
+      layout.bins[0] = {
+        ...layout.bins[0],
+        slant: { angleDeg: 40, side: 'back', endSupport: true },
+      };
+      const kept = validateShareLayout(layout, 1000);
+      expect(kept.valid && kept.layout.bins[0].slant).toEqual({
+        angleDeg: 40,
+        side: 'back',
+        endSupport: true,
+      });
+      layout.bins[0] = { ...layout.bins[0], slant: { angleDeg: 99, side: 'back' } };
+      const dropped = validateShareLayout(layout, 1000);
+      expect(dropped.valid).toBe(true);
+      if (dropped.valid) expect(dropped.layout.bins[0]).not.toHaveProperty('slant');
     });
   });
 

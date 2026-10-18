@@ -562,6 +562,10 @@
         "overhang": {
           "$ref": "https://gridfinitylayouttool.com/schema/bin-design.schema.json#/$defs/OverhangConfig"
         },
+        "slant": {
+          "$ref": "https://gridfinitylayouttool.com/schema/bin-design.schema.json#/$defs/SlantConfig",
+          "description": "Per-placement slant. Wins over the linked design's own, so the last bin of a slanted row can carry the end support its design does not."
+        },
         "locked": {
           "type": "boolean",
           "default": false,
