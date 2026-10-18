@@ -576,6 +576,11 @@ describe('customBinRegistry', () => {
       expect(fields).toEqual({ slant: { config: SLANT, extraWallMm: 6 } });
     });
 
+    it("records the design's units only when they are not the defaults", () => {
+      const fields = registrySlantFields({ ...DEFAULT_BIN_PARAMS, heightUnitMm: 10 });
+      expect(fields).toEqual({ slant: { heightUnitMm: 10 } });
+    });
+
     it('records a design that keeps any slant off', () => {
       const fields = registrySlantFields({
         ...DEFAULT_BIN_PARAMS,

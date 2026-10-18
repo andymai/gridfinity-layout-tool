@@ -31,4 +31,8 @@ export interface DesignSlantFacts {
   /** Something in the design keeps every slant off, a placed one included. */
   readonly blocked?: true;
   readonly extraWallMm?: number;
+  /** The design's own units, which size its support; absent when they are the defaults. */
+  readonly gridUnitMm?: number;
+  readonly gridUnitMmY?: number;
+  readonly heightUnitMm?: number;
 }

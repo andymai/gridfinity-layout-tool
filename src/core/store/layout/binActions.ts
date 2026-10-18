@@ -48,8 +48,8 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
       const { id: _stripId, ...safeUpdates } = updates;
 
       // Validate placement when the bin moves, resizes, changes how tall it
-      // stands (which moves everything resting on it) or takes a slant, as
-      // `bin.update` does.
+      // stands (which moves everything resting on it), or changes what decides
+      // its slant, as `bin.update` does.
       const merged = { ...bin, ...safeUpdates };
       if (
         merged.layerId !== STAGING_ID &&
@@ -60,7 +60,9 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
           updates.layerId !== undefined ||
           updates.height !== undefined ||
           'clearanceHeight' in updates ||
-          updates.slant !== undefined)
+          'slant' in updates ||
+          'overhang' in updates ||
+          'extendToMargin' in updates)
       ) {
         const rect = { x: merged.x, y: merged.y, width: merged.width, depth: merged.depth };
         const validationResult = canPlaceBin(
@@ -172,6 +174,7 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
             linkedDesignId: bin.linkedDesignId,
             slant: bin.slant,
             extendToMargin: bin.extendToMargin,
+            overhang: bin.overhang,
           },
           bin.layerId,
           layout

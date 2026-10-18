@@ -8,6 +8,7 @@
  */
 
 import type { DesignId, DesignSlantFacts } from '@/core/types';
+import { CONSTRAINTS } from '@/core/constants';
 import type { ItemEnvelope, ItemKind } from '@/shared/types/item';
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import { assemblyOverhangMm, assemblyRiseMm } from '@/shared/types/assemblyPlacement';
@@ -235,6 +236,13 @@ export function registrySlantFields(params: BinParams): Pick<CustomBinRef, 'slan
     ...(config ? { config } : {}),
     ...(slantBlocker(params) !== null ? { blocked: true as const } : {}),
     ...(extraWallMm > 0 ? { extraWallMm } : {}),
+    ...(params.gridUnitMm !== CONSTRAINTS.GRID_UNIT_MM_DEFAULT
+      ? { gridUnitMm: params.gridUnitMm }
+      : {}),
+    ...(params.gridUnitMmY !== undefined ? { gridUnitMmY: params.gridUnitMmY } : {}),
+    ...(params.heightUnitMm !== CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT
+      ? { heightUnitMm: params.heightUnitMm }
+      : {}),
   };
   return { slant: Object.keys(facts).length > 0 ? facts : undefined };
 }
@@ -441,14 +449,24 @@ function parseEntry(raw: unknown): CustomBinRef | null {
 
 function parseSlantFacts(raw: unknown): DesignSlantFacts | undefined {
   if (typeof raw !== 'object' || raw === null) return undefined;
-  const { config: rawConfig, blocked, extraWallMm } = raw as Record<string, unknown>;
+  const {
+    config: rawConfig,
+    blocked,
+    extraWallMm,
+    gridUnitMm,
+    gridUnitMmY,
+    heightUnitMm,
+  } = raw as Record<string, unknown>;
   const config = migrateSlant(rawConfig);
+  const positive = (v: unknown): v is number =>
+    typeof v === 'number' && Number.isFinite(v) && v > 0;
   const facts: DesignSlantFacts = {
     ...(config ? { config } : {}),
     ...(blocked === true ? { blocked: true as const } : {}),
-    ...(typeof extraWallMm === 'number' && Number.isFinite(extraWallMm) && extraWallMm > 0
-      ? { extraWallMm }
-      : {}),
+    ...(positive(extraWallMm) ? { extraWallMm } : {}),
+    ...(positive(gridUnitMm) ? { gridUnitMm } : {}),
+    ...(positive(gridUnitMmY) ? { gridUnitMmY } : {}),
+    ...(positive(heightUnitMm) ? { heightUnitMm } : {}),
   };
   return Object.keys(facts).length > 0 ? facts : undefined;
 }

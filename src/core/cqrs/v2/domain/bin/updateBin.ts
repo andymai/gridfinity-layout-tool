@@ -180,12 +180,13 @@ export const updateBin = defineCommand({
 
     const merged: Bin = { ...existing, ...changes };
 
-    // A new height or clearance moves every bin resting on this one, and a new
-    // slant takes room, so each is validated like a move. Linking is not: the
-    // rise it brings is derived from the design, and unlinking a deleted design
-    // must never be refused.
+    // A new height or clearance moves every bin resting on this one, and a
+    // change to the slant, or to the overhang that keeps a bin upright, can
+    // bring an end support back, so each is validated like a move. Linking is
+    // not: the rise it brings is derived from the design, and unlinking a
+    // deleted design must never be refused.
     const restacks = changes.height !== undefined || 'clearanceHeight' in changes;
-    const reslants = changes.slant !== undefined;
+    const reslants = 'slant' in changes || 'overhang' in changes || 'extendToMargin' in changes;
 
     if ((spatial || restacks || reslants) && merged.layerId !== STAGING_ID) {
       const rect = { x: merged.x, y: merged.y, width: merged.width, depth: merged.depth };

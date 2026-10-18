@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { produce } from 'immer';
 import { isOk } from '@/core/result';
 import { STAGING_ID } from '@/core/constants';
 import { binId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
 import { updateBin } from './updateBin';
+import { registerLinkedSlantResolver } from '@/shared/utils/placedSlant';
 import { makeLayout, makeBin } from './_testHelpers';
 
 describe('v2 bin.update', () => {
@@ -231,6 +232,39 @@ describe('v2 bin.update', () => {
         { aggregate: layout }
       );
       expect(isOk(result)).toBe(true);
+    });
+
+    describe("a design's own support coming back", () => {
+      afterEach(() => registerLinkedSlantResolver(null));
+      const behind = makeBin('behind', { y: gridUnits(1) });
+
+      it('refuses clearing a placed slant when the design support would cover a bin', () => {
+        registerLinkedSlantResolver(() => ({ config: SLANT }));
+        const linked = makeBin('bin_1', {
+          linkedDesignId: designId('d'),
+          slant: { angleDeg: 40, side: 'back' },
+        });
+        const layout = makeLayout({ bins: [linked, behind] });
+        const result = updateBin.handle(
+          { id: 'bin_1', updates: { slant: null } },
+          { aggregate: layout }
+        );
+        expect(result.ok).toBe(false);
+      });
+
+      it('refuses resetting the overhang that keeps such a bin upright', () => {
+        registerLinkedSlantResolver(() => ({ config: SLANT }));
+        const expanded = makeBin('bin_1', {
+          linkedDesignId: designId('d'),
+          overhang: { left: 5, right: 0, front: 0, back: 0 },
+        });
+        const layout = makeLayout({ bins: [expanded, behind] });
+        const result = updateBin.handle(
+          { id: 'bin_1', updates: { overhang: null } },
+          { aggregate: layout }
+        );
+        expect(result.ok).toBe(false);
+      });
     });
 
     // Nothing in a slant depends on where the bin stands, unlike an overhang.

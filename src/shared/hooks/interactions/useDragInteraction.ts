@@ -13,6 +13,7 @@ import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import type { InteractionContext, ModeHandlers, DragStartArgs } from './types';
+import { leadingFirst } from './moveOrder';
 import type {
   BinId,
   Coord,
@@ -440,10 +441,10 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
             mlTracking.trackMove(movedBin, oldPosition, 'drag', binsToMove.length);
           }
 
+          const ordered = leadingFirst(findBinsByIds(layout, interaction.binIds), deltaX, deltaY);
           execute(() => {
-            for (const binId of interaction.binIds) {
-              const bin = findBinById(layout, binId);
-              if (!bin) continue;
+            for (const bin of ordered) {
+              const binId = bin.id;
 
               updateBin(binId, {
                 x: (bin.x + deltaX) as GridUnits,

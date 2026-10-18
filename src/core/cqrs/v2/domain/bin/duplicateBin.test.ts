@@ -32,6 +32,20 @@ describe('v2 bin.duplicate', () => {
     expect(result.value.event.payload.sourceId).toBe(source.id);
   });
 
+  // The copy keeps the overhang, which keeps it upright, so the check must too.
+  it('places a copy whose overhang keeps it upright beside the source', () => {
+    const source = makeBin('bin_1', {
+      y: gridUnits(3),
+      slant: { angleDeg: 40, side: 'back', endSupport: true },
+      overhang: { left: 0, right: 0, front: 0, back: 5 },
+    });
+    const layout = makeLayout({ bins: [source] });
+    const result = duplicateBin.handle({ id: 'bin_1' }, { aggregate: layout });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.event.payload.newBin.layerId).not.toBe(STAGING_ID);
+  });
+
   it('falls back to staging when no adjacent placement fits', () => {
     // Fill all four cardinal slots around the source bin so the search exhausts.
     const source = makeBin('bin_src', { x: gridUnits(2), y: gridUnits(2) });

@@ -52,6 +52,7 @@ function findAdjacentPlacement(
         linkedDesignId: bin.linkedDesignId,
         slant: bin.slant,
         extendToMargin: bin.extendToMargin,
+        overhang: bin.overhang,
       },
       bin.layerId,
       layout

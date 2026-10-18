@@ -1,6 +1,6 @@
 import type { Bin, DesignId, DesignSlantFacts, FractionalEdge, Layout, Rect } from '@/core/types';
 import { effectiveGridUnitMmY, gridUnits } from '@/core/types';
-import { STAGING_ID } from '@/core/constants';
+import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { footprintsOverlap } from './collision';
 import { resolveBinOverhang } from './drawerMargin';
 import { edgeForPosition } from './fractionalEdge';
@@ -89,6 +89,12 @@ function placementFacts(bin: Bin): LinkedSlantFacts | undefined {
     // The quarter turn carries the design's +X side to the back and its +Y side to the left.
     fractionalEdgeX: otherEdge(facts.fractionalEdgeY),
     fractionalEdgeY: facts.fractionalEdgeX,
+    ...(facts.gridUnitMmY !== undefined
+      ? {
+          gridUnitMm: facts.gridUnitMmY,
+          gridUnitMmY: facts.gridUnitMm ?? CONSTRAINTS.GRID_UNIT_MM_DEFAULT,
+        }
+      : {}),
   };
 }
 
@@ -105,13 +111,24 @@ export function placedSlant(bin: Bin, layout: SlantLayout): PlacedSlant | null {
   if (resolveBinOverhang(bin, layout.drawer, layout.baseplateParams) !== null) return null;
   if (!plan.endSupport) return { plan, support: null };
 
+  // The export builds a linked design at its own height and in its own units,
+  // which a placement keeps until the next resync and the layout's can differ from.
+  const units = facts
+    ? {
+        gridUnitMm: facts.gridUnitMm ?? CONSTRAINTS.GRID_UNIT_MM_DEFAULT,
+        gridUnitMmY: facts.gridUnitMmY ?? facts.gridUnitMm ?? CONSTRAINTS.GRID_UNIT_MM_DEFAULT,
+        heightUnitMm: facts.heightUnitMm ?? CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT,
+      }
+    : {
+        gridUnitMm: layout.gridUnitMm,
+        gridUnitMmY: effectiveGridUnitMmY(layout),
+        heightUnitMm: layout.heightUnitMm,
+      };
   const span = slantSpanZFor({
     flatBase: facts?.flatBase === true,
     lowProfile: layout.lowProfileBase === true,
-    // The export builds the design's own height, which a placement linked to it
-    // keeps until the next resync.
     height: facts?.height ?? bin.height,
-    heightUnitMm: layout.heightUnitMm,
+    heightUnitMm: units.heightUnitMm,
     extraWallHeightMm: facts?.extraWallMm,
   });
   const support = planSupportFor(plan, {
@@ -124,8 +141,8 @@ export function placedSlant(bin: Bin, layout: SlantLayout): PlacedSlant | null {
     fractionalEdgeY:
       facts?.fractionalEdgeY ??
       edgeForPosition(bin.y, layout.drawer.depth, layout.drawer.fractionalEdgeY),
-    gridUnitMm: layout.gridUnitMm,
-    gridUnitMmY: effectiveGridUnitMmY(layout),
+    gridUnitMm: units.gridUnitMm,
+    gridUnitMmY: units.gridUnitMmY,
   });
   return { plan, support: support ? supportRect(bin, support) : null };
 }
