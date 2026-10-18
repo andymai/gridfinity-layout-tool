@@ -33,6 +33,22 @@ describe('LidSection', () => {
     expect(screen.getByRole('switch', { name: ENABLE })).toBeDisabled();
   });
 
+  it.each(['clickRails', 'slide'] as const)(
+    'says a slanted bin has no lid, with no lip to enable (%s)',
+    (attachment) => {
+      resetStore({
+        slant: { angleDeg: 45, side: 'back' },
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+        lid: { ...DEFAULT_BIN_PARAMS.lid, attachment },
+      });
+      render(<LidSection />);
+      expect(screen.getByText('A slanted bin has no lid.')).toBeInTheDocument();
+      expect(screen.queryByText('Requires stacking lip')).toBeNull();
+      expect(screen.queryByRole('button', { name: /stacking lip/i })).toBeNull();
+      expect(screen.getByRole('switch', { name: ENABLE })).toBeDisabled();
+    }
+  );
+
   it('toggles lid enabled', () => {
     render(<LidSection />);
     fireEvent.click(screen.getByRole('switch', { name: ENABLE }));

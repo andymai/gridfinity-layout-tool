@@ -15,6 +15,7 @@ import {
 import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartmentGrid';
 import { builtCompartmentFloorRaiseMm } from '@/features/bin-designer/utils/compartmentFloorRaise';
+import { isEffectiveTile } from '@/features/bin-designer/types';
 import type { BinParams } from '@/features/bin-designer/types';
 
 export const SLANT_DEFAULT_DEG = 45;
@@ -42,11 +43,14 @@ export function useSlantVisible(): boolean {
 }
 
 /**
- * The diagonal only holds while nothing stands across the lean: a standard bin
- * whose every compartment runs the full length of the lean axis.
+ * The diagonal only holds while the cavity is an empty parallelogram: a
+ * standard bin with walls, no scoop ramp in its low corner, and every
+ * compartment running the full length of the lean axis.
  */
 function leanIsUnobstructed(params: BinParams, axis: 'x' | 'y'): boolean {
-  if (params.style !== 'standard') return false;
+  if (params.style !== 'standard' || params.scoop.enabled || isEffectiveTile(params.base)) {
+    return false;
+  }
   const config = params.compartments;
   for (const id of new Set(config.cells)) {
     const bounds = getCompartmentBounds(config, id);

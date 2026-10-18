@@ -80,6 +80,8 @@ export function buildBlockerReason(
 ): string | null {
   if (blockers.length === 0) return null;
   if (blockers.length === 1) {
+    // A slant leaves nothing to fix, only a fact to state.
+    if (blockers[0].id === 'slanted') return t('binDesigner.lid.compat.slanted');
     const fixKey = `binDesigner.lid.compat.fix.${blockers[0].id}`;
     return t('binDesigner.lid.compat.disabledOne', { detail: t(fixKey) });
   }

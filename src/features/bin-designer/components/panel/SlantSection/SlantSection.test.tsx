@@ -79,6 +79,19 @@ describe('SlantSection', () => {
     expect(screen.queryByText(/binDesigner\.slant\.longestItem/)).toBeNull();
   });
 
+  it.each([
+    [
+      'a scoop ramps into its low corner',
+      { scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true } },
+    ],
+    ['it is a base-only tile', { base: { ...DEFAULT_BIN_PARAMS.base, tile: true }, height: 1 }],
+  ])('drops the fit length when %s', (_, over) => {
+    setParams({ slant: { angleDeg: 45, side: 'back' }, ...over });
+    render(<SlantSection />);
+    expect(screen.getByText(/binDesigner\.slant\.topOffset/)).toBeInTheDocument();
+    expect(screen.queryByText(/binDesigner\.slant\.longestItem/)).toBeNull();
+  });
+
   it('warns past 45 degrees only', () => {
     setParams({ slant: { angleDeg: 45, side: 'back' } });
     const { unmount } = render(<SlantSection />);

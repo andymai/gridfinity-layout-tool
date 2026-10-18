@@ -223,7 +223,9 @@ export function useLidSection() {
   // the worker builds from: the pin lengths it quotes are the ones the barrel
   // is actually bored for, and they change as the bin is resized.
   const hingePlan = planHingeLid(params);
-  const stackingLipMissing = needsStackingLip && !base.stackingLip;
+  // A slanted bin has no lip to turn back on, so its blocker speaks first.
+  const slanted = compatibilityIssues.some((i) => i.id === 'slanted');
+  const stackingLipMissing = needsStackingLip && !base.stackingLip && !slanted;
   const disabledReason = stackingLipMissing
     ? t('binDesigner.lid.requiresStackingLip')
     : (blockerReason ?? undefined);

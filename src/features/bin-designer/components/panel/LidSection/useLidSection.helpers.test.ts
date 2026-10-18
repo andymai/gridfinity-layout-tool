@@ -170,6 +170,10 @@ describe('buildBlockerReason', () => {
     );
   });
 
+  it('states the slant rather than a fix for a slanted bin', () => {
+    expect(buildBlockerReason([issue('slanted')], t)).toBe('binDesigner.lid.compat.slanted');
+  });
+
   it('returns the many-blockers key for multiple blockers', () => {
     expect(buildBlockerReason([issue('wallCutouts'), issue('handles')], t)).toBe(
       'binDesigner.lid.compat.disabledMany'
