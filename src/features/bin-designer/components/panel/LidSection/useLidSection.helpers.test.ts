@@ -313,6 +313,90 @@ describe('fixableIdsFor', () => {
     expect(fixableIdsFor(triangle(12)).has('slideFillTooHigh')).toBe(true);
   });
 
+  it('tips the end of a path the lean lowers, not the farther one', () => {
+    // Leaned the other way, the triangle's 12mm flat end goes down instead of
+    // its 14.5mm tip: 18mm drawn reaches 21.2mm, inside the lowered fill.
+    const flipped = solidWithPocket(18, {
+      shape: 'path',
+      clearance: 2,
+      leanDeg: -45,
+      path: [
+        { x: 15, y: 25, handleIn: null, handleOut: null, symmetric: false },
+        { x: 25, y: 45, handleIn: null, handleOut: null, symmetric: false },
+        { x: 5, y: 45, handleIn: null, handleOut: null, symmetric: false },
+      ],
+    });
+    expect(fixableIdsFor(flipped).has('slideFillTooHigh')).toBe(true);
+  });
+
+  it('tips a leaned chamfer’s wider rim as well as the floor', () => {
+    // A 6x24mm triangle's 5mm chamfer miters its tip out, and leaned 45° the
+    // rim sinks 22.6mm against the floor's 15.6mm.
+    const narrow = (chamferWidth: number): BinParams =>
+      solidWithPocket(10, {
+        shape: 'path',
+        x: 5,
+        y: 25,
+        width: 6,
+        depth: 24,
+        leanDeg: 45,
+        chamferWidth,
+        path: [
+          { x: 8, y: 25, handleIn: null, handleOut: null, symmetric: false },
+          { x: 11, y: 49, handleIn: null, handleOut: null, symmetric: false },
+          { x: 5, y: 49, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+    expect(fixableIdsFor(narrow(5)).has('slideFillTooHigh')).toBe(false);
+    expect(fixableIdsFor(narrow(0)).has('slideFillTooHigh')).toBe(true);
+  });
+
+  it('tips a chamfer sunk to a shallower pocket’s floor from there', () => {
+    // The inner pocket's floor reaches 21.2mm; its rim, opening on the outer
+    // pocket's floor, reaches 21.9mm from 15mm down but 14.8mm from 5mm.
+    const nested = (outerDepth: number): BinParams => {
+      const base = solidWithPocket(20, { leanDeg: 45, chamferWidth: 6 });
+      const outer: Cutout = {
+        ...base.cutouts[0],
+        id: 'outer',
+        x: 0,
+        y: 15,
+        width: 39,
+        depth: 50,
+        cutDepth: outerDepth,
+        leanDeg: 0,
+        chamferWidth: 0,
+      };
+      return { ...base, cutouts: [outer, ...base.cutouts] };
+    };
+    expect(fixableIdsFor(nested(15)).has('slideFillTooHigh')).toBe(false);
+    expect(fixableIdsFor(nested(5)).has('slideFillTooHigh')).toBe(true);
+  });
+
+  it('widens a sunk polygon flare by its mitered corners', () => {
+    // A triangle's flare miters out twice its width at a corner: a 5mm flare
+    // sunk 12mm on a 16mm-deep polygon reaches 22.6mm, where a flare grown by
+    // its width alone would reach 19.1mm.
+    const sunkPolygon = (sides: number): BinParams => {
+      const base = solidWithPocket(16, { shape: 'polygon', sides, leanDeg: 45, chamferWidth: 5 });
+      const outer: Cutout = {
+        ...base.cutouts[0],
+        id: 'outer',
+        shape: 'rectangle',
+        x: 0,
+        y: 15,
+        width: 39,
+        depth: 50,
+        cutDepth: 12,
+        leanDeg: 0,
+        chamferWidth: 0,
+      };
+      return { ...base, cutouts: [outer, ...base.cutouts] };
+    };
+    expect(fixableIdsFor(sunkPolygon(3)).has('slideFillTooHigh')).toBe(false);
+    expect(fixableIdsFor(sunkPolygon(12)).has('slideFillTooHigh')).toBe(true);
+  });
+
   it('tips a leaned floor along the tilt axis only', () => {
     // 15mm drawn across a 39mm-wide, 10mm-deep pocket reaches 14.1mm; reading
     // the width as the tilted span would put it at 24.4mm.

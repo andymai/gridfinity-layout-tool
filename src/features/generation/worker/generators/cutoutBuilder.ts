@@ -90,8 +90,7 @@ import {
   pathCutoutSections,
 } from '@/shared/utils/pathCutoutOutline';
 import type { Pt } from '@/shared/utils/polygonOffset';
-import { clearedProfile } from '@/shared/utils/cutoutClearance';
-import { entryChamferWidth, MIN_LOFTED_CHAMFER } from './cutoutFit';
+import { clearedProfile, entryChamferWidth, MIN_LOFTED_CHAMFER } from '@/shared/utils/cutoutFit';
 import { planNestedOpenings } from './nestedCutoutOpenings';
 import type { FloorTrim, NestedOpening, SunkMouth } from './nestedCutoutOpenings';
 import { buildTaperedInnerEnvelope } from './taperedOuter';
