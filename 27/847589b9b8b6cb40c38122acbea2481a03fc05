@@ -1,0 +1,26 @@
+src/shared/utils/slideLidPlan.test.ts
+  s_3ed1b5bc102254::t_8d2d72d80da898 143-158
+src/features/bin-designer/utils/slideLidPlanForParams.ts
+  s_3ed1b5bc102254::t_947de38d07989d 21,112,115-116
+src/features/generation/worker/generators/slideLidSeating.scenario.test.ts
+  s_3ed1b5bc102254::t_8d2d72d80da898 787-811
+src/shared/utils/slideLidPlan.ts
+  s_3ed1b5bc102254::t_947de38d07989d 665-679,737-740
+  s_3ed1b5bc102254::t_9ea57e21f4c802 664
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "27847589b9b8b6cb40c38122acbea2481a03fc05",
+  "prompts": {},
+  "sessions": {
+    "s_3ed1b5bc102254": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f41879-d3ed-4377-a3a8-af4dbd466449",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
