@@ -14,7 +14,7 @@ import type { OverhangConfig } from '@/shared/types/bin';
 import { getGridBins } from '@/shared/utils';
 import { getSplitPositions } from '@/shared/utils/splitPositions';
 import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
-import { overhangKey, resolveOverhang } from '@/shared/utils/overhang';
+import { hasOverhang, overhangKey, resolveOverhang } from '@/shared/utils/overhang';
 import {
   calcFilamentCost,
   calcSpoolPercentage,
@@ -175,8 +175,9 @@ function fitForBin(
 ): { maxWidth: number; maxDepth: number; key: string } {
   const overhang = fit.overhangFor?.(bin);
   // A slanted bin is never split, and is a different printed part from an
-  // upright one of the same size.
-  if (bin.slant) {
+  // upright one of the same size. An overhang keeps the slant off, as it does
+  // in the export.
+  if (bin.slant && !hasOverhang(resolveOverhang(overhang))) {
     const { angleDeg, side, endSupport } = bin.slant;
     return {
       maxWidth: bin.width,

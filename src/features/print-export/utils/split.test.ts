@@ -177,6 +177,14 @@ describe('generatePrintList', () => {
     const upright = rows.find((r) => r.totalPieces > 1);
     expect(slanted?.binCount).toBe(1);
     expect(upright?.binCount).toBe(1);
+
+    // An overhang keeps the slant off, so that bin splits like an upright one.
+    const overhang = { left: 5, right: 0, front: 0, back: 0 };
+    const kept = generatePrintList(
+      [bin('2', 6, { slant: { angleDeg: 40, side: 'back' } })],
+      fitAt(4, () => overhang)
+    );
+    expect(kept[0].totalPieces).toBeGreaterThan(1);
   });
 
   it('does not merge bins linked to different designs even with identical dims', () => {
