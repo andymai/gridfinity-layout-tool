@@ -68,7 +68,7 @@ import type { SnappingSliderOption } from '../../controls/SnappingSlider';
 import {
   buildBlockerReason,
   computeRailSummary,
-  FIXABLE_IDS,
+  fixableIdsFor,
   LID_TOP_SURFACES,
   lidValueSummary,
   type LidTopSurface,
@@ -171,6 +171,7 @@ export function useLidSection() {
   );
 
   const compatibilityIssues = useMemo(() => checkLidCompatibility(params), [params]);
+  const fixableIds = useMemo(() => fixableIdsFor(params), [params]);
   // Per-side rail conflicts (label tabs, wall cutouts, intruding handles).
   // Derived from the already-memoized issue list — avoids running the
   // compatibility scan a second time per params change. The worker side
@@ -1005,7 +1006,7 @@ export function useLidSection() {
       dimensionsReadout,
       railsReadout,
       compatibilityIssues,
-      fixableIds: FIXABLE_IDS,
+      fixableIds,
       // Lid-top text
       lidText,
       textMode,

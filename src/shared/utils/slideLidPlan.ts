@@ -575,6 +575,7 @@ export function slideLidPlanInput(
   isPolygon: boolean,
   dims: SlideLidBinDims
 ): SlideLidPlanInput {
+  const hollowDepth = dims.wallHeight - wallThickness;
   return {
     slide,
     plateThicknessMm,
@@ -582,7 +583,10 @@ export function slideLidPlanInput(
     innerD: dims.innerD,
     wallThickness,
     entryWallThicknessMm: slideWallThicknessMm(slide.entrySide, dims),
-    cavityDepthMm: dims.solidRecessMm ?? dims.wallHeight - wallThickness,
+    // An offset that outlived a shorter bin can reach past the floor, where the
+    // shell drops the fill and the floor is the cavity's bottom again.
+    cavityDepthMm:
+      dims.solidRecessMm === null ? hollowDepth : Math.min(dims.solidRecessMm, hollowDepth),
     hasLip: dims.hasLip,
     isPolygon,
     isSolid: dims.solidRecessMm !== null,

@@ -783,6 +783,40 @@ describe('LidSection', () => {
       expect(screen.getByRole('switch', { name: ENABLE })).toBeEnabled();
     });
 
+    it('leaves lowering the fill to the user when it would cut a pocket short', () => {
+      resetStore({
+        width: 1,
+        depth: 2,
+        height: 5,
+        style: 'solid',
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutouts: [
+          {
+            id: 'deep',
+            shape: 'rectangle',
+            x: 5,
+            y: 25,
+            width: 20,
+            depth: 20,
+            cutDepth: 28,
+            rotation: 0,
+            cornerRadius: 0,
+            label: '',
+            groupId: null,
+          },
+        ],
+        lid: {
+          ...DEFAULT_BIN_PARAMS.lid,
+          enabled: true,
+          attachment: 'slide',
+          slide: DEFAULT_LID_SLIDE_CONFIG,
+        },
+      });
+      render(<LidSection />);
+      expect(screen.getByText(/The solid fill sits too close to the rim/)).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /^Fix: The solid fill/ })).toBeNull();
+    });
+
     it('names a way out for a sliding lid the bin cannot take at all', () => {
       resetStore({
         height: 1,

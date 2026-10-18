@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { buildBlockerReason, computeRailSummary, lidValueSummary } from './useLidSection.helpers';
+import {
+  buildBlockerReason,
+  computeRailSummary,
+  fixableIdsFor,
+  lidValueSummary,
+} from './useLidSection.helpers';
+import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { DEFAULT_LID_SLIDE_CONFIG } from '@/features/bin-designer/types/lid';
+import type { BinParams } from '@/features/bin-designer/types';
 import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
 import { DEFAULT_LID_CONFIG, type LidClickRails } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -178,5 +186,48 @@ describe('buildBlockerReason', () => {
     expect(buildBlockerReason([issue('wallCutouts'), issue('handles')], t)).toBe(
       'binDesigner.lid.compat.disabledMany'
     );
+  });
+});
+
+describe('fixableIdsFor', () => {
+  /** A 1x2x5 solid bin filled to the rim, with one pocket `cutDepth` deep. */
+  const solidWithPocket = (cutDepth: number): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    width: 1,
+    depth: 2,
+    height: 5,
+    style: 'solid',
+    base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+    cutouts: [
+      {
+        id: 'pocket',
+        shape: 'circle',
+        x: 5,
+        y: 25,
+        width: 20,
+        depth: 20,
+        cutDepth,
+        rotation: 0,
+        cornerRadius: 0,
+        label: '',
+        groupId: null,
+      },
+    ],
+    lid: {
+      ...DEFAULT_BIN_PARAMS.lid,
+      enabled: true,
+      attachment: 'slide',
+      slide: DEFAULT_LID_SLIDE_CONFIG,
+    },
+  });
+
+  it('offers to lower the fill when every pocket keeps its depth', () => {
+    expect(fixableIdsFor(solidWithPocket(10)).has('slideFillTooHigh')).toBe(true);
+  });
+
+  it('withholds the fill fix when it would leave a pocket short of its depth', () => {
+    const ids = fixableIdsFor(solidWithPocket(25));
+    expect(ids.has('slideFillTooHigh')).toBe(false);
+    expect(ids.has('slideFlushNeedsNoLip')).toBe(true);
   });
 });

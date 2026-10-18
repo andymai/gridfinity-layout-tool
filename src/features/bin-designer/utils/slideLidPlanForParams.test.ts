@@ -142,6 +142,15 @@ describe('a solid bin', () => {
   it('refuses a recess shallower than the joint', () => {
     expect(slideLidPlanForParams(solidParams(5)).rejection).toBe('bin-too-shallow');
   });
+
+  it('measures no deeper than the bin when the offset outlived a taller one', () => {
+    // A rim-anchored offset survives a height cut, and past the floor the shell
+    // drops the fill, so the bin has only its own cavity to offer.
+    const outlived = solidParams(20, { height: 2 });
+    const hollow = slideParams({ width: 1, depth: 2, height: 2 });
+    expect(slideLidPlanForParams(hollow).rejection).toBe('bin-too-shallow');
+    expect(slideLidPlanForParams(outlived).rejection).toBe('bin-too-shallow');
+  });
 });
 
 describe('slideLidFillOffsetMm', () => {

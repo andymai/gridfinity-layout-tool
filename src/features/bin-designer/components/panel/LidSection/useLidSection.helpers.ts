@@ -3,10 +3,15 @@ import {
   LID_CORNER_RADIUS,
   LID_FIT_CLEARANCE,
   LID_MIN_RAIL_LENGTH,
+  type BinParams,
+  type Cutout,
   type LidClickRails,
   type LidConfig,
   type LidRailSide,
 } from '@/features/bin-designer/types';
+import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
+import { slideLidFillOffsetMm } from '@/features/bin-designer/utils/slideLidPlanForParams';
+import { cutoutDepthShortfall } from '../CutoutsSection/cutoutDepthShortfall';
 import type { useTranslation } from '@/i18n';
 import {
   railSegmentsClearOfBlocks,
@@ -240,7 +245,7 @@ export function computeRailSummary(
 // The rail is only segmented around the tabs, so the button offered to
 // destroy user content to recover part of one wall. The warning still explains
 // the trade and the user can turn labels off themselves.
-export const FIXABLE_IDS: ReadonlySet<LidCompatibilityId> = new Set<LidCompatibilityId>([
+const FIXABLE_IDS: ReadonlySet<LidCompatibilityId> = new Set<LidCompatibilityId>([
   'wallCutouts',
   'wallCutoutsAllSides',
   'wallPattern',
@@ -254,3 +259,31 @@ export const FIXABLE_IDS: ReadonlySet<LidCompatibilityId> = new Set<LidCompatibi
   'slideFillTooHigh',
   'hingeStackableTop',
 ]);
+
+const FIXABLE_IDS_WITHOUT_FILL: ReadonlySet<LidCompatibilityId> = new Set(
+  [...FIXABLE_IDS].filter((id) => id !== 'slideFillTooHigh')
+);
+
+/** Would a fill at `topOffset` cut any pocket shallower than the current fill does? */
+function fillShortensPockets(params: BinParams, topOffset: number): boolean {
+  const { innerW, innerD } = cutoutInterior(params);
+  const { wallHeight } = binDimensions(params);
+  const reach = (cutout: Cutout, offset: number): number =>
+    cutoutDepthShortfall(cutout, innerW, innerD, wallHeight - offset)?.achievable ??
+    cutout.cutDepth;
+  return params.cutouts.some(
+    (c) => c.hidden !== true && reach(c, topOffset) < reach(c, params.cutoutConfig.topOffset)
+  );
+}
+
+/**
+ * The issues this design offers a one-click Fix for. Pockets are cut down from
+ * the fill, so lowering it can leave a deep one short of its depth; that trade
+ * is left to the cutout editor, which reports the shortfall.
+ */
+export function fixableIdsFor(params: BinParams): ReadonlySet<LidCompatibilityId> {
+  const offset = slideLidFillOffsetMm(params);
+  return offset !== null && fillShortensPockets(params, offset)
+    ? FIXABLE_IDS_WITHOUT_FILL
+    : FIXABLE_IDS;
+}
