@@ -16,12 +16,15 @@ export function slantRenderFields(
 ): { shear?: BinShear; slantSupport?: SlantSupportRender } {
   const slant = placedSlant(bin, layout);
   if (!slant) return {};
-  const { plan, span, topOffsetMm, support } = slant;
+  const { plan, span, support } = slant;
   const pitchX = layout.gridUnitMm;
   const pitchY = effectiveGridUnitMmY(layout);
   const along = plan.sign * plan.k;
   const pivot = span.pivotZ / pitchX;
-  const top = span.topZ / pitchX;
+  // The stylized box stands at the bin's own height, without a linked design's
+  // extra wall, so its wedge must too or it outgrows the box it holds up.
+  const boxTopMm = bin.height * layout.heightUnitMm;
+  const top = boxTopMm / pitchX;
   const shear: BinShear =
     plan.axis === 'x' ? { x: along, y: 0, pivot } : { x: 0, y: (along * pitchX) / pitchY, pivot };
   if (!support) return { shear };
@@ -33,7 +36,7 @@ export function slantRenderFields(
       y: support.y,
       width: support.width,
       depth: support.depth,
-      reach: topOffsetMm / (plan.axis === 'x' ? pitchX : pitchY),
+      reach: (plan.k * Math.max(0, boxTopMm - span.pivotZ)) / (plan.axis === 'x' ? pitchX : pitchY),
       pivot,
       top,
     },

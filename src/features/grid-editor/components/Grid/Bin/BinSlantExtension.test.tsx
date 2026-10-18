@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { useLayoutStore } from '@/core/store';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
-import { gridUnits, heightUnits } from '@/core/types';
+import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
 import type { Bin } from '@/core/types';
 import { BinSlantExtension } from './BinSlantExtension';
 
@@ -30,6 +30,39 @@ describe('BinSlantExtension', () => {
     expect(parseFloat(lean.style.height)).toBeCloseTo((37.25 / 42) * 34, 3);
     expect(parseFloat(lean.style.top)).toBeCloseTo(-(37.25 / 42) * 34, 3);
     expect(screen.queryByTestId('slant-support-cells')).toBeNull();
+  });
+
+  it('stops the strip at the first bin it reaches', () => {
+    const leaning = bin({ slant: { angleDeg: 45, side: 'back' } });
+    const behind = (y: number): Bin =>
+      createTestBin({ id: binId('behind'), y: gridUnits(y), width: gridUnits(2) });
+
+    useLayoutStore.setState({ layout: createTestLayout({ bins: [leaning, behind(1)] }) });
+    const { unmount } = render(<BinSlantExtension bin={leaning} {...props} />);
+    expect(screen.queryByTestId('slant-lean')).toBeNull();
+    unmount();
+
+    useLayoutStore.setState({
+      layout: createTestLayout({ bins: [leaning, behind(1.5)] }),
+    });
+    render(<BinSlantExtension bin={leaning} {...props} />);
+    expect(parseFloat(screen.getByTestId('slant-lean').style.height)).toBeCloseTo(0.5 * 34, 3);
+  });
+
+  it('runs under bins on other layers', () => {
+    const leaning = bin({ slant: { angleDeg: 45, side: 'back' } });
+    const above = createTestBin({
+      id: binId('above'),
+      y: gridUnits(1),
+      width: gridUnits(2),
+      layerId: layerId('other'),
+    });
+    useLayoutStore.setState({ layout: createTestLayout({ bins: [leaning, above] }) });
+    render(<BinSlantExtension bin={leaning} {...props} />);
+    expect(parseFloat(screen.getByTestId('slant-lean').style.height)).toBeCloseTo(
+      (37.25 / 42) * 34,
+      3
+    );
   });
 
   it("hatches the end support's cells, a gap past the bin", () => {

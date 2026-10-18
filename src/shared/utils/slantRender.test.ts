@@ -1,12 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect } from 'vitest';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
-import { gridUnits, heightUnits, mm } from '@/core/types';
+import { designId, gridUnits, heightUnits, mm } from '@/core/types';
 import type { SlantConfig } from '@/core/types';
+import { registerLinkedSlantResolver } from './placedSlant';
 import { slantRenderFields } from './slantRender';
 
 const layout = createTestLayout({ gridUnitMm: mm(42), gridUnitMmY: mm(21) });
 const bin = (slant?: SlantConfig) =>
   createTestBin({ width: gridUnits(2), height: heightUnits(6), ...(slant ? { slant } : {}) });
+
+afterEach(() => {
+  registerLinkedSlantResolver(null);
+});
 
 describe('slantRenderFields', () => {
   it('leaves an upright bin alone', () => {
@@ -33,5 +38,20 @@ describe('slantRenderFields', () => {
     expect(slantSupport).toMatchObject({ side: 'right', x: 2, y: 0, width: 1, depth: 1 });
     expect(slantSupport?.reach).toBeCloseTo(37.25 / 42, 6);
     expect(slantSupport?.top).toBeCloseTo(1, 6);
+  });
+
+  it("keeps a linked design's wedge to the stylized box, not its extra wall", () => {
+    registerLinkedSlantResolver(() => ({ extraWallMm: 21 }));
+    const { slantSupport } = slantRenderFields(
+      createTestBin({
+        width: gridUnits(2),
+        height: heightUnits(6),
+        linkedDesignId: designId('d1'),
+        slant: { angleDeg: 45, side: 'right', endSupport: true },
+      }),
+      layout
+    );
+    expect(slantSupport?.top).toBeCloseTo(1, 6);
+    expect(slantSupport?.reach).toBeCloseTo(37.25 / 42, 6);
   });
 });

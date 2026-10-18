@@ -22,7 +22,10 @@ export function BinSlantBadge({
   const t = useTranslation();
   const label = attention ? t('grid.bin.slantIssue') : t('binDesigner.slant.title');
   return (
-    <div title={label} style={{ transform: `rotate(${TURN_DEG[side]}deg)` }}>
+    <div
+      title={label}
+      style={attention ? undefined : { transform: `rotate(${TURN_DEG[side]}deg)` }}
+    >
       <BinBadge
         small={small}
         label={label}

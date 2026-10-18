@@ -11,7 +11,6 @@ interface BinCornerBadgesProps {
   slantAttention: boolean;
 }
 
-/** The top-left badges: the size lock, and the way a slanted bin leans. */
 export function BinCornerBadges({
   small,
   locked,

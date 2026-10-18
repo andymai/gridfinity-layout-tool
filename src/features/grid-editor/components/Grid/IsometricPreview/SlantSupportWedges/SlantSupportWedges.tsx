@@ -11,7 +11,6 @@ interface SlantSupportWedgesProps {
   designGeometries: ReadonlyMap<BinId, DesignGeometryEntry>;
 }
 
-/** The end supports of slanted bins drawn as stylized boxes. */
 export function SlantSupportWedges({ bins, designGeometries }: SlantSupportWedgesProps) {
   return (
     <>

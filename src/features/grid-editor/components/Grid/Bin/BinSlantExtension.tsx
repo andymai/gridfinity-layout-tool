@@ -1,15 +1,16 @@
 /**
  * A slanted bin's reach past its grid footprint: the strip its top leans
- * over, and the cells its end support stands on. Drawn behind every bin, like
- * an overhang extension, so a neighbour leaning alike covers the lean and only
- * open cells show it. Purely visual: the interactive box stays the footprint.
+ * over, and the cells its end support stands on. Purely visual: the
+ * interactive box stays the footprint.
  */
 
 import type { CSSProperties } from 'react';
 import { useSlantLayout } from '@/shared/hooks/useSlantLayout';
 import { effectiveGridUnitMmY } from '@/core/types';
 import type { Bin, SlantSide } from '@/core/types';
-import { placedSlant } from '@/shared/utils/placedSlant';
+import { useLayoutStore } from '@/core/store';
+import { footprintsOverlap } from '@/shared/utils/collision';
+import { placedSlant, rectPastSide } from '@/shared/utils/placedSlant';
 
 interface BinSlantExtensionProps {
   bin: Bin;
@@ -35,6 +36,26 @@ function stripPast(side: SlantSide, offsetPx: number, lengthPx: number): CSSProp
   return { ...across, ...size, [EDGE[side]]: -(offsetPx + lengthPx) };
 }
 
+function openLean(bin: Bin, side: SlantSide, leanU: number, bins: readonly Bin[]): number {
+  const lean = rectPastSide(bin, side, leanU);
+  let open = leanU;
+  for (const other of bins) {
+    if (other.id === bin.id || other.layerId !== bin.layerId || !footprintsOverlap(other, lean)) {
+      continue;
+    }
+    const gapU =
+      side === 'back'
+        ? other.y - (bin.y + bin.depth)
+        : side === 'front'
+          ? bin.y - (other.y + other.depth)
+          : side === 'right'
+            ? other.x - (bin.x + bin.width)
+            : bin.x - (other.x + other.width);
+    open = Math.min(open, Math.max(0, gapU));
+  }
+  return open;
+}
+
 export function BinSlantExtension({
   bin,
   cellSize,
@@ -44,12 +65,18 @@ export function BinSlantExtension({
 }: BinSlantExtensionProps) {
   const slantLayout = useSlantLayout();
   const slant = placedSlant(bin, slantLayout);
+  const pitchMm =
+    slant?.plan.axis === 'y' ? effectiveGridUnitMmY(slantLayout) : slantLayout.gridUnitMm;
+  // Each bin orders only its own children, so no z-index keeps the strip under
+  // a neighbour it leans into: it stops at the first one instead.
+  const openU = useLayoutStore((s) =>
+    slant ? openLean(bin, slant.plan.side, slant.topOffsetMm / pitchMm, s.layout.bins) : 0
+  );
   if (!slant) return null;
 
   const { side, axis } = slant.plan;
   const unitPx = axis === 'x' ? cellSize + gap : cellSizeY + gap;
-  const pitchMm = axis === 'x' ? slantLayout.gridUnitMm : effectiveGridUnitMmY(slantLayout);
-  const leanPx = (slant.topOffsetMm / pitchMm) * unitPx;
+  const leanPx = openU * unitPx;
   const support = slant.support;
   const supportLengthPx = support
     ? (axis === 'x' ? support.width : support.depth) * unitPx - gap
@@ -71,12 +98,19 @@ export function BinSlantExtension({
           }}
         />
       )}
-      <div
-        aria-hidden="true"
-        data-testid="slant-lean"
-        className="pointer-events-none absolute"
-        style={{ ...stripPast(side, 0, leanPx), backgroundColor: color, opacity: 0.35, zIndex: -1 }}
-      />
+      {leanPx > 0 && (
+        <div
+          aria-hidden="true"
+          data-testid="slant-lean"
+          className="pointer-events-none absolute"
+          style={{
+            ...stripPast(side, 0, leanPx),
+            backgroundColor: color,
+            opacity: 0.35,
+            zIndex: -1,
+          }}
+        />
+      )}
     </>
   );
 }

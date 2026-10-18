@@ -9,9 +9,9 @@ describe('BinSlantBadge', () => {
     expect(screen.getByTitle('Slant')).toHaveStyle({ transform: 'rotate(90deg)' });
   });
 
-  it('turns to a warning when the row needs attention', () => {
-    render(<BinSlantBadge small={false} side="back" attention={true} />);
+  it('turns to an upright warning when the row needs attention', () => {
+    render(<BinSlantBadge small={false} side="front" attention={true} />);
     expect(screen.getByLabelText('Slant needs attention')).toBeInTheDocument();
-    expect(screen.getByTitle('Slant needs attention')).toBeInTheDocument();
+    expect(screen.getByTitle('Slant needs attention').style.transform).toBe('');
   });
 });
