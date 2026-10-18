@@ -19,7 +19,6 @@ describe('slantSupportWedge', () => {
 
 describe('slantSupportPlacement', () => {
   const cells = { x: 3, y: 4, reach: 0.5, pivot: 0.1, top: 1 };
-  // A support one cell long past a 2-wide bin, on each side.
   const supports: Record<SlantSide, SlantSupportRender> = {
     back: { ...cells, side: 'back', width: 2, depth: 1 },
     front: { ...cells, side: 'front', width: 2, depth: 1 },

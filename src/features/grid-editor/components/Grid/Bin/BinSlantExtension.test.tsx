@@ -6,7 +6,6 @@ import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
 import type { Bin } from '@/core/types';
 import { BinSlantExtension } from './BinSlantExtension';
 
-// 32px cells with a 2px gap: one grid unit spans 34px.
 const props = { cellSize: 32, cellSizeY: 32, gap: 2, color: '#ff0000' };
 
 function bin(overrides: Partial<Bin> = {}): Bin {
@@ -25,7 +24,6 @@ describe('BinSlantExtension', () => {
 
   it('draws the strip the top leans over, past the leaning side', () => {
     render(<BinSlantExtension bin={bin({ slant: { angleDeg: 45, side: 'back' } })} {...props} />);
-    // 45 degrees over 42 - 4.75 mm of body: 37.25 mm, 30.2 px.
     const lean = screen.getByTestId('slant-lean');
     expect(parseFloat(lean.style.height)).toBeCloseTo((37.25 / 42) * 34, 3);
     expect(parseFloat(lean.style.top)).toBeCloseTo(-(37.25 / 42) * 34, 3);
