@@ -1,0 +1,35 @@
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.test.ts
+  s_3ed1b5bc102254::t_9b9370beec9692 243-250,280-284
+  s_3ed1b5bc102254::t_845978f7402541 285-286
+src/features/generation/worker/generators/cutoutFit.ts
+  s_3ed1b5bc102254::t_9b9370beec9692 2-3
+  s_3ed1b5bc102254::t_aed8e52a504b00 6
+src/features/generation/worker/generators/cutoutFit.test.ts
+  s_3ed1b5bc102254::t_aed8e52a504b00 2
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_3ed1b5bc102254::t_aed8e52a504b00 93-94
+src/shared/utils/cutoutClearance.ts
+  s_3ed1b5bc102254::t_aed8e52a504b00 1-29
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_3ed1b5bc102254::t_9b9370beec9692 15,271-272,276
+src/features/generation/worker/generators/nestedCutoutOpenings.ts
+  s_3ed1b5bc102254::t_aed8e52a504b00 36-37
+src/shared/utils/cutoutClearance.test.ts
+  s_3ed1b5bc102254::t_aed8e52a504b00 1-23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "36d7a6562caaa9c7b260f5dec03b778ca0a329ee",
+  "prompts": {},
+  "sessions": {
+    "s_3ed1b5bc102254": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f41879-d3ed-4377-a3a8-af4dbd466449",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
