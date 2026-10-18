@@ -116,6 +116,19 @@ describe('BinSlantSection', () => {
     expect(screen.getByText('inspector.slant.noRoom')).toBeInTheDocument();
   });
 
+  it('puts a refused typed angle back to the angle that stands', () => {
+    updateBin.mockImplementation(() => err(layoutInvalidOperation('updateBin', 'collision')));
+    renderFor(bin('a', 0, { slant: BACK }));
+    const angle = screen.getByLabelText('binDesigner.slant.angleAria', { selector: 'input' });
+    for (const typed of ['60', '55']) {
+      fireEvent.change(angle, { target: { value: typed } });
+      fireEvent.blur(angle);
+      expect(
+        screen.getByLabelText('binDesigner.slant.angleAria', { selector: 'input' })
+      ).toHaveValue(45);
+    }
+  });
+
   it('matches the row, with the end support on its leading bin', () => {
     renderFor(bin('a', 0, { slant: BACK }), [bin('b', 1), bin('c', 2)]);
     expect(screen.getByText('inspector.slant.issue.mismatch')).toBeInTheDocument();

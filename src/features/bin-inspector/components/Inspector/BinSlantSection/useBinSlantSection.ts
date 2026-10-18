@@ -22,6 +22,7 @@ export function useBinSlantSection(bin: Bin, layout: Layout) {
   // A design re-saved with a new slant changes nothing in the layout store.
   useLinkedRiseKey();
   const [refused, setRefused] = useState(false);
+  const [refusals, setRefusals] = useState(0);
 
   const designSlant = linkedDesignSlant(bin);
   const config = bin.slant ?? designSlant;
@@ -30,7 +31,9 @@ export function useBinSlantSection(bin: Bin, layout: Layout) {
 
   const write = useCallback(
     (next: SlantConfig | null) => {
-      setRefused(!isOk(updateBin(bin.id, { slant: next })));
+      const applied = isOk(updateBin(bin.id, { slant: next }));
+      setRefused(!applied);
+      if (!applied) setRefusals((n) => n + 1);
     },
     [bin.id, updateBin]
   );
@@ -88,6 +91,7 @@ export function useBinSlantSection(bin: Bin, layout: Layout) {
       issue,
       canMatchRow: issue === 'mismatch' && rowCanMatch(bin, layout),
       refused,
+      refusals,
     },
     handlers: { toggle, setAngle, setSide, setEndSupport, useDesign: () => write(null), matchRow },
   };

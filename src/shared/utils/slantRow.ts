@@ -136,10 +136,6 @@ export function getSlantIssues(
   return issues;
 }
 
-/**
- * Match row settles a mismatch only when every bin leaning differently stands
- * in the bin's row, and every bin of the row it slants can take a slant at all.
- */
 export function rowCanMatch(bin: Bin, layout: Layout): boolean {
   const own = placedSlant(bin, layout);
   if (!own) return false;
