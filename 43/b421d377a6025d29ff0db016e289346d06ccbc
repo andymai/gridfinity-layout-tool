@@ -1,0 +1,64 @@
+src/core/storage/ShareService.test.ts
+  s_078fc63cde22ff::t_78ecf69749a578 1194-1208
+  s_078fc63cde22ff::t_4e659b03e0abfd 59
+src/features/bin-designer/storage/designStoreAdapter.ts
+  s_078fc63cde22ff::t_4e659b03e0abfd 82-86
+src/features/bin-designer/store/customBinRegistry.ts
+  s_078fc63cde22ff::t_4aa2adfb045d38 10
+  s_078fc63cde22ff::t_763b82979db984 550-569
+  s_078fc63cde22ff::t_a14577d6caa8a5 549
+src/features/bin-designer/sync/designAdapter.test.ts
+  s_078fc63cde22ff::t_dad2a43384a17c 25,399
+  s_078fc63cde22ff::t_aa2906946ed1e4 383-398,400-406,408
+  s_078fc63cde22ff::t_4cab232db5e60b 407
+  s_078fc63cde22ff::t_3d336a66fc0b1d 409
+src/core/storage/ShareService.ts
+  s_078fc63cde22ff::t_4e659b03e0abfd 441,449
+src/shared/utils/placedSlant.ts
+  s_078fc63cde22ff::t_adc1cb82a2d510 1,7,17-20,75-94,101,111-112
+  s_078fc63cde22ff::t_8402148b153ea4 113
+src/core/store/layout/binActions.ts
+  s_078fc63cde22ff::t_6a568160c8ee92 74
+src/shared/utils/placedSlant.test.ts
+  s_078fc63cde22ff::t_85f44e86935959 101-121
+src/core/cqrs/v2/domain/bin/updateBin.ts
+  s_078fc63cde22ff::t_6a568160c8ee92 200
+src/shared/utils/validationPlacement.ts
+  s_078fc63cde22ff::t_6a568160c8ee92 139-140,170-179
+src/features/bin-designer/sync/designAdapter.ts
+  s_078fc63cde22ff::t_763b82979db984 25,385
+src/core/api/share.test.ts
+  s_078fc63cde22ff::t_4e659b03e0abfd 323,421,548,673
+src/core/storage/designStorePort.ts
+  s_078fc63cde22ff::t_8865f0912f26ba 96,118-119
+  s_078fc63cde22ff::t_4e659b03e0abfd 19,101
+src/shell/registrations/DesignStoreRegistration.test.tsx
+  s_078fc63cde22ff::t_4e659b03e0abfd 12
+src/shared/utils/validationPlacement.test.ts
+  s_078fc63cde22ff::t_6a568160c8ee92 728-744
+src/shell/registrations/LinkedRiseRegistration.tsx
+  s_078fc63cde22ff::t_4aa2adfb045d38 78-80
+src/core/storage/BulkArchiveService.test.ts
+  s_078fc63cde22ff::t_4e659b03e0abfd 51
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_078fc63cde22ff::t_aa2906946ed1e4 16,602-609
+  s_078fc63cde22ff::t_6818a205396bf8 610-611
+src/core/types/slant.ts
+  s_078fc63cde22ff::t_adc1cb82a2d510 23-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "43b421d377a6025d29ff0db016e289346d06ccbc",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
