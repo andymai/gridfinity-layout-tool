@@ -139,6 +139,26 @@ describe('BinSlantSection', () => {
     expect(screen.queryByText('inspector.slant.noRoom')).toBeNull();
   });
 
+  it('offers no Match row past a neighbour that is not in the row', () => {
+    renderFor(bin('a', 0, { slant: BACK }), [bin('wide', 1, { width: gridUnits(3) })]);
+    expect(screen.getByText('inspector.slant.issue.mismatch')).toBeInTheDocument();
+    expect(screen.queryByText('inspector.slant.matchRow')).toBeNull();
+  });
+
+  it("keeps the design's slant one click away while an overhang holds the bin upright", () => {
+    registerLinkedSlantResolver(() => ({ config: { angleDeg: 30, side: 'left' } }));
+    renderFor(
+      bin('a', 0, {
+        linkedDesignId: designId('d1'),
+        slant: BACK,
+        overhang: { left: 5, right: 0, front: 0, back: 0 },
+      })
+    );
+    expect(screen.getByText('inspector.slant.heldBy.overhang')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('inspector.slant.useDesign'));
+    expect(updateBin).toHaveBeenLastCalledWith('a', { slant: null });
+  });
+
   it('asks for the end support at the open end of a row', () => {
     renderFor(bin('a', 0, { slant: BACK }));
     expect(screen.getByText('inspector.slant.issue.unsupported')).toBeInTheDocument();

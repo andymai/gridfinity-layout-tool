@@ -1,7 +1,7 @@
 import type { Bin, BinId, Layout, SlantConfig } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
-import { footprintsOverlap } from './collision';
+import { footprintsOverlap, linkedExcessCacheKey } from './collision';
 import { placedSlant, rectPastSide, slantConflicts, type PlacedSlant } from './placedSlant';
 import type { SlantPlan } from './slantPlan';
 import { insideDrawer } from './validationPlacement';
@@ -52,14 +52,50 @@ export function slantIssue(
   if (own.support) return null;
 
   const { plan, topOffsetMm } = own;
-  const lean = rectPastSide(bin, plan.side, topOffsetMm / pitchAlong(plan, layout));
-  const ahead = layout.bins.filter(
-    (other) =>
-      other.id !== bin.id && other.layerId === bin.layerId && footprintsOverlap(other, lean)
-  );
+  const ahead = binsLeanedOver(bin, own, layout);
   if (ahead.some((other) => !leansAlike(placedSlant(other, layout)?.plan, plan))) return 'mismatch';
   if (ahead.length > 0) return null;
   return roomPastMm(bin, plan, layout) + EPS < topOffsetMm ? 'pastDrawer' : 'unsupported';
+}
+
+function binsLeanedOver(bin: Bin, own: PlacedSlant, layout: Layout): Bin[] {
+  const { plan, topOffsetMm } = own;
+  const lean = rectPastSide(bin, plan.side, topOffsetMm / pitchAlong(plan, layout));
+  return layout.bins.filter(
+    (other) =>
+      other.id !== bin.id && other.layerId === bin.layerId && footprintsOverlap(other, lean)
+  );
+}
+
+let issueCache: {
+  layout: Layout;
+  key: string;
+  issues: ReadonlyMap<BinId, SlantIssue>;
+} | null = null;
+
+/** Every bin's issue at once, cached on the layout and the linked designs, for per-bin readers. */
+export function getSlantIssues(
+  layout: Layout,
+  key: string = linkedExcessCacheKey()
+): ReadonlyMap<BinId, SlantIssue> {
+  if (issueCache?.layout === layout && issueCache.key === key) return issueCache.issues;
+  const issues = new Map<BinId, SlantIssue>();
+  for (const bin of layout.bins) {
+    const issue = slantIssue(bin, layout);
+    if (issue) issues.set(bin.id, issue);
+  }
+  issueCache = { layout, key, issues };
+  return issues;
+}
+
+/** Match row settles a mismatch only when every bin leaning differently stands in the bin's row. */
+export function rowCanMatch(bin: Bin, layout: Layout): boolean {
+  const own = placedSlant(bin, layout);
+  if (!own) return false;
+  const row = new Set(slantRowOf(bin, own.plan.axis, layout).map((b) => b.id));
+  return binsLeanedOver(bin, own, layout).every(
+    (other) => row.has(other.id) || leansAlike(placedSlant(other, layout)?.plan, own.plan)
+  );
 }
 
 /**

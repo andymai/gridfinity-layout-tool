@@ -68,7 +68,6 @@ export interface PlacedSlant {
   readonly support: Rect | null;
 }
 
-/** The strip `length` grid units deep just past `rect`'s `side`. */
 export function rectPastSide(rect: Rect, side: SlantSide, length: number): Rect {
   const { x, y, width, depth } = rect;
   const along = gridUnits(length);

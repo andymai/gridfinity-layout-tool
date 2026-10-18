@@ -9,7 +9,7 @@ import { getBinTextColors, getBinPatternColor } from '@/shared/utils';
 import { isBinLocked } from '@/shared/utils/binLocation';
 import { formatHeightUnits } from '@/shared/utils/heightUnits';
 import { getRestingStack, getUnevenlySupported } from '@/shared/utils/restingStack';
-import { slantIssue } from '@/shared/utils/slantRow';
+import { getSlantIssues } from '@/shared/utils/slantRow';
 import { useLinkedRiseKey } from '@/shared/hooks/useLinkedRiseKey';
 import { getCategoryPatternIndex, getCategoryPatternStyle } from './categoryPatterns';
 import { ResizeHandles } from '../ResizeHandles';
@@ -130,7 +130,7 @@ function BinComponent({
   );
   const restingHeight = formatHeightUnits(restingZ);
   const slantNeedsAttention = useLayoutStore(
-    (state) => !isGhost && slantIssue(bin, state.layout) !== null
+    (state) => !isGhost && getSlantIssues(state.layout, riseKey).has(bin.id)
   );
 
   // All heavy grid positioning and pixel sizing calculations are memoized together

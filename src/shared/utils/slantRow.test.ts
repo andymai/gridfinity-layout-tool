@@ -3,7 +3,7 @@ import { createTestBin, createTestLayout } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
 import type { Bin, Layout, SlantConfig } from '@/core/types';
 import { binId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
-import { matchRowSlants, slantIssue, slantRowOf } from './slantRow';
+import { getSlantIssues, matchRowSlants, rowCanMatch, slantIssue, slantRowOf } from './slantRow';
 
 const L1 = layerId('layer1');
 const L2 = layerId('layer2');
@@ -130,5 +130,31 @@ describe('matchRowSlants', () => {
   it('has nothing to match for an upright bin', () => {
     const layout = layoutOf([bin('a', 0), bin('b', 1)]);
     expect(matchRowSlants(layout.bins[0], layout)).toEqual([]);
+  });
+});
+
+describe('rowCanMatch', () => {
+  it('can match a row whose differing neighbour stands in it', () => {
+    const layout = layoutOf([bin('a', 0, { slant: BACK }), bin('b', 1)]);
+    expect(rowCanMatch(layout.bins[0], layout)).toBe(true);
+  });
+
+  it('cannot match past a neighbour of another width, which is not in the row', () => {
+    const layout = layoutOf([
+      bin('a', 0, { slant: BACK }),
+      bin('wide', 1, { width: gridUnits(3) }),
+    ]);
+    expect(slantIssue(layout.bins[0], layout)).toBe('mismatch');
+    expect(rowCanMatch(layout.bins[0], layout)).toBe(false);
+  });
+});
+
+describe('getSlantIssues', () => {
+  it('names every bin with an issue, once per layout', () => {
+    const layout = layoutOf([bin('a', 0, { slant: BACK }), bin('b', 1), bin('c', 3)]);
+    const issues = getSlantIssues(layout, 'k');
+    expect([...issues]).toEqual([['a', 'mismatch']]);
+    expect(getSlantIssues(layout, 'k')).toBe(issues);
+    expect(getSlantIssues(layout, 'other')).not.toBe(issues);
   });
 });

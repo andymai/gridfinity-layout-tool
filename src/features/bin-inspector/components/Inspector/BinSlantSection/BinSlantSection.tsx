@@ -95,11 +95,15 @@ export function BinSlantSection({ bin, layout, variant }: BinSlantSectionProps) 
             onChange={handlers.setEndSupport}
           />
           {state.steep && <p className="text-micro text-warning">{t('binDesigner.slant.steep')}</p>}
-          {state.placed && designSlant && (
-            <Button variant="ghost" size="sm" type="button" onClick={handlers.useDesign}>
-              {t('inspector.slant.useDesign')}
-            </Button>
-          )}
+        </div>
+      )}
+
+      {/* Reachable while the bin stands upright, or the override would wait unseen. */}
+      {state.placed && designSlant && (
+        <div className="mt-2 px-2">
+          <Button variant="ghost" size="sm" type="button" onClick={handlers.useDesign}>
+            {t('inspector.slant.useDesign')}
+          </Button>
         </div>
       )}
 
@@ -110,7 +114,7 @@ export function BinSlantSection({ bin, layout, variant }: BinSlantSectionProps) 
           <p className="flex-1 text-micro leading-snug text-warning">
             {t(`inspector.slant.issue.${state.issue}`)}
           </p>
-          {state.issue === 'mismatch' && (
+          {state.canMatchRow && (
             <Button variant="secondary" size="sm" type="button" onClick={handlers.matchRow}>
               {t('inspector.slant.matchRow')}
             </Button>

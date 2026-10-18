@@ -7,7 +7,7 @@ import { useMutations } from '@/shared/contexts/MutationsContext';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useLinkedRiseKey } from '@/shared/hooks/useLinkedRiseKey';
 import { linkedDesignSlant, placedSlant, slantHeldUprightBy } from '@/shared/utils/placedSlant';
-import { matchRowSlants, slantIssue } from '@/shared/utils/slantRow';
+import { matchRowSlants, rowCanMatch, slantIssue } from '@/shared/utils/slantRow';
 
 export const SLANT_DEFAULT: SlantConfig = { angleDeg: 45, side: 'back' };
 export const SLANT_MIN_DEG = 1;
@@ -86,6 +86,7 @@ export function useBinSlantSection(bin: Bin, layout: Layout) {
       heldBy,
       steep: config !== undefined && config.angleDeg > SLANT_WARN_DEG,
       issue,
+      canMatchRow: issue === 'mismatch' && rowCanMatch(bin, layout),
       refused,
     },
     handlers: { toggle, setAngle, setSide, setEndSupport, useDesign: () => write(null), matchRow },
