@@ -1,0 +1,23 @@
+src/features/bin-designer/components/panel/SlantSection/useSlantSection.ts
+  s_078fc63cde22ff::t_707a367a177f3d 17,122-123,126,133-134
+  s_078fc63cde22ff::t_2636836ed5a0ef 124-125,127
+src/features/bin-designer/components/panel/SlantSection/SlantSection.test.tsx
+  s_078fc63cde22ff::t_2636836ed5a0ef 53-68,70-71
+  s_078fc63cde22ff::t_c9290b27dbe895 69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "84ba6a64047c0e8fc2efbd5ac4eac5280199baca",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
