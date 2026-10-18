@@ -174,9 +174,6 @@ function fitForBin(
   fit: PrintSplitFit
 ): { maxWidth: number; maxDepth: number; key: string } {
   const overhang = fit.overhangFor?.(bin);
-  // A slanted bin is never split, and is a different printed part from an
-  // upright one of the same size. An overhang keeps the slant off, as it does
-  // in the export.
   if (bin.slant && !hasOverhang(resolveOverhang(overhang))) {
     const { angleDeg, side, endSupport } = bin.slant;
     return {
