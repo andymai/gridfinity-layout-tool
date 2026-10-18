@@ -79,4 +79,9 @@ export const designStoreAdapter: DesignStorePort = {
     const { registryEdgeFields } = await import('@/features/bin-designer/store/customBinRegistry');
     return registryEdgeFields(params as BinParams);
   },
+
+  async registrySlantFields(params: unknown): Promise<Pick<DesignRegistryEntry, 'slant'>> {
+    const { registrySlantFields } = await import('@/features/bin-designer/store/customBinRegistry');
+    return registrySlantFields(params as BinParams);
+  },
 };

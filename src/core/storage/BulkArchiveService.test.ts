@@ -48,6 +48,7 @@ const fakePort: DesignStorePort = {
   saveDesign: () => Promise.reject(new Error('saveDesign not used in BulkArchive tests')),
   upsertRegistryEntry: () => Promise.reject(new Error('upsertRegistryEntry not used')),
   registryEdgeFields: () => Promise.resolve({}),
+  registrySlantFields: () => Promise.resolve({}),
 };
 
 // === Fixtures ===

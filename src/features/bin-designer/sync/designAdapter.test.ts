@@ -22,6 +22,7 @@ import { designAdapter } from './designAdapter';
 import { DESIGN_SCHEMA_VERSION } from '@/core/sync/payloadKey';
 import { __resetForTests, emit } from './designerEvents';
 import { loadRegistry, upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 
 const sampleParams = (): BinParams => ({}) as BinParams;
 const samplePayload = (name = 'D'): { name: string; params: BinParams } => ({
@@ -377,6 +378,33 @@ describe('designAdapter assembly kind', () => {
     expect(entry?.width).toBe(4);
     expect(entry?.depth).toBe(2);
     expect(entry?.assembledRiseMm).toBeGreaterThan(0);
+  });
+
+  // The layout reserves a slanted bin's end support from its registry entry,
+  // so a pulled slant cannot wait for the designer to write the entry again.
+  it("applyRemote refreshes a parametric bin's slant facts on its registry entry", async () => {
+    localStorage.clear();
+    upsertRegistryEntry({
+      id: designId('d1'),
+      name: 'D',
+      width: 1,
+      depth: 1,
+      height: 3,
+      slant: { config: { angleDeg: 30, side: 'left' } },
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    });
+    const slant = { angleDeg: 45, side: 'back' as const, endSupport: true };
+    loadDesignMock.mockResolvedValueOnce(ok(savedDesign('d1', '2026-01-01T00:00:00.000Z')));
+    saveDesignMock.mockResolvedValueOnce(
+      ok({
+        ...savedDesign('d1', '2026-04-01T00:00:00.000Z'),
+        params: { ...DEFAULT_BIN_PARAMS, slant },
+      })
+    );
+    await designAdapter.applyRemote({ id: 'd1', payload: samplePayload(), modifiedAt: 1 });
+    const entry = loadRegistry().find((r) => r.id === 'd1');
+    expect(entry?.slant).toEqual({ config: slant });
+    expect(entry?.name).toBe('D');
   });
 
   it('applyRemote leaves the registry alone when the assembly save fails', async () => {

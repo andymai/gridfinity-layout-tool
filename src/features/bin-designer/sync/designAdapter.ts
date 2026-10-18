@@ -22,6 +22,7 @@ import {
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { isBinDesign, isSyncableDesign } from '@/features/bin-designer/utils/designKind';
 import {
+  refreshRegistrySlant,
   registryItemEntry,
   removeRegistryEntry,
   upsertRegistryEntry,
@@ -381,6 +382,7 @@ export const designAdapter: DesignAdapter = {
       // be missing from the layout's palette, until the next reload.
       const registryEntry = registryItemEntry(result.value);
       if (registryEntry) upsertRegistryEntry(registryEntry);
+      else if (result.value.params) refreshRegistrySlant(item.id, result.value.params);
       // `saveDesign` falls back to the STORED value for both variant fields, so
       // it cannot clear them; `detachVariant` writes through the store for
       // exactly that reason. Runs after the save so it keeps what was just

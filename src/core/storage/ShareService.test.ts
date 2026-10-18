@@ -56,6 +56,7 @@ const fakePort: DesignStorePort = {
   saveDesign: (...args: unknown[]) => mockSaveDesign(...args),
   upsertRegistryEntry: (...args: unknown[]) => mockUpsertRegistryEntry(...args),
   registryEdgeFields: async () => ({}),
+  registrySlantFields: async () => ({}),
 };
 
 function expectImportError(result: Result<unknown, ValidationError>): ValidationImportError {
@@ -1188,6 +1189,21 @@ describe('storage-share', () => {
       expect(mockUpsertRegistryEntry).toHaveBeenCalledWith(
         expect.objectContaining({ id: 'design_shared_deadbeef', name: 'Socket Tray' })
       );
+    });
+
+    // The layout reserves a slanted design's end support from these facts.
+    it("registers a design's slant facts with it", async () => {
+      mockSaveDesign.mockResolvedValue(savedAs('design_shared_deadbeef'));
+      const slant = { config: { angleDeg: 45, side: 'back' as const, endSupport: true } };
+      const port: DesignStorePort = { ...fakePort, registrySlantFields: async () => ({ slant }) };
+      registerDesignStorePort(port);
+
+      await restoreSharedDesigns(SHARE_ID, layoutLinkedTo('remote-design-1'), [
+        { id: 'remote-design-1', name: 'Pens', params: { ...DEFAULT_BIN_PARAMS } },
+      ]);
+
+      expect(mockUpsertRegistryEntry).toHaveBeenCalledWith(expect.objectContaining({ slant }));
+      registerDesignStorePort(fakePort);
     });
 
     // Unlike a one-shot file import, a share link is re-fetched on every visit.

@@ -75,6 +75,9 @@ registerLinkedSlantResolver((designId) => {
   if (ref.kind !== undefined && ref.kind !== 'bin') return { blocked: true };
   return {
     ...ref.slant,
+    width: ref.width,
+    depth: ref.depth,
+    height: ref.height,
     flatBase: ref.socketless === true,
     fractionalEdgeX: ref.fractionalEdgeX,
     fractionalEdgeY: ref.fractionalEdgeY,

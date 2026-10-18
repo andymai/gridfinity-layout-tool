@@ -13,6 +13,7 @@ import {
   registryHeightFields,
   registryOverhangFields,
   registrySlantFields,
+  refreshRegistrySlant,
   type CustomBinRef,
 } from './customBinRegistry';
 import { designId } from '@/core/types';
@@ -596,6 +597,16 @@ describe('customBinRegistry', () => {
 
       upsertRegistryEntry({ ...makeRef('d1'), ...registrySlantFields(DEFAULT_BIN_PARAMS) });
       expect(loadRegistry()[0]?.slant).toBeUndefined();
+    });
+
+    it('refreshes only the slant facts of a known entry', () => {
+      upsertRegistryEntry({ ...makeRef('d1'), slant: { blocked: true } });
+      refreshRegistrySlant('d1', { ...DEFAULT_BIN_PARAMS, slant: SLANT });
+      expect(loadRegistry()[0]).toEqual({ ...makeRef('d1'), slant: { config: SLANT } });
+      refreshRegistrySlant('d1', DEFAULT_BIN_PARAMS);
+      expect(loadRegistry()[0]).toEqual(makeRef('d1'));
+      refreshRegistrySlant('unknown', { ...DEFAULT_BIN_PARAMS, slant: SLANT });
+      expect(loadRegistry()).toHaveLength(1);
     });
 
     it('keeps the usable part of a stored record and drops the rest', () => {

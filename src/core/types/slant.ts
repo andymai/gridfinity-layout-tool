@@ -20,3 +20,15 @@ export interface SlantConfig {
   /** Export a wedge the leaning top rests on, as a second part. */
   readonly endSupport?: boolean;
 }
+
+/**
+ * What a linked design's registry entry records about its slant, so layout
+ * checks can size a placed bin's end support without loading the design.
+ */
+export interface DesignSlantFacts {
+  /** The design's own slant. */
+  readonly config?: SlantConfig;
+  /** Something in the design keeps every slant off, a placed one included. */
+  readonly blocked?: true;
+  readonly extraWallMm?: number;
+}

@@ -136,6 +136,8 @@ export function canPlaceBin(
     linkedDesignId?: DesignId;
     slant?: SlantConfig;
     extendToMargin?: boolean;
+    /** Inherited only while the footprint stays put: a move or resize drops it. */
+    overhang?: Bin['overhang'];
   },
   layerId: LayerId,
   layout: Layout,
@@ -165,6 +167,16 @@ export function canPlaceBin(
     linkedDesignId: inherit('linkedDesignId'),
     slant: inherit('slant'),
     extendToMargin: inherit('extendToMargin'),
+    overhang:
+      'overhang' in rect
+        ? rect.overhang
+        : existing?.layerId === layerId &&
+            existing.x === rect.x &&
+            existing.y === rect.y &&
+            existing.width === rect.width &&
+            existing.depth === rect.depth
+          ? existing.overhang
+          : undefined,
     category: toCategoryId(''),
     label: '',
     notes: '',

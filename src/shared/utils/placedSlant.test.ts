@@ -98,6 +98,27 @@ describe('placedSlant', () => {
     withFacts({ d1: { extraWallMm: 5 } });
     expect(placedSlant(bin(short), layout)?.support?.depth).toBe(2);
   });
+  // A 2x1 design in a 1x2 footprint stands turned a quarter counterclockwise.
+  it("turns a linked design's slant with a turned placement", () => {
+    withFacts({ d1: { width: 2, depth: 1, config: BACK_45 } });
+    const turned = bin({
+      x: gridUnits(4),
+      y: gridUnits(4),
+      width: gridUnits(1),
+      depth: gridUnits(2),
+      height: heightUnits(6),
+      linkedDesignId: designId('d1'),
+    });
+    const slant = placedSlant(turned, layout);
+    expect(slant?.plan.side).toBe('left');
+    expect(slant?.support).toEqual({ x: 3, y: 4, width: 1, depth: 2 });
+  });
+
+  it("sizes a linked support from the design's height, not the placement's", () => {
+    withFacts({ d1: { height: 12 } });
+    const short = { height: heightUnits(6), linkedDesignId: designId('d1'), slant: BACK_45 };
+    expect(placedSlant(bin(short), layout)?.support?.depth).toBe(2);
+  });
 });
 
 describe('slantZone', () => {

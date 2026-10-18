@@ -197,6 +197,7 @@ export const updateBin = defineCommand({
           linkedDesignId: merged.linkedDesignId,
           slant: merged.slant,
           extendToMargin: merged.extendToMargin,
+          overhang: merged.overhang,
         },
         merged.layerId,
         ctx.aggregate,

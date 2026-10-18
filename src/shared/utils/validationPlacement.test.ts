@@ -725,6 +725,23 @@ describe('canPlaceBin with slanted bins', () => {
     ).toEqual({ valid: true });
   });
 
+  it('lets an expanded bin, which stands upright, change height where it is', () => {
+    const layout = makeSingleLayerLayout();
+    const overhang = { left: 0, right: 0, front: 0, back: 5 };
+    layout.bins = [slanted({ y: gridUnits(7), overhang })];
+    expect(canPlaceBin(at(0, 7, 5), LAYER_1, layout, binId('slanted'))).toEqual({ valid: true });
+  });
+
+  it('drops the overhang of an expanded bin that moves, as the update does', () => {
+    const layout = makeSingleLayerLayout();
+    const overhang = { left: 0, right: 0, front: 0, back: 5 };
+    layout.bins = [slanted({ y: gridUnits(0), overhang })];
+    expect(canPlaceBin(at(4, 7), LAYER_1, layout, binId('slanted'))).toMatchObject({
+      valid: false,
+      reason: 'exceeds_depth',
+    });
+  });
+
   it('does not freeze edits to a bin whose support already leaves the drawer', () => {
     const layout = makeSingleLayerLayout();
     layout.bins = [slanted({ y: gridUnits(7) })];

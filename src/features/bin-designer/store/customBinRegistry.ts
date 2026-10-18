@@ -7,7 +7,7 @@
  * Registry is updated whenever the Bin Designer saves or deletes a design.
  */
 
-import type { DesignId } from '@/core/types';
+import type { DesignId, DesignSlantFacts } from '@/core/types';
 import type { ItemEnvelope, ItemKind } from '@/shared/types/item';
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import { assemblyOverhangMm, assemblyRiseMm } from '@/shared/types/assemblyPlacement';
@@ -21,7 +21,6 @@ import {
   type AssembledHeightSource,
 } from '@/shared/printSettings/assembledHeight';
 import { planKnifeRest } from '@/shared/utils/knifeRestPlan';
-import type { DesignSlantFacts } from '@/shared/utils/placedSlant';
 import { migrateSlant, slantBlocker } from '@/shared/utils/slantPlan';
 import { hasOverhang, resolveOverhang } from '@/shared/utils/overhang';
 import { isPartialMask } from '@/shared/utils/cellMask';
@@ -545,6 +544,27 @@ function withCarriedFields(next: CustomBinRef, prev: CustomBinRef): CustomBinRef
       : {}),
     ...(!('slant' in next) && prev.slant !== undefined ? { slant: prev.slant } : {}),
   };
+}
+
+/**
+ * Refresh one entry's slant facts from its design's params, for a writer that
+ * holds the params but none of the entry's other fields, such as a sync pull.
+ * The facts reserve layout cells, so they cannot wait for the designer to
+ * write the entry again. A design the registry does not know stays out of it.
+ */
+export function refreshRegistrySlant(id: string, params: BinParams): Result<void, StorageError> {
+  const refs = loadRegistry();
+  if (!refs.some((r) => r.id === id)) return ok(undefined);
+  const { slant } = registrySlantFields(params);
+  const result = saveRegistry(
+    refs.map((r) => {
+      if (r.id !== id) return r;
+      const { slant: _stale, ...rest } = r;
+      return slant ? { ...rest, slant } : rest;
+    })
+  );
+  notifySubscribers();
+  return result;
 }
 
 /**

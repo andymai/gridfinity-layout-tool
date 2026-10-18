@@ -1,9 +1,10 @@
-import type { Bin, DesignId, FractionalEdge, Layout, Rect, SlantConfig } from '@/core/types';
+import type { Bin, DesignId, DesignSlantFacts, FractionalEdge, Layout, Rect } from '@/core/types';
 import { effectiveGridUnitMmY, gridUnits } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { footprintsOverlap } from './collision';
 import { resolveBinOverhang } from './drawerMargin';
 import { edgeForPosition } from './fractionalEdge';
+import { isTurnedPlacement, sideInPlacement } from './placementTurn';
 import {
   planSupportFor,
   slantPlanFor,
@@ -12,19 +13,11 @@ import {
   type SlantSupportPlan,
 } from './slantPlan';
 
-/**
- * What a linked design's registry entry records about its slant, so layout
- * checks can size a placed bin's end support without loading the design.
- */
-export interface DesignSlantFacts {
-  /** The design's own slant. */
-  readonly config?: SlantConfig;
-  /** Something in the design keeps every slant off, a placed one included. */
-  readonly blocked?: true;
-  readonly extraWallMm?: number;
-}
-
 export interface LinkedSlantFacts extends DesignSlantFacts {
+  /** The design's own size, which a turned or not yet resynced placement can differ from. */
+  readonly width?: number;
+  readonly depth?: number;
+  readonly height?: number;
   /** The base has no socket, so the lean starts at the bed. */
   readonly flatBase?: boolean;
   readonly fractionalEdgeX?: FractionalEdge;
@@ -79,14 +72,33 @@ function supportRect(bin: Bin, support: SlantSupportPlan): Rect {
   }
 }
 
+const otherEdge = (edge: FractionalEdge | undefined): FractionalEdge | undefined =>
+  edge === undefined ? undefined : edge === 'end' ? 'start' : 'end';
+
+/** The linked design's facts, facing the drawer the way the bin stands. */
+function placementFacts(bin: Bin): LinkedSlantFacts | undefined {
+  const facts =
+    bin.linkedDesignId !== undefined ? linkedSlantResolver?.(bin.linkedDesignId) : undefined;
+  if (facts?.width === undefined || facts.depth === undefined) return facts;
+  if (!isTurnedPlacement(bin, { width: facts.width, depth: facts.depth })) return facts;
+  return {
+    ...facts,
+    ...(facts.config
+      ? { config: { ...facts.config, side: sideInPlacement(facts.config.side) } }
+      : {}),
+    // The quarter turn carries the design's +X side to the back and its +Y side to the left.
+    fractionalEdgeX: otherEdge(facts.fractionalEdgeY),
+    fractionalEdgeY: facts.fractionalEdgeX,
+  };
+}
+
 /**
  * The slant a placed bin is exported with: its own, else its design's, unless
  * the design or the bin's own overhang keeps it upright, as the layout export
  * decides.
  */
 export function placedSlant(bin: Bin, layout: SlantLayout): PlacedSlant | null {
-  const facts =
-    bin.linkedDesignId !== undefined ? linkedSlantResolver?.(bin.linkedDesignId) : undefined;
+  const facts = placementFacts(bin);
   if (facts?.blocked) return null;
   const plan = slantPlanFor(bin.slant ?? facts?.config);
   if (!plan) return null;
@@ -96,7 +108,9 @@ export function placedSlant(bin: Bin, layout: SlantLayout): PlacedSlant | null {
   const span = slantSpanZFor({
     flatBase: facts?.flatBase === true,
     lowProfile: layout.lowProfileBase === true,
-    height: bin.height,
+    // The export builds the design's own height, which a placement linked to it
+    // keeps until the next resync.
+    height: facts?.height ?? bin.height,
     heightUnitMm: layout.heightUnitMm,
     extraWallHeightMm: facts?.extraWallMm,
   });

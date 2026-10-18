@@ -71,6 +71,7 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
             linkedDesignId: merged.linkedDesignId,
             slant: merged.slant,
             extendToMargin: merged.extendToMargin,
+            overhang: merged.overhang,
           },
           merged.layerId,
           layout,

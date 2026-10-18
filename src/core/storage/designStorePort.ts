@@ -16,7 +16,7 @@
  */
 
 import type { Result, StorageError } from '@/core/result';
-import type { DesignId } from '@/core/types';
+import type { DesignId, DesignSlantFacts } from '@/core/types';
 
 /** The slice of a stored design the share/archive flows read back on load. */
 export interface LoadedDesignData {
@@ -93,11 +93,12 @@ export interface DesignRegistryEntry extends DesignRegistryEdgeFields {
     readonly front: number;
     readonly back: number;
   };
+  readonly slant?: DesignSlantFacts;
   readonly updatedAt: string;
 }
 
 /**
- * The four operations `core/storage` needs from the bin-designer feature.
+ * The operations `core/storage` needs from the bin-designer feature.
  * Every method is async so the adapter can lazily `import()` the feature
  * chunk on first use, preserving the code-splitting the old dynamic imports
  * gave us.
@@ -114,6 +115,8 @@ export interface DesignStorePort {
   saveDesign(input: SaveDesignInput): Promise<Result<SavedDesignData, StorageError>>;
   upsertRegistryEntry(entry: DesignRegistryEntry): Promise<Result<void, StorageError>>;
   registryEdgeFields(params: unknown): Promise<DesignRegistryEdgeFields>;
+  /** A slanted design's end support reserves layout cells, so its facts are written with the entry. */
+  registrySlantFields(params: unknown): Promise<Pick<DesignRegistryEntry, 'slant'>>;
 }
 
 let port: DesignStorePort | null = null;
