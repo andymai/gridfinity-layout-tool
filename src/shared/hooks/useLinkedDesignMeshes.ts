@@ -240,8 +240,11 @@ function withoutOwnOverhang(params: BinParams): BinParams {
 interface MeshRequest {
   readonly id: DesignId;
   readonly stripOwnOverhang: boolean;
-  /** A placed slant, in the design's frame, built in place of the design's own. */
-  readonly slant?: SlantConfig;
+  /**
+   * A placed slant, in the design's frame, built in place of the design's own;
+   * null builds the design upright.
+   */
+  readonly slant?: SlantConfig | null;
 }
 
 /**
@@ -254,7 +257,7 @@ async function resolveDesignMesh(
   nozzleSizeMm: number,
   lowProfileBase: boolean,
   stripOwnOverhang: boolean,
-  slant: SlantConfig | undefined,
+  slant: SlantConfig | null | undefined,
   waitingFor: string[]
 ): Promise<LinkedDesignMesh | null> {
   const structure = design.structure;
@@ -308,7 +311,10 @@ async function resolveDesignMesh(
   const ownOverhang = stripOwnOverhang ? withoutOwnOverhang(params) : params;
   // The export does the same: the placed slant replaces the design's, and the
   // lip goes with it.
-  const source = slant ? normalizeSlant({ ...ownOverhang, slant }) : ownOverhang;
+  const source =
+    slant === undefined
+      ? ownOverhang
+      : normalizeSlant({ ...ownOverhang, slant: slant ?? undefined });
 
   // Nozzle-merged (transient) so a socket bin's pocket matches the live print
   // setting and shares the same cache key the designer preview persists under.
@@ -433,25 +439,36 @@ export function useLinkedDesignMeshes(bins: Bin[]): Map<BinId, LinkedDesignMesh>
       // stripping changes nothing and the bin keeps the shared mesh.
       const placedOverhang = resolveBinOverhang(bin, drawer, baseplate, ref.kind) !== null;
       const stripOwnOverhang = parametric && ref.overhangMm !== undefined && placedOverhang;
-      // A placed slant faces the drawer, so a turned placement builds it turned
-      // back; an overhang of the placement's own keeps the bin upright.
-      const slant =
-        parametric && bin.slant && !placedOverhang
-          ? isTurnedPlacement(bin, ref)
-            ? { ...bin.slant, side: sideInDesign(bin.slant.side) }
-            : bin.slant
-          : undefined;
+      // As the export builds it: an overhang of the placement's own keeps the
+      // bin upright, even a design that leans, and a placed slant faces the
+      // drawer, so a turned placement builds it turned back.
+      let slant: SlantConfig | null | undefined;
+      if (parametric && placedOverhang) {
+        slant = ref.slant?.config ? null : undefined;
+      } else if (parametric && bin.slant) {
+        slant = isTurnedPlacement(bin, ref)
+          ? { ...bin.slant, side: sideInDesign(bin.slant.side) }
+          : bin.slant;
+      }
       // Quantize the nozzle so float noise (e.g. 0.6000000000000001) can't
       // fragment the cache key into avoidable misses.
       const key = `${ref.id}:${ref.updatedAt}:n${nozzleSizeMm.toFixed(3)}${
         // Only a parametric bin is rebuilt on the layout's foot.
         lowProfileBase && parametric ? ':lp' : ''
       }${stripOwnOverhang ? ':no-own-overhang' : ''}${
-        slant ? `:slant${slant.angleDeg}${slant.side}${slant.endSupport ? 's' : ''}` : ''
+        slant === null
+          ? ':upright'
+          : slant
+            ? `:slant${slant.angleDeg}${slant.side}${slant.endSupport ? 's' : ''}`
+            : ''
       }`;
       keyByBin.set(bin.id, key);
       if (!requests.has(key)) {
-        requests.set(key, { id: ref.id, stripOwnOverhang, ...(slant ? { slant } : {}) });
+        requests.set(key, {
+          id: ref.id,
+          stripOwnOverhang,
+          ...(slant !== undefined ? { slant } : {}),
+        });
       }
     }
     return { requests, keyByBin };

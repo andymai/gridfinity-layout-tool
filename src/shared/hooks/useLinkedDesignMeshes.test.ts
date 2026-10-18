@@ -655,6 +655,23 @@ describe('useLinkedDesignMeshes', () => {
       expect(persistedKeys().some((key) => key.endsWith('-slant-right'))).toBe(true);
     });
 
+    it("builds a leaning design upright where the placement's overhang holds it", async () => {
+      mockUseCustomBins.mockReturnValue([makeRegistryRef({ slant: { config: SLANT } })]);
+      mockLoadDesign.mockResolvedValue(
+        ok(makeBinDesign({ ...DEFAULT_BIN_PARAMS, width: 2, slant: SLANT }))
+      );
+      const expanded = createTestBin({
+        id: B1,
+        linkedDesignId: D1,
+        width: gridUnits(2),
+        overhang: { left: 5, right: 0, front: 0, back: 0 },
+      });
+      const { result } = renderHook(() => useLinkedDesignMeshes([expanded]));
+      await waitFor(() => expect(result.current.size).toBe(1));
+      expect(result.current.get(B1)?.sig.endsWith(':upright')).toBe(true);
+      expect(persistedKeys().some((key) => key.includes('-slant-'))).toBe(false);
+    });
+
     it('leaves the slant off where an overhang of the placement keeps it upright', async () => {
       const expanded = createTestBin({
         id: B1,
