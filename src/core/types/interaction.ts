@@ -119,6 +119,5 @@ export type Interaction =
       paintSize: { width: number; depth: number };
       start: Coord;
       current: Coord;
-      /** Fill with slanted rows instead of a grid of upright bins. */
       slant?: SlantConfig;
     };

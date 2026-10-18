@@ -31,7 +31,6 @@ interface InteractionState {
   dropTarget: DropTarget;
 
   paintSize: PaintSize | null;
-  /** While set, a paint drag fills its area with rows leaning this way, each ending in an end support. */
   paintSlant: SlantConfig | null;
 
   /** One-shot "find bins that fit" mode: the next draw on empty space selects a gap for the community gallery instead of creating a bin. */
