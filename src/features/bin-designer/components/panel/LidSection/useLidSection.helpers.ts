@@ -294,26 +294,47 @@ function pocketSections(cutout: Cutout, chamfer: number): { wall: number[]; rim:
   };
 }
 
+interface MouthCircle {
+  readonly x: number;
+  readonly y: number;
+  readonly r: number;
+}
+
+function mouthCircles(c: Cutout): MouthCircle[] {
+  const grow = Math.max(0, c.clearance ?? 0) + Math.max(0, c.chamferWidth ?? 0);
+  return expandCutoutArray(c).map((i) => ({
+    x: i.x + i.width / 2,
+    y: i.y + i.depth / 2,
+    r: Math.hypot(i.width, i.depth) / 2 + grow,
+  }));
+}
+
+/** Whether the boxes around two sets of circles meet, so far-apart repeats skip the pairwise test. */
+function boxesMeet(a: readonly MouthCircle[], b: readonly MouthCircle[]): boolean {
+  const box = (cs: readonly MouthCircle[]) => ({
+    minX: Math.min(...cs.map((c) => c.x - c.r)),
+    maxX: Math.max(...cs.map((c) => c.x + c.r)),
+    minY: Math.min(...cs.map((c) => c.y - c.r)),
+    maxY: Math.max(...cs.map((c) => c.y + c.r)),
+  });
+  const p = box(a);
+  const q = box(b);
+  return p.minX < q.maxX && q.minX < p.maxX && p.minY < q.maxY && q.minY < p.maxY;
+}
+
 /** Depths of the level, shallower pockets this one's mouth might open onto. */
 function floorDepthsUnder(cutout: Cutout, pockets: readonly Cutout[]): number[] {
-  const circles = (c: Cutout): { x: number; y: number; r: number }[] => {
-    const grow = Math.max(0, c.clearance ?? 0) + Math.max(0, c.chamferWidth ?? 0);
-    return expandCutoutArray(c).map((i) => ({
-      x: i.x + i.width / 2,
-      y: i.y + i.depth / 2,
-      r: Math.hypot(i.width, i.depth) / 2 + grow,
-    }));
-  };
-  const own = circles(cutout);
+  const own = mouthCircles(cutout);
   return pockets
-    .filter(
-      (o) =>
-        o !== cutout &&
-        o.shape !== 'mesh' &&
-        resolveCutoutLeanDeg(o) === 0 &&
-        o.cutDepth < cutout.cutDepth &&
-        circles(o).some((a) => own.some((b) => Math.hypot(a.x - b.x, a.y - b.y) < a.r + b.r))
-    )
+    .filter((o) => {
+      if (o === cutout || o.shape === 'mesh' || o.cutDepth >= cutout.cutDepth) return false;
+      if (resolveCutoutLeanDeg(o) !== 0) return false;
+      const theirs = mouthCircles(o);
+      return (
+        boxesMeet(theirs, own) &&
+        theirs.some((a) => own.some((b) => Math.hypot(a.x - b.x, a.y - b.y) < a.r + b.r))
+      );
+    })
     .map((o) => o.cutDepth);
 }
 
@@ -325,7 +346,7 @@ function floorDepthsUnder(cutout: Cutout, pockets: readonly Cutout[]): number[] 
  * crossing a shallower pocket's floor `f` gets a flare of its own at
  * `h = f / cos`, as wide as the room under it allows, lerped from wall to rim.
  */
-function pocketReachMm(cutout: Cutout, floors: readonly number[]): number {
+function pocketReachMm(cutout: Cutout, floorsUnder: () => readonly number[]): number {
   const lean = (resolveCutoutLeanDeg(cutout) * Math.PI) / 180;
   const cos = Math.cos(lean);
   const sin = Math.sin(lean);
@@ -337,7 +358,9 @@ function pocketReachMm(cutout: Cutout, floors: readonly number[]): number {
   let reach = Math.max(depth, depth * cos + dip(wall));
   if (!lofted) return reach;
   reach = Math.max(reach, dip(rim));
-  for (const floor of floors) {
+  // A level pocket's flares sit no deeper than its floor, so only a lean needs the scan.
+  if (lean === 0) return reach;
+  for (const floor of floorsUnder()) {
     const flare = Math.min(chamfer, depth - floor / cos - MIN_STRAIGHT_WALL_MM);
     if (flare <= MIN_LOFTED_CHAMFER) continue;
     const t = flare / chamfer;
@@ -364,7 +387,7 @@ function fillShortensPockets(params: BinParams, topOffset: number): boolean {
   return pockets.some((c) =>
     c.shape === 'mesh'
       ? c.cutDepth > floorZ + fill + 1e-6
-      : pocketReachMm(c, floorDepthsUnder(c, pockets)) > fill + 1e-6
+      : pocketReachMm(c, () => floorDepthsUnder(c, pockets)) > fill + 1e-6
   );
 }
 
