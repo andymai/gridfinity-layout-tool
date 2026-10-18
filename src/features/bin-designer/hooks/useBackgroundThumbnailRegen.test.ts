@@ -39,6 +39,7 @@ vi.mock('../store/customBinRegistry', async (importOriginal) => {
     registryHeightFields: vi.fn(() => ({})),
     registryOverhangFields: vi.fn(() => ({})),
     registryKnifeRestFields: vi.fn(() => ({})),
+    registrySlantFields: vi.fn(() => ({})),
   };
 });
 

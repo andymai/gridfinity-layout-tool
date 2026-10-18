@@ -22,6 +22,7 @@ import {
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
+  registrySlantFields,
   registryKnifeRestFields,
 } from '@/features/bin-designer/store/customBinRegistry';
 import { binId, designId } from '@/core/types';
@@ -106,6 +107,7 @@ export function useDesignNameEditor(): DesignNameEditor {
             ...registryEdgeFields(params),
             ...registryHeightFields(params),
             ...registryOverhangFields(params),
+            ...registrySlantFields(params),
             ...registryKnifeRestFields(params),
             updatedAt: result.value.updatedAt,
           });
@@ -132,6 +134,7 @@ export function useDesignNameEditor(): DesignNameEditor {
             ...registryEdgeFields(params),
             ...registryHeightFields(params),
             ...registryOverhangFields(params),
+            ...registrySlantFields(params),
             ...registryKnifeRestFields(params),
             updatedAt: result.value.updatedAt,
           });

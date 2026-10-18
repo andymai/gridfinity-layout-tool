@@ -74,12 +74,10 @@ export function slantBlocker(params: SlantInputs): SlantBlocker | null {
   return null;
 }
 
-/** The slant the generator applies, or null for an upright bin. */
-export function resolveSlant(params: SlantInputs): SlantPlan | null {
-  const slant = params.slant;
+/** A stored slant as a plan, before anything in the bin gets to keep it off. */
+export function slantPlanFor(slant: SlantConfig | undefined): SlantPlan | null {
   if (!slant || !SLANT_SIDES.includes(slant.side)) return null;
   if (!Number.isFinite(slant.angleDeg) || slant.angleDeg <= 0) return null;
-  if (slantBlocker(params) !== null) return null;
   const angleDeg = Math.min(slant.angleDeg, SLANT_MAX_DEG);
   return {
     angleDeg,
@@ -89,6 +87,12 @@ export function resolveSlant(params: SlantInputs): SlantPlan | null {
     sign: slant.side === 'right' || slant.side === 'back' ? 1 : -1,
     endSupport: slant.endSupport === true,
   };
+}
+
+/** The slant the generator applies, or null for an upright bin. */
+export function resolveSlant(params: SlantInputs): SlantPlan | null {
+  const plan = slantPlanFor(params.slant);
+  return plan && slantBlocker(params) === null ? plan : null;
 }
 
 /**
@@ -131,11 +135,35 @@ export type SlantExtentInputs = SlantInputs &
     | 'gridUnitMmY'
   >;
 
-/** Where the lean starts (the floor's underside) and ends (the body's top), above the bed. */
-export function slantSpanZ(params: SlantExtentInputs): { pivotZ: number; topZ: number } {
-  const pivotZ = params.base.style === 'flat' ? 0 : socketHeightMm(params.base.lowProfile);
-  const topZ = params.height * params.heightUnitMm + Math.max(0, params.extraWallHeightMm ?? 0);
+export interface SlantSpanInputs {
+  /** The base has no socket, so the lean starts at the bed. */
+  readonly flatBase: boolean;
+  readonly lowProfile?: boolean;
+  readonly height: number;
+  readonly heightUnitMm: number;
+  readonly extraWallHeightMm?: number;
+}
+
+export interface SlantSpan {
+  readonly pivotZ: number;
+  readonly topZ: number;
+}
+
+export function slantSpanZFor(input: SlantSpanInputs): SlantSpan {
+  const pivotZ = input.flatBase ? 0 : socketHeightMm(input.lowProfile);
+  const topZ = input.height * input.heightUnitMm + Math.max(0, input.extraWallHeightMm ?? 0);
   return { pivotZ, topZ };
+}
+
+/** Where the lean starts (the floor's underside) and ends (the body's top), above the bed. */
+export function slantSpanZ(params: SlantExtentInputs): SlantSpan {
+  return slantSpanZFor({
+    flatBase: params.base.style === 'flat',
+    lowProfile: params.base.lowProfile,
+    height: params.height,
+    heightUnitMm: params.heightUnitMm,
+    extraWallHeightMm: params.extraWallHeightMm,
+  });
 }
 
 /** How far the body's top edge sits past its footprint, in mm; 0 when upright. */
@@ -185,14 +213,28 @@ export interface SlantSupportPlan {
   readonly crossEdge: 'start' | 'end';
 }
 
+export type SlantSupportExtent = SlantSpan &
+  Pick<
+    SlantExtentInputs,
+    'width' | 'depth' | 'fractionalEdgeX' | 'fractionalEdgeY' | 'gridUnitMm' | 'gridUnitMmY'
+  >;
+
 /**
  * The wedge a row's last bin rests on: the cells past its footprint, long
  * enough that the leaning top edge still lands on it.
  */
 export function planSlantSupport(params: SlantExtentInputs): SlantSupportPlan | null {
   const slant = resolveSlant(params);
-  if (!slant?.endSupport) return null;
-  const { pivotZ, topZ } = slantSpanZ(params);
+  return slant ? planSupportFor(slant, { ...params, ...slantSpanZ(params) }) : null;
+}
+
+/** {@link planSlantSupport} for a slant already resolved, from the extent alone. */
+export function planSupportFor(
+  slant: SlantPlan,
+  params: SlantSupportExtent
+): SlantSupportPlan | null {
+  if (!slant.endSupport) return null;
+  const { pivotZ, topZ } = params;
   if (topZ <= pivotZ) return null;
   const topOffsetMm = slant.k * (topZ - pivotZ);
   const pitch = slant.axis === 'x' ? params.gridUnitMm : (params.gridUnitMmY ?? params.gridUnitMm);

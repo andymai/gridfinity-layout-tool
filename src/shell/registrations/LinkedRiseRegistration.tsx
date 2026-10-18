@@ -1,5 +1,6 @@
 import { notifyLinkedExcessChanged, registerLinkedExcessResolver } from '@/shared/utils/collision';
 import { linkedStackExcessUnits, stackJunctionMm } from '@/shared/utils/heightUnits';
+import { registerLinkedSlantResolver } from '@/shared/utils/placedSlant';
 import { loadRegistry, subscribeToRegistry } from '@/features/bin-designer';
 import type { CustomBinRef } from '@/features/bin-designer';
 import { useLayoutStore } from '@/core/store/layout';
@@ -9,7 +10,8 @@ import type { Bin, DesignId } from '@/core/types';
  * Composition root wiring the bin-designer registry's assembled-rise data into
  * the collision module's linked-excess resolver, so blocked zones and
  * placement validation charge a linked design's real standing height without a
- * `shared/utils → feature` import.
+ * `shared/utils → feature` import. Its slant facts are wired the same way, so
+ * placement can reserve a linked bin's end support.
  *
  * Registration runs at module load (like `DesignStoreRegistration`) so the
  * first render's blocked-zone pass already sees linked excess; the resolver
@@ -65,6 +67,19 @@ registerLinkedExcessResolver(
     return `${registryTick}:${layout.heightUnitMm}:${layout.lowProfileBase === true}`;
   }
 );
+
+registerLinkedSlantResolver((designId) => {
+  const ref = refs().get(designId);
+  if (!ref) return undefined;
+  // Only a parametric bin is rebuilt with a slant; anything else exports as stored.
+  if (ref.kind !== undefined && ref.kind !== 'bin') return { blocked: true };
+  return {
+    ...ref.slant,
+    flatBase: ref.socketless === true,
+    fractionalEdgeX: ref.fractionalEdgeX,
+    fractionalEdgeY: ref.fractionalEdgeY,
+  };
+});
 
 /**
  * Eager mount anchor. Renders nothing; its only job is to keep this module in

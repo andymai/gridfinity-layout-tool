@@ -22,7 +22,7 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
 
         const rect = { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth };
         const validationResult = canPlaceBin(
-          { ...rect, height: bin.height, linkedDesignId: bin.linkedDesignId },
+          { ...rect, height: bin.height, linkedDesignId: bin.linkedDesignId, slant: bin.slant },
           bin.layerId,
           layout
         );
@@ -47,8 +47,9 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
       // Strip id to prevent identity corruption
       const { id: _stripId, ...safeUpdates } = updates;
 
-      // Validate placement when the bin moves, resizes, or changes how tall
-      // it stands (which moves everything resting on it), as `bin.update` does.
+      // Validate placement when the bin moves, resizes, changes how tall it
+      // stands (which moves everything resting on it) or takes a slant, as
+      // `bin.update` does.
       const merged = { ...bin, ...safeUpdates };
       if (
         merged.layerId !== STAGING_ID &&
@@ -58,7 +59,8 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
           updates.depth !== undefined ||
           updates.layerId !== undefined ||
           updates.height !== undefined ||
-          'clearanceHeight' in updates)
+          'clearanceHeight' in updates ||
+          updates.slant !== undefined)
       ) {
         const rect = { x: merged.x, y: merged.y, width: merged.width, depth: merged.depth };
         const validationResult = canPlaceBin(
@@ -67,6 +69,8 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
             height: merged.height,
             clearanceHeight: merged.clearanceHeight,
             linkedDesignId: merged.linkedDesignId,
+            slant: merged.slant,
+            extendToMargin: merged.extendToMargin,
           },
           merged.layerId,
           layout,
@@ -164,6 +168,9 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
             width: bin.width,
             depth: bin.depth,
             height: bin.height,
+            linkedDesignId: bin.linkedDesignId,
+            slant: bin.slant,
+            extendToMargin: bin.extendToMargin,
           },
           bin.layerId,
           layout

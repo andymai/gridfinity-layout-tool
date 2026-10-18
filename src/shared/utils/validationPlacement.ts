@@ -21,6 +21,7 @@ import type {
   Rect,
   BinId,
   LayerId,
+  SlantConfig,
 } from '@/core/types';
 import { isFootprintInsideOutline } from './drawerOutlineGeometry';
 import { drawerFrameOutline } from './outlineFrame';
@@ -31,8 +32,9 @@ import {
   HEIGHT_UNIT_STEP,
   heightUnits,
 } from '@/core/types';
-import { CONSTRAINTS } from '@/core/constants';
+import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { footprintsOverlap } from './collision';
+import { placedSlant, slantConflicts } from './placedSlant';
 import type { RestingStack } from './restingStack';
 import { getRestingStack, maxBinHeight, newViolations, restack } from './restingStack';
 
@@ -57,7 +59,32 @@ export function canPlaceFootprint(
   excludeBinId?: BinId,
   excludeBinIds?: Set<BinId>
 ): ValidationResult {
-  const { drawer, layers, bins } = layout;
+  const { layers, bins } = layout;
+
+  const inside = insideDrawer(rect, layout);
+  if (!inside.valid) return inside;
+
+  const layer = layers.find((l) => l.id === layerId);
+  if (!layer) {
+    return { valid: false, reason: 'invalid_layer' };
+  }
+
+  // Only bins sharing a layer can collide; across layers the upper one rests
+  // on the lower one instead.
+  for (const other of bins) {
+    if (other.layerId !== layerId || other.id === excludeBinId || excludeBinIds?.has(other.id)) {
+      continue;
+    }
+    if (footprintsOverlap(rect, other)) {
+      return { valid: false, reason: 'collision', blockingInfo: blockingInfoFor(other, layers) };
+    }
+  }
+
+  return { valid: true };
+}
+
+function insideDrawer(rect: Rect, layout: Layout): ValidationResult {
+  const { drawer } = layout;
 
   // Bounds check
   if (rect.x < 0 || rect.y < 0) {
@@ -88,28 +115,13 @@ export function canPlaceFootprint(
     return { valid: false, reason: 'outside_drawer' };
   }
 
-  const layer = layers.find((l) => l.id === layerId);
-  if (!layer) {
-    return { valid: false, reason: 'invalid_layer' };
-  }
-
-  // Only bins sharing a layer can collide; across layers the upper one rests
-  // on the lower one instead.
-  for (const other of bins) {
-    if (other.layerId !== layerId || other.id === excludeBinId || excludeBinIds?.has(other.id)) {
-      continue;
-    }
-    if (footprintsOverlap(rect, other)) {
-      return { valid: false, reason: 'collision', blockingInfo: blockingInfoFor(other, layers) };
-    }
-  }
-
   return { valid: true };
 }
 
 /**
- * Validate if a bin can be placed at the given position: its footprint, and
- * where it would rest along with everything that would rest on it.
+ * Validate if a bin can be placed at the given position: its footprint, the
+ * room its slant takes, and where it would rest along with everything that
+ * would rest on it.
  * @param excludeBinId - The bin being moved or resized, replaced by the candidate
  * @param excludeBinIds - Other bins moving with it, ignored for same-layer overlap
  */
@@ -117,11 +129,13 @@ export function canPlaceBin(
   rect: Rect & {
     height: HeightUnits;
     /**
-     * These two keys, when present (even as undefined), override the excluded
+     * These keys, when present (even as undefined), override the excluded
      * bin's own values; when absent, the candidate inherits them.
      */
     clearanceHeight?: HeightUnits;
     linkedDesignId?: DesignId;
+    slant?: SlantConfig;
+    extendToMargin?: boolean;
   },
   layerId: LayerId,
   layout: Layout,
@@ -134,8 +148,11 @@ export function canPlaceBin(
   const { drawer, layers, bins } = layout;
 
   // A caller moving or resizing an existing bin usually passes only the new
-  // footprint and height; the bin's clearance and linked rise travel with it.
+  // footprint and height; the bin's clearance, linked rise and slant travel with it.
   const existing = excludeBinId !== undefined ? bins.find((b) => b.id === excludeBinId) : undefined;
+  const inherit = <K extends 'clearanceHeight' | 'linkedDesignId' | 'slant' | 'extendToMargin'>(
+    key: K
+  ): Bin[K] => (key in rect ? rect[key] : existing?.[key]) as Bin[K];
   const testBin: Bin = {
     id: excludeBinId ?? toBinId('__test__'),
     layerId,
@@ -144,12 +161,42 @@ export function canPlaceBin(
     width: rect.width,
     depth: rect.depth,
     height: rect.height,
-    clearanceHeight: 'clearanceHeight' in rect ? rect.clearanceHeight : existing?.clearanceHeight,
-    linkedDesignId: 'linkedDesignId' in rect ? rect.linkedDesignId : existing?.linkedDesignId,
+    clearanceHeight: inherit('clearanceHeight'),
+    linkedDesignId: inherit('linkedDesignId'),
+    slant: inherit('slant'),
+    extendToMargin: inherit('extendToMargin'),
     category: toCategoryId(''),
     label: '',
     notes: '',
   };
+
+  // As with stacks, a slant problem the bin already had must not freeze the
+  // edit that would clear it.
+  const placed = existing !== undefined && existing.layerId !== STAGING_ID ? existing : undefined;
+  const priorSlant = placed && placedSlant(placed, layout);
+  const slant = placedSlant(testBin, layout);
+  if (slant?.support) {
+    const inside = insideDrawer(slant.support, layout);
+    const wasOutside = priorSlant?.support
+      ? !insideDrawer(priorSlant.support, layout).valid
+      : false;
+    if (!inside.valid && !wasOutside) return inside;
+  }
+  // A group's other bins on this layer move with it, as in the footprint check.
+  const skip = (other: Bin): boolean =>
+    other.layerId === layerId && excludeBinIds?.has(other.id) === true;
+  const conflicts = slantConflicts(testBin, slant, layout, skip);
+  if (conflicts.length > 0) {
+    const had = placed ? slantConflicts(placed, priorSlant ?? null, layout, skip) : [];
+    const newConflict = conflicts.find((c) => !had.some((h) => h.with.id === c.with.id));
+    if (newConflict) {
+      return {
+        valid: false,
+        reason: newConflict.kind === 'collision' ? 'collision' : 'blocked_zone',
+        blockingInfo: blockingInfoFor(newConflict.with, layers),
+      };
+    }
+  }
 
   // Other bins of a group move are checked where they stand, as the commit
   // applies one move at a time: removing them here would drop whatever they

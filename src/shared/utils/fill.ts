@@ -1,7 +1,8 @@
-import type { Bin, BinId, GridUnits, Layout, LayerId, CategoryId } from '@/core/types';
+import type { Bin, BinId, GridUnits, Layout, LayerId, CategoryId, Rect } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
-import { generateBinId, CONSTRAINTS } from '@/core/constants';
+import { generateBinId, CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { footprintsOverlap } from './collision';
+import { slantZone } from './placedSlant';
 import type { RestingBin } from './restingStack';
 import { getRestingStack, newViolations, resolveRestingStack } from './restingStack';
 import { getOutsideCellSet } from './drawerOutlineCells';
@@ -10,8 +11,9 @@ import { drawerFrameOutline } from './outlineFrame';
 const HEIGHT_EPSILON = 1e-9;
 
 /**
- * Cells a bin on `layerId` cannot cover: outside a non-rectangular drawer, or
- * taken by a bin on the same layer. Key format: "x,y".
+ * Cells a bin on `layerId` cannot cover: outside a non-rectangular drawer,
+ * taken by a bin or an end support on the same layer, or held by a slanted
+ * bin on another. Key format: "x,y".
  * @param step - Iteration step size (0.5 for half-bin mode, 1 for normal)
  */
 export function createFootprintCellSet(
@@ -52,7 +54,24 @@ export function createFootprintCellSet(
     }
   }
 
+  // An end support holds its cells on its own layer; a slanted bin and its
+  // support hold theirs on every other layer too, since nothing stacks on them.
+  for (const bin of bins) {
+    if (bin.layerId === STAGING_ID) continue;
+    const zone = slantZone(bin, layout);
+    const held = bin.layerId === layerId ? zone.rects.slice(1) : zone.slanted ? zone.rects : [];
+    for (const rect of held) addCoveredCells(rect, step, occupied);
+  }
+
   return occupied;
+}
+
+function addCoveredCells(rect: Rect, step: number, into: Set<string>): void {
+  const x0 = Math.floor(rect.x / step) * step;
+  const y0 = Math.floor(rect.y / step) * step;
+  for (let bx = x0; bx < rect.x + rect.width; bx += step) {
+    for (let by = y0; by < rect.y + rect.depth; by += step) into.add(`${bx},${by}`);
+  }
 }
 
 /**

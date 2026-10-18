@@ -92,6 +92,25 @@ describe('v2 bin.add', () => {
       expect(result.ok).toBe(false);
     });
 
+    it("returns err when the new bin's end support lands on another bin", () => {
+      const behind: Bin = {
+        id: binId('bin_behind'),
+        layerId: layerId('layer_1'),
+        x: gridUnits(0),
+        y: gridUnits(1),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
+        category: categoryId('cat_1'),
+        label: '',
+        notes: '',
+      };
+      const slant = { angleDeg: 40, side: 'back' as const, endSupport: true };
+      const layout = makeLayout({ bins: [behind] });
+      expect(addBin.handle({ ...validPayload, slant }, { aggregate: layout }).ok).toBe(false);
+      expect(addBin.handle(validPayload, { aggregate: layout }).ok).toBe(true);
+    });
+
     it('is deterministic: two invocations against same layout produce structurally identical events (modulo BinId)', () => {
       const layout = makeLayout();
       const r1 = addBin.handle(validPayload, { aggregate: layout });

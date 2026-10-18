@@ -12,6 +12,7 @@ import {
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
+  registrySlantFields,
   type CustomBinRef,
 } from './customBinRegistry';
 import { designId } from '@/core/types';
@@ -560,6 +561,54 @@ describe('customBinRegistry', () => {
       // A partly-valid record keeps its usable sides; a useless one is dropped.
       if (back) expect(back.left).toBe(0);
       else expect(back).toBeUndefined();
+    });
+  });
+  describe('design slant', () => {
+    const SLANT = { angleDeg: 40, side: 'back' as const, endSupport: true };
+
+    it("projects the design's slant and extra wall", () => {
+      const fields = registrySlantFields({
+        ...DEFAULT_BIN_PARAMS,
+        slant: SLANT,
+        extraWallHeightMm: 6,
+      });
+      expect(fields).toEqual({ slant: { config: SLANT, extraWallMm: 6 } });
+    });
+
+    it('records a design that keeps any slant off', () => {
+      const fields = registrySlantFields({
+        ...DEFAULT_BIN_PARAMS,
+        overhang: { left: 10, right: 0, front: 0, back: 0, enabled: true },
+      });
+      expect(fields).toEqual({ slant: { blocked: true } });
+    });
+
+    it('writes an explicit undefined for an upright design with nothing to record', () => {
+      const fields = registrySlantFields(DEFAULT_BIN_PARAMS);
+      expect('slant' in fields).toBe(true);
+      expect(fields.slant).toBeUndefined();
+    });
+
+    it('keeps the facts when an update omits them, and clears them on a re-save', () => {
+      upsertRegistryEntry({ ...makeRef('d1'), slant: { config: SLANT } });
+      upsertRegistryEntry({ ...makeRef('d1', 'Renamed') });
+      expect(loadRegistry()[0]?.slant).toEqual({ config: SLANT });
+
+      upsertRegistryEntry({ ...makeRef('d1'), ...registrySlantFields(DEFAULT_BIN_PARAMS) });
+      expect(loadRegistry()[0]?.slant).toBeUndefined();
+    });
+
+    it('keeps the usable part of a stored record and drops the rest', () => {
+      localStorage.setItem(
+        'gridfinity-custom-bins-v1',
+        JSON.stringify([
+          { ...makeRef('d1'), slant: { config: { angleDeg: 80, side: 'left' }, extraWallMm: -2 } },
+          { ...makeRef('d2'), slant: { config: 'tilted', blocked: 'yes' } },
+        ])
+      );
+      const [first, second] = loadRegistry();
+      expect(first?.slant).toEqual({ config: { angleDeg: 60, side: 'left' } });
+      expect(second?.slant).toBeUndefined();
     });
   });
 });

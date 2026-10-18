@@ -604,3 +604,68 @@ describe('fill and the resting stack', () => {
     expect(result.addedCount).toBeGreaterThan(0);
   });
 });
+
+describe('fill around slanted bins', () => {
+  // 45° over a 6-unit body: the end support takes the row behind the bin.
+  const SLANT = { angleDeg: 45, side: 'back' as const, endSupport: true };
+  const layout = (bins: Layout['bins']): Layout =>
+    baseCreateTestLayout({
+      drawer: { width: gridUnits(4), depth: gridUnits(4), height: heightUnits(12) },
+      layers: [
+        { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
+      ],
+      bins,
+    });
+  const slanted = (overrides: Partial<Layout['bins'][number]> = {}): Layout['bins'][number] => ({
+    id: binId('slanted'),
+    layerId: layerId('layer1'),
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(4),
+    depth: gridUnits(1),
+    height: heightUnits(6),
+    category: categoryId('cat1'),
+    label: '',
+    notes: '',
+    slant: SLANT,
+    ...overrides,
+  });
+
+  it('leaves the end support its cells', () => {
+    const result = fillAllWithSize(
+      layout([slanted()]),
+      layerId('layer1'),
+      1,
+      1,
+      categoryId('cat1')
+    );
+    expect(result.bins.every((b) => b.y >= 2)).toBe(true);
+    expect(result.bins).toHaveLength(8);
+  });
+
+  it('keeps every other layer off a slanted bin and its support', () => {
+    const result = fillAllWithSize(
+      layout([slanted()]),
+      layerId('layer2'),
+      1,
+      1,
+      categoryId('cat1')
+    );
+    expect(result.bins.every((b) => b.y >= 2)).toBe(true);
+    expect(result.bins).toHaveLength(8);
+  });
+
+  it('fills over an upright bin as before', () => {
+    const upright = slanted({ slant: undefined, height: heightUnits(3) });
+    const result = fillAllWithSize(layout([upright]), layerId('layer2'), 1, 1, categoryId('cat1'));
+    expect(result.bins).toHaveLength(16);
+  });
+
+  it('leaves the support cells to gap filling too', () => {
+    const result = fillGaps(layout([slanted()]), layerId('layer1'), categoryId('cat1'), 4);
+    const covered = result.bins.reduce((sum, b) => sum + b.width * b.depth, 0);
+    expect(result.bins.every((b) => b.y >= 2)).toBe(true);
+    expect(covered).toBe(8);
+  });
+});

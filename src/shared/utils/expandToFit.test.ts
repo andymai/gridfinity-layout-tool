@@ -161,6 +161,26 @@ describe('resolveExpandToFit — span growth', () => {
     expect(body.end - body.start).toBeCloseTo(126, 6);
   });
 
+  it("stops at a slanted neighbour's end support", () => {
+    const selected = [bin(0, 0, 2, 4), bin(2, 0, 2, 4)];
+    // Leaning left over a 6-unit body, its support takes the column at x = 5.
+    const slanted = bin(6, 0, 1, 4, {
+      height: heightUnits(6),
+      slant: { angleDeg: 45, side: 'left', endSupport: true },
+    });
+    const all = [...selected, slanted];
+    const result = resolveExpandToFit(
+      all,
+      selected.map((b) => b.id),
+      layout(7, 4, { bins: all }),
+      undefined
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const body = bodyX(placementFor(result.placements, selected[0].id), 2);
+    expect(body.end - body.start).toBeCloseTo(105, 6);
+  });
+
   it('claims baseplate padding when the span reaches a drawer edge', () => {
     const bins = [bin(0, 0, 2, 4), bin(2, 0, 2, 4), bin(4, 0, 2, 4)];
     const l = layout(7, 4, { bins });

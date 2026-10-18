@@ -211,6 +211,28 @@ describe('v2 bin.update', () => {
       expect(cleared.value.event.payload.previous.slant).toEqual(SLANT);
     });
 
+    it('refuses a slant whose end support lands on another bin', () => {
+      const layout = makeLayout({
+        bins: [makeBin('bin_1'), makeBin('behind', { y: gridUnits(1) })],
+      });
+      const result = updateBin.handle(
+        { id: 'bin_1', updates: { slant: SLANT } },
+        { aggregate: layout }
+      );
+      expect(result.ok).toBe(false);
+    });
+
+    it('clears a slant whose support already overlaps', () => {
+      const layout = makeLayout({
+        bins: [makeBin('bin_1', { slant: SLANT }), makeBin('behind', { y: gridUnits(1) })],
+      });
+      const result = updateBin.handle(
+        { id: 'bin_1', updates: { slant: null } },
+        { aggregate: layout }
+      );
+      expect(isOk(result)).toBe(true);
+    });
+
     // Nothing in a slant depends on where the bin stands, unlike an overhang.
     it('keeps the slant when the bin moves', () => {
       const layout = makeLayout({ bins: [makeBin('bin_1', { slant: SLANT })] });

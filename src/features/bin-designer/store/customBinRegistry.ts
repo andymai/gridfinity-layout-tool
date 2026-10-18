@@ -21,6 +21,8 @@ import {
   type AssembledHeightSource,
 } from '@/shared/printSettings/assembledHeight';
 import { planKnifeRest } from '@/shared/utils/knifeRestPlan';
+import type { DesignSlantFacts } from '@/shared/utils/placedSlant';
+import { migrateSlant, slantBlocker } from '@/shared/utils/slantPlan';
 import { hasOverhang, resolveOverhang } from '@/shared/utils/overhang';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { BinParams, SavedDesign } from '../types';
@@ -137,6 +139,13 @@ export interface CustomBinRef {
     readonly front: number;
     readonly back: number;
   };
+  /**
+   * What the layout needs to reserve a placed bin's end support, which it
+   * checks synchronously, without the full params. Absent = an upright design
+   * that could take a placed slant and has no extra wall, or an entry saved
+   * before the field.
+   */
+  readonly slant?: DesignSlantFacts;
   /** ISO timestamp of last update */
   readonly updatedAt: string;
 }
@@ -213,6 +222,22 @@ export function registryKnifeRestFields(params: BinParams): Pick<CustomBinRef, '
       gapMm: plan.gapMm,
     },
   };
+}
+
+/**
+ * Project the slant facts out of a full `BinParams`. Spread wherever
+ * {@link registryHeightFields} is; an explicit `slant: undefined` clears a
+ * stale entry, as {@link registryKnifeRestFields} does.
+ */
+export function registrySlantFields(params: BinParams): Pick<CustomBinRef, 'slant'> {
+  const config = migrateSlant(params.slant);
+  const extraWallMm = Math.max(0, params.extraWallHeightMm ?? 0);
+  const facts: DesignSlantFacts = {
+    ...(config ? { config } : {}),
+    ...(slantBlocker(params) !== null ? { blocked: true as const } : {}),
+    ...(extraWallMm > 0 ? { extraWallMm } : {}),
+  };
+  return { slant: Object.keys(facts).length > 0 ? facts : undefined };
 }
 
 /**
@@ -329,6 +354,7 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     hasLip,
     knifeRest,
     overhangMm,
+    slant,
   } = raw as Record<string, unknown>;
   if (
     typeof id !== 'string' ||
@@ -406,8 +432,26 @@ function parseEntry(raw: unknown): CustomBinRef | null {
         },
       };
     })(),
+    ...(() => {
+      const facts = parseSlantFacts(slant);
+      return facts ? { slant: facts } : {};
+    })(),
     updatedAt,
   };
+}
+
+function parseSlantFacts(raw: unknown): DesignSlantFacts | undefined {
+  if (typeof raw !== 'object' || raw === null) return undefined;
+  const { config: rawConfig, blocked, extraWallMm } = raw as Record<string, unknown>;
+  const config = migrateSlant(rawConfig);
+  const facts: DesignSlantFacts = {
+    ...(config ? { config } : {}),
+    ...(blocked === true ? { blocked: true as const } : {}),
+    ...(typeof extraWallMm === 'number' && Number.isFinite(extraWallMm) && extraWallMm > 0
+      ? { extraWallMm }
+      : {}),
+  };
+  return Object.keys(facts).length > 0 ? facts : undefined;
 }
 
 /**
@@ -499,6 +543,7 @@ function withCarriedFields(next: CustomBinRef, prev: CustomBinRef): CustomBinRef
     ...(!('knifeRest' in next) && prev.knifeRest !== undefined
       ? { knifeRest: prev.knifeRest }
       : {}),
+    ...(!('slant' in next) && prev.slant !== undefined ? { slant: prev.slant } : {}),
   };
 }
 

@@ -31,6 +31,7 @@ import {
   registryHeightFields,
   registryKnifeRestFields,
   registryOverhangFields,
+  registrySlantFields,
 } from '@/features/bin-designer/store/customBinRegistry';
 import { designFootprint, isBinDesign } from '@/features/bin-designer/utils/designKind';
 import type { SavedDesign } from '@/features/bin-designer/types';
@@ -54,6 +55,7 @@ export function navigateToPlaceInLayout(design: SavedDesign): void {
       ...registryHeightFields(design.params),
       ...registryKnifeRestFields(design.params),
       ...registryOverhangFields(design.params),
+      ...registrySlantFields(design.params),
       updatedAt: design.updatedAt,
     });
   } else if (design.structure?.kind === 'importedMesh') {

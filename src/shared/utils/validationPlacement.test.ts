@@ -641,3 +641,93 @@ describe('maxPlaceableHeight', () => {
     expect(maxPlaceableHeight({ ...bottom, id: binId('gap') }, layout)).toBe(3);
   });
 });
+
+describe('canPlaceBin with slanted bins', () => {
+  // 45° over a 6-unit body reaches 0.9 cells, so the end support takes one row.
+  const SLANT = { angleDeg: 45, side: 'back' as const, endSupport: true };
+  const slanted = (overrides: Partial<Bin> = {}): Bin =>
+    createTestBin({
+      id: binId('slanted'),
+      layerId: LAYER_1,
+      width: gridUnits(2),
+      height: heightUnits(6),
+      slant: SLANT,
+      ...overrides,
+    });
+  const at = (x: number, y: number, height = 6) =>
+    placementRect({ x, y, width: 2, depth: 1, height });
+
+  it("refuses a bin on another bin's support cells", () => {
+    const layout = makeSingleLayerLayout();
+    layout.bins = [slanted()];
+    const result = canPlaceBin(at(0, 1, 3), LAYER_1, layout);
+    expect(result).toMatchObject({ valid: false, reason: 'collision' });
+    if (result.valid) throw new Error('expected the placement to be rejected');
+    expect(result.blockingInfo?.binId).toBe('slanted');
+    expect(canPlaceBin(at(0, 2, 3), LAYER_1, layout)).toEqual({ valid: true });
+  });
+
+  it('refuses a slant whose support would cover a bin', () => {
+    const layout = makeSingleLayerLayout();
+    layout.bins = [createTestBin({ id: binId('behind'), y: gridUnits(1), width: gridUnits(2) })];
+    expect(canPlaceBin({ ...at(0, 0), slant: SLANT }, LAYER_1, layout)).toMatchObject({
+      valid: false,
+      reason: 'collision',
+    });
+  });
+
+  it('refuses a support past the drawer', () => {
+    const layout = makeSingleLayerLayout();
+    expect(canPlaceBin({ ...at(0, 7), slant: SLANT }, LAYER_1, layout)).toMatchObject({
+      valid: false,
+      reason: 'exceeds_depth',
+    });
+  });
+
+  it('keeps every other layer off a slanted bin and its support', () => {
+    const layout = makeTwoLayerLayout();
+    layout.bins = [slanted()];
+    expect(canPlaceBin(at(0, 1, 3), LAYER_2, layout)).toMatchObject({
+      valid: false,
+      reason: 'blocked_zone',
+    });
+    expect(canPlaceBin(at(4, 0, 3), LAYER_2, layout)).toEqual({ valid: true });
+  });
+
+  it('carries the slant of the bin it moves', () => {
+    const layout = makeSingleLayerLayout();
+    layout.bins = [
+      slanted(),
+      createTestBin({ id: binId('other'), x: gridUnits(4), y: gridUnits(1), width: gridUnits(2) }),
+    ];
+    expect(canPlaceBin(at(4, 0), LAYER_1, layout, binId('slanted'))).toMatchObject({
+      valid: false,
+      reason: 'collision',
+    });
+    expect(
+      canPlaceBin({ ...at(4, 0), slant: undefined }, LAYER_1, layout, binId('slanted'))
+    ).toEqual({ valid: true });
+  });
+
+  it('does not freeze edits to a bin whose support already overlaps', () => {
+    const layout = makeSingleLayerLayout();
+    layout.bins = [
+      slanted(),
+      createTestBin({ id: binId('behind'), y: gridUnits(1), width: gridUnits(2) }),
+    ];
+    expect(
+      canPlaceBin(
+        { ...at(0, 0), slant: { ...SLANT, angleDeg: 40 } },
+        LAYER_1,
+        layout,
+        binId('slanted')
+      )
+    ).toEqual({ valid: true });
+  });
+
+  it('does not freeze edits to a bin whose support already leaves the drawer', () => {
+    const layout = makeSingleLayerLayout();
+    layout.bins = [slanted({ y: gridUnits(7) })];
+    expect(canPlaceBin(at(0, 7, 5), LAYER_1, layout, binId('slanted'))).toEqual({ valid: true });
+  });
+});

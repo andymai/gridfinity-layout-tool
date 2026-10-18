@@ -37,6 +37,7 @@ import {
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
+  registrySlantFields,
   registryKnifeRestFields,
 } from '../store/customBinRegistry';
 import { regenerateThumbnail } from '../utils/thumbnailRegenerator';
@@ -237,6 +238,7 @@ async function runBatch(
         ...registryEdgeFields(design.params),
         ...registryHeightFields(design.params),
         ...registryOverhangFields(design.params),
+        ...registrySlantFields(design.params),
         ...registryKnifeRestFields(design.params),
         updatedAt: writeResult.value.updatedAt,
       });
