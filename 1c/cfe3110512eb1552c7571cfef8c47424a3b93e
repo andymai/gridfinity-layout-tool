@@ -1,0 +1,87 @@
+src/i18n/locales/ka.json
+  s_3ed1b5bc102254::t_87b991f3e1b249 2052-2055
+src/features/bin-designer/utils/cutoutFill.ts
+  s_3ed1b5bc102254::t_61615479194405 29-31
+src/i18n/locales/pt-BR.json
+  s_3ed1b5bc102254::t_87b991f3e1b249 1349-1352
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_3ed1b5bc102254::t_024edbb866b9ba 761-801
+src/i18n/locales/ja.json
+  s_3ed1b5bc102254::t_87b991f3e1b249 1349-1352
+src/features/bin-designer/utils/slideLidPlanForParams.ts
+  s_3ed1b5bc102254::t_29356833fbf245 67
+  s_3ed1b5bc102254::t_61615479194405 20,29,80-100
+  s_3ed1b5bc102254::t_85f84e77605d14 101
+src/i18n/locales/de.json
+  s_3ed1b5bc102254::t_87b991f3e1b249 1349-1352
+src/i18n/locales/nb.json
+  s_3ed1b5bc102254::t_87b991f3e1b249 1349-1352
+src/features/bin-designer/components/CutoutWorkspace/BinFeaturesSection.test.tsx
+  s_3ed1b5bc102254::t_2555fe956c26df 88-97
+src/features/generation/worker/generators/slideLidSeating.scenario.test.ts
+  s_3ed1b5bc102254::t_4e1a0b62d1c753 35,39,744-788,790,795-797,800-803,806-807,810
+  s_3ed1b5bc102254::t_eca2b24264e7b2 789,791-794,798-799,804-805,808-809
+  s_3ed1b5bc102254::t_110b24e0351af9 811
+src/shared/generation/meshPersistence.ts
+  s_3ed1b5bc102254::t_bcb9f88ad5cf2b 92-93,112
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_3ed1b5bc102254::t_02973155b443b5 101-104,140,160,757-761,784,788
+src/i18n/locales/fr.json
+  s_3ed1b5bc102254::t_87b991f3e1b249 1349-1352
+src/i18n/locales/sv.json
+  s_3ed1b5bc102254::t_87b991f3e1b249 1349-1352
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_3ed1b5bc102254::t_925b4c86660371 15,1126-1147,1314-1350,1360-1368
+src/i18n/locales/cs.json
+  s_3ed1b5bc102254::t_87b991f3e1b249 1349-1352
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_3ed1b5bc102254::t_08170e56a6af44 67,108-109,302-303
+src/features/bin-designer/components/controls/CutoutFillControls/CutoutFillControls.tsx
+  s_3ed1b5bc102254::t_61615479194405 20,86,97
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_3ed1b5bc102254::t_02973155b443b5 254
+src/features/bin-designer/components/CutoutWorkspace/BinFeaturesSection.tsx
+  s_3ed1b5bc102254::t_2555fe956c26df 16,22,25-26,52
+src/i18n/locales/en.ts
+  s_3ed1b5bc102254::t_87b991f3e1b249 2461-2466
+src/i18n/locales/es.json
+  s_3ed1b5bc102254::t_87b991f3e1b249 1349-1352
+src/shared/utils/slideLidPlan.ts
+  s_3ed1b5bc102254::t_78476b8da615bd 642-659,715-717
+  s_3ed1b5bc102254::t_29356833fbf245 209,485-486,536-540,585,588,676
+  s_3ed1b5bc102254::t_f4fec3ceb70164 641
+src/i18n/locales/uk.json
+  s_3ed1b5bc102254::t_87b991f3e1b249 1349-1352
+src/shared/utils/slideLidPlan.test.ts
+  s_3ed1b5bc102254::t_53a2795d1af1c7 109,131-136,139-142,743,802
+  s_3ed1b5bc102254::t_925b4c86660371 17
+  s_3ed1b5bc102254::t_db76c44ba0b1f1 137-138
+src/i18n/locales/it.json
+  s_3ed1b5bc102254::t_87b991f3e1b249 1349-1352
+src/features/bin-designer/utils/slideLidPlanForParams.test.ts
+  s_3ed1b5bc102254::t_925b4c86660371 16-17,117-181
+src/i18n/locales/pl.json
+  s_3ed1b5bc102254::t_87b991f3e1b249 1349-1352
+src/i18n/locales/zh-CN.json
+  s_3ed1b5bc102254::t_87b991f3e1b249 1349-1352
+src/i18n/locales/ko.json
+  s_3ed1b5bc102254::t_87b991f3e1b249 1349-1352
+src/i18n/locales/nl.json
+  s_3ed1b5bc102254::t_87b991f3e1b249 1349-1352
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1ccfe3110512eb1552c7571cfef8c47424a3b93e",
+  "prompts": {},
+  "sessions": {
+    "s_3ed1b5bc102254": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f41879-d3ed-4377-a3a8-af4dbd466449",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
