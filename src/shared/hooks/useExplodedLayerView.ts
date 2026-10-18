@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
-import type { Bin, Layer, Category, LayerId, DesignId } from '@/core/types';
+import type { Bin, Layer, Category, LayerId, DesignId, SlantSide } from '@/core/types';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { useRestingStack } from './useRestingStack';
-import type { BinDividersSpec } from '@/shared/hooks/useBinGeometry';
+import { useSlantLayout } from './useSlantLayout';
+import { slantRenderFields } from '@/shared/utils/slantRender';
+import type { BinDividersSpec, BinShear } from '@/shared/hooks/useBinGeometry';
 
 /** Gap between layers in grid units when exploded. */
 const EXPLODE_GAP = 2.5;
@@ -11,6 +13,22 @@ const EXPLODE_GAP = 2.5;
 const EXPLODE_DIM_OPACITY = 0.35;
 
 /** Renderable data for a single bin (matches binsToRender shape in IsometricPreview). */
+/**
+ * A slanted bin's end support for the stylized preview: its cells, in grid
+ * units, and the wedge standing on them, in scene units.
+ */
+export interface SlantSupportRender {
+  readonly side: SlantSide;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly depth: number;
+  /** How far past the bin the leaning top reaches, in grid units along the lean. */
+  readonly reach: number;
+  readonly pivot: number;
+  readonly top: number;
+}
+
 export interface BinRenderData {
   bin: Bin;
   x: number;
@@ -22,6 +40,10 @@ export interface BinRenderData {
   opacity: number;
   /** Compartment dividers from the bin's linked design, if any. */
   dividers?: BinDividersSpec;
+  /** A slanted bin's lean, drawn on the stylized box. */
+  shear?: BinShear;
+  /** A slanted bin's end support, standing past its leaning side. */
+  slantSupport?: SlantSupportRender;
 }
 
 /** Per-layer grouping for exploded view rendering. */
@@ -65,6 +87,7 @@ export function useExplodedLayerView({
 }: UseExplodedLayerViewOptions): LayerRenderGroup[] | null {
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const stack = useRestingStack(bins, layers);
+  const slantLayout = useSlantLayout();
 
   // Keep groups mounted during exit animation (offsets → 0) so useFrame can lerp back
   const shouldRender = isExplodedView || isExitAnimating;
@@ -117,6 +140,7 @@ export function useExplodedLayerView({
         opacity: group.opacity,
         dividers:
           bin.linkedDesignId !== undefined ? designDividers?.get(bin.linkedDesignId) : undefined,
+        ...slantRenderFields(bin, slantLayout),
       });
     }
 
@@ -150,5 +174,6 @@ export function useExplodedLayerView({
     heightToGridScale,
     activeLayerId,
     designDividers,
+    slantLayout,
   ]);
 }

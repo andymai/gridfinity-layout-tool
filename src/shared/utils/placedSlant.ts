@@ -14,7 +14,13 @@ import { footprintsOverlap } from './collision';
 import { resolveBinOverhang } from './drawerMargin';
 import { edgeForPosition } from './fractionalEdge';
 import { isTurnedPlacement, sideInPlacement } from './placementTurn';
-import { planSupportFor, slantPlanFor, slantSpanZFor, type SlantPlan } from './slantPlan';
+import {
+  planSupportFor,
+  slantPlanFor,
+  slantSpanZFor,
+  type SlantPlan,
+  type SlantSpan,
+} from './slantPlan';
 
 export interface LinkedSlantFacts extends DesignSlantFacts {
   /** The design's own size, which a turned or not yet resynced placement can differ from. */
@@ -62,6 +68,8 @@ export type SlantLayout = Pick<
 
 export interface PlacedSlant {
   readonly plan: SlantPlan;
+  /** Where the lean starts and ends above the bed, in mm. */
+  readonly span: SlantSpan;
   /** How far the top edge reaches past the footprint, in mm. */
   readonly topOffsetMm: number;
   /** The cells the end support stands on, past the lean side; null without one. */
@@ -160,7 +168,7 @@ export function placedSlant(
     extraWallHeightMm: facts?.extraWallMm,
   });
   const topOffsetMm = plan.k * Math.max(0, span.topZ - span.pivotZ);
-  if (!plan.endSupport) return { plan, topOffsetMm, support: null };
+  if (!plan.endSupport) return { plan, span, topOffsetMm, support: null };
   const support = planSupportFor(plan, {
     ...span,
     width: bin.width,
@@ -176,6 +184,7 @@ export function placedSlant(
   });
   return {
     plan,
+    span,
     topOffsetMm,
     support: support ? rectPastSide(bin, plan.side, support.lengthU) : null,
   };

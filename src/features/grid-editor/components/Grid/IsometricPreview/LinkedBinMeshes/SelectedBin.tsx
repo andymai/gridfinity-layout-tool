@@ -30,6 +30,7 @@ export function SelectedBin({ binData, designGeometries, gridUnitMm }: SelectedB
       opacity={binData.opacity}
       isSelected={true}
       dividers={binData.dividers}
+      shear={binData.shear}
     />
   );
 }

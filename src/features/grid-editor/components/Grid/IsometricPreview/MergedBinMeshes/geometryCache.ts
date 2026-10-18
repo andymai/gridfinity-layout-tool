@@ -1,9 +1,14 @@
 import type * as THREE from 'three';
-import { createBinGeometry, type BinDividersSpec } from '@/shared/hooks/useBinGeometry';
+import {
+  binShearSig,
+  createBinGeometry,
+  type BinDividersSpec,
+  type BinShear,
+} from '@/shared/hooks/useBinGeometry';
 
 /**
  * Geometry cache for reusing identical bin geometries.
- * Key format: "width|depth|height|color|dividerSig"
+ * Key format: "width|depth|height|color|dividerSig|shearSig"
  * This avoids recreating the same geometry multiple times when bins have identical dimensions.
  * Uses LRU eviction: accessed entries are moved to end, oldest entries evicted first.
  */
@@ -26,12 +31,13 @@ function getCacheKey(
   depth: number,
   height: number,
   color: string,
-  dividers?: BinDividersSpec
+  dividers?: BinDividersSpec,
+  shear?: BinShear
 ): string {
   // Round to 2 decimal places to handle floating point precision.
   // Divider sig (designId:updatedAt:gridUnitMm) distinguishes linked-design
   // interiors; bins linked to the same design share one cached geometry.
-  return `${width.toFixed(2)}|${depth.toFixed(2)}|${height.toFixed(2)}|${color}|${dividers?.sig ?? ''}`;
+  return `${width.toFixed(2)}|${depth.toFixed(2)}|${height.toFixed(2)}|${color}|${dividers?.sig ?? ''}|${binShearSig(shear)}`;
 }
 
 export function getCachedGeometry(
@@ -39,9 +45,10 @@ export function getCachedGeometry(
   depth: number,
   height: number,
   color: string,
-  dividers?: BinDividersSpec
+  dividers?: BinDividersSpec,
+  shear?: BinShear
 ): THREE.BufferGeometry {
-  const key = getCacheKey(width, depth, height, color, dividers);
+  const key = getCacheKey(width, depth, height, color, dividers, shear);
   let geo = geometryCache.get(key);
 
   if (geo) {
@@ -49,7 +56,7 @@ export function getCachedGeometry(
     geometryCache.delete(key);
     geometryCache.set(key, geo);
   } else {
-    geo = createBinGeometry({ width, depth, height, baseColor: color, dividers });
+    geo = createBinGeometry({ width, depth, height, baseColor: color, dividers, shear });
     // Evict oldest (least recently used) entry if cache is full
     if (geometryCache.size >= MAX_CACHE_SIZE) {
       const firstKey = geometryCache.keys().next().value;

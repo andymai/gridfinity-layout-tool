@@ -5,6 +5,8 @@ import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
 import type { BinDividersSpec } from '@/shared/hooks/useBinGeometry';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { useRestingStack } from '@/shared/hooks/useRestingStack';
+import { useSlantLayout } from '@/shared/hooks/useSlantLayout';
+import { slantRenderFields } from '@/shared/utils/slantRender';
 
 interface UseBinsToRenderOptions {
   bins: Bin[];
@@ -34,6 +36,7 @@ export function useBinsToRender({
   const layerIndexMap = useMemo(() => new Map(layers.map((l, idx) => [l.id, idx])), [layers]);
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const stack = useRestingStack(bins, layers);
+  const slantLayout = useSlantLayout();
 
   return useMemo(() => {
     const result: BinRenderData[] = [];
@@ -77,6 +80,7 @@ export function useBinsToRender({
         opacity: 1,
         dividers:
           bin.linkedDesignId !== undefined ? designDividers?.get(bin.linkedDesignId) : undefined,
+        ...slantRenderFields(bin, slantLayout),
       });
     }
 
@@ -114,5 +118,6 @@ export function useBinsToRender({
     layerViewMode,
     heightToGridScale,
     designDividers,
+    slantLayout,
   ]);
 }

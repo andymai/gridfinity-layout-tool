@@ -636,3 +636,26 @@ describe('useBinGeometry', () => {
     });
   });
 });
+
+describe('createBinGeometry shear', () => {
+  it('leans everything above the pivot and leaves the base where it stands', () => {
+    const upright = createBinGeometry({ width: 1, depth: 1, height: 1, baseColor: '#888888' });
+    const leaning = createBinGeometry({
+      width: 1,
+      depth: 1,
+      height: 1,
+      baseColor: '#888888',
+      shear: { x: 0.5, y: 0, pivot: 0.1 },
+    });
+    const a = upright.getAttribute('position');
+    const b = leaning.getAttribute('position');
+    for (let i = 0; i < a.count; i++) {
+      const rise = Math.max(0, a.getZ(i) - 0.1);
+      expect(b.getX(i)).toBeCloseTo(a.getX(i) + 0.5 * rise, 6);
+      expect(b.getY(i)).toBeCloseTo(a.getY(i), 6);
+      expect(b.getZ(i)).toBeCloseTo(a.getZ(i), 6);
+    }
+    upright.dispose();
+    leaning.dispose();
+  });
+});

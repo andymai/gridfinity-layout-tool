@@ -106,6 +106,7 @@ vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
 }));
 
 vi.mock('@/shared/hooks/useBinGeometry', () => ({
+  binShearSig: () => '',
   createBinGeometry: vi.fn(() => {
     const mockGeometry = {
       setAttribute: vi.fn(),

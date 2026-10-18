@@ -1,7 +1,7 @@
 import { useMemo, useEffect, useDeferredValue, useRef } from 'react';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import type { BinDividersSpec } from '@/shared/hooks/useBinGeometry';
+import type { BinDividersSpec, BinShear } from '@/shared/hooks/useBinGeometry';
 import { clearGeometryCache, getCachedGeometry } from './geometryCache';
 
 interface BinData {
@@ -17,6 +17,7 @@ interface BinData {
   color: string;
   opacity: number;
   dividers?: BinDividersSpec;
+  shear?: BinShear;
 }
 
 interface MergedBinMeshesProps {
@@ -41,7 +42,8 @@ function buildMergedGeometry(bins: BinData[]): THREE.BufferGeometry | null {
       binData.bin.depth,
       binData.height,
       binData.color,
-      binData.dividers
+      binData.dividers,
+      binData.shear
     );
 
     // Clone the cached geometry so we can translate it without affecting the cache

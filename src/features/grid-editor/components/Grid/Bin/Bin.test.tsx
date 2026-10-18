@@ -339,9 +339,10 @@ describe('Bin', () => {
       expect(screen.getByRole('button', { name: /slant needs attention/ })).toBeInTheDocument();
     });
 
-    it('leaves a row that ends on its support unbadged', () => {
+    it('shows only the lean for a row that ends on its support', () => {
       seed([slanted(true)]);
       render(<Bin {...defaultProps} bin={slanted(true)} />);
+      expect(screen.getByLabelText('Slant')).toBeInTheDocument();
       expect(screen.queryByLabelText('Slant needs attention')).not.toBeInTheDocument();
     });
 

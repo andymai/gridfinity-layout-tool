@@ -25,6 +25,7 @@ export function AnimatedBinMesh({ binData, transition }: AnimatedBinMeshProps) {
     height: binData.height,
     baseColor: binData.color,
     dividers: binData.dividers,
+    shear: binData.shear,
   });
 
   useFrame(() => {

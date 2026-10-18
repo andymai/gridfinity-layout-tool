@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import '@/shared/webgl/configureTroikaText';
 import { Scene } from './Scene';
 import { BatchedCornerMarkers } from './BatchedCornerMarkers';
+import { SlantSupportWedges } from './SlantSupportWedges';
 import { BinOverhangExtensions } from './BinOverhangExtensions';
 import { MergedBinMeshes } from './MergedBinMeshes';
 import { ExplodedLayerGroup } from './ExplodedLayerGroup';
@@ -224,6 +225,7 @@ export function IsometricPreview(props: IsometricPreviewProps) {
                 drawerDepth={drawer.depth}
                 designGeometries={designGeometries}
               />
+              <SlantSupportWedges bins={binsToRender} designGeometries={designGeometries} />
             </>
           )}
         </Scene>

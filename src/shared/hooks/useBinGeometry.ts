@@ -111,6 +111,20 @@ export interface BinDividersSpec {
   height: number | null;
 }
 
+/**
+ * A slanted body: each scene unit of rise above `pivot` (the socket's top)
+ * moves a vertex `x` across and `y` along, in the geometry's own units.
+ */
+export interface BinShear {
+  readonly x: number;
+  readonly y: number;
+  readonly pivot: number;
+}
+
+export function binShearSig(shear: BinShear | undefined): string {
+  return shear ? `${shear.x.toFixed(4)},${shear.y.toFixed(4)},${shear.pivot.toFixed(4)}` : '';
+}
+
 interface BinGeometryProps {
   width: number;
   depth: number;
@@ -118,6 +132,7 @@ interface BinGeometryProps {
   baseColor: string;
   /** Interior compartment dividers (from a linked bin-designer design). */
   dividers?: BinDividersSpec;
+  shear?: BinShear;
 }
 
 /**
@@ -131,6 +146,7 @@ export function createBinGeometry({
   height,
   baseColor,
   dividers,
+  shear,
 }: BinGeometryProps): THREE.BufferGeometry {
   const geometry = new THREE.BufferGeometry();
   const positions: number[] = [];
@@ -477,6 +493,15 @@ export function createBinGeometry({
     }
   }
 
+  if (shear) {
+    for (let i = 0; i < positions.length; i += 3) {
+      const rise = positions[i + 2] - shear.pivot;
+      if (rise <= 0) continue;
+      positions[i] += shear.x * rise;
+      positions[i + 1] += shear.y * rise;
+    }
+  }
+
   // Set geometry attributes
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
@@ -496,10 +521,24 @@ export function useBinGeometry({
   height,
   baseColor,
   dividers,
+  shear,
 }: BinGeometryProps): THREE.BufferGeometry {
+  const shearX = shear?.x;
+  const shearY = shear?.y;
+  const shearPivot = shear?.pivot;
   const geometry = useMemo(
-    () => createBinGeometry({ width, depth, height, baseColor, dividers }),
-    [width, depth, height, baseColor, dividers]
+    () =>
+      createBinGeometry({
+        width,
+        depth,
+        height,
+        baseColor,
+        dividers,
+        ...(shearX !== undefined && shearY !== undefined && shearPivot !== undefined
+          ? { shear: { x: shearX, y: shearY, pivot: shearPivot } }
+          : {}),
+      }),
+    [width, depth, height, baseColor, dividers, shearX, shearY, shearPivot]
   );
 
   // Cleanup geometry on dependency change or unmount

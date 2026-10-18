@@ -24,6 +24,7 @@ import { binOverhangSides } from '@/shared/utils/drawerMargin';
 import { effectiveGridUnitMmY } from '@/core/types';
 import type { Bin, Drawer } from '@/core/types';
 import type { CategoryPatternStyle } from './categoryPatterns';
+import { BinSlantExtension } from './BinSlantExtension';
 
 interface BinOverhangExtensionProps {
   bin: Bin;
@@ -71,7 +72,19 @@ export function BinOverhangExtension({
     baseplate,
     linkedId === undefined ? undefined : designKinds.get(linkedId)
   );
-  if (sides.left + sides.right + sides.front + sides.back <= 0) return null;
+  // An overhang keeps a bin upright, so a bin reaches past its footprint one
+  // way or the other, never both.
+  if (sides.left + sides.right + sides.front + sides.back <= 0) {
+    return (
+      <BinSlantExtension
+        bin={bin}
+        cellSize={cellSize}
+        cellSizeY={cellSizeY}
+        gap={gap}
+        color={color}
+      />
+    );
+  }
 
   // One grid unit spans `cellSize + gap` px across and `cellSizeY + gap` down;
   // overhang is a fraction of a unit. The two axes need separate conversions —

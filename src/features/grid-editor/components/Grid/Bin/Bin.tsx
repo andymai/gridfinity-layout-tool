@@ -10,13 +10,14 @@ import { isBinLocked } from '@/shared/utils/binLocation';
 import { formatHeightUnits } from '@/shared/utils/heightUnits';
 import { getRestingStack, getUnevenlySupported } from '@/shared/utils/restingStack';
 import { getSlantIssues } from '@/shared/utils/slantRow';
+import { placedSlant } from '@/shared/utils/placedSlant';
 import { useLinkedRiseKey } from '@/shared/hooks/useLinkedRiseKey';
 import { getCategoryPatternIndex, getCategoryPatternStyle } from './categoryPatterns';
 import { ResizeHandles } from '../ResizeHandles';
 import { calculateBinLayout } from './calculateBinLayout';
 import { calculateBinText } from './calculateBinText';
 import { BinBadge } from './BinBadge';
-import { BinSlantBadge } from './BinSlantBadge';
+import { BinCornerBadges } from './BinCornerBadges';
 import { BinOverhangExtension } from './BinOverhangExtension';
 import { ICON_PATHS, WARNING_ICON } from './binConstants';
 import type { BinProps } from './binPropsAreEqual';
@@ -129,6 +130,7 @@ function BinComponent({
     ).has(bin.id)
   );
   const restingHeight = formatHeightUnits(restingZ);
+  const slantSide = useLayoutStore((s) => (isGhost ? null : placedSlant(bin, s.layout)?.plan.side));
   const slantNeedsAttention = useLayoutStore(
     (state) => !isGhost && getSlantIssues(state.layout, riseKey).has(bin.id)
   );
@@ -399,19 +401,13 @@ function BinComponent({
         </div>
       )}
 
-      {(isLocked || slantNeedsAttention) && showBadges && (
-        <div className="absolute top-0.5 left-0.5 flex items-center gap-0.5 pointer-events-none">
-          {isLocked && (
-            <div title={t('grid.sizeLocked')}>
-              <BinBadge
-                small={useSmallBadges}
-                label={t('grid.sizeLocked')}
-                path={ICON_PATHS.lock}
-              />
-            </div>
-          )}
-          {slantNeedsAttention && <BinSlantBadge small={useSmallBadges} />}
-        </div>
+      {showBadges && (
+        <BinCornerBadges
+          small={useSmallBadges}
+          locked={isLocked}
+          slantSide={slantSide}
+          slantAttention={slantNeedsAttention}
+        />
       )}
 
       {hasMetadata && showBadges && (
