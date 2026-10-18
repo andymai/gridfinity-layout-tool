@@ -1,0 +1,34 @@
+src/shared/utils/cutoutFit.ts
+  s_3ed1b5bc102254::t_08e19fa02cae32 1-56
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.test.ts
+  s_3ed1b5bc102254::t_6a0aef630df3e5 355-356,358
+  s_3ed1b5bc102254::t_2de087d1e08e9e 376-399
+  s_3ed1b5bc102254::t_adfa8d9e81d561 316-354,357,359-375
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_3ed1b5bc102254::t_08e19fa02cae32 93
+src/shared/utils/cutoutFit.test.ts
+  s_3ed1b5bc102254::t_08e19fa02cae32 1-37
+src/features/generation/worker/generators/nestedCutoutOpenings.ts
+  s_3ed1b5bc102254::t_08e19fa02cae32 36-41
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_3ed1b5bc102254::t_56d1b7e04693c5 18,273-279,281-283,294,300-309,314-317,319,321-326,328-356,375-377
+  s_3ed1b5bc102254::t_08e19fa02cae32 16
+  s_3ed1b5bc102254::t_d157345cf2bc51 284-286,288-292,295-299,327
+  s_3ed1b5bc102254::t_2de087d1e08e9e 6,19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dae0c9a7a91d4004d61ea07a3a1f4a0e5805a26c",
+  "prompts": {},
+  "sessions": {
+    "s_3ed1b5bc102254": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f41879-d3ed-4377-a3a8-af4dbd466449",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
