@@ -88,6 +88,16 @@ describe('SlantSection', () => {
     ['it is a base-only tile', { base: { ...DEFAULT_BIN_PARAMS.base, tile: true }, height: 1 }],
     ['a floor fillet rounds its low corner', { interiorFilletMm: 3 }],
     ['a label tab hangs into its top', { label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } }],
+    [
+      'a wall label boss stands in it',
+      {
+        wallLabelSlots: {
+          enabled: true,
+          sides: { front: true, back: false, left: false, right: false },
+          everyCells: 1,
+        },
+      },
+    ],
   ])('drops the fit length when %s', (_, over) => {
     setParams({ slant: { angleDeg: 45, side: 'back' }, ...over });
     render(<SlantSection />);

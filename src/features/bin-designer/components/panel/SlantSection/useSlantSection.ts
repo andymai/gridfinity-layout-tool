@@ -45,14 +45,20 @@ export function useSlantVisible(): boolean {
 
 /**
  * The diagonal only holds while the cavity is an empty parallelogram: a
- * standard bin with walls, nothing filling its low corner (a scoop ramp, a
- * floor fillet) or hanging into its top (a label tab), and every compartment
- * running the full length of the lean axis.
+ * standard bin with walls and nothing in it but compartments that each run
+ * the full length of the lean axis. Anything else standing in the cavity
+ * (a scoop ramp, a floor fillet, a label tab, a wall label boss, an insert,
+ * a cutout pocket) can cross the diagonal, so it hides the read-out.
  */
 function leanIsUnobstructed(params: BinParams, axis: 'x' | 'y'): boolean {
-  const cornerFilled = params.scoop.enabled || (params.interiorFilletMm ?? 0) > 0;
-  if (params.style !== 'standard' || cornerFilled || params.label.enabled) return false;
-  if (isEffectiveTile(params.base)) return false;
+  const occupied =
+    params.scoop.enabled ||
+    (params.interiorFilletMm ?? 0) > 0 ||
+    params.label.enabled ||
+    params.wallLabelSlots?.enabled === true ||
+    params.inserts.length > 0 ||
+    params.cutouts.length > 0;
+  if (params.style !== 'standard' || occupied || isEffectiveTile(params.base)) return false;
   const config = params.compartments;
   for (const id of new Set(config.cells)) {
     const bounds = getCompartmentBounds(config, id);
