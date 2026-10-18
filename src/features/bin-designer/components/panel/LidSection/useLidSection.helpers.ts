@@ -264,15 +264,26 @@ const FIXABLE_IDS_WITHOUT_FILL: ReadonlySet<LidCompatibilityId> = new Set(
   [...FIXABLE_IDS].filter((id) => id !== 'slideFillTooHigh')
 );
 
-/** Would a fill at `topOffset` cut any pocket shallower than the current fill does? */
+/**
+ * Would a fill at `topOffset` cut any pocket shallower than the current fill does?
+ *
+ * Every pocket, mesh imprints included, stops at the fill's height. The
+ * shortfall helper adds what a lean or a wall takes, but answers null for
+ * shapes it does not judge, so it cannot be the only measure.
+ */
 function fillShortensPockets(params: BinParams, topOffset: number): boolean {
   const { innerW, innerD } = cutoutInterior(params);
   const { wallHeight } = binDimensions(params);
-  const reach = (cutout: Cutout, offset: number): number =>
-    cutoutDepthShortfall(cutout, innerW, innerD, wallHeight - offset)?.achievable ??
-    cutout.cutDepth;
+  const reach = (cutout: Cutout, offset: number): number => {
+    const fill = wallHeight - offset;
+    const clipped = cutoutDepthShortfall(cutout, innerW, innerD, fill)?.achievable ?? Infinity;
+    return Math.min(cutout.cutDepth, fill, clipped);
+  };
   return params.cutouts.some(
-    (c) => c.hidden !== true && reach(c, topOffset) < reach(c, params.cutoutConfig.topOffset)
+    (c) =>
+      c.hidden !== true &&
+      c.shape !== 'text' &&
+      reach(c, topOffset) < reach(c, params.cutoutConfig.topOffset) - 1e-6
   );
 }
 

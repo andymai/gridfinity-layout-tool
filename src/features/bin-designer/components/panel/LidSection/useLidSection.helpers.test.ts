@@ -7,7 +7,7 @@ import {
 } from './useLidSection.helpers';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { DEFAULT_LID_SLIDE_CONFIG } from '@/features/bin-designer/types/lid';
-import type { BinParams } from '@/features/bin-designer/types';
+import type { BinParams, Cutout } from '@/features/bin-designer/types';
 import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
 import { DEFAULT_LID_CONFIG, type LidClickRails } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -191,7 +191,7 @@ describe('buildBlockerReason', () => {
 
 describe('fixableIdsFor', () => {
   /** A 1x2x5 solid bin filled to the rim, with one pocket `cutDepth` deep. */
-  const solidWithPocket = (cutDepth: number): BinParams => ({
+  const solidWithPocket = (cutDepth: number, pocket: Partial<Cutout> = {}): BinParams => ({
     ...DEFAULT_BIN_PARAMS,
     width: 1,
     depth: 2,
@@ -211,6 +211,7 @@ describe('fixableIdsFor', () => {
         cornerRadius: 0,
         label: '',
         groupId: null,
+        ...pocket,
       },
     ],
     lid: {
@@ -229,5 +230,14 @@ describe('fixableIdsFor', () => {
     const ids = fixableIdsFor(solidWithPocket(25));
     expect(ids.has('slideFillTooHigh')).toBe(false);
     expect(ids.has('slideFlushNeedsNoLip')).toBe(true);
+  });
+
+  // The shortfall helper does not judge these, but the fill still bounds them.
+  it.each([
+    ['a mesh imprint', { shape: 'mesh' }],
+    ['a pocket hanging off the board', { x: -10 }],
+  ] as const)('withholds the fill fix for %s it would cut short', (_, pocket) => {
+    expect(fixableIdsFor(solidWithPocket(25, pocket)).has('slideFillTooHigh')).toBe(false);
+    expect(fixableIdsFor(solidWithPocket(10, pocket)).has('slideFillTooHigh')).toBe(true);
   });
 });
