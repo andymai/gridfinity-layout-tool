@@ -35,9 +35,9 @@ export type BinSplitFitParams = Pick<
 
 /** A slanted bin is never split: vertical cut planes would cross its leaning body. */
 function leansWhole(params: BinSplitFitParams): boolean {
-  const { slant, base, slide, cutouts } = params;
-  if (!slant || !base || !slide || !cutouts) return false;
-  return resolveSlant({ ...params, slant, base, slide, cutouts }) !== null;
+  const { slant, base, slide, cutouts, style } = params;
+  if (!slant || !base || !slide || !cutouts || !style) return false;
+  return resolveSlant({ ...params, slant, base, slide, cutouts, style }) !== null;
 }
 
 /** One axis of {@link binSplitChunkUnits}. */

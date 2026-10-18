@@ -25,7 +25,7 @@ import {
   createPersistenceSlice,
 } from './slices';
 import type { Set } from './slices/paramSlice/types';
-import { syncLidHeightUnits } from './helpers';
+import { syncLidHeightUnits, syncSlantLip } from './helpers';
 
 export const useDesignerStore = create<DesignerState>()(
   immer((rawSet, get) => {
@@ -33,6 +33,7 @@ export const useDesignerStore = create<DesignerState>()(
       rawSet((state) => {
         fn(state);
         syncLidHeightUnits(state);
+        syncSlantLip(state);
       });
     // Wrapped at composition time (not per call site) so every path that
     // turns a SavedDesign into the current design (including programmatic

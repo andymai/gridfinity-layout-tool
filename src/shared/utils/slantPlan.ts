@@ -15,7 +15,8 @@ import { hasOverhang, resolveOverhang } from './overhang';
  * floor onto the upright socket, whose openings the sheared floor would no
  * longer meet (floor pattern, an open lightweight floor, a spacer). Detachable
  * feet plug vertical pins into blind holes in the floor, which the shear would
- * tilt.
+ * tilt; removable dividers are rectangular parts for slots the shear tilts; and
+ * a raised pull tab stands above the rim, past the extent the bed check reads.
  */
 export type SlantBlocker =
   | 'overhang'
@@ -26,7 +27,9 @@ export type SlantBlocker =
   | 'knifeRest'
   | 'floorPattern'
   | 'openFloor'
-  | 'detachableFeet';
+  | 'detachableFeet'
+  | 'removableDividers'
+  | 'pullTab';
 
 export type SlantInputs = Pick<
   BinParams,
@@ -39,6 +42,8 @@ export type SlantInputs = Pick<
   | 'slide'
   | 'knifeRest'
   | 'floorPattern'
+  | 'style'
+  | 'pullTab'
 >;
 
 export interface SlantPlan {
@@ -64,6 +69,8 @@ export function slantBlocker(params: SlantInputs): SlantBlocker | null {
   const opensFloor = base.spacer || (base.lightweight && base.lightweightMode !== 'underside');
   if (opensFloor && base.style !== 'flat') return 'openFloor';
   if (base.feet === 'detachable' && base.style !== 'flat') return 'detachableFeet';
+  if (params.style === 'slotted') return 'removableDividers';
+  if (params.pullTab?.enabled) return 'pullTab';
   return null;
 }
 

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { DEFAULT_PULL_TAB } from './pullTabPlan';
 import type { BinParams } from '@/shared/types/bin';
 import {
   migrateSlant,
@@ -91,6 +92,8 @@ describe('slantBlocker', () => {
       { base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' } },
       'detachableFeet',
     ],
+    ['removable dividers', { style: 'slotted' }, 'removableDividers'],
+    ['a pull tab', { pullTab: { ...DEFAULT_PULL_TAB, enabled: true } }, 'pullTab'],
   ])('blocks on %s and drops the slant', (_label, overrides, blocker) => {
     const params = { ...slanted, ...overrides };
     expect(slantBlocker(params)).toBe(blocker);

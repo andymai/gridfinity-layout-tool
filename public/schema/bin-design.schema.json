@@ -2067,7 +2067,7 @@
     },
     "SlantConfig": {
       "type": "object",
-      "description": "Leans everything above the floor toward one side while the socket stays upright. A shear: each horizontal section keeps its shape and moves sideways by tan(angleDeg) per mm of rise. Ignored with an overhang, a custom shape, mesh pockets, a tray bottom, slide rails, a knife rest, a floor pattern or an open floor. A slanted bin has no stacking lip and no lid.",
+      "description": "Leans everything above the floor toward one side while the socket stays upright. A shear: each horizontal section keeps its shape and moves sideways by tan(angleDeg) per mm of rise. Ignored with an overhang, a custom shape, mesh pockets, a tray bottom, slide rails, a knife rest, a floor pattern, an open floor, detachable feet, removable dividers or a pull tab. A slanted bin has no stacking lip and no lid, and is never split.",
       "required": ["angleDeg", "side"],
       "properties": {
         "angleDeg": {

@@ -29,6 +29,7 @@ import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { trackToolActivated } from '@/shared/analytics/posthog/conversionEvents';
 import { findAssemblyPart } from '@/features/bin-designer/utils/assemblyTree';
 import { syncedLidHeight } from '@/features/bin-designer/utils/lidHeightUnits';
+import { resolveSlant } from '@/shared/utils/slantPlan';
 
 /**
  * Resolve the parameters a fresh bin starts from.
@@ -87,6 +88,16 @@ export function syncLidHeightUnits(state: Draft<DesignerState>): void {
   if (!synced) return;
   if (state.params.lid.extraHeightMm !== synced.extraHeightMm) {
     state.params.lid.extraHeightMm = synced.extraHeightMm;
+  }
+}
+
+/**
+ * A slanted bin has no stacking lip. Runs after every store write, like the lid
+ * height sync, so an edit that clears a slant's blocker drops the lip too.
+ */
+export function syncSlantLip(state: Draft<DesignerState>): void {
+  if (state.params.base.stackingLip && resolveSlant(state.params) !== null) {
+    state.params.base.stackingLip = false;
   }
 }
 

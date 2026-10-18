@@ -428,3 +428,28 @@ describe('useDesignerStore', () => {
     });
   });
 });
+
+describe('slant and the stacking lip', () => {
+  beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  it('drops the lip once an edit clears the slant blocker', () => {
+    const { setParams } = useDesignerStore.getState();
+    setParams({
+      slide: { ...useDesignerStore.getState().params.slide, enabled: true },
+      slant: { angleDeg: 30, side: 'back' },
+    });
+    expect(useDesignerStore.getState().params.base.stackingLip).toBe(true);
+    setParams({ slide: { ...useDesignerStore.getState().params.slide, enabled: false } });
+    expect(useDesignerStore.getState().params.base.stackingLip).toBe(false);
+  });
+
+  it('keeps the lip off on a slanted bin whatever the lip switch asks', () => {
+    const { setParams, updateBase } = useDesignerStore.getState();
+    setParams({ slant: { angleDeg: 30, side: 'back' } });
+    expect(useDesignerStore.getState().params.base.stackingLip).toBe(false);
+    updateBase({ stackingLip: true });
+    expect(useDesignerStore.getState().params.base.stackingLip).toBe(false);
+  });
+});

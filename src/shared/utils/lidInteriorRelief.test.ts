@@ -55,6 +55,14 @@ describe('interiorReliefActive', () => {
     expect(interiorReliefActive(slideLid('recessed', true))).toBe(true);
   });
 
+  // A slanted bin builds no lid, so a sliding lid's relief would cut travel
+  // space for a plate that never comes, and trim the compartments with it.
+  it('stands down on a slanted bin', () => {
+    const lid = slideLid('flush', false);
+    expect(interiorReliefActive(lid)).toBe(true);
+    expect(interiorReliefActive({ ...lid, slant: { angleDeg: 30, side: 'back' } })).toBe(false);
+  });
+
   it('has nothing to relieve on a base-only tile', () => {
     expect(
       interiorReliefActive(relieved({ base: { ...DEFAULT_BIN_PARAMS.base, tile: true } }))

@@ -25,10 +25,13 @@ import {
   SLIDE_KEEPOUT_CLEARANCE_MM,
   slidePlateTopBelowWallTopMm,
 } from '@/shared/utils/slideLidPlan';
+import { resolveSlant } from './slantPlan';
 
 export function interiorReliefActive(params: BinParams): boolean {
   if (!params.lid.relieveInterior) return false;
   if (!params.lid.enabled) return false;
+  // No lid is built on a slanted bin, so there is no travel to relieve.
+  if (resolveSlant(params)) return false;
   // The ring exists for click rails, which a filled lid never has, and its
   // notches at the divider ends are exactly the leak the fill closes.
   if (lidHasFill(params)) return false;
