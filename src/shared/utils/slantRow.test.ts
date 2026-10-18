@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
 import type { Bin, Layout, SlantConfig } from '@/core/types';
-import { binId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
+import { binId, designId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
+import { registerLinkedSlantResolver } from './placedSlant';
 import { getSlantIssues, matchRowSlants, rowCanMatch, slantIssue, slantRowOf } from './slantRow';
 
 const L1 = layerId('layer1');
@@ -145,6 +146,25 @@ describe('rowCanMatch', () => {
     ]);
     expect(slantIssue(layout.bins[0], layout)).toBe('mismatch');
     expect(rowCanMatch(layout.bins[0], layout)).toBe(false);
+  });
+
+  it('cannot match a neighbour that its design or its overhang keeps upright', () => {
+    registerLinkedSlantResolver(() => ({ blocked: true }));
+    try {
+      const slotted = layoutOf([
+        bin('a', 0, { slant: BACK }),
+        bin('b', 1, { linkedDesignId: designId('slotted') }),
+      ]);
+      expect(slantIssue(slotted.bins[0], slotted)).toBe('mismatch');
+      expect(rowCanMatch(slotted.bins[0], slotted)).toBe(false);
+    } finally {
+      registerLinkedSlantResolver(null);
+    }
+    const held = layoutOf([
+      bin('a', 0, { slant: BACK }),
+      bin('b', 1, { overhang: { left: 0, right: 0, front: 0, back: 5 } }),
+    ]);
+    expect(rowCanMatch(held.bins[0], held)).toBe(false);
   });
 });
 

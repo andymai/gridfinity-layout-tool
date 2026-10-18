@@ -2,7 +2,13 @@ import type { Bin, BinId, Layout, SlantConfig } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { footprintsOverlap, linkedExcessCacheKey } from './collision';
-import { placedSlant, rectPastSide, slantConflicts, type PlacedSlant } from './placedSlant';
+import {
+  placedSlant,
+  rectPastSide,
+  slantConflicts,
+  slantHeldUprightBy,
+  type PlacedSlant,
+} from './placedSlant';
 import type { SlantPlan } from './slantPlan';
 import { insideDrawer } from './validationPlacement';
 
@@ -88,13 +94,18 @@ export function getSlantIssues(
   return issues;
 }
 
-/** Match row settles a mismatch only when every bin leaning differently stands in the bin's row. */
+/**
+ * Match row settles a mismatch only when every bin leaning differently stands
+ * in the bin's row and can take a slant at all.
+ */
 export function rowCanMatch(bin: Bin, layout: Layout): boolean {
   const own = placedSlant(bin, layout);
   if (!own) return false;
   const row = new Set(slantRowOf(bin, own.plan.axis, layout).map((b) => b.id));
   return binsLeanedOver(bin, own, layout).every(
-    (other) => row.has(other.id) || leansAlike(placedSlant(other, layout)?.plan, own.plan)
+    (other) =>
+      leansAlike(placedSlant(other, layout)?.plan, own.plan) ||
+      (row.has(other.id) && slantHeldUprightBy(other, layout) === null)
   );
 }
 
