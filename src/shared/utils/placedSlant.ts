@@ -77,9 +77,16 @@ const otherEdge = (edge: FractionalEdge | undefined): FractionalEdge | undefined
 
 /** The linked design's facts, facing the drawer the way the bin stands. */
 function placementFacts(bin: Bin): LinkedSlantFacts | undefined {
-  const facts =
+  const stored =
     bin.linkedDesignId !== undefined ? linkedSlantResolver?.(bin.linkedDesignId) : undefined;
-  if (facts?.width === undefined || facts.depth === undefined) return facts;
+  if (!stored) return undefined;
+  // The design is built with its own edges, and the generator reads a missing one as 'end'.
+  const facts: LinkedSlantFacts = {
+    ...stored,
+    fractionalEdgeX: stored.fractionalEdgeX ?? 'end',
+    fractionalEdgeY: stored.fractionalEdgeY ?? 'end',
+  };
+  if (facts.width === undefined || facts.depth === undefined) return facts;
   if (!isTurnedPlacement(bin, { width: facts.width, depth: facts.depth })) return facts;
   return {
     ...facts,

@@ -60,51 +60,60 @@ describe('useBinResizedListener', () => {
     unmount();
   });
 
-  it("refuses the resize, before writing the design, when a sibling's support would not fit", async () => {
-    useDesignerStore.setState({ currentDesignId: null });
-    vi.mocked(loadDesign).mockResolvedValue(
-      ok({ id: DESIGN, name: 'Pens', params: { ...DEFAULT_BIN_PARAMS } }) as never
-    );
-    registerLinkedSlantResolver(() => ({
-      config: { angleDeg: 45, side: 'back', endSupport: true },
-      width: 2,
-      depth: 1,
-      height: 6,
-    }));
-    const linked = (id: string, x: number, height: number) =>
-      createTestBin({
-        id: binId(id),
-        x: gridUnits(x),
-        width: gridUnits(2),
-        height: heightUnits(height),
-        linkedDesignId: DESIGN,
+  it.each([
+    ['in storage', null],
+    ['open in the designer', DESIGN],
+  ])(
+    "refuses the resize of a design %s when a sibling's support would not fit",
+    async (_where, open) => {
+      const setParams = vi.fn();
+      useToastStore.setState({ toasts: [] });
+      useDesignerStore.setState({ currentDesignId: open, setParams });
+      vi.mocked(loadDesign).mockResolvedValue(
+        ok({ id: DESIGN, name: 'Pens', params: { ...DEFAULT_BIN_PARAMS } }) as never
+      );
+      registerLinkedSlantResolver(() => ({
+        config: { angleDeg: 45, side: 'back', endSupport: true },
+        width: 2,
+        depth: 1,
+        height: 6,
+      }));
+      const linked = (id: string, x: number, height: number) =>
+        createTestBin({
+          id: binId(id),
+          x: gridUnits(x),
+          width: gridUnits(2),
+          height: heightUnits(height),
+          linkedDesignId: DESIGN,
+        });
+      useLayoutStore.setState({
+        layout: createTestLayout({
+          bins: [
+            linked('bin-7', 0, 12),
+            linked('sibling', 3, 6),
+            createTestBin({
+              id: binId('behind'),
+              x: gridUnits(3),
+              y: gridUnits(2),
+              width: gridUnits(2),
+            }),
+          ],
+        }),
       });
-    useLayoutStore.setState({
-      layout: createTestLayout({
-        bins: [
-          linked('bin-7', 0, 12),
-          linked('sibling', 3, 6),
-          createTestBin({
-            id: binId('behind'),
-            x: gridUnits(3),
-            y: gridUnits(2),
-            width: gridUnits(2),
-          }),
-        ],
-      }),
-    });
-    const { unmount } = renderHook(() => useBinResizedListener());
+      const { unmount } = renderHook(() => useBinResizedListener());
 
-    emitSyncEvent({
-      type: 'bin-resized',
-      binId: binId('bin-7'),
-      linkedDesignId: DESIGN,
-      newDimensions: { width: 2, depth: 1, height: 12 },
-    });
+      emitSyncEvent({
+        type: 'bin-resized',
+        binId: binId('bin-7'),
+        linkedDesignId: DESIGN,
+        newDimensions: { width: 2, depth: 1, height: 12 },
+      });
 
-    await vi.waitFor(() => expect(useToastStore.getState().toasts).toHaveLength(1));
-    expect(updateDesignParams).not.toHaveBeenCalled();
-    registerLinkedSlantResolver(null);
-    unmount();
-  });
+      await vi.waitFor(() => expect(useToastStore.getState().toasts).toHaveLength(1));
+      expect(updateDesignParams).not.toHaveBeenCalled();
+      expect(setParams).not.toHaveBeenCalled();
+      registerLinkedSlantResolver(null);
+      unmount();
+    }
+  );
 });

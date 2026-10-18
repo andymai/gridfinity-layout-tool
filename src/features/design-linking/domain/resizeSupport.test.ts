@@ -44,4 +44,20 @@ describe('resizeBlockedBySupport', () => {
     expect(resizeBlockedBySupport(layout, DESIGN, 6, binId('resized'))).toBeNull();
     expect(resizeBlockedBySupport(layout, DESIGN, 12, binId('sibling'))).toBeNull();
   });
+
+  it('refuses two supports that would grow into each other', () => {
+    registerLinkedSlantResolver(() => ({ width: 2, depth: 1, height: 6 }));
+    const facing = createTestLayout({
+      drawer: { width: gridUnits(8), depth: gridUnits(8), height: heightUnits(20) },
+      bins: [
+        linked('resized', 5),
+        { ...linked('back', 0), slant: BACK },
+        { ...linked('front', 0), y: gridUnits(4), slant: { ...BACK, side: 'front' as const } },
+      ],
+    });
+    expect(resizeBlockedBySupport(facing, DESIGN, 6, binId('resized'))).toBeNull();
+    expect(resizeBlockedBySupport(facing, DESIGN, 12, binId('resized'))).toMatchObject({
+      result: { valid: false, reason: 'collision' },
+    });
+  });
 });

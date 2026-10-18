@@ -78,6 +78,25 @@ export function useBinResizedListener(): void {
       // Skip if already processing this design (prevents concurrent IDB writes)
       if (inFlightDesigns.current.has(linkedDesignId)) return;
 
+      const blocker = resizeBlockedBySupport(
+        layoutRef.current,
+        linkedDesignId,
+        newDimensions.height,
+        binId
+      );
+      if (blocker) {
+        addToastRef.current({
+          message: getPlacementErrorMessage(
+            tRef.current,
+            blocker.result.reason,
+            blocker.result.blockingInfo
+          ),
+          type: 'info',
+          duration: 3000,
+        });
+        return;
+      }
+
       // If the designer is currently open for this design, push dimensions
       // directly into the designer store. This triggers auto-save naturally,
       // which persists to IDB and emits `design-saved` for sibling cascade.
@@ -119,25 +138,6 @@ export function useBinResizedListener(): void {
         if (hasComplexGeometry(design.params)) {
           const reasons = getComplexityReasons(design.params);
           showBlockedResizeDialogRef.current(binId, linkedDesignId, designName, reasons);
-          return;
-        }
-
-        const blocker = resizeBlockedBySupport(
-          layoutRef.current,
-          linkedDesignId,
-          newDimensions.height,
-          binId
-        );
-        if (blocker) {
-          addToastRef.current({
-            message: getPlacementErrorMessage(
-              tRef.current,
-              blocker.result.reason,
-              blocker.result.blockingInfo
-            ),
-            type: 'info',
-            duration: 3000,
-          });
           return;
         }
 

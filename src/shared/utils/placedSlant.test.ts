@@ -97,6 +97,18 @@ describe('placedSlant', () => {
     withFacts({ d1: { extraWallMm: 5 } });
     expect(placedSlant(bin(short), layout)?.support?.depth).toBe(2);
   });
+  it("reads a linked design's missing fractional edge as the generator does", () => {
+    withFacts({ d1: { width: 2, depth: 1.5, height: 6 } });
+    const half = bin({
+      y: gridUnits(0.5),
+      depth: gridUnits(1.5),
+      height: heightUnits(6),
+      linkedDesignId: designId('d1'),
+      slant: BACK_45,
+    });
+    expect(placedSlant(half, layout)?.support?.depth).toBe(1.5);
+  });
+
   // A 2x1 design in a 1x2 footprint stands turned a quarter counterclockwise.
   it("turns a linked design's slant with a turned placement", () => {
     withFacts({ d1: { width: 2, depth: 1, config: BACK_45 } });

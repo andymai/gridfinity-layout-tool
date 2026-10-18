@@ -3,7 +3,7 @@ import { isOk } from '@/core/result';
 import { STAGING_ID } from '@/core/constants';
 import { useLayoutStore } from '@/core/store/layout';
 import type { Bin } from '@/core/types';
-import { designId, gridUnits, layerId } from '@/core/types';
+import { designId, gridUnits, heightUnits, layerId } from '@/core/types';
 import { makeBin, makeLayout } from '@/core/cqrs/v2/domain/bin/_testHelpers';
 
 const leaningBack = (overrides: Partial<Bin> = {}): Bin =>
@@ -52,6 +52,29 @@ describe('duplicateBin', () => {
     });
     expect(copy?.layerId).not.toBe(STAGING_ID);
     expect(copy?.locked).toBeUndefined();
+  });
+});
+
+describe('duplicateBin with clearance', () => {
+  it('skips a slot where the copy, clearance included, would not fit', () => {
+    const L2 = layerId('layer_2');
+    const source = makeBin('bin_1', { height: heightUnits(3), clearanceHeight: heightUnits(2) });
+    const upper = makeBin('upper', { layerId: L2, x: gridUnits(1) });
+    useLayoutStore.setState({
+      layout: makeLayout({
+        layers: [
+          { id: layerId('layer_1'), name: 'Layer 1', height: heightUnits(3) },
+          { id: L2, name: 'Layer 2', height: heightUnits(3) },
+        ],
+        bins: [source, upper],
+      }),
+    });
+
+    const result = useLayoutStore.getState().duplicateBin(source.id);
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    const copy = useLayoutStore.getState().layout.bins.find((b) => b.id === result.value);
+    expect(copy).toMatchObject({ x: 0, y: 1, layerId: 'layer_1' });
   });
 });
 

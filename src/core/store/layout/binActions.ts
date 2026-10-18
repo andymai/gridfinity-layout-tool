@@ -155,17 +155,7 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
 
       for (const { dx, dy } of offsets) {
         const placement = canPlaceBin(
-          {
-            x: (bin.x + dx) as GridUnits,
-            y: (bin.y + dy) as GridUnits,
-            width: bin.width,
-            depth: bin.depth,
-            height: bin.height,
-            linkedDesignId: bin.linkedDesignId,
-            slant: bin.slant,
-            extendToMargin: bin.extendToMargin,
-            overhang: bin.overhang,
-          },
+          copyAt(bin.layerId, (bin.x + dx) as GridUnits, (bin.y + dy) as GridUnits),
           bin.layerId,
           layout
         );
