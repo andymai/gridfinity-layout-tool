@@ -361,6 +361,9 @@ function BinComponent({
         (restingZ > 0 ? t('grid.bin.ariaLabelRestsAt', { height: restingHeight }) : '') +
         (unevenlySupported ? t('grid.bin.ariaLabelUneven') : '') +
         (isLocked ? t('grid.bin.ariaLabelLocked') : '') +
+        (slantSide
+          ? t('grid.bin.ariaLabelSlant', { side: t(`binDesigner.overhang.side.${slantSide}`) })
+          : '') +
         (slantNeedsAttention ? t('grid.bin.ariaLabelSlantIssue') : '')
       }
       aria-pressed={isSelected}

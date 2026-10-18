@@ -20,7 +20,9 @@ export function BinSlantBadge({
   attention: boolean;
 }) {
   const t = useTranslation();
-  const label = attention ? t('grid.bin.slantIssue') : t('binDesigner.slant.title');
+  const label = attention
+    ? t('grid.bin.slantIssue')
+    : t('grid.bin.slantToward', { side: t(`binDesigner.overhang.side.${side}`) });
   return (
     <div
       title={label}

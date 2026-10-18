@@ -13,6 +13,6 @@ describe('BinCornerBadges', () => {
   it('shows the lock and the lean side by side', () => {
     render(<BinCornerBadges small={true} locked={true} slantSide="back" slantAttention={false} />);
     expect(screen.getByLabelText('Size locked')).toBeInTheDocument();
-    expect(screen.getByLabelText('Slant')).toBeInTheDocument();
+    expect(screen.getByLabelText('Slant (Back)')).toBeInTheDocument();
   });
 });

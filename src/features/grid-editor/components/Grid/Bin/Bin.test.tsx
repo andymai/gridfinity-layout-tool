@@ -342,8 +342,9 @@ describe('Bin', () => {
     it('shows only the lean for a row that ends on its support', () => {
       seed([slanted(true)]);
       render(<Bin {...defaultProps} bin={slanted(true)} />);
-      expect(screen.getByLabelText('Slant')).toBeInTheDocument();
+      expect(screen.getByLabelText('Slant (Back)')).toBeInTheDocument();
       expect(screen.queryByLabelText('Slant needs attention')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /slant \(Back\)/ })).toBeInTheDocument();
     });
 
     it('leaves ghost bins unbadged', () => {

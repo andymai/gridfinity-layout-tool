@@ -23,4 +23,13 @@ describe('cornerMarkerPositions', () => {
     expect(upright[5] - upright[2]).toBeCloseTo(-0.12, 6);
     expect(positions.slice(0, 3)).toEqual([2, 3, 0]);
   });
+
+  it('keeps the upright arm of a short bin on its wall below the pivot', () => {
+    const positions = cornerMarkerPositions([
+      { ...box, height: 0.17, shear: { x: 1, y: 0, pivot: 0.11 } },
+    ]);
+    const upright = positions.slice(FIRST_TOP + 12, FIRST_TOP + 18);
+    expect(upright[0]).toBeCloseTo(2 + 0.06, 6);
+    expect(upright[3]).toBeCloseTo(2, 6);
+  });
 });

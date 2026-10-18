@@ -5,8 +5,8 @@ import { BinSlantBadge } from './BinSlantBadge';
 describe('BinSlantBadge', () => {
   it('points the way the bin leans', () => {
     render(<BinSlantBadge small={false} side="right" attention={false} />);
-    expect(screen.getByLabelText('Slant')).toBeInTheDocument();
-    expect(screen.getByTitle('Slant')).toHaveStyle({ transform: 'rotate(90deg)' });
+    expect(screen.getByLabelText('Slant (Right)')).toBeInTheDocument();
+    expect(screen.getByTitle('Slant (Right)')).toHaveStyle({ transform: 'rotate(90deg)' });
   });
 
   it('turns to an upright warning when the row needs attention', () => {

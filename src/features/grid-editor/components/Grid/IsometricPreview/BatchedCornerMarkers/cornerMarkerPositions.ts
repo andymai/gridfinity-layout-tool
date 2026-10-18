@@ -20,7 +20,10 @@ export function cornerMarkerPositions(bins: readonly CornerMarkerBin[]): number[
     const rise = shear ? Math.max(0, height - shear.pivot) : 0;
     const topX = shear ? shear.x * rise : 0;
     const topY = shear ? shear.y * rise : 0;
-    const down = [-(shear?.x ?? 0), -(shear?.y ?? 0), -1];
+    // The arm's lower end shears only by its own rise above the pivot.
+    const armRise = shear ? Math.max(0, height - MARKER_SIZE - shear.pivot) : 0;
+    const back = shear ? (armRise - rise) / MARKER_SIZE : 0;
+    const down = [(shear?.x ?? 0) * back, (shear?.y ?? 0) * back, -1];
 
     // Corner definitions: position relative to bin origin, and 3 direction vectors
     const corners = [
