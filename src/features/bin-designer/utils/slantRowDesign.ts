@@ -4,7 +4,8 @@ import { CONSTRAINTS, isFractional } from '@/core/constants';
 import { normalizeSlant } from '@/shared/utils/slantPlan';
 import type { SlantRowDesignSpec } from '@/shared/utils/slantRowDesign';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
-import { saveDesign } from '../storage';
+import { loadDesign, saveDesign } from '../storage';
+import { DEFAULT_FOOT_LATTICE, type FootLattice } from '../types/base';
 import {
   loadRegistry,
   registryEdgeFields,
@@ -52,12 +53,30 @@ function fitsRow(ref: CustomBinRef, spec: SlantRowDesignSpec): boolean {
  * new plain bin leaning the row's way. Registered at once, since placing the
  * row reads its slant from the registry.
  */
+/** The registry does not record where a design's feet fall, so a candidate's stored base decides. */
+async function seatsRow(id: DesignId, spec: SlantRowDesignSpec): Promise<boolean> {
+  const loaded = await loadDesign(id);
+  const base = isOk(loaded) ? loaded.value.params?.base : undefined;
+  if (!base) return false;
+  const matches = (ours: FootLattice | undefined, wanted: FootLattice | undefined): boolean =>
+    wanted === undefined || (ours ?? DEFAULT_FOOT_LATTICE) === wanted;
+  return (
+    matches(base.footLatticeX, spec.footLatticeX) && matches(base.footLatticeY, spec.footLatticeY)
+  );
+}
+
 export async function ensureSlantRowDesign(spec: SlantRowDesignSpec): Promise<DesignId | null> {
-  const existing = loadRegistry().find((ref) => fitsRow(ref, spec));
-  if (existing) return existing.id;
+  for (const ref of loadRegistry().filter((r) => fitsRow(r, spec))) {
+    if (await seatsRow(ref.id, spec)) return ref.id;
+  }
 
   const params = normalizeSlant({
     ...DEFAULT_BIN_PARAMS,
+    base: {
+      ...DEFAULT_BIN_PARAMS.base,
+      ...(spec.footLatticeX ? { footLatticeX: spec.footLatticeX } : {}),
+      ...(spec.footLatticeY ? { footLatticeY: spec.footLatticeY } : {}),
+    },
     width: spec.width,
     depth: spec.depth,
     height: spec.height,
@@ -75,7 +94,9 @@ export async function ensureSlantRowDesign(spec: SlantRowDesignSpec): Promise<De
     exportFileNameConfig: null,
   });
   if (!isOk(saved)) return null;
-  upsertRegistryEntry({
+  // Placement reads the row's slant from the registry, so a design it cannot
+  // find would leave every bin but the leading one upright.
+  const registered = upsertRegistryEntry({
     id: saved.value.id,
     name: saved.value.name,
     width: params.width,
@@ -88,5 +109,5 @@ export async function ensureSlantRowDesign(spec: SlantRowDesignSpec): Promise<De
     ...registrySlantFields(params),
     updatedAt: saved.value.updatedAt,
   });
-  return saved.value.id;
+  return isOk(registered) ? saved.value.id : null;
 }

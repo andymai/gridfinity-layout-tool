@@ -1,4 +1,5 @@
 import type { DesignId, FractionalEdge, SlantConfig } from '@/core/types';
+import type { FootLattice } from '@/shared/types/bin';
 
 /** The design a slanted row's bins share: the bins' size and height, leaning the row's way. */
 export interface SlantRowDesignSpec {
@@ -13,6 +14,9 @@ export interface SlantRowDesignSpec {
   readonly heightUnitMm: number;
   readonly fractionalEdgeX: FractionalEdge;
   readonly fractionalEdgeY: FractionalEdge;
+  /** Where a whole-unit axis's feet fall for the row's cells; absent on a fractional axis. */
+  readonly footLatticeX?: FootLattice;
+  readonly footLatticeY?: FootLattice;
 }
 
 /** Finds a saved design that matches, or saves a new one; null when none could be saved. */

@@ -4,7 +4,7 @@ import { CONSTRAINTS, snapToGrid } from '@/core/constants';
 import { gridUnits, heightUnits } from '@/core/types';
 import type { BinId, CategoryId, Coord, LayerId, Layout, Rect, SlantConfig } from '@/core/types';
 import type { AddBinParams } from './types';
-import { edgeForPosition } from '@/shared/utils/fractionalEdge';
+import { computeMatchedFootLattice, edgeForPosition } from '@/shared/utils/fractionalEdge';
 import { slantPlanFor } from '@/shared/utils/slantPlan';
 import { planSlantedRows, type SlantedRow } from '@/shared/utils/slantRowFill';
 import { ensureSlantRowDesign } from '@/shared/utils/slantRowDesign';
@@ -26,6 +26,8 @@ export interface PaintSlantedRowsArgs {
   readonly onPlaced: (ids: BinId[]) => void;
   readonly onFailed: (reason: 'noRoom' | 'saveFailed') => void;
   readonly designName: (height: number) => string;
+  /** False once the user has moved on to another layout while the design saved. */
+  readonly stillCurrent: () => boolean;
 }
 
 type PaintGesture = Pick<
@@ -53,8 +55,10 @@ export function slantedPaintArea(args: PaintGesture): Rect {
   }
   const plan = slantPlanFor(args.slant);
   const { width: drawerW, depth: drawerD } = layout.drawer;
-  const from = (at: number, along: number, edge: number): [number, number] =>
-    plan?.sign === -1 ? [0, at + along] : [at, edge - at];
+  const from = (at: number, along: number, edge: number): [number, number] => {
+    const start = Math.max(0, Math.min(at, edge - along));
+    return plan?.sign === -1 ? [0, start + along] : [start, edge - start];
+  };
   const across = (at: number, length: number, edge: number): [number, number] => {
     const centred = snapToGrid(at - (length - minSize) / 2, minSize === 0.5);
     return [Math.max(0, Math.min(centred, edge - length)), length];
@@ -116,11 +120,17 @@ export async function paintSlantedRows(args: PaintSlantedRowsArgs): Promise<void
     heightUnitMm: layout.heightUnitMm,
     fractionalEdgeX: edgeForPosition(first.x, layout.drawer.width, layout.drawer.fractionalEdgeX),
     fractionalEdgeY: edgeForPosition(first.y, layout.drawer.depth, layout.drawer.fractionalEdgeY),
+    ...computeMatchedFootLattice(
+      { width: size.width, depth: size.depth },
+      layout.drawer,
+      rows.flatMap((row) => row.bins)
+    ),
   });
   if (!designId) {
     args.onFailed('saveFailed');
     return;
   }
+  if (!args.stillCurrent()) return;
 
   const leadSlant = { angleDeg: slant.angleDeg, side: slant.side, endSupport: true };
   const placed: BinId[] = [];

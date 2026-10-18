@@ -31,6 +31,7 @@ function run(overrides: Partial<Parameters<typeof paintSlantedRows>[0]> = {}) {
     onPlaced,
     onFailed,
     designName: (height) => `Pens ${String(height)}`,
+    stillCurrent: () => true,
     ...overrides,
   });
   return { promise, addBin, onPlaced, onFailed };
@@ -100,6 +101,24 @@ describe('paintSlantedRows', () => {
   });
 });
 
+describe('paintSlantedRows placement', () => {
+  it('asks for feet on the half lattice for whole-unit bins painted half a unit off', async () => {
+    const designer = vi.fn(async (_spec: SlantRowDesignSpec) => designId('d1'));
+    registerSlantRowDesigner(designer);
+    const { promise } = run({ start: at(0.5, 0), current: at(2, 4), minSize: 0.5 });
+    await promise;
+    expect(designer.mock.calls[0][0]).toMatchObject({ footLatticeX: 'half', footLatticeY: 'grid' });
+  });
+
+  it('places nothing once another layout has been opened while the design saved', async () => {
+    registerSlantRowDesigner(async () => designId('d1'));
+    const { promise, addBin, onPlaced } = run({ stillCurrent: () => false });
+    await promise;
+    expect(addBin).not.toHaveBeenCalled();
+    expect(onPlaced).not.toHaveBeenCalled();
+  });
+});
+
 describe('slantedPaintArea', () => {
   const gesture = { size: { width: 2, depth: 1 }, minSize: 1, layout };
 
@@ -125,6 +144,19 @@ describe('slantedPaintArea', () => {
         current: click,
       })
     ).toEqual({ x: 2, y: 0, width: 2, depth: 3 });
+  });
+
+  it('keeps a click near the far wall inside the drawer along the lean too', () => {
+    const near = at(3, 7);
+    expect(
+      slantedPaintArea({
+        ...gesture,
+        size: { width: 1, depth: 2 },
+        slant: { ...BACK, side: 'front' },
+        start: near,
+        current: near,
+      })
+    ).toEqual({ x: 3, y: 0, width: 1, depth: 8 });
   });
 
   it('keeps a click inside the drawer across the lean, as the upright brush does', () => {

@@ -4,11 +4,15 @@ import { ok } from '@/core/result';
 import { designId } from '@/core/types';
 import type { SlantRowDesignSpec } from '@/shared/utils/slantRowDesign';
 import { loadRegistry, upsertRegistryEntry } from '../store/customBinRegistry';
-import { saveDesign } from '../storage';
+import { loadDesign, saveDesign } from '../storage';
+import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import { ensureSlantRowDesign } from './slantRowDesign';
 
-vi.mock('../storage', () => ({ saveDesign: vi.fn() }));
+vi.mock('../storage', () => ({ saveDesign: vi.fn(), loadDesign: vi.fn() }));
 const mockSave = vi.mocked(saveDesign);
+const mockLoad = vi.mocked(loadDesign);
+const storedWith = (base: Partial<typeof DEFAULT_BIN_PARAMS.base> = {}) =>
+  ok({ params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, ...base } } }) as never;
 
 const spec: SlantRowDesignSpec = {
   name: 'Slanted 2×1×6 · 45°',
@@ -35,6 +39,8 @@ const ref = (id: string, overrides: Record<string, unknown> = {}) => ({
 beforeEach(() => {
   localStorage.clear();
   mockSave.mockReset();
+  mockLoad.mockReset();
+  mockLoad.mockResolvedValue(storedWith());
   mockSave.mockImplementation(async (input) =>
     ok({
       ...input,
@@ -79,6 +85,31 @@ describe('ensureSlantRowDesign', () => {
     expect(params).toMatchObject({ width: 2, depth: 1, height: 6, slant: spec.slant });
     expect(params?.base.stackingLip).toBe(false);
     expect(loadRegistry().find((r) => r.id === 'new')?.slant).toEqual({ config: spec.slant });
+  });
+
+  it('reuses only a design whose feet fall where the row needs them, else saves one that does', async () => {
+    const back45 = { angleDeg: 45, side: 'back' as const };
+    upsertRegistryEntry(ref('gridFeet', { slant: { config: back45 } }));
+    upsertRegistryEntry(ref('halfFeet', { slant: { config: back45 } }));
+    mockLoad.mockImplementation(async (id) =>
+      storedWith(id === 'halfFeet' ? { footLatticeX: 'half' } : {})
+    );
+    expect(await ensureSlantRowDesign({ ...spec, footLatticeX: 'half' })).toBe('halfFeet');
+
+    mockLoad.mockResolvedValue(storedWith());
+    expect(await ensureSlantRowDesign({ ...spec, footLatticeX: 'half' })).toBe('new');
+    expect(mockSave.mock.calls[0][0].params?.base.footLatticeX).toBe('half');
+  });
+
+  it('gives up when the design cannot be registered, which placement reads its slant from', async () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('full', 'QuotaExceededError');
+    });
+    try {
+      expect(await ensureSlantRowDesign(spec)).toBeNull();
+    } finally {
+      setItem.mockRestore();
+    }
   });
 
   it('gives up when the design cannot be saved', async () => {

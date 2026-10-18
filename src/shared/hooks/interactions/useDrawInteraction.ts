@@ -4,6 +4,7 @@ import {
   useInteractionStore,
   useHalfGridModeStore,
   useToastStore,
+  useLibraryStore,
 } from '@/core/store';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useGapFitStore } from '@/core/store/gapFit';
@@ -262,6 +263,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
 
       const rowSlant = interaction.slant;
       if (rowSlant && layer) {
+        const layoutId = useLibraryStore.getState().library.activeLayoutId;
         void paintSlantedRows({
           layout,
           layerId: activeLayerId,
@@ -285,6 +287,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
               message: t(`layers.slantedRow.${reason}`),
               type: reason === 'saveFailed' ? 'error' : 'info',
             }),
+          stillCurrent: () => useLibraryStore.getState().library.activeLayoutId === layoutId,
           designName: (height) =>
             t('layers.slantedRow.designName', {
               size: `${ps.width}×${ps.depth}×${height}`,
