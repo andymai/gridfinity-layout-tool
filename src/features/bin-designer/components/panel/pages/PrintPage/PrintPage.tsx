@@ -6,6 +6,7 @@ import { SplitOptionsSection } from '../../SplitOptionsSection';
 import { useSplitOptionsSection } from '../../SplitOptionsSection/useSplitOptionsSection';
 import { PhysicalUnitsSection } from '../../PhysicalUnitsSection';
 import { SetDefaultFooter } from '../../SetDefaultFooter';
+import { SlantTooLargeNotice } from '../../shared';
 
 /**
  * Print & output: bed fit (always rendered — a passive all-clear when the bin
@@ -27,12 +28,7 @@ export function PrintPage() {
     <div className="divide-y divide-stroke-subtle/50">
       <PanelSection helpTarget="bd-print-fit">
         {slantTooLarge ? (
-          <p className="text-label text-warning">
-            {t('binDesigner.printFit.slantTooLarge', {
-              width: printBedSize.width,
-              depth: printBedSize.depth,
-            })}
-          </p>
+          <SlantTooLargeNotice width={printBedSize.width} depth={printBedSize.depth} />
         ) : needsSplit ? (
           <SplitOptionsSection />
         ) : (

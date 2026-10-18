@@ -46,6 +46,7 @@ import { PhysicalUnitsSection } from '../../panel/PhysicalUnitsSection';
 import { SetDefaultFooter } from '../../panel/SetDefaultFooter';
 import { modifiedGroups, type PanelGroup } from '../groupModified';
 import { GROUP_OF_CONTROL, HELP_SURFACES } from './groupControls';
+import { SlantTooLargeNotice } from '../../panel/shared';
 
 export interface BinScrollPanelProps {
   /** docked = desktop frame (resizable, collapsible); plain = fill the parent. */
@@ -157,12 +158,7 @@ export function BinScrollPanel({
           )}
           {slantTooLarge && (
             <PanelSection helpTarget="bd-print-fit">
-              <p className="text-label text-warning">
-                {t('binDesigner.printFit.slantTooLarge', {
-                  width: printBedSize.width,
-                  depth: printBedSize.depth,
-                })}
-              </p>
+              <SlantTooLargeNotice width={printBedSize.width} depth={printBedSize.depth} />
             </PanelSection>
           )}
         </div>

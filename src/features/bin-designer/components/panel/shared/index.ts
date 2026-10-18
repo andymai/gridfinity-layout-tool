@@ -8,5 +8,6 @@ export { FieldLabel, Hint, LabelInfo, OptionNotes, Readout, SubHeader } from './
 export { ModeTiles, type ModeTileOption } from './ModeTiles';
 export { DependencyHint } from './DependencyHint';
 export { FlatTextClashWarning } from './FlatTextClashWarning';
+export { SlantTooLargeNotice } from './SlantTooLargeNotice';
 export { TextColorControl } from './TextColorControl';
 export { TextFinishGrid } from './TextFinishGrid';
