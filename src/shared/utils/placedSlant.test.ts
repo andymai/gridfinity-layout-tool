@@ -41,7 +41,6 @@ describe('placedSlant', () => {
   });
 
   it('puts the end support on the cells the top leans over', () => {
-    // 45° over 84 - 4.75 mm of body reaches 1.9 cells past the footprint.
     const slant = placedSlant(bin({ x: gridUnits(1), y: gridUnits(2), slant: BACK_45 }), layout);
     expect(slant?.plan.side).toBe('back');
     expect(slant?.support).toEqual({ x: 1, y: 3, width: 2, depth: 2 });
@@ -120,7 +119,6 @@ describe('placedSlant', () => {
     expect(placedSlant(bin(short), layout)?.support?.depth).toBe(2);
   });
   it("sizes a linked support in the design's own units", () => {
-    // 6 units of 10 mm lean 55 mm at 45 degrees, past one 42 mm cell.
     withFacts({ d1: { heightUnitMm: 10 } });
     const linked = { height: heightUnits(6), linkedDesignId: designId('d1'), slant: BACK_45 };
     expect(placedSlant(bin(linked), layout)?.support?.depth).toBe(2);

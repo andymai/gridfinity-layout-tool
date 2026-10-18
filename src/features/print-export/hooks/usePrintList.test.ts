@@ -664,7 +664,6 @@ describe('usePrintList', () => {
   });
   describe('slanted bins', () => {
     const SLANT = { angleDeg: 40, side: 'back' as const };
-    // 4 units fit the 180mm bed, so an upright 6-unit bin splits.
     const wide = (overrides: Partial<Bin> = {}): Bin =>
       createTestBin({ width: gridUnits(6), depth: gridUnits(1), ...overrides });
     const onBed = (bins: Bin[]): Layout => ({ ...createTestLayout(bins), printBedSize: mm(180) });

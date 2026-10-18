@@ -3,11 +3,9 @@ import { isOk } from '@/core/result';
 import { STAGING_ID } from '@/core/constants';
 import { useLayoutStore } from '@/core/store/layout';
 import type { Bin } from '@/core/types';
-import { designId, gridUnits } from '@/core/types';
+import { designId, gridUnits, layerId } from '@/core/types';
 import { makeBin, makeLayout } from '@/core/cqrs/v2/domain/bin/_testHelpers';
 
-// At the back row of a 4-deep drawer, the support of a bin leaning back would
-// stand past the drawer, unless its overhang keeps it upright.
 const leaningBack = (overrides: Partial<Bin> = {}): Bin =>
   makeBin('bin_1', {
     y: gridUnits(3),
@@ -54,5 +52,18 @@ describe('duplicateBin', () => {
     });
     expect(copy?.layerId).not.toBe(STAGING_ID);
     expect(copy?.locked).toBeUndefined();
+  });
+});
+
+describe('moveBinFromStaging', () => {
+  it('checks the bin with the overhang the move keeps', () => {
+    const staged = makeBin('bin_1', {
+      layerId: STAGING_ID,
+      slant: { angleDeg: 40, side: 'front', endSupport: true },
+      overhang: { left: 0, right: 0, front: 5, back: 0 },
+    });
+    useLayoutStore.setState({ layout: makeLayout({ bins: [staged] }) });
+    const moved = useLayoutStore.getState().moveBinFromStaging(staged.id, layerId('layer_1'), 0, 0);
+    expect(isOk(moved)).toBe(true);
   });
 });

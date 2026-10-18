@@ -208,7 +208,13 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
 
       const rect = { x: x as GridUnits, y: y as GridUnits, width: bin.width, depth: bin.depth };
       const validationResult = canPlaceBin(
-        { ...rect, height: layer.height, linkedDesignId: bin.linkedDesignId },
+        // The move keeps the bin's explicit overhang, so the check must too.
+        {
+          ...rect,
+          height: layer.height,
+          linkedDesignId: bin.linkedDesignId,
+          overhang: bin.overhang,
+        },
         layerId,
         layout,
         id

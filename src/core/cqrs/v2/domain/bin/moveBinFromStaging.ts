@@ -72,8 +72,9 @@ export const moveBinFromStaging = defineCommand({
     const y = gridUnits(payload.y);
 
     const rect = { x, y, width: bin.width, depth: bin.depth };
+    // The move keeps the bin's explicit overhang, so the check must too.
     const validationResult = canPlaceBin(
-      { ...rect, height: bin.height },
+      { ...rect, height: bin.height, overhang: bin.overhang },
       layerId,
       ctx.aggregate,
       id

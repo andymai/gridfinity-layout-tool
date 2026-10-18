@@ -35,6 +35,7 @@ vi.mock('@/features/bin-designer/hooks/useCommunityPublish', () => ({
 const upsertRegistryEntry = vi.fn();
 const registryEdgeFields = vi.fn((_params: unknown) => ({}));
 const registryHeightFields = vi.fn((_params: unknown) => ({}));
+const registrySlantFields = vi.fn((_params: unknown): Record<string, unknown> => ({}));
 const registryAssemblyFields = vi.fn((_envelope: unknown, _structure: unknown) => ({
   kind: 'assembly' as const,
   assembledRiseMm: 47,
@@ -48,7 +49,7 @@ vi.mock('@/features/bin-designer/store/customBinRegistry', () => ({
   registryEdgeFields: (params: unknown) => registryEdgeFields(params),
   registryHeightFields: (params: unknown) => registryHeightFields(params),
   registryOverhangFields: () => ({}),
-  registrySlantFields: () => ({}),
+  registrySlantFields: (params: unknown) => registrySlantFields(params),
 }));
 
 import {
@@ -178,6 +179,8 @@ describe('communityDesignerBridge', () => {
       registryEdgeFields.mockReturnValue({});
       registryHeightFields.mockReset();
       registryHeightFields.mockReturnValue({});
+      registrySlantFields.mockReset();
+      registrySlantFields.mockReturnValue({});
       const layout = createDefaultLayout();
       useLayoutStore.setState({ layout });
       useSelectionStore.setState({
@@ -296,6 +299,19 @@ describe('communityDesignerBridge', () => {
 
       const placedBin = useLayoutStore.getState().layout.bins.find((b) => b.id !== 'blocker');
       expect(placedBin).toMatchObject({ x: 0, y: 0, width: 3, depth: 2 });
+    });
+
+    it('turns a leaning design where only the turned placement has room for its support', async () => {
+      registrySlantFields.mockReturnValue({
+        slant: { config: { angleDeg: 45, side: 'front', endSupport: true } },
+      });
+      useGapFitStore.getState().setConstraint(constraintFor());
+
+      await expect(placeCommunityDesignInLayout(design)).resolves.toBe('placed');
+
+      const placedBin = useLayoutStore.getState().layout.bins[0];
+      expect(placedBin).toMatchObject({ x: 0, y: 0, width: 3, depth: 2 });
+      expect(registrySlantFields.mock.calls[0][0]).toMatchObject({ slide: expect.anything() });
     });
 
     it('returns no-fit without saving anything when neither orientation fits', async () => {

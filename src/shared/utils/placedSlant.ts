@@ -103,7 +103,12 @@ function placementFacts(bin: Bin): LinkedSlantFacts | undefined {
  * the design or the bin's own overhang keeps it upright, as the layout export
  * decides.
  */
-export function placedSlant(bin: Bin, layout: SlantLayout): PlacedSlant | null {
+export function placedSlant(
+  bin: Bin,
+  layout: SlantLayout,
+  /** A height the linked design is about to be resized to. */
+  resizedTo?: number
+): PlacedSlant | null {
   const facts = placementFacts(bin);
   if (facts?.blocked) return null;
   const plan = slantPlanFor(bin.slant ?? facts?.config);
@@ -127,7 +132,7 @@ export function placedSlant(bin: Bin, layout: SlantLayout): PlacedSlant | null {
   const span = slantSpanZFor({
     flatBase: facts?.flatBase === true,
     lowProfile: layout.lowProfileBase === true,
-    height: facts?.height ?? bin.height,
+    height: resizedTo ?? facts?.height ?? bin.height,
     heightUnitMm: units.heightUnitMm,
     extraWallHeightMm: facts?.extraWallMm,
   });

@@ -1,4 +1,7 @@
-import type { Bin } from '@/core/types';
+import { produce } from 'immer';
+import { isOk } from '@/core/result';
+import { updateBin } from '@/core/cqrs/v2/domain/bin/updateBin';
+import type { Bin, LayerId, Layout } from '@/core/types';
 import { gridUnits } from '@/core/types';
 import { footprintsOverlap } from '@/shared/utils/collision';
 import { slantZone, type SlantLayout } from '@/shared/utils/placedSlant';
@@ -39,4 +42,32 @@ export function moveOrder(
     ordered.push(next.bin);
   }
   return ordered;
+}
+
+/**
+ * Whether every move of a group lands when applied in `order`, each checked as
+ * `bin.update` checks it, against the layout the moves before it leave.
+ * Nothing rolls a group back once some of it has moved, so a drop that would
+ * stop part way is refused whole.
+ */
+export function groupMoveLands(
+  order: readonly Bin[],
+  deltaX: number,
+  deltaY: number,
+  layerId: LayerId,
+  layout: Layout
+): boolean {
+  let current = layout;
+  for (const bin of order) {
+    const result = updateBin.handle(
+      { id: bin.id, updates: { x: bin.x + deltaX, y: bin.y + deltaY, layerId } },
+      { aggregate: current }
+    );
+    if (!isOk(result)) return false;
+    const { payload } = result.value.event;
+    current = produce(current, (draft) => {
+      updateBin.apply({ type: 'bin.updated', payload }, draft);
+    });
+  }
+  return true;
 }

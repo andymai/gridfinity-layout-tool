@@ -606,7 +606,6 @@ describe('fill and the resting stack', () => {
 });
 
 describe('fill around slanted bins', () => {
-  // 45° over a 6-unit body: the end support takes the row behind the bin.
   const SLANT = { angleDeg: 45, side: 'back' as const, endSupport: true };
   const layout = (bins: Layout['bins']): Layout =>
     baseCreateTestLayout({

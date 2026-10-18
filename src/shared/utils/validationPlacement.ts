@@ -186,7 +186,13 @@ export function canPlaceBin(
   // edit that would clear it.
   const placed = existing !== undefined && existing.layerId !== STAGING_ID ? existing : undefined;
   const priorSlant = placed && placedSlant(placed, layout);
-  const slant = placedSlant(testBin, layout);
+  // Editing a linked bin's height resizes its design to match, so the support
+  // the export will print is sized from the new height.
+  const resizesDesign =
+    existing?.linkedDesignId !== undefined &&
+    testBin.linkedDesignId === existing.linkedDesignId &&
+    rect.height !== existing.height;
+  const slant = placedSlant(testBin, layout, resizesDesign ? rect.height : undefined);
   if (slant?.support) {
     const inside = insideDrawer(slant.support, layout);
     const wasOutside = priorSlant?.support

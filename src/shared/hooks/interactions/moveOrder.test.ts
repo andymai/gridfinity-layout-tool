@@ -3,7 +3,7 @@ import { createTestBin, createTestLayout } from '@/test/testUtils';
 import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
 import type { Bin, Layout } from '@/core/types';
 import { canPlaceBin } from '@/shared/utils/validationPlacement';
-import { moveOrder } from './moveOrder';
+import { groupMoveLands, moveOrder } from './moveOrder';
 
 const layout = createTestLayout({
   drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(20) },
@@ -73,5 +73,29 @@ describe('moveOrder', () => {
     const wide = at('wide', 0, 2, { width: gridUnits(6) });
     const small = at('small', 4, 0, { depth: gridUnits(2), layerId: layerId('layer2') });
     expect(ids(moveOrder([wide, small], 1, 1, layout))).toEqual(['small', 'wide']);
+  });
+});
+
+describe('groupMoveLands', () => {
+  const L1 = layerId('layer1');
+
+  it('lands a group whose order leaves no bin waiting', () => {
+    const wide = at('wide', 0, 2, { width: gridUnits(6) });
+    const small = at('small', 4, 0, { depth: gridUnits(2) });
+    const both = { ...layout, bins: [small, wide] };
+    expect(groupMoveLands(moveOrder([small, wide], 1, 1, both), 1, 1, L1, both)).toBe(true);
+  });
+
+  // The overhang that held the leading bin upright goes with the move, and its
+  // support then lands where the bin beside it has moved.
+  it('refuses a group that would stop part way', () => {
+    const held = at('held', 0, 0, {
+      height: heightUnits(6),
+      slant: { angleDeg: 45, side: 'right', endSupport: true },
+      overhang: { left: 0, right: 5, front: 0, back: 0 },
+    });
+    const beside = at('beside', 1, 0, { height: heightUnits(6) });
+    const both = { ...layout, bins: [held, beside] };
+    expect(groupMoveLands(moveOrder([held, beside], 1, 0, both), 1, 0, L1, both)).toBe(false);
   });
 });

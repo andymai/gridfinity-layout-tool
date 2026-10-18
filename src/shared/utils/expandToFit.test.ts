@@ -163,7 +163,6 @@ describe('resolveExpandToFit — span growth', () => {
 
   it("stops at a slanted neighbour's end support", () => {
     const selected = [bin(0, 0, 2, 4), bin(2, 0, 2, 4)];
-    // Leaning left over a 6-unit body, its support takes the column at x = 5.
     const slanted = bin(6, 0, 1, 4, {
       height: heightUnits(6),
       slant: { angleDeg: 45, side: 'left', endSupport: true },

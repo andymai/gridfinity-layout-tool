@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { canPlaceBin, maxPlaceableHeight } from './validationPlacement';
 import { registerLinkedExcessResolver } from './collision';
+import { registerLinkedSlantResolver } from './placedSlant';
 import { createTestLayout, createTestBin } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
 import type { Bin, HeightUnits, Layout, Rect } from '@/core/types';
@@ -643,7 +644,10 @@ describe('maxPlaceableHeight', () => {
 });
 
 describe('canPlaceBin with slanted bins', () => {
-  // 45° over a 6-unit body reaches 0.9 cells, so the end support takes one row.
+  afterEach(() => {
+    registerLinkedSlantResolver(null);
+  });
+
   const SLANT = { angleDeg: 45, side: 'back' as const, endSupport: true };
   const slanted = (overrides: Partial<Bin> = {}): Bin =>
     createTestBin({
@@ -739,6 +743,25 @@ describe('canPlaceBin with slanted bins', () => {
     expect(canPlaceBin(at(4, 7), LAYER_1, layout, binId('slanted'))).toMatchObject({
       valid: false,
       reason: 'exceeds_depth',
+    });
+  });
+
+  it('sizes a linked support from the height its design is being resized to', () => {
+    registerLinkedSlantResolver(() => ({ width: 2, depth: 1, height: 6 }));
+    const layout = makeSingleLayerLayout();
+    layout.bins = [
+      slanted({ linkedDesignId: designId('d1') }),
+      createTestBin({
+        id: binId('behind'),
+        layerId: LAYER_1,
+        y: gridUnits(2),
+        width: gridUnits(2),
+      }),
+    ];
+    expect(canPlaceBin(at(0, 0), LAYER_1, layout, binId('slanted'))).toEqual({ valid: true });
+    expect(canPlaceBin(at(0, 0, 12), LAYER_1, layout, binId('slanted'))).toMatchObject({
+      valid: false,
+      reason: 'collision',
     });
   });
 
