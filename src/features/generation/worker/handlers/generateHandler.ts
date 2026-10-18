@@ -18,6 +18,7 @@ import { generateLid, generateStackPlate } from '../generators/lidOrchestrator';
 import { generateSlideTray } from '../generators/slideOrchestrator';
 import { generateDetachableFeetMesh } from '../generators/detachableFeetOrchestrator';
 import { generateKnifeRest } from '../generators/knifeRestBuilder';
+import { generateSlantSupport } from '../generators/slantSupportBuilder';
 import { generateLabelPlates } from '../generators/labelPlateGenerator';
 import { collectTextFontFamilies } from '@/shared/utils/textFonts';
 import { ensureFontsLoaded } from '../wasmInstantiator';
@@ -116,6 +117,15 @@ export async function handleGenerate(message: GenerateMessage): Promise<void> {
         console.warn('[BinGen] Knife rest generation failed; skipping rest:', e);
       }
 
+      let slantSupportMesh: MeshData | null = null;
+      try {
+        slantSupportMesh = generateSlantSupport(params, onProgress, false, signal);
+      } catch (e) {
+        if (isAbortError(e)) throw e;
+
+        console.warn('[BinGen] Slant support generation failed; skipping support:', e);
+      }
+
       // Lid generation failed (or is disabled) → bin-only. The label plates
       // and the text warnings below are about the bin, not the lid, so they
       // wrap both branches: a lidless bin must still preview its plates.
@@ -125,6 +135,7 @@ export async function handleGenerate(message: GenerateMessage): Promise<void> {
         ...(slideTrayMesh ? { slideTrayMesh } : {}),
         ...(detachableFeetMesh ? { detachableFeetMesh } : {}),
         ...(knifeRestMesh ? { knifeRestMesh } : {}),
+        ...(slantSupportMesh ? { slantSupportMesh } : {}),
       };
       // Separate stack-grid baseplate (glue-on companion). Same secondary-
       // feature contract as the lid: a build failure degrades to lid+bin, but

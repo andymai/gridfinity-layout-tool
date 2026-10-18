@@ -127,7 +127,7 @@ function pieceZone(label: string): ColorZone | null {
   // colour rather than falling through to the default material. The knife
   // block's handle rest has no zone of its own and stands on the same
   // baseplate, so it takes Base too rather than the default material.
-  if (label === 'feet' || label === 'knife-rest') return 'base';
+  if (label === 'feet' || label === 'knife-rest' || label === 'slant-support') return 'base';
   return null;
 }
 
@@ -143,7 +143,8 @@ function isSideLaidOutPiece(label: string): boolean {
     label === 'lid-baseplate' ||
     label === 'slide-tray' ||
     label === 'feet' ||
-    label === 'knife-rest'
+    label === 'knife-rest' ||
+    label === 'slant-support'
   );
 }
 

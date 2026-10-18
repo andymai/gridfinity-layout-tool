@@ -65,6 +65,8 @@ export interface GenerationResult {
    * companion block. One part in one colour, so no face groups.
    */
   readonly knifeRestMesh?: StackPlateMeshData;
+  /** Optional end support for a slanted bin. One part in one colour, so no face groups. */
+  readonly slantSupportMesh?: StackPlateMeshData;
   /** Optional sliding-tray mesh — the companion part that rides the bin's rail. */
   readonly slideTrayMesh?: SlideTrayMeshData;
   /** Swappable label plates with their seated poses (socket mode, preview only). */

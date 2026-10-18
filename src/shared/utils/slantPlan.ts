@@ -161,3 +161,40 @@ export function slantedBinFitsBed(
   const d = params.depth * pitchY - 0.5 + (slant.axis === 'y' ? offset : 0);
   return (w <= bedWidthMm && d <= bedDepthMm) || (w <= bedDepthMm && d <= bedWidthMm);
 }
+
+/** Clearance between the leaning wall and the support's slope, measured square to the slope. */
+export const SLANT_SUPPORT_GAP_MM = 0.5;
+
+export interface SlantSupportPlan {
+  readonly slant: SlantPlan;
+  readonly pivotZ: number;
+  readonly topZ: number;
+  readonly topOffsetMm: number;
+  /** Footprint along the slant axis, in grid units (half-unit steps). */
+  readonly lengthU: number;
+  /** Footprint across the slant: the bin's own, in grid units. */
+  readonly widthU: number;
+}
+
+/**
+ * The wedge a row's last bin rests on: the cells past its footprint, long
+ * enough that the leaning top edge still lands on it.
+ */
+export function planSlantSupport(params: SlantExtentInputs): SlantSupportPlan | null {
+  const slant = resolveSlant(params);
+  if (!slant?.endSupport) return null;
+  const { pivotZ, topZ } = slantSpanZ(params);
+  if (topZ <= pivotZ) return null;
+  const topOffsetMm = slant.k * (topZ - pivotZ);
+  const pitch = slant.axis === 'x' ? params.gridUnitMm : (params.gridUnitMmY ?? params.gridUnitMm);
+  const reachMm = topOffsetMm + SLANT_SUPPORT_GAP_MM * Math.hypot(1, slant.k);
+  const lengthU = Math.max(0.5, Math.ceil((2 * reachMm) / pitch - 1e-9) / 2);
+  return {
+    slant,
+    pivotZ,
+    topZ,
+    topOffsetMm,
+    lengthU,
+    widthU: slant.axis === 'x' ? params.depth : params.width,
+  };
+}

@@ -20,6 +20,8 @@ export function formatPieceDisplayName(
       return `Feet ${dims}`;
     case 'knife-rest':
       return `Handle Rest ${dims}`;
+    case 'slant-support':
+      return `End Support ${dims}`;
     case 'divider-horizontal':
       return 'Divider Horizontal';
     case 'divider-vertical':

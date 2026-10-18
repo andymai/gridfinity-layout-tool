@@ -56,6 +56,8 @@ import {
   classifyExportError,
   extractExportTransferBuffers,
 } from './workerContext';
+import { buildPlacedSlantSupport, exportSlantSupport } from '../generators/slantSupportBuilder';
+import { planSlantSupport } from '@/shared/utils/slantPlan';
 
 export async function handleExport(message: ExportMessage): Promise<void> {
   const payload = message.payload;
@@ -314,8 +316,9 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
       // so it belongs in this gate for the same reason the feet do — without it
       // the block takes the bin-only return and the rest never ships.
       const hasKnifeRest = shouldGenerateKnifeRest(params);
+      const slantSupportPlan = planSlantSupport(params);
 
-      if (!hasDividers && !hasLid && !hasFeet && !hasKnifeRest) {
+      if (!hasDividers && !hasLid && !hasFeet && !hasKnifeRest && !slantSupportPlan) {
         reportProgress(requestId, 'merge', 1);
         return {
           pieces: [{ data: binResult.data, label: 'bin' }] as CombinedExportPiece[],
@@ -366,6 +369,9 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         // would sit inside the block it stands next to.
         const restPlan = hasKnifeRest ? planKnifeRest(params) : null;
         let restSolid = restPlan ? buildKnifeRestSolid(params, restPlan, true) : null;
+        const supportSolid = slantSupportPlan
+          ? buildPlacedSlantSupport(params, slantSupportPlan, true)
+          : null;
         try {
           if (lidSolid) {
             const positioned = translate(lidSolid, [0, 0, lidZ]);
@@ -390,6 +396,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
             ...(stackPlateSolid ? [stackPlateSolid] : []),
             ...feetSolids,
             ...(restSolid ? [restSolid] : []),
+            ...(supportSolid ? [supportSolid] : []),
           ]);
           const blob = unwrap(exportSTEP(assembly));
 
@@ -406,6 +413,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
           lidSolid?.delete();
           stackPlateSolid?.delete();
           restSolid?.delete();
+          supportSolid?.delete();
         }
       }
 
@@ -457,6 +465,11 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
       const restExport = await exportKnifeRest(params, format, tolerance, angularTolerance);
       if (restExport) {
         pieces.push({ data: restExport.data, label: 'knife-rest' });
+      }
+
+      const supportExport = await exportSlantSupport(params, format, tolerance, angularTolerance);
+      if (supportExport) {
+        pieces.push({ data: supportExport.data, label: 'slant-support' });
       }
 
       reportProgress(requestId, 'merge', 1);

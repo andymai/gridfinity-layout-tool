@@ -4,6 +4,7 @@ export { StackPlateMesh } from './StackPlateMesh';
 export { SlideTrayMesh } from './SlideTrayMesh';
 export { DetachableFeetMesh } from './DetachableFeetMesh';
 export { KnifeRestMesh } from './KnifeRestMesh';
+export { SlantSupportMesh } from './SlantSupportMesh';
 export { FeetDetachSlider } from './FeetDetachSlider';
 export { LabelPlateMeshes } from './LabelPlateMeshes';
 export { LidGuideLine } from './LidGuideLine';

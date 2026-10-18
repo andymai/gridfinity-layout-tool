@@ -29,6 +29,7 @@ import {
   SlideTrayMesh,
   DetachableFeetMesh,
   KnifeRestMesh,
+  SlantSupportMesh,
   LabelPlateMeshes,
   LidGuideLine,
   LidExplodeSlider,
@@ -550,6 +551,7 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 wireframe={wireframe}
                 xray={xray}
               />
+              <SlantSupportMesh color={previewColor} wireframe={wireframe} xray={xray} />
               {/* Swappable label plates (socket mode): seated in their sockets
                 and again in a reference row beside the bin. Shares the explode
                 slider — it withdraws the seated ones, the row stays put. */}

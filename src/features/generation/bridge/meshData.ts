@@ -33,6 +33,8 @@ export interface MeshData {
    * an integrated rest is a shelf carved out of the bin itself.
    */
   readonly knifeRestMesh?: MeshData;
+  /** Optional end support for a slanted bin, meshed where it stands beside the bin. */
+  readonly slantSupportMesh?: MeshData;
   /**
    * Optional seated snap-clip connector mesh — the exact relieved part the
    * baseplate ships, so the preview can render it instead of an approximation.

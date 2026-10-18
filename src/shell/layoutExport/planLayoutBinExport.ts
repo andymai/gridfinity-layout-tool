@@ -44,6 +44,7 @@ import {
 } from '@/shared/printSettings/standardBinVolume';
 import { dedupeFileNames } from './dedupeFileNames';
 import type { ManifestBinEntry, ManifestSkipped } from './buildLayoutManifest';
+import { planSlantSupport } from '@/shared/utils/slantPlan';
 
 /** A linked design id resolved against storage; `design` is null when it failed to load. */
 export interface LoadedDesign {
@@ -143,6 +144,7 @@ function binCompanions(params: BinParams): string[] {
   // Same for a knife block's handle rest: a second solid the body-only path
   // cannot produce.
   if (shouldGenerateKnifeRest(params)) companions.push('knife-rest');
+  if (planSlantSupport(params)) companions.push('slant-support');
   if (params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled)) {
     companions.push('dividers');
   }

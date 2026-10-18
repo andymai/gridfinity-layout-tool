@@ -5,6 +5,7 @@ import type { BinParams } from '@/shared/types/bin';
 import {
   migrateSlant,
   normalizeSlant,
+  planSlantSupport,
   resolveSlant,
   slantBlocker,
   slantedBinFitsBed,
@@ -186,5 +187,33 @@ describe('slant extent', () => {
     expect(slantedBinFitsBed(leaning, 256)).toBe(false);
     expect(slantedBinFitsBed(leaning, 300, 256)).toBe(true);
     expect(slantedBinFitsBed(leaning, 256, 300)).toBe(true);
+  });
+});
+
+describe('slant support plan', () => {
+  const tall: BinParams = { ...DEFAULT_BIN_PARAMS, width: 1, depth: 2, height: 6 };
+
+  it('sizes the support to reach past the leaning top in half-unit steps', () => {
+    const plan = planSlantSupport({
+      ...tall,
+      slant: { angleDeg: 45, side: 'back', endSupport: true },
+    });
+    expect(plan).toMatchObject({ lengthU: 1, widthU: 1, pivotZ: 4.75, topZ: 42 });
+    const steep = planSlantSupport({
+      ...tall,
+      slant: { angleDeg: 60, side: 'left', endSupport: true },
+    });
+    // 37.25 * tan 60 = 64.5mm plus the gap: past 1.5 units, so 2.
+    expect(steep).toMatchObject({ lengthU: 2, widthU: 2 });
+  });
+
+  it('is null without the end support or while blocked', () => {
+    expect(planSlantSupport({ ...tall, slant: { angleDeg: 45, side: 'back' } })).toBeNull();
+    const blocked = {
+      ...tall,
+      slide: { ...tall.slide, enabled: true },
+      slant: { angleDeg: 45, side: 'back' as const, endSupport: true },
+    };
+    expect(planSlantSupport(blocked)).toBeNull();
   });
 });
