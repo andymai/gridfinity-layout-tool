@@ -21,6 +21,7 @@ import { openSideChannelOutline } from '@/shared/utils/cutoutOpenSides';
 import type { OpenSideChannel } from '@/shared/utils/cutoutOpenSides';
 import type { CrossSection, Manifold, ManifoldToplevel, Vec2, Vec3 } from 'manifold-3d';
 import type { BinParams, Cutout } from '@/shared/types/bin';
+import { isSlideLid, shouldGenerateLid, slideLidPlanForParams } from '@/shared/types/bin';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import type { BinDimensions } from './pipeline/types';
 
@@ -97,6 +98,12 @@ export interface ImprintFrame {
   readonly wallThickness: number;
   /** World Z an open-top channel is cut up to: above the rim, collar and lip. */
   readonly breachTopZ: number;
+  /**
+   * World Z a pocket's cutter stops at, under a sliding lid's channel. Imprints
+   * subtract after the channel is fused, so a cutter rising past the fill near
+   * a channel wall would take the shelf, retainer or lining with it.
+   */
+  readonly ceilingZ?: number;
 }
 
 export interface Bounds2D {
@@ -110,13 +117,21 @@ export function frameFromDimensions(
   params: BinParams,
   dims: Pick<
     BinDimensions,
-    'innerW' | 'innerD' | 'wallHeight' | 'innerOffsetX' | 'innerOffsetY' | 'baseOffsetZ'
+    | 'innerW'
+    | 'innerD'
+    | 'wallHeight'
+    | 'innerOffsetX'
+    | 'innerOffsetY'
+    | 'baseOffsetZ'
+    | 'wallTopZ'
   >
 ): ImprintFrame {
+  const solidTopZ = dims.baseOffsetZ + dims.wallHeight - params.cutoutConfig.topOffset;
   return {
     originX: -dims.innerW / 2 + dims.innerOffsetX,
     originY: -dims.innerD / 2 + dims.innerOffsetY,
-    solidTopZ: dims.baseOffsetZ + dims.wallHeight - params.cutoutConfig.topOffset,
+    solidTopZ,
+    ceilingZ: slideChannelCeilingZ(params, dims.wallTopZ, solidTopZ),
     innerW: dims.innerW,
     innerD: dims.innerD,
     wallThickness: params.wallThickness,
@@ -127,6 +142,30 @@ export function frameFromDimensions(
       LIP_HEIGHT +
       CUT_RIM_CLEARANCE,
   };
+}
+
+/** Least a capped cutter still rises past the fill, so the pocket stays open. */
+const CEILING_MIN_RISE_MM = 0.05;
+
+function slideChannelCeilingZ(
+  params: BinParams,
+  wallTopZ: number,
+  solidTopZ: number
+): number | undefined {
+  if (!isSlideLid(params.lid) || !shouldGenerateLid(params)) return undefined;
+  const { geometry } = slideLidPlanForParams(params);
+  if (!geometry) return undefined;
+  // Canonical z, 0 at the plate's top: the bars' sections, and the lining's
+  // chamfer back to the wall.
+  const barBottom = Math.min(
+    ...[...geometry.bars, ...geometry.entryBars].flatMap((bar) => bar.section.map(([, z]) => z))
+  );
+  const lining = geometry.wallLining;
+  const liningBottom = lining
+    ? lining.zMin - (lining.channelInsetMm - lining.cavityInsetMm)
+    : Infinity;
+  const plateTopZ = wallTopZ - geometry.plateTopBelowWallTopMm;
+  return Math.max(plateTopZ + Math.min(barBottom, liningBottom), solidTopZ + CEILING_MIN_RISE_MM);
 }
 
 /**
@@ -469,6 +508,9 @@ export function buildInstanceTool(
     }
 
     const union = parts.length === 1 ? parts[0] : track(module.Manifold.union(parts));
+    // Keeps z <= ceiling. The trim is a new manifold, so it is already detached
+    // from scratch disposal.
+    if (frame.ceilingZ !== undefined) return union.trimByPlane([0, 0, -1], -frame.ceilingZ);
     // Detach the result from scratch disposal.
     return union.translate([0, 0, 0]);
   } finally {

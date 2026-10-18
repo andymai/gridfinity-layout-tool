@@ -234,7 +234,7 @@ describe('fixableIdsFor', () => {
 
   // The fix lowers the fill to 21.75mm. A mesh imprint is bounded from the
   // print's bottom, so it can reach the socket and keeps 26.5mm.
-  it.each([
+  it.each<[string, Partial<Cutout>, number, number]>([
     ['a mesh imprint', { shape: 'mesh' }, 28, 25],
     ['a pocket hanging off the board', { x: -10 }, 25, 10],
     // A 45° lean tips the far end of a 40mm-long floor 14.1mm lower: 20mm
@@ -247,6 +247,24 @@ describe('fixableIdsFor', () => {
       { shape: 'circle', clearance: 2, leanDeg: 45 },
       20.5,
       18,
+    ],
+    // A path is offset by its clearance on every edge: 19mm drawn reaches
+    // 21.2mm on a 22mm profile, 21.9mm on the 24mm one the worker cuts.
+    [
+      'a leaned path with insertion clearance',
+      {
+        shape: 'path',
+        clearance: 2,
+        leanDeg: 45,
+        path: [
+          { x: 5, y: 25, handleIn: null, handleOut: null, symmetric: false },
+          { x: 25, y: 25, handleIn: null, handleOut: null, symmetric: false },
+          { x: 25, y: 45, handleIn: null, handleOut: null, symmetric: false },
+          { x: 5, y: 45, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      },
+      19,
+      16,
     ],
     // Every copy is clamped to the fill at its drawn depth, whatever the lean:
     // these 10mm copies tip only to 21.2mm, inside the lowered fill, but 25mm
@@ -272,7 +290,7 @@ describe('fixableIdsFor', () => {
       25,
       15,
     ],
-  ] as const)('withholds the fill fix only when it would cut %s short', (_, pocket, deep, kept) => {
+  ])('withholds the fill fix only when it would cut %s short', (_, pocket, deep, kept) => {
     expect(fixableIdsFor(solidWithPocket(deep, pocket)).has('slideFillTooHigh')).toBe(false);
     expect(fixableIdsFor(solidWithPocket(kept, pocket)).has('slideFillTooHigh')).toBe(true);
   });

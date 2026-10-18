@@ -219,7 +219,14 @@ export interface ImprintOptions {
 
 type ImprintDims = Pick<
   BinDimensions,
-  'innerW' | 'innerD' | 'wallHeight' | 'innerOffsetX' | 'innerOffsetY' | 'baseOffsetZ' | 'solid'
+  | 'innerW'
+  | 'innerD'
+  | 'wallHeight'
+  | 'innerOffsetX'
+  | 'innerOffsetY'
+  | 'baseOffsetZ'
+  | 'solid'
+  | 'wallTopZ'
 >;
 
 /**

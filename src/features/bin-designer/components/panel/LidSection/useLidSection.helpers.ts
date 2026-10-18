@@ -269,11 +269,13 @@ const FIXABLE_IDS_WITHOUT_FILL: ReadonlySet<LidCompatibilityId> = new Set(
 /**
  * Fill height a pocket needs to keep its depth. The worker clamps the drawn
  * depth to the fill whatever the lean, and a lean tilts the floor about local X,
- * tipping one end of the cleared profile's local depth lower still.
+ * tipping one end of the cleared profile's local depth lower still. A path's
+ * outline is offset by its clearance on every edge, so it grows by twice that.
  */
 function pocketReachMm(cutout: Cutout): number {
   const lean = (resolveCutoutLeanDeg(cutout) * Math.PI) / 180;
-  const halfSpan = clearedProfile(cutout).d / 2;
+  const { clearance, d } = clearedProfile(cutout);
+  const halfSpan = (cutout.shape === 'path' ? cutout.depth + 2 * clearance : d) / 2;
   const tipped = cutout.cutDepth * Math.cos(lean) + halfSpan * Math.abs(Math.sin(lean));
   return Math.max(cutout.cutDepth, tipped);
 }
