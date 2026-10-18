@@ -1,0 +1,29 @@
+src/features/bin-designer/components/preview/SlantSupportMesh/SlantSupportMesh.test.tsx
+  s_078fc63cde22ff::t_621f378e56db7c 14-15
+src/shared/utils/slantPlan.ts
+  s_078fc63cde22ff::t_3f14007a0cc3c9 125-126,175,179-185,199-208,216-217
+src/features/generation/worker/generators/slantSupportBuilder.ts
+  s_078fc63cde22ff::t_3f14007a0cc3c9 119,126-128,142,144
+  s_078fc63cde22ff::t_7c7aa9fd686def 38,66-79,120
+src/features/generation/worker/generators/slantSupport.scenario.test.ts
+  s_078fc63cde22ff::t_bcbbccb05a8a47 12-16,138
+  s_078fc63cde22ff::t_7c7aa9fd686def 101,137,139-166
+  s_078fc63cde22ff::t_0e5ede0d558afd 168-188
+  s_078fc63cde22ff::t_1aa99f4b71332b 167
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "69d1ebe6a5df111c8fcf6128ac01a7e80eef5284",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
