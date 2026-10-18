@@ -9,7 +9,7 @@ const { fakeAdapter } = vi.hoisted(() => ({
     saveDesign: vi.fn(),
     upsertRegistryEntry: vi.fn(),
     registryEdgeFields: vi.fn(),
-    registrySlantFields: vi.fn(),
+    registryPlacementFields: vi.fn(),
   },
 }));
 

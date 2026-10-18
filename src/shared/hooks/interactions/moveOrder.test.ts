@@ -19,7 +19,8 @@ function movedInTurn(order: Bin[], dx: number, dy: number, start: Layout): numbe
   let current = start;
   let moved = 0;
   for (const bin of order) {
-    const to = { ...bin, x: gridUnits(bin.x + dx), y: gridUnits(bin.y + dy) };
+    const { overhang: _dropped, ...rest } = bin;
+    const to = { ...rest, x: gridUnits(bin.x + dx), y: gridUnits(bin.y + dy) };
     if (!canPlaceBin(to, bin.layerId, current, bin.id).valid) continue;
     current = { ...current, bins: current.bins.map((b) => (b.id === bin.id ? to : b)) };
     moved++;
@@ -54,6 +55,18 @@ describe('moveOrder', () => {
     const both = { ...layout, bins: [leaning, tall] };
     expect(movedInTurn(moveOrder([leaning, tall], 1, 1, both), 1, 1, both)).toBe(2);
     expect(movedInTurn([leaning, tall], 1, 1, both)).toBe(1);
+  });
+
+  it('counts the support of a bin whose overhang, dropped by the move, held it upright', () => {
+    const held = at('held', 3, 3, {
+      height: heightUnits(6),
+      slant: { angleDeg: 45, side: 'right', endSupport: true },
+      overhang: { left: 0, right: 5, front: 0, back: 0 },
+    });
+    const tall = at('tall', 5, 0, { depth: gridUnits(5) });
+    const both = { ...layout, bins: [held, tall] };
+    expect(ids(moveOrder([held, tall], 1, 1, both))).toEqual(['tall', 'held']);
+    expect(movedInTurn(moveOrder([held, tall], 1, 1, both), 1, 1, both)).toBe(2);
   });
 
   it('ignores a bin on another layer unless one of them leans', () => {

@@ -27,6 +27,7 @@ import { hasOverhang, resolveOverhang } from '@/shared/utils/overhang';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { BinParams, SavedDesign } from '../types';
 import { isSocketlessBase } from '../types/base';
+import { migrateParams } from '../constants/paramMigration';
 import { designFootprint } from '../utils/designKind';
 
 const REGISTRY_KEY = 'gridfinity-custom-bins-v1';
@@ -565,20 +566,31 @@ function withCarriedFields(next: CustomBinRef, prev: CustomBinRef): CustomBinRef
 }
 
 /**
- * Refresh one entry's slant facts from its design's params, for a writer that
- * holds the params but none of the entry's other fields, such as a sync pull.
- * The facts reserve layout cells, so they cannot wait for the designer to
- * write the entry again. A design the registry does not know stays out of it.
+ * Refresh one entry's slant facts, and every field that sizes its end
+ * support, from its design's params, for a writer that holds the params but
+ * none of the entry's other fields, such as a sync pull. The support reserves
+ * layout cells, so these cannot wait for the designer to write the entry
+ * again. The params may be stored ones from before a field existed. A design
+ * the registry does not know stays out of it.
  */
-export function refreshRegistrySlant(id: string, params: BinParams): Result<void, StorageError> {
+export function refreshRegistrySlant(id: string, stored: BinParams): Result<void, StorageError> {
   const refs = loadRegistry();
   if (!refs.some((r) => r.id === id)) return ok(undefined);
+  const params = migrateParams(stored);
   const { slant } = registrySlantFields(params);
   const result = saveRegistry(
     refs.map((r) => {
       if (r.id !== id) return r;
-      const { slant: _stale, ...rest } = r;
-      return slant ? { ...rest, slant } : rest;
+      const { slant: _stale, lowProfileRiseDeltaMm: _staleDelta, ...rest } = r;
+      return {
+        ...rest,
+        width: params.width,
+        depth: params.depth,
+        height: params.height,
+        ...registryEdgeFields(params),
+        ...registryHeightFields(params),
+        ...(slant ? { slant } : {}),
+      };
     })
   );
   notifySubscribers();

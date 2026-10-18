@@ -56,7 +56,7 @@ const fakePort: DesignStorePort = {
   saveDesign: (...args: unknown[]) => mockSaveDesign(...args),
   upsertRegistryEntry: (...args: unknown[]) => mockUpsertRegistryEntry(...args),
   registryEdgeFields: async () => ({}),
-  registrySlantFields: async () => ({}),
+  registryPlacementFields: async () => ({}),
 };
 
 function expectImportError(result: Result<unknown, ValidationError>): ValidationImportError {
@@ -1192,17 +1192,22 @@ describe('storage-share', () => {
     });
 
     // The layout reserves a slanted design's end support from these facts.
-    it("registers a design's slant facts with it", async () => {
+    it('registers how a design stands and leans with it', async () => {
       mockSaveDesign.mockResolvedValue(savedAs('design_shared_deadbeef'));
       const slant = { config: { angleDeg: 45, side: 'back' as const, endSupport: true } };
-      const port: DesignStorePort = { ...fakePort, registrySlantFields: async () => ({ slant }) };
+      const port: DesignStorePort = {
+        ...fakePort,
+        registryPlacementFields: async () => ({ slant, socketless: true }),
+      };
       registerDesignStorePort(port);
 
       await restoreSharedDesigns(SHARE_ID, layoutLinkedTo('remote-design-1'), [
         { id: 'remote-design-1', name: 'Pens', params: { ...DEFAULT_BIN_PARAMS } },
       ]);
 
-      expect(mockUpsertRegistryEntry).toHaveBeenCalledWith(expect.objectContaining({ slant }));
+      expect(mockUpsertRegistryEntry).toHaveBeenCalledWith(
+        expect.objectContaining({ slant, socketless: true })
+      );
       registerDesignStorePort(fakePort);
     });
 

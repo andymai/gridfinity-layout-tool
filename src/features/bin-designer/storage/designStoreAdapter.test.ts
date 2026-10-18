@@ -126,3 +126,18 @@ describe('designStoreAdapter.loadDesign', () => {
     expect((loaded.params as SavedDesign['params'])?.meshAssets).toEqual({ m1: ref });
   });
 });
+
+describe('designStoreAdapter.registryPlacementFields', () => {
+  it('reads params stored before newer fields existed, base and slant both', async () => {
+    const { slide: _slide, ...legacy } = {
+      ...DEFAULT_BIN_PARAMS,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' as const },
+      slant: { angleDeg: 45, side: 'back' as const, endSupport: true },
+    };
+
+    const fields = await designStoreAdapter.registryPlacementFields(legacy);
+
+    expect(fields.socketless).toBe(true);
+    expect(fields.slant?.config).toEqual({ angleDeg: 45, side: 'back', endSupport: true });
+  });
+});

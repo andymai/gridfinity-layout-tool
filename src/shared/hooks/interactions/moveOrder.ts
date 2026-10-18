@@ -19,11 +19,12 @@ export function moveOrder(
   const along = (bin: Bin): number => bin.x * deltaX + bin.y * deltaY;
   const remaining = [...bins]
     .sort((a, b) => along(b) - along(a))
-    .map((bin) => ({
-      bin,
-      from: slantZone(bin, layout),
-      to: slantZone({ ...bin, x: gridUnits(bin.x + deltaX), y: gridUnits(bin.y + deltaY) }, layout),
-    }));
+    .map((bin) => {
+      // A move drops an explicit overhang, which may be all that held the bin upright.
+      const { overhang: _dropped, ...moved } = bin;
+      const to = { ...moved, x: gridUnits(bin.x + deltaX), y: gridUnits(bin.y + deltaY) };
+      return { bin, from: slantZone(bin, layout), to: slantZone(to, layout) };
+    });
   type Entry = (typeof remaining)[number];
   const waitsFor = (mover: Entry, other: Entry): boolean =>
     (mover.bin.layerId === other.bin.layerId || mover.to.slanted || other.from.slanted) &&

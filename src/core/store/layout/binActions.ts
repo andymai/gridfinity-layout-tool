@@ -21,11 +21,7 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
         }
 
         const rect = { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth };
-        const validationResult = canPlaceBin(
-          { ...rect, height: bin.height, linkedDesignId: bin.linkedDesignId, slant: bin.slant },
-          bin.layerId,
-          layout
-        );
+        const validationResult = canPlaceBin(bin, bin.layerId, layout);
         if (!validationResult.valid) {
           return err(toPlacementError(validationResult.reason, rect));
         }
@@ -123,16 +119,10 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
       if (!isOk(found)) return found;
       const bin = found.value;
 
-      const copyAt = (layerId: LayerId, x: GridUnits, y: GridUnits) => ({
-        width: bin.width,
-        depth: bin.depth,
-        height: bin.height,
-        clearanceHeight: bin.clearanceHeight,
-        category: bin.category,
-        label: bin.label,
-        notes: bin.notes,
-        customProperties: bin.customProperties,
-        items: bin.items,
+      // As `bin.duplicate` copies, so the copy is the bin each slot was checked for.
+      const { id: _id, locked: _locked, pairId: _pairId, pairRole: _pairRole, ...copyable } = bin;
+      const copyAt = (layerId: LayerId, x: GridUnits, y: GridUnits): Omit<Bin, 'id'> => ({
+        ...copyable,
         layerId,
         x,
         y,

@@ -320,7 +320,7 @@ describe('linked designs travelling with a share', () => {
       saveDesign: () => Promise.reject(new Error('unused')),
       upsertRegistryEntry: () => Promise.reject(new Error('unused')),
       registryEdgeFields: async () => ({}),
-      registrySlantFields: async () => ({}),
+      registryPlacementFields: async () => ({}),
     };
     registerDesignStorePort(port);
   };
@@ -418,7 +418,7 @@ describe('linked designs over the server per-design cap', () => {
       saveDesign: () => Promise.reject(new Error('unused')),
       upsertRegistryEntry: () => Promise.reject(new Error('unused')),
       registryEdgeFields: async () => ({}),
-      registrySlantFields: async () => ({}),
+      registryPlacementFields: async () => ({}),
     });
   };
 
@@ -545,7 +545,7 @@ describe('linked designs naming mesh files', () => {
       saveDesign: () => Promise.reject(new Error('unused')),
       upsertRegistryEntry: () => Promise.reject(new Error('unused')),
       registryEdgeFields: async () => ({}),
-      registrySlantFields: async () => ({}),
+      registryPlacementFields: async () => ({}),
     });
   };
 
@@ -670,7 +670,7 @@ describe('linked designs naming mesh files', () => {
       saveDesign: () => Promise.reject(new Error('unused')),
       upsertRegistryEntry: () => Promise.reject(new Error('unused')),
       registryEdgeFields: async () => ({}),
-      registrySlantFields: async () => ({}),
+      registryPlacementFields: async () => ({}),
     });
 
     expectOk(await createShare('abc123xyz789', layout, 'view'));

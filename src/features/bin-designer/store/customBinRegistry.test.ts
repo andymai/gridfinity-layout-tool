@@ -17,6 +17,8 @@ import {
   type CustomBinRef,
 } from './customBinRegistry';
 import { designId } from '@/core/types';
+import { isOk } from '@/core/result';
+import type { BinParams } from '../types';
 import type { ItemEnvelope } from '@/shared/types/item';
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
@@ -604,14 +606,40 @@ describe('customBinRegistry', () => {
       expect(loadRegistry()[0]?.slant).toBeUndefined();
     });
 
-    it('refreshes only the slant facts of a known entry', () => {
+    it('refreshes the slant facts of a known entry, and leaves unknown designs out', () => {
       upsertRegistryEntry({ ...makeRef('d1'), slant: { blocked: true } });
       refreshRegistrySlant('d1', { ...DEFAULT_BIN_PARAMS, slant: SLANT });
-      expect(loadRegistry()[0]).toEqual({ ...makeRef('d1'), slant: { config: SLANT } });
+      expect(loadRegistry()[0]?.slant).toEqual({ config: SLANT });
       refreshRegistrySlant('d1', DEFAULT_BIN_PARAMS);
-      expect(loadRegistry()[0]).toEqual(makeRef('d1'));
+      expect(loadRegistry()[0]?.slant).toBeUndefined();
       refreshRegistrySlant('unknown', { ...DEFAULT_BIN_PARAMS, slant: SLANT });
       expect(loadRegistry()).toHaveLength(1);
+    });
+
+    // A sync pull hands over the design's params alone, possibly stored before
+    // newer fields existed; the support is sized from all of these.
+    it('refreshes everything that sizes the support, from params of any age', () => {
+      upsertRegistryEntry({ ...makeRef('d1'), socketless: false, fractionalEdgeX: 'end' });
+      const { slide: _slide, ...legacy } = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 1.5,
+        depth: 1,
+        height: 12,
+        fractionalEdgeX: 'start' as const,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' as const },
+        slant: SLANT,
+      };
+      expect(isOk(refreshRegistrySlant('d1', legacy as BinParams))).toBe(true);
+      expect(loadRegistry()[0]).toMatchObject({
+        name: 'Test Bin',
+        width: 1.5,
+        depth: 1,
+        height: 12,
+        fractionalEdgeX: 'start',
+        socketless: true,
+        slant: { config: SLANT },
+        updatedAt: makeRef('d1').updatedAt,
+      });
     });
 
     it('keeps the usable part of a stored record and drops the rest', () => {

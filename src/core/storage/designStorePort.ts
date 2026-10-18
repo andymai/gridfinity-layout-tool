@@ -97,6 +97,11 @@ export interface DesignRegistryEntry extends DesignRegistryEdgeFields {
   readonly updatedAt: string;
 }
 
+export type DesignRegistryPlacementFields = Pick<
+  DesignRegistryEntry,
+  'assembledRiseMm' | 'lowProfileRiseDeltaMm' | 'socketless' | 'hasLip' | 'slant'
+>;
+
 /**
  * The operations `core/storage` needs from the bin-designer feature.
  * Every method is async so the adapter can lazily `import()` the feature
@@ -115,8 +120,12 @@ export interface DesignStorePort {
   saveDesign(input: SaveDesignInput): Promise<Result<SavedDesignData, StorageError>>;
   upsertRegistryEntry(entry: DesignRegistryEntry): Promise<Result<void, StorageError>>;
   registryEdgeFields(params: unknown): Promise<DesignRegistryEdgeFields>;
-  /** A slanted design's end support reserves layout cells, so its facts are written with the entry. */
-  registrySlantFields(params: unknown): Promise<Pick<DesignRegistryEntry, 'slant'>>;
+  /**
+   * How a linked bin stands and leans, from params that may predate current
+   * fields. A slanted design's end support reserves layout cells, sized by its
+   * base as well as its slant, so both are written with the entry.
+   */
+  registryPlacementFields(params: unknown): Promise<DesignRegistryPlacementFields>;
 }
 
 let port: DesignStorePort | null = null;
