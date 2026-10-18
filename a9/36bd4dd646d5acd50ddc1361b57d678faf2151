@@ -1,0 +1,22 @@
+src/features/bin-designer/utils/thumbnailRegenerator.ts
+  s_078fc63cde22ff::t_5efd32b509eb4f 409-416
+src/features/bin-designer/utils/thumbnailRegenerator.test.ts
+  s_078fc63cde22ff::t_5efd32b509eb4f 151-165
+  s_078fc63cde22ff::t_659b0741e4ff83 166-168
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a936bd4dd646d5acd50ddc1361b57d678faf2151",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
