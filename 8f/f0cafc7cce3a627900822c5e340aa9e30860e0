@@ -1,0 +1,77 @@
+api/lib/slantValidation.crossBoundary.test.ts
+  s_078fc63cde22ff::t_7f614b2ead3a9f 1-19
+scripts/schema/bounds.test.ts
+  s_078fc63cde22ff::t_507fed7ce5598e 38-39,152-153
+src/features/bin-designer/types/binParams.ts
+  s_078fc63cde22ff::t_d6f6115b06082d 1,180
+  s_078fc63cde22ff::t_166e9b709cfc84 179
+public/schema/bin-design.schema.json
+  s_078fc63cde22ff::t_507fed7ce5598e 469-471,2068-2074,2076-2079,2081-2092
+  s_078fc63cde22ff::t_bc3c4c105fa9e4 2075,2080,2093
+  s_078fc63cde22ff::t_55998353f77d47 2094
+src/shared/schema/binContentKeys.ts
+  s_078fc63cde22ff::t_fd48533cf2916c 34,167-168
+  s_078fc63cde22ff::t_90661a8d81a198 169
+src/features/bin-designer/constants/paramMigration.ts
+  s_078fc63cde22ff::t_e8f8b144faa4d8 97,453-574
+docs/schemas/constraints.md
+  s_078fc63cde22ff::t_f203d8e845bdfd 180-181
+src/features/generation/worker/generators/binGenerator.scenario.slant.test.ts
+  s_078fc63cde22ff::t_caa2a71deec9d1 1-13,15-56,64-75,78-122,127-128,133-190,192-195
+  s_078fc63cde22ff::t_4179713378d1e3 14,57-63,76-77,123-126,129-132,191
+src/shared/schema/binDesignKeys.ts
+  s_078fc63cde22ff::t_fd48533cf2916c 107
+src/features/generation/worker/generators/binOrchestrator.ts
+  s_078fc63cde22ff::t_e2de6b1f1a6062 23,30,53,68-70,102
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_078fc63cde22ff::t_63710aab951076 739-741
+  s_078fc63cde22ff::t_70e3d6fbf0abba 30
+src/core/types/index.ts
+  s_078fc63cde22ff::t_d6f6115b06082d 33
+src/features/generation/worker/generators/binDirectMesh.ts
+  s_078fc63cde22ff::t_15abc044c1f572 41
+  s_078fc63cde22ff::t_e2de6b1f1a6062 382
+docs/schemas/bin-design.md
+  s_078fc63cde22ff::t_f203d8e845bdfd 114
+  s_078fc63cde22ff::t_87e8049892d718 683-703
+src/shared/schema/keys.ts
+  s_078fc63cde22ff::t_fd48533cf2916c 80,230
+api/lib/slantValidation.ts
+  s_078fc63cde22ff::t_7f614b2ead3a9f 1-37
+src/shared/utils/slantPlan.test.ts
+  s_078fc63cde22ff::t_d9fde165f257a7 1-10,14-34,39-42,47-52,58-59,61-67,74-90,96-97,102-135,147
+  s_078fc63cde22ff::t_02e4ae9143d4a6 11-13,35-38,43-46,53-57,60,68-73,91-95,98-101,136-146
+src/shared/utils/slantPlan.ts
+  s_078fc63cde22ff::t_88f24ff6fc08fe 12-15,17-25,29-37,58-61
+  s_078fc63cde22ff::t_d4ceffeb4b2417 1,3-11,16,26-28,38-57,62-89,106
+  s_078fc63cde22ff::t_e8f8b144faa4d8 2,90-105
+api/lib/slantValidation.test.ts
+  s_078fc63cde22ff::t_e8f8b144faa4d8 12-15
+  s_078fc63cde22ff::t_7f614b2ead3a9f 1-11,16-42
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_078fc63cde22ff::t_17207d2e9cfe44 2161-2194
+src/core/types/slant.ts
+  s_078fc63cde22ff::t_ef195713cc864a 1-22
+src/features/generation/worker/generators/pipeline/stages/slantStage.ts
+  s_078fc63cde22ff::t_d1b41bf9c5ab98 1-69
+api/lib/designerValidation.ts
+  s_078fc63cde22ff::t_7f614b2ead3a9f 9,152,195
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_078fc63cde22ff::t_130e236991cd83 37,121-123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8ff0cafc7cce3a627900822c5e340aa9e30860e0",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
