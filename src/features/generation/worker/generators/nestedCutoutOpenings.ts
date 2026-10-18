@@ -33,12 +33,8 @@ import { pointInPolyline } from '@/shared/utils/drawerOutlineGeometry';
 import { outlinesComeWithin, outlinesTouch } from '@/shared/utils/outlineSegments';
 import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
 import type { Pt } from '@/shared/utils/polygonOffset';
-import {
-  clearedProfile,
-  entryChamferWidth,
-  MIN_LOFTED_CHAMFER,
-  MIN_STRAIGHT_WALL_MM,
-} from './cutoutFit';
+import { clearedProfile } from '@/shared/utils/cutoutClearance';
+import { entryChamferWidth, MIN_LOFTED_CHAMFER, MIN_STRAIGHT_WALL_MM } from './cutoutFit';
 import { resolveScoop } from './cutoutScoopHelpers';
 
 /** How far past a scooped floor's fillet a flare of its own carries on (mm). */

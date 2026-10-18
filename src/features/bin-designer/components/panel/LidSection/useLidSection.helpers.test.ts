@@ -240,6 +240,14 @@ describe('fixableIdsFor', () => {
     // A 45° lean tips the far end of a 40mm-long floor 14.1mm lower: 20mm
     // drawn reaches 28.3mm, 8mm only 19.8mm.
     ['a leaned pocket', { x: -1, width: 20, depth: 40, leanDeg: 45 }, 20, 8],
+    // Clearance grows the profile before the lean: 20.5mm drawn reaches 21.6mm
+    // on the nominal 20mm circle, 22.3mm on the cleared 22mm one.
+    [
+      'a leaned pocket with insertion clearance',
+      { shape: 'circle', clearance: 2, leanDeg: 45 },
+      20.5,
+      18,
+    ],
     // Every copy is clamped to the fill at its drawn depth, whatever the lean:
     // these 10mm copies tip only to 21.2mm, inside the lowered fill, but 25mm
     // drawn still loses 3.25mm.
@@ -267,6 +275,13 @@ describe('fixableIdsFor', () => {
   ] as const)('withholds the fill fix only when it would cut %s short', (_, pocket, deep, kept) => {
     expect(fixableIdsFor(solidWithPocket(deep, pocket)).has('slideFillTooHigh')).toBe(false);
     expect(fixableIdsFor(solidWithPocket(kept, pocket)).has('slideFillTooHigh')).toBe(true);
+  });
+
+  it('tips a leaned floor along the tilt axis only', () => {
+    // 15mm drawn across a 39mm-wide, 10mm-deep pocket reaches 14.1mm; reading
+    // the width as the tilted span would put it at 24.4mm.
+    const wide = solidWithPocket(15, { x: 0, width: 39, depth: 10, leanDeg: 45 });
+    expect(fixableIdsFor(wide).has('slideFillTooHigh')).toBe(true);
   });
 
   it('withholds the fill fix on a tapered bin, whose wall narrows with depth', () => {

@@ -26,7 +26,6 @@ import { baseWallHeight } from './binDimensions';
  */
 export const MIN_CUTOUT_FILL_MM = 0.5;
 
-/** Increment the fill controls move in. */
 export const CUTOUT_FILL_STEP_MM = 0.5;
 
 /**

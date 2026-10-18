@@ -12,6 +12,7 @@ import {
 } from '@/features/bin-designer/types';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { slideLidFillOffsetMm } from '@/features/bin-designer/utils/slideLidPlanForParams';
+import { clearedProfile } from '@/shared/utils/cutoutClearance';
 import { hasTaper, resolveOverhang } from '@/shared/utils/overhang';
 import type { useTranslation } from '@/i18n';
 import {
@@ -267,12 +268,12 @@ const FIXABLE_IDS_WITHOUT_FILL: ReadonlySet<LidCompatibilityId> = new Set(
 
 /**
  * Fill height a pocket needs to keep its depth. The worker clamps the drawn
- * depth to the fill whatever the lean, and a lean tips one end of the floor
- * lower than the drawn depth.
+ * depth to the fill whatever the lean, and a lean tilts the floor about local X,
+ * tipping one end of the cleared profile's local depth lower still.
  */
 function pocketReachMm(cutout: Cutout): number {
   const lean = (resolveCutoutLeanDeg(cutout) * Math.PI) / 180;
-  const halfSpan = Math.max(cutout.width, cutout.depth) / 2;
+  const halfSpan = clearedProfile(cutout).d / 2;
   const tipped = cutout.cutDepth * Math.cos(lean) + halfSpan * Math.abs(Math.sin(lean));
   return Math.max(cutout.cutDepth, tipped);
 }
