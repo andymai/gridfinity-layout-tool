@@ -9,7 +9,7 @@ import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useGapFitStore } from '@/core/store/gapFit';
 import { createTestBin, resetAllStores } from '@/test/testUtils';
 import { ok } from '@/core/result';
-import { binId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
+import { binId, designId, gridUnits, heightUnits, layerId, layoutId } from '@/core/types';
 import { registerSlantRowDesigner } from '@/shared/utils/slantRowDesign';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { trackPaintMode } from '@/shared/analytics/posthog';
@@ -308,6 +308,44 @@ describe('useDrawInteraction', () => {
       expect(placed.filter((bin) => bin.slant?.endSupport)).toHaveLength(1);
       expect(mlTracking.trackBulkCreation).toHaveBeenCalledWith(expect.any(Array), 'paint');
       expect(trackPaintMode).toHaveBeenCalledWith('exited', placed.length);
+    });
+
+    it.each([
+      [
+        'the editor opens another layout',
+        () => useLayoutStore.setState({ activeLayoutId: layoutId('preview') }),
+      ],
+      [
+        'the category is deleted',
+        () => {
+          const { layout } = useLayoutStore.getState();
+          useLayoutStore.setState({
+            layout: { ...layout, categories: layout.categories.slice(1) },
+          });
+        },
+      ],
+    ])('places nothing when %s while the design saves', async (_what, meanwhile) => {
+      const paintSize = { width: 2, depth: 1 };
+      let finishSave: (id: ReturnType<typeof designId>) => void = () => undefined;
+      registerSlantRowDesigner(
+        () =>
+          new Promise((resolve) => {
+            finishSave = resolve;
+          })
+      );
+      mockAddBin.mockReturnValue(ok('new-bin-id'));
+      useInteractionStore.setState({
+        interaction: { type: 'paint', paintSize, start: coord(1, 0), current: coord(2, 7), slant },
+      });
+      const { result } = renderHook(() => useDrawInteraction(createContext(paintSize, slant)));
+      act(() => result.current.handleUp());
+
+      meanwhile();
+      await act(async () => {
+        finishSave(designId('row-design'));
+        await Promise.resolve();
+      });
+      expect(mockAddBin).not.toHaveBeenCalled();
     });
   });
 

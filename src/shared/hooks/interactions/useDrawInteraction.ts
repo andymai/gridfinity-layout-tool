@@ -264,6 +264,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
       const rowSlant = interaction.slant;
       if (rowSlant && layer) {
         const layoutId = useLibraryStore.getState().library.activeLayoutId;
+        const editorLayoutId = useLayoutStore.getState().activeLayoutId;
         void paintSlantedRows({
           layout,
           layerId: activeLayerId,
@@ -287,7 +288,15 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
               message: t(`layers.slantedRow.${reason}`),
               type: reason === 'saveFailed' ? 'error' : 'info',
             }),
-          stillCurrent: () => useLibraryStore.getState().library.activeLayoutId === layoutId,
+          // A shared preview swaps the editor's layout without touching the library.
+          stillCurrent: () => {
+            const editor = useLayoutStore.getState();
+            return (
+              editor.activeLayoutId === editorLayoutId &&
+              useLibraryStore.getState().library.activeLayoutId === layoutId &&
+              editor.layout.categories.some((c) => c.id === activeCategoryId)
+            );
+          },
           designName: (height) =>
             t('layers.slantedRow.designName', {
               size: `${ps.width}×${ps.depth}×${height}`,
