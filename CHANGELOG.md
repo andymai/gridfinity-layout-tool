@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.518.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.517.0...gridfinity-layout-tool-v4.518.0) (2026-10-18)
+
+
+### Features
+
+* **bin-designer:** add a Slant section to the designer ([#4629](https://github.com/andymai/gridfinity-layout-tool/issues/4629)) ([a872fb9](https://github.com/andymai/gridfinity-layout-tool/commit/a872fb9e937fe07bba86c430beefc3e48ecaf765))
+* **bin-designer:** export an end support with a slanted bin ([#4628](https://github.com/andymai/gridfinity-layout-tool/issues/4628)) ([86bdd52](https://github.com/andymai/gridfinity-layout-tool/commit/86bdd520fd601bf0332d7a7810ee97f8da4cdcdb))
+* **bin-designer:** slant a bin's body above its floor ([#4627](https://github.com/andymai/gridfinity-layout-tool/issues/4627)) ([08dde1b](https://github.com/andymai/gridfinity-layout-tool/commit/08dde1bedb45e2ec50ba41c14dc238e187ac4464))
+* **layout:** carry a slant on placed bins ([#4630](https://github.com/andymai/gridfinity-layout-tool/issues/4630)) ([dcffddf](https://github.com/andymai/gridfinity-layout-tool/commit/dcffddf11ae08d4f7620cbd999799476d376ed09))
+
 ## [4.517.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.516.0...gridfinity-layout-tool-v4.517.0) (2026-10-18)
 
 
