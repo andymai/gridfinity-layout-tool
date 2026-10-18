@@ -215,6 +215,7 @@ export function IsometricPreview(props: IsometricPreviewProps) {
                   depth: binData.bin.depth,
                   height: binData.height,
                   opacity: binData.opacity,
+                  ...(binData.shear ? { shear: binData.shear } : {}),
                 }))}
               />
               {/* Drawer-margin extensions (Labs) — solid strips filling the margin

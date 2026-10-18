@@ -12,7 +12,6 @@ const EXPLODE_GAP = 2.5;
 /** Opacity for inactive (non-active) layers in exploded mode. */
 const EXPLODE_DIM_OPACITY = 0.35;
 
-/** Renderable data for a single bin (matches binsToRender shape in IsometricPreview). */
 /**
  * A slanted bin's end support for the stylized preview: its cells, in grid
  * units, and the wedge standing on them, in scene units.
@@ -29,6 +28,7 @@ export interface SlantSupportRender {
   readonly top: number;
 }
 
+/** Renderable data for a single bin (matches binsToRender shape in IsometricPreview). */
 export interface BinRenderData {
   bin: Bin;
   x: number;
