@@ -14,6 +14,7 @@ import {
 } from '@/shared/utils/slantPlan';
 import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartmentGrid';
+import { builtCompartmentFloorRaiseMm } from '@/features/bin-designer/utils/compartmentFloorRaise';
 import type { BinParams } from '@/features/bin-designer/types';
 
 export const SLANT_DEFAULT_DEG = 45;
@@ -118,12 +119,19 @@ export function useSlantSection() {
     const dims = binDimensions(params);
     const topOffsetMm = slantTopOffsetMm(params);
     if (!leanIsUnobstructed(params, plan.axis)) return { topOffsetMm, longestItemMm: null };
+    // Every compartment spans the lean, so the longest item stands in the one
+    // with the lowest floor.
+    const raises = [...new Set(params.compartments.cells)].map((id) =>
+      builtCompartmentFloorRaiseMm(params, id)
+    );
+    const lowestRaise = raises.length > 0 ? Math.min(...raises) : 0;
     // `floorZ` is the floor's underside; an item stands on its top.
     const cavityH =
       dims.totalH +
       Math.max(0, params.extraWallHeightMm ?? 0) -
       dims.floorZ -
-      resolveBinFloorMm(params);
+      resolveBinFloorMm(params) -
+      lowestRaise;
     const inner = plan.axis === 'x' ? dims.innerW : dims.innerD;
     // The cavity is a parallelogram along the lean; its longer diagonal runs
     // from the low floor corner to the top corner the lean carried out.

@@ -50,6 +50,25 @@ describe('SlantSection', () => {
     expect(screen.getByText('binDesigner.slant.longestItem 121')).toBeInTheDocument();
   });
 
+  it('measures the fit from a raised floor, in the compartment that sits lowest', () => {
+    const one = { ...DEFAULT_BIN_PARAMS.compartments, cols: 1, rows: 1, cells: [0] };
+    setParams({
+      slant: { angleDeg: 45, side: 'back' },
+      compartments: { ...one, floorRaises: [10] },
+    });
+    const { unmount } = render(<SlantSection />);
+    // 10mm off the 35mm cavity: hypot(81.1 + 25, 25).
+    expect(screen.getByText('binDesigner.slant.longestItem 109')).toBeInTheDocument();
+    unmount();
+    setParams({
+      slant: { angleDeg: 45, side: 'back' },
+      compartments: { ...one, cols: 2, cells: [0, 1], floorRaises: [10, null] },
+      width: 2,
+    });
+    render(<SlantSection />);
+    expect(screen.getByText('binDesigner.slant.longestItem 121')).toBeInTheDocument();
+  });
+
   it('drops the fit length once a divider stands across the lean', () => {
     setParams({
       slant: { angleDeg: 45, side: 'back' },
