@@ -159,6 +159,21 @@ export function useBinResizedListener(): void {
           return;
         }
 
+        const register = (updatedAt: string): void => {
+          upsertRegistryEntry({
+            id: updateResult.value.id,
+            name: updateResult.value.name,
+            width: newDimensions.width,
+            depth: newDimensions.depth,
+            height: newDimensions.height,
+            ...registryEdgeFields(newParams),
+            ...registryHeightFields(newParams),
+            ...registryOverhangFields(newParams),
+            ...registrySlantFields(newParams),
+            updatedAt,
+          });
+        };
+
         // Placement reads supports from the registry, which still holds the
         // old size, so the layout may have changed while the design saved.
         // Checked again in the same step as the registry write, nothing can
@@ -166,6 +181,10 @@ export function useBinResizedListener(): void {
         if (refusedBySupport()) {
           const restored = await updateDesignParams(linkedDesignId, design.params);
           if (isErr(restored)) {
+            // The new size is what is stored, so the registry has to say so:
+            // the layout then reserves the support the export will print, and
+            // flags the bin it now covers.
+            register(updateResult.value.updatedAt);
             addToastRef.current({
               message: tRef.current('designLinking.toast.designUpdateFailed'),
               type: 'error',
@@ -174,18 +193,7 @@ export function useBinResizedListener(): void {
           }
           return;
         }
-        upsertRegistryEntry({
-          id: updateResult.value.id,
-          name: updateResult.value.name,
-          width: newDimensions.width,
-          depth: newDimensions.depth,
-          height: newDimensions.height,
-          ...registryEdgeFields(newParams),
-          ...registryHeightFields(newParams),
-          ...registryOverhangFields(newParams),
-          ...registrySlantFields(newParams),
-          updatedAt: updateResult.value.updatedAt,
-        });
+        register(updateResult.value.updatedAt);
 
         // Cascade to sibling bins (other bins linked to the same design)
         const layout = layoutRef.current;
