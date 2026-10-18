@@ -792,5 +792,20 @@ describe('planLayoutBinExport', () => {
     it('keeps the design slant for a bin with none of its own', () => {
       expect(plan([linkedBin('d1')]).exportable[0]?.params.slant).toEqual(designSlant);
     });
+
+    // The 1x2 design stands turned a quarter counterclockwise in a 2x1 footprint,
+    // so leaning toward the drawer's back is leaning toward the design's right.
+    it('turns a placed slant back into the frame of a turned design', () => {
+      const turned = {
+        ...linkedBin('d1'),
+        width: gridUnits(2),
+        depth: gridUnits(1),
+        slant: { ...designSlant, side: 'back' as const },
+      };
+      expect(plan([turned]).exportable[0]?.params.slant).toEqual({
+        ...designSlant,
+        side: 'right',
+      });
+    });
   });
 });

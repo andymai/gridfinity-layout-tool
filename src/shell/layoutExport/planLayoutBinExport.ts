@@ -45,6 +45,7 @@ import {
 import { dedupeFileNames } from './dedupeFileNames';
 import type { ManifestBinEntry, ManifestSkipped } from './buildLayoutManifest';
 import { normalizeSlant, planSlantSupport } from '@/shared/utils/slantPlan';
+import { isTurnedPlacement, sideInDesign } from '@/shared/utils/placementTurn';
 
 /** A linked design id resolved against storage; `design` is null when it failed to load. */
 export interface LoadedDesign {
@@ -303,9 +304,14 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
       : { ...layoutParams, magnetAnchor };
     // A placed slant replaces the design's own, so the last bin of a row can
     // carry the end support its design does not; then the lip goes, as it
-    // does for any slanted design.
-    const params = normalizeSlant(b.slant ? { ...fitted, slant: b.slant } : fitted);
-    const key = `${b.linkedDesignId}|${overhangKey(overhang)}|${placedSlantKey(b.slant)}`;
+    // does for any slanted design. It faces the drawer, so a design that
+    // stands turned prints it turned back.
+    const placed =
+      b.slant && isTurnedPlacement(b, design.params)
+        ? { ...b.slant, side: sideInDesign(b.slant.side) }
+        : b.slant;
+    const params = normalizeSlant(placed ? { ...fitted, slant: placed } : fitted);
+    const key = `${b.linkedDesignId}|${overhangKey(overhang)}|${placedSlantKey(placed)}`;
     const existing = groups.get(key);
     if (existing) {
       existing.quantity++;
