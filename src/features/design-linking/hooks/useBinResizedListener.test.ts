@@ -13,6 +13,8 @@ import { useLayoutStore, useToastStore } from '@/core/store';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
 import { registerLinkedSlantResolver } from '@/shared/utils/placedSlant';
 import { loadDesign, updateDesignParams } from '@/features/bin-designer/storage';
+import { loadRegistry, upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
+import { err } from '@/core/result';
 import type * as StorageModule from '@/features/bin-designer/storage';
 
 vi.mock('@/shared/contexts/MutationsContext', () => ({
@@ -116,4 +118,42 @@ describe('useBinResizedListener', () => {
       unmount();
     }
   );
+
+  it('holds the new size in the registry while the design saves, and puts it back if the save fails', async () => {
+    useDesignerStore.setState({ currentDesignId: null });
+    useToastStore.setState({ toasts: [] });
+    localStorage.clear();
+    const previous = { id: DESIGN, name: 'Pens', width: 2, depth: 1, height: 6, updatedAt: 'then' };
+    upsertRegistryEntry(previous);
+    vi.mocked(loadDesign).mockResolvedValue(
+      ok({
+        id: DESIGN,
+        name: 'Pens',
+        updatedAt: 'then',
+        params: { ...DEFAULT_BIN_PARAMS },
+      }) as never
+    );
+    let finishSave: (result: unknown) => void = () => undefined;
+    vi.mocked(updateDesignParams).mockReturnValue(
+      new Promise((resolve) => {
+        finishSave = resolve;
+      }) as never
+    );
+    useLayoutStore.setState({ layout: createTestLayout() });
+    const { unmount } = renderHook(() => useBinResizedListener());
+
+    emitSyncEvent({
+      type: 'bin-resized',
+      binId: binId('bin-7'),
+      linkedDesignId: DESIGN,
+      newDimensions: { width: 2, depth: 1, height: 12 },
+    });
+
+    await vi.waitFor(() => expect(updateDesignParams).toHaveBeenCalled());
+    expect(loadRegistry()[0]).toMatchObject({ height: 12, updatedAt: 'then' });
+    finishSave(err({ code: 'STORAGE_WRITE_FAILED', message: 'full' }));
+    await vi.waitFor(() => expect(useToastStore.getState().toasts).toHaveLength(1));
+    expect(loadRegistry()[0]).toMatchObject({ height: 6 });
+    unmount();
+  });
 });

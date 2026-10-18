@@ -37,6 +37,21 @@ export function registerLinkedSlantResolver(resolver: LinkedSlantResolver | null
   linkedSlantResolver = resolver;
 }
 
+/** Runs `fn` as though one design's facts were `next` of them, to check a change before making it. */
+export function withLinkedSlantFacts<T>(
+  designId: DesignId,
+  next: (facts: LinkedSlantFacts | undefined) => LinkedSlantFacts | undefined,
+  fn: () => T
+): T {
+  const resolver = linkedSlantResolver;
+  linkedSlantResolver = (id) => (id === designId ? next(resolver?.(id)) : resolver?.(id));
+  try {
+    return fn();
+  } finally {
+    linkedSlantResolver = resolver;
+  }
+}
+
 export type SlantLayout = Pick<
   Layout,
   'drawer' | 'baseplateParams' | 'gridUnitMm' | 'gridUnitMmY' | 'heightUnitMm' | 'lowProfileBase'

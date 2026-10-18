@@ -26,7 +26,10 @@ import {
   registryHeightFields,
   registryOverhangFields,
   registrySlantFields,
+  loadRegistry,
 } from '@/features/bin-designer';
+import type { CustomBinRef } from '@/features/bin-designer';
+import type { DesignId } from '@/core/types';
 import { isErr } from '@/core/result';
 import { useTranslation } from '@/i18n';
 import { getPlacementErrorMessage } from '@/shared/utils/validation';
@@ -78,13 +81,9 @@ export function useBinResizedListener(): void {
       // Skip if already processing this design (prevents concurrent IDB writes)
       if (inFlightDesigns.current.has(linkedDesignId)) return;
 
-      const blocker = resizeBlockedBySupport(
-        layoutRef.current,
-        linkedDesignId,
-        newDimensions.height,
-        binId
-      );
-      if (blocker) {
+      const refusedBySupport = (): boolean => {
+        const blocker = resizeBlockedBySupport(layoutRef.current, linkedDesignId, newDimensions);
+        if (!blocker) return false;
         addToastRef.current({
           message: getPlacementErrorMessage(
             tRef.current,
@@ -94,13 +93,14 @@ export function useBinResizedListener(): void {
           type: 'info',
           duration: 3000,
         });
-        return;
-      }
+        return true;
+      };
 
       // If the designer is currently open for this design, push dimensions
       // directly into the designer store. This triggers auto-save naturally,
       // which persists to IDB and emits `design-saved` for sibling cascade.
       if (useDesignerStore.getState().currentDesignId === linkedDesignId) {
+        if (refusedBySupport()) return;
         const designerSetParams = useDesignerStore.getState().setParams;
         designerSetParams({
           width: newDimensions.width,
@@ -151,8 +151,32 @@ export function useBinResizedListener(): void {
           height: newDimensions.height,
         };
 
+        const resized = (id: DesignId, name: string, updatedAt: string): CustomBinRef => ({
+          id,
+          name,
+          width: newDimensions.width,
+          depth: newDimensions.depth,
+          height: newDimensions.height,
+          ...registryEdgeFields(newParams),
+          ...registryHeightFields(newParams),
+          ...registryOverhangFields(newParams),
+          ...registrySlantFields(newParams),
+          updatedAt,
+        });
+
+        // Placement reads supports from the registry, so the check and the
+        // registry write share one step: nothing can take a grown support's
+        // cells while the design saves. `updatedAt` waits for the save, as it
+        // keys the linked mesh, which is built from the stored design.
+        if (refusedBySupport()) return;
+        const previous = loadRegistry().find((r) => r.id === linkedDesignId);
+        upsertRegistryEntry(
+          resized(linkedDesignId, design.name, previous?.updatedAt ?? design.updatedAt)
+        );
+
         const updateResult = await updateDesignParams(linkedDesignId, newParams);
         if (isErr(updateResult)) {
+          if (previous) upsertRegistryEntry(previous);
           addToastRef.current({
             message: tRef.current('designLinking.toast.designUpdateFailed'),
             type: 'error',
@@ -161,18 +185,8 @@ export function useBinResizedListener(): void {
           return;
         }
 
-        // Update the lightweight registry
         upsertRegistryEntry({
-          id: updateResult.value.id,
-          name: updateResult.value.name,
-          width: newDimensions.width,
-          depth: newDimensions.depth,
-          height: newDimensions.height,
-          ...registryEdgeFields(newParams),
-          ...registryHeightFields(newParams),
-          ...registryOverhangFields(newParams),
-          ...registrySlantFields(newParams),
-          updatedAt: updateResult.value.updatedAt,
+          ...resized(updateResult.value.id, updateResult.value.name, updateResult.value.updatedAt),
         });
 
         // Cascade to sibling bins (other bins linked to the same design)

@@ -83,7 +83,7 @@ export function canPlaceFootprint(
   return { valid: true };
 }
 
-function insideDrawer(rect: Rect, layout: Layout): ValidationResult {
+export function insideDrawer(rect: Rect, layout: Layout): ValidationResult {
   const { drawer } = layout;
 
   // Bounds check
@@ -138,8 +138,6 @@ export function canPlaceBin(
     extendToMargin?: boolean;
     /** Inherited only while the footprint stays put: a move or resize drops it. */
     overhang?: Bin['overhang'];
-    /** A height the bin's linked design is about to be resized to. */
-    designHeight?: number;
   },
   layerId: LayerId,
   layout: Layout,
@@ -194,11 +192,7 @@ export function canPlaceBin(
     existing?.linkedDesignId !== undefined &&
     testBin.linkedDesignId === existing.linkedDesignId &&
     rect.height !== existing.height;
-  const slant = placedSlant(
-    testBin,
-    layout,
-    rect.designHeight ?? (resizesDesign ? rect.height : undefined)
-  );
+  const slant = placedSlant(testBin, layout, resizesDesign ? rect.height : undefined);
   if (slant?.support) {
     const inside = insideDrawer(slant.support, layout);
     const wasOutside = priorSlant?.support
