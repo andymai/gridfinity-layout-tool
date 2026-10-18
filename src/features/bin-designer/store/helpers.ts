@@ -325,6 +325,7 @@ export function restoreHistoryEntry(state: Draft<DesignerState>, entry: HistoryE
   if (entry.mesh) {
     // Cache hit: restore mesh directly, no regeneration needed
     state.generation.mesh = {
+      ...entry.mesh.result,
       vertices: entry.mesh.vertices,
       normals: entry.mesh.normals,
       indices: entry.mesh.indices,

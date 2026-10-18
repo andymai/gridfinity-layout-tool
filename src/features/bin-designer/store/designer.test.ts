@@ -218,6 +218,33 @@ describe('useDesignerStore', () => {
       expect(useDesignerStore.getState().generation.status).toBe('complete');
     });
 
+    // The cache stands in for a whole generation, so it has to bring back every
+    // part the worker built with the bin, not only the bin itself.
+    it('restores the companion parts and colour groups on undo, not just the bin', () => {
+      const part = {
+        vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        indices: new Uint32Array([0, 1, 2]),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 1,
+      };
+      const faceGroups = [{ start: 0, count: 3, tag: 4 }];
+      useDesignerStore.getState().setGenerationResult({
+        ...part,
+        faceGroups,
+        slantSupportMesh: part,
+        lidMesh: part,
+        error: null,
+        timingMs: 100,
+      });
+      useDesignerStore.getState().setParam('width', 5);
+      useDesignerStore.getState().undo();
+      const mesh = useDesignerStore.getState().generation.mesh;
+      expect(mesh?.slantSupportMesh).toBe(part);
+      expect(mesh?.lidMesh).toBe(part);
+      expect(mesh?.faceGroups).toEqual(faceGroups);
+    });
+
     it('should increment epoch on undo without cached mesh', () => {
       // No generation result set, so no cache
       useDesignerStore.getState().setParam('width', 5);

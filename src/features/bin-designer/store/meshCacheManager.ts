@@ -5,7 +5,7 @@
  * when memory usage exceeds the budget (100MB).
  */
 
-import type { HistoryEntry, CachedMesh } from '../types';
+import type { HistoryEntry, CachedMesh, GenerationResult } from '../types';
 
 /** Maximum total bytes for cached meshes across all history entries */
 const MAX_CACHE_BYTES = 100 * 1024 * 1024; // 100MB
@@ -30,7 +30,8 @@ export function createCachedMesh(
   normals: Float32Array,
   indices: Uint32Array,
   edgeVertices: Float32Array,
-  triangleCount: number
+  triangleCount: number,
+  result?: GenerationResult
 ): CachedMesh {
   return {
     vertices,
@@ -38,8 +39,24 @@ export function createCachedMesh(
     indices,
     edgeVertices,
     triangleCount,
-    byteSize: meshByteSize(vertices, normals, indices, edgeVertices),
+    byteSize: result ? bufferBytes(result) : meshByteSize(vertices, normals, indices, edgeVertices),
+    ...(result ? { result } : {}),
   };
+}
+
+/** Every typed array a result holds, companions and plates included, counted once. */
+function bufferBytes(value: unknown, seen = new Set<ArrayBufferLike>()): number {
+  if (ArrayBuffer.isView(value)) {
+    if (seen.has(value.buffer)) return 0;
+    seen.add(value.buffer);
+    return value.byteLength;
+  }
+  if (typeof value !== 'object' || value === null) return 0;
+  let total = 0;
+  for (const child of Array.isArray(value) ? value : Object.values(value)) {
+    total += bufferBytes(child, seen);
+  }
+  return total;
 }
 
 /**

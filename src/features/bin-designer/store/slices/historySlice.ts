@@ -153,7 +153,8 @@ export function createHistorySlice(set: Set, get: Get) {
             result.normals,
             result.indices,
             result.edgeVertices ?? new Float32Array(0),
-            result.indices.length / 3
+            result.indices.length / 3,
+            result
           )
         );
       } else {

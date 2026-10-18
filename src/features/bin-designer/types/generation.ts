@@ -108,6 +108,8 @@ export interface CachedMesh {
   readonly edgeVertices: Float32Array;
   readonly triangleCount: number;
   readonly byteSize: number;
+  /** The whole generation, so a restore brings back the companion parts and colour groups too. */
+  readonly result?: GenerationResult;
 }
 
 /** History entry pairing params with optional cached mesh */
