@@ -300,13 +300,28 @@ interface MouthCircle {
   readonly r: number;
 }
 
+/**
+ * How far from its centre a pocket's opening reaches: the cleared profile
+ * grown by the chamfer, or a path's own cleared outlines, whose mitered
+ * corners can grow far past the clearance.
+ */
+function mouthRadiusMm(c: Cutout): number {
+  const chamfer = entryChamferWidth(c);
+  const { clearance, w, d } = clearedProfile(c);
+  if (c.shape !== 'path') return Math.hypot(w + 2 * chamfer, d + 2 * chamfer) / 2;
+  const cut = pathCutoutCut(c, clearance, chamfer);
+  const points = cut ? [...cut.base, ...cut.rim] : [];
+  return Math.max(Math.hypot(c.width, c.depth) / 2, ...points.map((pt) => Math.hypot(pt.x, pt.y)));
+}
+
+/**
+ * Circles around every copy's opening and everything below it: a lean
+ * stretches the section by 1/cos and carries it sideways down the axis.
+ */
 function mouthCircles(c: Cutout): MouthCircle[] {
-  const grow = Math.max(0, c.clearance ?? 0) + Math.max(0, c.chamferWidth ?? 0);
-  return expandCutoutArray(c).map((i) => ({
-    x: i.x + i.width / 2,
-    y: i.y + i.depth / 2,
-    r: Math.hypot(i.width, i.depth) / 2 + grow,
-  }));
+  const lean = (Math.abs(resolveCutoutLeanDeg(c)) * Math.PI) / 180;
+  const r = mouthRadiusMm(c) / Math.cos(lean) + c.cutDepth * Math.tan(lean);
+  return expandCutoutArray(c).map((i) => ({ x: i.x + i.width / 2, y: i.y + i.depth / 2, r }));
 }
 
 /** Whether the boxes around two sets of circles meet, so far-apart repeats skip the pairwise test. */
@@ -384,6 +399,9 @@ function fillShortensPockets(params: BinParams, topOffset: number): boolean {
   if (hasTaper(resolveOverhang(params.overhang))) return true;
   const { wallHeight, floorZ } = binDimensions(params);
   const fill = wallHeight - topOffset;
+  // Below the shell's own floor the pockets are cut from a plane that floor
+  // sits over, which seals them.
+  if (fill < params.wallThickness) return true;
   return pockets.some((c) =>
     c.shape === 'mesh'
       ? c.cutDepth > floorZ + fill + 1e-6

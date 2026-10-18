@@ -8,6 +8,7 @@ import {
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { DEFAULT_LID_SLIDE_CONFIG } from '@/features/bin-designer/types/lid';
 import type { BinParams, Cutout } from '@/features/bin-designer/types';
+import { slideLidFillOffsetMm } from '@/features/bin-designer/utils/slideLidPlanForParams';
 import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
 import { DEFAULT_LID_CONFIG, type LidClickRails } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -397,6 +398,64 @@ describe('fixableIdsFor', () => {
     expect(fixableIdsFor(inner).has('slideFillTooHigh')).toBe(true);
     expect(fixableIdsFor(withFloor(inner, 8)).has('slideFillTooHigh')).toBe(false);
     expect(fixableIdsFor(withFloor(inner, 5)).has('slideFillTooHigh')).toBe(true);
+  });
+
+  it('finds a floor a mitered, leaned path flares onto from a distance', () => {
+    // A 5mm clearance miters the triangle's tip 32mm out and the 2mm chamfer's
+    // rim 40mm; leaned 30°, its flare reaches a 2mm-deep pocket 34mm away and
+    // sinks 22mm, where on its own the pocket reaches 20.3mm.
+    const flaring = (floorDepth: number): BinParams => {
+      const inner = solidWithPocket(5, {
+        shape: 'path',
+        x: 5,
+        y: 25,
+        width: 6,
+        depth: 24,
+        clearance: 5,
+        chamferWidth: 2,
+        leanDeg: 30,
+        path: [
+          { x: 8, y: 25, handleIn: null, handleOut: null, symmetric: false },
+          { x: 11, y: 49, handleIn: null, handleOut: null, symmetric: false },
+          { x: 5, y: 49, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+      const floor: Cutout = {
+        ...inner.cutouts[0],
+        id: 'floor',
+        shape: 'rectangle',
+        x: 5,
+        y: 0,
+        width: 6,
+        depth: 6,
+        cutDepth: floorDepth,
+        clearance: 0,
+        chamferWidth: 0,
+        leanDeg: 0,
+        path: undefined,
+      };
+      return { ...inner, cutouts: [floor, ...inner.cutouts] };
+    };
+    expect(fixableIdsFor(flaring(2)).has('slideFillTooHigh')).toBe(false);
+    // Deeper than the path, it is no floor for the path to open onto.
+    expect(fixableIdsFor(flaring(6)).has('slideFillTooHigh')).toBe(true);
+  });
+
+  it('withholds the fill fix when the lowered fill would sit under the floor', () => {
+    // A 1U flat bin with no lip lowers its fill to 1mm, under its 1.2mm floor,
+    // which would seal even a 0.5mm pocket cut from that plane.
+    const shallow = (cutouts: number): BinParams => {
+      const params = solidWithPocket(0.5);
+      return {
+        ...params,
+        height: 1,
+        base: { ...params.base, style: 'flat', stackingLip: false },
+        cutouts: params.cutouts.slice(0, cutouts),
+      };
+    };
+    expect(slideLidFillOffsetMm(shallow(1))).toBe(6);
+    expect(fixableIdsFor(shallow(1)).has('slideFillTooHigh')).toBe(false);
+    expect(fixableIdsFor(shallow(0)).has('slideFillTooHigh')).toBe(true);
   });
 
   it('tips a leaned floor along the tilt axis only', () => {
