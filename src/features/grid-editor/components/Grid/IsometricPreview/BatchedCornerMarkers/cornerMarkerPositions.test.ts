@@ -32,4 +32,12 @@ describe('cornerMarkerPositions', () => {
     expect(upright[0]).toBeCloseTo(2 + 0.06, 6);
     expect(upright[3]).toBeCloseTo(2, 6);
   });
+
+  it("leans a flat base's bottom arms, which stand above its pivot", () => {
+    const positions = cornerMarkerPositions([{ ...box, shear: { x: 1, y: 0, pivot: 0 } }]);
+    const firstUpright = positions.slice(12, 18);
+    expect(firstUpright[3] - firstUpright[0]).toBeCloseTo(0.12, 6);
+    const socketed = cornerMarkerPositions([{ ...box, shear: { x: 1, y: 0, pivot: 0.2 } }]);
+    expect(socketed[15] - socketed[12]).toBeCloseTo(0, 6);
+  });
 });
