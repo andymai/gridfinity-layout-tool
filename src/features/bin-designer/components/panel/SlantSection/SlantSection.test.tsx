@@ -45,7 +45,19 @@ describe('SlantSection', () => {
     render(<SlantSection />);
     // 6u: 42mm top, 4.75mm socket, a 37.25mm rise.
     expect(screen.getByText('binDesigner.slant.topOffset 37')).toBeInTheDocument();
-    expect(screen.getByText(/^binDesigner\.slant\.longestItem \d+$/)).toBeInTheDocument();
+    // Standing on the floor's top: 42 - 4.75 socket - 2.25 floor leaves 35mm,
+    // so the diagonal is hypot(81.1 + 35, 35) inside a 2u depth.
+    expect(screen.getByText('binDesigner.slant.longestItem 121')).toBeInTheDocument();
+  });
+
+  it('drops the fit length once a divider stands across the lean', () => {
+    setParams({
+      slant: { angleDeg: 45, side: 'back' },
+      compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 1, rows: 2, cells: [0, 1] },
+    });
+    render(<SlantSection />);
+    expect(screen.getByText('binDesigner.slant.topOffset 37')).toBeInTheDocument();
+    expect(screen.queryByText(/binDesigner\.slant\.longestItem/)).toBeNull();
   });
 
   it('warns past 45 degrees only', () => {

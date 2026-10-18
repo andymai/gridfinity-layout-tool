@@ -12,6 +12,9 @@ import {
   slantTopOffsetMm,
   type SlantBlocker,
 } from '@/shared/utils/slantPlan';
+import { resolveBinFloorMm } from '@/shared/utils/slotMath';
+import { getCompartmentBounds } from '@/features/bin-designer/utils/compartmentGrid';
+import type { BinParams } from '@/features/bin-designer/types';
 
 export const SLANT_DEFAULT_DEG = 45;
 export const SLANT_MIN_DEG = 1;
@@ -35,6 +38,25 @@ export function useSlantVisible(): boolean {
   const labsOn = useFeatureFlag('slant');
   const hasSlant = useDesignerStore((s) => s.params.slant !== undefined);
   return labsOn || hasSlant;
+}
+
+/**
+ * The diagonal only holds while nothing stands across the lean: a standard bin
+ * whose every compartment runs the full length of the lean axis.
+ */
+function leanIsUnobstructed(params: BinParams, axis: 'x' | 'y'): boolean {
+  if (params.style !== 'standard') return false;
+  const config = params.compartments;
+  for (const id of new Set(config.cells)) {
+    const bounds = getCompartmentBounds(config, id);
+    if (!bounds) continue;
+    const spansLean =
+      axis === 'x'
+        ? bounds.minCol === 0 && bounds.maxCol === config.cols - 1
+        : bounds.minRow === 0 && bounds.maxRow === config.rows - 1;
+    if (!spansLean) return false;
+  }
+  return true;
 }
 
 export function useSlantSection() {
@@ -95,7 +117,13 @@ export function useSlantSection() {
     if (!plan) return null;
     const dims = binDimensions(params);
     const topOffsetMm = slantTopOffsetMm(params);
-    const cavityH = dims.totalH + Math.max(0, params.extraWallHeightMm ?? 0) - dims.floorZ;
+    if (!leanIsUnobstructed(params, plan.axis)) return { topOffsetMm, longestItemMm: null };
+    // `floorZ` is the floor's underside; an item stands on its top.
+    const cavityH =
+      dims.totalH +
+      Math.max(0, params.extraWallHeightMm ?? 0) -
+      dims.floorZ -
+      resolveBinFloorMm(params);
     const inner = plan.axis === 'x' ? dims.innerW : dims.innerD;
     // The cavity is a parallelogram along the lean; its longer diagonal runs
     // from the low floor corner to the top corner the lean carried out.

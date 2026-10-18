@@ -71,11 +71,13 @@ export function SlantSection() {
                     mm: Math.round(state.readouts.topOffsetMm),
                   })}
                 </Readout>
-                <Readout>
-                  {t('binDesigner.slant.longestItem', {
-                    mm: Math.floor(state.readouts.longestItemMm),
-                  })}
-                </Readout>
+                {state.readouts.longestItemMm !== null && (
+                  <Readout>
+                    {t('binDesigner.slant.longestItem', {
+                      mm: Math.floor(state.readouts.longestItemMm),
+                    })}
+                  </Readout>
+                )}
               </div>
             )}
             {state.steep && (

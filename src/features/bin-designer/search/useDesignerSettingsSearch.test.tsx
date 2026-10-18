@@ -12,6 +12,7 @@ const allAvailable: ControlAvailabilityContext = {
   needsSplit: true,
   viewMode: 'rail',
   slideTrayEnabled: true,
+  slantVisible: true,
 };
 
 const restricted: ControlAvailabilityContext = {
@@ -20,6 +21,7 @@ const restricted: ControlAvailabilityContext = {
   needsSplit: false,
   viewMode: 'scroll',
   slideTrayEnabled: false,
+  slantVisible: false,
 };
 
 const ids = (results: { controlId: string }[]) => results.map((r) => r.controlId);

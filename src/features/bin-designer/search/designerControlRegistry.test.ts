@@ -15,6 +15,7 @@ const baseCtx: ControlAvailabilityContext = {
   needsSplit: true,
   viewMode: 'rail',
   slideTrayEnabled: true,
+  slantVisible: true,
 };
 
 // Controls the manifest knows about but the search deliberately does not index,
@@ -61,6 +62,7 @@ describe('designerControlRegistry', () => {
         needsSplit: false,
         viewMode: 'scroll',
         slideTrayEnabled: false,
+        slantVisible: false,
       })
     ).toBe(true);
   });
@@ -87,6 +89,11 @@ describe('designerControlRegistry', () => {
     expect(
       isDesignerControlAvailable('bd-slide-tray', { ...baseCtx, slideTrayEnabled: false })
     ).toBe(false);
+  });
+
+  it('offers the Slant section only while it is mounted', () => {
+    expect(isDesignerControlAvailable('bd-slant', { ...baseCtx, slantVisible: true })).toBe(true);
+    expect(isDesignerControlAvailable('bd-slant', { ...baseCtx, slantVisible: false })).toBe(false);
   });
 
   it('shows print-fit in the rail always but in the scroll only when splitting', () => {

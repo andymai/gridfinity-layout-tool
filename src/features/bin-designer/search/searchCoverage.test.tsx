@@ -16,6 +16,7 @@ const ALL_AVAILABLE: ControlAvailabilityContext = {
   needsSplit: true,
   viewMode: 'rail',
   slideTrayEnabled: true,
+  slantVisible: true,
 };
 
 const GOLDEN: { query: string; expect: string[] }[] = [
