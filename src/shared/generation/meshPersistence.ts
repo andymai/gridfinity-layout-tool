@@ -116,7 +116,6 @@ const BIN_MESH_REVISION = 'bin9';
  * (and its warm entries) untouched.
  *
  * occt-wasm `r1`: brepjs 18.124.8.
- * occt-wasm `r4`: occt-wasm 5.6.2.
  * brepkit `r1`: brepkit-wasm 3.2.28 — the interface-family winding and
  * cap-synthesis fixes move insert/cutout output that reaches a coplanar
  * interface, and the deep-cutout chain is now exact.
