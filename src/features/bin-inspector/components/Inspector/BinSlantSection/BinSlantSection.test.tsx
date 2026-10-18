@@ -116,17 +116,27 @@ describe('BinSlantSection', () => {
     expect(screen.getByText('inspector.slant.noRoom')).toBeInTheDocument();
   });
 
-  it('puts a refused typed angle back to the angle that stands', () => {
+  it('puts a refused typed angle back to the angle that stands, every time', () => {
     updateBin.mockImplementation(() => err(layoutInvalidOperation('updateBin', 'collision')));
     renderFor(bin('a', 0, { slant: BACK }));
-    const angle = screen.getByLabelText('binDesigner.slant.angleAria', { selector: 'input' });
-    for (const typed of ['60', '55']) {
-      fireEvent.change(angle, { target: { value: typed } });
-      fireEvent.blur(angle);
-      expect(
-        screen.getByLabelText('binDesigner.slant.angleAria', { selector: 'input' })
-      ).toHaveValue(45);
+    const angle = () => screen.getByLabelText('binDesigner.slant.angleAria', { selector: 'input' });
+    for (const typed of [60, 55]) {
+      fireEvent.change(angle(), { target: { value: String(typed) } });
+      fireEvent.blur(angle());
+      expect(updateBin).toHaveBeenLastCalledWith('a', { slant: { ...BACK, angleDeg: typed } });
+      expect(angle()).toHaveValue(45);
     }
+  });
+
+  it('keeps focus on a stepper button whose step is refused', () => {
+    updateBin.mockImplementation(() => err(layoutInvalidOperation('updateBin', 'collision')));
+    renderFor(bin('a', 0, { slant: BACK }));
+    const increase = screen.getByRole('button', { name: /increase/i });
+    increase.focus();
+    fireEvent.click(increase);
+    expect(updateBin).toHaveBeenCalled();
+    expect(document.activeElement).toBe(increase);
+    expect(increase).toBeInTheDocument();
   });
 
   it('matches the row, with the end support on its leading bin', () => {

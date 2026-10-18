@@ -51,6 +51,19 @@ describe('Stepper', () => {
   });
 
   describe('input mode', () => {
+    it('puts a typed value the caller refused back to its value when syncKey changes', () => {
+      const props = { ...defaultProps, value: 5, onChange: vi.fn() };
+      const { rerender } = render(<Stepper {...props} syncKey={0} />);
+      const input = screen.getByRole('spinbutton');
+      fireEvent.change(input, { target: { value: '8' } });
+      fireEvent.blur(input);
+      expect(props.onChange).toHaveBeenCalledWith(8);
+      expect(input).toHaveValue(8);
+      rerender(<Stepper {...props} syncKey={1} />);
+      expect(screen.getByRole('spinbutton')).toHaveValue(5);
+      expect(screen.getByRole('spinbutton')).toBe(input);
+    });
+
     it('renders an input with the value', () => {
       render(<Stepper {...defaultProps} onChange={vi.fn()} />);
       expect(screen.getByRole('spinbutton')).toHaveValue(5);

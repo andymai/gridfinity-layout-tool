@@ -69,10 +69,9 @@ export function BinSlantSection({ bin, layout, variant }: BinSlantSectionProps) 
             <div className="mb-1 text-micro text-content-tertiary">
               {t('binDesigner.slant.angle')}
             </div>
-            {/* The stepper keeps what was typed until its value changes, which a refused edit does not. */}
             <Stepper
-              key={state.refusals}
               value={config.angleDeg}
+              syncKey={state.refusals}
               onChange={handlers.setAngle}
               onStep={(delta) => handlers.setAngle(config.angleDeg + delta * ANGLE_STEP_DEG)}
               min={SLANT_MIN_DEG}

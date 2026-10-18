@@ -175,7 +175,8 @@ function useDeferredNumberInput(
   onChange: ((value: number) => void) | undefined,
   min: number,
   max: number,
-  decimals: number
+  decimals: number,
+  syncKey: unknown
 ) {
   const fmt = useCallback(
     // Round to `decimals` then strip trailing zeros so 5.5 stays "5.5" (not
@@ -195,8 +196,10 @@ function useDeferredNumberInput(
   // Only resync in input mode: when onChange is absent the input isn't rendered,
   // so a render-time setState there would just burn an extra pass for nothing.
   const [lastSynced, setLastSynced] = useState(externalValue);
-  if (onChange && externalValue !== lastSynced) {
+  const [lastSyncKey, setLastSyncKey] = useState(syncKey);
+  if (onChange && (externalValue !== lastSynced || syncKey !== lastSyncKey)) {
     setLastSynced(externalValue);
+    setLastSyncKey(syncKey);
     setLocalValue(fmt(externalValue));
   }
 
@@ -328,6 +331,12 @@ export interface StepperProps extends StepperVariantProps {
   displayValue?: ReactNode;
 
   /**
+   * Changing it puts the input back to `value`, for a caller that refuses a
+   * typed value: the input otherwise keeps what was typed until `value` changes.
+   */
+  syncKey?: unknown;
+
+  /**
    * Accessibility label for the stepper.
    */
   'aria-label': string;
@@ -425,6 +434,7 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
       commitMode = 'immediate',
       className,
       id,
+      syncKey,
     },
     ref
   ) => {
@@ -476,7 +486,8 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
       onChange,
       min,
       max,
-      inputDecimals
+      inputDecimals,
+      syncKey
     );
 
     const isDecreaseDisabled = disabled || optimisticValue <= Math.min(min, floor ?? min);
