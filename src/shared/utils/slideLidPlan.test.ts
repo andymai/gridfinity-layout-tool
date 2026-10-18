@@ -140,6 +140,22 @@ describe('resolveSlideLidPlan', () => {
       expect(solid(joint + 0.01).geometry).not.toBeNull();
     });
 
+    it('keeps a thin wall’s lining chamfer out of a solid bin’s fill', () => {
+      // The 0.8mm wall is lined out to 1.2mm, and the lining's 45° chamfer
+      // back to the wall reaches 0.4mm below the joint's foot.
+      const joint = slideJointDepthBelowWallTopMm(
+        DEFAULT_LID_SLIDE_CONFIG,
+        LID_SLIDE_PLATE_MIN_MM,
+        true
+      );
+      const thin = (isSolid: boolean, cavityDepthMm: number) =>
+        resolveSlideLidPlan(input({ isSolid, cavityDepthMm, wallThickness: 0.8 }));
+      expect(thin(true, joint + 0.2).rejection).toBe('bin-too-shallow');
+      expect(thin(true, joint + 0.41).geometry).not.toBeNull();
+      // A hollow bin's floor takes the chamfer whole.
+      expect(thin(false, joint + 0.2).geometry).not.toBeNull();
+    });
+
     it('refuses a bin too narrow for a usable plate', () => {
       // Narrow ACROSS the travel axis: with a front entry that is innerW.
       expect(resolveSlideLidPlan(input({ innerW: 8 })).rejection).toBe('bin-too-narrow');

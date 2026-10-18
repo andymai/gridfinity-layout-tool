@@ -662,6 +662,22 @@ export function slideJointDepthBelowWallTopMm(
 }
 
 /**
+ * How far below the wall top a solid bin's fill has to sit for the joint: the
+ * joint itself, and a thin wall's lining, whose 45° chamfer back to the wall
+ * starts at the joint's foot. The lining is fused after the pockets are cut,
+ * so a chamfer reaching into the fill would refill a pocket against the wall.
+ */
+export function slideSolidRecessNeededMm(
+  slide: Pick<LidSlideConfig, 'placement' | 'clearanceMm'>,
+  plateThicknessMm: number,
+  hasLip: boolean,
+  wallThickness: number
+): number {
+  const liningRun = Math.max(0, SLIDE_MIN_CHANNEL_WALL_MM - wallThickness);
+  return slideJointDepthBelowWallTopMm(slide, plateThicknessMm, hasLip) + liningRun;
+}
+
+/**
  * Resolve the sliding-lid geometry, or say why there is none.
  *
  * Every rejection is a real refusal to build, not a clamp: a channel that
@@ -718,9 +734,10 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
   const plateTopBelowWallTop = slidePlateTopBelowWallTopMm(slide.placement, c, input.hasLip);
   // Checked against the interior so a 1U bin is refused rather than shipped with
   // a channel through its floor.
-  if (slideJointDepthBelowWallTopMm(slide, t, input.hasLip) >= input.cavityDepthMm) {
-    return NO_GEOMETRY('bin-too-shallow');
-  }
+  const needed = input.isSolid
+    ? slideSolidRecessNeededMm(slide, t, input.hasLip, wallThickness)
+    : slideJointDepthBelowWallTopMm(slide, t, input.hasLip);
+  if (needed >= input.cavityDepthMm) return NO_GEOMETRY('bin-too-shallow');
 
   const detentRise = slide.detent
     ? Math.min(c * DETENT_RISE_FRACTION_OF_CLEARANCE, DETENT_MAX_RISE_MM)

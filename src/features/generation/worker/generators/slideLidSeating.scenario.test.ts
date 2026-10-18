@@ -784,6 +784,31 @@ describe('sliding lid on a solid bin', () => {
     expect(await travelOverlap(lowestFill())).toBeLessThan(CONTACT_FLOOR_MM3);
   }, 300000);
 
+  it('keeps a thin wall’s lining out of a pocket against the channel wall', async () => {
+    // A 0.8mm wall is lined out to 1.2mm, and the lining is fused after the
+    // pockets are cut, so its chamfer must stay above the lowered fill.
+    const thin = (topOffset: number): BinParams => ({
+      ...solidParams(topOffset),
+      wallThickness: 0.8,
+      cutouts: [{ ...pocket, x: 0 }],
+    });
+    const offset = slideLidFillOffsetMm(thin(0));
+    if (offset === null) throw new Error('expected a fill level that fits the channel');
+    const params = thin(offset);
+    const exported = getGenerateBin()(params, undefined, true);
+    if (!exported) throw new Error('expected the export mesh to build');
+    const { innerW, innerD } = binDimensions(params);
+    const fillTopZ = binWallTopZ(params) - offset;
+    const floorZ = fillTopZ - pocket.cutDepth;
+    // Inside the pocket, within the lining's run of the left wall's face.
+    const x = -innerW / 2 + 0.13;
+    const y = pocket.y + pocket.depth / 2 - innerD / 2 + 0.17;
+    const inPocket = columnCrossings(exported, x, y).filter(
+      (z) => z > floorZ + 0.05 && z < fillTopZ - 0.02
+    );
+    expect(inPocket).toEqual([]);
+  }, 300000);
+
   it('holds the plate, keeps the fill and still cuts the pocket', async () => {
     const params = lowestFill();
     expect(newCrossingsAbovePlate(await build(params), bareBin(params))).toBeGreaterThan(8);

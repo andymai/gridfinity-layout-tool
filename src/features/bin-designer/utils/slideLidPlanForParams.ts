@@ -17,8 +17,8 @@ import { wallOpenings } from '@/shared/utils/lipGapPlan';
 import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 import {
   resolveSlideLidPlan,
-  slideJointDepthBelowWallTopMm,
   slideLidPlanInput,
+  slideSolidRecessNeededMm,
   type SlideLidPlan,
 } from '@/shared/utils/slideLidPlan';
 import { liningBand, withLiningOpenings } from '@/shared/utils/slideLidLiningOpenings';
@@ -109,10 +109,11 @@ function solidRecessMm(
  */
 export function slideLidFillOffsetMm(params: BinParams): number | null {
   if (!isSlideLid(params.lid) || params.style !== 'solid') return null;
-  const joint = slideJointDepthBelowWallTopMm(
+  const joint = slideSolidRecessNeededMm(
     resolveLidSlide(params.lid),
     resolveLidPlateThickness(params),
-    params.base.stackingLip
+    params.base.stackingLip,
+    params.wallThickness
   );
   const offset = (Math.floor(joint / CUTOUT_FILL_STEP_MM) + 1) * CUTOUT_FILL_STEP_MM;
   if (offset <= params.cutoutConfig.topOffset) return null;
