@@ -1,0 +1,24 @@
+src/features/design-linking/hooks/useBinResizedListener.ts
+  s_078fc63cde22ff::t_9dfb3e641e4525 162-176,184-187,196
+src/features/design-linking/hooks/useBinResizedListener.test.ts
+  s_078fc63cde22ff::t_9dfb3e641e4525 16,122-158,185-189
+  s_078fc63cde22ff::t_89232de2ec214a 182-184
+  s_078fc63cde22ff::t_cbdedb244c7684 159-161
+  s_078fc63cde22ff::t_045f6591afef5a 190-192
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "733f4e5b1b2e3a966808c3a9932d2ab304caead9",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
