@@ -1,0 +1,34 @@
+src/features/bin-designer/utils/slideLidPlanForParams.test.ts
+  s_3ed1b5bc102254::t_8a2f2c91574867 146-170
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.test.ts
+  s_3ed1b5bc102254::t_8a2f2c91574867 251-268
+  s_3ed1b5bc102254::t_e0b12c838ce000 237,293
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_3ed1b5bc102254::t_bd07eb0d3c3e3f 272-273,277-278
+src/features/generation/worker/generators/meshImprintTools.ts
+  s_3ed1b5bc102254::t_accea436ee9d41 24,101-106,120-126,129,133-134,147-170,511-513
+src/features/generation/worker/generators/meshImprint.ts
+  s_3ed1b5bc102254::t_accea436ee9d41 222-229
+src/features/generation/worker/generators/slideLidMeshImprint.scenario.test.ts
+  s_3ed1b5bc102254::t_9b5622296c540e 1-29,31-70,72,89-90,96,113-122,124-137,140-145,147,149-150,152,154,156,161-164
+  s_3ed1b5bc102254::t_5e0b0bb29c602c 30,71,73-88,91-95,97-112,123,138-139,146
+  s_3ed1b5bc102254::t_6eb477528a213d 148,151,153,155,157-160
+src/features/bin-designer/utils/slideLidPlanForParams.ts
+  s_3ed1b5bc102254::t_bd07eb0d3c3e3f 17,83-87,95-97
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "684d7a3eb3c62365359c35917fd949ffa9a53c9e",
+  "prompts": {},
+  "sessions": {
+    "s_3ed1b5bc102254": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f41879-d3ed-4377-a3a8-af4dbd466449",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
