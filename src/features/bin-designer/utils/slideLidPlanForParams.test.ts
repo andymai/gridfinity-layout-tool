@@ -143,8 +143,10 @@ describe('a solid bin', () => {
     expect(slideLidPlanForParams(solidParams(5)).rejection).toBe('bin-too-shallow');
   });
 
-  it('finds no recess where a tapered wall reaches above the fill', () => {
-    // The band clips the recess to a wall narrower than the rim-sized plate.
+  it('counts only the recess above a tapered wall’s band', () => {
+    // The band clips the recess inside it to a wall narrower than the
+    // rim-sized plate; above it the recess keeps its full width. The fill tops
+    // out at 20.25mm and the wall at 30.25mm.
     const taper = (bandHeight: number): BinParams['overhang'] => ({
       enabled: true,
       left: 10,
@@ -161,11 +163,13 @@ describe('a solid bin', () => {
         back: 0,
       },
     });
-    // The fill tops out at 20.25mm.
-    expect(slideLidPlanForParams(solidParams(10, { overhang: taper(30) })).rejection).toBe(
-      'no-cavity'
-    );
-    expect(slideLidPlanForParams(solidParams(10, { overhang: taper(15) })).geometry).not.toBeNull();
+    const plan = (bandHeight: number) =>
+      slideLidPlanForParams(solidParams(10, { overhang: taper(bandHeight) }));
+    expect(plan(15).geometry).not.toBeNull();
+    // Into the band, with 9.25mm of full-width recess still above it.
+    expect(plan(21).geometry).not.toBeNull();
+    // 0.25mm above the band.
+    expect(plan(30).rejection).toBe('bin-too-shallow');
   });
 
   it('finds no recess in a tapered bin whose offset outlived a taller one', () => {

@@ -295,6 +295,24 @@ describe('fixableIdsFor', () => {
     expect(fixableIdsFor(solidWithPocket(kept, pocket)).has('slideFillTooHigh')).toBe(true);
   });
 
+  it('measures a leaned path by the mitered outline the worker cuts', () => {
+    // A 20mm triangle pointing at -Y: its 2mm clearance miters the tip out to
+    // 14.5mm from the centre, so 18mm drawn reaches 23mm, past the fill.
+    const triangle = (cutDepth: number): BinParams =>
+      solidWithPocket(cutDepth, {
+        shape: 'path',
+        clearance: 2,
+        leanDeg: 45,
+        path: [
+          { x: 15, y: 25, handleIn: null, handleOut: null, symmetric: false },
+          { x: 25, y: 45, handleIn: null, handleOut: null, symmetric: false },
+          { x: 5, y: 45, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+    expect(fixableIdsFor(triangle(18)).has('slideFillTooHigh')).toBe(false);
+    expect(fixableIdsFor(triangle(12)).has('slideFillTooHigh')).toBe(true);
+  });
+
   it('tips a leaned floor along the tilt axis only', () => {
     // 15mm drawn across a 39mm-wide, 10mm-deep pocket reaches 14.1mm; reading
     // the width as the tilted span would put it at 24.4mm.

@@ -13,6 +13,7 @@ import {
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { slideLidFillOffsetMm } from '@/features/bin-designer/utils/slideLidPlanForParams';
 import { clearedProfile } from '@/shared/utils/cutoutClearance';
+import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
 import { hasTaper, resolveOverhang } from '@/shared/utils/overhang';
 import type { useTranslation } from '@/i18n';
 import {
@@ -267,15 +268,25 @@ const FIXABLE_IDS_WITHOUT_FILL: ReadonlySet<LidCompatibilityId> = new Set(
 );
 
 /**
+ * How far from the pocket's centre, along local Y, the floor a lean tips
+ * reaches. A path is cut from its own cleared outline, whose mitered corners
+ * can grow past the clearance, or from its bounding box when that fails.
+ */
+function tiltedHalfSpanMm(cutout: Cutout): number {
+  const { clearance, d } = clearedProfile(cutout);
+  if (cutout.shape !== 'path') return d / 2;
+  const cut = pathCutoutCut(cutout, clearance, 0);
+  return cut ? Math.max(...cut.base.map((p) => Math.abs(p.y))) : cutout.depth / 2;
+}
+
+/**
  * Fill height a pocket needs to keep its depth. The worker clamps the drawn
  * depth to the fill whatever the lean, and a lean tilts the floor about local X,
- * tipping one end of the cleared profile's local depth lower still. A path's
- * outline is offset by its clearance on every edge, so it grows by twice that.
+ * tipping one end lower still.
  */
 function pocketReachMm(cutout: Cutout): number {
   const lean = (resolveCutoutLeanDeg(cutout) * Math.PI) / 180;
-  const { clearance, d } = clearedProfile(cutout);
-  const halfSpan = (cutout.shape === 'path' ? cutout.depth + 2 * clearance : d) / 2;
+  const halfSpan = tiltedHalfSpanMm(cutout);
   const tipped = cutout.cutDepth * Math.cos(lean) + halfSpan * Math.abs(Math.sin(lean));
   return Math.max(cutout.cutDepth, tipped);
 }

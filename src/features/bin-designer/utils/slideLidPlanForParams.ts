@@ -80,10 +80,10 @@ export function slideLidPlanForParams(params: BinParams): SlideLidPlan {
 }
 
 /**
- * The recess `boxBuilder` leaves above a solid bin's fill. A tapered body clips
- * a recess that reaches into its band to the narrowing wall, which the
- * rim-sized plate cannot pass, and keeps the whole loft once the fill is gone;
- * either way it offers the plate no recess. A plain body drops the fill past
+ * The full-width recess `boxBuilder` leaves above a solid bin's fill. A tapered
+ * body clips the part inside its band to the narrowing wall, which the
+ * rim-sized plate cannot pass, so only the recess above the band counts; once
+ * the fill is gone it keeps the whole loft. A plain body drops the fill past
  * the floor, which the plan caps at the bin's own cavity.
  */
 function solidRecessMm(
@@ -92,9 +92,10 @@ function solidRecessMm(
   polygon: boolean
 ): number {
   const { topOffset } = params.cutoutConfig;
-  const fillHeight = binDimensions(params).wallHeight - topOffset;
-  const inBand = !polygon && overhang.taper !== null && fillHeight < overhang.taper.bandHeight;
-  return inBand ? 0 : topOffset;
+  if (polygon || overhang.taper === null) return topOffset;
+  const { wallHeight } = binDimensions(params);
+  if (topOffset >= wallHeight) return 0;
+  return Math.min(topOffset, wallHeight - Math.min(overhang.taper.bandHeight, wallHeight));
 }
 
 /**
