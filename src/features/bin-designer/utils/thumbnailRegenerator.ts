@@ -21,6 +21,8 @@ import {
 } from '@/features/bin-designer/components/preview/LidMesh/lidAnchorZ';
 import { knifeRestGroupPosition } from '@/features/bin-designer/components/preview/KnifeRestMesh/knifeRestPlacement';
 import { planKnifeRest } from '@/shared/utils/knifeRestPlan';
+import { planSlantSupport, resolveSlant, slantTopOffsetMm } from '@/shared/utils/slantPlan';
+import type { MeshData } from '@/shared/types/generation';
 
 /** Thumbnail size matching the main capture utility */
 const THUMBNAIL_SIZE = 384;
@@ -53,6 +55,26 @@ export async function regenerateThumbnail(
   // three is loaded on demand: this offscreen renderer only runs during background
   // thumbnail regeneration (idle time), so three core stays out of the eager bundle.
   const THREE = await import('three');
+
+  /** A companion part's surface and edge lines, as the worker sends them. */
+  const partGeometries = (
+    part: MeshData
+  ): { geometry: BufferGeometry; edges: BufferGeometry | null } => {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(part.vertices, 3));
+    if (part.indices.length > 0) geometry.setIndex(new THREE.BufferAttribute(part.indices, 1));
+    if (part.normals.length > 0) {
+      geometry.setAttribute('normal', new THREE.Float32BufferAttribute(part.normals, 3));
+    } else {
+      geometry.computeVertexNormals();
+    }
+    let edges: BufferGeometry | null = null;
+    if (part.edgeVertices.length > 0) {
+      edges = new THREE.BufferGeometry();
+      edges.setAttribute('position', new THREE.Float32BufferAttribute(part.edgeVertices, 3));
+    }
+    return { geometry, edges };
+  };
   let renderer: WebGLRenderer | null = null;
   // Track whether `acquire()` actually returned before incrementing the
   // bridge's ref-count obligation on our side. BridgeManager.acquire()
@@ -70,8 +92,16 @@ export async function regenerateThumbnail(
     const result = await bridge.generateImmediate(params);
     if (signal?.aborted) return null;
 
-    const { vertices, normals, indices, edgeVertices, lidMesh, detachableFeetMesh, knifeRestMesh } =
-      result.mesh;
+    const {
+      vertices,
+      normals,
+      indices,
+      edgeVertices,
+      lidMesh,
+      detachableFeetMesh,
+      knifeRestMesh,
+      slantSupportMesh,
+    } = result.mesh;
     if (vertices.length === 0) return null;
 
     // Build geometry. The worker emits an indexed mesh (deduplicated vertices
@@ -158,6 +188,13 @@ export async function regenerateThumbnail(
       }
     }
 
+    // A slanted bin's end support arrives in the bin's own frame, like the feet.
+    const supportPlan = planSlantSupport(params);
+    const support =
+      supportPlan && slantSupportMesh && slantSupportMesh.vertices.length > 0
+        ? partGeometries(slantSupportMesh)
+        : null;
+
     // Lid mesh + edges (rendered at closed position when params.lid.enabled
     // and the worker produced a lid). Matches LidMesh.tsx's mated formula.
     let lidGeometry: BufferGeometry | null = null;
@@ -197,6 +234,8 @@ export async function regenerateThumbnail(
       feetEdgesGeometry?.dispose();
       restGeometry?.dispose();
       restEdgesGeometry?.dispose();
+      support?.geometry.dispose();
+      support?.edges?.dispose();
       return null;
     }
 
@@ -266,6 +305,18 @@ export async function regenerateThumbnail(
       }
     }
 
+    if (support) {
+      const supportPart = new THREE.Mesh(support.geometry, material);
+      supportPart.position.set(0, 0, 0.1);
+      scene.add(supportPart);
+      if (support.edges) {
+        const supportEdges = new THREE.LineSegments(support.edges, edgeMaterial);
+        supportEdges.position.set(0, 0, 0.1);
+        supportEdges.renderOrder = 1;
+        scene.add(supportEdges);
+      }
+    }
+
     if (restGeometry && restPosition) {
       const rest = new THREE.Mesh(restGeometry, material);
       rest.position.set(restPosition[0], restPosition[1], restPosition[2]);
@@ -320,12 +371,22 @@ export async function regenerateThumbnail(
         ? Math.abs(restAlongX ? restPosition[0] : restPosition[1]) +
           (restPlan.alongU * (restAlongX ? gridUnitMm : (gridUnitMmY ?? gridUnitMm))) / 2
         : 0;
-    const framedWidth =
-      restAlongX && restReachMm > 0 ? Math.max(width, (2 * restReachMm) / gridUnitMm) : width;
+    // A slanted top and its end support reach past the footprint the same way.
+    const slant = resolveSlant(params);
+    const slantAlongX = slant?.axis === 'x';
+    const slantPitch = slantAlongX ? gridUnitMm : (gridUnitMmY ?? gridUnitMm);
+    const slantReachMm = slant
+      ? ((slantAlongX ? width : depth) * slantPitch) / 2 +
+        Math.max(
+          slantTopOffsetMm(params),
+          support && supportPlan ? supportPlan.lengthU * slantPitch : 0
+        )
+      : 0;
+    const reachX = Math.max(restAlongX ? restReachMm : 0, slantAlongX ? slantReachMm : 0);
+    const reachY = Math.max(restAlongX ? 0 : restReachMm, slant && !slantAlongX ? slantReachMm : 0);
+    const framedWidth = reachX > 0 ? Math.max(width, (2 * reachX) / gridUnitMm) : width;
     const framedDepth =
-      !restAlongX && restReachMm > 0
-        ? Math.max(depth, (2 * restReachMm) / (gridUnitMmY ?? gridUnitMm))
-        : depth;
+      reachY > 0 ? Math.max(depth, (2 * reachY) / (gridUnitMmY ?? gridUnitMm)) : depth;
     const idealDistance = calculateIdealDistance(
       framedWidth,
       framedDepth,
@@ -375,6 +436,8 @@ export async function regenerateThumbnail(
     feetEdgesGeometry?.dispose();
     restGeometry?.dispose();
     restEdgesGeometry?.dispose();
+    support?.geometry.dispose();
+    support?.edges?.dispose();
     material.dispose();
     lidMaterial?.dispose();
     edgeMaterial.dispose();

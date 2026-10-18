@@ -28,7 +28,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import type { Bin, BinId, DesignId } from '@/core/types';
+import type { Bin, BinId, DesignId, SlantConfig } from '@/core/types';
 import type { BinParams } from '@/shared/types/bin';
 import { isOk } from '@/core/result';
 import {
@@ -50,6 +50,8 @@ import { bridgeManager, getActiveKernel } from '@/shared/generation/bridge';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
 import { withLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
+import { isTurnedPlacement, sideInDesign } from '@/shared/utils/placementTurn';
+import { normalizeSlant } from '@/shared/utils/slantPlan';
 import { useSettingsStore } from '@/core/store';
 import { useLayoutStore } from '@/core/store/layout';
 import type { MeshData } from '@/shared/types/generation';
@@ -238,6 +240,8 @@ function withoutOwnOverhang(params: BinParams): BinParams {
 interface MeshRequest {
   readonly id: DesignId;
   readonly stripOwnOverhang: boolean;
+  /** A placed slant, in the design's frame, built in place of the design's own. */
+  readonly slant?: SlantConfig;
 }
 
 /**
@@ -250,6 +254,7 @@ async function resolveDesignMesh(
   nozzleSizeMm: number,
   lowProfileBase: boolean,
   stripOwnOverhang: boolean,
+  slant: SlantConfig | undefined,
   waitingFor: string[]
 ): Promise<LinkedDesignMesh | null> {
   const structure = design.structure;
@@ -300,7 +305,10 @@ async function resolveDesignMesh(
 
   const params = design.params;
   if (!params) return null;
-  const source = stripOwnOverhang ? withoutOwnOverhang(params) : params;
+  const ownOverhang = stripOwnOverhang ? withoutOwnOverhang(params) : params;
+  // The export does the same: the placed slant replaces the design's, and the
+  // lip goes with it.
+  const source = slant ? normalizeSlant({ ...ownOverhang, slant }) : ownOverhang;
 
   // Nozzle-merged (transient) so a socket bin's pocket matches the live print
   // setting and shares the same cache key the designer preview persists under.
@@ -362,6 +370,7 @@ function enqueueResolve(
             nozzleSizeMm,
             lowProfileBase,
             request.stripOwnOverhang,
+            request.slant,
             waitingFor
           )
         : null;
@@ -422,18 +431,28 @@ export function useLinkedDesignMeshes(bins: Bin[]): Map<BinId, LinkedDesignMesh>
       // `overhangMm` is parts standing past its plate. `overhangMm` answers
       // "does the design carry one" without loading its params; with none,
       // stripping changes nothing and the bin keeps the shared mesh.
-      const stripOwnOverhang =
-        parametric &&
-        ref.overhangMm !== undefined &&
-        resolveBinOverhang(bin, drawer, baseplate, ref.kind) !== null;
+      const placedOverhang = resolveBinOverhang(bin, drawer, baseplate, ref.kind) !== null;
+      const stripOwnOverhang = parametric && ref.overhangMm !== undefined && placedOverhang;
+      // A placed slant faces the drawer, so a turned placement builds it turned
+      // back; an overhang of the placement's own keeps the bin upright.
+      const slant =
+        parametric && bin.slant && !placedOverhang
+          ? isTurnedPlacement(bin, ref)
+            ? { ...bin.slant, side: sideInDesign(bin.slant.side) }
+            : bin.slant
+          : undefined;
       // Quantize the nozzle so float noise (e.g. 0.6000000000000001) can't
       // fragment the cache key into avoidable misses.
       const key = `${ref.id}:${ref.updatedAt}:n${nozzleSizeMm.toFixed(3)}${
         // Only a parametric bin is rebuilt on the layout's foot.
         lowProfileBase && parametric ? ':lp' : ''
-      }${stripOwnOverhang ? ':no-own-overhang' : ''}`;
+      }${stripOwnOverhang ? ':no-own-overhang' : ''}${
+        slant ? `:slant${slant.angleDeg}${slant.side}${slant.endSupport ? 's' : ''}` : ''
+      }`;
       keyByBin.set(bin.id, key);
-      if (!requests.has(key)) requests.set(key, { id: ref.id, stripOwnOverhang });
+      if (!requests.has(key)) {
+        requests.set(key, { id: ref.id, stripOwnOverhang, ...(slant ? { slant } : {}) });
+      }
     }
     return { requests, keyByBin };
   }, [bins, registry, nozzleSizeMm, lowProfileBase, drawer, baseplate]);

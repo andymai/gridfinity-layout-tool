@@ -91,6 +91,19 @@ describe('buildDesignGeometry', () => {
     geometry.dispose();
   });
 
+  it("draws a slanted bin's end support where it arrives, past the bin, unlifted", () => {
+    const support: MeshData = {
+      ...makeMesh(true),
+      vertices: new Float32Array([0, 10, 0, 10, 10, 0, 10, 52, 0, 0, 52, 30]),
+    };
+    const geometry = buildDesignGeometry({ ...makeMesh(true), slantSupportMesh: support });
+    geometry.computeBoundingBox();
+    expect(geometry.attributes.position.count).toBe(12);
+    expect(geometry.boundingBox?.max.y).toBeCloseTo(52, 6);
+    expect(geometry.boundingBox?.min.z).toBeCloseTo(0, 6);
+    geometry.dispose();
+  });
+
   it('leaves a feetless mesh in its own frame', () => {
     const geometry = buildDesignGeometry(makeMesh(true));
     geometry.computeBoundingBox();

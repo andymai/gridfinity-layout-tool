@@ -26,6 +26,7 @@ import { loadPersistedBinMesh, savePersistedBinMesh } from '@/shared/generation/
 import { bridgeManager } from '@/shared/generation/bridge';
 import type { KernelName } from '@/shared/generation/bridge';
 import type { MeshData } from '@/shared/types/generation';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 
 let mockActiveKernel: KernelName = 'occt-wasm';
 
@@ -49,7 +50,9 @@ vi.mock('@/shared/generation/meshPersistence', () => ({
   // overhang-sensitive so a params variant without one is too.
   binMeshCacheKey: vi.fn(
     (p: BinParams, kernel: KernelName) =>
-      `persist-key-${kernel}${p.overhang ? OWN_OVERHANG_SUFFIX : ''}`
+      `persist-key-${kernel}${p.overhang ? OWN_OVERHANG_SUFFIX : ''}${
+        p.slant ? `-slant-${p.slant.side}${p.base.stackingLip ? '-lip' : ''}` : ''
+      }`
   ),
   itemMeshCacheKey: vi.fn((_i: unknown, kernel: KernelName) => `item-key-${kernel}`),
   loadPersistedBinMesh: vi.fn(async () => null),
@@ -610,6 +613,59 @@ describe('useLinkedDesignMeshes', () => {
       });
       expect(result.current.get(MARGIN_BIN)).toBe(result.current.get(PLAIN_BIN));
       expect(mockLoadDesign).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('a placed slant', () => {
+    const SLANT = { angleDeg: 40, side: 'back' as const, endSupport: true };
+    const persistedKeys = (): string[] => mockLoadPersistedBinMesh.mock.calls.map(([key]) => key);
+
+    beforeEach(() => {
+      mockLoadPersistedBinMesh.mockImplementation(async () => makeMesh());
+      mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+      mockLoadDesign.mockResolvedValue(ok(makeBinDesign({ ...DEFAULT_BIN_PARAMS, width: 2 })));
+    });
+
+    afterEach(() => {
+      resetAllStores();
+    });
+
+    it('builds the placement with its slant, apart from its upright copies', async () => {
+      const bins = [
+        createTestBin({ id: B1, linkedDesignId: D1, width: gridUnits(2) }),
+        createTestBin({ id: binId('b2'), linkedDesignId: D1, width: gridUnits(2), slant: SLANT }),
+      ];
+      const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+      await waitFor(() => expect(result.current.size).toBe(2));
+      expect(result.current.get(B1)?.sig).not.toBe(result.current.get(binId('b2'))?.sig);
+      // The lip goes with the slant, as the export drops it.
+      expect(persistedKeys().some((key) => key.endsWith('-slant-back'))).toBe(true);
+    });
+
+    it('builds a turned placement with the slant turned into the design', async () => {
+      const turned = createTestBin({
+        id: B1,
+        linkedDesignId: D1,
+        width: gridUnits(1),
+        depth: gridUnits(2),
+        slant: SLANT,
+      });
+      const { result } = renderHook(() => useLinkedDesignMeshes([turned]));
+      await waitFor(() => expect(result.current.size).toBe(1));
+      expect(persistedKeys().some((key) => key.endsWith('-slant-right'))).toBe(true);
+    });
+
+    it('leaves the slant off where an overhang of the placement keeps it upright', async () => {
+      const expanded = createTestBin({
+        id: B1,
+        linkedDesignId: D1,
+        width: gridUnits(2),
+        slant: SLANT,
+        overhang: { left: 5, right: 0, front: 0, back: 0 },
+      });
+      const { result } = renderHook(() => useLinkedDesignMeshes([expanded]));
+      await waitFor(() => expect(result.current.size).toBe(1));
+      expect(persistedKeys().some((key) => key.includes('-slant-'))).toBe(false);
     });
   });
 

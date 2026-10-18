@@ -85,13 +85,22 @@ function scheduleTrim(): void {
   });
 }
 
-/** Concatenate a companion part's buffers onto the body's, shifting its indices. */
+/** Concatenate companion parts' buffers onto the body's, shifting their indices. */
 function mergeParts(
   body: MeshData,
+  ...parts: (MeshData | undefined)[]
+): { vertices: Float32Array; indices: Uint32Array } {
+  let merged = { vertices: body.vertices, indices: body.indices };
+  for (const part of parts) merged = mergeOne(merged, part);
+  return merged;
+}
+
+function mergeOne(
+  body: { vertices: Float32Array; indices: Uint32Array },
   part: MeshData | undefined
 ): { vertices: Float32Array; indices: Uint32Array } {
   if (!part || part.vertices.length === 0) {
-    return { vertices: body.vertices, indices: body.indices };
+    return body;
   }
   const vertices = new Float32Array(body.vertices.length + part.vertices.length);
   vertices.set(body.vertices, 0);
@@ -136,7 +145,9 @@ export function buildDesignGeometry(mesh: MeshData): THREE.BufferGeometry {
   // Concatenating alone puts the feet through the layer plane while the rim
   // still sits a socket below an integral neighbour's. The lift is read off the
   // feet themselves, since a low-profile drawer builds them shorter.
-  const { vertices, indices } = mergeParts(mesh, mesh.detachableFeetMesh);
+  // A slanted bin's end support prints with it and arrives in the same frame,
+  // standing on the cells past its leaning side.
+  const { vertices, indices } = mergeParts(mesh, mesh.detachableFeetMesh, mesh.slantSupportMesh);
   const lift = detachableFeetLiftMm(mesh);
   if (lift > 0) {
     for (let i = 2; i < vertices.length; i += 3) {
