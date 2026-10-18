@@ -1,0 +1,33 @@
+src/shared/utils/validationPlacement.ts
+  s_078fc63cde22ff::t_96577ef2ecd1c8 86,195
+src/features/design-linking/hooks/useBinResizedListener.ts
+  s_078fc63cde22ff::t_f12352174618e7 29,31-32
+  s_078fc63cde22ff::t_036355b0d0b54f 84-86,96-97,103,154-176,179,189
+src/features/design-linking/domain/resizeSupport.test.ts
+  s_078fc63cde22ff::t_260edb5b0e3002 9,37,43,45-47,60-61,65-77,81
+  s_078fc63cde22ff::t_3104fb3865c89d 78-80
+  s_078fc63cde22ff::t_f6b95cc3ba94c8 82-84
+src/features/design-linking/hooks/useBinResizedListener.test.ts
+  s_078fc63cde22ff::t_ff4049f8e6c60d 16-17,121-153
+  s_078fc63cde22ff::t_77b6beab6ef44e 154-156
+src/features/design-linking/domain/resizeSupport.ts
+  s_078fc63cde22ff::t_96577ef2ecd1c8 1,3-9,14-18,20-33,36-40,45,47-57,59,62,64-67
+src/shared/utils/placedSlant.ts
+  s_078fc63cde22ff::t_96577ef2ecd1c8 40-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7bf8a3f649d6aaeebd84f61654cc7edd6d736e04",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
