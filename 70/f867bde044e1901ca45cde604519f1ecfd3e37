@@ -1,0 +1,36 @@
+src/features/bin-designer/store/helpers.ts
+  s_078fc63cde22ff::t_6e7cffac4352b1 32,94-100
+  s_078fc63cde22ff::t_15f0b8a46643ae 101-103
+src/shared/utils/slantPlan.test.ts
+  s_078fc63cde22ff::t_70cd39addfad1b 3,95-96
+src/shared/utils/slantPlan.ts
+  s_078fc63cde22ff::t_6e7cffac4352b1 18-19,30-32,45-46,72-73
+src/shared/utils/lidInteriorRelief.test.ts
+  s_078fc63cde22ff::t_0150ed65412646 58-65
+src/shared/utils/lidInteriorRelief.ts
+  s_078fc63cde22ff::t_6e7cffac4352b1 28,33-34
+src/features/bin-designer/store/designer.ts
+  s_078fc63cde22ff::t_6e7cffac4352b1 28,36
+public/schema/bin-design.schema.json
+  s_078fc63cde22ff::t_6e7cffac4352b1 2070
+src/features/bin-designer/store/designer.test.ts
+  s_078fc63cde22ff::t_0150ed65412646 431-455
+src/shared/utils/binSplitFit.ts
+  s_078fc63cde22ff::t_3fa89ddd8c7d0b 38-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "70f867bde044e1901ca45cde604519f1ecfd3e37",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
