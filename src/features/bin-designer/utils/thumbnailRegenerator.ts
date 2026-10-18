@@ -406,6 +406,14 @@ export async function regenerateThumbnail(
       .add(binCenter);
     camera.position.copy(cameraPos);
     camera.lookAt(binCenter);
+    // Wide framing for a tall, steep lean can set the camera further back than
+    // the default far plane, which would clip the whole bin.
+    const extentMm = Math.hypot(
+      framedWidth * gridUnitMm,
+      framedDepth * (gridUnitMmY ?? gridUnitMm),
+      height * heightUnitMm
+    );
+    camera.far = Math.max(camera.far, idealDistance + extentMm);
     camera.updateProjectionMatrix();
 
     // Create offscreen renderer

@@ -148,6 +148,24 @@ describe('regenerateThumbnail', () => {
     addSpy.mockRestore();
   });
 
+  it('keeps a tall, steeply leaning bin inside the camera far plane', async () => {
+    rendererInstances.length = 0;
+    generateImmediate.mockResolvedValue({ mesh: { ...makeMesh(), slantSupportMesh: makeMesh() } });
+    await regenerateThumbnail({
+      ...DEFAULT_BIN_PARAMS,
+      width: 2,
+      depth: 1,
+      height: 40,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+      slant: { angleDeg: 60, side: 'back', endSupport: true },
+    });
+    const [, camera] = rendererInstances[0].render.mock.calls[0] as [
+      unknown,
+      THREE.PerspectiveCamera,
+    ];
+    expect(camera.far).toBeGreaterThan(camera.position.length() + 40 * 7);
+  });
+
   it('skips setIndex when the worker returns an empty index buffer', async () => {
     generateImmediate.mockResolvedValue({
       mesh: makeMesh({ indices: new Uint32Array(0) }),
