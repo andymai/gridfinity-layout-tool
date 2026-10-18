@@ -27,6 +27,9 @@ export {
   formatDimensionChange,
 } from './syncOperations';
 
+// A resize that would grow a placement's end support past what fits
+export { resizeBlockedBySupport } from './resizeSupport';
+
 // Complex geometry detection
 export { hasComplexGeometry, getComplexityReasons } from './complexGeometry';
 export type { ComplexityReason } from './complexGeometry';

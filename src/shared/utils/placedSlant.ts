@@ -106,7 +106,10 @@ function placementFacts(bin: Bin): LinkedSlantFacts | undefined {
 export function placedSlant(
   bin: Bin,
   layout: SlantLayout,
-  /** A height the linked design is about to be resized to. */
+  /**
+   * A height the linked design may be resized to. The resize can still be
+   * refused, so the support is sized from the taller of it and the design's.
+   */
   resizedTo?: number
 ): PlacedSlant | null {
   const facts = placementFacts(bin);
@@ -132,7 +135,10 @@ export function placedSlant(
   const span = slantSpanZFor({
     flatBase: facts?.flatBase === true,
     lowProfile: layout.lowProfileBase === true,
-    height: resizedTo ?? facts?.height ?? bin.height,
+    height:
+      resizedTo !== undefined
+        ? Math.max(resizedTo, facts?.height ?? resizedTo)
+        : (facts?.height ?? bin.height),
     heightUnitMm: units.heightUnitMm,
     extraWallHeightMm: facts?.extraWallMm,
   });

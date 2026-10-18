@@ -765,6 +765,25 @@ describe('canPlaceBin with slanted bins', () => {
     });
   });
 
+  it('keeps the support of the design height while a shrink can still be refused', () => {
+    registerLinkedSlantResolver(() => ({ width: 2, depth: 1, height: 12 }));
+    const layout = makeSingleLayerLayout();
+    layout.bins = [
+      slanted({ linkedDesignId: designId('d1'), height: heightUnits(12) }),
+      createTestBin({
+        id: binId('ahead'),
+        layerId: LAYER_1,
+        x: gridUnits(4),
+        y: gridUnits(2),
+        width: gridUnits(2),
+      }),
+    ];
+    expect(canPlaceBin(at(4, 0, 6), LAYER_1, layout, binId('slanted'))).toMatchObject({
+      valid: false,
+      reason: 'collision',
+    });
+  });
+
   it('does not freeze edits to a bin whose support already leaves the drawer', () => {
     const layout = makeSingleLayerLayout();
     layout.bins = [slanted({ y: gridUnits(7) })];

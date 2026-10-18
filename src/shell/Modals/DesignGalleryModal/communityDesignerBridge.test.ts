@@ -63,6 +63,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore, INITIAL_SELECTION_STATE } from '@/core/store/selection';
 import { useGapFitStore } from '@/core/store/gapFit';
 import { binId, gridUnits, heightUnits } from '@/core/types';
+import { registerLinkedSlantResolver } from '@/shared/utils/placedSlant';
 import type { Bin } from '@/core/types';
 import type { GapFitConstraint } from '@/core/store/gapFit';
 
@@ -312,6 +313,42 @@ describe('communityDesignerBridge', () => {
       const placedBin = useLayoutStore.getState().layout.bins[0];
       expect(placedBin).toMatchObject({ x: 0, y: 0, width: 3, depth: 2 });
       expect(registrySlantFields.mock.calls[0][0]).toMatchObject({ slide: expect.anything() });
+    });
+
+    // The probe leans the design without its extra wall, which takes the
+    // linked support a second cell out; only the turned placement has room.
+    it('places it turned when only the turned placement fits its linked support', async () => {
+      const LEFT = { angleDeg: 45, side: 'left' as const, endSupport: true };
+      registrySlantFields.mockReturnValue({ slant: { config: LEFT } });
+      registerLinkedSlantResolver((id) =>
+        id === 'design_new'
+          ? { config: LEFT, extraWallMm: 21, width: 2, depth: 3, height: 6 }
+          : undefined
+      );
+      const layout = useLayoutStore.getState().layout;
+      useLayoutStore.setState({
+        layout: {
+          ...layout,
+          drawer: { ...layout.drawer, width: gridUnits(6), depth: gridUnits(6) },
+        },
+      });
+      useGapFitStore.getState().setConstraint({
+        ...constraintFor(),
+        targetPosition: { x: gridUnits(1), y: gridUnits(2), layerId: layout.layers[0].id },
+      });
+
+      try {
+        await expect(placeCommunityDesignInLayout(design)).resolves.toBe('placed');
+      } finally {
+        registerLinkedSlantResolver(null);
+      }
+
+      expect(useLayoutStore.getState().layout.bins[0]).toMatchObject({
+        x: 1,
+        y: 2,
+        width: 3,
+        depth: 2,
+      });
     });
 
     it('returns no-fit without saving anything when neither orientation fits', async () => {

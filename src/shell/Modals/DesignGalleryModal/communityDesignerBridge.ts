@@ -235,13 +235,33 @@ export async function placeCommunityDesignInLayout(
         updatedAt: saved.value.updatedAt,
       });
 
+      // The probe leaned the design without its base, extra wall or edges.
+      // Registered, the linked support is exact, and may only fit turned.
+      const registered = useLayoutStore.getState().layout;
+      const placement = [fitting, ...orientations.filter((o) => o !== fitting)].find(
+        (orientation) =>
+          canPlaceBin(
+            {
+              x,
+              y,
+              width: orientation.width as GridUnits,
+              depth: orientation.depth as GridUnits,
+              height: height as HeightUnits,
+              linkedDesignId: saved.value.id,
+            },
+            layerId,
+            registered
+          ).valid
+      );
+      if (placement === undefined) return 'error-copy-saved';
+
       const { commandBus, createCqrsMutations } = await import('@/core/cqrs');
       const result = createCqrsMutations(commandBus).addBin({
         layerId,
         x,
         y,
-        width: fitting.width as GridUnits,
-        depth: fitting.depth as GridUnits,
+        width: placement.width as GridUnits,
+        depth: placement.depth as GridUnits,
         height: height as HeightUnits,
         category: useSelectionStore.getState().activeCategoryId,
         label: '',

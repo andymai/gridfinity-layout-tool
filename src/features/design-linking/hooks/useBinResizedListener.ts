@@ -29,6 +29,7 @@ import {
 } from '@/features/bin-designer';
 import { isErr } from '@/core/result';
 import { useTranslation } from '@/i18n';
+import { getPlacementErrorMessage } from '@/shared/utils/validation';
 import { onSyncEvent } from '../events';
 import type { BinResizedEvent } from '../events';
 import { useLinkingStore } from '../store';
@@ -42,6 +43,7 @@ import {
   checkBatchSyncEligibility,
   createBinSyncUpdate,
   partitionSyncableByLock,
+  resizeBlockedBySupport,
 } from '../domain';
 
 export function useBinResizedListener(): void {
@@ -117,6 +119,25 @@ export function useBinResizedListener(): void {
         if (hasComplexGeometry(design.params)) {
           const reasons = getComplexityReasons(design.params);
           showBlockedResizeDialogRef.current(binId, linkedDesignId, designName, reasons);
+          return;
+        }
+
+        const blocker = resizeBlockedBySupport(
+          layoutRef.current,
+          linkedDesignId,
+          newDimensions.height,
+          binId
+        );
+        if (blocker) {
+          addToastRef.current({
+            message: getPlacementErrorMessage(
+              tRef.current,
+              blocker.result.reason,
+              blocker.result.blockingInfo
+            ),
+            type: 'info',
+            duration: 3000,
+          });
           return;
         }
 
