@@ -4876,6 +4876,7 @@
   "binDesigner.panel.viewAsRail": "Kompaktowe sekcje",
   "common.more": "Więcej",
   "binDesigner.printFit.fits": "Mieści się na stole {width} × {depth} mm.",
+  "binDesigner.printFit.slantTooLarge": "Ten pochylony bin jest za duży na stół {width} × {depth} mm, a pochylonych binów nie można dzielić. Zmniejsz kąt lub rozmiar binu.",
   "binDesigner.dependency.enableStackingLip": "Włącz krawędź piętrowania",
   "binDesigner.dependency.editFootprint": "Edytuj obrys",
   "spacemouse.connect": "Połącz",

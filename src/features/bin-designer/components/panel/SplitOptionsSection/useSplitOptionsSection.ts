@@ -6,40 +6,27 @@ import { useSettingsStore } from '@/core/store';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import { getSplitPieceCount } from '@/shared/utils/splitPositions';
 import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
+import { slantedBinFitsBed } from '@/shared/utils/slantPlan';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { useLayoutPrintBed } from '@/features/bin-designer/hooks/useLayoutPrintBed';
 
 export type SplitAxis = 'width' | 'depth' | 'both';
 
 export function useSplitOptionsSection() {
-  const {
-    width,
-    depth,
-    gridUnitMm,
-    gridUnitMmY,
-    overhang,
-    cellMask,
-    base,
-    splitConnectors,
-    splitViewMode,
-    setParam,
-    setSplitViewMode,
-  } = useDesignerStore(
-    useShallow((s) => ({
-      width: s.params.width,
-      depth: s.params.depth,
-      gridUnitMm: s.params.gridUnitMm,
-      gridUnitMmY: s.params.gridUnitMmY,
-      overhang: s.params.overhang,
-      cellMask: s.params.cellMask,
-      base: s.params.base,
-      splitConnectors: s.params.splitConnectors,
-      splitViewMode: s.ui.splitViewMode,
-      setParam: s.setParam,
-      setSplitViewMode: s.setSplitViewMode,
-    }))
-  );
+  const { width, depth, base, splitConnectors, splitViewMode, setParam, setSplitViewMode } =
+    useDesignerStore(
+      useShallow((s) => ({
+        width: s.params.width,
+        depth: s.params.depth,
+        base: s.params.base,
+        splitConnectors: s.params.splitConnectors,
+        splitViewMode: s.ui.splitViewMode,
+        setParam: s.setParam,
+        setSplitViewMode: s.setSplitViewMode,
+      }))
+    );
 
+  const params = useDesignerStore((s) => s.params);
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
   const { printBedSize, printBedDepth } = useLayoutPrintBed();
 
@@ -48,13 +35,14 @@ export function useSplitOptionsSection() {
   // body in mm past its grid footprint, so a bin whose units fit can still be
   // far too wide to print.
   const maxGrid = useMemo(
-    () =>
-      binSplitChunkUnits(
-        { width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask },
-        printBedSize,
-        printBedDepth
-      ),
-    [width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask, printBedSize, printBedDepth]
+    () => binSplitChunkUnits(params, printBedSize, printBedDepth),
+    [params, printBedSize, printBedDepth]
+  );
+  // A slanted bin never splits, so a lean too long for the bed has no remedy
+  // here but a smaller angle or bin.
+  const slantTooLarge = useMemo(
+    () => !slantedBinFitsBed(params, printBedSize, printBedDepth),
+    [params, printBedSize, printBedDepth]
   );
 
   const needsSplit = width > maxGrid.width || depth > maxGrid.depth;
@@ -110,6 +98,7 @@ export function useSplitOptionsSection() {
 
   return {
     needsSplit,
+    slantTooLarge,
     printBedSize: {
       width: printBedSize,
       depth: printBedDepth ?? printBedSize,

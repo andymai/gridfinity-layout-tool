@@ -4876,6 +4876,7 @@
   "binDesigner.panel.viewAsRail": "Kompaktní sekce",
   "common.more": "Více",
   "binDesigner.printFit.fits": "Vejde se na vaši tiskovou podložku {width} × {depth} mm.",
+  "binDesigner.printFit.slantTooLarge": "Tento šikmý bin se nevejde na vaši tiskovou podložku {width} × {depth} mm a šikmé biny nelze rozdělit. Zmenšete úhel nebo bin.",
   "binDesigner.dependency.enableStackingLip": "Zapnout stohovací okraj",
   "binDesigner.dependency.editFootprint": "Upravit půdorys",
   "spacemouse.connect": "Připojit",

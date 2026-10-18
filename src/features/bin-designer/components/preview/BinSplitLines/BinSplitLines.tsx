@@ -17,6 +17,7 @@ import { useLayoutPrintBed } from '@/features/bin-designer/hooks/useLayoutPrintB
 import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
 import { getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { resolveSlant } from '@/shared/utils/slantPlan';
 
 const AMBER_COLOR = new Color(0xfbbf24);
 
@@ -30,9 +31,10 @@ const DASHED_LINE_SHARED = {
 } as const;
 
 export const BinSplitLines = memo(function BinSplitLines() {
-  const { width, depth, height, heightUnitMm, gridUnitMm, gridUnitMmY, overhang, cellMask } =
+  const { width, depth, height, heightUnitMm, gridUnitMm, gridUnitMmY, overhang, cellMask, leans } =
     useDesignerStore(
       useShallow((s) => ({
+        leans: resolveSlant(s.params) !== null,
         width: s.params.width,
         depth: s.params.depth,
         height: s.params.height,
@@ -61,7 +63,7 @@ export const BinSplitLines = memo(function BinSplitLines() {
     [width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask, printBedSize, printBedDepth]
   );
 
-  const needsSplit = width > maxGrid.width || depth > maxGrid.depth;
+  const needsSplit = !leans && (width > maxGrid.width || depth > maxGrid.depth);
 
   const xSplits = useMemo(
     () => (needsSplit ? getSplitPlanePositionsMm(width, maxGrid.width, gridUnitMm) : []),

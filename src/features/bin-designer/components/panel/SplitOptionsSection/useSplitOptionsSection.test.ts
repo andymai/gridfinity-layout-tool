@@ -30,6 +30,29 @@ describe('useSplitOptionsSection', () => {
     expect(result.current.pieceCount).toBe(1);
   });
 
+  it('never splits a slanted bin, and flags one too long for the bed', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 6,
+        depth: 6,
+        height: 6,
+        slant: { angleDeg: 45, side: 'right' },
+      },
+    });
+    const { result } = renderHook(() => useSplitOptionsSection());
+    expect(result.current.needsSplit).toBe(false);
+    expect(result.current.slantTooLarge).toBe(true);
+  });
+
+  it('does not flag a slanted bin that fits', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, slant: { angleDeg: 45, side: 'right' } },
+    });
+    const { result } = renderHook(() => useSplitOptionsSection());
+    expect(result.current.slantTooLarge).toBe(false);
+  });
+
   it('reports needsSplit=true for oversized bin', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3 },

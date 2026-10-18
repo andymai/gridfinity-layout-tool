@@ -4876,6 +4876,7 @@
   "binDesigner.panel.viewAsRail": "Компактні розділи",
   "common.more": "Більше",
   "binDesigner.printFit.fits": "Вміщується на ваш стіл друку {width} × {depth} мм.",
+  "binDesigner.printFit.slantTooLarge": "Цей нахилений бін завеликий для вашого столу друку {width} × {depth} мм, а нахилені біни не можна розділити. Зменште кут або розмір біна.",
   "binDesigner.dependency.enableStackingLip": "Увімкнути стековий обід",
   "binDesigner.dependency.editFootprint": "Редагувати контур",
   "spacemouse.connect": "Підключити",

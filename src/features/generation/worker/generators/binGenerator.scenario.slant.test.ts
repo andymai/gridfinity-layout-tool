@@ -54,6 +54,25 @@ function tags(mesh: MeshData): number[] {
   return [...new Set((mesh.faceGroups ?? []).map((g) => g.tag))].sort((a, b) => a - b);
 }
 
+/**
+ * The height band each feature colour covers. A shear never moves z, so every
+ * tag's band must match the upright twin's: origins paired with the wrong faces
+ * would keep the same set of tags but move a colour onto another feature.
+ */
+function tagBands(mesh: MeshData): Map<number, [number, number]> {
+  const bands = new Map<number, [number, number]>();
+  for (const group of mesh.faceGroups ?? []) {
+    const band = bands.get(group.tag) ?? [Infinity, -Infinity];
+    for (let i = group.start; i < group.start + group.count; i++) {
+      const z = mesh.vertices[mesh.indices[i] * 3 + 2];
+      band[0] = Math.min(band[0], z);
+      band[1] = Math.max(band[1], z);
+    }
+    bands.set(group.tag, band);
+  }
+  return bands;
+}
+
 function expectSlantOf(
   upright: MeshData,
   slant: MeshData,
@@ -132,6 +151,8 @@ describe('slanted bin geometry', () => {
     ],
     ['a wall pattern', { wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true } }],
     ['a half-unit width', { width: 1.5 }],
+    ['a magnet base', { base: { ...UPRIGHT.base, style: 'magnet' } }],
+    ['a weighted base', { base: { ...UPRIGHT.base, style: 'weighted' } }],
   ];
 
   it.each(featured)(
@@ -144,6 +165,12 @@ describe('slanted bin geometry', () => {
       expectSlantOf(before, after, params, 40, 'back');
       expect(tags(after)).toEqual(tags(before));
       expect(tags(after).length).toBeGreaterThan(1);
+      const uprightBands = tagBands(before);
+      for (const [tag, [lo, hi]] of tagBands(after)) {
+        const [ulo, uhi] = uprightBands.get(tag) ?? [Number.NaN, Number.NaN];
+        expect(lo, `tag ${tag} bottom`).toBeCloseTo(ulo, 2);
+        expect(hi, `tag ${tag} top`).toBeCloseTo(uhi, 2);
+      }
     },
     180_000
   );

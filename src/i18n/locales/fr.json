@@ -4876,6 +4876,7 @@
   "binDesigner.panel.viewAsRail": "Sections compactes",
   "common.more": "Plus",
   "binDesigner.printFit.fits": "Tient sur votre plateau de {width} × {depth} mm.",
+  "binDesigner.printFit.slantTooLarge": "Ce bin incliné est trop grand pour votre plateau de {width} × {depth} mm, et un bin incliné ne peut pas être découpé. Réduisez l'angle ou la taille du bin.",
   "binDesigner.dependency.enableStackingLip": "Activer la lèvre d’empilage",
   "binDesigner.dependency.editFootprint": "Modifier l’empreinte",
   "spacemouse.connect": "Connecter",

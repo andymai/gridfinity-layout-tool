@@ -21,4 +21,19 @@ describe('PrintPage', () => {
       'bd-physical-units'
     ).not.toBeNull();
   });
+
+  it('warns instead of offering a split when a slanted bin is too long for the bed', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 8,
+        depth: 8,
+        height: 6,
+        slant: { angleDeg: 45, side: 'right' },
+      },
+    });
+    const { container } = render(<PrintPage />);
+    expect(container.textContent).toContain('binDesigner.printFit.slantTooLarge');
+    expect(container.textContent).not.toContain('binDesigner.printFit.fits');
+  });
 });

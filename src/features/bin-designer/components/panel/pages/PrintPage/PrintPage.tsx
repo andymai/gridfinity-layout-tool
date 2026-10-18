@@ -14,7 +14,7 @@ import { SetDefaultFooter } from '../../SetDefaultFooter';
  */
 export function PrintPage() {
   const t = useTranslation();
-  const { needsSplit, printBedSize } = useSplitOptionsSection();
+  const { needsSplit, slantTooLarge, printBedSize } = useSplitOptionsSection();
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
   const canExport = useDesignerStore(
     (s) =>
@@ -26,7 +26,14 @@ export function PrintPage() {
   return (
     <div className="divide-y divide-stroke-subtle/50">
       <PanelSection helpTarget="bd-print-fit">
-        {needsSplit ? (
+        {slantTooLarge ? (
+          <p className="text-label text-warning">
+            {t('binDesigner.printFit.slantTooLarge', {
+              width: printBedSize.width,
+              depth: printBedSize.depth,
+            })}
+          </p>
+        ) : needsSplit ? (
           <SplitOptionsSection />
         ) : (
           <p className="text-label text-content-tertiary">

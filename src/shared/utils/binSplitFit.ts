@@ -19,12 +19,26 @@ import { calcMaxGridUnitsForAxis, pickBedOrientation } from '@/core/constants';
 import type { BinParams } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { resolveOverhang } from '@/shared/utils/overhang';
+import { resolveSlant } from '@/shared/utils/slantPlan';
+import type { SlantInputs } from '@/shared/utils/slantPlan';
 
-/** The fields the limit depends on. Loose so a caller can pass a whole `BinParams`. */
+/**
+ * The fields the limit depends on. Loose so a caller can pass a whole
+ * `BinParams`; a caller that leaves out the slant's inputs gets the upright
+ * answer, since it could not have been showing a slant either.
+ */
 export type BinSplitFitParams = Pick<
   BinParams,
   'width' | 'depth' | 'gridUnitMm' | 'gridUnitMmY' | 'overhang' | 'cellMask'
->;
+> &
+  Partial<SlantInputs>;
+
+/** A slanted bin is never split: vertical cut planes would cross its leaning body. */
+function leansWhole(params: BinSplitFitParams): boolean {
+  const { slant, base, slide, cutouts } = params;
+  if (!slant || !base || !slide || !cutouts) return false;
+  return resolveSlant({ ...params, slant, base, slide, cutouts }) !== null;
+}
 
 /** One axis of {@link binSplitChunkUnits}. */
 function axisChunkUnits(
@@ -71,6 +85,7 @@ export function binSplitChunkUnits(
   printBedWidthMm: number,
   printBedDepthMm?: number
 ): { width: number; depth: number } {
+  if (leansWhole(params)) return { width: params.width, depth: params.depth };
   const gridUnitMmX = params.gridUnitMm;
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
   const bedDepthMm = printBedDepthMm ?? printBedWidthMm;

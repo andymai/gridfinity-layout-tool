@@ -147,3 +147,25 @@ describe('binSplitChunkUnits across a rectangular bed', () => {
     expect(getSplitPieceCount(p.width, p.depth, max.width, max.depth)).toBe(2);
   });
 });
+
+describe('binSplitChunkUnits on a slanted bin', () => {
+  const big: BinParams = { ...DEFAULT_BIN_PARAMS, width: 8, depth: 8, height: 6 };
+  const leaning: BinParams = { ...big, slant: { angleDeg: 30, side: 'back' } };
+
+  it('never splits a bin the shear leans', () => {
+    expect(binSplitChunkUnits(big, 256)).not.toEqual({ width: 8, depth: 8 });
+    expect(binSplitChunkUnits(leaning, 256)).toEqual({ width: 8, depth: 8 });
+  });
+
+  it('splits as usual when a blocker cancels the slant', () => {
+    const blocked = { ...leaning, slide: { ...leaning.slide, enabled: true } };
+    expect(binSplitChunkUnits(blocked, 256)).toEqual(binSplitChunkUnits(big, 256));
+  });
+
+  it('gives the upright answer to a caller that passes no slant inputs', () => {
+    const { width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask } = leaning;
+    expect(
+      binSplitChunkUnits({ width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask }, 256)
+    ).toEqual(binSplitChunkUnits(big, 256));
+  });
+});

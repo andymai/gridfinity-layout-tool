@@ -4876,6 +4876,7 @@
   "binDesigner.panel.viewAsRail": "Sezioni compatte",
   "common.more": "Altro",
   "binDesigner.printFit.fits": "Entra nel tuo piano di stampa da {width} × {depth} mm.",
+  "binDesigner.printFit.slantTooLarge": "Questo bin inclinato è troppo grande per il tuo piano di stampa da {width} × {depth} mm, e i bin inclinati non si possono dividere. Riduci l'angolo o le dimensioni del bin.",
   "binDesigner.dependency.enableStackingLip": "Attiva il bordo impilabile",
   "binDesigner.dependency.editFootprint": "Modifica la sagoma",
   "spacemouse.connect": "Connetti",

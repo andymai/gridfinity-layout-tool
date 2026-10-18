@@ -2,6 +2,7 @@ import { SLANT_MAX_DEG, SLANT_SIDES } from '@/core/types';
 import type { SlantConfig, SlantSide } from '@/core/types';
 import type { BinParams } from '@/shared/types/bin';
 import { hasMeshImprints } from '@/shared/generation/meshAsset';
+import { socketHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask } from './cellMask';
 import { hasOverhang, resolveOverhang } from './overhang';
 
@@ -12,7 +13,9 @@ import { hasOverhang, resolveOverhang } from './overhang';
  * bottom), reshapes the outer wall itself (overhang, a custom footprint), is cut
  * into the tessellated mesh in the unslanted frame (mesh pockets), or opens the
  * floor onto the upright socket, whose openings the sheared floor would no
- * longer meet (floor pattern, an open lightweight floor, a spacer).
+ * longer meet (floor pattern, an open lightweight floor, a spacer). Detachable
+ * feet plug vertical pins into blind holes in the floor, which the shear would
+ * tilt.
  */
 export type SlantBlocker =
   | 'overhang'
@@ -22,9 +25,10 @@ export type SlantBlocker =
   | 'slide'
   | 'knifeRest'
   | 'floorPattern'
-  | 'openFloor';
+  | 'openFloor'
+  | 'detachableFeet';
 
-type SlantInputs = Pick<
+export type SlantInputs = Pick<
   BinParams,
   | 'slant'
   | 'overhang'
@@ -59,6 +63,7 @@ export function slantBlocker(params: SlantInputs): SlantBlocker | null {
   const { base } = params;
   const opensFloor = base.spacer || (base.lightweight && base.lightweightMode !== 'underside');
   if (opensFloor && base.style !== 'flat') return 'openFloor';
+  if (base.feet === 'detachable' && base.style !== 'flat') return 'detachableFeet';
   return null;
 }
 
@@ -103,4 +108,49 @@ export function migrateSlant(raw: unknown): SlantConfig | undefined {
     side: side as SlantSide,
     ...(endSupport === true ? { endSupport: true } : {}),
   };
+}
+
+export type SlantExtentInputs = SlantInputs &
+  Pick<
+    BinParams,
+    | 'width'
+    | 'depth'
+    | 'height'
+    | 'heightUnitMm'
+    | 'extraWallHeightMm'
+    | 'gridUnitMm'
+    | 'gridUnitMmY'
+  >;
+
+/** Where the lean starts (the floor's underside) and ends (the body's top), above the bed. */
+export function slantSpanZ(params: SlantExtentInputs): { pivotZ: number; topZ: number } {
+  const pivotZ = params.base.style === 'flat' ? 0 : socketHeightMm(params.base.lowProfile);
+  const topZ = params.height * params.heightUnitMm + Math.max(0, params.extraWallHeightMm ?? 0);
+  return { pivotZ, topZ };
+}
+
+/** How far the body's top edge sits past its footprint, in mm; 0 when upright. */
+export function slantTopOffsetMm(params: SlantExtentInputs): number {
+  const slant = resolveSlant(params);
+  if (!slant) return 0;
+  const { pivotZ, topZ } = slantSpanZ(params);
+  return slant.k * Math.max(0, topZ - pivotZ);
+}
+
+/**
+ * Whether the leaning body, top offset included, fits the bed either way
+ * round. A slanted bin cannot be split, so this is the whole answer.
+ */
+export function slantedBinFitsBed(
+  params: SlantExtentInputs,
+  bedWidthMm: number,
+  bedDepthMm: number = bedWidthMm
+): boolean {
+  const slant = resolveSlant(params);
+  if (!slant) return true;
+  const offset = slantTopOffsetMm(params);
+  const pitchY = params.gridUnitMmY ?? params.gridUnitMm;
+  const w = params.width * params.gridUnitMm - 0.5 + (slant.axis === 'x' ? offset : 0);
+  const d = params.depth * pitchY - 0.5 + (slant.axis === 'y' ? offset : 0);
+  return (w <= bedWidthMm && d <= bedDepthMm) || (w <= bedDepthMm && d <= bedWidthMm);
 }

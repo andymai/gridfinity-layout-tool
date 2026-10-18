@@ -4876,6 +4876,7 @@
   "binDesigner.panel.viewAsRail": "Kompakte Abschnitte",
   "common.more": "Mehr",
   "binDesigner.printFit.fits": "Passt auf dein {width} × {depth} mm Druckbett.",
+  "binDesigner.printFit.slantTooLarge": "Dieser schräge Bin ist zu groß für dein {width} × {depth} mm Druckbett, und schräge Bins lassen sich nicht teilen. Verringere den Winkel oder verkleinere den Bin.",
   "binDesigner.dependency.enableStackingLip": "Stapelrand aktivieren",
   "binDesigner.dependency.editFootprint": "Grundriss bearbeiten",
   "spacemouse.connect": "Verbinden",

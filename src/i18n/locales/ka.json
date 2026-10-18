@@ -2418,6 +2418,7 @@
   "binDesigner.panel.viewAsScroll": "ერთიანი გადახვევა",
   "binDesigner.panel.viewAsRail": "კომპაქტური სექციები",
   "binDesigner.printFit.fits": "ეტევა თქვენს {width} × {depth} mm საბეჭდ მაგიდაზე.",
+  "binDesigner.printFit.slantTooLarge": "ეს დახრილი ყუთი ძალიან დიდია თქვენი {width} × {depth} mm საბეჭდი მაგიდისთვის, ხოლო დახრილი ყუთების დაყოფა შეუძლებელია. შეამცირეთ კუთხე ან ყუთის ზომა.",
   "binDesigner.dependency.enableStackingLip": "დასაწყობი კიდის ჩართვა",
   "binDesigner.dependency.editFootprint": "საფუძვლის კონტურის რედაქტირება",
   "binDesigner.multiColor.enableHint": "მიანიჭეთ ყუთის ნაწილებს სხვადასხვა ფილამენტი და ექსპორტირეთ მრავალფერიანი 3MF.",

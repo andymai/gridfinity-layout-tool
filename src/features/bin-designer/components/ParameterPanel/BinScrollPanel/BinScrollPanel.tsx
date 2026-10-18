@@ -79,7 +79,7 @@ export function BinScrollPanel({
       hasText: binHasText(s.params),
     }))
   );
-  const { needsSplit } = useSplitOptionsSection();
+  const { needsSplit, slantTooLarge, printBedSize } = useSplitOptionsSection();
 
   const [open, setOpen] = useState<Record<PanelGroup, boolean>>({
     shape: true,
@@ -153,6 +153,16 @@ export function BinScrollPanel({
           {needsSplit && (
             <PanelSection helpTarget="bd-print-fit">
               <SplitOptionsSection />
+            </PanelSection>
+          )}
+          {slantTooLarge && (
+            <PanelSection helpTarget="bd-print-fit">
+              <p className="text-label text-warning">
+                {t('binDesigner.printFit.slantTooLarge', {
+                  width: printBedSize.width,
+                  depth: printBedSize.depth,
+                })}
+              </p>
             </PanelSection>
           )}
         </div>

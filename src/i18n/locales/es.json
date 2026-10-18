@@ -4876,6 +4876,7 @@
   "binDesigner.panel.viewAsRail": "Secciones compactas",
   "common.more": "Más",
   "binDesigner.printFit.fits": "Cabe en tu cama de impresión de {width} × {depth} mm.",
+  "binDesigner.printFit.slantTooLarge": "Este bin inclinado es demasiado grande para tu cama de impresión de {width} × {depth} mm, y los bins inclinados no se pueden dividir. Reduce el ángulo o el tamaño del bin.",
   "binDesigner.dependency.enableStackingLip": "Activar borde apilable",
   "binDesigner.dependency.editFootprint": "Editar contorno",
   "spacemouse.connect": "Conectar",

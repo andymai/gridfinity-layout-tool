@@ -4876,6 +4876,7 @@
   "binDesigner.panel.viewAsRail": "Kompakte seksjoner",
   "common.more": "Mer",
   "binDesigner.printFit.fits": "Får plass på skriveplaten din på {width} × {depth} mm.",
+  "binDesigner.printFit.slantTooLarge": "Denne skrå bin-en er for stor for skriveplaten din på {width} × {depth} mm, og skrå biner kan ikke deles. Senk vinkelen eller gjør bin-en mindre.",
   "binDesigner.dependency.enableStackingLip": "Slå på stablekant",
   "binDesigner.dependency.editFootprint": "Rediger omriss",
   "spacemouse.connect": "Koble til",

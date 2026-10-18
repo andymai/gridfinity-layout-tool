@@ -4876,6 +4876,7 @@
   "binDesigner.panel.viewAsRail": "紧凑分区",
   "common.more": "更多",
   "binDesigner.printFit.fits": "可放入您的 {width} × {depth} mm 打印床。",
+  "binDesigner.printFit.slantTooLarge": "此倾斜收纳盒超出了您的 {width} × {depth} mm 打印床，且倾斜收纳盒无法拆分。请减小角度或缩小收纳盒。",
   "binDesigner.dependency.enableStackingLip": "启用堆叠边缘",
   "binDesigner.dependency.editFootprint": "编辑轮廓",
   "spacemouse.connect": "连接",
