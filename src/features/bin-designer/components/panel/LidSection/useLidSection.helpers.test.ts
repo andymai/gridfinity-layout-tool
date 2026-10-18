@@ -232,14 +232,63 @@ describe('fixableIdsFor', () => {
     expect(ids.has('slideFlushNeedsNoLip')).toBe(true);
   });
 
-  // The shortfall helper does not judge these, but the fill still bounds them.
-  // A mesh imprint is bounded from the print's bottom, so it can reach the
-  // socket: the 8.5mm offset leaves it 26.5mm, not the fill's 21.75mm.
+  // The fix lowers the fill to 21.75mm. A mesh imprint is bounded from the
+  // print's bottom, so it can reach the socket and keeps 26.5mm.
   it.each([
     ['a mesh imprint', { shape: 'mesh' }, 28, 25],
     ['a pocket hanging off the board', { x: -10 }, 25, 10],
+    // A 45° lean tips the far end of a 40mm-long floor 14.1mm lower: 20mm
+    // drawn reaches 28.3mm, 8mm only 19.8mm.
+    ['a leaned pocket', { x: -1, width: 20, depth: 40, leanDeg: 45 }, 20, 8],
+    // Every copy is clamped to the fill at its drawn depth, whatever the lean:
+    // these 10mm copies tip only to 21.2mm, inside the lowered fill, but 25mm
+    // drawn still loses 3.25mm.
+    [
+      'a leaned repeat',
+      {
+        width: 10,
+        depth: 10,
+        leanDeg: 45,
+        array: {
+          mode: 'grid',
+          cols: 1,
+          rows: 2,
+          pitchX: 0,
+          pitchY: 55,
+          count: 1,
+          radius: 0,
+          startAngle: 0,
+          rotateToCenter: false,
+        },
+      },
+      25,
+      15,
+    ],
   ] as const)('withholds the fill fix only when it would cut %s short', (_, pocket, deep, kept) => {
     expect(fixableIdsFor(solidWithPocket(deep, pocket)).has('slideFillTooHigh')).toBe(false);
     expect(fixableIdsFor(solidWithPocket(kept, pocket)).has('slideFillTooHigh')).toBe(true);
+  });
+
+  it('withholds the fill fix on a tapered bin, whose wall narrows with depth', () => {
+    const tapered: BinParams = {
+      ...solidWithPocket(5),
+      overhang: {
+        enabled: true,
+        left: 10,
+        right: 0,
+        front: 0,
+        back: 0,
+        taper: {
+          enabled: true,
+          profile: 'chamfer',
+          bandHeight: 20,
+          left: 10,
+          right: 0,
+          front: 0,
+          back: 0,
+        },
+      },
+    };
+    expect(fixableIdsFor(tapered).has('slideFillTooHigh')).toBe(false);
   });
 });

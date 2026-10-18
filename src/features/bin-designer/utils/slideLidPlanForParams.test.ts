@@ -143,6 +143,31 @@ describe('a solid bin', () => {
     expect(slideLidPlanForParams(solidParams(5)).rejection).toBe('bin-too-shallow');
   });
 
+  it('finds no recess in a tapered bin whose offset outlived a taller one', () => {
+    // The tapered body keeps its whole loft once the fill is gone.
+    const tapered = solidParams(40, {
+      height: 3,
+      overhang: {
+        enabled: true,
+        left: 10,
+        right: 0,
+        front: 0,
+        back: 0,
+        taper: {
+          enabled: true,
+          profile: 'chamfer',
+          bandHeight: 20,
+          left: 10,
+          right: 0,
+          front: 0,
+          back: 0,
+        },
+      },
+    });
+    expect(slideLidPlanForParams(tapered).rejection).toBe('no-cavity');
+    expect(slideLidFillOffsetMm(tapered)).toBeNull();
+  });
+
   it('measures no deeper than the bin when the offset outlived a taller one', () => {
     // A rim-anchored offset survives a height cut, and past the floor the shell
     // drops the fill, so the bin has only its own cavity to offer.

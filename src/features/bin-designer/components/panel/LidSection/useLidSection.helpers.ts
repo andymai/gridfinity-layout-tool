@@ -3,15 +3,16 @@ import {
   LID_CORNER_RADIUS,
   LID_FIT_CLEARANCE,
   LID_MIN_RAIL_LENGTH,
+  resolveCutoutLeanDeg,
   type BinParams,
   type Cutout,
   type LidClickRails,
   type LidConfig,
   type LidRailSide,
 } from '@/features/bin-designer/types';
-import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
+import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { slideLidFillOffsetMm } from '@/features/bin-designer/utils/slideLidPlanForParams';
-import { cutoutDepthShortfall } from '../CutoutsSection/cutoutDepthShortfall';
+import { hasTaper, resolveOverhang } from '@/shared/utils/overhang';
 import type { useTranslation } from '@/i18n';
 import {
   railSegmentsClearOfBlocks,
@@ -265,27 +266,34 @@ const FIXABLE_IDS_WITHOUT_FILL: ReadonlySet<LidCompatibilityId> = new Set(
 );
 
 /**
- * Would a fill at `topOffset` cut any pocket shallower than the current fill does?
+ * Fill height a pocket needs to keep its depth. The worker clamps the drawn
+ * depth to the fill whatever the lean, and a lean tips one end of the floor
+ * lower than the drawn depth.
+ */
+function pocketReachMm(cutout: Cutout): number {
+  const lean = (resolveCutoutLeanDeg(cutout) * Math.PI) / 180;
+  const halfSpan = Math.max(cutout.width, cutout.depth) / 2;
+  const tipped = cutout.cutDepth * Math.cos(lean) + halfSpan * Math.abs(Math.sin(lean));
+  return Math.max(cutout.cutDepth, tipped);
+}
+
+/**
+ * Would a fill at `topOffset` cut any pocket short?
  *
- * Every pocket stops at the fill's height, except a mesh imprint, which the
- * worker clamps from the print's bottom and so can sink into the socket. The
- * shortfall helper adds what a lean or a wall takes, but answers null for
- * shapes it does not judge, so it cannot be the only measure.
+ * Lowering the fill moves every pocket straight down, and vertical walls clip
+ * it the same at any height, so the fill's height is the one bound that moves: a
+ * pocket keeps its depth exactly when it still fits inside the lowered fill. A mesh
+ * imprint is clamped from the print's bottom instead, so it can sink into the
+ * socket. A tapered wall narrows with depth, so there any pocket may lose to it.
  */
 function fillShortensPockets(params: BinParams, topOffset: number): boolean {
-  const { innerW, innerD } = cutoutInterior(params);
+  const pockets = params.cutouts.filter((c) => c.hidden !== true && c.shape !== 'text');
+  if (pockets.length === 0) return false;
+  if (hasTaper(resolveOverhang(params.overhang))) return true;
   const { wallHeight, floorZ } = binDimensions(params);
-  const reach = (cutout: Cutout, offset: number): number => {
-    const fill = wallHeight - offset;
-    const limit = cutout.shape === 'mesh' ? floorZ + fill : fill;
-    const clipped = cutoutDepthShortfall(cutout, innerW, innerD, fill)?.achievable ?? Infinity;
-    return Math.min(cutout.cutDepth, limit, clipped);
-  };
-  return params.cutouts.some(
-    (c) =>
-      c.hidden !== true &&
-      c.shape !== 'text' &&
-      reach(c, topOffset) < reach(c, params.cutoutConfig.topOffset) - 1e-6
+  const fill = wallHeight - topOffset;
+  return pockets.some((c) =>
+    c.shape === 'mesh' ? c.cutDepth > floorZ + fill + 1e-6 : pocketReachMm(c) > fill + 1e-6
   );
 }
 

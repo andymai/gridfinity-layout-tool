@@ -14,7 +14,7 @@
 
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { wallOpenings } from '@/shared/utils/lipGapPlan';
-import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
+import { hasTaper, overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 import {
   resolveSlideLidPlan,
   slideJointDepthBelowWallTopMm,
@@ -45,9 +45,10 @@ export function slideLidPlanForParams(params: BinParams): SlideLidPlan {
   // Polygon footprints suppress overhang, mirroring the box builder — and the
   // plan refuses them anyway, but the expansion has to be right for the
   // rejection to be reported against the shape the user actually has.
+  const overhang = resolveOverhang(params.overhang);
   const expansion = polygon
     ? { addW: 0, addD: 0, offsetX: 0, offsetY: 0 }
-    : overhangExpansion(resolveOverhang(params.overhang));
+    : overhangExpansion(overhang);
 
   const plan = resolveSlideLidPlan(
     slideLidPlanInput(
@@ -64,7 +65,7 @@ export function slideLidPlanForParams(params: BinParams): SlideLidPlan {
         innerOffsetY: expansion.offsetY,
         wallHeight: base.wallHeight,
         hasLip: params.base.stackingLip,
-        solidRecessMm: params.style === 'solid' ? params.cutoutConfig.topOffset : null,
+        solidRecessMm: params.style === 'solid' ? solidRecessMm(params, overhang, polygon) : null,
         isSlotted: params.style === 'slotted',
         isTile: params.base.tile === true,
         lipTip: resolveLipTip(params.base),
@@ -76,6 +77,22 @@ export function slideLidPlanForParams(params: BinParams): SlideLidPlan {
   if (!geometry?.wallLining) return plan;
   const gaps = wallOpenings(params, liningBand(geometry, geometry.wallLining));
   return { ...plan, geometry: withLiningOpenings(geometry, gaps) };
+}
+
+/**
+ * The recess `boxBuilder` leaves above a solid bin's fill. An offset that
+ * outlived a taller bin can reach the floor, where the plain body drops the
+ * fill (the plan caps that at the bin's own cavity) but the tapered one keeps
+ * the whole loft and leaves no recess at all.
+ */
+function solidRecessMm(
+  params: BinParams,
+  overhang: ReturnType<typeof resolveOverhang>,
+  polygon: boolean
+): number {
+  const { topOffset } = params.cutoutConfig;
+  const fillGone = topOffset >= binDimensions(params).wallHeight;
+  return fillGone && !polygon && hasTaper(overhang) ? 0 : topOffset;
 }
 
 /**
@@ -95,6 +112,7 @@ export function slideLidFillOffsetMm(params: BinParams): number | null {
     params.base.stackingLip
   );
   const offset = (Math.floor(joint / CUTOUT_FILL_STEP_MM) + 1) * CUTOUT_FILL_STEP_MM;
+  if (offset <= params.cutoutConfig.topOffset) return null;
   if (offset > maxCutoutTopOffsetMm(cutoutWallHeightMm(params))) return null;
   const lowered = { ...params, cutoutConfig: { ...params.cutoutConfig, topOffset: offset } };
   return slideLidPlanForParams(lowered).geometry ? offset : null;
