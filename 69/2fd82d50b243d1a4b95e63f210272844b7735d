@@ -1,0 +1,90 @@
+src/shared/hooks/useBinGeometry.ts
+  s_078fc63cde22ff::t_3c10f1a479fa67 114-127,135,149,496-504,524,526-528,530-541
+src/features/grid-editor/components/Grid/IsometricPreview/SlantSupportWedges/index.ts
+  s_078fc63cde22ff::t_2043b287c6fcc7 1
+src/features/grid-editor/components/Grid/IsometricPreview/SlantSupportWedges/SlantSupportWedges.test.tsx
+  s_078fc63cde22ff::t_4125d480dab40d 1-45
+  s_078fc63cde22ff::t_05517c75012f9a 46-47
+src/features/grid-editor/components/Grid/IsometricPreview/useBinsToRender.ts
+  s_078fc63cde22ff::t_acd87b2623b28a 121
+  s_078fc63cde22ff::t_39150d9b117448 8-9,39,83
+src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreview.tsx
+  s_078fc63cde22ff::t_2043b287c6fcc7 6,228
+src/shared/hooks/useExplodedLayerView.ts
+  s_078fc63cde22ff::t_c061ae808ce086 43-46
+  s_078fc63cde22ff::t_acd87b2623b28a 5-6
+  s_078fc63cde22ff::t_bd7332765cb481 7,16-31
+  s_078fc63cde22ff::t_fa04bc3f100e7f 2
+  s_078fc63cde22ff::t_d72f949276b788 90,143,177
+src/shared/utils/slantRender.ts
+  s_078fc63cde22ff::t_39150d9b117448 1-41
+src/features/grid-editor/components/Grid/Bin/BinSlantExtension.tsx
+  s_078fc63cde22ff::t_acd87b2623b28a 9,38
+  s_078fc63cde22ff::t_3595d022a944cc 1-8,10-37,39-75
+  s_078fc63cde22ff::t_4eb0ec55741266 76-78
+src/features/grid-editor/components/Grid/Bin/BinSlantExtension.test.tsx
+  s_078fc63cde22ff::t_1ebdf1264cd4a5 1-46
+src/shared/hooks/useBinGeometry.test.ts
+  s_078fc63cde22ff::t_4125d480dab40d 639-661
+src/shared/utils/slantRender.test.ts
+  s_078fc63cde22ff::t_71fa6777a9906a 4,8
+  s_078fc63cde22ff::t_4125d480dab40d 1-3,5-7,9-37
+src/features/grid-editor/components/Grid/IsometricPreview/AnimatedBinMesh/AnimatedBinMesh.tsx
+  s_078fc63cde22ff::t_c061ae808ce086 28
+src/features/grid-editor/components/Grid/Bin/BinCornerBadges.test.tsx
+  s_078fc63cde22ff::t_1ebdf1264cd4a5 1-18
+src/features/grid-editor/components/Grid/Bin/BinSlantBadge.tsx
+  s_078fc63cde22ff::t_b0210c2ab1f574 1,6-21,23,25-31
+src/features/grid-editor/components/Grid/Bin/binConstants.ts
+  s_078fc63cde22ff::t_b0210c2ab1f574 13
+src/shared/hooks/useSlantLayout.ts
+  s_078fc63cde22ff::t_acd87b2623b28a 1-17
+src/features/grid-editor/components/Grid/Bin/Bin.test.tsx
+  s_078fc63cde22ff::t_1ebdf1264cd4a5 342,345
+src/features/grid-editor/components/Grid/Bin/BinOverhangExtension.tsx
+  s_078fc63cde22ff::t_fd80c2c6087483 27,75-81
+  s_078fc63cde22ff::t_d4a00aad12d197 82-84
+src/features/grid-editor/components/Grid/IsometricPreview/MergedBinMeshes/MergedBinMeshes.test.tsx
+  s_078fc63cde22ff::t_71fa6777a9906a 109
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/SelectedBin.tsx
+  s_078fc63cde22ff::t_c061ae808ce086 33
+src/shared/utils/placedSlant.ts
+  s_078fc63cde22ff::t_3c10f1a479fa67 17-23,56-57,122,138
+src/features/grid-editor/components/Grid/IsometricPreview/SlantSupportWedges/SlantSupportWedges.tsx
+  s_078fc63cde22ff::t_2043b287c6fcc7 1-59
+src/features/grid-editor/components/Grid/IsometricPreview/SlantSupportWedges/slantSupportWedge.ts
+  s_078fc63cde22ff::t_2043b287c6fcc7 1-59
+  s_078fc63cde22ff::t_cd3fd2c999f13f 60-62
+src/features/grid-editor/components/Grid/Bin/BinCornerBadges.tsx
+  s_078fc63cde22ff::t_fd80c2c6087483 1-28
+  s_078fc63cde22ff::t_e0393c037c8386 29-31
+src/features/grid-editor/components/Grid/IsometricPreview/BinMesh/BinMesh.tsx
+  s_078fc63cde22ff::t_c061ae808ce086 5,17,35,45
+src/features/grid-editor/components/Grid/IsometricPreview/MergedBinMeshes/MergedBinMeshes.tsx
+  s_078fc63cde22ff::t_c061ae808ce086 4,20,45-46
+src/features/grid-editor/components/Grid/IsometricPreview/MergedBinMeshes/geometryCache.ts
+  s_078fc63cde22ff::t_c061ae808ce086 2-7,11,34-35,40,48-49,51,59
+src/features/grid-editor/components/Grid/Bin/Bin.tsx
+  s_078fc63cde22ff::t_b2f188a82eacb0 13,133
+  s_078fc63cde22ff::t_fd80c2c6087483 20,404-410
+src/features/grid-editor/components/Grid/Bin/BinSlantBadge.test.tsx
+  s_078fc63cde22ff::t_1ebdf1264cd4a5 6-13
+src/features/grid-editor/components/Grid/IsometricPreview/SlantSupportWedges/slantSupportWedge.test.ts
+  s_078fc63cde22ff::t_4125d480dab40d 1-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "692fd82d50b243d1a4b95e63f210272844b7735d",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
