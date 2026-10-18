@@ -1,5 +1,25 @@
 # Changelog
 
+## [4.517.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.516.0...gridfinity-layout-tool-v4.517.0) (2026-10-18)
+
+
+### Features
+
+* **places:** find a bin from the mobile layouts sheet ([#4621](https://github.com/andymai/gridfinity-layout-tool/issues/4621)) ([2d266e4](https://github.com/andymai/gridfinity-layout-tool/commit/2d266e4d802834f5b72ea0ef708b739c57c1acea))
+* **places:** find bins across every layout from the command palette ([#4619](https://github.com/andymai/gridfinity-layout-tool/issues/4619)) ([ce3e4bd](https://github.com/andymai/gridfinity-layout-tool/commit/ce3e4bd66a2f0e9348986e1aba36d79530b10633))
+* **places:** give bins a list of what they hold ([#4616](https://github.com/andymai/gridfinity-layout-tool/issues/4616)) ([e6c7434](https://github.com/andymai/gridfinity-layout-tool/commit/e6c743464c72cdb909b69589f6bf75a0bee2ffba))
+* **places:** keep a folder's kind through sync ([#4615](https://github.com/andymai/gridfinity-layout-tool/issues/4615)) ([c059a1c](https://github.com/andymai/gridfinity-layout-tool/commit/c059a1c75d86a5d0771799c311a03ec6280a6236))
+* **places:** list what a bin holds in the inspector ([#4620](https://github.com/andymai/gridfinity-layout-tool/issues/4620)) ([f846ce6](https://github.com/andymai/gridfinity-layout-tool/commit/f846ce63ae867ae29867f146820ec0981a132031))
+* **places:** show what each folder is, and add places ([#4622](https://github.com/andymai/gridfinity-layout-tool/issues/4622)) ([92b7c44](https://github.com/andymai/gridfinity-layout-tool/commit/92b7c44cee106232a9ff4f2ccd6276dd6702a8aa))
+* **places:** show where the open layout lives, and announce Places ([#4623](https://github.com/andymai/gridfinity-layout-tool/issues/4623)) ([d36b753](https://github.com/andymai/gridfinity-layout-tool/commit/d36b753f95964ebe4455d8472929f0c554012908))
+
+
+### Bug Fixes
+
+* **bin-designer:** say where an overhang's flat bottom sits ([#4618](https://github.com/andymai/gridfinity-layout-tool/issues/4618)) ([a1cc8c1](https://github.com/andymai/gridfinity-layout-tool/commit/a1cc8c14fb64f252ad61a306ba8036c75d65e98d))
+* **sync:** keep a bin design's overhang through sync and share links ([#4617](https://github.com/andymai/gridfinity-layout-tool/issues/4617)) ([4f308af](https://github.com/andymai/gridfinity-layout-tool/commit/4f308af498c3f14e8b685eb82b284ae126a8b3a5))
+* **sync:** keep a bin's clearance, margin and overhang settings ([#4614](https://github.com/andymai/gridfinity-layout-tool/issues/4614)) ([6c58af5](https://github.com/andymai/gridfinity-layout-tool/commit/6c58af5bfaf8a0522019fa226758055fbd6020bd))
+
 ## [4.516.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.515.0...gridfinity-layout-tool-v4.516.0) (2026-10-17)
 
 
