@@ -14,6 +14,7 @@ import {
 } from '@/shared/utils/slantPlan';
 import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartmentGrid';
+import { deriveBodyType } from '../BaseSection/bodyType';
 import { builtCompartmentFloorRaiseMm } from '@/features/bin-designer/utils/compartmentFloorRaise';
 import { isEffectiveTile } from '@/features/bin-designer/types';
 import type { BinParams } from '@/features/bin-designer/types';
@@ -44,13 +45,14 @@ export function useSlantVisible(): boolean {
 
 /**
  * The diagonal only holds while the cavity is an empty parallelogram: a
- * standard bin with walls, no scoop ramp in its low corner, and every
- * compartment running the full length of the lean axis.
+ * standard bin with walls, nothing filling its low corner (a scoop ramp, a
+ * floor fillet) or hanging into its top (a label tab), and every compartment
+ * running the full length of the lean axis.
  */
 function leanIsUnobstructed(params: BinParams, axis: 'x' | 'y'): boolean {
-  if (params.style !== 'standard' || params.scoop.enabled || isEffectiveTile(params.base)) {
-    return false;
-  }
+  const cornerFilled = params.scoop.enabled || (params.interiorFilletMm ?? 0) > 0;
+  if (params.style !== 'standard' || cornerFilled || params.label.enabled) return false;
+  if (isEffectiveTile(params.base)) return false;
   const config = params.compartments;
   for (const id of new Set(config.cells)) {
     const bounds = getCompartmentBounds(config, id);
@@ -115,8 +117,12 @@ export function useSlantSection() {
     if (blocker === 'openFloor') {
       return t(params.base.spacer ? 'binDesigner.spacer' : 'binDesigner.lightweight');
     }
+    // A nesting base and a lid base share one style; name the tile the user picked.
+    if (blocker === 'trayBottom' && deriveBodyType(params.base) === 'nesting') {
+      return t('binDesigner.base.bodyType.nesting');
+    }
     return t(BLOCKER_LABEL[blocker]);
-  }, [blocker, params.base.spacer, t]);
+  }, [blocker, params.base, t]);
 
   const readouts = useMemo(() => {
     if (!plan) return null;

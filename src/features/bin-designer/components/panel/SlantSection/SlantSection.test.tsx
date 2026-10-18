@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, renderHook, screen, fireEvent } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { DEFAULT_TRAY_BOTTOM } from '@/features/bin-designer/types/base';
 import { useLabsStore } from '@/core/store';
 import { SlantSection } from './SlantSection';
 import { useSlantVisible } from './useSlantSection';
@@ -85,6 +86,8 @@ describe('SlantSection', () => {
       { scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true } },
     ],
     ['it is a base-only tile', { base: { ...DEFAULT_BIN_PARAMS.base, tile: true }, height: 1 }],
+    ['a floor fillet rounds its low corner', { interiorFilletMm: 3 }],
+    ['a label tab hangs into its top', { label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } }],
   ])('drops the fit length when %s', (_, over) => {
     setParams({ slant: { angleDeg: 45, side: 'back' }, ...over });
     render(<SlantSection />);
@@ -128,6 +131,20 @@ describe('SlantSection', () => {
     expect(
       screen.getByText('binDesigner.slant.unavailable binDesigner.slideTray.title')
     ).toBeInTheDocument();
+  });
+  it.each([
+    [true, 'binDesigner.base.bodyType.nesting'],
+    [false, 'binDesigner.lidBottom'],
+  ])('names the base tile that keeps it upright (floor at bed: %s)', (floorAtBed, label) => {
+    setParams({
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'lid',
+        trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed },
+      },
+    });
+    render(<SlantSection />);
+    expect(screen.getByText(`binDesigner.slant.unavailable ${label}`)).toBeInTheDocument();
   });
 });
 
