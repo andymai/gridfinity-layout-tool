@@ -7,7 +7,6 @@ import { getSlantIssues, matchRowSlants, rowCanMatch, slantIssue, slantRowOf } f
 
 const L1 = layerId('layer1');
 const L2 = layerId('layer2');
-// 45° over a 6-unit body: the top reaches 37 mm (0.9 cells) past the base.
 const BACK: SlantConfig = { angleDeg: 45, side: 'back' };
 
 function bin(id: string, y: number, overrides: Partial<Bin> = {}): Bin {
