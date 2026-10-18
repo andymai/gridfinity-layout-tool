@@ -1,0 +1,152 @@
+src/features/whats-new/entries.ts
+  s_078fc63cde22ff::t_23ae0f3e32e6d2 17-26
+  s_078fc63cde22ff::t_ee02abed6cc2e1 16
+src/features/bin-designer/utils/slantRowDesign.ts
+  s_078fc63cde22ff::t_31dfa750d51d8e 1-83
+src/i18n/locales/ka.json
+  s_078fc63cde22ff::t_45a53b04ecbe04 515-520
+src/features/layers/components/index.ts
+  s_078fc63cde22ff::t_669e923ab66758 5
+src/features/grid-editor/hooks/useInteraction.ts
+  s_078fc63cde22ff::t_f6aeb39e23a0fb 102,122,145
+.claude/skills/slant/SKILL.md
+  s_078fc63cde22ff::t_a03f38a78328e3 10
+  s_078fc63cde22ff::t_565f608df9d5b5 1-9,11-33,35-36
+  s_078fc63cde22ff::t_3f05cb76fd2883 34,37-39
+src/shared/hooks/interactions/paintSlantedRows.ts
+  s_078fc63cde22ff::t_a5af6991e77b1e 90,94
+  s_078fc63cde22ff::t_b03d132390ab79 2,5-6,23,118
+  s_078fc63cde22ff::t_ead56d5e5e2cf0 1,3-4,7-8,10-22,24-29,35-38,40-67,86-87,91-93,95-112,114-117,119-127,129,131-148
+  s_078fc63cde22ff::t_50c666fb5178a6 9,30-34,39,68-85,88-89
+  s_078fc63cde22ff::t_04e459d9365232 113,128,130
+src/features/whats-new/latest.ts
+  s_078fc63cde22ff::t_efa3b2d7238474 9
+src/features/layers/components/SlantedRowControls/index.ts
+  s_078fc63cde22ff::t_6228c3eced20b2 1
+src/features/bin-designer/index.ts
+  s_078fc63cde22ff::t_31dfa750d51d8e 33
+src/shell/Mobile/MobileGridToolbar/MobileGridToolbar.tsx
+  s_078fc63cde22ff::t_669e923ab66758 28,31,95
+src/i18n/locales/pt-BR.json
+  s_078fc63cde22ff::t_45a53b04ecbe04 3675-3680
+src/i18n/locales/zh-CN.json
+  s_078fc63cde22ff::t_45a53b04ecbe04 3675-3680
+src/i18n/locales/sv.json
+  s_078fc63cde22ff::t_45a53b04ecbe04 3675-3680
+src/shared/utils/slantRowDesign.ts
+  s_078fc63cde22ff::t_3a755d581da415 1-30
+src/core/store/interaction.ts
+  s_078fc63cde22ff::t_1084dc67edc080 103
+  s_078fc63cde22ff::t_ad1146edb68df2 2
+  s_078fc63cde22ff::t_2fe1241f3b15bf 34-35,54,72,102
+src/i18n/locales/nl.json
+  s_078fc63cde22ff::t_45a53b04ecbe04 3675-3680
+src/shared/hooks/interactions/paintSlantedRows.test.ts
+  s_078fc63cde22ff::t_6bfb24933f16d8 56,58,60-62,73
+  s_078fc63cde22ff::t_1f0cfc3c6fbb41 1-2,5-7,9-12,14-25,28-42,44-55,57,59,63-72,74-77,79-81,83-98,100-103,105-115,117-120
+  s_026b7789993b67::t_f2b31903505b0d 116
+  s_078fc63cde22ff::t_91a845553acf34 3-4,13,26-27,78,82,99,104
+  s_078fc63cde22ff::t_7eedcc8b656701 8,43
+src/i18n/locales/fr.json
+  s_078fc63cde22ff::t_45a53b04ecbe04 3675-3680
+src/features/bin-designer/utils/slantRowDesign.test.ts
+  s_078fc63cde22ff::t_3f760198c7a11d 1-43,45-72
+  s_078fc63cde22ff::t_91a845553acf34 44
+src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.tsx
+  s_078fc63cde22ff::t_669e923ab66758 141-148
+  s_078fc63cde22ff::t_5fce9f5bc9a27d 25,28
+src/i18n/locales/es.json
+  s_078fc63cde22ff::t_45a53b04ecbe04 3675-3680
+src/shell/registrations/DesignStoreRegistration.test.tsx
+  s_078fc63cde22ff::t_31dfa750d51d8e 16-19
+src/shared/utils/slantRowFill.test.ts
+  s_078fc63cde22ff::t_9b00d8a96840a9 1-49,56
+  s_078fc63cde22ff::t_1f0cfc3c6fbb41 50-55
+src/shared/hooks/interactions/useDrawInteraction.test.ts
+  s_078fc63cde22ff::t_0b8de4e3063644 1-2,12-13,279-307
+  s_078fc63cde22ff::t_29db0452f6bcd5 52,65
+  s_026b7789993b67::t_f7d339e7f628ef 308-309
+  s_078fc63cde22ff::t_97fe108a779a26 14
+src/features/layers/components/SlantedRowControls/SlantedRowControls.tsx
+  s_078fc63cde22ff::t_6228c3eced20b2 1-75
+src/shared/hooks/interactions/useDrawInteraction.ts
+  s_078fc63cde22ff::t_f6aeb39e23a0fb 53,83,96
+  s_078fc63cde22ff::t_30624cb4dbaa83 290
+  s_078fc63cde22ff::t_3f00982d5293a6 16,263-279,281-289
+  s_078fc63cde22ff::t_92125d7981dced 280
+src/features/grid-editor/components/Grid/Overlay/SlantedRowPreview.tsx
+  s_078fc63cde22ff::t_8b72ee3620f49c 1-37,39-77
+  s_026b7789993b67::t_277ef3666532d8 38
+src/i18n/locales/ko.json
+  s_078fc63cde22ff::t_45a53b04ecbe04 3675-3680
+src/i18n/locales/de.json
+  s_078fc63cde22ff::t_45a53b04ecbe04 3675-3680
+src/i18n/locales/it.json
+  s_078fc63cde22ff::t_45a53b04ecbe04 3675-3680
+src/i18n/locales/pl.json
+  s_078fc63cde22ff::t_45a53b04ecbe04 3675-3680
+src/i18n/locales/cs.json
+  s_078fc63cde22ff::t_45a53b04ecbe04 3675-3680
+src/shell/Mobile/MobileLayersPanel/ToolsTab/ToolsTab.tsx
+  s_078fc63cde22ff::t_669e923ab66758 9,128-129
+  s_078fc63cde22ff::t_5f7997ff301859 130-131
+src/core/types/interaction.ts
+  s_078fc63cde22ff::t_2fe1241f3b15bf 117-124
+  s_078fc63cde22ff::t_ad1146edb68df2 4
+src/shared/utils/slantRowFill.ts
+  s_078fc63cde22ff::t_9b00d8a96840a9 1-24,27-44,46-50,52-56,59-84
+  s_078fc63cde22ff::t_97fe108a779a26 25-26,57-58
+  s_026b7789993b67::t_4d4ee70c3b9a66 45,51
+src/shared/hooks/interactions/useStagingDragInteraction.test.ts
+  s_078fc63cde22ff::t_1100513ca13770 51
+src/i18n/locales/nb.json
+  s_078fc63cde22ff::t_45a53b04ecbe04 3675-3680
+src/shell/registrations/DesignStoreRegistration.tsx
+  s_078fc63cde22ff::t_31dfa750d51d8e 2-3,16-17
+src/i18n/locales/ja.json
+  s_078fc63cde22ff::t_45a53b04ecbe04 3675-3680
+src/features/grid-editor/components/Grid/Overlay/SlantedRowPreview.test.tsx
+  s_078fc63cde22ff::t_91a845553acf34 5-6,9-10,26-27,44-45
+  s_078fc63cde22ff::t_2dc7b440df240c 1-4,7-8,11-25,28-43,46-54
+src/shared/hooks/interactions/types.ts
+  s_078fc63cde22ff::t_f6aeb39e23a0fb 49-50
+  s_078fc63cde22ff::t_c7852954bcf8bb 17
+  s_078fc63cde22ff::t_b03d132390ab79 11,91-92
+src/features/grid-editor/components/Grid/Overlay/Overlay.tsx
+  s_078fc63cde22ff::t_8b72ee3620f49c 14,515-526
+src/features/layers/components/SlantedRowControls/SlantedRowControls.test.tsx
+  s_078fc63cde22ff::t_2dc7b440df240c 1-45
+src/i18n/locales/en.ts
+  s_078fc63cde22ff::t_45a53b04ecbe04 576-583
+src/i18n/locales/uk.json
+  s_078fc63cde22ff::t_45a53b04ecbe04 3675-3680
+scripts/doc-budget.json
+  s_078fc63cde22ff::t_5955b24bcbd5f2 23
+src/features/layers/components/ActiveLayerPanel/SizeSelectorPopover.tsx
+  s_078fc63cde22ff::t_669e923ab66758 6,169-170
+  s_078fc63cde22ff::t_832f7fded4172b 171-172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e9589d6748306e86e49c5d71ba240975c92d9480",
+  "prompts": {},
+  "sessions": {
+    "s_026b7789993b67": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9840488a-f188-474e-bb47-4c700a1bb0d4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
