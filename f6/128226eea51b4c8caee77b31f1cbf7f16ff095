@@ -1,0 +1,43 @@
+src/core/cqrs/v2/domain/bin/duplicateBin.ts
+  s_078fc63cde22ff::t_f11b2478d7be26 55
+src/core/cqrs/v2/domain/bin/updateBin.test.ts
+  s_078fc63cde22ff::t_164300a96a1540 1,7,237-267
+  s_078fc63cde22ff::t_3cdb4ba7cd1205 268-269
+src/shared/hooks/interactions/moveOrder.test.ts
+  s_078fc63cde22ff::t_ed5efe4cd461fc 1-21
+src/core/cqrs/v2/domain/bin/updateBin.ts
+  s_078fc63cde22ff::t_f11b2478d7be26 183-187,189
+src/core/store/layout/binActions.ts
+  s_078fc63cde22ff::t_f11b2478d7be26 51-52,63-65,177
+src/shared/hooks/interactions/useDragInteraction.ts
+  s_078fc63cde22ff::t_7d7a24ba1ab587 447
+  s_078fc63cde22ff::t_ed5efe4cd461fc 16,444,446
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_078fc63cde22ff::t_164300a96a1540 579-583
+src/shared/utils/placedSlant.test.ts
+  s_078fc63cde22ff::t_164300a96a1540 122-127
+src/shared/utils/placedSlant.ts
+  s_078fc63cde22ff::t_8e0f964e835817 3,92-97,114-126,131,144-145
+src/core/cqrs/v2/domain/bin/duplicateBin.test.ts
+  s_078fc63cde22ff::t_318b0da8d46f82 35-48
+src/shared/hooks/interactions/moveOrder.ts
+  s_078fc63cde22ff::t_ed5efe4cd461fc 1-11
+src/core/types/slant.ts
+  s_078fc63cde22ff::t_f47e24369fe3cd 34-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f6128226eea51b4c8caee77b31f1cbf7f16ff095",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
