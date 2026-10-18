@@ -28,6 +28,7 @@ src/features/generation/worker/generators/slantSupport.scenario.test.ts
 src/shared/utils/slantPlan.test.ts
   s_078fc63cde22ff::t_5a4b7170304969 4-9,11-12,161,163-178,193-215
   s_078fc63cde22ff::t_dd343fa211dd15 216
+  s_078fc63cde22ff::t_37a6cbdae493e5 189-192
 src/features/bin-designer/utils/binDownloadNaming.ts
   s_078fc63cde22ff::t_9091076cf2bfc5 23-24
 src/shell/layoutExport/planLayoutBinExport.ts
