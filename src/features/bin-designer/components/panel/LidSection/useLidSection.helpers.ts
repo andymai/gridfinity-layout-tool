@@ -267,17 +267,19 @@ const FIXABLE_IDS_WITHOUT_FILL: ReadonlySet<LidCompatibilityId> = new Set(
 /**
  * Would a fill at `topOffset` cut any pocket shallower than the current fill does?
  *
- * Every pocket, mesh imprints included, stops at the fill's height. The
+ * Every pocket stops at the fill's height, except a mesh imprint, which the
+ * worker clamps from the print's bottom and so can sink into the socket. The
  * shortfall helper adds what a lean or a wall takes, but answers null for
  * shapes it does not judge, so it cannot be the only measure.
  */
 function fillShortensPockets(params: BinParams, topOffset: number): boolean {
   const { innerW, innerD } = cutoutInterior(params);
-  const { wallHeight } = binDimensions(params);
+  const { wallHeight, floorZ } = binDimensions(params);
   const reach = (cutout: Cutout, offset: number): number => {
     const fill = wallHeight - offset;
+    const limit = cutout.shape === 'mesh' ? floorZ + fill : fill;
     const clipped = cutoutDepthShortfall(cutout, innerW, innerD, fill)?.achievable ?? Infinity;
-    return Math.min(cutout.cutDepth, fill, clipped);
+    return Math.min(cutout.cutDepth, limit, clipped);
   };
   return params.cutouts.some(
     (c) =>

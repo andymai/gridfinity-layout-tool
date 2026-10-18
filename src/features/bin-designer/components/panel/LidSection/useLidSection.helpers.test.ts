@@ -233,11 +233,13 @@ describe('fixableIdsFor', () => {
   });
 
   // The shortfall helper does not judge these, but the fill still bounds them.
+  // A mesh imprint is bounded from the print's bottom, so it can reach the
+  // socket: the 8.5mm offset leaves it 26.5mm, not the fill's 21.75mm.
   it.each([
-    ['a mesh imprint', { shape: 'mesh' }],
-    ['a pocket hanging off the board', { x: -10 }],
-  ] as const)('withholds the fill fix for %s it would cut short', (_, pocket) => {
-    expect(fixableIdsFor(solidWithPocket(25, pocket)).has('slideFillTooHigh')).toBe(false);
-    expect(fixableIdsFor(solidWithPocket(10, pocket)).has('slideFillTooHigh')).toBe(true);
+    ['a mesh imprint', { shape: 'mesh' }, 28, 25],
+    ['a pocket hanging off the board', { x: -10 }, 25, 10],
+  ] as const)('withholds the fill fix only when it would cut %s short', (_, pocket, deep, kept) => {
+    expect(fixableIdsFor(solidWithPocket(deep, pocket)).has('slideFillTooHigh')).toBe(false);
+    expect(fixableIdsFor(solidWithPocket(kept, pocket)).has('slideFillTooHigh')).toBe(true);
   });
 });
