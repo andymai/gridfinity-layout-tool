@@ -1,0 +1,34 @@
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_078fc63cde22ff::t_0eec06aac526f1 31,53-54,243-244,257,308-311,373,434-443,449-451,453-455
+src/features/bin-designer/utils/thumbnailRegenerator.test.ts
+  s_078fc63cde22ff::t_76d1388901b2aa 127-150
+src/features/bin-designer/utils/thumbnailRegenerator.ts
+  s_078fc63cde22ff::t_1595ded08b13d3 24-25,95-104,191-194,196-197,237-238,308-319,374-386
+  s_078fc63cde22ff::t_5ee1a24e26e6f8 58-77,195
+  s_078fc63cde22ff::t_53ab5027e271db 387
+src/shared/hooks/useLinkedDesignMeshes.test.ts
+  s_078fc63cde22ff::t_fd4c53dd8d1575 29,53-55,619-621,623-642,644-655,657-670
+  s_078fc63cde22ff::t_e4600e94049ae1 643,656
+  s_078fc63cde22ff::t_3c334e21fb03a3 622
+  s_078fc63cde22ff::t_d5d1b6df3243d9 671
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/useDesignGeometries.test.ts
+  s_078fc63cde22ff::t_fd4c53dd8d1575 94-106
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/useDesignGeometries.ts
+  s_078fc63cde22ff::t_0eec06aac526f1 88,91-99,103,148-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "239ff8676cd72c604eb8a05111254306fe2100ff",
+  "prompts": {},
+  "sessions": {
+    "s_078fc63cde22ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b927cd29-c4cb-4437-8a5a-a9d5381b07a5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
