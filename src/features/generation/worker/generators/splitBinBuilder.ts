@@ -34,6 +34,7 @@ import { splitConnectorsSuppressedByBase } from '@/shared/generation/splitUtils'
 import { EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 import { exportPiece, assertStepExportable, tessellatePiece } from './splitPieceExport';
 import type { SplitExportResult, SplitPreviewResult, SplitPieceInfo } from './splitPieceExport';
+import { resolveSlant } from '@/shared/utils/slantPlan';
 export { exportPiece, assertStepExportable, tessellatePiece } from './splitPieceExport';
 export type { SplitExportResult, SplitPreviewResult, SplitPieceInfo } from './splitPieceExport';
 
@@ -117,6 +118,9 @@ function splitSolidIntoPieces(
   splitConnectorConfig?: SplitConnectorConfig,
   pieceIndices?: ReadonlySet<number>
 ): SplitPieceInfo[] {
+  // Cut planes are vertical, but a slanted body crosses them at an angle, so
+  // the connectors and the per-piece lip would land off their faces.
+  if (resolveSlant(params)) throw new Error('A slanted bin cannot be split');
   const hasLip = params.base.stackingLip;
 
   // Generate body solid. When the bin has a stacking lip, leave the LIP SOLID

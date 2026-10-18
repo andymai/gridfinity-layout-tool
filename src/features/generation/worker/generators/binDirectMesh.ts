@@ -38,6 +38,7 @@ import { roundedRectPoints } from './directMeshShapes';
 import { addOuterWalls } from './directMeshWalls';
 import { creaseEdges } from './utils/creaseEdges';
 import { forEachSocketCell, resolveSocketCellPlan } from './socketBuilder';
+import { resolveSlant } from '@/shared/utils/slantPlan';
 import {
   SIZE,
   HEIGHT_UNIT,
@@ -378,6 +379,7 @@ const DIRECT_MESH_BASE_STYLES: ReadonlySet<BinParams['base']['style']> = new Set
  */
 export function canBinUseDirectMesh(params: BinParams): boolean {
   if (params.pullTab?.enabled) return false;
+  if (resolveSlant(params)) return false;
   const { base } = params;
   if (base.rimFillet && !base.stackingLip) return false;
 

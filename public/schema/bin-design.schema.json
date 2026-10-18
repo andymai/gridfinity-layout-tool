@@ -466,6 +466,9 @@
           },
           "description": "Extra exterior wall height in mm ABOVE the nominal bin height. Outer walls and stacking lip rise; the interior floor, cutouts, dividers, scoops and label tabs stay anchored at the original top plane. A collar of dead headroom. 0 reproduces the standard bin exactly."
         },
+        "slant": {
+          "$ref": "#/$defs/SlantConfig"
+        },
         "interiorFilletMm": {
           "type": "number",
           "minimum": 0.5,
@@ -2059,6 +2062,33 @@
         "right": {
           "type": "boolean",
           "description": "+X side."
+        }
+      }
+    },
+    "SlantConfig": {
+      "type": "object",
+      "description": "Leans everything above the floor toward one side while the socket stays upright. A shear: each horizontal section keeps its shape and moves sideways by tan(angleDeg) per mm of rise. Ignored with an overhang, a custom shape, mesh pockets, a tray bottom, slide rails, a knife rest, a floor pattern or an open floor. A slanted bin has no stacking lip and no lid.",
+      "required": ["angleDeg", "side"],
+      "properties": {
+        "angleDeg": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 60,
+          "x-constant": {
+            "maximum": "SLANT_MAX_DEG"
+          },
+          "description": "Lean from vertical in degrees; 0 is upright. Past 45 the leaning wall's underside prints as unsupported overhang."
+        },
+        "side": {
+          "enum": ["front", "back", "left", "right"],
+          "x-constant": {
+            "enum": "SLANT_SIDES"
+          },
+          "description": "The side the top leans toward."
+        },
+        "endSupport": {
+          "type": "boolean",
+          "description": "Export a wedge the leaning top rests on, as a second part."
         }
       }
     },

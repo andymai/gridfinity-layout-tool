@@ -6,6 +6,7 @@
  */
 
 import { withSanitizedOverhang } from './binFitValidation.js';
+import { withSanitizedSlant } from './slantValidation.js';
 import {
   isNumber,
   inRange,
@@ -148,6 +149,7 @@ export const ALLOWED_PARAM_KEYS: ReadonlySet<string> = new Set<string>([
   'interiorFilletMm',
   'style',
   'overhang',
+  'slant',
   // Sub-objects (deep-validated below)
   'base',
   'compartments',
@@ -190,7 +192,7 @@ function pickAllowedParams(params: Record<string, unknown>): Record<string, unkn
       out[key] = params[key];
     }
   }
-  return withSanitizedOverhang(out);
+  return withSanitizedSlant(withSanitizedOverhang(out));
 }
 
 export interface DesignerSharePayload {

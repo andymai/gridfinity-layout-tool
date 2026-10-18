@@ -31,6 +31,7 @@ import type {
   TextStyleDefaults,
   TextStyleOverride,
 } from '@/shared/types/bin';
+import type { SlantConfig } from '@/core/types';
 import type { Assert, KeysMatch } from './assert';
 
 export const FEATURE_COLOR_KEYS = [
@@ -162,6 +163,9 @@ export const KNIFE_REST_KEYS = [
 export type _KnifeRestKeys = Assert<
   KeysMatch<keyof KnifeRestConfig, (typeof KNIFE_REST_KEYS)[number]>
 >;
+
+export const SLANT_KEYS = ['angleDeg', 'side', 'endSupport'] as const;
+export type _SlantKeys = Assert<KeysMatch<keyof SlantConfig, (typeof SLANT_KEYS)[number]>>;
 
 export const CUTOUT_CONFIG_KEYS = ['topOffset', 'fillReference'] as const;
 export type _CutoutConfigKeys = Assert<

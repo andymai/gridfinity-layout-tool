@@ -1,4 +1,4 @@
-import type { MagnetAnchor } from '@/core/types';
+import type { MagnetAnchor, SlantConfig } from '@/core/types';
 import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { BaseConfig, BinStyle } from './base';
@@ -176,6 +176,8 @@ export interface BinParams {
    * from the footprint polygon.
    */
   readonly extraWallHeightMm?: number;
+  /** See {@link SlantConfig}. Ignored while `slantBlocker` reports a conflict. */
+  readonly slant?: SlantConfig;
 }
 
 // Insert Types

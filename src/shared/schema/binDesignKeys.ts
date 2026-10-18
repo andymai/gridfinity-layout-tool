@@ -104,6 +104,7 @@ export const BIN_PARAMS_KEYS = [
   'cellMask',
   'overhang',
   'extraWallHeightMm',
+  'slant',
 ] as const;
 export type _BinParamsKeys = Assert<KeysMatch<keyof BinParams, (typeof BIN_PARAMS_KEYS)[number]>>;
 

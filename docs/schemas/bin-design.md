@@ -111,6 +111,7 @@ or rides along in a shared design.
 | `cellMask`              | [`CellMask`](#cellmask)                         |          |          |                         |                                                                                                                                                                                                                                                                                                 |
 | `overhang`              | [`OverhangConfig`](#overhangconfig)             |          |          |                         |                                                                                                                                                                                                                                                                                                 |
 | `extraWallHeightMm`     | `number`                                        |          | `0`      | >= 0, <= 100            | Extra exterior wall height in mm ABOVE the nominal bin height. Outer walls and stacking lip rise; the interior floor, cutouts, dividers, scoops and label tabs stay anchored at the original top plane. A collar of dead headroom. 0 reproduces the standard bin exactly.                       |
+| `slant`                 | [`SlantConfig`](#slantconfig)                   |          |          |                         |                                                                                                                                                                                                                                                                                                 |
 | `interiorFilletMm`      | `number`                                        |          |          | >= 0.5, <= 15           | Radius in mm rounding each compartment's wall-to-floor edges; its vertical corners round to at least the same. Omit for sharp junctions. Standard style only. Each compartment is clamped to half its narrowest span and to its height, so a large value turns a small compartment into a bowl. |
 
 <!-- generated:end -->
@@ -676,6 +677,27 @@ Stored rim-anchored: the wall is full width at the rim and angles inward over
 | `right`      | `number`                  | yes      |         | >= 0, <= 42  | Magnitude on +X in mm.                                                                 |
 | `front`      | `number`                  | yes      |         | >= 0, <= 42  | Magnitude on -Y in mm.                                                                 |
 | `back`       | `number`                  | yes      |         | >= 0, <= 42  | Magnitude on +Y in mm.                                                                 |
+
+<!-- generated:end -->
+
+## Slant
+
+Leans everything above the floor toward one side while the Gridfinity base
+stays upright, so tall items fit a shallow drawer. Each horizontal section keeps
+its shape and moves sideways by `tan(angleDeg)` per mm of rise. A slanted bin has
+no stacking lip and no lid.
+
+<!-- schema:SlantConfig -->
+
+<a id="slantconfig"></a>
+
+<!-- generated:start -->
+
+| Field        | Type                                           | Required | Default | Constraint  | Notes                                                                                                             |
+| ------------ | ---------------------------------------------- | -------- | ------- | ----------- | ----------------------------------------------------------------------------------------------------------------- |
+| `angleDeg`   | `number`                                       | yes      |         | >= 0, <= 60 | Lean from vertical in degrees; 0 is upright. Past 45 the leaning wall's underside prints as unsupported overhang. |
+| `side`       | `"front"` \| `"back"` \| `"left"` \| `"right"` | yes      |         |             | The side the top leans toward.                                                                                    |
+| `endSupport` | `boolean`                                      |          |         |             | Export a wedge the leaning top rests on, as a second part.                                                        |
 
 <!-- generated:end -->
 

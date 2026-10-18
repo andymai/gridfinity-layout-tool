@@ -35,6 +35,8 @@ import {
   STACK_PRINT_MAX_GAP_MM,
   STACK_PRINT_MIN_COPIES,
   STACK_PRINT_MIN_GAP_MM,
+  SLANT_MAX_DEG,
+  SLANT_SIDES,
 } from '@/core/types';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
 import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
@@ -147,6 +149,8 @@ const SOURCES: Record<string, unknown> = {
   LIGHTWEIGHT_MODES,
   LIP_TIP_STYLES,
   SCOOP_SIDES,
+  SLANT_SIDES,
+  SLANT_MAX_DEG,
   PARTIAL_DIVIDER_STYLES,
   SLIDE_RAIL_MOUNTS,
   SLOT_LAYOUTS,

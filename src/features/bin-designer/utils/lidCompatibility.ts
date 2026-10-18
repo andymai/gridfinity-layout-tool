@@ -27,6 +27,7 @@ import { socketHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { hasAnyPatternedWall } from '@/shared/utils/wallPatternSides';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
+import { resolveSlant } from '@/shared/utils/slantPlan';
 import { dividerRailBlocks, dividerRailSides } from '@/shared/utils/dividerRailPlan';
 import { unlippedSides, lipGaps, lipGapSides, polygonLipGaps } from '@/shared/utils/lipGapPlan';
 // Safe from the recursion CLAUDE.md gotcha #18 documents: `planHingeLid` is a
@@ -735,6 +736,9 @@ export function shouldGenerateLid(params: BinParams): boolean {
   // lid would be emitted for a plate with no cavity to close. Gated here rather
   // than in the constraint engine because the lid is not a `FeatureKey`.
   if (params.base.tile === true) return false;
+  // A lid would sit on a rim that has moved sideways off the socket, and a bin
+  // stacked on top would lean further still.
+  if (resolveSlant(params)) return false;
   return !hasLidBlocker(checkLidCompatibility(params));
 }
 

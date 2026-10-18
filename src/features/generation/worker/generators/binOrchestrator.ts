@@ -20,12 +20,14 @@ import { trayBottomStage } from './pipeline/stages/trayBottomStage';
 import { lidInteriorReliefStage } from './pipeline/stages/lidInteriorReliefStage';
 import { lidRetentionStage } from './pipeline/stages/lidRetentionStage';
 import { lidHingeStage } from './pipeline/stages/lidHingeStage';
+import { slantStage } from './pipeline/stages/slantStage';
 import { slideLidChannelStage } from './pipeline/stages/slideLidChannelStage';
 import { lidGripDipStage } from './pipeline/stages/lidGripDipStage';
 import { tessellateStage } from './pipeline/stages/tessellateStage';
 import { meshImprintStage } from './pipeline/stages/meshImprintStage';
 import { mergeBaseStage } from './pipeline/stages/mergeBaseStage';
 import type { PerfCollector } from './pipeline/perfCollector';
+import { normalizeSlant } from '@/shared/utils/slantPlan';
 
 /**
  * Throws if `params.cellMask` is present but malformed. Checks dimensions
@@ -48,7 +50,7 @@ function assertValidMask(params: BinParams): void {
   if (err) throw new Error(`cellMask is invalid: ${err.message}`);
 }
 
-/** Default generation pipeline: shell -> features -> boolean -> translate -> lid-interior-relief -> tray-bottom -> lid-retention -> slide-lid-channel -> lid-grip-dip -> lid-hinge -> tessellate -> mesh imprint */
+/** Default generation pipeline: shell -> features -> boolean -> translate -> lid-interior-relief -> tray-bottom -> lid-retention -> slide-lid-channel -> lid-grip-dip -> lid-hinge -> slant -> tessellate -> mesh imprint */
 const DEFAULT_PIPELINE: readonly PipelineStage[] = [
   shellStage,
   featuresStage,
@@ -63,6 +65,9 @@ const DEFAULT_PIPELINE: readonly PipelineStage[] = [
   // above is free to reshape the rim without knowing a hinge exists, and the
   // knuckles weld onto whatever survives.
   lidHingeStage,
+  // After every solid stage, so each feature is built upright and leans with
+  // the body; before tessellation, which fuses the upright socket on.
+  slantStage,
   tessellateStage,
   meshImprintStage,
   mergeBaseStage,
@@ -94,7 +99,7 @@ export function generateBin(
 ): MeshData {
   assertValidMask(params);
   const ctx = createInitialContext(
-    params,
+    normalizeSlant(params),
     onProgress,
     forExport,
     signal,

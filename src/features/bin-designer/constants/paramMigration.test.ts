@@ -2158,3 +2158,37 @@ describe('migrateParams - low-profile flag', () => {
     expect('lowProfile' in stale.base).toBe(false);
   });
 });
+
+describe('migrateParams slant', () => {
+  it('leaves no slant key on an upright design', () => {
+    expect(migrateParams({ ...DEFAULT_BIN_PARAMS }).slant).toBeUndefined();
+  });
+
+  it('normalizes a stored slant and drops the stacking lip it rules out', () => {
+    const migrated = migrateParams({
+      ...DEFAULT_BIN_PARAMS,
+      slant: { angleDeg: 70, side: 'back', endSupport: false },
+    });
+    expect(migrated.slant).toEqual({ angleDeg: 60, side: 'back' });
+    expect(migrated.base.stackingLip).toBe(false);
+  });
+
+  it('strips a malformed slant and keeps the lip', () => {
+    const migrated = migrateParams({
+      ...DEFAULT_BIN_PARAMS,
+      slant: { angleDeg: 30, side: 'sideways' },
+    } as unknown as Parameters<typeof migrateParams>[0]);
+    expect(migrated.slant).toBeUndefined();
+    expect(migrated.base.stackingLip).toBe(true);
+  });
+
+  it('keeps the lip when a blocker cancels the slant', () => {
+    const migrated = migrateParams({
+      ...DEFAULT_BIN_PARAMS,
+      slide: { ...DEFAULT_BIN_PARAMS.slide, enabled: true },
+      slant: { angleDeg: 30, side: 'back' },
+    });
+    expect(migrated.slant).toEqual({ angleDeg: 30, side: 'back' });
+    expect(migrated.base.stackingLip).toBe(true);
+  });
+});

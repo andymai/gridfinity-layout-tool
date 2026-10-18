@@ -30,6 +30,7 @@ export {
 
 export * from './layout';
 export * from './overhang';
+export * from './slant';
 export * from './baseplate';
 export * from './drawerOutline';
 export * from './interaction';

@@ -94,6 +94,7 @@ import {
   migrateBentoCompartmentFields,
   migrateInteriorFilletMm,
 } from './paramMigrationCompartments';
+import { migrateSlant, normalizeSlant } from '@/shared/utils/slantPlan';
 export { migrateWalls } from './paramMigrationWalls';
 export type { LegacyWallConfig } from './paramMigrationWalls';
 
@@ -449,7 +450,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
       )
     : undefined;
 
-  return withSyncedLidHeight({
+  const migrated = withSyncedLidHeight({
     ...DEFAULT_BIN_PARAMS,
     ...rest,
     pullTab: params.pullTab ? resolvePullTab(params.pullTab) : undefined,
@@ -567,7 +568,9 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     ),
     // Spread rather than assigned: an absent radius must stay an absent key.
     ...optionalInteriorFillet(rawInteriorFillet),
+    slant: migrateSlant((rest as Record<string, unknown>).slant),
   });
+  return normalizeSlant(migrated);
 }
 
 function optionalInteriorFillet(raw: unknown): Pick<BinParams, 'interiorFilletMm'> {
