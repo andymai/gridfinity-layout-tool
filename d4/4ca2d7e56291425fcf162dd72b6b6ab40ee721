@@ -1,0 +1,31 @@
+src/features/bin-designer/utils/slideLidPlanForParams.test.ts
+  s_3ed1b5bc102254::t_58c4b158b4da7c 146-155,165-170
+  s_3ed1b5bc102254::t_6c89e8126c0201 156-164
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_3ed1b5bc102254::t_cf397948c8d394 6,13,15,274-275,278-281,283,286-287,290-292,294-295
+  s_3ed1b5bc102254::t_5a8340976c9205 269-273,276-277,284-285,296
+src/features/bin-designer/utils/slideLidPlanForParams.ts
+  s_3ed1b5bc102254::t_cf397948c8d394 17,48,51,68,82-97,115
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.test.ts
+  s_3ed1b5bc102254::t_713622ad937c9a 243-245,249-250
+  s_3ed1b5bc102254::t_f87f0ee9fddde8 240-242,248,251-263,273
+  s_3ed1b5bc102254::t_6c89e8126c0201 246-247,264-266,274-291
+  s_3ed1b5bc102254::t_58c4b158b4da7c 235-236,271-272,292
+  s_3ed1b5bc102254::t_ad7ccc76beb62a 293
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d44ca2d7e56291425fcf162dd72b6b6ab40ee721",
+  "prompts": {},
+  "sessions": {
+    "s_3ed1b5bc102254": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f41879-d3ed-4377-a3a8-af4dbd466449",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
