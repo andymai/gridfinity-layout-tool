@@ -9,7 +9,11 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { boundingBox, meshTopologyStats } from './__kernel-tests__/meshAssertions';
-import { exportSlantSupport, generateSlantSupport } from './slantSupportBuilder';
+import {
+  exportSlantSupport,
+  generateSlantSupport,
+  supportFractionalEdge,
+} from './slantSupportBuilder';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { planSlantSupport, SLANT_SUPPORT_GAP_MM } from '@/shared/utils/slantPlan';
 import type { BinParams } from '@/shared/types/bin';
@@ -94,7 +98,7 @@ describe('slant end support', () => {
       const topEdge =
         binHalf + plan.topOffsetMm + SLANT_SUPPORT_GAP_MM * Math.hypot(1, plan.slant.k);
       expect(farEdge).toBeGreaterThanOrEqual(topEdge);
-      expect(farEdge - p.gridUnitMm / 2).toBeLessThan(topEdge);
+      expect(farEdge - p.gridUnitMm).toBeLessThan(topEdge);
     }
   });
 
@@ -130,4 +134,56 @@ describe('slant end support', () => {
     expect(planSlantSupport(p)).toBeNull();
     expect(generateSlantSupport(p)).toBeNull();
   });
+
+  it('starts with a half cell where the half column leads, so the feet meet the pockets', () => {
+    const half = (side: SlantSide, edge: 'start' | 'end') =>
+      planSlantSupport(params(side, 45, { width: 1.5, fractionalEdgeX: edge }));
+    // The half column on the side the bin leans toward puts its edge on a half line.
+    expect(half('right', 'end')).toMatchObject({ leadingHalf: true });
+    expect((half('right', 'end')?.lengthU ?? 0) % 1).toBe(0.5);
+    expect(half('right', 'start')).toMatchObject({ leadingHalf: false });
+    expect((half('right', 'start')?.lengthU ?? 0) % 1).toBe(0);
+    expect(half('left', 'start')).toMatchObject({ leadingHalf: true });
+    const built = generateSlantSupport(params('right', 45, { width: 1.5 }), undefined, true);
+    expect(built && meshTopologyStats(built).boundaryEdges).toBe(0);
+  }, 120_000);
+
+  it('maps the half edges into the support frame for every side', () => {
+    const edges = (side: SlantSide) => {
+      const plan = planSlantSupport(
+        params(side, 45, { width: 1.5, depth: 2.5, fractionalEdgeX: 'end', fractionalEdgeY: 'end' })
+      );
+      if (!plan) throw new Error('expected a support plan');
+      return supportFractionalEdge(plan);
+    };
+    // Right: local Y is world Y; the bin's half row sits at the back ('end').
+    expect(edges('right')).toEqual({ x: 'start', y: 'end' });
+    // Left: turned 180 degrees, world back is local 'start'; a 2.5u depth leads nothing.
+    expect(edges('left')).toEqual({ x: 'end', y: 'start' });
+    // Back: local Y is world -X, so the right-hand half column is local 'start'.
+    expect(edges('back')).toEqual({ x: 'start', y: 'start' });
+    // Front: local Y is world +X.
+    expect(edges('front')).toEqual({ x: 'end', y: 'end' });
+  });
+
+  // The mapping above is reasoning about rotations; this checks it on the
+  // parts. Turned to lean back or front, the support's cross axis is world X,
+  // so its feet must sit in the same X columns as the bin's own feet.
+  it.each(['back', 'front'] as const)(
+    'puts the support feet in the bin foot columns when leaning %s',
+    (side) => {
+      const p = params(side, 45, { width: 1.5, fractionalEdgeX: 'end' });
+      const bin = getGenerateBin()(p, undefined, true);
+      const support = generateSlantSupport(p, undefined, true);
+      if (!support) throw new Error('expected a support');
+      const footXs = (v: Float32Array) => {
+        const xs = new Set<number>();
+        for (let i = 0; i < v.length; i += 3)
+          if (v[i + 2] < 0.05) xs.add(Math.round(v[i] * 10) / 10);
+        return [...xs].sort((a, b) => a - b);
+      };
+      expect(footXs(support.vertices)).toEqual(footXs(bin.vertices));
+    },
+    120_000
+  );
 });

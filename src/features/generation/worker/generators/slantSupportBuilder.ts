@@ -35,6 +35,7 @@ import { SOCKET_HEIGHT, toIndexedMeshData, checkCancelled } from './generatorTyp
 import type { ProgressFn } from './generatorTypes';
 import { CLEARANCE, COPLANAR_OVERLAP } from './generatorConstants';
 import { buildBaseSocket, DEFAULT_SOCKET_CELL_PLAN } from './socketBuilder';
+import type { FractionalEdge } from './socketBuilder';
 import { buildRidgeReliefTool } from './ridgeReliefBuilder';
 import { creaseEdges } from './utils';
 import { computeTessellationTolerances, EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
@@ -60,6 +61,20 @@ function supportFrame(params: BinParams, plan: SlantSupportPlan): SupportFrame {
   const binHalf = (binUnits * along - CLEARANCE) / 2;
   const lengthMm = plan.lengthU * along - CLEARANCE;
   return { centreMm: binHalf + CLEARANCE + lengthMm / 2 };
+}
+
+/**
+ * The support's half edges in its local frame, where X runs along the lean
+ * whatever the side. The turn that places it maps local +Y onto world +Y
+ * (right), +X (front), -Y (left) or -X (back), so the cross edge flips for two
+ * of the four sides.
+ */
+export function supportFractionalEdge(plan: SlantSupportPlan): FractionalEdge {
+  const flipped = plan.crossEdge === 'start' ? 'end' : 'start';
+  return {
+    x: plan.leadingHalf ? 'start' : 'end',
+    y: plan.slant.side === 'right' || plan.slant.side === 'front' ? plan.crossEdge : flipped,
+  };
 }
 
 /** The support in the local frame, centred on its own footprint, socket bottom at z = 0. */
@@ -101,15 +116,16 @@ function buildLocalSupport(params: BinParams, plan: SlantSupportPlan, forExport:
     let body: Shape3D = scope.register(unwrap(intersect(prism as ValidSolid, keep)));
     if (socketless) return unwrap(clone(body));
 
-    const unitX = plan.slant.axis === 'x' ? along : across;
-    const unitY = plan.slant.axis === 'x' ? across : along;
+    const pitch = { x: along, y: across };
+    const fractionalEdge = supportFractionalEdge(plan);
     if (plan.pivotZ < SOCKET_HEIGHT) {
       const relief = buildRidgeReliefTool(
         plan.lengthU,
         plan.widthU,
         undefined,
-        { x: unitX, y: unitY },
-        DEFAULT_SOCKET_CELL_PLAN
+        pitch,
+        DEFAULT_SOCKET_CELL_PLAN,
+        fractionalEdge
       );
       if (relief) body = scope.register(unwrap(cut(body, scope.register(relief))));
     }
@@ -123,9 +139,9 @@ function buildLocalSupport(params: BinParams, plan: SlantSupportPlan, forExport:
       0,
       forExport,
       DEFAULT_SOCKET_CELL_PLAN,
-      { x: unitX, y: unitY },
+      pitch,
       undefined,
-      undefined,
+      fractionalEdge,
       undefined,
       undefined,
       plan.pivotZ

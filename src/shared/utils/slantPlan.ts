@@ -122,6 +122,8 @@ export type SlantExtentInputs = SlantInputs &
     BinParams,
     | 'width'
     | 'depth'
+    | 'fractionalEdgeX'
+    | 'fractionalEdgeY'
     | 'height'
     | 'heightUnitMm'
     | 'extraWallHeightMm'
@@ -170,10 +172,17 @@ export interface SlantSupportPlan {
   readonly pivotZ: number;
   readonly topZ: number;
   readonly topOffsetMm: number;
-  /** Footprint along the slant axis, in grid units (half-unit steps). */
+  /** Footprint along the slant axis, in grid units. */
   readonly lengthU: number;
   /** Footprint across the slant: the bin's own, in grid units. */
   readonly widthU: number;
+  /**
+   * The bin's leading edge lands on a half-cell line, so the support starts
+   * with a half cell for the rest of its feet to meet the baseplate's pockets.
+   */
+  readonly leadingHalf: boolean;
+  /** The side of the cross axis the bin's own half column sits on, in its frame. */
+  readonly crossEdge: 'start' | 'end';
 }
 
 /**
@@ -187,8 +196,16 @@ export function planSlantSupport(params: SlantExtentInputs): SlantSupportPlan | 
   if (topZ <= pivotZ) return null;
   const topOffsetMm = slant.k * (topZ - pivotZ);
   const pitch = slant.axis === 'x' ? params.gridUnitMm : (params.gridUnitMmY ?? params.gridUnitMm);
-  const reachMm = topOffsetMm + SLANT_SUPPORT_GAP_MM * Math.hypot(1, slant.k);
-  const lengthU = Math.max(0.5, Math.ceil((2 * reachMm) / pitch - 1e-9) / 2);
+  const reachU = (topOffsetMm + SLANT_SUPPORT_GAP_MM * Math.hypot(1, slant.k)) / pitch;
+  const binAlongU = slant.axis === 'x' ? params.width : params.depth;
+  const binEdge = slant.axis === 'x' ? params.fractionalEdgeX : params.fractionalEdgeY;
+  // A fractional bin's half column sits on its 'end' side unless set to 'start';
+  // leaning toward that side puts the leading edge on a half-cell line.
+  const leadingHalf =
+    binAlongU % 1 !== 0 && (slant.sign === 1 ? binEdge !== 'start' : binEdge === 'start');
+  const lengthU = leadingHalf
+    ? Math.max(0, Math.ceil(reachU - 0.5 - 1e-9)) + 0.5
+    : Math.max(1, Math.ceil(reachU - 1e-9));
   return {
     slant,
     pivotZ,
@@ -196,5 +213,7 @@ export function planSlantSupport(params: SlantExtentInputs): SlantSupportPlan | 
     topOffsetMm,
     lengthU,
     widthU: slant.axis === 'x' ? params.depth : params.width,
+    leadingHalf,
+    crossEdge: slant.axis === 'x' ? params.fractionalEdgeY : params.fractionalEdgeX,
   };
 }

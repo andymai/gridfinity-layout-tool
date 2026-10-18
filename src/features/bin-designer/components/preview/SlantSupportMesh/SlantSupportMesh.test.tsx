@@ -11,6 +11,8 @@ import type { BinParams } from '@/features/bin-designer/types';
 import { PREVIEW_Z_OFFSET } from '../LidMesh/lidAnchorZ';
 import { SlantSupportMesh } from './SlantSupportMesh';
 
+// No canvas or WebGL under jsdom, so only the R3F hook is stood in; the
+// geometry the component builds is real three.js.
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
   useThree: () => ({
@@ -21,30 +23,6 @@ vi.mock('@react-three/fiber', () => ({
   }),
   useFrame: vi.fn(),
   extend: vi.fn(),
-}));
-
-vi.mock('three', () => {
-  class MockBufferGeometry {
-    setAttribute = vi.fn();
-    setIndex = vi.fn();
-    computeVertexNormals = vi.fn();
-    clearGroups = vi.fn();
-    addGroup = vi.fn();
-    dispose = vi.fn();
-  }
-  return {
-    BufferGeometry: MockBufferGeometry,
-    EdgesGeometry: MockBufferGeometry,
-    BufferAttribute: vi.fn(),
-    Float32BufferAttribute: vi.fn(),
-    Color: vi.fn(),
-    DoubleSide: 'DoubleSide',
-    FrontSide: 'FrontSide',
-  };
-});
-
-vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
-  toCreasedNormals: vi.fn((geo: unknown) => geo),
 }));
 
 const supported: BinParams = {
