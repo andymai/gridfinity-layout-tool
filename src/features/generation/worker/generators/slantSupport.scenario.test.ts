@@ -186,4 +186,63 @@ describe('slant end support', () => {
     },
     120_000
   );
+
+  // A bin half a unit off the grid seats only on the feet its lattice or half
+  // sockets give it, and its support shares that offset on both axes.
+  const footCoords = (v: Float32Array, axis: 0 | 1, shift = 0): number[] => {
+    const out = new Set<number>();
+    for (let i = 0; i < v.length; i += 3)
+      if (v[i + 2] < 0.05) out.add(Math.round((v[i + axis] + shift) * 10) / 10);
+    return [...out].sort((a, b) => a - b);
+  };
+
+  it.each([
+    ['back', 0, { width: 2, depth: 1, footLatticeX: 'half' }],
+    ['front', 0, { width: 2, depth: 1, footLatticeX: 'half' }],
+    ['right', 1, { width: 1, depth: 2, footLatticeY: 'half' }],
+    ['back', 0, { width: 2, depth: 1, halfSockets: true }],
+  ] as const)(
+    'puts the support feet in the bin foot columns across a %s lean (axis %i, %o)',
+    (side, axis, { width, depth, ...base }) => {
+      const p = params(side, 45, { width, depth, base: { ...params(side).base, ...base } });
+      const bin = getGenerateBin()(p, undefined, true);
+      const support = generateSlantSupport(p, undefined, true);
+      if (!support) throw new Error('expected a support');
+      expect(footCoords(support.vertices, axis)).toEqual(footCoords(bin.vertices, axis));
+    },
+    120_000
+  );
+
+  // Along the lean the support starts where the bin ends, so it is checked
+  // against an upright bin of its own length on the same feet, moved to where
+  // the support stands.
+  it.each([
+    ['right', { footLatticeX: 'half' }],
+    ['back', { footLatticeY: 'half' }],
+    ['left', { halfSockets: true }],
+  ] as const)(
+    'puts the support feet on the bin lattice along a %s lean (%o)',
+    (side, base) => {
+      const p = params(side, 45, { width: 1, depth: 1, base: { ...params(side).base, ...base } });
+      const plan = planSlantSupport(p);
+      const support = generateSlantSupport(p, undefined, true);
+      if (!plan || !support) throw new Error('expected a support');
+      const { axis, sign } = plan.slant;
+      const reference = getGenerateBin()(
+        {
+          ...p,
+          slant: undefined,
+          width: axis === 'x' ? plan.lengthU : plan.widthU,
+          depth: axis === 'y' ? plan.lengthU : plan.widthU,
+        },
+        undefined,
+        true
+      );
+      const binHalf = (p.gridUnitMm - 0.5) / 2;
+      const centre = sign * (binHalf + 0.5 + (plan.lengthU * p.gridUnitMm - 0.5) / 2);
+      const i = axis === 'x' ? 0 : 1;
+      expect(footCoords(support.vertices, i)).toEqual(footCoords(reference.vertices, i, centre));
+    },
+    120_000
+  );
 });

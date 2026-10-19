@@ -34,8 +34,8 @@ import type { ExportFormat, MeshData } from '../../bridge/types';
 import { SOCKET_HEIGHT, toIndexedMeshData, checkCancelled } from './generatorTypes';
 import type { ProgressFn } from './generatorTypes';
 import { CLEARANCE, COPLANAR_OVERLAP } from './generatorConstants';
-import { buildBaseSocket, DEFAULT_SOCKET_CELL_PLAN } from './socketBuilder';
-import type { FractionalEdge } from './socketBuilder';
+import { buildBaseSocket, resolveSocketCellPlan } from './socketBuilder';
+import type { FractionalEdge, SocketCellPlan } from './socketBuilder';
 import { buildRidgeReliefTool } from './ridgeReliefBuilder';
 import { creaseEdges } from './utils';
 import { computeTessellationTolerances, EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
@@ -75,6 +75,31 @@ export function supportFractionalEdge(plan: SlantSupportPlan): FractionalEdge {
     x: plan.leadingHalf ? 'start' : 'end',
     y: plan.slant.side === 'right' || plan.slant.side === 'front' ? plan.crossEdge : flipped,
   };
+}
+
+/**
+ * The bin's feet in the support's frame. The support sits at the bin's offset on
+ * both axes, so it seats only on the lattice or half sockets the bin seats on.
+ */
+function supportSocketCellPlan(params: BinParams, plan: SlantSupportPlan): SocketCellPlan {
+  const bin = resolveSocketCellPlan(
+    params.base.halfSockets,
+    params.base.footLatticeX,
+    params.base.footLatticeY,
+    params.cellMask,
+    params.width,
+    params.depth
+  );
+  const [along, across] =
+    plan.slant.axis === 'x' ? [bin.latticeX, bin.latticeY] : [bin.latticeY, bin.latticeX];
+  return resolveSocketCellPlan(
+    bin.halfSockets,
+    along,
+    across,
+    undefined,
+    plan.lengthU,
+    plan.widthU
+  );
 }
 
 /** The support in the local frame, centred on its own footprint, socket bottom at z = 0. */
@@ -118,13 +143,14 @@ function buildLocalSupport(params: BinParams, plan: SlantSupportPlan, forExport:
 
     const pitch = { x: along, y: across };
     const fractionalEdge = supportFractionalEdge(plan);
+    const cellPlan = supportSocketCellPlan(params, plan);
     if (plan.pivotZ < SOCKET_HEIGHT) {
       const relief = buildRidgeReliefTool(
         plan.lengthU,
         plan.widthU,
         undefined,
         pitch,
-        DEFAULT_SOCKET_CELL_PLAN,
+        cellPlan,
         fractionalEdge
       );
       if (relief) body = scope.register(unwrap(cut(body, scope.register(relief))));
@@ -138,7 +164,7 @@ function buildLocalSupport(params: BinParams, plan: SlantSupportPlan, forExport:
       0,
       0,
       forExport,
-      DEFAULT_SOCKET_CELL_PLAN,
+      cellPlan,
       pitch,
       undefined,
       fractionalEdge,
