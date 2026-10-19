@@ -1,16 +1,16 @@
-src/features/bin-designer/store/customBinRegistry.test.ts
-  s_c75d9dd57d73a9::t_7fc34737e05b5d 17,621-644
-  s_c75d9dd57d73a9::t_5949bf2727e84d 2,18
-  s_c75d9dd57d73a9::t_b972ab8f44dd69 645-646
+src/features/bin-designer/hooks/useBackgroundThumbnailRegen.test.ts
+  s_c75d9dd57d73a9::t_7fc34737e05b5d 38,64-68,512-520
+  s_c75d9dd57d73a9::t_3966e828fcf762 521-523
 src/features/bin-designer/store/customBinRegistry.ts
   s_c75d9dd57d73a9::t_e6e4b90abd3caf 589,593,595-596
   s_c75d9dd57d73a9::t_a6b1d21c5dfe03 577-587,590-592,594,601-621
-  s_c75d9dd57d73a9::t_08771b2cc0e4fc 622
+  s_c75d9dd57d73a9::t_a7813b19d4f94c 622
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_c75d9dd57d73a9::t_5949bf2727e84d 2,18
+  s_c75d9dd57d73a9::t_7fc34737e05b5d 17,621-644
+  s_c75d9dd57d73a9::t_2779c219954cc5 645-646
 src/features/bin-designer/hooks/useBackgroundThumbnailRegen.ts
   s_c75d9dd57d73a9::t_f492cca7026b53 8-9,38,285-290
-src/features/bin-designer/hooks/useBackgroundThumbnailRegen.test.ts
-  s_c75d9dd57d73a9::t_7fc34737e05b5d 38,64-68,512-520
-  s_c75d9dd57d73a9::t_588f224ce02742 521-526
 ---
 {
   "schema_version": "authorship/3.0.0",
