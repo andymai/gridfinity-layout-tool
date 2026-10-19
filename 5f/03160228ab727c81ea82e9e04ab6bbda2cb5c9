@@ -1,0 +1,24 @@
+src/features/generation/worker/generators/slantSupportBuilder.ts
+  s_c75d9dd57d73a9::t_bb96a470b7d030 37-38,80-104,146,153,167
+src/features/generation/worker/generators/slantSupport.scenario.test.ts
+  s_c75d9dd57d73a9::t_754b62947e9c12 189-247
+src/shared/generation/meshPersistence.ts
+  s_c75d9dd57d73a9::t_d729b0b4591b27 92-93
+  s_c75d9dd57d73a9::t_129884e2c45892 114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5f03160228ab727c81ea82e9e04ab6bbda2cb5c9",
+  "prompts": {},
+  "sessions": {
+    "s_c75d9dd57d73a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16b68099-b481-40ec-9a18-57e3b3779478",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
