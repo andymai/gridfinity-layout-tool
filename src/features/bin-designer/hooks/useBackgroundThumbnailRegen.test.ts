@@ -35,6 +35,7 @@ vi.mock('../store/customBinRegistry', async (importOriginal) => {
     upsertRegistryEntry: vi.fn(),
     loadRegistry: vi.fn(() => []),
     registryItemEntry: actual.registryItemEntry,
+    registryParamsEntry: actual.registryParamsEntry,
     refreshRegistrySlants: vi.fn(),
     registryEdgeFields: vi.fn(() => ({})),
     registryHeightFields: vi.fn(() => ({})),
@@ -508,6 +509,35 @@ describe('useBackgroundThumbnailRegen', () => {
         await new Promise((r) => setTimeout(r, 10));
       });
       expect(upsertRegistryEntry).not.toHaveBeenCalled();
+    });
+  });
+
+  // A save or sync pull can land while the thumbnail renders; the write keeps
+  // its params, so the registry must too.
+  it('registers the design the thumbnail write returns, not the params listed before it', async () => {
+    const listed = makeDesign({ id: 'd1' });
+    const slant = { angleDeg: 40, side: 'back' as const, endSupport: true };
+    const saved = {
+      ...listed,
+      params: { ...listed.params, width: 3, slant },
+      thumbnail: 'data:image/webp;base64,FAKE',
+      thumbnailVersion: THUMBNAIL_VERSION,
+      updatedAt: '2026-05-19T00:02:00.000Z',
+    } as SavedDesign;
+    vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(ok([listed]));
+    vi.mocked(DesignerStorage.updateDesignThumbnail).mockResolvedValue(ok(saved));
+
+    renderHook(() => useBackgroundThumbnailRegen());
+
+    await waitFor(() => {
+      expect(upsertRegistryEntry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'd1',
+          width: 3,
+          slant: { config: slant },
+          updatedAt: '2026-05-19T00:02:00.000Z',
+        })
+      );
     });
   });
 

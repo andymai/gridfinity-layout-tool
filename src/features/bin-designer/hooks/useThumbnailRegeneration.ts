@@ -13,14 +13,7 @@ import type { SavedDesign } from '../types';
 import { THUMBNAIL_VERSION } from '../types';
 import { regenerateThumbnail } from '../utils/thumbnailRegenerator';
 import { updateDesignThumbnail } from '../storage/DesignerStorage';
-import {
-  upsertRegistryEntry,
-  registryEdgeFields,
-  registryHeightFields,
-  registryOverhangFields,
-  registrySlantFields,
-  registryKnifeRestFields,
-} from '../store/customBinRegistry';
+import { upsertRegistryEntry, registryParamsEntry } from '../store/customBinRegistry';
 import { updateThumbnailCache } from './useDesignThumbnail';
 import { isOk } from '@/core/result';
 
@@ -79,20 +72,8 @@ export function useThumbnailRegeneration(
           // Mark as successfully processed
           processedRef.current.add(design.id);
 
-          // Update custom bin registry (thumbnails not stored in registry)
-          upsertRegistryEntry({
-            id: design.id,
-            name: design.name,
-            width: design.params.width,
-            depth: design.params.depth,
-            height: design.params.height,
-            ...registryEdgeFields(design.params),
-            ...registryHeightFields(design.params),
-            ...registryOverhangFields(design.params),
-            ...registrySlantFields(design.params),
-            ...registryKnifeRestFields(design.params),
-            updatedAt: result.value.updatedAt,
-          });
+          const entry = registryParamsEntry(result.value);
+          if (entry) upsertRegistryEntry(entry);
 
           // Update in-memory thumbnail cache
           updateThumbnailCache(design.id, thumbnail);

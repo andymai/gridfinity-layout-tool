@@ -15,6 +15,7 @@ import {
   registrySlantFields,
   refreshRegistrySlant,
   refreshRegistrySlants,
+  registryParamsEntry,
   subscribeToRegistry,
   type CustomBinRef,
 } from './customBinRegistry';
@@ -616,6 +617,28 @@ describe('customBinRegistry', () => {
       expect(loadRegistry()[0]?.slant).toBeUndefined();
       refreshRegistrySlant('unknown', { ...DEFAULT_BIN_PARAMS, slant: SLANT });
       expect(loadRegistry()).toHaveLength(1);
+    });
+
+    it('builds a parametric entry from the stored design, slant facts included', () => {
+      const params = { ...DEFAULT_BIN_PARAMS, width: 3, slant: SLANT };
+      const design = {
+        id: designId('d1'),
+        name: 'Pens',
+        params,
+        thumbnail: null,
+        exportFileNameConfig: null,
+        createdAt: '2026-10-18T00:00:00.000Z',
+        updatedAt: '2026-10-19T00:00:00.000Z',
+      };
+      expect(registryParamsEntry(design)).toMatchObject({
+        id: 'd1',
+        name: 'Pens',
+        width: 3,
+        slant: { config: SLANT },
+        updatedAt: '2026-10-19T00:00:00.000Z',
+      });
+      const { params: _params, ...withoutParams } = design;
+      expect(registryParamsEntry(withoutParams)).toBeNull();
     });
 
     it('refreshes many entries in one write, and writes nothing when they already match', () => {

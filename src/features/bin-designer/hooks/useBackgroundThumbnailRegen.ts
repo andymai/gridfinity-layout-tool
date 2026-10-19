@@ -36,12 +36,8 @@ import {
   loadRegistry,
   upsertRegistryEntry,
   registryItemEntry,
+  registryParamsEntry,
   refreshRegistrySlants,
-  registryEdgeFields,
-  registryHeightFields,
-  registryOverhangFields,
-  registrySlantFields,
-  registryKnifeRestFields,
 } from '../store/customBinRegistry';
 import { regenerateThumbnail } from '../utils/thumbnailRegenerator';
 import { updateThumbnailCache } from './useDesignThumbnail';
@@ -234,19 +230,8 @@ async function runBatch(
       }
 
       regenerated += 1;
-      upsertRegistryEntry({
-        id: design.id,
-        name: design.name,
-        width: design.params.width,
-        depth: design.params.depth,
-        height: design.params.height,
-        ...registryEdgeFields(design.params),
-        ...registryHeightFields(design.params),
-        ...registryOverhangFields(design.params),
-        ...registrySlantFields(design.params),
-        ...registryKnifeRestFields(design.params),
-        updatedAt: writeResult.value.updatedAt,
-      });
+      const entry = registryParamsEntry(writeResult.value);
+      if (entry) upsertRegistryEntry(entry);
       updateThumbnailCache(design.id, thumbnail);
 
       // Yield to the event loop between designs so user input doesn't pile up.

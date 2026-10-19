@@ -312,6 +312,29 @@ export function registryAssemblyEntry(design: SavedDesign): CustomBinRef | null 
 }
 
 /**
+ * The full registry entry for a saved parametric bin, or `null` for any other
+ * kind. Build it from the design a write returns, not from params read before
+ * an async step, which a save or sync pull may have replaced meanwhile.
+ */
+export function registryParamsEntry(design: SavedDesign): CustomBinRef | null {
+  const { params } = design;
+  if (!params) return null;
+  return {
+    id: design.id,
+    name: design.name,
+    width: params.width,
+    depth: params.depth,
+    height: params.height,
+    ...registryEdgeFields(params),
+    ...registryHeightFields(params),
+    ...registryOverhangFields(params),
+    ...registrySlantFields(params),
+    ...registryKnifeRestFields(params),
+    updatedAt: design.updatedAt,
+  };
+}
+
+/**
  * The full registry entry for a saved Workshop assembly or imported mesh, or
  * `null` for any other kind. `saveDesign` never registers a design, so the
  * paths that store one outside the designer (a sync pull, the startup pass)
