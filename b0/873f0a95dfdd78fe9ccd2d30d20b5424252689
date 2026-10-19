@@ -1,0 +1,26 @@
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_3ed1b5bc102254::t_37f52caef8bd07 15,17,295-296,298,305-321,339-352,354
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.test.ts
+  s_3ed1b5bc102254::t_ea34b7961e14f8 442-449,467-472
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_3ed1b5bc102254::t_0bef89e02b59fe 83,94-95
+src/shared/utils/nestedCutoutOpenings.ts
+  s_3ed1b5bc102254::t_37f52caef8bd07 30-35
+  s_3ed1b5bc102254::t_0bef89e02b59fe 1-29,36-362
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b0873f0a95dfdd78fe9ccd2d30d20b5424252689",
+  "prompts": {},
+  "sessions": {
+    "s_3ed1b5bc102254": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f41879-d3ed-4377-a3a8-af4dbd466449",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
