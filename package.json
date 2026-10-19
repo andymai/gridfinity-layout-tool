@@ -218,7 +218,7 @@
     "marked": "^18.1.1",
     "path-to-regexp": "6.3.0",
     "postcss": "^8.5.29",
-    "prettier": "^3.9.9",
+    "prettier": "^3.9.10",
     "rollup-plugin-visualizer": "^7.1.1",
     "size-limit": "^14.2.0",
     "tailwindcss": "^4.3.3",
