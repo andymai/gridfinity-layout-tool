@@ -326,22 +326,24 @@ function flareReachMm(opening: NestedOpening): number {
  *
  * Lowering the fill moves every pocket straight down, and vertical walls clip
  * it the same at any height, so the fill's height is the one bound that moves: a
- * pocket keeps its depth exactly when it still fits inside the lowered fill. A mesh
- * imprint is clamped from the print's bottom instead, so it can sink into the
- * socket. A tapered wall narrows with depth, so there any pocket may lose to it.
+ * pocket keeps its depth exactly when it still fits inside the lowered fill. A
+ * mesh imprint could sink on into the socket, but under the body there is
+ * material only inside each foot, so one crossing a seam would open through
+ * the underside. A tapered wall narrows with depth, so there any pocket may
+ * lose to it.
  */
 function fillShortensPockets(params: BinParams, topOffset: number): boolean {
   const pockets = params.cutouts.filter((c) => c.hidden !== true && c.shape !== 'text');
   if (pockets.length === 0) return false;
   if (hasTaper(resolveOverhang(params.overhang))) return true;
-  const { wallHeight, floorZ } = binDimensions(params);
+  const { wallHeight } = binDimensions(params);
   const fill = wallHeight - topOffset;
   const drawn = pockets.filter((c) => c.shape !== 'mesh');
   // Below the shell's own floor a drawn pocket is cut from a plane that floor
   // sits over, which seals it. A mesh imprint cuts the finished bin instead.
   if (drawn.length > 0 && fill < params.wallThickness) return true;
-  const short = pockets.some((c) =>
-    c.shape === 'mesh' ? c.cutDepth > floorZ + fill + 1e-6 : pocketReachMm(c) > fill + 1e-6
+  const short = pockets.some(
+    (c) => (c.shape === 'mesh' ? c.cutDepth : pocketReachMm(c)) > fill + 1e-6
   );
   if (short) return true;
   // A level pocket's flares sit no deeper than its floor, so only a lean needs

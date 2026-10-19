@@ -233,10 +233,10 @@ describe('fixableIdsFor', () => {
     expect(ids.has('slideFlushNeedsNoLip')).toBe(true);
   });
 
-  // The fix lowers the fill to 21.75mm. A mesh imprint is bounded from the
-  // print's bottom, so it can reach the socket and keeps 26.5mm.
+  // The fix lowers the fill to 21.75mm. A mesh imprint sunk past it would
+  // reach into the socket, whose feet leave seams open under the body.
   it.each<[string, Partial<Cutout>, number, number]>([
-    ['a mesh imprint', { shape: 'mesh' }, 28, 25],
+    ['a mesh imprint', { shape: 'mesh' }, 25, 20],
     ['a pocket hanging off the board', { x: -10 }, 25, 10],
     // A 45° lean tips the far end of a 40mm-long floor 14.1mm lower: 20mm
     // drawn reaches 28.3mm, 8mm only 19.8mm.
