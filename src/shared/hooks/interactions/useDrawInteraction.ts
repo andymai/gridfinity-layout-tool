@@ -5,6 +5,7 @@ import {
   useHalfGridModeStore,
   useToastStore,
   useLibraryStore,
+  useSharedPreviewStore,
 } from '@/core/store';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useGapFitStore } from '@/core/store/gapFit';
@@ -265,6 +266,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
       if (rowSlant && layer) {
         const layoutId = useLibraryStore.getState().library.activeLayoutId;
         const editorLayoutId = useLayoutStore.getState().activeLayoutId;
+        const preview = useSharedPreviewStore.getState().sharedPreview;
         void paintSlantedRows({
           layout,
           layerId: activeLayerId,
@@ -288,12 +290,14 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
               message: t(`layers.slantedRow.${reason}`),
               type: reason === 'saveFailed' ? 'error' : 'info',
             }),
-          // A shared preview swaps the editor's layout without touching the library.
+          // A shared preview swaps the editor's layout without touching the
+          // library, and every preview opens under the same editor id.
           stillCurrent: () => {
             const editor = useLayoutStore.getState();
             return (
               editor.activeLayoutId === editorLayoutId &&
               useLibraryStore.getState().library.activeLayoutId === layoutId &&
+              useSharedPreviewStore.getState().sharedPreview === preview &&
               editor.layout.categories.some((c) => c.id === activeCategoryId)
             );
           },

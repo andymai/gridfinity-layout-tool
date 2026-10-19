@@ -4,7 +4,7 @@ import { useDrawInteraction } from '@/shared/hooks/interactions/useDrawInteracti
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
-import { useHalfGridModeStore, useToastStore } from '@/core/store';
+import { useHalfGridModeStore, useSharedPreviewStore, useToastStore } from '@/core/store';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useGapFitStore } from '@/core/store/gapFit';
 import { createTestBin, resetAllStores } from '@/test/testUtils';
@@ -310,21 +310,7 @@ describe('useDrawInteraction', () => {
       expect(trackPaintMode).toHaveBeenCalledWith('exited', placed.length);
     });
 
-    it.each([
-      [
-        'the editor opens another layout',
-        () => useLayoutStore.setState({ activeLayoutId: layoutId('preview') }),
-      ],
-      [
-        'the category is deleted',
-        () => {
-          const { layout } = useLayoutStore.getState();
-          useLayoutStore.setState({
-            layout: { ...layout, categories: layout.categories.slice(1) },
-          });
-        },
-      ],
-    ])('places nothing when %s while the design saves', async (_what, meanwhile) => {
+    const paintWhileSaving = async (meanwhile: () => void): Promise<void> => {
       const paintSize = { width: 2, depth: 1 };
       let finishSave: (id: ReturnType<typeof designId>) => void = () => undefined;
       registerSlantRowDesigner(
@@ -345,7 +331,41 @@ describe('useDrawInteraction', () => {
         finishSave(designId('row-design'));
         await Promise.resolve();
       });
+    };
+
+    it.each([
+      [
+        'the editor opens another layout',
+        () => useLayoutStore.setState({ activeLayoutId: layoutId('preview') }),
+      ],
+      [
+        'the category is deleted',
+        () => {
+          const { layout } = useLayoutStore.getState();
+          useLayoutStore.setState({
+            layout: { ...layout, categories: layout.categories.slice(1) },
+          });
+        },
+      ],
+    ])('places nothing when %s while the design saves', async (_what, meanwhile) => {
+      await paintWhileSaving(meanwhile);
       expect(mockAddBin).not.toHaveBeenCalled();
+    });
+
+    // Every shared preview opens under the same editor id, so only the preview
+    // itself tells the first apart from the second.
+    it('places nothing when another shared preview opens while the design saves', async () => {
+      const { layout } = useLayoutStore.getState();
+      const { setSharedLayoutPreview } = useSharedPreviewStore.getState();
+      setSharedLayoutPreview(layout, 'First');
+      await paintWhileSaving(() => setSharedLayoutPreview({ ...layout }, 'Second'));
+      expect(mockAddBin).not.toHaveBeenCalled();
+    });
+
+    it('places the row when the same shared preview stays open', async () => {
+      useSharedPreviewStore.getState().setSharedLayoutPreview(useLayoutStore.getState().layout);
+      await paintWhileSaving(() => undefined);
+      expect(mockAddBin).toHaveBeenCalled();
     });
   });
 
