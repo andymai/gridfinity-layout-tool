@@ -27,6 +27,7 @@ import {
   updateDesignTags,
   clearDesignPublishedId,
   setDesignPublishedId,
+  updateDesignThumbnail,
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { BinParams, SavedDesign } from '../types';
@@ -143,6 +144,36 @@ describe('DesignerStorage', () => {
       await Promise.all([older, newer]);
 
       expect(expectOk(await loadDesign(id)).name).toBe('Newer');
+    });
+
+    it('applies a thumbnail to the save queued before it, not to the design as it was', async () => {
+      const id = designId('thumbnail-order');
+      const base = {
+        id,
+        name: 'Pens',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: null,
+        exportFileNameConfig: null,
+      };
+      expectOk(await saveDesign(base));
+      let release = (): void => undefined;
+      const storing = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      vi.mocked(storeHolderMeshes).mockImplementationOnce(async (holder) => {
+        await storing;
+        return holder;
+      });
+
+      const edit = saveDesign({ ...base, params: { ...DEFAULT_BIN_PARAMS, width: 3 } });
+      const thumbnail = updateDesignThumbnail(id, 'data:image/webp;base64,THUMB');
+      await new Promise((r) => setTimeout(r, 50));
+      release();
+      await Promise.all([edit, thumbnail]);
+
+      const stored = expectOk(await loadDesign(id));
+      expect(stored.params?.width).toBe(3);
+      expect(stored.thumbnail).toBe('data:image/webp;base64,THUMB');
     });
   });
 

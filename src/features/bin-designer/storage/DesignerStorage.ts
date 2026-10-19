@@ -75,7 +75,13 @@ const pendingSaves = new Map<DesignId, Promise<unknown>>();
 export function saveDesign(design: SaveDesignInput): Promise<Result<SavedDesign, StorageError>> {
   const id = design.id;
   if (id === undefined) return writeDesign(design);
-  const write = (): Promise<Result<SavedDesign, StorageError>> => writeDesign(design);
+  return inSaveOrder(id, () => writeDesign(design));
+}
+
+function inSaveOrder(
+  id: DesignId,
+  write: () => Promise<Result<SavedDesign, StorageError>>
+): Promise<Result<SavedDesign, StorageError>> {
   const saved = (pendingSaves.get(id) ?? Promise.resolve()).then(write, write);
   pendingSaves.set(id, saved);
   void saved.then(() => {
@@ -613,22 +619,20 @@ export async function detachVariant(
  * planner "Create Design" flow) and we need to update the thumbnail after
  * the first successful mesh generation.
  *
+ * The design is read in its save order, so the thumbnail lands on a save
+ * queued before it instead of writing back the params that save replaced.
+ *
  * @param id - The design ID
  * @param thumbnail - The new thumbnail data URL
  * @returns A `Result` with the updated `SavedDesign` on success
  */
-export async function updateDesignThumbnail(
+export function updateDesignThumbnail(
   id: DesignId,
   thumbnail: string
 ): Promise<Result<SavedDesign, StorageError>> {
-  const loadResult = await loadDesign(id);
-  if (isErr(loadResult)) {
-    return loadResult;
-  }
-
-  return saveDesign({
-    ...loadResult.value,
-    thumbnail,
+  return inSaveOrder(id, async () => {
+    const loadResult = await loadDesign(id);
+    return isErr(loadResult) ? loadResult : writeDesign({ ...loadResult.value, thumbnail });
   });
 }
 /**
