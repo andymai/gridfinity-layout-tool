@@ -125,27 +125,6 @@ describe('placedSlant', () => {
     expect(slant?.support).toEqual({ x: 3, y: 4, width: 1, depth: 2 });
   });
 
-  // A size-locked or not yet resynced placement keeps its footprint, but the
-  // export builds the design at its own size from the placement's corner.
-  it("sizes and places a linked support from the design's footprint, not the placement's", () => {
-    const stale = (facts: LinkedSlantFacts) => {
-      withFacts({ d1: { ...facts, height: 6, config: BACK_45 } });
-      return placedSlant(
-        bin({
-          x: gridUnits(4),
-          y: gridUnits(4),
-          width: gridUnits(1),
-          depth: gridUnits(1),
-          height: heightUnits(6),
-          linkedDesignId: designId('d1'),
-        }),
-        layout
-      )?.support;
-    };
-    expect(stale({ width: 3, depth: 1 })).toEqual({ x: 4, y: 5, width: 3, depth: 1 });
-    expect(stale({ width: 1, depth: 2.5 })).toEqual({ x: 4, y: 6.5, width: 1, depth: 1.5 });
-  });
-
   it("sizes a linked support from the design's height, not the placement's", () => {
     withFacts({ d1: { height: 12 } });
     const short = { height: heightUnits(6), linkedDesignId: designId('d1'), slant: BACK_45 };

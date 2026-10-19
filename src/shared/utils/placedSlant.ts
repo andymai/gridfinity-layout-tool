@@ -125,24 +125,6 @@ function placementFacts(bin: Bin): LinkedSlantFacts | undefined {
 }
 
 /**
- * Where the exported bin stands: a linked design is built at its own size, from
- * the placement's corner, whatever footprint a size-locked or not yet resynced
- * placement keeps.
- */
-function exportedFootprint(bin: Bin): Rect {
-  const stored =
-    bin.linkedDesignId !== undefined ? linkedSlantResolver?.(bin.linkedDesignId) : undefined;
-  if (stored?.width === undefined || stored.depth === undefined) return bin;
-  const turned = isTurnedPlacement(bin, { width: stored.width, depth: stored.depth });
-  return {
-    x: bin.x,
-    y: bin.y,
-    width: gridUnits(turned ? stored.depth : stored.width),
-    depth: gridUnits(turned ? stored.width : stored.depth),
-  };
-}
-
-/**
  * The slant a placed bin is exported with: its own, else its design's, unless
  * the design or the bin's own overhang keeps it upright, as the layout export
  * decides.
@@ -187,11 +169,10 @@ export function placedSlant(
   });
   const topOffsetMm = plan.k * Math.max(0, span.topZ - span.pivotZ);
   if (!plan.endSupport) return { plan, span, topOffsetMm, support: null };
-  const footprint = exportedFootprint(bin);
   const support = planSupportFor(plan, {
     ...span,
-    width: footprint.width,
-    depth: footprint.depth,
+    width: bin.width,
+    depth: bin.depth,
     fractionalEdgeX:
       facts?.fractionalEdgeX ??
       edgeForPosition(bin.x, layout.drawer.width, layout.drawer.fractionalEdgeX),
@@ -205,7 +186,7 @@ export function placedSlant(
     plan,
     span,
     topOffsetMm,
-    support: support ? rectPastSide(footprint, plan.side, support.lengthU) : null,
+    support: support ? rectPastSide(bin, plan.side, support.lengthU) : null,
   };
 }
 

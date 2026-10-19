@@ -7,7 +7,10 @@ import {
   type SlantConflict,
 } from '@/shared/utils/placedSlant';
 import { insideDrawer } from '@/shared/utils/validationPlacement';
+import { isBinLocked } from '@/shared/utils/binLocation';
 import { getBinsLinkedToDesign } from './linkageQueries';
+import { dimensionsFitAllowingRotation } from './linkingRules';
+import { createBinSyncUpdate, extractBinDimensions } from './syncOperations';
 
 type Refusal = Extract<ValidationResult, { valid: false }>;
 
@@ -32,12 +35,31 @@ function standings(layout: Layout, linkedDesignId: DesignId): Map<BinId, Standin
   return result;
 }
 
+/** The layout once the cascade has given `size` to the design's unlocked placements. */
+function cascaded(
+  layout: Layout,
+  linkedDesignId: DesignId,
+  size: { readonly width: number; readonly depth: number; readonly height: number }
+): Layout {
+  return {
+    ...layout,
+    bins: layout.bins.map((bin) =>
+      bin.linkedDesignId !== linkedDesignId ||
+      isBinLocked(bin) ||
+      dimensionsFitAllowingRotation(extractBinDimensions(bin), size)
+        ? bin
+        : { ...bin, ...createBinSyncUpdate(size) }
+    ),
+  };
+}
+
 /**
  * The first placement of a design whose end support would collide or leave
  * the drawer once the design takes `size`, comparing every placement as it
- * stands with how it would stand, so a problem one already had never blocks
- * the resize. Each placement reads its support from the design, so the check
- * runs before the design changes and covers them all together.
+ * stands with how it would stand after the cascade, so a problem one already
+ * had never blocks the resize. Each placement reads its support from the
+ * design, so the check runs before the design changes and covers them all
+ * together.
  */
 export function resizeBlockedBySupport(
   layout: Layout,
@@ -48,7 +70,7 @@ export function resizeBlockedBySupport(
   const after = withLinkedSlantFacts(
     linkedDesignId,
     (facts) => facts && { ...facts, ...size },
-    () => standings(layout, linkedDesignId)
+    () => standings(cascaded(layout, linkedDesignId, size), linkedDesignId)
   );
   for (const [id, now] of after) {
     const was = before.get(id);

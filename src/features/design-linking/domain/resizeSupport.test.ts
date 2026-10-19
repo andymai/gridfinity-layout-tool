@@ -63,12 +63,12 @@ describe('resizeBlockedBySupport', () => {
     });
   });
 
-  // The resized bin already stands at the new size; its unlocked siblings will
-  // once the cascade reaches them, and a locked one exports at the design's.
+  // The resized bin already stands at the new size, and the cascade gives it to
+  // every unlocked sibling; a locked one keeps its footprint and reserves from it.
   it.each([
-    ['an unlocked sibling', false],
-    ['a locked sibling', true],
-  ])('checks %s where it will stand after the resize', (_what, locked) => {
+    ['refuses', 'an unlocked sibling', false],
+    ['allows', 'a locked sibling', true],
+  ])('%s a resize by where %s will stand after it', (verdict, _what, locked) => {
     registerLinkedSlantResolver(() => ({ config: BACK, width: 2, depth: 1, height: 6 }));
     const growing = createTestLayout({
       drawer: { width: gridUnits(8), depth: gridUnits(8), height: heightUnits(20) },
@@ -83,12 +83,27 @@ describe('resizeBlockedBySupport', () => {
         }),
       ],
     });
-    expect(
-      resizeBlockedBySupport(growing, DESIGN, { width: 2, depth: 2, height: 6 })
-    ).toMatchObject({
-      bin: { id: 'sibling' },
-      result: { valid: false, reason: 'collision', blockingInfo: { binId: 'behind' } },
+    const blocked = resizeBlockedBySupport(growing, DESIGN, { width: 2, depth: 2, height: 6 });
+    if (verdict === 'allows') expect(blocked).toBeNull();
+    else
+      expect(blocked).toMatchObject({
+        bin: { id: 'sibling' },
+        result: { valid: false, reason: 'collision', blockingInfo: { binId: 'behind' } },
+      });
+  });
+
+  it("allows a resize whose taller support only reaches a sibling's old footprint", () => {
+    registerLinkedSlantResolver(() => ({ config: BACK, width: 3, depth: 1, height: 6 }));
+    const shrinking = createTestLayout({
+      drawer: { width: gridUnits(8), depth: gridUnits(8), height: heightUnits(20) },
+      bins: [
+        { ...linked('resized', 2), width: gridUnits(1), height: heightUnits(12) },
+        { ...linked('sibling', 0), y: gridUnits(2), width: gridUnits(3) },
+      ],
     });
+    expect(
+      resizeBlockedBySupport(shrinking, DESIGN, { width: 1, depth: 1, height: 12 })
+    ).toBeNull();
   });
 
   // A 2x1 design placed as 1x2 stands turned, leaning left; resized to 1x2 it
