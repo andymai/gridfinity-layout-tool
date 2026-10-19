@@ -5,7 +5,8 @@
  * or outdated thumbnails on idle time. Without this, fresh / imported / version-
  * bumped designs only get their thumbnail on the user's *next* modal open —
  * which is exactly when they notice it's missing. The same pass registers any
- * stored Workshop assembly or imported mesh that has no registry entry.
+ * stored Workshop assembly or imported mesh that has no registry entry, and
+ * brings every entry's slant facts up to its design.
  *
  * Coordination contract:
  *  - **Sync**: signed-in users wait for the sync store to leave `'syncing'`
@@ -34,6 +35,7 @@ import {
   loadRegistry,
   upsertRegistryEntry,
   registryItemEntry,
+  refreshRegistrySlants,
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
@@ -280,6 +282,12 @@ export function useBackgroundThumbnailRegen(): void {
         if (!isOk(listResult)) return;
 
         registerUnlistedItems(listResult.value);
+        // An entry written before it carried slant facts reads as an upright
+        // design on default units, so the layout reserves no end support for
+        // a design that leans, and previews its overhung placements leaning.
+        refreshRegistrySlants(
+          listResult.value.flatMap((d) => (d.params ? [{ id: d.id, params: d.params }] : []))
+        );
 
         const stale = listResult.value.filter(needsRegen);
         if (stale.length === 0) return;

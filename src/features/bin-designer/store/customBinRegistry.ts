@@ -574,27 +574,50 @@ function withCarriedFields(next: CustomBinRef, prev: CustomBinRef): CustomBinRef
  * the registry does not know stays out of it.
  */
 export function refreshRegistrySlant(id: string, stored: BinParams): Result<void, StorageError> {
+  return refreshRegistrySlants([{ id, params: stored }]);
+}
+
+/**
+ * {@link refreshRegistrySlant} for many designs, in one registry write that
+ * happens only when some entry differs from its design.
+ */
+export function refreshRegistrySlants(
+  designs: readonly { readonly id: string; readonly params: BinParams }[]
+): Result<void, StorageError> {
+  const stored = new Map(designs.map((d) => [d.id, d.params]));
   const refs = loadRegistry();
-  if (!refs.some((r) => r.id === id)) return ok(undefined);
-  const params = migrateParams(stored);
-  const { slant } = registrySlantFields(params);
-  const result = saveRegistry(
-    refs.map((r) => {
-      if (r.id !== id) return r;
-      const { slant: _stale, lowProfileRiseDeltaMm: _staleDelta, ...rest } = r;
-      return {
-        ...rest,
-        width: params.width,
-        depth: params.depth,
-        height: params.height,
-        ...registryEdgeFields(params),
-        ...registryHeightFields(params),
-        ...(slant ? { slant } : {}),
-      };
-    })
-  );
+  const next = refs.map((ref) => {
+    const params = stored.get(ref.id);
+    if (!params) return ref;
+    const fresh = withFreshSlant(ref, migrateParams(params));
+    return sortedJson(fresh) === sortedJson(ref) ? ref : fresh;
+  });
+  if (next.every((ref, i) => ref === refs[i])) return ok(undefined);
+  const result = saveRegistry(next);
   notifySubscribers();
   return result;
+}
+
+function withFreshSlant(ref: CustomBinRef, params: BinParams): CustomBinRef {
+  const { slant } = registrySlantFields(params);
+  const { slant: _stale, lowProfileRiseDeltaMm: _staleDelta, ...rest } = ref;
+  return {
+    ...rest,
+    width: params.width,
+    depth: params.depth,
+    height: params.height,
+    ...registryEdgeFields(params),
+    ...registryHeightFields(params),
+    ...(slant ? { slant } : {}),
+  };
+}
+
+function sortedJson(value: unknown): string {
+  return JSON.stringify(value, (_key, v: unknown) =>
+    v && typeof v === 'object' && !Array.isArray(v)
+      ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b)))
+      : v
+  );
 }
 
 /**

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   loadRegistry,
   upsertRegistryEntry,
@@ -14,6 +14,8 @@ import {
   registryOverhangFields,
   registrySlantFields,
   refreshRegistrySlant,
+  refreshRegistrySlants,
+  subscribeToRegistry,
   type CustomBinRef,
 } from './customBinRegistry';
 import { designId } from '@/core/types';
@@ -614,6 +616,32 @@ describe('customBinRegistry', () => {
       expect(loadRegistry()[0]?.slant).toBeUndefined();
       refreshRegistrySlant('unknown', { ...DEFAULT_BIN_PARAMS, slant: SLANT });
       expect(loadRegistry()).toHaveLength(1);
+    });
+
+    it('refreshes many entries in one write, and writes nothing when they already match', () => {
+      upsertRegistryEntry(makeRef('d1'));
+      upsertRegistryEntry(makeRef('d2'));
+      upsertRegistryEntry({ ...makeRef('d3'), ...registrySlantFields(DEFAULT_BIN_PARAMS) });
+      const notified = vi.fn();
+      const unsubscribe = subscribeToRegistry(notified);
+      const leaning = { ...DEFAULT_BIN_PARAMS, slant: SLANT };
+      const designs = [
+        { id: 'd1', params: leaning },
+        { id: 'd2', params: { ...DEFAULT_BIN_PARAMS, extraWallHeightMm: 4 } },
+        { id: 'unknown', params: leaning },
+      ];
+
+      refreshRegistrySlants(designs);
+      expect(notified).toHaveBeenCalledTimes(1);
+      expect(loadRegistry().map((r) => [r.id, r.slant])).toEqual([
+        ['d1', { config: SLANT }],
+        ['d2', { extraWallMm: 4 }],
+        ['d3', undefined],
+      ]);
+
+      refreshRegistrySlants(designs);
+      expect(notified).toHaveBeenCalledTimes(1);
+      unsubscribe();
     });
 
     // A sync pull hands over the design's params alone, possibly stored before
