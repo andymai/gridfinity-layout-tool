@@ -1,5 +1,21 @@
 # Changelog
 
+## [4.519.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.518.0...gridfinity-layout-tool-v4.519.0) (2026-10-19)
+
+
+### Features
+
+* **layout:** draw a slant in 2D and on plain bins in 3D ([#4634](https://github.com/andymai/gridfinity-layout-tool/issues/4634)) ([a5ee0be](https://github.com/andymai/gridfinity-layout-tool/commit/a5ee0be5023125f6dc4d1bd33be9cc0b2a9933c4))
+* **layout:** flag slanted rows that need attention and match them from the inspector ([#4632](https://github.com/andymai/gridfinity-layout-tool/issues/4632)) ([675d7c7](https://github.com/andymai/gridfinity-layout-tool/commit/675d7c73680490331a0bce902ec1ccee4ec0c7b6))
+* **layout:** paint slanted rows with the size brush ([#4635](https://github.com/andymai/gridfinity-layout-tool/issues/4635)) ([b0854b2](https://github.com/andymai/gridfinity-layout-tool/commit/b0854b2d113e7fba4c2261d6e5aa778d32596999))
+* **layout:** reserve a slanted bin's end support and keep its column clear ([#4631](https://github.com/andymai/gridfinity-layout-tool/issues/4631)) ([38bab7f](https://github.com/andymai/gridfinity-layout-tool/commit/38bab7f35cc18dad57412299a0d7d22c0023eff7))
+* **layout:** show a placed slant and its end support on linked bins in 3D ([#4633](https://github.com/andymai/gridfinity-layout-tool/issues/4633)) ([7e4c71a](https://github.com/andymai/gridfinity-layout-tool/commit/7e4c71a5aa069ef42da315110e27b17f5eb587b8))
+
+
+### Bug Fixes
+
+* **lid:** let a solid bin take a sliding lid in the recess above its fill ([#4637](https://github.com/andymai/gridfinity-layout-tool/issues/4637)) ([8b10c6b](https://github.com/andymai/gridfinity-layout-tool/commit/8b10c6b7e7f9c0e92f64f3830f2c9b7fdd7fa975))
+
 ## [4.518.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.517.0...gridfinity-layout-tool-v4.518.0) (2026-10-18)
 
 
