@@ -27,18 +27,18 @@
 
 import type { Cutout } from '@/shared/types/bin';
 import { CHAMFER_SHAPES, DEFAULT_GROUP_OP, resolveCutoutLeanDeg } from '@/shared/types/bin';
-import { cutoutOutlineRing, rotateAbout } from '@/shared/utils/cutoutOutline';
-import { expandCutoutArray, expandCutoutGroup } from '@/shared/utils/cutoutArray';
-import { pointInPolyline } from '@/shared/utils/drawerOutlineGeometry';
-import { outlinesComeWithin, outlinesTouch } from '@/shared/utils/outlineSegments';
-import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
-import type { Pt } from '@/shared/utils/polygonOffset';
+import { cutoutOutlineRing, rotateAbout } from './cutoutOutline';
+import { expandCutoutArray, expandCutoutGroup } from './cutoutArray';
+import { pointInPolyline } from './drawerOutlineGeometry';
+import { outlinesComeWithin, outlinesTouch } from './outlineSegments';
+import { pathCutoutCut } from './pathCutoutOutline';
+import type { Pt } from './polygonOffset';
 import {
   clearedProfile,
   entryChamferWidth,
   MIN_LOFTED_CHAMFER,
   MIN_STRAIGHT_WALL_MM,
-} from '@/shared/utils/cutoutFit';
+} from './cutoutFit';
 import { resolveScoop } from './cutoutScoopHelpers';
 
 /** How far past a scooped floor's fillet a flare of its own carries on (mm). */

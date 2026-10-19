@@ -439,6 +439,14 @@ describe('fixableIdsFor', () => {
     expect(fixableIdsFor(flaring(2)).has('slideFillTooHigh')).toBe(false);
     // Deeper than the path, it is no floor for the path to open onto.
     expect(fixableIdsFor(flaring(6)).has('slideFillTooHigh')).toBe(true);
+    // Across a 2x2 bin the outlines never meet, so the worker cuts no flare.
+    const distant = flaring(2);
+    const far: BinParams = {
+      ...distant,
+      width: 2,
+      cutouts: distant.cutouts.map((c) => (c.id === 'floor' ? { ...c, x: 50, y: 34 } : c)),
+    };
+    expect(fixableIdsFor(far).has('slideFillTooHigh')).toBe(true);
   });
 
   it('withholds the fill fix when the lowered fill would sit under the floor', () => {
@@ -456,6 +464,12 @@ describe('fixableIdsFor', () => {
     expect(slideLidFillOffsetMm(shallow(1))).toBe(6);
     expect(fixableIdsFor(shallow(1)).has('slideFillTooHigh')).toBe(false);
     expect(fixableIdsFor(shallow(0)).has('slideFillTooHigh')).toBe(true);
+    // A mesh imprint cuts the finished bin, through that floor.
+    const mesh: BinParams = {
+      ...shallow(1),
+      cutouts: shallow(1).cutouts.map((c) => ({ ...c, shape: 'mesh' as const })),
+    };
+    expect(fixableIdsFor(mesh).has('slideFillTooHigh')).toBe(true);
   });
 
   it('tips a leaned floor along the tilt axis only', () => {

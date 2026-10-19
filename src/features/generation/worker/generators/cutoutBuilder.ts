@@ -80,7 +80,7 @@ import {
   maxOwnerAxisRadius,
   classifyAxisRadius,
   type ResolvedScoop,
-} from './cutoutScoopHelpers';
+} from '@/shared/utils/cutoutScoopHelpers';
 import { sketch } from './meshUtils';
 import { buildTextSolid, flatTextPrismDepth } from './textBuilder';
 import { resolveTextStyle, ZERO_TEXT_OFFSET } from '@/shared/types/bin';
@@ -91,8 +91,8 @@ import {
 } from '@/shared/utils/pathCutoutOutline';
 import type { Pt } from '@/shared/utils/polygonOffset';
 import { clearedProfile, entryChamferWidth, MIN_LOFTED_CHAMFER } from '@/shared/utils/cutoutFit';
-import { planNestedOpenings } from './nestedCutoutOpenings';
-import type { FloorTrim, NestedOpening, SunkMouth } from './nestedCutoutOpenings';
+import { planNestedOpenings } from '@/shared/utils/nestedCutoutOpenings';
+import type { FloorTrim, NestedOpening, SunkMouth } from '@/shared/utils/nestedCutoutOpenings';
 import { buildTaperedInnerEnvelope } from './taperedOuter';
 import type { ResolvedTaper } from './overhang';
 import { FeatureTag } from './featureTags';

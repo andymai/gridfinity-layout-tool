@@ -12,14 +12,9 @@ import {
 } from '@/features/bin-designer/types';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { slideLidFillOffsetMm } from '@/features/bin-designer/utils/slideLidPlanForParams';
-import {
-  clearedProfile,
-  entryChamferWidth,
-  MIN_LOFTED_CHAMFER,
-  MIN_STRAIGHT_WALL_MM,
-} from '@/shared/utils/cutoutFit';
+import { clearedProfile, entryChamferWidth, MIN_LOFTED_CHAMFER } from '@/shared/utils/cutoutFit';
 import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
-import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import { planNestedOpenings, type NestedOpening } from '@/shared/utils/nestedCutoutOpenings';
 import { hasTaper, resolveOverhang } from '@/shared/utils/overhang';
 import type { useTranslation } from '@/i18n';
 import {
@@ -294,94 +289,36 @@ function pocketSections(cutout: Cutout, chamfer: number): { wall: number[]; rim:
   };
 }
 
-interface MouthCircle {
-  readonly x: number;
-  readonly y: number;
-  readonly r: number;
-}
-
-/**
- * How far from its centre a pocket's opening reaches: the cleared profile
- * grown by the chamfer, or a path's own cleared outlines, whose mitered
- * corners can grow far past the clearance.
- */
-function mouthRadiusMm(c: Cutout): number {
-  const chamfer = entryChamferWidth(c);
-  const { clearance, w, d } = clearedProfile(c);
-  if (c.shape !== 'path') return Math.hypot(w + 2 * chamfer, d + 2 * chamfer) / 2;
-  const cut = pathCutoutCut(c, clearance, chamfer);
-  const points = cut ? [...cut.base, ...cut.rim] : [];
-  return Math.max(Math.hypot(c.width, c.depth) / 2, ...points.map((pt) => Math.hypot(pt.x, pt.y)));
-}
-
-/**
- * Circles around every copy's opening and everything below it: a lean
- * stretches the section by 1/cos and carries it sideways down the axis.
- */
-function mouthCircles(c: Cutout): MouthCircle[] {
-  const lean = (Math.abs(resolveCutoutLeanDeg(c)) * Math.PI) / 180;
-  const r = mouthRadiusMm(c) / Math.cos(lean) + c.cutDepth * Math.tan(lean);
-  return expandCutoutArray(c).map((i) => ({ x: i.x + i.width / 2, y: i.y + i.depth / 2, r }));
-}
-
-/** Whether the boxes around two sets of circles meet, so far-apart repeats skip the pairwise test. */
-function boxesMeet(a: readonly MouthCircle[], b: readonly MouthCircle[]): boolean {
-  const box = (cs: readonly MouthCircle[]) => ({
-    minX: Math.min(...cs.map((c) => c.x - c.r)),
-    maxX: Math.max(...cs.map((c) => c.x + c.r)),
-    minY: Math.min(...cs.map((c) => c.y - c.r)),
-    maxY: Math.max(...cs.map((c) => c.y + c.r)),
-  });
-  const p = box(a);
-  const q = box(b);
-  return p.minX < q.maxX && q.minX < p.maxX && p.minY < q.maxY && q.minY < p.maxY;
-}
-
-/** Depths of the level, shallower pockets this one's mouth might open onto. */
-function floorDepthsUnder(cutout: Cutout, pockets: readonly Cutout[]): number[] {
-  const own = mouthCircles(cutout);
-  return pockets
-    .filter((o) => {
-      if (o === cutout || o.shape === 'mesh' || o.cutDepth >= cutout.cutDepth) return false;
-      if (resolveCutoutLeanDeg(o) !== 0) return false;
-      const theirs = mouthCircles(o);
-      return (
-        boxesMeet(theirs, own) &&
-        theirs.some((a) => own.some((b) => Math.hypot(a.x - b.x, a.y - b.y) < a.r + b.r))
-      );
-    })
-    .map((o) => o.cutDepth);
-}
-
 /**
  * Fill height a pocket needs to keep its depth. The worker clamps the drawn
  * depth to the fill, then turns the tool about local X through its mouth, so a
- * point `h` down the axis at local `y` lands `h·cos − y·sin` below the fill.
- * The floor is `h = D`; the chamfer's rim is at the mouth; and a leaned pocket
- * crossing a shallower pocket's floor `f` gets a flare of its own at
- * `h = f / cos`, as wide as the room under it allows, lerped from wall to rim.
+ * point `h` down the axis at local `y` lands `h·cos − y·sin` below the fill:
+ * the floor is `h = D`, the chamfer's rim the mouth.
  */
-function pocketReachMm(cutout: Cutout, floorsUnder: () => readonly number[]): number {
+function pocketReachMm(cutout: Cutout): number {
   const lean = (resolveCutoutLeanDeg(cutout) * Math.PI) / 180;
-  const cos = Math.cos(lean);
   const sin = Math.sin(lean);
   const dip = (ys: readonly number[]): number => Math.max(...ys.map((y) => -y * sin));
-  const depth = cutout.cutDepth;
   const chamfer = entryChamferWidth(cutout);
   const lofted = chamfer > MIN_LOFTED_CHAMFER;
   const { wall, rim } = pocketSections(cutout, lofted ? chamfer : 0);
-  let reach = Math.max(depth, depth * cos + dip(wall));
-  if (!lofted) return reach;
-  reach = Math.max(reach, dip(rim));
-  // A level pocket's flares sit no deeper than its floor, so only a lean needs the scan.
-  if (lean === 0) return reach;
-  for (const floor of floorsUnder()) {
-    const flare = Math.min(chamfer, depth - floor / cos - MIN_STRAIGHT_WALL_MM);
-    if (flare <= MIN_LOFTED_CHAMFER) continue;
-    const t = flare / chamfer;
-    reach = Math.max(reach, floor + dip(wall.map((y, i) => y + ((rim[i] ?? y) - y) * t)));
-  }
-  return reach;
+  const reach = Math.max(cutout.cutDepth, cutout.cutDepth * Math.cos(lean) + dip(wall));
+  return lofted ? Math.max(reach, dip(rim)) : reach;
+}
+
+/**
+ * How far below the fill a flare the worker cuts at a shallower pocket's floor
+ * reaches. It sits `floorDepth / cos` down the leaned axis, so `floorDepth`
+ * below the fill, and its rim is lerped from wall to rim by its width.
+ */
+function flareReachMm(opening: NestedOpening): number {
+  const pocket = opening.pocket;
+  const sin = Math.sin((resolveCutoutLeanDeg(pocket) * Math.PI) / 180);
+  const chamfer = entryChamferWidth(pocket);
+  if (chamfer <= MIN_LOFTED_CHAMFER || opening.flare > chamfer) return 0;
+  const { wall, rim } = pocketSections(pocket, chamfer);
+  const t = opening.flare / chamfer;
+  return opening.floorDepth + Math.max(...wall.map((y, i) => -(y + ((rim[i] ?? y) - y) * t) * sin));
 }
 
 /**
@@ -399,14 +336,22 @@ function fillShortensPockets(params: BinParams, topOffset: number): boolean {
   if (hasTaper(resolveOverhang(params.overhang))) return true;
   const { wallHeight, floorZ } = binDimensions(params);
   const fill = wallHeight - topOffset;
-  // Below the shell's own floor the pockets are cut from a plane that floor
-  // sits over, which seals them.
-  if (fill < params.wallThickness) return true;
-  return pockets.some((c) =>
-    c.shape === 'mesh'
-      ? c.cutDepth > floorZ + fill + 1e-6
-      : pocketReachMm(c, () => floorDepthsUnder(c, pockets)) > fill + 1e-6
+  const drawn = pockets.filter((c) => c.shape !== 'mesh');
+  // Below the shell's own floor a drawn pocket is cut from a plane that floor
+  // sits over, which seals it. A mesh imprint cuts the finished bin instead.
+  if (drawn.length > 0 && fill < params.wallThickness) return true;
+  const short = pockets.some((c) =>
+    c.shape === 'mesh' ? c.cutDepth > floorZ + fill + 1e-6 : pocketReachMm(c) > fill + 1e-6
   );
+  if (short) return true;
+  // A level pocket's flares sit no deeper than its floor, so only a lean needs
+  // the worker's nesting plan. Planned without scoops, whose reserve can only
+  // narrow a flare, so no flare it cuts is missed.
+  if (!drawn.some((c) => resolveCutoutLeanDeg(c) !== 0)) return false;
+  const unscooped = drawn.map(
+    ({ scoopRadiusW: _w, scoopRadiusD: _d, scoopEdges: _e, ...rest }): Cutout => rest
+  );
+  return planNestedOpenings(unscooped, fill).flares.some((o) => flareReachMm(o) > fill + 1e-6);
 }
 
 /**
