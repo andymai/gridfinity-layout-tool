@@ -1,0 +1,21 @@
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_3ed1b5bc102254::t_aa5986d2b0ef74 329-333,339,345-346
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.test.ts
+  s_3ed1b5bc102254::t_aa5986d2b0ef74 236-237,239
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bdbbf05a051b2cce425355a90970858eade8d4e8",
+  "prompts": {},
+  "sessions": {
+    "s_3ed1b5bc102254": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f41879-d3ed-4377-a3a8-af4dbd466449",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
