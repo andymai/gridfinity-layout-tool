@@ -245,4 +245,22 @@ describe('slant end support', () => {
     },
     120_000
   );
+
+  it('ignores a half lattice its half-unit bin ignores', () => {
+    const p = params('right', 45, {
+      width: 1.5,
+      depth: 1,
+      fractionalEdgeX: 'start',
+      base: { ...params('right').base, footLatticeX: 'half' },
+    });
+    expect(planSlantSupport(p)).toMatchObject({ leadingHalf: false });
+    const support = generateSlantSupport(p, undefined, true);
+    const onGrid = generateSlantSupport(
+      { ...p, base: { ...p.base, footLatticeX: undefined } },
+      undefined,
+      true
+    );
+    if (!support || !onGrid) throw new Error('expected a support');
+    expect(footCoords(support.vertices, 0)).toEqual(footCoords(onGrid.vertices, 0));
+  }, 120_000);
 });
