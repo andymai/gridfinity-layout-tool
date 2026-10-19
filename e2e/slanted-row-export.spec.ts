@@ -1,8 +1,6 @@
 /**
- * A slanted row painted with the size brush reaches the layout export as the
- * parts that print it: bodies of the row's one design, and exactly one end
- * support beside the lead bin's body. The lead bin exports apart from the rest
- * of the row because only it carries the support.
+ * The lead bin exports apart from the rest of its row because only it carries
+ * the end support.
  */
 
 import fs from 'node:fs';
@@ -18,12 +16,17 @@ import {
   waitForBinCount,
 } from './fixtures';
 
+// A desktop pointer flow, and the export runs the kernel, which other engines run far slower.
+const desktopChromium = ({ browserName, isMobile }: { browserName: string; isMobile: boolean }) =>
+  browserName === 'chromium' && !isMobile;
+
 test.describe('Slanted row export', () => {
-  test.beforeEach(async ({ page }, testInfo) => {
-    test.skip(
-      testInfo.project.name !== 'chromium',
-      'desktop pointer flow; the export runs the kernel, which other engines run far slower'
-    );
+  test.skip(
+    ({ browserName, isMobile }) => !desktopChromium({ browserName, isMobile }),
+    'desktop Chromium only'
+  );
+
+  test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem(
         'gridfinity-labs-v1',
@@ -38,7 +41,9 @@ test.describe('Slanted row export', () => {
     await waitForAppReady(page);
   });
 
-  test.afterEach(async ({ page }) => {
+  // Hooks run for a skipped test too, on a page that never left about:blank.
+  test.afterEach(async ({ page, browserName, isMobile }) => {
+    if (!desktopChromium({ browserName, isMobile })) return;
     await clearAllStorage(page);
     await resetViewport(page);
   });
