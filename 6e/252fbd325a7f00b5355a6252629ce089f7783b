@@ -1,0 +1,27 @@
+src/features/design-linking/domain/resizeSupport.test.ts
+  s_c75d9dd57d73a9::t_4728a5f165773e 66-88,92
+  s_c75d9dd57d73a9::t_7aa73e7c4aa589 89-91
+  s_c75d9dd57d73a9::t_8cc29df4105fa5 93
+src/shared/utils/placedSlant.ts
+  s_c75d9dd57d73a9::t_ebf214fc999f69 128-144,190,193-194,208
+  s_c75d9dd57d73a9::t_b3676959eba8d3 127
+src/shared/utils/placedSlant.test.ts
+  s_c75d9dd57d73a9::t_4728a5f165773e 128-145,147-148
+  s_c75d9dd57d73a9::t_ebf214fc999f69 146
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6e252fbd325a7f00b5355a6252629ce089f7783b",
+  "prompts": {},
+  "sessions": {
+    "s_c75d9dd57d73a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16b68099-b481-40ec-9a18-57e3b3779478",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
