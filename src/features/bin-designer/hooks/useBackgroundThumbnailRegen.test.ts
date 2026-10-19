@@ -185,6 +185,7 @@ describe('useBackgroundThumbnailRegen', () => {
     });
 
     vi.mocked(regenerateThumbnail).mockResolvedValue('data:image/webp;base64,FAKE');
+    vi.mocked(refreshRegistrySlants).mockReturnValue(ok(undefined));
     vi.mocked(DesignerStorage.updateDesignThumbnail).mockImplementation((id) =>
       Promise.resolve(
         ok({
@@ -507,6 +508,17 @@ describe('useBackgroundThumbnailRegen', () => {
         await new Promise((r) => setTimeout(r, 10));
       });
       expect(upsertRegistryEntry).not.toHaveBeenCalled();
+    });
+  });
+
+  it('keeps regenerating thumbnails when the registry slant refresh fails', async () => {
+    vi.mocked(refreshRegistrySlants).mockReturnValue(err(storageUnavailable('localStorage')));
+    vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(ok([makeDesign()]));
+
+    renderHook(() => useBackgroundThumbnailRegen());
+
+    await waitFor(() => {
+      expect(regenerateThumbnail).toHaveBeenCalledTimes(1);
     });
   });
 
