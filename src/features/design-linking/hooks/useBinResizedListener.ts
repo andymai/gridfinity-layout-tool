@@ -37,12 +37,10 @@ import {
   hasComplexGeometry,
   getComplexityReasons,
   getBinsLinkedToDesign,
-  dimensionsFitAllowingRotation,
   compareDimensions,
   extractBinDimensions,
-  checkBatchSyncEligibility,
   createBinSyncUpdate,
-  partitionSyncableByLock,
+  planSiblingCascade,
   resizeBlockedBySupport,
 } from '../domain';
 
@@ -197,15 +195,15 @@ export function useBinResizedListener(): void {
 
         // Cascade to sibling bins (other bins linked to the same design)
         const layout = layoutRef.current;
-        const allSiblings = getBinsLinkedToDesign(layout.bins, linkedDesignId).filter(
-          (b) => b.id !== binId
-        );
-
-        // Only cascade to siblings whose dimensions actually differ
-        const { syncable: siblingBins, locked: lockedSiblings } = partitionSyncableByLock(
-          allSiblings.filter(
-            (b) => !dimensionsFitAllowingRotation(extractBinDimensions(b), newDimensions)
-          )
+        const {
+          syncable: siblingBins,
+          locked: lockedSiblings,
+          eligibility,
+          allEligible,
+        } = planSiblingCascade(
+          getBinsLinkedToDesign(layout.bins, linkedDesignId).filter((b) => b.id !== binId),
+          newDimensions,
+          layout
         );
 
         if (siblingBins.length === 0) {
@@ -221,10 +219,6 @@ export function useBinResizedListener(): void {
           });
           return;
         }
-
-        // Check eligibility for sibling bins that need syncing
-        const eligibility = checkBatchSyncEligibility(siblingBins, newDimensions, layout);
-        const allEligible = eligibility.every((e) => e.canSync);
 
         if (allEligible) {
           const syncUpdate = createBinSyncUpdate(newDimensions);

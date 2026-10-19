@@ -13,6 +13,7 @@ export {
   compareDimensions,
   checkSyncEligibility,
   checkBatchSyncEligibility,
+  planSiblingCascade,
   generateDefaultDesignName,
 } from './linkingRules';
 

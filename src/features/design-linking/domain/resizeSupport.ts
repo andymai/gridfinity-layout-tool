@@ -7,10 +7,9 @@ import {
   type SlantConflict,
 } from '@/shared/utils/placedSlant';
 import { insideDrawer } from '@/shared/utils/validationPlacement';
-import { isBinLocked } from '@/shared/utils/binLocation';
 import { getBinsLinkedToDesign } from './linkageQueries';
-import { dimensionsFitAllowingRotation } from './linkingRules';
-import { createBinSyncUpdate, extractBinDimensions } from './syncOperations';
+import { planSiblingCascade } from './linkingRules';
+import { createBinSyncUpdate } from './syncOperations';
 
 type Refusal = Extract<ValidationResult, { valid: false }>;
 
@@ -35,21 +34,30 @@ function standings(layout: Layout, linkedDesignId: DesignId): Map<BinId, Standin
   return result;
 }
 
-/** The layout once the cascade has given `size` to the design's unlocked placements. */
+/**
+ * The layout as the cascade in `useBinResizedListener` leaves it. Resizing drops
+ * a placement's explicit overhang, as `bin.update` does.
+ */
 function cascaded(
   layout: Layout,
   linkedDesignId: DesignId,
   size: { readonly width: number; readonly depth: number; readonly height: number }
 ): Layout {
+  const { syncable, allEligible } = planSiblingCascade(
+    getBinsLinkedToDesign(layout.bins, linkedDesignId),
+    size,
+    layout
+  );
+  if (syncable.length === 0 || !allEligible) return layout;
+  const resized = new Set(syncable.map((bin) => bin.id));
+  const update = createBinSyncUpdate(size);
   return {
     ...layout,
-    bins: layout.bins.map((bin) =>
-      bin.linkedDesignId !== linkedDesignId ||
-      isBinLocked(bin) ||
-      dimensionsFitAllowingRotation(extractBinDimensions(bin), size)
-        ? bin
-        : { ...bin, ...createBinSyncUpdate(size) }
-    ),
+    bins: layout.bins.map((bin) => {
+      if (!resized.has(bin.id)) return bin;
+      const { overhang: _dropped, ...rest } = bin;
+      return { ...rest, ...update };
+    }),
   };
 }
 

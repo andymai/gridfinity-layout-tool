@@ -8,6 +8,7 @@ import {
   dimensionsFitAllowingRotation,
   footprintFitsAllowingRotation,
   syncDeclineKey,
+  planSiblingCascade,
 } from './linkingRules';
 import type { Bin, Layout } from '@/core/types';
 import { binId, layerId, categoryId, gridUnits, heightUnits, mm } from '@/core/types';
@@ -412,5 +413,35 @@ describe('syncDeclineKey', () => {
     expect(syncDeclineKey({ width: 2, depth: 5, height: 6 })).not.toBe(
       syncDeclineKey({ width: 5, depth: 2, height: 6 })
     );
+  });
+
+  describe('planSiblingCascade', () => {
+    const size = { width: 3, depth: 2, height: 3 };
+
+    it('leaves out siblings that already fit, turned or not, and sets locked ones apart', () => {
+      const plan = planSiblingCascade(
+        [
+          makeBin({ id: binId('fits'), width: gridUnits(3) }),
+          makeBin({ id: binId('turned'), width: gridUnits(2), depth: gridUnits(3) }),
+          makeBin({ id: binId('grows'), x: gridUnits(5) }),
+          makeBin({ id: binId('locked'), y: gridUnits(5), locked: true }),
+        ],
+        size,
+        makeLayout()
+      );
+      expect(plan.syncable.map((b) => b.id)).toEqual(['grows']);
+      expect(plan.locked.map((b) => b.id)).toEqual(['locked']);
+      expect(plan.allEligible).toBe(true);
+    });
+
+    it('is not all eligible when one sibling cannot take the size', () => {
+      const plan = planSiblingCascade(
+        [makeBin({ id: binId('grows') }), makeBin({ id: binId('edge'), x: gridUnits(8) })],
+        size,
+        makeLayout()
+      );
+      expect(plan.allEligible).toBe(false);
+      expect(plan.eligibility.find((e) => !e.canSync)?.binId).toBe('edge');
+    });
   });
 });

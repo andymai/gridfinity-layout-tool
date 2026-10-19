@@ -7,7 +7,7 @@
 
 import type { SyncableDimensions, DimensionComparison, SyncEligibility } from '../types';
 import type { Bin, Layout } from '@/core/types';
-import { formatDimension } from './syncOperations';
+import { extractBinDimensions, formatDimension, partitionSyncableByLock } from './syncOperations';
 
 /** Tolerance for floating-point dimension comparison (half-bin mode uses 0.5 increments) */
 const DIMENSION_TOLERANCE = 0.001;
@@ -138,6 +138,27 @@ export function checkBatchSyncEligibility(
 ): SyncEligibility[] {
   const allBins = layout.bins;
   return bins.map((bin) => checkSyncEligibility(bin, newDimensions, layout, allBins));
+}
+
+export interface SiblingCascade {
+  readonly syncable: Bin[];
+  readonly locked: Bin[];
+  readonly eligibility: SyncEligibility[];
+  /** The cascade resizes every syncable sibling, or none of them. */
+  readonly allEligible: boolean;
+}
+
+/** Which of a design's other placements a resize to `size` reaches, and whether all can take it. */
+export function planSiblingCascade(
+  siblings: readonly Bin[],
+  size: SyncableDimensions,
+  layout: Layout
+): SiblingCascade {
+  const { syncable, locked } = partitionSyncableByLock(
+    siblings.filter((bin) => !dimensionsFitAllowingRotation(extractBinDimensions(bin), size))
+  );
+  const eligibility = checkBatchSyncEligibility(syncable, size, layout);
+  return { syncable, locked, eligibility, allEligible: eligibility.every((e) => e.canSync) };
 }
 
 // Design Name Generation
