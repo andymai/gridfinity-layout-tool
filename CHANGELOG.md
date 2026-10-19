@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.519.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.519.0...gridfinity-layout-tool-v4.519.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* **bin-designer:** seat a slant end support beside a half-offset bin ([#4640](https://github.com/andymai/gridfinity-layout-tool/issues/4640)) ([ab402d6](https://github.com/andymai/gridfinity-layout-tool/commit/ab402d6771a4100389d9ff238e59b4d2e5699ae2))
+* **layout:** keep slanted rows in their shared preview and refresh old slant facts ([#4641](https://github.com/andymai/gridfinity-layout-tool/issues/4641)) ([b4fb0ca](https://github.com/andymai/gridfinity-layout-tool/commit/b4fb0caa6708041987900b003478710dbda47401))
+
 ## [4.519.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.518.0...gridfinity-layout-tool-v4.519.0) (2026-10-19)
 
 
