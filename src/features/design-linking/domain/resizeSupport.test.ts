@@ -63,6 +63,34 @@ describe('resizeBlockedBySupport', () => {
     });
   });
 
+  // The resized bin already stands at the new size; its unlocked siblings will
+  // once the cascade reaches them, and a locked one exports at the design's.
+  it.each([
+    ['an unlocked sibling', false],
+    ['a locked sibling', true],
+  ])('checks %s where it will stand after the resize', (_what, locked) => {
+    registerLinkedSlantResolver(() => ({ config: BACK, width: 2, depth: 1, height: 6 }));
+    const growing = createTestLayout({
+      drawer: { width: gridUnits(8), depth: gridUnits(8), height: heightUnits(20) },
+      bins: [
+        { ...linked('resized', 0), depth: gridUnits(2) },
+        { ...linked('sibling', 3), locked },
+        createTestBin({
+          id: binId('behind'),
+          x: gridUnits(3),
+          y: gridUnits(2),
+          width: gridUnits(2),
+        }),
+      ],
+    });
+    expect(
+      resizeBlockedBySupport(growing, DESIGN, { width: 2, depth: 2, height: 6 })
+    ).toMatchObject({
+      bin: { id: 'sibling' },
+      result: { valid: false, reason: 'collision', blockingInfo: { binId: 'behind' } },
+    });
+  });
+
   // A 2x1 design placed as 1x2 stands turned, leaning left; resized to 1x2 it
   // stands as designed, leaning back.
   it('follows a placement whose support the new size turns', () => {
