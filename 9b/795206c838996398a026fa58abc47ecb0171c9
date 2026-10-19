@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/slantSupport.scenario.test.ts
+  s_c75d9dd57d73a9::t_bb95634b1b249f 248-265
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9b795206c838996398a026fa58abc47ecb0171c9",
+  "prompts": {},
+  "sessions": {
+    "s_c75d9dd57d73a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16b68099-b481-40ec-9a18-57e3b3779478",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
