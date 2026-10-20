@@ -1,0 +1,38 @@
+src/features/bin-designer/hooks/useCreateFromBin.ts
+  s_fbd258b587d61b::t_0a998e5d02b6dc 167-181,183-184
+  s_fbd258b587d61b::t_222870bd5bb16d 17
+  s_fbd258b587d61b::t_1d6e989e0f5000 32-33
+src/features/bin-designer/store/slices/persistenceSlice.test.ts
+  s_fbd258b587d61b::t_83909f5af356a4 185,188,191-192,195,197,200-206
+  s_fbd258b587d61b::t_6573e383ace296 3
+  s_fbd258b587d61b::t_4d7918168cd25c 258-266
+src/core/store/halfGridMode.ts
+  s_fbd258b587d61b::t_6285aa02c4057e 14
+src/features/bin-designer/hooks/useCreateFromBin.test.ts
+  s_fbd258b587d61b::t_598f844d0ce45a 205-212,214-253,256-259,261-270
+  s_fbd258b587d61b::t_cbb5ea5cef6205 213
+  s_fbd258b587d61b::t_ed647fc47afd98 254-255
+  s_fbd258b587d61b::t_dada0b74d17872 10
+  s_fbd258b587d61b::t_0af3b1ecb37fca 260
+  s_fbd258b587d61b::t_81667a26727eb8 6-9,11
+  s_fbd258b587d61b::t_6419717c446c62 13
+src/features/bin-designer/store/helpers.ts
+  s_fbd258b587d61b::t_062aecc77a9e25 35-37
+  s_fbd258b587d61b::t_8fa6a45f5af9a1 33,40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0f8ae80698a52e5a53d580b5543ebecea2de48f9",
+  "prompts": {},
+  "sessions": {
+    "s_fbd258b587d61b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3feec13e-9088-4414-b8ea-fe1a58a350f6",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
