@@ -4,7 +4,7 @@ import type { ScrewHoleParams } from '@/core/types/baseplate';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { HOLE_OFFSET } from './generatorConstants';
 import {
-  pieceScrewsNeedFloor,
+  pieceScrewsNeedPad,
   planBaseplateScrewHoles,
   resolveScrewHoles,
   screwAwareHoleRadius,
@@ -191,7 +191,7 @@ describe('planBaseplateScrewHoles through screwPlacementFor', () => {
   });
 });
 
-describe('pieceScrewsNeedFloor', () => {
+describe('pieceScrewsNeedPad', () => {
   const base: ResolvedBaseplateParams = {
     width: 5,
     depth: 5,
@@ -208,27 +208,49 @@ describe('pieceScrewsNeedFloor', () => {
   };
   const M3_FLAT: ScrewHoleParams = { ...COUNTERSINK, headDiameter: mm(6) };
 
+  const padded = { paddingLeft: 14, paddingRight: 14, paddingFront: 14, paddingBack: 14 };
+
   it('is false when every screw finds a junction', () => {
-    expect(pieceScrewsNeedFloor({ ...base, screwHoles: M3_FLAT })).toBe(false);
+    expect(pieceScrewsNeedPad({ ...base, screwHoles: M3_FLAT })).toBe(false);
   });
 
-  it('is false when every screw rides the margin', () => {
-    const padded = { paddingLeft: 14, paddingRight: 14, paddingFront: 14, paddingBack: 14 };
-    expect(pieceScrewsNeedFloor({ ...base, ...padded, screwHoles: COUNTERSINK })).toBe(false);
+  it('is false when every screw rides the margin and the plate retains its recess', () => {
+    expect(pieceScrewsNeedPad({ ...base, ...padded, screwHoles: COUNTERSINK })).toBe(false);
+  });
+
+  it('is true for a margin screw recessed deeper than the plate can retain', () => {
+    // The margin takes a 6mm counterbore by width, but a 4.65mm frame would be
+    // cut head-wide right through with no shoulder for the head.
+    const deep: ScrewHoleParams = { ...COUNTERBORE, counterboreDepth: mm(6) };
+    const params = { ...base, ...padded, screwHoles: deep };
+    const holes = planBaseplateScrewHoles(deep, params, screwPlacementFor(deep, params));
+    expect(holes.every((h) => h.site === 'margin')).toBe(true);
+    expect(pieceScrewsNeedPad(params)).toBe(true);
+  });
+
+  it('is false for that margin screw once a solid floor retains it', () => {
+    const deep: ScrewHoleParams = { ...COUNTERBORE, counterboreDepth: mm(6) };
+    expect(
+      pieceScrewsNeedPad({
+        ...base,
+        ...padded,
+        solidFloor: true,
+        solidFloorThickness: 3,
+        screwHoles: deep,
+      })
+    ).toBe(false);
   });
 
   it('is true for a piece with neither', () => {
-    expect(pieceScrewsNeedFloor({ ...base, width: 1, screwHoles: M3_FLAT })).toBe(true);
+    expect(pieceScrewsNeedPad({ ...base, width: 1, screwHoles: M3_FLAT })).toBe(true);
   });
 
   it('is true when the head is too wide for the posts', () => {
-    expect(pieceScrewsNeedFloor({ ...base, screwHoles: COUNTERSINK })).toBe(true);
+    expect(pieceScrewsNeedPad({ ...base, screwHoles: COUNTERSINK })).toBe(true);
   });
 
   it('is false with screws off', () => {
-    expect(pieceScrewsNeedFloor({ ...base, screwHoles: { ...M3_FLAT, enabled: false } })).toBe(
-      false
-    );
+    expect(pieceScrewsNeedPad({ ...base, screwHoles: { ...M3_FLAT, enabled: false } })).toBe(false);
   });
 });
 

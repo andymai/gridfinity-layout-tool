@@ -13,6 +13,7 @@
 
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
+import { SCREW_PAD_MIN_RETAIN_MM } from '@/core/baseplateDefaults';
 import type { ScrewHoleParams } from '@/core/types/baseplate';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { baseplateFloorDepthBeforeScrews } from '@/shared/printSettings/baseplateHeight';
@@ -22,6 +23,7 @@ import {
   nearestWithLean,
   planPieceScrews,
   resolveScrewHeadDiameter,
+  screwHeadRecessDepth,
   screwSnapPreference,
   type ScrewJunctionSite,
   type ScrewSite,
@@ -257,15 +259,23 @@ export function planBaseplateScrewHoles(
 }
 
 /**
- * Whether any of a piece's screws falls back to the pocket floor, which is what
- * obliges the whole plate to carry the pad. Plans exactly as the build does, so
- * the pad is provisioned for precisely the screws that use it.
+ * Whether a piece obliges the whole plate to carry the pad: a screw falls back
+ * to the pocket floor, or a margin screw's recess would leave less than
+ * `SCREW_PAD_MIN_RETAIN_MM` under it in the plate WITHOUT the pad. A margin is
+ * chosen by its width alone, so a deep counterbore can ride a wide band and
+ * still need the height. Junction sites are already checked against the
+ * unpadded plate. Plans exactly as the build does, so the pad is provisioned
+ * for precisely the screws that use it.
  */
-export function pieceScrewsNeedFloor(params: ResolvedBaseplateParams): boolean {
+export function pieceScrewsNeedPad(params: ResolvedBaseplateParams): boolean {
   const screwParams = params.screwHoles;
   if (screwParams?.enabled !== true) return false;
+  const unpaddedHeight =
+    plateProfileHeightMm(params.lowProfileBase) + baseplateFloorDepthBeforeScrews(params);
+  const marginRetained =
+    unpaddedHeight - screwHeadRecessDepth(screwParams) >= SCREW_PAD_MIN_RETAIN_MM - 1e-9;
   return planBaseplateScrewHoles(screwParams, params, screwPlacementFor(screwParams, params)).some(
-    (hole) => hole.site === 'floor'
+    (hole) => hole.site === 'floor' || (hole.site === 'margin' && !marginRetained)
   );
 }
 

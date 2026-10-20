@@ -23,7 +23,7 @@
  */
 import { draw } from 'brepjs';
 import type { Drawing } from 'brepjs';
-import { CLEARANCE, BOX_CORNER_RADIUS } from './generatorConstants';
+import { CLEARANCE, BOX_CORNER_RADIUS, MIN_ARC_RADIUS } from './generatorConstants';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { MASK_CELL_SIZE, maskToPolygon, type CellMask, type Point2 } from '@/shared/utils/cellMask';
 
@@ -31,9 +31,6 @@ interface Point2Mm {
   readonly x: number;
   readonly y: number;
 }
-
-/** Minimum arc radius — below this we emit a sharp corner instead. */
-export const MIN_ARC_RADIUS = 0.05;
 
 /**
  * Inset an axis-aligned CCW polygon by `inset` mm, moving every edge

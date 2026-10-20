@@ -183,6 +183,9 @@ export function footCornerRadius(cellW_mm: number, cellD_mm: number): number {
  */
 const MAX_SECTION_RADIUS_FRACTION = 0.4;
 
+/** Minimum arc radius: the polygon builder emits a sharp corner below this. */
+export const MIN_ARC_RADIUS = 0.05;
+
 /**
  * Smallest corner radius a section may carry. Above `MIN_ARC_RADIUS`, so the
  * polygon builder rounds every section of a loft rather than squaring off the

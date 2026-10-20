@@ -28,6 +28,7 @@ import type { CellInfo } from './generatorTypes';
 import type { MeshBuilder } from './directMeshBuilder';
 import { CORNER_SEGMENTS } from './directMeshBuilder';
 import { pointInPolygon } from './directMeshShapes';
+import type { JunctionBore } from './directMeshScrews';
 
 export function addPlateFace(
   mb: MeshBuilder,
@@ -52,7 +53,9 @@ export function addPlateFace(
    * pockets — never capping a tiled (e.g. 21mm half-grid) pocket opening. Omit
    * for plain solid padding, where the ring fills the whole margin to the grid.
    */
-  pocketDepths?: { left: number; right: number; front: number; back: number }
+  pocketDepths?: { left: number; right: number; front: number; back: number },
+  /** Junction bores that open this face; the gussets around each stop at it. */
+  bores: readonly JunctionBore[] = []
 ): void {
   const nz = faceUp ? 1 : -1;
   // `x` scales width/columns, `y` scales depth/rows (equal for a square grid).
@@ -101,9 +104,15 @@ export function addPlateFace(
       faceUp,
       outerPts,
       offsetX,
-      offsetY
+      offsetY,
+      bores
     );
   }
+}
+
+/** The bore centred on a cell corner, if one is. */
+function boreAt(bores: readonly JunctionBore[], x: number, y: number): JunctionBore | undefined {
+  return bores.find((b) => Math.abs(b.x - x) < 1e-6 && Math.abs(b.y - y) < 1e-6);
 }
 
 /**
@@ -115,6 +124,9 @@ export function addPlateFace(
  * (and bottom, in through-cut mode). Each gusset is triangulated as a fan
  * from the cell corner to the arc samples — valid because the cell corner
  * sees the entire arc with no occlusion.
+ *
+ * A corner holding a junction bore keeps only the part of its gusset outside
+ * the bore: along each fan ray, from the bore's rim out to the arc.
  */
 function addCellCornerGussets(
   mb: MeshBuilder,
@@ -126,7 +138,8 @@ function addCellCornerGussets(
   faceUp: boolean,
   slabOuter: ReadonlyArray<readonly [number, number]>,
   slabOffsetX: number,
-  slabOffsetY: number
+  slabOffsetY: number,
+  bores: readonly JunctionBore[]
 ): void {
   const r = pocketCornerRadius(cellW_mm, cellD_mm);
   if (r < 0.01) return;
@@ -164,21 +177,93 @@ function addCellCornerGussets(
     const probeY = cornerY + (dy / len) * insetEps;
     if (!pointInPolygon(probeX, probeY, slabOuter, slabOffsetX, slabOffsetY)) continue;
 
-    const anchor = mb.pushVertex(cornerX, cornerY, z, 0, 0, nz);
-    const arcVerts: number[] = [];
     // Walk arc from end angle backward by π/2 — keeps gusset CCW from +Z.
+    const arc: Array<readonly [number, number]> = [];
     for (let i = 0; i <= CORNER_SEGMENTS; i++) {
       const angle = arcEndAngle - (i / CORNER_SEGMENTS) * (Math.PI / 2);
-      const ax = arcCx + r * Math.cos(angle);
-      const ay = arcCy + r * Math.sin(angle);
-      arcVerts.push(mb.pushVertex(ax, ay, z, 0, 0, nz));
+      arc.push([arcCx + r * Math.cos(angle), arcCy + r * Math.sin(angle)]);
     }
+
+    const bore = boreAt(bores, cornerX, cornerY);
+    if (bore !== undefined) {
+      addGussetOutsideBore(mb, cornerX, cornerY, arc, bore.radius, z, nz, faceUp);
+      continue;
+    }
+
+    const anchor = mb.pushVertex(cornerX, cornerY, z, 0, 0, nz);
+    const arcVerts = arc.map(([ax, ay]) => mb.pushVertex(ax, ay, z, 0, 0, nz));
     for (let i = 0; i < CORNER_SEGMENTS; i++) {
       if (faceUp) {
         mb.pushTriangle(anchor, arcVerts[i], arcVerts[i + 1]);
       } else {
         mb.pushTriangle(anchor, arcVerts[i + 1], arcVerts[i]);
       }
+    }
+  }
+}
+
+/**
+ * The part of a corner gusset outside a bore centred on the corner. Each fan
+ * ray from the corner to an arc sample keeps the stretch beyond the bore's
+ * rim. Where the arc dips into the bore between two samples, the strip ends
+ * at the point the arc chord crosses the rim.
+ */
+function addGussetOutsideBore(
+  mb: MeshBuilder,
+  cornerX: number,
+  cornerY: number,
+  arc: ReadonlyArray<readonly [number, number]>,
+  radius: number,
+  z: number,
+  nz: number,
+  faceUp: boolean
+): void {
+  const vertex = (x: number, y: number): number => mb.pushVertex(x, y, z, 0, 0, nz);
+  const outside = arc.map(([ax, ay]) => Math.hypot(ax - cornerX, ay - cornerY) > radius);
+  const arcVerts = new Map<number, number>();
+  const rimVerts = new Map<number, number>();
+  const onArc = (i: number): number => {
+    const cached = arcVerts.get(i);
+    if (cached !== undefined) return cached;
+    const index = vertex(arc[i][0], arc[i][1]);
+    arcVerts.set(i, index);
+    return index;
+  };
+  const onRim = (i: number): number => {
+    const cached = rimVerts.get(i);
+    if (cached !== undefined) return cached;
+    const [ax, ay] = arc[i];
+    const k = radius / Math.hypot(ax - cornerX, ay - cornerY);
+    const index = vertex(cornerX + (ax - cornerX) * k, cornerY + (ay - cornerY) * k);
+    rimVerts.set(i, index);
+    return index;
+  };
+  const rimCrossing = (from: number, to: number): number => {
+    const [fx, fy] = arc[from];
+    const dx = arc[to][0] - fx;
+    const dy = arc[to][1] - fy;
+    const ox = fx - cornerX;
+    const oy = fy - cornerY;
+    const a = dx * dx + dy * dy;
+    const b = ox * dx + oy * dy;
+    const c = ox * ox + oy * oy - radius * radius;
+    const t = a > 0 ? (-b - Math.sqrt(Math.max(0, b * b - a * c))) / a : 0;
+    return vertex(fx + t * dx, fy + t * dy);
+  };
+  const tri = (a: number, b: number, c: number): void => {
+    if (faceUp) mb.pushTriangle(a, b, c);
+    else mb.pushTriangle(a, c, b);
+  };
+  for (let i = 0; i + 1 < arc.length; i++) {
+    const j = i + 1;
+    if (!outside[i] && !outside[j]) continue;
+    if (outside[i] && outside[j]) {
+      tri(onRim(i), onArc(i), onArc(j));
+      tri(onRim(i), onArc(j), onRim(j));
+    } else if (outside[i]) {
+      tri(onRim(i), onArc(i), rimCrossing(i, j));
+    } else {
+      tri(rimCrossing(j, i), onArc(j), onRim(j));
     }
   }
 }

@@ -1474,6 +1474,26 @@ describe('mount-down screw pad', () => {
     expect(resolve({ ...padded, screwHoles: unsetHead }, 4, 4).screwPadThicknessMm).toBe(0);
   });
 
+  it('keeps the pad for a margin screw whose recess the stock plate cannot retain', () => {
+    // A 6mm counterbore (the UI, CQRS and server cap) rides the 14mm margins,
+    // but a 4.65mm slab would leave nothing under it: the pocket would cut
+    // head-wide through the plate.
+    const deep = { enabled: true, diameter: mm(3.4), headStyle: 'counterbore' as const };
+    const plate = resolve(
+      {
+        ...frameOnly,
+        paddingLeft: mm(14),
+        paddingRight: mm(14),
+        paddingFront: mm(14),
+        paddingBack: mm(14),
+        screwHoles: { ...deep, counterboreDepth: mm(6) },
+      },
+      4,
+      4
+    );
+    expect(baseplateTotalHeight(plate) - 6).toBeGreaterThanOrEqual(0.8 - 1e-9);
+  });
+
   it('pads the whole plate when one piece of the split has no junction', () => {
     // A hand-drawn 5 + 1 split leaves a 1x5 strip with no crossing, so its
     // screws fall back to the floor, and the 5x5 beside it must match its height.

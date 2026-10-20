@@ -22,6 +22,9 @@ import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { ScrewHoleParams } from '@/core/types/baseplate';
 import { mm } from '@/core/types';
 import { screwPadThicknessMm } from '@/shared/generation/screwHolePlan';
+import { planBaseplateScrewHoles, screwPlacementFor } from '@/shared/generation/screwHolePlacement';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
+import { buildFullParams } from '@/features/baseplate/utils/buildFullParams';
 import { PLATE_PROFILE_HEIGHT } from './generatorTypes';
 
 beforeAll(async () => {
@@ -282,6 +285,59 @@ describe('baseplate mount-down screw holes (#3425)', () => {
     assertStructurallyValid(result);
     const bb = boundingBox(result.vertices);
     expect(bb.maxZ - bb.minZ).toBeCloseTo(PLATE_PROFILE_HEIGHT + magnetFloor + pad, 1);
+  });
+});
+
+describe('a margin screw recessed deeper than the stock plate', () => {
+  it('keeps a retaining shoulder under every counterbore', () => {
+    // A 6mm counterbore rides 14mm margins by width alone; the plate has to
+    // stay tall enough that the pocket stops short of the underside.
+    const deep: ScrewHoleParams = {
+      enabled: true,
+      diameter: mm(3.4),
+      headStyle: 'counterbore',
+      counterboreDepth: mm(6),
+    };
+    const params = buildFullParams(
+      {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        paddingLeft: mm(14),
+        paddingRight: mm(14),
+        paddingFront: mm(14),
+        paddingBack: mm(14),
+        lightweight: false,
+        screwHoles: deep,
+      },
+      4,
+      4,
+      42,
+      'end',
+      'end',
+      0.4,
+      undefined,
+      undefined,
+      42,
+      0,
+      0,
+      false,
+      { widthMm: 256, depthMm: 256 }
+    );
+    const holes = planBaseplateScrewHoles(deep, params, screwPlacementFor(deep, params));
+    expect(holes).toHaveLength(4);
+    expect(holes.every((h) => h.site === 'margin')).toBe(true);
+
+    const mesh = getGenerateBaseplate()(params, NO_OP, true);
+    assertStructurallyValid(mesh);
+    const top = boundingBox(mesh.vertices).maxZ;
+    for (const h of holes) {
+      // Between the ø3.4 shaft and the ø5.5 pocket: the shoulder the head sits on.
+      const spans = verticalSolidSpans(mesh, h.x + 2.2, h.y + 0.13);
+      expect(spans.length).toBeGreaterThan(0);
+      const [bottom, shoulder] = spans[spans.length - 1];
+      expect(bottom).toBeCloseTo(0, 2);
+      expect(shoulder).toBeCloseTo(top - 6, 1);
+      expect(shoulder - bottom).toBeGreaterThanOrEqual(0.8 - 0.01);
+    }
   });
 });
 

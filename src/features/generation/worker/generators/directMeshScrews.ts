@@ -22,7 +22,11 @@
  */
 
 import type { ScrewHoleParams } from '@/core/types/baseplate';
-import { resolveScrewHeadDiameter, screwCutDepths } from '@/shared/generation/screwHolePlan';
+import {
+  resolveScrewHeadDiameter,
+  screwCutDepths,
+  screwHeadRecessDepth,
+} from '@/shared/generation/screwHolePlan';
 import type { MeshBuilder } from './directMeshBuilder';
 import { CANCEL_EPSILON, CIRCLE_SEGMENTS } from './directMeshBuilder';
 import { circlePoints } from './directMeshShapes';
@@ -30,6 +34,36 @@ import type { ResolvedScrewHole } from '@/shared/generation/screwHolePlacement';
 import { junctionPostDepthMm } from '@/shared/generation/screwJunctionPlan';
 
 type UnitCircle = ReadonlyArray<readonly [number, number]>;
+
+/**
+ * A junction screw's bore: open from the top face down through the post, so
+ * the plate face and the pocket walls around the crossing must stop at it.
+ */
+export interface JunctionBore {
+  readonly x: number;
+  readonly y: number;
+  readonly radius: number;
+}
+
+/**
+ * Radius of the cut that opens at the top face over a junction, matching the
+ * BREP template: the head when there is a recess to cut, else the shaft.
+ */
+export function junctionBoreRadius(params: ScrewHoleParams): number {
+  const shaftRadius = params.diameter / 2;
+  const headRadius = resolveScrewHeadDiameter(params.headStyle, params.headDiameter) / 2;
+  return headRadius > shaftRadius && screwHeadRecessDepth(params) > 0 ? headRadius : shaftRadius;
+}
+
+/** The bores of a plate's junction screws. */
+export function junctionBores(
+  holes: readonly ResolvedScrewHole[],
+  params: ScrewHoleParams | undefined
+): JunctionBore[] {
+  if (params === undefined) return [];
+  const radius = junctionBoreRadius(params);
+  return holes.filter((h) => h.site === 'junction').map(({ x, y }) => ({ x, y, radius }));
+}
 
 /** Below this a band or shoulder is degenerate and would emit zero-area quads. */
 const MIN_FEATURE_MM = 1e-6;
@@ -106,8 +140,8 @@ function addAnnulus(
 /**
  * The head-wide bore above a junction screw's seat. Each ring vertex rises only
  * to the depth where that point of the bore enters the post, so the wall stops
- * where the pocket's air begins. The pocket corners inside the bore are not
- * notched here; the exact build cuts them.
+ * where the pocket's air begins: the edge the pocket walls are notched down to
+ * (`addPocketWalls`), and the plate face stops at the bore's rim.
  */
 function addJunctionBore(
   mb: MeshBuilder,
@@ -182,7 +216,16 @@ export function addScrewHoleAt(
   const unit = circlePoints(1, CIRCLE_SEGMENTS);
 
   if (site === 'junction') {
-    addJunctionBore(mb, sx, sy, entryRadius, totalHeightMm, zEntry, profileHeightMm, unit);
+    addJunctionBore(
+      mb,
+      sx,
+      sy,
+      junctionBoreRadius(params),
+      totalHeightMm,
+      zEntry,
+      profileHeightMm,
+      unit
+    );
   } else {
     addDisc(mb, sx, sy, zEntry - CANCEL_EPSILON, entryRadius, -1, unit);
   }

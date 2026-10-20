@@ -56,7 +56,7 @@ import { addPocketWalls, addOuterWalls } from './directMeshWalls';
 import { addPlateFace, addSolidBottomFace } from './directMeshFaces';
 import { addMagnetHoleAt, addMountMagnetHoleAt } from './directMeshMagnets';
 import { planMountMagnets } from '@/shared/generation/mountMagnetPlan';
-import { addScrewHoleAt } from './directMeshScrews';
+import { addScrewHoleAt, junctionBores } from './directMeshScrews';
 import {
   cellHostsAttachmentHoles,
   chamferFitsCell,
@@ -211,6 +211,17 @@ export function generateBaseplateDirect(
 
   const outerPts = roundedRectPointsSelective(totalW, totalD, cornerR, CORNER_SEGMENTS, edges);
 
+  // Mount-down screw holes. Through the shared planner and placement, so the
+  // draft and the exported plate put every hole in the same place. Planned
+  // before the pocket walls and the top face, which stop at each junction
+  // screw's bore as the export's cut does.
+  const screwParams = params.screwHoles?.enabled === true ? params.screwHoles : undefined;
+  const screwHoles =
+    screwParams !== undefined
+      ? planBaseplateScrewHoles(screwParams, params, screwPlacementFor(screwParams, params))
+      : [];
+  const bores = junctionBores(screwHoles, screwParams);
+
   addOuterWalls(mb, outerPts, slabOffsetX, slabOffsetY, totalHeight);
 
   onProgress('base', 0.2);
@@ -227,7 +238,8 @@ export function generateBaseplateDirect(
       cellD_mm,
       totalHeight,
       floorDepth,
-      profileHeight
+      profileHeight,
+      bores
     );
   }
 
@@ -246,7 +258,8 @@ export function generateBaseplateDirect(
     totalHeight,
     true,
     drawRing,
-    pocketDepths
+    pocketDepths,
+    bores
   );
 
   onProgress('base', 0.6);
@@ -337,13 +350,6 @@ export function generateBaseplateDirect(
     }
   }
 
-  // Mount-down screw holes. Through the shared planner and placement, so the
-  // draft and the exported plate put every hole in the same place.
-  const screwParams = params.screwHoles?.enabled === true ? params.screwHoles : undefined;
-  const screwHoles =
-    screwParams !== undefined
-      ? planBaseplateScrewHoles(screwParams, params, screwPlacementFor(screwParams, params))
-      : [];
   if (screwParams !== undefined) {
     for (const hole of screwHoles) {
       addScrewHoleAt(mb, hole, screwParams, totalHeight, profileHeight);

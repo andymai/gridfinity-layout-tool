@@ -7,6 +7,7 @@ import { mm } from '@/core/types';
 import { pocketCornerRadius, MAGNET_FLOOR } from './generatorConstants';
 import { PLATE_PROFILE_HEIGHT } from './generatorTypes';
 import { CANCEL_EPSILON, CIRCLE_SEGMENTS } from './directMeshBuilder';
+import { junctionBoreRadius } from './directMeshScrews';
 import {
   effectiveMarginBands,
   planPieceScrews,
@@ -16,6 +17,8 @@ import {
 import { resolveScrewHoles, screwFloorCandidates } from '@/shared/generation/screwHolePlacement';
 import type { ResolvedScrewHole } from '@/shared/generation/screwHolePlacement';
 import { initTestKernel } from '@/test/initTestKernel';
+import { columnCrossings } from './__kernel-tests__/meshAssertions';
+import type { MeshData } from '../../bridge/types';
 
 // BREP generator requires OpenCascade WASM init
 type BrepGenerateFn = (
@@ -961,5 +964,91 @@ describe('mount magnets in the draft', () => {
     const plain = generateDirect(defaults({ width: 1, depth: 1 }), noop);
     const drafted = generateDirect(defaults({ width: 1, depth: 1, mountMagnets: magnets }), noop);
     expect(drafted.triangleCount).toBe(plain.triangleCount);
+  });
+});
+
+describe('junction screws in the draft', () => {
+  // A stock 3x3 frame-only plate with M3 flat heads: every screw sits at one of
+  // the four crossings, and the export opens each one head-wide from the top.
+  const m3: ScrewHoleParams = {
+    enabled: true,
+    diameter: mm(3.4),
+    headStyle: 'countersink',
+    headDiameter: mm(6),
+  };
+  const plate = (): ResolvedBaseplateParams =>
+    defaults({ width: 3, depth: 3, screwHoles: m3, screwPadThicknessMm: 0 });
+  const junctions = [
+    [-21, -21],
+    [21, -21],
+    [-21, 21],
+    [21, 21],
+  ] as const;
+  type Mesh = Pick<MeshData, 'vertices' | 'indices'>;
+  const crossings = (mesh: Mesh, x: number, y: number): number[] =>
+    columnCrossings(
+      {
+        ...mesh,
+        normals: new Float32Array(0),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 0,
+      },
+      x,
+      y
+    );
+
+  it('leaves no top face over a crossing, where the export is open', () => {
+    const draft = generateDirect(plate(), noop);
+    const exported = generateBrep(plate(), noop, true);
+    const above = (zs: number[]): number[] => zs.filter((z) => z > 0.5);
+    for (const [jx, jy] of junctions) {
+      const x = jx + 0.37;
+      const y = jy + 0.21;
+      expect(above(crossings(exported, x, y))).toEqual([]);
+      expect(above(crossings(draft, x, y))).toEqual([]);
+    }
+  });
+
+  it('stops every top-face triangle at the bore rim', () => {
+    // The fan ray that crosses the rim between two arc samples is the case: a
+    // gusset that keeps its arc chord there pokes a sliver into the bore.
+    const draft = generateDirect(plate(), noop);
+    const { vertices: v, indices } = draft;
+    let topZ = -Infinity;
+    for (let i = 2; i < v.length; i += 3) topZ = Math.max(topZ, v[i]);
+    const rim = junctionBoreRadius(m3);
+    const intrusions: number[] = [];
+    for (let t = 0; t < indices.length; t += 3) {
+      const corners = [indices[t], indices[t + 1], indices[t + 2]];
+      if (!corners.every((k) => Math.abs(v[k * 3 + 2] - topZ) < 1e-4)) continue;
+      for (const k of corners) {
+        for (const [jx, jy] of junctions) {
+          const d = Math.hypot(v[k * 3] - jx, v[k * 3 + 1] - jy);
+          if (d < rim - 1e-3) intrusions.push(d);
+        }
+      }
+    }
+    expect(intrusions).toEqual([]);
+  });
+
+  it('notches the pocket corners inside the bore down to where the export does', () => {
+    // 2.5mm out along a cell diagonal the pocket corner is air at the top; the
+    // export's bore takes the post below it too, so the first surface going
+    // down is the countersink. An unnotched pocket wall sits 0.9mm higher.
+    const draft = generateDirect(plate(), noop);
+    const exported = generateBrep(plate(), noop, true);
+    const top = (mesh: Mesh, x: number, y: number): number => Math.max(...crossings(mesh, x, y));
+    for (const [jx, jy] of junctions) {
+      for (const [sx, sy] of [
+        [1, 1],
+        [-1, 1],
+        [1, -1],
+        [-1, -1],
+      ]) {
+        const x = jx + (sx * 2.5) / Math.SQRT2;
+        const y = jy + (sy * 2.5) / Math.SQRT2;
+        expect(top(draft, x, y)).toBeCloseTo(top(exported, x, y), 1);
+      }
+    }
   });
 });

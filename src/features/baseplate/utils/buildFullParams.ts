@@ -24,7 +24,7 @@ import {
   resolveOutlineFrame,
 } from '@/shared/utils/outlineFrame';
 import { screwPadThicknessMm } from '@/shared/generation/screwHolePlan';
-import { pieceScrewsNeedFloor } from '@/shared/generation/screwHolePlacement';
+import { pieceScrewsNeedPad } from '@/shared/generation/screwHolePlacement';
 import { baseplateFloorDepthBeforeScrews } from '@/shared/printSettings/baseplateHeight';
 import { normalizeSplitOverride } from './splitOverride';
 import {
@@ -261,10 +261,12 @@ export function resolveScrewPadMm(stored: StoredBaseplateParams): number {
 }
 
 /**
- * Keep the floor pad only when some piece has a screw that falls back to the
- * floor: margin and junction screws cost no height. Pieces share one slab, so
- * every piece the bed splits the plate into is planned, exactly as each will be
- * built. Without a bed the plate is planned as the one piece it is unsplit.
+ * Keep the floor pad only when some piece needs it (`pieceScrewsNeedPad`): a
+ * screw that falls back to the floor, or a margin screw recessed deeper than
+ * the plate can retain. Junction screws and shallow margin screws cost no
+ * height. Pieces share one slab, so every piece the bed splits the plate into
+ * is planned, exactly as each will be built. Without a bed the plate is planned
+ * as the one piece it is unsplit.
  */
 function decideScrewPad(
   params: ResolvedBaseplateParams,
@@ -278,7 +280,7 @@ function decideScrewPad(
     tiling?.isSplit === true
       ? tiling.pieces.map((piece) => pieceToBaseplateParams(piece, params))
       : [bodyParamsForDetach(params)];
-  return pieces.some(pieceScrewsNeedFloor) ? params : { ...params, screwPadThicknessMm: 0 };
+  return pieces.some(pieceScrewsNeedPad) ? params : { ...params, screwPadThicknessMm: 0 };
 }
 
 /**

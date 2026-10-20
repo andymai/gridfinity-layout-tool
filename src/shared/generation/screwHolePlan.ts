@@ -3,9 +3,10 @@
  *
  * Owns the ONE decision every layer has to agree on: for each screw, does it sit
  * in the solid drawer-fit margin, in the solid post where four pockets meet, or
- * does it fall back to the pocket floor? Only the floor costs height, so whether
- * any screw lands there is resolved once at PLATE level and handed down as the
- * pad, never re-derived per piece.
+ * does it fall back to the pocket floor? The floor costs height, and so does a
+ * margin screw recessed deeper than the plate can retain, so whether any piece
+ * has one is resolved once at PLATE level and handed down as the pad, never
+ * re-derived per piece.
  *
  * Why plate level: each split piece is generated from its own params, but the
  * pieces have to assemble flush. A 1xN piece has neither a margin nor a

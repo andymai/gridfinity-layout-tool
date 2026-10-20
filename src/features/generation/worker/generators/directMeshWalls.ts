@@ -18,6 +18,7 @@ import { POCKET_INSET_BOT, pocketProfileFor, pocketCornerRadius } from './genera
 import type { MeshBuilder } from './directMeshBuilder';
 import { CORNER_SEGMENTS } from './directMeshBuilder';
 import { roundedRectPoints } from './directMeshShapes';
+import type { JunctionBore } from './directMeshScrews';
 
 /**
  * Floors for a pocket section's size and corner radius.
@@ -29,6 +30,41 @@ import { roundedRectPoints } from './directMeshShapes';
 const MIN_SECTION_MM = 0.2;
 const MIN_SECTION_RADIUS_MM = 0.1;
 
+type WallPoint = [x: number, y: number, z: number];
+
+/**
+ * Lower every wall column whose top lies inside a junction bore to the point
+ * where that column's wall line leaves the bore, so the pocket corner is
+ * notched where the export cuts it. A column is a run of ruled segments down
+ * the profile and recedes from the crossing as it descends, so it leaves the
+ * bore once.
+ */
+function notchUnderBores(rings: WallPoint[][], bores: readonly JunctionBore[]): void {
+  const n = rings[0].length;
+  for (let i = 0; i < n; i++) {
+    const [tx, ty] = rings[0][i];
+    const bore = bores.find((b) => Math.hypot(tx - b.x, ty - b.y) < b.radius);
+    if (bore === undefined) continue;
+    const exit = rings.findIndex((ring) => {
+      const [x, y] = ring[i];
+      return Math.hypot(x - bore.x, y - bore.y) >= bore.radius;
+    });
+    if (exit <= 0) continue;
+    const [ax, ay, az] = rings[exit - 1][i];
+    const [bx, by, bz] = rings[exit][i];
+    const dx = bx - ax;
+    const dy = by - ay;
+    const ox = ax - bore.x;
+    const oy = ay - bore.y;
+    const a = dx * dx + dy * dy;
+    const b = ox * dx + oy * dy;
+    const c = ox * ox + oy * oy - bore.radius * bore.radius;
+    const t = a > 0 ? (-b + Math.sqrt(Math.max(0, b * b - a * c))) / a : 1;
+    const cut: WallPoint = [ax + t * dx, ay + t * dy, az + t * (bz - az)];
+    for (let k = 0; k < exit; k++) rings[k][i] = [...cut];
+  }
+}
+
 export function addPocketWalls(
   mb: MeshBuilder,
   cx: number,
@@ -37,7 +73,8 @@ export function addPocketWalls(
   cellD_mm: number,
   totalHeight: number,
   floorDepth: number,
-  profileHeight: number
+  profileHeight: number,
+  bores: readonly JunctionBore[] = []
 ): void {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
 
@@ -55,14 +92,16 @@ export function addPocketWalls(
   }));
 
   const n = rings[0].pts.length;
+  const positions = rings.map(({ z, pts }) => pts.map(([x, y]): WallPoint => [x + cx, y + cy, z]));
+  if (bores.length > 0) notchUnderBores(positions, bores);
 
   // Build each perimeter ring once and share its vertex indices with the bands
   // above and below. Normals are intentionally zeroed; they'll be overwritten
   // by `computeVertexNormals` downstream.
-  const indices = rings.map(({ z, pts }) => {
+  const indices = positions.map((ringPts) => {
     const ring = new Array<number>(n);
     for (let i = 0; i < n; i++) {
-      ring[i] = mb.pushVertex(pts[i][0] + cx, pts[i][1] + cy, z, 0, 0, 0);
+      ring[i] = mb.pushVertex(ringPts[i][0], ringPts[i][1], ringPts[i][2], 0, 0, 0);
     }
     return ring;
   });
