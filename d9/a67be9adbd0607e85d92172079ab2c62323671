@@ -1,0 +1,77 @@
+src/features/generation/README.md
+  s_fbd258b587d61b::t_89eba76990239e 266
+src/features/generation/worker/generators/baseplateGenerator.scenario.screws.test.ts
+  s_fbd258b587d61b::t_41d698e66b24f9 293-343
+  s_fbd258b587d61b::t_10059b35408ef8 25-27
+  s_fbd258b587d61b::t_a1c7a70b1b61ed 291-292
+src/shared/generation/screwHolePlan.ts
+  s_fbd258b587d61b::t_eb536ffca6a4f3 6-9
+src/features/generation/worker/generators/directMeshWalls.ts
+  s_fbd258b587d61b::t_d92c18c65f7bed 21
+  s_fbd258b587d61b::t_13db220261ce31 33-47,51-67,76-77,95-96,101,104
+  s_fbd258b587d61b::t_f2729e3cfdc5f5 48-50
+src/features/generation/worker/generators/baseplateDirectMesh.test.ts
+  s_fbd258b587d61b::t_149015f5852aee 21
+  s_fbd258b587d61b::t_54353401bc94a9 10
+  s_fbd258b587d61b::t_42275d75147934 969-986,999-1002,1004-1006,1009-1011,1034-1039,1041-1054
+  s_fbd258b587d61b::t_197de79bcb552c 987-989,996-998,1003,1007-1008,1040
+  s_fbd258b587d61b::t_9e0eb15b87d843 990-995
+  s_fbd258b587d61b::t_9fe62a9d806687 1012-1033
+  s_fbd258b587d61b::t_f95c6aae6c95d7 20
+src/features/generation/worker/generators/directMeshFaces.ts
+  s_fbd258b587d61b::t_6af6767a5ef64c 181,184,186-194,205-207,210-220,253-257
+  s_fbd258b587d61b::t_576031dc78936e 261-262,264,266
+  s_fbd258b587d61b::t_fe9d6614d518f6 31
+  s_fbd258b587d61b::t_33dbf37a348e4a 127-129,141-142
+  s_fbd258b587d61b::t_1f9d8313e36f50 208-209,221-222,232,235-236,240-252,258-260,263,265,267
+  s_fbd258b587d61b::t_34fde7a3450cb9 223-231,233-234,237-239
+  s_fbd258b587d61b::t_c9245b0c79157e 56-58
+  s_fbd258b587d61b::t_ee95506287ee5a 107-108,113-115
+  s_fbd258b587d61b::t_e417652733a038 116-117
+  s_fbd258b587d61b::t_07b48f06d281ea 268-270
+src/shared/generation/generatorConstants.ts
+  s_fbd258b587d61b::t_781f8e64146ca0 186-188
+src/shared/generation/generatorConstants.test.ts
+  s_fbd258b587d61b::t_15965c3c98c4e9 2
+src/shared/generation/screwHolePlacement.ts
+  s_fbd258b587d61b::t_489b0fb3256568 262-268,270,273-276
+  s_fbd258b587d61b::t_7d94f4168c0b69 278
+  s_fbd258b587d61b::t_87d4576b0e2d58 16
+  s_fbd258b587d61b::t_87e1bd8941aaed 26
+src/features/generation/worker/generators/maskPolygon.ts
+  s_fbd258b587d61b::t_6d758ffb6c34e7 26
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_fbd258b587d61b::t_ecbee421aa652a 1477-1496
+src/features/baseplate/utils/buildFullParams.ts
+  s_fbd258b587d61b::t_29b647b677e957 27
+  s_fbd258b587d61b::t_6e52daf62508b2 264-269
+  s_fbd258b587d61b::t_b906b0fa7b799e 283
+src/features/generation/worker/generators/baseplateDirectMesh.ts
+  s_fbd258b587d61b::t_b2f294f3966727 59
+  s_fbd258b587d61b::t_840cf1149a677d 214-224,241-242,261-262
+src/features/generation/worker/generators/directMeshScrews.ts
+  s_fbd258b587d61b::t_1e32cab546d27c 25-29,38-66
+  s_fbd258b587d61b::t_a1894820353e79 143-144
+  s_fbd258b587d61b::t_bd333eb86c3960 219-228
+  s_fbd258b587d61b::t_44917edb6b2d63 67
+src/shared/generation/screwHolePlacement.test.ts
+  s_fbd258b587d61b::t_f526896022b9cf 211-212,214-218,221-241,245,249,253
+  s_fbd258b587d61b::t_dabdd6a95239ce 7
+  s_fbd258b587d61b::t_3750797bcadf9b 194
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d9a67be9adbd0607e85d92172079ab2c62323671",
+  "prompts": {},
+  "sessions": {
+    "s_fbd258b587d61b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3feec13e-9088-4414-b8ea-fe1a58a350f6",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
