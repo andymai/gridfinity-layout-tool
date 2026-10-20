@@ -12,11 +12,12 @@ import type { BinParams } from '@/shared/types/bin';
 import type { LidMeshData, StackPlateMeshData, ExportFormat } from '../../bridge/types';
 import type { ProgressFn } from './generatorTypes';
 import { buildLid, buildStackPlate } from './lidBuilder';
+import { keepsNaturalOrientation } from './lidInputs';
 import { toIndexedMeshData, creaseEdges } from './utils';
 import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
 import { computeTessellationTolerances, EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 import { checkCancelled } from './meshUtils';
-import { isSlideLid, shouldGenerateLid } from '@/shared/types/bin';
+import { shouldGenerateLid } from '@/shared/types/bin';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
 import { FeatureTag } from './featureTags';
@@ -45,27 +46,6 @@ function orientForPrint(lidSolid: Shape3D): Shape3D {
     lidSolid.delete();
     throw err;
   }
-}
-
-/**
- * Whether the lid should keep its natural (unflipped) orientation on export.
- *
- * A tray recess lives on the top face and the mating cavity on the underside;
- * they want opposite print orientations and one side needs supports
- * (decision D1, "auto by attachment"). Click-rail lids always flip so the rails
- * print clean (the tray then needs supports); friction/magnetic tray lids skip
- * the flip so the tray prints clean (the gentler cavity/magnet overhang takes
- * the supports). Non-tray lids always flip, as before.
- */
-function keepsNaturalOrientation(params: BinParams): boolean {
-  // A sliding lid is already print-ready: it is a flat plate whose retaining
-  // chamfer is a TOP edge and whose only other feature is an underside relief
-  // for first-layer squish. Flipping it would put the chamfer against the bed
-  // and print the joint's bearing edge into the elephant foot it exists to
-  // avoid — and there is no cavity or rail the flip was ever for.
-  if (isSlideLid(params.lid)) return true;
-  const trayActive = params.lid.tray.enabled && !params.lid.stackableTop;
-  return trayActive && params.lid.attachment !== 'clickRails';
 }
 
 export function generateLid(

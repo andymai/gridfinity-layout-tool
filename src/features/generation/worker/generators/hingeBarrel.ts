@@ -58,6 +58,12 @@ export interface HingeFrame {
   /** Axis height. Bin builders pass world Z; the lid passes lid-local Z. */
   readonly axisZ: number;
   readonly rotationDeg: number;
+  /**
+   * Which way along this frame's Z is up on the print bed: `1` when the part
+   * prints as built, `-1` when its export turns it over about a horizontal
+   * axis, as a lid laid on its top face is.
+   */
+  readonly printUpZ: 1 | -1;
 }
 
 /**
@@ -98,8 +104,9 @@ function onAxis(
  * unsupported arch — it sags, prints oval and undersized, and the pin then
  * needs a drill through it before the hinge will turn. A 45°-plus peak bridges
  * itself off the two walls below, so the hole leaves the bed the size it was
- * modelled. The peak lands in the barrel's top half where there is material to
- * spare, so it costs nothing structurally.
+ * modelled. The peak points along {@link HingeFrame.printUpZ}, so it is the top
+ * of the hole on the bed whichever way up the part is laid, and the barrel has
+ * material to spare on every side of the bore, so it costs nothing structurally.
  *
  * The apex sits at `r·√2`, which puts each flank at 54.7° from horizontal —
  * comfortably inside the 45° an FDM printer will bridge without support, with
@@ -118,7 +125,7 @@ function boreSolid(
   const round = onAxis(scope, g, frame, radius, x0, x1);
   const peak = draw([cy - radius, cz])
     .lineTo([cy + radius, cz])
-    .lineTo([cy, cz + radius * Math.SQRT2])
+    .lineTo([cy, cz + frame.printUpZ * radius * Math.SQRT2])
     .close();
   const prism = scope.register(sketch(peak, 'YZ').extrude(x1 - x0));
   return scope.register(unwrap(fuse(round, scope.register(translate(prism, [x0, 0, 0])))));

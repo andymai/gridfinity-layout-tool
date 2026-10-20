@@ -407,6 +407,30 @@ function resolveLidCutoutInputs(params: BinParams): LidCutoutInputs | null {
   };
 }
 
+/**
+ * Whether the lid should keep its natural (unflipped) orientation on export.
+ *
+ * A tray recess lives on the top face and the mating cavity on the underside;
+ * they want opposite print orientations and one side needs supports
+ * (decision D1, "auto by attachment"). Click-rail lids always flip so the rails
+ * print clean (the tray then needs supports); friction/magnetic tray lids skip
+ * the flip so the tray prints clean (the gentler cavity/magnet overhang takes
+ * the supports). Non-tray lids always flip.
+ *
+ * Read by the builder as well as the export, because a hinged lid's pin bore
+ * has to point its peak at whichever face ends up on top in the print.
+ */
+export function keepsNaturalOrientation(params: BinParams): boolean {
+  // A sliding lid is already print-ready: it is a flat plate whose retaining
+  // chamfer is a TOP edge and whose only other feature is an underside relief
+  // for first-layer squish. Flipping it would put the chamfer against the bed
+  // and print the joint's bearing edge into the elephant foot it exists to
+  // avoid, and there is no cavity or rail the flip was ever for.
+  if (isSlideLid(params.lid)) return true;
+  const trayActive = params.lid.tray.enabled && !params.lid.stackableTop;
+  return trayActive && params.lid.attachment !== 'clickRails';
+}
+
 function resolveLidFillInputs(params: BinParams, mateRelief: number): LidFillInputs | null {
   const bottomZ = lidFillBottomZ(params);
   if (bottomZ === null) return null;

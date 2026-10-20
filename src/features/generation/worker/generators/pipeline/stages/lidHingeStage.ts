@@ -92,6 +92,7 @@ export const lidHingeStage: PipelineStage = {
         outerFaceCrossMm: crossSpan / 2 + ctx.params.wallThickness + outward * offset,
         axisZ: dim.lipTopZ + geometry.axisAboveLipTopMm,
         rotationDeg: geometry.rotationDeg,
+        printUpZ: 1,
       },
       ctx.params.wallThickness
     );

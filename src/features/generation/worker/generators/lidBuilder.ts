@@ -31,7 +31,7 @@ import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
-import { resolveLidInputs } from './lidInputs';
+import { keepsNaturalOrientation, resolveLidInputs } from './lidInputs';
 import type { LidInputs } from './lidInputs';
 import { buildLidFloor, buildMatingShell } from './lidProfile';
 import { addClickRails } from './lidClickRail';
@@ -104,7 +104,9 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
     //     snap rail is meant to snap past it. The plan drops a rail the relief
     //     would leave without a plug to hang from (`detentFits`).
     const hinge = planHingeLid(params).geometry;
-    const hingeFrame = hinge ? lidHingeFrame(inputs, hinge) : null;
+    const hingeFrame = hinge
+      ? lidHingeFrame(inputs, hinge, keepsNaturalOrientation(params) ? 1 : -1)
+      : null;
     if (hinge && hingeFrame && hinge.relievesLatch) {
       body = relieveLatchPlug(scope, body, hinge, hingeFrame, lidLatchWall(inputs, hinge));
     }
@@ -217,7 +219,11 @@ function lidLatchWall(inputs: LidInputs, hinge: HingeGeometry): LatchWall {
   };
 }
 
-function lidHingeFrame(inputs: LidInputs, hinge: HingeGeometry): HingeFrame {
+function lidHingeFrame(
+  inputs: LidInputs,
+  hinge: HingeGeometry,
+  printUpZ: HingeFrame['printUpZ']
+): HingeFrame {
   const crossOuter = hinge.alongX ? inputs.lidOuterD / 2 : inputs.lidOuterW / 2;
   const offset = hinge.alongX ? inputs.outerOffsetY : inputs.outerOffsetX;
   const outward = hinge.side === 'back' || hinge.side === 'right' ? 1 : -1;
@@ -228,6 +234,7 @@ function lidHingeFrame(inputs: LidInputs, hinge: HingeGeometry): HingeFrame {
     // rather than by two copies of the anchor chain (CLAUDE.md gotcha #14).
     axisZ: -inputs.topThickness,
     rotationDeg: hinge.rotationDeg,
+    printUpZ,
   };
 }
 
