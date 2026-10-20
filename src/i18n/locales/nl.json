@@ -3040,6 +3040,7 @@
   "designLinking.syncDialog.title": "Afmetingen synchroniseren",
   "designLinking.toast.autoSynced": "Automatisch {count} bak(ken) gesynchroniseerd vanuit ontwerp",
   "designLinking.toast.autoSyncedSomeLocked": "Automatisch {count} bin(s) gesynchroniseerd — {locked} met vergrendelde afmetingen ongewijzigd",
+  "designLinking.toast.autoSyncedSomeRefused": "Automatisch {count} bin(s) gesynchroniseerd; {refused} behielden hun oude afmetingen (geen ruimte)",
   "designLinking.toast.cascadedResize": "Ontwerp + {count} gekoppelde bak(ken) bijgewerkt",
   "designLinking.toast.cascadedResizeSomeLocked": "Ontwerp + {count} gekoppelde bin(s) bijgewerkt — {locked} met vergrendelde afmetingen ongewijzigd",
   "designLinking.toast.cascadedResizeSomeRefused": "Ontwerp + {count} gekoppelde bin(s) bijgewerkt; {refused} behielden hun oude afmetingen (geen ruimte)",

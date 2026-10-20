@@ -3040,6 +3040,7 @@
   "designLinking.syncDialog.title": "Синхронізувати розміри",
   "designLinking.toast.autoSynced": "Автосинхронізовано {count} бінів із дизайну",
   "designLinking.toast.autoSyncedSomeLocked": "Автосинхронізовано {count} бінів — {locked} із заблокованим розміром лишилися без змін",
+  "designLinking.toast.autoSyncedSomeRefused": "Автосинхронізовано {count} бінів; {refused} зберегли попередній розмір (немає місця)",
   "designLinking.toast.cascadedResize": "Оновлено дизайн + {count} пов’язаних бінів",
   "designLinking.toast.cascadedResizeSomeLocked": "Оновлено дизайн + {count} пов’язаних бінів — {locked} із заблокованим розміром лишилися без змін",
   "designLinking.toast.cascadedResizeSomeRefused": "Оновлено дизайн + {count} пов’язаних бінів; {refused} зберегли попередній розмір (немає місця)",

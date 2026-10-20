@@ -3040,6 +3040,7 @@
   "designLinking.syncDialog.title": "Synkroniser dimensjoner",
   "designLinking.toast.autoSynced": "Auto-synkroniserte {count} beholder(e) fra designet",
   "designLinking.toast.autoSyncedSomeLocked": "Auto-synkroniserte {count} beholder(e) — {locked} med låst størrelse ble uendret",
+  "designLinking.toast.autoSyncedSomeRefused": "Auto-synkroniserte {count} beholder(e); {refused} beholdt gammel størrelse (ikke plass)",
   "designLinking.toast.cascadedResize": "Oppdaterte design + {count} tilkoblede beholder(e)",
   "designLinking.toast.cascadedResizeSomeLocked": "Oppdaterte design + {count} tilknyttede beholder(e) — {locked} med låst størrelse ble uendret",
   "designLinking.toast.cascadedResizeSomeRefused": "Oppdaterte design + {count} tilknyttede beholder(e); {refused} beholdt gammel størrelse (ikke plass)",

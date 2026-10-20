@@ -15,6 +15,7 @@
 
 import { useEffect } from 'react';
 import { useToastStore } from '@/core/store';
+import { isOk } from '@/core/result';
 import { batch } from '@/core/cqrs';
 import { useMutations } from '@/shared/contexts';
 import { useLatestRef, useLayoutRef } from '@/shared/hooks';
@@ -26,12 +27,11 @@ import { useLinkingStore } from '../store';
 import {
   getLinkedDesignIds,
   getBinsLinkedToDesign,
-  dimensionsFitAllowingRotation,
   extractBinDimensions,
   compareDimensions,
-  checkBatchSyncEligibility,
   createBinSyncUpdate,
-  partitionSyncableByLock,
+  planSiblingCascade,
+  resizeOrder,
   syncDeclineKey,
 } from '../domain';
 
@@ -57,11 +57,12 @@ export function useDesignSavedListener(): void {
       const linkedBins = getBinsLinkedToDesign(layout.bins, event.designId);
       if (linkedBins.length === 0) return;
 
-      const { syncable: binsNeedingSync, locked: lockedBins } = partitionSyncableByLock(
-        linkedBins.filter(
-          (bin) => !dimensionsFitAllowingRotation(extractBinDimensions(bin), event.dimensions)
-        )
-      );
+      const {
+        syncable: binsNeedingSync,
+        locked: lockedBins,
+        eligibility,
+        allEligible,
+      } = planSiblingCascade(linkedBins, event.dimensions, layout);
       if (binsNeedingSync.length === 0) {
         if (lockedBins.length > 0) {
           addToastRef.current({
@@ -75,30 +76,39 @@ export function useDesignSavedListener(): void {
         return;
       }
 
-      const eligibility = checkBatchSyncEligibility(binsNeedingSync, event.dimensions, layout);
-      const allEligible = eligibility.every((e) => e.canSync);
-
       if (allEligible) {
         const syncUpdate = createBinSyncUpdate(event.dimensions);
+        let refused = 0;
         batch(() => {
-          for (const bin of binsNeedingSync) {
-            updateBinRef.current(bin.id, syncUpdate);
+          for (const bin of resizeOrder(binsNeedingSync, event.dimensions, layout)) {
+            if (!isOk(updateBinRef.current(bin.id, syncUpdate))) refused += 1;
           }
         });
 
-        addToastRef.current({
-          message:
-            lockedBins.length > 0
-              ? tRef.current('designLinking.toast.autoSyncedSomeLocked', {
-                  count: binsNeedingSync.length,
-                  locked: lockedBins.length,
-                })
-              : tRef.current('designLinking.toast.autoSynced', {
-                  count: binsNeedingSync.length,
+        addToastRef.current(
+          refused > 0
+            ? {
+                message: tRef.current('designLinking.toast.autoSyncedSomeRefused', {
+                  count: binsNeedingSync.length - refused,
+                  refused,
                 }),
-          type: 'success',
-          duration: 2000,
-        });
+                type: 'info',
+                duration: 4000,
+              }
+            : {
+                message:
+                  lockedBins.length > 0
+                    ? tRef.current('designLinking.toast.autoSyncedSomeLocked', {
+                        count: binsNeedingSync.length,
+                        locked: lockedBins.length,
+                      })
+                    : tRef.current('designLinking.toast.autoSynced', {
+                        count: binsNeedingSync.length,
+                      }),
+                type: 'success',
+                duration: 2000,
+              }
+        );
         return;
       }
 
@@ -135,7 +145,7 @@ export function useDesignSavedListener(): void {
         event.designId,
         designName,
         comparison,
-        checkBatchSyncEligibility(binsNeedingSync, event.dimensions, layout),
+        eligibility,
         binsHaveVaryingDimensions
       );
     }

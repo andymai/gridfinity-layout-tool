@@ -3040,6 +3040,7 @@
   "designLinking.syncDialog.title": "Synchroniser les dimensions",
   "designLinking.toast.autoSynced": "Synchronisé automatiquement {count} bac(s) depuis le design",
   "designLinking.toast.autoSyncedSomeLocked": "Synchronisé automatiquement {count} bac(s) — {locked} bac(s) à taille verrouillée inchangés",
+  "designLinking.toast.autoSyncedSomeRefused": "Synchronisé automatiquement {count} bac(s) ; {refused} ont gardé leur ancienne taille (pas de place)",
   "designLinking.toast.cascadedResize": "Design + {count} bac(s) lié(s) mis à jour",
   "designLinking.toast.cascadedResizeSomeLocked": "Design + {count} bac(s) lié(s) mis à jour — {locked} bac(s) à taille verrouillée inchangés",
   "designLinking.toast.cascadedResizeSomeRefused": "Design + {count} bac(s) lié(s) mis à jour ; {refused} ont gardé leur ancienne taille (pas de place)",

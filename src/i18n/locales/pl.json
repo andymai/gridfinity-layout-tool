@@ -3040,6 +3040,7 @@
   "designLinking.syncDialog.title": "Synchronizuj wymiary",
   "designLinking.toast.autoSynced": "Automatycznie zsynchronizowano {count} bin(ów) z projektu",
   "designLinking.toast.autoSyncedSomeLocked": "Automatycznie zsynchronizowano {count} binów — {locked} z zablokowanym rozmiarem bez zmian",
+  "designLinking.toast.autoSyncedSomeRefused": "Automatycznie zsynchronizowano {count} binów; {refused} zachowało poprzedni rozmiar (brak miejsca)",
   "designLinking.toast.cascadedResize": "Zaktualizowano projekt + {count} powiązany(-ch) bin(ów)",
   "designLinking.toast.cascadedResizeSomeLocked": "Zaktualizowano projekt + {count} powiązanych binów — {locked} z zablokowanym rozmiarem bez zmian",
   "designLinking.toast.cascadedResizeSomeRefused": "Zaktualizowano projekt + {count} powiązanych binów; {refused} zachowało poprzedni rozmiar (brak miejsca)",

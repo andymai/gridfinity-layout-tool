@@ -3040,6 +3040,7 @@
   "designLinking.syncDialog.title": "同步尺寸",
   "designLinking.toast.autoSynced": "已从设计自动同步 {count} 个收纳盒",
   "designLinking.toast.autoSyncedSomeLocked": "已自动同步 {count} 个收纳盒 — {locked} 个已锁定尺寸的收纳盒保持不变",
+  "designLinking.toast.autoSyncedSomeRefused": "已自动同步 {count} 个收纳盒；{refused} 个因空间不足保持原尺寸",
   "designLinking.toast.cascadedResize": "已更新设计 + {count} 个已关联的收纳盒",
   "designLinking.toast.cascadedResizeSomeLocked": "已更新设计和 {count} 个关联收纳盒 — {locked} 个已锁定尺寸的收纳盒保持不变",
   "designLinking.toast.cascadedResizeSomeRefused": "已更新设计和 {count} 个关联收纳盒；{refused} 个因空间不足保持原尺寸",

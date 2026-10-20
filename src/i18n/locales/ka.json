@@ -4543,6 +4543,7 @@
   "designLinking.toast.cascadedResizeSomeLocked": "განახლდა დიზაინი და {count} დაკავშირებული ყუთი — ზომაჩაკეტილმა {locked} ყუთმა ზომა შეინარჩუნა",
   "designLinking.toast.cascadedResizeSomeRefused": "განახლდა დიზაინი და {count} დაკავშირებული ყუთი; {refused} ყუთმა ძველი ზომა შეინარჩუნა (ადგილი არ არის)",
   "designLinking.toast.autoSyncedSomeLocked": "ავტომატურად სინქრონიზდა {count} ყუთი — ზომაჩაკეტილმა {locked} ყუთმა ზომა შეინარჩუნა",
+  "designLinking.toast.autoSyncedSomeRefused": "ავტომატურად სინქრონიზდა {count} ყუთი; {refused} ყუთმა ძველი ზომა შეინარჩუნა (ადგილი არ არის)",
   "designLinking.toast.syncSkippedLocked": "ზომაჩაკეტილმა {count} ყუთმა ზომა შეინარჩუნა",
   "designLinking.blockedResize.title": "დიზაინი არ განახლებულა",
   "designLinking.blockedResize.description": "ყუთის ზომა შეიცვალა, თუმცა დაკავშირებულ დიზაინს „{name}“ აქვს ინდივიდუალური გეომეტრია, რომელზეც ეს შეიძლება აისახოს. ზომების განახლებისთვის დიზაინი ხელით შეცვალეთ.",

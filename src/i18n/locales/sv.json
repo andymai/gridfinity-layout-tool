@@ -3040,6 +3040,7 @@
   "designLinking.syncDialog.title": "Synka mått",
   "designLinking.toast.autoSynced": "Auto-synkade {count} fack från design",
   "designLinking.toast.autoSyncedSomeLocked": "Auto-synkade {count} fack — {locked} med låst storlek lämnades orörda",
+  "designLinking.toast.autoSyncedSomeRefused": "Auto-synkade {count} fack; {refused} behöll sin gamla storlek (inget utrymme)",
   "designLinking.toast.cascadedResize": "Uppdaterade design + {count} länkade fack",
   "designLinking.toast.cascadedResizeSomeLocked": "Uppdaterade design + {count} länkade fack — {locked} med låst storlek lämnades orörda",
   "designLinking.toast.cascadedResizeSomeRefused": "Uppdaterade design + {count} länkade fack; {refused} behöll sin gamla storlek (inget utrymme)",

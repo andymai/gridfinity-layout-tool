@@ -3040,6 +3040,7 @@
   "designLinking.syncDialog.title": "Sincronizar Dimensiones",
   "designLinking.toast.autoSynced": "Auto-sincronizados {count} contenedor(es) desde el diseño",
   "designLinking.toast.autoSyncedSomeLocked": "Auto-sincronizados {count} bin(s) — {locked} con tamaño bloqueado no cambiaron",
+  "designLinking.toast.autoSyncedSomeRefused": "Auto-sincronizados {count} bin(s); {refused} conservaron su tamaño anterior (sin espacio)",
   "designLinking.toast.cascadedResize": "Diseño + {count} contenedor(es) vinculado(s) actualizados",
   "designLinking.toast.cascadedResizeSomeLocked": "Diseño + {count} bin(s) vinculados actualizados — {locked} con tamaño bloqueado no cambiaron",
   "designLinking.toast.cascadedResizeSomeRefused": "Diseño + {count} bin(s) vinculados actualizados; {refused} conservaron su tamaño anterior (sin espacio)",

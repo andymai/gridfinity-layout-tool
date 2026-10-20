@@ -17,6 +17,10 @@ import * as UseCustomBins from '@/features/bin-designer/hooks/useCustomBins';
 import type { Bin, Layout } from '@/core/types';
 import { binId, designId, layerId, categoryId, gridUnits, heightUnits, mm } from '@/core/types';
 import type { CustomBinRef } from '@/features/bin-designer';
+import { err, ok } from '@/core/result';
+import { commandBus, createCqrsMutations } from '@/core/cqrs';
+import { createTestBin, createTestLayout } from '@/test/testUtils';
+import { registerLinkedSlantResolver } from '@/shared/utils/placedSlant';
 
 vi.mock('@/shared/contexts/MutationsContext', () => ({
   useMutations: vi.fn(),
@@ -69,7 +73,7 @@ function makeRegistryEntry(overrides: Partial<CustomBinRef> = {}): CustomBinRef 
 }
 
 function setupStores(bins: Bin[], registryEntries: CustomBinRef[] = []) {
-  const mockUpdateBin = vi.fn();
+  const mockUpdateBin = vi.fn(() => ok(undefined));
   const mockExecute = vi.fn((fn: () => void) => fn());
   const mockAddToast = vi.fn();
   const mockShowSyncDialog = vi.fn();
@@ -422,6 +426,77 @@ describe('useDesignSavedListener', () => {
       renderHook(() => useDesignSavedListener());
 
       expect(mockShowSyncDialog).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // Made 1x3, `ahead` would stand its support on the cell `behind` covers
+  // until `behind` has narrowed too; the layout lists `ahead` first.
+  describe('applying the sync', () => {
+    const DESIGN = designId('design-1');
+    const linked = (id: string, x: number, y: number) =>
+      createTestBin({
+        id: binId(id),
+        x: gridUnits(x),
+        y: gridUnits(y),
+        width: gridUnits(2),
+        height: heightUnits(6),
+        linkedDesignId: DESIGN,
+      });
+    const addToast = vi.fn();
+    const saved = (): void =>
+      emitSyncEvent({
+        type: 'design-saved',
+        designId: DESIGN,
+        dimensions: { width: 1, depth: 3, height: 6 },
+      });
+
+    beforeEach(() => {
+      registerLinkedSlantResolver(() => ({
+        config: { angleDeg: 45, side: 'back', endSupport: true },
+        width: 1,
+        depth: 3,
+        height: 6,
+      }));
+      vi.mocked(UseCustomBins.useCustomBins).mockReturnValue([]);
+      useToastStore.setState({ addToast, toasts: [] });
+      useLayoutStore.setState({
+        layout: createTestLayout({
+          drawer: { width: gridUnits(8), depth: gridUnits(8), height: heightUnits(20) },
+          bins: [linked('ahead', 1, 0), linked('behind', 0, 3)],
+        }),
+      });
+    });
+
+    afterEach(() => registerLinkedSlantResolver(null));
+
+    it('resizes every linked bin, in an order where none waits on another', () => {
+      vi.mocked(MutationsContext.useMutations).mockReturnValue(createCqrsMutations(commandBus));
+      renderHook(() => useDesignSavedListener());
+
+      saved();
+
+      const bins = useLayoutStore.getState().layout.bins;
+      for (const bin of bins) expect(bin).toMatchObject({ width: 1, depth: 3 });
+      expect(addToast).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }));
+    });
+
+    it('says how many kept their size instead of reporting success', () => {
+      const updateBin = vi.fn((id: string) =>
+        id === 'ahead'
+          ? err({ code: 'VALIDATION_COLLISION', message: 'taken' } as never)
+          : ok(undefined)
+      );
+      vi.mocked(MutationsContext.useMutations).mockReturnValue({ updateBin } as never);
+      renderHook(() => useDesignSavedListener());
+
+      saved();
+
+      expect(addToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'info',
+          message: expect.stringContaining('1 kept their old size'),
+        })
+      );
     });
   });
 });

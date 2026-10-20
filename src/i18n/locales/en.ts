@@ -5473,6 +5473,8 @@ const en: Record<string, string> = {
     'Updated design + {count} linked bin(s); {refused} kept their old size (no room)',
   'designLinking.toast.autoSyncedSomeLocked':
     'Auto-synced {count} bin(s) — {locked} size-locked bin(s) kept their size',
+  'designLinking.toast.autoSyncedSomeRefused':
+    'Auto-synced {count} bin(s); {refused} kept their old size (no room)',
   'designLinking.toast.syncSkippedLocked': '{count} size-locked bin(s) kept their size',
 
   // Blocked resize dialog

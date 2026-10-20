@@ -3040,6 +3040,7 @@
   "designLinking.syncDialog.title": "Synchronizovat rozměry",
   "designLinking.toast.autoSynced": "Automaticky synchronizováno {count} binů z návrhu",
   "designLinking.toast.autoSyncedSomeLocked": "Automaticky synchronizováno {count} binů — {locked} se zamčenou velikostí zůstalo beze změny",
+  "designLinking.toast.autoSyncedSomeRefused": "Automaticky synchronizováno {count} binů; {refused} si ponechalo původní velikost (není místo)",
   "designLinking.toast.cascadedResize": "Aktualizován návrh + {count} propojených binů",
   "designLinking.toast.cascadedResizeSomeLocked": "Aktualizován návrh + {count} propojených binů — {locked} se zamčenou velikostí zůstalo beze změny",
   "designLinking.toast.cascadedResizeSomeRefused": "Aktualizován návrh + {count} propojených binů; {refused} si ponechalo původní velikost (není místo)",

@@ -3040,6 +3040,7 @@
   "designLinking.syncDialog.title": "寸法を同期",
   "designLinking.toast.autoSynced": "デザインから{count}個のビンを自動同期しました",
   "designLinking.toast.autoSyncedSomeLocked": "{count}個のビンを自動同期しました（サイズをロック中の{locked}個はそのまま）",
+  "designLinking.toast.autoSyncedSomeRefused": "{count}個のビンを自動同期しました（{refused}個はスペースがないため元のサイズのまま）",
   "designLinking.toast.cascadedResize": "デザインとリンクされた{count}個のビンを更新しました",
   "designLinking.toast.cascadedResizeSomeLocked": "デザインとリンクされた{count}個のビンを更新しました（サイズをロック中の{locked}個はそのまま）",
   "designLinking.toast.cascadedResizeSomeRefused": "デザインとリンクされた{count}個のビンを更新しました（{refused}個はスペースがないため元のサイズのまま）",
