@@ -1,0 +1,28 @@
+src/shared/utils/validationImport.ts
+  s_fbd258b587d61b::t_ec218904f13842 33
+  s_fbd258b587d61b::t_181d0935ce56fd 239,243-252
+  s_fbd258b587d61b::t_e50a9c09fa068f 253
+src/core/api/share.ts
+  s_fbd258b587d61b::t_5a56775cdc7025 268-269,271-273
+  s_fbd258b587d61b::t_be82eb16022360 270
+src/core/api/share.test.ts
+  s_fbd258b587d61b::t_91aefb1f3d6ea7 732-755
+src/shared/utils/validation.test.ts
+  s_fbd258b587d61b::t_dee22ab942bf6d 505-520
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a85cc7e4cc86d5adf1a58eaa504799fb6778eebd",
+  "prompts": {},
+  "sessions": {
+    "s_fbd258b587d61b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3feec13e-9088-4414-b8ea-fe1a58a350f6",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
