@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.519.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.519.1...gridfinity-layout-tool-v4.519.2) (2026-10-20)
+
+
+### Bug Fixes
+
+* **layout:** check linked resizes where the cascade puts each placement, and keep thumbnail writes current ([#4655](https://github.com/andymai/gridfinity-layout-tool/issues/4655)) ([5120109](https://github.com/andymai/gridfinity-layout-tool/commit/5120109c7899268cd2b06b024868b43f5841744d))
+
 ## [4.519.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.519.0...gridfinity-layout-tool-v4.519.1) (2026-10-19)
 
 
