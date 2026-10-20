@@ -346,7 +346,6 @@ describe('mount-down screws at the pocket junctions', () => {
   }, 240_000);
 });
 
-/** Centres of the four pockets around a junction. */
 function junctionPockets(jx: number, jy: number): Array<readonly [number, number]> {
   return [
     [jx - 21, jy - 21],
