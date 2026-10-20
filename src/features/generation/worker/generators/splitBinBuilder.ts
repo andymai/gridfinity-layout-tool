@@ -25,7 +25,7 @@ import { buildWallCutoutCuts, interiorDividerTopZ } from './wallCutoutBuilder';
 import { buildLipBreachChannels } from './cutoutBuilder';
 import { isAbortError } from './utils/abort';
 import { resolveOverhang } from './overhang';
-import { isPartialMask } from '@/shared/utils/cellMask';
+import { isPartialMask, regionHasFilledCell } from '@/shared/utils/cellMask';
 import { createInitialContext, deriveDimensions } from './pipeline/context';
 import { buildWallPatterns } from './wallPatternBuilder';
 import { buildKumikoWallPatterns } from './kumikoWrapBuilder';
@@ -409,6 +409,25 @@ function splitSolidIntoPieces(
   const numCols = xBounds.length - 1;
   const numRows = yBounds.length - 1;
 
+  // The grid is planned off the bin's width and depth, not its shape, so a
+  // custom shape can leave a piece over none of its cells (painted short of an
+  // edge, or the notch of an L cut both ways). Past the cells there is only a
+  // concave corner's rounding, a sliver nobody could print alone. The body
+  // stands CLEARANCE / 2 inside every cell edge and the cut planes sit 0.1mm off
+  // cell boundaries, so reaching a cell by less than that reaches none of it.
+  const footprint = isPartialMask(params.cellMask) ? params.cellMask : null;
+  const halfSpanX = (params.width * gridUnitMmX) / 2;
+  const halfSpanY = (params.depth * gridUnitMmY) / 2;
+  const reachesFootprint = (xMin: number, xMax: number, yMin: number, yMax: number): boolean =>
+    footprint === null ||
+    regionHasFilledCell(
+      footprint,
+      (xMin + CLEARANCE / 2 + halfSpanX) / gridUnitMmX,
+      (yMin + CLEARANCE / 2 + halfSpanY) / gridUnitMmY,
+      (xMax - CLEARANCE / 2 + halfSpanX) / gridUnitMmX,
+      (yMax - CLEARANCE / 2 + halfSpanY) / gridUnitMmY
+    );
+
   const pieces: SplitPieceInfo[] = [];
 
   try {
@@ -437,6 +456,7 @@ function splitSolidIntoPieces(
         const xMax = xBounds[col + 1];
         const yMin = yBounds[row];
         const yMax = yBounds[row + 1];
+        if (!reachesFootprint(xMin, xMax, yMin, yMax)) continue;
 
         const pieceW = xMax - xMin;
         const pieceD = yMax - yMin;

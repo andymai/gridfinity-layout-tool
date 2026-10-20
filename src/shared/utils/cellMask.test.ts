@@ -12,6 +12,7 @@ import {
   MASK_CELLS_PER_UNIT,
   MAX_MASK_DIMENSION,
   maskToPolygon,
+  regionHasFilledCell,
   resizeMask,
   validateMask,
   type CellMask,
@@ -617,5 +618,39 @@ describe('isRegionFilled', () => {
 
   it('returns false when region extends outside the mask', () => {
     expect(isRegionFilled(lMask, 3, 0, 1, 1)).toBe(false);
+  });
+});
+
+describe('regionHasFilledCell', () => {
+  // 3x3 L-shape (BR corner removed), at half-bin resolution (6x6 mask)
+  const lMask = mask([
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 0, 0],
+    [1, 1, 1, 1, 0, 0],
+  ]);
+
+  it('finds a filled cell anywhere in the region', () => {
+    expect(regionHasFilledCell(lMask, 1.5, 0, 3, 1)).toBe(true);
+  });
+
+  it('finds none over the missing corner, whose edges touch filled cells', () => {
+    expect(regionHasFilledCell(lMask, 2, 0, 3, 1)).toBe(false);
+  });
+
+  it('counts a cell the region reaches into, however slightly', () => {
+    expect(regionHasFilledCell(lMask, 1.99, 0, 3, 1)).toBe(true);
+    expect(regionHasFilledCell(lMask, 2, 0, 3, 1.01)).toBe(true);
+  });
+
+  it('clips a region reaching past the mask', () => {
+    expect(regionHasFilledCell(lMask, 2.5, -1, 4, 1)).toBe(false);
+    expect(regionHasFilledCell(lMask, -1, -1, 0.01, 0.01)).toBe(true);
+  });
+
+  it('finds nothing in an empty region', () => {
+    expect(regionHasFilledCell(lMask, 1, 1, 1, 2)).toBe(false);
   });
 });

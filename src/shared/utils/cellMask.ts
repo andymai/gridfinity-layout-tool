@@ -469,6 +469,31 @@ export function isRegionFilled(
 }
 
 /**
+ * True if any filled mask cell overlaps the open rectangle
+ * `(leftUnit, rightUnit) × (bottomUnit, topUnit)`, in grid units with the
+ * origin at the bin's bottom-left. A cell that only touches an edge does not
+ * overlap.
+ */
+export function regionHasFilledCell(
+  mask: CellMask,
+  leftUnit: number,
+  bottomUnit: number,
+  rightUnit: number,
+  topUnit: number
+): boolean {
+  const colStart = Math.max(0, Math.floor(leftUnit * MASK_CELLS_PER_UNIT));
+  const rowStart = Math.max(0, Math.floor(bottomUnit * MASK_CELLS_PER_UNIT));
+  const colEnd = Math.min(mask.cols, Math.ceil(rightUnit * MASK_CELLS_PER_UNIT));
+  const rowEnd = Math.min(mask.rows, Math.ceil(topUnit * MASK_CELLS_PER_UNIT));
+  for (let r = rowStart; r < rowEnd; r++) {
+    for (let c = colStart; c < colEnd; c++) {
+      if (mask.cells[r * mask.cols + c] === 1) return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Stable, short hash for a mask — suitable for inclusion in cache keys.
  * Uses a 32-bit FNV-1a over the canonicalized `cols|rows|cells`.
  */
