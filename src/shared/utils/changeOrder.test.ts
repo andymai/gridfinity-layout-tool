@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
 import { binId, gridUnits, heightUnits } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 import type { Bin } from '@/core/types';
 import { changeOrder, landUpdates } from './changeOrder';
 
@@ -36,6 +37,19 @@ describe('changeOrder', () => {
       layout
     );
     expect(swapped.map((bin) => bin.id)).toEqual(['a', 'b']);
+  });
+
+  it('neither waits for nor holds up a bin in the stash', () => {
+    const stashed = at('stashed', 0, 0, { layerId: STAGING_ID, width: gridUnits(3) });
+    const growing = at('growing', 0, 1);
+    const order = changeOrder(
+      [
+        { bin: growing, to: { ...growing, y: gridUnits(0) } },
+        { bin: stashed, to: { ...stashed, width: gridUnits(1) } },
+      ],
+      layout
+    );
+    expect(order.map((b) => b.id)).toEqual(['growing', 'stashed']);
   });
 });
 

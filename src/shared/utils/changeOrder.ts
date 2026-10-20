@@ -2,12 +2,12 @@ import { produce } from 'immer';
 import { isOk } from '@/core/result';
 import { updateBin } from '@/core/cqrs/v2/domain/bin/updateBin';
 import type { Bin, BinId, BinUpdates, Layout } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 import { footprintsOverlap } from './collision';
 import { slantZone, type SlantLayout } from './placedSlant';
 
 export interface BinChange {
   readonly bin: Bin;
-  /** The bin as the change leaves it. */
   readonly to: Bin;
 }
 
@@ -16,16 +16,19 @@ export interface BinChange {
  * another has yet to leave: each change is checked against the layout as it
  * stands, so a bin whose new cells (its support's included) cover another
  * bin's current ones goes after it. Bins that block each other in a ring keep
- * the order they came in.
+ * the order they came in. The stash holds no cells, as placement ignores it.
  */
 export function changeOrder(changes: readonly BinChange[], layout: SlantLayout): Bin[] {
   const remaining = changes.map(({ bin, to }) => ({
     bin,
+    staysStashed: to.layerId === STAGING_ID,
     from: slantZone(bin, layout),
     to: slantZone(to, layout),
   }));
   type Entry = (typeof remaining)[number];
   const waitsFor = (mover: Entry, other: Entry): boolean =>
+    !mover.staysStashed &&
+    other.bin.layerId !== STAGING_ID &&
     (mover.bin.layerId === other.bin.layerId || mover.to.slanted || other.from.slanted) &&
     mover.to.rects.some((r) => other.from.rects.some((s) => footprintsOverlap(r, s)));
 

@@ -17,6 +17,7 @@ import { err } from '@/core/result';
 import { loadRegistry, upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 import type * as StorageModule from '@/features/bin-designer/storage';
 import { commandBus, createCqrsMutations } from '@/core/cqrs';
+import { STAGING_ID } from '@/core/constants';
 import type { LinkedSlantFacts } from '@/shared/utils/placedSlant';
 
 vi.mock('@/shared/contexts/MutationsContext', () => ({
@@ -238,6 +239,8 @@ describe('useBinResizedListener', () => {
             linked('resized', 6, 0, 1, 3),
             linked('ahead', 1, 0, 2, 1),
             linked('behind', 0, 3, 2, 1),
+            // Placement ignores the stash, so ordering must too.
+            { ...linked('stashed', 0, 2, 2, 1), layerId: STAGING_ID },
           ],
         }),
       });
@@ -259,7 +262,8 @@ describe('useBinResizedListener', () => {
 
       await vi.waitFor(() => expect(useToastStore.getState().toasts).toHaveLength(1));
       expect(useToastStore.getState().toasts[0].type).toBe('success');
-      for (const id of ['ahead', 'behind']) expect(bin(id)).toMatchObject({ width: 1, depth: 3 });
+      for (const id of ['ahead', 'behind', 'stashed'])
+        expect(bin(id)).toMatchObject({ width: 1, depth: 3 });
       registerLinkedSlantResolver(null);
       unmount();
     });
@@ -279,7 +283,8 @@ describe('useBinResizedListener', () => {
       const [toast] = useToastStore.getState().toasts;
       expect(toast.type).toBe('info');
       expect(toast.message).toContain('1 kept their old size');
-      expect(updateBin.mock.calls.map(([id]) => id)).toEqual(['behind', 'ahead']);
+      const order = updateBin.mock.calls.map(([id]) => id);
+      expect(order.indexOf('behind')).toBeLessThan(order.indexOf('ahead'));
       registerLinkedSlantResolver(null);
       unmount();
     });
