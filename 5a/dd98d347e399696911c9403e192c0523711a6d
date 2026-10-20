@@ -1,0 +1,213 @@
+src/features/baseplate/components/BaseplatePreview/ConnectorKeyMeshes.tsx
+  s_fbd258b587d61b::t_5432869b585dc6 252
+  s_fbd258b587d61b::t_40cf6404894444 26
+  s_fbd258b587d61b::t_c3e4cfeff1928d 283-287
+src/i18n/locales/nl.json
+  s_fbd258b587d61b::t_0281ce3a722d22 258,264,270
+src/i18n/locales/zh-CN.json
+  s_fbd258b587d61b::t_0281ce3a722d22 258,264,270
+src/features/baseplate/utils/buildBaseplateExportPieces.ts
+  s_fbd258b587d61b::t_ef6c455f36b5f9 231-232,246-247
+src/features/generation/worker/generators/baseplateScrews.test.ts
+  s_fbd258b587d61b::t_f92f60b401d596 524
+  s_fbd258b587d61b::t_a4a0a7dc0404c9 547-549
+  s_fbd258b587d61b::t_be8bb5da83fc45 144-244
+  s_fbd258b587d61b::t_f502c151c94e89 8-9,19-20,24
+  s_fbd258b587d61b::t_8ad38fb3b96ded 15
+  s_fbd258b587d61b::t_da6e4d2f851e2f 513-523,525-546,550-555
+src/i18n/locales/sv.json
+  s_fbd258b587d61b::t_0281ce3a722d22 258,264,270
+src/features/generation/worker/generators/baseplateGenerator.scenario.junctionScrews.test.ts
+  s_fbd258b587d61b::t_71ed32f5ebf7df 66,69-70,74-75
+  s_fbd258b587d61b::t_3e119542b021ff 212
+  s_fbd258b587d61b::t_b49afa4fd3e1fc 1-34,39,42-65,67-68,71-73,76-115,118,124-131,138-186,188-211,213-247,254-296
+  s_fbd258b587d61b::t_329ccf20a2b70d 116-117,119-123,132-137
+  s_fbd258b587d61b::t_951ef7a6960329 40-41
+  s_fbd258b587d61b::t_792f69dda57c88 35-38
+  s_fbd258b587d61b::t_3ac66720786f50 187
+  s_fbd258b587d61b::t_1e80687bcbb034 248-253
+src/features/generation/worker/generators/directMeshScrews.ts
+  s_fbd258b587d61b::t_114b76e9dccecd 107-139,142-143,147,152,157-158
+  s_fbd258b587d61b::t_ea4d69b7d2ac82 13-15,29-30
+  s_fbd258b587d61b::t_9b47166ccd66b8 184-188
+src/features/baseplate/hooks/usePlateScrewPadMm.ts
+  s_fbd258b587d61b::t_dadbcd38e1df1a 1-30
+src/core/baseplateDefaults.ts
+  s_fbd258b587d61b::t_eecbecd07aa00a 74-76
+  s_fbd258b587d61b::t_6f6d12b4d87829 66-69,71,73,77-78
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_fbd258b587d61b::t_ab216a9a1f1837 1500
+  s_fbd258b587d61b::t_67eda64454f7a3 1426,1442
+  s_fbd258b587d61b::t_5afcf3fd575d3c 8-9,11
+  s_fbd258b587d61b::t_ac0017e73b97a8 1400-1425,1427-1441,1443-1499,1501-1545
+src/features/baseplate/utils/mountMagnetFit.test.ts
+  s_fbd258b587d61b::t_e5ebe584c85ef6 7-10,14,19,27-28,32-36
+  s_fbd258b587d61b::t_6aee8ca0c1c4d0 37
+src/features/baseplate/components/BaseplatePanel/BaseSection.test.tsx
+  s_fbd258b587d61b::t_30f68ae13bd2de 183,187-203,205,210-212,217-219
+  s_fbd258b587d61b::t_343fc98b718a97 204,206-209,213-216
+  s_fbd258b587d61b::t_a7ec609f14f59b 220
+src/i18n/locales/de.json
+  s_fbd258b587d61b::t_0281ce3a722d22 258,264,270
+src/i18n/locales/ja.json
+  s_fbd258b587d61b::t_0281ce3a722d22 258,264,270
+src/features/baseplate/hooks/useConnectorSampleExport.ts
+  s_fbd258b587d61b::t_b51052414f8c24 48,61-62
+  s_fbd258b587d61b::t_3077735a00fda6 49-57,59,63-67
+  s_fbd258b587d61b::t_4824efd8aed507 18
+src/features/generation/worker/generators/baseplateDirectMesh.ts
+  s_fbd258b587d61b::t_12d7e92a596743 23-25
+  s_fbd258b587d61b::t_c14a5b13f757b9 340-341,345,349,354-355
+  s_fbd258b587d61b::t_8e08e5aa6d13a3 70
+  s_fbd258b587d61b::t_a46251daa444c3 374-375
+src/features/baseplate/utils/snapClipFit.test.ts
+  s_fbd258b587d61b::t_a97aeaf1003458 8,12,17,21,26
+src/i18n/locales/ka.json
+  s_fbd258b587d61b::t_0281ce3a722d22 3650,3658,3664
+src/features/generation/worker/generators/mountMagnetPlan.test.ts
+  s_fbd258b587d61b::t_cd057cdef2bf72 10
+  s_fbd258b587d61b::t_c7020f474ace1a 223-275
+src/i18n/locales/it.json
+  s_fbd258b587d61b::t_0281ce3a722d22 258,264,270
+src/features/generation/worker/generators/screwJunctionPlan.ts
+  s_fbd258b587d61b::t_9cb399ab79a82d 23-29
+  s_fbd258b587d61b::t_7e3c284cd1b7a6 45
+  s_fbd258b587d61b::t_e3e2b628529148 101-132
+  s_fbd258b587d61b::t_e38311b92a7875 175-179,181
+  s_fbd258b587d61b::t_7dc44eba5c51e9 1-22,30-44,46-100,133-174,180,182-203,209-211
+  s_fbd258b587d61b::t_2ea5d6cba099bd 204-208
+src/shared/generation/screwHolePlan.test.ts
+  s_fbd258b587d61b::t_f6350855169a52 125-126,447-517,522-548,552-555,557-559
+  s_fbd258b587d61b::t_36ce0ae5a69da2 518-521
+  s_fbd258b587d61b::t_9e468373cfeee0 549-551,556
+  s_fbd258b587d61b::t_eaffaed7e25de0 7,11,14,19
+  s_fbd258b587d61b::t_77bb623488f9e3 73-75,85-124
+  s_fbd258b587d61b::t_afcad404e2b833 127
+src/i18n/locales/ko.json
+  s_fbd258b587d61b::t_0281ce3a722d22 258,264,270
+src/features/baseplate/utils/buildFullParams.ts
+  s_fbd258b587d61b::t_8f53129a297ec3 263,489-499,512-544
+  s_fbd258b587d61b::t_4d850bd6847a1e 321-322
+  s_fbd258b587d61b::t_d93eb8cbb33a54 389-391
+  s_fbd258b587d61b::t_c64736deb60e8a 264-283,488
+  s_fbd258b587d61b::t_3a39c6b9987d30 9
+  s_fbd258b587d61b::t_923dd785d7ddff 298-302
+  s_fbd258b587d61b::t_ca2244efad89d1 27,30-32,34-40
+  s_fbd258b587d61b::t_013d7ef9c504ee 11,15-16
+  s_fbd258b587d61b::t_a0629e88933a3b 242-244
+  s_fbd258b587d61b::t_ca86392fb97d02 411
+  s_fbd258b587d61b::t_2522fe8bf13880 487
+  s_fbd258b587d61b::t_cb84ce7c387c99 500-511
+  s_fbd258b587d61b::t_8ed4e7e7aed9e9 33
+src/i18n/locales/pl.json
+  s_fbd258b587d61b::t_0281ce3a722d22 258,264,270
+src/features/generation/worker/generators/directMeshScrews.test.ts
+  s_fbd258b587d61b::t_19ee1891de89a3 170-193
+  s_fbd258b587d61b::t_44d682e14ea533 31,35-57
+  s_fbd258b587d61b::t_48ad2c96bad71e 58
+src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.tsx
+  s_fbd258b587d61b::t_afd1348ee389b5 80-83,88
+  s_fbd258b587d61b::t_3175a090837eaf 28
+src/features/generation/worker/generators/baseplateScrews.ts
+  s_fbd258b587d61b::t_fbea2fca71b502 317-318,324
+  s_fbd258b587d61b::t_1eb34c1034359b 97-100,118-125,127-128
+  s_fbd258b587d61b::t_9fb9366cb39a25 8-9,27,32,36-42,46-48,54-55
+  s_fbd258b587d61b::t_f70e4a419b9f60 255-266,275-278,284-285,287,291-292,294,299-301
+  s_fbd258b587d61b::t_26e1bcbac53c4b 348-350,360,365-367,369-370
+  s_fbd258b587d61b::t_b6d4cd3986fbe5 160-214,224-227,240
+  s_fbd258b587d61b::t_e03c63c888c2ed 254
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_fbd258b587d61b::t_147ac8816585b0 710-711
+  s_fbd258b587d61b::t_8149805c443ec6 77,79
+  s_fbd258b587d61b::t_03232968900f60 341-342,344
+  s_fbd258b587d61b::t_bebfb25b289fb0 384-390,398
+  s_fbd258b587d61b::t_926f43dda4dfe7 93
+src/features/generation/worker/generators/baseplateDirectMesh.test.ts
+  s_fbd258b587d61b::t_29b6df2ee42407 911-926
+src/features/generation/worker/generators/mountMagnetPlan.ts
+  s_fbd258b587d61b::t_7dbb3d7734e457 176,179,186-188,190-192,194,200
+  s_fbd258b587d61b::t_0e94112a5cb002 219,234,237-262,267-268,270
+  s_fbd258b587d61b::t_55d0a7dd3c5201 467-470,480-481,493-494
+  s_fbd258b587d61b::t_61931f8aded01a 33,42-43,45-46,49,52,55,58-71
+src/i18n/locales/en.ts
+  s_fbd258b587d61b::t_c74d80aa87d9a0 4334
+  s_fbd258b587d61b::t_4b5dc08a7f1232 4345
+  s_fbd258b587d61b::t_a897a4327288db 4355
+src/features/baseplate/utils/snapClipFit.ts
+  s_fbd258b587d61b::t_35b5e97b4a0684 10-12,17-18,25
+src/i18n/locales/pt-BR.json
+  s_fbd258b587d61b::t_0281ce3a722d22 258,264,270
+src/i18n/locales/uk.json
+  s_fbd258b587d61b::t_0281ce3a722d22 258,264,270
+src/features/generation/worker/generators/baseplateFrame.ts
+  s_fbd258b587d61b::t_817fb58ca432cc 1-82
+docs/schemas/layout.md
+  s_fbd258b587d61b::t_1eff492fccb5fc 432-439
+src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
+  s_fbd258b587d61b::t_f7dc9ef60fda5d 38-41
+  s_fbd258b587d61b::t_6d756bbe4e5817 96
+  s_fbd258b587d61b::t_6fa425b429c7ce 58
+  s_fbd258b587d61b::t_59b5aa36e2ddf1 114-115,118-123
+  s_fbd258b587d61b::t_21e116955f809f 136-137
+  s_fbd258b587d61b::t_5231e4a5d3d460 401-402,404-407
+  s_fbd258b587d61b::t_f71d860a34fc7b 279
+  s_fbd258b587d61b::t_aeb9877bb3b545 186
+src/shared/generation/screwHolePlan.ts
+  s_fbd258b587d61b::t_95a835f52f0d1d 281-284,287-289,301-302,304-305,307
+  s_fbd258b587d61b::t_16362a081fc112 533-534,537-541,548,550,558-567,569
+  s_fbd258b587d61b::t_28181334beccc4 591-594,598-599,617
+  s_fbd258b587d61b::t_b254e4381ac47d 186-190,193-199
+  s_fbd258b587d61b::t_81e1b539a2507d 435
+  s_fbd258b587d61b::t_131b8a183f4254 5-8,11-14,17-21
+  s_fbd258b587d61b::t_b903ba43e5630a 34,48-63
+  s_fbd258b587d61b::t_676e8dc15fa3ee 88-90,93-94
+  s_fbd258b587d61b::t_e93a76c4d41cd3 409,419-434,436-502
+  s_fbd258b587d61b::t_d4c8696ed54718 131-138
+  s_fbd258b587d61b::t_10ccfa579aef2b 130
+  s_fbd258b587d61b::t_fd1539de6a49b9 503
+src/features/baseplate/components/BaseplatePreview/BaseplatePreview.test.tsx
+  s_fbd258b587d61b::t_c7cff08253fac1 112
+  s_fbd258b587d61b::t_112f6a07eae923 111,113-118
+  s_fbd258b587d61b::t_b97bcb8dd3d346 2
+public/schema/layout.schema.json
+  s_fbd258b587d61b::t_b18a277b570385 1025
+src/i18n/locales/nb.json
+  s_fbd258b587d61b::t_0281ce3a722d22 258,264,270
+src/features/generation/README.md
+  s_fbd258b587d61b::t_6d0097856a8deb 266
+src/features/generation/worker/generators/screwJunctionPlan.test.ts
+  s_fbd258b587d61b::t_19fcc34e013d2c 94
+  s_fbd258b587d61b::t_b3d563d6dbd325 1-93,95-164
+src/core/types/baseplate.ts
+  s_fbd258b587d61b::t_9a6a026e9dc0c4 90-94,99,109
+  s_fbd258b587d61b::t_42c181cc9092d4 110-111
+src/shared/generation/screwPadPlan.ts
+  s_fbd258b587d61b::t_73bbd0f8f22ddf 1-6
+src/i18n/locales/cs.json
+  s_fbd258b587d61b::t_0281ce3a722d22 258,264,270
+src/i18n/locales/es.json
+  s_fbd258b587d61b::t_0281ce3a722d22 258,264,270
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_fbd258b587d61b::t_f37e3863b76cfb 656,670-671,673
+  s_fbd258b587d61b::t_569e8b509f511b 591-592,606-607
+src/i18n/locales/fr.json
+  s_fbd258b587d61b::t_0281ce3a722d22 258,264,270
+src/features/baseplate/utils/mountMagnetFit.ts
+  s_fbd258b587d61b::t_0bdca268171479 9-10,15-16,27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5add98d347e399696911c9403e192c0523711a6d",
+  "prompts": {},
+  "sessions": {
+    "s_fbd258b587d61b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3feec13e-9088-4414-b8ea-fe1a58a350f6",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
