@@ -1,0 +1,33 @@
+src/shared/utils/cellMask.test.ts
+  s_fbd258b587d61b::t_d4fafedd28e948 15
+  s_fbd258b587d61b::t_c87252920adb57 639,643-645
+  s_fbd258b587d61b::t_57299fe6e6e2b6 623-638,640-642,646-656
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_fbd258b587d61b::t_0cd73b6f26c71d 412-417
+  s_fbd258b587d61b::t_5db327c562a140 459
+  s_fbd258b587d61b::t_9bea9ed27328c0 418-430
+  s_fbd258b587d61b::t_b802af70b9b2fb 28
+src/features/generation/worker/generators/binGenerator.scenario.split-polygon.test.ts
+  s_fbd258b587d61b::t_394670c3af7107 13-22,24
+  s_fbd258b587d61b::t_244f2167e9297b 66-98,100-113
+  s_fbd258b587d61b::t_22aed0a8407f5c 99
+src/shared/utils/cellMask.ts
+  s_fbd258b587d61b::t_7be235f7eb79a6 472-495
+  s_fbd258b587d61b::t_958800b99ad1e8 471
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c18997597a1d4eda6dfe75ed54a03e2bf6464604",
+  "prompts": {},
+  "sessions": {
+    "s_fbd258b587d61b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3feec13e-9088-4414-b8ea-fe1a58a350f6",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
