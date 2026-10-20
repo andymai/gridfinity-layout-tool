@@ -1,0 +1,41 @@
+src/shared/generation/screwJunctionPlan.test.ts
+  s_a0abc24586b3f5::t_319ab91f5aee7e 117-124
+  s_a0abc24586b3f5::t_261fd78e7a961b 63-90
+  s_a0abc24586b3f5::t_fbf06c47a741ae 13,15,20-21
+src/shared/generation/screwHolePlacement.ts
+  s_a0abc24586b3f5::t_72d18173f3faac 220,225-227
+  s_a0abc24586b3f5::t_294844c33f4670 203
+  s_a0abc24586b3f5::t_e5fafc3bc517c3 282-287
+  s_a0abc24586b3f5::t_4a1d88fdf596dd 179-184
+src/shared/generation/screwJunctionPlan.ts
+  s_a0abc24586b3f5::t_42ad8af9e08f68 193,204-205,209-215
+  s_a0abc24586b3f5::t_0f26f9df3159d5 51-58,64-65,67-69
+  s_a0abc24586b3f5::t_4642c629e5380b 85-86,92-93
+src/shared/generation/screwHolePlacement.test.ts
+  s_a0abc24586b3f5::t_44577cfed67c74 192-208
+src/features/generation/worker/generators/baseplateGenerator.scenario.junctionScrews.test.ts
+  s_a0abc24586b3f5::t_420c7e28c91a91 363-365
+  s_a0abc24586b3f5::t_4f9a705ec4edad 382
+  s_a0abc24586b3f5::t_cd21e62d15e74e 25-28
+  s_a0abc24586b3f5::t_b526d86d667a50 29
+  s_a0abc24586b3f5::t_abf1e01443f3ba 286-346,348-362,366-378,383-389
+  s_a0abc24586b3f5::t_5a97654b74195f 17
+  s_a0abc24586b3f5::t_36263cf816565d 379-381
+  s_a0abc24586b3f5::t_66c197267fd412 220,222-227,231-232,234
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8d43dc6cb4987bfe31c47969c549f75e6f24569b",
+  "prompts": {},
+  "sessions": {
+    "s_a0abc24586b3f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b7579fd7-35e1-4a1b-9013-f2ed376a9ae2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
