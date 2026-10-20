@@ -55,21 +55,21 @@ import { roundedRectPointsSelective } from './directMeshShapes';
 import { addPocketWalls, addOuterWalls } from './directMeshWalls';
 import { addPlateFace, addSolidBottomFace } from './directMeshFaces';
 import { addMagnetHoleAt, addMountMagnetHoleAt } from './directMeshMagnets';
-import { planMountMagnets } from './mountMagnetPlan';
+import { planMountMagnets } from '@/shared/generation/mountMagnetPlan';
 import { addScrewHoleAt } from './directMeshScrews';
 import {
   cellHostsAttachmentHoles,
   chamferFitsCell,
+  floorReliefReachesCorners,
   magnetPositionsForCell,
-} from './baseplateMagnets';
+} from '@/shared/generation/magnetPositions';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import {
   cellHoldsFloorScrew,
   planBaseplateScrewHoles,
   screwAwareHoleRadius,
   screwPlacementFor,
-} from './baseplateScrews';
-import { floorReliefReachesCorners } from './lightweightFloorCutter';
+} from '@/shared/generation/screwHolePlacement';
 import { addConnectorNub, addConnectorHole } from './directMeshConnectors';
 
 /**

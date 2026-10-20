@@ -19,7 +19,7 @@ import {
   resolveScrewHeadDiameter,
   screwHeadRecessDepth,
   type ScrewJunctionSite,
-} from '@/shared/generation/screwHolePlan';
+} from './screwHolePlan';
 import {
   BOX_CORNER_RADIUS,
   CLEARANCE,

@@ -60,8 +60,8 @@ import type { ProgressFn, CellInfo, SideMargins } from './generatorTypes';
 import {
   buildLightweightFloorCutters,
   buildPartialCellFloorCutters,
-  floorReliefReachesCorners,
 } from './lightweightFloorCutter';
+import { floorReliefReachesCorners } from '@/shared/generation/magnetPositions';
 import { slabWithPocketsCache } from './baseplateCaches';
 import { slabPocketsCacheKey } from './baseplateCacheKeys';
 import { sanitizeParams, tagOp, buildSlabProfile } from './baseplateSlab';
@@ -69,16 +69,16 @@ import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
 import { buildMagnetHoles, buildPartialCellMagnetHoles } from './baseplateMagnets';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
+import { buildScrewCutters } from './baseplateScrews';
 import {
-  buildScrewCutters,
   cellHoldsFloorScrew,
   planBaseplateScrewHoles,
   screwAwareHoleRadius,
   screwPlacementFor,
-} from './baseplateScrews';
-import { baseplateCellClassifier, plateCornerRadii } from './baseplateFrame';
+} from '@/shared/generation/screwHolePlacement';
+import { baseplateCellClassifier, plateCornerRadii } from '@/shared/generation/baseplateFrame';
 import { buildMountMagnetCutters } from './baseplateMountMagnets';
-import { planMountMagnets } from './mountMagnetPlan';
+import { planMountMagnets } from '@/shared/generation/mountMagnetPlan';
 import {
   buildConnectors,
   buildDovetailKey,

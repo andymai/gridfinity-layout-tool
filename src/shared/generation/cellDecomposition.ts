@@ -1,0 +1,459 @@
+/**
+ * Cell decomposition utilities for Gridfinity grid iteration.
+ *
+ * Decomposes grid dimensions into arrays of cell sizes and provides
+ * iteration helpers for traversing all cells with position tracking.
+ * Used by socket builders, feature builders, and baseplate generators.
+ */
+
+import { resolvePitch, type GridUnitInput } from './gridPitch';
+/** Cell position info for iteration */
+export interface CellInfo {
+  /** Cell size in grid units (1 or 0.5) */
+  readonly widthUnits: number;
+  readonly depthUnits: number;
+  /** Cell center position in mm (relative to bin center) */
+  readonly centerX: number;
+  readonly centerY: number;
+}
+
+const FRACTION_EPS = 1e-9;
+
+/**
+ * Options for {@link decomposeCells}.
+ */
+export interface DecomposeOptions {
+  /**
+   * Emit the trailing remainder at its exact fractional size instead of
+   * snapping it to a 0.5 half-cell. Used by over-tile baseplates and
+   * fractional-foot bins, where the edge cell fills an arbitrary leftover
+   * (e.g. a 1.7u axis decomposes to `[1, 0.7]` rather than `[1, 0.5]`).
+   */
+  readonly fractional?: boolean;
+  /**
+   * Minimum trailing-cell size, in grid units. In `fractional` mode a
+   * remainder smaller than this is dropped (no cell emitted) so the caller
+   * can leave that edge strip flat — the "drop foot / fall back to padding"
+   * sliver rule. Defaults to emitting any positive remainder.
+   */
+  readonly minFractionUnits?: number;
+}
+
+/**
+ * Decompose a grid dimension (in units) into an array of cell sizes (in units).
+ * Full cells are 1.0 unit; a trailing half-cell is 0.5 unit.
+ *
+ * Examples:
+ *   2.0 -> [1, 1]
+ *   1.5 -> [1, 0.5]
+ *   0.5 -> [0.5]
+ *   3.0 -> [1, 1, 1]
+ *
+ * With `fractional: true` the trailing remainder is emitted at its exact size
+ * (subject to `minFractionUnits`) instead of snapping to 0.5:
+ *   1.7 -> [1, 0.7]
+ *   4.3 -> [1, 1, 1, 1, 0.3]
+ *   2.05 with minFractionUnits 0.2 -> [1, 1]   (0.05 sliver dropped)
+ */
+export function decomposeCells(gridUnits: number, options: DecomposeOptions = {}): number[] {
+  if (options.fractional) {
+    const fullCells = Math.floor(gridUnits + FRACTION_EPS);
+    const remainder = gridUnits - fullCells;
+    const cells: number[] = Array<number>(fullCells).fill(1);
+    const minFraction = options.minFractionUnits ?? FRACTION_EPS;
+    if (remainder > FRACTION_EPS && remainder >= minFraction - FRACTION_EPS) {
+      cells.push(remainder);
+    }
+    return cells;
+  }
+  const fullCells = Math.floor(gridUnits);
+  const hasHalf = gridUnits - fullCells >= 0.5 - 1e-10;
+  const cells: number[] = Array<number>(fullCells).fill(1);
+  if (hasHalf) cells.push(0.5);
+  return cells;
+}
+
+/**
+ * Compute the mm-positions of inter-cell boundaries along an axis, relative to
+ * the piece center (axis spans `[-axisUnits*gridUnitMm/2, +axisUnits*gridUnitMm/2]`).
+ *
+ * When the fractional half-cell sits at the start, every full-cell boundary
+ * shifts by half a grid unit in the negative direction.
+ *
+ * Returns an empty array when the axis has only one cell (no interior boundaries).
+ */
+export function computeCellBoundariesMm(
+  axisUnits: number,
+  gridUnitMm: number,
+  fractionalEdge: 'start' | 'end' = 'end'
+): number[] {
+  const cells = decomposeCells(axisUnits);
+  if (fractionalEdge === 'start') cells.reverse();
+  const totalMm = axisUnits * gridUnitMm;
+  const offsets: number[] = [];
+  let pos = 0;
+  for (let i = 0; i < cells.length - 1; i++) {
+    pos += cells[i] * gridUnitMm;
+    offsets.push(pos - totalMm / 2);
+  }
+  return offsets;
+}
+
+/**
+ * Compute the mm-positions of cell centers along an axis, relative to the piece
+ * center (axis spans `[-axisUnits*gridUnitMm/2, +axisUnits*gridUnitMm/2]`).
+ *
+ * Mirrors {@link computeCellBoundariesMm} but returns one position per cell (its
+ * midpoint), so it is never empty for a non-zero axis. `fractionalEdge` places
+ * the half-cell at the start or end, shifting the full cells accordingly.
+ */
+export function computeCellCentersMm(
+  axisUnits: number,
+  gridUnitMm: number,
+  fractionalEdge: 'start' | 'end' = 'end'
+): number[] {
+  const cells = decomposeCells(axisUnits);
+  if (fractionalEdge === 'start') cells.reverse();
+  const totalMm = axisUnits * gridUnitMm;
+  const centers: number[] = [];
+  let pos = 0;
+  for (const cell of cells) {
+    const size = cell * gridUnitMm;
+    centers.push(pos + size / 2 - totalMm / 2);
+    pos += size;
+  }
+  return centers;
+}
+
+/**
+ * Decompose a grid dimension into all 0.5-unit cells (half sockets mode).
+ * Each 1-unit cell becomes two 0.5-unit cells; trailing half-cells stay 0.5.
+ *
+ * Examples:
+ *   2.0 -> [0.5, 0.5, 0.5, 0.5]
+ *   1.5 -> [0.5, 0.5, 0.5]
+ *   0.5 -> [0.5]
+ *   1.0 -> [0.5, 0.5]
+ */
+export function decomposeHalfCells(gridUnits: number): number[] {
+  const totalHalves = Math.round(gridUnits * 2);
+  return Array<number>(totalHalves).fill(0.5);
+}
+
+/**
+ * Decompose a grid dimension into a half cell at each end with full cells
+ * between them — the "outer edge" half-socket layout.
+ *
+ * The arithmetic is exact for any integer axis, because `0.5 + (N-1)·1 + 0.5`
+ * is `N`. That is the point of the layout: the feet fall on half-unit
+ * boundaries at the rim, so shifting the bin half a unit still lands every
+ * foot inside one baseplate pocket, from any rotation — the property a
+ * uniform full-cell base does not have. It costs far fewer feet than halving
+ * every cell.
+ *
+ * A non-integer axis has no palindromic split, so its leftover rides inside the
+ * middle run while both outer cells stay 0.5. Which side the leftover sits on
+ * is {@link forEachCell}'s existing `fractionalEdge` reversal — an integer axis
+ * comes out palindromic, so that reversal is a no-op there. An axis under one
+ * unit is already a single edge cell and is left to {@link decomposeCells}.
+ *
+ * Examples (fractional mode):
+ *   3.0 -> [0.5, 1, 1, 0.5]
+ *   2.0 -> [0.5, 1, 0.5]
+ *   1.0 -> [0.5, 0.5]
+ *   2.5 -> [0.5, 1, 0.5, 0.5]
+ *   1.7 -> [0.5, 0.7, 0.5]
+ */
+export function decomposeEdgeBandCells(
+  gridUnits: number,
+  options: DecomposeOptions = {}
+): number[] {
+  if (gridUnits < 1 - FRACTION_EPS) return decomposeCells(gridUnits, options);
+  return [0.5, ...decomposeCells(gridUnits - 1, options), 0.5];
+}
+
+/**
+ * Options for {@link forEachCell}.
+ */
+export interface ForEachCellOptions {
+  /** Decompose every cell into 0.5-unit sub-cells (bin half-sockets mode). */
+  readonly halfSockets?: boolean;
+  /**
+   * Decompose this axis into a 0.5-unit cell at both rims with full cells
+   * between them ({@link decomposeEdgeBandCells}) — the layout that seats when
+   * the bin sits half a unit off-grid on that axis. Per axis, because a bin can
+   * be half-offset on one and on-grid on the other. Ignored when
+   * {@link halfSockets} is set, which already halves everything.
+   */
+  readonly edgeBandX?: boolean;
+  readonly edgeBandY?: boolean;
+  /**
+   * Which side the fractional (half-unit) column sits on.
+   * `'end'` (default) = right/positive-X. `'start'` = left/negative-X.
+   */
+  readonly fractionalEdgeX?: 'start' | 'end';
+  /**
+   * Which side the fractional (half-unit) row sits on.
+   * `'end'` (default) = back/positive-Y. `'start'` = front/negative-Y.
+   */
+  readonly fractionalEdgeY?: 'start' | 'end';
+  /**
+   * Grid unit size in mm. Either a square scalar (default standard Gridfinity
+   * 42mm) or an explicit per-axis pitch `{ x, y }` for a non-square grid. `x`
+   * scales the width axis, `y` the depth axis.
+   */
+  readonly gridUnitMm?: GridUnitInput;
+  /**
+   * Emit exact fractional trailing cells instead of snapping to 0.5
+   * (over-tile baseplates, fractional-foot bins). Ignored when
+   * `halfSockets` is set. See {@link DecomposeOptions.fractional}.
+   */
+  readonly fractional?: boolean;
+  /**
+   * Minimum trailing-cell size in units; smaller remainders are dropped.
+   * Only consulted in `fractional` mode. See
+   * {@link DecomposeOptions.minFractionUnits}.
+   */
+  readonly minFractionUnits?: number;
+  /**
+   * Per-axis overrides for {@link minFractionUnits}. With a non-square pitch the
+   * same physical drop threshold (mm) maps to a different grid-unit count on
+   * each axis (`mm / pitchX` vs `mm / pitchY`), so callers pass both. Falls back
+   * to {@link minFractionUnits} when omitted.
+   */
+  readonly minFractionUnitsX?: number;
+  readonly minFractionUnitsY?: number;
+}
+
+/**
+ * Iterate over all cells in a grid, calling the callback with cell info.
+ * Encapsulates the common pattern of nested cell iteration with position tracking.
+ *
+ * When `halfSockets` is true, every cell is decomposed into 0.5-unit sub-cells,
+ * so a 1x1 bin yields a 2x2 grid of 0.5x0.5 sockets.
+ *
+ * `fractionalEdgeX` / `fractionalEdgeY` control which side the half-unit cell
+ * appears on. Default `'end'` places the half cell at the positive coordinate
+ * side; `'start'` places it at the negative side.
+ */
+export function forEachCell(
+  gridW: number,
+  gridD: number,
+  callback: (cell: CellInfo) => void,
+  optionsOrHalfSockets: ForEachCellOptions | boolean = false
+): void {
+  const opts: ForEachCellOptions =
+    typeof optionsOrHalfSockets === 'boolean'
+      ? { halfSockets: optionsOrHalfSockets }
+      : optionsOrHalfSockets;
+
+  const decompose = (
+    units: number,
+    minFractionUnits: number | undefined,
+    edgeBand: boolean | undefined
+  ): number[] => {
+    if (opts.halfSockets) return decomposeHalfCells(units);
+    const decomposeOpts = { fractional: opts.fractional, minFractionUnits };
+    return edgeBand
+      ? decomposeEdgeBandCells(units, decomposeOpts)
+      : decomposeCells(units, decomposeOpts);
+  };
+  const cellsW = decompose(gridW, opts.minFractionUnitsX ?? opts.minFractionUnits, opts.edgeBandX);
+  const cellsD = decompose(gridD, opts.minFractionUnitsY ?? opts.minFractionUnits, opts.edgeBandY);
+
+  // When fractionalEdge is 'start', reverse so the half cell is first (negative side)
+  if (opts.fractionalEdgeX === 'start') cellsW.reverse();
+  if (opts.fractionalEdgeY === 'start') cellsD.reverse();
+
+  // Width/columns scale by unitX, depth/rows by unitY. A scalar pitch makes
+  // unitX === unitY, reproducing the original square iteration exactly.
+  const { x: unitX, y: unitY } = resolvePitch(opts.gridUnitMm);
+  const totalW_mm = gridW * unitX;
+  const totalD_mm = gridD * unitY;
+
+  let xOffset = 0;
+  for (const cellW_units of cellsW) {
+    const centerX = xOffset + (cellW_units * unitX) / 2 - totalW_mm / 2;
+    let yOffset = 0;
+
+    for (const cellD_units of cellsD) {
+      const centerY = yOffset + (cellD_units * unitY) / 2 - totalD_mm / 2;
+
+      callback({
+        widthUnits: cellW_units,
+        depthUnits: cellD_units,
+        centerX,
+        centerY,
+      });
+
+      yOffset += cellD_units * unitY;
+    }
+    xOffset += cellW_units * unitX;
+  }
+}
+
+/** Per-side margin widths in mm around a grid (left/right = X, front/back = Y). */
+export interface SideMargins {
+  readonly left: number;
+  readonly right: number;
+  readonly front: number;
+  readonly back: number;
+}
+
+interface MarginAxisEntry {
+  readonly units: number;
+  /** Cell center in mm, origin-centered to match {@link forEachCell}. */
+  readonly center: number;
+  readonly margin: boolean;
+}
+
+/**
+ * Decompose one margin strip into edge cells, packed from the grid-adjacent edge
+ * outward. `innerEdge` is the mm-position of the strip's grid-adjacent edge and
+ * `dir` is the outward direction (-1 toward negative coords, +1 toward positive).
+ *
+ * Default (over-tile): the whole strip is one clipped cell at its exact size.
+ * `halfGrid`: pack true 0.5-unit functional half-cells from the grid edge first,
+ * then a sub-half-unit remainder as a clipped cell at the outer edge (subject to
+ * `minMm`). A strip narrower than `minMm` is dropped entirely (stays solid).
+ * `solidLeftover` (half-grid only) drops that remainder cell so the leftover
+ * stays solid plastic — keeping true 21mm cells visually distinct from the
+ * sub-cell margin.
+ */
+function marginStripEntries(
+  innerEdge: number,
+  sizeMm: number,
+  dir: -1 | 1,
+  unit: number,
+  minMm: number,
+  halfGrid: boolean,
+  solidLeftover: boolean
+): MarginAxisEntry[] {
+  if (sizeMm < minMm) return [];
+  if (!halfGrid) {
+    return [{ units: sizeMm / unit, center: innerEdge + (dir * sizeMm) / 2, margin: true }];
+  }
+  const halfMm = unit / 2;
+  const halfCount = Math.floor((sizeMm + FRACTION_EPS) / halfMm);
+  const entries: MarginAxisEntry[] = [];
+  for (let k = 0; k < halfCount; k++) {
+    entries.push({ units: 0.5, center: innerEdge + dir * (k + 0.5) * halfMm, margin: true });
+  }
+  const remainder = sizeMm - halfCount * halfMm;
+  if (!solidLeftover && remainder >= minMm - FRACTION_EPS) {
+    const center = innerEdge + dir * (halfCount * halfMm + remainder / 2);
+    entries.push({ units: remainder / unit, center, margin: true });
+  }
+  return entries;
+}
+
+function marginAxisEntries(
+  grid: number,
+  startMm: number,
+  endMm: number,
+  unit: number,
+  minMm: number,
+  halfGrid: boolean,
+  solidLeftover: boolean
+): MarginAxisEntry[] {
+  const totalNom = grid * unit;
+  const entries: MarginAxisEntry[] = [];
+  entries.push(
+    ...marginStripEntries(-totalNom / 2, startMm, -1, unit, minMm, halfGrid, solidLeftover)
+  );
+  let offset = 0;
+  for (const s of decomposeCells(grid)) {
+    entries.push({ units: s, center: offset + (s * unit) / 2 - totalNom / 2, margin: false });
+    offset += s * unit;
+  }
+  entries.push(...marginStripEntries(totalNom / 2, endMm, 1, unit, minMm, halfGrid, solidLeftover));
+  return entries;
+}
+
+/**
+ * Build the "frame" of clipped cells around a nominal grid — used to fill a
+ * margin (bin overhang region, or baseplate drawer-fit padding) with
+ * grid-aligned cells. Returns the 2D product of per-axis entries where at least
+ * one axis is a margin strip (edge strips subdivided per nominal cell, plus
+ * corners). Nominal×nominal cells are NOT included — the caller already has
+ * those. A margin narrower than `minStripMm` is dropped (left flat/solid).
+ *
+ * Cell centers are origin-centered to match {@link forEachCell}, so frame cells
+ * compose directly with the nominal grid.
+ *
+ * With `halfGrid`, each margin packs true 0.5-unit functional half-cells from the
+ * grid edge outward before the leftover (< half a unit) falls back to a clipped
+ * strip — so a wide margin reads as a half-grid border rather than one big clip.
+ * `solidLeftover` (half-grid only) drops that leftover strip so it stays solid.
+ */
+export function frameCells(
+  gridW: number,
+  gridD: number,
+  margins: SideMargins,
+  gridUnitMm: GridUnitInput,
+  minStripMm: number,
+  halfGrid = false,
+  solidLeftover = false
+): CellInfo[] {
+  // Left/right margins live on the X axis (unitX), front/back on Y (unitY).
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
+  const xs = marginAxisEntries(
+    gridW,
+    margins.left,
+    margins.right,
+    unitX,
+    minStripMm,
+    halfGrid,
+    solidLeftover
+  );
+  const ys = marginAxisEntries(
+    gridD,
+    margins.front,
+    margins.back,
+    unitY,
+    minStripMm,
+    halfGrid,
+    solidLeftover
+  );
+  const cells: CellInfo[] = [];
+  for (const x of xs) {
+    for (const y of ys) {
+      if (!x.margin && !y.margin) continue;
+      cells.push({
+        widthUnits: x.units,
+        depthUnits: y.units,
+        centerX: x.center,
+        centerY: y.center,
+      });
+    }
+  }
+  return cells;
+}
+
+/**
+ * How far (mm) {@link frameCells} pockets reach into a margin of width
+ * `paddingMm` — the part filled with cells rather than left as a dropped
+ * sub-threshold sliver. The leftover (`paddingMm - result`) is solid plastic at
+ * the margin's outer edge.
+ *
+ * Mirrors the drop rule in {@link frameCells}: over-tile fills the whole margin
+ * with one clip once it clears `minStripMm` (otherwise nothing); half-grid packs
+ * 0.5-unit cells from the grid edge first and keeps only a printable remainder
+ * (dropped when `solidLeftover` so the leftover stays solid —).
+ * Used by the direct-mesh draft to fill solid bands without capping pockets.
+ */
+export function marginPocketDepthMm(
+  paddingMm: number,
+  gridUnitMm: number,
+  minStripMm: number,
+  halfGrid: boolean,
+  solidLeftover = false
+): number {
+  if (paddingMm < FRACTION_EPS) return 0;
+  if (!halfGrid) return paddingMm >= minStripMm ? paddingMm : 0;
+  const halfMm = gridUnitMm / 2;
+  const halfCount = Math.floor((paddingMm + FRACTION_EPS) / halfMm);
+  const leftover = paddingMm - halfCount * halfMm;
+  const keptLeftover = !solidLeftover && leftover >= minStripMm - FRACTION_EPS ? leftover : 0;
+  return halfCount * halfMm + keptLeftover;
+}

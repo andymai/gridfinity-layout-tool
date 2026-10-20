@@ -24,7 +24,7 @@ import {
   resolveOutlineFrame,
 } from '@/shared/utils/outlineFrame';
 import { screwPadThicknessMm } from '@/shared/generation/screwHolePlan';
-import { pieceScrewsNeedFloor } from '@/shared/generation/screwPadPlan';
+import { pieceScrewsNeedFloor } from '@/shared/generation/screwHolePlacement';
 import { baseplateFloorDepthBeforeScrews } from '@/shared/printSettings/baseplateHeight';
 import { normalizeSplitOverride } from './splitOverride';
 import {

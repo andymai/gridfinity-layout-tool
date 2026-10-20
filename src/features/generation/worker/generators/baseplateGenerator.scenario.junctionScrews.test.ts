@@ -31,7 +31,7 @@ import {
 } from './__kernel-tests__/meshAssertions';
 import { seatDepth } from './__kernel-tests__/binSeating';
 import { LOW_PROFILE_BAND_CUT_MM, PLATE_PROFILE_HEIGHT, SOCKET_HEIGHT } from './generatorTypes';
-import { junctionScrewSeatMm } from './screwJunctionPlan';
+import { junctionScrewSeatMm } from '@/shared/generation/screwJunctionPlan';
 import type {
   buildBaseplateSolid as BuildBaseplateSolid,
   generateBaseplate as GenerateBaseplate,

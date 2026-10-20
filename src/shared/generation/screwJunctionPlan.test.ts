@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { mm } from '@/core/types';
 import type { ScrewHoleParams } from '@/core/types/baseplate';
-import { screwHeadRecessDepth } from '@/shared/generation/screwHolePlan';
+import { screwHeadRecessDepth } from './screwHolePlan';
 import {
   SCREW_JUNCTION_FOOT_CLEARANCE_MM,
   junctionPostDepthMm,

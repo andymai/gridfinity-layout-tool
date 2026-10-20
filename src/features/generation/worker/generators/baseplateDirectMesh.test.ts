@@ -13,8 +13,8 @@ import {
   resolveScrewHeadDiameter,
   screwPadThicknessMm,
 } from '@/shared/generation/screwHolePlan';
-import { resolveScrewHoles, screwFloorCandidates } from './baseplateScrews';
-import type { ResolvedScrewHole } from './baseplateScrews';
+import { resolveScrewHoles, screwFloorCandidates } from '@/shared/generation/screwHolePlacement';
+import type { ResolvedScrewHole } from '@/shared/generation/screwHolePlacement';
 import { initTestKernel } from '@/test/initTestKernel';
 
 // BREP generator requires OpenCascade WASM init

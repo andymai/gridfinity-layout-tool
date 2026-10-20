@@ -1,268 +1,22 @@
 /**
- * Mount-down screw hole geometry for the baseplate.
+ * Mount-down screw hole cutters for the baseplate: one template per site (and
+ * junction seat), translated to each position the same way magnets are.
  *
- * Splits into two halves so the draft mesh and the BREP build can share the
- * decisions without sharing a kernel:
- *   - {@link planBaseplateScrewHoles} and {@link resolveScrewHoles}: pure. Turn
- *     a piece's params into absolute XY positions, snapping each floor target to
- *     a real magnet position. No brepjs, so `baseplateDirectMesh` and the
- *     plate-level pad decision call them too.
- *   - {@link buildScrewCutters}: the BREP cutters, built as one template per
- *     site and translated to each position, the same way magnets are.
- *
- * The floor snap is why this lives beside `baseplateMagnets` rather than in
- * shared: it consumes `magnetPositionsForCell`, which is also what the magnets,
- * the lightweight pads and the bin base use. One source for those positions is
- * what keeps a screw concentric with its magnet instead of 0.3mm off it.
+ * Where the holes go is decided in `@/shared/generation/screwHolePlacement`,
+ * kernel-free, so the draft mesh and the plate-level pad decision on the main
+ * thread run the same planner this build does.
  */
 
 import { cylinder, drawCircle, unwrap, translate, fuse } from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
-import type { MagnetAnchor } from '@/core/types';
-import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import type { ScrewHoleParams } from '@/core/types/baseplate';
-import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import {
-  effectiveMarginBands,
-  nearestWithLean,
-  planPieceScrews,
   resolveScrewHeadDiameter,
   screwCutDepths,
-  screwSnapPreference,
-  type ScrewJunctionSite,
   type ScrewSite,
-  type ScrewSlot,
 } from '@/shared/generation/screwHolePlan';
-import { baseplateFloorDepthBeforeScrews } from '@/shared/printSettings/baseplateHeight';
-import {
-  COPLANAR_MARGIN,
-  forEachCell,
-  plateProfileHeightMm,
-  socketHeightMm,
-} from './generatorTypes';
-import type { ForEachCellOptions, CellInfo } from './generatorTypes';
-import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
-import { resolvePitch, type GridPitch, type GridUnitInput } from './gridPitch';
-import { baseplateCellClassifier, plateCornerRadii, plateFootprintMm } from './baseplateFrame';
-import { floorReliefReachesCorners } from './lightweightFloorCutter';
-import { screwJunctions } from './screwJunctionPlan';
-
-export interface ResolvedScrewHole {
-  readonly x: number;
-  readonly y: number;
-  readonly site: ScrewSite;
-  /** Head seat depth below the top face, junction holes only. */
-  readonly seatBelowTopMm?: number;
-}
-
-/**
- * Candidate floor positions for a piece: every magnet position on a full cell.
- *
- * Sized with the LARGEST cutter that will sit at the position, per
- * `magnetPositionsForCell`'s contract. A ø8 countersink is wider than a ø6.5
- * magnet, so passing the magnet radius alone would let the placement clamp a
- * position closer to a wall than the cone can actually fit.
- *
- * Cell eligibility comes from `cellHostsAttachmentHoles`, matching
- * `buildMagnetHoles`: a screw sits on the same pad a magnet would, so a cell too
- * small to hold one holds neither, and a corner over it snaps inward to the
- * nearest cell that does.
- */
-export function screwFloorCandidates(
-  gridW: number,
-  gridD: number,
-  holeRadius: number,
-  cellOpts: ForEachCellOptions & { gridUnitMm: GridUnitInput },
-  cellFilter?: (cell: CellInfo) => boolean,
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
-): Array<readonly [number, number]> {
-  const { x: pitchX, y: pitchY } = resolvePitch(cellOpts.gridUnitMm);
-  const out: Array<readonly [number, number]> = [];
-  forEachCell(
-    gridW,
-    gridD,
-    (cell) => {
-      if (!cellHostsAttachmentHoles(cell, holeRadius, pitchX, pitchY)) return;
-      if (cellFilter !== undefined && !cellFilter(cell)) return;
-      out.push(...magnetPositionsForCell(cell, holeRadius, pitchX, pitchY, anchor));
-    },
-    cellOpts
-  );
-  return out;
-}
-
-/**
- * Turn planned slots into absolute positions.
- *
- * A margin or junction slot already carries its exact centre. A floor slot
- * carries only an ideal target, and is snapped to the nearest candidate (ties
- * by {@link screwSnapPreference}): the single rule that stops each layer
- * inventing its own notion of "the corner cell".
- *
- * Candidates are consumed as they are taken. Without that, every anchor on a
- * piece small enough to offer one magnet position would snap to the SAME point
- * and stack coincident holes there; a slot with nothing left is dropped.
- */
-export function resolveScrewHoles(
-  slots: readonly ScrewSlot[],
-  candidates: ReadonlyArray<readonly [number, number]>
-): ResolvedScrewHole[] {
-  const available = [...candidates];
-  const holes: ResolvedScrewHole[] = [];
-
-  for (const slot of slots) {
-    if (slot.site === 'margin') {
-      holes.push({ x: slot.target[0], y: slot.target[1], site: 'margin' });
-      continue;
-    }
-    if (slot.site === 'junction') {
-      holes.push({
-        x: slot.target[0],
-        y: slot.target[1],
-        site: 'junction',
-        seatBelowTopMm: slot.seatBelowTopMm ?? 0,
-      });
-      continue;
-    }
-
-    const bestIndex = nearestWithLean(slot.target, screwSnapPreference(slot.anchor), available);
-    if (bestIndex < 0) continue;
-
-    const [x, y] = available[bestIndex];
-    available.splice(bestIndex, 1);
-    holes.push({ x, y, site: 'floor' });
-  }
-
-  return holes;
-}
-
-/** Everything a piece contributes to its own screw placement. */
-export interface ScrewPlacementInput {
-  /** Padded printed footprint of the piece in mm. */
-  readonly totalWidthMm: number;
-  readonly totalDepthMm: number;
-  /**
-   * The radii the rounding cut will actually use — `resolveCornerRadii`'s
-   * output, never the raw `params.cornerRadii` (absent in the linked mode, so
-   * the containment test would treat every uniform radius as square corners
-   * and site a margin screw in material the arc cuts away).
-   */
-  readonly resolvedCornerRadii: { tl: number; tr: number; bl: number; br: number };
-  /** Grid extent in units, which is what the floor candidate lattice spans. */
-  readonly gridW: number;
-  readonly gridD: number;
-  readonly pitch: GridPitch;
-  readonly cellOpts: ForEachCellOptions;
-  readonly magnetRadius: number;
-  readonly magnetAnchor?: MagnetAnchor;
-  /** Restricts floor candidates to the cells a shaped plate actually keeps. */
-  readonly cellFilter?: (cell: CellInfo) => boolean;
-  /** Junctions whose post holds the head; see {@link screwPlacementFor}. */
-  readonly junctions?: readonly ScrewJunctionSite[];
-}
-
-/**
- * Everything {@link planBaseplateScrewHoles} needs, derived from a piece's own
- * params. The BREP build, the draft mesh and the plate-level pad decision all
- * plan through this, so none can site a screw from inputs the others lack.
- *
- * Junctions are fit-checked at the height the plate has WITHOUT its screw pad,
- * so a padded plate sites every screw exactly where the pad decision assumed.
- * Their corner relief ignores floor screws: a cell holding one hosts magnet
- * pads, which is exactly when the relief stays clear of its corners.
- */
-export function screwPlacementFor(
-  screwParams: ScrewHoleParams,
-  params: ResolvedBaseplateParams
-): ScrewPlacementInput {
-  const pitch = { x: params.gridUnitMm, y: params.gridUnitMmY ?? params.gridUnitMm };
-  const cellOpts = {
-    fractionalEdgeX: params.fractionalEdgeX,
-    fractionalEdgeY: params.fractionalEdgeY,
-    gridUnitMm: pitch,
-  };
-  const { widthMm, depthMm } = plateFootprintMm(params);
-  const classify = baseplateCellClassifier(params);
-  const cellFilter =
-    params.outline !== undefined
-      ? (cell: CellInfo): boolean => classify(cell) === 'inside'
-      : undefined;
-  const profileHeight = plateProfileHeightMm(params.lowProfileBase);
-  const reliefRadius = screwAwareHoleRadius(params.magnetDiameter / 2, screwParams);
-  return {
-    totalWidthMm: widthMm,
-    totalDepthMm: depthMm,
-    resolvedCornerRadii: plateCornerRadii(params),
-    gridW: params.width,
-    gridD: params.depth,
-    pitch,
-    cellOpts,
-    magnetRadius: params.magnetDiameter / 2,
-    magnetAnchor: params.magnetAnchor,
-    cellFilter,
-    junctions: screwJunctions(
-      screwParams,
-      params.width,
-      params.depth,
-      profileHeight + baseplateFloorDepthBeforeScrews(params),
-      profileHeight,
-      socketHeightMm(params.lowProfileBase),
-      cellOpts,
-      cellFilter,
-      (cell) => floorReliefReachesCorners(params, cell, reliefRadius, pitch.x, pitch.y, () => false)
-    ),
-  };
-}
-
-/**
- * Plan and resolve a piece's screw holes.
- *
- * The BREP build and the direct-mesh draft both go through here so they cannot
- * put a hole in different places for the same plate.
- *
- * `floorPadProvisioned` is always true: `buildFullParams` provisions the pad
- * whenever any piece of the plate has a screw that falls back to the floor, so a
- * floor site always has material to cut into. A piece may not second-guess
- * that. Pieces of one plate share a slab height, and one that decided for itself
- * would cut screws into a slab the others never grew.
- */
-export function planBaseplateScrewHoles(
-  screwParams: ScrewHoleParams,
-  params: ResolvedBaseplateParams,
-  input: ScrewPlacementInput
-): ResolvedScrewHole[] {
-  return resolveScrewHoles(
-    planPieceScrews(screwParams, {
-      widthMm: input.totalWidthMm,
-      depthMm: input.totalDepthMm,
-      bands: effectiveMarginBands(params),
-      cornerRadii: input.resolvedCornerRadii,
-      junctions: input.junctions,
-      floorPadProvisioned: true,
-    }),
-    screwFloorCandidates(
-      input.gridW,
-      input.gridD,
-      screwAwareHoleRadius(input.magnetRadius, screwParams),
-      { ...input.cellOpts, gridUnitMm: input.pitch },
-      input.cellFilter,
-      input.magnetAnchor
-    )
-  );
-}
-
-/**
- * Whether any of a piece's screws falls back to the pocket floor, which is what
- * obliges the whole plate to carry the pad. Plans exactly as the build does, so
- * the pad is provisioned for precisely the screws that use it.
- */
-export function pieceScrewsNeedFloor(params: ResolvedBaseplateParams): boolean {
-  const screwParams = params.screwHoles;
-  if (screwParams?.enabled !== true) return false;
-  return planBaseplateScrewHoles(screwParams, params, screwPlacementFor(screwParams, params)).some(
-    (hole) => hole.site === 'floor'
-  );
-}
+import type { ResolvedScrewHole } from '@/shared/generation/screwHolePlacement';
+import { COPLANAR_MARGIN } from './generatorTypes';
 
 /**
  * One cutter template for a site, centred on the origin in XY.
@@ -306,7 +60,8 @@ function buildScrewTemplate(
   // would loft between coincident sections and a counterbore would be a pocket
   // narrower than the hole through it. Both kernels happen to tolerate the
   // degenerate loft today, which is not something to depend on. Reachable from
-  // the UI, where the shaft tops out at the countersink head's default width.
+  // the UI, where the shaft tops out at 8mm, the width an unset countersink
+  // head resolves to.
   if (headRadius <= shaftRadius || recessDepth <= 0) {
     return shaft;
   }
@@ -379,37 +134,4 @@ export function buildScrewCutters(
   }
 
   return cutters;
-}
-
-/** True when a floor-sited screw lands inside this cell, so it keeps a floor. */
-export function cellHoldsFloorScrew(
-  holes: readonly ResolvedScrewHole[],
-  cell: CellInfo,
-  pitch: GridPitch
-): boolean {
-  const halfW = (cell.widthUnits * pitch.x) / 2;
-  const halfD = (cell.depthUnits * pitch.y) / 2;
-  return holes.some(
-    (h) =>
-      h.site === 'floor' &&
-      Math.abs(h.x - cell.centerX) <= halfW &&
-      Math.abs(h.y - cell.centerY) <= halfD
-  );
-}
-
-/**
- * Largest cutter radius that will sit at a magnet position once screws are on.
- *
- * The lightweight floor cutter sizes each kept pad from the radius it is handed,
- * so a ø8 countersink concentric with a ø6.5 magnet would otherwise have its
- * cone breach the pad edge into the cross cutout. Callers pass this in place of
- * the bare magnet radius whenever a plate carries both.
- */
-export function screwAwareHoleRadius(
-  magnetRadius: number,
-  screwParams: ScrewHoleParams | undefined
-): number {
-  if (screwParams === undefined || !screwParams.enabled) return magnetRadius;
-  const headRadius = resolveScrewHeadDiameter(screwParams.headStyle, screwParams.headDiameter) / 2;
-  return Math.max(magnetRadius, headRadius);
 }

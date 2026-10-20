@@ -1,7 +1,7 @@
 import type { StoredBaseplateParams } from '@/core/types';
 import { baseplateFloorDepthBeforeScrews } from '@/shared/printSettings/baseplateHeight';
 import { plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
-import { maxMountMagnetDepthMm } from '@/shared/generation/mountMagnetFit';
+import { maxMountMagnetDepthMm } from '@/shared/generation/mountMagnetPlan';
 
 /**
  * Deepest mount-magnet hole the plate's junctions hold at the stored diameter.

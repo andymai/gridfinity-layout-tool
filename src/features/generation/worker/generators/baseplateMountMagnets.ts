@@ -1,13 +1,13 @@
 /**
  * BREP cutters for underside mount magnets. Placement lives in
- * `mountMagnetPlan.ts`, which the direct-mesh draft shares.
+ * `@/shared/generation/mountMagnetPlan`, which the direct-mesh draft shares.
  */
 
 import { translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
+import type { MountMagnetHole } from '@/shared/generation/mountMagnetPlan';
 import { COPLANAR_MARGIN } from './generatorConstants';
 import { buildMagnetHoleCutter } from './magnetHoleCutter';
-import type { MountMagnetHole } from './mountMagnetPlan';
 
 /**
  * One blind hole per position, opening on the underside. Z follows the BREP

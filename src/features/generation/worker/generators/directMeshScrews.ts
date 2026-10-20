@@ -26,8 +26,8 @@ import { resolveScrewHeadDiameter, screwCutDepths } from '@/shared/generation/sc
 import type { MeshBuilder } from './directMeshBuilder';
 import { CANCEL_EPSILON, CIRCLE_SEGMENTS } from './directMeshBuilder';
 import { circlePoints } from './directMeshShapes';
-import type { ResolvedScrewHole } from './baseplateScrews';
-import { junctionPostDepthMm } from './screwJunctionPlan';
+import type { ResolvedScrewHole } from '@/shared/generation/screwHolePlacement';
+import { junctionPostDepthMm } from '@/shared/generation/screwJunctionPlan';
 
 type UnitCircle = ReadonlyArray<readonly [number, number]>;
 

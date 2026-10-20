@@ -16,7 +16,7 @@
 
 import type { MountMagnetParams } from '@/core/types/baseplate';
 import { MOUNT_MAGNETS_PER_PIECE_DEFAULT } from '@/core/baseplateDefaults';
-import { MAGNET_CHAMFER_MM } from '@/shared/generation/magnetHoleStyle';
+import { MAGNET_CHAMFER_MM } from './magnetHoleStyle';
 import {
   COPLANAR_MARGIN,
   CORNER_RADIUS,

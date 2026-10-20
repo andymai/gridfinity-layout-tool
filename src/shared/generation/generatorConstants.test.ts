@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { safeSectionRect, capSectionRadius } from './generatorConstants';
-import { MIN_ARC_RADIUS } from './maskPolygon';
+import { MIN_ARC_RADIUS } from '@/features/generation/worker/generators/maskPolygon';
 
 /**
  * The invariant both helpers exist for: brepjs sketches each corner arc tangent
