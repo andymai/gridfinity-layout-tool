@@ -55,7 +55,6 @@ export function junctionBoreRadius(params: ScrewHoleParams): number {
   return headRadius > shaftRadius && screwHeadRecessDepth(params) > 0 ? headRadius : shaftRadius;
 }
 
-/** The bores of a plate's junction screws. */
 export function junctionBores(
   holes: readonly ResolvedScrewHole[],
   params: ScrewHoleParams | undefined

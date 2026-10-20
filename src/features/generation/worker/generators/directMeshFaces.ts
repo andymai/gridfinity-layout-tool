@@ -110,7 +110,6 @@ export function addPlateFace(
   }
 }
 
-/** The bore centred on a cell corner, if one is. */
 function boreAt(bores: readonly JunctionBore[], x: number, y: number): JunctionBore | undefined {
   return bores.find((b) => Math.abs(b.x - x) < 1e-6 && Math.abs(b.y - y) < 1e-6);
 }
