@@ -1,0 +1,26 @@
+src/shared/generation/screwJunctionPlan.ts
+  s_a0abc24586b3f5::t_db47c638086cf5 193-195
+  s_a0abc24586b3f5::t_ac750b5c695562 216
+src/features/generation/worker/generators/baseplateGenerator.scenario.junctionScrews.test.ts
+  s_a0abc24586b3f5::t_1d42cd659840cf 347-350,355,361,367-374,377-397,399-400
+  s_a0abc24586b3f5::t_0d8a67491c3dd5 351-354,356-360,362-366
+  s_a0abc24586b3f5::t_55496dd4e33220 375-376,398
+src/shared/generation/screwJunctionPlan.test.ts
+  s_a0abc24586b3f5::t_068fd1f1931571 203-217
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "82104dfc4dc1dd6845842ff4afd223c38552bdce",
+  "prompts": {},
+  "sessions": {
+    "s_a0abc24586b3f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b7579fd7-35e1-4a1b-9013-f2ed376a9ae2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
