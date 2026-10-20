@@ -1,0 +1,47 @@
+src/features/generation/worker/generators/hingeBarrel.test.ts
+  s_fbd258b587d61b::t_26f419687d238e 1-70,72-92,98-120,122-132,138-149,155-171,177-213,215-216,218,224-229,231-233,235-245,251-252
+  s_fbd258b587d61b::t_d747824de85a10 214,217,219-223
+  s_fbd258b587d61b::t_9faf48795c9edf 230,234
+  s_fbd258b587d61b::t_1daf8803719f4f 121
+  s_fbd258b587d61b::t_f1d25925e7306f 172-176
+  s_fbd258b587d61b::t_ac2feba0c54763 71
+  s_fbd258b587d61b::t_0671cf8b587fdf 150-154
+  s_fbd258b587d61b::t_f74f67b15d7130 133-137
+  s_fbd258b587d61b::t_7b8322f7854685 93-97
+  s_fbd258b587d61b::t_0e3318c2567ba0 246-250
+src/features/generation/worker/generators/pipeline/stages/lidHingeStage.ts
+  s_fbd258b587d61b::t_0ad645811cd0ed 95
+src/features/generation/worker/generators/hingeBarrel.ts
+  s_fbd258b587d61b::t_8d1f5a33d24ab2 61-66
+  s_fbd258b587d61b::t_2c16851db4e393 107-109
+  s_fbd258b587d61b::t_13188700ac5ca9 128
+src/features/generation/worker/generators/lidInputs.ts
+  s_fbd258b587d61b::t_4c95f50f0badd5 428
+  s_fbd258b587d61b::t_a92f511ad40ce8 410-427,429-433
+src/features/generation/worker/generators/lidBuilder.ts
+  s_fbd258b587d61b::t_9e3c8a051742df 107-109
+  s_fbd258b587d61b::t_b748773ed12445 34
+  s_fbd258b587d61b::t_39ec6c2da26899 222-226,237
+src/shared/generation/meshPersistence.ts
+  s_fbd258b587d61b::t_905116fa622ca8 87
+  s_fbd258b587d61b::t_a00954aa126e23 46-47
+src/features/generation/worker/generators/lidOrchestrator.ts
+  s_fbd258b587d61b::t_18ab21fc3b6c1b 20
+  s_fbd258b587d61b::t_2127b075a195f6 15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "38bf3827d76265ec7904c423edbcba8b4d7ab19d",
+  "prompts": {},
+  "sessions": {
+    "s_fbd258b587d61b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3feec13e-9088-4414-b8ea-fe1a58a350f6",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
