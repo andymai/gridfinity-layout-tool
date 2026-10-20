@@ -176,10 +176,12 @@ export function screwAwareHoleRadius(
  * params. The BREP build, the draft mesh and the plate-level pad decision all
  * plan through this, so none can site a screw from inputs the others lack.
  *
- * Junctions are fit-checked at the height the plate has WITHOUT its screw pad,
- * so a padded plate sites every screw exactly where the pad decision assumed.
- * Their corner relief ignores floor screws: a cell holding one hosts magnet
- * pads, which is exactly when the relief stays clear of its corners.
+ * Junctions are fit-checked at the height the plate has WITHOUT its screw pad.
+ * A pad under pockets with no floor of their own leaves the feet resting on the
+ * tapers, lower than the drawer would hold them, so the heads seat lower; the
+ * pad decision plans unpadded, where the drawer stops the feet. Their corner
+ * relief ignores floor screws: a cell holding one hosts magnet pads, which is
+ * exactly when the relief stays clear of its corners.
  */
 export function screwPlacementFor(
   screwParams: ScrewHoleParams,
@@ -198,6 +200,7 @@ export function screwPlacementFor(
       ? (cell: CellInfo): boolean => classify(cell) === 'inside'
       : undefined;
   const profileHeight = plateProfileHeightMm(params.lowProfileBase);
+  const floorBeforeScrews = baseplateFloorDepthBeforeScrews(params);
   const reliefRadius = screwAwareHoleRadius(params.magnetDiameter / 2, screwParams);
   return {
     totalWidthMm: widthMm,
@@ -214,12 +217,14 @@ export function screwPlacementFor(
       screwParams,
       params.width,
       params.depth,
-      profileHeight + baseplateFloorDepthBeforeScrews(params),
+      profileHeight + floorBeforeScrews,
       profileHeight,
       socketHeightMm(params.lowProfileBase),
       cellOpts,
       cellFilter,
-      (cell) => floorReliefReachesCorners(params, cell, reliefRadius, pitch.x, pitch.y, () => false)
+      (cell) =>
+        floorReliefReachesCorners(params, cell, reliefRadius, pitch.x, pitch.y, () => false),
+      (params.screwPadThicknessMm ?? 0) > 0 && floorBeforeScrews <= 0
     ),
   };
 }
@@ -274,9 +279,12 @@ export function pieceScrewsNeedPad(params: ResolvedBaseplateParams): boolean {
     plateProfileHeightMm(params.lowProfileBase) + baseplateFloorDepthBeforeScrews(params);
   const marginRetained =
     unpaddedHeight - screwHeadRecessDepth(screwParams) >= SCREW_PAD_MIN_RETAIN_MM - 1e-9;
-  return planBaseplateScrewHoles(screwParams, params, screwPlacementFor(screwParams, params)).some(
-    (hole) => hole.site === 'floor' || (hole.site === 'margin' && !marginRetained)
-  );
+  const unpadded = { ...params, screwPadThicknessMm: 0 };
+  return planBaseplateScrewHoles(
+    screwParams,
+    unpadded,
+    screwPlacementFor(screwParams, unpadded)
+  ).some((hole) => hole.site === 'floor' || (hole.site === 'margin' && !marginRetained));
 }
 
 /** True when a floor-sited screw lands inside this cell, so it keeps a floor. */

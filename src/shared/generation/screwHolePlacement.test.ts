@@ -189,6 +189,23 @@ describe('planBaseplateScrewHoles through screwPlacementFor', () => {
   it('gives a 1xN piece floor screws: it has no crossing', () => {
     expect(holesOf(plate({ width: 1 })).every((h) => h.site === 'floor')).toBe(true);
   });
+
+  const seatsOf = (params: ResolvedBaseplateParams): Array<number | undefined> =>
+    holesOf(params).map((h) => h.seatBelowTopMm);
+
+  it('seats the heads 0.35mm lower over a pad, where through-cut pockets drop the feet onto the tapers', () => {
+    const stock = seatsOf(plate());
+    const overPad = seatsOf(plate({ screwPadThicknessMm: 2.1 }));
+    expect(overPad).toHaveLength(4);
+    overPad.forEach((seat, i) => expect(seat).toBeCloseTo((stock[i] ?? NaN) + 0.35, 3));
+  });
+
+  it('keeps the seat over a pad when every pocket has a floor to land on', () => {
+    const magnets = { magnetHoles: true };
+    expect(seatsOf(plate({ ...magnets, screwPadThicknessMm: 2.1 }))).toEqual(
+      seatsOf(plate(magnets))
+    );
+  });
 });
 
 describe('pieceScrewsNeedPad', () => {

@@ -10,12 +10,15 @@ import {
   screwJunctions,
   seatedFootDistanceMm,
 } from './screwJunctionPlan';
-import { junctionClearanceMm } from './mountMagnetPlan';
+import { junctionClearanceMm, profileInsetAt } from './mountMagnetPlan';
 import {
+  CLEARANCE,
   LOW_PROFILE_BAND_CUT_MM,
   PLATE_PROFILE_HEIGHT,
   SOCKET_HEIGHT,
   MAGNET_FLOOR,
+  footProfileFor,
+  pocketProfileFor,
 } from './generatorConstants';
 
 const STANDARD = PLATE_PROFILE_HEIGHT;
@@ -57,6 +60,34 @@ describe('seatedFootDistanceMm', () => {
   it('is absent below the pocket profile', () => {
     expect(seatedFootDistanceMm(STANDARD + 0.5, STANDARD, STANDARD_FOOT)).toBe(Infinity);
   });
+
+  it('rests a foot with nothing under it on the tapers, CLEARANCE/2 below the top face', () => {
+    for (const [plate, foot] of [
+      [STANDARD, STANDARD_FOOT],
+      [LOW, LOW_FOOT],
+    ]) {
+      const gapAt = (rise: number): number => {
+        let gap = Infinity;
+        for (let d = 0; d <= plate; d += 0.01) {
+          if (d + rise < 0 || d + rise > foot) continue;
+          const footInset = CLEARANCE / 2 + profileInsetAt(footProfileFor(foot), d + rise);
+          gap = Math.min(gap, footInset - profileInsetAt(pocketProfileFor(plate), d));
+        }
+        return gap;
+      };
+      expect(gapAt(-CLEARANCE / 2)).toBeCloseTo(0, 6);
+      expect(gapAt(-CLEARANCE / 2 - 0.01)).toBeLessThan(0);
+    }
+  });
+
+  it('brings a foot resting on the tapers 0.35mm closer at every depth', () => {
+    for (let d = 0.5; d <= 4; d += 0.25) {
+      expect(seatedFootDistanceMm(d, STANDARD, STANDARD_FOOT, undefined, true)).toBeCloseTo(
+        seatedFootDistanceMm(d - 0.35, STANDARD, STANDARD_FOOT),
+        6
+      );
+    }
+  });
 });
 
 describe('junctionScrewSeatMm', () => {
@@ -81,6 +112,14 @@ describe('junctionScrewSeatMm', () => {
       const headRadius = (params.headDiameter ?? 5.5) / 2;
       expect(junctionClearanceMm(seat, STANDARD)).toBeGreaterThanOrEqual(headRadius - 0.1 - 1e-9);
     }
+  });
+
+  it('seats an M3 flat head 0.35mm lower where the feet rest on the tapers', () => {
+    const seat = junctionScrewSeatMm(M3_FLAT, STANDARD, STANDARD_FOOT, undefined, true);
+    expect(seat).toBeCloseTo(1.594, 3);
+    expect(
+      seatedFootDistanceMm(seat ?? 0, STANDARD, STANDARD_FOOT, undefined, true)
+    ).toBeGreaterThanOrEqual(3 + SCREW_JUNCTION_FOOT_CLEARANCE_MM - 1e-9);
   });
 
   it('has no seat for a head wider than the foot ever recedes', () => {

@@ -14,6 +14,7 @@ import { cylinder, drawCircle, intersect, measureVolume, translate } from 'brepj
 import type { Shape3D, Sketch } from 'brepjs';
 import { isOk } from '@/core/result';
 import { mm } from '@/core/types';
+import { gridUnits } from '@gridfinity/branded-types';
 import type { ScrewHoleParams, StoredBaseplateParams } from '@/core/types/baseplate';
 import type { BinParams, ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MeshData } from '../../bridge/types';
@@ -21,6 +22,11 @@ import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { defaultScrewHeadDiameter, screwHeadRecessDepth } from '@/shared/generation/screwHolePlan';
 import { buildFullParams } from '@/features/baseplate/utils/buildFullParams';
+import {
+  computeBaseplateTiling,
+  pieceToBaseplateParams,
+} from '@/features/baseplate/utils/splitPlanner';
+import { planBaseplateScrewHoles, screwPlacementFor } from '@/shared/generation/screwHolePlacement';
 import { initTestKernel } from '@/test/initTestKernel';
 import {
   assertStructurallyValid,
@@ -206,42 +212,26 @@ describe('mount-down screws at the pocket junctions', () => {
     const params = plate();
     const plateMesh = generateBaseplate(params, NO_OP, true);
     const bin = generateBin({ ...DEFAULT_BIN_PARAMS, width: 1, depth: 1, height: 2 });
-    const binBottom = boundingBox(bin.vertices).minZ;
     // The bin reaches the drawer the frame-only plate stands on, so that is
     // where it rests; mated rather than assumed.
     expect(seatDepth(bin, plateMesh, { dx: -42, dy: -42 }).mm).toBeGreaterThanOrEqual(
       PLATE_PROFILE_HEIGHT - 0.05
     );
-    const topZ = boundingBox(plateMesh.vertices).maxZ;
-    const headTop = topZ - SEAT;
+    const bb = boundingBox(plateMesh.vertices);
 
-    let footOverHead = 0;
-    let closestAboveHead = Infinity;
-    let tooHighASeatCollides = false;
-    for (const [cx, cy] of [
-      [-42, -42],
-      [0, -42],
-      [-42, 0],
-      [0, 0],
-    ]) {
-      for (let dx = -HEAD_RADIUS; dx <= HEAD_RADIUS; dx += 0.25) {
-        for (let dy = -HEAD_RADIUS; dy <= HEAD_RADIUS; dy += 0.25) {
-          if (Math.hypot(dx, dy) > HEAD_RADIUS) continue;
-          const crossings = columnCrossings(bin, -21 + dx + 0.013 - cx, -21 + dy + 0.017 - cy);
-          if (crossings.length === 0) continue;
-          footOverHead++;
-          const footZ = crossings[0] - binBottom;
-          closestAboveHead = Math.min(closestAboveHead, footZ - headTop);
-          if (footZ < topZ - (SEAT - 0.5)) tooHighASeatCollides = true;
-        }
-      }
+    let columns = 0;
+    let closest = Infinity;
+    for (const [cx, cy] of junctionPockets(-21, -21)) {
+      const over = footOverHead(bin, -21, -21, cx, cy, bb.minZ, bb.maxZ - SEAT);
+      columns += over.columns;
+      closest = Math.min(closest, over.closest);
     }
     // The foot's rounded corner overhangs the head in plan, so the clearance
     // is real and not a column that simply misses the bin.
-    expect(footOverHead).toBeGreaterThan(20);
-    expect(closestAboveHead).toBeGreaterThanOrEqual(-0.01);
+    expect(columns).toBeGreaterThan(20);
+    expect(closest).toBeGreaterThanOrEqual(-0.01);
     // A head seated 0.5mm higher would sit inside the foot: the probe can fail.
-    expect(tooHighASeatCollides).toBe(true);
+    expect(closest).toBeLessThan(0.5);
   }, 120_000);
 
   it('gives the screws the corner junctions and the mount magnets the rest', () => {
@@ -293,4 +283,107 @@ describe('mount-down screws at the pocket junctions', () => {
       expect(verticalSolidSpans(mesh, x + 0.37, y + 0.21).length).toBeGreaterThan(0);
     }
   });
+
+  it('keeps a bin clear of the head where a padded through-cut pocket lets it sink', () => {
+    // The 1x5 strip of a 5 + 1 split has no crossing, so its floor screws pad
+    // the whole plate, while the 5x5 piece's pockets stay through-cut over air.
+    const whole = buildFullParams(
+      {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        screwHoles: NEW_SCREWS,
+        splitOverride: { cols: [5, 1].map(gridUnits), rows: [5].map(gridUnits) },
+      },
+      6,
+      5,
+      42,
+      'end',
+      'end',
+      0.4,
+      undefined,
+      undefined,
+      42,
+      0,
+      0,
+      false,
+      { widthMm: 256, depthMm: 256 }
+    );
+    expect(whole.screwPadThicknessMm ?? 0).toBeGreaterThan(0);
+    const params = computeBaseplateTiling(whole, 256, 256)
+      .pieces.map((piece) => pieceToBaseplateParams(piece, whole))
+      .find((piece) => piece.width === 5);
+    if (params === undefined) throw new Error('no 5x5 piece');
+    const junctions = planBaseplateScrewHoles(
+      NEW_SCREWS,
+      params,
+      screwPlacementFor(NEW_SCREWS, params)
+    ).filter((hole) => hole.site === 'junction');
+    expect(junctions).toHaveLength(4);
+
+    const mesh = generateBaseplate(params, NO_OP, true);
+    const bb = boundingBox(mesh.vertices);
+    const bin = generateBin({ ...DEFAULT_BIN_PARAMS, width: 1, depth: 1, height: 2 });
+    let closest = Infinity;
+    for (const { x: jx, y: jy, seatBelowTopMm } of junctions) {
+      expect(verticalSolidSpans(mesh, jx + 0.37, jy + 0.21)).toEqual([]);
+      for (const [cx, cy] of junctionPockets(jx, jy)) {
+        const rest = seatDepth(bin, mesh, { dx: cx, dy: cy }).mm;
+        // Mated, not assumed: the foot hangs on the tapers above the drawer.
+        expect(rest).toBeLessThan(bb.maxZ - bb.minZ - 1);
+        const over = footOverHead(
+          bin,
+          jx,
+          jy,
+          cx,
+          cy,
+          bb.maxZ - rest,
+          bb.maxZ - (seatBelowTopMm ?? 0)
+        );
+        expect(over.columns).toBeGreaterThan(5);
+        closest = Math.min(closest, over.closest);
+      }
+    }
+    expect(closest).toBeGreaterThanOrEqual(-0.01);
+  }, 240_000);
 });
+
+/** Centres of the four pockets around a junction. */
+function junctionPockets(jx: number, jy: number): Array<readonly [number, number]> {
+  return [
+    [jx - 21, jy - 21],
+    [jx + 21, jy - 21],
+    [jx - 21, jy + 21],
+    [jx + 21, jy + 21],
+  ];
+}
+
+/**
+ * How far a bin seated in the pocket centred at `(cx, cy)` stays above a
+ * junction head's top face, over every column of the head's disc that the foot
+ * covers. Negative means the foot reaches into the head.
+ *
+ * Sampled on rings out to the rim itself: the foot comes closest along the
+ * diagonal, where a square grid's outermost point falls short of the rim.
+ */
+function footOverHead(
+  bin: MeshData,
+  jx: number,
+  jy: number,
+  cx: number,
+  cy: number,
+  binUndersideZ: number,
+  headTopZ: number
+): { readonly columns: number; readonly closest: number } {
+  const binBottom = boundingBox(bin.vertices).minZ;
+  let columns = 0;
+  let closest = Infinity;
+  for (let r = 0.25; r <= HEAD_RADIUS + 1e-9; r += 0.25) {
+    for (let deg = 0; deg < 360; deg += 2.5) {
+      const a = (deg * Math.PI) / 180 + 0.013;
+      const crossings = columnCrossings(bin, jx + r * Math.cos(a) - cx, jy + r * Math.sin(a) - cy);
+      if (crossings.length === 0) continue;
+      columns++;
+      closest = Math.min(closest, binUndersideZ + crossings[0] - binBottom - headTopZ);
+    }
+  }
+  return { columns, closest };
+}

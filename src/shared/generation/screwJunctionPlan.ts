@@ -48,22 +48,25 @@ export const SCREW_JUNCTION_FOOT_CLEARANCE_MM = CLEARANCE / 2;
  * Distance from a junction to a bin foot seated in one of its four pockets, at
  * `depthBelowTop` below the plate's top face. Infinity below the foot.
  *
- * The foot lands on the pocket floor, so its top stands `socketHeight -
- * profileHeight` above the plate's top face. Its sections are `cell - CLEARANCE`
- * inset by the foot profile, rounded about the same arc centre as the pocket,
- * `CLEARANCE / 2 + footRadius` in from the cell edges.
+ * A foot that lands on the pocket floor, or on the drawer under an unpadded
+ * through-cut pocket, stands `socketHeight - profileHeight` above the plate's
+ * top face. `feetOnTapers` is a through-cut pocket over a screw pad, with
+ * nothing under the foot: it settles until the two upper tapers, the same 45°
+ * chamfer, touch, which leaves its top `CLEARANCE / 2` BELOW the top face.
+ * Its sections are `cell - CLEARANCE` inset by the foot profile, rounded about
+ * the same arc centre as the pocket, `CLEARANCE / 2 + footRadius` in from the
+ * cell edges.
  */
 export function seatedFootDistanceMm(
   depthBelowTop: number,
   profileHeight: number,
   socketHeight: number,
-  pocketRadius: number = CORNER_RADIUS
+  pocketRadius: number = CORNER_RADIUS,
+  feetOnTapers: boolean = false
 ): number {
-  if (depthBelowTop > profileHeight) return Number.POSITIVE_INFINITY;
-  const footInset = profileInsetAt(
-    footProfileFor(socketHeight),
-    depthBelowTop + socketHeight - profileHeight
-  );
+  const footRise = feetOnTapers ? -CLEARANCE / 2 : socketHeight - profileHeight;
+  if (depthBelowTop + footRise > socketHeight) return Number.POSITIVE_INFINITY;
+  const footInset = profileInsetAt(footProfileFor(socketHeight), depthBelowTop + footRise);
   const footRadius = Math.min(BOX_CORNER_RADIUS, pocketRadius);
   return cornerDistance(CLEARANCE / 2 + footInset, CLEARANCE / 2 + footRadius);
 }
@@ -79,13 +82,15 @@ export function junctionScrewSeatMm(
   params: ScrewHoleParams,
   profileHeight: number,
   socketHeight: number,
-  pocketRadius: number = CORNER_RADIUS
+  pocketRadius: number = CORNER_RADIUS,
+  feetOnTapers: boolean = false
 ): number | undefined {
   const need =
     resolveScrewHeadDiameter(params.headStyle, params.headDiameter) / 2 +
     SCREW_JUNCTION_FOOT_CLEARANCE_MM;
   const clears = (depth: number): boolean =>
-    seatedFootDistanceMm(depth, profileHeight, socketHeight, pocketRadius) >= need - 1e-9;
+    seatedFootDistanceMm(depth, profileHeight, socketHeight, pocketRadius, feetOnTapers) >=
+    need - 1e-9;
   if (clears(0)) return 0;
   if (!clears(profileHeight)) return undefined;
   let lo = 0;
@@ -185,6 +190,7 @@ export function junctionScrewFits(
  * The junctions of a piece that hold this screw, with each one's head seat.
  * `totalHeight` must be the plate's height WITHOUT a screw pad: a site that
  * only fits once the pad exists would make the pad a condition of itself.
+ * `feetOnTapers` as in {@link seatedFootDistanceMm}.
  */
 export function screwJunctions(
   params: ScrewHoleParams,
@@ -195,11 +201,18 @@ export function screwJunctions(
   socketHeight: number,
   cellOpts: ForEachCellOptions & { gridUnitMm: GridUnitInput },
   cellFilter?: (cell: CellInfo) => boolean,
-  cellCornerRelief?: (cell: CellInfo) => boolean
+  cellCornerRelief?: (cell: CellInfo) => boolean,
+  feetOnTapers: boolean = false
 ): ScrewJunctionSite[] {
   const out: ScrewJunctionSite[] = [];
   for (const j of pieceJunctions(gridW, gridD, cellOpts, cellFilter, cellCornerRelief)) {
-    const seat = junctionScrewSeatMm(params, profileHeight, socketHeight, j.cornerRadius);
+    const seat = junctionScrewSeatMm(
+      params,
+      profileHeight,
+      socketHeight,
+      j.cornerRadius,
+      feetOnTapers
+    );
     if (seat === undefined) continue;
     if (
       junctionScrewFits(params, seat, totalHeight, profileHeight, j.cornerRadius, j.cornerRelief)
