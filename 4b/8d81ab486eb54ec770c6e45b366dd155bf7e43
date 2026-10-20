@@ -1,0 +1,21 @@
+src/shared/utils/cellMask.test.ts
+  s_fbd258b587d61b::t_0b9b72877e09f9 656-661
+src/shared/utils/cellMask.ts
+  s_fbd258b587d61b::t_48ecdd5840d716 484
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4b8d81ab486eb54ec770c6e45b366dd155bf7e43",
+  "prompts": {},
+  "sessions": {
+    "s_fbd258b587d61b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3feec13e-9088-4414-b8ea-fe1a58a350f6",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
