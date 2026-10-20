@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
-import { binId, gridUnits, heightUnits } from '@/core/types';
+import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import type { Bin } from '@/core/types';
 import { changeOrder, landUpdates } from './changeOrder';
@@ -37,6 +37,19 @@ describe('changeOrder', () => {
       layout
     );
     expect(swapped.map((bin) => bin.id)).toEqual(['a', 'b']);
+  });
+
+  it('waits for no bin on another layer unless one of them leans', () => {
+    const upper = at('upper', 0, 0, { layerId: layerId('layer2') });
+    const lower = at('lower', 1, 0);
+    const order = changeOrder(
+      [
+        { bin: upper, to: { ...upper, x: gridUnits(1) } },
+        { bin: lower, to: { ...lower, x: gridUnits(2) } },
+      ],
+      layout
+    );
+    expect(order.map((b) => b.id)).toEqual(['upper', 'lower']);
   });
 
   it('neither waits for nor holds up a bin in the stash', () => {

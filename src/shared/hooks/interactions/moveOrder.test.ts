@@ -71,10 +71,14 @@ describe('moveOrder', () => {
     expect(movedInTurn(moveOrder([held, tall], 1, 1, L1, both), 1, 1, both)).toBe(2);
   });
 
-  it('ignores a bin on another layer unless one of them leans', () => {
+  // The drop puts every bin of the group on one layer, whichever it left.
+  it('waits for a bin on another layer whose spot it lands on', () => {
     const wide = at('wide', 0, 2, { width: gridUnits(6) });
     const small = at('small', 4, 0, { depth: gridUnits(2), layerId: layerId('layer2') });
-    expect(ids(moveOrder([wide, small], 1, 1, L1, layout))).toEqual(['small', 'wide']);
+    const both = { ...layout, bins: [wide, small] };
+    const order = moveOrder([wide, small], 1, 1, L1, both);
+    expect(ids(order)).toEqual(['wide', 'small']);
+    expect(groupMoveLands(order, 1, 1, L1, both)).toBe(true);
   });
 });
 

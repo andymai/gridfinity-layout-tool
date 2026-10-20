@@ -21,15 +21,15 @@ export interface BinChange {
 export function changeOrder(changes: readonly BinChange[], layout: SlantLayout): Bin[] {
   const remaining = changes.map(({ bin, to }) => ({
     bin,
-    staysStashed: to.layerId === STAGING_ID,
+    lands: to.layerId,
     from: slantZone(bin, layout),
     to: slantZone(to, layout),
   }));
   type Entry = (typeof remaining)[number];
   const waitsFor = (mover: Entry, other: Entry): boolean =>
-    !mover.staysStashed &&
+    mover.lands !== STAGING_ID &&
     other.bin.layerId !== STAGING_ID &&
-    (mover.bin.layerId === other.bin.layerId || mover.to.slanted || other.from.slanted) &&
+    (mover.lands === other.bin.layerId || mover.to.slanted || other.from.slanted) &&
     mover.to.rects.some((r) => other.from.rects.some((s) => footprintsOverlap(r, s)));
 
   const ordered: Bin[] = [];
