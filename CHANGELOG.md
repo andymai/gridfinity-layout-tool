@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.519.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.519.2...gridfinity-layout-tool-v4.519.3) (2026-10-20)
+
+
+### Bug Fixes
+
+* **layout:** resize a design's placements in an order where each fits, and report any that don't ([#4658](https://github.com/andymai/gridfinity-layout-tool/issues/4658)) ([baa4638](https://github.com/andymai/gridfinity-layout-tool/commit/baa46381a6a4f6a4286319d80d061b7403792667))
+
 ## [4.519.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.519.1...gridfinity-layout-tool-v4.519.2) (2026-10-20)
 
 
