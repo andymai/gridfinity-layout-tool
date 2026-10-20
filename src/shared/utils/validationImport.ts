@@ -30,6 +30,7 @@ import {
   isValidLayer,
   isValidBin,
   isValidCategory,
+  type BinShape,
   type DrawerShape,
 } from './validationGuards';
 import { canPlaceFootprint } from './validationPlacement';
@@ -235,7 +236,18 @@ export function validateImport(data: unknown): ImportValidationResult {
     errors: [],
     layout: normalizeDrawerOutline({
       ...typedLayout,
-      bins: [...dropOrphanedPairs<Bin>(typedLayout.bins)],
+      bins: [...dropOrphanedPairs<Bin>(typedLayout.bins.map(withTextFields))],
     }),
   };
+}
+
+/**
+ * Stored shares and hand-written files may omit both fields, and every reader
+ * of a bin calls string methods on them.
+ */
+function withTextFields(bin: Bin): Bin {
+  const { label, notes } = bin as BinShape;
+  return label === undefined || notes === undefined
+    ? { ...bin, label: label ?? '', notes: notes ?? '' }
+    : bin;
 }

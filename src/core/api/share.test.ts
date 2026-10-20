@@ -729,6 +729,30 @@ describe('fetchShare', () => {
     expect(value.metadata.authorName).toBe('Test Author');
   });
 
+  it('gives each bin of an older share an empty label and notes when it carries none', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          layout: {
+            ...mockLayout,
+            bins: [
+              { id: 'b1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3 },
+              { id: 'b2', layerId: 'layer1', x: 2, y: 0, width: 2, depth: 2, height: 3 },
+            ],
+          },
+          metadata: { createdAt: '2026-01-01T00:00:00.000Z', permission: 'view' },
+        }),
+    } as Response);
+
+    const value = expectOk(await fetchShare('abc123xyz789'));
+
+    expect(value.layout.bins.map((bin) => [bin.label, bin.notes])).toEqual([
+      ['', ''],
+      ['', ''],
+    ]);
+  });
+
   it('returns Err with ApiNotFoundError on 404', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,

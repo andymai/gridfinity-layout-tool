@@ -265,7 +265,12 @@ function validateFetchShareResponse(
 
   return {
     valid: true,
-    data: { ...data, linkedDesigns, meshFiles: parseMeshFiles(data.meshFiles) },
+    data: {
+      ...data,
+      layout: layoutValidation.layout,
+      linkedDesigns,
+      meshFiles: parseMeshFiles(data.meshFiles),
+    },
   };
 }
 

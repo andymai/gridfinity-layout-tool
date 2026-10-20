@@ -502,6 +502,22 @@ describe('validateImport', () => {
     expect(result.layout.gridUnitMm).toBe(40);
     expect(result.layout.heightUnitMm).toBe(6);
   });
+
+  it('fills an empty label and notes on a bin that omits them', () => {
+    const { label: _label, notes: _notes, ...bare } = createTestBin({ id: binId('bare') });
+    const written = createTestBin({
+      id: binId('written'),
+      x: gridUnits(4),
+      label: 'Screws',
+      notes: 'M3 x 8',
+    });
+
+    const result = validateImport({ ...createTestLayout(), bins: [bare, written] });
+
+    if (!result.valid) throw new Error(result.errors.join(', '));
+    expect(result.layout.bins[0]).toMatchObject({ id: 'bare', label: '', notes: '' });
+    expect(result.layout.bins[1]).toMatchObject({ label: 'Screws', notes: 'M3 x 8' });
+  });
 });
 
 describe('salvageImport', () => {
