@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.519.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.519.3...gridfinity-layout-tool-v4.519.4) (2026-10-20)
+
+
+### Bug Fixes
+
+* **bin-designer:** start new bins on full feet when half-grid mode is on ([#4665](https://github.com/andymai/gridfinity-layout-tool/issues/4665)) ([d228ff2](https://github.com/andymai/gridfinity-layout-tool/commit/d228ff22f9f903c832375e7cc27fee056b2efe6d))
+* **cloud-share:** open older shared layouts whose bins have no notes or label ([#4666](https://github.com/andymai/gridfinity-layout-tool/issues/4666)) ([d3b1a02](https://github.com/andymai/gridfinity-layout-tool/commit/d3b1a024a133976c56c664f4aee7f73aaacb6fa1))
+* **lid:** print a hinged lid's pin holes peak-up so the pin slides in ([#4667](https://github.com/andymai/gridfinity-layout-tool/issues/4667)) ([7ded7ad](https://github.com/andymai/gridfinity-layout-tool/commit/7ded7ad816bc115f9466c180647cefb2a52d8629))
+
 ## [4.519.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.519.2...gridfinity-layout-tool-v4.519.3) (2026-10-20)
 
 
