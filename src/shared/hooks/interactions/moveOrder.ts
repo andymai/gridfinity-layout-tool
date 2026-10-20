@@ -12,6 +12,7 @@ export function moveOrder(
   bins: readonly Bin[],
   deltaX: number,
   deltaY: number,
+  layerId: LayerId,
   layout: SlantLayout
 ): Bin[] {
   const along = (bin: Bin): number => bin.x * deltaX + bin.y * deltaY;
@@ -23,7 +24,7 @@ export function moveOrder(
         const { overhang: _dropped, ...moved } = bin;
         return {
           bin,
-          to: { ...moved, x: gridUnits(bin.x + deltaX), y: gridUnits(bin.y + deltaY) },
+          to: { ...moved, x: gridUnits(bin.x + deltaX), y: gridUnits(bin.y + deltaY), layerId },
         };
       }),
     layout

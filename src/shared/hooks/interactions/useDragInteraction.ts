@@ -428,7 +428,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
         } else {
           // Move mode: update bin positions
           const binsToMove = findBinsByIds(layout, interaction.binIds);
-          const ordered = moveOrder(binsToMove, deltaX, deltaY, layout);
+          const ordered = moveOrder(binsToMove, deltaX, deltaY, activeLayerId, layout);
           if (!groupMoveLands(ordered, deltaX, deltaY, activeLayerId, layout)) {
             addToast(getPlacementErrorMessage(t, 'collision'), 'info');
             return;

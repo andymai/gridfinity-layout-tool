@@ -12,6 +12,8 @@ const layout = createTestLayout({
 const at = (id: string, x: number, y: number, overrides: Partial<Bin> = {}): Bin =>
   createTestBin({ id: binId(id), x: gridUnits(x), y: gridUnits(y), ...overrides });
 
+const L1 = layerId('layer1');
+
 const ids = (bins: Bin[]): string[] => bins.map((b) => b.id);
 
 /** How many of the bins placement accepts when each moves in turn, as the drop does. */
@@ -32,16 +34,16 @@ describe('moveOrder', () => {
   const column = [at('a', 0, 0), at('b', 0, 1), at('c', 0, 2)];
 
   it('moves the bin furthest along the move first', () => {
-    expect(ids(moveOrder(column, 0, 1, layout))).toEqual(['c', 'b', 'a']);
-    expect(ids(moveOrder(column, 0, -1, layout))).toEqual(['a', 'b', 'c']);
+    expect(ids(moveOrder(column, 0, 1, L1, layout))).toEqual(['c', 'b', 'a']);
+    expect(ids(moveOrder(column, 0, -1, L1, layout))).toEqual(['a', 'b', 'c']);
   });
 
   it('moves a wide bin before a small one whose new spot it still covers', () => {
     const wide = at('wide', 0, 2, { width: gridUnits(6) });
     const small = at('small', 4, 0, { depth: gridUnits(2) });
-    expect(ids(moveOrder([small, wide], 1, 1, layout))).toEqual(['wide', 'small']);
+    expect(ids(moveOrder([small, wide], 1, 1, L1, layout))).toEqual(['wide', 'small']);
     const both = { ...layout, bins: [small, wide] };
-    expect(movedInTurn(moveOrder([small, wide], 1, 1, both), 1, 1, both)).toBe(2);
+    expect(movedInTurn(moveOrder([small, wide], 1, 1, L1, both), 1, 1, both)).toBe(2);
     expect(movedInTurn([small, wide], 1, 1, both)).toBe(1);
   });
 
@@ -51,9 +53,9 @@ describe('moveOrder', () => {
       slant: { angleDeg: 45, side: 'right', endSupport: true },
     });
     const tall = at('tall', 5, 0, { depth: gridUnits(5) });
-    expect(ids(moveOrder([leaning, tall], 1, 1, layout))).toEqual(['tall', 'leaning']);
+    expect(ids(moveOrder([leaning, tall], 1, 1, L1, layout))).toEqual(['tall', 'leaning']);
     const both = { ...layout, bins: [leaning, tall] };
-    expect(movedInTurn(moveOrder([leaning, tall], 1, 1, both), 1, 1, both)).toBe(2);
+    expect(movedInTurn(moveOrder([leaning, tall], 1, 1, L1, both), 1, 1, both)).toBe(2);
     expect(movedInTurn([leaning, tall], 1, 1, both)).toBe(1);
   });
 
@@ -65,25 +67,23 @@ describe('moveOrder', () => {
     });
     const tall = at('tall', 5, 0, { depth: gridUnits(5) });
     const both = { ...layout, bins: [held, tall] };
-    expect(ids(moveOrder([held, tall], 1, 1, both))).toEqual(['tall', 'held']);
-    expect(movedInTurn(moveOrder([held, tall], 1, 1, both), 1, 1, both)).toBe(2);
+    expect(ids(moveOrder([held, tall], 1, 1, L1, both))).toEqual(['tall', 'held']);
+    expect(movedInTurn(moveOrder([held, tall], 1, 1, L1, both), 1, 1, both)).toBe(2);
   });
 
   it('ignores a bin on another layer unless one of them leans', () => {
     const wide = at('wide', 0, 2, { width: gridUnits(6) });
     const small = at('small', 4, 0, { depth: gridUnits(2), layerId: layerId('layer2') });
-    expect(ids(moveOrder([wide, small], 1, 1, layout))).toEqual(['small', 'wide']);
+    expect(ids(moveOrder([wide, small], 1, 1, L1, layout))).toEqual(['small', 'wide']);
   });
 });
 
 describe('groupMoveLands', () => {
-  const L1 = layerId('layer1');
-
   it('lands a group whose order leaves no bin waiting', () => {
     const wide = at('wide', 0, 2, { width: gridUnits(6) });
     const small = at('small', 4, 0, { depth: gridUnits(2) });
     const both = { ...layout, bins: [small, wide] };
-    expect(groupMoveLands(moveOrder([small, wide], 1, 1, both), 1, 1, L1, both)).toBe(true);
+    expect(groupMoveLands(moveOrder([small, wide], 1, 1, L1, both), 1, 1, L1, both)).toBe(true);
   });
 
   // The overhang that held the leading bin upright goes with the move, and its
@@ -96,6 +96,6 @@ describe('groupMoveLands', () => {
     });
     const beside = at('beside', 1, 0, { height: heightUnits(6) });
     const both = { ...layout, bins: [held, beside] };
-    expect(groupMoveLands(moveOrder([held, beside], 1, 0, both), 1, 0, L1, both)).toBe(false);
+    expect(groupMoveLands(moveOrder([held, beside], 1, 0, L1, both), 1, 0, L1, both)).toBe(false);
   });
 });
