@@ -5469,6 +5469,8 @@ const en: Record<string, string> = {
   'designLinking.toast.cascadedResize': 'Updated design + {count} linked bin(s)',
   'designLinking.toast.cascadedResizeSomeLocked':
     'Updated design + {count} linked bin(s) — {locked} size-locked bin(s) kept their size',
+  'designLinking.toast.cascadedResizeSomeRefused':
+    'Updated design + {count} linked bin(s); {refused} kept their old size (no room)',
   'designLinking.toast.autoSyncedSomeLocked':
     'Auto-synced {count} bin(s) — {locked} size-locked bin(s) kept their size',
   'designLinking.toast.syncSkippedLocked': '{count} size-locked bin(s) kept their size',

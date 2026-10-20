@@ -3042,6 +3042,7 @@
   "designLinking.toast.autoSyncedSomeLocked": "Automatisch {count} bin(s) gesynchroniseerd — {locked} met vergrendelde afmetingen ongewijzigd",
   "designLinking.toast.cascadedResize": "Ontwerp + {count} gekoppelde bak(ken) bijgewerkt",
   "designLinking.toast.cascadedResizeSomeLocked": "Ontwerp + {count} gekoppelde bin(s) bijgewerkt — {locked} met vergrendelde afmetingen ongewijzigd",
+  "designLinking.toast.cascadedResizeSomeRefused": "Ontwerp + {count} gekoppelde bin(s) bijgewerkt; {refused} behielden hun oude afmetingen (geen ruimte)",
   "designLinking.toast.deleteFailed": "Verwijderen van bin-ontwerp mislukt",
   "designLinking.toast.deleted": "„{name}\" verwijderd",
   "designLinking.toast.designUpdateFailed": "Kan gekoppeld ontwerp niet bijwerken",

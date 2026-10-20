@@ -27,7 +27,7 @@ import {
   registryOverhangFields,
   registrySlantFields,
 } from '@/features/bin-designer';
-import { isErr } from '@/core/result';
+import { isErr, isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
 import { getPlacementErrorMessage } from '@/shared/utils/validation';
 import { onSyncEvent } from '../events';
@@ -42,6 +42,7 @@ import {
   createBinSyncUpdate,
   planSiblingCascade,
   resizeBlockedBySupport,
+  resizeOrder,
 } from '../domain';
 
 export function useBinResizedListener(): void {
@@ -222,25 +223,37 @@ export function useBinResizedListener(): void {
 
         if (allEligible) {
           const syncUpdate = createBinSyncUpdate(newDimensions);
+          let refused = 0;
           batch(() => {
-            for (const bin of siblingBins) {
-              updateBinRef.current(bin.id, syncUpdate);
+            for (const bin of resizeOrder(siblingBins, newDimensions, layout)) {
+              if (!isOk(updateBinRef.current(bin.id, syncUpdate))) refused += 1;
             }
           });
 
-          addToastRef.current({
-            message:
-              lockedSiblings.length > 0
-                ? tRef.current('designLinking.toast.cascadedResizeSomeLocked', {
-                    count: siblingBins.length,
-                    locked: lockedSiblings.length,
-                  })
-                : tRef.current('designLinking.toast.cascadedResize', {
-                    count: siblingBins.length,
+          addToastRef.current(
+            refused > 0
+              ? {
+                  message: tRef.current('designLinking.toast.cascadedResizeSomeRefused', {
+                    count: siblingBins.length - refused,
+                    refused,
                   }),
-            type: 'success',
-            duration: 2000,
-          });
+                  type: 'info',
+                  duration: 4000,
+                }
+              : {
+                  message:
+                    lockedSiblings.length > 0
+                      ? tRef.current('designLinking.toast.cascadedResizeSomeLocked', {
+                          count: siblingBins.length,
+                          locked: lockedSiblings.length,
+                        })
+                      : tRef.current('designLinking.toast.cascadedResize', {
+                          count: siblingBins.length,
+                        }),
+                  type: 'success',
+                  duration: 2000,
+                }
+          );
         } else {
           // Some siblings can't fit -- show sync dialog
           const comparison = compareDimensions(newDimensions, extractBinDimensions(siblingBins[0]));

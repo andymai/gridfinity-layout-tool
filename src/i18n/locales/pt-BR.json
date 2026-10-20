@@ -3042,6 +3042,7 @@
   "designLinking.toast.autoSyncedSomeLocked": "Sincronizados automaticamente {count} bin(s) — {locked} com tamanho bloqueado não mudaram",
   "designLinking.toast.cascadedResize": "Design + {count} compartimento(s) vinculado(s) atualizados",
   "designLinking.toast.cascadedResizeSomeLocked": "Design + {count} bin(s) vinculados atualizados — {locked} com tamanho bloqueado não mudaram",
+  "designLinking.toast.cascadedResizeSomeRefused": "Design + {count} bin(s) vinculados atualizados; {refused} mantiveram o tamanho anterior (sem espaço)",
   "designLinking.toast.deleteFailed": "Falha ao excluir design do bin",
   "designLinking.toast.deleted": "\"{name}\" excluído",
   "designLinking.toast.designUpdateFailed": "Falha ao atualizar design vinculado",

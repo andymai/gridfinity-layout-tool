@@ -4541,6 +4541,7 @@
   "designLinking.toast.edgeMatched": "ნახევარი ერთეულის კიდე განლაგებას შეუსაბამდა",
   "designLinking.toast.cascadedResize": "განახლდა დიზაინი და {count} დაკავშირებული ყუთი",
   "designLinking.toast.cascadedResizeSomeLocked": "განახლდა დიზაინი და {count} დაკავშირებული ყუთი — ზომაჩაკეტილმა {locked} ყუთმა ზომა შეინარჩუნა",
+  "designLinking.toast.cascadedResizeSomeRefused": "განახლდა დიზაინი და {count} დაკავშირებული ყუთი; {refused} ყუთმა ძველი ზომა შეინარჩუნა (ადგილი არ არის)",
   "designLinking.toast.autoSyncedSomeLocked": "ავტომატურად სინქრონიზდა {count} ყუთი — ზომაჩაკეტილმა {locked} ყუთმა ზომა შეინარჩუნა",
   "designLinking.toast.syncSkippedLocked": "ზომაჩაკეტილმა {count} ყუთმა ზომა შეინარჩუნა",
   "designLinking.blockedResize.title": "დიზაინი არ განახლებულა",

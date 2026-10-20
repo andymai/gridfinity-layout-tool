@@ -3042,6 +3042,7 @@
   "designLinking.toast.autoSyncedSomeLocked": "수납통 {count}개를 자동 동기화했습니다 (크기가 잠긴 {locked}개는 그대로)",
   "designLinking.toast.cascadedResize": "디자인 + 연결된 수납통 {count}개를 업데이트했습니다",
   "designLinking.toast.cascadedResizeSomeLocked": "디자인과 연결된 수납통 {count}개를 업데이트했습니다 (크기가 잠긴 {locked}개는 그대로)",
+  "designLinking.toast.cascadedResizeSomeRefused": "디자인과 연결된 수납통 {count}개를 업데이트했습니다 (공간이 없어 {refused}개는 이전 크기 유지)",
   "designLinking.toast.deleteFailed": "수납통 디자인 삭제에 실패했습니다",
   "designLinking.toast.deleted": "\"{name}\"을(를) 삭제했습니다",
   "designLinking.toast.designUpdateFailed": "연결된 디자인 업데이트에 실패했습니다",

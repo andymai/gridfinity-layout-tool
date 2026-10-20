@@ -3042,6 +3042,7 @@
   "designLinking.toast.autoSyncedSomeLocked": "{count}個のビンを自動同期しました（サイズをロック中の{locked}個はそのまま）",
   "designLinking.toast.cascadedResize": "デザインとリンクされた{count}個のビンを更新しました",
   "designLinking.toast.cascadedResizeSomeLocked": "デザインとリンクされた{count}個のビンを更新しました（サイズをロック中の{locked}個はそのまま）",
+  "designLinking.toast.cascadedResizeSomeRefused": "デザインとリンクされた{count}個のビンを更新しました（{refused}個はスペースがないため元のサイズのまま）",
   "designLinking.toast.deleteFailed": "ビンデザインの削除に失敗しました",
   "designLinking.toast.deleted": "「{name}」を削除しました",
   "designLinking.toast.designUpdateFailed": "リンクされたデザインの更新に失敗しました",

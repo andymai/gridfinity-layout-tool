@@ -3,7 +3,7 @@ import { createTestBin, createTestLayout } from '@/test/testUtils';
 import { binId, designId, gridUnits, heightUnits } from '@/core/types';
 import type { Bin } from '@/core/types';
 import { registerLinkedSlantResolver } from '@/shared/utils/placedSlant';
-import { resizeBlockedBySupport } from './resizeSupport';
+import { resizeBlockedBySupport, resizeOrder } from './resizeSupport';
 
 const DESIGN = designId('d1');
 const size = (height: number) => ({ width: 2, depth: 1, height });
@@ -172,5 +172,18 @@ describe('resizeBlockedBySupport', () => {
         result: { valid: false, reason: 'collision', blockingInfo: { binId: 'behind' } },
       }
     );
+  });
+
+  // Made 1x3, `ahead` stands its support where `behind` is until `behind` narrows.
+  it('resizes a placement after the sibling whose cells its support needs', () => {
+    registerLinkedSlantResolver(() => ({ config: BACK, width: 1, depth: 3, height: 6 }));
+    const ahead = { ...linked('ahead', 1), height: heightUnits(6) };
+    const behind = { ...linked('behind', 0), y: gridUnits(3) };
+    const row = createTestLayout({
+      drawer: { width: gridUnits(8), depth: gridUnits(8), height: heightUnits(20) },
+      bins: [ahead, behind],
+    });
+    const order = resizeOrder([ahead, behind], { width: 1, depth: 3, height: 6 }, row);
+    expect(order.map((b) => b.id)).toEqual(['behind', 'ahead']);
   });
 });

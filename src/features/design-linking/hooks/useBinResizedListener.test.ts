@@ -16,6 +16,8 @@ import { loadDesign, updateDesignParams } from '@/features/bin-designer/storage'
 import { err } from '@/core/result';
 import { loadRegistry, upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 import type * as StorageModule from '@/features/bin-designer/storage';
+import { commandBus, createCqrsMutations } from '@/core/cqrs';
+import type { LinkedSlantFacts } from '@/shared/utils/placedSlant';
 
 vi.mock('@/shared/contexts/MutationsContext', () => ({
   useMutations: vi.fn(),
@@ -193,4 +195,93 @@ describe('useBinResizedListener', () => {
       unmount();
     }
   );
+
+  describe('the cascade to siblings', () => {
+    const BACK = { angleDeg: 45, side: 'back' as const, endSupport: true };
+    let facts: LinkedSlantFacts = {};
+    const linked = (id: string, x: number, y: number, width: number, depth: number) =>
+      createTestBin({
+        id: binId(id),
+        x: gridUnits(x),
+        y: gridUnits(y),
+        width: gridUnits(width),
+        depth: gridUnits(depth),
+        height: heightUnits(6),
+        linkedDesignId: DESIGN,
+      });
+    const bin = (id: string) => useLayoutStore.getState().layout.bins.find((b) => b.id === id);
+
+    // Made 1x3, `ahead` would stand its support on the cell `behind` covers
+    // until `behind` has narrowed too; the layout lists `ahead` first.
+    beforeEach(() => {
+      useDesignerStore.setState({ currentDesignId: null });
+      useToastStore.setState({ toasts: [] });
+      localStorage.clear();
+      facts = { config: BACK, width: 2, depth: 1, height: 6 };
+      registerLinkedSlantResolver(() => facts);
+      vi.mocked(loadDesign).mockResolvedValue(
+        ok({
+          id: DESIGN,
+          name: 'Pens',
+          updatedAt: 'then',
+          params: { ...DEFAULT_BIN_PARAMS },
+        }) as never
+      );
+      vi.mocked(updateDesignParams).mockImplementation(async () => {
+        facts = { config: BACK, width: 1, depth: 3, height: 6 };
+        return ok({ id: DESIGN, name: 'Pens', updatedAt: 'now' }) as never;
+      });
+      useLayoutStore.setState({
+        layout: createTestLayout({
+          drawer: { width: gridUnits(8), depth: gridUnits(8), height: heightUnits(20) },
+          bins: [
+            linked('resized', 6, 0, 1, 3),
+            linked('ahead', 1, 0, 2, 1),
+            linked('behind', 0, 3, 2, 1),
+          ],
+        }),
+      });
+    });
+
+    const resize = (): void =>
+      emitSyncEvent({
+        type: 'bin-resized',
+        binId: binId('resized'),
+        linkedDesignId: DESIGN,
+        newDimensions: { width: 1, depth: 3, height: 6 },
+      });
+
+    it('resizes every sibling, in an order where none waits on another', async () => {
+      vi.mocked(MutationsContext.useMutations).mockReturnValue(createCqrsMutations(commandBus));
+      const { unmount } = renderHook(() => useBinResizedListener());
+
+      resize();
+
+      await vi.waitFor(() => expect(useToastStore.getState().toasts).toHaveLength(1));
+      expect(useToastStore.getState().toasts[0].type).toBe('success');
+      for (const id of ['ahead', 'behind']) expect(bin(id)).toMatchObject({ width: 1, depth: 3 });
+      registerLinkedSlantResolver(null);
+      unmount();
+    });
+
+    it('says which siblings kept their size instead of reporting success', async () => {
+      const updateBin = vi.fn((id: string) =>
+        id === 'ahead'
+          ? err({ code: 'VALIDATION_COLLISION', message: 'taken' } as never)
+          : ok(undefined)
+      );
+      vi.mocked(MutationsContext.useMutations).mockReturnValue({ updateBin } as never);
+      const { unmount } = renderHook(() => useBinResizedListener());
+
+      resize();
+
+      await vi.waitFor(() => expect(useToastStore.getState().toasts).toHaveLength(1));
+      const [toast] = useToastStore.getState().toasts;
+      expect(toast.type).toBe('info');
+      expect(toast.message).toContain('1 kept their old size');
+      expect(updateBin.mock.calls.map(([id]) => id)).toEqual(['behind', 'ahead']);
+      registerLinkedSlantResolver(null);
+      unmount();
+    });
+  });
 });

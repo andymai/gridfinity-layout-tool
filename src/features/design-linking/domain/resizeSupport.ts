@@ -7,11 +7,31 @@ import {
   type SlantConflict,
 } from '@/shared/utils/placedSlant';
 import { insideDrawer } from '@/shared/utils/validationPlacement';
+import { changeOrder } from '@/shared/utils/changeOrder';
 import { getBinsLinkedToDesign } from './linkageQueries';
 import { planSiblingCascade } from './linkingRules';
 import { createBinSyncUpdate } from './syncOperations';
 
 type Refusal = Extract<ValidationResult, { valid: false }>;
+
+type Size = { readonly width: number; readonly depth: number; readonly height: number };
+
+/** A placement as the cascade leaves it: resizing drops its explicit overhang, as `bin.update` does. */
+function resized(bin: Bin, size: Size): Bin {
+  const { overhang: _dropped, ...rest } = bin;
+  return { ...rest, ...createBinSyncUpdate(size) };
+}
+
+/**
+ * The cascade's placements in an order where none is checked against a
+ * sibling's cells before that sibling has left them.
+ */
+export function resizeOrder(bins: readonly Bin[], size: Size, layout: Layout): Bin[] {
+  return changeOrder(
+    bins.map((bin) => ({ bin, to: resized(bin, size) })),
+    layout
+  );
+}
 
 interface Standing {
   readonly bin: Bin;
@@ -34,30 +54,18 @@ function standings(layout: Layout, linkedDesignId: DesignId): Map<BinId, Standin
   return result;
 }
 
-/**
- * The layout as the cascade in `useBinResizedListener` leaves it. Resizing drops
- * a placement's explicit overhang, as `bin.update` does.
- */
-function cascaded(
-  layout: Layout,
-  linkedDesignId: DesignId,
-  size: { readonly width: number; readonly depth: number; readonly height: number }
-): Layout {
+/** The layout as the cascade in `useBinResizedListener` leaves it. */
+function cascaded(layout: Layout, linkedDesignId: DesignId, size: Size): Layout {
   const { syncable, allEligible } = planSiblingCascade(
     getBinsLinkedToDesign(layout.bins, linkedDesignId),
     size,
     layout
   );
   if (syncable.length === 0 || !allEligible) return layout;
-  const resized = new Set(syncable.map((bin) => bin.id));
-  const update = createBinSyncUpdate(size);
+  const reached = new Set(syncable.map((bin) => bin.id));
   return {
     ...layout,
-    bins: layout.bins.map((bin) => {
-      if (!resized.has(bin.id)) return bin;
-      const { overhang: _dropped, ...rest } = bin;
-      return { ...rest, ...update };
-    }),
+    bins: layout.bins.map((bin) => (reached.has(bin.id) ? resized(bin, size) : bin)),
   };
 }
 
@@ -72,7 +80,7 @@ function cascaded(
 export function resizeBlockedBySupport(
   layout: Layout,
   linkedDesignId: DesignId,
-  size: { readonly width: number; readonly depth: number; readonly height: number }
+  size: Size
 ): { bin: Bin; result: Refusal } | null {
   const before = standings(layout, linkedDesignId);
   const after = withLinkedSlantFacts(

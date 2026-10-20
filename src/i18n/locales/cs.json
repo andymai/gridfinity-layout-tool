@@ -3042,6 +3042,7 @@
   "designLinking.toast.autoSyncedSomeLocked": "Automaticky synchronizováno {count} binů — {locked} se zamčenou velikostí zůstalo beze změny",
   "designLinking.toast.cascadedResize": "Aktualizován návrh + {count} propojených binů",
   "designLinking.toast.cascadedResizeSomeLocked": "Aktualizován návrh + {count} propojených binů — {locked} se zamčenou velikostí zůstalo beze změny",
+  "designLinking.toast.cascadedResizeSomeRefused": "Aktualizován návrh + {count} propojených binů; {refused} si ponechalo původní velikost (není místo)",
   "designLinking.toast.deleteFailed": "Smazání návrhu binu selhalo",
   "designLinking.toast.deleted": "Smazáno „{name}“",
   "designLinking.toast.designUpdateFailed": "Aktualizace propojeného návrhu selhala",

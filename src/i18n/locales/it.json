@@ -3042,6 +3042,7 @@
   "designLinking.toast.autoSyncedSomeLocked": "Sincronizzati automaticamente {count} bin — {locked} con dimensioni bloccate invariati",
   "designLinking.toast.cascadedResize": "Aggiornato il design + {count} bin collegati",
   "designLinking.toast.cascadedResizeSomeLocked": "Aggiornati design + {count} bin collegati — {locked} con dimensioni bloccate invariati",
+  "designLinking.toast.cascadedResizeSomeRefused": "Aggiornati design + {count} bin collegati; {refused} hanno mantenuto le dimensioni precedenti (spazio insufficiente)",
   "designLinking.toast.deleteFailed": "Eliminazione del design del bin non riuscita",
   "designLinking.toast.deleted": "Eliminato \"{name}\"",
   "designLinking.toast.designUpdateFailed": "Aggiornamento del design collegato non riuscito",

@@ -29,7 +29,7 @@ export {
 } from './syncOperations';
 
 // A resize that would grow a placement's end support past what fits
-export { resizeBlockedBySupport } from './resizeSupport';
+export { resizeBlockedBySupport, resizeOrder } from './resizeSupport';
 
 // Complex geometry detection
 export { hasComplexGeometry, getComplexityReasons } from './complexGeometry';

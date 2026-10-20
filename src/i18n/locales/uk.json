@@ -3042,6 +3042,7 @@
   "designLinking.toast.autoSyncedSomeLocked": "Автосинхронізовано {count} бінів — {locked} із заблокованим розміром лишилися без змін",
   "designLinking.toast.cascadedResize": "Оновлено дизайн + {count} пов’язаних бінів",
   "designLinking.toast.cascadedResizeSomeLocked": "Оновлено дизайн + {count} пов’язаних бінів — {locked} із заблокованим розміром лишилися без змін",
+  "designLinking.toast.cascadedResizeSomeRefused": "Оновлено дизайн + {count} пов’язаних бінів; {refused} зберегли попередній розмір (немає місця)",
   "designLinking.toast.deleteFailed": "Не вдалося видалити дизайн біна",
   "designLinking.toast.deleted": "Видалено «{name}»",
   "designLinking.toast.designUpdateFailed": "Не вдалося оновити пов’язаний дизайн",

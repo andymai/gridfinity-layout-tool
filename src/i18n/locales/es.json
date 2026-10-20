@@ -3042,6 +3042,7 @@
   "designLinking.toast.autoSyncedSomeLocked": "Auto-sincronizados {count} bin(s) — {locked} con tamaño bloqueado no cambiaron",
   "designLinking.toast.cascadedResize": "Diseño + {count} contenedor(es) vinculado(s) actualizados",
   "designLinking.toast.cascadedResizeSomeLocked": "Diseño + {count} bin(s) vinculados actualizados — {locked} con tamaño bloqueado no cambiaron",
+  "designLinking.toast.cascadedResizeSomeRefused": "Diseño + {count} bin(s) vinculados actualizados; {refused} conservaron su tamaño anterior (sin espacio)",
   "designLinking.toast.deleteFailed": "Error al eliminar modelo 3D",
   "designLinking.toast.deleted": "Eliminado \"{name}\"",
   "designLinking.toast.designUpdateFailed": "Error al actualizar el diseño vinculado",

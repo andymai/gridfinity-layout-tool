@@ -3042,6 +3042,7 @@
   "designLinking.toast.autoSyncedSomeLocked": "Auto-synkade {count} fack — {locked} med låst storlek lämnades orörda",
   "designLinking.toast.cascadedResize": "Uppdaterade design + {count} länkade fack",
   "designLinking.toast.cascadedResizeSomeLocked": "Uppdaterade design + {count} länkade fack — {locked} med låst storlek lämnades orörda",
+  "designLinking.toast.cascadedResizeSomeRefused": "Uppdaterade design + {count} länkade fack; {refused} behöll sin gamla storlek (inget utrymme)",
   "designLinking.toast.deleteFailed": "Det gick inte att radera fackdesignen",
   "designLinking.toast.deleted": "Raderade \"{name}\"",
   "designLinking.toast.designUpdateFailed": "Det gick inte att uppdatera länkad design",

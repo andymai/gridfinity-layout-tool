@@ -3042,6 +3042,7 @@
   "designLinking.toast.autoSyncedSomeLocked": "Automatycznie zsynchronizowano {count} binów — {locked} z zablokowanym rozmiarem bez zmian",
   "designLinking.toast.cascadedResize": "Zaktualizowano projekt + {count} powiązany(-ch) bin(ów)",
   "designLinking.toast.cascadedResizeSomeLocked": "Zaktualizowano projekt + {count} powiązanych binów — {locked} z zablokowanym rozmiarem bez zmian",
+  "designLinking.toast.cascadedResizeSomeRefused": "Zaktualizowano projekt + {count} powiązanych binów; {refused} zachowało poprzedni rozmiar (brak miejsca)",
   "designLinking.toast.deleteFailed": "Nie udało się usunąć projektu bina",
   "designLinking.toast.deleted": "Usunięto \"{name}\"",
   "designLinking.toast.designUpdateFailed": "Nie udało się zaktualizować powiązanego projektu",
