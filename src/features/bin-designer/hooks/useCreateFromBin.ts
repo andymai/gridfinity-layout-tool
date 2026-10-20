@@ -14,7 +14,7 @@ import { useEffect, useRef } from 'react';
 import { useDesignerStore } from '../store/designer';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
-import { isFractional } from '@/core/constants';
+import { isFractional, STAGING_ID } from '@/core/constants';
 import { isOk } from '@/core/result';
 import { binId } from '@/core/types';
 import { saveDesign, setActiveDesignId } from '@/features/bin-designer/storage/DesignerStorage';
@@ -29,6 +29,8 @@ import {
 import { useLayoutStore } from '@/core/store/layout';
 import { defaultsForNewDesign } from '@/features/bin-designer/store/helpers';
 import { withSyncedLidHeight } from '@/features/bin-designer/utils/lidHeightUnits';
+import { hasDetachableFeet } from '@/features/bin-designer/types/base';
+import { computeMatchedFootLattice } from '@/shared/utils/fractionalEdge';
 
 interface CreateFromBinParams {
   createFrom: 'bin';
@@ -162,8 +164,24 @@ export function useCreateFromBin(): void {
     // The half-unit edge arrives on the URL, already resolved from where the
     // source bin's half cell lands in the drawer. Left as a
     // non-manual choice so moving the bin later surfaces a mismatch warning.
+    const defaults = defaultsForNewDesign();
+    const source = layoutState.layout.bins.find((b) => b.id === urlParams.linkBin);
+    const lattice =
+      source === undefined || source.layerId === STAGING_ID
+        ? {}
+        : computeMatchedFootLattice(
+            {
+              width: urlParams.width,
+              depth: urlParams.depth,
+              halfSockets: defaults.base.halfSockets,
+              detachableFeet: hasDetachableFeet(defaults.base),
+            },
+            layoutState.layout.drawer,
+            [{ x: source.x, y: source.y }]
+          );
     const binParams = withSyncedLidHeight({
-      ...defaultsForNewDesign(),
+      ...defaults,
+      base: { ...defaults.base, ...lattice },
       width: urlParams.width,
       depth: urlParams.depth,
       height: urlParams.height,

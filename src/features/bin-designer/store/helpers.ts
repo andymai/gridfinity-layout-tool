@@ -8,7 +8,6 @@
  */
 
 import { current, type Draft } from 'immer';
-import { isSocketlessBase } from '@/features/bin-designer/types/base';
 import { parentGroups, unitTag } from '@/features/bin-designer/utils/cutoutHierarchy';
 import type {
   BinParams,
@@ -25,38 +24,20 @@ import { evictIfNeeded } from './meshCacheManager';
 import { isFractional } from '@/core/constants';
 import { heldCutoutFillMm, reanchorCutoutFill } from '@/features/bin-designer/utils/cutoutFill';
 import { hasHalfBinDetail, isPartialMask } from '@/shared/utils/cellMask';
-import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { trackToolActivated } from '@/shared/analytics/posthog/conversionEvents';
 import { findAssemblyPart } from '@/features/bin-designer/utils/assemblyTree';
 import { syncedLidHeight } from '@/features/bin-designer/utils/lidHeightUnits';
 import { resolveSlant } from '@/shared/utils/slantPlan';
 
 /**
- * Resolve the parameters a fresh bin starts from.
+ * The user's saved "default for new bins", or the factory defaults.
  *
- * Layered, in order of precedence:
- * 1. The user's saved "default for new bins" (style-only) if present,
- *    otherwise the hardcoded factory `DEFAULT_BIN_PARAMS`.
- * 2. `base.halfSockets = true` when the layout-level half-grid mode is
- *    active. Skipped for flat-floor bins — the `halfSockets ⇔ flat-floor`
- *    mutual-exclusion constraint takes precedence, and a user who switched
- *    to a flat floor made an explicit choice that shouldn't be overridden
- *    by a mode toggle elsewhere. The check reads the
- *    *resolved* base style so a custom flat-floor default is also honored.
- *
- * Called from `newDesign` and `resetToDefaults` so both fresh-start paths
- * pick up the user default + coupling without re-implementing it.
+ * Ignores the layout's half-grid mode on purpose: the app turns that on by
+ * itself for any fractional drawer, so it says nothing about the feet a user
+ * wants. Half sockets on every new bin come from a saved default instead.
  */
 export function defaultsForNewDesign(): BinParams {
-  const base = loadDefaultParams() ?? DEFAULT_BIN_PARAMS;
-  const halfGridOn = useHalfGridModeStore.getState().halfGridMode;
-  if (!halfGridOn || isSocketlessBase(base.base.style)) {
-    return base;
-  }
-  return {
-    ...base,
-    base: { ...base.base, halfSockets: true },
-  };
+  return loadDefaultParams() ?? DEFAULT_BIN_PARAMS;
 }
 
 /**

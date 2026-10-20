@@ -3,7 +3,14 @@ import { renderHook, waitFor, act } from '@testing-library/react';
 import { useCreateFromBin } from './useCreateFromBin';
 import { useDesignerStore } from '../store/designer';
 import { useToastStore } from '@/core/store/toast';
+import { useLayoutStore } from '@/core/store/layout';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
+import { STAGING_ID } from '@/core/constants';
+import { binId, gridUnits } from '@/core/types';
+import type { Bin } from '@/core/types';
+import { createTestBin, createTestLayout } from '@/test/testUtils';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
+import { DEFAULT_FOOT_LATTICE } from '../types/base';
 
 // Mock the translation hook
 vi.mock('@/i18n', () => ({
@@ -192,6 +199,72 @@ describe('useCreateFromBin', () => {
       const state = useDesignerStore.getState();
       // width is integer, so the inferred edge must not override the default
       expect(state.params.fractionalEdgeX).toBe(DEFAULT_BIN_PARAMS.fractionalEdgeX);
+    });
+  });
+
+  describe('foot lattice from where the source bin sits', () => {
+    const initialLayout = useLayoutStore.getState().layout;
+
+    afterEach(() => {
+      useLayoutStore.setState({ layout: initialLayout });
+      useHalfGridModeStore.setState({ halfGridMode: false });
+    });
+
+    function placeSource(overrides: Partial<Bin>): void {
+      const bin = createTestBin({
+        id: binId('bin-123'),
+        width: gridUnits(2),
+        depth: gridUnits(3),
+        ...overrides,
+      });
+      useLayoutStore.setState({ layout: createTestLayout({ bins: [bin] }) });
+    }
+
+    function createFromSource(): void {
+      setUrlParams({
+        createFrom: 'bin',
+        linkBin: 'bin-123',
+        name: 'Placed Bin',
+        width: '2',
+        depth: '3',
+        height: '4',
+      });
+      renderHook(() => useCreateFromBin());
+    }
+
+    it('gives a bin half a unit off the grid the half-offset lattice, not half sockets', async () => {
+      useHalfGridModeStore.setState({ halfGridMode: true });
+      placeSource({ x: gridUnits(0.5), y: gridUnits(1) });
+      createFromSource();
+
+      await waitFor(() => {
+        const { base } = useDesignerStore.getState().params;
+        expect(base.footLatticeX).toBe('half');
+        expect(base.footLatticeY).toBe('grid');
+        expect(base.halfSockets).toBe(false);
+      });
+    });
+
+    it('keeps the on-grid lattice for a bin on a cell boundary', async () => {
+      placeSource({ x: gridUnits(1), y: gridUnits(2) });
+      createFromSource();
+
+      await waitFor(() => {
+        const { base } = useDesignerStore.getState().params;
+        expect(base.footLatticeX ?? DEFAULT_FOOT_LATTICE).toBe('grid');
+        expect(base.footLatticeY ?? DEFAULT_FOOT_LATTICE).toBe('grid');
+      });
+    });
+
+    it('ignores the stash position of a staged bin', async () => {
+      placeSource({ x: gridUnits(0.5), y: gridUnits(0.5), layerId: STAGING_ID });
+      createFromSource();
+
+      await waitFor(() => {
+        const { base } = useDesignerStore.getState().params;
+        expect(base.footLatticeX).toBe(DEFAULT_BIN_PARAMS.base.footLatticeX);
+        expect(base.footLatticeY).toBe(DEFAULT_BIN_PARAMS.base.footLatticeY);
+      });
     });
   });
 

@@ -11,8 +11,7 @@ import { saveToLocalStorage, loadFromLocalStorage } from '@/core/storage/backend
  * Half-Grid Mode Store
  *
  * Manages the half-grid mode setting: allows 0.5-unit grid increments for
- * fractional bin sizing AND seeds `base.halfSockets = true` on new bin
- * designs (see `defaultsForNewDesign` in `bin-designer/store/helpers.ts`).
+ * fractional bin sizing. It does not touch a new design's feet.
  *
  * Extracted from ui.ts as part of the god object decomposition.
  *
