@@ -190,7 +190,9 @@ export function junctionScrewFits(
  * The junctions of a piece that hold this screw, with each one's head seat.
  * `totalHeight` must be the plate's height WITHOUT a screw pad: a site that
  * only fits once the pad exists would make the pad a condition of itself.
- * `feetOnTapers` as in {@link seatedFootDistanceMm}.
+ * `feetOnTapers` as in {@link seatedFootDistanceMm}; a junction beside a cell
+ * whose floor relief is cut through under the foot (`cornerRelief`) seats the
+ * same way.
  */
 export function screwJunctions(
   params: ScrewHoleParams,
@@ -211,7 +213,7 @@ export function screwJunctions(
       profileHeight,
       socketHeight,
       j.cornerRadius,
-      feetOnTapers
+      feetOnTapers || j.cornerRelief
     );
     if (seat === undefined) continue;
     if (

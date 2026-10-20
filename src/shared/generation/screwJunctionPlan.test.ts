@@ -200,4 +200,19 @@ describe('screwJunctions', () => {
     );
     expect(sites).toHaveLength(3);
   });
+
+  it('seats the head lower beside a cell whose relief leaves its foot on the tapers', () => {
+    const sites = screwJunctions(
+      M3_FLAT,
+      3,
+      3,
+      MAGNET_PLATE,
+      STANDARD,
+      STANDARD_FOOT,
+      cellOpts,
+      undefined,
+      (cell) => cell.centerX > 0 && cell.centerY > 0
+    );
+    expect(sites.map((s) => s.seatBelowTopMm)).toEqual([1.244, 1.244, 1.244, 1.594]);
+  });
 });

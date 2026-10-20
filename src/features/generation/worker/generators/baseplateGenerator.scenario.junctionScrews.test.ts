@@ -344,6 +344,60 @@ describe('mount-down screws at the pocket junctions', () => {
     }
     expect(closest).toBeGreaterThanOrEqual(-0.01);
   }, 240_000);
+  it('keeps a bin clear of the head where a relieved half cell lets it sink', () => {
+    // At a 25mm pitch a half cell is too small for a magnet pad, so the
+    // lightweight relief cuts its floor through under the foot.
+    const pitch = 25;
+    const params = buildFullParams(
+      { ...DEFAULT_BASEPLATE_PARAMS, magnetHoles: true, screwHoles: NEW_SCREWS },
+      3.5,
+      3.5,
+      pitch,
+      'end',
+      'end',
+      0.4,
+      undefined,
+      undefined,
+      pitch,
+      0,
+      0,
+      false,
+      { widthMm: 256, depthMm: 256 }
+    );
+    const junction = planBaseplateScrewHoles(
+      NEW_SCREWS,
+      params,
+      screwPlacementFor(NEW_SCREWS, params)
+    ).find((hole) => hole.x > 0 && hole.y > 0);
+    if (junction?.site !== 'junction') throw new Error('no junction beside the half cells');
+    const { x: jx, y: jy } = junction;
+
+    const mesh = generateBaseplate(params, NO_OP, true);
+    const bb = boundingBox(mesh.vertices);
+    let closest = Infinity;
+    for (const [width, depth, cx, cy] of [
+      [0.5, 1, jx + pitch / 4, jy - pitch / 2],
+      [1, 0.5, jx - pitch / 2, jy + pitch / 4],
+      [0.5, 0.5, jx + pitch / 4, jy + pitch / 4],
+    ] as const) {
+      const bin = generateBin({
+        ...DEFAULT_BIN_PARAMS,
+        width,
+        depth,
+        height: 2,
+        gridUnitMm: pitch,
+        gridUnitMmY: pitch,
+      });
+      const rest = seatDepth(bin, mesh, { dx: cx, dy: cy }, 1).mm;
+      // Mated, not assumed: the foot passes the pocket floor onto the tapers.
+      expect(rest).toBeGreaterThan(PLATE_PROFILE_HEIGHT + 0.3);
+      const headTop = bb.maxZ - (junction.seatBelowTopMm ?? 0);
+      const over = footOverHead(bin, jx, jy, cx, cy, bb.maxZ - rest, headTop);
+      expect(over.columns).toBeGreaterThan(5);
+      closest = Math.min(closest, over.closest);
+    }
+    expect(closest).toBeGreaterThanOrEqual(-0.01);
+  }, 240_000);
 });
 
 function junctionPockets(jx: number, jy: number): Array<readonly [number, number]> {
