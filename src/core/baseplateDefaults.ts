@@ -63,12 +63,19 @@ export const SCREW_HOLE_MIN_DIAMETER_MM = 2;
 export const SCREW_HOLE_MAX_DIAMETER_MM = 8;
 
 /**
- * Head recess defaults (mm), from kennetek's `standard.scad` so plates match the
- * wider ecosystem: countersink widens the shaft by 2×2.3mm, counterbore is a
- * flat ø5.5 × 3mm pocket for a socket-head cap.
+ * Head recess defaults (mm) a new screw config starts at: an M3 flat head is
+ * ø6, which still seats in the solid post where four pockets meet on a stock
+ * plate, so the screws cost no height. The counterbore is a flat ø5.5 × 3mm
+ * pocket for an M3 socket-head cap.
  */
-export const SCREW_COUNTERSINK_DEFAULT_DIAMETER_MM = 8;
+export const SCREW_COUNTERSINK_DEFAULT_DIAMETER_MM = 6;
 export const SCREW_COUNTERBORE_DEFAULT_DIAMETER_MM = 5.5;
+/**
+ * Head width a stored countersink WITHOUT `headDiameter` resolves to. Plates
+ * that omit the field were built at ø8 (kennetek's `standard.scad` cone), so
+ * this must stay 8 or they change shape on load. New configs store their width.
+ */
+export const SCREW_COUNTERSINK_UNSET_DIAMETER_MM = 8;
 export const SCREW_COUNTERBORE_DEFAULT_DEPTH_MM = 3;
 export const SCREW_HEAD_MIN_DIAMETER_MM = 3;
 export const SCREW_HEAD_MAX_DIAMETER_MM = 16;

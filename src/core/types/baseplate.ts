@@ -87,15 +87,16 @@ export type ScrewHeadStyle = 'countersink' | 'counterbore';
  * well its neighbours are screwed down.
  *
  * Each hole prefers the solid drawer-fit margin, which is full plate height and
- * needs no floor, and falls back to the pocket floor when no margin band is wide
- * enough. That fallback is the only case that changes the plate's height: the
- * pad under the hole must be `recessDepth + SCREW_PAD_MIN_RETAIN_MM` thick,
- * since a 2.3mm countersink cannot be sunk into a 0.8mm floor.
+ * needs no floor; then the solid post where four pockets meet, when the head
+ * seats there clear of a bin's feet; and falls back to the pocket floor last.
+ * That fallback is the only case that changes the plate's height: the pad under
+ * the hole must be `recessDepth + SCREW_PAD_MIN_RETAIN_MM` thick, since a 2.3mm
+ * countersink cannot be sunk into a 0.8mm floor.
  *
  * A magnet plate can escape that cost, but not automatically. Because the screw
  * is concentric with a magnet, the ø6.5 × 2mm magnet pocket can serve as the
  * head recess (screw in first, magnet dropped in over it). That only holds while
- * the head fits the pocket, so the ø8 countersink default (too wide) and the 3mm
+ * the head fits the pocket, so a ø8 countersink (too wide) and the 3mm
  * counterbore default (too deep) each still buy their own pad. See
  * `screwPadThicknessMm`.
  */
@@ -105,7 +106,9 @@ export interface ScrewHoleParams {
    * off the mounting surface rather than pull it down. */
   readonly diameter: Mm;
   readonly headStyle: ScrewHeadStyle;
-  /** Head recess diameter. Absent ⇒ the style's default (8 / 5.5). */
+  /** Head recess diameter. Absent ⇒ 8 for a countersink, 5.5 for a counterbore
+   * (`resolveScrewHeadDiameter`), fixed so plates that omit it keep their shape.
+   * New configs store it. */
   readonly headDiameter?: Mm;
   /** Counterbore depth. Ignored for a countersink, whose depth is derived from
    * the cone angle. Absent ⇒ `SCREW_COUNTERBORE_DEFAULT_DEPTH_MM`. */

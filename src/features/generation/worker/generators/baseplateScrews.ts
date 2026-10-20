@@ -5,7 +5,8 @@
  * decisions without sharing a kernel:
  *   - {@link planBaseplateScrewHoles} and {@link resolveScrewHoles}: pure. Turn
  *     a piece's params into absolute XY positions, snapping each floor target to
- *     a real magnet position. No brepjs, so `baseplateDirectMesh` calls them too.
+ *     a real magnet position. No brepjs, so `baseplateDirectMesh` and the
+ *     plate-level pad decision call them too.
  *   - {@link buildScrewCutters}: the BREP cutters, built as one template per
  *     site and translated to each position, the same way magnets are.
  *
@@ -23,22 +24,35 @@ import type { ScrewHoleParams } from '@/core/types/baseplate';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import {
   effectiveMarginBands,
+  nearestWithLean,
   planPieceScrews,
   resolveScrewHeadDiameter,
   screwCutDepths,
   screwSnapPreference,
+  type ScrewJunctionSite,
   type ScrewSite,
   type ScrewSlot,
 } from '@/shared/generation/screwHolePlan';
-import { COPLANAR_MARGIN, forEachCell } from './generatorTypes';
+import { baseplateFloorDepthBeforeScrews } from '@/shared/printSettings/baseplateHeight';
+import {
+  COPLANAR_MARGIN,
+  forEachCell,
+  plateProfileHeightMm,
+  socketHeightMm,
+} from './generatorTypes';
 import type { ForEachCellOptions, CellInfo } from './generatorTypes';
 import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import { resolvePitch, type GridPitch, type GridUnitInput } from './gridPitch';
+import { baseplateCellClassifier, plateCornerRadii, plateFootprintMm } from './baseplateFrame';
+import { floorReliefReachesCorners } from './lightweightFloorCutter';
+import { screwJunctions } from './screwJunctionPlan';
 
 export interface ResolvedScrewHole {
   readonly x: number;
   readonly y: number;
   readonly site: ScrewSite;
+  /** Head seat depth below the top face, junction holes only. */
+  readonly seatBelowTopMm?: number;
 }
 
 /**
@@ -78,26 +92,12 @@ export function screwFloorCandidates(
 }
 
 /**
- * Squared-mm slack within which two candidates count as EQUIDISTANT, so the
- * lean decides between them rather than arrival order. Detecting the tie is the
- * point: the two magnets flanking a centreline are equidistant by construction,
- * so a strict `<` never reaches the lean at all.
- *
- * Compared against a SQUARED distance, so the slack it admits is `eps / 2r`,
- * not `sqrt(eps)`: ~0.04nm at an edge anchor's ~128mm², far under the lattice.
- */
-const SNAP_TIE_EPSILON_MM2 = 1e-6;
-
-/**
  * Turn planned slots into absolute positions.
  *
- * A margin slot already carries its exact centre. A floor slot carries only an
- * ideal target, and is snapped to the nearest candidate: the single rule that
- * stops each layer inventing its own notion of "the corner cell".
- *
- * Nearest alone is ambiguous: an edge-midpoint anchor ties exactly between the
- * two magnets flanking it, and taking the first leans every edge screw toward
- * one corner (#3698). Ties go to {@link screwSnapPreference}.
+ * A margin or junction slot already carries its exact centre. A floor slot
+ * carries only an ideal target, and is snapped to the nearest candidate (ties
+ * by {@link screwSnapPreference}): the single rule that stops each layer
+ * inventing its own notion of "the corner cell".
  *
  * Candidates are consumed as they are taken. Without that, every anchor on a
  * piece small enough to offer one magnet position would snap to the SAME point
@@ -115,24 +115,17 @@ export function resolveScrewHoles(
       holes.push({ x: slot.target[0], y: slot.target[1], site: 'margin' });
       continue;
     }
-
-    const [leanX, leanY] = screwSnapPreference(slot.anchor);
-    let bestIndex = -1;
-    let bestDist = Number.POSITIVE_INFINITY;
-    let bestLean = Number.NEGATIVE_INFINITY;
-    for (let i = 0; i < available.length; i++) {
-      const dx = available[i][0] - slot.target[0];
-      const dy = available[i][1] - slot.target[1];
-      const d = dx * dx + dy * dy;
-      if (d > bestDist + SNAP_TIE_EPSILON_MM2) continue;
-
-      const lean = dx * leanX + dy * leanY;
-      if (d < bestDist - SNAP_TIE_EPSILON_MM2 || lean > bestLean) {
-        bestDist = Math.min(bestDist, d);
-        bestLean = lean;
-        bestIndex = i;
-      }
+    if (slot.site === 'junction') {
+      holes.push({
+        x: slot.target[0],
+        y: slot.target[1],
+        site: 'junction',
+        seatBelowTopMm: slot.seatBelowTopMm ?? 0,
+      });
+      continue;
     }
+
+    const bestIndex = nearestWithLean(slot.target, screwSnapPreference(slot.anchor), available);
     if (bestIndex < 0) continue;
 
     const [x, y] = available[bestIndex];
@@ -164,6 +157,61 @@ export interface ScrewPlacementInput {
   readonly magnetAnchor?: MagnetAnchor;
   /** Restricts floor candidates to the cells a shaped plate actually keeps. */
   readonly cellFilter?: (cell: CellInfo) => boolean;
+  /** Junctions whose post holds the head; see {@link screwPlacementFor}. */
+  readonly junctions?: readonly ScrewJunctionSite[];
+}
+
+/**
+ * Everything {@link planBaseplateScrewHoles} needs, derived from a piece's own
+ * params. The BREP build, the draft mesh and the plate-level pad decision all
+ * plan through this, so none can site a screw from inputs the others lack.
+ *
+ * Junctions are fit-checked at the height the plate has WITHOUT its screw pad,
+ * so a padded plate sites every screw exactly where the pad decision assumed.
+ * Their corner relief ignores floor screws: a cell holding one hosts magnet
+ * pads, which is exactly when the relief stays clear of its corners.
+ */
+export function screwPlacementFor(
+  screwParams: ScrewHoleParams,
+  params: ResolvedBaseplateParams
+): ScrewPlacementInput {
+  const pitch = { x: params.gridUnitMm, y: params.gridUnitMmY ?? params.gridUnitMm };
+  const cellOpts = {
+    fractionalEdgeX: params.fractionalEdgeX,
+    fractionalEdgeY: params.fractionalEdgeY,
+    gridUnitMm: pitch,
+  };
+  const { widthMm, depthMm } = plateFootprintMm(params);
+  const classify = baseplateCellClassifier(params);
+  const cellFilter =
+    params.outline !== undefined
+      ? (cell: CellInfo): boolean => classify(cell) === 'inside'
+      : undefined;
+  const profileHeight = plateProfileHeightMm(params.lowProfileBase);
+  const reliefRadius = screwAwareHoleRadius(params.magnetDiameter / 2, screwParams);
+  return {
+    totalWidthMm: widthMm,
+    totalDepthMm: depthMm,
+    resolvedCornerRadii: plateCornerRadii(params),
+    gridW: params.width,
+    gridD: params.depth,
+    pitch,
+    cellOpts,
+    magnetRadius: params.magnetDiameter / 2,
+    magnetAnchor: params.magnetAnchor,
+    cellFilter,
+    junctions: screwJunctions(
+      screwParams,
+      params.width,
+      params.depth,
+      profileHeight + baseplateFloorDepthBeforeScrews(params),
+      profileHeight,
+      socketHeightMm(params.lowProfileBase),
+      cellOpts,
+      cellFilter,
+      (cell) => floorReliefReachesCorners(params, cell, reliefRadius, pitch.x, pitch.y, () => false)
+    ),
+  };
 }
 
 /**
@@ -173,10 +221,10 @@ export interface ScrewPlacementInput {
  * put a hole in different places for the same plate.
  *
  * `floorPadProvisioned` is always true: `buildFullParams` provisions the pad
- * whenever screws are enabled, so a floor site always has material to cut into.
- * A piece may not second-guess that. Pieces of one plate share a slab height,
- * and one that decided for itself would cut screws into a slab the others never
- * grew.
+ * whenever any piece of the plate has a screw that falls back to the floor, so a
+ * floor site always has material to cut into. A piece may not second-guess
+ * that. Pieces of one plate share a slab height, and one that decided for itself
+ * would cut screws into a slab the others never grew.
  */
 export function planBaseplateScrewHoles(
   screwParams: ScrewHoleParams,
@@ -189,6 +237,7 @@ export function planBaseplateScrewHoles(
       depthMm: input.totalDepthMm,
       bands: effectiveMarginBands(params),
       cornerRadii: input.resolvedCornerRadii,
+      junctions: input.junctions,
       floorPadProvisioned: true,
     }),
     screwFloorCandidates(
@@ -203,6 +252,19 @@ export function planBaseplateScrewHoles(
 }
 
 /**
+ * Whether any of a piece's screws falls back to the pocket floor, which is what
+ * obliges the whole plate to carry the pad. Plans exactly as the build does, so
+ * the pad is provisioned for precisely the screws that use it.
+ */
+export function pieceScrewsNeedFloor(params: ResolvedBaseplateParams): boolean {
+  const screwParams = params.screwHoles;
+  if (screwParams?.enabled !== true) return false;
+  return planBaseplateScrewHoles(screwParams, params, screwPlacementFor(screwParams, params)).some(
+    (hole) => hole.site === 'floor'
+  );
+}
+
+/**
  * One cutter template for a site, centred on the origin in XY.
  *
  * Z follows the BREP build's convention (top face at 0, growing downward), which
@@ -210,28 +272,33 @@ export function planBaseplateScrewHoles(
  *
  * The recess is lofted rather than built from a cone primitive so the profile is
  * explicit: full head width AT the entry plane, narrowing to the shaft over
- * exactly `recessDepth`. It is extended `COPLANAR_MARGIN` above the entry plane
- * at full width, which cuts only air and keeps the boolean off a coplanar face.
+ * exactly `recessDepth`. It is extended at full width up to `COPLANAR_MARGIN`
+ * above the plane the bore opens on, which cuts only air and keeps the boolean
+ * off a coplanar face. For a junction that plane is the top face, so the same
+ * full-width run is the bore the head goes down.
  */
 function buildScrewTemplate(
   params: ScrewHoleParams,
   site: ScrewSite,
   totalHeightMm: number,
-  profileHeightMm: number
+  profileHeightMm: number,
+  seatBelowTopMm: number
 ): Shape3D {
-  const { entryBelowTop, recessDepth, throughDepth } = screwCutDepths(
+  const { openBelowTop, entryBelowTop, recessDepth, throughDepth } = screwCutDepths(
     params,
     site,
     profileHeightMm,
-    totalHeightMm
+    totalHeightMm,
+    seatBelowTopMm
   );
+  const openZ = -openBelowTop;
   const entryZ = -entryBelowTop;
   const shaftRadius = params.diameter / 2;
   const headRadius = resolveScrewHeadDiameter(params.headStyle, params.headDiameter) / 2;
 
-  // Shaft runs from just above the entry plane clear through the underside.
-  const shaft = cylinder(shaftRadius, throughDepth + 2 * COPLANAR_MARGIN, {
-    at: [0, 0, entryZ + COPLANAR_MARGIN],
+  // Shaft runs from just above the opening clear through the underside.
+  const shaft = cylinder(shaftRadius, openZ - entryZ + throughDepth + 2 * COPLANAR_MARGIN, {
+    at: [0, 0, openZ + COPLANAR_MARGIN],
     axis: [0, 0, -1],
   });
 
@@ -247,14 +314,14 @@ function buildScrewTemplate(
   let recess: Shape3D;
   try {
     if (params.headStyle === 'counterbore') {
-      recess = cylinder(headRadius, recessDepth + COPLANAR_MARGIN, {
-        at: [0, 0, entryZ + COPLANAR_MARGIN],
+      recess = cylinder(headRadius, openZ - entryZ + recessDepth + COPLANAR_MARGIN, {
+        at: [0, 0, openZ + COPLANAR_MARGIN],
         axis: [0, 0, -1],
       });
     } else {
       const section = (r: number, z: number): Sketch =>
         drawCircle(r).sketchOnPlane('XY', z) as Sketch;
-      const start = section(headRadius, entryZ + COPLANAR_MARGIN);
+      const start = section(headRadius, openZ + COPLANAR_MARGIN);
       try {
         recess = start.loftWith(
           [section(headRadius, entryZ), section(shaftRadius, entryZ - recessDepth)],
@@ -278,8 +345,9 @@ function buildScrewTemplate(
 }
 
 /**
- * Build cutters for every resolved hole. Templates are built once per site and
- * translated into place, matching how magnets amortise their construction.
+ * Build cutters for every resolved hole. Templates are built once per site (and
+ * junction seat) and translated into place, matching how magnets amortise their
+ * construction.
  */
 export function buildScrewCutters(
   holes: readonly ResolvedScrewHole[],
@@ -289,15 +357,17 @@ export function buildScrewCutters(
 ): Shape3D[] {
   if (holes.length === 0) return [];
 
-  const templates = new Map<ScrewSite, Shape3D>();
+  const templates = new Map<string, Shape3D>();
   const cutters: Shape3D[] = [];
 
   try {
     for (const hole of holes) {
-      let template = templates.get(hole.site);
+      const seat = hole.seatBelowTopMm ?? 0;
+      const key = `${hole.site}:${seat}`;
+      let template = templates.get(key);
       if (template === undefined) {
-        template = buildScrewTemplate(params, hole.site, totalHeightMm, profileHeightMm);
-        templates.set(hole.site, template);
+        template = buildScrewTemplate(params, hole.site, totalHeightMm, profileHeightMm, seat);
+        templates.set(key, template);
       }
       cutters.push(translate(template, [hole.x, hole.y, 0]));
     }

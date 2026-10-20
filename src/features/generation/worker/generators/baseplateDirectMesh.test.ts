@@ -908,6 +908,22 @@ describe('direct mesh mount-down screw holes (#3425)', () => {
       generateDirect(plain, noop).triangleCount
     );
   });
+
+  it('drills an M3 flat head at each crossing of a stock plate, exiting the underside', () => {
+    const m3: ScrewHoleParams = { ...SCREWS, headDiameter: mm(6) };
+    const params = defaults({ width: 3, depth: 3, screwHoles: m3, screwPadThicknessMm: 0 });
+    const mesh = generateDirect(params, noop);
+    const junctions = keys([
+      [-21, -21],
+      [21, -21],
+      [-21, 21],
+      [21, 21],
+    ]);
+    expect(keys(discCentresAt(mesh, CANCEL_EPSILON, 1))).toEqual(junctions);
+    // No entry face is punched: the post is a knife edge at the top.
+    expect(discCentresAt(mesh, PLATE_PROFILE_HEIGHT - CANCEL_EPSILON, -1)).toEqual([]);
+    expect(computeBounds(mesh.vertices).maxZ).toBeCloseTo(PLATE_PROFILE_HEIGHT, 6);
+  });
 });
 
 describe('mount magnets in the draft', () => {

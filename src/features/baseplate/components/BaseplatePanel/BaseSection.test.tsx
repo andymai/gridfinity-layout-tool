@@ -180,7 +180,42 @@ describe('BaseSection', () => {
         enabled: true,
         diameter: 3.4,
         headStyle: 'countersink',
+        headDiameter: 6,
       });
+    });
+
+    it('leaves a saved config without a head width without one, so it keeps its ø8', () => {
+      useLayoutStore.getState().setBaseplateParams({
+        ...DEFAULT_BASEPLATE_PARAMS,
+        screwHoles: { enabled: false, diameter: mm(3.4), headStyle: 'countersink' },
+      });
+      render(<BaseSection />);
+      fireEvent.click(screen.getByRole('switch', { name: 'baseplate.screwHoles.label' }));
+      expect(useLayoutStore.getState().layout.baseplateParams?.screwHoles).toEqual({
+        enabled: true,
+        diameter: 3.4,
+        headStyle: 'countersink',
+      });
+    });
+
+    it('resets the head width to the new style default on a style switch', () => {
+      enableScrews('countersink');
+      render(<BaseSection />);
+      // The style control sits behind the collapsed "Customize" disclosure.
+      fireEvent.click(
+        screen.getByRole('radio', {
+          name: 'baseplate.screwHoles.headStyle.counterbore',
+          hidden: true,
+        })
+      );
+      expect(useLayoutStore.getState().layout.baseplateParams?.screwHoles?.headDiameter).toBe(5.5);
+      fireEvent.click(
+        screen.getByRole('radio', {
+          name: 'baseplate.screwHoles.headStyle.countersink',
+          hidden: true,
+        })
+      );
+      expect(useLayoutStore.getState().layout.baseplateParams?.screwHoles?.headDiameter).toBe(6);
     });
 
     it('adds the screw summary to the section header beside the magnet one', () => {

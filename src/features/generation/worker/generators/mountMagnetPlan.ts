@@ -30,6 +30,7 @@ import {
 import { forEachCell } from './cellDecomposition';
 import type { CellInfo, ForEachCellOptions } from './cellDecomposition';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
+import type { TaperProfile } from './generatorConstants';
 
 /**
  * Plastic kept between a mount-magnet hole and the nearest pocket corner. The
@@ -38,25 +39,36 @@ import { resolvePitch, type GridUnitInput } from './gridPitch';
 export const MOUNT_MAGNET_MIN_WALL_MM = 0.2;
 
 /**
+ * Inset of a taper profile at `depth` below its top face: 0 above it, its last
+ * inset below it.
+ */
+export function profileInsetAt(profile: TaperProfile, depth: number): number {
+  if (depth <= 0) return 0;
+  for (let k = 1; k < profile.length; k++) {
+    const [d1, i1] = profile[k];
+    if (depth <= d1) {
+      const [d0, i0] = profile[k - 1];
+      const span = d1 - d0;
+      return span <= 0 ? i1 : i0 + ((depth - d0) / span) * (i1 - i0);
+    }
+  }
+  return profile[profile.length - 1][1];
+}
+
+/**
  * Inset of the pocket profile at `depthBelowTop`. Below the profile a cell is
  * either floored (no pocket) or through-cut at {@link POCKET_INSET_BOT}; the
  * caller handles that band.
  */
 function pocketInsetAt(depthBelowTop: number, profileHeight: number): number {
-  const profile = pocketProfileFor(profileHeight);
-  if (depthBelowTop <= 0) return 0;
-  for (let k = 1; k < profile.length; k++) {
-    const [d1, i1] = profile[k];
-    if (depthBelowTop <= d1) {
-      const [d0, i0] = profile[k - 1];
-      const span = d1 - d0;
-      return span <= 0 ? i1 : i0 + ((depthBelowTop - d0) / span) * (i1 - i0);
-    }
-  }
-  return POCKET_INSET_BOT;
+  return profileInsetAt(pocketProfileFor(profileHeight), depthBelowTop);
 }
 
-function cornerDistance(inset: number, cornerRadius: number): number {
+/**
+ * Distance from a cell corner to a rounded section inset `inset` from the cell
+ * edges, whose corner arc keeps its centre `cornerRadius` in from both edges.
+ */
+export function cornerDistance(inset: number, cornerRadius: number): number {
   const r = Math.max(cornerRadius - inset, 0);
   return (inset + r) * Math.SQRT2 - r;
 }
@@ -161,30 +173,31 @@ export interface MountMagnetHole {
   readonly chamfer: boolean;
 }
 
-interface Junction {
+export interface PieceJunction {
   readonly x: number;
   readonly y: number;
+  /** Smallest pocket corner radius of the four cells. */
   readonly cornerRadius: number;
   readonly cornerRelief: boolean;
 }
 
 const KEY_PRECISION = 1000;
 
+const pointKey = (x: number, y: number): string =>
+  `${Math.round(x * KEY_PRECISION)},${Math.round(y * KEY_PRECISION)}`;
+
 /**
- * Interior junctions of a piece: points that are a corner of exactly four
- * kept cells, each of which leaves the hole room. A seam or plate edge is a
- * corner of two cells at most, so it never qualifies.
+ * Interior junctions of a piece: points that are a corner of exactly four kept
+ * cells. A seam or plate edge is a corner of two cells at most, so it never
+ * qualifies. Sorted by y, then x.
  */
-export function mountMagnetJunctions(
+export function pieceJunctions(
   gridW: number,
   gridD: number,
-  params: Pick<MountMagnetParams, 'diameter' | 'depth'>,
-  totalHeight: number,
-  profileHeight: number,
   cellOpts: ForEachCellOptions & { gridUnitMm: GridUnitInput },
   cellFilter?: (cell: CellInfo) => boolean,
   cellCornerRelief?: (cell: CellInfo) => boolean
-): Junction[] {
+): PieceJunction[] {
   const { x: pitchX, y: pitchY } = resolvePitch(cellOpts.gridUnitMm);
   const corners = new Map<
     string,
@@ -203,7 +216,7 @@ export function mountMagnetJunctions(
         for (const sy of [-1, 1]) {
           const x = cell.centerX + (sx * w) / 2;
           const y = cell.centerY + (sy * d) / 2;
-          const key = `${Math.round(x * KEY_PRECISION)},${Math.round(y * KEY_PRECISION)}`;
+          const key = pointKey(x, y);
           const entry = corners.get(key);
           if (entry === undefined) {
             corners.set(key, { x, y, count: 1, radius, relief });
@@ -218,25 +231,43 @@ export function mountMagnetJunctions(
     cellOpts
   );
 
-  const out: Junction[] = [];
+  const out: PieceJunction[] = [];
   for (const c of corners.values()) {
     if (c.count !== 4) continue;
-    if (
-      !mountMagnetFits(
-        params.diameter,
-        params.depth,
-        totalHeight,
-        profileHeight,
-        c.radius,
-        c.relief
-      )
-    ) {
-      continue;
-    }
     out.push({ x: c.x, y: c.y, cornerRadius: c.radius, cornerRelief: c.relief });
   }
   out.sort((a, b) => a.y - b.y || a.x - b.x);
   return out;
+}
+
+/**
+ * Junctions of a piece that leave a mount-magnet hole room, minus any in
+ * `reserved` (taken by a screw, which claims its junctions first).
+ */
+export function mountMagnetJunctions(
+  gridW: number,
+  gridD: number,
+  params: Pick<MountMagnetParams, 'diameter' | 'depth'>,
+  totalHeight: number,
+  profileHeight: number,
+  cellOpts: ForEachCellOptions & { gridUnitMm: GridUnitInput },
+  cellFilter?: (cell: CellInfo) => boolean,
+  cellCornerRelief?: (cell: CellInfo) => boolean,
+  reserved: ReadonlyArray<{ readonly x: number; readonly y: number }> = []
+): PieceJunction[] {
+  const taken = new Set(reserved.map(({ x, y }) => pointKey(x, y)));
+  return pieceJunctions(gridW, gridD, cellOpts, cellFilter, cellCornerRelief).filter(
+    (j) =>
+      !taken.has(pointKey(j.x, j.y)) &&
+      mountMagnetFits(
+        params.diameter,
+        params.depth,
+        totalHeight,
+        profileHeight,
+        j.cornerRadius,
+        j.cornerRelief
+      )
+  );
 }
 
 interface Point {
@@ -433,9 +464,10 @@ export function selectMountMagnets<T extends Point>(candidates: readonly T[], co
 }
 
 /**
- * Plan a piece's mount magnets: every fitting junction, thinned to the count.
- * `cellCornerRelief` names the cells whose floor relief reaches their corners
- * (see {@link junctionClearanceMm}); omit it on a plate with no relief.
+ * Plan a piece's mount magnets: every fitting junction not `reserved` by a
+ * screw, thinned to the count. `cellCornerRelief` names the cells whose floor
+ * relief reaches their corners (see {@link junctionClearanceMm}); omit it on a
+ * plate with no relief.
  */
 export function planMountMagnets(
   params: MountMagnetParams,
@@ -445,7 +477,8 @@ export function planMountMagnets(
   profileHeight: number,
   cellOpts: ForEachCellOptions & { gridUnitMm: GridUnitInput },
   cellFilter?: (cell: CellInfo) => boolean,
-  cellCornerRelief?: (cell: CellInfo) => boolean
+  cellCornerRelief?: (cell: CellInfo) => boolean,
+  reserved: ReadonlyArray<{ readonly x: number; readonly y: number }> = []
 ): MountMagnetHole[] {
   if (!params.enabled) return [];
   return selectMountMagnets(
@@ -457,7 +490,8 @@ export function planMountMagnets(
       profileHeight,
       cellOpts,
       cellFilter,
-      cellCornerRelief
+      cellCornerRelief,
+      reserved
     ),
     params.perPiece ?? MOUNT_MAGNETS_PER_PIECE_DEFAULT
   ).map(({ x, y, cornerRadius, cornerRelief }) => ({

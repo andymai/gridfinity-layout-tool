@@ -10,7 +10,9 @@
  * Pattern (per hole), mirroring `directMeshMagnets`:
  *   - Cancel disc CANCEL_EPSILON below the entry plane facing -Z, punching the
  *     surface the screw enters (top face for a margin site, pocket floor for a
- *     floor site) without z-fighting it.
+ *     floor site) without z-fighting it. A junction has no face to punch: the
+ *     post is a knife edge at the top, so it gets the bore wall instead, drawn
+ *     only where the bore passes through the post.
  *   - Head recess band: a truncated cone (countersink) or a plain cylinder plus
  *     a shoulder annulus (counterbore).
  *   - Shaft band down to the underside, since a screw that stops inside the
@@ -20,11 +22,12 @@
  */
 
 import type { ScrewHoleParams } from '@/core/types/baseplate';
-import type { ScrewSite } from '@/shared/generation/screwHolePlan';
 import { resolveScrewHeadDiameter, screwCutDepths } from '@/shared/generation/screwHolePlan';
 import type { MeshBuilder } from './directMeshBuilder';
 import { CANCEL_EPSILON, CIRCLE_SEGMENTS } from './directMeshBuilder';
 import { circlePoints } from './directMeshShapes';
+import type { ResolvedScrewHole } from './baseplateScrews';
+import { junctionPostDepthMm } from './screwJunctionPlan';
 
 type UnitCircle = ReadonlyArray<readonly [number, number]>;
 
@@ -101,25 +104,58 @@ function addAnnulus(
 }
 
 /**
- * Emit a single mount-down screw hole at absolute (sx, sy).
+ * The head-wide bore above a junction screw's seat. Each ring vertex rises only
+ * to the depth where that point of the bore enters the post, so the wall stops
+ * where the pocket's air begins. The pocket corners inside the bore are not
+ * notched here; the exact build cuts them.
+ */
+function addJunctionBore(
+  mb: MeshBuilder,
+  cx: number,
+  cy: number,
+  radius: number,
+  zTop: number,
+  zSeat: number,
+  profileHeightMm: number,
+  unit: UnitCircle
+): void {
+  const seatDepth = zTop - zSeat;
+  const top = new Array<number>(unit.length);
+  const bot = new Array<number>(unit.length);
+  for (let i = 0; i < unit.length; i++) {
+    const [ux, uy] = unit[i];
+    const entry = junctionPostDepthMm(ux * radius, uy * radius, profileHeightMm);
+    const z = zTop - Math.min(entry, seatDepth);
+    top[i] = mb.pushVertex(cx + ux * radius, cy + uy * radius, z, 0, 0, 0);
+    bot[i] = mb.pushVertex(cx + ux * radius, cy + uy * radius, zSeat, 0, 0, 0);
+  }
+  for (let i = 0; i < unit.length; i++) {
+    const j = (i + 1) % unit.length;
+    mb.pushQuad(top[j], top[i], bot[i], bot[j]);
+  }
+}
+
+/**
+ * Emit a single mount-down screw hole at the hole's absolute position.
  *
  * `totalHeightMm` is the plate's printed height, so the entry plane lands on the
- * top face for a margin site and on the pocket floor for a floor site.
+ * top face for a margin site, at the head seat for a junction site and on the
+ * pocket floor for a floor site.
  */
 export function addScrewHoleAt(
   mb: MeshBuilder,
-  sx: number,
-  sy: number,
-  site: ScrewSite,
+  hole: ResolvedScrewHole,
   params: ScrewHoleParams,
   totalHeightMm: number,
   profileHeightMm: number
 ): void {
+  const { x: sx, y: sy, site } = hole;
   const { entryBelowTop, recessDepth, throughDepth } = screwCutDepths(
     params,
     site,
     profileHeightMm,
-    totalHeightMm
+    totalHeightMm,
+    hole.seatBelowTopMm
   );
   if (throughDepth <= 0) return;
 
@@ -145,7 +181,11 @@ export function addScrewHoleAt(
 
   const unit = circlePoints(1, CIRCLE_SEGMENTS);
 
-  addDisc(mb, sx, sy, zEntry - CANCEL_EPSILON, entryRadius, -1, unit);
+  if (site === 'junction') {
+    addJunctionBore(mb, sx, sy, entryRadius, totalHeightMm, zEntry, profileHeightMm, unit);
+  } else {
+    addDisc(mb, sx, sy, zEntry - CANCEL_EPSILON, entryRadius, -1, unit);
+  }
 
   if (recess > 0) {
     addBand(mb, sx, sy, entryRadius, zEntry, recessBottomRadius, zRecess, unit);

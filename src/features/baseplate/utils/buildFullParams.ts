@@ -6,11 +6,14 @@
 
 import type {
   CornerCutParams,
+  Drawer,
   DrawerOutline,
+  Layout,
   MagnetAnchor,
   StoredBaseplateParams,
 } from '@/core/types';
-import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
+import { DEFAULT_MAGNET_ANCHOR, effectiveGridUnitMmY } from '@/core/types';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isSeatedConnectorStyle } from '@/shared/types/bin';
 import { clampCornerCuts, cornerCutVertices } from '@/shared/utils/cornerCutOutline';
@@ -21,8 +24,20 @@ import {
   resolveOutlineFrame,
 } from '@/shared/utils/outlineFrame';
 import { screwPadThicknessMm } from '@/shared/generation/screwHolePlan';
+import { pieceScrewsNeedFloor } from '@/shared/generation/screwPadPlan';
 import { baseplateFloorDepthBeforeScrews } from '@/shared/printSettings/baseplateHeight';
 import { normalizeSplitOverride } from './splitOverride';
+import {
+  bodyParamsForDetach,
+  computeBaseplateTiling,
+  pieceToBaseplateParams,
+} from './splitPlanner';
+
+/** The print bed a plate is split for, which decides its pieces. */
+export interface PrintBedMm {
+  readonly widthMm: number;
+  readonly depthMm: number;
+}
 
 /**
  * Largest corner radius the plain rounding path may cut: the arc can enter
@@ -224,9 +239,9 @@ function resolveRadiusOutline(
 }
 
 /**
- * Floor pad mount-down screws add under the plate, from the stored params alone.
- * Shared with the panel, which has to know the slab height a plate will print
- * at without the drawer and split plan `buildFullParams` needs.
+ * Pad a mount-down screw needs under the plate when it falls back to the pocket
+ * floor, from the stored params alone. Whether the plate carries it depends on
+ * where every piece's screws land, which `buildFullParams` decides.
  */
 export function resolveScrewPadMm(stored: StoredBaseplateParams): number {
   if (stored.screwHoles?.enabled !== true) return 0;
@@ -246,6 +261,27 @@ export function resolveScrewPadMm(stored: StoredBaseplateParams): number {
 }
 
 /**
+ * Keep the floor pad only when some piece has a screw that falls back to the
+ * floor: margin and junction screws cost no height. Pieces share one slab, so
+ * every piece the bed splits the plate into is planned, exactly as each will be
+ * built. Without a bed the plate is planned as the one piece it is unsplit.
+ */
+function decideScrewPad(
+  params: ResolvedBaseplateParams,
+  printBed: PrintBedMm | undefined
+): ResolvedBaseplateParams {
+  const tiling =
+    printBed !== undefined
+      ? computeBaseplateTiling(params, printBed.widthMm, printBed.depthMm)
+      : undefined;
+  const pieces =
+    tiling?.isSplit === true
+      ? tiling.pieces.map((piece) => pieceToBaseplateParams(piece, params))
+      : [bodyParamsForDetach(params)];
+  return pieces.some(pieceScrewsNeedFloor) ? params : { ...params, screwPadThicknessMm: 0 };
+}
+
+/**
  * Build full generation params from the stored per-layout config.
  *
  * @param drawerOutline - The drawer's non-rectangular boundary, if any.
@@ -259,6 +295,11 @@ export function resolveScrewPadMm(stored: StoredBaseplateParams): number {
  * and detached margins are outline-unaware, so while a shape is active they are
  * functionally zeroed, stored values untouched (the stack-print stripping
  * precedent).
+ *
+ * @param printBed - The bed the plate is split for. Only the mount-down screw
+ * pad reads it, since the pad is owed when any piece of the split has a floor
+ * screw. Every caller that builds or measures a screwed plate must pass it, or
+ * its height can disagree with the pieces the generator builds.
  */
 export function buildFullParams(
   stored: StoredBaseplateParams,
@@ -277,7 +318,8 @@ export function buildFullParams(
   gridShiftX: number = 0,
   gridShiftY: number = 0,
   // The layout's low-profile base; the plate's pockets must match its bins.
-  lowProfileBase?: boolean
+  lowProfileBase?: boolean,
+  printBed?: PrintBedMm
 ): ResolvedBaseplateParams {
   const {
     synced,
@@ -344,13 +386,9 @@ export function buildFullParams(
   // uniform-tile assumption stacking relies on: the same two reasons magnets and
   // the solid floor are stripped. The stored value returns on toggle-off.
   const screwHoles = stackingOn ? undefined : stored.screwHoles;
-  // The pad is provisioned whenever screws are on, not only when this plate's
-  // own bands fall short. The split plan is not known here, and a split plate
-  // almost always needs it: a corner piece's seam-side anchors have no margin
-  // band and a fully interior piece has none at all, so deriving from the
-  // unsplit plate would leave interior pieces unfastened, the exact failure
-  // per-piece placement exists to prevent. With magnets the shortfall is
-  // typically 0.6mm, since the magnet floor already covers most of the recess.
+  // Provisioned first, then kept only if a piece needs it (`decideScrewPad`).
+  // With magnets the shortfall is typically 0.6mm, since the magnet floor
+  // already covers most of the recess.
   const screwPad = screwHoles?.enabled === true ? resolveScrewPadMm(stored) : undefined;
   // The connector is only meaningful when margins actually detach. When
   // stacking strips a snapClip style to undefined, the seam gate downstream
@@ -370,7 +408,7 @@ export function buildFullParams(
       ? true
       : undefined;
 
-  return {
+  const params: ResolvedBaseplateParams = {
     width,
     depth,
     gridUnitMm,
@@ -446,4 +484,62 @@ export function buildFullParams(
       effFractionalEdgeY
     ),
   };
+  return screwPad !== undefined && screwPad > 0 ? decideScrewPad(params, printBed) : params;
+}
+
+/** The layout fields a plate's screw pad depends on. */
+export type PlateLayout = Pick<
+  Layout,
+  | 'gridUnitMm'
+  | 'gridUnitMmY'
+  | 'magnetAnchor'
+  | 'lowProfileBase'
+  | 'printBedSize'
+  | 'printBedDepth'
+  | 'baseplateParams'
+> & {
+  readonly drawer: Pick<
+    Drawer,
+    | 'width'
+    | 'depth'
+    | 'outline'
+    | 'fractionalEdgeX'
+    | 'fractionalEdgeY'
+    | 'gridShiftX'
+    | 'gridShiftY'
+  >;
+};
+
+/**
+ * The mount-down screw pad a layout's plate prints with, decided against the
+ * pieces its print bed splits it into, for readouts that need the plate's
+ * height without building its params. `lowProfileBase` overrides the layout's,
+ * to ask what the plate would be with it toggled.
+ */
+export function plateScrewPadMm(
+  layout: PlateLayout,
+  nozzleSizeMm: number,
+  lowProfileBase: boolean | undefined = layout.lowProfileBase
+): number {
+  const stored = layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+  if (stored.screwHoles?.enabled !== true) return 0;
+  const { drawer } = layout;
+  return (
+    buildFullParams(
+      stored,
+      drawer.width,
+      drawer.depth,
+      layout.gridUnitMm,
+      drawer.fractionalEdgeX ?? 'end',
+      drawer.fractionalEdgeY ?? 'end',
+      nozzleSizeMm,
+      drawer.outline,
+      layout.magnetAnchor,
+      effectiveGridUnitMmY(layout),
+      drawer.gridShiftX ?? 0,
+      drawer.gridShiftY ?? 0,
+      lowProfileBase,
+      { widthMm: layout.printBedSize, depthMm: layout.printBedDepth ?? layout.printBedSize }
+    ).screwPadThicknessMm ?? 0
+  );
 }

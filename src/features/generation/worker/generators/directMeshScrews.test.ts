@@ -28,8 +28,32 @@ function build(
   totalHeight = TOTAL_HEIGHT
 ): MeshData {
   const mb = new MeshBuilder();
-  addScrewHoleAt(mb, x, y, site, params, totalHeight, PLATE_PROFILE_HEIGHT);
+  addScrewHoleAt(mb, { x, y, site }, params, totalHeight, PLATE_PROFILE_HEIGHT);
   return mb.build();
+}
+
+const M3_FLAT: ScrewHoleParams = { ...COUNTERSINK, headDiameter: mm(6) };
+
+function buildJunction(params: ScrewHoleParams, seat: number): MeshData {
+  const mb = new MeshBuilder();
+  addScrewHoleAt(
+    mb,
+    { x: 0, y: 0, site: 'junction', seatBelowTopMm: seat },
+    params,
+    PLATE_PROFILE_HEIGHT,
+    PLATE_PROFILE_HEIGHT
+  );
+  return mb.build();
+}
+
+/** Highest vertex within 0.01mm of a point in plan. */
+function topAt(mesh: MeshData, x: number, y: number): number {
+  let top = -Infinity;
+  for (let i = 0; i < mesh.vertices.length; i += 3) {
+    if (Math.hypot(mesh.vertices[i] - x, mesh.vertices[i + 1] - y) > 0.01) continue;
+    top = Math.max(top, mesh.vertices[i + 2]);
+  }
+  return top;
 }
 
 function zRange(mesh: MeshData): { min: number; max: number } {
@@ -141,6 +165,30 @@ describe('addScrewHoleAt', () => {
     const { min, max } = zRange(mesh);
     expect(min).toBeCloseTo(0, 6);
     expect(max).toBeCloseTo(1, 6);
+  });
+
+  it('seats a junction head at its seat plane and runs the shaft out the underside', () => {
+    const seat = 1.25;
+    const mesh = buildJunction(M3_FLAT, seat);
+    const zSeat = PLATE_PROFILE_HEIGHT - seat;
+    expect(radiusAtZ(mesh, zSeat)).toBeCloseTo(3, 6);
+    expect(radiusAtZ(mesh, zSeat - screwHeadRecessDepth(M3_FLAT))).toBeCloseTo(1.7, 6);
+    expect(zRange(mesh).min).toBeCloseTo(0, 6);
+  });
+
+  it('punches no entry face at a junction, where the post is a knife edge', () => {
+    const seat = 1.25;
+    const mesh = buildJunction(M3_FLAT, seat);
+    expect(facesAtZ(mesh, PLATE_PROFILE_HEIGHT - seat - CANCEL_EPSILON, -1)).toBe(0);
+  });
+
+  it('raises the bore wall only where the bore passes through the post', () => {
+    // Along a "+" arm the post rises to the top face; on the diagonal the pocket
+    // corner is air down to 1.34mm, where a 3mm radius meets its arc.
+    const seat = 1.25;
+    const mesh = buildJunction(M3_FLAT, seat);
+    expect(topAt(mesh, 3, 0)).toBeCloseTo(PLATE_PROFILE_HEIGHT, 6);
+    expect(topAt(mesh, 3 / Math.SQRT2, 3 / Math.SQRT2)).toBeCloseTo(PLATE_PROFILE_HEIGHT - seat, 6);
   });
 
   it('shares ring vertices between the walls of one band', () => {

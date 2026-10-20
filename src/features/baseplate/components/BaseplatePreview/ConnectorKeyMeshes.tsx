@@ -23,6 +23,7 @@ import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import type { ConnectorKeyMesh } from '../../store/baseplatePageStore';
 import { buildFullParams } from '../../utils/buildFullParams';
 import { computeSeamJunctions } from '../../utils/connectorKeys';
+import { usePlateScrewPadMm } from '../../hooks/usePlateScrewPadMm';
 import {
   PUZZLE_NECK_HALF,
   PUZZLE_NECK_PROTRUSION,
@@ -248,6 +249,7 @@ export function ConnectorKeyMeshes() {
   );
 
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+  const screwPadMm = usePlateScrewPadMm();
 
   const fullParams = useMemo(
     () =>
@@ -278,7 +280,11 @@ export function ConnectorKeyMeshes() {
 
   // The worker's own derivation, so a floor or screw pad that makes a
   // low-profile plate tall enough for a clip shows the clip here too.
-  const totalHeight = baseplateTotalHeight({ ...fullParams, lowProfileBase });
+  const totalHeight = baseplateTotalHeight({
+    ...fullParams,
+    lowProfileBase,
+    screwPadThicknessMm: screwPadMm,
+  });
 
   const isSnapClip = fullParams.connectorStyle === 'snapClip';
   // On a slab too thin to flex, the worker skips snap pockets — so the preview

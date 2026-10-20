@@ -1022,7 +1022,7 @@
             "minimum": "SCREW_HEAD_MIN_DIAMETER_MM",
             "maximum": "SCREW_HEAD_MAX_DIAMETER_MM"
           },
-          "description": "Head recess diameter in mm. Absent uses the style default (8 for countersink, 5.5 for counterbore)."
+          "description": "Head recess diameter in mm. Absent means 8 for countersink, 5.5 for counterbore."
         },
         "counterboreDepth": {
           "type": "number",

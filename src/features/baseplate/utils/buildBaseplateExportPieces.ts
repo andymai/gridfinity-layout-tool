@@ -228,6 +228,8 @@ export async function buildBaseplateExportPieces(
   // single-sourced in buildFullParams (mirrors useBaseplateExport).
   const exportStored =
     format === 'step' ? { ...baseplateParams, stackPrint: undefined } : baseplateParams;
+  // An unsplit export prints the plate as one piece, so only a split one owes
+  // the screw pad to every piece of the bed's tiling.
   const fullParams = buildFullParams(
     exportStored,
     drawerWidth,
@@ -241,7 +243,8 @@ export async function buildBaseplateExportPieces(
     gridUnitMmY,
     gridShiftX,
     gridShiftY,
-    lowProfileBase
+    lowProfileBase,
+    splitEnabled ? { widthMm: printBedWidthMm, depthMm: printBedDepthMm } : undefined
   );
 
   const baseName = generateBaseplateFileName(toNamingParams(fullParams), format, fileNameConfig);

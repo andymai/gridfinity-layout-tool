@@ -2,21 +2,23 @@
  * Mount-down screw hole planning: pure geometry, no BREP kernel.
  *
  * Owns the ONE decision every layer has to agree on: for each screw, does it sit
- * in the solid drawer-fit margin, or does it fall back to the pocket floor?
- * That choice drives the plate's printed height, so it is resolved once at PLATE
- * level and handed down, never re-derived per piece.
+ * in the solid drawer-fit margin, in the solid post where four pockets meet, or
+ * does it fall back to the pocket floor? Only the floor costs height, so whether
+ * any screw lands there is resolved once at PLATE level and handed down as the
+ * pad, never re-derived per piece.
  *
  * Why plate level: each split piece is generated from its own params, but the
- * pieces have to assemble flush. An interior piece has no margin at all, so it
- * always needs the pocket-floor fallback, and if any one piece needs the pad,
- * every piece must carry the same taller slab or the assembled plate is stepped.
+ * pieces have to assemble flush. A 1xN piece has neither a margin nor a
+ * junction, so it needs the pocket-floor fallback, and if any one piece needs
+ * the pad, every piece must carry the same taller slab or the assembled plate is
+ * stepped.
  *
  * Every slot carries a `target` in piece-centred mm, whatever its site. A margin
- * target IS the hole centre. A floor target is the IDEAL point, and the geometry
- * layer snaps it to the nearest legal `magnetPositionsForCell` position. Stating
- * the snap as one rule ("nearest magnet position to the anchor") is what keeps
- * the exact build, the draft mesh and the margin path from each inventing their
- * own "corner cell" and drifting apart.
+ * or junction target IS the hole centre. A floor target is the IDEAL point, and
+ * the geometry layer snaps it to the nearest legal `magnetPositionsForCell`
+ * position. Stating the snap as one rule ("nearest magnet position to the
+ * anchor") is what keeps the exact build, the draft mesh and the margin path
+ * from each inventing their own "corner cell" and drifting apart.
  *
  * Plan against a PIECE's own resolved params, never the parent plate's. Under
  * `preferIdenticalPieces` a piece is built in a canonical orientation and rotated
@@ -29,6 +31,7 @@ import {
   SCREW_COUNTERBORE_DEFAULT_DIAMETER_MM,
   SCREW_COUNTERSINK_DEFAULT_DIAMETER_MM,
   SCREW_COUNTERSINK_INCLUDED_ANGLE_DEG,
+  SCREW_COUNTERSINK_UNSET_DIAMETER_MM,
   SCREW_PAD_MIN_RETAIN_MM,
   SCREWS_PER_PIECE_DEFAULT,
   SCREWS_PER_PIECE_MAX,
@@ -42,8 +45,22 @@ import type { ScrewHeadStyle, ScrewHoleParams } from '@/core/types/baseplate';
  */
 export const SCREW_MARGIN_MIN_WALL_MM = 1.2;
 
-/** Which material a screw passes through. */
-export type ScrewSite = 'margin' | 'floor';
+/**
+ * Which material a screw passes through: the solid drawer-fit margin, the
+ * solid post where four pockets meet (`junction`), or the pocket floor.
+ */
+export type ScrewSite = 'margin' | 'junction' | 'floor';
+
+/**
+ * A four-pocket junction whose post holds the head, in the same frame as the
+ * floor candidates. `seatBelowTopMm` is where the head's top face sits: low
+ * enough that a seated bin foot's rounded corner clears it.
+ */
+export interface ScrewJunctionSite {
+  readonly x: number;
+  readonly y: number;
+  readonly seatBelowTopMm: number;
+}
 
 /**
  * Where on a piece a screw can sit, in the order slots are filled: the four
@@ -68,10 +85,13 @@ export interface ScrewSlot {
   readonly anchor: ScrewAnchor;
   readonly site: ScrewSite;
   /**
-   * Piece-centred mm. Exact hole centre for a margin slot; for a floor slot the
-   * ideal point that the geometry layer snaps to the nearest magnet position.
+   * Piece-centred mm. Exact hole centre for a margin or junction slot; for a
+   * floor slot the ideal point that the geometry layer snaps to the nearest
+   * magnet position.
    */
   readonly target: readonly [number, number];
+  /** Head seat depth below the top face, junction slots only. */
+  readonly seatBelowTopMm?: number;
 }
 
 /** Per-side solid margin band widths (mm) available on a piece. */
@@ -107,6 +127,15 @@ export interface ScrewPieceInput {
    * and gets its pad, instead of silently shipping with fewer fasteners.
    */
   readonly isInsidePerimeter?: (x: number, y: number, radius: number) => boolean;
+  /**
+   * Junctions whose post holds this head, already fit-checked by the geometry
+   * layer against the plate's height WITHOUT any screw pad. Absent ⇒ none.
+   *
+   * Consulted while ASSIGNING sites, like the perimeter: the cell grid and the
+   * profile are known as early as padding. Checked against the unpadded height
+   * so a site never depends on the pad it decides.
+   */
+  readonly junctions?: readonly ScrewJunctionSite[];
   /**
    * True when a candidate collides with something that owns that material: a
    * connector tongue or groove, or a seam. Piece-centred mm; `radius` is the
@@ -154,9 +183,20 @@ export function effectiveMarginBands(params: {
   };
 }
 
-/** Resolved head diameter for a style, honouring an explicit override. */
+/**
+ * Resolved head diameter for a style, honouring an explicit override. An
+ * absent countersink width is {@link SCREW_COUNTERSINK_UNSET_DIAMETER_MM}, not
+ * the default a new config starts at (see {@link defaultScrewHeadDiameter}).
+ */
 export function resolveScrewHeadDiameter(headStyle: ScrewHeadStyle, headDiameter?: number): number {
   if (headDiameter !== undefined) return headDiameter;
+  return headStyle === 'countersink'
+    ? SCREW_COUNTERSINK_UNSET_DIAMETER_MM
+    : SCREW_COUNTERBORE_DEFAULT_DIAMETER_MM;
+}
+
+/** Head width a new config, or a switch to this style, starts at. */
+export function defaultScrewHeadDiameter(headStyle: ScrewHeadStyle): number {
   return headStyle === 'countersink'
     ? SCREW_COUNTERSINK_DEFAULT_DIAMETER_MM
     : SCREW_COUNTERBORE_DEFAULT_DIAMETER_MM;
@@ -238,11 +278,15 @@ export function minBandForHead(headDiameterMm: number): number {
  * once, at the edge, instead of open-coding a sign.
  *
  * A margin screw enters at the top face. A floor screw enters at the pocket
- * floor, `pocketDepthMm` below it, and both run out through the underside so
- * the screw can reach the drawer.
+ * floor, `pocketDepthMm` below it. A junction screw's head seats `seatBelowTopMm`
+ * down in the post, reached through a bore of the head's width that opens at the
+ * top face and notches the four pocket corners. All of them run out through the
+ * underside so the screw can reach the drawer.
  */
 export interface ScrewCutDepths {
-  /** Depth of the entry plane below the top face. */
+  /** Depth below the top face where the head-wide bore opens. */
+  readonly openBelowTop: number;
+  /** Depth of the entry plane (the head's top face) below the top face. */
   readonly entryBelowTop: number;
   /** How far the head recess sinks below the entry plane. */
   readonly recessDepth: number;
@@ -254,10 +298,13 @@ export function screwCutDepths(
   params: ScrewHoleParams,
   site: ScrewSite,
   pocketDepthMm: number,
-  totalHeightMm: number
+  totalHeightMm: number,
+  seatBelowTopMm: number = 0
 ): ScrewCutDepths {
-  const entryBelowTop = site === 'margin' ? 0 : pocketDepthMm;
+  const entryBelowTop =
+    site === 'margin' ? 0 : site === 'junction' ? seatBelowTopMm : pocketDepthMm;
   return {
+    openBelowTop: site === 'junction' ? 0 : entryBelowTop,
     entryBelowTop,
     recessDepth: screwHeadRecessDepth(params),
     throughDepth: totalHeightMm - entryBelowTop,
@@ -359,7 +406,7 @@ export function screwSnapPreference(anchor: ScrewAnchor): readonly [number, numb
   return [sx, sy];
 }
 
-/** The ideal point for an anchor, used as the floor snap target. */
+/** The ideal point for an anchor, used as the floor and junction snap target. */
 function anchorTarget(
   anchor: ScrewAnchor,
   halfW: number,
@@ -367,6 +414,91 @@ function anchorTarget(
 ): readonly [number, number] {
   const [sx, sy] = anchorSigns(anchor);
   return [sx * halfW, sy * halfD];
+}
+
+/**
+ * Squared-mm slack within which two candidates count as EQUIDISTANT, so the
+ * lean decides between them rather than arrival order. Detecting the tie is the
+ * point: the two magnets flanking a centreline are equidistant by construction,
+ * so a strict `<` never reaches the lean at all.
+ *
+ * Compared against a SQUARED distance, so the slack it admits is `eps / 2r`,
+ * not `sqrt(eps)`: ~0.04nm at an edge anchor's ~128mm², far under the lattice.
+ */
+const SNAP_TIE_EPSILON_MM2 = 1e-6;
+
+/**
+ * Index of the candidate nearest `target`, or -1 when there is none.
+ *
+ * Nearest alone is ambiguous: an edge-midpoint anchor ties exactly between the
+ * two points flanking it, and taking the first leans every edge screw toward
+ * one corner. Ties go to the candidate furthest along `lean`, which
+ * {@link screwSnapPreference} supplies.
+ */
+export function nearestWithLean(
+  target: readonly [number, number],
+  lean: readonly [number, number],
+  candidates: ReadonlyArray<readonly [number, number]>
+): number {
+  let bestIndex = -1;
+  let bestDist = Number.POSITIVE_INFINITY;
+  let bestLean = Number.NEGATIVE_INFINITY;
+  for (let i = 0; i < candidates.length; i++) {
+    const dx = candidates[i][0] - target[0];
+    const dy = candidates[i][1] - target[1];
+    const d = dx * dx + dy * dy;
+    if (d > bestDist + SNAP_TIE_EPSILON_MM2) continue;
+
+    const along = dx * lean[0] + dy * lean[1];
+    if (d < bestDist - SNAP_TIE_EPSILON_MM2 || along > bestLean) {
+      bestDist = Math.min(bestDist, d);
+      bestLean = along;
+      bestIndex = i;
+    }
+  }
+  return bestIndex;
+}
+
+/** Below this a coordinate counts as ON the centreline, in neither half. */
+const CENTRELINE_EPSILON_MM = 1e-6;
+
+/**
+ * Whether a junction lies in the anchor's own quadrant (corner) or half (edge
+ * midpoint), measured from the junction lattice's centre.
+ *
+ * Restricting each anchor to its own region is what keeps junction screws
+ * spread and half-turn symmetric: the region maps onto its partner's under the
+ * rotation, and a junction on a centreline (a 2xN piece's only row, or the
+ * middle of an even piece) belongs to no corner, so a lone centre junction can
+ * never pair one corner with a floor screw at the opposite one.
+ */
+function junctionInAnchorRegion(anchor: ScrewAnchor, x: number, y: number): boolean {
+  const [sx, sy] = anchorSigns(anchor);
+  return (
+    (sx === 0 || x * sx > CENTRELINE_EPSILON_MM) && (sy === 0 || y * sy > CENTRELINE_EPSILON_MM)
+  );
+}
+
+/**
+ * Take the junction an anchor screws into, removing it from `available`, or
+ * undefined when its region has none left.
+ */
+function takeJunction(
+  anchor: ScrewAnchor,
+  available: ScrewJunctionSite[],
+  halfW: number,
+  halfD: number
+): ScrewJunctionSite | undefined {
+  const inRegion = available.filter((j) => junctionInAnchorRegion(anchor, j.x, j.y));
+  const pick = nearestWithLean(
+    anchorTarget(anchor, halfW, halfD),
+    screwSnapPreference(anchor),
+    inRegion.map((j) => [j.x, j.y] as const)
+  );
+  if (pick < 0) return undefined;
+  const junction = inRegion[pick];
+  available.splice(available.indexOf(junction), 1);
+  return junction;
 }
 
 /**
@@ -398,21 +530,24 @@ function marginPosition(
 }
 
 /**
- * Assign every anchor a site from DIMENSIONS ALONE.
+ * Assign every anchor a site from DIMENSIONS ALONE: the margin when a band
+ * hosts the head, else a junction in the anchor's own region, else the floor.
  *
  * This is the height-critical half of planning and it deliberately takes no
- * collision callbacks. Band widths, over-tile and corner radii are all known
- * early and deterministically; connector collisions are not, and letting one
- * flip an anchor to the floor would make the plate 3.1mm taller because a screw
- * moved. See {@link planPieceScrews} for the invariant that follows from this.
+ * collision callbacks. Band widths, over-tile, corner radii and the junction
+ * lattice are all known early and deterministically; connector collisions are
+ * not, and letting one flip an anchor to the floor would make the plate 3.1mm
+ * taller because a screw moved. See {@link planPieceScrews} for the invariant
+ * that follows from this.
  */
 function assignAnchorSites(params: ScrewHoleParams, input: ScrewPieceInput): readonly ScrewSlot[] {
   const headDiameterMm = resolveScrewHeadDiameter(params.headStyle, params.headDiameter);
   const headRadius = headDiameterMm / 2;
   const halfW = input.widthMm / 2;
   const halfD = input.depthMm / 2;
+  const junctions = [...(input.junctions ?? [])];
 
-  return SCREW_ANCHORS.map((anchor) => {
+  return SCREW_ANCHORS.map((anchor): ScrewSlot => {
     const cornerR = anchorCornerRadius(anchor, input.cornerRadii);
     const margin = marginPosition(anchor, input, headDiameterMm);
     if (
@@ -420,9 +555,18 @@ function assignAnchorSites(params: ScrewHoleParams, input: ScrewPieceInput): rea
       discFitsRoundedRect(margin[0], margin[1], halfW, halfD, cornerR, headRadius) &&
       input.isInsidePerimeter?.(margin[0], margin[1], headRadius) !== false
     ) {
-      return { anchor, site: 'margin', target: margin } as const;
+      return { anchor, site: 'margin', target: margin };
     }
-    return { anchor, site: 'floor', target: anchorTarget(anchor, halfW, halfD) } as const;
+    const junction = takeJunction(anchor, junctions, halfW, halfD);
+    if (junction !== undefined) {
+      return {
+        anchor,
+        site: 'junction',
+        target: [junction.x, junction.y],
+        seatBelowTopMm: junction.seatBelowTopMm,
+      };
+    }
+    return { anchor, site: 'floor', target: anchorTarget(anchor, halfW, halfD) };
   });
 }
 
@@ -444,14 +588,15 @@ function wantedScrewCount(params: ScrewHoleParams): number {
  * list is capped rather than stacking two holes on one spot.
  *
  * INVARIANT: blocking prunes, it never re-sites. When the piece's nominal
- * anchors all fit margins the plate carries no floor pad, so a later anchor that
- * would have been floor-sited is dropped rather than placed into material that
- * was never provisioned for it. That is what keeps the plate's printed height a
- * pure function of its dimensions.
+ * anchors all fit margins or junctions the plate carries no floor pad, so a
+ * later anchor that would have been floor-sited is dropped rather than placed
+ * into material that was never provisioned for it. That is what keeps the
+ * plate's printed height a pure function of its dimensions.
  *
  * Floor targets are still only IDEAL points here. The geometry layer snaps each
  * to the nearest legal magnet position and owns the containment check for the
- * snapped result; this function has already done that check for margin slots.
+ * snapped result; this function has already done that check for margin slots,
+ * and the junction list arrives checked.
  */
 export function planPieceScrews(
   params: ScrewHoleParams,
@@ -469,7 +614,7 @@ export function planPieceScrews(
   for (const slot of assignments) {
     if (slots.length >= wanted) break;
 
-    if (slot.site === 'margin') {
+    if (slot.site !== 'floor') {
       if (input.isBlocked?.(slot.target[0], slot.target[1], headRadius) === true) continue;
     } else if (!floorPadProvisioned) {
       // No pad was provisioned, so there is no material here to cut into.

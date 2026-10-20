@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import type * as GridfinityGeometry from '@/shared/printSettings/gridfinityGeometry';
 
 vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
   toCreasedNormals: vi.fn((geo: unknown) => geo),
@@ -107,10 +108,14 @@ vi.mock('./GhostPaddingOutline', () => ({
 vi.mock('./useMeshGeometry', () => ({
   useMeshGeometry: () => ({ geometry: null, edgesGeometry: null, hasPrecomputedNormals: false }),
 }));
-vi.mock('@/shared/printSettings/gridfinityGeometry', () => ({
-  GRIDFINITY_SPEC: { BASEPLATE_HEIGHT: 5 },
-  plateProfileHeightMm: () => 5,
-}));
+vi.mock('@/shared/printSettings/gridfinityGeometry', async (importOriginal) => {
+  const actual = await importOriginal<typeof GridfinityGeometry>();
+  return {
+    ...actual,
+    GRIDFINITY_SPEC: { ...actual.GRIDFINITY_SPEC, BASEPLATE_HEIGHT: 5 },
+    plateProfileHeightMm: () => 5,
+  };
+});
 
 const { BaseplatePreview } = await import('./BaseplatePreview');
 

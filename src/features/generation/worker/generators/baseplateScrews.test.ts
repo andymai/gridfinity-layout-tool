@@ -5,18 +5,23 @@ import type { ScrewHoleParams } from '@/core/types/baseplate';
 import { mesh } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import { initTestKernel } from '@/test/initTestKernel';
-import { boundingBox } from './__kernel-tests__/meshAssertions';
+import { boundingBox, sectionHalfWidth } from './__kernel-tests__/meshAssertions';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import {
   HOLE_OFFSET,
   SOCKET_HEIGHT,
   PLATE_PROFILE_HEIGHT,
   LOW_PROFILE_BAND_CUT_MM,
+  toIndexedMeshData,
 } from './generatorTypes';
 import {
   buildScrewCutters,
+  pieceScrewsNeedFloor,
+  planBaseplateScrewHoles,
   resolveScrewHoles,
   screwAwareHoleRadius,
   screwFloorCandidates,
+  screwPlacementFor,
 } from './baseplateScrews';
 import { planPieceScrews } from '@/shared/generation/screwHolePlan';
 
@@ -135,6 +140,107 @@ describe('resolveScrewHoles', () => {
 
   it('returns nothing for an empty plan', () => {
     expect(resolveScrewHoles([], candidates)).toEqual([]);
+  });
+
+  it('passes a junction slot through at the junction, with its head seat', () => {
+    const holes = resolveScrewHoles(
+      [{ anchor: 'bl', site: 'junction', target: [-21, -21], seatBelowTopMm: 1.25 }],
+      candidates
+    );
+    expect(holes).toEqual([{ x: -21, y: -21, site: 'junction', seatBelowTopMm: 1.25 }]);
+  });
+});
+
+describe('planBaseplateScrewHoles through screwPlacementFor', () => {
+  const M3_FLAT: ScrewHoleParams = { ...COUNTERSINK, headDiameter: mm(6) };
+
+  const plate = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
+    width: 5,
+    depth: 5,
+    gridUnitMm: 42,
+    magnetHoles: false,
+    magnetDiameter: 6.5,
+    magnetDepth: 2,
+    paddingLeft: 0,
+    paddingRight: 0,
+    paddingFront: 0,
+    paddingBack: 0,
+    fractionalEdgeX: 'end',
+    fractionalEdgeY: 'end',
+    screwHoles: M3_FLAT,
+    ...overrides,
+  });
+
+  const holesOf = (params: ResolvedBaseplateParams) => {
+    const screws = params.screwHoles ?? M3_FLAT;
+    return planBaseplateScrewHoles(screws, params, screwPlacementFor(screws, params));
+  };
+
+  it('screws a stock 5x5 down at the crossing one cell in from each corner', () => {
+    const holes = holesOf(plate());
+    expect(holes.map((h) => `${h.site}:${h.x},${h.y}`)).toEqual([
+      'junction:-63,-63',
+      'junction:63,63',
+      'junction:63,-63',
+      'junction:-63,63',
+    ]);
+  });
+
+  it('sends an M4 flat head to the floor, where the stock post cannot hold it', () => {
+    const holes = holesOf(plate({ screwHoles: COUNTERSINK }));
+    expect(holes.every((h) => h.site === 'floor')).toBe(true);
+  });
+
+  it('sites screws from the plate WITHOUT its pad, so the pad cannot decide its own need', () => {
+    // A 3.1mm pad would let an M4 head seat in the post. Honouring that would
+    // make the junction site a consequence of the pad it was meant to avoid.
+    const holes = holesOf(plate({ screwHoles: COUNTERSINK, screwPadThicknessMm: 3.1 }));
+    expect(holes.every((h) => h.site === 'floor')).toBe(true);
+  });
+
+  it('gives a 1xN piece floor screws: it has no crossing', () => {
+    expect(holesOf(plate({ width: 1 })).every((h) => h.site === 'floor')).toBe(true);
+  });
+});
+
+describe('pieceScrewsNeedFloor', () => {
+  const base: ResolvedBaseplateParams = {
+    width: 5,
+    depth: 5,
+    gridUnitMm: 42,
+    magnetHoles: false,
+    magnetDiameter: 6.5,
+    magnetDepth: 2,
+    paddingLeft: 0,
+    paddingRight: 0,
+    paddingFront: 0,
+    paddingBack: 0,
+    fractionalEdgeX: 'end',
+    fractionalEdgeY: 'end',
+  };
+  const M3_FLAT: ScrewHoleParams = { ...COUNTERSINK, headDiameter: mm(6) };
+
+  it('is false when every screw finds a junction', () => {
+    expect(pieceScrewsNeedFloor({ ...base, screwHoles: M3_FLAT })).toBe(false);
+  });
+
+  it('is false when every screw rides the margin', () => {
+    const padded = { paddingLeft: 14, paddingRight: 14, paddingFront: 14, paddingBack: 14 };
+    expect(pieceScrewsNeedFloor({ ...base, ...padded, screwHoles: COUNTERSINK })).toBe(false);
+  });
+
+  it('is true for a piece with neither', () => {
+    expect(pieceScrewsNeedFloor({ ...base, width: 1, screwHoles: M3_FLAT })).toBe(true);
+  });
+
+  it('is true when the head is too wide for the posts', () => {
+    expect(pieceScrewsNeedFloor({ ...base, screwHoles: COUNTERSINK })).toBe(true);
+  });
+
+  it('is false with screws off', () => {
+    expect(pieceScrewsNeedFloor({ ...base, screwHoles: { ...M3_FLAT, enabled: false } })).toBe(
+      false
+    );
   });
 });
 
@@ -402,6 +508,49 @@ describe('buildScrewCutters', () => {
       expect(bb.maxX - bb.minX).toBeCloseTo(5.5, 1);
     } finally {
       cutter.delete();
+    }
+  });
+
+  it('bores a junction hole head-wide from the top face down to its seat', () => {
+    const m3: ScrewHoleParams = { ...COUNTERSINK, headDiameter: mm(6) };
+    const seat = 1.25;
+    const [cutter] = buildScrewCutters(
+      [{ x: 0, y: 0, site: 'junction', seatBelowTopMm: seat }],
+      m3,
+      PLATE_PROFILE_HEIGHT,
+      PLATE_PROFILE_HEIGHT
+    );
+    try {
+      const tessellated = toIndexedMeshData(mesh(cutter, { tolerance: 0.01, angularTolerance: 5 }));
+      const bb = boundingBox(tessellated.vertices);
+      expect(bb.maxZ).toBeGreaterThan(0);
+      expect(bb.minZ).toBeLessThanOrEqual(-PLATE_PROFILE_HEIGHT);
+      expect(sectionHalfWidth(tessellated, -seat / 2)).toBeCloseTo(3, 1);
+      expect(sectionHalfWidth(tessellated, -(seat + 1.3 + 0.5))).toBeCloseTo(1.7, 1);
+    } finally {
+      cutter.delete();
+    }
+  });
+
+  it('builds a template per junction seat, so each hole narrows at its own', () => {
+    const m3: ScrewHoleParams = { ...COUNTERSINK, headDiameter: mm(6) };
+    const cutters = buildScrewCutters(
+      [
+        { x: 0, y: 0, site: 'junction', seatBelowTopMm: 1 },
+        { x: 0, y: 0, site: 'junction', seatBelowTopMm: 2 },
+      ],
+      m3,
+      PLATE_PROFILE_HEIGHT,
+      PLATE_PROFILE_HEIGHT
+    );
+    try {
+      const [shallow, deep] = cutters.map((c) =>
+        toIndexedMeshData(mesh(c, { tolerance: 0.01, angularTolerance: 5 }))
+      );
+      expect(sectionHalfWidth(shallow, -1.5)).toBeLessThan(2.9);
+      expect(sectionHalfWidth(deep, -1.5)).toBeCloseTo(3, 1);
+    } finally {
+      for (const c of cutters) c.delete();
     }
   });
 });

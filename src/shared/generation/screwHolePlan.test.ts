@@ -4,15 +4,19 @@ import type { ScrewHoleParams } from '@/core/types/baseplate';
 import {
   SCREW_ANCHORS,
   SCREW_MARGIN_MIN_WALL_MM,
+  defaultScrewHeadDiameter,
   discFitsRoundedRect,
   effectiveMarginBands,
   minBandForHead,
+  nearestWithLean,
   planPieceScrews,
   resolveScrewHeadDiameter,
+  screwCutDepths,
   screwHeadRecessDepth,
   screwPadThicknessMm,
   screwSnapPreference,
   type ScrewAnchor,
+  type ScrewJunctionSite,
   type ScrewPieceInput,
 } from './screwHolePlan';
 
@@ -66,13 +70,58 @@ describe('screwHeadRecessDepth', () => {
 });
 
 describe('resolveScrewHeadDiameter', () => {
-  it('defaults per style', () => {
+  it('resolves an absent width to the one saved plates without it were built with', () => {
+    // Plates saved while ø8 was the countersink default omit the field, so an
+    // absent width must keep meaning ø8 or they change shape on load.
     expect(resolveScrewHeadDiameter('countersink')).toBe(8);
     expect(resolveScrewHeadDiameter('counterbore')).toBe(5.5);
   });
 
   it('honours an override', () => {
     expect(resolveScrewHeadDiameter('countersink', 6)).toBe(6);
+  });
+});
+
+describe('defaultScrewHeadDiameter', () => {
+  it('starts a new countersink at an M3 flat head and a counterbore at an M3 cap', () => {
+    expect(defaultScrewHeadDiameter('countersink')).toBe(6);
+    expect(defaultScrewHeadDiameter('counterbore')).toBe(5.5);
+  });
+});
+
+describe('screwCutDepths', () => {
+  it('opens a junction bore at the top face and seats the head below it', () => {
+    const depths = screwCutDepths(COUNTERSINK, 'junction', 4.65, 4.65, 1.25);
+    expect(depths.openBelowTop).toBe(0);
+    expect(depths.entryBelowTop).toBe(1.25);
+    expect(depths.throughDepth).toBeCloseTo(3.4, 6);
+  });
+
+  it('opens a margin hole and a floor hole where the head enters', () => {
+    expect(screwCutDepths(COUNTERSINK, 'margin', 4.65, 7.75).openBelowTop).toBe(0);
+    const floor = screwCutDepths(COUNTERSINK, 'floor', 4.65, 7.75);
+    expect(floor.openBelowTop).toBe(4.65);
+    expect(floor.entryBelowTop).toBe(4.65);
+  });
+});
+
+describe('nearestWithLean', () => {
+  const pair: Array<readonly [number, number]> = [
+    [-21, -63],
+    [21, -63],
+  ];
+
+  it('breaks an exact tie along the lean', () => {
+    expect(nearestWithLean([0, -105], [-1, 0], pair)).toBe(0);
+    expect(nearestWithLean([0, -105], [1, 0], pair)).toBe(1);
+  });
+
+  it('takes the nearer candidate whatever the lean', () => {
+    expect(nearestWithLean([20, -105], [-1, 0], pair)).toBe(1);
+  });
+
+  it('reports no candidate as -1', () => {
+    expect(nearestWithLean([0, 0], [1, 1], [])).toBe(-1);
   });
 });
 
@@ -393,5 +442,118 @@ describe('site stability invariant', () => {
     );
     expect(slots.map((s) => s.anchor)).toEqual(['bl', 'tl', 'l']);
     expect(slots.every((s) => s.site === 'margin')).toBe(true);
+  });
+});
+
+/** Every interior junction of an N x M piece of 42mm cells, grid-centred. */
+function junctionLattice(cols: number, rows: number, seat = 1.25): ScrewJunctionSite[] {
+  const out: ScrewJunctionSite[] = [];
+  for (let i = 1; i < cols; i++) {
+    for (let j = 1; j < rows; j++) {
+      out.push({ x: i * 42 - (cols * 42) / 2, y: j * 42 - (rows * 42) / 2, seatBelowTopMm: seat });
+    }
+  }
+  return out;
+}
+
+function sizedPiece(
+  cols: number,
+  rows: number,
+  overrides: Partial<ScrewPieceInput> = {}
+): ScrewPieceInput {
+  return {
+    widthMm: cols * 42,
+    depthMm: rows * 42,
+    bands: { left: 0, right: 0, front: 0, back: 0 },
+    junctions: junctionLattice(cols, rows),
+    ...overrides,
+  };
+}
+
+const M3_FLAT: ScrewHoleParams = { ...COUNTERSINK, headDiameter: mm(6) };
+
+describe('junction screw sites', () => {
+  it('prefers the margin to a junction when a band hosts the head', () => {
+    const slots = planPieceScrews(
+      M3_FLAT,
+      sizedPiece(5, 5, { bands: { left: 12, right: 12, front: 12, back: 12 } })
+    );
+    expect(slots.map((s) => s.site)).toEqual(['margin', 'margin', 'margin', 'margin']);
+  });
+
+  it('takes the junction one cell in from each corner before the floor', () => {
+    // The reported plate: a bandless 5x5 screwed down through the posts where
+    // four pockets meet, so it needs no pad at all.
+    const slots = planPieceScrews(M3_FLAT, sizedPiece(5, 5));
+    expect(slots.map((s) => [s.anchor, s.site, ...s.target])).toEqual([
+      ['bl', 'junction', -63, -63],
+      ['tr', 'junction', 63, 63],
+      ['br', 'junction', 63, -63],
+      ['tl', 'junction', -63, 63],
+    ]);
+    expect(slots.every((s) => s.seatBelowTopMm === 1.25)).toBe(true);
+  });
+
+  it('falls back to the floor where a piece has no junction', () => {
+    // A 1xN piece has no four-cell crossing at all.
+    const slots = planPieceScrews(M3_FLAT, sizedPiece(1, 4));
+    expect(slots.every((s) => s.site === 'floor')).toBe(true);
+  });
+
+  it('keeps each corner screw in its own quadrant, so a 2xN piece falls back', () => {
+    // A 2-deep piece's crossings all lie on its centreline, in no corner's
+    // quadrant. Taking them anyway would line four screws up on one row.
+    const slots = planPieceScrews(M3_FLAT, sizedPiece(4, 2));
+    expect(slots.every((s) => s.site === 'floor')).toBe(true);
+  });
+
+  it('never pairs a lone centre junction with a floor screw at the opposite corner', () => {
+    // A 2x2 piece has one crossing, at its centre. One corner taking it would
+    // leave the set asymmetric under the half-turn rotated pieces rely on.
+    const slots = planPieceScrews(M3_FLAT, sizedPiece(2, 2));
+    expect(slots.every((s) => s.site === 'floor')).toBe(true);
+  });
+
+  it('mixes sites per anchor: margins where bands reach, junctions elsewhere', () => {
+    const slots = planPieceScrews(
+      M3_FLAT,
+      sizedPiece(4, 4, { bands: { left: 12, right: 0, front: 0, back: 0 } })
+    );
+    const bySite = slots.map((s) => `${s.anchor}:${s.site}`);
+    expect(bySite).toEqual(['bl:margin', 'tr:junction', 'br:junction', 'tl:margin']);
+  });
+
+  it('closes eight screws under the half-turn on a 5x5 piece', () => {
+    const slots = planPieceScrews({ ...M3_FLAT, screwsPerPiece: 8 }, sizedPiece(5, 5));
+    expect(slots.every((s) => s.site === 'junction')).toBe(true);
+    const key = (x: number, y: number): string => `${x},${y}`;
+    const points = new Set(slots.map((s) => key(s.target[0], s.target[1])));
+    expect(points.size).toBe(8);
+    for (const s of slots) expect(points.has(key(-s.target[0], -s.target[1]))).toBe(true);
+  });
+
+  it('sends the edge screws a 3x3 piece has no junction left for to the floor', () => {
+    // Its four crossings go to the corners; the edge midpoints then fall back,
+    // and that one piece obliges the plate to carry the pad.
+    const slots = planPieceScrews({ ...M3_FLAT, screwsPerPiece: 8 }, sizedPiece(3, 3));
+    expect(slots.slice(0, 4).every((s) => s.site === 'junction')).toBe(true);
+    expect(slots.slice(4).every((s) => s.site === 'floor')).toBe(true);
+  });
+
+  it('needs no pad when every wanted screw finds a junction', () => {
+    // No pad provisioned and none needed: nothing is pruned.
+    const slots = planPieceScrews(M3_FLAT, sizedPiece(5, 5, { floorPadProvisioned: false }));
+    expect(slots).toHaveLength(4);
+  });
+
+  it('prunes a blocked junction screw and moves on to the next anchor', () => {
+    // The bottom-left quadrant is blocked, so bl and b (which leans into it)
+    // are dropped and t fills the fourth place. Nothing is re-sited.
+    const slots = planPieceScrews(
+      M3_FLAT,
+      sizedPiece(5, 5, { isBlocked: (x, y) => x < 0 && y < 0, floorPadProvisioned: false })
+    );
+    expect(slots.map((s) => s.anchor)).toEqual(['tr', 'br', 'tl', 't']);
+    expect(slots.every((s) => s.site === 'junction')).toBe(true);
   });
 });

@@ -25,6 +25,7 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { useMutations } from '@/shared/contexts';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { snapClipFitsPlate } from '../../utils/snapClipFit';
+import { usePlateScrewPadMm } from '../../hooks/usePlateScrewPadMm';
 
 /** Print Settings header summary: "{grid}mm · {bed}mm", each half widening to
  *  "{x}×{y}mm" when that pair is asymmetric. */
@@ -76,13 +77,15 @@ export function PhysicalUnitsSection() {
       .updateSetting('printSettings', { ...current, maxPrintHeightMm: value });
   }, []);
 
-  // Only the switch-on direction is refused: turning it off always makes the
-  // plate taller, which a snap clip can only welcome.
+  // Only the switch-on direction is refused: turning it off leaves at least a
+  // standard-height plate, which a snap clip can only welcome. Junction screws
+  // fit a low-profile plate less often, so its screw pad is decided anew.
+  const lowProfileScrewPadMm = usePlateScrewPadMm(true);
   const lowProfileBlocked =
     !lowProfileBase &&
     baseplateParams.connectorNubs === true &&
     baseplateParams.connectorStyle === 'snapClip' &&
-    !snapClipFitsPlate(baseplateParams, true, nozzleSizeMm);
+    !snapClipFitsPlate(baseplateParams, true, nozzleSizeMm, lowProfileScrewPadMm);
 
   const [printSettingsExpanded, setPrintSettingsExpanded] = useState(true);
   useEffect(() => {

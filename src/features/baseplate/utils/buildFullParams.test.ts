@@ -5,7 +5,10 @@ import {
   hasEffectivePerimeter,
   maxCornerRadiusMm,
   plainRoundingLimit,
+  plateScrewPadMm,
+  type PlateLayout,
 } from './buildFullParams';
+import { baseplateTotalHeight } from '@/shared/printSettings/baseplateHeight';
 import { computeBaseplateTiling, pieceToBaseplateParams } from './splitPlanner';
 import { groupPiecesByFingerprint } from './pieceFingerprint';
 import { stackGroupsFromTiling, evaluateStackPrint } from './stackPrint';
@@ -1392,5 +1395,151 @@ describe('split-piece outline frame vs. its overhang-widened slab (#3212)', () =
       expect(b.maxX).toBeGreaterThanOrEqual(totalW + (oh?.right ?? 0) - 1e-9);
       expect(b.maxY).toBeGreaterThanOrEqual(totalD + (oh?.back ?? 0) - 1e-9);
     }
+  });
+});
+
+describe('mount-down screw pad', () => {
+  const BED = { widthMm: 256, depthMm: 256 };
+  const frameOnly = {
+    magnetHoles: false,
+    magnetDiameter: mm(6.5),
+    magnetDepth: mm(2),
+    paddingLeft: mm(0),
+    paddingRight: mm(0),
+    paddingFront: mm(0),
+    paddingBack: mm(0),
+  };
+  const m3Flat = {
+    enabled: true,
+    diameter: mm(3.4),
+    headStyle: 'countersink' as const,
+    headDiameter: mm(6),
+  };
+  // A plate saved before new configs stored their head width.
+  const unsetHead = { enabled: true, diameter: mm(3.4), headStyle: 'countersink' as const };
+
+  const resolve = (
+    stored: Parameters<typeof buildFullParams>[0],
+    width = 5,
+    depth = 5,
+    lowProfileBase?: boolean,
+    printBed: { widthMm: number; depthMm: number } | 'none' = BED
+  ) =>
+    buildFullParams(
+      stored,
+      width,
+      depth,
+      42,
+      'end',
+      'end',
+      undefined,
+      undefined,
+      undefined,
+      42,
+      0,
+      0,
+      lowProfileBase,
+      printBed === 'none' ? undefined : printBed
+    );
+
+  it('adds no height when every screw seats at a junction', () => {
+    const plate = resolve({ ...frameOnly, screwHoles: m3Flat });
+    expect(plate.screwPadThicknessMm).toBe(0);
+    expect(baseplateTotalHeight(plate)).toBeCloseTo(4.65, 6);
+  });
+
+  it('adds no height to a low-profile plate either', () => {
+    const plate = resolve({ ...frameOnly, screwHoles: m3Flat }, 5, 5, true);
+    expect(plate.screwPadThicknessMm).toBe(0);
+    expect(baseplateTotalHeight(plate)).toBeCloseTo(3.55, 6);
+  });
+
+  it('keeps the pad for a head the stock posts cannot hold', () => {
+    // A saved plate with no head width resolves to ø8, which falls back to the
+    // floor exactly as before.
+    expect(resolve({ ...frameOnly, screwHoles: unsetHead }).screwPadThicknessMm).toBeCloseTo(
+      3.1,
+      6
+    );
+  });
+
+  it('drops a pad that every margin screw would have left unused', () => {
+    const padded = {
+      ...frameOnly,
+      paddingLeft: mm(14),
+      paddingRight: mm(14),
+      paddingFront: mm(14),
+      paddingBack: mm(14),
+    };
+    expect(resolve({ ...padded, screwHoles: unsetHead }, 4, 4).screwPadThicknessMm).toBe(0);
+  });
+
+  it('pads the whole plate when one piece of the split has no junction', () => {
+    // A hand-drawn 5 + 1 split leaves a 1x5 strip with no crossing, so its
+    // screws fall back to the floor, and the 5x5 beside it must match its height.
+    const stored = {
+      ...frameOnly,
+      screwHoles: m3Flat,
+      splitOverride: { cols: [gridUnits(5), gridUnits(1)], rows: [gridUnits(5)] },
+    };
+    const plate = resolve(stored, 6, 5);
+    expect(plate.screwPadThicknessMm).toBeCloseTo(1.3 + 0.8, 6);
+
+    const tiling = computeBaseplateTiling(plate, BED.widthMm, BED.depthMm);
+    expect(tiling.pieces).toHaveLength(2);
+    const pads = tiling.pieces.map((p) => pieceToBaseplateParams(p, plate).screwPadThicknessMm);
+    expect(new Set(pads)).toEqual(new Set([plate.screwPadThicknessMm]));
+  });
+
+  it('plans the plate as one piece when no bed is given', () => {
+    const stored = {
+      ...frameOnly,
+      screwHoles: m3Flat,
+      splitOverride: { cols: [gridUnits(5), gridUnits(1)], rows: [gridUnits(5)] },
+    };
+    expect(resolve(stored, 6, 5, undefined, 'none').screwPadThicknessMm).toBe(0);
+  });
+
+  it('strips the screws, and so the pad, while stack printing', () => {
+    const stacked = {
+      ...frameOnly,
+      screwHoles: unsetHead,
+      stackPrint: { enabled: true, gapMm: mm(0.2) },
+    };
+    expect(resolve(stacked).screwPadThicknessMm).toBeUndefined();
+  });
+});
+
+describe('plateScrewPadMm', () => {
+  const stored = {
+    magnetHoles: false,
+    magnetDiameter: mm(6.5),
+    magnetDepth: mm(2),
+    paddingLeft: mm(0),
+    paddingRight: mm(0),
+    paddingFront: mm(0),
+    paddingBack: mm(0),
+    screwHoles: { enabled: true, diameter: mm(3.4), headStyle: 'countersink' as const },
+  };
+  const layout: PlateLayout = {
+    drawer: { width: gridUnits(5), depth: gridUnits(5) },
+    gridUnitMm: mm(42),
+    printBedSize: mm(256),
+    baseplateParams: stored,
+  };
+
+  it('reports the pad the generation path resolves for the layout', () => {
+    expect(plateScrewPadMm(layout, 0.4)).toBeCloseTo(3.1, 6);
+  });
+
+  it('decides against the layout low-profile override', () => {
+    const m3Flat = { ...stored, screwHoles: { ...stored.screwHoles, headDiameter: mm(6) } };
+    expect(plateScrewPadMm({ ...layout, baseplateParams: m3Flat }, 0.4, true)).toBe(0);
+  });
+
+  it('is zero without screws', () => {
+    expect(
+      plateScrewPadMm({ ...layout, baseplateParams: { ...stored, screwHoles: undefined } }, 0.4)
+    ).toBe(0);
   });
 });

@@ -4331,7 +4331,7 @@ const en: Record<string, string> = {
   'baseplate.screwHoles.label': 'Screw down',
   'baseplate.screwHoles.summary': 'ø{diameter}mm, {count} per piece',
   'baseplate.screwHoles.info':
-    'Vertical holes to fasten the plate to a drawer bottom, bench or wall. They sit in the solid drawer-fit padding where it is wide enough, and in the pocket floor otherwise, which makes the plate slightly taller.',
+    'Vertical holes to fasten the plate to a drawer bottom, bench or wall. They sit in the solid drawer-fit padding where it is wide enough, or where four pockets meet when the head fits there. Otherwise they go in the pocket floor, which makes the plate slightly taller.',
   'baseplate.screwHoles.diameter.label': 'Hole diameter',
   'baseplate.screwHoles.diameter.info':
     'Clearance for the screw shaft, not a pilot hole: 3.4mm passes an M3. A hole that bites into the threads holds the plate off the surface instead of pulling it down.',
@@ -4342,7 +4342,7 @@ const en: Record<string, string> = {
   'baseplate.screwHoles.headStyle.counterbore': 'Counterbore',
   'baseplate.screwHoles.headDiameter.label': 'Head diameter',
   'baseplate.screwHoles.headDiameter.info':
-    'Width of the recess at the surface: 8mm suits an M3 flat head, 5.5mm a socket head cap.',
+    'Width of the recess at the surface: 6mm for an M3 flat head, 8mm for an M4 flat head, 5.5mm for an M3 socket head cap. A countersink up to 6mm fits where four pockets meet, so the plate keeps its standard height.',
   'baseplate.screwHoles.counterboreDepth.label': 'Counterbore depth',
   'baseplate.screwHoles.counterboreDepth.info':
     'Depth of the flat pocket. Match it to the height of your screw head so the head ends up level with the surface.',
@@ -4352,7 +4352,7 @@ const en: Record<string, string> = {
   'baseplate.mountMagnets.label': 'Underside magnets',
   'baseplate.mountMagnets.summary': 'ø{diameter} × {depth}mm, {count} per piece',
   'baseplate.mountMagnets.info':
-    'Magnet holes in the underside, where four pockets meet, so the plate holds to a steel drawer or tool chest without getting any taller. Crossings on a split seam or the plate edge are skipped.',
+    'Magnet holes in the underside, where four pockets meet, so the plate holds to a steel drawer or tool chest without getting any taller. Crossings on a split seam, on the plate edge or holding a screw are skipped.',
   'baseplate.mountMagnets.diameter.label': 'Magnet diameter',
   'baseplate.mountMagnets.diameter.info':
     "Hole diameter: the magnet's diameter plus clearance for your printer, usually 0.2 to 0.5mm.",

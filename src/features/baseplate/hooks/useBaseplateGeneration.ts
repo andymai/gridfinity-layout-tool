@@ -588,6 +588,8 @@ export function useBaseplateGeneration(): void {
         // already populated the canvas via the params-change effect.
         const layoutState = useLayoutStore.getState();
         const stored = layoutState.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+        const bedW = layoutState.layout.printBedSize;
+        const bedD = layoutState.layout.printBedDepth ?? layoutState.layout.printBedSize;
         const params = buildFullParams(
           stored,
           layoutState.layout.drawer.width,
@@ -601,10 +603,9 @@ export function useBaseplateGeneration(): void {
           effectiveGridUnitMmY(layoutState.layout),
           layoutState.layout.drawer.gridShiftX ?? 0,
           layoutState.layout.drawer.gridShiftY ?? 0,
-          layoutState.layout.lowProfileBase
+          layoutState.layout.lowProfileBase,
+          { widthMm: bedW, depthMm: bedD }
         );
-        const bedW = layoutState.layout.printBedSize;
-        const bedD = layoutState.layout.printBedDepth ?? layoutState.layout.printBedSize;
         const epoch = ++generationEpochRef.current;
         const tiling = computeBaseplateTiling(params, bedW, bedD);
         // Mirror runGeneration's deferral: if the stored plate is predicted too
@@ -652,6 +653,7 @@ export function useBaseplateGeneration(): void {
   // (renders before bridge is ready); BREP runs in background once bridge exists.
   useEffect(() => {
     const stored = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+    const bedDepth = printBedDepth ?? printBedSize;
     const params = buildFullParams(
       stored,
       drawerWidth,
@@ -665,9 +667,10 @@ export function useBaseplateGeneration(): void {
       gridUnitMmY,
       gridShiftX,
       gridShiftY,
-      lowProfileBase
+      lowProfileBase,
+      { widthMm: printBedSize, depthMm: bedDepth }
     );
-    runGeneration(params, printBedSize, printBedDepth ?? printBedSize);
+    runGeneration(params, printBedSize, bedDepth);
     // `generationTriggers` carries the trigger-only params (connectorStyle,
     // magnets, padding, corners, …); its reference changes whenever any of them
     // does. The named values are listed because they're read directly above.

@@ -35,7 +35,10 @@ import {
   MOUNT_MAGNETS_PER_PIECE_MAX,
 } from '@/core/baseplateDefaults';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
-import { resolveScrewHeadDiameter } from '@/shared/generation/screwHolePlan';
+import {
+  defaultScrewHeadDiameter,
+  resolveScrewHeadDiameter,
+} from '@/shared/generation/screwHolePlan';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
 import { useTranslation } from '@/i18n';
@@ -52,6 +55,7 @@ import { isSeatedConnectorStyle } from '@/shared/types/bin';
 import { maxCornerRadiusMm } from '../../utils/buildFullParams';
 import { maxMountMagnetDepthForPlate } from '../../utils/mountMagnetFit';
 import { snapClipFitsPlate } from '../../utils/snapClipFit';
+import { usePlateScrewPadMm } from '../../hooks/usePlateScrewPadMm';
 import type { MountMagnetParams, ScrewHeadStyle, ScrewHoleParams } from '@/core/types';
 import { Stepper } from '@/design-system/Stepper';
 import {
@@ -89,6 +93,7 @@ export function BaseSection() {
   const tiling = useBaseplatePageStore((s) => s.tiling);
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
   const lowProfileBase = useLayoutStore((s) => s.layout.lowProfileBase === true);
+  const screwPadMm = usePlateScrewPadMm();
   const screwHolesAvailable = useFeatureFlag('baseplate_screw_holes');
 
   // Render when the section has any content: connectors (split), magnets/floor
@@ -106,12 +111,16 @@ export function BaseSection() {
     count: screwsPerPiece,
   });
 
+  // Only a config created here is given a head width. A saved one without it
+  // resolves to ø8, the width it was built with, and must keep resolving there.
   const updateScrewHoles = (patch: Partial<ScrewHoleParams>): void => {
     updateParam('screwHoles', {
-      enabled: true,
-      diameter: mm(SCREW_HOLE_DEFAULT_DIAMETER_MM),
-      headStyle: 'countersink',
-      ...screwHoles,
+      ...(screwHoles ?? {
+        enabled: true,
+        diameter: mm(SCREW_HOLE_DEFAULT_DIAMETER_MM),
+        headStyle: 'countersink',
+        headDiameter: mm(defaultScrewHeadDiameter('countersink')),
+      }),
       ...patch,
     });
   };
@@ -124,7 +133,8 @@ export function BaseSection() {
   const mountMagnetMaxDepth = maxMountMagnetDepthForPlate(
     baseplateParams,
     mountMagnetDiameter,
-    lowProfileBase
+    lowProfileBase,
+    screwPadMm
   );
   const mountMagnetSummary = t('baseplate.mountMagnets.summary', {
     diameter: mountMagnetDiameter,
@@ -173,7 +183,7 @@ export function BaseSection() {
             disabledOptions={
               stackEnabled
                 ? { snapClip: t('baseplate.connectors.snapClipNoStack') }
-                : !snapClipFitsPlate(baseplateParams, lowProfileBase, nozzleSizeMm)
+                : !snapClipFitsPlate(baseplateParams, lowProfileBase, nozzleSizeMm, screwPadMm)
                   ? { snapClip: t('baseplate.connectors.snapClipTooThin') }
                   : undefined
             }
@@ -266,7 +276,7 @@ export function BaseSection() {
           !stackEnabled &&
           baseplateParams.connectorNubs === true &&
           baseplateParams.connectorStyle === 'snapClip' &&
-          !snapClipFitsPlate(baseplateParams, lowProfileBase, nozzleSizeMm) && (
+          !snapClipFitsPlate(baseplateParams, lowProfileBase, nozzleSizeMm, screwPadMm) && (
             <p className="text-label leading-relaxed text-warning">
               {t('baseplate.connectors.snapClipTooThin')}
             </p>
@@ -388,11 +398,13 @@ export function BaseSection() {
                         },
                       ]}
                       value={screwHeadStyle}
-                      // Head width is dropped with the style: the two defaults
-                      // differ (ø8 cone vs ø5.5 pocket), so carrying an explicit
-                      // countersink width into a counterbore oversizes the pocket.
+                      // Head width resets with the style: carrying a countersink
+                      // width into a counterbore oversizes the pocket.
                       onChange={(style) =>
-                        updateScrewHoles({ headStyle: style, headDiameter: undefined })
+                        updateScrewHoles({
+                          headStyle: style,
+                          headDiameter: mm(defaultScrewHeadDiameter(style)),
+                        })
                       }
                     />
                   </SettingsRow>

@@ -55,7 +55,6 @@ import {
   checkCancelled,
   baseplateFloorDepth,
   MIN_PRINTABLE_TILE_MM,
-  resolveCornerRadii,
 } from './generatorTypes';
 import type { ProgressFn, CellInfo, SideMargins } from './generatorTypes';
 import {
@@ -75,7 +74,9 @@ import {
   cellHoldsFloorScrew,
   planBaseplateScrewHoles,
   screwAwareHoleRadius,
+  screwPlacementFor,
 } from './baseplateScrews';
+import { baseplateCellClassifier, plateCornerRadii } from './baseplateFrame';
 import { buildMountMagnetCutters } from './baseplateMountMagnets';
 import { planMountMagnets } from './mountMagnetPlan';
 import {
@@ -89,11 +90,7 @@ import { creaseEdges } from './utils';
 import { buildBaseplateSTL } from './baseplateSTL';
 import { buildOutlineDrawing } from './baseplateOutline';
 import type { DrawerOutline } from '@/core/types';
-import {
-  classifyRect,
-  insideAreaFraction,
-  type RegionClass,
-} from '@/shared/utils/drawerOutlineGeometry';
+import { insideAreaFraction, type RegionClass } from '@/shared/utils/drawerOutlineGeometry';
 import { EXPORT_ANGULAR_TOLERANCE_RAD, PREVIEW_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 
 /**
@@ -341,18 +338,10 @@ export function buildBaseplateSolid(
       )
     : [];
 
-  // Shaped plates: classify each cell against the outline. Cell centers live
-  // in the final frame (grid centered on origin, slab offset by padding
-  // asymmetry); the outline is plate-local mm — invert the frame mapping.
+  // Shaped plates: classify each cell against the outline, the same way the
+  // screw plan does.
   const outline = params.outline;
-  const classifyCell = (cell: CellInfo): RegionClass => {
-    if (outline === undefined) return 'inside';
-    const w = cell.widthUnits * gridUnitMm;
-    const d = cell.depthUnits * gridUnitMmY;
-    const x0 = cell.centerX - w / 2 + totalW / 2 - slabOffsetX;
-    const y0 = cell.centerY - d / 2 + totalD / 2 - slabOffsetY;
-    return classifyRect(outline, x0, y0, x0 + w, y0 + d);
-  };
+  const classifyCell: (cell: CellInfo) => RegionClass = baseplateCellClassifier(params);
   // A boundary-clipped cell keeps its (outline-trimmed) pocket only when
   // enough of it survives to be a usable socket — the same sliver philosophy
   // as MIN_PRINTABLE_TILE_MM, expressed as an area fraction. Applies to
@@ -392,20 +381,13 @@ export function buildBaseplateSolid(
     shapedPocketCells = [...nominalCells, ...overTileFrame];
     pocketDecisions = shapedPocketCells.map(pocketDecision);
   }
-  // Corner radii resolved ONCE, up here, because two consumers must agree on
-  // them: the rounding cut below, and the screw plan's containment test — the
-  // check that stops a margin screw being placed in material a large corner
-  // radius has already cut away. Feeding the plan the raw `params.cornerRadii`
-  // (populated only in the unlinked per-corner mode) told it every LINKED
-  // radius was zero, so a uniform 25mm corner shipped its screw hole in air.
-  const minPadding = Math.min(
-    Math.min(paddingLeft, paddingRight),
-    Math.min(paddingFront, paddingBack)
-  );
-  const cellLimit = gridUnitMm / 2 + minPadding;
-  const geomLimit = Math.min(totalW, totalD) / 2 - 0.1;
-  const maxRadius = Math.min(cellLimit, geomLimit);
-  const cornerRadii = resolveCornerRadii(params, maxRadius);
+  // Two consumers must agree on the corner radii: the rounding cut below, and
+  // the screw plan's containment test, the check that stops a margin screw
+  // being placed in material a large corner radius has already cut away. Both
+  // read `plateCornerRadii`. The raw `params.cornerRadii` is populated only in
+  // the unlinked per-corner mode, so reading it told the plan every LINKED
+  // radius was zero, and a uniform 25mm corner shipped its screw hole in air.
+  const cornerRadii = plateCornerRadii(params);
 
   // Mount-down screw holes. Planned here, before the slab is cached,
   // because which cells keep a floor is part of the pocket geometry.
@@ -413,21 +395,7 @@ export function buildBaseplateSolid(
   const screwPadMm = params.screwPadThicknessMm ?? 0;
   const screwHoles =
     screwParams !== undefined
-      ? planBaseplateScrewHoles(screwParams, params, {
-          resolvedCornerRadii: cornerRadii,
-          totalWidthMm: totalW,
-          totalDepthMm: totalD,
-          gridW: width,
-          gridD: depth,
-          pitch,
-          cellOpts,
-          magnetRadius: magnetDiameter / 2,
-          magnetAnchor,
-          cellFilter:
-            outline !== undefined
-              ? (cell: CellInfo): boolean => classifyCell(cell) === 'inside'
-              : undefined,
-        })
+      ? planBaseplateScrewHoles(screwParams, params, screwPlacementFor(screwParams, params))
       : [];
   const cellHoldsScrew = (cell: CellInfo): boolean => cellHoldsFloorScrew(screwHoles, cell, pitch);
 
@@ -739,7 +707,8 @@ export function buildBaseplateSolid(
           gridUnitMm,
           gridUnitMmY,
           cellHoldsScrew
-        )
+        ),
+      screwHoles.filter((h) => h.site === 'junction')
     );
     const cutters = buildMountMagnetCutters(
       positions,

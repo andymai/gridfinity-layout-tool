@@ -20,8 +20,9 @@
  *   into the solid floor, leaving a thin retaining floor (MAGNET_FLOOR)
  *   at the bottom. Magnets are dropped in from the pocket side
  * - Mount-down screws: a hole enters at the top face when it rides the solid
- *   drawer-fit margin and at the pocket floor when it falls back there, and
- *   runs clear through the underside either way
+ *   drawer-fit margin, seats down in the post where four pockets meet at a
+ *   junction, and enters at the pocket floor when it falls back there; it runs
+ *   clear through the underside either way
  * - Grid centered at XY origin; slab offset by padding
  *
  * The orchestrator wires together pure-geometry helpers from sibling modules:
@@ -66,6 +67,7 @@ import {
   cellHoldsFloorScrew,
   planBaseplateScrewHoles,
   screwAwareHoleRadius,
+  screwPlacementFor,
 } from './baseplateScrews';
 import { floorReliefReachesCorners } from './lightweightFloorCutter';
 import { addConnectorNub, addConnectorHole } from './directMeshConnectors';
@@ -335,32 +337,22 @@ export function generateBaseplateDirect(
     }
   }
 
-  // Mount-down screw holes. Through the shared planner, so the draft and
-  // the exported plate put every hole in the same place. No cell filter: the
-  // direct mesh is never used for a shaped plate.
+  // Mount-down screw holes. Through the shared planner and placement, so the
+  // draft and the exported plate put every hole in the same place.
   const screwParams = params.screwHoles?.enabled === true ? params.screwHoles : undefined;
   const screwHoles =
     screwParams !== undefined
-      ? planBaseplateScrewHoles(screwParams, params, {
-          resolvedCornerRadii: resolved,
-          totalWidthMm: totalW,
-          totalDepthMm: totalD,
-          gridW: width,
-          gridD: depth,
-          pitch,
-          cellOpts,
-          magnetRadius: magnetDiameter / 2,
-          magnetAnchor,
-        })
+      ? planBaseplateScrewHoles(screwParams, params, screwPlacementFor(screwParams, params))
       : [];
   if (screwParams !== undefined) {
     for (const hole of screwHoles) {
-      addScrewHoleAt(mb, hole.x, hole.y, hole.site, screwParams, totalHeight, profileHeight);
+      addScrewHoleAt(mb, hole, screwParams, totalHeight, profileHeight);
     }
   }
 
   // Shares the BREP build's planner, so the draft and the export agree on
-  // every hole; no cell filter for the same reason as the screws above.
+  // every hole. No cell filter: the direct mesh is never used for a shaped
+  // plate.
   const mountMagnets = params.mountMagnets;
   if (mountMagnets?.enabled === true) {
     for (const { x, y, chamfer } of planMountMagnets(
@@ -379,7 +371,8 @@ export function generateBaseplateDirect(
           gridUnitMm,
           gridUnitMmY,
           (c) => cellHoldsFloorScrew(screwHoles, c, pitch)
-        )
+        ),
+      screwHoles.filter((h) => h.site === 'junction')
     )) {
       addMountMagnetHoleAt(mb, x, y, mountMagnets.diameter / 2, mountMagnets.depth, chamfer);
     }

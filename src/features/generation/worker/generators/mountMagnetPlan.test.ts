@@ -7,6 +7,7 @@ import {
   mountMagnetChamferFits,
   mountMagnetFits,
   mountMagnetJunctions,
+  pieceJunctions,
   planMountMagnets,
   selectMountMagnets,
 } from './mountMagnetPlan';
@@ -218,5 +219,58 @@ describe('planMountMagnets', () => {
     expect(
       planMountMagnets({ ...size, enabled: true }, 5, 5, STANDARD, STANDARD, cellOpts)
     ).toHaveLength(4);
+  });
+
+  it('leaves the junctions screws take to the screws, and spreads over the rest', () => {
+    // Screws claim the four corner crossings of a 5x5 first; the magnets move
+    // to the next symmetric set rather than drilling into a screw's post.
+    const screws = [
+      { x: -63, y: -63 },
+      { x: 63, y: 63 },
+      { x: 63, y: -63 },
+      { x: -63, y: 63 },
+    ];
+    const holes = planMountMagnets(
+      { enabled: true, diameter: mm(6.5), depth: mm(2) },
+      5,
+      5,
+      STANDARD,
+      STANDARD,
+      cellOpts,
+      undefined,
+      undefined,
+      screws
+    );
+    expect(holes).toHaveLength(4);
+    const taken = new Set(screws.map(({ x, y }) => `${x},${y}`));
+    expect(holes.some(({ x, y }) => taken.has(`${x},${y}`))).toBe(false);
+  });
+
+  it('gets fewer magnets than asked when screws take every crossing', () => {
+    const screws = [
+      { x: -21, y: -21 },
+      { x: 21, y: 21 },
+      { x: 21, y: -21 },
+      { x: -21, y: 21 },
+    ];
+    expect(
+      planMountMagnets(
+        { enabled: true, diameter: mm(6.5), depth: mm(2) },
+        3,
+        3,
+        STANDARD,
+        STANDARD,
+        cellOpts,
+        undefined,
+        undefined,
+        screws
+      )
+    ).toEqual([]);
+  });
+});
+
+describe('pieceJunctions', () => {
+  it('returns every four-cell crossing, with no hole size to filter by', () => {
+    expect(pieceJunctions(3, 4, cellOpts)).toHaveLength(6);
   });
 });

@@ -15,7 +15,7 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { useTranslation } from '@/i18n';
 import { downloadWorkerSample, useSampleExport } from '@/shared/hooks/useSampleExport';
 import type { SampleExportContext, UseSampleExportReturn } from '@/shared/hooks/useSampleExport';
-import { buildFullParams } from '../utils/buildFullParams';
+import { buildFullParams, plateScrewPadMm } from '../utils/buildFullParams';
 
 /** Default download name when the dialog isn't given a custom one. */
 export const CONNECTOR_SAMPLE_BASE_NAME = 'connector-fit-sample';
@@ -45,17 +45,26 @@ export function useConnectorSampleExport(): UseSampleExportReturn {
 
   const download = useCallback(
     (context: SampleExportContext) => {
+      const nozzleSizeMm = context.printSettings.nozzleSizeMm;
+      const plate = buildFullParams(
+        baseplateParams,
+        drawerWidth,
+        drawerDepth,
+        gridUnitMm,
+        fractionalEdgeX,
+        fractionalEdgeY,
+        nozzleSizeMm
+      );
       const fullParams = {
-        ...buildFullParams(
-          baseplateParams,
-          drawerWidth,
-          drawerDepth,
-          gridUnitMm,
-          fractionalEdgeX,
-          fractionalEdgeY,
-          context.printSettings.nozzleSizeMm
-        ),
+        ...plate,
         ...(lowProfileBase === true ? { lowProfileBase: true } : {}),
+        // The coupon matches the real plate's height, so it takes the pad the
+        // plate's own pieces decide.
+        ...(plate.screwHoles?.enabled === true
+          ? {
+              screwPadThicknessMm: plateScrewPadMm(useLayoutStore.getState().layout, nozzleSizeMm),
+            }
+          : {}),
       };
       return downloadWorkerSample(context, (format) =>
         context.bridge.exportConnectorSample(fullParams, format)
