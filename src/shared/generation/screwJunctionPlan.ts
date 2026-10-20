@@ -165,7 +165,10 @@ export function junctionScrewFits(
   const shaftRadius = params.diameter / 2;
   const headRadius = resolveScrewHeadDiameter(params.headStyle, params.headDiameter) / 2;
 
-  if (recess > 0 && headRadius > shaftRadius) {
+  // The cutter skips a recess no wider than the shaft and runs the shaft up
+  // to the seat instead, so the shaft probes must start there.
+  const cutsRecess = recess > 0 && headRadius > shaftRadius;
+  if (cutsRecess) {
     const steps = 8;
     for (let k = 1; k <= steps; k++) {
       const z = (k / steps) * recess;
@@ -177,7 +180,7 @@ export function junctionScrewFits(
     }
   }
 
-  const shaftTop = seat + recess;
+  const shaftTop = cutsRecess ? seat + recess : seat;
   const probes = Math.ceil((totalHeight - shaftTop) / SHAFT_PROBE_STEP_MM);
   for (let k = 0; k <= probes; k++) {
     const depth = Math.min(shaftTop + k * SHAFT_PROBE_STEP_MM, totalHeight);

@@ -162,6 +162,18 @@ describe('junctionScrewFits', () => {
   it('refuses a shaft too wide for the post', () => {
     expect(fits({ ...M3_FLAT, diameter: mm(8), headDiameter: mm(8) }, MAGNET_PLATE)).toBe(false);
   });
+
+  it('checks the shaft from the seat down when a head no wider than it cuts no recess', () => {
+    // The cutter skips the counterbore and runs the 8mm shaft up to the seat,
+    // so the depth band the counterbore would have filled is shaft too.
+    const narrowHead: ScrewHoleParams = {
+      ...M3_CAP,
+      diameter: mm(8),
+      headDiameter: mm(5.5),
+      counterboreDepth: mm(4.5),
+    };
+    expect(fits(narrowHead, MAGNET_PLATE)).toBe(false);
+  });
 });
 
 describe('junctionPostDepthMm', () => {
