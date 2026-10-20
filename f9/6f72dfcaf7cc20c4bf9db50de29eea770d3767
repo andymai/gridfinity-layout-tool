@@ -1,0 +1,22 @@
+src/shared/generation/screwJunctionPlan.test.ts
+  s_a0abc24586b3f5::t_d05be1b349fc8d 165-176
+src/shared/generation/screwJunctionPlan.ts
+  s_a0abc24586b3f5::t_04e52503f3add0 183
+  s_a0abc24586b3f5::t_edbb46bf3ef12e 168-171
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f96f72dfcaf7cc20c4bf9db50de29eea770d3767",
+  "prompts": {},
+  "sessions": {
+    "s_a0abc24586b3f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b7579fd7-35e1-4a1b-9013-f2ed376a9ae2",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
