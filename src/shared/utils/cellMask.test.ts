@@ -653,4 +653,10 @@ describe('regionHasFilledCell', () => {
   it('finds nothing in an empty region', () => {
     expect(regionHasFilledCell(lMask, 1, 1, 1, 2)).toBe(false);
   });
+
+  it('finds nothing in a zero-size or reversed region inside a filled cell', () => {
+    expect(regionHasFilledCell(lMask, 0.25, 0, 0.25, 1)).toBe(false);
+    expect(regionHasFilledCell(lMask, 0, 0.25, 1, 0.25)).toBe(false);
+    expect(regionHasFilledCell(lMask, 0.4, 0, 0.1, 1)).toBe(false);
+  });
 });

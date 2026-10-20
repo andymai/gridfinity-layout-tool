@@ -481,6 +481,7 @@ export function regionHasFilledCell(
   rightUnit: number,
   topUnit: number
 ): boolean {
+  if (rightUnit <= leftUnit || topUnit <= bottomUnit) return false;
   const colStart = Math.max(0, Math.floor(leftUnit * MASK_CELLS_PER_UNIT));
   const rowStart = Math.max(0, Math.floor(bottomUnit * MASK_CELLS_PER_UNIT));
   const colEnd = Math.min(mask.cols, Math.ceil(rightUnit * MASK_CELLS_PER_UNIT));
