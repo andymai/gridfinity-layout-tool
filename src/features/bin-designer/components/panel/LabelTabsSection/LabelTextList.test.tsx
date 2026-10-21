@@ -52,6 +52,7 @@ describe('LabelTextList', () => {
       'placeholder',
       'Left blank, linked bins print their layout labels'
     );
+    expect(screen.queryByText(/will print blank/)).not.toBeInTheDocument();
   });
 
   it('keeps the example placeholder otherwise', () => {

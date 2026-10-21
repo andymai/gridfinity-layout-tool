@@ -19,7 +19,6 @@ import { isPartialMask } from './cellMask';
 import { labelTabsSpanRows } from './labelSocketPlan';
 import { isSlottedBody } from './slotFreeWalls';
 
-/** Where a caption is stored: a compartment's text, or a row's when the tabs span rows. */
 export interface CaptionSlot {
   readonly scope: 'compartment' | 'row';
   readonly index: number;
@@ -79,7 +78,6 @@ function soleTabRow(params: BinParams, innerDmm: number): number | null {
   return sole;
 }
 
-/** The caption a bin's layout label gives, or null when it has none to give. */
 export function placementCaption(binLabel: string): string | null {
   const caption = binLabel.trim();
   return caption === '' ? null : caption;
@@ -130,12 +128,10 @@ function tabCarriesCaption(params: BinParams): boolean {
   return (params.label.mode ?? 'text') !== 'socket';
 }
 
-/** {@link withPlacedCaption} for the bin body alone. */
 export function withPlacedTabCaption(params: BinParams, binLabel: string): BinParams {
   return tabCarriesCaption(params) ? withPlacedCaption(params, binLabel) : params;
 }
 
-/** Whether {@link withPlacedTabCaption} captions this design for a placement with a label. */
 export function takesPlacedTabCaption(params: BinParams): boolean {
   return tabCarriesCaption(params) && blankCaptionSlot(params) !== null;
 }

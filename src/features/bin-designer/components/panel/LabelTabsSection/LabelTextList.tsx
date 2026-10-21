@@ -183,7 +183,7 @@ export function LabelTextList({
 
       {/* Blank is a fact, not a fault — a bare shelf still takes a paper label —
           so this stays informational. The overflow below is the defect. */}
-      {blankCount > 0 && (
+      {blankCount > 0 && !layoutLabelFillsBlank && (
         <p className="mb-2 flex items-start gap-1 text-xs text-content-tertiary">
           <InfoIcon size="xs" className="mt-0.5 shrink-0" />
           <span className="flex-1">

@@ -268,7 +268,6 @@ function withoutOwnOverhang(params: BinParams): BinParams {
 
 interface MeshRequest {
   readonly id: DesignId;
-  /** The design save the request is keyed under. */
   readonly updatedAt: string;
   readonly stripOwnOverhang: boolean;
   /**
@@ -276,11 +275,9 @@ interface MeshRequest {
    * null builds the design upright.
    */
   readonly slant?: SlantConfig | null;
-  /** A placement's layout label, built into the design's blank caption. */
   readonly caption?: string;
 }
 
-/** The params a request builds a parametric design from. */
 function previewParams(
   params: BinParams,
   request: MeshRequest,
