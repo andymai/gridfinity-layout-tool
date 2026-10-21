@@ -269,6 +269,42 @@ describe('detachable foot geometry', () => {
     }
   });
 
+  it('drops pins and their holes together once the floor has no room past the clearance', () => {
+    const cutoff = MEMBRANE + END_CLEARANCE;
+    for (const floorThicknessMm of [cutoff - 0.1, cutoff]) {
+      const { feet, pinHoles } = feetOf({ floorThicknessMm });
+      const holesOnly = buildDetachablePinHoles({
+        placements: [CORNER_L],
+        armMm: ARM,
+        pinDiameterMm: PIN,
+        pinHoleDiameterMm: DETACHABLE_PIN_HOLE_DIAMETER_MM,
+        floorThicknessMm,
+      });
+      try {
+        expect(boundingBox(meshOf(feet[0]).vertices).maxZ).toBeCloseTo(0, 4);
+        expect(pinHoles).toBeNull();
+        expect(holesOnly).toBeNull();
+      } finally {
+        feet.forEach((f) => f.delete());
+        pinHoles?.delete();
+        holesOnly?.delete();
+      }
+    }
+
+    const { feet, pinHoles } = feetOf({ floorThicknessMm: cutoff + 0.1 });
+    try {
+      if (!pinHoles) throw new Error('expected a hole tool just past the cutoff');
+      const m = meshOf(feet[0]);
+      expect(boundingBox(m.vertices).maxZ).toBeCloseTo(0.1, 4);
+      const stats = meshTopologyStats(m);
+      expect(stats.boundaryEdges).toBe(0);
+      expect(stats.nonManifoldEdges).toBe(0);
+    } finally {
+      feet.forEach((f) => f.delete());
+      pinHoles?.delete();
+    }
+  });
+
   /**
    * The one dimension every other check here is blind to: a pin wider than its
    * hole is still a closed solid of the right height, with its holes in place.
