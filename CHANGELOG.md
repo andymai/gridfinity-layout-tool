@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.519.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.519.4...gridfinity-layout-tool-v4.519.5) (2026-10-21)
+
+
+### Bug Fixes
+
+* **split:** export a custom-shaped bin when a planned piece holds none of its shape ([#4668](https://github.com/andymai/gridfinity-layout-tool/issues/4668)) ([18c12b5](https://github.com/andymai/gridfinity-layout-tool/commit/18c12b51db54d756b484a85b5e68a17c55b14f39))
+
 ## [4.519.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.519.3...gridfinity-layout-tool-v4.519.4) (2026-10-20)
 
 
