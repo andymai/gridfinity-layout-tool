@@ -1,0 +1,34 @@
+src/features/generation/worker/generators/detachableFeetBuilder.ts
+  s_b4e88c271715ca::t_7859bbcd6582d4 355-358
+  s_b4e88c271715ca::t_1b92fd3ff9dd34 359-367
+  s_b4e88c271715ca::t_d831aeb11dbdee 48-52,182-185,325-327,469
+src/shared/generation/meshPersistence.ts
+  s_b4e88c271715ca::t_58c9719a32be6c 117
+  s_b4e88c271715ca::t_7b3a638d35c9fb 94
+src/shared/types/bin.ts
+  s_b4e88c271715ca::t_b933abfcbbe4e2 338
+src/features/generation/worker/generators/detachableFeet.kernel.test.ts
+  s_b4e88c271715ca::t_2252595d5fd3ee 35,96,314,352-355
+  s_b4e88c271715ca::t_22f322916b6018 247-248,257-268
+  s_b4e88c271715ca::t_0f011d2dab464b 328
+  s_b4e88c271715ca::t_4eb95c4e3e3da4 269-271
+src/features/bin-designer/types/base.ts
+  s_b4e88c271715ca::t_e5404956a7978c 341-344,388
+  s_b4e88c271715ca::t_5a0d2cc90e106d 389-395
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7841586f4105cb63538fba4e7ebcba08e7c92f75",
+  "prompts": {},
+  "sessions": {
+    "s_b4e88c271715ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "712d4240-72ca-418c-a1a3-9e03d8541fa4",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
