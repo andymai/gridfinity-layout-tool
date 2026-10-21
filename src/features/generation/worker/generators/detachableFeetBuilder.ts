@@ -45,7 +45,11 @@ import {
   footPinPositions,
   type FootPlacement,
 } from '@/shared/utils/detachableFeetPlan';
-import { DETACHABLE_PIN_LEAD_IN_MM, detachablePinEngagementMm } from '@/shared/types/bin';
+import {
+  DETACHABLE_PIN_END_CLEARANCE_MM,
+  DETACHABLE_PIN_LEAD_IN_MM,
+  detachablePinEngagementMm,
+} from '@/shared/types/bin';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { buildMagnetHoleCutter } from './magnetHoleCutter';
 
@@ -173,6 +177,10 @@ export interface DetachableFeetGeometry {
  */
 function floorEngagementMm(floorThicknessMm: number): number {
   return Math.max(0, detachablePinEngagementMm(floorThicknessMm));
+}
+
+function hasRoomForPins(engagementMm: number): boolean {
+  return engagementMm > DETACHABLE_PIN_END_CLEARANCE_MM;
 }
 
 /**
@@ -314,7 +322,9 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
 
   return withScope((scope: DisposalScope): DetachableFeetGeometry => {
     const engagementMm = floorEngagementMm(floorThicknessMm);
-    const pinTemplate = buildPin(scope, pinDiameterMm, engagementMm);
+    const pinTemplate = hasRoomForPins(engagementMm)
+      ? buildPin(scope, pinDiameterMm, engagementMm - DETACHABLE_PIN_END_CLEARANCE_MM)
+      : null;
     const feet: Shape3D[] = [];
 
     for (const p of placements) {
@@ -342,17 +352,19 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
       // with `optimisation: 'commonFace'` making no difference. The shell stays
       // closed either way, so only an edge-manifold check catches it, and a
       // slicer would silently reinterpret the result.
-      // A floor with nothing left under the membrane gets no pins at all: the
-      // feet locate on their own footprint and are glued. Degenerate pin
-      // geometry would be the alternative, and a hole would breach the floor.
-      const pins = engagementMm > 0 ? footPinPositions(p, armMm, pinDiameterMm) : [];
-      for (const pin of pins) {
-        const solid = scope.register(
-          translate(pinTemplate, [pin.x - centre.x, pin.y - centre.y, 0])
-        );
-        const pinned = unwrap(fuse(foot, solid));
-        if (pinned !== foot) foot.delete();
-        foot = pinned;
+      // A floor with no room for a pin past the membrane and the end clearance
+      // gets no pins at all: the feet locate on their own footprint and are
+      // glued. Degenerate pin geometry would be the alternative, and a hole
+      // would breach the floor.
+      if (pinTemplate) {
+        for (const pin of footPinPositions(p, armMm, pinDiameterMm)) {
+          const solid = scope.register(
+            translate(pinTemplate, [pin.x - centre.x, pin.y - centre.y, 0])
+          );
+          const pinned = unwrap(fuse(foot, solid));
+          if (pinned !== foot) foot.delete();
+          foot = pinned;
+        }
       }
 
       // Magnet pockets at every standard corner position this foot covers: one
@@ -454,7 +466,7 @@ function buildFloorHoles(
     // Blind from the underside: the cutter starts below the floor and stops at
     // the engagement depth, leaving the membrane that keeps the interior floor
     // — where the scoop ramp, dividers and floor pattern live — unbroken.
-    const pins = engagementMm > 0 ? footPinPositions(p, armMm, pinDiameterMm) : [];
+    const pins = hasRoomForPins(engagementMm) ? footPinPositions(p, armMm, pinDiameterMm) : [];
     for (const pin of pins) {
       holes.push(
         translate(scope.register(cylinder(pinHoleDiameterMm / 2, engagementMm + COPLANAR_MARGIN)), [

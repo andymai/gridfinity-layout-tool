@@ -32,6 +32,7 @@ import { boundingBox, isSolidThrough, meshTopologyStats } from './__kernel-tests
 import { seatDepth } from './__kernel-tests__/binSeating';
 import { FOOT_PROFILE, SOCKET_HEIGHT } from './generatorTypes';
 import {
+  DETACHABLE_PIN_END_CLEARANCE_MM,
   DETACHABLE_PIN_HOLE_DIAMETER_MM,
   DETACHABLE_PIN_LEAD_IN_MM,
   DETACHABLE_PIN_TARGET_ENGAGEMENT_MM,
@@ -92,6 +93,7 @@ const PITCH = 42;
 const CLEARANCE = 0.5;
 const FLOOR = 1.2;
 const MEMBRANE = 0.4;
+const END_CLEARANCE = DETACHABLE_PIN_END_CLEARANCE_MM;
 const PIN = 3;
 const MAGNET_D = 6.5;
 const MAGNET_DEPTH = 2;
@@ -242,15 +244,28 @@ describe('detachable foot geometry', () => {
     const { feet, pinHoles } = feetOf();
     try {
       const box = boundingBox(meshOf(feet[0]).vertices);
-      // Top of the pins, not of the foot: the foot's own top face is Z=0. The
-      // pin reaches the engagement depth and stops, leaving the membrane that
-      // keeps the interior floor unbroken.
-      expect(box.maxZ).toBeCloseTo(FLOOR - MEMBRANE, 4);
+      // Top of the pins, not of the foot: the foot's own top face is Z=0.
+      expect(box.maxZ).toBeCloseTo(FLOOR - MEMBRANE - END_CLEARANCE, 4);
       expect(box.maxZ).toBeLessThan(FLOOR);
       expect(box.minZ).toBeCloseTo(-SOCKET_HEIGHT, 4);
     } finally {
       feet.forEach((f) => f.delete());
       pinHoles?.delete();
+    }
+  });
+
+  it('stops each pin short of the end of its hole, so the foot seats on the floor', () => {
+    for (const floorThicknessMm of [FLOOR, 2.4]) {
+      const { feet, pinHoles } = feetOf({ floorThicknessMm });
+      try {
+        if (!pinHoles) throw new Error('expected a hole tool');
+        const pinTop = boundingBox(meshOf(feet[0]).vertices).maxZ;
+        const holeEnd = boundingBox(meshOf(pinHoles).vertices).maxZ;
+        expect(holeEnd - pinTop).toBeCloseTo(END_CLEARANCE, 4);
+      } finally {
+        feet.forEach((f) => f.delete());
+        pinHoles?.delete();
+      }
     }
   });
 
@@ -296,7 +311,7 @@ describe('detachable foot geometry', () => {
     try {
       const m = meshOf(feet[0]);
       const [pin] = footPinPositions(CORNER_L, ARM, PIN);
-      const shaftTop = 2.4 - MEMBRANE - DETACHABLE_PIN_LEAD_IN_MM;
+      const shaftTop = 2.4 - MEMBRANE - END_CLEARANCE - DETACHABLE_PIN_LEAD_IN_MM;
       // Just inside the pin's own surface: solid for the shaft's whole length
       // on a cylinder, interrupted at every valley on a ridged one.
       const inside = PIN / 2 - 0.02;
@@ -310,7 +325,7 @@ describe('detachable foot geometry', () => {
   });
 
   it('tapers each pin tip so three pins can enter three holes at once', () => {
-    const { feet, pinHoles } = feetOf();
+    const { feet, pinHoles } = feetOf({ floorThicknessMm: binFloorMm(1.2, 'standard', 0) });
     try {
       const m = meshOf(feet[0]);
       const pins = footPinPositions(CORNER_L, ARM, PIN);
@@ -334,7 +349,10 @@ describe('detachable foot geometry', () => {
   it('takes a thicker floor as a longer pin, so the fit never depends on wall thickness', () => {
     const thick = feetOf({ floorThicknessMm: 2.4 });
     try {
-      expect(boundingBox(meshOf(thick.feet[0]).vertices).maxZ).toBeCloseTo(2.4 - MEMBRANE, 4);
+      expect(boundingBox(meshOf(thick.feet[0]).vertices).maxZ).toBeCloseTo(
+        2.4 - MEMBRANE - END_CLEARANCE,
+        4
+      );
     } finally {
       thick.feet.forEach((f) => f.delete());
       thick.pinHoles?.delete();

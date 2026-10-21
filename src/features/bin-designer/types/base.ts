@@ -338,7 +338,10 @@ export const DETACHABLE_PIN_MEMBRANE_MM = 0.4;
  */
 export const DETACHABLE_PIN_MIN_ENGAGEMENT_MM = 0.6;
 
-/** How deep a pin reaches into a floor of `floorThicknessMm`, in mm. */
+/**
+ * How deep a pin's hole reaches into a floor of `floorThicknessMm`, in mm. The
+ * pin itself stops {@link DETACHABLE_PIN_END_CLEARANCE_MM} short of it.
+ */
 export function detachablePinEngagementMm(floorThicknessMm: number): number {
   return floorThicknessMm - DETACHABLE_PIN_MEMBRANE_MM;
 }
@@ -381,6 +384,14 @@ export const DETACHABLE_PIN_TARGET_ENGAGEMENT_MM =
  * the other two land on floor.
  */
 export const DETACHABLE_PIN_LEAD_IN_MM = 0.4;
+
+/**
+ * How far a pin's tip stops short of the end of its hole, in mm. The hole ends
+ * at the membrane, which prints as a bridge that sags into it, and both parts
+ * round to the layer grid. A pin cut to the full hole depth bottoms out there
+ * first and holds the foot off the floor.
+ */
+export const DETACHABLE_PIN_END_CLEARANCE_MM = 0.4;
 
 /**
  * Largest gap allowed between adjacent feet, in mm.
