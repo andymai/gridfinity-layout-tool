@@ -1,0 +1,151 @@
+src/i18n/locales/ka.json
+  s_b4e88c271715ca::t_770059f81f44b7 1790
+src/shared/hooks/useLabelPlateCounts.ts
+  s_b4e88c271715ca::t_a5d6ccdf714997 116-120
+  s_b4e88c271715ca::t_5090ffac0b33a9 42-46,49-53
+  s_b4e88c271715ca::t_b234343ab3e82a 100
+  s_b4e88c271715ca::t_ae83d49bc6fc29 130,134
+  s_b4e88c271715ca::t_2b5bcba8c75375 28
+  s_b4e88c271715ca::t_c5742d14016e98 54
+src/features/bin-designer/components/panel/LabelTabsSection/useLabelTabsSection.test.ts
+  s_b4e88c271715ca::t_ee0cb74e6a9a69 1,5-7
+  s_b4e88c271715ca::t_552c50c34103cd 925-968
+src/features/design-linking/hooks/useQuickExport.ts
+  s_b4e88c271715ca::t_f307fc838f4a74 12
+  s_b4e88c271715ca::t_a94b435fe5abe1 37
+  s_b4e88c271715ca::t_6150e326d08dd0 23-24
+  s_b4e88c271715ca::t_d620c708881266 65-66,68,73-74
+  s_b4e88c271715ca::t_def8c617655b96 69-72
+src/i18n/locales/pl.json
+  s_b4e88c271715ca::t_770059f81f44b7 1267
+src/shared/hooks/useLinkedDesignMeshes.test.ts
+  s_b4e88c271715ca::t_3645ef624fde86 689-760,762-781
+  s_b4e88c271715ca::t_325076f040d206 761
+src/core/types/printList.ts
+  s_b4e88c271715ca::t_00baeaa79676ae 40-42
+src/shared/utils/placedCaption.ts
+  s_b4e88c271715ca::t_5dd6b10c49d26d 51
+  s_b4e88c271715ca::t_a019fa038928bb 126-133,135-140
+  s_b4e88c271715ca::t_39a895f28cad24 1-50,52-125,134,141
+src/features/design-linking/hooks/useQuickExport.test.ts
+  s_b4e88c271715ca::t_838cd6e35c942f 39-41
+  s_b4e88c271715ca::t_41f39d49b93aa6 59
+  s_b4e88c271715ca::t_03b4d7ba8d3672 1-38,42-58,60-77
+src/i18n/locales/cs.json
+  s_b4e88c271715ca::t_770059f81f44b7 1267
+src/i18n/locales/zh-CN.json
+  s_b4e88c271715ca::t_770059f81f44b7 1267
+src/i18n/locales/es.json
+  s_b4e88c271715ca::t_770059f81f44b7 1267
+src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.test.tsx
+  s_b4e88c271715ca::t_69d286f7031fe9 153-174
+src/i18n/locales/ko.json
+  s_b4e88c271715ca::t_770059f81f44b7 1267
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_b4e88c271715ca::t_a11158ce0d87f9 524-535,537-540,542-543
+  s_b4e88c271715ca::t_4bc6ce18d1a545 482-484,488-489
+  s_b4e88c271715ca::t_452079f0afcc28 27-31
+  s_b4e88c271715ca::t_53b7dd191d062e 568,574-579,583
+  s_b4e88c271715ca::t_dafce2c0c5efbf 462-469
+  s_b4e88c271715ca::t_7f44ab40b165b4 117-134
+  s_b4e88c271715ca::t_0d69c677fdb9f3 158
+  s_b4e88c271715ca::t_4ccba656205545 59-63
+  s_b4e88c271715ca::t_2c1111e0929e01 367
+  s_b4e88c271715ca::t_7fcec8de57fe3a 271-272,279-304,314
+  s_b4e88c271715ca::t_c85a62a42c8e04 414,418-420,424-428
+  s_b4e88c271715ca::t_3f297fb5589373 439-441
+src/features/generation/worker/generators/binGenerator.scenario.placedCaption.test.ts
+  s_b4e88c271715ca::t_0a36e4b8ab79cd 1-66
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_b4e88c271715ca::t_a275ea8356b1fc 811-902
+  s_b4e88c271715ca::t_69e7f30c2a5a52 903-905
+  s_3ce529a1eaae1d::t_1fe8b3f43b6ace 906-907
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_b4e88c271715ca::t_35565f473e2df9 50
+  s_b4e88c271715ca::t_81c5462c4b5f45 287-291
+  s_b4e88c271715ca::t_75214e9e81ef34 187-195,199,206-207
+  s_b4e88c271715ca::t_08f7289638dfe5 409,415
+  s_b4e88c271715ca::t_28fab5b5a8a5b5 23
+  s_b4e88c271715ca::t_8135d734a63584 327-334,345
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_b4e88c271715ca::t_8f08d28a540c11 123
+src/features/print-export/hooks/usePrintList.test.ts
+  s_b4e88c271715ca::t_ab6fa2e63187cd 548-580
+  s_b4e88c271715ca::t_2f95adfdc37a38 495-502,524-531
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTextList.tsx
+  s_b4e88c271715ca::t_2dc36b6d334999 251-255
+  s_b4e88c271715ca::t_f77193d0320deb 68-70
+  s_b4e88c271715ca::t_0be0d1fe5c4871 91
+src/shared/hooks/useLabelPlateCounts.test.ts
+  s_b4e88c271715ca::t_94a5f208206022 25-30
+  s_b4e88c271715ca::t_7cc0259d2901b5 318-362
+  s_b4e88c271715ca::t_37976f23f806fc 363-365
+  s_3ce529a1eaae1d::t_d5f69944b5f24b 366-368
+src/i18n/locales/pt-BR.json
+  s_b4e88c271715ca::t_770059f81f44b7 1267
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTextList.test.tsx
+  s_b4e88c271715ca::t_4ba873a82443ab 49-64
+src/features/bin-designer/components/panel/LabelTabsSection/useLabelTabsSection.ts
+  s_b4e88c271715ca::t_b9ab87fb9efc4b 809
+  s_b4e88c271715ca::t_7a97ef6706efd8 22
+  s_b4e88c271715ca::t_def8c617655b96 751-754
+  s_b4e88c271715ca::t_d8cca54990363f 747-750,755-757
+src/i18n/locales/en.ts
+  s_b4e88c271715ca::t_d0923d93411dad 2120-2121
+src/shared/utils/placedCaption.test.ts
+  s_b4e88c271715ca::t_e1c40e9df0d41e 109-114
+  s_b4e88c271715ca::t_e01a4c8804b5fd 7
+  s_b4e88c271715ca::t_ca8a9efb4c2bab 1-6,8-57,59-108,115-122
+  s_b4e88c271715ca::t_3e01f5ebbdd12a 58
+src/i18n/locales/uk.json
+  s_b4e88c271715ca::t_770059f81f44b7 1267
+src/i18n/locales/nl.json
+  s_b4e88c271715ca::t_770059f81f44b7 1267
+src/i18n/locales/nb.json
+  s_b4e88c271715ca::t_770059f81f44b7 1267
+src/features/print-export/hooks/usePrintList.ts
+  s_b4e88c271715ca::t_3fa7d5decb26d6 15
+  s_b4e88c271715ca::t_73b0d9ca88dc63 194-196,200
+src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.tsx
+  s_b4e88c271715ca::t_e94666cca3b378 114,116
+src/i18n/locales/ja.json
+  s_b4e88c271715ca::t_770059f81f44b7 1267
+src/shell/layoutExport/planLabelPlateExport.test.ts
+  s_b4e88c271715ca::t_6dbbf24f232fa5 200-241
+src/shell/layoutExport/planLabelPlateExport.ts
+  s_b4e88c271715ca::t_b9f461ac9d733a 167-175,182-184,191-192
+  s_b4e88c271715ca::t_839960e153159e 11-14,18
+  s_b4e88c271715ca::t_dcb609b9db1c80 29-30
+src/i18n/locales/de.json
+  s_b4e88c271715ca::t_770059f81f44b7 1267
+src/i18n/locales/sv.json
+  s_b4e88c271715ca::t_770059f81f44b7 1267
+src/i18n/locales/fr.json
+  s_b4e88c271715ca::t_770059f81f44b7 1267
+src/i18n/locales/it.json
+  s_b4e88c271715ca::t_770059f81f44b7 1267
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2413d5fdb610c90e114add86ec0fab10ddf93a6c",
+  "prompts": {},
+  "sessions": {
+    "s_3ce529a1eaae1d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a0104ddd589bf1a71",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_b4e88c271715ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "712d4240-72ca-418c-a1a3-9e03d8541fa4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
