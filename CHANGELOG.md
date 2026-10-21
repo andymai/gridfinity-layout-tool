@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.520.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.519.5...gridfinity-layout-tool-v4.520.0) (2026-10-21)
+
+
+### Features
+
+* **baseplate:** screw plates down where four pockets meet, with no added height ([#4670](https://github.com/andymai/gridfinity-layout-tool/issues/4670)) ([2de4f91](https://github.com/andymai/gridfinity-layout-tool/commit/2de4f91700c307140bf67ee2b472f3e9fbd2c935))
+
 ## [4.519.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.519.4...gridfinity-layout-tool-v4.519.5) (2026-10-21)
 
 
