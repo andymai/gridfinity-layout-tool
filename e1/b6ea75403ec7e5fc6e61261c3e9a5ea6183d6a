@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/detachableFeet.kernel.test.ts
+  s_b4e88c271715ca::t_0c61a3ece8a01c 272-307
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e1b6ea75403ec7e5fc6e61261c3e9a5ea6183d6a",
+  "prompts": {},
+  "sessions": {
+    "s_b4e88c271715ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "712d4240-72ca-418c-a1a3-9e03d8541fa4",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
