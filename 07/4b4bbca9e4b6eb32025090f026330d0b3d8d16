@@ -1,0 +1,21 @@
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTextList.test.tsx
+  s_b4e88c271715ca::t_066b7d57b88c6b 55
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTextList.tsx
+  s_b4e88c271715ca::t_b5a50f6bd4e860 186
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "074b4bbca9e4b6eb32025090f026330d0b3d8d16",
+  "prompts": {},
+  "sessions": {
+    "s_b4e88c271715ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "712d4240-72ca-418c-a1a3-9e03d8541fa4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
