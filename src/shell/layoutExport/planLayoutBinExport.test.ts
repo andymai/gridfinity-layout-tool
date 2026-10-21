@@ -845,9 +845,24 @@ describe('planLayoutBinExport', () => {
     it('names each file after the label it prints', () => {
       const paths = plan(screwsAndBolts()).exportable.map((e) => e.path);
       expect(paths.sort()).toEqual([
-        'bins/Box_1x1x6_label_Bolts.stl',
-        'bins/Box_1x1x6_label_Screws.stl',
+        'bins/Box_1x1x6_label (Bolts).stl',
+        'bins/Box_1x1x6_label (Screws).stl',
       ]);
+    });
+
+    it('never names a body the way another variant names a companion part', () => {
+      const bins = ['Screws', 'Screws_lid', 'lid', 'feet (2)', ''].map((label, i) => ({
+        ...linkedBin('d1', { label }),
+        id: createTestBin({ x: gridUnits(i) }).id,
+      }));
+      const bodies = plan(bins).exportable.map((e) => e.path);
+      expect(bodies).toHaveLength(5);
+      const parts = ['lid', 'lid-baseplate', 'feet', 'slide-tray', 'knife-rest', 'slant-support'];
+      const every = bodies.flatMap((body) => [
+        body,
+        ...parts.map((part) => body.replace(/\.stl$/, `_${part}.stl`)),
+      ]);
+      expect(new Set(every).size).toBe(every.length);
     });
 
     it('groups bins that share a label into one file', () => {

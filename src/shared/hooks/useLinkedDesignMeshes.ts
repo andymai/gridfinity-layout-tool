@@ -410,6 +410,9 @@ function enqueueResolve(
     let missedArrival = false;
     let takesCaption = false;
     try {
+      // The inspector rewrites a bin's label on every keystroke, so most
+      // caption variants have no viewer left by the time their turn comes.
+      if (request.caption !== undefined && !pinnedKeys.has(key)) return;
       const designResult = await loadDesign(request.id);
       const waitingFor: string[] = [];
       const design = isOk(designResult) ? designResult.value : null;
@@ -544,19 +547,21 @@ export function useLinkedDesignMeshes(bins: Bin[]): Map<BinId, LinkedDesignMesh>
     const onSettled = (): void => {
       if (!cancelled) setLoadTick((tick) => tick + 1);
     };
-    // Pinned for as long as this preview shows them. The has-check below still
+    // Pinned for as long as this preview shows them, including the plain mesh a
+    // captioned bin shows until its own is built. The has-check below still
     // reloads any evicted before this effect ran, between render and commit.
-    for (const key of requests.keys()) pinKey(key);
+    const shown = [...requests.keys(), ...fallbackByBin.values()];
+    for (const key of shown) pinKey(key);
     for (const [key, request] of requests) {
       if (!meshCache.has(key) || staleKeys.has(key))
         enqueueResolve(request, key, nozzleSizeMm, lowProfileBase, onSettled);
     }
     return () => {
       cancelled = true;
-      for (const key of requests.keys()) unpinKey(key);
+      for (const key of shown) unpinKey(key);
       scheduleTrim();
     };
-  }, [requests, nozzleSizeMm, lowProfileBase, staleTick]);
+  }, [requests, fallbackByBin, nozzleSizeMm, lowProfileBase, staleTick]);
 
   return useMemo(() => {
     // loadTick re-runs this memo when async resolutions land in the cache

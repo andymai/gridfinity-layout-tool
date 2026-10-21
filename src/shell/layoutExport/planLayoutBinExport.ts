@@ -187,9 +187,15 @@ function withPositionSuffix(name: string, x: number, y: number): string {
   return withNameSuffix(name, `_pos${posToken(x)}-${posToken(y)}`);
 }
 
-/** Name a variant after the layout label it prints, which is how the user tells the files apart. */
+/**
+ * Name a variant after the layout label it prints, which is how the user tells
+ * the files apart. Companion parts are written as `<body>_<part>` and only body
+ * names are deduped, so the label sits in parentheses: no `_<part>` suffix can
+ * end in one, which keeps a bin labelled "lid" off the plain variant's lid file
+ * and "Screws_lid" off the "Screws" variant's.
+ */
 function withCaptionSuffix(name: string, caption: string): string {
-  return withNameSuffix(name, `_${sanitizeFileName(caption)}`);
+  return withNameSuffix(name, ` (${sanitizeFileName(caption).replace(/[()]/g, '')})`);
 }
 
 function withNameSuffix(name: string, suffix: string): string {

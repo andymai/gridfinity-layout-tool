@@ -750,6 +750,71 @@ describe('useLinkedDesignMeshes', () => {
       expect(result.current.get(B1)?.mesh).toBe(designMesh);
     });
 
+    const flushMicrotasks = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    it('skips a caption the label was typed past before its turn came', async () => {
+      let release = (): void => undefined;
+      const generateImmediate = vi.fn((p: BinParams) =>
+        captionOf(p) === 'S'
+          ? new Promise<{ mesh: MeshData }>((resolve) => {
+              release = () => resolve({ mesh: makeMesh() });
+            })
+          : Promise.resolve({ mesh: makeMesh() })
+      );
+      useBridge(generateImmediate);
+      mockLoadDesign.mockResolvedValue(ok(labeledDesign()));
+      const labeled = (label: string): Bin[] => [
+        createTestBin({ id: B1, linkedDesignId: D1, label }),
+      ];
+
+      const { rerender } = renderHook(({ bins }: { bins: Bin[] }) => useLinkedDesignMeshes(bins), {
+        initialProps: { bins: labeled('S') },
+      });
+      await waitFor(() => expect(captionsBuilt(generateImmediate)).toEqual([undefined, 'S']));
+      rerender({ bins: labeled('Sc') });
+      rerender({ bins: labeled('Scr') });
+      release();
+
+      await waitFor(() =>
+        expect(captionsBuilt(generateImmediate)).toEqual([undefined, 'S', 'Scr'])
+      );
+      await flushMicrotasks();
+      expect(captionsBuilt(generateImmediate)).toEqual([undefined, 'S', 'Scr']);
+    });
+
+    it('keeps every plain mesh a captioned bin is still showing', async () => {
+      const count = MAX_CACHE_ENTRIES + 4;
+      const refs: CustomBinRef[] = [];
+      const many: Bin[] = [];
+      for (let i = 0; i < count; i++) {
+        const id = designId(`captioned-${i}`);
+        refs.push(makeRegistryRef({ id }));
+        many.push(
+          createTestBin({ id: binId(`captioned-bin-${i}`), linkedDesignId: id, label: `Bin ${i}` })
+        );
+      }
+      mockUseCustomBins.mockReturnValue(refs);
+      mockLoadDesign.mockImplementation(async (id) => ok({ ...labeledDesign(), id }));
+      const generateImmediate = vi.fn((p: BinParams) =>
+        captionOf(p) === undefined
+          ? Promise.resolve({ mesh: makeMesh() })
+          : new Promise<never>(() => undefined)
+      );
+      useBridge(generateImmediate);
+
+      const { result, rerender } = renderHook(
+        ({ bins }: { bins: Bin[] }) => useLinkedDesignMeshes(bins),
+        { initialProps: { bins: many } }
+      );
+
+      await waitFor(() => expect(captionsBuilt(generateImmediate)).toContain('Bin 0'));
+      await flushMicrotasks();
+      // An evicted fallback only shows once the hook renders again.
+      rerender({ bins: [...many] });
+      await flushMicrotasks();
+      expect(result.current.size).toBe(count);
+    });
+
     it.each([
       [
         'a design with its own caption',
