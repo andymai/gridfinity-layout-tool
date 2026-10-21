@@ -1264,6 +1264,7 @@
   "binDesigner.labelTextClearRow": "清除 {n} 的标签文字",
   "binDesigner.labelTextFilled": "已填写 {filled}/{total}",
   "binDesigner.labelTextLayout": "标签文字布局",
+  "binDesigner.labelTextLayoutLabelPlaceholder": "留空时，已关联的收纳盒会打印其布局标签",
   "binDesigner.labelTextNextBlank": "下一个空白",
   "binDesigner.labelTextOverflowCount.one": "1 个标签过长，无法打印",
   "binDesigner.labelTextOverflowCount.other": "{count} 个标签过长，无法打印",

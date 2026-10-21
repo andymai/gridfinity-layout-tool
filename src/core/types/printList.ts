@@ -37,8 +37,9 @@ export interface EnhancedPrintRow extends PrintRow {
   costEstimate: number; // $ based on filament usage
   spoolPercentage: number; // % of 1kg spool
   labelPlateCount?: number; // Swappable label plates this row needs (socket-mode designs)
-  /** The linked design has label tabs on with no text on any of them, so every
-   *  tab in this row prints blank. Absent when there is text, or no tabs. */
+  /** The linked design has label tabs on with no text on any of them, and this
+   *  row's layout label does not fill them, so every tab in it prints blank.
+   *  Absent when there is text, or no tabs. */
   labelTabsWithoutText?: boolean;
 }
 

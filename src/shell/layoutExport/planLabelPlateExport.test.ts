@@ -197,6 +197,48 @@ describe('planLabelPlateExport', () => {
     );
   });
 
+  it('captions a blank single-compartment plate with each bin label', () => {
+    const loaded: LoadedDesign[] = [
+      {
+        id: designId('d1'),
+        design: socketDesign('d1', 'Single', { compartments: DEFAULT_BIN_PARAMS.compartments }),
+      },
+    ];
+    const bins: Bin[] = [
+      linkedBin('d1', { label: 'Screws' }),
+      { ...linkedBin('d1', { label: 'Bolts' }), x: gridUnits(2) },
+      { ...linkedBin('d1', { label: ' ' }), x: gridUnits(4) },
+    ];
+
+    const plan = planLabelPlateExport(bins, loaded, BED, BED, 0.4);
+    expect(plan.totalPlates).toBe(3);
+    expect(plan.groups[0].manifestPlates.map((p) => [p.text, p.quantity]).sort()).toEqual([
+      ['', 1],
+      ['Bolts', 1],
+      ['Screws', 1],
+    ]);
+  });
+
+  it('keeps the design caption on every plate when it has its own', () => {
+    const loaded: LoadedDesign[] = [
+      {
+        id: designId('d1'),
+        design: socketDesign('d1', 'Single', {
+          compartments: { ...DEFAULT_BIN_PARAMS.compartments, compartmentTexts: ['M3'] },
+        }),
+      },
+    ];
+    const bins: Bin[] = [
+      linkedBin('d1', { label: 'Screws' }),
+      { ...linkedBin('d1', { label: 'Bolts' }), x: gridUnits(2) },
+    ];
+
+    const plan = planLabelPlateExport(bins, loaded, BED, BED, 0.4);
+    expect(plan.groups[0].manifestPlates).toEqual([
+      expect.objectContaining({ text: 'M3', quantity: 2 }),
+    ]);
+  });
+
   it('packs plates within the usable bed and centers each sheet', () => {
     const loaded: LoadedDesign[] = [{ id: designId('d1'), design: socketDesign('d1', 'Hardware') }];
     const bins: Bin[] = Array.from({ length: 6 }, (_, i) => ({

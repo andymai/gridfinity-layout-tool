@@ -1264,6 +1264,7 @@
   "binDesigner.labelTextClearRow": "Очистити текст етикетки для {n}",
   "binDesigner.labelTextFilled": "Заповнено {filled} з {total}",
   "binDesigner.labelTextLayout": "Розташування тексту етикетки",
+  "binDesigner.labelTextLayoutLabelPlaceholder": "Порожньо: пов’язані біни друкують свою мітку з розкладки",
   "binDesigner.labelTextNextBlank": "Наступний порожній",
   "binDesigner.labelTextOverflowCount.one": "1 етикетка задовга для друку",
   "binDesigner.labelTextOverflowCount.other": "Задовгих етикеток для друку: {count}",

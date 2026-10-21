@@ -1264,6 +1264,7 @@
   "binDesigner.labelTextClearRow": "Effacer le texte d’étiquette de {n}",
   "binDesigner.labelTextFilled": "{filled} sur {total} remplis",
   "binDesigner.labelTextLayout": "Disposition du texte d’étiquette",
+  "binDesigner.labelTextLayoutLabelPlaceholder": "Vide : les bins liés impriment leur libellé de la disposition",
   "binDesigner.labelTextNextBlank": "Suivante vide",
   "binDesigner.labelTextOverflowCount.one": "1 étiquette trop longue à imprimer",
   "binDesigner.labelTextOverflowCount.other": "{count} étiquettes trop longues à imprimer",

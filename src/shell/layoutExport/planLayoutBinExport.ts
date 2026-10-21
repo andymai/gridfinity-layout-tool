@@ -20,6 +20,7 @@ import { generateFileName } from '@/features/bin-designer';
 // Deep import (not the barrel): the bin-designer barrel is eagerly loaded by App,
 // and this code only runs inside the lazy layout-export chunk.
 import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
+import { sanitizeFileName } from '@/features/bin-designer/utils/fileNaming';
 import { hasDetachableFeet } from '@/shared/types/bin';
 import { shouldGenerateKnifeRest } from '@/shared/utils/knifeRestPlan';
 import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
@@ -46,6 +47,7 @@ import { dedupeFileNames } from './dedupeFileNames';
 import type { ManifestBinEntry, ManifestSkipped } from './buildLayoutManifest';
 import { normalizeSlant, planSlantSupport } from '@/shared/utils/slantPlan';
 import { isTurnedPlacement, sideInDesign } from '@/shared/utils/placementTurn';
+import { placementCaption, withPlacedTabCaption } from '@/shared/utils/placedCaption';
 
 /** A linked design id resolved against storage; `design` is null when it failed to load. */
 export interface LoadedDesign {
@@ -182,16 +184,27 @@ function posToken(value: number): string {
  * `WxDxH` token, so an `x`-prefixed suffix would read as another dimension.
  */
 function withPositionSuffix(name: string, x: number, y: number): string {
+  return withNameSuffix(name, `_pos${posToken(x)}-${posToken(y)}`);
+}
+
+/** Name a variant after the layout label it prints, which is how the user tells the files apart. */
+function withCaptionSuffix(name: string, caption: string): string {
+  return withNameSuffix(name, `_${sanitizeFileName(caption)}`);
+}
+
+function withNameSuffix(name: string, suffix: string): string {
   const dot = name.lastIndexOf('.');
   const base = dot === -1 ? name : name.slice(0, dot);
   const ext = dot === -1 ? '' : name.slice(dot);
-  return `${base}_pos${posToken(x)}-${posToken(y)}${ext}`;
+  return `${base}${suffix}${ext}`;
 }
 
 interface BinExportGroup {
   readonly design: SavedDesign;
   readonly params: BinParams;
   readonly extended: boolean;
+  /** The layout label printed in the design's blank caption; null when it prints its own. */
+  readonly caption: string | null;
   quantity: number;
   /**
    * Every grid position this group's mesh is placed at. A group is keyed by
@@ -271,10 +284,11 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
     designById.set(id, design);
   }
 
-  // Group linked bins by (design, resolved overhang). A bin that carries an
-  // explicit overhang or extends into the drawer margin forms its own group;
-  // identical bins (extended or not) still share one mesh. The overhang
-  // REPLACES the design's own overhang for that instance.
+  // Group linked bins by (design, resolved overhang, placed slant, placed
+  // caption). A bin that carries an explicit overhang or extends into the
+  // drawer margin forms its own group; identical bins (extended or not) still
+  // share one mesh. The overhang REPLACES the design's own overhang for that
+  // instance.
   const groups = new Map<string, BinExportGroup>();
   const usable: BinExportGroup[] = [];
   // Designs a STEP export cannot represent because their pocket is carved out
@@ -310,8 +324,14 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
       b.slant && isTurnedPlacement(b, design.params)
         ? { ...b.slant, side: sideInDesign(b.slant.side) }
         : b.slant;
-    const params = normalizeSlant(placed ? { ...fitted, slant: placed } : fitted);
-    const key = `${b.linkedDesignId}|${overhangKey(overhang)}|${placedSlantKey(placed)}`;
+    const slanted = normalizeSlant(placed ? { ...fitted, slant: placed } : fitted);
+    const params = withPlacedTabCaption(slanted, b.label);
+    // Keyed only when the label reaches the mesh, so every other design still
+    // ships one file for all its bins.
+    const caption = params === slanted ? null : placementCaption(b.label);
+    const key = `${b.linkedDesignId}|${overhangKey(overhang)}|${placedSlantKey(placed)}${
+      caption === null ? '' : `|${caption}`
+    }`;
     const existing = groups.get(key);
     if (existing) {
       existing.quantity++;
@@ -322,6 +342,7 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
       design,
       params,
       extended: overhang !== null,
+      caption,
       quantity: 1,
       positions: [{ x: b.x, y: b.y }],
     };
@@ -385,12 +406,13 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
   // silently collide with a parametric design of the same stem.
   const fileNames = dedupeFileNames([
     ...usable.map((u) => {
-      const name = generateFileName(
+      const generated = generateFileName(
         u.params,
         format,
         u.design.exportFileNameConfig ?? fileNameConfig,
         u.design.name
       );
+      const name = u.caption === null ? generated : withCaptionSuffix(generated, u.caption);
       return u.extended ? withPositionSuffix(name, u.positions[0].x, u.positions[0].y) : name;
     }),
     ...meshUsable.map(

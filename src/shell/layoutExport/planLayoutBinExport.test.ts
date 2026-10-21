@@ -808,4 +808,101 @@ describe('planLayoutBinExport', () => {
       });
     });
   });
+
+  describe('layout label as the caption', () => {
+    const LABELED: Partial<BinParams> = {
+      width: 1,
+      depth: 1,
+      height: 6,
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+    };
+
+    const plan = (bins: Bin[], params: Partial<BinParams> = LABELED) =>
+      planLayoutBinExport({
+        bins,
+        loaded: [{ id: designId('d1'), design: design('d1', 'Box', params) }],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
+
+    const screwsAndBolts = (): Bin[] => [
+      linkedBin('d1', { label: 'Screws' }),
+      { ...linkedBin('d1', { label: 'Bolts' }), id: createTestBin({ x: gridUnits(1) }).id },
+    ];
+
+    it('exports one file per label when the design caption is blank', () => {
+      const result = plan(screwsAndBolts());
+      expect(result.exportable).toHaveLength(2);
+      const captions = result.exportable.map((e) => e.params.compartments.compartmentTexts?.[0]);
+      expect(captions.sort()).toEqual(['Bolts', 'Screws']);
+      expect(result.manifestBins.map((b) => b.quantity)).toEqual([1, 1]);
+    });
+
+    it('names each file after the label it prints', () => {
+      const paths = plan(screwsAndBolts()).exportable.map((e) => e.path);
+      expect(paths.sort()).toEqual([
+        'bins/Box_1x1x6_label_Bolts.stl',
+        'bins/Box_1x1x6_label_Screws.stl',
+      ]);
+    });
+
+    it('groups bins that share a label into one file', () => {
+      const bins = [
+        linkedBin('d1', { label: 'Screws' }),
+        { ...linkedBin('d1', { label: ' Screws ' }), id: createTestBin({ x: gridUnits(1) }).id },
+      ];
+      const result = plan(bins);
+      expect(result.exportable).toHaveLength(1);
+      expect(result.manifestBins[0].quantity).toBe(2);
+    });
+
+    it('keeps the design caption, and one file, when the design has its own', () => {
+      const result = plan(screwsAndBolts(), {
+        ...LABELED,
+        compartments: { ...DEFAULT_BIN_PARAMS.compartments, compartmentTexts: ['HARDWARE'] },
+      });
+      expect(result.exportable).toHaveLength(1);
+      expect(result.exportable[0].params.compartments.compartmentTexts).toEqual(['HARDWARE']);
+      expect(result.exportable[0].path).toBe('bins/Box_1x1x6_label.stl');
+      expect(result.manifestBins[0].quantity).toBe(2);
+    });
+
+    it('leaves a multi-compartment design untouched', () => {
+      const params: Partial<BinParams> = {
+        ...LABELED,
+        width: 2,
+        compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 1, cells: [0, 1] },
+      };
+      const result = plan(screwsAndBolts(), params);
+      expect(result.exportable).toHaveLength(1);
+      expect(result.exportable[0].params.compartments.compartmentTexts).toBeUndefined();
+      expect(result.manifestBins[0].quantity).toBe(2);
+    });
+
+    it('prints the blank caption blank for an unlabeled bin', () => {
+      const bins = [
+        linkedBin('d1', { label: 'Screws' }),
+        { ...linkedBin('d1', { label: '' }), id: createTestBin({ x: gridUnits(1) }).id },
+      ];
+      const result = plan(bins);
+      expect(result.exportable).toHaveLength(2);
+      const blank = result.exportable.find(
+        (e) => e.params.compartments.compartmentTexts === undefined
+      );
+      expect(blank?.path).toBe('bins/Box_1x1x6_label.stl');
+    });
+
+    it('keeps one body file for a socket design, whose label prints on the plate', () => {
+      const result = plan(screwsAndBolts(), {
+        ...LABELED,
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'socket', depth: 14 },
+      });
+      expect(result.exportable).toHaveLength(1);
+      expect(result.manifestBins[0].quantity).toBe(2);
+    });
+  });
 });

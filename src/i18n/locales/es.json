@@ -1264,6 +1264,7 @@
   "binDesigner.labelTextClearRow": "Borrar el texto de etiqueta de {n}",
   "binDesigner.labelTextFilled": "{filled} de {total} rellenados",
   "binDesigner.labelTextLayout": "Disposición del texto de etiqueta",
+  "binDesigner.labelTextLayoutLabelPlaceholder": "En blanco: los bins vinculados imprimen su etiqueta de la disposición",
   "binDesigner.labelTextNextBlank": "Siguiente vacía",
   "binDesigner.labelTextOverflowCount.one": "1 etiqueta demasiado larga para imprimir",
   "binDesigner.labelTextOverflowCount.other": "{count} etiquetas demasiado largas para imprimir",

@@ -65,6 +65,9 @@ interface LabelTextListProps {
    *  caption. Absent unless that mapping is unambiguous. */
   readonly suggestedName?: string;
   readonly onApplySuggestedName?: () => void;
+  /** The design's one caption is blank, and each bin linked to it in the layout
+   *  prints its own layout label there instead. */
+  readonly layoutLabelFillsBlank?: boolean;
   /** Raising `label.width` is the one auto-fix for an overflow; absent when the
    *  tabs are already full width or the caption sits on a plate. */
   readonly onWiden?: () => void;
@@ -85,6 +88,7 @@ export function LabelTextList({
   onPlateIconChange,
   suggestedName,
   onApplySuggestedName,
+  layoutLabelFillsBlank = false,
 }: LabelTextListProps) {
   const { isMobile } = useResponsive();
   const t = useTranslation();
@@ -244,7 +248,11 @@ export function LabelTextList({
                     describedBy={row.overflows ? messageId : undefined}
                     placeholder={
                       row.index === rows[0]?.index
-                        ? t('binDesigner.tabEngravedTextPlaceholder')
+                        ? t(
+                            layoutLabelFillsBlank
+                              ? 'binDesigner.labelTextLayoutLabelPlaceholder'
+                              : 'binDesigner.tabEngravedTextPlaceholder'
+                          )
                         : ''
                     }
                     ariaLabel={

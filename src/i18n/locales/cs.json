@@ -1264,6 +1264,7 @@
   "binDesigner.labelTextClearRow": "Vymazat text štítku pro {n}",
   "binDesigner.labelTextFilled": "Vyplněno {filled} z {total}",
   "binDesigner.labelTextLayout": "Rozvržení textu štítku",
+  "binDesigner.labelTextLayoutLabelPlaceholder": "Prázdné: propojené biny vytisknou svůj štítek z rozvržení",
   "binDesigner.labelTextNextBlank": "Další prázdný",
   "binDesigner.labelTextOverflowCount.one": "1 štítek je příliš dlouhý k tisku",
   "binDesigner.labelTextOverflowCount.other": "Příliš dlouhé štítky k tisku: {count}",

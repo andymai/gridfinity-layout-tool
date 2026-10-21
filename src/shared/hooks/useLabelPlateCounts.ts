@@ -25,6 +25,7 @@ import type { BinParams } from '@/shared/types/bin';
 import { useSettingsStore } from '@/core/store';
 import { planLabelPlates } from '@/shared/utils/labelSocketPlan';
 import type { LabelPlatePlanEntry } from '@/shared/utils/labelSocketPlan';
+import { blankCaptionSlot } from '@/shared/utils/placedCaption';
 
 /**
  * What a linked design's label tabs mean for the print list.
@@ -38,7 +39,18 @@ import type { LabelPlatePlanEntry } from '@/shared/utils/labelSocketPlan';
 export interface DesignLabelInfo {
   readonly plateSet: DesignPlateSet | null;
   readonly tabsWithoutText: boolean;
+  /**
+   * The design's one caption is blank, so a linked bin with a layout label
+   * prints that label there instead (`withPlacedCaption`).
+   */
+  readonly blankCaptionTakesBinLabel: boolean;
 }
+
+const INERT_INFO: DesignLabelInfo = {
+  plateSet: null,
+  tabsWithoutText: false,
+  blankCaptionTakesBinLabel: false,
+};
 
 /** The plates one placed bin of a socket-mode design needs. */
 export interface DesignPlateSet {
@@ -85,7 +97,7 @@ function printedLabelTexts(
 
 function computeLabelInfo(design: SavedDesign, nozzleSizeMm: number): DesignLabelInfo {
   const params = design.params;
-  if (!params) return { plateSet: null, tabsWithoutText: false };
+  if (!params) return INERT_INFO;
   const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, params.label.plateFitOffset);
   // Expanded interior, matching the worker's socket frame (see
   // `useCutoutSocketPlan`).
@@ -101,7 +113,11 @@ function computeLabelInfo(design: SavedDesign, nozzleSizeMm: number): DesignLabe
     params.label.enabled && !printedLabelTexts(params, planned).some((t) => t.trim() !== '');
   const plateSet =
     planned.length === 0 ? null : { perBin: planned.length, widthsU: planned.map((p) => p.widthU) };
-  return { plateSet, tabsWithoutText };
+  return {
+    plateSet,
+    tabsWithoutText,
+    blankCaptionTakesBinLabel: blankCaptionSlot(params, nozzleSizeMm) !== null,
+  };
 }
 
 function enqueueLoad(id: DesignId, key: string, nozzleSizeMm: number, onSettled: () => void): void {
@@ -111,13 +127,11 @@ function enqueueLoad(id: DesignId, key: string, nozzleSizeMm: number, onSettled:
     .then((result) => {
       plateSetCache.set(id, {
         key,
-        info: isOk(result)
-          ? computeLabelInfo(result.value, nozzleSizeMm)
-          : { plateSet: null, tabsWithoutText: false },
+        info: isOk(result) ? computeLabelInfo(result.value, nozzleSizeMm) : INERT_INFO,
       });
     })
     .catch(() => {
-      plateSetCache.set(id, { key, info: { plateSet: null, tabsWithoutText: false } });
+      plateSetCache.set(id, { key, info: INERT_INFO });
     })
     .finally(() => {
       inFlight.delete(key);

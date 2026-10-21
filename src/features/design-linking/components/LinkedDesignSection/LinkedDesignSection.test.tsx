@@ -150,6 +150,28 @@ describe('LinkedDesignSection', () => {
     expect(img).toHaveAttribute('src', 'data:image/png;base64,abc123');
   });
 
+  it('exports the design as this bin prints it, with its label', () => {
+    const exportToSTL = vi.fn();
+    vi.mocked(useQuickExport).mockReturnValue({ isExporting: false, exportToSTL });
+    vi.mocked(useLinkedDesign).mockReturnValue({
+      linkedDesign: {
+        id: designId('design-1'),
+        name: 'My Design',
+        width: 2,
+        depth: 3,
+        height: 5,
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      },
+      isStale: false,
+      hasLink: true,
+    });
+
+    render(<LinkedDesignSection bin={{ ...testBin, label: 'Screws' }} variant="desktop" />);
+    fireEvent.click(screen.getByText('common.export'));
+
+    expect(exportToSTL).toHaveBeenCalledWith(designId('design-1'), 'My Design', 'Screws');
+  });
+
   it('shows placeholder thumbnail when no thumbnail available', () => {
     vi.mocked(useLinkedDesign).mockReturnValue({
       linkedDesign: {

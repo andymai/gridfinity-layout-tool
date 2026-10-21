@@ -120,6 +120,7 @@ export function LabelTabsSection() {
       onPlateIconChange={handlers.setCompartmentPlateIcon}
       suggestedName={state.binNameSuggestion?.name}
       onApplySuggestedName={handlers.applyBinNameSuggestion}
+      layoutLabelFillsBlank={state.layoutLabelFillsBlank}
     />
   );
 

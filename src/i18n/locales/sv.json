@@ -1264,6 +1264,7 @@
   "binDesigner.labelTextClearRow": "Rensa etikettext för {n}",
   "binDesigner.labelTextFilled": "{filled} av {total} ifyllda",
   "binDesigner.labelTextLayout": "Layout för etikettext",
+  "binDesigner.labelTextLayoutLabelPlaceholder": "Tomt: länkade fack skriver ut sin layoutetikett",
   "binDesigner.labelTextNextBlank": "Nästa tomma",
   "binDesigner.labelTextOverflowCount.one": "1 etikett för lång för utskrift",
   "binDesigner.labelTextOverflowCount.other": "{count} etiketter för långa för utskrift",

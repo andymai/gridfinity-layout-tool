@@ -19,6 +19,7 @@ import {
 } from '@/shared/constants/labelPlates';
 import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
 import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
+import { blankCaptionSlot } from '@/shared/utils/placedCaption';
 import { getCompartmentBounds, getCompartmentReadingOrder } from '../../../utils/compartments';
 import type { LabelSocketStyle } from '@/shared/constants/labelPlates';
 import type {
@@ -743,6 +744,17 @@ export function useLabelTabsSection() {
     return name === '' ? null : { compartmentId: compartmentTextRows[0].id, name };
   }, [currentDesignId, spanning, compartmentTextRows, layoutBins]);
 
+  // Left blank, the one caption takes each linked bin's layout label in the
+  // layout's preview and export, so the empty field must not read as a tab
+  // that prints nothing.
+  const layoutLabelFillsBlank = useMemo(
+    () =>
+      currentDesignId !== null &&
+      layoutBins.some((b) => b.linkedDesignId === currentDesignId) &&
+      blankCaptionSlot(params, nozzleSizeMm) !== null,
+    [currentDesignId, layoutBins, params, nozzleSizeMm]
+  );
+
   const applyBinNameSuggestion = useCallback(() => {
     if (binNameSuggestion === null) return;
     setCompartmentText(binNameSuggestion.compartmentId, binNameSuggestion.name);
@@ -794,6 +806,7 @@ export function useLabelTabsSection() {
       canWidenTabs,
       warnings,
       binNameSuggestion,
+      layoutLabelFillsBlank,
       labelFocusCompartmentId,
       isUnavailable,
       tabWidthMm,

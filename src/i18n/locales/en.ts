@@ -2117,6 +2117,8 @@ const en: Record<string, string> = {
   'binDesigner.labelWarningJump': 'Open {group}',
   'binDesigner.labelTextFilled': '{filled} of {total} filled',
   'binDesigner.labelTextLayout': 'Label text layout',
+  'binDesigner.labelTextLayoutLabelPlaceholder':
+    'Left blank, linked bins print their layout labels',
   'binDesigner.labelTextPerCompartment': 'One per compartment',
   'binDesigner.labelTextPerRow': 'One per row',
   'binDesigner.labelTextBlankCount.one': '1 tab will print blank',

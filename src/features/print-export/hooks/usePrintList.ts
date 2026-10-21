@@ -12,6 +12,7 @@ import { generateEnhancedPrintList } from '@/features/print-export/utils/split';
 import type { PrintSplitFit } from '@/features/print-export/utils/split';
 import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
 import { placedSlant } from '@/shared/utils/placedSlant';
+import { placementCaption } from '@/shared/utils/placedCaption';
 import { effectiveGridUnitMmY } from '@/core/types';
 import {
   applyFiltersAndSort,
@@ -190,10 +191,13 @@ export function usePrintList(): UsePrintListReturn {
     return baseRows.map((row) => {
       const info = row.linkedDesignId ? labelInfos.get(row.linkedDesignId) : undefined;
       if (!info) return row;
+      // A row's bins share one label: the print-list group key includes it.
+      const labelFillsTabs =
+        info.blankCaptionTakesBinLabel && placementCaption(row.labels[0] ?? '') !== null;
       return {
         ...row,
         ...(info.plateSet ? { labelPlateCount: info.plateSet.perBin * row.binCount } : {}),
-        ...(info.tabsWithoutText ? { labelTabsWithoutText: true } : {}),
+        ...(info.tabsWithoutText && !labelFillsTabs ? { labelTabsWithoutText: true } : {}),
       };
     });
   }, [baseRows, labelInfos]);

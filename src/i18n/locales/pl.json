@@ -1264,6 +1264,7 @@
   "binDesigner.labelTextClearRow": "Wyczyść tekst etykiety dla {n}",
   "binDesigner.labelTextFilled": "Wypełniono {filled} z {total}",
   "binDesigner.labelTextLayout": "Układ tekstu etykiety",
+  "binDesigner.labelTextLayoutLabelPlaceholder": "Puste: powiązane biny drukują swoją etykietę z układu",
   "binDesigner.labelTextNextBlank": "Następna pusta",
   "binDesigner.labelTextOverflowCount.one": "1 etykieta zbyt długa do druku",
   "binDesigner.labelTextOverflowCount.other": "Etykiety zbyt długie do druku: {count}",

@@ -1264,6 +1264,7 @@
   "binDesigner.labelTextClearRow": "Cancella il testo etichetta di {n}",
   "binDesigner.labelTextFilled": "{filled} di {total} compilati",
   "binDesigner.labelTextLayout": "Disposizione del testo etichetta",
+  "binDesigner.labelTextLayoutLabelPlaceholder": "Vuoto: i bin collegati stampano la propria etichetta del layout",
   "binDesigner.labelTextNextBlank": "Successiva vuota",
   "binDesigner.labelTextOverflowCount.one": "1 etichetta troppo lunga per la stampa",
   "binDesigner.labelTextOverflowCount.other": "{count} etichette troppo lunghe per la stampa",

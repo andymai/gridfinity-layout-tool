@@ -686,6 +686,99 @@ describe('useLinkedDesignMeshes', () => {
     });
   });
 
+  describe('a layout label filling the blank caption', () => {
+    const B2 = binId('bin-2');
+    const B3 = binId('bin-3');
+    const captionOf = (p: BinParams): string | undefined => p.compartments.compartmentTexts?.[0];
+    const captionsBuilt = (generate: ReturnType<typeof vi.fn>): (string | undefined)[] =>
+      generate.mock.calls.map(([p]) => captionOf(p as BinParams));
+
+    function labeledDesign(params: Partial<BinParams> = {}): SavedDesign {
+      return makeBinDesign({
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+        ...params,
+      });
+    }
+
+    function useBridge(generateImmediate: ReturnType<typeof vi.fn>): void {
+      mockAcquire.mockResolvedValue({ generateImmediate } as unknown as Awaited<
+        ReturnType<typeof bridgeManager.acquire>
+      >);
+    }
+
+    const bins = [
+      createTestBin({ id: B1, linkedDesignId: D1, label: 'Screws' }),
+      createTestBin({ id: B2, linkedDesignId: D1, label: 'Bolts', x: gridUnits(2) }),
+      createTestBin({ id: B3, linkedDesignId: D1, x: gridUnits(4) }),
+    ];
+
+    beforeEach(() => {
+      mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    });
+
+    it('builds each labeled bin with its label as the caption', async () => {
+      const generateImmediate = vi.fn(async () => ({ mesh: makeMesh() }));
+      useBridge(generateImmediate);
+      mockLoadDesign.mockResolvedValue(ok(labeledDesign()));
+
+      const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+      await waitFor(() => {
+        const sigs = new Set([B1, B2, B3].map((id) => result.current.get(id)?.sig));
+        expect(sigs.size).toBe(3);
+        expect(sigs.has(undefined)).toBe(false);
+      });
+      expect(captionsBuilt(generateImmediate).sort()).toEqual(['Bolts', 'Screws', undefined]);
+    });
+
+    it('shows the design mesh while the captioned one builds', async () => {
+      const designMesh = makeMesh();
+      const generateImmediate = vi.fn((p: BinParams) =>
+        captionOf(p) === undefined
+          ? Promise.resolve({ mesh: designMesh })
+          : new Promise<never>(() => undefined)
+      );
+      useBridge(generateImmediate);
+      mockLoadDesign.mockResolvedValue(ok(labeledDesign()));
+
+      const { result } = renderHook(() => useLinkedDesignMeshes([bins[0]]));
+
+      await waitFor(() => expect(generateImmediate).toHaveBeenCalledTimes(2));
+      expect(captionsBuilt(generateImmediate)).toEqual([undefined, 'Screws']);
+      expect(result.current.get(B1)?.mesh).toBe(designMesh);
+    });
+
+    it.each([
+      [
+        'a design with its own caption',
+        { compartments: { ...DEFAULT_BIN_PARAMS.compartments, compartmentTexts: ['HARDWARE'] } },
+      ],
+      [
+        'a socket design, whose caption prints on the plate',
+        {
+          label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'socket' as const, depth: 14 },
+        },
+      ],
+      [
+        'a design with several compartments',
+        { compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, cells: [0, 1] } },
+      ],
+    ])('keeps one shared mesh for %s', async (_name, params) => {
+      const generateImmediate = vi.fn(async () => ({ mesh: makeMesh() }));
+      useBridge(generateImmediate);
+      mockLoadDesign.mockResolvedValue(ok(labeledDesign(params)));
+
+      const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+      await waitFor(() => expect(result.current.size).toBe(3));
+      expect(result.current.get(B1)).toBe(result.current.get(B3));
+      expect(result.current.get(B2)).toBe(result.current.get(B3));
+      expect(generateImmediate).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it('reuses cached meshes across mounts without reloading', async () => {
     const mesh = makeMesh();
     mockUseCustomBins.mockReturnValue([makeRegistryRef()]);

@@ -1264,6 +1264,7 @@
   "binDesigner.labelTextClearRow": "Labeltekst voor {n} wissen",
   "binDesigner.labelTextFilled": "{filled} van {total} ingevuld",
   "binDesigner.labelTextLayout": "Indeling van labeltekst",
+  "binDesigner.labelTextLayoutLabelPlaceholder": "Leeg: gekoppelde bins printen hun layoutlabel",
   "binDesigner.labelTextNextBlank": "Volgende lege",
   "binDesigner.labelTextOverflowCount.one": "1 label te lang om te printen",
   "binDesigner.labelTextOverflowCount.other": "{count} labels te lang om te printen",

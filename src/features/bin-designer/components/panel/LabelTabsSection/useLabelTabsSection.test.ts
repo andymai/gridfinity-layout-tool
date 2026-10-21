@@ -1,7 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useLabelTabsSection } from './useLabelTabsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useLayoutStore } from '@/core/store/layout';
+import { designId } from '@/core/types';
+import { createTestBin, createTestLayout, resetAllStores } from '@/test/testUtils';
 import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { LABEL_SOCKET_STACK_RELIEF_MM } from '@/shared/constants/labelPlates';
@@ -917,6 +920,50 @@ describe('useLabelTabsSection', () => {
       // and row-indexed under `span`, so row 1 must not light up compartment 1.
       const { result } = withOverflow([{ scope: 'row', index: 1 }]);
       expect(result.current.state.textRows.every((r) => !r.overflows)).toBe(true);
+    });
+  });
+
+  describe('layoutLabelFillsBlank', () => {
+    const DESIGN = 'design-1';
+
+    function render(
+      compartments: Partial<typeof DEFAULT_BIN_PARAMS.compartments> = {},
+      linkedDesignId: string = DESIGN
+    ) {
+      useDesignerStore.setState({
+        currentDesignId: DESIGN,
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+          compartments: { ...DEFAULT_BIN_PARAMS.compartments, ...compartments },
+        },
+      });
+      useLayoutStore.setState({
+        layout: createTestLayout({
+          bins: [createTestBin({ linkedDesignId: designId(linkedDesignId), label: 'Screws' })],
+        }),
+      });
+      return renderHook(() => useLabelTabsSection()).result.current.state.layoutLabelFillsBlank;
+    }
+
+    afterEach(() => {
+      resetAllStores();
+    });
+
+    it('is set for a blank single caption of a design the layout links', () => {
+      expect(render()).toBe(true);
+    });
+
+    it('is clear when no layout bin links the design', () => {
+      expect(render({}, 'another-design')).toBe(false);
+    });
+
+    it('is clear when the design has its own caption', () => {
+      expect(render({ compartmentTexts: ['NUTS'] })).toBe(false);
+    });
+
+    it('is clear for a design with several compartments', () => {
+      expect(render({ cols: 2, cells: [0, 1] })).toBe(false);
     });
   });
 });

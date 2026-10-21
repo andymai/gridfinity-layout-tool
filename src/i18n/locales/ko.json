@@ -1264,6 +1264,7 @@
   "binDesigner.labelTextClearRow": "{n}의 라벨 문구 지우기",
   "binDesigner.labelTextFilled": "{total}개 중 {filled}개 입력됨",
   "binDesigner.labelTextLayout": "라벨 문구 배치",
+  "binDesigner.labelTextLayoutLabelPlaceholder": "비워 두면 연결된 수납통에 레이아웃 라벨이 출력됩니다",
   "binDesigner.labelTextNextBlank": "다음 빈 칸",
   "binDesigner.labelTextOverflowCount.one": "라벨 1개가 너무 길어 출력할 수 없습니다",
   "binDesigner.labelTextOverflowCount.other": "라벨 {count}개가 너무 길어 출력할 수 없습니다",

@@ -1264,6 +1264,7 @@
   "binDesigner.labelTextClearRow": "Beschriftungstext für {n} löschen",
   "binDesigner.labelTextFilled": "{filled} von {total} ausgefüllt",
   "binDesigner.labelTextLayout": "Layout des Beschriftungstexts",
+  "binDesigner.labelTextLayoutLabelPlaceholder": "Leer: Verknüpfte Bins drucken ihre Layout-Bezeichnung",
   "binDesigner.labelTextNextBlank": "Nächste leere",
   "binDesigner.labelTextOverflowCount.one": "1 Beschriftung zu lang zum Drucken",
   "binDesigner.labelTextOverflowCount.other": "{count} Beschriftungen zu lang zum Drucken",

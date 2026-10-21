@@ -1264,6 +1264,7 @@
   "binDesigner.labelTextClearRow": "Tøm etikettekst for {n}",
   "binDesigner.labelTextFilled": "{filled} av {total} fylt ut",
   "binDesigner.labelTextLayout": "Oppsett for etikettekst",
+  "binDesigner.labelTextLayoutLabelPlaceholder": "Tomt: tilknyttede bins skriver ut etiketten sin fra oppsettet",
   "binDesigner.labelTextNextBlank": "Neste tomme",
   "binDesigner.labelTextOverflowCount.one": "1 etikett for lang til utskrift",
   "binDesigner.labelTextOverflowCount.other": "{count} etiketter for lange til utskrift",

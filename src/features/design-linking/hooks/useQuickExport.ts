@@ -9,6 +9,7 @@ import { useCallback, useState } from 'react';
 import type { DesignId } from '@/core/types';
 import { bridgeManager } from '@/shared/generation/bridge';
 import { withLowProfileBase } from '@/shared/generation/lowProfileBase';
+import { withPlacedTabCaption } from '@/shared/utils/placedCaption';
 import { useLayoutStore } from '@/core/store/layout';
 import { generateFileName, loadDesign } from '@/features/bin-designer';
 import { assemblyDescriptor } from '@/shared/items/assembly/descriptor';
@@ -19,8 +20,8 @@ import { useTranslation } from '@/i18n';
 interface UseQuickExportReturn {
   /** Whether an export is currently in progress */
   readonly isExporting: boolean;
-  /** Export a design to STL and trigger download */
-  readonly exportToSTL: (id: DesignId, designName: string) => Promise<void>;
+  /** Export a design to STL as the bin labeled `binLabel` prints it, and trigger download */
+  readonly exportToSTL: (id: DesignId, designName: string, binLabel: string) => Promise<void>;
 }
 
 /**
@@ -33,7 +34,7 @@ export function useQuickExport(): UseQuickExportReturn {
   const [isExporting, setIsExporting] = useState(false);
 
   const exportToSTL = useCallback(
-    async (id: DesignId, designName: string) => {
+    async (id: DesignId, designName: string, binLabel: string) => {
       if (isExporting) return;
 
       setIsExporting(true);
@@ -61,9 +62,16 @@ export function useQuickExport(): UseQuickExportReturn {
         try {
           const exported = design.params
             ? {
-                // Exported from the layout, so the layout's foot profile applies.
+                // Exported from the layout, so the layout's foot profile and the
+                // bin's own label apply.
                 data: (
-                  await bridge.exportBin(withLowProfileBase(design.params, lowProfileBase), 'stl')
+                  await bridge.exportBin(
+                    withPlacedTabCaption(
+                      withLowProfileBase(design.params, lowProfileBase),
+                      binLabel
+                    ),
+                    'stl'
+                  )
                 ).data,
                 fileName: generateFileName(
                   design.params,

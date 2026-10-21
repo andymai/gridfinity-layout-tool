@@ -1264,6 +1264,7 @@
   "binDesigner.labelTextClearRow": "{n} のラベル文字を消去",
   "binDesigner.labelTextFilled": "{total} 件中 {filled} 件入力済み",
   "binDesigner.labelTextLayout": "ラベル文字の配置",
+  "binDesigner.labelTextLayoutLabelPlaceholder": "空欄の場合、リンクされたビンにはレイアウトのラベルが印刷されます",
   "binDesigner.labelTextNextBlank": "次の空欄へ",
   "binDesigner.labelTextOverflowCount.one": "1 件のラベルが長すぎて印刷できません",
   "binDesigner.labelTextOverflowCount.other": "{count} 件のラベルが長すぎて印刷できません",

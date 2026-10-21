@@ -46,6 +46,22 @@ describe('LabelTextList', () => {
     expect(screen.queryByText(/will print blank/)).not.toBeInTheDocument();
   });
 
+  it('says a blank caption prints each linked bin layout label', () => {
+    renderList({ rows: rows(''), layoutLabelFillsBlank: true });
+    expect(screen.getByLabelText('Engraved text for compartment 1')).toHaveAttribute(
+      'placeholder',
+      'Left blank, linked bins print their layout labels'
+    );
+  });
+
+  it('keeps the example placeholder otherwise', () => {
+    renderList({ rows: rows('') });
+    expect(screen.getByLabelText('Engraved text for compartment 1')).toHaveAttribute(
+      'placeholder',
+      'e.g. SCREWS'
+    );
+  });
+
   it('drops the number column for a single compartment', () => {
     renderList({ rows: rows('') });
     // Nothing to count against, so the "1" would be pure noise.

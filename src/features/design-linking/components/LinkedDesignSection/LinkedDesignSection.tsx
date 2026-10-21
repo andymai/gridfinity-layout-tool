@@ -111,9 +111,9 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
 
   const handleExport = useCallback(() => {
     if (linkedDesign) {
-      void exportToSTL(linkedDesign.id, linkedDesign.name);
+      void exportToSTL(linkedDesign.id, linkedDesign.name, bin.label);
     }
-  }, [linkedDesign, exportToSTL]);
+  }, [linkedDesign, exportToSTL, bin.label]);
 
   const handleMatchDrawer = useCallback(async () => {
     if (!linkedDesign) return;

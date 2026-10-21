@@ -22,6 +22,12 @@ vi.mock('@/features/bin-designer', () => ({
   cutoutInterior: vi.fn(() => ({ innerW: 100, innerD: 80, offsetX: 0, offsetY: 0 })),
 }));
 
+// The caption rule reads the same interior through its deep import.
+vi.mock('@/features/bin-designer/utils/binDimensions', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  cutoutInterior: vi.fn(() => ({ innerW: 100, innerD: 80, offsetX: 0, offsetY: 0 })),
+}));
+
 const mockLoadDesign = vi.mocked(loadDesign);
 const mockUseCustomBins = vi.mocked(useCustomBins);
 const mockBinDimensions = vi.mocked(binDimensions);
@@ -306,6 +312,57 @@ describe('useLabelPlateCounts', () => {
       );
 
       await waitFor(() => expect(result.current.get(D1)?.tabsWithoutText).toBe(true));
+    });
+  });
+
+  describe('a blank single caption', () => {
+    it('takes each bin label in a single-compartment design', async () => {
+      mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+      mockLoadDesign.mockResolvedValue(ok(makeSocketDesign()));
+
+      const { result } = renderHook(() =>
+        useLabelPlateCounts([createTestBin({ linkedDesignId: D1, label: 'Screws' })])
+      );
+
+      await waitFor(() => expect(result.current.get(D1)?.blankCaptionTakesBinLabel).toBe(true));
+      expect(result.current.get(D1)?.tabsWithoutText).toBe(true);
+    });
+
+    it('does not when the design has its own caption', async () => {
+      mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+      mockLoadDesign.mockResolvedValue(
+        ok(
+          makeSocketDesign({
+            compartments: {
+              cols: 1,
+              rows: 1,
+              cells: [0],
+              thickness: 1.2,
+              compartmentTexts: ['M3'],
+            },
+          })
+        )
+      );
+
+      const { result } = renderHook(() =>
+        useLabelPlateCounts([createTestBin({ linkedDesignId: D1, label: 'Screws' })])
+      );
+
+      await waitFor(() => expect(result.current.get(D1)?.blankCaptionTakesBinLabel).toBe(false));
+    });
+
+    it('does not for a design with several compartments', async () => {
+      mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+      mockLoadDesign.mockResolvedValue(
+        ok(makeSocketDesign({ compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 } }))
+      );
+
+      const { result } = renderHook(() =>
+        useLabelPlateCounts([createTestBin({ linkedDesignId: D1, label: 'Screws' })])
+      );
+
+      await waitFor(() => expect(result.current.get(D1)?.plateSet?.perBin).toBe(2));
+      expect(result.current.get(D1)?.blankCaptionTakesBinLabel).toBe(false);
     });
   });
 

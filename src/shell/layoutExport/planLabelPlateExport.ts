@@ -8,13 +8,14 @@
  * bed-sized sheets. Sheets never mix designs — text style options ride
  * per-request, and different designs may use different fonts/modes.
  *
- * Spanning-socket designs label whole bins, so their plate text comes from
- * each placed bin's label (falling back to the design name) rather than
- * from compartment texts.
+ * A design whose single caption is blank prints each placed bin's layout label
+ * on that plate, as its tab does. A blank row plate standing in for
+ * compartments too narrow for their own takes the bin's label as well, or the
+ * design name when the bin has none.
  */
 
 import type { Bin } from '@/core/types';
-import type { FeatureColorConfig, TextStyleDefaults } from '@/shared/types/bin';
+import type { BinParams, FeatureColorConfig, TextStyleDefaults } from '@/shared/types/bin';
 // Deep import (not the barrel): this code only runs inside the lazy
 // layout-export chunk (same rationale as planLayoutBinExport's deep imports).
 import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
@@ -25,6 +26,8 @@ import {
 } from '@/shared/constants/labelPlates';
 import type { LabelPlateIconId, LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import { planLabelPlates } from '@/shared/utils/labelSocketPlan';
+import type { LabelPlatePlanEntry } from '@/shared/utils/labelSocketPlan';
+import { withPlacedCaption } from '@/shared/utils/placedCaption';
 import type { LoadedDesign } from './planLayoutBinExport';
 
 /** One plate placed on a sheet, center coordinates in mm (sheet-centered). */
@@ -161,29 +164,32 @@ export function planLabelPlateExport(
     // Expanded interior, matching the worker's socket frame (see
     // `useCutoutSocketPlan`).
     const inner = cutoutInterior(params);
-    const planned = planLabelPlates({
-      params,
-      innerWmm: inner.innerW,
-      innerDmm: inner.innerD,
-      wallHeightMm: dims.wallHeight,
-      clearanceMm,
-    });
+    const planFor = (source: BinParams): LabelPlatePlanEntry[] =>
+      planLabelPlates({
+        params: source,
+        innerWmm: inner.innerW,
+        innerDmm: inner.innerD,
+        wallHeightMm: dims.wallHeight,
+        clearanceMm,
+      });
+    const planned = planFor(params);
     if (planned.length === 0) continue;
 
     // Expand to physical plates: every plate the plan lists repeats per placed
     // bin. A blank row plate that stands in for compartments too narrow for
     // their own takes each bin's label, which names what the bin holds.
     const expanded: { widthU: LabelPlateWidthU; text: string; icon?: LabelPlateIconId }[] =
-      linkedBins.flatMap((b) =>
-        planned.map((p) => ({
+      linkedBins.flatMap((b) => {
+        const captioned = withPlacedCaption(params, b.label, nozzleSizeMm);
+        return (captioned === params ? planned : planFor(captioned)).map((p) => ({
           widthU: p.widthU,
           text:
             p.scope === 'row' && p.rowsForced === true && p.text === ''
               ? b.label.trim() || design.name
               : p.text,
           ...(p.icon !== undefined ? { icon: p.icon } : {}),
-        }))
-      );
+        }));
+      });
 
     // Bed-fit guard: a plate wider than the usable bed (e.g. a 3U plate on
     // a small printer) cannot ship on any sheet — skip it and surface the

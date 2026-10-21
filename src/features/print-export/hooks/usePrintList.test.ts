@@ -492,7 +492,14 @@ describe('usePrintList', () => {
       mockUseLabelPlateCounts.mockImplementation(
         () =>
           new Map([
-            [D1, { plateSet: { perBin: 2, widthsU: [1, 2] as const }, tabsWithoutText: false }],
+            [
+              D1,
+              {
+                plateSet: { perBin: 2, widthsU: [1, 2] as const },
+                tabsWithoutText: false,
+                blankCaptionTakesBinLabel: false,
+              },
+            ],
           ])
       );
       const layout = createTestLayout([
@@ -514,7 +521,14 @@ describe('usePrintList', () => {
       mockUseLabelPlateCounts.mockImplementation(
         () =>
           new Map([
-            [D1, { plateSet: { perBin: 1, widthsU: [1] as const }, tabsWithoutText: false }],
+            [
+              D1,
+              {
+                plateSet: { perBin: 1, widthsU: [1] as const },
+                tabsWithoutText: false,
+                blankCaptionTakesBinLabel: false,
+              },
+            ],
           ])
       );
       const layout = createTestLayout([createTestBin({ linkedDesignId: D1 })]);
@@ -528,6 +542,39 @@ describe('usePrintList', () => {
       });
 
       expect(result.current.totalLabelPlates).toBe(0);
+    });
+  });
+
+  describe('blank label tabs', () => {
+    const D1 = designId('design-1');
+
+    function render(blankCaptionTakesBinLabel: boolean) {
+      mockUseLabelPlateCounts.mockImplementation(
+        () => new Map([[D1, { plateSet: null, tabsWithoutText: true, blankCaptionTakesBinLabel }]])
+      );
+      useLayoutStore.setState({
+        layout: createTestLayout([
+          createTestBin({ linkedDesignId: D1, label: 'Screws' }),
+          createTestBin({ linkedDesignId: D1, x: gridUnits(1) }),
+        ]),
+      });
+      const { result } = renderHook(() => usePrintList());
+      return {
+        labeled: result.current.rows.find((r) => r.labels.includes('Screws')),
+        unlabeled: result.current.rows.find((r) => r.labels.length === 0),
+      };
+    }
+
+    it('spares the bins whose layout label fills the blank caption', () => {
+      const { labeled, unlabeled } = render(true);
+      expect(labeled?.labelTabsWithoutText).toBeUndefined();
+      expect(unlabeled?.labelTabsWithoutText).toBe(true);
+    });
+
+    it('flags every bin when the design takes no layout label', () => {
+      const { labeled, unlabeled } = render(false);
+      expect(labeled?.labelTabsWithoutText).toBe(true);
+      expect(unlabeled?.labelTabsWithoutText).toBe(true);
     });
   });
 
