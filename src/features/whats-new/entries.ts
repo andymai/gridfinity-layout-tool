@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'linked-bin-layout-labels',
+    date: '2026-10-21',
+    kind: 'new',
+    title: { en: 'Give each linked bin its own label' },
+    body: {
+      en: 'Several bins linked to one design can now print their own labels. Turn on Label tabs with a single label, then leave Label text blank. Each bin uses its Bin label from the layout. You will see it in the 3D layout preview and Export layout (3D), which writes one file per label. Swappable label plates use it too. The blank Label text box reads: "Left blank, linked bins print their layout labels".',
+    },
+    action: { kind: 'openTool', tool: 'layout' },
+  },
+  {
     id: 'baseplate-junction-screws',
     date: '2026-10-20',
     kind: 'improved',
