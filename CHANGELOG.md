@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.520.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.520.0...gridfinity-layout-tool-v4.520.1) (2026-10-21)
+
+
+### Bug Fixes
+
+* **feet:** let detachable feet seat flush ([#4675](https://github.com/andymai/gridfinity-layout-tool/issues/4675)) ([ff483c5](https://github.com/andymai/gridfinity-layout-tool/commit/ff483c5f8dfb9e8d2f7e17379fa7c67b210e6dcc))
+
 ## [4.520.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.519.5...gridfinity-layout-tool-v4.520.0) (2026-10-21)
 
 
