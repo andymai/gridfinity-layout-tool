@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'baseplate-junction-screws',
+    date: '2026-10-20',
+    kind: 'improved',
+    title: { en: 'Keep Screw down plates at standard height' },
+    body: {
+      en: 'Screw down baseplates can now keep their standard height. Use a Countersink with a 6mm Head diameter, which suits an M3 flat head. When the head fits, screw holes are placed automatically in the solid corner where four pockets meet, under the rounded corners of the bin feet. Holes use solid drawer-fit padding when it is wide enough. Otherwise they go in the pocket floor, which makes the plate slightly taller.',
+    },
+    action: { kind: 'openTool', tool: 'baseplate' },
+  },
+  {
     id: 'slanted-bins-labs',
     date: '2026-10-18',
     kind: 'new',
