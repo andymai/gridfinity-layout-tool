@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.521.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.520.1...gridfinity-layout-tool-v4.521.0) (2026-10-22)
+
+
+### Features
+
+* **layout:** print layout labels on linked blank-caption bins ([#4677](https://github.com/andymai/gridfinity-layout-tool/issues/4677)) ([2dfd22e](https://github.com/andymai/gridfinity-layout-tool/commit/2dfd22e6dd811f68b2d4082334a75ad03eb8d949))
+
 ## [4.520.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.520.0...gridfinity-layout-tool-v4.520.1) (2026-10-21)
 
 
