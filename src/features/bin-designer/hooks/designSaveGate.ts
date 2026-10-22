@@ -10,11 +10,20 @@
  * write.
  */
 
+import type { BinParams, ExportFileNameConfig } from '../types';
+
 const MAX_SETTLE_ROUNDS = 5;
+
+interface HeldEdit {
+  readonly designId: string;
+  readonly params: BinParams;
+  readonly config: ExportFileNameConfig;
+}
 
 let flushOpenDesign: (() => void) | null = null;
 /** Each resolves false when its edit did not reach storage. */
 const pendingWrites = new Set<Promise<boolean>>();
+let heldEdit: HeldEdit | null = null;
 
 /** Starts a write of the open design's unsaved edit, through {@link trackDesignWrite}. */
 export function registerOpenDesignFlush(flush: () => void): () => void {
@@ -28,6 +37,21 @@ export function trackDesignWrite(write: Promise<boolean>): void {
   pendingWrites.add(write);
   const settled = () => pendingWrites.delete(write);
   void write.then(settled, settled);
+}
+
+/**
+ * Keeps an edit whose write failed after the designer closed. The store still
+ * shows it, so a reopened designer would otherwise take it for stored and
+ * never retry it.
+ */
+export function holdUnsavedEdit(edit: HeldEdit): void {
+  heldEdit = edit;
+}
+
+export function takeUnsavedEdit(): HeldEdit | null {
+  const edit = heldEdit;
+  heldEdit = null;
+  return edit;
 }
 
 /**
@@ -54,4 +78,5 @@ export async function settleDesignSaves(): Promise<boolean> {
 export function _resetDesignSaveGate(): void {
   pendingWrites.clear();
   flushOpenDesign = null;
+  heldEdit = null;
 }

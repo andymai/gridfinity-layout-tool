@@ -24,11 +24,18 @@ import {
   registryKnifeRestFields,
 } from '../store/customBinRegistry';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
-import { registerOpenDesignFlush, trackDesignWrite } from './designSaveGate';
+import {
+  holdUnsavedEdit,
+  registerOpenDesignFlush,
+  takeUnsavedEdit,
+  trackDesignWrite,
+} from './designSaveGate';
 import { designId as toDesignId } from '@/core/types';
 import type { BinParams, ExportFileNameConfig, GenerationStatus } from '../types';
 
 const AUTO_SAVE_DELAY_MS = 1000;
+
+type WriteOutcome = 'saved' | 'gone' | 'failed';
 
 /**
  * Read abort state through a function call to prevent TypeScript
@@ -130,8 +137,8 @@ export function useAutoSave(): void {
       designId: string,
       thumbnail: string | null | undefined,
       writeSession: number
-    ): Promise<boolean> => {
-      const write = (async (): Promise<'saved' | 'gone' | 'failed'> => {
+    ): Promise<WriteOutcome> => {
+      const write = (async (): Promise<WriteOutcome> => {
         inFlight.current = { params: paramsToSave, config: configToSave };
         let result;
         try {
@@ -193,7 +200,7 @@ export function useAutoSave(): void {
         return 'saved';
       })();
       trackDesignWrite(write.then((outcome) => outcome !== 'failed'));
-      return write.then((outcome) => outcome === 'saved');
+      return write;
     },
     []
   );
@@ -206,14 +213,14 @@ export function useAutoSave(): void {
       configToSave: ExportFileNameConfig,
       designId: string,
       writeSession: number
-    ): void => {
+    ): Promise<WriteOutcome> | null => {
       if (lastSavedParams.current === paramsToSave && lastSavedConfig.current === configToSave) {
-        return;
+        return null;
       }
       // A save already writing exactly this will land on its own; an in-flight
       // save for older params still needs the flush.
-      if (isInFlight(paramsToSave, configToSave)) return;
-      void persist(paramsToSave, configToSave, designId, undefined, writeSession);
+      if (isInFlight(paramsToSave, configToSave)) return null;
+      return persist(paramsToSave, configToSave, designId, undefined, writeSession);
     },
     [persist]
   );
@@ -247,8 +254,8 @@ export function useAutoSave(): void {
         heightUnitMm: paramsToSave.heightUnitMm,
       });
 
-      const saved = await persist(paramsToSave, configToSave, designId, thumbnail, writeSession);
-      setSaveStatus(saved ? 'saved' : 'error');
+      const outcome = await persist(paramsToSave, configToSave, designId, thumbnail, writeSession);
+      setSaveStatus(outcome === 'saved' ? 'saved' : 'error');
     },
     [setSaveStatus, persist]
   );
@@ -271,7 +278,7 @@ export function useAutoSave(): void {
           }
         : null;
     if (previous && previous.designId !== currentDesignId) {
-      flushUnsaved(previous.params, previous.config, previous.designId, previous.session);
+      void flushUnsaved(previous.params, previous.config, previous.designId, previous.session);
     }
 
     // Params-only autosave: non-bin kinds persist through their own hooks,
@@ -280,7 +287,13 @@ export function useAutoSave(): void {
     // Skip first render (initial mount shouldn't trigger save)
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      lastSavedParams.current = params;
+      const held = takeUnsavedEdit();
+      const retry =
+        held !== null &&
+        held.designId === currentDesignId &&
+        held.params === params &&
+        held.config === exportFileNameConfig;
+      lastSavedParams.current = retry ? null : params;
       lastSavedConfig.current = exportFileNameConfig;
       lastDesignId.current = currentDesignId;
       return;
@@ -339,7 +352,15 @@ export function useAutoSave(): void {
       const state = useDesignerStore.getState();
       const id = state.currentDesignId;
       if (!id || state.itemKind !== 'bin') return;
-      flushUnsaved(state.params, state.exportFileNameConfig, id, session.current.id);
+      const { params: unsaved, exportFileNameConfig: unsavedConfig } = state;
+      const write = flushUnsaved(unsaved, unsavedConfig, id, session.current.id);
+      // Gone once this lands, the hook no longer speaks for the open design:
+      // another may have become active meanwhile.
+      session.current = { ...session.current, id: session.current.id + 1 };
+      const hold = () => holdUnsavedEdit({ designId: id, params: unsaved, config: unsavedConfig });
+      void write?.then((outcome) => {
+        if (outcome === 'failed') hold();
+      }, hold);
     };
   }, [flushUnsaved]);
 
@@ -349,7 +370,7 @@ export function useAutoSave(): void {
         const state = useDesignerStore.getState();
         const id = state.currentDesignId;
         if (id && state.itemKind === 'bin') {
-          flushUnsaved(state.params, state.exportFileNameConfig, id, session.current.id);
+          void flushUnsaved(state.params, state.exportFileNameConfig, id, session.current.id);
         }
       }),
     [flushUnsaved]

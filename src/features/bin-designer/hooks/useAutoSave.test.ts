@@ -842,6 +842,61 @@ describe('useAutoSave', () => {
         expect(settled).toBe(true);
       });
 
+      it('retries an edit whose flush failed as the designer closed', async () => {
+        mockUpdateDesignParams();
+        vi.mocked(DesignerStorage.updateDesignParams).mockResolvedValueOnce(
+          err(storageUnavailable('indexedDB'))
+        );
+        useDesignerStore.setState({ currentDesignId: 'existing-id' });
+        const first = renderHook(() => useAutoSave());
+        act(() => {
+          useDesignerStore.getState().setParam('width', 4);
+        });
+        await act(async () => {
+          first.unmount();
+        });
+
+        renderHook(() => useAutoSave());
+        let settled: boolean | null = null;
+        await act(async () => {
+          settled = await settleDesignSaves();
+        });
+
+        expect(DesignerStorage.updateDesignParams).toHaveBeenCalledTimes(2);
+        expect(DesignerStorage.updateDesignParams).toHaveBeenLastCalledWith(
+          'existing-id',
+          expect.objectContaining({ width: 4 }),
+          undefined,
+          expect.anything()
+        );
+        expect(settled).toBe(true);
+      });
+
+      it('does not let a flush that lands after closing pick the active design', async () => {
+        const savedDesign = mockUpdateDesignParams();
+        let land = (): void => {};
+        vi.mocked(DesignerStorage.updateDesignParams).mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              land = () => resolve(ok(savedDesign));
+            })
+        );
+        useDesignerStore.setState({ currentDesignId: 'existing-id' });
+        const { unmount } = renderHook(() => useAutoSave());
+        act(() => {
+          useDesignerStore.getState().setParam('width', 4);
+        });
+        await act(async () => {
+          unmount();
+        });
+        await act(async () => {
+          land();
+        });
+
+        expect(DesignerStorage.updateDesignParams).toHaveBeenCalledOnce();
+        expect(DesignerStorage.setActiveDesignId).not.toHaveBeenCalled();
+      });
+
       it('does not hold a switch for a design deleted while it was open', async () => {
         vi.mocked(DesignerStorage.updateDesignParams).mockResolvedValue(
           err(storageNotFound('existing-id'))
