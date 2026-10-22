@@ -737,6 +737,28 @@ describe('useAutoSave', () => {
         );
       });
 
+      it('reports unsaved when a new edit lands in every round it is given', async () => {
+        const savedDesign = mockUpdateDesignParams();
+        let width = 4;
+        vi.mocked(DesignerStorage.updateDesignParams).mockImplementation(() => {
+          width += 1;
+          useDesignerStore.getState().setParam('width', width);
+          return Promise.resolve(ok(savedDesign));
+        });
+        useDesignerStore.setState({ currentDesignId: 'existing-id' });
+        renderHook(() => useAutoSave());
+        act(() => {
+          useDesignerStore.getState().setParam('width', width);
+        });
+
+        let settled: boolean | null = null;
+        await act(async () => {
+          settled = await settleDesignSaves();
+        });
+
+        expect(settled).toBe(false);
+      });
+
       it('reports a write that failed', async () => {
         vi.mocked(DesignerStorage.updateDesignParams).mockResolvedValue(
           err(storageUnavailable('indexedDB'))

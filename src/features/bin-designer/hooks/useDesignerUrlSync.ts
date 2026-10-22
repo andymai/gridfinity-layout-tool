@@ -18,9 +18,26 @@ import { designId } from '@/core/types';
 import { loadDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
 import { settleDesignSaves } from './designSaveGate';
+import type { BinParams, ExportFileNameConfig } from '../types';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
+
+const MAX_SWITCH_ATTEMPTS = 3;
+
+interface EditorSnapshot {
+  readonly params: BinParams;
+  readonly config: ExportFileNameConfig;
+}
+
+function editorSnapshot(): EditorSnapshot {
+  const state = useDesignerStore.getState();
+  return { params: state.params, config: state.exportFileNameConfig };
+}
+
+function sameSnapshot(a: EditorSnapshot, b: EditorSnapshot): boolean {
+  return a.params === b.params && a.config === b.config;
+}
 
 /** Read through a call so a check after an await is not narrowed by the one before it. */
 function isSuperseded(request: { superseded: boolean }): boolean {
@@ -70,13 +87,21 @@ export function useDesignerUrlSync(): void {
     const request = { superseded: false, done: false };
 
     void (async () => {
-      const saved = await settleDesignSaves();
-      if (isSuperseded(request)) return;
-      const result = saved ? await loadDesign(requestedId) : null;
-      if (isSuperseded(request)) return;
+      let result: Awaited<ReturnType<typeof loadDesign>> | null = null;
+      for (let attempt = 0; attempt < MAX_SWITCH_ATTEMPTS && result === null; attempt += 1) {
+        const saved = await settleDesignSaves();
+        if (isSuperseded(request)) return;
+        if (!saved) break;
+        const outgoing = editorSnapshot();
+        const read = await loadDesign(requestedId);
+        if (isSuperseded(request)) return;
+        // An edit made during the read can change what it should have seen (a
+        // parent rewrites its variants), so it gets another settle and read.
+        if (sameSnapshot(outgoing, editorSnapshot())) result = read;
+      }
       request.done = true;
       if (result === null) {
-        // The open design's edits never reached storage. Keep it open rather
+        // The open design's edits are not all in storage. Keep it open rather
         // than replace the only copy of them.
         addToast({ message: t('header.saveFailed'), type: 'error', duration: 4000 });
         setSaveStatus('error');

@@ -187,6 +187,11 @@ describe('useDesignerUrlSync', () => {
       vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(ok(makeSavedDesign('picked')));
     });
 
+    // Queued one-shot reads would otherwise outlive a failing test.
+    afterEach(() => {
+      vi.mocked(DesignerStorage.loadDesign).mockReset();
+    });
+
     it('drops a pick that Back undid before the saves settled', async () => {
       const release = blockSaves();
       renderHook(() => useDesignerUrlSync());
@@ -214,6 +219,24 @@ describe('useDesignerUrlSync', () => {
 
       expect(DesignerStorage.loadDesign).not.toHaveBeenCalled();
       expect(useDesignerStore.getState().currentDesignId).toBe('open');
+    });
+
+    it('reads again when the open design was edited during the read', async () => {
+      vi.mocked(DesignerStorage.loadDesign)
+        .mockImplementationOnce(() => {
+          useDesignerStore.getState().setParam('width', 5);
+          return Promise.resolve(ok(makeSavedDesign('picked', 'Stale read')));
+        })
+        .mockResolvedValueOnce(ok(makeSavedDesign('picked', 'Fresh read')));
+      renderHook(() => useDesignerUrlSync());
+
+      navigate('/designer?id=picked');
+
+      await waitFor(() => {
+        expect(useDesignerStore.getState().currentDesignId).toBe('picked');
+      });
+      expect(DesignerStorage.loadDesign).toHaveBeenCalledTimes(2);
+      expect(useDesignerStore.getState().designName).toBe('Fresh read');
     });
 
     it('keeps the open design when its edits could not be saved', async () => {

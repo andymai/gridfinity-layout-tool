@@ -339,22 +339,23 @@ export function useAutoSave(): void {
   }, [flushUnsaved]);
 
   // The editor stays live while a write lands, so an edit made meanwhile gets
-  // its own round; the cap only stops a user who never stops typing.
+  // its own round. Only a round that finds nothing left to write is settled;
+  // running out of rounds counts as unsaved, since the last edit may be too.
   useEffect(
     () =>
       registerDesignSaveSettler(async () => {
         let saved = true;
-        for (let round = 0; round < MAX_SETTLE_ROUNDS; round += 1) {
+        for (let round = 0; ; round += 1) {
           const state = useDesignerStore.getState();
           const id = state.currentDesignId;
           if (id && state.itemKind === 'bin') {
             flushUnsaved(state.params, state.exportFileNameConfig, id, session.current.id);
           }
           if (pendingWrites.current.size === 0) return saved;
+          if (round === MAX_SETTLE_ROUNDS) return false;
           const results = await Promise.allSettled([...pendingWrites.current]);
           saved = results.every((r) => r.status === 'fulfilled' && r.value);
         }
-        return saved;
       }),
     [flushUnsaved]
   );
