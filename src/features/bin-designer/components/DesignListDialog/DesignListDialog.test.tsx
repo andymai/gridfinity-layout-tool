@@ -99,19 +99,22 @@ describe('DesignListDialog', () => {
     expect(screen.getByText('Active')).toBeInTheDocument();
   });
 
-  it('loads a design by clicking on the item', async () => {
+  // The load itself belongs to useDesignerUrlSync, which waits for the open
+  // design's edits to land before reading the one picked here.
+  it('opens a design through its URL by clicking on the item', async () => {
     render(<DesignListDialog open={true} onClose={onClose} />);
 
     await waitFor(() => {
       expect(screen.getByText('Screw Bin')).toBeInTheDocument();
     });
 
-    // Click on the design item itself to load it
     fireEvent.click(screen.getByText('Screw Bin'));
 
-    expect(useDesignerStore.getState().currentDesignId).toBe('design-2');
-    expect(useDesignerStore.getState().designName).toBe('Screw Bin');
+    expect(window.location.pathname).toBe('/designer');
+    expect(window.location.search).toBe('?id=design-2');
+    expect(useDesignerStore.getState().currentDesignId).toBe('design-1');
     expect(onClose).toHaveBeenCalled();
+    window.history.replaceState(null, '', '/');
   });
 
   it('closes dialog when clicking the active design', async () => {

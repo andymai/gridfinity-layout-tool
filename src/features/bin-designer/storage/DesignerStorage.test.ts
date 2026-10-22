@@ -30,6 +30,7 @@ import {
   updateDesignThumbnail,
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
+import { THUMBNAIL_VERSION } from '../types';
 import type { BinParams, SavedDesign } from '../types';
 import { getDb } from '@/features/bin-designer/storage/designerDb';
 import { expectOk, expectErr } from '@/test/testUtils';
@@ -532,6 +533,43 @@ describe('DesignerStorage', () => {
     it('should return error for non-existent design', async () => {
       const result = await updateDesignParams(designId('nonexistent'), DEFAULT_BIN_PARAMS);
       expectErr(result);
+    });
+
+    it('keeps the thumbnail but marks it outdated when the params change without a new one', async () => {
+      await saveDesign({
+        id: designId('thumb-test'),
+        name: 'Thumb Test',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: 'data:image/png;base64,old',
+        exportFileNameConfig: null,
+      });
+
+      const value = expectOk(
+        await updateDesignParams(designId('thumb-test'), { ...DEFAULT_BIN_PARAMS, width: 4 })
+      );
+
+      expect(value.thumbnail).toBe('data:image/png;base64,old');
+      expect(value.thumbnailVersion).toBeUndefined();
+    });
+
+    it('stamps a thumbnail passed with the params as current', async () => {
+      await saveDesign({
+        id: designId('thumb-test'),
+        name: 'Thumb Test',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: null,
+        exportFileNameConfig: null,
+      });
+
+      const value = expectOk(
+        await updateDesignParams(
+          designId('thumb-test'),
+          { ...DEFAULT_BIN_PARAMS, width: 4 },
+          'data:image/png;base64,new'
+        )
+      );
+
+      expect(value.thumbnailVersion).toBe(THUMBNAIL_VERSION);
     });
   });
 

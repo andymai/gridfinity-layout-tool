@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useDesignerUrlSync } from './useDesignerUrlSync';
+import { registerDesignSaveSettler } from './designSaveGate';
 import { useDesignerStore } from '../store/designer';
 import * as DesignerStorage from '@/features/bin-designer/storage/DesignerStorage';
 import { ok, err, storageUnavailable } from '@/core/result';
@@ -59,6 +60,32 @@ describe('useDesignerUrlSync', () => {
       const state = useDesignerStore.getState();
       expect(state.currentDesignId).toBe('url-design-123');
       expect(state.designName).toBe('Test Design');
+    });
+
+    it("reads the design only once the open design's saves have settled", async () => {
+      vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(ok(makeSavedDesign('next')));
+      let release = (): void => {};
+      const unregister = registerDesignSaveSettler(
+        () =>
+          new Promise<void>((resolve) => {
+            release = resolve;
+          })
+      );
+      window.history.replaceState(null, '', '/designer?id=next');
+
+      renderHook(() => useDesignerUrlSync());
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(DesignerStorage.loadDesign).not.toHaveBeenCalled();
+
+      await act(async () => {
+        release();
+      });
+      await waitFor(() => {
+        expect(useDesignerStore.getState().currentDesignId).toBe('next');
+      });
+      unregister();
     });
 
     it('does not load when URL has no ?id= param', async () => {

@@ -58,7 +58,11 @@ function generateDesignId(): DesignId {
   return designId(`design_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
 }
 
-type SaveDesignInput = Omit<SavedDesign, 'id' | 'createdAt' | 'updatedAt'> & { id?: DesignId };
+type SaveDesignInput = Omit<SavedDesign, 'id' | 'createdAt' | 'updatedAt'> & {
+  id?: DesignId;
+  /** The kept thumbnail no longer shows these params; store it as outdated. */
+  thumbnailOutdated?: boolean;
+};
 
 const pendingSaves = new Map<DesignId, Promise<unknown>>();
 
@@ -143,8 +147,9 @@ async function writeDesign(design: SaveDesignInput): Promise<Result<SavedDesign,
       id: design.id ?? generateDesignId(),
       name: design.name,
       thumbnail: design.thumbnail ?? null,
-      // Set thumbnail version when saving a thumbnail
-      thumbnailVersion: design.thumbnail ? THUMBNAIL_VERSION : undefined,
+      // Unversioned reads as outdated, which is what queues a regeneration.
+      thumbnailVersion:
+        design.thumbnail && !design.thumbnailOutdated ? THUMBNAIL_VERSION : undefined,
       exportFileNameConfig: design.exportFileNameConfig ?? null,
       createdAt,
       updatedAt: now,
@@ -480,7 +485,7 @@ export async function updateDesignParams(
   const saved = await saveDesign({
     ...loadResult.value,
     params,
-    ...(thumbnail !== undefined ? { thumbnail } : {}),
+    ...(thumbnail !== undefined ? { thumbnail } : { thumbnailOutdated: true }),
     ...(exportFileNameConfig !== undefined ? { exportFileNameConfig } : {}),
   });
   if (isErr(saved)) return saved;

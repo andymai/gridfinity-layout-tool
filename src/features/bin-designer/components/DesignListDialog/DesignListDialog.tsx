@@ -246,12 +246,14 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         onClose();
         return;
       }
-      loadDesign(design);
+      // Through the URL rather than from this list's copy, which was read when
+      // the dialog opened: the URL load waits for the open design's edits to
+      // land first, and a variant of it picks up that change.
       navigateToDesign(design.id);
       addToast({ message: `Loaded "${design.name}"`, type: 'success', duration: 2000 });
       onClose();
     },
-    [loadDesign, navigateToDesign, addToast, onClose, currentDesignId]
+    [navigateToDesign, addToast, onClose, currentDesignId]
   );
 
   const [showNewDesignConfirm, setShowNewDesignConfirm] = useState(false);

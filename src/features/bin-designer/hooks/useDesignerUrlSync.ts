@@ -17,6 +17,7 @@ import { isOk, getUserMessage } from '@/core/result';
 import { designId } from '@/core/types';
 import { loadDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
+import { settleDesignSaves } from './designSaveGate';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useToastStore } from '@/core/store/toast';
 
@@ -56,16 +57,19 @@ export function useDesignerUrlSync(): void {
 
     loadingFromUrlRef.current = true;
 
-    void loadDesign(designId(designIdFromUrl)).then((result) => {
-      if (isOk(result)) {
-        storeLoadDesign(result.value);
-      } else {
-        addToast({ message: getUserMessage(result.error), type: 'error', duration: 4000 });
-        syncUrlToDesign(null);
-      }
-      loadingFromUrlRef.current = false;
-      mountedRef.current = true;
-    });
+    const requestedId = designId(designIdFromUrl);
+    void settleDesignSaves()
+      .then(() => loadDesign(requestedId))
+      .then((result) => {
+        if (isOk(result)) {
+          storeLoadDesign(result.value);
+        } else {
+          addToast({ message: getUserMessage(result.error), type: 'error', duration: 4000 });
+          syncUrlToDesign(null);
+        }
+        loadingFromUrlRef.current = false;
+        mountedRef.current = true;
+      });
   }, [designIdFromUrl, currentDesignId, storeLoadDesign, addToast, syncUrlToDesign]);
 
   // Direction 2: Store → URL (sync URL when design ID changes)
