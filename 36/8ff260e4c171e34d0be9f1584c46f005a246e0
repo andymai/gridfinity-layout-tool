@@ -1,0 +1,43 @@
+src/features/bin-designer/hooks/useDesignerUrlSync.test.ts
+  s_e7eeec410157f8::t_cd42468d887df6 65-90
+  s_e7eeec410157f8::t_c7b9297fa2e4c8 4
+src/features/bin-designer/storage/DesignerStorage.test.ts
+  s_e7eeec410157f8::t_f9050d84e6a3b6 537-573
+  s_e7eeec410157f8::t_7c3ef1444f8110 33
+src/features/bin-designer/hooks/useAutoSave.ts
+  s_e7eeec410157f8::t_cd92349783b146 135-149,151,153-164,168-190
+  s_e7eeec410157f8::t_5a851a2e73d76a 100-102,107,109
+  s_e7eeec410157f8::t_ac2cf2cdc2bf47 27,195-196,198-203,210,220-221,244,251-256,260-265,268,314,316,336,339-351
+  s_e7eeec410157f8::t_c471ec1eb060ed 128,132-133
+src/features/bin-designer/storage/DesignerStorage.ts
+  s_e7eeec410157f8::t_5212ee3abe28db 61-65,150-151
+  s_e7eeec410157f8::t_d2e23035e9f5c5 152
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.test.tsx
+  s_e7eeec410157f8::t_c76d97eee095ff 102-104,113-115,117
+src/features/bin-designer/hooks/designSaveGate.ts
+  s_e7eeec410157f8::t_386ee6b8ab4261 1-23
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_e7eeec410157f8::t_133054f694575b 249-251,256
+src/features/bin-designer/hooks/useAutoSave.test.ts
+  s_e7eeec410157f8::t_be417bcf791860 667-744
+  s_e7eeec410157f8::t_e05ac038491f90 604-646
+  s_e7eeec410157f8::t_f760a2279fc519 4
+src/features/bin-designer/hooks/useDesignerUrlSync.ts
+  s_e7eeec410157f8::t_133054f694575b 20,60-72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "368ff260e4c171e34d0be9f1584c46f005a246e0",
+  "prompts": {},
+  "sessions": {
+    "s_e7eeec410157f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "277c7c45-b167-4b5b-b2a1-7d22af2a8870",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
