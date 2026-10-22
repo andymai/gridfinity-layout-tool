@@ -8,7 +8,10 @@ import { INITIAL_TOAST_STATE, useToastStore } from '@/core/store/toast';
 import type { SavedDesign } from '@/features/bin-designer/types';
 import { designId } from '@/core/types';
 import { loadRegistry, upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
-import { registerDesignSaveSettler } from '@/features/bin-designer/hooks/designSaveGate';
+import {
+  registerOpenDesignFlush,
+  trackDesignWrite,
+} from '@/features/bin-designer/hooks/designSaveGate';
 
 vi.mock('@/features/bin-designer/storage/DesignerStorage');
 
@@ -197,9 +200,8 @@ describe('DesignListDialog', () => {
   it('opens a new variant through its URL, after the parent has been saved', async () => {
     const DesignerStorage = await import('@/features/bin-designer/storage/DesignerStorage');
     const order: string[] = [];
-    const unregister = registerDesignSaveSettler(() => {
+    const unregister = registerOpenDesignFlush(() => {
       order.push('settle');
-      return Promise.resolve(true);
     });
     vi.mocked(DesignerStorage.createVariant).mockImplementation(() => {
       order.push('create');
@@ -229,7 +231,9 @@ describe('DesignListDialog', () => {
 
   it("does not create a variant while the parent's edits could not be saved", async () => {
     const DesignerStorage = await import('@/features/bin-designer/storage/DesignerStorage');
-    const unregister = registerDesignSaveSettler(() => Promise.resolve(false));
+    const unregister = registerOpenDesignFlush(() => {
+      trackDesignWrite(Promise.resolve(false));
+    });
     render(<DesignListDialog open={true} onClose={onClose} />);
 
     await waitFor(() => {

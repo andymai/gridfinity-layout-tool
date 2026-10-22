@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useAutoSave } from './useAutoSave';
-import { settleDesignSaves } from './designSaveGate';
+import { _resetDesignSaveGate, settleDesignSaves } from './designSaveGate';
 import { useDesignerStore } from '../store/designer';
 import * as DesignerStorage from '@/features/bin-designer/storage/DesignerStorage';
-import { ok, err, storageUnavailable } from '@/core/result';
+import { ok, err, storageNotFound, storageUnavailable } from '@/core/result';
 import { onSyncEvent } from '@/shared/events/syncEventBus';
 import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '../constants/defaults';
 import { loadRegistry } from '../store/customBinRegistry';
@@ -21,6 +21,8 @@ describe('useAutoSave', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
+    vi.mocked(DesignerStorage.updateDesignParams).mockReset();
+    _resetDesignSaveGate();
 
     // Reset store to clean state with generation complete (so thumbnail capture proceeds)
     useDesignerStore.setState({
@@ -806,6 +808,56 @@ describe('useAutoSave', () => {
           expect.anything()
         );
         expect(settled).toBe(false);
+      });
+
+      it('still waits for the write the designer flushed as it closed', async () => {
+        const savedDesign = mockUpdateDesignParams();
+        let land = (): void => {};
+        vi.mocked(DesignerStorage.updateDesignParams).mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              land = () => resolve(ok(savedDesign));
+            })
+        );
+        useDesignerStore.setState({ currentDesignId: 'existing-id' });
+        const { unmount } = renderHook(() => useAutoSave());
+        act(() => {
+          useDesignerStore.getState().setParam('width', 4);
+        });
+        await act(async () => {
+          unmount();
+        });
+
+        let settled: boolean | null = null;
+        await act(async () => {
+          void settleDesignSaves().then((saved) => {
+            settled = saved;
+          });
+        });
+        expect(settled).toBeNull();
+
+        await act(async () => {
+          land();
+        });
+        expect(settled).toBe(true);
+      });
+
+      it('does not hold a switch for a design deleted while it was open', async () => {
+        vi.mocked(DesignerStorage.updateDesignParams).mockResolvedValue(
+          err(storageNotFound('existing-id'))
+        );
+        useDesignerStore.setState({ currentDesignId: 'existing-id' });
+        renderHook(() => useAutoSave());
+        act(() => {
+          useDesignerStore.getState().setParam('width', 4);
+        });
+
+        let settled: boolean | null = null;
+        await act(async () => {
+          settled = await settleDesignSaves();
+        });
+
+        expect(settled).toBe(true);
       });
 
       it('reports a write that failed', async () => {

@@ -24,12 +24,11 @@ import {
   registryKnifeRestFields,
 } from '../store/customBinRegistry';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
-import { registerDesignSaveSettler } from './designSaveGate';
+import { registerOpenDesignFlush, trackDesignWrite } from './designSaveGate';
 import { designId as toDesignId } from '@/core/types';
 import type { BinParams, ExportFileNameConfig, GenerationStatus } from '../types';
 
 const AUTO_SAVE_DELAY_MS = 1000;
-const MAX_SETTLE_ROUNDS = 5;
 
 /**
  * Read abort state through a function call to prevent TypeScript
@@ -107,7 +106,6 @@ export function useAutoSave(): void {
     designId: string;
     session: number;
   } | null>(null);
-  const pendingWrites = useRef(new Set<Promise<boolean>>());
   // Abort token for the current pending save (new object per effect run)
   const abortTokenRef = useRef<{ current: boolean }>({ current: false });
   // What a save currently past its abort checks is writing. `lastSaved*` only
@@ -133,7 +131,7 @@ export function useAutoSave(): void {
       thumbnail: string | null | undefined,
       writeSession: number
     ): Promise<boolean> => {
-      const write = (async (): Promise<boolean> => {
+      const write = (async (): Promise<'saved' | 'gone' | 'failed'> => {
         inFlight.current = { params: paramsToSave, config: configToSave };
         let result;
         try {
@@ -149,7 +147,16 @@ export function useAutoSave(): void {
             inFlight.current = null;
           }
         }
-        if (!isOk(result)) return false;
+        if (!isOk(result)) {
+          if (result.error.code !== 'STORAGE_NOT_FOUND') return 'failed';
+          // Deleted while open: there is nowhere left to save it, and holding
+          // the switch for it would trap the user on a design that is gone.
+          if (writeSession === session.current.id) {
+            lastSavedParams.current = paramsToSave;
+            lastSavedConfig.current = configToSave;
+          }
+          return 'gone';
+        }
 
         // A write that lands after another design opened, or after this one was
         // reopened from storage, must not vouch for what the editor holds now.
@@ -183,12 +190,10 @@ export function useAutoSave(): void {
             height: paramsToSave.height,
           },
         });
-        return true;
+        return 'saved';
       })();
-      pendingWrites.current.add(write);
-      const settled = () => pendingWrites.current.delete(write);
-      void write.then(settled, settled);
-      return write;
+      trackDesignWrite(write.then((outcome) => outcome !== 'failed'));
+      return write.then((outcome) => outcome === 'saved');
     },
     []
   );
@@ -338,25 +343,13 @@ export function useAutoSave(): void {
     };
   }, [flushUnsaved]);
 
-  // The editor stays live while a write lands, so an edit made meanwhile gets
-  // its own round. Only a round that finds nothing left to write is settled;
-  // running out of rounds counts as unsaved, since the last edit may be too.
   useEffect(
     () =>
-      registerDesignSaveSettler(async () => {
-        let saved = true;
-        for (let round = 0; ; round += 1) {
-          const state = useDesignerStore.getState();
-          const id = state.currentDesignId;
-          if (id && state.itemKind === 'bin') {
-            flushUnsaved(state.params, state.exportFileNameConfig, id, session.current.id);
-          }
-          if (pendingWrites.current.size === 0) return saved;
-          if (round === MAX_SETTLE_ROUNDS) return false;
-          const results = await Promise.allSettled([...pendingWrites.current]);
-          // A failure stays reported even if a later round succeeds: the write
-          // that failed may belong to a design no longer open to retry.
-          saved = saved && results.every((r) => r.status === 'fulfilled' && r.value);
+      registerOpenDesignFlush(() => {
+        const state = useDesignerStore.getState();
+        const id = state.currentDesignId;
+        if (id && state.itemKind === 'bin') {
+          flushUnsaved(state.params, state.exportFileNameConfig, id, session.current.id);
         }
       }),
     [flushUnsaved]

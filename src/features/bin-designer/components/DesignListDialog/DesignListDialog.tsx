@@ -251,10 +251,9 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       // the dialog opened: the URL load waits for the open design's edits to
       // land first, and a variant of it picks up that change.
       navigateToDesign(design.id);
-      addToast({ message: `Loaded "${design.name}"`, type: 'success', duration: 2000 });
       onClose();
     },
-    [navigateToDesign, addToast, onClose, currentDesignId]
+    [navigateToDesign, onClose, currentDesignId]
   );
 
   const [showNewDesignConfirm, setShowNewDesignConfirm] = useState(false);

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useDesignerUrlSync } from './useDesignerUrlSync';
-import { registerDesignSaveSettler } from './designSaveGate';
+import { _resetDesignSaveGate, trackDesignWrite } from './designSaveGate';
 import { useDesignerStore } from '../store/designer';
 import * as DesignerStorage from '@/features/bin-designer/storage/DesignerStorage';
 import { ok, err, storageUnavailable } from '@/core/result';
@@ -17,6 +17,7 @@ describe('useDesignerUrlSync', () => {
   beforeEach(() => {
     originalHref = window.location.href;
     vi.clearAllMocks();
+    _resetDesignSaveGate();
 
     // Reset store to clean state (no active design)
     useDesignerStore.setState({
@@ -27,11 +28,7 @@ describe('useDesignerUrlSync', () => {
     });
   });
 
-  let unregister = (): void => {};
-
   afterEach(() => {
-    unregister();
-    unregister = () => {};
     window.history.replaceState(null, '', originalHref);
   });
 
@@ -69,11 +66,10 @@ describe('useDesignerUrlSync', () => {
     it("reads the design only once the open design's saves have settled", async () => {
       vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(ok(makeSavedDesign('next')));
       let release = (): void => {};
-      unregister = registerDesignSaveSettler(
-        () =>
-          new Promise<boolean>((resolve) => {
-            release = () => resolve(true);
-          })
+      trackDesignWrite(
+        new Promise<boolean>((resolve) => {
+          release = () => resolve(true);
+        })
       );
       window.history.replaceState(null, '', '/designer?id=next');
 
@@ -165,11 +161,10 @@ describe('useDesignerUrlSync', () => {
   describe('while the open design is still saving', () => {
     function blockSaves(): (saved: boolean) => void {
       let release: (saved: boolean) => void = () => {};
-      unregister = registerDesignSaveSettler(
-        () =>
-          new Promise<boolean>((resolve) => {
-            release = resolve;
-          })
+      trackDesignWrite(
+        new Promise<boolean>((resolve) => {
+          release = resolve;
+        })
       );
       return (saved) => release(saved);
     }
