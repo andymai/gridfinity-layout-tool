@@ -1,0 +1,25 @@
+src/features/bin-designer/hooks/designSaveGate.ts
+  s_e7eeec410157f8::t_3d8f19f3ec267e 13-14,17-22,26,42-56,81
+src/features/bin-designer/hooks/useAutoSave.ts
+  s_e7eeec410157f8::t_93fc46337f5a98 281,373
+  s_e7eeec410157f8::t_3d8f19f3ec267e 27-32,38-39,140-141,203,216,218,222-223,257-258,290-296,355-363
+src/features/bin-designer/hooks/useAutoSave.test.ts
+  s_e7eeec410157f8::t_f0086bea40fad0 845,847-899
+  s_e7eeec410157f8::t_e49695253132ad 846
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f56f33fb9bc6509c20ce45fc3de6319a7fd5a2ef",
+  "prompts": {},
+  "sessions": {
+    "s_e7eeec410157f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "277c7c45-b167-4b5b-b2a1-7d22af2a8870",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
