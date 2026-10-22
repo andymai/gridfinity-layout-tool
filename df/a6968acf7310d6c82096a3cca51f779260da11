@@ -1,0 +1,76 @@
+src/shared/hooks/useDesignerRouting.test.ts
+  s_e7eeec410157f8::t_d396160b0da1fd 157-168
+src/shared/hooks/useDesignerRouting.ts
+  s_e7eeec410157f8::t_784c86ce67c0c6 108-109,113
+src/i18n/locales/en.ts
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1876-1877
+src/i18n/locales/pl.json
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1573-1574
+src/features/bin-designer/components/LayoutDesignSwitch/LayoutDesignSwitch.tsx
+  s_e7eeec410157f8::t_9bef3acf9b29b2 1-165
+src/i18n/locales/pt-BR.json
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1573-1574
+src/features/bin-designer/components/LayoutDesignSwitch/index.ts
+  s_e7eeec410157f8::t_8c9d8b07a93a5c 1
+src/i18n/locales/de.json
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1573-1574
+src/i18n/locales/cs.json
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1573-1574
+src/features/bin-designer/components/LayoutDesignSwitch/layoutDesigns.ts
+  s_e7eeec410157f8::t_53b95e2ae82cf4 1,3-24,26-43
+  s_e7eeec410157f8::t_fbe93018c55b14 2,25
+src/features/bin-designer/components/LayoutDesignSwitch/layoutDesigns.test.ts
+  s_e7eeec410157f8::t_6d6eb3ffc4d488 1-76
+src/i18n/locales/nl.json
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1573-1574
+src/i18n/locales/fr.json
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1573-1574
+src/i18n/locales/uk.json
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1573-1574
+src/i18n/locales/sv.json
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1573-1574
+src/i18n/locales/it.json
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1573-1574
+src/i18n/locales/ko.json
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1573-1574
+src/i18n/locales/zh-CN.json
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1573-1574
+src/features/bin-designer/components/LayoutDesignSwitch/LayoutDesignSwitch.test.tsx
+  s_e7eeec410157f8::t_ecf346b502bbc8 1-105
+  s_026b7789993b67::t_9336e1482fccba 106-113
+src/i18n/locales/nb.json
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1573-1574
+src/features/bin-designer/components/DesignerPage/DesignerHeader.tsx
+  s_e7eeec410157f8::t_416a58930b85a1 116-117
+  s_e7eeec410157f8::t_d720c005e10a9d 16
+src/i18n/locales/ka.json
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1568-1569
+src/i18n/locales/es.json
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1573-1574
+src/i18n/locales/ja.json
+  s_e7eeec410157f8::t_ed154d0fe91ff1 1573-1574
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dfa6968acf7310d6c82096a3cca51f779260da11",
+  "prompts": {},
+  "sessions": {
+    "s_026b7789993b67": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9840488a-f188-474e-bb47-4c700a1bb0d4",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_e7eeec410157f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "277c7c45-b167-4b5b-b2a1-7d22af2a8870",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
