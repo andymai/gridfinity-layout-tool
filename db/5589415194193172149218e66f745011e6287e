@@ -1,0 +1,23 @@
+src/features/bin-designer/hooks/useAutoSave.ts
+  s_e7eeec410157f8::t_064d3f6044c8d5 121-125,133-146,220-224,245,315-321,395-398
+src/features/bin-designer/hooks/useAutoSave.test.ts
+  s_e7eeec410157f8::t_b3bf611a69d705 875-967
+src/features/bin-designer/hooks/designSaveGate.ts
+  s_e7eeec410157f8::t_064d3f6044c8d5 49-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "db5589415194193172149218e66f745011e6287e",
+  "prompts": {},
+  "sessions": {
+    "s_e7eeec410157f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "277c7c45-b167-4b5b-b2a1-7d22af2a8870",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
