@@ -512,6 +512,114 @@ describe('useAutoSave', () => {
       expect(DesignerStorage.updateDesignParams).toHaveBeenCalledOnce();
     });
 
+    describe('on switching to another design', () => {
+      const otherDesign: SavedDesign = {
+        id: designId('other-id'),
+        name: 'Other Bin',
+        params: { ...DEFAULT_BIN_PARAMS, width: 2 },
+        thumbnail: null,
+        exportFileNameConfig: null,
+        createdAt: '2026-01-22T00:00:00.000Z',
+        updatedAt: '2026-01-22T00:01:00.000Z',
+      };
+
+      it('persists the edit still inside the debounce window to the design it was made on', async () => {
+        mockUpdateDesignParams();
+        useDesignerStore.setState({ currentDesignId: 'existing-id' });
+        renderHook(() => useAutoSave());
+
+        act(() => {
+          useDesignerStore.getState().setParam('width', 4);
+        });
+        await act(async () => {
+          vi.advanceTimersByTime(300);
+          useDesignerStore.getState().loadDesign(otherDesign);
+        });
+        await advanceThroughSave();
+
+        expect(DesignerStorage.updateDesignParams).toHaveBeenCalledOnce();
+        expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
+          'existing-id',
+          expect.objectContaining({ width: 4 }),
+          undefined,
+          expect.anything()
+        );
+      });
+
+      it('persists an edit whose save was still waiting on generation', async () => {
+        mockUpdateDesignParams();
+        useDesignerStore.setState({
+          currentDesignId: 'existing-id',
+          generation: {
+            ...DEFAULT_GENERATION_STATE,
+            status: 'generating',
+            mesh: null,
+            progress: 0,
+            epoch: 0,
+          },
+        });
+        renderHook(() => useAutoSave());
+
+        act(() => {
+          useDesignerStore.getState().setParam('width', 6);
+        });
+        await act(async () => {
+          vi.advanceTimersByTime(1100);
+        });
+        expect(DesignerStorage.updateDesignParams).not.toHaveBeenCalled();
+
+        await act(async () => {
+          useDesignerStore.getState().loadDesign(otherDesign);
+        });
+
+        expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
+          'existing-id',
+          expect.objectContaining({ width: 6 }),
+          undefined,
+          expect.anything()
+        );
+      });
+
+      it('leaves the design switched to as the active one, with nothing to flush', async () => {
+        mockUpdateDesignParams();
+        useDesignerStore.setState({ currentDesignId: 'existing-id' });
+        const { unmount } = renderHook(() => useAutoSave());
+
+        act(() => {
+          useDesignerStore.getState().setParam('width', 4);
+        });
+        await act(async () => {
+          useDesignerStore.getState().loadDesign(otherDesign);
+        });
+        await advanceThroughSave();
+        await act(async () => {
+          unmount();
+        });
+
+        expect(DesignerStorage.updateDesignParams).toHaveBeenCalledOnce();
+        expect(DesignerStorage.setActiveDesignId).not.toHaveBeenCalledWith('existing-id');
+      });
+
+      it('does not write when the design had no unsaved edit', async () => {
+        mockUpdateDesignParams();
+        useDesignerStore.setState({ currentDesignId: 'existing-id' });
+        renderHook(() => useAutoSave());
+
+        act(() => {
+          useDesignerStore.getState().setParam('width', 4);
+        });
+        await advanceThroughSave();
+        expect(DesignerStorage.updateDesignParams).toHaveBeenCalledOnce();
+
+        await act(async () => {
+          useDesignerStore.getState().loadDesign(otherDesign);
+        });
+        await advanceThroughSave();
+
+        expect(DesignerStorage.updateDesignParams).toHaveBeenCalledOnce();
+      });
+    });
+
     it('does not write for an unsaved design', async () => {
       mockUpdateDesignParams();
       const { unmount } = renderHook(() => useAutoSave());

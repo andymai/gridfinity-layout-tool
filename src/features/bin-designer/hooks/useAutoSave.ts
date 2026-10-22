@@ -96,6 +96,11 @@ export function useAutoSave(): void {
   const lastSavedParams = useRef<BinParams | null>(null);
   const lastSavedConfig = useRef<ExportFileNameConfig | null>(null);
   const lastDesignId = useRef<string | null>(null);
+  const lastSeen = useRef<{
+    params: BinParams;
+    config: ExportFileNameConfig;
+    designId: string;
+  } | null>(null);
   // Abort token for the current pending save (new object per effect run)
   const abortTokenRef = useRef<{ current: boolean }>({ current: false });
   // What a save currently past its abort checks is writing. `lastSaved*` only
@@ -137,10 +142,14 @@ export function useAutoSave(): void {
       }
       if (!isOk(result)) return false;
 
-      lastSavedParams.current = paramsToSave;
-      lastSavedConfig.current = configToSave;
-      // Track active design for session restoration
-      setActiveDesignId(result.value.id);
+      // A write for a design the user has since switched away from must not
+      // claim the refs or the session's active design from its successor.
+      if (useDesignerStore.getState().currentDesignId === designId) {
+        lastSavedParams.current = paramsToSave;
+        lastSavedConfig.current = configToSave;
+        // Track active design for session restoration
+        setActiveDesignId(result.value.id);
+      }
       // Sync lightweight ref to registry for Layout Planner
       upsertRegistryEntry({
         id: result.value.id,
@@ -168,6 +177,22 @@ export function useAutoSave(): void {
       return true;
     },
     []
+  );
+
+  // No thumbnail: the canvas is gone or already shows another design, and
+  // `undefined` keeps the stored one until useBackgroundThumbnailRegen
+  // refreshes it.
+  const flushUnsaved = useCallback(
+    (paramsToSave: BinParams, configToSave: ExportFileNameConfig, designId: string): void => {
+      if (lastSavedParams.current === paramsToSave && lastSavedConfig.current === configToSave) {
+        return;
+      }
+      // A save already writing exactly this will land on its own; an in-flight
+      // save for older params still needs the flush.
+      if (isInFlight(paramsToSave, configToSave)) return;
+      void persist(paramsToSave, configToSave, designId, undefined);
+    },
+    [persist]
   );
 
   const performSave = useCallback(
@@ -205,6 +230,18 @@ export function useAutoSave(): void {
   );
 
   useEffect(() => {
+    // Loading another design swaps params and id in one update, so by now the
+    // previous design's unsaved edit survives only in this ref, and the
+    // cleanup has already cancelled the save that would have written it.
+    const previous = lastSeen.current;
+    lastSeen.current =
+      itemKind === 'bin' && currentDesignId
+        ? { params, config: exportFileNameConfig, designId: currentDesignId }
+        : null;
+    if (previous && previous.designId !== currentDesignId) {
+      flushUnsaved(previous.params, previous.config, previous.designId);
+    }
+
     // Params-only autosave: non-bin kinds persist through their own hooks,
     // and flushing here would write stale bin params onto their rows.
     if (itemKind !== 'bin') return;
@@ -258,31 +295,18 @@ export function useAutoSave(): void {
         clearTimeout(timerRef.current);
       }
     };
-  }, [itemKind, params, exportFileNameConfig, currentDesignId, performSave]);
+  }, [itemKind, params, exportFileNameConfig, currentDesignId, performSave, flushUnsaved]);
 
   // Leaving the designer (route change) unmounts this hook, which aborts both
   // the debounce and any save still waiting on generation — a window of up to
   // ~6s in which the user's last edits were silently dropped while the
-  // in-memory store kept showing them. Flush straight to storage
-  // instead. No thumbnail: the canvas is already gone, and passing `undefined`
-  // keeps the stored one until useBackgroundThumbnailRegen refreshes it.
+  // in-memory store kept showing them. Flush straight to storage instead.
   useEffect(() => {
     return () => {
       const state = useDesignerStore.getState();
       const id = state.currentDesignId;
       if (!id || state.itemKind !== 'bin') return;
-      if (
-        lastSavedParams.current === state.params &&
-        lastSavedConfig.current === state.exportFileNameConfig
-      ) {
-        return;
-      }
-      // A save already writing exactly this will land on its own; an in-flight
-      // save for older params still needs the flush.
-      if (isInFlight(state.params, state.exportFileNameConfig)) {
-        return;
-      }
-      void persist(state.params, state.exportFileNameConfig, id, undefined);
+      flushUnsaved(state.params, state.exportFileNameConfig, id);
     };
-  }, [persist]);
+  }, [flushUnsaved]);
 }
