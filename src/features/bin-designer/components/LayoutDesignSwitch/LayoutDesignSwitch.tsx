@@ -13,11 +13,6 @@ import type { LayoutDesign } from './layoutDesigns';
 const ITEM_CLASS =
   'w-full justify-start gap-2.5 rounded-none px-2.5 py-2 text-left text-sm font-normal hover:bg-surface-hover';
 
-/**
- * Jumps between the designs the active layout's bins use, without a trip back
- * to the layout. Renders nothing for a layout with no linked bins, where the
- * Designs list is the only way to another design anyway.
- */
 export function LayoutDesignSwitch() {
   const t = useTranslation();
   const registry = useCustomBins();
@@ -33,7 +28,9 @@ export function LayoutDesignSwitch() {
   const { navigateToDesign } = useDesignerRouting();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const wasOpen = useRef(false);
   const closeMenu = useCallback(() => setOpen(false), []);
   const onMenuKeyDown = useMenuKeyboardNav({ isOpen: open, menuRef, onClose: closeMenu });
 
@@ -49,6 +46,16 @@ export function LayoutDesignSwitch() {
     };
     document.addEventListener('mousedown', onPointerDown);
     return () => document.removeEventListener('mousedown', onPointerDown);
+  }, [open]);
+
+  // Closing removes the focused item. Hand focus back to the chevron, unless
+  // the chosen action already moved it (All designs opens a dialog).
+  useEffect(() => {
+    if (wasOpen.current && !open) {
+      const lost = document.activeElement === null || document.activeElement === document.body;
+      if (lost) triggerRef.current?.focus();
+    }
+    wasOpen.current = open;
   }, [open]);
 
   const handleSwitch = useCallback(
@@ -67,6 +74,7 @@ export function LayoutDesignSwitch() {
   return (
     <div ref={containerRef} className="relative">
       <Button
+        ref={triggerRef}
         variant="ghost"
         onClick={() => setOpen((v) => !v)}
         className="h-8 px-1.5 text-content-secondary hover:bg-surface-hover hover:text-content"

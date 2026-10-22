@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useLayoutStore } from '@/core/store/layout';
 import { binId, designId } from '@/core/types';
@@ -97,6 +97,24 @@ describe('LayoutDesignSwitch', () => {
 
     expect(window.location.search).toBe('?id=d1');
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('returns focus to the chevron when the menu closes', async () => {
+    seedLayout();
+    render(<LayoutDesignSwitch />);
+    const trigger = screen.getByRole('button', { name: 'Switch to another bin in this layout' });
+
+    await userEvent.click(trigger);
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: /Spice rack/ })).toHaveFocus();
+    });
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+
+    await userEvent.click(trigger);
+    await userEvent.click(screen.getByRole('menuitem', { name: /Utensils/ }));
+    expect(trigger).toHaveFocus();
   });
 
   it('hands off to the full design list', async () => {
