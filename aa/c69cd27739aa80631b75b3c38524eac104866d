@@ -1,0 +1,27 @@
+src/features/bin-designer/hooks/useAutoSave.ts
+  s_e7eeec410157f8::t_8cfcc9cee01c3d 357-359
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.test.tsx
+  s_e7eeec410157f8::t_b092fa3bac1e4e 11,199-209,224,227-250
+src/features/bin-designer/hooks/useAutoSave.test.ts
+  s_e7eeec410157f8::t_7ed501c5778fcd 787-788,794-796
+  s_e7eeec410157f8::t_b092fa3bac1e4e 763
+  s_e7eeec410157f8::t_5296d6ca835ac8 762,764-786,789-793,797-810
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_e7eeec410157f8::t_8cfcc9cee01c3d 39,346-351
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "aac69cd27739aa80631b75b3c38524eac104866d",
+  "prompts": {},
+  "sessions": {
+    "s_e7eeec410157f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "277c7c45-b167-4b5b-b2a1-7d22af2a8870",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
