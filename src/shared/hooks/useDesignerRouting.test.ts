@@ -154,6 +154,18 @@ describe('useDesignerRouting', () => {
       expect(window.location.search).toBe('?id=other');
     });
 
+    it('carries the layout bin a switch names along with the design', () => {
+      window.history.replaceState(null, '', '/designer?id=abc123&bin=bin-9');
+      const { result } = renderHook(() => useDesignerRouting());
+
+      act(() => {
+        result.current.navigateToDesign('other', 'bin-3');
+      });
+
+      expect(result.current.placementBinIdFromUrl).toBe('bin-3');
+      expect(window.location.search).toBe('?id=other&bin=bin-3');
+    });
+
     it('returns null designIdFromUrl when no ?id= param', () => {
       window.history.replaceState(null, '', '/designer');
       const { result } = renderHook(() => useDesignerRouting());

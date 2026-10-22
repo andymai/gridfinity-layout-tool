@@ -1570,6 +1570,8 @@
   "binDesigner.openBentoWorkspace": "Espaço de trabalho Bento",
   "binDesigner.openBentoWorkspaceSubtitle": "Arraste para desenhar compartimentos do tamanho que quiser",
   "binDesigner.openDesignList": "Abrir lista de designs",
+  "binDesigner.layoutSwitch.open": "Trocar para outro bin deste layout",
+  "binDesigner.layoutSwitch.allDesigns": "Todos os designs…",
   "binDesigner.overhang.feet": "Pés sob a saliência",
   "binDesigner.overhang.feetHint": "Adiciona pés alinhados à grade sob a saliência onde ela for larga o bastante para imprimi-los, para que essa parte chegue à mesa. Uma saliência mais estreita ainda precisa de suportes.",
   "binDesigner.overhang.hint": "Expande as paredes para fora para preencher a folga da gaveta. Os pés da base permanecem no lugar, então o fundo sob a saliência fica plano na altura do topo da base e precisa de suportes para imprimir. Com uma base plana, ele apoia na mesa.",

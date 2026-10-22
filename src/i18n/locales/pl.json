@@ -1570,6 +1570,8 @@
   "binDesigner.openBentoWorkspace": "Obszar roboczy Bento",
   "binDesigner.openBentoWorkspaceSubtitle": "Przeciągaj, aby rysować przegrody w dowolnym rozmiarze",
   "binDesigner.openDesignList": "Otwórz listę projektów",
+  "binDesigner.layoutSwitch.open": "Przełącz na inny bin w tym układzie",
+  "binDesigner.layoutSwitch.allDesigns": "Wszystkie projekty…",
   "binDesigner.overhang.feet": "Stopki pod nawisem",
   "binDesigner.overhang.feetHint": "Dodaj stopki wyrównane do siatki pod nawisem tam, gdzie jest dość szeroki, by je wydrukować, aby ta część sięgała stołu. Węższy nawis nadal wymaga podpór.",
   "binDesigner.overhang.hint": "Rozszerz ścianki na zewnątrz, aby wypełnić szczelinę w szufladzie. Stopki podstawy pozostają na miejscu, więc spód pod nawisem jest płaski na wysokości górnej krawędzi podstawy i wymaga podpór do druku. Na płaskiej podstawie opiera się na stole.",

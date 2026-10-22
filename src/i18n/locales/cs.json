@@ -1570,6 +1570,8 @@
   "binDesigner.openBentoWorkspace": "Pracovní plocha Bento",
   "binDesigner.openBentoWorkspaceSubtitle": "Tažením nakresli přihrádky libovolné velikosti",
   "binDesigner.openDesignList": "Otevřít seznam návrhů",
+  "binDesigner.layoutSwitch.open": "Přepnout na jiný bin v tomto rozvržení",
+  "binDesigner.layoutSwitch.allDesigns": "Všechny návrhy…",
   "binDesigner.overhang.feet": "Nožky pod přesahem",
   "binDesigner.overhang.feetHint": "Přidej nožky zarovnané s mřížkou pod přesah tam, kde je dost široký na jejich tisk, aby ta část dosáhla na podložku. Užší přesah stále potřebuje podpěry.",
   "binDesigner.overhang.hint": "Rozšiř stěny ven, abys vyplnil mezeru v zásuvce. Nožky základny zůstanou na místě, takže dno pod přesahem je ploché ve výšce horní hrany základny a k tisku potřebuje podpěry. Na ploché základně leží na podložce.",

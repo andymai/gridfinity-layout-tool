@@ -1570,6 +1570,8 @@
   "binDesigner.openBentoWorkspace": "Espace de travail Bento",
   "binDesigner.openBentoWorkspaceSubtitle": "Faites glisser pour dessiner des compartiments de la taille voulue",
   "binDesigner.openDesignList": "Ouvrir la liste des designs",
+  "binDesigner.layoutSwitch.open": "Passer à un autre bac de ce layout",
+  "binDesigner.layoutSwitch.allDesigns": "Tous les designs…",
   "binDesigner.overhang.feet": "Pieds sous le débord",
   "binDesigner.overhang.feetHint": "Ajoute des pieds alignés sur la grille sous le débord là où il est assez large pour les imprimer, pour que cette partie touche le plateau. Un débord plus étroit demande toujours des supports.",
   "binDesigner.overhang.hint": "Étend les parois vers l'extérieur pour combler un espace de tiroir. Les pieds de la base ne bougent pas, donc le fond sous le débord est plat au niveau du haut de la base et demande des supports à l'impression. Sur une base plate, il repose sur le plateau.",

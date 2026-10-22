@@ -1570,6 +1570,8 @@
   "binDesigner.openBentoWorkspace": "도시락 작업 공간",
   "binDesigner.openBentoWorkspaceSubtitle": "드래그해서 원하는 크기의 칸을 그리세요",
   "binDesigner.openDesignList": "디자인 목록 열기",
+  "binDesigner.layoutSwitch.open": "이 레이아웃의 다른 수납통으로 전환",
+  "binDesigner.layoutSwitch.allDesigns": "모든 디자인…",
   "binDesigner.overhang.feet": "오버행 아래 발",
   "binDesigner.overhang.feetHint": "오버행이 발을 인쇄할 만큼 넓은 곳에 그리드에 맞춘 발을 추가해 그 부분이 베드에 닿게 합니다. 더 좁은 오버행은 여전히 서포트가 필요합니다.",
   "binDesigner.overhang.hint": "서랍 틈을 채우도록 벽을 바깥으로 넓힙니다. 베이스 발은 제자리에 있어, 오버행 아래 바닥은 베이스 윗면 높이에서 평평하며 출력하려면 서포트가 필요합니다. 평평한 바닥에서는 베드에 닿습니다.",

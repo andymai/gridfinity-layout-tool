@@ -1570,6 +1570,8 @@
   "binDesigner.openBentoWorkspace": "Espacio de trabajo Bento",
   "binDesigner.openBentoWorkspaceSubtitle": "Arrastra para dibujar compartimentos del tamaño que quieras",
   "binDesigner.openDesignList": "Abrir lista de diseños",
+  "binDesigner.layoutSwitch.open": "Cambiar a otro bin de este diseño",
+  "binDesigner.layoutSwitch.allDesigns": "Todos los diseños…",
   "binDesigner.overhang.feet": "Pies bajo el voladizo",
   "binDesigner.overhang.feetHint": "Añade pies alineados a la rejilla bajo el voladizo donde sea lo bastante ancho para imprimirlos, para que esa parte llegue a la cama. Un voladizo más estrecho sigue necesitando soportes.",
   "binDesigner.overhang.hint": "Extiende las paredes hacia afuera para rellenar el hueco del cajón. Los pies de la base no se mueven, así que la base bajo el voladizo es plana a la altura de la parte superior de la base y necesita soportes para imprimirse. Con una base plana, se apoya en la cama.",

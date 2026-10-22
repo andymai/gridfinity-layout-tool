@@ -1873,6 +1873,8 @@ const en: Record<string, string> = {
   'binDesigner.exportSTL': 'Export bin as STL',
   'binDesigner.clickToRename': 'Click to rename design',
   'binDesigner.openDesignList': 'Open design list',
+  'binDesigner.layoutSwitch.open': 'Switch to another bin in this layout',
+  'binDesigner.layoutSwitch.allDesigns': 'All designs…',
   'binDesigner.dimensions': 'Dimensions',
   'binDesigner.shape.section.footprint': 'Footprint',
   'binDesigner.interiorDimensions': 'Inside',

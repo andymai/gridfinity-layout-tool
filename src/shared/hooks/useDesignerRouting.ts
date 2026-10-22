@@ -105,12 +105,12 @@ export function useDesignerRouting() {
    * Navigate to a specific design (creates history entry for back/forward).
    * Call this when the user explicitly switches designs (e.g., from design list).
    */
-  const navigateToDesign = useCallback((designId: string) => {
-    const url = buildDesignerUrl(designId);
+  const navigateToDesign = useCallback((designId: string, placementBinId?: string) => {
+    const url = buildDesignerUrl(designId, placementBinId);
     window.history.pushState({ designId }, '', url);
     setIsDesignerRoute(true);
     setDesignIdFromUrl(designId);
-    setPlacementBinIdFromUrl(null);
+    setPlacementBinIdFromUrl(placementBinId ?? null);
     dispatchSyntheticPopstate();
   }, []);
 

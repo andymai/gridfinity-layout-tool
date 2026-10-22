@@ -13,6 +13,7 @@ import { useCommunityPublishEntry } from '@/features/bin-designer/hooks/useCommu
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '@/i18n';
 import { SaveStatusIndicator } from '@/shared/components/SaveStatusIndicator';
+import { LayoutDesignSwitch } from '../LayoutDesignSwitch';
 import type { DesignNameEditor } from './useDesignNameEditor';
 
 /** Platform modifier key for keyboard shortcut hints */
@@ -111,6 +112,8 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                 {designName}
               </Button>
             )}
+
+            <LayoutDesignSwitch />
 
             {/* Designs switcher button */}
             <Button

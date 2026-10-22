@@ -1565,6 +1565,8 @@
   "binDesigner.exportSTL": "ყუთის ექსპორტი STL-ად",
   "binDesigner.clickToRename": "დიზაინის სახელის გადასარქმევად დააწკაპუნეთ",
   "binDesigner.openDesignList": "დიზაინების სიის გახსნა",
+  "binDesigner.layoutSwitch.open": "ამ განლაგების სხვა ყუთზე გადასვლა",
+  "binDesigner.layoutSwitch.allDesigns": "ყველა დიზაინი…",
   "binDesigner.dimensions": "ზომები",
   "binDesigner.shape.section.footprint": "ფართობი",
   "binDesigner.interiorDimensions": "შიგნით",

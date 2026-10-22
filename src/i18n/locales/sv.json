@@ -1570,6 +1570,8 @@
   "binDesigner.openBentoWorkspace": "Bento-arbetsyta",
   "binDesigner.openBentoWorkspaceSubtitle": "Dra för att rita fack i vilken storlek du vill",
   "binDesigner.openDesignList": "Öppna designlista",
+  "binDesigner.layoutSwitch.open": "Byt till ett annat fack i den här layouten",
+  "binDesigner.layoutSwitch.allDesigns": "Alla designer…",
   "binDesigner.overhang.feet": "Fötter under överhänget",
   "binDesigner.overhang.feetHint": "Lägg till rutnätsjusterade fötter under överhänget där det är tillräckligt brett för att skriva ut dem, så att den delen når byggplattan. Ett smalare överhäng behöver fortfarande stöd.",
   "binDesigner.overhang.hint": "Utvidgar väggarna utåt för att fylla en lådspringa. Basfötterna stannar kvar, så botten under överhänget är plan i höjd med basens ovansida och behöver stöd för att skrivas ut. På en platt bas vilar den på byggplattan.",
