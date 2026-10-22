@@ -1,0 +1,34 @@
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.test.tsx
+  s_e7eeec410157f8::t_cecec9d05e87e8 11-14,203,234-236
+src/features/bin-designer/hooks/useAutoSave.test.ts
+  s_e7eeec410157f8::t_e4bf30290e446d 4,24-25
+  s_e7eeec410157f8::t_3513a554ec8c2f 7
+  s_e7eeec410157f8::t_17c83ea65fae1f 813-862
+src/features/bin-designer/hooks/useAutoSave.ts
+  s_e7eeec410157f8::t_485c20e4b93776 27,134,150,152-153,159,193,195-196,348-352
+  s_e7eeec410157f8::t_7077835a38b319 151,154-158
+src/features/bin-designer/hooks/designSaveGate.ts
+  s_e7eeec410157f8::t_e4bf30290e446d 52-56
+  s_e7eeec410157f8::t_0a75e7bf3ea5be 7-10,13,15-17,19-21,23,27-51
+src/features/bin-designer/hooks/useDesignerUrlSync.test.ts
+  s_e7eeec410157f8::t_e4bf30290e446d 4,20
+  s_e7eeec410157f8::t_cecec9d05e87e8 69-72,164-167
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_e7eeec410157f8::t_cecec9d05e87e8 256
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "98ca1968671dac0f27d068e48413c51ca29c016c",
+  "prompts": {},
+  "sessions": {
+    "s_e7eeec410157f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "277c7c45-b167-4b5b-b2a1-7d22af2a8870",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
