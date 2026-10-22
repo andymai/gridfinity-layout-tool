@@ -145,9 +145,31 @@ describe('DesignListDialog', () => {
 
     fireEvent.click(screen.getByText('New Design'));
 
-    expect(useDesignerStore.getState().currentDesignId).toBeNull();
+    await waitFor(() => {
+      expect(useDesignerStore.getState().currentDesignId).toBeNull();
+    });
     expect(useDesignerStore.getState().designName).toBe('Untitled Bin');
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('keeps the open design when its edits could not be saved before a new one', async () => {
+    const unregister = registerOpenDesignFlush(() => {
+      trackDesignWrite(Promise.resolve(false));
+    });
+    render(<DesignListDialog open={true} onClose={onClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Tool Holder')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('New Design'));
+
+    await waitFor(() => {
+      expect(useToastStore.getState().toasts.some((toast) => toast.message === 'Save failed')).toBe(
+        true
+      );
+    });
+    expect(useDesignerStore.getState().currentDesignId).toBe('design-1');
+    unregister();
   });
 
   it('opens overflow menu and shows actions', async () => {

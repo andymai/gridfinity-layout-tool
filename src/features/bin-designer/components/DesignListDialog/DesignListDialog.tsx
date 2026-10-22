@@ -262,7 +262,12 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const [pendingNewKind, setPendingNewKind] = useState<ItemKind>('bin');
 
   const createNewDesign = useCallback(
-    (kind: ItemKind) => {
+    async (kind: ItemKind) => {
+      // Replacing the editor drops the open design's only in-memory copy.
+      if (!(await settleDesignSaves())) {
+        addToast({ message: t('header.saveFailed'), type: 'error', duration: 4000 });
+        return;
+      }
       newDesign(kind === 'bin' ? undefined : kind);
       syncUrlToDesign(null);
       addToast({ message: t('binDesigner.newDesignCreated'), type: 'success', duration: 2000 });
@@ -279,13 +284,13 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         setShowNewDesignConfirm(true);
         return;
       }
-      createNewDesign(kind);
+      void createNewDesign(kind);
     },
     [createNewDesign]
   );
 
   const handleConfirmNewDesign = useCallback(() => {
-    createNewDesign(pendingNewKind);
+    void createNewDesign(pendingNewKind);
   }, [createNewDesign, pendingNewKind]);
 
   const handleOpenOptionsMenu = useCallback((e: ReactMouseEvent<HTMLButtonElement>) => {

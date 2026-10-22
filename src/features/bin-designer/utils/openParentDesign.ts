@@ -1,7 +1,10 @@
 import { isOk } from '@/core/result';
+import { useToastStore } from '@/core/store/toast';
 import type { DesignId } from '@/core/types';
+import { getStaticTranslation } from '@/i18n';
 import { loadDesign, setActiveDesignId } from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { settleDesignSaves } from '@/features/bin-designer/hooks/designSaveGate';
 
 /**
  * Open the design a variant follows.
@@ -12,6 +15,15 @@ import { useDesignerStore } from '@/features/bin-designer/store';
  */
 export async function openParentDesign(parentId: DesignId | null): Promise<void> {
   if (!parentId) return;
+  // The parent is read after the variant's edits land, like any other switch.
+  if (!(await settleDesignSaves())) {
+    useToastStore.getState().addToast({
+      message: getStaticTranslation('header.saveFailed'),
+      type: 'error',
+      duration: 4000,
+    });
+    return;
+  }
   const parent = await loadDesign(parentId);
   if (!isOk(parent)) return;
   setActiveDesignId(parentId);
