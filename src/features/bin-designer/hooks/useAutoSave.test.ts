@@ -872,6 +872,99 @@ describe('useAutoSave', () => {
         expect(settled).toBe(true);
       });
 
+      it('saves a recovered edit on reopening, without waiting for a switch', async () => {
+        mockUpdateDesignParams();
+        vi.mocked(DesignerStorage.updateDesignParams).mockResolvedValueOnce(
+          err(storageUnavailable('indexedDB'))
+        );
+        useDesignerStore.setState({ currentDesignId: 'existing-id' });
+        const first = renderHook(() => useAutoSave());
+        act(() => {
+          useDesignerStore.getState().setParam('width', 4);
+        });
+        await act(async () => {
+          first.unmount();
+        });
+
+        renderHook(() => useAutoSave());
+        await advanceThroughSave();
+
+        expect(DesignerStorage.updateDesignParams).toHaveBeenCalledTimes(2);
+        expect(DesignerStorage.updateDesignParams).toHaveBeenLastCalledWith(
+          'existing-id',
+          expect.objectContaining({ width: 4 }),
+          null,
+          expect.anything()
+        );
+      });
+
+      it('holds an autosave write that was already under way when the designer closed', async () => {
+        mockUpdateDesignParams();
+        let fail = (): void => {};
+        vi.mocked(DesignerStorage.updateDesignParams).mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              fail = () => resolve(err(storageUnavailable('indexedDB')));
+            })
+        );
+        useDesignerStore.setState({ currentDesignId: 'existing-id' });
+        const first = renderHook(() => useAutoSave());
+        act(() => {
+          useDesignerStore.getState().setParam('width', 4);
+        });
+        await advanceThroughSave();
+        expect(DesignerStorage.updateDesignParams).toHaveBeenCalledOnce();
+
+        await act(async () => {
+          first.unmount();
+        });
+        expect(DesignerStorage.updateDesignParams).toHaveBeenCalledOnce();
+        await act(async () => {
+          fail();
+        });
+
+        renderHook(() => useAutoSave());
+        let settled: boolean | null = null;
+        await act(async () => {
+          settled = await settleDesignSaves();
+        });
+
+        expect(DesignerStorage.updateDesignParams).toHaveBeenCalledTimes(2);
+        expect(settled).toBe(true);
+      });
+
+      it('retries at once when the closing flush fails after the designer reopened', async () => {
+        mockUpdateDesignParams();
+        let fail = (): void => {};
+        vi.mocked(DesignerStorage.updateDesignParams).mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              fail = () => resolve(err(storageUnavailable('indexedDB')));
+            })
+        );
+        useDesignerStore.setState({ currentDesignId: 'existing-id' });
+        const first = renderHook(() => useAutoSave());
+        act(() => {
+          useDesignerStore.getState().setParam('width', 4);
+        });
+        await act(async () => {
+          first.unmount();
+        });
+        renderHook(() => useAutoSave());
+
+        await act(async () => {
+          fail();
+        });
+
+        expect(DesignerStorage.updateDesignParams).toHaveBeenCalledTimes(2);
+        expect(DesignerStorage.updateDesignParams).toHaveBeenLastCalledWith(
+          'existing-id',
+          expect.objectContaining({ width: 4 }),
+          undefined,
+          expect.anything()
+        );
+      });
+
       it('does not let a flush that lands after closing pick the active design', async () => {
         const savedDesign = mockUpdateDesignParams();
         let land = (): void => {};

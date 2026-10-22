@@ -46,6 +46,9 @@ export function trackDesignWrite(write: Promise<boolean>): void {
  */
 export function holdUnsavedEdit(edit: HeldEdit): void {
   heldEdit = edit;
+  // A designer already open on the edit retries it now; otherwise the next
+  // one to open takes it.
+  flushOpenDesign?.();
 }
 
 export function takeUnsavedEdit(): HeldEdit | null {

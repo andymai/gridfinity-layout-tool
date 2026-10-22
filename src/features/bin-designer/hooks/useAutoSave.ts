@@ -118,12 +118,30 @@ export function useAutoSave(): void {
   // What a save currently past its abort checks is writing. `lastSaved*` only
   // updates once the write resolves, so without this the unmount flush would
   // re-issue an identical write for a save already in flight.
-  const inFlight = useRef<{ params: BinParams; config: ExportFileNameConfig } | null>(null);
+  const inFlight = useRef<{
+    params: BinParams;
+    config: ExportFileNameConfig;
+    write?: Promise<WriteOutcome>;
+  } | null>(null);
   // Read behind a function boundary so a check after an await sees the slot as
   // it is now, not as it was narrowed to at the assignment above the await.
   const isInFlight = (params: BinParams, config: ExportFileNameConfig): boolean => {
     const current = inFlight.current;
     return current !== null && current.params === params && current.config === config;
+  };
+
+  const takesHeldEdit = (
+    designId: string,
+    shownParams: BinParams,
+    shownConfig: ExportFileNameConfig
+  ): boolean => {
+    const held = takeUnsavedEdit();
+    return (
+      held !== null &&
+      held.designId === designId &&
+      held.params === shownParams &&
+      held.config === shownConfig
+    );
   };
 
   // The write itself plus the bookkeeping every consumer downstream depends on
@@ -199,6 +217,11 @@ export function useAutoSave(): void {
         });
         return 'saved';
       })();
+      // Kept so a flush that finds this write already under way can report its
+      // outcome rather than its absence.
+      if (isInFlight(paramsToSave, configToSave) && inFlight.current) {
+        inFlight.current = { ...inFlight.current, write };
+      }
       trackDesignWrite(write.then((outcome) => outcome !== 'failed'));
       return write;
     },
@@ -219,7 +242,7 @@ export function useAutoSave(): void {
       }
       // A save already writing exactly this will land on its own; an in-flight
       // save for older params still needs the flush.
-      if (isInFlight(paramsToSave, configToSave)) return null;
+      if (isInFlight(paramsToSave, configToSave)) return inFlight.current?.write ?? null;
       return persist(paramsToSave, configToSave, designId, undefined, writeSession);
     },
     [persist]
@@ -287,16 +310,15 @@ export function useAutoSave(): void {
     // Skip first render (initial mount shouldn't trigger save)
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      const held = takeUnsavedEdit();
-      const retry =
-        held !== null &&
-        held.designId === currentDesignId &&
-        held.params === params &&
-        held.config === exportFileNameConfig;
-      lastSavedParams.current = retry ? null : params;
       lastSavedConfig.current = exportFileNameConfig;
       lastDesignId.current = currentDesignId;
-      return;
+      // An edit the last designer failed to write as it closed falls through
+      // to be saved like a fresh one; anything else on screen is stored.
+      if (!currentDesignId || !takesHeldEdit(currentDesignId, params, exportFileNameConfig)) {
+        lastSavedParams.current = params;
+        return;
+      }
+      lastSavedParams.current = null;
     }
 
     // When switching designs (loadDesign), reset tracking refs without saving.
@@ -370,6 +392,10 @@ export function useAutoSave(): void {
         const state = useDesignerStore.getState();
         const id = state.currentDesignId;
         if (id && state.itemKind === 'bin') {
+          // A closing flush can fail after this designer opened on its edit.
+          if (takesHeldEdit(id, state.params, state.exportFileNameConfig)) {
+            lastSavedParams.current = null;
+          }
           void flushUnsaved(state.params, state.exportFileNameConfig, id, session.current.id);
         }
       }),
