@@ -43,6 +43,10 @@ describe('isStaleAssetError', () => {
   it.each([
     ['Safari dynamic import', 'Kernel init failed: Importing a module script failed.'],
     [
+      'Safari canceled import',
+      'Kernel init failed: Importing a module script is canceled. (first attempt: Kernel init failed: Importing a module script is canceled.)',
+    ],
+    [
       'Firefox dynamic import',
       'Kernel init failed: error loading dynamically imported module: https://x/assets/occt-wasm-C7KBdFbv.js',
     ],

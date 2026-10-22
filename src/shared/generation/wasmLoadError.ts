@@ -34,6 +34,8 @@ const STALE_ASSET_SIGNATURES = [
   'Failed to fetch',
   'error loading dynamically imported module',
   'Importing a module script failed',
+  // Safari again, when the network layer drops the import mid-flight.
+  'Importing a module script is canceled',
   'NetworkError when attempting to fetch resource',
   // Safari's fetch rejection, which carries no detail at all.
   'Load failed',
