@@ -1,0 +1,28 @@
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_e7eeec410157f8::t_700a90a99c5455 265-270
+  s_e7eeec410157f8::t_8c30db5079cce8 287,293
+src/features/bin-designer/utils/openParentDesign.ts
+  s_e7eeec410157f8::t_700a90a99c5455 2,4,7,18-26
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.test.tsx
+  s_e7eeec410157f8::t_aa5606c68ad2d8 148-150,155-172
+  s_e7eeec410157f8::t_c8d44e5e76ff11 173-174
+src/features/bin-designer/utils/openParentDesign.test.ts
+  s_e7eeec410157f8::t_a628255529ee1b 52-53,61
+  s_e7eeec410157f8::t_aa5606c68ad2d8 1-51,54-60,62-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2e005697046ba7f7e86c36df3e678da05f1b66fb",
+  "prompts": {},
+  "sessions": {
+    "s_e7eeec410157f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "277c7c45-b167-4b5b-b2a1-7d22af2a8870",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
