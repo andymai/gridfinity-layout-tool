@@ -354,7 +354,9 @@ export function useAutoSave(): void {
           if (pendingWrites.current.size === 0) return saved;
           if (round === MAX_SETTLE_ROUNDS) return false;
           const results = await Promise.allSettled([...pendingWrites.current]);
-          saved = results.every((r) => r.status === 'fulfilled' && r.value);
+          // A failure stays reported even if a later round succeeds: the write
+          // that failed may belong to a design no longer open to retry.
+          saved = saved && results.every((r) => r.status === 'fulfilled' && r.value);
         }
       }),
     [flushUnsaved]

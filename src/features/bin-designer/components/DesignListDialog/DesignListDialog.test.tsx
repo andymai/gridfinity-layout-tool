@@ -8,6 +8,7 @@ import { INITIAL_TOAST_STATE, useToastStore } from '@/core/store/toast';
 import type { SavedDesign } from '@/features/bin-designer/types';
 import { designId } from '@/core/types';
 import { loadRegistry, upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
+import { registerDesignSaveSettler } from '@/features/bin-designer/hooks/designSaveGate';
 
 vi.mock('@/features/bin-designer/storage/DesignerStorage');
 
@@ -195,9 +196,17 @@ describe('DesignListDialog', () => {
 
   it('opens a new variant through its URL, after the parent has been saved', async () => {
     const DesignerStorage = await import('@/features/bin-designer/storage/DesignerStorage');
-    vi.mocked(DesignerStorage.createVariant).mockResolvedValue(
-      ok({ ...mockDesigns[0], id: designId('design-variant'), name: 'Tool Holder (Variant)' })
-    );
+    const order: string[] = [];
+    const unregister = registerDesignSaveSettler(() => {
+      order.push('settle');
+      return Promise.resolve(true);
+    });
+    vi.mocked(DesignerStorage.createVariant).mockImplementation(() => {
+      order.push('create');
+      return Promise.resolve(
+        ok({ ...mockDesigns[0], id: designId('design-variant'), name: 'Tool Holder (Variant)' })
+      );
+    });
     render(<DesignListDialog open={true} onClose={onClose} />);
 
     await waitFor(() => {
@@ -212,8 +221,33 @@ describe('DesignListDialog', () => {
     await waitFor(() => {
       expect(window.location.search).toBe('?id=design-variant');
     });
+    expect(order).toEqual(['settle', 'create']);
     expect(useDesignerStore.getState().currentDesignId).toBe('design-1');
     window.history.replaceState(null, '', '/');
+    unregister();
+  });
+
+  it("does not create a variant while the parent's edits could not be saved", async () => {
+    const DesignerStorage = await import('@/features/bin-designer/storage/DesignerStorage');
+    const unregister = registerDesignSaveSettler(() => Promise.resolve(false));
+    render(<DesignListDialog open={true} onClose={onClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Tool Holder')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getAllByRole('button', { name: /more actions/i })[0]);
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: /create variant/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('menuitem', { name: /create variant/i }));
+
+    await waitFor(() => {
+      expect(useToastStore.getState().toasts.some((toast) => toast.message === 'Save failed')).toBe(
+        true
+      );
+    });
+    expect(DesignerStorage.createVariant).not.toHaveBeenCalled();
+    unregister();
   });
 
   it('deletes a design with two-click confirmation', async () => {

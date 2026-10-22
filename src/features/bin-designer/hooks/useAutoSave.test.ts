@@ -759,6 +759,55 @@ describe('useAutoSave', () => {
         expect(settled).toBe(false);
       });
 
+      it("still reports a switched-away design's failed write after the open one saves", async () => {
+        mockUpdateDesignParams();
+        let fail = (): void => {};
+        vi.mocked(DesignerStorage.updateDesignParams).mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              fail = () => resolve(err(storageUnavailable('indexedDB')));
+            })
+        );
+        useDesignerStore.setState({ currentDesignId: 'existing-id' });
+        renderHook(() => useAutoSave());
+        act(() => {
+          useDesignerStore.getState().setParam('width', 4);
+        });
+        await act(async () => {
+          useDesignerStore.getState().loadDesign({
+            id: designId('other-id'),
+            name: 'Other Bin',
+            params: { ...DEFAULT_BIN_PARAMS, width: 2 },
+            thumbnail: null,
+            exportFileNameConfig: null,
+            createdAt: '2026-01-22T00:00:00.000Z',
+            updatedAt: '2026-01-22T00:01:00.000Z',
+          });
+        });
+        // The open design's edit arrives while the first round still waits on
+        // the failing write, so it is saved in a later round.
+        let settled: boolean | null = null;
+        await act(async () => {
+          void settleDesignSaves().then((saved) => {
+            settled = saved;
+          });
+        });
+        act(() => {
+          useDesignerStore.getState().setParam('width', 3);
+        });
+        await act(async () => {
+          fail();
+        });
+
+        expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
+          'other-id',
+          expect.objectContaining({ width: 3 }),
+          undefined,
+          expect.anything()
+        );
+        expect(settled).toBe(false);
+      });
+
       it('reports a write that failed', async () => {
         vi.mocked(DesignerStorage.updateDesignParams).mockResolvedValue(
           err(storageUnavailable('indexedDB'))

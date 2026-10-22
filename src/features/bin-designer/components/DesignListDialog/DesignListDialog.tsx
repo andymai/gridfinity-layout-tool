@@ -36,6 +36,7 @@ import { groupByLineage, branchesOf } from './designLineage';
 import type { SortOption } from './designListSort';
 import { removeRegistryEntry, renameRegistryEntry } from '../../store/customBinRegistry';
 import { useDesignerStore } from '../../store';
+import { settleDesignSaves } from '../../hooks/designSaveGate';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import type { ItemKind } from '@/shared/types/item';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
@@ -342,6 +343,12 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   // between this and Duplicate becomes visible.
   const handleCreateVariant = useCallback(
     async (design: SavedDesign) => {
+      // The variant is built from the parent's stored params, and a parent
+      // save that lands mid-creation would enumerate variants before this one.
+      if (!(await settleDesignSaves())) {
+        addToast({ message: t('header.saveFailed'), type: 'error', duration: 4000 });
+        return;
+      }
       const name = `${design.name} (${t('binDesigner.variants.label')})`;
       const result = await createVariant(design.id, name, {});
       if (isOk(result)) {
