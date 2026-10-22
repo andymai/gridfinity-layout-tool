@@ -1,0 +1,51 @@
+src/features/bin-designer/storage/designVariants.test.ts
+  s_e7eeec410157f8::t_e57706cf65fc92 15
+  s_e7eeec410157f8::t_6f7d4bf808e3ee 125-140
+src/features/bin-designer/hooks/designSaveGate.ts
+  s_e7eeec410157f8::t_31923498fc3966 10-11,22-23
+src/features/bin-designer/hooks/useAutoSave.ts
+  s_e7eeec410157f8::t_31923498fc3966 32,341-342,346-355,357
+src/features/bin-designer/storage/DesignerStorage.ts
+  s_e7eeec410157f8::t_038a3344c9eea0 63-68,71-82,166,502-504,542-546,660-662
+src/features/bin-designer/storage/DesignerStorage.test.ts
+  s_e7eeec410157f8::t_d830331e4e187f 31
+  s_e7eeec410157f8::t_704f3249c46b0d 556-587
+src/features/bin-designer/hooks/useAutoSave.test.ts
+  s_e7eeec410157f8::t_2fb018e0e2e94a 703-757
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_e7eeec410157f8::t_3f1b618ceecb2f 360-361,368
+src/features/bin-designer/hooks/useDesignerUrlSync.ts
+  s_e7eeec410157f8::t_ef66b921cbecb3 25-28,74,76
+  s_e7eeec410157f8::t_76cb5c19b4a343 23,38,40,69,71-73,75,78-94,96-97,99-102
+  s_e7eeec410157f8::t_958d5d96c235ff 70,77,95,98
+  s_026b7789993b67::t_2daca95a68a28a 24,103-110
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.test.tsx
+  s_e7eeec410157f8::t_ad7f89fd6a3d18 196-218
+src/features/bin-designer/hooks/useDesignerUrlSync.test.ts
+  s_e7eeec410157f8::t_958d5d96c235ff 30-31,33-34,72,74-75
+  s_e7eeec410157f8::t_3dd09bc4c0ede3 165-234
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d4b62edbdf31b08f2262530538f010028d5512d2",
+  "prompts": {},
+  "sessions": {
+    "s_026b7789993b67": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9840488a-f188-474e-bb47-4c700a1bb0d4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_e7eeec410157f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "277c7c45-b167-4b5b-b2a1-7d22af2a8870",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
