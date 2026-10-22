@@ -60,9 +60,25 @@ function generateDesignId(): DesignId {
 
 type SaveDesignInput = Omit<SavedDesign, 'id' | 'createdAt' | 'updatedAt'> & {
   id?: DesignId;
-  /** The kept thumbnail no longer shows these params; store it as outdated. */
-  thumbnailOutdated?: boolean;
+  /**
+   * How the thumbnail relates to the params being saved. Omitted, an image the
+   * row already holds keeps its stored version and any other image is current,
+   * so a rename cannot vouch for an image that predates the params.
+   */
+  thumbnailState?: 'fresh' | 'outdated';
 };
+
+// Unversioned reads as outdated, which is what queues a regeneration.
+function thumbnailVersionFor(
+  design: SaveDesignInput,
+  existing: SavedDesign | undefined
+): number | undefined {
+  if (!design.thumbnail || design.thumbnailState === 'outdated') return undefined;
+  if (design.thumbnailState !== 'fresh' && design.thumbnail === existing?.thumbnail) {
+    return existing.thumbnailVersion;
+  }
+  return THUMBNAIL_VERSION;
+}
 
 const pendingSaves = new Map<DesignId, Promise<unknown>>();
 
@@ -147,9 +163,7 @@ async function writeDesign(design: SaveDesignInput): Promise<Result<SavedDesign,
       id: design.id ?? generateDesignId(),
       name: design.name,
       thumbnail: design.thumbnail ?? null,
-      // Unversioned reads as outdated, which is what queues a regeneration.
-      thumbnailVersion:
-        design.thumbnail && !design.thumbnailOutdated ? THUMBNAIL_VERSION : undefined,
+      thumbnailVersion: thumbnailVersionFor(design, existing),
       exportFileNameConfig: design.exportFileNameConfig ?? null,
       createdAt,
       updatedAt: now,
@@ -485,7 +499,9 @@ export async function updateDesignParams(
   const saved = await saveDesign({
     ...loadResult.value,
     params,
-    ...(thumbnail !== undefined ? { thumbnail } : { thumbnailOutdated: true }),
+    ...(thumbnail !== undefined
+      ? { thumbnail, thumbnailState: 'fresh' as const }
+      : { thumbnailState: 'outdated' as const }),
     ...(exportFileNameConfig !== undefined ? { exportFileNameConfig } : {}),
   });
   if (isErr(saved)) return saved;
@@ -523,7 +539,11 @@ export async function propagateToVariants(
     let updated = 0;
     for (const variant of variants) {
       const { params: resolved } = applyOverrides(nextParams, variant.overrides);
-      const result = await saveDesign({ ...variant, params: resolved });
+      const result = await saveDesign({
+        ...variant,
+        params: resolved,
+        thumbnailState: 'outdated',
+      });
       if (isOk(result)) updated++;
     }
     return ok(updated);
@@ -637,7 +657,9 @@ export function updateDesignThumbnail(
 ): Promise<Result<SavedDesign, StorageError>> {
   return inSaveOrder(id, async () => {
     const loadResult = await loadDesign(id);
-    return isErr(loadResult) ? loadResult : writeDesign({ ...loadResult.value, thumbnail });
+    return isErr(loadResult)
+      ? loadResult
+      : writeDesign({ ...loadResult.value, thumbnail, thumbnailState: 'fresh' });
   });
 }
 /**

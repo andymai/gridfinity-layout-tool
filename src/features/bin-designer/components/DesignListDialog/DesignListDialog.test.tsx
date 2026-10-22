@@ -193,6 +193,29 @@ describe('DesignListDialog', () => {
     });
   });
 
+  it('opens a new variant through its URL, after the parent has been saved', async () => {
+    const DesignerStorage = await import('@/features/bin-designer/storage/DesignerStorage');
+    vi.mocked(DesignerStorage.createVariant).mockResolvedValue(
+      ok({ ...mockDesigns[0], id: designId('design-variant'), name: 'Tool Holder (Variant)' })
+    );
+    render(<DesignListDialog open={true} onClose={onClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Tool Holder')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getAllByRole('button', { name: /more actions/i })[0]);
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: /create variant/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('menuitem', { name: /create variant/i }));
+
+    await waitFor(() => {
+      expect(window.location.search).toBe('?id=design-variant');
+    });
+    expect(useDesignerStore.getState().currentDesignId).toBe('design-1');
+    window.history.replaceState(null, '', '/');
+  });
+
   it('deletes a design with two-click confirmation', async () => {
     const DesignerStorage = await import('@/features/bin-designer/storage/DesignerStorage');
     render(<DesignListDialog open={true} onClose={onClose} />);

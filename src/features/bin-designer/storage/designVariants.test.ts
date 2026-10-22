@@ -12,6 +12,7 @@ import {
   createVariant,
   updateVariantOverrides,
   detachVariant,
+  updateDesignThumbnail,
 } from './DesignerStorage';
 import { closeDesignerDb } from './designerDb';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
@@ -119,6 +120,22 @@ describe('design variants', () => {
       const reloaded = expectOk(await loadDesign(variant.id));
       expect(reloaded.params?.height).toBe(12);
       expect(reloaded.params?.cutouts?.[0].width).toBe(12.7);
+    });
+
+    it("marks a rewritten variant's thumbnail outdated", async () => {
+      await seedParent();
+      const variant = expectOk(
+        await createVariant(PARENT, '1/2"', { cutouts: { bit: { width: 12.7 } } })
+      );
+      expectOk(await updateDesignThumbnail(variant.id, 'data:image/png;base64,variant'));
+
+      expectOk(
+        await updateDesignParams(PARENT, parentParams({ height: 12, cutouts: [bit('bit')] }))
+      );
+
+      const reloaded = expectOk(await loadDesign(variant.id));
+      expect(reloaded.thumbnail).toBe('data:image/png;base64,variant');
+      expect(reloaded.thumbnailVersion).toBeUndefined();
     });
 
     it('rewrites every variant, not just the first', async () => {

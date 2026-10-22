@@ -28,6 +28,7 @@ import {
   clearDesignPublishedId,
   setDesignPublishedId,
   updateDesignThumbnail,
+  updateDesignName,
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import { THUMBNAIL_VERSION } from '../types';
@@ -550,6 +551,38 @@ describe('DesignerStorage', () => {
 
       expect(value.thumbnail).toBe('data:image/png;base64,old');
       expect(value.thumbnailVersion).toBeUndefined();
+    });
+
+    it('keeps an outdated thumbnail outdated through a later rename', async () => {
+      await saveDesign({
+        id: designId('thumb-test'),
+        name: 'Thumb Test',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: 'data:image/png;base64,old',
+        exportFileNameConfig: null,
+      });
+      await updateDesignParams(designId('thumb-test'), { ...DEFAULT_BIN_PARAMS, width: 4 });
+
+      const value = expectOk(await updateDesignName(designId('thumb-test'), 'Renamed'));
+
+      expect(value.thumbnailVersion).toBeUndefined();
+    });
+
+    it('marks a regenerated thumbnail current even when its bytes match the old one', async () => {
+      await saveDesign({
+        id: designId('thumb-test'),
+        name: 'Thumb Test',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: 'data:image/png;base64,same',
+        exportFileNameConfig: null,
+      });
+      await updateDesignParams(designId('thumb-test'), { ...DEFAULT_BIN_PARAMS, width: 4 });
+
+      const value = expectOk(
+        await updateDesignThumbnail(designId('thumb-test'), 'data:image/png;base64,same')
+      );
+
+      expect(value.thumbnailVersion).toBe(THUMBNAIL_VERSION);
     });
 
     it('stamps a thumbnail passed with the params as current', async () => {

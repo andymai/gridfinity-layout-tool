@@ -29,6 +29,7 @@ import { designId as toDesignId } from '@/core/types';
 import type { BinParams, ExportFileNameConfig, GenerationStatus } from '../types';
 
 const AUTO_SAVE_DELAY_MS = 1000;
+const MAX_SETTLE_ROUNDS = 5;
 
 /**
  * Read abort state through a function call to prevent TypeScript
@@ -337,15 +338,23 @@ export function useAutoSave(): void {
     };
   }, [flushUnsaved]);
 
+  // The editor stays live while a write lands, so an edit made meanwhile gets
+  // its own round; the cap only stops a user who never stops typing.
   useEffect(
     () =>
       registerDesignSaveSettler(async () => {
-        const state = useDesignerStore.getState();
-        const id = state.currentDesignId;
-        if (id && state.itemKind === 'bin') {
-          flushUnsaved(state.params, state.exportFileNameConfig, id, session.current.id);
+        let saved = true;
+        for (let round = 0; round < MAX_SETTLE_ROUNDS; round += 1) {
+          const state = useDesignerStore.getState();
+          const id = state.currentDesignId;
+          if (id && state.itemKind === 'bin') {
+            flushUnsaved(state.params, state.exportFileNameConfig, id, session.current.id);
+          }
+          if (pendingWrites.current.size === 0) return saved;
+          const results = await Promise.allSettled([...pendingWrites.current]);
+          saved = results.every((r) => r.status === 'fulfilled' && r.value);
         }
-        await Promise.allSettled([...pendingWrites.current]);
+        return saved;
       }),
     [flushUnsaved]
   );

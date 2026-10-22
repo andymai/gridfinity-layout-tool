@@ -7,7 +7,8 @@
  * the user just made, or a variant without its parent's change.
  */
 
-type Settle = () => Promise<void>;
+/** Resolves false when an edit could not be written, so the switch must not go ahead. */
+type Settle = () => Promise<boolean>;
 
 let registered: Settle | null = null;
 
@@ -18,6 +19,6 @@ export function registerDesignSaveSettler(settle: Settle): () => void {
   };
 }
 
-export function settleDesignSaves(): Promise<void> {
-  return registered ? registered() : Promise.resolve();
+export function settleDesignSaves(): Promise<boolean> {
+  return registered ? registered() : Promise.resolve(true);
 }

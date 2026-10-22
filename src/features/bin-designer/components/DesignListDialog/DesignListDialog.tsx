@@ -357,14 +357,15 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         // Opened rather than just listed. A variant is created with no claims,
         // so it is identical to its parent until the user claims something, and
         // leaving them in the list to find it makes the next step invisible.
-        loadDesign(result.value);
+        // Through the URL, like handleLoad: the parent's pending edit lands and
+        // propagates into the new variant before it is read.
         navigateToDesign(result.value.id);
         onClose();
       } else {
         showErrorToast(result.error);
       }
     },
-    [addToast, t, loadDesign, navigateToDesign, onClose]
+    [addToast, t, navigateToDesign, onClose]
   );
 
   const handleDelete = useCallback(

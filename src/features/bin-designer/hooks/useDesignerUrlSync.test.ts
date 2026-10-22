@@ -27,7 +27,11 @@ describe('useDesignerUrlSync', () => {
     });
   });
 
+  let unregister = (): void => {};
+
   afterEach(() => {
+    unregister();
+    unregister = () => {};
     window.history.replaceState(null, '', originalHref);
   });
 
@@ -65,10 +69,10 @@ describe('useDesignerUrlSync', () => {
     it("reads the design only once the open design's saves have settled", async () => {
       vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(ok(makeSavedDesign('next')));
       let release = (): void => {};
-      const unregister = registerDesignSaveSettler(
+      unregister = registerDesignSaveSettler(
         () =>
-          new Promise<void>((resolve) => {
-            release = resolve;
+          new Promise<boolean>((resolve) => {
+            release = () => resolve(true);
           })
       );
       window.history.replaceState(null, '', '/designer?id=next');
@@ -85,7 +89,6 @@ describe('useDesignerUrlSync', () => {
       await waitFor(() => {
         expect(useDesignerStore.getState().currentDesignId).toBe('next');
       });
-      unregister();
     });
 
     it('does not load when URL has no ?id= param', async () => {
@@ -156,6 +159,76 @@ describe('useDesignerUrlSync', () => {
         expect(DesignerStorage.loadDesign).toHaveBeenCalledWith('design-2');
         expect(useDesignerStore.getState().currentDesignId).toBe('design-2');
       });
+    });
+  });
+
+  describe('while the open design is still saving', () => {
+    function blockSaves(): (saved: boolean) => void {
+      let release: (saved: boolean) => void = () => {};
+      unregister = registerDesignSaveSettler(
+        () =>
+          new Promise<boolean>((resolve) => {
+            release = resolve;
+          })
+      );
+      return (saved) => release(saved);
+    }
+
+    function navigate(url: string): void {
+      act(() => {
+        window.history.pushState(null, '', url);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+    }
+
+    beforeEach(() => {
+      useDesignerStore.setState({ currentDesignId: 'open' });
+      window.history.replaceState(null, '', '/designer?id=open');
+      vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(ok(makeSavedDesign('picked')));
+    });
+
+    it('drops a pick that Back undid before the saves settled', async () => {
+      const release = blockSaves();
+      renderHook(() => useDesignerUrlSync());
+
+      navigate('/designer?id=picked');
+      navigate('/designer?id=open');
+      await act(async () => {
+        release(true);
+      });
+
+      expect(DesignerStorage.loadDesign).not.toHaveBeenCalled();
+      expect(useDesignerStore.getState().currentDesignId).toBe('open');
+      expect(window.location.search).toBe('?id=open');
+    });
+
+    it('drops the pick when the designer closes before the saves settle', async () => {
+      const release = blockSaves();
+      const { unmount } = renderHook(() => useDesignerUrlSync());
+
+      navigate('/designer?id=picked');
+      unmount();
+      await act(async () => {
+        release(true);
+      });
+
+      expect(DesignerStorage.loadDesign).not.toHaveBeenCalled();
+      expect(useDesignerStore.getState().currentDesignId).toBe('open');
+    });
+
+    it('keeps the open design when its edits could not be saved', async () => {
+      const release = blockSaves();
+      renderHook(() => useDesignerUrlSync());
+
+      navigate('/designer?id=picked');
+      await act(async () => {
+        release(false);
+      });
+
+      expect(DesignerStorage.loadDesign).not.toHaveBeenCalled();
+      expect(useDesignerStore.getState().currentDesignId).toBe('open');
+      expect(useDesignerStore.getState().saveStatus).toBe('error');
+      expect(window.location.search).toBe('?id=open');
     });
   });
 

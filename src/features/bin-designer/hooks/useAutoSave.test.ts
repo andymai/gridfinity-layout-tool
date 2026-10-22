@@ -700,6 +700,61 @@ describe('useAutoSave', () => {
         expect(settled).toBe(true);
       });
 
+      it('writes an edit made while the first write was landing before resolving', async () => {
+        const savedDesign = mockUpdateDesignParams();
+        let land = (): void => {};
+        vi.mocked(DesignerStorage.updateDesignParams).mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              land = () => resolve(ok(savedDesign));
+            })
+        );
+        useDesignerStore.setState({ currentDesignId: 'existing-id' });
+        renderHook(() => useAutoSave());
+        act(() => {
+          useDesignerStore.getState().setParam('width', 4);
+        });
+
+        let settled: boolean | null = null;
+        await act(async () => {
+          void settleDesignSaves().then((saved) => {
+            settled = saved;
+          });
+        });
+        act(() => {
+          useDesignerStore.getState().setParam('width', 5);
+        });
+        await act(async () => {
+          land();
+        });
+
+        expect(settled).toBe(true);
+        expect(DesignerStorage.updateDesignParams).toHaveBeenLastCalledWith(
+          'existing-id',
+          expect.objectContaining({ width: 5 }),
+          undefined,
+          expect.anything()
+        );
+      });
+
+      it('reports a write that failed', async () => {
+        vi.mocked(DesignerStorage.updateDesignParams).mockResolvedValue(
+          err(storageUnavailable('indexedDB'))
+        );
+        useDesignerStore.setState({ currentDesignId: 'existing-id' });
+        renderHook(() => useAutoSave());
+        act(() => {
+          useDesignerStore.getState().setParam('width', 4);
+        });
+
+        let settled: boolean | null = null;
+        await act(async () => {
+          settled = await settleDesignSaves();
+        });
+
+        expect(settled).toBe(false);
+      });
+
       it("waits for a switched-away design's write that is still landing", async () => {
         const savedDesign = mockUpdateDesignParams();
         let land = (): void => {};
