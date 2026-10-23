@@ -322,6 +322,12 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
     keywords: ['wall text', 'engrave walls', 'emboss', 'sign', 'caption'],
   },
   {
+    id: 'opt-floor-text',
+    labelKey: 'binDesigner.floor.text.heading',
+    section: 'bd-floor-pattern',
+    keywords: ['floor text', 'engrave floor', 'bottom text', 'inside label', 'caption'],
+  },
+  {
     id: 'opt-wall-label-slots',
     labelKey: 'binDesigner.walls.labelSlots.heading',
     section: 'bd-wall-style',
