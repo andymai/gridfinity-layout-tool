@@ -10,7 +10,8 @@
  */
 
 import { FeatureTag } from '@/shared/types/generation';
-import { isSocketlessBase } from './base';
+import { floorTextHostBlock, isSocketlessBase } from './base';
+import type { BaseConfig, BinStyle } from './base';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import type { BaseStyle, WallTextSide } from './index';
 
@@ -558,10 +559,17 @@ export function isSingleColor(
  * the full `BinParams` type.
  */
 export interface ActiveZonesParams {
+  /** Absent reads as a standard bin, for callers that never carry floor text. */
+  readonly style?: BinStyle;
   readonly base: {
     readonly style: BaseStyle;
     readonly stackingLip: boolean;
-  };
+  } & Partial<
+    Pick<
+      BaseConfig,
+      'solid' | 'spacer' | 'lightweight' | 'lightweightMode' | 'tile' | 'feet' | 'trayBottom'
+    >
+  >;
   readonly label: {
     readonly enabled: boolean;
     readonly mode?: 'text' | 'socket';
@@ -735,7 +743,13 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
       (t) => typeof t === 'string' && t.trim().length > 0
     );
 
-  const hasFloorText = !isPartialMask(p.cellMask) && (p.surfaceText?.floorText ?? '').trim() !== '';
+  const hasFloorText =
+    (p.surfaceText?.floorText ?? '').trim() !== '' &&
+    floorTextHostBlock({
+      style: p.style ?? 'standard',
+      cellMask: p.cellMask,
+      base: { solid: false, spacer: false, lightweight: false, ...p.base },
+    }) === null;
 
   const zones = new Set<ColorZone>(['body']);
   // The Base zone paints FeatureTag.SOCKET, which only the socket branch of

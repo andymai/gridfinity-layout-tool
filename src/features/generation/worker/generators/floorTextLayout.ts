@@ -13,15 +13,16 @@
  */
 
 import type { BinParams, TextMode, TextQuarterTurn } from '@/shared/types/bin';
-import { isNestingBase, resolveFloorTextStyle } from '@/shared/types/bin';
-import { isPartialMask } from '@/shared/utils/cellMask';
+import { floorTextHostBlock, resolveFloorTextStyle } from '@/shared/types/bin';
 import { maximalClearRects, type WallRect } from '@/shared/utils/maximalClearRects';
 import { planTypeBlock, type TypeBlockPlan } from '@/shared/utils/typePlan';
-import type { ResolvedTextStyle } from '@/shared/utils/wallTextPlan';
+import { settleInside, type ResolvedTextStyle } from '@/shared/utils/wallTextPlan';
+import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import type { WorldKeepOut } from './dividerPatterns';
 import { pinKeepOuts, standingFeatureKeepOuts } from './floorPatterns';
 import { resolveFloorRaises } from './floorRaisePlan';
 import { BOX_CORNER_RADIUS } from './generatorConstants';
+import { taperInsetAt } from './overhang';
 import type { BinDimensions } from './pipeline/types';
 import { getTypeMeasurer, textOpForMode } from './textBuilder';
 
@@ -58,10 +59,9 @@ export interface FloorTextLayout {
 /** Whether the bin has a closed, flat floor of its own for the caption to sit on. */
 export function floorTextApplies(params: BinParams, dim: BinDimensions): boolean {
   if ((params.surfaceText?.floorText?.trim() ?? '') === '') return false;
-  if (params.style !== 'standard' || dim.solid || dim.isSlotted || dim.isTile) return false;
-  if (dim.liteFloorOpen || isNestingBase(params.base) || isPartialMask(params.cellMask)) {
-    return false;
-  }
+  // `liteFloorOpen` also covers detachable feet that resolve no placements,
+  // which leave lightweight live where the shared predicate assumes it inert.
+  if (floorTextHostBlock(params) !== null || dim.liteFloorOpen) return false;
   return dim.innerW > 0 && dim.innerD > 0;
 }
 
@@ -72,6 +72,24 @@ function toRect(k: WorldKeepOut, dim: BinDimensions): WallRect {
     minZ: k.yMin - dim.innerOffsetY,
     maxZ: k.yMax - dim.innerOffsetY,
   };
+}
+
+/**
+ * Detachable-feet screw bores. Unlike the blind pin recesses they run through
+ * the floor, so an engraving loses strokes there and an emboss bridges the
+ * opening, whatever the finish.
+ */
+function screwBoreRects(params: BinParams, dim: BinDimensions): WallRect[] {
+  if (!dim.detachableFeet) return [];
+  const screw = resolveDetachableFeet(params).screw;
+  if (!screw) return [];
+  const r = screw.diameterMm / 2;
+  return screw.positions.map(([x, y]) => ({
+    minU: x - r - dim.innerOffsetX,
+    maxU: x + r - dim.innerOffsetX,
+    minZ: y - r - dim.innerOffsetY,
+    maxZ: y + r - dim.innerOffsetY,
+  }));
 }
 
 /** Square around each insert pocket, wide enough for either orientation. */
@@ -153,11 +171,17 @@ export function computeFloorTextLayout(
   // rounded cavity corner of radius r.
   const cornerR = Math.max(BOX_CORNER_RADIUS - params.wallThickness, 0);
   const inset = cornerR * (1 - Math.SQRT1_2);
+  // A tapered outer wall leans inboard toward the base, most at the glyphs'
+  // lowest point, and the cavity follows it on each tapered side.
+  const taper = dim.overhang.taper;
+  const lowestZ = style.mode === 'engrave' ? dim.floorThickness - depth : dim.floorThickness;
+  const lean = (side: number): number =>
+    taper ? taperInsetAt(taper, side, lowestZ, dim.wallHeight) : 0;
   const bounds: WallRect = {
-    minU: -dim.innerW / 2 + inset,
-    maxU: dim.innerW / 2 - inset,
-    minZ: -dim.innerD / 2 + inset,
-    maxZ: dim.innerD / 2 - inset,
+    minU: -dim.innerW / 2 + inset + lean(taper?.left ?? 0),
+    maxU: dim.innerW / 2 - inset - lean(taper?.right ?? 0),
+    minZ: -dim.innerD / 2 + inset + lean(taper?.front ?? 0),
+    maxZ: dim.innerD / 2 - inset - lean(taper?.back ?? 0),
   };
   const keepOuts = [
     ...standingFeatureKeepOuts(params, dim),
@@ -165,6 +189,7 @@ export function computeFloorTextLayout(
   ];
   const obstacles = [
     ...keepOuts.map((k) => toRect(k, dim)),
+    ...screwBoreRects(params, dim),
     ...insertRects(params),
     ...raisedFloorRects(params, dim),
   ];
@@ -176,10 +201,13 @@ export function computeFloorTextLayout(
   for (const rect of maximalClearRects(bounds, obstacles)) {
     const w = rect.maxU - rect.minU;
     const d = rect.maxZ - rect.minZ;
-    const plan = planTypeBlock(
+    const fitted = planTypeBlock(
       { text, style, host: sideways ? { width: d, depth: w } : { width: w, depth: d } },
       measurer
     );
+    // An offset or an optically overhung letter can carry the ink past the
+    // stretch it was fitted to, onto an obstacle bounding it.
+    const plan = fitted && (sideways ? settleInside(fitted, d, w) : settleInside(fitted, w, d));
     if (!plan) continue;
     const area = w * d;
     if (

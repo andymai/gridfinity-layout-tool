@@ -25,6 +25,10 @@ import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, SurfaceTextConfig } from '@/shared/types/bin';
 import { FeatureTag } from './featureTags';
 import { deriveDimensions } from './pipeline/context';
+import { computeFloorTextLayout, type FloorTextLayout } from './floorTextLayout';
+import { standingFeatureKeepOuts } from './floorPatterns';
+import { taperInsetAt } from './overhang';
+import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import type { MeshData } from '@/features/generation/bridge/types';
 
 beforeAll(async () => {
@@ -200,5 +204,100 @@ describe('floor text scenarios', () => {
     const base = { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw' as const };
     const result = generateBin(makeParams(floor('ABC'), { base }), undefined, true);
     assertWatertight(result, 'floor text export');
+  });
+});
+
+type Box = { minX: number; maxX: number; minY: number; maxY: number };
+
+// Settled ink may sit flush against an obstacle, so touching is not overlap.
+const overlaps = (a: Box, b: Box, eps = 1e-6): boolean =>
+  a.minX < b.maxX - eps && a.maxX > b.minX + eps && a.minY < b.maxY - eps && a.maxY > b.minY + eps;
+
+function layoutOf(params: BinParams): {
+  layout: FloorTextLayout;
+  dim: ReturnType<typeof deriveDimensions>;
+} {
+  const dim = deriveDimensions(params, false);
+  const layout = computeFloorTextLayout(params, dim);
+  if (!layout) throw new Error('expected a floor caption');
+  return { layout, dim };
+}
+
+describe('floor text placement', () => {
+  it('keeps an edge-anchored caption inside a tapered wall', () => {
+    const overhang: BinParams['overhang'] = {
+      left: 10,
+      right: 0,
+      front: 0,
+      back: 0,
+      feet: false,
+      enabled: true,
+      taper: {
+        enabled: true,
+        profile: 'chamfer',
+        bandHeight: 16,
+        left: 10,
+        right: 0,
+        front: 0,
+        back: 0,
+      },
+    };
+    const { layout, dim } = layoutOf(
+      makeParams(floor('ABCDEF', { anchor: 'left', mode: 'emboss' }), { overhang })
+    );
+    const taper = dim.overhang.taper;
+    if (!taper) throw new Error('expected a taper');
+    const lean = taperInsetAt(taper, taper.left, dim.floorThickness, dim.wallHeight);
+    expect(lean).toBeGreaterThan(1);
+    expect(layout.ink.minX).toBeGreaterThanOrEqual(-dim.innerW / 2 + lean - 1e-6);
+  });
+
+  it.each(['engrave', 'emboss'] as const)(
+    'keeps %s text off the screw bores through a detachable floor',
+    (mode) => {
+      const base = {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'screw' as const,
+        feet: 'detachable' as const,
+      };
+      const params = makeParams(floor('ABCDEFGH', { anchor: 'bottom-left', mode }), { base });
+      const { layout, dim } = layoutOf(params);
+      const screw = resolveDetachableFeet(params).screw;
+      if (!screw) throw new Error('expected screw bores');
+      const r = screw.diameterMm / 2;
+      for (const [x, y] of screw.positions) {
+        const cx = x - dim.innerOffsetX;
+        const cy = y - dim.innerOffsetY;
+        const bore = { minX: cx - r, maxX: cx + r, minY: cy - r, maxY: cy + r };
+        expect(overlaps(layout.ink, bore), `bore at ${cx}, ${cy}`).toBe(false);
+      }
+    }
+  );
+
+  it('holds an offset caption off the divider beside it', () => {
+    const compartments = {
+      ...DEFAULT_BIN_PARAMS.compartments,
+      cols: 2,
+      rows: 1,
+      cells: [0, 1],
+    };
+    for (const x of [-30, 30]) {
+      const params = makeParams(floor('AB', { anchor: 'center', offset: { x, y: 0 } }), {
+        width: 3,
+        compartments,
+      });
+      const { layout, dim } = layoutOf(params);
+      expect(layout.ink.minX).toBeGreaterThanOrEqual(-dim.innerW / 2);
+      expect(layout.ink.maxX).toBeLessThanOrEqual(dim.innerW / 2);
+      for (const k of standingFeatureKeepOuts(params, dim)) {
+        const keepOut = {
+          minX: k.xMin - dim.innerOffsetX,
+          maxX: k.xMax - dim.innerOffsetX,
+          minY: k.yMin - dim.innerOffsetY,
+          maxY: k.yMax - dim.innerOffsetY,
+        };
+        expect(overlaps(layout.ink, keepOut), `offset ${x}`).toBe(false);
+      }
+    }
   });
 });

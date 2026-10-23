@@ -3,6 +3,7 @@ import { hexContrast } from '@/shared/utils/color';
 import type { BinParams, TextMode } from '../types';
 import {
   WALL_TEXT_SIDES,
+  floorTextHostBlock,
   resolveFloorTextStyle,
   resolveTextStyle,
   resolveWallTextStyle,
@@ -61,7 +62,7 @@ export function flatTextSurfaces(p: BinParams): ReadonlySet<TextSurface> {
 
   if (
     (p.surfaceText?.floorText?.trim() ?? '') !== '' &&
-    !isPartialMask(p.cellMask) &&
+    floorTextHostBlock(p) === null &&
     isFlat(resolveFloorTextStyle(p.textDefaults, p.surfaceText).mode)
   ) {
     out.add('body');

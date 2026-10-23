@@ -28,6 +28,7 @@ import {
   zoneIndex,
 } from './featureColors';
 import type { ActiveZonesParams, FeatureColorConfig, LipColorConfig } from './featureColors';
+import type { BinParams } from './binParams';
 
 const SINGLE = '#d4d8dc';
 
@@ -353,6 +354,28 @@ describe('computeActiveZones', () => {
         surfaceText: { walls: { front: 'Cables' } },
       });
       expect(solid.has('text')).toBe(true);
+    });
+  });
+
+  describe('floor text', () => {
+    const floorZones = (over: Partial<BinParams>): ReadonlySet<string> =>
+      computeActiveZones({
+        ...DEFAULT_BIN_PARAMS,
+        ...over,
+        surfaceText: { floorText: 'Screws' },
+      });
+
+    it('activates the text zone on a bin with a closed floor', () => {
+      expect(floorZones({}).has('text')).toBe(true);
+    });
+
+    it.each<[string, Partial<BinParams>]>([
+      ['solid', { style: 'solid', base: { ...DEFAULT_BIN_PARAMS.base, solid: true } }],
+      ['slotted', { style: 'slotted' }],
+      ['spacer', { base: { ...DEFAULT_BIN_PARAMS.base, spacer: true } }],
+      ['lightweight', { base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true } }],
+    ])('leaves it off on a %s bin, where the worker builds no floor text', (_name, over) => {
+      expect(floorZones(over).has('text')).toBe(false);
     });
   });
 

@@ -12,6 +12,7 @@ import { computeActiveZones, type ColorZone } from '@/features/bin-designer/type
 export function useActiveColorZones(): ReadonlySet<ColorZone> {
   const inputs = useDesignerStore(
     useShallow((s) => ({
+      style: s.params.style,
       base: s.params.base,
       label: s.params.label,
       scoop: s.params.scoop,

@@ -319,6 +319,7 @@ export {
   // the foot builder and the floor's hole cutter both have to agree about.
   hasDetachableFeet,
   DEFAULT_FEET_MODE,
+  floorTextHostBlock,
   // Stacking-lip peak finish: the worker builds it, the panel offers it, and
   // the print-quality note beside the control quotes the same millimetre.
   LIP_TIP_STYLES,

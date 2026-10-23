@@ -257,7 +257,11 @@ interface Candidate {
  * pointed end letter past the margin on purpose, and an offset. Sliding the
  * block back keeps the caption flush against the edge it was reaching for.
  */
-function settleInside(plan: TypeBlockPlan, availW: number, availD: number): TypeBlockPlan | null {
+export function settleInside(
+  plan: TypeBlockPlan,
+  availW: number,
+  availD: number
+): TypeBlockPlan | null {
   const eps = 1e-6;
   if (plan.maxX - plan.minX > availW + eps || plan.maxY - plan.minY > availD + eps) return null;
   const dx = Math.max(0, -availW / 2 - plan.minX) - Math.max(0, plan.maxX - availW / 2);

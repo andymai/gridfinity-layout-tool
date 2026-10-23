@@ -1,8 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '@/i18n';
-import { getFeatureStatus } from '@/shared/constraints';
-import { isPartialMask } from '@/shared/utils/cellMask';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import type {
   BinParams,
@@ -10,21 +8,17 @@ import type {
   TextMode,
   TextQuarterTurn,
 } from '@/features/bin-designer/types';
-import { resolveFloorTextStyle } from '@/features/bin-designer/types';
-import { isNestingBase } from '@/shared/types/bin';
+import { floorTextHostBlock, resolveFloorTextStyle } from '@/features/bin-designer/types';
 
-/** Mirrors the worker's `floorTextApplies`. */
 function unavailableKey(params: BinParams): string | undefined {
-  if (isPartialMask(params.cellMask)) return 'binDesigner.walls.text.disabledPolygon';
-  if (
-    params.style !== 'standard' ||
-    params.base.solid ||
-    isNestingBase(params.base) ||
-    !getFeatureStatus(params, 'floorPattern').available
-  ) {
-    return 'binDesigner.floor.text.disabled';
+  switch (floorTextHostBlock(params)) {
+    case 'polygon':
+      return 'binDesigner.walls.text.disabledPolygon';
+    case 'host':
+      return 'binDesigner.floor.text.disabled';
+    case null:
+      return undefined;
   }
-  return undefined;
 }
 
 export function useFloorTextSection() {
