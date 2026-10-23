@@ -27,10 +27,8 @@ graph TB
 
 - `components/panel/PullTabSection/` — raised grips on the width or depth wall, with millimetre/percentage width and optional mirrored recess. `src/shared/utils/pullTabPlan.ts` resolves dimensions and safe blends; `setParam` preserves undo/redo. Missing `pullTab` stays absent on legacy designs. Unsupported wall features disable the tab without clearing its saved settings.
 
-- `components/LayoutDesignSwitch/` — desktop header chevron listing the saved designs the active
-  layout's bins link to (`layoutDesigns.ts`). A pick calls `navigateToDesign(id, binId)`, so the
-  URL names the placement and `usePlacementOverhang` still applies; a grid placement wins over a
-  stashed one. Hidden when no bin links to a design.
+- `components/LayoutDesignSwitch/` — header menu of the active layout's linked designs. A pick
+  calls `navigateToDesign(id, binId)` so `usePlacementOverhang` still applies.
 - `components/DesignerPage/DesignerQuickstartCard.tsx` — one-time orientation card for first-visit
   /designer landers (desktop/tablet only). Dismissed by "Got it", Escape, or the first edit;
   state in `hooks/useDesignerFirstRun.ts`. `hooks/usePlannerBridge.ts` shows the one-time
