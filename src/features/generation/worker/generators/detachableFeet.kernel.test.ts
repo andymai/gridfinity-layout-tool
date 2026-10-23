@@ -91,7 +91,8 @@ beforeAll(async () => {
 
 const PITCH = 42;
 const CLEARANCE = 0.5;
-const FLOOR = 1.2;
+const WALL = 1.2;
+const FLOOR = binFloorMm(WALL, 'standard', 0);
 const MEMBRANE = 0.4;
 const END_CLEARANCE = DETACHABLE_PIN_END_CLEARANCE_MM;
 const PIN = 3;
@@ -342,7 +343,7 @@ describe('detachable foot geometry', () => {
    */
   it('holds the full pin diameter all the way up the shaft', () => {
     // The deep floor, so the shaft is long enough for a column probe to say
-    // something: at the default 1.2mm floor a pin is 0.8mm tall in total.
+    // something.
     const { feet, pinHoles } = feetOf({ floorThicknessMm: 2.4 });
     try {
       const m = meshOf(feet[0]);
@@ -602,7 +603,7 @@ describe('a bin built with detachable feet', () => {
     const { minZ } = boundingBox(m.vertices);
     const resolved = resolveDetachableFeet(binParams('detachable'));
     expect(resolved.placements.length).toBe(4);
-    const floor = binFloorMm(FLOOR, 'standard', 0);
+    const floor = binFloorMm(WALL, 'standard', 0);
 
     for (const foot of resolved.placements) {
       for (const pin of footPinPositions(foot, resolved.armMm, resolved.pinDiameterMm)) {
@@ -621,8 +622,8 @@ describe('a bin built with detachable feet', () => {
     const m = bin('detachable');
     const { minZ } = boundingBox(m.vertices);
     const resolved = resolveDetachableFeet(binParams('detachable'));
-    const floor = binFloorMm(FLOOR, 'standard', 0);
-    expect(floor).toBeGreaterThan(FLOOR);
+    const floor = binFloorMm(WALL, 'standard', 0);
+    expect(floor).toBeGreaterThan(WALL);
 
     const pin = footPinPositions(resolved.placements[0], resolved.armMm, resolved.pinDiameterMm)[0];
     // Open to the membrane, so the extra floor is engagement not dead material.

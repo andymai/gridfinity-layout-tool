@@ -387,11 +387,12 @@ export const DETACHABLE_PIN_LEAD_IN_MM = 0.4;
 
 /**
  * How far a pin's tip stops short of the end of its hole, in mm. The hole ends
- * at the membrane, which prints as a bridge that sags into it, and both parts
- * round to the layer grid. A pin cut to the full hole depth bottoms out there
- * first and holds the foot off the floor.
+ * at the membrane, which prints as a bridge that sags into it by up to 0.4mm,
+ * and the pin and the hole each round to the layer grid, which can eat another
+ * layer. A pin that reaches the sag bottoms out and holds the foot off the
+ * floor, so the gap has to cover all three.
  */
-export const DETACHABLE_PIN_END_CLEARANCE_MM = 0.4;
+export const DETACHABLE_PIN_END_CLEARANCE_MM = 1;
 
 /**
  * Largest gap allowed between adjacent feet, in mm.

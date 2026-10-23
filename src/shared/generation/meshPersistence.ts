@@ -91,6 +91,7 @@ const MESH_CACHE_VERSION = 'v29';
  * assembly-item previews (their own `item` segment) stay warm. The mirror of
  * {@link itemMeshCacheKey}'s segment.
  *
+ * `bin13`: a detachable foot's pins stop 1mm short of their holes' ends.
  * `bin12`: a detachable foot's pins stop short of the end of their holes.
  * `bin11`: a slanted bin's end support stands on the bin's own foot lattice
  * or half sockets, so it seats beside a bin half a unit off the grid.
@@ -114,7 +115,7 @@ const MESH_CACHE_VERSION = 'v29';
  * `bin1`: a lipless bin's sliding-lid entry window no longer ramps through the
  * rim, so its entry corners keep their full wall height.
  */
-const BIN_MESH_REVISION = 'bin12';
+const BIN_MESH_REVISION = 'bin13';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for
