@@ -1,0 +1,23 @@
+src/features/bin-designer/types/base.ts
+  s_cd6741ffc2b979::t_027b8df667e3b0 390-393,395
+src/shared/generation/meshPersistence.ts
+  s_cd6741ffc2b979::t_8ebfde4c3b2333 94,118
+src/features/generation/worker/generators/detachableFeet.kernel.test.ts
+  s_cd6741ffc2b979::t_027b8df667e3b0 94-95,346,606,625-626
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "baf8d2f8d9cc97c2772bddf9d4cbad8ef3c2e68c",
+  "prompts": {},
+  "sessions": {
+    "s_cd6741ffc2b979": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8ce0807-7994-4f6b-83de-6b2be919099e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
