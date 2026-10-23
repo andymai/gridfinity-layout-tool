@@ -205,15 +205,15 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
  * than the wall strictly covers — the safe direction, and the same convention
  * `dividerPatterns` uses for label tabs.
  *
- * `span`, when given, is the band of body Z the caller needs clear. A leaning
- * divider then answers with its true section over that band: `buildLeaningPrism`
- * widens it past the thickness and slides it from the foot, at the floor slab's
- * underside (Z=0), toward the top edge.
+ * `span` is the band of body Z the caller needs clear. A leaning divider
+ * answers with its true section over that band: `buildLeaningPrism` widens it
+ * past the thickness and slides it from the foot, at the floor slab's underside
+ * (Z=0), toward the top edge.
  */
 export function standingFeatureKeepOuts(
   params: BinParams,
   dim: BinDimensions,
-  span?: { readonly z0: number; readonly z1: number }
+  span: { readonly z0: number; readonly z1: number }
 ): WorldKeepOut[] {
   const { innerW, innerD, innerOffsetX, innerOffsetY } = dim;
   const out: WorldKeepOut[] = [];
@@ -240,15 +240,15 @@ export function standingFeatureKeepOuts(
       const rad = (seg.rotateZ * Math.PI) / 180;
       const driftX = seg.x - seg.footX;
       const driftY = seg.y - seg.footY;
-      const swept = span !== undefined && dividerHeight > 0;
+      const swept = dividerHeight > 0;
       const across = swept
         ? (half * Math.hypot(Math.hypot(driftX, driftY), dividerHeight)) / dividerHeight
         : half;
       const halfX = Math.abs(Math.cos(rad)) * (seg.wallLen / 2) + Math.abs(Math.sin(rad)) * across;
       const halfY = Math.abs(Math.sin(rad)) * (seg.wallLen / 2) + Math.abs(Math.cos(rad)) * across;
       const at = (z: number): number => (swept ? Math.min(1, Math.max(0, z / dividerHeight)) : 0);
-      const t0 = at(span?.z0 ?? 0);
-      const t1 = at(span?.z1 ?? 0);
+      const t0 = at(span.z0);
+      const t1 = at(span.z1);
       // Keyed to the FOOT, not the top edge: this keep-out is the floor
       // footprint, and a leaning divider stands nowhere near `seg.x/y` there.
       out.push({
@@ -317,7 +317,8 @@ export function planFloorPattern(
   const worldKeepOuts = [
     ...attachmentKeepOuts(params, dim),
     ...pinKeepOuts(params, dim),
-    ...standingFeatureKeepOuts(params, dim),
+    // A hole runs up through the whole slab, where the divider's root sits.
+    ...standingFeatureKeepOuts(params, dim, { z0: 0, z1: dim.floorThickness }),
     ...extraKeepOuts,
   ].map((k) => inflate(k, border));
 

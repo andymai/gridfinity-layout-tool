@@ -185,3 +185,73 @@ describe('tilted dividers through full pipeline', () => {
     }
   }, 60_000);
 });
+
+describe('raked divider over drainage holes', () => {
+  // The root is read off the built wall: its X span through the floor slab,
+  // from the foot at the slab's underside to where it meets the floor top. A
+  // hole anywhere in that band undercuts the divider.
+  it('keeps every hole out from under the divider root', async () => {
+    const { mesh } = await import('brepjs');
+    const { toIndexedMeshData } = await import('./meshUtils');
+    const { buildCompartmentWalls } = await import('./compartmentBuilder');
+    const { deriveDimensions } = await import('./pipeline/context');
+    const { resolveCompartmentDividerHeight } = await import('@/shared/utils/slotMath');
+    const { isSolidThrough } = await import('./__kernel-tests__/meshAssertions');
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 3,
+      depth: 2,
+      height: 4,
+      floorPattern: { enabled: true, pattern: 'slots', scale: 0.6 },
+      compartments: {
+        cols: 2,
+        rows: 1,
+        cells: [0, 1],
+        thickness: 1.2,
+        dividerOverrides: [
+          { compartmentA: 0, compartmentB: 1, offsetStart: 0, offsetEnd: 0, rakeDeg: 60 },
+        ],
+      },
+    };
+    const dim = deriveDimensions(params, false);
+    const h = resolveCompartmentDividerHeight(
+      params.compartments.dividerHeight,
+      dim.interiorHeight
+    );
+    const wall = buildCompartmentWalls(params, dim.innerW, dim.innerD, h);
+    if (!wall) throw new Error('expected a divider');
+    const { vertices: v, indices } = toIndexedMeshData(
+      mesh(wall, { tolerance: 0.01, angularTolerance: 0.1 })
+    );
+    wall.delete();
+    let minX = Infinity;
+    let maxX = -Infinity;
+    for (const z of [0, dim.floorThickness]) {
+      for (let t = 0; t < indices.length; t += 3) {
+        for (let e = 0; e < 3; e++) {
+          const a = indices[t + e] * 3;
+          const b = indices[t + ((e + 1) % 3)] * 3;
+          if ((v[a + 2] - z) * (v[b + 2] - z) > 0 || v[a + 2] === v[b + 2]) continue;
+          const k = (z - v[a + 2]) / (v[b + 2] - v[a + 2]);
+          minX = Math.min(minX, v[a] + k * (v[b] - v[a]));
+          maxX = Math.max(maxX, v[a] + k * (v[b] - v[a]));
+        }
+      }
+    }
+    expect(maxX - minX).toBeGreaterThan(params.compartments.thickness);
+
+    const bin = getGenerateBin()(params, undefined, true);
+    const slab0 = dim.baseOffsetZ + 0.05;
+    const slab1 = dim.baseOffsetZ + dim.floorThickness - 0.05;
+    const holed: string[] = [];
+    for (let x = minX + 0.05; x <= maxX - 0.05; x += 0.5) {
+      for (let y = -dim.innerD / 2 + 4; y <= dim.innerD / 2 - 4; y += 1) {
+        const wx = x + dim.innerOffsetX;
+        const wy = y + dim.innerOffsetY;
+        if (!isSolidThrough(bin, wx, wy, slab0, slab1))
+          holed.push(`${wx.toFixed(2)},${wy.toFixed(1)}`);
+      }
+    }
+    expect(holed).toEqual([]);
+  });
+});

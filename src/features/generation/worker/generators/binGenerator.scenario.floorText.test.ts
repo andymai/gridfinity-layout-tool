@@ -311,7 +311,7 @@ describe('floor text placement', () => {
       const { layout, dim } = layoutOf(params);
       expect(layout.ink.minX).toBeGreaterThanOrEqual(-dim.innerW / 2);
       expect(layout.ink.maxX).toBeLessThanOrEqual(dim.innerW / 2);
-      for (const k of standingFeatureKeepOuts(params, dim)) {
+      for (const k of standingFeatureKeepOuts(params, dim, { z0: 0, z1: dim.floorThickness })) {
         const keepOut = {
           minX: k.xMin - dim.innerOffsetX,
           maxX: k.xMax - dim.innerOffsetX,
