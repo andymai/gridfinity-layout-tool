@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.523.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.522.0...gridfinity-layout-tool-v4.523.0) (2026-10-23)
+
+
+### Features
+
+* **bin-designer:** add floor text to hollow bins ([#4688](https://github.com/andymai/gridfinity-layout-tool/issues/4688)) ([c2b4dcb](https://github.com/andymai/gridfinity-layout-tool/commit/c2b4dcb8e09ee418cfe18b4dcbe0c091edbcdc04))
+
+
+### Bug Fixes
+
+* **feet:** stop detachable-foot pins 1mm short of their holes ([#4692](https://github.com/andymai/gridfinity-layout-tool/issues/4692)) ([058280d](https://github.com/andymai/gridfinity-layout-tool/commit/058280dff5d190e9b53476569fd1c1688359d848))
+* **generation:** keep drainage holes clear of a leaning divider's root ([#4693](https://github.com/andymai/gridfinity-layout-tool/issues/4693)) ([51c5fcb](https://github.com/andymai/gridfinity-layout-tool/commit/51c5fcbcea27ec13689ac7316437f211a2a57c61))
+
 ## [4.522.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.521.1...gridfinity-layout-tool-v4.522.0) (2026-10-23)
 
 
