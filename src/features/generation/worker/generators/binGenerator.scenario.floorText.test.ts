@@ -30,7 +30,8 @@ import { standingFeatureKeepOuts } from './floorPatterns';
 import { taperInsetAt } from './overhang';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
-import { interiorDividerSegments } from './compartmentBuilder';
+import { planLabelTabLayout } from '@/shared/utils/labelTabPlan';
+import { planForContext as planWallLabelSlotsFor } from './wallLabelSlotBuilder';
 import {
   retentionBossRadius,
   retentionMagnetInset,
@@ -231,33 +232,47 @@ function layoutOf(params: BinParams): {
 }
 
 describe('floor text placement', () => {
-  it('keeps an edge-anchored caption inside a tapered wall', () => {
-    const overhang: BinParams['overhang'] = {
-      left: 10,
-      right: 0,
-      front: 0,
-      back: 0,
-      feet: false,
-      enabled: true,
-      taper: {
-        enabled: true,
-        profile: 'chamfer',
-        bandHeight: 16,
+  // Pressed flush against the bound by an offset, so the margin cannot hide a
+  // short inset.
+  it.each([
+    ['a tapered wall', 16, 4, 0],
+    ['a taper band taller than the wall under a collar', 30, 2, 20],
+  ] as const)(
+    'keeps an edge-anchored caption inside %s',
+    (_name, bandHeight, height, extraWallHeightMm) => {
+      const overhang: BinParams['overhang'] = {
         left: 10,
         right: 0,
         front: 0,
         back: 0,
-      },
-    };
-    const { layout, dim } = layoutOf(
-      makeParams(floor('ABCDEF', { anchor: 'left', mode: 'emboss' }), { overhang })
-    );
-    const taper = dim.overhang.taper;
-    if (!taper) throw new Error('expected a taper');
-    const lean = taperInsetAt(taper, taper.left, dim.floorThickness, dim.wallHeight);
-    expect(lean).toBeGreaterThan(1);
-    expect(layout.ink.minX).toBeGreaterThanOrEqual(-dim.innerW / 2 + lean - 1e-6);
-  });
+        feet: false,
+        enabled: true,
+        taper: {
+          enabled: true,
+          profile: 'chamfer',
+          bandHeight,
+          left: 10,
+          right: 0,
+          front: 0,
+          back: 0,
+        },
+      };
+      const { layout, dim } = layoutOf(
+        makeParams(floor('ABCDEF', { anchor: 'left', mode: 'emboss', offset: { x: -60, y: 0 } }), {
+          overhang,
+          height,
+          extraWallHeightMm,
+        })
+      );
+      const taper = dim.overhang.taper;
+      if (!taper) throw new Error('expected a taper');
+      const shell = dim.wallHeight + dim.collarHeight;
+      expect(shell).toBeGreaterThan(Math.min(bandHeight, dim.wallHeight));
+      const lean = taperInsetAt(taper, taper.left, dim.floorThickness, shell);
+      expect(lean).toBeGreaterThan(1);
+      expect(layout.ink.minX).toBeGreaterThanOrEqual(-dim.innerW / 2 + lean - 1e-6);
+    }
+  );
 
   it.each(['engrave', 'emboss'] as const)(
     'keeps %s text off the screw bores through a detachable floor',
@@ -308,9 +323,12 @@ describe('floor text placement', () => {
     }
   });
 
-  // The wall's section at height r sits on the foot line slid toward the top
-  // edge by r / h, and is wider than the thickness by L / h.
-  it('clears a leaning divider over the height an emboss stands', () => {
+  // Measured on the built wall, not on the keep-out's own formula: the X span
+  // of the divider's section at each height the glyphs occupy.
+  it('clears a leaning divider over the height an emboss stands', async () => {
+    const { mesh } = await import('brepjs');
+    const { toIndexedMeshData } = await import('./meshUtils');
+    const { buildCompartmentWalls } = await import('./compartmentBuilder');
     const compartments = {
       ...DEFAULT_BIN_PARAMS.compartments,
       cols: 2,
@@ -331,17 +349,29 @@ describe('floor text placement', () => {
         params.compartments.dividerHeight,
         dim.interiorHeight
       );
-      const [seg] = interiorDividerSegments(params, dim.innerW, dim.innerD, h);
-      const drift = seg.x - seg.footX;
-      expect(Math.abs(drift)).toBeGreaterThan(1);
-      const half = (params.compartments.thickness / 2) * (Math.hypot(drift, h) / h);
-      const reach = (drift * layout.depth) / h;
-      const band = {
-        minX: seg.footX - half + Math.min(0, reach),
-        maxX: seg.footX + half + Math.max(0, reach),
-        minY: -dim.innerD / 2,
-        maxY: dim.innerD / 2,
-      };
+      const wall = buildCompartmentWalls(params, dim.innerW, dim.innerD, h);
+      if (!wall) throw new Error('expected a divider');
+      const { vertices: v, indices } = toIndexedMeshData(
+        mesh(wall, { tolerance: 0.01, angularTolerance: 0.1 })
+      );
+      wall.delete();
+      let minX = Infinity;
+      let maxX = -Infinity;
+      for (const z of [dim.floorThickness, dim.floorThickness + layout.depth]) {
+        for (let t = 0; t < indices.length; t += 3) {
+          for (let e = 0; e < 3; e++) {
+            const a = indices[t + e] * 3;
+            const b = indices[t + ((e + 1) % 3)] * 3;
+            if ((v[a + 2] - z) * (v[b + 2] - z) > 0 || v[a + 2] === v[b + 2]) continue;
+            const k = (z - v[a + 2]) / (v[b + 2] - v[a + 2]);
+            const ex = v[a] + k * (v[b] - v[a]);
+            minX = Math.min(minX, ex);
+            maxX = Math.max(maxX, ex);
+          }
+        }
+      }
+      expect(maxX - minX).toBeGreaterThan(params.compartments.thickness);
+      const band = { minX, maxX, minY: -dim.innerD / 2, maxY: dim.innerD / 2 };
       expect(overlaps(layout.ink, band), `offset ${x}`).toBe(false);
     }
   });
@@ -372,6 +402,63 @@ describe('floor text placement', () => {
         maxY: y > 0 ? dim.innerD / 2 : y + boss,
       };
       expect(overlaps(layout.ink, pad), `pad at ${x}, ${y}`).toBe(false);
+    }
+  });
+
+  it('keeps out from under a label tab', () => {
+    const params = makeParams(floor('ABCDEFGH', { anchor: 'top', mode: 'emboss' }), {
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+    });
+    const { layout, dim } = layoutOf(params);
+    const tabs = planLabelTabLayout(
+      params,
+      dim.innerW,
+      dim.innerD,
+      dim.interiorHeight,
+      params.wallThickness
+    );
+    if (!tabs) throw new Error('expected label tabs');
+    const slots = tabs.plannedRows.flatMap((row) => row.slots.map((slot) => ({ row, slot })));
+    expect(slots.length).toBeGreaterThan(0);
+    for (const { row, slot } of slots) {
+      const reach = row.anchor === 'back' ? -row.dims.tabDepth : row.dims.tabDepth;
+      const shelf = {
+        minX: slot.tabXStart,
+        maxX: slot.tabXStart + slot.tabWidth,
+        minY: Math.min(slot.positionY, slot.positionY + reach),
+        maxY: Math.max(slot.positionY, slot.positionY + reach),
+      };
+      expect(overlaps(layout.ink, shelf), `tab over cell ${slot.cellId}`).toBe(false);
+    }
+  });
+
+  // No interior fillet, whose floor band would otherwise cover the bosses, and
+  // an offset pressing the caption against the front wall.
+  it('keeps off the wall-label-slot bosses', () => {
+    const params = makeParams(
+      floor('ABCDEFGH', { anchor: 'bottom', mode: 'emboss', offset: { x: 0, y: -60 } }),
+      {
+        height: 3,
+        interiorFilletMm: 0,
+        wallLabelSlots: {
+          enabled: true,
+          sides: { front: true, back: false, left: false, right: false },
+          everyCells: 1,
+        },
+      }
+    );
+    const { layout, dim } = layoutOf(params);
+    const plan = planWallLabelSlotsFor(params, dim);
+    expect(plan.bossDepthMm).toBeGreaterThan(0);
+    expect(plan.slots.length).toBeGreaterThan(0);
+    for (const { offset } of plan.slots) {
+      const boss = {
+        minX: offset - plan.bossWidthMm / 2,
+        maxX: offset + plan.bossWidthMm / 2,
+        minY: -dim.innerD / 2,
+        maxY: -dim.innerD / 2 + plan.bossDepthMm,
+      };
+      expect(overlaps(layout.ink, boss), `boss at ${offset}`).toBe(false);
     }
   });
 });

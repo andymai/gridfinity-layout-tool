@@ -19,6 +19,8 @@ import { maximalClearRects, type WallRect } from '@/shared/utils/maximalClearRec
 import { planTypeBlock, type TypeBlockPlan } from '@/shared/utils/typePlan';
 import { settleInside, type ResolvedTextStyle } from '@/shared/utils/wallTextPlan';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
+import { planLabelTabLayout } from '@/shared/utils/labelTabPlan';
+import { resolveWallLabelSlots } from '@/shared/utils/wallLabelSlotPlan';
 import type { WorldKeepOut } from './dividerPatterns';
 import { pinKeepOuts, standingFeatureKeepOuts } from './floorPatterns';
 import { resolveFloorRaises } from './floorRaisePlan';
@@ -33,7 +35,8 @@ import {
   usesRetentionMagnets,
 } from './retentionMagnetGeometry';
 import type { BinDimensions } from './pipeline/types';
-import { getTypeMeasurer, textOpForMode } from './textBuilder';
+import { flatTextPrismDepth, getTypeMeasurer, textOpForMode } from './textBuilder';
+import { planForContext as planWallLabelSlotsFor } from './wallLabelSlotBuilder';
 
 /** Solid floor kept under an engraved floor glyph (mm). */
 export const FLOOR_TEXT_ENGRAVE_FLOOR = 0.4;
@@ -140,6 +143,57 @@ function lidPadRects(params: BinParams, dim: BinDimensions): WallRect[] {
   });
 }
 
+/**
+ * Label tab shelves and their gussets. A lowered tab brings the supports down
+ * toward the floor, and at any height the shelf hides what lies under it.
+ */
+function labelTabRects(params: BinParams, dim: BinDimensions): WallRect[] {
+  if (!params.label.enabled || dim.isSlotted) return [];
+  const layout = planLabelTabLayout(
+    params,
+    dim.innerW,
+    dim.innerD,
+    dim.interiorHeight,
+    params.wallThickness
+  );
+  if (!layout) return [];
+  return layout.plannedRows.flatMap(({ anchor, dims, slots }) => {
+    const reach = anchor === 'back' ? -dims.tabDepth : dims.tabDepth;
+    return slots.map((slot) => ({
+      minU: slot.tabXStart,
+      maxU: slot.tabXStart + slot.tabWidth,
+      minZ: Math.min(slot.positionY, slot.positionY + reach),
+      maxZ: Math.max(slot.positionY, slot.positionY + reach),
+    }));
+  });
+}
+
+/**
+ * Wall-label-slot bosses, which stand inward of the wall face and slope down
+ * toward the floor on a short bin.
+ */
+function labelSlotBossRects(params: BinParams, dim: BinDimensions): WallRect[] {
+  if (!resolveWallLabelSlots(params).enabled) return [];
+  const plan = planWallLabelSlotsFor(params, dim);
+  if (plan.bossDepthMm <= 0) return [];
+  const halfW = dim.innerW / 2;
+  const halfD = dim.innerD / 2;
+  const along = plan.bossWidthMm / 2;
+  const deep = plan.bossDepthMm;
+  return plan.slots.map(({ side, offset }) => {
+    switch (side) {
+      case 'front':
+        return { minU: offset - along, maxU: offset + along, minZ: -halfD, maxZ: -halfD + deep };
+      case 'back':
+        return { minU: offset - along, maxU: offset + along, minZ: halfD - deep, maxZ: halfD };
+      case 'left':
+        return { minU: -halfW, maxU: -halfW + deep, minZ: offset - along, maxZ: offset + along };
+      case 'right':
+        return { minU: halfW - deep, maxU: halfW, minZ: offset - along, maxZ: offset + along };
+    }
+  });
+}
+
 /** Square around each insert pocket, wide enough for either orientation. */
 function insertRects(params: BinParams): WallRect[] {
   return params.inserts
@@ -174,6 +228,17 @@ function raisedFloorRects(params: BinParams, dim: BinDimensions): WallRect[] {
     }
   }
   return out;
+}
+
+/** Body Z the placed glyphs occupy: above the floor top, or sunk into it. */
+function glyphSpan(
+  mode: TextMode,
+  depth: number,
+  floorTop: number
+): { readonly z0: number; readonly z1: number } {
+  if (mode === 'emboss') return { z0: floorTop, z1: floorTop + depth };
+  const sunk = mode === 'flat' ? flatTextPrismDepth(floorTop) : depth;
+  return { z0: floorTop - sunk, z1: floorTop };
 }
 
 /** Engrave/emboss depth after the floor clamp, or null when nothing would print. */
@@ -219,27 +284,29 @@ export function computeFloorTextLayout(
   // rounded cavity corner of radius r.
   const cornerR = Math.max(BOX_CORNER_RADIUS - params.wallThickness, 0);
   const inset = cornerR * (1 - Math.SQRT1_2);
+  const glyphs = glyphSpan(style.mode, depth, dim.floorThickness);
   // A tapered outer wall leans inboard toward the base, most at the glyphs'
-  // lowest point, and the cavity follows it on each tapered side.
+  // lowest point, and the cavity follows it on each tapered side. The shell
+  // builds the taper over the wall plus any collar, which clamps its band.
   const taper = dim.overhang.taper;
-  const lowestZ = style.mode === 'engrave' ? dim.floorThickness - depth : dim.floorThickness;
   const lean = (side: number): number =>
-    taper ? taperInsetAt(taper, side, lowestZ, dim.wallHeight) : 0;
+    taper ? taperInsetAt(taper, side, glyphs.z0, dim.wallHeight + dim.collarHeight) : 0;
   const bounds: WallRect = {
     minU: -dim.innerW / 2 + inset + lean(taper?.left ?? 0),
     maxU: dim.innerW / 2 - inset - lean(taper?.right ?? 0),
     minZ: -dim.innerD / 2 + inset + lean(taper?.front ?? 0),
     maxZ: dim.innerD / 2 - inset - lean(taper?.back ?? 0),
   };
-  const rise = style.mode === 'emboss' ? depth : 0;
   const keepOuts = [
-    ...standingFeatureKeepOuts(params, dim, rise),
+    ...standingFeatureKeepOuts(params, dim, glyphs),
     ...(textOpForMode(style.mode) === 'cut' ? pinKeepOuts(params, dim) : []),
   ];
   const obstacles = [
     ...keepOuts.map((k) => toRect(k, dim)),
     ...screwBoreRects(params, dim),
     ...lidPadRects(params, dim),
+    ...labelTabRects(params, dim),
+    ...labelSlotBossRects(params, dim),
     ...insertRects(params),
     ...raisedFloorRects(params, dim),
   ];

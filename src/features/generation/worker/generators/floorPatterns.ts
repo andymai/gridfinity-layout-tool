@@ -205,14 +205,15 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
  * than the wall strictly covers — the safe direction, and the same convention
  * `dividerPatterns` uses for label tabs.
  *
- * `riseMm`, when given, is how far above the floor the caller needs clear. A
- * leaning divider then answers with its true section, which `buildLeaningPrism`
- * widens past the thickness and slides toward the top edge with height.
+ * `span`, when given, is the band of body Z the caller needs clear. A leaning
+ * divider then answers with its true section over that band: `buildLeaningPrism`
+ * widens it past the thickness and slides it from the foot, at the floor slab's
+ * underside (Z=0), toward the top edge.
  */
 export function standingFeatureKeepOuts(
   params: BinParams,
   dim: BinDimensions,
-  riseMm?: number
+  span?: { readonly z0: number; readonly z1: number }
 ): WorldKeepOut[] {
   const { innerW, innerD, innerOffsetX, innerOffsetY } = dim;
   const out: WorldKeepOut[] = [];
@@ -239,20 +240,22 @@ export function standingFeatureKeepOuts(
       const rad = (seg.rotateZ * Math.PI) / 180;
       const driftX = seg.x - seg.footX;
       const driftY = seg.y - seg.footY;
-      const across =
-        riseMm === undefined || dividerHeight <= 0
-          ? half
-          : (half * Math.hypot(Math.hypot(driftX, driftY), dividerHeight)) / dividerHeight;
+      const swept = span !== undefined && dividerHeight > 0;
+      const across = swept
+        ? (half * Math.hypot(Math.hypot(driftX, driftY), dividerHeight)) / dividerHeight
+        : half;
       const halfX = Math.abs(Math.cos(rad)) * (seg.wallLen / 2) + Math.abs(Math.sin(rad)) * across;
       const halfY = Math.abs(Math.sin(rad)) * (seg.wallLen / 2) + Math.abs(Math.cos(rad)) * across;
-      const climb = riseMm === undefined || dividerHeight <= 0 ? 0 : riseMm / dividerHeight;
+      const at = (z: number): number => (swept ? Math.min(1, Math.max(0, z / dividerHeight)) : 0);
+      const t0 = at(span?.z0 ?? 0);
+      const t1 = at(span?.z1 ?? 0);
       // Keyed to the FOOT, not the top edge: this keep-out is the floor
       // footprint, and a leaning divider stands nowhere near `seg.x/y` there.
       out.push({
-        xMin: seg.footX - halfX + Math.min(0, driftX * climb),
-        xMax: seg.footX + halfX + Math.max(0, driftX * climb),
-        yMin: seg.footY - halfY + Math.min(0, driftY * climb),
-        yMax: seg.footY + halfY + Math.max(0, driftY * climb),
+        xMin: seg.footX - halfX + Math.min(driftX * t0, driftX * t1),
+        xMax: seg.footX + halfX + Math.max(driftX * t0, driftX * t1),
+        yMin: seg.footY - halfY + Math.min(driftY * t0, driftY * t1),
+        yMax: seg.footY + halfY + Math.max(driftY * t0, driftY * t1),
         zMin: 0,
         zMax: 0,
       });
