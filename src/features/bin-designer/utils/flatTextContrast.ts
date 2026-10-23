@@ -1,9 +1,9 @@
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { hexContrast } from '@/shared/utils/color';
 import type { BinParams, TextMode } from '../types';
+import { floorTextHostBlock } from '@/shared/utils/floorTextHost';
 import {
   WALL_TEXT_SIDES,
-  floorTextHostBlock,
   resolveFloorTextStyle,
   resolveTextStyle,
   resolveWallTextStyle,

@@ -10,8 +10,8 @@
  */
 
 import { FeatureTag } from '@/shared/types/generation';
-import { floorTextHostBlock, isSocketlessBase } from './base';
-import type { BaseConfig, BinStyle } from './base';
+import { isSocketlessBase } from './base';
+import { floorTextHostBlock, type FloorTextHostParams } from '@/shared/utils/floorTextHost';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import type { BaseStyle, WallTextSide } from './index';
 
@@ -554,22 +554,22 @@ export function isSingleColor(
 }
 
 /**
+ * Floor text asks whether the floor survives, which reads the bin style and,
+ * under detachable feet, the footprint. Absent fields read as a standard bin
+ * with a closed floor, for callers that never carry floor text.
+ */
+type FloorHostInputs = Partial<Omit<FloorTextHostParams, 'cellMask' | 'base'>>;
+
+/**
  * Subset of `BinParams` that determines which zones are visually
  * meaningful. Declared structurally to avoid a circular import on
  * the full `BinParams` type.
  */
-export interface ActiveZonesParams {
-  /** Absent reads as a standard bin, for callers that never carry floor text. */
-  readonly style?: BinStyle;
+export interface ActiveZonesParams extends FloorHostInputs {
   readonly base: {
     readonly style: BaseStyle;
     readonly stackingLip: boolean;
-  } & Partial<
-    Pick<
-      BaseConfig,
-      'solid' | 'spacer' | 'lightweight' | 'lightweightMode' | 'tile' | 'feet' | 'trayBottom'
-    >
-  >;
+  } & Partial<FloorTextHostParams['base']>;
   readonly label: {
     readonly enabled: boolean;
     readonly mode?: 'text' | 'socket';
@@ -746,8 +746,8 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   const hasFloorText =
     (p.surfaceText?.floorText ?? '').trim() !== '' &&
     floorTextHostBlock({
+      ...p,
       style: p.style ?? 'standard',
-      cellMask: p.cellMask,
       base: { solid: false, spacer: false, lightweight: false, ...p.base },
     }) === null;
 

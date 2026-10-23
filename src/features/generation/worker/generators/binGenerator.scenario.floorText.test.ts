@@ -29,6 +29,13 @@ import { computeFloorTextLayout, type FloorTextLayout } from './floorTextLayout'
 import { standingFeatureKeepOuts } from './floorPatterns';
 import { taperInsetAt } from './overhang';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
+import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
+import { interiorDividerSegments } from './compartmentBuilder';
+import {
+  retentionBossRadius,
+  retentionMagnetInset,
+  retentionMagnetPositions,
+} from './retentionMagnetGeometry';
 import type { MeshData } from '@/features/generation/bridge/types';
 
 beforeAll(async () => {
@@ -298,6 +305,73 @@ describe('floor text placement', () => {
         };
         expect(overlaps(layout.ink, keepOut), `offset ${x}`).toBe(false);
       }
+    }
+  });
+
+  // The wall's section at height r sits on the foot line slid toward the top
+  // edge by r / h, and is wider than the thickness by L / h.
+  it('clears a leaning divider over the height an emboss stands', () => {
+    const compartments = {
+      ...DEFAULT_BIN_PARAMS.compartments,
+      cols: 2,
+      rows: 1,
+      cells: [0, 1],
+      dividerOverrides: [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 0, offsetEnd: 0, rakeDeg: 30 },
+      ],
+    };
+    const depth = 1.5;
+    for (const x of [-60, 60]) {
+      const params = makeParams(
+        floor('AB', { anchor: 'center', offset: { x, y: 0 }, mode: 'emboss', depth }),
+        { width: 3, compartments }
+      );
+      const { layout, dim } = layoutOf(params);
+      const h = resolveCompartmentDividerHeight(
+        params.compartments.dividerHeight,
+        dim.interiorHeight
+      );
+      const [seg] = interiorDividerSegments(params, dim.innerW, dim.innerD, h);
+      const drift = seg.x - seg.footX;
+      expect(Math.abs(drift)).toBeGreaterThan(1);
+      const half = (params.compartments.thickness / 2) * (Math.hypot(drift, h) / h);
+      const reach = (drift * layout.depth) / h;
+      const band = {
+        minX: seg.footX - half + Math.min(0, reach),
+        maxX: seg.footX + half + Math.max(0, reach),
+        minY: -dim.innerD / 2,
+        maxY: dim.innerD / 2,
+      };
+      expect(overlaps(layout.ink, band), `offset ${x}`).toBe(false);
+    }
+  });
+
+  it('keeps out from under the lid-magnet pads', () => {
+    const params = makeParams(floor('ABCDEFGH', { anchor: 'bottom-left' }), {
+      height: 3,
+      lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'magnetic' },
+    });
+    const { layout, dim } = layoutOf(params);
+    const { diameter, edgeMagnets } = params.lid.retentionMagnet;
+    const boss = retentionBossRadius(diameter);
+    const pads = retentionMagnetPositions(
+      params.width,
+      params.depth,
+      dim.gridUnitMmX,
+      dim.gridUnitMmY,
+      retentionMagnetInset(diameter),
+      edgeMagnets,
+      boss
+    );
+    expect(pads.length).toBeGreaterThan(0);
+    for (const { x, y } of pads) {
+      const pad = {
+        minX: x > 0 ? x - boss : -dim.innerW / 2,
+        maxX: x > 0 ? dim.innerW / 2 : x + boss,
+        minY: y > 0 ? y - boss : -dim.innerD / 2,
+        maxY: y > 0 ? dim.innerD / 2 : y + boss,
+      };
+      expect(overlaps(layout.ink, pad), `pad at ${x}, ${y}`).toBe(false);
     }
   });
 });

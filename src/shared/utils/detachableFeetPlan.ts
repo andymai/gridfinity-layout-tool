@@ -39,7 +39,7 @@ import {
   DEFAULT_DETACHABLE_PIN_DIAMETER_MM,
   MAX_FOOT_SPAN_MM,
   type FootLattice,
-} from '@/features/bin-designer/types';
+} from '@/features/bin-designer/types/base';
 import { isFractional } from '@/core/constants';
 import { isPartialMask, isRegionFilled, type CellMask } from '@/shared/utils/cellMask';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';

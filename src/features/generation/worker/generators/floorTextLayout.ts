@@ -13,7 +13,8 @@
  */
 
 import type { BinParams, TextMode, TextQuarterTurn } from '@/shared/types/bin';
-import { floorTextHostBlock, resolveFloorTextStyle } from '@/shared/types/bin';
+import { resolveFloorTextStyle, shouldGenerateLid } from '@/shared/types/bin';
+import { floorTextHostBlock } from '@/shared/utils/floorTextHost';
 import { maximalClearRects, type WallRect } from '@/shared/utils/maximalClearRects';
 import { planTypeBlock, type TypeBlockPlan } from '@/shared/utils/typePlan';
 import { settleInside, type ResolvedTextStyle } from '@/shared/utils/wallTextPlan';
@@ -22,7 +23,15 @@ import type { WorldKeepOut } from './dividerPatterns';
 import { pinKeepOuts, standingFeatureKeepOuts } from './floorPatterns';
 import { resolveFloorRaises } from './floorRaisePlan';
 import { BOX_CORNER_RADIUS } from './generatorConstants';
-import { taperInsetAt } from './overhang';
+import { hasOverhang, overhangExpansion, taperInsetAt } from './overhang';
+import {
+  retentionBossRadius,
+  retentionMagnetInset,
+  retentionMagnetPlacementsFor,
+  retentionMagnetPositions,
+  retentionMagnetSide,
+  usesRetentionMagnets,
+} from './retentionMagnetGeometry';
 import type { BinDimensions } from './pipeline/types';
 import { getTypeMeasurer, textOpForMode } from './textBuilder';
 
@@ -59,8 +68,6 @@ export interface FloorTextLayout {
 /** Whether the bin has a closed, flat floor of its own for the caption to sit on. */
 export function floorTextApplies(params: BinParams, dim: BinDimensions): boolean {
   if ((params.surfaceText?.floorText?.trim() ?? '') === '') return false;
-  // `liteFloorOpen` also covers detachable feet that resolve no placements,
-  // which leave lightweight live where the shared predicate assumes it inert.
   if (floorTextHostBlock(params) !== null || dim.liteFloorOpen) return false;
   return dim.innerW > 0 && dim.innerD > 0;
 }
@@ -90,6 +97,47 @@ function screwBoreRects(params: BinParams, dim: BinDimensions): WallRect[] {
     minZ: y - r - dim.innerOffsetY,
     maxZ: y + r - dim.innerOffsetY,
   }));
+}
+
+/**
+ * Footprints of the lid-magnet pads `lidRetentionStage` welds into the walls:
+ * from the wall in to the inboard edge of the boss. On a short bin the pad's
+ * taper reaches the floor, and on a tall one it overhangs the caption, so the
+ * caption keeps out from under it at any height.
+ */
+function lidPadRects(params: BinParams, dim: BinDimensions): WallRect[] {
+  if (!usesRetentionMagnets(params) || !shouldGenerateLid(params)) return [];
+  const { diameter, edgeMagnets } = params.lid.retentionMagnet;
+  const boss = retentionBossRadius(diameter);
+  const expansion = hasOverhang(dim.overhang) ? overhangExpansion(dim.overhang) : null;
+  const positions = retentionMagnetPlacementsFor(
+    retentionMagnetSide(params),
+    retentionMagnetPositions(
+      params.width,
+      params.depth,
+      dim.gridUnitMmX,
+      dim.gridUnitMmY,
+      retentionMagnetInset(diameter),
+      edgeMagnets,
+      boss,
+      expansion
+    ),
+    expansion?.offsetX ?? 0,
+    expansion?.offsetY ?? 0
+  );
+  const halfW = dim.innerW / 2;
+  const halfD = dim.innerD / 2;
+  return positions.map(({ x, y, anchor }) => {
+    const u = x - dim.innerOffsetX;
+    const v = y - dim.innerOffsetY;
+    const su = Math.sign(u);
+    const sv = Math.sign(v);
+    const span = (centre: number, sign: number, wall: number): [number, number] =>
+      sign > 0 ? [centre - boss, wall] : [-wall, centre + boss];
+    const [minU, maxU] = anchor === 'y' ? [u - boss, u + boss] : span(u, su, halfW);
+    const [minZ, maxZ] = anchor === 'x' ? [v - boss, v + boss] : span(v, sv, halfD);
+    return { minU, maxU, minZ, maxZ };
+  });
 }
 
 /** Square around each insert pocket, wide enough for either orientation. */
@@ -183,13 +231,15 @@ export function computeFloorTextLayout(
     minZ: -dim.innerD / 2 + inset + lean(taper?.front ?? 0),
     maxZ: dim.innerD / 2 - inset - lean(taper?.back ?? 0),
   };
+  const rise = style.mode === 'emboss' ? depth : 0;
   const keepOuts = [
-    ...standingFeatureKeepOuts(params, dim),
+    ...standingFeatureKeepOuts(params, dim, rise),
     ...(textOpForMode(style.mode) === 'cut' ? pinKeepOuts(params, dim) : []),
   ];
   const obstacles = [
     ...keepOuts.map((k) => toRect(k, dim)),
     ...screwBoreRects(params, dim),
+    ...lidPadRects(params, dim),
     ...insertRects(params),
     ...raisedFloorRects(params, dim),
   ];

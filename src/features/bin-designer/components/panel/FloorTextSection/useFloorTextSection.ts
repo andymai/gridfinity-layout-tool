@@ -8,7 +8,8 @@ import type {
   TextMode,
   TextQuarterTurn,
 } from '@/features/bin-designer/types';
-import { floorTextHostBlock, resolveFloorTextStyle } from '@/features/bin-designer/types';
+import { resolveFloorTextStyle } from '@/features/bin-designer/types';
+import { floorTextHostBlock } from '@/shared/utils/floorTextHost';
 
 function unavailableKey(params: BinParams): string | undefined {
   switch (floorTextHostBlock(params)) {

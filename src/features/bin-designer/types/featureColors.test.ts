@@ -374,6 +374,19 @@ describe('computeActiveZones', () => {
       ['slotted', { style: 'slotted' }],
       ['spacer', { base: { ...DEFAULT_BIN_PARAMS.base, spacer: true } }],
       ['lightweight', { base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true } }],
+      [
+        'half-lattice detachable',
+        {
+          width: 1,
+          depth: 2,
+          base: {
+            ...DEFAULT_BIN_PARAMS.base,
+            lightweight: true,
+            feet: 'detachable',
+            footLatticeX: 'half',
+          },
+        },
+      ],
     ])('leaves it off on a %s bin, where the worker builds no floor text', (_name, over) => {
       expect(floorZones(over).has('text')).toBe(false);
     });

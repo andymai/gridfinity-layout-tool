@@ -204,8 +204,16 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
  * A tilted divider contributes its axis-aligned bounding box, which clears more
  * than the wall strictly covers — the safe direction, and the same convention
  * `dividerPatterns` uses for label tabs.
+ *
+ * `riseMm`, when given, is how far above the floor the caller needs clear. A
+ * leaning divider then answers with its true section, which `buildLeaningPrism`
+ * widens past the thickness and slides toward the top edge with height.
  */
-export function standingFeatureKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
+export function standingFeatureKeepOuts(
+  params: BinParams,
+  dim: BinDimensions,
+  riseMm?: number
+): WorldKeepOut[] {
   const { innerW, innerD, innerOffsetX, innerOffsetY } = dim;
   const out: WorldKeepOut[] = [];
 
@@ -229,15 +237,22 @@ export function standingFeatureKeepOuts(params: BinParams, dim: BinDimensions): 
     );
     for (const seg of interiorDividerSegments(params, innerW, innerD, dividerHeight)) {
       const rad = (seg.rotateZ * Math.PI) / 180;
-      const halfX = Math.abs(Math.cos(rad)) * (seg.wallLen / 2) + Math.abs(Math.sin(rad)) * half;
-      const halfY = Math.abs(Math.sin(rad)) * (seg.wallLen / 2) + Math.abs(Math.cos(rad)) * half;
+      const driftX = seg.x - seg.footX;
+      const driftY = seg.y - seg.footY;
+      const across =
+        riseMm === undefined || dividerHeight <= 0
+          ? half
+          : (half * Math.hypot(Math.hypot(driftX, driftY), dividerHeight)) / dividerHeight;
+      const halfX = Math.abs(Math.cos(rad)) * (seg.wallLen / 2) + Math.abs(Math.sin(rad)) * across;
+      const halfY = Math.abs(Math.sin(rad)) * (seg.wallLen / 2) + Math.abs(Math.cos(rad)) * across;
+      const climb = riseMm === undefined || dividerHeight <= 0 ? 0 : riseMm / dividerHeight;
       // Keyed to the FOOT, not the top edge: this keep-out is the floor
       // footprint, and a leaning divider stands nowhere near `seg.x/y` there.
       out.push({
-        xMin: seg.footX - halfX,
-        xMax: seg.footX + halfX,
-        yMin: seg.footY - halfY,
-        yMax: seg.footY + halfY,
+        xMin: seg.footX - halfX + Math.min(0, driftX * climb),
+        xMax: seg.footX + halfX + Math.max(0, driftX * climb),
+        yMin: seg.footY - halfY + Math.min(0, driftY * climb),
+        yMax: seg.footY + halfY + Math.max(0, driftY * climb),
         zMin: 0,
         zMax: 0,
       });

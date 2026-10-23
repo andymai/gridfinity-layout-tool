@@ -5,7 +5,6 @@ import {
 } from './lid';
 import type { LidAttachment, LidClickRails, LidMagnetConfig } from './lid';
 import { GRIDFINITY } from '../constants/gridfinity';
-import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 
 /**
  * Thickness of the slab that IS a base-only bin's body, in mm — the ONLY
@@ -281,36 +280,6 @@ export function hasDetachableFeet(base: {
   readonly style: BaseStyle;
 }): boolean {
   return base.feet === 'detachable' && base.spacer !== true && !isSocketlessBase(base.style);
-}
-
-/**
- * Why a bin cannot carry floor text, or null when it can. The panel, the colour
- * zones and the worker all ask this, so a caption the geometry skips never
- * claims a filament. Lightweight, spacer and base-only are inert on a
- * socketless base, and lightweight is inert under detachable feet, which is
- * why those flags only block a socketed body.
- */
-export function floorTextHostBlock(p: {
-  readonly style: BinStyle;
-  readonly cellMask?: CellMask;
-  readonly base: Pick<
-    BaseConfig,
-    | 'style'
-    | 'solid'
-    | 'spacer'
-    | 'lightweight'
-    | 'lightweightMode'
-    | 'tile'
-    | 'feet'
-    | 'trayBottom'
-  >;
-}): 'polygon' | 'host' | null {
-  if (isPartialMask(p.cellMask)) return 'polygon';
-  if (p.style !== 'standard' || p.base.solid || isNestingBase(p.base)) return 'host';
-  if (isSocketlessBase(p.base.style)) return null;
-  if (p.base.tile === true || p.base.spacer) return 'host';
-  const floorOpen = p.base.lightweight && !hasDetachableFeet(p.base) && !isUndersideRelief(p.base);
-  return floorOpen ? 'host' : null;
 }
 
 /**
