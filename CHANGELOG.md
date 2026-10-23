@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.521.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.521.0...gridfinity-layout-tool-v4.521.1) (2026-10-23)
+
+
+### Bug Fixes
+
+* **generation:** treat Safari's canceled kernel import as a stale asset ([#4683](https://github.com/andymai/gridfinity-layout-tool/issues/4683)) ([6d81b75](https://github.com/andymai/gridfinity-layout-tool/commit/6d81b757e7d62f1dccd8aef20a1896ba922da0c4))
+
 ## [4.521.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.520.1...gridfinity-layout-tool-v4.521.0) (2026-10-22)
 
 
