@@ -4951,5 +4951,9 @@
   "binDesigner.walls.text.face.outside": "外側",
   "binDesigner.walls.text.face.inside": "内側",
   "binDesigner.walls.text.face.solidNote": "無垢ビンには内側の面がありません。",
-  "binDesigner.walls.text.face.scoopNote": "スクープがこの壁の内側の面を覆っています。"
+  "binDesigner.walls.text.face.scoopNote": "スクープがこの壁の内側の面を覆っています。",
+  "binDesigner.floor.text.heading": "底面テキスト",
+  "binDesigner.floor.text.hint": "仕切り、スクープ、かさ上げ底を避け、底面の最も広い空き領域に配置されます。",
+  "binDesigner.floor.text.disabled": "底が閉じた標準の bin が必要です。",
+  "binDesigner.floor.text.anchor": "底面テキストの位置"
 }

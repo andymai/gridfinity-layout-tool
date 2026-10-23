@@ -4951,5 +4951,9 @@
   "binDesigner.walls.text.face.outside": "바깥",
   "binDesigner.walls.text.face.inside": "안쪽",
   "binDesigner.walls.text.face.solidNote": "솔리드 수납통에는 안쪽 면이 없습니다.",
-  "binDesigner.walls.text.face.scoopNote": "손가락 홈이 이 벽의 안쪽 면을 덮습니다."
+  "binDesigner.walls.text.face.scoopNote": "손가락 홈이 이 벽의 안쪽 면을 덮습니다.",
+  "binDesigner.floor.text.heading": "바닥 텍스트",
+  "binDesigner.floor.text.hint": "칸막이, 스쿱, 높인 바닥을 피해 바닥의 가장 넓은 빈 영역에 배치됩니다.",
+  "binDesigner.floor.text.disabled": "바닥이 막힌 표준 bin이 필요합니다.",
+  "binDesigner.floor.text.anchor": "바닥 텍스트 위치"
 }

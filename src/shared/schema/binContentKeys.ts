@@ -96,10 +96,13 @@ export type _TextOffsetKeys = Assert<
 export const SURFACE_TEXT_KEYS = [
   'lidText',
   'lidTextRotation',
+  'floorText',
+  'floorTextRotation',
   'walls',
   'wallAlign',
   'style',
   'lidStyle',
+  'floorStyle',
   'wallStyles',
   'wallFaces',
   'insideStyle',

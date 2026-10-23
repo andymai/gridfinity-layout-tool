@@ -105,20 +105,26 @@ export function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined 
   const {
     lidText,
     lidTextRotation,
+    floorText,
+    floorTextRotation,
     walls,
     wallAlign,
     style,
     lidStyle,
+    floorStyle,
     wallStyles,
     wallFaces,
     insideStyle,
   } = raw as {
     lidText?: unknown;
     lidTextRotation?: unknown;
+    floorText?: unknown;
+    floorTextRotation?: unknown;
     walls?: unknown;
     wallAlign?: unknown;
     style?: unknown;
     lidStyle?: unknown;
+    floorStyle?: unknown;
     wallStyles?: unknown;
     wallFaces?: unknown;
     insideStyle?: unknown;
@@ -130,6 +136,9 @@ export function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined 
   // 0 is the absent state, so it collapses like every other default here.
   const rotation =
     isTextQuarterTurn(lidTextRotation) && lidTextRotation !== 0 ? lidTextRotation : undefined;
+  const floor = typeof floorText === 'string' ? normalizeTextInput(floorText).trim() : '';
+  const floorRotation =
+    isTextQuarterTurn(floorTextRotation) && floorTextRotation !== 0 ? floorTextRotation : undefined;
 
   // Per-wall strings: keep only known sides with non-empty values, clamped
   // and trimmed like the lid text.
@@ -166,6 +175,7 @@ export function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined 
       : baseStyle;
 
   const migratedLidStyle = migrateTextStyleOverride(lidStyle);
+  const migratedFloorStyle = migrateTextStyleOverride(floorStyle);
   const migratedWallStyles: Partial<Record<WallTextSide, TextStyleOverride>> = {};
   if (isObj(wallStyles)) {
     for (const side of WALL_TEXT_SIDES) {
@@ -187,9 +197,12 @@ export function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined 
   if (
     !hasText &&
     rotation === undefined &&
+    floor === '' &&
+    floorRotation === undefined &&
     !hasWalls &&
     migratedStyle === undefined &&
     migratedLidStyle === undefined &&
+    migratedFloorStyle === undefined &&
     !hasWallStyles &&
     !hasFaces
   ) {
@@ -198,9 +211,12 @@ export function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined 
   return {
     ...(hasText ? { lidText: text } : {}),
     ...(rotation !== undefined ? { lidTextRotation: rotation } : {}),
+    ...(floor !== '' ? { floorText: floor } : {}),
+    ...(floorRotation !== undefined ? { floorTextRotation: floorRotation } : {}),
     ...(hasWalls ? { walls: migratedWalls } : {}),
     ...(migratedStyle !== undefined ? { style: migratedStyle } : {}),
     ...(migratedLidStyle !== undefined ? { lidStyle: migratedLidStyle } : {}),
+    ...(migratedFloorStyle !== undefined ? { floorStyle: migratedFloorStyle } : {}),
     ...(hasWallStyles ? { wallStyles: migratedWallStyles } : {}),
     ...(hasFaces ? { wallFaces: migratedFaces } : {}),
     ...(migratedInsideStyle !== undefined ? { insideStyle: migratedInsideStyle } : {}),

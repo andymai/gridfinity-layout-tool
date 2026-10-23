@@ -3623,6 +3623,11 @@ const en: Record<string, string> = {
   'binDesigner.walls.text.face.inside': 'Inside',
   'binDesigner.walls.text.face.solidNote': 'A solid bin has no inside face.',
   'binDesigner.walls.text.face.scoopNote': "The finger scoop covers this wall's inside face.",
+  'binDesigner.floor.text.heading': 'Floor text',
+  'binDesigner.floor.text.hint':
+    'Sits on the largest clear part of the floor, away from dividers, scoops and raised floors.',
+  'binDesigner.floor.text.disabled': 'Needs a standard bin with a closed floor.',
+  'binDesigner.floor.text.anchor': 'Floor text position',
   'binDesigner.walls.text.heading': 'Wall text',
   'binDesigner.walls.text.placeholder': 'e.g. Cables',
   'binDesigner.walls.text.sideAria': '{side} wall text',

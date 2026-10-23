@@ -4951,5 +4951,9 @@
   "binDesigner.walls.text.face.outside": "Na zewnątrz",
   "binDesigner.walls.text.face.inside": "Wewnątrz",
   "binDesigner.walls.text.face.solidNote": "Pełny bin nie ma strony wewnętrznej.",
-  "binDesigner.walls.text.face.scoopNote": "Podbieranie zakrywa wewnętrzną stronę tej ścianki."
+  "binDesigner.walls.text.face.scoopNote": "Podbieranie zakrywa wewnętrzną stronę tej ścianki.",
+  "binDesigner.floor.text.heading": "Tekst na dnie",
+  "binDesigner.floor.text.hint": "Umieszczany na największej wolnej części dna, z dala od przegródek, wybrań i podniesionych den.",
+  "binDesigner.floor.text.disabled": "Wymaga standardowego bin z zamkniętym dnem.",
+  "binDesigner.floor.text.anchor": "Położenie tekstu na dnie"
 }

@@ -455,6 +455,15 @@ export interface SurfaceTextConfig {
    */
   readonly lidTextRotation?: TextQuarterTurn;
   /**
+   * Text on the interior floor of a standard hollow bin. It takes the largest
+   * clear stretch of floor, so dividers, scoops, the interior fillet, inserts
+   * and raised floors stay untouched. Ignored on solid, slotted and polygon
+   * `cellMask` bins and on bins without a closed floor.
+   */
+  readonly floorText?: string;
+  /** Turns the floor caption's reading frame, like {@link lidTextRotation}. */
+  readonly floorTextRotation?: TextQuarterTurn;
+  /**
    * Per-wall text on the bin's outer walls. Each string fits into the largest
    * clear region on its wall (avoiding wall cutouts and handles, and clearing
    * any wall pattern behind it). Ignored for polygon `cellMask` bins and for
@@ -467,6 +476,8 @@ export interface SurfaceTextConfig {
   readonly style?: TextStyleOverride;
   /** Lid-only refinement, merged over {@link style}. */
   readonly lidStyle?: TextStyleOverride;
+  /** Floor-only refinement, merged over {@link style}. */
+  readonly floorStyle?: TextStyleOverride;
   /** Per-wall refinement, merged over {@link style} and {@link insideStyle}. */
   readonly wallStyles?: Partial<Record<WallTextSide, TextStyleOverride>>;
   /**
@@ -501,6 +512,18 @@ export function resolveWallTextStyle(
     wallTextFace(surfaceText, side) === 'inside' ? surfaceText?.insideStyle : undefined,
     surfaceText?.wallStyles?.[side]
   );
+}
+
+/**
+ * The floor caption's style. A floor has a base under it, so nothing can be
+ * cut through: a through-cut inherited from the shared style engraves instead.
+ */
+export function resolveFloorTextStyle(
+  defaults: TextStyleDefaults,
+  surfaceText: SurfaceTextConfig | undefined
+): TextStyleDefaults & { readonly fontSizeOverride?: number } {
+  const style = resolveTextStyle(defaults, surfaceText?.style, surfaceText?.floorStyle);
+  return style.mode === 'through-cut' ? { ...style, mode: 'engrave' } : style;
 }
 
 /**

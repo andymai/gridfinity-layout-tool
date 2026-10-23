@@ -4951,5 +4951,9 @@
   "binDesigner.walls.text.face.outside": "Fuori",
   "binDesigner.walls.text.face.inside": "Dentro",
   "binDesigner.walls.text.face.solidNote": "Un bin pieno non ha un lato interno.",
-  "binDesigner.walls.text.face.scoopNote": "La rampa copre il lato interno di questa parete."
+  "binDesigner.walls.text.face.scoopNote": "La rampa copre il lato interno di questa parete.",
+  "binDesigner.floor.text.heading": "Testo sul fondo",
+  "binDesigner.floor.text.hint": "Si posiziona sulla parte libera più ampia del fondo, lontano da divisori, scivoli e fondi rialzati.",
+  "binDesigner.floor.text.disabled": "Richiede un bin standard con fondo chiuso.",
+  "binDesigner.floor.text.anchor": "Posizione del testo sul fondo"
 }

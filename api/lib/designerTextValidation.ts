@@ -187,10 +187,13 @@ export function validateTextStyleOverride(value: unknown, label: string): string
 const ALLOWED_SURFACE_TEXT_KEYS = new Set([
   'lidText',
   'lidTextRotation',
+  'floorText',
+  'floorTextRotation',
   'walls',
   'wallAlign',
   'style',
   'lidStyle',
+  'floorStyle',
   'wallStyles',
   'wallFaces',
   'insideStyle',
@@ -228,7 +231,7 @@ export const VALID_WALL_TEXT_FACES = ['outside', 'inside'] as const;
 export const VALID_TEXT_QUARTER_TURNS = [0, 90, 180, 270] as const;
 
 /**
- * Exterior-surface text: a lid-top string plus per-wall strings
+ * Surface text: a lid-top string, a floor string, per-wall strings
  * and a shared vertical alignment. Strings share the client's
  * `TEXT_MAX_LENGTH = 50` cap (mirrored numerically, like `compartmentTexts`);
  * the style override reuses the `textDefaults` field caps so a crafted share
@@ -254,6 +257,17 @@ export function validateSurfaceText(value: unknown): string | null {
   ) {
     return `surfaceText.lidTextRotation must be one of: ${VALID_TEXT_QUARTER_TURNS.join(', ')}`;
   }
+  if (value.floorText !== undefined) {
+    if (typeof value.floorText !== 'string') return 'surfaceText.floorText must be a string';
+    const err = checkCaption(value.floorText, 'surfaceText.floorText');
+    if (err) return err;
+  }
+  if (
+    value.floorTextRotation !== undefined &&
+    !(VALID_TEXT_QUARTER_TURNS as readonly unknown[]).includes(value.floorTextRotation)
+  ) {
+    return `surfaceText.floorTextRotation must be one of: ${VALID_TEXT_QUARTER_TURNS.join(', ')}`;
+  }
   if (value.walls !== undefined) {
     if (!isObject(value.walls)) return 'surfaceText.walls must be an object';
     for (const key of Object.keys(value.walls)) {
@@ -278,6 +292,10 @@ export function validateSurfaceText(value: unknown): string | null {
   }
   if (value.lidStyle !== undefined) {
     const styleErr = validateTextStyleOverride(value.lidStyle, 'surfaceText.lidStyle');
+    if (styleErr) return styleErr;
+  }
+  if (value.floorStyle !== undefined) {
+    const styleErr = validateTextStyleOverride(value.floorStyle, 'surfaceText.floorStyle');
     if (styleErr) return styleErr;
   }
   if (value.wallStyles !== undefined) {

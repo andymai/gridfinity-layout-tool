@@ -4951,5 +4951,9 @@
   "binDesigner.walls.text.face.outside": "Ззовні",
   "binDesigner.walls.text.face.inside": "Всередині",
   "binDesigner.walls.text.face.solidNote": "Суцільний бін не має внутрішнього боку.",
-  "binDesigner.walls.text.face.scoopNote": "Скіс закриває внутрішній бік цієї стінки."
+  "binDesigner.walls.text.face.scoopNote": "Скіс закриває внутрішній бік цієї стінки.",
+  "binDesigner.floor.text.heading": "Текст на дні",
+  "binDesigner.floor.text.hint": "Розміщується на найбільшій вільній частині дна, подалі від перегородок, виїмок і піднятих дн.",
+  "binDesigner.floor.text.disabled": "Потрібен стандартний bin із закритим дном.",
+  "binDesigner.floor.text.anchor": "Положення тексту на дні"
 }

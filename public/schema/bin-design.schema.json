@@ -2289,7 +2289,7 @@
     },
     "SurfaceTextConfig": {
       "type": "object",
-      "description": "Text on the lid top and on either face of the outer walls. Omit for designs without surface text so they serialize byte-identically.",
+      "description": "Text on the lid top, the interior floor, and either face of the outer walls. Omit for designs without surface text so they serialize byte-identically.",
       "properties": {
         "lidText": {
           "type": "string",
@@ -2299,6 +2299,18 @@
           "enum": [0, 90, 180, 270],
           "default": 0,
           "description": "Turn of the lid text in degrees clockwise seen from above. The anchor and offset turn with it; 90 and 270 fit the text along the lid's other side.",
+          "x-constant": {
+            "enum": "TEXT_QUARTER_TURNS"
+          }
+        },
+        "floorText": {
+          "type": "string",
+          "description": "Text on the interior floor of a standard hollow bin. It takes the largest clear part of the floor."
+        },
+        "floorTextRotation": {
+          "enum": [0, 90, 180, 270],
+          "default": 0,
+          "description": "Turn of the floor text in degrees clockwise seen from above.",
           "x-constant": {
             "enum": "TEXT_QUARTER_TURNS"
           }
@@ -2322,6 +2334,10 @@
         },
         "lidStyle": {
           "$ref": "#/$defs/TextStyleOverride"
+        },
+        "floorStyle": {
+          "$ref": "#/$defs/TextStyleOverride",
+          "description": "Style for the floor text, applied over style. A through-cut engraves instead."
         },
         "wallStyles": {
           "type": "object",

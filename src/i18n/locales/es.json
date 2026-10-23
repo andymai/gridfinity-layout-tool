@@ -4951,5 +4951,9 @@
   "binDesigner.walls.text.face.outside": "Fuera",
   "binDesigner.walls.text.face.inside": "Dentro",
   "binDesigner.walls.text.face.solidNote": "Una caja sólida no tiene cara interior.",
-  "binDesigner.walls.text.face.scoopNote": "La rampa cubre la cara interior de esta pared."
+  "binDesigner.walls.text.face.scoopNote": "La rampa cubre la cara interior de esta pared.",
+  "binDesigner.floor.text.heading": "Texto en el fondo",
+  "binDesigner.floor.text.hint": "Se coloca en la mayor zona libre del fondo, lejos de divisores, rampas y fondos elevados.",
+  "binDesigner.floor.text.disabled": "Requiere un bin estándar con fondo cerrado.",
+  "binDesigner.floor.text.anchor": "Posición del texto en el fondo"
 }

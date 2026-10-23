@@ -4951,5 +4951,9 @@
   "binDesigner.walls.text.face.outside": "Extérieur",
   "binDesigner.walls.text.face.inside": "Intérieur",
   "binDesigner.walls.text.face.solidNote": "Un bac plein n'a pas de face intérieure.",
-  "binDesigner.walls.text.face.scoopNote": "La rampe recouvre la face intérieure de cette paroi."
+  "binDesigner.walls.text.face.scoopNote": "La rampe recouvre la face intérieure de cette paroi.",
+  "binDesigner.floor.text.heading": "Texte au fond",
+  "binDesigner.floor.text.hint": "Se place sur la plus grande zone libre du fond, loin des séparateurs, rampes et fonds surélevés.",
+  "binDesigner.floor.text.disabled": "Nécessite un bin standard avec un fond fermé.",
+  "binDesigner.floor.text.anchor": "Position du texte au fond"
 }

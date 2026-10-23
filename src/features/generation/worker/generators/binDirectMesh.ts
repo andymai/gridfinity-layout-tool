@@ -446,6 +446,7 @@ export function canBinUseDirectMesh(params: BinParams): boolean {
   if (wallTexts && Object.values(wallTexts).some((t) => typeof t === 'string' && t.trim() !== '')) {
     return false;
   }
+  if ((params.surfaceText?.floorText?.trim() ?? '') !== '') return false;
 
   // Exterior-wall collar raises the walls + lip above the
   // nominal height; the direct-mesh builder models a fixed wall/lip Z, so a

@@ -87,6 +87,7 @@ export function useTypeSection() {
       surfaceText?.walls?.left,
       surfaceText?.walls?.right,
       surfaceText?.lidText,
+      surfaceText?.floorText,
       ...(compartmentTexts ?? []),
     ].find((text) => (text?.trim() ?? '') !== '');
     return own?.trim() ?? SPECIMEN_SAMPLE;

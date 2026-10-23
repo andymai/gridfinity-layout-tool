@@ -107,7 +107,7 @@ function inflate(box: WorldKeepOut, by: number): WorldKeepOut {
  * pattern window (5.85mm and 14.78mm from a cell centre against a 16.30mm
  * half-span), so this is not a case the window inset already covers.
  */
-function pinKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
+export function pinKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
   if (!dim.detachableFeet) return [];
   const resolved = resolveDetachableFeet(params);
   const radius = DETACHABLE_PIN_HOLE_DIAMETER_MM / 2;
@@ -205,7 +205,7 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
  * than the wall strictly covers — the safe direction, and the same convention
  * `dividerPatterns` uses for label tabs.
  */
-function standingFeatureKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
+export function standingFeatureKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
   const { innerW, innerD, innerOffsetX, innerOffsetY } = dim;
   const out: WorldKeepOut[] = [];
 
@@ -284,7 +284,11 @@ function localKeepOuts(
  * Every returned window is already inset for the socket taper and the wall, so
  * the builder only has to fit elements inside it.
  */
-export function planFloorPattern(params: BinParams, dim: BinDimensions): FloorPatternPlan | null {
+export function planFloorPattern(
+  params: BinParams,
+  dim: BinDimensions,
+  extraKeepOuts: readonly WorldKeepOut[] = []
+): FloorPatternPlan | null {
   if (!floorPatternApplies(params, dim)) return null;
 
   const inset = floorWindowInset(params.wallThickness);
@@ -296,6 +300,7 @@ export function planFloorPattern(params: BinParams, dim: BinDimensions): FloorPa
     ...attachmentKeepOuts(params, dim),
     ...pinKeepOuts(params, dim),
     ...standingFeatureKeepOuts(params, dim),
+    ...extraKeepOuts,
   ].map((k) => inflate(k, border));
 
   const windows: FloorPatternWindow[] = [];

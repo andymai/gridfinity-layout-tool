@@ -5,8 +5,9 @@ import { TypeSection } from '../../TypeSection';
 import { ColorsSection } from '../../ColorsSection';
 import { WallSurfaceSection } from '../../WallsSection';
 import { FloorPatternSection } from '../../BaseSection';
+import { FloorTextSection } from '../../FloorTextSection';
 
-/** Appearance: typography, colors, wall patterns and text, floor pattern. */
+/** Appearance: typography, colors, wall patterns and text, floor pattern and text. */
 export function StylePage() {
   const hasText = useDesignerStore((s) => binHasText(s.params));
   return (
@@ -24,6 +25,7 @@ export function StylePage() {
       </PanelSection>
       <PanelSection helpTarget="bd-floor-pattern">
         <FloorPatternSection />
+        <FloorTextSection />
       </PanelSection>
     </div>
   );

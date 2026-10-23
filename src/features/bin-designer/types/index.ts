@@ -62,6 +62,7 @@ export {
   normalizeTextInput,
   resolveTextStyle,
   resolveWallTextStyle,
+  resolveFloorTextStyle,
   snapToTypeScale,
   splitTextLines,
   withExactLabelSize,

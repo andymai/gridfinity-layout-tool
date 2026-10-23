@@ -4951,5 +4951,9 @@
   "binDesigner.walls.text.face.outside": "Außen",
   "binDesigner.walls.text.face.inside": "Innen",
   "binDesigner.walls.text.face.solidNote": "Ein Vollkörper hat keine Innenseite.",
-  "binDesigner.walls.text.face.scoopNote": "Die Auslaufschräge bedeckt die Innenseite dieser Wand."
+  "binDesigner.walls.text.face.scoopNote": "Die Auslaufschräge bedeckt die Innenseite dieser Wand.",
+  "binDesigner.floor.text.heading": "Bodentext",
+  "binDesigner.floor.text.hint": "Sitzt auf dem größten freien Teil des Bodens, abseits von Trennwänden, Mulden und erhöhten Böden.",
+  "binDesigner.floor.text.disabled": "Benötigt einen Standard-Bin mit geschlossenem Boden.",
+  "binDesigner.floor.text.anchor": "Position des Bodentexts"
 }

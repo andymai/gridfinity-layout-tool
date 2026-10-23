@@ -40,6 +40,7 @@ import { InteriorFilletSection } from '../../panel/InteriorFilletSection';
 import { KnifeRestSection } from '../../panel/KnifeRestSection';
 import { SlideTraySection } from '../../panel/SlideTraySection';
 import { BaseSection, FloorPatternSection } from '../../panel/BaseSection';
+import { FloorTextSection } from '../../panel/FloorTextSection';
 import { TypeSection } from '../../panel/TypeSection';
 import { ColorsSection } from '../../panel/ColorsSection';
 import { PhysicalUnitsSection } from '../../panel/PhysicalUnitsSection';
@@ -259,6 +260,7 @@ export function BinScrollPanel({
           </PanelSection>
           <PanelSection helpTarget="bd-floor-pattern">
             <FloorPatternSection />
+            <FloorTextSection />
           </PanelSection>
           <PanelSection helpTarget="bd-physical-units">
             <PhysicalUnitsSection />

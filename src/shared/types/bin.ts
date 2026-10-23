@@ -277,6 +277,7 @@ export {
   normalizeTextInput,
   resolveTextStyle,
   resolveWallTextStyle,
+  resolveFloorTextStyle,
   snapToTypeScale,
   splitTextLines,
   MIN_POLYGON_SIDES,

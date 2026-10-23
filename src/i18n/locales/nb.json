@@ -4951,5 +4951,9 @@
   "binDesigner.walls.text.face.outside": "Utside",
   "binDesigner.walls.text.face.inside": "Innside",
   "binDesigner.walls.text.face.solidNote": "En solid binge har ingen innside.",
-  "binDesigner.walls.text.face.scoopNote": "Skråen dekker innsiden av denne veggen."
+  "binDesigner.walls.text.face.scoopNote": "Skråen dekker innsiden av denne veggen.",
+  "binDesigner.floor.text.heading": "Bunntekst",
+  "binDesigner.floor.text.hint": "Plasseres på den største ledige delen av bunnen, unna skillevegger, skuffer og hevede bunner.",
+  "binDesigner.floor.text.disabled": "Krever en standard bin med lukket bunn.",
+  "binDesigner.floor.text.anchor": "Plassering av bunntekst"
 }

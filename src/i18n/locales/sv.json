@@ -4951,5 +4951,9 @@
   "binDesigner.walls.text.face.outside": "Utsida",
   "binDesigner.walls.text.face.inside": "Insida",
   "binDesigner.walls.text.face.solidNote": "Ett solitt fack har ingen insida.",
-  "binDesigner.walls.text.face.scoopNote": "Sluttningen täcker insidan av den här väggen."
+  "binDesigner.walls.text.face.scoopNote": "Sluttningen täcker insidan av den här väggen.",
+  "binDesigner.floor.text.heading": "Bottentext",
+  "binDesigner.floor.text.hint": "Placeras på den största fria delen av botten, bort från avdelare, skopor och upphöjda bottnar.",
+  "binDesigner.floor.text.disabled": "Kräver en standard-bin med sluten botten.",
+  "binDesigner.floor.text.anchor": "Placering av bottentext"
 }

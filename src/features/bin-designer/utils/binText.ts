@@ -2,7 +2,7 @@
  * Whether a bin design carries any text the typography settings would govern.
  *
  * Text reaches the type system from more places than the type specimen tracks:
- * wall and lid text (`surfaceText`), per-compartment tab captions
+ * wall, lid and floor text (`surfaceText`), per-compartment tab captions
  * (`compartmentTexts`), spanning-tab captions (`label.rowTexts`), and engraved
  * cutout labels on both the bin and the lid. A cutout's label only counts when
  * the cutout actually engraves it (a `text` cutout, or one with `engraveLabel`);
@@ -22,7 +22,7 @@ function cutoutEngravesText(cutout: Cutout): boolean {
 export function binHasText(params: BinParams): boolean {
   const surface = params.surfaceText;
   if (surface) {
-    if (filled(surface.lidText)) return true;
+    if (filled(surface.lidText) || filled(surface.floorText)) return true;
     if (surface.walls && Object.values(surface.walls).some(filled)) return true;
   }
   if (params.compartments.compartmentTexts?.some(filled)) return true;

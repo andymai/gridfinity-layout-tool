@@ -4951,5 +4951,9 @@
   "binDesigner.walls.text.face.outside": "გარეთ",
   "binDesigner.walls.text.face.inside": "შიგნით",
   "binDesigner.walls.text.face.solidNote": "მყარ ყუთს შიდა მხარე არ აქვს.",
-  "binDesigner.walls.text.face.scoopNote": "ჩაღრმავება ფარავს ამ კედლის შიდა მხარეს."
+  "binDesigner.walls.text.face.scoopNote": "ჩაღრმავება ფარავს ამ კედლის შიდა მხარეს.",
+  "binDesigner.floor.text.heading": "ძირის ტექსტი",
+  "binDesigner.floor.text.hint": "თავსდება ძირის ყველაზე დიდ თავისუფალ ნაწილზე, ტიხრების, ჩაღრმავებების და აწეული ძირებისგან მოშორებით.",
+  "binDesigner.floor.text.disabled": "საჭიროა სტანდარტული bin დახურული ძირით.",
+  "binDesigner.floor.text.anchor": "ძირის ტექსტის პოზიცია"
 }

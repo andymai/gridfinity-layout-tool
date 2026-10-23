@@ -4951,5 +4951,9 @@
   "binDesigner.walls.text.face.outside": "Venku",
   "binDesigner.walls.text.face.inside": "Uvnitř",
   "binDesigner.walls.text.face.solidNote": "Plný bin nemá vnitřní stranu.",
-  "binDesigner.walls.text.face.scoopNote": "Naběrák zakrývá vnitřní stranu této stěny."
+  "binDesigner.walls.text.face.scoopNote": "Naběrák zakrývá vnitřní stranu této stěny.",
+  "binDesigner.floor.text.heading": "Text na dně",
+  "binDesigner.floor.text.hint": "Umístí se na největší volnou část dna, mimo přepážky, výřezy a zvýšená dna.",
+  "binDesigner.floor.text.disabled": "Vyžaduje standardní bin s uzavřeným dnem.",
+  "binDesigner.floor.text.anchor": "Pozice textu na dně"
 }

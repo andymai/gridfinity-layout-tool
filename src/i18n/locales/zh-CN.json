@@ -4951,5 +4951,9 @@
   "binDesigner.walls.text.face.outside": "外侧",
   "binDesigner.walls.text.face.inside": "内侧",
   "binDesigner.walls.text.face.solidNote": "实心收纳盒没有内侧面。",
-  "binDesigner.walls.text.face.scoopNote": "取物斜面覆盖了这面侧壁的内侧面。"
+  "binDesigner.walls.text.face.scoopNote": "取物斜面覆盖了这面侧壁的内侧面。",
+  "binDesigner.floor.text.heading": "底面文字",
+  "binDesigner.floor.text.hint": "放在底面最大的空闲区域，避开隔板、取物斜坡和抬高的底面。",
+  "binDesigner.floor.text.disabled": "需要底面封闭的标准 bin。",
+  "binDesigner.floor.text.anchor": "底面文字位置"
 }

@@ -4951,5 +4951,9 @@
   "binDesigner.walls.text.face.outside": "Buiten",
   "binDesigner.walls.text.face.inside": "Binnen",
   "binDesigner.walls.text.face.solidNote": "Een massief bakje heeft geen binnenkant.",
-  "binDesigner.walls.text.face.scoopNote": "De schepvorm bedekt de binnenkant van deze wand."
+  "binDesigner.walls.text.face.scoopNote": "De schepvorm bedekt de binnenkant van deze wand.",
+  "binDesigner.floor.text.heading": "Bodemtekst",
+  "binDesigner.floor.text.hint": "Komt op het grootste vrije deel van de bodem, weg van scheidingswanden, scoops en verhoogde bodems.",
+  "binDesigner.floor.text.disabled": "Vereist een standaard bin met een gesloten bodem.",
+  "binDesigner.floor.text.anchor": "Positie van de bodemtekst"
 }

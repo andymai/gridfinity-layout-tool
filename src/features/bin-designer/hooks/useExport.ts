@@ -223,6 +223,7 @@ export function useExport(): UseExportReturn {
       has_lid: hasLid,
       needs_split: isSplit,
       multi_color_enabled: isMultiColorDesign(params),
+      has_floor_text: (params.surfaceText?.floorText?.trim() ?? '') !== '',
     }),
     [params, hasDividers, hasLid]
   );

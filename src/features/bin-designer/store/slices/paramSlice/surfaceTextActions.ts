@@ -1,5 +1,5 @@
 /**
- * Surface-text actions: lid text, per-wall text + alignment + shared style,
+ * Surface-text actions: lid and floor text, per-wall text + alignment + shared style,
  * and the label-tab row texts. Each collapses the `surfaceText`/`label` config
  * back to absent when nothing remains so pre-feature designs serialize
  * byte-identically.
@@ -65,6 +65,50 @@ export function createSurfaceTextActions(set: Set, get: Get) {
         };
         // Drop the whole key when nothing remains so pre-feature designs
         // (and cleared text) serialize byte-identically.
+        state.params.surfaceText = Object.keys(next).length > 0 ? next : undefined;
+      });
+    },
+
+    setFloorText: (text: string) => {
+      const { params } = get();
+      const clamped = normalizeTextInput(text).trim();
+      if ((params.surfaceText?.floorText ?? '') === clamped) return;
+
+      set((state) => {
+        pushHistoryEntry(state);
+        const { floorText: _drop, ...rest } = state.params.surfaceText ?? {};
+        const next = {
+          ...rest,
+          ...(clamped !== '' ? { floorText: clamped } : {}),
+        };
+        state.params.surfaceText = Object.keys(next).length > 0 ? next : undefined;
+      });
+    },
+
+    setFloorTextStyle: (overrides: TextStyleOverride | null) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        const { floorStyle: _drop, ...rest } = state.params.surfaceText ?? {};
+        const next = {
+          ...rest,
+          ...(overrides !== null && Object.keys(overrides).length > 0
+            ? { floorStyle: overrides }
+            : {}),
+        };
+        state.params.surfaceText = Object.keys(next).length > 0 ? next : undefined;
+      });
+    },
+
+    setFloorTextRotation: (rotation: TextQuarterTurn) => {
+      const { params } = get();
+      if ((params.surfaceText?.floorTextRotation ?? 0) === rotation) return;
+      set((state) => {
+        pushHistoryEntry(state);
+        const { floorTextRotation: _drop, ...rest } = state.params.surfaceText ?? {};
+        const next = {
+          ...rest,
+          ...(rotation !== 0 ? { floorTextRotation: rotation } : {}),
+        };
         state.params.surfaceText = Object.keys(next).length > 0 ? next : undefined;
       });
     },

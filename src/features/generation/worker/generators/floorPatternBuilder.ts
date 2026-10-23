@@ -24,6 +24,7 @@ import type { PipelineContext } from './pipeline/types';
 import { resolvePanelFactory } from './dividerPatternBuilder';
 import { buildCacheKey, compactKey, quantize } from './cacheKeyUtils';
 import { planFloorPattern } from './floorPatterns';
+import { computeFloorTextLayout } from './floorTextLayout';
 import { DEFAULT_PATTERN_SCALE } from '@/shared/types/bin';
 import { checkCancelled } from './utils/abort';
 import { FeatureTag } from './featureTags';
@@ -58,7 +59,24 @@ export function buildFloorPattern(ctx: PipelineContext): FloorPatternResult {
   const floorPattern = params.floorPattern;
   if (floorPattern?.enabled !== true) return NONE;
 
-  const plan = planFloorPattern(params, dim);
+  // Like the wall pattern behind wall text, the holes clear the floor caption.
+  const floorText = computeFloorTextLayout(params, dim);
+  const plan = planFloorPattern(
+    params,
+    dim,
+    floorText
+      ? [
+          {
+            xMin: floorText.ink.minX + dim.innerOffsetX,
+            xMax: floorText.ink.maxX + dim.innerOffsetX,
+            yMin: floorText.ink.minY + dim.innerOffsetY,
+            yMax: floorText.ink.maxY + dim.innerOffsetY,
+            zMin: 0,
+            zMax: 0,
+          },
+        ]
+      : []
+  );
   if (!plan) return NONE;
 
   const factory = resolvePanelFactory(params, dim.innerW, dim.innerD, {

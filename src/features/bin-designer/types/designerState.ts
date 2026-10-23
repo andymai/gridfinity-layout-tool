@@ -272,7 +272,7 @@ export interface DesignerState {
   setTextDefaults: (partial: Partial<TextStyleDefaults>) => void;
   setLabelTabTextStyle: (overrides: TextStyleOverride | null) => void;
 
-  // Surface text actions (lid top + outer walls)
+  // Surface text actions (lid top, floor, walls)
   setLidText: (text: string) => void;
   setWallText: (side: WallTextSide, text: string) => void;
   /** Remove text from every wall in one history entry (drops per-wall styles and faces too). */
@@ -285,6 +285,9 @@ export interface DesignerState {
   setSurfaceTextAnchor: (anchor: TextAnchor) => void;
   setLidTextStyle: (overrides: TextStyleOverride | null) => void;
   setLidTextRotation: (rotation: TextQuarterTurn) => void;
+  setFloorText: (text: string) => void;
+  setFloorTextStyle: (overrides: TextStyleOverride | null) => void;
+  setFloorTextRotation: (rotation: TextQuarterTurn) => void;
   setWallTextStyle: (side: WallTextSide, overrides: TextStyleOverride | null) => void;
 
   // Wall pattern actions
