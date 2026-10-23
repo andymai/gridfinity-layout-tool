@@ -1,0 +1,45 @@
+src/features/generation/worker/generators/floorPatterns.ts
+  s_cd6741ffc2b979::t_9ab5f3485a08e5 207-210,212-216,240-248,252-255
+src/shared/utils/floorTextHost.test.ts
+  s_cd6741ffc2b979::t_f0e93bb7cd0027 1-52
+src/features/bin-designer/types/featureColors.test.ts
+  s_cd6741ffc2b979::t_d88e70ea24d4a9 377-389
+src/features/bin-designer/utils/flatTextContrast.ts
+  s_cd6741ffc2b979::t_993785825e4295 4
+src/features/generation/worker/generators/binGenerator.scenario.floorText.test.ts
+  s_cd6741ffc2b979::t_857eae9fc0822f 324
+  s_cd6741ffc2b979::t_8891574edc49ce 32-38,310-323,325-376
+src/shared/utils/detachableFeetPlan.ts
+  s_cd6741ffc2b979::t_993785825e4295 42
+src/features/bin-designer/components/panel/FloorTextSection/useFloorTextSection.ts
+  s_cd6741ffc2b979::t_993785825e4295 11-12
+src/features/generation/worker/generators/floorTextLayout.ts
+  s_cd6741ffc2b979::t_993785825e4295 17
+  s_cd6741ffc2b979::t_6c9d9d14be6827 16,26-34,102-142,242
+  s_cd6741ffc2b979::t_9ab5f3485a08e5 234,236
+src/shared/utils/floorTextHost.ts
+  s_cd6741ffc2b979::t_ff2866ee11cc0b 19-26,65
+  s_cd6741ffc2b979::t_993785825e4295 1-18,27-64,66-67
+src/features/bin-designer/types/featureColors.ts
+  s_cd6741ffc2b979::t_a0b5fcdf9ce554 557-562,568,572,749
+  s_cd6741ffc2b979::t_a5311bfd4e68ba 13-14
+  s_cd6741ffc2b979::t_7bde6b4b8cef21 556
+src/features/bin-designer/hooks/useActiveColorZones.ts
+  s_cd6741ffc2b979::t_a0b5fcdf9ce554 16-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "08afa24a5199e9c196e774d2b36ac30ad21fa4df",
+  "prompts": {},
+  "sessions": {
+    "s_cd6741ffc2b979": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8ce0807-7994-4f6b-83de-6b2be919099e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
