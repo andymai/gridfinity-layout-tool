@@ -1,0 +1,20 @@
+src/features/bin-designer/search/designerControlRegistry.ts
+  s_cd6741ffc2b979::t_9fdc7d11b55ffe 325-329
+  s_cd6741ffc2b979::t_eab648dea7b918 324
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a3baf653495863c261a406fa94f91d5bf947a726",
+  "prompts": {},
+  "sessions": {
+    "s_cd6741ffc2b979": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8ce0807-7994-4f6b-83de-6b2be919099e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
