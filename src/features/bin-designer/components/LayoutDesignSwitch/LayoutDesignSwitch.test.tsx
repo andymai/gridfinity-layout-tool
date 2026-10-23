@@ -99,6 +99,20 @@ describe('LayoutDesignSwitch', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
+  it('goes back to the open design when it is picked while another pick is loading', async () => {
+    seedLayout();
+    render(<LayoutDesignSwitch />);
+    const trigger = screen.getByRole('button', { name: 'Switch to another bin in this layout' });
+
+    await userEvent.click(trigger);
+    await userEvent.click(screen.getByRole('menuitem', { name: /Utensils/ }));
+    expect(window.location.search).toBe('?id=d2&bin=b2');
+    await userEvent.click(trigger);
+    await userEvent.click(screen.getByRole('menuitem', { name: /Spice rack/ }));
+
+    expect(window.location.search).toBe('?id=d1&bin=b1');
+  });
+
   it('returns focus to the chevron when the menu closes', async () => {
     seedLayout();
     render(<LayoutDesignSwitch />);

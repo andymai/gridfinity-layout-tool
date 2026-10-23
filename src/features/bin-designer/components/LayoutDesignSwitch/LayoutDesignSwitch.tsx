@@ -25,7 +25,7 @@ export function LayoutDesignSwitch() {
   );
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
   const setDesignListOpen = useDesignerStore((s) => s.setDesignListOpen);
-  const { navigateToDesign } = useDesignerRouting();
+  const { navigateToDesign, designIdFromUrl } = useDesignerRouting();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -61,10 +61,12 @@ export function LayoutDesignSwitch() {
   const handleSwitch = useCallback(
     (entry: LayoutDesign) => {
       setOpen(false);
-      if (entry.design.id === currentDesignId) return;
+      // While another pick is still loading the URL names it, and navigating
+      // back here is what supersedes it.
+      if (entry.design.id === currentDesignId && designIdFromUrl === currentDesignId) return;
       navigateToDesign(entry.design.id, entry.binId);
     },
-    [currentDesignId, navigateToDesign]
+    [currentDesignId, designIdFromUrl, navigateToDesign]
   );
 
   if (entries.length === 0) return null;

@@ -113,7 +113,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const newDesign = useDesignerStore((s) => s.newDesign);
   const workshopEnabled = useFeatureFlag('workshop');
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
-  const { navigateToDesign, syncUrlToDesign } = useDesignerRouting();
+  const { navigateToDesign, syncUrlToDesign, designIdFromUrl } = useDesignerRouting();
   const addToast = useToastStore((s) => s.addToast);
 
   const handleImportedBinSaved = useCallback(
@@ -243,8 +243,9 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
 
   const handleLoad = useCallback(
     (design: SavedDesign) => {
-      // If clicking the active design, just close the modal
-      if (design.id === currentDesignId) {
+      // The active design just closes the modal, unless another pick is still
+      // loading: navigating back here is what supersedes it.
+      if (design.id === currentDesignId && designIdFromUrl === currentDesignId) {
         onClose();
         return;
       }
@@ -254,7 +255,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       navigateToDesign(design.id);
       onClose();
     },
-    [navigateToDesign, onClose, currentDesignId]
+    [navigateToDesign, onClose, currentDesignId, designIdFromUrl]
   );
 
   const [showNewDesignConfirm, setShowNewDesignConfirm] = useState(false);

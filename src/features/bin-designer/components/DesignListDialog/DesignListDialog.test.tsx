@@ -121,19 +121,35 @@ describe('DesignListDialog', () => {
     window.history.replaceState(null, '', '/');
   });
 
+  it('goes back to the active design when it is picked while another pick is loading', async () => {
+    render(<DesignListDialog open={true} onClose={onClose} />);
+    await waitFor(() => {
+      expect(screen.getByText('Screw Bin')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Screw Bin'));
+    fireEvent.click(screen.getByText('Tool Holder'));
+
+    expect(window.location.search).toBe('?id=design-1');
+    window.history.replaceState(null, '', '/');
+  });
+
   it('closes dialog when clicking the active design', async () => {
+    window.history.replaceState(null, '', '/designer?id=design-1');
+    const pushState = vi.spyOn(window.history, 'pushState');
     render(<DesignListDialog open={true} onClose={onClose} />);
 
     await waitFor(() => {
       expect(screen.getByText('Tool Holder')).toBeInTheDocument();
     });
 
-    // Click on the active design - should just close the dialog
     fireEvent.click(screen.getByText('Tool Holder'));
 
-    // Should stay on the same design but close
+    expect(pushState).not.toHaveBeenCalled();
     expect(useDesignerStore.getState().currentDesignId).toBe('design-1');
     expect(onClose).toHaveBeenCalled();
+    pushState.mockRestore();
+    window.history.replaceState(null, '', '/');
   });
 
   it('creates new design and closes dialog', async () => {
