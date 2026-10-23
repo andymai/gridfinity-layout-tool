@@ -195,8 +195,8 @@
     "@typescript/native-preview": "7.0.0-dev.20260707.2",
     "@vercel/node": "^20.0.0",
     "@vitejs/plugin-react": "^6.1.2",
-    "@vitest/coverage-v8": "^5.0.4",
-    "@vitest/ui": "^5.0.4",
+    "@vitest/coverage-v8": "^5.0.5",
+    "@vitest/ui": "^5.0.5",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "axe-core": "^4.14.0",
@@ -228,7 +228,7 @@
     "vite": "^8.3.4",
     "vite-plugin-pwa": "^2.0.0",
     "vite-plugin-wasm": "^3.6.0",
-    "vitest": "^5.0.4",
+    "vitest": "^5.0.5",
     "vitest-axe": "^0.1.0",
     "workbox-window": "^7.4.1"
   }
