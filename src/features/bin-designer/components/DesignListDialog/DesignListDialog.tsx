@@ -44,7 +44,7 @@ import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
 import { showErrorToast } from '@/shared/hooks/useResultToast';
 import { useSettingsStore } from '@/core/store/settings';
-import { useResponsive } from '@/shared/hooks';
+import { useLatestRef, useResponsive } from '@/shared/hooks';
 import { ItemListShell } from '@/shared/components';
 import { DesignImportView } from '../DesignImportView';
 import { ImportBinDialog, useImportBinDesign } from '../ImportBinDialog';
@@ -109,6 +109,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   });
 
   const loadDesign = useDesignerStore((s) => s.loadDesign);
+  const openRef = useLatestRef(open);
   const newDesign = useDesignerStore((s) => s.newDesign);
   const workshopEnabled = useFeatureFlag('workshop');
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
@@ -263,8 +264,12 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
 
   const createNewDesign = useCallback(
     async (kind: ItemKind) => {
+      const openDesignId = useDesignerStore.getState().currentDesignId;
       // Replacing the editor drops the open design's only in-memory copy.
-      if (!(await settleDesignSaves())) {
+      const saved = await settleDesignSaves();
+      // Dismissed or moved on while the saves landed: no longer asked for.
+      if (!openRef.current || useDesignerStore.getState().currentDesignId !== openDesignId) return;
+      if (!saved) {
         addToast({ message: t('header.saveFailed'), type: 'error', duration: 4000 });
         return;
       }
@@ -273,7 +278,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       addToast({ message: t('binDesigner.newDesignCreated'), type: 'success', duration: 2000 });
       onClose();
     },
-    [newDesign, syncUrlToDesign, addToast, onClose, t]
+    [newDesign, syncUrlToDesign, addToast, onClose, t, openRef]
   );
 
   const handleNewDesign = useCallback(

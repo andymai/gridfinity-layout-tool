@@ -15,8 +15,12 @@ import { settleDesignSaves } from '@/features/bin-designer/hooks/designSaveGate'
  */
 export async function openParentDesign(parentId: DesignId | null): Promise<void> {
   if (!parentId) return;
+  const fromId = useDesignerStore.getState().currentDesignId;
   // The parent is read after the variant's edits land, like any other switch.
-  if (!(await settleDesignSaves())) {
+  const saved = await settleDesignSaves();
+  // Moved on while the saves landed: no longer asked for.
+  if (useDesignerStore.getState().currentDesignId !== fromId) return;
+  if (!saved) {
     useToastStore.getState().addToast({
       message: getStaticTranslation('header.saveFailed'),
       type: 'error',

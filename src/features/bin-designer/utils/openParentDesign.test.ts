@@ -58,6 +58,23 @@ describe('openParentDesign', () => {
     expect(useDesignerStore.getState().currentDesignId).toBe('parent');
   });
 
+  it('drops the parent when another design opened while the saves landed', async () => {
+    let land = (): void => {};
+    trackDesignWrite(
+      new Promise<boolean>((resolve) => {
+        land = () => resolve(true);
+      })
+    );
+
+    const opening = openParentDesign(designId('parent'));
+    useDesignerStore.setState({ currentDesignId: 'elsewhere' });
+    land();
+    await opening;
+
+    expect(DesignerStorage.loadDesign).not.toHaveBeenCalled();
+    expect(useDesignerStore.getState().currentDesignId).toBe('elsewhere');
+  });
+
   it('stays on the variant when its edits could not be saved', async () => {
     registerOpenDesignFlush(() => {
       trackDesignWrite(Promise.resolve(false));

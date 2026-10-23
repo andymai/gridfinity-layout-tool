@@ -152,6 +152,26 @@ describe('DesignListDialog', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
+  it('drops a new design asked for before the dialog was dismissed', async () => {
+    let land = (): void => {};
+    trackDesignWrite(
+      new Promise<boolean>((resolve) => {
+        land = () => resolve(true);
+      })
+    );
+    const { rerender } = render(<DesignListDialog open={true} onClose={onClose} />);
+    await waitFor(() => {
+      expect(screen.getByText('Tool Holder')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('New Design'));
+    rerender(<DesignListDialog open={false} onClose={onClose} />);
+    land();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(useDesignerStore.getState().currentDesignId).toBe('design-1');
+  });
+
   it('keeps the open design when its edits could not be saved before a new one', async () => {
     const unregister = registerOpenDesignFlush(() => {
       trackDesignWrite(Promise.resolve(false));
