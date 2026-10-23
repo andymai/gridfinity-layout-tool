@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.522.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.521.1...gridfinity-layout-tool-v4.522.0) (2026-10-23)
+
+
+### Features
+
+* **designer:** switch between a layout's bins from the designer header ([#4685](https://github.com/andymai/gridfinity-layout-tool/issues/4685)) ([7752f4a](https://github.com/andymai/gridfinity-layout-tool/commit/7752f4ab4c7d8e90ffba2144ad94c5a52dca8024))
+
+
+### Bug Fixes
+
+* **designer:** save pending edits when switching designs ([#4684](https://github.com/andymai/gridfinity-layout-tool/issues/4684)) ([4e5515d](https://github.com/andymai/gridfinity-layout-tool/commit/4e5515df3615edc3cdf8eff516a0033127fcae0c))
+
 ## [4.521.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.521.0...gridfinity-layout-tool-v4.521.1) (2026-10-23)
 
 
