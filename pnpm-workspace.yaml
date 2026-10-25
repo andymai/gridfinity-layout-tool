@@ -29,11 +29,13 @@ minimumReleaseAgeExclude:
   # every future release of it. One package needing two versions exempted takes
   # a single `||` union entry, never a second line (see SECURITY.md).
   #
-  # handlebars 4.7.10 (2026-10-05) fixes GHSA-8r5x-fm3f-whwj,
-  # GHSA-p8wg-vrv2-v86f and GHSA-xw65-4hp5-5hc7: JavaScript injection through
-  # compiled templates. Reached only through eslint-plugin-boundaries (lint).
-  # TODO: remove after 2026-10-13.
-  - handlebars@4.7.10
+  # fast-uri 3.1.9 (2026-10-19) fixes GHSA-w74x-v6f9-j3xg, GHSA-xhq7-xmqj-769h,
+  # GHSA-wjr9-j795-jxcr and GHSA-333x-w4r6-6crp. Reached only through ajv
+  # (PWA build, @vercel/node). TODO: remove after 2026-10-27.
+  - fast-uri@3.1.9
+  # serialize-javascript 7.1.3 (2026-10-22) fixes GHSA-m5mm-p8h7-m29v. Reached
+  # only through workbox-build (PWA build). TODO: remove after 2026-10-30.
+  - serialize-javascript@7.1.3
 
 # Blocks Shai-Hulud-class worms that spread via npm lifecycle scripts.
 # Packages that need to build are listed in allowBuilds.
@@ -58,11 +60,15 @@ peerDependencyRules:
 # no rule yet rather than guessing at one. `parent>child` entries are exempt --
 # naming the parent already bounds the blast radius.
 overrides:
-  '@vercel/node>undici': '^7.29.1'
-  # GHSA-3wwx-pv8p-q78v, GHSA-r53p-7pc4-xj5r and GHSA-rfgv-xxqx-mfg5 are fixed
-  # at 6.28.1 and 7.29.1 on their lines.
-  'undici@>=6.0.0 <6.28.1': '^6.28.1'
-  'undici@>=7.0.0 <7.29.1': '^7.29.1'
+  '@vercel/node>undici': '^7.30.1'
+  # GHSA-xjj6-f33q-929c and GHSA-4qv8-2p9j-2685 are fixed at 6.29.1, 7.30.1
+  # and 8.12.2 on their lines; GHSA-f72v-6w45-q472 at 7.30.1 and 8.12.2.
+  'undici@>=6.0.0 <6.29.1': '^6.29.1'
+  'undici@>=7.0.0 <7.30.1': '^7.30.1'
+  'undici@>=8.0.0 <8.12.2': '^8.12.2'
+  # GHSA-mrhx-c7xc-m3w5 is fixed at 4.6.6. @vercel/cli-config (under
+  # @vercel/blob) pins 4.1.11 exactly.
+  'zod@>=4.0.0 <4.6.6': '^4.6.6'
   # GHSA-9wv6-86v2-598j — ReDoS, fixed at 6.3.0 for the 4.x-6.x range with no
   # backport. Scoped to 6.x, the only line in the tree (@vercel/node pins 6.1.0).
   # The 7.x and 8.x lines have their own advisories and their own fixes; a bare
@@ -73,7 +79,7 @@ overrides:
   'workbox-build>@rollup/plugin-node-resolve': '^16.0.0'
   '@apideck/better-ajv-errors>ajv': '^8.17.1'
   # ajv pins ^3.0.1; the 4.x line has separate advisories fixed at 4.1.2.
-  'fast-uri@>=3.0.0 <3.1.7': '^3.1.7'
+  'fast-uri@>=3.0.0 <3.1.9': '^3.1.9'
   # sharp <0.35.0 inherits libvips CVE-2026-33327/33328/35590/35591
   # (GHSA-f88m-g3jw-g9cj). Only reachable transitively via
   # manifold-3d>@gltf-transform/functions>ndarray-pixels (build-time glTF
@@ -84,8 +90,8 @@ overrides:
   # the old floor was itself a vulnerable version. It never resolved there --
   # @rollup/plugin-terser asks for ^7.0.3 and gets 7.0.7 -- so OSV stayed green
   # and the stale floor never surfaced.
-  # 7.1.2 fixes GHSA-gfhx-hw2g-v5hg.
-  'serialize-javascript@>=7.0.0 <7.1.2': '^7.1.2'
+  # 7.1.2 fixes GHSA-gfhx-hw2g-v5hg; 7.1.3 fixes GHSA-m5mm-p8h7-m29v.
+  'serialize-javascript@>=7.0.0 <7.1.3': '^7.1.3'
   'eslint-plugin-react-hooks>eslint': '^10.0.3'
   'eslint-plugin-jsx-a11y>eslint': '^10.0.3'
   # All minimatch consumers are pinned to the 10.x line, the only line pulling a
