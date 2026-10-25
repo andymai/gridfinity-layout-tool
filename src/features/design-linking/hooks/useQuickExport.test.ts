@@ -1,11 +1,14 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { designId } from '@/core/types';
 import { ok } from '@/core/result';
+import { useSettingsStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
 import { loadDesign, type BinParams, type SavedDesign } from '@/features/bin-designer';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { bridgeManager } from '@/shared/generation/bridge';
+import { bridgeManager, type CombinedExportResult } from '@/shared/generation/bridge';
+import { triggerDownload } from '@/shared/generation/exportUtils';
+import type * as ExportUtils from '@/shared/generation/exportUtils';
 import { useQuickExport } from './useQuickExport';
 
 vi.mock('@/features/bin-designer', () => ({
@@ -15,6 +18,11 @@ vi.mock('@/features/bin-designer', () => ({
 
 vi.mock('@/shared/generation/bridge', () => ({
   bridgeManager: { acquire: vi.fn(), release: vi.fn() },
+}));
+
+vi.mock('@/shared/generation/exportUtils', async (importOriginal) => ({
+  ...(await importOriginal<typeof ExportUtils>()),
+  triggerDownload: vi.fn(),
 }));
 
 const D1 = designId('design-1');
@@ -35,28 +43,31 @@ function design(params: Partial<BinParams> = {}): SavedDesign {
   };
 }
 
+function piece(label: string): CombinedExportResult['pieces'][number] {
+  return { data: new ArrayBuffer(4), label };
+}
+
 describe('useQuickExport', () => {
-  const exportBin = vi.fn<(params: BinParams, format: string) => Promise<{ data: ArrayBuffer }>>(
-    async () => ({ data: new ArrayBuffer(4) })
-  );
+  const exportCombined = vi.fn<
+    (params: BinParams, format: string) => Promise<CombinedExportResult>
+  >(async () => ({ pieces: [piece('bin')], format: 'stl' }));
 
   beforeEach(() => {
     resetAllStores();
     vi.clearAllMocks();
-    vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:x'), revokeObjectURL: vi.fn() });
-    vi.mocked(bridgeManager.acquire).mockResolvedValue({ exportBin } as unknown as Awaited<
+    vi.mocked(bridgeManager.acquire).mockResolvedValue({ exportCombined } as unknown as Awaited<
       ReturnType<typeof bridgeManager.acquire>
     >);
   });
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  async function exportedParams(label: string): Promise<BinParams> {
+  async function runExport(label = 'Box'): Promise<void> {
     const { result } = renderHook(() => useQuickExport());
     await act(() => result.current.exportToSTL(D1, 'Box', label));
-    return exportBin.mock.calls[0][0];
+  }
+
+  async function exportedParams(label: string): Promise<BinParams> {
+    await runExport(label);
+    return exportCombined.mock.calls[0][0];
   }
 
   it('prints the bin label in a blank single caption', async () => {
@@ -73,5 +84,38 @@ describe('useQuickExport', () => {
       )
     );
     expect((await exportedParams('Screws')).compartments.compartmentTexts).toEqual(['HARDWARE']);
+  });
+
+  it('downloads a lone body as a plain STL', async () => {
+    vi.mocked(loadDesign).mockResolvedValue(ok(design()));
+    await runExport();
+    expect(triggerDownload).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(triggerDownload).mock.calls[0][1]).toBe('box.stl');
+  });
+
+  it('ships feet, lid and dividers alongside the body in a ZIP', async () => {
+    vi.mocked(loadDesign).mockResolvedValue(ok(design()));
+    exportCombined.mockResolvedValueOnce({
+      pieces: [piece('bin'), piece('lid'), piece('feet'), piece('dividers')],
+      format: 'stl',
+    });
+    await runExport();
+    expect(triggerDownload).toHaveBeenCalledTimes(1);
+    const [blob, name] = vi.mocked(triggerDownload).mock.calls[0];
+    expect(name).toBe('box.zip');
+    expect(blob.type).toBe('application/zip');
+  });
+
+  it('sizes a label socket for the configured nozzle', async () => {
+    useSettingsStore.setState((s) => ({
+      settings: {
+        ...s.settings,
+        printSettings: { ...s.settings.printSettings, nozzleSizeMm: 0.6 },
+      },
+    }));
+    vi.mocked(loadDesign).mockResolvedValue(
+      ok(design({ label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'socket' } }))
+    );
+    expect((await exportedParams('Box')).nozzleSizeMm).toBe(0.6);
   });
 });
