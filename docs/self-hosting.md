@@ -109,9 +109,10 @@ service worker, and the new build simply arrives on the next page load.
 ## Build from source without Docker
 
 Any static file server can host the app. Build with Node 26 and pnpm (corepack
-picks the pinned version):
+picks the pinned version; Node 26 no longer bundles it, so install it first):
 
 ```bash
+npm install -g corepack
 corepack enable
 pnpm install --frozen-lockfile
 VITE_SELF_HOSTED=1 GIT_SHA=$(git rev-parse HEAD) GIT_COMMIT_TIME=$(git log -1 --format=%cI) pnpm run build
