@@ -57,6 +57,9 @@ const CELL_BOUNDARY_TOLERANCE = 0.001;
  */
 const CELL_BOUNDARY_NUDGE = 0.1;
 
+/** Total gap between the two faces of an interior cut (mm), half on each piece. */
+export const SEAM_GAP = 0.1;
+
 /**
  * Shift any cut plane that lands on a socket-cell boundary by a tiny
  * amount so it no longer coincides with the bin's internal wall plane.
@@ -66,8 +69,8 @@ const CELL_BOUNDARY_NUDGE = 0.1;
  * the natural even-split cut plane lands at exactly y=0, which is one of
  * those boundaries.
  *
- * Pieces still meet flush — they both use the shifted plane — so the
- * nudge just translates the seam, it doesn't create overlap.
+ * Both pieces cut against the shifted plane, so the nudge only translates the
+ * seam; it doesn't change the gap between them.
  */
 export function shiftCutPlanesOffCellBoundaries(
   cutPlanes: readonly number[],
@@ -376,14 +379,10 @@ function splitSolidIntoPieces(
     }
   }
 
-  // When a cut plane lands exactly on a socket-cell boundary (e.g. depth=10
-  // split into 5+5 puts the cut at y=0, which is the shared wall between
-  // adjacent socket cells), the per-piece 0.01mm cutting-box overlap isn't
-  // enough — OCCT still treats some interior faces as coplanar and drops
-  // walls ( reported A2 lost ~22mm of body Z). Shifting the cut
-  // plane itself by 0.1mm fully resolves the coplanarity at both faces and
-  // keeps the pieces flush (no overlap region, just a 0.1mm offset that's
-  // invisible to FDM print and barely felt at the join).
+  // A cut plane on a socket-cell boundary (depth=10 split 5+5 cuts at y=0, the
+  // wall shared by two cells) puts a cut face within 0.01mm of that wall, where
+  // OCCT treats the faces as coplanar and drops walls (a piece lost ~22mm of
+  // body Z). Moving the plane itself off the boundary clears both faces.
   const adjustedCutPlanesX = shiftCutPlanesOffCellBoundaries(cutPlanesX, params.width, gridUnitMmX);
   const adjustedCutPlanesY = shiftCutPlanesOffCellBoundaries(cutPlanesY, params.depth, gridUnitMmY);
 
@@ -400,11 +399,11 @@ function splitSolidIntoPieces(
   // silently drop outer walls.
   const EDGE_MARGIN = 1;
 
-  // Interior cut faces still get a small overlap to defeat coplanarity
-  // tolerance at the cut. With shiftCutPlanesOffCellBoundaries() above,
-  // the cut plane itself is already off any cell wall — this offset is the
-  // belt to the suspenders of the cell-boundary shift.
-  const INTERIOR_MARGIN = 0.01;
+  // Interior cut faces stand back from their plane so a cut foot assembles
+  // under its nominal size instead of over it. Half the gap per face must stay
+  // below CELL_BOUNDARY_NUDGE, or a nudged plane's face lands back on the cell
+  // wall it was moved off.
+  const interiorMargin = -SEAM_GAP / 2;
 
   const numCols = xBounds.length - 1;
   const numRows = yBounds.length - 1;
@@ -464,12 +463,10 @@ function splitSolidIntoPieces(
         const centerY = (yMin + yMax) / 2;
         const colLabel = String.fromCharCode(65 + col); // A, B, C...
 
-        // Expand cutting box at outer bin edges to avoid coplanar booleans;
-        // interior faces get a smaller margin to break socket wall coplanarity.
-        const marginL = col === 0 ? EDGE_MARGIN : INTERIOR_MARGIN;
-        const marginR = col === xBounds.length - 2 ? EDGE_MARGIN : INTERIOR_MARGIN;
-        const marginB = row === 0 ? EDGE_MARGIN : INTERIOR_MARGIN;
-        const marginT = row === yBounds.length - 2 ? EDGE_MARGIN : INTERIOR_MARGIN;
+        const marginL = col === 0 ? EDGE_MARGIN : interiorMargin;
+        const marginR = col === xBounds.length - 2 ? EDGE_MARGIN : interiorMargin;
+        const marginB = row === 0 ? EDGE_MARGIN : interiorMargin;
+        const marginT = row === yBounds.length - 2 ? EDGE_MARGIN : interiorMargin;
         const boxW = pieceW + marginL + marginR;
         const boxD = pieceD + marginB + marginT;
         const boxCenterX = centerX + (marginR - marginL) / 2;
@@ -553,9 +550,15 @@ function splitSolidIntoPieces(
             centerX,
             centerY
           );
-          const cutFaces = isPartialMask(params.cellMask)
+          const planeFaces = isPartialMask(params.cellMask)
             ? maskCutFaces(rectFaces, params.cellMask, { x: gridUnitMmX, y: gridUnitMmY })
             : rectFaces;
+          // A male face is the piece's max side, so it stood back toward min.
+          // Moving each connector with its face keeps the assembled fit unchanged.
+          const cutFaces = planeFaces.map((face) => ({
+            ...face,
+            position: face.position + (face.isMale ? interiorMargin : -interiorMargin),
+          }));
           const geometryContext: BinGeometryContext = {
             floorZ,
             wallTopZ,

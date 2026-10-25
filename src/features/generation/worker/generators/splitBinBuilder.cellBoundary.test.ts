@@ -4,7 +4,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { shiftCutPlanesOffCellBoundaries } from './splitBinBuilder';
+import { SEAM_GAP, shiftCutPlanesOffCellBoundaries } from './splitBinBuilder';
 
 describe('shiftCutPlanesOffCellBoundaries', () => {
   it('nudges a cut plane that lands exactly on an interior cell boundary', () => {
@@ -12,6 +12,11 @@ describe('shiftCutPlanesOffCellBoundaries', () => {
     const out = shiftCutPlanesOffCellBoundaries([0], 10, 42);
     expect(out).toHaveLength(1);
     expect(out[0]).toBeCloseTo(0.1, 5);
+  });
+
+  it('keeps both seam faces of a nudged cut on the same side of the cell wall', () => {
+    const [plane] = shiftCutPlanesOffCellBoundaries([0], 10, 42);
+    expect(plane - SEAM_GAP / 2).toBeGreaterThan(0);
   });
 
   it('leaves a cut plane that sits cleanly between cell boundaries alone', () => {

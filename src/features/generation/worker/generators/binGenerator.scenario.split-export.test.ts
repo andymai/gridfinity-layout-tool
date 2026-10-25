@@ -160,10 +160,9 @@ describe('split export: geometry completeness', () => {
   }, 90000);
 
   it('exports a 3x10x7 standard-base no-lip bin without losing body Z (issue #1676)', async () => {
-    // Reported failure: depth 10 forces a single y-cut at exactly y=0, which
-    // lands on the shared wall between adjacent socket cells. Even with the
-    // 0.01mm INTERIOR_MARGIN, OCCT was dropping ~22mm of wall geometry
-    // (final piece Z=26.7mm vs expected 49mm), tripping the body-loss guard.
+    // Depth 10 forces a single y-cut at exactly y=0, the wall shared by two
+    // socket cells. With a cut face 0.01mm off that wall, OCCT dropped ~22mm of
+    // wall geometry (piece Z=26.7mm vs 49mm), tripping the body-loss guard.
     const exportSplitBin = getExportSplitBin();
 
     const params: BinParams = {
