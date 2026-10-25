@@ -1,0 +1,21 @@
+src/features/design-linking/hooks/useQuickExport.test.ts
+  s_cb5189120896c0::t_bde8e6103f25c9 3,47-48,100,107-110
+src/features/design-linking/README.md
+  s_cb5189120896c0::t_1b6d22ee369675 38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7ce3648463451ac99b0072815e127fc88131bcb0",
+  "prompts": {},
+  "sessions": {
+    "s_cb5189120896c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "772e2ff0-2c58-4904-948a-e63dad0372b8",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
