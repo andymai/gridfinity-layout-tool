@@ -16,6 +16,7 @@ const ALONG_X: BinParams = { ...DEFAULT_BIN_PARAMS, width: 3, depth: 1, height: 
 const ALONG_Y: BinParams = { ...DEFAULT_BIN_PARAMS, width: 1, depth: 3, height: 3 };
 const MIDDLE_FOOT_HALF_SPAN = 21;
 const NO_CONNECTORS: SplitConnectorConfig = { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, enabled: false };
+const SCARF_TONGUE_REACH_MM = 1.2;
 
 type Axis = 'x' | 'y';
 
@@ -88,8 +89,7 @@ describe('split seam gap', () => {
   it('moves the connectors with their faces, so the joint fits as it does flush', async () => {
     const [low, high] = await splitAtCenter('x', DEFAULT_SPLIT_CONNECTOR_CONFIG);
 
-    // The male scarf tongue reaches 1.2mm past its face.
-    expect(low.max).toBeCloseTo(-0.05 + 1.2, 3);
+    expect(low.max).toBeCloseTo(-0.05 + SCARF_TONGUE_REACH_MM, 3);
     expect(high.min).toBeCloseTo(0.05, 3);
     expect(low.footMax - low.footMin).toBeCloseTo(17.75, 3);
     expect(high.footMax - high.footMin).toBeCloseTo(17.75, 3);
