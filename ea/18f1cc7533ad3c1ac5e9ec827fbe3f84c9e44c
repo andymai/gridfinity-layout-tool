@@ -1,0 +1,21 @@
+docs/self-hosting.md
+  s_0b97b732934bc6::t_67bd9fcb0410eb 112,115
+Dockerfile
+  s_0b97b732934bc6::t_cbe9ab7f25f1a2 13-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ea18f1cc7533ad3c1ac5e9ec827fbe3f84c9e44c",
+  "prompts": {},
+  "sessions": {
+    "s_0b97b732934bc6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a15c13dd-1194-4f30-bd54-682f2bb81f77",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
