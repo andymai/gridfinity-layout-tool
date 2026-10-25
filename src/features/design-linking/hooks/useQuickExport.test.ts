@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import { unzipSync } from 'fflate';
 import { designId } from '@/core/types';
 import { ok } from '@/core/result';
 import { useSettingsStore } from '@/core/store';
@@ -43,8 +44,8 @@ function design(params: Partial<BinParams> = {}): SavedDesign {
   };
 }
 
-function piece(label: string): CombinedExportResult['pieces'][number] {
-  return { data: new ArrayBuffer(4), label };
+function piece(label: string, byte = 0): CombinedExportResult['pieces'][number] {
+  return { data: new Uint8Array([byte, byte, byte, byte]).buffer, label };
 }
 
 describe('useQuickExport', () => {
@@ -96,14 +97,17 @@ describe('useQuickExport', () => {
   it('ships feet, lid and dividers alongside the body in a ZIP', async () => {
     vi.mocked(loadDesign).mockResolvedValue(ok(design()));
     exportCombined.mockResolvedValueOnce({
-      pieces: [piece('bin'), piece('lid'), piece('feet'), piece('dividers')],
+      pieces: [piece('bin', 1), piece('lid', 2), piece('feet', 3), piece('dividers', 4)],
       format: 'stl',
     });
     await runExport();
     expect(triggerDownload).toHaveBeenCalledTimes(1);
     const [blob, name] = vi.mocked(triggerDownload).mock.calls[0];
     expect(name).toBe('box.zip');
-    expect(blob.type).toBe('application/zip');
+    const files = unzipSync(new Uint8Array(await blob.arrayBuffer()));
+    expect(
+      Object.fromEntries(Object.entries(files).map(([file, bytes]) => [file, bytes[0]]))
+    ).toEqual({ 'box_bin.stl': 1, 'box_lid.stl': 2, 'box_feet.stl': 3, 'box_dividers.stl': 4 });
   });
 
   it('sizes a label socket for the configured nozzle', async () => {

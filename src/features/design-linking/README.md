@@ -35,6 +35,7 @@ graph TB
 | Create from bin    | Select unlinked bin → "Create Design" → name dialog → Designer → save + link |
 | Link existing      | Select unlinked bin → "Link Existing" → pick compatible design → linked      |
 | Sync dimensions    | Design changed → "Sync" → eligible bins update, ineligible bins unlink       |
+| Quick export       | Select linked bin → "Export" → one STL, or a ZIP when it has companion parts |
 
 ## Make Bento
 
