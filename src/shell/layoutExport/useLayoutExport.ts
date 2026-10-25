@@ -35,6 +35,7 @@ import { triggerDownload } from '@/shared/generation/exportUtils';
 import { packageFilesAsZip } from '@/shared/generation/zipExport';
 import type { ZipBinaryFile, ZipTextFile } from '@/shared/generation/zipExport';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
+import type { FaceGroupData } from '@/shared/types/generation';
 import {
   buildBaseplateExportPieces,
   BaseplateBedOverageError,
@@ -42,7 +43,11 @@ import {
 import { loadDesign } from '@/features/bin-designer';
 // Deep import (not the barrel): the bin-designer barrel is eagerly loaded by App;
 // this packaging only runs inside the lazy layout-export chunk.
-import { buildMultiObject3MFObjects } from '@/features/bin-designer/utils/binDownloadHelpers';
+import {
+  buildMultiObject3MFObjects,
+  buildSinglePiece3MFObject,
+} from '@/features/bin-designer/utils/binDownloadHelpers';
+import { isMultiColorDesign } from '@/features/bin-designer/utils/multiColorDesign';
 import { buildThreeMFPrintSettings } from '@/shared/generation/stlTo3mf';
 import { getLinkedDesignIds } from '@/features/design-linking';
 import { planLayoutBinExport } from './planLayoutBinExport';
@@ -182,22 +187,33 @@ export function useLayoutExport(): UseLayoutExportReturn {
           // Scale each socket bin's pocket to the live nozzle (transient — never
           // persisted). No-op for non-socket designs.
           const params = simple.map((e) => withSocketNozzle(e.params, printSettings.nozzleSizeMm));
-          let bytes: ArrayBuffer[];
+          let results: { data: ArrayBuffer; faceGroups?: readonly FaceGroupData[] }[];
           if (pool && !pool.isDestroyed && pool.size > 1) {
-            const results = await pool.exportBins(params, workerFormat, (c) =>
+            results = await pool.exportBins(params, workerFormat, (c) =>
               setExportProgress({ current: c, total: binTotal, label: binLabel(c) })
             );
-            bytes = results.map((r) => r.data);
           } else {
-            bytes = [];
+            results = [];
             for (let i = 0; i < params.length; i++) {
               setExportProgress({ current: i, total: binTotal, label: binLabel(i) });
-              bytes.push((await bridge.exportBin(params[i], workerFormat)).data);
+              results.push(await bridge.exportBin(params[i], workerFormat));
             }
           }
           for (let i = 0; i < simple.length; i++) {
-            if (projectMode) projectParts.addStl(baseNameOf(simple[i].path), bytes[i]);
-            else binFiles.push({ path: simple[i].path, data: bytes[i] });
+            const { data, faceGroups } = results[i];
+            if (projectMode) {
+              projectParts.addObjects([
+                buildSinglePiece3MFObject(
+                  data,
+                  faceGroups,
+                  simple[i].params,
+                  baseNameOf(simple[i].path),
+                  true
+                ),
+              ]);
+            } else {
+              binFiles.push({ path: simple[i].path, data });
+            }
           }
           done = simple.length;
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
@@ -554,7 +570,11 @@ export function useLayoutExport(): UseLayoutExportReturn {
 
         const zip = packageFilesAsZip(binaryFiles, textFiles);
         triggerDownload(zip, `${zipBaseName}.zip`);
-        trackEvent('ui.layoutExported', { format: 'zip', fileFormat: format });
+        trackEvent('ui.layoutExported', {
+          format: 'zip',
+          fileFormat: format,
+          multiColorBins: plan.exportable.filter((e) => isMultiColorDesign(e.params)).length,
+        });
         trackToolConverted('layout', { format, piece_count: binaryFiles.length });
 
         // Report what actually made it into the archive.

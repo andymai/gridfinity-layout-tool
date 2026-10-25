@@ -19,6 +19,7 @@
 import { GenerationBridge } from './GenerationBridge';
 import type { GenerationResult, SplitPreviewResult, SplitExportResult } from './GenerationBridge';
 import type { BinParams, ResolvedBaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
+import type { FaceGroupData } from '@/shared/types/generation';
 import type { ExportFormat, KernelName } from './types';
 
 /** Maximum number of pool workers (caps memory usage from parallel WASM instances) */
@@ -279,7 +280,7 @@ export class WorkerPool {
     format: ExportFormat,
     onProgress?: (completed: number, total: number) => void,
     signal?: AbortSignal
-  ): Promise<Array<{ data: ArrayBuffer; index: number }>> {
+  ): Promise<Array<{ data: ArrayBuffer; faceGroups?: readonly FaceGroupData[]; index: number }>> {
     await this.ensureWorkers();
 
     const total = bins.length;
@@ -289,12 +290,12 @@ export class WorkerPool {
 
     const taskGroups = indexGroups.map((indices, bridgeIdx) => {
       const bridge = this.bridges[bridgeIdx];
-      return indices.map((binIdx) => async (): Promise<{ data: ArrayBuffer; index: number }> => {
+      return indices.map((binIdx) => async () => {
         if (signal?.aborted) throw new DOMException('Export cancelled', 'AbortError');
         const result = await bridge.exportBin(bins[binIdx], format);
         completed++;
         onProgress?.(completed, total);
-        return { data: result.data, index: binIdx };
+        return { data: result.data, faceGroups: result.faceGroups, index: binIdx };
       });
     });
 

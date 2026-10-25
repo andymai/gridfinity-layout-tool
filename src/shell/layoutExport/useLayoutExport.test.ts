@@ -13,6 +13,7 @@ const h = vi.hoisted(() => ({
   trackEvent: vi.fn(),
   buildBaseplateExportPieces: vi.fn(),
   loadDesign: vi.fn(),
+  buildLayoutProjectFile: vi.fn(),
   bridgeAcquire: vi.fn(),
   bridgeRelease: vi.fn(),
   poolAcquire: vi.fn(),
@@ -43,9 +44,24 @@ vi.mock('@/features/bin-designer', async (orig) => ({
   loadDesign: h.loadDesign,
 }));
 
+vi.mock('./buildProjectFile', async (orig) => ({
+  ...(await orig<Record<string, unknown>>()),
+  buildLayoutProjectFile: h.buildLayoutProjectFile,
+}));
+
 import { useLayoutExport } from './useLayoutExport';
 import { BaseplateBedOverageError } from '@/features/baseplate/utils/buildBaseplateExportPieces';
 import { useToastStore } from '@/core/store/toast';
+import type { ThreeMFObject } from '@/shared/generation/export';
+
+function oneTriangleStl(): ArrayBuffer {
+  const buf = new ArrayBuffer(84 + 50);
+  const view = new DataView(buf);
+  view.setUint32(80, 1, true);
+  const coords = [0, 0, 0, 10, 0, 0, 0, 10, 0];
+  coords.forEach((c, i) => view.setFloat32(84 + 12 + i * 4, c, true));
+  return buf;
+}
 
 function design(id: string, name: string, params: Partial<typeof DEFAULT_BIN_PARAMS> = {}) {
   return ok({
@@ -109,6 +125,7 @@ describe('useLayoutExport', () => {
     expect(h.trackEvent).toHaveBeenCalledWith('ui.layoutExported', {
       format: 'zip',
       fileFormat: 'stl',
+      multiColorBins: 0,
     });
     expect(h.bridgeRelease).toHaveBeenCalledTimes(1);
     expect(h.poolRelease).toHaveBeenCalledTimes(1);
@@ -233,6 +250,48 @@ describe('useLayoutExport', () => {
     );
     // The whole-bin route must not also run — that is the un-cut file.
     expect(h.bridge.exportBin).not.toHaveBeenCalled();
+  });
+
+  it('keeps the colors of a body-only multi-color bin in the 3MF project (#4696)', async () => {
+    h.loadDesign.mockImplementation((id: string) =>
+      Promise.resolve(
+        design(id, 'Colored', {
+          featureColors: {
+            ...DEFAULT_BIN_PARAMS.featureColors,
+            enabled: true,
+            body: '#3b82f6',
+            base: '#22c55e',
+          },
+        })
+      )
+    );
+    h.bridge.exportBin.mockResolvedValue({
+      data: oneTriangleStl(),
+      fileName: 'x',
+      format: 'stl',
+      faceGroups: [{ tag: 0, start: 0, count: 1 }],
+    });
+    h.buildLayoutProjectFile.mockResolvedValue(null);
+    useLayoutStore.setState({
+      layout: createTestLayout({
+        name: 'L',
+        bins: [createTestBin({ linkedDesignId: designId('d1') })],
+      }),
+    });
+    const { result } = renderHook(() => useLayoutExport());
+
+    const success = await result.current.exportLayout('3mf', 'z', { ...CONFIG, format: '3mf' });
+
+    expect(success).toBe(true);
+    expect(h.bridge.exportBin).toHaveBeenCalledTimes(1);
+    expect(h.bridge.exportCombined).not.toHaveBeenCalled();
+    const parts = h.buildLayoutProjectFile.mock.calls[0][0] as ThreeMFObject[];
+    const bin = parts.find((p) => p.name.startsWith('Colored'));
+    expect(bin?.colorConfig).toBeDefined();
+    expect(h.trackEvent).toHaveBeenCalledWith(
+      'ui.layoutExported',
+      expect.objectContaining({ multiColorBins: 1 })
+    );
   });
 
   it('reports engine-not-ready and does not release when the bridge fails to acquire', async () => {
