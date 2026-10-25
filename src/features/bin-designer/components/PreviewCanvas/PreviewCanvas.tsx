@@ -76,6 +76,7 @@ import { useTranslation } from '@/i18n';
 import { hasDetachableFeet } from '@/features/bin-designer/types/base';
 import { planKnifeRest } from '@/shared/utils/knifeRestPlan';
 import { planHingeLid } from '@/shared/utils/hingeLidPlan';
+import { shouldGenerateLid } from '../../utils/lidCompatibility';
 import { useToastStore } from '@/core/store/toast';
 import {
   CameraController,
@@ -244,7 +245,7 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
 
   // A bin can carry several sliders, and they share one anchor on the right
   // edge — so each takes the next free slot down the list.
-  const showLidSlider = params.lid.enabled && params.base.stackingLip;
+  const showLidSlider = useMemo(() => shouldGenerateLid(params), [params]);
   const showFeetSlider = hasDetachableFeet(params.base);
   // Companion only: an integrated rest is part of the block, so there is
   // nothing to separate from it.
@@ -255,17 +256,17 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   const hingeStopDeg = useMemo(() => planHingeLid(params).geometry?.stopAngleDeg ?? null, [params]);
   const restSliderSlot = EXPLODE_SLIDER_SLOTS[(showLidSlider ? 1 : 0) + (showFeetSlider ? 1 : 0)];
 
-  // Reset the explode slider to its default whenever the lid transitions
-  // off → on. Without this, a stale value (e.g. 80mm from a previous session)
-  // persists across the slider's unmount/remount cycle — disabling the lid
-  // hides the slider but doesn't clear the parent-owned `lidOffsetMm`.
-  const wasLidEnabledRef = useRef(params.lid.enabled);
+  // Reset the explode slider to its default whenever it reappears. Without
+  // this, a stale value (e.g. 80mm from a previous session) persists across the
+  // slider's unmount/remount cycle — hiding the slider doesn't clear the
+  // parent-owned `lidOffsetMm`.
+  const wasLidSliderShownRef = useRef(showLidSlider);
   useEffect(() => {
-    if (params.lid.enabled && !wasLidEnabledRef.current) {
+    if (showLidSlider && !wasLidSliderShownRef.current) {
       setLidOffsetMm(LID_OFFSET_DEFAULT);
     }
-    wasLidEnabledRef.current = params.lid.enabled;
-  }, [params.lid.enabled]);
+    wasLidSliderShownRef.current = showLidSlider;
+  }, [showLidSlider]);
 
   // Same stale-value problem the lid has: the rest's slider unmounts with the
   // rest, but the offset it set is parent-owned and outlives it.
@@ -560,7 +561,7 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 // The slider only exists with a lid; without one the parent
                 // still holds its default, which would leave every plate
                 // hovering out of its slot.
-                lidOffsetMm={params.lid.enabled ? lidOffsetMm : 0}
+                lidOffsetMm={showLidSlider ? lidOffsetMm : 0}
                 wireframe={wireframe}
               />
               {/* Dashed guide line between bin's lip top and lid's mating opening,
@@ -680,8 +681,8 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
           {/* Nostalgic loading indicator (bottom center) */}
           {showOverlay && <GeneratingIndicator />}
 
-          {/* Lid explode slider — only when the bin has a lid configured AND
-              its stacking lip is on (lid won't render/export without lip). */}
+          {/* Lid explode slider — only when the worker builds a lid. A flush
+              sliding lid needs no stacking lip, and a blocked lid is never built. */}
           {/* A hinged lid swings, so its slider carries DEGREES and stops where
               the lid does. Same control, different units — see the slider's own
               note on why this is a prop and not a second component. */}

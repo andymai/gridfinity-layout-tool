@@ -5,6 +5,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { useDesignerStore } from '../../store';
 import { useToastStore } from '@/core/store/toast';
 import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '../../constants';
+import { DEFAULT_LID_SLIDE_CONFIG, type BinParams } from '../../types';
+import { shouldGenerateLid } from '../../utils/lidCompatibility';
 
 // Mock Three.js rendering (jsdom has no WebGL)
 vi.mock('@react-three/fiber', () => ({
@@ -547,6 +549,57 @@ describe('PreviewCanvas', () => {
       expect(screen.getByText('Engine failed to load')).toBeInTheDocument();
       expect(screen.getByLabelText('Retry loading')).toBeInTheDocument();
       expect(screen.queryByLabelText('Revert')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('lid slider', () => {
+    function flushSlideLid(stackingLip: boolean): BinParams {
+      return {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip },
+        lid: {
+          ...DEFAULT_BIN_PARAMS.lid,
+          enabled: true,
+          attachment: 'slide',
+          slide: { ...DEFAULT_LID_SLIDE_CONFIG, placement: 'flush' },
+        },
+      };
+    }
+
+    function renderWithMesh(params: BinParams): void {
+      useDesignerStore.setState({
+        params,
+        wasmStatus: 'ready',
+        generation: {
+          ...DEFAULT_GENERATION_STATE,
+          status: 'complete',
+          mesh: {
+            vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+            normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+            indices: new Uint32Array([0, 1, 2]),
+            edgeVertices: new Float32Array(0),
+            error: null,
+            timingMs: 50,
+          },
+          progress: 0,
+          epoch: 0,
+        },
+      });
+      render(<PreviewCanvas />);
+    }
+
+    it('offers the slider for a flush sliding lid, which is built with no stacking lip', () => {
+      const params = flushSlideLid(false);
+      expect(shouldGenerateLid(params)).toBe(true);
+      renderWithMesh(params);
+      expect(screen.getByLabelText('Lid open/close')).toBeInTheDocument();
+    });
+
+    it('hides the slider when the lid is blocked and never built', () => {
+      const params = flushSlideLid(true);
+      expect(shouldGenerateLid(params)).toBe(false);
+      renderWithMesh(params);
+      expect(screen.queryByLabelText('Lid open/close')).not.toBeInTheDocument();
     });
   });
 });
