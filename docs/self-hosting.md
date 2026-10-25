@@ -108,7 +108,7 @@ service worker, and the new build simply arrives on the next page load.
 
 ## Build from source without Docker
 
-Any static file server can host the app. Build with Node 24 and pnpm (corepack
+Any static file server can host the app. Build with Node 26 and pnpm (corepack
 picks the pinned version):
 
 ```bash
