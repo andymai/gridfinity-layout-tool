@@ -99,7 +99,7 @@ updates:
     cooldown:
       default-days: 7
     ignore:
-      # The tag `24-bookworm-slim` reads as major 24, so Node 25 would be offered
+      # The tag `26-bookworm-slim` reads as major 26, so Node 27 would be offered
       # weekly; .nvmrc and the parity test pin the major.
       - dependency-name: 'node'
         update-types: ['version-update:semver-major']

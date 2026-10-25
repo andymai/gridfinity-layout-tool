@@ -56,7 +56,7 @@ To set expectations, this tool deliberately does not:
 
 ## Local Development
 
-Requires **Node.js 24+** and **pnpm 11+**. Use `nvm use` to switch to the correct version (requires [nvm](https://github.com/nvm-sh/nvm)).
+Requires **Node.js 26+** and **pnpm 11+**. Use `nvm use` to switch to the correct version (requires [nvm](https://github.com/nvm-sh/nvm)).
 
 ```bash
 git clone https://github.com/andymai/gridfinity-layout-tool.git
