@@ -125,7 +125,6 @@ describe('useLayoutExport', () => {
     expect(h.trackEvent).toHaveBeenCalledWith('ui.layoutExported', {
       format: 'zip',
       fileFormat: 'stl',
-      multiColorBins: 0,
     });
     expect(h.bridgeRelease).toHaveBeenCalledTimes(1);
     expect(h.poolRelease).toHaveBeenCalledTimes(1);
@@ -288,10 +287,6 @@ describe('useLayoutExport', () => {
     const parts = h.buildLayoutProjectFile.mock.calls[0][0] as ThreeMFObject[];
     const bin = parts.find((p) => p.name.startsWith('Colored'));
     expect(bin?.colorConfig).toBeDefined();
-    expect(h.trackEvent).toHaveBeenCalledWith(
-      'ui.layoutExported',
-      expect.objectContaining({ multiColorBins: 1 })
-    );
   });
 
   it('reports engine-not-ready and does not release when the bridge fails to acquire', async () => {

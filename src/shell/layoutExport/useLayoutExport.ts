@@ -47,7 +47,6 @@ import {
   buildMultiObject3MFObjects,
   buildSinglePiece3MFObject,
 } from '@/features/bin-designer/utils/binDownloadHelpers';
-import { isMultiColorDesign } from '@/features/bin-designer/utils/multiColorDesign';
 import { buildThreeMFPrintSettings } from '@/shared/generation/stlTo3mf';
 import { getLinkedDesignIds } from '@/features/design-linking';
 import { planLayoutBinExport } from './planLayoutBinExport';
@@ -570,11 +569,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
 
         const zip = packageFilesAsZip(binaryFiles, textFiles);
         triggerDownload(zip, `${zipBaseName}.zip`);
-        trackEvent('ui.layoutExported', {
-          format: 'zip',
-          fileFormat: format,
-          multiColorBins: plan.exportable.filter((e) => isMultiColorDesign(e.params)).length,
-        });
+        trackEvent('ui.layoutExported', { format: 'zip', fileFormat: format });
         trackToolConverted('layout', { format, piece_count: binaryFiles.length });
 
         // Report what actually made it into the archive.
