@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.523.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.523.0...gridfinity-layout-tool-v4.523.1) (2026-10-25)
+
+
+### Bug Fixes
+
+* **layout-export:** keep multi-color body-only bins colored in the 3MF project ([#4697](https://github.com/andymai/gridfinity-layout-tool/issues/4697)) ([20f14e1](https://github.com/andymai/gridfinity-layout-tool/commit/20f14e1488bc112db7e05492de77bcf6445a8c64))
+
 ## [4.523.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.522.0...gridfinity-layout-tool-v4.523.0) (2026-10-23)
 
 
