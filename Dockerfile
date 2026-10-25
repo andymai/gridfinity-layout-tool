@@ -10,7 +10,8 @@ WORKDIR /app
 ENV PNPM_HOME=/pnpm COREPACK_ENABLE_DOWNLOAD_PROMPT=0 CI=true
 # corepack reads the pinned pnpm from package.json; it runs before .npmrc lands
 # because that file's min-release-age would refuse a fresh exact pin under npm.
-RUN corepack enable
+# Node 25+ no longer bundles corepack, so it is installed first.
+RUN npm install -g corepack@0.36.0 && corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY patches ./patches
 COPY packages ./packages
