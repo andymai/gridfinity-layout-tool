@@ -1,0 +1,20 @@
+src/features/generation/worker/generators/binGenerator.scenario.split-seam-gap.test.ts
+  s_0b97b732934bc6::t_f5745044c5e17b 19
+  s_0b97b732934bc6::t_0801236d6a02da 92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6a684117130dc05dbe0b1b604a06891313cc2562",
+  "prompts": {},
+  "sessions": {
+    "s_0b97b732934bc6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a15c13dd-1194-4f30-bd54-682f2bb81f77",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
