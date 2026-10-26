@@ -140,7 +140,7 @@ const BIN_MESH_REVISION = 'bin14';
  */
 const KERNEL_MESH_REVISION: Record<KernelName, string> = {
   'occt-wasm': 'r4',
-  brepkit: 'r4',
+  brepkit: 'r5',
   manifold: 'r1',
 };
 

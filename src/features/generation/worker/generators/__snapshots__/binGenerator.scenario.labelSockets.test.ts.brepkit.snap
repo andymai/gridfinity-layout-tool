@@ -1,19 +1,41 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`label sockets > 1×1 lipped socket sinks by the stacking relief 1`] = `2134`;
+exports[`label sockets > 1.5×1 socket with removal hole 1`] = `1006`;
 
-exports[`label sockets > 1×1 socket hosts a 1U plate 1`] = `1186`;
+exports[`label sockets > 1×1 lipped socket sinks by the stacking relief 1`] = `2072`;
 
-exports[`label sockets > 1×1 text mode unchanged 1`] = `822`;
+exports[`label sockets > 1×1 removal hole keeps its shelf at maximum clearance 1`] = `1078`;
 
-exports[`label sockets > 2×1 four columns → bin-spanning 2U socket 1`] = `1580`;
+exports[`label sockets > 1×1 slide channel ignores removal hole 1`] = `608`;
 
-exports[`label sockets > 2×1 two compartments, two 1U sockets 1`] = `900`;
+exports[`label sockets > 1×1 socket hosts a 1U plate 1`] = `700`;
 
-exports[`label sockets > 3u lipped socket at the tightest height budget 1`] = `2160`;
+exports[`label sockets > 1×1 socket with removal hole 1`] = `814`;
 
-exports[`label sockets > 3×1 override forces a 1U plate 1`] = `1634`;
+exports[`label sockets > 1×1 text mode unchanged 1`] = `388`;
 
-exports[`label sockets > 3×1 socket auto-quantizes to 3U 1`] = `1718`;
+exports[`label sockets > 2×1 four columns → bin-spanning 2U socket 1`] = `1524`;
 
-exports[`label sockets > 3×1 socket on a 0.6mm nozzle widens the pocket 1`] = `1630`;
+exports[`label sockets > 2×1 slide channel keeps a 2U plate on 2mm walls 1`] = `840`;
+
+exports[`label sockets > 2×1 slide channel on 2.4mm walls clears a 4mm interior fillet 1`] = `836`;
+
+exports[`label sockets > 2×1 socket clears a 10mm interior fillet 1`] = `948`;
+
+exports[`label sockets > 2×1 socket keeps a 2U plate on 2.4mm walls 1`] = `892`;
+
+exports[`label sockets > 2×1 socket on 2.4mm walls clears a 4mm interior fillet 1`] = `892`;
+
+exports[`label sockets > 2×1 two compartments, two 1U sockets 1`] = `1284`;
+
+exports[`label sockets > 2×3 lowered slide channel keeps its way out past a 15mm fillet 1`] = `1656`;
+
+exports[`label sockets > 3u lipped socket at the tightest height budget 1`] = `2098`;
+
+exports[`label sockets > 3×1 override forces a 1U plate 1`] = `1236`;
+
+exports[`label sockets > 3×1 socket auto-quantizes to 3U 1`] = `1236`;
+
+exports[`label sockets > 3×1 socket on a 0.6mm nozzle widens the pocket 1`] = `1168`;
+
+exports[`label sockets > 3×2 four columns two rows → a 3U socket on each row 1`] = `2302`;

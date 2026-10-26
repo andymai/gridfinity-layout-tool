@@ -321,7 +321,7 @@ export default defineConfig({
             // Cache WASM binaries (content-hashed, immutable) after first use.
             // CacheFirst is safe because new deploys produce new hashes.
             //
-            // Three kernels ship (occt-wasm ~22MB, brepkit ~5MB, manifold
+            // Three kernels ship (occt-wasm ~22MB, brepkit ~7MB, manifold
             // ~0.5MB), so a budget of three is a budget with no headroom: a
             // deploy that rehashes any one of them adds a fourth entry and the
             // LRU has to drop something. Six leaves room for a deploy's
