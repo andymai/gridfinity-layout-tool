@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.523.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.523.1...gridfinity-layout-tool-v4.523.2) (2026-10-26)
+
+
+### Bug Fixes
+
+* **bin-designer:** show the lid slider exactly when a lid is built ([#4706](https://github.com/andymai/gridfinity-layout-tool/issues/4706)) ([bdba2c5](https://github.com/andymai/gridfinity-layout-tool/commit/bdba2c5c4dee9404f31706b96867fdc1d443620f))
+* **deps:** raise override floors past new undici, zod, fast-uri and serialize-javascript advisories ([#4701](https://github.com/andymai/gridfinity-layout-tool/issues/4701)) ([5acd493](https://github.com/andymai/gridfinity-layout-tool/commit/5acd4938ae7cdd5d48604a95a355eef68f5b9973))
+* **design-linking:** ship lid, dividers and feet with a quick export ([#4705](https://github.com/andymai/gridfinity-layout-tool/issues/4705)) ([4cbfde0](https://github.com/andymai/gridfinity-layout-tool/commit/4cbfde03a75be6634c91e24849b1823c3aa00df1))
+* **split:** leave a 0.1mm gap at each seam so split bins assemble under size ([#4704](https://github.com/andymai/gridfinity-layout-tool/issues/4704)) ([1743d90](https://github.com/andymai/gridfinity-layout-tool/commit/1743d904295f54c52c95d6d919d4065f2ba57e44))
+
 ## [4.523.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.523.0...gridfinity-layout-tool-v4.523.1) (2026-10-25)
 
 
