@@ -1,0 +1,68 @@
+vite.config.ts
+  s_cb5189120896c0::t_9f71e08171eccb 324
+pnpm-workspace.yaml
+  s_cb5189120896c0::t_0f55ac016a7767 192
+patches/brepjs@20.5.0.patch
+  s_cb5189120896c0::t_0f55ac016a7767 1-40
+src/shared/generation/meshPersistence.ts
+  s_cb5189120896c0::t_0b04ff5b504004 143
+package.json
+  s_cb5189120896c0::t_c735b87cff7ceb 140
+  s_cb5189120896c0::t_815fbc9e104b80 141
+pnpm-lock.yaml
+  s_cb5189120896c0::t_57ff01524ca3c0 56,98-99,101-102,3380-3381,3387,3399-3400,8971,8976,8979
+src/features/generation/worker/generators/__snapshots__/baseplateGenerator.scenario.magnetOversized.test.ts.brepkit.snap
+  s_cb5189120896c0::t_93b15935813108 3,5
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.baseStyles.test.ts.brepkit.snap
+  s_cb5189120896c0::t_5b8ca606bde266 5,7,9,11,13,15,17,19,21,23,25-29
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.binStyles.test.ts.brepkit.snap
+  s_cb5189120896c0::t_7ddc1ecc49c245 3,5,7
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.combinedFeatures.test.ts.brepkit.snap
+  s_cb5189120896c0::t_733592c4c73716 3,5,7,9,11
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.compartments.test.ts.brepkit.snap
+  s_cb5189120896c0::t_8404e2f9241a1b 3,5,7,9
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.customShape.test.ts.brepkit.snap
+  s_cb5189120896c0::t_503676c79fc943 3,5,7,9,11,13,15,17,19,21,23,25,27,29,31
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.dimensions.test.ts.brepkit.snap
+  s_cb5189120896c0::t_b7b363e60ae885 3,5,7,9,11,13,15,17,19,21
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.exportAndLarge.test.ts.brepkit.snap
+  s_cb5189120896c0::t_e1bea1d622741d 3,5,7
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.floorPatterns.test.ts.brepkit.snap
+  s_cb5189120896c0::t_1617d6ab9d9424 3,5,7,9,11,13,15,17-19
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.halfSockets.test.ts.brepkit.snap
+  s_cb5189120896c0::t_715cc17a1ea8c2 3,5,7
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.heights.test.ts.brepkit.snap
+  s_cb5189120896c0::t_5e864017da1694 3,5
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.honeycombJunction.test.ts.brepkit.snap
+  s_cb5189120896c0::t_1351045acab101 3,5,7,9,11,13,15
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.inserts.test.ts.brepkit.snap
+  s_cb5189120896c0::t_84e49b68f53139 3,5,7,9,11,13
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.labelSockets.test.ts.brepkit.snap
+  s_cb5189120896c0::t_e0c43a7a54201f 3,5,7,9,11,13,15,17,19-41
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.labelTabs.test.ts.brepkit.snap
+  s_cb5189120896c0::t_642f1c9e6bda7d 3,5,7,9,11,13,15,17,19,21,23,25,27
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.scoops.test.ts.brepkit.snap
+  s_cb5189120896c0::t_ee127601980fb1 3,5,7,9,11,13,15,17,19,21,23,25,27,29,31-49
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.slotted.test.ts.brepkit.snap
+  s_cb5189120896c0::t_dda9418181e4c8 3,5,7
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.solidCutouts.test.ts.brepkit.snap
+  s_cb5189120896c0::t_9ad44c3d90c5ec 3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.wallThickness.test.ts.brepkit.snap
+  s_cb5189120896c0::t_1b6185f4b6c715 3,5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b1478710667df864d864557ae78eb8c34ce86096",
+  "prompts": {},
+  "sessions": {
+    "s_cb5189120896c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "772e2ff0-2c58-4904-948a-e63dad0372b8",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
