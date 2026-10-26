@@ -119,6 +119,9 @@ export interface SlidePair {
   readonly geometry: SlideLidGeometry;
 }
 
+/** What the bin-side probes read: no lid, so an exported bin can be probed alone. */
+export type SlideBin = Pick<SlidePair, 'params' | 'bin' | 'geometry'>;
+
 /** Build the pair, or null when the design produces no sliding lid. */
 export function seatSlideLid(
   params: BinParams,
@@ -211,7 +214,7 @@ export function addedCrossings(
  * is over the plate's edge too, and was there before — cannot be mistaken for
  * a retainer.
  */
-export function newCrossingsAbovePlate(pair: SlidePair, bareBin: MeshData, samples = 8): number {
+export function newCrossingsAbovePlate(pair: SlideBin, bareBin: MeshData, samples = 8): number {
   const dz = slideLidZOffset(pair.params, pair.geometry);
   const { plate } = pair.geometry;
   // Just inside the plate's edge, under the wedge the retainer overhangs.
@@ -243,7 +246,7 @@ export function newCrossingsAbovePlate(pair: SlidePair, bareBin: MeshData, sampl
  *
  * Returns the greatest surviving material found at any sampled column.
  */
-export function entryLipRemnantMm(pair: SlidePair, samples = 7, inboardMm = 0.5): number {
+export function entryLipRemnantMm(pair: SlideBin, samples = 7, inboardMm = 0.5): number {
   const wallTop = binWallTopZ(pair.params);
   const { plate } = pair.geometry;
   const along = plate.trailingX - inboardMm;
@@ -281,7 +284,7 @@ export function entryLipRemnantMm(pair: SlidePair, samples = 7, inboardMm = 0.5)
  * Returns the SMALLEST opening over the sampled width, so a notch that reaches
  * in the middle and pinches at the edges fails rather than averaging out.
  */
-export function entryOpeningMm(pair: SlidePair, samples = 7): number {
+export function entryOpeningMm(pair: SlideBin, samples = 7): number {
   const dz = slideLidZOffset(pair.params, pair.geometry);
   const { plate } = pair.geometry;
   // Inside the entry wall, where the plate's trailing edge finishes: half a

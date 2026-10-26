@@ -69,6 +69,7 @@ import { variantOverrides } from './variantOverrides';
 import { lowProfile } from './lowProfile';
 import { nestedChamfers } from './nestedChamfers';
 import { pullTab } from './pullTab';
+import { slideLid } from './slideLid';
 
 export type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
@@ -137,4 +138,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...lowProfile,
   ...nestedChamfers,
   ...pullTab,
+  ...slideLid,
 ];
