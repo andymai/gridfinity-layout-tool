@@ -1,0 +1,35 @@
+src/features/generation/worker/generators/binGenerator.export.slideLid.test.ts
+  s_cb5189120896c0::t_b387e18fcb4364 1,7,10,20-21
+  s_cb5189120896c0::t_29079a11a0fa4e 2-6,9,12-13,16-17,22-59
+  s_cb5189120896c0::t_274eb27a495a08 8,11,14-15,18-19
+src/features/generation/worker/generators/binGenerator.scenario.slideLid.test.ts
+  s_cb5189120896c0::t_349d86ef419d9a 1-5
+src/features/generation/worker/generators/scenarios/slideLid.ts
+  s_cb5189120896c0::t_36056116aec332 1,3-59,62-65
+  s_cb5189120896c0::t_05d0c945adc691 2
+  s_cb5189120896c0::t_6d620c60cf9774 60-61
+src/features/generation/worker/generators/scenarios/index.ts
+  s_cb5189120896c0::t_0fc37a351ce436 72
+  s_cb5189120896c0::t_7ab2aef687fc68 141
+src/features/generation/worker/generators/__kernel-tests__/slideLidSeating.ts
+  s_cb5189120896c0::t_455f1de98dff62 217
+  s_cb5189120896c0::t_323ca4dd226fc3 287
+  s_cb5189120896c0::t_f8416fc195b3fa 122-124
+  s_cb5189120896c0::t_b96b8bec7afe00 249
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "324fd74efc3ef4c05b7c8a0d96f248aa1d8a8bbe",
+  "prompts": {},
+  "sessions": {
+    "s_cb5189120896c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "772e2ff0-2c58-4904-948a-e63dad0372b8",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
