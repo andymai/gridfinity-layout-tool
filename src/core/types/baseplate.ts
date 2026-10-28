@@ -33,6 +33,18 @@ export interface StackPrintParams {
 
 /** Default air gap between stacked copies — one 0.2mm layer. */
 export const STACK_PRINT_DEFAULT_GAP_MM = 0.2;
+/**
+ * Height planed off every stacked plate's top so the seam between plates lands
+ * on a flat ridge instead of the profile's zero-width apex. A ridge narrower
+ * than an extrusion line is dropped by the Classic wall generator (the Bambu
+ * Studio and Snapmaker U1 preset default), on both sides of the gap, and the
+ * first ridge that does print then spans cell corner to cell corner over air.
+ * At this depth the shared ridge is twice this wide and the outer edge this
+ * wide, and both print with either wall generator. It is a whole number of
+ * 0.2mm layers so the plate top keeps the untrimmed plate's position against
+ * the slice planes: 0.3 or 0.5 lands it exactly on one at a 0.25mm first layer.
+ */
+export const STACK_SEAM_TRIM_MM = 0.4;
 /** Inclusive bounds + default for the whole-layout copy multiplier. */
 export const STACK_PRINT_DEFAULT_COPIES = 1;
 export const STACK_PRINT_MIN_COPIES = 1;

@@ -64,7 +64,7 @@ import {
 import { floorReliefReachesCorners } from '@/shared/generation/magnetPositions';
 import { slabWithPocketsCache } from './baseplateCaches';
 import { slabPocketsCacheKey } from './baseplateCacheKeys';
-import { sanitizeParams, tagOp, buildSlabProfile } from './baseplateSlab';
+import { sanitizeParams, tagOp, buildSlabProfile, cutAboveZ } from './baseplateSlab';
 import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
 import { buildMagnetHoles, buildPartialCellMagnetHoles } from './baseplateMagnets';
@@ -768,6 +768,15 @@ export function buildBaseplateSolid(
   }
 
   onProgress?.(0.6);
+
+  const seamTrim = params.stackSeamTrimMm ?? 0;
+  if (seamTrim > 0) {
+    const untrimmed = baseplate;
+    baseplate = tagOp('stackSeamTrim', () => cutAboveZ(untrimmed, -seamTrim));
+    untrimmed.delete();
+    probe?.('stackSeamTrim', baseplate);
+  }
+
   onProgress?.(0.8);
 
   // Probe before the final translate: the +Z shift preserves topology,
@@ -839,10 +848,16 @@ export async function exportConnectorKey(
   const params = sanitizeParams(rawParams);
   const totalHeight = plateProfileHeightMm(params.lowProfileBase) + baseplateFloorDepth(params);
   // Snap clip ships its own bed-flat part; dovetail key is the legacy default.
-  const key =
+  const fullKey =
     params.connectorStyle === 'snapClip'
       ? buildSnapClipForPrint(totalHeight, params.gridUnitMm, params.nozzleSizeMm)
       : buildDovetailKey(totalHeight, params.gridUnitMm, socketHeightMm(params.lowProfileBase));
+  const seamTrim = params.stackSeamTrimMm ?? 0;
+  let key = fullKey;
+  if (seamTrim > 0) {
+    key = cutAboveZ(fullKey, totalHeight - seamTrim);
+    fullKey.delete();
+  }
   try {
     const name = 'connector_key';
     if (format === 'step') {

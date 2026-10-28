@@ -4,9 +4,10 @@
  */
 
 import type { StackPrintParams } from '@/core/types';
-import { STACK_PRINT_MAX_STACK_HEIGHT } from '@/core/types';
+import { STACK_PRINT_MAX_STACK_HEIGHT, STACK_SEAM_TRIM_MM } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { effectiveCornerRadii } from '@/shared/generation/baseplateCorners';
+import { plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import type { BaseplateTiling } from '../types/tiling';
 import { groupPiecesByFingerprint } from './pieceFingerprint';
 
@@ -68,6 +69,14 @@ export function isUnstackedSplit(plan: readonly PhysicalStack[], pieceCount: num
   if (plan.length !== pieceCount) return false;
   if (!plan.every((s) => s.copies === 1)) return false;
   return new Set(plan.map((s) => s.label)).size === plan.length;
+}
+
+/**
+ * A stacked plate's printed height. Stacking strips every floor (magnets, screws,
+ * solid floor), so this is the pocket profile less the seam trim.
+ */
+export function stackedPlateHeightMm(lowProfileBase: boolean | undefined): number {
+  return plateProfileHeightMm(lowProfileBase) - STACK_SEAM_TRIM_MM;
 }
 
 /**

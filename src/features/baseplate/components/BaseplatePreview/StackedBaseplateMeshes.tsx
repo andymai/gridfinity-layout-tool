@@ -21,12 +21,12 @@ import {
   stackGroupsFromTiling,
   planPhysicalStacks,
   stackHeightCap,
+  stackedPlateHeightMm,
   planPlateFlip,
   isUnstackedSplit,
   type StackMeshArrays,
 } from '../../utils/stackPrint';
 import { buildStackPreviewMeshes, type StackPreviewTower } from '../../utils/stackPreview';
-import { plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 
 const EMPTY_GEO = { vertices: null, normals: null, indices: null, edgeVertices: null } as const;
 const EMPTY_F32 = new Float32Array(0);
@@ -124,7 +124,7 @@ export function StackedBaseplateMeshes({
       fullParams,
       stack.copies ?? STACK_PRINT_DEFAULT_COPIES
     );
-    const cap = stackHeightCap(maxPrintHeightMm, plateProfileHeightMm(lowProfileBase), stack.gapMm);
+    const cap = stackHeightCap(maxPrintHeightMm, stackedPlateHeightMm(lowProfileBase), stack.gapMm);
     const plan = planPhysicalStacks(groups, cap);
     const isSplit = tiling?.isSplit ?? false;
 

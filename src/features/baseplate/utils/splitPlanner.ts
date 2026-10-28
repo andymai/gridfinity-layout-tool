@@ -668,6 +668,9 @@ export function pieceToBaseplateParams(
     magnetDepth: parentParams.magnetDepth,
     // Rotation-invariant, and every piece must cut the same pocket depth.
     ...(parentParams.lowProfileBase === true ? { lowProfileBase: true } : {}),
+    ...(parentParams.stackSeamTrimMm !== undefined
+      ? { stackSeamTrimMm: parentParams.stackSeamTrimMm }
+      : {}),
     paddingLeft: rot ? piece.paddingRight : piece.paddingLeft,
     paddingRight: rot ? piece.paddingLeft : piece.paddingRight,
     paddingFront: rot ? piece.paddingBack : piece.paddingFront,

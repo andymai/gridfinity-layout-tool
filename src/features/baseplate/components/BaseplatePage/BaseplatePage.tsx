@@ -36,8 +36,12 @@ import { BaseplateSelector } from '../BaseplateSelector';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { generateBaseplateFileName, toNamingParams } from '../../utils/fileNaming';
 import { buildFullParams } from '../../utils/buildFullParams';
-import { stackGroupsFromTiling, planPhysicalStacks, stackHeightCap } from '../../utils/stackPrint';
-import { plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
+import {
+  stackGroupsFromTiling,
+  planPhysicalStacks,
+  stackHeightCap,
+  stackedPlateHeightMm,
+} from '../../utils/stackPrint';
 import { STACK_PRINT_DEFAULT_GAP_MM, STACK_PRINT_DEFAULT_COPIES } from '@/core/types';
 import { BaseplatePanel } from '../BaseplatePanel/BaseplatePanel';
 import { BaseplatePreview } from '../BaseplatePreview/BaseplatePreview';
@@ -196,7 +200,7 @@ export function BaseplatePage() {
     const groups = stackGroupsFromTiling(tiling, fullParams, stackCopies);
     const cap = stackHeightCap(
       maxPrintHeightMm,
-      plateProfileHeightMm(fullParams.lowProfileBase),
+      stackedPlateHeightMm(fullParams.lowProfileBase),
       stackGapMm
     );
     return planPhysicalStacks(groups, cap);

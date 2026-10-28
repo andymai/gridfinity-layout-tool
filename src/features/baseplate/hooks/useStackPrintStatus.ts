@@ -11,12 +11,12 @@ import { useLayoutStore } from '@/core/store/layout';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
-import { plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import {
   stackGroupsFromTiling,
   stackHeightCap,
+  stackedPlateHeightMm,
   evaluateStackPrint,
   planPhysicalStacks,
   type StackPrintStatus,
@@ -87,7 +87,7 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
       lowProfileBase
     );
     const groups = stackGroupsFromTiling(tiling, fullParams, copies);
-    const plateMm = plateProfileHeightMm(lowProfileBase);
+    const plateMm = stackedPlateHeightMm(lowProfileBase);
     const cap = stackHeightCap(maxPrintHeightMm, plateMm, gapMm);
     return {
       status: evaluateStackPrint(groups, cap, plateMm, maxPrintHeightMm),

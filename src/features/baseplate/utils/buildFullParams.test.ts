@@ -9,6 +9,7 @@ import {
   type PlateLayout,
 } from './buildFullParams';
 import { baseplateTotalHeight } from '@/shared/printSettings/baseplateHeight';
+import { STACK_SEAM_TRIM_MM } from '@/core/types';
 import { computeBaseplateTiling, pieceToBaseplateParams } from './splitPlanner';
 import { groupPiecesByFingerprint } from './pieceFingerprint';
 import { stackGroupsFromTiling, evaluateStackPrint } from './stackPrint';
@@ -413,6 +414,18 @@ describe('buildFullParams', () => {
       expect(result.connectorNubs).toBe(true);
       expect(result.connectorStyle).toBe('dovetailKey');
       expect(result.magnetHoles).toBe(true);
+    });
+
+    it('trims the seam ridges only while stacking', () => {
+      const stacked = { ...storedBase, stackPrint: { enabled: true, gapMm: mm(0.2) } };
+      expect(buildFullParams(stacked, 10, 8, 42, 'end', 'end').stackSeamTrimMm).toBe(
+        STACK_SEAM_TRIM_MM
+      );
+      expect(buildFullParams(storedBase, 10, 8, 42, 'end', 'end')).not.toHaveProperty(
+        'stackSeamTrimMm'
+      );
+      const off = { ...storedBase, stackPrint: { enabled: false, gapMm: mm(0.2) } };
+      expect(buildFullParams(off, 10, 8, 42, 'end', 'end')).not.toHaveProperty('stackSeamTrimMm');
     });
 
     it('keeps dovetail connectors but strips magnets when stacking (vertical prisms flip cleanly)', () => {

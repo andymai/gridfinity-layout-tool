@@ -12,7 +12,7 @@ import type {
   MagnetAnchor,
   StoredBaseplateParams,
 } from '@/core/types';
-import { DEFAULT_MAGNET_ANCHOR, effectiveGridUnitMmY } from '@/core/types';
+import { DEFAULT_MAGNET_ANCHOR, STACK_SEAM_TRIM_MM, effectiveGridUnitMmY } from '@/core/types';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isSeatedConnectorStyle } from '@/shared/types/bin';
@@ -425,6 +425,7 @@ export function buildFullParams(
     ...(stored.magnetChamfer === true ? { magnetChamfer: true } : {}),
     magnetAnchor,
     ...(lowProfileBase === true ? { lowProfileBase: true } : {}),
+    ...(stackingOn ? { stackSeamTrimMm: STACK_SEAM_TRIM_MM } : {}),
     paddingLeft: paddingOn ? stored.paddingLeft : 0,
     paddingRight: paddingOn ? stored.paddingRight : 0,
     paddingFront: paddingOn ? stored.paddingFront : 0,

@@ -2,8 +2,8 @@
  * Slab profile + parameter sanitation + boolean op tagging for baseplate gen.
  */
 
-import { drawRectangle, drawRoundedRectangle, draw } from 'brepjs';
-import type { Drawing } from 'brepjs';
+import { drawRectangle, drawRoundedRectangle, draw, box, cut, getBounds, unwrap } from 'brepjs';
+import type { Drawing, Shape3D, ValidSolid } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { CONSTRAINTS } from '@/core/constants';
 import { clamp } from '@/shared/utils/math';
@@ -59,6 +59,21 @@ export function buildSlabProfile(
   pen = pen.lineTo([-hw, -hd]);
   if (rBL > 0) pen = pen.customCorner(rBL);
   return pen.close();
+}
+
+/** Everything of `shape` below the plane Z = `planeZ`, as a new solid. */
+export function cutAboveZ(shape: Shape3D, planeZ: number): Shape3D {
+  const b = getBounds(shape);
+  const pad = 1;
+  const height = b.zMax - planeZ + pad;
+  const cutter = box(b.xMax - b.xMin + 2 * pad, b.yMax - b.yMin + 2 * pad, height, {
+    at: [(b.xMin + b.xMax) / 2, (b.yMin + b.yMax) / 2, planeZ + height / 2],
+  });
+  try {
+    return unwrap(cut(shape as ValidSolid, cutter));
+  } finally {
+    cutter.delete();
+  }
 }
 
 /**

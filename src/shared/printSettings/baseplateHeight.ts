@@ -27,6 +27,7 @@ export interface BaseplateHeightParams {
    */
   readonly screwPadThicknessMm?: number;
   readonly lowProfileBase?: boolean;
+  readonly stackSeamTrimMm?: number;
 }
 
 /**
@@ -72,7 +73,11 @@ export function baseplateFloorDepthBeforeScrews(params: BaseplateHeightParams): 
  * profile stands taller than the pocket receiving it.
  */
 export function baseplateTotalHeight(params: BaseplateHeightParams): number {
-  return plateProfileHeightMm(params.lowProfileBase) + baseplateFloorDepth(params);
+  return (
+    plateProfileHeightMm(params.lowProfileBase) +
+    baseplateFloorDepth(params) -
+    (params.stackSeamTrimMm ?? 0)
+  );
 }
 
 /**

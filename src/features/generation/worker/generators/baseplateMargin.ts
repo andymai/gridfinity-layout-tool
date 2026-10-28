@@ -31,7 +31,7 @@ import {
   resolveCornerRadii,
 } from './generatorTypes';
 import type { SideMargins } from './generatorTypes';
-import { buildSlabProfile } from './baseplateSlab';
+import { buildSlabProfile, cutAboveZ } from './baseplateSlab';
 import { buildMarginSeamGroove } from './baseplateConnectors';
 import { computeCellBoundariesMm, computeCellCentersMm } from './cellDecomposition';
 import { cutInBatches } from './baseplateBatchOps';
@@ -200,6 +200,15 @@ function buildMarginSolid(params: ResolvedBaseplateParams, margin: MarginPiece):
       );
       rail = cutInBatches(rail, grooves);
     }
+  }
+
+  // A rail never stacks, but it butts against plates that did, so it takes
+  // the same trim to stay flush with them.
+  const seamTrim = params.stackSeamTrimMm ?? 0;
+  if (seamTrim > 0) {
+    const untrimmed = rail;
+    rail = cutAboveZ(untrimmed, -seamTrim);
+    untrimmed.delete();
   }
 
   // Shift up so Z=0 is the bottom face, matching the body's final transform.

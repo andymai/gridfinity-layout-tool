@@ -860,6 +860,18 @@ describe('pieceToBaseplateParams', () => {
     expect(result.paddingRight).toBe(0); // join edge
   });
 
+  it('propagates the stack seam trim to every piece', () => {
+    const parent = makeParams({ width: 10, depth: 8, stackSeamTrimMm: 0.4 });
+    const tiling = computeBaseplateTiling(parent, 256);
+    expect(tiling.isSplit).toBe(true);
+    for (const piece of tiling.pieces) {
+      expect(pieceToBaseplateParams(piece, parent).stackSeamTrimMm).toBe(0.4);
+    }
+    expect(
+      pieceToBaseplateParams(tiling.pieces[0], makeParams({ width: 10, depth: 8 }))
+    ).not.toHaveProperty('stackSeamTrimMm');
+  });
+
   it('propagates screw holes and the resolved pad to every piece', () => {
     // The params object is built field by field rather than spread, so a new
     // field is dropped unless it is listed. Dropping these two would leave every

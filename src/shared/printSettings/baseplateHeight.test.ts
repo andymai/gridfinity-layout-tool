@@ -56,4 +56,10 @@ describe('baseplateTotalHeight', () => {
     const params = { magnetHoles: true, magnetDepth: 2, solidFloor: true, solidFloorThickness: 1 };
     expect(baseplateTotalHeight(params)).toBe(POCKET + baseplateFloorDepth(params));
   });
+
+  it('loses the stack seam trim off the top', () => {
+    expect(
+      baseplateTotalHeight({ magnetHoles: false, magnetDepth: 2, stackSeamTrimMm: 0.4 })
+    ).toBeCloseTo(POCKET - 0.4, 9);
+  });
 });

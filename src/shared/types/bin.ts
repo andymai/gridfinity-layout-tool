@@ -649,6 +649,13 @@ export interface ResolvedBaseplateParams {
    * built for it. Absent ⇒ standard.
    */
   readonly lowProfileBase?: boolean;
+  /**
+   * Millimetres planed off the plate top, set only while stack printing. The
+   * grid ridges come to a zero-width edge there, which is exactly where the
+   * stacked plates meet, and a slicer drops the sub-line slivers; see
+   * `STACK_SEAM_TRIM_MM`.
+   */
+  readonly stackSeamTrimMm?: number;
   readonly paddingLeft: number;
   readonly paddingRight: number;
   readonly paddingFront: number;

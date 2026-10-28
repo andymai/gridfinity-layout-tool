@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { gridUnits, mm } from '@/core/types';
+import { gridUnits, mm, STACK_SEAM_TRIM_MM } from '@/core/types';
 import type { DrawerOutline, StackPrintParams } from '@/core/types';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { computeBaseplateTiling, pieceToBaseplateParams } from './splitPlanner';
@@ -11,6 +11,7 @@ import {
   planPhysicalStacks,
   isUnstackedSplit,
   stackHeightCap,
+  stackedPlateHeightMm,
   stackStrideMm,
   stackGroupsFromTiling,
   translateMesh,
@@ -173,6 +174,13 @@ describe('stackHeightCap', () => {
       // And one more tile would overflow (unless we're already at the floor of 1).
       if (n > 1) expect((n + 1) * tile + n * gap).toBeGreaterThan(maxZ);
     }
+  });
+});
+
+describe('stackedPlateHeightMm', () => {
+  it('is the pocket profile less the seam trim', () => {
+    expect(stackedPlateHeightMm(false)).toBeCloseTo(4.65 - STACK_SEAM_TRIM_MM, 9);
+    expect(stackedPlateHeightMm(true)).toBeCloseTo(3.55 - STACK_SEAM_TRIM_MM, 9);
   });
 });
 

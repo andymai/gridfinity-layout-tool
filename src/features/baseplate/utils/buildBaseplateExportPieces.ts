@@ -15,7 +15,6 @@ import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { buildThreeMFPrintSettings, stlTo3MF } from '@/shared/generation/stlTo3mf';
 import { FORMAT_EXTENSIONS } from '@/shared/generation/exportUtils';
 import { isErr, getUserMessage } from '@/core/result';
-import { plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { STACK_PRINT_DEFAULT_COPIES } from '@/core/types';
 import type {
   DrawerOutline,
@@ -26,7 +25,13 @@ import type {
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
 import type { GenerationBridge, WorkerPool, ExportFormat } from '@/shared/generation/bridge';
 import { buildStackExportSoup } from './stackExport';
-import { planPhysicalStacks, stackHeightCap, planPlateFlip, type PlateFlip } from './stackPrint';
+import {
+  planPhysicalStacks,
+  stackHeightCap,
+  stackedPlateHeightMm,
+  planPlateFlip,
+  type PlateFlip,
+} from './stackPrint';
 import { buildFullParams } from './buildFullParams';
 import { computeBaseplateTiling, bodyParamsForDetach } from './splitPlanner';
 import { groupPiecesByFingerprint } from './pieceFingerprint';
@@ -220,7 +225,7 @@ export async function buildBaseplateExportPieces(
   const copies = Math.max(1, Math.floor(stack?.copies ?? STACK_PRINT_DEFAULT_COPIES));
   const stackCap = stackHeightCap(
     printSettings.maxPrintHeightMm,
-    plateProfileHeightMm(lowProfileBase),
+    stackedPlateHeightMm(lowProfileBase),
     stack?.gapMm ?? 0.2
   );
 
