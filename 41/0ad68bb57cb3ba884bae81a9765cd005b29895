@@ -1,0 +1,80 @@
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_a8afc2678da43b::t_12a9c895bb1916 863-869,873-874
+  s_a8afc2678da43b::t_f6107850b1f0dd 870-872
+src/features/baseplate/utils/buildFullParams.ts
+  s_a8afc2678da43b::t_d46203390c3b09 428
+  s_a8afc2678da43b::t_7fee2f5ac59b5a 15
+src/core/types/baseplate.ts
+  s_a8afc2678da43b::t_0fe1611ddf68be 36-42,46
+  s_a8afc2678da43b::t_7b5490618eab92 43-45,47
+src/features/baseplate/components/BaseplatePreview/StackedBaseplateMeshes.tsx
+  s_a8afc2678da43b::t_e68d07cb18d03c 24,127
+src/features/generation/worker/generators/baseplateGenerator.scenario.stackSeamTrim.test.ts
+  s_a8afc2678da43b::t_1393c60a774661 1-137
+src/features/generation/worker/generators/baseplateMargin.ts
+  s_a8afc2678da43b::t_477e456f879c5f 34
+  s_a8afc2678da43b::t_7d27258d53f05c 205-213
+src/shared/printSettings/baseplateHeight.ts
+  s_a8afc2678da43b::t_25bfae6fcb038a 30,76-80
+src/features/baseplate/README.md
+  s_a8afc2678da43b::t_dcb580c3f3305f 68
+src/features/baseplate/utils/stackPrint.test.ts
+  s_a8afc2678da43b::t_f6107850b1f0dd 2
+  s_a8afc2678da43b::t_12a9c895bb1916 14,180-183
+  s_a8afc2678da43b::t_c6cf7bf973b0b6 184-186
+src/features/generation/worker/generators/baseplateSlab.ts
+  s_a8afc2678da43b::t_78cf4e7161a3a8 64-72,74-78
+  s_a8afc2678da43b::t_b1e3d489c35437 73
+  s_a8afc2678da43b::t_d174e4d07c4241 5-6
+src/features/baseplate/hooks/useStackPrintStatus.ts
+  s_a8afc2678da43b::t_e68d07cb18d03c 19,90
+src/shared/printSettings/baseplateHeight.test.ts
+  s_a8afc2678da43b::t_c088d7c52bb70e 59-64
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_a8afc2678da43b::t_83cd799a1cea58 67
+  s_a8afc2678da43b::t_174a9302a2bac8 771-779
+  s_a8afc2678da43b::t_4b71a929b6b63d 851,855-860
+src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+  s_a8afc2678da43b::t_e68d07cb18d03c 39-44,203
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_a8afc2678da43b::t_de329a96dad0fb 419-430
+  s_a8afc2678da43b::t_12a9c895bb1916 12
+src/shared/types/bin.ts
+  s_a8afc2678da43b::t_c3df70e9647507 652-658
+src/features/baseplate/utils/printGuide.ts
+  s_a8afc2678da43b::t_5e560c9789582b 12,177-185
+src/features/baseplate/utils/printGuide.test.ts
+  s_a8afc2678da43b::t_55f35897c3e36f 3,343
+src/features/baseplate/utils/splitPlanner.ts
+  s_a8afc2678da43b::t_8c8b0470ec4ac0 671-673
+src/features/baseplate/utils/stackPrint.ts
+  s_a8afc2678da43b::t_530a1cb3a214bd 7,10
+  s_a8afc2678da43b::t_0218ce4f2dfcc2 75-81
+  s_b643c88cf32b29::t_f80176f81b99ff 74
+src/features/baseplate/utils/buildBaseplateExportPieces.ts
+  s_a8afc2678da43b::t_e68d07cb18d03c 28-34,228
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "410ad68bb57cb3ba884bae81a9765cd005b29895",
+  "prompts": {},
+  "sessions": {
+    "s_a8afc2678da43b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5bd5bfa7-b92a-460b-a4a0-de8910faa516",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_b643c88cf32b29": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4bb05cff-da30-45b2-a3b6-85e1ddcdee98",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
