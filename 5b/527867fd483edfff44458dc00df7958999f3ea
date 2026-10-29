@@ -1,0 +1,27 @@
+src/features/supporters/components/SupportersScene/supportersSceneBins.tsx
+  s_792461bfbd0af2::t_99e819acdcd41f 137-138
+src/features/supporters/hooks/useAchievements.test.ts
+  s_792461bfbd0af2::t_99e819acdcd41f 32
+src/features/supporters/hooks/useAchievements.ts
+  s_792461bfbd0af2::t_99e819acdcd41f 2,16,20-21
+src/features/supporters/utils/achievements.test.ts
+  s_792461bfbd0af2::t_99e819acdcd41f 2,11-12,16-19,22,28
+src/features/supporters/utils/achievements.ts
+  s_792461bfbd0af2::t_99e819acdcd41f 19-20,22,25,31,33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5b527867fd483edfff44458dc00df7958999f3ea",
+  "prompts": {},
+  "sessions": {
+    "s_792461bfbd0af2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "971efe59-75e6-421b-ad6f-2f7f27706660",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
