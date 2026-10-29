@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { creditFromSearch, creditLinkFor, isCreditFor } from './creditLink';
+import { creditFromSearch, creditLinkFor, isCreditFor, wellFormed } from './creditLink';
 
 describe('credit links', () => {
   it('round-trips a name with spaces and accents', () => {
@@ -14,6 +14,12 @@ describe('credit links', () => {
     const linked = creditFromSearch(new URL(link).search) ?? '';
     expect(isCreditFor(linked, broken)).toBe(true);
     expect(isCreditFor(linked, 'Sam')).toBe(false);
+  });
+
+  it('repairs only lone surrogates, leaving whole emoji alone', () => {
+    expect(wellFormed('ok \u{1F600}')).toBe('ok \u{1F600}');
+    expect(wellFormed('a\uD83Db')).toBe('a\uFFFDb');
+    expect(wellFormed('\uDE00a')).toBe('\uFFFDa');
   });
 
   it('matches whole names only, ignoring case', () => {

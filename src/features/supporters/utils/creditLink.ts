@@ -8,10 +8,24 @@ const MAX_LENGTH = 64;
  * repaired form, and the lookup compares it on both sides.
  */
 export function wellFormed(text: string): string {
-  return text.replace(
-    /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g,
-    '\uFFFD'
-  );
+  // A loop, not a lookbehind regex: Safari 15 can't parse lookbehind, and a
+  // regex literal it can't parse breaks the whole chunk, not just links.
+  let out = '';
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    if (code >= 0xd800 && code <= 0xdbff) {
+      const next = text.charCodeAt(i + 1);
+      if (next >= 0xdc00 && next <= 0xdfff) {
+        out += text[i] + text[i + 1];
+        i++;
+      } else {
+        out += '\uFFFD';
+      }
+    } else {
+      out += code >= 0xdc00 && code <= 0xdfff ? '\uFFFD' : text[i];
+    }
+  }
+  return out;
 }
 
 /** A link that opens the credits on `name`. Names are the only handle the public list carries. */
