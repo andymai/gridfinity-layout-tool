@@ -21,6 +21,7 @@ import {
   normalizeJoinedAt,
   parseAmountMinorUnits,
   parseKofiPayload,
+  recordDonor,
   serializeDonorRecord,
 } from './lib/supporters.js';
 
@@ -161,13 +162,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // A message rides only with a public name: an opted-out supporter surfaces
     // neither, so we don't even filter their words.
     const message = displayName ? filterMessage(payload.message) : null;
-    const record = serializeDonorRecord({
+    const record = {
       name: displayName,
       joinedAt: normalizeJoinedAt(payload.timestamp),
       message: message ?? undefined,
-    });
+    };
 
-    await redis.hset(supportersDonorsKey(), donorId ?? `anon-${randomUUID()}`, record);
+    if (donorId) {
+      await recordDonor(redis, donorId, record);
+    } else {
+      await redis.hset(supportersDonorsKey(), `anon-${randomUUID()}`, serializeDonorRecord(record));
+    }
 
     return res.status(200).json({ ok: true });
   } catch (error) {

@@ -251,6 +251,73 @@ export function serializeDonorRecord(record: SupporterRecord): string {
 }
 
 /**
+ * A repeat payment from someone already on the wall. The stored record wins,
+ * so a self-service rename or going anonymous survives another tip, and so
+ * does the earlier join date. Only a public payment's message replaces the
+ * stored one; a blank never wipes it. An undated legacy record stays undated:
+ * dating it now would tag a long-time supporter "just joined".
+ */
+export function mergeDonorRecord(
+  stored: SupporterRecord | null,
+  incoming: SupporterRecord
+): SupporterRecord {
+  if (!stored) return incoming;
+  const joinedAt =
+    stored.joinedAt && incoming.joinedAt && incoming.joinedAt < stored.joinedAt
+      ? incoming.joinedAt
+      : stored.joinedAt;
+  return { name: stored.name, joinedAt, message: incoming.message ?? stored.message };
+}
+
+const RECORD_ATTEMPTS = 3;
+
+const COMPARE_AND_SET = `
+if (redis.call('HGET', KEYS[1], ARGV[1]) or '') == ARGV[2] then
+  redis.call('HSET', KEYS[1], ARGV[1], ARGV[3])
+  return 1
+end
+return 0`;
+
+interface DonorRedis extends Redis {
+  donorCompareAndSet(key: string, field: string, expected: string, value: string): Promise<number>;
+}
+
+// Registered lazily and per instance, like `ensureMeshScripts` in meshIndex.ts.
+function ensureDonorScript(redis: Redis): DonorRedis {
+  const client = redis as DonorRedis;
+  if (typeof client.donorCompareAndSet !== 'function') {
+    client.defineCommand('donorCompareAndSet', { numberOfKeys: 1, lua: COMPARE_AND_SET });
+  }
+  return client;
+}
+
+/**
+ * Write a payment into its donor's field, merged with what is there. The
+ * compare-and-set means a self-service edit landing between the read and the
+ * write is merged on the next attempt instead of overwritten. The last attempt
+ * writes unconditionally: Ko-fi never replays, so losing the payment is worse
+ * than losing a concurrent edit.
+ */
+export async function recordDonor(
+  redis: Redis,
+  field: string,
+  incoming: SupporterRecord
+): Promise<void> {
+  const key = supportersDonorsKey();
+  const client = ensureDonorScript(redis);
+  for (let attempt = 1; ; attempt++) {
+    const raw = await client.hget(key, field);
+    const merged = mergeDonorRecord(raw === null ? null : parseDonorRecord(raw), incoming);
+    const value = serializeDonorRecord(merged);
+    if (attempt === RECORD_ATTEMPTS) {
+      await client.hset(key, field, value);
+      return;
+    }
+    if ((await client.donorCompareAndSet(key, field, raw ?? '', value)) === 1) return;
+  }
+}
+
+/**
  * Parse a `supporters:donors` hash value, tolerating both shapes.
  *
  * The value was historically a bare display name (`''` = anonymous). New writes

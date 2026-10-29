@@ -15,8 +15,17 @@ const mocks = vi.hoisted(() => ({
   ping: vi.fn(),
   set: vi.fn(),
   hset: vi.fn(),
+  hget: vi.fn(),
+  donorCompareAndSet: vi.fn(),
   hincrby: vi.fn(),
 }));
+
+/** The `supporters:donors` hash, so a repeat payment can read what an earlier one wrote. */
+const donors = new Map<string, string>();
+const written = (): Record<string, unknown> => {
+  expect(donors.size).toBe(1);
+  return JSON.parse([...donors.values()][0]) as Record<string, unknown>;
+};
 
 vi.mock('./lib/rateLimit.js', () => ({
   checkRateLimit: mocks.checkRateLimit,
@@ -81,12 +90,26 @@ describe('kofi-webhook', () => {
     process.env.TOKEN_SALT = 'salt';
     mocks.ping.mockResolvedValue('PONG');
     mocks.set.mockResolvedValue('OK');
-    mocks.hset.mockResolvedValue(1);
+    donors.clear();
+    mocks.hset.mockImplementation(async (_key: string, field: string, value: string) => {
+      donors.set(field, value);
+      return 1;
+    });
+    mocks.hget.mockImplementation(async (_key: string, field: string) => donors.get(field) ?? null);
+    mocks.donorCompareAndSet.mockImplementation(
+      async (_key: string, field: string, prev: string, next: string) => {
+        if ((donors.get(field) ?? '') !== prev) return 0;
+        donors.set(field, next);
+        return 1;
+      }
+    );
     mocks.hincrby.mockResolvedValue(1);
     mocks.getRedis.mockReturnValue({
       ping: mocks.ping,
       set: mocks.set,
       hset: mocks.hset,
+      hget: mocks.hget,
+      donorCompareAndSet: mocks.donorCompareAndSet,
       hincrby: mocks.hincrby,
     });
     mocks.checkRateLimit.mockResolvedValue({ allowed: true, remaining: 59, resetAt: 0 });
@@ -99,13 +122,13 @@ describe('kofi-webhook', () => {
   it('records a valid donation', async () => {
     const res = await handle(payload());
     expect(res._status).toBe(200);
-    expect(mocks.hset).toHaveBeenCalledTimes(1);
+    expect(donors.size).toBe(1);
   });
 
   it('rejects a forged token without touching the store', async () => {
     const res = await handle(payload({ verification_token: 'wrong' }));
     expect(res._status).toBe(401);
-    expect(mocks.hset).not.toHaveBeenCalled();
+    expect(donors.size).toBe(0);
     // The whole point of verifying first: a forged request costs no Redis I/O.
     expect(mocks.checkRateLimit).not.toHaveBeenCalled();
   });
@@ -114,7 +137,7 @@ describe('kofi-webhook', () => {
     delete process.env.KOFI_VERIFICATION_TOKEN;
     const res = await handle(payload());
     expect(res._status).toBe(503);
-    expect(mocks.hset).not.toHaveBeenCalled();
+    expect(donors.size).toBe(0);
   });
 
   it('400s on a malformed payload', async () => {
@@ -169,7 +192,7 @@ describe('kofi-webhook', () => {
     const res = await handle(payload());
     expect(res._status).toBe(200);
     expect((res._body as { deduped: boolean }).deduped).toBe(true);
-    expect(mocks.hset).not.toHaveBeenCalled();
+    expect(donors.size).toBe(0);
   });
 
   it('ignores a subscription renewal so regulars keep one bin', async () => {
@@ -177,20 +200,19 @@ describe('kofi-webhook', () => {
       payload({ is_subscription_payment: true, is_first_subscription_payment: false })
     );
     expect(res._status).toBe(200);
-    expect(mocks.hset).not.toHaveBeenCalled();
+    expect(donors.size).toBe(0);
   });
 
   it('stores a private supporter as anonymous with no message', async () => {
     await handle(payload({ is_public: false, message: 'secret note' }));
-    expect(mocks.hset).toHaveBeenCalledTimes(1);
-    const record = JSON.parse(mocks.hset.mock.calls[0][2]);
+    const record = written();
     expect(record.n).toBe('');
     expect(record.m).toBeUndefined();
   });
 
   it('stores a public supporter as a record with name, date, and message', async () => {
     await handle(payload({ timestamp: '2026-07-01T13:04:30Z', message: 'thanks!' }));
-    const record = JSON.parse(mocks.hset.mock.calls[0][2]);
+    const record = written();
     expect(record.n).toBe('Jo Example');
     expect(record.t).toBe('2026-07-01T13:04:30.000Z');
     expect(record.m).toBe('thanks!');
@@ -201,9 +223,76 @@ describe('kofi-webhook', () => {
     // ISO string like "…:X5.001Z" can coincidentally contain "5.00" (seconds
     // ending in 5, ms starting 00), flaking the substring assertion below.
     await handle(payload({ amount: '5.00', timestamp: '2026-07-01T13:04:30Z' }));
-    const written = JSON.stringify(mocks.hset.mock.calls[0]);
-    expect(written).not.toContain('jo@example.com');
-    expect(written).not.toContain('5.00');
+    const stored = JSON.stringify([...donors]);
+    expect(stored).not.toContain('jo@example.com');
+    expect(stored).not.toContain('5.00');
+  });
+
+  describe('a repeat tip from someone already on the wall', () => {
+    const first = payload({ timestamp: '2026-07-01T13:04:30Z', message: 'first words' });
+    const again = (over: Record<string, unknown> = {}) =>
+      payload({ message_id: 'm-2', timestamp: '2026-09-01T10:00:00Z', ...over });
+
+    it('keeps their message when the new tip has none', async () => {
+      await handle(first);
+      await handle(again());
+      expect(written().m).toBe('first words');
+    });
+
+    it('keeps their earliest join date', async () => {
+      await handle(first);
+      await handle(again({ message: 'more words' }));
+      expect(written().t).toBe('2026-07-01T13:04:30.000Z');
+    });
+
+    it('takes the new message from a public tip', async () => {
+      await handle(first);
+      await handle(again({ message: 'more words' }));
+      expect(written().m).toBe('more words');
+    });
+
+    it('never publishes a private tip message over a public record', async () => {
+      await handle(first);
+      await handle(again({ is_public: false, message: 'private words' }));
+      expect(written()).toMatchObject({ n: 'Jo Example', m: 'first words' });
+    });
+
+    it('keeps a self-service rename', async () => {
+      await handle(first);
+      const [field] = [...donors.keys()];
+      donors.set(field, JSON.stringify({ n: 'Jo E.', t: '2026-07-01T13:04:30.000Z' }));
+      await handle(again({ from_name: 'Jo Example' }));
+      expect(written().n).toBe('Jo E.');
+    });
+
+    it('keeps them anonymous after they opted out', async () => {
+      await handle(first);
+      const [field] = [...donors.keys()];
+      donors.set(field, JSON.stringify({ n: '', t: '2026-07-01T13:04:30.000Z' }));
+      await handle(again({ message: 'more words' }));
+      expect(written()).toMatchObject({ n: '' });
+      expect(written().m).toBeUndefined();
+    });
+
+    it('leaves an undated legacy record undated', async () => {
+      await handle(first);
+      const [field] = [...donors.keys()];
+      donors.set(field, 'Jo Example');
+      await handle(again());
+      expect(written().t).toBeUndefined();
+    });
+
+    it('merges an edit that lands between the read and the write', async () => {
+      await handle(first);
+      const [field] = [...donors.keys()];
+      mocks.hget.mockImplementationOnce(async () => {
+        const seen = donors.get(field) ?? null;
+        donors.set(field, JSON.stringify({ n: 'Jo E.', t: '2026-07-01T13:04:30.000Z' }));
+        return seen;
+      });
+      await handle(again({ message: 'more words' }));
+      expect(written()).toMatchObject({ n: 'Jo E.', m: 'more words' });
+    });
   });
 
   it('folds the amount into a collect-only per-currency total', async () => {
@@ -226,7 +315,7 @@ describe('kofi-webhook', () => {
       })
     );
     expect(mocks.hincrby).toHaveBeenCalledWith('supporters:totals', 'EUR', 300);
-    expect(mocks.hset).not.toHaveBeenCalled();
+    expect(donors.size).toBe(0);
   });
 
   it.each([
@@ -245,7 +334,7 @@ describe('kofi-webhook', () => {
     const mod = await import('./kofi-webhook.js');
     await mod.default(createRequest(payload(), 'text/plain'), res);
     expect(res._status).toBe(415);
-    expect(mocks.hset).not.toHaveBeenCalled();
+    expect(donors.size).toBe(0);
   });
 
   it('rejects a non-POST method', async () => {
