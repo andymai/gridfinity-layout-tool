@@ -29,28 +29,33 @@ function earliest(dates: (string | undefined)[]): string | undefined {
   return dates.reduce<string | undefined>((a, b) => (b && (!a || b < a) ? b : a), undefined);
 }
 
-function longest(texts: string[]): string | undefined {
-  return texts.reduce<string | undefined>((a, b) => (!a || b.length > a.length ? b : a), undefined);
+export interface BackfillContext {
+  /** The seed's own date assignment for `seed:anon:*`, which have no transactions of their own. */
+  seedAnonDates?: Record<string, string | undefined>;
+  /** Webhook records an account has linked to, whose owner may have edited them from the panel. */
+  linkedDonors?: Set<string>;
 }
 
 /**
  * What a Ko-fi export can still add to the stored records: a message the old
  * cap cut, a message or join date that was never stored, and a join date a
- * repeat tip moved forward. A record only ever takes text from its own donor's
- * transactions (the salted email id for a webhook record; the public name for
- * a `seed:named` record, skipping rows that belong to a webhook record, so two
- * people sharing a name never swap words), and only while it shows a public
- * name. `seedAnonDates` carries the seed's own date assignment for
- * `seed:anon:*`, which have no transactions of their own.
+ * repeat tip moved forward. A record only takes rows from its own donor (the
+ * salted email id for a webhook record; the public name for a `seed:named`
+ * record, skipping rows that belong to a webhook record), and only while it
+ * shows a public name.
  *
- * A cut message is restored only when it is exactly what the old cap would
- * have cut that full text to, so an edited message never matches.
+ * The export has no public/private flag, so a missing message is added only
+ * when the donor's single tip carried it: a named record whose donor tipped
+ * once proves that tip was public. Never to a record whose account could have
+ * cleared the message on purpose. A seed name shared by two donors gets no
+ * message or date. A cut message is restored only when it is exactly what the
+ * old cap would have cut that full text to, so an edited message never matches.
  */
 export function planBackfill(
   donors: Record<string, string>,
   rows: TransactionRow[],
   donorIdFor: (email: string) => string | null,
-  seedAnonDates: Record<string, string | undefined> = {}
+  { seedAnonDates = {}, linkedDonors = new Set<string>() }: BackfillContext = {}
 ): BackfillPlan {
   const owners = rows.map((row) => (row.email ? donorIdFor(row.email) : null));
   const isLive = (field: string | null): boolean =>
@@ -69,6 +74,8 @@ export function planBackfill(
   for (const [field, raw] of Object.entries(donors)) {
     const record = parseDonorRecord(raw);
     const own = ownRows(field, record.name);
+    const oneDonor =
+      new Set(own.map((row) => row.email || `${row.from}|${row.dateTime}`)).size === 1;
     const fix: Omit<RecordFix, 'field' | 'previous' | 'value'> = {};
     const next = { ...record };
 
@@ -76,8 +83,10 @@ export function planBackfill(
       const texts = own.map((row) => filterMessage(row.message)).filter((t): t is string => !!t);
       const stored = record.message;
       if (!stored) {
-        next.message = longest(texts);
-        if (next.message) fix.message = 'added';
+        if (own.length === 1 && !linkedDonors.has(field)) {
+          next.message = filterMessage(own[0].message) ?? undefined;
+          if (next.message) fix.message = 'added';
+        }
       } else if (
         stored.length >= PREVIOUS_MESSAGE_LENGTH - 1 &&
         stored.length <= PREVIOUS_MESSAGE_LENGTH
@@ -99,7 +108,9 @@ export function planBackfill(
 
     const firstTip = field.startsWith('seed:anon:')
       ? seedAnonDates[field]
-      : earliest(own.map((row) => parseCsvDate(row.dateTime)));
+      : oneDonor
+        ? earliest(own.map((row) => parseCsvDate(row.dateTime)))
+        : undefined;
     if (firstTip) {
       if (!record.joinedAt) {
         next.joinedAt = firstTip;

@@ -93,19 +93,48 @@ describe('planBackfill: messages the old cap cut', () => {
 });
 
 describe('planBackfill: messages that were never stored', () => {
-  it("adds the longest of a live supporter's own messages that passes the filter", () => {
+  it("adds the message from a named supporter's single tip", () => {
+    const { fixes } = planBackfill({ [JO]: stored() }, [row('it saved my drawers')], idFor);
+    expect(fixes).toHaveLength(1);
+    expect(fixes[0].message).toBe('added');
+    expect(after(fixes[0].value).message).toBe('it saved my drawers');
+  });
+
+  it('adds nothing for a donor with several tips, since the export cannot show which were public', () => {
     const { fixes } = planBackfill(
       { [JO]: stored() },
+      [row('a private note'), row('', 'jo@example.com', 'Jo', '2026-07-01T13:04:30Z')],
+      idFor
+    );
+    expect(fixes).toEqual([]);
+  });
+
+  it('never adds a message the content filter rejects', () => {
+    const { fixes } = planBackfill(
+      { [JO]: stored() },
+      [row('see https://spam.example now')],
+      idFor
+    );
+    expect(fixes).toEqual([]);
+  });
+
+  it('never gives back a message a linked account could have cleared from the panel', () => {
+    const { fixes } = planBackfill({ [JO]: stored() }, [row('it saved my drawers')], idFor, {
+      linkedDonors: new Set([JO]),
+    });
+    expect(fixes).toEqual([]);
+  });
+
+  it('gives a seed name two donors share neither a message nor a date', () => {
+    const { fixes } = planBackfill(
+      { 'seed:named:0': serializeDonorRecord({ name: 'Sam' }) },
       [
-        row('thanks!'),
-        row('thanks for this tool, it saved my drawers'),
-        row('see https://spam.example now'),
+        row('one Sam', 'sam1@example.com', 'Sam', '2026-05-01T00:00:00Z'),
+        row('', 'sam2@example.com', 'Sam', '2026-06-01T00:00:00Z'),
       ],
       idFor
     );
-    expect(fixes).toHaveLength(1);
-    expect(fixes[0].message).toBe('added');
-    expect(after(fixes[0].value).message).toBe('thanks for this tool, it saved my drawers');
+    expect(fixes).toEqual([]);
   });
 
   it('never gives an anonymous supporter a message', () => {
@@ -177,7 +206,7 @@ describe('planBackfill: join dates', () => {
       { 'seed:anon:0': serializeDonorRecord({ name: null }) },
       [row('words', 'x@example.com', 'X')],
       idFor,
-      { 'seed:anon:0': '2026-02-01T00:00:00.000Z' }
+      { seedAnonDates: { 'seed:anon:0': '2026-02-01T00:00:00.000Z' } }
     );
     expect(fixes).toHaveLength(1);
     expect(after(fixes[0].value)).toEqual({ name: null, joinedAt: '2026-02-01T00:00:00.000Z' });

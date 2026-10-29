@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { Redis } from 'ioredis';
 import supporters from '../src/features/supporters/data/supporters.json' with { type: 'json' };
-import { supportersDonorsKey } from '../api/lib/redisKeys.js';
+import { supportersDonorsKey, supportersLinkKey } from '../api/lib/redisKeys.js';
 import { deriveDonorId, parseDonorRecord } from '../api/lib/supporters.js';
 import { buildSeedEntries, parseTransactionCsv } from './seed-supporters.core.js';
 import { planBackfill, type RecordFix } from './restore-supporter-messages.core.js';
@@ -76,7 +76,15 @@ async function main(): Promise<void> {
   redis.defineCommand('compareAndSet', { numberOfKeys: 1, lua: COMPARE_AND_SET });
   try {
     const donors = await redis.hgetall(supportersDonorsKey());
-    const { fixes, unmatched } = planBackfill(donors, rows, deriveDonorId, seedAnonDates(rows));
+    const live = Object.keys(donors).filter(
+      (f) => !f.startsWith('seed:') && !f.startsWith('anon-')
+    );
+    const links = live.length ? await redis.mget(live.map(supportersLinkKey)) : [];
+    const linkedDonors = new Set(live.filter((_, i) => links[i] !== null));
+    const { fixes, unmatched } = planBackfill(donors, rows, deriveDonorId, {
+      seedAnonDates: seedAnonDates(rows),
+      linkedDonors,
+    });
     summarize(fixes, rows.length, unmatched);
     if (dryRun) {
       say('--dry-run: no writes.');
