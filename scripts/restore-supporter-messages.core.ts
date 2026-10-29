@@ -69,18 +69,22 @@ export function planBackfill(
   const isLive = (field: string | null): boolean =>
     field !== null && field in donors && !field.startsWith('seed:') && !field.startsWith('anon-');
 
-  const ownRows = (field: string, name: string | null): number[] => {
+  /** Every row of the record's donor, or null when the export cannot say who that is. */
+  const ownRows = (field: string, name: string | null): number[] | null => {
     const all = rows.map((_, i) => i);
-    if (field.startsWith('seed:named:'))
-      return name ? all.filter((i) => rows[i].from === name) : [];
-    return isLive(field) ? all.filter((i) => owners[i] === field) : [];
-  };
-  const isCertain = (field: string, idx: number[]): boolean => {
-    if (!field.startsWith('seed:named:')) return idx.length > 0;
+    if (!field.startsWith('seed:named:')) {
+      return isLive(field) ? all.filter((i) => owners[i] === field) : [];
+    }
+    const named = name ? all.filter((i) => rows[i].from === name) : [];
+    if (named.length === 0) return [];
     const donorsIn = new Set(
-      idx.map((i) => rows[i].email || `${rows[i].from}|${rows[i].dateTime}`)
+      named.map((i) => rows[i].email || `${rows[i].from}|${rows[i].dateTime}`)
     );
-    return donorsIn.size === 1 && idx.every((i) => !isLive(owners[i]));
+    if (donorsIn.size !== 1) return null;
+    // Under every name they tipped as, so an earlier tip under another name still dates them.
+    const email = rows[named[0]].email;
+    const theirs = email ? all.filter((i) => rows[i].email === email) : named;
+    return theirs.some((i) => isLive(owners[i])) ? null : theirs;
   };
 
   const fixes: RecordFix[] = [];
@@ -88,8 +92,8 @@ export function planBackfill(
   for (const [field, raw] of Object.entries(donors)) {
     const record = parseDonorRecord(raw);
     const idx = ownRows(field, record.name);
-    const own = idx.map((i) => rows[i]);
-    const certain = isCertain(field, idx);
+    const own = (idx ?? []).map((i) => rows[i]);
+    const certain = own.length > 0;
     const unedited = field.startsWith('seed:named:') || isBareName(raw);
     const fix: Omit<RecordFix, 'field' | 'previous' | 'value'> = {};
     const next = { ...record };

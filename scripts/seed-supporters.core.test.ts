@@ -50,6 +50,12 @@ describe('parseCsvDate', () => {
     expect(parseCsvDate('01/24/2026 03:41')).toBe('2026-01-24T03:41:00.000Z');
   });
 
+  it('rejects a Ko-fi timestamp whose parts are out of range instead of rolling it over', () => {
+    expect(parseCsvDate('13/24/2026 03:41')).toBeUndefined();
+    expect(parseCsvDate('02/30/2026 10:00')).toBeUndefined();
+    expect(parseCsvDate('01/24/2026 24:00')).toBeUndefined();
+  });
+
   it('returns undefined (never now) for garbage', () => {
     expect(parseCsvDate('not a date')).toBeUndefined();
   });

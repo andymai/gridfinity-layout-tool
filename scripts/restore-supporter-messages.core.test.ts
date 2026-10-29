@@ -37,6 +37,16 @@ describe('planBackfill: messages the old cap cut', () => {
     });
   });
 
+  it('restores no cut message on a seed whose name two donors share', () => {
+    const { fixes, unmatched } = planBackfill(
+      { 'seed:named:0': stored(cut) },
+      [row(full, 'jo@example.com'), row('hello', 'other-jo@example.com')],
+      idFor
+    );
+    expect(fixes).toEqual([]);
+    expect(unmatched).toBe(1);
+  });
+
   it('restores a seed record from the transactions under its public name', () => {
     const { fixes } = planBackfill(
       { 'seed:named:0': stored(cut) },
@@ -132,6 +142,18 @@ describe('planBackfill: messages that were never stored', () => {
       idFor
     );
     expect(fixes).toEqual([]);
+  });
+
+  it("dates a seed by its donor's first tip under any name, and adds no message for two tips", () => {
+    const { fixes } = planBackfill(
+      { 'seed:named:0': serializeDonorRecord({ name: 'Ada' }) },
+      [
+        row('early words', 'ada@example.com', 'Ada Lovelace', '2026-03-01T00:00:00Z'),
+        row('later words', 'ada@example.com', 'Ada', '2026-07-01T00:00:00Z'),
+      ],
+      idFor
+    );
+    expect(after(fixes[0].value)).toEqual({ name: 'Ada', joinedAt: '2026-03-01T00:00:00.000Z' });
   });
 
   it('gives a seed nothing when its donor also has a webhook record', () => {

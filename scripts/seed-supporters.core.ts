@@ -101,9 +101,19 @@ export function parseCsvDate(raw: string): string | undefined {
   // Ko-fi writes `MM/DD/YYYY HH:MM` under a "DateTime (UTC)" header, which
   // Date.parse would read as the machine's local time.
   const kofi = /^(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(raw.trim());
-  const t = kofi
-    ? Date.UTC(+kofi[3], +kofi[1] - 1, +kofi[2], +kofi[4], +kofi[5], +(kofi[6] ?? 0))
-    : Date.parse(raw);
+  if (kofi) {
+    const [month, day, year, hour, minute, second] = [1, 2, 3, 4, 5, 6].map((i) => +(kofi[i] ?? 0));
+    const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+    // Date.UTC rolls 13/24 over into January rather than rejecting it.
+    const exact =
+      date.getUTCMonth() === month - 1 &&
+      date.getUTCDate() === day &&
+      date.getUTCHours() === hour &&
+      date.getUTCMinutes() === minute &&
+      date.getUTCSeconds() === second;
+    return exact ? date.toISOString() : undefined;
+  }
+  const t = Date.parse(raw);
   return Number.isFinite(t) ? new Date(t).toISOString() : undefined;
 }
 
