@@ -30,7 +30,6 @@ const SAMPLE_PX = 2;
 const WINDOW_PAD_PX = 48;
 const RAMP_PX = 72;
 
-/** Reading time for a quote, from a skim pace of about 20 characters a second. */
 export function messageDwell(characters: number): number {
   return Math.min(6, Math.max(2, 0.9 + characters / 20));
 }

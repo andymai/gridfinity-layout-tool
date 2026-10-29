@@ -1,6 +1,5 @@
 type FrameListener = (clock: CreditsClock) => void;
 
-/** How fast the playback rate eases toward its target, per second. */
 const RATE_RESPONSE = 8;
 
 /**

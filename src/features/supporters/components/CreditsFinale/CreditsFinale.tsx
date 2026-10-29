@@ -19,7 +19,6 @@ interface CreditsFinaleProps {
   onOpenPanel: () => void;
 }
 
-/** Everything that appears once the plate is full: the count, the empty socket's tag, the ask. */
 export function CreditsFinale({
   total,
   count,

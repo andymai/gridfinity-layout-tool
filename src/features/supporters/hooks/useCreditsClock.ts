@@ -10,7 +10,6 @@ export interface CreditsClockHandle {
   setPaused: (paused: boolean) => void;
 }
 
-/** Owns the roll's clock and ticks it on animation frames while `running`. */
 export function useCreditsClock(running: boolean, onEnd: () => void): CreditsClockHandle {
   const [clock] = useState(() => new CreditsClock(0));
   const [paused, setPausedState] = useState(false);

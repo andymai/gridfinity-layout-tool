@@ -86,7 +86,6 @@ export function PlateInstances({
   );
 }
 
-/** Each department's name on a strip of tape in the socket row in front of its zone. */
 export function ZoneLabels({
   layout,
   labels,

@@ -62,10 +62,6 @@ function HoldButton({
   );
 }
 
-/**
- * Tape-deck controls for the roll: hold to rewind or fast-forward, pause,
- * skip to the finale, plus a quiet way to support that never covers a credit.
- */
 export function CreditsControls({
   clock,
   paused,

@@ -1,6 +1,5 @@
 const SEEN_KEY = 'gridfinity-supporters-credits-seen';
 
-/** Whether this browser has watched (or skipped) the credits before. False if storage is blocked. */
 export function hasSeenCredits(): boolean {
   try {
     return localStorage.getItem(SEEN_KEY) === '1';

@@ -11,7 +11,6 @@ interface SavedEdit {
 }
 
 export interface ProfileOverlay {
-  /** The supporter list with the caller's own saved edit applied. */
   effective: SupportersData;
   saveProfile: (patch: SupporterProfilePatch) => Promise<SupporterEditError | null>;
 }

@@ -2,7 +2,6 @@ import type { SupporterBin } from './supportersData';
 
 export interface FoundSupporter {
   bin: SupporterBin & { name: string };
-  /** How many supporters share exactly this name. */
   exactMatches: number;
 }
 

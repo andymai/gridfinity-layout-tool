@@ -94,7 +94,6 @@ export function departmentOf(bin: SupporterBin): number {
   return isSupporterDepartment(bin.department) ? bin.department : fallbackDepartment(bin.name);
 }
 
-/** Split `list` into `parts` runs whose lengths differ by at most one. */
 function splitEvenly<T>(list: T[], parts: number): T[][] {
   const runs: T[][] = [];
   let start = 0;

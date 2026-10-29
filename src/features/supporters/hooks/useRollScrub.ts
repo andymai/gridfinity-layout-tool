@@ -3,7 +3,6 @@ import { useLatestRef } from '@/shared/hooks';
 import type { CreditsClock } from '../utils/creditsClock';
 import { scrubTime, type RollTimeline } from '../utils/rollTimeline';
 
-/** Playback rate while an arrow key or a hold button is down. */
 export const HOLD_RATE = 6;
 /** Movement before a press becomes a drag, so taps on a credit still click it. */
 const DRAG_THRESHOLD_PX = 6;
@@ -28,11 +27,6 @@ function ignored(target: EventTarget | null): boolean {
   return target.matches('input, textarea, select, [contenteditable="true"]');
 }
 
-/**
- * Wheel, drag and arrow keys move the playhead while the roll is up. Wheel
- * and drag scrub by distance; held arrows fast-forward or rewind like a
- * tape; Space pauses and End skips to the finale.
- */
 export function useRollScrub({
   enabled,
   target,

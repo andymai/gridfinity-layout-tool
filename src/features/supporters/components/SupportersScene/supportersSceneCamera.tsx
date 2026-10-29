@@ -14,7 +14,6 @@ import {
 import { FULL_STAGE, type StageFrame } from './supportersSceneStage';
 
 const ZONE_TIGHTNESS = 0.62;
-/** How quickly the camera closes on its target, per second. */
 const FOLLOW_RATE = 1.9;
 /** The finale hands the camera to orbit controls once it is this close to its framing. */
 const SETTLED_FRACTION = 0.02;

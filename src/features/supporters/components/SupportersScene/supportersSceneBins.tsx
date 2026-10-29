@@ -26,7 +26,6 @@ import {
   type BakedGeometry,
 } from './supportersSceneGeometry';
 
-/** Seconds from a bin leaving the air to settling in its socket. */
 const DROP_SECONDS = 0.6;
 /** Longest wait before a bin joins the cascade when the finale fills the plate at once. */
 const CASCADE_SPREAD = 0.9;

@@ -9,7 +9,6 @@ import type { SupporterBin } from './supportersData';
 
 export const INTRO_SECONDS = 7.5;
 
-/** Seconds between neighbouring names in a block dropping their bins. */
 const NAME_STAGGER = 0.07;
 const HEADING_DWELL = 1.8;
 const GAG_DWELL = 2.4;
