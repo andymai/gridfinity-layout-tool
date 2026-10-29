@@ -12,6 +12,7 @@ import {
   normalizeDisplayName,
   parseDonorRecord,
   serializeDonorRecord,
+  withDepartment,
   type SupporterRecord,
 } from '../lib/supporters.js';
 import {
@@ -35,6 +36,7 @@ interface SupporterMeResponse {
   name: string | null;
   message: string | null;
   joinedAt?: string;
+  department?: number;
 }
 
 const NOT_A_SUPPORTER: SupporterMeResponse = {
@@ -145,13 +147,17 @@ async function resolveLink(redis: Redis, userId: string): Promise<SupporterLink 
 
 async function buildResponse(redis: Redis, link: SupporterLink): Promise<SupporterMeResponse> {
   const raw = await redis.hget(supportersDonorsKey(), link.donorId);
-  const record: SupporterRecord = raw ? parseDonorRecord(raw) : { name: null };
+  const record: SupporterRecord = withDepartment(
+    link.donorId,
+    raw ? parseDonorRecord(raw) : { name: null }
+  );
   return {
     supporter: true,
     badgePublic: link.badgePublic,
     name: record.name,
     message: record.message ?? null,
     ...(record.joinedAt ? { joinedAt: record.joinedAt } : {}),
+    ...(record.department !== undefined ? { department: record.department } : {}),
   };
 }
 

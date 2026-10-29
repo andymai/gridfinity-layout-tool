@@ -14,6 +14,8 @@ export interface SupporterRecord {
   /** ISO timestamp of when they first supported. Absent on legacy entries. */
   joinedAt?: string;
   message?: string;
+  /** Credits-roll department, only alongside a name. Derived on read, never stored. */
+  department?: number;
 }
 
 /** Public shape served by `/api/supporters` and mirrored by the bundled JSON fallback. */
@@ -76,6 +78,30 @@ function stripUnsafeNameChars(text: string): string {
     if (!isUnsafeNameCodePoint(ch.codePointAt(0) ?? 0)) out += ch;
   }
   return out;
+}
+
+/**
+ * KEEP IN LOCKSTEP with `SUPPORTER_DEPARTMENT_COUNT` in
+ * `src/features/supporters/constants.ts`. Effectively permanent: changing it
+ * moves almost every supporter to a different department.
+ */
+export const SUPPORTER_DEPARTMENT_COUNT = 8;
+
+/**
+ * Map a `supporters:donors` field to a credits department.
+ *
+ * Keyed by the hash field rather than the name so a department survives a
+ * rename and is independent of whether two people share a name. Only the
+ * index leaves the server, never the field itself.
+ */
+export function supporterDepartment(donorKey: string): number {
+  const digest = createHash('sha256').update(`department:${donorKey}`).digest();
+  return digest.readUInt32BE(0) % SUPPORTER_DEPARTMENT_COUNT;
+}
+
+/** Attach the department to a named record; anonymous records share one on the client. */
+export function withDepartment(donorKey: string, record: SupporterRecord): SupporterRecord {
+  return record.name ? { ...record, department: supporterDepartment(donorKey) } : record;
 }
 
 /** Bound the sanitize pass so it stays linear in a small constant, not the payload. */
@@ -276,6 +302,8 @@ export function parseKofiPayload(body: unknown): KofiPayload | null {
  */
 export async function readSupporters(redis: Redis): Promise<SupportersPayload> {
   const donors = await redis.hgetall(supportersDonorsKey());
-  const supporters = Object.values(donors).map(parseDonorRecord);
+  const supporters = Object.entries(donors).map(([key, raw]) =>
+    withDepartment(key, parseDonorRecord(raw))
+  );
   return { supporters };
 }

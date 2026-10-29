@@ -1,4 +1,5 @@
 import supportersData from '../data/supporters.json';
+import { isSupporterDepartment } from '../constants';
 
 /** One supporter as served by `/api/supporters`. `name` null = shown anonymously. */
 export interface SupporterRecord {
@@ -7,6 +8,8 @@ export interface SupporterRecord {
   joinedAt?: string;
   /** Only ever present alongside a name (Ko-fi's public opt-in gates the whole shout-out). */
   message?: string;
+  /** Server-assigned credits department; absent on the bundled fallback and for anonymous. */
+  department?: number;
 }
 
 export interface SupportersData {
@@ -19,6 +22,7 @@ export interface SupporterBin {
   name: string | null;
   joinedAt?: string;
   message?: string;
+  department?: number;
   /** The single most recent supporter (by `joinedAt`), for the arrival glow. */
   isNewest: boolean;
 }
@@ -69,6 +73,7 @@ export function buildSupporterBins(
     joinedAt: s.joinedAt,
     // A message never rides with an anonymous bin, even if the payload carries one.
     message: s.name ? s.message : undefined,
+    department: s.name ? s.department : undefined,
     isNewest: i === newest,
   }));
 
@@ -139,7 +144,12 @@ export function isSupportersData(value: unknown): value is SupportersData {
   if (!Array.isArray(supporters)) return false;
   return supporters.every((s: unknown) => {
     if (typeof s !== 'object' || s === null) return false;
-    const record = s as { name?: unknown; joinedAt?: unknown; message?: unknown };
+    const record = s as {
+      name?: unknown;
+      joinedAt?: unknown;
+      message?: unknown;
+      department?: unknown;
+    };
     const nameOk = record.name === null || typeof record.name === 'string';
     const joinedOk = record.joinedAt === undefined || typeof record.joinedAt === 'string';
     // A message is only valid alongside a non-empty name: never trust a payload
@@ -149,6 +159,8 @@ export function isSupportersData(value: unknown): value is SupportersData {
       (typeof record.message === 'string' &&
         typeof record.name === 'string' &&
         record.name.length > 0);
-    return nameOk && joinedOk && messageOk;
+    const departmentOk =
+      record.department === undefined || isSupporterDepartment(record.department);
+    return nameOk && joinedOk && messageOk && departmentOk;
   });
 }

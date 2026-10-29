@@ -9,7 +9,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { supportersDonorsKey, userProfileKey } from '../lib/redisKeys.js';
-import { deriveDonorId, serializeDonorRecord } from '../lib/supporters.js';
+import { deriveDonorId, serializeDonorRecord, supporterDepartment } from '../lib/supporters.js';
 import { supportersUserKey } from '../lib/redisKeys.js';
 
 const mocks = vi.hoisted(() => ({
@@ -177,6 +177,13 @@ describe('GET /api/supporters/me', () => {
     seedSupporter(null);
     const res = await handle({ method: 'GET' });
     expect(res._body).toMatchObject({ supporter: true, name: null, message: null });
+    expect(res._body).not.toHaveProperty('department');
+  });
+
+  it('reports the department the public list shows for this bin', async () => {
+    const donorId = seedSupporter('Jo');
+    const res = await handle({ method: 'GET' });
+    expect(res._body).toMatchObject({ department: supporterDepartment(donorId) });
   });
 });
 
@@ -202,7 +209,7 @@ describe('PATCH /api/supporters/me', () => {
     const donorId = seedSupporter('Jo');
     const res = await handle({ method: 'PATCH', body: { name: 'Joanne' } });
     expect(res._status).toBe(200);
-    expect(res._body).toMatchObject({ name: 'Joanne' });
+    expect(res._body).toMatchObject({ name: 'Joanne', department: supporterDepartment(donorId) });
     expect(redis.hashes.get(supportersDonorsKey())?.get(donorId)).toContain('Joanne');
   });
 

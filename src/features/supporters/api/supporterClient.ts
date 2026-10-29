@@ -1,4 +1,5 @@
 import { apiFetch } from '@/core/sync/apiFetch';
+import { isSupporterDepartment } from '../constants';
 
 /** The caller's own supporter record, as served by `GET /api/supporters/me`. */
 export interface SupporterStatus {
@@ -8,6 +9,7 @@ export interface SupporterStatus {
   name: string | null;
   message: string | null;
   joinedAt?: string;
+  department?: number;
 }
 
 export interface SupporterProfilePatch {
@@ -42,6 +44,7 @@ function parseStatus(value: unknown): SupporterStatus {
     name: typeof record.name === 'string' && record.name ? record.name : null,
     message: typeof record.message === 'string' && record.message ? record.message : null,
     ...(typeof record.joinedAt === 'string' ? { joinedAt: record.joinedAt } : {}),
+    ...(isSupporterDepartment(record.department) ? { department: record.department } : {}),
   };
 }
 

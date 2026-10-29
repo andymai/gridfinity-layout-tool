@@ -44,8 +44,9 @@ verifies it, and writes the supporter to the `supporters:donors` hash as a
 compact JSON record (`{n: name, t: joinedAt, m?: message}`; legacy bare-name
 values are still parsed). The payment amount is folded into a **collect-only**
 per-currency `supporters:totals` counter, never tied to a person and never
-served. `api/supporters.ts` serves the list; `hooks/useSupportersData.ts`
-fetches it.
+served. `api/supporters.ts` serves the list, adding a credits `department` to
+each named supporter: a hash of their donor field, so it survives a rename and
+the field itself never leaves the server. `hooks/useSupportersData.ts` fetches it.
 
 Ko-fi has **no read API and no webhook replay**, so the live feed only ever sees
 payments made after it went live. Historical supporters (dates, messages,
@@ -111,8 +112,9 @@ ingest rules. `data/supporters.json` is only the offline fallback (see below).
 - `api/supporterClient.ts` + `hooks/useSupporterStatus.ts` — the caller's own
   record. Never throws: an anonymous visitor, an expired session, and a failed
   request all mean the same thing to the page (show the ask).
-- `constants.ts` — client mirrors of the server's name/message caps. **Keep in
-  lockstep with `api/lib/supporters.ts`**; the server is the authority.
+- `constants.ts`: client mirrors of the server's name/message caps and
+  department count, pinned to `api/lib/supporters.ts` by `constants.test.ts`;
+  the server is the authority.
 
 ## Gotchas
 

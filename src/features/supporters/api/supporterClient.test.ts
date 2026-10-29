@@ -35,6 +35,7 @@ describe('fetchSupporterStatus', () => {
         name: 'Jo',
         message: 'Nice tool',
         joinedAt: '2026-01-02T03:04:05.000Z',
+        department: 4,
       })
     );
     await expect(fetchSupporterStatus()).resolves.toEqual({
@@ -43,7 +44,16 @@ describe('fetchSupporterStatus', () => {
       name: 'Jo',
       message: 'Nice tool',
       joinedAt: '2026-01-02T03:04:05.000Z',
+      department: 4,
     });
+  });
+
+  it('drops a department outside the known range', async () => {
+    apiFetch.mockResolvedValue(
+      jsonResponse(200, { supporter: true, badgePublic: true, name: 'Jo', department: 99 })
+    );
+    const status = await fetchSupporterStatus();
+    expect(status).not.toHaveProperty('department');
   });
 
   it('reads an anonymous supporter as a supporter with no name', async () => {

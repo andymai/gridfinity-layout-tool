@@ -13,3 +13,18 @@ export const MAX_DISPLAY_NAME_LENGTH = 32;
 
 /** A supporter message shows on a bin's tape card; keep it to a glanceable line. */
 export const MAX_MESSAGE_LENGTH = 140;
+
+/**
+ * KEEP IN LOCKSTEP with `SUPPORTER_DEPARTMENT_COUNT` in `api/lib/supporters.ts`.
+ * A drift here rejects the live list as malformed and falls back to the bundle.
+ */
+export const SUPPORTER_DEPARTMENT_COUNT = 8;
+
+export function isSupporterDepartment(value: unknown): value is number {
+  return (
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= 0 &&
+    value < SUPPORTER_DEPARTMENT_COUNT
+  );
+}

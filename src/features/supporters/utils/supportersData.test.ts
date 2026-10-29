@@ -87,6 +87,20 @@ describe('supportersData', () => {
       );
       expect(bins[0].message).toBeUndefined();
     });
+
+    it('carries the department onto a named bin and never onto an anonymous one', () => {
+      const bins = buildSupporterBins(
+        {
+          supporters: [
+            { name: 'Ada', department: 3 },
+            { name: null, department: 5 },
+          ],
+        },
+        () => 0.99
+      );
+      expect(bins.find((b) => b.name === 'Ada')?.department).toBe(3);
+      expect(bins.find((b) => b.name === null)?.department).toBeUndefined();
+    });
   });
 
   describe('with live data', () => {
@@ -164,6 +178,17 @@ describe('isSupportersData', () => {
     ).toBe(true);
   });
 
+  it('accepts a department on every boundary of the range', () => {
+    expect(
+      isSupportersData({
+        supporters: [
+          { name: 'Ada', department: 0 },
+          { name: 'Grace', department: 7 },
+        ],
+      })
+    ).toBe(true);
+  });
+
   it('accepts anonymous entries and an empty list', () => {
     expect(isSupportersData({ supporters: [{ name: null }] })).toBe(true);
     expect(isSupportersData({ supporters: [] })).toBe(true);
@@ -180,6 +205,10 @@ describe('isSupportersData', () => {
     ['a non-string message', { supporters: [{ name: 'Ada', message: 5 }] }],
     ['a message on an anonymous record', { supporters: [{ name: null, message: 'leak' }] }],
     ['a message on an empty-name record', { supporters: [{ name: '', message: 'leak' }] }],
+    ['a department past the last one', { supporters: [{ name: 'Ada', department: 8 }] }],
+    ['a negative department', { supporters: [{ name: 'Ada', department: -1 }] }],
+    ['a fractional department', { supporters: [{ name: 'Ada', department: 1.5 }] }],
+    ['a string department', { supporters: [{ name: 'Ada', department: '2' }] }],
   ])('rejects %s', (_label, value) => {
     expect(isSupportersData(value)).toBe(false);
   });
