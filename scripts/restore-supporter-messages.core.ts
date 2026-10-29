@@ -32,50 +32,65 @@ function earliest(dates: (string | undefined)[]): string | undefined {
 export interface BackfillContext {
   /** The seed's own date assignment for `seed:anon:*`, which have no transactions of their own. */
   seedAnonDates?: Record<string, string | undefined>;
-  /** Webhook records an account has linked to, whose owner may have edited them from the panel. */
-  linkedDonors?: Set<string>;
+}
+
+/** A bare display name, as the webhook stored one before it kept messages. The panel only writes JSON records. */
+function isBareName(raw: string): boolean {
+  try {
+    const value: unknown = JSON.parse(raw);
+    return !(typeof value === 'object' && value !== null && 'n' in value);
+  } catch {
+    return true;
+  }
 }
 
 /**
  * What a Ko-fi export can still add to the stored records: a message the old
  * cap cut, a message or join date that was never stored, and a join date a
- * repeat tip moved forward. A record only takes rows from its own donor (the
- * salted email id for a webhook record; the public name for a `seed:named`
- * record, skipping rows that belong to a webhook record), and only while it
- * shows a public name.
+ * repeat tip moved forward. A webhook record takes rows by its salted email
+ * id; a `seed:named` record by its public name, and only when every row under
+ * that name comes from one donor with no webhook record of their own.
  *
  * The export has no public/private flag, so a missing message is added only
- * when the donor's single tip carried it: a named record whose donor tipped
- * once proves that tip was public. Never to a record whose account could have
- * cleared the message on purpose. A seed name shared by two donors gets no
- * message or date. A cut message is restored only when it is exactly what the
- * old cap would have cut that full text to, so an edited message never matches.
+ * from a donor's single tip: a record showing a public name that one tip wrote
+ * proves the tip was public. It goes only to records no supporter can have
+ * edited: seed records, which no account can link to, and bare-name webhook
+ * records, since any panel save rewrites a record as JSON. A cut message is
+ * restored only when it is exactly what the old cap would have cut that full
+ * text to, so an edited message never matches.
  */
 export function planBackfill(
   donors: Record<string, string>,
   rows: TransactionRow[],
   donorIdFor: (email: string) => string | null,
-  { seedAnonDates = {}, linkedDonors = new Set<string>() }: BackfillContext = {}
+  { seedAnonDates = {} }: BackfillContext = {}
 ): BackfillPlan {
   const owners = rows.map((row) => (row.email ? donorIdFor(row.email) : null));
   const isLive = (field: string | null): boolean =>
     field !== null && field in donors && !field.startsWith('seed:') && !field.startsWith('anon-');
 
-  const ownRows = (field: string, name: string | null): TransactionRow[] => {
-    if (field.startsWith('seed:named:')) {
-      return name ? rows.filter((row, i) => row.from === name && !isLive(owners[i])) : [];
-    }
-    if (!isLive(field)) return [];
-    return rows.filter((_, i) => owners[i] === field);
+  const ownRows = (field: string, name: string | null): number[] => {
+    const all = rows.map((_, i) => i);
+    if (field.startsWith('seed:named:'))
+      return name ? all.filter((i) => rows[i].from === name) : [];
+    return isLive(field) ? all.filter((i) => owners[i] === field) : [];
+  };
+  const isCertain = (field: string, idx: number[]): boolean => {
+    if (!field.startsWith('seed:named:')) return idx.length > 0;
+    const donorsIn = new Set(
+      idx.map((i) => rows[i].email || `${rows[i].from}|${rows[i].dateTime}`)
+    );
+    return donorsIn.size === 1 && idx.every((i) => !isLive(owners[i]));
   };
 
   const fixes: RecordFix[] = [];
   let unmatched = 0;
   for (const [field, raw] of Object.entries(donors)) {
     const record = parseDonorRecord(raw);
-    const own = ownRows(field, record.name);
-    const oneDonor =
-      new Set(own.map((row) => row.email || `${row.from}|${row.dateTime}`)).size === 1;
+    const idx = ownRows(field, record.name);
+    const own = idx.map((i) => rows[i]);
+    const certain = isCertain(field, idx);
+    const unedited = field.startsWith('seed:named:') || isBareName(raw);
     const fix: Omit<RecordFix, 'field' | 'previous' | 'value'> = {};
     const next = { ...record };
 
@@ -83,7 +98,7 @@ export function planBackfill(
       const texts = own.map((row) => filterMessage(row.message)).filter((t): t is string => !!t);
       const stored = record.message;
       if (!stored) {
-        if (own.length === 1 && !linkedDonors.has(field)) {
+        if (certain && unedited && own.length === 1) {
           next.message = filterMessage(own[0].message) ?? undefined;
           if (next.message) fix.message = 'added';
         }
@@ -108,7 +123,7 @@ export function planBackfill(
 
     const firstTip = field.startsWith('seed:anon:')
       ? seedAnonDates[field]
-      : oneDonor
+      : certain
         ? earliest(own.map((row) => parseCsvDate(row.dateTime)))
         : undefined;
     if (firstTip) {

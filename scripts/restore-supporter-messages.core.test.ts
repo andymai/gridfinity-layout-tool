@@ -93,35 +93,32 @@ describe('planBackfill: messages the old cap cut', () => {
 });
 
 describe('planBackfill: messages that were never stored', () => {
-  it("adds the message from a named supporter's single tip", () => {
-    const { fixes } = planBackfill({ [JO]: stored() }, [row('it saved my drawers')], idFor);
+  /** How the webhook stored a supporter before it kept messages. */
+  const BARE_JO = 'Jo';
+
+  it("adds the message from a bare-name supporter's single tip", () => {
+    const { fixes } = planBackfill({ [JO]: BARE_JO }, [row('it saved my drawers')], idFor);
     expect(fixes).toHaveLength(1);
     expect(fixes[0].message).toBe('added');
-    expect(after(fixes[0].value).message).toBe('it saved my drawers');
+    expect(after(fixes[0].value)).toMatchObject({ name: 'Jo', message: 'it saved my drawers' });
   });
 
   it('adds nothing for a donor with several tips, since the export cannot show which were public', () => {
     const { fixes } = planBackfill(
-      { [JO]: stored() },
+      { [JO]: BARE_JO },
       [row('a private note'), row('', 'jo@example.com', 'Jo', '2026-07-01T13:04:30Z')],
       idFor
     );
-    expect(fixes).toEqual([]);
+    expect(fixes.map((f) => f.message)).toEqual([undefined]);
   });
 
   it('never adds a message the content filter rejects', () => {
-    const { fixes } = planBackfill(
-      { [JO]: stored() },
-      [row('see https://spam.example now')],
-      idFor
-    );
-    expect(fixes).toEqual([]);
+    const { fixes } = planBackfill({ [JO]: BARE_JO }, [row('see https://spam.example now')], idFor);
+    expect(fixes.map((f) => f.message)).toEqual([undefined]);
   });
 
-  it('never gives back a message a linked account could have cleared from the panel', () => {
-    const { fixes } = planBackfill({ [JO]: stored() }, [row('it saved my drawers')], idFor, {
-      linkedDonors: new Set([JO]),
-    });
+  it('never gives a message to a JSON record, which a supporter may have cleared from the panel', () => {
+    const { fixes } = planBackfill({ [JO]: stored() }, [row('it saved my drawers')], idFor);
     expect(fixes).toEqual([]);
   });
 
@@ -137,6 +134,32 @@ describe('planBackfill: messages that were never stored', () => {
     expect(fixes).toEqual([]);
   });
 
+  it('gives a seed nothing when its donor also has a webhook record', () => {
+    const donors = {
+      'seed:named:0': serializeDonorRecord({ name: 'John' }),
+      [idFor('john@example.com')]: stored(undefined, 'John', '2026-09-01T00:00:00.000Z'),
+    };
+    const rows = [
+      row('early words, later cleared', 'john@example.com', 'John', '2026-05-01T00:00:00Z'),
+    ];
+    expect(planBackfill(donors, rows, idFor).fixes.map((f) => f.field)).not.toContain(
+      'seed:named:0'
+    );
+  });
+
+  it('adds a seed message from the one donor under its name', () => {
+    const { fixes } = planBackfill(
+      { 'seed:named:0': serializeDonorRecord({ name: 'Ada' }) },
+      [row('love it', 'ada@example.com', 'Ada', '2026-05-01T00:00:00Z')],
+      idFor
+    );
+    expect(after(fixes[0].value)).toEqual({
+      name: 'Ada',
+      joinedAt: '2026-05-01T00:00:00.000Z',
+      message: 'love it',
+    });
+  });
+
   it('never gives an anonymous supporter a message', () => {
     const { fixes } = planBackfill(
       { [JO]: stored(undefined, null) },
@@ -144,21 +167,6 @@ describe('planBackfill: messages that were never stored', () => {
       idFor
     );
     expect(fixes).toEqual([]);
-  });
-
-  it('adds a seed message by name, skipping rows that belong to a live supporter of the same name', () => {
-    const donors = {
-      'seed:named:0': stored(undefined, 'John'),
-      [idFor('other-john@example.com')]: stored('their own words', 'John'),
-    };
-    const rows = [
-      row('the early words', 'john@example.com', 'John'),
-      row('a much longer message from a different John', 'other-john@example.com', 'John'),
-    ];
-    const { fixes } = planBackfill(donors, rows, idFor);
-    expect(fixes.map((f) => [f.field, after(f.value).message])).toEqual([
-      ['seed:named:0', 'the early words'],
-    ]);
   });
 
   it('touches nothing on a record whose donor has no transactions', () => {
