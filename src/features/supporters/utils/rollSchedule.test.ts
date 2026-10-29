@@ -66,6 +66,30 @@ describe('buildRollSchedule', () => {
     expect(schedule.creditTimes.get('s2')).toBeCloseTo(time);
   });
 
+  it('keeps even a huge crowd raining in within the hold of its line', () => {
+    const crowd: SupporterBin[] = Array.from({ length: 500 }, (_, i) => ({
+      id: `s${i}`,
+      name: 'Somebody',
+      department: i % 8,
+      isNewest: false,
+    }));
+    const big = buildCreditsPlan(crowd);
+    const stacked: MeasuredCredit[] = big.items.map((item, i) => ({
+      id: item.id,
+      center: i * 60 + 30,
+      height: 60,
+    }));
+    const times = buildRollSchedule(
+      big,
+      new Map(crowd.map((b) => [b.id, b])),
+      stacked,
+      region,
+      100
+    );
+    const drops = crowd.map((b) => times.seatTimes.get(b.id) ?? 0);
+    expect(Math.max(...drops) - Math.min(...drops)).toBeLessThanOrEqual(1.8 + 1e-9);
+  });
+
   it('cues the camera to each department ahead of its heading, in roll order', () => {
     expect(schedule.zoneCues.map((c) => c.zone)).toEqual([0, 3, null, 8]);
     const heading = measured.find((m) => m.id === 'dept-3');
