@@ -1,0 +1,28 @@
+src/features/supporters/hooks/useSupporterFocus.test.ts
+  s_ddf50d3700ef87::t_8139bb5bf467e9 95-143
+src/features/supporters/components/SupportersScene/SupportersScene.tsx
+  s_ddf50d3700ef87::t_4efdf54fda6fc4 55-56,82,133
+src/features/supporters/hooks/useSupporterFocus.ts
+  s_ddf50d3700ef87::t_868325b7d59086 52-55,69,89,94-115,129,197,200,203
+src/features/supporters/components/SupportersScene/supportersSceneCamera.tsx
+  s_ddf50d3700ef87::t_4efdf54fda6fc4 36-37,57,64,77-88
+  s_ddf50d3700ef87::t_c7668d469c1afe 89
+src/features/supporters/components/SupportersPage/SupportersPage.tsx
+  s_ddf50d3700ef87::t_4efdf54fda6fc4 285,309
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7053319cd782c1d367033d4410fdab07f5f380ef",
+  "prompts": {},
+  "sessions": {
+    "s_ddf50d3700ef87": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7a956845-573e-4040-bf05-8a9647067fef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
