@@ -17,13 +17,13 @@ export function CreditSpotlight({ name, accent, stageInset }: CreditSpotlightPro
       style={{ left: stageInset }}
     >
       <span
-        className="text-xs uppercase tracking-[0.08em] sm:text-sm"
-        style={{ fontFamily: PIXEL_FONT, color: accent, textShadow: `0 0 18px ${accent}66` }}
+        className="rounded bg-black/55 px-2 py-1 text-xs uppercase tracking-[0.08em] text-white sm:text-sm"
+        style={{ fontFamily: PIXEL_FONT, textShadow: `0 0 18px ${accent}` }}
       >
         {t('supporters.credits.nowStarring')}
       </span>
       <span
-        className="mt-3 rounded-md bg-black/55 px-4 py-1.5 text-3xl font-bold tracking-tight text-white backdrop-blur-sm sm:text-5xl"
+        className="mt-3 max-w-full rounded-md bg-black/55 px-4 py-1.5 text-3xl font-bold tracking-tight text-white backdrop-blur-sm [overflow-wrap:anywhere] sm:text-5xl"
         style={{ textShadow: `0 0 32px ${accent}55` }}
       >
         {name}

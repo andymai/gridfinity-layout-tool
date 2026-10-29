@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from '@/i18n';
-import { useLatestRef } from '@/shared/hooks';
 import type { CreditsClock } from '../utils/creditsClock';
 import { departmentOf } from '../utils/creditsPlan';
 import { findSupporter } from '../utils/findSupporter';
@@ -25,7 +24,6 @@ interface FocusOptions {
   creditName: string | null;
   /** Bring the roll back up, for a credit link opened after the credits were seen. */
   openRoll: () => void;
-  onShown: (bin: SupporterBin) => void;
 }
 
 /**
@@ -42,7 +40,6 @@ export function useSupporterFocus({
   departmentLabels,
   creditName,
   openRoll,
-  onShown,
 }: FocusOptions) {
   const t = useTranslation();
   const [focusedId, setFocusedId] = useState<string | null>(null);
@@ -52,7 +49,6 @@ export function useSupporterFocus({
   const [findStatus, setFindStatus] = useState<string | null>(null);
   const [spotlight, setSpotlight] = useState<string | null>(null);
   const linkLanded = useRef(false);
-  const onShownRef = useLatestRef(onShown);
 
   const flyToBin = useCallback((id: string) => {
     flyNonce.current += 1;
@@ -76,21 +72,12 @@ export function useSupporterFocus({
       setFocusedId(id);
       if (rolling) pauseSeated(id, schedule, jump);
       else flyToBin(id);
-      const bin = bins.find((b) => b.id === id);
-      if (bin) onShownRef.current(bin);
     },
-    [rolling, schedule, bins, pauseSeated, flyToBin, onShownRef]
+    [rolling, schedule, pauseSeated, flyToBin]
   );
 
   /** A bin clicked on the plate: show its card without stopping the roll. */
-  const selectBin = useCallback(
-    (id: string) => {
-      setFocusedId(id);
-      const bin = bins.find((b) => b.id === id);
-      if (bin) onShownRef.current(bin);
-    },
-    [bins, onShownRef]
-  );
+  const selectBin = useCallback((id: string) => setFocusedId(id), []);
 
   const togglePause = useCallback(() => {
     const next = !clock.isPaused;
@@ -157,7 +144,6 @@ export function useSupporterFocus({
       linkLanded.current = true;
       setFocusedId(linked.id);
       setSpotlight(linked.name);
-      onShownRef.current(linked);
       if (measured) {
         openRoll();
         pauseSeated(linked.id, measured, true);
@@ -165,7 +151,7 @@ export function useSupporterFocus({
         flyToBin(linked.id);
       }
     },
-    [linked, openRoll, pauseSeated, flyToBin, onShownRef]
+    [linked, openRoll, pauseSeated, flyToBin]
   );
 
   useEffect(() => {

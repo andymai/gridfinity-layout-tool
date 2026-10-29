@@ -20,8 +20,8 @@ export function AchievementToast({ id, accent }: { id: AchievementId | null; acc
           </svg>
           <div className="flex flex-col gap-1">
             <span
-              className="text-[9px] uppercase tracking-[0.08em]"
-              style={{ fontFamily: PIXEL_FONT, color: accent }}
+              className="text-[9px] uppercase tracking-[0.08em] text-white/90"
+              style={{ fontFamily: PIXEL_FONT }}
             >
               {t('supporters.achievements.unlocked')}
             </span>

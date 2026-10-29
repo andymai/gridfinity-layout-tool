@@ -27,6 +27,12 @@ describe('credit links', () => {
     expect(isCreditFor('Gra', 'Grace')).toBe(false);
   });
 
+  it('keeps a trailing space a stored name can end in', () => {
+    const stored = 'Alexandria Catherine Montgomery ';
+    const linked = creditFromSearch(new URL(creditLinkFor(stored, 'https://x.test')).search) ?? '';
+    expect(isCreditFor(linked, stored)).toBe(true);
+  });
+
   it('ignores a missing, blank or overlong name', () => {
     expect(creditFromSearch('')).toBeNull();
     expect(creditFromSearch('?credit=%20%20')).toBeNull();

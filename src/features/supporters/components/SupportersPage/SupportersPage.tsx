@@ -11,7 +11,6 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useResolvedTheme } from '@/shared/hooks/useThemeEffect';
 import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
 import { buildSupporterBins, getSupporterCount, joinedThisMonth } from '../../utils/supportersData';
-import type { SupporterBin } from '../../utils/supportersData';
 import {
   DEPARTMENT_TITLE_KEYS,
   REDACTED_DEPARTMENT,
@@ -107,14 +106,6 @@ export function SupportersPage() {
   );
 
   const status = supporter.status;
-  const onShown = useCallback(
-    (bin: SupporterBin) => {
-      if (status.supporter && status.name !== null && bin.name === status.name) {
-        unlock('foundOwnBin');
-      }
-    },
-    [status, unlock]
-  );
   const [creditName] = useState(() => creditFromSearch(window.location.search));
   const focus = useSupporterFocus({
     bins,
@@ -125,9 +116,17 @@ export function SupportersPage() {
     departmentLabels,
     creditName,
     openRoll,
-    onShown,
   });
   const { focusedId, setFocusedId, togglePause, landCreditLink } = focus;
+
+  // Checked against whatever is focused, so it also fires when sign-in status
+  // arrives after a click, a search or an own-credit link has already landed.
+  const focusedName = focusedId ? (binsById.get(focusedId)?.name ?? null) : null;
+  useEffect(() => {
+    if (status.supporter && status.name !== null && focusedName === status.name) {
+      unlock('foundOwnBin');
+    }
+  }, [status, focusedName, unlock]);
 
   const onSchedule = useCallback(
     (next: RollSchedule | null) => {
@@ -149,9 +148,10 @@ export function SupportersPage() {
   // Wall time, not the playhead: rewinding to the start or pausing there must
   // not make a later skip look fast.
   const rollStartedAt = useRef(0);
+  const playable = roll && settled && schedule !== null;
   useEffect(() => {
-    if (roll) rollStartedAt.current = performance.now();
-  }, [roll]);
+    if (playable) rollStartedAt.current = performance.now();
+  }, [playable]);
 
   // Bins set document.body.cursor on hover; reset it if we unmount mid-hover.
   useEffect(() => () => void (document.body.style.cursor = ''), []);

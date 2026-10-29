@@ -36,7 +36,6 @@ function setup(over: Partial<Parameters<typeof useSupporterFocus>[0]> = {}) {
   const clock = new CreditsClock(schedule.timeline.duration);
   const setPaused = vi.fn((p: boolean) => clock.setPaused(p));
   const openRoll = vi.fn();
-  const onShown = vi.fn();
   const hook = renderHook(() =>
     useSupporterFocus({
       bins,
@@ -47,31 +46,28 @@ function setup(over: Partial<Parameters<typeof useSupporterFocus>[0]> = {}) {
       departmentLabels: LABELS,
       creditName: null,
       openRoll,
-      onShown,
       ...over,
     })
   );
-  return { ...hook, clock, setPaused, openRoll, onShown };
+  return { ...hook, clock, setPaused, openRoll };
 }
 
 afterEach(() => vi.useRealTimers());
 
 describe('useSupporterFocus', () => {
   it('pauses mid-roll with the bin already seated', () => {
-    const { result, clock, onShown } = setup();
+    const { result, clock } = setup();
     act(() => result.current.showSupporter('g', true));
     expect(clock.time).toBeCloseTo(14.75, 5);
     expect(clock.isPaused).toBe(true);
     expect(result.current.focusedId).toBe('g');
-    expect(onShown).toHaveBeenCalledWith(bins[1]);
   });
 
-  it('shows a clicked bin without stopping the roll, and reports who was shown', () => {
-    const { result, clock, onShown } = setup();
+  it('shows a clicked bin without stopping the roll', () => {
+    const { result, clock } = setup();
     act(() => result.current.selectBin('a'));
     expect(result.current.focusedId).toBe('a');
     expect(clock.isPaused).toBe(false);
-    expect(onShown).toHaveBeenCalledWith(bins[0]);
   });
 
   it('flies to the bin when the roll is not running', () => {
@@ -97,12 +93,11 @@ describe('useSupporterFocus', () => {
   });
 
   it('lands a shared link on its supporter, reopening the roll', () => {
-    const { result, clock, openRoll, onShown } = setup({ creditName: 'Grace' });
+    const { result, clock, openRoll } = setup({ creditName: 'Grace' });
     act(() => result.current.landCreditLink(schedule));
     expect(openRoll).toHaveBeenCalled();
     expect(clock.time).toBeCloseTo(14.75, 5);
     expect(result.current.spotlight).toBe('Grace');
-    expect(onShown).toHaveBeenCalledWith(bins[1]);
   });
 
   it('lands a shared link only once, and only on an exact name', () => {

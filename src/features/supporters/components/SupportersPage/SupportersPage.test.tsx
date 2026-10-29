@@ -6,6 +6,7 @@ import { trackEvent } from '@/shared/analytics/posthog';
 import { KOFI_URL } from '@/shared/constants/links';
 import { FALLBACK_SUPPORTERS, type SupportersData } from '../../utils/supportersData';
 import { hasSeenCredits, markCreditsSeen } from '../../utils/creditsSeen';
+import type { SupporterStatus } from '../../api/supporterClient';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 vi.mock('@/shared/analytics/posthog', () => ({ trackEvent: vi.fn() }));
@@ -31,6 +32,12 @@ vi.mock('../../hooks/useSupportersData', () => ({
   useSupportersData: () => supportersState,
 }));
 
+const NOT_A_SUPPORTER = { supporter: false, badgePublic: false, name: null, message: null };
+const statusState: { status: SupporterStatus } = { status: NOT_A_SUPPORTER };
+vi.mock('../../hooks/useSupporterStatus', () => ({
+  useSupporterStatus: () => ({ ...statusState, settled: true, save: async () => null }),
+}));
+
 const LIVE: SupportersData = {
   supporters: [
     { name: 'Ada', joinedAt: '2026-07-10T00:00:00Z', message: 'a wonderful tool', department: 1 },
@@ -54,6 +61,7 @@ describe('SupportersPage', () => {
     vi.clearAllMocks();
     localStorage.clear();
     motion.reduced = false;
+    statusState.status = NOT_A_SUPPORTER;
     supportersState.settled = true;
     supportersState.data = LIVE;
     vi.useFakeTimers({ toFake: ['Date'] });
@@ -135,6 +143,15 @@ describe('SupportersPage', () => {
     now.mockReturnValue(start + 60_000);
     fireEvent.click(screen.getByRole('button', { name: 'supporters.credits.skip' }));
     expect(screen.queryByText('supporters.achievements.speedrunner')).not.toBeInTheDocument();
+  });
+
+  it('notices a supporter finding their own bin, even when sign-in lands afterwards', () => {
+    const { rerender } = render(<SupportersPage />);
+    find('Ada');
+    expect(screen.queryByText('supporters.achievements.foundOwnBin')).not.toBeInTheDocument();
+    statusState.status = { supporter: true, badgePublic: true, name: 'Ada', message: null };
+    rerender(<SupportersPage />);
+    expect(screen.getByText('supporters.achievements.foundOwnBin')).toBeInTheDocument();
   });
 
   it('celebrates a skip within three seconds', () => {

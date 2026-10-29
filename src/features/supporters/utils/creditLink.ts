@@ -38,7 +38,8 @@ export function isCreditFor(linked: string, name: string): boolean {
   return wellFormed(name).toLowerCase() === linked.toLowerCase();
 }
 
+/** Untrimmed on purpose: a name cut at 32 units can end in a space, and the link keeps it. */
 export function creditFromSearch(search: string): string | null {
-  const name = new URLSearchParams(search).get(PARAM)?.trim();
-  return name && name.length <= MAX_LENGTH ? name : null;
+  const name = new URLSearchParams(search).get(PARAM);
+  return name?.trim() && name.length <= MAX_LENGTH ? name : null;
 }
