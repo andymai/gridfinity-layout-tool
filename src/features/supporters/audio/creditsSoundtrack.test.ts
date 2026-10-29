@@ -15,9 +15,13 @@ describe('musicFor', () => {
     expect(fast.pitch).toBeGreaterThan(1);
   });
 
-  it('holds while paused and warbles while rewinding', () => {
-    expect(musicFor(0, true).mode).toBe('hold');
+  it('keeps the tune going, muffled, while paused and warbles while rewinding', () => {
+    expect(musicFor(0, true)).toEqual({ mode: 'muffled', tempo: 1, pitch: 1 });
     expect(musicFor(-6, true).mode).toBe('rewind');
+  });
+
+  it('never plays slower than normal on a slow scrub', () => {
+    expect(musicFor(0.5, true)).toEqual({ mode: 'play', tempo: 1, pitch: 1 });
   });
 
   it('goes quiet once the credits are over', () => {
@@ -103,11 +107,17 @@ class FakeAudioContext {
   readonly sampleRate = 8000;
   readonly destination = new FakeNode();
   readonly started: Started[] = [];
+  readonly filters: (FakeNode & { type: string; frequency: FakeParam })[] = [];
   createGain(): FakeGain {
     return new FakeGain();
   }
   createBiquadFilter(): FakeNode & { type: string; frequency: FakeParam } {
-    return Object.assign(new FakeNode(), { type: 'lowpass', frequency: new FakeParam(350) });
+    const filter = Object.assign(new FakeNode(), {
+      type: 'lowpass',
+      frequency: new FakeParam(350),
+    });
+    this.filters.push(filter);
+    return filter;
   }
   createDelay(): FakeNode & { delayTime: FakeParam } {
     return Object.assign(new FakeNode(), { delayTime: new FakeParam(0) });
@@ -169,13 +179,17 @@ describe('CreditsSoundtrack', () => {
     expect(hears(last())).toBe(true);
   });
 
-  it('plays no new notes while the roll is paused', () => {
+  it('keeps the tune playing behind a closed filter while paused, then opens it on resume', () => {
     const { ctx, run } = setup();
+    const musicFilter = ctx.filters[0];
     run(1, 1);
     run(0.5, 0);
-    const held = ctx.started.length;
+    const paused = ctx.started.length;
     run(1, 0);
-    expect(ctx.started.length).toBe(held);
+    expect(ctx.started.length).toBeGreaterThan(paused);
+    expect(musicFilter.frequency.target).toBeLessThan(1000);
+    run(0.5, 1);
+    expect(musicFilter.frequency.target).toBeGreaterThan(10000);
   });
 
   it('swaps the tune for a warble while rewinding', () => {

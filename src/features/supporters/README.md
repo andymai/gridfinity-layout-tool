@@ -85,8 +85,8 @@ ingest rules. `data/supporters.json` is only the offline fallback (see below).
   post-credits guest (`postCreditsPose.ts`) live only in the scene.
 - **Sound is opt-in and synthesised** (`audio/`): an original tune on a chip
   synth, no audio file. `CreditsSoundtrack` gives the tune its own playhead
-  moving at the clock's rate, so a scrub changes its tempo, a pause holds a
-  filtered chord and a rewind warbles. No Web Audio exists until sound is on.
+  moving at the clock's rate, so a fast-forward speeds it up, a pause muffles
+  it and a rewind warbles. No Web Audio exists until sound is on.
 
 ## Key files
 

@@ -7,7 +7,7 @@ const VOLUME = 0.16;
 /** More clock movement than this (per unit of rate) between ticks is a seek, not frame jitter. */
 const SEEK_SLACK_SECONDS = 0.1;
 
-export type MusicMode = 'play' | 'hold' | 'rewind' | 'off';
+export type MusicMode = 'play' | 'muffled' | 'rewind' | 'off';
 
 export interface Music {
   mode: MusicMode;
@@ -16,16 +16,17 @@ export interface Music {
 }
 
 /**
- * How the tune answers the credits clock: it plays along at the roll's own
- * speed (capped, with the pitch creeping up like a sped-up tape), holds a
- * filtered chord while paused, and warbles while rewinding.
+ * How the tune answers the credits clock: it speeds up with a fast-forward
+ * (capped, with the pitch creeping up like a sped-up tape) but never drops
+ * below normal tempo, keeps playing muffled while paused, the way a game's
+ * music sounds behind its pause menu, and warbles while rewinding.
  */
 export function musicFor(rate: number, rolling: boolean): Music {
   if (!rolling) return { mode: 'off', tempo: 0, pitch: 1 };
   if (rate < -0.2) return { mode: 'rewind', tempo: 0, pitch: 1 };
-  if (rate < 0.2) return { mode: 'hold', tempo: 0, pitch: 1 };
-  const tempo = Math.min(MAX_TEMPO, Math.max(0.6, rate));
-  return { mode: 'play', tempo, pitch: tempo > 1 ? 1 + (tempo - 1) * 0.2 : 1 };
+  if (rate < 0.2) return { mode: 'muffled', tempo: 1, pitch: 1 };
+  const tempo = Math.min(MAX_TEMPO, Math.max(1, rate));
+  return { mode: 'play', tempo, pitch: 1 + (tempo - 1) * 0.2 };
 }
 
 /** Whether any time in the sorted `times` falls in (from, to]. */
@@ -92,7 +93,7 @@ export class CreditsSoundtrack {
     const music = musicFor(this.rate, rolling);
     if (music.mode !== this.mode) this.transition(this.mode, music.mode, now);
     this.mode = music.mode;
-    if (music.mode !== 'play') return;
+    if (music.mode === 'rewind' || music.mode === 'off') return;
 
     const stepsPerSecond = STEPS_PER_SECOND * music.tempo;
     // A late tick stretches the tune rather than piling the steps it missed onto `now`.
@@ -112,12 +113,10 @@ export class CreditsSoundtrack {
 
   private transition(from: MusicMode, to: MusicMode, now: number): void {
     if (from === 'rewind') this.synth.warble(false, now);
-    if (from === 'hold') this.synth.hold(null, now);
+    if (from === 'muffled') this.synth.muffle(false, now);
     if (from === 'off') this.synth.fade(1, now, 0.6);
-    if (to === 'hold') this.synth.hold(chordAt(this.position), now);
+    if (to === 'muffled') this.synth.muffle(true, now);
     if (to === 'rewind') this.synth.warble(true, now);
     if (to === 'off') this.synth.fade(0, now, 2.5);
-    // A pause or rewind leaves notes queued past the playhead; skip them on return.
-    if (to === 'play') this.scheduledTo = Math.max(this.scheduledTo, this.position);
   }
 }

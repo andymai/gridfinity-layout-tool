@@ -4,14 +4,14 @@ import { pulseCoefficients } from './pulseWave';
 export type Blip = 'seat' | 'poke' | 'achievement' | 'plop';
 
 const OPEN_CUTOFF = 14000;
-const HELD_CUTOFF = 650;
+const MUFFLED_CUTOFF = 700;
 /** A dotted eighth at the tune's tempo, so the echo lands on the beat grid. */
 const ECHO_SECONDS = (60 / 112) * 0.75;
 
 /**
  * A small chip synth: two pulse voices, a triangle bass and noise drums, a
- * lead echo, and a low-pass that closes for the "held" sound of a paused
- * roll. Effects have their own bus past the music's filter and fade, so a
+ * lead echo, and a low-pass that muffles the tune while the roll is paused.
+ * Effects have their own bus past the music's filter and fade, so a
  * poke in the finale is still heard after the tune has faded out. Everything
  * takes an explicit start time, so the same synth plays live and offline.
  */
@@ -24,7 +24,6 @@ export class ChipSynth {
   private readonly lead: PeriodicWave;
   private readonly arp: PeriodicWave;
   private readonly noise: AudioBuffer;
-  private pad: { osc: OscillatorNode; gain: GainNode }[] = [];
   private warbler: { osc: OscillatorNode; lfo: OscillatorNode } | null = null;
 
   constructor(ctx: BaseAudioContext, volume = 0.16, musicLevel = 1) {
@@ -119,25 +118,8 @@ export class ChipSynth {
     }
   }
 
-  hold(chord: number[] | null, at: number): void {
-    this.filter.frequency.setTargetAtTime(chord ? HELD_CUTOFF : OPEN_CUTOFF, at, 0.12);
-    for (const { osc, gain } of this.pad) {
-      gain.gain.setTargetAtTime(0, at, 0.08);
-      osc.stop(at + 0.5);
-    }
-    this.pad = [];
-    if (!chord) return;
-    for (const midi of chord) {
-      const osc = this.ctx.createOscillator();
-      osc.type = 'triangle';
-      osc.frequency.value = midiToHz(midi);
-      const gain = this.ctx.createGain();
-      gain.gain.setValueAtTime(0, at);
-      gain.gain.linearRampToValueAtTime(0.06, at + 0.25);
-      osc.connect(gain).connect(this.filter);
-      osc.start(at);
-      this.pad.push({ osc, gain });
-    }
+  muffle(on: boolean, at: number): void {
+    this.filter.frequency.setTargetAtTime(on ? MUFFLED_CUTOFF : OPEN_CUTOFF, at, 0.12);
   }
 
   /** Rewinding: a wobbling, falling tape whine instead of the tune. */
