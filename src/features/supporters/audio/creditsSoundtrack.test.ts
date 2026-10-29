@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { crossedAny, musicFor } from './creditsSoundtrack';
+import { CreditsSoundtrack, crossedAny, musicFor } from './creditsSoundtrack';
 
 describe('musicFor', () => {
   it('plays along at normal speed', () => {
@@ -35,5 +35,180 @@ describe('crossedAny', () => {
   it('finds nothing past the last seat or in an empty list', () => {
     expect(crossedAny(seats, 4, 10)).toBe(false);
     expect(crossedAny(new Float64Array(0), 0, 10)).toBe(false);
+  });
+});
+
+class FakeParam {
+  value: number;
+  target: number | null = null;
+  constructor(value = 1) {
+    this.value = value;
+  }
+  setValueAtTime(): this {
+    return this;
+  }
+  linearRampToValueAtTime(): this {
+    return this;
+  }
+  exponentialRampToValueAtTime(): this {
+    return this;
+  }
+  setTargetAtTime(value: number): this {
+    this.target = value;
+    return this;
+  }
+}
+
+class FakeNode {
+  readonly outputs: FakeNode[] = [];
+  connect<T>(next: T): T {
+    if (next instanceof FakeNode) this.outputs.push(next);
+    return next;
+  }
+}
+
+class FakeGain extends FakeNode {
+  readonly gain = new FakeParam();
+}
+
+interface Started {
+  node: FakeNode;
+  type: string;
+  at: number;
+}
+
+class FakeSource extends FakeNode {
+  type = 'sine';
+  buffer: unknown = null;
+  readonly frequency = new FakeParam(440);
+  private readonly started: Started[];
+  constructor(started: Started[]) {
+    super();
+    this.started = started;
+  }
+  setPeriodicWave(): void {
+    this.type = 'custom';
+  }
+  start(at = 0): void {
+    this.started.push({ node: this, type: this.type, at });
+  }
+  stop(): void {}
+}
+
+class FakeAudioContext {
+  currentTime = 0;
+  readonly sampleRate = 8000;
+  readonly destination = new FakeNode();
+  readonly started: Started[] = [];
+  createGain(): FakeGain {
+    return new FakeGain();
+  }
+  createBiquadFilter(): FakeNode & { type: string; frequency: FakeParam } {
+    return Object.assign(new FakeNode(), { type: 'lowpass', frequency: new FakeParam(350) });
+  }
+  createDelay(): FakeNode & { delayTime: FakeParam } {
+    return Object.assign(new FakeNode(), { delayTime: new FakeParam(0) });
+  }
+  createPeriodicWave(): object {
+    return {};
+  }
+  createBuffer(_channels: number, length: number): { getChannelData: () => Float32Array } {
+    const data = new Float32Array(length);
+    return { getChannelData: () => data };
+  }
+  createOscillator(): FakeSource {
+    return new FakeSource(this.started);
+  }
+  createBufferSource(): FakeSource {
+    return new FakeSource(this.started);
+  }
+}
+
+/** Whether a sound can reach the speakers: some path to the destination crosses no gain settled at 0. */
+function audible(node: FakeNode, destination: FakeNode, seen = new Set<FakeNode>()): boolean {
+  if (node === destination) return true;
+  if (seen.has(node)) return false;
+  seen.add(node);
+  if (node instanceof FakeGain && (node.gain.target ?? node.gain.value) === 0) return false;
+  return node.outputs.some((next) => audible(next, destination, seen));
+}
+
+const TICK = 0.025;
+
+function setup() {
+  const ctx = new FakeAudioContext();
+  const track = new CreditsSoundtrack(ctx as unknown as BaseAudioContext);
+  let clock = 0;
+  const run = (seconds: number, rate: number, rolling = true): void => {
+    for (let t = 0; t < seconds; t += TICK) {
+      ctx.currentTime += TICK;
+      clock += rate * TICK;
+      track.tick(clock, rolling);
+    }
+  };
+  const seek = (to: number): void => {
+    clock = to;
+  };
+  const last = (): Started => ctx.started[ctx.started.length - 1];
+  const hears = (sound: Started): boolean => audible(sound.node, ctx.destination);
+  return { ctx, track, run, seek, last, hears };
+}
+
+describe('CreditsSoundtrack', () => {
+  it('schedules the tune a little ahead of the audio clock while the roll plays', () => {
+    const { ctx, run, last, hears } = setup();
+    run(1, 1);
+    expect(ctx.started.length).toBeGreaterThan(10);
+    expect(Math.max(...ctx.started.map((s) => s.at))).toBeLessThanOrEqual(
+      ctx.currentTime + 0.12 + 1e-9
+    );
+    expect(hears(last())).toBe(true);
+  });
+
+  it('plays no new notes while the roll is paused', () => {
+    const { ctx, run } = setup();
+    run(1, 1);
+    run(0.5, 0);
+    const held = ctx.started.length;
+    run(1, 0);
+    expect(ctx.started.length).toBe(held);
+  });
+
+  it('swaps the tune for a warble while rewinding', () => {
+    const { ctx, run } = setup();
+    run(1, 1);
+    const playing = ctx.started.length;
+    run(0.5, -6);
+    expect(ctx.started.slice(playing).map((s) => s.type)).toEqual(['sawtooth', 'sine']);
+  });
+
+  it('fades the music out at the finale but keeps effects audible', () => {
+    const { track, run, last, hears } = setup();
+    run(1, 1);
+    const note = last();
+    run(0.2, 0, false);
+    expect(hears(note)).toBe(false);
+    track.blip('poke');
+    expect(hears(last())).toBe(true);
+  });
+
+  it('plays effects when sound is first turned on in the finale', () => {
+    const { track, run, last, hears } = setup();
+    run(0.2, 0, false);
+    track.blip('achievement');
+    expect(hears(last())).toBe(true);
+  });
+
+  it('plays from the top after Replay instead of rewinding', () => {
+    const { ctx, run, seek, last, hears } = setup();
+    run(2, 1);
+    run(0.2, 0, false);
+    seek(0);
+    const finale = ctx.started.length;
+    run(0.5, 1);
+    const replayed = ctx.started.slice(finale);
+    expect(replayed.length).toBeGreaterThan(0);
+    expect(replayed.some((s) => s.type === 'sawtooth')).toBe(false);
+    expect(hears(last())).toBe(true);
   });
 });

@@ -197,7 +197,6 @@ export function eventsInWindow(from: number, to: number): TuneEvent[] {
   return out;
 }
 
-/** The chord under a step, for blips that should sit in key. */
 export function chordAt(step: number): number[] {
   const bar = Math.floor((((step % LOOP_STEPS) + LOOP_STEPS) % LOOP_STEPS) / STEPS_PER_BAR);
   return CHORDS[PROGRESSION[bar]];

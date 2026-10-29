@@ -56,7 +56,7 @@ export class CreditsSoundtrack {
 
   constructor(ctx: BaseAudioContext) {
     this.ctx = ctx;
-    this.synth = new ChipSynth(ctx, 0);
+    this.synth = new ChipSynth(ctx, VOLUME, 0);
     this.lastAudio = ctx.currentTime;
   }
 
@@ -64,11 +64,17 @@ export class CreditsSoundtrack {
     const now = this.ctx.currentTime;
     const dt = now - this.lastAudio;
     this.lastAudio = now;
-    if (this.lastClock !== null && dt > 0) {
-      const instant = (clockTime - this.lastClock) / dt;
-      this.rate += (instant - this.rate) * Math.min(1, dt * 10);
+    if (!rolling) {
+      // Replay jumps the clock from the end back to zero; that is not a rewind.
+      this.lastClock = null;
+      this.rate = 1;
+    } else {
+      if (this.lastClock !== null && dt > 0) {
+        const instant = (clockTime - this.lastClock) / dt;
+        this.rate += (instant - this.rate) * Math.min(1, dt * 10);
+      }
+      this.lastClock = clockTime;
     }
-    this.lastClock = clockTime;
 
     const music = musicFor(this.rate, rolling);
     if (music.mode !== this.mode) this.transition(this.mode, music.mode, now);
@@ -92,7 +98,7 @@ export class CreditsSoundtrack {
   private transition(from: MusicMode, to: MusicMode, now: number): void {
     if (from === 'rewind') this.synth.warble(false, now);
     if (from === 'hold') this.synth.hold(null, now);
-    if (from === 'off') this.synth.fade(VOLUME, now, 0.6);
+    if (from === 'off') this.synth.fade(1, now, 0.6);
     if (to === 'hold') this.synth.hold(chordAt(this.position), now);
     if (to === 'rewind') this.synth.warble(true, now);
     if (to === 'off') this.synth.fade(0, now, 2.5);

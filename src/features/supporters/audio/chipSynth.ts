@@ -10,13 +10,15 @@ const ECHO_SECONDS = (60 / 112) * 0.75;
 
 /**
  * A small chip synth: two pulse voices, a triangle bass and noise drums, a
- * lead echo, and a master low-pass that closes for the "held" sound of a
- * paused roll. Everything takes an explicit start time, so the same synth
- * plays live and renders offline.
+ * lead echo, and a low-pass that closes for the "held" sound of a paused
+ * roll. Effects have their own bus past the music's filter and fade, so a
+ * poke in the finale is still heard after the tune has faded out. Everything
+ * takes an explicit start time, so the same synth plays live and offline.
  */
 export class ChipSynth {
   readonly ctx: BaseAudioContext;
-  private readonly master: GainNode;
+  private readonly music: GainNode;
+  private readonly fx: GainNode;
   private readonly filter: BiquadFilterNode;
   private readonly leadBus: GainNode;
   private readonly lead: PeriodicWave;
@@ -25,14 +27,20 @@ export class ChipSynth {
   private pad: { osc: OscillatorNode; gain: GainNode }[] = [];
   private warbler: { osc: OscillatorNode; lfo: OscillatorNode } | null = null;
 
-  constructor(ctx: BaseAudioContext, volume = 0.16) {
+  constructor(ctx: BaseAudioContext, volume = 0.16, musicLevel = 1) {
     this.ctx = ctx;
-    this.master = ctx.createGain();
-    this.master.gain.value = volume;
+    const master = ctx.createGain();
+    master.gain.value = volume;
+    master.connect(ctx.destination);
+    this.music = ctx.createGain();
+    this.music.gain.value = musicLevel;
+    this.music.connect(master);
+    this.fx = ctx.createGain();
+    this.fx.connect(master);
     this.filter = ctx.createBiquadFilter();
     this.filter.type = 'lowpass';
     this.filter.frequency.value = OPEN_CUTOFF;
-    this.filter.connect(this.master).connect(ctx.destination);
+    this.filter.connect(this.music);
 
     this.leadBus = ctx.createGain();
     this.leadBus.connect(this.filter);
@@ -58,7 +66,6 @@ export class ChipSynth {
     for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
   }
 
-  /** Play one tune event; `pitch` above 1 is the sped-up-tape effect of fast-forwarding. */
   play(event: TuneEvent, at: number, secondsPerStep: number, pitch = 1): void {
     const length = event.length * secondsPerStep;
     const hz = midiToHz(event.midi) * pitch;
@@ -73,7 +80,7 @@ export class ChipSynth {
         this.tone('triangle', hz, at, length * 0.9, 0.42, this.filter);
         break;
       case 'kick':
-        this.sweep('sine', 150 * pitch, 42, at, 0.14, 0.75);
+        this.sweep('sine', 150 * pitch, 42, at, 0.14, 0.75, this.filter);
         break;
       case 'snare':
         this.burst(at, 0.12, 0.28, 'bandpass', 1800);
@@ -94,25 +101,24 @@ export class ChipSynth {
           at,
           0.05,
           0.07,
-          this.filter
+          this.fx
         );
         break;
       case 'poke':
-        this.sweep('square', 520, 1040, at, 0.08, 0.26);
-        this.sweep('square', 1040, 700, at + 0.08, 0.08, 0.22);
+        this.sweep('square', 520, 1040, at, 0.08, 0.26, this.fx);
+        this.sweep('square', 1040, 700, at + 0.08, 0.08, 0.22, this.fx);
         break;
       case 'achievement':
         [72, 76, 79, 84].forEach((n, i) =>
-          this.tone(this.lead, midiToHz(n), at + i * 0.065, 0.12, 0.32, this.leadBus)
+          this.tone(this.lead, midiToHz(n), at + i * 0.065, 0.12, 0.32, this.fx)
         );
         break;
       case 'plop':
-        this.sweep('sine', 420, 110, at, 0.14, 0.55);
+        this.sweep('sine', 420, 110, at, 0.14, 0.55, this.fx);
         break;
     }
   }
 
-  /** The paused roll: the filter closes over a quiet chord, held until released. */
   hold(chord: number[] | null, at: number): void {
     this.filter.frequency.setTargetAtTime(chord ? HELD_CUTOFF : OPEN_CUTOFF, at, 0.12);
     for (const { osc, gain } of this.pad) {
@@ -159,8 +165,9 @@ export class ChipSynth {
     }
   }
 
-  fade(volume: number, at: number, seconds: number): void {
-    this.master.gain.setTargetAtTime(volume, at, seconds / 3);
+  /** The music only: effects keep playing through a fade. */
+  fade(level: number, at: number, seconds: number): void {
+    this.music.gain.setTargetAtTime(level, at, seconds / 3);
   }
 
   private tone(
@@ -193,7 +200,8 @@ export class ChipSynth {
     to: number,
     at: number,
     length: number,
-    volume: number
+    volume: number,
+    out: AudioNode
   ): void {
     const osc = this.ctx.createOscillator();
     osc.type = type;
@@ -202,7 +210,7 @@ export class ChipSynth {
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(volume, at);
     gain.gain.exponentialRampToValueAtTime(0.001, at + length);
-    osc.connect(gain).connect(this.filter);
+    osc.connect(gain).connect(out);
     osc.start(at);
     osc.stop(at + length + 0.01);
   }
