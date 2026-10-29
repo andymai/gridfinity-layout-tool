@@ -14,6 +14,15 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'supporters-end-credits',
+    date: '2026-10-28',
+    kind: 'improved',
+    title: { en: 'The supporters page now rolls like the end of a game' },
+    body: {
+      en: 'Every supporter now gets a credit, rolling past like the credits at the end of a game, while their bin drops onto a baseplate sorted into departments. Messages supporters left get a line of their own. Scroll or drag to fast-forward and rewind, click a name to stop on it, or skip to the end. Open it from Supporters at the bottom of the app.',
+    },
+  },
+  {
     id: 'linked-bin-layout-labels',
     date: '2026-10-21',
     kind: 'new',

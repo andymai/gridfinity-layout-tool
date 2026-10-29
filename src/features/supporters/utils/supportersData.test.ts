@@ -5,7 +5,6 @@ import {
   getSupporterCount,
   isSupportersData,
   joinedThisMonth,
-  supportHistogram,
   type SupportersData,
 } from './supportersData';
 import supportersData from '../data/supporters.json';
@@ -145,29 +144,6 @@ describe('joinedThisMonth', () => {
 
   it('is zero when nobody joined this month', () => {
     expect(joinedThisMonth(data, new Date('2026-09-01T00:00:00Z'))).toBe(0);
-  });
-});
-
-describe('supportHistogram', () => {
-  const now = new Date('2026-07-19T00:00:00Z');
-  const data: SupportersData = {
-    supporters: [
-      { name: 'A', joinedAt: '2026-05-10T00:00:00Z' },
-      { name: 'B', joinedAt: '2026-07-01T00:00:00Z' },
-      { name: 'C', joinedAt: '2026-07-18T00:00:00Z' },
-      { name: 'D' },
-    ],
-  };
-
-  it('returns a gap-free trailing window, oldest first', () => {
-    const buckets = supportHistogram(data, 4, now);
-    expect(buckets.map((b) => b.key)).toEqual(['2026-04', '2026-05', '2026-06', '2026-07']);
-    expect(buckets.map((b) => b.count)).toEqual([0, 1, 0, 2]);
-  });
-
-  it('ignores joins outside the window and undated supporters', () => {
-    const buckets = supportHistogram(data, 1, now);
-    expect(buckets).toEqual([{ key: '2026-07', count: 2 }]);
   });
 });
 

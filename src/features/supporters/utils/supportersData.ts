@@ -100,41 +100,6 @@ export function joinedThisMonth(
   }).length;
 }
 
-export interface SupportBucket {
-  /** `YYYY-MM` of the bucket. */
-  key: string;
-  count: number;
-}
-
-/**
- * Monthly join counts over the trailing `months` window ending at `now`,
- * oldest first — the series a sparkline plots. Buckets with no joins are 0, so
- * the line has no gaps.
- */
-export function supportHistogram(
-  data: SupportersData = FALLBACK_SUPPORTERS,
-  months: number,
-  now: Date = new Date()
-): SupportBucket[] {
-  const monthKey = (d: Date): string =>
-    `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
-
-  const buckets: SupportBucket[] = [];
-  const indexByKey = new Map<string, number>();
-  for (let i = months - 1; i >= 0; i--) {
-    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
-    indexByKey.set(monthKey(d), buckets.length);
-    buckets.push({ key: monthKey(d), count: 0 });
-  }
-
-  for (const s of data.supporters) {
-    if (!s.joinedAt) continue;
-    const idx = indexByKey.get(monthKey(new Date(s.joinedAt)));
-    if (idx !== undefined) buckets[idx].count += 1;
-  }
-  return buckets;
-}
-
 /** Narrow an unknown API response to `SupportersData`. */
 export function isSupportersData(value: unknown): value is SupportersData {
   if (typeof value !== 'object' || value === null) return false;

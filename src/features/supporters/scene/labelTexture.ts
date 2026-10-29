@@ -66,3 +66,50 @@ export function createTabLabelTexture(
   texture.anisotropy = 4;
   return texture;
 }
+
+const PLATE_LABEL_HEIGHT = 96;
+
+/**
+ * A department name as a strip of label tape laid across the plate in front
+ * of its zone. The canvas takes the strip's aspect so the text isn't
+ * stretched, and the text shrinks to fit rather than overflowing the tape.
+ */
+export function createPlateLabelTexture(
+  text: string,
+  aspect: number,
+  tape: string,
+  ink: string
+): CanvasTexture | null {
+  if (typeof document === 'undefined') return null;
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  const width = Math.min(2048, Math.round(PLATE_LABEL_HEIGHT * aspect));
+  canvas.width = width;
+  canvas.height = PLATE_LABEL_HEIGHT;
+  ctx.fillStyle = tape;
+  ctx.beginPath();
+  if (typeof ctx.roundRect === 'function')
+    ctx.roundRect(4, 8, width - 8, PLATE_LABEL_HEIGHT - 16, 14);
+  else ctx.rect(4, 8, width - 8, PLATE_LABEL_HEIGHT - 16);
+  ctx.fill();
+
+  const label = text.toLocaleUpperCase();
+  let size = 46;
+  ctx.font = `700 ${size}px ${FONT_STACK}`;
+  while (size > 18 && ctx.measureText(label).width > width * 0.9) {
+    size -= 2;
+    ctx.font = `700 ${size}px ${FONT_STACK}`;
+  }
+  ctx.fillStyle = ink;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, width / 2, PLATE_LABEL_HEIGHT / 2 + 2, width * 0.92);
+
+  const texture = new CanvasTexture(canvas);
+  texture.colorSpace = SRGBColorSpace;
+  texture.minFilter = LinearFilter;
+  texture.anisotropy = 8;
+  return texture;
+}

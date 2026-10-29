@@ -11,127 +11,194 @@ import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion'
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useResolvedTheme } from '@/shared/hooks/useThemeEffect';
 import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
-import {
-  buildSupporterBins,
-  getSupporterCount,
-  joinedThisMonth,
-  supportHistogram,
-  type SupporterBin,
-} from '../../utils/supportersData';
+import { buildSupporterBins, getSupporterCount, joinedThisMonth } from '../../utils/supportersData';
+import { DEPARTMENT_TITLE_KEYS, buildCreditsPlan, departmentOf } from '../../utils/creditsPlan';
+import { computeZonedLayout } from '../../utils/supportersLayout';
+import { INTRO_SECONDS, type RollSchedule } from '../../utils/rollSchedule';
+import type { CreditsClock } from '../../utils/creditsClock';
+import { hasSeenCredits, markCreditsSeen } from '../../utils/creditsSeen';
+import { findSupporter } from '../../utils/findSupporter';
 import { useSupportersData } from '../../hooks/useSupportersData';
 import { useSupporterStatus } from '../../hooks/useSupporterStatus';
-import type { SupporterProfilePatch } from '../../api/supporterClient';
+import { useCreditsClock } from '../../hooks/useCreditsClock';
+import { NO_SCRUB_ATTR, useRollScrub } from '../../hooks/useRollScrub';
+import { useProfileOverlay } from '../../hooks/useProfileOverlay';
 import { getSupportersPalette } from '../../scene/palette';
 import { SupportersScene, type FlyToRequest } from '../SupportersScene';
+import { FULL_STAGE, type StageFrame } from '../SupportersScene/supportersSceneStage';
 import { SupporterPanel } from '../SupporterPanel';
+import { CreditsRoll } from '../CreditsRoll';
+import { CreditsTitleCard } from '../CreditsTitleCard';
+import { CreditsControls } from '../CreditsControls';
+import { CreditsFinale } from '../CreditsFinale';
 import { useCountUp } from './useCountUp';
-import { CtaBurst, RotatingMessage, Sparkline } from './SupportersFlourishes';
+import { CtaBurst } from './SupportersFlourishes';
 
-/** Months of history the sparkline plots. */
-const SPARKLINE_MONTHS = 6;
-/** The sparkline only earns its space once support spans a few distinct months. */
-const SPARKLINE_MIN_ACTIVE_MONTHS = 3;
+/** Roll speed outside quotes, px/s. Phones read one narrow column, so they go a touch slower. */
+const BASE_SPEED = { side: 110, stacked: 90 };
+const HINT_MS = 9000;
+/** Past a bin's landing, so pausing on its credit shows it seated rather than about to drop. */
+const SEATED_AFTER = 0.75;
+/** Width of the credits column beside the plate, matching `CreditsRoll`. */
+const columnWidth = (viewport: number) => Math.max(340, Math.min(viewport * 0.44, 600));
 
 /**
- * Immersive standalone /supporters experience: an orbitable WebGL baseplate
- * where each Ko-fi supporter is a bin. DOM overlays carry the copy, the
- * animated count, the CTA, and an accessible name list (the canvas itself is
- * inert to assistive tech). Falls back to a calm static render for
- * prefers-reduced-motion and lightens on mobile.
+ * /supporters as the end credits of a game: names roll up beside a baseplate
+ * that starts empty, each bin dropping into its department's zone as its name
+ * passes, ending on the full plate with one empty socket left for the next
+ * supporter. A first visit rolls; a return visit (or reduced motion) opens on
+ * the finale.
  */
 export function SupportersPage() {
   const t = useTranslation();
   const theme = useResolvedTheme();
-  const { isMobile } = useResponsive();
+  const { isMobile, viewportWidth: viewport } = useResponsive();
   const reducedMotion = usePrefersReducedMotion();
   const { navigateHome } = useSupportersRouting();
-
   const accent = useSettingsStore((state) => state.settings.accentColor);
   const { data: supporters, settled } = useSupportersData();
   const supporter = useSupporterStatus();
+  const { effective, saveProfile } = useProfileOverlay(supporters, supporter);
 
-  // A profile save must show on the wall in the same session, but the list is
-  // fetched once and `/api/supporters` is edge-cached (s-maxage 60, SWR 600),
-  // so a refetch can keep serving the pre-edit payload for minutes. The rename
-  // is applied locally instead: the record is found by its pre-save name (the
-  // only handle the public list carries), or by the first anonymous slot for
-  // a supporter naming themself for the first time.
-  const [profileEdit, setProfileEdit] = useState<{ prevName: string | null } | null>(null);
-  const saveProfile = useCallback(
-    async (patch: SupporterProfilePatch) => {
-      const prevName = supporter.status.name;
-      const error = await supporter.save(patch);
-      // Keep the ORIGINAL handle across repeated renames: after the first
-      // save `status.name` is already the new name, which the public list
-      // has never carried — recording it would strand the overlay.
-      if (error === null) setProfileEdit((prev) => prev ?? { prevName });
-      return error;
-    },
-    [supporter]
-  );
-
-  const effectiveSupporters = useMemo(() => {
-    const status = supporter.status;
-    if (!profileEdit || !status.supporter || status.name === null) return supporters;
-    if (supporters.supporters.some((r) => r.name === status.name)) return supporters;
-    const records = supporters.supporters.slice();
-    const idx =
-      profileEdit.prevName !== null
-        ? records.findIndex((r) => r.name === profileEdit.prevName)
-        : records.findIndex((r) => r.name === null);
-    // Renames an existing record, never adds one: a push would double the
-    // user's bin on the wall while the headline count reads the raw list.
-    if (idx < 0) return supporters;
-    records[idx] = {
-      ...records[idx],
-      name: status.name,
-      ...(status.message ? { message: status.message } : { message: undefined }),
-    };
-    return { ...supporters, supporters: records };
-  }, [supporters, supporter.status, profileEdit]);
-  const bins = useMemo(() => buildSupporterBins(effectiveSupporters), [effectiveSupporters]);
-  const total = getSupporterCount(supporters);
+  const bins = useMemo(() => buildSupporterBins(effective), [effective]);
+  const binsById = useMemo(() => new Map(bins.map((b) => [b.id, b])), [bins]);
+  const plan = useMemo(() => buildCreditsPlan(bins), [bins]);
+  const layout = useMemo(() => computeZonedLayout(plan.zoneSizes), [plan.zoneSizes]);
+  const departmentLabels = useMemo(() => DEPARTMENT_TITLE_KEYS.map((key) => t(key)), [t]);
   const palette = useMemo(() => getSupportersPalette(theme, accent), [theme, accent]);
-  // Gated on `settled` so the count-up starts when the scene actually appears,
-  // rather than having already run to the bundled total behind the hold.
-  const count = useCountUp(total, !reducedMotion && settled);
-
+  const total = getSupporterCount(supporters);
   const thisMonth = useMemo(() => joinedThisMonth(supporters), [supporters]);
-  const history = useMemo(() => supportHistogram(supporters, SPARKLINE_MONTHS), [supporters]);
-  const activeMonths = history.filter((b) => b.count > 0).length;
-  const messages = useMemo(
-    () =>
-      bins.filter((b) => b.message).map((b) => ({ message: b.message as string, name: b.name })),
-    [bins]
+  const stacked = isMobile;
+
+  const [rollPhase, setPhase] = useState<'roll' | 'finale'>(() =>
+    hasSeenCredits() ? 'finale' : 'roll'
+  );
+  const phase = reducedMotion ? 'finale' : rollPhase;
+  const finish = useCallback(() => {
+    setPhase('finale');
+    markCreditsSeen();
+  }, []);
+
+  const [schedule, setSchedule] = useState<RollSchedule | null>(null);
+  const rolling = phase === 'roll' && !reducedMotion && settled && schedule !== null;
+  const { clock, paused, setPaused } = useCreditsClock(rolling, finish);
+  const onSchedule = useCallback(
+    (next: RollSchedule) => {
+      setSchedule(next);
+      clock.setDuration(next.timeline.duration);
+    },
+    [clock]
   );
 
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [flyTo, setFlyTo] = useState<FlyToRequest | null>(null);
+  const flyNonce = useRef(0);
   const [findQuery, setFindQuery] = useState('');
   const [findStatus, setFindStatus] = useState<string | null>(null);
-  const flyNonce = useRef(0);
   const [burst, setBurst] = useState<{ x: number; y: number; seed: number } | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [showHint, setShowHint] = useState(true);
+  const mainRef = useRef<HTMLElement>(null);
+  const endTagRef = useRef<HTMLDivElement>(null);
 
   // Bins set document.body.cursor on hover; reset it if we unmount mid-hover.
   useEffect(() => () => void (document.body.style.cursor = ''), []);
-
-  // Stable so CtaBurst's effect doesn't restart the animation on unrelated re-renders.
   const clearBurst = useCallback(() => setBurst(null), []);
 
-  const focused = focusedId ? bins.find((b) => b.id === focusedId) : null;
+  useEffect(() => {
+    if (phase !== 'roll') return;
+    const id = setTimeout(() => setShowHint(false), HINT_MS);
+    return () => clearTimeout(id);
+  }, [phase]);
 
-  // Hold the whole scene until the supporter list settles (a fetch, or the
-  // hook's timeout falling back to the bundled list). Rendering early would
-  // count up to the bundled total, then restart from zero at the real one, and
-  // re-frame the camera — which sizes itself on bin count. The wait is a fetch
-  // the page already covers with its lazy-chunk fallback.
+  const togglePause = useCallback(() => {
+    const next = !clock.isPaused;
+    setPaused(next);
+    if (!next) setFocusedId(null);
+  }, [clock, setPaused]);
+
+  const skip = useCallback(() => {
+    if (clock.duration > 0) clock.seek(clock.duration);
+    setPaused(false);
+    setFocusedId(null);
+    finish();
+  }, [clock, setPaused, finish]);
+
+  const replay = useCallback(() => {
+    clock.seek(0);
+    setPaused(false);
+    setFocusedId(null);
+    setShowHint(true);
+    setPhase('roll');
+  }, [clock, setPaused]);
+
+  useRollScrub({
+    enabled: phase === 'roll' && !reducedMotion,
+    target: mainRef,
+    clock,
+    timeline: schedule?.timeline ?? null,
+    baseSpeed: stacked ? BASE_SPEED.stacked : BASE_SPEED.side,
+    onTogglePause: togglePause,
+    onSkip: skip,
+  });
+
+  /**
+   * Point at one supporter: mid-roll, pause with their bin seated (jumping to
+   * their credit when found by name, nudging forward only as far as the drop
+   * when clicked); otherwise fly to their bin.
+   */
+  const showSupporter = useCallback(
+    (id: string, jump: boolean) => {
+      setFocusedId(id);
+      if (phase === 'roll' && !reducedMotion) {
+        const seated = schedule?.seatTimes.get(id);
+        if (seated !== undefined) {
+          clock.seek(jump ? seated + SEATED_AFTER : Math.max(clock.time, seated + SEATED_AFTER));
+        }
+        setPaused(true);
+      } else {
+        flyNonce.current += 1;
+        setFlyTo({ id, nonce: flyNonce.current });
+      }
+    },
+    [phase, reducedMotion, schedule, clock, setPaused]
+  );
+
+  const onCredit = useCallback(
+    (id: string) => {
+      if (phase === 'roll' && clock.isPaused && focusedId === id) togglePause();
+      else showSupporter(id, false);
+    },
+    [phase, clock, focusedId, togglePause, showSupporter]
+  );
+
+  const count = useCountUp(total, !reducedMotion && settled && phase === 'finale');
+
+  const roll = phase === 'roll' && !reducedMotion;
+  const besidePlateEarly = roll || reducedMotion;
+  const scrimRef = useRef<HTMLDivElement>(null);
+  // Fully opaque beside the plate: at anything less, the bright grid lines show through the text.
+  const scrimOpacity = besidePlateEarly ? 1 : theme === 'dark' ? 0.92 : 0.88;
+  // The title card owns the whole screen, so the column's scrim only rises as
+  // the first credits arrive. Driven by the clock so a scrub back undoes it.
+  useEffect(() => {
+    const el = scrimRef.current;
+    if (!el || !roll) return;
+    const intro = schedule?.timeline.introSeconds ?? INTRO_SECONDS;
+    const fade = (c: CreditsClock) => {
+      const t = Math.min(1, Math.max(0, (c.time - (intro - 1.6)) / 1.6));
+      el.style.opacity = String(scrimOpacity * t);
+    };
+    fade(clock);
+    return clock.subscribe(fade);
+  }, [roll, settled, clock, schedule, scrimOpacity]);
+
   if (!settled) {
     return <main className="h-screen w-screen" style={{ background: palette.background }} />;
   }
 
-  const handleKofiClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    trackEvent('kofi_clicked', { source: 'supporters_page' });
+  const handleKofiClick = (source: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
+    trackEvent('kofi_clicked', { source });
     if (!reducedMotion) {
       const r = e.currentTarget.getBoundingClientRect();
       setBurst({ x: r.left + r.width / 2, y: r.top + r.height / 2, seed: Math.random() * 6.28 });
@@ -139,97 +206,126 @@ export function SupportersPage() {
     window.open(KOFI_URL, '_blank', 'noopener,noreferrer');
   };
 
-  const focusBin = (id: string) => {
-    setFocusedId(id);
-    flyNonce.current += 1;
-    setFlyTo({ id, nonce: flyNonce.current });
-  };
-
   const handleFind = () => {
-    const query = findQuery.trim();
-    if (!query) {
-      // Clear any lingering "not found"/"multiple" message from a prior search.
-      setFindStatus(null);
+    const found = findSupporter(bins, findQuery);
+    if (!found) {
+      setFindStatus(
+        findQuery.trim() ? t('supporters.find.notFound', { name: findQuery.trim() }) : null
+      );
       return;
     }
-    const needle = query.toLowerCase();
-    const named = bins.filter((b): b is SupporterBin & { name: string } => b.name !== null);
-
-    // Exact (case-insensitive) name wins; only if none matches do we fall back to
-    // a substring. Both pools are sorted so the pick is stable across the shuffle.
-    const exact = named.filter((b) => b.name.toLowerCase() === needle);
-    const pool =
-      exact.length > 0
-        ? exact
-        : named
-            .filter((b) => b.name.toLowerCase().includes(needle))
-            .sort((a, b) => a.name.length - b.name.length || a.name.localeCompare(b.name));
-
-    if (pool.length === 0) {
-      setFindStatus(t('supporters.find.notFound', { name: query }));
-      return;
-    }
-    const target = pool[0];
-    focusBin(target.id);
-    // "1 of N named X" only makes sense for genuine duplicate names (exact matches).
+    showSupporter(found.bin.id, true);
     setFindStatus(
-      exact.length > 1
-        ? t('supporters.find.multiple', { count: exact.length, name: target.name })
-        : null
+      found.exactMatches > 1
+        ? t('supporters.find.multiple', { count: found.exactMatches, name: found.bin.name })
+        : t('supporters.find.department', {
+            name: found.bin.name,
+            department: departmentLabels[departmentOf(found.bin)],
+          })
     );
   };
 
-  // A linked supporter's own bin is located by NAME, which is the only handle
-  // the public list carries — so an anonymous supporter has no findable bin and
-  // the affordance is correctly absent for them rather than pointing at someone
-  // else's. The name is exact: it is the same string the wall renders.
+  // The caller's bin is found by NAME, the only handle the public list carries,
+  // so an anonymous supporter has no findable bin and the affordance is absent.
   const myBin =
     supporter.status.supporter && supporter.status.name !== null
       ? (bins.find((b) => b.name === supporter.status.name) ?? null)
       : null;
 
+  const besidePlate = besidePlateEarly;
+  const column = columnWidth(viewport);
+  const stage: StageFrame = !besidePlate
+    ? FULL_STAGE
+    : stacked
+      ? { shiftX: 0, shiftY: 0.18, widthFraction: 1, heightFraction: 0.44 }
+      : {
+          shiftX: column / viewport / 2,
+          shiftY: 0,
+          widthFraction: 1 - column / viewport,
+          heightFraction: 1,
+        };
+  const focused = focusedId ? (binsById.get(focusedId) ?? null) : null;
+  const stageInset = besidePlate && !stacked ? `${column}px` : '0px';
+
   return (
     <main
-      className="relative h-screen w-screen overflow-hidden"
+      ref={mainRef}
+      className={`relative h-screen w-screen overflow-hidden ${roll ? 'touch-none select-none' : ''}`}
       style={{ background: palette.background, color: theme === 'dark' ? '#ffffff' : '#1c1b18' }}
     >
       <Canvas
         className="absolute inset-0"
         dpr={isMobile ? [1, 1.5] : [1, 2]}
         frameloop={reducedMotion ? 'demand' : 'always'}
-        camera={{ fov: 38, near: 0.1, far: 160, position: [2, 10, 14] }}
+        camera={{ fov: 38, near: 0.1, far: 220, position: [2, 10, 14] }}
         gl={{ antialias: true, alpha: false }}
-        onPointerMissed={() => setFocusedId(null)}
+        onPointerMissed={() => phase === 'finale' && setFocusedId(null)}
       >
         <Suspense fallback={null}>
           <SupportersScene
             bins={bins}
+            plan={plan}
+            layout={layout}
+            clock={clock}
+            schedule={reducedMotion ? null : schedule}
+            phase={phase}
+            stage={stage}
             theme={theme}
             accent={accent}
             reducedMotion={reducedMotion}
             focusedId={focusedId}
-            onSelect={setFocusedId}
+            focusCamera={roll && paused}
+            onSelect={phase === 'roll' ? onCredit : setFocusedId}
             anonymousLabel={t('supporters.anonymous')}
+            departmentLabels={departmentLabels}
             flyTo={flyTo}
+            endTagRef={endTagRef}
+            onVacantSelect={() => {
+              trackEvent('kofi_clicked', { source: 'supporters_socket' });
+              window.open(KOFI_URL, '_blank', 'noopener,noreferrer');
+            }}
           />
         </Suspense>
       </Canvas>
 
-      {/* Top scrim — keeps hero copy legible over the bright baseplate */}
+      {/* Scrims keep the copy legible over the bright baseplate. */}
       <div
-        className="pointer-events-none fixed inset-x-0 top-0 z-10 h-1/2"
+        ref={scrimRef}
         aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-10"
         style={{
-          background: `linear-gradient(to bottom, ${palette.background} 8%, transparent 100%)`,
-          opacity: theme === 'dark' ? 0.9 : 0.85,
+          opacity: roll ? undefined : scrimOpacity,
+          background: !besidePlate
+            ? `linear-gradient(to bottom, ${palette.background} 4%, transparent 45%)`
+            : stacked
+              ? `linear-gradient(to bottom, ${palette.background} 44%, transparent 60%)`
+              : `linear-gradient(to right, ${palette.background} ${column}px, transparent ${column * 1.45}px)`,
         }}
       />
-      {/* Top bar: back control (left) + find-your-bin (right) */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-3 p-5">
+
+      <h1 className="sr-only">{t('supporters.heading')}</h1>
+
+      {roll && <CreditsTitleCard clock={clock} count={total} accent={palette.accent} />}
+
+      <CreditsRoll
+        plan={plan}
+        binsById={binsById}
+        clock={clock}
+        mode={reducedMotion ? 'scroll' : 'roll'}
+        stacked={stacked}
+        baseSpeed={stacked ? BASE_SPEED.stacked : BASE_SPEED.side}
+        accent={palette.accent}
+        hidden={!besidePlate}
+        focusedId={focusedId}
+        onSchedule={onSchedule}
+        onCredit={onCredit}
+      />
+
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between gap-3 p-5">
         <Button
           variant="ghost"
           onClick={navigateHome}
-          className="pointer-events-auto flex items-center gap-1.5 px-2.5 py-1.5 text-sm"
+          className="pointer-events-auto flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1.5 text-sm"
           style={{ color: 'inherit' }}
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -242,8 +338,7 @@ export function SupportersPage() {
           </svg>
           {t('supporters.back')}
         </Button>
-
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-col items-end gap-2" {...{ [NO_SCRUB_ATTR]: '' }}>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -251,7 +346,7 @@ export function SupportersPage() {
             }}
             className="pointer-events-auto flex items-center gap-2"
           >
-            <div className="w-36 sm:w-44">
+            <div className="w-28 sm:w-44">
               <Input
                 value={findQuery}
                 onChange={(e) => setFindQuery(e.target.value)}
@@ -267,7 +362,7 @@ export function SupportersPage() {
           </form>
           {findStatus && (
             <p
-              className="pointer-events-none max-w-[15rem] text-right text-xs opacity-80"
+              className="pointer-events-none max-w-[16rem] rounded-md bg-black/55 px-2.5 py-1 text-right text-xs text-white/90 backdrop-blur-sm"
               role="status"
             >
               {findStatus}
@@ -276,61 +371,13 @@ export function SupportersPage() {
         </div>
       </div>
 
-      {/* Hero */}
-      <div className="pointer-events-none absolute inset-x-0 top-[5%] z-20 flex flex-col items-center px-6 text-center">
-        <h1 className="flex flex-col items-center">
-          {/* Static total for AT (avoids announcing the count-up animation). */}
-          <span className="sr-only">{total} </span>
-          <span
-            aria-hidden="true"
-            className="text-7xl font-bold tabular-nums leading-none tracking-tighter sm:text-9xl"
-            style={{
-              color: palette.accent,
-              textShadow:
-                theme === 'dark' ? `0 0 48px ${palette.accent}55` : `0 1px 0 rgba(255,255,255,0.6)`,
-            }}
-          >
-            {count}
-          </span>
-          <span className="mt-3 text-base font-semibold uppercase tracking-[0.28em] opacity-90 sm:text-lg">
-            {t('supporters.countLabel')}
-          </span>
-        </h1>
-        {thisMonth > 0 && (
-          <p
-            className="mt-2 text-xs font-semibold uppercase tracking-[0.2em]"
-            style={{ color: palette.accent, opacity: 0.85 }}
-          >
-            {t('supporters.thisMonth', { count: thisMonth })}
-          </p>
-        )}
-        <p
-          className="mt-3 max-w-md text-sm leading-relaxed opacity-65 sm:text-base"
-          style={{ textWrap: 'balance' }}
-        >
-          {t('supporters.subheading')}
-        </p>
-      </div>
-
-      {/* Support-over-time sparkline, tucked in a corner (desktop only) */}
-      {activeMonths >= SPARKLINE_MIN_ACTIVE_MONTHS && (
-        <figure
-          className="pointer-events-none absolute bottom-6 left-6 z-20 m-0 hidden flex-col gap-1 opacity-90 sm:flex"
-          aria-label={t('supporters.sparklineLabel', { count: SPARKLINE_MONTHS })}
-        >
-          <Sparkline buckets={history} color={palette.accent} />
-          <figcaption className="text-micro font-medium uppercase tracking-[0.16em] opacity-55">
-            {t('supporters.sparklineCaption')}
-          </figcaption>
-        </figure>
-      )}
-
-      {/* Focused thank-you card */}
       {focused && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-[22%] z-20 flex justify-center px-6">
-          {/* Styled like the printed label tape on the bins */}
+        <div
+          className="pointer-events-none absolute bottom-[20%] right-0 z-20 flex justify-center px-6"
+          style={{ left: stageInset }}
+        >
           <div
-            className="rounded-md px-5 py-2 text-sm font-semibold shadow-lg motion-safe:animate-fade-in"
+            className="max-w-sm rounded-md px-5 py-3 text-center text-sm shadow-lg motion-safe:animate-fade-in"
             style={{
               background: palette.tape,
               color: palette.tapeInk,
@@ -338,77 +385,50 @@ export function SupportersPage() {
               boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
             }}
           >
-            {focused.isNewest && (
-              <span
-                className="mr-2 rounded-sm px-1.5 py-0.5 text-micro font-bold uppercase tracking-wider"
-                style={{ background: palette.accent, color: '#fff' }}
-              >
-                {t('supporters.justJoined')}
-              </span>
-            )}
-            {focused.name
-              ? t('supporters.thanksNamed', { name: focused.name })
-              : t('supporters.thanksAnon')}
+            <p className="font-semibold">
+              {focused.name
+                ? t('supporters.thanksNamed', { name: focused.name })
+                : t('supporters.thanksAnon')}
+            </p>
+            {focused.message && <q className="mt-1 block italic opacity-80">{focused.message}</q>}
+            <p className="mt-1.5 text-micro uppercase tracking-wider opacity-60">
+              {departmentLabels[departmentOf(focused)]}
+            </p>
           </div>
         </div>
       )}
 
-      {/*
-        CTA stack. Deliberately three rows: a rotating supporter message, one
-        purpose line, and the actions. The benefits copy and the "change my
-        name / go anonymous" flow both live in the panel instead of stacking
-        more paragraphs here — on a short viewport this column is what runs
-        into the wall.
-      */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-3 px-6 pb-8 text-center">
-        {/* Hidden while a bin is focused so it doesn't collide with the thank-you card. */}
-        {messages.length > 0 && !focused && (
-          <RotatingMessage
-            items={messages}
-            reducedMotion={reducedMotion}
-            attribution={(name) => t('supporters.messageBy', { name })}
-          />
-        )}
-        <p className="max-w-md text-sm opacity-70" style={{ textWrap: 'balance' }}>
-          {t('supporters.purpose')}
-        </p>
-        <div className="flex flex-col items-center gap-2 sm:flex-row">
-          <Button
-            variant="primary"
-            onClick={handleKofiClick}
-            className="pointer-events-auto flex items-center gap-2 px-5 py-2.5 text-sm"
-            style={{ color: '#fff', textShadow: '0 1px 1px rgba(34,34,34,0.15)' }}
-          >
-            <img
-              src="/kofi-cup.png"
-              alt=""
-              aria-hidden="true"
-              className="kofi-cup-wiggle h-4 w-auto"
-            />
-            {t('supporters.cta.button')}
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => setPanelOpen(true)}
-            className="pointer-events-auto px-3 py-2 text-sm underline-offset-2 hover:underline"
-            style={{ color: 'inherit' }}
-          >
-            {supporter.status.supporter
-              ? t('supporters.panel.yoursTitle')
-              : t('supporters.panel.title')}
-          </Button>
-        </div>
-      </div>
+      {roll && (
+        <CreditsControls
+          clock={clock}
+          paused={paused}
+          stacked={stacked}
+          showHint={showHint}
+          onTogglePause={togglePause}
+          onSkip={skip}
+          onKofi={handleKofiClick('supporters_credits')}
+        />
+      )}
 
-      {/* Accessible, screen-reader-only supporter list (the canvas is inert to AT) */}
-      <div className="sr-only">
-        <h2>{t('supporters.heading')}</h2>
-        <ul aria-label={t('supporters.listAria', { count: total })}>
-          {bins.map((bin) => (
-            <li key={bin.id}>{bin.name ?? t('supporters.anonymous')}</li>
-          ))}
-        </ul>
-      </div>
+      {phase === 'finale' && (
+        <CreditsFinale
+          total={total}
+          count={count}
+          thisMonth={thisMonth}
+          accent={palette.accent}
+          theme={theme}
+          stageInset={stageInset}
+          panelLabel={
+            supporter.status.supporter
+              ? t('supporters.panel.yoursTitle')
+              : t('supporters.panel.title')
+          }
+          endTagRef={endTagRef}
+          onKofi={handleKofiClick('supporters_page')}
+          onReplay={reducedMotion ? undefined : replay}
+          onOpenPanel={() => setPanelOpen(true)}
+        />
+      )}
 
       <SupporterPanel
         open={panelOpen}
@@ -419,7 +439,7 @@ export function SupportersPage() {
         onFindMyBin={
           myBin
             ? () => {
-                focusBin(myBin.id);
+                showSupporter(myBin.id, true);
                 setPanelOpen(false);
               }
             : undefined

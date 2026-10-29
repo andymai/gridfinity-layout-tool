@@ -4,14 +4,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { SupportersPage } from './SupportersPage';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { KOFI_URL } from '@/shared/constants/links';
-import supportersData from '../../data/supporters.json';
 import { FALLBACK_SUPPORTERS, type SupportersData } from '../../utils/supportersData';
+import { hasSeenCredits, markCreditsSeen } from '../../utils/creditsSeen';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
-
-vi.mock('@/shared/analytics/posthog', () => ({
-  trackEvent: vi.fn(),
-}));
+vi.mock('@/shared/analytics/posthog', () => ({ trackEvent: vi.fn() }));
 
 // The WebGL layers can't render in jsdom; stub them so we can test the DOM overlays.
 vi.mock('@react-three/fiber', () => ({
@@ -19,123 +16,166 @@ vi.mock('@react-three/fiber', () => ({
 }));
 vi.mock('../SupportersScene', () => ({ SupportersScene: () => null }));
 
+const motion = { reduced: false };
+vi.mock('@/shared/hooks/usePrefersReducedMotion', () => ({
+  usePrefersReducedMotion: () => motion.reduced,
+}));
+
 // Fetching is covered by useSupportersData's own tests; here we pin the data so
-// these assertions stay about the DOM overlays.
-const supportersState = { data: FALLBACK_SUPPORTERS, settled: true };
+// these assertions stay about the page.
+const supportersState: { data: SupportersData; settled: boolean } = {
+  data: FALLBACK_SUPPORTERS,
+  settled: true,
+};
 vi.mock('../../hooks/useSupportersData', () => ({
   useSupportersData: () => supportersState,
 }));
+
+const LIVE: SupportersData = {
+  supporters: [
+    { name: 'Ada', joinedAt: '2026-07-10T00:00:00Z', message: 'a wonderful tool', department: 1 },
+    { name: 'Grace', joinedAt: '2026-06-01T00:00:00Z', department: 4 },
+    { name: 'Linus', joinedAt: '2026-05-01T00:00:00Z', department: 4 },
+    { name: null, joinedAt: '2026-07-05T00:00:00Z' },
+  ],
+};
+
+const find = (name: string) => {
+  fireEvent.change(screen.getByPlaceholderText('supporters.find.placeholder'), {
+    target: { value: name },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'supporters.find.submit' }));
+};
 
 describe('SupportersPage', () => {
   let openSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
+    motion.reduced = false;
     supportersState.settled = true;
-    supportersState.data = FALLBACK_SUPPORTERS;
+    supportersState.data = LIVE;
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-07-15T00:00:00Z'));
     openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    // jsdom lays nothing out; stack the credits 50 px apart so the roll has a length.
+    vi.spyOn(HTMLElement.prototype, 'offsetTop', 'get').mockImplementation(function (
+      this: HTMLElement
+    ) {
+      const credits = [...document.querySelectorAll('[data-credit-id]')];
+      return Math.max(0, credits.indexOf(this)) * 50;
+    });
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(50);
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(600);
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
-  it('renders the accessible heading and count label', () => {
-    render(<SupportersPage />);
-    expect(screen.getByRole('heading', { name: 'supporters.heading' })).toBeInTheDocument();
-    expect(screen.getByText('supporters.countLabel')).toBeInTheDocument();
-  });
-
-  it('lists every supporter for screen readers (named + anonymous)', () => {
-    const firstNamed = supportersData.supporters.find((s) => s.name)?.name ?? '';
-    const anonCount = supportersData.supporters.filter((s) => !s.name).length;
-    render(<SupportersPage />);
-    expect(screen.getByText(firstNamed)).toBeInTheDocument();
-    // queryAllByText (not getAllByText) so the assertion holds even at 0 anonymous.
-    expect(screen.queryAllByText('supporters.anonymous')).toHaveLength(anonCount);
-  });
-
-  it('never renders an email address', () => {
-    const { container } = render(<SupportersPage />);
-    expect(container.textContent ?? '').not.toContain('@');
-  });
-
-  it('fires kofi_clicked with the supporters_page source and opens Ko-fi', () => {
-    render(<SupportersPage />);
-    fireEvent.click(screen.getByText('supporters.cta.button'));
-    expect(trackEvent).toHaveBeenCalledWith('kofi_clicked', { source: 'supporters_page' });
-    expect(openSpy).toHaveBeenCalledWith(KOFI_URL, '_blank', 'noopener,noreferrer');
-  });
-
-  // Rendering the hero before the count is known would count up to the bundled
-  // total and then restart at the real one.
-  it('holds the hero until the supporter list settles', () => {
-    supportersState.settled = false;
-    render(<SupportersPage />);
-    expect(screen.queryByText('supporters.countLabel')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('canvas')).not.toBeInTheDocument();
-  });
-
-  describe('recency and messages (live data)', () => {
-    const RICH: SupportersData = {
-      supporters: [
-        { name: 'Ada', joinedAt: '2026-07-10T00:00:00Z', message: 'a wonderful tool' },
-        { name: 'Grace', joinedAt: '2026-06-01T00:00:00Z' },
-        { name: 'Linus', joinedAt: '2026-05-01T00:00:00Z', message: 'saved me hours' },
-        { name: 'Margaret', joinedAt: '2026-04-01T00:00:00Z' },
-        { name: null, joinedAt: '2026-03-01T00:00:00Z' },
-        { name: null, joinedAt: '2026-07-05T00:00:00Z' },
-      ],
-    };
-
-    beforeEach(() => {
-      // Fix only Date so joinedThisMonth / the sparkline window are deterministic;
-      // rAF and setInterval stay real so the count-up and message rotation don't stall.
-      vi.useFakeTimers({ toFake: ['Date'] });
-      vi.setSystemTime(new Date('2026-07-15T00:00:00Z'));
-      supportersState.data = RICH;
-    });
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
-    it('shows how many joined this month', () => {
+  describe('a first visit', () => {
+    it('opens on the title card and rolls the credits', () => {
       render(<SupportersPage />);
-      // Ada (07-10) + one anonymous (07-05) fall in July.
+      expect(
+        screen.getByText(/supporters\.credits\.victoryLine1/, { selector: '.sr-only' })
+      ).toBeInTheDocument();
+      expect(screen.getByRole('region', { name: 'supporters.credits.listLabel' })).toBeVisible();
+      expect(screen.getByRole('button', { name: 'supporters.credits.skip' })).toBeInTheDocument();
+      expect(screen.queryByText('supporters.credits.theEnd')).not.toBeInTheDocument();
+    });
+
+    it('credits every supporter, the anonymous one as a redaction', () => {
+      render(<SupportersPage />);
+      for (const name of ['Ada', 'Grace', 'Linus']) {
+        expect(screen.getByRole('button', { name })).toBeInTheDocument();
+      }
+      expect(screen.getByRole('button', { name: 'supporters.anonymous' })).toBeInTheDocument();
+      expect(screen.getByText('a wonderful tool')).toBeInTheDocument();
+    });
+
+    it('skips to the finale and remembers it was seen', () => {
+      render(<SupportersPage />);
+      fireEvent.click(screen.getByRole('button', { name: 'supporters.credits.skip' }));
+      expect(screen.getByText('supporters.credits.theEnd')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'supporters.credits.skip' })).toBeNull();
+      expect(hasSeenCredits()).toBe(true);
+    });
+
+    it('offers a quiet Ko-fi door while the credits roll', () => {
+      render(<SupportersPage />);
+      fireEvent.click(screen.getByRole('button', { name: 'supporters.cta.button' }));
+      expect(trackEvent).toHaveBeenCalledWith('kofi_clicked', { source: 'supporters_credits' });
+      expect(openSpy).toHaveBeenCalledWith(KOFI_URL, '_blank', 'noopener,noreferrer');
+    });
+
+    it('pauses on a found supporter and names their department', () => {
+      render(<SupportersPage />);
+      find('Ada');
+      expect(screen.getByText('supporters.find.department')).toBeInTheDocument();
+      expect(screen.getByText('supporters.thanksNamed')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'supporters.credits.play' })).toBeInTheDocument();
+    });
+  });
+
+  describe('a return visit', () => {
+    beforeEach(() => markCreditsSeen());
+
+    it('opens on the finale, with the count and the empty socket', () => {
+      render(<SupportersPage />);
+      expect(
+        screen.getByRole('heading', { level: 1, name: /^4\s*supporters\.countLabel$/ })
+      ).toBeInTheDocument();
+      expect(screen.getByText('supporters.credits.theEnd')).toBeInTheDocument();
       expect(screen.getByText('supporters.thisMonth')).toBeInTheDocument();
     });
 
-    it('shows the purpose line near the CTA', () => {
+    it('fires kofi_clicked with the supporters_page source', () => {
       render(<SupportersPage />);
-      expect(screen.getByText('supporters.purpose')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /supporters\.cta\.button/ }));
+      expect(trackEvent).toHaveBeenCalledWith('kofi_clicked', { source: 'supporters_page' });
     });
 
-    it('surfaces a public message near the CTA', () => {
-      const { container } = render(<SupportersPage />);
-      expect(container.textContent ?? '').toMatch(/a wonderful tool|saved me hours/);
-    });
-
-    it('reveals the sparkline once support spans enough months', () => {
+    it('can replay the credits', () => {
       render(<SupportersPage />);
-      expect(screen.getByLabelText('supporters.sparklineLabel')).toBeInTheDocument();
-    });
-
-    it('finds a bin by name and shows its thank-you card', () => {
-      render(<SupportersPage />);
-      fireEvent.change(screen.getByPlaceholderText('supporters.find.placeholder'), {
-        target: { value: 'Ada' },
-      });
-      fireEvent.click(screen.getByRole('button', { name: 'supporters.find.submit' }));
-      expect(screen.getByText('supporters.thanksNamed')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'supporters.credits.replay' }));
+      expect(screen.getByRole('button', { name: 'supporters.credits.skip' })).toBeInTheDocument();
     });
 
     it('reports when no supporter matches the search', () => {
       render(<SupportersPage />);
-      fireEvent.change(screen.getByPlaceholderText('supporters.find.placeholder'), {
-        target: { value: 'Nobody' },
-      });
-      fireEvent.click(screen.getByRole('button', { name: 'supporters.find.submit' }));
+      find('Nobody');
       expect(screen.getByText('supporters.find.notFound')).toBeInTheDocument();
     });
+  });
+
+  describe('with reduced motion', () => {
+    beforeEach(() => {
+      motion.reduced = true;
+    });
+
+    it('shows the finale beside credits the visitor scrolls, with nothing to replay', () => {
+      render(<SupportersPage />);
+      expect(screen.getByText('supporters.credits.theEnd')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Ada' })).toBeVisible();
+      expect(screen.queryByRole('button', { name: 'supporters.credits.skip' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'supporters.credits.replay' })).toBeNull();
+    });
+  });
+
+  it('never renders an email address', () => {
+    supportersState.data = FALLBACK_SUPPORTERS;
+    const { container } = render(<SupportersPage />);
+    expect(container.textContent ?? '').not.toContain('@');
+  });
+
+  // Rendering before the count is known would count up to the bundled total
+  // and then restart at the real one.
+  it('holds everything until the supporter list settles', () => {
+    supportersState.settled = false;
+    render(<SupportersPage />);
+    expect(screen.queryByTestId('canvas')).not.toBeInTheDocument();
+    expect(screen.queryByText('supporters.credits.listLabel')).not.toBeInTheDocument();
   });
 });

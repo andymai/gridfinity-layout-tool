@@ -1,0 +1,1 @@
+export { CreditsTitleCard } from './CreditsTitleCard';

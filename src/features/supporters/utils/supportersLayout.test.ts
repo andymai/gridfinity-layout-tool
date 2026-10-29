@@ -1,88 +1,110 @@
 import { describe, it, expect } from 'vitest';
-import { computeBaseplateLayout, computeCameraFrame } from './supportersLayout';
+import { computeCameraFrame, computeZonedLayout } from './supportersLayout';
 import { fitLabelLines } from './labelText';
 
-describe('computeBaseplateLayout', () => {
-  it('places one socket seat per supporter', () => {
-    expect(computeBaseplateLayout(32).positions).toHaveLength(32);
+const SIZES = [27, 31, 22, 29, 25, 30, 26, 24, 29];
+
+describe('computeZonedLayout', () => {
+  const layout = computeZonedLayout(SIZES);
+  const key = (p: { x: number; z: number }) => `${p.x},${p.z}`;
+  const seats = SIZES.flatMap((size, zone) =>
+    Array.from({ length: size }, (_, slot) => layout.seat(zone, slot))
+  );
+
+  it('gives every member of every zone its own socket on the plate', () => {
+    const sockets = new Set(layout.sockets.map(key));
+    expect(new Set(seats.map(key)).size).toBe(seats.length);
+    for (const s of seats) expect(sockets.has(key(s))).toBe(true);
   });
 
-  it('centers the plate on the origin', () => {
-    const { sockets } = computeBaseplateLayout(32);
-    const meanX = sockets.reduce((s, p) => s + p.x, 0) / sockets.length;
-    const meanZ = sockets.reduce((s, p) => s + p.z, 0) / sockets.length;
-    expect(Math.abs(meanX)).toBeLessThan(1e-9);
-    expect(Math.abs(meanZ)).toBeLessThan(1e-9);
+  it('centres the plate on the origin on exact socket pitch', () => {
+    const xs = layout.sockets.map((s) => s.x);
+    expect(Math.min(...xs)).toBeCloseTo(-Math.max(...xs));
+    for (const s of seats) expect(Math.abs(s.x * 2 - Math.round(s.x * 2))).toBeLessThan(1e-9);
   });
 
-  it('produces a slightly-wide grid (columns >= rows)', () => {
-    const { columns, rows } = computeBaseplateLayout(32);
-    expect(columns).toBeGreaterThanOrEqual(rows);
-  });
-
-  it('seats bins on exact 1-unit socket pitch', () => {
-    const { positions } = computeBaseplateLayout(9);
-    const xs = [...new Set(positions.map((p) => p.x))].sort((a, b) => a - b);
-    for (let i = 1; i < xs.length; i++) {
-      expect(xs[i] - xs[i - 1]).toBeCloseTo(1, 9);
+  it('keeps zones apart, so each department reads as its own compartment', () => {
+    const zoneOf = new Map<string, number>();
+    SIZES.forEach((size, zone) => {
+      for (let slot = 0; slot < size; slot++) zoneOf.set(key(layout.seat(zone, slot)), zone);
+    });
+    for (const [k, zone] of zoneOf) {
+      const [x, z] = k.split(',').map(Number);
+      for (const [dx, dz] of [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ]) {
+        const neighbour = zoneOf.get(`${x + dx},${z + dz}`);
+        if (neighbour !== undefined) expect(neighbour).toBe(zone);
+      }
     }
   });
 
-  it('adds a one-socket empty margin ring around the bin cluster', () => {
-    const layout = computeBaseplateLayout(12);
-    expect(layout.plateColumns).toBe(layout.columns + 2);
-    expect(layout.plateRows).toBe(layout.rows + 2);
-    expect(layout.sockets).toHaveLength(layout.plateColumns * layout.plateRows);
-  });
-
-  it('never seats a bin on the margin ring', () => {
-    const layout = computeBaseplateLayout(25);
-    for (const p of layout.positions) {
-      expect(p.col).toBeGreaterThanOrEqual(1);
-      expect(p.col).toBeLessThanOrEqual(layout.plateColumns - 2);
-      expect(p.row).toBeGreaterThanOrEqual(1);
-      expect(p.row).toBeLessThanOrEqual(layout.plateRows - 2);
+  it('prints each label in front of its zone, never over a seat', () => {
+    const taken = new Set(seats.map(key));
+    for (const zone of layout.zones) {
+      expect(zone.label.z).toBeGreaterThan(zone.z);
+      for (let dx = -Math.floor(zone.width / 2); dx <= Math.floor(zone.width / 2); dx++) {
+        expect(taken.has(key({ x: zone.label.x + dx, z: zone.label.z }))).toBe(false);
+      }
     }
   });
 
-  it('handles a single supporter', () => {
-    const layout = computeBaseplateLayout(1);
-    expect(layout.columns).toBe(1);
-    expect(layout.positions[0]).toMatchObject({ x: 0, z: 0 });
+  it('offers an empty socket as the vacant one', () => {
+    const sockets = new Set(layout.sockets.map(key));
+    expect(sockets.has(key(layout.vacant))).toBe(true);
+    expect(new Set(seats.map(key)).has(key(layout.vacant))).toBe(false);
   });
 
-  it('handles zero supporters with a non-empty plate', () => {
-    const layout = computeBaseplateLayout(0);
-    expect(layout.positions).toHaveLength(0);
-    expect(layout.sockets.length).toBeGreaterThan(0);
+  it('still has a vacant socket when every zone is exactly full', () => {
+    const full = computeZonedLayout(Array.from({ length: 9 }, () => 6));
+    const taken = new Set(
+      Array.from({ length: 9 }, (_, zone) =>
+        Array.from({ length: 6 }, (_, slot) => key(full.seat(zone, slot)))
+      ).flat()
+    );
+    expect(taken.has(key(full.vacant))).toBe(false);
   });
 
-  it('grows the plate as supporters grow', () => {
-    const small = computeBaseplateLayout(10);
-    const large = computeBaseplateLayout(400);
+  it('grows with the largest department', () => {
+    const small = computeZonedLayout([4, 4, 4]);
+    const large = computeZonedLayout([60, 4, 4]);
     expect(large.width).toBeGreaterThan(small.width);
-    expect(large.positions).toHaveLength(400);
   });
 });
 
 describe('computeCameraFrame', () => {
   it('pulls back further for larger plates', () => {
-    const near = computeCameraFrame(computeBaseplateLayout(10), 16 / 9);
-    const far = computeCameraFrame(computeBaseplateLayout(400), 16 / 9);
+    const near = computeCameraFrame({ width: 5, depth: 4 }, 16 / 9);
+    const far = computeCameraFrame({ width: 25, depth: 19 }, 16 / 9);
     expect(far.distance).toBeGreaterThan(near.distance);
   });
 
   it('pulls back further in portrait than landscape for the same plate', () => {
-    const layout = computeBaseplateLayout(40);
-    const landscape = computeCameraFrame(layout, 16 / 9);
-    const portrait = computeCameraFrame(layout, 9 / 16);
+    const footprint = { width: 10, depth: 8 };
+    const landscape = computeCameraFrame(footprint, 16 / 9);
+    const portrait = computeCameraFrame(footprint, 9 / 16);
     expect(portrait.distance).toBeGreaterThan(landscape.distance);
   });
 
   it('positions the camera above and in front of the target', () => {
-    const frame = computeCameraFrame(computeBaseplateLayout(42), 16 / 9);
+    const frame = computeCameraFrame({ width: 10, depth: 8 }, 16 / 9);
     expect(frame.position[1]).toBeGreaterThan(frame.target[1]);
     expect(frame.position[2]).toBeGreaterThan(frame.target[2]);
+  });
+
+  it('aims at the centre it is given, so one zone can fill the stage', () => {
+    const frame = computeCameraFrame({ width: 6, depth: 5 }, 16 / 9, { x: 7, z: -4 });
+    expect(frame.target[0]).toBe(7);
+    expect(frame.target[2]).toBe(-4);
+  });
+
+  it('moves in closer when asked to frame tightly', () => {
+    const loose = computeCameraFrame({ width: 12, depth: 10 }, 16 / 9);
+    const tight = computeCameraFrame({ width: 12, depth: 10 }, 16 / 9, undefined, 0.7);
+    expect(tight.distance).toBeLessThan(loose.distance);
   });
 });
 

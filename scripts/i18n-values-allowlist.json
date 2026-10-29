@@ -347,7 +347,8 @@
     "workshop.view.side",
     "workshop.view.top",
     "binDesigner.cutouts.openSideForm",
-    "binDesigner.cutouts.openSideForm.tunnel"
+    "binDesigner.cutouts.openSideForm.tunnel",
+    "supporters.credits.gag.cateringValue"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

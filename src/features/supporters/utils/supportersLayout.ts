@@ -1,72 +1,105 @@
-export interface SocketPosition {
-  index: number;
-  col: number;
-  row: number;
-  /** Scene-space position on the baseplate plane (centered on origin). */
+export interface ScenePoint {
   x: number;
   z: number;
 }
 
-export interface BaseplateLayout {
-  /** Bin-cluster grid (excludes the empty margin ring). */
-  columns: number;
-  rows: number;
-  /** Full plate grid (bin cluster + margin ring of empty sockets). */
+export interface PlateZone extends ScenePoint {
+  index: number;
+  /** Footprint in sockets. */
+  width: number;
+  depth: number;
+  /** Centre of the department strip printed in the socket row in front of the zone. */
+  label: ScenePoint;
+}
+
+export interface ZonedLayout {
+  zones: PlateZone[];
   plateColumns: number;
   plateRows: number;
   /** Plate footprint in scene units (1 unit = one 42mm socket). */
   width: number;
   depth: number;
-  /** One seat per supporter bin, row-major from the back-left. */
-  positions: SocketPosition[];
-  /** Every socket tile on the plate (occupied or not), for instancing. */
-  sockets: { x: number; z: number }[];
+  /** Every socket tile on the plate, occupied or not, for instancing. */
+  sockets: ScenePoint[];
+  /** Where the `slot`-th member of `zone` sits. */
+  seat: (zone: number, slot: number) => ScenePoint;
+  /** The empty socket the finale offers as "your bin here". */
+  vacant: ScenePoint;
 }
 
+const ZONE_GRID_COLUMNS = 3;
+const AISLE = 1;
+const MARGIN = 1;
+
 /**
- * Arrange `count` bins into a centered, slightly-wide grid of real sockets.
- * Bins sit on exact 42mm pitch (1 unit) like a physical plate; a one-socket
- * margin ring stays empty so the plate visibly has room for more supporters.
- * Pure and deterministic so it can be unit-tested; the scene consumes the
- * returned positions directly.
+ * A drawer-style plate: every zone is the same size block, sized to the
+ * largest department, laid out three across with a one-socket aisle between
+ * them and a margin ring outside. Each zone's label sits in the socket row in
+ * front of it, which is an aisle or the front margin, so a strip never covers
+ * a seat. Bins fill a zone back-left first, in roll order.
  */
-export function computeBaseplateLayout(count: number): BaseplateLayout {
-  const safeCount = Math.max(0, Math.floor(count));
-  const columns = Math.min(
-    Math.max(1, safeCount),
-    Math.max(1, Math.ceil(Math.sqrt(safeCount * 1.6)))
-  );
-  const rows = Math.max(1, safeCount === 0 ? 1 : Math.ceil(safeCount / columns));
+export function computeZonedLayout(zoneSizes: number[]): ZonedLayout {
+  const largest = Math.max(1, ...zoneSizes);
+  const cols = Math.max(3, Math.ceil(Math.sqrt(largest * 1.25)));
+  const rows = Math.max(2, Math.ceil(largest / cols));
+  const gridRows = Math.max(1, Math.ceil(zoneSizes.length / ZONE_GRID_COLUMNS));
 
-  const plateColumns = columns + 2;
-  const plateRows = rows + 2;
-
+  const plateColumns = 2 * MARGIN + ZONE_GRID_COLUMNS * cols + (ZONE_GRID_COLUMNS - 1) * AISLE;
+  const plateRows = 2 * MARGIN + gridRows * rows + (gridRows - 1) * AISLE;
   const socketX = (col: number): number => col - (plateColumns - 1) / 2;
   const socketZ = (row: number): number => row - (plateRows - 1) / 2;
 
-  const positions: SocketPosition[] = [];
-  for (let index = 0; index < safeCount; index++) {
-    const col = 1 + (index % columns);
-    const row = 1 + Math.floor(index / columns);
-    positions.push({ index, col, row, x: socketX(col), z: socketZ(row) });
+  const origin = (zone: number) => ({
+    col: MARGIN + (zone % ZONE_GRID_COLUMNS) * (cols + AISLE),
+    row: MARGIN + Math.floor(zone / ZONE_GRID_COLUMNS) * (rows + AISLE),
+  });
+
+  const zones: PlateZone[] = zoneSizes.map((_, index) => {
+    const { col, row } = origin(index);
+    const x = (socketX(col) + socketX(col + cols - 1)) / 2;
+    return {
+      index,
+      x,
+      z: (socketZ(row) + socketZ(row + rows - 1)) / 2,
+      width: cols,
+      depth: rows,
+      label: { x, z: socketZ(row + rows) },
+    };
+  });
+
+  const seat = (zone: number, slot: number): ScenePoint => {
+    const { col, row } = origin(zone);
+    return { x: socketX(col + (slot % cols)), z: socketZ(row + Math.floor(slot / cols)) };
+  };
+
+  const sockets: ScenePoint[] = [];
+  for (let row = 0; row < plateRows; row++) {
+    for (let col = 0; col < plateColumns; col++) sockets.push({ x: socketX(col), z: socketZ(row) });
   }
 
-  const sockets: { x: number; z: number }[] = [];
-  for (let row = 0; row < plateRows; row++) {
-    for (let col = 0; col < plateColumns; col++) {
-      sockets.push({ x: socketX(col), z: socketZ(row) });
+  const frontCentre = { x: 0, z: socketZ(plateRows - 1) };
+  let vacant: ScenePoint = { x: socketX(plateColumns - 1), z: socketZ(plateRows - 1) };
+  let best = Number.POSITIVE_INFINITY;
+  zoneSizes.forEach((size, zone) => {
+    for (let slot = size; slot < cols * rows; slot++) {
+      const p = seat(zone, slot);
+      const d = Math.hypot(p.x - frontCentre.x, p.z - frontCentre.z);
+      if (d < best) {
+        best = d;
+        vacant = p;
+      }
     }
-  }
+  });
 
   return {
-    columns,
-    rows,
+    zones,
     plateColumns,
     plateRows,
     width: plateColumns,
     depth: plateRows,
-    positions,
     sockets,
+    seat,
+    vacant,
   };
 }
 
@@ -79,31 +112,37 @@ export interface CameraFrame {
 }
 
 const CAMERA_FOV_DEG = 38;
-/** Rest direction: slightly right of front, elevated — a workbench glance. */
-const CAMERA_DIR: [number, number, number] = [0.22, 0.72, 1];
+/** Rest direction: slightly right of front and elevated, a workbench glance. */
+export const CAMERA_DIR: [number, number, number] = [0.22, 0.72, 1];
+/** Steeper, for a single zone: label tapes face up, so a higher angle is what makes names readable. */
+export const ZONE_CAMERA_DIR: [number, number, number] = [0.1, 1.25, 1];
 
 /**
- * Frame the plate for the current viewport so the whole grid fits with
- * breathing room in both landscape and portrait. Pure math (no three.js):
- * fits the plate's bounding radius against the vertical fov and the
- * aspect-derived horizontal fov, taking whichever needs more distance.
+ * Fit a `width` × `depth` footprint centred on `center` into a viewport of
+ * the given aspect, from the workbench angle. Fits the footprint's bounding
+ * radius against the vertical fov and the aspect-derived horizontal fov,
+ * whichever needs more distance. `tightness` below 1 trades breathing room
+ * for size, which a single zone wants and the whole plate does not.
  */
 export function computeCameraFrame(
-  layout: Pick<BaseplateLayout, 'width' | 'depth'>,
-  aspect: number
+  footprint: { width: number; depth: number },
+  aspect: number,
+  center: ScenePoint = { x: 0, z: 0 },
+  tightness = 1,
+  direction: [number, number, number] = CAMERA_DIR
 ): CameraFrame {
-  const radius = 0.5 * Math.hypot(layout.width, layout.depth) * 1.18;
+  const radius = 0.5 * Math.hypot(footprint.width, footprint.depth) * 1.18 * tightness;
   const vHalf = (CAMERA_FOV_DEG * Math.PI) / 360;
   const safeAspect = Math.max(0.3, aspect);
   const hHalf = Math.atan(Math.tan(vHalf) * safeAspect);
   const distance = Math.max(6, radius / Math.tan(vHalf), radius / Math.tan(hHalf));
 
-  const len = Math.hypot(...CAMERA_DIR);
-  const target: [number, number, number] = [0, -0.4, 0];
+  const len = Math.hypot(...direction);
+  const target: [number, number, number] = [center.x, -0.4, center.z];
   const position: [number, number, number] = [
-    target[0] + (CAMERA_DIR[0] / len) * distance,
-    target[1] + (CAMERA_DIR[1] / len) * distance,
-    target[2] + (CAMERA_DIR[2] / len) * distance,
+    target[0] + (direction[0] / len) * distance,
+    target[1] + (direction[1] / len) * distance,
+    target[2] + (direction[2] / len) * distance,
   ];
   return { position, target, distance };
 }

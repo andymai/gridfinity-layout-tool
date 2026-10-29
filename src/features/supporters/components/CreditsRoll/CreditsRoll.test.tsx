@@ -1,0 +1,116 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { CreditsRoll } from './CreditsRoll';
+import { CreditsClock } from '../../utils/creditsClock';
+import { buildCreditsPlan } from '../../utils/creditsPlan';
+import type { RollSchedule } from '../../utils/rollSchedule';
+import type { SupporterBin } from '../../utils/supportersData';
+
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
+
+const bins: SupporterBin[] = [
+  { id: 'a', name: 'Ada', department: 0, isNewest: false },
+  { id: 'b', name: 'Bo', department: 0, isNewest: true },
+  { id: 'q', name: 'Quinn', department: 2, message: 'Saved my garage', isNewest: false },
+  { id: 'x', name: null, isNewest: false },
+];
+const plan = buildCreditsPlan(bins);
+const binsById = new Map(bins.map((b) => [b.id, b]));
+const order = plan.items.map((i) => i.id);
+
+const props = (over: Partial<React.ComponentProps<typeof CreditsRoll>> = {}) => ({
+  plan,
+  binsById,
+  clock: new CreditsClock(0),
+  mode: 'roll' as const,
+  stacked: false,
+  baseSpeed: 100,
+  accent: '#f59e0b',
+  hidden: false,
+  focusedId: null,
+  onSchedule: vi.fn(),
+  onCredit: vi.fn(),
+  ...over,
+});
+
+beforeEach(() => {
+  vi.spyOn(HTMLElement.prototype, 'offsetTop', 'get').mockImplementation(function (
+    this: HTMLElement
+  ) {
+    const id = this.dataset.creditId;
+    return id ? order.indexOf(id) * 50 : 0;
+  });
+  vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(50);
+  vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(500);
+});
+
+afterEach(() => vi.restoreAllMocks());
+
+describe('CreditsRoll', () => {
+  it('rolls the departments in order, with the redacted one last', () => {
+    render(<CreditsRoll {...props()} />);
+    const headings = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
+    expect(headings).toEqual([
+      'supporters.credits.dept.oneMoreBin',
+      'supporters.credits.dept.magnetHoles',
+      'supporters.credits.dept.redacted',
+    ]);
+    expect(screen.getByText('supporters.credits.dept.magnetHolesNote')).toBeInTheDocument();
+  });
+
+  it('credits an anonymous supporter as a redaction bar that reads as Anonymous', () => {
+    render(<CreditsRoll {...props()} />);
+    expect(screen.getByRole('button', { name: 'supporters.anonymous' })).toBeInTheDocument();
+  });
+
+  it('puts a quote on its own line beside the name', () => {
+    render(<CreditsRoll {...props()} />);
+    const quote = screen.getByText('Saved my garage');
+    expect(quote.tagName).toBe('Q');
+    expect(screen.getByRole('button', { name: 'Quinn' })).toBeInTheDocument();
+  });
+
+  it('tags the newest supporter', () => {
+    render(<CreditsRoll {...props()} />);
+    expect(screen.getByRole('button', { name: 'Bo' })).toHaveTextContent('supporters.justJoined');
+  });
+
+  it('reports a click on a credit', () => {
+    const onCredit = vi.fn();
+    render(<CreditsRoll {...props({ onCredit })} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ada' }));
+    expect(onCredit).toHaveBeenCalledWith('a');
+  });
+
+  it('measures itself into a schedule that seats every bin', () => {
+    const onSchedule = vi.fn<(s: RollSchedule) => void>();
+    render(<CreditsRoll {...props({ onSchedule })} />);
+    const schedule = onSchedule.mock.lastCall?.[0];
+    expect([...(schedule?.seatTimes.keys() ?? [])].sort()).toEqual(['a', 'b', 'q', 'x']);
+  });
+
+  it('slides with the clock', () => {
+    const clock = new CreditsClock(0);
+    let schedule: RollSchedule | undefined;
+    const { container } = render(
+      <CreditsRoll {...props({ clock, onSchedule: (s) => (schedule = s) })} />
+    );
+    clock.setDuration(schedule?.timeline.duration ?? 0);
+    act(() => clock.seek(clock.duration));
+    const list = container.querySelector<HTMLElement>('.will-change-transform');
+    expect(list?.style.transform).toBe(
+      `translate3d(0, ${-(schedule?.timeline.endOffset ?? 0)}px, 0)`
+    );
+  });
+
+  it('stays put and skips the schedule when motion is reduced', () => {
+    const onSchedule = vi.fn();
+    const clock = new CreditsClock(100);
+    const { container } = render(<CreditsRoll {...props({ clock, mode: 'scroll', onSchedule })} />);
+    clock.seek(50);
+    expect(onSchedule).not.toHaveBeenCalled();
+    expect(container.querySelector<HTMLElement>('.will-change-transform')?.style.transform).toBe(
+      ''
+    );
+  });
+});

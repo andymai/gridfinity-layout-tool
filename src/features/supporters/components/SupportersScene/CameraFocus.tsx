@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Vector3 } from 'three';
-import type { SupporterBin } from '../../utils/supportersData';
-import type { BaseplateLayout } from '../../utils/supportersLayout';
+import type { ScenePoint } from '../../utils/supportersLayout';
 
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
@@ -25,13 +24,11 @@ interface OrbitControlsLike {
  * reduced motion. `nonce` lets the same bin be re-framed on a repeat search.
  */
 export function CameraFocus({
-  bins,
-  layout,
+  seatOf,
   request,
   reducedMotion,
 }: {
-  bins: SupporterBin[];
-  layout: BaseplateLayout;
+  seatOf: (id: string) => ScenePoint | undefined;
   request: FlyToRequest | null;
   reducedMotion: boolean;
 }) {
@@ -49,13 +46,12 @@ export function CameraFocus({
   useEffect(() => {
     if (!request || request.nonce === lastNonce.current) return;
 
-    const index = bins.findIndex((b) => b.id === request.id);
-    if (index < 0) {
-      // Nothing to fly to — consume the request so it doesn't re-fire.
+    const seat = seatOf(request.id);
+    if (!seat) {
+      // Nothing to fly to: consume the request so it doesn't re-fire.
       lastNonce.current = request.nonce;
       return;
     }
-    const seat = layout.positions[index];
 
     // Aim above the bin so it lands in the lower-centre of frame, clear of the
     // hero copy up top; a little extra distance keeps neighbours for context.
@@ -89,7 +85,7 @@ export function CameraFocus({
       t: 0,
     };
     lastNonce.current = request.nonce;
-  }, [request, bins, layout, camera, controls, reducedMotion]);
+  }, [request, seatOf, camera, controls, reducedMotion]);
 
   useFrame((_, delta) => {
     const a = anim.current;

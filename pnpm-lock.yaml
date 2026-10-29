@@ -66,6 +66,9 @@ importers:
       '@3dconnexion/3dconnexionjs':
         specifier: ^0.8.1
         version: 0.8.1
+      '@fontsource/press-start-2p':
+        specifier: 5.3.0
+        version: 5.3.0
       '@gridfinity/branded-types':
         specifier: workspace:*
         version: link:packages/branded-types
@@ -1240,6 +1243,9 @@ packages:
     peerDependenciesMeta:
       '@noble/hashes':
         optional: true
+
+  '@fontsource/press-start-2p@5.3.0':
+    resolution: {integrity: sha512-gxWFxdeDglPhEYSwEeooomcaFK8kSQYLQwVxfnOJeYRj2sPEHXjpVtFgEaYfqzOjuAJGrIcJOipu2KY5YkbyuQ==}
 
   '@gltf-transform/core@4.4.1':
     resolution: {integrity: sha512-ygWWFOrj1HnfvBimHF1yHTY4abbeBjn3CvljijaWKoRLMRV/a8pWYQu9rfMFQhfpT5kYZTD5Mp+dizAXPbiTDQ==}
@@ -7219,6 +7225,8 @@ snapshots:
       levn: 0.4.1
 
   '@exodus/bytes@1.16.0': {}
+
+  '@fontsource/press-start-2p@5.3.0': {}
 
   '@gltf-transform/core@4.4.1':
     dependencies:

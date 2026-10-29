@@ -1,18 +1,22 @@
 # Supporters
 
-Standalone `/supporters` thank-you page: an orbitable WebGL workshop scene
-(react-three-fiber) where each Ko-fi supporter is a **real generated Gridfinity
-bin** (stacking lip, base feet, back-edge label tab) seated on a real socketed
-baseplate, styled to match the app: THREE_COLORS backgrounds, the app-default
-#d4d8dc preview plastic, and the user's chosen accent. No amounts and no tiers
-are ever shown — every bin is equal and the order is shuffled per load. The
-single exception is the most recent supporter, whose bin gets a soft arrival
-glow.
+Standalone `/supporters` page, staged as the end credits of a game. A first
+visit opens on a victory title card, then supporters roll up a credits column
+beside a baseplate that starts empty: each supporter's bin drops into their
+department's zone as their name passes, and the roll ends on the full plate
+with one glowing empty socket ("The end? your bin here"). Return visits
+(remembered per browser) and reduced motion open on that finale.
 
-Each supporter also carries a **join date** and, for those shown publicly, a
-short **message**. Those drive the recency touches (a "joined this month" line,
-the newest-bin glow, a muted support-over-time sparkline) and a rotating quote
-near the CTA. A **find-your-bin** search flies the camera to your bin.
+Every supporter is a **real generated Gridfinity bin** (stacking lip, base feet,
+label tab) on a real socketed baseplate, styled like the app: THREE_COLORS
+backgrounds, the #d4d8dc preview plastic, the user's accent. No amounts and no
+tiers are ever shown, and credit order is shuffled per load. The only
+per-person distinction is the newest supporter's glow and "just joined" tag.
+
+Departments are joke Gridfinity departments ("Spaghetti Incident Response"),
+one of eight per named supporter, assigned by the server and stable across
+renames. Anonymous supporters roll last in the Department of [REDACTED], one
+redaction bar each. A public message gets its own credit line beside the name.
 
 ## Supporter benefits
 
@@ -54,6 +58,26 @@ totals) are backfilled once from a manually-exported Ko-fi transaction CSV via
 `pnpm seed-supporters --csv <Transaction_All.csv>` — see `api/README.md` for the
 ingest rules. `data/supporters.json` is only the offline fallback (see below).
 
+## The roll
+
+- **One clock drives everything.** `utils/creditsClock.ts` is the only playhead:
+  the DOM roll's offset, which bins are seated, and the camera's zone are all
+  read from it, so rewinding lifts bins back out with no extra code. Put new
+  motion on the clock, not on a timer of its own.
+- **Pacing comes from reading time.** `CreditsRoll` measures the rendered
+  credits (again on resize, and when the pixel font swaps in), and
+  `utils/rollSchedule.ts` turns those positions into a `utils/rollTimeline.ts`
+  table whose speed dips inside each quote's reading window. The untouched
+  length follows from the messages, not a target duration.
+- **The camera shares the screen** by shifting the projection
+  (`setViewOffset`) into the space the credits leave, never by resizing the
+  canvas. `supportersSceneCamera.tsx` owns it until the finale framing settles,
+  then enables OrbitControls; disabled controls never update, so they cannot
+  fight it.
+- **Input** (`hooks/useRollScrub.ts`): wheel and drag scrub by distance, arrows
+  hold to fast-forward or rewind, Space pauses, End skips. Any control that
+  takes its own wheel or keys needs `data-no-scrub`.
+
 ## Key files
 
 - `data/supporters.json` — the reconciled public list seeded into Redis once via
@@ -81,35 +105,33 @@ ingest rules. `data/supporters.json` is only the offline fallback (see below).
   tapes land exactly on the shelf. **Re-run the script instead of editing these
   by hand.**
 - `data/meshes.ts` — resolves the GLBs to bundled hashed URLs (`import.meta.glob` + `?url`).
-- `utils/supportersData.ts` — `buildSupporterBins(data?, rng?)` (shuffled bins,
-  flags the newest by `joinedAt`), `getSupporterCount(data?)`, `joinedThisMonth()`,
-  `supportHistogram()` (sparkline series), `FALLBACK_SUPPORTERS`,
-  `isSupportersData()` (the API response is untrusted input — narrow it).
-- `utils/supportersLayout.ts` — pure layout math: bin seats on exact 42mm pitch,
-  a one-socket empty margin ring, and `computeCameraFrame()` (aspect-aware
-  auto-framing that scales with supporter count).
-- `scene/palette.ts` — app-matched palette: `THREE_COLORS` backgrounds, uniform
-  #d4d8dc bins/plate, and per-theme accent hexes mirroring
-  `src/shell/styles/themes.css` (**keep in lockstep**). Accent follows
-  `settings.accentColor`.
-- `scene/labelTexture.ts` — renders a name as a printed label-tape strip
-  (`CanvasTexture`, **system font**, no font file, CSP-safe) for the tab shelf.
-- `components/SupportersScene/` — the R3F scene: all bins as ONE `InstancedMesh`,
-  instanced socket tiles, per-bin label-tape planes and edge overlays that
-  mirror instance transforms each frame, one merged `LineSegments` for all
-  plate-tile edges, constrained `OrbitControls` (drag-orbit only, no idle
-  auto-rotate), intro dolly, magnetic cursor bins, newest-bin glow, and baked
-  shadow. `CameraFocus.tsx` drives the find-your-bin fly-to (exports `FlyToRequest`).
-- `components/SupportersPage/` — DOM orchestrator: `<Canvas>`, hero count-up +
-  "joined this month", find-your-bin search, corner sparkline, rotating public
-  message + purpose line by the CTA, celebration burst, reduced-motion + mobile
-  gating, and the accessible fallback list.
-- `components/SupporterPanel/` — the benefits/self-service sheet. A panel over
-  the canvas rather than a section below it: the page is a fixed
-  `h-screen overflow-hidden` scene with absolutely-positioned overlays, so
-  there is no scroll region to put copy in without restructuring the wall.
-  Renders as a bottom sheet on mobile.
-- `api/supporterClient.ts` + `hooks/useSupporterStatus.ts` — the caller's own
+- `utils/supportersData.ts`: `buildSupporterBins(data?, rng?)` (shuffled bins,
+  flags the newest by `joinedAt`), `getSupporterCount(data?)`,
+  `joinedThisMonth()`, `FALLBACK_SUPPORTERS`, and `isSupportersData()` (the API
+  response is untrusted input, so narrow it).
+- `utils/creditsPlan.ts`: departments, the roll's items (message lines spread
+  between name blocks, gag cards), and each bin's zone and slot.
+- `utils/supportersLayout.ts`: `computeZonedLayout()` (equal zones three
+  across, one-socket aisles, a label row in front of each zone, the vacant
+  socket) and `computeCameraFrame()`.
+- `scene/palette.ts`: app-matched palette, with per-theme accent hexes mirroring
+  `src/shell/styles/themes.css` (**keep in lockstep**).
+- `scene/labelTexture.ts`: name tapes and department strips as `CanvasTexture`s
+  in the **system font** (no font file, CSP-safe).
+- `components/SupportersScene/`: the R3F scene, split by part (plate and
+  labels, bins, camera, vacant socket). All bins are ONE `InstancedMesh` whose
+  drop progress follows the clock; `CameraFocus.tsx` flies to a found bin in
+  the finale.
+- `components/CreditsRoll/`, `CreditsTitleCard/`, `CreditsControls/`,
+  `CreditsFinale/`: the DOM side of the credits. Headings use the self-hosted
+  Press Start 2P (`@fontsource`); names and quotes stay in the app font so
+  every script renders.
+- `components/SupportersPage/`: the orchestrator (phase, clock, find, panel,
+  scrims), plus `hooks/useProfileOverlay.ts`, which shows a profile save at
+  once although `/api/supporters` is edge-cached.
+- `components/SupporterPanel/`: the benefits and self-service sheet; a bottom
+  sheet on mobile.
+- `api/supporterClient.ts` + `hooks/useSupporterStatus.ts`: the caller's own
   record. Never throws: an anonymous visitor, an expired session, and a failed
   request all mean the same thing to the page (show the ask).
 - `constants.ts`: client mirrors of the server's name/message caps and
@@ -118,52 +140,46 @@ ingest rules. `data/supporters.json` is only the offline fallback (see below).
 
 ## Gotchas
 
+- **Departments are permanent.** Changing `SUPPORTER_DEPARTMENT_COUNT` or the
+  order of `DEPARTMENT_TITLE_KEYS` reassigns almost every supporter. The
+  bundled fallback carries no departments, so the client hashes names there.
 - **Bundle boundary:** the whole page is lazy-loaded by `App.tsx`, keeping
-  three/drei out of the main bundle. Keep heavy imports inside this slice.
-  The GLBs load via `useGLTF` with the **self-hosted** Draco decoder in
-  `public/draco/` (CSP forbids the default CDN) — same pattern as the
-  bin-designer example gallery.
-- **Scale architecture:** bin bodies are one draw call at any supporter count;
-  the camera auto-frames the growing plate per viewport aspect (portrait pulls
-  back further). Label tapes are one small plane per bin — fine to ~500.
-- **No real shadow maps.** `Canvas` runs without `shadows`; depth comes from
-  directional lighting + a baked `ShadowBlob`. Enabling shadow maps grows the
-  shared three chunk — avoid.
-- **The WebGL canvas is inert to assistive tech**, so `SupportersPage` also
-  renders an `sr-only` list of every supporter (named + "Anonymous"). Keep it
-  in sync with the scene.
+  three/drei and the pixel font out of the main bundle. The GLBs load via
+  `useGLTF` with the **self-hosted** Draco decoder in `public/draco/` (CSP
+  forbids the default CDN).
+- **Scale:** bin bodies are one draw call at any count, and zones grow with the
+  largest department. Label tapes are one small plane per bin, fine to ~500.
+- **No real shadow maps.** Depth comes from directional lighting and a baked
+  `ShadowBlob`; shadow maps grow the shared three chunk.
+- **The credits are the accessible list.** They are real text, kept in the
+  document (faded, not removed) after the roll, so screen readers always have
+  every supporter; redaction bars are labelled "Anonymous".
+- **jsdom lays nothing out**, so a roll measures as zero length. Tests that need
+  one stub `offsetTop`, `offsetHeight` and `clientHeight` (see `CreditsRoll`).
 - **Theme:** the scene follows `useResolvedTheme()` + `settings.accentColor`;
-  both theme variants and all six accents must stay valid.
-- **Disposal:** imperatively-created textures (tab tapes, the shadow blob) are
-  disposed on unmount — follow that pattern for any new
-  texture/geometry. `useGLTF` geometries are cached by drei; do not dispose them.
-- Anonymous supporters get the same bins with a localized "Anonymous" tape —
-  equal, not visually second-class.
+  both themes and all six accents must stay valid.
+- **Disposal:** imperatively-created textures (tapes, strips, the shadow blob)
+  are disposed on unmount; `useGLTF` geometries are cached by drei, so never
+  dispose those.
 - **Recency degrades quietly:** the fallback and legacy records carry no
-  `joinedAt`, so "joined this month", the sparkline, and the newest glow simply
-  don't render until real dated data loads (each has its own reveal threshold).
+  `joinedAt`, so "joined this month" and the newest glow simply don't render.
   Never assume a bin has a date.
-- **Messages are public-only and auto-published:** a message is stored only
-  alongside a public name (`is_public`), passed through `filterMessage` (length
-  cap + the shared content filter), and shown with no manual review. An opted-out
-  supporter surfaces neither name nor message. The self-service edit is a
-  **second door onto the same text** and re-runs the identical server-side
-  gauntlet — a validator that only lives on the client is not a validator.
-- **Find-your-bin can't find the anonymous:** opted-out supporters have no stored
-  name, so the search reports "can't be searched" for them — keep that empty state.
-  The same limit applies to the panel's "show me my bin": a bin is located by
-  NAME (the only handle the public list carries), so the affordance is absent for
-  an anonymous supporter rather than pointing at someone else's bin.
-- **The panel shows neither branch until the status read settles.** Guessing one
-  means a supporter on a slow connection reads "here is what supporters get" —
-  an ask aimed at someone who already paid — and watches it swap.
-- **Sign-in from here stashes a return path** (`saveAuthReturnPath('/supporters')`).
-  The OAuth callback always lands on `/`, and the boot-time restore lives in
-  `useCommunityLikeReturn` ABOVE its community feature-flag gate for exactly
-  this reason — /supporters has nothing to do with the showcase.
-- Ko-fi doors: the DOM CTA (`kofi_clicked`, `source: 'supporters_page'`) and the
-  panel's button (`source: 'supporters_panel'`).
-- After any generator change that should be reflected here, re-bake:
+- **Messages are public-only and auto-published:** stored only alongside a
+  public name (`is_public`), passed through `filterMessage` (length cap + the
+  shared content filter), shown with no manual review. The self-service edit is
+  a **second door onto the same text** and re-runs the identical server-side
+  gauntlet.
+- **Find-your-bin can't find the anonymous:** a bin is located by NAME, the only
+  handle the public list carries, so the search reports "can't be searched" and
+  the panel's "show me my bin" is absent for them.
+- **The panel shows neither branch until the status read settles**, so a
+  supporter on a slow connection never reads an ask aimed at the unpaid.
+- **Sign-in from here stashes a return path** (`saveAuthReturnPath('/supporters')`),
+  restored by `useCommunityLikeReturn` ABOVE its community feature-flag gate.
+- Ko-fi doors (`kofi_clicked` sources): `supporters_credits` (the quiet button
+  during the roll), `supporters_page` (the finale), `supporters_socket` (the
+  vacant socket), `supporters_panel` (the panel).
+- After any generator change that should show here, re-bake:
   `pnpm run gen:supporters-meshes`.
 
 ## Wiring (outside this slice)
