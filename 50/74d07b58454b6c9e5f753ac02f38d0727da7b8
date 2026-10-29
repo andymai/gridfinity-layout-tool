@@ -1,0 +1,217 @@
+src/features/supporters/components/SupportersScene/SupportersScene.tsx
+  s_792461bfbd0af2::t_19b07329c8533a 1,4-7,9-13,16-20,23-25,30-36,41-42,45-46,48-49,54-59,64,67,69-70,78-90,97-98,107-119,122,126,132,135,139-142,150-158,174
+  s_792461bfbd0af2::t_c80131f8b25f34 21-22
+src/features/supporters/components/SupportersScene/supportersSceneVacant.tsx
+  s_792461bfbd0af2::t_38e0947bba09cc 58
+  s_792461bfbd0af2::t_cc6fd6b2756a5a 1-57,59-93
+src/i18n/locales/nb.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 4453-4487
+src/features/supporters/utils/creditsSeen.ts
+  s_792461bfbd0af2::t_b433050ca5fec3 1-18
+src/features/supporters/components/SupportersPage/SupportersPage.test.tsx
+  s_792461bfbd0af2::t_b363b4583a8390 8,11,19-23,25-29,34-49,55-56,58-60,74,78-80,84-87,89-96,98-104,106-111,113-119,122-123,125,130,134,136-137,140-143,146,148-149,151,153-155,158,160-163,166-180
+  s_792461bfbd0af2::t_80b5b064fb0973 62-70,81-83,127-129
+src/features/supporters/components/SupportersScene/CameraFocus.tsx
+  s_792461bfbd0af2::t_b3d0f29153b78c 4,27,31,49-51,88
+src/features/supporters/hooks/useCreditsClock.test.ts
+  s_792461bfbd0af2::t_73f3f9551afe3a 1-82
+src/i18n/locales/ko.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 4453-4487
+src/i18n/locales/en.ts
+  s_792461bfbd0af2::t_756c6eccadfc23 54-88
+src/features/supporters/hooks/useProfileOverlay.test.ts
+  s_792461bfbd0af2::t_1f8a64fd84836c 1-59
+src/i18n/locales/sv.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 4453-4487
+src/features/supporters/README.md
+  s_792461bfbd0af2::t_668996e18b4a0f 3-19,61-80,108-134,143-145,147-158,160-163,165,167-182
+src/features/supporters/hooks/useProfileOverlay.ts
+  s_792461bfbd0af2::t_1f8a64fd84836c 1-62
+package.json
+  s_792461bfbd0af2::t_b593d7bd7a6a1a 119
+  s_792461bfbd0af2::t_2cd6681260c7ff 130
+src/features/supporters/components/CreditsControls/CreditsControls.tsx
+  s_792461bfbd0af2::t_4753a50264a247 1-48,50-86,91-134
+  s_792461bfbd0af2::t_38e0947bba09cc 87-90
+  s_792461bfbd0af2::t_2d41a54c662b7d 49
+  s_792461bfbd0af2::t_09a35a5fd01f81 135-139
+src/features/supporters/components/CreditsFinale/CreditsFinale.test.tsx
+  s_792461bfbd0af2::t_2b089245413132 1-14,16-57
+  s_792461bfbd0af2::t_462511103a10fc 15
+src/features/supporters/components/SupportersPage/SupportersPage.tsx
+  s_792461bfbd0af2::t_c80131f8b25f34 28,73-76,100,109,112,131
+  s_792461bfbd0af2::t_a30ef71f58d60b 178,180-181,235
+  s_792461bfbd0af2::t_462511103a10fc 241-246,253,422-424
+  s_792461bfbd0af2::t_3e391b22bbf1b0 240,328,349
+  s_792461bfbd0af2::t_ae421e1d9127ee 14-16,19-20,23-25,30-33,35,37-39,42-43,46-50,61,63-67,69,71-72,77-90,95,101-102,108,110-111,113-130,132-144,150,152-153,158-169,171-175,200-201,210-214,219-224,228-229,236-239,247-249,252,260,262,267-272,277-278,280,282-286,291,298-300,305-324,341,375-378,380,388-396,401-411,413-421,425-431
+  s_792461bfbd0af2::t_fb64e51a227126 40-41,145-149,151,154-157,170,217,365,442
+  s_792461bfbd0af2::t_2d27589348e66f 17-18,177,179,182-194,293,295,297,301-302
+  s_792461bfbd0af2::t_b894ddfb37a550 55
+  s_792461bfbd0af2::t_d7d2d577197c38 176
+src/features/supporters/utils/findSupporter.ts
+  s_792461bfbd0af2::t_04a8feca014469 1-27
+src/features/supporters/components/CreditsRoll/CreditsRoll.test.tsx
+  s_792461bfbd0af2::t_2d41a54c662b7d 58,109
+  s_792461bfbd0af2::t_94b30d1b795338 1-57,59-108,110-116
+src/i18n/locales/fr.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 4453-4487
+src/features/supporters/components/SupportersScene/supportersSceneBins.tsx
+  s_792461bfbd0af2::t_781a3821b53598 87,126-127,186-190
+  s_792461bfbd0af2::t_c80131f8b25f34 218-219,245
+  s_792461bfbd0af2::t_b0c4070cc7e336 1-9,11-86,88-125,128-185,191-217,220-244,246-281
+  s_792461bfbd0af2::t_2d41a54c662b7d 10
+  s_792461bfbd0af2::t_bd68a8cc1c13b7 282
+src/i18n/locales/cs.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 4453-4487
+src/features/supporters/components/SupportersScene/supportersSceneCamera.tsx
+  s_792461bfbd0af2::t_6b57b9c86738f9 8,14,16,83,85-86,105-106,111,120-121
+  s_792461bfbd0af2::t_a30ef71f58d60b 109
+  s_792461bfbd0af2::t_c80131f8b25f34 77-78,104
+  s_792461bfbd0af2::t_3e391b22bbf1b0 80-82,84
+  s_792461bfbd0af2::t_aa717adb6a14ea 1-7,9-13,15,17-76,79,87-103,107-108,110,112-119,122-150
+src/features/supporters/components/CreditsControls/index.ts
+  s_792461bfbd0af2::t_4753a50264a247 1
+src/i18n/locales/zh-CN.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 4453-4487
+src/features/supporters/components/CreditsFinale/CreditsFinale.tsx
+  s_792461bfbd0af2::t_3e391b22bbf1b0 40
+  s_792461bfbd0af2::t_462511103a10fc 12-13,29,39,41-42,85-88
+  s_792461bfbd0af2::t_38e0947bba09cc 73
+  s_792461bfbd0af2::t_2b089245413132 1-11,14-28,30-38,43-72,74-84,89-119
+  s_792461bfbd0af2::t_54315db3d404eb 120-124
+src/i18n/locales/de.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 4453-4487
+src/features/supporters/utils/creditsSeen.test.ts
+  s_792461bfbd0af2::t_b433050ca5fec3 1-4,6-16,18,21-24
+  s_792461bfbd0af2::t_8e99461d0ab533 5,17,19-20
+src/features/supporters/components/SupportersScene/supportersScenePlate.tsx
+  s_792461bfbd0af2::t_a77b90f5801565 1-171
+src/features/supporters/components/CreditsControls/CreditsControls.test.tsx
+  s_792461bfbd0af2::t_b894ddfb37a550 19
+  s_792461bfbd0af2::t_4753a50264a247 1-18,20-21,23-71
+  s_792461bfbd0af2::t_3cbba9f815b72e 22
+src/features/supporters/components/CreditsRoll/CreditsRoll.tsx
+  s_792461bfbd0af2::t_155342f9848693 1-6,12-17,19-70,77-117,120-142
+  s_792461bfbd0af2::t_6a98b4126a6a41 7-11,18,71-76
+  s_792461bfbd0af2::t_38e0947bba09cc 119
+  s_792461bfbd0af2::t_3e391b22bbf1b0 118
+src/features/supporters/components/CreditsFinale/index.ts
+  s_792461bfbd0af2::t_2b089245413132 1
+src/features/whats-new/latest.ts
+  s_792461bfbd0af2::t_d27f9e848f2d81 9
+src/features/supporters/components/SupportersPage/SupportersFlourishes.tsx
+  s_792461bfbd0af2::t_7f0cd6d8f8501c 1
+src/features/supporters/utils/findSupporter.test.ts
+  s_792461bfbd0af2::t_04a8feca014469 1-23
+  s_792461bfbd0af2::t_f4075b54f208fe 24-29
+src/features/supporters/hooks/useRollScrub.test.tsx
+  s_792461bfbd0af2::t_c6af5cd65a43af 104
+  s_792461bfbd0af2::t_87e1ec37784f68 1-103,105-118
+src/features/supporters/utils/supportersLayout.test.ts
+  s_792461bfbd0af2::t_269289473fab93 2,5-41,45-51,55-58,61-68,71-73,80-81,86-88,93,97-103
+  s_792461bfbd0af2::t_1d71530d89cf9f 104-108
+src/i18n/locales/pt-BR.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 4453-4487
+src/features/supporters/hooks/useCreditsClock.ts
+  s_792461bfbd0af2::t_ed5455e775391f 1-14,16,19-42
+  s_792461bfbd0af2::t_c80131f8b25f34 15,17-18
+src/features/supporters/utils/creditsClock.ts
+  s_792461bfbd0af2::t_2c63175886a9a0 72
+  s_792461bfbd0af2::t_c80131f8b25f34 20,24-27
+  s_792461bfbd0af2::t_0185ebae69a223 15,22-23,28-29
+  s_792461bfbd0af2::t_1a4a8d3568a875 1-14,16-19,21,30-71,73-78
+src/features/supporters/utils/rollSchedule.test.ts
+  s_792461bfbd0af2::t_938524693b824f 1-8,11-28,30-33,37-79
+  s_792461bfbd0af2::t_db1376e2cebde1 9-10,29,34-36
+src/features/supporters/utils/rollTimeline.test.ts
+  s_792461bfbd0af2::t_940565235f8fc6 1,3-23,25-64,83-84
+  s_792461bfbd0af2::t_ed2f69f1877cb2 24
+  s_792461bfbd0af2::t_87e351eb3d3c8a 2,65-82
+src/features/supporters/components/CreditsTitleCard/CreditsTitleCard.test.tsx
+  s_792461bfbd0af2::t_5ca99e52c5ac5c 1-48
+src/features/supporters/utils/rollSchedule.ts
+  s_792461bfbd0af2::t_92bc4573299ed3 1,8-113
+  s_792461bfbd0af2::t_6a98b4126a6a41 2-7
+src/i18n/locales/es.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 4453-4487
+src/i18n/locales/ja.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 4453-4487
+src/features/supporters/utils/supportersLayout.ts
+  s_792461bfbd0af2::t_fe98ceeccc676c 115
+  s_792461bfbd0af2::t_6a98b4126a6a41 117-118,131-132,140,143-145
+  s_792461bfbd0af2::t_367c21731ac94d 1,6-16,22-27,30-33,35-39,41-45,47-48,52-73,75,77,80-93,95,101-102,116,121-125,128-130,134,141
+src/features/supporters/hooks/useRollScrub.ts
+  s_792461bfbd0af2::t_2d41a54c662b7d 75
+  s_792461bfbd0af2::t_fc2386b6886e4a 62,83,87-90,117,126
+  s_792461bfbd0af2::t_93a7845834212d 1-61,63-74,76-82,84-86,91-116,118-125,127-132
+src/features/supporters/components/CreditsRoll/index.ts
+  s_792461bfbd0af2::t_6fdfb3341d3102 1-2
+src/features/supporters/components/CreditsRoll/creditsRollItems.tsx
+  s_792461bfbd0af2::t_2d41a54c662b7d 110
+  s_792461bfbd0af2::t_8722328eccbd85 12
+  s_792461bfbd0af2::t_53d4103ab3e741 1-11,13-109,111-115,117-157
+  s_792461bfbd0af2::t_38e0947bba09cc 116
+src/features/whats-new/entries.ts
+  s_792461bfbd0af2::t_d27f9e848f2d81 17-24
+  s_792461bfbd0af2::t_a863d762956997 16
+src/features/supporters/utils/creditsPlan.test.ts
+  s_792461bfbd0af2::t_d7908336050bc1 82
+  s_792461bfbd0af2::t_4c69094710ac44 1-81,83-105
+src/features/supporters/components/SupportersScene/supportersSceneStage.ts
+  s_792461bfbd0af2::t_c80131f8b25f34 1-11
+src/features/supporters/utils/creditsPlan.ts
+  s_792461bfbd0af2::t_a0de442d32d20b 128-129
+  s_792461bfbd0af2::t_3d3e5efb57d681 1-127,130-147
+src/features/supporters/components/SupportersPage/SupportersFlourishes.test.tsx
+  s_792461bfbd0af2::t_dadd499752f21c 3
+  s_792461bfbd0af2::t_f7a1916f188ff7 2
+src/features/supporters/components/SupportersScene/supportersSceneGeometry.ts
+  s_792461bfbd0af2::t_f02746881ba97a 1-34
+src/i18n/locales/it.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 4453-4487
+src/features/supporters/utils/rollTimeline.ts
+  s_792461bfbd0af2::t_9254d99d20bc6a 1-99
+  s_792461bfbd0af2::t_87e351eb3d3c8a 100-119
+scripts/i18n-values-allowlist.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 350-351
+src/i18n/locales/pl.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 4453-4487
+src/features/supporters/utils/creditsClock.test.ts
+  s_792461bfbd0af2::t_974c48bda7b8a4 1-60,68-74
+  s_792461bfbd0af2::t_1ef2f61d6a5feb 61-67
+src/features/supporters/scene/labelTexture.ts
+  s_792461bfbd0af2::t_8786cf1cafb606 69-114
+  s_792461bfbd0af2::t_caec3086dc9ebf 115
+src/features/supporters/components/CreditsTitleCard/index.ts
+  s_792461bfbd0af2::t_550601f21bfc97 1
+src/i18n/locales/uk.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 4453-4487
+src/i18n/locales/ka.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 61-95
+src/features/supporters/components/CreditsTitleCard/CreditsTitleCard.tsx
+  s_792461bfbd0af2::t_550601f21bfc97 1-36,38-43,47-54,58-83,86,91-115
+  s_792461bfbd0af2::t_ab6ce83b0be24e 37,44-46,55-57,85,87-88
+  s_792461bfbd0af2::t_b894ddfb37a550 84
+  s_792461bfbd0af2::t_2d41a54c662b7d 89-90
+  s_792461bfbd0af2::t_542a7d360ee0b7 116
+src/i18n/locales/nl.json
+  s_792461bfbd0af2::t_63a90a2f7d2387 4453-4487
+pnpm-lock.yaml
+  s_792461bfbd0af2::t_7746951f1926fb 69-71,1247-1249,7229-7230
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5074d07b58454b6c9e5f753ac02f38d0727da7b8",
+  "prompts": {},
+  "sessions": {
+    "s_792461bfbd0af2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "971efe59-75e6-421b-ad6f-2f7f27706660",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
