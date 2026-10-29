@@ -82,7 +82,7 @@ export function CreditsControls({
     <div
       {...{ [NO_SCRUB_ATTR]: '' }}
       className={`absolute z-30 flex flex-col gap-2 ${
-        stacked ? 'inset-x-0 bottom-4 items-center' : 'bottom-6 right-6 items-end'
+        stacked ? 'inset-x-0 bottom-4 items-center px-4' : 'bottom-6 right-6 items-end'
       }`}
     >
       {showHint && (
@@ -93,7 +93,11 @@ export function CreditsControls({
           {t('supporters.credits.scrubHint')}
         </p>
       )}
-      <div className="flex items-center gap-1 rounded-lg bg-black/25 p-1 backdrop-blur-sm">
+      <div
+        className={`flex items-center gap-1 rounded-lg bg-black/25 p-1 backdrop-blur-sm ${
+          stacked ? 'max-w-full flex-wrap justify-center' : ''
+        }`}
+      >
         <HoldButton
           clock={clock}
           direction={-1}
@@ -126,7 +130,7 @@ export function CreditsControls({
         >
           {t('supporters.credits.skip')}
         </Button>
-        <span aria-hidden="true" className="mx-1 h-5 w-px bg-current opacity-20" />
+        {!stacked && <span aria-hidden="true" className="mx-1 h-5 w-px bg-current opacity-20" />}
         <Button
           variant="ghost"
           onClick={onKofi}
