@@ -77,6 +77,32 @@ describe('useProfileOverlay', () => {
     });
   });
 
+  it('finds the caller among namesakes by join date', async () => {
+    const twins: SupportersData = {
+      supporters: [
+        { name: 'Max', joinedAt: '2026-07-01T00:00:00Z', department: 2 },
+        { name: 'Max', joinedAt: '2026-08-01T00:00:00Z', department: 5 },
+      ],
+    };
+    const joinedAt = '2026-08-01T00:00:00Z';
+    const { result, rerender } = renderHook(({ s }) => useProfileOverlay(twins, s), {
+      initialProps: { s: statusHook('Max', { joinedAt }) },
+    });
+    await act(() => result.current.saveProfile({ message: 'mine' }));
+    rerender({ s: statusHook('Max', { joinedAt, message: 'mine', department: 5 }) });
+    expect(result.current.effective.supporters.map((r) => r.message)).toEqual([undefined, 'mine']);
+  });
+
+  it('leaves namesakes alone when nothing tells them apart', async () => {
+    const twins: SupportersData = { supporters: [{ name: 'Max' }, { name: 'Max' }] };
+    const { result, rerender } = renderHook(({ s }) => useProfileOverlay(twins, s), {
+      initialProps: { s: statusHook('Max') },
+    });
+    await act(() => result.current.saveProfile({ message: 'mine' }));
+    rerender({ s: statusHook('Max', { message: 'mine' }) });
+    expect(result.current.effective).toBe(twins);
+  });
+
   it('keeps tracking the original name across repeated renames', async () => {
     const { result, rerender } = renderHook(({ s }) => useProfileOverlay(list, s), {
       initialProps: { s: statusHook('Jo') },

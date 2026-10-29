@@ -40,13 +40,18 @@ export function useProfileOverlay(
     const status = supporter.status;
     if (!edit || !status.supporter) return supporters;
     const records = supporters.supporters.slice();
-    const idx =
-      edit.prevName !== null
-        ? records.findIndex((r) => r.name === edit.prevName)
-        : records.findIndex((r) => r.name === null);
+    // Two people can share a name, so the join date narrows the match. A named
+    // record that is still ambiguous is left alone rather than guessed at;
+    // anonymous records are interchangeable on the page, so any one will do.
+    let candidates = records.flatMap((r, i) => (r.name === edit.prevName ? [i] : []));
+    if (status.joinedAt) {
+      const dated = candidates.filter((i) => records[i].joinedAt === status.joinedAt);
+      if (dated.length > 0) candidates = dated;
+    }
+    const idx = candidates.at(0);
     // Edits an existing record, never adds one: a push would double the
     // caller's bin while the headline count reads the raw list.
-    if (idx < 0) return supporters;
+    if (idx === undefined || (edit.prevName !== null && candidates.length > 1)) return supporters;
     const current = records[idx];
     records[idx] =
       status.name === null
