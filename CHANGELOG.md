@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.523.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.523.2...gridfinity-layout-tool-v4.523.3) (2026-10-29)
+
+
+### Bug Fixes
+
+* **baseplate:** flatten stacked plate ridges so the seam prints with Classic walls ([#4724](https://github.com/andymai/gridfinity-layout-tool/issues/4724)) ([36592b9](https://github.com/andymai/gridfinity-layout-tool/commit/36592b9645e66ea905201c65b87eb93d4e06b8c4))
+* **deps:** remove deepmerge from the tree to clear its prototype-poisoning advisory ([#4725](https://github.com/andymai/gridfinity-layout-tool/issues/4725)) ([3499b5a](https://github.com/andymai/gridfinity-layout-tool/commit/3499b5a509f1dac7381fd520ca910eca78d2f21c))
+
 ## [4.523.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.523.1...gridfinity-layout-tool-v4.523.2) (2026-10-26)
 
 
