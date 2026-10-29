@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.525.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.524.1...gridfinity-layout-tool-v4.525.0) (2026-10-29)
+
+
+### Features
+
+* **supporters:** backfill missing messages and join dates from a Ko-fi export ([#4736](https://github.com/andymai/gridfinity-layout-tool/issues/4736)) ([ac384d7](https://github.com/andymai/gridfinity-layout-tool/commit/ac384d7a41d213d5c84cccfc757ab88deef0e84c))
+* **supporters:** tidy the credits roll and give Somebody a department ([#4737](https://github.com/andymai/gridfinity-layout-tool/issues/4737)) ([23d0eac](https://github.com/andymai/gridfinity-layout-tool/commit/23d0eac983554c8fa18599271970bb9ef9b6e880))
+
+
+### Bug Fixes
+
+* **supporters:** merge a repeat Ko-fi tip into the supporter's record ([#4735](https://github.com/andymai/gridfinity-layout-tool/issues/4735)) ([6a6fcd6](https://github.com/andymai/gridfinity-layout-tool/commit/6a6fcd6bdd35289fcdaa4030dcfa0faa711df585))
+* **supporters:** return the camera after a found supporter is let go ([#4738](https://github.com/andymai/gridfinity-layout-tool/issues/4738)) ([c6d77f7](https://github.com/andymai/gridfinity-layout-tool/commit/c6d77f7b3f26eea80ad8eb9361706c67eb94db77))
+
 ## [4.524.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.524.0...gridfinity-layout-tool-v4.524.1) (2026-10-29)
 
 
