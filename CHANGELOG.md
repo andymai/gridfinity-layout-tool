@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.524.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.524.0...gridfinity-layout-tool-v4.524.1) (2026-10-29)
+
+
+### Bug Fixes
+
+* **deploy:** install a fresh node_modules on Vercel so new patches apply ([#4733](https://github.com/andymai/gridfinity-layout-tool/issues/4733)) ([6294fea](https://github.com/andymai/gridfinity-layout-tool/commit/6294fea66946ec4dd7162bf0e337f91223ae4008))
+
 ## [4.524.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.523.3...gridfinity-layout-tool-v4.524.0) (2026-10-29)
 
 
