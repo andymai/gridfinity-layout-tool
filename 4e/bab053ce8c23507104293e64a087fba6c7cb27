@@ -1,0 +1,21 @@
+src/features/supporters/utils/rollSchedule.test.ts
+  s_ddf50d3700ef87::t_2b1d6463b3da76 69-92
+src/features/supporters/utils/rollSchedule.ts
+  s_ddf50d3700ef87::t_5070d6381a740c 18-19,101,103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4ebab053ce8c23507104293e64a087fba6c7cb27",
+  "prompts": {},
+  "sessions": {
+    "s_ddf50d3700ef87": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7a956845-573e-4040-bf05-8a9647067fef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
