@@ -29,10 +29,7 @@ describe('useAchievements', () => {
   it('keeps awards another tab saved meanwhile', () => {
     const { result } = renderHook(() => useAchievements());
     act(() => result.current.unlock('speedrunner'));
-    localStorage.setItem(
-      'gridfinity-supporters-achievements',
-      JSON.stringify(['speedrunner', 'postCredits'])
-    );
+    localStorage.setItem('gridfinity-supporters-achievement-postCredits', '1');
     act(() => result.current.unlock('poked10'));
     expect([...readAchievements()].sort()).toEqual(['poked10', 'postCredits', 'speedrunner']);
   });

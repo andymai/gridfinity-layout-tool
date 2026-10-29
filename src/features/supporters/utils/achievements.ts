@@ -16,24 +16,21 @@ export const ACHIEVEMENT_TITLE_KEYS: Record<AchievementId, string> = {
   postCredits: 'supporters.achievements.postCredits',
 };
 
-const STORAGE_KEY = 'gridfinity-supporters-achievements';
+/** One key per award, so two tabs earning different ones never write the same entry. */
+const keyFor = (id: AchievementId) => `gridfinity-supporters-achievement-${id}`;
 
-/** A per-browser keepsake, so blocked or garbled storage just means none earned yet. */
+/** A per-browser keepsake, so blocked storage just means none earned yet. */
 export function readAchievements(): Set<AchievementId> {
   try {
-    const parsed: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
-    if (!Array.isArray(parsed)) return new Set();
-    return new Set(
-      parsed.filter((id): id is AchievementId => ACHIEVEMENT_IDS.includes(id as AchievementId))
-    );
+    return new Set(ACHIEVEMENT_IDS.filter((id) => localStorage.getItem(keyFor(id)) === '1'));
   } catch {
     return new Set();
   }
 }
 
-export function saveAchievements(unlocked: Set<AchievementId>): void {
+export function saveAchievement(id: AchievementId): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...unlocked]));
+    localStorage.setItem(keyFor(id), '1');
   } catch {
     // Blocked storage: the toast still shows, it just shows again next visit.
   }

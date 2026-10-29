@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { readAchievements, saveAchievements, type AchievementId } from '../utils/achievements';
+import { readAchievements, saveAchievement, type AchievementId } from '../utils/achievements';
 
 const TOAST_MS = 4200;
 
@@ -13,16 +13,12 @@ export function useAchievements(): Achievements {
   const handled = useRef(new Set<AchievementId>());
   const [queue, setQueue] = useState<AchievementId[]>([]);
 
-  // Storage is re-read on every unlock and merged, so two open tabs can't
-  // overwrite each other's awards; `handled` keeps a session with blocked
-  // storage from announcing the same one twice.
+  // `handled` keeps a session with blocked storage from announcing one twice.
   const unlock = useCallback((id: AchievementId) => {
     if (handled.current.has(id)) return;
     handled.current.add(id);
-    const saved = readAchievements();
-    if (saved.has(id)) return;
-    saved.add(id);
-    saveAchievements(saved);
+    if (readAchievements().has(id)) return;
+    saveAchievement(id);
     setQueue((q) => [...q, id]);
   }, []);
 

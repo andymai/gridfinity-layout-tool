@@ -134,6 +134,8 @@ export function BinInstances({
       progressRef.current = new Float32Array(bins.length);
     if (pokedAt.current.length !== bins.length)
       pokedAt.current = new Float64Array(bins.length).fill(-1);
+    // Reduced motion renders on demand, so a hop in flight would freeze mid-spin.
+    if (reducedMotion) pokedAt.current.fill(-1);
     const progress = progressRef.current;
     elapsed.current += dt;
     finaleElapsed.current = phase === 'finale' ? finaleElapsed.current + dt : 0;

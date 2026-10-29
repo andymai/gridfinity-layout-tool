@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { readAchievements, saveAchievements } from './achievements';
+import { readAchievements, saveAchievement } from './achievements';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -8,23 +8,23 @@ afterEach(() => {
 
 describe('achievements storage', () => {
   it('keeps what was earned', () => {
-    saveAchievements(new Set(['poked10', 'satThrough']));
+    saveAchievement('poked10');
+    saveAchievement('satThrough');
     expect([...readAchievements()].sort()).toEqual(['poked10', 'satThrough']);
   });
 
-  it('drops anything it does not recognise', () => {
-    localStorage.setItem('gridfinity-supporters-achievements', '["poked10","hacker",3]');
-    expect([...readAchievements()]).toEqual(['poked10']);
+  it('ignores anything but its own keys and values', () => {
+    localStorage.setItem('gridfinity-supporters-achievement-hacker', '1');
+    localStorage.setItem('gridfinity-supporters-achievement-poked10', 'yes');
+    expect(readAchievements().size).toBe(0);
   });
 
-  it('treats garbled or blocked storage as nothing earned', () => {
-    localStorage.setItem('gridfinity-supporters-achievements', '{not json');
-    expect(readAchievements().size).toBe(0);
+  it('treats blocked storage as nothing earned', () => {
     const blocked = () => {
       throw new Error('blocked');
     };
     vi.stubGlobal('localStorage', { getItem: blocked, setItem: blocked });
     expect(readAchievements().size).toBe(0);
-    expect(() => saveAchievements(new Set(['poked10']))).not.toThrow();
+    expect(() => saveAchievement('poked10')).not.toThrow();
   });
 });
