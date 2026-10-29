@@ -1,0 +1,116 @@
+src/features/supporters/components/SupportersScene/SupportersScene.tsx
+  s_792461bfbd0af2::t_9d9cbcc4e772be 48,75,185-188
+src/i18n/locales/en.ts
+  s_792461bfbd0af2::t_f8dfaa253e7bac 89-90
+src/i18n/locales/cs.json
+  s_792461bfbd0af2::t_f8dfaa253e7bac 4488-4489
+src/i18n/locales/it.json
+  s_792461bfbd0af2::t_f8dfaa253e7bac 4488-4489
+src/features/supporters/components/SupportersPage/SupportersPage.test.tsx
+  s_792461bfbd0af2::t_11c8f905cebb32 157-166
+src/features/supporters/audio/pulseWave.test.ts
+  s_792461bfbd0af2::t_ab68f09bc50b11 1-31
+src/features/supporters/audio/chipSynth.ts
+  s_792461bfbd0af2::t_e64fa1c7642360 175-176
+  s_792461bfbd0af2::t_9ec50874347080 25,91-98,118-121,133,210-216
+  s_792461bfbd0af2::t_c63c44c1cf8b37 1-24,26-90,99-100,103-105,107-109,111-117,122-132,134-149,151-174,177-209,217-228
+  s_792461bfbd0af2::t_afb11476c98b04 101-102,106,110,150
+src/features/supporters/audio/creditsSoundtrack.ts
+  s_792461bfbd0af2::t_b26a7b5230abe9 1-102
+src/i18n/locales/ja.json
+  s_792461bfbd0af2::t_f8dfaa253e7bac 4488-4489
+src/features/supporters/audio/creditsSoundtrack.test.ts
+  s_792461bfbd0af2::t_b26a7b5230abe9 1-39
+src/features/supporters/components/SoundToggle/SoundToggle.test.tsx
+  s_792461bfbd0af2::t_f8dfaa253e7bac 1-24
+src/features/supporters/components/CreditsControls/CreditsControls.tsx
+  s_792461bfbd0af2::t_f8dfaa253e7bac 5,15-16,73-74,119
+src/i18n/locales/sv.json
+  s_792461bfbd0af2::t_f8dfaa253e7bac 4488-4489
+src/i18n/locales/uk.json
+  s_792461bfbd0af2::t_f8dfaa253e7bac 4488-4489
+src/i18n/locales/de.json
+  s_792461bfbd0af2::t_f8dfaa253e7bac 4488-4489
+src/features/supporters/components/CreditsControls/CreditsControls.test.tsx
+  s_792461bfbd0af2::t_f8dfaa253e7bac 15-16
+src/i18n/locales/nl.json
+  s_792461bfbd0af2::t_f8dfaa253e7bac 4488-4489
+src/features/supporters/utils/soundPreference.ts
+  s_792461bfbd0af2::t_b26a7b5230abe9 1-18
+src/features/supporters/audio/pulseWave.ts
+  s_792461bfbd0af2::t_ab68f09bc50b11 1-17
+src/features/supporters/utils/soundPreference.test.ts
+  s_792461bfbd0af2::t_b26a7b5230abe9 1-26
+src/features/supporters/components/SoundToggle/SoundToggle.tsx
+  s_792461bfbd0af2::t_f8dfaa253e7bac 1-34
+src/features/supporters/components/SoundToggle/index.ts
+  s_792461bfbd0af2::t_f8dfaa253e7bac 1
+src/i18n/locales/fr.json
+  s_792461bfbd0af2::t_f8dfaa253e7bac 4488-4489
+src/i18n/locales/ka.json
+  s_792461bfbd0af2::t_f8dfaa253e7bac 96-97
+src/features/supporters/components/SupportersPage/SupportersPage.tsx
+  s_792461bfbd0af2::t_9d9cbcc4e772be 34-35,154-162,194,197,304,382-383,402-403
+scripts/doc-budget.json
+  s_792461bfbd0af2::t_daa8994665bd99 73
+src/features/supporters/hooks/useCreditsSoundtrack.test.ts
+  s_792461bfbd0af2::t_9920d8b3ec3893 1-83
+src/i18n/locales/nb.json
+  s_792461bfbd0af2::t_f8dfaa253e7bac 4488-4489
+src/i18n/locales/es.json
+  s_792461bfbd0af2::t_f8dfaa253e7bac 4488-4489
+src/features/supporters/audio/creditsTune.test.ts
+  s_792461bfbd0af2::t_d6667d9c617a72 1-49
+src/i18n/locales/ko.json
+  s_792461bfbd0af2::t_f8dfaa253e7bac 4488-4489
+src/features/supporters/audio/creditsTune.ts
+  s_792461bfbd0af2::t_cdc4826cff9e05 1-49,51-59,61-65,67-72,74-77,79-84,86-90,92-97,99-102,104-109,111-115,117-122,124-127,129-134,136-140,142-147,149-152,154-172,174-206
+  s_792461bfbd0af2::t_51e6518b7c2f9c 50
+  s_792461bfbd0af2::t_c06010c8640e70 60
+  s_792461bfbd0af2::t_fceec2d64fcefb 66
+  s_792461bfbd0af2::t_62a114e8d91165 73
+  s_792461bfbd0af2::t_727d394e61ec6d 78
+  s_792461bfbd0af2::t_3faa1417443c8b 85
+  s_792461bfbd0af2::t_f4d37dad379c0d 91
+  s_792461bfbd0af2::t_63da8c5fadb918 98
+  s_792461bfbd0af2::t_8974b0d9694d60 103
+  s_792461bfbd0af2::t_0595ac0d266bb0 110
+  s_792461bfbd0af2::t_31351d6539fe86 116
+  s_792461bfbd0af2::t_4ff21eece38755 123
+  s_792461bfbd0af2::t_5a8fd36930ac3f 128
+  s_792461bfbd0af2::t_c81a4c60e3f040 135
+  s_792461bfbd0af2::t_0f2fa5fd008b88 141
+  s_792461bfbd0af2::t_9117faa2aaee10 148
+  s_792461bfbd0af2::t_b24873523bd145 153
+  s_792461bfbd0af2::t_8bce16e341a281 173
+src/features/supporters/README.md
+  s_792461bfbd0af2::t_11c8f905cebb32 86-89
+src/i18n/locales/pt-BR.json
+  s_792461bfbd0af2::t_f8dfaa253e7bac 4488-4489
+src/features/supporters/components/CreditsFinale/CreditsFinale.tsx
+  s_792461bfbd0af2::t_f8dfaa253e7bac 4,21-22,37-38,125
+src/i18n/locales/pl.json
+  s_792461bfbd0af2::t_f8dfaa253e7bac 4488-4489
+src/features/supporters/components/CreditsFinale/CreditsFinale.test.tsx
+  s_792461bfbd0af2::t_f8dfaa253e7bac 21-22
+src/features/supporters/hooks/useCreditsSoundtrack.ts
+  s_792461bfbd0af2::t_9920d8b3ec3893 1-76
+src/i18n/locales/zh-CN.json
+  s_792461bfbd0af2::t_f8dfaa253e7bac 4488-4489
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a0c286dc6ee8ab6997ca84e9bcf9117ea4381dab",
+  "prompts": {},
+  "sessions": {
+    "s_792461bfbd0af2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "971efe59-75e6-421b-ad6f-2f7f27706660",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
