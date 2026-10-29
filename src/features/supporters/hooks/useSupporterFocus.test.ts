@@ -92,6 +92,55 @@ describe('useSupporterFocus', () => {
     expect(result.current.focusedId).toBeNull();
   });
 
+  describe('letting go of a found supporter', () => {
+    it('resumes the roll when the search is cleared mid-roll', () => {
+      const { result, clock } = setup();
+      act(() => result.current.setFindQuery('Grace'));
+      act(() => result.current.findText());
+      expect(clock.isPaused).toBe(true);
+      act(() => result.current.setFindQuery(''));
+      expect(result.current.focusedId).toBeNull();
+      expect(result.current.findStatus).toBeNull();
+      expect(clock.isPaused).toBe(false);
+    });
+
+    it('sends the camera home when the search is cleared in the finale', () => {
+      const { result } = setup({ rolling: false });
+      act(() => result.current.setFindQuery('Ada'));
+      act(() => result.current.findText());
+      const before = result.current.homeRequest;
+      act(() => result.current.setFindQuery(''));
+      expect(result.current.focusedId).toBeNull();
+      expect(result.current.flyTo).toBeNull();
+      expect(result.current.homeRequest).toBe(before + 1);
+    });
+
+    it('lets go the same way on a click into empty space', () => {
+      const { result, clock } = setup();
+      act(() => result.current.onCredit('a'));
+      act(() => result.current.release());
+      expect(result.current.focusedId).toBeNull();
+      expect(clock.isPaused).toBe(false);
+    });
+
+    it('keeps a pause the visitor chose themselves', () => {
+      const { result, clock } = setup();
+      act(() => result.current.togglePause());
+      act(() => result.current.selectBin('a'));
+      act(() => result.current.release());
+      expect(result.current.focusedId).toBeNull();
+      expect(clock.isPaused).toBe(true);
+    });
+
+    it('leaves a camera that never flew where the visitor put it', () => {
+      const { result } = setup({ rolling: false });
+      act(() => result.current.selectBin('a'));
+      const before = result.current.homeRequest;
+      act(() => result.current.release());
+      expect(result.current.homeRequest).toBe(before);
+    });
+  });
+
   it('lands a shared link on its supporter, reopening the roll', () => {
     const { result, clock, openRoll } = setup({ creditName: 'Grace' });
     act(() => result.current.landCreditLink(schedule));

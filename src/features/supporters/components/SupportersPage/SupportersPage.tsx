@@ -282,7 +282,7 @@ export function SupportersPage() {
         frameloop={reducedMotion ? 'demand' : 'always'}
         camera={{ fov: 38, near: 0.1, far: 220, position: [2, 10, 14] }}
         gl={{ antialias: true, alpha: false }}
-        onPointerMissed={() => setFocusedId(null)}
+        onPointerMissed={focus.release}
       >
         <Suspense fallback={null}>
           <SupportersScene
@@ -306,6 +306,7 @@ export function SupportersPage() {
             anonymousLabel={t('supporters.anonymous')}
             departmentLabels={departmentLabels}
             flyTo={focus.flyTo}
+            homeRequest={focus.homeRequest}
             endTagRef={endTagRef}
             onVacantSelect={() => {
               trackEvent('kofi_clicked', { source: 'supporters_socket' });

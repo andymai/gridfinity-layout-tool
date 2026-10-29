@@ -33,6 +33,8 @@ interface CreditsCameraProps {
   stage: StageFrame;
   /** A paused, clicked credit: frame its bin instead of the department. */
   focusSeat: ScenePoint | null;
+  /** A change takes the finale camera back from orbit controls and re-frames the plate. */
+  homeRequest: number;
   reducedMotion: boolean;
   onOrbitReady: (ready: boolean) => void;
 }
@@ -52,12 +54,14 @@ export function CreditsCamera({
   phase,
   stage,
   focusSeat,
+  homeRequest,
   reducedMotion,
   onOrbitReady,
 }: CreditsCameraProps) {
   const camera = useThree((s) => s.camera) as PerspectiveCamera;
   const size = useThree((s) => s.size);
   const controls = useThree((s) => s.controls) as unknown as OrbitControlsLike | null;
+  const invalidate = useThree((s) => s.invalidate);
   const look = useRef<Vector3 | null>(null);
   const shift = useRef({ x: 0, y: 0 });
   const handedOff = useRef(false);
@@ -69,6 +73,19 @@ export function CreditsCamera({
       onOrbitReadyRef.current(false);
     }
   }, [phase, onOrbitReadyRef]);
+
+  const homeSeen = useRef(homeRequest);
+  useEffect(() => {
+    if (homeRequest === homeSeen.current) return;
+    homeSeen.current = homeRequest;
+    if (phase !== 'finale' || !handedOff.current) return;
+    handedOff.current = false;
+    // Orbit controls (or a fly-to) moved the camera since the hand-off; start
+    // the glide home from where it is now rather than snapping first.
+    if (look.current && controls) look.current.copy(controls.target);
+    onOrbitReadyRef.current(false);
+    invalidate();
+  }, [homeRequest, phase, controls, onOrbitReadyRef, invalidate]);
 
   useEffect(() => () => camera.clearViewOffset(), [camera]);
 
