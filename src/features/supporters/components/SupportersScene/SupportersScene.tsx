@@ -52,7 +52,6 @@ interface SceneProps {
   /** Translated department names, indexed like the plan's zones. */
   departmentLabels: string[];
   flyTo: FlyToRequest | null;
-  /** Bumped to fly the finale camera back to the whole plate. */
   homeRequest: number;
   endTagRef: React.RefObject<HTMLDivElement | null>;
   onVacantSelect: () => void;

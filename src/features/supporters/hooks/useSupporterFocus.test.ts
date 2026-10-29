@@ -132,6 +132,16 @@ describe('useSupporterFocus', () => {
       expect(clock.isPaused).toBe(true);
     });
 
+    it('keeps a pause the visitor chose before searching', () => {
+      const { result, clock } = setup();
+      act(() => result.current.togglePause());
+      act(() => result.current.setFindQuery('Grace'));
+      act(() => result.current.findText());
+      act(() => result.current.setFindQuery(''));
+      expect(result.current.focusedId).toBeNull();
+      expect(clock.isPaused).toBe(true);
+    });
+
     it('leaves a camera that never flew where the visitor put it', () => {
       const { result } = setup({ rolling: false });
       act(() => result.current.selectBin('a'));

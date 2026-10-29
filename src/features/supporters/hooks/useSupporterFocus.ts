@@ -49,7 +49,6 @@ export function useSupporterFocus({
   const [findStatus, setFindStatus] = useState<string | null>(null);
   const [spotlight, setSpotlight] = useState<string | null>(null);
   const linkLanded = useRef(false);
-  /** Bumped to send the finale camera back to the whole plate. */
   const [homeRequest, setHomeRequest] = useState(0);
   // Only a pause this hook made is undone when the visitor lets go.
   const pausedByFocus = useRef(false);
@@ -65,8 +64,8 @@ export function useSupporterFocus({
       if (seated !== undefined) {
         clock.seek(jump ? seated + SEATED_AFTER : Math.max(clock.time, seated + SEATED_AFTER));
       }
+      if (!clock.isPaused) pausedByFocus.current = true;
       setPaused(true);
-      pausedByFocus.current = true;
     },
     [clock, setPaused]
   );
@@ -91,7 +90,6 @@ export function useSupporterFocus({
     if (!next) setFocusedId(null);
   }, [clock, setPaused]);
 
-  /** Back to how things were before a supporter was shown: the roll running, or the whole plate. */
   const release = useCallback(() => {
     setFocusedId(null);
     if (flyTo) {
