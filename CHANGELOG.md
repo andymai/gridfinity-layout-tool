@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.524.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.523.3...gridfinity-layout-tool-v4.524.0) (2026-10-29)
+
+
+### Features
+
+* **supporters:** add achievements, pokes, a post-credits scene and credit links ([#4729](https://github.com/andymai/gridfinity-layout-tool/issues/4729)) ([7a6be7d](https://github.com/andymai/gridfinity-layout-tool/commit/7a6be7dcf4dd1e05ef70130a91f0a26e17c31c5b))
+* **supporters:** add an opt-in chiptune soundtrack to the credits ([#4730](https://github.com/andymai/gridfinity-layout-tool/issues/4730)) ([f34f4ff](https://github.com/andymai/gridfinity-layout-tool/commit/f34f4ff350ddaefbd3aae5d8b0900caef0c3b290))
+* **supporters:** assign each supporter a stable credits department ([#4727](https://github.com/andymai/gridfinity-layout-tool/issues/4727)) ([a94f270](https://github.com/andymai/gridfinity-layout-tool/commit/a94f2708616e36f2ccacdf4bd3fbc3e0bd7c0e8c))
+* **supporters:** keep supporter messages whole up to 280 characters ([#4731](https://github.com/andymai/gridfinity-layout-tool/issues/4731)) ([896805f](https://github.com/andymai/gridfinity-layout-tool/commit/896805fe4aa04c8d25e68d108de5863055a19261))
+* **supporters:** turn the supporters page into game end credits ([#4728](https://github.com/andymai/gridfinity-layout-tool/issues/4728)) ([3afeacf](https://github.com/andymai/gridfinity-layout-tool/commit/3afeacfaab07db60331ee5c0920f78b161f9e227))
+
 ## [4.523.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.523.2...gridfinity-layout-tool-v4.523.3) (2026-10-29)
 
 
