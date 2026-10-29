@@ -1,0 +1,145 @@
+src/features/supporters/components/CreditsRoll/CreditsRoll.test.tsx
+  s_792461bfbd0af2::t_9f37252663989d 122,124,126,130
+  s_792461bfbd0af2::t_2377cd3f37d3ea 114
+  s_792461bfbd0af2::t_e1308806a6b295 139
+src/features/supporters/components/SupportersHeader/SupportersHeader.test.tsx
+  s_792461bfbd0af2::t_0805f053b5484c 1-30
+src/features/supporters/utils/creditLink.ts
+  s_792461bfbd0af2::t_9c599a6abcc8f1 1-13
+src/features/supporters/components/CreditSpotlight/index.ts
+  s_792461bfbd0af2::t_0805f053b5484c 1
+src/features/supporters/utils/creditsClock.ts
+  s_792461bfbd0af2::t_9c599a6abcc8f1 2-3,21,23,28,42,46,61,69,75
+src/features/supporters/components/DepartmentStamp/DepartmentStamp.test.tsx
+  s_792461bfbd0af2::t_0805f053b5484c 1-29
+src/i18n/locales/uk.json
+  s_792461bfbd0af2::t_2726d6074cb689 4488-4498
+src/features/supporters/utils/achievements.test.ts
+  s_792461bfbd0af2::t_9c599a6abcc8f1 1-30
+src/features/supporters/hooks/useSupporterFocus.test.ts
+  s_792461bfbd0af2::t_b8205d171984b0 1-116,118-120
+  s_792461bfbd0af2::t_96beb815516400 117
+src/features/supporters/components/SupporterPanel/SupporterPanel.test.tsx
+  s_792461bfbd0af2::t_8fd8756c609776 123-146
+  s_792461bfbd0af2::t_a2061876577ea1 122
+src/features/supporters/components/SupportersPage/SupportersPage.test.tsx
+  s_792461bfbd0af2::t_8fd8756c609776 131-155
+src/features/supporters/components/AchievementToast/index.ts
+  s_792461bfbd0af2::t_9f1250c4bcc1c5 1
+src/features/supporters/utils/creditLink.test.ts
+  s_792461bfbd0af2::t_9c599a6abcc8f1 1-16
+src/i18n/locales/en.ts
+  s_792461bfbd0af2::t_2726d6074cb689 89-99
+src/features/supporters/components/CreditsRoll/CreditsRoll.tsx
+  s_792461bfbd0af2::t_e1308806a6b295 33-34,94-98
+src/features/supporters/components/SupportersScene/supportersScenePostCredits.tsx
+  s_792461bfbd0af2::t_87deb59cb83569 9-10,15,62
+  s_792461bfbd0af2::t_1ece5778673400 1-8,11-14,16-61,63-98
+src/features/supporters/components/SupporterPanel/SupporterPanel.tsx
+  s_792461bfbd0af2::t_503490b5ced57d 1-11,20-21,32-35,86-87,96-100,153-161,178-194
+src/features/supporters/components/SupportersScene/supportersSceneGeometry.ts
+  s_792461bfbd0af2::t_9a0d26964bad7c 14-15
+src/features/supporters/utils/creditsClock.test.ts
+  s_792461bfbd0af2::t_9c599a6abcc8f1 39-52
+src/i18n/locales/cs.json
+  s_792461bfbd0af2::t_2726d6074cb689 4488-4498
+src/i18n/locales/es.json
+  s_792461bfbd0af2::t_2726d6074cb689 4488-4498
+src/features/supporters/components/CreditSpotlight/CreditSpotlight.test.tsx
+  s_792461bfbd0af2::t_0805f053b5484c 1-14
+src/i18n/locales/pl.json
+  s_792461bfbd0af2::t_2726d6074cb689 4488-4498
+src/i18n/locales/ko.json
+  s_792461bfbd0af2::t_2726d6074cb689 4488-4498
+src/i18n/locales/ka.json
+  s_792461bfbd0af2::t_2726d6074cb689 96-106
+src/features/supporters/components/SupportersHeader/index.ts
+  s_792461bfbd0af2::t_0805f053b5484c 1
+src/features/supporters/components/SupportersHeader/SupportersHeader.tsx
+  s_792461bfbd0af2::t_0805f053b5484c 1-68
+src/features/supporters/components/SupportersScene/supportersSceneBins.tsx
+  s_792461bfbd0af2::t_9a0d26964bad7c 25,34-35,62,86,94-95,135-136,178-189,192,249-251,256-259
+src/i18n/locales/fr.json
+  s_792461bfbd0af2::t_2726d6074cb689 4488-4498
+src/features/supporters/components/SupportersScene/supportersSceneVacant.tsx
+  s_792461bfbd0af2::t_01184151da7f14 21,30-31,40,46-49,62
+src/features/supporters/components/CreditSpotlight/CreditSpotlight.tsx
+  s_792461bfbd0af2::t_01184151da7f14 16
+  s_792461bfbd0af2::t_0805f053b5484c 1-15,17-33
+src/features/supporters/hooks/useSupporterFocus.ts
+  s_792461bfbd0af2::t_bef4bcf562cc45 1-12,14-174
+  s_792461bfbd0af2::t_38fcf823a13ab7 13
+src/features/supporters/components/AchievementToast/AchievementToast.test.tsx
+  s_792461bfbd0af2::t_9f1250c4bcc1c5 1-19
+src/features/supporters/components/SupportersPage/SupportersPage.tsx
+  s_792461bfbd0af2::t_0e307d3c9116fc 14-21,26-27,31,33-34,36,43-46,53-55,64,76,92-101,104-131,133-138,140,148,161,165-166,174-180,183,194,197,228-229,231-239,267,283-286,289,329-330,333-339,342-351,375,384-385,389,392-397,401
+src/features/supporters/hooks/useCreditsClock.ts
+  s_792461bfbd0af2::t_9c599a6abcc8f1 13-16
+src/i18n/locales/nl.json
+  s_792461bfbd0af2::t_2726d6074cb689 4488-4498
+src/i18n/locales/nb.json
+  s_792461bfbd0af2::t_2726d6074cb689 4488-4498
+src/i18n/locales/ja.json
+  s_792461bfbd0af2::t_2726d6074cb689 4488-4498
+src/features/supporters/components/SupportersScene/postCreditsPose.test.ts
+  s_792461bfbd0af2::t_87deb59cb83569 1-26
+  s_792461bfbd0af2::t_c829b73bbc52a4 27-30
+src/features/supporters/hooks/useAchievements.ts
+  s_792461bfbd0af2::t_9f1250c4bcc1c5 1-33
+src/features/supporters/utils/creditsSeen.test.ts
+  s_792461bfbd0af2::t_7f9e9870b33721 2,16-20
+  s_792461bfbd0af2::t_ad0977d18991f4 21-22
+src/features/supporters/components/DepartmentStamp/DepartmentStamp.tsx
+  s_792461bfbd0af2::t_0805f053b5484c 1-44
+src/features/supporters/utils/achievements.ts
+  s_792461bfbd0af2::t_9c599a6abcc8f1 1-40
+src/features/supporters/utils/creditsSeen.ts
+  s_792461bfbd0af2::t_7f9e9870b33721 18-36
+src/features/supporters/components/AchievementToast/AchievementToast.tsx
+  s_792461bfbd0af2::t_9f1250c4bcc1c5 1-34
+src/features/supporters/components/DepartmentStamp/index.ts
+  s_792461bfbd0af2::t_0805f053b5484c 1
+src/features/supporters/components/ThanksCard/ThanksCard.test.tsx
+  s_792461bfbd0af2::t_0805f053b5484c 1-36
+src/features/supporters/components/SupportersScene/SupportersScene.tsx
+  s_792461bfbd0af2::t_071fe10be3b92c 24,45-49,72-74,107-111,164,177-184
+  s_792461bfbd0af2::t_01184151da7f14 172
+  s_792461bfbd0af2::t_d64adf04e406ba 185
+src/features/supporters/components/ThanksCard/index.ts
+  s_792461bfbd0af2::t_0805f053b5484c 1
+src/features/supporters/components/SupportersScene/postCreditsPose.ts
+  s_792461bfbd0af2::t_87deb59cb83569 1-33
+src/features/supporters/components/ThanksCard/ThanksCard.tsx
+  s_792461bfbd0af2::t_0805f053b5484c 1-38
+src/i18n/locales/it.json
+  s_792461bfbd0af2::t_2726d6074cb689 4488-4498
+src/i18n/locales/pt-BR.json
+  s_792461bfbd0af2::t_2726d6074cb689 4488-4498
+src/features/supporters/hooks/useAchievements.test.ts
+  s_792461bfbd0af2::t_9f1250c4bcc1c5 1-41
+src/features/supporters/README.md
+  s_792461bfbd0af2::t_0283ac12104ca8 181-182
+  s_792461bfbd0af2::t_2b5138d15f887d 80-85
+src/i18n/locales/zh-CN.json
+  s_792461bfbd0af2::t_2726d6074cb689 4488-4498
+src/i18n/locales/de.json
+  s_792461bfbd0af2::t_2726d6074cb689 4488-4498
+src/i18n/locales/sv.json
+  s_792461bfbd0af2::t_2726d6074cb689 4488-4498
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "38b85185139e8a9e7fafa8217cb3f708f5b64f4b",
+  "prompts": {},
+  "sessions": {
+    "s_792461bfbd0af2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "971efe59-75e6-421b-ad6f-2f7f27706660",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
