@@ -41,8 +41,8 @@ export interface KofiPayload {
 /** Ko-fi allows long names; the tape texture wraps but can't absorb an essay. */
 export const MAX_DISPLAY_NAME_LENGTH = 32;
 
-/** A supporter message shows on a bin's tape card; keep it to a glanceable line. */
-export const MAX_MESSAGE_LENGTH = 140;
+/** Ko-fi messages stop at 280 characters, so a supporter's words arrive whole. */
+export const MAX_MESSAGE_LENGTH = 280;
 
 /**
  * Characters that must never reach a rendered supporter name:
@@ -114,6 +114,7 @@ export function sliceWhole(text: string, max: number): string {
 
 /** Bound the sanitize pass so it stays linear in a small constant, not the payload. */
 const SANITIZE_INPUT_CAP = MAX_DISPLAY_NAME_LENGTH * 8;
+const MESSAGE_SANITIZE_INPUT_CAP = MAX_MESSAGE_LENGTH * 2;
 
 /** Webhook dedupe markers only need to outlive Ko-fi's retry window. */
 export const MESSAGE_DEDUPE_TTL_SECONDS = 7 * 24 * 60 * 60;
@@ -197,7 +198,7 @@ export function normalizeDisplayName(
  * never reach here.
  */
 export function filterMessage(rawMessage: string | null | undefined): string | null {
-  const bounded = (rawMessage ?? '').trim().slice(0, SANITIZE_INPUT_CAP);
+  const bounded = (rawMessage ?? '').trim().slice(0, MESSAGE_SANITIZE_INPUT_CAP);
   const cleaned = sliceWhole(stripUnsafeNameChars(bounded).trim(), MAX_MESSAGE_LENGTH);
   if (!cleaned) return null;
   if (!filterDisplayName(cleaned).passed) return null;

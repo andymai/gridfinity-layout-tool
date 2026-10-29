@@ -121,7 +121,9 @@ quadratically on `"ononon…"` (120KB took 4.7s). Any new pattern there must not
 use an unbounded quantifier followed by a required literal.
 
 Seed the pre-webhook backfill once with `pnpm seed-supporters` (`--dry-run` to
-preview); see `src/features/supporters/README.md`.
+preview); see `src/features/supporters/README.md`. Messages the old 140-character
+cap cut are restored from a Ko-fi export by `pnpm restore-supporter-messages --csv`
+(also `--dry-run`), which only touches a stored message that is a cut of one in it.
 
 ## Supporter recognition (`lib/supporterLink.ts`)
 

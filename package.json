@@ -61,6 +61,7 @@
     "check:missing-tests": "./scripts/check-missing-tests.sh",
     "check:component-structure": "./scripts/check-component-structure.sh",
     "seed-supporters": "tsx scripts/seed-supporters.ts",
+    "restore-supporter-messages": "tsx scripts/restore-supporter-messages.ts",
     "sync-admin": "tsx scripts/sync-admin/index.ts",
     "community-admin": "tsx scripts/community-admin/index.ts",
     "backfill-ml-ttls": "tsx scripts/backfill-ml-ttls.ts",
