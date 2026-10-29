@@ -10,8 +10,8 @@ import type { SupporterBin } from './supportersData';
 export const INTRO_SECONDS = 7.5;
 
 const NAME_STAGGER = 0.07;
-const HEADING_DWELL = 1.8;
-const GAG_DWELL = 2.4;
+const HEADING_DWELL = 1.4;
+const GAG_DWELL = 1.8;
 /** The camera leaves for a department this long before its heading is read. */
 const CAMERA_LEAD = 1.4;
 /** Where the last credit sits, as a fraction of the region, when the roll ends. */

@@ -31,7 +31,7 @@ const WINDOW_PAD_PX = 48;
 const RAMP_PX = 72;
 
 export function messageDwell(characters: number): number {
-  return Math.min(6, Math.max(2, 0.9 + characters / 20));
+  return Math.min(4.5, Math.max(1.4, 0.6 + characters / 26));
 }
 
 const smoothstep = (t: number): number => t * t * (3 - 2 * t);

@@ -75,7 +75,7 @@ const en: Record<string, string> = {
   'supporters.credits.gag.greetzRole': 'Greetz',
   'supporters.credits.gag.greetzValue': 'everyone whose bin almost fit',
   'supporters.credits.gag.developerRole': 'Developer',
-  'supporters.credits.gag.developerValue': 'still fixing one more thing',
+  'supporters.credits.gag.developerValue': 'Andy Aragon (still fixing one more thing)',
   'supporters.credits.gag.noBinsHarmed': 'No bins were harmed in the making of this tool.',
   'supporters.credits.skip': 'Skip',
   'supporters.credits.pause': 'Pause the credits',

@@ -59,9 +59,9 @@ describe('buildRollTimeline', () => {
 
 describe('messageDwell', () => {
   it('gives longer quotes longer, within bounds', () => {
-    expect(messageDwell(8)).toBe(2);
+    expect(messageDwell(8)).toBe(1.4);
     expect(messageDwell(60)).toBeGreaterThan(messageDwell(30));
-    expect(messageDwell(280)).toBe(6);
+    expect(messageDwell(280)).toBe(4.5);
   });
 });
 

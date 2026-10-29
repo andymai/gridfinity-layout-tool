@@ -35,7 +35,7 @@ import { useCountUp } from './useCountUp';
 import { CtaBurst } from './SupportersFlourishes';
 
 /** Roll speed outside quotes, px/s. Phones read one narrow column, so they go a touch slower. */
-const BASE_SPEED = { side: 110, stacked: 90 };
+const BASE_SPEED = { side: 125, stacked: 105 };
 const HINT_MS = 9000;
 /** Past a bin's landing, so pausing on its credit shows it seated rather than about to drop. */
 const SEATED_AFTER = 0.75;
