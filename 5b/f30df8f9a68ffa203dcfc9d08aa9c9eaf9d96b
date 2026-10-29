@@ -1,0 +1,25 @@
+src/features/supporters/README.md
+  s_792461bfbd0af2::t_6a0d55bfeed591 88-89
+src/features/supporters/audio/chipSynth.ts
+  s_792461bfbd0af2::t_6a0d55bfeed591 7,13-14,121-122
+src/features/supporters/audio/creditsSoundtrack.ts
+  s_792461bfbd0af2::t_6a0d55bfeed591 10,19-22,27-29,96,116,118
+src/features/supporters/audio/creditsSoundtrack.test.ts
+  s_792461bfbd0af2::t_6a0d55bfeed591 18-19,23-26,110,115-120,182,184,187,189-192
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5bf30df8f9a68ffa203dcfc9d08aa9c9eaf9d96b",
+  "prompts": {},
+  "sessions": {
+    "s_792461bfbd0af2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "971efe59-75e6-421b-ad6f-2f7f27706660",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
