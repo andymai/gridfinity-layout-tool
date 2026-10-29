@@ -88,11 +88,9 @@ function stripUnsafeNameChars(text: string): string {
 export const SUPPORTER_DEPARTMENT_COUNT = 8;
 
 /**
- * Map a `supporters:donors` field to a credits department.
- *
- * Keyed by the hash field rather than the name so a department survives a
- * rename and is independent of whether two people share a name. Only the
- * index leaves the server, never the field itself.
+ * Keyed by the `supporters:donors` hash field rather than the name so a
+ * department survives a rename and is independent of whether two people share
+ * a name. Only the index leaves the server, never the field itself.
  */
 export function supporterDepartment(donorKey: string): number {
   const digest = createHash('sha256').update(`department:${donorKey}`).digest();
