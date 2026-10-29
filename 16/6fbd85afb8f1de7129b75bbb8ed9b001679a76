@@ -1,0 +1,34 @@
+src/features/supporters/utils/creditLink.test.ts
+  s_792461bfbd0af2::t_520e0ab98f3819 30-35
+src/features/supporters/components/AchievementToast/AchievementToast.tsx
+  s_792461bfbd0af2::t_520e0ab98f3819 23-24
+src/features/supporters/utils/creditLink.ts
+  s_792461bfbd0af2::t_520e0ab98f3819 41,43-44
+src/features/supporters/hooks/useSupporterFocus.ts
+  s_792461bfbd0af2::t_520e0ab98f3819 76,80,154
+src/features/supporters/hooks/useSupporterFocus.test.ts
+  s_792461bfbd0af2::t_520e0ab98f3819 52,59,66-67,96
+src/features/supporters/components/SupportersPage/SupportersPage.tsx
+  s_792461bfbd0af2::t_520e0ab98f3819 122-130,151,153-154
+src/features/supporters/components/SupportersPage/SupportersPage.test.tsx
+  s_792461bfbd0af2::t_48af2c18244208 9,35-40,64,148-154
+  s_792461bfbd0af2::t_9678fcb946bd6b 155-156
+src/features/supporters/components/CreditSpotlight/CreditSpotlight.tsx
+  s_792461bfbd0af2::t_520e0ab98f3819 20-21,26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "166fbd85afb8f1de7129b75bbb8ed9b001679a76",
+  "prompts": {},
+  "sessions": {
+    "s_792461bfbd0af2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "971efe59-75e6-421b-ad6f-2f7f27706660",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
