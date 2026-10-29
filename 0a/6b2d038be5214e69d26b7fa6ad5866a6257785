@@ -1,0 +1,23 @@
+scripts/restore-supporter-messages.core.ts
+  s_ddf50d3700ef87::t_db6f859f449595 32-36,42-45,47-52,58,77-78,86-89,111-113
+scripts/restore-supporter-messages.ts
+  s_ddf50d3700ef87::t_db6f859f449595 11,79-87
+scripts/restore-supporter-messages.core.test.ts
+  s_ddf50d3700ef87::t_d4456f07eff0f5 96-112,115-130,132-133,137,209
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0a6b2d038be5214e69d26b7fa6ad5866a6257785",
+  "prompts": {},
+  "sessions": {
+    "s_ddf50d3700ef87": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7a956845-573e-4040-bf05-8a9647067fef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
