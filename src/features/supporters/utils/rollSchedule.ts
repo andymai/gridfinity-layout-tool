@@ -17,6 +17,8 @@ const CROWD_DWELL = 2.6;
 const CROWD_STAGGER = 0.03;
 /** However big the crowd, its last bin starts inside the line's hold. */
 const CROWD_SPREAD = 1.8;
+/** Mirrors `DROP_SECONDS` in supportersSceneBins, so the camera waits for the last landing. */
+const BIN_DROP_SECONDS = 0.6;
 /** The camera leaves for a department this long before its heading is read. */
 const CAMERA_LEAD = 1.4;
 /** Where the last credit sits, as a fraction of the region, when the roll ends. */
@@ -90,19 +92,22 @@ export function buildRollSchedule(
   const seatTimes = new Map<string, number>();
   const creditTimes = new Map<string, number>();
   const zoneCues: RollSchedule['zoneCues'] = [];
+  // A crowd drops across every zone, so the next department's camera waits for it.
+  let crowdLanded = 0;
   for (const item of plan.items) {
     const m = byId.get(item.id);
     if (!m) continue;
     const time = timeline.timeAt(passOffset(m));
     if (item.kind === 'department' || item.kind === 'section') {
       const zone = item.kind === 'department' ? item.department : null;
-      zoneCues.push({ zone, time: Math.max(INTRO_SECONDS, time - CAMERA_LEAD) });
+      zoneCues.push({ zone, time: Math.max(INTRO_SECONDS, time - CAMERA_LEAD, crowdLanded) });
     } else if (item.kind === 'crowd') {
       const stagger = Math.min(CROWD_STAGGER, CROWD_SPREAD / Math.max(1, item.binIds.length - 1));
       item.binIds.forEach((id, i) => {
         seatTimes.set(id, time + i * stagger);
         creditTimes.set(id, time);
       });
+      crowdLanded = time + (item.binIds.length - 1) * stagger + BIN_DROP_SECONDS;
     } else if (item.kind === 'names') {
       const centers = new Map((m.members ?? []).map((member) => [member.id, member.center]));
       const perRow = new Map<number, number>();

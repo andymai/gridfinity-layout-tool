@@ -90,6 +90,28 @@ describe('buildRollSchedule', () => {
     expect(Math.max(...drops) - Math.min(...drops)).toBeLessThanOrEqual(1.8 + 1e-9);
   });
 
+  it('keeps the camera on the whole plate until a crowd has landed', () => {
+    const crowd: SupporterBin[] = [
+      ...Array.from({ length: 40 }, (_, i) => ({
+        id: `s${i}`,
+        name: 'Somebody',
+        department: i % 8,
+        isNewest: false,
+      })),
+      { id: 'x', name: null, isNewest: false },
+    ];
+    const tight = buildCreditsPlan(crowd);
+    const rows: MeasuredCredit[] = tight.items.map((item, i) => ({
+      id: item.id,
+      center: i * 30 + 15,
+      height: 30,
+    }));
+    const times = buildRollSchedule(tight, new Map(crowd.map((b) => [b.id, b])), rows, region, 100);
+    const lastDrop = Math.max(...crowd.slice(0, 40).map((b) => times.seatTimes.get(b.id) ?? 0));
+    const redacted = times.zoneCues.find((c) => c.zone === 8);
+    expect(redacted?.time).toBeGreaterThanOrEqual(lastDrop + 0.6);
+  });
+
   it('cues the camera to each department ahead of its heading, in roll order', () => {
     expect(schedule.zoneCues.map((c) => c.zone)).toEqual([0, 3, null, 8]);
     const heading = measured.find((m) => m.id === 'dept-3');
