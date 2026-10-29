@@ -1,18 +1,27 @@
 /**
- * Restore supporter messages that the old 140-character cap cut short, from a
- * Ko-fi transaction export. Only fields whose stored message is a cut of a
- * message in the export change. Messages are written only into Redis and never
- * printed, so the output is safe to share.
- *
  * Usage:
- *   REDIS_URL=rediss://… pnpm restore-supporter-messages --csv path/to/Transaction_All.csv [--dry-run]
+ *   REDIS_URL=rediss://… TOKEN_SALT=… pnpm restore-supporter-messages --csv path/to/Transaction_All.csv [--dry-run]
+ *
+ * Prints lengths only, never message text.
  */
 
 import { readFileSync } from 'node:fs';
 import { Redis } from 'ioredis';
 import { supportersDonorsKey } from '../api/lib/redisKeys.js';
+import { deriveDonorId } from '../api/lib/supporters.js';
 import { parseTransactionCsv } from './seed-supporters.core.js';
 import { planMessageRestores } from './restore-supporter-messages.core.js';
+
+// Writes only if the field still holds what was read, so a supporter's edit
+// (or going anonymous) between the read and the write is never undone.
+const COMPARE_AND_SET = `
+if redis.call('HGET', KEYS[1], ARGV[1]) == ARGV[2] then
+  redis.call('HSET', KEYS[1], ARGV[1], ARGV[3])
+  return 1
+end
+return 0`;
+
+const say = (line: string): void => void process.stdout.write(`${line}\n`);
 
 async function main(): Promise<void> {
   const flag = process.argv.indexOf('--csv');
@@ -22,8 +31,10 @@ async function main(): Promise<void> {
     process.exit(1);
   }
   const redisUrl = process.env.REDIS_URL;
-  if (!redisUrl) {
-    console.error('REDIS_URL is required. Pull it with `vercel env pull` or pass it inline.');
+  if (!redisUrl || !process.env.TOKEN_SALT) {
+    console.error(
+      'REDIS_URL and TOKEN_SALT are required (TOKEN_SALT ties a webhook record to its own transactions). Pull them with `vercel env pull`.'
+    );
     process.exit(1);
   }
   const dryRun = process.argv.includes('--dry-run');
@@ -32,24 +43,27 @@ async function main(): Promise<void> {
   const redis = new Redis(redisUrl, { maxRetriesPerRequest: 2 });
   try {
     const donors = await redis.hgetall(supportersDonorsKey());
-    const { restores, unmatched } = planMessageRestores(donors, rows);
-    console.log(
+    const { restores, unmatched } = planMessageRestores(donors, rows, deriveDonorId);
+    say(
       `${restores.length} cut message(s) to restore from ${rows.length} transactions` +
         (unmatched ? `; ${unmatched} at the old cap with no single match, left as they are` : '')
     );
     for (const r of restores) {
       const kind = r.field.startsWith('seed:') ? 'seed' : 'live';
-      console.log(`  ${kind} record: ${r.storedLength} -> ${r.restoredLength} characters`);
+      say(`  ${kind} record: ${r.storedLength} -> ${r.restoredLength} characters`);
     }
-    if (dryRun || restores.length === 0) {
-      if (dryRun) console.log('--dry-run: no writes.');
+    if (dryRun) {
+      say('--dry-run: no writes.');
       return;
     }
-    await redis.hset(
-      supportersDonorsKey(),
-      Object.fromEntries(restores.map((r) => [r.field, r.value]))
-    );
-    console.log('Done.');
+    let written = 0;
+    for (const r of restores) {
+      written += Number(
+        await redis.eval(COMPARE_AND_SET, 1, supportersDonorsKey(), r.field, r.previous, r.value)
+      );
+    }
+    const changed = restores.length - written;
+    say(`Restored ${written}.` + (changed ? ` Skipped ${changed} edited since the read.` : ''));
   } finally {
     redis.disconnect();
   }
