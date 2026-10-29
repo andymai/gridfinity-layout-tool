@@ -12,6 +12,8 @@ const setup = (over: Partial<React.ComponentProps<typeof CreditsControls>> = {})
     paused: false,
     stacked: false,
     showHint: false,
+    soundOn: false,
+    onToggleSound: vi.fn(),
     onTogglePause: vi.fn(),
     onSkip: vi.fn(),
     onKofi: vi.fn(),

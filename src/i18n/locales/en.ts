@@ -86,6 +86,8 @@ const en: Record<string, string> = {
   'supporters.credits.replay': 'Replay the credits',
   'supporters.credits.theEnd': 'The end?',
   'supporters.credits.yourBinHere': 'your bin here',
+  'supporters.credits.soundOn': 'Turn sound on',
+  'supporters.credits.soundOff': 'Turn sound off',
   'supporters.achievements.unlocked': 'Achievement unlocked',
   'supporters.achievements.satThrough': 'Sat through the credits',
   'supporters.achievements.foundOwnBin': 'Found your own bin',

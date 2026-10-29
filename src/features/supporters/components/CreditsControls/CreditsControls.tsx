@@ -2,6 +2,7 @@ import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { CreditsClock } from '../../utils/creditsClock';
 import { HOLD_RATE, NO_SCRUB_ATTR } from '../../hooks/useRollScrub';
+import { SoundToggle } from '../SoundToggle';
 
 /** A keyboard press on a hold button can't be held, so it jumps this far instead. */
 const KEY_JUMP_SECONDS = 8;
@@ -11,6 +12,8 @@ interface CreditsControlsProps {
   paused: boolean;
   stacked: boolean;
   showHint: boolean;
+  soundOn: boolean;
+  onToggleSound: () => void;
   onTogglePause: () => void;
   onSkip: () => void;
   onKofi: (e: React.MouseEvent<HTMLButtonElement>) => void;
@@ -67,6 +70,8 @@ export function CreditsControls({
   paused,
   stacked,
   showHint,
+  soundOn,
+  onToggleSound,
   onTogglePause,
   onSkip,
   onKofi,
@@ -111,6 +116,7 @@ export function CreditsControls({
           label={t('supporters.credits.fastForward')}
           path={FORWARD}
         />
+        <SoundToggle on={soundOn} onToggle={onToggleSound} />
         <Button
           variant="ghost"
           onClick={onSkip}

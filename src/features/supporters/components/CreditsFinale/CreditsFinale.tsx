@@ -1,6 +1,7 @@
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { PIXEL_FONT } from '../CreditsRoll/creditsRollItems';
+import { SoundToggle } from '../SoundToggle';
 
 interface CreditsFinaleProps {
   total: number;
@@ -17,6 +18,8 @@ interface CreditsFinaleProps {
   onKofi: (e: React.MouseEvent<HTMLButtonElement>) => void;
   onReplay?: () => void;
   onOpenPanel: () => void;
+  soundOn: boolean;
+  onToggleSound: () => void;
 }
 
 export function CreditsFinale({
@@ -31,6 +34,8 @@ export function CreditsFinale({
   onKofi,
   onReplay,
   onOpenPanel,
+  soundOn,
+  onToggleSound,
 }: CreditsFinaleProps) {
   const t = useTranslation();
   return (
@@ -117,6 +122,7 @@ export function CreditsFinale({
         >
           {panelLabel}
         </Button>
+        <SoundToggle on={soundOn} onToggle={onToggleSound} />
       </div>
     </>
   );

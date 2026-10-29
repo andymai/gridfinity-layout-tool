@@ -45,6 +45,7 @@ interface SceneProps {
   onPoke: () => void;
   /** The post-credits scene has played to its end. */
   onPostCredits: () => void;
+  onPostCreditsStart: () => void;
   /** Taped on the stranger's bin in the post-credits scene. */
   postCreditsLabel: string;
   anonymousLabel: string;
@@ -71,6 +72,7 @@ export function SupportersScene({
   onSelect,
   onPoke,
   onPostCredits,
+  onPostCreditsStart,
   postCreditsLabel,
   anonymousLabel,
   departmentLabels,
@@ -180,7 +182,10 @@ export function SupportersScene({
         palette={palette}
         armed={phase === 'finale' && orbitReady && !reducedMotion}
         label={postCreditsLabel}
-        onStart={() => setGuest(true)}
+        onStart={() => {
+          setGuest(true);
+          onPostCreditsStart();
+        }}
         onDone={guestLeft}
         onCancel={() => setGuest(false)}
       />

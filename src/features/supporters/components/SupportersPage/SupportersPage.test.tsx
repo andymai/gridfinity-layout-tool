@@ -154,6 +154,16 @@ describe('SupportersPage', () => {
     expect(screen.getByText('supporters.achievements.foundOwnBin')).toBeInTheDocument();
   });
 
+  it('keeps sound off until asked, and remembers turning it on', () => {
+    render(<SupportersPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'supporters.credits.soundOn' }));
+    expect(screen.getByRole('button', { name: 'supporters.credits.soundOff' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(localStorage.getItem('gridfinity-supporters-sound')).toBe('1');
+  });
+
   it('celebrates a skip within three seconds', () => {
     render(<SupportersPage />);
     fireEvent.click(screen.getByRole('button', { name: 'supporters.credits.skip' }));

@@ -31,6 +31,8 @@ import { useRollScrub } from '../../hooks/useRollScrub';
 import { useProfileOverlay } from '../../hooks/useProfileOverlay';
 import { useSupporterFocus } from '../../hooks/useSupporterFocus';
 import { useAchievements } from '../../hooks/useAchievements';
+import { useCreditsSoundtrack } from '../../hooks/useCreditsSoundtrack';
+import { readSoundOn, saveSoundOn } from '../../utils/soundPreference';
 import { getSupportersPalette } from '../../scene/palette';
 import { SupportersScene } from '../SupportersScene';
 import { FULL_STAGE, type StageFrame } from '../SupportersScene/supportersSceneStage';
@@ -149,6 +151,15 @@ export function SupportersPage() {
   // not make a later skip look fast.
   const rollStartedAt = useRef(0);
   const playable = roll && settled && schedule !== null;
+  const [soundOn, setSoundOn] = useState(readSoundOn);
+  const toggleSound = useCallback(() => {
+    saveSoundOn(!soundOn);
+    setSoundOn(!soundOn);
+  }, [soundOn]);
+  const { blip } = useCreditsSoundtrack({ enabled: soundOn, clock, schedule, rolling: playable });
+  useEffect(() => {
+    if (toast) blip('achievement');
+  }, [toast, blip]);
   useEffect(() => {
     if (playable) rollStartedAt.current = performance.now();
   }, [playable]);
@@ -180,9 +191,10 @@ export function SupportersPage() {
   }, [clock, setPaused, setFocusedId]);
 
   const onPoke = useCallback(() => {
+    blip('poke');
     pokes.current += 1;
     if (pokes.current >= POKES_FOR_ACHIEVEMENT) unlock('poked10');
-  }, [unlock]);
+  }, [unlock, blip]);
   const onPostCredits = useCallback(() => unlock('postCredits'), [unlock]);
 
   useRollScrub({
@@ -289,6 +301,7 @@ export function SupportersPage() {
             onSelect={focus.selectBin}
             onPoke={onPoke}
             onPostCredits={onPostCredits}
+            onPostCreditsStart={() => blip('plop')}
             postCreditsLabel={t('supporters.credits.postCreditsTape')}
             anonymousLabel={t('supporters.anonymous')}
             departmentLabels={departmentLabels}
@@ -366,6 +379,8 @@ export function SupportersPage() {
           onTogglePause={togglePause}
           onSkip={skip}
           onKofi={handleKofiClick('supporters_credits')}
+          soundOn={soundOn}
+          onToggleSound={toggleSound}
         />
       )}
 
@@ -384,6 +399,8 @@ export function SupportersPage() {
           onKofi={handleKofiClick('supporters_page')}
           onReplay={reducedMotion ? undefined : replay}
           onOpenPanel={() => setPanelOpen(true)}
+          soundOn={soundOn}
+          onToggleSound={toggleSound}
         />
       )}
 

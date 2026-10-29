@@ -83,6 +83,10 @@ ingest rules. `data/supporters.json` is only the offline fallback (see below).
   `?credit=<name>` link (`utils/creditLink.ts`) lands from `CreditsRoll`'s
   ready callback, because seeking needs the roll measured. Pokes and the
   post-credits guest (`postCreditsPose.ts`) live only in the scene.
+- **Sound is opt-in and synthesised** (`audio/`): an original tune on a chip
+  synth, no audio file. `CreditsSoundtrack` gives the tune its own playhead
+  moving at the clock's rate, so a scrub changes its tempo, a pause holds a
+  filtered chord and a rewind warbles. No Web Audio exists until sound is on.
 
 ## Key files
 

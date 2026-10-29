@@ -18,6 +18,8 @@ const setup = (over: Partial<React.ComponentProps<typeof CreditsFinale>> = {}) =
     onKofi: vi.fn(),
     onReplay: vi.fn(),
     onOpenPanel: vi.fn(),
+    soundOn: false,
+    onToggleSound: vi.fn(),
     ...over,
   };
   render(<CreditsFinale {...props} />);
