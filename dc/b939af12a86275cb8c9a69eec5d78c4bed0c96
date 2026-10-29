@@ -1,0 +1,43 @@
+src/features/supporters/components/SupportersScene/supportersSceneVacant.tsx
+  s_792461bfbd0af2::t_dad1b360de4af3 43-45
+  s_792461bfbd0af2::t_cfba4ff0b8f6f2 41-42
+src/features/supporters/components/SupportersScene/SupportersScene.tsx
+  s_792461bfbd0af2::t_cfba4ff0b8f6f2 117-119
+src/features/supporters/components/SupportersScene/supportersSceneBins.tsx
+  s_792461bfbd0af2::t_cfba4ff0b8f6f2 152-153
+src/features/supporters/components/CreditsRoll/CreditsRoll.tsx
+  s_792461bfbd0af2::t_cfba4ff0b8f6f2 113-114
+src/features/supporters/hooks/useProfileOverlay.ts
+  s_792461bfbd0af2::t_dad1b360de4af3 41,47,50-60
+src/features/supporters/components/CreditsRoll/CreditsRoll.test.tsx
+  s_792461bfbd0af2::t_1bdb960fe57ec7 78-83
+src/features/supporters/components/CreditsRoll/creditsRollItems.tsx
+  s_792461bfbd0af2::t_cfba4ff0b8f6f2 18-19,45
+src/features/supporters/hooks/useRollScrub.test.tsx
+  s_792461bfbd0af2::t_1bdb960fe57ec7 83-100
+src/features/supporters/components/CreditsControls/CreditsControls.test.tsx
+  s_792461bfbd0af2::t_1bdb960fe57ec7 5,35-38
+  s_792461bfbd0af2::t_4a845289636045 39-40
+src/features/supporters/components/CreditsControls/CreditsControls.tsx
+  s_792461bfbd0af2::t_cfba4ff0b8f6f2 4,82
+src/features/supporters/hooks/useRollScrub.ts
+  s_792461bfbd0af2::t_cfba4ff0b8f6f2 111-112,122,132
+src/features/supporters/hooks/useProfileOverlay.test.ts
+  s_792461bfbd0af2::t_dad1b360de4af3 49-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dcb939af12a86275cb8c9a69eec5d78c4bed0c96",
+  "prompts": {},
+  "sessions": {
+    "s_792461bfbd0af2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "971efe59-75e6-421b-ad6f-2f7f27706660",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
