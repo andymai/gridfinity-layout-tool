@@ -1,0 +1,24 @@
+pnpm-workspace.yaml
+  s_15a628cd2c3e24::t_5607581f45ccb1 195
+  s_15a628cd2c3e24::t_3a52ce21d26337 177-180
+patches/@rollup__plugin-node-resolve@16.0.3.patch
+  s_15a628cd2c3e24::t_5607581f45ccb1 1-41
+pnpm-lock.yaml
+  s_15a628cd2c3e24::t_6b9a0455a479e5 50,56,8003,11768
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cac854d6898f5edbe3ed308c381491c47225244f",
+  "prompts": {},
+  "sessions": {
+    "s_15a628cd2c3e24": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e49c5824-c930-485e-8a12-e60ba2673c4c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
