@@ -12,6 +12,9 @@ export const INTRO_SECONDS = 7.5;
 const NAME_STAGGER = 0.07;
 const HEADING_DWELL = 1.4;
 const GAG_DWELL = 1.8;
+/** Long enough for a whole crowd of bins to rain in while its line is read. */
+const CROWD_DWELL = 2.6;
+const CROWD_STAGGER = 0.03;
 /** The camera leaves for a department this long before its heading is read. */
 const CAMERA_LEAD = 1.4;
 /** Where the last credit sits, as a fraction of the region, when the roll ends. */
@@ -36,8 +39,8 @@ export interface RollSchedule {
   timeline: RollTimeline;
   /** When each bin lands in its socket. */
   seatTimes: Map<string, number>;
-  /** When the camera should head for each department's zone, in roll order. */
-  zoneCues: { zone: number; time: number }[];
+  /** When the camera should head for each department's zone (null: the whole plate), in roll order. */
+  zoneCues: { zone: number | null; time: number }[];
   /** When each bin's credit crosses the reading line, for seeking to it. */
   creditTimes: Map<string, number>;
 }
@@ -60,10 +63,12 @@ export function buildRollSchedule(
     if (item.kind === 'message') {
       const bin = binsById.get(item.binId);
       dwell = messageDwell((bin?.message?.length ?? 0) + (bin?.name?.length ?? 0));
-    } else if (item.kind === 'department') {
+    } else if (item.kind === 'department' || item.kind === 'section') {
       dwell = HEADING_DWELL;
     } else if (item.kind === 'gag' || item.kind === 'note') {
       dwell = GAG_DWELL;
+    } else if (item.kind === 'crowd') {
+      dwell = CROWD_DWELL;
     }
     if (dwell > 0) marks.push({ at: passOffset(m), height: m.height, dwell });
   }
@@ -82,13 +87,19 @@ export function buildRollSchedule(
 
   const seatTimes = new Map<string, number>();
   const creditTimes = new Map<string, number>();
-  const zoneCues: { zone: number; time: number }[] = [];
+  const zoneCues: RollSchedule['zoneCues'] = [];
   for (const item of plan.items) {
     const m = byId.get(item.id);
     if (!m) continue;
     const time = timeline.timeAt(passOffset(m));
-    if (item.kind === 'department') {
-      zoneCues.push({ zone: item.department, time: Math.max(INTRO_SECONDS, time - CAMERA_LEAD) });
+    if (item.kind === 'department' || item.kind === 'section') {
+      const zone = item.kind === 'department' ? item.department : null;
+      zoneCues.push({ zone, time: Math.max(INTRO_SECONDS, time - CAMERA_LEAD) });
+    } else if (item.kind === 'crowd') {
+      item.binIds.forEach((id, i) => {
+        seatTimes.set(id, time + i * CROWD_STAGGER);
+        creditTimes.set(id, time);
+      });
     } else if (item.kind === 'names') {
       const centers = new Map((m.members ?? []).map((member) => [member.id, member.center]));
       const perRow = new Map<number, number>();

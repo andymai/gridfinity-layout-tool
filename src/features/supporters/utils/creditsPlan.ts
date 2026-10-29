@@ -14,7 +14,7 @@ export const DEPARTMENT_TITLE_KEYS = [
   'supporters.credits.dept.magnetHoles',
   'supporters.credits.dept.firstLayer',
   'supporters.credits.dept.measureTwice',
-  'supporters.credits.dept.elephantsFoot',
+  'supporters.credits.dept.cloggedNozzle',
   'supporters.credits.dept.almostFit',
   'supporters.credits.dept.lipQa',
   'supporters.credits.dept.redacted',
@@ -24,9 +24,16 @@ export const DEPARTMENT_NOTE_KEYS: Partial<Record<number, string>> = {
   2: 'supporters.credits.dept.magnetHolesNote',
 };
 
+/** Ko-fi's name for a supporter who left the name field blank. */
+export const KOFI_DEFAULT_NAME = 'Somebody';
+
 export type CreditItem =
   | { kind: 'department'; id: string; department: number }
+  /** A heading with no zone of its own: the camera takes in the whole plate. */
+  | { kind: 'section'; id: string; titleKey: string; noteKey: string }
   | { kind: 'names'; id: string; binIds: string[] }
+  /** Many supporters sharing one name, credited on a single line. */
+  | { kind: 'crowd'; id: string; binIds: string[] }
   | { kind: 'message'; id: string; binId: string }
   | { kind: 'gag'; id: string; roleKey: string; valueKey: string }
   | { kind: 'note'; id: string; textKey: string };
@@ -51,6 +58,14 @@ const GAGS_AFTER: Partial<Record<number, CreditItem[]>> = {
       id: 'gag-catering',
       roleKey: 'supporters.credits.gag.cateringRole',
       valueKey: 'supporters.credits.gag.cateringValue',
+    },
+  ],
+  2: [
+    {
+      kind: 'gag',
+      id: 'gag-magnet-retrieval',
+      roleKey: 'supporters.credits.gag.magnetRetrievalRole',
+      valueKey: 'supporters.credits.gag.magnetRetrievalValue',
     },
   ],
   4: [
@@ -94,22 +109,17 @@ export function departmentOf(bin: SupporterBin): number {
   return isSupporterDepartment(bin.department) ? bin.department : fallbackDepartment(bin.name);
 }
 
-function splitEvenly<T>(list: T[], parts: number): T[][] {
-  const runs: T[][] = [];
-  let start = 0;
-  for (let i = 0; i < parts; i++) {
-    const size = Math.floor(list.length / parts) + (i < list.length % parts ? 1 : 0);
-    runs.push(list.slice(start, start + size));
-    start += size;
-  }
-  return runs;
+function isSomebody(bin: SupporterBin): boolean {
+  return bin.name === KOFI_DEFAULT_NAME;
 }
 
 /**
- * Lay out the roll: each department's heading, then its plain names in short
- * blocks with every message line spread evenly between them, so a department
- * never ends in a wall of quotes. Bins keep the order they arrive in, which is
- * the per-load shuffle from `buildSupporterBins`.
+ * Lay out the roll: each department's heading, its plain names in one grid,
+ * then its message lines. Supporters named "Somebody" roll together in a
+ * section of their own before the redacted department, but keep their seats
+ * in their own department's zone, so the plate looks the same either way.
+ * Bins keep the order they arrive in, which is the per-load shuffle from
+ * `buildSupporterBins`.
  */
 export function buildCreditsPlan(bins: SupporterBin[]): CreditsPlan {
   const members: SupporterBin[][] = Array.from({ length: DEPARTMENT_TITLE_KEYS.length }, () => []);
@@ -117,29 +127,62 @@ export function buildCreditsPlan(bins: SupporterBin[]): CreditsPlan {
 
   const items: CreditItem[] = [];
   const seats = new Map<string, CreditSeat>();
+  const nextSlot = members.map(() => 0);
+  const seat = (bin: SupporterBin) => {
+    const zone = departmentOf(bin);
+    seats.set(bin.id, { zone, slot: nextSlot[zone]++ });
+  };
+  const creditNames = (group: SupporterBin[], id: string) => {
+    if (group.length === 0) return;
+    group.forEach(seat);
+    items.push({ kind: 'names', id, binIds: group.map((b) => b.id) });
+  };
+  const creditMessages = (group: SupporterBin[]) => {
+    for (const bin of group.filter((b) => b.message)) {
+      seat(bin);
+      items.push({ kind: 'message', id: `message-${bin.id}`, binId: bin.id });
+    }
+  };
 
-  members.forEach((group, zone) => {
+  const creditDepartment = (zone: number) => {
+    const group = members[zone].filter((b) => !isSomebody(b));
     if (group.length > 0) {
       items.push({ kind: 'department', id: `dept-${zone}`, department: zone });
-      let slot = 0;
-      const seat = (bin: SupporterBin) => seats.set(bin.id, { zone, slot: slot++ });
-
-      const quoted = group.filter((b) => b.message);
-      const plain = group.filter((b) => !b.message);
-      splitEvenly(plain, quoted.length + 1).forEach((run, i) => {
-        if (run.length > 0) {
-          run.forEach(seat);
-          items.push({ kind: 'names', id: `names-${zone}-${i}`, binIds: run.map((b) => b.id) });
-        }
-        const quote = quoted.at(i);
-        if (quote) {
-          seat(quote);
-          items.push({ kind: 'message', id: `message-${quote.id}`, binId: quote.id });
-        }
-      });
+      creditNames(
+        group.filter((b) => !b.message),
+        `names-${zone}`
+      );
+      creditMessages(group);
     }
     items.push(...(GAGS_AFTER[zone] ?? []));
-  });
+  };
+
+  for (let zone = 0; zone < REDACTED_DEPARTMENT; zone++) creditDepartment(zone);
+
+  const somebodies = bins.filter(isSomebody);
+  if (somebodies.length > 0) {
+    items.push({
+      kind: 'section',
+      id: 'section-somebody',
+      titleKey: 'supporters.credits.somebody.title',
+      noteKey: 'supporters.credits.somebody.note',
+    });
+    // The newest keeps a line of their own, so "just joined" names one person.
+    const quiet = somebodies.filter((b) => !b.message && !b.isNewest);
+    if (quiet.length > 1) {
+      quiet.forEach(seat);
+      items.push({ kind: 'crowd', id: 'crowd-somebody', binIds: quiet.map((b) => b.id) });
+    } else {
+      creditNames(quiet, 'names-somebody');
+    }
+    creditNames(
+      somebodies.filter((b) => !b.message && b.isNewest),
+      'names-somebody-newest'
+    );
+    creditMessages(somebodies);
+  }
+
+  creditDepartment(REDACTED_DEPARTMENT);
   items.push(...CLOSING_ITEMS);
 
   return { items, seats, zoneSizes: members.map((g) => g.length) };

@@ -12,6 +12,8 @@ const bins: SupporterBin[] = [
   { id: 'a', name: 'Ada', department: 0, isNewest: false },
   { id: 'b', name: 'Bo', department: 0, isNewest: true },
   { id: 'q', name: 'Quinn', department: 2, message: 'Saved my garage', isNewest: false },
+  { id: 's1', name: 'Somebody', department: 0, isNewest: false },
+  { id: 's2', name: 'Somebody', department: 2, isNewest: false },
   { id: 'x', name: null, isNewest: false },
 ];
 const plan = buildCreditsPlan(bins);
@@ -54,6 +56,7 @@ describe('CreditsRoll', () => {
     expect(headings).toEqual([
       'supporters.credits.dept.oneMoreBin',
       'supporters.credits.dept.magnetHoles',
+      'supporters.credits.somebody.title',
       'supporters.credits.dept.redacted',
     ]);
     expect(screen.getByText('supporters.credits.dept.magnetHolesNote')).toBeInTheDocument();
@@ -62,6 +65,13 @@ describe('CreditsRoll', () => {
   it('credits an anonymous supporter as a redaction bar that reads as Anonymous', () => {
     render(<CreditsRoll {...props()} />);
     expect(screen.getByRole('button', { name: 'supporters.anonymous' })).toBeInTheDocument();
+  });
+
+  it('credits everyone named Somebody on one line that reads its count aloud', () => {
+    render(<CreditsRoll {...props()} />);
+    expect(screen.getByText('×2')).toBeInTheDocument();
+    expect(screen.getByText('supporters.credits.somebody.crowdLabel')).toHaveClass('sr-only');
+    expect(screen.queryByRole('button', { name: 'Somebody' })).not.toBeInTheDocument();
   });
 
   it('puts a quote on its own line beside the name', () => {
@@ -114,7 +124,14 @@ describe('CreditsRoll', () => {
     const onSchedule = vi.fn<(s: RollSchedule | null) => void>();
     render(<CreditsRoll {...props({ onSchedule })} />);
     const schedule = onSchedule.mock.lastCall?.[0];
-    expect([...(schedule?.seatTimes.keys() ?? [])].sort()).toEqual(['a', 'b', 'q', 'x']);
+    expect([...(schedule?.seatTimes.keys() ?? [])].sort()).toEqual([
+      'a',
+      'b',
+      'q',
+      's1',
+      's2',
+      'x',
+    ]);
   });
 
   it('slides with the clock', () => {

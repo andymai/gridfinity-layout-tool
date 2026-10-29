@@ -10,6 +10,8 @@ const bins: SupporterBin[] = [
   { id: 'e', name: 'Eli', department: 0, isNewest: false },
   { id: 'q', name: 'Quinn', department: 0, message: 'Saved my whole garage', isNewest: false },
   { id: 'c', name: 'Cy', department: 3, isNewest: false },
+  { id: 's1', name: 'Somebody', department: 0, isNewest: false },
+  { id: 's2', name: 'Somebody', department: 3, isNewest: false },
   { id: 'x', name: null, isNewest: false },
 ];
 const plan = buildCreditsPlan(bins);
@@ -26,7 +28,17 @@ const schedule = buildRollSchedule(plan, binsById, measured, region, 100);
 
 describe('buildRollSchedule', () => {
   it('seats every credited bin after the title card', () => {
-    expect([...schedule.seatTimes.keys()].sort()).toEqual(['a', 'b', 'c', 'd', 'e', 'q', 'x']);
+    expect([...schedule.seatTimes.keys()].sort()).toEqual([
+      'a',
+      'b',
+      'c',
+      'd',
+      'e',
+      'q',
+      's1',
+      's2',
+      'x',
+    ]);
     for (const time of schedule.seatTimes.values()) expect(time).toBeGreaterThan(INTRO_SECONDS);
   });
 
@@ -44,8 +56,18 @@ describe('buildRollSchedule', () => {
     expect(schedule.timeline.offsetAt(schedule.seatTimes.get('q') ?? 0)).toBeCloseTo(at, 0);
   });
 
+  it('drops a whole crowd of bins together as its one line passes', () => {
+    const line = measured.find((m) => m.id === 'crowd-somebody');
+    const time = schedule.timeline.timeAt((line?.center ?? 0) - region.readingLine);
+    const [first, second] = ['s1', 's2'].map((id) => schedule.seatTimes.get(id) ?? 0);
+    expect(first).toBeCloseTo(time);
+    expect(second - first).toBeGreaterThan(0);
+    expect(second - first).toBeLessThan(0.1);
+    expect(schedule.creditTimes.get('s2')).toBeCloseTo(time);
+  });
+
   it('cues the camera to each department ahead of its heading, in roll order', () => {
-    expect(schedule.zoneCues.map((c) => c.zone)).toEqual([0, 3, 8]);
+    expect(schedule.zoneCues.map((c) => c.zone)).toEqual([0, 3, null, 8]);
     const heading = measured.find((m) => m.id === 'dept-3');
     const read = schedule.timeline.timeAt((heading?.center ?? 0) - region.readingLine);
     expect(schedule.zoneCues[1].time).toBeLessThan(read);

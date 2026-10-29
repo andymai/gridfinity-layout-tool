@@ -7,8 +7,7 @@ department's zone as their name passes, and the roll ends on the full plate
 with one glowing empty socket ("The end? your bin here"). Return visits
 (remembered per browser) and reduced motion open on that finale.
 
-Every supporter is a **real generated Gridfinity bin** (stacking lip, base feet,
-label tab) on a real socketed baseplate, styled like the app: THREE_COLORS
+Every supporter is a **real generated Gridfinity bin** on a real socketed baseplate, styled like the app: THREE_COLORS
 backgrounds, the #d4d8dc preview plastic, the user's accent. No amounts and no
 tiers are ever shown, and credit order is shuffled per load. The only
 per-person distinction is the newest supporter's glow and "just joined" tag.
@@ -16,7 +15,9 @@ per-person distinction is the newest supporter's glow and "just joined" tag.
 Departments are joke Gridfinity departments ("Spaghetti Incident Response"),
 one of eight per named supporter, assigned by the server and stable across
 renames. Anonymous supporters roll last in the Department of [REDACTED], one
-redaction bar each. A public message gets its own credit line beside the name.
+redaction bar each. Everyone named "Somebody" (Ko-fi's blank-name default)
+rolls as one crowd line but keeps their zone seat. A public message gets its
+own credit line beside the name.
 
 ## Supporter benefits
 
@@ -119,8 +120,8 @@ ingest rules. `data/supporters.json` is only the offline fallback (see below).
   flags the newest by `joinedAt`), `getSupporterCount(data?)`,
   `joinedThisMonth()`, `FALLBACK_SUPPORTERS`, and `isSupportersData()` (the API
   response is untrusted input, so narrow it).
-- `utils/creditsPlan.ts`: departments, the roll's items (message lines spread
-  between name blocks, gag cards), and each bin's zone and slot.
+- `utils/creditsPlan.ts`: departments, the roll's items (a names grid, then
+  message lines, then gag cards), and each bin's zone and slot.
 - `utils/supportersLayout.ts`: `computeZonedLayout()` (equal zones three
   across, one-socket aisles, a label row in front of each zone, the vacant
   socket) and `computeCameraFrame()`.

@@ -3,6 +3,7 @@ import type { TFunction } from '@/i18n';
 import {
   DEPARTMENT_NOTE_KEYS,
   DEPARTMENT_TITLE_KEYS,
+  KOFI_DEFAULT_NAME,
   type CreditItem,
 } from '../../utils/creditsPlan';
 import type { SupporterBin } from '../../utils/supportersData';
@@ -98,35 +99,73 @@ function PairedLine({
   );
 }
 
+function Heading({ title, note, accent }: { title: string; note?: string; accent: string }) {
+  return (
+    <div className="px-3 pb-5 pt-16 text-center">
+      <h3
+        className="text-[11px] uppercase leading-[1.7] tracking-[0.06em] sm:text-xs"
+        style={{ fontFamily: PIXEL_FONT, color: accent }}
+      >
+        {title}
+      </h3>
+      {note && <p className="mt-2 text-xs italic opacity-60">{note}</p>}
+    </div>
+  );
+}
+
 export function CreditItemView({ item, ctx }: { item: CreditItem; ctx: ItemContext }) {
   const { t } = ctx;
   switch (item.kind) {
     case 'department': {
       const note = DEPARTMENT_NOTE_KEYS[item.department];
       return (
-        <div className="px-3 pb-5 pt-16 text-center">
-          <h3
-            className="text-[11px] uppercase leading-[1.7] tracking-[0.06em] sm:text-xs"
-            style={{ fontFamily: PIXEL_FONT, color: ctx.accent }}
-          >
-            {t(DEPARTMENT_TITLE_KEYS[item.department])}
-          </h3>
-          {note && <p className="mt-2 text-xs italic opacity-60">{t(note)}</p>}
-        </div>
+        <Heading
+          title={t(DEPARTMENT_TITLE_KEYS[item.department])}
+          note={note && t(note)}
+          accent={ctx.accent}
+        />
       );
     }
+    case 'section':
+      return <Heading title={t(item.titleKey)} note={t(item.noteKey)} accent={ctx.accent} />;
     case 'names':
+      // Fixed-width cells keep the columns aligned row to row; a short last
+      // row centres under them.
       return (
-        <ul className="flex flex-wrap justify-center gap-x-5 gap-y-0.5 px-4 py-1.5">
+        <ul className="flex flex-wrap justify-center gap-y-0.5 px-2 pb-4 pt-1.5">
           {item.binIds.map((id) => {
             const bin = ctx.binsById.get(id);
             return bin ? (
-              <li key={id} className="max-w-full">
+              <li
+                key={id}
+                className={`flex min-w-0 justify-center ${ctx.stacked ? 'basis-1/2' : 'basis-1/3'}`}
+              >
                 <CreditName bin={bin} ctx={ctx} />
               </li>
             ) : null;
           })}
         </ul>
+      );
+    case 'crowd':
+      return (
+        <p className="flex items-baseline justify-center gap-2.5 px-4 pb-4 pt-1.5">
+          <span aria-hidden="true" className="text-[15px] font-medium">
+            {KOFI_DEFAULT_NAME}
+          </span>
+          <span
+            aria-hidden="true"
+            className="text-[11px]"
+            style={{ fontFamily: PIXEL_FONT, color: ctx.accent }}
+          >
+            ×{item.binIds.length}
+          </span>
+          <span className="sr-only">
+            {t('supporters.credits.somebody.crowdLabel', {
+              count: item.binIds.length,
+              name: KOFI_DEFAULT_NAME,
+            })}
+          </span>
+        </p>
       );
     case 'message': {
       const bin = ctx.binsById.get(item.binId);
