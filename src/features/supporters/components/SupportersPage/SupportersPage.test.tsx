@@ -128,6 +128,31 @@ describe('SupportersPage', () => {
     expect(screen.queryByText('supporters.thanksNamed')).not.toBeInTheDocument();
   });
 
+  it('celebrates a skip within three seconds', () => {
+    render(<SupportersPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'supporters.credits.skip' }));
+    expect(screen.getByText('supporters.achievements.speedrunner')).toBeInTheDocument();
+  });
+
+  describe('a shared credit link', () => {
+    afterEach(() => window.history.replaceState(null, '', '/'));
+
+    it('opens paused on its supporter, starring them, even after the credits were seen', () => {
+      markCreditsSeen();
+      window.history.replaceState(null, '', '/supporters?credit=Grace');
+      render(<SupportersPage />);
+      expect(screen.getByText('supporters.credits.nowStarring')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'supporters.credits.play' })).toBeInTheDocument();
+      expect(screen.getByText('supporters.thanksNamed')).toBeInTheDocument();
+    });
+
+    it('opens normally for a name that is not in the credits', () => {
+      window.history.replaceState(null, '', '/supporters?credit=Nobody');
+      render(<SupportersPage />);
+      expect(screen.queryByText('supporters.credits.nowStarring')).not.toBeInTheDocument();
+    });
+  });
+
   describe('a return visit', () => {
     beforeEach(() => markCreditsSeen());
 

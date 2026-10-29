@@ -18,6 +18,7 @@ export function VacantSocket({
   point,
   palette,
   visible,
+  occupied,
   reducedMotion,
   endTagRef,
   onSelect,
@@ -26,6 +27,8 @@ export function VacantSocket({
   point: ScenePoint;
   palette: SupportersPalette;
   visible: boolean;
+  /** The post-credits guest is sitting in it: hide the ghost, keep the tag. */
+  occupied: boolean;
   reducedMotion: boolean;
   endTagRef: React.RefObject<HTMLDivElement | null>;
   onSelect: () => void;
@@ -34,15 +37,16 @@ export function VacantSocket({
   const bodyRef = useRef<MeshStandardMaterial>(null);
   const edgeRef = useRef<LineBasicMaterial>(null);
   const fade = useRef(0);
+  const tagFade = useRef(0);
   const camera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
 
   useFrame((state, delta) => {
     // Reduced motion renders on demand, so an eased fade would stall part way.
-    const shown = visible ? 1 : 0;
-    fade.current = reducedMotion
-      ? shown
-      : fade.current + (shown - fade.current) * Math.min(1, delta * 3);
+    const ease = (from: number, to: number) =>
+      reducedMotion ? to : from + (to - from) * Math.min(1, delta * 3);
+    fade.current = ease(fade.current, visible && !occupied ? 1 : 0);
+    tagFade.current = ease(tagFade.current, visible ? 1 : 0);
     const pulse = reducedMotion ? 0.5 : 0.5 + 0.5 * Math.sin(state.clock.elapsedTime * 2.4);
     const group = groupRef.current;
     if (group) {
@@ -55,7 +59,7 @@ export function VacantSocket({
     const tag = endTagRef.current;
     if (!tag) return;
     projected.set(point.x, MESH_META.binHeight + 0.2 - SEAT_DEPTH, point.z).project(camera);
-    const onScreen = fade.current > 0.6 && projected.z < 1;
+    const onScreen = tagFade.current > 0.6 && projected.z < 1;
     tag.style.visibility = onScreen ? 'visible' : 'hidden';
     tag.style.transform = `translate(${((projected.x + 1) / 2) * size.width}px, ${
       ((1 - projected.y) / 2) * size.height

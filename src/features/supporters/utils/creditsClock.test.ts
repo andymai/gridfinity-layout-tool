@@ -36,6 +36,20 @@ describe('CreditsClock', () => {
     expect(clock.rate).toBeCloseTo(0, 2);
   });
 
+  it('says whether the end came from playing or from jumping there', () => {
+    const onEnd = vi.fn();
+    const clock = new CreditsClock(2, onEnd);
+    run(clock, 4);
+    expect(onEnd).toHaveBeenLastCalledWith(true);
+    clock.seek(0);
+    clock.seek(2);
+    expect(onEnd).toHaveBeenLastCalledWith(false);
+    clock.seek(1.5);
+    clock.setHoldRate(6);
+    run(clock, 2);
+    expect(onEnd).toHaveBeenLastCalledWith(false);
+  });
+
   it('ends once, and again only after it has been rewound', () => {
     const onEnd = vi.fn();
     const clock = new CreditsClock(10, onEnd);

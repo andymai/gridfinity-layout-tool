@@ -22,6 +22,7 @@ import { createTabLabelTexture } from '../../scene/labelTexture';
 import { MESH_META } from '../../data/meshes';
 import {
   SEAT_DEPTH,
+  easeInOutCubic,
   easeOutBack,
   easeOutCubic,
   type BakedGeometry,
@@ -30,6 +31,8 @@ import {
 const DROP_SECONDS = 0.6;
 /** Longest wait before a bin joins the cascade when the finale fills the plate at once. */
 const CASCADE_SPREAD = 0.9;
+const POKE_SECONDS = 0.9;
+const POKE_HEIGHT = 0.9;
 
 const tmpMatrix = new Matrix4();
 const tmpPosition = new Vector3();
@@ -56,6 +59,7 @@ interface BinInstancesProps {
   pointerTarget: React.RefObject<Vector3>;
   focusedId: string | null;
   onSelect: (id: string) => void;
+  onPoke: () => void;
   anonymousLabel: string;
 }
 
@@ -79,6 +83,7 @@ export function BinInstances({
   pointerTarget,
   focusedId,
   onSelect,
+  onPoke,
   anonymousLabel,
 }: BinInstancesProps) {
   const meshRef = useRef<InstancedMesh>(null);
@@ -86,6 +91,8 @@ export function BinInstances({
   const labelMats = useRef<(MeshStandardMaterial | null)[]>([]);
   const progressRef = useRef(new Float32Array(0));
   const elapsed = useRef(0);
+  /** When each bin was last poked, in `elapsed` seconds; negative while at rest. */
+  const pokedAt = useRef(new Float64Array(0));
   const finaleElapsed = useRef(0);
 
   const motion = useMemo(
@@ -125,6 +132,8 @@ export function BinInstances({
     const dt = Math.min(delta, 0.1);
     if (progressRef.current.length !== bins.length)
       progressRef.current = new Float32Array(bins.length);
+    if (pokedAt.current.length !== bins.length)
+      pokedAt.current = new Float64Array(bins.length).fill(-1);
     const progress = progressRef.current;
     elapsed.current += dt;
     finaleElapsed.current = phase === 'finale' ? finaleElapsed.current + dt : 0;
@@ -166,9 +175,21 @@ export function BinInstances({
       if (bin.isNewest) lift += 0.12;
       if (focused) lift += 0.5;
 
+      let spin = 0;
+      const poke = pokedAt.current[i];
+      if (poke >= 0) {
+        const t = (elapsed.current - poke) / POKE_SECONDS;
+        if (t >= 1) {
+          pokedAt.current[i] = -1;
+        } else {
+          lift += Math.sin(Math.PI * t) * POKE_HEIGHT;
+          spin = easeInOutCubic(t) * Math.PI * 2;
+        }
+      }
+
       const baseY = MathUtils.lerp(m.startY, -SEAT_DEPTH, easeOutCubic(p));
       tmpPosition.set(seat.x, baseY + p * lift, seat.z);
-      tmpEuler.set(tiltX, 0, tiltZ);
+      tmpEuler.set(tiltX, spin, tiltZ);
       tmpQuaternion.setFromEuler(tmpEuler);
       tmpScale.setScalar(Math.max(0.0001, easeOutBack(p) * (focused ? 1.08 : 1)));
       tmpMatrix.compose(tmpPosition, tmpQuaternion, tmpScale);
@@ -225,11 +246,17 @@ export function BinInstances({
         args={[geometry.solid, undefined, bins.length]}
         key={bins.length}
         frustumCulled={false}
-        onPointerDown={(e) => {
+        // onClick, not onPointerDown: a drag that starts on a bin is a scrub,
+        // and the roll swallows the click that ends one.
+        onClick={(e) => {
           if (e.instanceId === undefined) return;
           const bin = bins.at(e.instanceId);
           if (!bin || progressRef.current[e.instanceId] < 0.5) return;
           e.stopPropagation();
+          if (!reducedMotion && pokedAt.current[e.instanceId] < 0) {
+            pokedAt.current[e.instanceId] = elapsed.current;
+          }
+          onPoke();
           onSelect(bin.id);
         }}
         onPointerOver={() => (document.body.style.cursor = 'pointer')}

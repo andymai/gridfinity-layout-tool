@@ -77,6 +77,12 @@ ingest rules. `data/supporters.json` is only the offline fallback (see below).
 - **Input** (`hooks/useRollScrub.ts`): wheel and drag scrub by distance, arrows
   hold to fast-forward or rewind, Space pauses, End skips. Any control that
   takes its own wheel or keys needs `data-no-scrub`.
+- **Extras ride the same clock.** Achievements (`hooks/useAchievements.ts`)
+  are a per-browser keepsake; "sat through" needs the clock's `played` end,
+  which a seek, skip or held fast-forward never reports. A shared
+  `?credit=<name>` link (`utils/creditLink.ts`) lands from `CreditsRoll`'s
+  ready callback, because seeking needs the roll measured. Pokes and the
+  post-credits guest (`postCreditsPose.ts`) live only in the scene.
 
 ## Key files
 
@@ -172,8 +178,8 @@ ingest rules. `data/supporters.json` is only the offline fallback (see below).
 - **Find-your-bin can't find the anonymous:** a bin is located by NAME, the only
   handle the public list carries, so the search reports "can't be searched" and
   the panel's "show me my bin" is absent for them.
-- **The panel shows neither branch until the status read settles**, so a
-  supporter on a slow connection never reads an ask aimed at the unpaid.
+- **The panel waits for the status read** rather than guessing a branch and
+  showing a supporter the ask.
 - **Sign-in from here stashes a return path** (`saveAuthReturnPath('/supporters')`),
   restored by `useCommunityLikeReturn` ABOVE its community feature-flag gate.
 - Ko-fi doors (`kofi_clicked` sources): `supporters_credits` (the quiet button

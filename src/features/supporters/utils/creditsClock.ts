@@ -1,4 +1,6 @@
 type FrameListener = (clock: CreditsClock) => void;
+/** `played`: reached by ordinary playback, not a seek, a skip or a held fast-forward. */
+type EndHandler = (played: boolean) => void;
 
 const RATE_RESPONSE = 8;
 
@@ -16,14 +18,14 @@ export class CreditsClock {
   private paused = false;
   private ended = false;
   private readonly listeners = new Set<FrameListener>();
-  private onEnd: () => void;
+  private onEnd: EndHandler;
 
-  constructor(duration: number, onEnd: () => void = () => {}) {
+  constructor(duration: number, onEnd: EndHandler = () => {}) {
     this.duration = duration;
     this.onEnd = onEnd;
   }
 
-  setEndHandler(onEnd: () => void): void {
+  setEndHandler(onEnd: EndHandler): void {
     this.onEnd = onEnd;
   }
 
@@ -37,11 +39,11 @@ export class CreditsClock {
 
   advance(dt: number): void {
     this.rate += (this.targetRate - this.rate) * (1 - Math.exp(-dt * RATE_RESPONSE));
-    this.setTime(this.time + this.rate * dt);
+    this.setTime(this.time + this.rate * dt, this.holdRate === null);
   }
 
   seek(time: number): void {
-    this.setTime(time);
+    this.setTime(time, false);
   }
 
   setPaused(paused: boolean): void {
@@ -56,7 +58,7 @@ export class CreditsClock {
 
   setDuration(duration: number): void {
     this.duration = duration;
-    this.setTime(this.time);
+    this.setTime(this.time, false);
   }
 
   subscribe(listener: FrameListener): () => void {
@@ -64,13 +66,13 @@ export class CreditsClock {
     return () => this.listeners.delete(listener);
   }
 
-  private setTime(time: number): void {
+  private setTime(time: number, played: boolean): void {
     this.time = Math.min(this.duration, Math.max(0, time));
     if (this.time < this.duration) {
       this.ended = false;
     } else if (!this.ended && this.duration > 0) {
       this.ended = true;
-      this.onEnd();
+      this.onEnd(played);
     }
     for (const listener of this.listeners) listener(this);
   }

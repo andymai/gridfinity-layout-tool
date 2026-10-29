@@ -1,5 +1,14 @@
-import { useState } from 'react';
-import { Button, Dialog, Field, Input, Spinner, Switch, Textarea } from '@/design-system';
+import { useEffect, useState } from 'react';
+import {
+  Button,
+  CopyButton,
+  Dialog,
+  Field,
+  Input,
+  Spinner,
+  Switch,
+  Textarea,
+} from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { signInUrl, type AuthProvider } from '@/core/sync/session/sessionApi';
@@ -8,6 +17,8 @@ import { KOFI_URL } from '@/shared/constants/links';
 import { saveAuthReturnPath } from '@/shared/utils/communityReturnPath';
 import { MAX_DISPLAY_NAME_LENGTH, MAX_MESSAGE_LENGTH } from '../../constants';
 import type { SupporterProfilePatch, SupporterStatus } from '../../api/supporterClient';
+import { hasSeenStamp, markStampSeen } from '../../utils/creditsSeen';
+import { DepartmentStamp } from '../DepartmentStamp';
 
 export interface SupporterPanelProps {
   open: boolean;
@@ -18,6 +29,10 @@ export interface SupporterPanelProps {
   save: (patch: SupporterProfilePatch) => Promise<{ kind: string; message?: string } | null>;
   /** Fly the camera to the caller's own bin. Absent when their bin isn't on this wall. */
   onFindMyBin?: () => void;
+  /** The caller's credits department, for a supporter. */
+  department?: string;
+  /** A link that opens the credits on the caller's name; absent for an anonymous bin. */
+  creditLink?: string;
 }
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
@@ -68,6 +83,8 @@ export function SupporterPanel({
   settled,
   save,
   onFindMyBin,
+  department,
+  creditLink,
 }: SupporterPanelProps) {
   const t = useTranslation();
   const sessionStatus = useSessionStore((state) => state.status);
@@ -76,6 +93,11 @@ export function SupporterPanel({
   const [badgePublic, setBadgePublic] = useState(status.badgePublic);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [saveError, setSaveError] = useState('');
+  const [stampFresh, setStampFresh] = useState(() => !hasSeenStamp());
+  const stampShown = open && settled && status.supporter && department !== undefined;
+  useEffect(() => {
+    if (stampShown) markStampSeen();
+  }, [stampShown]);
 
   // Adopt the server's record whenever it changes — the first settle, and every
   // successful save (which returns the FILTERED values, not what was typed, so
@@ -128,7 +150,15 @@ export function SupporterPanel({
   const isSupporter = status.supporter;
 
   return (
-    <Dialog.Root open onClose={onClose} size="sm" mobilePresentation="sheet">
+    <Dialog.Root
+      open
+      onClose={() => {
+        setStampFresh(false);
+        onClose();
+      }}
+      size="sm"
+      mobilePresentation="sheet"
+    >
       <Dialog.Header
         title={isSupporter ? t('supporters.panel.yoursTitle') : t('supporters.panel.title')}
         closeAriaLabel={t('common.closeDialog')}
@@ -145,11 +175,23 @@ export function SupporterPanel({
         ) : isSupporter ? (
           <div className="flex flex-col gap-4">
             <p className="text-sm text-content-secondary">{t('supporters.panel.yoursBody')}</p>
-
-            {onFindMyBin && (
-              <Button variant="secondary" onClick={onFindMyBin} className="self-start">
-                {t('supporters.panel.findMine')}
-              </Button>
+            {department && <DepartmentStamp department={department} animate={stampFresh} />}
+            {(onFindMyBin || creditLink) && (
+              <div className="flex flex-wrap gap-2">
+                {onFindMyBin && (
+                  <Button variant="secondary" onClick={onFindMyBin}>
+                    {t('supporters.panel.findMine')}
+                  </Button>
+                )}
+                {creditLink && (
+                  <CopyButton
+                    value={creditLink}
+                    aria-label={t('supporters.panel.copyCreditLink')}
+                    label={t('supporters.panel.copyCreditLink')}
+                    copiedLabel={t('supporters.panel.creditLinkCopied')}
+                  />
+                )}
+              </div>
             )}
 
             <Field label={t('supporters.panel.nameLabel')} hint={t('supporters.panel.nameHint')}>

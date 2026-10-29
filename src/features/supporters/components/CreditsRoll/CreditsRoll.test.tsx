@@ -111,7 +111,7 @@ describe('CreditsRoll', () => {
   });
 
   it('measures itself into a schedule that seats every bin', () => {
-    const onSchedule = vi.fn<(s: RollSchedule) => void>();
+    const onSchedule = vi.fn<(s: RollSchedule | null) => void>();
     render(<CreditsRoll {...props({ onSchedule })} />);
     const schedule = onSchedule.mock.lastCall?.[0];
     expect([...(schedule?.seatTimes.keys() ?? [])].sort()).toEqual(['a', 'b', 'q', 'x']);
@@ -119,15 +119,15 @@ describe('CreditsRoll', () => {
 
   it('slides with the clock', () => {
     const clock = new CreditsClock(0);
-    let schedule: RollSchedule | undefined;
+    const seen: { schedule: RollSchedule | null } = { schedule: null };
     const { container } = render(
-      <CreditsRoll {...props({ clock, onSchedule: (s) => (schedule = s) })} />
+      <CreditsRoll {...props({ clock, onSchedule: (s) => (seen.schedule = s) })} />
     );
-    clock.setDuration(schedule?.timeline.duration ?? 0);
+    clock.setDuration(seen.schedule?.timeline.duration ?? 0);
     act(() => clock.seek(clock.duration));
     const list = container.querySelector<HTMLElement>('.will-change-transform');
     expect(list?.style.transform).toBe(
-      `translate3d(0, ${-(schedule?.timeline.endOffset ?? 0)}px, 0)`
+      `translate3d(0, ${-(seen.schedule?.timeline.endOffset ?? 0)}px, 0)`
     );
   });
 
@@ -136,7 +136,7 @@ describe('CreditsRoll', () => {
     const clock = new CreditsClock(100);
     const { container } = render(<CreditsRoll {...props({ clock, mode: 'scroll', onSchedule })} />);
     clock.seek(50);
-    expect(onSchedule).not.toHaveBeenCalled();
+    expect(onSchedule).toHaveBeenCalledWith(null);
     expect(container.querySelector<HTMLElement>('.will-change-transform')?.style.transform).toBe(
       ''
     );

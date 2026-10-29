@@ -21,6 +21,7 @@ import { BinInstances } from './supportersSceneBins';
 import { CreditsCamera } from './supportersSceneCamera';
 import type { StageFrame } from './supportersSceneStage';
 import { VacantSocket } from './supportersSceneVacant';
+import { PostCreditsScene } from './supportersScenePostCredits';
 
 // Self-hosted Draco decoder (public/draco/): CSP forbids the default CDN.
 useGLTF.setDecoderPath('/draco/');
@@ -41,6 +42,11 @@ interface SceneProps {
   /** Frame the focused bin rather than its department (a paused, clicked credit). */
   focusCamera: boolean;
   onSelect: (id: string) => void;
+  onPoke: () => void;
+  /** The post-credits scene has played to its end. */
+  onPostCredits: () => void;
+  /** Taped on the stranger's bin in the post-credits scene. */
+  postCreditsLabel: string;
   anonymousLabel: string;
   /** Translated department names, indexed like the plan's zones. */
   departmentLabels: string[];
@@ -63,6 +69,9 @@ export function SupportersScene({
   focusedId,
   focusCamera,
   onSelect,
+  onPoke,
+  onPostCredits,
+  postCreditsLabel,
   anonymousLabel,
   departmentLabels,
   flyTo,
@@ -95,6 +104,11 @@ export function SupportersScene({
 
   const pointerTarget = useRef(new Vector3(0, 0, 0));
   const [orbitReady, setOrbitReady] = useState(false);
+  const [guest, setGuest] = useState(false);
+  const guestLeft = useCallback(() => {
+    setGuest(false);
+    onPostCredits();
+  }, [onPostCredits]);
   const focusSeat = focusCamera && focusedId ? (seatOf(focusedId) ?? null) : null;
 
   return (
@@ -147,6 +161,7 @@ export function SupportersScene({
         pointerTarget={pointerTarget}
         focusedId={focusedId}
         onSelect={onSelect}
+        onPoke={onPoke}
         anonymousLabel={anonymousLabel}
       />
       <VacantSocket
@@ -154,9 +169,19 @@ export function SupportersScene({
         point={layout.vacant}
         palette={palette}
         visible={phase === 'finale'}
+        occupied={guest}
         reducedMotion={reducedMotion}
         endTagRef={endTagRef}
         onSelect={onVacantSelect}
+      />
+      <PostCreditsScene
+        geometry={binGeometry}
+        point={layout.vacant}
+        palette={palette}
+        armed={phase === 'finale' && orbitReady && !reducedMotion}
+        label={postCreditsLabel}
+        onStart={() => setGuest(true)}
+        onDone={guestLeft}
       />
 
       <ShadowBlob

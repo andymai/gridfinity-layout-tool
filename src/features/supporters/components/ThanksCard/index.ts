@@ -1,0 +1,1 @@
+export { ThanksCard } from './ThanksCard';

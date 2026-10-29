@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { hasSeenCredits, markCreditsSeen } from './creditsSeen';
+import { hasSeenCredits, hasSeenStamp, markCreditsSeen, markStampSeen } from './creditsSeen';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -11,6 +11,13 @@ describe('creditsSeen', () => {
     expect(hasSeenCredits()).toBe(false);
     markCreditsSeen();
     expect(hasSeenCredits()).toBe(true);
+  });
+
+  it('remembers the department stamp separately', () => {
+    markCreditsSeen();
+    expect(hasSeenStamp()).toBe(false);
+    markStampSeen();
+    expect(hasSeenStamp()).toBe(true);
   });
 
   it('treats blocked storage as a first visit rather than throwing', () => {

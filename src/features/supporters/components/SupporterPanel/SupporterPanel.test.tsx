@@ -119,6 +119,31 @@ describe('SupporterPanel', () => {
     });
   });
 
+  describe("a supporter's department and credit link", () => {
+    beforeEach(() => localStorage.clear());
+
+    it('stamps their department and offers a link to their credit', () => {
+      renderPanel({
+        status: supporter(),
+        department: 'Spaghetti Incident Response',
+        creditLink: 'https://example.test/supporters?credit=Jo',
+      });
+      expect(screen.getByText('Assigned to')).toBeInTheDocument();
+      expect(screen.getByText('Spaghetti Incident Response')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Copy link to my credit' })).toBeInTheDocument();
+    });
+
+    it('offers no link to an anonymous bin, which has no name to find', () => {
+      renderPanel({ status: supporter({ name: null }), department: 'Department of [REDACTED]' });
+      expect(screen.queryByRole('button', { name: 'Copy link to my credit' })).toBeNull();
+    });
+
+    it('remembers that the stamp has been seen', () => {
+      renderPanel({ status: supporter(), department: 'Spaghetti Incident Response' });
+      expect(localStorage.getItem('gridfinity-supporters-stamped')).toBe('1');
+    });
+  });
+
   it('shows neither branch until the status read settles', () => {
     renderPanel({ status: supporter(), settled: false });
     // A supporter must never read "here is what supporters get" — an ask aimed

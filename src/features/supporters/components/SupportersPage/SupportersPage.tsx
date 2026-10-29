@@ -3,7 +3,6 @@ import { Canvas } from '@react-three/fiber';
 // Side-effect: must run before any <Text> mounts under this Canvas.
 import '@/shared/webgl/configureTroikaText';
 import { useSettingsStore } from '@/core/store';
-import { Button, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { KOFI_URL } from '@/shared/constants/links';
@@ -12,33 +11,48 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useResolvedTheme } from '@/shared/hooks/useThemeEffect';
 import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
 import { buildSupporterBins, getSupporterCount, joinedThisMonth } from '../../utils/supportersData';
-import { DEPARTMENT_TITLE_KEYS, buildCreditsPlan, departmentOf } from '../../utils/creditsPlan';
+import type { SupporterBin } from '../../utils/supportersData';
+import {
+  DEPARTMENT_TITLE_KEYS,
+  REDACTED_DEPARTMENT,
+  buildCreditsPlan,
+  departmentOf,
+  fallbackDepartment,
+} from '../../utils/creditsPlan';
 import { computeZonedLayout } from '../../utils/supportersLayout';
 import { INTRO_SECONDS, type RollSchedule } from '../../utils/rollSchedule';
 import type { CreditsClock } from '../../utils/creditsClock';
 import { hasSeenCredits, markCreditsSeen } from '../../utils/creditsSeen';
-import { findSupporter } from '../../utils/findSupporter';
+import { creditFromSearch, creditLinkFor } from '../../utils/creditLink';
+import { isSupporterDepartment } from '../../constants';
 import { useSupportersData } from '../../hooks/useSupportersData';
 import { useSupporterStatus } from '../../hooks/useSupporterStatus';
 import { useCreditsClock } from '../../hooks/useCreditsClock';
-import { NO_SCRUB_ATTR, useRollScrub } from '../../hooks/useRollScrub';
+import { useRollScrub } from '../../hooks/useRollScrub';
 import { useProfileOverlay } from '../../hooks/useProfileOverlay';
+import { useSupporterFocus } from '../../hooks/useSupporterFocus';
+import { useAchievements } from '../../hooks/useAchievements';
 import { getSupportersPalette } from '../../scene/palette';
-import { SupportersScene, type FlyToRequest } from '../SupportersScene';
+import { SupportersScene } from '../SupportersScene';
 import { FULL_STAGE, type StageFrame } from '../SupportersScene/supportersSceneStage';
 import { SupporterPanel } from '../SupporterPanel';
 import { CreditsRoll } from '../CreditsRoll';
 import { CreditsTitleCard } from '../CreditsTitleCard';
 import { CreditsControls } from '../CreditsControls';
 import { CreditsFinale } from '../CreditsFinale';
+import { SupportersHeader } from '../SupportersHeader';
+import { ThanksCard } from '../ThanksCard';
+import { CreditSpotlight } from '../CreditSpotlight';
+import { AchievementToast } from '../AchievementToast';
 import { useCountUp } from './useCountUp';
 import { CtaBurst } from './SupportersFlourishes';
 
 /** Roll speed outside quotes, px/s. Phones read one narrow column, so they go a touch slower. */
 const BASE_SPEED = { side: 125, stacked: 105 };
 const HINT_MS = 9000;
-/** Past a bin's landing, so pausing on its credit shows it seated rather than about to drop. */
-const SEATED_AFTER = 0.75;
+/** Skipping sooner than this after the roll starts earns the speedrunner achievement. */
+const SPEEDRUN_SECONDS = 3;
+const POKES_FOR_ACHIEVEMENT = 10;
 /** Width of the credits column beside the plate, matching `CreditsRoll`. */
 const columnWidth = (viewport: number) => Math.max(340, Math.min(viewport * 0.44, 600));
 
@@ -47,7 +61,7 @@ const columnWidth = (viewport: number) => Math.max(340, Math.min(viewport * 0.44
  * that starts empty, each bin dropping into its department's zone as its name
  * passes, ending on the full plate with one empty socket left for the next
  * supporter. A first visit rolls; a return visit (or reduced motion) opens on
- * the finale.
+ * the finale, and a shared credit link opens paused on its supporter.
  */
 export function SupportersPage() {
   const t = useTranslation();
@@ -59,6 +73,7 @@ export function SupportersPage() {
   const { data: supporters, settled } = useSupportersData();
   const supporter = useSupporterStatus();
   const { effective, saveProfile } = useProfileOverlay(supporters, supporter);
+  const { toast, unlock } = useAchievements();
 
   const bins = useMemo(() => buildSupporterBins(effective), [effective]);
   const binsById = useMemo(() => new Map(bins.map((b) => [b.id, b])), [bins]);
@@ -74,32 +89,63 @@ export function SupportersPage() {
     hasSeenCredits() ? 'finale' : 'roll'
   );
   const phase = reducedMotion ? 'finale' : rollPhase;
-  const finish = useCallback(() => {
-    setPhase('finale');
-    markCreditsSeen();
-  }, []);
+  const roll = phase === 'roll';
+  const finish = useCallback(
+    (played: boolean) => {
+      setPhase('finale');
+      markCreditsSeen();
+      if (played) unlock('satThrough');
+    },
+    [unlock]
+  );
+  const openRoll = useCallback(() => setPhase('roll'), []);
 
   const [schedule, setSchedule] = useState<RollSchedule | null>(null);
-  const rolling = phase === 'roll' && !reducedMotion && settled && schedule !== null;
-  const { clock, paused, setPaused } = useCreditsClock(rolling, finish);
-  const onSchedule = useCallback(
-    (next: RollSchedule) => {
-      setSchedule(next);
-      clock.setDuration(next.timeline.duration);
-    },
-    [clock]
+  const { clock, paused, setPaused } = useCreditsClock(
+    roll && settled && schedule !== null,
+    finish
   );
 
-  const [focusedId, setFocusedId] = useState<string | null>(null);
-  const [flyTo, setFlyTo] = useState<FlyToRequest | null>(null);
-  const flyNonce = useRef(0);
-  const [findQuery, setFindQuery] = useState('');
-  const [findStatus, setFindStatus] = useState<string | null>(null);
+  const status = supporter.status;
+  const onShown = useCallback(
+    (bin: SupporterBin) => {
+      if (status.supporter && status.name !== null && bin.name === status.name) {
+        unlock('foundOwnBin');
+      }
+    },
+    [status, unlock]
+  );
+  const [creditName] = useState(() => creditFromSearch(window.location.search));
+  const focus = useSupporterFocus({
+    bins,
+    rolling: roll,
+    schedule,
+    clock,
+    setPaused,
+    departmentLabels,
+    creditName,
+    openRoll,
+    onShown,
+  });
+  const { focusedId, setFocusedId, togglePause, landCreditLink } = focus;
+
+  const onSchedule = useCallback(
+    (next: RollSchedule | null) => {
+      if (next) {
+        setSchedule(next);
+        clock.setDuration(next.timeline.duration);
+      }
+      landCreditLink(next);
+    },
+    [clock, landCreditLink]
+  );
+
   const [burst, setBurst] = useState<{ x: number; y: number; seed: number } | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [showHint, setShowHint] = useState(true);
   const mainRef = useRef<HTMLElement>(null);
   const endTagRef = useRef<HTMLDivElement>(null);
+  const pokes = useRef(0);
 
   // Bins set document.body.cursor on hover; reset it if we unmount mid-hover.
   useEffect(() => () => void (document.body.style.cursor = ''), []);
@@ -111,18 +157,13 @@ export function SupportersPage() {
     return () => clearTimeout(id);
   }, [phase]);
 
-  const togglePause = useCallback(() => {
-    const next = !clock.isPaused;
-    setPaused(next);
-    if (!next) setFocusedId(null);
-  }, [clock, setPaused]);
-
   const skip = useCallback(() => {
+    if (clock.time < SPEEDRUN_SECONDS) unlock('speedrunner');
     if (clock.duration > 0) clock.seek(clock.duration);
     setPaused(false);
     setFocusedId(null);
-    finish();
-  }, [clock, setPaused, finish]);
+    finish(false);
+  }, [clock, setPaused, setFocusedId, finish, unlock]);
 
   const replay = useCallback(() => {
     clock.seek(0);
@@ -130,10 +171,16 @@ export function SupportersPage() {
     setFocusedId(null);
     setShowHint(true);
     setPhase('roll');
-  }, [clock, setPaused]);
+  }, [clock, setPaused, setFocusedId]);
+
+  const onPoke = useCallback(() => {
+    pokes.current += 1;
+    if (pokes.current >= POKES_FOR_ACHIEVEMENT) unlock('poked10');
+  }, [unlock]);
+  const onPostCredits = useCallback(() => unlock('postCredits'), [unlock]);
 
   useRollScrub({
-    enabled: phase === 'roll' && !reducedMotion,
+    enabled: roll,
     target: mainRef,
     clock,
     timeline: schedule?.timeline ?? null,
@@ -142,54 +189,12 @@ export function SupportersPage() {
     onSkip: skip,
   });
 
-  /**
-   * Point at one supporter: mid-roll, pause with their bin seated (jumping to
-   * their credit when found by name, nudging forward only as far as the drop
-   * when clicked); otherwise fly to their bin.
-   */
-  const showSupporter = useCallback(
-    (id: string, jump: boolean) => {
-      setFocusedId(id);
-      if (phase === 'roll' && !reducedMotion) {
-        const seated = schedule?.seatTimes.get(id);
-        if (seated !== undefined) {
-          clock.seek(jump ? seated + SEATED_AFTER : Math.max(clock.time, seated + SEATED_AFTER));
-        }
-        setPaused(true);
-      } else {
-        flyNonce.current += 1;
-        setFlyTo({ id, nonce: flyNonce.current });
-      }
-    },
-    [phase, reducedMotion, schedule, clock, setPaused]
-  );
-
-  const onCredit = useCallback(
-    (id: string) => {
-      if (phase === 'roll' && clock.isPaused && focusedId === id) togglePause();
-      else showSupporter(id, false);
-    },
-    [phase, clock, focusedId, togglePause, showSupporter]
-  );
-
-  const onKeyboardFocus = useCallback(
-    (id: string) => {
-      const at = schedule?.creditTimes.get(id);
-      if (at !== undefined) clock.seek(at);
-      setPaused(true);
-      // An earlier selection would keep the camera and card on someone else.
-      setFocusedId((current) => (current === id ? current : null));
-    },
-    [schedule, clock, setPaused]
-  );
-
   const count = useCountUp(total, !reducedMotion && settled && phase === 'finale');
 
-  const roll = phase === 'roll' && !reducedMotion;
-  const besidePlateEarly = roll || reducedMotion;
+  const besidePlate = roll || reducedMotion;
   const scrimRef = useRef<HTMLDivElement>(null);
   // Fully opaque beside the plate: at anything less, the bright grid lines show through the text.
-  const scrimOpacity = besidePlateEarly ? 1 : theme === 'dark' ? 0.92 : 0.88;
+  const scrimOpacity = besidePlate ? 1 : theme === 'dark' ? 0.92 : 0.88;
   // The title card owns the whole screen, so the column's scrim only rises as
   // the first credits arrive. Driven by the clock so a scrub back undoes it.
   useEffect(() => {
@@ -217,33 +222,22 @@ export function SupportersPage() {
     window.open(KOFI_URL, '_blank', 'noopener,noreferrer');
   };
 
-  const handleFind = () => {
-    const found = findSupporter(bins, findQuery);
-    if (!found) {
-      setFindStatus(
-        findQuery.trim() ? t('supporters.find.notFound', { name: findQuery.trim() }) : null
-      );
-      return;
-    }
-    showSupporter(found.bin.id, true);
-    setFindStatus(
-      found.exactMatches > 1
-        ? t('supporters.find.multiple', { count: found.exactMatches, name: found.bin.name })
-        : t('supporters.find.department', {
-            name: found.bin.name,
-            department: departmentLabels[departmentOf(found.bin)],
-          })
-    );
-  };
-
   // The caller's bin is found by NAME, the only handle the public list carries,
   // so an anonymous supporter has no findable bin and the affordance is absent.
   const myBin =
-    supporter.status.supporter && supporter.status.name !== null
-      ? (bins.find((b) => b.name === supporter.status.name) ?? null)
+    status.supporter && status.name !== null
+      ? (bins.find((b) => b.name === status.name) ?? null)
       : null;
+  const myDepartment = !status.supporter
+    ? undefined
+    : departmentLabels[
+        status.name === null
+          ? REDACTED_DEPARTMENT
+          : isSupporterDepartment(status.department)
+            ? status.department
+            : fallbackDepartment(status.name)
+      ];
 
-  const besidePlate = besidePlateEarly;
   const column = columnWidth(viewport);
   const stage: StageFrame = !besidePlate
     ? FULL_STAGE
@@ -270,7 +264,7 @@ export function SupportersPage() {
         frameloop={reducedMotion ? 'demand' : 'always'}
         camera={{ fov: 38, near: 0.1, far: 220, position: [2, 10, 14] }}
         gl={{ antialias: true, alpha: false }}
-        onPointerMissed={() => phase === 'finale' && setFocusedId(null)}
+        onPointerMissed={() => setFocusedId(null)}
       >
         <Suspense fallback={null}>
           <SupportersScene
@@ -286,10 +280,13 @@ export function SupportersPage() {
             reducedMotion={reducedMotion}
             focusedId={focusedId}
             focusCamera={roll && paused}
-            onSelect={phase === 'roll' ? onCredit : setFocusedId}
+            onSelect={setFocusedId}
+            onPoke={onPoke}
+            onPostCredits={onPostCredits}
+            postCreditsLabel={t('supporters.credits.postCreditsTape')}
             anonymousLabel={t('supporters.anonymous')}
             departmentLabels={departmentLabels}
-            flyTo={flyTo}
+            flyTo={focus.flyTo}
             endTagRef={endTagRef}
             onVacantSelect={() => {
               trackEvent('kofi_clicked', { source: 'supporters_socket' });
@@ -329,85 +326,29 @@ export function SupportersPage() {
         hidden={!besidePlate}
         focusedId={focusedId}
         onSchedule={onSchedule}
-        onCredit={onCredit}
-        onKeyboardFocus={onKeyboardFocus}
+        onCredit={focus.onCredit}
+        onKeyboardFocus={focus.onKeyboardFocus}
       />
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between gap-3 p-5">
-        <Button
-          variant="ghost"
-          onClick={navigateHome}
-          className="pointer-events-auto flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1.5 text-sm"
-          style={{ color: 'inherit' }}
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          {t('supporters.back')}
-        </Button>
-        <div className="flex flex-col items-end gap-2" {...{ [NO_SCRUB_ATTR]: '' }}>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleFind();
-            }}
-            className="pointer-events-auto flex items-center gap-2"
-          >
-            <div className="w-28 sm:w-44">
-              <Input
-                value={findQuery}
-                onChange={(e) => setFindQuery(e.target.value)}
-                placeholder={t('supporters.find.placeholder')}
-                aria-label={t('supporters.find.placeholder')}
-                size="sm"
-                fullWidth
-              />
-            </div>
-            <Button type="submit" variant="secondary" className="px-3 py-1.5 text-sm">
-              {t('supporters.find.submit')}
-            </Button>
-          </form>
-          {findStatus && (
-            <p
-              className="pointer-events-none max-w-[16rem] rounded-md bg-black/55 px-2.5 py-1 text-right text-xs text-white/90 backdrop-blur-sm"
-              role="status"
-            >
-              {findStatus}
-            </p>
-          )}
-        </div>
-      </div>
+      <SupportersHeader
+        query={focus.findQuery}
+        onQueryChange={focus.setFindQuery}
+        onFind={focus.findText}
+        status={focus.findStatus}
+        onBack={navigateHome}
+      />
 
       {focused && (
-        <div
-          className="pointer-events-none absolute bottom-[20%] right-0 z-20 flex justify-center px-6"
-          style={{ left: stageInset }}
-        >
-          <div
-            className="max-w-sm rounded-md px-5 py-3 text-center text-sm shadow-lg motion-safe:animate-fade-in"
-            style={{
-              background: palette.tape,
-              color: palette.tapeInk,
-              border: `1px solid ${palette.accent}66`,
-              boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
-            }}
-          >
-            <p className="font-semibold">
-              {focused.name
-                ? t('supporters.thanksNamed', { name: focused.name })
-                : t('supporters.thanksAnon')}
-            </p>
-            {focused.message && <q className="mt-1 block italic opacity-80">{focused.message}</q>}
-            <p className="mt-1.5 text-micro uppercase tracking-wider opacity-60">
-              {departmentLabels[departmentOf(focused)]}
-            </p>
-          </div>
-        </div>
+        <ThanksCard
+          bin={focused}
+          department={departmentLabels[departmentOf(focused)]}
+          palette={palette}
+          stageInset={stageInset}
+        />
+      )}
+
+      {focus.spotlight && (
+        <CreditSpotlight name={focus.spotlight} accent={palette.accent} stageInset={stageInset} />
       )}
 
       {roll && (
@@ -431,9 +372,7 @@ export function SupportersPage() {
           theme={theme}
           stageInset={stageInset}
           panelLabel={
-            supporter.status.supporter
-              ? t('supporters.panel.yoursTitle')
-              : t('supporters.panel.title')
+            status.supporter ? t('supporters.panel.yoursTitle') : t('supporters.panel.title')
           }
           endTagRef={endTagRef}
           onKofi={handleKofiClick('supporters_page')}
@@ -442,16 +381,24 @@ export function SupportersPage() {
         />
       )}
 
+      <AchievementToast id={toast} accent={palette.accent} />
+
       <SupporterPanel
         open={panelOpen}
         onClose={() => setPanelOpen(false)}
-        status={supporter.status}
+        status={status}
         settled={supporter.settled}
         save={saveProfile}
+        department={myDepartment}
+        creditLink={
+          status.supporter && status.name
+            ? creditLinkFor(status.name, window.location.origin)
+            : undefined
+        }
         onFindMyBin={
           myBin
             ? () => {
-                showSupporter(myBin.id, true);
+                focus.showSupporter(myBin.id, true);
                 setPanelOpen(false);
               }
             : undefined

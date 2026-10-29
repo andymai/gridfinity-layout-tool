@@ -30,7 +30,8 @@ export interface CreditsRollProps {
   /** Faded out for the finale, but kept in the document for screen readers. */
   hidden: boolean;
   focusedId: string | null;
-  onSchedule: (schedule: RollSchedule) => void;
+  /** Once the credits are laid out; null in `scroll` mode, which has no schedule. */
+  onSchedule: (schedule: RollSchedule | null) => void;
   onCredit: (binId: string) => void;
   /** A credit reached by Tab, so the roll can stop with it in view. */
   onKeyboardFocus: (binId: string) => void;
@@ -90,7 +91,11 @@ export function CreditsRoll({
   useLayoutEffect(() => {
     const region = regionRef.current;
     const list = listRef.current;
-    if (mode !== 'roll' || !region || !list) return;
+    if (mode !== 'roll') {
+      onScheduleRef.current(null);
+      return;
+    }
+    if (!region || !list) return;
 
     const measure = () => {
       const measured: MeasuredCredit[] = [];

@@ -11,6 +11,8 @@ export interface BakedGeometry {
 export const SEAT_DEPTH = MESH_META.plateHeight * 0.82;
 
 export const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
+export const easeInOutCubic = (t: number): number =>
+  t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 export const easeOutBack = (t: number): number => {
   const c = 1.70158;
   return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2);
