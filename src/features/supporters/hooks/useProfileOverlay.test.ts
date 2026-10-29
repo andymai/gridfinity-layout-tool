@@ -93,6 +93,30 @@ describe('useProfileOverlay', () => {
     expect(result.current.effective.supporters.map((r) => r.message)).toEqual([undefined, 'mine']);
   });
 
+  it('tells namesakes apart by department when they share a join date too', async () => {
+    const twins: SupportersData = {
+      supporters: [
+        { name: 'Sam', department: 2 },
+        { name: 'Sam', department: 6 },
+      ],
+    };
+    const { result, rerender } = renderHook(({ s }) => useProfileOverlay(twins, s), {
+      initialProps: { s: statusHook('Sam', { department: 6 }) },
+    });
+    await act(() => result.current.saveProfile({ name: 'Samantha' }));
+    rerender({ s: statusHook('Samantha', { department: 6 }) });
+    expect(result.current.effective.supporters.map((r) => r.name)).toEqual(['Sam', 'Samantha']);
+  });
+
+  it('drops the edit once a different account is signed in', async () => {
+    const { result, rerender } = renderHook(({ s }) => useProfileOverlay(list, s), {
+      initialProps: { s: statusHook('Jo', { joinedAt: '2026-07-01T00:00:00Z' }) },
+    });
+    await act(() => result.current.saveProfile({ name: 'Joanna' }));
+    rerender({ s: statusHook('Sam', { joinedAt: '2026-09-09T00:00:00Z', department: 4 }) });
+    expect(result.current.effective).toBe(list);
+  });
+
   it('leaves namesakes alone when nothing tells them apart', async () => {
     const twins: SupportersData = { supporters: [{ name: 'Max' }, { name: 'Max' }] };
     const { result, rerender } = renderHook(({ s }) => useProfileOverlay(twins, s), {

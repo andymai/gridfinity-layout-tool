@@ -3,6 +3,13 @@ import type { SupporterEditError, SupporterProfilePatch } from '../api/supporter
 import type { SupportersData } from '../utils/supportersData';
 import type { UseSupporterStatus } from './useSupporterStatus';
 
+/** The caller's record as it stood before their first save, to find it again. */
+interface SavedEdit {
+  prevName: string | null;
+  joinedAt?: string;
+  department?: number;
+}
+
 export interface ProfileOverlay {
   /** The supporter list with the caller's own saved edit applied. */
   effective: SupportersData;
@@ -21,16 +28,16 @@ export function useProfileOverlay(
   supporters: SupportersData,
   supporter: UseSupporterStatus
 ): ProfileOverlay {
-  const [edit, setEdit] = useState<{ prevName: string | null } | null>(null);
+  const [edit, setEdit] = useState<SavedEdit | null>(null);
 
   const saveProfile = useCallback(
     async (patch: SupporterProfilePatch) => {
-      const prevName = supporter.status.name;
+      const { name, joinedAt, department } = supporter.status;
       const error = await supporter.save(patch);
       // Keep the ORIGINAL handle across repeated renames: after the first save
       // `status.name` is already the new name, which the public list has never
       // carried, so recording it would strand the overlay.
-      if (error === null) setEdit((prev) => prev ?? { prevName });
+      if (error === null) setEdit((prev) => prev ?? { prevName: name, joinedAt, department });
       return error;
     },
     [supporter]
@@ -38,16 +45,19 @@ export function useProfileOverlay(
 
   const effective = useMemo(() => {
     const status = supporter.status;
-    if (!edit || !status.supporter) return supporters;
+    // A different account signed in since the save (another tab): the edit isn't theirs.
+    if (!edit || !status.supporter || status.joinedAt !== edit.joinedAt) return supporters;
     const records = supporters.supporters.slice();
-    // Two people can share a name, so the join date narrows the match. A named
-    // record that is still ambiguous is left alone rather than guessed at;
-    // anonymous records are interchangeable on the page, so any one will do.
+    // Two people can share a name, so the join date and department narrow the
+    // match. A named record that is still ambiguous is left alone rather than
+    // guessed at; anonymous records are interchangeable on the page.
     let candidates = records.flatMap((r, i) => (r.name === edit.prevName ? [i] : []));
-    if (status.joinedAt) {
-      const dated = candidates.filter((i) => records[i].joinedAt === status.joinedAt);
-      if (dated.length > 0) candidates = dated;
-    }
+    const narrow = (keep: (i: number) => boolean) => {
+      const kept = candidates.filter(keep);
+      if (kept.length > 0) candidates = kept;
+    };
+    if (edit.joinedAt) narrow((i) => records[i].joinedAt === edit.joinedAt);
+    if (edit.department !== undefined) narrow((i) => records[i].department === edit.department);
     const idx = candidates.at(0);
     // Edits an existing record, never adds one: a push would double the
     // caller's bin while the headline count reads the raw list.
