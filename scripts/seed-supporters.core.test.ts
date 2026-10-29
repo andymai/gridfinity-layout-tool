@@ -46,6 +46,10 @@ describe('parseCsvDate', () => {
     expect(parseCsvDate('2026-07-01T13:04:30Z')).toBe('2026-07-01T13:04:30.000Z');
   });
 
+  it("reads Ko-fi's own MM/DD/YYYY HH:MM as UTC, whatever the machine's zone", () => {
+    expect(parseCsvDate('01/24/2026 03:41')).toBe('2026-01-24T03:41:00.000Z');
+  });
+
   it('returns undefined (never now) for garbage', () => {
     expect(parseCsvDate('not a date')).toBeUndefined();
   });

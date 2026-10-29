@@ -98,7 +98,12 @@ export function parseTransactionCsv(text: string): TransactionRow[] {
 
 /** ISO form of a CSV timestamp, or undefined if it can't be parsed (never "now"). */
 export function parseCsvDate(raw: string): string | undefined {
-  const t = Date.parse(raw);
+  // Ko-fi writes `MM/DD/YYYY HH:MM` under a "DateTime (UTC)" header, which
+  // Date.parse would read as the machine's local time.
+  const kofi = /^(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(raw.trim());
+  const t = kofi
+    ? Date.UTC(+kofi[3], +kofi[1] - 1, +kofi[2], +kofi[4], +kofi[5], +(kofi[6] ?? 0))
+    : Date.parse(raw);
   return Number.isFinite(t) ? new Date(t).toISOString() : undefined;
 }
 
