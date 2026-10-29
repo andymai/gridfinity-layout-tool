@@ -1,0 +1,29 @@
+api/lib/supporters.ts
+  s_ddf50d3700ef87::t_6c77e5aaa86507 253-280,294-306,308,310-312,314-315,317-319
+  s_ddf50d3700ef87::t_67b8c3acbe17a2 281-293,307,309,313,316
+api/kofi-webhook.test.ts
+  s_ddf50d3700ef87::t_4c7e0e03a82eb9 19,99-100,112
+  s_ddf50d3700ef87::t_cc07d3eb2d9083 18,23-29,93-98,101-105,111,125,131,140,195,203,208,215,226-295,318,337
+api/lib/supporters.integration.test.ts
+  s_ddf50d3700ef87::t_148b1f05fe3a99 73
+  s_ddf50d3700ef87::t_257f6e9bf5c338 1-72,74-84
+api/kofi-webhook.ts
+  s_ddf50d3700ef87::t_19522092135631 24
+  s_ddf50d3700ef87::t_5de5db700ebbf2 165,169,171-175
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "651c0a3743c2e73d9869f1e52bc43b4a80a5e1b3",
+  "prompts": {},
+  "sessions": {
+    "s_ddf50d3700ef87": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7a956845-573e-4040-bf05-8a9647067fef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
