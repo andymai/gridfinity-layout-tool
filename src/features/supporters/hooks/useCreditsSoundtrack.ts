@@ -47,7 +47,7 @@ export function useCreditsSoundtrack({ enabled, clock, schedule, rolling }: Soun
     const timer = setInterval(() => {
       const current = track.current;
       if (!current) return;
-      current.tick(clock.time, rollingRef.current);
+      current.tick(clock.time, clock.rate, rollingRef.current);
       const step = clock.time - previous;
       const now = performance.now();
       if (

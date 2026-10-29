@@ -4,6 +4,8 @@ import { STEPS_PER_SECOND, chordAt, eventsInWindow } from './creditsTune';
 const LOOKAHEAD_SECONDS = 0.12;
 const MAX_TEMPO = 1.75;
 const VOLUME = 0.16;
+/** More clock movement than this (per unit of rate) between ticks is a seek, not frame jitter. */
+const SEEK_SLACK_SECONDS = 0.1;
 
 export type MusicMode = 'play' | 'hold' | 'rewind' | 'off';
 
@@ -60,19 +62,30 @@ export class CreditsSoundtrack {
     this.lastAudio = ctx.currentTime;
   }
 
-  tick(clockTime: number, rolling: boolean): void {
+  tick(clockTime: number, clockRate: number, rolling: boolean): void {
     const now = this.ctx.currentTime;
     const dt = now - this.lastAudio;
     this.lastAudio = now;
+    if (this.ctx.state !== 'running') {
+      // A context waiting for a gesture holds currentTime still, so anything
+      // scheduled now would all sound at once when it resumes.
+      this.lastClock = rolling ? clockTime : null;
+      return;
+    }
     if (!rolling) {
       // Replay jumps the clock from the end back to zero; that is not a rewind.
       this.lastClock = null;
       this.rate = 1;
     } else {
+      // The clock moves in animation frames, so its motion sampled on a timer
+      // jitters around its rate; only a scrub or a jump moves it further.
+      let target = clockRate;
       if (this.lastClock !== null && dt > 0) {
-        const instant = (clockTime - this.lastClock) / dt;
-        this.rate += (instant - this.rate) * Math.min(1, dt * 10);
+        const moved = clockTime - this.lastClock;
+        const slack = SEEK_SLACK_SECONDS * Math.max(1, Math.abs(clockRate));
+        if (Math.abs(moved - clockRate * dt) > slack) target = moved / dt;
       }
+      this.rate += (target - this.rate) * Math.min(1, Math.max(0, dt) * 10);
       this.lastClock = clockTime;
     }
 
@@ -82,7 +95,8 @@ export class CreditsSoundtrack {
     if (music.mode !== 'play') return;
 
     const stepsPerSecond = STEPS_PER_SECOND * music.tempo;
-    this.position += Math.max(0, dt) * stepsPerSecond;
+    // A late tick stretches the tune rather than piling the steps it missed onto `now`.
+    this.position += Math.min(Math.max(0, dt), LOOKAHEAD_SECONDS) * stepsPerSecond;
     const until = this.position + LOOKAHEAD_SECONDS * stepsPerSecond;
     for (const event of eventsInWindow(this.scheduledTo, until)) {
       const at = now + (event.step - this.position) / stepsPerSecond;
@@ -92,6 +106,7 @@ export class CreditsSoundtrack {
   }
 
   blip(kind: Blip): void {
+    if (this.ctx.state !== 'running') return;
     this.synth.blip(kind, this.ctx.currentTime, chordAt(this.position));
   }
 

@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ChipSynth } from './chipSynth';
 import { CreditsSoundtrack, crossedAny, musicFor } from './creditsSoundtrack';
+import { STEPS_PER_SECOND } from './creditsTune';
 
 describe('musicFor', () => {
   it('plays along at normal speed', () => {
@@ -97,6 +99,7 @@ class FakeSource extends FakeNode {
 
 class FakeAudioContext {
   currentTime = 0;
+  state: AudioContextState = 'running';
   readonly sampleRate = 8000;
   readonly destination = new FakeNode();
   readonly started: Started[] = [];
@@ -143,7 +146,7 @@ function setup() {
     for (let t = 0; t < seconds; t += TICK) {
       ctx.currentTime += TICK;
       clock += rate * TICK;
-      track.tick(clock, rolling);
+      track.tick(clock, rate, rolling);
     }
   };
   const seek = (to: number): void => {
@@ -151,10 +154,11 @@ function setup() {
   };
   const last = (): Started => ctx.started[ctx.started.length - 1];
   const hears = (sound: Started): boolean => audible(sound.node, ctx.destination);
-  return { ctx, track, run, seek, last, hears };
+  return { ctx, track, run, seek, last, hears, clockTime: () => clock };
 }
 
 describe('CreditsSoundtrack', () => {
+  afterEach(() => vi.restoreAllMocks());
   it('schedules the tune a little ahead of the audio clock while the roll plays', () => {
     const { ctx, run, last, hears } = setup();
     run(1, 1);
@@ -210,5 +214,61 @@ describe('CreditsSoundtrack', () => {
     expect(replayed.length).toBeGreaterThan(0);
     expect(replayed.some((s) => s.type === 'sawtooth')).toBe(false);
     expect(hears(last())).toBe(true);
+  });
+
+  it('keeps normal speed in tune when the clock only moves on animation frames', () => {
+    const play = vi.spyOn(ChipSynth.prototype, 'play');
+    const ctx = new FakeAudioContext();
+    const track = new CreditsSoundtrack(ctx as unknown as BaseAudioContext);
+    for (let i = 1; i <= 120; i++) {
+      ctx.currentTime = i * TICK;
+      track.tick(Math.floor(ctx.currentTime * 60) / 60, 1, true);
+    }
+    expect(play.mock.calls.length).toBeGreaterThan(0);
+    expect(new Set(play.mock.calls.map((call) => call[3]))).toEqual(new Set([1]));
+    expect(new Set(play.mock.calls.map((call) => call[2]))).toEqual(
+      new Set([1 / STEPS_PER_SECOND])
+    );
+  });
+
+  it('stretches the tune over a late tick instead of bunching the missed steps', () => {
+    const play = vi.spyOn(ChipSynth.prototype, 'play');
+    const { ctx, track, run, clockTime } = setup();
+    run(1, 1);
+    play.mockClear();
+    ctx.currentTime += 0.5;
+    track.tick(clockTime() + 0.5, 1, true);
+    const startsByStep = new Map<number, number>();
+    for (const [event, at] of play.mock.calls) startsByStep.set(event.step, at);
+    expect(startsByStep.size).toBeGreaterThan(0);
+    expect(new Set(startsByStep.values()).size).toBe(startsByStep.size);
+  });
+
+  it('plays the downbeat when the first tick is late', () => {
+    const play = vi.spyOn(ChipSynth.prototype, 'play');
+    const ctx = new FakeAudioContext();
+    const track = new CreditsSoundtrack(ctx as unknown as BaseAudioContext);
+    ctx.currentTime = 0.5;
+    track.tick(0.5, 1, true);
+    expect(play.mock.calls[0][0].step).toBe(0);
+  });
+
+  it('schedules nothing while waiting for a gesture, then picks up at normal speed', () => {
+    const play = vi.spyOn(ChipSynth.prototype, 'play');
+    const ctx = new FakeAudioContext();
+    ctx.state = 'suspended';
+    const track = new CreditsSoundtrack(ctx as unknown as BaseAudioContext);
+    for (let i = 1; i <= 40; i++) {
+      track.tick(i * TICK, 1, true);
+      track.blip('seat');
+    }
+    expect(ctx.started).toEqual([]);
+    ctx.state = 'running';
+    for (let i = 41; i <= 60; i++) {
+      ctx.currentTime += TICK;
+      track.tick(i * TICK, 1, true);
+    }
+    expect(play.mock.calls.length).toBeGreaterThan(0);
+    expect(new Set(play.mock.calls.map((call) => call[3]))).toEqual(new Set([1]));
   });
 });
