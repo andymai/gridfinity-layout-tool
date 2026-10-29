@@ -1,0 +1,32 @@
+scripts/restore-supporter-messages.core.ts
+  s_792461bfbd0af2::t_123f83691275a2 1-62
+src/features/supporters/constants.ts
+  s_792461bfbd0af2::t_05303cb0e862c5 14-15
+scripts/restore-supporter-messages.ts
+  s_792461bfbd0af2::t_43548b2c7866f2 1-61
+package.json
+  s_792461bfbd0af2::t_2b46332f99949b 64
+api/lib/supporters.ts
+  s_792461bfbd0af2::t_05303cb0e862c5 44-45,117,201
+scripts/restore-supporter-messages.core.test.ts
+  s_792461bfbd0af2::t_de6352640957b8 1-37,39-76
+  s_792461bfbd0af2::t_32520e8721a6f9 38
+api/README.md
+  s_792461bfbd0af2::t_37b95f54d6a70b 124-126
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f11b5d947f7f6c1f8c0324ff7c42986993a3a4f1",
+  "prompts": {},
+  "sessions": {
+    "s_792461bfbd0af2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "971efe59-75e6-421b-ad6f-2f7f27706660",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
