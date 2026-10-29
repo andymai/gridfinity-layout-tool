@@ -117,22 +117,32 @@ export const CAMERA_DIR: [number, number, number] = [0.22, 0.72, 1];
 /** Steeper, for a single zone: label tapes face up, so a higher angle is what makes names readable. */
 export const ZONE_CAMERA_DIR: [number, number, number] = [0.1, 1.25, 1];
 
+export interface FrameOptions {
+  center?: ScenePoint;
+  /** Below 1 trades breathing room for size: a single zone wants it, the whole plate does not. */
+  tightness?: number;
+  direction?: [number, number, number];
+  /** Share of the canvas height the footprint must fit, when credits take the rest. */
+  heightFraction?: number;
+}
+
 /**
- * Fit a `width` × `depth` footprint centred on `center` into a viewport of
- * the given aspect, from the workbench angle. Fits the footprint's bounding
- * radius against the vertical fov and the aspect-derived horizontal fov,
- * whichever needs more distance. `tightness` below 1 trades breathing room
- * for size, which a single zone wants and the whole plate does not.
+ * Fit a `width` × `depth` footprint into a stage of the given aspect, from the
+ * workbench angle: its bounding radius against the stage's vertical fov and
+ * the aspect-derived horizontal fov, whichever needs more distance.
  */
 export function computeCameraFrame(
   footprint: { width: number; depth: number },
   aspect: number,
-  center: ScenePoint = { x: 0, z: 0 },
-  tightness = 1,
-  direction: [number, number, number] = CAMERA_DIR
+  {
+    center = { x: 0, z: 0 },
+    tightness = 1,
+    direction = CAMERA_DIR,
+    heightFraction = 1,
+  }: FrameOptions = {}
 ): CameraFrame {
   const radius = 0.5 * Math.hypot(footprint.width, footprint.depth) * 1.18 * tightness;
-  const vHalf = (CAMERA_FOV_DEG * Math.PI) / 360;
+  const vHalf = Math.atan(Math.tan((CAMERA_FOV_DEG * Math.PI) / 360) * heightFraction);
   const safeAspect = Math.max(0.3, aspect);
   const hHalf = Math.atan(Math.tan(vHalf) * safeAspect);
   const distance = Math.max(6, radius / Math.tan(vHalf), radius / Math.tan(hHalf));

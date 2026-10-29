@@ -6,6 +6,7 @@ import {
   MathUtils,
   Matrix4,
   Quaternion,
+  Sphere,
   Vector3,
   type CanvasTexture,
   type Group,
@@ -193,6 +194,16 @@ export function BinInstances({
     }
     mesh.instanceMatrix.needsUpdate = true;
   });
+
+  // three caches an instanced mesh's bounding sphere on its first raycast; taken
+  // while bins are still airborne it would miss them once landed. One fixed
+  // sphere covering every seat and drop height keeps every pose clickable.
+  useEffect(() => {
+    const mesh = meshRef.current;
+    if (!mesh) return;
+    const reach = Math.max(0, ...positions.map((p) => Math.hypot(p.x, p.z)));
+    mesh.boundingSphere = new Sphere(new Vector3(0, 2, 0), reach + 6);
+  }, [positions]);
 
   const edgeMaterial = useMemo(
     () => new LineBasicMaterial({ color: palette.edge }),

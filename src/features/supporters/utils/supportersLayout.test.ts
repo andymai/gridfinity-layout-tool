@@ -96,15 +96,21 @@ describe('computeCameraFrame', () => {
   });
 
   it('aims at the centre it is given, so one zone can fill the stage', () => {
-    const frame = computeCameraFrame({ width: 6, depth: 5 }, 16 / 9, { x: 7, z: -4 });
+    const frame = computeCameraFrame({ width: 6, depth: 5 }, 16 / 9, { center: { x: 7, z: -4 } });
     expect(frame.target[0]).toBe(7);
     expect(frame.target[2]).toBe(-4);
   });
 
   it('moves in closer when asked to frame tightly', () => {
     const loose = computeCameraFrame({ width: 12, depth: 10 }, 16 / 9);
-    const tight = computeCameraFrame({ width: 12, depth: 10 }, 16 / 9, undefined, 0.7);
+    const tight = computeCameraFrame({ width: 12, depth: 10 }, 16 / 9, { tightness: 0.7 });
     expect(tight.distance).toBeLessThan(loose.distance);
+  });
+
+  it('pulls back to fit a footprint into a shorter stage', () => {
+    const full = computeCameraFrame({ width: 8, depth: 8 }, 2);
+    const band = computeCameraFrame({ width: 8, depth: 8 }, 2, { heightFraction: 0.44 });
+    expect(band.distance).toBeGreaterThan(full.distance * 1.8);
   });
 });
 

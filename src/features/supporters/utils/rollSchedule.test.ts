@@ -70,6 +70,32 @@ describe('buildRollSchedule', () => {
   });
 });
 
+describe('a block that wraps onto several rows', () => {
+  it('lands each name as its own row passes, and seeks to that row', () => {
+    const block = plan.items.find((i) => i.kind === 'names' && i.binIds.length > 1);
+    if (block?.kind !== 'names') throw new Error('fixture has no multi-name block');
+    const [first, second] = block.binIds;
+    const rows = measured.map((m) =>
+      m.id === block.id
+        ? {
+            ...m,
+            members: [
+              { id: first, center: m.center - 20 },
+              { id: second, center: m.center + 20 },
+            ],
+          }
+        : m
+    );
+    const wrapped = buildRollSchedule(plan, binsById, rows, region, 100);
+    const center = measured.find((m) => m.id === block.id)?.center ?? 0;
+    const seekOffset = (id: string) =>
+      wrapped.timeline.offsetAt(wrapped.creditTimes.get(id) ?? 0) + region.readingLine;
+    expect(seekOffset(first)).toBeCloseTo(center - 20, 0);
+    expect(seekOffset(second)).toBeCloseTo(center + 20, 0);
+    expect(wrapped.seatTimes.get(second) ?? 0).toBeGreaterThan(wrapped.seatTimes.get(first) ?? 0);
+  });
+});
+
 describe('zoneAt', () => {
   it('follows the cues and is null before the first one', () => {
     expect(zoneAt(schedule, 0)).toBeNull();

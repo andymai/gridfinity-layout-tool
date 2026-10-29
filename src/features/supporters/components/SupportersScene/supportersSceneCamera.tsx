@@ -105,21 +105,28 @@ export function CreditsCamera({
       Math.max(1, size.height * frameStage.heightFraction);
     let frame: CameraFrame;
     if (phase === 'finale') {
-      frame = computeCameraFrame(layout, size.width / Math.max(1, size.height), undefined, 0.9);
+      // The stage, not the canvas: under reduced motion the finale shares the screen with the credits.
+      frame = computeCameraFrame(layout, aspect, {
+        tightness: 0.9,
+        heightFraction: frameStage.heightFraction,
+      });
     } else if (focusSeat) {
-      frame = computeCameraFrame({ width: 3, depth: 3 }, aspect, focusSeat, 1, ZONE_CAMERA_DIR);
+      frame = computeCameraFrame({ width: 3, depth: 3 }, aspect, {
+        center: focusSeat,
+        direction: ZONE_CAMERA_DIR,
+        heightFraction: frameStage.heightFraction,
+      });
     } else {
       const zone = schedule ? zoneAt(schedule, clock.time) : null;
       const z = zone === null ? undefined : layout.zones[zone];
       frame = z
-        ? computeCameraFrame(
-            { width: z.width + 1, depth: z.depth + 1.6 },
-            aspect,
-            { x: z.x, z: z.z + 0.5 },
-            ZONE_TIGHTNESS,
-            ZONE_CAMERA_DIR
-          )
-        : computeCameraFrame(layout, aspect);
+        ? computeCameraFrame({ width: z.width + 1, depth: z.depth + 1.6 }, aspect, {
+            center: { x: z.x, z: z.z + 0.5 },
+            tightness: ZONE_TIGHTNESS,
+            direction: ZONE_CAMERA_DIR,
+            heightFraction: frameStage.heightFraction,
+          })
+        : computeCameraFrame(layout, aspect, { heightFraction: frameStage.heightFraction });
     }
 
     want.set(...frame.position);

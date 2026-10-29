@@ -93,7 +93,7 @@ export function useRollScrub({
         if (!e.repeat) clock.setHoldRate(-HOLD_RATE);
       } else if (e.key === ' ' && !(e.target instanceof HTMLButtonElement)) {
         e.preventDefault();
-        handlers.current.onTogglePause();
+        if (!e.repeat) handlers.current.onTogglePause();
       } else if (e.key === 'End') {
         e.preventDefault();
         handlers.current.onSkip();

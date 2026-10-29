@@ -172,6 +172,15 @@ export function SupportersPage() {
     [phase, clock, focusedId, togglePause, showSupporter]
   );
 
+  const onKeyboardFocus = useCallback(
+    (id: string) => {
+      const at = schedule?.creditTimes.get(id);
+      if (at !== undefined) clock.seek(at);
+      setPaused(true);
+    },
+    [schedule, clock, setPaused]
+  );
+
   const count = useCountUp(total, !reducedMotion && settled && phase === 'finale');
 
   const roll = phase === 'roll' && !reducedMotion;
@@ -319,6 +328,7 @@ export function SupportersPage() {
         focusedId={focusedId}
         onSchedule={onSchedule}
         onCredit={onCredit}
+        onKeyboardFocus={onKeyboardFocus}
       />
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between gap-3 p-5">

@@ -22,6 +22,8 @@ export interface MeasuredCredit {
   /** Centre and height in px, measured from the top of the credits list. */
   center: number;
   height: number;
+  /** Each name in a block, which can wrap onto several rows. */
+  members?: { id: string; center: number }[];
 }
 
 export interface RollRegion {
@@ -88,9 +90,21 @@ export function buildRollSchedule(
     if (item.kind === 'department') {
       zoneCues.push({ zone: item.department, time: Math.max(INTRO_SECONDS, time - CAMERA_LEAD) });
     } else if (item.kind === 'names') {
+      const centers = new Map((m.members ?? []).map((member) => [member.id, member.center]));
+      const perRow = new Map<number, number>();
       item.binIds.forEach((id, i) => {
-        seatTimes.set(id, time + i * NAME_STAGGER);
-        creditTimes.set(id, time);
+        const center = centers.get(id);
+        if (center === undefined) {
+          seatTimes.set(id, time + i * NAME_STAGGER);
+          creditTimes.set(id, time);
+          return;
+        }
+        // Names side by side in one row land one after another, not at once.
+        const inRow = perRow.get(center) ?? 0;
+        perRow.set(center, inRow + 1);
+        const own = timeline.timeAt(center - region.readingLine);
+        seatTimes.set(id, own + inRow * NAME_STAGGER);
+        creditTimes.set(id, own);
       });
     } else if (item.kind === 'message') {
       seatTimes.set(item.binId, time);

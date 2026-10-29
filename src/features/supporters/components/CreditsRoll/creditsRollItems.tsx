@@ -42,6 +42,7 @@ function CreditName({ bin, ctx }: { bin: SupporterBin; ctx: ItemContext }) {
     <Button
       variant="ghost"
       onClick={() => ctx.onCredit(bin.id)}
+      data-bin-id={bin.id}
       tabIndex={ctx.hidden ? -1 : undefined}
       aria-pressed={focused}
       aria-label={bin.name ?? ctx.t('supporters.anonymous')}

@@ -80,6 +80,15 @@ describe('useRollScrub', () => {
     expect(clock.targetRate).toBe(1);
   });
 
+  it('toggles pause once for a held Space, not on every repeat', () => {
+    const onTogglePause = vi.fn();
+    render(<Harness clock={makeClock()} onTogglePause={onTogglePause} />);
+    fireEvent.keyDown(window, { key: ' ' });
+    fireEvent.keyDown(window, { key: ' ', repeat: true });
+    fireEvent.keyDown(window, { key: ' ', repeat: true });
+    expect(onTogglePause).toHaveBeenCalledTimes(1);
+  });
+
   it('lets go of a held arrow when the window loses focus', () => {
     const clock = makeClock();
     render(<Harness clock={clock} />);

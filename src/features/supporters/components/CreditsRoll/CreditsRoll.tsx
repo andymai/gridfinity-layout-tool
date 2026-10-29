@@ -32,6 +32,8 @@ export interface CreditsRollProps {
   focusedId: string | null;
   onSchedule: (schedule: RollSchedule) => void;
   onCredit: (binId: string) => void;
+  /** A credit reached by Tab, so the roll can stop with it in view. */
+  onKeyboardFocus: (binId: string) => void;
 }
 
 /**
@@ -52,12 +54,38 @@ export function CreditsRoll({
   focusedId,
   onSchedule,
   onCredit,
+  onKeyboardFocus,
 }: CreditsRollProps) {
   const t = useTranslation();
   const regionRef = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const scheduleRef = useRef<RollSchedule | null>(null);
   const onScheduleRef = useLatestRef(onSchedule);
+  const keyboardRef = useRef(false);
+
+  useEffect(() => {
+    if (mode !== 'roll') return;
+    const fromKeys = () => void (keyboardRef.current = true);
+    const fromPointer = () => void (keyboardRef.current = false);
+    window.addEventListener('keydown', fromKeys, true);
+    window.addEventListener('pointerdown', fromPointer, true);
+    return () => {
+      window.removeEventListener('keydown', fromKeys, true);
+      window.removeEventListener('pointerdown', fromPointer, true);
+    };
+  }, [mode]);
+
+  // Focus scrolls even an overflow-hidden region natively, which would slide
+  // the text away from the clock. Undo that, and stop the roll on a credit
+  // reached from the keyboard so it stays in view.
+  const handleFocus = (e: React.FocusEvent<HTMLElement>) => {
+    const region = regionRef.current;
+    if (mode !== 'roll' || !region) return;
+    region.scrollTop = 0;
+    region.scrollLeft = 0;
+    const binId = e.target.closest<HTMLElement>('[data-bin-id]')?.dataset.binId;
+    if (binId && keyboardRef.current) onKeyboardFocus(binId);
+  };
 
   useLayoutEffect(() => {
     const region = regionRef.current;
@@ -68,12 +96,16 @@ export function CreditsRoll({
       const measured: MeasuredCredit[] = [];
       for (const el of list.querySelectorAll<HTMLElement>('[data-credit-id]')) {
         const id = el.dataset.creditId;
-        if (id)
-          measured.push({
-            id,
-            center: el.offsetTop + el.offsetHeight / 2,
-            height: el.offsetHeight,
-          });
+        if (!id) continue;
+        const members = [...el.querySelectorAll<HTMLElement>('li [data-bin-id]')].flatMap((b) =>
+          b.dataset.binId ? [{ id: b.dataset.binId, center: b.offsetTop + b.offsetHeight / 2 }] : []
+        );
+        measured.push({
+          id,
+          center: el.offsetTop + el.offsetHeight / 2,
+          height: el.offsetHeight,
+          ...(members.length > 0 ? { members } : {}),
+        });
       }
       const height = region.clientHeight;
       const schedule = buildRollSchedule(
@@ -121,6 +153,7 @@ export function CreditsRoll({
   return (
     <section
       ref={regionRef}
+      onFocus={handleFocus}
       aria-label={t('supporters.credits.listLabel')}
       className={`absolute z-20 ${placement} ${
         mode === 'scroll' ? 'overflow-y-auto' : 'overflow-hidden'

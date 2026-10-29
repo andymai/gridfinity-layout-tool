@@ -30,6 +30,7 @@ const props = (over: Partial<React.ComponentProps<typeof CreditsRoll>> = {}) => 
   focusedId: null,
   onSchedule: vi.fn(),
   onCredit: vi.fn(),
+  onKeyboardFocus: vi.fn(),
   ...over,
 });
 
@@ -79,6 +80,27 @@ describe('CreditsRoll', () => {
     render(<CreditsRoll {...props({ hidden: true })} />);
     const credit = screen.getByRole('button', { name: 'Ada' });
     expect(credit).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('stops on a credit reached from the keyboard and undoes the focus scroll', () => {
+    const onKeyboardFocus = vi.fn();
+    const { container } = render(<CreditsRoll {...props({ onKeyboardFocus })} />);
+    const region = container.querySelector('section');
+    if (!region) throw new Error('no region');
+    region.scrollTop = 120;
+    fireEvent.keyDown(window, { key: 'Tab' });
+    fireEvent.focus(screen.getByRole('button', { name: 'Ada' }));
+    expect(onKeyboardFocus).toHaveBeenCalledWith('a');
+    expect(region.scrollTop).toBe(0);
+  });
+
+  it('leaves a credit focused by the pointer to its click', () => {
+    const onKeyboardFocus = vi.fn();
+    render(<CreditsRoll {...props({ onKeyboardFocus })} />);
+    const credit = screen.getByRole('button', { name: 'Ada' });
+    fireEvent.pointerDown(credit);
+    fireEvent.focus(credit);
+    expect(onKeyboardFocus).not.toHaveBeenCalled();
   });
 
   it('reports a click on a credit', () => {
