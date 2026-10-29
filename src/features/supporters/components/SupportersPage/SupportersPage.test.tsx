@@ -119,6 +119,15 @@ describe('SupportersPage', () => {
     });
   });
 
+  it('drops an earlier selection when Tab moves to another credit', () => {
+    render(<SupportersPage />);
+    find('Ada');
+    expect(screen.getByText('supporters.thanksNamed')).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: 'Tab' });
+    fireEvent.focus(screen.getByRole('button', { name: 'Grace' }));
+    expect(screen.queryByText('supporters.thanksNamed')).not.toBeInTheDocument();
+  });
+
   describe('a return visit', () => {
     beforeEach(() => markCreditsSeen());
 

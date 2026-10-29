@@ -177,6 +177,8 @@ export function SupportersPage() {
       const at = schedule?.creditTimes.get(id);
       if (at !== undefined) clock.seek(at);
       setPaused(true);
+      // An earlier selection would keep the camera and card on someone else.
+      setFocusedId((current) => (current === id ? current : null));
     },
     [schedule, clock, setPaused]
   );
