@@ -75,6 +75,12 @@ describe('CreditsRoll', () => {
     expect(screen.getByRole('button', { name: 'Bo' })).toHaveTextContent('supporters.justJoined');
   });
 
+  it('keeps hidden credits readable but out of the tab order', () => {
+    render(<CreditsRoll {...props({ hidden: true })} />);
+    const credit = screen.getByRole('button', { name: 'Ada' });
+    expect(credit).toHaveAttribute('tabindex', '-1');
+  });
+
   it('reports a click on a credit', () => {
     const onCredit = vi.fn();
     render(<CreditsRoll {...props({ onCredit })} />);

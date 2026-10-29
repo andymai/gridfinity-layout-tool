@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { CreditsControls } from './CreditsControls';
 import { CreditsClock } from '../../utils/creditsClock';
-import { HOLD_RATE } from '../../hooks/useRollScrub';
+import { HOLD_RATE, NO_SCRUB_ATTR } from '../../hooks/useRollScrub';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
@@ -30,6 +30,12 @@ describe('CreditsControls', () => {
     expect(clock.targetRate).toBe(HOLD_RATE);
     fireEvent.pointerUp(forward, { pointerId: 1 });
     expect(clock.targetRate).toBe(1);
+  });
+
+  it('keeps its own gestures out of the roll drag', () => {
+    setup();
+    const forward = screen.getByRole('button', { name: 'supporters.credits.fastForward' });
+    expect(forward.closest(`[${NO_SCRUB_ATTR}]`)).not.toBeNull();
   });
 
   it('rewinds while held', () => {

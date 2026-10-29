@@ -38,7 +38,11 @@ export function VacantSocket({
   const size = useThree((s) => s.size);
 
   useFrame((state, delta) => {
-    fade.current += ((visible ? 1 : 0) - fade.current) * Math.min(1, delta * 3);
+    // Reduced motion renders on demand, so an eased fade would stall part way.
+    const shown = visible ? 1 : 0;
+    fade.current = reducedMotion
+      ? shown
+      : fade.current + (shown - fade.current) * Math.min(1, delta * 3);
     const pulse = reducedMotion ? 0.5 : 0.5 + 0.5 * Math.sin(state.clock.elapsedTime * 2.4);
     const group = groupRef.current;
     if (group) {

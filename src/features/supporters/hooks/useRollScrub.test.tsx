@@ -80,6 +80,24 @@ describe('useRollScrub', () => {
     expect(clock.targetRate).toBe(1);
   });
 
+  it('lets go of a held arrow when the window loses focus', () => {
+    const clock = makeClock();
+    render(<Harness clock={clock} />);
+    fireEvent.keyDown(window, { key: 'ArrowDown' });
+    fireEvent.blur(window);
+    expect(clock.targetRate).toBe(1);
+  });
+
+  it('ignores a drag that starts inside a no-scrub region', () => {
+    const clock = makeClock();
+    const before = clock.time;
+    render(<Harness clock={clock} />);
+    const field = screen.getByLabelText('find');
+    fireEvent.pointerDown(field, { button: 0, pointerId: 1, clientY: 400 });
+    fireEvent.pointerMove(field, { pointerId: 1, clientY: 200 });
+    expect(clock.time).toBe(before);
+  });
+
   it('pauses on Space and skips on End', () => {
     const onTogglePause = vi.fn();
     const onSkip = vi.fn();

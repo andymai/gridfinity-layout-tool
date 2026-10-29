@@ -110,8 +110,8 @@ export function CreditsRoll({
   }, [clock, mode]);
 
   const ctx: ItemContext = useMemo(
-    () => ({ binsById, t, accent, stacked, focusedId, onCredit }),
-    [binsById, t, accent, stacked, focusedId, onCredit]
+    () => ({ binsById, t, accent, stacked, focusedId, hidden, onCredit }),
+    [binsById, t, accent, stacked, focusedId, hidden, onCredit]
   );
 
   const placement = stacked

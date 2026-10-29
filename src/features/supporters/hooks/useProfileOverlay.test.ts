@@ -46,6 +46,37 @@ describe('useProfileOverlay', () => {
     expect(result.current.effective.supporters).toHaveLength(3);
   });
 
+  it('shows a new message when only the message changed', async () => {
+    const { result, rerender } = renderHook(({ s }) => useProfileOverlay(list, s), {
+      initialProps: { s: statusHook('Jo') },
+    });
+    await act(() => result.current.saveProfile({ message: 'hello again' }));
+    rerender({ s: statusHook('Jo', { message: 'hello again', department: 1 }) });
+    expect(result.current.effective.supporters[0]).toMatchObject({
+      name: 'Jo',
+      message: 'hello again',
+    });
+  });
+
+  it('takes the name, message and department off a supporter who goes anonymous', async () => {
+    const withMessage: SupportersData = {
+      supporters: [
+        { name: 'Jo', message: 'hi', department: 1 },
+        { name: 'Sam', department: 4 },
+      ],
+    };
+    const { result, rerender } = renderHook(({ s }) => useProfileOverlay(withMessage, s), {
+      initialProps: { s: statusHook('Jo', { message: 'hi' }) },
+    });
+    await act(() => result.current.saveProfile({ name: null }));
+    rerender({ s: statusHook(null) });
+    expect(result.current.effective.supporters[0]).toEqual({
+      name: null,
+      message: undefined,
+      department: undefined,
+    });
+  });
+
   it('keeps tracking the original name across repeated renames', async () => {
     const { result, rerender } = renderHook(({ s }) => useProfileOverlay(list, s), {
       initialProps: { s: statusHook('Jo') },

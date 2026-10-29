@@ -1,7 +1,7 @@
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { CreditsClock } from '../../utils/creditsClock';
-import { HOLD_RATE } from '../../hooks/useRollScrub';
+import { HOLD_RATE, NO_SCRUB_ATTR } from '../../hooks/useRollScrub';
 
 /** A keyboard press on a hold button can't be held, so it jumps this far instead. */
 const KEY_JUMP_SECONDS = 8;
@@ -79,6 +79,7 @@ export function CreditsControls({
   const pauseLabel = paused ? t('supporters.credits.play') : t('supporters.credits.pause');
   return (
     <div
+      {...{ [NO_SCRUB_ATTR]: '' }}
       className={`absolute z-30 flex flex-col gap-2 ${
         stacked ? 'inset-x-0 bottom-4 items-center' : 'bottom-6 right-6 items-end'
       }`}

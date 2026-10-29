@@ -148,8 +148,9 @@ export function BinInstances({
         }
         const step = (dt / DROP_SECONDS) * m.speed;
         p = progress[i] + MathUtils.clamp(target - progress[i], -step, step);
-        progress[i] = p;
       }
+      // Stored in both motion modes: the click guard below reads it.
+      progress[i] = p;
 
       let lift = 0;
       let tiltX = 0;

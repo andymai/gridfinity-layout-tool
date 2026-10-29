@@ -38,23 +38,26 @@ export function useProfileOverlay(
 
   const effective = useMemo(() => {
     const status = supporter.status;
-    if (!edit || !status.supporter || status.name === null) return supporters;
-    if (supporters.supporters.some((r) => r.name === status.name)) return supporters;
+    if (!edit || !status.supporter) return supporters;
     const records = supporters.supporters.slice();
     const idx =
       edit.prevName !== null
         ? records.findIndex((r) => r.name === edit.prevName)
         : records.findIndex((r) => r.name === null);
-    // Renames an existing record, never adds one: a push would double the
+    // Edits an existing record, never adds one: a push would double the
     // caller's bin while the headline count reads the raw list.
     if (idx < 0) return supporters;
-    records[idx] = {
-      ...records[idx],
-      name: status.name,
-      message: status.message ?? undefined,
-      // An anonymous record carries no department; the caller's own status does.
-      department: status.department ?? records[idx].department,
-    };
+    const current = records[idx];
+    records[idx] =
+      status.name === null
+        ? { ...current, name: null, message: undefined, department: undefined }
+        : {
+            ...current,
+            name: status.name,
+            message: status.message ?? undefined,
+            // An anonymous record carries no department; the caller's own status does.
+            department: status.department ?? current.department,
+          };
     return { ...supporters, supporters: records };
   }, [supporters, supporter.status, edit]);
 

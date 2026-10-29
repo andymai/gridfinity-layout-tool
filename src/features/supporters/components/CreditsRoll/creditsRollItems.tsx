@@ -15,6 +15,8 @@ export interface ItemContext {
   accent: string;
   stacked: boolean;
   focusedId: string | null;
+  /** The finale fades the roll: still read aloud, but out of the tab order. */
+  hidden: boolean;
   onCredit: (binId: string) => void;
 }
 
@@ -40,6 +42,7 @@ function CreditName({ bin, ctx }: { bin: SupporterBin; ctx: ItemContext }) {
     <Button
       variant="ghost"
       onClick={() => ctx.onCredit(bin.id)}
+      tabIndex={ctx.hidden ? -1 : undefined}
       aria-pressed={focused}
       aria-label={bin.name ?? ctx.t('supporters.anonymous')}
       className="h-auto min-h-0 max-w-full gap-1.5 px-1.5 py-0.5 text-[15px] font-medium hover:bg-white/10"

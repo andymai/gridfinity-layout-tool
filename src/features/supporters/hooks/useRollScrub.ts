@@ -108,6 +108,8 @@ export function useRollScrub({
     const onKeyUp = (e: KeyboardEvent) => {
       if (e.key.startsWith('Arrow')) clock.setHoldRate(null);
     };
+    // A key released in another window never sends keyup here.
+    const onBlur = () => clock.setHoldRate(null);
 
     el.addEventListener('wheel', onWheel, { passive: false });
     el.addEventListener('pointerdown', onPointerDown);
@@ -117,6 +119,7 @@ export function useRollScrub({
     el.addEventListener('click', onClickCapture, { capture: true });
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', onBlur);
     return () => {
       el.removeEventListener('wheel', onWheel);
       el.removeEventListener('pointerdown', onPointerDown);
@@ -126,6 +129,7 @@ export function useRollScrub({
       el.removeEventListener('click', onClickCapture, { capture: true });
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onBlur);
       clock.setHoldRate(null);
     };
   }, [enabled, target, clock, timeline, baseSpeed, handlers]);

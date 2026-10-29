@@ -114,7 +114,9 @@ export function SupportersScene({
         reducedMotion={reducedMotion}
         onOrbitReady={setOrbitReady}
       />
-      {phase === 'finale' && (
+      {/* Mounted only once the pull-back has handed over, so a search made
+          during it waits instead of being undone when the pull-back lands. */}
+      {phase === 'finale' && orbitReady && (
         <CameraFocus seatOf={seatOf} request={flyTo} reducedMotion={reducedMotion} />
       )}
       <OrbitControls
