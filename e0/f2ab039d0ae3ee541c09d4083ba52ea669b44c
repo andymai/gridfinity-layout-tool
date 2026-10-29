@@ -1,0 +1,27 @@
+src/features/supporters/components/SoundToggle/SoundToggle.tsx
+  s_792461bfbd0af2::t_fc0a7f30844e34 8-13
+src/features/supporters/audio/creditsSoundtrack.ts
+  s_792461bfbd0af2::t_fc0a7f30844e34 59,67-70,101
+  s_792461bfbd0af2::t_aafa7ba1e382da 71-76
+src/features/supporters/audio/creditsSoundtrack.test.ts
+  s_792461bfbd0af2::t_a0f222e0f42fcf 2,40-213
+  s_792461bfbd0af2::t_51de2df9879a7e 214
+src/features/supporters/audio/chipSynth.ts
+  s_792461bfbd0af2::t_fc0a7f30844e34 13-16,20-21,30,32-39,43,83,104,108-109,113,117,168-170,203-204,213
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e0f2ab039d0ae3ee541c09d4083ba52ea669b44c",
+  "prompts": {},
+  "sessions": {
+    "s_792461bfbd0af2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "971efe59-75e6-421b-ad6f-2f7f27706660",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
