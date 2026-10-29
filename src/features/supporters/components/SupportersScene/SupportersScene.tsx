@@ -108,6 +108,11 @@ export function SupportersScene({
 
   const pointerTarget = useRef(new Vector3(0, 0, 0));
   const [orbitReady, setOrbitReady] = useState(false);
+  // Sending the camera home hands orbit back for a moment; the post-credits
+  // scene stays armed through that, and only leaving the finale disarms it.
+  const [finaleSettled, setFinaleSettled] = useState(false);
+  if (phase !== 'finale' && finaleSettled) setFinaleSettled(false);
+  if (phase === 'finale' && orbitReady && !finaleSettled) setFinaleSettled(true);
   const [guest, setGuest] = useState(false);
   const guestLeft = useCallback(() => {
     setGuest(false);
@@ -183,7 +188,7 @@ export function SupportersScene({
         geometry={binGeometry}
         point={layout.vacant}
         palette={palette}
-        armed={phase === 'finale' && orbitReady && !reducedMotion}
+        armed={phase === 'finale' && finaleSettled && !reducedMotion}
         label={postCreditsLabel}
         onStart={() => {
           setGuest(true);
