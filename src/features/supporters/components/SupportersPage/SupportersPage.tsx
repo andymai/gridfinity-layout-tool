@@ -51,7 +51,7 @@ import { CtaBurst } from './SupportersFlourishes';
 const BASE_SPEED = { side: 125, stacked: 105 };
 const HINT_MS = 9000;
 /** Skipping sooner than this after the roll starts earns the speedrunner achievement. */
-const SPEEDRUN_SECONDS = 3;
+const SPEEDRUN_MS = 3000;
 const POKES_FOR_ACHIEVEMENT = 10;
 /** Width of the credits column beside the plate, matching `CreditsRoll`. */
 const columnWidth = (viewport: number) => Math.max(340, Math.min(viewport * 0.44, 600));
@@ -146,6 +146,12 @@ export function SupportersPage() {
   const mainRef = useRef<HTMLElement>(null);
   const endTagRef = useRef<HTMLDivElement>(null);
   const pokes = useRef(0);
+  // Wall time, not the playhead: rewinding to the start or pausing there must
+  // not make a later skip look fast.
+  const rollStartedAt = useRef(0);
+  useEffect(() => {
+    if (roll) rollStartedAt.current = performance.now();
+  }, [roll]);
 
   // Bins set document.body.cursor on hover; reset it if we unmount mid-hover.
   useEffect(() => () => void (document.body.style.cursor = ''), []);
@@ -158,7 +164,7 @@ export function SupportersPage() {
   }, [phase]);
 
   const skip = useCallback(() => {
-    if (clock.time < SPEEDRUN_SECONDS) unlock('speedrunner');
+    if (performance.now() - rollStartedAt.current < SPEEDRUN_MS) unlock('speedrunner');
     if (clock.duration > 0) clock.seek(clock.duration);
     setPaused(false);
     setFocusedId(null);
@@ -280,7 +286,7 @@ export function SupportersPage() {
             reducedMotion={reducedMotion}
             focusedId={focusedId}
             focusCamera={roll && paused}
-            onSelect={setFocusedId}
+            onSelect={focus.selectBin}
             onPoke={onPoke}
             onPostCredits={onPostCredits}
             postCreditsLabel={t('supporters.credits.postCreditsTape')}

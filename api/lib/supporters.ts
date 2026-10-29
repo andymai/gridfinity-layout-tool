@@ -102,6 +102,16 @@ export function withDepartment(donorKey: string, record: SupporterRecord): Suppo
   return record.name ? { ...record, department: supporterDepartment(donorKey) } : record;
 }
 
+/**
+ * Cap at `max` UTF-16 units without cutting an emoji in half: a lone surrogate
+ * left at the end is invalid text, and `encodeURIComponent` throws on it.
+ */
+export function sliceWhole(text: string, max: number): string {
+  const cut = text.slice(0, max);
+  const last = cut.charCodeAt(cut.length - 1);
+  return last >= 0xd800 && last <= 0xdbff ? cut.slice(0, -1) : cut;
+}
+
 /** Bound the sanitize pass so it stays linear in a small constant, not the payload. */
 const SANITIZE_INPUT_CAP = MAX_DISPLAY_NAME_LENGTH * 8;
 
@@ -167,7 +177,7 @@ export function normalizeDisplayName(
 
   // Strip before capping to the display length, so invisible padding can't eat
   // the budget and push the actual name off the end.
-  const cleaned = stripUnsafeNameChars(bounded).trim().slice(0, MAX_DISPLAY_NAME_LENGTH);
+  const cleaned = sliceWhole(stripUnsafeNameChars(bounded).trim(), MAX_DISPLAY_NAME_LENGTH);
   if (!cleaned) return null;
 
   // Filter last, on exactly the text we will render. This ordering is
@@ -188,7 +198,7 @@ export function normalizeDisplayName(
  */
 export function filterMessage(rawMessage: string | null | undefined): string | null {
   const bounded = (rawMessage ?? '').trim().slice(0, SANITIZE_INPUT_CAP);
-  const cleaned = stripUnsafeNameChars(bounded).trim().slice(0, MAX_MESSAGE_LENGTH);
+  const cleaned = sliceWhole(stripUnsafeNameChars(bounded).trim(), MAX_MESSAGE_LENGTH);
   if (!cleaned) return null;
   if (!filterDisplayName(cleaned).passed) return null;
   return cleaned;

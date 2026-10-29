@@ -128,6 +128,15 @@ describe('SupportersPage', () => {
     expect(screen.queryByText('supporters.thanksNamed')).not.toBeInTheDocument();
   });
 
+  it('does not celebrate a skip that came long after the roll started', () => {
+    const start = performance.now();
+    const now = vi.spyOn(performance, 'now').mockReturnValue(start);
+    render(<SupportersPage />);
+    now.mockReturnValue(start + 60_000);
+    fireEvent.click(screen.getByRole('button', { name: 'supporters.credits.skip' }));
+    expect(screen.queryByText('supporters.achievements.speedrunner')).not.toBeInTheDocument();
+  });
+
   it('celebrates a skip within three seconds', () => {
     render(<SupportersPage />);
     fireEvent.click(screen.getByRole('button', { name: 'supporters.credits.skip' }));

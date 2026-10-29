@@ -66,6 +66,14 @@ describe('useSupporterFocus', () => {
     expect(onShown).toHaveBeenCalledWith(bins[1]);
   });
 
+  it('shows a clicked bin without stopping the roll, and reports who was shown', () => {
+    const { result, clock, onShown } = setup();
+    act(() => result.current.selectBin('a'));
+    expect(result.current.focusedId).toBe('a');
+    expect(clock.isPaused).toBe(false);
+    expect(onShown).toHaveBeenCalledWith(bins[0]);
+  });
+
   it('flies to the bin when the roll is not running', () => {
     const { result } = setup({ rolling: false });
     act(() => result.current.showSupporter('a', true));
@@ -89,11 +97,12 @@ describe('useSupporterFocus', () => {
   });
 
   it('lands a shared link on its supporter, reopening the roll', () => {
-    const { result, clock, openRoll } = setup({ creditName: 'Grace' });
+    const { result, clock, openRoll, onShown } = setup({ creditName: 'Grace' });
     act(() => result.current.landCreditLink(schedule));
     expect(openRoll).toHaveBeenCalled();
     expect(clock.time).toBeCloseTo(14.75, 5);
     expect(result.current.spotlight).toBe('Grace');
+    expect(onShown).toHaveBeenCalledWith(bins[1]);
   });
 
   it('lands a shared link only once, and only on an exact name', () => {

@@ -22,6 +22,7 @@ export function PostCreditsScene({
   label,
   onStart,
   onDone,
+  onCancel,
 }: {
   geometry: BakedGeometry;
   point: ScenePoint;
@@ -30,12 +31,14 @@ export function PostCreditsScene({
   label: string;
   onStart: () => void;
   onDone: () => void;
+  /** Disarmed part way (Replay, reduced motion): gone, and it does not count as watched. */
+  onCancel: () => void;
 }) {
   const group = useRef<Group>(null);
   const waited = useRef(0);
   const played = useRef(false);
   const clock = useRef(-1);
-  const callbacks = useLatestRef({ onStart, onDone });
+  const callbacks = useLatestRef({ onStart, onDone, onCancel });
 
   const texture = useMemo(
     () => createTabLabelTexture(label, palette.tape, palette.tapeInk),
@@ -57,6 +60,12 @@ export function PostCreditsScene({
       played.current = true;
       clock.current = 0;
       callbacks.current.onStart();
+    }
+    if (!armed) {
+      clock.current = -1;
+      g.visible = false;
+      callbacks.current.onCancel();
+      return;
     }
     clock.current += Math.min(delta, 0.1);
     if (clock.current >= POST_CREDITS_LENGTH) {

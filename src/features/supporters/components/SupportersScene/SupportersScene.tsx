@@ -182,6 +182,7 @@ export function SupportersScene({
         label={postCreditsLabel}
         onStart={() => setGuest(true)}
         onDone={guestLeft}
+        onCancel={() => setGuest(false)}
       />
 
       <ShadowBlob

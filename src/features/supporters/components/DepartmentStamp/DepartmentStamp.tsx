@@ -1,19 +1,25 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from '@/i18n';
 import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
+import { useResolvedTheme } from '@/shared/hooks/useThemeEffect';
+import { hasSeenStamp, markStampSeen } from '../../utils/creditsSeen';
 
-const INK = '#c2410c';
+/** Stamp-pad orange, light enough on the dark panel and dark enough on the light one for 4.5:1. */
+const INK = { dark: '#fb923c', light: '#c2410c' };
 
-interface DepartmentStampProps {
-  department: string;
-  /** Slam it down; otherwise it just sits there, already stamped. */
-  animate: boolean;
-}
-
-export function DepartmentStamp({ department, animate }: DepartmentStampProps) {
+/**
+ * Slams down the first time it is actually shown in this browser, then just
+ * sits there. Tracking display here, not in the panel, means closing the
+ * panel before the status loads never uses the stamp up.
+ */
+export function DepartmentStamp({ department }: { department: string }) {
   const t = useTranslation();
   const reducedMotion = usePrefersReducedMotion();
+  const ink = INK[useResolvedTheme()];
   const ref = useRef<HTMLDivElement>(null);
+  const [animate] = useState(() => !hasSeenStamp());
+
+  useEffect(() => markStampSeen(), []);
 
   useEffect(() => {
     const el = ref.current;
@@ -33,9 +39,9 @@ export function DepartmentStamp({ department, animate }: DepartmentStampProps) {
     <div
       ref={ref}
       className="self-start rounded-sm border-[3px] border-double px-3 py-1.5 uppercase"
-      style={{ color: INK, borderColor: INK, transform: 'rotate(-6deg)' }}
+      style={{ color: ink, borderColor: ink, transform: 'rotate(-6deg)' }}
     >
-      <p className="text-micro font-semibold tracking-[0.2em] opacity-80">
+      <p className="text-micro font-semibold tracking-[0.2em]">
         {t('supporters.panel.assignedTo')}
       </p>
       <p className="text-sm font-extrabold tracking-wider">{department}</p>

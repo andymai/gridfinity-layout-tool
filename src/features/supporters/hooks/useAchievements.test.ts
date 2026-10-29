@@ -26,6 +26,17 @@ describe('useAchievements', () => {
     expect(result.current.toast).toBeNull();
   });
 
+  it('keeps awards another tab saved meanwhile', () => {
+    const { result } = renderHook(() => useAchievements());
+    act(() => result.current.unlock('speedrunner'));
+    localStorage.setItem(
+      'gridfinity-supporters-achievements',
+      JSON.stringify(['speedrunner', 'postCredits'])
+    );
+    act(() => result.current.unlock('poked10'));
+    expect([...readAchievements()].sort()).toEqual(['poked10', 'postCredits', 'speedrunner']);
+  });
+
   it('queues unlocks that land together and shows them in turn', () => {
     const { result } = renderHook(() => useAchievements());
     act(() => {

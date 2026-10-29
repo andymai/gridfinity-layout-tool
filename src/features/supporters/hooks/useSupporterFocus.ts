@@ -4,6 +4,7 @@ import { useLatestRef } from '@/shared/hooks';
 import type { CreditsClock } from '../utils/creditsClock';
 import { departmentOf } from '../utils/creditsPlan';
 import { findSupporter } from '../utils/findSupporter';
+import { isCreditFor } from '../utils/creditLink';
 import type { RollSchedule } from '../utils/rollSchedule';
 import type { SupporterBin } from '../utils/supportersData';
 import type { FlyToRequest } from '../components/SupportersScene';
@@ -81,6 +82,16 @@ export function useSupporterFocus({
     [rolling, schedule, bins, pauseSeated, flyToBin, onShownRef]
   );
 
+  /** A bin clicked on the plate: show its card without stopping the roll. */
+  const selectBin = useCallback(
+    (id: string) => {
+      setFocusedId(id);
+      const bin = bins.find((b) => b.id === id);
+      if (bin) onShownRef.current(bin);
+    },
+    [bins, onShownRef]
+  );
+
   const togglePause = useCallback(() => {
     const next = !clock.isPaused;
     setPaused(next);
@@ -124,10 +135,16 @@ export function useSupporterFocus({
     );
   }, [bins, findQuery, showSupporter, departmentLabels, t]);
 
-  const linked = useMemo(() => {
-    const found = creditName ? findSupporter(bins, creditName) : null;
-    return found && found.exactMatches > 0 ? found.bin : null;
-  }, [bins, creditName]);
+  const linked = useMemo(
+    () =>
+      creditName
+        ? (bins.find(
+            (b): b is SupporterBin & { name: string } =>
+              b.name !== null && isCreditFor(creditName, b.name)
+          ) ?? null)
+        : null,
+    [bins, creditName]
+  );
 
   /**
    * Called once the credits are laid out (with no schedule under reduced
@@ -140,6 +157,7 @@ export function useSupporterFocus({
       linkLanded.current = true;
       setFocusedId(linked.id);
       setSpotlight(linked.name);
+      onShownRef.current(linked);
       if (measured) {
         openRoll();
         pauseSeated(linked.id, measured, true);
@@ -147,7 +165,7 @@ export function useSupporterFocus({
         flyToBin(linked.id);
       }
     },
-    [linked, openRoll, pauseSeated, flyToBin]
+    [linked, openRoll, pauseSeated, flyToBin, onShownRef]
   );
 
   useEffect(() => {
@@ -165,6 +183,7 @@ export function useSupporterFocus({
     findStatus,
     spotlight,
     showSupporter,
+    selectBin,
     togglePause,
     onCredit,
     onKeyboardFocus,
