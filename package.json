@@ -60,6 +60,7 @@
     "check:whats-new": "./scripts/check-whats-new.sh",
     "check:missing-tests": "./scripts/check-missing-tests.sh",
     "check:component-structure": "./scripts/check-component-structure.sh",
+    "check:toolchain": "node scripts/check-toolchain-advisories.ts",
     "seed-supporters": "tsx scripts/seed-supporters.ts",
     "restore-supporter-messages": "tsx scripts/restore-supporter-messages.ts",
     "sync-admin": "tsx scripts/sync-admin/index.ts",
