@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'eco-plate',
+    date: '2026-10-30',
+    kind: 'new',
+    title: { en: 'Eco plates use about a third less filament' },
+    body: {
+      en: 'Turn on Eco plate in the baseplate settings. The straight joints between corner posts are cut down to a thin bar, so a plate uses about a third less filament, or less with wide padding. Bins are held by the corner posts only. Eco plate switches off while Vertical stack is on. Thanks to Sznycel2442 for building it.',
+    },
+    action: { kind: 'openTool', tool: 'baseplate' },
+  },
+  {
     id: 'supporters-end-credits',
     date: '2026-10-28',
     kind: 'improved',

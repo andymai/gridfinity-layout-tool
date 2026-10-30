@@ -4379,9 +4379,9 @@ const en: Record<string, string> = {
   'baseplate.magnetChamferLightweight':
     'A lightweight plate leaves too little wall around each hole for a lead-in.',
   'baseplate.solidFloor': 'Solid floor',
-  'baseplate.ecoPlate': 'Eco plate mode',
+  'baseplate.ecoPlate': 'Eco plate',
   'baseplate.ecoPlateHint':
-    'Hollows the straight grid joints to save filament. Corner posts and a thin connecting bridge remain.',
+    'Cuts the straight joints between corner posts down to a thin bar, so a plate uses about a third less filament (less with wide padding). Bins are held by the corner posts only.',
   'baseplate.solidFloorThickness': 'Floor thickness',
   'baseplate.solidFloorHeightNote':
     'Added below the standard grid. Total height of the plate increases by this amount to accommodate.',

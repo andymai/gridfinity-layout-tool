@@ -286,7 +286,7 @@ export function BaseSection() {
             <div className="border-t border-stroke-subtle pt-3">
               <Checkbox
                 checked={baseplateParams.ecoPlate === true}
-                onChange={(checked) => updateParam('ecoPlate', checked)}
+                onChange={(checked) => updateParam('ecoPlate', checked || undefined)}
                 label={t('baseplate.ecoPlate')}
               />
               <p className="text-label leading-relaxed text-content-tertiary pl-6">
