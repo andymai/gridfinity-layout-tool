@@ -11,7 +11,6 @@ export interface StoredGenerationInput {
   readonly bedDepthMm: number;
 }
 
-/** The open layout's plate and print bed, resolved from the stores right now. */
 export function storedGenerationInput(): StoredGenerationInput {
   const { layout } = useLayoutStore.getState();
   const bedWidthMm = layout.printBedSize;

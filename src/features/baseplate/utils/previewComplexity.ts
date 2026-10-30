@@ -92,7 +92,14 @@ export function shouldDeferBrepPreview(
   // rectangles-only, so a shaped plate would finalize with a wrong (or no)
   // preview. Shaped plates always run BREP.
   if (parentParams.outline !== undefined) return false;
-  if (deferredPreviewSource(parentParams) === 'manifold' && !hasPreviewBridge) return false;
+  // The Manifold draft builds neither detached margin rails nor the padding-free
+  // body they leave, so a plate with rails can only settle on the exact build.
+  if (
+    deferredPreviewSource(parentParams) === 'manifold' &&
+    (!hasPreviewBridge || tiling.margins.length > 0)
+  ) {
+    return false;
+  }
   if (!parentParams.magnetHoles) return false;
 
   if (lastBrepMs !== null && lastBrepMs >= DEFER_LAST_BREP_MS) return true;

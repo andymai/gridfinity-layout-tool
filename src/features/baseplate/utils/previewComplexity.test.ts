@@ -92,6 +92,20 @@ describe('shouldDeferBrepPreview', () => {
     expect(defer(makeParams({ width: 10, depth: 10 }), 460, null, false)).toBe(true);
   });
 
+  it('keeps an eco plate with detached margin rails on the exact build', () => {
+    const railed = makeParams({
+      width: 10,
+      depth: 10,
+      ecoPlate: true,
+      detachMargins: true,
+      paddingLeft: 10,
+      paddingRight: 10,
+    });
+    expect(computeBaseplateTiling(railed, 460).margins.length).toBeGreaterThan(0);
+    expect(defer(railed, 460)).toBe(false);
+    expect(defer({ ...railed, ecoPlate: false }, 460)).toBe(true);
+  });
+
   it('never defers an eco plate without magnets', () => {
     expect(
       defer(makeParams({ width: 10, depth: 10, ecoPlate: true, magnetHoles: false }), 460)
