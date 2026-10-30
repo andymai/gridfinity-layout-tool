@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.525.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.525.0...gridfinity-layout-tool-v4.525.1) (2026-10-30)
+
+
+### Bug Fixes
+
+* **deps:** bump pnpm to 11.28.8, clearing 17 pnpm advisories ([#4748](https://github.com/andymai/gridfinity-layout-tool/issues/4748)) ([192578d](https://github.com/andymai/gridfinity-layout-tool/commit/192578daec4e49d13e2303c4caa883b6e873a20b))
+* **deps:** floor ct-core's vite at 6.4.5 for GHSA-8g5g-mxqh-grgj ([#4746](https://github.com/andymai/gridfinity-layout-tool/issues/4746)) ([ed9a53f](https://github.com/andymai/gridfinity-layout-tool/commit/ed9a53fb732ebcf7637f37453e4db14106834ae6))
+
 ## [4.525.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.524.1...gridfinity-layout-tool-v4.525.0) (2026-10-29)
 
 
