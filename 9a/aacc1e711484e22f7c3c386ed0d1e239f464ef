@@ -1,0 +1,19 @@
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_91213deb28ff89::t_7bb3193037c41a 247
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9aaacc1e711484e22f7c3c386ed0d1e239f464ef",
+  "prompts": {},
+  "sessions": {
+    "s_91213deb28ff89": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "deaa571a-1688-47b1-9794-673e9f62649d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
