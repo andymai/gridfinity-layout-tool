@@ -1,0 +1,21 @@
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_91213deb28ff89::t_ed277a97835946 391-396
+src/features/baseplate/hooks/storedGenerationInput.test.ts
+  s_91213deb28ff89::t_bdf9df0b03d3f5 6,20-22,25-30,63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7e4c5284a403703be45e2691e3d573dbde9802d3",
+  "prompts": {},
+  "sessions": {
+    "s_91213deb28ff89": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "deaa571a-1688-47b1-9794-673e9f62649d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}

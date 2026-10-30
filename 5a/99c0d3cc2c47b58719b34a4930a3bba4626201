@@ -1,0 +1,19 @@
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_91213deb28ff89::t_4e94a13afc7518 292-294,302,638
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5a99c0d3cc2c47b58719b34a4930a3bba4626201",
+  "prompts": {},
+  "sessions": {
+    "s_91213deb28ff89": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "deaa571a-1688-47b1-9794-673e9f62649d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
