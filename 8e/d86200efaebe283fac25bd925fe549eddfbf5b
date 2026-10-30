@@ -1,0 +1,30 @@
+src/shared/generation/ecoPlate.ts
+  s_91213deb28ff89::t_f8b70c6ef59491 3,12-18,21-33,37-38,64-65,67,83-101,111,121,155-159,178,182-198
+src/features/generation/worker/generators/baseplateGenerator.test.ts
+  s_91213deb28ff89::t_908b0ea797f024 3
+  s_91213deb28ff89::t_b39be56df919c9 102-125
+  s_91213deb28ff89::t_b69a5a6fe8cc1d 101
+src/shared/generation/ecoPlate.test.ts
+  s_91213deb28ff89::t_ed20720e536bed 2,5-7
+  s_91213deb28ff89::t_67b14159aed753 49-91
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_91213deb28ff89::t_de211d2385a745 96-97
+  s_91213deb28ff89::t_2fa2f20e04e089 550-575,581-592
+  s_91213deb28ff89::t_30e89b1333f108 752
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8ed86200efaebe283fac25bd925fe549eddfbf5b",
+  "prompts": {},
+  "sessions": {
+    "s_91213deb28ff89": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "deaa571a-1688-47b1-9794-673e9f62649d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
