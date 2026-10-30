@@ -164,6 +164,10 @@ overrides:
   # common transitively and an unbounded `<7.5.21` would have forced any that
   # appeared onto 7.x, which is an ESM/API break.
   'tar@>=7.0.0 <7.5.21': '^7.5.21'
+  # GHSA-8g5g-mxqh-grgj is fixed at 6.4.5. Parent-scoped because a
+  # `vite@>=6.0.0 <6.4.5` selector also matches every plugin's vite peer range
+  # and rewrites it to ^6.4.5, under an app that runs vite 8.
+  '@playwright/experimental-ct-core>vite': '^6.4.5'
   '@vercel/python-analysis>smol-toml': '^1.6.1'
   esbuild: '0.28.1'
   # GHSA-vfj7-8cjw-p6xm (braces <= 3.0.3: unbounded recursion on nested
