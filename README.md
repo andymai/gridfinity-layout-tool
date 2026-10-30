@@ -16,7 +16,7 @@ https://github.com/user-attachments/assets/eb7a7b68-07f0-45b3-9273-ecf1dfcf6a7c
 
 </div>
 
-The video plans an IKEA Alex drawer, from its measured size to a baseplate exported as 3MF. [Watch it on YouTube](https://www.youtube.com/watch?v=MTMkVwuJ4Fs).
+The video plans an IKEA Alex drawer, from its measured size to a baseplate exported as 3MF. [Watch it on YouTube](https://www.youtube.com/watch?v=X85QnDIGCJc).
 
 <img width="1436" height="847" alt="image" src="https://github.com/user-attachments/assets/17dba424-3a01-4064-b3e9-7742687fc2d5" />
 
