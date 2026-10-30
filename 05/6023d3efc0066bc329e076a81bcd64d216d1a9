@@ -1,0 +1,29 @@
+src/shared/generation/ecoPlate.ts
+  s_91213deb28ff89::t_b6ce4e1bfe0490 11-12
+  s_91213deb28ff89::t_4aa8091f3f58a9 96-98,101-103,108-138
+  s_91213deb28ff89::t_1adc1fc1ddcc0c 24-38,42
+  s_91213deb28ff89::t_9004cfdc63728e 67-69,80-82
+src/features/baseplate/README.md
+  s_91213deb28ff89::t_e3dd5e04d1ae84 45
+src/features/generation/worker/generators/baseplateGenerator.test.ts
+  s_91213deb28ff89::t_449464e2a91a8f 93-98
+  s_91213deb28ff89::t_c82d74844a0e29 83-92,99
+src/shared/generation/ecoPlate.test.ts
+  s_91213deb28ff89::t_baf68a88e004cb 31-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "056023d3efc0066bc329e076a81bcd64d216d1a9",
+  "prompts": {},
+  "sessions": {
+    "s_91213deb28ff89": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "deaa571a-1688-47b1-9794-673e9f62649d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
