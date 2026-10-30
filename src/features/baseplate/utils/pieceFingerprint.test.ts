@@ -26,6 +26,11 @@ function makeParams(overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedB
 }
 
 describe('computePieceFingerprint', () => {
+  it('distinguishes eco plate pieces from standard pieces', () => {
+    expect(computePieceFingerprint(makeParams({ ecoPlate: true }))).not.toBe(
+      computePieceFingerprint(makeParams())
+    );
+  });
   it('produces identical keys for identical params', () => {
     const params = makeParams({ width: 3, depth: 3 });
     const fp1 = computePieceFingerprint(params);

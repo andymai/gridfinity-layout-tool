@@ -45,6 +45,7 @@ describe('BaseSection', () => {
     render(<BaseSection />);
     expect(screen.getByText('baseplate.magnetHoles')).toBeInTheDocument();
     expect(screen.getByText('baseplate.solidFloor')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.ecoPlate')).toBeInTheDocument();
     expect(screen.getByText('baseplate.cornerRadius')).toBeInTheDocument();
   });
 
@@ -57,6 +58,7 @@ describe('BaseSection', () => {
     expect(screen.getByText('baseplate.cornerRadius')).toBeInTheDocument();
     // Magnets are still stripped (and hidden) while stacking.
     expect(screen.queryByText('baseplate.magnetHoles')).not.toBeInTheDocument();
+    expect(screen.queryByText('baseplate.ecoPlate')).not.toBeInTheDocument();
   });
 
   it('toggling magnet holes writes through to the layout store', () => {
@@ -66,6 +68,12 @@ describe('BaseSection', () => {
       DEFAULT_BASEPLATE_PARAMS.magnetHoles;
     fireEvent.click(screen.getByRole('switch', { name: 'baseplate.magnetHoles' }));
     expect(useLayoutStore.getState().layout.baseplateParams?.magnetHoles).toBe(!before);
+  });
+
+  it('enables eco plate in the layout settings', () => {
+    render(<BaseSection />);
+    fireEvent.click(screen.getByRole('checkbox', { name: 'baseplate.ecoPlate' }));
+    expect(useLayoutStore.getState().layout.baseplateParams?.ecoPlate).toBe(true);
   });
 
   describe('all-edge slots (issue #2866)', () => {

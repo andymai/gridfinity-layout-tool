@@ -96,6 +96,12 @@ describe('selectGenerationTriggers', () => {
     expect(shallowEqual(selectGenerationTriggers(off), selectGenerationTriggers(on))).toBe(false);
   });
 
+  it('regenerates when eco plate mode toggles', () => {
+    const off = makeState(undefined, { ecoPlate: false });
+    const on = makeState(undefined, { ecoPlate: true });
+    expect(shallowEqual(selectGenerationTriggers(off), selectGenerationTriggers(on))).toBe(false);
+  });
+
   it('produces a different trigger selection when solidFloorThickness changes (floor on)', () => {
     const thin = makeState(undefined, { solidFloor: true, solidFloorThickness: mm(0.8) });
     const thick = makeState(undefined, { solidFloor: true, solidFloorThickness: mm(2) });

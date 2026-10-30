@@ -284,6 +284,8 @@
   "baseplate.shapedPaddingTooLarge": "パディングがこの形状には大きすぎるため無視されます。輪郭に収まるように小さくしてください。",
   "baseplate.sideView": "側面",
   "baseplate.solidFloor": "ソリッド底面",
+  "baseplate.ecoPlate": "エコプレートモード",
+  "baseplate.ecoPlateHint": "グリッドの直線接合部をくり抜いてフィラメントを節約します。角の支柱と薄い連結部は残します。",
   "baseplate.solidFloorHeightNote": "標準グリッドの下に追加されます。その分だけプレートの全体の高さが増えて対応します。",
   "baseplate.solidFloorThickness": "底面の厚さ",
   "baseplate.splitCustom": "カスタム分割",

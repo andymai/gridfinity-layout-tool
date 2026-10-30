@@ -284,6 +284,8 @@
   "baseplate.shapedPaddingTooLarge": "여백이 이 모양에 비해 너무 커서 무시됩니다. 윤곽선에 맞도록 줄이세요.",
   "baseplate.sideView": "측면",
   "baseplate.solidFloor": "솔리드 바닥",
+  "baseplate.ecoPlate": "에코 플레이트 모드",
+  "baseplate.ecoPlateHint": "격자의 직선 연결부를 파내 필라멘트를 절약합니다. 모서리 기둥과 얇은 연결 다리는 유지됩니다.",
   "baseplate.solidFloorHeightNote": "표준 그리드 아래에 추가됩니다. 이를 수용하기 위해 플레이트 전체 높이가 그만큼 늘어납니다.",
   "baseplate.solidFloorThickness": "바닥 두께",
   "baseplate.splitCustom": "사용자 지정 분할",

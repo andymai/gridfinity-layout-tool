@@ -706,6 +706,7 @@ export function pieceToBaseplateParams(
     invertDovetails: parentParams.invertDovetails,
     preferIdenticalPieces: parentParams.preferIdenticalPieces,
     lightweight: parentParams.lightweight,
+    ecoPlate: parentParams.ecoPlate,
     solidFloor: parentParams.solidFloor,
     solidFloorThickness: parentParams.solidFloorThickness,
     screwHoles: parentParams.screwHoles,

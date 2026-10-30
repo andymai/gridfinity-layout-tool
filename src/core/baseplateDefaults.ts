@@ -221,6 +221,7 @@ export function migrateBaseplateParams(stored: unknown): StoredBaseplateParams {
         }
       : {}),
     ...(typeof obj.lightweight === 'boolean' ? { lightweight: obj.lightweight } : {}),
+    ...(typeof obj.ecoPlate === 'boolean' ? { ecoPlate: obj.ecoPlate } : {}),
     ...(typeof obj.solidFloor === 'boolean' ? { solidFloor: obj.solidFloor } : {}),
     ...(typeof obj.solidFloorThickness === 'number'
       ? {

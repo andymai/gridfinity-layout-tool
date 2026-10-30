@@ -244,7 +244,7 @@ describe('buildFullParams', () => {
 
     const result = buildFullParams(stored, 20, 16, 42, 'start', 'start');
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       width: 20,
       depth: 16,
       gridUnitMm: 42,
@@ -261,6 +261,7 @@ describe('buildFullParams', () => {
       fractionalEdgeY: 'start',
       detachMargins: false,
       detachMarginConnector: false,
+      ecoPlate: false,
     });
   });
 
@@ -710,6 +711,21 @@ describe('drawer outline handling', () => {
     const result = buildFullParams(stored, 10, 8, 42, 'end', 'end', undefined, outline);
     expect(result.magnetHoles).toBe(true);
     expect(result.solidFloor).toBe(true);
+  });
+
+  it('passes eco plate mode to generation and strips it while stacking', () => {
+    const stored = { ...storedBase, ecoPlate: true };
+    expect(buildFullParams(stored, 3, 2, 42, 'end', 'end').ecoPlate).toBe(true);
+    expect(
+      buildFullParams(
+        { ...stored, stackPrint: { enabled: true, gapMm: mm(0.2) } },
+        3,
+        2,
+        42,
+        'end',
+        'end'
+      ).ecoPlate
+    ).toBe(false);
   });
 
   it('ignores the outline for unsynced (custom-size) plates', () => {

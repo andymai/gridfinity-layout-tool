@@ -779,6 +779,8 @@ export interface ResolvedBaseplateParams {
   readonly nozzleSizeMm?: number;
   /** Remove center floor material, keeping only magnet pads. */
   readonly lightweight?: boolean;
+  /** Hollow the straight grid joints while retaining corner posts and a bottom bridge. */
+  readonly ecoPlate?: boolean;
   /**
    * Leave a solid floor under every socket instead of through-cutting the
    * pockets — a rigid/weighted plate. The floor is added below the 5mm socket

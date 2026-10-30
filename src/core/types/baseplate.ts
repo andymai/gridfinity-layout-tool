@@ -204,6 +204,8 @@ export interface StoredBaseplateParams {
   readonly connectorNubs?: boolean;
   /** Remove center floor material, keeping only magnet pads (default true). */
   readonly lightweight?: boolean;
+  /** Hollow the straight grid joints while keeping the corner posts and a bottom bridge. */
+  readonly ecoPlate?: boolean;
   /**
    * Leave a solid floor under every socket instead of cutting the pockets
    * through — a rigid/weighted plate (default false). The floor is added below

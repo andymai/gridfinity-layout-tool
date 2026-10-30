@@ -284,6 +284,8 @@
   "baseplate.shapedPaddingTooLarge": "Polstringen er for stor for denne formen og ignoreres. Reduser den slik at den passer rundt konturen.",
   "baseplate.sideView": "Side",
   "baseplate.solidFloor": "Massiv bunn",
+  "baseplate.ecoPlate": "Økoplatemodus",
+  "baseplate.ecoPlateHint": "Sparer filament ved å hule ut de rette skjøtene i rutenettet. Hjørnestolper og en tynn forbindelsesbro beholdes.",
   "baseplate.solidFloorHeightNote": "Legges til under standardrutenettet. Platens totale høyde øker tilsvarende for å gi plass.",
   "baseplate.solidFloorThickness": "Bunntykkelse",
   "baseplate.splitCustom": "Egendefinert deling",

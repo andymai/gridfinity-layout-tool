@@ -284,6 +284,8 @@
   "baseplate.shapedPaddingTooLarge": "留边对此形状来说太大，因此被忽略。请减小它以贴合轮廓。",
   "baseplate.sideView": "侧",
   "baseplate.solidFloor": "实心底面",
+  "baseplate.ecoPlate": "环保底板模式",
+  "baseplate.ecoPlateHint": "挖空网格的直线连接段以节省耗材，同时保留角柱和薄连接桥。",
   "baseplate.solidFloorHeightNote": "添加在标准网格下方。底板的总高度会相应增加这么多。",
   "baseplate.solidFloorThickness": "底面厚度",
   "baseplate.splitCustom": "自定义拆分",

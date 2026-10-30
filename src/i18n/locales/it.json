@@ -284,6 +284,8 @@
   "baseplate.shapedPaddingTooLarge": "Il margine è troppo grande per questa forma e viene ignorato. Riducilo per adattarlo al contorno.",
   "baseplate.sideView": "Lato",
   "baseplate.solidFloor": "Fondo pieno",
+  "baseplate.ecoPlate": "Modalità piastra eco",
+  "baseplate.ecoPlateHint": "Risparmia filamento svuotando le giunzioni dritte della griglia. Restano i montanti agli angoli e un sottile ponte.",
   "baseplate.solidFloorHeightNote": "Aggiunto sotto la griglia standard. L'altezza totale della piastra aumenta di questa quantità per adattarsi.",
   "baseplate.solidFloorThickness": "Spessore fondo",
   "baseplate.splitCustom": "Divisione personalizzata",

@@ -284,6 +284,8 @@
   "baseplate.shapedPaddingTooLarge": "O preenchimento é grande demais para este formato e é ignorado. Reduza-o para caber ao redor do contorno.",
   "baseplate.sideView": "Lado",
   "baseplate.solidFloor": "Base sólida",
+  "baseplate.ecoPlate": "Modo placa eco",
+  "baseplate.ecoPlateHint": "Economiza filamento com recortes nas juntas retas da grade. Mantém os postes dos cantos e uma ponte fina de ligação.",
   "baseplate.solidFloorHeightNote": "Adicionada abaixo da grade padrão. A altura total da placa aumenta nessa medida para acomodá-la.",
   "baseplate.solidFloorThickness": "Espessura da base",
   "baseplate.splitCustom": "Divisão personalizada",

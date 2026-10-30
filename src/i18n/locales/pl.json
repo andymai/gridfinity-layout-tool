@@ -284,6 +284,8 @@
   "baseplate.shapedPaddingTooLarge": "Margines jest zbyt duży dla tego kształtu, więc jest ignorowany. Zmniejsz go, aby zmieścił się wokół obrysu.",
   "baseplate.sideView": "Bok",
   "baseplate.solidFloor": "Lita podłoga",
+  "baseplate.ecoPlate": "Tryb eco plate",
+  "baseplate.ecoPlateHint": "Odciąża proste połączenia siatki, oszczędzając filament. Narożniki i cienki mostek łączący pozostają na miejscu.",
   "baseplate.solidFloorHeightNote": "Dodana pod standardową siatką. Całkowita wysokość płyty zwiększa się o tę wartość, aby ją pomieścić.",
   "baseplate.solidFloorThickness": "Grubość podłogi",
   "baseplate.splitCustom": "Podział niestandardowy",

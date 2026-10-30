@@ -91,6 +91,7 @@ export function shouldDeferBrepPreview(
   // rectangles-only, so a shaped plate would finalize with a wrong (or no)
   // preview. Shaped plates always run BREP.
   if (parentParams.outline !== undefined) return false;
+  if (parentParams.ecoPlate === true) return false;
   if (!parentParams.magnetHoles) return false;
 
   if (lastBrepMs !== null && lastBrepMs >= DEFER_LAST_BREP_MS) return true;
@@ -111,7 +112,7 @@ export function shouldDeferBrepPreview(
  * not a duplicate of the exact.
  */
 export function shouldSkipManifoldDraft(params: ResolvedBaseplateParams): boolean {
-  return params.outline !== undefined;
+  return params.outline !== undefined || params.ecoPlate === true;
 }
 
 /**

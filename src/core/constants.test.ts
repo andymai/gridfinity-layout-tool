@@ -15,6 +15,7 @@ import {
   getDefaultDrawerSize,
 } from '@/core/constants';
 import {
+  DEFAULT_BASEPLATE_PARAMS,
   migrateBaseplateParams,
   MOUNT_MAGNET_DEFAULT_DEPTH_MM,
   MOUNT_MAGNET_MAX_DIAMETER_MM,
@@ -364,6 +365,11 @@ describe('getCellSizeY', () => {
 });
 
 describe('migrateBaseplateParams', () => {
+  it('preserves eco plate mode only for boolean stored values', () => {
+    const base = { ...DEFAULT_BASEPLATE_PARAMS };
+    expect(migrateBaseplateParams({ ...base, ecoPlate: true }).ecoPlate).toBe(true);
+    expect(migrateBaseplateParams({ ...base, ecoPlate: 'true' }).ecoPlate).toBeUndefined();
+  });
   it('preserves connectorNubs when true', () => {
     const stored = {
       magnetHoles: true,

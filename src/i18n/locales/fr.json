@@ -284,6 +284,8 @@
   "baseplate.shapedPaddingTooLarge": "La marge est trop grande pour cette forme, elle est donc ignorée. Réduisez-la pour qu'elle tienne autour du contour.",
   "baseplate.sideView": "Côté",
   "baseplate.solidFloor": "Fond plein",
+  "baseplate.ecoPlate": "Mode plaque éco",
+  "baseplate.ecoPlateHint": "Économise du filament en évidant les jonctions droites de la grille. Les poteaux d’angle et un fin pont restent en place.",
   "baseplate.solidFloorHeightNote": "Ajouté sous la grille standard. La hauteur totale de la plaque augmente d'autant pour l'accueillir.",
   "baseplate.solidFloorThickness": "Épaisseur du fond",
   "baseplate.splitCustom": "Découpe personnalisée",

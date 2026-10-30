@@ -4,6 +4,11 @@ import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MeshData } from '../../bridge/types';
 import { initTestKernel } from '@/test/initTestKernel';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import {
+  assertStructurallyValid,
+  assertWatertight,
+  meshVolume,
+} from './__kernel-tests__/meshAssertions';
 
 type GenerateFn = (
   params: ResolvedBaseplateParams,
@@ -69,6 +74,59 @@ const PLATE_HEIGHT = GRIDFINITY_SPEC.BASEPLATE_HEIGHT;
 const MAGNET_FLOOR = 0.5;
 
 describe('baseplateGenerator', () => {
+  it('eco plate removes joint material and keeps a valid printable mesh', () => {
+    const plain = generateBaseplate(defaults(), noop, true);
+    const eco = generateBaseplate(defaults({ ecoPlate: true }), noop, true);
+    assertStructurallyValid(eco, 'eco plate');
+    expect(meshVolume(eco)).toBeLessThan(meshVolume(plain) - 100);
+  });
+  it.each([
+    { connectorNubs: false },
+    { connectorNubs: true, connectorStyle: 'dovetailKey' as const },
+    { connectorNubs: true, connectorStyle: 'puzzle' as const },
+  ])('relieves split seams and preserves $connectorStyle connectors', (connector) => {
+    const params = defaults({
+      ecoPlate: true,
+      edges: { left: 'exterior', right: 'join', front: 'exterior', back: 'exterior' },
+      ...connector,
+    });
+    const mesh = generateBaseplate(params, noop, true);
+    assertStructurallyValid(mesh, 'eco split seam');
+    expect(meshVolume(mesh)).toBeGreaterThan(0);
+  });
+  it.each([
+    { paddingBack: 12, overTileHalfGrid: false },
+    { paddingBack: 21, overTileHalfGrid: true },
+  ])('relieves a $paddingBack mm tiled margin on a split piece', (margin) => {
+    const params = defaults({
+      ecoPlate: true,
+      overTile: true,
+      edges: { left: 'exterior', right: 'join', front: 'exterior', back: 'exterior' },
+      ...margin,
+    });
+    const mesh = generateBaseplate(params, noop, true);
+    assertStructurallyValid(mesh, 'eco tiled margin');
+    expect(meshVolume(mesh)).toBeLessThan(
+      meshVolume(generateBaseplate({ ...params, ecoPlate: false }, noop, true))
+    );
+  });
+  it('keeps the outer corner of two half-grid margins intact', () => {
+    const mesh = generateBaseplate(
+      defaults({
+        width: 1,
+        depth: 1,
+        ecoPlate: true,
+        overTile: true,
+        overTileHalfGrid: true,
+        paddingLeft: 21,
+        paddingFront: 21,
+      }),
+      noop,
+      true
+    );
+    assertStructurallyValid(mesh, 'eco half-grid margin corner');
+    assertWatertight(mesh, 'eco half-grid margin corner');
+  });
   // ─── Without magnets ──────────────────────────────────────────────────────
   it('2×2 without magnets (preview)', () => {
     const mesh = generateBaseplate(defaults(), noop, false);

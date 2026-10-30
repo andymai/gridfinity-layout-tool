@@ -42,6 +42,7 @@ import {
   booleanPipeline,
   isOk,
   drawRectangle,
+  drawRoundedRectangle,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, BooleanPipelineStep } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
@@ -92,6 +93,7 @@ import { buildOutlineDrawing } from './baseplateOutline';
 import type { DrawerOutline } from '@/core/types';
 import { insideAreaFraction, type RegionClass } from '@/shared/utils/drawerOutlineGeometry';
 import { EXPORT_ANGULAR_TOLERANCE_RAD, PREVIEW_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
+import { ecoJointCutouts } from '@/shared/generation/ecoPlate';
 
 /**
  * Minimum surviving area for an outline-clipped over-tile pocket. Below this
@@ -542,6 +544,26 @@ export function buildBaseplateSolid(
     oldBaseplate.delete();
     roundedTranslated.delete();
     probe?.('cornerIntersected', baseplate);
+  }
+
+  if (params.ecoPlate === true) {
+    // Keep a bottom band so every corner post remains connected, with no
+    // unsupported bridge to print across the relieved straight joints.
+    const bridgeHeight = Math.min(1.6, totalHeight / 2);
+    const cutHeight = totalHeight - bridgeHeight + 0.2;
+    const cutters = ecoJointCutouts(params, overTileFrame).map((slot) => {
+      // Round the four inside corners of each relief so the surviving posts
+      // transition into the thin connecting bridge without sharp notches.
+      const radius = Math.min(2, Math.min(slot.width, slot.depth) / 2 - 0.05);
+      const cutter = drawRoundedRectangle(slot.width, slot.depth, radius)
+        .sketchOnPlane('XY', 0.2)
+        .extrude(-cutHeight);
+      const positioned = translate(cutter, [slot.x, slot.y, 0]);
+      cutter.delete();
+      return positioned;
+    });
+    baseplate = cutInBatches(baseplate, cutters);
+    probe?.('ecoJointsCut', baseplate);
   }
 
   // Magnet hole cutters — built and cut in batches to limit WASM memory.

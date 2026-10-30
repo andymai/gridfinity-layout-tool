@@ -284,6 +284,8 @@
   "baseplate.shapedPaddingTooLarge": "El relleno es demasiado grande para esta forma, por lo que se ignora. Redúcelo para que quepa alrededor del contorno.",
   "baseplate.sideView": "Lado",
   "baseplate.solidFloor": "Base sólida",
+  "baseplate.ecoPlate": "Modo de placa eco",
+  "baseplate.ecoPlateHint": "Ahorra filamento vaciando las uniones rectas de la cuadrícula. Conserva los postes de las esquinas y un puente fino.",
   "baseplate.solidFloorHeightNote": "Se añade bajo la cuadrícula estándar. La altura total de la placa aumenta en esa cantidad para acomodarla.",
   "baseplate.solidFloorThickness": "Grosor de la base",
   "baseplate.splitCustom": "División personalizada",

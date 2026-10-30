@@ -284,6 +284,16 @@ export function BaseSection() {
         {!stackEnabled && (
           <>
             <div className="border-t border-stroke-subtle pt-3">
+              <Checkbox
+                checked={baseplateParams.ecoPlate === true}
+                onChange={(checked) => updateParam('ecoPlate', checked)}
+                label={t('baseplate.ecoPlate')}
+              />
+              <p className="text-label leading-relaxed text-content-tertiary pl-6">
+                {t('baseplate.ecoPlateHint')}
+              </p>
+            </div>
+            <div className="border-t border-stroke-subtle pt-3">
               <FeatureToggle
                 label={t('baseplate.magnetHoles')}
                 checked={baseplateParams.magnetHoles}

@@ -456,6 +456,7 @@ export function buildFullParams(
     connectorSlotsAllEdges,
     connectorFitOffset: stored.connectorFitOffset,
     lightweight: stored.lightweight,
+    ecoPlate: !stackingOn && stored.ecoPlate === true,
     // Stack printing nests flipped plates into each other, which needs the
     // pockets through-cut — a solid floor would block the nesting — so strip it
     // while stacking (restored when stacking is off, like magnets above).

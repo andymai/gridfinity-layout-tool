@@ -324,6 +324,7 @@ const baseplateParamsSchema = z.object({
   connectorStyle: z.enum(BASEPLATE_CONNECTOR_STYLES).optional(),
   lightweight: z.boolean().optional(),
   solidFloor: z.boolean().optional(),
+  ecoPlate: z.boolean().optional(),
   solidFloorThickness: z.number().min(SOLID_FLOOR_MIN_MM).max(SOLID_FLOOR_MAX_MM).optional(),
   syncWithLayout: z.boolean().optional(),
   baseplateWidth: z.number().min(CONSTRAINTS.GRID_MIN).max(CONSTRAINTS.GRID_MAX).optional(),

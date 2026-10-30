@@ -79,6 +79,9 @@ describe('estimatePreviewComplexity', () => {
 });
 
 describe('shouldDeferBrepPreview', () => {
+  it('always generates the exact preview for eco plates', () => {
+    expect(defer(makeParams({ width: 10, depth: 10, ecoPlate: true }), 460)).toBe(false);
+  });
   it('never defers when magnets are off (BREP is fast without per-cell holes)', () => {
     expect(defer(makeParams({ width: 20, depth: 20, magnetHoles: false }))).toBe(false);
   });
@@ -135,6 +138,9 @@ describe('shouldDeferBrepPreview', () => {
 });
 
 describe('shouldSkipManifoldDraft', () => {
+  it('skips the incomplete draft for eco plates', () => {
+    expect(shouldSkipManifoldDraft(makeParams({ ecoPlate: true }))).toBe(true);
+  });
   it('skips the draft for a shaped (outlined) plate — the draft duplicates the exact intersect', () => {
     expect(shouldSkipManifoldDraft(makeParams({ outline: rectOutline(252, 252) }))).toBe(true);
   });
@@ -197,5 +203,10 @@ describe('planPreviewDrafts', () => {
     expect(plan({ params: shaped })).toBe('none');
     expect(plan({ params: shaped, hasPreviewBridge: false })).toBe('none');
     expect(plan({ params: shaped, lastBrepMs: 5000 })).toBe('none');
+  });
+
+  it('shows only the exact preview for an eco plate', () => {
+    expect(plan({ params: makeParams({ ecoPlate: true }) })).toBe('none');
+    expect(plan({ params: makeParams({ ecoPlate: true }), hasPreviewBridge: false })).toBe('none');
   });
 });

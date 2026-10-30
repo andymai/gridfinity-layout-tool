@@ -46,6 +46,7 @@ const payloadSchema = z.object({
     connectorNubs: z.boolean().optional(),
     connectorStyle: z.enum(BASEPLATE_CONNECTOR_STYLES).optional(),
     lightweight: z.boolean().optional(),
+    ecoPlate: z.boolean().optional(),
     solidFloor: z.boolean().optional(),
     solidFloorThickness: z.number().optional(),
     syncWithLayout: z.boolean().optional(),

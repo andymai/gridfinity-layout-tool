@@ -143,6 +143,7 @@ export const BASEPLATE_PARAMS_KEYS = [
   'wholeCellsOnly',
   'connectorNubs',
   'lightweight',
+  'ecoPlate',
   'solidFloor',
   'solidFloorThickness',
   'syncWithLayout',

@@ -284,6 +284,8 @@
   "baseplate.shapedPaddingTooLarge": "Utfyllnaden är för stor för den här formen och ignoreras. Minska den så att den får plats runt konturen.",
   "baseplate.sideView": "Sida",
   "baseplate.solidFloor": "Massiv botten",
+  "baseplate.ecoPlate": "Ekonomiläge för platta",
+  "baseplate.ecoPlateHint": "Sparar filament genom urtag i rutnätets raka fogar. Hörnstolpar och en tunn förbindelsebrygga bevaras.",
   "baseplate.solidFloorHeightNote": "Läggs till under standardrutnätet. Plattans totala höjd ökar med detta värde för att ge plats.",
   "baseplate.solidFloorThickness": "Bottentjocklek",
   "baseplate.splitCustom": "Anpassad delning",

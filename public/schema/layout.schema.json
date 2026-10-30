@@ -793,6 +793,11 @@
           "default": true,
           "description": "Remove centre floor material, keeping only magnet pads."
         },
+        "ecoPlate": {
+          "type": "boolean",
+          "default": false,
+          "description": "Relieve baseplate grid joints while preserving corner posts, connectors and a printable bottom bridge."
+        },
         "solidFloor": {
           "type": "boolean",
           "default": false,
