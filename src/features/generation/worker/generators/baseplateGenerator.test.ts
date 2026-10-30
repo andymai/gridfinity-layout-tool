@@ -4,6 +4,13 @@ import { mm } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MeshData } from '../../bridge/types';
 import { initTestKernel } from '@/test/initTestKernel';
+import {
+  ecoJointCutouts,
+  ecoMagnetKeepOuts,
+  type EcoJointCutout,
+  type EcoKeepOut,
+} from '@/shared/generation/ecoPlate';
+import { planMagnetPockets } from './baseplateMagnets';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import {
   assertStructurallyValid,
@@ -98,6 +105,44 @@ describe('baseplateGenerator', () => {
       removed(unpadded, generateBaseplate({ ...unpadded, ecoPlate: true }, noop, true))
     );
   });
+  it('keeps eco reliefs out of large magnet pockets but leaves standard magnets the full relief', () => {
+    const cellOpts = { gridUnitMm: 42, fractionalEdgeX: 'end', fractionalEdgeY: 'end' } as const;
+    const reliefs = (
+      magnetDiameter: number
+    ): { full: EcoJointCutout[]; kept: EcoJointCutout[]; keepOuts: EcoKeepOut[] } => {
+      const params = defaults({
+        width: 2,
+        depth: 1,
+        magnetHoles: true,
+        magnetDiameter,
+        paddingLeft: 10,
+        paddingRight: 10,
+        paddingFront: 10,
+        paddingBack: 10,
+      });
+      const pockets = planMagnetPockets(2, 1, magnetDiameter / 2, cellOpts);
+      expect(pockets.plain.length).toBeGreaterThan(0);
+      const keepOuts = ecoMagnetKeepOuts(pockets, magnetDiameter);
+      return {
+        full: ecoJointCutouts(params),
+        kept: ecoJointCutouts(params, [], keepOuts),
+        keepOuts,
+      };
+    };
+
+    const standard = reliefs(6.5);
+    expect(standard.kept).toEqual(standard.full);
+
+    const large = reliefs(12);
+    expect(large.kept.length).toBeGreaterThan(0);
+    for (const slot of large.kept) {
+      for (const keepOut of large.keepOuts) {
+        const dx = Math.max(Math.abs(keepOut.x - slot.x) - slot.width / 2, 0);
+        const dy = Math.max(Math.abs(keepOut.y - slot.y) - slot.depth / 2, 0);
+        expect(Math.hypot(dx, dy)).toBeGreaterThanOrEqual(keepOut.radius - 1e-9);
+      }
+    }
+  });
   it.each([
     {
       name: 'margin screws',
@@ -114,6 +159,15 @@ describe('baseplateGenerator', () => {
       },
     },
     { name: 'mount magnets', mountMagnets: { enabled: true, diameter: mm(6.5), depth: mm(2.5) } },
+    {
+      name: '12 mm magnets',
+      magnetHoles: true,
+      magnetDiameter: 12,
+      paddingLeft: 10,
+      paddingRight: 10,
+      paddingFront: 10,
+      paddingBack: 10,
+    },
   ])('builds a valid eco plate around $name', ({ name, ...overrides }) => {
     const mesh = generateBaseplate(
       defaults({ width: 3, depth: 3, ecoPlate: true, ...overrides }),

@@ -68,7 +68,12 @@ import { slabPocketsCacheKey } from './baseplateCacheKeys';
 import { sanitizeParams, tagOp, buildSlabProfile, cutAboveZ } from './baseplateSlab';
 import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
-import { buildMagnetHoles, buildPartialCellMagnetHoles } from './baseplateMagnets';
+import {
+  buildMagnetPocketCutters,
+  planMagnetPockets,
+  planPartialCellMagnetPockets,
+  type MagnetPocketPlan,
+} from './baseplateMagnets';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { buildScrewCutters } from './baseplateScrews';
 import {
@@ -93,8 +98,12 @@ import { buildOutlineDrawing } from './baseplateOutline';
 import type { DrawerOutline } from '@/core/types';
 import { insideAreaFraction, type RegionClass } from '@/shared/utils/drawerOutlineGeometry';
 import { EXPORT_ANGULAR_TOLERANCE_RAD, PREVIEW_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
-import { ecoJointCutouts, ecoKeepOuts } from '@/shared/generation/ecoPlate';
-import { resolveScrewHeadDiameter } from '@/shared/generation/screwHolePlan';
+import {
+  ecoJointCutouts,
+  ecoKeepOuts,
+  ecoMagnetKeepOuts,
+  ecoScrewKeepOuts,
+} from '@/shared/generation/ecoPlate';
 
 /**
  * Minimum surviving area for an outline-clipped over-tile pocket. Below this
@@ -547,6 +556,45 @@ export function buildBaseplateSolid(
     probe?.('cornerIntersected', baseplate);
   }
 
+  // Shaped plates: magnets only in fully-inside cells — a magnet pocket in
+  // an outline-clipped cell could straddle the boundary and leave a floating
+  // half-hole in the wall the intersect produces.
+  const magnetCellFilter =
+    outline !== undefined
+      ? (cell: CellInfo): boolean => classifyCell(cell) === 'inside'
+      : undefined;
+  // A lightweight plate keeps only a thin pad around each bore, too thin for
+  // the chamfer to open into; the ribs still apply there.
+  const magnetStyle: MagnetHoleStyle = {
+    crushRibs: magnetCrushRibs === true,
+    chamfer: magnetChamfer === true && !params.lightweight,
+  };
+  // Over-tile margin tiles get magnets too — the corner magnets that fit, or a
+  // spread/centered magnet for tiles too small for any corner — so the clipped
+  // padding tiles aren't left as solid plastic. Mirrors the pocket frame above.
+  const magnetFrame =
+    magnetCellFilter === undefined ? overTileFrame : overTileFrame.filter(magnetCellFilter);
+  const magnetPockets: MagnetPocketPlan[] = magnetHoles
+    ? [
+        planMagnetPockets(
+          width,
+          depth,
+          magnetDiameter / 2,
+          cellOpts,
+          magnetCellFilter,
+          magnetAnchor,
+          magnetStyle
+        ),
+        planPartialCellMagnetPockets(
+          magnetFrame,
+          magnetDiameter / 2,
+          pitch,
+          magnetAnchor,
+          magnetStyle
+        ),
+      ]
+    : [];
+
   const mountMagnets = params.mountMagnets;
   const mountMagnetHoles =
     mountMagnets?.enabled === true
@@ -579,15 +627,11 @@ export function buildBaseplateSolid(
     const bridgeHeight = Math.min(1.6, totalHeight / 2);
     const cutHeight = totalHeight - bridgeHeight + 0.2;
     const keepOuts = [
-      ...(screwParams === undefined
-        ? []
-        : ecoKeepOuts(
-            screwHoles,
-            resolveScrewHeadDiameter(screwParams.headStyle, screwParams.headDiameter)
-          )),
+      ...(screwParams === undefined ? [] : ecoScrewKeepOuts(screwHoles, screwParams)),
       ...(mountMagnets?.enabled === true
         ? ecoKeepOuts(mountMagnetHoles, mountMagnets.diameter)
         : []),
+      ...magnetPockets.flatMap((plan) => ecoMagnetKeepOuts(plan, magnetDiameter)),
     ];
     const cutters = ecoJointCutouts(params, overTileFrame, keepOuts).map((slot) => {
       // Round the four inside corners of each relief so the surviving posts
@@ -607,48 +651,9 @@ export function buildBaseplateSolid(
   // Magnet hole cutters — built and cut in batches to limit WASM memory.
   // A 16x16 grid produces 1024 magnet holes; holding all simultaneously can OOM.
   if (magnetHoles) {
-    // Shaped plates: magnets only in fully-inside cells — a magnet pocket in
-    // an outline-clipped cell could straddle the boundary and leave a floating
-    // half-hole in the wall the intersect produces.
-    const magnetCellFilter =
-      outline !== undefined
-        ? (cell: CellInfo): boolean => classifyCell(cell) === 'inside'
-        : undefined;
-    // A lightweight plate keeps only a thin pad around each bore, too thin for
-    // the chamfer to open into; the ribs still apply there.
-    const magnetStyle: MagnetHoleStyle = {
-      crushRibs: magnetCrushRibs === true,
-      chamfer: magnetChamfer === true && !params.lightweight,
-    };
-    const holes = buildMagnetHoles(
-      width,
-      depth,
-      magnetDiameter / 2,
-      magnetDepth,
-      cellOpts,
-      magnetCellFilter,
-      magnetAnchor,
-      magnetStyle,
-      profileHeight
+    const holes = magnetPockets.flatMap((plan) =>
+      buildMagnetPocketCutters(plan, magnetDiameter / 2, magnetDepth, magnetStyle, profileHeight)
     );
-    // Over-tile margin tiles get magnets too — the corner magnets that fit, or a
-    // spread/centered magnet for tiles too small for any corner — so the clipped
-    // padding tiles aren't left as solid plastic. Mirrors the pocket frame above.
-    const magnetFrame =
-      magnetCellFilter === undefined ? overTileFrame : overTileFrame.filter(magnetCellFilter);
-    if (magnetFrame.length > 0) {
-      holes.push(
-        ...buildPartialCellMagnetHoles(
-          magnetFrame,
-          magnetDiameter / 2,
-          magnetDepth,
-          pitch,
-          magnetAnchor,
-          magnetStyle,
-          profileHeight
-        )
-      );
-    }
     baseplate = cutInBatches(baseplate, holes);
     probe?.('magnetHolesCut', baseplate);
   }

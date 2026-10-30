@@ -1,6 +1,8 @@
+import type { ScrewHoleParams } from '@/core/types/baseplate';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { computeCellBoundariesMm, decomposeCells, type CellInfo } from './cellDecomposition';
-import { SCREW_MARGIN_MIN_WALL_MM } from './screwHolePlan';
+import { MAGNET_CHAMFER_MM } from './magnetHoleStyle';
+import { SCREW_MARGIN_MIN_WALL_MM, resolveScrewHeadDiameter } from './screwHolePlan';
 
 export interface EcoJointCutout {
   readonly x: number;
@@ -17,6 +19,8 @@ export interface EcoKeepOut {
 }
 
 const ECO_MIN_FRAME_STRIP_MM = 2;
+/** Shorter reliefs save too little to be worth the cut. */
+const ECO_MIN_SPAN_MM = 8;
 
 /**
  * Keep-outs for round holes the plate carries (screw seats, mount magnets): the
@@ -29,6 +33,30 @@ export function ecoKeepOuts(
 ): EcoKeepOut[] {
   const radius = diameterMm / 2 + SCREW_MARGIN_MIN_WALL_MM;
   return holes.map((hole) => ({ x: hole.x, y: hole.y, radius }));
+}
+
+/** The shaft cuts the plate's full height too, and may be set wider than the head. */
+export function ecoScrewKeepOuts(
+  holes: ReadonlyArray<{ readonly x: number; readonly y: number }>,
+  screw: Pick<ScrewHoleParams, 'diameter' | 'headStyle' | 'headDiameter'>
+): EcoKeepOut[] {
+  const head = resolveScrewHeadDiameter(screw.headStyle, screw.headDiameter);
+  return ecoKeepOuts(holes, Math.max(screw.diameter, head));
+}
+
+/** A chamfered pocket is widest at its mouth. */
+export function ecoMagnetKeepOuts(
+  pockets: {
+    readonly chamfered: ReadonlyArray<readonly [number, number]>;
+    readonly plain: ReadonlyArray<readonly [number, number]>;
+  },
+  magnetDiameterMm: number
+): EcoKeepOut[] {
+  const at = ([x, y]: readonly [number, number]): { x: number; y: number } => ({ x, y });
+  return [
+    ...ecoKeepOuts(pockets.plain.map(at), magnetDiameterMm),
+    ...ecoKeepOuts(pockets.chamfered.map(at), magnetDiameterMm + 2 * MAGNET_CHAMFER_MM),
+  ];
 }
 
 /** The untouched ends of each straight joint form solid corner posts. */
@@ -63,8 +91,9 @@ export function ecoJointCutouts(
   const jointWidth = Math.min(7, Math.min(pitchX, pitchY) * 0.17);
   const clear = (slot: EcoJointCutout): boolean =>
     keepOuts.every((keepOut) => !touchesDisc(slot, keepOut));
-  const add = (slot: EcoJointCutout, vertical: boolean): void => {
-    if (!clear(slot)) return;
+  const add = (candidate: EcoJointCutout, vertical: boolean): void => {
+    const slot = shortenClearOf(candidate, vertical, keepOuts);
+    if (slot === null) return;
     // Shared edges may be emitted by cells of different sizes. Keep one cutter
     // with the narrower width so a small clipped cell retains its corner post.
     const key = [vertical ? 'v' : 'h', slot.x, slot.y, vertical ? slot.depth : slot.width]
@@ -107,7 +136,7 @@ export function ecoJointCutouts(
     const size = units * pitchY;
     const width = widthFor(size);
     const span = spanFor(size, width);
-    if (span >= 8) {
+    if (span >= ECO_MIN_SPAN_MM) {
       for (const boundary of xs) relieve(boundary, width, y + size / 2, span, true);
     }
     y += size;
@@ -117,7 +146,7 @@ export function ecoJointCutouts(
     const size = units * pitchX;
     const width = widthFor(size);
     const span = spanFor(size, width);
-    if (span >= 8) {
+    if (span >= ECO_MIN_SPAN_MM) {
       for (const boundary of ys) relieve(boundary, width, x + size / 2, span, false);
     }
     x += size;
@@ -130,12 +159,12 @@ export function ecoJointCutouts(
     const marginWidth = widthFor(Math.min(halfW * 2, halfD * 2));
     const verticalSpan = spanFor(halfD * 2, marginWidth);
     const horizontalSpan = spanFor(halfW * 2, marginWidth);
-    if (verticalSpan >= 8) {
+    if (verticalSpan >= ECO_MIN_SPAN_MM) {
       for (const edgeX of [cell.centerX - halfW, cell.centerX + halfW]) {
         add({ x: edgeX, y: cell.centerY, width: marginWidth, depth: verticalSpan }, true);
       }
     }
-    if (horizontalSpan >= 8) {
+    if (horizontalSpan >= ECO_MIN_SPAN_MM) {
       for (const edgeY of [cell.centerY - halfD, cell.centerY + halfD]) {
         add({ x: cell.centerX, y: edgeY, width: horizontalSpan, depth: marginWidth }, false);
       }
@@ -189,6 +218,29 @@ function place(
   return vertical
     ? { x: across.center, y: along, width: across.size, depth: span }
     : { x: along, y: across.center, width: span, depth: across.size };
+}
+
+/**
+ * Trim a relief evenly from both ends until every keep-out clears it. Holes sit
+ * toward cell corners, so the middle of the joint, where most of the saving is,
+ * survives; null when less than {@link ECO_MIN_SPAN_MM} would remain.
+ */
+function shortenClearOf(
+  slot: EcoJointCutout,
+  vertical: boolean,
+  keepOuts: readonly EcoKeepOut[]
+): EcoJointCutout | null {
+  const acrossHalf = (vertical ? slot.width : slot.depth) / 2;
+  let alongHalf = (vertical ? slot.depth : slot.width) / 2;
+  for (const keepOut of keepOuts) {
+    const acrossGap = Math.abs(vertical ? keepOut.x - slot.x : keepOut.y - slot.y) - acrossHalf;
+    const across = Math.max(acrossGap, 0);
+    if (across >= keepOut.radius) continue;
+    const along = Math.abs(vertical ? keepOut.y - slot.y : keepOut.x - slot.x);
+    alongHalf = Math.min(alongHalf, along - Math.sqrt(keepOut.radius ** 2 - across ** 2));
+  }
+  if (alongHalf * 2 < ECO_MIN_SPAN_MM) return null;
+  return vertical ? { ...slot, depth: alongHalf * 2 } : { ...slot, width: alongHalf * 2 };
 }
 
 function touchesDisc(slot: EcoJointCutout, disc: EcoKeepOut): boolean {

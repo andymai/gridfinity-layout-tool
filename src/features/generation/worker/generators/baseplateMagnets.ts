@@ -46,6 +46,12 @@ export {
   magnetPositionsForCell,
 } from '@/shared/generation/magnetPositions';
 
+/** Magnet pocket centres, split by whether their chamfer fits the cell. */
+export interface MagnetPocketPlan {
+  readonly chamfered: Array<[number, number]>;
+  readonly plain: Array<[number, number]>;
+}
+
 /** Magnet placements for one cell, split by whether their chamfer fits there. */
 function splitByChamferFit(
   cell: CellInfo,
@@ -54,7 +60,7 @@ function splitByChamferFit(
   pitchY: number,
   anchor: MagnetAnchor,
   style: MagnetHoleStyle,
-  out: { readonly chamfered: Array<[number, number]>; readonly plain: Array<[number, number]> }
+  out: MagnetPocketPlan
 ): void {
   const positions = magnetPositionsForCell(cell, magnetRadius, pitchX, pitchY, anchor);
   const chamfer =
@@ -62,13 +68,57 @@ function splitByChamferFit(
   (chamfer ? out.chamfered : out.plain).push(...positions);
 }
 
+/** Where {@link buildMagnetHoles} puts its pockets, without building them. */
+export function planMagnetPockets(
+  gridW: number,
+  gridD: number,
+  magnetRadius: number,
+  cellOpts?: ForEachCellOptions,
+  cellFilter?: (cell: CellInfo) => boolean,
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  style: MagnetHoleStyle = PLAIN_MAGNET_HOLE
+): MagnetPocketPlan {
+  const { x: pitchX, y: pitchY } = resolvePitch(cellOpts?.gridUnitMm);
+  const plan: MagnetPocketPlan = { chamfered: [], plain: [] };
+  forEachCell(
+    gridW,
+    gridD,
+    (cell) => {
+      if (!cellHostsAttachmentHoles(cell, magnetRadius, pitchX, pitchY)) return;
+      if (cellFilter !== undefined && !cellFilter(cell)) return;
+      // Same shared placement (with the standard wall-distance clamp) as the bin
+      // base and lid, so every magnet-bearing surface agrees.
+      splitByChamferFit(cell, magnetRadius, pitchX, pitchY, anchor, style, plan);
+    },
+    cellOpts
+  );
+  return plan;
+}
+
+/** Where {@link buildPartialCellMagnetHoles} puts its pockets, without building them. */
+export function planPartialCellMagnetPockets(
+  cells: readonly CellInfo[],
+  magnetRadius: number,
+  gridUnitMm: GridUnitInput,
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  style: MagnetHoleStyle = PLAIN_MAGNET_HOLE
+): MagnetPocketPlan {
+  // `x` scales width, `y` scales depth (equal for a square grid).
+  const { x: pitchX, y: pitchY } = resolvePitch(gridUnitMm);
+  const plan: MagnetPocketPlan = { chamfered: [], plain: [] };
+  for (const cell of cells) {
+    splitByChamferFit(cell, magnetRadius, pitchX, pitchY, anchor, style, plan);
+  }
+  return plan;
+}
+
 /** Cutters for both placement groups; the plain group keeps the bore's ribs. */
-function buildSplitMagnetCutters(
-  groups: { readonly chamfered: Array<[number, number]>; readonly plain: Array<[number, number]> },
+export function buildMagnetPocketCutters(
+  groups: MagnetPocketPlan,
   magnetRadius: number,
   magnetDepth: number,
-  style: MagnetHoleStyle,
-  profileHeight: number
+  style: MagnetHoleStyle = PLAIN_MAGNET_HOLE,
+  profileHeight: number = PLATE_PROFILE_HEIGHT
 ): Shape3D[] {
   return [
     ...buildMagnetCutters(groups.chamfered, magnetRadius, magnetDepth, style, profileHeight),
@@ -130,21 +180,8 @@ export function buildMagnetHoles(
   style: MagnetHoleStyle = PLAIN_MAGNET_HOLE,
   profileHeight: number = PLATE_PROFILE_HEIGHT
 ): Shape3D[] {
-  const { x: pitchX, y: pitchY } = resolvePitch(cellOpts?.gridUnitMm);
-  const groups = { chamfered: [] as Array<[number, number]>, plain: [] as Array<[number, number]> };
-  forEachCell(
-    gridW,
-    gridD,
-    (cell) => {
-      if (!cellHostsAttachmentHoles(cell, magnetRadius, pitchX, pitchY)) return;
-      if (cellFilter !== undefined && !cellFilter(cell)) return;
-      // Same shared placement (with the standard wall-distance clamp) as the bin
-      // base and lid, so every magnet-bearing surface agrees.
-      splitByChamferFit(cell, magnetRadius, pitchX, pitchY, anchor, style, groups);
-    },
-    cellOpts
-  );
-  return buildSplitMagnetCutters(groups, magnetRadius, magnetDepth, style, profileHeight);
+  const plan = planMagnetPockets(gridW, gridD, magnetRadius, cellOpts, cellFilter, anchor, style);
+  return buildMagnetPocketCutters(plan, magnetRadius, magnetDepth, style, profileHeight);
 }
 
 /**
@@ -162,11 +199,6 @@ export function buildPartialCellMagnetHoles(
   style: MagnetHoleStyle = PLAIN_MAGNET_HOLE,
   profileHeight: number = PLATE_PROFILE_HEIGHT
 ): Shape3D[] {
-  // `x` scales width, `y` scales depth (equal for a square grid).
-  const { x: pitchX, y: pitchY } = resolvePitch(gridUnitMm);
-  const groups = { chamfered: [] as Array<[number, number]>, plain: [] as Array<[number, number]> };
-  for (const cell of cells) {
-    splitByChamferFit(cell, magnetRadius, pitchX, pitchY, anchor, style, groups);
-  }
-  return buildSplitMagnetCutters(groups, magnetRadius, magnetDepth, style, profileHeight);
+  const plan = planPartialCellMagnetPockets(cells, magnetRadius, gridUnitMm, anchor, style);
+  return buildMagnetPocketCutters(plan, magnetRadius, magnetDepth, style, profileHeight);
 }
