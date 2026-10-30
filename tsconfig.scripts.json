@@ -21,6 +21,7 @@
   "include": [
     "scripts/sync-admin/**/*.ts",
     "scripts/community-admin/**/*.ts",
-    "scripts/backfill-ml-ttls.ts"
+    "scripts/backfill-ml-ttls.ts",
+    "scripts/check-toolchain-advisories.ts"
   ]
 }
