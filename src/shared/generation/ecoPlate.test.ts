@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { mm } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { frameCells } from './cellDecomposition';
-import { ecoJointCutouts } from './ecoPlate';
+import { ecoJointCutouts, ecoKeepOuts } from './ecoPlate';
+import { planBaseplateScrewHoles, screwPlacementFor } from './screwHolePlacement';
+import { resolveScrewHeadDiameter } from './screwHolePlan';
 
 const plate = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
   width: 2,
@@ -41,6 +44,49 @@ describe('ecoJointCutouts', () => {
     const back = cutouts.find((slot) => slot.x === 21 && slot.y > 42);
     expect(back?.y).toBeCloseTo(44.7);
     expect(back?.depth).toBeCloseTo(12.4);
+  });
+
+  it('keeps a padding notch out of the wall around a margin screw seat', () => {
+    const screwHoles = {
+      enabled: true,
+      diameter: mm(3.4),
+      headStyle: 'countersink' as const,
+      headDiameter: mm(6),
+      screwsPerPiece: 8,
+    };
+    const params = plate({
+      width: 1,
+      depth: 1,
+      paddingLeft: 10,
+      paddingRight: 10,
+      paddingFront: 10,
+      paddingBack: 10,
+      screwHoles,
+    });
+    const holes = planBaseplateScrewHoles(
+      screwHoles,
+      params,
+      screwPlacementFor(screwHoles, params)
+    );
+    expect(holes.some((hole) => hole.site === 'margin' && hole.x === 0)).toBe(true);
+    const keepOuts = ecoKeepOuts(holes, resolveScrewHeadDiameter('countersink', mm(6)));
+    const cutouts = ecoJointCutouts(params, [], keepOuts);
+
+    for (const slot of cutouts) {
+      for (const keepOut of keepOuts) {
+        const dx = Math.max(Math.abs(keepOut.x - slot.x) - slot.width / 2, 0);
+        const dy = Math.max(Math.abs(keepOut.y - slot.y) - slot.depth / 2, 0);
+        expect(Math.hypot(dx, dy)).toBeGreaterThanOrEqual(keepOut.radius);
+      }
+    }
+    const back = cutouts.find((slot) => slot.x === 0 && slot.y > 0);
+    expect(back).toEqual({ x: 0, y: 19.25, width: 25.2, depth: 3.5 });
+  });
+
+  it('drops a joint relief that would reach a keep-out', () => {
+    const cutouts = ecoJointCutouts(plate(), [], [{ x: 0, y: -12, radius: 4 }]);
+    expect(cutouts).toHaveLength(11);
+    expect(cutouts.some((slot) => slot.x === 0 && slot.y === -21)).toBe(false);
   });
 
   it('relieves a single cell frame including split join edges', () => {

@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
+import { mm } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MeshData } from '../../bridge/types';
 import { initTestKernel } from '@/test/initTestKernel';
@@ -96,6 +97,31 @@ describe('baseplateGenerator', () => {
     expect(removed(params, eco)).toBeGreaterThanOrEqual(
       removed(unpadded, generateBaseplate({ ...unpadded, ecoPlate: true }, noop, true))
     );
+  });
+  it.each([
+    {
+      name: 'margin screws',
+      paddingLeft: 10,
+      paddingRight: 10,
+      paddingFront: 10,
+      paddingBack: 10,
+      screwHoles: {
+        enabled: true,
+        diameter: mm(3.4),
+        headStyle: 'countersink' as const,
+        headDiameter: mm(6),
+        screwsPerPiece: 8,
+      },
+    },
+    { name: 'mount magnets', mountMagnets: { enabled: true, diameter: mm(6.5), depth: mm(2.5) } },
+  ])('builds a valid eco plate around $name', ({ name, ...overrides }) => {
+    const mesh = generateBaseplate(
+      defaults({ width: 3, depth: 3, ecoPlate: true, ...overrides }),
+      noop,
+      true
+    );
+    assertStructurallyValid(mesh, `eco ${name}`);
+    assertWatertight(mesh, `eco ${name}`);
   });
   it.each([
     { connectorNubs: false },

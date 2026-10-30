@@ -93,7 +93,8 @@ import { buildOutlineDrawing } from './baseplateOutline';
 import type { DrawerOutline } from '@/core/types';
 import { insideAreaFraction, type RegionClass } from '@/shared/utils/drawerOutlineGeometry';
 import { EXPORT_ANGULAR_TOLERANCE_RAD, PREVIEW_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
-import { ecoJointCutouts } from '@/shared/generation/ecoPlate';
+import { ecoJointCutouts, ecoKeepOuts } from '@/shared/generation/ecoPlate';
+import { resolveScrewHeadDiameter } from '@/shared/generation/screwHolePlan';
 
 /**
  * Minimum surviving area for an outline-clipped over-tile pocket. Below this
@@ -546,12 +547,49 @@ export function buildBaseplateSolid(
     probe?.('cornerIntersected', baseplate);
   }
 
+  const mountMagnets = params.mountMagnets;
+  const mountMagnetHoles =
+    mountMagnets?.enabled === true
+      ? planMountMagnets(
+          mountMagnets,
+          width,
+          depth,
+          totalHeight,
+          profileHeight,
+          cellOpts,
+          outline !== undefined
+            ? (cell: CellInfo): boolean => classifyCell(cell) === 'inside'
+            : undefined,
+          (cell: CellInfo): boolean =>
+            floorReliefReachesCorners(
+              params,
+              cell,
+              screwAwareHoleRadius(magnetDiameter / 2, screwParams),
+              gridUnitMm,
+              gridUnitMmY,
+              cellHoldsScrew
+            ),
+          screwHoles.filter((h) => h.site === 'junction')
+        )
+      : [];
+
   if (params.ecoPlate === true) {
     // Keep a bottom band so every corner post remains connected, with no
     // unsupported bridge to print across the relieved straight joints.
     const bridgeHeight = Math.min(1.6, totalHeight / 2);
     const cutHeight = totalHeight - bridgeHeight + 0.2;
-    const cutters = ecoJointCutouts(params, overTileFrame).map((slot) => {
+    const keepOuts = [
+      ...(screwParams === undefined
+        ? []
+        : ecoKeepOuts(
+            screwHoles,
+            resolveScrewHeadDiameter(screwParams.headStyle, screwParams.headDiameter)
+          )),
+      ...(mountMagnets?.enabled === true
+        ? ecoKeepOuts(mountMagnetHoles, mountMagnets.diameter)
+        : []),
+    ];
+    const cutters = ecoJointCutouts(params, overTileFrame, keepOuts).map((slot) => {
       // Round the four inside corners of each relief so the surviving posts
       // transition into the thin connecting bridge without sharp notches.
       const radius = Math.min(2, Math.min(slot.width, slot.depth) / 2 - 0.05);
@@ -709,31 +747,9 @@ export function buildBaseplateSolid(
     probe?.('screwHolesCut', baseplate);
   }
 
-  const mountMagnets = params.mountMagnets;
   if (mountMagnets?.enabled === true) {
-    const positions = planMountMagnets(
-      mountMagnets,
-      width,
-      depth,
-      totalHeight,
-      profileHeight,
-      cellOpts,
-      outline !== undefined
-        ? (cell: CellInfo): boolean => classifyCell(cell) === 'inside'
-        : undefined,
-      (cell: CellInfo): boolean =>
-        floorReliefReachesCorners(
-          params,
-          cell,
-          screwAwareHoleRadius(magnetDiameter / 2, screwParams),
-          gridUnitMm,
-          gridUnitMmY,
-          cellHoldsScrew
-        ),
-      screwHoles.filter((h) => h.site === 'junction')
-    );
     const cutters = buildMountMagnetCutters(
-      positions,
+      mountMagnetHoles,
       mountMagnets.diameter,
       mountMagnets.depth,
       totalHeight
