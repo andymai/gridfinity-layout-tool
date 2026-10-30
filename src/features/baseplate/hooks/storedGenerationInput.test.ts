@@ -3,6 +3,7 @@ import { resetAllStores } from '@/test/testUtils';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
+import { gridUnits, mm } from '@/core/types';
 import { buildFullParams } from '../utils/buildFullParams';
 import { storedGenerationInput } from './storedGenerationInput';
 
@@ -16,12 +17,17 @@ describe('storedGenerationInput', () => {
     useLayoutStore.setState((state) => ({
       layout: {
         ...state.layout,
-        gridUnitMm: 42,
-        printBedSize: 220,
-        printBedDepth: 180,
+        gridUnitMm: mm(42),
+        printBedSize: mm(220),
+        printBedDepth: mm(180),
         lowProfileBase: true,
         baseplateParams: stored,
-        drawer: { ...state.layout.drawer, width: 5, depth: 3, fractionalEdgeX: 'start' },
+        drawer: {
+          ...state.layout.drawer,
+          width: gridUnits(5),
+          depth: gridUnits(3),
+          fractionalEdgeX: 'start',
+        },
       },
     }));
     const nozzle = useSettingsStore.getState().settings.printSettings.nozzleSizeMm;
@@ -54,7 +60,7 @@ describe('storedGenerationInput', () => {
 
   it('uses the bed width for its depth when no depth is set', () => {
     useLayoutStore.setState((state) => ({
-      layout: { ...state.layout, printBedSize: 256, printBedDepth: undefined },
+      layout: { ...state.layout, printBedSize: mm(256), printBedDepth: undefined },
     }));
     expect(storedGenerationInput().bedDepthMm).toBe(256);
   });

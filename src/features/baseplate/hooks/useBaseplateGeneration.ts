@@ -388,6 +388,12 @@ export function useBaseplateGeneration(): void {
           setGenerationStatus('complete');
         }
 
+        // Mark this epoch's exact result as authoritative before the rail
+        // round-trips below, so a late Manifold draft (async) can't replace the
+        // padding-free body while they run — mirrors the bin-designer hook's
+        // finalize-first ordering.
+        finalizedEpochRef.current = epoch;
+
         // Detached margin rails: generate each from the ORIGINAL params (so the
         // rail's over-tile pockets align with the body grid) and place by mm
         // offset. Sequential — they share the bridge's single-request channel.
@@ -413,10 +419,6 @@ export function useBaseplateGeneration(): void {
         } else {
           setMarginMeshes([]);
         }
-        // Mark this epoch's exact result as authoritative before anything else
-        // so a late Manifold draft (async) can't overwrite it — mirrors the
-        // bin-designer hook's finalize-first ordering.
-        finalizedEpochRef.current = epoch;
         succeeded = true;
       } catch (e: unknown) {
         // These three early returns are intentional non-events: bridge
