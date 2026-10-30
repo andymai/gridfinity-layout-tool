@@ -1,0 +1,21 @@
+CONTRIBUTING.md
+  s_8d190f87b7162f::t_db6251e487aa90 47
+.devcontainer/devcontainer.json
+  s_8d190f87b7162f::t_db6251e487aa90 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "be9d22039a55e1567b6e647b63d64d06e889b1f6",
+  "prompts": {},
+  "sessions": {
+    "s_8d190f87b7162f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b60d043-0993-483b-98eb-3f40d05d6222",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
