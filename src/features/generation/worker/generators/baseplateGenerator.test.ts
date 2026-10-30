@@ -80,6 +80,23 @@ describe('baseplateGenerator', () => {
     assertStructurallyValid(eco, 'eco plate');
     expect(meshVolume(eco)).toBeLessThan(meshVolume(plain) - 100);
   });
+  it.each([3, 10])('relieves the perimeter cell edges beside %d mm padding', (padding) => {
+    const params = defaults({
+      paddingLeft: padding,
+      paddingRight: padding,
+      paddingFront: padding,
+      paddingBack: padding,
+    });
+    const eco = generateBaseplate({ ...params, ecoPlate: true }, noop, true);
+    assertStructurallyValid(eco, `eco ${padding} mm padding`);
+    assertWatertight(eco, `eco ${padding} mm padding`);
+    const removed = (p: ResolvedBaseplateParams, relieved: MeshData): number =>
+      meshVolume(generateBaseplate(p, noop, true)) - meshVolume(relieved);
+    const unpadded = defaults();
+    expect(removed(params, eco)).toBeGreaterThanOrEqual(
+      removed(unpadded, generateBaseplate({ ...unpadded, ecoPlate: true }, noop, true))
+    );
+  });
   it.each([
     { connectorNubs: false },
     { connectorNubs: true, connectorStyle: 'dovetailKey' as const },

@@ -28,6 +28,21 @@ describe('ecoJointCutouts', () => {
     expect(cutouts).toContainEqual({ x: 21, y: 42, width: 25.2, depth: 7 });
   });
 
+  it('relieves the cell edges beside wide padding and leaves a solid strip outside', () => {
+    const cutouts = ecoJointCutouts(plate({ paddingLeft: 10, paddingBack: 10 }));
+    expect(cutouts).toHaveLength(12);
+    expect(cutouts).toContainEqual({ x: -42, y: 21, width: 7, depth: 25.2 });
+    expect(cutouts).toContainEqual({ x: 21, y: 42, width: 25.2, depth: 7 });
+  });
+
+  it('runs the relief out through padding too narrow to stand beside it', () => {
+    const cutouts = ecoJointCutouts(plate({ paddingLeft: 3, paddingBack: 5.4 }));
+    expect(cutouts).toContainEqual({ x: -43.5, y: 21, width: 10, depth: 25.2 });
+    const back = cutouts.find((slot) => slot.x === 21 && slot.y > 42);
+    expect(back?.y).toBeCloseTo(44.7);
+    expect(back?.depth).toBeCloseTo(12.4);
+  });
+
   it('relieves a single cell frame including split join edges', () => {
     expect(ecoJointCutouts(plate({ width: 1, depth: 1 }))).toHaveLength(4);
     expect(
