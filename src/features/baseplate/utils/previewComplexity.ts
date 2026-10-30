@@ -76,8 +76,8 @@ export function estimatePreviewComplexity(
 }
 
 /**
- * True when the live BREP preview should be skipped in favor of keeping the
- * instant procedural direct-mesh on screen.
+ * True when the live BREP preview should be skipped in favor of keeping a draft
+ * on screen as the final preview (see {@link deferredPreviewSource}).
  *
  * Only magnet plates qualify — without magnets the BREP build is fast (through-
  * cut pockets, no per-cell hole booleans) and never the source of timeouts.
@@ -85,19 +85,47 @@ export function estimatePreviewComplexity(
 export function shouldDeferBrepPreview(
   tiling: BaseplateTiling,
   parentParams: ResolvedBaseplateParams,
-  lastBrepMs: number | null
+  lastBrepMs: number | null,
+  hasPreviewBridge: boolean
 ): boolean {
   // Deferral keeps the procedural direct-mesh on screen — but that mesh is
   // rectangles-only, so a shaped plate would finalize with a wrong (or no)
   // preview. Shaped plates always run BREP.
   if (parentParams.outline !== undefined) return false;
-  if (parentParams.ecoPlate === true) return false;
+  if (deferredPreviewSource(parentParams) === 'manifold' && !hasPreviewBridge) return false;
   if (!parentParams.magnetHoles) return false;
 
   if (lastBrepMs !== null && lastBrepMs >= DEFER_LAST_BREP_MS) return true;
 
   const { maxPieceCells, totalCells } = estimatePreviewComplexity(tiling, parentParams);
   return maxPieceCells >= DEFER_MAX_PIECE_CELLS || totalCells >= DEFER_TOTAL_CELLS;
+}
+
+/**
+ * The draft a deferred plate keeps as its final preview. The procedural mesh
+ * draws no eco reliefs, so an eco plate finishes on the Manifold draft, which
+ * runs the real generator.
+ */
+export function deferredPreviewSource(params: ResolvedBaseplateParams): 'direct' | 'manifold' {
+  return params.ecoPlate === true ? 'manifold' : 'direct';
+}
+
+/**
+ * True when the deferral decision should wait for the draft kernel: the plate
+ * would defer onto a Manifold draft, and that kernel is still loading. Deciding
+ * now would start an exact build the draft is about to make unnecessary.
+ */
+export function shouldAwaitPreviewBridge(
+  tiling: BaseplateTiling,
+  parentParams: ResolvedBaseplateParams,
+  lastBrepMs: number | null,
+  hasPreviewBridge: boolean
+): boolean {
+  return (
+    !hasPreviewBridge &&
+    deferredPreviewSource(parentParams) === 'manifold' &&
+    shouldDeferBrepPreview(tiling, parentParams, lastBrepMs, true)
+  );
 }
 
 /**
@@ -112,7 +140,7 @@ export function shouldDeferBrepPreview(
  * not a duplicate of the exact.
  */
 export function shouldSkipManifoldDraft(params: ResolvedBaseplateParams): boolean {
-  return params.outline !== undefined || params.ecoPlate === true;
+  return params.outline !== undefined;
 }
 
 /**
@@ -120,9 +148,10 @@ export function shouldSkipManifoldDraft(params: ResolvedBaseplateParams): boolea
  *
  * - `none` — leave the last good mesh on screen.
  * - `direct` — the synchronous procedural mesh only.
+ * - `manifold` — leave the last good mesh on screen until the Manifold draft lands.
  * - `direct-then-manifold` — procedural first, then refine with the Manifold draft.
  */
-export type PreviewDraftPlan = 'none' | 'direct' | 'direct-then-manifold';
+export type PreviewDraftPlan = 'none' | 'direct' | 'manifold' | 'direct-then-manifold';
 
 /**
  * Pick the draft ladder for one edit.
@@ -151,12 +180,15 @@ export function planPreviewDrafts(options: {
   if (shouldSkipManifoldDraft(params)) return 'none';
 
   // No draft kernel — the procedural mesh is the only fill available, and it is
-  // cheap enough to paint even when the exact is predicted fast.
+  // cheap enough to paint even when the exact is predicted fast. An eco plate
+  // shows its joints unrelieved until the exact build lands.
   if (!hasPreviewBridge) return 'direct';
 
   // A quick exact crossfades in on its own; a draft replaced almost immediately
   // is just an intermediate jump.
   if (lastBrepMs !== null && lastBrepMs < skipBelowMs) return 'none';
 
-  return 'direct-then-manifold';
+  // The procedural mesh draws no eco reliefs: painting it first would flash the
+  // joints solid on every edit before the Manifold draft relieves them again.
+  return params.ecoPlate === true ? 'manifold' : 'direct-then-manifold';
 }

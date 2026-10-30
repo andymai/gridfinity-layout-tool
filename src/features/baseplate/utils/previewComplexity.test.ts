@@ -4,6 +4,8 @@ import {
   shouldDeferBrepPreview,
   shouldSkipManifoldDraft,
   planPreviewDrafts,
+  deferredPreviewSource,
+  shouldAwaitPreviewBridge,
   DEFER_MAX_PIECE_CELLS,
   DEFER_TOTAL_CELLS,
   DEFER_LAST_BREP_MS,
@@ -42,8 +44,12 @@ function makeParams(overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedB
   };
 }
 
-const defer = (p: ResolvedBaseplateParams, bed = 256, lastMs: number | null = null): boolean =>
-  shouldDeferBrepPreview(computeBaseplateTiling(p, bed), p, lastMs);
+const defer = (
+  p: ResolvedBaseplateParams,
+  bed = 256,
+  lastMs: number | null = null,
+  hasPreviewBridge = true
+): boolean => shouldDeferBrepPreview(computeBaseplateTiling(p, bed), p, lastMs, hasPreviewBridge);
 
 describe('estimatePreviewComplexity', () => {
   it('counts a single unsplit plate as its own cells', () => {
@@ -79,8 +85,17 @@ describe('estimatePreviewComplexity', () => {
 });
 
 describe('shouldDeferBrepPreview', () => {
-  it('always generates the exact preview for eco plates', () => {
-    expect(defer(makeParams({ width: 10, depth: 10, ecoPlate: true }), 460)).toBe(false);
+  it('defers a large eco magnet plate onto the Manifold draft only when that kernel is up', () => {
+    const eco = makeParams({ width: 10, depth: 10, ecoPlate: true });
+    expect(defer(eco, 460)).toBe(true);
+    expect(defer(eco, 460, null, false)).toBe(false);
+    expect(defer(makeParams({ width: 10, depth: 10 }), 460, null, false)).toBe(true);
+  });
+
+  it('never defers an eco plate without magnets', () => {
+    expect(
+      defer(makeParams({ width: 10, depth: 10, ecoPlate: true, magnetHoles: false }), 460)
+    ).toBe(false);
   });
   it('never defers when magnets are off (BREP is fast without per-cell holes)', () => {
     expect(defer(makeParams({ width: 20, depth: 20, magnetHoles: false }))).toBe(false);
@@ -137,9 +152,31 @@ describe('shouldDeferBrepPreview', () => {
   });
 });
 
+describe('deferredPreviewSource', () => {
+  it('settles an eco plate on the Manifold draft, which draws its reliefs', () => {
+    expect(deferredPreviewSource(makeParams({ ecoPlate: true }))).toBe('manifold');
+    expect(deferredPreviewSource(makeParams())).toBe('direct');
+  });
+});
+
+describe('shouldAwaitPreviewBridge', () => {
+  const awaits = (p: ResolvedBaseplateParams, hasPreviewBridge: boolean): boolean =>
+    shouldAwaitPreviewBridge(computeBaseplateTiling(p, 460), p, null, hasPreviewBridge);
+
+  it('waits for the draft kernel before deciding a large eco magnet plate', () => {
+    expect(awaits(makeParams({ width: 10, depth: 10, ecoPlate: true }), false)).toBe(true);
+  });
+
+  it('decides at once when the kernel is up, the plate is small, or it is not eco', () => {
+    expect(awaits(makeParams({ width: 10, depth: 10, ecoPlate: true }), true)).toBe(false);
+    expect(awaits(makeParams({ width: 4, depth: 4, ecoPlate: true }), false)).toBe(false);
+    expect(awaits(makeParams({ width: 10, depth: 10 }), false)).toBe(false);
+  });
+});
+
 describe('shouldSkipManifoldDraft', () => {
-  it('skips the incomplete draft for eco plates', () => {
-    expect(shouldSkipManifoldDraft(makeParams({ ecoPlate: true }))).toBe(true);
+  it('keeps the draft for eco plates, which it draws exactly', () => {
+    expect(shouldSkipManifoldDraft(makeParams({ ecoPlate: true }))).toBe(false);
   });
   it('skips the draft for a shaped (outlined) plate — the draft duplicates the exact intersect', () => {
     expect(shouldSkipManifoldDraft(makeParams({ outline: rectOutline(252, 252) }))).toBe(true);
@@ -205,8 +242,17 @@ describe('planPreviewDrafts', () => {
     expect(plan({ params: shaped, lastBrepMs: 5000 })).toBe('none');
   });
 
-  it('shows only the exact preview for an eco plate', () => {
-    expect(plan({ params: makeParams({ ecoPlate: true }) })).toBe('none');
-    expect(plan({ params: makeParams({ ecoPlate: true }), hasPreviewBridge: false })).toBe('none');
+  it('drafts an eco plate on Manifold alone, so its reliefs never flash solid', () => {
+    expect(plan({ params: makeParams({ ecoPlate: true }) })).toBe('manifold');
+  });
+
+  it('paints the procedural mesh for an eco plate only until a draft kernel is up', () => {
+    expect(plan({ params: makeParams({ ecoPlate: true }), hasPreviewBridge: false })).toBe(
+      'direct'
+    );
+  });
+
+  it('skips an eco draft when the exact build is predicted faster than the gate', () => {
+    expect(plan({ params: makeParams({ ecoPlate: true }), lastBrepMs: 149 })).toBe('none');
   });
 });

@@ -26,7 +26,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { effectiveGridUnitMmY } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import {
@@ -48,7 +47,13 @@ import { generateBaseplateDirect } from '@/shared/generation/directMesh';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import { computeBaseplateTiling, bodyParamsForDetach } from '../utils/splitPlanner';
-import { shouldDeferBrepPreview, planPreviewDrafts } from '../utils/previewComplexity';
+import {
+  deferredPreviewSource,
+  planPreviewDrafts,
+  shouldAwaitPreviewBridge,
+  shouldDeferBrepPreview,
+} from '../utils/previewComplexity';
+import { storedGenerationInput } from './storedGenerationInput';
 import { groupPiecesByFingerprint } from '../utils/pieceFingerprint';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MarginMeshEntry, PieceMeshEntry } from '../store/baseplatePageStore';
@@ -88,6 +93,10 @@ export function useBaseplateGeneration(): void {
   /** Last successful BREP wall-clock — predicts whether a draft is worth showing. */
   const lastBrepMsRef = useRef<number | null>(null);
   const draftSkipGate = useRef(createDraftSkipGate()).current;
+  const previewBridgeReady = useCallback((): boolean => {
+    const preview = previewBridgeRef.current;
+    return preview !== null && !preview.isDestroyed;
+  }, []);
 
   // Single memoized selection drives both the values used below and the regen
   // effect's dependency (see `selectGenerationTriggers`). `useShallow` keeps the
@@ -247,15 +256,16 @@ export function useBaseplateGeneration(): void {
    *
    * The exact BREP always supersedes: drafts at or below `finalizedEpochRef`
    * are dropped (the draft is async and may resolve after the BREP it races).
+   * Resolves true only when the draft reached the screen.
    */
   const runManifoldDraftPreview = useCallback(
     async (
       fullParams: ResolvedBaseplateParams,
       tiling: BaseplateTiling,
       epoch: number
-    ): Promise<void> => {
+    ): Promise<boolean> => {
       const preview = previewBridgeRef.current;
-      if (!preview || preview.isDestroyed) return;
+      if (!preview || preview.isDestroyed) return false;
 
       const stillCurrent = (): boolean =>
         generationEpochRef.current === epoch && epoch > finalizedEpochRef.current;
@@ -263,7 +273,7 @@ export function useBaseplateGeneration(): void {
       try {
         if (!tiling.isSplit) {
           const result = await preview.generateBaseplate(fullParams, NO_OP_PROGRESS);
-          if (!stillCurrent()) return;
+          if (!stillCurrent()) return false;
           setGenerationResult(toSingleMesh(result));
           setPieceMeshes([]);
         } else {
@@ -272,17 +282,19 @@ export function useBaseplateGeneration(): void {
 
           for (const group of groups.values()) {
             const baseResult = await preview.generateBaseplate(group.params, NO_OP_PROGRESS);
-            if (!stillCurrent()) return;
+            if (!stillCurrent()) return false;
             fillGroupMeshEntries(meshEntries, group, tiling.pieces, baseResult);
           }
 
-          if (!stillCurrent()) return;
+          if (!stillCurrent()) return false;
           setPieceMeshes(meshEntries);
           setGenerationResult(EMPTY_MESH);
         }
+        return true;
       } catch {
-        // Draft failed — the procedural direct-mesh painted before this call is
-        // still on screen, and the exact BREP still follows.
+        // Draft failed — whatever was on screen stays, and the exact BREP (or,
+        // for a deferred plate, the fallback in finishDeferredPreview) follows.
+        return false;
       }
     },
     [setGenerationResult, setPieceMeshes]
@@ -460,6 +472,31 @@ export function useBaseplateGeneration(): void {
   );
 
   /**
+   * Settle a deferred plate on its final draft (see `deferredPreviewSource`).
+   * The procedural mesh is already on screen; a Manifold draft still has to
+   * land, and if it can't, the exact build runs after all rather than leaving
+   * a preview that is missing the eco reliefs.
+   */
+  const finishDeferredPreview = useCallback(
+    (fullParams: ResolvedBaseplateParams, tiling: BaseplateTiling, epoch: number): void => {
+      const finalize = (): void => {
+        finalizedEpochRef.current = epoch;
+        setGenerationStatus('complete');
+      };
+      if (deferredPreviewSource(fullParams) === 'direct') {
+        finalize();
+        return;
+      }
+      void runManifoldDraftPreview(fullParams, tiling, epoch).then((applied) => {
+        if (generationEpochRef.current !== epoch) return;
+        if (applied) finalize();
+        else void runBrepGeneration(fullParams, tiling, epoch);
+      });
+    },
+    [setGenerationStatus, runManifoldDraftPreview, runBrepGeneration]
+  );
+
+  /**
    * Combined flow: direct-mesh always runs; BREP only if bridge is ready.
    * If the bridge isn't ready yet, the direct-mesh preview stays on screen
    * and BREP kicks in once `bridgeManager.acquire()` resolves (mount effect).
@@ -477,29 +514,27 @@ export function useBaseplateGeneration(): void {
       setGenerationStatus('generating');
 
       const tiling = computeBaseplateTiling(fullParams, bedWidthMm, bedDepthMm);
+      const hasPreviewBridge = previewBridgeReady();
 
       // Large magnet plates can exceed the per-piece BREP budget on slower
       // hardware — the user would wait out the whole timeout only to fall back
-      // to the (already faithful) direct-mesh. Skip that gamble: keep the
-      // instant procedural mesh on screen and mark the preview complete. Export
-      // rebuilds at full BREP fidelity via its own (larger-budget) path.
-      if (shouldDeferBrepPreview(tiling, fullParams, lastBrepMsRef.current)) {
+      // to a draft anyway. Skip that gamble: paint the instant procedural mesh
+      // and settle on a faithful draft. Export rebuilds at full BREP fidelity
+      // via its own (larger-budget) path.
+      if (shouldDeferBrepPreview(tiling, fullParams, lastBrepMsRef.current, hasPreviewBridge)) {
         runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch, tiling);
-        // Claim this epoch as final so a late async draft can't overwrite it.
-        finalizedEpochRef.current = epoch;
-        setGenerationStatus('complete');
+        finishDeferredPreview(fullParams, tiling, epoch);
         return;
       }
 
-      const preview = previewBridgeRef.current;
       const plan = planPreviewDrafts({
         params: fullParams,
-        hasPreviewBridge: preview !== null && !preview.isDestroyed,
+        hasPreviewBridge,
         lastBrepMs: lastBrepMsRef.current,
         skipBelowMs,
       });
 
-      if (plan === 'none') {
+      if (plan === 'none' || plan === 'manifold') {
         // Keep the last good mesh on screen (never blank to EMPTY_MESH mid-edit)
         // and let the exact BREP replace it. Still publish the tiling/progress so
         // the split overlay tracks the new piece layout while the exact runs.
@@ -509,9 +544,9 @@ export function useBaseplateGeneration(): void {
       } else {
         // `runDirectMeshPreview` publishes the tiling itself.
         runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch, tiling);
-        if (plan === 'direct-then-manifold') {
-          void runManifoldDraftPreview(fullParams, tiling, epoch);
-        }
+      }
+      if (plan === 'manifold' || plan === 'direct-then-manifold') {
+        void runManifoldDraftPreview(fullParams, tiling, epoch);
       }
 
       void runBrepGeneration(fullParams, tiling, epoch);
@@ -521,8 +556,10 @@ export function useBaseplateGeneration(): void {
       setTiling,
       setSplitProgress,
       setDedupStats,
+      previewBridgeReady,
       runManifoldDraftPreview,
       runDirectMeshPreview,
+      finishDeferredPreview,
       runBrepGeneration,
       draftSkipGate,
     ]
@@ -568,7 +605,7 @@ export function useBaseplateGeneration(): void {
 
         // Best-effort Manifold draft-preview bridge (null when manifold_preview
         // is off or the kernel fails to load — drafts fall back to direct-mesh).
-        void bridgeManager
+        const previewSettled = bridgeManager
           .acquirePreview()
           .then((previewBridge) => {
             if (cancelled) {
@@ -586,37 +623,24 @@ export function useBaseplateGeneration(): void {
 
         // Bridge is ready — kick off BREP for the current params. The draft has
         // already populated the canvas via the params-change effect.
-        const layoutState = useLayoutStore.getState();
-        const stored = layoutState.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
-        const bedW = layoutState.layout.printBedSize;
-        const bedD = layoutState.layout.printBedDepth ?? layoutState.layout.printBedSize;
-        const params = buildFullParams(
-          stored,
-          layoutState.layout.drawer.width,
-          layoutState.layout.drawer.depth,
-          layoutState.layout.gridUnitMm,
-          layoutState.layout.drawer.fractionalEdgeX ?? 'end',
-          layoutState.layout.drawer.fractionalEdgeY ?? 'end',
-          useSettingsStore.getState().settings.printSettings.nozzleSizeMm,
-          layoutState.layout.drawer.outline,
-          layoutState.layout.magnetAnchor,
-          effectiveGridUnitMmY(layoutState.layout),
-          layoutState.layout.drawer.gridShiftX ?? 0,
-          layoutState.layout.drawer.gridShiftY ?? 0,
-          layoutState.layout.lowProfileBase,
-          { widthMm: bedW, depthMm: bedD }
-        );
+        const { params, bedWidthMm, bedDepthMm } = storedGenerationInput();
         const epoch = ++generationEpochRef.current;
-        const tiling = computeBaseplateTiling(params, bedW, bedD);
+        const tiling = computeBaseplateTiling(params, bedWidthMm, bedDepthMm);
         // Mirror runGeneration's deferral: if the stored plate is predicted too
         // expensive, don't kick off the doomed BREP on bridge-ready — the
-        // params-change effect already left the faithful direct-mesh on screen.
-        if (shouldDeferBrepPreview(tiling, params, lastBrepMsRef.current)) {
-          finalizedEpochRef.current = epoch;
-          setGenerationStatus('complete');
-        } else {
-          void runBrepGeneration(params, tiling, epoch);
-        }
+        // params-change effect already left the direct-mesh on screen.
+        const settle = (): void => {
+          if (cancelled || generationEpochRef.current !== epoch) return;
+          const last = lastBrepMsRef.current;
+          if (shouldDeferBrepPreview(tiling, params, last, previewBridgeReady()))
+            finishDeferredPreview(params, tiling, epoch);
+          else void runBrepGeneration(params, tiling, epoch);
+        };
+        // An eco plate defers onto a Manifold draft, so wait for that kernel
+        // rather than start an exact build the draft is about to replace.
+        if (shouldAwaitPreviewBridge(tiling, params, lastBrepMsRef.current, previewBridgeReady()))
+          void previewSettled.then(settle);
+        else settle();
       })
       .catch((e: unknown) => {
         if (cancelled) return;
@@ -647,7 +671,14 @@ export function useBaseplateGeneration(): void {
         workerPoolManager.release();
       }
     };
-  }, [setWasmStatus, setGenerationStatus, runBrepGeneration, t]);
+  }, [
+    setWasmStatus,
+    setGenerationStatus,
+    runBrepGeneration,
+    finishDeferredPreview,
+    previewBridgeReady,
+    t,
+  ]);
 
   // Re-generate on every params change. Direct-mesh runs synchronously here
   // (renders before bridge is ready); BREP runs in background once bridge exists.
