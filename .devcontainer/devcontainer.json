@@ -1,6 +1,6 @@
 {
   "name": "Gridfinity Layout Tool",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:24",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:26",
 
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {},
