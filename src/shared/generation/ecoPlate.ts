@@ -117,16 +117,17 @@ export function ecoJointCutouts(
     vertical: boolean
   ): void => {
     const across = reliefAcross(boundary, width);
-    const slot = place(across, along, span, vertical);
     const notched = boundary.padding > 0 && across.size === width;
-    if (notched && !clear(slot)) {
+    const paddingSide = { center: boundary.at + (boundary.outward * width) / 4, size: width / 2 };
+    if (notched && !clear(place(paddingSide, along, span, vertical))) {
       // A screw seated in the padding keeps the notch out of its wall; relieve
-      // only the cell side of the edge.
+      // only the cell side of the edge. A hole inside the cell instead just
+      // trims the notch's ends, like any other relief.
       const cellSide = { center: boundary.at - (boundary.outward * width) / 4, size: width / 2 };
       add(place(cellSide, along, span, vertical), vertical);
       return;
     }
-    add(slot, vertical);
+    add(place(across, along, span, vertical), vertical);
   };
   const widthFor = (size: number): number => Math.min(jointWidth, Math.max(2, size * 0.17));
   // Leave at least 2 mm between the rounded cut and the end of a small cell.

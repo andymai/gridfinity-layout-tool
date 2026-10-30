@@ -99,6 +99,17 @@ describe('ecoJointCutouts', () => {
     expect(back).toEqual({ x: 0, y: 19.25, width: 25.2, depth: 3.5 });
   });
 
+  it('trims a padding notch, keeping it, when the keep-out is inside the cell', () => {
+    const cutouts = ecoJointCutouts(
+      plate({ paddingLeft: 10 }),
+      [],
+      [{ x: -34, y: 34, radius: 5.25 }]
+    );
+    const notch = cutouts.find((slot) => slot.x === -42 && slot.y === 21);
+    expect(notch?.width).toBe(7);
+    expect(notch?.depth).toBeLessThan(25.2);
+  });
+
   it('sizes a screw keep-out from its shaft when the shaft is wider than the head', () => {
     const screwHoles: ScrewHoleParams = {
       enabled: true,
