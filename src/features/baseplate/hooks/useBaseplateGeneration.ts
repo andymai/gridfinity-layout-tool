@@ -256,7 +256,6 @@ export function useBaseplateGeneration(): void {
    *
    * The exact BREP always supersedes: drafts at or below `finalizedEpochRef`
    * are dropped (the draft is async and may resolve after the BREP it races).
-   * Resolves true only when the draft reached the screen.
    */
   const runManifoldDraftPreview = useCallback(
     async (
@@ -290,6 +289,9 @@ export function useBaseplateGeneration(): void {
           setPieceMeshes(meshEntries);
           setGenerationResult(EMPTY_MESH);
         }
+        // The draft body keeps its padding, so rails left from the last exact
+        // build would double it; the exact build brings them back.
+        setMarginMeshes([]);
         return true;
       } catch {
         // Draft failed — whatever was on screen stays, and the exact BREP (or,
@@ -297,7 +299,7 @@ export function useBaseplateGeneration(): void {
         return false;
       }
     },
-    [setGenerationResult, setPieceMeshes]
+    [setGenerationResult, setPieceMeshes, setMarginMeshes]
   );
 
   /**
@@ -633,8 +635,7 @@ export function useBaseplateGeneration(): void {
         // params-change effect already left the direct-mesh on screen.
         const settle = (): void => {
           if (cancelled || generationEpochRef.current !== epoch) return;
-          const last = lastBrepMsRef.current;
-          if (shouldDeferBrepPreview(tiling, params, last, previewBridgeReady()))
+          if (shouldDeferBrepPreview(tiling, params, lastBrepMsRef.current, previewBridgeReady()))
             finishDeferredPreview(params, tiling, epoch);
           else void runBrepGeneration(params, tiling, epoch);
         };
