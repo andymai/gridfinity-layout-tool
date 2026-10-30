@@ -237,8 +237,8 @@ importers:
         specifier: 7.0.0-dev.20260707.2
         version: 7.0.0-dev.20260707.2
       '@vercel/node':
-        specifier: ^23.0.1
-        version: 23.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@vercel/build-utils@14.20.1)(rollup@4.64.10)(supports-color@7.2.0)
+        specifier: ^24.0.2
+        version: 24.0.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@vercel/build-utils@14.21.3)(rollup@4.64.10)(supports-color@7.2.0)
       '@vitejs/plugin-react':
         specifier: ^6.1.2
         version: 6.1.2(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
@@ -2950,8 +2950,8 @@ packages:
     resolution: {integrity: sha512-ZUUWO2VA00r9ZTRtKgH4va7FGOUxUtge2FaRr9WZmeeX2s3C3qVe2tOTLTbv/tkcd+L+ijxaI2eP9S1/mGHc9Q==}
     engines: {node: '>=20.0.0'}
 
-  '@vercel/build-utils@14.20.1':
-    resolution: {integrity: sha512-Bq1xRt8ymFuhfi8dMWKE1myzdZrdxk6I19b3jbcqFrW9PXZSbjsNBTgMcEQ5CG6MYgTgU73/4RoJ7M6rnYn51Q==}
+  '@vercel/build-utils@14.21.3':
+    resolution: {integrity: sha512-qlLHcmjc1O8eiaam8tu2Ola20mR/cy8+1V7BZjmjSRycnqEJKhT2Iw9MUj45QeqVaF/MgR05R//eFLha0GkE5A==}
 
   '@vercel/cli-config@0.3.1':
     resolution: {integrity: sha512-sISbygqlFXYb8qfPu/+2Cf/A8IjrlAuZePdag3EDQr2PRA455s7UZtl9Ro674CWsB/saBRmz3jEkw0YsQs8OoQ==}
@@ -2968,10 +2968,10 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@vercel/node@23.0.1':
-    resolution: {integrity: sha512-3FsWUIXUe8P/EH231i8N3ZFqMy1/GQ+SvhizOBrpdhk/BlqC+INcqN/3puqEO97okNR4bMWealSJH4V6oi/l8A==}
+  '@vercel/node@24.0.3':
+    resolution: {integrity: sha512-K3KcbanLoSeIrM/DXWYowHwwCBFGjf5KPiDHein6/Fi+ETieRd1M2VJGPHvBHn097Kv1mulYg+br9Nz2sF2j9g==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 14.21.3
 
   '@vercel/oidc@3.8.10':
     resolution: {integrity: sha512-sPw1kIfQEA6/2dB+zlAJHnhhNBRJ8t/t4HfFvKO+g0EPBA7NbCKyGovuhgAV6Mnl865ka7HqCEguIy596czdAw==}
@@ -8405,7 +8405,7 @@ snapshots:
       throttleit: 2.1.0
       undici: 6.29.1
 
-  '@vercel/build-utils@14.20.1':
+  '@vercel/build-utils@14.21.3':
     dependencies:
       cjs-module-lexer: 1.2.3
       es-module-lexer: 1.5.0
@@ -8440,13 +8440,13 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vercel/node@23.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@vercel/build-utils@14.20.1)(rollup@4.64.10)(supports-color@7.2.0)':
+  '@vercel/node@24.0.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@vercel/build-utils@14.21.3)(rollup@4.64.10)(supports-color@7.2.0)':
     dependencies:
       '@edge-runtime/node-utils': 2.3.0
       '@edge-runtime/primitives': 4.1.0
       '@edge-runtime/vm': 3.2.0
       '@types/node': 20.11.0
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 14.21.3
       '@vercel/error-utils': 2.2.1
       '@vercel/nft': 1.10.0(rollup@4.64.10)(supports-color@7.2.0)
       '@vercel/static-config': 3.4.4(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)
