@@ -244,7 +244,7 @@ describe('buildFullParams', () => {
 
     const result = buildFullParams(stored, 20, 16, 42, 'start', 'start');
 
-    expect(result).toMatchObject({
+    expect(result).toEqual({
       width: 20,
       depth: 16,
       gridUnitMm: 42,
