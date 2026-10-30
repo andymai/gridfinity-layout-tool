@@ -10,29 +10,38 @@ export interface PinnedPackage {
   source: PinSource;
 }
 
+export interface PinnedAction {
+  name: string;
+  sha: string;
+  source: PinSource;
+}
+
 export interface PinnedImage {
   repository: string;
   tag: string;
   digest: string;
+  platforms: string[];
   source: PinSource;
 }
 
 export interface ToolchainPins {
   packages: PinnedPackage[];
+  actions: PinnedAction[];
   images: PinnedImage[];
 }
 
 export interface ToolchainFiles {
   packageJson: string;
   dockerfile: string;
+  dockerWorkflow: string;
   workflows: { path: string; text: string }[];
 }
 
 const FROM_LINE =
-  /^FROM\s+(?:--platform=\S+\s+)?([a-z0-9][a-z0-9._/-]*):([A-Za-z0-9._-]+)@(sha256:[0-9a-f]{64})/i;
+  /^FROM\s+(--platform=\S+\s+)?([a-z0-9][a-z0-9._/-]*):([A-Za-z0-9._-]+)@(sha256:[0-9a-f]{64})/i;
 const COREPACK_PIN = /\bcorepack@(\d+\.\d+\.\d+)\b/;
-const ACTION_PIN =
-  /uses:\s*([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)(?:\/[^\s@]*)?@[0-9a-f]{40}\s+#\s*v?(\d+(?:\.\d+){0,2})\b/;
+const ACTION_PIN = /uses:\s*([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)(?:\/[^\s@]*)?@([0-9a-f]{40})\b/;
+const CI_BUILD_PLATFORM = 'linux/amd64';
 
 function lineOf(text: string, pattern: string): number {
   return text.split('\n').findIndex((l) => l.includes(pattern)) + 1;
@@ -48,8 +57,17 @@ export function dockerHubRepository(image: string): string {
   return image.includes('/') ? image : `library/${image}`;
 }
 
+export function publishedPlatforms(dockerWorkflow: string): string[] {
+  const platforms = new Set<string>();
+  for (const match of dockerWorkflow.matchAll(/^\s*platforms:\s*(\S+)\s*$/gm)) {
+    for (const p of (match[1] ?? '').split(',')) if (p) platforms.add(p);
+  }
+  return platforms.size > 0 ? [...platforms].sort() : [CI_BUILD_PLATFORM];
+}
+
 export function readToolchainPins(files: ToolchainFiles): ToolchainPins {
   const packages: PinnedPackage[] = [];
+  const actions: PinnedAction[] = [];
   const images: PinnedImage[] = [];
 
   const manifest: unknown = JSON.parse(files.packageJson);
@@ -68,13 +86,18 @@ export function readToolchainPins(files: ToolchainFiles): ToolchainPins {
     });
   }
 
+  const shipped = publishedPlatforms(files.dockerWorkflow);
   files.dockerfile.split('\n').forEach((line, i) => {
     const from = FROM_LINE.exec(line.trim());
-    if (from?.[1] && from[2] && from[3]) {
+    if (from?.[2] && from[3] && from[4]) {
+      // A $BUILDPLATFORM stage runs on the CI runner whatever the target, so
+      // only the stages that ship need every published platform.
+      const buildOnly = from[1]?.includes('BUILDPLATFORM') ?? false;
       images.push({
-        repository: dockerHubRepository(from[1]),
-        tag: from[2],
-        digest: from[3],
+        repository: dockerHubRepository(from[2]),
+        tag: from[3],
+        digest: from[4],
+        platforms: buildOnly ? [CI_BUILD_PLATFORM] : shipped,
         source: { file: 'Dockerfile', line: i + 1 },
       });
     }
@@ -97,16 +120,37 @@ export function readToolchainPins(files: ToolchainFiles): ToolchainPins {
       const key = `${action[1]}@${action[2]}`;
       if (seen.has(key)) return;
       seen.add(key);
-      packages.push({
-        ecosystem: 'GitHub Actions',
+      actions.push({
         name: action[1],
-        version: action[2],
+        sha: action[2],
         source: { file: workflow.path, line: i + 1 },
       });
     });
   }
 
-  return { packages, images };
+  return { packages, actions, images };
+}
+
+// Version comments beside a pinned SHA go stale when only the SHA is bumped,
+// so the release is read from the tags that point at the commit itself.
+export function versionForCommit(lsRemoteTags: string, sha: string): string | undefined {
+  const versions = lsRemoteTags
+    .split('\n')
+    .map((line) => line.split('\t'))
+    .filter(([commit]) => commit === sha)
+    .map(([, ref]) => (ref ?? '').replace(/^refs\/tags\//, '').replace(/\^\{\}$/, ''))
+    .map((tag) => /^v?(\d+(?:\.\d+){0,2})$/.exec(tag)?.[1])
+    .filter((v): v is string => v !== undefined)
+    .map((v) => v.split('.').map(Number));
+  versions.sort((a, b) => {
+    if (a.length !== b.length) return b.length - a.length;
+    for (let i = 0; i < a.length; i++) {
+      const diff = (b[i] ?? 0) - (a[i] ?? 0);
+      if (diff !== 0) return diff;
+    }
+    return 0;
+  });
+  return versions[0]?.join('.');
 }
 
 export interface OsPackage {
@@ -328,16 +372,16 @@ export interface ImageProblem {
 }
 
 // An image advisory is ours to fix only when the tag's current build no longer
-// has it; otherwise re-pinning changes nothing and the wait is on upstream.
+// carries it at all, fixable or not; otherwise re-pinning changes nothing and
+// the wait is on upstream.
 export function partitionByUpstreamFix(
   pinned: ImageProblem[],
-  current: ImageProblem[] | undefined
+  currentAdvisories: ReadonlySet<string> | undefined
 ): { fixedUpstream: ImageProblem[]; outstanding: ImageProblem[] } {
-  if (!current) return { fixedUpstream: [], outstanding: pinned };
-  const stillPresent = new Set(current.map((p) => p.key));
+  if (!currentAdvisories) return { fixedUpstream: [], outstanding: pinned };
   return {
-    fixedUpstream: pinned.filter((p) => !stillPresent.has(p.key)),
-    outstanding: pinned.filter((p) => stillPresent.has(p.key)),
+    fixedUpstream: pinned.filter((p) => !currentAdvisories.has(p.key)),
+    outstanding: pinned.filter((p) => currentAdvisories.has(p.key)),
   };
 }
 

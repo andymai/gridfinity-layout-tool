@@ -11,8 +11,10 @@
  * Usage: node scripts/check-toolchain-advisories.ts [--report-only]
  */
 
+import { execFile } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 import { gunzipSync, zstdDecompressSync } from 'node:zlib';
 import {
   fixedVersions,
@@ -24,15 +26,19 @@ import {
   parseDpkgStatus,
   readTarFiles,
   readToolchainPins,
+  versionForCommit,
   type Finding,
   type ImageProblem,
   type NodeCoreEntry,
   type OsPackage,
   type OsvVulnerability,
+  type PinnedAction,
   type PinnedImage,
+  type PinnedPackage,
 } from './check-toolchain-advisories.core.ts';
 
 const ROOT = join(import.meta.dirname, '..');
+const execFileAsync = promisify(execFile);
 const OSV = 'https://api.osv.dev/v1';
 const REGISTRY = 'https://registry-1.docker.io/v2';
 const NODE_CORE_INDEX =
@@ -134,17 +140,18 @@ interface ImageContents {
   files: Map<string, string>;
 }
 
-async function readImage(image: PinnedImage): Promise<ImageContents> {
+async function readImage(image: PinnedImage, platform: string): Promise<ImageContents> {
   const token = await registryToken(image.repository);
   const headers = { Authorization: `Bearer ${token}`, Accept: INDEX_TYPES };
   const base = `${REGISTRY}/${image.repository}`;
+  const [os, architecture] = platform.split('/');
   let manifest = await fetchJson<ImageManifest>(`${base}/manifests/${image.digest}`, { headers });
   if (manifest.manifests) {
-    const amd64 = manifest.manifests.find(
-      (m) => m.platform?.os === 'linux' && m.platform.architecture === 'amd64'
+    const match = manifest.manifests.find(
+      (m) => m.platform?.os === os && m.platform.architecture === architecture
     );
-    if (!amd64) throw new Error(`${image.repository}@${image.digest} has no linux/amd64 image`);
-    manifest = await fetchJson<ImageManifest>(`${base}/manifests/${amd64.digest}`, { headers });
+    if (!match) throw new Error(`${image.repository}@${image.digest} has no ${platform} image`);
+    manifest = await fetchJson<ImageManifest>(`${base}/manifests/${match.digest}`, { headers });
   }
   if (!manifest.config || !manifest.layers) {
     throw new Error(`${image.repository}@${image.digest}: manifest has no config or layers`);
@@ -181,13 +188,15 @@ async function currentDigest(image: PinnedImage): Promise<{ digest: string; upda
 interface ImageScan {
   summary: string;
   problems: ImageProblem[];
+  present: Set<string>;
 }
 
 async function scanImage(
   image: PinnedImage,
+  platform: string,
   nodeIndex: () => Promise<Record<string, NodeCoreEntry>>
 ): Promise<ImageScan> {
-  const { nodeVersion, files } = await readImage(image);
+  const { nodeVersion, files } = await readImage(image, platform);
   const osRelease = files.get('usr/lib/os-release') ?? files.get('etc/os-release') ?? '';
   const ecosystem = osvEcosystem(osRelease);
   if (!ecosystem) throw new Error(`${image.repository}@${image.digest}: unrecognised OS`);
@@ -201,9 +210,11 @@ async function scanImage(
 
   const ids = await osvIdsFor(packages.map((p) => ({ ecosystem, ...p })));
   const problems: ImageProblem[] = [];
+  const present = new Set<string>();
   let unfixed = 0;
   for (const [i, pkg] of packages.entries()) {
     const hits = ids[i] ?? [];
+    for (const id of hits) present.add(`${pkg.name}:${id}`);
     if (hits.length === 0) continue;
     const result = await classify(ecosystem, pkg.name, hits);
     unfixed += result.unfixed.length;
@@ -217,6 +228,7 @@ async function scanImage(
 
   if (nodeVersion) {
     for (const a of nodeCoreAdvisories(await nodeIndex(), nodeVersion)) {
+      present.add(`node:${a.id}`);
       problems.push({
         key: `node:${a.id}`,
         text: `Node ${nodeVersion}: ${a.cves.join(', ') || `core advisory ${a.id}`} (patched in ${a.patched})`,
@@ -228,6 +240,7 @@ async function scanImage(
   return {
     summary: `${ecosystem}, ${packages.length} packages${node}: ${problems.length} fixable, ${unfixed} with no fixed release yet`,
     problems,
+    present,
   };
 }
 
@@ -235,40 +248,79 @@ async function checkImage(
   image: PinnedImage,
   nodeIndex: () => Promise<Record<string, NodeCoreEntry>>
 ): Promise<Finding[]> {
-  const label = `${image.repository.replace(/^library\//, '')}:${image.tag}`;
-  const pinned = await scanImage(image, nodeIndex);
-  console.log(`${label} (${pinned.summary})`);
-  if (pinned.problems.length === 0) return [];
-
-  const current = await currentDigest(image);
-  const rebuilt = current.digest !== image.digest;
-  const latest = rebuilt
-    ? await scanImage({ ...image, digest: current.digest }, nodeIndex)
-    : undefined;
-  if (latest)
-    console.log(
-      `${label} current build ${current.digest} from ${current.updated} (${latest.summary})`
-    );
-  const { fixedUpstream, outstanding } = partitionByUpstreamFix(pinned.problems, latest?.problems);
-
   const findings: Finding[] = [];
-  if (fixedUpstream.length > 0) {
-    findings.push({
-      level: 'error',
-      title: `${label}: newer build fixes ${advisories(fixedUpstream.length)}`,
-      message: `${fixedUpstream.map((p) => p.text).join('; ')}. Re-pin to ${current.digest} (built ${current.updated}).`,
-      source: image.source,
-    });
-  }
-  if (outstanding.length > 0) {
-    findings.push({
-      level: 'warning',
-      title: `${label}: ${advisories(outstanding.length)} awaiting an upstream rebuild`,
-      message: `${outstanding.map((p) => p.text).join('; ')}. ${rebuilt ? 'The current build is still affected.' : 'The pin is already the current build.'}`,
-      source: image.source,
-    });
+  let current: { digest: string; updated: string } | undefined;
+  for (const platform of image.platforms) {
+    const label = `${image.repository.replace(/^library\//, '')}:${image.tag} ${platform}`;
+    const pinned = await scanImage(image, platform, nodeIndex);
+    console.log(`${label} (${pinned.summary})`);
+    if (pinned.problems.length === 0) continue;
+
+    current ??= await currentDigest(image);
+    const rebuilt = current.digest !== image.digest;
+    const latest = rebuilt
+      ? await scanImage({ ...image, digest: current.digest }, platform, nodeIndex)
+      : undefined;
+    if (latest) {
+      console.log(
+        `${label} current build ${current.digest} from ${current.updated} (${latest.summary})`
+      );
+    }
+    const { fixedUpstream, outstanding } = partitionByUpstreamFix(pinned.problems, latest?.present);
+
+    if (fixedUpstream.length > 0) {
+      findings.push({
+        level: 'error',
+        title: `${label}: newer build fixes ${advisories(fixedUpstream.length)}`,
+        message: `${fixedUpstream.map((p) => p.text).join('; ')}. Re-pin to ${current.digest} (built ${current.updated}).`,
+        source: image.source,
+      });
+    }
+    if (outstanding.length > 0) {
+      findings.push({
+        level: 'warning',
+        title: `${label}: ${advisories(outstanding.length)} awaiting an upstream rebuild`,
+        message: `${outstanding.map((p) => p.text).join('; ')}. ${rebuilt ? 'The current build still carries them.' : 'The pin is already the current build.'}`,
+        source: image.source,
+      });
+    }
   }
   return findings;
+}
+
+async function resolveActions(
+  actions: PinnedAction[]
+): Promise<{ packages: PinnedPackage[]; findings: Finding[] }> {
+  const resolved = await Promise.all(
+    actions.map(async (action) => {
+      const { stdout } = await execFileAsync('git', [
+        'ls-remote',
+        '--tags',
+        `https://github.com/${action.name}.git`,
+      ]);
+      return { action, version: versionForCommit(stdout, action.sha) };
+    })
+  );
+  const packages: PinnedPackage[] = [];
+  const findings: Finding[] = [];
+  for (const { action, version } of resolved) {
+    if (version) {
+      packages.push({
+        ecosystem: 'GitHub Actions',
+        name: action.name,
+        version,
+        source: action.source,
+      });
+    } else {
+      findings.push({
+        level: 'warning',
+        title: `${action.name}@${action.sha.slice(0, 12)}: no release tag`,
+        message: 'No version tag points at this commit, so it cannot be checked against OSV.',
+        source: action.source,
+      });
+    }
+  }
+  return { packages, findings };
 }
 
 function workflowFiles(): { path: string; text: string }[] {
@@ -288,14 +340,19 @@ async function main(): Promise<void> {
   const pins = readToolchainPins({
     packageJson: readFileSync(join(ROOT, 'package.json'), 'utf8'),
     dockerfile: readFileSync(join(ROOT, 'Dockerfile'), 'utf8'),
+    dockerWorkflow: readFileSync(join(ROOT, '.github/workflows/docker.yml'), 'utf8'),
     workflows: workflowFiles(),
   });
-  const findings: Finding[] = [];
+  const actions = await resolveActions(pins.actions);
+  const findings: Finding[] = [...actions.findings];
+  const packages = [...pins.packages, ...actions.packages];
 
-  const ids = await osvIdsFor(pins.packages);
-  for (const [i, pin] of pins.packages.entries()) {
+  const ids = await osvIdsFor(packages);
+  let packageAdvisories = 0;
+  for (const [i, pin] of packages.entries()) {
     const hits = ids[i] ?? [];
     if (hits.length === 0) continue;
+    packageAdvisories += hits.length;
     const result = await classify(pin.ecosystem, pin.name, hits);
     for (const f of result.fixable) {
       findings.push({
@@ -315,7 +372,8 @@ async function main(): Promise<void> {
     }
   }
   console.log(
-    `${pins.packages.length} package and action pins: ${findings.length === 0 ? 'no advisories' : `${findings.length} advisories`}`
+    `${pins.packages.length} package pins and ${pins.actions.length} actions ` +
+      `(${actions.packages.length} resolved to a release): ${packageAdvisories === 0 ? 'no advisories' : advisories(packageAdvisories)}`
   );
 
   let index: Promise<Record<string, NodeCoreEntry>> | undefined;
@@ -332,7 +390,7 @@ async function main(): Promise<void> {
     );
   }
   const errors = findings.filter((f) => f.level === 'error').length;
-  console.log(`${errors} actionable, ${findings.length - errors} waiting on upstream`);
+  console.log(`${errors} actionable, ${findings.length - errors} warnings`);
   if (errors > 0 && !reportOnly) process.exit(1);
 }
 

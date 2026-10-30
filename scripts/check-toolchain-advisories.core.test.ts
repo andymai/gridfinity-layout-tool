@@ -8,9 +8,11 @@ import {
   parseApkInstalled,
   parseDpkgStatus,
   partitionByUpstreamFix,
+  publishedPlatforms,
   readTarFiles,
   readToolchainPins,
   satisfiesNodeRange,
+  versionForCommit,
 } from './check-toolchain-advisories.core.js';
 
 const DIGEST = `sha256:${'a'.repeat(64)}`;
@@ -54,16 +56,20 @@ describe('readToolchainPins', () => {
     `FROM nginxinc/nginx-unprivileged:1.31.7-alpine-slim@${DIGEST}`,
     'FROM build AS unpinned',
   ].join('\n');
+  const OTHER_SHA = 'c'.repeat(40);
 
   const pins = readToolchainPins({
     packageJson: '{\n  "name": "x",\n  "packageManager": "pnpm@11.28.8+sha512.abc"\n}',
     dockerfile,
+    dockerWorkflow:
+      '          platforms: linux/amd64\n          platforms: linux/amd64,linux/arm64\n',
     workflows: [
       {
         path: '.github/workflows/ci.yml',
         text: [
           `      - uses: actions/checkout@${SHA} # v7.0.1`,
-          `      - uses: actions/checkout@${SHA} # v7.0.1`,
+          `      - uses: actions/checkout@${SHA} # v5`,
+          `      - uses: actions/checkout@${OTHER_SHA}`,
           `    uses: google/osv-scanner-action/.github/workflows/scan.yml@${SHA} # v2.7.0`,
           '      - uses: ./.github/actions/setup-pnpm',
           '      - uses: actions/cache@v4',
@@ -93,29 +99,60 @@ describe('readToolchainPins', () => {
     ]);
   });
 
-  it('reads digest-pinned FROM lines and maps official images to library/', () => {
+  it('scans a $BUILDPLATFORM stage on the CI runner only and a shipped stage on every published platform', () => {
     expect(pins.images).toEqual([
       {
         repository: 'library/node',
         tag: '26-bookworm-slim',
         digest: DIGEST,
+        platforms: ['linux/amd64'],
         source: { file: 'Dockerfile', line: 2 },
       },
       {
         repository: 'nginxinc/nginx-unprivileged',
         tag: '1.31.7-alpine-slim',
         digest: DIGEST,
+        platforms: ['linux/amd64', 'linux/arm64'],
         source: { file: 'Dockerfile', line: 5 },
       },
     ]);
   });
 
-  it('reads SHA-pinned actions by owner/repo, once per version, skipping local and tag refs', () => {
-    const actions = pins.packages.filter((p) => p.ecosystem === 'GitHub Actions');
-    expect(actions.map((a) => `${a.name}@${a.version}`)).toEqual([
-      'actions/checkout@7.0.1',
-      'google/osv-scanner-action@2.7.0',
+  it('keys actions by commit, ignoring version comments, and skips local and tag refs', () => {
+    expect(pins.actions.map((a) => `${a.name}@${a.sha.slice(0, 1)}:${a.source.line}`)).toEqual([
+      'actions/checkout@b:1',
+      'actions/checkout@c:3',
+      'google/osv-scanner-action@b:4',
     ]);
+  });
+});
+
+describe('publishedPlatforms', () => {
+  it('falls back to the CI runner platform when the workflow names none', () => {
+    expect(publishedPlatforms('jobs: {}\n')).toEqual(['linux/amd64']);
+  });
+});
+
+describe('versionForCommit', () => {
+  const lsRemote = [
+    `${SHA}\trefs/tags/v7`,
+    `${SHA}\trefs/tags/v7.0.1`,
+    `${SHA}\trefs/tags/latest`,
+    `${'d'.repeat(40)}\trefs/tags/v6.0.0`,
+    `${'e'.repeat(40)}\trefs/tags/v2.7.0`,
+    `${'f'.repeat(40)}\trefs/tags/v2.7.0^{}`,
+  ].join('\n');
+
+  it('picks the most specific version tag on the commit', () => {
+    expect(versionForCommit(lsRemote, SHA)).toBe('7.0.1');
+  });
+
+  it('follows the peeled commit of an annotated tag', () => {
+    expect(versionForCommit(lsRemote, 'f'.repeat(40))).toBe('2.7.0');
+  });
+
+  it('returns undefined for a commit no version tag points at', () => {
+    expect(versionForCommit(lsRemote, '1'.repeat(40))).toBeUndefined();
   });
 });
 
@@ -299,7 +336,15 @@ describe('partitionByUpstreamFix', () => {
   });
 
   it('splits by what the current build still carries', () => {
-    expect(partitionByUpstreamFix([a, b], [a])).toEqual({ fixedUpstream: [b], outstanding: [a] });
+    expect(partitionByUpstreamFix([a, b], new Set([a.key]))).toEqual({
+      fixedUpstream: [b],
+      outstanding: [a],
+    });
+  });
+
+  it('keeps an advisory outstanding when the current build still carries it with no fix', () => {
+    const presentButUnfixable = new Set([a.key, b.key]);
+    expect(partitionByUpstreamFix([a, b], presentButUnfixable).fixedUpstream).toEqual([]);
   });
 });
 
