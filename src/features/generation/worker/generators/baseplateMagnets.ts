@@ -46,7 +46,6 @@ export {
   magnetPositionsForCell,
 } from '@/shared/generation/magnetPositions';
 
-/** Magnet pocket centres, split by whether their chamfer fits the cell. */
 export interface MagnetPocketPlan {
   readonly chamfered: Array<[number, number]>;
   readonly plain: Array<[number, number]>;
@@ -68,7 +67,6 @@ function splitByChamferFit(
   (chamfer ? out.chamfered : out.plain).push(...positions);
 }
 
-/** Where {@link buildMagnetHoles} puts its pockets, without building them. */
 export function planMagnetPockets(
   gridW: number,
   gridD: number,
@@ -95,7 +93,6 @@ export function planMagnetPockets(
   return plan;
 }
 
-/** Where {@link buildPartialCellMagnetHoles} puts its pockets, without building them. */
 export function planPartialCellMagnetPockets(
   cells: readonly CellInfo[],
   magnetRadius: number,
