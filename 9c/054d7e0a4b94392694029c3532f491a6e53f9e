@@ -1,0 +1,21 @@
+src/shared/generation/ecoPlate.test.ts
+  s_91213deb28ff89::t_6b2596245723b7 102-112
+src/shared/generation/ecoPlate.ts
+  s_91213deb28ff89::t_6b2596245723b7 121-122,124-125,130
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9c054d7e0a4b94392694029c3532f491a6e53f9e",
+  "prompts": {},
+  "sessions": {
+    "s_91213deb28ff89": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "deaa571a-1688-47b1-9794-673e9f62649d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
