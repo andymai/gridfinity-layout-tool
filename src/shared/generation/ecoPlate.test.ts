@@ -5,12 +5,14 @@ import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { frameCells } from './cellDecomposition';
 import {
   ecoJointCutouts,
+  ecoKeepOuts,
   ecoMagnetKeepOuts,
   ecoScrewKeepOuts,
   type EcoJointCutout,
   type EcoKeepOut,
 } from './ecoPlate';
 import { MAGNET_CHAMFER_MM } from './magnetHoleStyle';
+import { planMountMagnets } from './mountMagnetPlan';
 import { planBaseplateScrewHoles, screwPlacementFor } from './screwHolePlacement';
 import { SCREW_MARGIN_MIN_WALL_MM } from './screwHolePlan';
 
@@ -122,6 +124,23 @@ describe('ecoJointCutouts', () => {
       { x: 3, y: 4, radius: 3.25 + SCREW_MARGIN_MIN_WALL_MM },
       { x: 1, y: 2, radius: 3.25 + MAGNET_CHAMFER_MM + SCREW_MARGIN_MIN_WALL_MM },
     ]);
+  });
+
+  it('trims reliefs clear of mount magnets at the junctions beside half-width cells', () => {
+    const params = plate({ width: 3, depth: 2.5 });
+    const magnets = planMountMagnets(
+      { enabled: true, diameter: mm(6.5), depth: mm(2.5) },
+      3,
+      2.5,
+      4.65,
+      4.65,
+      { gridUnitMm: 42, fractionalEdgeX: 'end', fractionalEdgeY: 'end' }
+    );
+    expect(magnets.length).toBeGreaterThan(0);
+    const keepOuts = ecoKeepOuts(magnets, 6.5);
+    const kept = ecoJointCutouts(params, [], keepOuts);
+    expect(kept).not.toEqual(ecoJointCutouts(params));
+    expectClear(kept, keepOuts);
   });
 
   it('shortens a joint relief from both ends until a keep-out near its end clears', () => {
