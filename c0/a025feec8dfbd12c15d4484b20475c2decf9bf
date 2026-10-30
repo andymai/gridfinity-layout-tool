@@ -1,0 +1,46 @@
+scripts/check-toolchain-advisories.ts
+  s_8d190f87b7162f::t_e45c3386b3eba0 170-173,258,266
+  s_8d190f87b7162f::t_255bbfbf6f3399 7,9
+  s_8d190f87b7162f::t_c849e5f265ff8e 22,28,85-89,174,178,181-189,193,198-200,203,211-214,220-223,227-257,259-265,267,269-271
+  s_8d190f87b7162f::t_f778764988a6ad 1-6,8,10-21,23-27,29-84,90-169,175-177,179-180,190-192,194-197,201-202,204-210,215-219,224-226,268,272-342
+SECURITY.md
+  s_8d190f87b7162f::t_2e911ae3043c23 37-46
+tsconfig.scripts.json
+  s_8d190f87b7162f::t_e5b7cadd72665f 24-25
+scripts/check-toolchain-advisories.core.test.ts
+  s_8d190f87b7162f::t_087eadc172c0af 1-90,92-101,103-172,174-223,225-227,229-239,243-283,285-296,298-317
+  s_8d190f87b7162f::t_37749528d9badd 284
+  s_8d190f87b7162f::t_4e6c073e79aa4d 91
+  s_8d190f87b7162f::t_02db6b237e1e75 102
+  s_8d190f87b7162f::t_0280c8af4ecf9e 173
+  s_8d190f87b7162f::t_dbffec36752c77 224
+  s_8d190f87b7162f::t_2cc812a33777a7 228
+  s_8d190f87b7162f::t_1d2cc4391503c8 240-242
+  s_8d190f87b7162f::t_1038d0717cd902 297
+scripts/check-toolchain-advisories.core.ts
+  s_8d190f87b7162f::t_2fa8fa861236f7 33,60-61,81
+  s_8d190f87b7162f::t_26adc91f251614 1-32,34-59,62-80,82-225,229-324,328-329,342-366
+  s_8d190f87b7162f::t_b6945545de0efc 226-228
+  s_8d190f87b7162f::t_c849e5f265ff8e 325-327,330-341
+.github/workflows/toolchain-advisories.yml
+  s_8d190f87b7162f::t_21e10fac6b5ebc 1-10,12-17,20-47
+  s_8d190f87b7162f::t_1d8762f415c732 11,18-19
+package.json
+  s_8d190f87b7162f::t_31454778eeee73 63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c0a025feec8dfbd12c15d4484b20475c2decf9bf",
+  "prompts": {},
+  "sessions": {
+    "s_8d190f87b7162f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b60d043-0993-483b-98eb-3f40d05d6222",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
