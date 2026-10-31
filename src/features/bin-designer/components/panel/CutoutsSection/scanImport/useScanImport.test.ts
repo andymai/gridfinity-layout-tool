@@ -158,6 +158,34 @@ describe('useScanImport', () => {
     expect(added.y).toBe(-0.03);
   });
 
+  // A 3x2 bin as six by four half cells, 1 = floor.
+  function shaped(cells: number[]): BinParams {
+    return { ...DEFAULT_BIN_PARAMS, width: 3, depth: 2, cellMask: { cols: 6, rows: 4, cells } };
+  }
+
+  it('keeps a scan in place when the middle of a custom shape is a notch', () => {
+    // U-shape: the two middle columns of the top half are open.
+    mockParams = shaped([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1]);
+    const { result } = renderHook(() => useScanImport());
+    result.current.addScanCutouts([spec({ width: 40, depth: 60 })]);
+
+    const added = mockAddCutout.mock.calls[0][0];
+    expect(added.x).toBe(0);
+    expect(added.y).toBe(0);
+  });
+
+  it('centers a scan on a custom shape whose middle is floor', () => {
+    // Only the bottom-left half cell is open, which is where the scan arrives.
+    mockParams = shaped([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+    const { innerW, innerD } = cutoutInterior(mockParams);
+    const { result } = renderHook(() => useScanImport());
+    result.current.addScanCutouts([spec({ width: 10, depth: 10 })]);
+
+    const added = mockAddCutout.mock.calls[0][0];
+    expect(added.x).toBeCloseTo((innerW - 10) / 2);
+    expect(added.y).toBeCloseTo((innerD - 10) / 2);
+  });
+
   it('commits the transaction even if an addition throws', () => {
     mockAddCutout.mockImplementationOnce(() => {
       throw new Error('boom');
