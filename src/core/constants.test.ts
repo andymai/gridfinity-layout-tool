@@ -735,6 +735,8 @@ describe('migrateBaseplateParams', () => {
       headDiameter: 5.5,
       counterboreDepth: 3,
       screwsPerPiece: 6,
+      edgeInsetCells: 1,
+      cellCorner: 'inner',
     };
     expect(migrateBaseplateParams({ ...currentShapeBase, screwHoles: full }).screwHoles).toEqual(
       full
@@ -757,6 +759,8 @@ describe('migrateBaseplateParams', () => {
         headStyle: 'counterbore',
         counterboreDepth: 99,
         screwsPerPiece: 0,
+        edgeInsetCells: 99,
+        cellCorner: 'diagonal',
       },
     });
     expect(result.screwHoles).toEqual({
@@ -765,6 +769,7 @@ describe('migrateBaseplateParams', () => {
       headStyle: 'counterbore',
       counterboreDepth: 6,
       screwsPerPiece: 1,
+      edgeInsetCells: 4,
     });
     expect(
       migrateBaseplateParams({

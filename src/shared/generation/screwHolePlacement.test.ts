@@ -9,7 +9,9 @@ import {
   resolveScrewHoles,
   screwAwareHoleRadius,
   screwFloorCandidates,
+  screwInsetCellFilter,
   screwPlacementFor,
+  type ScrewFloorCandidate,
 } from './screwHolePlacement';
 import { planPieceScrews } from './screwHolePlan';
 
@@ -62,14 +64,50 @@ describe('screwFloorCandidates', () => {
     expect(found).toHaveLength(4);
     expect(found.every(([x]) => x < 0)).toBe(true);
   });
+
+  it('carries the centre of the cell each position sits in', () => {
+    const found = screwFloorCandidates(2, 1, 4, { ...cellOpts });
+    expect(found.every(([x, , cx]) => Math.abs(x - cx) === HOLE_OFFSET)).toBe(true);
+    expect(new Set(found.map(([, , cx, cy]) => `${cx},${cy}`))).toEqual(new Set(['-21,0', '21,0']));
+  });
+});
+
+describe('screwInsetCellFilter', () => {
+  const cellOpts = { gridUnitMm: 42, fractionalEdgeX: 'end', fractionalEdgeY: 'end' } as const;
+  const pitch = { x: 42, y: 42 };
+
+  it('is absent without an inset', () => {
+    expect(screwInsetCellFilter(0, 5, 5, pitch)).toBeUndefined();
+  });
+
+  it('keeps only the cells clear of the outer rings', () => {
+    const filter = screwInsetCellFilter(1, 5, 5, pitch);
+    const centres = new Set(
+      screwFloorCandidates(5, 5, 4, { ...cellOpts }, filter).map(([, , cx, cy]) => `${cx},${cy}`)
+    );
+    expect(centres.size).toBe(9);
+    expect([...centres].every((c) => c.split(',').every((v) => Math.abs(Number(v)) <= 42))).toBe(
+      true
+    );
+    expect(
+      screwFloorCandidates(5, 5, 4, { ...cellOpts }, screwInsetCellFilter(2, 5, 5, pitch))
+    ).toHaveLength(4);
+  });
+
+  it('measures the inset in grid units, so a half cell at the edge counts toward it', () => {
+    // 2.5 wide: a half cell at the end, then two full cells. One unit of inset
+    // removes the half cell and the full cell at the start.
+    const filter = screwInsetCellFilter(1, 2.5, 3, pitch);
+    expect(screwFloorCandidates(2.5, 3, 4, { ...cellOpts }, filter)).toHaveLength(0);
+  });
 });
 
 describe('resolveScrewHoles', () => {
-  const candidates: Array<readonly [number, number]> = [
-    [-13, -13],
-    [13, -13],
-    [13, 13],
-    [-13, 13],
+  const candidates: ScrewFloorCandidate[] = [
+    [-13, -13, 0, 0],
+    [13, -13, 0, 0],
+    [13, 13, 0, 0],
+    [-13, 13, 0, 0],
   ];
 
   it('passes a margin slot through at its exact centre', () => {
@@ -109,7 +147,7 @@ describe('resolveScrewHoles', () => {
         { anchor: 'bl', site: 'floor', target: [-42, -42] },
         { anchor: 'br', site: 'floor', target: [42, -42] },
       ],
-      [[0, 0]]
+      [[0, 0, 0, 0]]
     );
     expect(holes).toHaveLength(1);
     expect(holes[0]).toEqual({ x: 0, y: 0, site: 'floor' });
@@ -128,6 +166,20 @@ describe('resolveScrewHoles', () => {
 
   it('returns nothing for an empty plan', () => {
     expect(resolveScrewHoles([], candidates)).toEqual([]);
+  });
+
+  it('takes the opposite corner of the same cell for an inner snap (#4764)', () => {
+    const holes = resolveScrewHoles(
+      [
+        { anchor: 'bl', site: 'floor', target: [-42, -42] },
+        { anchor: 'tr', site: 'floor', target: [42, 42] },
+        { anchor: 'br', site: 'floor', target: [42, -42] },
+        { anchor: 'tl', site: 'floor', target: [-42, 42] },
+      ],
+      candidates,
+      'inner'
+    );
+    expect(holes.map((h) => `${h.x},${h.y}`)).toEqual(['13,13', '-13,-13', '-13,13', '13,-13']);
   });
 
   it('passes a junction slot through at the junction, with its head seat', () => {
@@ -206,6 +258,64 @@ describe('planBaseplateScrewHoles through screwPlacementFor', () => {
       seatsOf(plate(magnets))
     );
   });
+
+  describe('edge inset and cell corner (#4764)', () => {
+    const at = (params: ResolvedBaseplateParams): string[] =>
+      holesOf(params).map((h) => `${h.site}:${h.x},${h.y}`);
+
+    it('moves junction screws off the crossings that touch the outer ring', () => {
+      expect(at(plate({ screwHoles: { ...M3_FLAT, edgeInsetCells: 1 } }))).toEqual([
+        'junction:-21,-21',
+        'junction:21,21',
+        'junction:21,-21',
+        'junction:-21,21',
+      ]);
+    });
+
+    it('snaps a floor screw to the outer corner of the first cell inside the inset', () => {
+      // Without the inset the screw sits in the outer corner of the corner cell,
+      // 8mm from the plate edge, where a drawer lip covers it.
+      expect(at(plate({ screwHoles: COUNTERSINK }))[0]).toBe('floor:-97,-97');
+      expect(at(plate({ screwHoles: { ...COUNTERSINK, edgeInsetCells: 1 } }))[0]).toBe(
+        'floor:-55,-55'
+      );
+    });
+
+    it('snaps a floor screw to the inner corner of its cell', () => {
+      expect(at(plate({ screwHoles: { ...COUNTERSINK, cellCorner: 'inner' } }))[0]).toBe(
+        'floor:-71,-71'
+      );
+      expect(
+        at(plate({ screwHoles: { ...COUNTERSINK, edgeInsetCells: 1, cellCorner: 'inner' } }))[0]
+      ).toBe('floor:-29,-29');
+    });
+
+    it('keeps screws out of the padding, which sits under the lip', () => {
+      const padded = { paddingLeft: 14, paddingRight: 14, paddingFront: 14, paddingBack: 14 };
+      expect(
+        holesOf(plate({ ...padded, screwHoles: COUNTERSINK })).every((h) => h.site === 'margin')
+      ).toBe(true);
+      const inset = holesOf(
+        plate({ ...padded, screwHoles: { ...COUNTERSINK, edgeInsetCells: 1 } })
+      );
+      expect(inset).toHaveLength(4);
+      expect(inset.some((h) => h.site === 'margin')).toBe(false);
+    });
+
+    it('gives no screws, and so no pad, to a piece too small for the inset', () => {
+      const params = plate({ width: 2, screwHoles: { ...COUNTERSINK, edgeInsetCells: 1 } });
+      expect(holesOf(params)).toEqual([]);
+      expect(pieceScrewsNeedPad(params)).toBe(false);
+    });
+
+    it('needs the pad once the inset sends a margin screw to the floor', () => {
+      const padded = { paddingLeft: 14, paddingRight: 14, paddingFront: 14, paddingBack: 14 };
+      expect(pieceScrewsNeedPad(plate({ ...padded, screwHoles: COUNTERSINK }))).toBe(false);
+      expect(
+        pieceScrewsNeedPad(plate({ ...padded, screwHoles: { ...COUNTERSINK, edgeInsetCells: 1 } }))
+      ).toBe(true);
+    });
+  });
 });
 
 describe('pieceScrewsNeedPad', () => {
@@ -280,8 +390,13 @@ describe('resolveScrewHoles half-turn symmetry (#3698)', () => {
    * plumbing: an unpadded piece, so every anchor is floor-sited and every screw
    * goes through the snap this fix governs.
    */
-  function holesFor(gridW: number, gridD: number, screwsPerPiece: number) {
-    const params: ScrewHoleParams = { ...COUNTERSINK, screwsPerPiece };
+  function holesFor(
+    gridW: number,
+    gridD: number,
+    screwsPerPiece: number,
+    placement: Pick<ScrewHoleParams, 'edgeInsetCells' | 'cellCorner'> = {}
+  ) {
+    const params: ScrewHoleParams = { ...COUNTERSINK, screwsPerPiece, ...placement };
     return resolveScrewHoles(
       planPieceScrews(params, {
         widthMm: gridW * 42,
@@ -289,7 +404,14 @@ describe('resolveScrewHoles half-turn symmetry (#3698)', () => {
         bands: NO_BANDS,
         floorPadProvisioned: true,
       }),
-      screwFloorCandidates(gridW, gridD, screwAwareHoleRadius(6.5 / 2, params), { ...CELL_OPTS })
+      screwFloorCandidates(
+        gridW,
+        gridD,
+        screwAwareHoleRadius(6.5 / 2, params),
+        { ...CELL_OPTS },
+        screwInsetCellFilter(params.edgeInsetCells ?? 0, gridW, gridD, { x: 42, y: 42 })
+      ),
+      params.cellCorner
     );
   }
 
@@ -343,13 +465,31 @@ describe('resolveScrewHoles half-turn symmetry (#3698)', () => {
     expect(isHalfTurnInvariant(holesFor(6, 6, 6))).toBe(true);
   });
 
+  it('holds with an edge inset and an inner corner (#4764)', () => {
+    for (const placement of [
+      { edgeInsetCells: 1 },
+      { cellCorner: 'inner' as const },
+      { edgeInsetCells: 1, cellCorner: 'inner' as const },
+    ]) {
+      for (const [w, d] of [
+        [6, 6],
+        [5, 5],
+        [7, 4],
+      ]) {
+        const holes = holesFor(w, d, 8, placement);
+        expect(holes).toHaveLength(8);
+        expect(isHalfTurnInvariant(holes)).toBe(true);
+      }
+    }
+  });
+
   it('still resolves nearest first, so a lean never beats a closer candidate', () => {
     // Candidate order puts the tie-preferred but distant point first.
     const holes = resolveScrewHoles(
       [{ anchor: 'b', site: 'floor', target: [0, -42] }],
       [
-        [-40, -13],
-        [-13, -29],
+        [-40, -13, -21, -21],
+        [-13, -29, -21, -21],
       ]
     );
     expect(holes).toEqual([{ x: -13, y: -29, site: 'floor' }]);

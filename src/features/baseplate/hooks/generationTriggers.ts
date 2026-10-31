@@ -166,6 +166,8 @@ export function selectGenerationTriggers(state: LayoutState) {
         ? bp.screwHoles.counterboreDepth
         : undefined,
     screwsPerPiece: screwsOn ? bp.screwHoles.screwsPerPiece : undefined,
+    screwEdgeInsetCells: screwsOn ? bp.screwHoles.edgeInsetCells : undefined,
+    screwCellCorner: screwsOn ? bp.screwHoles.cellCorner : undefined,
     mountMagnetsEnabled: mountMagnetsOn,
     mountMagnetDiameter: mountMagnetsOn ? bp.mountMagnets.diameter : undefined,
     mountMagnetDepth: mountMagnetsOn ? bp.mountMagnets.depth : undefined,

@@ -288,6 +288,15 @@ describe('planPieceScrews', () => {
     expect(slots.map((s) => s.anchor)).toEqual(['bl', 'tr', 'br', 'tl']);
   });
 
+  it('keeps every screw out of the margin under an edge inset (#4764)', () => {
+    const slots = planPieceScrews(
+      { ...COUNTERSINK, edgeInsetCells: 1 },
+      piece({ bands: { left: 12, right: 12, front: 12, back: 12 } })
+    );
+    expect(slots).toHaveLength(4);
+    expect(slots.every((s) => s.site === 'floor')).toBe(true);
+  });
+
   it('falls back to the floor when no band can host the head', () => {
     const slots = planPieceScrews(COUNTERSINK, piece());
     expect(slots).toHaveLength(4);

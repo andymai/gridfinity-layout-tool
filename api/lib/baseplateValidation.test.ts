@@ -174,6 +174,8 @@ describe('validateBaseplateShare', () => {
       headDiameter: 8,
       counterboreDepth: 3,
       screwsPerPiece: 4,
+      edgeInsetCells: 1,
+      cellCorner: 'inner',
     };
 
     it('accepts a fully specified object and preserves it through the allowlist', () => {
@@ -285,6 +287,17 @@ describe('validateBaseplateShare', () => {
       ).toBe(false);
       expect(
         validate({ ...validParams, screwHoles: { ...screwHoles, screwsPerPiece: '4' } }).valid
+      ).toBe(false);
+    });
+
+    it('rejects a fractional or out-of-range edge inset, and an unknown cell corner', () => {
+      for (const edgeInsetCells of [0.5, -1, 5, '1']) {
+        expect(
+          validate({ ...validParams, screwHoles: { ...screwHoles, edgeInsetCells } }).valid
+        ).toBe(false);
+      }
+      expect(
+        validate({ ...validParams, screwHoles: { ...screwHoles, cellCorner: 'diagonal' } }).valid
       ).toBe(false);
     });
   });

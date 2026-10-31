@@ -24,6 +24,9 @@ import {
   SCREWS_PER_PIECE_DEFAULT,
   SCREWS_PER_PIECE_MIN,
   SCREWS_PER_PIECE_MAX,
+  SCREW_EDGE_INSET_CELLS_DEFAULT,
+  SCREW_EDGE_INSET_CELLS_MIN,
+  SCREW_EDGE_INSET_CELLS_MAX,
   MOUNT_MAGNET_DEFAULT_DIAMETER_MM,
   MOUNT_MAGNET_DEFAULT_DEPTH_MM,
   MOUNT_MAGNET_MIN_DIAMETER_MM,
@@ -40,6 +43,7 @@ import {
   resolveScrewHeadDiameter,
 } from '@/shared/generation/screwHolePlan';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { trackEvent } from '@/shared/analytics/posthog';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
@@ -56,7 +60,12 @@ import { maxCornerRadiusMm } from '../../utils/buildFullParams';
 import { maxMountMagnetDepthForPlate } from '../../utils/mountMagnetFit';
 import { snapClipFitsPlate } from '../../utils/snapClipFit';
 import { usePlateScrewPadMm } from '../../hooks/usePlateScrewPadMm';
-import type { MountMagnetParams, ScrewHeadStyle, ScrewHoleParams } from '@/core/types';
+import type {
+  MountMagnetParams,
+  ScrewCellCorner,
+  ScrewHeadStyle,
+  ScrewHoleParams,
+} from '@/core/types';
 import { Stepper } from '@/design-system/Stepper';
 import {
   CONNECTOR_FIT_OFFSET_MIN,
@@ -449,6 +458,42 @@ export function BaseSection() {
                     step={1}
                     info={t('baseplate.screwHoles.perPiece.info')}
                   />
+                  <SliderInput
+                    label={t('baseplate.screwHoles.edgeInset.label')}
+                    value={screwHoles?.edgeInsetCells ?? SCREW_EDGE_INSET_CELLS_DEFAULT}
+                    onChange={(v) => {
+                      updateScrewHoles({ edgeInsetCells: v });
+                      trackEvent('baseplate_screw_placement_changed', {
+                        setting: 'edge_inset',
+                        value: v,
+                      });
+                    }}
+                    min={SCREW_EDGE_INSET_CELLS_MIN}
+                    max={SCREW_EDGE_INSET_CELLS_MAX}
+                    step={1}
+                    info={t('baseplate.screwHoles.edgeInset.info')}
+                  />
+                  <SettingsRow
+                    label={t('baseplate.screwHoles.cellCorner.label')}
+                    tooltip={t('baseplate.screwHoles.cellCorner.info')}
+                  >
+                    <SegmentedControl<ScrewCellCorner>
+                      aria-label={t('baseplate.screwHoles.cellCorner.label')}
+                      size="sm"
+                      options={[
+                        { value: 'outer', label: t('baseplate.screwHoles.cellCorner.outer') },
+                        { value: 'inner', label: t('baseplate.screwHoles.cellCorner.inner') },
+                      ]}
+                      value={screwHoles?.cellCorner ?? 'outer'}
+                      onChange={(cellCorner) => {
+                        updateScrewHoles({ cellCorner });
+                        trackEvent('baseplate_screw_placement_changed', {
+                          setting: 'cell_corner',
+                          value: cellCorner,
+                        });
+                      }}
+                    />
+                  </SettingsRow>
                 </FeatureToggle>
               </div>
             )}

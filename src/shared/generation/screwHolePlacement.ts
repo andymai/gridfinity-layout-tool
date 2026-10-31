@@ -14,7 +14,7 @@
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import { SCREW_PAD_MIN_RETAIN_MM } from '@/core/baseplateDefaults';
-import type { ScrewHoleParams } from '@/core/types/baseplate';
+import type { ScrewCellCorner, ScrewHoleParams } from '@/core/types/baseplate';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { baseplateFloorDepthBeforeScrews } from '@/shared/printSettings/baseplateHeight';
 import { plateProfileHeightMm, socketHeightMm } from '@/shared/printSettings/gridfinityGeometry';
@@ -49,6 +49,13 @@ export interface ResolvedScrewHole {
 }
 
 /**
+ * A floor position and the centre of the cell it sits in. Every cell's magnet
+ * set is point-symmetric about that centre, so reflecting through it always
+ * lands on another candidate of the same cell.
+ */
+export type ScrewFloorCandidate = readonly [x: number, y: number, cellX: number, cellY: number];
+
+/**
  * Candidate floor positions for a piece: every magnet position on a full cell.
  *
  * Sized with the LARGEST cutter that will sit at the position, per
@@ -68,16 +75,18 @@ export function screwFloorCandidates(
   cellOpts: ForEachCellOptions & { gridUnitMm: GridUnitInput },
   cellFilter?: (cell: CellInfo) => boolean,
   anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
-): Array<readonly [number, number]> {
+): ScrewFloorCandidate[] {
   const { x: pitchX, y: pitchY } = resolvePitch(cellOpts.gridUnitMm);
-  const out: Array<readonly [number, number]> = [];
+  const out: ScrewFloorCandidate[] = [];
   forEachCell(
     gridW,
     gridD,
     (cell) => {
       if (!cellHostsAttachmentHoles(cell, holeRadius, pitchX, pitchY)) return;
       if (cellFilter !== undefined && !cellFilter(cell)) return;
-      out.push(...magnetPositionsForCell(cell, holeRadius, pitchX, pitchY, anchor));
+      for (const [x, y] of magnetPositionsForCell(cell, holeRadius, pitchX, pitchY, anchor)) {
+        out.push([x, y, cell.centerX, cell.centerY]);
+      }
     },
     cellOpts
   );
@@ -95,10 +104,17 @@ export function screwFloorCandidates(
  * Candidates are consumed as they are taken. Without that, every anchor on a
  * piece small enough to offer one magnet position would snap to the SAME point
  * and stack coincident holes there; a slot with nothing left is dropped.
+ *
+ * `'inner'` snaps on each candidate's reflection through its cell centre and
+ * takes the candidate itself, so a slot gets the position opposite the one
+ * `'outer'` would pick, in the same cell. Done this way rather than as a second
+ * hop from the outer pick, it consumes candidates exactly as `'outer'` does and
+ * keeps the half-turn symmetry, since the reflection commutes with the turn.
  */
 export function resolveScrewHoles(
   slots: readonly ScrewSlot[],
-  candidates: ReadonlyArray<readonly [number, number]>
+  candidates: readonly ScrewFloorCandidate[],
+  cellCorner: ScrewCellCorner = 'outer'
 ): ResolvedScrewHole[] {
   const available = [...candidates];
   const holes: ResolvedScrewHole[] = [];
@@ -118,7 +134,13 @@ export function resolveScrewHoles(
       continue;
     }
 
-    const bestIndex = nearestWithLean(slot.target, screwSnapPreference(slot.anchor), available);
+    const bestIndex = nearestWithLean(
+      slot.target,
+      screwSnapPreference(slot.anchor),
+      available.map(([x, y, cx, cy]) =>
+        cellCorner === 'inner' ? ([2 * cx - x, 2 * cy - y] as const) : ([x, y] as const)
+      )
+    );
     if (bestIndex < 0) continue;
 
     const [x, y] = available[bestIndex];
@@ -148,7 +170,10 @@ export interface ScrewPlacementInput {
   readonly cellOpts: ForEachCellOptions;
   readonly magnetRadius: number;
   readonly magnetAnchor?: MagnetAnchor;
-  /** Restricts floor candidates to the cells a shaped plate actually keeps. */
+  /**
+   * Restricts floor candidates and junctions to the cells a shaped plate
+   * actually keeps and the edge inset allows.
+   */
   readonly cellFilter?: (cell: CellInfo) => boolean;
   /** Junctions whose post holds the head; see {@link screwPlacementFor}. */
   readonly junctions?: readonly ScrewJunctionSite[];
@@ -169,6 +194,33 @@ export function screwAwareHoleRadius(
   if (screwParams === undefined || !screwParams.enabled) return magnetRadius;
   const headRadius = resolveScrewHeadDiameter(screwParams.headStyle, screwParams.headDiameter) / 2;
   return Math.max(magnetRadius, headRadius);
+}
+
+/** Slack so a cell exactly on the inset boundary counts as inside it. */
+const INSET_EPSILON_MM = 1e-6;
+
+/**
+ * Cells lying wholly `insetCells` grid units or more inside every edge of a
+ * piece's grid, or undefined when there is no inset. Measured from the grid,
+ * not the padded footprint: the inset counts cells, and padding holds none.
+ *
+ * Junctions go through the same filter, and one survives only when all four of
+ * its cells do, so a junction on the inset boundary is dropped with the ring it
+ * touches. The test is symmetric about the grid centre, which is what keeps it
+ * invariant under the half-turn a rotated identical piece is built with.
+ */
+export function screwInsetCellFilter(
+  insetCells: number,
+  gridW: number,
+  gridD: number,
+  pitch: GridPitch
+): ((cell: CellInfo) => boolean) | undefined {
+  if (insetCells <= 0) return undefined;
+  const limitX = (gridW / 2 - insetCells) * pitch.x + INSET_EPSILON_MM;
+  const limitY = (gridD / 2 - insetCells) * pitch.y + INSET_EPSILON_MM;
+  return (cell) =>
+    Math.abs(cell.centerX) + (cell.widthUnits * pitch.x) / 2 <= limitX &&
+    Math.abs(cell.centerY) + (cell.depthUnits * pitch.y) / 2 <= limitY;
 }
 
 /**
@@ -195,10 +247,20 @@ export function screwPlacementFor(
   };
   const { widthMm, depthMm } = plateFootprintMm(params);
   const classify = baseplateCellClassifier(params);
-  const cellFilter =
+  const outlineFilter =
     params.outline !== undefined
       ? (cell: CellInfo): boolean => classify(cell) === 'inside'
       : undefined;
+  const insetFilter = screwInsetCellFilter(
+    screwParams.edgeInsetCells ?? 0,
+    params.width,
+    params.depth,
+    pitch
+  );
+  const cellFilter =
+    outlineFilter !== undefined && insetFilter !== undefined
+      ? (cell: CellInfo): boolean => outlineFilter(cell) && insetFilter(cell)
+      : (outlineFilter ?? insetFilter);
   const profileHeight = plateProfileHeightMm(params.lowProfileBase);
   const floorBeforeScrews = baseplateFloorDepthBeforeScrews(params);
   const reliefRadius = screwAwareHoleRadius(params.magnetDiameter / 2, screwParams);
@@ -259,7 +321,8 @@ export function planBaseplateScrewHoles(
       { ...input.cellOpts, gridUnitMm: input.pitch },
       input.cellFilter,
       input.magnetAnchor
-    )
+    ),
+    screwParams.cellCorner
   );
 }
 

@@ -194,6 +194,8 @@ export const SCREW_HOLES_KEYS = [
   'headDiameter',
   'counterboreDepth',
   'screwsPerPiece',
+  'edgeInsetCells',
+  'cellCorner',
 ] as const;
 export type _ScrewHolesKeys = Assert<
   KeysMatch<keyof ScrewHoleParams, (typeof SCREW_HOLES_KEYS)[number]>

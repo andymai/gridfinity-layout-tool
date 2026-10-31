@@ -430,14 +430,16 @@ the override is dropped and the automatic plan is used instead, silently.
 
 <!-- generated:start -->
 
-| Field              | Type                               | Required | Default | Constraint  | Notes                                                                            |
-| ------------------ | ---------------------------------- | -------- | ------- | ----------- | -------------------------------------------------------------------------------- |
-| `enabled`          | `boolean`                          | yes      |         |             | Cut screw holes.                                                                 |
-| `diameter`         | `number`                           |          |         | >= 2, <= 8  | Screw shaft hole diameter in mm.                                                 |
-| `headStyle`        | `"countersink"` \| `"counterbore"` |          |         |             | Head recess style.                                                               |
-| `headDiameter`     | `number`                           |          |         | >= 3, <= 16 | Head recess diameter in mm. Absent means 8 for countersink, 5.5 for counterbore. |
-| `counterboreDepth` | `number`                           |          |         | >= 0, <= 6  | Counterbore depth in mm. Only meaningful for headStyle 'counterbore'.            |
-| `screwsPerPiece`   | `integer`                          |          |         | >= 1, <= 8  | How many screw holes each split piece gets.                                      |
+| Field              | Type                               | Required | Default | Constraint  | Notes                                                                                                                                              |
+| ------------------ | ---------------------------------- | -------- | ------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`          | `boolean`                          | yes      |         |             | Cut screw holes.                                                                                                                                   |
+| `diameter`         | `number`                           |          |         | >= 2, <= 8  | Screw shaft hole diameter in mm.                                                                                                                   |
+| `headStyle`        | `"countersink"` \| `"counterbore"` |          |         |             | Head recess style.                                                                                                                                 |
+| `headDiameter`     | `number`                           |          |         | >= 3, <= 16 | Head recess diameter in mm. Absent means 8 for countersink, 5.5 for counterbore.                                                                   |
+| `counterboreDepth` | `number`                           |          |         | >= 0, <= 6  | Counterbore depth in mm. Only meaningful for headStyle 'counterbore'.                                                                              |
+| `screwsPerPiece`   | `integer`                          |          |         | >= 1, <= 8  | How many screw holes each split piece gets.                                                                                                        |
+| `edgeInsetCells`   | `integer`                          |          |         | >= 0, <= 4  | Grid units kept free of screws along every edge of each piece, for a drawer lip. Above 0 it also rules out screws in the padding. Absent means 0.  |
+| `cellCorner`       | `"outer"` \| `"inner"`             |          |         |             | Which magnet position in its cell a pocket-floor screw takes: the one toward the piece edge, or the one diagonally opposite. Absent means 'outer'. |
 
 <!-- generated:end -->
 

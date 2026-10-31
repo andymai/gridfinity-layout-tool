@@ -80,7 +80,8 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
       ? [
           `sc:${params.screwHoles.diameter},${params.screwHoles.headStyle},` +
             `${params.screwHoles.headDiameter ?? ''},${params.screwHoles.counterboreDepth ?? ''},` +
-            `${params.screwHoles.screwsPerPiece ?? ''}`,
+            `${params.screwHoles.screwsPerPiece ?? ''},` +
+            `${params.screwHoles.edgeInsetCells ?? ''},${params.screwHoles.cellCorner ?? ''}`,
           `sp:${params.screwPadThicknessMm ?? 0}`,
         ]
       : []),

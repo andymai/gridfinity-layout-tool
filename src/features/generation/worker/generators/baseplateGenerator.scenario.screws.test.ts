@@ -434,3 +434,50 @@ describe('screw hole placement symmetry (#3698)', () => {
     expect(diverged).toEqual([]);
   });
 });
+
+describe('screw edge inset and inner cell corner (#4764)', () => {
+  const INSET: ScrewHoleParams = { ...SCREWS, edgeInsetCells: 1, cellCorner: 'inner' };
+  const FOUR_BY_FOUR = defaults({
+    width: 4,
+    depth: 4,
+    screwHoles: INSET,
+    screwPadThicknessMm: screwPadThicknessMm(INSET, 0),
+  });
+
+  function plate(draft: boolean): MeshData {
+    return getGenerateBaseplate()(FOUR_BY_FOUR, NO_OP, !draft, undefined, draft);
+  }
+
+  it('drills the inner corners of the cells inside the inset', () => {
+    const holes = planBaseplateScrewHoles(
+      INSET,
+      FOUR_BY_FOUR,
+      screwPlacementFor(INSET, FOUR_BY_FOUR)
+    );
+    const inner = 21 - HOLE_OFFSET;
+    expect(holes.map((h) => `${h.site}:${h.x},${h.y}`)).toEqual([
+      `floor:${-inner},${-inner}`,
+      `floor:${inner},${inner}`,
+      `floor:${inner},${-inner}`,
+      `floor:${-inner},${inner}`,
+    ]);
+
+    const mesh = plate(false);
+    assertStructurallyValid(mesh);
+    for (const h of holes) expect(verticalSolidSpans(mesh, h.x, h.y)).toEqual([]);
+  });
+
+  it('leaves the outer ring open and floors the screw cells, in export and draft alike', () => {
+    for (const mesh of [plate(false), plate(true)]) {
+      // A sibling magnet position of each cell says whether it kept a floor.
+      expect(verticalSolidSpans(mesh, -63 - HOLE_OFFSET, -63 - HOLE_OFFSET)).toEqual([]);
+      expect(verticalSolidSpans(mesh, 63 + HOLE_OFFSET, -21 - HOLE_OFFSET)).toEqual([]);
+      expect(verticalSolidSpans(mesh, -21 - HOLE_OFFSET, -21 - HOLE_OFFSET).length).toBeGreaterThan(
+        0
+      );
+      expect(verticalSolidSpans(mesh, 21 + HOLE_OFFSET, 21 + HOLE_OFFSET).length).toBeGreaterThan(
+        0
+      );
+    }
+  });
+});

@@ -42,6 +42,7 @@ const MIN_SCREW_HEAD_DIAMETER_MM = 3;
 const MAX_SCREW_HEAD_DIAMETER_MM = 16;
 const MIN_SCREWS_PER_PIECE = 1;
 const MAX_SCREWS_PER_PIECE = 8;
+const MAX_SCREW_EDGE_INSET_CELLS = 4;
 /**
  * The counterbore pocket IS the head recess, and a floor-sited screw grows the
  * plate's slab by that recess plus its retaining floor, so an unbounded depth is
@@ -71,6 +72,7 @@ const ALLOWED_MOUNT_MAGNET_KEYS = new Set<string>([
 ]);
 
 const VALID_SCREW_HEAD_STYLES = ['countersink', 'counterbore'] as const;
+const VALID_SCREW_CELL_CORNERS = ['outer', 'inner'] as const;
 
 /**
  * Keys allowed inside `screwHoles`. The nested object is closed rather than
@@ -84,6 +86,8 @@ const ALLOWED_SCREW_HOLE_KEYS = new Set<string>([
   'headDiameter',
   'counterboreDepth',
   'screwsPerPiece',
+  'edgeInsetCells',
+  'cellCorner',
 ]);
 
 /**
@@ -433,6 +437,29 @@ export function validateBaseplateShare(
       return validationError(
         'INVALID_PARAMS',
         `screwHoles.screwsPerPiece must be a whole number ${MIN_SCREWS_PER_PIECE}-${MAX_SCREWS_PER_PIECE}`
+      );
+    }
+    if (
+      screwHoles.edgeInsetCells !== undefined &&
+      (!isNumber(screwHoles.edgeInsetCells) ||
+        !Number.isInteger(screwHoles.edgeInsetCells) ||
+        !inRange(screwHoles.edgeInsetCells, 0, MAX_SCREW_EDGE_INSET_CELLS))
+    ) {
+      return validationError(
+        'INVALID_PARAMS',
+        `screwHoles.edgeInsetCells must be a whole number 0-${MAX_SCREW_EDGE_INSET_CELLS}`
+      );
+    }
+    if (
+      screwHoles.cellCorner !== undefined &&
+      (!isString(screwHoles.cellCorner) ||
+        !VALID_SCREW_CELL_CORNERS.includes(
+          screwHoles.cellCorner as (typeof VALID_SCREW_CELL_CORNERS)[number]
+        ))
+    ) {
+      return validationError(
+        'INVALID_PARAMS',
+        `screwHoles.cellCorner must be one of: ${VALID_SCREW_CELL_CORNERS.join(', ')}`
       );
     }
   }

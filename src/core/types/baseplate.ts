@@ -89,6 +89,14 @@ export interface SplitOverride {
 export type ScrewHeadStyle = 'countersink' | 'counterbore';
 
 /**
+ * Which magnet position in a cell a floor screw takes: the one toward the
+ * piece's edge, or the one diagonally opposite it in the same cell. Relative to
+ * the anchor, not the compass, so the choice survives the half-turn
+ * `preferIdenticalPieces` applies.
+ */
+export type ScrewCellCorner = 'outer' | 'inner';
+
+/**
  * Mount-down screw holes: vertical through-holes that fasten a plate to
  * a drawer bottom, bench or wall. Distinct from the bin's `base.style: 'screw'`
  * (which anchors a BIN to a plate) and from the split-piece connectors (which
@@ -127,6 +135,14 @@ export interface ScrewHoleParams {
   readonly counterboreDepth?: Mm;
   /** Holes per split piece. Absent ⇒ `SCREWS_PER_PIECE_DEFAULT`. */
   readonly screwsPerPiece?: number;
+  /**
+   * Grid units kept free of screws along every edge of each piece, for a drawer
+   * whose lip covers the outer ring. Above 0 it also rules out the margin, which
+   * sits under that lip. Absent ⇒ 0.
+   */
+  readonly edgeInsetCells?: number;
+  /** Floor screws only. Absent ⇒ `'outer'`. */
+  readonly cellCorner?: ScrewCellCorner;
 }
 
 /**

@@ -1047,6 +1047,20 @@
             "maximum": "SCREWS_PER_PIECE_MAX"
           },
           "description": "How many screw holes each split piece gets."
+        },
+        "edgeInsetCells": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "x-constant": {
+            "minimum": "SCREW_EDGE_INSET_CELLS_MIN",
+            "maximum": "SCREW_EDGE_INSET_CELLS_MAX"
+          },
+          "description": "Grid units kept free of screws along every edge of each piece, for a drawer lip. Above 0 it also rules out screws in the padding. Absent means 0."
+        },
+        "cellCorner": {
+          "enum": ["outer", "inner"],
+          "description": "Which magnet position in its cell a pocket-floor screw takes: the one toward the piece edge, or the one diagonally opposite. Absent means 'outer'."
         }
       }
     },

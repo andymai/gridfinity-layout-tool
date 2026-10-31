@@ -21,6 +21,8 @@ import {
   SCREW_COUNTERBORE_MAX_DEPTH_MM,
   SCREWS_PER_PIECE_MIN,
   SCREWS_PER_PIECE_MAX,
+  SCREW_EDGE_INSET_CELLS_MIN,
+  SCREW_EDGE_INSET_CELLS_MAX,
   MOUNT_MAGNET_MIN_DIAMETER_MM,
   MOUNT_MAGNET_MAX_DIAMETER_MM,
   MOUNT_MAGNET_MIN_DEPTH_MM,
@@ -365,6 +367,13 @@ const baseplateParamsSchema = z.object({
         .min(SCREWS_PER_PIECE_MIN)
         .max(SCREWS_PER_PIECE_MAX)
         .optional(),
+      edgeInsetCells: z
+        .number()
+        .int()
+        .min(SCREW_EDGE_INSET_CELLS_MIN)
+        .max(SCREW_EDGE_INSET_CELLS_MAX)
+        .optional(),
+      cellCorner: z.enum(['outer', 'inner']).optional(),
     })
     .optional(),
   mountMagnets: z

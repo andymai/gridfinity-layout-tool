@@ -4406,6 +4406,14 @@ const en: Record<string, string> = {
   'baseplate.screwHoles.perPiece.label': 'Screws per piece',
   'baseplate.screwHoles.perPiece.info':
     'Holes placed in every split piece, so no printed piece is left unfastened. Four fill the corners; higher counts add the edge midpoints.',
+  'baseplate.screwHoles.edgeInset.label': 'Edge inset',
+  'baseplate.screwHoles.edgeInset.info':
+    'Grid units along each piece edge that get no screws. Set 1 to keep screws clear of a drawer lip. Above 0, no screw goes in the padding, so a screw can move to the pocket floor and make the plate slightly taller. A piece too small for the inset gets no screws.',
+  'baseplate.screwHoles.cellCorner.label': 'Corner in cell',
+  'baseplate.screwHoles.cellCorner.info':
+    'Which corner of its cell a pocket-floor screw uses. Inner puts the screw in the opposite corner of the same cell, away from the piece edge.',
+  'baseplate.screwHoles.cellCorner.outer': 'Outer',
+  'baseplate.screwHoles.cellCorner.inner': 'Inner',
   'baseplate.mountMagnets.label': 'Underside magnets',
   'baseplate.mountMagnets.summary': 'ø{diameter} × {depth}mm, {count} per piece',
   'baseplate.mountMagnets.info':

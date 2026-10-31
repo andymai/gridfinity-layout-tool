@@ -9,6 +9,7 @@ import type { BaseplatePiece } from '../../types/tiling';
 import type { ScrewHeadStyle } from '@/core/types';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { resetAllStores } from '@/test/testUtils';
+import { trackEvent } from '@/shared/analytics/posthog';
 
 /** Minimal exterior-front/back, join-shared-edge piece for a 2-col split row. */
 function makePiece(
@@ -32,6 +33,10 @@ function makePiece(
 }
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
+vi.mock(import('@/shared/analytics/posthog'), async (importOriginal) => ({
+  ...(await importOriginal()),
+  trackEvent: vi.fn(),
+}));
 
 describe('BaseSection', () => {
   beforeEach(() => {
@@ -236,6 +241,22 @@ describe('BaseSection', () => {
       expect(
         screen.getByText(/ø6\.5mm × 2mm · baseplate\.screwHoles\.summary/)
       ).toBeInTheDocument();
+    });
+
+    it('writes the inner cell corner through to the layout store (#4764)', () => {
+      enableScrews('countersink');
+      render(<BaseSection />);
+      fireEvent.click(
+        screen.getByRole('radio', { name: 'baseplate.screwHoles.cellCorner.inner', hidden: true })
+      );
+      expect(useLayoutStore.getState().layout.baseplateParams?.screwHoles?.cellCorner).toBe(
+        'inner'
+      );
+      expect(trackEvent).toHaveBeenCalledWith('baseplate_screw_placement_changed', {
+        setting: 'cell_corner',
+        value: 'inner',
+      });
+      expect(screen.getByText('baseplate.screwHoles.edgeInset.label')).toBeInTheDocument();
     });
 
     it('shows the counterbore depth only for a counterbore head', () => {

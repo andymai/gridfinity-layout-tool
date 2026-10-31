@@ -20,6 +20,8 @@ import {
   MOUNT_MAGNETS_PER_PIECE_MIN,
   SCREWS_PER_PIECE_MAX,
   SCREWS_PER_PIECE_MIN,
+  SCREW_EDGE_INSET_CELLS_MAX,
+  SCREW_EDGE_INSET_CELLS_MIN,
   SCREW_COUNTERBORE_MAX_DEPTH_MM,
   SCREW_HEAD_MAX_DIAMETER_MM,
   SCREW_HEAD_MIN_DIAMETER_MM,
@@ -206,6 +208,8 @@ const SOURCES: Record<string, unknown> = {
   MOUNT_MAGNETS_PER_PIECE_MIN,
   SCREWS_PER_PIECE_MAX,
   SCREWS_PER_PIECE_MIN,
+  SCREW_EDGE_INSET_CELLS_MAX,
+  SCREW_EDGE_INSET_CELLS_MIN,
   SCREW_COUNTERBORE_MAX_DEPTH_MM,
   SCREW_HEAD_MAX_DIAMETER_MM,
   SCREW_HEAD_MIN_DIAMETER_MM,
@@ -263,7 +267,7 @@ const annotations = collectAnnotations();
  * a drop means someone deleted provenance rather than a bound legitimately
  * becoming hand-picked, which is the erosion this guards against.
  */
-const MIN_ANNOTATED_BOUNDS = 220;
+const MIN_ANNOTATED_BOUNDS = 222;
 
 describe('x-constant annotations', () => {
   it('finds annotations to check', () => {

@@ -532,7 +532,8 @@ function marginPosition(
 
 /**
  * Assign every anchor a site from DIMENSIONS ALONE: the margin when a band
- * hosts the head, else a junction in the anchor's own region, else the floor.
+ * hosts the head and no edge inset rules it out, else a junction in the
+ * anchor's own region, else the floor.
  *
  * This is the height-critical half of planning and it deliberately takes no
  * collision callbacks. Band widths, over-tile, corner radii and the junction
@@ -547,10 +548,11 @@ function assignAnchorSites(params: ScrewHoleParams, input: ScrewPieceInput): rea
   const halfW = input.widthMm / 2;
   const halfD = input.depthMm / 2;
   const junctions = [...(input.junctions ?? [])];
+  const marginAllowed = (params.edgeInsetCells ?? 0) <= 0;
 
   return SCREW_ANCHORS.map((anchor): ScrewSlot => {
     const cornerR = anchorCornerRadius(anchor, input.cornerRadii);
-    const margin = marginPosition(anchor, input, headDiameterMm);
+    const margin = marginAllowed ? marginPosition(anchor, input, headDiameterMm) : undefined;
     if (
       margin !== undefined &&
       discFitsRoundedRect(margin[0], margin[1], halfW, halfD, cornerR, headRadius) &&

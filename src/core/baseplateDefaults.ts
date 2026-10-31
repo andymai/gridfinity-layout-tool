@@ -112,6 +112,10 @@ export const SCREWS_PER_PIECE_DEFAULT = 4;
 export const SCREWS_PER_PIECE_MIN = 1;
 export const SCREWS_PER_PIECE_MAX = 8;
 
+export const SCREW_EDGE_INSET_CELLS_DEFAULT = 0;
+export const SCREW_EDGE_INSET_CELLS_MIN = 0;
+export const SCREW_EDGE_INSET_CELLS_MAX = 4;
+
 /**
  * Underside mount-magnet bounds + defaults (mm), sized for a ø6 × 2mm magnet.
  * The hole is 0.5mm wider than the magnet but exactly as deep, so the magnet
@@ -349,6 +353,19 @@ function migrateScrewHoles(value: unknown): ScrewHoleParams | undefined {
           ),
         }
       : {}),
+    ...(typeof o.edgeInsetCells === 'number' && Number.isFinite(o.edgeInsetCells)
+      ? {
+          edgeInsetCells: Math.round(
+            clampNumber(
+              o.edgeInsetCells,
+              SCREW_EDGE_INSET_CELLS_MIN,
+              SCREW_EDGE_INSET_CELLS_MAX,
+              SCREW_EDGE_INSET_CELLS_DEFAULT
+            )
+          ),
+        }
+      : {}),
+    ...(o.cellCorner === 'outer' || o.cellCorner === 'inner' ? { cellCorner: o.cellCorner } : {}),
   };
 }
 
