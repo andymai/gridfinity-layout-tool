@@ -4,6 +4,7 @@ import { useScanImport } from './useScanImport';
 import type { BinParams, Cutout } from '@/features/bin-designer/types';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
+import type { CellMask } from '@/shared/utils/cellMask';
 import type { ParsedCutoutSpec } from '../svgImport/types';
 
 // Mirrors the store contract: `addCutout` reports whether the cutout landed,
@@ -159,7 +160,7 @@ describe('useScanImport', () => {
   });
 
   // A 3x2 bin as six by four half cells, 1 = floor.
-  function shaped(cells: number[]): BinParams {
+  function shaped(cells: CellMask['cells']): BinParams {
     return { ...DEFAULT_BIN_PARAMS, width: 3, depth: 2, cellMask: { cols: 6, rows: 4, cells } };
   }
 
