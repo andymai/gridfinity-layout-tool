@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useScanImport } from './useScanImport';
-import type { Cutout } from '@/features/bin-designer/types';
+import type { BinParams, Cutout } from '@/features/bin-designer/types';
+import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import type { ParsedCutoutSpec } from '../svgImport/types';
 
 // Mirrors the store contract: `addCutout` reports whether the cutout landed,
@@ -12,6 +14,7 @@ import type { ParsedCutoutSpec } from '../svgImport/types';
 const mockAddCutout = vi.fn((_cutout: Cutout) => true);
 const mockStartTransaction = vi.fn();
 const mockCommitTransaction = vi.fn();
+let mockParams: BinParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 5 };
 
 vi.mock('@/features/bin-designer/store', async () => {
   const { remainingCutoutCapacity } = await vi.importActual<{
@@ -27,7 +30,7 @@ vi.mock('@/features/bin-designer/store', async () => {
   // has no cap, which is the fixture every case here describes.
   useDesignerStore.getState = () => ({
     ui: { cutoutTarget: 'bin' },
-    params: { lid: { cutouts: [] } },
+    params: mockParams,
   });
   return { useDesignerStore, remainingCutoutCapacity };
 });
@@ -53,6 +56,7 @@ describe('useScanImport', () => {
   afterEach(() => {
     vi.clearAllMocks();
     mockAddCutout.mockReturnValue(true);
+    mockParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 5 };
   });
 
   it('adds each spec as a cutout and returns the count', () => {
@@ -104,7 +108,9 @@ describe('useScanImport', () => {
 
     const added = mockAddCutout.mock.calls[0][0];
     expect(added.shape).toBe('path');
-    expect(added.path).toEqual(path);
+    expect(added.path?.map((p) => [p.x - added.x, p.y - added.y])).toEqual(
+      path.map((p) => [p.x, p.y])
+    );
     // Scanned path outlines get a default fit clearance + self-centering chamfer.
     expect(added.clearance).toBeGreaterThan(0);
     expect(added.chamferWidth).toBeGreaterThan(0);
@@ -115,6 +121,41 @@ describe('useScanImport', () => {
     result.current.addScanCutouts([spec({ shape: 'rectangle' })]);
     expect(mockAddCutout.mock.calls[0][0].clearance).toBeUndefined();
     expect(mockAddCutout.mock.calls[0][0].chamferWidth).toBeUndefined();
+  });
+
+  // The scanner's coordinates are the outline's own frame, corner at the origin
+  // and a rounding hair past it, so an uncentered scan lands flush in the
+  // corner and reads as clipped in a bin with room to spare.
+  it('centers a scanned outline in the bin', () => {
+    const { innerW, innerD } = cutoutInterior(mockParams);
+    const { result } = renderHook(() => useScanImport());
+    result.current.addScanCutouts([spec({ y: -0.03, width: 72, depth: 158 })]);
+
+    const added = mockAddCutout.mock.calls[0][0];
+    expect(added.x).toBeCloseTo((innerW - 72) / 2);
+    expect(added.y).toBeCloseTo((innerD - 158) / 2);
+  });
+
+  it('moves the outlines of one scan together', () => {
+    const { result } = renderHook(() => useScanImport());
+    result.current.addScanCutouts([
+      spec({ width: 60, depth: 100 }),
+      spec({ x: 20, y: 30, width: 10, depth: 10 }),
+    ]);
+
+    const [outer, inner] = mockAddCutout.mock.calls.map(([c]) => c);
+    expect(inner.x - outer.x).toBeCloseTo(20);
+    expect(inner.y - outer.y).toBeCloseTo(30);
+  });
+
+  it('leaves a scan larger than the bin where it landed', () => {
+    mockParams = { ...DEFAULT_BIN_PARAMS, width: 1, depth: 1 };
+    const { result } = renderHook(() => useScanImport());
+    result.current.addScanCutouts([spec({ y: -0.03, width: 72, depth: 158 })]);
+
+    const added = mockAddCutout.mock.calls[0][0];
+    expect(added.x).toBe(0);
+    expect(added.y).toBe(-0.03);
   });
 
   it('commits the transaction even if an addition throws', () => {
