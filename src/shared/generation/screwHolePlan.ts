@@ -166,7 +166,9 @@ export interface ScrewPieceInput {
  * Padding survives in resolved params under `overTile`, but the material there
  * is functional grid rather than the solid ring a screw needs, so those bands
  * read as zero. `detachMargins` needs no handling here: it already zeroes the
- * body's padding, and each detached rail is planned as its own piece.
+ * body's padding, and each detached rail is planned as its own piece. An edge
+ * inset zeroes them too: the padding is under the drawer lip it keeps screws
+ * away from.
  */
 export function effectiveMarginBands(params: {
   readonly paddingLeft: number;
@@ -174,8 +176,11 @@ export function effectiveMarginBands(params: {
   readonly paddingFront: number;
   readonly paddingBack: number;
   readonly overTile?: boolean;
+  readonly screwHoles?: Pick<ScrewHoleParams, 'edgeInsetCells'>;
 }): ScrewMarginBands {
-  if (params.overTile === true) return { left: 0, right: 0, front: 0, back: 0 };
+  if (params.overTile === true || (params.screwHoles?.edgeInsetCells ?? 0) > 0) {
+    return { left: 0, right: 0, front: 0, back: 0 };
+  }
   return {
     left: params.paddingLeft,
     right: params.paddingRight,
@@ -532,8 +537,7 @@ function marginPosition(
 
 /**
  * Assign every anchor a site from DIMENSIONS ALONE: the margin when a band
- * hosts the head and no edge inset rules it out, else a junction in the
- * anchor's own region, else the floor.
+ * hosts the head, else a junction in the anchor's own region, else the floor.
  *
  * This is the height-critical half of planning and it deliberately takes no
  * collision callbacks. Band widths, over-tile, corner radii and the junction
@@ -548,11 +552,10 @@ function assignAnchorSites(params: ScrewHoleParams, input: ScrewPieceInput): rea
   const halfW = input.widthMm / 2;
   const halfD = input.depthMm / 2;
   const junctions = [...(input.junctions ?? [])];
-  const marginAllowed = (params.edgeInsetCells ?? 0) <= 0;
 
   return SCREW_ANCHORS.map((anchor): ScrewSlot => {
     const cornerR = anchorCornerRadius(anchor, input.cornerRadii);
-    const margin = marginAllowed ? marginPosition(anchor, input, headDiameterMm) : undefined;
+    const margin = marginPosition(anchor, input, headDiameterMm);
     if (
       margin !== undefined &&
       discFitsRoundedRect(margin[0], margin[1], halfW, halfD, cornerR, headRadius) &&

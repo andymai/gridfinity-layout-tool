@@ -117,6 +117,9 @@ export function resolveScrewHoles(
   cellCorner: ScrewCellCorner = 'outer'
 ): ResolvedScrewHole[] {
   const available = [...candidates];
+  const snapPoints = available.map(([x, y, cx, cy]) =>
+    cellCorner === 'inner' ? ([2 * cx - x, 2 * cy - y] as const) : ([x, y] as const)
+  );
   const holes: ResolvedScrewHole[] = [];
 
   for (const slot of slots) {
@@ -134,17 +137,12 @@ export function resolveScrewHoles(
       continue;
     }
 
-    const bestIndex = nearestWithLean(
-      slot.target,
-      screwSnapPreference(slot.anchor),
-      available.map(([x, y, cx, cy]) =>
-        cellCorner === 'inner' ? ([2 * cx - x, 2 * cy - y] as const) : ([x, y] as const)
-      )
-    );
+    const bestIndex = nearestWithLean(slot.target, screwSnapPreference(slot.anchor), snapPoints);
     if (bestIndex < 0) continue;
 
     const [x, y] = available[bestIndex];
     available.splice(bestIndex, 1);
+    snapPoints.splice(bestIndex, 1);
     holes.push({ x, y, site: 'floor' });
   }
 
