@@ -1,0 +1,21 @@
+src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
+  s_dc3e3eca95a150::t_093051235945aa 463,481
+src/features/baseplate/components/BaseplatePanel/BaseSection.test.tsx
+  s_dc3e3eca95a150::t_540120728478c5 241
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7e6ee2b6ebd563d2129e65b84797e1ea31bbc2af",
+  "prompts": {},
+  "sessions": {
+    "s_dc3e3eca95a150": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7da796f6-5cba-4117-a81a-9cc4ed71cc63",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
