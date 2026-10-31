@@ -36,6 +36,14 @@ minimumReleaseAgeExclude:
   # serialize-javascript 7.1.3 (2026-10-22) fixes GHSA-m5mm-p8h7-m29v. Reached
   # only through workbox-build (PWA build). TODO: remove after 2026-10-30.
   - serialize-javascript@7.1.3
+  # minimatch 11.0.3 and glob 14.0.3 (2026-10-28) fix GHSA-g3hv-75wg-m249 and
+  # GHSA-3g3m-2fjr-6pw4, neither backported to an older major. path-scurry 3.0.0
+  # (2026-10-27) and @isaacs/nonrecursive-glob-match 1.0.3 (2026-10-28) arrive
+  # as their dependencies. TODO: remove after 2026-11-04.
+  - minimatch@11.0.3
+  - glob@14.0.3
+  - path-scurry@3.0.0
+  - '@isaacs/nonrecursive-glob-match@1.0.3'
 
 # Blocks Shai-Hulud-class worms that spread via npm lifecycle scripts.
 # Packages that need to build are listed in allowBuilds.
@@ -94,26 +102,28 @@ overrides:
   'serialize-javascript@>=7.0.0 <7.1.3': '^7.1.3'
   'eslint-plugin-react-hooks>eslint': '^10.0.3'
   'eslint-plugin-jsx-a11y>eslint': '^10.0.3'
-  # All minimatch consumers are pinned to the 10.x line, the only line pulling a
-  # brace-expansion that is patched against GHSA-mh99-v99m-4gvg (fixed only in
-  # 5.0.8 — every earlier major, incl. the 1.x/2.x/3.x/4.x lines, is affected
-  # with no backport). filelist reaches minimatch only through the named
-  # `minimatch.match(...)`, so it never needed the default export.
+  # GHSA-g3hv-75wg-m249 covers every minimatch below 11.0.1 with no backport, so
+  # each consumer is moved to 11.x by name. 11.0 removed makeRe(),
+  # Minimatch#regexp and the AST class; every consumer below calls only
+  # minimatch(), minimatch.match() or new Minimatch().match(), which 11 keeps. A
+  # consumer that needs the removed API cannot join this list. eslint's file walk
+  # depends on Minimatch#match(path, true), whose `**` partial matching changed
+  # in 11.0, so a bump here needs lint parity proven, not just a green lint.
   #
-  # jsx-a11y and @ts-morph/common historically blocked this: both called
-  # minimatch's *default* export, which minimatch@10's CJS build does not define
-  # (it exports named `{ minimatch }` and sets __esModule with no `default`), so
-  # both threw `is not a function` at runtime — keeping minimatch@3 and the
-  # unpatchable brace-expansion@1.x in the tree. Both are now patched to import
-  # the named export (patches/), the same change upstream would make, so they
-  # move to 10.x too and brace-expansion@1.x leaves the tree entirely (#2974).
-  'eslint-plugin-jsx-a11y>minimatch': '^10.2.5'
-  '@ts-morph/common>minimatch': '^10.2.5'
-  'filelist>minimatch': '^10.2.5'
-  '@vercel/build-utils>minimatch': '^10.2.3'
-  '@vercel/python-analysis>minimatch': '^10.2.3'
+  # jsx-a11y and @ts-morph/common call minimatch's *default* export, which no
+  # CJS build since 9.0 defines, so both are patched (patches/) to import the
+  # named export.
+  'eslint>minimatch': '^11.0.3'
+  '@eslint/config-array>minimatch': '^11.0.3'
+  '@typescript-eslint/typescript-estree>minimatch': '^11.0.3'
+  'eslint-plugin-jsx-a11y>minimatch': '^11.0.3'
+  '@ts-morph/common>minimatch': '^11.0.3'
+  'filelist>minimatch': '^11.0.3'
   '@vercel/static-config>ajv': '^8.18.0'
-  'glob>minimatch': '^10.2.3'
+  # GHSA-3g3m-2fjr-6pw4 covers glob 9.0.0 through 14.0.1. Both consumers call
+  # glob() or globSync() with options 14 keeps.
+  'workbox-build>glob': '^14.0.3'
+  '@vercel/nft>glob': '^14.0.3'
   'flatted@>=3.0.0 <3.4.2': '^3.4.2'
   # posthog-js (^3.3.2) and @cesium/engine (^3.3.0) both sit on 3.x.
   # 3.4.16 fixes GHSA-p98j-92pf-mc4p.
@@ -154,8 +164,8 @@ overrides:
   'eslint-plugin-i18next>lodash': '^4.18.1'
   'vitest-axe>lodash-es': '^4.18.1'
   'picomatch@>=4.0.0 <4.0.4': '^4.0.4'
-  # brace-expansion arrives only via minimatch@10 now (all consumers pinned to
-  # 10.x above), which uses the 5.x line. Floor at 5.0.12, the first release
+  # brace-expansion arrives only via minimatch@11 now (all consumers pinned to
+  # 11.x above), which uses the 5.x line. Floor at 5.0.12, the first release
   # patched against GHSA-rgw5-rvv9-x895, GHSA-6j4f-fj2g-mc7p, GHSA-qhr7-859c-m2p7
   # and GHSA-q2hr-2g5m-vwhr. The 1.x line is gone, so its old
   # `brace-expansion@<1.1.17` pin is no longer needed (#2974).
