@@ -43,7 +43,6 @@ import {
   resolveScrewHeadDiameter,
 } from '@/shared/generation/screwHolePlan';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
-import { trackEvent } from '@/shared/analytics/posthog';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
@@ -461,13 +460,7 @@ export function BaseSection() {
                   <SliderInput
                     label={t('baseplate.screwHoles.edgeInset.label')}
                     value={screwHoles?.edgeInsetCells ?? SCREW_EDGE_INSET_CELLS_DEFAULT}
-                    onChange={(v) => {
-                      updateScrewHoles({ edgeInsetCells: v });
-                      trackEvent('baseplate_screw_placement_changed', {
-                        setting: 'edge_inset',
-                        value: v,
-                      });
-                    }}
+                    onChange={(v) => updateScrewHoles({ edgeInsetCells: v })}
                     min={SCREW_EDGE_INSET_CELLS_MIN}
                     max={SCREW_EDGE_INSET_CELLS_MAX}
                     step={1}
@@ -485,13 +478,7 @@ export function BaseSection() {
                         { value: 'inner', label: t('baseplate.screwHoles.cellCorner.inner') },
                       ]}
                       value={screwHoles?.cellCorner ?? 'outer'}
-                      onChange={(cellCorner) => {
-                        updateScrewHoles({ cellCorner });
-                        trackEvent('baseplate_screw_placement_changed', {
-                          setting: 'cell_corner',
-                          value: cellCorner,
-                        });
-                      }}
+                      onChange={(cellCorner) => updateScrewHoles({ cellCorner })}
                     />
                   </SettingsRow>
                 </FeatureToggle>
