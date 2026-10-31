@@ -76,6 +76,55 @@ test('an unevenly-tiled drawer does not fully consolidate', async ({ page }) => 
   expect(stacks).toBeGreaterThan(1);
 });
 
+test('mixed-size mode prints a whole uneven Eco Plate as one tower', async ({ page }) => {
+  await setDimensions(page, 14);
+  await setBed(page, 180);
+  await page.waitForTimeout(800);
+  await page.getByText('Eco plate', { exact: true }).click();
+  await stackSwitch(page).click();
+  await page.getByText('Mix tile sizes in stacks', { exact: true }).click();
+  await expect(page.getByText(/16 plates stacked into 1 print file/i)).toBeVisible();
+});
+
+test('four distinct drawer parts with margins and connectors print once in one tower', async ({
+  page,
+}) => {
+  await setDimensions(page, 8);
+  await setBed(page, 180);
+  for (const side of ['Left', 'Right', 'Front', 'Back']) {
+    await page.getByRole('spinbutton', { name: side, exact: true }).fill('10');
+    await page.keyboard.press('Enter');
+  }
+  await page.getByRole('radio', { name: /Dovetail/i }).click();
+  await stackSwitch(page).click();
+  await page.getByText('Mix tile sizes in stacks', { exact: true }).click();
+  await expect(page.getByText(/4 plates stacked into 1 print file/i)).toBeVisible();
+});
+
+test('tiled Eco Plate margins still stack the different parts of a 523 by 325 mm drawer', async ({
+  page,
+}) => {
+  await page.getByRole('button', { name: /Edit baseplate dimensions/i }).click();
+  await page.getByRole('spinbutton', { name: /Baseplate width in mm/i }).fill('504');
+  await page.getByRole('spinbutton', { name: /Baseplate depth in mm/i }).fill('294');
+  await page.keyboard.press('Enter');
+  await setBed(page, 180);
+  for (const [side, value] of [
+    ['Left', '10'],
+    ['Right', '9'],
+    ['Back', '31'],
+  ] as const) {
+    await page.getByRole('spinbutton', { name: side, exact: true }).fill(value);
+    await page.keyboard.press('Enter');
+  }
+  await page.getByRole('switch', { name: /Fill padding with grid tiles/i }).click();
+  await page.getByText('Eco plate', { exact: true }).click();
+  await page.getByRole('radio', { name: /Dovetail/i }).click();
+  await stackSwitch(page).click();
+  await page.getByText('Mix tile sizes in stacks', { exact: true }).click();
+  await expect(page.getByText(/6 plates across 2 print files/i)).toBeVisible();
+});
+
 test('build height drives the per-stack cap', async ({ page }) => {
   await setDimensions(page, 16);
   await setBed(page, 180);

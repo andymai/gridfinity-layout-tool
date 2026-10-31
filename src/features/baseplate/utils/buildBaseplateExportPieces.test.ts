@@ -68,6 +68,65 @@ function input(overrides: Partial<BuildBaseplateExportInput> = {}): BuildBasepla
 }
 
 describe('buildBaseplateExportPieces', () => {
+  it('exports every distinct padded connector tile in one printable tower', async () => {
+    const { bridge } = makeBridge();
+    const result = await buildBaseplateExportPieces(
+      bridge,
+      null,
+      input({
+        drawerWidth: 8,
+        drawerDepth: 8,
+        printBedWidthMm: 180,
+        printBedDepthMm: 180,
+        baseplateParams: {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          paddingLeft: mm(10),
+          paddingRight: mm(10),
+          paddingFront: mm(10),
+          paddingBack: mm(10),
+          connectorNubs: true,
+          stackPrint: { enabled: true, gapMm: mm(0.2), mixedSizes: true },
+        },
+      })
+    );
+    expect(result.splitStats).toEqual({ uniqueCount: 4, totalPieces: 4, stackEnabled: true });
+    expect(result.pieces).toHaveLength(1);
+    expect(new DataView(result.pieces[0].data).getUint32(80, true)).toBe(4);
+    for (const label of ['A1', 'A2', 'B1', 'B2']) {
+      expect(result.guideText).toContain(label);
+    }
+  });
+
+  it('exports mixed Eco towers with a matching bottom-to-top print guide', async () => {
+    const { bridge } = makeBridge();
+    const result = await buildBaseplateExportPieces(
+      bridge,
+      null,
+      input({
+        drawerWidth: 14,
+        drawerDepth: 14,
+        printBedWidthMm: 180,
+        printBedDepthMm: 180,
+        printSettings: { ...PRINT_SETTINGS, maxPrintHeightMm: 250 },
+        baseplateParams: {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          ecoPlate: true,
+          stackPrint: { enabled: true, gapMm: mm(0.2), mixedSizes: true },
+        },
+      })
+    );
+    expect(result.splitStats?.totalPieces).toBe(16);
+    expect(result.pieces).toHaveLength(1);
+    expect(new Set(result.pieces.map((piece) => piece.label)).size).toBe(result.pieces.length);
+    let plateCount = 0;
+    for (const piece of result.pieces) {
+      expect(result.guideText).toContain(`${result.baseNameNoExt}_${piece.label}.stl`);
+      const triangles = new DataView(piece.data).getUint32(80, true);
+      plateCount += triangles;
+    }
+    expect(plateCount).toBe(16);
+    expect(result.guideText).toContain('Print towers (bottom to top)');
+  });
   it('returns a single un-split plate as one labelless piece with no guide', async () => {
     const { bridge, exportBaseplate } = makeBridge();
     const result = await buildBaseplateExportPieces(bridge, null, input());

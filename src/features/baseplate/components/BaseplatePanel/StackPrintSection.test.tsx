@@ -55,13 +55,22 @@ describe('StackPrintSection', () => {
 
   it('renders the copies stepper when enabled', () => {
     render(<StackPrintSection stackPrint={enabled} onChange={vi.fn()} />);
-    expect(screen.getByLabelText('Increase Copies')).toBeInTheDocument();
+    expect(screen.getByLabelText('Increase Complete sets')).toBeInTheDocument();
+  });
+
+  it('opts in to mixed tile sizes without changing the existing stack defaults', () => {
+    const onChange = vi.fn();
+    render(<StackPrintSection stackPrint={enabled} onChange={onChange} />);
+    fireEvent.click(screen.getByRole('switch', { name: /mix tile sizes in stacks/i }));
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ enabled: true, mixedSizes: true, gapMm: mm(0.2) })
+    );
   });
 
   it('increments the copy count through onChange', () => {
     const onChange = vi.fn();
     render(<StackPrintSection stackPrint={{ ...enabled, copies: 2 }} onChange={onChange} />);
-    fireEvent.click(screen.getByLabelText('Increase Copies'));
+    fireEvent.click(screen.getByLabelText('Increase Complete sets'));
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ enabled: true, copies: 3 }));
   });
 

@@ -180,7 +180,7 @@ export function selectGenerationTriggers(state: LayoutState) {
     // plates and screw-pad cells alike — fold it out when neither can
     // (stacking strips both, so it folds out there too).
     lightweight: lightweightRelevant ? bp.lightweight !== false : true,
-    ecoPlate: !stackingOn && bp.ecoPlate === true,
+    ecoPlate: (!stackingOn || bp.stackPrint.mixedSizes === true) && bp.ecoPlate === true,
     paddingLeft: bp.paddingLeft,
     paddingRight: bp.paddingRight,
     paddingFront: bp.paddingFront,

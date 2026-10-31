@@ -4890,14 +4890,17 @@ const en: Record<string, string> = {
   'baseplate.connectorNozzleNotice':
     'Connectors are enlarged so a {nozzle}mm nozzle can print them.',
   'baseplate.stackPrint.enable': 'Vertical stack',
+  'baseplate.stackPrint.mixedSizes.label': 'Mix tile sizes in stacks',
+  'baseplate.stackPrint.mixedSizes.info':
+    'Print every part of this split baseplate once when Complete sets is 1, including different sizes, Eco Plate, margins and connectors. Parts are turned to align their grids and fit above the part below. Build height, margins or an incompatible outline can require more than one stack. Check the exported file in your slicer and print a small test first.',
   'baseplate.stackPrint.exportBanner':
     'Stack printing: {stacks} stacks ({plates} plates) export as a ZIP with a print guide.',
   'baseplate.stackPrint.gap.label': 'Gap',
   'baseplate.stackPrint.gap.info':
     'Air gap between stacked plates, about 0.2mm (one layer). Keep your slicer’s layer height at or below this gap or the plates fuse. No supports needed. Test a small stack first to fine-tune it.',
-  'baseplate.stackPrint.copies.label': 'Copies',
+  'baseplate.stackPrint.copies.label': 'Complete sets',
   'baseplate.stackPrint.copies.info':
-    'How many copies of the whole layout to print. Each copy is added to the stack, so a single-plate layout prints as a tower of duplicates. Tall stacks split into separate files automatically.',
+    'How many complete sets of this project to print. Set to 1 for exactly one of each part. Larger values duplicate the whole set; towers that exceed build height split into separate files.',
   'baseplate.stackPrint.output.oneFile': '{plates} plates stacked into 1 print file.',
   'baseplate.stackPrint.output.manyFiles':
     '{plates} plates across {files} print files ({breakdown}).',
@@ -4926,7 +4929,9 @@ const en: Record<string, string> = {
   'baseplate.stackPrint.sampleDescription':
     'A single stack of two 1×1 plates to fine-tune the air-gap separation before printing a full stack.',
   'baseplate.stackPrint.warning.singlePlate':
-    'Vertical stacking combines repeated plates into one print, but this drawer makes a single plate. Raise Copies to stack duplicates, or stacking kicks in automatically once a larger drawer splits into identical pieces.',
+    'This drawer makes a single plate. Increase Complete sets to stack copies, or split a larger drawer into parts to stack them.',
+  'baseplate.stackPrint.warning.incompatibleFootprints':
+    'These tiles cannot safely stack with the current margins and shapes. They remain separate print files; try a larger bed or different margins.',
   'baseplate.stackPrint.warning.buildHeightCapped':
     'At a {gap}mm gap, your {maxHeight}mm build height fits only one plate per stack. Lower the gap or raise the build-height limit in print settings to stack into towers.',
   'baseplate.stackPrint.warning.plateTooTall':

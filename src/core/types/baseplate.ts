@@ -5,9 +5,9 @@ import type { FractionalEdge } from './drawerOutline';
 export type PaddingAnchor = 'tl' | 'tc' | 'tr' | 'ml' | 'c' | 'mr' | 'bl' | 'bc' | 'br' | 'custom';
 
 /**
- * Vertical stack-print configuration. When enabled, each group
- * of identical baseplate pieces is duplicated along Z so a whole drawer's worth
- * of plates prints in one job. The bottom plate prints upright (bed adhesion,
+ * Vertical stack-print configuration (experimental). By default, each group
+ * of identical baseplate pieces is duplicated along Z. With mixedSizes enabled,
+ * compatible tiles of one split plate can share a tower. The bottom prints upright (bed adhesion,
  * no overhang); every plate above it is flipped upside down (community practice
  * that minimizes overhangs), separated by a thin air gap so the tower snaps
  * apart after printing. Each physical stack is capped at how many tiles fit the
@@ -15,12 +15,13 @@ export type PaddingAnchor = 'tl' | 'tc' | 'tr' | 'ml' | 'c' | 'mr' | 'bl' | 'bc'
  * `settings.printSettings.maxPrintHeightMm`), so an over-tall group splits into
  * several stacks.
  *
- * Connectors, magnet holes, and corner rounding are auto-disabled while enabled
- * (overhangs that can't print, and per-tile differences that would break the
- * uniform-tile assumption stacking relies on).
+ * Magnet holes, screws and solid floors are disabled while stacking; snap-clip
+ * connectors are disabled. Explicit corner rounding stays on its own tiles.
  */
 export interface StackPrintParams {
   readonly enabled: boolean;
+  /** Allow differently sized tiles from one split baseplate in a tower. */
+  readonly mixedSizes?: boolean;
   /** Air gap between stacked copies (mm) — one print layer (~0.2mm) is typical. */
   readonly gapMm: Mm;
   /**

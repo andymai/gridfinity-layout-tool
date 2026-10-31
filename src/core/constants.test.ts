@@ -611,10 +611,11 @@ describe('migrateBaseplateParams', () => {
     const result = migrateBaseplateParams({
       ...base,
       // `mode` is a dropped legacy field — migration ignores it.
-      stackPrint: { enabled: true, gapMm: 5, mode: 'sacrificialSheet' },
+      stackPrint: { enabled: true, gapMm: 5, mixedSizes: true, mode: 'sacrificialSheet' },
     });
     expect(result.stackPrint).toEqual({
       enabled: true,
+      mixedSizes: true,
       gapMm: 1, // clamped to STACK_PRINT_MAX_GAP_MM
     });
     // Absent or malformed → undefined
