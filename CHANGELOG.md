@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.526.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.526.1...gridfinity-layout-tool-v4.526.2) (2026-10-31)
+
+
+### Bug Fixes
+
+* **bin-designer:** center a scanned outline in the bin ([#4767](https://github.com/andymai/gridfinity-layout-tool/issues/4767)) ([eec2788](https://github.com/andymai/gridfinity-layout-tool/commit/eec2788e4c688955d13bd4c34f4e5cbbfc65cc35))
+* **i18n:** fill version, variant and branch placeholders ([#4766](https://github.com/andymai/gridfinity-layout-tool/issues/4766)) ([195ae9f](https://github.com/andymai/gridfinity-layout-tool/commit/195ae9fe8d1507d0ee96f710b21e9d38420bdf85))
+
 ## [4.526.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.526.0...gridfinity-layout-tool-v4.526.1) (2026-10-31)
 
 
