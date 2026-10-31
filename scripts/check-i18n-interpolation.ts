@@ -4,6 +4,7 @@
  * This script detects:
  * 1. Translation calls that pass params but the string doesn't use them
  * 2. Translation strings with placeholders that are never called with params
+ * 3. Double-brace tokens (`{{name}}`) in any locale, which render with a stray pair of braces
  *
  * Usage: pnpm exec tsx scripts/check-i18n-interpolation.ts
  * Exit code 0 = all interpolations match, 1 = mismatches found
@@ -347,8 +348,45 @@ function findZeroParamCalls(
   return mismatches;
 }
 
+// interpolate() replaces `{name}`, so `{{name}}` renders as `{value}`, and the placeholder
+// checks above still match the inner token.
+function findDoubleBraces(): string[] {
+  const token = /\{\{[a-zA-Z_][a-zA-Z0-9_]*\}\}/;
+  const found: string[] = [];
+  readFileSync(join(LOCALES_DIR, 'en.ts'), 'utf-8')
+    .split('\n')
+    .forEach((line, i) => {
+      if (token.test(line)) found.push(`src/i18n/locales/en.ts:${i + 1}: ${line.trim()}`);
+    });
+  for (const file of readdirSync(LOCALES_DIR).filter(
+    (f) => f.endsWith('.json') && f !== 'en.json'
+  )) {
+    const strings = JSON.parse(readFileSync(join(LOCALES_DIR, file), 'utf-8')) as Record<
+      string,
+      unknown
+    >;
+    for (const [key, value] of Object.entries(strings)) {
+      if (typeof value === 'string' && token.test(value))
+        found.push(`src/i18n/locales/${file}: ${key}`);
+    }
+  }
+  return found;
+}
+
 // Main execution
 console.log('\n🔍 Checking i18n interpolation placeholders...\n');
+
+const doubleBraces = findDoubleBraces();
+if (doubleBraces.length > 0) {
+  console.log(
+    `❌ Found ${doubleBraces.length} double-brace placeholder(s); use {name}, not {{name}}:\n`
+  );
+  for (const line of doubleBraces) console.log(`   ${line}`);
+  console.error(
+    '\n❌ i18n interpolation mismatch detected. Fix the translation strings or code usage.\n'
+  );
+  process.exit(1);
+}
 
 const translations = getTranslationStrings();
 console.log(`📋 Found ${translations.size} translation strings in en.ts`);

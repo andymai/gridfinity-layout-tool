@@ -8,4 +8,11 @@ describe('en strings', () => {
       .map(([key]) => key);
     expect(escaped).toEqual([]);
   });
+
+  it('writes placeholders as {name}, which is the only form t() fills in', () => {
+    const doubled = Object.entries(en)
+      .filter(([, value]) => /\{\{[a-zA-Z_]\w*\}\}/.test(value))
+      .map(([key]) => key);
+    expect(doubled).toEqual([]);
+  });
 });
