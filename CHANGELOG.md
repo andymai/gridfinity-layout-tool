@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.526.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.525.1...gridfinity-layout-tool-v4.526.0) (2026-10-31)
+
+
+### Features
+
+* **baseplate:** add Eco Plate mode ([#4741](https://github.com/andymai/gridfinity-layout-tool/issues/4741)) ([a96b7e1](https://github.com/andymai/gridfinity-layout-tool/commit/a96b7e1bdb8b363abd04e35b51935dad5496bdc3))
+* **baseplate:** announce Eco plate and say what it saves ([#4760](https://github.com/andymai/gridfinity-layout-tool/issues/4760)) ([f6da44f](https://github.com/andymai/gridfinity-layout-tool/commit/f6da44fbc85dcfa3610301a044047d51055823c4))
+* **baseplate:** relieve padded eco plate edges, clear of screws and magnets ([#4758](https://github.com/andymai/gridfinity-layout-tool/issues/4758)) ([020fb5f](https://github.com/andymai/gridfinity-layout-tool/commit/020fb5f98ebac92cabcf150f9d2b3fc47234cfd3))
+
+
+### Performance
+
+* **baseplate:** draft eco plates on Manifold and defer large ones again ([#4759](https://github.com/andymai/gridfinity-layout-tool/issues/4759)) ([7c3493d](https://github.com/andymai/gridfinity-layout-tool/commit/7c3493d7f990aa16edaacbff079340a88ff5989b))
+
 ## [4.525.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.525.0...gridfinity-layout-tool-v4.525.1) (2026-10-30)
 
 
