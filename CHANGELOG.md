@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.526.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.526.0...gridfinity-layout-tool-v4.526.1) (2026-10-31)
+
+
+### Bug Fixes
+
+* **deps:** move minimatch to 11.x and glob to 14.x past new advisories ([#4762](https://github.com/andymai/gridfinity-layout-tool/issues/4762)) ([2ee33ed](https://github.com/andymai/gridfinity-layout-tool/commit/2ee33ed301c03ff03dcb9a959693bb2b9a94d425))
+
 ## [4.526.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.525.1...gridfinity-layout-tool-v4.526.0) (2026-10-31)
 
 
