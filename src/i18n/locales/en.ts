@@ -3716,7 +3716,7 @@ const en: Record<string, string> = {
   'binDesigner.slideTray.fitSample.exportComplete': 'Fit test downloaded',
   'binDesigner.slideTray.fitSample.exportFailed': 'Could not export the fit test',
   'binDesigner.slideTray.title': 'Sliding tray',
-  'binDesigner.slideTray.summary': '{{width}}u, {{mount}}',
+  'binDesigner.slideTray.summary': '{width}u, {mount}',
   'binDesigner.slideTray.mount.interior': 'Inside bin',
   'binDesigner.slideTray.mount.rim': 'Over the rim',
   'binDesigner.slideTray.mountAria': 'Rail position',
@@ -3734,7 +3734,7 @@ const en: Record<string, string> = {
   'binDesigner.slideTray.clearanceHint':
     'Gap on each side between tray and rail. Print the fit test if the tray binds or rattles.',
   'binDesigner.slideTray.protrudes':
-    'The tray stands {{mm}}mm above the rim. Increase the rail drop to sink it inside.',
+    'The tray stands {mm}mm above the rim. Increase the rail drop to sink it inside.',
   'binDesigner.slideTray.unavailable.noCavity': 'A solid bin has no cavity for a tray to sit in.',
   'binDesigner.slideTray.unavailable.slotConflict':
     'Slotted bins carry divider slots on the walls the rail needs.',
@@ -4107,7 +4107,7 @@ const en: Record<string, string> = {
   // Version history: named, restorable checkpoints for one design
   'binDesigner.versions.title': 'Versions',
   'binDesigner.versions.open': 'Version history',
-  'binDesigner.versions.count': '{{count}} of {{max}}',
+  'binDesigner.versions.count': '{count} of {max}',
   'binDesigner.versions.save': 'Save version',
   'binDesigner.versions.namePlaceholder': 'Name this version',
   'binDesigner.versions.nameHint': 'For example: 0.2 mm, a tight fit',
@@ -4116,7 +4116,7 @@ const en: Record<string, string> = {
   'binDesigner.versions.restore': 'Restore',
   'binDesigner.versions.restoreWarning':
     'Replaces your current design. Your current state is saved first.',
-  'binDesigner.versions.restored': 'Restored “{{name}}”. Current state saved as “{{backup}}”.',
+  'binDesigner.versions.restored': 'Restored “{name}”. Current state saved as “{backup}”.',
   'binDesigner.versions.preRestoreName': 'Before restore',
   'binDesigner.versions.automatic': 'Automatic',
   'binDesigner.versions.pinned': 'Pinned',
@@ -4124,11 +4124,11 @@ const en: Record<string, string> = {
   'binDesigner.versions.unpin': 'Unpin this version',
   'binDesigner.versions.rename': 'Rename',
   'binDesigner.versions.delete': 'Delete',
-  'binDesigner.versions.deleteWarning': 'Delete “{{name}}”? This cannot be undone.',
-  'binDesigner.versions.saved': 'Saved “{{name}}”.',
-  'binDesigner.versions.deleted': 'Deleted “{{name}}”.',
+  'binDesigner.versions.deleteWarning': 'Delete “{name}”? This cannot be undone.',
+  'binDesigner.versions.saved': 'Saved “{name}”.',
+  'binDesigner.versions.deleted': 'Deleted “{name}”.',
   'binDesigner.versions.evicted':
-    'Oldest version “{{name}}” was removed to make room. Pin a version to keep it.',
+    'Oldest version “{name}” was removed to make room. Pin a version to keep it.',
   'binDesigner.versions.emptyTitle': 'No versions yet',
   'binDesigner.versions.emptyBody':
     'Save one when the design reaches a state worth keeping, then come back to it any time.',
@@ -4136,18 +4136,18 @@ const en: Record<string, string> = {
 
   // Branching: an independent design seeded from a stored version
   'binDesigner.versions.branch': 'Branch from here',
-  'binDesigner.versions.branched': 'Created “{{name}}” from “{{version}}”.',
+  'binDesigner.versions.branched': 'Created “{name}” from “{version}”.',
   'binDesigner.designs.branchBadge': 'Branch',
-  'binDesigner.designs.branchedFrom': 'From “{{name}}”',
-  'binDesigner.designs.branchCount': '{{count}} branches',
+  'binDesigner.designs.branchedFrom': 'From “{name}”',
+  'binDesigner.designs.branchCount': '{count} branches',
   'binDesigner.designs.showBranches': 'Show branches',
   'binDesigner.designs.hideBranches': 'Hide branches',
   'binDesigner.designs.deleteWithBranches':
-    'This design has {{count}} branches. Deleting it keeps them, listed on their own.',
+    'This design has {count} branches. Deleting it keeps them, listed on their own.',
 
   // Variants: a design kept in step with another except for values it claims
   'binDesigner.variants.label': 'Variant',
-  'binDesigner.variants.lockedHere': 'These values come from {{name}}.',
+  'binDesigner.variants.lockedHere': 'These values come from {name}.',
   'binDesigner.variants.openParent': 'Open parent',
   'binDesigner.variants.takeParent': 'Take parent’s',
   'binDesigner.variants.field.width': 'Width',
@@ -4158,19 +4158,19 @@ const en: Record<string, string> = {
   'binDesigner.variants.field.clearance': 'Clearance',
   'binDesigner.variants.field.chamferWidth': 'Chamfer',
   'binDesigner.variants.create': 'Create variant',
-  'binDesigner.variants.created': 'Created “{{name}}” as a variant of “{{parent}}”.',
-  'binDesigner.variants.panelLocked': 'Everything else comes from {{name}}.',
+  'binDesigner.variants.created': 'Created “{name}” as a variant of “{parent}”.',
+  'binDesigner.variants.panelLocked': 'Everything else comes from {name}.',
   'binDesigner.variants.panelLockedDetail':
     'Claim a value below to change it here, or detach to edit freely.',
   'binDesigner.variants.detach': 'Detach from parent',
-  'binDesigner.variants.detached': '“{{name}}” no longer follows its parent.',
+  'binDesigner.variants.detached': '“{name}” no longer follows its parent.',
   'binDesigner.variants.claim': 'Claim',
   'binDesigner.variants.release': 'Use parent’s value',
-  'binDesigner.variants.inherited': 'From parent: {{value}}',
+  'binDesigner.variants.inherited': 'From parent: {value}',
   'binDesigner.variants.noneClaimed': 'This variant matches its parent exactly.',
   'binDesigner.variants.dimensions': 'Bin dimensions',
   'binDesigner.variants.cutouts': 'Cutouts',
-  'binDesigner.variants.orphanTitle': '{{count}} claimed values point at deleted cutouts',
+  'binDesigner.variants.orphanTitle': '{count} claimed values point at deleted cutouts',
   'binDesigner.variants.orphanBody':
     'They are kept in case the deletion is undone, and ignored until then.',
   'binDesigner.variants.orphanClear': 'Forget them',
@@ -5120,7 +5120,7 @@ const en: Record<string, string> = {
   'community.gallery.depthMinLabel': 'Minimum depth',
   'community.gallery.depthMaxLabel': 'Maximum depth',
   'community.gallery.dimensionAny': 'Any',
-  'community.gallery.dimensionOnlyValue': 'Every design is {{value}} on this axis',
+  'community.gallery.dimensionOnlyValue': 'Every design is {value} on this axis',
   'community.shelves.featured': 'Featured',
   'community.shelves.proven': 'People have printed these',
   'community.shelves.newThisWeek': 'New this week',
