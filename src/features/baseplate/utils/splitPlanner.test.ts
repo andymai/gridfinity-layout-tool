@@ -1105,6 +1105,101 @@ describe('pieceToBaseplateParams', () => {
     const result = pieceToBaseplateParams(piece, parent);
     expect(result.invertDovetails).toBeUndefined();
   });
+
+  it('gives every piece the magnet crush ribs, chamfer and anchor of its plate', () => {
+    const parent = makeParams({
+      width: 11,
+      depth: 5,
+      magnetHoles: true,
+      magnetCrushRibs: true,
+      magnetChamfer: true,
+      magnetAnchor: 'center',
+      lightweight: true,
+      connectorNubs: true,
+    });
+    const tiling = computeBaseplateTiling(parent, 256);
+    expect(tiling.isSplit).toBe(true);
+    for (const piece of tiling.pieces) {
+      const result = pieceToBaseplateParams(piece, parent);
+      expect(result.magnetCrushRibs, piece.label).toBe(true);
+      expect(result.magnetChamfer, piece.label).toBe(true);
+      expect(result.magnetAnchor, piece.label).toBe('center');
+    }
+  });
+
+  it('names every plate field on each piece except the plate-level ones', () => {
+    // Typed Required so a new ResolvedBaseplateParams field fails typecheck here
+    // until it is added, and then fails below until pieceToBaseplateParams
+    // either carries it or it is listed as plate-level. A field it does not
+    // name reaches no split piece, so the control silently does nothing there.
+    const PLATE_LEVEL = new Set([
+      'detachMargins',
+      'detachMarginConnector',
+      'stackPrint',
+      'splitOverride',
+    ]);
+    const parent: Required<ResolvedBaseplateParams> = {
+      width: 10,
+      depth: 8,
+      gridUnitMm: 42,
+      gridUnitMmY: 42,
+      magnetHoles: true,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      magnetCrushRibs: true,
+      magnetChamfer: true,
+      magnetAnchor: 'center',
+      lowProfileBase: true,
+      stackSeamTrimMm: 0.4,
+      paddingLeft: 4,
+      paddingRight: 4,
+      paddingFront: 4,
+      paddingBack: 4,
+      fractionalEdgeX: 'end',
+      fractionalEdgeY: 'end',
+      overTile: true,
+      overTileHalfGrid: true,
+      overTileHalfGridSolidLeftover: true,
+      wholeCellsOnly: true,
+      edges: { left: 'exterior', right: 'exterior', front: 'exterior', back: 'exterior' },
+      connectorFilter: {},
+      outline: {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 428, y: 0 },
+          { x: 428, y: 344 },
+          { x: 0, y: 344 },
+        ],
+      },
+      outlineOverhang: { left: 0, right: 0, front: 0, back: 0 },
+      connectorNubs: true,
+      invertDovetails: true,
+      preferIdenticalPieces: true,
+      connectorStyle: 'puzzle',
+      connectorSlotsAllEdges: true,
+      connectorFitOffset: 0.1,
+      nozzleSizeMm: 0.6,
+      lightweight: true,
+      ecoPlate: true,
+      solidFloor: true,
+      solidFloorThickness: 1.2,
+      screwHoles: { enabled: true, diameter: mm(3.4), headStyle: 'countersink' },
+      screwPadThicknessMm: 1,
+      mountMagnets: { enabled: true, diameter: mm(6.5), depth: mm(2) },
+      cornerRadius: 4,
+      cornerRadii: { tl: 1, tr: 2, bl: 3, br: 4 },
+      detachMargins: true,
+      detachMarginConnector: true,
+      stackPrint: { enabled: false, gapMm: mm(0.2) },
+      splitOverride: { cols: [gridUnits(5), gridUnits(5)], rows: [gridUnits(4), gridUnits(4)] },
+    };
+    const tiling = computeBaseplateTiling(parent, 256);
+    expect(tiling.isSplit).toBe(true);
+    const result = pieceToBaseplateParams(tiling.pieces[0], parent);
+    const unnamed = Object.keys(parent).filter((key) => !(key in result) && !PLATE_LEVEL.has(key));
+    expect(unnamed).toEqual([]);
+    for (const key of PLATE_LEVEL) expect(result).not.toHaveProperty(key);
+  });
 });
 
 // ─── preferIdenticalPieces ───────────────────────────────────────────

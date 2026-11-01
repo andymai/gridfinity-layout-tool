@@ -666,6 +666,11 @@ export function pieceToBaseplateParams(
     magnetHoles: parentParams.magnetHoles,
     magnetDiameter: parentParams.magnetDiameter,
     magnetDepth: parentParams.magnetDepth,
+    ...(parentParams.magnetCrushRibs === true ? { magnetCrushRibs: true } : {}),
+    ...(parentParams.magnetChamfer === true ? { magnetChamfer: true } : {}),
+    // Rotation-invariant: the anchor insets every magnet the same distance
+    // from its own cell's edges.
+    magnetAnchor: parentParams.magnetAnchor,
     // Rotation-invariant, and every piece must cut the same pocket depth.
     ...(parentParams.lowProfileBase === true ? { lowProfileBase: true } : {}),
     ...(parentParams.stackSeamTrimMm !== undefined

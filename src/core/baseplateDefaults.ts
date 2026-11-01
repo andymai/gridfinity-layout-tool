@@ -187,6 +187,8 @@ export function migrateBaseplateParams(stored: unknown): StoredBaseplateParams {
     magnetHoles: typeof obj.magnetHoles === 'boolean' ? obj.magnetHoles : false,
     magnetDiameter: mm(clampNumber(obj.magnetDiameter, 0.5, 20, 6.5)),
     magnetDepth: mm(clampNumber(obj.magnetDepth, 0.5, 10, 2)),
+    ...(obj.magnetCrushRibs === true ? { magnetCrushRibs: true } : {}),
+    ...(obj.magnetChamfer === true ? { magnetChamfer: true } : {}),
     paddingLeft: mm(clampNumber(obj.paddingLeft, 0, 100, 0)),
     paddingRight: mm(clampNumber(obj.paddingRight, 0, 100, 0)),
     paddingFront: mm(clampNumber(obj.paddingFront, 0, 100, 0)),

@@ -16,6 +16,14 @@ import {
   MAGNET_CRUSH_RIB_COUNT,
   MAGNET_CRUSH_RIB_DEPTH_MM,
 } from '@/shared/generation/magnetHoleStyle';
+import { plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
+import type { StoredBaseplateParams } from '@/core/types';
+import { buildFullParams } from '@/features/baseplate/utils/buildFullParams';
+import { computeBaseplateTiling } from '@/features/baseplate/utils/splitPlanner';
+import { groupPiecesByFingerprint } from '@/features/baseplate/utils/pieceFingerprint';
+import { boundingBox } from './__kernel-tests__/meshAssertions';
+import { planMagnetPockets } from './baseplateMagnets';
 
 type Mesh = { readonly vertices: Float32Array };
 
@@ -241,4 +249,67 @@ describe('magnet hole press-fit options', () => {
     expectRibbed(p, 'lightweight plate ribs');
     expect(p.mouthAbove, 'lightweight pad keeps its plain mouth').toBeLessThan(R + 0.1);
   }, 120_000);
+
+  it('baseplate: a piece of a plate split for the bed keeps the ribs a 1x1 plate has', () => {
+    // Built the way the app builds both: stored panel settings, resolved
+    // against the drawer, then tiled for a 256mm bed and grouped into pieces.
+    const stored: StoredBaseplateParams = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      magnetHoles: true,
+      magnetCrushRibs: true,
+      connectorNubs: true,
+      connectorStyle: 'dovetail',
+    };
+    const small = buildFullParams(stored, 1, 1, 42, 'end', 'end');
+    const smallMesh = generateBrepPlate(small, () => {}, true);
+    const smallHole = holeProfile(smallMesh, MAGNET, MAGNET);
+    expectBoreSeated(smallMesh, smallHole, small, '1x1 plate');
+    expectRibbed(smallHole, '1x1 plate');
+
+    const large = buildFullParams(stored, 11, 5, 42, 'end', 'end');
+    const tiling = computeBaseplateTiling(large, 256, 256);
+    expect(tiling.isSplit).toBe(true);
+    const first = [...groupPiecesByFingerprint(tiling.pieces, large).values()].find((g) =>
+      g.indices.includes(0)
+    );
+    if (first === undefined) throw new Error('no group holds the first piece');
+    const piece = first.params;
+    const holes = planMagnetPockets(piece.width, piece.depth, R, {
+      fractionalEdgeX: piece.fractionalEdgeX,
+      fractionalEdgeY: piece.fractionalEdgeY,
+      gridUnitMm: piece.gridUnitMm,
+    }).plain;
+    expect(holes.length).toBe(piece.width * piece.depth * 4);
+
+    for (const [label, pieceMesh] of [
+      ['piece', generateBrepPlate(piece, () => {}, true)],
+      ['piece draft', generateDirectPlate(piece, () => {})],
+    ] as const) {
+      for (const [x, y] of holes) {
+        const p = holeProfile(pieceMesh, x, y);
+        expectBoreSeated(pieceMesh, p, piece, `${label} hole at ${x},${y}`);
+        expectRibbed(p, `${label} hole at ${x},${y}`);
+      }
+    }
+  }, 120_000);
 });
+
+/**
+ * Anti-vacuity for a probe position: a bore really is there, opening on the
+ * pocket floor (a profile height below the plate top) and as deep as the
+ * magnet. A probe off the hole sees no bore vertices and fails here instead of
+ * passing a rib check on nothing.
+ */
+function expectBoreSeated(
+  mesh: Mesh,
+  p: ReturnType<typeof holeProfile>,
+  params: ResolvedBaseplateParams,
+  label: string
+): void {
+  const top = boundingBox(mesh.vertices).maxZ;
+  expect(p.zMax, `${label} opens on the pocket floor`).toBeCloseTo(
+    top - plateProfileHeightMm(params.lowProfileBase),
+    1
+  );
+  expect(p.zMax - p.zMin, `${label} is magnet deep`).toBeCloseTo(params.magnetDepth, 1);
+}
