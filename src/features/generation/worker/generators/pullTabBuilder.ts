@@ -59,17 +59,34 @@ function position(
   return translate(right, [innerW / 2, alongY, 0]);
 }
 
-/** Tabs on different walls never touch, so one disjoint fuse joins them. */
-function joinAll(scope: DisposalScope, shapes: Shape3D[]): Shape3D | null {
+/**
+ * One shape per plan, joined. Tabs on different walls never touch, so one
+ * disjoint fuse joins them. A wall that throws frees the walls built before it.
+ */
+function joinEach(
+  tabs: readonly PullTabPlan[],
+  build: (p: PullTabPlan) => Shape3D | null
+): Shape3D | null {
+  const shapes: Shape3D[] = [];
+  try {
+    for (const p of tabs) {
+      const shape = build(p);
+      if (shape) shapes.push(shape);
+    }
+  } catch (error) {
+    for (const shape of shapes) shape.delete();
+    throw error;
+  }
   if (shapes.length <= 1) return shapes[0] ?? null;
-  for (const shape of shapes) scope.register(shape);
-  return unwrap(fuseAll(shapes as ValidSolid[]));
+  return withScope((scope: DisposalScope) => {
+    for (const shape of shapes) scope.register(shape);
+    return unwrap(fuseAll(shapes as ValidSolid[]));
+  });
 }
 
 /** Every selected wall's raised body as one shape, positioned in the cavity frame. */
 export function buildPullTab(ctx: PipelineContext): Shape3D | null {
-  const bodies = plans(ctx).map((p) => buildPullTabBody(ctx, p));
-  return withScope((scope: DisposalScope) => joinAll(scope, bodies));
+  return joinEach(plans(ctx), (p) => buildPullTabBody(ctx, p));
 }
 
 function buildPullTabBody(ctx: PipelineContext, p: PullTabPlan): Shape3D {
@@ -135,11 +152,7 @@ function buildPullTabBody(ctx: PipelineContext, p: PullTabPlan): Shape3D {
 }
 
 export function buildPullTabRecess(ctx: PipelineContext, back = false): Shape3D | null {
-  const pockets = plans(ctx).flatMap((p) => {
-    const pocket = buildPullTabRecessFor(ctx, p, back);
-    return pocket ? [pocket] : [];
-  });
-  return withScope((scope: DisposalScope) => joinAll(scope, pockets));
+  return joinEach(plans(ctx), (p) => buildPullTabRecessFor(ctx, p, back));
 }
 
 function buildPullTabRecessFor(

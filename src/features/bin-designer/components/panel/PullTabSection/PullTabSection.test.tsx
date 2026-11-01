@@ -116,6 +116,42 @@ describe('PullTabSection', () => {
     expect(screen.queryByText(reason)).toBeNull();
     expect(pullTabUnavailableReason(useDesignerStore.getState().params)).toBeUndefined();
   });
+  const crowded = (pullTab: Partial<typeof DEFAULT_PULL_TAB>) =>
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 0.5,
+        gridUnitMm: 16,
+        wallThickness: 1.6,
+        pullTab: {
+          ...DEFAULT_PULL_TAB,
+          thickness: 4,
+          wall: 'width',
+          walls: ['front', 'back'],
+          ...pullTab,
+        },
+      },
+    });
+  it('lets a tab that is off with no room be turned back on and fixed', () => {
+    crowded({ enabled: false });
+    render(<PullTabSection />);
+    const toggle = screen.getByRole('switch', { name: 'Pull tab' });
+    expect(toggle.hasAttribute('disabled')).toBe(false);
+    fireEvent.click(toggle);
+    fireEvent.click(wall('Back'));
+    expect(pullTab()).toMatchObject({ enabled: true, wall: 'width' });
+    expect(pullTabUnavailableReason(useDesignerStore.getState().params)).toBeUndefined();
+  });
+  it('keeps the tab width across a unit switch made while it has no room', () => {
+    crowded({ enabled: true, width: 20 });
+    render(<PullTabSection />);
+    fireEvent.click(screen.getByRole('button', { name: '%' }));
+    // 20mm of the 22mm a 32mm wall leaves for a tab.
+    expect(pullTab()?.widthPercent).toBeCloseTo((20 / 22) * 100, 1);
+    fireEvent.click(screen.getByRole('button', { name: 'mm' }));
+    expect(pullTab()?.width).toBeCloseTo(20, 1);
+  });
   it('says when a chosen wall is too short to carry a tab', () => {
     useDesignerStore.setState({
       params: {

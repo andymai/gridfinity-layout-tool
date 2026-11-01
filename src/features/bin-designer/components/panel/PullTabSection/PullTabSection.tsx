@@ -70,6 +70,15 @@ export function PullTabSection() {
     null
   );
   const longestWall = Math.max(...walls.map((wall) => availablePullTabWidth(params, wall)));
+  // Worked out as the plan does, but even when nothing builds, so a unit
+  // switch made while fixing a blocked selection keeps the tab's size.
+  const longestTabWidth = Math.min(
+    longestWall,
+    Math.max(
+      MIN_PULL_TAB_WIDTH,
+      tab.widthMode === 'percent' ? (longestWall * tab.widthPercent) / 100 : tab.width
+    )
+  );
   const tooShort = walls.some((wall) => availablePullTabWidth(params, wall) < MIN_PULL_TAB_WIDTH);
   const belowRim = Math.max(
     0,
@@ -120,9 +129,11 @@ export function PullTabSection() {
       label={t('binDesigner.pullTab.title')}
       checked={tab.enabled}
       onChange={() => update({ enabled: !tab.enabled })}
-      // A tab already on stays switchable and keeps its controls, so the wall
-      // or thickness that blocks it can be changed back.
-      disabledReason={reason && !tab.enabled ? t(reason) : undefined}
+      // The section's own walls and thickness can clear a lack of room, and a
+      // tab already on can always be changed back, so neither locks the switch.
+      disabledReason={
+        reason && !tab.enabled && reason !== 'binDesigner.pullTab.noRoom' ? t(reason) : undefined
+      }
       badge={
         <FeatureTip
           tip="pullTab"
@@ -165,8 +176,8 @@ export function PullTabSection() {
               update({
                 widthMode,
                 ...(widthMode === 'percent'
-                  ? { widthPercent: Math.round((effective?.widthPercent ?? 75) * 10) / 10 }
-                  : { width: effective?.width ?? tab.width }),
+                  ? { widthPercent: Math.round((longestTabWidth / longestWall) * 1000) / 10 }
+                  : { width: longestTabWidth }),
               })
             }
           />
