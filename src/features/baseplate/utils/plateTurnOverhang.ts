@@ -32,7 +32,6 @@ interface Rect {
   readonly y1: number;
 }
 
-/** Sorted x-spans of the plate (outline clipped to its slab) along row `y`. */
 function rowSpans(pts: readonly OutlinePoint[], y: number, slab: Rect): Span[] {
   if (y < slab.y0 || y > slab.y1) return [];
   const xs: number[] = [];
@@ -51,7 +50,6 @@ function rowSpans(pts: readonly OutlinePoint[], y: number, slab: Rect): Span[] {
   return spans;
 }
 
-/** Parts of the sorted spans `a` not covered by the sorted spans `b`. */
 function subtractSpans(a: readonly Span[], b: readonly Span[]): Span[] {
   const out: Span[] = [];
   for (const [start, hi] of a) {
@@ -68,7 +66,6 @@ function subtractSpans(a: readonly Span[], b: readonly Span[]): Span[] {
   return out;
 }
 
-/** The plate below as rows of spans, one per `ROW_STEP_MM` up from `y0`. */
 interface BelowRows {
   readonly y0: number;
   readonly spans: readonly Span[][];
