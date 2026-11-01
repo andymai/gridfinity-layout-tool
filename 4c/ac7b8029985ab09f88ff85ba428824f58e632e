@@ -1,0 +1,21 @@
+src/features/bin-designer/components/panel/PullTabSection/PullTabSection.test.tsx
+  s_f721a21584cb95::t_a255a9f77d9039 155-167
+src/features/bin-designer/components/panel/PullTabSection/PullTabSection.tsx
+  s_f721a21584cb95::t_a255a9f77d9039 89-95,182
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4cac7b8029985ab09f88ff85ba428824f58e632e",
+  "prompts": {},
+  "sessions": {
+    "s_f721a21584cb95": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14ff3cc8-6691-4939-a25c-f6ba932191ef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
