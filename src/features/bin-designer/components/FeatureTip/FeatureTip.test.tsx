@@ -94,6 +94,22 @@ describe('FeatureTip', () => {
     pause.mockRestore();
   });
 
+  it('offers Play again when a theme change swaps the clip under Reduce motion', async () => {
+    setSettings('dark', true);
+    render(<FeatureTip tip="scoops" feature="Finger scoop" />);
+    await userEvent.click(screen.getByRole('button', { name: 'See how Finger scoop works' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Play clip' }));
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Play clip' })).toBeNull());
+
+    act(() => setSettings('light', true));
+    // jsdom does not run the load algorithm; a browser fires this on the new src.
+    act(() => {
+      video().dispatchEvent(new Event('emptied'));
+    });
+    expect(video().getAttribute('src')).toContain('scoops.light.mp4');
+    expect(screen.getByRole('button', { name: 'Play clip' })).toBeInTheDocument();
+  });
+
   it('keeps the play button when a manual play is refused', async () => {
     setSettings('dark', true);
     play.mockRejectedValueOnce(new DOMException('blocked', 'NotAllowedError'));

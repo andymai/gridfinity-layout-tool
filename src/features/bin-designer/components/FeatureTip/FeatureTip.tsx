@@ -109,6 +109,8 @@ function FeatureTipCard({ tip, detail }: { tip: FeatureTipId; detail?: ReactNode
           playsInline
           onPlay={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
+          // A new source (the theme changed) stops playback without a pause event.
+          onEmptied={() => setPlaying(false)}
           preload={reduceMotion ? 'none' : 'auto'}
           aria-hidden="true"
           className="block aspect-[4/3] w-full"
