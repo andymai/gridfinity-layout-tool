@@ -34,6 +34,8 @@ describe('shouldIgnoreError — message patterns', () => {
     // iOS in-app browser (WKWebView) bridge-script injection
     "TypeError: undefined is not an object (evaluating 'top.webkit.messageHandlers.foregroundToBackground.postMessage')",
     "TypeError: undefined is not an object (evaluating 'window.webkit.messageHandlers.handler.postMessage')",
+    // A crypto-wallet extension's injected `window.ethereum` script
+    "TypeError: undefined is not an object (evaluating 'window.ethereum.selectedAddress = undefined')",
     // A writing-assistant extension's own RPC timeouts, rejected as bare strings
     'Non-Error promise rejection captured with value: Request timeout lettersVoicesDistributor.getValue',
     'Non-Error promise rejection captured with value: Request timeout getDictionariesByLanguageId',
@@ -50,6 +52,7 @@ describe('shouldIgnoreError — message patterns', () => {
     'TypeError: foo is not a function',
     'Non-Error promise rejection captured with value: Request timeout after 30s',
     "'TimeoutError' captured as exception with message: 'operation timed out after 30s'",
+    "TypeError: undefined is not an object (evaluating 'config.ethereum.rpcUrl')",
   ])('does NOT ignore real app error %j', (msg) => {
     expect(shouldIgnoreError(msg)).toBe(false);
   });
