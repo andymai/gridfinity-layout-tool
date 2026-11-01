@@ -1,3 +1,6 @@
+import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import type { Locator, Page } from '@playwright/test';
 import type { DesignerStoreModule, SettingsStoreModule } from './appModules';
 import { FPS } from './encode';
@@ -288,6 +291,9 @@ const cutEditor: Tip = {
 };
 
 const PANEL_VIEWPORT = { width: 1280, height: 900 };
+/** The editor half of the split at the taller viewport. */
+const EDITOR_TALL: Rect = { x: 0, y: 88, width: 640, height: 812 };
+const FULL_TALL: Rect = { x: 0, y: 0, width: 1280, height: 900 };
 /** The designer's side panel, below the app header. */
 const PANEL: Rect = { x: 0, y: 50, width: 318, height: 850 };
 const SHAPE_BIN = { width: 3, depth: 2, height: 4 };
@@ -387,4 +393,118 @@ const compartments: Tip = {
   },
 };
 
-export const TIPS_UI: readonly Tip[] = [cutEditor, customShape, compartments];
+const SCAN_OUTLINE = readFileSync(
+  resolve(process.cwd(), 'scripts/feature-tips/fixtures/scan-outline.svg'),
+  'utf8'
+);
+
+/**
+ * The scan handoff needs Redis, so its two endpoints are answered here: the
+ * session is created at once, and the poll stays pending until `ready`.
+ */
+async function relayScan(page: Page): Promise<{ deliver(): void }> {
+  let ready = false;
+  const session = randomUUID();
+  await page.route('**/api/scan-session', (route) =>
+    route.fulfill({
+      status: 201,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        token: session,
+        url: `https://gridfinitylayouttool.com/scan/${session}`,
+        expiresInSeconds: 900,
+      }),
+    })
+  );
+  await page.route('**/api/scan-session/*', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(
+        ready
+          ? { status: 'ready', svg: SCAN_OUTLINE, createdAt: '2026-11-01T12:00:00.000Z' }
+          : { status: 'pending' }
+      ),
+    })
+  );
+  return {
+    deliver() {
+      ready = true;
+    },
+  };
+}
+
+/** The scan button, the dialog waiting for a photo, then the same dialog with the pocket added. */
+async function scanTake(base: string, theme: Theme): Promise<Take> {
+  const ui = await openUi(PANEL_VIEWPORT, theme, STORAGE);
+  const { page } = ui;
+  try {
+    const relay = await relayScan(page);
+    await openDesigner(ui, base, theme, { fresh: true, params: { width: 2, depth: 5, height: 5 } });
+    await ui.preClick(page.getByRole('radio', { name: 'Custom Cutouts' }).first());
+    await ui.waitBuilt();
+    await ui.preClick(page.getByText('Cut Editor').first());
+    const scan = page.getByRole('button', { name: 'Scan with your phone' }).first();
+    for (let i = 0; i < 90 && !(await scan.isVisible()); i++) {
+      await ui.warm(1);
+      await page.waitForTimeout(100);
+    }
+    await page.waitForTimeout(2000);
+    await ui.warm(30);
+    await dismissToasts(ui);
+
+    const frames: Buffer[] = [];
+    const s = await boxOf(scan);
+    await ui.park(s.x + 120, s.y + 60);
+    await ui.record(frameAround({ x: 0, y: s.y - 60, width: 200, height: 150 }, 0, EDITOR_TALL));
+    await ui.hold(0.25);
+    await ui.click(scan);
+    await ui.hold(0.15);
+    frames.push(...ui.stop());
+
+    const dialog = page.getByRole('dialog').first();
+    const waiting = page.getByText('Waiting for your photo…').first();
+    for (let i = 0; i < 90 && !(await waiting.isVisible()); i++) {
+      await ui.warm(1);
+      await page.waitForTimeout(100);
+    }
+    await ui.warm(20);
+    // The dialog is tall and narrow; its top (title, QR code, status) is what
+    // reads at card size.
+    const head = (box: Rect): Rect => ({ ...box, height: Math.min(box.height, 290) });
+    const d = await boxOf(dialog);
+    await ui.hideCursor();
+    await ui.record(frameAround(head(d), 8, FULL_TALL));
+    await ui.hold(1);
+    frames.push(...ui.stop());
+
+    relay.deliver();
+    // The dialog polls on real time, which the virtual clock does not advance.
+    const added = page.getByText(/^Added 1 cutout/).first();
+    for (let i = 0; i < 100 && !(await added.isVisible()); i++) {
+      await ui.warm(1);
+      await page.waitForTimeout(200);
+    }
+    await ui.waitBuilt();
+    await ui.record(frameAround(head(await boxOf(dialog)), 8, FULL_TALL));
+    await ui.hold(0.9);
+    frames.push(...ui.stop());
+    await ui.preClick(page.getByRole('dialog').getByRole('button', { name: 'Done' }).first());
+    await ui.waitBuilt();
+    return { frames, params: (await ui.designerParams()) as ParamOverrides };
+  } finally {
+    await ui.close();
+  }
+}
+
+const scanToPocket: Tip = {
+  id: 'scanToPocket',
+  color: '#f472b6',
+  async capture({ stage, base }) {
+    stage.setTint(this.color);
+    const { editor, params } = await twoTakes(base, scanTake);
+    return withResult(stage, editor, params);
+  },
+};
+
+export const TIPS_UI: readonly Tip[] = [cutEditor, customShape, compartments, scanToPocket];
