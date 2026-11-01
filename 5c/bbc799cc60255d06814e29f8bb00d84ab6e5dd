@@ -1,0 +1,21 @@
+src/features/bin-designer/components/FeatureTip/FeatureTip.tsx
+  s_f721a21584cb95::t_946019e995ddf9 112-113
+src/features/bin-designer/components/FeatureTip/FeatureTip.test.tsx
+  s_f721a21584cb95::t_946019e995ddf9 97-112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5cbbc799cc60255d06814e29f8bb00d84ab6e5dd",
+  "prompts": {},
+  "sessions": {
+    "s_f721a21584cb95": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14ff3cc8-6691-4939-a25c-f6ba932191ef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
