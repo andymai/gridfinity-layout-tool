@@ -1,6 +1,6 @@
 {
   "binDesigner.pullTab.title": "Aba de puxar",
-  "binDesigner.pullTab.description": "Pegas elevadas em qualquer parede ou na divisória central. As abas têm a espessura escolhida; as paredes crescem para dentro e uma divisória para os dois lados.",
+  "binDesigner.pullTab.description": "Pegas elevadas em qualquer parede ou na divisória central. As abas têm a espessura escolhida; as paredes crescem para dentro e a divisória cresce para os dois lados.",
   "binDesigner.pullTab.wall": "Paredes",
   "binDesigner.pullTab.sideAria": "Paredes com aba de puxar",
   "binDesigner.pullTab.side.front": "Frontal",
@@ -5027,7 +5027,7 @@
   "spacemouse.status.error": "Falha na conexão",
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "Aba de puxar",
-  "help.target.binDesigner.pullTab.description": "Pegas elevadas em qualquer parede ou na divisória central. As abas têm a espessura escolhida; as paredes crescem para dentro e uma divisória para os dois lados.",
+  "help.target.binDesigner.pullTab.description": "Pegas elevadas em qualquer parede ou na divisória central. As abas têm a espessura escolhida; as paredes crescem para dentro e a divisória cresce para os dois lados.",
   "help.target.binDesigner.pullTab.keywords": "aba de puxar, pega, alça, rebaixo para dedos, parede elevada, duas abas, quatro abas, levantar, centro, divisória",
   "binDesigner.walls.text.anchorOutside": "Posição do texto na parede externa",
   "binDesigner.walls.text.anchorInside": "Posição do texto na parede interna",

@@ -74,6 +74,9 @@ describe('SideSelector', () => {
       'false'
     );
     expect(screen.getByRole('switch', { name: 'Center' }).getAttribute('title')).toBe('No divider');
+    expect(screen.getByRole<HTMLButtonElement>('switch', { name: 'Center' }).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('switch', { name: 'Center' }));
+    expect(onCenter).toHaveBeenCalledTimes(1);
   });
 
   it('toggles a side on click', () => {

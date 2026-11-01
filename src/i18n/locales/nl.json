@@ -1,6 +1,6 @@
 {
   "binDesigner.pullTab.title": "Treklip",
-  "binDesigner.pullTab.description": "Verhoogde grepen op elke wand of op het middelste tussenschot. Lippen hebben de gekozen dikte; wanden groeien naar binnen, een tussenschot naar beide kanten.",
+  "binDesigner.pullTab.description": "Verhoogde grepen op elke wand of op het middelste tussenschot. Lippen hebben de gekozen dikte; wanden groeien naar binnen en het tussenschot groeit naar beide kanten.",
   "binDesigner.pullTab.wall": "Wanden",
   "binDesigner.pullTab.sideAria": "Wanden met een treklip",
   "binDesigner.pullTab.side.front": "Voor",
@@ -5027,7 +5027,7 @@
   "spacemouse.status.error": "Verbinding mislukt",
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "Treklip",
-  "help.target.binDesigner.pullTab.description": "Verhoogde grepen op elke wand of op het middelste tussenschot. Lippen hebben de gekozen dikte; wanden groeien naar binnen, een tussenschot naar beide kanten.",
+  "help.target.binDesigner.pullTab.description": "Verhoogde grepen op elke wand of op het middelste tussenschot. Lippen hebben de gekozen dikte; wanden groeien naar binnen en het tussenschot groeit naar beide kanten.",
   "help.target.binDesigner.pullTab.keywords": "treklip, greep, handvat, vingergroef, verhoogde wand, twee lippen, vier lippen, optillen, midden, tussenschot",
   "binDesigner.walls.text.anchorOutside": "Positie van wandtekst buiten",
   "binDesigner.walls.text.anchorInside": "Positie van wandtekst binnen",

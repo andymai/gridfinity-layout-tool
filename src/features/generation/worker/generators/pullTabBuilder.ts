@@ -48,9 +48,9 @@ function position(
   const alongY = -innerOffsetY || 0;
   const upright = scope.register(rotate(shape, 90, { axis: [1, 0, 0] }));
   if (p.side === 'front') return translate(upright, [alongX, -innerD / 2, 0]);
-  // A center tab straddles its divider line. Its recess faces the front on a
-  // width divider and the right on a depth divider, as the front and right
-  // wall tabs' outside faces do.
+  // A center tab straddles its divider line, turned like the back or left
+  // wall's tab: that puts its recess on the face toward the front or the
+  // right, where the front and right wall tabs show their outside faces.
   const at = p.centerAt ?? 0;
   if (p.side === 'back' || (p.side === 'center' && p.axis === 'width')) {
     const back = scope.register(rotate(upright, 180, { axis: [0, 0, 1] }));
@@ -241,7 +241,9 @@ function cacheKey(ctx: PipelineContext, site: Site): string {
       ctx.dimensions.innerD,
       ctx.dimensions.innerOffsetX,
       ctx.dimensions.innerOffsetY,
-      ...(site === 'center' ? [ctx.dimensions.compartmentsBakedIntoShell] : []),
+      ...(site === 'center'
+        ? [ctx.dimensions.compartmentsBakedIntoShell, effectiveRimFilletRadius(ctx.params)]
+        : []),
     ])
   );
 }

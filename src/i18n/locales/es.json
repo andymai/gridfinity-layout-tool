@@ -1,6 +1,6 @@
 {
   "binDesigner.pullTab.title": "Lengüeta de agarre",
-  "binDesigner.pullTab.description": "Agarres elevados en cualquier pared o en el divisor central. Las lengüetas comparten el grosor elegido; las paredes crecen hacia dentro y un divisor hacia ambos lados.",
+  "binDesigner.pullTab.description": "Agarres elevados en cualquier pared o en el divisor central. Las lengüetas comparten el grosor elegido; las paredes crecen hacia dentro y el divisor crece hacia ambos lados.",
   "binDesigner.pullTab.wall": "Paredes",
   "binDesigner.pullTab.sideAria": "Paredes con lengüeta de agarre",
   "binDesigner.pullTab.side.front": "Frontal",
@@ -5027,7 +5027,7 @@
   "spacemouse.status.error": "Error de conexión",
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "Lengüeta de agarre",
-  "help.target.binDesigner.pullTab.description": "Agarres elevados en cualquier pared o en el divisor central. Las lengüetas comparten el grosor elegido; las paredes crecen hacia dentro y un divisor hacia ambos lados.",
+  "help.target.binDesigner.pullTab.description": "Agarres elevados en cualquier pared o en el divisor central. Las lengüetas comparten el grosor elegido; las paredes crecen hacia dentro y el divisor crece hacia ambos lados.",
   "help.target.binDesigner.pullTab.keywords": "lengüeta, agarre, asa, hueco para dedos, pared elevada, dos lengüetas, cuatro lengüetas, levantar, centro, divisor",
   "binDesigner.walls.text.anchorOutside": "Posición del texto en la pared exterior",
   "binDesigner.walls.text.anchorInside": "Posición del texto en la pared interior",

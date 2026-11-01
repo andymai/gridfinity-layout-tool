@@ -1,6 +1,6 @@
 {
   "binDesigner.pullTab.title": "Dragflik",
-  "binDesigner.pullTab.description": "Upphöjda grepp på valfri vägg eller på den mittre mellanväggen. Flikarna har vald tjocklek; väggar byggs inåt, en mellanvägg åt båda håll.",
+  "binDesigner.pullTab.description": "Upphöjda grepp på valfri vägg eller på den mittre mellanväggen. Flikarna har vald tjocklek; väggar byggs inåt och mellanväggen byggs ut åt båda håll.",
   "binDesigner.pullTab.wall": "Väggar",
   "binDesigner.pullTab.sideAria": "Väggar med dragflik",
   "binDesigner.pullTab.side.front": "Fram",
@@ -5027,7 +5027,7 @@
   "spacemouse.status.error": "Anslutningen misslyckades",
   "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel.",
   "help.target.binDesigner.pullTab.title": "Dragflik",
-  "help.target.binDesigner.pullTab.description": "Upphöjda grepp på valfri vägg eller på den mittre mellanväggen. Flikarna har vald tjocklek; väggar byggs inåt, en mellanvägg åt båda håll.",
+  "help.target.binDesigner.pullTab.description": "Upphöjda grepp på valfri vägg eller på den mittre mellanväggen. Flikarna har vald tjocklek; väggar byggs inåt och mellanväggen byggs ut åt båda håll.",
   "help.target.binDesigner.pullTab.keywords": "dragflik, grepp, handtag, fingergrop, upphöjd vägg, två flikar, fyra flikar, lyfta, mitten, mellanvägg",
   "binDesigner.walls.text.anchorOutside": "Placering av väggtext utvändigt",
   "binDesigner.walls.text.anchorInside": "Placering av väggtext invändigt",

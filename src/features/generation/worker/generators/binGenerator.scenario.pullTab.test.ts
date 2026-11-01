@@ -13,7 +13,8 @@ import {
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { DEFAULT_PULL_TAB, planPullTab, pullTabWallFields } from '@/shared/utils/pullTabPlan';
 import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
-import { deriveDimensions } from './pipeline/context';
+import { createInitialContext, deriveDimensions } from './pipeline/context';
+import { pullTabCenterFeature } from './pullTabBuilder';
 import { generateLabelPlates } from './labelPlateGenerator';
 import { planLabelPlates } from '@/shared/utils/labelSocketPlan';
 import { labelPlateWidthMm, effectiveLabelSocketClearance } from '@/shared/constants/labelPlates';
@@ -645,7 +646,6 @@ describe('pull tabs on several walls', () => {
 });
 
 describe('a pull tab on the center divider', () => {
-  // A 3x2 bin: x within +-62.75, y within +-41.75, rim at 42, tab top at 54.
   const RIM = 42;
   const TOP = RIM + DEFAULT_PULL_TAB.height;
   const HALF_T = DEFAULT_PULL_TAB.thickness / 2;
@@ -741,6 +741,18 @@ describe('a pull tab on the center divider', () => {
     expect(top(mesh, 'width', 0, 0.13)).toBeCloseTo(TOP, 1);
     expect(verticalSolidSpans(mesh, 0.13, -40.75).at(-1)?.[1]).toBeCloseTo(TOP, 1);
     expect(verticalSolidSpans(mesh, -61.75, 0.13).at(-1)?.[1]).toBeCloseTo(TOP, 1);
+  });
+
+  it('re-keys the cached center tab when only the rim round changes', () => {
+    const rounded = (rimFilletRadius: number) =>
+      tray(2, 2, {
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false, rimFillet: true, rimFilletRadius },
+      });
+    const key = (p: BinParams) =>
+      pullTabCenterFeature.cacheKey(
+        createInitialContext(p, undefined, false, undefined, undefined)
+      );
+    expect(key(rounded(0.2))).not.toBe(key(rounded(0.4)));
   });
 
   it.skipIf(getKernelName() === 'manifold')(
