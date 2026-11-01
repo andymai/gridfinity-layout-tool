@@ -7,7 +7,7 @@
   "binDesigner.pullTab.side.back": "Arrière",
   "binDesigner.pullTab.side.left": "Gauche",
   "binDesigner.pullTab.side.right": "Droite",
-  "binDesigner.pullTab.wallTooShort": "Une paroi de moins de 22 mm n’a pas la place pour une languette.",
+  "binDesigner.pullTab.wallTooShort": "Une paroi de moins de {min} mm n’a pas la place pour une languette.",
   "binDesigner.pullTab.thickness": "Épaisseur paroi et languette",
   "binDesigner.pullTab.width": "Largeur de languette",
   "binDesigner.pullTab.widthUnit": "Unité de largeur",

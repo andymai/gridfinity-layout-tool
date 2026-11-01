@@ -7,7 +7,7 @@
   "binDesigner.pullTab.side.back": "Bak",
   "binDesigner.pullTab.side.left": "Vänster",
   "binDesigner.pullTab.side.right": "Höger",
-  "binDesigner.pullTab.wallTooShort": "En vägg kortare än 22 mm har inte plats för en flik.",
+  "binDesigner.pullTab.wallTooShort": "En vägg kortare än {min} mm har inte plats för en flik.",
   "binDesigner.pullTab.thickness": "Väggens och flikens tjocklek",
   "binDesigner.pullTab.width": "Flikbredd",
   "binDesigner.pullTab.widthUnit": "Enhet för flikbredd",

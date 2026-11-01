@@ -49,8 +49,10 @@ describe('PullTabSection', () => {
   it('keeps the last wall on and pushes no undo entry for clicking it', () => {
     render(<PullTabSection />);
     const params = useDesignerStore.getState().params;
+    const undoDepth = useDesignerStore.getState().history.past.length;
     fireEvent.click(wall('Front'));
     expect(useDesignerStore.getState().params).toBe(params);
+    expect(useDesignerStore.getState().history.past.length).toBe(undoDepth);
     expect(wall('Front').getAttribute('aria-checked')).toBe('true');
     expect((wall('Front') as HTMLButtonElement).disabled).toBe(false);
   });
@@ -72,6 +74,19 @@ describe('PullTabSection', () => {
     expect(
       screen.getByText(/^Recess width: \d+\.\d mm front\/back, \d+\.\d mm sides/)
     ).toBeDefined();
+  });
+  it('keeps the longest wall’s tab width when switching from mm to percent', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 3,
+        pullTab: { ...DEFAULT_PULL_TAB, enabled: true, wall: 'width', walls: ['front', 'left'] },
+      },
+    });
+    render(<PullTabSection />);
+    fireEvent.click(screen.getByRole('button', { name: '%' }));
+    expect(screen.getByText('Tab width: 31.9 mm front/back, 50.0 mm sides.')).toBeDefined();
   });
   it('says when a chosen wall is too short to carry a tab', () => {
     useDesignerStore.setState({

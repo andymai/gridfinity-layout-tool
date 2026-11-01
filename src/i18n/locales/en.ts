@@ -1879,7 +1879,7 @@ const en: Record<string, string> = {
   'binDesigner.pullTab.side.back': 'Back',
   'binDesigner.pullTab.side.left': 'Left',
   'binDesigner.pullTab.side.right': 'Right',
-  'binDesigner.pullTab.wallTooShort': 'A wall shorter than 22 mm has no room for a tab.',
+  'binDesigner.pullTab.wallTooShort': 'A wall shorter than {min} mm has no room for a tab.',
   'binDesigner.pullTab.thickness': 'Wall & tab thickness',
   'binDesigner.pullTab.width': 'Tab width',
   'binDesigner.pullTab.widthUnit': 'Tab width unit',

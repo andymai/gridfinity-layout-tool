@@ -7,7 +7,7 @@
   "binDesigner.pullTab.side.back": "奥",
   "binDesigner.pullTab.side.left": "左",
   "binDesigner.pullTab.side.right": "右",
-  "binDesigner.pullTab.wallTooShort": "22 mm未満の壁にはタブを付けられません。",
+  "binDesigner.pullTab.wallTooShort": "{min} mm未満の壁にはタブを付けられません。",
   "binDesigner.pullTab.thickness": "壁とタブの厚さ",
   "binDesigner.pullTab.width": "タブの幅",
   "binDesigner.pullTab.widthUnit": "タブ幅の単位",

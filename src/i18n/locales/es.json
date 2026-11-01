@@ -7,7 +7,7 @@
   "binDesigner.pullTab.side.back": "Trasera",
   "binDesigner.pullTab.side.left": "Izquierda",
   "binDesigner.pullTab.side.right": "Derecha",
-  "binDesigner.pullTab.wallTooShort": "Una pared de menos de 22 mm no tiene espacio para una lengüeta.",
+  "binDesigner.pullTab.wallTooShort": "Una pared de menos de {min} mm no tiene espacio para una lengüeta.",
   "binDesigner.pullTab.thickness": "Grosor de pared y lengüeta",
   "binDesigner.pullTab.width": "Ancho de la lengüeta",
   "binDesigner.pullTab.widthUnit": "Unidad del ancho",

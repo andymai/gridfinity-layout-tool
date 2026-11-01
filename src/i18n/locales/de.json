@@ -7,7 +7,7 @@
   "binDesigner.pullTab.side.back": "Hinten",
   "binDesigner.pullTab.side.left": "Links",
   "binDesigner.pullTab.side.right": "Rechts",
-  "binDesigner.pullTab.wallTooShort": "An einer Wand unter 22 mm ist kein Platz für eine Lasche.",
+  "binDesigner.pullTab.wallTooShort": "An einer Wand unter {min} mm ist kein Platz für eine Lasche.",
   "binDesigner.pullTab.thickness": "Wand- und Laschendicke",
   "binDesigner.pullTab.width": "Laschenbreite",
   "binDesigner.pullTab.widthUnit": "Einheit der Laschenbreite",

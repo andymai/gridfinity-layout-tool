@@ -7,7 +7,7 @@
   "binDesigner.pullTab.side.back": "后",
   "binDesigner.pullTab.side.left": "左",
   "binDesigner.pullTab.side.right": "右",
-  "binDesigner.pullTab.wallTooShort": "短于 22 mm 的壁放不下拉片。",
+  "binDesigner.pullTab.wallTooShort": "短于 {min} mm 的壁放不下拉片。",
   "binDesigner.pullTab.thickness": "壁与拉片厚度",
   "binDesigner.pullTab.width": "拉片宽度",
   "binDesigner.pullTab.widthUnit": "拉片宽度单位",

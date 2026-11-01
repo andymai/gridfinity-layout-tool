@@ -184,11 +184,14 @@ function firstWall(p: BinParams): PullTabWall {
   return resolvePullTabWalls(resolvePullTab(p.pullTab))[0];
 }
 
+/** Wall length a tab leaves clear, split between its two ends. */
+export const PULL_TAB_END_CLEARANCE_MM = 10;
+
 export function availablePullTabWidth(p: BinParams, wall: PullTabWall = firstWall(p)): number {
   return (
     (pullTabWallAxis(wall) === 'width'
       ? p.width * p.gridUnitMm
-      : p.depth * (p.gridUnitMmY ?? p.gridUnitMm)) - 10
+      : p.depth * (p.gridUnitMmY ?? p.gridUnitMm)) - PULL_TAB_END_CLEARANCE_MM
   );
 }
 

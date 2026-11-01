@@ -7,7 +7,7 @@
   "binDesigner.pullTab.side.back": "Traseira",
   "binDesigner.pullTab.side.left": "Esquerda",
   "binDesigner.pullTab.side.right": "Direita",
-  "binDesigner.pullTab.wallTooShort": "Uma parede com menos de 22 mm não tem espaço para uma aba.",
+  "binDesigner.pullTab.wallTooShort": "Uma parede com menos de {min} mm não tem espaço para uma aba.",
   "binDesigner.pullTab.thickness": "Espessura da parede e aba",
   "binDesigner.pullTab.width": "Largura da aba",
   "binDesigner.pullTab.widthUnit": "Unidade da largura",

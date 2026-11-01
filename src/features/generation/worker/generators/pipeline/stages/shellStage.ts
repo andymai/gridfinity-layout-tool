@@ -26,7 +26,7 @@ import type { LightweightBase, LightweightOpenDirection } from '../../lightweigh
 import { buildBinBox, buildTopShape } from '../../boxBuilder';
 import { buildBinBoxWithLip } from '../../integratedLipBuilder';
 import { roundTopRim } from '../../rimFilletBuilder';
-import { buildPullTabs } from '../../pullTabBuilder';
+import { buildPullTab } from '../../pullTabBuilder';
 import { buildInteriorFillet, interiorFilletInRimShell } from '../../interiorFilletBuilder';
 import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 import { maskHasHoles } from '../../maskPolygon';
@@ -380,21 +380,18 @@ export const shellStage: PipelineStage = {
       // the wall round. Join these finished surfaces here: rounding a raised
       // wall and its perpendicular divider junction together can fail in OCCT.
       if (pullTabInRimShell(params)) {
-        const tabs = buildPullTabs(ctx);
-        try {
-          for (const tab of tabs) {
-            const positioned = translate(tab, [dim.innerOffsetX, dim.innerOffsetY, 0]);
-            try {
-              tagUntaggedFaces(positioned, FeatureTag.BASE);
-              const combined = unwrap(fuse(built as ValidSolid, positioned as ValidSolid));
-              built.delete();
-              built = combined;
-            } finally {
-              positioned.delete();
-            }
+        const tab = buildPullTab(ctx);
+        if (tab) {
+          const positioned = translate(tab, [dim.innerOffsetX, dim.innerOffsetY, 0]);
+          try {
+            tagUntaggedFaces(positioned, FeatureTag.BASE);
+            const combined = unwrap(fuse(built as ValidSolid, positioned as ValidSolid));
+            built.delete();
+            built = combined;
+          } finally {
+            positioned.delete();
+            tab.delete();
           }
-        } finally {
-          for (const tab of tabs) tab.delete();
         }
       }
 

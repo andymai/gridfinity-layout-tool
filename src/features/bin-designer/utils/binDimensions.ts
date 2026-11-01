@@ -201,7 +201,8 @@ export interface CutoutInterior {
   readonly innerD: number;
   /**
    * X shift (mm, +X) of the expanded cavity center inside the outer body when
-   * opposite overhang sides differ. Zero for symmetric/absent overhang. Only
+   * opposite overhang sides differ, or when a pull tab thickens one side wall
+   * and not the other. Zero when neither applies. Only
    * model-space consumers (the 3D ghost) need it; the flat 2D cutout editor
    * works in the offset-free `[0, innerW]` in-cavity frame.
    */

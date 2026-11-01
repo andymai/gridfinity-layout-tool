@@ -7,7 +7,7 @@
   "binDesigner.pullTab.side.back": "უკანა",
   "binDesigner.pullTab.side.left": "მარცხენა",
   "binDesigner.pullTab.side.right": "მარჯვენა",
-  "binDesigner.pullTab.wallTooShort": "22 მმ-ზე მოკლე კედელზე ენა არ ეტევა.",
+  "binDesigner.pullTab.wallTooShort": "{min} მმ-ზე მოკლე კედელზე ენა არ ეტევა.",
   "binDesigner.pullTab.thickness": "კედლისა და ენის სისქე",
   "binDesigner.pullTab.width": "ენის სიგანე",
   "binDesigner.pullTab.widthUnit": "სიგანის ერთეული",

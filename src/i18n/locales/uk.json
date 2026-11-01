@@ -7,7 +7,7 @@
   "binDesigner.pullTab.side.back": "Ззаду",
   "binDesigner.pullTab.side.left": "Ліворуч",
   "binDesigner.pullTab.side.right": "Праворуч",
-  "binDesigner.pullTab.wallTooShort": "На стінці, коротшій за 22 мм, немає місця для язичка.",
+  "binDesigner.pullTab.wallTooShort": "На стінці, коротшій за {min} мм, немає місця для язичка.",
   "binDesigner.pullTab.thickness": "Товщина стінки та язичка",
   "binDesigner.pullTab.width": "Ширина язичка",
   "binDesigner.pullTab.widthUnit": "Одиниця ширини",

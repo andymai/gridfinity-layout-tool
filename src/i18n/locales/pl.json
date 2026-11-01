@@ -7,7 +7,7 @@
   "binDesigner.pullTab.side.back": "Tył",
   "binDesigner.pullTab.side.left": "Lewa",
   "binDesigner.pullTab.side.right": "Prawa",
-  "binDesigner.pullTab.wallTooShort": "Na ściance krótszej niż 22 mm nie zmieści się uchwyt.",
+  "binDesigner.pullTab.wallTooShort": "Na ściance krótszej niż {min} mm nie zmieści się uchwyt.",
   "binDesigner.pullTab.thickness": "Grubość ścianki i uchwytu",
   "binDesigner.pullTab.width": "Szerokość uchwytu",
   "binDesigner.pullTab.widthUnit": "Jednostka szerokości",

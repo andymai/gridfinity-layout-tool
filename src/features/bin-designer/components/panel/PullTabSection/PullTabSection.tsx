@@ -14,6 +14,7 @@ import {
   PULL_TAB_LIMITS,
   PULL_TAB_WALLS,
   MIN_PULL_TAB_WIDTH,
+  PULL_TAB_END_CLEARANCE_MM,
   availablePullTabWidth,
 } from '@/shared/utils/pullTabPlan';
 import type { PullTabPlan } from '@/shared/utils/pullTabPlan';
@@ -58,16 +59,22 @@ export function PullTabSection() {
   const enabled = { ...params, pullTab: { ...tab, enabled: true } };
   const plans = planPullTabs(enabled, rim, params.wallThickness);
   // The steppers show the longest wall's tab: the one the settings reach
-  // unclamped. A shorter wall's tab is narrower, which the axis hints report.
+  // unclamped, so a switch between mm and % keeps that tab's width. A shorter
+  // wall's tab is narrower, which the axis hints report.
   const effective = plans.reduce<PullTabPlan | null>(
-    (widest, plan) => (widest && widest.width >= plan.width ? widest : plan),
+    (longest, plan) =>
+      longest &&
+      availablePullTabWidth(params, longest.side) >= availablePullTabWidth(params, plan.side)
+        ? longest
+        : plan,
     null
   );
   const longestWall = Math.max(...walls.map((wall) => availablePullTabWidth(params, wall)));
   const tooShort = walls.some((wall) => availablePullTabWidth(params, wall) < MIN_PULL_TAB_WIDTH);
-  const belowRim = effective
-    ? Math.max(0, rim - effective.recessTop + effective.recessHeight).toFixed(1)
-    : '0';
+  const belowRim = Math.max(
+    0,
+    ...plans.map((plan) => rim - plan.recessTop + plan.recessHeight)
+  ).toFixed(1);
   const tabWidths = perAxis(plans, (plan) => plan.width);
   const recessWidths = perAxis(plans, (plan) => plan.recessWidth);
   const toggleWall = (wall: PullTabWall) => {
@@ -136,7 +143,13 @@ export function PullTabSection() {
               onToggle={toggleWall}
             />
           </div>
-          {tooShort && <Hint>{t('binDesigner.pullTab.wallTooShort')}</Hint>}
+          {tooShort && (
+            <Hint>
+              {t('binDesigner.pullTab.wallTooShort', {
+                min: String(MIN_PULL_TAB_WIDTH + PULL_TAB_END_CLEARANCE_MM),
+              })}
+            </Hint>
+          )}
           {field('thickness', params.wallThickness, 4)}
           <ShapePicker
             value={tab.widthMode}

@@ -16,7 +16,7 @@ export interface PullTabConfig {
    * Absent for those two, so a design saved before this existed builds
    * byte-identical geometry, and one that visits the picker and comes back
    * fingerprints as one that never did (`communityParamsFingerprint` hashes
-   * `params` wholesale). `resolvePullTabWalls` is the only reader.
+   * `params` wholesale). Geometry reads it only through `resolvePullTabWalls`.
    */
   readonly walls?: PullTabWall[];
   readonly backRecess: boolean;

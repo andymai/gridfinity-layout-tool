@@ -7,7 +7,7 @@
   "binDesigner.pullTab.side.back": "Retro",
   "binDesigner.pullTab.side.left": "Sinistra",
   "binDesigner.pullTab.side.right": "Destra",
-  "binDesigner.pullTab.wallTooShort": "Una parete più corta di 22 mm non ha spazio per una linguetta.",
+  "binDesigner.pullTab.wallTooShort": "Una parete più corta di {min} mm non ha spazio per una linguetta.",
   "binDesigner.pullTab.thickness": "Spessore parete e linguetta",
   "binDesigner.pullTab.width": "Larghezza linguetta",
   "binDesigner.pullTab.widthUnit": "Unità della larghezza",

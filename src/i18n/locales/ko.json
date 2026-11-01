@@ -7,7 +7,7 @@
   "binDesigner.pullTab.side.back": "뒤",
   "binDesigner.pullTab.side.left": "왼쪽",
   "binDesigner.pullTab.side.right": "오른쪽",
-  "binDesigner.pullTab.wallTooShort": "22 mm보다 짧은 벽에는 탭을 넣을 공간이 없습니다.",
+  "binDesigner.pullTab.wallTooShort": "{min} mm보다 짧은 벽에는 탭을 넣을 공간이 없습니다.",
   "binDesigner.pullTab.thickness": "벽과 탭 두께",
   "binDesigner.pullTab.width": "탭 너비",
   "binDesigner.pullTab.widthUnit": "탭 너비 단위",

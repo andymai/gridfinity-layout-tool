@@ -7,7 +7,7 @@
   "binDesigner.pullTab.side.back": "Achter",
   "binDesigner.pullTab.side.left": "Links",
   "binDesigner.pullTab.side.right": "Rechts",
-  "binDesigner.pullTab.wallTooShort": "Een wand korter dan 22 mm heeft geen ruimte voor een lip.",
+  "binDesigner.pullTab.wallTooShort": "Een wand korter dan {min} mm heeft geen ruimte voor een lip.",
   "binDesigner.pullTab.thickness": "Dikte van wand en lip",
   "binDesigner.pullTab.width": "Breedte van treklip",
   "binDesigner.pullTab.widthUnit": "Eenheid voor lipbreedte",

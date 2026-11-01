@@ -7,7 +7,7 @@
   "binDesigner.pullTab.side.back": "Zadní",
   "binDesigner.pullTab.side.left": "Levá",
   "binDesigner.pullTab.side.right": "Pravá",
-  "binDesigner.pullTab.wallTooShort": "Na stěnu kratší než 22 mm se úchyt nevejde.",
+  "binDesigner.pullTab.wallTooShort": "Na stěnu kratší než {min} mm se úchyt nevejde.",
   "binDesigner.pullTab.thickness": "Tloušťka stěny a úchytu",
   "binDesigner.pullTab.width": "Šířka úchytu",
   "binDesigner.pullTab.widthUnit": "Jednotka šířky",

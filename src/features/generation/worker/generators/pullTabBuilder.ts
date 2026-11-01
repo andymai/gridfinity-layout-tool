@@ -66,13 +66,9 @@ function joinAll(scope: DisposalScope, shapes: Shape3D[]): Shape3D | null {
   return unwrap(fuseAll(shapes as ValidSolid[]));
 }
 
-/** Each selected wall's raised body, positioned in the cavity frame. */
-export function buildPullTabs(ctx: PipelineContext): Shape3D[] {
-  return plans(ctx).map((p) => buildPullTabBody(ctx, p));
-}
-
+/** Every selected wall's raised body as one shape, positioned in the cavity frame. */
 export function buildPullTab(ctx: PipelineContext): Shape3D | null {
-  const bodies = buildPullTabs(ctx);
+  const bodies = plans(ctx).map((p) => buildPullTabBody(ctx, p));
   return withScope((scope: DisposalScope) => joinAll(scope, bodies));
 }
 
