@@ -35,6 +35,7 @@
   "binDesigner.pullTab.hollowOnly": "Trekkfliker krever en vanlig hul boks med vegger.",
   "binDesigner.pullTab.noLid": "Slå av lokket for å gi plass til trekkfliken.",
   "binDesigner.pullTab.noOverhang": "Slå av overheng for å bruke en rett vegg.",
+  "binDesigner.pullTab.noRoom": "Flikene gir ikke plass inne i en så liten bin.",
   "binDesigner.pullTab.needsPlainWall": "Trenger en ubrutt vegg: ingen utskjæringer, håndtak, mønstre, tekst eller etikettspor.",
   "binDesigner.base.rimFillet": "Rund av toppkanten",
   "binDesigner.base.rimFillet.radius": "Radius på toppkant",

@@ -35,6 +35,7 @@
   "binDesigner.pullTab.hollowOnly": "Язички потребують стандартного порожнистого контейнера зі стінками.",
   "binDesigner.pullTab.noLid": "Вимкніть кришку, щоб звільнити місце для язичка.",
   "binDesigner.pullTab.noOverhang": "Вимкніть звис для прямої стінки язичка.",
+  "binDesigner.pullTab.noRoom": "Язички не залишають місця всередині такого малого bin.",
   "binDesigner.pullTab.needsPlainWall": "Потрібна суцільна стінка: без вирізів, ручок, візерунків, тексту й пазів етикеток.",
   "binDesigner.base.rimFillet": "Заокруглити верхній край",
   "binDesigner.base.rimFillet.radius": "Радіус верхнього краю",

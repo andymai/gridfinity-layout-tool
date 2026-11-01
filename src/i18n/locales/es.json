@@ -35,6 +35,7 @@
   "binDesigner.pullTab.hollowOnly": "Las lengüetas requieren un contenedor estándar hueco con paredes.",
   "binDesigner.pullTab.noLid": "Desactiva la tapa para dejar espacio a la lengüeta.",
   "binDesigner.pullTab.noOverhang": "Desactiva el voladizo para usar una pared recta.",
+  "binDesigner.pullTab.noRoom": "Las lengüetas no dejan espacio dentro de un bin tan pequeño.",
   "binDesigner.pullTab.needsPlainWall": "Necesita una pared continua: sin recortes, asas, patrones, texto ni ranuras de etiquetas.",
   "binDesigner.base.rimFillet": "Redondear borde superior",
   "binDesigner.base.rimFillet.radius": "Radio del borde",

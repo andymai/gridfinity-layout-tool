@@ -35,6 +35,7 @@
   "binDesigner.pullTab.hollowOnly": "Úchyty vyžadují standardní dutý box se stěnami.",
   "binDesigner.pullTab.noLid": "Vypněte víko, aby vznikl prostor pro úchyt.",
   "binDesigner.pullTab.noOverhang": "Vypněte přesah, aby byla stěna rovná.",
+  "binDesigner.pullTab.noRoom": "Úchyty v tak malé nádobě nenechají uvnitř žádné místo.",
   "binDesigner.pullTab.needsPlainWall": "Potřebuje souvislou stěnu: bez výřezů, madel, vzorů, textu a drážek na štítky.",
   "binDesigner.base.rimFillet": "Zaoblit horní okraj",
   "binDesigner.base.rimFillet.radius": "Poloměr horního okraje",

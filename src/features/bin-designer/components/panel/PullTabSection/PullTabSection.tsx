@@ -174,7 +174,11 @@ export function PullTabSection() {
             {field('height', 3, 40, 1)}
           </div>
           {tabWidths ? (
-            <Hint info={t('binDesigner.pullTab.percentHintDetail')}>
+            <Hint
+              info={
+                tab.widthMode === 'percent' ? t('binDesigner.pullTab.percentHintDetail') : undefined
+              }
+            >
               {t('binDesigner.pullTab.widthPerAxis', {
                 front: tabWidths.front,
                 side: tabWidths.side,

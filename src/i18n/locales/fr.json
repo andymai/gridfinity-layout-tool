@@ -35,6 +35,7 @@
   "binDesigner.pullTab.hollowOnly": "Les languettes nécessitent un bac standard creux avec des parois.",
   "binDesigner.pullTab.noLid": "Désactivez le couvercle pour laisser place à la languette.",
   "binDesigner.pullTab.noOverhang": "Désactivez le débord pour obtenir une paroi droite.",
+  "binDesigner.pullTab.noRoom": "Les languettes ne laissent aucune place dans un bin aussi petit.",
   "binDesigner.pullTab.needsPlainWall": "Nécessite une paroi continue : sans découpes, poignées, motifs, textes ni fentes d’étiquettes.",
   "binDesigner.base.rimFillet": "Arrondir le bord supérieur",
   "binDesigner.base.rimFillet.radius": "Rayon du bord",

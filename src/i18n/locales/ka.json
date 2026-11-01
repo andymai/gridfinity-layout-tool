@@ -35,6 +35,7 @@
   "binDesigner.pullTab.hollowOnly": "გამოსაწევ ენებს სტანდარტული ღრუ კონტეინერი სჭირდება კედლებით.",
   "binDesigner.pullTab.noLid": "გამორთეთ თავსახური, რათა ამაღლებული ენისთვის ადგილი დარჩეს.",
   "binDesigner.pullTab.noOverhang": "გამორთეთ შვერილი სწორი კედლის გამოსაყენებლად.",
+  "binDesigner.pullTab.noRoom": "ასეთ პატარა ბინში ენები შიგნით ადგილს არ ტოვებს.",
   "binDesigner.pullTab.needsPlainWall": "საჭიროა უწყვეტი კედელი: ამონაჭრების, სახელურების, ნახატების, ტექსტისა და ეტიკეტის ღარების გარეშე.",
   "binDesigner.base.rimFillet": "ზედა კიდის მომრგვალება",
   "binDesigner.base.rimFillet.radius": "ზედა კიდის რადიუსი",

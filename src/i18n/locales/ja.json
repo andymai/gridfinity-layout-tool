@@ -35,6 +35,7 @@
   "binDesigner.pullTab.hollowOnly": "プルタブには壁のある標準の中空ビンが必要です。",
   "binDesigner.pullTab.noLid": "タブのスペースを確保するため、ふたをオフにしてください。",
   "binDesigner.pullTab.noOverhang": "まっすぐな壁にするため、張り出しをオフにしてください。",
+  "binDesigner.pullTab.noRoom": "このサイズのビンでは、タブで内側に空間が残りません。",
   "binDesigner.pullTab.needsPlainWall": "連続した壁が必要です。切り欠き、取っ手、模様、文字、ラベルスロットは使えません。",
   "binDesigner.base.rimFillet": "上縁を丸める",
   "binDesigner.base.rimFillet.radius": "上縁の丸み半径",

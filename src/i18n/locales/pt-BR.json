@@ -35,6 +35,7 @@
   "binDesigner.pullTab.hollowOnly": "Abas exigem um recipiente padrão oco com paredes.",
   "binDesigner.pullTab.noLid": "Desative a tampa para dar espaço à aba elevada.",
   "binDesigner.pullTab.noOverhang": "Desative a saliência para usar uma parede reta.",
+  "binDesigner.pullTab.noRoom": "As abas não deixam espaço dentro de um bin tão pequeno.",
   "binDesigner.pullTab.needsPlainWall": "Precisa de uma parede contínua: sem recortes, alças, padrões, texto ou ranhuras de etiquetas.",
   "binDesigner.base.rimFillet": "Arredondar borda superior",
   "binDesigner.base.rimFillet.radius": "Raio da borda",

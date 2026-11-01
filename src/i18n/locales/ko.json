@@ -35,6 +35,7 @@
   "binDesigner.pullTab.hollowOnly": "당김 탭에는 벽이 있는 표준 중공 빈이 필요합니다.",
   "binDesigner.pullTab.noLid": "돌출 탭 공간을 확보하려면 뚜껑을 끄세요.",
   "binDesigner.pullTab.noOverhang": "곧은 벽을 사용하려면 돌출부를 끄세요.",
+  "binDesigner.pullTab.noRoom": "이렇게 작은 bin에서는 탭 때문에 안쪽 공간이 남지 않습니다.",
   "binDesigner.pullTab.needsPlainWall": "연속된 벽이 필요합니다. 벽 절개, 손잡이, 패턴, 텍스트, 라벨 슬롯은 쓸 수 없습니다.",
   "binDesigner.base.rimFillet": "상단 테두리 둥글게",
   "binDesigner.base.rimFillet.radius": "테두리 라운딩 반지름",

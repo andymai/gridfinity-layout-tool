@@ -35,6 +35,7 @@
   "binDesigner.pullTab.hollowOnly": "Dragflikar kräver en vanlig ihålig låda med väggar.",
   "binDesigner.pullTab.noLid": "Stäng av locket för att ge plats åt dragfliken.",
   "binDesigner.pullTab.noOverhang": "Stäng av överhänget för att använda en rak vägg.",
+  "binDesigner.pullTab.noRoom": "Flikarna lämnar inget utrymme inne i en så liten bin.",
   "binDesigner.pullTab.needsPlainWall": "Kräver en obruten vägg: inga utskärningar, handtag, mönster, text eller etikettspår.",
   "binDesigner.base.rimFillet": "Runda överkanten",
   "binDesigner.base.rimFillet.radius": "Överkantens radie",

@@ -35,6 +35,7 @@
   "binDesigner.pullTab.hollowOnly": "提拉片需要有壁的标准中空盒体。",
   "binDesigner.pullTab.noLid": "请关闭盖子，为凸起的提拉片留出空间。",
   "binDesigner.pullTab.noOverhang": "请关闭外伸，使用笔直的拉片壁。",
+  "binDesigner.pullTab.noRoom": "这么小的 bin 加上拉片后内部没有空间。",
   "binDesigner.pullTab.needsPlainWall": "需要连续的壁面：不能有开口、把手、纹样、文字或标签槽。",
   "binDesigner.base.rimFillet": "圆滑顶部边缘",
   "binDesigner.base.rimFillet.radius": "顶部边缘圆角半径",

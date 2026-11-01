@@ -35,6 +35,7 @@
   "binDesigner.pullTab.hollowOnly": "Zuglaschen benötigen einen hohlen Standardbehälter mit Wänden.",
   "binDesigner.pullTab.noLid": "Deckel ausschalten, um Platz für die erhöhte Zuglasche zu schaffen.",
   "binDesigner.pullTab.noOverhang": "Überhang ausschalten, um eine gerade Wand für die Zuglasche zu erhalten.",
+  "binDesigner.pullTab.noRoom": "Die Laschen lassen in einem so kleinen Bin innen keinen Platz.",
   "binDesigner.pullTab.needsPlainWall": "Braucht eine durchgehende Wand: keine Ausschnitte, Griffe, Muster, Texte oder Etikettenschlitze.",
   "binDesigner.base.rimFillet": "Oberen Rand abrunden",
   "binDesigner.base.rimFillet.radius": "Rundungsradius des Rands",

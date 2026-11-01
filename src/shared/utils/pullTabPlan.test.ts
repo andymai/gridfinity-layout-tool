@@ -9,6 +9,7 @@ import {
   resolvePullTabWalls,
   pullTabWallFields,
   pullTabWallInset,
+  pullTabUnavailableReason,
 } from './pullTabPlan';
 import { migrateParams } from '@/features/bin-designer/constants/paramMigration';
 import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
@@ -262,6 +263,20 @@ describe('pull tabs on more than one wall', () => {
       ['right', 58],
     ]);
     expect(planPullTabs({ ...p, pullTab: { ...p.pullTab, enabled: false } }, 35, 1.2)).toEqual([]);
+  });
+
+  it('refuses tabs whose thickened walls would close the cavity', () => {
+    const narrow = (...walls: PullTabWall[]) => ({
+      ...on(...walls),
+      width: 2,
+      depth: 0.5,
+      gridUnitMm: 16,
+      wallThickness: 1.6,
+      pullTab: resolvePullTab({ ...on(...walls).pullTab, thickness: 4 }),
+    });
+    expect(pullTabUnavailableReason(narrow('front'))).toBeUndefined();
+    expect(pullTabUnavailableReason(narrow('front', 'back'))).toBe('binDesigner.pullTab.noRoom');
+    expect(pullTabUnavailableReason(narrow('left', 'right'))).toBeUndefined();
   });
 
   it('skips the tab on a wall too short for one, keeping the others', () => {

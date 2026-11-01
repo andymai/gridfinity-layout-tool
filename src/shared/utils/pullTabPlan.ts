@@ -1,5 +1,6 @@
 import type { BinParams, PullTabConfig, PullTabWall } from '@/shared/types/bin';
 import { isPartialMask } from './cellMask';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { effectiveRimFilletRadius } from './rimFillet';
 
 export const DEFAULT_PULL_TAB: PullTabConfig = {
@@ -125,6 +126,11 @@ export type PullTabHost = Partial<
     | 'wallLabelSlots'
     | 'surfaceText'
     | 'pullTab'
+    | 'width'
+    | 'depth'
+    | 'gridUnitMm'
+    | 'gridUnitMmY'
+    | 'wallThickness'
   >
 > & {
   base: Pick<BinParams['base'], 'style'> & Partial<BinParams['base']>;
@@ -156,7 +162,35 @@ export function pullTabUnavailableReason(p: PullTabHost): string | undefined {
     Object.values(p.surfaceText?.walls ?? {}).some((text) => text.trim())
   )
     return 'binDesigner.pullTab.needsPlainWall';
+  if (thickenedCavityMm(p) <= 0) return 'binDesigner.pullTab.noRoom';
   return undefined;
+}
+
+/**
+ * The cavity's smaller side once every chosen wall grows inward, or infinity
+ * when the bin's size is not known. Tabs on opposite walls of a narrow bin can
+ * otherwise close the cavity up entirely.
+ */
+function thickenedCavityMm(p: PullTabHost): number {
+  const { width, depth, gridUnitMm, wallThickness } = p;
+  if (
+    width === undefined ||
+    depth === undefined ||
+    gridUnitMm === undefined ||
+    wallThickness === undefined
+  )
+    return Infinity;
+  const tab = resolvePullTab(p.pullTab);
+  const extra = Math.max(0, tab.thickness - wallThickness);
+  const walls = resolvePullTabWalls(tab);
+  const grown = (a: PullTabWall, b: PullTabWall): number =>
+    extra * ((walls.includes(a) ? 1 : 0) + (walls.includes(b) ? 1 : 0));
+  const inner = (span: number, a: PullTabWall, b: PullTabWall): number =>
+    span - GRIDFINITY_SPEC.TOLERANCE - 2 * wallThickness - grown(a, b);
+  return Math.min(
+    inner(width * gridUnitMm, 'left', 'right'),
+    inner(depth * (p.gridUnitMmY ?? gridUnitMm), 'front', 'back')
+  );
 }
 
 export function activePullTab(p: BinParams): PullTabConfig | null {

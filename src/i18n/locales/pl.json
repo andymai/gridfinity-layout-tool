@@ -35,6 +35,7 @@
   "binDesigner.pullTab.hollowOnly": "Uchwyty wymagają standardowego pustego pojemnika ze ściankami.",
   "binDesigner.pullTab.noLid": "Wyłącz pokrywkę, aby zrobić miejsce na uchwyt.",
   "binDesigner.pullTab.noOverhang": "Wyłącz nawis, aby użyć prostej ścianki.",
+  "binDesigner.pullTab.noRoom": "Uchwyty nie zostawiają miejsca w tak małym binie.",
   "binDesigner.pullTab.needsPlainWall": "Wymaga ciągłej ścianki: bez wycięć, rączek, wzorów, tekstu i szczelin na etykiety.",
   "binDesigner.base.rimFillet": "Zaokrąglij górną krawędź",
   "binDesigner.base.rimFillet.radius": "Promień górnej krawędzi",
