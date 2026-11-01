@@ -64,6 +64,7 @@ src/features/generation/worker/generators/pullTabBuilder.ts
   s_f721a21584cb95::t_7ba4868cbd363e 51-55,57-58,61,63-64,96-101,121-123,247,294
   s_f721a21584cb95::t_4de293494fba6d 23,103,170-174,234-246,248-249,251-252,255-257,266,275,278,284-293,295-320
   s_f721a21584cb95::t_3cf1ede965e586 102
+  s_f721a21584cb95::t_760ffd86255d4a 104,175
 src/features/bin-designer/components/panel/PullTabSection/PullTabSection.test.tsx
   s_f721a21584cb95::t_f62b478171ca8b 60-67,69,71,73-76
   s_f721a21584cb95::t_88519dee2f444c 16-19,21-25,30-51,53-54,56-59,68,70,72,77,168-180
