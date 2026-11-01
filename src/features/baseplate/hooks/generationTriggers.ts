@@ -140,6 +140,8 @@ export function selectGenerationTriggers(state: LayoutState) {
     magnetHoles: bp.magnetHoles,
     magnetDiameter: bp.magnetDiameter,
     magnetDepth: bp.magnetDepth,
+    magnetCrushRibs: bp.magnetHoles && bp.magnetCrushRibs === true,
+    magnetChamfer: bp.magnetHoles && bp.magnetChamfer === true,
     // Layout-scoped magnet anchor (edge vs legacy center). Changes hole XY on
     // grids >42mm, so it must re-trigger BREP like the other magnet params.
     magnetAnchor: state.layout.magnetAnchor,

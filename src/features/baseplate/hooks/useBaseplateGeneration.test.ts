@@ -96,6 +96,24 @@ describe('selectGenerationTriggers', () => {
     expect(shallowEqual(selectGenerationTriggers(off), selectGenerationTriggers(on))).toBe(false);
   });
 
+  it('regenerates when magnet crush ribs or the chamfered mouth toggle', () => {
+    const plain = selectGenerationTriggers(makeState(undefined, { magnetHoles: true }));
+    for (const flag of ['magnetCrushRibs', 'magnetChamfer'] as const) {
+      const on = selectGenerationTriggers(
+        makeState(undefined, { magnetHoles: true, [flag]: true })
+      );
+      expect(shallowEqual(plain, on)).toBe(false);
+    }
+  });
+
+  it('ignores the press-fit flags while magnet holes are off', () => {
+    const a = selectGenerationTriggers(makeState(undefined));
+    const b = selectGenerationTriggers(
+      makeState(undefined, { magnetCrushRibs: true, magnetChamfer: true })
+    );
+    expect(shallowEqual(a, b)).toBe(true);
+  });
+
   it('regenerates when eco plate mode toggles', () => {
     const off = makeState(undefined, { ecoPlate: false });
     const on = makeState(undefined, { ecoPlate: true });

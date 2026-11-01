@@ -269,29 +269,29 @@ describe('magnet hole press-fit options', () => {
     const large = buildFullParams(stored, 11, 5, 42, 'end', 'end');
     const tiling = computeBaseplateTiling(large, 256, 256);
     expect(tiling.isSplit).toBe(true);
-    const first = [...groupPiecesByFingerprint(tiling.pieces, large).values()].find((g) =>
-      g.indices.includes(0)
-    );
-    if (first === undefined) throw new Error('no group holds the first piece');
-    const piece = first.params;
-    const holes = planMagnetPockets(piece.width, piece.depth, R, {
-      fractionalEdgeX: piece.fractionalEdgeX,
-      fractionalEdgeY: piece.fractionalEdgeY,
-      gridUnitMm: piece.gridUnitMm,
-    }).plain;
-    expect(holes.length).toBe(piece.width * piece.depth * 4);
+    const groups = [...groupPiecesByFingerprint(tiling.pieces, large).values()];
+    expect(groups.length).toBeGreaterThan(1);
+    for (const { params: piece } of groups) {
+      const name = `${piece.width}x${piece.depth} piece`;
+      const holes = planMagnetPockets(piece.width, piece.depth, R, {
+        fractionalEdgeX: piece.fractionalEdgeX,
+        fractionalEdgeY: piece.fractionalEdgeY,
+        gridUnitMm: piece.gridUnitMm,
+      }).plain;
+      expect(holes.length).toBe(piece.width * piece.depth * 4);
 
-    for (const [label, pieceMesh] of [
-      ['piece', generateBrepPlate(piece, () => {}, true)],
-      ['piece draft', generateDirectPlate(piece, () => {})],
-    ] as const) {
-      for (const [x, y] of holes) {
-        const p = holeProfile(pieceMesh, x, y);
-        expectBoreSeated(pieceMesh, p, piece, `${label} hole at ${x},${y}`);
-        expectRibbed(p, `${label} hole at ${x},${y}`);
+      for (const [label, pieceMesh] of [
+        [name, generateBrepPlate(piece, () => {}, true)],
+        [`${name} draft`, generateDirectPlate(piece, () => {})],
+      ] as const) {
+        for (const [x, y] of holes) {
+          const p = holeProfile(pieceMesh, x, y);
+          expectBoreSeated(pieceMesh, p, piece, `${label} hole at ${x},${y}`);
+          expectRibbed(p, `${label} hole at ${x},${y}`);
+        }
       }
     }
-  }, 120_000);
+  }, 240_000);
 });
 
 /**
