@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'pull-tabs-any-wall',
+    date: '2026-11-01',
+    kind: 'improved',
+    title: { en: 'Pull tabs on any wall, or on all four' },
+    body: {
+      en: 'Pull tabs can now go on any of the four walls, as many as you like, so a bin can be lifted from both ends. Pick the walls under Pull tab on the Features page of the designer. Every tab shares the same size settings, and each wall with a tab is thickened on the inside.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'bin-designer-video-tips',
     date: '2026-11-01',
     kind: 'new',
