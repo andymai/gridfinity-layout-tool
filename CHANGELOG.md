@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.527.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.526.2...gridfinity-layout-tool-v4.527.0) (2026-11-01)
+
+
+### Features
+
+* **baseplate:** add screw-hole edge inset and inner cell corner ([#4765](https://github.com/andymai/gridfinity-layout-tool/issues/4765)) ([105b244](https://github.com/andymai/gridfinity-layout-tool/commit/105b244d9ea259fc2ac6828019ecb02c0a7c261e))
+
 ## [4.526.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.526.1...gridfinity-layout-tool-v4.526.2) (2026-10-31)
 
 
