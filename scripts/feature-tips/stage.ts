@@ -158,16 +158,21 @@ async function setUpStage(
           '/src/features/bin-designer/constants/defaults.ts' as string
         )) as DefaultsModule;
         const before = useDesignerStore.getState().generation.mesh;
-        const merged: Record<string, unknown> = { ...DEFAULT_BIN_PARAMS };
-        for (const [k, v] of Object.entries(o)) {
-          const d = merged[k];
-          merged[k] =
-            v && typeof v === 'object' && !Array.isArray(v) && d && typeof d === 'object'
-              ? { ...d, ...v }
-              : v;
-        }
+        // Overrides name only what a clip changes (one wall's cutout, say), so
+        // nested objects merge into the defaults all the way down.
+        const isRecord = (x: unknown): x is Record<string, unknown> =>
+          typeof x === 'object' && x !== null && !Array.isArray(x);
+        const deepMerge = (d: unknown, v: unknown): unknown => {
+          if (!isRecord(d) || !isRecord(v)) return v;
+          const out: Record<string, unknown> = { ...d };
+          for (const [k, x] of Object.entries(v)) out[k] = deepMerge(d[k], x);
+          return out;
+        };
+        // A fresh copy: the store freezes what it holds, and some setters write
+        // into the params they are given.
+        const merged = structuredClone(deepMerge(DEFAULT_BIN_PARAMS, o)) as Record<string, unknown>;
         // setParams merges, so optional fields a previous design set must be cleared.
-        for (const k of ['cellMask', 'surfaceText', 'pullTab'])
+        for (const k of ['cellMask', 'surfaceText', 'pullTab', 'slant'])
           if (!(k in o)) merged[k] = undefined;
         useDesignerStore.getState().setParams(merged);
         // A Manifold draft lands first and can show holes the exact build fills,

@@ -5,7 +5,7 @@ import {
 import type { LidAttachment } from '../../src/features/bin-designer/types/lid';
 import { FPS } from './encode';
 import { CLIP_CAMERA, lerpView } from './stage';
-import type { Bounds, ParamOverrides, Stage, ThemeFrames, View } from './stage';
+import type { Bounds, Camera, ParamOverrides, Stage, ThemeFrames, View } from './stage';
 
 export const easeInOut = (t: number): number => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2);
 
@@ -53,39 +53,145 @@ async function renderRun(
   return frames;
 }
 
-const COMPARTMENTS = { cols: 2, rows: 1, thickness: 1.2, cells: [0, 1] };
+interface Sweep {
+  id: string;
+  color: string;
+  /** The design without the feature. */
+  base: ParamOverrides;
+  /** The design with the feature at `value`. */
+  at: (value: number) => ParamOverrides;
+  from: number;
+  to: number;
+  /** Rounds each swept value, so the frames ask for buildable sizes. */
+  step: number;
+  camera?: Camera;
+}
 
-const scoops: Tip = {
+/**
+ * Plain bin, the feature appearing and growing from `from` to `to`, a hold,
+ * then the same frames back. Long holds on both ends, so it reads as before
+ * and after.
+ */
+function sweepTip({ id, color, base, at, from, to, step, camera = CLIP_CAMERA }: Sweep): Tip {
+  return {
+    id,
+    color,
+    async capture({ stage }) {
+      stage.setTint(color);
+      await stage.setParams(at(to));
+      const view = await stage.fit(camera, await stage.bounds());
+      const grow = ramp(30, from, to).map((v) => ({ params: at(Math.round(v / step) * step) }));
+      const before = 21;
+      const after = 30;
+      const out = await renderRun(stage, view, [
+        ...hold(before, { params: base }),
+        ...grow,
+        ...hold(after, { params: at(to) }),
+      ]);
+      const back = out.slice(before, before + grow.length).reverse();
+      return { frames: [...out, ...back], poster: before + grow.length + after / 2 };
+    },
+  };
+}
+
+const COMPARTMENTS = { cols: 2, rows: 1, thickness: 1.2, cells: [0, 1] };
+const BIN = { width: 2, depth: 2, height: 4 };
+// Features on the outside of a bin hide from the raised camera that suits
+// the inside, so each of these is shot from where it shows.
+const FACING_FRONT_WALL: Camera = { ...CLIP_CAMERA, az: -65, el: 25 };
+const TOTE = { width: 3, depth: 2, height: 6 };
+
+const scoops = sweepTip({
   id: 'scoops',
   color: '#2dd4bf',
-  async capture({ stage }) {
-    stage.setTint(this.color);
-    const base = { width: 2, depth: 2, height: 4, compartments: COMPARTMENTS };
-    const scoop = (radius: number): ParamOverrides => ({
-      ...base,
-      scoop: { enabled: true, radius, style: 'curved', side: 'front' },
-    });
-    // The scoop rises up the front wall's inner face, which faces away from a
-    // front camera, so this one clip looks from the back at the same height.
-    await stage.setParams(scoop(25));
-    const view = await stage.fit(
-      { ...CLIP_CAMERA, az: CLIP_CAMERA.az + 180 },
-      await stage.bounds()
-    );
-    const grow = ramp(30, 5, 25).map((r) => ({ params: scoop(Math.round(r * 2) / 2) }));
-    // Long holds on the plain bin and the full scoop, so it reads as before and after.
-    const before = 21;
-    const after = 30;
-    const out = await renderRun(stage, view, [
-      ...hold(before, { params: base }),
-      ...grow,
-      ...hold(after, { params: scoop(25) }),
-    ]);
-    // The way back is the way out reversed: same designs, so reuse the frames.
-    const back = out.slice(before, before + grow.length).reverse();
-    return { frames: [...out, ...back], poster: before + grow.length + after / 2 };
-  },
-};
+  base: { ...BIN, compartments: COMPARTMENTS },
+  at: (radius) => ({
+    ...BIN,
+    compartments: COMPARTMENTS,
+    scoop: { enabled: true, radius, style: 'curved', side: 'front' },
+  }),
+  from: 5,
+  to: 25,
+  step: 0.5,
+  // The scoop rises up the front wall's inner face, which faces away from a
+  // front camera, so this one clip looks from the back at the same height.
+  camera: { ...CLIP_CAMERA, az: CLIP_CAMERA.az + 180 },
+});
+
+const handles = sweepTip({
+  id: 'handles',
+  color: '#fb923c',
+  base: TOTE,
+  at: (width) => ({ ...TOTE, handles: { enabled: true, width } }),
+  from: 20,
+  to: 55,
+  step: 1,
+  camera: FACING_FRONT_WALL,
+});
+
+const wallCutouts = sweepTip({
+  id: 'wallCutouts',
+  color: '#4ade80',
+  base: TOTE,
+  at: (depth) => ({
+    ...TOTE,
+    walls: {
+      enabled: true,
+      front: { enabled: true, width: 60, depth },
+      left: { enabled: false },
+      right: { enabled: false },
+    },
+  }),
+  from: 15,
+  to: 55,
+  step: 1,
+  camera: { ...CLIP_CAMERA, az: -70, el: 22 },
+});
+
+const labelTabs = sweepTip({
+  id: 'labelTabs',
+  color: '#fbbf24',
+  base: { ...BIN, compartments: COMPARTMENTS },
+  at: (depth) => ({ ...BIN, compartments: COMPARTMENTS, label: { enabled: true, depth } }),
+  from: 6,
+  to: 16,
+  step: 0.5,
+});
+
+const overhang = sweepTip({
+  id: 'overhang',
+  color: '#818cf8',
+  base: BIN,
+  at: (mm) => ({ ...BIN, overhang: { enabled: true, front: mm, right: mm, feet: false } }),
+  from: 3,
+  to: 21,
+  step: 1,
+  // From below, the feet stay on the grid footprint while the body grows past
+  // them; from above, an overhang only reads as a bigger bin.
+  camera: { ...CLIP_CAMERA, el: -35 },
+});
+
+const slant = sweepTip({
+  id: 'slant',
+  color: '#a3e635',
+  base: BIN,
+  at: (angleDeg) => ({ ...BIN, slant: { angleDeg, side: 'front', endSupport: true } }),
+  from: 4,
+  to: 30,
+  step: 1,
+  camera: { ...CLIP_CAMERA, az: 0, el: 10 },
+});
+
+const pullTab = sweepTip({
+  id: 'pullTab',
+  color: '#38bdf8',
+  base: BIN,
+  at: (height) => ({ ...BIN, pullTab: { enabled: true, height, backRecess: true } }),
+  from: 4,
+  to: 16,
+  step: 0.5,
+  camera: FACING_FRONT_WALL,
+});
 
 /** How far each lid type opens: mm for capping and sliding lids; a hinged lid swings to its stop. */
 // From above, a lift reads shorter than a slide, hence the longer lift.
@@ -171,4 +277,13 @@ const lids: Tip = {
   },
 };
 
-export const TIPS_3D: readonly Tip[] = [scoops, lids];
+export const TIPS_3D: readonly Tip[] = [
+  scoops,
+  lids,
+  handles,
+  wallCutouts,
+  labelTabs,
+  overhang,
+  slant,
+  pullTab,
+];
