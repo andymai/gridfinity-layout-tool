@@ -1,0 +1,182 @@
+src/shared/components/InfoDot/InfoDot.test.tsx
+  s_f721a21584cb95::t_9dfbb772289291 1-2,57-153
+.claude/skills/bin-designer/SKILL.md
+  s_f721a21584cb95::t_2ac69e4288196a 86-94
+scripts/feature-tips/encode.ts
+  s_f721a21584cb95::t_b0657c32c4abcf 1-7,10-16,19-27,29-36,40-52,54-68,70-79
+  s_f721a21584cb95::t_8d52fc105ef855 53
+  s_f721a21584cb95::t_03a02028f241ba 17-18,28,69
+  s_f721a21584cb95::t_37f25187b31a6d 8-9,37-39
+src/features/bin-designer/components/panel/ScoopSection/ScoopSection.tsx
+  s_f721a21584cb95::t_c1936f066ecd86 49
+  s_f721a21584cb95::t_b75a614704d985 15
+scripts/feature-tips/stage.ts
+  s_f721a21584cb95::t_63b192bfd42566 435-442,444-445
+  s_f721a21584cb95::t_8bf13858c56689 30,368-370
+  s_f721a21584cb95::t_501af43cb24492 399-401,407-408,410,459-462
+  s_f721a21584cb95::t_47995a2f27906c 270,272-273,276-284,286-292
+  s_f721a21584cb95::t_5d3ecf667221f6 43-62,72-73,76,171-172,176,210,295-304,355,364-365,394-395,397-398,414-426
+  s_f721a21584cb95::t_8d52fc105ef855 74-75,115,173-175,177-180,211,396,402-406,409,411-413
+  s_f721a21584cb95::t_7ed9ab853f0f15 220,230-236
+  s_f721a21584cb95::t_1650b7e0677fe8 133
+  s_f721a21584cb95::t_d89325100de558 443,466
+  s_f721a21584cb95::t_837e051be7be6d 489
+  s_f721a21584cb95::t_f5fac9119e3ab3 1-15,21,23-29,31-34,42,63-71,77-114,116-129,131,134-145,158,160-170,181-209,212-219,222-229,237-269,271,274-275,293-294,305-338,340-346,350,353-354,356-357,362-363,427-434,448-449,457,468-488,490-495
+  s_f721a21584cb95::t_d8b0253d3086f3 146-157,159
+  s_f721a21584cb95::t_354175b59ae98f 463-465,467
+  s_f721a21584cb95::t_e992ccf91a1454 16-20,22,339,347-349,351-352,358-361,366-367,371-393
+  s_f721a21584cb95::t_83a2e9f490571b 35-41
+  s_f721a21584cb95::t_0ec13f0e47eadb 130,132,285
+  s_f721a21584cb95::t_8823f667a09cd6 221
+  s_f721a21584cb95::t_d1969aa2c8c991 446-447,450-456,458
+  s_f721a21584cb95::t_36cb3081c5630b 496-503
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_f721a21584cb95::t_c1936f066ecd86 163-167
+  s_f721a21584cb95::t_b75a614704d985 47
+src/features/bin-designer/data/featureTips/featureTips.test.ts
+  s_f721a21584cb95::t_c60c7a9a9af7b8 4
+  s_f721a21584cb95::t_08dd5b8218e01a 1-3,5-40
+scripts/doc-budget.json
+  s_f721a21584cb95::t_b4647d08b30ba9 7
+scripts/feature-tips/ui.ts
+  s_f721a21584cb95::t_3e2d3c4659553a 1-12,14-80,96-143,146-160,162-172,176-196,199-200,207-216,222-224,226-227,233-267,269-273,278-281,283-295,300-346,350-361,367,369-372
+  s_f721a21584cb95::t_0ec13f0e47eadb 347-349,362-364
+  s_f721a21584cb95::t_76a134f90ed330 145,225,228-232
+  s_f721a21584cb95::t_5310e7a474b994 81-95
+  s_f721a21584cb95::t_d16513ebb3919b 197-198,217-219,221,268,274-275,277,282,296-297,299
+  s_f721a21584cb95::t_37f25187b31a6d 13,144,161,173-175,201-206,368
+  s_f721a21584cb95::t_c27d136131b193 365-366
+  s_f721a21584cb95::t_488799e3a88b12 220
+  s_f721a21584cb95::t_a099126b5f2973 276
+  s_f721a21584cb95::t_d5689fb7a1b08d 298
+src/features/bin-designer/components/FeatureTip/FeatureTip.tsx
+  s_f721a21584cb95::t_0c299f14ee3a3f 58,70,105
+  s_f721a21584cb95::t_6d4d0366e382b5 1-57,59-69,71-104,106-121,123-141
+  s_f721a21584cb95::t_1bce0129c86629 122
+scripts/feature-tips/tsconfig.json
+  s_f721a21584cb95::t_0ec13f0e47eadb 5-7
+  s_f721a21584cb95::t_ce7cb4764d2cc2 1-4,8-10
+src/i18n/locales/ka.json
+  s_f721a21584cb95::t_8f4ccb89485c13 1931
+  s_f721a21584cb95::t_60d1f64d9127b6 1927-1930
+src/features/bin-designer/data/featureTips/index.ts
+  s_f721a21584cb95::t_8f4ccb89485c13 8-11,22,59-65
+  s_f721a21584cb95::t_8a86aa59f8fef4 1-7,12-21,23-58,66-67
+src/features/bin-designer/data/featureTips/timing.ts
+  s_f721a21584cb95::t_45172cbc3b7a43 1-7
+src/i18n/locales/en.ts
+  s_f721a21584cb95::t_60d1f64d9127b6 2267-2270
+  s_f721a21584cb95::t_8f4ccb89485c13 2271
+  s_f721a21584cb95::t_893f9bcdb19040 2272-2274
+src/i18n/locales/es.json
+  s_f721a21584cb95::t_60d1f64d9127b6 1508-1511
+  s_f721a21584cb95::t_8f4ccb89485c13 1512
+src/i18n/locales/zh-CN.json
+  s_f721a21584cb95::t_8f4ccb89485c13 1512
+  s_f721a21584cb95::t_60d1f64d9127b6 1508-1511
+src/i18n/locales/uk.json
+  s_f721a21584cb95::t_8f4ccb89485c13 1512
+  s_f721a21584cb95::t_60d1f64d9127b6 1508-1511
+src/i18n/locales/cs.json
+  s_f721a21584cb95::t_60d1f64d9127b6 1508-1511
+  s_f721a21584cb95::t_8f4ccb89485c13 1512
+package.json
+  s_f721a21584cb95::t_bbdee4d1500752 70
+src/features/bin-designer/components/panel/InteriorSection/InteriorModes.tsx
+  s_f721a21584cb95::t_bbdee4d1500752 19,85,127-132
+scripts/feature-tips/tips3d.ts
+  s_f721a21584cb95::t_83a2e9f490571b 7,70-71,73,90-91,126
+  s_f721a21584cb95::t_af9077eb505556 9,11-16,18,32,36-37,40,43-45,47-52,54-59,61,65-69,72,80,83,86-88,92,100,108-109,115,117,121,124,127-128,139,145,164,170-172
+  s_f721a21584cb95::t_8d52fc105ef855 10,33-34,62,64,101,103,167-168
+  s_f721a21584cb95::t_abeea29a086b47 1-6,89
+  s_f721a21584cb95::t_837e051be7be6d 19-22,29-31,60,99,173
+  s_f721a21584cb95::t_587a06142c28e5 8,17,23-28,35,38-39,41-42,46,53,63,74-79,81-82,84-85,93-98,102,104-107,110-114,116,118-120,122-123,125,129-138,140-144,146-163,165-166,169
+  s_f721a21584cb95::t_8da30d5a8f47fc 174-176
+src/i18n/locales/nb.json
+  s_f721a21584cb95::t_60d1f64d9127b6 1508-1511
+  s_f721a21584cb95::t_8f4ccb89485c13 1512
+src/features/bin-designer/components/panel/InteriorSection/InteriorModes.test.tsx
+  s_f721a21584cb95::t_f45e10d4e1a15b 119
+  s_f721a21584cb95::t_3d3bbf7ed330de 30-43,70,118,120-133
+  s_f721a21584cb95::t_366ea17b1ec142 134
+src/i18n/locales/sv.json
+  s_f721a21584cb95::t_60d1f64d9127b6 1508-1511
+  s_f721a21584cb95::t_8f4ccb89485c13 1512
+src/i18n/locales/de.json
+  s_f721a21584cb95::t_60d1f64d9127b6 1508-1511
+  s_f721a21584cb95::t_8f4ccb89485c13 1512
+scripts/feature-tips/tipsUi.ts
+  s_f721a21584cb95::t_76a134f90ed330 32,38-40,161,186,188
+  s_f721a21584cb95::t_19db694b06fe0f 1,5,8,13,20,27-28,31,33-37,41-131,133-134,137,145-146,148,150-160,162,164-167,169,181-183,189-190,194-196,204-205,237,240-241,244
+  s_f721a21584cb95::t_83a2e9f490571b 3,235
+  s_f721a21584cb95::t_5e7a1ea8df3587 15-19
+  s_f721a21584cb95::t_ba54c33837505d 2,4,6-7,9,22-26,132,138-141,143-144,147,163,168,197,206-217,219,221-234,236,238-239,245-248
+  s_f721a21584cb95::t_79b8e1727a5ba0 170-180,198-203
+  s_f721a21584cb95::t_837e051be7be6d 242-243
+  s_f721a21584cb95::t_d379778a8f7a7b 10-12,14,21,29-30,135-136,149,184-185,187,191-193,218,220
+  s_f721a21584cb95::t_0ec13f0e47eadb 142
+  s_f721a21584cb95::t_78c4c1bed5279b 249-253
+src/i18n/locales/nl.json
+  s_f721a21584cb95::t_8f4ccb89485c13 1512
+  s_f721a21584cb95::t_60d1f64d9127b6 1508-1511
+knip.json
+  s_f721a21584cb95::t_33d79d1b4bee53 4
+src/design-system/Icon/index.ts
+  s_f721a21584cb95::t_babb1e7a0db87e 61-62
+src/i18n/locales/ko.json
+  s_f721a21584cb95::t_60d1f64d9127b6 1508-1511
+  s_f721a21584cb95::t_8f4ccb89485c13 1512
+src/i18n/locales/pt-BR.json
+  s_f721a21584cb95::t_8f4ccb89485c13 1512
+  s_f721a21584cb95::t_60d1f64d9127b6 1508-1511
+src/i18n/locales/ja.json
+  s_f721a21584cb95::t_8f4ccb89485c13 1512
+  s_f721a21584cb95::t_60d1f64d9127b6 1508-1511
+src/features/bin-designer/components/FeatureTip/index.ts
+  s_f721a21584cb95::t_4d9c256fb73c8a 1-2
+src/features/bin-designer/components/FeatureTip/FeatureTip.test.tsx
+  s_f721a21584cb95::t_f5214cf967dbc7 1-80
+src/i18n/locales/fr.json
+  s_f721a21584cb95::t_60d1f64d9127b6 1508-1511
+  s_f721a21584cb95::t_8f4ccb89485c13 1512
+src/i18n/locales/it.json
+  s_f721a21584cb95::t_60d1f64d9127b6 1508-1511
+  s_f721a21584cb95::t_8f4ccb89485c13 1512
+src/design-system/Popover/Popover.tsx
+  s_f721a21584cb95::t_d9308773834fbd 1-8,30-32,48-49,153-154
+tsconfig.json
+  s_f721a21584cb95::t_ae6f1d445d94dd 8
+src/shared/components/InfoDot/InfoDot.tsx
+  s_f721a21584cb95::t_c136f738a40896 12-15,19,25-30,34-39,42-48,51,54-60,63,65-67,72,86,92-100,110-126,134,142-148
+src/features/bin-designer/components/panel/InteriorSection/WorkspaceLaunchButton.tsx
+  s_f721a21584cb95::t_bbdee4d1500752 17-18,26,28,57-62
+  s_f721a21584cb95::t_89c115271ba96c 63
+scripts/feature-tips/capture.ts
+  s_f721a21584cb95::t_2393ee14e0b8a5 7-8,11-12,49-50
+  s_f721a21584cb95::t_837e051be7be6d 13,17,23-25,42,45
+  s_f721a21584cb95::t_abeea29a086b47 3,20,30-32
+  s_f721a21584cb95::t_2011ffc2500c85 1-2,4-6,9-10,14-16,18-19,21-22,26-29,33-41,43-44,46-48,51-63
+src/features/bin-designer/components/panel/InteriorSection/WorkspaceLaunchButton.test.tsx
+  s_f721a21584cb95::t_3d3bbf7ed330de 39-56
+src/i18n/locales/pl.json
+  s_f721a21584cb95::t_8f4ccb89485c13 1512
+  s_f721a21584cb95::t_60d1f64d9127b6 1508-1511
+src/design-system/Icon/icons/PlayCircle.tsx
+  s_f721a21584cb95::t_91ad9bc8299970 1-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "eeec4a008222265dac42c3545c708521ecef64ee",
+  "prompts": {},
+  "sessions": {
+    "s_f721a21584cb95": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14ff3cc8-6691-4939-a25c-f6ba932191ef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
