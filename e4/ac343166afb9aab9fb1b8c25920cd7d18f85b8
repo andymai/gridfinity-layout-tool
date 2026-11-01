@@ -1,0 +1,28 @@
+scripts/feature-tips/tipsUi.ts
+  s_f721a21584cb95::t_98fba49743ba51 101-116,163,460-461,477,491
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.test.tsx
+  s_f721a21584cb95::t_72b367f56206be 102-115
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.tsx
+  s_f721a21584cb95::t_72b367f56206be 69-71
+  s_f721a21584cb95::t_405dd7e9d4d7a4 39
+src/features/bin-designer/components/panel/shared/ModeTiles.test.tsx
+  s_f721a21584cb95::t_72b367f56206be 80-82
+src/i18n/locales/fr.json
+  s_f721a21584cb95::t_72b367f56206be 1515
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e4ac343166afb9aab9fb1b8c25920cd7d18f85b8",
+  "prompts": {},
+  "sessions": {
+    "s_f721a21584cb95": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14ff3cc8-6691-4939-a25c-f6ba932191ef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
