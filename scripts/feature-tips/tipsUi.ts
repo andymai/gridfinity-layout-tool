@@ -98,6 +98,22 @@ async function boxOf(target: Locator): Promise<Rect> {
   return b;
 }
 
+// Polls in real time while nudging the virtual clock, since some of what is
+// awaited (the scan dialog's polling) runs on real time.
+async function untilVisible(
+  ui: UiSession,
+  target: Locator,
+  tries: number,
+  waitMs: number
+): Promise<void> {
+  for (let i = 0; i < tries; i++) {
+    if (await target.isVisible()) return;
+    await ui.warm(1);
+    await ui.page.waitForTimeout(waitMs);
+  }
+  throw new Error(`timed out waiting for ${String(target)}`);
+}
+
 /** The designer loaded in `theme` on a built design, with setup toasts dismissed. */
 async function openDesigner(
   ui: UiSession,
@@ -144,10 +160,7 @@ async function openCutEditor(ui: UiSession, base: string, theme: Theme): Promise
   await ui.waitBuilt();
   await ui.preClick(page.getByText('Cut Editor').first());
   const circle = page.getByRole('button', { name: 'Circle', exact: true }).first();
-  for (let i = 0; i < 90 && !(await circle.isVisible()); i++) {
-    await ui.warm(1);
-    await page.waitForTimeout(100);
-  }
+  await untilVisible(ui, circle, 90, 100);
   await page.waitForTimeout(2000);
   await ui.warm(30);
   await dismissToasts(ui);
@@ -444,11 +457,8 @@ async function scanTake(base: string, theme: Theme): Promise<Take> {
     await ui.preClick(page.getByRole('radio', { name: 'Custom Cutouts' }).first());
     await ui.waitBuilt();
     await ui.preClick(page.getByText('Cut Editor').first());
-    const scan = page.getByRole('button', { name: 'Scan with your phone' }).first();
-    for (let i = 0; i < 90 && !(await scan.isVisible()); i++) {
-      await ui.warm(1);
-      await page.waitForTimeout(100);
-    }
+    const scan = page.getByRole('button', { name: 'Scan with your phone', exact: true }).first();
+    await untilVisible(ui, scan, 90, 100);
     await page.waitForTimeout(2000);
     await ui.warm(30);
     await dismissToasts(ui);
@@ -464,10 +474,7 @@ async function scanTake(base: string, theme: Theme): Promise<Take> {
 
     const dialog = page.getByRole('dialog').first();
     const waiting = page.getByText('Waiting for your photo…').first();
-    for (let i = 0; i < 90 && !(await waiting.isVisible()); i++) {
-      await ui.warm(1);
-      await page.waitForTimeout(100);
-    }
+    await untilVisible(ui, waiting, 90, 100);
     await ui.warm(20);
     // The dialog is tall and narrow; its top (title, QR code, status) is what
     // reads at card size.
@@ -481,10 +488,7 @@ async function scanTake(base: string, theme: Theme): Promise<Take> {
     relay.deliver();
     // The dialog polls on real time, which the virtual clock does not advance.
     const added = page.getByText(/^Added 1 cutout/).first();
-    for (let i = 0; i < 100 && !(await added.isVisible()); i++) {
-      await ui.warm(1);
-      await page.waitForTimeout(200);
-    }
+    await untilVisible(ui, added, 100, 200);
     await ui.waitBuilt();
     await ui.record(frameAround(head(await boxOf(dialog)), 8, FULL_TALL));
     await ui.hold(0.9);

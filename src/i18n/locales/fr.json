@@ -1512,7 +1512,7 @@
   "binDesigner.featureTip.cutEditor": "Dessinez une poche à la forme de la pièce, puis répétez-la dans tout le bac.",
   "binDesigner.featureTip.customShape": "Désactivez des cellules de la grille pour créer un bin en L, T ou U.",
   "binDesigner.featureTip.compartments": "Réglez colonnes et rangées, puis faites glisser sur les cellules pour les fusionner.",
-  "binDesigner.featureTip.scanToPocket": "Photographiez un outil avec votre téléphone et obtenez une poche à sa forme.",
+  "binDesigner.featureTip.scanToPocket": "Photographiez un outil avec votre téléphone et obtenez une poche tracée selon son contour.",
   "binDesigner.featureTip.labelTabs": "Un rebord incliné contre la paroi arrière de chaque compartiment, où se pose l’étiquette.",
   "binDesigner.featureTip.handles": "Une fente dans la paroi pour passer un doigt et sortir le bin d’un tiroir profond.",
   "binDesigner.featureTip.wallCutouts": "Ouvrez une partie de la paroi pour passer la main par l’avant ou faire passer un câble.",

@@ -36,6 +36,7 @@ export function InteriorSection() {
   const { state, handlers } = useInteriorSection();
   const t = useTranslation();
   const { isDesktop } = useResponsive();
+  const cutoutsAvailable = useDesignerStore((s) => getFeatureStatus(s.params, 'cutouts').available);
   const isCustomShape = useDesignerStore((s) => isPartialMask(s.params.cellMask));
   const hasAngledDividers = useDesignerStore(
     (s) => (s.params.compartments.dividerOverrides?.length ?? 0) > 0
@@ -65,8 +66,9 @@ export function InteriorSection() {
     if (card === 'standard') {
       return <FeatureTip tip="compartments" feature={t(INTERIOR_MODE_META[card].titleKey)} />;
     }
-    // Scanning starts from the Cut Editor, which only opens on desktop.
-    if (card === 'solid' && isDesktop) {
+    // Scanning starts from the Cut Editor, which opens only on desktop and
+    // only while cutouts are allowed.
+    if (card === 'solid' && isDesktop && cutoutsAvailable) {
       return <FeatureTip tip="scanToPocket" feature={t('binDesigner.cutouts.scanImport.title')} />;
     }
     return undefined;

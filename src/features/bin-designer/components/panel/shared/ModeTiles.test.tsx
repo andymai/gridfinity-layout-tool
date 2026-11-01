@@ -77,7 +77,9 @@ describe('ModeTiles', () => {
     const { rerender } = render(
       <ModeTiles ariaLabel="Body type" value="tray" onChange={vi.fn()} options={withTips} />
     );
-    expect(screen.getByText('Tray tip')).toBeInTheDocument();
+    expect(screen.getByText('Sits on another bin').parentElement).toContainElement(
+      screen.getByText('Tray tip')
+    );
     expect(screen.queryByText('Standard tip')).toBeNull();
 
     rerender(

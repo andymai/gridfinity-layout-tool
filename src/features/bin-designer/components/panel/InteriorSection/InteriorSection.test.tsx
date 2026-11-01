@@ -99,6 +99,20 @@ describe('InteriorSection', () => {
     expect(screen.queryByRole('button', { name: /^See how/ })).toBeNull();
   });
 
+  it('offers no scan clip while cutouts are withheld', () => {
+    const initial = useDesignerStore.getState().params;
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true, lightweightMode: 'interior' },
+      },
+    });
+    view.card = 'solid';
+    render(<InteriorSection />);
+    expect(screen.queryByRole('button', { name: /^See how/ })).toBeNull();
+    useDesignerStore.setState({ params: initial });
+  });
+
   describe('Removable tile gate', () => {
     const initial = useDesignerStore.getState().params;
     afterEach(() => {
