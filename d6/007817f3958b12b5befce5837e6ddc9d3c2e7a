@@ -1,0 +1,23 @@
+src/features/whats-new/entries.ts
+  s_f721a21584cb95::t_864ed50d3b7a8e 22
+  s_f721a21584cb95::t_e68a4cc269eb08 17-21,23-25
+  s_f721a21584cb95::t_93a25655a409e0 16
+src/features/whats-new/latest.ts
+  s_f721a21584cb95::t_ad741ea0996abe 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d6007817f3958b12b5befce5837e6ddc9d3c2e7a",
+  "prompts": {},
+  "sessions": {
+    "s_f721a21584cb95": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14ff3cc8-6691-4939-a25c-f6ba932191ef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
