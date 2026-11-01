@@ -4,7 +4,7 @@ import { PullTabSection } from './PullTabSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import en from '@/i18n/locales/en';
-import { DEFAULT_PULL_TAB } from '@/shared/utils/pullTabPlan';
+import { DEFAULT_PULL_TAB, pullTabUnavailableReason } from '@/shared/utils/pullTabPlan';
 
 describe('PullTabSection', () => {
   beforeEach(() =>
@@ -87,6 +87,34 @@ describe('PullTabSection', () => {
     render(<PullTabSection />);
     fireEvent.click(screen.getByRole('button', { name: '%' }));
     expect(screen.getByText('Tab width: 31.9 mm front/back, 50.0 mm sides.')).toBeDefined();
+  });
+  it('keeps a tab that has run out of room switchable, so the wall that caused it can go', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 0.5,
+        gridUnitMm: 16,
+        wallThickness: 1.6,
+        pullTab: {
+          ...DEFAULT_PULL_TAB,
+          enabled: true,
+          thickness: 4,
+          wall: 'width',
+          walls: ['front', 'back'],
+        },
+      },
+    });
+    const reason =
+      'The tabs leave no room inside a bin this small. Pick fewer walls or a thinner tab.';
+    render(<PullTabSection />);
+    expect(screen.getByText(reason)).toBeDefined();
+    expect(screen.getByRole('switch', { name: 'Pull tab' }).hasAttribute('disabled')).toBe(false);
+    fireEvent.click(wall('Back'));
+    expect(pullTab()).toMatchObject({ enabled: true, wall: 'width' });
+    expect(pullTab()).not.toHaveProperty('walls');
+    expect(screen.queryByText(reason)).toBeNull();
+    expect(pullTabUnavailableReason(useDesignerStore.getState().params)).toBeUndefined();
   });
   it('says when a chosen wall is too short to carry a tab', () => {
     useDesignerStore.setState({

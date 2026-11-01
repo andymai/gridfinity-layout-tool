@@ -120,7 +120,9 @@ export function PullTabSection() {
       label={t('binDesigner.pullTab.title')}
       checked={tab.enabled}
       onChange={() => update({ enabled: !tab.enabled })}
-      disabledReason={reason ? t(reason) : undefined}
+      // A tab already on stays switchable and keeps its controls, so the wall
+      // or thickness that blocks it can be changed back.
+      disabledReason={reason && !tab.enabled ? t(reason) : undefined}
       badge={
         <FeatureTip
           tip="pullTab"
@@ -130,6 +132,7 @@ export function PullTabSection() {
       }
       primaryControls={
         <div className="space-y-3">
+          {reason && <Hint>{t(reason)}</Hint>}
           <div>
             <FieldLabel>{t('binDesigner.pullTab.wall')}</FieldLabel>
             <SideSelector
