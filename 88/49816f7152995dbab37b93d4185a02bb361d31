@@ -1,0 +1,26 @@
+src/features/baseplate/utils/plateTurnOverhang.test.ts
+  s_f721a21584cb95::t_6344771374ae0c 166-173
+src/features/baseplate/utils/plateTurnOverhang.ts
+  s_f721a21584cb95::t_5f6be8131226e9 78-80,82,91,106-108,113-115,121-122,147-149,157-158
+src/features/baseplate/utils/stackPrint.ts
+  s_f721a21584cb95::t_5f6be8131226e9 290-291
+src/features/baseplate/utils/stackPrint.test.ts
+  s_f721a21584cb95::t_6344771374ae0c 448-449,451-462,464-465
+  s_f721a21584cb95::t_1b83751fc0fff7 450,463
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8849816f7152995dbab37b93d4185a02bb361d31",
+  "prompts": {},
+  "sessions": {
+    "s_f721a21584cb95": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14ff3cc8-6691-4939-a25c-f6ba932191ef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
