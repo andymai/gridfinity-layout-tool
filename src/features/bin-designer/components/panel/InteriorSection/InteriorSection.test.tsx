@@ -108,9 +108,12 @@ describe('InteriorSection', () => {
       },
     });
     view.card = 'solid';
-    render(<InteriorSection />);
-    expect(screen.queryByRole('button', { name: /^See how/ })).toBeNull();
-    useDesignerStore.setState({ params: initial });
+    try {
+      render(<InteriorSection />);
+      expect(screen.queryByRole('button', { name: /^See how/ })).toBeNull();
+    } finally {
+      useDesignerStore.setState({ params: initial });
+    }
   });
 
   describe('Removable tile gate', () => {
