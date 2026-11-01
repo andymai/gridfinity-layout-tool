@@ -51,35 +51,47 @@ describe('wallToWallDividers', () => {
 });
 
 describe('resolvePullTabCenter', () => {
+  // The height a full divider reaches in these fixtures.
+  const INTERIOR = 15.3;
+  const resolve = (p: BinParams) => resolvePullTabCenter(p, INTERIOR);
+
   it('takes the picked axis while it has a divider, else the only one that does', () => {
     const both = grid(2, 2);
-    expect(resolvePullTabCenter(bin(both)).divider).toEqual({ axis: 'width', at: 0.5 });
+    expect(resolve(bin(both)).divider).toEqual({ axis: 'width', at: 0.5 });
     const picked = bin(both, {
       pullTab: { ...DEFAULT_PULL_TAB, enabled: true, walls: ['center'], centerAxis: 'depth' },
     });
-    expect(resolvePullTabCenter(picked).divider).toEqual({ axis: 'depth', at: 0.5 });
-    expect(resolvePullTabCenter(bin(grid(3, 1))).divider).toEqual({ axis: 'depth', at: 1 / 3 });
+    expect(resolve(picked).divider).toEqual({ axis: 'depth', at: 0.5 });
+    expect(resolve(bin(grid(3, 1))).divider).toEqual({ axis: 'depth', at: 1 / 3 });
     expect(pullTabCenterAxes(both)).toEqual(['width', 'depth']);
     expect(pullTabCenterAxes(grid(3, 1))).toEqual(['depth']);
   });
 
   it('explains why no divider can carry a tab', () => {
-    expect(resolvePullTabCenter(bin(grid(1, 1))).reason).toBe(
-      'binDesigner.pullTab.center.noDivider'
-    );
-    expect(resolvePullTabCenter(bin({ ...grid(2, 1), dividerHeight: 20 })).reason).toBe(
+    expect(resolve(bin(grid(1, 1))).reason).toBe('binDesigner.pullTab.center.noDivider');
+    expect(resolve(bin({ ...grid(2, 1), dividerHeight: 4 })).reason).toBe(
       'binDesigner.pullTab.center.lowDivider'
     );
-    expect(
-      resolvePullTabCenter(bin({ ...grid(2, 1), dividerHeight: 'auto' })).divider
-    ).toBeDefined();
-    expect(resolvePullTabCenter(bin(grid(2, 1), { extraWallHeightMm: 4 })).reason).toBe(
+    expect(resolve(bin(grid(2, 1), { extraWallHeightMm: 4 })).reason).toBe(
       'binDesigner.pullTab.center.collar'
     );
     expect(
-      resolvePullTabCenter(
-        bin(grid(2, 1), { label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } })
-      ).reason
+      resolve(bin(grid(2, 1), { label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } })).reason
     ).toBe('binDesigner.pullTab.center.labelTabs');
+  });
+
+  it('blocks only a divider lowered below the interior, whatever form full height takes', () => {
+    for (const dividerHeight of ['auto', undefined, INTERIOR, 40] as const) {
+      expect(resolve(bin({ ...grid(2, 1), dividerHeight })).divider, String(dividerHeight)).toEqual(
+        { axis: 'depth', at: 0.5 }
+      );
+    }
+    expect(resolve(bin({ ...grid(2, 1), dividerHeight: INTERIOR - 0.1 })).reason).toBe(
+      'binDesigner.pullTab.center.lowDivider'
+    );
+    expect(resolvePullTabCenter(bin({ ...grid(2, 1), dividerHeight: 4 }), null).divider).toEqual({
+      axis: 'depth',
+      at: 0.5,
+    });
   });
 });

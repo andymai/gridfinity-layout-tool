@@ -224,7 +224,7 @@ describe('PullTabSection', () => {
     expect(pullTab()).not.toHaveProperty('centerAxis');
   });
   it('keeps a chosen center switchable once its divider is lowered, and says why it is idle', () => {
-    withGrid(3, 1, { dividerHeight: 15 });
+    withGrid(3, 1, { dividerHeight: 4 });
     useDesignerStore.setState((s) => ({
       params: {
         ...s.params,
@@ -237,6 +237,34 @@ describe('PullTabSection', () => {
     expect(center.disabled).toBe(false);
     fireEvent.click(center);
     expect(pullTab()).not.toHaveProperty('walls');
+  });
+  it('turns the tab off when a center that is the only wall can no longer stand', () => {
+    withGrid(3, 1, { dividerHeight: 4 });
+    useDesignerStore.setState((s) => ({
+      params: {
+        ...s.params,
+        pullTab: {
+          ...DEFAULT_PULL_TAB,
+          enabled: true,
+          walls: ['center'],
+          centerAxis: 'depth',
+        },
+      },
+    }));
+    render(<PullTabSection />);
+    expect(screen.getByText('A center tab needs dividers at full height.')).toBeDefined();
+    fireEvent.click(wall('Center'));
+    expect(pullTab()).toMatchObject({ enabled: false, wall: 'width' });
+    expect(pullTab()).not.toHaveProperty('walls');
+    expect(pullTab()).not.toHaveProperty('centerAxis');
+  });
+  it('keeps the center when a numeric divider height is still full height', () => {
+    withGrid(3, 1, { dividerHeight: 500 });
+    render(<PullTabSection />);
+    expect((wall('Center') as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(wall('Center'));
+    expect(pullTab()?.walls).toEqual(['front', 'center']);
+    expect(screen.queryByText('A center tab needs dividers at full height.')).toBeNull();
   });
   it('changes the common border and reports the resulting recess width', () => {
     render(<PullTabSection />);

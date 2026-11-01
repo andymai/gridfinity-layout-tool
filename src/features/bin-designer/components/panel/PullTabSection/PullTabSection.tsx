@@ -19,6 +19,8 @@ import {
 import type { PullTabPlan } from '@/shared/utils/pullTabPlan';
 import { pullTabCenterAxes, resolvePullTabCenter } from '@/shared/utils/pullTabCenterPlan';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
+import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
 import type {
   PullTabCenterAxis,
   PullTabConfig,
@@ -97,11 +99,21 @@ export function PullTabSection() {
       ? { widthPercent: Math.round((longestTabWidth / longestWall) * 1000) / 10 }
       : { width: longestTabWidth };
   };
+  const center = resolvePullTabCenter(
+    params,
+    computeInteriorHeight(wallHeight, params.base.stackingLip, GRIDFINITY.LIP_SMALL_TAPER)
+  );
   const toggleWall = (wall: PullTabWall) => {
     const on = new Set(walls);
     if (on.has(wall)) {
-      // A tab that is on and builds nothing is what the toggle above says.
-      if (on.size === 1) return;
+      if (on.size === 1) {
+        // A center left with no divider to stand on turns the tab off: there
+        // is no other wall for it to fall back to.
+        if (wall === 'center' && center.reason)
+          update({ enabled: false, wall: 'width', walls: undefined, centerAxis: undefined });
+        // A tab that is on and builds nothing is what the toggle above says.
+        return;
+      }
       on.delete(wall);
     } else {
       on.add(wall);
@@ -109,7 +121,6 @@ export function PullTabSection() {
     const fields = pullTabWallFields([...on]);
     update({ wall: fields.wall, walls: fields.walls });
   };
-  const center = resolvePullTabCenter(params);
   const centerOn = walls.includes('center');
   const centerAxes = pullTabCenterAxes(params.compartments);
   const field = (

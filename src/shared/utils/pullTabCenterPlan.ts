@@ -1,4 +1,5 @@
 import type { BinParams, CompartmentConfig, PullTabCenterAxis } from '@/shared/types/bin';
+import { resolveCompartmentDividerHeight } from './slotMath';
 
 export const PULL_TAB_CENTER_AXES: readonly PullTabCenterAxis[] = ['width', 'depth'];
 
@@ -59,20 +60,41 @@ export function wallToWallDividers(c: CompartmentConfig, axis: PullTabCenterAxis
 }
 
 /**
- * Which divider a center tab stands on, or why none can.
+ * The divider a center tab would stand on, before asking whether it can.
  *
  * The picked axis wins while it has a qualifying divider; otherwise the only
  * axis that has one is used, so a grid edit never leaves a tab on a divider
  * that is gone.
  */
-export function resolvePullTabCenter(p: CenterHost): PullTabCenterResolution {
+export function pullTabCenterDivider(
+  p: Pick<BinParams, 'compartments' | 'pullTab'>
+): PullTabCenterDivider | null {
   const picked = p.pullTab?.centerAxis === 'depth' ? 'depth' : 'width';
   const axis = ([picked, picked === 'width' ? 'depth' : 'width'] as const).find(
     (a) => wallToWallDividers(p.compartments, a).length > 0
   );
-  if (!axis) return { reason: 'binDesigner.pullTab.center.noDivider' };
-  const divider: PullTabCenterDivider = { axis, at: wallToWallDividers(p.compartments, axis)[0] };
-  if (typeof p.compartments.dividerHeight === 'number')
+  return axis ? { axis, at: wallToWallDividers(p.compartments, axis)[0] } : null;
+}
+
+/**
+ * Which divider a center tab stands on, or why none can.
+ *
+ * `interiorHeightMm` is the height a full divider reaches; a numeric divider
+ * height at or above it is full height. `null` when the caller cannot know it,
+ * which lets any divider height through.
+ */
+export function resolvePullTabCenter(
+  p: CenterHost,
+  interiorHeightMm: number | null
+): PullTabCenterResolution {
+  const divider = pullTabCenterDivider(p);
+  if (!divider) return { reason: 'binDesigner.pullTab.center.noDivider' };
+  const { dividerHeight } = p.compartments;
+  if (
+    typeof dividerHeight === 'number' &&
+    interiorHeightMm !== null &&
+    resolveCompartmentDividerHeight(dividerHeight, interiorHeightMm) < interiorHeightMm
+  )
     return { reason: 'binDesigner.pullTab.center.lowDivider' };
   // Dividers stop at the nominal height under a collar, so the tab would
   // stand on a fin of its own above them.

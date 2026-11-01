@@ -811,11 +811,18 @@ describe('a pull tab on the center divider', () => {
     }
   );
 
+  it('still stands on a divider whose numeric height reaches full height', () => {
+    const p = tray(3, 2, { compartments: { ...tray(3, 2).compartments, dividerHeight: 500 } });
+    const mesh = getGenerateBin()(p, undefined, true);
+    assertStructurallyValid(mesh);
+    expect(top(mesh, 'width', 0, 0.13)).toBeCloseTo(TOP, 1);
+  });
+
   it.each([
     { name: 'no divider', p: () => tray(1, 1) },
     {
       name: 'a lowered divider',
-      p: () => tray(3, 2, { compartments: { ...tray(3, 2).compartments, dividerHeight: 20 } }),
+      p: () => tray(3, 2, { compartments: { ...tray(3, 2).compartments, dividerHeight: 4 } }),
     },
     {
       name: 'label tabs',

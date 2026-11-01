@@ -8,7 +8,11 @@ import type {
 import { isPartialMask } from './cellMask';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { effectiveRimFilletRadius } from './rimFillet';
-import { PULL_TAB_CENTER_MARGIN_MM, resolvePullTabCenter } from './pullTabCenterPlan';
+import {
+  PULL_TAB_CENTER_MARGIN_MM,
+  pullTabCenterDivider,
+  resolvePullTabCenter,
+} from './pullTabCenterPlan';
 
 export const DEFAULT_PULL_TAB: PullTabConfig = {
   enabled: false,
@@ -210,18 +214,22 @@ function thickenedCavityMm(p: PullTabHost): number {
 
 /**
  * Whether an enabled tab builds anything: a center tab alone builds nothing
- * while no divider can carry it.
+ * while no divider can carry it. Without the interior height a lowered divider
+ * cannot be told apart, and counting the tab is the safe side of a clearance.
  */
 export function pullTabBuildsAny(p: PullTabHost): boolean {
   const walls = resolvePullTabWalls(resolvePullTab(p.pullTab));
   if (walls.some((wall) => wall !== 'center')) return true;
   if (!p.compartments || !p.label) return true;
-  return !resolvePullTabCenter({
-    compartments: p.compartments,
-    label: p.label,
-    pullTab: p.pullTab,
-    extraWallHeightMm: p.extraWallHeightMm,
-  }).reason;
+  return !resolvePullTabCenter(
+    {
+      compartments: p.compartments,
+      label: p.label,
+      pullTab: p.pullTab,
+      extraWallHeightMm: p.extraWallHeightMm,
+    },
+    null
+  ).reason;
 }
 
 export function activePullTab(p: BinParams): PullTabConfig | null {
@@ -255,8 +263,7 @@ function firstWall(p: BinParams): PullTabWall {
  */
 export function pullTabAxis(p: BinParams, wall: PullTabWall): PullTabCenterAxis {
   if (wall !== 'center') return pullTabWallAxis(wall);
-  const center = resolvePullTabCenter(p);
-  return center.divider?.axis ?? (p.pullTab?.centerAxis === 'depth' ? 'depth' : 'width');
+  return pullTabCenterDivider(p)?.axis ?? (p.pullTab?.centerAxis === 'depth' ? 'depth' : 'width');
 }
 
 /** Wall length a tab leaves clear, split between its two ends. */
@@ -292,7 +299,13 @@ export function planPullTab(
 ) {
   const tab = activePullTab(p);
   if (!tab) return null;
-  const center = wall === 'center' ? resolvePullTabCenter(p) : null;
+  // The rim stands a collar above the wall top, and a lip's taper starts
+  // below it: what is left is the height a full divider reaches.
+  const interiorHeightMm =
+    rimZ -
+    Math.max(0, p.extraWallHeightMm ?? 0) -
+    (p.base.stackingLip ? GRIDFINITY_SPEC.LIP_SMALL_TAPER : 0);
+  const center = wall === 'center' ? resolvePullTabCenter(p, interiorHeightMm) : null;
   if (center && !center.divider) return null;
   const available = availablePullTabWidth(p, wall);
   const width = Math.min(
