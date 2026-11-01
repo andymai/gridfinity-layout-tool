@@ -70,14 +70,12 @@ function zSpan(
   return { zMin, zMax };
 }
 
-/** Z midway along the bore: the span of vertices on the wall band around (cx, cy). */
 export function boreMidZ(mesh: SliceableMesh, cx: number, cy: number, radius: number): number {
   const lo = radius - MAGNET_CRUSH_RIB_DEPTH_MM - 0.1;
   const { zMin, zMax } = zSpan(mesh, cx, cy, lo, radius + 0.05);
   return (zMin + zMax) / 2;
 }
 
-/** Z span of the whole hole around (cx, cy), a chamfered mouth's rim included. */
 export function holeZSpan(
   mesh: SliceableMesh,
   cx: number,
@@ -88,7 +86,6 @@ export function holeZSpan(
   return zSpan(mesh, cx, cy, lo, radius + MAGNET_CHAMFER_MM + 0.05);
 }
 
-/** Mean radial error of the points against an n-rib wave whose peaks sit on `radius`. */
 export function ribWaveError(points: readonly PolarPoint[], radius: number, n: number): number {
   const half = MAGNET_CRUSH_RIB_DEPTH_MM / 2;
   const sum = points.reduce(
