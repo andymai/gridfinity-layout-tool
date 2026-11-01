@@ -152,6 +152,19 @@ describe('PullTabSection', () => {
     fireEvent.click(screen.getByRole('button', { name: 'mm' }));
     expect(pullTab()?.width).toBeCloseTo(20, 1);
   });
+  it('keeps the saved width when no chosen wall can carry a tab', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 0.5,
+        pullTab: { ...DEFAULT_PULL_TAB, enabled: true, width: 50 },
+      },
+    });
+    render(<PullTabSection />);
+    fireEvent.click(screen.getByRole('button', { name: '%' }));
+    fireEvent.click(screen.getByRole('button', { name: 'mm' }));
+    expect(pullTab()).toMatchObject({ widthMode: 'mm', width: 50 });
+  });
   it('says when a chosen wall is too short to carry a tab', () => {
     useDesignerStore.setState({
       params: {

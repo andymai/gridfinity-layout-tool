@@ -86,6 +86,13 @@ export function PullTabSection() {
   ).toFixed(1);
   const tabWidths = perAxis(plans, (plan) => plan.width);
   const recessWidths = perAxis(plans, (plan) => plan.recessWidth);
+  const convertedWidth = (widthMode: PullTabConfig['widthMode']): Partial<PullTabConfig> => {
+    // No selected wall can carry a tab, so there is no width to convert from.
+    if (longestWall < MIN_PULL_TAB_WIDTH) return {};
+    return widthMode === 'percent'
+      ? { widthPercent: Math.round((longestTabWidth / longestWall) * 1000) / 10 }
+      : { width: longestTabWidth };
+  };
   const toggleWall = (wall: PullTabWall) => {
     const on = new Set(walls);
     if (on.has(wall)) {
@@ -172,14 +179,7 @@ export function PullTabSection() {
               { value: 'mm', label: 'mm' },
               { value: 'percent', label: '%' },
             ]}
-            onChange={(widthMode) =>
-              update({
-                widthMode,
-                ...(widthMode === 'percent'
-                  ? { widthPercent: Math.round((longestTabWidth / longestWall) * 1000) / 10 }
-                  : { width: longestTabWidth }),
-              })
-            }
+            onChange={(widthMode) => update({ widthMode, ...convertedWidth(widthMode) })}
           />
           <div className="flex gap-2">
             {tab.widthMode === 'percent'
