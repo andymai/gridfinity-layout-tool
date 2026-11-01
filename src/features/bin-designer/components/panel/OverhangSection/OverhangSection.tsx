@@ -20,6 +20,7 @@
 import { useId } from 'react';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { FeatureToggle } from '../FeatureToggle';
+import { FeatureTip } from '../../FeatureTip';
 import { OptionNotes, SubHeader } from '../shared';
 import { OverhangSliderRow } from './OverhangSliderRow';
 import { PlacementOverhangNotice } from './PlacementOverhangNotice';
@@ -53,19 +54,28 @@ export function OverhangSection() {
         checked={state.enabled}
         onChange={handlers.toggle}
         disabledReason={meta.disabledReason}
-        info={
-          <div className="space-y-2">
-            <p>{t('binDesigner.overhang.hint')}</p>
-            <OptionNotes
-              options={[
-                { label: t('binDesigner.overhang.feet'), note: t('binDesigner.overhang.feetHint') },
-                {
-                  label: t('binDesigner.overhang.taper.title'),
-                  note: t('binDesigner.overhang.taper.hint'),
-                },
-              ]}
-            />
-          </div>
+        badge={
+          <FeatureTip
+            tip="overhang"
+            feature={t('binDesigner.overhang.title')}
+            detail={
+              <div className="space-y-2">
+                <p>{t('binDesigner.overhang.hint')}</p>
+                <OptionNotes
+                  options={[
+                    {
+                      label: t('binDesigner.overhang.feet'),
+                      note: t('binDesigner.overhang.feetHint'),
+                    },
+                    {
+                      label: t('binDesigner.overhang.taper.title'),
+                      note: t('binDesigner.overhang.taper.hint'),
+                    },
+                  ]}
+                />
+              </div>
+            }
+          />
         }
         primaryControls={
           <>

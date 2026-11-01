@@ -10,12 +10,14 @@
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { useTranslation } from '@/i18n';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 import { getFeatureStatus } from '@/shared/constraints';
 import { Badge } from '@/design-system';
 import { InteriorModeContent } from './InteriorModes';
 import { INTERIOR_MODE_META } from './interiorModeMeta';
 import { useInteriorSection } from './useInteriorSection';
 import { ModeTiles } from '../shared';
+import { FeatureTip } from '../../FeatureTip';
 import { INTERIOR_CARDS } from '../../../types';
 import type { InteriorCard } from '../../../types';
 
@@ -33,6 +35,7 @@ const CARDS_REQUIRING_RECTANGULAR_SHAPE: ReadonlySet<InteriorCard> = new Set([
 export function InteriorSection() {
   const { state, handlers } = useInteriorSection();
   const t = useTranslation();
+  const { isDesktop } = useResponsive();
   const isCustomShape = useDesignerStore((s) => isPartialMask(s.params.cellMask));
   const hasAngledDividers = useDesignerStore(
     (s) => (s.params.compartments.dividerOverrides?.length ?? 0) > 0
@@ -58,6 +61,17 @@ export function InteriorSection() {
     return undefined;
   };
 
+  const tip = (card: InteriorCard) => {
+    if (card === 'standard') {
+      return <FeatureTip tip="compartments" feature={t(INTERIOR_MODE_META[card].titleKey)} />;
+    }
+    // Scanning starts from the Cut Editor, which only opens on desktop.
+    if (card === 'solid' && isDesktop) {
+      return <FeatureTip tip="scanToPocket" feature={t('binDesigner.cutouts.scanImport.title')} />;
+    }
+    return undefined;
+  };
+
   return (
     <ModeTiles
       ariaLabel={t('binDesigner.group.interior')}
@@ -70,6 +84,7 @@ export function InteriorSection() {
         label: t(INTERIOR_MODE_META[card].titleKey),
         caption: t(INTERIOR_MODE_META[card].descriptionKey),
         disabledReason: disabledReason(card),
+        tip: tip(card),
         badge:
           card === 'bento' ? (
             <Badge tone="info" title={t('binDesigner.bento.experimentalHint')}>

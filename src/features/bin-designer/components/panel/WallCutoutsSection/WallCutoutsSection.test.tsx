@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { WallCutoutsSection } from './WallCutoutsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import en from '@/i18n/locales/en';
 
 describe('WallCutoutsSection', () => {
   beforeEach(() => {
@@ -235,5 +236,11 @@ describe('WallCutoutsSection', () => {
 
     render(<WallCutoutsSection />);
     expect(screen.queryByText(/stack of slats/)).toBeNull();
+  });
+
+  it('plays a clip of the feature from the dot beside its toggle', () => {
+    render(<WallCutoutsSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'See how Wall cutouts works' }));
+    expect(screen.getByText(en['binDesigner.featureTip.wallCutouts'])).toBeInTheDocument();
   });
 });

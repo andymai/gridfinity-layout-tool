@@ -9,6 +9,7 @@
  */
 
 import { FeatureToggle } from '../FeatureToggle';
+import { FeatureTip } from '../../FeatureTip';
 import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import { ShapePicker, SideSelector, StepperField, LinkIcon, type SideState } from '../shared';
 import { RulerIcon } from '@/design-system/Icon';
@@ -115,6 +116,7 @@ export function HandleSection() {
       onChange={handlers.toggleEnabled}
       disabledReason={meta.disabledReason}
       valueSummary={meta.summary}
+      badge={<FeatureTip tip="handles" feature={t('binDesigner.handles')} />}
       primaryControls={
         <div className="space-y-3">
           <ShapePicker

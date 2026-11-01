@@ -156,6 +156,15 @@ describe('SlantSection', () => {
     render(<SlantSection />);
     expect(screen.getByText(`binDesigner.slant.unavailable ${label}`)).toBeInTheDocument();
   });
+
+  it('keeps its explanation in the clip card behind the play dot', () => {
+    render(<SlantSection />);
+    fireEvent.click(
+      screen.getByRole('button', { name: 'binDesigner.featureTip.watch binDesigner.slant.title' })
+    );
+    expect(screen.getByText('binDesigner.featureTip.slant')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.slant.hint')).toBeInTheDocument();
+  });
 });
 
 describe('useSlantVisible', () => {

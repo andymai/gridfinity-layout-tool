@@ -11,6 +11,7 @@ import { useTranslation } from '@/i18n';
 import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import { Button } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
+import { FeatureTip } from '../../FeatureTip';
 import { Hint, ShapePicker, SideSelector, StepperField, LinkIcon, type SideState } from '../shared';
 import { useWallCutoutsSection } from './useWallCutoutsSection';
 import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
@@ -355,18 +356,21 @@ export function WallCutoutsSection() {
       onChange={handlers.toggleEnabled}
       disabledReason={meta.disabledReason}
       badge={
-        // Small red dot when this section is currently blocking the
-        // click-lock lid. Only renders when lid is enabled AND all 4
-        // walls have cutouts (the only wall-cutout config that fully
-        // removes the lip).
-        blocksLid ? (
-          <span
-            role="img"
-            aria-label={t('binDesigner.lid.conflictBadgeLabel')}
-            title={t('binDesigner.lid.conflictBadgeLabel')}
-            className="inline-block h-1.5 w-1.5 rounded-full bg-danger"
-          />
-        ) : undefined
+        <>
+          <FeatureTip tip="wallCutouts" feature={t('binDesigner.wallCutouts')} />
+          {/* Small red dot when this section is currently blocking the
+              click-lock lid. Only renders when lid is enabled AND all 4
+              walls have cutouts (the only wall-cutout config that fully
+              removes the lip). */}
+          {blocksLid && (
+            <span
+              role="img"
+              aria-label={t('binDesigner.lid.conflictBadgeLabel')}
+              title={t('binDesigner.lid.conflictBadgeLabel')}
+              className="inline-block h-1.5 w-1.5 rounded-full bg-danger"
+            />
+          )}
+        </>
       }
       primaryControls={
         <div className="space-y-3">

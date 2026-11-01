@@ -6,6 +6,7 @@
 
 import { SLANT_MAX_DEG } from '@/core/types';
 import { FeatureToggle } from '../FeatureToggle';
+import { FeatureTip } from '../../FeatureTip';
 import { InfoDot } from '@/shared/components/InfoDot';
 import { FieldLabel, Hint, Readout, SideSelector, StepperField } from '../shared';
 import { SLANT_MIN_DEG, useSlantSection } from './useSlantSection';
@@ -30,7 +31,13 @@ export function SlantSection() {
       onChange={handlers.toggle}
       // A slant already set stays switchable, so a blocked one can be removed.
       disabledReason={state.enabled ? undefined : unavailable}
-      info={t('binDesigner.slant.hint')}
+      badge={
+        <FeatureTip
+          tip="slant"
+          feature={t('binDesigner.slant.title')}
+          detail={t('binDesigner.slant.hint')}
+        />
+      }
       primaryControls={
         state.enabled && unavailable ? (
           <Hint>{unavailable}</Hint>

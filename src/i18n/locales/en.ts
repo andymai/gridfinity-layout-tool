@@ -2272,6 +2272,22 @@ const en: Record<string, string> = {
     'A lid that presses on, slides in or swings open. Click-rail and magnetic lids hold tighter.',
   'binDesigner.featureTip.cutEditor':
     'Draw a pocket shaped like your part, then repeat it across the bin.',
+  'binDesigner.featureTip.customShape': 'Click grid cells off to make an L, T or U shaped bin.',
+  'binDesigner.featureTip.compartments':
+    'Set the columns and rows, then drag across cells to merge them.',
+  'binDesigner.featureTip.scanToPocket':
+    'Photograph a tool with your phone and get a pocket traced to its outline.',
+  'binDesigner.featureTip.labelTabs':
+    'A sloped ledge along the back of each compartment, where a label sits.',
+  'binDesigner.featureTip.handles':
+    'A slot through the wall to hook a finger in and lift the bin from a deep drawer.',
+  'binDesigner.featureTip.wallCutouts':
+    'Cut an opening through a wall, to reach in from the front or run a cable.',
+  'binDesigner.featureTip.pullTab':
+    'A grip raised above the wall, to pull the bin out of a snug drawer.',
+  'binDesigner.featureTip.overhang':
+    'Grow the walls past the grid to fill the gap at the edge of a drawer.',
+  'binDesigner.featureTip.slant': 'Lean the bin so tall things like pens fit a shallow drawer.',
   'binDesigner.lid.text.useStackLipOnly': 'Use stacking lip only',
   'binDesigner.lid.text.disabledStackable': 'Not available with a full stack grid.',
   'binDesigner.lid.text.disabledPolygon': 'Not available for custom-shape bins.',

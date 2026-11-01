@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { LabelTabsSection } from './LabelTabsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import en from '@/i18n/locales/en';
 
 describe('LabelTabsSection', () => {
   beforeEach(() => {
@@ -117,5 +118,11 @@ describe('LabelTabsSection', () => {
     fireEvent.click(screen.getByRole('button', { name: /Placement/ }));
     expect(screen.getByRole('button', { name: 'Center', pressed: true })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Left', pressed: false })).toBeInTheDocument();
+  });
+
+  it('plays a clip of the feature from the dot beside its toggle', () => {
+    render(<LabelTabsSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'See how Label tabs works' }));
+    expect(screen.getByText(en['binDesigner.featureTip.labelTabs'])).toBeInTheDocument();
   });
 });

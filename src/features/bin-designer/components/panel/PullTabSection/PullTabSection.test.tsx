@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { PullTabSection } from './PullTabSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import en from '@/i18n/locales/en';
 import { DEFAULT_PULL_TAB } from '@/shared/utils/pullTabPlan';
 
 describe('PullTabSection', () => {
@@ -69,5 +70,12 @@ describe('PullTabSection', () => {
       widthMode: 'mm',
       width: 44.4,
     });
+  });
+
+  it('plays a clip of the feature from the dot beside its toggle', () => {
+    render(<PullTabSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'See how Pull tab works' }));
+    expect(screen.getByText(en['binDesigner.featureTip.pullTab'])).toBeInTheDocument();
+    expect(screen.getByText(en['binDesigner.pullTab.description'])).toBeInTheDocument();
   });
 });

@@ -2,6 +2,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { FeatureToggle } from '../FeatureToggle';
+import { FeatureTip } from '../../FeatureTip';
 import { Hint, ShapePicker, StepperField } from '../shared';
 import {
   resolvePullTab,
@@ -67,7 +68,13 @@ export function PullTabSection() {
       checked={tab.enabled}
       onChange={() => update({ enabled: !tab.enabled })}
       disabledReason={reason ? t(reason) : undefined}
-      info={t('binDesigner.pullTab.description')}
+      badge={
+        <FeatureTip
+          tip="pullTab"
+          feature={t('binDesigner.pullTab.title')}
+          detail={t('binDesigner.pullTab.description')}
+        />
+      }
       primaryControls={
         <div className="space-y-3">
           <ShapePicker

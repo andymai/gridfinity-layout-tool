@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import en from '@/i18n/locales/en';
 import { ShapeSection } from './ShapeSection';
 
 function toggleOn() {
@@ -73,5 +74,12 @@ describe('ShapeSection', () => {
     expect(screen.getByRole('button', { name: 'L' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'T' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'U' })).toBeDisabled();
+  });
+
+  it('plays a clip of the feature from the dot beside its toggle', () => {
+    render(<ShapeSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'See how Custom shape works' }));
+    expect(screen.getByText(en['binDesigner.featureTip.customShape'])).toBeInTheDocument();
+    expect(screen.getByText(en['binDesigner.shape.custom.hint'])).toBeInTheDocument();
   });
 });

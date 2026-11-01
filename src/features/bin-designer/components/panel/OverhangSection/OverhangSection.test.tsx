@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { OverhangSection } from './OverhangSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import en from '@/i18n/locales/en';
 import { useLayoutStore } from '@/core/store/layout';
 import { createDefaultLayout } from '@/core/constants';
 import { createTestBin } from '@/test/testUtils';
@@ -362,5 +363,12 @@ describe('OverhangSection', () => {
     });
     render(<OverhangSection />);
     expect(screen.getByRole('switch')).toBeDisabled();
+  });
+
+  it('plays a clip of the feature from the dot beside its toggle', () => {
+    render(<OverhangSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'See how Overhang works' }));
+    expect(screen.getByText(en['binDesigner.featureTip.overhang'])).toBeInTheDocument();
+    expect(screen.getByText(en['binDesigner.overhang.hint'])).toBeInTheDocument();
   });
 });

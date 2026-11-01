@@ -71,4 +71,19 @@ describe('ModeTiles', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Standard' }));
     expect(onChange).not.toHaveBeenCalled();
   });
+
+  it('shows the chosen mode tip beside its caption, but not while the mode is blocked', () => {
+    const withTips = OPTIONS.map((option) => ({ ...option, tip: <span>{option.label} tip</span> }));
+    const { rerender } = render(
+      <ModeTiles ariaLabel="Body type" value="tray" onChange={vi.fn()} options={withTips} />
+    );
+    expect(screen.getByText('Tray tip')).toBeInTheDocument();
+    expect(screen.queryByText('Standard tip')).toBeNull();
+
+    rerender(
+      <ModeTiles ariaLabel="Body type" value="spacer" onChange={vi.fn()} options={withTips} />
+    );
+    expect(screen.getByText('Blocked')).toBeInTheDocument();
+    expect(screen.queryByText('Spacer tip')).toBeNull();
+  });
 });

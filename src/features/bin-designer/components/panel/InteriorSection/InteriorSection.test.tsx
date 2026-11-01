@@ -5,6 +5,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '../../../constants';
 import { DEFAULT_TRAY_BOTTOM } from '../../../types';
 import type { InteriorCard } from '../../../types';
+import en from '@/i18n/locales/en';
 
 vi.mock('./InteriorModes', () => ({
   InteriorModeContent: ({ card }: { card: InteriorCard }) => (
@@ -15,17 +16,23 @@ vi.mock('./InteriorModes', () => ({
 // Mock the hook
 const mockSelectCard = vi.fn();
 const mockSetStyle = vi.fn();
+const view = vi.hoisted(() => ({ card: 'standard', isDesktop: true }));
 vi.mock('./useInteriorSection', () => ({
   useInteriorSection: () => ({
-    state: { style: 'standard', card: 'standard', isSlotted: false, isSolid: false },
+    state: { style: 'standard', card: view.card, isSlotted: false, isSolid: false },
     handlers: { setStyle: mockSetStyle, selectCard: mockSelectCard },
   }),
+}));
+vi.mock('@/shared/hooks/useResponsive', () => ({
+  useResponsive: () => ({ isDesktop: view.isDesktop }),
 }));
 
 describe('InteriorSection', () => {
   beforeEach(() => {
     mockSelectCard.mockClear();
     mockSetStyle.mockClear();
+    view.card = 'standard';
+    view.isDesktop = true;
   });
 
   it('offers the four modes as tiles', () => {
@@ -71,6 +78,25 @@ describe('InteriorSection', () => {
 
     expect(mockSelectCard).toHaveBeenCalledWith('bento');
     expect(mockSetStyle).not.toHaveBeenCalled();
+  });
+
+  it('plays a clip of the compartment editor beside the Grid Dividers caption', () => {
+    render(<InteriorSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'See how Grid Dividers works' }));
+    expect(screen.getByText(en['binDesigner.featureTip.compartments'])).toBeInTheDocument();
+  });
+
+  it('offers the scan clip on Custom Cutouts only where the Cut Editor opens', () => {
+    view.card = 'solid';
+    const { unmount } = render(<InteriorSection />);
+    expect(
+      screen.getByRole('button', { name: 'See how Scan with your phone works' })
+    ).toBeInTheDocument();
+    unmount();
+
+    view.isDesktop = false;
+    render(<InteriorSection />);
+    expect(screen.queryByRole('button', { name: /^See how/ })).toBeNull();
   });
 
   describe('Removable tile gate', () => {

@@ -36,6 +36,7 @@ const INLINE_INFO = new Set(['SliderInput']);
 const ON_DEMAND_PROP = 'info';
 const ON_DEMAND = new Set([
   'InfoDot',
+  'FeatureTip',
   'LabelInfo',
   'OptionNotes',
   'Dialog',

@@ -10,6 +10,7 @@
 import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import { useCallback, useState } from 'react';
 import { FeatureToggle } from '../FeatureToggle';
+import { FeatureTip } from '../../FeatureTip';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 import { Button, Stepper, InfoIcon } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
@@ -130,6 +131,7 @@ export function LabelTabsSection() {
       checked={state.label.enabled}
       onChange={handlers.toggleLabelTabs}
       disabledReason={meta.disabledReason}
+      badge={<FeatureTip tip="labelTabs" feature={t('binDesigner.labelTabs')} />}
       primaryControls={
         <>
           {/* Label type leads because it decides what the captions below become:

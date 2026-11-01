@@ -41,6 +41,12 @@ if (typeof Element !== 'undefined') {
   Element.prototype.hasPointerCapture = () => false;
 }
 
+// jsdom has no media playback: play() returns undefined instead of a promise.
+if (typeof HTMLMediaElement !== 'undefined') {
+  HTMLMediaElement.prototype.play = () => Promise.resolve();
+  HTMLMediaElement.prototype.pause = () => {};
+}
+
 // jsdom returns null for any WebGL context; teach getContext to return a
 // non-lost context object instead so detectWebGL() resolves "available" by
 // default. Tests covering the WebGL-unavailable path override this locally

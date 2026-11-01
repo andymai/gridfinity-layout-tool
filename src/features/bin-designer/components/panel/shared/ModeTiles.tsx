@@ -10,6 +10,8 @@ export interface ModeTileOption<T extends string> {
   readonly caption: string;
   /** On the tile, under its label: an "Experimental" pill and the like. */
   readonly badge?: ReactNode;
+  /** Beside the caption while the mode is chosen and not blocked. */
+  readonly tip?: ReactNode;
   /** Why the mode cannot be chosen. Disables the tile and is its tooltip. */
   readonly disabledReason?: string;
 }
@@ -108,9 +110,12 @@ export function ModeTiles<T extends string>({
         })}
       </div>
       {chosen && (
-        <p className="text-label leading-relaxed text-content-tertiary">
-          {blockedReason ?? chosen.caption}
-        </p>
+        <div className="flex items-start gap-1.5">
+          <p className="text-label leading-relaxed text-content-tertiary">
+            {blockedReason ?? chosen.caption}
+          </p>
+          {blockedReason === undefined && chosen.tip}
+        </div>
       )}
       {blockedReason === undefined ? (
         children
