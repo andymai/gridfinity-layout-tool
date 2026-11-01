@@ -1,0 +1,46 @@
+src/features/baseplate/utils/plateTurnOverhang.ts
+  s_f721a21584cb95::t_94154291113471 1-137
+src/features/baseplate/utils/stackPrint.test.ts
+  s_f721a21584cb95::t_99df328c19d7ae 255-271,401-473,478-482
+  s_f721a21584cb95::t_82928e0674b77f 474-477,483-485
+src/features/baseplate/utils/printGuide.test.ts
+  s_f721a21584cb95::t_a7f8ba3272b5f1 341
+src/features/baseplate/utils/stackPrint.ts
+  s_f721a21584cb95::t_e379625eda0cd3 329
+  s_f721a21584cb95::t_7372ee1f0e8f92 288
+  s_f721a21584cb95::t_c968d116034a89 180,259-263
+  s_f721a21584cb95::t_005a4583731164 13,181,184-190,207,257-258,285-287,289-293,302,332
+src/features/baseplate/utils/plateTurnOverhang.test.ts
+  s_f721a21584cb95::t_f8cd39b0476568 1-95,98-106,108-122,124-127
+  s_f721a21584cb95::t_cca36a22d08e36 123
+  s_f721a21584cb95::t_3e558787144f4b 96-97,107
+src/features/baseplate/utils/printGuide.ts
+  s_f721a21584cb95::t_ddf28e29fbcf1a 175-177
+src/features/baseplate/utils/stackExport.ts
+  s_f721a21584cb95::t_44fd55a6249db8 26-27
+src/features/baseplate/README.md
+  s_f721a21584cb95::t_815e745b8e617d 63
+  s_f721a21584cb95::t_bec5c2612fe82f 67
+src/features/generation/worker/generators/baseplateGenerator.scenario.stackShaped.test.ts
+  s_f721a21584cb95::t_0d46915206aad3 135-136
+  s_f721a21584cb95::t_5438a552f16532 144-145
+  s_f721a21584cb95::t_68d038b22c6e1d 1-134,137-143,146-147
+src/features/baseplate/utils/buildFullParams.ts
+  s_f721a21584cb95::t_44fd55a6249db8 342-347
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0a65d109b86ecd3c1fa49534c5e39ab631891148",
+  "prompts": {},
+  "sessions": {
+    "s_f721a21584cb95": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14ff3cc8-6691-4939-a25c-f6ba932191ef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
