@@ -199,10 +199,12 @@ export function deriveDimensions(
   const ovhExp = hasOverhang(overhang) ? overhangExpansion(overhang) : null;
 
   const inset = pullTabWallInset(params);
-  const innerW = outerW + (ovhExp?.addW ?? 0) - 2 * params.wallThickness - inset.x;
-  const innerD = outerD + (ovhExp?.addD ?? 0) - 2 * params.wallThickness - inset.y;
-  const innerOffsetX = (ovhExp?.offsetX ?? 0) - inset.x / 2;
-  const innerOffsetY = (ovhExp?.offsetY ?? 0) + inset.y / 2;
+  const innerW =
+    outerW + (ovhExp?.addW ?? 0) - 2 * params.wallThickness - (inset.left + inset.right);
+  const innerD =
+    outerD + (ovhExp?.addD ?? 0) - 2 * params.wallThickness - (inset.front + inset.back);
+  const innerOffsetX = (ovhExp?.offsetX ?? 0) - (inset.right - inset.left) / 2;
+  const innerOffsetY = (ovhExp?.offsetY ?? 0) + (inset.front - inset.back) / 2;
   const isSlotted = isSlottedBody(params);
   const grooveDepth = liteFloorOpen ? 0 : dividerGrooveDepth(params);
 
@@ -331,7 +333,12 @@ export function deriveDimensions(
   const shellKey = compactKey(
     buildCacheKey(
       'v7',
-      ...(inset.x || inset.y ? [`pull-wall:${inset.x}:${inset.y}`] : []),
+      ...(inset.left || inset.right || inset.front || inset.back
+        ? [
+            `pull-wall:${inset.right}:${inset.front}` +
+              (inset.left || inset.back ? `:${inset.left}:${inset.back}` : ''),
+          ]
+        : []),
       ...(effectiveRimFilletRadius(params) > 0
         ? [
             `rim-v7-${quantize(effectiveRimFilletRadius(params))}`,
@@ -339,6 +346,7 @@ export function deriveDimensions(
               ? [
                   stableSerialize([
                     rimTab.wall,
+                    ...(rimTab.walls ? [rimTab.walls] : []),
                     rimTab.thickness,
                     rimTab.width,
                     rimTab.widthMode,

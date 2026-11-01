@@ -1866,20 +1866,25 @@ const en: Record<string, string> = {
 
   // Bin Designer
   'help.target.binDesigner.pullTab.keywords':
-    'pull tab, grip, handle, finger recess, raised wall, shoulder',
+    'pull tab, grip, handle, finger recess, raised wall, shoulder, two tabs, four tabs, lift',
   'help.target.binDesigner.pullTab.title': 'Pull tab',
   'binDesigner.pullTab.title': 'Pull tab',
   'help.target.binDesigner.pullTab.description':
-    'A raised grip on one wall. Wall and tab share the chosen thickness; extra material grows inward.',
+    'Raised grips on up to four walls. Walls and tabs share the chosen thickness; extra material grows inward.',
   'binDesigner.pullTab.description':
-    'A raised grip on one wall. Wall and tab share the chosen thickness; extra material grows inward.',
-  'binDesigner.pullTab.wall': 'Pull tab wall',
-  'binDesigner.pullTab.widthWall': 'Width wall',
-  'binDesigner.pullTab.depthWall': 'Depth wall',
+    'Raised grips on up to four walls. Walls and tabs share the chosen thickness; extra material grows inward.',
+  'binDesigner.pullTab.wall': 'Walls',
+  'binDesigner.pullTab.sideAria': 'Walls with a pull tab',
+  'binDesigner.pullTab.side.front': 'Front',
+  'binDesigner.pullTab.side.back': 'Back',
+  'binDesigner.pullTab.side.left': 'Left',
+  'binDesigner.pullTab.side.right': 'Right',
+  'binDesigner.pullTab.wallTooShort': 'A wall shorter than 22 mm has no room for a tab.',
   'binDesigner.pullTab.thickness': 'Wall & tab thickness',
   'binDesigner.pullTab.width': 'Tab width',
   'binDesigner.pullTab.widthUnit': 'Tab width unit',
   'binDesigner.pullTab.percentHint': 'Current tab width: {width} mm.',
+  'binDesigner.pullTab.widthPerAxis': 'Tab width: {front} mm front/back, {side} mm sides.',
   'binDesigner.pullTab.percentHintDetail':
     '100% fills the usable wall width between the corner clearances.',
   'binDesigner.pullTab.outlineHint':
@@ -1902,6 +1907,8 @@ const en: Record<string, string> = {
     'Border width sets the top and side margins; sloping shoulders can leave wider side margins. Smaller values widen the recess. Increasing recess height can extend it below the rim; depth leaves at least 0.8 mm of wall behind it.',
   'binDesigner.pullTab.recessSize':
     'Recess width: {width} mm \u00b7 Extends below rim: {below} mm.',
+  'binDesigner.pullTab.recessSizePerAxis':
+    'Recess width: {front} mm front/back, {side} mm sides \u00b7 Extends below rim: {below} mm.',
   'binDesigner.pullTab.recessSizeDetail':
     'Border and corner radius adjust when needed to stay inside the tab.',
   'binDesigner.pullTab.rectangularOnly': 'Pull tabs need a rectangular bin.',

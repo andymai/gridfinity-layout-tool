@@ -122,7 +122,18 @@ describe('pull-tab validation', () => {
     expect(result.valid).toBe(true);
     if (result.valid) expect(result.payload.params.pullTab).toEqual(tab);
   });
+  it('preserves the walls a tab stands on', () => {
+    const tab = { ...DEFAULT_PULL_TAB, enabled: true, walls: ['front', 'back', 'left', 'right'] };
+    const result = check(JSON.parse(JSON.stringify(tab)) as Record<string, unknown>);
+    expect(result.valid).toBe(true);
+    if (result.valid) expect(result.payload.params.pullTab).toEqual(tab);
+  });
   it.each([
+    { walls: [] },
+    { walls: 'front' },
+    { walls: ['front', 'front'] },
+    { walls: ['roof'] },
+    { walls: ['front', 'back', 'left', 'right', 'front'] },
     { wall: ['width'] },
     { wall: 'back' },
     { enabled: 'yes' },

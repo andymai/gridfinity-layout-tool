@@ -1,4 +1,4 @@
-import type { BinParams, PullTabConfig } from '@/shared/types/bin';
+import type { BinParams, PullTabConfig, PullTabWall } from '@/shared/types/bin';
 import { isPartialMask } from './cellMask';
 import { effectiveRimFilletRadius } from './rimFillet';
 
@@ -35,6 +35,50 @@ export const PULL_TAB_LIMITS = {
   recessInsideRadius: [0, 6],
 } as const;
 
+/** Canonical wall order. The picker renders in it and `resolvePullTabWalls` sorts to it. */
+export const PULL_TAB_WALLS: readonly PullTabWall[] = ['front', 'back', 'left', 'right'];
+
+function isPullTabWall(value: unknown): value is PullTabWall {
+  return typeof value === 'string' && (PULL_TAB_WALLS as readonly string[]).includes(value);
+}
+
+/**
+ * Every wall this tab stands on, in a stable order. The one reader of `walls`:
+ * a tab on the front or the right alone stores `wall` and reaches here through
+ * the fallback, so nothing downstream has to know which field a design uses.
+ *
+ * Filtered and de-duplicated because a repeat would build one tab twice in the
+ * same place, a coincident pair the fuse turns into a sliver.
+ */
+export function resolvePullTabWalls(
+  tab: Pick<PullTabConfig, 'wall' | 'walls'>
+): readonly PullTabWall[] {
+  const raw: unknown = tab.walls;
+  if (Array.isArray(raw)) {
+    const seen = new Set(raw.filter(isPullTabWall));
+    if (seen.size > 0) return PULL_TAB_WALLS.filter((wall) => seen.has(wall));
+  }
+  return [tab.wall === 'depth' ? 'right' : 'front'];
+}
+
+export function pullTabWallAxis(wall: PullTabWall): PullTabConfig['wall'] {
+  return wall === 'left' || wall === 'right' ? 'depth' : 'width';
+}
+
+/**
+ * The stored form of a wall selection. Picking the walls in a different
+ * sequence, or coming back to the front or right alone, must hash the same.
+ */
+export function pullTabWallFields(
+  walls: readonly PullTabWall[]
+): Pick<PullTabConfig, 'wall' | 'walls'> {
+  const picked = PULL_TAB_WALLS.filter((wall) => walls.includes(wall));
+  if (picked.length === 0 || (picked.length === 1 && picked[0] === 'front'))
+    return { wall: 'width' };
+  if (picked.length === 1 && picked[0] === 'right') return { wall: 'depth' };
+  return { wall: pullTabWallAxis(picked[0]), walls: picked };
+}
+
 export function resolvePullTab(value: unknown): PullTabConfig {
   const v = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
   const n = (key: keyof typeof PULL_TAB_LIMITS): number => {
@@ -46,7 +90,12 @@ export function resolvePullTab(value: unknown): PullTabConfig {
   };
   return {
     enabled: v.enabled === true,
-    wall: v.wall === 'depth' ? 'depth' : 'width',
+    ...pullTabWallFields(
+      resolvePullTabWalls({
+        wall: v.wall === 'depth' ? 'depth' : 'width',
+        walls: v.walls as PullTabConfig['walls'],
+      })
+    ),
     backRecess: v.backRecess === true,
     thickness: n('thickness'),
     width: n('width'),
@@ -119,19 +168,32 @@ export function pullTabInRimShell(p: BinParams): boolean {
   return activePullTab(p) !== null && effectiveRimFilletRadius(p) > 0;
 }
 
-/** Front (-Y) for the width wall; right (+X) for the depth wall. */
-export function pullTabWallInset(p: BinParams) {
+/**
+ * Inward growth of each selected wall. A selected wall too short for a tab is
+ * still thickened: that is what a one-wall tab has always done there.
+ */
+export function pullTabWallInset(p: BinParams): Readonly<Record<PullTabWall, number>> {
   const tab = activePullTab(p);
   const extra = tab ? Math.max(0, tab.thickness - p.wallThickness) : 0;
-  return { x: tab?.wall === 'depth' ? extra : 0, y: tab?.wall === 'width' ? extra : 0 };
+  const on = tab ? resolvePullTabWalls(tab) : [];
+  const at = (wall: PullTabWall): number => (on.includes(wall) ? extra : 0);
+  return { front: at('front'), back: at('back'), left: at('left'), right: at('right') };
 }
 
-export function availablePullTabWidth(p: BinParams): number {
-  const wall = resolvePullTab(p.pullTab).wall;
+function firstWall(p: BinParams): PullTabWall {
+  return resolvePullTabWalls(resolvePullTab(p.pullTab))[0];
+}
+
+export function availablePullTabWidth(p: BinParams, wall: PullTabWall = firstWall(p)): number {
   return (
-    (wall === 'width' ? p.width * p.gridUnitMm : p.depth * (p.gridUnitMmY ?? p.gridUnitMm)) - 10
+    (pullTabWallAxis(wall) === 'width'
+      ? p.width * p.gridUnitMm
+      : p.depth * (p.gridUnitMmY ?? p.gridUnitMm)) - 10
   );
 }
+
+/** Narrowest tab a wall can carry; a shorter wall builds none. */
+export const MIN_PULL_TAB_WIDTH = 12;
 
 /** Opposite circular arcs can meet tangentially before either turns 90 degrees. */
 function fitRounds(first: number, second: number, rise: number, maxRun: number) {
@@ -144,15 +206,23 @@ function fitRounds(first: number, second: number, rise: number, maxRun: number) 
   return { first: first * scale, second: second * scale, angle, run: fitted * Math.sin(angle) };
 }
 
-export function planPullTab(p: BinParams, rimZ: number, floorZ: number) {
+export function planPullTab(
+  p: BinParams,
+  rimZ: number,
+  floorZ: number,
+  wall: PullTabWall = firstWall(p)
+) {
   const tab = activePullTab(p);
   if (!tab) return null;
-  const available = availablePullTabWidth(p);
+  const available = availablePullTabWidth(p, wall);
   const width = Math.min(
     available,
-    Math.max(12, tab.widthMode === 'percent' ? (available * tab.widthPercent) / 100 : tab.width)
+    Math.max(
+      MIN_PULL_TAB_WIDTH,
+      tab.widthMode === 'percent' ? (available * tab.widthPercent) / 100 : tab.width
+    )
   );
-  if (width < 12 || rimZ <= floorZ + 1) return null;
+  if (width < MIN_PULL_TAB_WIDTH || rimZ <= floorZ + 1) return null;
   const thickness = Math.max(p.wallThickness, tab.thickness);
   const outline = fitRounds(tab.rootRadius, tab.topRadius, tab.height, width / 2 - 3);
   const topRadius = outline.second;
@@ -196,6 +266,7 @@ export function planPullTab(p: BinParams, rimZ: number, floorZ: number) {
   const recessInsideRadius = blend.second;
   return {
     ...tab,
+    side: wall,
     width,
     widthPercent: (width / available) * 100,
     thickness,
@@ -217,4 +288,15 @@ export function planPullTab(p: BinParams, rimZ: number, floorZ: number) {
     recessBlendAngle: blend.angle,
     recessBlendWidth: blend.run,
   };
+}
+
+export type PullTabPlan = NonNullable<ReturnType<typeof planPullTab>>;
+
+export function planPullTabs(p: BinParams, rimZ: number, floorZ: number): PullTabPlan[] {
+  const tab = activePullTab(p);
+  if (!tab) return [];
+  return resolvePullTabWalls(tab).flatMap((wall) => {
+    const plan = planPullTab(p, rimZ, floorZ, wall);
+    return plan ? [plan] : [];
+  });
 }

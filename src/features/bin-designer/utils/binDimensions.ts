@@ -167,8 +167,8 @@ export function binDimensions(params: BinParams): BinDimensions {
   const outerW = params.width * params.gridUnitMm - GRIDFINITY.TOLERANCE;
   const outerD = params.depth * gridUnitMmY - GRIDFINITY.TOLERANCE;
   const inset = pullTabWallInset(params);
-  const innerW = outerW - 2 * params.wallThickness - inset.x;
-  const innerD = outerD - 2 * params.wallThickness - inset.y;
+  const innerW = outerW - 2 * params.wallThickness - (inset.left + inset.right);
+  const innerD = outerD - 2 * params.wallThickness - (inset.front + inset.back);
   const totalH = params.height * params.heightUnitMm;
   const isFlat = params.base.style === 'flat';
   // Mirrors the worker's `deriveDimensions`. A tray bin is socketless
@@ -231,8 +231,8 @@ export function cutoutInterior(params: BinParams): CutoutInterior {
   const inset = pullTabWallInset(params);
   return {
     ...cavity,
-    offsetX: cavity.offsetX - inset.x / 2,
-    offsetY: cavity.offsetY + inset.y / 2,
+    offsetX: cavity.offsetX - (inset.right - inset.left) / 2,
+    offsetY: cavity.offsetY + (inset.front - inset.back) / 2,
   };
 }
 

@@ -21,7 +21,8 @@ const ROOTS = [
 const BOOLEAN_PRIMITIVES = new Set(['Checkbox', 'CheckboxRow', 'Switch', 'ToggleRow']);
 const CHOICE_CONTROLS = new Set(['SegmentedControl', 'SegmentGrid']);
 /** Wall-name keys: a control labelled with these is picking a wall. */
-const WALL_KEY = /^binDesigner\.(lid\.side|overhang\.side|wallCutouts\.side|handles\.side)\./;
+const WALL_KEY =
+  /^binDesigner\.(lid\.side|overhang\.side|wallCutouts\.side|handles\.side|pullTab\.side)\./;
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {

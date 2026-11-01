@@ -370,6 +370,7 @@ export type _SideFlagsKeys = Assert<
 export const PULL_TAB_KEYS = [
   'enabled',
   'wall',
+  'walls',
   'backRecess',
   'thickness',
   'width',

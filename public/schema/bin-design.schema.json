@@ -2951,7 +2951,21 @@
           "type": "boolean"
         },
         "wall": {
-          "enum": ["width", "depth"]
+          "enum": ["width", "depth"],
+          "description": "A tab on the front (\"width\") or the right (\"depth\") alone. Read alone unless \"walls\" is present."
+        },
+        "walls": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["front", "back", "left", "right"],
+            "x-constant": {
+              "enum": "PULL_TAB_WALLS"
+            }
+          },
+          "description": "Every wall carrying a tab, sharing one set of sizes. Omitted for a tab on the front or the right alone, which stores \"wall\" alone."
         },
         "backRecess": {
           "type": "boolean",

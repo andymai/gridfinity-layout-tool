@@ -371,7 +371,7 @@ it, so holes drain rather than ending in a blind pocket.
 
 <a id="pulltabconfig"></a>
 
-16 fields, in `src/features/bin-designer/types/pullTab.ts`.
+17 fields, in `src/features/bin-designer/types/pullTab.ts`.
 
 ## Label tabs
 
@@ -927,7 +927,7 @@ Magnets are turned on by the base `style`, not a separate flag:
 
 <a id="pulltabconfig"></a>
 
-18 fields, in `src/features/bin-designer/types/pullTab.ts`.
+17 fields, in `src/features/bin-designer/types/pullTab.ts`.
 
 ## Label tabs on the back wall
 

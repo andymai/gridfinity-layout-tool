@@ -8,10 +8,12 @@ import {
   edgeFinder,
   getBounds,
   fillet,
+  fuseAll,
   unwrap,
 } from 'brepjs';
 import type { DisposalScope, Shape3D, ValidSolid } from 'brepjs';
-import { planPullTab, pullTabInRimShell } from '@/shared/utils/pullTabPlan';
+import { planPullTabs, pullTabInRimShell } from '@/shared/utils/pullTabPlan';
+import type { PullTabPlan } from '@/shared/utils/pullTabPlan';
 import { effectiveRimFilletRadius } from '@/shared/utils/rimFillet';
 import { sketch } from './meshUtils';
 import { FeatureTag } from './featureTags';
@@ -19,27 +21,62 @@ import type { FeatureBuilder } from './pipeline/featureBuilder';
 import type { PipelineContext } from './pipeline/types';
 import { compactKey, stableSerialize } from './cacheKeyUtils';
 
-function plan(ctx: PipelineContext) {
-  return planPullTab(
+function plans(ctx: PipelineContext): PullTabPlan[] {
+  return planPullTabs(
     ctx.params,
     ctx.dimensions.wallHeight + ctx.dimensions.collarHeight,
     ctx.dimensions.floorThickness
   );
 }
 
-/** Local XY is the tab's elevation; extrusion is toward the outside of the wall. */
-function position(scope: DisposalScope, shape: Shape3D, ctx: PipelineContext): Shape3D {
-  const p = plan(ctx);
-  if (!p) throw new Error('Pull tab has no usable host wall');
+/**
+ * Local XY is the tab's elevation; extrusion is toward the outside of the wall.
+ *
+ * The caller shifts every tab by the cavity offset, which a thickened
+ * neighbouring wall moves off the bin's centre. Undoing that along the host
+ * wall keeps each tab centred on the outside of its own wall.
+ */
+function position(
+  scope: DisposalScope,
+  shape: Shape3D,
+  ctx: PipelineContext,
+  p: PullTabPlan
+): Shape3D {
+  const { innerW, innerD, innerOffsetX, innerOffsetY } = ctx.dimensions;
+  const alongX = -innerOffsetX || 0;
+  const alongY = -innerOffsetY || 0;
   const upright = scope.register(rotate(shape, 90, { axis: [1, 0, 0] }));
-  if (p.wall === 'width') return translate(upright, [0, -ctx.dimensions.innerD / 2, 0]);
+  if (p.side === 'front') return translate(upright, [alongX, -innerD / 2, 0]);
+  if (p.side === 'back') {
+    const back = scope.register(rotate(upright, 180, { axis: [0, 0, 1] }));
+    return translate(back, [alongX, innerD / 2, 0]);
+  }
+  if (p.side === 'left') {
+    const left = scope.register(rotate(upright, -90, { axis: [0, 0, 1] }));
+    return translate(left, [-innerW / 2, alongY, 0]);
+  }
   const right = scope.register(rotate(upright, 90, { axis: [0, 0, 1] }));
-  return translate(right, [ctx.dimensions.innerW / 2, 0, 0]);
+  return translate(right, [innerW / 2, alongY, 0]);
+}
+
+/** Tabs on different walls never touch, so one disjoint fuse joins them. */
+function joinAll(scope: DisposalScope, shapes: Shape3D[]): Shape3D | null {
+  if (shapes.length <= 1) return shapes[0] ?? null;
+  for (const shape of shapes) scope.register(shape);
+  return unwrap(fuseAll(shapes as ValidSolid[]));
+}
+
+/** Each selected wall's raised body, positioned in the cavity frame. */
+export function buildPullTabs(ctx: PipelineContext): Shape3D[] {
+  return plans(ctx).map((p) => buildPullTabBody(ctx, p));
 }
 
 export function buildPullTab(ctx: PipelineContext): Shape3D | null {
-  const p = plan(ctx);
-  if (!p) return null;
+  const bodies = buildPullTabs(ctx);
+  return withScope((scope: DisposalScope) => joinAll(scope, bodies));
+}
+
+function buildPullTabBody(ctx: PipelineContext, p: PullTabPlan): Shape3D {
   return withScope((scope: DisposalScope) => {
     const a = p.width / 2,
       r = p.rootRadius,
@@ -81,7 +118,7 @@ export function buildPullTab(ctx: PipelineContext): Shape3D | null {
     const body = scope.register(
       sketch(pen.lineTo([a + wing, z - p.embed]).close()).extrude(p.thickness)
     );
-    if (rimRadius <= 0) return position(scope, body, ctx);
+    if (rimRadius <= 0) return position(scope, body, ctx, p);
     const edges = edgeFinder()
       .when((edge) => {
         const b = getBounds(edge);
@@ -94,7 +131,7 @@ export function buildPullTab(ctx: PipelineContext): Shape3D | null {
       .findAll(body);
     try {
       const rounded = scope.register(unwrap(fillet(body as ValidSolid, edges, rimRadius)));
-      return position(scope, rounded, ctx);
+      return position(scope, rounded, ctx, p);
     } finally {
       for (const edge of edges) edge.delete();
     }
@@ -102,8 +139,19 @@ export function buildPullTab(ctx: PipelineContext): Shape3D | null {
 }
 
 export function buildPullTabRecess(ctx: PipelineContext, back = false): Shape3D | null {
-  const p = plan(ctx);
-  if (!p || p.recessDepth <= 0 || p.recessHeight <= 0) return null;
+  const pockets = plans(ctx).flatMap((p) => {
+    const pocket = buildPullTabRecessFor(ctx, p, back);
+    return pocket ? [pocket] : [];
+  });
+  return withScope((scope: DisposalScope) => joinAll(scope, pockets));
+}
+
+function buildPullTabRecessFor(
+  ctx: PipelineContext,
+  p: PullTabPlan,
+  back: boolean
+): Shape3D | null {
+  if (p.recessDepth <= 0 || p.recessHeight <= 0) return null;
   return withScope((scope: DisposalScope) => {
     const e = p.recessEdgeRadius;
     const section = (depth: number, inset: number) =>
@@ -148,18 +196,25 @@ export function buildPullTabRecess(ctx: PipelineContext, back = false): Shape3D 
       const reflected = scope.register(
         mirror(tool, { normal: [0, 0, 1], at: [0, 0, p.thickness / 2] })
       );
-      return position(scope, reflected, ctx);
+      return position(scope, reflected, ctx, p);
     }
-    return position(scope, tool, ctx);
+    return position(scope, tool, ctx, p);
   });
 }
 
 const common = {
   tag: FeatureTag.BASE,
-  shouldBuild: (ctx: PipelineContext) => plan(ctx) !== null,
+  shouldBuild: (ctx: PipelineContext) => plans(ctx).length > 0,
   cacheKey: (ctx: PipelineContext) =>
     compactKey(
-      stableSerialize(['pull-tab-v4', plan(ctx), ctx.dimensions.innerW, ctx.dimensions.innerD])
+      stableSerialize([
+        'pull-tab-v5',
+        plans(ctx),
+        ctx.dimensions.innerW,
+        ctx.dimensions.innerD,
+        ctx.dimensions.innerOffsetX,
+        ctx.dimensions.innerOffsetY,
+      ])
     ),
 };
 export const pullTabFeature: FeatureBuilder = {
@@ -185,7 +240,7 @@ export const pullTabBackRecessFeature: FeatureBuilder = {
   ...common,
   name: 'pullTabBackRecess',
   target: 'cut',
-  shouldBuild: (ctx) => plan(ctx)?.backRecess === true,
+  shouldBuild: (ctx) => plans(ctx).some((p) => p.backRecess),
   build: (ctx) => {
     const pocket = buildPullTabRecess(ctx, true);
     return pocket ? [pocket] : null;

@@ -42,6 +42,7 @@ import {
 } from './designerCutoutValidation.js';
 import { validateLid } from './designerLidValidation.js';
 import { validateBase, validateWalls } from './designerBaseValidation.js';
+import { validatePullTab } from './designerPullTabValidation.js';
 export {
   VALID_FOOT_LATTICES,
   VALID_LIGHTWEIGHT_MODES,
@@ -565,49 +566,8 @@ export function validateDesignerShare(
   }
 
   if (params.pullTab !== undefined) {
-    const tab = params.pullTab;
-    const ranges: Record<string, readonly [number, number]> = {
-      thickness: [0.4, 4],
-      width: [12, 500],
-      widthPercent: [1, 100],
-      height: [3, 40],
-      topRadius: [0, 20],
-      rootRadius: [0, 20],
-      recessHeight: [1, 80],
-      recessBorder: [0.8, 20],
-      recessDepth: [0, 3.2],
-      recessRadius: [0, 20],
-      recessEdgeRadius: [0, 6],
-      recessInsideRadius: [0, 6],
-    };
-    if (
-      !isObject(tab) ||
-      typeof tab.enabled !== 'boolean' ||
-      (tab.backRecess !== undefined && typeof tab.backRecess !== 'boolean') ||
-      (tab.widthMode !== undefined && tab.widthMode !== 'mm' && tab.widthMode !== 'percent') ||
-      (tab.wall !== 'width' && tab.wall !== 'depth')
-    )
-      return validationError('INVALID_PARAMS', 'Invalid pull tab configuration');
-    for (const key of Object.keys(tab)) {
-      if (
-        key !== 'enabled' &&
-        key !== 'wall' &&
-        key !== 'backRecess' &&
-        key !== 'widthMode' &&
-        !(key in ranges)
-      )
-        return validationError('INVALID_PARAMS', `Unknown pull tab setting: ${key}`);
-    }
-    for (const [key, [min, max]] of Object.entries(ranges)) {
-      const value = tab[key];
-      if (
-        ['recessBorder', 'recessInsideRadius', 'widthPercent'].includes(key) &&
-        value === undefined
-      )
-        continue;
-      if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max)
-        return validationError('INVALID_PARAMS', `Invalid pull tab ${key}`);
-    }
+    const pullTabErr = validatePullTab(params.pullTab);
+    if (pullTabErr) return validationError('INVALID_PARAMS', pullTabErr);
   }
   if (params.wallLabelSlots !== undefined) {
     const slotsErr = validateWallLabelSlots(params.wallLabelSlots);

@@ -5,12 +5,13 @@ import {
   assertStructurallyValid,
   assertWatertight,
   boundingBox,
+  meshTopologyStats,
   meshVolume,
   verticalSolidSpans,
   columnCrossings,
 } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { DEFAULT_PULL_TAB, planPullTab } from '@/shared/utils/pullTabPlan';
+import { DEFAULT_PULL_TAB, planPullTab, pullTabWallFields } from '@/shared/utils/pullTabPlan';
 import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { deriveDimensions } from './pipeline/context';
 import { generateLabelPlates } from './labelPlateGenerator';
@@ -18,7 +19,8 @@ import { planLabelPlates } from '@/shared/utils/labelSocketPlan';
 import { labelPlateWidthMm, effectiveLabelSocketClearance } from '@/shared/constants/labelPlates';
 import { assembledHeight } from '@/shared/printSettings/assembledHeight';
 import { canBinUseDirectMesh } from './binDirectMesh';
-import type { BinParams, PullTabConfig } from '@/shared/types/bin';
+import type { BinParams, PullTabConfig, PullTabWall } from '@/shared/types/bin';
+import type { MeshData } from '@/features/generation/bridge/types';
 import { runScenarios } from './__kernel-tests__/scenarioRunner';
 import { pullTab } from './scenarios/pullTab';
 
@@ -513,4 +515,124 @@ describe('raised pull tabs', () => {
     assertWatertight(mesh);
     expect(meshVolume(mesh)).toBeGreaterThan(0);
   });
+});
+
+describe('pull tabs on several walls', () => {
+  const WALLS: readonly PullTabWall[] = ['front', 'back', 'left', 'right'];
+  const HALF_W = 41.75;
+  const HALF_D = 62.75;
+  const RIM = 42;
+  const TOP = RIM + DEFAULT_PULL_TAB.height;
+  const on = (walls: readonly PullTabWall[], more: Partial<BinParams> = {}) =>
+    params(pullTabWallFields(walls), more);
+  /** A point `inset` mm in from the outside of a wall, `along` mm from its centre. */
+  const at = (wall: PullTabWall, inset: number, along = 0.13): readonly [number, number] => {
+    if (wall === 'front') return [along, -HALF_D + inset];
+    if (wall === 'back') return [along, HALF_D - inset];
+    if (wall === 'left') return [-HALF_W + inset, along];
+    return [HALF_W - inset, along];
+  };
+  const top = (mesh: MeshData, wall: PullTabWall, along?: number) =>
+    verticalSolidSpans(mesh, ...at(wall, 1, along)).at(-1)?.[1] ?? 0;
+  /** The preview carries its socket unfused, so only its highest crossing is meaningful. */
+  const previewTop = (mesh: MeshData, wall: PullTabWall) =>
+    Math.max(...columnCrossings(mesh, ...at(wall, 1)));
+  /** Solid through mid-height 2.5 mm in: inside a 3 mm wall, but cavity behind a 1.6 mm one. */
+  const thickened = (mesh: MeshData, wall: PullTabWall) =>
+    verticalSolidSpans(mesh, ...at(wall, 2.5, 30)).some(([lo, hi]) => lo < 20 && hi > 30);
+
+  function expectTabsOn(mesh: MeshData, chosen: readonly PullTabWall[]) {
+    for (const wall of WALLS) {
+      const expected = chosen.includes(wall) ? TOP : RIM;
+      expect(top(mesh, wall), `${wall} wall top`).toBeCloseTo(expected, 1);
+      expect(thickened(mesh, wall), `${wall} wall thickened`).toBe(chosen.includes(wall));
+    }
+  }
+
+  it('the probes see the wall but no tab, and no thickening, on a bin without one', () => {
+    const mesh = getGenerateBin()(params({ enabled: false }), undefined, true);
+    for (const wall of WALLS) {
+      expect(verticalSolidSpans(mesh, ...at(wall, 1)).length).toBeGreaterThan(0);
+    }
+    expectTabsOn(mesh, []);
+  });
+
+  it.each<{ chosen: readonly PullTabWall[] }>([
+    { chosen: ['front', 'back'] },
+    { chosen: ['left', 'right'] },
+    { chosen: ['back'] },
+    { chosen: ['left'] },
+    { chosen: ['front', 'right'] },
+    { chosen: ['front', 'back', 'left', 'right'] },
+  ])('raises a tab above the rim on $chosen and on no other wall', ({ chosen }) => {
+    const p = on(chosen, {
+      compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 2, cells: [0, 1, 2, 3] },
+    });
+    const mesh = getGenerateBin()(p, undefined, true);
+    assertStructurallyValid(mesh);
+    assertWatertight(mesh);
+    // One closed genus-0 solid. Disjoint tabs fuse as one compound, and a tab
+    // left as its own shell would still read watertight.
+    expect(meshTopologyStats(mesh).eulerCharacteristic).toBe(2);
+    expectTabsOn(mesh, chosen);
+    const box = boundingBox(mesh.vertices);
+    expect([box.minX, box.maxX, box.minY, box.maxY]).toEqual([
+      expect.closeTo(-HALF_W, 2),
+      expect.closeTo(HALF_W, 2),
+      expect.closeTo(-HALF_D, 2),
+      expect.closeTo(HALF_D, 2),
+    ]);
+    const dim = deriveDimensions(p, true);
+    const ui = cutoutInterior(p);
+    expect([ui.innerW, ui.innerD, ui.offsetX, ui.offsetY]).toEqual([
+      expect.closeTo(dim.innerW, 6),
+      expect.closeTo(dim.innerD, 6),
+      expect.closeTo(dim.innerOffsetX, 6),
+      expect.closeTo(dim.innerOffsetY, 6),
+    ]);
+    expect(canBinUseDirectMesh(p)).toBe(false);
+    const preview = getGenerateBin()(p);
+    assertStructurallyValid(preview);
+    for (const wall of WALLS) {
+      expect(previewTop(preview, wall), `${wall} preview top`).toBeCloseTo(top(mesh, wall), 1);
+    }
+  });
+
+  it.each<{ chosen: readonly PullTabWall[] }>([
+    { chosen: ['front', 'right'] },
+    { chosen: ['back', 'left'] },
+  ])('centres each tab on its own wall when a neighbour is thickened: $chosen', ({ chosen }) => {
+    const mesh = getGenerateBin()(on(chosen), undefined, true);
+    for (const wall of chosen) {
+      expect(Math.abs(top(mesh, wall, 22.5) - top(mesh, wall, -22.5)), wall).toBeLessThan(0.05);
+      expect(top(mesh, wall, 22.5)).toBeGreaterThan(RIM + 0.3);
+      expect(top(mesh, wall, 22.5)).toBeLessThan(RIM + 2);
+    }
+  });
+
+  it.skipIf(getKernelName() === 'manifold')(
+    'joins four rounded tabs, each with mirrored recesses, into one watertight shell',
+    () => {
+      const p = on(WALLS, {
+        base: {
+          ...DEFAULT_BIN_PARAMS.base,
+          stackingLip: false,
+          rimFillet: true,
+          rimFilletRadius: 0.4,
+        },
+      });
+      const rounded = { ...p, pullTab: { ...DEFAULT_PULL_TAB, ...p.pullTab, backRecess: true } };
+      const mesh = getGenerateBin()(rounded, undefined, true);
+      assertStructurallyValid(mesh);
+      assertWatertight(mesh);
+      expect(meshTopologyStats(mesh).eulerCharacteristic).toBe(2);
+      expectTabsOn(mesh, WALLS);
+      const single = getGenerateBin()(
+        params({ backRecess: true }, { base: rounded.base }),
+        undefined,
+        true
+      );
+      expect(meshVolume(mesh)).toBeGreaterThan(meshVolume(single) + 500);
+    }
+  );
 });

@@ -69,6 +69,7 @@ export type {
   WallConnectorStyle,
   HandleConfig,
   PullTabConfig,
+  PullTabWall,
   HandleCutoutShape,
   HandleSide,
   HandleWallSide,

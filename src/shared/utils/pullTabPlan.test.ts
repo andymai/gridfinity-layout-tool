@@ -4,10 +4,15 @@ import {
   DEFAULT_PULL_TAB,
   activePullTab,
   planPullTab,
+  planPullTabs,
   resolvePullTab,
+  resolvePullTabWalls,
+  pullTabWallFields,
   pullTabWallInset,
 } from './pullTabPlan';
 import { migrateParams } from '@/features/bin-designer/constants/paramMigration';
+import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
+import type { PullTabWall } from '@/shared/types/bin';
 
 describe('pull tab planning and saved designs', () => {
   const p = { ...DEFAULT_BIN_PARAMS, pullTab: { ...DEFAULT_PULL_TAB, enabled: true } };
@@ -29,7 +34,7 @@ describe('pull tab planning and saved designs', () => {
   it('keeps wall and tab at least as thick as the general wall', () => {
     const thin = { ...p, pullTab: { ...p.pullTab, thickness: 0.4 } };
     expect(planPullTab(thin, 35, 1.2)?.thickness).toBe(p.wallThickness);
-    expect(pullTabWallInset(thin)).toEqual({ x: 0, y: 0 });
+    expect(pullTabWallInset(thin)).toEqual({ front: 0, back: 0, left: 0, right: 0 });
     expect(planPullTab({ ...thin, wallThickness: 0.4 }, 35, 0.4)?.recessDepth).toBe(0);
   });
   it('allows 2 mm fillets in a shallow recess without deepening the cut', () => {
@@ -183,5 +188,110 @@ describe('pull tab planning and saved designs', () => {
     );
     expect(plan?.recessDepth).toBeCloseTo(2.2);
     expect((plan?.recessTop ?? 0) - (plan?.recessHeight ?? 0)).toBeCloseTo(2);
+  });
+});
+
+describe('pull tabs on more than one wall', () => {
+  const p = { ...DEFAULT_BIN_PARAMS, pullTab: { ...DEFAULT_PULL_TAB, enabled: true } };
+  const on = (...walls: PullTabWall[]) => ({
+    ...p,
+    pullTab: resolvePullTab({ ...p.pullTab, ...pullTabWallFields(walls) }),
+  });
+
+  it('reads a saved width or depth wall as the front or right wall it built on', () => {
+    expect(resolvePullTabWalls({ wall: 'width' })).toEqual(['front']);
+    expect(resolvePullTabWalls({ wall: 'depth' })).toEqual(['right']);
+    for (const wall of ['width', 'depth'] as const) {
+      const saved = { ...DEFAULT_PULL_TAB, enabled: true, wall };
+      const loaded = migrateParams({ ...p, pullTab: saved }).pullTab;
+      expect(JSON.stringify(loaded)).toBe(JSON.stringify(saved));
+      expect(loaded).not.toHaveProperty('walls');
+    }
+  });
+
+  it('writes the front or right alone the way designs saved before walls did', () => {
+    expect(pullTabWallFields(['front'])).toEqual({ wall: 'width' });
+    expect(pullTabWallFields(['right'])).toEqual({ wall: 'depth' });
+    const visited = resolvePullTab({
+      ...resolvePullTab({ ...p.pullTab, ...pullTabWallFields(['front', 'right']) }),
+      ...pullTabWallFields(['front']),
+      walls: undefined,
+    });
+    expect(JSON.stringify(visited)).toBe(JSON.stringify(resolvePullTab(p.pullTab)));
+  });
+
+  it('stores every other selection in one canonical order', () => {
+    expect(pullTabWallFields(['back'])).toEqual({ wall: 'width', walls: ['back'] });
+    expect(pullTabWallFields(['left'])).toEqual({ wall: 'depth', walls: ['left'] });
+    expect(pullTabWallFields(['right', 'left', 'front'])).toEqual({
+      wall: 'width',
+      walls: ['front', 'left', 'right'],
+    });
+    expect(JSON.stringify(resolvePullTab({ ...p.pullTab, walls: ['right', 'back'] }))).toBe(
+      JSON.stringify(resolvePullTab({ ...p.pullTab, walls: ['back', 'right'], wall: 'depth' }))
+    );
+  });
+
+  it('ignores unknown and repeated walls, falling back to the saved wall', () => {
+    const corrupt = { wall: 'depth', walls: ['left', 'left', 'roof'] } as unknown as Parameters<
+      typeof resolvePullTabWalls
+    >[0];
+    expect(resolvePullTabWalls(corrupt)).toEqual(['left']);
+    const empty = { wall: 'depth', walls: ['roof'] } as unknown as Parameters<
+      typeof resolvePullTabWalls
+    >[0];
+    expect(resolvePullTabWalls(empty)).toEqual(['right']);
+    expect(resolvePullTab({ ...p.pullTab, walls: 'front' })).not.toHaveProperty('walls');
+  });
+
+  it('plans one tab per wall, each sized from its own wall length', () => {
+    const percent = {
+      ...on('front', 'back', 'left', 'right'),
+      width: 2,
+      depth: 3,
+    };
+    const tabs = planPullTabs(
+      { ...percent, pullTab: { ...percent.pullTab, widthMode: 'percent', widthPercent: 50 } },
+      35,
+      1.2
+    );
+    expect(tabs.map((tab) => [tab.side, tab.width])).toEqual([
+      ['front', 37],
+      ['back', 37],
+      ['left', 58],
+      ['right', 58],
+    ]);
+    expect(planPullTabs({ ...p, pullTab: { ...p.pullTab, enabled: false } }, 35, 1.2)).toEqual([]);
+  });
+
+  it('skips the tab on a wall too short for one, keeping the others', () => {
+    const narrow = { ...on('front', 'left'), width: 0.5 };
+    expect(planPullTabs(narrow, 35, 1.2).map((tab) => tab.side)).toEqual(['left']);
+  });
+
+  it('thickens each chosen wall inward and centres the cavity between them', () => {
+    const thick = (...walls: PullTabWall[]) => {
+      const params = on(...walls);
+      return {
+        inset: pullTabWallInset(params),
+        dims: binDimensions(params),
+        ui: cutoutInterior(params),
+      };
+    };
+    const plain = binDimensions({ ...p, pullTab: undefined });
+    const extra = DEFAULT_PULL_TAB.thickness - p.wallThickness;
+    const opposite = thick('front', 'back');
+    expect(opposite.inset).toEqual({ front: extra, back: extra, left: 0, right: 0 });
+    expect(opposite.dims.innerD).toBeCloseTo(plain.innerD - 2 * extra);
+    expect(opposite.dims.innerW).toBeCloseTo(plain.innerW);
+    expect(opposite.ui.offsetY).toBeCloseTo(0);
+    const adjacent = thick('back', 'left');
+    expect(adjacent.ui.offsetX).toBeCloseTo(extra / 2);
+    expect(adjacent.ui.offsetY).toBeCloseTo(-extra / 2);
+    const all = thick('front', 'back', 'left', 'right');
+    expect(all.dims.innerW).toBeCloseTo(plain.innerW - 2 * extra);
+    expect(all.dims.innerD).toBeCloseTo(plain.innerD - 2 * extra);
+    expect([all.ui.offsetX, all.ui.offsetY]).toEqual([0, 0]);
+    expect(activePullTab(on('back'))?.walls).toEqual(['back']);
   });
 });

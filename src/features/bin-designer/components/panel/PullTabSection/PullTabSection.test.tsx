@@ -13,16 +13,79 @@ describe('PullTabSection', () => {
       ui: { ...DEFAULT_UI_STATE },
     })
   );
-  it('offers exactly two wall choices and independent rounding controls', () => {
+  const wall = (name: string) => screen.getByRole('switch', { name });
+  const pullTab = () => useDesignerStore.getState().params.pullTab;
+
+  it('offers all four walls, starting on the front, and independent rounding controls', () => {
     render(<PullTabSection />);
-    expect(screen.getByRole('button', { name: 'Width wall' })).toBeDefined();
-    fireEvent.click(screen.getByRole('button', { name: 'Depth wall' }));
-    expect(useDesignerStore.getState().params.pullTab?.wall).toBe('depth');
+    expect(screen.getByRole('group', { name: 'Walls with a pull tab' })).toBeDefined();
+    expect(wall('Front').getAttribute('aria-checked')).toBe('true');
+    for (const name of ['Back', 'Left', 'Right']) {
+      expect(wall(name).getAttribute('aria-checked')).toBe('false');
+    }
     expect(screen.getByText('Top corner radius')).toBeDefined();
     expect(screen.getByText('Wall transition radius')).toBeDefined();
     expect(screen.getByText('Recess outside fillet')).toBeDefined();
     expect(screen.getByText('Recess inside fillet')).toBeDefined();
-    expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
+  });
+  it('adds and removes walls, and comes back to the front alone as it started', () => {
+    const before = JSON.stringify(pullTab());
+    render(<PullTabSection />);
+    fireEvent.click(wall('Back'));
+    expect(pullTab()).toMatchObject({ wall: 'width', walls: ['front', 'back'] });
+    fireEvent.click(wall('Right'));
+    expect(pullTab()?.walls).toEqual(['front', 'back', 'right']);
+    fireEvent.click(wall('Back'));
+    fireEvent.click(wall('Right'));
+    expect(JSON.stringify(pullTab())).toBe(before);
+  });
+  it('writes a lone right wall as the depth wall saved designs use', () => {
+    render(<PullTabSection />);
+    fireEvent.click(wall('Right'));
+    fireEvent.click(wall('Front'));
+    expect(pullTab()?.wall).toBe('depth');
+    expect(pullTab()).not.toHaveProperty('walls');
+  });
+  it('keeps the last wall on and pushes no undo entry for clicking it', () => {
+    render(<PullTabSection />);
+    const params = useDesignerStore.getState().params;
+    fireEvent.click(wall('Front'));
+    expect(useDesignerStore.getState().params).toBe(params);
+    expect(wall('Front').getAttribute('aria-checked')).toBe('true');
+    expect((wall('Front') as HTMLButtonElement).disabled).toBe(false);
+  });
+  it('reports the tab width per axis once walls of two lengths carry tabs', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 3,
+        pullTab: { ...DEFAULT_PULL_TAB, enabled: true, widthMode: 'percent' },
+      },
+    });
+    render(<PullTabSection />);
+    fireEvent.click(wall('Back'));
+    expect(screen.queryByText(/front\/back/)).toBeNull();
+    expect(screen.getByText('Current tab width: 55.5 mm.')).toBeDefined();
+    fireEvent.click(wall('Left'));
+    expect(screen.getByText('Tab width: 55.5 mm front/back, 87.0 mm sides.')).toBeDefined();
+    expect(
+      screen.getByText(/^Recess width: \d+\.\d mm front\/back, \d+\.\d mm sides/)
+    ).toBeDefined();
+  });
+  it('says when a chosen wall is too short to carry a tab', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 0.5,
+        pullTab: { ...DEFAULT_PULL_TAB, enabled: true },
+      },
+    });
+    render(<PullTabSection />);
+    expect(screen.getByText('A wall shorter than 22 mm has no room for a tab.')).toBeDefined();
+    fireEvent.click(wall('Left'));
+    fireEvent.click(wall('Front'));
+    expect(screen.queryByText('A wall shorter than 22 mm has no room for a tab.')).toBeNull();
   });
   it('changes the common border and reports the resulting recess width', () => {
     render(<PullTabSection />);
