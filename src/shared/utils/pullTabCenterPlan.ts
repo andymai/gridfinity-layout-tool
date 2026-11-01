@@ -33,8 +33,12 @@ export function wallToWallDividers(c: CompartmentConfig, axis: PullTabCenterAxis
   const { cols, rows, cells } = c;
   if (cols < 1 || rows < 1 || cells.length !== cols * rows) return [];
   const at = (col: number, row: number): number | undefined => cells[row * cols + col];
+  // The divider builder sets a segment's ends by its offsets and its foot by
+  // its rake, so an override with neither builds the plain divider in place.
   const overridden = new Set(
-    (c.dividerOverrides ?? []).map((o) => `${o.compartmentA}|${o.compartmentB}`)
+    (c.dividerOverrides ?? [])
+      .filter((o) => o.offsetStart !== 0 || o.offsetEnd !== 0 || (o.rakeDeg ?? 0) !== 0)
+      .map((o) => `${o.compartmentA}|${o.compartmentB}`)
   );
   const splits = (a: number | undefined, b: number | undefined): boolean =>
     a !== undefined &&

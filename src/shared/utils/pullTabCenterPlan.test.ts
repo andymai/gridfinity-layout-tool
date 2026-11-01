@@ -43,6 +43,24 @@ describe('wallToWallDividers', () => {
       dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 2, offsetEnd: -2 }],
     };
     expect(wallToWallDividers(tilted, 'depth')).toEqual([]);
+    const leaning: CompartmentConfig = {
+      ...grid(2, 1),
+      dividerOverrides: [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 0, offsetEnd: 0, rakeDeg: 5 },
+      ],
+    };
+    expect(wallToWallDividers(leaning, 'depth')).toEqual([]);
+  });
+
+  it('keeps a divider whose saved override neither moves nor leans it', () => {
+    const zero: CompartmentConfig = {
+      ...grid(2, 1),
+      dividerOverrides: [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 0, offsetEnd: 0, rakeDeg: 0 },
+      ],
+    };
+    expect(wallToWallDividers(zero, 'depth')).toEqual([0.5]);
+    expect(resolvePullTabCenter(bin(zero), 15.3).divider).toEqual({ axis: 'depth', at: 0.5 });
   });
 
   it('returns nothing for a malformed grid', () => {

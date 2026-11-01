@@ -811,6 +811,20 @@ describe('a pull tab on the center divider', () => {
     }
   );
 
+  it('stands on a divider whose saved override neither moves nor leans it', () => {
+    const p = tray(2, 1, {
+      compartments: {
+        ...tray(2, 1).compartments,
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 0, offsetEnd: 0 }],
+      },
+    });
+    const mesh = getGenerateBin()(p, undefined, true);
+    assertStructurallyValid(mesh);
+    assertWatertight(mesh);
+    expect(top(mesh, 'depth', 0, 0.13)).toBeCloseTo(TOP, 1);
+    expect(solidAt(mesh, 'depth', HALF_T - 0.3, 10)).toBe(true);
+  });
+
   it('still stands on a divider whose numeric height reaches full height', () => {
     const p = tray(3, 2, { compartments: { ...tray(3, 2).compartments, dividerHeight: 500 } });
     const mesh = getGenerateBin()(p, undefined, true);
