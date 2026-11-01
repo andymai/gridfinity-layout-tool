@@ -75,10 +75,11 @@ interface BelowRows {
 }
 
 /**
- * Distance from (x, y) to the plate below. Rows are searched outward from the
- * nearest one and the search stops once no row left can come closer.
+ * Distance from (x, y) to the plate below, looking no further than `reach`:
+ * past it the answer is Infinity. Rows are searched outward from the nearest
+ * one and the search stops once no row left can come closer.
  */
-function distanceToBelow(below: BelowRows, x: number, y: number): number {
+function distanceToBelow(below: BelowRows, x: number, y: number, reach: number): number {
   const n = below.spans.length;
   const nearest = Math.min(n - 1, Math.max(0, Math.round((y - below.y0) / ROW_STEP_MM)));
   let best = Infinity;
@@ -87,7 +88,7 @@ function distanceToBelow(below: BelowRows, x: number, y: number): number {
     for (const i of k === 0 ? [nearest] : [nearest - k, nearest + k]) {
       if (i < 0 || i >= n) continue;
       const dy = Math.abs(below.y0 + i * ROW_STEP_MM - y);
-      if (dy >= best) continue;
+      if (dy >= best || dy > reach) continue;
       closer = true;
       for (const [lo, hi] of below.spans[i]) {
         const dx = x < lo ? lo - x : x > hi ? x - hi : 0;
@@ -102,19 +103,23 @@ function distanceToBelow(below: BelowRows, x: number, y: number): number {
 /**
  * Deepest reach (mm) of a turned-over copy past the plate below, for the turn
  * about `axis` seated by `seatMm` (see `planPlateFlip`). Zero for a plate with
- * no outline, whose padding is judged separately.
+ * no outline, whose padding is judged separately. With `limitMm`, the scan
+ * stops at the first reading past it and returns that reading, which may be
+ * Infinity: a caller deciding whether a turn fits needs no more than that.
  *
  * The plate is scanned row by row in its plate-local frame, where the turn is
  * a mirror about the socket lattice's centre line shifted by the seat. The
  * plate below is the outline clipped to the slab, since a split piece carries
- * its parent's whole outline. Each overhanging stretch is sampled along its
- * length, ends included, so a mirrored arc that flattens a hair differently
+ * its parent's whole outline. Turned rows share the rows of the plate below, so
+ * a reading within a row is exact. Each overhanging stretch is sampled along
+ * its length, ends included, so a mirrored arc that flattens a hair differently
  * reads as a few hundredths of a millimetre and a cut corner as its full depth.
  */
 export function turnedPlateOverhangMm(
   params: TurnOverhangInput,
   axis: 'x' | 'y',
-  seatMm: number
+  seatMm: number,
+  limitMm = Infinity
 ): number {
   if (params.outline === undefined) return 0;
   const pts = flattenOutline(params.outline);
@@ -139,8 +144,9 @@ export function turnedPlateOverhangMm(
   const rowHi = axis === 'x' ? mirror - slab.y0 : slab.y1;
 
   let deepest = 0;
-  for (let y = rowLo + ROW_STEP_MM / 2; y < rowHi; y += ROW_STEP_MM) {
-    const underneath = rowSpans(pts, y, slab);
+  for (let k = Math.ceil((rowLo - belowY0) / ROW_STEP_MM); belowY0 + k * ROW_STEP_MM < rowHi; k++) {
+    const y = belowY0 + k * ROW_STEP_MM;
+    const underneath = belowSpans[k] ?? [];
     const turned =
       axis === 'x'
         ? rowSpans(pts, mirror - y, slab)
@@ -148,7 +154,8 @@ export function turnedPlateOverhangMm(
     for (const [a, b] of subtractSpans(turned, underneath)) {
       const steps = Math.max(1, Math.ceil((b - a) / ROW_STEP_MM));
       for (let j = 0; j <= steps; j++) {
-        deepest = Math.max(deepest, distanceToBelow(below, a + ((b - a) * j) / steps, y));
+        deepest = Math.max(deepest, distanceToBelow(below, a + ((b - a) * j) / steps, y, limitMm));
+        if (deepest > limitMm) return deepest;
       }
     }
   }

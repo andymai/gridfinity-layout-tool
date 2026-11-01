@@ -287,7 +287,8 @@ export function planPlateFlip(params: PlateFlipInput): PlateFlip {
   const [first, second] = preferY ? [y, x] : [x, y];
   if (params.outline === undefined) return first;
   const lands = (f: PlateFlip): boolean =>
-    turnedPlateOverhangMm(params, f.axis, f.offsetMm) <= SHAPED_SEAM_OVERHANG_TOLERANCE_MM;
+    turnedPlateOverhangMm(params, f.axis, f.offsetMm, SHAPED_SEAM_OVERHANG_TOLERANCE_MM) <=
+    SHAPED_SEAM_OVERHANG_TOLERANCE_MM;
   if (lands(first)) return first;
   if (lands(second)) return second;
   return { ...first, flipBottom: true };

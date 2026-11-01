@@ -445,6 +445,24 @@ describe('planPlateFlip', () => {
       });
     });
 
+    it(
+      'plans a large shaped plate without measuring every overhang in full',
+      { timeout: 2000 },
+      () => {
+        // 20 x 14 units with a 10 x 7 corner missing: the decision is made at the
+        // first reading past the tolerance, not after scanning the whole corner.
+        const bigL = cells([
+          [0, 0],
+          [20, 0],
+          [20, 7],
+          [10, 7],
+          [10, 14],
+          [0, 14],
+        ]);
+        expect(planPlateFlip(plate({ width: 20, depth: 14, outline: bigL })).flipBottom).toBe(true);
+      }
+    );
+
     it('takes the turn the outline is symmetric about, keeping the bottom plate upright', () => {
       // Back-middle cell missing: the padding tie picks X, which would move the
       // gap to the front; only the Y turn keeps it at the back.

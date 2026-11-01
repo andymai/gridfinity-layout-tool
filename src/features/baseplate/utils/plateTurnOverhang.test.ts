@@ -163,4 +163,12 @@ describe('turnedPlateOverhangMm', () => {
     };
     expect(turnedPlateOverhangMm(shifted, 'x', 0)).toBeGreaterThan(1);
   });
+
+  it('stops at the first reading past a limit', () => {
+    const p = plate({ outline: L_SHAPE });
+    const limited = turnedPlateOverhangMm(p, 'x', 0, 1);
+    expect(limited).toBeGreaterThan(1);
+    expect(limited).toBeLessThanOrEqual(turnedPlateOverhangMm(p, 'x', 0));
+    expect(turnedPlateOverhangMm(plate({ outline: U_SHAPE }), 'y', 0, 1)).toBeLessThan(1e-6);
+  });
 });
