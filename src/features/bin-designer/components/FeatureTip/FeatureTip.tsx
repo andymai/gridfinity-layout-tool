@@ -54,6 +54,7 @@ function FeatureTipCard({ tip, detail }: { tip: FeatureTipId; detail?: ReactNode
   const { captionKey, clips, chips } = FEATURE_TIPS[tip];
   const clip = clips[theme];
   const videoRef = useRef<HTMLVideoElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(false);
   const [refused, setRefused] = useState(false);
   const [chip, setChip] = useState(0);
@@ -63,12 +64,13 @@ function FeatureTipCard({ tip, detail }: { tip: FeatureTipId; detail?: ReactNode
   // refusal leaves the poster and the play button.
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || reduceMotion) return;
+    if (!video) return;
+    if (reduceMotion) {
+      video.pause();
+      return;
+    }
     video.muted = true;
-    video.play().then(
-      () => setPlaying(true),
-      () => setRefused(true)
-    );
+    video.play().catch(() => setRefused(true));
   }, [reduceMotion, clip.video]);
 
   useEffect(() => {
@@ -84,13 +86,20 @@ function FeatureTipCard({ tip, detail }: { tip: FeatureTipId; detail?: ReactNode
   const play = (): void => {
     const video = videoRef.current;
     if (!video) return;
+    // The button disappears once the clip plays, so hand focus to the frame
+    // first or a keyboard user is dropped out of the card.
+    frameRef.current?.focus();
     video.muted = true;
-    void video.play().then(() => setPlaying(true));
+    video.play().catch(() => setRefused(true));
   };
 
   return (
     <div className="space-y-2">
-      <div className="relative overflow-hidden rounded-md">
+      <div
+        ref={frameRef}
+        tabIndex={-1}
+        className="relative overflow-hidden rounded-md outline-none"
+      >
         <video
           ref={videoRef}
           src={clip.video}
@@ -98,6 +107,8 @@ function FeatureTipCard({ tip, detail }: { tip: FeatureTipId; detail?: ReactNode
           muted
           loop
           playsInline
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
           preload={reduceMotion ? 'none' : 'auto'}
           aria-hidden="true"
           className="block aspect-[4/3] w-full"

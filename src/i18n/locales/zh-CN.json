@@ -1507,7 +1507,7 @@
   "binDesigner.infoButton": "更多信息",
   "binDesigner.featureTip.watch": "查看{feature}如何工作",
   "binDesigner.featureTip.play": "播放片段",
-  "binDesigner.featureTip.scoops": "靠墙的弧形斜面，一根手指就能把小零件滑出来。",
+  "binDesigner.featureTip.scoops": "靠墙的取物斜面，一根手指就能把小零件滑出来。",
   "binDesigner.featureTip.lids": "盖子可按压盖上、滑入或通过合页翻开。卡扣导轨和磁吸盖子扣得更牢。",
   "binDesigner.featureTip.cutEditor": "按零件形状画一个凹槽，再在整个收纳盒里重复排列。",
   "binDesigner.lid.text.placeholder": "例如 Cables",

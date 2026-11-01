@@ -24,7 +24,6 @@ const BASE = process.env.BASE_URL ?? 'http://localhost:5173';
 const FRAME = { width: 640, height: 480 };
 const TIPS = [...TIPS_3D, ...TIPS_UI];
 
-/** The card's `--bg-elevated`, read from the same stylesheets the app ships. */
 function cardSurfaces(): Record<Theme, string> {
   const token = (file: string): string => {
     const match = /--bg-elevated:\s*(#[0-9a-fA-F]{6})/.exec(
@@ -38,7 +37,10 @@ function cardSurfaces(): Record<Theme, string> {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const ids = args.find((a) => !a.startsWith('--'))?.split(',');
+  if (args.length > 1 || args.some((a) => a.startsWith('-'))) {
+    throw new Error('usage: capture:feature-tips [id,id,...]');
+  }
+  const ids = args[0]?.split(',');
   const tips = ids ? TIPS.filter((t) => ids.includes(t.id)) : TIPS;
   if (ids && tips.length !== ids.length) throw new Error(`unknown tip in ${ids.join(',')}`);
 

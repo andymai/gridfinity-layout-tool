@@ -1,4 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
+import type { DesignerStoreModule, SettingsStoreModule } from './appModules';
 import { FPS } from './encode';
 import { CLIP_CAMERA } from './stage';
 import type { ParamOverrides, Theme, ThemeFrames } from './stage';
@@ -29,7 +30,6 @@ const POCKET_MM = 14;
 /** Fill bin only counts copies to the right of and above the drawn pocket. */
 const POCKET_CENTER_MM: [number, number] = [12, 12];
 
-/** The smallest 4:3 rect around `box` plus `margin`, shrunk if need be to stay inside `within`. */
 function frameAround(box: Rect, margin: number, within: Rect): Rect {
   let width = box.width + margin * 2;
   let height = box.height + margin * 2;
@@ -60,7 +60,6 @@ function union(a: Rect, b: Rect): Rect {
   };
 }
 
-/** Where a board point in mm lands on screen, read off the rulers' 0 and 80 mm labels. */
 async function boardToScreen(page: Page): Promise<(mm: [number, number]) => [number, number]> {
   const m = await page.evaluate(() => {
     const rulers = [...document.querySelectorAll('svg')].filter((svg) =>
@@ -103,11 +102,13 @@ async function openCutEditor(ui: UiSession, base: string, theme: Theme): Promise
   await page.waitForTimeout(2000);
   await ui.warm(20);
   await page.evaluate(async (t) => {
-    const { useSettingsStore } = await import('/src/core/store/settings.ts' as string);
+    const { useSettingsStore } = (await import(
+      '/src/core/store/settings.ts' as string
+    )) as SettingsStoreModule;
     useSettingsStore.getState().updateSetting('theme', t);
-    const { useDesignerStore } = await import(
+    const { useDesignerStore } = (await import(
       '/src/features/bin-designer/store/designer.ts' as string
-    );
+    )) as DesignerStoreModule;
     const s = useDesignerStore.getState();
     s.newDesign('bin');
     s.setParams({ width: 2, depth: 2, height: 4 });

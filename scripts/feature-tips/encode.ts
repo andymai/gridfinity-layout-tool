@@ -10,6 +10,7 @@ export const FRAME_PX = { width: 1280, height: 960 };
 
 function ffmpeg(args: string[]): void {
   const run = spawnSync('ffmpeg', ['-y', '-loglevel', 'error', ...args], { stdio: 'inherit' });
+  if (run.error) throw new Error(`could not run ffmpeg: ${run.error.message}`);
   if (run.status !== 0) throw new Error(`ffmpeg exited ${run.status}`);
 }
 

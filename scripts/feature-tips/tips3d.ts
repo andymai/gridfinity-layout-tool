@@ -9,7 +9,6 @@ import type { Bounds, ParamOverrides, Stage, ThemeFrames, View } from './stage';
 
 export const easeInOut = (t: number): number => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2);
 
-/** `n` eased values from `from` to `to`, excluding `from` and including `to`. */
 function ramp(n: number, from: number, to: number): number[] {
   return Array.from({ length: n }, (_, i) => from + (to - from) * easeInOut((i + 1) / n));
 }
@@ -35,7 +34,6 @@ export interface Tip {
   capture(ctx: TipContext): Promise<Clip>;
 }
 
-/** Renders a run of designs from one view, rebuilding only when the design changes. */
 async function renderRun(
   stage: Stage,
   view: View,

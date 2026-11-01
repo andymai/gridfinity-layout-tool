@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useSettingsStore } from '@/core/store';
 import { FeatureTip } from './FeatureTip';
@@ -19,7 +19,14 @@ describe('FeatureTip', () => {
 
   beforeEach(() => {
     setSettings('dark', false);
-    play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
+    // jsdom does not play media; fire the event a browser fires so the card
+    // follows the element's real state.
+    play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(function (
+      this: HTMLMediaElement
+    ) {
+      this.dispatchEvent(new Event('play'));
+      return Promise.resolve();
+    });
   });
 
   afterEach(() => {
@@ -53,9 +60,48 @@ describe('FeatureTip', () => {
     await userEvent.click(screen.getByRole('button', { name: 'See how Finger scoop works' }));
 
     expect(play).not.toHaveBeenCalled();
+    expect(video().getAttribute('poster')).toContain('scoops.dark.webp');
     await userEvent.click(screen.getByRole('button', { name: 'Play clip' }));
     expect(play).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Play clip' })).toBeNull());
+  });
+
+  it('keeps keyboard focus in the card when Play is pressed', async () => {
+    setSettings('dark', true);
+    const user = userEvent.setup();
+    render(<FeatureTip tip="scoops" feature="Finger scoop" />);
+    await user.click(screen.getByRole('button', { name: 'See how Finger scoop works' }));
+    screen.getByRole('button', { name: 'Play clip' }).focus();
+    await user.keyboard('{Enter}');
+
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Play clip' })).toBeNull());
+    expect(screen.getByRole('dialog')).toContainElement(document.activeElement as HTMLElement);
+  });
+
+  it('stops the loop when Reduce motion is turned on while the card is open', async () => {
+    const pause = vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(function (
+      this: HTMLMediaElement
+    ) {
+      this.dispatchEvent(new Event('pause'));
+    });
+    render(<FeatureTip tip="scoops" feature="Finger scoop" />);
+    await userEvent.click(screen.getByRole('button', { name: 'See how Finger scoop works' }));
+    expect(screen.queryByRole('button', { name: 'Play clip' })).toBeNull();
+
+    act(() => setSettings('dark', true));
+    expect(pause).toHaveBeenCalled();
+    expect(await screen.findByRole('button', { name: 'Play clip' })).toBeInTheDocument();
+    pause.mockRestore();
+  });
+
+  it('keeps the play button when a manual play is refused', async () => {
+    setSettings('dark', true);
+    play.mockRejectedValueOnce(new DOMException('blocked', 'NotAllowedError'));
+    render(<FeatureTip tip="scoops" feature="Finger scoop" />);
+    await userEvent.click(screen.getByRole('button', { name: 'See how Finger scoop works' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Play clip' }));
+
+    expect(screen.getByRole('button', { name: 'Play clip' })).toBeInTheDocument();
   });
 
   it('offers the play button when the browser refuses to autoplay', async () => {

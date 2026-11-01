@@ -8,7 +8,21 @@
 
 import { chromium } from '@playwright/test';
 import type { Browser, Page } from '@playwright/test';
+import type {
+  Camera as ThreeCamera,
+  HemisphereLight,
+  LineSegments,
+  Material,
+  Mesh,
+  Object3D,
+  PerspectiveCamera,
+  Scene,
+  ShaderMaterial,
+  Vector3,
+  WebGLRenderer,
+} from 'three';
 import type { BinParams } from '../../src/features/bin-designer/types';
+import type { DefaultsModule, DesignerStoreModule, ThemeColorsModule } from './appModules';
 
 export type Theme = 'light' | 'dark';
 export type ThemeFrames = Record<Theme, Buffer>;
@@ -40,14 +54,12 @@ export interface Camera {
  */
 export const CLIP_CAMERA: Camera = { az: -45, el: 55, fill: 0.86, fov: 45 };
 
-/** A camera framed on a design: where it looks and how far back it stands. */
 export interface View {
   camera: Camera;
   center: [number, number, number];
   dist: number;
 }
 
-/** Same angles, eased target and distance: a push in or out between two framings. */
 export function lerpView(a: View, b: View, t: number): View {
   return {
     camera: a.camera,
@@ -91,6 +103,20 @@ export async function openStage(
   surfaces: Record<Theme, string>
 ): Promise<Stage> {
   const browser: Browser = await chromium.launch({ args: GPU_ARGS });
+  try {
+    return await setUpStage(browser, base, size, surfaces);
+  } catch (e) {
+    await browser.close();
+    throw e;
+  }
+}
+
+async function setUpStage(
+  browser: Browser,
+  base: string,
+  size: { width: number; height: number },
+  surfaces: Record<Theme, string>
+): Promise<Stage> {
   const ctx = await browser.newContext({
     viewport: size,
     deviceScaleFactor: 2,
@@ -125,12 +151,12 @@ export async function openStage(
     page,
     async setParams(overrides) {
       await page.evaluate(async (o) => {
-        const { useDesignerStore } = await import(
+        const { useDesignerStore } = (await import(
           '/src/features/bin-designer/store/designer.ts' as string
-        );
-        const { DEFAULT_BIN_PARAMS } = await import(
+        )) as DesignerStoreModule;
+        const { DEFAULT_BIN_PARAMS } = (await import(
           '/src/features/bin-designer/constants/defaults.ts' as string
-        );
+        )) as DefaultsModule;
         const before = useDesignerStore.getState().generation.mesh;
         const merged: Record<string, unknown> = { ...DEFAULT_BIN_PARAMS };
         for (const [k, v] of Object.entries(o)) {
@@ -205,6 +231,11 @@ export async function openStage(
   };
 }
 
+type Tintable = Material & {
+  color?: { getHex(): number; set(c: string): void; setHex(h: number): void };
+  emissive?: { getHex(): number; set(c: string): void; setHex(h: number): void };
+};
+
 interface Bridge {
   __tip: {
     settle(frames: number): Promise<void>;
@@ -223,39 +254,61 @@ interface Bridge {
 
 async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
   const EDGE_OPACITY = 0.4;
-  const w = window as any;
-  const renderer = w.__observed.filter((o: any) => o && o.isWebGLRenderer).pop();
-  let camera: any = null;
+  const w = window as unknown as { __observed: unknown[]; __tip?: Bridge['__tip'] };
+  const flag = (o: unknown, key: string): boolean =>
+    typeof o === 'object' && o !== null && (o as Record<string, unknown>)[key] === true;
+  const isMesh = (o: Object3D): o is Mesh => flag(o, 'isMesh');
+  const isLines = (o: Object3D): o is LineSegments => flag(o, 'isLineSegments');
+  const materialsOf = (o: Mesh | LineSegments): Material[] =>
+    Array.isArray(o.material) ? o.material : [o.material];
+
+  const renderer = w.__observed.filter((o): o is WebGLRenderer => flag(o, 'isWebGLRenderer')).pop();
+  if (!renderer) throw new Error('no renderer reported by the devtools hook');
+  // Read the camera off a render call: the canvas only exposes the renderer.
+  const seen: { camera: PerspectiveCamera | null } = { camera: null };
   const original = renderer.render.bind(renderer);
-  renderer.render = (s: any, c: any) => {
-    camera = c;
-    return original(s, c);
+  renderer.render = (s: Object3D, c: ThreeCamera) => {
+    seen.camera = c as PerspectiveCamera;
+    original(s, c);
   };
   // The canvas renders on demand, so nudge it until one render reveals the camera.
-  for (let i = 0; i < 60 && !camera; i++) {
+  for (let i = 0; i < 60 && !seen.camera; i++) {
     window.dispatchEvent(new Event('resize'));
     await new Promise((r) => requestAnimationFrame(r));
   }
   renderer.render = original;
+  const camera = seen.camera as PerspectiveCamera | null;
   if (!camera) throw new Error('preview never rendered');
+  const vec = (x = 0, y = 0, z = 0): Vector3 => camera.position.clone().set(x, y, z);
 
-  const scene = (): any =>
-    w.__observed
-      .filter((o: any) => o && o.isScene)
-      .map((s: any) => {
-        let n = 0;
-        s.traverse((o: any) => {
-          if (o.isMesh) n++;
-        });
-        return [n, s];
-      })
-      .sort((a: any, b: any) => b[0] - a[0])[0][1];
+  const scene = (): Scene => {
+    let best: Scene | null = null;
+    let most = -1;
+    for (const o of w.__observed) {
+      if (!flag(o, 'isScene')) continue;
+      const candidate = o as Scene;
+      let meshes = 0;
+      candidate.traverse((x) => {
+        if (isMesh(x)) meshes++;
+      });
+      if (meshes > most) {
+        most = meshes;
+        best = candidate;
+      }
+    }
+    if (!best) throw new Error('no scene reported by the devtools hook');
+    return best;
+  };
 
   // Everything that isn't the part: the gradient backdrop and the ghost overlays.
-  const chrome = (o: any): boolean => o.renderOrder >= 2 || Boolean(o.material?.uniforms?.colorTop);
-  const withHidden = <T>(s: any, fn: () => T): T => {
-    const hidden: any[] = [];
-    s.traverse((o: any) => {
+  const chrome = (o: Object3D): boolean => {
+    if (o.renderOrder >= 2) return true;
+    if (!isMesh(o) || Array.isArray(o.material)) return false;
+    return Boolean((o.material as Partial<ShaderMaterial>).uniforms?.colorTop);
+  };
+  const withHidden = <T>(s: Scene, fn: () => T): T => {
+    const hidden: Object3D[] = [];
+    s.traverse((o) => {
       if (o.visible && chrome(o)) {
         hidden.push(o);
         o.visible = false;
@@ -286,25 +339,27 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
   // The hemisphere light's ground colour is the one theme-dependent input to
   // the part's shading, so each theme's frame is lit the way that theme's
   // preview lights it.
-  const { THREE_COLORS } = await import('/src/shared/hooks/useThemeEffect.ts' as string);
-  const hemisphere = (): any => {
-    let light: any = null;
-    scene().traverse((o: any) => {
-      if (o.isHemisphereLight) light = o;
+  const { THREE_COLORS } = (await import(
+    '/src/shared/hooks/useThemeEffect.ts' as string
+  )) as ThemeColorsModule;
+  const hemisphere = (): HemisphereLight => {
+    const found: HemisphereLight[] = [];
+    scene().traverse((o) => {
+      if (flag(o, 'isHemisphereLight')) found.push(o as HemisphereLight);
     });
+    const light = found[0];
     if (!light) throw new Error('no hemisphere light in the preview scene');
     return light;
   };
 
   const axes = (cam: Camera) => {
-    const V = camera.position.constructor;
     const a = (cam.az * Math.PI) / 180;
     const e = (cam.el * Math.PI) / 180;
-    const toCamera = new V(Math.cos(a) * Math.cos(e), Math.sin(a) * Math.cos(e), Math.sin(e));
+    const toCamera = vec(Math.cos(a) * Math.cos(e), Math.sin(a) * Math.cos(e), Math.sin(e));
     const right = toCamera
       .clone()
       .negate()
-      .cross(new V(0, 0, 1))
+      .cross(vec(0, 0, 1))
       .normalize();
     const up = right.clone().cross(toCamera.clone().negate());
     return { toCamera, right, up };
@@ -346,9 +401,9 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
       return withHidden(s, () => {
         const points: [number, number, number][] = [];
         s.updateMatrixWorld(true);
-        s.traverse((o: any) => {
-          if (!o.visible || !(o.isMesh || o.isLineSegments) || !o.geometry) return;
-          for (let p = o; p; p = p.parent) if (!p.visible) return;
+        s.traverse((o) => {
+          if (!o.visible || !(isMesh(o) || isLines(o))) return;
+          for (let p: Object3D | null = o; p; p = p.parent) if (!p.visible) return;
           o.geometry.computeBoundingBox();
           const b = o.geometry.boundingBox;
           if (!b || !Number.isFinite(b.min.x)) return;
@@ -361,13 +416,9 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
       });
     },
     fit(cam: Camera, bounds: Bounds): View {
-      if (!camera) throw new Error('camera not captured yet');
-      const V = camera.position.constructor;
-      const points = bounds.points.map((p) => new V(...p));
-      const center = points
-        .reduce((sum: any, p: any) => sum.add(p), new V())
-        .multiplyScalar(1 / points.length);
-      const canvas = renderer.domElement as HTMLCanvasElement;
+      const points = bounds.points.map((p) => vec(...p));
+      const center = points.reduce((sum, p) => sum.add(p), vec()).multiplyScalar(1 / points.length);
+      const canvas = renderer.domElement;
       const vf = (cam.fov * Math.PI) / 180;
       const hf = 2 * Math.atan(Math.tan(vf / 2) * (canvas.width / canvas.height));
       const { toCamera, right, up } = axes(cam);
@@ -399,27 +450,25 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
           .addScaledVector(right, ((x0 + x1) / 2) * dist)
           .addScaledVector(up, ((y0 + y1) / 2) * dist);
       }
-      return { camera: cam, center: center.toArray(), dist };
+      return { camera: cam, center: center.toArray() as [number, number, number], dist };
     },
     render(view: View, tint: string | null): Record<Theme, string> {
-      if (!camera) throw new Error('camera not captured yet');
       const s = scene();
       // The preview colour drives both the colour and a faint emissive glow;
       // tinting the colour alone leaves a grey glow that washes it out.
-      const tinted: [any, number, number | null][] = [];
+      const tinted: [Tintable, number, number | null][] = [];
       if (tint) {
-        s.traverse((o: any) => {
-          if (!o.isMesh || o.renderOrder >= 2) return;
-          for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
-            if (!m?.color) continue;
+        s.traverse((o) => {
+          if (!isMesh(o) || o.renderOrder >= 2) return;
+          for (const m of materialsOf(o) as Tintable[]) {
+            if (!m.color) continue;
             const glow = m.emissive && m.emissive.getHex() !== 0 ? m.emissive.getHex() : null;
             tinted.push([m, m.color.getHex(), glow]);
             m.color.set(tint);
-            if (glow !== null) m.emissive.set(tint);
+            if (glow !== null) m.emissive?.set(tint);
           }
         });
       }
-      const V = camera.position.constructor;
       const saved = {
         pos: camera.position.clone(),
         up: camera.up.clone(),
@@ -427,8 +476,8 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
         fov: camera.fov,
         aspect: camera.aspect,
       };
-      const canvas = renderer.domElement as HTMLCanvasElement;
-      const center = new V(...view.center);
+      const canvas = renderer.domElement;
+      const center = vec(...view.center);
       camera.fov = view.camera.fov;
       camera.aspect = canvas.width / canvas.height;
       camera.position.copy(center).addScaledVector(axes(view.camera).toCamera, view.dist);
@@ -442,13 +491,14 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
       renderer.setClearAlpha(0);
       // A curved face carries a feature edge per facet seam; at card size those
       // pack into a black patch, so clips draw the edges faint.
-      const edges: [any, number, boolean][] = [];
-      s.traverse((o: any) => {
-        if (o.isLineSegments && o.renderOrder === 1 && o.material) {
-          edges.push([o.material, o.material.opacity, o.material.transparent]);
-          o.material.transparent = true;
-          o.material.opacity = EDGE_OPACITY;
-          o.material.needsUpdate = true;
+      const edges: [Material, number, boolean][] = [];
+      s.traverse((o) => {
+        if (!isLines(o) || o.renderOrder !== 1) return;
+        for (const m of materialsOf(o)) {
+          edges.push([m, m.opacity, m.transparent]);
+          m.transparent = true;
+          m.opacity = EDGE_OPACITY;
+          m.needsUpdate = true;
         }
       });
       const hemi = hemisphere();
@@ -465,8 +515,8 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
       });
       hemi.groundColor.copy(ground);
       for (const [material, hex, glow] of tinted) {
-        material.color.setHex(hex);
-        if (glow !== null) material.emissive.setHex(glow);
+        material.color?.setHex(hex);
+        if (glow !== null) material.emissive?.setHex(glow);
       }
       for (const [material, opacity, transparent] of edges) {
         material.opacity = opacity;

@@ -12,7 +12,8 @@
  *
  * With `hoverDelayMs`, a resting mouse also opens it, without moving focus:
  * it closes again once the pointer has left both the dot and the panel. A
- * click pins it open the same way a dot without hover opens.
+ * click on the dot or inside the panel pins it open the same way a dot
+ * without hover opens.
  */
 
 import { useEffect, useId, useRef, useState } from 'react';
@@ -147,7 +148,18 @@ export function InfoDot({
           if (isMouse(event)) scheduleHoverClose();
         }}
       >
-        <div id={contentId} ref={contentRef} tabIndex={-1} className="outline-none">
+        <div
+          id={contentId}
+          ref={contentRef}
+          tabIndex={-1}
+          className="outline-none"
+          // Using a control in a hover-opened panel commits to it, so pointer-out
+          // must no longer close it under the user.
+          onPointerDown={() => {
+            clearHoverTimer();
+            setPinned(true);
+          }}
+        >
           {children}
         </div>
       </Popover>

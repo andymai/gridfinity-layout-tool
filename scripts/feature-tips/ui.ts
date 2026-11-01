@@ -10,6 +10,7 @@
 
 import { chromium } from '@playwright/test';
 import type { Browser, CDPSession, Locator, Page } from '@playwright/test';
+import type { DesignerStoreModule } from './appModules';
 import { FPS, FRAME_PX } from './encode';
 import type { Theme } from './stage';
 
@@ -342,15 +343,17 @@ export async function openUi(
     },
     async waitBuilt() {
       await page.waitForTimeout(300);
-      for (let i = 0; i < 400; i++) {
-        const done = await page.evaluate(async () => {
-          const { useDesignerStore } = await import(
+      for (let i = 0; ; i++) {
+        const status = await page.evaluate(async () => {
+          const { useDesignerStore } = (await import(
             '/src/features/bin-designer/store/designer.ts' as string
-          );
+          )) as DesignerStoreModule;
           const g = useDesignerStore.getState().generation;
-          return g.status === 'complete' && !g.isDraft;
+          return g.status === 'complete' && !g.isDraft ? 'built' : g.status;
         });
-        if (done) break;
+        if (status === 'built') break;
+        if (status === 'error') throw new Error('generation failed');
+        if (i >= 400) throw new Error('generation did not finish within 60 s');
         await session.warm(2);
         await page.waitForTimeout(150);
       }
@@ -359,9 +362,9 @@ export async function openUi(
     },
     designerParams: () =>
       page.evaluate(async () => {
-        const { useDesignerStore } = await import(
+        const { useDesignerStore } = (await import(
           '/src/features/bin-designer/store/designer.ts' as string
-        );
+        )) as DesignerStoreModule;
         // Playwright serialises the returned object, which also detaches it from the store.
         return useDesignerStore.getState().params as unknown;
       }),
