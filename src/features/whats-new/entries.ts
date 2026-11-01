@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'bin-designer-video-tips',
+    date: '2026-11-01',
+    kind: 'new',
+    featured: true,
+    title: { en: 'See what a designer feature does before you turn it on' },
+    body: {
+      en: 'A play button now sits beside many bin designer features, such as scoops, lids, handles, label tabs, wall cutouts and the Cut Editor. Point at it, or tap it on a touch screen, to watch a few seconds of the feature at work with a line on what it is for. With Reduce motion on, a clip waits until you press play.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'eco-plate',
     date: '2026-10-30',
     kind: 'new',
