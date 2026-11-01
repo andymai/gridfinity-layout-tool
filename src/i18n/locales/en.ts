@@ -1870,9 +1870,9 @@ const en: Record<string, string> = {
   'help.target.binDesigner.pullTab.title': 'Pull tab',
   'binDesigner.pullTab.title': 'Pull tab',
   'help.target.binDesigner.pullTab.description':
-    'Raised grips on any wall or on the center divider. Tabs share the chosen thickness; walls grow inward, a divider on both sides.',
+    'Raised grips on any wall or on the center divider. Tabs share the chosen thickness; walls grow inward, and a divider grows on both sides.',
   'binDesigner.pullTab.description':
-    'Raised grips on any wall or on the center divider. Tabs share the chosen thickness; walls grow inward, a divider on both sides.',
+    'Raised grips on any wall or on the center divider. Tabs share the chosen thickness; walls grow inward, and a divider grows on both sides.',
   'binDesigner.pullTab.wall': 'Walls',
   'binDesigner.pullTab.sideAria': 'Walls with a pull tab',
   'binDesigner.pullTab.side.front': 'Front',
