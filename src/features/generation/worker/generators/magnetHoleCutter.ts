@@ -10,12 +10,21 @@
  * cuts, which also keeps a caller's own coplanar margin working unchanged.
  */
 
-import { cone, cylinder, drawPointsInterpolation, fuse, unwrap } from 'brepjs';
+import {
+  cone,
+  cylinder,
+  draw,
+  drawPointsInterpolation,
+  fuse,
+  getKernelCapabilities,
+  unwrap,
+} from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import {
   MAGNET_CHAMFER_MM,
   MAGNET_CRUSH_RIB_COUNT,
+  magnetBoreProfile,
   magnetBoreRadiusAt,
   magnetBoreSegments,
 } from '@/shared/generation/magnetHoleStyle';
@@ -46,6 +55,7 @@ export interface MagnetHoleCutterOptions {
  */
 function ribbedBore(radius: number, height: number, style: MagnetHoleStyle): Shape3D {
   const segments = magnetBoreSegments(style, PLAIN_RING_SEGMENTS);
+  if (!getKernelCapabilities().exact) return polylineBore(radius, height, style, segments);
   const phase = Math.PI / (2 * MAGNET_CRUSH_RIB_COUNT);
   const points: [number, number][] = [];
   for (let i = 0; i <= segments; i++) {
@@ -54,6 +64,23 @@ function ribbedBore(radius: number, height: number, style: MagnetHoleStyle): Sha
     points.push([r * Math.cos(theta), r * Math.sin(theta)]);
   }
   return drawPointsInterpolation(points).sketchOnPlane('XY', 0).extrude(height);
+}
+
+/**
+ * A mesh kernel has no B-spline curve of its own: brepjs borrows OCCT's, and
+ * the draft worker loads no OCCT. It would cut the spline into chords anyway,
+ * so it takes a polyline through the ring the procedural mesh draws.
+ */
+function polylineBore(
+  radius: number,
+  height: number,
+  style: MagnetHoleStyle,
+  segments: number
+): Shape3D {
+  const ring = magnetBoreProfile(radius, style, segments);
+  let pen = draw([ring[0][0], ring[0][1]]);
+  for (let i = 1; i < ring.length; i++) pen = pen.lineTo([ring[i][0], ring[i][1]]);
+  return pen.close().sketchOnPlane('XY', 0).extrude(height);
 }
 
 export function buildMagnetHoleCutter(opts: MagnetHoleCutterOptions): Shape3D {
