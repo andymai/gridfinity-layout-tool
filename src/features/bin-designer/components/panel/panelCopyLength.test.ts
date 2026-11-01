@@ -27,7 +27,11 @@ const ROOTS = [
 ];
 
 /** Modules outside the sidebar whose keys it renders inline as blocked reasons. */
-const PRODUCERS = ['src/shared/utils/pullTabPlan.ts', 'src/shared/constraints'];
+const PRODUCERS = [
+  'src/shared/utils/pullTabPlan.ts',
+  'src/shared/utils/pullTabCenterPlan.ts',
+  'src/shared/constraints',
+];
 
 const INLINE_ELEMENTS = new Set(['Hint', 'p', 'DependencyHint']);
 const INLINE_PROPS = new Set(['disabledReason', 'hint']);

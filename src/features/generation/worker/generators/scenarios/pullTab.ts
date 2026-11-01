@@ -77,4 +77,37 @@ export const pullTab = [
       pullTab: { ...DEFAULT_PULL_TAB, ...pullTabWallFields(['back', 'left']), enabled: true },
     },
   }),
+  defineScenario('Pull tabs', 'center divider of a pencil tray with mirrored recesses', {
+    assert: 'structural',
+    params: {
+      width: 4,
+      depth: 2,
+      height: 4,
+      compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 4, rows: 1, cells: [0, 1, 2, 3] },
+      pullTab: {
+        ...DEFAULT_PULL_TAB,
+        ...pullTabWallFields(['center']),
+        enabled: true,
+        backRecess: true,
+      },
+    },
+  }),
+  defineScenario('Pull tabs', 'center divider front to back beside tabs on both ends', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 2,
+      height: 6,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+      compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 2, cells: [0, 1, 2, 3] },
+      pullTab: {
+        ...DEFAULT_PULL_TAB,
+        ...pullTabWallFields(['left', 'right', 'center']),
+        centerAxis: 'depth',
+        enabled: true,
+        widthMode: 'percent',
+        widthPercent: 50,
+      },
+    },
+  }),
 ];

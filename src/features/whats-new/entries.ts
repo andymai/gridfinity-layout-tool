@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'pull-tab-center-divider',
+    date: '2026-11-01',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Lift a divided tray from the middle' },
+    body: {
+      en: 'A pull tab can now stand on the divider in the middle of a bin, so a big tray full of dividers lifts out with one hand. Pick Center under Pull tab on the Features page. The divider needs to run from wall to wall at full height, and it is thickened around the tab so it can carry the load. Label tabs share those divider tops, so turn them off to use it.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'pull-tabs-any-wall',
     date: '2026-11-01',
     kind: 'improved',

@@ -48,6 +48,7 @@ import {
 } from '@/shared/printSettings/baseplateHeight';
 import {
   resolvePullTab,
+  pullTabBuildsAny,
   pullTabUnavailableReason,
   type PullTabHost,
 } from '@/shared/utils/pullTabPlan';
@@ -249,7 +250,7 @@ export function assembledHeight(
   if (lidMm > 0) push('lid', lidMm);
   if (gridMm > 0) push('lidStackGrid', gridMm);
   const tab = resolvePullTab(params.pullTab);
-  if (tab.enabled && !pullTabUnavailableReason(params)) {
+  if (tab.enabled && !pullTabUnavailableReason(params) && pullTabBuildsAny(params)) {
     const extra = Math.max(0, tab.height - lipMm - lidMm - gridMm);
     if (extra > 0) push('pullTab', extra);
   }

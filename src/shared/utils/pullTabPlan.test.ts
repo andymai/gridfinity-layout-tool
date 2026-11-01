@@ -5,6 +5,7 @@ import {
   activePullTab,
   planPullTab,
   planPullTabs,
+  pullTabBuildsAny,
   resolvePullTab,
   resolvePullTabWalls,
   pullTabWallFields,
@@ -13,7 +14,8 @@ import {
 } from './pullTabPlan';
 import { migrateParams } from '@/features/bin-designer/constants/paramMigration';
 import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
-import type { PullTabWall } from '@/shared/types/bin';
+import type { BinParams, PullTabWall } from '@/shared/types/bin';
+import { assembledHeight } from '@/shared/printSettings/assembledHeight';
 
 describe('pull tab planning and saved designs', () => {
   const p = { ...DEFAULT_BIN_PARAMS, pullTab: { ...DEFAULT_PULL_TAB, enabled: true } };
@@ -308,5 +310,78 @@ describe('pull tabs on more than one wall', () => {
     expect(all.dims.innerD).toBeCloseTo(plain.innerD - 2 * extra);
     expect([all.ui.offsetX, all.ui.offsetY]).toEqual([0, 0]);
     expect(activePullTab(on('back'))?.walls).toEqual(['back']);
+  });
+});
+
+describe('a pull tab on the center divider', () => {
+  const tray = (more: Partial<BinParams> = {}): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    width: 4,
+    depth: 2,
+    compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 4, rows: 1, cells: [0, 1, 2, 3] },
+    pullTab: resolvePullTab({ ...DEFAULT_PULL_TAB, enabled: true, walls: ['center'] }),
+    ...more,
+  });
+
+  it('stores the center like any other wall, and its axis only while it is chosen', () => {
+    expect(pullTabWallFields(['center'])).toEqual({ wall: 'width', walls: ['center'] });
+    expect(pullTabWallFields(['center', 'front'])).toEqual({
+      wall: 'width',
+      walls: ['front', 'center'],
+    });
+    expect(resolvePullTab({ walls: ['center'], centerAxis: 'depth' }).centerAxis).toBe('depth');
+    expect(resolvePullTab({ walls: ['center'], centerAxis: 'up' })).not.toHaveProperty(
+      'centerAxis'
+    );
+    expect(resolvePullTab({ walls: ['front', 'back'], centerAxis: 'depth' })).not.toHaveProperty(
+      'centerAxis'
+    );
+  });
+
+  it('plans a tab as wide as the parallel walls allow, thickened from the floor up', () => {
+    const p = tray();
+    const [plan] = planPullTabs(p, 30, 1.2);
+    expect(plan).toMatchObject({ side: 'center', axis: 'depth', centerAt: 0.5 });
+    expect(plan.thickness).toBe(DEFAULT_PULL_TAB.thickness);
+    expect(plan.embed).toBe(30);
+    expect(plan.margin).toBeGreaterThan(0);
+    const thick = tray({
+      compartments: { ...tray().compartments, thickness: 3.5 },
+    });
+    expect(planPullTabs(thick, 30, 1.2)[0]?.thickness).toBe(3.5);
+    const percent = tray({
+      pullTab: resolvePullTab({ ...tray().pullTab, widthMode: 'percent', widthPercent: 100 }),
+    });
+    expect(planPullTabs(percent, 30, 1.2)[0]?.width).toBe(2 * 42 - 10);
+  });
+
+  it('keeps its recesses above the rim, where shelves and scoops cannot reach', () => {
+    const deep = tray({
+      pullTab: resolvePullTab({ ...tray().pullTab, recessHeight: 80, recessDepth: 3.2 }),
+    });
+    const [plan] = planPullTabs(deep, 30, 1.2);
+    expect(plan.recessTop - plan.recessHeight).toBeGreaterThanOrEqual(30 + 0.8 - 1e-9);
+    const [wall] = planPullTabs(
+      { ...deep, pullTab: resolvePullTab({ ...deep.pullTab, walls: undefined }) },
+      30,
+      1.2
+    );
+    expect(wall.recessTop - wall.recessHeight).toBeLessThan(30);
+  });
+
+  it('builds nothing on the center when no divider can carry it, and thickens no wall', () => {
+    const bare = tray({ compartments: DEFAULT_BIN_PARAMS.compartments });
+    expect(planPullTabs(bare, 30, 1.2)).toEqual([]);
+    expect(pullTabBuildsAny(bare)).toBe(false);
+    expect(pullTabBuildsAny(tray())).toBe(true);
+    const plain = { ...bare, pullTab: undefined };
+    expect(assembledHeight(bare).totalMm).toBe(assembledHeight(plain).totalMm);
+    expect(assembledHeight(tray()).totalMm).toBeGreaterThan(assembledHeight(plain).totalMm);
+    expect(pullTabWallInset(tray())).toEqual({ front: 0, back: 0, left: 0, right: 0 });
+    const both = tray({
+      pullTab: resolvePullTab({ ...tray().pullTab, walls: ['front', 'center'] }),
+    });
+    expect(planPullTabs(both, 30, 1.2).map((plan) => plan.side)).toEqual(['front', 'center']);
+    expect(pullTabWallInset(both).front).toBeGreaterThan(0);
   });
 });

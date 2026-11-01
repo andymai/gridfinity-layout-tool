@@ -1866,19 +1866,29 @@ const en: Record<string, string> = {
 
   // Bin Designer
   'help.target.binDesigner.pullTab.keywords':
-    'pull tab, grip, handle, finger recess, raised wall, shoulder, two tabs, four tabs, lift',
+    'pull tab, grip, handle, finger recess, raised wall, shoulder, two tabs, four tabs, lift, center, divider, middle',
   'help.target.binDesigner.pullTab.title': 'Pull tab',
   'binDesigner.pullTab.title': 'Pull tab',
   'help.target.binDesigner.pullTab.description':
-    'Raised grips on up to four walls. Walls and tabs share the chosen thickness; extra material grows inward.',
+    'Raised grips on any wall or on the center divider. Tabs share the chosen thickness; walls grow inward, and a divider grows on both sides.',
   'binDesigner.pullTab.description':
-    'Raised grips on up to four walls. Walls and tabs share the chosen thickness; extra material grows inward.',
+    'Raised grips on any wall or on the center divider. Tabs share the chosen thickness; walls grow inward, and a divider grows on both sides.',
   'binDesigner.pullTab.wall': 'Walls',
   'binDesigner.pullTab.sideAria': 'Walls with a pull tab',
   'binDesigner.pullTab.side.front': 'Front',
   'binDesigner.pullTab.side.back': 'Back',
   'binDesigner.pullTab.side.left': 'Left',
   'binDesigner.pullTab.side.right': 'Right',
+  'binDesigner.pullTab.side.center': 'Center',
+  'binDesigner.pullTab.centerAxis': 'Center divider',
+  'binDesigner.pullTab.centerAxis.width': 'Left to right',
+  'binDesigner.pullTab.centerAxis.depth': 'Front to back',
+  'binDesigner.pullTab.center.noDivider':
+    'A center tab needs a straight divider running wall to wall.',
+  'binDesigner.pullTab.center.lowDivider': 'A center tab needs dividers at full height.',
+  'binDesigner.pullTab.center.collar':
+    'A center tab needs dividers up to the rim. Set Extra wall height to 0.',
+  'binDesigner.pullTab.center.labelTabs': 'Turn off label tabs to put a tab on a divider.',
   'binDesigner.pullTab.wallTooShort': 'A wall shorter than {min} mm has no room for a tab.',
   'binDesigner.pullTab.thickness': 'Wall & tab thickness',
   'binDesigner.pullTab.width': 'Tab width',

@@ -3,7 +3,7 @@
 import { isObject } from './validationUtils.js';
 
 /** Mirrors `PULL_TAB_WALLS` in `src/shared/utils/pullTabPlan.ts`. */
-const PULL_TAB_WALLS: readonly unknown[] = ['front', 'back', 'left', 'right'];
+const PULL_TAB_WALLS: readonly unknown[] = ['front', 'back', 'left', 'right', 'center'];
 
 const RANGES: Record<string, readonly [number, number]> = {
   thickness: [0.4, 4],
@@ -23,7 +23,7 @@ const RANGES: Record<string, readonly [number, number]> = {
 /** Settings older designs were saved without. */
 const OPTIONAL_RANGES = new Set(['recessBorder', 'recessInsideRadius', 'widthPercent']);
 
-const OTHER_KEYS = new Set(['enabled', 'wall', 'walls', 'backRecess', 'widthMode']);
+const OTHER_KEYS = new Set(['enabled', 'wall', 'walls', 'centerAxis', 'backRecess', 'widthMode']);
 
 function validWalls(walls: unknown): boolean {
   return (
@@ -43,7 +43,8 @@ export function validatePullTab(tab: unknown): string | null {
     (tab.backRecess !== undefined && typeof tab.backRecess !== 'boolean') ||
     (tab.widthMode !== undefined && tab.widthMode !== 'mm' && tab.widthMode !== 'percent') ||
     (tab.wall !== 'width' && tab.wall !== 'depth') ||
-    (tab.walls !== undefined && !validWalls(tab.walls))
+    (tab.walls !== undefined && !validWalls(tab.walls)) ||
+    (tab.centerAxis !== undefined && tab.centerAxis !== 'width' && tab.centerAxis !== 'depth')
   )
     return 'Invalid pull tab configuration';
   for (const key of Object.keys(tab)) {

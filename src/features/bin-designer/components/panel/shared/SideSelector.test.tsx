@@ -38,6 +38,47 @@ describe('SideSelector', () => {
     expect(screen.getByRole('switch', { name: 'Back' }).getAttribute('aria-checked')).toBe('false');
   });
 
+  it('offers the middle of the bin as a fifth switch when asked', () => {
+    const onCenter = vi.fn();
+    const { rerender } = render(
+      <SideSelector sides={SIDES} onToggle={() => {}} ariaLabel="Sides" />
+    );
+    expect(screen.queryByRole('switch', { name: 'Center' })).toBeNull();
+    rerender(
+      <SideSelector
+        sides={SIDES}
+        onToggle={() => {}}
+        ariaLabel="Sides"
+        center={{ label: 'Center', active: true, onToggle: onCenter }}
+      />
+    );
+    const center = screen.getByRole('switch', { name: 'Center' });
+    expect(center.getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(center);
+    expect(onCenter).toHaveBeenCalledTimes(1);
+    rerender(
+      <SideSelector
+        sides={SIDES}
+        onToggle={() => {}}
+        ariaLabel="Sides"
+        center={{
+          label: 'Center',
+          active: true,
+          disabled: true,
+          title: 'No divider',
+          onToggle: onCenter,
+        }}
+      />
+    );
+    expect(screen.getByRole('switch', { name: 'Center' }).getAttribute('aria-checked')).toBe(
+      'false'
+    );
+    expect(screen.getByRole('switch', { name: 'Center' }).getAttribute('title')).toBe('No divider');
+    expect(screen.getByRole<HTMLButtonElement>('switch', { name: 'Center' }).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('switch', { name: 'Center' }));
+    expect(onCenter).toHaveBeenCalledTimes(1);
+  });
+
   it('toggles a side on click', () => {
     const onToggle = vi.fn();
     render(<SideSelector sides={SIDES} onToggle={onToggle} ariaLabel="Sides" />);

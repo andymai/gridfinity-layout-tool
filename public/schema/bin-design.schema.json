@@ -2957,15 +2957,22 @@
         "walls": {
           "type": "array",
           "minItems": 1,
-          "maxItems": 4,
+          "maxItems": 5,
           "uniqueItems": true,
           "items": {
-            "enum": ["front", "back", "left", "right"],
+            "enum": ["front", "back", "left", "right", "center"],
             "x-constant": {
               "enum": "PULL_TAB_WALLS"
             }
           },
-          "description": "Every wall carrying a tab, sharing one set of sizes. Omitted for a tab on the front or the right alone, which stores \"wall\" alone."
+          "description": "Every wall carrying a tab, sharing one set of sizes. \"center\" is the divider nearest the middle of the bin. Omitted for a tab on the front or the right alone, which stores \"wall\" alone."
+        },
+        "centerAxis": {
+          "enum": ["width", "depth"],
+          "x-constant": {
+            "enum": "PULL_TAB_CENTER_AXES"
+          },
+          "description": "Which way the divider under a \"center\" tab runs: along the width (parallel to the front wall) or the depth. Omitted takes a width divider when there is one."
         },
         "backRecess": {
           "type": "boolean",

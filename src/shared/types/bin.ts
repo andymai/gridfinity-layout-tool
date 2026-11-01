@@ -70,6 +70,8 @@ export type {
   HandleConfig,
   PullTabConfig,
   PullTabWall,
+  PullTabOuterWall,
+  PullTabCenterAxis,
   HandleCutoutShape,
   HandleSide,
   HandleWallSide,
