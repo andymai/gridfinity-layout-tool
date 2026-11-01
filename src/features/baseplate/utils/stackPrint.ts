@@ -299,7 +299,7 @@ export function planPlateFlip(params: PlateFlipInput): PlateFlip {
  * flipped upside down — community practice that minimizes overhangs while the
  * air gap lets the tower snap apart (see the baseplate README). Every copy's
  * socket lattice lands on the one below it, and the bottom sits at Z=0.
- * `flip.flipBottom` turns the bottom plate over as well.
+ * `flip.flipBottom` turns the bottom plate over as well when there is a plate above it.
  *
  * `flip` comes from {@link planPlateFlip}: the turn negates one lateral axis
  * about 0, where the socket lattice is centred, and `flip.offsetMm` seats a
@@ -326,7 +326,8 @@ export function buildTowerLayers(
     flip.axis === 'x' ? flip.offsetMm : 0,
     -b.minZ
   );
-  const bottom = flip.flipBottom === true ? flipped : upright;
+  // A lone plate has no copy to coincide with, so it keeps its flat underside on the bed.
+  const bottom = flip.flipBottom === true && n > 1 ? flipped : upright;
   const layers: StackMeshArrays[] = [];
   for (let i = 0; i < n; i++) {
     layers.push(i === 0 ? bottom : translateMesh(flipped, 0, 0, i * strideMm));

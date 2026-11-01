@@ -68,21 +68,35 @@ function subtractSpans(a: readonly Span[], b: readonly Span[]): Span[] {
   return out;
 }
 
-function distanceToPolyline(pts: readonly OutlinePoint[], x: number, y: number): number {
-  let best = Infinity;
-  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
-    const a = pts[j];
-    const dx = pts[i].x - a.x;
-    const dy = pts[i].y - a.y;
-    const len2 = dx * dx + dy * dy;
-    const t = len2 > 0 ? Math.min(1, Math.max(0, ((x - a.x) * dx + (y - a.y) * dy) / len2)) : 0;
-    best = Math.min(best, Math.hypot(x - (a.x + t * dx), y - (a.y + t * dy)));
-  }
-  return best;
+/** The plate below as rows of spans, one per `ROW_STEP_MM` up from `y0`. */
+interface BelowRows {
+  readonly y0: number;
+  readonly spans: readonly Span[][];
 }
 
-function distanceToRect(r: Rect, x: number, y: number): number {
-  return Math.hypot(Math.max(r.x0 - x, 0, x - r.x1), Math.max(r.y0 - y, 0, y - r.y1));
+/**
+ * Distance from (x, y) to the plate below. Rows are searched outward from the
+ * nearest one and the search stops once no row left can come closer.
+ */
+function distanceToBelow(below: BelowRows, x: number, y: number): number {
+  const n = below.spans.length;
+  const nearest = Math.min(n - 1, Math.max(0, Math.round((y - below.y0) / ROW_STEP_MM)));
+  let best = Infinity;
+  for (let k = 0; k < n; k++) {
+    let closer = false;
+    for (const i of k === 0 ? [nearest] : [nearest - k, nearest + k]) {
+      if (i < 0 || i >= n) continue;
+      const dy = Math.abs(below.y0 + i * ROW_STEP_MM - y);
+      if (dy >= best) continue;
+      closer = true;
+      for (const [lo, hi] of below.spans[i]) {
+        const dx = x < lo ? lo - x : x > hi ? x - hi : 0;
+        best = Math.min(best, Math.hypot(dx, dy));
+      }
+    }
+    if (!closer) break;
+  }
+  return best;
 }
 
 /**
@@ -91,10 +105,11 @@ function distanceToRect(r: Rect, x: number, y: number): number {
  * no outline, whose padding is judged separately.
  *
  * The plate is scanned row by row in its plate-local frame, where the turn is
- * a mirror about the socket lattice's centre line shifted by the seat. Each
- * overhanging stretch is measured from its midpoint to the nearest edge of the
- * plate below, so a mirrored arc that flattens a hair differently reads as a
- * few hundredths of a millimetre and a missing cell as half a cell.
+ * a mirror about the socket lattice's centre line shifted by the seat. The
+ * plate below is the outline clipped to the slab, since a split piece carries
+ * its parent's whole outline. Each overhanging stretch is sampled along its
+ * length, ends included, so a mirrored arc that flattens a hair differently
+ * reads as a few hundredths of a millimetre and a cut corner as its full depth.
  */
 export function turnedPlateOverhangMm(
   params: TurnOverhangInput,
@@ -112,6 +127,10 @@ export function turnedPlateOverhangMm(
     x1: gridW + params.paddingLeft + params.paddingRight + (oh?.right ?? 0),
     y1: gridD + params.paddingFront + params.paddingBack + (oh?.back ?? 0),
   };
+  const belowY0 = slab.y0 + ROW_STEP_MM / 2;
+  const belowSpans: Span[][] = [];
+  for (let y = belowY0; y < slab.y1; y += ROW_STEP_MM) belowSpans.push(rowSpans(pts, y, slab));
+  const below: BelowRows = { y0: belowY0, spans: belowSpans };
   const mirror =
     axis === 'x'
       ? 2 * params.paddingFront + gridD + seatMm
@@ -121,16 +140,16 @@ export function turnedPlateOverhangMm(
 
   let deepest = 0;
   for (let y = rowLo + ROW_STEP_MM / 2; y < rowHi; y += ROW_STEP_MM) {
-    const below = rowSpans(pts, y, slab);
+    const underneath = rowSpans(pts, y, slab);
     const turned =
       axis === 'x'
         ? rowSpans(pts, mirror - y, slab)
-        : below.map(([a, b]): Span => [mirror - b, mirror - a]).reverse();
-    for (const [a, b] of subtractSpans(turned, below)) {
-      const x = (a + b) / 2;
-      const onSlab = x >= slab.x0 && x <= slab.x1 && y >= slab.y0 && y <= slab.y1;
-      const depth = onSlab ? distanceToPolyline(pts, x, y) : distanceToRect(slab, x, y);
-      deepest = Math.max(deepest, depth);
+        : underneath.map(([a, b]): Span => [mirror - b, mirror - a]).reverse();
+    for (const [a, b] of subtractSpans(turned, underneath)) {
+      const steps = Math.max(1, Math.ceil((b - a) / ROW_STEP_MM));
+      for (let j = 0; j <= steps; j++) {
+        deepest = Math.max(deepest, distanceToBelow(below, a + ((b - a) * j) / steps, y));
+      }
     }
   }
   return deepest;

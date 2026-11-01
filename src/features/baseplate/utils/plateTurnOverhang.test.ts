@@ -121,7 +121,46 @@ describe('turnedPlateOverhangMm', () => {
         [0, 2],
       ]),
     });
-    expect(turnedPlateOverhangMm(p, 'y', -U / 2)).toBeCloseTo(U / 4, 0);
+    expect(turnedPlateOverhangMm(p, 'y', -U / 2)).toBeCloseTo(U / 2, 0);
     expect(turnedPlateOverhangMm(p, 'y', 0)).toBeLessThan(1e-6);
+  });
+
+  it('reads a small cut corner at its full depth', () => {
+    const c = 2.8;
+    const p = plate({
+      outline: {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 3 * U, y: 0 },
+          { x: 3 * U, y: 2 * U },
+          { x: c, y: 2 * U },
+          { x: 0, y: 2 * U - c },
+        ],
+      },
+    });
+    // The turned copy's square corner reaches c / sqrt(2) past the cut.
+    expect(turnedPlateOverhangMm(p, 'x', 0)).toBeGreaterThan(1.8);
+    expect(turnedPlateOverhangMm(p, 'y', 0)).toBeGreaterThan(1.8);
+  });
+
+  it('measures to the plate the slab keeps, not to outline the slab cuts away', () => {
+    // A split piece keeps its parent's outline: here it runs 1mm past the slab
+    // at the front and left, where there is no plate to rest on.
+    const p = plate({
+      outline: cells([
+        [0, 0],
+        [3, 0],
+        [3, 2],
+        [0, 2],
+      ]),
+      outlineOverhang: { left: 0, right: 1, front: 0, back: 1 },
+    });
+    const shifted = {
+      ...p,
+      outline: {
+        vertices: (p.outline?.vertices ?? []).map((v) => ({ x: v.x + 1, y: v.y + 1 })),
+      },
+    };
+    expect(turnedPlateOverhangMm(shifted, 'x', 0)).toBeGreaterThan(1);
   });
 });

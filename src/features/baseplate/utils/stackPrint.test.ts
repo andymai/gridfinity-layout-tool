@@ -269,6 +269,16 @@ describe('buildTowerLayers', () => {
     }
   });
 
+  it('keeps a lone plate upright even when its copies would all be turned', () => {
+    const [only] = buildTowerLayers(plate(), 1, 10.2, {
+      axis: 'x',
+      offsetMm: 30,
+      flipBottom: true,
+    });
+    expect(only.normals[2]).toBeCloseTo(-1, 5);
+    expect(Array.from(only.vertices)).toEqual(Array.from(plate().vertices));
+  });
+
   it('clamps copies to at least 1', () => {
     expect(buildTowerLayers(plate(), 0, 10.2, { axis: 'x', offsetMm: 30 })).toHaveLength(1);
     expect(buildTowerLayers(plate(), 3.9, 10.2, { axis: 'x', offsetMm: 30 })).toHaveLength(3);

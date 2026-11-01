@@ -103,7 +103,9 @@ export function StackedBaseplateMeshes({
   const singleMesh = useBaseplatePageStore((s) => s.generation.mesh);
   const pieceMeshes = useBaseplatePageStore((s) => s.pieceMeshes);
 
-  const preview = useMemo(() => {
+  // Planned apart from the meshes: a shaped plate's flip scans its outline,
+  // which dragging the separation slider must not repeat.
+  const towerPlan = useMemo(() => {
     const fullParams = buildFullParams(
       baseplateParams,
       drawerWidth,
@@ -174,10 +176,7 @@ export function StackedBaseplateMeshes({
         })
       : towers;
 
-    return {
-      meshes: buildStackPreviewMeshes(positionedTowers, stack, separationMm, gridUnitMm),
-      plan: filteredPlan,
-    };
+    return { towers: positionedTowers, plan: filteredPlan };
   }, [
     baseplateParams,
     drawerWidth,
@@ -196,8 +195,16 @@ export function StackedBaseplateMeshes({
     singleMesh,
     pieceMeshes,
     stack,
-    separationMm,
   ]);
+
+  const preview = useMemo(
+    () =>
+      towerPlan && {
+        meshes: buildStackPreviewMeshes(towerPlan.towers, stack, separationMm, gridUnitMm),
+        plan: towerPlan.plan,
+      },
+    [towerPlan, stack, separationMm, gridUnitMm]
+  );
 
   const meshResult = preview?.meshes ?? null;
   const plan = preview?.plan ?? [];
