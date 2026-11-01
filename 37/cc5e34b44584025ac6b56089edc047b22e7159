@@ -27,6 +27,7 @@ src/shared/types/bin.ts
 src/features/generation/worker/generators/pullTabBuilder.ts
   s_f721a21584cb95::t_7ba4868cbd363e 51-55,57-58,61,63-64,78-83,104-106,234,281
   s_f721a21584cb95::t_4de293494fba6d 23,85-86,153-158,221-233,235-236,238-239,242-244,253,262,265,271-280,282-307
+  s_f721a21584cb95::t_3cf1ede965e586 84
 src/i18n/locales/fr.json
   s_f721a21584cb95::t_09aff539a60037 16
   s_f721a21584cb95::t_a79fc790e39327 3,10-15,17,5020-5021
@@ -125,6 +126,8 @@ src/shared/schema/binDesignKeys.ts
   s_f721a21584cb95::t_592ebfaef3a7b2 374
 src/features/bin-designer/types/pullTab.ts
   s_f721a21584cb95::t_315d381bb16635 1-5,26-30
+src/features/bin-designer/README.md
+  s_f721a21584cb95::t_3cf1ede965e586 28
 ---
 {
   "schema_version": "authorship/3.0.0",
