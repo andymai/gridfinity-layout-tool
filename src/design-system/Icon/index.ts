@@ -58,6 +58,8 @@ export type { Grid3x3IconProps } from './icons/Grid3x3';
 
 export { InfoIcon } from './icons/Info';
 export type { InfoIconProps } from './icons/Info';
+export { PlayCircleIcon } from './icons/PlayCircle';
+export type { PlayCircleIconProps } from './icons/PlayCircle';
 
 export { LayoutGridIcon } from './icons/LayoutGrid';
 export type { LayoutGridIconProps } from './icons/LayoutGrid';

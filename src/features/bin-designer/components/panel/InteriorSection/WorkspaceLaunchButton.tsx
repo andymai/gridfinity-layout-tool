@@ -14,6 +14,8 @@ export interface WorkspaceLaunchButtonProps {
   readonly title: string;
   readonly subtitle: string;
   readonly onClick: () => void;
+  /** A control pinned to the card's corner, outside the button: controls cannot nest. */
+  readonly tip?: ReactNode;
 }
 
 export function WorkspaceLaunchButton({
@@ -21,8 +23,9 @@ export function WorkspaceLaunchButton({
   title,
   subtitle,
   onClick,
+  tip,
 }: WorkspaceLaunchButtonProps) {
-  return (
+  const button = (
     <Button
       type="button"
       variant="ghost"
@@ -50,5 +53,12 @@ export function WorkspaceLaunchButton({
         </svg>
       </div>
     </Button>
+  );
+  if (tip === undefined) return button;
+  return (
+    <div className="relative">
+      {button}
+      <div className="absolute right-9 top-2.5 flex">{tip}</div>
+    </div>
   );
 }

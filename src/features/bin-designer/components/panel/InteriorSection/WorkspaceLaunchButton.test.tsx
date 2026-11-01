@@ -36,4 +36,22 @@ describe('WorkspaceLaunchButton', () => {
 
     expect(screen.getAllByRole('button')).toHaveLength(1);
   });
+
+  it('keeps a tip outside the button, so using it does not launch', () => {
+    const onClick = vi.fn();
+    render(
+      <WorkspaceLaunchButton
+        illustration={<div />}
+        title="Cut Editor"
+        subtitle="Draw shapes"
+        onClick={onClick}
+        tip={<button type="button">Watch</button>}
+      />
+    );
+
+    const tip = screen.getByRole('button', { name: 'Watch' });
+    expect(screen.getByRole('button', { name: /Cut Editor/ })).not.toContainElement(tip);
+    fireEvent.click(tip);
+    expect(onClick).not.toHaveBeenCalled();
+  });
 });

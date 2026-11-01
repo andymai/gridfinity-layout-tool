@@ -44,6 +44,7 @@ import type { TextMode } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
 import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
 import { FeatureToggle } from '../FeatureToggle';
+import { FeatureTip } from '../../FeatureTip';
 import { useLidSection, LID_TOP_SURFACES } from './useLidSection';
 import { LidAdvancedFields } from './LidAdvancedFields';
 import { LidHeightField } from './LidHeightField';
@@ -159,9 +160,11 @@ export function LidSection() {
         onChange={handlers.toggleEnabled}
         disabledReason={state.disabledReason}
         badge={
-          <InfoDot aria-label={t('binDesigner.infoButton')}>
-            <p>{t('binDesigner.lid.printNote')}</p>
-          </InfoDot>
+          <FeatureTip
+            tip="lids"
+            feature={t('binDesigner.lid.enable')}
+            detail={t('binDesigner.lid.printNote')}
+          />
         }
       />
       {state.stackingLipMissing && (

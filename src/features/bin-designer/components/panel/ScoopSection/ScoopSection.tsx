@@ -12,6 +12,7 @@ import type { SegmentedControlOption } from '@/design-system';
 import type { ScoopStyle, ScoopSide } from '@/shared/types/bin';
 import { SCOOP_SIDES } from '@/shared/utils/scoopCalculations';
 import { FeatureToggle } from '../FeatureToggle';
+import { FeatureTip } from '../../FeatureTip';
 import { FieldLabel, SideSelector } from '../shared';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { useScoopSection } from './useScoopSection';
@@ -45,6 +46,7 @@ export function ScoopSection() {
       onChange={handlers.toggleScoop}
       disabledReason={meta.disabledReason}
       valueSummary={meta.summary}
+      badge={<FeatureTip tip="scoops" feature={t('binDesigner.fingerScoop')} />}
     >
       {/* Which wall the ramp rises to */}
       <div className="mb-3">

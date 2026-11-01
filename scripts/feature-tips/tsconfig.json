@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.scripts.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "../../node_modules/.tmp/tsconfig.feature-tips.tsbuildinfo",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": ["node", "vite/client"],
+    "paths": { "@/*": ["../../src/*"] }
+  },
+  "include": ["./*.ts"]
+}

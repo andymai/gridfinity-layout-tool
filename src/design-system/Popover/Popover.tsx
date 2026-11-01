@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import { createPortal } from 'react-dom';
 
 type Placement = 'bottom-start' | 'bottom-end' | 'top-start' | 'top-end';
@@ -20,6 +27,9 @@ export interface PopoverProps {
   className?: string;
   /** Accessible name for the dialog container */
   'aria-label'?: string;
+  /** Lets a hover-opened popover stay open while the pointer is over it. */
+  onPointerEnter?: (event: PointerEvent<HTMLDivElement>) => void;
+  onPointerLeave?: (event: PointerEvent<HTMLDivElement>) => void;
 }
 
 /**
@@ -35,6 +45,8 @@ export function Popover({
   children,
   className = '',
   'aria-label': ariaLabel,
+  onPointerEnter,
+  onPointerLeave,
 }: PopoverProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -138,6 +150,8 @@ export function Popover({
       ref={popoverRef}
       role="dialog"
       aria-label={ariaLabel}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
       className={`fixed z-50 bg-surface-elevated border border-stroke-subtle rounded-xl shadow-xl animate-scale-in ${className}`}
       style={{ top: position.top, left: position.left }}
     >

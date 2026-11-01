@@ -27,6 +27,20 @@ const mocks = vi.hoisted(() => ({
   setBentoWorkspaceOpen: vi.fn(),
   setCutoutEditorOpen: vi.fn(),
   params: {} as BinParams,
+  isDesktop: true,
+}));
+
+vi.mock('@/shared/hooks/useResponsive', () => ({
+  useResponsive: () => ({
+    isMobile: !mocks.isDesktop,
+    isTablet: false,
+    isDesktop: mocks.isDesktop,
+    isTouchDevice: !mocks.isDesktop,
+    layoutMode: mocks.isDesktop ? 'desktop' : 'mobile',
+    viewportWidth: mocks.isDesktop ? 1280 : 390,
+    viewportHeight: 800,
+    isLandscape: mocks.isDesktop,
+  }),
 }));
 
 // Real DEFAULT_BIN_PARAMS rather than a hand-built stub: the solid mode asks the
@@ -53,6 +67,7 @@ function setParams(base: Partial<BinParams['base']> = {}, rest: Partial<BinParam
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.isDesktop = true;
   setParams();
 });
 
@@ -98,6 +113,23 @@ describe('InteriorModes', () => {
 
       fireEvent.click(screen.getByText('binDesigner.editCutouts'));
       expect(mocks.setCutoutEditorOpen).toHaveBeenCalledWith(true);
+    });
+
+    it('offers a clip of the editor at work beside its launcher', () => {
+      vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
+      render(<InteriorModeContent card="solid" />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'binDesigner.featureTip.watch' }));
+      expect(screen.getByText('binDesigner.featureTip.cutEditor')).toBeInTheDocument();
+      expect(mocks.setCutoutEditorOpen).not.toHaveBeenCalled();
+    });
+
+    it('offers no clip where the editor cannot open', () => {
+      mocks.isDesktop = false;
+      render(<InteriorModeContent card="solid" />);
+
+      expect(screen.getByText('binDesigner.editCutouts')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'binDesigner.featureTip.watch' })).toBeNull();
     });
 
     it('blocks the editor under an interior lightweight floor', () => {

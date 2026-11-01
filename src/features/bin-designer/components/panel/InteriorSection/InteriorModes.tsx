@@ -16,6 +16,7 @@ import { getDrawnCompartmentIds } from '@/features/bin-designer/utils/bentoDraw'
 import { CompartmentEditor } from '../../CompartmentEditor';
 import { SlotConfigurator } from '../../SlotConfigurator/SlotConfigurator';
 import { WorkspaceLaunchButton } from './WorkspaceLaunchButton';
+import { FeatureTip } from '../../FeatureTip';
 import { BentoMiniPreview } from './BentoMiniPreview';
 import { BentoIcon } from './icons';
 import type { InteriorCard } from '../../../types';
@@ -81,6 +82,7 @@ function SolidModeContent() {
       params: s.params,
     }))
   );
+  const { isDesktop } = useResponsive();
   const t = useTranslation();
 
   // Asking the engine rather than reading `base.lightweight` directly. Three
@@ -122,6 +124,12 @@ function SolidModeContent() {
       title={t('binDesigner.editCutouts')}
       subtitle={t('binDesigner.editCutoutsSubtitle')}
       onClick={() => setCutoutEditorOpen(true)}
+      // The Cut Editor itself only opens on desktop.
+      tip={
+        isDesktop ? (
+          <FeatureTip tip="cutEditor" feature={t('binDesigner.editCutouts')} />
+        ) : undefined
+      }
     />
   );
 }

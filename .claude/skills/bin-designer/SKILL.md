@@ -83,6 +83,15 @@ A blocked reason or warning stays inline, or the state it reports disappears.
 A picker must skip `onChange` when the chosen value is picked again: the store
 write still pushes an undo entry and clears redo.
 
+### Feature tip clips
+
+A play dot (`FeatureTip`) plays a clip listed in `data/featureTips/index.ts`;
+`featureTips.test.ts` fails on a missing or orphaned file. Re-shoot a clip when
+the UI or geometry it shows changes: with the dev server up,
+`BASE_URL=<dev url> pnpm run capture:feature-tips <id>`. Shots, colours and the
+55 degree camera live in `scripts/feature-tips/`. Review the clips in motion
+against the launch sizzle before the PR.
+
 ## Verification
 
 ```bash

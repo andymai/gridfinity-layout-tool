@@ -2264,6 +2264,14 @@ const en: Record<string, string> = {
   'binDesigner.lid.text.rotation': 'Rotation',
   'binDesigner.lid.text.rotationOption': '{angle}°',
   'binDesigner.infoButton': 'More information',
+  'binDesigner.featureTip.watch': 'See how {feature} works',
+  'binDesigner.featureTip.play': 'Play clip',
+  'binDesigner.featureTip.scoops':
+    'A curved ramp up the wall, so small parts slide out with one finger.',
+  'binDesigner.featureTip.lids':
+    'A lid that presses on, slides in or swings open. Click-rail and magnetic lids hold tighter.',
+  'binDesigner.featureTip.cutEditor':
+    'Draw a pocket shaped like your part, then repeat it across the bin.',
   'binDesigner.lid.text.useStackLipOnly': 'Use stacking lip only',
   'binDesigner.lid.text.disabledStackable': 'Not available with a full stack grid.',
   'binDesigner.lid.text.disabledPolygon': 'Not available for custom-shape bins.',
