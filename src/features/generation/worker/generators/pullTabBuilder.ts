@@ -20,6 +20,7 @@ import { FeatureTag } from './featureTags';
 import type { FeatureBuilder } from './pipeline/featureBuilder';
 import type { PipelineContext } from './pipeline/types';
 import { compactKey, stableSerialize } from './cacheKeyUtils';
+import { collectOrigins } from './pipeline/collectOrigins';
 
 function plans(ctx: PipelineContext): PullTabPlan[] {
   return planPullTabs(
@@ -47,12 +48,20 @@ function position(
   const alongY = -innerOffsetY || 0;
   const upright = scope.register(rotate(shape, 90, { axis: [1, 0, 0] }));
   if (p.side === 'front') return translate(upright, [alongX, -innerD / 2, 0]);
-  if (p.side === 'back') {
+  // A center tab straddles its divider line. Its recess faces the front on a
+  // width divider and the right on a depth divider, as the front and right
+  // wall tabs' outside faces do.
+  const at = p.centerAt ?? 0;
+  if (p.side === 'back' || (p.side === 'center' && p.axis === 'width')) {
     const back = scope.register(rotate(upright, 180, { axis: [0, 0, 1] }));
+    if (p.side === 'center')
+      return translate(back, [alongX, -innerD / 2 + at * innerD - p.thickness / 2, 0]);
     return translate(back, [alongX, innerD / 2, 0]);
   }
-  if (p.side === 'left') {
+  if (p.side === 'left' || p.side === 'center') {
     const left = scope.register(rotate(upright, -90, { axis: [0, 0, 1] }));
+    if (p.side === 'center')
+      return translate(left, [-innerW / 2 + at * innerW + p.thickness / 2, alongY, 0]);
     return translate(left, [-innerW / 2, alongY, 0]);
   }
   const right = scope.register(rotate(upright, 90, { axis: [0, 0, 1] }));
@@ -84,9 +93,15 @@ function joinEach(
   });
 }
 
-/** Every selected wall's raised body as one shape, positioned in the cavity frame. */
-export function buildPullTab(ctx: PipelineContext): Shape3D | null {
-  return joinEach(plans(ctx), (p) => buildPullTabBody(ctx, p));
+type Site = 'walls' | 'center';
+
+function sitePlans(ctx: PipelineContext, site: Site): PullTabPlan[] {
+  return plans(ctx).filter((p) => (p.side === 'center') === (site === 'center'));
+}
+
+/** One site's raised bodies as one shape, positioned in the cavity frame. */
+export function buildPullTab(ctx: PipelineContext, site: Site = 'walls'): Shape3D | null {
+  return joinEach(sitePlans(ctx, site), (p) => buildPullTabBody(ctx, p));
 }
 
 function buildPullTabBody(ctx: PipelineContext, p: PullTabPlan): Shape3D {
@@ -103,8 +118,9 @@ function buildPullTabBody(ctx: PipelineContext, p: PullTabPlan): Shape3D {
       halfRise = 1 - Math.cos(angle / 2);
     const rimRadius = effectiveRimFilletRadius(ctx.params);
     // A short level wing carries the same round as the host wall, so the
-    // two blends overlap continuously at the tab shoulder.
-    const wing = rimRadius > 0 ? 0.5 : 0;
+    // two blends overlap continuously at the tab shoulder. A center tab's
+    // wing is the thickened divider reaching past its root.
+    const wing = p.margin > 0 ? p.margin : rimRadius > 0 ? 0.5 : 0;
     let pen = draw([-a - wing, z - p.embed]).lineTo([-a - wing, z]);
     if (wing > 0) pen = pen.lineTo([-a, z]);
     if (r > 0)
@@ -151,8 +167,12 @@ function buildPullTabBody(ctx: PipelineContext, p: PullTabPlan): Shape3D {
   });
 }
 
-export function buildPullTabRecess(ctx: PipelineContext, back = false): Shape3D | null {
-  return joinEach(plans(ctx), (p) => buildPullTabRecessFor(ctx, p, back));
+export function buildPullTabRecess(
+  ctx: PipelineContext,
+  back = false,
+  site: Site = 'walls'
+): Shape3D | null {
+  return joinEach(sitePlans(ctx, site), (p) => buildPullTabRecessFor(ctx, p, back));
 }
 
 function buildPullTabRecessFor(
@@ -211,24 +231,30 @@ function buildPullTabRecessFor(
   });
 }
 
-const common = {
+function cacheKey(ctx: PipelineContext, site: Site): string {
+  return compactKey(
+    stableSerialize([
+      'pull-tab-v5',
+      site,
+      sitePlans(ctx, site),
+      ctx.dimensions.innerW,
+      ctx.dimensions.innerD,
+      ctx.dimensions.innerOffsetX,
+      ctx.dimensions.innerOffsetY,
+      ...(site === 'center' ? [ctx.dimensions.compartmentsBakedIntoShell] : []),
+    ])
+  );
+}
+
+const wallCommon = {
   tag: FeatureTag.BASE,
-  shouldBuild: (ctx: PipelineContext) => plans(ctx).length > 0,
-  cacheKey: (ctx: PipelineContext) =>
-    compactKey(
-      stableSerialize([
-        'pull-tab-v5',
-        plans(ctx),
-        ctx.dimensions.innerW,
-        ctx.dimensions.innerD,
-        ctx.dimensions.innerOffsetX,
-        ctx.dimensions.innerOffsetY,
-      ])
-    ),
+  shouldBuild: (ctx: PipelineContext) => sitePlans(ctx, 'walls').length > 0,
+  cacheKey: (ctx: PipelineContext) => cacheKey(ctx, 'walls'),
 };
 export const pullTabFeature: FeatureBuilder = {
-  ...common,
-  shouldBuild: (ctx) => !pullTabInRimShell(ctx.params) && common.shouldBuild(ctx),
+  ...wallCommon,
+  // The rounded-rim shell already carries these, fused with the rim round.
+  shouldBuild: (ctx) => !pullTabInRimShell(ctx.params) && wallCommon.shouldBuild(ctx),
   name: 'pullTab',
   target: 'fuse',
   build: (ctx) => {
@@ -237,7 +263,7 @@ export const pullTabFeature: FeatureBuilder = {
   },
 };
 export const pullTabRecessFeature: FeatureBuilder = {
-  ...common,
+  ...wallCommon,
   name: 'pullTabRecess',
   target: 'cut',
   build: (ctx) => {
@@ -246,12 +272,49 @@ export const pullTabRecessFeature: FeatureBuilder = {
   },
 };
 export const pullTabBackRecessFeature: FeatureBuilder = {
-  ...common,
+  ...wallCommon,
   name: 'pullTabBackRecess',
   target: 'cut',
-  shouldBuild: (ctx) => plans(ctx).some((p) => p.backRecess),
+  shouldBuild: (ctx) => sitePlans(ctx, 'walls').some((p) => p.backRecess),
   build: (ctx) => {
     const pocket = buildPullTabRecess(ctx, true);
     return pocket ? [pocket] : null;
   },
+};
+
+/**
+ * A center tab takes its divider's colour: shell-baked dividers are body
+ * faces, and only dividers built as their own feature carry the divider tag.
+ */
+function centerTagged(ctx: PipelineContext, shape: Shape3D | null): readonly Shape3D[] | null {
+  if (!shape) return null;
+  const tag = ctx.dimensions.compartmentsBakedIntoShell ? FeatureTag.BASE : FeatureTag.DIVIDER;
+  collectOrigins(shape, tag, ctx.originToTag);
+  return [shape];
+}
+
+const centerCommon = {
+  tag: FeatureTag.DIVIDER,
+  tagsOwnFaces: true,
+  shouldBuild: (ctx: PipelineContext) => sitePlans(ctx, 'center').length > 0,
+  cacheKey: (ctx: PipelineContext) => cacheKey(ctx, 'center'),
+};
+export const pullTabCenterFeature: FeatureBuilder = {
+  ...centerCommon,
+  name: 'pullTabCenter',
+  target: 'fuse',
+  build: (ctx) => centerTagged(ctx, buildPullTab(ctx, 'center')),
+};
+export const pullTabCenterRecessFeature: FeatureBuilder = {
+  ...centerCommon,
+  name: 'pullTabCenterRecess',
+  target: 'cut',
+  build: (ctx) => centerTagged(ctx, buildPullTabRecess(ctx, false, 'center')),
+};
+export const pullTabCenterBackRecessFeature: FeatureBuilder = {
+  ...centerCommon,
+  name: 'pullTabCenterBackRecess',
+  target: 'cut',
+  shouldBuild: (ctx) => sitePlans(ctx, 'center').some((p) => p.backRecess),
+  build: (ctx) => centerTagged(ctx, buildPullTabRecess(ctx, true, 'center')),
 };

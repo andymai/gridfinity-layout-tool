@@ -12,6 +12,9 @@
  *
  * `mode: 'single'` picks exactly one wall (a hinge, a slide entry): a radio
  * group where the arrow keys choose the wall in that direction.
+ *
+ * A multi selector can also offer the middle of the bin (a pull tab on the
+ * center divider): `center` puts a fifth switch where the bin glyph sits.
  */
 
 import { useRef } from 'react';
@@ -30,12 +33,21 @@ export interface SideState {
   title?: string;
 }
 
+interface CenterState {
+  label: string;
+  active: boolean;
+  disabled?: boolean;
+  title?: string;
+  onToggle: () => void;
+}
+
 interface MultiSideSelectorProps {
   readonly mode?: 'multi';
   /** All four sides; order is irrelevant — placement is spatial. */
   sides: ReadonlyArray<SideState>;
   onToggle: (side: Side) => void;
   ariaLabel: string;
+  center?: CenterState;
 }
 
 interface SingleSideSelectorProps {
@@ -83,11 +95,13 @@ function Cross({
   role,
   ariaLabel,
   onKeyDown,
+  middle,
   children,
 }: {
   role: 'group' | 'radiogroup';
   ariaLabel: string;
   onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void;
+  middle?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -98,10 +112,12 @@ function Cross({
       className="grid grid-cols-3 grid-rows-3 gap-1"
     >
       {children}
-      {/* Center bin glyph — grounds the four sides in physical space. */}
-      <div aria-hidden className="col-start-2 row-start-2 flex items-center justify-center">
-        <div className="h-5 w-7 rounded-sm border border-stroke-subtle bg-surface-tertiary" />
-      </div>
+      {middle ?? (
+        // Center bin glyph: grounds the four sides in physical space.
+        <div aria-hidden className="col-start-2 row-start-2 flex items-center justify-center">
+          <div className="h-5 w-7 rounded-sm border border-stroke-subtle bg-surface-tertiary" />
+        </div>
+      )}
     </div>
   );
 }
@@ -150,9 +166,25 @@ function SingleSide({ sides, value, onSelect, ariaLabel }: SingleSideSelectorPro
   );
 }
 
-function MultiSide({ sides, onToggle, ariaLabel }: MultiSideSelectorProps) {
+function MultiSide({ sides, onToggle, ariaLabel, center }: MultiSideSelectorProps) {
+  const middle = center && (
+    <Button
+      variant="ghost"
+      type="button"
+      role="switch"
+      aria-checked={center.active && !center.disabled}
+      disabled={center.disabled}
+      title={center.title}
+      onClick={center.onToggle}
+      className={`col-start-2 row-start-2 ${CHIP_BASE} ${
+        center.active && !center.disabled ? CHIP_ON : CHIP_OFF
+      }`}
+    >
+      {center.label}
+    </Button>
+  );
   return (
-    <Cross role="group" ariaLabel={ariaLabel}>
+    <Cross role="group" ariaLabel={ariaLabel} middle={middle}>
       {sides.map(({ side, label, active, disabled, title }) => {
         // A disabled side always reads as off — both visually and for ARIA —
         // regardless of the `active` the caller passes, so a blocked side can

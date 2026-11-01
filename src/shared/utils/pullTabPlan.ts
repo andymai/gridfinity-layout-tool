@@ -1,7 +1,14 @@
-import type { BinParams, PullTabConfig, PullTabWall } from '@/shared/types/bin';
+import type {
+  BinParams,
+  PullTabCenterAxis,
+  PullTabConfig,
+  PullTabOuterWall,
+  PullTabWall,
+} from '@/shared/types/bin';
 import { isPartialMask } from './cellMask';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { effectiveRimFilletRadius } from './rimFillet';
+import { PULL_TAB_CENTER_MARGIN_MM, resolvePullTabCenter } from './pullTabCenterPlan';
 
 export const DEFAULT_PULL_TAB: PullTabConfig = {
   enabled: false,
@@ -37,7 +44,8 @@ export const PULL_TAB_LIMITS = {
 } as const;
 
 /** Canonical wall order. The picker renders in it and `resolvePullTabWalls` sorts to it. */
-export const PULL_TAB_WALLS: readonly PullTabWall[] = ['front', 'back', 'left', 'right'];
+export const PULL_TAB_WALLS: readonly PullTabWall[] = ['front', 'back', 'left', 'right', 'center'];
+export const PULL_TAB_OUTER_WALLS: readonly PullTabOuterWall[] = ['front', 'back', 'left', 'right'];
 
 function isPullTabWall(value: unknown): value is PullTabWall {
   return typeof value === 'string' && (PULL_TAB_WALLS as readonly string[]).includes(value);
@@ -62,7 +70,7 @@ export function resolvePullTabWalls(
   return [tab.wall === 'depth' ? 'right' : 'front'];
 }
 
-export function pullTabWallAxis(wall: PullTabWall): PullTabConfig['wall'] {
+export function pullTabWallAxis(wall: PullTabOuterWall): PullTabConfig['wall'] {
   return wall === 'left' || wall === 'right' ? 'depth' : 'width';
 }
 
@@ -77,7 +85,7 @@ export function pullTabWallFields(
   if (picked.length === 0 || (picked.length === 1 && picked[0] === 'front'))
     return { wall: 'width' };
   if (picked.length === 1 && picked[0] === 'right') return { wall: 'depth' };
-  return { wall: pullTabWallAxis(picked[0]), walls: picked };
+  return { wall: picked[0] === 'center' ? 'width' : pullTabWallAxis(picked[0]), walls: picked };
 }
 
 export function resolvePullTab(value: unknown): PullTabConfig {
@@ -89,14 +97,18 @@ export function resolvePullTab(value: unknown): PullTabConfig {
       ? Math.min(max, Math.max(min, number))
       : DEFAULT_PULL_TAB[key];
   };
+  const walls = resolvePullTabWalls({
+    wall: v.wall === 'depth' ? 'depth' : 'width',
+    walls: v.walls as PullTabConfig['walls'],
+  });
+  const centerAxis: PullTabCenterAxis | undefined =
+    walls.includes('center') && (v.centerAxis === 'width' || v.centerAxis === 'depth')
+      ? v.centerAxis
+      : undefined;
   return {
     enabled: v.enabled === true,
-    ...pullTabWallFields(
-      resolvePullTabWalls({
-        wall: v.wall === 'depth' ? 'depth' : 'width',
-        walls: v.walls as PullTabConfig['walls'],
-      })
-    ),
+    ...pullTabWallFields(walls),
+    ...(centerAxis ? { centerAxis } : {}),
     backRecess: v.backRecess === true,
     thickness: n('thickness'),
     width: n('width'),
@@ -131,6 +143,9 @@ export type PullTabHost = Partial<
     | 'gridUnitMm'
     | 'gridUnitMmY'
     | 'wallThickness'
+    | 'compartments'
+    | 'label'
+    | 'extraWallHeightMm'
   >
 > & {
   base: Pick<BinParams['base'], 'style'> & Partial<BinParams['base']>;
@@ -193,6 +208,22 @@ function thickenedCavityMm(p: PullTabHost): number {
   );
 }
 
+/**
+ * Whether an enabled tab builds anything: a center tab alone builds nothing
+ * while no divider can carry it.
+ */
+export function pullTabBuildsAny(p: PullTabHost): boolean {
+  const walls = resolvePullTabWalls(resolvePullTab(p.pullTab));
+  if (walls.some((wall) => wall !== 'center')) return true;
+  if (!p.compartments || !p.label) return true;
+  return !resolvePullTabCenter({
+    compartments: p.compartments,
+    label: p.label,
+    pullTab: p.pullTab,
+    extraWallHeightMm: p.extraWallHeightMm,
+  }).reason;
+}
+
 export function activePullTab(p: BinParams): PullTabConfig | null {
   const tab = resolvePullTab(p.pullTab);
   return tab.enabled && !pullTabUnavailableReason(p) ? tab : null;
@@ -206,11 +237,11 @@ export function pullTabInRimShell(p: BinParams): boolean {
  * Inward growth of each selected wall. A selected wall too short for a tab is
  * still thickened: that is what a one-wall tab has always done there.
  */
-export function pullTabWallInset(p: BinParams): Readonly<Record<PullTabWall, number>> {
+export function pullTabWallInset(p: BinParams): Readonly<Record<PullTabOuterWall, number>> {
   const tab = activePullTab(p);
   const extra = tab ? Math.max(0, tab.thickness - p.wallThickness) : 0;
   const on = tab ? resolvePullTabWalls(tab) : [];
-  const at = (wall: PullTabWall): number => (on.includes(wall) ? extra : 0);
+  const at = (wall: PullTabOuterWall): number => (on.includes(wall) ? extra : 0);
   return { front: at('front'), back: at('back'), left: at('left'), right: at('right') };
 }
 
@@ -218,12 +249,22 @@ function firstWall(p: BinParams): PullTabWall {
   return resolvePullTabWalls(resolvePullTab(p.pullTab))[0];
 }
 
+/**
+ * The axis a tab's width runs along. A center tab runs along its divider,
+ * which spans the bin like the walls parallel to it.
+ */
+export function pullTabAxis(p: BinParams, wall: PullTabWall): PullTabCenterAxis {
+  if (wall !== 'center') return pullTabWallAxis(wall);
+  const center = resolvePullTabCenter(p);
+  return center.divider?.axis ?? (p.pullTab?.centerAxis === 'depth' ? 'depth' : 'width');
+}
+
 /** Wall length a tab leaves clear, split between its two ends. */
 export const PULL_TAB_END_CLEARANCE_MM = 10;
 
 export function availablePullTabWidth(p: BinParams, wall: PullTabWall = firstWall(p)): number {
   return (
-    (pullTabWallAxis(wall) === 'width'
+    (pullTabAxis(p, wall) === 'width'
       ? p.width * p.gridUnitMm
       : p.depth * (p.gridUnitMmY ?? p.gridUnitMm)) - PULL_TAB_END_CLEARANCE_MM
   );
@@ -251,6 +292,8 @@ export function planPullTab(
 ) {
   const tab = activePullTab(p);
   if (!tab) return null;
+  const center = wall === 'center' ? resolvePullTabCenter(p) : null;
+  if (center && !center.divider) return null;
   const available = availablePullTabWidth(p, wall);
   const width = Math.min(
     available,
@@ -260,7 +303,10 @@ export function planPullTab(
     )
   );
   if (width < MIN_PULL_TAB_WIDTH || rimZ <= floorZ + 1) return null;
-  const thickness = Math.max(p.wallThickness, tab.thickness);
+  const thickness = Math.max(center ? p.compartments.thickness : p.wallThickness, tab.thickness);
+  // Compartments beside a divider can carry shelves and scoops up to the rim,
+  // so a center tab's recesses stay clear above it.
+  const recessFloorZ = center ? rimZ : floorZ;
   const outline = fitRounds(tab.rootRadius, tab.topRadius, tab.height, width / 2 - 3);
   const topRadius = outline.second;
   const rootRadius = outline.first;
@@ -268,7 +314,7 @@ export function planPullTab(
   // An inscribed corner stays inside the broad top arc even when its center
   // lies below the rim. At 90 degrees this is the original vertical-side plan.
   const recessSideHalf = width / 2 - outline.run + tabCornerRise;
-  const heightBudget = rimZ + tab.height - floorZ - 0.8;
+  const heightBudget = rimZ + tab.height - recessFloorZ - 0.8;
   // A short recess needs a wider border for its rounded top corners to stay
   // inside the tab. Include the floor limit before deriving all three margins.
   const recessBorder = Math.min(
@@ -282,7 +328,7 @@ export function planPullTab(
     heightBudget - 0.2
   );
   const recessTop = rimZ + tab.height - recessBorder;
-  const recessHeight = Math.min(tab.recessHeight, recessTop - floorZ - 0.8);
+  const recessHeight = Math.min(tab.recessHeight, recessTop - recessFloorZ - 0.8);
   const recessWidth = 2 * (recessSideHalf - recessBorder);
   const recessDepth = Math.max(
     0,
@@ -304,6 +350,8 @@ export function planPullTab(
   return {
     ...tab,
     side: wall,
+    axis: center?.divider.axis ?? pullTabAxis(p, wall),
+    centerAt: center?.divider.at,
     width,
     widthPercent: (width / available) * 100,
     thickness,
@@ -313,7 +361,10 @@ export function planPullTab(
     tabShoulderRun: outline.run,
     tabCornerRise,
     rimZ,
-    embed: Math.min(2, rimZ - floorZ),
+    // A center tab's body is the thickened divider, so it starts where the
+    // dividers do: at the bottom of the floor slab.
+    embed: center ? rimZ : Math.min(2, rimZ - floorZ),
+    margin: center ? PULL_TAB_CENTER_MARGIN_MM : 0,
     recessTop,
     recessBorder,
     recessHeight,

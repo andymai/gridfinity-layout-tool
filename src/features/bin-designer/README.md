@@ -25,7 +25,7 @@ graph TB
 
 ## Key Files
 
-- `components/panel/PullTabSection/` — raised grips on one to four walls (`pullTab.walls`, read through `resolvePullTabWalls`), with mm/% width and optional mirrored recess. `src/shared/utils/pullTabPlan.ts` resolves dimensions and safe blends; `setParam` preserves undo/redo. Missing `pullTab` stays absent on legacy designs. Unsupported wall features disable the tab without clearing its saved settings.
+- `components/panel/PullTabSection/` — raised grips on any wall or the center divider (`pullTab.walls` via `resolvePullTabWalls`; `resolvePullTabCenter` picks the divider), mm/% width, optional mirrored recess. `src/shared/utils/pullTabPlan.ts` resolves dimensions and safe blends; `setParam` preserves undo/redo. Missing `pullTab` stays absent on legacy designs. Unsupported wall features disable the tab without clearing its saved settings.
 
 - `components/LayoutDesignSwitch/` — header menu of the active layout's linked designs. A pick
   calls `navigateToDesign(id, binId)` so `usePlacementOverhang` still applies.

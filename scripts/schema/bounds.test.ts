@@ -54,6 +54,7 @@ import {
 } from '@/features/bin-designer/types/base';
 import { SCOOP_SIDES } from '@/shared/utils/scoopCalculations';
 import { PULL_TAB_WALLS } from '@/shared/utils/pullTabPlan';
+import { PULL_TAB_CENTER_AXES } from '@/shared/utils/pullTabCenterPlan';
 import {
   CROSS_DIVIDER_STYLES,
   PARTIAL_DIVIDER_STYLES,
@@ -153,6 +154,7 @@ const SOURCES: Record<string, unknown> = {
   LIP_TIP_STYLES,
   SCOOP_SIDES,
   PULL_TAB_WALLS,
+  PULL_TAB_CENTER_AXES,
   SLANT_SIDES,
   SLANT_MAX_DEG,
   PARTIAL_DIVIDER_STYLES,

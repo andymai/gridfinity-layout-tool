@@ -7,21 +7,26 @@ import { FieldLabel, Hint, ShapePicker, SideSelector, StepperField } from '../sh
 import {
   resolvePullTab,
   resolvePullTabWalls,
-  pullTabWallAxis,
   pullTabWallFields,
   planPullTabs,
   pullTabUnavailableReason,
   PULL_TAB_LIMITS,
-  PULL_TAB_WALLS,
+  PULL_TAB_OUTER_WALLS,
   MIN_PULL_TAB_WIDTH,
   PULL_TAB_END_CLEARANCE_MM,
   availablePullTabWidth,
 } from '@/shared/utils/pullTabPlan';
 import type { PullTabPlan } from '@/shared/utils/pullTabPlan';
+import { pullTabCenterAxes, resolvePullTabCenter } from '@/shared/utils/pullTabCenterPlan';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
-import type { PullTabConfig, PullTabWall } from '@/features/bin-designer/types';
+import type {
+  PullTabCenterAxis,
+  PullTabConfig,
+  PullTabOuterWall,
+  PullTabWall,
+} from '@/features/bin-designer/types';
 
-const WALL_LABEL: Record<PullTabWall, string> = {
+const WALL_LABEL: Record<PullTabOuterWall, string> = {
   front: 'binDesigner.pullTab.side.front',
   back: 'binDesigner.pullTab.side.back',
   left: 'binDesigner.pullTab.side.left',
@@ -30,8 +35,7 @@ const WALL_LABEL: Record<PullTabWall, string> = {
 
 /** One value per axis, or a single value when both axes agree to the shown precision. */
 function perAxis(plans: readonly PullTabPlan[], read: (plan: PullTabPlan) => number) {
-  const along = (axis: 'width' | 'depth') =>
-    plans.find((plan) => pullTabWallAxis(plan.side) === axis);
+  const along = (axis: PullTabCenterAxis) => plans.find((plan) => plan.axis === axis);
   const front = along('width');
   const side = along('depth');
   if (!front || !side || read(front).toFixed(1) === read(side).toFixed(1)) return null;
@@ -105,6 +109,9 @@ export function PullTabSection() {
     const fields = pullTabWallFields([...on]);
     update({ wall: fields.wall, walls: fields.walls });
   };
+  const center = resolvePullTabCenter(params);
+  const centerOn = walls.includes('center');
+  const centerAxes = pullTabCenterAxes(params.compartments);
   const field = (
     key: keyof typeof PULL_TAB_LIMITS,
     min = PULL_TAB_LIMITS[key][0] as number,
@@ -155,15 +162,41 @@ export function PullTabSection() {
             <FieldLabel>{t('binDesigner.pullTab.wall')}</FieldLabel>
             <SideSelector
               ariaLabel={t('binDesigner.pullTab.sideAria')}
-              sides={PULL_TAB_WALLS.map((wall) => ({
+              sides={PULL_TAB_OUTER_WALLS.map((wall) => ({
                 side: wall,
                 label: t(WALL_LABEL[wall]),
                 active: walls.includes(wall),
                 title: t(WALL_LABEL[wall]),
               }))}
               onToggle={toggleWall}
+              center={{
+                label: t('binDesigner.pullTab.side.center'),
+                active: centerOn,
+                // A chosen center that stopped fitting stays switchable, so it
+                // can still be turned off; the hint below says why it is idle.
+                disabled: !centerOn && center.reason !== undefined,
+                title: center.reason ? t(center.reason) : t('binDesigner.pullTab.side.center'),
+                onToggle: () => toggleWall('center'),
+              }}
             />
           </div>
+          {centerOn && center.reason && <Hint>{t(center.reason)}</Hint>}
+          {centerOn && center.divider && centerAxes.length > 1 && (
+            <div>
+              <FieldLabel>{t('binDesigner.pullTab.centerAxis')}</FieldLabel>
+              <ShapePicker
+                value={center.divider.axis}
+                ariaLabel={t('binDesigner.pullTab.centerAxis')}
+                options={[
+                  { value: 'width', label: t('binDesigner.pullTab.centerAxis.width') },
+                  { value: 'depth', label: t('binDesigner.pullTab.centerAxis.depth') },
+                ]}
+                onChange={(centerAxis) => {
+                  if (centerAxis !== center.divider.axis) update({ centerAxis });
+                }}
+              />
+            </div>
+          )}
           {tooShort && (
             <Hint>
               {t('binDesigner.pullTab.wallTooShort', {

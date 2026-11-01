@@ -139,6 +139,7 @@ const PERTURBATIONS: Record<string, unknown> = {
   'pullTab.walls': (walls: unknown) =>
     Array.isArray(walls) && walls.length > 1 ? walls.slice(1) : ['back', 'left'],
   'pullTab.widthMode': (mode: unknown) => (mode === 'mm' ? 'percent' : 'mm'),
+  'pullTab.centerAxis': (axis: unknown) => (axis === 'depth' ? 'width' : 'depth'),
   'slotConfig.crossStyle': 'notch',
   'slotConfig.longAxis': 'x',
   'slotConfig.partialStyle': 'partial',

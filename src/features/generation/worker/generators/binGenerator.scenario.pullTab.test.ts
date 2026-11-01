@@ -643,3 +643,178 @@ describe('pull tabs on several walls', () => {
     }
   );
 });
+
+describe('a pull tab on the center divider', () => {
+  // A 3x2 bin: x within +-62.75, y within +-41.75, rim at 42, tab top at 54.
+  const RIM = 42;
+  const TOP = RIM + DEFAULT_PULL_TAB.height;
+  const HALF_T = DEFAULT_PULL_TAB.thickness / 2;
+  const tray = (cols: number, rows: number, more: Partial<BinParams> = {}): BinParams =>
+    params(pullTabWallFields(['center']), {
+      width: 3,
+      depth: 2,
+      compartments: {
+        ...DEFAULT_BIN_PARAMS.compartments,
+        cols,
+        rows,
+        cells: Array.from({ length: cols * rows }, (_, i) => i),
+      },
+      ...more,
+    });
+  const without = (p: BinParams): BinParams => ({
+    ...p,
+    pullTab: { ...DEFAULT_PULL_TAB, ...p.pullTab, enabled: false },
+  });
+  /** `across` mm off the divider line, `along` mm along it from the bin's middle. */
+  const point = (axis: 'width' | 'depth', across: number, along: number) =>
+    axis === 'width' ? ([along, across] as const) : ([across, along] as const);
+  const top = (mesh: MeshData, axis: 'width' | 'depth', across: number, along: number) =>
+    verticalSolidSpans(mesh, ...point(axis, across, along)).at(-1)?.[1] ?? 0;
+  const solidAt = (mesh: MeshData, axis: 'width' | 'depth', across: number, along: number) =>
+    verticalSolidSpans(mesh, ...point(axis, across, along)).some(([lo, hi]) => lo < 20 && hi > 30);
+
+  it.each<{ axis: 'width' | 'depth'; cols: number; rows: number }>([
+    { axis: 'width', cols: 3, rows: 2 },
+    { axis: 'depth', cols: 4, rows: 1 },
+  ])(
+    'raises a tab from the $axis divider and thickens it, where a plain divider has neither',
+    ({ axis, cols, rows }) => {
+      const p = tray(cols, rows);
+      const mesh = getGenerateBin()(p, undefined, true);
+      const plain = getGenerateBin()(without(p), undefined, true);
+      assertStructurallyValid(mesh);
+      assertWatertight(mesh);
+      expectOneSolid(mesh);
+      // The probes find the divider in both bins, so a missing tab cannot pass.
+      expect(top(plain, axis, 0, 0.13)).toBeCloseTo(RIM, 1);
+      expect(top(mesh, axis, 0, 0.13)).toBeCloseTo(TOP, 1);
+      expect(solidAt(plain, axis, HALF_T - 0.3, 10)).toBe(false);
+      expect(solidAt(mesh, axis, HALF_T - 0.3, 10)).toBe(true);
+      expect(solidAt(mesh, axis, -(HALF_T - 0.3), 10)).toBe(true);
+      expect(solidAt(mesh, axis, HALF_T + 0.3, 10)).toBe(false);
+      // Thickened under the tab and its margin only; the rest stays a thin divider.
+      expect(solidAt(mesh, axis, HALF_T - 0.3, 30)).toBe(false);
+      expect(top(mesh, axis, 0, 30)).toBeCloseTo(RIM, 1);
+      for (const wall of ['front', 'back', 'left', 'right'] as const) {
+        const [x, y] =
+          wall === 'front'
+            ? [20.13, -40.75]
+            : wall === 'back'
+              ? [20.13, 40.75]
+              : wall === 'left'
+                ? [-61.75, 20.13]
+                : [61.75, 20.13];
+        expect(verticalSolidSpans(mesh, x, y).at(-1)?.[1], wall).toBeCloseTo(RIM, 1);
+      }
+      // The recess faces the front on a width divider and the right on a depth one.
+      const recessSide = axis === 'width' ? -1 : 1;
+      const pocket = (side: number) =>
+        verticalSolidSpans(mesh, ...point(axis, side * (HALF_T - 0.5), 0.13)).length;
+      expect(pocket(recessSide)).toBeGreaterThanOrEqual(2);
+      expect(pocket(-recessSide)).toBe(1);
+      expect(canBinUseDirectMesh(p)).toBe(false);
+      const preview = getGenerateBin()(p);
+      assertStructurallyValid(preview);
+      expect(Math.max(...columnCrossings(preview, ...point(axis, 0, 0.13)))).toBeCloseTo(TOP, 1);
+    }
+  );
+
+  it('stands between scoops and beside tabs on all four walls, as one closed solid', () => {
+    const p = tray(1, 2, {
+      scoop: {
+        ...DEFAULT_BIN_PARAMS.scoop,
+        enabled: true,
+        side: 'front',
+        sides: ['front', 'back'],
+      },
+      pullTab: {
+        ...DEFAULT_PULL_TAB,
+        enabled: true,
+        backRecess: true,
+        ...pullTabWallFields(['front', 'back', 'left', 'right', 'center']),
+      },
+    });
+    const mesh = getGenerateBin()(p, undefined, true);
+    assertStructurallyValid(mesh);
+    assertWatertight(mesh);
+    expectOneSolid(mesh);
+    expect(top(mesh, 'width', 0, 0.13)).toBeCloseTo(TOP, 1);
+    expect(verticalSolidSpans(mesh, 0.13, -40.75).at(-1)?.[1]).toBeCloseTo(TOP, 1);
+    expect(verticalSolidSpans(mesh, -61.75, 0.13).at(-1)?.[1]).toBeCloseTo(TOP, 1);
+  });
+
+  it.skipIf(getKernelName() === 'manifold')(
+    'joins a center tab to a rounded rim bin whose wall tabs ride in the shell',
+    () => {
+      const p = tray(2, 2, {
+        base: {
+          ...DEFAULT_BIN_PARAMS.base,
+          stackingLip: false,
+          rimFillet: true,
+          rimFilletRadius: 0.4,
+        },
+        pullTab: { ...DEFAULT_PULL_TAB, enabled: true, ...pullTabWallFields(['left', 'center']) },
+      });
+      const mesh = getGenerateBin()(p, undefined, true);
+      assertStructurallyValid(mesh);
+      assertWatertight(mesh);
+      expectOneSolid(mesh);
+      expect(top(mesh, 'width', 0, 0.13)).toBeCloseTo(TOP, 1);
+      expect(verticalSolidSpans(mesh, -61.75, 0.13).at(-1)?.[1]).toBeCloseTo(TOP, 1);
+    }
+  );
+
+  it.skipIf(getKernelName() === 'manifold')(
+    'takes its divider colour: a body face on a shell divider, a divider face on a built one',
+    () => {
+      const tagAbove = (mesh: MeshData, z: number): Set<number> => {
+        const tags = new Set<number>();
+        for (const group of mesh.faceGroups ?? []) {
+          for (let i = group.start; i < group.start + group.count; i += 3) {
+            const corners = [0, 1, 2].map((k) => mesh.indices[i + k] * 3);
+            if (corners.every((c) => mesh.vertices[c + 2] > z)) tags.add(group.tag);
+          }
+        }
+        return tags;
+      };
+      const baked = tray(3, 2);
+      expect(deriveDimensions(baked, true).compartmentsBakedIntoShell).toBe(true);
+      // A leaning divider elsewhere in the grid sends every divider down the
+      // additive path, where they carry the divider tag.
+      const built = tray(3, 2, {
+        compartments: {
+          ...tray(3, 2).compartments,
+          dividerOverrides: [
+            { compartmentA: 0, compartmentB: 1, offsetStart: 0, offsetEnd: 0, rakeDeg: 5 },
+          ],
+        },
+      });
+      expect(deriveDimensions(built, true).compartmentsBakedIntoShell).toBe(false);
+      const dividerTag = 6;
+      expect(tagAbove(getGenerateBin()(baked, undefined, true), RIM + 2).has(dividerTag)).toBe(
+        false
+      );
+      const builtTags = tagAbove(getGenerateBin()(built, undefined, true), RIM + 2);
+      expect([...builtTags]).toEqual([dividerTag]);
+    }
+  );
+
+  it.each([
+    { name: 'no divider', p: () => tray(1, 1) },
+    {
+      name: 'a lowered divider',
+      p: () => tray(3, 2, { compartments: { ...tray(3, 2).compartments, dividerHeight: 20 } }),
+    },
+    {
+      name: 'label tabs',
+      p: () => tray(3, 2, { label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } }),
+    },
+    { name: 'a collar above the dividers', p: () => tray(3, 2, { extraWallHeightMm: 5 }) },
+  ])('builds no center tab with $name', ({ p }) => {
+    const mesh = getGenerateBin()(p(), undefined, true);
+    assertStructurallyValid(mesh);
+    const plain = getGenerateBin()(without(p()), undefined, true);
+    expect(boundingBox(mesh.vertices).maxZ).toBeCloseTo(boundingBox(plain.vertices).maxZ, 3);
+    expect(meshVolume(mesh)).toBeCloseTo(meshVolume(plain), 0);
+  });
+});

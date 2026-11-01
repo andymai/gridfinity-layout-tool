@@ -371,6 +371,7 @@ export const PULL_TAB_KEYS = [
   'enabled',
   'wall',
   'walls',
+  'centerAxis',
   'backRecess',
   'thickness',
   'width',
