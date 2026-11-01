@@ -338,6 +338,7 @@ describe('generatePrintGuide', () => {
     expect(guide).toContain('Stack printing');
     expect(guide).toContain('right-side up'); // bottom plate upright
     expect(guide).toContain('flipped upside'); // the rest flipped
+    expect(guide).toContain('has its bottom plate flipped too'); // asymmetric shapes
     expect(guide).toContain('air gap');
     expect(guide).toContain('support interface'); // PETG / slicer tip
     expect(guide).toContain(`each plate is ${STACK_SEAM_TRIM_MM}mm shorter`);

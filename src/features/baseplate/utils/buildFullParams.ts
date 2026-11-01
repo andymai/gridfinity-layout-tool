@@ -339,11 +339,12 @@ export function buildFullParams(
   // NOT stripped, and neither is a corner radius the user set, plain or
   // converted to a radius-cut outline: the tiles split and dedupe by
   // fingerprint, so identical ones stack into towers (an unsplit rounded plate
-  // stacks whole) while the unique corner tiles print singly. A corner tile's
-  // lone rounded corner is congruent about neither flip axis, so its flipped
-  // copies carry it on the opposite side of the tower (a few mm of overhang at
-  // one seam); that beats flattening a radius the user asked for. Only the
-  // implicit spec radius is squared, via `roundingOn` below.
+  // stacks whole) while the unique corner tiles print singly. A plain-rounded
+  // corner tile is congruent about neither flip axis, so its flipped copies
+  // carry the corner to the opposite side of the tower (a few mm of overhang at
+  // one seam); that beats flattening a radius the user asked for. A shaped tile
+  // no turn maps onto itself prints every copy turned instead (`planPlateFlip`).
+  // Only the implicit spec radius is squared, via `roundingOn` below.
   // Dovetail connectors survive: tongues, grooves, and the dovetail key are
   // full-height vertical prisms that flip cleanly. Only snap clip is
   // incompatible — its blind top pocket (sealed floor + undercut ledge) inverts

@@ -10,6 +10,7 @@ import { effectiveCornerRadii } from '@/shared/generation/baseplateCorners';
 import { plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import type { BaseplateTiling } from '../types/tiling';
 import { groupPiecesByFingerprint } from './pieceFingerprint';
+import { turnedPlateOverhangMm } from './plateTurnOverhang';
 
 /** Non-null mesh buffers (xyz-interleaved positions/normals, line-pair edges). */
 export interface StackMeshArrays {
@@ -176,7 +177,16 @@ export interface PlateFlip {
    * extent, the sliver for a fractional one.
    */
   readonly offsetMm: number;
+  /** Turn the bottom plate over too, so every copy shares one orientation. */
+  readonly flipBottom?: boolean;
 }
+
+/**
+ * Deepest a turned shaped plate may reach past the one below it and still
+ * print on it. Clears the few hundredths a mirrored arc flattens differently;
+ * an asymmetric perimeter misses by a cell or a corner cut.
+ */
+const SHAPED_SEAM_OVERHANG_TOLERANCE_MM = 1;
 
 /** Turn about X with no seat — correct for any whole-unit plate. */
 export const DEFAULT_PLATE_FLIP: PlateFlip = { axis: 'x', offsetMm: 0 };
@@ -194,6 +204,7 @@ export type PlateFlipInput = Pick<
   | 'paddingFront'
   | 'paddingBack'
   | 'outline'
+  | 'outlineOverhang'
   | 'cornerRadius'
   | 'cornerRadii'
   | 'edges'
@@ -243,8 +254,13 @@ function turnCost(
  *
  * Rounded corners only break a tie the padding leaves open: a full-width row
  * rounds its two outer corners, which the Y turn swaps with each other and the
- * X turn carries to the far edge. A custom perimeter's mirror symmetry isn't
- * derivable, so a shaped plate is judged on its padding like any other.
+ * X turn carries to the far edge.
+ *
+ * A shaped plate must also be symmetric about the turn: a turned copy is the
+ * plate's mirror image in plan view, so an L turned over is a mirrored L with
+ * cells over air. The padding's pick is kept when its turn lands the outline
+ * on itself, else the other turn; when neither does, the bottom plate is
+ * turned too so every copy coincides.
  */
 export function planPlateFlip(params: PlateFlipInput): PlateFlip {
   const aboutX = turnCost(
@@ -266,7 +282,15 @@ export function planPlateFlip(params: PlateFlipInput): PlateFlip {
   const roundingY = r.tl === r.tr && r.bl === r.br;
   const tie = Math.abs(aboutY.overhangMm - aboutX.overhangMm) < 1e-9;
   const preferY = tie ? roundingY && !roundingX : aboutY.overhangMm < aboutX.overhangMm;
-  return preferY ? { axis: 'y', offsetMm: aboutY.seatMm } : { axis: 'x', offsetMm: aboutX.seatMm };
+  const x: PlateFlip = { axis: 'x', offsetMm: aboutX.seatMm };
+  const y: PlateFlip = { axis: 'y', offsetMm: aboutY.seatMm };
+  const [first, second] = preferY ? [y, x] : [x, y];
+  if (params.outline === undefined) return first;
+  const lands = (f: PlateFlip): boolean =>
+    turnedPlateOverhangMm(params, f.axis, f.offsetMm) <= SHAPED_SEAM_OVERHANG_TOLERANCE_MM;
+  if (lands(first)) return first;
+  if (lands(second)) return second;
+  return { ...first, flipBottom: true };
 }
 
 /**
@@ -275,6 +299,7 @@ export function planPlateFlip(params: PlateFlipInput): PlateFlip {
  * flipped upside down — community practice that minimizes overhangs while the
  * air gap lets the tower snap apart (see the baseplate README). Every copy's
  * socket lattice lands on the one below it, and the bottom sits at Z=0.
+ * `flip.flipBottom` turns the bottom plate over as well.
  *
  * `flip` comes from {@link planPlateFlip}: the turn negates one lateral axis
  * about 0, where the socket lattice is centred, and `flip.offsetMm` seats a
@@ -301,10 +326,10 @@ export function buildTowerLayers(
     flip.axis === 'x' ? flip.offsetMm : 0,
     -b.minZ
   );
+  const bottom = flip.flipBottom === true ? flipped : upright;
   const layers: StackMeshArrays[] = [];
   for (let i = 0; i < n; i++) {
-    const src = i === 0 ? upright : flipped;
-    layers.push(i === 0 ? src : translateMesh(src, 0, 0, i * strideMm));
+    layers.push(i === 0 ? bottom : translateMesh(flipped, 0, 0, i * strideMm));
   }
   return layers;
 }

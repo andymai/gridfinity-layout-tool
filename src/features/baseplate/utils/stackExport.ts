@@ -23,7 +23,8 @@ export interface StackExportSoup {
  * bottom plate is upright; the rest are flipped upside down, each separated by
  * `stack.gapMm` so the printed tower snaps apart. `flip` comes from
  * `planPlateFlip`: it picks the turn axis and seat that land the flipped plates'
- * socket walls on the upright one's.
+ * socket walls on the upright one's, or turns the bottom plate too for a shaped
+ * plate no turn maps onto itself.
  */
 export function buildStackExportSoup(
   baseVertices: Float32Array,
