@@ -1,0 +1,30 @@
+src/features/bin-designer/components/panel/PullTabSection/PullTabSection.tsx
+  s_f721a21584cb95::t_6df45fba969c13 21-22,85-88,92-99
+src/features/generation/worker/generators/binGenerator.scenario.pullTab.test.ts
+  s_f721a21584cb95::t_ccdd9ec28d45c1 814-820,825
+src/shared/utils/pullTabCenterPlan.test.ts
+  s_f721a21584cb95::t_702c7f370acdd7 54-57,60,64-65,71-72,75,79,82-95
+  s_f721a21584cb95::t_6b392015e998e2 96
+src/shared/utils/pullTabCenterPlan.ts
+  s_f721a21584cb95::t_6df45fba969c13 2,63,69-71,76-97
+src/shared/utils/pullTabPlan.ts
+  s_f721a21584cb95::t_6df45fba969c13 11-15,217-218,224-232,266,302-308
+src/features/bin-designer/components/panel/PullTabSection/PullTabSection.test.tsx
+  s_f721a21584cb95::t_43711a3e342d06 177,191-218
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1c4f30885776d03acf1c63cc83689728cc3c1b93",
+  "prompts": {},
+  "sessions": {
+    "s_f721a21584cb95": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14ff3cc8-6691-4939-a25c-f6ba932191ef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
