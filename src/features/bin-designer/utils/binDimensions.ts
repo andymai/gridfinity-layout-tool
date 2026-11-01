@@ -195,9 +195,9 @@ export interface TaperBandSides {
 }
 
 export interface CutoutInterior {
-  /** Interior cavity width in mm, overhang folded in. */
+  /** Interior cavity width in mm, overhang and pull tab walls folded in. */
   readonly innerW: number;
-  /** Interior cavity depth in mm, overhang folded in. */
+  /** Interior cavity depth in mm, overhang and pull tab walls folded in. */
   readonly innerD: number;
   /**
    * X shift (mm, +X) of the expanded cavity center inside the outer body when
@@ -225,6 +225,10 @@ export interface CutoutInterior {
  * overhang leaves the interior nominal, overhang is suppressed for polygon
  * masks (the mask defines its own footprint), negative side values clamp to
  * zero, and the asymmetry offset is `(right − left) / 2` / `(back − front) / 2`.
+ *
+ * Pull tab walls fold in the same way: each wall `pullTabWallInset` thickens
+ * shrinks the interior and moves its center away from that wall, so a tab on
+ * the left or front alone shifts the offset with no overhang at all.
  */
 export function cutoutInterior(params: BinParams): CutoutInterior {
   const { innerW, innerD } = binDimensions(params);

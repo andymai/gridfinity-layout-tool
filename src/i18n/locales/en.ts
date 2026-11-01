@@ -1908,14 +1908,15 @@ const en: Record<string, string> = {
   'binDesigner.pullTab.recessSize':
     'Recess width: {width} mm \u00b7 Extends below rim: {below} mm.',
   'binDesigner.pullTab.recessSizePerAxis':
-    'Recess width: {front} mm front/back, {side} mm sides \u00b7 Extends below rim: {below} mm.',
+    'Recess width: {front} mm front/back, {side} mm sides \u00b7 Extends up to {below} mm below rim.',
   'binDesigner.pullTab.recessSizeDetail':
     'Border and corner radius adjust when needed to stay inside the tab.',
   'binDesigner.pullTab.rectangularOnly': 'Pull tabs need a rectangular bin.',
   'binDesigner.pullTab.hollowOnly': 'Pull tabs need a standard hollow bin with walls.',
   'binDesigner.pullTab.noLid': 'Turn off the lid to make room for the raised pull tab.',
   'binDesigner.pullTab.noOverhang': 'Turn off overhang to use a straight pull-tab wall.',
-  'binDesigner.pullTab.noRoom': 'The tabs leave no room inside a bin this small.',
+  'binDesigner.pullTab.noRoom':
+    'The tabs leave no room inside a bin this small. Pick fewer walls or a thinner tab.',
   'binDesigner.pullTab.needsPlainWall':
     'Needs an unbroken wall: no cutouts, handles, patterns, text or label slots.',
   'binDesigner.base.rimFillet': 'Round top rim',
