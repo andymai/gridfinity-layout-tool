@@ -98,11 +98,14 @@ describe('InfoDot', () => {
       expect(screen.queryByText('Scoops explained.')).toBeNull();
     });
 
-    it('ignores touch, which opens with a tap instead', () => {
+    it('ignores a touch hover, and opens on the tap instead', () => {
       const dot = setup();
       fireEvent.pointerEnter(dot, { pointerType: 'touch' });
       tick(1000);
       expect(screen.queryByText('Scoops explained.')).toBeNull();
+
+      fireEvent.click(dot);
+      expect(screen.getByText('Scoops explained.')).toBeInTheDocument();
     });
 
     it('stays open while the pointer crosses into the panel, and closes after it leaves', () => {

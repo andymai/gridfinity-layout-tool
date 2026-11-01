@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { MockInstance } from 'vitest';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useSettingsStore } from '@/core/store';
@@ -16,6 +17,7 @@ function video(): HTMLVideoElement {
 
 describe('FeatureTip', () => {
   let play: ReturnType<typeof vi.spyOn>;
+  let pause: MockInstance<HTMLMediaElement['pause']> | undefined;
 
   beforeEach(() => {
     setSettings('dark', false);
@@ -31,6 +33,8 @@ describe('FeatureTip', () => {
 
   afterEach(() => {
     play.mockRestore();
+    pause?.mockRestore();
+    pause = undefined;
   });
 
   it('opens a card with the clip for the current theme, its caption and detail', async () => {
@@ -79,7 +83,7 @@ describe('FeatureTip', () => {
   });
 
   it('stops the loop when Reduce motion is turned on while the card is open', async () => {
-    const pause = vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(function (
+    pause = vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(function (
       this: HTMLMediaElement
     ) {
       this.dispatchEvent(new Event('pause'));
@@ -91,7 +95,6 @@ describe('FeatureTip', () => {
     act(() => setSettings('dark', true));
     expect(pause).toHaveBeenCalled();
     expect(await screen.findByRole('button', { name: 'Play clip' })).toBeInTheDocument();
-    pause.mockRestore();
   });
 
   it('offers Play again when a theme change swaps the clip under Reduce motion', async () => {
