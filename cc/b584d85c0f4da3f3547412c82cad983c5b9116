@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/binGenerator.scenario.pullTab.test.ts
+  s_f721a21584cb95::t_fc933f519422bb 520-528,583,635
+src/features/generation/worker/generators/scenarios/pullTab.ts
+  s_f721a21584cb95::t_fc933f519422bb 55,61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ccb584d85c0f4da3f3547412c82cad983c5b9116",
+  "prompts": {},
+  "sessions": {
+    "s_f721a21584cb95": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14ff3cc8-6691-4939-a25c-f6ba932191ef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
