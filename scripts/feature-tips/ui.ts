@@ -151,11 +151,14 @@ export interface UiSession {
   park(x: number, y: number): Promise<void>;
   moveTo(x: number, y: number): Promise<void>;
   click(target: Locator): Promise<void>;
+  clickAt(x: number, y: number): Promise<void>;
   drag(from: [number, number], to: [number, number], frames: number): Promise<void>;
   /** Eases the target's scroller so it sits in view, on camera, as a person would scroll. */
   reveal(target: Locator): Promise<void>;
   /** Off camera: puts the target in view and clicks it. */
   preClick(target: Locator): Promise<void>;
+  /** Off camera: centres the target in its scroller. */
+  preReveal(target: Locator): Promise<void>;
   /** Waits off camera for the designer's exact build, then lets the page catch up. */
   waitBuilt(): Promise<void>;
   designerParams(): Promise<unknown>;
@@ -264,7 +267,10 @@ export async function openUi(
       await session.reveal(target);
       const b = await target.boundingBox({ timeout: 8000 });
       if (!b) throw new Error(`no box for ${String(target)}`);
-      await session.moveTo(b.x + b.width / 2, b.y + b.height / 2);
+      await session.clickAt(b.x + b.width / 2, b.y + b.height / 2);
+    },
+    async clickAt(x, y) {
+      await session.moveTo(x, y);
       await session.hold(0.06);
       await page.evaluate(() => (window as unknown as PageHooks).__cursor.press());
       buttons = 1;
@@ -333,6 +339,10 @@ export async function openUi(
         );
         await frame();
       }
+    },
+    async preReveal(target) {
+      await target.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+      await session.warm(6);
     },
     async preClick(target) {
       await target.evaluate((el) => el.scrollIntoView({ block: 'center' }));

@@ -2,9 +2,9 @@ import type { Locator, Page } from '@playwright/test';
 import type { DesignerStoreModule, SettingsStoreModule } from './appModules';
 import { FPS } from './encode';
 import { CLIP_CAMERA } from './stage';
-import type { ParamOverrides, Theme, ThemeFrames } from './stage';
+import type { ParamOverrides, Stage, Theme, ThemeFrames } from './stage';
 import { easeInOut } from './tips3d';
-import type { Tip } from './tips3d';
+import type { Clip, Tip } from './tips3d';
 import { openUi } from './ui';
 import type { Rect, UiSession } from './ui';
 
@@ -95,25 +95,48 @@ async function boxOf(target: Locator): Promise<Rect> {
   return b;
 }
 
-async function openCutEditor(ui: UiSession, base: string, theme: Theme): Promise<void> {
+/** The designer loaded in `theme` on a built design, with setup toasts dismissed. */
+async function openDesigner(
+  ui: UiSession,
+  base: string,
+  theme: Theme,
+  { fresh, params }: { fresh: boolean; params: ParamOverrides }
+): Promise<void> {
   const { page } = ui;
   await page.goto(`${base}/designer`, { waitUntil: 'networkidle' });
   await page.getByRole('button', { name: 'Increase Height' }).first().waitFor({ timeout: 90000 });
   await page.waitForTimeout(2000);
   await ui.warm(20);
-  await page.evaluate(async (t) => {
-    const { useSettingsStore } = (await import(
-      '/src/core/store/settings.ts' as string
-    )) as SettingsStoreModule;
-    useSettingsStore.getState().updateSetting('theme', t);
-    const { useDesignerStore } = (await import(
-      '/src/features/bin-designer/store/designer.ts' as string
-    )) as DesignerStoreModule;
-    const s = useDesignerStore.getState();
-    s.newDesign('bin');
-    s.setParams({ width: 2, depth: 2, height: 4 });
-  }, theme);
+  await page.evaluate(
+    async ([t, f, p]) => {
+      const { useSettingsStore } = (await import(
+        '/src/core/store/settings.ts' as string
+      )) as SettingsStoreModule;
+      useSettingsStore.getState().updateSetting('theme', t);
+      const { useDesignerStore } = (await import(
+        '/src/features/bin-designer/store/designer.ts' as string
+      )) as DesignerStoreModule;
+      const s = useDesignerStore.getState();
+      if (f) s.newDesign('bin');
+      s.setParams(p);
+    },
+    [theme, fresh, params] as const
+  );
   await ui.waitBuilt();
+  await dismissToasts(ui);
+}
+
+// Toasts left by the setup would otherwise fade out on camera.
+async function dismissToasts(ui: UiSession): Promise<void> {
+  await ui.page
+    .getByRole('button', { name: 'Dismiss notification' })
+    .evaluateAll((els) => els.forEach((el) => (el as HTMLElement).click()));
+  await ui.warm(30);
+}
+
+async function openCutEditor(ui: UiSession, base: string, theme: Theme): Promise<void> {
+  const { page } = ui;
+  await openDesigner(ui, base, theme, { fresh: true, params: { width: 2, depth: 2, height: 4 } });
   await ui.preClick(page.getByRole('radio', { name: 'Custom Cutouts' }).first());
   await ui.waitBuilt();
   await ui.preClick(page.getByText('Cut Editor').first());
@@ -124,11 +147,7 @@ async function openCutEditor(ui: UiSession, base: string, theme: Theme): Promise
   }
   await page.waitForTimeout(2000);
   await ui.warm(30);
-  // Toasts left by the setup would otherwise fade out on camera.
-  await page
-    .getByRole('button', { name: 'Dismiss notification' })
-    .evaluateAll((els) => els.forEach((el) => (el as HTMLElement).click()));
-  await ui.warm(30);
+  await dismissToasts(ui);
 }
 
 /**
@@ -215,40 +234,157 @@ async function cutEditorTake(
   }
 }
 
-/**
- * Two takes of the editor, one per theme, then a crossfade to the finished
- * bin on the 3D stage, and a crossfade back to the first frame so it loops.
- */
+interface Take {
+  frames: Buffer[];
+  params: ParamOverrides;
+}
+
+/** A take per theme; the virtual clock makes both the same length. */
+async function twoTakes(
+  base: string,
+  take: (base: string, theme: Theme) => Promise<Take>
+): Promise<{ editor: ThemeFrames[]; params: ParamOverrides }> {
+  const dark = await take(base, 'dark');
+  const light = await take(base, 'light');
+  if (dark.frames.length !== light.frames.length) {
+    throw new Error(`takes differ: ${dark.frames.length} vs ${light.frames.length} frames`);
+  }
+  return {
+    editor: dark.frames.map((d, i) => ({ dark: d, light: light.frames[i] ?? d })),
+    params: dark.params,
+  };
+}
+
+/** The UI shots, a crossfade to the finished bin, and a crossfade back so it loops. */
+async function withResult(
+  stage: Stage,
+  editor: ThemeFrames[],
+  params: ParamOverrides
+): Promise<Clip> {
+  const first = editor[0];
+  const last = editor[editor.length - 1];
+  if (!first || !last) throw new Error('empty take');
+  await stage.setParams(params);
+  const result = await stage.render(await stage.fit(CLIP_CAMERA, await stage.bounds()));
+  const fade = Math.round(0.3 * FPS);
+  const holdFrames = Math.round(1.3 * FPS);
+  const out = [...editor];
+  for (let i = 1; i <= fade; i++) out.push(await stage.blend(last, result, easeInOut(i / fade)));
+  const poster = out.length + Math.floor(holdFrames / 2);
+  for (let i = 0; i < holdFrames; i++) out.push(result);
+  // Stops one step short: the loop's next frame is `first` itself.
+  for (let i = 1; i < fade; i++) out.push(await stage.blend(result, first, easeInOut(i / fade)));
+  return { frames: out, poster };
+}
+
 const cutEditor: Tip = {
   id: 'cutEditor',
   color: '#38bdf8',
   async capture({ stage, base }) {
     stage.setTint(this.color);
-    const dark = await cutEditorTake(base, 'dark');
-    const light = await cutEditorTake(base, 'light');
-    if (dark.frames.length !== light.frames.length) {
-      throw new Error(`takes differ: ${dark.frames.length} vs ${light.frames.length} frames`);
-    }
-    const editor: ThemeFrames[] = dark.frames.map((d, i) => ({
-      dark: d,
-      light: light.frames[i] ?? d,
-    }));
-    const first = editor[0];
-    const last = editor[editor.length - 1];
-    if (!first || !last) throw new Error('empty take');
-
-    await stage.setParams(dark.params);
-    const result = await stage.render(await stage.fit(CLIP_CAMERA, await stage.bounds()));
-    const fade = Math.round(0.3 * FPS);
-    const holdFrames = Math.round(1.3 * FPS);
-    const out = [...editor];
-    for (let i = 1; i <= fade; i++) out.push(await stage.blend(last, result, easeInOut(i / fade)));
-    const poster = out.length + Math.floor(holdFrames / 2);
-    for (let i = 0; i < holdFrames; i++) out.push(result);
-    // Stops one step short: the loop's next frame is `first` itself.
-    for (let i = 1; i < fade; i++) out.push(await stage.blend(result, first, easeInOut(i / fade)));
-    return { frames: out, poster };
+    const { editor, params } = await twoTakes(base, cutEditorTake);
+    return withResult(stage, editor, params);
   },
 };
 
-export const TIPS_UI: readonly Tip[] = [cutEditor];
+const PANEL_VIEWPORT = { width: 1280, height: 900 };
+/** The designer's side panel, below the app header. */
+const PANEL: Rect = { x: 0, y: 50, width: 318, height: 850 };
+const SHAPE_BIN = { width: 3, depth: 2, height: 4 };
+
+/** The shape grid while two cells are clicked off, leaving an L. */
+async function customShapeTake(base: string, theme: Theme): Promise<Take> {
+  const ui = await openUi(PANEL_VIEWPORT, theme, STORAGE);
+  const { page } = ui;
+  try {
+    await openDesigner(ui, base, theme, { fresh: false, params: SHAPE_BIN });
+    await ui.preClick(page.getByRole('switch', { name: 'Custom shape', exact: true }).first());
+    await ui.waitBuilt();
+    const grid = page.locator('[aria-label^="Bin shape editor"]').first();
+    await ui.preReveal(grid);
+    const g = await boxOf(grid);
+    const cell = (col: number, row: number): [number, number] => [
+      g.x + ((col + 0.5) * g.width) / SHAPE_BIN.width,
+      g.y + ((row + 0.5) * g.height) / SHAPE_BIN.depth,
+    ];
+    await ui.park(g.x + g.width * 0.2, g.y + g.height * 0.85);
+    await ui.record(frameAround(g, 18, PANEL));
+    await ui.hold(0.3);
+    await ui.clickAt(...cell(2, 0));
+    await ui.hold(0.35);
+    await ui.clickAt(...cell(1, 0));
+    await ui.hold(0.7);
+    const frames = ui.stop();
+    await ui.waitBuilt();
+    return { frames, params: (await ui.designerParams()) as ParamOverrides };
+  } finally {
+    await ui.close();
+  }
+}
+
+const customShape: Tip = {
+  id: 'customShape',
+  color: '#c084fc',
+  async capture({ stage, base }) {
+    stage.setTint(this.color);
+    const { editor, params } = await twoTakes(base, customShapeTake);
+    return withResult(stage, editor, params);
+  },
+};
+
+/** The column and row steppers, then the grid while two cells are dragged into one. */
+async function compartmentsTake(base: string, theme: Theme): Promise<Take> {
+  const ui = await openUi(PANEL_VIEWPORT, theme, STORAGE);
+  const { page } = ui;
+  try {
+    await openDesigner(ui, base, theme, { fresh: false, params: SHAPE_BIN });
+    const button = (name: string) => page.getByRole('button', { name }).first();
+    await ui.preReveal(button('Increase Columns'));
+    const steppers = union(
+      await boxOf(button('Decrease Columns')),
+      await boxOf(button('Increase Rows'))
+    );
+    await ui.park(steppers.x + steppers.width * 0.5, steppers.y + steppers.height + 40);
+    const frames: Buffer[] = [];
+    await ui.record(frameAround(steppers, 30, PANEL));
+    await ui.hold(0.25);
+    await ui.click(button('Increase Columns'));
+    await ui.hold(0.1);
+    await ui.click(button('Increase Columns'));
+    await ui.hold(0.1);
+    await ui.click(button('Increase Rows'));
+    await ui.hold(0.35);
+    frames.push(...ui.stop());
+
+    await ui.waitBuilt();
+    const grid = page.locator('[aria-label^="Compartment grid"]').first();
+    await ui.preReveal(grid);
+    const g = await boxOf(grid);
+    const cell = (col: number, row: number): [number, number] => [
+      g.x + ((col + 0.5) * g.width) / 3,
+      g.y + ((row + 0.5) * g.height) / 2,
+    ];
+    await ui.park(g.x + g.width * 0.5, g.y + g.height * 0.9);
+    await ui.record(frameAround(g, 18, PANEL));
+    await ui.hold(0.25);
+    await ui.drag(cell(1, 0), cell(2, 0), 12);
+    await ui.hold(0.6);
+    frames.push(...ui.stop());
+    await ui.waitBuilt();
+    return { frames, params: (await ui.designerParams()) as ParamOverrides };
+  } finally {
+    await ui.close();
+  }
+}
+
+const compartments: Tip = {
+  id: 'compartments',
+  color: '#2dd4bf',
+  async capture({ stage, base }) {
+    stage.setTint(this.color);
+    const { editor, params } = await twoTakes(base, compartmentsTake);
+    return withResult(stage, editor, params);
+  },
+};
+
+export const TIPS_UI: readonly Tip[] = [cutEditor, customShape, compartments];
