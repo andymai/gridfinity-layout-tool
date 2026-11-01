@@ -1,86 +1,86 @@
-src/features/bin-designer/components/panel/panelCopyLength.test.ts
-  s_f721a21584cb95::t_c926dc2d1d2503 39
-src/i18n/locales/en.ts
-  s_f721a21584cb95::t_5891538bd9c887 2275-2290
-src/features/bin-designer/components/panel/InteriorSection/InteriorSection.tsx
-  s_f721a21584cb95::t_8c9f52718484bb 13,20,38,64-74
-  s_f721a21584cb95::t_d9ad9b5a5b0cba 87
 src/i18n/locales/es.json
   s_f721a21584cb95::t_5891538bd9c887 1513-1521
-src/i18n/locales/ko.json
+src/i18n/locales/cs.json
   s_f721a21584cb95::t_5891538bd9c887 1513-1521
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.test.tsx
+  s_f721a21584cb95::t_bc5ced1a750aff 6,240-244
+  s_f721a21584cb95::t_8d91c12c70ac21 245
+src/features/bin-designer/components/panel/SlantSection/SlantSection.test.tsx
+  s_f721a21584cb95::t_bc5ced1a750aff 159-167
+src/features/bin-designer/components/panel/shared/ModeTiles.tsx
+  s_f721a21584cb95::t_8c9f52718484bb 13-14,113-118
+src/features/bin-designer/components/panel/panelCopyLength.test.ts
+  s_f721a21584cb95::t_c926dc2d1d2503 39
+src/features/bin-designer/components/panel/ShapeSection/ShapeSection.test.tsx
+  s_f721a21584cb95::t_bc5ced1a750aff 5,78-83
+  s_f721a21584cb95::t_027188948423f3 84
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.tsx
+  s_f721a21584cb95::t_f20d4b52d31cb1 23,57-78
+src/i18n/locales/fr.json
+  s_f721a21584cb95::t_5891538bd9c887 1513-1521
+src/features/bin-designer/components/panel/SlantSection/SlantSection.tsx
+  s_f721a21584cb95::t_f20d4b52d31cb1 9,34-40
+src/features/bin-designer/components/panel/shared/ModeTiles.test.tsx
+  s_f721a21584cb95::t_bc5ced1a750aff 74-88
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_f721a21584cb95::t_f20d4b52d31cb1 13,134
+src/i18n/locales/en.ts
+  s_f721a21584cb95::t_5891538bd9c887 2275-2290
+src/i18n/locales/zh-CN.json
+  s_f721a21584cb95::t_5891538bd9c887 1513-1521
+src/features/bin-designer/components/panel/HandleSection/HandleSection.test.tsx
+  s_f721a21584cb95::t_bc5ced1a750aff 6,145-149
+  s_f721a21584cb95::t_b2791d1dc29416 150
 src/features/bin-designer/components/panel/HandleSection/HandleSection.tsx
   s_f721a21584cb95::t_f20d4b52d31cb1 12,119
 src/i18n/locales/pl.json
   s_f721a21584cb95::t_5891538bd9c887 1513-1521
-src/i18n/locales/pt-BR.json
-  s_f721a21584cb95::t_5891538bd9c887 1513-1521
-src/i18n/locales/cs.json
-  s_f721a21584cb95::t_5891538bd9c887 1513-1521
-src/features/bin-designer/components/panel/ShapeSection/ShapeSection.test.tsx
-  s_f721a21584cb95::t_bc5ced1a750aff 5,78-83
-  s_f721a21584cb95::t_a4f5c36e07864a 84
-src/features/bin-designer/components/panel/OverhangSection/OverhangSection.tsx
-  s_f721a21584cb95::t_f20d4b52d31cb1 23,57-78
-src/i18n/locales/zh-CN.json
-  s_f721a21584cb95::t_5891538bd9c887 1513-1521
-src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
-  s_f721a21584cb95::t_f20d4b52d31cb1 13,134
-src/features/bin-designer/components/panel/HandleSection/HandleSection.test.tsx
-  s_f721a21584cb95::t_bc5ced1a750aff 6,145-149
-  s_f721a21584cb95::t_59848896ca9eb3 150
-src/features/bin-designer/components/panel/shared/ModeTiles.test.tsx
-  s_f721a21584cb95::t_bc5ced1a750aff 74-88
-src/features/bin-designer/components/panel/SlantSection/SlantSection.test.tsx
-  s_f721a21584cb95::t_bc5ced1a750aff 159-167
-src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.tsx
-  s_f721a21584cb95::t_cd303eab88510c 14,359-373
 src/i18n/locales/it.json
   s_f721a21584cb95::t_5891538bd9c887 1513-1521
 src/features/bin-designer/data/featureTips/index.ts
   s_f721a21584cb95::t_26089067acfdbf 8-15,20-27,32-43,48-55,58-70,90-117,125-166
-src/features/bin-designer/components/panel/PullTabSection/PullTabSection.test.tsx
-  s_f721a21584cb95::t_bc5ced1a750aff 6,74-79
-  s_f721a21584cb95::t_4be48769742b33 80
-src/i18n/locales/fr.json
-  s_f721a21584cb95::t_5891538bd9c887 1513-1521
 src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.test.tsx
   s_f721a21584cb95::t_bc5ced1a750aff 6,122-126
-  s_f721a21584cb95::t_6c7e37592e6bf1 127
-src/i18n/locales/ja.json
+  s_f721a21584cb95::t_b5fd98322187c5 127
+src/features/bin-designer/components/panel/PullTabSection/PullTabSection.tsx
+  s_f721a21584cb95::t_f20d4b52d31cb1 5,71-77
+src/features/bin-designer/components/panel/ShapeSection/ShapeSection.tsx
+  s_f721a21584cb95::t_f20d4b52d31cb1 12,35-41
+src/i18n/locales/pt-BR.json
   s_f721a21584cb95::t_5891538bd9c887 1513-1521
 src/i18n/locales/sv.json
   s_f721a21584cb95::t_5891538bd9c887 1513-1521
+src/i18n/locales/nl.json
+  s_f721a21584cb95::t_5891538bd9c887 1513-1521
+src/i18n/locales/ja.json
+  s_f721a21584cb95::t_5891538bd9c887 1513-1521
+src/i18n/locales/uk.json
+  s_f721a21584cb95::t_5891538bd9c887 1513-1521
+src/i18n/locales/de.json
+  s_f721a21584cb95::t_5891538bd9c887 1513-1521
+src/i18n/locales/nb.json
+  s_f721a21584cb95::t_5891538bd9c887 1513-1521
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.tsx
+  s_f721a21584cb95::t_8c9f52718484bb 13,20,38,64-74
+  s_f721a21584cb95::t_16a1326c2de043 87
+src/test/setup-dom.ts
+  s_f721a21584cb95::t_c12b5664550b23 44-49
 src/i18n/locales/ka.json
   s_f721a21584cb95::t_5891538bd9c887 1932-1940
 src/features/bin-designer/components/panel/OverhangSection/OverhangSection.test.tsx
   s_f721a21584cb95::t_bc5ced1a750aff 6,367-372
-  s_f721a21584cb95::t_17a46c433c1732 373
-src/features/bin-designer/components/panel/shared/ModeTiles.tsx
-  s_f721a21584cb95::t_8c9f52718484bb 13-14,113-118
-src/i18n/locales/nl.json
+  s_f721a21584cb95::t_047b3536e0aa4f 373
+src/features/bin-designer/components/panel/PullTabSection/PullTabSection.test.tsx
+  s_f721a21584cb95::t_bc5ced1a750aff 6,74-79
+  s_f721a21584cb95::t_c45eab6f97b04a 80
+src/i18n/locales/ko.json
   s_f721a21584cb95::t_5891538bd9c887 1513-1521
-src/features/bin-designer/components/panel/SlantSection/SlantSection.tsx
-  s_f721a21584cb95::t_f20d4b52d31cb1 9,34-40
-src/features/bin-designer/components/panel/ShapeSection/ShapeSection.tsx
-  s_f721a21584cb95::t_f20d4b52d31cb1 12,35-41
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.tsx
+  s_f721a21584cb95::t_cd303eab88510c 14,359-373
 src/features/bin-designer/components/panel/InteriorSection/InteriorSection.test.tsx
   s_f721a21584cb95::t_6073e8f2986e41 19
   s_f721a21584cb95::t_854880dda1acb2 8,22,26-28,34-35,83-100
-  s_f721a21584cb95::t_f65ffbde8c81d3 101
-src/i18n/locales/de.json
-  s_f721a21584cb95::t_5891538bd9c887 1513-1521
-src/i18n/locales/uk.json
-  s_f721a21584cb95::t_5891538bd9c887 1513-1521
-src/i18n/locales/nb.json
-  s_f721a21584cb95::t_5891538bd9c887 1513-1521
-src/test/setup-dom.ts
-  s_f721a21584cb95::t_c12b5664550b23 44-49
-src/features/bin-designer/components/panel/PullTabSection/PullTabSection.tsx
-  s_f721a21584cb95::t_f20d4b52d31cb1 5,71-77
-src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.test.tsx
-  s_f721a21584cb95::t_bc5ced1a750aff 6,240-244
-  s_f721a21584cb95::t_0586e99e5e5919 245
+  s_f721a21584cb95::t_fc3a39a24d4358 101
 ---
 {
   "schema_version": "authorship/3.0.0",
