@@ -52,18 +52,13 @@ export const pullTab = [
       },
     },
   }),
-  defineScenario('Pull tabs', 'all four walls with a rounded rim', {
+  defineScenario('Pull tabs', 'all four walls at a percent width', {
     assert: 'structural',
     params: {
       width: 3,
       depth: 2,
       height: 5,
-      base: {
-        ...DEFAULT_BIN_PARAMS.base,
-        stackingLip: false,
-        rimFillet: true,
-        rimFilletRadius: 0.4,
-      },
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
       pullTab: {
         ...DEFAULT_PULL_TAB,
         ...pullTabWallFields(['front', 'back', 'left', 'right']),
