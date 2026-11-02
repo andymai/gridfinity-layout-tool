@@ -44,17 +44,34 @@ interface Packed {
   readonly rotation?: number;
 }
 
-function packed(unit: ArrangeUnit, turn: boolean, context: readonly string[]): Packed {
+/** The editor keeps angles in [0°, 360°); its rotation field clamps anything else. */
+const storedAngle = (deg: number): number => ((deg % 360) + 360) % 360;
+
+function packed(
+  unit: ArrangeUnit,
+  turn: boolean,
+  context: readonly string[],
+  room: number
+): Packed {
   const [only] = unit.members;
   // A group is one block at this level even when it holds a single shape.
   const tag = unit.members.length === 1 ? unitTag(only, context) : null;
   if (!turn || tag === null || unitTagShapeId(tag) === null) return { unit, bounds: unit.bounds };
-  const rotation = minAreaTurn(only);
-  if (rotation === null) return { unit, bounds: unit.bounds };
-  // Measured the way the board measures it, so the packed shape never reads as
-  // off it, and arranging again finds the same room.
-  const bounds = getCutoutBounds({ ...only, rotation });
-  return rotation === only.rotation ? { unit, bounds } : { unit, bounds, rotation };
+  const best = minAreaTurn(only);
+  if (best === null) return { unit, bounds: unit.bounds };
+  // Landscape fills rows best, but a shape too long for the bin's width lies
+  // along its depth instead, and one that fits neither way keeps its angle.
+  for (const rotation of [best, best + 90]) {
+    // Measured the way the board measures it, so the packed shape never reads
+    // as off it, and arranging again finds the same room.
+    const bounds = getCutoutBounds({ ...only, rotation });
+    if (bounds.maxX - bounds.minX > room + 1e-6) continue;
+    // Half a turn from the current angle is the same box: keep the angle.
+    const gap180 = Math.abs(storedAngle(rotation - only.rotation) % 180);
+    if (Math.min(gap180, 180 - gap180) < 1e-3) return { unit, bounds };
+    return { unit, bounds, rotation: storedAngle(rotation) };
+  }
+  return { unit, bounds: unit.bounds };
 }
 
 /**
@@ -77,7 +94,7 @@ export function autoArrangeCutouts(
   const depth = (p: Packed) => tidy(p.bounds.maxY - p.bounds.minY);
   const movable = toArrangeUnits(cutouts, context)
     .filter((unit) => !unit.locked)
-    .map((unit) => packed(unit, turn, context));
+    .map((unit) => packed(unit, turn, context, binWidth - 2 * gap));
   const sorted = [...movable].sort((a, b) => depth(b) - depth(a));
   const positions: Record<string, ArrangedPlacement> = {};
 

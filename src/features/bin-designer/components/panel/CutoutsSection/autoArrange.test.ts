@@ -251,6 +251,51 @@ describe('autoArrangeCutouts', () => {
       expect(autoArrangeCutouts([alone], options, ['box']).a.rotation).toBe(90);
     });
 
+    it('stands a long shape along the depth of a bin too narrow to lay it across', () => {
+      const result = autoArrangeCutouts([createCutout('a', 10, 80), createCutout('b', 10, 80)], {
+        binWidth: 40,
+        binDepth: 100,
+        gap: 2,
+        turn: true,
+      });
+      expect(result.a).toEqual({ x: 2, y: 2 });
+      expect(result.b).toEqual({ x: 14, y: 2 });
+    });
+
+    it('turns a shape lying across a narrow bin to stand along it', () => {
+      const result = autoArrangeCutouts([createCutout('a', 80, 10)], {
+        binWidth: 40,
+        binDepth: 100,
+        gap: 2,
+        turn: true,
+      });
+      expect(result.a.rotation).toBe(90);
+    });
+
+    it('stores a turn as the editor keeps angles, from 0° up to 360°', () => {
+      const a = (-50 * Math.PI) / 180;
+      const pts = [
+        [0, 0],
+        [40, 0],
+        [40, 8],
+        [0, 8],
+      ].map(([x, y]) => ({
+        x: 20 + x * Math.cos(a) - y * Math.sin(a),
+        y: 60 + x * Math.sin(a) + y * Math.cos(a),
+      }));
+      const xs = pts.map((q) => q.x);
+      const ys = pts.map((q) => q.y);
+      const bar: Cutout = {
+        ...createCutout('a', Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)),
+        shape: 'path',
+        x: Math.min(...xs),
+        y: Math.min(...ys),
+        path: pts.map((q) => ({ ...q, handleIn: null, handleOut: null, symmetric: false })),
+      };
+      const result = autoArrangeCutouts([bar], { binWidth: 70, binDepth: 100, gap: 2, turn: true });
+      expect(result.a.rotation).toBeCloseTo(310, 6);
+    });
+
     it('turns nothing unless asked', () => {
       const result = autoArrangeCutouts([createCutout('a', 10, 30)], {
         binWidth: 70,
