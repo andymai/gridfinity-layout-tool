@@ -32,6 +32,9 @@ export const CONSTRAINTS = {
   // The client clamps at read time too; this stops a NaN or an absurd angle
   // reaching tan() in the generator's tool-extension math.
   MAX_CUTOUT_LEAN_DEG: 45,
+  // Mirrors MAX_CUTOUT_FLOOR_MM in src/features/bin-designer/types/cutout.ts:
+  // the tallest bin (MAX_HEIGHT * 7mm), above which no floor can sit.
+  MAX_CUTOUT_FLOOR_MM: 350,
   // Mirrors MAX_ARRAY_INSTANCES in src/features/bin-designer/types/cutout.ts.
   // A repeat expands to at most this many holes, so a label list longer than it
   // describes copies that do not exist. Bounded here so a direct HTTP POST

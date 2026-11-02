@@ -15,6 +15,7 @@ import type { ParsedCutoutSpec } from '../svgImport/types';
 const mockAddCutout = vi.fn((_cutout: Cutout) => true);
 const mockStartTransaction = vi.fn();
 const mockCommitTransaction = vi.fn();
+const mockQueueDepthPrompt = vi.fn((_ids: readonly string[]) => undefined);
 let mockParams: BinParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 5 };
 
 vi.mock('@/features/bin-designer/store', async () => {
@@ -26,6 +27,7 @@ vi.mock('@/features/bin-designer/store', async () => {
       addCutout: mockAddCutout,
       startTransaction: mockStartTransaction,
       commitTransaction: mockCommitTransaction,
+      queueDepthPrompt: mockQueueDepthPrompt,
     });
   // The capacity gate reads committed state imperatively; a bin-target board
   // has no cap, which is the fixture every case here describes.
@@ -78,6 +80,17 @@ describe('useScanImport', () => {
 
     expect(mockAddCutout).toHaveBeenCalledTimes(3);
     expect(count).toBe(1);
+  });
+
+  it('asks for the thickness of the outlines it stored, and only those', () => {
+    mockAddCutout.mockImplementation(() => mockAddCutout.mock.calls.length <= 1);
+    const { result } = renderHook(() => useScanImport());
+
+    result.current.addScanCutouts([spec(), spec({ x: 20 })]);
+
+    const stored = mockAddCutout.mock.calls[0][0].id;
+    expect(mockQueueDepthPrompt).toHaveBeenCalledOnce();
+    expect(mockQueueDepthPrompt).toHaveBeenCalledWith([stored]);
   });
 
   it('wraps all additions in a single undo transaction', () => {

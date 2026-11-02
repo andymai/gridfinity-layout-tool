@@ -205,6 +205,30 @@ export function createUISlice(set: Set) {
       });
     },
 
+    queueDepthPrompt: (ids: readonly string[]) => {
+      if (ids.length === 0) return;
+      set((state) => {
+        const queued = new Set(state.ui.depthPromptIds);
+        const additions = ids.filter((id) => {
+          if (queued.has(id)) return false;
+          queued.add(id);
+          return true;
+        });
+        state.ui.depthPromptIds = [...state.ui.depthPromptIds, ...additions];
+      });
+    },
+
+    clearDepthPrompt: (ids?: readonly string[]) => {
+      set((state) => {
+        if (ids === undefined) {
+          state.ui.depthPromptIds = [];
+          return;
+        }
+        const done = new Set(ids);
+        state.ui.depthPromptIds = state.ui.depthPromptIds.filter((id) => !done.has(id));
+      });
+    },
+
     setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => {
       set((state) => {
         state.ui.splitPieceMeshes = [...meshes];

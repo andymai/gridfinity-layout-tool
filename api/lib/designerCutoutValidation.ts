@@ -25,6 +25,13 @@ export const VALID_CUTOUT_FILL_REFERENCES = ['rim', 'floor'] as const;
 export const VALID_CUTOUT_LABEL_MODES = ['engrave', 'socket'] as const;
 
 /**
+ * Cross-boundary contract: MUST match `STORED_CUTOUT_DEPTH_MODES` in
+ * `src/features/bin-designer/types/cutout.ts`. `fixed` is stored as the
+ * field's absence, so it is not a valid value.
+ */
+export const VALID_CUTOUT_DEPTH_MODES = ['floor', 'through'] as const;
+
+/**
  * Global fill level for a cutout bin.
  *
  * `topOffset` reaches the generator as `wallHeight - topOffset`, so a
@@ -89,6 +96,20 @@ export function validateCutouts(value: unknown): string | null {
       )
     ) {
       return `cutouts[${i}].leanDeg must be a number within ±${CONSTRAINTS.MAX_CUTOUT_LEAN_DEG}`;
+    }
+    // The depth mode decides how deep the generator cuts, so an unknown one must
+    // stop here rather than build silently as a fixed depth.
+    if (
+      c.depthMode !== undefined &&
+      !VALID_CUTOUT_DEPTH_MODES.includes(c.depthMode as (typeof VALID_CUTOUT_DEPTH_MODES)[number])
+    ) {
+      return `cutouts[${i}].depthMode must be one of: ${VALID_CUTOUT_DEPTH_MODES.join(', ')}`;
+    }
+    if (
+      c.floorMm !== undefined &&
+      !(isNumber(c.floorMm) && inRange(c.floorMm, 0, CONSTRAINTS.MAX_CUTOUT_FLOOR_MM))
+    ) {
+      return `cutouts[${i}].floorMm must be between 0 and ${CONSTRAINTS.MAX_CUTOUT_FLOOR_MM}`;
     }
     // Open sides name walls the worker breaches, so an unknown entry must stop
     // here rather than ride into storage as an inert string. Each entry is a

@@ -48,6 +48,7 @@ import { DEFAULT_TEXT_STYLE_DEFAULTS } from '../types/text';
 import type { TextStyleDefaults } from '../types/text';
 import { MAX_CUTOUT_TOP_OFFSET_MM } from '../utils/cutoutFill';
 import { withSyncedLidHeight } from '../utils/lidHeightUnits';
+import { withResolvedCutoutDepths } from '@/shared/utils/cutoutDepth';
 import {
   DEFAULT_BIN_PARAMS,
   DEFAULT_CUTOUT_CONFIG,
@@ -573,7 +574,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     ...optionalInteriorFillet(rawInteriorFillet),
     slant: migrateSlant((rest as Record<string, unknown>).slant),
   });
-  return normalizeSlant(migrated);
+  return withResolvedCutoutDepths(normalizeSlant(migrated));
 }
 
 function optionalInteriorFillet(raw: unknown): Pick<BinParams, 'interiorFilletMm'> {

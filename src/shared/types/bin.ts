@@ -52,6 +52,7 @@ export type {
   Cutout,
   CutoutShape,
   CutoutColorScope,
+  CutoutDepthMode,
   CutoutConfig,
   CutoutArrayConfig,
   CutoutScoopEdges,
@@ -124,6 +125,7 @@ export type {
 
 export {
   MIN_PATH_POINTS,
+  MAX_CUTOUT_FLOOR_MM,
   MAX_PATH_POINTS,
   DEFAULT_KNIFE_SPEC,
   knifeSlotDimensions,
@@ -364,6 +366,7 @@ export {
  * against different bins.
  */
 export { slideLidPlanForParams } from '@/features/bin-designer/utils/slideLidPlanForParams';
+export { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 
 /**
  * Re-export compartment-edge predicates so worker-side feature builders

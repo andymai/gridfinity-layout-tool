@@ -77,6 +77,9 @@ function geometryFingerprint(c: Cutout): string {
     round3(c.width),
     round3(c.depth),
     round3(c.cutDepth),
+    // The same depth today can follow the bin differently tomorrow.
+    c.depthMode ?? '-',
+    round3(c.floorMm ?? -1),
     round3(c.cornerRadius),
     c.sides ?? 0,
     round3(c.clearance ?? 0),

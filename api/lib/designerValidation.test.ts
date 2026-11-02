@@ -1817,6 +1817,40 @@ describe('validateDesignerShare', () => {
     });
   });
 
+  describe('cutout depth mode validation', () => {
+    const withCutouts = (cutouts: unknown) => {
+      const payload = validPayload();
+      (payload.params as Record<string, unknown>).cutouts = cutouts;
+      return validateDesignerShare(payload, JSON.stringify(payload).length);
+    };
+
+    it('accepts a floored or through mode and keeps it in the payload', () => {
+      const result = withCutouts([
+        { id: 'a', depthMode: 'floor', floorMm: 4.75 },
+        { id: 'b', depthMode: 'through' },
+      ]);
+      expect(result.valid).toBe(true);
+      if (!result.valid) return;
+      const cutouts = (result.payload.params as { cutouts: Record<string, unknown>[] }).cutouts;
+      expect(cutouts.map((c) => [c.depthMode, c.floorMm])).toEqual([
+        ['floor', 4.75],
+        ['through', undefined],
+      ]);
+    });
+
+    it('rejects a mode the generator does not know, including an explicit fixed', () => {
+      expect(withCutouts([{ id: 'a', depthMode: 'deep' }]).valid).toBe(false);
+      expect(withCutouts([{ id: 'a', depthMode: 'fixed' }]).valid).toBe(false);
+    });
+
+    it('rejects a negative, oversized, or non-numeric floor', () => {
+      expect(withCutouts([{ id: 'a', floorMm: -1 }]).valid).toBe(false);
+      expect(withCutouts([{ id: 'a', floorMm: 351 }]).valid).toBe(false);
+      expect(withCutouts([{ id: 'a', floorMm: Number.NaN }]).valid).toBe(false);
+      expect(withCutouts([{ id: 'a', floorMm: '4' }]).valid).toBe(false);
+    });
+  });
+
   describe('repeat label list validation', () => {
     const withCutouts = (cutouts: unknown) => {
       const payload = validPayload();

@@ -677,7 +677,23 @@
         "cutDepth": {
           "type": "number",
           "exclusiveMinimum": 0,
-          "description": "How deep the cut goes in mm."
+          "description": "How deep the cut goes in mm. Derived from the mode when depthMode is set, so a hand-written value is replaced on import."
+        },
+        "depthMode": {
+          "enum": ["floor", "through"],
+          "x-constant": {
+            "enum": "STORED_CUTOUT_DEPTH_MODES"
+          },
+          "description": "What the depth is held to when the bin changes. Absent: cutDepth below the fill surface, as written. 'floor': the lowest point of the pocket floor targets floorMm above the bin's underside, within the material the bin has. 'through': no floor, the cut opens out of the underside (not inside a group, on a tilted pocket, beside a tapered wall, over detachable feet, or on a Nesting body). Ignored for mesh and knifeSlot shapes."
+        },
+        "floorMm": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 350,
+          "x-constant": {
+            "maximum": "MAX_CUTOUT_FLOOR_MM"
+          },
+          "description": "Plastic under the pocket floor in mm, measured from the bin's underside and counting a socket's height. Read only when depthMode is 'floor'; absent there means the base's default floor."
         },
         "rotation": {
           "type": "number",

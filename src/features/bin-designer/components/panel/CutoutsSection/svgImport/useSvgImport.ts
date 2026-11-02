@@ -41,11 +41,12 @@ export interface UseSvgImportReturn {
  * the resulting cutouts to the store in a single undo transaction.
  */
 export function useSvgImport(): UseSvgImportReturn {
-  const { addCutout, startTransaction, commitTransaction } = useDesignerStore(
+  const { addCutout, startTransaction, commitTransaction, queueDepthPrompt } = useDesignerStore(
     useShallow((s) => ({
       addCutout: s.addCutout,
       startTransaction: s.startTransaction,
       commitTransaction: s.commitTransaction,
+      queueDepthPrompt: s.queueDepthPrompt,
     }))
   );
 
@@ -102,17 +103,21 @@ export function useSvgImport(): UseSvgImportReturn {
         }
 
         // Wrap all additions in a single undo transaction
-        let added = 0;
+        const addedIds: string[] = [];
         startTransaction();
         try {
           // Largest first so big outlines land underneath the detail they
           // enclose — `addCutout` stacks each new shape on top.
           for (const spec of byDescendingArea(specs)) {
-            if (addCutout(specToCutout(spec, hydrationOptions))) added += 1;
+            const cutout = specToCutout(spec, hydrationOptions);
+            if (addCutout(cutout)) addedIds.push(cutout.id);
           }
         } finally {
           commitTransaction();
         }
+        const added = addedIds.length;
+        // A lid plate is cut clean through, so only a bin has a depth to ask for.
+        if (ui.cutoutTarget === 'bin') queueDepthPrompt(addedIds);
 
         // Analytics
         const hasRects = specs.some((s) => s.shape === 'rectangle');
@@ -150,7 +155,7 @@ export function useSvgImport(): UseSvgImportReturn {
 
       reader.readAsText(file);
     },
-    [addCutout, startTransaction, commitTransaction, addToast, t]
+    [addCutout, startTransaction, commitTransaction, queueDepthPrompt, addToast, t]
   );
 
   // Keep ref in sync with latest handleFile

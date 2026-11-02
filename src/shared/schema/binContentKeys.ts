@@ -183,6 +183,8 @@ export const CUTOUT_KEYS = [
   'width',
   'depth',
   'cutDepth',
+  'depthMode',
+  'floorMm',
   'rotation',
   'cornerRadius',
   'label',

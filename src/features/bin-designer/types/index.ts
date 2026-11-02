@@ -238,6 +238,7 @@ export type {
   CutoutFillReference,
   Cutout,
   CutoutColorScope,
+  CutoutDepthMode,
   CutoutArrayMode,
   CutoutArrayConfig,
   CutoutLabelMode,
@@ -246,6 +247,8 @@ export type {
 } from './cutout';
 export {
   CUTOUT_FILL_REFERENCES,
+  CUTOUT_DEPTH_MODES,
+  STORED_CUTOUT_DEPTH_MODES,
   DEFAULT_GROUP_OP,
   DEFAULT_CUTOUT_COLOR_SCOPE,
   GROUP_OPS,
@@ -263,6 +266,7 @@ export {
   maxEntryChamfer,
   MAX_CUTOUT_CLEARANCE,
   MAX_CUTOUT_CHAMFER,
+  MAX_CUTOUT_FLOOR_MM,
   CHAMFER_SHAPES,
   MAX_CUTOUT_LEAN_DEG,
   LEAN_SHAPES,

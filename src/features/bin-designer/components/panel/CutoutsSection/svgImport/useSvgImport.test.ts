@@ -7,6 +7,8 @@ import { MAX_SVG_FILE_SIZE } from './types';
 const mockAddCutout = vi.fn();
 const mockStartTransaction = vi.fn();
 const mockCommitTransaction = vi.fn();
+const mockQueueDepthPrompt = vi.fn();
+let mockTarget: 'bin' | 'lid' = 'bin';
 
 vi.mock('@/features/bin-designer/store', async () => {
   const { remainingCutoutCapacity } = await vi.importActual<{
@@ -17,11 +19,12 @@ vi.mock('@/features/bin-designer/store', async () => {
       addCutout: mockAddCutout,
       startTransaction: mockStartTransaction,
       commitTransaction: mockCommitTransaction,
+      queueDepthPrompt: mockQueueDepthPrompt,
     });
   // The capacity gate reads committed state imperatively; a bin-target board
   // has no cap, so the per-add refusals below still drive the clipped paths.
   useDesignerStore.getState = () => ({
-    ui: { cutoutTarget: 'bin' },
+    ui: { cutoutTarget: mockTarget },
     params: { lid: { cutouts: [] } },
   });
   return { useDesignerStore, remainingCutoutCapacity };
@@ -47,6 +50,7 @@ vi.mock('zustand/react/shallow', () => ({
 describe('useSvgImport', () => {
   afterEach(() => {
     vi.clearAllMocks();
+    mockTarget = 'bin';
     // Clean up any leftover inputs
     document.querySelectorAll('input[type="file"][accept=".svg"]').forEach((el) => el.remove());
   });
@@ -144,5 +148,26 @@ describe('useSvgImport', () => {
       'svg_import',
       expect.objectContaining({ shape_count: 3, added_count: 3 })
     );
+  });
+
+  it('asks for the thickness of every shape it stored on the bin, and only those', async () => {
+    mockAddCutout.mockImplementation(() => mockAddCutout.mock.calls.length <= 1);
+    renderHook(() => useSvgImport());
+
+    await importSvg(2);
+
+    const stored = (mockAddCutout.mock.calls[0][0] as { id: string }).id;
+    expect(mockQueueDepthPrompt).toHaveBeenCalledOnce();
+    expect(mockQueueDepthPrompt).toHaveBeenCalledWith([stored]);
+  });
+
+  it('does not ask for a depth on the lid, which is cut through', async () => {
+    mockTarget = 'lid';
+    mockAddCutout.mockImplementation(() => true);
+    renderHook(() => useSvgImport());
+
+    await importSvg(2);
+
+    expect(mockQueueDepthPrompt).not.toHaveBeenCalled();
   });
 });

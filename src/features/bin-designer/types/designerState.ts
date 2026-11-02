@@ -443,6 +443,9 @@ export interface DesignerState {
   setShapeEditorOpen: (open: boolean) => void;
   setSplitViewMode: (mode: SplitViewMode) => void;
   setShowLabelPlates: (show: boolean) => void;
+  queueDepthPrompt: (ids: readonly string[]) => void;
+  /** Stop asking about these outlines, or about every queued one. */
+  clearDepthPrompt: (ids?: readonly string[]) => void;
   setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => void;
   setHoveredColorZone: (zone: HoverableZone | null) => void;
   setHoveredOverhangSide: (side: OverhangHighlightSide | null) => void;

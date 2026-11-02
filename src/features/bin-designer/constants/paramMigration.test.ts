@@ -1705,6 +1705,59 @@ describe('migrateParams', () => {
       expect('openSides' in migrateParams({ cutouts: [rect('right')] }).cutouts[0]).toBe(false);
     });
 
+    describe('depth modes', () => {
+      const pocket = (fields: Record<string, unknown>) =>
+        ({
+          id: 'p',
+          shape: 'rectangle',
+          x: 0,
+          y: 0,
+          width: 10,
+          depth: 10,
+          cutDepth: 5,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: null,
+          ...fields,
+        }) as unknown as BinParams['cutouts'][number];
+
+      // The default bin: 3u on a 4.75mm socket, 16.25mm of fill.
+      it('re-derives a stored depth from its mode on load', () => {
+        const [floored, through] = migrateParams({
+          cutouts: [
+            pocket({ depthMode: 'floor', floorMm: 8, cutDepth: 2 }),
+            pocket({ id: 'q', depthMode: 'through', cutDepth: 2 }),
+          ],
+        }).cutouts;
+        expect([floored.cutDepth, through.cutDepth]).toEqual([13, 16.25]);
+      });
+
+      it('reads an unknown mode as a fixed depth, floor and all', () => {
+        const [unknown] = migrateParams({
+          cutouts: [pocket({ depthMode: 'deep', floorMm: 8 })],
+        }).cutouts;
+        expect('depthMode' in unknown).toBe(false);
+        expect('floorMm' in unknown).toBe(false);
+        expect(unknown.cutDepth).toBe(5);
+      });
+
+      // 3u on a 4.75mm socket: the default floor is the socket, all 16.25mm of fill.
+      it('falls back to the default floor when the stored one is broken', () => {
+        const [badFloor] = migrateParams({
+          cutouts: [pocket({ depthMode: 'floor', floorMm: -3 })],
+        }).cutouts;
+        expect(badFloor.depthMode).toBe('floor');
+        expect('floorMm' in badFloor).toBe(false);
+        expect(badFloor.cutDepth).toBe(16.25);
+      });
+
+      it('leaves a cutout without a mode exactly as stored', () => {
+        const stored = pocket({});
+        expect(migrateParams({ cutouts: [stored] }).cutouts[0]).toEqual(stored);
+      });
+    });
+
     it('leaves a knife already carrying width and height untouched', () => {
       const knife = {
         bladeLengthMm: 205,

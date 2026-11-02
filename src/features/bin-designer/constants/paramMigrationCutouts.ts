@@ -21,6 +21,7 @@ import {
   KNIFE_REST_MAX_GROOVE_DEPTH_MM,
 } from '../types';
 import { MAX_LID_CUTOUTS } from '../types/lid';
+import { MAX_CUTOUT_FLOOR_MM } from '../types/cutout';
 import { TEXT_MAX_LENGTH } from '../types/text';
 import { clampNumber } from './paramMigrationHelpers';
 
@@ -115,7 +116,30 @@ export function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
     withArray,
     migrateParentGroups(withArray.parentGroups) ?? []
   );
-  return migrateScoopRadius(withOpenSides(withParents), scoopRadius);
+  return migrateScoopRadius(withOpenSides(withDepthMode(withParents)), scoopRadius);
+}
+
+/**
+ * Keep a known depth mode and a finite floor, and drop anything else so the
+ * cutout reads as a fixed depth. Already-valid cutouts come back by reference.
+ */
+function withDepthMode(cutout: Cutout): Cutout {
+  const { depthMode, floorMm } = cutout;
+  const validMode = depthMode === 'floor' || depthMode === 'through';
+  const validFloor =
+    typeof floorMm === 'number' &&
+    Number.isFinite(floorMm) &&
+    floorMm >= 0 &&
+    floorMm <= MAX_CUTOUT_FLOOR_MM;
+  if ((depthMode === undefined || validMode) && (floorMm === undefined || validFloor)) {
+    return cutout;
+  }
+  const { depthMode: _mode, floorMm: _floor, ...rest } = cutout;
+  return {
+    ...rest,
+    ...(validMode ? { depthMode } : {}),
+    ...(validMode && validFloor ? { floorMm } : {}),
+  };
 }
 
 /**

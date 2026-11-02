@@ -12,6 +12,8 @@ import { clampRotationToBounds } from '../panel/CutoutsSection/geometry';
 import { resizeAroundCenter } from '../panel/CutoutsSection/cutoutHelpers';
 import { cutoutDepthShortfall } from '../panel/CutoutsSection/cutoutDepthShortfall';
 import { CutoutScoopControls } from './CutoutScoopControls';
+import { CutoutDepthControl } from '../panel/CutoutsSection/CutoutDepthControl';
+import { isThroughCut } from '@/shared/utils/cutoutDepth';
 import { CutoutShapeControls } from '../panel/CutoutsSection/CutoutShapeControls';
 import { CutoutFitControls } from '../panel/CutoutsSection/CutoutFitControls';
 import { CutoutShapeBadge } from '../panel/CutoutsSection/CutoutShapeBadge';
@@ -85,6 +87,8 @@ export function SingleCutoutInspector({
   const t = useTranslation();
   const ungroupCutouts = useDesignerStore((s) => s.ungroupCutouts);
   const setCutoutArray = useDesignerStore((s) => s.setCutoutArray);
+  // A through cut has no floor, so the generator drops its floor fillet.
+  const throughCut = useDesignerStore((s) => isThroughCut(cutout, s.params));
   // maxCutDepth is the remaining fill on a bin host; a through-cut host has no
   // depth to fall short of.
   // The fields display preview-merged values, so anything computed FROM them
@@ -200,14 +204,13 @@ export function SingleCutoutInspector({
                   })}
                 </p>
               ) : (
-                <NumberField
-                  label={t('binDesigner.cutouts.cutDepth')}
-                  value={cutout.cutDepth}
-                  onChange={(cutDepth) => onUpdate(cutout.id, { cutDepth })}
-                  min={0.5}
-                  max={maxCutDepth}
-                  step={0.5}
-                  unit="mm"
+                <CutoutDepthControl
+                  cutouts={[live]}
+                  maxCutDepth={maxCutDepth}
+                  onUpdate={(updates) => {
+                    const patch = updates.get(cutout.id);
+                    if (patch) onUpdate(cutout.id, patch);
+                  }}
                   disabled={disabled}
                 />
               ))}
@@ -269,7 +272,7 @@ export function SingleCutoutInspector({
                   )}
                 </div>
               )}
-              {cutout.shape !== 'mesh' && !throughOnly && (
+              {cutout.shape !== 'mesh' && !throughOnly && !throughCut && (
                 <CutoutScoopControls
                   key={cutout.id}
                   cutout={cutout}

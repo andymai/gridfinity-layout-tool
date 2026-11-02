@@ -53,11 +53,12 @@ function withScanFit(cutout: Cutout, cutDepth: number): Cutout {
 }
 
 export function useScanImport(): UseScanImportReturn {
-  const { addCutout, startTransaction, commitTransaction } = useDesignerStore(
+  const { addCutout, startTransaction, commitTransaction, queueDepthPrompt } = useDesignerStore(
     useShallow((s) => ({
       addCutout: s.addCutout,
       startTransaction: s.startTransaction,
       commitTransaction: s.commitTransaction,
+      queueDepthPrompt: s.queueDepthPrompt,
     }))
   );
 
@@ -86,15 +87,19 @@ export function useScanImport(): UseScanImportReturn {
         new Set(cutouts.map((c) => c.id))
       );
 
-      let added = 0;
+      const addedIds: string[] = [];
       startTransaction();
       try {
         for (const cutout of cutouts) {
-          if (addCutout({ ...cutout, ...moves.get(cutout.id) })) added += 1;
+          if (addCutout({ ...cutout, ...moves.get(cutout.id) })) addedIds.push(cutout.id);
         }
       } finally {
         commitTransaction();
       }
+      // A traced outline says nothing about how thick the tool is. A lid plate
+      // is cut clean through, so only a bin has a depth to ask for.
+      if (ui.cutoutTarget === 'bin') queueDepthPrompt(addedIds);
+      const added = addedIds.length;
 
       // The count STORED, not the count asked for. The scan entry point is
       // hidden while the lid is the target, so nothing refuses today, but a
@@ -102,7 +107,7 @@ export function useScanImport(): UseScanImportReturn {
       // remember why it happened to be right.
       return added;
     },
-    [addCutout, startTransaction, commitTransaction]
+    [addCutout, startTransaction, commitTransaction, queueDepthPrompt]
   );
 
   return { addScanCutouts };

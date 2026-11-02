@@ -27,6 +27,10 @@ import { buildKumikoWallPatterns } from '../../kumikoWrapBuilder';
 import { buildDividerPatterns } from '../../dividerPatternBuilder';
 import { buildFloorPattern } from '../../floorPatternBuilder';
 
+/** How far a through cut reaches past the underside, so it never ends on the
+ *  bottom face it is meant to open. */
+const THROUGH_CUT_MARGIN_MM = 1;
+
 export const featuresStage: PipelineStage = {
   name: 'features',
   progressValue: 0.5,
@@ -60,12 +64,17 @@ export const featuresStage: PipelineStage = {
             taper,
           }
         : undefined;
-      const { cutTools, fuseTools } = buildCutoutCuts(
+      const {
+        cutTools,
+        fuseTools,
+        throughTools = [],
+      } = buildCutoutCuts(
         params,
         dim.innerW,
         dim.innerD,
         dim.wallHeight,
-        interiorTaper
+        interiorTaper,
+        dim.baseOffsetZ + THROUGH_CUT_MARGIN_MM
       );
       // Swappable-label sockets are planned separately: they are bounded by
       // the fill surface and their own clear-space test, not by the interior
@@ -98,6 +107,9 @@ export const featuresStage: PipelineStage = {
       // here would clobber them — just translate.
       const cutoutTools = cutTools.map(shiftToInterior);
       const embossTools = fuseTools.map(shiftToInterior);
+      // The body pass owns these and disposes them; the socket carve runs
+      // first, while they are still alive.
+      const openings = throughTools.map(shiftToInterior);
       // Wall text is the one generic feature a solid body can still take: it
       // works the outer face, which a solid bin has exactly like a hollow one.
       // Run through the shared runner rather than called directly, so engrave
@@ -110,8 +122,9 @@ export const featuresStage: PipelineStage = {
       // post-boolean resume cache can't safely identify them — disable it.
       return {
         ...ctx,
-        cutTargets: [...cutoutTools, ...wallText.cutTargets],
+        cutTargets: [...cutoutTools, ...openings, ...wallText.cutTargets],
         fuseTargets: [...embossTools, ...wallText.fuseTargets],
+        deferredCutTargets: openings,
         // Empty for the two wall-text builders, and passed on anyway so a
         // builder added to the solid set later cannot leak its shapes here.
         patternCutTargets: wallText.patternCutTargets,
