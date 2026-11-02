@@ -1,0 +1,76 @@
+src/features/bin-designer/store/slices/persistenceSlice.ts
+  s_883a4eee2ecc4e::t_8b54d0df8f68b2 77
+src/features/bin-designer/components/panel/BaseSection/bodyTypeMemory.ts
+  s_883a4eee2ecc4e::t_aca4912cdb240b 1-47,52-73,75,77-110,113-134,136-222
+  s_883a4eee2ecc4e::t_ec0d58dfbaba17 48-51,74,76,111-112
+  s_883a4eee2ecc4e::t_9c6d48a5c829a2 135
+src/features/bin-designer/components/panel/BaseSection/bodyTypeMemory.test.ts
+  s_883a4eee2ecc4e::t_3733c46dc3a831 109
+  s_883a4eee2ecc4e::t_ef9da5a6ae244e 1-108,110-121,123-131
+  s_ea375a065cf92e::t_9e443e52f2f2d7 122
+src/features/bin-designer/constants/defaults.ts
+  s_883a4eee2ecc4e::t_3eac8e7e8dc140 301
+src/features/bin-designer/types/uiState.ts
+  s_883a4eee2ecc4e::t_13bced97003665 11-28
+  s_883a4eee2ecc4e::t_cd22bf96bb7b40 8
+  s_883a4eee2ecc4e::t_9021c608c43305 164-168
+  s_4b9adb1d9473fb::t_85fcd6a7d591ba 9-10
+src/features/bin-designer/components/panel/BaseSection/finalizeBaseParams.ts
+  s_883a4eee2ecc4e::t_c54cc3615e2be7 1-58
+src/features/bin-designer/hooks/useCreateFromBin.ts
+  s_883a4eee2ecc4e::t_36f5e812554894 211
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_883a4eee2ecc4e::t_76ea0737e7efba 46,53,55-56
+  s_883a4eee2ecc4e::t_fad66805af0cc1 254
+  s_883a4eee2ecc4e::t_c090924a402562 376-379,381
+  s_883a4eee2ecc4e::t_f0f14232583701 88-96
+  s_883a4eee2ecc4e::t_9240aa10977701 97-98
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.test.ts
+  s_883a4eee2ecc4e::t_1eb6b07a47a049 13,15-16
+  s_883a4eee2ecc4e::t_7c7a17fde6dbb9 901,908,913,937-940,946-967
+src/features/bin-designer/README.md
+  s_883a4eee2ecc4e::t_f0a00a298b267a 184
+src/features/bin-designer/types/designerState.ts
+  s_883a4eee2ecc4e::t_1650095ae087bd 452
+  s_883a4eee2ecc4e::t_b76b1b86a25f33 68
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_883a4eee2ecc4e::t_472aa9ca62aac8 11
+  s_883a4eee2ecc4e::t_ec0d58dfbaba17 5,236
+  s_883a4eee2ecc4e::t_b214ba2c9cd95a 234-235,237-239
+src/features/bin-designer/components/panel/BaseSection/bodyType.ts
+  s_883a4eee2ecc4e::t_2cca3d427ddc53 87-89
+src/features/bin-designer/store/designer.ts
+  s_883a4eee2ecc4e::t_30fd4f07e3c848 70-71,76,83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1330cb3eaa972ec5bc214bfb711b30d2c28e7f79",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_883a4eee2ecc4e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf59d3b6-e347-45ec-8991-5ee56bc71466",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_ea375a065cf92e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0100531f-e2b5-4b32-8108-e46ee2eee6d7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
