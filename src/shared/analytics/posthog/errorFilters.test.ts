@@ -23,6 +23,8 @@ describe('shouldIgnoreError — message patterns', () => {
     'Error: No Listener: tabs:outgoing.message.ready',
     'No Listener: tabs:incoming.foo',
     'Invalid call to runtime.sendMessage(). Tab not found.',
+    // A Safari Web Extension's own storage call failing
+    'Invalid call to browser.storage.local.set(). Exceeded storage quota.',
     'Extension context invalidated.',
     'Script error.',
     'Script error',
@@ -53,6 +55,7 @@ describe('shouldIgnoreError — message patterns', () => {
     'Non-Error promise rejection captured with value: Request timeout after 30s',
     "'TimeoutError' captured as exception with message: 'operation timed out after 30s'",
     "TypeError: undefined is not an object (evaluating 'config.ethereum.rpcUrl')",
+    'Invalid call to browserStorage.set()',
   ])('does NOT ignore real app error %j', (msg) => {
     expect(shouldIgnoreError(msg)).toBe(false);
   });

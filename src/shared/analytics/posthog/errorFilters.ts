@@ -138,6 +138,11 @@ const IGNORED_MESSAGE_PATTERNS: readonly RegExp[] = [
   /No Listener: tabs:/i,
   // Chrome extension API surfaces
   /Invalid call to runtime\.sendMessage/i,
+  // A Safari Web Extension's own storage call failing ("Invalid call to
+  // browser.storage.local.set(). Exceeded storage quota.", or a "Disk I/O
+  // error" reason). Page scripts cannot reach `browser.*`, and these arrive without
+  // frames, so the source check never sees them.
+  /Invalid call to browser\.[a-z]+\./i,
   /Extension context invalidated/i,
   // Generic same-origin script error from a script we didn't load
   /^Script error\.?$/,
