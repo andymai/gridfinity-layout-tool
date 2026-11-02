@@ -113,6 +113,46 @@ export const cutoutDepthModes = [
       expect(lowest).toBeCloseTo(8, 1);
     },
   }),
+  defineScenario(
+    'cutoutDepthModes',
+    'leaning floored path keeps its cleared low edge on the floor',
+    {
+      params: {
+        style: 'solid',
+        base: FLAT,
+        height: 3,
+        cutouts: [
+          pocket({
+            shape: 'path',
+            x: 25.55,
+            y: 30.55,
+            width: 20,
+            depth: 20,
+            clearance: 2,
+            leanDeg: 30,
+            depthMode: 'floor',
+            floorMm: 8,
+            path: [
+              { x: 25.55, y: 30.55, handleIn: null, handleOut: null, symmetric: false },
+              { x: 45.55, y: 30.55, handleIn: null, handleOut: null, symmetric: false },
+              { x: 45.55, y: 50.55, handleIn: null, handleOut: null, symmetric: false },
+              { x: 25.55, y: 50.55, handleIn: null, handleOut: null, symmetric: false },
+            ],
+          }),
+        ],
+      },
+      forExport: true,
+      assert: 'structural',
+      customAssert: (result) => {
+        let lowest = Infinity;
+        for (let i = 2; i < result.vertices.length; i += 3) {
+          const z = result.vertices[i];
+          if (z > 0.5 && z < lowest) lowest = z;
+        }
+        expect(lowest).toBeCloseTo(8, 1);
+      },
+    }
+  ),
   defineScenario('cutoutDepthModes', 'floored pocket keeps its floor above the underside', {
     params: {
       style: 'solid',

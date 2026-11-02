@@ -137,6 +137,33 @@ describe('resolveCutoutDepth', () => {
     expect(floorUnderCutout({ ...leaning, cutDepth: cut }, FLAT)).toBeCloseTo(8, 1);
   });
 
+  // A path offsets each edge by its clearance: a 20mm-deep path with 2mm of
+  // clearance is 24mm deep, so a 30° lean drops its low edge 12·sin 30° = 6mm.
+  it('reads a leaning path from its cleared outline', () => {
+    const corner = (x: number, y: number) => ({
+      x,
+      y,
+      handleIn: null,
+      handleOut: null,
+      symmetric: false,
+    });
+    const path = pocket({
+      shape: 'path',
+      x: 0,
+      y: 0,
+      width: 20,
+      depth: 20,
+      clearance: 2,
+      leanDeg: 30,
+      depthMode: 'floor',
+      floorMm: 8,
+      path: [corner(0, 0), corner(20, 0), corner(20, 20), corner(0, 20)],
+    });
+    const cut = resolveCutoutDepth(path, FLAT);
+    expect(cut).toBeCloseTo((13 - 6) / Math.cos(Math.PI / 6), 2);
+    expect(floorUnderCutout({ ...path, cutDepth: cut }, FLAT)).toBeCloseTo(8, 1);
+  });
+
   it('reads the floor under a leaning pocket from its low edge', () => {
     const leaning = pocket({ depth: 20, leanDeg: -30, cutDepth: 10 });
     expect(floorUnderCutout(leaning, FLAT)).toBeCloseTo(21 - (10 * Math.cos(Math.PI / 6) + 5), 2);
@@ -193,6 +220,14 @@ describe('throughBlockedReason', () => {
       {},
       {
         base: { ...SOLID, style: 'lid', trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true } },
+      },
+      'nesting',
+    ],
+    [
+      'a Nesting body with a raised floor',
+      {},
+      {
+        base: { ...SOLID, style: 'lid', trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: false } },
       },
       'nesting',
     ],

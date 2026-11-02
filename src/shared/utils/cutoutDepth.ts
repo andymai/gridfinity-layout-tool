@@ -20,6 +20,7 @@ import {
 import { socketHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask } from './cellMask';
 import { clearedProfile } from './cutoutFit';
+import { pathCutoutCut } from './pathCutoutOutline';
 import { resolveDetachableFeet } from './detachableFeetPlan';
 import { resolveOverhang } from './overhang';
 
@@ -101,22 +102,37 @@ export function cutoutDepthMode(cutout: Pick<Cutout, 'shape' | 'depthMode'>): Cu
 
 type DepthCutout = Pick<
   Cutout,
-  'shape' | 'depthMode' | 'cutDepth' | 'floorMm' | 'leanDeg' | 'width' | 'depth' | 'clearance'
+  | 'shape'
+  | 'depthMode'
+  | 'cutDepth'
+  | 'floorMm'
+  | 'leanDeg'
+  | 'x'
+  | 'y'
+  | 'width'
+  | 'depth'
+  | 'clearance'
+  | 'path'
 >;
 
 /**
  * A leaning pocket turns about its mouth, so `cutDepth` runs along the tilted
- * axis and the low edge of its floor sits `(d/2)·|sin θ|` below the axis end.
- * These convert between that axial depth and the drop to the floor's lowest
- * point, using the same swept extent the generator tilts.
+ * axis and a floor point at local `y` ends `-y·sin θ` below the axis end. The
+ * sweep is the most any point drops: half the cleared depth for a parametric
+ * shape, which is symmetric, but read from the cleared outline for a path,
+ * which offsets each edge by its clearance and need not be symmetric.
  */
 function leanTerms(cutout: DepthCutout): { readonly cos: number; readonly sweep: number } {
   const lean = (resolveCutoutLeanDeg(cutout) * Math.PI) / 180;
   if (lean === 0) return { cos: 1, sweep: 0 };
-  return {
-    cos: Math.cos(lean),
-    sweep: (clearedProfile(cutout).d / 2) * Math.abs(Math.sin(lean)),
-  };
+  const sin = Math.sin(lean);
+  const cleared = clearedProfile(cutout);
+  const outline =
+    cutout.shape === 'path' ? pathCutoutCut(cutout, cleared.clearance, 0)?.base : undefined;
+  const sweep = outline
+    ? Math.max(0, ...outline.map((p) => -p.y * sin))
+    : (cleared.d / 2) * Math.abs(sin);
+  return { cos: Math.cos(lean), sweep };
 }
 
 export function resolveCutoutDepth(cutout: DepthCutout, frame: CutoutDepthFrame): number {
@@ -166,8 +182,9 @@ export function withResolvedCutoutDepths<P extends BinParams>(params: P): P {
  * - `tilt`: the opening under a leaning pocket would need its own lean.
  * - `taper`: the flared wall narrows the interior below the floor line.
  * - `feet`: detachable feet print separately and would close the opening.
- * - `nesting`: a nesting body's bed-level floor is built after the cutouts and
- *   would close the opening again.
+ * - `nesting`: a Nesting body's lid-mating underside (its skirt, and the
+ *   bed-level floor of newer designs) is built after the cutouts and would
+ *   close the opening again.
  */
 export function throughBlockedReason(
   cutout: Pick<Cutout, 'groupId' | 'leanDeg' | 'shape'>,
@@ -180,7 +197,7 @@ export function throughBlockedReason(
   if (hasDetachableFeet(params.base) && resolveDetachableFeet(params).placements.length > 0) {
     return 'feet';
   }
-  if (params.base.style === 'lid' && params.base.trayBottom?.floorAtBed === true) return 'nesting';
+  if (params.base.style === 'lid') return 'nesting';
   return null;
 }
 
