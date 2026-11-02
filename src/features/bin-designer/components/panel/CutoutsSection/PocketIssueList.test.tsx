@@ -57,6 +57,19 @@ describe('PocketIssueList', () => {
     expect(onFix).toHaveBeenCalledWith(floor);
   });
 
+  it('offers to remove the islands too thin to keep', () => {
+    const onFix = vi.fn();
+    const thin = issue({ kind: 'island', ids: ['a'], mm: 0.3, fix: { holes: undefined } });
+    show([thin], vi.fn(), onFix);
+    expect(
+      screen.getByText(
+        'An island in Rectangle 20×10 is only 0.3 mm across at the top once clearance and the entry edge are taken off'
+      )
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Remove thin islands' }));
+    expect(onFix).toHaveBeenCalledWith(thin);
+  });
+
   it('words each kind, and a repeat against its own copies', () => {
     show([
       issue({ kind: 'merge' }),

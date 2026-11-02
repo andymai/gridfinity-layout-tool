@@ -716,6 +716,8 @@
   "binDesigner.cutoutEditor.checks.lip": "{a}伸入堆叠边缘下方 {mm}mm，工具可能会被卡住",
   "binDesigner.cutoutEditor.checks.floor": "{a}下方的底只有 {mm}mm，可能会弯曲或透光",
   "binDesigner.cutoutEditor.checks.floorFix": "保留 {mm}mm",
+  "binDesigner.cutoutEditor.checks.island": "{a}中的一个岛减去间隙和入口边后，顶部只有 {mm}mm 宽",
+  "binDesigner.cutoutEditor.checks.islandFix": "移除过细的岛",
   "binDesigner.cutoutEditor.checks.more": "再显示 {count} 项",
   "binDesigner.cutoutEditor.checks.fewer": "收起",
   "binDesigner.cutoutEditor.offBoardWarning.one": "1 个挖槽将被裁剪",

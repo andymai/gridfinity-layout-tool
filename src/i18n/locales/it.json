@@ -716,6 +716,8 @@
   "binDesigner.cutoutEditor.checks.lip": "{a} entra di {mm} mm sotto il bordo di impilamento, dove un utensile può impigliarsi",
   "binDesigner.cutoutEditor.checks.floor": "Solo {mm} mm di fondo sotto {a}, che può flettersi o lasciar passare la luce",
   "binDesigner.cutoutEditor.checks.floorFix": "Lascia {mm} mm",
+  "binDesigner.cutoutEditor.checks.island": "Un’isola in {a} è larga solo {mm} mm in cima tolti gioco e bordo d’ingresso",
+  "binDesigner.cutoutEditor.checks.islandFix": "Rimuovi isole sottili",
   "binDesigner.cutoutEditor.checks.more": "Mostra altri {count}",
   "binDesigner.cutoutEditor.checks.fewer": "Mostra meno",
   "binDesigner.cutoutEditor.offBoardWarning.one": "1 ritaglio verrà tagliato",

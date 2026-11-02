@@ -75,6 +75,7 @@ import {
   MAX_CUTOUT_CHAMFER,
   MAX_CUTOUT_CLEARANCE,
   MAX_CUTOUT_FLOOR_MM,
+  MAX_CUTOUT_HOLES,
   MAX_CUTOUT_LEAN_DEG,
   MAX_SPLIT_POINT_MM,
   MAX_GROUP_NAME_LENGTH,
@@ -188,6 +189,7 @@ const SOURCES: Record<string, unknown> = {
   PATTERN_WEB_THICKNESS_MAX,
   PATTERN_WEB_THICKNESS_MIN,
   DEFAULT_POLYGON_SIDES,
+  MAX_CUTOUT_HOLES,
   DETACHABLE_PIN_DIAMETERS_MM,
   KNIFE_REST_DEFAULT_GAP_MM,
   KNIFE_REST_MAX_DEPTH_U,
@@ -283,7 +285,7 @@ const annotations = collectAnnotations();
  * a drop means someone deleted provenance rather than a bound legitimately
  * becoming hand-picked, which is the erosion this guards against.
  */
-const MIN_ANNOTATED_BOUNDS = 230;
+const MIN_ANNOTATED_BOUNDS = 231;
 
 describe('x-constant annotations', () => {
   it('finds annotations to check', () => {

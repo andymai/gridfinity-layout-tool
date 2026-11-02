@@ -716,6 +716,8 @@
   "binDesigner.cutoutEditor.checks.lip": "{a} sięga {mm} mm pod kołnierz sztaplujący, o który narzędzie może zahaczyć",
   "binDesigner.cutoutEditor.checks.floor": "Tylko {mm} mm dna pod {a}, które może się uginać lub przepuszczać światło",
   "binDesigner.cutoutEditor.checks.floorFix": "Zostaw {mm} mm",
+  "binDesigner.cutoutEditor.checks.island": "Wysepka w {a} ma u góry tylko {mm} mm po odjęciu luzu i krawędzi wejściowej",
+  "binDesigner.cutoutEditor.checks.islandFix": "Usuń cienkie wysepki",
   "binDesigner.cutoutEditor.checks.more": "Pokaż jeszcze {count}",
   "binDesigner.cutoutEditor.checks.fewer": "Pokaż mniej",
   "binDesigner.cutoutEditor.offBoardWarning.one": "1 wycięcie zostanie przycięte",

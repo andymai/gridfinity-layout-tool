@@ -8,6 +8,7 @@ import {
   applyFlattenArray,
   flattenCutoutGroupArray,
   translateCutoutPreview,
+  cloneCutoutsWithGroups,
 } from './cutoutHelpers';
 import type { Cutout, CutoutArrayConfig } from '@/features/bin-designer/types';
 
@@ -390,6 +391,37 @@ describe('translateCutoutPreview', () => {
       [35, 40],
       [35, 60],
     ]);
+  });
+
+  it('carries islands along with the outline', () => {
+    const withIsland: Cutout = {
+      ...pathCutout,
+      holes: [
+        [
+          { x: 15, y: 15, handleIn: null, handleOut: null, symmetric: false },
+          { x: 20, y: 15, handleIn: null, handleOut: null, symmetric: false },
+          { x: 20, y: 20, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      ],
+    };
+    const moved = translateCutoutPreview(withIsland, { x: 15, y: 40 });
+    expect(moved.holes?.[0].map((pt) => [pt.x, pt.y])).toEqual([
+      [20, 45],
+      [25, 45],
+      [25, 50],
+    ]);
+  });
+
+  // A pasted copy whose box moved but whose points did not drew on top of
+  // the shape it was copied from.
+  it('lands a cloned path, islands included, where its box goes', () => {
+    const withIsland: Cutout = {
+      ...pathCutout,
+      holes: [[{ x: 15, y: 15, handleIn: null, handleOut: null, symmetric: false }]],
+    };
+    const [clone] = cloneCutoutsWithGroups([withIsland], (c) => ({ x: c.x + 7, y: c.y + 3 }));
+    expect(clone.path?.[0]).toMatchObject({ x: 17, y: 13 });
+    expect(clone.holes?.[0][0]).toMatchObject({ x: 22, y: 18 });
   });
 
   it('leaves the path alone when the patch does not move the cutout', () => {

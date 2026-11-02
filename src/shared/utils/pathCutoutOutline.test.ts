@@ -3,12 +3,15 @@ import { timeLimitMs } from '@/test/timeLimit';
 import {
   BEZIER_SEGMENTS,
   pathCutoutCut,
+  pathCutoutHoles,
   pathCutoutOutline,
+  pathHoleCuts,
   pathCutoutSections,
   polylineSelfIntersects,
 } from './pathCutoutOutline';
 import type { Pt } from './polygonOffset';
 import { MAX_PATH_POINTS } from '@/shared/types/bin';
+import type { PathPoint } from '@/shared/types/bin';
 
 /**
  * A pocket split by a slit between two interleaved combs, 607 points. The
@@ -307,5 +310,60 @@ describe('polylineSelfIntersects', () => {
     expect(performance.now() - started).toBeLessThan(timeLimitMs(1000));
     const path = fan.map((p) => ({ ...p, handleIn: null, handleOut: null, symmetric: false }));
     expect(pathCutoutOutline({ x: 0, y: 0, width: 100, depth: 100, path })).toBeNull();
+  });
+});
+
+describe('path cutout holes', () => {
+  const corner = (x: number, y: number): PathPoint => ({
+    x,
+    y,
+    handleIn: null,
+    handleOut: null,
+    symmetric: false,
+  });
+  const square = (x0: number, y0: number, x1: number, y1: number): PathPoint[] => [
+    corner(x0, y0),
+    corner(x1, y0),
+    corner(x1, y1),
+    corner(x0, y1),
+  ];
+  // A 40 × 20 pocket at (10, 10) with a 10 × 10 island in its middle.
+  const ring = {
+    x: 10,
+    y: 10,
+    width: 40,
+    depth: 20,
+    path: square(10, 10, 50, 30),
+    holes: [square(25, 15, 35, 25)],
+  };
+  const span = (pts: readonly Pt[]) => ({
+    w: Math.max(...pts.map((p) => p.x)) - Math.min(...pts.map((p) => p.x)),
+    d: Math.max(...pts.map((p) => p.y)) - Math.min(...pts.map((p) => p.y)),
+  });
+
+  it('centres each island on the cutout box, as the outline is', () => {
+    const [hole] = pathCutoutHoles(ring);
+    expect(hole.map((p) => [p.x, p.y])).toEqual([
+      [-5, -5],
+      [5, -5],
+      [5, 5],
+      [-5, 5],
+    ]);
+  });
+
+  it('shrinks an island by the clearance and, at the rim, the chamfer too', () => {
+    const [cut] = pathHoleCuts(ring, 0.4, 1);
+    expect(span(cut.base).w).toBeCloseTo(10 - 0.8, 6);
+    expect(span(cut.rim).w).toBeCloseTo(10 - 2.8, 6);
+    expect(cut.base).toHaveLength(cut.rim.length);
+  });
+
+  it('leaves out a ring that cannot be cut', () => {
+    const bowtie = [corner(25, 15), corner(35, 25), corner(35, 15), corner(25, 25)];
+    expect(pathCutoutHoles({ ...ring, holes: [bowtie, square(40, 15, 45, 20)] })).toHaveLength(1);
+  });
+
+  it('has no islands when the outline itself cannot be cut', () => {
+    expect(pathCutoutHoles({ ...ring, path: [corner(10, 10), corner(50, 10)] })).toEqual([]);
   });
 });

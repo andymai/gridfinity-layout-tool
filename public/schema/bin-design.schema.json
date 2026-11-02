@@ -786,6 +786,21 @@
           },
           "description": "Pen-tool path. Required for shape 'path'. Duplicate consecutive vertices make the worker fall back to a bounding box, which renders as a plain rectangle in 3D while looking correct in 2D."
         },
+        "holes": {
+          "type": "array",
+          "maxItems": 64,
+          "x-constant": {
+            "maxItems": "MAX_CUTOUT_HOLES"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "$ref": "#/$defs/PathPoint"
+            }
+          },
+          "description": "Islands in a path cutout: closed rings in the same frame as path, where the bin keeps its material to the full height. Clearance shrinks each one and the entry edge runs round it. Ignored for other shapes."
+        },
         "sides": {
           "type": "integer",
           "minimum": 3,

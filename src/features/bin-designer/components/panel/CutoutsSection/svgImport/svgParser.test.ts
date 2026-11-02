@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isOk, isErr } from '@/core/result';
 import { parseSvgString } from './svgParser';
+import { migrateParams } from '@/features/bin-designer/constants/paramMigration';
 
 function svgWrap(content: string, width = 100, height = 100): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${content}</svg>`;
@@ -549,5 +550,35 @@ describe('parseSvgString', () => {
       expect(spec.width).toBeCloseTo(50, 0);
       expect(spec.depth).toBeGreaterThan(0);
     });
+  });
+
+  // Two anchors and their handles draw a closed curve; the island has to
+  // survive the load-time sanitizer as well as the import.
+  it('keeps a two-anchor curved island through a save and reload', () => {
+    const svg = svgWrap(
+      '<path fill-rule="evenodd" d="M 0 0 L 40 0 L 40 40 L 0 40 Z ' +
+        'M 15 20 C 15 10 25 10 25 20 C 25 30 15 30 15 20 Z"/>'
+    );
+    const parsed = parseSvgString(svg);
+    if (!isOk(parsed)) throw new Error('did not parse');
+    const [spec] = parsed.value;
+    expect(spec.holes?.[0]).toHaveLength(2);
+    const cutout = {
+      id: 'c',
+      shape: 'path' as const,
+      x: spec.x,
+      y: spec.y,
+      width: spec.width,
+      depth: spec.depth,
+      cutDepth: 5,
+      rotation: 0,
+      cornerRadius: 0,
+      label: '',
+      groupId: null,
+      path: spec.path,
+      holes: spec.holes,
+    };
+    const [reloaded] = migrateParams({ cutouts: [cutout] }).cutouts;
+    expect(reloaded.holes).toEqual(spec.holes);
   });
 });

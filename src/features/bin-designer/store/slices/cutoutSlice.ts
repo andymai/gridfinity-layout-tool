@@ -30,7 +30,7 @@ import {
   withCutoutArray,
 } from '../helpers';
 import { generateLayoutId } from '@/shared/utils/uuid';
-import { translatePathPoints } from '../../utils/pathTransforms';
+import { mapPathRings, translatePathPoints } from '../../utils/pathTransforms';
 import {
   canNestDeeper,
   groupChain,
@@ -465,7 +465,7 @@ export function createCutoutSlice(rawSet: Set) {
         const duplicated = toDuplicate.map((c, i) => {
           // Path points are absolute, so shifting x/y must shift them too —
           // otherwise duplicates render with the original path geometry.
-          const translatedPath = c.path ? translatePathPoints(c.path, 5, 5) : c.path;
+          const translated = mapPathRings(c, (ring) => translatePathPoints(ring, 5, 5));
           return {
             ...remapGroupChain(c, groupMap, generateLayoutId),
             id: generateLayoutId(),
@@ -476,7 +476,7 @@ export function createCutoutSlice(rawSet: Set) {
             // its source with an identical area — a tie neither stacking
             // channel can break consistently.
             zIndex: topZ + i,
-            ...(translatedPath ? { path: translatedPath } : {}),
+            ...translated,
           };
         });
         // Truncate rather than refuse the whole batch: duplicating six shapes with

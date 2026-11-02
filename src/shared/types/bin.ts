@@ -128,6 +128,7 @@ export {
   MIN_PATH_POINTS,
   MAX_CUTOUT_FLOOR_MM,
   MAX_PATH_POINTS,
+  MAX_CUTOUT_HOLES,
   DEFAULT_KNIFE_SPEC,
   knifeSlotDimensions,
   knifeBlockTopZMm,

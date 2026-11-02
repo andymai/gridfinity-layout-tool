@@ -33,6 +33,7 @@ import { cutoutFitsInMask, type MaskCellSize } from './maskFit';
 import { createDefaultCutout, defaultPlaceSize } from './cutoutHelpers';
 import { type InteractionMode, type PreviewMap } from './cutoutInteractionTypes';
 import { generateUUID } from '@/shared/utils/uuid';
+import { mapPathRings, translatePathPoints } from '@/features/bin-designer/utils/pathTransforms';
 
 interface DrawingPreviewState {
   readonly x: number;
@@ -293,11 +294,7 @@ export function useCutoutPointerHandlers(
             if (dx !== 0 || dy !== 0) {
               augmented.set(id, {
                 ...updates,
-                path: cutout.path.map((pt) => ({
-                  ...pt,
-                  x: pt.x + dx,
-                  y: pt.y + dy,
-                })),
+                ...mapPathRings(cutout, (ring) => translatePathPoints(ring, dx, dy)),
               });
             }
           }

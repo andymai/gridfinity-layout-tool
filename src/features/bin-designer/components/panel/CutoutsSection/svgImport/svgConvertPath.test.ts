@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
+import { timeLimitMs } from '@/test/timeLimit';
 import { convertPath } from './svgConvertPath';
 import { IDENTITY, type Matrix } from '@/shared/utils/svg';
 import type { ViewBox } from './types';
+import { MAX_CUTOUT_HOLES } from '@/features/bin-designer/types';
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -130,5 +132,119 @@ describe('convertPath', () => {
       dx: expect.closeTo(10, 5),
       dy: expect.closeTo(-10, 5),
     });
+  });
+});
+
+describe('convertPath subpaths and fill rules', () => {
+  // A 40 × 40 square with a 10 × 10 square inside it, both drawn clockwise.
+  const SAME = 'M 0 0 L 40 0 L 40 40 L 0 40 Z M 15 15 L 25 15 L 25 25 L 15 25 Z';
+  // The same, the inner one drawn the other way round.
+  const OPPOSITE = 'M 0 0 L 40 0 L 40 40 L 0 40 Z M 15 15 L 15 25 L 25 25 L 25 15 Z';
+
+  const withRule = (d: string, rule?: string, onParent = false): Element => {
+    const el = makePath(d);
+    if (rule && !onParent) el.setAttribute('fill-rule', rule);
+    if (rule && onParent) {
+      const g = document.createElement('g');
+      g.setAttribute('style', `fill:black; fill-rule: ${rule}`);
+      g.appendChild(el);
+    }
+    return el;
+  };
+
+  it('makes an inner subpath an island under evenodd', () => {
+    const specs = convertPath(withRule(SAME, 'evenodd'), IDENTITY, VIEW_BOX);
+    expect(specs).toHaveLength(1);
+    expect(specs?.[0].holes).toHaveLength(1);
+    expect(specs?.[0].holes?.[0].map((p) => p.x).sort((a, b) => a - b)).toEqual([15, 15, 25, 25]);
+  });
+
+  it('reads the fill rule from a parent group style', () => {
+    const specs = convertPath(withRule(SAME, 'evenodd', true), IDENTITY, VIEW_BOX);
+    expect(specs?.[0].holes).toHaveLength(1);
+  });
+
+  it('makes a counter-wound inner subpath an island under nonzero', () => {
+    const specs = convertPath(withRule(OPPOSITE), IDENTITY, VIEW_BOX);
+    expect(specs).toHaveLength(1);
+    expect(specs?.[0].holes).toHaveLength(1);
+  });
+
+  it('keeps a same-wound inner subpath as a pocket of its own under nonzero', () => {
+    const specs = convertPath(withRule(SAME), IDENTITY, VIEW_BOX);
+    expect(specs).toHaveLength(2);
+    expect(specs?.every((s) => s.holes === undefined)).toBe(true);
+  });
+
+  // Starts inside the outline but runs out past its right edge.
+  it('keeps a subpath that crosses the outline as a pocket of its own', () => {
+    const d = 'M 0 0 L 40 0 L 40 40 L 0 40 Z M 30 15 L 50 15 L 50 25 L 30 25 Z';
+    const specs = convertPath(withRule(d, 'evenodd'), IDENTITY, VIEW_BOX);
+    expect(specs).toHaveLength(2);
+    expect(specs?.every((s) => s.holes === undefined)).toBe(true);
+  });
+
+  // Every corner of the bar sits inside the U, but its middle crosses the notch.
+  it('keeps a subpath that crosses a concave outline as a pocket of its own', () => {
+    const d = 'M 0 0 L 10 0 L 10 10 L 7 10 L 7 3 L 3 3 L 3 10 L 0 10 Z M 1 5 L 9 5 L 9 6 L 1 6 Z';
+    const specs = convertPath(withRule(d, 'evenodd'), IDENTITY, VIEW_BOX);
+    expect(specs).toHaveLength(2);
+    expect(specs?.every((s) => s.holes === undefined)).toBe(true);
+  });
+
+  it('nests a detailed compound path quickly', () => {
+    const ring = (r: number, n: number, ccw: boolean) =>
+      Array.from({ length: n }, (_, k) => {
+        const a = ((ccw ? -k : k) / n) * 2 * Math.PI;
+        return `${k === 0 ? 'M' : 'L'} ${50 + r * Math.cos(a)} ${50 + r * Math.sin(a)}`;
+      }).join(' ') + ' Z';
+    const d = Array.from({ length: 100 }, (_, i) => ring(49 - i * 0.45, 200, i % 2 === 1)).join(
+      ' '
+    );
+    const start = performance.now();
+    const specs = convertPath(withRule(d), IDENTITY, VIEW_BOX);
+    expect(performance.now() - start).toBeLessThan(timeLimitMs(3000));
+    expect(specs?.length).toBeGreaterThan(0);
+  });
+
+  // Windings +, +, -, -: filled 1, 2, 1, then 0 in the middle.
+  it('keeps the centre of nested rings whose winding comes back to zero', () => {
+    const cw = (a: number, b: number) => `M ${a} ${a} L ${b} ${a} L ${b} ${b} L ${a} ${b} Z`;
+    const ccw = (a: number, b: number) => `M ${a} ${a} L ${a} ${b} L ${b} ${b} L ${b} ${a} Z`;
+    const d = [cw(0, 80), cw(10, 70), ccw(20, 60), ccw(30, 50)].join(' ');
+    const specs = convertPath(withRule(d), IDENTITY, VIEW_BOX) ?? [];
+    // Every pocket around the middle keeps it, so none of them cuts it away.
+    expect(specs.length).toBeGreaterThan(0);
+    for (const spec of specs) {
+      const xs = (spec.holes ?? []).flat().map((p) => p.x);
+      expect(Math.min(...xs)).toBeCloseTo(30, 6);
+      expect(Math.max(...xs)).toBeCloseTo(50, 6);
+    }
+  });
+
+  it('keeps at most the cap of islands, the largest first', () => {
+    const outline = 'M 0 0 L 100 0 L 100 100 L 0 100 Z';
+    const islands = Array.from({ length: MAX_CUTOUT_HOLES + 1 }, (_, k) => {
+      const x = 2 + (k % 9) * 11;
+      const y = 2 + Math.floor(k / 9) * 11;
+      const s = k === MAX_CUTOUT_HOLES ? 2 : 4;
+      return `M ${x} ${y} L ${x + s} ${y} L ${x + s} ${y + s} L ${x} ${y + s} Z`;
+    });
+    const [spec] =
+      convertPath(withRule([outline, ...islands].join(' '), 'evenodd'), IDENTITY, VIEW_BOX) ?? [];
+    expect(spec.holes).toHaveLength(MAX_CUTOUT_HOLES);
+    const smallest = Math.min(
+      ...(spec.holes ?? []).map(
+        (h) => Math.max(...h.map((p) => p.x)) - Math.min(...h.map((p) => p.x))
+      )
+    );
+    expect(smallest).toBeCloseTo(4, 6);
+  });
+
+  it('makes a shape inside an island its own pocket again', () => {
+    const d = `${SAME} M 18 18 L 22 18 L 22 22 L 18 22 Z`;
+    const specs = convertPath(withRule(d, 'evenodd'), IDENTITY, VIEW_BOX);
+    expect(specs).toHaveLength(2);
+    expect(specs?.filter((s) => s.holes)).toHaveLength(1);
   });
 });

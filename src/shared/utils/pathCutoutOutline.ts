@@ -60,21 +60,43 @@ export function polylineSelfIntersects(poly: readonly { x: number; y: number }[]
   return polylineCrosses(poly);
 }
 
-/** Centered, flattened, validated outline for a path cutout (or null if degenerate). */
-export function pathCutoutOutline(cutout: {
+interface PathCutoutFrame {
   readonly x: number;
   readonly y: number;
   readonly width: number;
   readonly depth: number;
   readonly path?: readonly PathPoint[];
-}): Array<{ x: number; y: number }> | null {
-  const path = cutout.path;
-  if (!path || path.length < MIN_PATH_POINTS) return null;
-  const polyline = dropCoincidentPoints(flattenPathToPolyline(path));
+  readonly holes?: readonly (readonly PathPoint[])[];
+}
+
+/** A ring flattened and centred on the cutout's box, or null when it cannot be cut. */
+function centredRing(
+  cutout: PathCutoutFrame,
+  ring: readonly PathPoint[]
+): Array<{ x: number; y: number }> | null {
+  const polyline = dropCoincidentPoints(flattenPathToPolyline(ring));
   if (polyline.length < 3 || polylineSelfIntersects(polyline)) return null;
   const cx = cutout.x + cutout.width / 2;
   const cy = cutout.y + cutout.depth / 2;
   return polyline.map((p) => ({ x: p.x - cx, y: p.y - cy }));
+}
+
+/** Centered, flattened, validated outline for a path cutout (or null if degenerate). */
+export function pathCutoutOutline(cutout: PathCutoutFrame): Array<{ x: number; y: number }> | null {
+  const path = cutout.path;
+  if (!path || path.length < MIN_PATH_POINTS) return null;
+  return centredRing(cutout, path);
+}
+
+/**
+ * A path cutout's island rings, flattened and centred like its outline. A ring
+ * that cannot be cut is left out, so that island reads as pocket.
+ */
+export function pathCutoutHoles(cutout: PathCutoutFrame): Array<Array<{ x: number; y: number }>> {
+  if (!cutout.holes || pathCutoutOutline(cutout) === null) return [];
+  return cutout.holes
+    .map((ring) => centredRing(cutout, ring))
+    .filter((ring): ring is Array<{ x: number; y: number }> => ring !== null);
 }
 
 /** The two outlines a path cutout is cut between, vertex for vertex. */
@@ -87,7 +109,9 @@ export interface PathCutoutSections {
 
 /**
  * A centered outline offset by its insertion clearance and, at the rim, its
- * entry chamfer as well, as one loft's sections. A notch too tight for the full
+ * entry chamfer as well, as one loft's sections. An `island` ring shrinks by
+ * the same amounts instead, so the tool fits round it and its top edge gets
+ * the pocket's chamfer. A notch too tight for the full
  * offset takes what it can hold, and the base is capped by the rim's reach
  * there, so every ruled face between them flares outward. Null when the
  * outline cannot be offset, because thinning it to its point budget would
@@ -96,15 +120,16 @@ export interface PathCutoutSections {
 export function pathCutoutSections(
   outline: readonly Pt[],
   clearance: number,
-  chamfer: number
+  chamfer: number,
+  island = false
 ): PathCutoutSections | null {
   const toRim = clearance + Math.max(0, chamfer);
-  const refined = refineForOffset(outline, toRim);
+  const refined = refineForOffset(outline, toRim, island);
   if (!refined) return null;
-  const rim = offsetClosedPolygonWithinReach(refined, toRim);
+  const rim = offsetClosedPolygonWithinReach(refined, toRim, undefined, island);
   if (chamfer <= 0) return { base: rim.points, rim: rim.points };
   return {
-    base: offsetClosedPolygonWithinReach(refined, clearance, rim.reach).points,
+    base: offsetClosedPolygonWithinReach(refined, clearance, rim.reach, island).points,
     rim: rim.points,
   };
 }
@@ -122,4 +147,29 @@ export function pathCutoutCut(
   const outline = pathCutoutOutline(cutout);
   if (!outline) return null;
   return pathCutoutSections(outline, clearance, chamfer) ?? { base: outline, rim: outline };
+}
+
+/** One island's sections, with the index of its ring in {@link Cutout.holes}. */
+export interface PathHoleCut extends PathCutoutSections {
+  readonly index: number;
+}
+
+/**
+ * The sections each island of a path cutout is kept to: its ring shrunk by
+ * the clearance and, at the rim, the chamfer too. An island too tight to
+ * shrink keeps its bare ring; one that cannot be cut at all is left out, so
+ * each keeps the index of the ring it came from.
+ */
+export function pathHoleCuts(
+  cutout: PathCutoutFrame,
+  clearance: number,
+  chamfer: number
+): PathHoleCut[] {
+  if (!cutout.holes || pathCutoutOutline(cutout) === null) return [];
+  return cutout.holes.flatMap((hole, index) => {
+    const ring = centredRing(cutout, hole);
+    if (!ring) return [];
+    const cut = pathCutoutSections(ring, clearance, chamfer, true) ?? { base: ring, rim: ring };
+    return [{ ...cut, index }];
+  });
 }

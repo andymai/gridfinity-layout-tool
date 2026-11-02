@@ -716,6 +716,8 @@
   "binDesigner.cutoutEditor.checks.lip": "{a}가 적층 립 아래로 {mm}mm 들어가 공구가 걸릴 수 있습니다",
   "binDesigner.cutoutEditor.checks.floor": "{a} 아래 바닥이 {mm}mm뿐이라 휘거나 빛이 비칠 수 있습니다",
   "binDesigner.cutoutEditor.checks.floorFix": "{mm}mm 남기기",
+  "binDesigner.cutoutEditor.checks.island": "{a}의 섬은 여유와 입구 가장자리를 빼면 윗부분 폭이 {mm}mm뿐입니다",
+  "binDesigner.cutoutEditor.checks.islandFix": "얇은 섬 제거",
   "binDesigner.cutoutEditor.checks.more": "{count}개 더 보기",
   "binDesigner.cutoutEditor.checks.fewer": "간단히 보기",
   "binDesigner.cutoutEditor.offBoardWarning.one": "컷아웃 1개가 잘립니다",

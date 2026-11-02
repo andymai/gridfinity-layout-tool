@@ -42,7 +42,7 @@ export function specToCutout(spec: ParsedCutoutSpec, options: HydrationOptions):
   };
 
   if (spec.shape === 'path' && spec.path) {
-    return { ...base, path: spec.path };
+    return { ...base, path: spec.path, ...(spec.holes ? { holes: spec.holes } : {}) };
   }
 
   return base;

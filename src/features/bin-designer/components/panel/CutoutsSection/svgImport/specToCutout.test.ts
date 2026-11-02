@@ -118,4 +118,30 @@ describe('specToCutout', () => {
     expect(called).toBe(true);
     expect(cutout.id).toBe('custom-id');
   });
+
+  it("carries a path spec's islands onto the cutout", () => {
+    const at = (x: number, y: number) => ({
+      x,
+      y,
+      handleIn: null,
+      handleOut: null,
+      symmetric: false,
+    });
+    const holes = [[at(2, 2), at(4, 2), at(4, 4)]];
+    const cutout = specToCutout(
+      {
+        shape: 'path',
+        x: 0,
+        y: 0,
+        width: 10,
+        depth: 10,
+        cornerRadius: 0,
+        rotation: 0,
+        path: [at(0, 0), at(10, 0), at(10, 10)],
+        holes,
+      },
+      defaultOptions
+    );
+    expect(cutout.holes).toEqual(holes);
+  });
 });

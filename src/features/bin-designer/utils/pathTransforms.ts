@@ -31,3 +31,18 @@ export function translatePathPoints(
 ): PathPoint[] {
   return points.map((pt) => ({ ...pt, x: pt.x + dx, y: pt.y + dy }));
 }
+
+/**
+ * A cutout's outline and islands, each ring passed through `move`, holding only
+ * the fields it has. Islands live in the outline's frame, so anything that
+ * moves, scales or mirrors one has to do the same to the other.
+ */
+export function mapPathRings(
+  c: { readonly path?: readonly PathPoint[]; readonly holes?: readonly (readonly PathPoint[])[] },
+  move: (ring: readonly PathPoint[]) => PathPoint[]
+): { path?: PathPoint[]; holes?: PathPoint[][] } {
+  return {
+    ...(c.path ? { path: move(c.path) } : {}),
+    ...(c.holes ? { holes: c.holes.map(move) } : {}),
+  };
+}

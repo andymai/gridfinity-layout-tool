@@ -716,6 +716,8 @@
   "binDesigner.cutoutEditor.checks.lip": "{a} reikt {mm} mm onder de stapelrand, waar gereedschap kan blijven haken",
   "binDesigner.cutoutEditor.checks.floor": "Maar {mm} mm bodem onder {a}, die kan doorbuigen of licht doorlaten",
   "binDesigner.cutoutEditor.checks.floorFix": "{mm} mm laten staan",
+  "binDesigner.cutoutEditor.checks.island": "Een eiland in {a} is bovenaan maar {mm} mm breed zodra speling en invoerrand eraf gaan",
+  "binDesigner.cutoutEditor.checks.islandFix": "Dunne eilanden verwijderen",
   "binDesigner.cutoutEditor.checks.more": "Nog {count} tonen",
   "binDesigner.cutoutEditor.checks.fewer": "Minder tonen",
   "binDesigner.cutoutEditor.offBoardWarning.one": "1 uitsparing wordt bijgesneden",

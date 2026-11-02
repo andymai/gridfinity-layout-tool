@@ -27,9 +27,12 @@ import {
   CUTOUT_ENTRY_PROFILES,
   CUTOUT_FINGER_BOTTOMS,
   MAX_CUTOUT_FLOOR_MM,
+  MAX_CUTOUT_HOLES,
   MAX_SPLIT_POINT_MM,
+  MIN_PATH_POINTS,
   SPLIT_DEPTH_MODES,
 } from '../types/cutout';
+import type { PathPoint } from '../types/cutout';
 import { TEXT_MAX_LENGTH } from '../types/text';
 import { clampNumber } from './paramMigrationHelpers';
 
@@ -125,7 +128,7 @@ export function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
     migrateParentGroups(withArray.parentGroups) ?? []
   );
   return migrateScoopRadius(
-    withSplit(withFinger(withOpenSides(withEntryProfile(withDepthMode(withParents))))),
+    withHoles(withSplit(withFinger(withOpenSides(withEntryProfile(withDepthMode(withParents)))))),
     scoopRadius
   );
 }
@@ -244,6 +247,47 @@ function withSplit(cutout: Cutout): Cutout {
       ...(validMode && isFloorMm(floorMm) ? { floorMm } : {}),
     },
   };
+}
+
+const isHandle = (h: unknown): h is { dx: number; dy: number } => {
+  if (typeof h !== 'object' || h === null) return false;
+  const { dx, dy } = h as { dx?: unknown; dy?: unknown };
+  return [dx, dy].every((v) => typeof v === 'number' && Number.isFinite(v));
+};
+
+/** A hole vertex rebuilt from what a file holds, or null when it has no real position. */
+function holePoint(raw: unknown): PathPoint | null {
+  if (!isPoint(raw)) return null;
+  const { handleIn, handleOut, symmetric } = raw as Partial<Record<keyof PathPoint, unknown>>;
+  return {
+    x: raw.x,
+    y: raw.y,
+    handleIn: isHandle(handleIn) ? { dx: handleIn.dx, dy: handleIn.dy } : null,
+    handleOut: isHandle(handleOut) ? { dx: handleOut.dx, dy: handleOut.dy } : null,
+    symmetric: symmetric === true,
+  };
+}
+
+/**
+ * Keep holes only on a path, each a ring of at least two real points, at
+ * most {@link MAX_CUTOUT_HOLES} of them, and drop the field when none is left.
+ * A bad ring is dropped rather than the cutout: the pocket still cuts, solid
+ * where the ring was. Already-valid holes come back by reference.
+ */
+function withHoles(cutout: Cutout): Cutout {
+  const raw: unknown = cutout.holes;
+  if (raw === undefined) return cutout;
+  const rings = cutout.shape === 'path' && Array.isArray(raw) ? (raw as unknown[]) : [];
+  const kept = rings
+    .slice(0, MAX_CUTOUT_HOLES)
+    .filter((ring): ring is unknown[] => Array.isArray(ring))
+    .map((ring) => ring.map(holePoint).filter((p): p is PathPoint => p !== null))
+    // The outline's own minimum: two anchors with handles can bound a curve.
+    .filter((ring) => ring.length >= MIN_PATH_POINTS);
+  const { holes: _holes, ...rest } = cutout;
+  if (kept.length === 0) return rest;
+  // A ring written as this rebuilds it compares equal, so a clean file keeps its reference.
+  return JSON.stringify(kept) === JSON.stringify(raw) ? cutout : { ...rest, holes: kept };
 }
 
 function migrateScoopRadius(cutout: Cutout, scoopRadius: number | undefined): Cutout {

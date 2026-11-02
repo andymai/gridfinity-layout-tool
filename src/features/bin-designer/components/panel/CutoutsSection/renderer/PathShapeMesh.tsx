@@ -9,7 +9,8 @@
 import { memo, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import type { Cutout } from '@/features/bin-designer/types';
-import { flattenPath, triangulatePath, getPathBounds, MIN_PATH_POINTS } from '../pathGeometry';
+import { flattenPath, getPathBounds, MIN_PATH_POINTS } from '../pathGeometry';
+import { pathFillIndices } from './pathFill';
 import { RENDER_ORDER } from './constants';
 import { useShapePointerHandlers, useShapeColors, pickStrokeColor } from './shapeInteraction';
 import { shapePosZ, shapeRenderOrder } from './zLayer';
@@ -95,6 +96,14 @@ export const PathShapeMesh = memo(function PathShapeMesh({
         : flatPoints,
     [effectivePath, flatPoints]
   );
+  const effectiveHoles = previewOverrides?.holes ?? cutout.holes;
+  const flatHoles = useMemo(
+    () =>
+      (effectiveHoles ?? [])
+        .map((hole) => flattenPath(hole))
+        .filter((ring) => ring.length >= MIN_POLYLINE_POINTS),
+    [effectiveHoles]
+  );
 
   // Effective center for geometry and positioning
   const { renderCenterX, renderCenterY } = useMemo(() => {
@@ -119,12 +128,14 @@ export const PathShapeMesh = memo(function PathShapeMesh({
       ? renderCenterY + (previewOverrides.y - cutout.y)
       : renderCenterY;
 
-  // Build fill geometry (triangulated polygon mesh)
+  // Build fill geometry (triangulated polygon mesh). Islands are left open,
+  // so they read as material and a click there misses the cutout.
   const fillGeometry = useMemo(() => {
-    const pts = effectiveFlatPoints;
-    if (pts.length < MIN_POLYLINE_POINTS) return null;
+    const outline = effectiveFlatPoints;
+    if (outline.length < MIN_POLYLINE_POINTS) return null;
 
-    const indices = triangulatePath(pts);
+    const pts = [outline, ...flatHoles].flat();
+    const indices = pathFillIndices(outline, flatHoles);
     if (indices.length === 0) return null;
 
     const positions = new Float32Array(pts.length * 3);
@@ -138,7 +149,7 @@ export const PathShapeMesh = memo(function PathShapeMesh({
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geo.setIndex(indices);
     return geo;
-  }, [effectiveFlatPoints, renderCenterX, renderCenterY]);
+  }, [effectiveFlatPoints, flatHoles, renderCenterX, renderCenterY]);
 
   // Dispose previous fill geometry on change
   useEffect(() => {
@@ -150,8 +161,8 @@ export const PathShapeMesh = memo(function PathShapeMesh({
   // Bake distance field texture for depth shading
   const distField = useMemo(() => {
     if (effectiveFlatPoints.length < MIN_POLYLINE_POINTS) return null;
-    return bakeDistanceField(effectiveFlatPoints, renderCenterX, renderCenterY);
-  }, [effectiveFlatPoints, renderCenterX, renderCenterY]);
+    return bakeDistanceField(effectiveFlatPoints, renderCenterX, renderCenterY, flatHoles);
+  }, [effectiveFlatPoints, flatHoles, renderCenterX, renderCenterY]);
 
   // Dispose previous distance field texture on change
   useEffect(() => {
@@ -160,23 +171,22 @@ export const PathShapeMesh = memo(function PathShapeMesh({
     };
   }, [distField]);
 
-  // Build stroke geometry (closed loop outline)
-  const strokeGeometry = useMemo(() => {
-    const pts = effectiveFlatPoints;
-    if (pts.length < MIN_POLYLINE_POINTS) return null;
-
-    const loopPoints = pts.map(
-      (p) => new THREE.Vector3(p.x - renderCenterX, p.y - renderCenterY, 0.02)
+  // Build stroke geometry: one closed loop for the outline and one per island
+  const strokeGeometries = useMemo(() => {
+    if (effectiveFlatPoints.length < MIN_POLYLINE_POINTS) return [];
+    return [effectiveFlatPoints, ...flatHoles].map((ring) =>
+      new THREE.BufferGeometry().setFromPoints(
+        ring.map((p) => new THREE.Vector3(p.x - renderCenterX, p.y - renderCenterY, 0.02))
+      )
     );
-    return new THREE.BufferGeometry().setFromPoints(loopPoints);
-  }, [effectiveFlatPoints, renderCenterX, renderCenterY]);
+  }, [effectiveFlatPoints, flatHoles, renderCenterX, renderCenterY]);
 
   // Dispose previous stroke geometry on change
   useEffect(() => {
     return () => {
-      strokeGeometry?.dispose();
+      for (const geometry of strokeGeometries) geometry.dispose();
     };
-  }, [strokeGeometry]);
+  }, [strokeGeometries]);
 
   // Depth-shaded fill material with distance field texture
   const fillMaterial = useMemo(() => {
@@ -227,14 +237,16 @@ export const PathShapeMesh = memo(function PathShapeMesh({
       )}
 
       {/* Solid stroke outline (matches rect/circle styling) — hidden during vertex editing */}
-      {strokeGeometry && !disablePointerEvents && (
-        <lineLoop
-          geometry={strokeGeometry}
-          renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES + 1, cutout.zIndex, area)}
-        >
-          <lineBasicMaterial color={strokeColor} transparent opacity={1} depthTest={false} />
-        </lineLoop>
-      )}
+      {!disablePointerEvents &&
+        strokeGeometries.map((geometry, i) => (
+          <lineLoop
+            key={i}
+            geometry={geometry}
+            renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES + 1, cutout.zIndex, area)}
+          >
+            <lineBasicMaterial color={strokeColor} transparent opacity={1} depthTest={false} />
+          </lineLoop>
+        ))}
     </group>
   );
 });

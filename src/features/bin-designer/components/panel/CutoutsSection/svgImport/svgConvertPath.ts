@@ -2,7 +2,9 @@
  * SVG `<path>` element → ParsedCutoutSpec[] conversion.
  *
  * Splits the path's command stream into contours (each `M` starts a new
- * sub-path) and converts each contour independently. Quadratic beziers are
+ * sub-path) and converts each contour independently, then nests them by the
+ * element's fill rule (see {@link nestContours}): a sub-path the rule leaves
+ * unfilled becomes an island in the outline around it. Quadratic beziers are
  * elevated to cubic; arcs are converted via `arcToCubicBeziers`.
  *
  * There is no close-path case: `NORMALIZE_HVZ` rewrites `Z` as an explicit line
@@ -15,10 +17,13 @@ import { SVGPathData, SVGPathDataTransformer } from 'svg-pathdata';
 import type { SVGCommand } from 'svg-pathdata';
 import { SVGPathData as SVGPathDataEnum } from 'svg-pathdata';
 import type { PathPoint } from '@/features/bin-designer/types';
+import { MAX_CUTOUT_HOLES } from '@/features/bin-designer/types';
 import type { ParsedCutoutSpec } from './types';
 import { transformPoint, type Matrix } from '@/shared/utils/svg';
-import type { ViewBox } from './types';
+import { MAX_SVG_SHAPES, type ViewBox } from './types';
 import { makeCornerPoint, pathPointsToSpec } from './svgConvertShapes';
+import { flattenPath } from '@/shared/utils/pathGeometryBezier';
+import { outlinesTouch } from '@/shared/utils/outlineSegments';
 import { arcToCubicBeziers } from './svgArcToBezier';
 
 export function convertPath(
@@ -42,7 +47,133 @@ export function convertPath(
     }
   }
 
-  return specs.length > 0 ? specs : null;
+  const nested = nestContours(specs, fillRuleOf(el));
+  return nested.length > 0 ? nested : null;
+}
+
+/** The fill rule an element paints with, from itself or the nearest ancestor that sets one. */
+function fillRuleOf(el: Element): 'nonzero' | 'evenodd' {
+  for (let node: Element | null = el; node; node = node.parentElement) {
+    const styled = /(?:^|;)\s*fill-rule\s*:\s*(nonzero|evenodd)/i.exec(
+      node.getAttribute('style') ?? ''
+    );
+    const rule = (styled?.[1] ?? node.getAttribute('fill-rule') ?? '').trim().toLowerCase();
+    if (rule === 'evenodd' || rule === 'nonzero') return rule;
+  }
+  return 'nonzero';
+}
+
+function signedArea(ring: readonly { x: number; y: number }[]): number {
+  let a = 0;
+  for (let i = 0; i < ring.length; i++) {
+    const b = ring[(i + 1) % ring.length];
+    a += ring[i].x * b.y - b.x * ring[i].y;
+  }
+  return a / 2;
+}
+
+function insideRing(
+  p: { x: number; y: number },
+  ring: readonly { x: number; y: number }[]
+): boolean {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const a = ring[i];
+    const b = ring[j];
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+/**
+ * One element's sub-paths as the fill rule paints them.
+ *
+ * A sub-path counts as inside another only when its whole ring is; two that
+ * cross are separate pockets, as they always were. The fill just inside a
+ * ring is the winding of every ring around it plus its own, and just outside
+ * the same without its own: a ring with fill inside and none outside is a
+ * pocket's outline, the reverse an island. A ring with fill on both sides is
+ * painted over and stays a pocket of its own (a separate cut inside the first,
+ * as before). `evenodd` reads parity instead of winding.
+ *
+ * An island belongs to every pocket around it that does not already leave it
+ * inside one of its own islands, since each pocket cuts on its own and any one
+ * of them would carve the island away. At most {@link MAX_CUTOUT_HOLES}
+ * islands are kept per pocket, the largest, as a saved design keeps.
+ */
+function nestContours(
+  specs: readonly ParsedCutoutSpec[],
+  rule: 'nonzero' | 'evenodd'
+): ParsedCutoutSpec[] {
+  // Past the import's own shape limit nesting is wasted work: the file is refused anyway.
+  if (specs.length > MAX_SVG_SHAPES) return [...specs];
+  const rings = specs.map((s) => flattenPath(s.path ?? []));
+  // An open or self-overlapping curve can enclose no net area; it still counts one way.
+  const signs = rings.map((r) => (signedArea(r) < 0 ? -1 : 1));
+  const area = rings.map((r) => Math.abs(signedArea(r)));
+  const boxes = rings.map(boundsOf);
+  const order = specs.map((_, i) => i).sort((a, b) => area[b] - area[a]);
+  // Inside when no edges meet and one point is in: right for a concave outline
+  // too, and near linear per pair, since the edge test runs on a grid.
+  const inside = (i: number, j: number): boolean =>
+    area[j] > area[i] &&
+    boxWithin(boxes[i], boxes[j]) &&
+    rings[i].length > 0 &&
+    !outlinesTouch(rings[i], rings[j]) &&
+    insideRing(rings[i][0], rings[j]);
+  const ancestors = new Map<number, number[]>();
+  for (const i of order)
+    ancestors.set(
+      i,
+      order.filter((j) => j !== i && inside(i, j))
+    );
+  const filled = (w: number): boolean => (rule === 'evenodd' ? w % 2 !== 0 : w !== 0);
+  const role = new Map<number, 'pocket' | 'island'>();
+  for (const i of order) {
+    const anc = ancestors.get(i) ?? [];
+    const outside = rule === 'evenodd' ? anc.length : anc.reduce((w, j) => w + signs[j], 0);
+    const within = rule === 'evenodd' ? anc.length + 1 : outside + signs[i];
+    const fin = filled(within);
+    const fout = filled(outside);
+    // Only a ring with fill outside and none in is an island; anything else imports as before.
+    role.set(i, !fin && fout ? 'island' : 'pocket');
+  }
+  const holesOf = new Map<number, number[]>();
+  for (const i of order) {
+    if (role.get(i) !== 'island') continue;
+    for (const j of ancestors.get(i) ?? []) {
+      if (role.get(j) !== 'pocket') continue;
+      const held = holesOf.get(j) ?? [];
+      // Already inside one of this pocket's islands, so the pocket leaves it alone.
+      if (held.some((h) => inside(i, h))) continue;
+      holesOf.set(j, [...held, i]);
+    }
+  }
+  return specs.flatMap((spec, i) => {
+    if (role.get(i) !== 'pocket') return [];
+    const holes = (holesOf.get(i) ?? [])
+      .slice(0, MAX_CUTOUT_HOLES)
+      .map((h) => specs[h].path)
+      .filter((path): path is PathPoint[] => path !== undefined);
+    return [holes.length > 0 ? { ...spec, holes } : spec];
+  });
+}
+
+function boundsOf(ring: readonly { x: number; y: number }[]) {
+  const xs = ring.map((p) => p.x);
+  const ys = ring.map((p) => p.y);
+  return {
+    minX: Math.min(...xs),
+    minY: Math.min(...ys),
+    maxX: Math.max(...xs),
+    maxY: Math.max(...ys),
+  };
+}
+
+function boxWithin(a: ReturnType<typeof boundsOf>, b: ReturnType<typeof boundsOf>): boolean {
+  return a.minX >= b.minX && a.minY >= b.minY && a.maxX <= b.maxX && a.maxY <= b.maxY;
 }
 
 /** Split path commands into separate contours (each starting with M). */

@@ -27,6 +27,8 @@ import { cavityCornerRadiusMm } from '@/shared/utils/insideWallObstacles';
 import { lipInnerReachMm } from '@/shared/utils/lipNotchPlan';
 import { effectiveOpenSides } from '@/shared/utils/cutoutOpenSides';
 import { offsetClosedPolygon } from '@/shared/utils/polygonOffset';
+import { pathHoleCuts } from '@/shared/utils/pathCutoutOutline';
+import { minAreaRect } from '@/shared/scanTrace/minAreaRect';
 import { isCutoutOffBoard, type CutoutBoard } from './offBoardCutouts';
 
 /** Three 0.4 mm perimeters: less than this between two cuts prints weak. */
@@ -34,7 +36,7 @@ export const MIN_MATERIAL_MM = 1.2;
 /** Six 0.2 mm layers: a thinner floor flexes and can show light. */
 export const MIN_FLOOR_MM = 1.2;
 
-export type PocketIssueKind = 'merge' | 'wall' | 'lip' | 'thin' | 'floor';
+export type PocketIssueKind = 'merge' | 'wall' | 'lip' | 'thin' | 'island' | 'floor';
 
 export interface PocketIssue {
   readonly kind: PocketIssueKind;
@@ -45,11 +47,14 @@ export interface PocketIssue {
   /**
    * Plastic left, in mm: between the cuts for `merge` and `thin` (zero or
    * less once they merge), in the wall for `wall` (negative once the cut
-   * breaks through), under the floor for `floor`. For `lip`, how far the cut
-   * reaches under the lip.
+   * breaks through), under the floor for `floor`, across the narrowest island's
+   * top for `island`. For `lip`, how far the cut reaches under the lip.
    */
   readonly mm: number;
-  /** For `floor`: the change to `ids[0]` that leaves the minimum floor. */
+  /**
+   * The change to `ids[0]` that clears it: for `floor` the minimum floor, for
+   * `island` the islands too thin to keep removed.
+   */
   readonly fix?: Partial<Cutout>;
 }
 
@@ -85,7 +90,7 @@ interface Placed extends PlacedCopy {
   readonly clipped: readonly (readonly Pt[])[];
 }
 
-const KIND_ORDER: readonly PocketIssueKind[] = ['merge', 'wall', 'lip', 'thin', 'floor'];
+const KIND_ORDER: readonly PocketIssueKind[] = ['merge', 'wall', 'lip', 'thin', 'island', 'floor'];
 
 function boxOf(rings: readonly (readonly Pt[])[]): Box {
   let minX = Infinity;
@@ -592,5 +597,27 @@ export function checkPockets(
   checkPairs(pockets, book);
   checkWalls(pockets, params, board, book);
   checkFloors(pockets, cutouts, params, book);
+  checkIslands(pockets, book);
   return book.all();
+}
+
+/**
+ * An island's top is its narrowest part, shrunk by the clearance and the
+ * entry edge both, so that is where it is measured: across its own short
+ * axis, whatever way it lies.
+ */
+function checkIslands(pockets: readonly Placed[], book: IssueBook): void {
+  for (const { cutout, owner } of pockets) {
+    if (cutout.shape !== 'path' || !cutout.holes) continue;
+    const { clearance } = clearedProfile(cutout);
+    const thin = pathHoleCuts(cutout, clearance, entryChamferWidth(cutout))
+      .map((cut) => ({ index: cut.index, mm: minAreaRect(cut.rim)?.height ?? 0 }))
+      .filter(({ mm }) => mm < MIN_MATERIAL_MM - 1e-6);
+    if (thin.length === 0) continue;
+    const gone = new Set(thin.map((t) => t.index));
+    const kept = cutout.holes.filter((_, i) => !gone.has(i));
+    book.note('island', [owner], [cutout.id], Math.min(...thin.map((t) => t.mm)), {
+      holes: kept.length > 0 ? kept : undefined,
+    });
+  }
 }

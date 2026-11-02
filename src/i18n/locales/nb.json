@@ -716,6 +716,8 @@
   "binDesigner.cutoutEditor.checks.lip": "{a} når {mm} mm inn under stablekanten, der et verktøy kan hekte seg",
   "binDesigner.cutoutEditor.checks.floor": "Bare {mm} mm bunn under {a}, som kan gi etter eller slippe gjennom lys",
   "binDesigner.cutoutEditor.checks.floorFix": "La {mm} mm stå",
+  "binDesigner.cutoutEditor.checks.island": "En øy i {a} er bare {mm} mm bred øverst når klaring og innføringskant er trukket fra",
+  "binDesigner.cutoutEditor.checks.islandFix": "Fjern tynne øyer",
   "binDesigner.cutoutEditor.checks.more": "Vis {count} til",
   "binDesigner.cutoutEditor.checks.fewer": "Vis færre",
   "binDesigner.cutoutEditor.offBoardWarning.one": "1 utskjæring blir beskåret",

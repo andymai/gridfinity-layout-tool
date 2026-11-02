@@ -277,6 +277,13 @@ export function expandCutoutArray(cutout: Cutout): Cutout[] {
       ...(cutout.path
         ? { path: cutout.path.map((p) => ({ ...p, x: p.x + inst.dx, y: p.y + inst.dy })) }
         : {}),
+      ...(cutout.holes
+        ? {
+            holes: cutout.holes.map((hole) =>
+              hole.map((p) => ({ ...p, x: p.x + inst.dx, y: p.y + inst.dy }))
+            ),
+          }
+        : {}),
     };
   });
 }

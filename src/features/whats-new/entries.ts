@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'cutout-islands',
+    date: '2026-11-02',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Islands inside traced pockets' },
+    body: {
+      en: 'An imported outline with holes in it, such as the ring of a spanner or the middle of a letter O, now cuts as one pocket with islands of plastic left standing inside. Each island shrinks by the pocket’s clearance and takes its entry edge, Pocket checks warn when one gets too thin to print, and Export SVG writes the islands back out.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'scan-several-tools',
     date: '2026-11-02',
     kind: 'new',

@@ -57,3 +57,23 @@ describe('scaleParsedSpec', () => {
     ]);
   });
 });
+
+describe('scaleParsedSpec islands', () => {
+  it("scales a path spec's islands with its outline", () => {
+    const at = (x: number, y: number) => ({
+      x,
+      y,
+      handleIn: null,
+      handleOut: { dx: 2, dy: 0 },
+      symmetric: false,
+    });
+    const spec: ParsedCutoutSpec = {
+      ...baseRect,
+      shape: 'path',
+      path: [at(0, 0), at(10, 0), at(10, 10)],
+      holes: [[at(2, 2), at(4, 2), at(4, 4)]],
+    };
+    const out = scaleParsedSpec(spec, 0.5);
+    expect(out.holes?.[0][1]).toMatchObject({ x: 2, y: 1, handleOut: { dx: 1, dy: 0 } });
+  });
+});

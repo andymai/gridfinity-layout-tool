@@ -716,6 +716,8 @@
   "binDesigner.cutoutEditor.checks.lip": "{a} passe {mm} mm sous le rebord d’empilage, où un outil peut accrocher",
   "binDesigner.cutoutEditor.checks.floor": "Seulement {mm} mm de fond sous {a}, qui peut fléchir ou laisser passer la lumière",
   "binDesigner.cutoutEditor.checks.floorFix": "Laisser {mm} mm",
+  "binDesigner.cutoutEditor.checks.island": "Un îlot dans {a} ne fait que {mm} mm en haut une fois le jeu et le bord d’entrée retirés",
+  "binDesigner.cutoutEditor.checks.islandFix": "Retirer les îlots trop fins",
   "binDesigner.cutoutEditor.checks.more": "Afficher {count} de plus",
   "binDesigner.cutoutEditor.checks.fewer": "Afficher moins",
   "binDesigner.cutoutEditor.offBoardWarning.one": "1 découpe sera rognée",

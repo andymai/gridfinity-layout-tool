@@ -67,3 +67,21 @@ describe.each([
     expect('split' in flip(pocket({ split: undefined }))).toBe(false);
   });
 });
+
+describe('flipping a path with an island', () => {
+  const island = [corner(30, 35), corner(40, 35), corner(40, 45)];
+  const path = pocket({ shape: 'path', path: L_PATH, holes: [island], split: undefined });
+
+  it('mirrors the island with its outline left to right', () => {
+    const flipped = flipCutoutHorizontal(path);
+    // The outline spans 20 to 60, so it mirrors about x = 40.
+    expect(flipped.holes?.[0].map((p) => p.x)).toEqual([50, 40, 40]);
+    expect(flipped.holes?.[0].map((p) => p.y)).toEqual([35, 35, 45]);
+  });
+
+  it('mirrors the island with its outline top to bottom', () => {
+    const flipped = flipCutoutVertical(path);
+    // The outline spans 30 to 50, so it mirrors about y = 40.
+    expect(flipped.holes?.[0].map((p) => p.y)).toEqual([45, 45, 35]);
+  });
+});

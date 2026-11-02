@@ -716,6 +716,8 @@
   "binDesigner.cutoutEditor.checks.lip": "{a} entra {mm} mm bajo el borde apilable, donde una herramienta puede engancharse",
   "binDesigner.cutoutEditor.checks.floor": "Solo {mm} mm de fondo bajo {a}, que puede ceder o dejar pasar luz",
   "binDesigner.cutoutEditor.checks.floorFix": "Dejar {mm} mm",
+  "binDesigner.cutoutEditor.checks.island": "Una isla en {a} mide solo {mm} mm arriba al restar la holgura y el borde de entrada",
+  "binDesigner.cutoutEditor.checks.islandFix": "Quitar islas finas",
   "binDesigner.cutoutEditor.checks.more": "Mostrar {count} más",
   "binDesigner.cutoutEditor.checks.fewer": "Mostrar menos",
   "binDesigner.cutoutEditor.offBoardWarning.one": "1 recorte se va a recortar",

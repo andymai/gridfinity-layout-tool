@@ -10,6 +10,7 @@
 
 import type { Cutout, CutoutSplit, PathPoint } from '@/features/bin-designer/types';
 import { getPathBounds } from './pathGeometry';
+import { mapPathRings, translatePathPoints } from '@/features/bin-designer/utils/pathTransforms';
 import { cutoutPatternBounds, selectionVisualBounds } from './cutoutGroups';
 
 /**
@@ -63,10 +64,10 @@ export function flipCutoutHorizontal(cutout: Cutout): Partial<Cutout> {
   if (cutout.shape === 'path' && cutout.path) {
     const bounds = getPathBounds(cutout.path);
     const cx = (bounds.minX + bounds.maxX) / 2;
-    const flippedPath = cutout.path.map((pt) => mirrorPathPointX(pt, cx));
-    const newBounds = getPathBounds(flippedPath);
+    const flipped = mapPathRings(cutout, (ring) => ring.map((pt) => mirrorPathPointX(pt, cx)));
+    const newBounds = getPathBounds(flipped.path ?? []);
     return {
-      path: flippedPath,
+      ...flipped,
       x: newBounds.minX,
       y: newBounds.minY,
       width: newBounds.maxX - newBounds.minX,
@@ -88,10 +89,10 @@ export function flipCutoutVertical(cutout: Cutout): Partial<Cutout> {
   if (cutout.shape === 'path' && cutout.path) {
     const bounds = getPathBounds(cutout.path);
     const cy = (bounds.minY + bounds.maxY) / 2;
-    const flippedPath = cutout.path.map((pt) => mirrorPathPointY(pt, cy));
-    const newBounds = getPathBounds(flippedPath);
+    const flipped = mapPathRings(cutout, (ring) => ring.map((pt) => mirrorPathPointY(pt, cy)));
+    const newBounds = getPathBounds(flipped.path ?? []);
     return {
-      path: flippedPath,
+      ...flipped,
       x: newBounds.minX,
       y: newBounds.minY,
       width: newBounds.maxX - newBounds.minX,
@@ -129,7 +130,7 @@ export function flipSelectionHorizontal(
         updates.set(cutout.id, {
           ...patch,
           x: mirroredX,
-          path: patch.path.map((pt) => ({ ...pt, x: pt.x + dx })),
+          ...mapPathRings(patch, (ring) => translatePathPoints(ring, dx, 0)),
         });
       } else {
         updates.set(cutout.id, { ...patch, x: mirroredX });
@@ -167,7 +168,7 @@ export function flipSelectionVertical(
         updates.set(cutout.id, {
           ...patch,
           y: mirroredY,
-          path: patch.path.map((pt) => ({ ...pt, y: pt.y + dy })),
+          ...mapPathRings(patch, (ring) => translatePathPoints(ring, 0, dy)),
         });
       } else {
         updates.set(cutout.id, { ...patch, y: mirroredY });

@@ -29,7 +29,7 @@ import {
   type OutlineRing,
 } from '@/shared/utils/cutoutOutline';
 import { fitTestFootprintBox } from '@/shared/utils/fitTestPlan';
-import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
+import { pathCutoutCut, pathHoleCuts } from '@/shared/utils/pathCutoutOutline';
 import { slotCornerRadius } from '@/shared/utils/cutoutPolygon';
 import { combineGroupPolygons } from '../booleanGeometry';
 
@@ -104,14 +104,20 @@ function roundGrown(ring: OutlineRing, d: number): MultiPolygon {
 
 /**
  * A path as the generator cuts it: its clearance held back where the outline
- * is too tight for it, and its box when the path cannot be outlined at all.
+ * is too tight for it, its islands shrunk by the same clearance, and its box
+ * when the path cannot be outlined at all.
  */
-function pathRing(c: Cutout, clearance: number): OutlineRing | null {
+function pathRings(c: Cutout, clearance: number): OutlineRing[] {
   const cut = pathCutoutCut(c, clearance, 0);
-  if (!cut) return cutoutOutlineRing({ ...c, shape: 'rectangle', cornerRadius: 0 });
+  if (!cut) {
+    const box = cutoutOutlineRing({ ...c, shape: 'rectangle', cornerRadius: 0 });
+    return box ? [box] : [];
+  }
   const cx = c.x + c.width / 2;
   const cy = c.y + c.depth / 2;
-  return cut.base.map((p) => rotateAbout(cx + p.x, cy + p.y, cx, cy, c.rotation));
+  const turn = (ring: readonly { x: number; y: number }[]): OutlineRing =>
+    ring.map((p) => rotateAbout(cx + p.x, cy + p.y, cx, cy, c.rotation));
+  return [turn(cut.base), ...pathHoleCuts(c, clearance, 0).map((island) => turn(island.base))];
 }
 
 /**
@@ -130,16 +136,17 @@ function openingOf(c: Cutout, params: BinParams, clearance: boolean): MultiPolyg
       rings.flatMap((r) => (grow.clearance > 0 ? roundGrown(r, grow.clearance) : [[r]]))
     );
   }
-  const ring =
-    c.shape === 'path'
-      ? pathRing(c, grow.clearance)
-      : cutoutOutlineRing({
-          ...c,
-          x: c.x - (grow.w - c.width) / 2,
-          y: c.y - (grow.d - c.depth) / 2,
-          width: grow.w,
-          depth: grow.d,
-        });
+  if (c.shape === 'path') {
+    const rings = pathRings(c, grow.clearance).filter((r) => r.length >= 3);
+    return rings.length > 0 ? [rings] : [];
+  }
+  const ring = cutoutOutlineRing({
+    ...c,
+    x: c.x - (grow.w - c.width) / 2,
+    y: c.y - (grow.d - c.depth) / 2,
+    width: grow.w,
+    depth: grow.d,
+  });
   return ring && ring.length >= 3 ? [[ring]] : [];
 }
 

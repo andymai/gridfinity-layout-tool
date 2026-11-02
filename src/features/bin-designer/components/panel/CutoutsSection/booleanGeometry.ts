@@ -16,18 +16,18 @@
 import polygonClipping, { type MultiPolygon, type Polygon, type Ring } from 'polygon-clipping';
 import type { Cutout, GroupOp } from '@/features/bin-designer/types';
 import { DEFAULT_GROUP_OP } from '@/features/bin-designer/types';
-import { cutoutOutlineRing } from '@/shared/utils/cutoutOutline';
+import { cutoutHoleRings, cutoutOutlineRing } from '@/shared/utils/cutoutOutline';
 
 /**
- * Convert a cutout to a polygon-clipping `Polygon` (single outer ring,
- * no holes). Returns `null` for cutouts that are too degenerate to outline.
- * The ring itself comes from `@/shared/utils/cutoutOutline`, which the worker
- * and the lip-gap plan sample too, so a group's preview and its open-side
- * channels measure the same shape.
+ * Convert a cutout to a polygon-clipping `Polygon`: its outer ring, then a
+ * path's islands as holes. Returns `null` for cutouts that are too degenerate
+ * to outline. The rings come from `@/shared/utils/cutoutOutline`, which the
+ * worker and the lip-gap plan sample too, so a group's preview and its
+ * open-side channels measure the same shape.
  */
 export function cutoutToPolygon(c: Cutout): Polygon | null {
   const ring = cutoutOutlineRing(c);
-  return ring ? [ring] : null;
+  return ring ? [ring, ...cutoutHoleRings(c)] : null;
 }
 
 /**

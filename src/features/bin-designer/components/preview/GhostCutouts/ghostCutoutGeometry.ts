@@ -119,6 +119,17 @@ function localOutline(cutout: Cutout): OutlinePoint[] | null {
   }
 }
 
+/** A path's islands in the same local frame as {@link localOutline}. */
+function localHoles(cutout: Cutout): OutlinePoint[][] {
+  if (cutout.shape !== 'path' || !cutout.holes) return [];
+  const cx = cutout.x + cutout.width / 2;
+  const cy = cutout.y + cutout.depth / 2;
+  return cutout.holes
+    .map((hole) => flattenPath(hole))
+    .filter((flat) => flat.length >= 3)
+    .map((flat) => flat.map((p) => ({ x: p.x - cx, y: p.y - cy })));
+}
+
 function emitCutout(
   positions: number[],
   cutout: Cutout,
@@ -129,7 +140,20 @@ function emitCutout(
   if (cutout.width <= 0 || cutout.depth <= 0 || cutout.cutDepth <= 0) return;
   const outline = localOutline(cutout);
   if (!outline) return;
+  // An island's wall is a wall of the pocket too, so it ghosts the same way.
+  for (const ring of [outline, ...localHoles(cutout)]) {
+    emitRing(positions, cutout, ring, originX, originY, surfaceZ);
+  }
+}
 
+function emitRing(
+  positions: number[],
+  cutout: Cutout,
+  outline: readonly OutlinePoint[],
+  originX: number,
+  originY: number,
+  surfaceZ: number
+): void {
   const cx = originX + cutout.x + cutout.width / 2;
   const cy = originY + cutout.y + cutout.depth / 2;
   const lean = (resolveCutoutLeanDeg(cutout) * Math.PI) / 180;

@@ -89,7 +89,9 @@ import {
   pathCutoutCut,
   pathCutoutOutline,
   pathCutoutSections,
+  pathHoleCuts,
 } from '@/shared/utils/pathCutoutOutline';
+import type { PathCutoutSections } from '@/shared/utils/pathCutoutOutline';
 import type { Pt } from '@/shared/utils/polygonOffset';
 import {
   clearedProfile,
@@ -356,13 +358,24 @@ function buildUnrotatedCutoutShape(
       // Paths can't use the parametric profile loft; flatten + offset the outline
       // for the flared rim. On any failure, fall through to a straight extrude.
       try {
-        return buildChamferedPathShape(
-          cutout,
-          chamfer,
-          clearance,
-          topExt,
-          cutoutEntryProfile(cutout),
-          sunk
+        const flare = sunk?.flare ?? chamfer;
+        return withIslands(
+          buildChamferedPathShape(
+            cutout,
+            chamfer,
+            clearance,
+            topExt,
+            cutoutEntryProfile(cutout),
+            sunk
+          ),
+          pathHoleCuts(cutout, clearance, chamfer),
+          {
+            chamfer,
+            flare,
+            mouthZ: cutout.cutDepth - (sunk?.depth ?? 0),
+            topZ: fullDepth,
+            profile: cutoutEntryProfile(cutout),
+          }
         );
       } catch {
         /* fall through to the straight `case 'path'` below */
@@ -417,7 +430,11 @@ function buildUnrotatedCutoutShape(
     }
     case 'path': {
       try {
-        return buildPathCutoutShape({ ...cutout, cutDepth: fullDepth }, clearance);
+        return withIslands(
+          buildPathCutoutShape({ ...cutout, cutDepth: fullDepth }, clearance),
+          pathHoleCuts(cutout, clearance, 0),
+          { chamfer: 0, flare: 0, mouthZ: fullDepth, topZ: fullDepth, profile: 'chamfer' }
+        );
       } catch {
         // Self-intersecting or degenerate path — fall back to bounding box rectangle
         return box(cutout.width, cutout.depth, fullDepth, {
@@ -539,6 +556,72 @@ function buildChamferedPathShape(
   );
 }
 
+/** Height (mm) an island runs past the tool at either end, so neither cut face is shared. */
+const ISLAND_OVERRUN = 1;
+
+/**
+ * `tool` with each island left standing in it: a solid from below the floor
+ * to above the top, cut away so the bin keeps that material to its full
+ * height. A chamfered island goes through the pocket's own entry loft, so its
+ * top edge gets the same chamfer or round, shrinking where the pocket grows.
+ * An island whose loft cannot be built is kept straight; one that cannot be
+ * built at all is left out, and its pocket cuts through.
+ */
+function withIslands(
+  tool: Shape3D,
+  islands: readonly PathCutoutSections[],
+  edge: {
+    readonly chamfer: number;
+    readonly flare: number;
+    readonly mouthZ: number;
+    readonly topZ: number;
+    readonly profile: CutoutEntryProfile;
+  }
+): Shape3D {
+  let out = tool;
+  for (const island of islands) {
+    const solid = islandSolid(island, edge);
+    if (!solid) continue;
+    try {
+      const kept = unwrap(cut(out, solid));
+      out.delete();
+      out = kept;
+    } catch {
+      /* the island is left out and its pocket cuts through */
+    } finally {
+      solid.delete();
+    }
+  }
+  return out;
+}
+
+function islandSolid(
+  island: PathCutoutSections,
+  edge: Parameters<typeof withIslands>[2]
+): Shape3D | null {
+  const bottomZ = -ISLAND_OVERRUN;
+  const topZ = edge.topZ + ISLAND_OVERRUN;
+  if (edge.chamfer > MIN_LOFTED_CHAMFER) {
+    try {
+      return loftEntry(
+        entrySections(island, edge.chamfer, edge.flare),
+        edge.mouthZ,
+        edge.flare,
+        topZ,
+        edge.profile,
+        bottomZ
+      );
+    } catch {
+      /* kept straight below */
+    }
+  }
+  try {
+    return sketch(pathWire(island.base), 'XY', bottomZ).extrude(topZ - bottomZ);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * A chamfered path's outlines from {@link pathCutoutSections}, the same ones
  * the surface chamfer lofts between. A narrower `flare` takes its rim that much
@@ -559,7 +642,11 @@ function pathSections(
 ): EntrySections | null {
   const outline = pathCutoutOutline(cutout);
   const cut = outline ? pathCutoutSections(outline, clearance, chamfer) : null;
-  if (!cut) return null;
+  return cut ? entrySections(cut, chamfer, flare) : null;
+}
+
+/** Lofting sections between `cut`'s base and rim, its rim `flare / chamfer` of the way up. */
+function entrySections(cut: PathCutoutSections, chamfer: number, flare: number): EntrySections {
   const { base } = cut;
   const t = flare / chamfer;
   const rim: Pt[] =
@@ -1182,6 +1269,16 @@ function buildNestedEntryFlare(
     shape = loftEntry(sections, mouthZ, flare, topZ, cutoutEntryProfile(pocket));
   } catch {
     return null;
+  }
+  // This flare cuts on its own, so it has to leave the pocket's islands standing too.
+  if (pocket.shape === 'path') {
+    shape = withIslands(shape, pathHoleCuts(pocket, clearance, chamfer), {
+      chamfer,
+      flare,
+      mouthZ,
+      topZ,
+      profile: cutoutEntryProfile(pocket),
+    });
   }
   shape = applyCutoutLean(shape, lean, pocket.cutDepth);
   if (pocket.rotation !== 0) {
@@ -1940,7 +2037,7 @@ function roundedRectContains(lx: number, ly: number, hw: number, hd: number, r: 
  * paths extrude as their bounding box (see the shape builders), so their
  * containment tests fall back to the same box.
  */
-function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean {
+export function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean {
   const hw = cutout.width / 2;
   const hd = cutout.depth / 2;
   switch (cutout.shape) {
@@ -1961,7 +2058,13 @@ function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean
     case 'path': {
       const outline = pathCutoutOutline(cutout);
       if (!outline) return Math.abs(lx) <= hw && Math.abs(ly) <= hd;
-      return pointInPolyline(outline, lx, ly);
+      // A caption over an island lands on the surface the island keeps, measured
+      // on the island as cut: the clearance strip round it is pocket floor.
+      const islands = pathHoleCuts(cutout, clearedProfile(cutout).clearance, 0);
+      return (
+        pointInPolyline(outline, lx, ly) &&
+        !islands.some((island) => pointInPolyline(island.base, lx, ly))
+      );
     }
     case 'mesh':
       // The imported pocket floor is an arbitrary surface with no flat plane to

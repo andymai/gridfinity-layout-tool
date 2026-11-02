@@ -716,6 +716,8 @@
   "binDesigner.cutoutEditor.checks.lip": "{a} når {mm} mm in under staplingskanten, där ett verktyg kan haka i",
   "binDesigner.cutoutEditor.checks.floor": "Bara {mm} mm botten under {a}, som kan ge efter eller släppa igenom ljus",
   "binDesigner.cutoutEditor.checks.floorFix": "Lämna {mm} mm",
+  "binDesigner.cutoutEditor.checks.island": "En ö i {a} är bara {mm} mm bred upptill när spelrum och instickskant dras av",
+  "binDesigner.cutoutEditor.checks.islandFix": "Ta bort tunna öar",
   "binDesigner.cutoutEditor.checks.more": "Visa {count} till",
   "binDesigner.cutoutEditor.checks.fewer": "Visa färre",
   "binDesigner.cutoutEditor.offBoardWarning.one": "1 urtag kommer att beskäras",

@@ -716,6 +716,8 @@
   "binDesigner.cutoutEditor.checks.lip": "{a} заходить на {mm} мм під бортик для штабелювання, де інструмент може зачепитися",
   "binDesigner.cutoutEditor.checks.floor": "Лише {mm} мм дна під {a}, яке може прогинатися або просвічувати",
   "binDesigner.cutoutEditor.checks.floorFix": "Залишити {mm} мм",
+  "binDesigner.cutoutEditor.checks.island": "Острівець у {a} зверху лише {mm} мм завширшки, коли відняти зазор і вхідний край",
+  "binDesigner.cutoutEditor.checks.islandFix": "Прибрати тонкі острівці",
   "binDesigner.cutoutEditor.checks.more": "Показати ще {count}",
   "binDesigner.cutoutEditor.checks.fewer": "Показати менше",
   "binDesigner.cutoutEditor.offBoardWarning.one": "1 виріз буде обрізано",
