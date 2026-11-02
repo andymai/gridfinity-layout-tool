@@ -1,0 +1,38 @@
+src/features/baseplate/utils/splitPlanner.ts
+  s_f721a21584cb95::t_1ecef668d2cff2 665
+src/shared/types/bin.ts
+  s_f721a21584cb95::t_1ecef668d2cff2 739-741,743
+src/features/bin-designer/components/FeatureTip/FeatureTip.test.tsx
+  s_f721a21584cb95::t_332d2697fa019b 77
+api/lib/designerPullTabValidation.ts
+  s_f721a21584cb95::t_7162d7471cde25 50
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_f721a21584cb95::t_1ecef668d2cff2 1175
+src/features/baseplate/utils/stackPrint.ts
+  s_f721a21584cb95::t_1ecef668d2cff2 208,289-290,293-295,301-302
+src/features/bin-designer/components/panel/InteriorSection/useCutEditorOpens.test.ts
+  s_f721a21584cb95::t_90efeb0f2d631c 1-39
+api/lib/designerValidation.test.ts
+  s_f721a21584cb95::t_d531ef428675a9 136
+  s_f721a21584cb95::t_7162d7471cde25 150-151
+src/features/baseplate/utils/stackPrint.test.ts
+  s_f721a21584cb95::t_a8a005f8d9122e 511-549
+src/features/baseplate/utils/buildFullParams.ts
+  s_f721a21584cb95::t_1ecef668d2cff2 162,199,239,347-349,361,425
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "abd1d843038d4e8de700a7c7ea945c6677ba7722",
+  "prompts": {},
+  "sessions": {
+    "s_f721a21584cb95": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14ff3cc8-6691-4939-a25c-f6ba932191ef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
