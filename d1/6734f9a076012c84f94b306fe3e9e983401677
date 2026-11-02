@@ -1,0 +1,31 @@
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.tsx
+  s_2c42631c148a0b::t_fc4a1ad700ee89 75-76,79,85,102-122,124-138
+  s_2c42631c148a0b::t_9469c63a5c962b 244,275-280
+  s_2c42631c148a0b::t_1f82c3cb5e64e8 245-272
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.test.tsx
+  s_2c42631c148a0b::t_47fa09ed280d7d 230-242
+  s_2c42631c148a0b::t_337d4fbb3d262b 117-132
+src/features/generation/worker/generators/__kernel-tests__/wallCutoutSweep.test.ts
+  s_2c42631c148a0b::t_873c00c54385be 1-15,17-18,21,24-32,35-37,39,41-42,44,49,57-59,63-64,77-80,83-100,107-108,110-113,115-116,118-129,132-142,144,147-149
+  s_2c42631c148a0b::t_1f72dbb75a9ea5 16,19-20,22-23,33,38,40,43,45-48,50-55,60-62,65-76,81-82,101-106,109,114,117,131,143,145-146,150-151
+  s_2c42631c148a0b::t_a31705c1f587b7 34,56
+  s_2c42631c148a0b::t_2473f83074ee15 130
+src/features/generation/worker/generators/scenarios/wallCutouts.ts
+  s_2c42631c148a0b::t_d1924c2065ead4 1,3-4,7-54,266-270
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d16734f9a076012c84f94b306fe3e9e983401677",
+  "prompts": {},
+  "sessions": {
+    "s_2c42631c148a0b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6f90d5f-00a5-4075-a4a0-4889f54d1f4f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
