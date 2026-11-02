@@ -43,36 +43,18 @@ import {
   LID_MAGNET_DIMENSION_STEP_MM,
 } from '@/features/bin-designer/types';
 import { assessFloorPatternFit } from '@/features/bin-designer/utils/floorPatternFit';
-import { DESIGNER_CONSTRAINTS, minHeightUnits } from '@/features/bin-designer/constants';
+import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import {
   DEFAULT_FOOT_LATTICE,
   DEFAULT_LIGHTWEIGHT_MODE,
   resolveLipTip,
-  isEffectiveTile,
   isSocketlessBase,
 } from '@/features/bin-designer/types/base';
-import { bodyTypeParams, deriveBodyType } from './bodyType';
-import type { BodyType } from './bodyType';
+import { deriveBodyType } from './bodyType';
+import { useBodyTypeSwitch } from './useBodyTypeSwitch';
+import { finalizeBaseParams } from './finalizeBaseParams';
 import { useMagnetPressFit } from './useMagnetPressFit';
 import { resolveSlant } from '@/shared/utils/slantPlan';
-
-/** Drop the `tile` key entirely — absent is the off state, never `false`. */
-function omitTile(base: BinParams['base']): BinParams['base'] {
-  const { tile: _tile, ...rest } = base;
-  return rest;
-}
-
-/** Strip a `lightweightMode` that just restates the default. */
-function omitDefaultLightweightMode(base: BinParams['base']): BinParams['base'] {
-  const { lightweightMode: _mode, ...rest } = base;
-  return rest;
-}
-
-/** Strip a `lipTip` that just restates the default. */
-function omitDefaultLipTip(base: BinParams['base']): BinParams['base'] {
-  const { lipTip: _tip, ...rest } = base;
-  return rest;
-}
 
 /**
  * Strip the detachable-feet fields entirely.
@@ -110,6 +92,7 @@ export function useBaseSection() {
       setParams: s.setParams,
     }))
   );
+  const setBodyType = useBodyTypeSwitch();
 
   const base = params.base;
   const hasMagnet = hasMountingMagnets(base);
@@ -263,59 +246,9 @@ export function useBaseSection() {
     ? undefined
     : familyReason(lightweightStatus, floorPatternStatusForApplies);
 
-  // Every base toggle commits through here. Only an effective spacer may stand
-  // 1u tall, and several toggles can END one: leaving spacer mode, or
-  // enabling the flat base, which auto-disables the spacer via CONSTRAINT_RULES.
-  // Any of those would otherwise strand the bin under the ordinary floor, below
-  // what the height stepper will even let the user climb back out of.
-  //
-  // The floor is read off the RESOLVED params, never the requested change: the
-  // engine's post-check returns the params untouched when an enable turns out
-  // to be blocked, and it computes that verdict against the patched params
-  // rather than the `available` status each callback guarded on.
   const commit = useCallback(
     (resolved: BinParams) => {
-      if (isEffectiveTile(resolved.base)) {
-        // A base-only bin's height is inert (the wall is 0 and `assembledHeight`
-        // supplies the real height from the slab), so it is pinned rather than
-        // merely floored: two base-only bins
-        // that differ only in a number nothing reads must not fingerprint
-        // differently and defeat the community duplicate guard. The collar is
-        // inert for the same reason — generation forces it to 0 there — so
-        // it is dropped rather than left to drift the fingerprint.
-        // Explicitly `undefined`, not omitted: `setParams` merges via
-        // `Object.assign`, so leaving the key out would keep the stale value.
-        // JSON serialisation drops an undefined-valued key, so the stored design
-        // and its fingerprint come out the same as one that never had a collar.
-        setParams({ ...resolved, height: 1, extraWallHeightMm: undefined });
-        return;
-      }
-      // Off must end up ABSENT, not `false`. `resolveConstraints` writes
-      // `tile: false` whenever a rule auto-disables base-only mode (switching to a
-      // flat or lid base, enabling the spacer), and EVERY base toggle commits
-      // through here — so stripping only on the tile card's own path would
-      // still leave the key behind on the others and fingerprint an ordinary bin
-      // differently from an identical one that never tried the mode.
-      const withoutTile =
-        'tile' in resolved.base ? { ...resolved, base: omitTile(resolved.base) } : resolved;
-      // The relief mode gets the same treatment, for the same reason: 'interior'
-      // is what an absent field already means, so writing it would fingerprint a
-      // bin differently from an identical one whose owner never opened the
-      // control. Stripped here rather than in `setLightweightMode` so no future
-      // path can reintroduce it.
-      const withoutMode =
-        withoutTile.base.lightweightMode === 'interior'
-          ? { ...withoutTile, base: omitDefaultLightweightMode(withoutTile.base) }
-          : withoutTile;
-      // And the lip's peak finish, for the third time and the same reason:
-      // 'sharp' is what an absent field already means, so a bin that visited the
-      // control and came back must fingerprint as one that never did.
-      const next =
-        withoutMode.base.lipTip === 'sharp'
-          ? { ...withoutMode, base: omitDefaultLipTip(withoutMode.base) }
-          : withoutMode;
-      const minHeight = minHeightUnits(next.base, next.heightUnitMm);
-      setParams(next.height < minHeight ? { ...next, height: minHeight } : next);
+      setParams(finalizeBaseParams(resolved));
     },
     [setParams]
   );
@@ -434,19 +367,6 @@ export function useBaseSection() {
     });
     commit(resolved);
   }, [params, commit]);
-
-  /**
-   * Switch the base's archetype.
-   *
-   * `commit` still runs: `bodyTypeParams` produces the resolved params, but the
-   * height floor and the `tile: false` strip are this hook's job on every path.
-   */
-  const setBodyType = useCallback(
-    (next: BodyType) => {
-      commit(bodyTypeParams(params, next));
-    },
-    [params, commit]
-  );
 
   const toggleHalfSockets = useCallback(() => {
     if (!hasHalfSockets && !halfSocketsStatus.available) return;

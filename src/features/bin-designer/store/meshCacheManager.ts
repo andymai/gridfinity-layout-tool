@@ -92,7 +92,7 @@ export function evictIfNeeded(
     const entry = newPast[i];
     if (entry.mesh) {
       totalBytes -= entry.mesh.byteSize;
-      newPast[i] = { params: entry.params, mesh: null };
+      newPast[i] = { ...entry, mesh: null };
     }
   }
 
@@ -102,7 +102,7 @@ export function evictIfNeeded(
     const entry = newFuture[i];
     if (entry.mesh) {
       totalBytes -= entry.mesh.byteSize;
-      newFuture[i] = { params: entry.params, mesh: null };
+      newFuture[i] = { ...entry, mesh: null };
     }
   }
 

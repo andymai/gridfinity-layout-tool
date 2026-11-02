@@ -3027,6 +3027,7 @@ const en: Record<string, string> = {
     "A slanted bin can't be split, so lower the angle or make the bin smaller.",
   'binDesigner.dependency.enableStackingLip': 'Enable stacking lip',
   'binDesigner.dependency.editFootprint': 'Edit footprint',
+  'binDesigner.dependency.editHeight': 'Edit height',
   'binDesigner.multiColor.enableHint':
     'Assign different filaments to bin parts and export a multi-color 3MF.',
   'binDesigner.colors.body': 'Body',
@@ -3716,6 +3717,8 @@ const en: Record<string, string> = {
     'Solid material between the openings. 0.8 mm is two perimeters at a 0.4 mm nozzle; go thicker for a wall that gets knocked about.',
   'binDesigner.walls.pattern.allSlotted': 'All walls have divider slots',
   'binDesigner.walls.pattern.someSlotted': 'Walls with divider slots will keep solid walls',
+  'binDesigner.walls.pattern.collarNote':
+    'The pattern stops below the {mm} mm of extra wall height',
   'binDesigner.walls.pattern.sides': 'Patterned walls',
   'binDesigner.walls.pattern.sides.slotted': 'This wall has divider slots and stays solid',
   'binDesigner.walls.pattern.sides.none': 'Pick a wall, or pattern the divider walls below',
@@ -4198,9 +4201,11 @@ const en: Record<string, string> = {
     'These holes are too large for this base: try a finer scale',
   'binDesigner.heightUnit': 'Height unit',
   'binDesigner.heightUnitTooltip': 'Size of one height unit in mm (standard Gridfinity = 7mm)',
+  'binDesigner.heightUnitsDetail':
+    'Gridfinity measures height in units: 1u is {mm} mm. Bins with the same number of units come out the same height.',
   'binDesigner.extraWallHeight': 'Extra wall height',
-  'binDesigner.extraWallHeightTooltip':
-    'Raise the outer walls and stacking lip above the bin height, leaving the interior as-is. Adds headroom so tall contents are enclosed and a stacked bin rests on the taller rim.',
+  'binDesigner.extraWallHeightDetail':
+    'Raise the outer walls and stacking lip above the bin height, leaving the interior as-is. Adds headroom so tall contents are enclosed and a stacked bin rests on the taller rim. Wall patterns only cover the wall below it: for a taller patterned wall, raise Height instead.',
   'binDesigner.load': 'Load',
   'binDesigner.placeInLayout.action': 'Place in layout',
   'binDesigner.placeInLayout.defaultName': 'Custom bin',

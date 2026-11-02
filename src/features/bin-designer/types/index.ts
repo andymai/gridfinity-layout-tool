@@ -343,6 +343,7 @@ export * from './floor';
 export * from './splitConnector';
 export * from './binParams';
 export * from './generation';
+export * from './bodyTypeMemory';
 export * from './uiState';
 export * from './savedDesign';
 export * from './designVersion';

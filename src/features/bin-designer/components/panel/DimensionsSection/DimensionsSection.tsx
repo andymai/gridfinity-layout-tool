@@ -141,8 +141,16 @@ export function DimensionsSection() {
       {state.heightApplies && (
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-xs text-content-tertiary">{t('common.height')}</span>
-            <span className="text-label tabular-nums text-content-tertiary">{state.height}u</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-content-tertiary">{t('common.height')}</span>
+              <LabelInfo label={t('common.height')}>
+                {t('binDesigner.heightUnitsDetail', { mm: formatCompactMm(state.heightUnitMm) })}
+              </LabelInfo>
+            </div>
+            <span className="text-label tabular-nums text-content-tertiary">
+              {state.height}u<span> · </span>
+              {formatCompactMm(state.heightMm)} mm
+            </span>
           </div>
           <Stepper
             value={state.height}
@@ -163,12 +171,14 @@ export function DimensionsSection() {
           that encloses tall contents and keeps a stacked bin off them (#2500). */}
       <div>
         <div className="mb-1 flex items-center justify-between">
-          <span
-            className="text-xs text-content-tertiary"
-            title={t('binDesigner.extraWallHeightTooltip')}
-          >
-            {t('binDesigner.extraWallHeight')}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-content-tertiary">
+              {t('binDesigner.extraWallHeight')}
+            </span>
+            <LabelInfo label={t('binDesigner.extraWallHeight')}>
+              {t('binDesigner.extraWallHeightDetail')}
+            </LabelInfo>
+          </div>
           <span className="text-label tabular-nums text-content-tertiary">
             {state.extraWallHeightMm} mm
           </span>

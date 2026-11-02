@@ -42,6 +42,7 @@ import { slottedWalls } from '@/shared/utils/slotMath';
 import { resolveWallPatternSides } from '@/shared/utils/wallPatternSides';
 import { assessDividerPatternFit } from '@/features/bin-designer/utils/dividerPatternFit';
 import { getCompartmentCount } from '@/features/bin-designer/utils/compartments';
+import { formatCompactMm } from '@/features/bin-designer/utils/compartmentDimensions';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
 
 export function useWallsSection() {
@@ -176,6 +177,14 @@ export function useWallsSection() {
       return t('binDesigner.walls.pattern.kumiko.notLabelSlots');
     return undefined;
   }, [wallPattern.pattern, params, slotBlocked, t]);
+
+  // The pattern is sized to the nominal wall, so the extra wall height above it
+  // stays solid. A bin made taller that way looks like a pattern that stopped short.
+  const extraWallMm = params.base.tile === true ? 0 : Math.max(0, params.extraWallHeightMm ?? 0);
+  const patternCollarNote =
+    extraWallMm > 0 && patternInertReason === undefined && activePatternSideCount > 0
+      ? t('binDesigner.walls.pattern.collarNote', { mm: formatCompactMm(extraWallMm) })
+      : undefined;
 
   // ── Divider walls ─────────────────────────────────────────────────
   // The same pattern and scale carried through the compartment dividers, so a
@@ -426,6 +435,7 @@ export function useWallsSection() {
       patternSideBlocked: slotBlocked,
       patternSidesNote,
       patternInertReason,
+      patternCollarNote,
       dividersEnabled,
       dividersAvailableReason,
       dividersNote,

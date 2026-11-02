@@ -5,6 +5,7 @@ import type { HistoryEntry, SplitPieceMeshEntry } from './generation';
 import type { AssemblyPartType } from '@/shared/types/assembly';
 import type { OverhangHighlightSide } from './walls';
 import type { MeasurePoint } from '@/features/bin-designer/utils/measure3d';
+import type { BodyTypeMemory } from './bodyTypeMemory';
 
 /**
  * Eyedropper click anchor: which zone was hit and the viewport coords
@@ -140,6 +141,11 @@ export interface DesignerUIState {
    * reads only ids that still exist, so the queue never needs history.
    */
   readonly depthPromptIds: readonly string[];
+  /**
+   * Session state with the same lifetime as `depthPromptIds`: values from one
+   * design must never be given back to another.
+   */
+  readonly bodyTypeMemory: BodyTypeMemory | null;
   /** Per-piece mesh data for split bin preview (populated when exploded mode is active) */
   readonly splitPieceMeshes: readonly SplitPieceMeshEntry[];
   /** Currently hovered color zone in the panel (for 3D preview glow feedback) */
