@@ -87,6 +87,17 @@ function geometryFingerprint(c: Cutout): string {
     round3(c.chamferWidth ?? 0),
     c.entryProfile ?? 'chamfer',
     fingerBottom(c) ?? '-',
+    c.split
+      ? [
+          round3(c.split.a.x),
+          round3(c.split.a.y),
+          round3(c.split.b.x),
+          round3(c.split.b.y),
+          round3(c.split.cutDepth),
+          c.split.depthMode ?? '-',
+          round3(c.split.floorMm ?? -1),
+        ].join(',')
+      : '-',
     round3(c.scoopRadiusW ?? 0),
     round3(c.scoopRadiusD ?? 0),
     c.scoopEdges ? JSON.stringify(c.scoopEdges) : '-',

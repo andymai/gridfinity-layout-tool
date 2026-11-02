@@ -28,6 +28,7 @@ import type {
   CutoutArrayConfig,
   CutoutConfig,
   CutoutColorScope,
+  CutoutSplit,
   GroupOp,
   CutoutToggleProperties,
   ReorderDirection,
@@ -315,6 +316,8 @@ export interface DesignerState {
   addMeshCutout: (cutout: Cutout, asset: MeshAssetEntry) => void;
   removeCutout: (id: string) => void;
   updateCutout: (id: string, updates: Partial<Cutout>) => void;
+  /** Split a pocket into two depths along a line, or remove its split with null. */
+  setCutoutSplit: (id: string, split: CutoutSplit | null) => void;
   clearCutouts: () => void;
   duplicateCutouts: (cutoutIds: readonly string[]) => void;
   /**

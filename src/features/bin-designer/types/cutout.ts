@@ -90,6 +90,31 @@ export interface CutoutFinger {
   readonly bottom: CutoutFingerBottom;
 }
 
+/** A point in a cutout's own frame: mm from its centre, before it is turned. */
+export interface CutoutSplitPoint {
+  readonly x: number;
+  readonly y: number;
+}
+
+/** The modes side B of a split stores; it never cuts through. */
+export const SPLIT_DEPTH_MODES = ['floor'] as const;
+
+/**
+ * A straight line across a pocket that cuts each side to its own depth, from
+ * the same top. Side A lies left of `a` to `b` and keeps the cutout's own depth
+ * fields; side B takes these. The line sits in the cutout's own frame, so it
+ * moves and turns with the pocket.
+ */
+export interface CutoutSplit {
+  readonly a: CutoutSplitPoint;
+  readonly b: CutoutSplitPoint;
+  readonly cutDepth: number;
+  /** Absent means a fixed depth. */
+  readonly depthMode?: (typeof SPLIT_DEPTH_MODES)[number];
+  /** Read only in `floor` mode, as {@link Cutout.floorMm} is. */
+  readonly floorMm?: number;
+}
+
 /** Ordered mode list for UI rendering and exhaustiveness checks. */
 export const CUTOUT_DEPTH_MODES: readonly CutoutDepthMode[] = ['fixed', 'floor', 'through'];
 
@@ -133,6 +158,10 @@ export const MAX_CUTOUT_CHAMFER = 5;
 /** Highest {@link Cutout.floorMm} a file may carry: the tallest bin's height
  *  (MAX_HEIGHT units at 7mm). Mirrored in `api/lib/designerValidationConstants.ts`. */
 export const MAX_CUTOUT_FLOOR_MM = 350;
+
+/** Farthest a split line's point may sit from its pocket's centre (mm). Only
+ *  stops absurd values. Mirrored in `api/lib/designerValidationConstants.ts`. */
+export const MAX_SPLIT_POINT_MM = 1000;
 
 /** Straight wall (mm) that must remain below the bevel, so a chamfer never
  *  consumes the full cut depth. */
@@ -612,6 +641,8 @@ export interface Cutout {
   readonly entryProfile?: CutoutEntryProfile;
   /** Present on a finger-access cut; read only on a slot or a circle. */
   readonly finger?: CutoutFinger;
+  /** Present on a pocket cut to two depths either side of a line. */
+  readonly split?: CutoutSplit;
   /**
    * Tilt of the pocket's axis off vertical, in degrees (±{@link
    * MAX_CUTOUT_LEAN_DEG}), so an item slides in at a slope. The pocket is the

@@ -829,6 +829,10 @@
           "$ref": "#/$defs/CutoutFinger",
           "description": "Makes a 'slot' or 'circle' a finger cut beside a pocket, so a fingertip can reach under the tool and lift it. Ignored on any other shape."
         },
+        "split": {
+          "$ref": "#/$defs/CutoutSplit",
+          "description": "Divides the pocket along a straight line so each side is cut to its own depth from the same top, making a step. Side A keeps cutDepth, depthMode and floorMm; side B takes the split's. Ignored on a leaning pocket, a through cut, a group member, or a mesh, text, knifeSlot or finger cut, and where the line no longer crosses the outline twice."
+        },
         "leanDeg": {
           "type": "number",
           "minimum": -45,
@@ -1065,6 +1069,65 @@
         "back": {
           "type": "boolean",
           "description": "Scoop the +Y edge."
+        }
+      }
+    },
+    "CutoutSplit": {
+      "type": "object",
+      "description": "A line across a pocket and the depth of the side to its right.",
+      "required": ["a", "b", "cutDepth"],
+      "properties": {
+        "a": {
+          "$ref": "#/$defs/CutoutSplitPoint",
+          "description": "Where the line starts. Side A lies to its left, looking from a to b."
+        },
+        "b": {
+          "$ref": "#/$defs/CutoutSplitPoint",
+          "description": "Another point on the line."
+        },
+        "cutDepth": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "How deep side B is cut in mm. Derived from depthMode when it is set, as the pocket's own cutDepth is."
+        },
+        "depthMode": {
+          "enum": ["floor"],
+          "x-constant": {
+            "enum": "SPLIT_DEPTH_MODES"
+          },
+          "description": "Absent: side B's cutDepth as written. 'floor': side B's floor is held to floorMm above the bin's underside. Side B never cuts through."
+        },
+        "floorMm": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 350,
+          "x-constant": {
+            "maximum": "MAX_CUTOUT_FLOOR_MM"
+          },
+          "description": "Plastic under side B's floor in mm, measured as the pocket's own floorMm is. Read only in floor mode."
+        }
+      }
+    },
+    "CutoutSplitPoint": {
+      "type": "object",
+      "description": "A point in the pocket's own frame: mm from its centre, before its rotation.",
+      "required": ["x", "y"],
+      "properties": {
+        "x": {
+          "type": "number",
+          "minimum": -1000,
+          "maximum": 1000,
+          "x-constant": {
+            "maximum": "MAX_SPLIT_POINT_MM"
+          }
+        },
+        "y": {
+          "type": "number",
+          "minimum": -1000,
+          "maximum": 1000,
+          "x-constant": {
+            "maximum": "MAX_SPLIT_POINT_MM"
+          }
         }
       }
     },

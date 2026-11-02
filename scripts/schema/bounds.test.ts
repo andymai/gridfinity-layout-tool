@@ -76,6 +76,7 @@ import {
   MAX_CUTOUT_CLEARANCE,
   MAX_CUTOUT_FLOOR_MM,
   MAX_CUTOUT_LEAN_DEG,
+  MAX_SPLIT_POINT_MM,
   MAX_GROUP_NAME_LENGTH,
   MAX_PARENT_GROUPS,
   MAX_POLYGON_SIDES,
@@ -83,6 +84,7 @@ import {
   STORED_CUTOUT_DEPTH_MODES,
   CUTOUT_ENTRY_PROFILES,
   CUTOUT_FINGER_BOTTOMS,
+  SPLIT_DEPTH_MODES,
 } from '@/features/bin-designer/types/cutout';
 import {
   ACCENT_BAND_DEFAULT_MM,
@@ -148,6 +150,7 @@ const SOURCES: Record<string, unknown> = {
   STORED_CUTOUT_DEPTH_MODES,
   CUTOUT_ENTRY_PROFILES,
   CUTOUT_FINGER_BOTTOMS,
+  SPLIT_DEPTH_MODES,
   FEET_MODES,
   FLOOR_PATTERN_TYPES,
   FOOT_LATTICES,
@@ -208,6 +211,7 @@ const SOURCES: Record<string, unknown> = {
   MAX_CUTOUT_CLEARANCE,
   MAX_CUTOUT_FLOOR_MM,
   MAX_CUTOUT_LEAN_DEG,
+  MAX_SPLIT_POINT_MM,
   MAX_LID_CUTOUTS,
   MAX_POLYGON_SIDES,
   MIN_POLYGON_SIDES,
@@ -279,7 +283,7 @@ const annotations = collectAnnotations();
  * a drop means someone deleted provenance rather than a bound legitimately
  * becoming hand-picked, which is the erosion this guards against.
  */
-const MIN_ANNOTATED_BOUNDS = 226;
+const MIN_ANNOTATED_BOUNDS = 230;
 
 describe('x-constant annotations', () => {
   it('finds annotations to check', () => {

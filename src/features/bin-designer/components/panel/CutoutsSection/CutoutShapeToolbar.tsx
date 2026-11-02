@@ -79,7 +79,8 @@ export function CutoutShapeToolbar({
     mode.type === 'group-scaling' ||
     mode.type === 'marquee' ||
     mode.type === 'vertex-editing';
-  const isRulerActive = mode.type === 'ruler-ready' || mode.type === 'measuring';
+  const isRulerActive =
+    (mode.type === 'ruler-ready' || mode.type === 'measuring') && mode.splitId === undefined;
 
   const handleClick = (shape: CutoutShape) => {
     if (activeShape === shape) {

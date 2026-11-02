@@ -94,6 +94,17 @@ describe('planNestedOpenings', () => {
     expect(plan.flares).toEqual([]);
   });
 
+  it("sinks a pocket on a split floor no deeper than the split's shallower side", () => {
+    const split = {
+      ...TRAY,
+      cutDepth: 12,
+      split: { a: { x: 0, y: -20 }, b: { x: 0, y: 20 }, cutDepth: 6 },
+    };
+    const onB = { ...SLOT, x: 48, width: 15 };
+    const plan = planNestedOpenings([split, onB], SURFACE);
+    expect([...plan.sunk]).toEqual([['slot', { depth: 6, flare: 0.8 }]]);
+  });
+
   it('gives a pocket crossing the floor outline a flare trimmed to it', () => {
     const plan = planNestedOpenings([TRAY, { ...SLOT, x: 55 }], SURFACE);
     expect(plan.sunk.size).toBe(0);

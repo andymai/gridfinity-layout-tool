@@ -44,6 +44,46 @@ export const VALID_CUTOUT_ENTRY_PROFILES = ['chamfer', 'round'] as const;
 export const VALID_CUTOUT_FINGER_BOTTOMS = ['curved', 'flat'] as const;
 
 /**
+ * Cross-boundary contract: MUST match `SPLIT_DEPTH_MODES` in
+ * `src/features/bin-designer/types/cutout.ts`.
+ */
+export const VALID_SPLIT_DEPTH_MODES = ['floor'] as const;
+
+function splitProblem(split: unknown): string | null {
+  if (!isObject(split)) return 'must be an object';
+  for (const end of ['a', 'b'] as const) {
+    const p = split[end];
+    if (
+      !isObject(p) ||
+      !isNumber(p.x) ||
+      !isNumber(p.y) ||
+      Math.abs(p.x) > CONSTRAINTS.MAX_SPLIT_POINT_MM ||
+      Math.abs(p.y) > CONSTRAINTS.MAX_SPLIT_POINT_MM
+    ) {
+      return `.${end} must be a point within ±${CONSTRAINTS.MAX_SPLIT_POINT_MM} mm`;
+    }
+  }
+  // Unbounded above, as the pocket's own depth is: a custom height unit can make
+  // a bin taller than any fixed ceiling, and the generator clamps to the fill.
+  if (!isNumber(split.cutDepth) || split.cutDepth <= 0) {
+    return '.cutDepth must be above 0';
+  }
+  if (
+    split.depthMode !== undefined &&
+    !VALID_SPLIT_DEPTH_MODES.includes(split.depthMode as (typeof VALID_SPLIT_DEPTH_MODES)[number])
+  ) {
+    return `.depthMode must be one of: ${VALID_SPLIT_DEPTH_MODES.join(', ')}`;
+  }
+  if (
+    split.floorMm !== undefined &&
+    !(isNumber(split.floorMm) && inRange(split.floorMm, 0, CONSTRAINTS.MAX_CUTOUT_FLOOR_MM))
+  ) {
+    return `.floorMm must be between 0 and ${CONSTRAINTS.MAX_CUTOUT_FLOOR_MM}`;
+  }
+  return null;
+}
+
+/**
  * Global fill level for a cutout bin.
  *
  * `topOffset` reaches the generator as `wallHeight - topOffset`, so a
@@ -127,6 +167,10 @@ export function validateCutouts(value: unknown): string | null {
       )
     ) {
       return `cutouts[${i}].finger.bottom must be one of: ${VALID_CUTOUT_FINGER_BOTTOMS.join(', ')}`;
+    }
+    if (c.split !== undefined) {
+      const problem = splitProblem(c.split);
+      if (problem) return `cutouts[${i}].split${problem.startsWith('.') ? problem : ` ${problem}`}`;
     }
     // The depth mode decides how deep the generator cuts, so an unknown one must
     // stop here rather than build silently as a fixed depth.

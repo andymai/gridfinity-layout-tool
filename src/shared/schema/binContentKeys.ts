@@ -205,6 +205,7 @@ export const CUTOUT_KEYS = [
   'chamferWidth',
   'entryProfile',
   'finger',
+  'split',
   'leanDeg',
   'array',
   'engraveLabel',
@@ -281,6 +282,16 @@ export type _CutoutOpenSideSpecKeys = Assert<
 export const CUTOUT_FINGER_KEYS = ['bottom'] as const;
 export type _CutoutFingerKeys = Assert<
   KeysMatch<keyof NonNullable<Cutout['finger']>, (typeof CUTOUT_FINGER_KEYS)[number]>
+>;
+
+export const CUTOUT_SPLIT_KEYS = ['a', 'b', 'cutDepth', 'depthMode', 'floorMm'] as const;
+export type _CutoutSplitKeys = Assert<
+  KeysMatch<keyof NonNullable<Cutout['split']>, (typeof CUTOUT_SPLIT_KEYS)[number]>
+>;
+
+export const CUTOUT_SPLIT_POINT_KEYS = ['x', 'y'] as const;
+export type _CutoutSplitPointKeys = Assert<
+  KeysMatch<keyof NonNullable<Cutout['split']>['a'], (typeof CUTOUT_SPLIT_POINT_KEYS)[number]>
 >;
 
 export const CUTOUT_SCOOP_EDGES_KEYS = ['left', 'right', 'front', 'back'] as const;

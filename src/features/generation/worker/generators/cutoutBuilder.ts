@@ -100,6 +100,8 @@ import {
 } from '@/shared/utils/cutoutFit';
 import { planNestedOpenings } from '@/shared/utils/nestedCutoutOpenings';
 import { isThroughCut } from '@/shared/utils/cutoutDepth';
+import { effectiveSplit, onSideB, shallowerDepth } from '@/shared/utils/cutoutSplit';
+import { buildSplitTool, splitSidePrism } from './cutoutSplitTool';
 import type { FloorTrim, NestedOpening, SunkMouth } from '@/shared/utils/nestedCutoutOpenings';
 import { buildTaperedInnerEnvelope } from './taperedOuter';
 import type { ResolvedTaper } from './overhang';
@@ -751,22 +753,11 @@ export function buildUngroupedCutout(
   originY: number,
   sunk?: SunkMouth
 ): Shape3D | null {
-  const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
+  const effectiveDepth = toolDepth(cutout, solidSurfaceZ);
   if (effectiveDepth <= 0) return null;
 
-  let shape = buildUnrotatedCutoutShape({ ...cutout, cutDepth: effectiveDepth }, sunk);
+  let shape = buildLocalTool(cutout, solidSurfaceZ, sunk);
   if (!shape) return null;
-
-  const scoop = resolveScoop(cutout, effectiveDepth);
-  if (scoop.w > 0 || scoop.d > 0) {
-    const filleted = applyAxisAwareScoop(shape, cutout, scoop);
-    if (filleted !== shape) {
-      shape.delete();
-      shape = filleted;
-    }
-  }
-
-  shape = applyCutoutLean(shape, resolveCutoutLeanDeg(cutout), effectiveDepth);
 
   if (cutout.rotation !== 0) {
     const rotated = rotate(shape, -cutout.rotation, { axis: [0, 0, 1] });
@@ -781,6 +772,47 @@ export function buildUngroupedCutout(
   ]);
   shape.delete();
   return positioned;
+}
+
+/** How deep a cutout's tool reaches below the fill surface: its deeper side, when split. */
+function toolDepth(cutout: Cutout, solidSurfaceZ: number): number {
+  const split = effectiveSplit(cutout);
+  return Math.min(Math.max(cutout.cutDepth, split?.cutDepth ?? 0), solidSurfaceZ);
+}
+
+/**
+ * A cutout's tool in its own frame before it is turned, scooped and leaned,
+ * spanning z = 0 to {@link toolDepth}.
+ */
+function buildLocalTool(
+  cutout: Cutout,
+  solidSurfaceZ: number,
+  sunk: SunkMouth | undefined
+): Shape3D | null {
+  const atDepth =
+    (c: Cutout) =>
+    (cutDepth: number): Shape3D | null => {
+      let shape = buildUnrotatedCutoutShape({ ...c, cutDepth }, sunk);
+      if (!shape) return null;
+      const scoop = resolveScoop(c, cutDepth);
+      if (scoop.w > 0 || scoop.d > 0) {
+        const filleted = applyAxisAwareScoop(shape, c, scoop);
+        if (filleted !== shape) {
+          shape.delete();
+          shape = filleted;
+        }
+      }
+      return applyCutoutLean(shape, resolveCutoutLeanDeg(c), cutDepth);
+    };
+  const depthA = Math.min(cutout.cutDepth, solidSurfaceZ);
+  const split = effectiveSplit(cutout);
+  if (!split) return depthA > 0 ? atDepth(cutout)(depthA) : null;
+  const depthB = Math.min(split.cutDepth, solidSurfaceZ);
+  // Both halves take the entry edge the shallower side has wall for, or the
+  // rims differ where the line meets the mouth and leave a notch.
+  const chamferWidth = entryChamferWidth({ ...cutout, cutDepth: Math.min(depthA, depthB) });
+  const shared = { ...cutout, chamferWidth };
+  return buildSplitTool(shared, split, depthA, depthB, atDepth(shared));
 }
 
 /**
@@ -1052,7 +1084,7 @@ export function buildArrayUngroupedCutouts(
   originY: number,
   sunkOf: (instanceId: string) => SunkMouth | undefined = () => undefined
 ): Shape3D[] {
-  const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
+  const effectiveDepth = toolDepth(cutout, solidSurfaceZ);
   if (effectiveDepth <= 0 || !cutout.array) return [];
 
   const instances = expandCutoutArray(cutout);
@@ -1063,19 +1095,8 @@ export function buildArrayUngroupedCutouts(
   const nonUniformRotation = cutout.array.mode === 'radial' && cutout.array.rotateToCenter;
 
   const buildMaster = (sunk: SunkMouth | undefined): Shape3D | null => {
-    let master = buildUnrotatedCutoutShape({ ...cutout, cutDepth: effectiveDepth }, sunk);
+    let master = buildLocalTool(cutout, solidSurfaceZ, sunk);
     if (!master) return null;
-
-    const scoop = resolveScoop(cutout, effectiveDepth);
-    if (scoop.w > 0 || scoop.d > 0) {
-      const filleted = applyAxisAwareScoop(master, cutout, scoop);
-      if (filleted !== master) {
-        master.delete();
-        master = filleted;
-      }
-    }
-
-    master = applyCutoutLean(master, resolveCutoutLeanDeg(cutout), effectiveDepth);
 
     // Bake the uniform rotation into master so instances only need a translate.
     if (!nonUniformRotation && cutout.rotation !== 0) {
@@ -1136,7 +1157,10 @@ function buildNestedEntryFlare(
   originY: number
 ): Shape3D | null {
   const { floorDepth, flare, rise } = opening;
-  const pocket = { ...opening.pocket, cutDepth: Math.min(opening.pocket.cutDepth, solidSurfaceZ) };
+  const pocket = {
+    ...opening.pocket,
+    cutDepth: Math.min(shallowerDepth(opening.pocket), solidSurfaceZ),
+  };
   const lean = resolveCutoutLeanDeg(pocket);
   const { clearance, w, d } = clearedProfile(pocket);
   const chamfer = entryChamferWidth(pocket);
@@ -1190,7 +1214,7 @@ function buildFloorPrism(
 ): Shape3D | null {
   const chamferWidth = entryChamferWidth({
     ...floor,
-    cutDepth: Math.min(floor.cutDepth, solidSurfaceZ),
+    cutDepth: Math.min(shallowerDepth(floor), solidSurfaceZ),
   });
   const span = solidSurfaceZ + FLOOR_PRISM_UNDERSHOOT;
   let shape = buildUnrotatedCutoutShape({ ...floor, cutDepth: span, chamferWidth, leanDeg: 0 });
@@ -1878,6 +1902,9 @@ function clipToInterior(
   return clipped;
 }
 
+/** How far above the fill a split caption's clip reaches, past any raised glyph (mm). */
+const LABEL_CLIP_HEADROOM_MM = 20;
+
 /** A cutout label solid plus how it must be applied to the bin. */
 interface CutoutLabelShape {
   readonly solid: Shape3D;
@@ -1965,6 +1992,18 @@ function labelOverCavity(
   originX: number,
   originY: number
 ): boolean {
+  const [lx, ly] = labelLocal(cutout, centerX, centerY, originX, originY);
+  return labelCenterInFootprint(cutout, lx, ly);
+}
+
+/** A label centre in its cutout's own frame, the frame the tool is built in. */
+function labelLocal(
+  cutout: Cutout,
+  centerX: number,
+  centerY: number,
+  originX: number,
+  originY: number
+): [number, number] {
   const dx = centerX - (originX + cutout.x + cutout.width / 2);
   const dy = centerY - (originY + cutout.y + cutout.depth / 2);
   // Localize with the inverse of the shape's world rotation —
@@ -1972,9 +2011,7 @@ function labelOverCavity(
   const theta = (cutout.rotation * Math.PI) / 180;
   const c = Math.cos(theta);
   const s = Math.sin(theta);
-  const lx = dx * c - dy * s;
-  const ly = dx * s + dy * c;
-  return labelCenterInFootprint(cutout, lx, ly);
+  return [dx * c - dy * s, dx * s + dy * c];
 }
 
 /**
@@ -2101,50 +2138,113 @@ function buildCutoutLabel(
 
   const overCavity = labelOverCavity(cutout, centerX, centerY, originX, originY);
   if (floor === 'open' && overCavity) return null;
-  const surfaceZ =
-    floor === 'recess' && overCavity
-      ? solidSurfaceZ - Math.min(cutout.cutDepth, solidSurfaceZ)
-      : solidSurfaceZ;
   const mode = cutoutLabelMode(style.mode);
-  const onRecessFloor = surfaceZ < solidSurfaceZ;
-  // A recess consuming the full fill depth leaves no floor to engrave into or
-  // lay flat text on — the interior clip stops at z=0 to protect the base, so
-  // skip the label.
-  if ((mode === 'engrave' || mode === 'flat') && surfaceZ <= 0) return null;
+  const labelAt = (surfaceZ: number): CutoutLabelShape | null => {
+    const onRecessFloor = surfaceZ < solidSurfaceZ;
+    // A recess consuming the full fill depth leaves no floor to engrave into or
+    // lay flat text on — the interior clip stops at z=0 to protect the base, so
+    // skip the label.
+    if ((mode === 'engrave' || mode === 'flat') && surfaceZ <= 0) return null;
 
-  return withScope((scope: DisposalScope): CutoutLabelShape | null => {
-    const result = buildTextSolid(scope, {
-      text: label,
-      // A cutout label's position is decided by `cutoutLabelPlacement`, which
-      // already resolved this cutout's own anchor and offset into the band
-      // handed over as the host box. Letting the design-wide anchor apply again
-      // would push the caption into a corner of that band and double-count the
-      // nudge. The typographic fields (face, tracking, case, cut profile) DO
-      // apply: a design's type reads the same everywhere, only the placement
-      // mechanism differs.
-      style: { ...style, mode, anchor: 'center', offset: ZERO_TEXT_OFFSET },
-      availW,
-      availD,
-      centerX,
-      centerY,
-      // A flat label on a recess floor rides the cavity tool rather than the
-      // body, so its prism stands on the floor inside the tool: lifted by its
-      // own depth, its bottom face is the one that meets the floor.
-      topZ: mode === 'flat' && onRecessFloor ? surfaceZ + flatTextPrismDepth(surfaceZ) : surfaceZ,
-      depth: style.depth,
-      hostThickness: surfaceZ,
-      // A text element IS its text, so the element's rotation turns the
-      // glyphs; other shapes rotate their cavity and carry a separate angle.
-      angleDeg: cutout.shape === 'text' ? cutout.rotation : (cutout.textAngle ?? 0),
+    return withScope((scope: DisposalScope): CutoutLabelShape | null => {
+      const result = buildTextSolid(scope, {
+        text: label,
+        // A cutout label's position is decided by `cutoutLabelPlacement`, which
+        // already resolved this cutout's own anchor and offset into the band
+        // handed over as the host box. Letting the design-wide anchor apply again
+        // would push the caption into a corner of that band and double-count the
+        // nudge. The typographic fields (face, tracking, case, cut profile) DO
+        // apply: a design's type reads the same everywhere, only the placement
+        // mechanism differs.
+        style: { ...style, mode, anchor: 'center', offset: ZERO_TEXT_OFFSET },
+        availW,
+        availD,
+        centerX,
+        centerY,
+        // A flat label on a recess floor rides the cavity tool rather than the
+        // body, so its prism stands on the floor inside the tool: lifted by its
+        // own depth, its bottom face is the one that meets the floor.
+        topZ: mode === 'flat' && onRecessFloor ? surfaceZ + flatTextPrismDepth(surfaceZ) : surfaceZ,
+        depth: style.depth,
+        hostThickness: surfaceZ,
+        // A text element IS its text, so the element's rotation turns the
+        // glyphs; other shapes rotate their cavity and carry a separate angle.
+        angleDeg: cutout.shape === 'text' ? cutout.rotation : (cutout.textAngle ?? 0),
+      });
+      if (!result) return null;
+      // Emboss below the fill top means "inside a recess" — reroute from the
+      // fuse pile to the cavity carve so the raised text survives the cut pass.
+      // Flat there imprints the cavity instead: fuses run before the cut that
+      // opens the floor, so in the fuse pile the prism would sit inside solid
+      // material and leave no outline.
+      const op =
+        result.op !== 'fuse' || !onRecessFloor ? result.op : mode === 'flat' ? 'imprint' : 'carve';
+      return { solid: unwrap(clone(result.solid)), op };
     });
-    if (!result) return null;
-    // Emboss below the fill top means "inside a recess" — reroute from the
-    // fuse pile to the cavity carve so the raised text survives the cut pass.
-    // Flat there imprints the cavity instead: fuses run before the cut that
-    // opens the floor, so in the fuse pile the prism would sit inside solid
-    // material and leave no outline.
-    const op =
-      result.op !== 'fuse' || !onRecessFloor ? result.op : mode === 'flat' ? 'imprint' : 'carve';
-    return { solid: unwrap(clone(result.solid)), op };
-  });
+  };
+
+  const floorZ = (depth: number): number => solidSurfaceZ - Math.min(depth, solidSurfaceZ);
+  const recess = floor === 'recess' && overCavity;
+  const split = recess ? effectiveSplit(cutout) : null;
+  if (!split) return labelAt(recess ? floorZ(cutout.cutDepth) : solidSurfaceZ);
+
+  // On a split floor the caption sits on the floor under its centre, and where
+  // it crosses the line each side's glyphs move to that side's floor: one plane
+  // would bury them under the shallow floor or leave them hanging over the deep
+  // one.
+  const local = (x: number, y: number) => {
+    const [px, py] = labelLocal(cutout, x, y, originX, originY);
+    return { x: px, y: py };
+  };
+  const centreOnB = onSideB(split, local(centerX, centerY));
+  const depthOn = (sideB: boolean): number => (sideB ? split.cutDepth : cutout.cutDepth);
+  const clipToSide = (solid: Shape3D, sideB: boolean): Shape3D | null => {
+    const prism = splitSidePrism(cutout, split, sideB, -1, solidSurfaceZ + LABEL_CLIP_HEADROOM_MM);
+    const turned = rotate(prism, -cutout.rotation, { axis: [0, 0, 1] });
+    prism.delete();
+    const placed = translate(turned, [
+      originX + cutout.x + cutout.width / 2,
+      originY + cutout.y + cutout.depth / 2,
+      0,
+    ]);
+    turned.delete();
+    try {
+      const clipped = intersect(solid, placed);
+      if (!isOk(clipped)) return null;
+      if (getSolids(clipped.value).length > 0) return clipped.value;
+      clipped.value.delete();
+      return null;
+    } finally {
+      solid.delete();
+      placed.delete();
+    }
+  };
+  const first = labelAt(floorZ(depthOn(centreOnB)));
+  if (!first) {
+    // The centre's side has no floor to carry text; the glyphs over the other
+    // side's floor still print there.
+    const other = labelAt(floorZ(depthOn(!centreOnB)));
+    const kept = other ? clipToSide(other.solid, !centreOnB) : null;
+    return kept && other ? { solid: kept, op: other.op } : null;
+  }
+  const box = getBounds(first.solid);
+  const corners = [
+    local(box.xMin, box.yMin),
+    local(box.xMax, box.yMin),
+    local(box.xMax, box.yMax),
+    local(box.xMin, box.yMax),
+  ];
+  if (corners.every((p) => onSideB(split, p) === centreOnB)) return first;
+
+  const second = labelAt(floorZ(depthOn(!centreOnB)));
+  const near = clipToSide(first.solid, centreOnB);
+  const far = second ? clipToSide(second.solid, !centreOnB) : null;
+  if (!near || !far) {
+    const only = near ?? far;
+    return only ? { solid: only, op: first.op } : null;
+  }
+  const joined = fuse(near, far);
+  near.delete();
+  far.delete();
+  return isOk(joined) ? { solid: joined.value, op: first.op } : null;
 }

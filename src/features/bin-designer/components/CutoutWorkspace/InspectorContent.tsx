@@ -43,6 +43,7 @@ import { BinFeaturesSection } from './BinFeaturesSection';
 import { FitTestButton } from './FitTestButton';
 import { AlignControls } from './AlignControls';
 import { RepeatSuggestion } from './RepeatSuggestion';
+import type { SplitTool } from './CutoutSplitControls';
 import { useRepeatSuggestion } from '@/features/bin-designer/hooks/useRepeatSuggestion';
 
 /** Matches the per-cutout minimum the single-cutout inspector enforces. */
@@ -76,6 +77,7 @@ interface InspectorContentProps {
   readonly onFitCue?: (cue: FitCue) => void;
   readonly onFlattenArray?: (id: string) => void;
   readonly onAddFingerAccess?: (id: string) => void;
+  readonly splitTool?: SplitTool;
   /** Bakes a repeated group into one independent group per copy. */
   readonly onFlattenGroupArray?: (id: string) => void;
   readonly board?: BoardSettings;
@@ -204,6 +206,7 @@ export function InspectorContent({
   onFitCue,
   onFlattenArray,
   onAddFingerAccess,
+  splitTool,
   onFlattenGroupArray,
   board,
   offBoardCount = 0,
@@ -403,6 +406,7 @@ export function InspectorContent({
           onFitCue={onFitCue}
           onFlattenArray={onFlattenArray}
           onAddFingerAccess={onAddFingerAccess}
+          splitTool={splitTool}
           disabled={disabled}
         />
       )}
