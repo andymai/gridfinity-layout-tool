@@ -31,12 +31,15 @@ const ARCHETYPE_FEATURES: ReadonlySet<FeatureKey> = new Set<FeatureKey>([
 ]);
 
 /**
- * Config that belongs to one body type. A feature stored there (magnets on a
- * Nesting base live in `trayBottom`) is remembered without it, since writing
- * the slot onto another body would leave tray config on a bin with no tray.
+ * Slots a setting is remembered without, because writing one back carries more
+ * than that setting: `trayBottom` is Nesting's own config, and `base.style`
+ * encodes the flat and lid bodies and both attachments at once. A feature
+ * stored there (magnets, screws) comes back through the target body's enable
+ * patch, which composes with what the bin has now.
  */
-const ARCHETYPE_SLOTS: ReadonlySet<string> = new Set([
+const SHARED_SLOTS: ReadonlySet<string> = new Set([
   'base.trayBottom',
+  'base.style',
   'base.tile',
   'base.spacer',
 ]);
@@ -124,7 +127,7 @@ function collectCleared(before: BinParams, after: BinParams): ClearedBodySetting
     if (ARCHETYPE_FEATURES.has(feature)) continue;
     const manifest = FEATURE_MANIFESTS[feature];
     if (!manifest.isEnabled(before) || manifest.isEnabled(after)) continue;
-    const slots = featureSlots(before, feature).filter((slot) => !ARCHETYPE_SLOTS.has(slot));
+    const slots = featureSlots(before, feature).filter((slot) => !SHARED_SLOTS.has(slot));
     cleared.push({ feature, original: readSlots(before, slots), left: readSlots(after, slots) });
   }
   for (const slot of PLAIN_SLOTS) {
@@ -182,14 +185,10 @@ function giveBack(
   next: BodyType
 ): BinParams | null {
   const { feature, original } = setting;
-  // A feature's own values can be in the encoding of the body that cleared them
-  // (magnets are `base.style` on a socketed base, `trayBottom` on Nesting). When
-  // they do not fit the target, its own enable patch turns the feature on.
   const restored =
     feature === null
       ? writeSlots(params, original)
-      : (enableOn(writeSlots(params, original), feature, original, next) ??
-        enableOn(params, feature, {}, next));
+      : enableOn(writeSlots(params, original), feature, original, next);
   if (!restored) return null;
   // Held, not spent, when finalizing would undo it at once (Base only pins the
   // height, a floor raises it): a later body may keep it.
@@ -228,29 +227,36 @@ export function switchBodyType(
 
   let restored = switched;
   const kept: ClearedBodySetting[] = [];
+  const given: ClearedBodySetting[] = [];
   for (const setting of held) {
     if (setting.feature !== null && FEATURE_MANIFESTS[setting.feature].isEnabled(restored)) {
       continue;
     }
-    const given = giveBack(restored, setting, next);
-    if (given) restored = given;
-    else kept.push(setting);
+    const back = giveBack(restored, setting, next);
+    if (back) {
+      restored = back;
+      given.push(setting);
+    } else {
+      kept.push(setting);
+    }
   }
   const result = finalizeBaseParams(restored);
 
-  // A held setting keeps the user's original value, so it outranks anything this
-  // switch clears in the same slot: that would only record a value the user
-  // never chose (a 1u pin, a floor) as the one to come back to.
   const carried = kept.map((setting) => ({
     ...setting,
     left: readSlots(result, Object.keys(setting.left)),
   }));
-  const heldSlots = new Set(carried.flatMap((setting) => Object.keys(setting.left)));
-  // Read off the switch alone and kept only where its result still stands. A
-  // slot a restore filled since is the user's value, not something this cleared.
+  // A slot held or just given back already has the user's own value on record,
+  // so this switch must not record what it found there instead: that is only
+  // a value the user never chose (a 1u pin, a floor). Even a restore that
+  // lands on the value this switch would have pinned anyway counts.
+  const claimed = new Set([...carried, ...given].flatMap((setting) => Object.keys(setting.left)));
+  // Read off the switch alone and kept only where its result still stands.
   const fresh = collectCleared(params, switched).filter(
     (setting) =>
-      slotsMatch(result, setting.left) && Object.keys(setting.left).every((s) => !heldSlots.has(s))
+      slotsMatch(result, setting.left) &&
+      Object.keys(setting.left).every((slot) => !claimed.has(slot)) &&
+      (setting.feature === null || !FEATURE_MANIFESTS[setting.feature].isEnabled(result))
   );
 
   const cleared = [...carried, ...fresh];

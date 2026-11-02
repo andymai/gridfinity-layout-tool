@@ -151,6 +151,46 @@ describe('switchBodyType', () => {
     expect(wide.params.compartments.cols).toBe(8);
   });
 
+  it('gives screws back alongside magnets turned on since', () => {
+    const screws: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'screw' },
+    };
+    const nesting = walk(screws, ['nesting']);
+    const magnetic = resolveConstraints(nesting.params, {
+      feature: 'base.magnet',
+      enabled: true,
+    }).params;
+
+    const back = switchBodyType(magnetic, 'standard', nesting.memory);
+    expect(back.params.base.style).toBe('magnet_and_screw');
+  });
+
+  it('does not bring back magnets turned off since', () => {
+    const both: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw' },
+    };
+    const nesting = walk(both, ['nesting']);
+    const plain = resolveConstraints(nesting.params, {
+      feature: 'base.magnet',
+      enabled: false,
+    }).params;
+
+    const back = switchBodyType(plain, 'standard', nesting.memory);
+    expect(back.params.base.style).toBe('screw');
+  });
+
+  it('keeps a 1u spacer height through a body that pins it to the same value', () => {
+    const spacer: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      height: 1,
+      base: { ...DEFAULT_BIN_PARAMS.base, spacer: true },
+    };
+    const end = walk(spacer, ['standard', 'tile', 'spacer']);
+    expect(end.params.height).toBe(1);
+  });
+
   it('refuses a restore that would turn off something enabled since', () => {
     const flatWithPattern = resolveConstraints(
       { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } },
