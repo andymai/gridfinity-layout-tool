@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useCutoutClipboard } from './useCutoutClipboard';
 import { PASTE_OFFSET } from './cutoutInteractionTypes';
+import { translateCutout } from './cutoutHelpers';
 
 vi.mock('@/shared/analytics/posthog', () => ({ trackEvent: vi.fn() }));
 
@@ -27,7 +28,14 @@ function cutout(overrides: Partial<Cutout> = {}): Cutout {
  * Drives the hook the way the editor does: `cutouts` and `selection` are owned
  * outside it, so a duplicate has to be reflected back before the next call.
  */
-function harness(initial: Cutout[], capacity = Infinity) {
+function harness(
+  initial: Cutout[],
+  capacity = Infinity,
+  mask?: Pick<Parameters<typeof useCutoutClipboard>[0], 'cellMask' | 'maskCellSize'> & {
+    readonly binWidth: number;
+    readonly binDepth: number;
+  }
+) {
   let cutouts = initial;
   let selection = new Set(initial.map((c) => c.id));
   const added: Cutout[] = [];
@@ -47,8 +55,10 @@ function harness(initial: Cutout[], capacity = Infinity) {
           cutouts = [...cutouts, c];
           return true;
         },
-        binWidth: 500,
-        binDepth: 500,
+        binWidth: mask?.binWidth ?? 500,
+        binDepth: mask?.binDepth ?? 500,
+        cellMask: mask?.cellMask,
+        maskCellSize: mask?.maskCellSize,
       }),
     { initialProps: { cutouts, selection } }
   );
@@ -62,7 +72,7 @@ function harness(initial: Cutout[], capacity = Infinity) {
     },
     /** Simulate the user dragging the current selection somewhere. */
     moveSelection: (dx: number, dy: number) => {
-      cutouts = cutouts.map((c) => (selection.has(c.id) ? { ...c, x: c.x + dx, y: c.y + dy } : c));
+      cutouts = cutouts.map((c) => (selection.has(c.id) ? translateCutout(c, dx, dy) : c));
       rendered.rerender({ cutouts, selection });
     },
     last: () => added[added.length - 1],
@@ -165,5 +175,46 @@ describe('a target at its cap', () => {
 
     expect(h.added).toHaveLength(0);
     expect(h.selection().size).toBe(0);
+  });
+});
+
+describe('a masked board', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  // Three 20mm cells, the last one cut away.
+  const mask = {
+    cellMask: { cols: 3, rows: 1, cells: [1, 1, 0] as (0 | 1)[] },
+    maskCellSize: { cellMmX: 20, cellMmY: 20 },
+    binWidth: 60,
+    binDepth: 20,
+  };
+  const at = (x: number, y: number) => ({
+    x,
+    y,
+    handleIn: null,
+    handleOut: null,
+    symmetric: false,
+  });
+
+  // A path's points are absolute, so the check has to look at the copy where
+  // it lands, not at the shape it was copied from.
+  it('refuses a path copy that would land over a missing cell', () => {
+    const square = cutout({
+      shape: 'path',
+      x: 2,
+      y: 4,
+      width: 6,
+      depth: 6,
+      path: [at(2, 4), at(8, 4), at(8, 10), at(2, 10)],
+    });
+    const h = harness([square], Infinity, mask);
+    h.duplicate();
+    h.moveSelection(20, 0);
+    const before = h.added.length;
+
+    // The chain repeats the 22mm step, onto the missing third cell.
+    h.duplicate();
+
+    expect(h.added).toHaveLength(before);
   });
 });

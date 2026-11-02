@@ -20,9 +20,10 @@ import type { PathPoint } from '@/features/bin-designer/types';
 import { MAX_CUTOUT_HOLES } from '@/features/bin-designer/types';
 import type { ParsedCutoutSpec } from './types';
 import { transformPoint, type Matrix } from '@/shared/utils/svg';
-import type { ViewBox } from './types';
+import { MAX_SVG_SHAPES, type ViewBox } from './types';
 import { makeCornerPoint, pathPointsToSpec } from './svgConvertShapes';
 import { flattenPath } from '@/shared/utils/pathGeometryBezier';
+import { outlinesTouch } from '@/shared/utils/outlineSegments';
 import { arcToCubicBeziers } from './svgArcToBezier';
 
 export function convertPath(
@@ -106,17 +107,22 @@ function nestContours(
   specs: readonly ParsedCutoutSpec[],
   rule: 'nonzero' | 'evenodd'
 ): ParsedCutoutSpec[] {
+  // Past the import's own shape limit nesting is wasted work: the file is refused anyway.
+  if (specs.length > MAX_SVG_SHAPES) return [...specs];
   const rings = specs.map((s) => flattenPath(s.path ?? []));
   // An open or self-overlapping curve can enclose no net area; it still counts one way.
   const signs = rings.map((r) => (signedArea(r) < 0 ? -1 : 1));
   const area = rings.map((r) => Math.abs(signedArea(r)));
   const boxes = rings.map(boundsOf);
   const order = specs.map((_, i) => i).sort((a, b) => area[b] - area[a]);
+  // Inside when no edges meet and one point is in: right for a concave outline
+  // too, and near linear per pair, since the edge test runs on a grid.
   const inside = (i: number, j: number): boolean =>
     area[j] > area[i] &&
     boxWithin(boxes[i], boxes[j]) &&
     rings[i].length > 0 &&
-    rings[i].every((p) => insideRing(p, rings[j]));
+    !outlinesTouch(rings[i], rings[j]) &&
+    insideRing(rings[i][0], rings[j]);
   const ancestors = new Map<number, number[]>();
   for (const i of order)
     ancestors.set(

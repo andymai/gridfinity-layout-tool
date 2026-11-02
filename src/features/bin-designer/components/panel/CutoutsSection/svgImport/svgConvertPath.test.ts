@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { timeLimitMs } from '@/test/timeLimit';
 import { convertPath } from './svgConvertPath';
 import { IDENTITY, type Matrix } from '@/shared/utils/svg';
 import type { ViewBox } from './types';
@@ -181,6 +182,29 @@ describe('convertPath subpaths and fill rules', () => {
     const specs = convertPath(withRule(d, 'evenodd'), IDENTITY, VIEW_BOX);
     expect(specs).toHaveLength(2);
     expect(specs?.every((s) => s.holes === undefined)).toBe(true);
+  });
+
+  // Every corner of the bar sits inside the U, but its middle crosses the notch.
+  it('keeps a subpath that crosses a concave outline as a pocket of its own', () => {
+    const d = 'M 0 0 L 10 0 L 10 10 L 7 10 L 7 3 L 3 3 L 3 10 L 0 10 Z M 1 5 L 9 5 L 9 6 L 1 6 Z';
+    const specs = convertPath(withRule(d, 'evenodd'), IDENTITY, VIEW_BOX);
+    expect(specs).toHaveLength(2);
+    expect(specs?.every((s) => s.holes === undefined)).toBe(true);
+  });
+
+  it('nests a detailed compound path quickly', () => {
+    const ring = (r: number, n: number, ccw: boolean) =>
+      Array.from({ length: n }, (_, k) => {
+        const a = ((ccw ? -k : k) / n) * 2 * Math.PI;
+        return `${k === 0 ? 'M' : 'L'} ${50 + r * Math.cos(a)} ${50 + r * Math.sin(a)}`;
+      }).join(' ') + ' Z';
+    const d = Array.from({ length: 100 }, (_, i) => ring(49 - i * 0.45, 200, i % 2 === 1)).join(
+      ' '
+    );
+    const start = performance.now();
+    const specs = convertPath(withRule(d), IDENTITY, VIEW_BOX);
+    expect(performance.now() - start).toBeLessThan(timeLimitMs(3000));
+    expect(specs?.length).toBeGreaterThan(0);
   });
 
   // Windings +, +, -, -: filled 1, 2, 1, then 0 in the middle.

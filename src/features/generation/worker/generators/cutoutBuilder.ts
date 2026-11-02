@@ -89,7 +89,6 @@ import {
   pathCutoutCut,
   pathCutoutOutline,
   pathCutoutSections,
-  pathCutoutHoles,
   pathHoleCuts,
 } from '@/shared/utils/pathCutoutOutline';
 import type { PathCutoutSections } from '@/shared/utils/pathCutoutOutline';
@@ -2038,7 +2037,7 @@ function roundedRectContains(lx: number, ly: number, hw: number, hd: number, r: 
  * paths extrude as their bounding box (see the shape builders), so their
  * containment tests fall back to the same box.
  */
-function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean {
+export function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean {
   const hw = cutout.width / 2;
   const hd = cutout.depth / 2;
   switch (cutout.shape) {
@@ -2059,10 +2058,12 @@ function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean
     case 'path': {
       const outline = pathCutoutOutline(cutout);
       if (!outline) return Math.abs(lx) <= hw && Math.abs(ly) <= hd;
-      // A caption over an island lands on the surface the island keeps.
+      // A caption over an island lands on the surface the island keeps, measured
+      // on the island as cut: the clearance strip round it is pocket floor.
+      const islands = pathHoleCuts(cutout, clearedProfile(cutout).clearance, 0);
       return (
         pointInPolyline(outline, lx, ly) &&
-        !pathCutoutHoles(cutout).some((hole) => pointInPolyline(hole, lx, ly))
+        !islands.some((island) => pointInPolyline(island.base, lx, ly))
       );
     }
     case 'mesh':

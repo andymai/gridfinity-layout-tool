@@ -17,7 +17,12 @@ import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import { cutoutFitsInMask } from './maskFit';
-import { addClonedCutouts, clampedOffset, clampedDelta } from './cutoutHelpers';
+import {
+  addClonedCutouts,
+  clampedOffset,
+  clampedDelta,
+  translateCutoutPreview,
+} from './cutoutHelpers';
 import { PASTE_OFFSET } from './cutoutInteractionTypes';
 import { trackEvent } from '@/shared/analytics/posthog';
 
@@ -124,7 +129,13 @@ export function useCutoutClipboard({
       cellMask && maskCellSize
         ? clipboard.filter((orig) => {
             const pos = clampedOffset(orig, offset, binWidth, binDepth);
-            return cutoutFitsInMask({ ...orig, ...pos }, cellMask, maskCellSize, meshAssets);
+            // The copy as it lands, a path's points and islands moved with its box.
+            return cutoutFitsInMask(
+              translateCutoutPreview(orig, pos),
+              cellMask,
+              maskCellSize,
+              meshAssets
+            );
           })
         : clipboard;
     if (placeable.length === 0) return;
@@ -179,7 +190,13 @@ export function useCutoutClipboard({
       cellMask && maskCellSize
         ? selected.filter((orig) => {
             const pos = clampedDelta(orig, dx, dy, binWidth, binDepth);
-            return cutoutFitsInMask({ ...orig, ...pos }, cellMask, maskCellSize, meshAssets);
+            // The copy as it lands, a path's points and islands moved with its box.
+            return cutoutFitsInMask(
+              translateCutoutPreview(orig, pos),
+              cellMask,
+              maskCellSize,
+              meshAssets
+            );
           })
         : selected;
     if (placeable.length === 0) return;

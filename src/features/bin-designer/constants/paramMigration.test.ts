@@ -1793,7 +1793,7 @@ describe('migrateParams', () => {
               path: [at(0, 0), at(9, 0), at(9, 9)],
               holes: [
                 [{ x: 1, y: 1 }, at(3, 1), { ...at(3, 3), handleIn: { dx: 'a' } }, { y: 1 }],
-                [at(1, 1), at(2, 1)],
+                [at(1, 1)],
                 'not a ring',
               ],
             }),
@@ -1802,7 +1802,7 @@ describe('migrateParams', () => {
           ],
         }).cutouts;
         expect(clean.holes).toEqual([ring]);
-        // A bad point is dropped, a bad handle cleared, a ring under three points dropped.
+        // A bad point is dropped, a bad handle cleared, a ring under two points dropped.
         expect(messy.holes).toEqual([[at(1, 1), at(3, 1), at(3, 3)]]);
         for (const dropped of [onRect, empty]) expect('holes' in dropped).toBe(false);
       });

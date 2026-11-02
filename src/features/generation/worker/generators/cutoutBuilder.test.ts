@@ -9,7 +9,7 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { box, getBounds } from 'brepjs';
-import { findBottomEdges, buildCutoutCuts } from './cutoutBuilder';
+import { findBottomEdges, buildCutoutCuts, labelCenterInFootprint } from './cutoutBuilder';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { loadTestFonts } from '@/test/loadTestFonts';
 import type { BinParams, Cutout } from '@/shared/types/bin';
@@ -89,4 +89,50 @@ describe('findBottomEdges', () => {
       solid.delete();
     }
   }, 60_000);
+});
+
+describe('labelCenterInFootprint over an island', () => {
+  const at = (x: number, y: number) => ({
+    x,
+    y,
+    handleIn: null,
+    handleOut: null,
+    symmetric: false,
+  });
+  const square = (x0: number, y0: number, x1: number, y1: number) => [
+    at(x0, y0),
+    at(x1, y0),
+    at(x1, y1),
+    at(x0, y1),
+  ];
+  // A 40 × 20 pocket centred on (30, 20), a 10 × 10 island in its middle, 1mm clearance.
+  const pocket = {
+    id: 'p',
+    shape: 'path',
+    x: 10,
+    y: 10,
+    width: 40,
+    depth: 20,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: 'X',
+    groupId: null,
+    clearance: 1,
+    path: square(10, 10, 50, 30),
+    holes: [square(25, 15, 35, 25)],
+  } as Cutout;
+
+  it('puts a caption on the island top, where the bin keeps its surface', () => {
+    expect(labelCenterInFootprint(pocket, 0, 0)).toBe(false);
+  });
+
+  // 0.5mm inside the drawn island edge, inside the 1mm the clearance cuts away.
+  it('puts a caption in the clearance strip round the island on the floor', () => {
+    expect(labelCenterInFootprint(pocket, -4.5, 0)).toBe(true);
+  });
+
+  it('puts a caption between the island and the wall on the floor', () => {
+    expect(labelCenterInFootprint(pocket, -15, 0)).toBe(true);
+  });
 });

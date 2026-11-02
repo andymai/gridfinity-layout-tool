@@ -794,7 +794,7 @@
           },
           "items": {
             "type": "array",
-            "minItems": 3,
+            "minItems": 2,
             "items": {
               "$ref": "#/$defs/PathPoint"
             }

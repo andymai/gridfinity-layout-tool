@@ -29,6 +29,7 @@ import {
   MAX_CUTOUT_FLOOR_MM,
   MAX_CUTOUT_HOLES,
   MAX_SPLIT_POINT_MM,
+  MIN_PATH_POINTS,
   SPLIT_DEPTH_MODES,
 } from '../types/cutout';
 import type { PathPoint } from '../types/cutout';
@@ -268,7 +269,7 @@ function holePoint(raw: unknown): PathPoint | null {
 }
 
 /**
- * Keep holes only on a path, each a ring of at least three real points, at
+ * Keep holes only on a path, each a ring of at least two real points, at
  * most {@link MAX_CUTOUT_HOLES} of them, and drop the field when none is left.
  * A bad ring is dropped rather than the cutout: the pocket still cuts, solid
  * where the ring was. Already-valid holes come back by reference.
@@ -281,7 +282,8 @@ function withHoles(cutout: Cutout): Cutout {
     .slice(0, MAX_CUTOUT_HOLES)
     .filter((ring): ring is unknown[] => Array.isArray(ring))
     .map((ring) => ring.map(holePoint).filter((p): p is PathPoint => p !== null))
-    .filter((ring) => ring.length >= 3);
+    // The outline's own minimum: two anchors with handles can bound a curve.
+    .filter((ring) => ring.length >= MIN_PATH_POINTS);
   const { holes: _holes, ...rest } = cutout;
   if (kept.length === 0) return rest;
   // A ring written as this rebuilds it compares equal, so a clean file keeps its reference.
