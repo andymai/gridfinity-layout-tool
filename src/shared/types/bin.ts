@@ -735,6 +735,12 @@ export interface ResolvedBaseplateParams {
    * carry nothing and stay byte-identical to unshifted plates.
    */
   readonly outlineOverhang?: OutlineOverhang;
+  /**
+   * The largest corner radius cut into {@link outline}, when the outline came
+   * from corner rounding. Geometry reads the outline; stack flip planning reads
+   * this to tell a rounded corner from a shape the turn cannot land.
+   */
+  readonly cornerCutRadiusMm?: number;
   /** Enable registration nubs/holes on join edges for split piece alignment. */
   readonly connectorNubs?: boolean;
   /** Swap tongue/groove convention on all join edges (default false). */

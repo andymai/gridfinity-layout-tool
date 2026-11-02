@@ -159,6 +159,7 @@ function resolveOutline(
   outline: DrawerOutline | undefined;
   paddingOn: boolean;
   overhang?: ResolvedBaseplateParams['outlineOverhang'];
+  cornerCutRadiusMm?: number;
 } {
   if (outlineOn && drawerOutline !== undefined) {
     const frame = resolveOutlineFrame(drawerOutline, {
@@ -195,7 +196,7 @@ function resolveRadiusOutline(
   widthMm: number,
   depthMm: number,
   gridUnitMm: number
-): { outline: DrawerOutline | undefined; paddingOn: boolean } {
+): { outline: DrawerOutline | undefined; paddingOn: boolean; cornerCutRadiusMm?: number } {
   // No active drawer shape: corner radii beyond the plain rounding limit become
   // a radius-cut outline, so the generator's cell classification handles the
   // sockets the arc consumes (the plain path must never orphan a pocket, which is
@@ -235,6 +236,9 @@ function resolveRadiusOutline(
   return {
     outline: { vertices: cornerCutVertices(totalW, totalD, cuts) },
     paddingOn: true,
+    cornerCutRadiusMm: Math.max(
+      ...[cuts.tl, cuts.tr, cuts.bl, cuts.br].map((cut) => (cut.kind === 'radius' ? cut.r : 0))
+    ),
   };
 }
 
@@ -356,7 +360,7 @@ export function buildFullParams(
 
   const effFractionalEdgeX = synced ? fractionalEdgeX : (stored.fractionalEdgeX ?? 'end');
   const effFractionalEdgeY = synced ? fractionalEdgeY : (stored.fractionalEdgeY ?? 'end');
-  const { outline, paddingOn, overhang } = resolveOutline(
+  const { outline, paddingOn, overhang, cornerCutRadiusMm } = resolveOutline(
     drawerOutline,
     outlineOn,
     stored,
@@ -420,6 +424,7 @@ export function buildFullParams(
     nozzleSizeMm,
     outline,
     outlineOverhang: overhang,
+    ...(cornerCutRadiusMm ? { cornerCutRadiusMm } : {}),
     magnetHoles: stackingOn ? false : stored.magnetHoles,
     magnetDiameter: stored.magnetDiameter,
     magnetDepth: stored.magnetDepth,

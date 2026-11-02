@@ -205,6 +205,7 @@ export type PlateFlipInput = Pick<
   | 'paddingBack'
   | 'outline'
   | 'outlineOverhang'
+  | 'cornerCutRadiusMm'
   | 'cornerRadius'
   | 'cornerRadii'
   | 'edges'
@@ -288,7 +289,7 @@ export function planPlateFlip(params: PlateFlipInput): PlateFlip {
   // plain-rounded plate already prints with; a radius cut as an outline gets
   // the same allowance, so only a real shape difference turns the bottom plate.
   const tolerance =
-    SHAPED_SEAM_OVERHANG_TOLERANCE_MM + (Math.SQRT2 - 1) * Math.max(r.tl, r.tr, r.bl, r.br);
+    SHAPED_SEAM_OVERHANG_TOLERANCE_MM + (Math.SQRT2 - 1) * (params.cornerCutRadiusMm ?? 0);
   const lands = (f: PlateFlip): boolean =>
     turnedPlateOverhangMm(params, f.axis, f.offsetMm, tolerance) <= tolerance;
   if (lands(first)) return first;

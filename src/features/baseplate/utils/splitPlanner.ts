@@ -662,6 +662,7 @@ export function pieceToBaseplateParams(
     gridUnitMmY: parentParams.gridUnitMmY,
     outline: pieceOutline,
     outlineOverhang: pieceOverhang,
+    cornerCutRadiusMm: pieceOutline ? parentParams.cornerCutRadiusMm : undefined,
     connectorFilter,
     magnetHoles: parentParams.magnetHoles,
     magnetDiameter: parentParams.magnetDiameter,

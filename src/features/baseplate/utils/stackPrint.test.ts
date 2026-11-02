@@ -463,28 +463,49 @@ describe('planPlateFlip', () => {
       }
     );
 
-    it('keeps the bottom upright under a rounded corner cut as an outline, as plain rounding does', () => {
-      const radii = { tl: 22, tr: 0, bl: 0, br: 0 };
-      const corner: DrawerOutline = {
-        vertices: cornerCutVertices(4 * 42, 4 * 42, {
-          tl: { kind: 'radius', r: 22 },
-          tr: { kind: 'none' },
-          bl: { kind: 'none' },
-          br: { kind: 'none' },
-        }),
-      };
-      expect(planPlateFlip(plate({ outline: corner, cornerRadii: radii }))).not.toHaveProperty(
-        'flipBottom'
+    it('keeps the bottom upright under a rounded corner, whether rounded plainly or cut', () => {
+      // 21mm is the most plain rounding cuts on a padless 42mm grid; 22mm is
+      // cut as an outline instead.
+      const resolve = (r: number, drawerOutline?: DrawerOutline) =>
+        buildFullParams(
+          {
+            ...DEFAULT_BASEPLATE_PARAMS,
+            stackPrint: { enabled: true, gapMm: mm(0.2) },
+            cornerRadii: { tl: mm(r), tr: mm(0), bl: mm(0), br: mm(0) },
+          },
+          4 * 42,
+          4 * 42,
+          42,
+          'end',
+          'end',
+          undefined,
+          drawerOutline
+        );
+      expect(resolve(21).outline).toBeUndefined();
+      expect(resolve(22).outline).toBeDefined();
+      expect(planPlateFlip(resolve(21))).not.toHaveProperty('flipBottom');
+      expect(planPlateFlip(resolve(22))).not.toHaveProperty('flipBottom');
+
+      const drawer = buildFullParams(
+        {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          stackPrint: { enabled: true, gapMm: mm(0.2) },
+          cornerRadius: mm(22),
+        },
+        12 * 42,
+        12 * 42,
+        42,
+        'end',
+        'end'
       );
-      const lShape = cells([
-        [0, 0],
-        [4, 0],
-        [4, 2],
-        [2, 2],
-        [2, 4],
-        [0, 4],
-      ]);
-      expect(planPlateFlip(plate({ outline: lShape, cornerRadii: radii })).flipBottom).toBe(true);
+      const tiling = computeBaseplateTiling(drawer, 256);
+      expect(tiling.isSplit).toBe(true);
+      for (const piece of tiling.pieces) {
+        expect(
+          planPlateFlip(pieceToBaseplateParams(piece, drawer)),
+          piece.label
+        ).not.toHaveProperty('flipBottom');
+      }
     });
 
     it('takes the turn the outline is symmetric about, keeping the bottom plate upright', () => {
