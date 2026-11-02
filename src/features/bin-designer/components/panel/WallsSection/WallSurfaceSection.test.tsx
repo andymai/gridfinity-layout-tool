@@ -27,6 +27,21 @@ describe('WallSurfaceSection', () => {
     expect(screen.getByText('Honeycomb')).toBeInTheDocument();
   });
 
+  it('offers a way to the height when the pattern stops below the extra wall height', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        extraWallHeightMm: 14,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+      },
+    });
+    render(<WallSurfaceSection />);
+    expect(
+      screen.getByText('The pattern stops below the 14 mm of extra wall height')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit height' })).toBeInTheDocument();
+  });
+
   it('shows partial slot note when some walls slotted and pattern enabled', () => {
     useDesignerStore.setState({
       params: {

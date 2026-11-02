@@ -28,6 +28,21 @@ describe('DimensionsSection', () => {
     expect(screen.getByText('8 mm')).toBeInTheDocument();
   });
 
+  it('says what a height unit is in millimetres', () => {
+    render(<DimensionsSection />);
+    expect(
+      screen.getByText((_, el) => el?.tagName === 'SPAN' && el.textContent === '3u · 21 mm')
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /About Height/ }));
+    expect(screen.getByText(/1u is 7 mm/)).toBeVisible();
+  });
+
+  it('tells a touch screen that wall patterns skip the extra wall height', () => {
+    render(<DimensionsSection />);
+    fireEvent.click(screen.getByRole('button', { name: /About Extra wall height/ }));
+    expect(screen.getByText(/raise Height instead/)).toBeVisible();
+  });
+
   it('shows the inside size under the outside size', () => {
     render(<DimensionsSection />);
     expect(screen.getByText('84 × 84 × 21 mm')).toBeInTheDocument();

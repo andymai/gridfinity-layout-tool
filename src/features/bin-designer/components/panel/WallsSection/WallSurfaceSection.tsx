@@ -15,6 +15,7 @@ import {
   WALL_TEXT_SIDES,
   isKumikoPattern,
 } from '@/features/bin-designer/types';
+import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest';
 import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
 import { FeatureToggle } from '../FeatureToggle';
@@ -22,6 +23,7 @@ import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
 import { LabelPlatesControls } from '../LabelTabsSection/LabelPlatesControls';
 import { AnchorPicker } from '../../controls/AnchorPicker';
 import {
+  DependencyHint,
   FieldLabel,
   Hint,
   LabelInfo,
@@ -129,6 +131,15 @@ export function WallSurfaceSection() {
                   <p className="mt-1 text-label leading-relaxed text-content-tertiary">
                     {state.patternSidesNote}
                   </p>
+                )}
+                {state.patternCollarNote !== undefined && (
+                  <div className="mt-1">
+                    <DependencyHint
+                      reason={state.patternCollarNote}
+                      actionLabel={t('binDesigner.dependency.editHeight')}
+                      onAction={() => jumpToDesignerControl('bd-dimensions')}
+                    />
+                  </div>
                 )}
               </div>
             )}

@@ -33,6 +33,31 @@ describe('useWallsSection', () => {
     expect(result.current.state.options[0]).toHaveProperty('description');
   });
 
+  it('warns that the pattern stops below the extra wall height', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        extraWallHeightMm: 10.5,
+        wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true, pattern: 'honeycomb' },
+      },
+    });
+    const { result } = renderHook(() => useWallsSection());
+    expect(result.current.state.patternCollarNote).toBe(
+      'The pattern stops below the 10.5 mm of extra wall height'
+    );
+  });
+
+  it('says nothing about the extra wall height when there is none', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true, pattern: 'honeycomb' },
+      },
+    });
+    const { result } = renderHook(() => useWallsSection());
+    expect(result.current.state.patternCollarNote).toBeUndefined();
+  });
+
   it('initial state has pattern disabled', () => {
     const { result } = renderHook(() => useWallsSection());
     expect(result.current.state.patternEnabled).toBe(false);

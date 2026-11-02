@@ -157,6 +157,7 @@ export function useDimensionsSection() {
       widthMm,
       depthMm,
       heightMm,
+      heightUnitMm,
       interior,
       halfGridMode,
       dimensionStep,
