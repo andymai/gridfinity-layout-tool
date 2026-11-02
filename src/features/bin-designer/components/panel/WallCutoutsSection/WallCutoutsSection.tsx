@@ -14,7 +14,7 @@ import { FeatureToggle } from '../FeatureToggle';
 import { FeatureTip } from '../../FeatureTip';
 import { Hint, ShapePicker, SideSelector, StepperField, LinkIcon, type SideState } from '../shared';
 import { useWallCutoutsSection } from './useWallCutoutsSection';
-import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
+import { MAX_CUTOUT_CORNER_RADIUS, cutoutHasBottomCorner } from '@/shared/utils/wallCutoutPosition';
 import type {
   BinParams,
   WallSide,
@@ -72,11 +72,11 @@ function CornersDisclosure({
 }) {
   const { top, bottom } = displayCorners(walls, cfg);
   const isAuto = bottom === null;
-  // A scoop's floor is its own arc, so it has no bottom corner to round.
-  const hasBottomCorner = walls.shape !== 'scoop';
+  const hasBottomCorner = cutoutHasBottomCorner(walls.shape);
   const autoLabel = t('binDesigner.wallCutouts.cornerAuto');
   const topText = top > 0 ? `${top}mm` : t('binDesigner.wallCutouts.cornerSquare');
-  const summary = hasBottomCorner ? `${topText} / ${isAuto ? autoLabel : `${bottom}mm`}` : topText;
+  const bottomText = isAuto ? autoLabel : `${bottom}mm`;
+  const summary = hasBottomCorner ? `${topText} / ${bottomText}` : topText;
 
   return (
     <MoreDisclosure

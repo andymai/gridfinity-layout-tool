@@ -169,6 +169,39 @@ describe('wall cutout rounded shoulders', () => {
 });
 
 /**
+ * A scoop draws no bottom corner, so nothing below its shoulder competes for
+ * the cut's height: an 8mm round-over on a 10mm cut keeps its full radius.
+ */
+describe('scoop rounded shoulders', () => {
+  const RADIUS = 8;
+  let scoop: MeshData;
+  let rimZ: number;
+
+  beforeAll(async () => {
+    await initBrepjs();
+    scoop = gen({
+      ...frontCutout({ depthMm: 10, cornerRadiusTop: RADIUS }),
+      shape: 'scoop',
+    });
+    rimZ = boundingBox(scoop.vertices).maxZ;
+  }, 120_000);
+
+  it('produces a valid solid', () => {
+    assertStructurallyValid(scoop, 'scoop shoulder');
+    assertWatertight(scoop, 'scoop shoulder');
+  });
+
+  it('flares to the full radius it was asked for', () => {
+    const depth = 1.5;
+    const widened = RADIUS - Math.sqrt(RADIUS * RADIUS - (RADIUS - depth) ** 2);
+    const solidAt = (x: number): boolean =>
+      isSolidThrough(scoop, x, WALL_Y, rimZ - depth - 0.02, rimZ - depth + 0.02);
+    expect(solidAt(CUT_HALF + widened - 0.3), 'inside the flare').toBe(false);
+    expect(solidAt(CUT_HALF + widened + 0.3), 'past the flare').toBe(true);
+  });
+});
+
+/**
  * The same round-over, on an interior divider.
  *
  * A divider has no stacking lip over it, so its own top face is the rim its

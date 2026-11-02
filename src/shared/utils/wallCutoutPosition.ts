@@ -8,6 +8,8 @@
  * wide the opening is AT THE LIP before it can say what rail a lid keeps.
  */
 
+import type { WallCutoutShape } from '@/shared/types/bin';
+
 /** A cutout's stored span: an absolute mm override, or null to use the %. */
 export interface CutoutSpanSource {
   readonly width: number;
@@ -152,19 +154,30 @@ export interface CutoutCornerSource {
  * again against the cut it is actually drawing, which it can and this cannot:
  * the material standing beside the opening is a property of the wall, not of
  * the setting.
+ *
+ * A scoop resolves no bottom radius whatever is stored: the panel does not
+ * offer one, and a radius the arc never draws would still cap its top
+ * round-over in {@link safeCutoutCornerRadii}.
  */
 export function resolveCutoutCornerRadii(
-  wall: CutoutCornerSource | undefined,
+  wall: (CutoutCornerSource & { readonly shape?: WallCutoutShape }) | undefined,
   side: CutoutCornerSource | undefined,
   cutWidth: number
 ): CutoutCornerRadii {
   const clamp = (v: number): number => Math.max(0, Math.min(MAX_CUTOUT_CORNER_RADIUS, v));
   const top = side?.cornerRadiusTop ?? wall?.cornerRadiusTop ?? null;
+  const resolvedTop = top === null ? 0 : clamp(top);
+  if (!cutoutHasBottomCorner(wall?.shape)) return { top: resolvedTop, bottom: 0 };
   const bottom = side?.cornerRadiusBottom ?? wall?.cornerRadiusBottom ?? null;
   return {
-    top: top === null ? 0 : clamp(top),
+    top: resolvedTop,
     bottom: bottom === null ? autoCornerRadius(cutWidth) : clamp(bottom),
   };
+}
+
+/** A scoop's floor is its own arc, so it has no bottom corner to round. */
+export function cutoutHasBottomCorner(shape: WallCutoutShape | undefined): boolean {
+  return shape !== 'scoop';
 }
 
 /** Wall material left standing on each side of a cutout, in mm along the span. */

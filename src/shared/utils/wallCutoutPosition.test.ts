@@ -169,6 +169,24 @@ describe('resolveCutoutCornerRadii', () => {
     );
     expect(resolveCutoutCornerRadii({ cornerRadiusTop: -5 }, {}, CUT).top).toBe(0);
   });
+
+  it('gives a scoop no bottom radius, stored or automatic', () => {
+    const wall = { shape: 'scoop' as const, cornerRadiusTop: 3 };
+    expect(resolveCutoutCornerRadii(wall, { cornerRadiusBottom: 4 }, CUT)).toEqual({
+      top: 3,
+      bottom: 0,
+    });
+    expect(resolveCutoutCornerRadii(wall, {}, CUT).bottom).toBe(0);
+  });
+
+  it('lets a lipless scoop round its shoulder as deep as the cut', () => {
+    // Counting the automatic bottom fillet against the shoulder would cut
+    // this round-over short.
+    const depth = 10;
+    const wall = { shape: 'scoop' as const, cornerRadiusTop: 8 };
+    const radii = resolveCutoutCornerRadii(wall, {}, CUT);
+    expect(safeCutoutCornerRadii(radii, CUT, depth, 0).topLeft).toBe(8);
+  });
 });
 
 describe('safeCutoutCornerRadii', () => {

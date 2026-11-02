@@ -9,17 +9,16 @@
  *   SWEEP_SPANS=60,65,70,75,80 SWEEP_DEPTHS=50,100 SWEEP_COLS=2 SWEEP_ROWS=1 \
  *   SWEEP_EXTRA='{"wallThickness":2}' BREPJS_KERNEL=occt-wasm \
  *   pnpm exec vitest run --config vitest.profile.config.ts __kernel-tests__/wallCutoutSweep
- *
- * A wall or divider counts as cut when a column through its middle stands at
- * least `MIN_DROP_MM` below the same column on the bin with cutouts off.
  */
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin, getKernelName } from './wasmInit';
 import { boundingBox, columnCrossings } from './meshAssertions';
-import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { deriveDimensions } from '../pipeline/context';
+import { computeInteriorDividerCutouts, interiorDividerTopZ } from '../wallCutoutBuilder';
+import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
-import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
+import type { BinParams, WallCutout, WallCutoutShape } from '@/shared/types/bin';
 
 const list = (key: string, fallback: string): string[] =>
   (process.env[key] ?? fallback).split(',').filter(Boolean);
@@ -43,14 +42,7 @@ function buildSweepParams(
   span: number,
   drop: number
 ): BinParams {
-  const side = {
-    enabled: true,
-    width: span,
-    depth: drop,
-    alignment: 'center' as const,
-    offset: 0,
-    widthMm: null,
-  };
+  const side: WallCutout = { ...DISABLED_WALL_CUTOUT, enabled: true, width: span, depth: drop };
   return {
     ...DEFAULT_BIN_PARAMS,
     ...EXTRA,
@@ -81,23 +73,48 @@ function topAt(mesh: MeshData, x: number, y: number): number {
 }
 
 /**
- * Columns through the middle of each outer wall and of the first divider.
- * Offset off the axes, which are full of shared triangle edges.
+ * A column through the middle of each outer wall's cut and of every divider
+ * window. Each sits just off the cut's centre line, which is full of shared
+ * triangle edges, and a divider's sits 1.37mm along it, clear of a crossing
+ * divider's half-thickness.
  */
-function probeColumns(plain: MeshData, wallThickness: number): Record<string, [number, number]> {
-  const bb = boundingBox(plain.vertices);
-  const t = wallThickness / 2;
-  const innerW = bb.maxX - bb.minX - 2 * wallThickness;
-  const innerD = bb.maxY - bb.minY - 2 * wallThickness;
+function probeColumns(params: BinParams): Record<string, [number, number]> {
+  const dim = deriveDimensions(params, FOR_EXPORT);
+  const { innerW, innerD, innerOffsetX: ox, innerOffsetY: oy } = dim;
+  const mid = params.wallThickness / 2;
   const columns: Record<string, [number, number]> = {
-    front: [0.37, bb.minY + t],
-    back: [0.37, bb.maxY - t],
-    left: [bb.minX + t, 0.41],
-    right: [bb.maxX - t, 0.41],
+    front: [ox + 0.37, oy - innerD / 2 - mid],
+    back: [ox + 0.37, oy + innerD / 2 + mid],
+    left: [ox - innerW / 2 - mid, oy + 0.41],
+    right: [ox + innerW / 2 + mid, oy + 0.41],
   };
-  if (COLS > 1) columns['divider'] = [-innerW / 2 + innerW / COLS + 0.07, 0.41];
-  else if (ROWS > 1) columns['divider'] = [0.41, -innerD / 2 + innerD / ROWS + 0.07];
+  const windows = computeInteriorDividerCutouts(
+    params,
+    innerW,
+    innerD,
+    interiorDividerTopZ(params, dim)
+  );
+  windows.forEach((w, i) => {
+    const rad = (w.rotateZ * Math.PI) / 180;
+    columns[`divider ${i + 1}`] = [
+      ox + w.x + 1.37 * Math.cos(rad) - 0.07 * Math.sin(rad),
+      oy + w.y + 1.37 * Math.sin(rad) + 0.07 * Math.cos(rad),
+    ];
+  });
   return columns;
+}
+
+function findDefect(mesh: MeshData, plain: MeshData, params: BinParams): string | null {
+  if (plain.triangleCount === 0) return 'bin without cutouts came out empty';
+  if (mesh.triangleCount === 0) return 'came out empty';
+  const bodyTop = boundingBox(mesh.vertices).maxZ;
+  if (bodyTop < boundingBox(plain.vertices).maxZ - MIN_DROP_MM) {
+    return `body gone (top ${bodyTop.toFixed(2)})`;
+  }
+  const solid = Object.entries(probeColumns(params))
+    .filter(([, [x, y]]) => topAt(mesh, x, y) > topAt(plain, x, y) - MIN_DROP_MM)
+    .map(([wall]) => wall);
+  return solid.length > 0 ? `solid ${solid.join(', ')}` : null;
 }
 
 beforeAll(async () => {
@@ -117,8 +134,8 @@ describe(`wall cutout sweep (${getKernelName()})`, () => {
           for (const span of SPANS)
             for (const drop of DEPTHS) {
               const params = buildSweepParams(shape, size, height, span, drop);
-              const label = `${shape} ${size.join('x')}x${height} span ${span}% height ${drop}%`;
               const plainKey = `${size.join('x')}x${height}`;
+              const label = `${shape} ${plainKey} span ${span}% height ${drop}%`;
               let plain = plainCache.get(plainKey);
               if (!plain) {
                 plain = generateBin(
@@ -131,15 +148,8 @@ describe(`wall cutout sweep (${getKernelName()})`, () => {
               try {
                 const mesh = generateBin(params, undefined, FOR_EXPORT);
                 built++;
-                const solid = Object.entries(probeColumns(plain, params.wallThickness))
-                  .filter(([, [x, y]]) => topAt(mesh, x, y) > topAt(plain, x, y) - MIN_DROP_MM)
-                  .map(([wall]) => wall);
-                const bodyTop = boundingBox(mesh.vertices).maxZ;
-                if (bodyTop < boundingBox(plain.vertices).maxZ - MIN_DROP_MM) {
-                  failures.push(`${label}: body gone (top ${bodyTop.toFixed(2)})`);
-                } else if (solid.length > 0) {
-                  failures.push(`${label}: solid ${solid.join(', ')}`);
-                }
+                const defect = findDefect(mesh, plain, params);
+                if (defect !== null) failures.push(`${label}: ${defect}`);
               } catch (e) {
                 failures.push(`${label}: threw ${String(e)}`);
               }

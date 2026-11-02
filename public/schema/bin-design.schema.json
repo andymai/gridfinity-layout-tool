@@ -2790,7 +2790,7 @@
         },
         "shape": {
           "enum": ["u-shape", "scoop", "funnel"],
-          "description": "Cutout shape applied to all sides."
+          "description": "Cutout shape applied to all sides. A scoop is a circular arc reaching down the smaller of half its span and its depth, and has no bottom corner."
         },
         "width": {
           "type": "number",
@@ -2812,7 +2812,7 @@
         "cornerRadiusBottom": {
           "type": ["number", "null"],
           "minimum": 0,
-          "description": "Default bottom fillet in mm. null means the automatic 15%-of-span rule."
+          "description": "Default bottom fillet in mm. null means the automatic 15%-of-span rule. A scoop ignores it."
         },
         "front": {
           "$ref": "#/$defs/WallCutout"
@@ -2878,7 +2878,7 @@
         "cornerRadiusBottom": {
           "type": ["number", "null"],
           "minimum": 0,
-          "description": "Bottom fillet in mm. null defers to WallConfig.cornerRadiusBottom."
+          "description": "Bottom fillet in mm. null defers to WallConfig.cornerRadiusBottom. A scoop ignores it."
         }
       }
     },

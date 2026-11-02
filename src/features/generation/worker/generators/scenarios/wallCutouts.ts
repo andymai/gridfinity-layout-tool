@@ -11,12 +11,14 @@ function topAt(mesh: MeshData, x: number, y: number): number {
 }
 
 /**
- * Hold a scoop on every outer wall and the one centred divider to having
- * opened its wall: a column through the middle of each must stand well below
- * the same column on the bin with cutouts off. A cut the boolean dropped
- * leaves that wall solid while every other check passes.
+ * A scoop the boolean dropped leaves its wall solid while every structural
+ * check passes, so each wall is probed against the same bin uncut.
  */
-function scoopEverywhere(span: number, depth: number, bin: Partial<BinParams>): ScenarioCase {
+function scoopEverywhere(
+  span: number,
+  depth: number,
+  bin: Pick<BinParams, 'width' | 'depth' | 'height'>
+): ScenarioCase {
   const side: WallCutout = { ...DISABLED_WALL_CUTOUT, enabled: true, width: span, depth };
   const walls: BinParams['walls'] = {
     ...DEFAULT_BIN_PARAMS.walls,
