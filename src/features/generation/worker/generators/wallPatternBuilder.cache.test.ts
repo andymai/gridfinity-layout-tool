@@ -127,6 +127,25 @@ describe('wallPatternBuilder cache split', () => {
     expect(clipped.misses, 'a radius edit must rebuild the clipped result per wall').toBe(4);
   }, 60_000);
 
+  it('rebuilds the clipped pattern when only a cut height in mm changes', () => {
+    const generateBin = getGenerateBin();
+    const withDepthMm = (depthMm: number): typeof HONEYCOMB_2x2x4 => {
+      const side = { ...HONEYCOMB_2x2x4.walls.front, depthMm };
+      return {
+        ...HONEYCOMB_2x2x4,
+        walls: { ...HONEYCOMB_2x2x4.walls, front: side, back: side, left: side, right: side },
+      };
+    };
+
+    generateBin(withDepthMm(10));
+    resetAllShapeCacheStats();
+    generateBin(withDepthMm(20));
+
+    const clipped = getStats('feature-wallPatternClipped');
+    expect(clipped.hits, 'a deeper cut must not reuse the shallower clip').toBe(0);
+    expect(clipped.misses).toBe(4);
+  }, 60_000);
+
   it('reuses the fully-clipped cache when nothing changes', () => {
     const generateBin = getGenerateBin();
 

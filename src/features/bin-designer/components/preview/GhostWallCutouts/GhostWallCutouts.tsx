@@ -205,7 +205,7 @@ export function GhostWallCutouts() {
       // The blend drops the arc's chord by the deeper of the two radii, the
       // same way the profile does, so the outline tracks the solid.
       const topZ = cz + hh - Math.max(corner.topLeft, corner.topRight);
-      const sagitta = Math.min(hw, hh); // Clamp arc depth to floor boundary
+      const sagitta = Math.min(hw, topZ - (cz - hh)); // Clamp arc depth to floor boundary
       // Circular segment: compute radius from chord (2*hw) and sagitta
       const chord = 2 * hw;
       const r = sagitta / 2 + (chord * chord) / (8 * sagitta);

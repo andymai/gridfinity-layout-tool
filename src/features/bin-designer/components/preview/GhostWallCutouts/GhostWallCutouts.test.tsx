@@ -200,6 +200,32 @@ describe('GhostWallCutouts', () => {
     expect(zAtWidest).toBeCloseTo(rimZ, 6);
   });
 
+  const lowestZ = (): number => {
+    let min = Infinity;
+    for (let i = 2; i < captured.positions.length; i += 3) {
+      min = Math.min(min, captured.positions[i]);
+    }
+    return min;
+  };
+
+  it('bottoms a wide scoop out on the cut floor, as deep as a u-shape', () => {
+    for (const cornerRadiusTop of [0, 6]) {
+      const sides = {
+        left: { ...DEFAULT_BIN_PARAMS.walls.left, cornerRadiusTop },
+        right: { ...DEFAULT_BIN_PARAMS.walls.right, cornerRadiusTop },
+      };
+      captured.positions = [];
+      generating({ ...sides, shape: 'u-shape' });
+      render(<GhostWallCutouts />);
+      const floor = lowestZ();
+
+      captured.positions = [];
+      generating({ ...sides, shape: 'scoop' });
+      render(<GhostWallCutouts />);
+      expect(lowestZ(), `top radius ${cornerRadiusTop}`).toBeCloseTo(floor, 6);
+    }
+  });
+
   it('draws nothing extra when both radii are on their defaults', () => {
     generating({});
     render(<GhostWallCutouts />);

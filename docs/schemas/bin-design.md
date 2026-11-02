@@ -286,19 +286,19 @@ already had), and on a per-side `WallCutout` it means "defer to the
 
 <!-- generated:start -->
 
-| Field                | Type                                   | Required | Default | Constraint   | Notes                                                                                                           |
-| -------------------- | -------------------------------------- | -------- | ------- | ------------ | --------------------------------------------------------------------------------------------------------------- |
-| `enabled`            | `boolean`                              | yes      |         |              | Master toggle for wall cutouts.                                                                                 |
-| `shape`              | `"u-shape"` \| `"scoop"` \| `"funnel"` | yes      |         |              | Cutout shape applied to all sides.                                                                              |
-| `width`              | `number`                               | yes      |         | >= 0, <= 100 | Default cutout width as a PERCENTAGE of the wall span, for sides without an override.                           |
-| `depth`              | `number`                               | yes      |         | >= 0, <= 100 | Default cutout depth as a PERCENTAGE of wall height, measured from the top.                                     |
-| `cornerRadiusTop`    | `number` \| `null`                     |          |         | >= 0         | Default shoulder round-over in mm. null means square, which is what every design saved before this control had. |
-| `cornerRadiusBottom` | `number` \| `null`                     |          |         | >= 0         | Default bottom fillet in mm. null means the automatic 15%-of-span rule.                                         |
-| `front`              | [`WallCutout`](#wallcutout)            | yes      |         |              |                                                                                                                 |
-| `back`               | [`WallCutout`](#wallcutout)            | yes      |         |              |                                                                                                                 |
-| `left`               | [`WallCutout`](#wallcutout)            | yes      |         |              |                                                                                                                 |
-| `right`              | [`WallCutout`](#wallcutout)            | yes      |         |              |                                                                                                                 |
-| `interior`           | [`WallCutout`](#wallcutout)            | yes      |         |              |                                                                                                                 |
+| Field                | Type                                   | Required | Default | Constraint   | Notes                                                                                                                                            |
+| -------------------- | -------------------------------------- | -------- | ------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `enabled`            | `boolean`                              | yes      |         |              | Master toggle for wall cutouts.                                                                                                                  |
+| `shape`              | `"u-shape"` \| `"scoop"` \| `"funnel"` | yes      |         |              | Cutout shape applied to all sides. A scoop is a circular arc reaching down the smaller of half its span and its depth, and has no bottom corner. |
+| `width`              | `number`                               | yes      |         | >= 0, <= 100 | Default cutout width as a PERCENTAGE of the wall span, for sides without an override.                                                            |
+| `depth`              | `number`                               | yes      |         | >= 0, <= 100 | Default cutout depth as a PERCENTAGE of wall height, measured from the top.                                                                      |
+| `cornerRadiusTop`    | `number` \| `null`                     |          |         | >= 0         | Default shoulder round-over in mm. null means square, which is what every design saved before this control had.                                  |
+| `cornerRadiusBottom` | `number` \| `null`                     |          |         | >= 0         | Default bottom fillet in mm. null means the automatic 15%-of-span rule. A scoop ignores it.                                                      |
+| `front`              | [`WallCutout`](#wallcutout)            | yes      |         |              |                                                                                                                                                  |
+| `back`               | [`WallCutout`](#wallcutout)            | yes      |         |              |                                                                                                                                                  |
+| `left`               | [`WallCutout`](#wallcutout)            | yes      |         |              |                                                                                                                                                  |
+| `right`              | [`WallCutout`](#wallcutout)            | yes      |         |              |                                                                                                                                                  |
+| `interior`           | [`WallCutout`](#wallcutout)            | yes      |         |              |                                                                                                                                                  |
 
 <!-- generated:end -->
 
@@ -320,7 +320,7 @@ already had), and on a per-side `WallCutout` it means "defer to the
 | `widthMm`            | `number` \| `null`                  | yes      |         | >= 0         | Absolute cutout width in mm. When null, the percentage width is used instead.                                                                                                          |
 | `depthMm`            | `number` \| `null`                  |          |         | >= 0         | Absolute cutout depth in mm, measured down from the wall top. When absent or null, the percentage depth is used instead. Set it to hold one cut line across bins of different heights. |
 | `cornerRadiusTop`    | `number` \| `null`                  |          |         | >= 0         | Shoulder round-over in mm. null defers to WallConfig.cornerRadiusTop.                                                                                                                  |
-| `cornerRadiusBottom` | `number` \| `null`                  |          |         | >= 0         | Bottom fillet in mm. null defers to WallConfig.cornerRadiusBottom.                                                                                                                     |
+| `cornerRadiusBottom` | `number` \| `null`                  |          |         | >= 0         | Bottom fillet in mm. null defers to WallConfig.cornerRadiusBottom. A scoop ignores it.                                                                                                 |
 
 <!-- generated:end -->
 
