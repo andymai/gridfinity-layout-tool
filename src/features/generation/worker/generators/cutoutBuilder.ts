@@ -2198,17 +2198,6 @@ function buildCutoutLabel(
   };
   const centreOnB = onSideB(split, local(centerX, centerY));
   const depthOn = (sideB: boolean): number => (sideB ? split.cutDepth : cutout.cutDepth);
-  const first = labelAt(floorZ(depthOn(centreOnB)));
-  if (!first) return null;
-  const box = getBounds(first.solid);
-  const corners = [
-    local(box.xMin, box.yMin),
-    local(box.xMax, box.yMin),
-    local(box.xMax, box.yMax),
-    local(box.xMin, box.yMax),
-  ];
-  if (corners.every((p) => onSideB(split, p) === centreOnB)) return first;
-
   const clipToSide = (solid: Shape3D, sideB: boolean): Shape3D | null => {
     const prism = splitSidePrism(cutout, split, sideB, -1, solidSurfaceZ + LABEL_CLIP_HEADROOM_MM);
     const turned = rotate(prism, -cutout.rotation, { axis: [0, 0, 1] });
@@ -2230,6 +2219,23 @@ function buildCutoutLabel(
       placed.delete();
     }
   };
+  const first = labelAt(floorZ(depthOn(centreOnB)));
+  if (!first) {
+    // The centre's side has no floor to carry text; the glyphs over the other
+    // side's floor still print there.
+    const other = labelAt(floorZ(depthOn(!centreOnB)));
+    const kept = other ? clipToSide(other.solid, !centreOnB) : null;
+    return kept && other ? { solid: kept, op: other.op } : null;
+  }
+  const box = getBounds(first.solid);
+  const corners = [
+    local(box.xMin, box.yMin),
+    local(box.xMax, box.yMin),
+    local(box.xMax, box.yMax),
+    local(box.xMin, box.yMax),
+  ];
+  if (corners.every((p) => onSideB(split, p) === centreOnB)) return first;
+
   const second = labelAt(floorZ(depthOn(!centreOnB)));
   const near = clipToSide(first.solid, centreOnB);
   const far = second ? clipToSide(second.solid, !centreOnB) : null;

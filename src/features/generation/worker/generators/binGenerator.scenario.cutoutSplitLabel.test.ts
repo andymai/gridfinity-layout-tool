@@ -31,7 +31,7 @@ beforeAll(async () => {
 const DEEP = 8;
 const SHALLOW = 3;
 
-function splitBin(label: string, mode: BinParams['textDefaults']['mode']): BinParams {
+function splitBin(label: string, mode: BinParams['textDefaults']['mode'], deep = DEEP): BinParams {
   return {
     ...DEFAULT_BIN_PARAMS,
     width: 1,
@@ -49,7 +49,7 @@ function splitBin(label: string, mode: BinParams['textDefaults']['mode']): BinPa
         y: 10,
         width: 20,
         depth: 20,
-        cutDepth: DEEP,
+        cutDepth: deep,
         rotation: 0,
         cornerRadius: 0,
         label,
@@ -107,4 +107,20 @@ describe('a caption across a split pocket', () => {
     },
     180000
   );
+
+  // Side A cuts the whole fill, so it has no floor for flat text; the glyphs
+  // over side B's floor still print.
+  it('keeps the glyphs over a floor when the other side has none', () => {
+    const generateBin = getGenerateBin();
+    const params = splitBin('HIHIHI', 'flat', 100);
+    const mesh = generateBin(params);
+    const top = boundingBox(mesh.vertices).maxZ;
+    const { line, points } = textVertices(mesh, params);
+    expect(points.length).toBeGreaterThan(0);
+    for (const [x, z] of points) {
+      expect(x).toBeGreaterThan(line);
+      expect(z).toBeGreaterThanOrEqual(top - SHALLOW - 1e-3);
+      expect(z).toBeLessThanOrEqual(top - SHALLOW + 0.25);
+    }
+  }, 180000);
 });

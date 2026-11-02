@@ -264,6 +264,27 @@ describe('drawnSplit', () => {
     expect(typeof drawnSplit(repeat, { x: 65, y: 48.32 }, { x: 75, y: 51.66 })).toBe('string');
   });
 
+  it('passes over a copy whose edge only runs on along the drag', () => {
+    const rows = pocket({
+      split: undefined,
+      array: {
+        mode: 'grid',
+        cols: 1,
+        rows: 2,
+        pitchX: 0,
+        pitchY: 10,
+        count: 0,
+        radius: 0,
+        startAngle: 0,
+        rotateToCenter: false,
+      },
+    });
+    const split = drawnSplit(rows, { x: 0, y: 50 }, { x: 10, y: 50 });
+    if (typeof split === 'string') throw new Error(split);
+    expect(split.a.y).toBeCloseTo(0, 6);
+    expect(split.b.y).toBeCloseTo(0, 6);
+  });
+
   it('takes a line across any copy of a repeat', () => {
     const repeat = pocket({
       split: undefined,

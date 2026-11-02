@@ -248,12 +248,21 @@ function inside(ring: readonly SplitPt[], p: SplitPt): boolean {
 
 /** Whether the segment from `p` to `q` crosses the outline or lies in it. */
 function segmentMeets(ring: readonly SplitPt[], p: SplitPt, q: SplitPt): boolean {
+  const len2 = (q.x - p.x) ** 2 + (q.y - p.y) ** 2;
+  const along = (r: SplitPt) => ((r.x - p.x) * (q.x - p.x) + (r.y - p.y) * (q.y - p.y)) / len2;
+  const eps = 1e-9 * (len2 + 1);
   for (let i = 0; i < ring.length; i++) {
     const r = ring[i];
     const s = ring[(i + 1) % ring.length];
-    if (sideOf(r, p, q) * sideOf(s, p, q) <= 0 && sideOf(p, r, s) * sideOf(q, r, s) <= 0) {
-      return true;
+    const dr = sideOf(r, p, q);
+    const ds = sideOf(s, p, q);
+    // An edge on the drag's own line meets it only where the two overlap.
+    if (Math.abs(dr) < eps && Math.abs(ds) < eps) {
+      const [lo, hi] = [along(r), along(s)].sort((m, n) => m - n);
+      if (hi >= 0 && lo <= 1) return true;
+      continue;
     }
+    if (dr * ds <= 0 && sideOf(p, r, s) * sideOf(q, r, s) <= 0) return true;
   }
   return inside(ring, p);
 }
