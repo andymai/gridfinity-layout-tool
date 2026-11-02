@@ -1,0 +1,21 @@
+src/features/bin-designer/components/panel/BaseSection/bodyTypeMemory.ts
+  s_883a4eee2ecc4e::t_ff0378a3bb32ff 34-38,40,42,130,191,230,235-241,249-254,257-259
+src/features/bin-designer/components/panel/BaseSection/bodyTypeMemory.test.ts
+  s_883a4eee2ecc4e::t_ff0378a3bb32ff 154-193
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "220a6700750609d13b1f76832bbc57c88535c497",
+  "prompts": {},
+  "sessions": {
+    "s_883a4eee2ecc4e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf59d3b6-e347-45ec-8991-5ee56bc71466",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
