@@ -1,0 +1,83 @@
+src/shared/scanTrace/toolBlobs.ts
+  s_4b9adb1d9473fb::t_fb01cc11c14ac1 10,41-76,79-80,84
+src/features/scan-capture/components/ScanPage/ScanToolList.test.tsx
+  s_4b9adb1d9473fb::t_eb4666a9b0ce37 38-46
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/scanIngest.test.ts
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 67,71,78,83-92,100
+src/i18n/locales/pt-BR.json
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 1012
+src/features/scan-capture/components/ScanPage/ScanPage.tsx
+  s_4b9adb1d9473fb::t_46e3584124c5ea 19,69-71,110,118,121,134,143-151,161,173,356,413-418
+  s_4b9adb1d9473fb::t_3c7ab2d53aab1e 37
+src/i18n/locales/ja.json
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 1012
+src/shared/scanTrace/traceScene.ts
+  s_4b9adb1d9473fb::t_e4f6854844b33b 39,225-233,240,252-274
+src/shared/scanTrace/index.ts
+  s_4b9adb1d9473fb::t_8141f09e63cf16 9
+src/shared/scanTrace/traceScene.test.ts
+  s_4b9adb1d9473fb::t_eb4666a9b0ce37 9,320-339
+  s_4b9adb1d9473fb::t_bdf637c2dd0ba4 340-341
+src/i18n/locales/en.ts
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 3605
+src/features/scan-capture/components/ScanPage/scanFlow.ts
+  s_4b9adb1d9473fb::t_8141f09e63cf16 1,10,35-37,53,59,61,73,80,85,89-90,98-103,105-110,114
+  s_4b9adb1d9473fb::t_3c7ab2d53aab1e 2,20-27
+  s_4b9adb1d9473fb::t_73ba9193f386c8 28
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanWithPhoneDialog.test.tsx
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 116,123
+src/i18n/locales/it.json
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 1012
+src/i18n/locales/ko.json
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 1012
+src/i18n/locales/ka.json
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 3039
+src/i18n/locales/pl.json
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 1012
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/scanIngest.ts
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 30-33,36,74-78
+src/i18n/locales/cs.json
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 1012
+src/i18n/locales/uk.json
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 1012
+src/i18n/locales/nl.json
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 1012
+src/i18n/locales/zh-CN.json
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 1012
+src/i18n/locales/de.json
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 1012
+src/i18n/locales/sv.json
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 1012
+src/features/scan-capture/components/ScanPage/ScanToolList.tsx
+  s_4b9adb1d9473fb::t_46e3584124c5ea 9,15,45
+src/i18n/locales/nb.json
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 1012
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanWithPhoneDialog.tsx
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 306-307
+src/features/scan-capture/components/ScanPage/scanFlow.test.ts
+  s_4b9adb1d9473fb::t_eb4666a9b0ce37 3,65,83-88,93,95-106,116
+src/i18n/locales/fr.json
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 1012
+src/i18n/locales/es.json
+  s_4b9adb1d9473fb::t_745ef3fb00e2e3 1012
+src/shared/scanTrace/toolBlobs.test.ts
+  s_4b9adb1d9473fb::t_fb01cc11c14ac1 48-68
+src/features/scan-capture/components/ScanPage/ScanPage.test.tsx
+  s_4b9adb1d9473fb::t_eb4666a9b0ce37 260-275
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b935621b304a15cba59a08f625f46d807d32962b",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
