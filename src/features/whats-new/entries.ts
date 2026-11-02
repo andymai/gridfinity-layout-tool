@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'scan-several-tools',
+    date: '2026-11-02',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Scan several tools in one photo' },
+    body: {
+      en: 'Lay a few tools out with a gap between them and the phone scanner traces every one, each sized by your card, sheet or baseplate. The outline finder weighs colour over brightness, so a soft shadow stays out of the outline. Remove any outline you do not want or tap a tool to redraw it, and they arrive in the bin designer together, ready to arrange.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'cutout-shadow-board',
     date: '2026-11-02',
     kind: 'new',
