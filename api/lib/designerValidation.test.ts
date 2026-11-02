@@ -133,7 +133,7 @@ describe('pull-tab validation', () => {
     expect(result.valid).toBe(true);
     if (result.valid) expect(result.payload.params.pullTab).toEqual(tab);
   });
-  it.each([
+  it.each<Record<string, unknown>>([
     { walls: [] },
     { walls: 'front' },
     { walls: ['front', 'front'] },
@@ -147,6 +147,8 @@ describe('pull-tab validation', () => {
     { height: NaN },
     { recessDepth: 3.3 },
     { unexpected: true },
+    { constructor: 1 },
+    { toString: 1 },
   ])('rejects malformed or unsupported settings: %j', (patch) => {
     expect(check({ ...DEFAULT_PULL_TAB, ...patch }).valid).toBe(false);
   });

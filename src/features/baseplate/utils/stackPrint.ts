@@ -205,7 +205,7 @@ export type PlateFlipInput = Pick<
   | 'paddingBack'
   | 'outline'
   | 'outlineOverhang'
-  | 'cornerCutRadiusMm'
+  | 'outlineIsCornerRounding'
   | 'cornerRadius'
   | 'cornerRadii'
   | 'edges'
@@ -285,21 +285,21 @@ export function planPlateFlip(params: PlateFlipInput): PlateFlip {
   const y: PlateFlip = { axis: 'y', offsetMm: aboutY.seatMm };
   const [first, second] = preferY ? [y, x] : [x, y];
   if (params.outline === undefined) return first;
-  // A rounded corner turned over a square one hangs (√2 − 1)·r past it, which a
-  // plain-rounded plate already prints with; a radius cut as an outline gets
-  // the same allowance, so only a real shape difference turns the bottom plate.
-  const tolerance =
-    SHAPED_SEAM_OVERHANG_TOLERANCE_MM + (Math.SQRT2 - 1) * (params.cornerCutRadiusMm ?? 0);
   const lands = (f: PlateFlip): boolean =>
-    turnedPlateOverhangMm(params, f.axis, f.offsetMm, tolerance) <= tolerance;
+    turnedPlateOverhangMm(params, f.axis, f.offsetMm, SHAPED_SEAM_OVERHANG_TOLERANCE_MM) <=
+    SHAPED_SEAM_OVERHANG_TOLERANCE_MM;
   if (lands(first)) return first;
   if (lands(second)) return second;
+  // Corner rounding cut as an outline only moves a rounded corner, which a
+  // plain-rounded plate already prints with the bottom upright.
+  if (params.outlineIsCornerRounding) return first;
   return { ...first, flipBottom: true };
 }
 
 /**
  * Build the meshes for one printed tower of `copies` plates. The bottom plate
- * stays upright for bed adhesion unless `flip.flipBottom` turns it too; every
+ * stays upright for bed adhesion unless `flip.flipBottom` turns it too in a
+ * tower of two or more; every
  * plate above it is flipped upside down, community practice that minimizes
  * overhangs while the air gap lets the tower snap apart (see the baseplate
  * README). Every copy's socket lattice lands on the one below it, and the

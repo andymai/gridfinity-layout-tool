@@ -159,7 +159,7 @@ function resolveOutline(
   outline: DrawerOutline | undefined;
   paddingOn: boolean;
   overhang?: ResolvedBaseplateParams['outlineOverhang'];
-  cornerCutRadiusMm?: number;
+  outlineIsCornerRounding?: boolean;
 } {
   if (outlineOn && drawerOutline !== undefined) {
     const frame = resolveOutlineFrame(drawerOutline, {
@@ -196,7 +196,7 @@ function resolveRadiusOutline(
   widthMm: number,
   depthMm: number,
   gridUnitMm: number
-): { outline: DrawerOutline | undefined; paddingOn: boolean; cornerCutRadiusMm?: number } {
+): { outline: DrawerOutline | undefined; paddingOn: boolean; outlineIsCornerRounding?: boolean } {
   // No active drawer shape: corner radii beyond the plain rounding limit become
   // a radius-cut outline, so the generator's cell classification handles the
   // sockets the arc consumes (the plain path must never orphan a pocket, which is
@@ -236,9 +236,7 @@ function resolveRadiusOutline(
   return {
     outline: { vertices: cornerCutVertices(totalW, totalD, cuts) },
     paddingOn: true,
-    cornerCutRadiusMm: Math.max(
-      ...[cuts.tl, cuts.tr, cuts.bl, cuts.br].map((cut) => (cut.kind === 'radius' ? cut.r : 0))
-    ),
+    outlineIsCornerRounding: true,
   };
 }
 
@@ -346,9 +344,9 @@ export function buildFullParams(
   // stacks whole) while the unique corner tiles print singly. A rounded corner
   // tile, plain or cut as an outline, is congruent about neither flip axis, so
   // its flipped copies carry the corner to the opposite side of the tower
-  // ((√2 − 1)·r of overhang at one seam); that beats flattening a radius the
-  // user asked for. A shaped tile no turn maps onto itself, past that
-  // allowance, prints every copy turned instead (`planPlateFlip`).
+  // (an overhang at one seam); that beats flattening a radius the user asked
+  // for. Only a shaped tile no turn maps onto itself prints every copy turned
+  // instead (`planPlateFlip`).
   // Only the implicit spec radius is squared, via `roundingOn` below.
   // Dovetail connectors survive: tongues, grooves, and the dovetail key are
   // full-height vertical prisms that flip cleanly. Only snap clip is
@@ -360,7 +358,7 @@ export function buildFullParams(
 
   const effFractionalEdgeX = synced ? fractionalEdgeX : (stored.fractionalEdgeX ?? 'end');
   const effFractionalEdgeY = synced ? fractionalEdgeY : (stored.fractionalEdgeY ?? 'end');
-  const { outline, paddingOn, overhang, cornerCutRadiusMm } = resolveOutline(
+  const { outline, paddingOn, overhang, outlineIsCornerRounding } = resolveOutline(
     drawerOutline,
     outlineOn,
     stored,
@@ -424,7 +422,7 @@ export function buildFullParams(
     nozzleSizeMm,
     outline,
     outlineOverhang: overhang,
-    ...(cornerCutRadiusMm ? { cornerCutRadiusMm } : {}),
+    ...(outlineIsCornerRounding ? { outlineIsCornerRounding } : {}),
     magnetHoles: stackingOn ? false : stored.magnetHoles,
     magnetDiameter: stored.magnetDiameter,
     magnetDepth: stored.magnetDepth,

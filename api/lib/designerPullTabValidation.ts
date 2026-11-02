@@ -47,7 +47,7 @@ export function validatePullTab(tab: unknown): string | null {
   )
     return 'Invalid pull tab configuration';
   for (const key of Object.keys(tab)) {
-    if (!OTHER_KEYS.has(key) && !(key in PULL_TAB_RANGES))
+    if (!OTHER_KEYS.has(key) && !Object.hasOwn(PULL_TAB_RANGES, key))
       return `Unknown pull tab setting: ${key}`;
   }
   for (const [key, [min, max]] of Object.entries(PULL_TAB_RANGES)) {

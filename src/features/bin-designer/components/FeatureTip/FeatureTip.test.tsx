@@ -74,7 +74,7 @@ describe('FeatureTip', () => {
     const reduced = vi.spyOn(window, 'matchMedia').mockImplementation(
       (query: string) =>
         ({
-          matches: query.includes('prefers-reduced-motion'),
+          matches: query === '(prefers-reduced-motion: reduce)',
           media: query,
           addEventListener: () => {},
           removeEventListener: () => {},

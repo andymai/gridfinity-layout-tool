@@ -508,6 +508,45 @@ describe('planPlateFlip', () => {
       }
     });
 
+    it('still takes a turn that lands a cut corner rounding exactly', () => {
+      // Both back corners rounded: the Y turn keeps them at the back, the X
+      // turn would hang them over the square front corners below.
+      const both = buildFullParams(
+        {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          stackPrint: { enabled: true, gapMm: mm(0.2) },
+          cornerRadii: { tl: mm(22), tr: mm(22), bl: mm(0), br: mm(0) },
+        },
+        4 * 42,
+        4 * 42,
+        42,
+        'end',
+        'end'
+      );
+      expect(both.outlineIsCornerRounding).toBe(true);
+      expect(planPlateFlip(both)).toEqual({ axis: 'y', offsetMm: 0 });
+    });
+
+    it('keeps the bottom upright for padding beside a cut corner rounding', () => {
+      const roundedPadded = plate({
+        paddingLeft: 20,
+        paddingFront: 20,
+        outline: {
+          vertices: cornerCutVertices(4 * 42 + 20, 4 * 42 + 20, {
+            tl: { kind: 'radius', r: 22 },
+            tr: { kind: 'radius', r: 22 },
+            bl: { kind: 'radius', r: 22 },
+            br: { kind: 'radius', r: 22 },
+          }),
+        },
+        outlineIsCornerRounding: true,
+      });
+      expect(planPlateFlip(roundedPadded)).not.toHaveProperty('flipBottom');
+      expect(
+        planPlateFlip({ ...roundedPadded, outlineIsCornerRounding: undefined }).flipBottom
+      ).toBe(true);
+    });
+
     it('takes the turn the outline is symmetric about, keeping the bottom plate upright', () => {
       // Back-middle cell missing: the padding tie picks X, which would move the
       // gap to the front; only the Y turn keeps it at the back.
