@@ -1,0 +1,22 @@
+src/features/generation/worker/generators/lidCutouts.scenario.test.ts
+  s_4b9adb1d9473fb::t_1e8259b613e19d 126,129-147,149-150
+  s_4b9adb1d9473fb::t_87a102e4477825 127-128,148
+src/features/generation/worker/generators/lidCutoutBuilder.ts
+  s_4b9adb1d9473fb::t_1e8259b613e19d 94-98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0dea55947c3c4159c3c6936fd3e65bccb9c5fd55",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
