@@ -1,0 +1,142 @@
+src/i18n/locales/fr.json
+  s_a51c3923959314::t_ce9cb6398df4b6 450-456
+src/i18n/locales/ka.json
+  s_a51c3923959314::t_ce9cb6398df4b6 3419-3425
+src/i18n/locales/uk.json
+  s_a51c3923959314::t_ce9cb6398df4b6 450-456
+src/features/generation/worker/generators/binDirectMesh.ts
+  s_a51c3923959314::t_3441d4831b3534 384-385
+  s_a51c3923959314::t_4cd50ef4d3a111 42
+src/i18n/locales/zh-CN.json
+  s_a51c3923959314::t_ce9cb6398df4b6 450-456
+src/i18n/locales/de.json
+  s_a51c3923959314::t_ce9cb6398df4b6 450-456
+src/i18n/locales/nl.json
+  s_a51c3923959314::t_ce9cb6398df4b6 450-456
+src/features/generation/worker/generators/binGenerator.scenario.lipNotches.test.ts
+  s_a51c3923959314::t_126454b4943741 1-5
+src/shared/utils/lipNotchPlan.test.ts
+  s_a51c3923959314::t_672ccaf04a5c48 1-49
+src/i18n/locales/ko.json
+  s_a51c3923959314::t_ce9cb6398df4b6 450-456
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_a51c3923959314::t_e9620567c010bf 76-109
+src/i18n/locales/ja.json
+  s_a51c3923959314::t_ce9cb6398df4b6 450-456
+src/i18n/locales/pt-BR.json
+  s_a51c3923959314::t_ce9cb6398df4b6 450-456
+src/features/generation/worker/generators/pipeline/stages/shellStage.ts
+  s_a51c3923959314::t_140b8d0c7569a2 201-203
+  s_a51c3923959314::t_971fa733d053ef 263-264,332-333
+  s_a51c3923959314::t_6488402689970a 209-211
+src/i18n/locales/nb.json
+  s_a51c3923959314::t_ce9cb6398df4b6 450-456
+src/features/generation/worker/generators/binDirectMesh.test.ts
+  s_a51c3923959314::t_225abde453d504 241-247
+src/features/whats-new/latest.ts
+  s_a51c3923959314::t_3129e433fbcd78 9
+.claude/skills/geometry-generation/SKILL.md
+  s_a51c3923959314::t_5803b95b477cce 265-273
+src/shared/schema/binDesignKeys.ts
+  s_a51c3923959314::t_6abe0ac859fc20 121
+src/features/bin-designer/constants/paramMigration.ts
+  s_a51c3923959314::t_bd27cd81ac4b0a 217-219
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_a51c3923959314::t_2cb141af75dee1 2162-2174
+src/features/generation/worker/generators/pipeline/context.test.ts
+  s_a51c3923959314::t_db8998cc08641b 183-193,195-201
+  s_a51c3923959314::t_9392a2b190df1f 194
+src/i18n/locales/it.json
+  s_a51c3923959314::t_ce9cb6398df4b6 450-456
+src/features/generation/worker/generators/scenarios/index.ts
+  s_a51c3923959314::t_775f1eec21eb19 40,108
+src/features/generation/worker/generators/scenarios/lipNotches.ts
+  s_a51c3923959314::t_7e9e8ee385c22c 1-24,32-101,106-131
+  s_a51c3923959314::t_cb33114f24a8d1 25-31,102-105
+src/features/bin-designer/types/base.ts
+  s_a51c3923959314::t_b5f32064d156e8 515-522
+src/features/bin-designer/search/designerControlRegistry.ts
+  s_a51c3923959314::t_a44e0cf1bdac49 207-220
+  s_a51c3923959314::t_b7b69cea9912a5 206
+src/i18n/locales/en.ts
+  s_a51c3923959314::t_e02373a0ed44e9 4069-4077
+src/i18n/locales/es.json
+  s_a51c3923959314::t_ce9cb6398df4b6 450-456
+src/features/generation/worker/generators/lipNotchStacking.kernel.test.ts
+  s_a51c3923959314::t_14e71950544537 121-124
+  s_a51c3923959314::t_1d8b56b88bc225 35-36
+  s_a51c3923959314::t_da922c5495299d 1-16,19,21-22,24-27,29-34,37-103,129
+  s_a51c3923959314::t_27ddf095059edd 17-18,28,104-120,125-128
+  s_a51c3923959314::t_91644662d7ad5d 20,23
+api/lib/designerBaseValidation.ts
+  s_a51c3923959314::t_7bd64713c7e3c0 64-70
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_a51c3923959314::t_3850c54c5d7f78 247-252
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_a51c3923959314::t_90a98fe985223a 369-375
+  s_a51c3923959314::t_ab8024257756dc 25
+  s_a51c3923959314::t_1e1c21eaf7fd0c 666-667
+  s_a51c3923959314::t_90eb7d97859f63 717
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_a51c3923959314::t_1e9bbf3d83f45d 245,249
+  s_a51c3923959314::t_5d05c2960cdd10 49
+  s_a51c3923959314::t_e40647619f1e1b 240-244,246-248,250-252
+  s_a51c3923959314::t_2061e8e5f717c5 54-62
+src/i18n/locales/pl.json
+  s_a51c3923959314::t_ce9cb6398df4b6 450-456
+api/lib/designerBaseValidation.test.ts
+  s_a51c3923959314::t_4df167f1199974 35-45
+src/features/whats-new/entries.ts
+  s_a51c3923959314::t_1c405f1da9cb6d 17-26
+  s_a51c3923959314::t_df963dfc473514 16
+public/schema/bin-design.schema.json
+  s_a51c3923959314::t_cbfa205d1811ae 176-179
+src/i18n/locales/cs.json
+  s_a51c3923959314::t_ce9cb6398df4b6 450-456
+src/i18n/locales/sv.json
+  s_a51c3923959314::t_ce9cb6398df4b6 450-456
+src/features/generation/worker/generators/boxTopShape.ts
+  s_a51c3923959314::t_ee61843d6437d7 379-393
+  s_a51c3923959314::t_2c9b36f85c7a36 418-426
+  s_a51c3923959314::t_cec47ab8a393fc 119-123,129
+  s_a51c3923959314::t_7aba078ca7c523 566-567,574-576,586-587
+  s_a51c3923959314::t_02bf1f8bdad5f7 294-303,322-341,346-378,394-417,427-449,466-468
+  s_a51c3923959314::t_0a8f82d9e18b8d 605-622
+  s_a51c3923959314::t_ac1ea90b2e5d27 47
+  s_a51c3923959314::t_5368640cdc61d3 315-321
+  s_a51c3923959314::t_85d6b93352f2d2 10,16,40-43,46
+  s_a51c3923959314::t_4224560b24453b 13,19-28
+  s_a51c3923959314::t_5dd0d5037bbee5 342-345
+  s_a51c3923959314::t_6351ba5fdc0668 450-465
+  s_a51c3923959314::t_2cd87986a134fd 604,623-624
+  s_a51c3923959314::t_4a2a30fc029b52 304-314
+src/features/generation/worker/generators/pipeline/types.ts
+  s_a51c3923959314::t_d8cfbf3b256491 216-220
+src/features/generation/worker/generators/binGenerator.export.lipNotches.test.ts
+  s_a51c3923959314::t_126454b4943741 1-5
+src/shared/utils/lipNotchPlan.ts
+  s_a51c3923959314::t_f4ef35041c543e 1-36
+src/features/generation/worker/generators/pipeline/context.ts
+  s_a51c3923959314::t_166d13128a0abd 451-452
+  s_a51c3923959314::t_f87c5d8399fcc5 246
+  s_a51c3923959314::t_b164c66c64700d 31
+  s_a51c3923959314::t_3ce3d98fcc8fcc 509
+docs/schemas/bin-design.md
+  s_a51c3923959314::t_49b1e1ea3dc2dd 155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "44bd422dd58e2e7d8cca9ac13caf361fbbdb3d43",
+  "prompts": {},
+  "sessions": {
+    "s_a51c3923959314": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3f4a089b-7222-4e3f-8bbf-ce9f799fd4d8",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
