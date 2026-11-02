@@ -41,6 +41,7 @@ import { CutoutBoardSettings } from './CutoutBoardSettings';
 import { BinSizeSection } from './BinSizeSection';
 import { BinFeaturesSection } from './BinFeaturesSection';
 import { FitTestButton } from './FitTestButton';
+import { ShadowBoardButton } from './ShadowBoardButton';
 import { AlignControls } from './AlignControls';
 import { RepeatSuggestion } from './RepeatSuggestion';
 import type { SplitTool } from './CutoutSplitControls';
@@ -262,6 +263,7 @@ export function InspectorContent({
       />
       <BinFeaturesSection />
       <FitTestButton />
+      {!throughOnly && <ShadowBoardButton />}
     </>
   );
 

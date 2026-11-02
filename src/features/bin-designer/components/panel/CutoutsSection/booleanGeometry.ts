@@ -47,10 +47,23 @@ export function applyGroupOp(
   members: readonly Cutout[],
   op: GroupOp = DEFAULT_GROUP_OP
 ): MultiPolygon | null {
-  const polygons = members
-    .map((c) => ({ cutout: c, polygon: cutoutToPolygon(c) }))
-    .filter((e): e is { cutout: Cutout; polygon: Polygon } => e.polygon !== null);
+  return combineGroupPolygons(
+    members
+      .map((c) => ({ cutout: c, polygon: cutoutToPolygon(c) }))
+      .filter((e): e is { cutout: Cutout; polygon: Polygon } => e.polygon !== null),
+    op
+  );
+}
 
+/**
+ * {@link applyGroupOp} over outlines the caller has already drawn, each with
+ * the member it stands for (its z-order picks a subtract's cutter): what lets
+ * a caller grow every member by its clearance before the op.
+ */
+export function combineGroupPolygons(
+  polygons: readonly { readonly cutout: Cutout; readonly polygon: Polygon }[],
+  op: GroupOp = DEFAULT_GROUP_OP
+): MultiPolygon | null {
   if (polygons.length === 0) return null;
   if (polygons.length === 1) return [polygons[0].polygon];
 
