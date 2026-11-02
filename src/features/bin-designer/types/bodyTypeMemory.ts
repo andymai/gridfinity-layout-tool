@@ -19,4 +19,6 @@ export interface BodyTypeMemory {
   readonly bodyType: string;
   // Mutable so a history entry holding it stays assignable to an immer draft.
   readonly cleared: ClearedBodySetting[];
+  /** A floor-referenced fill height a body clamped, and what it clamped it to. */
+  readonly fill?: { readonly originalMm: number; readonly leftMm: number };
 }

@@ -45,12 +45,8 @@ const SHARED_SLOTS: ReadonlySet<string> = new Set([
   'base.spacer',
 ]);
 
-/**
- * Values a switch pins or floors without any feature turning off. The cutout
- * config is here for its fill: a floor-referenced fill is held in mm across the
- * write, and Base only's slab clamps it to almost nothing.
- */
-const PLAIN_SLOTS = ['height', 'extraWallHeightMm', 'cutoutConfig'] as const;
+/** Values a switch pins or floors without any feature turning off. */
+const PLAIN_SLOTS = ['height', 'extraWallHeightMm'] as const;
 
 const BASE_PREFIX = 'base.';
 
@@ -205,7 +201,11 @@ function giveBack(
   return restored;
 }
 
-/** `next` with its fill re-held the way `setParams` will on the write. */
+function sameMm(a: number, b: number): boolean {
+  return Math.abs(a - b) < 1e-6;
+}
+
+/** `next` with a floor-referenced fill held at `heldMm`, as `setParams` holds one. */
 function holdFill(next: BinParams, heldMm: number | null): BinParams {
   const topOffset = reanchorCutoutFill(next, heldMm);
   return topOffset === undefined
@@ -232,12 +232,11 @@ export function switchBodyType(
   const current = deriveBodyType(params.base);
   if (current === next) return { params, memory };
 
-  const held =
-    memory?.bodyType === current
-      ? memory.cleared.filter((setting) => slotsMatch(params, setting.left))
-      : [];
-  const heldFill = heldCutoutFillMm(params);
-  const switched = holdFill(finalizeBaseParams(bodyTypeParams(params, next)), heldFill);
+  const remembered = memory?.bodyType === current ? memory : null;
+  const held = remembered
+    ? remembered.cleared.filter((setting) => slotsMatch(params, setting.left))
+    : [];
+  const switched = finalizeBaseParams(bodyTypeParams(params, next));
 
   let restored = switched;
   const kept: ClearedBodySetting[] = [];
@@ -254,11 +253,20 @@ export function switchBodyType(
       kept.push(setting);
     }
   }
-  // A fill given back is the user's own, so it is not re-held. `setParams`
-  // re-holds it anyway, which is why the caller writes it again afterwards.
-  const result = given.some((setting) => 'cutoutConfig' in setting.original)
-    ? finalizeBaseParams(restored)
-    : holdFill(finalizeBaseParams(restored), heldFill);
+  // A floor-referenced fill is a height in mm, and `topOffset` only expresses
+  // it against one body's wall, so the fill is remembered in mm. Base only's
+  // slab clamps it, and the user's fill comes back once a body has the room.
+  const currentFill = heldCutoutFillMm(params);
+  const wantFill =
+    currentFill !== null && remembered?.fill && sameMm(currentFill, remembered.fill.leftMm)
+      ? remembered.fill.originalMm
+      : currentFill;
+  const result = holdFill(finalizeBaseParams(restored), wantFill);
+  const reachedFill = heldCutoutFillMm(result);
+  const fill =
+    wantFill !== null && reachedFill !== null && !sameMm(reachedFill, wantFill)
+      ? { originalMm: wantFill, leftMm: reachedFill }
+      : undefined;
 
   const carried = kept.map((setting) => ({
     ...setting,
@@ -278,5 +286,8 @@ export function switchBodyType(
   );
 
   const cleared = [...carried, ...fresh];
-  return { params: result, memory: cleared.length > 0 ? { bodyType: next, cleared } : null };
+  return {
+    params: result,
+    memory: cleared.length > 0 || fill ? { bodyType: next, cleared, ...(fill && { fill }) } : null,
+  };
 }

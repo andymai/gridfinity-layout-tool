@@ -36,7 +36,7 @@ export function useBodyTypeSwitch(): (next: BodyType) => void {
       const written = useDesignerStore.getState().params;
       // `setParams` can refuse the write, and the memory must then stay with it.
       if (written !== params) {
-        // It also re-holds a floor-referenced fill, over one the switch gave back.
+        // It also holds a floor-referenced fill where it was, over a remembered one.
         if (written.cutoutConfig.topOffset !== topOffset) updateCutoutConfig({ topOffset });
         setBodyTypeMemory(switched.memory);
       }

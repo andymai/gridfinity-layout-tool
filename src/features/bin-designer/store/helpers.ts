@@ -176,7 +176,6 @@ export function pruneAssemblySelection(state: Draft<DesignerState>): void {
  * generation epoch isn't bumped, so the worker doesn't re-run on every
  * lock/hide click.
  */
-/** The body-type memory as plain data, for a history entry. */
 export function snapshotBodyTypeMemory(state: Draft<DesignerState>): BodyTypeMemory | null {
   const memory = state.ui.bodyTypeMemory;
   return memory && isDraft(memory) ? current(memory) : memory;

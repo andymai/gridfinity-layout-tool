@@ -6,6 +6,7 @@ import type { FeatureKey } from '@/shared/constraints';
 import { BODY_TYPES } from './bodyType';
 import type { BodyType } from './bodyType';
 import { switchBodyType } from './bodyTypeMemory';
+import { heldCutoutFillMm } from '@/features/bin-designer/utils/cutoutFill';
 
 /** A standard bin with every setting a body switch can clear turned on. */
 function designedBin(): BinParams {
@@ -205,6 +206,36 @@ describe('switchBodyType', () => {
     const back = switchBodyType(tile.params, 'standard', tile.memory);
     expect(back.params.cutoutConfig.topOffset).toBe(4);
     expect(back.params.style).toBe('solid');
+  });
+
+  it('holds the fill height in mm across bodies with different walls', () => {
+    const solid: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      height: 6,
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutoutConfig: { ...DEFAULT_BIN_PARAMS.cutoutConfig, fillReference: 'floor', topOffset: 4 },
+    };
+    const fill = heldCutoutFillMm(solid);
+    const flat = walk(solid, ['flat']);
+    expect(heldCutoutFillMm(flat.params)).toBe(fill);
+
+    const tray = switchBodyType(flat.params, 'tray', flat.memory);
+    expect(heldCutoutFillMm(tray.params)).toBe(fill);
+    const back = switchBodyType(tray.params, 'standard', tray.memory);
+    expect(back.params.cutoutConfig.topOffset).toBe(4);
+  });
+
+  it('keeps a clamped fill held until a body has room for it', () => {
+    const solid: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      height: 6,
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutoutConfig: { ...DEFAULT_BIN_PARAMS.cutoutConfig, fillReference: 'floor', topOffset: 4 },
+    };
+    const end = walk(solid, ['tile', 'spacer', 'standard']);
+    expect(end.params.cutoutConfig.topOffset).toBe(4);
   });
 
   it('refuses a restore that would turn off something enabled since', () => {
