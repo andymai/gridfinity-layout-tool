@@ -1,0 +1,23 @@
+src/shared/analytics/posthog/errorFilters.ts
+  s_a51c3923959314::t_c246004ac3758e 145
+  s_a51c3923959314::t_9929db7848955e 141-144
+src/shared/analytics/posthog/errorFilters.test.ts
+  s_a51c3923959314::t_20c0b43c3521f8 26-27
+  s_a51c3923959314::t_d9a4f36f4481b5 58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2dfb3bcb2c3b3c6a8a0fbdda1d292af31a396699",
+  "prompts": {},
+  "sessions": {
+    "s_a51c3923959314": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3f4a089b-7222-4e3f-8bbf-ce9f799fd4d8",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
