@@ -1,0 +1,24 @@
+src/features/baseplate/utils/stackPrint.test.ts
+  s_f721a21584cb95::t_ffa5aa19737c9c 488-489,532-546
+  s_f721a21584cb95::t_dfe6de45af106d 547-548
+src/features/baseplate/utils/buildFullParams.ts
+  s_f721a21584cb95::t_ffa5aa19737c9c 348-350
+src/features/baseplate/utils/stackPrint.ts
+  s_f721a21584cb95::t_ffa5aa19737c9c 13,294-312
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7a4f85d16c3bb27d308b23ab46e409b84d5b4478",
+  "prompts": {},
+  "sessions": {
+    "s_f721a21584cb95": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14ff3cc8-6691-4939-a25c-f6ba932191ef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
