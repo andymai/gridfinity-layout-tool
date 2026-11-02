@@ -1,5 +1,21 @@
 # Changelog
 
+## [4.529.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.528.0...gridfinity-layout-tool-v4.529.0) (2026-11-02)
+
+
+### Features
+
+* **bin-designer:** add a round entry edge as an alternative to the chamfer ([#4792](https://github.com/andymai/gridfinity-layout-tool/issues/4792)) ([8a8c555](https://github.com/andymai/gridfinity-layout-tool/commit/8a8c5552fcb39a2b740a1217edf3ace88b39a224))
+* **bin-designer:** add finger access cuts beside pockets ([#4793](https://github.com/andymai/gridfinity-layout-tool/issues/4793)) ([8098957](https://github.com/andymai/gridfinity-layout-tool/commit/8098957eca235b06adf6fb0a763f425de86d7aff))
+* **bin-designer:** add lip notches so smaller stacked bins stay on the grid ([#4790](https://github.com/andymai/gridfinity-layout-tool/issues/4790)) ([0b82669](https://github.com/andymai/gridfinity-layout-tool/commit/0b82669265d633c7b8889940c0c9882c3c2f783c))
+* **bin-designer:** add pocket depth modes and ask tool thickness on import ([#4791](https://github.com/andymai/gridfinity-layout-tool/issues/4791)) ([59fc0a4](https://github.com/andymai/gridfinity-layout-tool/commit/59fc0a4bf79a87eddd393c802845f7e3ef1b468c))
+* **export:** send exports to a folder or a URL ([#4784](https://github.com/andymai/gridfinity-layout-tool/issues/4784)) ([cf1941a](https://github.com/andymai/gridfinity-layout-tool/commit/cf1941a3efee2fd581f45b6e650b2701197b1aeb))
+
+
+### Bug Fixes
+
+* **analytics:** ignore Safari extension storage-quota errors ([#4789](https://github.com/andymai/gridfinity-layout-tool/issues/4789)) ([ac782c9](https://github.com/andymai/gridfinity-layout-tool/commit/ac782c90b7e6d6c2c5e6d61ca2e2569e8787c2ab))
+
 ## [4.528.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.527.0...gridfinity-layout-tool-v4.528.0) (2026-11-02)
 
 
