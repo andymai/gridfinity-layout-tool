@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'cutout-round-entry',
+    date: '2026-11-02',
+    kind: 'improved',
+    title: { en: 'Rounded pocket edges' },
+    body: {
+      en: 'The entry edge of a pocket can now be rounded instead of chamfered. Pick Round under Fit & insertion in the Cut Editor. A rounded rim is smooth to the hand, so tools you lift out by hand do not catch on it, while a chamfer still guides bits and sockets in.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'cutout-depth-modes',
     date: '2026-11-02',
     kind: 'new',

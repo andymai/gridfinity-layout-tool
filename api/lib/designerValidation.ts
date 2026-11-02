@@ -61,6 +61,7 @@ export {
 } from './designerLidValidation.js';
 export {
   VALID_CUTOUT_DEPTH_MODES,
+  VALID_CUTOUT_ENTRY_PROFILES,
   VALID_CUTOUT_FILL_REFERENCES,
   VALID_CUTOUT_LABEL_MODES,
 } from './designerCutoutValidation.js';

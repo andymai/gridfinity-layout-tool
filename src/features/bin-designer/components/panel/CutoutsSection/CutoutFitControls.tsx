@@ -18,6 +18,8 @@ import { useTranslation } from '@/i18n';
 import { Stepper } from '@/design-system';
 import { clamp } from '@/shared/utils/math';
 import type { FitCue } from './cutoutSectionVisibility';
+import { EntryProfileToggle } from './EntryProfileToggle';
+import { cutoutEntryProfile } from '@/shared/utils/cutoutFit';
 
 /** Stepper increment for fit fields — coarse enough to tune by clicking, while
  *  the text field still accepts off-grid values for precise tuning. */
@@ -40,6 +42,7 @@ export function CutoutFitControls({
   const isClearanceShape = CLEARANCE_SHAPES.includes(cutout.shape);
   const isChamferShape = CHAMFER_SHAPES.includes(cutout.shape);
   const maxChamfer = maxEntryChamfer(cutout.cutDepth);
+  const profile = cutoutEntryProfile(cutout);
 
   // Show the cue while a fit control is being interacted with (focus enters on
   // both the buttons and the number field; pointerenter covers drags without a
@@ -68,17 +71,30 @@ export function CutoutFitControls({
       )}
 
       {isChamferShape && maxChamfer > 0 && (
-        <FitStepRow
-          {...cueProps('chamfer')}
-          label={t('binDesigner.cutouts.chamfer')}
-          info={t('binDesigner.cutouts.chamferInfo')}
-          unit="mm"
-          value={Math.min(cutout.chamferWidth ?? 0, maxChamfer)}
-          onChange={(chamferWidth) => onUpdate({ chamferWidth })}
-          min={0}
-          max={maxChamfer}
-          disabled={disabled}
-        />
+        <>
+          <EntryProfileToggle
+            value={profile}
+            onChange={(next) => onUpdate({ entryProfile: next === 'chamfer' ? undefined : next })}
+            disabled={disabled}
+          />
+          <FitStepRow
+            {...cueProps('chamfer')}
+            label={t(
+              profile === 'round' ? 'binDesigner.cutouts.entryRound' : 'binDesigner.cutouts.chamfer'
+            )}
+            info={t(
+              profile === 'round'
+                ? 'binDesigner.cutouts.entryRoundInfo'
+                : 'binDesigner.cutouts.chamferInfo'
+            )}
+            unit="mm"
+            value={Math.min(cutout.chamferWidth ?? 0, maxChamfer)}
+            onChange={(chamferWidth) => onUpdate({ chamferWidth })}
+            min={0}
+            max={maxChamfer}
+            disabled={disabled}
+          />
+        </>
       )}
     </div>
   );

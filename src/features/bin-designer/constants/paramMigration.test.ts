@@ -1752,6 +1752,14 @@ describe('migrateParams', () => {
         expect(badFloor.cutDepth).toBe(16.25);
       });
 
+      it('drops an entry edge shape the generator does not know', () => {
+        const [unknown, round] = migrateParams({
+          cutouts: [pocket({ entryProfile: 'ogee' }), pocket({ id: 'q', entryProfile: 'round' })],
+        }).cutouts;
+        expect('entryProfile' in unknown).toBe(false);
+        expect(round.entryProfile).toBe('round');
+      });
+
       it('leaves a cutout without a mode exactly as stored', () => {
         const stored = pocket({});
         expect(migrateParams({ cutouts: [stored] }).cutouts[0]).toEqual(stored);

@@ -20,7 +20,8 @@ import { LIP_HEIGHT, CUT_RIM_CLEARANCE } from './generatorConstants';
 import { openSideChannelOutline } from '@/shared/utils/cutoutOpenSides';
 import type { OpenSideChannel } from '@/shared/utils/cutoutOpenSides';
 import type { CrossSection, Manifold, ManifoldToplevel, Vec2, Vec3 } from 'manifold-3d';
-import type { BinParams, Cutout } from '@/shared/types/bin';
+import type { BinParams, Cutout, CutoutEntryProfile } from '@/shared/types/bin';
+import { cutoutEntryProfile, entryEdgeStations } from '@/shared/utils/cutoutFit';
 import { isSlideLid, shouldGenerateLid, slideLidPlanForParams } from '@/shared/types/bin';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import type { BinDimensions } from './pipeline/types';
@@ -28,6 +29,14 @@ import type { BinDimensions } from './pipeline/types';
 /** Facets on the cone each opening edge is swept with for the entry chamfer;
  *  the bevel's convex corners round with this many segments per turn. */
 const CHAMFER_CONE_SEGMENTS = 16;
+
+/**
+ * Bands in a round entry edge around an imprint. Every band costs one hull per
+ * opening edge, and imprint openings carry far more edges than a profile, so
+ * this stays below the profile cutouts' count; the error is still under
+ * 0.02mm at a 1mm round.
+ */
+const MESH_ROUND_ENTRY_SEGMENTS = 4;
 
 /** The opening is read this far under the surface, so a tool face lying in
  *  the surface plane cannot make the section ambiguous. */
@@ -361,36 +370,45 @@ function dilatedTool(
 }
 
 /**
- * A 45° bevel from `opening` (the pocket section at z=0) out to its offset by
+ * An entry edge from `opening` (the pocket section at z=0) out to its offset by
  * `bevel` at z=bevel, plus the overshoot above it: the interior extruded, each
- * opening edge swept with a cone (the hull of the edge and the cone's rim at
- * both ends, which is the edge's Minkowski sum with the cone), and the rim
- * prism on top. Concave corners come out sharp, where neighbouring sweeps
+ * opening edge swept band by band between the edge's stations (see
+ * `entryEdgeStations`), and the rim prism on top. A band is the hull of the
+ * edge's two endpoints ringed at the band's lower and upper offsets, which is
+ * the edge's Minkowski sum with a cone frustum; a chamfer is one band, and a
+ * round is a stack of them, since a hull of the whole curved edge would fill
+ * in its hollow. Concave corners come out sharp, where neighbouring sweeps
  * overlap. Returned detached from its inputs; the caller owns it.
  */
-function buildChamferSweep(
+function buildEntrySweep(
   module: ManifoldToplevel,
   opening: CrossSection,
-  bevel: number
+  bevel: number,
+  profile: CutoutEntryProfile
 ): Manifold {
-  const cone: Vec2[] = [];
+  const unit: Vec2[] = [];
   for (let k = 0; k < CHAMFER_CONE_SEGMENTS; k++) {
     const angle = (2 * Math.PI * k) / CHAMFER_CONE_SEGMENTS;
-    cone.push([bevel * Math.cos(angle), bevel * Math.sin(angle)]);
+    unit.push([Math.cos(angle), Math.sin(angle)]);
   }
+  const stations = entryEdgeStations(profile, MESH_ROUND_ENTRY_SEGMENTS);
+  const ringed = (x: number, y: number, grow: number, z: number): Vec3[] =>
+    grow <= 0 ? [[x, y, z]] : unit.map(([ux, uy]): Vec3 => [x + ux * grow, y + uy * grow, z]);
   const pieces: Manifold[] = [module.Manifold.extrude(opening, bevel + TOP_OVERSHOOT_MM)];
   for (const ring of opening.toPolygons()) {
     for (let i = 0; i < ring.length; i++) {
       const [ax, ay] = ring[i];
       const [bx, by] = ring[(i + 1) % ring.length];
-      const points: Vec3[] = [
-        [ax, ay, 0],
-        [bx, by, 0],
-      ];
-      for (const [dx, dy] of cone) {
-        points.push([ax + dx, ay + dy, bevel], [bx + dx, by + dy, bevel]);
+      for (let k = 0; k + 1 < stations.length; k++) {
+        const points: Vec3[] = [];
+        for (const { grow, rise } of [stations[k], stations[k + 1]]) {
+          points.push(
+            ...ringed(ax, ay, grow * bevel, rise * bevel),
+            ...ringed(bx, by, grow * bevel, rise * bevel)
+          );
+        }
+        pieces.push(module.Manifold.hull(points));
       }
-      pieces.push(module.Manifold.hull(points));
     }
   }
   const rim = opening.offset(bevel, 'Round');
@@ -502,7 +520,9 @@ export function buildInstanceTool(
         simplified = section(rim.simplify(epsilon));
       }
       if (edgeCount(simplified) > 0) {
-        const sweep = track(buildChamferSweep(module, simplified, chamfer));
+        const sweep = track(
+          buildEntrySweep(module, simplified, chamfer, cutoutEntryProfile(cutout))
+        );
         parts.push(placeLocal(track(sweep.translate([0, 0, cutDepth - chamfer]))));
       }
     }

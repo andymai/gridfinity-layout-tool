@@ -32,6 +32,12 @@ export const VALID_CUTOUT_LABEL_MODES = ['engrave', 'socket'] as const;
 export const VALID_CUTOUT_DEPTH_MODES = ['floor', 'through'] as const;
 
 /**
+ * Cross-boundary contract: MUST match `CUTOUT_ENTRY_PROFILES` in
+ * `src/features/bin-designer/types/cutout.ts`.
+ */
+export const VALID_CUTOUT_ENTRY_PROFILES = ['chamfer', 'round'] as const;
+
+/**
  * Global fill level for a cutout bin.
  *
  * `topOffset` reaches the generator as `wallHeight - topOffset`, so a
@@ -96,6 +102,14 @@ export function validateCutouts(value: unknown): string | null {
       )
     ) {
       return `cutouts[${i}].leanDeg must be a number within ±${CONSTRAINTS.MAX_CUTOUT_LEAN_DEG}`;
+    }
+    if (
+      c.entryProfile !== undefined &&
+      !VALID_CUTOUT_ENTRY_PROFILES.includes(
+        c.entryProfile as (typeof VALID_CUTOUT_ENTRY_PROFILES)[number]
+      )
+    ) {
+      return `cutouts[${i}].entryProfile must be one of: ${VALID_CUTOUT_ENTRY_PROFILES.join(', ')}`;
     }
     // The depth mode decides how deep the generator cuts, so an unknown one must
     // stop here rather than build silently as a fixed depth.

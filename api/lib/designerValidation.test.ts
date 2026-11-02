@@ -1817,6 +1817,29 @@ describe('validateDesignerShare', () => {
     });
   });
 
+  describe('cutout entry profile validation', () => {
+    const withCutouts = (cutouts: unknown) => {
+      const payload = validPayload();
+      (payload.params as Record<string, unknown>).cutouts = cutouts;
+      return validateDesignerShare(payload, JSON.stringify(payload).length);
+    };
+
+    it('accepts a chamfer or a round and keeps it in the payload', () => {
+      const result = withCutouts([
+        { id: 'a', entryProfile: 'round' },
+        { id: 'b', entryProfile: 'chamfer' },
+      ]);
+      expect(result.valid).toBe(true);
+      if (!result.valid) return;
+      const cutouts = (result.payload.params as { cutouts: Record<string, unknown>[] }).cutouts;
+      expect(cutouts.map((c) => c.entryProfile)).toEqual(['round', 'chamfer']);
+    });
+
+    it('rejects a profile the generator does not know', () => {
+      expect(withCutouts([{ id: 'a', entryProfile: 'ogee' }]).valid).toBe(false);
+    });
+  });
+
   describe('cutout depth mode validation', () => {
     const withCutouts = (cutouts: unknown) => {
       const payload = validPayload();

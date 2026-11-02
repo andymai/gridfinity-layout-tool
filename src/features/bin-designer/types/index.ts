@@ -239,6 +239,7 @@ export type {
   Cutout,
   CutoutColorScope,
   CutoutDepthMode,
+  CutoutEntryProfile,
   CutoutArrayMode,
   CutoutArrayConfig,
   CutoutLabelMode,
@@ -248,6 +249,7 @@ export type {
 export {
   CUTOUT_FILL_REFERENCES,
   CUTOUT_DEPTH_MODES,
+  CUTOUT_ENTRY_PROFILES,
   STORED_CUTOUT_DEPTH_MODES,
   DEFAULT_GROUP_OP,
   DEFAULT_CUTOUT_COLOR_SCOPE,

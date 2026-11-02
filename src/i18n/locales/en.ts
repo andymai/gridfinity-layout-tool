@@ -3179,6 +3179,12 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.clearanceInfo': 'Extra size added so parts drop in',
   'binDesigner.cutouts.chamfer': 'Entry chamfer',
   'binDesigner.cutouts.chamferInfo': 'Beveled rim so parts self-center',
+  'binDesigner.cutouts.entryProfile': 'Entry edge',
+  'binDesigner.cutouts.entryProfile.chamfer': 'Chamfer',
+  'binDesigner.cutouts.entryProfile.round': 'Round',
+  'binDesigner.cutouts.entryRound': 'Entry round',
+  'binDesigner.cutouts.entryRoundInfo':
+    'Rounded rim, smooth to the hand, so nothing catches on the way in',
   'binDesigner.cutouts.section.transform': 'Transform',
   'binDesigner.cutouts.section.shape': 'Shape',
   'binDesigner.cutouts.section.knife': 'Knife',

@@ -42,6 +42,7 @@ import type {
   BinParams,
   Cutout,
   CutoutArrayConfig,
+  CutoutEntryProfile,
   PathPoint,
   GroupOp,
   TextMode,
@@ -90,7 +91,13 @@ import {
   pathCutoutSections,
 } from '@/shared/utils/pathCutoutOutline';
 import type { Pt } from '@/shared/utils/polygonOffset';
-import { clearedProfile, entryChamferWidth, MIN_LOFTED_CHAMFER } from '@/shared/utils/cutoutFit';
+import {
+  clearedProfile,
+  cutoutEntryProfile,
+  entryChamferWidth,
+  entryEdgeStations,
+  MIN_LOFTED_CHAMFER,
+} from '@/shared/utils/cutoutFit';
 import { planNestedOpenings } from '@/shared/utils/nestedCutoutOpenings';
 import { isThroughCut } from '@/shared/utils/cutoutDepth';
 import type { FloorTrim, NestedOpening, SunkMouth } from '@/shared/utils/nestedCutoutOpenings';
@@ -217,13 +224,13 @@ function applyCutoutLean(shape: Shape3D, leanDeg: number, mouthZ: number): Shape
 }
 
 /**
- * A chamfer's two outlines in the cutout's local frame: the straight wall's,
- * and the rim's `flare` further out. `rimReach` is how far the rim reaches
- * along local Y, the axis a lean tips it about.
+ * An entry edge's outlines in the cutout's local frame: the straight wall's
+ * grown outward by `fraction` of the flare, at height `z` (0 is the wall, 1 the
+ * rim). `rimReach` is how far the rim reaches along local Y, the axis a lean
+ * tips it about.
  */
-interface ChamferSections {
-  readonly wall: (z: number) => Sketch;
-  readonly rim: (z: number) => Sketch;
+interface EntrySections {
+  readonly at: (fraction: number, z: number) => Sketch;
   readonly rimReach: number;
 }
 
@@ -241,7 +248,7 @@ function profileSections(
     readonly sides?: number;
   },
   flare: number
-): ChamferSections {
+): EntrySections {
   const profile = (grow: number, z: number): Sketch =>
     cutoutProfileDrawing({
       shape: p.shape,
@@ -250,31 +257,37 @@ function profileSections(
       cornerRadius: p.cornerRadius + grow,
       sides: p.sides,
     }).sketchOnPlane('XY', z) as Sketch;
-  return { wall: (z) => profile(0, z), rim: (z) => profile(flare, z), rimReach: p.d / 2 + flare };
+  return { at: (fraction, z) => profile(fraction * flare, z), rimReach: p.d / 2 + flare };
 }
 
 /**
- * Entry-chamfer cutout: a straight prism that flares outward over `flare` mm
- * so its mouth is a ~45° countersink (bits self-center). Built as a ruled loft:
- * the wall outline at the bottom, again `flare` under the mouth, then the rim
- * at the mouth. The mouth is the top unless a pocket around this one has
- * already cut the top away; there it sits on that pocket's floor and the rim
- * carries on straight up.
+ * An entry edge as a ruled loft: the wall outline from `bottomZ`, then the
+ * edge's stations (see `entryEdgeStations`) flaring outward over `flare` mm
+ * into the mouth, a ~45° countersink that centres bits or a quarter round. The
+ * mouth is the top unless a pocket around this one has already cut the top
+ * away; there it sits on that pocket's floor and the rim carries on straight
+ * up. Without `bottomZ` the loft starts at the edge's foot, for a flare built
+ * on its own.
  *
  * A `topZ` past the mouth (a sunk mouth, or a leaned tool's extension) carries
- * the rim straight on up as a last section, so the countersink stays at the
- * mouth while the rest stays clear.
+ * the rim straight on up as a last section, so the edge stays at the mouth
+ * while the rest stays clear.
  */
-function loftChamfer(
-  sections: ChamferSections,
+function loftEntry(
+  sections: EntrySections,
   mouthZ: number,
   flare: number,
-  topZ: number
+  topZ: number,
+  profile: CutoutEntryProfile,
+  bottomZ?: number
 ): Shape3D {
-  const base = sections.wall(0);
-  const rest = [sections.wall(mouthZ - flare), sections.rim(mouthZ)];
-  if (topZ > mouthZ) rest.push(sections.rim(topZ));
-  return base.loftWith(rest, { ruled: true });
+  const footZ = mouthZ - flare;
+  const edge = entryEdgeStations(profile).map(({ grow, rise }) =>
+    sections.at(grow, footZ + rise * flare)
+  );
+  const [first, ...rest] = bottomZ === undefined ? edge : [sections.at(0, bottomZ), ...edge];
+  if (topZ > mouthZ) rest.push(sections.at(1, topZ));
+  return first.loftWith(rest, { ruled: true });
 }
 
 function buildChamferedCutoutShape(p: {
@@ -286,14 +299,17 @@ function buildChamferedCutoutShape(p: {
   readonly cutDepth: number;
   readonly chamfer: number;
   readonly topExtension: number;
+  readonly profile: CutoutEntryProfile;
   readonly sunk?: SunkMouth;
 }): Shape3D {
   const flare = p.sunk?.flare ?? p.chamfer;
-  return loftChamfer(
+  return loftEntry(
     profileSections(p, flare),
     p.cutDepth - (p.sunk?.depth ?? 0),
     flare,
-    p.cutDepth + p.topExtension
+    p.cutDepth + p.topExtension,
+    p.profile,
+    0
   );
 }
 
@@ -316,6 +332,7 @@ function buildUnrotatedCutoutShape(
     readonly sides?: number;
     readonly clearance?: number;
     readonly chamferWidth?: number;
+    readonly entryProfile?: CutoutEntryProfile;
     readonly leanDeg?: number;
     readonly path?: readonly PathPoint[];
   },
@@ -337,7 +354,14 @@ function buildUnrotatedCutoutShape(
       // Paths can't use the parametric profile loft; flatten + offset the outline
       // for the flared rim. On any failure, fall through to a straight extrude.
       try {
-        return buildChamferedPathShape(cutout, chamfer, clearance, topExt, sunk);
+        return buildChamferedPathShape(
+          cutout,
+          chamfer,
+          clearance,
+          topExt,
+          cutoutEntryProfile(cutout),
+          sunk
+        );
       } catch {
         /* fall through to the straight `case 'path'` below */
       }
@@ -351,6 +375,7 @@ function buildUnrotatedCutoutShape(
         cutDepth: cutout.cutDepth,
         chamfer,
         topExtension: topExt,
+        profile: cutoutEntryProfile(cutout),
         sunk,
       });
     }
@@ -480,7 +505,7 @@ function buildPathCutoutShape(
 
 /**
  * Entry-chamfered path cutout: the parametric shapes' ~45° self-centering
- * countersink (see {@link loftChamfer}) on a freeform outline, its sections
+ * countersink or round (see {@link loftEntry}) on a freeform outline, its sections
  * from {@link pathCutoutSections}. Throws when those cannot be built so the
  * caller can fall back to a straight (clearance-only) extrude.
  */
@@ -496,16 +521,19 @@ function buildChamferedPathShape(
   chamfer: number,
   clearance: number,
   topExtension: number,
+  profile: CutoutEntryProfile,
   sunk?: SunkMouth
 ): Shape3D {
   const flare = sunk?.flare ?? chamfer;
   const sections = pathSections(cutout, chamfer, clearance, flare);
   if (!sections) throw new Error('path: degenerate');
-  return loftChamfer(
+  return loftEntry(
     sections,
     cutout.cutDepth - (sunk?.depth ?? 0),
     flare,
-    cutout.cutDepth + topExtension
+    cutout.cutDepth + topExtension,
+    profile,
+    0
   );
 }
 
@@ -526,7 +554,7 @@ function pathSections(
   chamfer: number,
   clearance: number,
   flare: number
-): ChamferSections | null {
+): EntrySections | null {
   const outline = pathCutoutOutline(cutout);
   const cut = outline ? pathCutoutSections(outline, clearance, chamfer) : null;
   if (!cut) return null;
@@ -541,9 +569,17 @@ function pathSections(
         }));
   let rimReach = 0;
   for (const q of rim) rimReach = Math.max(rimReach, Math.abs(q.y));
+  const between = (fraction: number): readonly Pt[] =>
+    fraction <= 0
+      ? base
+      : fraction >= 1
+        ? rim
+        : base.map((p, i) => ({
+            x: p.x + (rim[i].x - p.x) * fraction,
+            y: p.y + (rim[i].y - p.y) * fraction,
+          }));
   return {
-    wall: (z) => pathWire(base).sketchOnPlane('XY', z) as Sketch,
-    rim: (z) => pathWire(rim).sketchOnPlane('XY', z) as Sketch,
+    at: (fraction, z) => pathWire(between(fraction)).sketchOnPlane('XY', z) as Sketch,
     rimReach,
   };
 }
@@ -1119,10 +1155,7 @@ function buildNestedEntryFlare(
   const topZ = Math.min(mouthZ + carry, pocket.cutDepth + leanTopExtension(lean, d));
   let shape: Shape3D;
   try {
-    const foot = sections.wall(mouthZ - flare);
-    const rest = [sections.rim(mouthZ)];
-    if (topZ > mouthZ) rest.push(sections.rim(topZ));
-    shape = foot.loftWith(rest, { ruled: true });
+    shape = loftEntry(sections, mouthZ, flare, topZ, cutoutEntryProfile(pocket));
   } catch {
     return null;
   }
