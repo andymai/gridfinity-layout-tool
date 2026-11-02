@@ -420,3 +420,46 @@ describe('checkPockets under the floor', () => {
     expect(check([pocket('a', { cutDepth: deep })], socketed)).toEqual([]);
   });
 });
+
+describe('islands', () => {
+  const corner = (x: number, y: number) => ({
+    x,
+    y,
+    handleIn: null,
+    handleOut: null,
+    symmetric: false,
+  });
+  const square = (x0: number, y0: number, x1: number, y1: number) => [
+    corner(x0, y0),
+    corner(x1, y0),
+    corner(x1, y1),
+    corner(x0, y1),
+  ];
+  const tray = (holes: ReturnType<typeof square>[]) =>
+    pocket('tray', {
+      shape: 'path',
+      x: 10,
+      y: 10,
+      width: 50,
+      depth: 30,
+      cutDepth: 5,
+      clearance: 0.4,
+      chamferWidth: 0.5,
+      path: square(10, 10, 60, 40),
+      holes,
+    });
+
+  it('passes an island with room to spare at its top', () => {
+    expect(check([tray([square(20, 15, 30, 35)])]).filter((i) => i.kind === 'island')).toEqual([]);
+  });
+
+  // 2 mm wide, less 0.9 mm off each side at the top.
+  it('flags an island the clearance and entry edge leave too thin, and offers to remove it', () => {
+    const wide = square(20, 15, 30, 35);
+    const narrow = square(40, 15, 42, 35);
+    const [issue] = check([tray([wide, narrow])]).filter((i) => i.kind === 'island');
+    expect(issue.ids).toEqual(['tray']);
+    expect(issue.mm).toBeCloseTo(0.2, 1);
+    expect(issue.fix).toEqual({ holes: [wide] });
+  });
+});

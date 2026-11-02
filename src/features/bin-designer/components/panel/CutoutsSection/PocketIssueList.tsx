@@ -59,6 +59,8 @@ export function PocketIssueList({
           : t('binDesigner.cutoutEditor.checks.wallThrough', { a });
       case 'lip':
         return t('binDesigner.cutoutEditor.checks.lip', { a, mm });
+      case 'island':
+        return t('binDesigner.cutoutEditor.checks.island', { a, mm });
       case 'floor':
         return t('binDesigner.cutoutEditor.checks.floor', { a, mm });
     }
@@ -96,7 +98,11 @@ export function PocketIssueList({
                 disabled={disabled}
                 onClick={() => onFix(issue)}
               >
-                {t('binDesigner.cutoutEditor.checks.floorFix', { mm: MIN_FLOOR_MM.toFixed(1) })}
+                {issue.kind === 'island'
+                  ? t('binDesigner.cutoutEditor.checks.islandFix')
+                  : t('binDesigner.cutoutEditor.checks.floorFix', {
+                      mm: MIN_FLOOR_MM.toFixed(1),
+                    })}
               </Button>
             )}
           </li>

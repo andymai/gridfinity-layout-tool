@@ -716,6 +716,8 @@
   "binDesigner.cutoutEditor.checks.lip": "{a} zasahuje {mm} mm pod stohovací lem, o který se nástroj může zachytit",
   "binDesigner.cutoutEditor.checks.floor": "Pod {a} zbývá jen {mm} mm dna, které se může prohýbat nebo prosvítat",
   "binDesigner.cutoutEditor.checks.floorFix": "Nechat {mm} mm",
+  "binDesigner.cutoutEditor.checks.island": "Ostrůvek v {a} je po odečtení vůle a nájezdové hrany nahoře široký jen {mm} mm",
+  "binDesigner.cutoutEditor.checks.islandFix": "Odebrat tenké ostrůvky",
   "binDesigner.cutoutEditor.checks.more": "Zobrazit dalších {count}",
   "binDesigner.cutoutEditor.checks.fewer": "Zobrazit méně",
   "binDesigner.cutoutEditor.offBoardWarning.one": "1 výřez bude oříznut",

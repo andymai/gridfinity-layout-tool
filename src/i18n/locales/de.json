@@ -716,6 +716,8 @@
   "binDesigner.cutoutEditor.checks.lip": "{a} reicht {mm} mm unter den Stapelrand, an dem ein Werkzeug hängen bleiben kann",
   "binDesigner.cutoutEditor.checks.floor": "Nur {mm} mm Boden unter {a}, der nachgeben oder Licht durchlassen kann",
   "binDesigner.cutoutEditor.checks.floorFix": "{mm} mm lassen",
+  "binDesigner.cutoutEditor.checks.island": "Eine Insel in {a} ist oben nur {mm} mm breit, wenn Spiel und Einführkante abgehen",
+  "binDesigner.cutoutEditor.checks.islandFix": "Dünne Inseln entfernen",
   "binDesigner.cutoutEditor.checks.more": "{count} weitere anzeigen",
   "binDesigner.cutoutEditor.checks.fewer": "Weniger anzeigen",
   "binDesigner.cutoutEditor.offBoardWarning.one": "1 Aussparung wird beschnitten",

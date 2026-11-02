@@ -25,7 +25,13 @@ export function scaleParsedSpec(spec: ParsedCutoutSpec, scale: number): ParsedCu
   };
 
   if (spec.path) {
-    return { ...base, path: spec.path.map((pt) => scalePathPoint(pt, scale)) };
+    return {
+      ...base,
+      path: spec.path.map((pt) => scalePathPoint(pt, scale)),
+      ...(spec.holes
+        ? { holes: spec.holes.map((hole) => hole.map((pt) => scalePathPoint(pt, scale))) }
+        : {}),
+    };
   }
 
   return base;

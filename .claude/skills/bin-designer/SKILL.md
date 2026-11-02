@@ -187,6 +187,15 @@ to the interior, non-tunnel open sides out to the footprint, path clearance via
 `pathCutoutCut`. Sample with the shared `cutoutOutlineRing`, never the editor's
 `getCutoutOutline`, which inflates arcs for its fit checks.
 
+## Islands in path cutouts
+
+`Cutout.holes` holds island rings in the same absolute frame as `path`. Anything
+that moves, scales or mirrors a path must do the same to its holes through
+`mapPathRings` (`utils/pathTransforms.ts`); writing `path` alone leaves the
+islands behind. The worker cuts each island out of the tool full height
+(`withIslands`), shrunk by the clearance with the reach-limited offset's
+`inward` mode, so a thin island thins rather than turns inside out.
+
 ## Compartment geometry and the size lock
 
 ### A `dividerOverride` moves the compartment wall

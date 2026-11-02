@@ -132,3 +132,52 @@ describe('convertPath', () => {
     });
   });
 });
+
+describe('convertPath subpaths and fill rules', () => {
+  // A 40 × 40 square with a 10 × 10 square inside it, both drawn clockwise.
+  const SAME = 'M 0 0 L 40 0 L 40 40 L 0 40 Z M 15 15 L 25 15 L 25 25 L 15 25 Z';
+  // The same, the inner one drawn the other way round.
+  const OPPOSITE = 'M 0 0 L 40 0 L 40 40 L 0 40 Z M 15 15 L 15 25 L 25 25 L 25 15 Z';
+
+  const withRule = (d: string, rule?: string, onParent = false): Element => {
+    const el = makePath(d);
+    if (rule && !onParent) el.setAttribute('fill-rule', rule);
+    if (rule && onParent) {
+      const g = document.createElement('g');
+      g.setAttribute('style', `fill:black; fill-rule: ${rule}`);
+      g.appendChild(el);
+    }
+    return el;
+  };
+
+  it('makes an inner subpath an island under evenodd', () => {
+    const specs = convertPath(withRule(SAME, 'evenodd'), IDENTITY, VIEW_BOX);
+    expect(specs).toHaveLength(1);
+    expect(specs?.[0].holes).toHaveLength(1);
+    expect(specs?.[0].holes?.[0].map((p) => p.x).sort((a, b) => a - b)).toEqual([15, 15, 25, 25]);
+  });
+
+  it('reads the fill rule from a parent group style', () => {
+    const specs = convertPath(withRule(SAME, 'evenodd', true), IDENTITY, VIEW_BOX);
+    expect(specs?.[0].holes).toHaveLength(1);
+  });
+
+  it('makes a counter-wound inner subpath an island under nonzero', () => {
+    const specs = convertPath(withRule(OPPOSITE), IDENTITY, VIEW_BOX);
+    expect(specs).toHaveLength(1);
+    expect(specs?.[0].holes).toHaveLength(1);
+  });
+
+  it('keeps a same-wound inner subpath as a pocket of its own under nonzero', () => {
+    const specs = convertPath(withRule(SAME), IDENTITY, VIEW_BOX);
+    expect(specs).toHaveLength(2);
+    expect(specs?.every((s) => s.holes === undefined)).toBe(true);
+  });
+
+  it('makes a shape inside an island its own pocket again', () => {
+    const d = `${SAME} M 18 18 L 22 18 L 22 22 L 18 22 Z`;
+    const specs = convertPath(withRule(d, 'evenodd'), IDENTITY, VIEW_BOX);
+    expect(specs).toHaveLength(2);
+    expect(specs?.filter((s) => s.holes)).toHaveLength(1);
+  });
+});

@@ -1775,6 +1775,38 @@ describe('migrateParams', () => {
         for (const dropped of [rect, unknown, broken]) expect('finger' in dropped).toBe(false);
       });
 
+      it('keeps islands only on a path, rebuilt from real points', () => {
+        const at = (x: number, y: number) => ({
+          x,
+          y,
+          handleIn: null,
+          handleOut: null,
+          symmetric: false,
+        });
+        const ring = [at(2, 2), at(4, 2), at(4, 4)];
+        const [clean, messy, onRect, empty] = migrateParams({
+          cutouts: [
+            pocket({ shape: 'path', path: [at(0, 0), at(9, 0), at(9, 9)], holes: [ring] }),
+            pocket({
+              id: 'q',
+              shape: 'path',
+              path: [at(0, 0), at(9, 0), at(9, 9)],
+              holes: [
+                [{ x: 1, y: 1 }, at(3, 1), { ...at(3, 3), handleIn: { dx: 'a' } }, { y: 1 }],
+                [at(1, 1), at(2, 1)],
+                'not a ring',
+              ],
+            }),
+            pocket({ id: 'r', holes: [ring] }),
+            pocket({ id: 's', shape: 'path', path: [at(0, 0), at(9, 0), at(9, 9)], holes: [] }),
+          ],
+        }).cutouts;
+        expect(clean.holes).toEqual([ring]);
+        // A bad point is dropped, a bad handle cleared, a ring under three points dropped.
+        expect(messy.holes).toEqual([[at(1, 1), at(3, 1), at(3, 3)]]);
+        for (const dropped of [onRect, empty]) expect('holes' in dropped).toBe(false);
+      });
+
       it('keeps a whole split by reference and drops a broken one', () => {
         const line = { a: { x: 0, y: -10 }, b: { x: 0, y: 10 }, cutDepth: 6 };
         const kept = pocket({ split: line });

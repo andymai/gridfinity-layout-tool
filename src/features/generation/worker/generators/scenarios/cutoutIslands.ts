@@ -96,6 +96,54 @@ export const cutoutIslands = [
       expect(topAt(result, params, ISLAND.x0 + 0.9, islandMidY)).toBeCloseTo(surface - 0.5, 1);
     },
   }),
+  defineScenario('cutoutIslands', 'a scooped pocket keeps its island', {
+    params: {
+      style: 'solid',
+      base: FLAT,
+      height: 3,
+      cutouts: [islandPocket({ clearance: 0.4, scoopRadiusW: 3, scoopRadiusD: 3 })],
+    },
+    forExport: true,
+    assert: 'structural',
+    customAssert: (result, params) => {
+      const surface = topAt(result, params, 10, 10);
+      expect(topAt(result, params, (ISLAND.x0 + ISLAND.x1) / 2, islandMidY)).toBeCloseTo(
+        surface,
+        1
+      );
+      expect(topAt(result, params, POCKET.x + 8, islandMidY)).toBeLessThan(surface - 1);
+    },
+  }),
+  defineScenario('cutoutIslands', 'a split pocket keeps its island on both sides', {
+    params: {
+      style: 'solid',
+      base: FLAT,
+      height: 3,
+      cutouts: [
+        islandPocket({
+          clearance: 0.4,
+          // Down the middle, through the island: side B is the right half.
+          split: { a: { x: 0, y: -10 }, b: { x: 0, y: 10 }, cutDepth: 8 },
+        }),
+      ],
+    },
+    forExport: true,
+    assert: 'structural',
+    customAssert: (result, params) => {
+      const surface = topAt(result, params, 10, 10);
+      // Both sides are cut to their own depths: the split took.
+      const sides = [POCKET.x + 5, POCKET.x + POCKET.width - 5].map(
+        (x) => surface - topAt(result, params, x, islandMidY)
+      );
+      expect(sides.sort((a, b) => a - b)).toEqual([
+        expect.closeTo(CUT_DEPTH, 1),
+        expect.closeTo(8, 1),
+      ]);
+      for (const x of [ISLAND.x0 + 2, ISLAND.x1 - 2]) {
+        expect(topAt(result, params, x, islandMidY)).toBeCloseTo(surface, 1);
+      }
+    },
+  }),
   defineScenario('cutoutIslands', 'an island leans with its pocket', {
     params: {
       style: 'solid',

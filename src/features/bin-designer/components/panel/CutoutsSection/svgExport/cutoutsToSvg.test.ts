@@ -253,3 +253,25 @@ describe('cutoutsToSvg — round trip through the importer', () => {
     expect(second.y - first.y).toBeCloseTo(30, 3);
   });
 });
+
+describe('cutoutsToSvg islands', () => {
+  it('writes a path island so it imports as an island again', () => {
+    const square = (x0: number, y0: number, x1: number, y1: number) => [
+      corner(x0, y0),
+      corner(x1, y0),
+      corner(x1, y1),
+      corner(x0, y1),
+    ];
+    const cutout = pathCutout(square(10, 10, 50, 30), {
+      holes: [square(25, 15, 35, 25)],
+    });
+    const svg = cutoutsToSvg([cutout]);
+    expect(svg).toContain('fill-rule="evenodd"');
+    const parsed = parseSvgString(svg ?? '');
+    if (!isOk(parsed)) throw new Error('did not parse');
+    expect(parsed.value).toHaveLength(1);
+    const [island] = parsed.value[0].holes ?? [];
+    const xs = island.map((p) => p.x);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(10, 3);
+  });
+});

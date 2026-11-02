@@ -252,6 +252,44 @@ describe('planShadowBoard openings', () => {
   });
 });
 
+describe('planShadowBoard islands', () => {
+  const corner = (x: number, y: number) => ({
+    x,
+    y,
+    handleIn: null,
+    handleOut: null,
+    symmetric: false,
+  });
+  const square = (x0: number, y0: number, x1: number, y1: number) => [
+    corner(x0, y0),
+    corner(x1, y0),
+    corner(x1, y1),
+    corner(x0, y1),
+  ];
+  const tray = cut('t', {
+    shape: 'path',
+    x: 10,
+    y: 10,
+    width: 40,
+    depth: 20,
+    clearance: 1,
+    path: square(10, 10, 50, 30),
+    holes: [square(25, 15, 35, 25)],
+  });
+
+  it('draws a path island as a hole in its opening', () => {
+    const [[outer, island]] = plan(bin([tray])).openings;
+    expect(box(outer).maxX - box(outer).minX).toBeCloseTo(40, 6);
+    expect(box(island).maxX - box(island).minX).toBeCloseTo(10, 6);
+  });
+
+  it('shrinks the island by the clearance as the opening grows by it', () => {
+    const [[outer, island]] = plan(bin([tray]), true).openings;
+    expect(box(outer).maxX - box(outer).minX).toBeCloseTo(42, 6);
+    expect(box(island).maxX - box(island).minX).toBeCloseTo(8, 6);
+  });
+});
+
 describe('planShadowBoard footprint', () => {
   it('rounds the corners of a rectangular bin inside its footprint box', () => {
     const params = bin([cut('a')]);

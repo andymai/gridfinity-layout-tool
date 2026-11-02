@@ -25,6 +25,8 @@ export interface ParsedCutoutSpec {
   readonly rotation: number;
   /** Path vertices for path shapes */
   readonly path?: PathPoint[];
+  /** Islands inside a path: subpaths the SVG's fill rule leaves unfilled. */
+  readonly holes?: PathPoint[][];
 }
 
 /** Error codes for SVG import failures. */

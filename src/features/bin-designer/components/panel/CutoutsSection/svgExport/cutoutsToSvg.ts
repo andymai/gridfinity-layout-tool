@@ -61,7 +61,7 @@ function handlePoint(anchor: PathPoint, handle: PathPoint['handleIn']): Point2D 
  * while `rotatePoint` turns counter-clockwise, and the width/depth box the other
  * shapes rotate about can lag the actual points.
  */
-function pathContour(cutout: Cutout): Contour | null {
+function pathContour(cutout: Cutout): { contour: Contour; holes: Contour[] } | null {
   const points = cutout.path;
   // `MIN_PATH_POINTS` (2) admits a sliver that bounds no area — two anchors
   // enclose something only when a handle bows the span. Judge the flattened
@@ -79,12 +79,17 @@ function pathContour(cutout: Cutout): Contour | null {
       ? [turn(handlePoint(from, from.handleOut)), turn(handlePoint(to, to.handleIn))]
       : null;
 
-  const vertices = points.map((p, i) => ({
-    point: turn({ x: p.x, y: p.y }),
-    curve: i === 0 ? null : span(points[i - 1], p),
-  }));
+  const contourOf = (ring: readonly PathPoint[]): Contour => ({
+    vertices: ring.map((p, i) => ({
+      point: turn({ x: p.x, y: p.y }),
+      curve: i === 0 ? null : span(ring[i - 1], p),
+    })),
+    closing: span(ring[ring.length - 1], ring[0]),
+  });
 
-  return { vertices, closing: span(points[points.length - 1], points[0]) };
+  // Islands turn about the outline's centre, the same as on the board.
+  const holes = (cutout.holes ?? []).filter((h) => flattenPath(h).length >= 3).map(contourOf);
+  return { contour: contourOf(points), holes };
 }
 
 /** Polyline contour for every non-path shape, from its pathfinder ring. */
@@ -107,7 +112,7 @@ function ringContour(cutout: Cutout): Contour | null {
  * exactly as the importer would have rasterized it.
  */
 type Emittable =
-  | { readonly kind: 'contour'; readonly contour: Contour }
+  | { readonly kind: 'contour'; readonly contour: Contour; readonly holes?: readonly Contour[] }
   | {
       readonly kind: 'rect';
       readonly x: number;
@@ -126,8 +131,8 @@ type Emittable =
 
 function toEmittable(cutout: Cutout): Emittable | null {
   if (cutout.shape === 'path') {
-    const contour = pathContour(cutout);
-    return contour ? { kind: 'contour', contour } : null;
+    const traced = pathContour(cutout);
+    return traced ? { kind: 'contour', ...traced } : null;
   }
 
   if (cutout.rotation === 0 && cutout.width > 0 && cutout.depth > 0) {
@@ -249,7 +254,11 @@ function element(shape: Emittable, offsetX: number, top: number): string {
       `rx="${num(shape.rx)}" ry="${num(shape.ry)}"/>`
     );
   }
-  return `<path d="${contourPathData(shape.contour, offsetX, top)}"/>`;
+  const holes = shape.holes ?? [];
+  if (holes.length === 0) return `<path d="${contourPathData(shape.contour, offsetX, top)}"/>`;
+  // Even-odd, so each island reads as a hole whichever way its ring winds.
+  const data = [shape.contour, ...holes].map((c) => contourPathData(c, offsetX, top)).join(' ');
+  return `<path d="${data}" fill-rule="evenodd"/>`;
 }
 
 /**

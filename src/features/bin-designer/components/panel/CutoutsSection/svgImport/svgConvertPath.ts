@@ -2,7 +2,9 @@
  * SVG `<path>` element → ParsedCutoutSpec[] conversion.
  *
  * Splits the path's command stream into contours (each `M` starts a new
- * sub-path) and converts each contour independently. Quadratic beziers are
+ * sub-path) and converts each contour independently, then nests them by the
+ * element's fill rule (see {@link nestContours}): a sub-path the rule leaves
+ * unfilled becomes an island in the outline around it. Quadratic beziers are
  * elevated to cubic; arcs are converted via `arcToCubicBeziers`.
  *
  * There is no close-path case: `NORMALIZE_HVZ` rewrites `Z` as an explicit line
@@ -19,6 +21,7 @@ import type { ParsedCutoutSpec } from './types';
 import { transformPoint, type Matrix } from '@/shared/utils/svg';
 import type { ViewBox } from './types';
 import { makeCornerPoint, pathPointsToSpec } from './svgConvertShapes';
+import { flattenPath } from '@/shared/utils/pathGeometryBezier';
 import { arcToCubicBeziers } from './svgArcToBezier';
 
 export function convertPath(
@@ -42,7 +45,93 @@ export function convertPath(
     }
   }
 
-  return specs.length > 0 ? specs : null;
+  const nested = nestContours(specs, fillRuleOf(el));
+  return nested.length > 0 ? nested : null;
+}
+
+/** The fill rule an element paints with, from itself or the nearest ancestor that sets one. */
+function fillRuleOf(el: Element): 'nonzero' | 'evenodd' {
+  for (let node: Element | null = el; node; node = node.parentElement) {
+    const styled = /(?:^|;)\s*fill-rule\s*:\s*(nonzero|evenodd)/i.exec(
+      node.getAttribute('style') ?? ''
+    );
+    const rule = (styled?.[1] ?? node.getAttribute('fill-rule') ?? '').trim().toLowerCase();
+    if (rule === 'evenodd' || rule === 'nonzero') return rule;
+  }
+  return 'nonzero';
+}
+
+function signedArea(ring: readonly { x: number; y: number }[]): number {
+  let a = 0;
+  for (let i = 0; i < ring.length; i++) {
+    const b = ring[(i + 1) % ring.length];
+    a += ring[i].x * b.y - b.x * ring[i].y;
+  }
+  return a / 2;
+}
+
+function insideRing(
+  p: { x: number; y: number },
+  ring: readonly { x: number; y: number }[]
+): boolean {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const a = ring[i];
+    const b = ring[j];
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+/**
+ * One element's sub-paths as the fill rule paints them. A sub-path inside a
+ * filled one is a hole under `evenodd`, and under `nonzero` when it winds the
+ * other way; one winding the same way under `nonzero` is painted over and
+ * stays a pocket of its own. Anything inside a hole is a shape again.
+ */
+function nestContours(
+  specs: readonly ParsedCutoutSpec[],
+  rule: 'nonzero' | 'evenodd'
+): ParsedCutoutSpec[] {
+  const rings = specs.map((s) => flattenPath(s.path ?? []));
+  const area = rings.map((r) => Math.abs(signedArea(r)));
+  const order = specs.map((_, i) => i).sort((a, b) => area[b] - area[a]);
+  const parentOf = new Map<number, number>();
+  for (const i of order) {
+    if (rings[i].length === 0) continue;
+    const probe = rings[i][0];
+    // The smallest ring around it, since bigger ones come first.
+    let parent = -1;
+    for (const j of order) {
+      if (j === i || area[j] <= area[i]) continue;
+      if (insideRing(probe, rings[j])) parent = j;
+    }
+    if (parent !== -1) parentOf.set(i, parent);
+  }
+  const isHole = new Map<number, boolean>();
+  for (const i of order) {
+    const parent = parentOf.get(i);
+    if (parent === undefined || isHole.get(parent) === true) {
+      isHole.set(i, false);
+      continue;
+    }
+    const opposite = Math.sign(signedArea(rings[i])) !== Math.sign(signedArea(rings[parent]));
+    isHole.set(i, rule === 'evenodd' || opposite);
+  }
+  const holesOf = new Map<number, PathPoint[][]>();
+  for (const [i, hole] of isHole) {
+    const parent = parentOf.get(i);
+    const path = specs[i].path;
+    if (!hole || parent === undefined || !path) continue;
+    holesOf.set(parent, [...(holesOf.get(parent) ?? []), path]);
+  }
+  return specs.flatMap((spec, i) => {
+    if (isHole.get(i) === true) return [];
+    const holes = holesOf.get(i);
+    return [holes ? { ...spec, holes } : spec];
+  });
 }
 
 /** Split path commands into separate contours (each starting with M). */
