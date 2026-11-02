@@ -1,0 +1,21 @@
+src/features/bin-designer/components/panel/CutoutsSection/fingerAccessPlan.test.ts
+  s_4b9adb1d9473fb::t_2fffa5a2d69a31 89
+src/features/bin-designer/components/panel/CutoutsSection/fingerAccessPlan.ts
+  s_4b9adb1d9473fb::t_2fffa5a2d69a31 114-116,119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "90800d10e183d8bd559344f291cdacda81410e0f",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
