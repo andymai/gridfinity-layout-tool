@@ -168,3 +168,17 @@ describe('path insertion clearance', () => {
     expect(removed).toBeLessThan(1.3 * band);
   }, 120000);
 });
+
+// A quarter round leaves the corner under its arc, so it removes
+// `perimeter × r² × (1 − π/4)`, under half of a chamfer of the same size. The
+// band tells a round from a chamfer, and from a straight wall.
+describe('entry round', () => {
+  for (const c of CHAMFER_CASES) {
+    it(`rounds the rim of a ${c.name}`, () => {
+      const band = c.perimeter * CHAMFER * CHAMFER * (1 - Math.PI / 4);
+      const removed = removedBy({ chamferWidth: CHAMFER, entryProfile: 'round' }, c.pocket, true);
+      expect(removed).toBeGreaterThan(0.8 * band);
+      expect(removed).toBeLessThan(1.3 * band);
+    }, 120000);
+  }
+});

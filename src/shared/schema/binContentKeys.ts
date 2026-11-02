@@ -203,6 +203,7 @@ export const CUTOUT_KEYS = [
   'sides',
   'clearance',
   'chamferWidth',
+  'entryProfile',
   'leanDeg',
   'array',
   'engraveLabel',

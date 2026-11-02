@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { CutoutFitControls } from './CutoutFitControls';
 import { hasFitControls } from './cutoutSectionVisibility';
 import type { Cutout } from '@/features/bin-designer/types';
@@ -58,5 +58,32 @@ describe('CutoutFitControls', () => {
       />
     );
     expect(screen.queryByText('binDesigner.cutouts.chamfer')).not.toBeInTheDocument();
+  });
+
+  it('offers a chamfer or a round for the entry edge', () => {
+    const onUpdate = vi.fn();
+    render(<CutoutFitControls cutout={makeCutout({ shape: 'circle' })} onUpdate={onUpdate} />);
+    const chamfer = screen.getByRole('button', {
+      name: 'binDesigner.cutouts.entryProfile.chamfer',
+    });
+    expect(chamfer).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.cutouts.entryProfile.round' }));
+    expect(onUpdate).toHaveBeenCalledWith({ entryProfile: 'round' });
+  });
+
+  it('names the size after the shape the edge has', () => {
+    const onUpdate = vi.fn();
+    render(
+      <CutoutFitControls
+        cutout={makeCutout({ shape: 'circle', entryProfile: 'round' })}
+        onUpdate={onUpdate}
+      />
+    );
+    expect(screen.getByText('binDesigner.cutouts.entryRound')).toBeInTheDocument();
+    expect(screen.queryByText('binDesigner.cutouts.chamfer')).not.toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'binDesigner.cutouts.entryProfile.chamfer' })
+    );
+    expect(onUpdate).toHaveBeenCalledWith({ entryProfile: undefined });
   });
 });

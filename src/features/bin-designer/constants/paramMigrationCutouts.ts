@@ -21,7 +21,7 @@ import {
   KNIFE_REST_MAX_GROOVE_DEPTH_MM,
 } from '../types';
 import { MAX_LID_CUTOUTS } from '../types/lid';
-import { MAX_CUTOUT_FLOOR_MM } from '../types/cutout';
+import { CUTOUT_ENTRY_PROFILES, MAX_CUTOUT_FLOOR_MM } from '../types/cutout';
 import { TEXT_MAX_LENGTH } from '../types/text';
 import { clampNumber } from './paramMigrationHelpers';
 
@@ -116,13 +116,23 @@ export function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
     withArray,
     migrateParentGroups(withArray.parentGroups) ?? []
   );
-  return migrateScoopRadius(withOpenSides(withDepthMode(withParents)), scoopRadius);
+  return migrateScoopRadius(
+    withOpenSides(withEntryProfile(withDepthMode(withParents))),
+    scoopRadius
+  );
 }
 
 /**
  * Keep a known depth mode and a finite floor, and drop anything else so the
  * cutout reads as a fixed depth. Already-valid cutouts come back by reference.
  */
+function withEntryProfile(cutout: Cutout): Cutout {
+  const { entryProfile } = cutout;
+  if (entryProfile === undefined || CUTOUT_ENTRY_PROFILES.includes(entryProfile)) return cutout;
+  const { entryProfile: _profile, ...rest } = cutout;
+  return rest;
+}
+
 function withDepthMode(cutout: Cutout): Cutout {
   const { depthMode, floorMm } = cutout;
   const validMode = depthMode === 'floor' || depthMode === 'through';

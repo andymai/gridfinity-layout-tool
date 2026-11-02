@@ -63,6 +63,17 @@ export const DEFAULT_CUTOUT_COLOR_SCOPE: CutoutColorScope = 'floorAndWalls';
  */
 export type CutoutDepthMode = 'fixed' | 'floor' | 'through';
 
+/**
+ * Shape of a cutout's entry edge, sized by {@link Cutout.chamferWidth}:
+ *  - `chamfer` — a 45° bevel, so a part centres itself as it drops in.
+ *  - `round` — a quarter round over the same width and drop, tangent to the
+ *    wall and to the top, so the edge is smooth to the hand and nothing
+ *    catches on it.
+ */
+export type CutoutEntryProfile = 'chamfer' | 'round';
+
+export const CUTOUT_ENTRY_PROFILES: readonly CutoutEntryProfile[] = ['chamfer', 'round'];
+
 /** Ordered mode list for UI rendering and exhaustiveness checks. */
 export const CUTOUT_DEPTH_MODES: readonly CutoutDepthMode[] = ['fixed', 'floor', 'through'];
 
@@ -581,6 +592,8 @@ export interface Cutout {
    * Missing/undefined/0 = straight walls, so existing designs are unchanged.
    */
   readonly chamferWidth?: number;
+  /** Shape of that entry edge. Absent means `chamfer`. */
+  readonly entryProfile?: CutoutEntryProfile;
   /**
    * Tilt of the pocket's axis off vertical, in degrees (±{@link
    * MAX_CUTOUT_LEAN_DEG}), so an item slides in at a slope. The pocket is the

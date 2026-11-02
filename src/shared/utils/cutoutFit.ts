@@ -4,6 +4,7 @@
  * designer panel measure the same outlines the cavity builder cuts.
  */
 
+import type { CutoutEntryProfile } from '@/shared/types/bin';
 import { CHAMFER_SHAPES, CLEARANCE_SHAPES } from '@/shared/types/bin';
 
 /** An entry chamfer narrower than this (mm) is cut as a straight wall. */
@@ -11,6 +12,46 @@ export const MIN_LOFTED_CHAMFER = 0.05;
 
 /** The straight wall kept under any entry chamfer (mm). */
 export const MIN_STRAIGHT_WALL_MM = 0.2;
+
+/** Facets in a round entry edge: under 0.01mm from the true arc at 1mm. */
+export const ROUND_ENTRY_SEGMENTS = 6;
+
+/** One section of an entry edge, as fractions of the edge's size. */
+export interface EntryStation {
+  /** How far the wall has grown outward. */
+  readonly grow: number;
+  /** How far above the edge's foot. */
+  readonly rise: number;
+}
+
+export function cutoutEntryProfile(cutout: {
+  readonly entryProfile?: CutoutEntryProfile;
+}): CutoutEntryProfile {
+  return cutout.entryProfile ?? 'chamfer';
+}
+
+/**
+ * An entry edge from its foot on the wall to the mouth, bottom up. A chamfer
+ * is one straight 45° step. A round follows the quarter circle centred one
+ * edge-size out and down from the mouth's edge, leaving the wall and meeting
+ * the top tangentially; both end in the same place, so a round fits wherever
+ * a chamfer of that size does.
+ */
+export function entryEdgeStations(
+  profile: CutoutEntryProfile,
+  segments = ROUND_ENTRY_SEGMENTS
+): readonly EntryStation[] {
+  if (profile === 'chamfer') {
+    return [
+      { grow: 0, rise: 0 },
+      { grow: 1, rise: 1 },
+    ];
+  }
+  return Array.from({ length: segments + 1 }, (_, k) => {
+    const phi = (k / segments) * (Math.PI / 2);
+    return { grow: 1 - Math.cos(phi), rise: Math.sin(phi) };
+  });
+}
 
 /**
  * The entry chamfer a cut of `cutDepth` takes at its rim, clamped so a

@@ -34,6 +34,8 @@ import type { AlignMode, DistributeAxis } from '../panel/CutoutsSection/geometry
 import { SingleCutoutInspector } from './SingleCutoutInspector';
 import { CutoutDepthControl } from '../panel/CutoutsSection/CutoutDepthControl';
 import { isThroughCut } from '@/shared/utils/cutoutDepth';
+import { EntryProfileToggle } from '../panel/CutoutsSection/EntryProfileToggle';
+import { cutoutEntryProfile } from '@/shared/utils/cutoutFit';
 import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutBoardSettings } from './CutoutBoardSettings';
 import { BinSizeSection } from './BinSizeSection';
@@ -310,6 +312,8 @@ export function InspectorContent({
   const sharedDepth = getSharedValue(selectedCutouts, preview, 'depth');
   const chamferCutouts = selectedCutouts.filter((c) => CHAMFER_SHAPES.includes(c.shape));
   const sharedChamfer = getSharedValue(chamferCutouts, preview, 'chamferWidth');
+  const profiles = new Set(chamferCutouts.map(cutoutEntryProfile));
+  const sharedProfile = profiles.size === 1 ? [...profiles][0] : null;
 
   // `transformOnly` fields fall under the lock contract ("cannot be moved,
   // resized, or rotated"); cut depth and colour do not, so they still apply to
@@ -555,17 +559,39 @@ export function InspectorContent({
               </>
             )}
             {chamferCutouts.length > 0 && (
-              <NumberField
-                label={t('binDesigner.cutouts.chamfer')}
-                value={sharedChamfer ?? 0}
-                indeterminate={sharedChamfer === null}
-                onChange={handleChamferBatch}
-                min={0}
-                max={MAX_CUTOUT_CHAMFER}
-                step={0.2}
-                unit="mm"
-                disabled={disabled}
-              />
+              <>
+                <div className="col-span-2">
+                  <EntryProfileToggle
+                    value={sharedProfile}
+                    onChange={(profile) =>
+                      applySelectionUpdates(
+                        new Map(
+                          chamferCutouts.map((c) => [
+                            c.id,
+                            { entryProfile: profile === 'chamfer' ? undefined : profile },
+                          ])
+                        )
+                      )
+                    }
+                    disabled={disabled}
+                  />
+                </div>
+                <NumberField
+                  label={t(
+                    sharedProfile === 'round'
+                      ? 'binDesigner.cutouts.entryRound'
+                      : 'binDesigner.cutouts.chamfer'
+                  )}
+                  value={sharedChamfer ?? 0}
+                  indeterminate={sharedChamfer === null}
+                  onChange={handleChamferBatch}
+                  min={0}
+                  max={MAX_CUTOUT_CHAMFER}
+                  step={0.2}
+                  unit="mm"
+                  disabled={disabled}
+                />
+              </>
             )}
           </div>
           {/* Gated exactly as the single-select inspector gates it: a lid hole

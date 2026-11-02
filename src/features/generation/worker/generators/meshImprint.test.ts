@@ -827,6 +827,28 @@ describe('mesh imprint clearance and chamfer on curved tools', () => {
       ).toBeLessThan(0.3);
     }
   }, 240_000);
+
+  it('rounds the real opening along a quarter circle', async () => {
+    clearMeshImprintCache();
+    await prepareMeshImprints(spoolBin({}), module);
+    const generate = getGenerateBin();
+    const plain = generate(spoolBin({}), undefined, true);
+    const rounded = generate(spoolBin({ chamferWidth: 2, entryProfile: 'round' }), undefined, true);
+    const opening = holeBoxesAt(plain, solidTop - 0.02, within);
+    expect(opening).toHaveLength(1);
+    // A 2mm round has reached 2 - sqrt(4 - (2 - below)²) past the opening.
+    for (const [below, reach] of [
+      [0.2, 1.13],
+      [1.0, 0.27],
+      [1.8, 0.01],
+    ] as const) {
+      const b = holeBoxesAt(rounded, solidTop - below, within);
+      expect(b, `depth ${below}`).toHaveLength(1);
+      expect(Math.abs(width(b[0]) - width(opening[0]) - 2 * reach), `depth ${below}`).toBeLessThan(
+        0.3
+      );
+    }
+  }, 240_000);
 });
 
 describe('mesh imprint on a socketed base (preview)', () => {

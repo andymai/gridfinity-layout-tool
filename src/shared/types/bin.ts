@@ -53,6 +53,7 @@ export type {
   CutoutShape,
   CutoutColorScope,
   CutoutDepthMode,
+  CutoutEntryProfile,
   CutoutConfig,
   CutoutArrayConfig,
   CutoutScoopEdges,
