@@ -1,0 +1,65 @@
+src/i18n/locales/ja.json
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1062
+src/i18n/locales/zh-CN.json
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1062
+src/features/bin-designer/components/panel/CutoutsSection/autoArrange.test.ts
+  s_883a4eee2ecc4e::t_cfe23437db22c8 4,155-356
+  s_883a4eee2ecc4e::t_c6cd3ee4fe8a3a 357
+src/features/bin-designer/components/panel/CutoutsSection/minAreaTurn.test.ts
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1-128
+src/i18n/locales/es.json
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1062
+src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.tsx
+  s_883a4eee2ecc4e::t_cfe23437db22c8 163,169,198,222,235-240,327,358,360-364
+src/features/bin-designer/components/panel/CutoutsSection/minAreaTurn.ts
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1-139
+src/i18n/locales/de.json
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1062
+src/i18n/locales/fr.json
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1062
+src/features/whats-new/latest.ts
+  s_883a4eee2ecc4e::t_cfe23437db22c8 9
+src/i18n/locales/nb.json
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1062
+src/features/whats-new/entries.ts
+  s_883a4eee2ecc4e::t_cfe23437db22c8 17-26
+  s_883a4eee2ecc4e::t_285053d43e3524 16
+src/i18n/locales/pl.json
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1062
+src/i18n/locales/en.ts
+  s_883a4eee2ecc4e::t_cfe23437db22c8 3424
+src/i18n/locales/ko.json
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1062
+src/i18n/locales/pt-BR.json
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1062
+src/i18n/locales/sv.json
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1062
+src/i18n/locales/it.json
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1062
+src/i18n/locales/ka.json
+  s_883a4eee2ecc4e::t_cfe23437db22c8 2888
+src/i18n/locales/uk.json
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1062
+src/i18n/locales/cs.json
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1062
+src/i18n/locales/nl.json
+  s_883a4eee2ecc4e::t_cfe23437db22c8 1062
+src/features/bin-designer/components/panel/CutoutsSection/autoArrange.ts
+  s_883a4eee2ecc4e::t_cfe23437db22c8 11-13,17-21,28-79,85,94-104,109,118-120,131-138
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a4b5cd02dd7a4ab47379ad5ff27156b0474e209f",
+  "prompts": {},
+  "sessions": {
+    "s_883a4eee2ecc4e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf59d3b6-e347-45ec-8991-5ee56bc71466",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
