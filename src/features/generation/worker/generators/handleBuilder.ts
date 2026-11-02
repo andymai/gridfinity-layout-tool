@@ -24,7 +24,7 @@ import type { HandleWallDef } from '@/shared/utils/handleCutoutClip';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
 import { getSlotFreeWalls, isSlottedBody } from '@/shared/utils/slotFreeWalls';
 import { buildHandleProfile } from './handleProfiles';
-import { lipInnerReachMm } from './boxTopShape';
+import { lipInnerReachMm } from '@/shared/utils/lipNotchPlan';
 import { resolvePolygonSideGeometry } from './maskPolygonEdges';
 import { pitchFromParams } from './gridPitch';
 import { isPartialMask } from '@/shared/utils/cellMask';

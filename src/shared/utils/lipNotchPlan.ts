@@ -2,6 +2,11 @@ import { hasDetachableFeet, type BinParams } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { hasOverhang, resolveOverhang } from '@/shared/utils/overhang';
 import { resolveSocketCellPlan } from '@/shared/generation/socketCellPlan';
+import {
+  BOX_CORNER_RADIUS,
+  CLEARANCE,
+  LIP_TAPER_WIDTH,
+} from '@/shared/generation/generatorConstants';
 
 /** Why a bin cannot carry lip notches, in the order the panel reports them. */
 export type LipNotchBlocker =
@@ -47,4 +52,23 @@ export function lipNotchBlocker(params: LipNotchParams): LipNotchBlocker | null 
 
 export function resolveLipNotches(params: LipNotchParams): boolean {
   return params.base.lipNotches === true && lipNotchBlocker(params) === null;
+}
+
+/**
+ * How far in from the outer face a lip notch reaches, in mm.
+ *
+ * A foot's rounded corner ends `BOX_CORNER_RADIUS` in from the face, so the
+ * notch has to reach at least that far to hold the whole corner. Stopping
+ * exactly there would cut the pockets along their arc-to-flat seam, so it
+ * carries on by half a clearance into the straight ridge.
+ */
+export const LIP_NOTCH_REACH_MM = BOX_CORNER_RADIUS + CLEARANCE / 2;
+
+/**
+ * How far in from the outer face the lip stands: its taper, or the notch reach
+ * when notches are built. A tool cut through the lip has to clear this, or a
+ * thin wall leaves a sliver of notch inside the opening.
+ */
+export function lipInnerReachMm(params: LipNotchParams): number {
+  return resolveLipNotches(params) ? LIP_NOTCH_REACH_MM : LIP_TAPER_WIDTH;
 }

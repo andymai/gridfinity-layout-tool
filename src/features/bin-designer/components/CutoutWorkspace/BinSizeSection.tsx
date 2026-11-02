@@ -11,6 +11,7 @@ import { Alert, Button } from '@/design-system';
 import { AlertTriangleIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { DimensionsSection } from '../panel/DimensionsSection/DimensionsSection';
+import { PocketIssueList, type PocketChecksView } from '../panel/CutoutsSection/PocketIssueList';
 
 /**
  * The dock narrows to 220px and the action names a bin size, so verbose locales
@@ -44,6 +45,7 @@ interface BinSizeSectionProps {
   readonly onGrowToFit?: () => void;
   /** Count of cutouts the generator will cut shallower than requested. */
   readonly depthShortfallCount?: number;
+  readonly pocketChecks?: PocketChecksView;
 }
 
 export function BinSizeSection({
@@ -53,6 +55,7 @@ export function BinSizeSection({
   growTarget,
   onGrowToFit,
   depthShortfallCount = 0,
+  pocketChecks,
 }: BinSizeSectionProps) {
   const t = useTranslation();
   return (
@@ -141,6 +144,8 @@ export function BinSizeSection({
           </p>
         </Alert>
       )}
+
+      {pocketChecks && <PocketIssueList {...pocketChecks} />}
     </div>
   );
 }

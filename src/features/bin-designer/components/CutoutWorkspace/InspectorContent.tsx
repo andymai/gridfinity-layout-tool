@@ -10,6 +10,7 @@ import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
+import type { PocketChecksView } from '../panel/CutoutsSection/PocketIssueList';
 import { alignSelection, distributeSelection } from '../panel/CutoutsSection/geometryAlign';
 import { expandSelectionToGroups } from '../panel/CutoutsSection/cutoutGroups';
 import { resizeAroundCenter } from '../panel/CutoutsSection/cutoutHelpers';
@@ -82,6 +83,7 @@ interface InspectorContentProps {
   readonly offBoardCount?: number;
   /** Count of cutouts the generator will cut shallower than requested. */
   readonly depthShortfallCount?: number;
+  readonly pocketChecks?: PocketChecksView;
   /** Clamp every off-board cutout back inside the board. */
   readonly onClampOffBoard?: () => void;
   /** Center every off-board cutout as one block. */
@@ -206,6 +208,7 @@ export function InspectorContent({
   board,
   offBoardCount = 0,
   depthShortfallCount = 0,
+  pocketChecks,
   onClampOffBoard,
   onCenterOffBoard,
   growTarget,
@@ -250,6 +253,7 @@ export function InspectorContent({
         onClampOffBoard={onClampOffBoard}
         onCenterOffBoard={onCenterOffBoard}
         depthShortfallCount={depthShortfallCount}
+        pocketChecks={pocketChecks}
         growTarget={growTarget}
         onGrowToFit={onGrowToFit}
       />

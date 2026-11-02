@@ -6,7 +6,8 @@ import type { MeshData } from '@/features/generation/bridge/types';
 import { boundingBox, verticalSolidSpans } from '../__kernel-tests__/meshAssertions';
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
-import { LIP_NOTCH_REACH_MM, LIP_NOTCH_TOP_DROP_MM } from '../boxTopShape';
+import { LIP_NOTCH_TOP_DROP_MM } from '../boxTopShape';
+import { LIP_NOTCH_REACH_MM } from '@/shared/utils/lipNotchPlan';
 
 const SIZE = GRIDFINITY.GRID_SIZE;
 const HEIGHT = 3;

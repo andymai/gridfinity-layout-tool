@@ -46,6 +46,7 @@ import { useStlImport, StlImportDialog } from '../panel/CutoutsSection/stlImport
 import { ScanWithPhoneDialog } from '../panel/CutoutsSection/scanImport';
 import { ToolThicknessPrompt } from '../panel/CutoutsSection/ToolThicknessPrompt';
 import { useAddFingerAccess } from '../panel/CutoutsSection/useAddFingerAccess';
+import { usePocketChecks } from '../panel/CutoutsSection/usePocketChecks';
 import { InspectorDock } from './InspectorDock';
 import { ShapeList } from './ShapeList';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
@@ -483,6 +484,14 @@ export function CutoutWorkspace() {
   });
 
   const handleAddFingerAccess = useAddFingerAccess(cutouts, cutoutBoard, maxCutDepth, selectIds);
+  const pocketChecks = usePocketChecks(
+    cutouts,
+    params,
+    cutoutBoard,
+    !isLid,
+    selectIds,
+    updateCutout
+  );
 
   /**
    * Select a shape-list row, moving the editor into that row's branch first.
@@ -745,6 +754,7 @@ export function CutoutWorkspace() {
                 canvasHeight={canvasHeight}
                 selection={selection}
                 offBoardIds={offBoardIds}
+                issueInstanceIds={pocketChecks.issueInstanceIds}
                 preview={preview}
                 fitCue={fitCue}
                 mode={mode}
@@ -816,6 +826,7 @@ export function CutoutWorkspace() {
           onClampOffBoard={offBoardUpdates.size > 0 ? handleClampOffBoard : undefined}
           onCenterOffBoard={centerUpdates.size > 0 ? handleCenterOffBoard : undefined}
           depthShortfallCount={depthShortfallCount}
+          pocketChecks={pocketChecks.view}
           growTarget={growTarget}
           onGrowToFit={handleGrowToFit}
           onDuplicate={duplicateSelected}
