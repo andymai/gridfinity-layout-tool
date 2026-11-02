@@ -266,8 +266,8 @@ describe('detectBaseplateGrid', () => {
     expect(result.value.grid?.kind).toBe('baseplate');
     expect(result.value.card).toBeNull();
 
-    const xs = result.value.outputPoints.map((p) => p.x);
-    const ys = result.value.outputPoints.map((p) => p.y);
+    const xs = result.value.shapes[0].outputPoints.map((p) => p.x);
+    const ys = result.value.shapes[0].outputPoints.map((p) => p.y);
     expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(82, 0);
     expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(82, 0);
   });

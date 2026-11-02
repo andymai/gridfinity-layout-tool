@@ -4,10 +4,14 @@ export {
   traceSceneSegmented,
   detectCard,
   detectReference,
-  computeAutoSeed,
+  sameReference,
   withCardSize,
+  withReference,
 } from './traceScene';
+export { withRefinedShape, type Refinement } from './refineScene';
+export { interiorSeed } from './toolBlobs';
 export type {
+  SceneShape,
   SceneTrace,
   SceneCard,
   SceneGrid,

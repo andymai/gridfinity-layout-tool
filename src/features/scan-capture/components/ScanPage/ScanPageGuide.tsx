@@ -81,6 +81,7 @@ export function CaptureGuide({ t }: { readonly t: ReturnType<typeof useTranslati
         <GuideTip text={t('scan.capture.tip.card')} />
         <GuideTip text={t('scan.capture.tip.sheet')} />
         <GuideTip text={t('scan.capture.tip.topDown')} />
+        <GuideTip text={t('scan.capture.tip.several')} />
       </ul>
       <PrivacyNote text={t('scan.capture.privacy')} />
     </div>
@@ -116,6 +117,26 @@ export function CardStatusIcon({ ok }: { readonly ok: boolean }) {
 }
 
 /** Pointing-hand cue that the photo is tappable to re-select the tool. */
+export function SentIcon() {
+  return (
+    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-success">
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M20 6L9 17l-5-5" />
+      </svg>
+    </div>
+  );
+}
+
 export function TapIcon() {
   return (
     <svg

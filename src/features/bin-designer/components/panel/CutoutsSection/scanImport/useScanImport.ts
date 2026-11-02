@@ -16,7 +16,7 @@ import { specToCutout, DEFAULT_CUT_DEPTH } from '../svgImport/specToCutout';
 import type { ParsedCutoutSpec } from '../svgImport/types';
 import { byDescendingArea } from '../importStackOrder';
 import { centerOffBoardCutouts, type CutoutBoard } from '../offBoardCutouts';
-import { generateUUID } from '@/shared/utils/uuid';
+import { generateLayoutId, generateUUID } from '@/shared/utils/uuid';
 
 /** Default insertion clearance (mm) applied to a scanned tool outline. */
 const SCAN_DEFAULT_CLEARANCE_MM = 0.4;
@@ -74,9 +74,16 @@ export function useScanImport(): UseScanImportReturn {
 
       // Same stacking rule as the SVG path: a scan can trace an
       // outer silhouette around smaller detail.
-      const cutouts = byDescendingArea(specs).map((spec) =>
+      const hydrated = byDescendingArea(specs).map((spec) =>
         withScanFit(specToCutout(spec, hydrationOptions), cutDepth)
       );
+      // Several tools from one photo arrive in one arrange-only container,
+      // so the batch moves as a block and Auto-arrange inside it packs the
+      // tools. A container leaves every cut as it was.
+      const containerId = hydrated.length > 1 ? generateLayoutId() : null;
+      const cutouts = containerId
+        ? hydrated.map((c) => ({ ...c, parentGroups: [containerId] }))
+        : hydrated;
       // Unlike an SVG, a scan has no layout to keep: its coordinates are the
       // outline's own frame, corner at the origin, which sits flush in the bin's
       // corner and a rounding hair past it. One scan moves to the middle as a

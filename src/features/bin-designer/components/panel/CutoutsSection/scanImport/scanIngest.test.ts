@@ -61,6 +61,75 @@ describe('parseScanSvg', () => {
     expect(result.value.bounds.longest).toBeCloseTo(80, 5);
   });
 
+  it('sizes a scan of one tool by the whole outline', () => {
+    const result = parseScanSvg(RECT_WIDE);
+    if (!isOk(result)) throw new Error('fixture failed');
+    expect(result.value.sizedByLongest).toBe(false);
+    expect(result.value.sized.longest).toBeCloseTo(result.value.bounds.longest, 6);
+  });
+
+  it('sizes a scan of several tools by the longest one', () => {
+    const result = parseScanSvg(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100">' +
+        '<rect x="0" y="0" width="120" height="40"/>' +
+        '<rect x="200" y="0" width="30" height="90"/></svg>'
+    );
+    if (!isOk(result)) throw new Error('fixture failed');
+    expect(result.value.sizedByLongest).toBe(true);
+    expect(result.value.sized.longest).toBeCloseTo(120, 5);
+    expect(result.value.bounds.longest).toBeCloseTo(230, 5);
+  });
+
+  it('picks the longest tool, not the bulkiest', () => {
+    const result = parseScanSvg(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100">' +
+        '<rect x="0" y="0" width="60" height="60"/>' +
+        '<rect x="100" y="0" width="150" height="10"/></svg>'
+    );
+    if (!isOk(result)) throw new Error('fixture failed');
+    expect(result.value.sized.longest).toBeCloseTo(150, 5);
+  });
+
+  // 150 × 10 turned 45° spans only 113 on each axis, so a box would pick the
+  // 120 × 40 tool and size the batch by the wrong length.
+  it('measures a tool lying at an angle along its own length', () => {
+    const result = parseScanSvg(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">' +
+        '<rect x="0" y="0" width="120" height="40"/>' +
+        '<polygon points="200,10 306.07,116.07 299,123.14 192.93,17.07"/></svg>'
+    );
+    if (!isOk(result)) throw new Error('fixture failed');
+    expect(result.value.sizedByLongest).toBe(true);
+    expect(result.value.sized.longest).toBeCloseTo(150, 0);
+    expect(result.value.sized.depth).toBeCloseTo(10, 0);
+  });
+
+  // Its four anchors alone make a 70.7-unit square: measured that way, a
+  // 100 mm entry would import a 141 mm circle.
+  it('measures a curved outline by its curves, not its anchors', () => {
+    const result = parseScanSvg(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="' +
+        'M 100 50 C 100 77.6 77.6 100 50 100 C 22.4 100 0 77.6 0 50 ' +
+        'C 0 22.4 22.4 0 50 0 C 77.6 0 100 22.4 100 50 Z"/></svg>'
+    );
+    if (!isOk(result)) throw new Error('fixture failed');
+    expect(result.value.sized.longest).toBeGreaterThan(99);
+    expect(result.value.sized.longest).toBeLessThan(101);
+    const rescaled = rescaleToLongestMm(result.value.specs, result.value.sized.longest, 100);
+    expect(rescaled[0].width).toBeCloseTo(100, 0);
+  });
+
+  it('treats detail inside an outline as part of one tool', () => {
+    const result = parseScanSvg(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
+        '<rect x="0" y="0" width="100" height="60"/>' +
+        '<rect x="20" y="20" width="10" height="10"/></svg>'
+    );
+    if (!isOk(result)) throw new Error('fixture failed');
+    expect(result.value.sizedByLongest).toBe(false);
+    expect(result.value.sized.longest).toBeCloseTo(100, 5);
+  });
+
   it('rejects an SVG with no shapes', () => {
     const result = parseScanSvg(EMPTY);
     expect(isErr(result)).toBe(true);
