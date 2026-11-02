@@ -81,6 +81,24 @@ describe('applyOverrides', () => {
     expect(result?.chamferWidth).toBe(0.8);
   });
 
+  it('pins a claimed cut depth as a fixed one', () => {
+    const { params } = applyOverrides(parent([cutout('bit', { depthMode: 'floor', floorMm: 8 })]), {
+      cutouts: { bit: { cutDepth: 7 } },
+    });
+    const result = params.cutouts[0];
+    expect(result.cutDepth).toBe(7);
+    expect('depthMode' in result).toBe(false);
+    expect('floorMm' in result).toBe(false);
+  });
+
+  it('holds a floored pocket to its floor in a taller variant', () => {
+    const { params } = applyOverrides(parent([cutout('bit', { depthMode: 'floor', floorMm: 8 })]), {
+      dimensions: { height: 8 },
+    });
+    // 8u on a 4.75mm socket: 51.25mm of fill, so an 8mm floor leaves 48mm.
+    expect(params.cutouts[0].cutDepth).toBe(48);
+  });
+
   // The upstream deletion may itself be undone, so the override is reported,
   // not discarded.
   it('reports an override naming a cutout the parent no longer has', () => {

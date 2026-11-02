@@ -158,6 +158,25 @@ For divider-override structure: pairs are canonical (`compartmentA < compartment
 
 Designer shares have their own limits (`MAX_PAYLOAD_BYTES` 100KB in `api/lib/designerValidationConstants.ts`), smaller than the layout-share limits in `api/lib/validation.ts` — see the share-api-collab skill. Cloud-sync envelope rules live in `src/features/bin-designer/sync/designAdapter.ts`. For the placed-bin side panel (bin-inspector), read `src/features/bin-inspector/README.md`; custom-property keys must avoid `RESERVED_PROPERTY_KEYS` in `src/core/constants.ts`.
 
+## Cutout depth modes
+
+`Cutout.depthMode` (`floor` or `through`, absent means fixed) makes `cutDepth`
+derived: `resolveCutoutDepth` (`src/shared/utils/cutoutDepth.ts`) recomputes it
+from the fill and the base, so every reader of `cutDepth` stays mode-blind. Four
+places re-derive: the store's composed `set` (`syncCutoutDepths`),
+`migrateParams`, `applyOverrides` and the worker's `createInitialContext`. A new
+path that builds params outside them needs `withResolvedCutoutDepths`. A
+`cutDepth` written without `depthMode` means fixed (`mergeCutoutUpdate`);
+otherwise the next sync overwrites the number the user typed.
+
+`floorMm` is measured from the bin's underside and counts a full socket, so
+`floor` mode never cuts into one. A through cut is ONE tool, built on a surface
+raised by `belowMm` and lowered after its clip, and handed to both the body cut
+and `deferredCutTargets` (the socket carve): a second prism under the pocket
+would share its walls, and coplanar faces between tools are where booleans go
+non-manifold. `throughBlockedReason` gates groups, lean, tapered walls and
+detachable feet.
+
 ## Compartment geometry and the size lock
 
 ### A `dividerOverride` moves the compartment wall

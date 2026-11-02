@@ -28,6 +28,7 @@ import { trackToolActivated } from '@/shared/analytics/posthog/conversionEvents'
 import { findAssemblyPart } from '@/features/bin-designer/utils/assemblyTree';
 import { syncedLidHeight } from '@/features/bin-designer/utils/lidHeightUnits';
 import { resolveSlant } from '@/shared/utils/slantPlan';
+import { cutoutDepthFrame, resolveCutoutDepth } from '@/shared/utils/cutoutDepth';
 
 /**
  * The user's saved "default for new bins", or the factory defaults.
@@ -79,6 +80,21 @@ export function syncLidHeightUnits(state: Draft<DesignerState>): void {
 export function syncSlantLip(state: Draft<DesignerState>): void {
   if (state.params.base.stackingLip && resolveSlant(state.params) !== null) {
     state.params.base.stackingLip = false;
+  }
+}
+
+/**
+ * Re-derive the depth of every cutout held to its floor or cut through. Runs
+ * after every store write, like the lid height sync: the fill these depths
+ * follow moves with the height, the base, the height unit and the top offset.
+ */
+export function syncCutoutDepths(state: Draft<DesignerState>): void {
+  const { cutouts } = state.params;
+  if (!cutouts.some((c) => c.depthMode !== undefined)) return;
+  const frame = cutoutDepthFrame(state.params);
+  for (const cutout of cutouts) {
+    const cutDepth = resolveCutoutDepth(cutout, frame);
+    if (cutout.cutDepth !== cutDepth) cutout.cutDepth = cutDepth;
   }
 }
 

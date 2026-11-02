@@ -32,6 +32,7 @@ import { useCutoutSelection, useDesignerStore } from '@/features/bin-designer/st
 import { Collapsible, NumberField } from '@/design-system';
 import type { AlignMode, DistributeAxis } from '../panel/CutoutsSection/geometryAlign';
 import { SingleCutoutInspector } from './SingleCutoutInspector';
+import { CutoutDepthControl } from '../panel/CutoutsSection/CutoutDepthControl';
 import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutBoardSettings } from './CutoutBoardSettings';
 import { BinSizeSection } from './BinSizeSection';
@@ -510,16 +511,11 @@ export function InspectorContent({
             />
             {!throughOnly && (
               <>
-                <NumberField
-                  label={t('binDesigner.cutouts.cutDepth')}
-                  value={sharedCutDepth ?? 5}
-                  indeterminate={sharedCutDepth === null}
-                  onChange={(cutDepth) => handleBatchUpdate('cutDepth', cutDepth)}
-                  min={0.5}
-                  max={maxCutDepth}
-                  step={0.5}
-                  unit="mm"
-                  disabled={disabled}
+                <CutoutDepthControl
+                  cutouts={selectedCutouts.map((c) => ({ ...c, ...preview.get(c.id) }))}
+                  maxCutDepth={maxCutDepth}
+                  onUpdate={(updates) => onUpdateBatch?.(updates)}
+                  disabled={disabled || !onUpdateBatch}
                 />
                 <NumberField
                   label={t('binDesigner.cutouts.scoopW')}

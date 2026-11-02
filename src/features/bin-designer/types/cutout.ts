@@ -49,6 +49,26 @@ export type CutoutColorScope = 'floor' | 'floorAndWalls';
 /** Scope applied when a cutout is colored but no scope was set. */
 export const DEFAULT_CUTOUT_COLOR_SCOPE: CutoutColorScope = 'floorAndWalls';
 
+/**
+ * What a cutout's depth is held to when the bin around it changes:
+ *  - `fixed` — {@link Cutout.cutDepth} below the fill surface, as typed. A tool
+ *    set to sit flush stays flush when the fill moves.
+ *  - `floor` — the pocket floor stays {@link Cutout.floorMm} above the bin's
+ *    underside, so `cutDepth` follows the fill and the bin height.
+ *  - `through` — no floor: the cut opens out of the underside.
+ *
+ * For `floor` and `through`, `cutDepth` is derived (see `resolveCutoutDepth`)
+ * and re-derived after every store write, so every reader of `cutDepth` sees
+ * the depth the generator builds.
+ */
+export type CutoutDepthMode = 'fixed' | 'floor' | 'through';
+
+/** Ordered mode list for UI rendering and exhaustiveness checks. */
+export const CUTOUT_DEPTH_MODES: readonly CutoutDepthMode[] = ['fixed', 'floor', 'through'];
+
+/** The modes a cutout stores; `fixed` is stored as the field's absence. */
+export const STORED_CUTOUT_DEPTH_MODES = ['floor', 'through'] as const;
+
 /** Minimum side count for a polygon cutout (triangle). */
 export const MIN_POLYGON_SIDES = 3;
 /** Maximum side count for a polygon cutout. */
@@ -82,6 +102,10 @@ export const MAX_CUTOUT_CLEARANCE = 5;
 
 /** Largest entry-chamfer width (mm) the editor allows. */
 export const MAX_CUTOUT_CHAMFER = 5;
+
+/** Highest {@link Cutout.floorMm} a file may carry: the tallest bin's height
+ *  (MAX_HEIGHT units at 7mm). Mirrored in `api/lib/designerValidationConstants.ts`. */
+export const MAX_CUTOUT_FLOOR_MM = 350;
 
 /** Straight wall (mm) that must remain below the bevel, so a chamfer never
  *  consumes the full cut depth. */
@@ -445,6 +469,17 @@ export interface Cutout {
   readonly depth: number;
   /** Cavity depth in mm (how deep the cut goes from top surface) */
   readonly cutDepth: number;
+  /**
+   * How {@link cutDepth} is held when the bin changes. Absent means `fixed`,
+   * so a design saved before the field existed serializes unchanged.
+   */
+  readonly depthMode?: (typeof STORED_CUTOUT_DEPTH_MODES)[number];
+  /**
+   * Plastic under the pocket floor, measured from the bin's underside (a
+   * socket's height included), in mm. Read only in `floor` mode; absent there
+   * means the base's default floor.
+   */
+  readonly floorMm?: number;
   /** Rotation in degrees (0-359) */
   readonly rotation: number;
   /** Corner radius for rectangle shape (mm) */

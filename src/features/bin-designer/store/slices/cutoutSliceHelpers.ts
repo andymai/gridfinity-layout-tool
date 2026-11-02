@@ -78,6 +78,23 @@ export function applyPathTransform(c: Cutout, updates: Partial<Cutout>): PathPoi
   return translated ? translatePathPoints(scaledPoints, dx, dy) : [...scaledPoints];
 }
 
+/**
+ * Merge `updates` into `c`. A depth typed without a mode means a fixed depth:
+ * `floor` and `through` re-derive `cutDepth` after every write, so leaving the
+ * mode in place would quietly overwrite the number the user just entered.
+ */
+export function mergeCutoutUpdate(c: Cutout, updates: Partial<Cutout>): Cutout {
+  const transformedPath = applyPathTransform(c, updates);
+  const merged = transformedPath
+    ? { ...c, ...updates, path: transformedPath }
+    : { ...c, ...updates };
+  const typedDepth = updates.cutDepth !== undefined && !('depthMode' in updates);
+  if (!typedDepth && merged.depthMode !== undefined) return merged;
+  if (!('depthMode' in merged) && !('floorMm' in merged)) return merged;
+  const { depthMode: _mode, floorMm: _floor, ...fixed } = merged;
+  return fixed;
+}
+
 // Expand a target id set to include every member of any group those ids touch,
 // so a per-group property (color) is written to the whole group at once.
 export function expandIdsToGroups(

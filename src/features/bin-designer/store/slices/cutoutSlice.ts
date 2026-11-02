@@ -40,7 +40,7 @@ import {
 import {
   cutoutList,
   cutoutOwner,
-  applyPathTransform,
+  mergeCutoutUpdate,
   expandIdsToGroups,
   gcMeshAssets,
   gcCutoutGroupNames,
@@ -381,13 +381,9 @@ export function createCutoutSlice(rawSet: Set) {
       set((state) => {
         pushHistoryEntry(state);
         const owner = cutoutOwner(state);
-        owner.cutouts = owner.cutouts.map((c) => {
-          if (c.id !== id) return c;
-          const transformedPath = applyPathTransform(c, updates);
-          return withTextFootprint(
-            transformedPath ? { ...c, ...updates, path: transformedPath } : { ...c, ...updates }
-          );
-        });
+        owner.cutouts = owner.cutouts.map((c) =>
+          c.id === id ? withTextFootprint(mergeCutoutUpdate(c, updates)) : c
+        );
       });
     },
 
@@ -537,11 +533,7 @@ export function createCutoutSlice(rawSet: Set) {
         const owner = cutoutOwner(state);
         owner.cutouts = owner.cutouts.map((c) => {
           const u = updates.get(c.id);
-          if (!u) return c;
-          const transformedPath = applyPathTransform(c, u);
-          return withTextFootprint(
-            transformedPath ? { ...c, ...u, path: transformedPath } : { ...c, ...u }
-          );
+          return u ? withTextFootprint(mergeCutoutUpdate(c, u)) : c;
         });
       });
     },

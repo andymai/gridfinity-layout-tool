@@ -14,6 +14,7 @@ import type {
   OrphanedOverride,
 } from '@/shared/types/designOverrides';
 import { resizeAroundCenter } from './cutoutResize';
+import { withResolvedCutoutDepths } from './cutoutDepth';
 
 export interface AppliedOverrides {
   readonly params: BinParams;
@@ -41,7 +42,12 @@ function applyCutoutOverride(cutout: Cutout, override: CutoutOverride): Cutout {
     };
   }
 
-  if (override.cutDepth !== undefined) next = { ...next, cutDepth: override.cutDepth };
+  if (override.cutDepth !== undefined) {
+    // A claimed depth is a fixed one; a floored or through mode would
+    // re-derive it from the variant's own fill and discard the claim.
+    const { depthMode: _mode, floorMm: _floor, ...fixed } = next;
+    next = { ...fixed, cutDepth: override.cutDepth };
+  }
   if (override.clearance !== undefined) next = { ...next, clearance: override.clearance };
   if (override.chamferWidth !== undefined) {
     next = { ...next, chamferWidth: override.chamferWidth };
@@ -66,7 +72,7 @@ export function applyOverrides(
 
   const cutoutOverrides = overrides.cutouts ?? {};
   const overriddenIds = Object.keys(cutoutOverrides);
-  if (overriddenIds.length === 0) return { params, orphans: [] };
+  if (overriddenIds.length === 0) return { params: withResolvedCutoutDepths(params), orphans: [] };
 
   const present = new Set(params.cutouts.map((c) => c.id));
   const orphans: OrphanedOverride[] = overriddenIds
@@ -79,5 +85,5 @@ export function applyOverrides(
       : cutout
   );
 
-  return { params: { ...params, cutouts }, orphans };
+  return { params: withResolvedCutoutDepths({ ...params, cutouts }), orphans };
 }

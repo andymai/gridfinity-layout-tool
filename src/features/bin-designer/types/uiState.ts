@@ -134,6 +134,12 @@ export interface DesignerUIState {
   readonly splitViewMode: SplitViewMode;
   /** Draw socket-mode label plates in the 3D preview. Preview-only: never saved or exported. */
   readonly showLabelPlates: boolean;
+  /**
+   * Imported outlines still waiting for the thickness prompt, oldest first.
+   * Session state: undoing an import removes the cutouts, and the prompt
+   * reads only ids that still exist, so the queue never needs history.
+   */
+  readonly depthPromptIds: readonly string[];
   /** Per-piece mesh data for split bin preview (populated when exploded mode is active) */
   readonly splitPieceMeshes: readonly SplitPieceMeshEntry[];
   /** Currently hovered color zone in the panel (for 3D preview glow feedback) */

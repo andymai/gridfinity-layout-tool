@@ -12,6 +12,8 @@ import { useTranslation } from '@/i18n';
 import { clampRotationToBounds, flipCutoutHorizontal, flipCutoutVertical } from './geometry';
 import { CutoutScoopControls } from '../../CutoutWorkspace/CutoutScoopControls';
 import { CutoutShapeControls } from './CutoutShapeControls';
+import { CutoutDepthControl } from './CutoutDepthControl';
+import { isThroughCut } from '@/shared/utils/cutoutDepth';
 import { CutoutFitControls } from './CutoutFitControls';
 import { CutoutShapeBadge } from './CutoutShapeBadge';
 import { hasFitControls, formatFitSummary, repeatBlockedReason } from './cutoutSectionVisibility';
@@ -52,6 +54,8 @@ export function CutoutPropertyPanel({
   onUngroup,
 }: CutoutPropertyPanelProps) {
   const t = useTranslation();
+  // A through cut has no floor, so the generator drops its floor fillet.
+  const throughCut = useDesignerStore((s) => isThroughCut(cutout, s.params));
   const setCutoutArray = useDesignerStore((s) => s.setCutoutArray);
 
   return (
@@ -105,14 +109,14 @@ export function CutoutPropertyPanel({
               />
             </>
           )}
-          <SliderInput
-            label={t('binDesigner.cutouts.cutDepth')}
-            value={cutout.cutDepth}
-            onChange={(cutDepth) => onUpdate(cutout.id, { cutDepth })}
-            min={0.5}
-            max={maxCutDepth}
-            step={0.5}
-            unit="mm"
+          <CutoutDepthControl
+            variant="slider"
+            cutouts={[cutout]}
+            maxCutDepth={maxCutDepth}
+            onUpdate={(updates) => {
+              const patch = updates.get(cutout.id);
+              if (patch) onUpdate(cutout.id, patch);
+            }}
             disabled={disabled}
           />
           <SliderInput
@@ -152,12 +156,14 @@ export function CutoutPropertyPanel({
             onUpdate={(patch) => onUpdate(cutout.id, patch)}
             disabled={disabled}
           />
-          <CutoutScoopControls
-            key={cutout.id}
-            cutout={cutout}
-            disabled={disabled}
-            onUpdate={(patch) => onUpdate(cutout.id, patch)}
-          />
+          {!throughCut && (
+            <CutoutScoopControls
+              key={cutout.id}
+              cutout={cutout}
+              disabled={disabled}
+              onUpdate={(patch) => onUpdate(cutout.id, patch)}
+            />
+          )}
         </div>
       </MoreDisclosure>
 

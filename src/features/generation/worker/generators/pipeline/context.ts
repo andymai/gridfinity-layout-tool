@@ -22,6 +22,7 @@ import {
   resolveTileFloorThickness,
 } from '@/shared/types/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
+import { withResolvedCutoutDepths } from '@/shared/utils/cutoutDepth';
 import { dividerGrooveDepth, resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { isSlottedBody } from '@/shared/utils/slotFreeWalls';
 import { effectiveRimFilletRadius } from '@/shared/utils/rimFillet';
@@ -529,9 +530,13 @@ export function createInitialContext(
   perfCollector?: PerfCollector,
   omitLipSolid = false
 ): PipelineContext {
+  // The store keeps floored and through depths current, but a params object can
+  // reach the worker without passing through it; resolving here makes the mode,
+  // not the stored number, decide what gets cut.
+  const resolved = withResolvedCutoutDepths(params);
   return {
-    params,
-    dimensions: deriveDimensions(params, forExport, omitLipSolid),
+    params: resolved,
+    dimensions: deriveDimensions(resolved, forExport, omitLipSolid),
     forExport,
     signal,
     onProgress,

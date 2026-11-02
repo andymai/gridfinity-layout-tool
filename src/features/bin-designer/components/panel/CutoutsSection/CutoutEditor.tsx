@@ -11,6 +11,7 @@ import { CutoutCanvas3D } from './renderer';
 import { CutoutShapeToolbar } from './CutoutShapeToolbar';
 import { StlImportDialog } from './stlImport';
 import { ScanWithPhoneDialog } from './scanImport';
+import { ToolThicknessPrompt } from './ToolThicknessPrompt';
 import { CutoutPropertyPanel } from './CutoutPropertyPanel';
 import { AlignmentToolbar } from './AlignmentToolbar';
 import { CutoutContextMenu } from './CutoutContextMenu';
@@ -46,6 +47,7 @@ export function CutoutEditor() {
     setMode,
     selection,
     selectCutout,
+    selectIds,
     preview,
     drawingPreview,
     pathDrawingPreview,
@@ -106,6 +108,8 @@ export function CutoutEditor() {
         onPlace={stlImport.place}
         onCancel={stlImport.cancel}
       />
+
+      <ToolThicknessPrompt onFocusTools={(ids) => selectIds(ids, false)} />
 
       {/* Fill level: shared with the workspace inspector so the two agree */}
       <div className="rounded border border-stroke-subtle bg-surface-elevated p-3">

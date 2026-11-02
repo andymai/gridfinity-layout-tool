@@ -92,6 +92,7 @@ import {
 import type { Pt } from '@/shared/utils/polygonOffset';
 import { clearedProfile, entryChamferWidth, MIN_LOFTED_CHAMFER } from '@/shared/utils/cutoutFit';
 import { planNestedOpenings } from '@/shared/utils/nestedCutoutOpenings';
+import { isThroughCut } from '@/shared/utils/cutoutDepth';
 import type { FloorTrim, NestedOpening, SunkMouth } from '@/shared/utils/nestedCutoutOpenings';
 import { buildTaperedInnerEnvelope } from './taperedOuter';
 import type { ResolvedTaper } from './overhang';
@@ -1233,6 +1234,12 @@ function buildNestedEntryFlares(
 export interface CutoutTools {
   readonly cutTools: Shape3D[];
   readonly fuseTools: Shape3D[];
+  /**
+   * Through cuts, running from below the body's underside to the fill top.
+   * Separate from `cutTools` because they also have to carve whatever is built
+   * under the body. Absent when there are none.
+   */
+  readonly throughTools?: Shape3D[];
 }
 
 /**
@@ -1269,13 +1276,16 @@ const CUTOUT_BOOLEAN_EPSILON = 0.1;
  * @param wallHeight - Wall height in mm (Z extent from floor to wall top)
  * @param interiorTaper - Present when the outer wall tapers, so the interior
  *   clip follows the narrowing wall instead of a rim-sized prism
+ * @param belowMm - How far below the body's underside a through cut must reach
+ *   to clear everything under it; 0 builds through cuts as full-depth pockets
  */
 export function buildCutoutCuts(
   params: BinParams,
   innerW: number,
   innerD: number,
   wallHeight: number,
-  interiorTaper?: InteriorTaper
+  interiorTaper?: InteriorTaper,
+  belowMm = 0
 ): CutoutTools {
   // Color ordinals MUST come from the full cutout list — the paint layer
   // enumerates ALL cutouts (incl. mesh imprints), so filtering first would
@@ -1307,7 +1317,10 @@ export function buildCutoutCuts(
       labelledInstances(c).some((i) => i.label.trim() !== '')
   );
   if (buildable.length === 0 && !hasMeshLabel) return { cutTools: [], fuseTools: [] };
-  params = { ...params, cutouts: buildable.map((c) => withOpenSideScoopsOff(c, params)) };
+  params = {
+    ...params,
+    cutouts: buildable.map((c) => withThroughScoopsOff(withOpenSideScoopsOff(c, params), params)),
+  };
 
   // Cutout x,y are relative to interior bottom-left corner (0,0).
   // The bin body is centered at model origin, so interior left/front is at -innerW/2, -innerD/2.
@@ -1323,6 +1336,13 @@ export function buildCutoutCuts(
   if (solidSurfaceZ <= 0) return { cutTools: [], fuseTools: [] };
 
   const rawShapes: Shape3D[] = [];
+  // A through cut is one tool from the fill top to below the underside, built
+  // on a surface raised by `belowMm` and lowered after its clip: a second
+  // prism under an ordinary pocket would share its side walls, and coplanar
+  // faces between tools are where booleans go non-manifold.
+  const throughSurfaceZ = solidSurfaceZ + belowMm;
+  const throughRaw: Shape3D[] = [];
+  const throughTags: number[] = [];
   // Per-cutout color face tag, aligned 1:1 with rawShapes. Applied AFTER the
   // interior clip (its intersect boolean regenerates faces and drops any origin
   // set beforehand), so it's carried alongside rather than stamped here. Every
@@ -1358,6 +1378,18 @@ export function buildCutoutCuts(
     // contributes no cavity tool — inside a group it adds nothing to the
     // boolean, which is what keeps grouping text with shapes purely spatial.
     if (cutout.shape === 'text') continue;
+    if (belowMm > 0 && isThroughCut(cutout, params)) {
+      const spec = { ...cutout, cutDepth: throughSurfaceZ };
+      const shapes = cutout.array
+        ? buildArrayUngroupedCutouts(spec, throughSurfaceZ, originX, originY, sunkOf)
+        : [buildUngroupedCutout(spec, throughSurfaceZ, originX, originY, sunkOf(cutout.id))];
+      for (const shape of shapes) {
+        if (!shape) continue;
+        throughRaw.push(shape);
+        throughTags.push(cavityTag(cutout));
+      }
+      continue;
+    }
     if (cutout.groupId === null) {
       if (cutout.array) {
         for (const s of buildArrayUngroupedCutouts(
@@ -1457,9 +1489,12 @@ export function buildCutoutCuts(
       // point at solid material. Only union cavities keep member floors intact.
       // A leaned pocket's floor is tilted and laterally shifted, so the flat
       // recess-floor Z guess is wrong for it too — its labels stay on the top.
-      const allowFloor =
-        (cutout.groupId === null || groupOps.get(cutout.groupId) === 'union') &&
-        resolveCutoutLeanDeg(cutout) === 0;
+      const floor: LabelFloor = isThroughCut(cutout, params)
+        ? 'open'
+        : (cutout.groupId === null || groupOps.get(cutout.groupId) === 'union') &&
+            resolveCutoutLeanDeg(cutout) === 0
+          ? 'recess'
+          : 'top';
       const textShape = buildCutoutLabel(
         cutout,
         label,
@@ -1469,7 +1504,7 @@ export function buildCutoutCuts(
         originY,
         innerW,
         innerD,
-        allowFloor,
+        floor,
         master.array
       );
       if (!textShape) continue;
@@ -1488,7 +1523,7 @@ export function buildCutoutCuts(
     }
   }
 
-  if (rawShapes.length === 0 && rawFuseShapes.length === 0) {
+  if (rawShapes.length === 0 && rawFuseShapes.length === 0 && throughRaw.length === 0) {
     return { cutTools: [], fuseTools: [] };
   }
 
@@ -1515,7 +1550,15 @@ export function buildCutoutCuts(
           interiorTaper
         )
       : [];
-  return { cutTools, fuseTools };
+  if (throughRaw.length === 0) return { cutTools, fuseTools };
+  const throughTools = clipToInterior(throughRaw, innerW, innerD, throughSurfaceZ, throughTags).map(
+    (tool) => {
+      const lowered = translate(tool, [0, 0, -belowMm]);
+      tool.delete();
+      return lowered;
+    }
+  );
+  return { cutTools, fuseTools, throughTools };
 }
 
 /** Extra reach past any wall so a breach channel always exits the body (mm). */
@@ -1545,6 +1588,16 @@ function breachHeight(params: BinParams, frame: BreachFrame, effectiveDepth: num
     LIP_HEIGHT +
     CUT_RIM_CLEARANCE
   );
+}
+
+/**
+ * A through cut has no floor, so a fillet at its bottom edge would leave a
+ * rounded lip around the opening where it leaves the body.
+ */
+function withThroughScoopsOff(cutout: Cutout, params: BinParams): Cutout {
+  if (!isThroughCut(cutout, params)) return cutout;
+  const { scoopRadiusW: _w, scoopRadiusD: _d, scoopEdges: _e, ...rest } = cutout;
+  return rest;
 }
 
 /**
@@ -1863,22 +1916,23 @@ function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean
   }
 }
 
+/** Where a cutout label lands relative to the cavity it names. */
+type LabelFloor = 'recess' | 'top' | 'open';
+
 /**
- * Z of the surface a cutout label lands on: the recess floor when the placed
- * center sits inside the cutout's rotated footprint (the `center` anchor, or an
- * offset drag ending over the cavity), the un-recessed fill top otherwise.
- * Labels used to engrave at the fill top unconditionally, so a center-anchored
- * label's shallow cut sat entirely inside the volume the cavity removes and
- * vanished from the model.
+ * True when a label's placed center sits inside the cutout's rotated footprint
+ * (the `center` anchor, or an offset drag ending over the cavity). Such a label
+ * lands on the recess floor: labels used to engrave at the fill top
+ * unconditionally, so a center-anchored label's shallow cut sat entirely inside
+ * the volume the cavity removes and vanished from the model.
  */
-function labelSurfaceZ(
+function labelOverCavity(
   cutout: Cutout,
   centerX: number,
   centerY: number,
-  solidSurfaceZ: number,
   originX: number,
   originY: number
-): number {
+): boolean {
   const dx = centerX - (originX + cutout.x + cutout.width / 2);
   const dy = centerY - (originY + cutout.y + cutout.depth / 2);
   // Localize with the inverse of the shape's world rotation —
@@ -1888,8 +1942,7 @@ function labelSurfaceZ(
   const s = Math.sin(theta);
   const lx = dx * c - dy * s;
   const ly = dx * s + dy * c;
-  if (!labelCenterInFootprint(cutout, lx, ly)) return solidSurfaceZ;
-  return solidSurfaceZ - Math.min(cutout.cutDepth, solidSurfaceZ);
+  return labelCenterInFootprint(cutout, lx, ly);
 }
 
 /**
@@ -1954,9 +2007,11 @@ function cutoutLabelMode(mode: TextMode): 'engrave' | 'emboss' | 'flat' {
 
 /**
  * Label text for a cutout: on the bin top beside it (outer anchors) or on the
- * recess floor inside it (`center` anchor, see {@link labelSurfaceZ}).
- * `allowFloor` gates the floor branch — callers pass false for members of
- * non-union groups, whose final cavity may not contain the member's footprint.
+ * recess floor inside it (`center` anchor, see {@link labelOverCavity}).
+ * `floor` decides what a label over the cavity lands on: the recess floor, the
+ * fill top (members of non-union groups, whose final cavity may not contain
+ * the member's footprint, and leaning pockets), or nothing at all over a
+ * through cut, which has neither.
  *
  * The side picker is interpreted in WORLD coordinates (top = +Y, etc.); text
  * reads left-to-right in world XY regardless of cutout rotation. The cutout
@@ -1983,7 +2038,7 @@ function buildCutoutLabel(
   originY: number,
   innerW: number,
   innerD: number,
-  allowFloor: boolean,
+  floor: LabelFloor,
   repeat: CutoutArrayConfig | undefined
 ): CutoutLabelShape | null {
   // A text element's caption centers on its own box regardless of stray
@@ -2012,9 +2067,12 @@ function buildCutoutLabel(
       ? { ...resolved, sizeMode: 'fixed' as const }
       : resolved;
 
-  const surfaceZ = allowFloor
-    ? labelSurfaceZ(cutout, centerX, centerY, solidSurfaceZ, originX, originY)
-    : solidSurfaceZ;
+  const overCavity = labelOverCavity(cutout, centerX, centerY, originX, originY);
+  if (floor === 'open' && overCavity) return null;
+  const surfaceZ =
+    floor === 'recess' && overCavity
+      ? solidSurfaceZ - Math.min(cutout.cutDepth, solidSurfaceZ)
+      : solidSurfaceZ;
   const mode = cutoutLabelMode(style.mode);
   const onRecessFloor = surfaceZ < solidSurfaceZ;
   // A recess consuming the full fill depth leaves no floor to engrave into or

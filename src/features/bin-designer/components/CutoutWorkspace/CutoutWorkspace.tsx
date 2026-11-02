@@ -44,6 +44,7 @@ import { useSvgImport } from '../panel/CutoutsSection/svgImport';
 import { useSvgExport } from '../panel/CutoutsSection/svgExport';
 import { useStlImport, StlImportDialog } from '../panel/CutoutsSection/stlImport';
 import { ScanWithPhoneDialog } from '../panel/CutoutsSection/scanImport';
+import { ToolThicknessPrompt } from '../panel/CutoutsSection/ToolThicknessPrompt';
 import { InspectorDock } from './InspectorDock';
 import { ShapeList } from './ShapeList';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
@@ -728,6 +729,7 @@ export function CutoutWorkspace() {
                   onScanWithPhone={!isLid ? () => setScanDialogOpen(true) : undefined}
                 />
               )}
+              <ToolThicknessPrompt placement="chip" onFocusTools={(ids) => selectIds(ids, false)} />
               <CutoutCanvas3D
                 cutouts={cutouts}
                 binWidth={binWidth}
