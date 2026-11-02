@@ -302,12 +302,13 @@ export function planPlateFlip(params: PlateFlipInput): PlateFlip {
       params.paddingFront,
       params.paddingBack
     );
-    const allowance =
-      SHAPED_SEAM_OVERHANG_TOLERANCE_MM +
-      (first.axis === 'x' ? aboutX.overhangMm : aboutY.overhangMm) +
-      (Math.SQRT2 - 1) * plainRoundingLimit(params.gridUnitMm, minPadding);
-    if (turnedPlateOverhangMm(params, first.axis, first.offsetMm, allowance) <= allowance) {
-      return first;
+    const corner = (Math.SQRT2 - 1) * plainRoundingLimit(params.gridUnitMm, minPadding);
+    for (const f of [first, second]) {
+      const allowance =
+        SHAPED_SEAM_OVERHANG_TOLERANCE_MM +
+        (f.axis === 'x' ? aboutX.overhangMm : aboutY.overhangMm) +
+        corner;
+      if (turnedPlateOverhangMm(params, f.axis, f.offsetMm, allowance) <= allowance) return f;
     }
   }
   return { ...first, flipBottom: true };

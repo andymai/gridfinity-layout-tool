@@ -529,6 +529,24 @@ describe('planPlateFlip', () => {
       expect(planPlateFlip(both)).toEqual({ axis: 'y', offsetMm: 0 });
     });
 
+    it('takes the other turn when only it keeps a cut rounding within reach', () => {
+      // Turned about X the 30mm corner lands on a square one; about Y it lands
+      // on the 22mm one and hangs only the difference.
+      const uneven = buildFullParams(
+        {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          stackPrint: { enabled: true, gapMm: mm(0.2) },
+          cornerRadii: { tl: mm(30), tr: mm(22), bl: mm(0), br: mm(0) },
+        },
+        4 * 42,
+        4 * 42,
+        42,
+        'end',
+        'end'
+      );
+      expect(planPlateFlip(uneven)).toEqual({ axis: 'y', offsetMm: 0 });
+    });
+
     it('turns the bottom when a cut radius strips a whole corner cell', () => {
       const huge = buildFullParams(
         {
