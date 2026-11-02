@@ -74,10 +74,11 @@ export function pullTabCenterDivider(
   p: Pick<BinParams, 'compartments' | 'pullTab'>
 ): PullTabCenterDivider | null {
   const picked = p.pullTab?.centerAxis === 'depth' ? 'depth' : 'width';
-  const axis = ([picked, picked === 'width' ? 'depth' : 'width'] as const).find(
-    (a) => wallToWallDividers(p.compartments, a).length > 0
-  );
-  return axis ? { axis, at: wallToWallDividers(p.compartments, axis)[0] } : null;
+  for (const axis of [picked, picked === 'width' ? 'depth' : 'width'] as const) {
+    const lines = wallToWallDividers(p.compartments, axis);
+    if (lines.length > 0) return { axis, at: lines[0] };
+  }
+  return null;
 }
 
 /**

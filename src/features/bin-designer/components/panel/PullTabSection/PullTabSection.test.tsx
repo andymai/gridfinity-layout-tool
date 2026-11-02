@@ -70,9 +70,11 @@ describe('PullTabSection', () => {
     expect(screen.queryByText(/front\/back/)).toBeNull();
     expect(screen.getByText('Current tab width: 55.5 mm.')).toBeDefined();
     fireEvent.click(wall('Left'));
-    expect(screen.getByText('Tab width: 55.5 mm front/back, 87.0 mm sides.')).toBeDefined();
     expect(
-      screen.getByText(/^Recess width: \d+\.\d mm front\/back, \d+\.\d mm sides/)
+      screen.getByText('Tab width: 55.5 mm left to right, 87.0 mm front to back.')
+    ).toBeDefined();
+    expect(
+      screen.getByText(/^Recess: \d+\.\d mm left to right, \d+\.\d mm front to back/)
     ).toBeDefined();
   });
   it('keeps the longest wall’s tab width when switching from mm to percent', () => {
@@ -86,7 +88,9 @@ describe('PullTabSection', () => {
     });
     render(<PullTabSection />);
     fireEvent.click(screen.getByRole('button', { name: '%' }));
-    expect(screen.getByText('Tab width: 31.9 mm front/back, 50.0 mm sides.')).toBeDefined();
+    expect(
+      screen.getByText('Tab width: 31.9 mm left to right, 50.0 mm front to back.')
+    ).toBeDefined();
   });
   it('keeps a tab that has run out of room switchable, so the wall that caused it can go', () => {
     useDesignerStore.setState({
@@ -316,7 +320,7 @@ describe('PullTabSection', () => {
 
   it('plays a clip of the feature from the dot beside its toggle', () => {
     render(<PullTabSection />);
-    fireEvent.click(screen.getByRole('button', { name: 'See how Pull tab works' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Pull tab' }));
     expect(screen.getByText(en['binDesigner.featureTip.pullTab'])).toBeInTheDocument();
     expect(screen.getByText(en['binDesigner.pullTab.description'])).toBeInTheDocument();
   });

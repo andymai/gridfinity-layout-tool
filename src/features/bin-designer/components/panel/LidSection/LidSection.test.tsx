@@ -6,6 +6,7 @@ import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/co
 import { LID_TOP_THICKNESS_MAX_MM } from '@/features/bin-designer/types';
 import { DEFAULT_LID_SLIDE_CONFIG } from '@/features/bin-designer/types/lid';
 import { slideLidPlanForParams } from '@/features/bin-designer/utils/slideLidPlanForParams';
+import en from '@/i18n/locales/en';
 
 function resetStore(overrides: Partial<typeof DEFAULT_BIN_PARAMS> = {}) {
   useDesignerStore.setState({
@@ -78,6 +79,13 @@ describe('LidSection', () => {
     render(<LidSection />);
     fireEvent.click(screen.getByRole('switch', { name: ENABLE }));
     expect(useDesignerStore.getState().params.lid.magnetHoles).toBe(false);
+  });
+
+  it('plays a clip of the lid types from the dot, with the print note under it', () => {
+    render(<LidSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Lid' }));
+    expect(screen.getByText(en['binDesigner.featureTip.lids'])).toBeInTheDocument();
+    expect(screen.getByText(en['binDesigner.lid.printNote'])).toBeInTheDocument();
   });
 
   describe('attachment picker', () => {

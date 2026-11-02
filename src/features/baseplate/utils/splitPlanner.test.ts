@@ -1172,6 +1172,7 @@ describe('pieceToBaseplateParams', () => {
         ],
       },
       outlineOverhang: { left: 0, right: 0, front: 0, back: 0 },
+      outlineIsCornerRounding: true,
       connectorNubs: true,
       invertDovetails: true,
       preferIdenticalPieces: true,

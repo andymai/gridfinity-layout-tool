@@ -37,9 +37,9 @@ export interface Bounds {
 }
 
 export interface Camera {
-  /** Degrees around Z, 0 = +X. The designer's isometric preset is -45. */
+  /** Degrees around Z, 0 = +X. */
   az: number;
-  /** Degrees above the XY plane. The isometric preset is ~30.5. */
+  /** Degrees above the XY plane. */
   el: number;
   /** Fraction of the frame's width and height the part's box may reach. */
   fill: number;
@@ -47,10 +47,9 @@ export interface Camera {
 }
 
 /**
- * The designer's isometric preset (CAMERA_PRESETS.isometric, [0.6, -0.6, 0.5]
- * at CAMERA_FOV 45) raised from ~30 to 55 degrees: at the preset's height the
- * walls hide the floor, scoops and pockets a tip is about. Higher than ~60
- * and a bin flattens into a tray.
+ * The designer's isometric direction, raised: at the preset's height the walls
+ * hide the floor, scoops and pockets a tip is about. Much higher and a bin
+ * flattens into a tray.
  */
 export const CLIP_CAMERA: Camera = { az: -45, el: 55, fill: 0.86, fov: 45 };
 
@@ -96,6 +95,14 @@ const GPU_ARGS = [
 ];
 
 const toBuffer = (dataUrl: string): Buffer => Buffer.from(dataUrl.split(',')[1] ?? '', 'base64');
+const toFrames = (urls: Record<Theme, string>): ThemeFrames => ({
+  light: toBuffer(urls.light),
+  dark: toBuffer(urls.dark),
+});
+const toDataUrls = (frames: ThemeFrames): Record<Theme, string> => ({
+  light: `data:image/png;base64,${frames.light.toString('base64')}`,
+  dark: `data:image/png;base64,${frames.dark.toString('base64')}`,
+});
 
 export async function openStage(
   base: string,
@@ -213,24 +220,14 @@ async function setUpStage(
         ([v, c]) => (window as unknown as Bridge).__tip.render(v, c),
         [view, tint] as const
       );
-      return { light: toBuffer(urls.light), dark: toBuffer(urls.dark) };
+      return toFrames(urls);
     },
     async blend(a, b, t) {
       const urls = await page.evaluate(
         ([x, y, k]) => (window as unknown as Bridge).__tip.blend(x, y, k),
-        [
-          {
-            light: `data:image/png;base64,${a.light.toString('base64')}`,
-            dark: `data:image/png;base64,${a.dark.toString('base64')}`,
-          },
-          {
-            light: `data:image/png;base64,${b.light.toString('base64')}`,
-            dark: `data:image/png;base64,${b.dark.toString('base64')}`,
-          },
-          t,
-        ] as const
+        [toDataUrls(a), toDataUrls(b), t] as const
       );
-      return { light: toBuffer(urls.light), dark: toBuffer(urls.dark) };
+      return toFrames(urls);
     },
     close: () => browser.close(),
   };
@@ -326,8 +323,13 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
     }
   };
 
-  const lidInput = (): HTMLInputElement | null =>
-    document.querySelector<HTMLInputElement>('#dev-thumbnail-route input[type="range"]');
+  const lidInput = (): HTMLInputElement => {
+    const input = document.querySelector<HTMLInputElement>(
+      '#dev-thumbnail-route input[type="range"]'
+    );
+    if (!input) throw new Error('no lid slider: is the lid enabled and built?');
+    return input;
+  };
 
   const onSurface = (src: HTMLCanvasElement, color: string): string => {
     const c = document.createElement('canvas');
@@ -390,16 +392,13 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
       }),
     setLidOffset(value: number): number {
       const input = lidInput();
-      if (!input) throw new Error('no lid slider: is the lid enabled and built?');
       const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
       setter?.call(input, String(value));
       input.dispatchEvent(new Event('input', { bubbles: true }));
       return Number(input.value);
     },
     lidOffsetMax(): number {
-      const input = lidInput();
-      if (!input) throw new Error('no lid slider: is the lid enabled and built?');
-      return Number(input.max);
+      return Number(lidInput().max);
     },
     bounds(): Bounds {
       const s = scene();

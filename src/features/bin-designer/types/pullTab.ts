@@ -9,9 +9,8 @@ export interface PullTabConfig {
   readonly enabled: boolean;
   /**
    * The wall of a tab that stands on the front ('width') or the right
-   * ('depth') alone, the only two places a tab could go before {@link walls}.
-   * Every other selection writes `walls`, and this then names the axis of its
-   * first wall.
+   * ('depth') alone. Every other selection writes {@link walls}, and this then
+   * names the axis of its first wall.
    */
   readonly wall: 'width' | 'depth';
   /**
@@ -20,9 +19,8 @@ export interface PullTabConfig {
    * Absent for those two, so a design saved before this existed builds
    * byte-identical geometry, and one that visits the picker and comes back
    * fingerprints as one that never did (`communityParamsFingerprint` hashes
-   * `params` wholesale). Geometry reads it only through `resolvePullTabWalls`;
-   * the shell cache key serializes it as stored, after `resolvePullTab` has
-   * made it canonical.
+   * `params` wholesale). Geometry reads it only through `resolvePullTabWalls`,
+   * and the shell key serializes its outer walls in this same stored form.
    */
   readonly walls?: PullTabWall[];
   /**

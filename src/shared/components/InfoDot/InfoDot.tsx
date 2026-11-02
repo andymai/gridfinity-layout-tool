@@ -32,11 +32,10 @@ const DEFAULT_PANEL =
 interface InfoDotProps {
   readonly 'aria-label': string;
   readonly children: ReactNode;
-  /** Glyph in place of the info icon. */
   readonly icon?: ReactNode;
   /** Opens after the mouse rests on the dot this long. */
   readonly hoverDelayMs?: number;
-  /** Replaces the panel's default text sizing. */
+  /** Replaces the panel's default classes, sizing and padding included. */
   readonly panelClassName?: string;
 }
 
@@ -92,9 +91,10 @@ export function InfoDot({
     return () => content.removeEventListener('keydown', onKeyDown);
   }, [open, pinned]);
 
-  const hover = hoverDelayMs !== undefined;
-  const isMouse = (event: PointerEvent): boolean => hover && event.pointerType === 'mouse';
-  const scheduleHoverClose = (): void => {
+  const isMouse = (event: PointerEvent): boolean =>
+    hoverDelayMs !== undefined && event.pointerType === 'mouse';
+  const onHoverLeave = (event: PointerEvent): void => {
+    if (!isMouse(event)) return;
     clearHoverTimer();
     if (pinned) return;
     hoverTimer.current = setTimeout(() => setOpen(false), HOVER_CLOSE_GRACE_MS);
@@ -122,9 +122,7 @@ export function InfoDot({
           clearHoverTimer();
           if (!open) hoverTimer.current = setTimeout(() => setOpen(true), hoverDelayMs);
         }}
-        onPointerLeave={(event) => {
-          if (isMouse(event)) scheduleHoverClose();
-        }}
+        onPointerLeave={onHoverLeave}
         aria-label={ariaLabel}
         aria-expanded={open}
         aria-controls={open ? contentId : undefined}
@@ -144,9 +142,7 @@ export function InfoDot({
         onPointerEnter={(event) => {
           if (isMouse(event)) clearHoverTimer();
         }}
-        onPointerLeave={(event) => {
-          if (isMouse(event)) scheduleHoverClose();
-        }}
+        onPointerLeave={onHoverLeave}
       >
         <div
           id={contentId}

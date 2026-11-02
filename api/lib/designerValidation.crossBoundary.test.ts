@@ -42,6 +42,11 @@ import {
   validateDesignerShare,
 } from './designerValidation.js';
 import { VALID_WALL_TEXT_FACES } from './designerTextValidation.js';
+import {
+  PULL_TAB_RANGES,
+  VALID_PULL_TAB_CENTER_AXES,
+  VALID_PULL_TAB_WALLS,
+} from './designerPullTabValidation.js';
 import { SOCKET_HEIGHT_MM } from './assemblyValidation.js';
 import {
   CONSTRAINTS,
@@ -116,6 +121,8 @@ import { GRIDFINITY_SPEC } from '../../src/shared/printSettings/gridfinityGeomet
 import { MAX_MASK_DIMENSION } from '../../src/shared/utils/cellMask.js';
 import { BIN_PARAMS_KEYS } from '../../src/shared/schema/binDesignKeys.js';
 import { MAX_CUTOUT_CORNER_RADIUS } from '../../src/shared/utils/wallCutoutPosition.js';
+import { PULL_TAB_LIMITS, PULL_TAB_WALLS } from '../../src/shared/utils/pullTabPlan.js';
+import { PULL_TAB_CENTER_AXES } from '../../src/shared/utils/pullTabCenterPlan.js';
 
 type Allowlist = readonly (string | number)[];
 
@@ -167,6 +174,12 @@ const ALLOWLIST_MIRRORS: readonly (readonly [string, Allowlist, Allowlist])[] = 
   ['VALID_CUTOUT_LABEL_MODES / CUTOUT_LABEL_MODES', VALID_CUTOUT_LABEL_MODES, CUTOUT_LABEL_MODES],
   ['LIP_CORNERS', API_LIP_CORNERS, LIP_CORNERS],
   ['VALID_LIP_AXIS_COUNTS / LIP_AXIS_COUNTS', [...VALID_LIP_AXIS_COUNTS], LIP_AXIS_COUNTS],
+  ['VALID_PULL_TAB_WALLS / PULL_TAB_WALLS', VALID_PULL_TAB_WALLS, PULL_TAB_WALLS],
+  [
+    'VALID_PULL_TAB_CENTER_AXES / PULL_TAB_CENTER_AXES',
+    VALID_PULL_TAB_CENTER_AXES,
+    PULL_TAB_CENTER_AXES,
+  ],
 ];
 
 const BOUND_MIRRORS: readonly (readonly [string, number, number])[] = [
@@ -404,5 +417,11 @@ describe('designer param allowlist covers BinParams', () => {
       expect(BIN_PARAMS_KEYS).toContain(key);
       expect(ALLOWED_PARAM_KEYS.has(key)).toBe(false);
     }
+  });
+});
+
+describe('pull tab ranges (cross-boundary mirror)', () => {
+  it('match PULL_TAB_LIMITS', () => {
+    expect(PULL_TAB_RANGES).toEqual(PULL_TAB_LIMITS);
   });
 });

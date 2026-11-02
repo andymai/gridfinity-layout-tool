@@ -15,6 +15,7 @@ import {
   MIN_PULL_TAB_WIDTH,
   PULL_TAB_END_CLEARANCE_MM,
   availablePullTabWidth,
+  pullTabWidth,
 } from '@/shared/utils/pullTabPlan';
 import type { PullTabPlan } from '@/shared/utils/pullTabPlan';
 import { pullTabCenterAxes, resolvePullTabCenter } from '@/shared/utils/pullTabCenterPlan';
@@ -35,13 +36,14 @@ const WALL_LABEL: Record<PullTabOuterWall, string> = {
   right: 'binDesigner.pullTab.side.right',
 };
 
-/** One value per axis, or a single value when both axes agree to the shown precision. */
+/** Both axes' readings, or null when only one axis has a tab or both read the same. */
 function perAxis(plans: readonly PullTabPlan[], read: (plan: PullTabPlan) => number) {
   const along = (axis: PullTabCenterAxis) => plans.find((plan) => plan.axis === axis);
   const front = along('width');
   const side = along('depth');
-  if (!front || !side || read(front).toFixed(1) === read(side).toFixed(1)) return null;
-  return { front: read(front).toFixed(1), side: read(side).toFixed(1) };
+  if (!front || !side) return null;
+  const readings = { front: read(front).toFixed(1), side: read(side).toFixed(1) };
+  return readings.front === readings.side ? null : readings;
 }
 
 const FIELD_INFO: Partial<Record<keyof typeof PULL_TAB_LIMITS, string>> = {
@@ -62,8 +64,8 @@ export function PullTabSection() {
   const { wallHeight } = binDimensions(params);
   const rim = wallHeight + (params.extraWallHeightMm ?? 0);
   const walls = resolvePullTabWalls(tab);
-  const enabled = { ...params, pullTab: { ...tab, enabled: true } };
-  const plans = planPullTabs(enabled, rim, params.wallThickness);
+  const enabledParams = { ...params, pullTab: { ...tab, enabled: true } };
+  const plans = planPullTabs(enabledParams, rim, params.wallThickness);
   // The steppers show the longest wall's tab: the one the settings reach
   // unclamped, so a switch between mm and % keeps that tab's width. A shorter
   // wall's tab is narrower, which the axis hints report.
@@ -75,17 +77,12 @@ export function PullTabSection() {
         : plan,
     null
   );
-  const longestWall = Math.max(...walls.map((wall) => availablePullTabWidth(params, wall)));
-  // Worked out as the plan does, but even when nothing builds, so a unit
-  // switch made while fixing a blocked selection keeps the tab's size.
-  const longestTabWidth = Math.min(
-    longestWall,
-    Math.max(
-      MIN_PULL_TAB_WIDTH,
-      tab.widthMode === 'percent' ? (longestWall * tab.widthPercent) / 100 : tab.width
-    )
-  );
-  const tooShort = walls.some((wall) => availablePullTabWidth(params, wall) < MIN_PULL_TAB_WIDTH);
+  const wallRooms = walls.map((wall) => availablePullTabWidth(params, wall));
+  const longestWall = Math.max(...wallRooms);
+  // Read even when nothing builds, so a unit switch made while fixing a
+  // blocked selection keeps the tab's size.
+  const longestTabWidth = pullTabWidth(tab, longestWall);
+  const tooShort = wallRooms.some((room) => room < MIN_PULL_TAB_WIDTH);
   const belowRim = Math.max(
     0,
     ...plans.map((plan) => rim - plan.recessTop + plan.recessHeight)
@@ -93,7 +90,6 @@ export function PullTabSection() {
   const tabWidths = perAxis(plans, (plan) => plan.width);
   const recessWidths = perAxis(plans, (plan) => plan.recessWidth);
   const convertedWidth = (widthMode: PullTabConfig['widthMode']): Partial<PullTabConfig> => {
-    // No selected wall can carry a tab, so there is no width to convert from.
     if (longestWall < MIN_PULL_TAB_WIDTH) return {};
     return widthMode === 'percent'
       ? { widthPercent: Math.round((longestTabWidth / longestWall) * 1000) / 10 }
@@ -107,11 +103,11 @@ export function PullTabSection() {
     const on = new Set(walls);
     if (on.has(wall)) {
       if (on.size === 1) {
-        // A center left with no divider to stand on turns the tab off: there
-        // is no other wall for it to fall back to.
+        // The last wall stays selected; the switch above is what turns the tab
+        // off. A center that can no longer stand is the exception, since it
+        // would otherwise be stuck on with nothing to build.
         if (wall === 'center' && center.reason)
           update({ enabled: false, wall: 'width', walls: undefined, centerAxis: undefined });
-        // A tab that is on and builds nothing is what the toggle above says.
         return;
       }
       on.delete(wall);

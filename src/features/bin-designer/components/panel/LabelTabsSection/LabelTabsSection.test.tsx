@@ -122,7 +122,7 @@ describe('LabelTabsSection', () => {
 
   it('plays a clip of the feature from the dot beside its toggle', () => {
     render(<LabelTabsSection />);
-    fireEvent.click(screen.getByRole('button', { name: 'See how Label tabs works' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Label tabs' }));
     expect(screen.getByText(en['binDesigner.featureTip.labelTabs'])).toBeInTheDocument();
   });
 });

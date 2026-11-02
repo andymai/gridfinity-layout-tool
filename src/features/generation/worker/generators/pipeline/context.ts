@@ -5,7 +5,13 @@
  * PipelineContext that flows through all pipeline stages.
  */
 
-import { activePullTab, pullTabWallInset, pullTabInRimShell } from '@/shared/utils/pullTabPlan';
+import {
+  activePullTab,
+  pullTabWallFields,
+  pullTabWallInset,
+  pullTabInRimShell,
+  resolvePullTabWalls,
+} from '@/shared/utils/pullTabPlan';
 
 import type { BinParams } from '@/shared/types/bin';
 import {
@@ -330,6 +336,11 @@ export function deriveDimensions(
     : '';
 
   const rimTab = pullTabInRimShell(params) ? activePullTab(params) : null;
+  // In the stored form a front or right tab alone is written, so a center tab
+  // added beside it leaves this key alone.
+  const rimWalls = pullTabWallFields(
+    (rimTab ? resolvePullTabWalls(rimTab) : []).filter((wall) => wall !== 'center')
+  );
   const shellKey = compactKey(
     buildCacheKey(
       'v7',
@@ -345,8 +356,8 @@ export function deriveDimensions(
             ...(rimTab
               ? [
                   stableSerialize([
-                    rimTab.wall,
-                    ...(rimTab.walls ? [rimTab.walls] : []),
+                    rimWalls.wall,
+                    ...(rimWalls.walls ? [rimWalls.walls] : []),
                     rimTab.thickness,
                     rimTab.width,
                     rimTab.widthMode,

@@ -159,6 +159,7 @@ function resolveOutline(
   outline: DrawerOutline | undefined;
   paddingOn: boolean;
   overhang?: ResolvedBaseplateParams['outlineOverhang'];
+  outlineIsCornerRounding?: boolean;
 } {
   if (outlineOn && drawerOutline !== undefined) {
     const frame = resolveOutlineFrame(drawerOutline, {
@@ -195,7 +196,7 @@ function resolveRadiusOutline(
   widthMm: number,
   depthMm: number,
   gridUnitMm: number
-): { outline: DrawerOutline | undefined; paddingOn: boolean } {
+): { outline: DrawerOutline | undefined; paddingOn: boolean; outlineIsCornerRounding?: boolean } {
   // No active drawer shape: corner radii beyond the plain rounding limit become
   // a radius-cut outline, so the generator's cell classification handles the
   // sockets the arc consumes (the plain path must never orphan a pocket, which is
@@ -235,6 +236,7 @@ function resolveRadiusOutline(
   return {
     outline: { vertices: cornerCutVertices(totalW, totalD, cuts) },
     paddingOn: true,
+    outlineIsCornerRounding: true,
   };
 }
 
@@ -339,11 +341,13 @@ export function buildFullParams(
   // NOT stripped, and neither is a corner radius the user set, plain or
   // converted to a radius-cut outline: the tiles split and dedupe by
   // fingerprint, so identical ones stack into towers (an unsplit rounded plate
-  // stacks whole) while the unique corner tiles print singly. A plain-rounded
-  // corner tile is congruent about neither flip axis, so its flipped copies
-  // carry the corner to the opposite side of the tower (a few mm of overhang at
-  // one seam); that beats flattening a radius the user asked for. A shaped tile
-  // no turn maps onto itself prints every copy turned instead (`planPlateFlip`).
+  // stacks whole) while the unique corner tiles print singly. A rounded corner
+  // tile, plain or cut as an outline, is congruent about neither flip axis, so
+  // its flipped copies carry the corner to the opposite side of the tower
+  // (an overhang at one seam); that beats flattening a radius the user asked
+  // for. A shaped tile no turn maps onto itself, or a cut radius whose corner
+  // hangs further than plain rounding's can, prints every copy turned instead
+  // (`planPlateFlip`).
   // Only the implicit spec radius is squared, via `roundingOn` below.
   // Dovetail connectors survive: tongues, grooves, and the dovetail key are
   // full-height vertical prisms that flip cleanly. Only snap clip is
@@ -355,7 +359,7 @@ export function buildFullParams(
 
   const effFractionalEdgeX = synced ? fractionalEdgeX : (stored.fractionalEdgeX ?? 'end');
   const effFractionalEdgeY = synced ? fractionalEdgeY : (stored.fractionalEdgeY ?? 'end');
-  const { outline, paddingOn, overhang } = resolveOutline(
+  const { outline, paddingOn, overhang, outlineIsCornerRounding } = resolveOutline(
     drawerOutline,
     outlineOn,
     stored,
@@ -419,6 +423,7 @@ export function buildFullParams(
     nozzleSizeMm,
     outline,
     outlineOverhang: overhang,
+    ...(outlineIsCornerRounding ? { outlineIsCornerRounding } : {}),
     magnetHoles: stackingOn ? false : stored.magnetHoles,
     magnetDiameter: stored.magnetDiameter,
     magnetDepth: stored.magnetDepth,

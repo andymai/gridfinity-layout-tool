@@ -40,7 +40,7 @@ describe('FeatureTip', () => {
   it('opens a card with the clip for the current theme, its caption and detail', async () => {
     setSettings('light', false);
     render(<FeatureTip tip="lids" feature="Lid" detail="Print it upside down." />);
-    await userEvent.click(screen.getByRole('button', { name: 'See how Lid works' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Watch a clip: Lid' }));
 
     expect(video().getAttribute('src')).toContain('lids.light.mp4');
     expect(video().getAttribute('poster')).toContain('lids.light.webp');
@@ -50,7 +50,7 @@ describe('FeatureTip', () => {
 
   it('starts the clip muted and looping', async () => {
     render(<FeatureTip tip="scoops" feature="Finger scoop" />);
-    await userEvent.click(screen.getByRole('button', { name: 'See how Finger scoop works' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Watch a clip: Finger scoop' }));
 
     expect(play).toHaveBeenCalledTimes(1);
     expect(video().muted).toBe(true);
@@ -61,7 +61,7 @@ describe('FeatureTip', () => {
   it('holds the poster behind a play button while Reduce motion is on', async () => {
     setSettings('dark', true);
     render(<FeatureTip tip="scoops" feature="Finger scoop" />);
-    await userEvent.click(screen.getByRole('button', { name: 'See how Finger scoop works' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Watch a clip: Finger scoop' }));
 
     expect(play).not.toHaveBeenCalled();
     expect(video().getAttribute('poster')).toContain('scoops.dark.webp');
@@ -70,11 +70,32 @@ describe('FeatureTip', () => {
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Play clip' })).toBeNull());
   });
 
+  it('holds the poster when the system asks for reduced motion', async () => {
+    const reduced = vi.spyOn(window, 'matchMedia').mockImplementation(
+      (query: string) =>
+        ({
+          matches: query === '(prefers-reduced-motion: reduce)',
+          media: query,
+          addEventListener: () => {},
+          removeEventListener: () => {},
+        }) as unknown as MediaQueryList
+    );
+    try {
+      render(<FeatureTip tip="scoops" feature="Finger scoop" />);
+      await userEvent.click(screen.getByRole('button', { name: 'Watch a clip: Finger scoop' }));
+
+      expect(play).not.toHaveBeenCalled();
+      expect(screen.getByRole('button', { name: 'Play clip' })).toBeInTheDocument();
+    } finally {
+      reduced.mockRestore();
+    }
+  });
+
   it('keeps keyboard focus in the card when Play is pressed', async () => {
     setSettings('dark', true);
     const user = userEvent.setup();
     render(<FeatureTip tip="scoops" feature="Finger scoop" />);
-    await user.click(screen.getByRole('button', { name: 'See how Finger scoop works' }));
+    await user.click(screen.getByRole('button', { name: 'Watch a clip: Finger scoop' }));
     screen.getByRole('button', { name: 'Play clip' }).focus();
     await user.keyboard('{Enter}');
 
@@ -89,7 +110,7 @@ describe('FeatureTip', () => {
       this.dispatchEvent(new Event('pause'));
     });
     render(<FeatureTip tip="scoops" feature="Finger scoop" />);
-    await userEvent.click(screen.getByRole('button', { name: 'See how Finger scoop works' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Watch a clip: Finger scoop' }));
     expect(screen.queryByRole('button', { name: 'Play clip' })).toBeNull();
 
     act(() => setSettings('dark', true));
@@ -100,7 +121,7 @@ describe('FeatureTip', () => {
   it('offers Play again when a theme change swaps the clip under Reduce motion', async () => {
     setSettings('dark', true);
     render(<FeatureTip tip="scoops" feature="Finger scoop" />);
-    await userEvent.click(screen.getByRole('button', { name: 'See how Finger scoop works' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Watch a clip: Finger scoop' }));
     await userEvent.click(screen.getByRole('button', { name: 'Play clip' }));
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Play clip' })).toBeNull());
 
@@ -117,7 +138,7 @@ describe('FeatureTip', () => {
     setSettings('dark', true);
     play.mockRejectedValueOnce(new DOMException('blocked', 'NotAllowedError'));
     render(<FeatureTip tip="scoops" feature="Finger scoop" />);
-    await userEvent.click(screen.getByRole('button', { name: 'See how Finger scoop works' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Watch a clip: Finger scoop' }));
     await userEvent.click(screen.getByRole('button', { name: 'Play clip' }));
 
     expect(screen.getByRole('button', { name: 'Play clip' })).toBeInTheDocument();
@@ -126,14 +147,14 @@ describe('FeatureTip', () => {
   it('offers the play button when the browser refuses to autoplay', async () => {
     play.mockRejectedValueOnce(new DOMException('blocked', 'NotAllowedError'));
     render(<FeatureTip tip="scoops" feature="Finger scoop" />);
-    await userEvent.click(screen.getByRole('button', { name: 'See how Finger scoop works' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Watch a clip: Finger scoop' }));
 
     expect(await screen.findByRole('button', { name: 'Play clip' })).toBeInTheDocument();
   });
 
   it('marks the lid type the clip is showing', async () => {
     render(<FeatureTip tip="lids" feature="Lid" />);
-    await userEvent.click(screen.getByRole('button', { name: 'See how Lid works' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Watch a clip: Lid' }));
     Object.defineProperty(video(), 'currentTime', { value: 2.5, configurable: true });
 
     await waitFor(() =>

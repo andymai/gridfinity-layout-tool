@@ -240,7 +240,7 @@ describe('WallCutoutsSection', () => {
 
   it('plays a clip of the feature from the dot beside its toggle', () => {
     render(<WallCutoutsSection />);
-    fireEvent.click(screen.getByRole('button', { name: 'See how Wall cutouts works' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Wall cutouts' }));
     expect(screen.getByText(en['binDesigner.featureTip.wallCutouts'])).toBeInTheDocument();
   });
 });

@@ -358,10 +358,6 @@ export function WallCutoutsSection() {
       badge={
         <>
           <FeatureTip tip="wallCutouts" feature={t('binDesigner.wallCutouts')} />
-          {/* Small red dot when this section is currently blocking the
-              click-lock lid. Only renders when lid is enabled AND all 4
-              walls have cutouts (the only wall-cutout config that fully
-              removes the lip). */}
           {blocksLid && (
             <span
               role="img"

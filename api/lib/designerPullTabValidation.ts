@@ -1,11 +1,11 @@
-/** Pull tab validation for shared bin designs. Ranges mirror `PULL_TAB_LIMITS`. */
+/** Pull tab validation for shared bin designs. */
 
 import { isObject } from './validationUtils.js';
 
-/** Mirrors `PULL_TAB_WALLS` in `src/shared/utils/pullTabPlan.ts`. */
-const PULL_TAB_WALLS: readonly unknown[] = ['front', 'back', 'left', 'right', 'center'];
+export const VALID_PULL_TAB_WALLS: readonly string[] = ['front', 'back', 'left', 'right', 'center'];
+export const VALID_PULL_TAB_CENTER_AXES: readonly string[] = ['width', 'depth'];
 
-const RANGES: Record<string, readonly [number, number]> = {
+export const PULL_TAB_RANGES: Record<string, readonly [number, number]> = {
   thickness: [0.4, 4],
   width: [12, 500],
   widthPercent: [1, 100],
@@ -29,13 +29,11 @@ function validWalls(walls: unknown): boolean {
   return (
     Array.isArray(walls) &&
     walls.length > 0 &&
-    walls.length <= PULL_TAB_WALLS.length &&
     new Set(walls).size === walls.length &&
-    walls.every((wall) => PULL_TAB_WALLS.includes(wall))
+    walls.every((wall) => typeof wall === 'string' && VALID_PULL_TAB_WALLS.includes(wall))
   );
 }
 
-/** Returns an error message, or null when `tab` is a valid pull tab. */
 export function validatePullTab(tab: unknown): string | null {
   if (
     !isObject(tab) ||
@@ -44,13 +42,15 @@ export function validatePullTab(tab: unknown): string | null {
     (tab.widthMode !== undefined && tab.widthMode !== 'mm' && tab.widthMode !== 'percent') ||
     (tab.wall !== 'width' && tab.wall !== 'depth') ||
     (tab.walls !== undefined && !validWalls(tab.walls)) ||
-    (tab.centerAxis !== undefined && tab.centerAxis !== 'width' && tab.centerAxis !== 'depth')
+    (tab.centerAxis !== undefined &&
+      !(typeof tab.centerAxis === 'string' && VALID_PULL_TAB_CENTER_AXES.includes(tab.centerAxis)))
   )
     return 'Invalid pull tab configuration';
   for (const key of Object.keys(tab)) {
-    if (!OTHER_KEYS.has(key) && !(key in RANGES)) return `Unknown pull tab setting: ${key}`;
+    if (!OTHER_KEYS.has(key) && !Object.hasOwn(PULL_TAB_RANGES, key))
+      return `Unknown pull tab setting: ${key}`;
   }
-  for (const [key, [min, max]] of Object.entries(RANGES)) {
+  for (const [key, [min, max]] of Object.entries(PULL_TAB_RANGES)) {
     const value = tab[key];
     if (OPTIONAL_RANGES.has(key) && value === undefined) continue;
     if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max)

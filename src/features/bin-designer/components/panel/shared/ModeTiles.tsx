@@ -10,7 +10,6 @@ export interface ModeTileOption<T extends string> {
   readonly caption: string;
   /** On the tile, under its label: an "Experimental" pill and the like. */
   readonly badge?: ReactNode;
-  /** Beside the caption while the mode is chosen and not blocked. */
   readonly tip?: ReactNode;
   /** Why the mode cannot be chosen. Disables the tile and is its tooltip. */
   readonly disabledReason?: string;

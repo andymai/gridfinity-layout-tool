@@ -735,6 +735,12 @@ export interface ResolvedBaseplateParams {
    * carry nothing and stay byte-identical to unshifted plates.
    */
   readonly outlineOverhang?: OutlineOverhang;
+  /**
+   * The {@link outline} only rounds the plate's corners. Geometry reads the
+   * outline; stack flip planning reads this to plan the plate like plain
+   * rounding rather than a shape.
+   */
+  readonly outlineIsCornerRounding?: boolean;
   /** Enable registration nubs/holes on join edges for split piece alignment. */
   readonly connectorNubs?: boolean;
   /** Swap tongue/groove convention on all join edges (default false). */

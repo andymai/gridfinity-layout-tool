@@ -68,10 +68,7 @@ function position(
   return translate(right, [innerW / 2, alongY, 0]);
 }
 
-/**
- * One shape per plan, joined. Tabs on different walls never touch, so one
- * disjoint fuse joins them. A wall that throws frees the walls built before it.
- */
+/** Tabs on different walls never touch, so one disjoint fuse joins them. */
 function joinEach(
   tabs: readonly PullTabPlan[],
   build: (p: PullTabPlan) => Shape3D | null
@@ -120,7 +117,9 @@ function buildPullTabBody(ctx: PipelineContext, p: PullTabPlan): Shape3D {
     // A short level wing carries the same round as the host wall, so the
     // two blends overlap continuously at the tab shoulder. A center tab's
     // wing is the thickened divider reaching past its root.
-    const wing = p.margin > 0 ? p.margin : rimRadius > 0 ? 0.5 : 0;
+    let wing = 0;
+    if (p.margin > 0) wing = p.margin;
+    else if (rimRadius > 0) wing = 0.5;
     let pen = draw([-a - wing, z - p.embed]).lineTo([-a - wing, z]);
     if (wing > 0) pen = pen.lineTo([-a, z]);
     if (r > 0)

@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { ScoopSection } from './ScoopSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import en from '@/i18n/locales/en';
 
 describe('ScoopSection', () => {
   beforeEach(() => {
@@ -76,5 +77,11 @@ describe('ScoopSection', () => {
 
     render(<ScoopSection />);
     expect(screen.getByText(/Not available/)).toBeDefined();
+  });
+
+  it('plays a clip of the scoop from the dot beside its toggle', () => {
+    render(<ScoopSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Finger scoop' }));
+    expect(screen.getByText(en['binDesigner.featureTip.scoops'])).toBeInTheDocument();
   });
 });

@@ -22,6 +22,7 @@ import {
   planPhysicalStacks,
   stackHeightCap,
   stackedPlateHeightMm,
+  DEFAULT_PLATE_FLIP,
   planPlateFlip,
   isUnstackedSplit,
   type StackMeshArrays,
@@ -103,8 +104,7 @@ export function StackedBaseplateMeshes({
   const singleMesh = useBaseplatePageStore((s) => s.generation.mesh);
   const pieceMeshes = useBaseplatePageStore((s) => s.pieceMeshes);
 
-  // Planned apart from the meshes: a shaped plate's flip scans its outline,
-  // which dragging the separation slider must not repeat.
+  // Kept apart from the separation slider: a shaped plate's flip scans its outline.
   const towerPlan = useMemo(() => {
     const fullParams = buildFullParams(
       baseplateParams,
@@ -133,7 +133,9 @@ export function StackedBaseplateMeshes({
     // The unsplit mesh is generated from the detach-adjusted body params
     // (padding-free on detached sides), so the flip must be planned from the
     // same params or flipped copies re-seat off-axis by the removed padding.
-    const singleFlip = planPlateFlip(bodyParamsForDetach(fullParams));
+    const singleFlip = isSplit
+      ? DEFAULT_PLATE_FLIP
+      : planPlateFlip(bodyParamsForDetach(fullParams));
 
     // Index pieces/meshes by label once: the loop and the spatial-positioning
     // pass below both look up by label, so a per-tower find() would be O(n²).

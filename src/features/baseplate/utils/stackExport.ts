@@ -1,6 +1,6 @@
 /**
- * Bake stacked baseplate geometry for export as triangle soup (9 floats/triangle):
- * the bottom plate upright, the rest flipped, separated by an air gap.
+ * Bake stacked baseplate geometry for export as triangle soup (9 floats/triangle),
+ * laid out as `buildTowerLayers` lays out a tower.
  */
 
 import type { StackPrintParams } from '@/core/types';
@@ -19,12 +19,9 @@ export interface StackExportSoup {
 }
 
 /**
- * Build a vertical stack of `copies` plates from one plate's triangle soup. The
- * bottom plate is upright; the rest are flipped upside down, each separated by
- * `stack.gapMm` so the printed tower snaps apart. `flip` comes from
- * `planPlateFlip`: it picks the turn axis and seat that land the flipped plates'
- * socket walls on the upright one's, or turns the bottom plate too for a shaped
- * plate no turn maps onto itself.
+ * Build a vertical stack of `copies` plates from one plate's triangle soup, each
+ * separated by `stack.gapMm` so the printed tower snaps apart. `flip` comes from
+ * `planPlateFlip`.
  */
 export function buildStackExportSoup(
   baseVertices: Float32Array,

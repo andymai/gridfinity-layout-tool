@@ -10,6 +10,7 @@ import { effectiveCornerRadii } from '@/shared/generation/baseplateCorners';
 import { plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import type { BaseplateTiling } from '../types/tiling';
 import { groupPiecesByFingerprint } from './pieceFingerprint';
+import { plainRoundingLimit } from './buildFullParams';
 import { turnedPlateOverhangMm } from './plateTurnOverhang';
 
 /** Non-null mesh buffers (xyz-interleaved positions/normals, line-pair edges). */
@@ -205,6 +206,7 @@ export type PlateFlipInput = Pick<
   | 'paddingBack'
   | 'outline'
   | 'outlineOverhang'
+  | 'outlineIsCornerRounding'
   | 'cornerRadius'
   | 'cornerRadii'
   | 'edges'
@@ -258,9 +260,7 @@ function turnCost(
  *
  * A shaped plate must also be symmetric about the turn: a turned copy is the
  * plate's mirror image in plan view, so an L turned over is a mirrored L with
- * cells over air. The padding's pick is kept when its turn lands the outline
- * on itself, else the other turn; when neither does, the bottom plate is
- * turned too so every copy coincides.
+ * cells over air.
  */
 export function planPlateFlip(params: PlateFlipInput): PlateFlip {
   const aboutX = turnCost(
@@ -291,16 +291,37 @@ export function planPlateFlip(params: PlateFlipInput): PlateFlip {
     SHAPED_SEAM_OVERHANG_TOLERANCE_MM;
   if (lands(first)) return first;
   if (lands(second)) return second;
+  // A plain-rounded corner, which stops at its cell's center, prints upright
+  // while hanging (√2 − 1)·limit past a square one. A rounding cut as an
+  // outline gets the same allowance on top of the padding the turn already
+  // shifts; a larger radius strips cells and turns the bottom plate.
+  if (params.outlineIsCornerRounding) {
+    const minPadding = Math.min(
+      params.paddingLeft,
+      params.paddingRight,
+      params.paddingFront,
+      params.paddingBack
+    );
+    const corner = (Math.SQRT2 - 1) * plainRoundingLimit(params.gridUnitMm, minPadding);
+    for (const f of [first, second]) {
+      const allowance =
+        SHAPED_SEAM_OVERHANG_TOLERANCE_MM +
+        (f.axis === 'x' ? aboutX.overhangMm : aboutY.overhangMm) +
+        corner;
+      if (turnedPlateOverhangMm(params, f.axis, f.offsetMm, allowance) <= allowance) return f;
+    }
+  }
   return { ...first, flipBottom: true };
 }
 
 /**
  * Build the meshes for one printed tower of `copies` plates. The bottom plate
- * stays upright (best bed adhesion, no overhang); every plate above it is
- * flipped upside down — community practice that minimizes overhangs while the
- * air gap lets the tower snap apart (see the baseplate README). Every copy's
- * socket lattice lands on the one below it, and the bottom sits at Z=0.
- * `flip.flipBottom` turns the bottom plate over as well when there is a plate above it.
+ * stays upright for bed adhesion unless `flip.flipBottom` turns it too in a
+ * tower of two or more; every
+ * plate above it is flipped upside down, community practice that minimizes
+ * overhangs while the air gap lets the tower snap apart (see the baseplate
+ * README). Every copy's socket lattice lands on the one below it, and the
+ * bottom sits at Z=0.
  *
  * `flip` comes from {@link planPlateFlip}: the turn negates one lateral axis
  * about 0, where the socket lattice is centred, and `flip.offsetMm` seats a

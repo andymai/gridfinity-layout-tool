@@ -78,7 +78,7 @@ describe('ShapeSection', () => {
 
   it('plays a clip of the feature from the dot beside its toggle', () => {
     render(<ShapeSection />);
-    fireEvent.click(screen.getByRole('button', { name: 'See how Custom shape works' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Custom shape' }));
     expect(screen.getByText(en['binDesigner.featureTip.customShape'])).toBeInTheDocument();
     expect(screen.getByText(en['binDesigner.shape.custom.hint'])).toBeInTheDocument();
   });

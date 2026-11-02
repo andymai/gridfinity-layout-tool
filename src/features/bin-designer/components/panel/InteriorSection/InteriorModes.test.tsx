@@ -116,13 +116,11 @@ describe('InteriorModes', () => {
     });
 
     it('offers a clip of the editor at work beside its launcher', () => {
-      const play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
       render(<InteriorModeContent card="solid" />);
 
       fireEvent.click(screen.getByRole('button', { name: 'binDesigner.featureTip.watch' }));
       expect(screen.getByText('binDesigner.featureTip.cutEditor')).toBeInTheDocument();
       expect(mocks.setCutoutEditorOpen).not.toHaveBeenCalled();
-      play.mockRestore();
     });
 
     it('offers no clip where the editor cannot open', () => {

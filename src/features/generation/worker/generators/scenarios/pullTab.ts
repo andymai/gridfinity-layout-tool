@@ -3,7 +3,6 @@ import { DEFAULT_PULL_TAB, pullTabWallFields } from '@/shared/utils/pullTabPlan'
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 
 /**
- * Both wall orientations exercise the raised body and both recess cutters.
  * The opposite-walls case leads so the cache-key sweep, which takes the first
  * scenarios that build a feature, reads `walls`.
  */
