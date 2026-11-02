@@ -1,0 +1,65 @@
+src/i18n/locales/ka.json
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 2763
+src/features/generation/worker/generators/scenarios/cutoutDepthModes.ts
+  s_4b9adb1d9473fb::t_4824c0ff3990ef 94-113,115
+  s_4b9adb1d9473fb::t_132940f016841e 114
+src/shared/utils/cutoutDepth.test.ts
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 107-108,110,125-138
+  s_4b9adb1d9473fb::t_bbd8bc080cae70 139
+src/i18n/locales/nl.json
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 1046
+src/features/bin-designer/components/panel/CutoutsSection/CutoutDepthControl.tsx
+  s_4b9adb1d9473fb::t_90d0279bbe0600 74
+src/i18n/locales/ja.json
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 1046
+src/i18n/locales/es.json
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 1046
+src/features/bin-designer/components/panel/CutoutsSection/ToolThicknessPrompt.tsx
+  s_4b9adb1d9473fb::t_90d0279bbe0600 98,183
+src/i18n/locales/cs.json
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 1046
+src/i18n/locales/it.json
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 1046
+src/features/bin-designer/components/panel/CutoutsSection/ToolThicknessPrompt.test.tsx
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 93,97-105
+src/shared/types/bin.ts
+  s_4b9adb1d9473fb::t_90d0279bbe0600 368
+src/i18n/locales/fr.json
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 1046
+src/i18n/locales/en.ts
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 3278-3279
+src/i18n/locales/ko.json
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 1046
+src/shared/utils/cutoutDepth.ts
+  s_4b9adb1d9473fb::t_90d0279bbe0600 14,17,94-114,122-124,131-135
+src/i18n/locales/nb.json
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 1046
+src/i18n/locales/zh-CN.json
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 1046
+src/i18n/locales/de.json
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 1046
+src/i18n/locales/pl.json
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 1046
+src/i18n/locales/pt-BR.json
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 1046
+src/i18n/locales/sv.json
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 1046
+src/i18n/locales/uk.json
+  s_4b9adb1d9473fb::t_4cbe04ca48fa98 1046
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "602dbd7b3f776d8274d4010044768168023db1b0",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
