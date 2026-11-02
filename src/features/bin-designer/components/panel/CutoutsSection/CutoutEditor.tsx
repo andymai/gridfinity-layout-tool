@@ -43,6 +43,7 @@ export function CutoutEditor() {
     fitCue,
     setFitCue,
     handleFlattenArray,
+    handleAddFingerAccess,
     mode,
     setMode,
     selection,
@@ -198,6 +199,7 @@ export function CutoutEditor() {
           disabled={isInteracting}
           onFitCue={setFitCue}
           onFlattenArray={handleFlattenArray}
+          onAddFingerAccess={handleAddFingerAccess}
         />
       )}
 

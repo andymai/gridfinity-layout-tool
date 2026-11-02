@@ -11,6 +11,7 @@ import {
 import { sameChain } from '../utils/cutoutHierarchy';
 import { groupRepeatConfig } from '@/shared/utils/cutoutArray';
 import { normalizeOpenSides, sameOpenSides } from '@/shared/utils/cutoutOpenSides';
+import { FINGER_SHAPES } from '@/shared/utils/fingerAccess';
 import {
   KNIFE_REST_DEFAULT_GAP_MM,
   KNIFE_REST_GROOVE_DEPTH_MM,
@@ -21,7 +22,8 @@ import {
   KNIFE_REST_MAX_GROOVE_DEPTH_MM,
 } from '../types';
 import { MAX_LID_CUTOUTS } from '../types/lid';
-import { CUTOUT_ENTRY_PROFILES, MAX_CUTOUT_FLOOR_MM } from '../types/cutout';
+import type { CutoutFingerBottom } from '../types/cutout';
+import { CUTOUT_ENTRY_PROFILES, CUTOUT_FINGER_BOTTOMS, MAX_CUTOUT_FLOOR_MM } from '../types/cutout';
 import { TEXT_MAX_LENGTH } from '../types/text';
 import { clampNumber } from './paramMigrationHelpers';
 
@@ -117,15 +119,11 @@ export function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
     migrateParentGroups(withArray.parentGroups) ?? []
   );
   return migrateScoopRadius(
-    withOpenSides(withEntryProfile(withDepthMode(withParents))),
+    withFinger(withOpenSides(withEntryProfile(withDepthMode(withParents)))),
     scoopRadius
   );
 }
 
-/**
- * Keep a known depth mode and a finite floor, and drop anything else so the
- * cutout reads as a fixed depth. Already-valid cutouts come back by reference.
- */
 function withEntryProfile(cutout: Cutout): Cutout {
   const { entryProfile } = cutout;
   if (entryProfile === undefined || CUTOUT_ENTRY_PROFILES.includes(entryProfile)) return cutout;
@@ -133,6 +131,10 @@ function withEntryProfile(cutout: Cutout): Cutout {
   return rest;
 }
 
+/**
+ * Keep a known depth mode and a finite floor, and drop anything else so the
+ * cutout reads as a fixed depth. Already-valid cutouts come back by reference.
+ */
 function withDepthMode(cutout: Cutout): Cutout {
   const { depthMode, floorMm } = cutout;
   const validMode = depthMode === 'floor' || depthMode === 'through';
@@ -167,6 +169,22 @@ function withOpenSides(cutout: Cutout): Cutout {
   }
   if (sameOpenSides(sides, cutout.openSides)) return cutout;
   return { ...cutout, openSides: sides };
+}
+
+/** A finger cut is a slot or a round with a known bottom; anything else is a plain pocket. */
+function withFinger(cutout: Cutout): Cutout {
+  const raw: unknown = cutout.finger;
+  if (raw === undefined) return cutout;
+  const bottom =
+    typeof raw === 'object' && raw !== null ? (raw as { bottom?: unknown }).bottom : null;
+  if (
+    FINGER_SHAPES.includes(cutout.shape) &&
+    CUTOUT_FINGER_BOTTOMS.includes(bottom as CutoutFingerBottom)
+  ) {
+    return cutout;
+  }
+  const { finger: _finger, ...rest } = cutout;
+  return rest;
 }
 
 function migrateScoopRadius(cutout: Cutout, scoopRadius: number | undefined): Cutout {

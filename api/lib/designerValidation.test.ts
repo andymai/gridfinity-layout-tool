@@ -1840,6 +1840,33 @@ describe('validateDesignerShare', () => {
     });
   });
 
+  describe('cutout finger access validation', () => {
+    const withCutouts = (cutouts: unknown) => {
+      const payload = validPayload();
+      (payload.params as Record<string, unknown>).cutouts = cutouts;
+      return validateDesignerShare(payload, JSON.stringify(payload).length);
+    };
+
+    it('keeps a curved or flat finger cut in the payload', () => {
+      const result = withCutouts([
+        { id: 'a', shape: 'slot', finger: { bottom: 'curved' } },
+        { id: 'b', shape: 'circle', finger: { bottom: 'flat' } },
+      ]);
+      expect(result.valid).toBe(true);
+      if (!result.valid) return;
+      const cutouts = (result.payload.params as { cutouts: Record<string, unknown>[] }).cutouts;
+      expect(cutouts.map((c) => c.finger)).toEqual([{ bottom: 'curved' }, { bottom: 'flat' }]);
+    });
+
+    it.each([
+      ['an unknown bottom', { bottom: 'pointed' }],
+      ['a missing bottom', {}],
+      ['a bare string', 'curved'],
+    ])('rejects %s', (_name, finger) => {
+      expect(withCutouts([{ id: 'a', shape: 'slot', finger }]).valid).toBe(false);
+    });
+  });
+
   describe('cutout depth mode validation', () => {
     const withCutouts = (cutouts: unknown) => {
       const payload = validPayload();

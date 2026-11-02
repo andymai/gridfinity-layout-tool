@@ -1629,7 +1629,7 @@ function breachHeight(params: BinParams, frame: BreachFrame, effectiveDepth: num
  */
 function withThroughScoopsOff(cutout: Cutout, params: BinParams): Cutout {
   if (!isThroughCut(cutout, params)) return cutout;
-  const { scoopRadiusW: _w, scoopRadiusD: _d, scoopEdges: _e, ...rest } = cutout;
+  const { scoopRadiusW: _w, scoopRadiusD: _d, scoopEdges: _e, finger: _f, ...rest } = cutout;
   return rest;
 }
 
@@ -1647,7 +1647,7 @@ function withOpenSideScoopsOff(cutout: Cutout, params: BinParams): Cutout {
           (c) => c.groupId === cutout.groupId && effectiveOpenSides(c, params).length > 0
         );
   if (!open) return cutout;
-  const { scoopRadiusW: _w, scoopRadiusD: _d, scoopEdges: _e, ...rest } = cutout;
+  const { scoopRadiusW: _w, scoopRadiusD: _d, scoopEdges: _e, finger: _f, ...rest } = cutout;
   return rest;
 }
 

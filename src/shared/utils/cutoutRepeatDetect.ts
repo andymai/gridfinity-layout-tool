@@ -19,6 +19,7 @@ import type { Cutout, CutoutArrayConfig, CutoutArrayMode } from '@/features/bin-
 import { MAX_ARRAY_INSTANCES } from '@/features/bin-designer/types';
 import { arrayFieldBounds, arrayInstanceCount, canArray, defaultArrayConfig } from './cutoutArray';
 import { isCutoutSocketMode } from './cutoutLabelSocketPlan';
+import { fingerBottom } from './fingerAccess';
 
 /**
  * Position slack (mm) allowed when fitting centers to a lattice. Matches the
@@ -85,6 +86,7 @@ function geometryFingerprint(c: Cutout): string {
     round3(c.clearance ?? 0),
     round3(c.chamferWidth ?? 0),
     c.entryProfile ?? 'chamfer',
+    fingerBottom(c) ?? '-',
     round3(c.scoopRadiusW ?? 0),
     round3(c.scoopRadiusD ?? 0),
     c.scoopEdges ? JSON.stringify(c.scoopEdges) : '-',

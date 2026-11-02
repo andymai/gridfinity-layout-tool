@@ -31,7 +31,9 @@ import {
 import { generateLayoutId } from '@/shared/utils/uuid';
 import { translatePathPoints } from '../../utils/pathTransforms';
 import {
+  canNestDeeper,
   groupChain,
+  insertGroupAt,
   parentGroups,
   remapGroupChain,
   sameChain,
@@ -336,6 +338,42 @@ export function createCutoutSlice(rawSet: Set) {
         pushHistoryEntry(state);
         const owner = cutoutOwner(state);
         owner.cutouts = [...owner.cutouts, withTopZIndex(state, cutout)];
+        added = true;
+      });
+      return added;
+    },
+
+    /**
+     * Add a finger cut beside `pocketId`, bound to the pocket in a new
+     * arrange-only container so the two move, align and arrange as one. A
+     * container leaves every boolean op as it was, which a boolean group would
+     * not. The binding is skipped, and the cut added loose, when the pocket's
+     * ancestry is already as deep as a chain can go.
+     */
+    addFingerAccess: (pocketId: string, finger: Cutout): boolean => {
+      let added = false;
+      set((state) => {
+        if (remainingCapacity(state) < 1) return;
+        const owner = cutoutOwner(state);
+        const pocket = owner.cutouts.find((c) => c.id === pocketId);
+        if (!pocket) return;
+        pushHistoryEntry(state);
+        const chain = parentGroups(pocket);
+        const placed = withTopZIndex(state, withGroupChain(finger, chain, false));
+        const unit = new Set(
+          pocket.groupId === null
+            ? [pocket.id]
+            : owner.cutouts.filter((c) => c.groupId === pocket.groupId).map((c) => c.id)
+        );
+        unit.add(placed.id);
+        let next = [...owner.cutouts, placed];
+        if (canNestDeeper(next.filter((c) => unit.has(c.id)))) {
+          const containerId = generateLayoutId();
+          next = next.map((c) =>
+            unit.has(c.id) ? insertGroupAt(c, containerId, chain.length) : c
+          );
+        }
+        owner.cutouts = next;
         added = true;
       });
       return added;

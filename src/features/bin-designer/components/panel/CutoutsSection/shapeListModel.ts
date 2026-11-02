@@ -13,6 +13,7 @@
 import type { Cutout, CutoutShape, GroupOp } from '@/features/bin-designer/types';
 import { DEFAULT_GROUP_OP } from '@/features/bin-designer/types';
 import { groupTag, unitKey } from '@/features/bin-designer/utils/cutoutHierarchy';
+import { fingerBottom } from '@/shared/utils/fingerAccess';
 
 /** A single cutout row. */
 export interface ShapeListLeaf {
@@ -212,6 +213,12 @@ const SHAPE_LABEL_KEYS: Record<CutoutShape, string> = {
  * polygon reports its side count, since that is what distinguishes it.
  */
 export function derivedLabel(cutout: Cutout): DerivedLabel {
+  if (fingerBottom(cutout) !== null) {
+    return {
+      key: 'binDesigner.shapeList.derived.finger',
+      values: { w: mm(cutout.width), d: mm(cutout.depth) },
+    };
+  }
   const key = SHAPE_LABEL_KEYS[cutout.shape];
   switch (cutout.shape) {
     case 'circle':

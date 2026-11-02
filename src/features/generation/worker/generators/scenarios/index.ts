@@ -68,6 +68,7 @@ import { cutoutRepeatOverlap } from './cutoutRepeatOverlap';
 import { cutoutLean } from './cutoutLean';
 import { cutoutDepthModes } from './cutoutDepthModes';
 import { cutoutEntryEdges } from './cutoutEntryEdges';
+import { cutoutFingerAccess } from './cutoutFingerAccess';
 import { variantOverrides } from './variantOverrides';
 import { lowProfile } from './lowProfile';
 import { nestedChamfers } from './nestedChamfers';
@@ -145,4 +146,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...slideLid,
   ...cutoutDepthModes,
   ...cutoutEntryEdges,
+  ...cutoutFingerAccess,
 ];

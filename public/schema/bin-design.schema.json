@@ -825,6 +825,10 @@
           },
           "description": "Shape of the entry edge sized by chamferWidth: a 45° bevel ('chamfer', the default when absent) or a quarter round tangent to the wall and the top ('round')."
         },
+        "finger": {
+          "$ref": "#/$defs/CutoutFinger",
+          "description": "Makes a 'slot' or 'circle' a finger cut beside a pocket, so a fingertip can reach under the tool and lift it. Ignored on any other shape."
+        },
         "leanDeg": {
           "type": "number",
           "minimum": -45,
@@ -1024,6 +1028,20 @@
         "tunnel": {
           "type": "boolean",
           "description": "Keep the wall above the pocket, so the channel stops at the fill surface and the stacking lip stays whole. Absent means open to the top."
+        }
+      }
+    },
+    "CutoutFinger": {
+      "type": "object",
+      "description": "How a finger cut is shaped below its outline.",
+      "required": ["bottom"],
+      "properties": {
+        "bottom": {
+          "enum": ["curved", "flat"],
+          "x-constant": {
+            "enum": "CUTOUT_FINGER_BOTTOMS"
+          },
+          "description": "'curved' rounds the floor with the largest fillet that fits: no wider than half the cut's narrow side, no taller than the wall below its entry edge. That makes a trough of a slot and a bowl of a circle. 'flat' keeps the cut's own scoop settings."
         }
       }
     },

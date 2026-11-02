@@ -12,6 +12,7 @@ import type {
   PathPoint,
 } from '../../types';
 import { MAX_LID_CUTOUTS } from '../../types';
+import { FINGER_SHAPES } from '@/shared/utils/fingerAccess';
 import { scalePathPoints, translatePathPoints } from '../../utils/pathTransforms';
 import {
   groupChain,
@@ -85,14 +86,21 @@ export function applyPathTransform(c: Cutout, updates: Partial<Cutout>): PathPoi
  */
 export function mergeCutoutUpdate(c: Cutout, updates: Partial<Cutout>): Cutout {
   const transformedPath = applyPathTransform(c, updates);
-  const merged = transformedPath
-    ? { ...c, ...updates, path: transformedPath }
-    : { ...c, ...updates };
+  const merged = withoutStrayFinger(
+    transformedPath ? { ...c, ...updates, path: transformedPath } : { ...c, ...updates }
+  );
   const typedDepth = updates.cutDepth !== undefined && !('depthMode' in updates);
   if (!typedDepth && merged.depthMode !== undefined) return merged;
   if (!('depthMode' in merged) && !('floorMm' in merged)) return merged;
   const { depthMode: _mode, floorMm: _floor, ...fixed } = merged;
   return fixed;
+}
+
+/** Only a slot or a round is a finger cut, so any other shape drops the role. */
+function withoutStrayFinger(c: Cutout): Cutout {
+  if (!('finger' in c) || (c.finger !== undefined && FINGER_SHAPES.includes(c.shape))) return c;
+  const { finger: _finger, ...rest } = c;
+  return rest;
 }
 
 // Expand a target id set to include every member of any group those ids touch,

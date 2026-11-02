@@ -8,6 +8,7 @@ import type { ReactNode } from 'react';
 import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
 import { DEFAULT_POLYGON_SIDES } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
+import { fingerBottom } from '@/shared/utils/fingerAccess';
 
 function shapeName(shape: CutoutShape, t: ReturnType<typeof useTranslation>): string {
   switch (shape) {
@@ -101,7 +102,10 @@ function ShapeGlyph({ shape }: { readonly shape: CutoutShape }): ReactNode {
 
 export function CutoutShapeBadge({ cutout }: { readonly cutout: Cutout }) {
   const t = useTranslation();
-  const name = shapeName(cutout.shape, t);
+  const name =
+    fingerBottom(cutout) === null
+      ? shapeName(cutout.shape, t)
+      : t('binDesigner.cutouts.finger.name');
   const sides = cutout.sides ?? DEFAULT_POLYGON_SIDES;
   return (
     <div className="flex items-center gap-1.5 text-xs font-semibold text-content-secondary">
