@@ -25,6 +25,7 @@ describe('shouldIgnoreError — message patterns', () => {
     'Invalid call to runtime.sendMessage(). Tab not found.',
     // A Safari Web Extension's own storage call failing
     'Invalid call to browser.storage.local.set(). Exceeded storage quota.',
+    'Invalid call to browser.storage.local.set(). Disk I/O error.',
     'Extension context invalidated.',
     'Script error.',
     'Script error',
