@@ -104,6 +104,21 @@ describe('parseScanSvg', () => {
     expect(result.value.sized.depth).toBeCloseTo(10, 0);
   });
 
+  // Its four anchors alone make a 70.7-unit square: measured that way, a
+  // 100 mm entry would import a 141 mm circle.
+  it('measures a curved outline by its curves, not its anchors', () => {
+    const result = parseScanSvg(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="' +
+        'M 100 50 C 100 77.6 77.6 100 50 100 C 22.4 100 0 77.6 0 50 ' +
+        'C 0 22.4 22.4 0 50 0 C 77.6 0 100 22.4 100 50 Z"/></svg>'
+    );
+    if (!isOk(result)) throw new Error('fixture failed');
+    expect(result.value.sized.longest).toBeGreaterThan(99);
+    expect(result.value.sized.longest).toBeLessThan(101);
+    const rescaled = rescaleToLongestMm(result.value.specs, result.value.sized.longest, 100);
+    expect(rescaled[0].width).toBeCloseTo(100, 0);
+  });
+
   it('treats detail inside an outline as part of one tool', () => {
     const result = parseScanSvg(
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +

@@ -15,6 +15,7 @@ import { parseSvgString } from '../svgImport/svgParser';
 import { scaleParsedSpec } from '../svgImport/svgScaleSpec';
 import type { ParsedCutoutSpec, SvgImportError } from '../svgImport/types';
 import { minAreaRect } from '@/shared/scanTrace/minAreaRect';
+import { flattenPath } from '@/shared/utils/pathGeometryBezier';
 import type { Point } from '@/shared/scanTrace';
 
 /** Combined extent of all parsed specs, in the SVG's own (unscaled) units. */
@@ -87,9 +88,12 @@ export function parseScanSvg(svgString: string): Result<ParsedScan, SvgImportErr
   });
 }
 
-/** A spec's outline as points: its path, or its box turned by its rotation. */
+/**
+ * A spec's outline as points: its path with the curves flattened, since a
+ * curve bows past its anchors, or its box turned by its rotation.
+ */
 function outlineOf(spec: ParsedCutoutSpec): Point[] {
-  if (spec.path && spec.path.length >= 3) return spec.path.map(({ x, y }) => ({ x, y }));
+  if (spec.path && spec.path.length >= 2) return flattenPath(spec.path);
   const cx = spec.x + spec.width / 2;
   const cy = spec.y + spec.depth / 2;
   const a = (spec.rotation * Math.PI) / 180;
