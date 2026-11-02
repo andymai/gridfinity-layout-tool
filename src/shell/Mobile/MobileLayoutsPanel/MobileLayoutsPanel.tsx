@@ -31,6 +31,7 @@ import {
   copyToClipboard,
   downloadLayoutAsFile,
 } from '@/core/storage';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import type { Layout } from '@/core/types';
 import { layoutId } from '@/core/types';
 import { isOk } from '@/core/result';
@@ -274,6 +275,7 @@ export function MobileLayoutsPanel() {
 
   const handleDownload = useCallback(
     async (id: string) => {
+      primeExportFolder();
       const entry = findEntry(entries, id);
       const layout = await resolveLayout(id, activeLayoutId, currentLayout);
       if (layout && entry) {

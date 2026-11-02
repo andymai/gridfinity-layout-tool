@@ -4,6 +4,7 @@ import { LayoutListItem } from '../LayoutListItem';
 import { LayoutGridItem } from '../LayoutGridItem';
 import { useLayoutStore } from '@/core/store/layout';
 import { loadLayoutAsync, downloadLayoutAsFile } from '@/core/storage';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
@@ -189,6 +190,7 @@ export function LayoutList({
 
   const handleDownload = useCallback(
     async (entry: LayoutEntry) => {
+      primeExportFolder();
       const layout = await getLayoutData(entry.id);
       if (layout) {
         const downloaded = await downloadLayoutAsFile(
