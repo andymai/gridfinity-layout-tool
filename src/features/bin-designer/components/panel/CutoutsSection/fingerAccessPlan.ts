@@ -27,8 +27,17 @@ const FLOOR_LIFT_MM = 1;
 const FAR_SIDE_GAP_MM = 1;
 /** Lines across the cut's width the far wall is measured along. */
 const WIDTH_SAMPLES = 21;
+/**
+ * Extra lines either side of each outline vertex, so a notch narrower than
+ * the spacing above cannot slip between lines. Either side, never on it: a
+ * line through a vertex at a notch's tip touches without crossing.
+ */
+const VERTEX_NUDGE_MM = 1e-4;
 const MIN_FINGER_DEPTH_MM = 2;
 const FINGER_ENTRY_MM = 1;
+
+/** The fields show hundredths; the keep is two millimetres. */
+const toHundredths = (mm: number): number => Math.round(mm * 100) / 100;
 
 export type FingerAccessBlock = 'shape' | 'repeat';
 
@@ -107,12 +116,39 @@ function pocketOutline(
 interface Crossing {
   /** Signed distance along the line. */
   readonly t: number;
-  /** Sine of the angle the crossed edge makes with the line. */
-  readonly sin: number;
+  readonly at: Vec;
+  /** The crossed edge. */
+  readonly a: Vec;
+  readonly b: Vec;
 }
 
-/** Never ask for more than this many times the keep along a glancing wall. */
-const MIN_WALL_SIN = 0.2;
+function distanceToSegment(p: Vec, a: Vec, b: Vec): number {
+  const ex = b.x - a.x;
+  const ey = b.y - a.y;
+  const len2 = ex * ex + ey * ey;
+  const k = len2 === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - a.x) * ex + (p.y - a.y) * ey) / len2));
+  return Math.hypot(p.x - (a.x + ex * k), p.y - (a.y + ey * k));
+}
+
+/**
+ * How far from a crossing, back along the line toward the cut, a point has to
+ * stand to be `keep` from the crossed edge. Measured to the edge itself rather
+ * than its line, so a slanted wall asks for more than `keep` and the tip of a
+ * thin tongue for only about `keep`. The distance only grows along the way.
+ */
+function clearanceAlong(c: Crossing, dir: Vec, keep: number): number {
+  const from = (d: number) =>
+    distanceToSegment({ x: c.at.x + dir.x * d, y: c.at.y + dir.y * d }, c.a, c.b);
+  let hi = keep + Math.hypot(c.b.x - c.a.x, c.b.y - c.a.y);
+  if (from(hi) < keep) return hi;
+  let lo = 0;
+  for (let i = 0; i < 32; i++) {
+    const mid = (lo + hi) / 2;
+    if (from(mid) < keep) lo = mid;
+    else hi = mid;
+  }
+  return hi;
+}
 
 /**
  * Where the line through `origin` along `dir` crosses the rings, smallest
@@ -134,7 +170,10 @@ function lineCrossings(rings: PocketOutline['rings'], origin: Vec, dir: Vec): Cr
       if (Math.abs(denom) < 1e-12) continue;
       const t = (px * ey - py * ex) / denom;
       const u = (px * dir.y - py * dir.x) / denom;
-      if (u >= 0 && u < 1) crossings.push({ t, sin: Math.abs(denom) / Math.hypot(ex, ey) });
+      if (u >= 0 && u < 1) {
+        const at = { x: origin.x + dir.x * t, y: origin.y + dir.y * t };
+        crossings.push({ t, at, a: p, b: q });
+      }
     }
   }
   return crossings.sort((a, b) => a.t - b.t);
@@ -162,18 +201,25 @@ function pocketSide(outline: PocketOutline, dir: Vec, keep: number): PocketSide 
   const outer = centreEdge + outline.pad;
   const tangent = { x: -dir.y, y: dir.x };
   const end = FINGER_WIDTH_MM / 2;
+  const lines: number[] = [];
+  for (let i = 0; i < WIDTH_SAMPLES; i++) lines.push(-end + (2 * end * i) / (WIDTH_SAMPLES - 1));
+  for (const ring of outline.rings) {
+    for (const v of ring) {
+      const at = v.x * tangent.x + v.y * tangent.y;
+      for (const s of [at - VERTEX_NUDGE_MM, at + VERTEX_NUDGE_MM]) {
+        if (Math.abs(s) <= end) lines.push(s);
+      }
+    }
+  }
   let inward = Number.POSITIVE_INFINITY;
-  for (let i = 0; i < WIDTH_SAMPLES; i++) {
-    const s = -end + (2 * end * i) / (WIDTH_SAMPLES - 1);
+  for (const s of lines) {
     const crossings = lineCrossings(outline.rings, { x: tangent.x * s, y: tangent.y * s }, dir);
     let farWall: Crossing | null = null;
     for (let k = 0; k + 1 < crossings.length; k += 2) {
       if (crossings[k].t <= centreEdge + 1e-9) farWall = crossings[k];
     }
     if (farWall === null) continue;
-    // The keep is perpendicular to the wall, so a slanted one needs more of it
-    // along the line.
-    const room = keep / Math.max(MIN_WALL_SIN, farWall.sin);
+    const room = clearanceAlong(farWall, dir, keep);
     const unfilled = end - Math.sqrt(Math.max(0, end * end - s * s));
     inward = Math.min(inward, outer - (farWall.t - outline.pad) - room + unfilled);
   }
@@ -231,10 +277,10 @@ export function planFingerAccess(
     const depthMm = acrossY ? length : FINGER_WIDTH_MM;
     candidates.push({
       shape: 'slot',
-      x: centre.x + offset.x - width / 2,
-      y: centre.y + offset.y - depthMm / 2,
-      width,
-      depth: depthMm,
+      x: toHundredths(centre.x + offset.x - width / 2),
+      y: toHundredths(centre.y + offset.y - depthMm / 2),
+      width: toHundredths(width),
+      depth: toHundredths(depthMm),
       cutDepth: depth,
       rotation: pocket.rotation,
       cornerRadius: 0,

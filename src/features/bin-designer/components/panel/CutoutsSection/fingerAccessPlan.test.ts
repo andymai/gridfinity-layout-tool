@@ -192,6 +192,45 @@ describe('planFingerAccess', () => {
     });
   });
 
+  // A tongue of plastic 0.8 mm wide, narrower than the spacing of the lines the
+  // far wall is measured on, reaching in from the back wall to 10 mm behind
+  // the front edge. The cut stops about the keep short of its tip, rather than
+  // treating the tongue's long sides as a wall it runs head-on into.
+  it('stays off a tongue narrower than its sampling', () => {
+    const tip = { x: 50.5, y: 50 };
+    const notched = pocket({
+      shape: 'path',
+      x: 20,
+      y: 40,
+      width: 60,
+      depth: 30,
+      path: [
+        corner(20, 40),
+        corner(80, 40),
+        corner(80, 70),
+        corner(50.9, 70),
+        corner(tip.x, tip.y),
+        corner(50.1, 70),
+        corner(20, 70),
+      ],
+    });
+    const plan = planFingerAccess(notched, BOARD, MAX_CUT);
+    expect(plan).not.toBeNull();
+    if (!plan) return;
+    expect(plan.y + plan.depth).toBeGreaterThan(tip.y - 2.5);
+    const r = plan.width / 2;
+    const axis = { x: plan.x + r, from: plan.y + r, to: plan.y + plan.depth - r };
+    const outsideSlot = (p: { x: number; y: number }) =>
+      Math.hypot(p.x - axis.x, p.y - Math.min(axis.to, Math.max(axis.from, p.y))) - r;
+    for (const base of [50.1, 50.9]) {
+      for (let i = 0; i <= 20; i++) {
+        const k = i / 20;
+        const p = { x: tip.x + (base - tip.x) * k, y: tip.y + (70 - tip.y) * k };
+        expect(outsideSlot(p)).toBeGreaterThan(1.9);
+      }
+    }
+  });
+
   describe('on a mesh imprint', () => {
     // Its silhouette in the asset's lay-flat frame: a U open toward the front.
     const asset: MeshAsset = {
