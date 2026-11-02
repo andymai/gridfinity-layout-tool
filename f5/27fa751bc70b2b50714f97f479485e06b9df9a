@@ -1,0 +1,24 @@
+src/features/bin-designer/components/panel/CutoutsSection/fingerAccessPlan.test.ts
+  s_4b9adb1d9473fb::t_d603babb9feea9 195-196,199-219,221-233
+  s_4b9adb1d9473fb::t_b7d1b9a7ccd70d 197-198,220
+src/features/bin-designer/components/panel/CutoutsSection/fingerAccessPlan.ts
+  s_4b9adb1d9473fb::t_08917d3d70c454 39-41,280-283
+  s_4b9adb1d9473fb::t_c5fa90870d49ce 119-122,125-151,173-176,222
+  s_4b9adb1d9473fb::t_337fe0cb27609e 30-35,204-213,215
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f527fa751bc70b2b50714f97f479485e06b9df9a",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
