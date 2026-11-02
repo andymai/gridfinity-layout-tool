@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'cutout-finger-access',
+    date: '2026-11-02',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Lift a tool out of a snug pocket' },
+    body: {
+      en: 'Select a pocket in the Cut Editor and press Add finger access under Shape. A scoop is cut across the middle of its long side, half over the pocket and half into the plastic beside it, so a fingertip can get under the tool and lift it out. The scoop moves with the pocket. It can be a slot or a round, with a curved or flat floor, and the Finger access switch turns any slot or round you already have into one.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'cutout-round-entry',
     date: '2026-11-02',
     kind: 'improved',
