@@ -70,6 +70,8 @@ export interface SceneContentProps {
   readonly selection: ReadonlySet<string>;
   /** Cutouts stranded past the board edge — framed with a red warning outline. */
   readonly offBoardIds?: ReadonlySet<string>;
+  /** Placed copies a pocket check names, framed dashed. */
+  readonly issueInstanceIds?: ReadonlySet<string>;
   readonly preview: PreviewMap;
   readonly mode: InteractionMode;
   readonly isDragging: boolean;

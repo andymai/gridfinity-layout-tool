@@ -18,6 +18,7 @@ import { OpenSideOverlay } from './OpenSideOverlay';
 import { dimmedBinColor } from './dimmedBinColor';
 import { isWithin } from '@/features/bin-designer/utils/cutoutHierarchy';
 import { OffBoardFrames3D } from './OffBoardFrames3D';
+import { IssueFrames3D } from './IssueFrames3D';
 import { KeepoutCircles3D } from './KeepoutCircles3D';
 import { CutoutLabel3D } from './CutoutLabel3D';
 import { CutoutHandles3D } from './CutoutHandles3D';
@@ -55,6 +56,7 @@ export function SceneContent({
   groupContext,
   selection,
   offBoardIds = EMPTY_IDS,
+  issueInstanceIds = EMPTY_IDS,
   preview,
   mode,
   isDragging,
@@ -375,6 +377,7 @@ export function SceneContent({
         cellMask={cellMask}
         lidWindow={lidWindow}
       />
+      <IssueFrames3D cutouts={cutouts} instanceIds={issueInstanceIds} preview={preview} />
 
       {/* Smart guides during drag */}
       {isDragging && (

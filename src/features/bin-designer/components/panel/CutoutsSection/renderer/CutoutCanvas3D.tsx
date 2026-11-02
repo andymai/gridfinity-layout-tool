@@ -81,6 +81,8 @@ export interface CutoutCanvas3DProps {
   readonly selection: ReadonlySet<string>;
   /** Cutouts stranded past the board edge — framed with a red warning outline. */
   readonly offBoardIds?: ReadonlySet<string>;
+  /** Placed copies a pocket check names, framed dashed. */
+  readonly issueInstanceIds?: ReadonlySet<string>;
   readonly preview: PreviewMap;
   readonly mode: InteractionMode;
   readonly drawingPreview: DrawingPreview | null;
@@ -142,6 +144,7 @@ export function CutoutCanvas3D({
   canvasHeight,
   selection,
   offBoardIds,
+  issueInstanceIds,
   preview,
   mode,
   drawingPreview,
@@ -330,6 +333,7 @@ export function CutoutCanvas3D({
         groupContext={groupContext}
         selection={selection}
         offBoardIds={offBoardIds}
+        issueInstanceIds={issueInstanceIds}
         preview={preview}
         mode={mode}
         isDragging={isDragging}

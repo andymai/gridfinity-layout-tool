@@ -3608,6 +3608,24 @@ const en: Record<string, string> = {
     "The lid needs the stacking lip, so it won't be generated until you turn the lip back on.",
   'binDesigner.cutoutEditor.depthShortfallWarning':
     '{count} cutout(s) will be cut shallower than requested',
+  'binDesigner.cutoutEditor.checks.title': 'Pocket checks',
+  'binDesigner.cutoutEditor.checks.titleDetail':
+    'Clearance and entry edges make each pocket a little wider where it is cut. These checks show where that leaves plastic too thin to print well. Select one to find its shapes; none of them stops an export.',
+  'binDesigner.cutoutEditor.checks.merge':
+    '{a} and {b} merge once clearance and entry edges are added',
+  'binDesigner.cutoutEditor.checks.mergeRepeat':
+    'Copies of {a} merge once clearance and entry edges are added',
+  'binDesigner.cutoutEditor.checks.thin': 'Only {mm} mm of plastic between {a} and {b}',
+  'binDesigner.cutoutEditor.checks.thinRepeat': 'Only {mm} mm of plastic between copies of {a}',
+  'binDesigner.cutoutEditor.checks.wall': 'Only {mm} mm of wall left beside {a}',
+  'binDesigner.cutoutEditor.checks.wallThrough':
+    '{a} breaks through the wall once clearance and its entry edge are added',
+  'binDesigner.cutoutEditor.checks.lip':
+    '{a} reaches {mm} mm under the stacking lip, where a tool can catch',
+  'binDesigner.cutoutEditor.checks.floor':
+    'Only {mm} mm of floor under {a}, which can flex or let light through',
+  'binDesigner.cutoutEditor.checks.floorFix': 'Leave {mm} mm',
+  'binDesigner.cutoutEditor.checks.more': '{count} more',
   'binDesigner.cutoutEditor.offBoardWarning.one': '1 cutout will be clipped',
   'binDesigner.cutoutEditor.offBoardWarning.other': '{count} cutouts will be clipped',
   'binDesigner.cutoutEditor.bringBackIn': 'Bring back in',

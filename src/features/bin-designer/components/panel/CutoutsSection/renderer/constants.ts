@@ -65,6 +65,11 @@ export const HANDLE_STROKE_COLOR = '#ffffff';
 /** Off-board warning frame — red to stay distinct from the amber selection. */
 export const OFF_BOARD_COLOR = '#ef4444'; // --color-error
 /**
+ * Pocket check frame: orange and drawn dashed, so it reads apart from both the
+ * solid amber selection and the solid red off-board frame.
+ */
+export const ISSUE_COLOR = '#fb923c';
+/**
  * Taper band — slate rather than a warning colour. Nothing is wrong when it
  * shows; it marks where a deep cutout gets trimmed, and it must not compete
  * with the amber selection or the red off-board frame.

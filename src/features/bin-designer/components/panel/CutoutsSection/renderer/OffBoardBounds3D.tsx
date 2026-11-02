@@ -12,14 +12,18 @@ import { RENDER_ORDER, OFF_BOARD_COLOR } from './constants';
 
 interface OffBoardBounds3DProps {
   readonly bounds: Bounds;
+  readonly color?: string;
+  readonly dashed?: boolean;
 }
-
-const frameColor = new THREE.Color(OFF_BOARD_COLOR);
 
 /** mm the frame sits proud of the shape so it reads as a surrounding warning. */
 const MARGIN_MM = 0.75;
 
-export function OffBoardBounds3D({ bounds }: OffBoardBounds3DProps) {
+export function OffBoardBounds3D({
+  bounds,
+  color = OFF_BOARD_COLOR,
+  dashed = false,
+}: OffBoardBounds3DProps) {
   const lineObj = useMemo(() => {
     const x0 = bounds.minX - MARGIN_MM;
     const y0 = bounds.minY - MARGIN_MM;
@@ -33,16 +37,21 @@ export function OffBoardBounds3D({ bounds }: OffBoardBounds3DProps) {
       new THREE.Vector3(x0, y0, 0.05),
     ];
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const material = new THREE.LineBasicMaterial({
-      color: frameColor,
+    const style = {
+      color: new THREE.Color(color),
       transparent: true,
       opacity: 0.9,
       depthTest: false,
-    });
+    };
+    const material = dashed
+      ? new THREE.LineDashedMaterial({ ...style, dashSize: 1.5, gapSize: 1 })
+      : new THREE.LineBasicMaterial(style);
     const line = new THREE.Line(geometry, material);
+    // Dashes are laid out along the distances this writes onto the geometry.
+    if (dashed) line.computeLineDistances();
     line.renderOrder = RENDER_ORDER.OFF_BOARD;
     return line;
-  }, [bounds.minX, bounds.minY, bounds.maxX, bounds.maxY]);
+  }, [bounds.minX, bounds.minY, bounds.maxX, bounds.maxY, color, dashed]);
 
   // <primitive> does not auto-dispose attached objects; release the GPU
   // resources when the line is replaced or the component unmounts.
