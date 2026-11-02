@@ -51,7 +51,7 @@ function packed(
   unit: ArrangeUnit,
   turn: boolean,
   context: readonly string[],
-  room: number
+  room: { readonly w: number; readonly d: number }
 ): Packed {
   const [only] = unit.members;
   // A group is one block at this level even when it holds a single shape.
@@ -60,15 +60,20 @@ function packed(
   const best = minAreaTurn(only);
   if (best === null) return { unit, bounds: unit.bounds };
   // Landscape fills rows best, but a shape too long for the bin's width lies
-  // along its depth instead, and one that fits neither way keeps its angle.
+  // along its depth instead, and one that fits the bin neither way keeps its
+  // angle.
   for (const rotation of [best, best + 90]) {
     // Measured the way the board measures it, so the packed shape never reads
     // as off it, and arranging again finds the same room.
     const bounds = getCutoutBounds({ ...only, rotation });
-    if (bounds.maxX - bounds.minX > room + 1e-6) continue;
-    // Half a turn from the current angle is the same box: keep the angle.
+    if (bounds.maxX - bounds.minX > room.w + 1e-6 || bounds.maxY - bounds.minY > room.d + 1e-6) {
+      continue;
+    }
+    // Half a turn from the current angle is the same size of box, so the angle
+    // stays; a path turns about its own centre, so the box is measured again
+    // where the kept angle puts it.
     const gap180 = Math.abs(storedAngle(rotation - only.rotation) % 180);
-    if (Math.min(gap180, 180 - gap180) < 1e-3) return { unit, bounds };
+    if (Math.min(gap180, 180 - gap180) < 1e-3) return { unit, bounds: getCutoutBounds(only) };
     return { unit, bounds, rotation: storedAngle(rotation) };
   }
   return { unit, bounds: unit.bounds };
@@ -87,14 +92,14 @@ export function autoArrangeCutouts(
   options: AutoArrangeOptions,
   context: readonly string[] = []
 ): Record<string, ArrangedPlacement> {
-  const { binWidth, gap, staggered = false, turn = false } = options;
+  const { binWidth, binDepth, gap, staggered = false, turn = false } = options;
   // Quantized, so the sines a turned outline is measured through cannot tip
   // two equal shapes into a different order or row when arranged again.
   const width = (p: Packed) => tidy(p.bounds.maxX - p.bounds.minX);
   const depth = (p: Packed) => tidy(p.bounds.maxY - p.bounds.minY);
   const movable = toArrangeUnits(cutouts, context)
     .filter((unit) => !unit.locked)
-    .map((unit) => packed(unit, turn, context, binWidth - 2 * gap));
+    .map((unit) => packed(unit, turn, context, { w: binWidth - 2 * gap, d: binDepth - 2 * gap }));
   const sorted = [...movable].sort((a, b) => depth(b) - depth(a));
   const positions: Record<string, ArrangedPlacement> = {};
 

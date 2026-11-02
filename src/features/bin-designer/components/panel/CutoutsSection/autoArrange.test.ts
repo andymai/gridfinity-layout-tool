@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Cutout } from '@/features/bin-designer/types';
 import { autoArrangeCutouts } from './autoArrange';
+import { getCutoutBounds } from './maskFit';
 
 const createCutout = (id: string, width: number, depth: number): Cutout => ({
   id,
@@ -270,6 +271,55 @@ describe('autoArrangeCutouts', () => {
         turn: true,
       });
       expect(result.a.rotation).toBe(90);
+    });
+
+    it('keeps the angle of a shape that fits as drawn but in neither square turn', () => {
+      const bar = { ...createCutout('a', 80, 10), x: 0, y: 0, rotation: 45 };
+      const result = autoArrangeCutouts([bar], { binWidth: 70, binDepth: 70, gap: 2, turn: true });
+      expect(result.a.rotation).toBeUndefined();
+      const b = getCutoutBounds({ ...bar, ...result.a });
+      expect(b.minX).toBeCloseTo(2, 6);
+      expect(b.minY).toBeCloseTo(2, 6);
+    });
+
+    it('places a kept angle by its own outline, not the half turn it was measured at', () => {
+      const a = (35 * Math.PI) / 180;
+      const pts = [
+        [0, 0],
+        [80, 0],
+        [60, 10],
+        [0, 10],
+      ].map(([x, y]) => ({
+        x: 30 + x * Math.cos(a) - y * Math.sin(a),
+        y: 20 + x * Math.sin(a) + y * Math.cos(a),
+      }));
+      const xs = pts.map((q) => q.x);
+      const ys = pts.map((q) => q.y);
+      const trapezoid: Cutout = {
+        ...createCutout('a', Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)),
+        shape: 'path',
+        x: Math.min(...xs),
+        y: Math.min(...ys),
+        rotation: 305,
+        path: pts.map((q) => ({ ...q, handleIn: null, handleOut: null, symmetric: false })),
+      };
+      const result = autoArrangeCutouts([trapezoid], {
+        binWidth: 40,
+        binDepth: 100,
+        gap: 2,
+        turn: true,
+      });
+      expect(result.a.rotation).toBeUndefined();
+      const dx = result.a.x - trapezoid.x;
+      const dy = result.a.y - trapezoid.y;
+      const placed = {
+        ...trapezoid,
+        ...result.a,
+        path: (trapezoid.path ?? []).map((q) => ({ ...q, x: q.x + dx, y: q.y + dy })),
+      };
+      const b = getCutoutBounds(placed);
+      expect(b.minX).toBeCloseTo(2, 6);
+      expect(b.minY).toBeCloseTo(2, 6);
     });
 
     it('stores a turn as the editor keeps angles, from 0° up to 360°', () => {
