@@ -10,9 +10,10 @@ import type { BinParams } from '@/features/bin-designer/types';
 
 describe('useBaseSection', () => {
   beforeEach(() => {
-    useDesignerStore.setState({
+    useDesignerStore.setState((state) => ({
       params: { ...DEFAULT_BIN_PARAMS },
-    });
+      ui: { ...state.ui, bodyTypeMemory: null },
+    }));
   });
 
   it('uses common Mounting handlers for Nesting and shares dimensions with the lid', () => {
@@ -897,25 +898,19 @@ describe('useBaseSection — base-only bin residue', () => {
       }
     );
 
-    // What the round trip does NOT restore, recorded so the next change to this
-    // area can tell an intended loss from a new one. Both predate the picker and
-    // come from the constraint engine and the base-only commit path, which the
-    // four toggles routed through identically. The picker makes them easier to
-    // reach, not different.
-    it('does not restore what the engine cleared on the way in', () => {
+    it('gives back what the engine cleared on the way in', () => {
       useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS } });
       const { result } = renderHook(() => useBaseSection());
 
       act(() => {
         result.current.handlers.setBodyType('spacer');
       });
+      expect(useDesignerStore.getState().params.slotConfig.x.enabled).toBe(false);
       act(() => {
         result.current.handlers.setBodyType('standard');
       });
 
-      // A spacer has no interior, so the engine clears the divider slots; coming
-      // back does not put them there again.
-      expect(useDesignerStore.getState().params.slotConfig.x.enabled).toBe(false);
+      expect(useDesignerStore.getState().params.slotConfig.x.enabled).toBe(true);
     });
 
     // Switching body type CLEARS whatever the new body cannot hold, and the
@@ -939,19 +934,41 @@ describe('useBaseSection — base-only bin residue', () => {
       expect(useDesignerStore.getState().params.base.style).toBe('magnet');
     });
 
-    it('leaves a base-only bin at the height floor rather than its original height', () => {
-      useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, height: 6 } });
+    it('gives a base-only bin its height and extra wall height back', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, height: 6, extraWallHeightMm: 5 },
+      });
       const { result } = renderHook(() => useBaseSection());
 
       act(() => {
         result.current.handlers.setBodyType('tile');
       });
+      expect(useDesignerStore.getState().params.height).toBe(1);
       act(() => {
         result.current.handlers.setBodyType('standard');
       });
 
-      // A base-only bin pins height to 1 because the wall is inert there, and
-      // leaving lifts to the minimum rather than to the 6u it came from.
+      const params = useDesignerStore.getState().params;
+      expect(params.height).toBe(6);
+      expect(params.extraWallHeightMm).toBe(5);
+    });
+
+    it('does not carry what a switch cleared into the next design', () => {
+      useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, height: 6 } });
+      const { result } = renderHook(() => useBaseSection());
+      act(() => {
+        result.current.handlers.setBodyType('tile');
+      });
+      const tileParams = useDesignerStore.getState().params;
+
+      act(() => {
+        useDesignerStore.getState().newDesign();
+        useDesignerStore.getState().setParams(tileParams);
+      });
+      act(() => {
+        result.current.handlers.setBodyType('standard');
+      });
+
       expect(useDesignerStore.getState().params.height).toBe(DESIGNER_CONSTRAINTS.MIN_HEIGHT);
     });
   });

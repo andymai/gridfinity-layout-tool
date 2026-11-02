@@ -65,6 +65,7 @@ import type {
 } from './generation';
 import type { PerfSnapshot } from '@/shared/types/generation';
 import type {
+  BodyTypeMemory,
   DesignerHistory,
   DesignerUIState,
   DesignerCategory,
@@ -448,6 +449,7 @@ export interface DesignerState {
   queueDepthPrompt: (ids: readonly string[]) => void;
   /** Stop asking about these outlines, or about every queued one. */
   clearDepthPrompt: (ids?: readonly string[]) => void;
+  setBodyTypeMemory: (memory: BodyTypeMemory | null) => void;
   setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => void;
   setHoveredColorZone: (zone: HoverableZone | null) => void;
   setHoveredOverhangSide: (side: OverhangHighlightSide | null) => void;

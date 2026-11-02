@@ -84,8 +84,9 @@ function withTrayConfig(params: BinParams): BinParams {
  * silently fail for the rest (leaving `standard` needs an explicit disable and
  * has nothing to enable).
  *
- * The result still has to go through `useBaseSection`'s `commit`, which is what
- * enforces the height floor and strips the `tile: false` residue.
+ * The result still has to go through `finalizeBaseParams`, which enforces the
+ * height floor and strips the `tile: false` residue. `switchBodyType` does both
+ * and gives back what earlier switches cleared.
  */
 export function bodyTypeParams(params: BinParams, next: BodyType): BinParams {
   const current = deriveBodyType(params.base);
