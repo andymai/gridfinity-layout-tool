@@ -4,6 +4,7 @@ import {
   normalizeCategories,
   normalizeSTLSearchSites,
   normalizeViewMode,
+  normalizeExportDestination,
 } from './settings.normalize';
 import { DEFAULT_BIN_LIST_SORT_ORDER, DEFAULT_STL_SEARCH_SITES } from './settings.types';
 import type { BinSortField } from './settings.types';
@@ -137,5 +138,40 @@ describe('normalizeViewMode', () => {
 
   it('returns fallback for undefined', () => {
     expect(normalizeViewMode(undefined, 'grid')).toBe('grid');
+  });
+});
+
+describe('normalizeExportDestination', () => {
+  it('defaults everything to off when nothing was stored', () => {
+    expect(normalizeExportDestination({})).toEqual({
+      exportUrlEnabled: false,
+      exportUrl: '',
+      exportUrlHeaderName: '',
+      exportUrlHeaderValue: '',
+      exportFolderName: null,
+    });
+  });
+
+  it('keeps well-typed values', () => {
+    const stored = {
+      exportUrlEnabled: true,
+      exportUrl: 'https://nas.local/upload',
+      exportUrlHeaderName: 'X-API-Key',
+      exportUrlHeaderValue: 'secret',
+      exportFolderName: 'prints',
+    };
+    expect(normalizeExportDestination(stored)).toEqual(stored);
+  });
+
+  it('drops values of the wrong type', () => {
+    expect(
+      normalizeExportDestination({
+        exportUrlEnabled: 'yes',
+        exportUrl: 42,
+        exportUrlHeaderName: null,
+        exportUrlHeaderValue: {},
+        exportFolderName: '',
+      })
+    ).toEqual(normalizeExportDestination({}));
   });
 });

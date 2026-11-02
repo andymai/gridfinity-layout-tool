@@ -101,6 +101,29 @@ export function normalizeViewMode(value: unknown, fallback: 'grid' | 'list'): 'g
   return value === 'grid' || value === 'list' ? value : fallback;
 }
 
+type ExportDestinationSettings = Pick<
+  UserSettings,
+  | 'exportUrlEnabled'
+  | 'exportUrl'
+  | 'exportUrlHeaderName'
+  | 'exportUrlHeaderValue'
+  | 'exportFolderName'
+>;
+
+export function normalizeExportDestination(
+  parsed: Partial<Record<keyof ExportDestinationSettings, unknown>>
+): ExportDestinationSettings {
+  const text = (value: unknown): string => (typeof value === 'string' ? value : '');
+  const folder = parsed.exportFolderName;
+  return {
+    exportUrlEnabled: parsed.exportUrlEnabled === true,
+    exportUrl: text(parsed.exportUrl),
+    exportUrlHeaderName: text(parsed.exportUrlHeaderName),
+    exportUrlHeaderValue: text(parsed.exportUrlHeaderValue),
+    exportFolderName: typeof folder === 'string' && folder !== '' ? folder : null,
+  };
+}
+
 /**
  * Load settings from localStorage.
  * Uses Result internally for structured error handling, but always returns
@@ -143,6 +166,7 @@ export function loadSettings(): UserSettings {
       layoutManagerViewMode,
       designListViewMode,
       printSettings,
+      ...normalizeExportDestination(parsed),
     };
     // If user never explicitly set analyticsEnabled, apply browser privacy signal
     if (parsed.analyticsEnabled === undefined && isTrackingOptOut()) {

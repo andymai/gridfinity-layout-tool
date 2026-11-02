@@ -575,7 +575,7 @@ export function CutoutWorkspace() {
 
   const { exportCutoutsAsSvg } = useSvgExport();
   const exportSelectedAsSvg = useCallback(() => {
-    exportCutoutsAsSvg(cutouts.filter((c) => selection.has(c.id)));
+    void exportCutoutsAsSvg(cutouts.filter((c) => selection.has(c.id)));
   }, [exportCutoutsAsSvg, cutouts, selection]);
 
   const contextMenuActions = useMemo(

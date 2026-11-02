@@ -12,6 +12,8 @@ import { Dialog, Button, Input, Spinner } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { trackEvent } from '@/shared/analytics/posthog';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { isOk } from '@/core/result';
 import { MAX_SVG_FILE_SIZE, type ParsedCutoutSpec } from '../svgImport/types';
 import { parseScanSvg, rescaleToLongestMm, type ParsedScan } from './scanIngest';
@@ -168,18 +170,13 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
   // The sheet is printed on the computer, not the phone, so the offer belongs
   // here rather than on the capture page.
   const handleDownloadSheet = useCallback(() => {
+    primeExportFolder();
     const svg = buildCalibrationSheetSvg({
       title: t('binDesigner.cutouts.scanImport.sheetTitle'),
       printHint: t('binDesigner.cutouts.scanImport.sheetPrintHint'),
       placeHint: t('binDesigner.cutouts.scanImport.sheetPlaceHint'),
     });
-    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = CALIBRATION_SHEET_FILENAME;
-    link.click();
-    // Revoking synchronously can cancel the download in some browsers.
-    setTimeout(() => URL.revokeObjectURL(url), 0);
+    void deliverExport(new Blob([svg], { type: 'image/svg+xml' }), CALIBRATION_SHEET_FILENAME);
     trackEvent('scan_calibration_sheet_download');
   }, [t]);
 

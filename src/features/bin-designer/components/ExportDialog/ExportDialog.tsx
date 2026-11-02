@@ -115,7 +115,7 @@ export function ExportDialog() {
     void downloadDesignAsFile(designName, params).then((result) => {
       if (isOk(result)) {
         addToast({ message: t('binDesigner.downloadDesignJson'), type: 'success', duration: 2000 });
-      } else {
+      } else if (result.error.code === 'STORAGE_MESH_MISSING') {
         addToast(t('toast.meshFileMissing'), 'error');
       }
     });

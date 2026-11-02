@@ -276,7 +276,8 @@ function LayoutManagerModalContent({
       const currentLibrary = useLibraryStore.getState().library;
       const result = await downloadArchive(currentLibrary);
       if (!isOk(result)) {
-        addToast(t('toast.meshFileMissing'), 'error');
+        if (result.error.code === 'STORAGE_MESH_MISSING')
+          addToast(t('toast.meshFileMissing'), 'error');
         return;
       }
       const { exported, skipped } = result.value;

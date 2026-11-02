@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import { ScanWithPhoneDialog } from './ScanWithPhoneDialog';
+
+vi.mock('@/shared/exportDestination/deliverExport', () => ({
+  deliverExport: vi.fn(async () => true),
+}));
 
 const mockAddScanCutouts = vi.fn((..._args: unknown[]) => 1);
 vi.mock('./useScanImport', () => ({
@@ -68,20 +73,13 @@ describe('ScanWithPhoneDialog', () => {
     session.current = { phase: 'waiting', url: 'https://example.com/scan/abc' };
     render(<ScanWithPhoneDialog open onClose={vi.fn()} />);
 
-    const clicks: HTMLAnchorElement[] = [];
-    const realClick = HTMLAnchorElement.prototype.click;
-    HTMLAnchorElement.prototype.click = function mockClick(this: HTMLAnchorElement) {
-      clicks.push(this);
-    };
-    try {
-      fireEvent.click(screen.getByText('binDesigner.cutouts.scanImport.calibrationSheet'));
-    } finally {
-      HTMLAnchorElement.prototype.click = realClick;
-    }
+    fireEvent.click(screen.getByText('binDesigner.cutouts.scanImport.calibrationSheet'));
 
-    expect(clicks).toHaveLength(1);
-    expect(clicks[0].download).toBe('gridfinity-calibration-sheet.svg');
-    expect(URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+    expect(deliverExport).toHaveBeenCalledTimes(1);
+    expect(deliverExport).toHaveBeenCalledWith(
+      expect.any(Blob),
+      'gridfinity-calibration-sheet.svg'
+    );
   });
 
   it('moves to review with an empty scale field after a valid upload', async () => {

@@ -81,7 +81,7 @@ export function useAppWindowEvents({
       const layout = useLayoutStore.getState().layout;
       const filename = `${layout.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`;
       void downloadLayoutAsFile(layout, filename).then((downloaded) => {
-        if (!isOk(downloaded))
+        if (!isOk(downloaded) && downloaded.error.code === 'STORAGE_MESH_MISSING')
           useToastStore.getState().addToast(t('toast.meshFileMissing'), 'error');
       });
     };

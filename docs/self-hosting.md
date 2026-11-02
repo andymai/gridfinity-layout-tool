@@ -65,6 +65,55 @@ harmless and can be ignored in access logs: `/api/supporters` when someone
 opens the supporters page, and `/api/ml-telemetry` only if the image was
 built without the self-hosted flag.
 
+## Sending exports to a library or NAS
+
+Settings > Exports can save each export into a folder instead of Downloads
+(Chrome and Edge, over HTTPS or on `localhost`), and can also POST a copy to a
+URL. Both are per browser and off by default. The upload is
+`multipart/form-data`:
+
+| Field      | Value                                                                   |
+| ---------- | ----------------------------------------------------------------------- |
+| `file`     | The exported file                                                       |
+| `filename` | Its name, such as `bin-2x3.stl`                                         |
+| `format`   | The extension: `stl`, `step`, `3mf`, `zip`, `json`, `svg`, `txt` (test) |
+| `source`   | `gridfinity-layout-tool`                                                |
+
+An optional header such as `X-API-Key` goes along; cookies never do. From an
+HTTPS page the receiver must be `https://` too (or on `localhost`), and it must
+answer CORS, including the preflight a header triggers. A minimal Node receiver
+that saves uploads into `./inbox`; run it with `KEY` set to the header value and
+`ORIGIN` set to the address you open the app on:
+
+```js
+import { createServer } from 'node:http';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { basename } from 'node:path';
+
+const { KEY, ORIGIN = 'https://gridfinitylayouttool.com' } = process.env;
+if (!KEY) throw new Error('Set KEY to the header value entered in the app');
+await mkdir('inbox', { recursive: true });
+createServer(async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', ORIGIN);
+  res.setHeader('Access-Control-Allow-Headers', 'X-API-Key');
+  if (req.method !== 'POST') return res.end();
+  if (req.headers['x-api-key'] !== KEY) return res.writeHead(401).end();
+  try {
+    const upload = new Request('http://receiver', {
+      method: 'POST',
+      headers: req.headers,
+      body: req,
+      duplex: 'half',
+    });
+    const file = (await upload.formData()).get('file');
+    await writeFile(`inbox/${basename(file.name)}`, Buffer.from(await file.arrayBuffer()));
+    res.end();
+  } catch {
+    res.writeHead(400).end();
+  }
+}).listen(8090);
+```
+
 ## Reverse proxy, TLS, and updating
 
 Terminate TLS at your proxy and pass requests through unchanged; the container

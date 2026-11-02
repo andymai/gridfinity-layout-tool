@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/design-system';
 import { useResponsive } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
@@ -14,6 +14,18 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   const { isMobile } = useResponsive();
   const t = useTranslation();
   const navRef = useRef<HTMLDivElement>(null);
+
+  // A deep link can open a tab the horizontal strip has scrolled out of view.
+  useEffect(() => {
+    if (!isMobile) return;
+    const nav = navRef.current;
+    const tab = nav?.querySelector<HTMLElement>(`#settings-tab-${activeTab}`);
+    if (!nav || !tab) return;
+    const navBox = nav.getBoundingClientRect();
+    const tabBox = tab.getBoundingClientRect();
+    if (tabBox.left >= navBox.left && tabBox.right <= navBox.right) return;
+    nav.scrollLeft += tabBox.left - navBox.left - (navBox.width - tabBox.width) / 2;
+  }, [activeTab, isMobile]);
 
   // Arrow-key navigation walks the flattened tab order so it works uniformly
   // across sidebar groups (desktop) and the horizontal scroller (mobile).

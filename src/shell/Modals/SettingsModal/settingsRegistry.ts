@@ -102,6 +102,12 @@ export const SETTINGS_REGISTRY: SettingsRegistryEntry[] = [
     labelKey: 'settings.storage.dangerZone',
     keywordsKey: 'settings.search.keywords.storageDanger',
   },
+  {
+    id: 'export-destination',
+    tabId: 'exports',
+    labelKey: 'settings.exportDestination',
+    keywordsKey: 'settings.search.keywords.exportDestination',
+  },
   // Integrations
   {
     id: 'stl-search',

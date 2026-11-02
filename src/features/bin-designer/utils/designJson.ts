@@ -7,14 +7,16 @@
 
 import type { BinParams } from '../types';
 import type { TFunction } from '@/i18n';
-import { isErr, OK } from '@/core/result';
-import type { Result, StorageMeshMissingError } from '@/core/result';
+import { err, isErr, OK, storageNotSaved } from '@/core/result';
+import type { Result, StorageMeshMissingError, StorageNotSavedError } from '@/core/result';
 import { BIN_STYLES } from '../types';
 import { DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import { migrateParams } from '../constants/paramMigration';
 import { withoutLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { inlineParamsMeshes } from '@/shared/generation/meshRefs';
 import { sanitizeFileName } from './fileNaming';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 
 /**
  * Design JSON export schema.
@@ -66,11 +68,12 @@ export function exportDesignJSON(name: string, params: BinParams): string {
 }
 
 /**
- * Download bin design as JSON file.
- * Creates a blob and triggers browser download.
+ * Save a bin design as a JSON file through the user's export destination.
+ * Resolves once the file is saved locally (downloaded or written to the export
+ * folder); an upload to the export URL carries on afterwards.
  *
  * The file is self-contained: mesh refs are written out as the inline assets
- * they name. Fails, downloading nothing, when a mesh file is missing.
+ * they name. Fails, saving nothing, when a mesh file is missing.
  *
  * @param name - Design name (used for filename)
  * @param params - Complete bin parameters
@@ -84,25 +87,18 @@ export function exportDesignJSON(name: string, params: BinParams): string {
 export async function downloadDesignAsFile(
   name: string,
   params: BinParams
-): Promise<Result<void, StorageMeshMissingError>> {
+): Promise<Result<void, StorageMeshMissingError | StorageNotSavedError>> {
+  primeExportFolder();
   const inline = await inlineParamsMeshes(params);
   if (isErr(inline)) return inline;
   const json = exportDesignJSON(name, inline.value);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-
-  // Sanitize filename
   const sanitized = sanitizeFileName(name);
   const filename = !sanitized || /^_+$/.test(sanitized) ? 'gridfinity-bin' : sanitized;
-  a.download = `${filename}.json`;
-
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  return OK;
+  const saved = await deliverExport(
+    new Blob([json], { type: 'application/json' }),
+    `${filename}.json`
+  );
+  return saved ? OK : err(storageNotSaved());
 }
 
 /**

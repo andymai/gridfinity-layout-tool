@@ -55,3 +55,17 @@ describe('loadSettings - browser privacy signals', () => {
     expect(settings.analyticsEnabled).toBe(false);
   });
 });
+
+describe('loadSettings - export destination', () => {
+  it('keeps stored export destination fields and repairs bad ones', () => {
+    vi.mocked(loadFromLocalStorage).mockReturnValue({
+      ok: true,
+      value: { exportUrlEnabled: true, exportUrl: 'https://nas.local/upload', exportFolderName: 7 },
+    });
+    const settings = loadSettings();
+    expect(settings.exportUrlEnabled).toBe(true);
+    expect(settings.exportUrl).toBe('https://nas.local/upload');
+    expect(settings.exportUrlHeaderValue).toBe('');
+    expect(settings.exportFolderName).toBeNull();
+  });
+});

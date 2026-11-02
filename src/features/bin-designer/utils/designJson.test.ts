@@ -12,6 +12,11 @@ import { testT as t } from '@/test/i18nTestUtils';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { storeMeshAsset } from '@/shared/generation/meshRefs';
 import { isErr } from '@/core/result';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
+
+vi.mock('@/shared/exportDestination/deliverExport', () => ({
+  deliverExport: vi.fn(async () => true),
+}));
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...overrides };
@@ -54,48 +59,35 @@ describe('exportDesignJSON', () => {
 });
 
 describe('downloadDesignAsFile', () => {
-  let createElementSpy: ReturnType<typeof vi.spyOn>;
-  let createObjectURLSpy: ReturnType<typeof vi.spyOn>;
-  let revokeObjectURLSpy: ReturnType<typeof vi.spyOn>;
-  let anchorElement: HTMLAnchorElement;
+  const savedName = (): unknown => vi.mocked(deliverExport).mock.calls[0]?.[1];
 
   beforeEach(() => {
-    anchorElement = document.createElement('a');
-    createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(anchorElement);
-    createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url');
-    revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
-    vi.spyOn(anchorElement, 'click').mockImplementation(() => {});
-    vi.spyOn(document.body, 'appendChild').mockImplementation(() => anchorElement);
-    vi.spyOn(document.body, 'removeChild').mockImplementation(() => anchorElement);
+    vi.mocked(deliverExport).mockClear();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('should create and download file with sanitized name', async () => {
+  it('hands the file to the export destination with a sanitized name', async () => {
     await downloadDesignAsFile('Test Bin', DEFAULT_BIN_PARAMS);
 
-    expect(createElementSpy).toHaveBeenCalledWith('a');
-    expect(createObjectURLSpy).toHaveBeenCalled();
-    expect(anchorElement.download).toBe('Test Bin.json');
-    expect(anchorElement.click).toHaveBeenCalled();
-    expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url');
+    expect(deliverExport).toHaveBeenCalledWith(expect.any(Blob), 'Test Bin.json');
   });
 
   it('should sanitize filename with unsafe characters', async () => {
     await downloadDesignAsFile('My/Bin<test>', DEFAULT_BIN_PARAMS);
-    expect(anchorElement.download).toBe('My_Bin_test_.json');
+    expect(savedName()).toBe('My_Bin_test_.json');
   });
 
   it('should use fallback name for empty design name', async () => {
     await downloadDesignAsFile('', DEFAULT_BIN_PARAMS);
-    expect(anchorElement.download).toBe('gridfinity-bin.json');
+    expect(savedName()).toBe('gridfinity-bin.json');
   });
 
   it('should use fallback name for only unsafe characters', async () => {
     await downloadDesignAsFile('<<<>>>', DEFAULT_BIN_PARAMS);
-    expect(anchorElement.download).toBe('gridfinity-bin.json');
+    expect(savedName()).toBe('gridfinity-bin.json');
   });
 
   it('writes a mesh ref out as the inline asset it names', async () => {
@@ -133,7 +125,7 @@ describe('downloadDesignAsFile', () => {
     };
     const result = await downloadDesignAsFile('Test', makeParams({ meshAssets: { m1: missing } }));
     expect(isErr(result) && result.error.code).toBe('STORAGE_MESH_MISSING');
-    expect(anchorElement.click).not.toHaveBeenCalled();
+    expect(deliverExport).not.toHaveBeenCalled();
   });
 
   it('should create blob with correct content type', async () => {

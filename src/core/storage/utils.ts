@@ -5,10 +5,12 @@
  * for interacting with browser APIs (clipboard, file download).
  */
 
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { exportLayoutJSONWithDesigns } from './ShareService';
 import type { Layout } from '@/core/types';
-import { isOk, OK } from '@/core/result';
-import type { Result, StorageMeshMissingError } from '@/core/result';
+import { err, isOk, OK, storageNotSaved } from '@/core/result';
+import type { Result, StorageMeshMissingError, StorageNotSavedError } from '@/core/result';
 
 /**
  * Copy text to clipboard.
@@ -26,26 +28,23 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 /**
- * Download a layout as a JSON file with embedded bin designs.
- * Creates a temporary anchor element to trigger the download.
- * Async because it needs to look up linked designs from IndexedDB. Fails,
- * downloading nothing, when a linked design's mesh file is missing.
+ * Save a layout as a JSON file with embedded bin designs, through the user's
+ * export destination. Looks up linked designs in IndexedDB first, and fails,
+ * saving nothing, when a linked design's mesh file is missing. Resolves once
+ * the file is saved locally (downloaded or written to the export folder); an
+ * upload to the export URL carries on afterwards and does not change the result.
  */
 export async function downloadLayoutAsFile(
   layout: Layout,
   filename?: string
-): Promise<Result<void, StorageMeshMissingError>> {
+): Promise<Result<void, StorageMeshMissingError | StorageNotSavedError>> {
+  primeExportFolder();
   const exported = await exportLayoutJSONWithDesigns(layout);
   if (!isOk(exported)) return exported;
   const blob = new Blob([exported.value], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename || `${layout.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  return OK;
+  const saved = await deliverExport(
+    blob,
+    filename || `${layout.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.json`
+  );
+  return saved ? OK : err(storageNotSaved());
 }

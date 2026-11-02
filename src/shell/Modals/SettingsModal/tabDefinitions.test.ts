@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { TAB_DEFINITIONS, TAB_GROUPS } from './tabDefinitions';
 
 describe('TAB_DEFINITIONS', () => {
-  it('has exactly 11 tab definitions', () => {
-    expect(TAB_DEFINITIONS).toHaveLength(11);
+  it('has exactly 12 tab definitions', () => {
+    expect(TAB_DEFINITIONS).toHaveLength(12);
   });
 
   it('every tab has id, labelKey, and icon', () => {
@@ -29,6 +29,7 @@ describe('TAB_DEFINITIONS', () => {
       'account',
       'privacy',
       'storage',
+      'exports',
       'integrations',
       'labs',
     ]);

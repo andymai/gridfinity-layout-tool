@@ -11,7 +11,8 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { bridgeManager } from '@/shared/generation/bridge';
-import { triggerDownload } from '@/shared/generation/exportUtils';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { stlTo3MF } from '@/shared/generation/stlTo3mf';
 import type { GridfinityItem } from '@/shared/types/item';
 import { ASSEMBLY_PART_TYPES } from '@/shared/types/assembly';
@@ -144,6 +145,7 @@ export function WorkshopPanel() {
   const assembly: AssemblyStructure = structure;
 
   const exportBuild = async (format: 'stl' | 'step' | '3mf'): Promise<void> => {
+    primeExportFolder();
     const item: GridfinityItem = { envelope, structure: assembly };
     setExporting(true);
     let acquired = false;
@@ -155,17 +157,17 @@ export function WorkshopPanel() {
       const workerFormat = format === 'step' ? 'step' : 'stl';
       const result = await bridge.exportItem(item, workerFormat);
       if (format === 'step') {
-        triggerDownload(new Blob([result.data], { type: 'model/step' }), result.fileName);
+        void deliverExport(new Blob([result.data], { type: 'model/step' }), result.fileName);
         return;
       }
       if (format === 'stl') {
-        triggerDownload(new Blob([result.data], { type: 'application/sla' }), result.fileName);
+        void deliverExport(new Blob([result.data], { type: 'application/sla' }), result.fileName);
         return;
       }
       const blob = stlTo3MF(result.data, useSettingsStore.getState().settings.printSettings, {
         name: result.fileName.replace(/\.stl$/, ''),
       });
-      triggerDownload(blob, result.fileName.replace(/\.stl$/, '.3mf'));
+      void deliverExport(blob, result.fileName.replace(/\.stl$/, '.3mf'));
     } catch {
       addToast(t('workshop.export.failed'), 'error');
     } finally {

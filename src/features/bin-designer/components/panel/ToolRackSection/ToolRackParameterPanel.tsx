@@ -13,7 +13,8 @@ import { StickyGroupHeader } from '../StickyGroupHeader';
 import { PanelSection } from '../PanelSection';
 import { MAX_RACK_FIN_ANGLE } from '@/shared/items/toolRack/descriptor';
 import { bridgeManager } from '@/shared/generation/bridge';
-import { triggerDownload } from '@/shared/generation/exportUtils';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import type { GridfinityItem } from '@/shared/types/item';
 
 type RackExportFormat = 'stl' | 'step';
@@ -61,12 +62,13 @@ export function ToolRackParameterPanel() {
   if (!envelope || structure?.kind !== 'toolRack') return null;
 
   const exportRack = async (format: RackExportFormat): Promise<void> => {
+    primeExportFolder();
     const item: GridfinityItem = { envelope, structure };
     const bridge = await bridgeManager.acquire();
     try {
       const result = await bridge.exportItem(item, format);
       const mime = format === 'step' ? 'application/step' : 'application/sla';
-      triggerDownload(new Blob([result.data], { type: mime }), result.fileName);
+      void deliverExport(new Blob([result.data], { type: mime }), result.fileName);
     } finally {
       bridgeManager.release();
     }

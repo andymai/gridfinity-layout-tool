@@ -74,6 +74,17 @@ describe('toast store', () => {
       expect(toasts[2].message).toBe('Fourth');
     });
 
+    it('replaces a showing toast that has the same key', () => {
+      const { addToast } = useToastStore.getState();
+
+      addToast({ message: 'Saved a.stl', type: 'success', key: 'export' });
+      addToast('Unrelated', 'info');
+      addToast({ message: 'Saved 2 files', type: 'success', key: 'export' });
+
+      const messages = useToastStore.getState().toasts.map((toast) => toast.message);
+      expect(messages).toEqual(['Unrelated', 'Saved 2 files']);
+    });
+
     it('generates unique ids', () => {
       const { addToast } = useToastStore.getState();
 
