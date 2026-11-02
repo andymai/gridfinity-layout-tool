@@ -73,9 +73,8 @@ function topAt(mesh: MeshData, x: number, y: number): number {
 }
 
 /**
- * A column through the middle of each outer wall's cut and of every divider
- * window. Each sits just off the cut's centre line, which is full of shared
- * triangle edges, and a divider's sits 1.37mm along it, clear of a crossing
+ * Each probe sits just off its cut's centre line, which is full of shared
+ * triangle edges. A divider's sits 1.37mm along it, clear of a crossing
  * divider's half-thickness.
  */
 function probeColumns(params: BinParams): Record<string, [number, number]> {
@@ -111,7 +110,10 @@ function findDefect(mesh: MeshData, plain: MeshData, params: BinParams): string 
   if (bodyTop < boundingBox(plain.vertices).maxZ - MIN_DROP_MM) {
     return `body gone (top ${bodyTop.toFixed(2)})`;
   }
-  const solid = Object.entries(probeColumns(params))
+  const columns = Object.entries(probeColumns(params));
+  const missed = columns.filter(([, [x, y]]) => topAt(plain, x, y) === -Infinity);
+  if (missed.length > 0) return `no material to probe at ${missed.map(([w]) => w).join(', ')}`;
+  const solid = columns
     .filter(([, [x, y]]) => topAt(mesh, x, y) > topAt(plain, x, y) - MIN_DROP_MM)
     .map(([wall]) => wall);
   return solid.length > 0 ? `solid ${solid.join(', ')}` : null;

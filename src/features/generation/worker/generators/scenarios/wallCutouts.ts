@@ -11,8 +11,10 @@ function topAt(mesh: MeshData, x: number, y: number): number {
 }
 
 /**
- * A scoop the boolean dropped leaves its wall solid while every structural
- * check passes, so each wall is probed against the same bin uncut.
+ * A cut the boolean dropped leaves its wall solid, and one that came back
+ * empty takes the body with it and leaves the base, and every structural
+ * check passes either way. So the bin must keep its full height, and each
+ * wall is probed against the same bin uncut.
  */
 function scoopEverywhere(
   span: number,
@@ -39,6 +41,7 @@ function scoopEverywhere(
       params: { ...bin, compartments, walls: { ...walls, enabled: false } },
       assert: (cut, plain) => {
         const bb = boundingBox(plain.vertices);
+        expect(boundingBox(cut.vertices).maxZ, 'body height').toBeCloseTo(bb.maxZ, 1);
         const t = DEFAULT_BIN_PARAMS.wallThickness / 2;
         const columns: Record<string, readonly [number, number]> = {
           front: [0.37, bb.minY + t],

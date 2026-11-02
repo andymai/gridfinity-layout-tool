@@ -396,9 +396,8 @@ export function computeWallClips(
     ? buildCacheKey(
         'clip',
         params.walls.shape,
-        cutoutCfg.widthMm !== null ? 'mm' : 'pct',
-        cutoutCfg.widthMm !== null ? quantize(cutoutCfg.widthMm) : quantize(cutoutCfg.width),
-        quantize(cutoutCfg.depth),
+        quantize(cutWidth),
+        quantize(userCutHeight),
         cutoutCfg.alignment,
         quantize(cutoutCfg.offset),
         quantize(clipRadii?.top ?? 0),
