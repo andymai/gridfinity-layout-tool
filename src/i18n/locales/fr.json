@@ -1009,7 +1009,7 @@
   "binDesigner.cutouts.scanImport.resultSize": "≈ {width} × {depth} mm",
   "binDesigner.cutouts.scanImport.scaleHelp": "Saisissez la longueur mesurée pour que la découpe s’imprime à l’échelle.",
   "binDesigner.cutouts.scanImport.scaleLabel": "Taille réelle (plus grand côté, mm)",
-  "binDesigner.cutouts.scanImport.scaleLabelLargest": "Taille réelle du plus grand outil (plus grand côté, mm)",
+  "binDesigner.cutouts.scanImport.scaleLabelLongest": "Longueur réelle de l'outil le plus long (mm)",
   "binDesigner.cutouts.scanImport.sheetPlaceHint": "Posez l’outil dans le cadre de repères et photographiez-le à la verticale.",
   "binDesigner.cutouts.scanImport.sheetPrintHint": "Imprimez à 100 % (taille réelle) : la barre ci-dessus doit mesurer exactement 100 mm.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — feuille d’étalonnage pour le scan",

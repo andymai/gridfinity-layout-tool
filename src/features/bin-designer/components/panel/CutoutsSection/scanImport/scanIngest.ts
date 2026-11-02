@@ -27,11 +27,13 @@ export interface ParsedScan {
   readonly specs: readonly ParsedCutoutSpec[];
   readonly bounds: ScanBounds;
   /**
-   * What the user gives a real size for: the whole outline, or the largest
-   * tool when several lie side by side, since nobody knows the span of a batch.
+   * What the user gives a real size for: the whole outline, or the longest
+   * tool when several lie side by side, since nobody knows the span of a
+   * batch. Longest, not largest by area, so the prompt names a tool the user
+   * can pick out by eye.
    */
   readonly sized: ScanBounds;
-  readonly sizedByLargest: boolean;
+  readonly sizedByLongest: boolean;
 }
 
 /** Bounding box across every spec's [x, x+width] × [y, y+depth] footprint. */
@@ -69,11 +71,11 @@ export function parseScanSvg(svgString: string): Result<ParsedScan, SvgImportErr
     return err({ code: 'SVG_NO_SHAPES', detail: 'Traced outline has zero size' });
   }
 
-  const largest = specs.reduce((a, b) => (b.width * b.depth > a.width * a.depth ? b : a));
-  const own = computeScanBounds([largest]);
-  // A spec inside the largest one is detail on the same tool, not a second tool.
-  const sizedByLargest = own.width < bounds.width - 1e-6 || own.depth < bounds.depth - 1e-6;
-  return ok({ specs, bounds, sized: sizedByLargest ? own : bounds, sizedByLargest });
+  const span = (s: ParsedCutoutSpec) => Math.max(s.width, s.depth);
+  const own = computeScanBounds([specs.reduce((a, b) => (span(b) > span(a) ? b : a))]);
+  // A spec inside the longest one is detail on the same tool, not a second tool.
+  const sizedByLongest = own.width < bounds.width - 1e-6 || own.depth < bounds.depth - 1e-6;
+  return ok({ specs, bounds, sized: sizedByLongest ? own : bounds, sizedByLongest });
 }
 
 /**

@@ -1009,7 +1009,7 @@
   "binDesigner.cutouts.scanImport.resultSize": "≈ {width} × {depth} mm",
   "binDesigner.cutouts.scanImport.scaleHelp": "Zadej naměřenou délku, aby se výřez vytiskl v měřítku.",
   "binDesigner.cutouts.scanImport.scaleLabel": "Skutečná velikost (nejdelší strana, mm)",
-  "binDesigner.cutouts.scanImport.scaleLabelLargest": "Skutečná velikost největšího nástroje (nejdelší strana, mm)",
+  "binDesigner.cutouts.scanImport.scaleLabelLongest": "Skutečná délka nejdelšího nástroje (mm)",
   "binDesigner.cutouts.scanImport.sheetPlaceHint": "Nástroj položte dovnitř rámu se značkami a vyfoťte ho kolmo shora.",
   "binDesigner.cutouts.scanImport.sheetPrintHint": "Tiskněte ve 100 % (skutečná velikost): úsečka nahoře musí měřit přesně 100 mm.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — kalibrační list pro skenování",

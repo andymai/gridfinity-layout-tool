@@ -6,6 +6,7 @@ export {
   detectReference,
   sameReference,
   withCardSize,
+  withReference,
 } from './traceScene';
 export { withRefinedShape, type Refinement } from './refineScene';
 export { interiorSeed } from './toolBlobs';

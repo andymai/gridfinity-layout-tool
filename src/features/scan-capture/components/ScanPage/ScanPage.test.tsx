@@ -257,6 +257,22 @@ describe('ScanPage', () => {
     vi.unstubAllGlobals();
   });
 
+  it('holds removal until a tap’s redraw has landed', async () => {
+    mockTrace.mockReturnValue(ok(SCENE_TWO));
+    render(<ScanPage token={TOKEN} />);
+    selectPhoto();
+    const img = await screen.findByAltText('scan.photoAlt');
+
+    mockSegment.mockReturnValue(new Promise(() => {}));
+    fireEvent.pointerDown(img, { clientX: 20, clientY: 30 });
+
+    await waitFor(() =>
+      expect(screen.getAllByLabelText('scan.review.removeTool')[1]).toBeDisabled()
+    );
+    fireEvent.click(screen.getAllByLabelText('scan.review.removeTool')[1]);
+    expect(screen.getAllByText('scan.review.toolLabel')).toHaveLength(2);
+  });
+
   it('undoes a tap that swallowed other tools', async () => {
     mockTrace.mockReturnValue(ok(SCENE_TWO));
     render(<ScanPage token={TOKEN} />);

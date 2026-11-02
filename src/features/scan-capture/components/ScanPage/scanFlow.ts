@@ -1,9 +1,5 @@
-/**
- * The phone's trace passes: find every tool, let the model redraw each, and
- * fold a tap into the scene.
- */
-
-import { isOk } from '@/core/result';
+import { err, isOk, ok, type Result } from '@/core/result';
+import type { CardSizeMm } from '@/features/scan-capture/cardSize';
 import {
   interiorSeed,
   pointsToSvgPath,
@@ -11,6 +7,7 @@ import {
   segmentAt,
   traceScene,
   traceSceneSegmented,
+  withReference,
   withRefinedShape,
   type ImageDataLike,
   type Point,
@@ -21,10 +18,22 @@ import {
 } from '@/shared/scanTrace';
 
 /**
+ * Card size as the tracer's detect options. It steers the aspect ratio the
+ * detector looks for as well as the metric map, so a non-standard card is
+ * recognised as readily as an ID-1 one.
+ */
+export function cardOptions(size: CardSizeMm): { widthMm: number; heightMm: number } {
+  return { widthMm: size.longMm, heightMm: size.shortMm };
+}
+
+/**
  * The model redraws at most this many tools on its own. A busy surface can
  * turn up dozens of pieces, and each pass takes a noticeable moment on a phone.
  */
 export const MAX_AUTO_REFINE = 8;
+
+/** Nothing traced; or, for a tap, the model could not run. */
+export type TraceFlowError = 'noObject' | 'modelFailed';
 
 export interface TracedScene {
   readonly scene: SceneTrace;
@@ -41,15 +50,15 @@ export async function traceAll(
   canvas: HTMLCanvasElement,
   image: ImageDataLike,
   options: SceneTraceOptions
-): Promise<TracedScene | null> {
+): Promise<Result<TracedScene, 'noObject'>> {
   const classical = traceScene(image, options);
   if (!isOk(classical)) {
     try {
       const soft = await segmentAt(canvas, { x: 0.5, y: 0.5 });
       const traced = traceSceneSegmented(image, soft, options);
-      return isOk(traced) ? { scene: traced.value, canRefine: true } : null;
+      return isOk(traced) ? ok({ scene: traced.value, canRefine: true }) : err('noObject');
     } catch {
-      return null;
+      return err('noObject');
     }
   }
   let scene = classical.value;
@@ -61,23 +70,24 @@ export async function traceAll(
     try {
       soft = await segmentAt(canvas, interiorSeed(shape.imagePoints, image.width, image.height));
     } catch {
-      return { scene, canRefine: false };
+      return ok({ scene, canRefine: false });
     }
     const refined = traceSceneSegmented(image, soft, options, scene.reference);
     if (isOk(refined)) {
       scene = withRefinedShape(scene, refined.value.shapes[0], { kind: 'seeded', index });
     }
   }
-  return { scene, canRefine: true };
+  return ok({ scene, canRefine: true });
 }
 
 /**
  * `scene` with the tool at `seed` (0 to 1) redrawn by the model, or added if
- * the colour pass missed it. Throws when the model cannot run.
+ * the colour pass missed it.
  *
  * The tap re-solves the reference with the tapped tool left out, so a
  * card-shaped tool taken for the card gives way to the real one. When that
- * moves the reference, the other tools are found again against it.
+ * moves the reference, the other outlines are re-sized against it, not
+ * traced again, so a tool the user removed stays removed.
  */
 export async function traceTap(
   canvas: HTMLCanvasElement,
@@ -85,19 +95,23 @@ export async function traceTap(
   scene: SceneTrace,
   seed: Point,
   options: SceneTraceOptions
-): Promise<SceneTrace | null> {
-  const soft = await segmentAt(canvas, seed);
-  const tapped = traceSceneSegmented(image, soft, options);
-  if (!isOk(tapped)) return null;
-  let base = scene;
-  if (!sameReference(tapped.value.reference, scene.reference)) {
-    const again = traceScene(image, options, tapped.value.reference);
-    base = isOk(again) ? again.value : { ...tapped.value, shapes: [] };
+): Promise<Result<SceneTrace, TraceFlowError>> {
+  let soft: SoftMask;
+  try {
+    soft = await segmentAt(canvas, seed);
+  } catch {
+    return err('modelFailed');
   }
-  return withRefinedShape(base, tapped.value.shapes[0], {
+  const tapped = traceSceneSegmented(image, soft, options);
+  if (!isOk(tapped)) return err('noObject');
+  const base = sameReference(tapped.value.reference, scene.reference)
+    ? scene
+    : withReference(scene, tapped.value.reference, options);
+  const next = withRefinedShape(base, tapped.value.shapes[0], {
     kind: 'tapped',
     at: { x: seed.x * image.width, y: seed.y * image.height },
   });
+  return ok(next);
 }
 
 const round1 = (n: number): number => Math.round(n * 10) / 10;

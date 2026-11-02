@@ -3036,7 +3036,7 @@
   "binDesigner.cutouts.scanImport.sheetPrintHint": "დაბეჭდეთ 100%-ზე (რეალური ზომა): ზედა ზოლის სიგრძე ზუსტად 100 mm უნდა იყოს.",
   "binDesigner.cutouts.scanImport.sheetPlaceHint": "მოათავსეთ ხელსაწყო მარკერის ჩარჩოში და პირდაპირ ზემოდან გადაუღეთ.",
   "binDesigner.cutouts.scanImport.scaleLabel": "რეალური ზომა (ყველაზე გრძელი მხარე, mm)",
-  "binDesigner.cutouts.scanImport.scaleLabelLargest": "უდიდესი ხელსაწყოს რეალური ზომა (ყველაზე გრძელი მხარე, mm)",
+  "binDesigner.cutouts.scanImport.scaleLabelLongest": "ყველაზე გრძელი ხელსაწყოს რეალური სიგრძე (mm)",
   "binDesigner.cutouts.scanImport.scaleHelp": "შეიყვანეთ გაზომილი სიგრძე, რათა ამონაჭერი სწორ მასშტაბში დაიბეჭდოს.",
   "binDesigner.cutouts.scanImport.resultSize": "≈ {width} × {depth} mm",
   "binDesigner.cutouts.scanImport.add": "ყუთში დამატება",

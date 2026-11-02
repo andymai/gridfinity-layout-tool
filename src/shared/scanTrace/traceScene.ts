@@ -36,7 +36,7 @@ import { detectBaseplateGrid, type BaseplateDetectOptions } from './baseplateDet
 import type { LatticeFit } from './latticeFit';
 import type { CellQuad } from './latticeBlobs';
 import { segmentTools } from './colorSegment';
-import { findToolBlobs } from './toolBlobs';
+import { findToolBlobs, interiorSeed, pointInPolygon } from './toolBlobs';
 import { convexHull } from './minAreaRect';
 
 export interface SceneCard {
@@ -222,13 +222,22 @@ function finishTrace(
     return err({ code: 'DEGENERATE', detail: 'Outline collapsed to a line' });
   }
 
+  return ok(sized(outlines, reference, options));
+}
+
+/** Outlines in image pixels, framed and sized by `reference`. */
+function sized(
+  outlines: readonly (readonly Point[])[],
+  reference: SceneReference | null,
+  options: SceneTraceOptions
+): SceneTrace {
   const toMm = referenceToMm(reference, options);
   const shapes = outlines.map((imagePoints) => ({
     imagePoints,
     outputPoints: toMm ? toMm(imagePoints) : imagePoints,
   }));
   const lattice = reference && reference.kind !== 'card' ? reference : null;
-  return ok({
+  return {
     shapes,
     units: toMm ? 'mm' : 'px',
     card: reference?.kind === 'card' && toMm ? reference.card : null,
@@ -240,7 +249,29 @@ function finishTrace(
         }
       : null,
     reference,
-  });
+  };
+}
+
+/**
+ * `scene` sized by a different reference, its outlines otherwise kept, so a
+ * tool the user removed stays removed. An outline lying on the new reference
+ * goes: it was that card, traced as a tool while another object was taken
+ * for the card.
+ */
+export function withReference(
+  scene: SceneTrace,
+  reference: SceneReference | null,
+  options: SceneTraceOptions = {}
+): SceneTrace {
+  const quads = referenceQuads(reference);
+  const outlines = scene.shapes
+    .map((shape) => shape.imagePoints)
+    .filter((points) => {
+      // In pixels: a 1 × 1 frame leaves the seed unnormalised.
+      const seed = interiorSeed(points, 1, 1);
+      return !quads.some((quad) => pointInPolygon(seed, quad));
+    });
+  return sized(outlines, reference, options);
 }
 
 /**

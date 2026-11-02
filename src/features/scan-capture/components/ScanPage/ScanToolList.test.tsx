@@ -35,4 +35,13 @@ describe('ScanToolList', () => {
     fireEvent.click(screen.getAllByLabelText('scan.review.removeTool')[1]);
     expect(onRemove).toHaveBeenCalledWith(1);
   });
+
+  it('locks removal while the outlines are changing', () => {
+    render(
+      <ScanToolList shapes={[box(120, 30), box(40, 12)]} units="mm" disabled onRemove={vi.fn()} />
+    );
+    for (const button of screen.getAllByLabelText('scan.review.removeTool')) {
+      expect(button).toBeDisabled();
+    }
+  });
 });

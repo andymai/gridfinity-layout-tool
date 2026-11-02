@@ -3602,8 +3602,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.scanImport.sheetPlaceHint':
     'Place the tool inside the marker frame and photograph it straight down.',
   'binDesigner.cutouts.scanImport.scaleLabel': 'Real-world size (longest side, mm)',
-  'binDesigner.cutouts.scanImport.scaleLabelLargest':
-    'Real-world size of the largest tool (longest side, mm)',
+  'binDesigner.cutouts.scanImport.scaleLabelLongest': 'Real-world length of the longest tool (mm)',
   'binDesigner.cutouts.scanImport.scaleHelp':
     'Enter the measured length so the cutout prints to scale.',
   'binDesigner.cutouts.scanImport.resultSize': '≈ {width} × {depth} mm',

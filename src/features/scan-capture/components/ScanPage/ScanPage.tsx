@@ -16,6 +16,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Spinner } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { isOk } from '@/core/result';
 import {
   decodeImageToCanvas,
   imageDataFromCanvas,
@@ -33,7 +34,7 @@ import { CardSizeEditor } from '@/features/scan-capture/components/CardSizeEdito
 import { ProgressSteps, CaptureGuide, CardStatusIcon, SentIcon, TapIcon } from './ScanPageGuide';
 import type { Step } from './ScanPageGuide';
 import { ScanToolList } from './ScanToolList';
-import { bounds, svgFromShapes, traceAll, traceTap } from './scanFlow';
+import { bounds, cardOptions, svgFromShapes, traceAll, traceTap } from './scanFlow';
 
 interface ScanPageProps {
   readonly token: string;
@@ -65,18 +66,12 @@ const round1 = (n: number): number => Math.round(n * 10) / 10;
 /** Tool number badges, scaled to the photo so they read the same at any resolution. */
 const badgeRadius = (image: ImageDataLike): number => Math.max(image.width, image.height) * 0.025;
 
+/** A redraw or an upload is under way, so the outlines must hold still. */
+const busy = (review: ReviewState): boolean => review.resegmenting || review.sending;
+
 function measuredFromKey(grid: SceneTrace['grid']): string {
   if (!grid) return 'scan.cardMeasured';
   return grid.kind === 'sheet' ? 'scan.gridMeasured' : 'scan.baseplateMeasured';
-}
-
-/**
- * Card size as the tracer's detect options. It steers the aspect ratio the
- * detector looks for as well as the metric map, so a non-standard card is
- * recognised as readily as an ID-1 one.
- */
-function cardOptions(size: CardSizeMm): { widthMm: number; heightMm: number } {
-  return { widthMm: size.longMm, heightMm: size.shortMm };
 }
 
 export function ScanPage({ token }: ScanPageProps) {
@@ -112,7 +107,7 @@ export function ScanPage({ token }: ScanPageProps) {
       }
       const image = imageDataFromCanvas(canvas);
       const traced = await traceAll(canvas, image, cardOptions(cardSize));
-      if (!traced) {
+      if (!isOk(traced)) {
         setStatus({ kind: 'error', messageKey: 'scan.error.noObject' });
         return;
       }
@@ -120,10 +115,10 @@ export function ScanPage({ token }: ScanPageProps) {
         kind: 'review',
         canvas,
         image,
-        scene: traced.scene,
+        scene: traced.value.scene,
         previous: null,
         photoUrl: URL.createObjectURL(file),
-        canRefine: traced.canRefine,
+        canRefine: traced.value.canRefine,
         resegmenting: false,
         sending: false,
       });
@@ -136,7 +131,7 @@ export function ScanPage({ token }: ScanPageProps) {
     (e: React.PointerEvent<HTMLDivElement>) => {
       const box = imageBoxRef.current;
       setStatus((prev) => {
-        if (prev.kind !== 'review' || !box || !prev.canRefine || prev.resegmenting) return prev;
+        if (prev.kind !== 'review' || !box || !prev.canRefine || busy(prev)) return prev;
         const rect = box.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) return prev;
         const seed: Point = {
@@ -145,20 +140,15 @@ export function ScanPage({ token }: ScanPageProps) {
         };
         const { canvas, image, scene: current } = prev;
         void (async () => {
-          try {
-            const next = await traceTap(canvas, image, current, seed, cardOptions(cardSize));
-            if (next) {
-              setStatus((s) =>
-                s.kind === 'review'
-                  ? { ...s, scene: next, previous: s.scene, resegmenting: false }
-                  : s
-              );
-              return;
-            }
-          } catch {
-            // Keep the previous outlines on failure.
-          }
-          setStatus((s) => (s.kind === 'review' ? { ...s, resegmenting: false } : s));
+          const next = await traceTap(canvas, image, current, seed, cardOptions(cardSize));
+          // Remove and Undo are locked while this runs, so `current` is still the live scene.
+          setStatus((s) =>
+            s.kind !== 'review'
+              ? s
+              : isOk(next)
+                ? { ...s, scene: next.value, previous: s.scene, resegmenting: false }
+                : { ...s, resegmenting: false }
+          );
         })();
         return { ...prev, resegmenting: true };
       });
@@ -168,7 +158,7 @@ export function ScanPage({ token }: ScanPageProps) {
 
   const handleRemove = useCallback((index: number) => {
     setStatus((prev) =>
-      prev.kind === 'review' && prev.scene.shapes.length > 1
+      prev.kind === 'review' && prev.scene.shapes.length > 1 && !busy(prev)
         ? {
             ...prev,
             scene: { ...prev.scene, shapes: prev.scene.shapes.filter((_, i) => i !== index) },
@@ -180,7 +170,7 @@ export function ScanPage({ token }: ScanPageProps) {
 
   const handleUndo = useCallback(() => {
     setStatus((prev) =>
-      prev.kind === 'review' && prev.previous && !prev.resegmenting
+      prev.kind === 'review' && prev.previous && !busy(prev)
         ? { ...prev, scene: prev.previous, previous: null }
         : prev
     );
@@ -363,7 +353,7 @@ export function ScanPage({ token }: ScanPageProps) {
                   variant="ghost"
                   size="md"
                   className="self-end"
-                  disabled={status.resegmenting}
+                  disabled={busy(status)}
                   onClick={handleUndo}
                 >
                   {t('scan.review.undo')}
@@ -420,7 +410,12 @@ export function ScanPage({ token }: ScanPageProps) {
               {scene.card && <CardSizeEditor size={cardSize} onChange={handleCardSize} />}
 
               {toolCount > 1 && (
-                <ScanToolList shapes={scene.shapes} units={scene.units} onRemove={handleRemove} />
+                <ScanToolList
+                  shapes={scene.shapes}
+                  units={scene.units}
+                  disabled={busy(status)}
+                  onRemove={handleRemove}
+                />
               )}
 
               {status.canRefine ? (

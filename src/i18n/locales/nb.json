@@ -1009,7 +1009,7 @@
   "binDesigner.cutouts.scanImport.resultSize": "≈ {width} × {depth} mm",
   "binDesigner.cutouts.scanImport.scaleHelp": "Skriv inn den målte lengden så utskjæringen skrives ut i riktig målestokk.",
   "binDesigner.cutouts.scanImport.scaleLabel": "Virkelig størrelse (lengste side, mm)",
-  "binDesigner.cutouts.scanImport.scaleLabelLargest": "Virkelig størrelse på det største verktøyet (lengste side, mm)",
+  "binDesigner.cutouts.scanImport.scaleLabelLongest": "Virkelig lengde på det lengste verktøyet (mm)",
   "binDesigner.cutouts.scanImport.sheetPlaceHint": "Legg verktøyet inne i markørrammen og fotografer det rett ovenfra.",
   "binDesigner.cutouts.scanImport.sheetPrintHint": "Skriv ut i 100 % (faktisk størrelse): streken over må måle nøyaktig 100 mm.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — kalibreringsark for skanning",

@@ -1009,7 +1009,7 @@
   "binDesigner.cutouts.scanImport.resultSize": "≈ {width} × {depth} mm",
   "binDesigner.cutouts.scanImport.scaleHelp": "Введіть виміряну довжину, щоб виріз надрукувався в правильному масштабі.",
   "binDesigner.cutouts.scanImport.scaleLabel": "Реальний розмір (найдовша сторона, мм)",
-  "binDesigner.cutouts.scanImport.scaleLabelLargest": "Реальний розмір найбільшого інструмента (найдовша сторона, мм)",
+  "binDesigner.cutouts.scanImport.scaleLabelLongest": "Реальна довжина найдовшого інструмента (мм)",
   "binDesigner.cutouts.scanImport.sheetPlaceHint": "Покладіть інструмент усередину рамки з маркерами та сфотографуйте його прямо згори.",
   "binDesigner.cutouts.scanImport.sheetPrintHint": "Друкуйте у 100 % (реальний розмір): смуга вгорі має бути завдовжки рівно 100 мм.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — калібрувальний аркуш для сканування",

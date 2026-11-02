@@ -1,8 +1,3 @@
-/**
- * The tools a scan found, numbered as they are on the photo, each with its
- * size and a way to leave it out of the upload.
- */
-
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { SceneShape } from '@/shared/scanTrace';
@@ -11,12 +6,13 @@ import { bounds } from './scanFlow';
 interface ScanToolListProps {
   readonly shapes: readonly SceneShape[];
   readonly units: 'mm' | 'px';
+  readonly disabled?: boolean;
   readonly onRemove: (index: number) => void;
 }
 
 const round1 = (n: number): number => Math.round(n * 10) / 10;
 
-export function ScanToolList({ shapes, units, onRemove }: ScanToolListProps) {
+export function ScanToolList({ shapes, units, disabled = false, onRemove }: ScanToolListProps) {
   const t = useTranslation();
   return (
     <ol className="flex w-full flex-col divide-y divide-stroke-subtle rounded-lg border border-stroke">
@@ -46,6 +42,7 @@ export function ScanToolList({ shapes, units, onRemove }: ScanToolListProps) {
               type="button"
               variant="ghost"
               size="md"
+              disabled={disabled}
               onClick={() => onRemove(i)}
               aria-label={t('scan.review.removeTool', { index })}
             >

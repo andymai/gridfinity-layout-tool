@@ -1009,7 +1009,7 @@
   "binDesigner.cutouts.scanImport.resultSize": "≈ {width} × {depth} mm",
   "binDesigner.cutouts.scanImport.scaleHelp": "切り抜きが正しい縮尺で印刷されるよう、実測した長さを入力してください。",
   "binDesigner.cutouts.scanImport.scaleLabel": "実寸（最長辺、mm）",
-  "binDesigner.cutouts.scanImport.scaleLabelLargest": "最も大きい工具の実寸（最長辺、mm）",
+  "binDesigner.cutouts.scanImport.scaleLabelLongest": "最も長い工具の実際の長さ（mm）",
   "binDesigner.cutouts.scanImport.sheetPlaceHint": "マーカーの枠の内側に工具を置き、真上から撮影してください。",
   "binDesigner.cutouts.scanImport.sheetPrintHint": "100%（原寸）で印刷してください。上のバーがちょうど 100 mm になる必要があります。",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — スキャン用キャリブレーションシート",

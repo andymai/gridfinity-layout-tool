@@ -6,6 +6,7 @@ import {
   detectCard,
   buildToolTraceSoft,
   withCardSize,
+  withReference,
   sameReference,
   type SceneReference,
 } from './traceScene';
@@ -314,5 +315,27 @@ describe('sameReference', () => {
   it('tells a card found elsewhere, or none, apart', () => {
     expect(sameReference(card(0), card(30))).toBe(false);
     expect(sameReference(card(0), null)).toBe(false);
+  });
+});
+
+describe('withReference', () => {
+  it('keeps the outlines, sizes them by the new card and drops the card itself', () => {
+    const traced = traceScene(render(true, 360, 260, [TOOL_MM, BAR_MM]), { smooth: false });
+    if (!isOk(traced) || !traced.value.reference) throw new Error('fixture failed');
+    const unsized: SceneReference | null = null;
+    const pixels = withReference(traced.value, unsized);
+    expect(pixels.units).toBe('px');
+    expect(pixels.shapes.map((s) => s.imagePoints)).toEqual(
+      traced.value.shapes.map((s) => s.imagePoints)
+    );
+
+    // Sized again by the same card, from a scene that had traced it as a tool.
+    const withCardAsTool = {
+      ...pixels,
+      shapes: [...pixels.shapes, { imagePoints: project(CARD_MM), outputPoints: [] }],
+    };
+    const resized = withReference(withCardAsTool, traced.value.reference);
+    expect(resized.units).toBe('mm');
+    expect(resized.shapes).toEqual(traced.value.shapes);
   });
 });

@@ -1009,7 +1009,7 @@
   "binDesigner.cutouts.scanImport.resultSize": "≈ {width} × {depth} mm",
   "binDesigner.cutouts.scanImport.scaleHelp": "输入测得的长度，使挖槽按比例打印。",
   "binDesigner.cutouts.scanImport.scaleLabel": "实际尺寸（最长边，mm）",
-  "binDesigner.cutouts.scanImport.scaleLabelLargest": "最大工具的实际尺寸（最长边，mm）",
+  "binDesigner.cutouts.scanImport.scaleLabelLongest": "最长工具的实际长度（mm）",
   "binDesigner.cutouts.scanImport.sheetPlaceHint": "把工具放在标记方框内，从正上方拍摄。",
   "binDesigner.cutouts.scanImport.sheetPrintHint": "请以 100%（实际大小）打印：上方的标尺必须正好是 100 毫米。",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — 扫描校准页",

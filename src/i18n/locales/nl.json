@@ -1009,7 +1009,7 @@
   "binDesigner.cutouts.scanImport.resultSize": "≈ {width} × {depth} mm",
   "binDesigner.cutouts.scanImport.scaleHelp": "Voer de gemeten lengte in zodat de uitsparing op schaal wordt geprint.",
   "binDesigner.cutouts.scanImport.scaleLabel": "Werkelijke grootte (langste zijde, mm)",
-  "binDesigner.cutouts.scanImport.scaleLabelLargest": "Werkelijke grootte van het grootste gereedschap (langste zijde, mm)",
+  "binDesigner.cutouts.scanImport.scaleLabelLongest": "Werkelijke lengte van het langste gereedschap (mm)",
   "binDesigner.cutouts.scanImport.sheetPlaceHint": "Leg het gereedschap binnen het markerkader en fotografeer het recht van boven.",
   "binDesigner.cutouts.scanImport.sheetPrintHint": "Print op 100% (werkelijke grootte): de balk hierboven moet precies 100 mm meten.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — kalibratieblad voor scannen",

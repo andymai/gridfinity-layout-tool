@@ -1009,7 +1009,7 @@
   "binDesigner.cutouts.scanImport.resultSize": "≈ {width} × {depth} mm",
   "binDesigner.cutouts.scanImport.scaleHelp": "Wpisz zmierzoną długość, aby wycięcie wydrukowało się w skali.",
   "binDesigner.cutouts.scanImport.scaleLabel": "Rzeczywisty rozmiar (najdłuższy bok, mm)",
-  "binDesigner.cutouts.scanImport.scaleLabelLargest": "Rzeczywisty rozmiar największego narzędzia (najdłuższy bok, mm)",
+  "binDesigner.cutouts.scanImport.scaleLabelLongest": "Rzeczywista długość najdłuższego narzędzia (mm)",
   "binDesigner.cutouts.scanImport.sheetPlaceHint": "Połóż narzędzie wewnątrz ramki ze znacznikami i sfotografuj je prosto z góry.",
   "binDesigner.cutouts.scanImport.sheetPrintHint": "Drukuj w 100% (rzeczywisty rozmiar): pasek powyżej musi mieć dokładnie 100 mm.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — arkusz kalibracyjny do skanowania",

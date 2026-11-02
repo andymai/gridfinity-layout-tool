@@ -1009,7 +1009,7 @@
   "binDesigner.cutouts.scanImport.resultSize": "≈ {width} × {depth} mm",
   "binDesigner.cutouts.scanImport.scaleHelp": "Informe o comprimento medido para que o recorte seja impresso na escala correta.",
   "binDesigner.cutouts.scanImport.scaleLabel": "Tamanho real (lado mais longo, mm)",
-  "binDesigner.cutouts.scanImport.scaleLabelLargest": "Tamanho real da maior ferramenta (lado mais longo, mm)",
+  "binDesigner.cutouts.scanImport.scaleLabelLongest": "Comprimento real da ferramenta mais longa (mm)",
   "binDesigner.cutouts.scanImport.sheetPlaceHint": "Coloque a ferramenta dentro da moldura de marcadores e fotografe-a de cima.",
   "binDesigner.cutouts.scanImport.sheetPrintHint": "Imprima em 100% (tamanho real): a barra acima deve medir exatamente 100 mm.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — folha de calibração para digitalização",

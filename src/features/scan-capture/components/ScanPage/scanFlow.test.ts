@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type * as ScanTrace from '@/shared/scanTrace';
-import { ok } from '@/core/result';
+import { err, ok } from '@/core/result';
 import type { SceneShape, SceneTrace } from '@/shared/scanTrace';
 import { MAX_AUTO_REFINE, svgFromShapes, traceAll, traceTap } from './scanFlow';
 
@@ -62,7 +62,7 @@ describe('traceAll', () => {
 
     const traced = await traceAll(CANVAS, IMAGE, {});
 
-    expect(traced).toEqual({ scene: found, canRefine: false });
+    expect(traced).toEqual(ok({ scene: found, canRefine: false }));
     expect(mockSegment).toHaveBeenCalledTimes(1);
   });
 
@@ -80,19 +80,30 @@ describe('traceAll', () => {
 });
 
 describe('traceTap', () => {
-  it('finds the other tools again when the tap moves the card', async () => {
-    // The colour pass took a card-shaped tool for the card; the tap shows it is a tool.
-    const before = scene([box(50, 5, 90, 40)], 0);
+  it('re-sizes the kept outlines, not the photo, when the tap moves the card', async () => {
+    // The colour pass took a card-shaped tool for the card, and traced the
+    // real card as a tool; the user had already removed something else.
+    const tool = box(50, 5, 90, 40);
+    const realCard = box(71, 61, 89, 74);
+    const before = scene([tool, realCard], 0);
     const tapped = scene([box(2, 58, 24, 77)], 70);
-    const refound = scene([box(50, 5, 90, 40)], 70);
     mockTraceSegmented.mockReturnValue(ok(tapped));
-    mockTrace.mockReturnValue(ok(refound));
 
     const next = await traceTap(CANVAS, IMAGE, before, { x: 0.1, y: 0.85 }, {});
+    if (!next.ok) throw new Error('tap failed');
 
-    expect(mockTrace).toHaveBeenCalledWith(IMAGE, {}, tapped.reference);
-    expect(next?.reference).toEqual(tapped.reference);
-    expect(next?.shapes).toEqual([refound.shapes[0], tapped.shapes[0]]);
+    expect(mockTrace).not.toHaveBeenCalled();
+    expect(next.value.reference).toEqual(tapped.reference);
+    expect(next.value.shapes.map((s) => s.imagePoints)).toEqual([
+      tool.imagePoints,
+      tapped.shapes[0].imagePoints,
+    ]);
+  });
+
+  it('reports a model that cannot run instead of throwing', async () => {
+    mockSegment.mockRejectedValue(new Error('no model'));
+    const next = await traceTap(CANVAS, IMAGE, scene([box(5, 5, 30, 40)]), { x: 0.2, y: 0.2 }, {});
+    expect(next).toEqual(err('modelFailed'));
   });
 
   it('keeps the scene’s reference when the tap agrees with it', async () => {
@@ -102,7 +113,7 @@ describe('traceTap', () => {
     const next = await traceTap(CANVAS, IMAGE, before, { x: 0.15, y: 0.25 }, {});
 
     expect(mockTrace).not.toHaveBeenCalled();
-    expect(next?.shapes).toHaveLength(2);
+    expect(next.ok && next.value.shapes).toHaveLength(2);
   });
 });
 

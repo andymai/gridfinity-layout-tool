@@ -303,8 +303,8 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
             <div className="flex flex-col gap-1">
               <label htmlFor={fieldId} className="text-sm font-medium text-content-primary">
                 {t(
-                  stage.parsed.sizedByLargest
-                    ? 'binDesigner.cutouts.scanImport.scaleLabelLargest'
+                  stage.parsed.sizedByLongest
+                    ? 'binDesigner.cutouts.scanImport.scaleLabelLongest'
                     : 'binDesigner.cutouts.scanImport.scaleLabel'
                 )}
               </label>

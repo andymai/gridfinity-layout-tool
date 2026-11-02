@@ -64,20 +64,30 @@ describe('parseScanSvg', () => {
   it('sizes a scan of one tool by the whole outline', () => {
     const result = parseScanSvg(RECT_WIDE);
     if (!isOk(result)) throw new Error('fixture failed');
-    expect(result.value.sizedByLargest).toBe(false);
+    expect(result.value.sizedByLongest).toBe(false);
     expect(result.value.sized).toEqual(result.value.bounds);
   });
 
-  it('sizes a scan of several tools by the largest one', () => {
+  it('sizes a scan of several tools by the longest one', () => {
     const result = parseScanSvg(
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100">' +
         '<rect x="0" y="0" width="120" height="40"/>' +
         '<rect x="200" y="0" width="30" height="90"/></svg>'
     );
     if (!isOk(result)) throw new Error('fixture failed');
-    expect(result.value.sizedByLargest).toBe(true);
+    expect(result.value.sizedByLongest).toBe(true);
     expect(result.value.sized.longest).toBeCloseTo(120, 5);
     expect(result.value.bounds.longest).toBeCloseTo(230, 5);
+  });
+
+  it('picks the longest tool, not the bulkiest', () => {
+    const result = parseScanSvg(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100">' +
+        '<rect x="0" y="0" width="60" height="60"/>' +
+        '<rect x="100" y="0" width="150" height="10"/></svg>'
+    );
+    if (!isOk(result)) throw new Error('fixture failed');
+    expect(result.value.sized.longest).toBeCloseTo(150, 5);
   });
 
   it('treats detail inside an outline as part of one tool', () => {
@@ -87,7 +97,7 @@ describe('parseScanSvg', () => {
         '<rect x="20" y="20" width="10" height="10"/></svg>'
     );
     if (!isOk(result)) throw new Error('fixture failed');
-    expect(result.value.sizedByLargest).toBe(false);
+    expect(result.value.sizedByLongest).toBe(false);
     expect(result.value.sized.longest).toBeCloseTo(100, 5);
   });
 

@@ -7,7 +7,7 @@
  */
 
 import type { Mask, Point } from './types';
-import { labelComponents, maskFromLabel } from './components';
+import { labelComponents } from './components';
 import { traceContour } from './contour';
 import { fillPolygon } from './colorSegment';
 
@@ -38,21 +38,50 @@ export function findToolBlobs(mask: Mask, minAreaPx: number): ToolBlob[] {
   const { labels, components } = labelComponents(mask);
   const largest = components.reduce((m, c) => Math.max(m, c.area), 0);
   const floor = Math.max(minAreaPx, largest * SPECK_SHARE);
-  const kept = components
-    .filter((c) => c.area >= floor)
-    .sort((a, b) => b.area - a.area)
-    .map((c) => ({
-      start: c.start,
-      areaPx: c.area,
-      contour: traceContour(maskFromLabel(labels, c.label, width, height), c.start),
-    }));
+  const keep = components.filter((c) => c.area >= floor);
+  // One pass for every kept piece's bounds, so each is traced in its own crop
+  // rather than a full-frame copy per piece.
+  const slot = new Map(keep.map((c, i) => [c.label, i]));
+  const box = keep.map(() => ({ x0: width, y0: height, x1: -1, y1: -1 }));
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = slot.get(labels[y * width + x]);
+      if (i === undefined) continue;
+      const b = box[i];
+      if (x < b.x0) b.x0 = x;
+      if (x > b.x1) b.x1 = x;
+      if (y < b.y0) b.y0 = y;
+      if (y > b.y1) b.y1 = y;
+    }
+  }
+  const kept = keep
+    .map((c, i) => {
+      const b = box[i];
+      // A blank pixel all round, so the trace never runs off the crop.
+      const w = b.x1 - b.x0 + 3;
+      const h = b.y1 - b.y0 + 3;
+      const data = new Uint8Array(w * h);
+      for (let y = b.y0; y <= b.y1; y++) {
+        for (let x = b.x0; x <= b.x1; x++) {
+          if (labels[y * width + x] === c.label) data[(y - b.y0 + 1) * w + (x - b.x0 + 1)] = 1;
+        }
+      }
+      const local = traceContour(
+        { width: w, height: h, data },
+        { x: c.start.x - b.x0 + 1, y: c.start.y - b.y0 + 1 }
+      );
+      const contour = local.map((p) => ({ x: p.x + b.x0 - 1, y: p.y + b.y0 - 1 }));
+      return { start: c.start, areaPx: c.area, contour };
+    })
+    .sort((a, b) => b.areaPx - a.areaPx);
   // Off the pixel grid, so the ray never grazes a contour vertex. A pixel of
   // another piece is at least two pixels from this contour, so the nudge
-  // cannot carry it across.
+  // cannot carry it across. No area test: a thin ring holds fewer pixels than
+  // a solid piece lying in its hole.
   const inside = (p: Point, contour: readonly Point[]) =>
     pointInPolygon({ x: p.x + 0.25, y: p.y + 0.25 }, contour);
   return kept
-    .filter((c) => !kept.some((o) => o !== c && o.areaPx > c.areaPx && inside(c.start, o.contour)))
+    .filter((c) => !kept.some((o) => o !== c && inside(c.start, o.contour)))
     .map(({ contour, areaPx }) => ({ contour, areaPx }));
 }
 

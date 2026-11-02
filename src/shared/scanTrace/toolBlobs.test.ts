@@ -45,6 +45,27 @@ describe('findToolBlobs', () => {
     expect(blobs[0].areaPx).toBe(80 * 80 - 50 * 50);
   });
 
+  it('drops a solid piece inside a thin ring that holds fewer pixels', () => {
+    const ring = (x: number, y: number) => box(10, 10, 89, 89)(x, y) && !box(15, 15, 84, 84)(x, y);
+    const inner = box(20, 20, 79, 79);
+    const blobs = findToolBlobs(
+      maskOf(100, 100, (x, y) => ring(x, y) || inner(x, y)),
+      16
+    );
+    expect(blobs).toHaveLength(1);
+    expect(blobs[0].areaPx).toBe(80 * 80 - 70 * 70);
+  });
+
+  it('traces each piece at its place in the frame', () => {
+    const piece = box(30, 40, 59, 49);
+    const [blob] = findToolBlobs(maskOf(100, 80, piece), 16);
+    const xs = blob.contour.map((p) => p.x);
+    const ys = blob.contour.map((p) => p.y);
+    expect([Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)]).toEqual([
+      30, 59, 40, 49,
+    ]);
+  });
+
   it('finds nothing in an empty mask', () => {
     expect(
       findToolBlobs(

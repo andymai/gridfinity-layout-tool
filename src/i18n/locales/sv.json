@@ -1009,7 +1009,7 @@
   "binDesigner.cutouts.scanImport.resultSize": "≈ {width} × {depth} mm",
   "binDesigner.cutouts.scanImport.scaleHelp": "Ange den uppmätta längden så att urskärningen skrivs ut i rätt skala.",
   "binDesigner.cutouts.scanImport.scaleLabel": "Verklig storlek (längsta sidan, mm)",
-  "binDesigner.cutouts.scanImport.scaleLabelLargest": "Verklig storlek på det största verktyget (längsta sidan, mm)",
+  "binDesigner.cutouts.scanImport.scaleLabelLongest": "Verklig längd på det längsta verktyget (mm)",
   "binDesigner.cutouts.scanImport.sheetPlaceHint": "Lägg verktyget innanför markörramen och fotografera det rakt uppifrån.",
   "binDesigner.cutouts.scanImport.sheetPrintHint": "Skriv ut i 100 % (verklig storlek): stapeln ovan måste mäta exakt 100 mm.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — kalibreringsark för skanning",
