@@ -1,0 +1,49 @@
+src/features/bin-designer/types/pullTab.ts
+  s_f721a21584cb95::t_f7110686a91a54 12-13
+src/shared/utils/pullTabPlan.test.ts
+  s_f721a21584cb95::t_2d0028aaafb895 338-340,346-350,352-365
+  s_f721a21584cb95::t_16e7ac9483d727 351
+  s_f721a21584cb95::t_fa77af268ff9bc 14,18
+  s_f721a21584cb95::t_65ca1525c085f6 20,374,406,408
+  s_f721a21584cb95::t_e0eb9df36538ca 366-367
+src/features/generation/worker/generators/binGenerator.scenario.pullTab.test.ts
+  s_f721a21584cb95::t_65ca1525c085f6 3,806
+api/lib/designerPullTabValidation.ts
+  s_f721a21584cb95::t_716abf20e2195f 1,5-6,8,33,46-47,51-52,54
+src/features/generation/worker/generators/pullTabBuilder.ts
+  s_f721a21584cb95::t_f7110686a91a54 71
+src/features/bin-designer/components/panel/PullTabSection/PullTabSection.tsx
+  s_f721a21584cb95::t_304fde5631319c 18,80-82
+  s_f721a21584cb95::t_f7110686a91a54 39,104-106
+src/features/generation/worker/generators/pipeline/context.ts
+  s_f721a21584cb95::t_3c52b036bc7719 349
+src/shared/utils/pullTabPlan.ts
+  s_f721a21584cb95::t_304fde5631319c 77,269,288-300,334
+  s_f721a21584cb95::t_978a4844550c34 319-324
+  s_f721a21584cb95::t_9b58e9c457a734 108,110,239,241-246
+  s_f721a21584cb95::t_f7110686a91a54 59-61,251
+  s_f721a21584cb95::t_98be35c41501cc 301
+src/features/bin-designer/components/panel/PullTabSection/PullTabSection.test.tsx
+  s_f721a21584cb95::t_f7ed3450742c7c 323
+  s_f721a21584cb95::t_0f1601582769d6 74-76,91-93
+  s_f721a21584cb95::t_152419d12db15c 77
+api/lib/designerValidation.crossBoundary.test.ts
+  s_f721a21584cb95::t_716abf20e2195f 45-49,124-125,177-182,422-425
+  s_f721a21584cb95::t_83f78d7f222c90 426-427
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0a52649f5566ee3cf9e55106306bfbaee021dc99",
+  "prompts": {},
+  "sessions": {
+    "s_f721a21584cb95": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14ff3cc8-6691-4939-a25c-f6ba932191ef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
