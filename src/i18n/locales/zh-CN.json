@@ -4257,6 +4257,8 @@
   "scan.review.remove": "移除",
   "scan.review.removeTool": "移除工具 {index}",
   "scan.review.undo": "撤销",
+  "scan.review.keepHoles": "保留孔洞",
+  "scan.review.keepHolesHint": "在透过工具能看到底面的地方保留塑料，比如环的内部。反光可能看起来像孔洞。",
   "scan.review.tapHint": "如果高亮的形状不对，请点按照片中你的工具。",
   "scan.sending": "发送中…",
   "scan.sent.another": "再扫一个",

@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'scan-keep-holes',
+    date: '2026-11-02',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Scanned tools keep their holes' },
+    body: {
+      en: 'When the phone scanner sees the surface through a tool, such as inside a spanner’s ring or a coiled cable, turn on Keep holes and the outline arrives in the bin designer with an island of plastic standing in each hole. Anything resting inside a hole comes along as a tool of its own. It is off by default, because a shiny reflection can look like a hole too.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'cutout-islands',
     date: '2026-11-02',
     kind: 'new',

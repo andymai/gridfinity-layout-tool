@@ -141,7 +141,7 @@ describe('ScanPage', () => {
     expect(screen.getByText('scan.review.confirmTitle')).toBeInTheDocument();
     expect(screen.getByText('scan.use')).toBeInTheDocument();
     // Two overlays: the tool outline and the detected-card highlight.
-    expect(document.querySelectorAll('polygon')).toHaveLength(2);
+    expect(document.querySelectorAll('polygon, path[fill-rule]')).toHaveLength(2);
     expect(screen.getByText('binDesigner.cutouts.scanImport.resultSize')).toBeInTheDocument();
     expect(screen.getByText('scan.cardMeasured')).toBeInTheDocument();
     // A flat shot (skew 0) shows no steep-angle caution.
@@ -188,7 +188,7 @@ describe('ScanPage', () => {
 
     expect(await screen.findByText('scan.noCardTitle')).toBeInTheDocument();
     expect(screen.getByText('scan.noCardHint')).toBeInTheDocument();
-    expect(document.querySelectorAll('polygon')).toHaveLength(1);
+    expect(document.querySelectorAll('polygon, path[fill-rule]')).toHaveLength(1);
   });
 
   it('re-segments at the tapped point', async () => {
@@ -229,7 +229,7 @@ describe('ScanPage', () => {
     expect(screen.getAllByText('scan.review.toolLabel')).toHaveLength(2);
     expect(screen.getByText('scan.review.toolsFound')).toBeInTheDocument();
     // Two tool outlines plus the card.
-    expect(document.querySelectorAll('polygon')).toHaveLength(3);
+    expect(document.querySelectorAll('polygon, path[fill-rule]')).toHaveLength(3);
     // The model redrew each tool from a seed inside it.
     expect(mockSegment).toHaveBeenCalledTimes(2);
 
@@ -291,6 +291,37 @@ describe('ScanPage', () => {
     expect(screen.queryByText('scan.review.undo')).toBeNull();
   });
 
+  it('keeps holes, and the tool in one, only once the switch is on', async () => {
+    const ring: SceneShape = { ...box(10, 10, 60, 60), holes: [box(25, 25, 45, 45)] };
+    const nut: SceneShape = { ...box(30, 30, 40, 40), inHole: true };
+    mockTrace.mockReturnValue(ok({ ...SCENE_MM, shapes: [ring, nut] }));
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+    vi.stubGlobal('fetch', fetchMock);
+    render(<ScanPage token={TOKEN} />);
+    selectPhoto();
+
+    // Off: one tool, its outline alone.
+    expect(await screen.findByText('scan.review.keepHoles')).toBeInTheDocument();
+    expect(screen.getByText('scan.use')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('switch', { name: 'scan.review.keepHoles' }));
+
+    expect(screen.getAllByText('scan.review.toolLabel')).toHaveLength(2);
+    fireEvent.click(screen.getByText('scan.useMany'));
+    await screen.findByText('scan.sent.titleMany');
+    const svg = lastUploadedSvg(fetchMock);
+    expect(svg.match(/<path /g)).toHaveLength(2);
+    expect(svg).toContain('fill-rule="evenodd"');
+    vi.unstubAllGlobals();
+  });
+
+  it('offers no hole switch when nothing has a hole', async () => {
+    render(<ScanPage token={TOKEN} />);
+    selectPhoto();
+    await screen.findByAltText('scan.photoAlt');
+    expect(screen.queryByText('scan.review.keepHoles')).toBeNull();
+  });
+
   it('takes the model’s redraw when it agrees with the tool it was seeded in', async () => {
     const redrawn = box(11, 11, 34, 54);
     mockTraceSegmented.mockReturnValue(ok({ ...SCENE_MM, shapes: [redrawn] }));
@@ -298,8 +329,8 @@ describe('ScanPage', () => {
     selectPhoto();
 
     await screen.findByAltText('scan.photoAlt');
-    const outline = document.querySelectorAll('polygon')[1];
-    expect(outline.getAttribute('points')).toBe('11,11 34,11 34,54 11,54');
+    const outline = document.querySelector('path[fill-rule="evenodd"]');
+    expect(outline?.getAttribute('d')).toBe('M 11 11 L 34 11 L 34 54 L 11 54 Z');
   });
 
   it('asks the model for the middle of the frame when the colour pass finds nothing', async () => {

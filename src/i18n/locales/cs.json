@@ -4257,6 +4257,8 @@
   "scan.review.remove": "Odebrat",
   "scan.review.removeTool": "Odebrat nástroj {index}",
   "scan.review.undo": "Zpět",
+  "scan.review.keepHoles": "Zachovat otvory",
+  "scan.review.keepHolesHint": "Ponechá plast tam, kde nástrojem prosvítá podložka, třeba uvnitř kroužku. Odlesk může vypadat jako otvor.",
   "scan.review.tapHint": "Pokud je zvýrazněný tvar špatně, klepni na svůj nástroj ve fotce.",
   "scan.sending": "Odesílám…",
   "scan.sent.another": "Naskenovat další",

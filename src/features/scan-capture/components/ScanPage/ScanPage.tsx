@@ -14,13 +14,12 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button, Spinner } from '@/design-system';
+import { Button, Spinner, Switch } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
 import {
   decodeImageToCanvas,
   imageDataFromCanvas,
-  interiorSeed,
   preloadSegmenter,
   cardPerspectiveSkew,
   withCardSize,
@@ -34,7 +33,8 @@ import { CardSizeEditor } from '@/features/scan-capture/components/CardSizeEdito
 import { ProgressSteps, CaptureGuide, CardStatusIcon, SentIcon, TapIcon } from './ScanPageGuide';
 import type { Step } from './ScanPageGuide';
 import { ScanToolList } from './ScanToolList';
-import { bounds, cardOptions, svgFromShapes, traceAll, traceTap } from './scanFlow';
+import { bounds, cardOptions, svgFromShapes, traceAll, traceTap, visibleShapes } from './scanFlow';
+import { ScanOverlay } from './ScanOverlay';
 
 interface ScanPageProps {
   readonly token: string;
@@ -63,9 +63,6 @@ type Status =
 
 const round1 = (n: number): number => Math.round(n * 10) / 10;
 
-/** Tool number badges, scaled to the photo so they read the same at any resolution. */
-const badgeRadius = (image: ImageDataLike): number => Math.max(image.width, image.height) * 0.025;
-
 /** A redraw or an upload is under way, so the outlines must hold still. */
 const busy = (review: ReviewState): boolean => review.resegmenting || review.sending;
 
@@ -81,6 +78,7 @@ export function ScanPage({ token }: ScanPageProps) {
   const imageBoxRef = useRef<HTMLDivElement | null>(null);
   const [status, setStatus] = useState<Status>({ kind: 'capture' });
   const [cardSize, setCardSize] = useState<CardSizeMm>(loadCardSize);
+  const [keepHoles, setKeepHoles] = useState(false);
 
   // Warm the model while the user reads the guidance and frames the shot, so
   // the first segmentation isn't gated on the download.
@@ -156,17 +154,23 @@ export function ScanPage({ token }: ScanPageProps) {
     [cardSize]
   );
 
-  const handleRemove = useCallback((index: number) => {
-    setStatus((prev) =>
-      prev.kind === 'review' && prev.scene.shapes.length > 1 && !busy(prev)
-        ? {
-            ...prev,
-            scene: { ...prev.scene, shapes: prev.scene.shapes.filter((_, i) => i !== index) },
-            previous: prev.scene,
-          }
-        : prev
-    );
-  }, []);
+  // `index` counts the tools on screen, which leave out any in a hole while holes are off.
+  const handleRemove = useCallback(
+    (index: number) => {
+      setStatus((prev) => {
+        if (prev.kind !== 'review' || busy(prev)) return prev;
+        const listed = visibleShapes(prev.scene.shapes, keepHoles);
+        const gone = listed.at(index);
+        if (listed.length < 2 || !gone) return prev;
+        return {
+          ...prev,
+          scene: { ...prev.scene, shapes: prev.scene.shapes.filter((s) => s !== gone) },
+          previous: prev.scene,
+        };
+      });
+    },
+    [keepHoles]
+  );
 
   const handleUndo = useCallback(() => {
     setStatus((prev) =>
@@ -190,8 +194,9 @@ export function ScanPage({ token }: ScanPageProps) {
   const handleUse = useCallback(async () => {
     if (status.kind !== 'review') return;
     const rectified = withCardSize(status.scene, cardSize.longMm, cardSize.shortMm);
-    const svg = svgFromShapes(rectified.shapes, rectified.units);
-    const count = rectified.shapes.length;
+    const sending = visibleShapes(rectified.shapes, keepHoles);
+    const svg = svgFromShapes(sending, rectified.units, keepHoles);
+    const count = sending.length;
     setStatus({ ...status, sending: true });
     try {
       const res = await fetch(`/api/scan-session/${token}`, {
@@ -209,7 +214,7 @@ export function ScanPage({ token }: ScanPageProps) {
     } catch {
       setStatus({ kind: 'error', messageKey: 'scan.error.send' });
     }
-  }, [status, token, cardSize]);
+  }, [status, token, cardSize, keepHoles]);
 
   const reset = useCallback(() => setStatus({ kind: 'capture' }), []);
   // window.close() only works on script-opened tabs, so fall through to a
@@ -226,21 +231,10 @@ export function ScanPage({ token }: ScanPageProps) {
         ? 'review'
         : 'capture';
 
-  const toolCount = scene?.shapes.length ?? 0;
-  const measured = scene && scene.units === 'mm' ? bounds(scene.shapes[0].outputPoints) : null;
-  const reviewShapes = status.kind === 'review' ? status.scene.shapes : null;
-  const imageSize = status.kind === 'review' ? status.image : null;
-  // Each badge sits where the tool is widest, so it never lands off the tool.
-  const badges = useMemo(
-    () =>
-      reviewShapes && imageSize && reviewShapes.length > 1
-        ? reviewShapes.map((shape) => {
-            const at = interiorSeed(shape.imagePoints, imageSize.width, imageSize.height);
-            return { x: at.x * imageSize.width, y: at.y * imageSize.height };
-          })
-        : [],
-    [reviewShapes, imageSize]
-  );
+  const shown = useMemo(() => visibleShapes(scene?.shapes ?? [], keepHoles), [scene, keepHoles]);
+  const toolCount = shown.length;
+  const measured = scene && scene.units === 'mm' && shown[0] ? bounds(shown[0].outputPoints) : null;
+  const holesFound = scene?.shapes.some((s) => (s.holes?.length ?? 0) > 0 || s.inHole) ?? false;
 
   const cardSteep =
     scene !== null &&
@@ -286,60 +280,12 @@ export function ScanPage({ token }: ScanPageProps) {
                   className="block h-auto w-full select-none"
                   draggable={false}
                 />
-                <svg
-                  className="pointer-events-none absolute inset-0 h-full w-full"
-                  viewBox={`0 0 ${status.image.width} ${status.image.height}`}
-                  preserveAspectRatio="none"
-                  fill="none"
-                >
-                  {scene.card && (
-                    <polygon
-                      points={scene.card.corners.map((p) => `${p.x},${p.y}`).join(' ')}
-                      className="stroke-success"
-                      strokeWidth={2}
-                      strokeDasharray="6 4"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  )}
-                  {scene.grid?.cells.map((cell, i) => (
-                    <polygon
-                      key={i}
-                      points={cell.map((p) => `${p.x},${p.y}`).join(' ')}
-                      className="stroke-success"
-                      strokeWidth={2}
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  ))}
-                  {scene.shapes.map((shape, i) => (
-                    <polygon
-                      key={i}
-                      points={shape.imagePoints.map((p) => `${p.x},${p.y}`).join(' ')}
-                      className="fill-accent/15 stroke-accent"
-                      strokeWidth={3}
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  ))}
-                  {badges.map((at, i) => (
-                    <g key={i} aria-hidden="true">
-                      <circle
-                        cx={at.x}
-                        cy={at.y}
-                        r={badgeRadius(status.image)}
-                        className="fill-accent"
-                      />
-                      <text
-                        x={at.x}
-                        y={at.y}
-                        textAnchor="middle"
-                        dominantBaseline="central"
-                        fontSize={badgeRadius(status.image) * 1.2}
-                        className="fill-on-accent font-semibold"
-                      >
-                        {i + 1}
-                      </text>
-                    </g>
-                  ))}
-                </svg>
+                <ScanOverlay
+                  image={status.image}
+                  scene={scene}
+                  shapes={shown}
+                  keepHoles={keepHoles}
+                />
                 {status.resegmenting && (
                   <div className="absolute inset-0 flex items-center justify-center bg-surface/40">
                     <Spinner size="sm" />
@@ -409,9 +355,21 @@ export function ScanPage({ token }: ScanPageProps) {
 
               {scene.card && <CardSizeEditor size={cardSize} onChange={handleCardSize} />}
 
+              {holesFound && (
+                <div className="flex w-full flex-col gap-1">
+                  <Switch
+                    checked={keepHoles}
+                    onChange={setKeepHoles}
+                    label={t('scan.review.keepHoles')}
+                    disabled={busy(status)}
+                  />
+                  <p className="text-xs text-content-tertiary">{t('scan.review.keepHolesHint')}</p>
+                </div>
+              )}
+
               {toolCount > 1 && (
                 <ScanToolList
-                  shapes={scene.shapes}
+                  shapes={shown}
                   units={scene.units}
                   disabled={busy(status)}
                   onRemove={handleRemove}

@@ -85,3 +85,31 @@ describe('withRefinedShape', () => {
     expect(next.shapes).toEqual([big, small, missed]);
   });
 });
+
+describe('withRefinedShape and holes', () => {
+  const ring = {
+    ...shape(square(10, 10, 90, 90)),
+    holes: [shape(square(30, 30, 70, 70))],
+  };
+  const nut: SceneShape = { ...shape(square(40, 40, 60, 60)), inHole: true };
+
+  it("keeps a tool resting in a redrawn ring's hole", () => {
+    const next = withRefinedShape(sceneOf(shape(square(10, 10, 90, 90)), nut), ring, {
+      kind: 'seeded',
+      index: 0,
+    });
+    expect(next.shapes).toEqual([ring, nut]);
+  });
+
+  it('keeps the in-hole mark on a tool redrawn where it lies', () => {
+    const redrawn = shape(square(41, 41, 59, 59));
+    const next = withRefinedShape(sceneOf(ring, nut), redrawn, { kind: 'seeded', index: 1 });
+    expect(next.shapes[1]).toEqual({ ...redrawn, inHole: true });
+  });
+
+  it("marks a tool a tap finds in a ring's hole as lying there", () => {
+    const found = shape(square(35, 35, 45, 45));
+    const next = withRefinedShape(sceneOf(ring), found, { kind: 'tapped', at: { x: 40, y: 40 } });
+    expect(next.shapes.find((s) => s.imagePoints === found.imagePoints)?.inHole).toBe(true);
+  });
+});

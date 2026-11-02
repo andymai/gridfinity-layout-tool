@@ -4257,6 +4257,8 @@
   "scan.review.remove": "Ta bort",
   "scan.review.removeTool": "Ta bort verktyg {index}",
   "scan.review.undo": "Ångra",
+  "scan.review.keepHoles": "Behåll hål",
+  "scan.review.keepHolesHint": "Lämnar plast där underlaget syns genom ett verktyg, som inuti en ring. En reflex kan se ut som ett hål.",
   "scan.review.tapHint": "Tryck på ditt verktyg i bilden om den markerade formen är fel.",
   "scan.sending": "Skickar…",
   "scan.sent.another": "Skanna en till",

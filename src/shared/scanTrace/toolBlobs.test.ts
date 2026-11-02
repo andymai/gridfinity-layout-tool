@@ -34,26 +34,62 @@ describe('findToolBlobs', () => {
     expect(blobs).toHaveLength(1);
   });
 
-  it('drops a piece lying inside another tool’s outline', () => {
+  it('flags a piece lying in another tool’s hole', () => {
     const ring = (x: number, y: number) => box(10, 10, 89, 89)(x, y) && !box(25, 25, 74, 74)(x, y);
     const inner = box(40, 40, 59, 59);
     const blobs = findToolBlobs(
       maskOf(100, 100, (x, y) => ring(x, y) || inner(x, y)),
       16
     );
-    expect(blobs).toHaveLength(1);
-    expect(blobs[0].areaPx).toBe(80 * 80 - 50 * 50);
+    expect(blobs.map((b) => [b.areaPx, b.inHole])).toEqual([
+      [80 * 80 - 50 * 50, false],
+      [20 * 20, true],
+    ]);
   });
 
-  it('drops a solid piece inside a thin ring that holds fewer pixels', () => {
+  it('flags a solid piece inside a thin ring that holds fewer pixels', () => {
     const ring = (x: number, y: number) => box(10, 10, 89, 89)(x, y) && !box(15, 15, 84, 84)(x, y);
     const inner = box(20, 20, 79, 79);
     const blobs = findToolBlobs(
       maskOf(100, 100, (x, y) => ring(x, y) || inner(x, y)),
       16
     );
-    expect(blobs).toHaveLength(1);
-    expect(blobs[0].areaPx).toBe(80 * 80 - 70 * 70);
+    expect(blobs.find((b) => !b.inHole)?.areaPx).toBe(80 * 80 - 70 * 70);
+    expect(blobs.find((b) => b.inHole)?.areaPx).toBe(60 * 60);
+  });
+
+  it('traces the hole a ring encloses', () => {
+    const ring = (x: number, y: number) => box(10, 10, 89, 89)(x, y) && !box(25, 25, 74, 74)(x, y);
+    const [blob] = findToolBlobs(maskOf(100, 100, ring), 16);
+    expect(blob.holes).toHaveLength(1);
+    const xs = blob.holes[0].map((p) => p.x);
+    const ys = blob.holes[0].map((p) => p.y);
+    expect([Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)]).toEqual([
+      25, 74, 25, 74,
+    ]);
+  });
+
+  it('does not take a notch open to the frame, or a speck of a hole, for a hole', () => {
+    // A U open at the top runs to the frame's edge; a 1px gap is a speck.
+    const u = (x: number, y: number) =>
+      box(10, 0, 89, 89)(x, y) && !box(30, 0, 69, 60)(x, y) && !(x === 20 && y === 80);
+    const [blob] = findToolBlobs(maskOf(100, 100, u), 16);
+    expect(blob.holes).toEqual([]);
+  });
+
+  // Holes are 4-connected: two pixels touching only at a corner do not leak.
+  it('keeps a hole closed by a ring that meets itself only diagonally', () => {
+    const ring = (x: number, y: number) =>
+      (box(10, 10, 49, 49)(x, y) && !box(15, 15, 44, 44)(x, y)) ||
+      (x === 45 && y === 30) ||
+      (x === 46 && y === 31);
+    const leaky = (x: number, y: number) =>
+      ring(x, y) && !(x >= 45 && x <= 49 && y === 30) && !(x >= 45 && x <= 49 && y === 31);
+    const [blob] = findToolBlobs(
+      maskOf(60, 60, (x, y) => leaky(x, y) || (x === 45 && y === 30) || (x === 46 && y === 31)),
+      16
+    );
+    expect(blob.holes).toHaveLength(1);
   });
 
   it('traces each piece at its place in the frame', () => {

@@ -4257,6 +4257,8 @@
   "scan.review.remove": "제거",
   "scan.review.removeTool": "공구 {index} 제거",
   "scan.review.undo": "실행 취소",
+  "scan.review.keepHoles": "구멍 유지",
+  "scan.review.keepHolesHint": "고리 안쪽처럼 공구 사이로 바닥이 보이는 곳에 플라스틱을 남깁니다. 반사가 구멍처럼 보일 수 있습니다.",
   "scan.review.tapHint": "강조된 모양이 틀리면 사진에서 공구를 탭하세요.",
   "scan.sending": "전송 중…",
   "scan.sent.another": "다른 것 스캔",

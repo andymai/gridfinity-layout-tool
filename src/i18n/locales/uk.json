@@ -4257,6 +4257,8 @@
   "scan.review.remove": "Прибрати",
   "scan.review.removeTool": "Прибрати інструмент {index}",
   "scan.review.undo": "Скасувати",
+  "scan.review.keepHoles": "Зберегти отвори",
+  "scan.review.keepHolesHint": "Залишає пластик там, де крізь інструмент видно поверхню, як усередині кільця. Відблиск може виглядати як отвір.",
   "scan.review.tapHint": "Торкніться свого інструмента на фото, якщо виділена форма неправильна.",
   "scan.sending": "Надсилання…",
   "scan.sent.another": "Сканувати ще",

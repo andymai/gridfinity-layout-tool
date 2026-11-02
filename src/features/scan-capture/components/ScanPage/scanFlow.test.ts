@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type * as ScanTrace from '@/shared/scanTrace';
 import { err, ok } from '@/core/result';
 import type { SceneShape, SceneTrace } from '@/shared/scanTrace';
-import { MAX_AUTO_REFINE, svgFromShapes, traceAll, traceTap } from './scanFlow';
+import { MAX_AUTO_REFINE, svgFromShapes, traceAll, traceTap, visibleShapes } from './scanFlow';
 
 const mockSegment = vi.fn();
 const mockTrace = vi.fn();
@@ -127,5 +127,27 @@ describe('svgFromShapes', () => {
 
   it('leaves an unscaled outline untagged', () => {
     expect(svgFromShapes([box(0, 0, 5, 5)], 'px')).not.toContain('data-scan-units');
+  });
+});
+
+describe('holes', () => {
+  const ring: SceneShape = { ...box(0, 0, 40, 40), holes: [box(10, 10, 30, 30)] };
+  const nut: SceneShape = { ...box(15, 15, 25, 25), inHole: true };
+
+  it('leaves a tool lying in a hole out unless holes are kept', () => {
+    expect(visibleShapes([ring, nut], false)).toEqual([ring]);
+    expect(visibleShapes([ring, nut], true)).toEqual([ring, nut]);
+  });
+
+  it('writes a kept hole as an even-odd subpath of its tool', () => {
+    const svg = svgFromShapes([ring], 'mm', true);
+    expect(svg).toContain('fill-rule="evenodd"');
+    expect(svg.match(/M/g)).toHaveLength(2);
+  });
+
+  it('leaves holes out of the outline when they are not kept', () => {
+    const svg = svgFromShapes([ring], 'mm', false);
+    expect(svg).not.toContain('fill-rule');
+    expect(svg.match(/M/g)).toHaveLength(1);
   });
 });

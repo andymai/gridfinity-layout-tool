@@ -130,15 +130,32 @@ export function bounds(points: readonly Point[]): {
 }
 
 /**
+ * The tools the review shows: all of them while holes are kept, otherwise
+ * not one lying in another's hole, which would be a pocket inside a pocket.
+ */
+export function visibleShapes(shapes: readonly SceneShape[], keepHoles: boolean): SceneShape[] {
+  return keepHoles ? [...shapes] : shapes.filter((s) => s.inHole !== true);
+}
+
+/**
  * One path per tool in a shared 0-origin viewBox, so the outlines import at
  * their true size and keep their places relative to each other.
  */
-export function svgFromShapes(shapes: readonly SceneShape[], units: 'mm' | 'px'): string {
+export function svgFromShapes(
+  shapes: readonly SceneShape[],
+  units: 'mm' | 'px',
+  keepHoles = false
+): string {
   const { minX, minY, w, h } = bounds(shapes.flatMap((s) => s.outputPoints));
-  const paths = shapes.map(
-    (s) =>
-      `<path d="${pointsToSvgPath(s.outputPoints.map((p) => ({ x: p.x - minX, y: p.y - minY })))}"/>`
-  );
+  const local = (points: readonly Point[]) =>
+    pointsToSvgPath(points.map((p) => ({ x: p.x - minX, y: p.y - minY })));
+  const paths = shapes.map((s) => {
+    const holes = keepHoles ? (s.holes ?? []) : [];
+    if (holes.length === 0) return `<path d="${local(s.outputPoints)}"/>`;
+    // Even-odd, so the desktop reads each hole as an island whichever way it winds.
+    const d = [s.outputPoints, ...holes.map((hole) => hole.outputPoints)].map(local).join(' ');
+    return `<path d="${d}" fill-rule="evenodd"/>`;
+  });
   // Tag mm output so the desktop can skip its scale-confirm step.
   const unitsAttr = units === 'mm' ? ' data-scan-units="mm"' : '';
   return (

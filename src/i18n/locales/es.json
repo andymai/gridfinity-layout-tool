@@ -4257,6 +4257,8 @@
   "scan.review.remove": "Quitar",
   "scan.review.removeTool": "Quitar herramienta {index}",
   "scan.review.undo": "Deshacer",
+  "scan.review.keepHoles": "Conservar agujeros",
+  "scan.review.keepHolesHint": "Deja plástico donde la superficie se ve a través de la herramienta, como dentro de un anillo. Un reflejo puede parecer un agujero.",
   "scan.review.tapHint": "Toca tu herramienta en la foto si la forma resaltada es incorrecta.",
   "scan.sending": "Enviando…",
   "scan.sent.another": "Escanear otra",

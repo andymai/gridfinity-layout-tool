@@ -4257,6 +4257,8 @@
   "scan.review.remove": "削除",
   "scan.review.removeTool": "工具 {index} を削除",
   "scan.review.undo": "元に戻す",
+  "scan.review.keepHoles": "穴を残す",
+  "scan.review.keepHolesHint": "リングの内側など、工具越しに下の面が見える部分にプラスチックを残します。反射が穴に見えることがあります。",
   "scan.review.tapHint": "ハイライトされた形が間違っている場合は、写真の工具をタップしてください。",
   "scan.sending": "送信中…",
   "scan.sent.another": "別をスキャン",

@@ -33,8 +33,15 @@ export type Refinement =
   | { readonly kind: 'seeded'; readonly index: number }
   | { readonly kind: 'tapped'; readonly at: Point };
 
-/** The share of `poly`'s area that lies inside `cover`, by grid sampling. */
-export function coverage(poly: readonly Point[], cover: readonly Point[]): number {
+/**
+ * The share of `poly`'s area that lies inside `cover` and outside its holes,
+ * by grid sampling: a tool resting in a ring's hole is not covered by the ring.
+ */
+export function coverage(
+  poly: readonly Point[],
+  cover: readonly Point[],
+  coverHoles: readonly (readonly Point[])[] = []
+): number {
   const xs = poly.map((p) => p.x);
   const ys = poly.map((p) => p.y);
   const x0 = Math.min(...xs);
@@ -48,7 +55,9 @@ export function coverage(poly: readonly Point[], cover: readonly Point[]): numbe
     for (let x = x0 + step / 2; x < x1; x += step) {
       if (!pointInPolygon({ x, y }, poly)) continue;
       inside++;
-      if (pointInPolygon({ x, y }, cover)) hit++;
+      if (pointInPolygon({ x, y }, cover) && !coverHoles.some((h) => pointInPolygon({ x, y }, h))) {
+        hit++;
+      }
     }
   }
   return inside === 0 ? 0 : hit / inside;
@@ -64,6 +73,7 @@ export function withRefinedShape(
   how: Refinement
 ): SceneTrace {
   const outline = refined.imagePoints;
+  const holes = (refined.holes ?? []).map((h) => h.imagePoints);
   if (how.kind === 'seeded') {
     if (how.index < 0 || how.index >= scene.shapes.length) return scene;
     const target = scene.shapes[how.index];
@@ -72,10 +82,22 @@ export function withRefinedShape(
       polygonArea(outline) <= MAX_GROWTH * polygonArea(target.imagePoints);
     if (!agrees) return scene;
   }
+  // A tap in a ring's hole is not a tap on the ring.
+  const tappedOn = (shape: SceneShape, at: Point): boolean =>
+    pointInPolygon(at, shape.imagePoints) &&
+    !(shape.holes ?? []).some((h) => pointInPolygon(at, h.imagePoints));
   const replaced = (shape: SceneShape, i: number): boolean =>
-    (how.kind === 'seeded' ? i === how.index : pointInPolygon(how.at, shape.imagePoints)) ||
-    coverage(shape.imagePoints, outline) >= SAME_TOOL;
-  const shapes = [...scene.shapes.filter((s, i) => !replaced(s, i)), refined].sort(
+    (how.kind === 'seeded' ? i === how.index : tappedOn(shape, how.at)) ||
+    coverage(shape.imagePoints, outline, holes) >= SAME_TOOL;
+  const kept = scene.shapes.filter((s, i) => !replaced(s, i));
+  // A redraw stays where its outline was found: in a hole when it was seeded
+  // in one, or when a tap lands it in the hole of a shape still kept.
+  const inHole =
+    how.kind === 'seeded'
+      ? scene.shapes[how.index].inHole === true
+      : kept.some((s) => (s.holes ?? []).some((h) => pointInPolygon(how.at, h.imagePoints)));
+  const placed: SceneShape = { ...refined, ...(inHole ? { inHole: true } : {}) };
+  const shapes = [...kept, placed].sort(
     (a, b) => polygonArea(b.imagePoints) - polygonArea(a.imagePoints)
   );
   return { ...scene, shapes };
