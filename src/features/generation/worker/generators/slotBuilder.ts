@@ -534,7 +534,7 @@ import type { FeatureBuilder } from './pipeline/featureBuilder';
 import { FeatureTag } from './featureTags';
 import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKeyUtils';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
-import { LIP_NOTCH_REACH_MM } from './boxTopShape';
+import { LIP_NOTCH_REACH_MM } from '@/shared/utils/lipNotchPlan';
 
 export const slotCutsFeature: FeatureBuilder = {
   name: 'slotCuts',

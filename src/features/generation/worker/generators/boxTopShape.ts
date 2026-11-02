@@ -45,8 +45,7 @@ import {
 } from './generatorTypes';
 import { forEachCell, type CellInfo } from './cellDecomposition';
 import { isAbortError } from './utils/abort';
-import { resolveLipNotches } from '@/shared/utils/lipNotchPlan';
-import type { BinParams } from '@/shared/types/bin';
+import { LIP_NOTCH_REACH_MM } from '@/shared/utils/lipNotchPlan';
 import { getLipCache, setLipCache } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { resolvePitch, pitchKeySegments, type GridUnitInput } from './gridPitch';
@@ -294,16 +293,6 @@ function buildTopShapeLoft(
 }
 
 /**
- * How far in from the outer face a lip notch reaches, in mm.
- *
- * A foot's rounded corner ends `BOX_CORNER_RADIUS` in from the face, so the
- * notch has to reach at least that far to hold the whole corner. Stopping
- * exactly there would cut the pockets along their arc-to-flat seam, so it
- * carries on by half a clearance into the straight ridge.
- */
-export const LIP_NOTCH_REACH_MM = BOX_CORNER_RADIUS + CLEARANCE / 2;
-
-/**
  * How far below the lip's peak each notch stops, in mm.
  *
  * Carried up to the peak, a notch's top meets the knife edge at a cusp (the
@@ -320,15 +309,6 @@ export const LIP_NOTCH_TOP_DROP_MM = 1;
  * block cut off square.
  */
 export const LIP_NOTCH_NOSE_MM = LIP_SMALL_TAPER;
-
-/**
- * How far in from the outer face the lip stands: its taper, or the notch reach
- * when notches are built. A tool cut through the lip has to clear this, or a
- * thin wall leaves a sliver of notch inside the opening.
- */
-export function lipInnerReachMm(params: BinParams): number {
-  return resolveLipNotches(params) ? LIP_NOTCH_REACH_MM : LIP_TAPER_WIDTH;
-}
 
 export interface LipNotchGrid {
   readonly fractionalEdgeX: 'start' | 'end';

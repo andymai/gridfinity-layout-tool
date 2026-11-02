@@ -10,7 +10,7 @@ import type { Shape3D, Drawing, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { LIP_HEIGHT, CUT_RIM_CLEARANCE } from './generatorConstants';
-import { lipInnerReachMm } from './boxTopShape';
+import { lipInnerReachMm } from '@/shared/utils/lipNotchPlan';
 import { interiorDividerSegments } from './compartmentBuilder';
 import { resolvePolygonSideGeometry, type PolygonSideGeometry } from './maskPolygonEdges';
 import { pitchFromParams } from './gridPitch';
