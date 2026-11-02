@@ -206,6 +206,20 @@ describe('checkPockets against the wall', () => {
     expect(check(exit(true), withLip)).toEqual([expect.objectContaining({ kind: 'lip' })]);
   });
 
+  // The generator builds no exit for a leaning pocket, so its lip is still there.
+  it('still warns when the generator will not open the exit', () => {
+    const withLip = bin({ base: { ...FLAT, stackingLip: true } });
+    const leaning = pocket('a', { x: 1, leanDeg: 10, openSides: [{ side: 'left' }] });
+    expect(check([leaning], withLip)).toEqual([expect.objectContaining({ kind: 'lip' })]);
+  });
+
+  it('says nothing of a lip on a custom footprint that has none', () => {
+    const mask = { cols: 4, rows: 4, cells: Array<0 | 1>(16).fill(1) };
+    const board = { ...BOARD, mask, cellSize: { cellMmX: 20, cellMmY: 20 } };
+    const reaching = pocket('a', { shape: 'circle', x: 0.5, clearance: 2 });
+    expect(checkPockets([reaching], bin({ wallThickness: 2 }), board)).toEqual([]);
+  });
+
   it('warns about a thin wall only where the wall itself is thin', () => {
     const near = [pocket('a', { x: 0.5 })];
     expect(check(near)).toEqual([]);

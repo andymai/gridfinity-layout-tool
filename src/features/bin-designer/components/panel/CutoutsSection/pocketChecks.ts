@@ -20,7 +20,7 @@ import { clearedProfile, entryChamferWidth } from '@/shared/utils/cutoutFit';
 import { cutoutOutlineRing, meshOutlineRings } from '@/shared/utils/cutoutOutline';
 import { cavityCornerRadiusMm } from '@/shared/utils/insideWallObstacles';
 import { lipInnerReachMm } from '@/shared/utils/lipNotchPlan';
-import { normalizeOpenSides } from '@/shared/utils/cutoutOpenSides';
+import { effectiveOpenSides } from '@/shared/utils/cutoutOpenSides';
 import { offsetClosedPolygon } from '@/shared/utils/polygonOffset';
 import { isCutoutOffBoard, type CutoutBoard } from './offBoardCutouts';
 
@@ -456,9 +456,12 @@ function nearestSide(p: Pt, w: number, d: number): 'left' | 'right' | 'front' | 
   return sides.reduce((best, side) => (side[1] < best[1] ? side : best))[0];
 }
 
-/** Whether the cut opens through that wall to the top, taking the lip with it. */
-function opensThrough(c: Cutout, side: string): boolean {
-  return normalizeOpenSides(c.openSides)?.some((s) => s.side === side && !s.tunnel) ?? false;
+/**
+ * Whether the cut opens through that wall to the top, taking the lip with it:
+ * by the generator's own rule, since a leaning pocket keeps no exit.
+ */
+function opensThrough(c: Cutout, side: string, params: BinParams): boolean {
+  return effectiveOpenSides(c, params).some((s) => s.side === side && !s.tunnel);
 }
 
 /**
@@ -497,7 +500,7 @@ function checkBoxWalls(
     if (!at) continue;
     if (least < MIN_MATERIAL_MM) {
       book.note('wall', [p.owner], [p.cutout.id], least);
-    } else if (least < lipReach && !opensThrough(p.cutout, nearestSide(at, w, d))) {
+    } else if (least < lipReach && !opensThrough(p.cutout, nearestSide(at, w, d), params)) {
       book.note('lip', [p.owner], [p.cutout.id], lipReach - least);
     }
   }
@@ -526,7 +529,7 @@ function checkMaskWalls(
     const cut = (gap === 0 ? -overshoot(p.rings, interior) : gap) - p.grow;
     const wallLeft = params.wallThickness + cut;
     if (wallLeft < MIN_MATERIAL_MM) book.note('wall', [p.owner], [p.cutout.id], wallLeft);
-    else if (cut < lip) book.note('lip', [p.owner], [p.cutout.id], lip - cut);
+    else if (lip > 0 && cut < lip) book.note('lip', [p.owner], [p.cutout.id], lip - cut);
   }
 }
 
