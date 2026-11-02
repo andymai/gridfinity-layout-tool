@@ -7,7 +7,8 @@
 import type { Cutout } from '@/features/bin-designer/types';
 import { maxEntryChamfer } from '@/features/bin-designer/types';
 import { clearedProfile } from '@/shared/utils/cutoutFit';
-import { pathCutoutOutline } from '@/shared/utils/pathCutoutOutline';
+import { cutoutOutlineRing } from '@/shared/utils/cutoutOutline';
+import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
 import { isCutoutOffBoard, type CutoutBoard } from './offBoardCutouts';
 
 /** Along the pocket's side: an adult fingertip with room to spare. */
@@ -19,8 +20,13 @@ export const FINGER_WIDTH_MM = 20;
 export const FINGER_LENGTH_MM = 40;
 /** Stops short of the pocket floor, so the two floors never share a plane. */
 const FLOOR_LIFT_MM = 1;
-/** Keeps the cut's inner end off the pocket's far wall, which it would notch. */
+/**
+ * Plastic kept between the cut's inner end and the pocket's far wall, beyond
+ * the entry edge's flare, so the cut never notches the wall behind the tool.
+ */
 const FAR_SIDE_GAP_MM = 1;
+/** Lines across the cut's width the far wall is measured along. */
+const WIDTH_SAMPLES = 21;
 const MIN_FINGER_DEPTH_MM = 2;
 const FINGER_ENTRY_MM = 1;
 
@@ -53,51 +59,98 @@ function toWorld(local: Vec, rotationDeg: number): Vec {
 }
 
 /**
- * Where the line through the outline's centre along `dir` crosses it, as
- * signed distances along `dir`, smallest first. Each edge owns its start
- * point only, so a line through a vertex counts it once.
+ * The pocket as cut, clearance included, centred on its box and unturned. A
+ * mesh imprint or a degenerate path reads as its box.
  */
-function lineCrossings(outline: readonly Vec[], dir: Vec): number[] {
-  const crossings: number[] = [];
+function clearedOutline(pocket: Cutout): Vec[] {
+  const { clearance, w, d } = clearedProfile(pocket);
+  if (pocket.shape === 'path') {
+    const cut = pathCutoutCut(pocket, clearance, 0);
+    if (cut) return cut.base.map((p) => ({ x: p.x, y: p.y }));
+  }
+  const ring =
+    pocket.shape === 'path'
+      ? null
+      : cutoutOutlineRing({ ...pocket, x: -w / 2, y: -d / 2, width: w, depth: d, rotation: 0 });
+  if (ring) return ring.map(([x, y]) => ({ x, y }));
+  return [
+    { x: -w / 2, y: -d / 2 },
+    { x: w / 2, y: -d / 2 },
+    { x: w / 2, y: d / 2 },
+    { x: -w / 2, y: d / 2 },
+  ];
+}
+
+interface Crossing {
+  /** Signed distance along the line. */
+  readonly t: number;
+  /** Sine of the angle the crossed edge makes with the line. */
+  readonly sin: number;
+}
+
+/** Never ask for more than this many times the keep along a glancing wall. */
+const MIN_WALL_SIN = 0.2;
+
+/**
+ * Where the line through `origin` along `dir` crosses the outline, smallest
+ * first. Each edge owns its start point only, so a line through a vertex
+ * counts it once.
+ */
+function lineCrossings(outline: readonly Vec[], origin: Vec, dir: Vec): Crossing[] {
+  const crossings: Crossing[] = [];
   for (let i = 0; i < outline.length; i++) {
     const p = outline[i];
     const q = outline[(i + 1) % outline.length];
+    const px = p.x - origin.x;
+    const py = p.y - origin.y;
     const ex = q.x - p.x;
     const ey = q.y - p.y;
     const denom = dir.x * ey - dir.y * ex;
     if (Math.abs(denom) < 1e-12) continue;
-    const t = (p.x * ey - p.y * ex) / denom;
-    const u = (p.x * dir.y - p.y * dir.x) / denom;
-    if (u >= 0 && u < 1) crossings.push(t);
+    const t = (px * ey - py * ex) / denom;
+    const u = (px * dir.y - py * dir.x) / denom;
+    if (u >= 0 && u < 1) crossings.push({ t, sin: Math.abs(denom) / Math.hypot(ex, ey) });
   }
-  return crossings.sort((a, b) => a - b);
+  return crossings.sort((a, b) => a.t - b.t);
 }
 
 interface PocketSide {
   /** From the pocket's centre to its outer edge that way. */
   readonly reach: number;
-  /** How much pocket lies inward of that edge before the next one. */
-  readonly span: number;
+  /** How far past that edge the cut's inner end may go. */
+  readonly inward: number;
 }
 
 /**
- * The pocket's outer edge along a local axis and the pocket behind it: the
- * whole pocket across for a plain shape, only the arm a C or U shape ends in.
- * Null when the line through the centre meets no edge that way, as on the
- * open side of a U, where a cut would stand in the plastic between its legs.
+ * The pocket's outer edge along a local axis, and how far a cut standing on it
+ * may reach back over the pocket. Measured on lines across the cut's whole
+ * width, so a far wall that closes in, as on a tapered tool, stops the cut's
+ * corners as well as its middle; the cut's round end gives back what it does
+ * not fill at each line. A line that misses the pocket sets no limit. Null when
+ * the centre line meets no edge that way, as on the open side of a U, where a
+ * cut would stand in the plastic between its legs.
  */
-function pocketSide(pocket: Cutout, dir: Vec): PocketSide | null {
-  const cleared = clearedProfile(pocket);
-  const outline = pocket.shape === 'path' ? pathCutoutOutline(pocket) : null;
-  if (outline) {
-    const crossings = lineCrossings(outline, dir);
-    const outer = crossings.at(-1);
-    if (outer === undefined || outer <= 0) return null;
-    const inner = crossings.at(-2) ?? -outer;
-    return { reach: outer + cleared.clearance, span: outer - inner + 2 * cleared.clearance };
+function pocketSide(outline: readonly Vec[], dir: Vec, keep: number): PocketSide | null {
+  const outer = lineCrossings(outline, { x: 0, y: 0 }, dir).at(-1)?.t;
+  if (outer === undefined || outer <= 0) return null;
+  const tangent = { x: -dir.y, y: dir.x };
+  const end = FINGER_WIDTH_MM / 2;
+  let inward = Number.POSITIVE_INFINITY;
+  for (let i = 0; i < WIDTH_SAMPLES; i++) {
+    const s = -end + (2 * end * i) / (WIDTH_SAMPLES - 1);
+    const crossings = lineCrossings(outline, { x: tangent.x * s, y: tangent.y * s }, dir);
+    let farWall: Crossing | null = null;
+    for (let k = 0; k + 1 < crossings.length; k += 2) {
+      if (crossings[k].t <= outer + 1e-9) farWall = crossings[k];
+    }
+    if (farWall === null) continue;
+    // The keep is perpendicular to the wall, so a slanted one needs more of it
+    // along the line.
+    const room = keep / Math.max(MIN_WALL_SIN, farWall.sin);
+    const unfilled = end - Math.sqrt(Math.max(0, end * end - s * s));
+    inward = Math.min(inward, outer - farWall.t - room + unfilled);
   }
-  const half = Math.abs(dir.x) > 0.5 ? cleared.w / 2 : cleared.d / 2;
-  return { reach: half, span: 2 * half };
+  return { reach: outer, inward };
 }
 
 /**
@@ -135,11 +188,13 @@ export function planFingerAccess(
   );
   const outward = FINGER_LENGTH_MM / 2;
 
+  const entry = Math.min(FINGER_ENTRY_MM, maxEntryChamfer(depth));
+  const outline = clearedOutline(pocket);
   const candidates: Omit<Cutout, 'id'>[] = [];
   for (const normal of [...frontFirst, ...short]) {
-    const side = pocketSide(pocket, normal);
+    const side = pocketSide(outline, normal, FAR_SIDE_GAP_MM + entry);
     if (!side) continue;
-    const inward = Math.max(0, Math.min(outward, side.span - FAR_SIDE_GAP_MM));
+    const inward = Math.max(0, Math.min(outward, side.inward));
     const along = side.reach + (outward - inward) / 2;
     const offset = toWorld({ x: normal.x * along, y: normal.y * along }, pocket.rotation);
     const length = outward + inward;
@@ -159,7 +214,7 @@ export function planFingerAccess(
       groupId: null,
       finger: { bottom: 'curved' },
       entryProfile: 'round',
-      chamferWidth: Math.min(FINGER_ENTRY_MM, maxEntryChamfer(depth)),
+      chamferWidth: entry,
     });
   }
   return (

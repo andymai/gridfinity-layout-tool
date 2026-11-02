@@ -95,10 +95,45 @@ describe('planFingerAccess', () => {
     expect(plan && centre(plan)).toEqual({ x: 50, y: 26 });
   });
 
-  // An 18 mm pocket would have the 20 mm inner half notch its back wall.
+  // An 18 mm pocket would have the 20 mm inner half notch its back wall. It
+  // stops 1 mm short, plus the 1 mm its entry edge flares at the top.
   it('stops short of the far side of a narrow pocket', () => {
     const plan = planFingerAccess(pocket({ depth: 18 }), BOARD, MAX_CUT);
-    expect(plan).toMatchObject({ y: 20, depth: 20 + 17 });
+    expect(plan).toMatchObject({ y: 20, depth: 20 + 16 });
+  });
+
+  // A tapered pocket closes in behind the cut's corners before its middle.
+  // Every point of the inner end keeps the 1 mm entry flare and the 1 mm
+  // margin square to the wall, less a little for the lines it is sampled on.
+  it('keeps every part of its inner end off a tapering far wall', () => {
+    const apex = { x: 60, y: 61 };
+    const walls = [
+      [{ x: 80, y: 40 }, apex],
+      [apex, { x: 40, y: 40 }],
+    ] as const;
+    const triangle = pocket({
+      shape: 'path',
+      x: 40,
+      y: 40,
+      width: 40,
+      depth: 21,
+      path: [corner(40, 40), corner(80, 40), corner(apex.x, apex.y)],
+    });
+    const plan = planFingerAccess(triangle, BOARD, MAX_CUT);
+    expect(plan).not.toBeNull();
+    if (!plan) return;
+    const r = plan.width / 2;
+    const end = { x: plan.x + r, y: plan.y + plan.depth - r };
+    for (let i = 0; i <= 36; i++) {
+      const a = (Math.PI * i) / 36;
+      const p = { x: end.x + r * Math.cos(a), y: end.y + r * Math.sin(a) };
+      for (const [from, to] of walls) {
+        const ex = to.x - from.x;
+        const ey = to.y - from.y;
+        const inside = ((p.y - from.y) * ex - (p.x - from.x) * ey) / Math.hypot(ex, ey);
+        expect(inside).toBeGreaterThan(1.9);
+      }
+    }
   });
 
   it('runs across a tall pocket from its side', () => {
@@ -150,9 +185,9 @@ describe('planFingerAccess', () => {
     });
     expect(planFingerAccess(u, BOARD, MAX_CUT)).toMatchObject({
       x: 40,
-      y: 71,
+      y: 72,
       width: 20,
-      depth: 29,
+      depth: 28,
     });
   });
 
