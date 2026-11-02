@@ -1,5 +1,24 @@
 # Changelog
 
+## [4.528.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.527.0...gridfinity-layout-tool-v4.528.0) (2026-11-02)
+
+
+### Features
+
+* **bin-designer:** add video tips for nine more features ([#4781](https://github.com/andymai/gridfinity-layout-tool/issues/4781)) ([4fcb283](https://github.com/andymai/gridfinity-layout-tool/commit/4fcb283a833f700c61cf0e6b0129c1277cbf3dd7))
+* **bin-designer:** add video tips for scoops, lids and the Cut Editor ([#4771](https://github.com/andymai/gridfinity-layout-tool/issues/4771)) ([1d715d9](https://github.com/andymai/gridfinity-layout-tool/commit/1d715d909c9dba937ab58e8c78f308b782f127e7))
+* **bin-designer:** put a pull tab on the center divider ([#4780](https://github.com/andymai/gridfinity-layout-tool/issues/4780)) ([c04e7be](https://github.com/andymai/gridfinity-layout-tool/commit/c04e7beec59754f379f156b60439ac538f05c3a8))
+* **bin-designer:** put pull tabs on any of the four walls ([#4778](https://github.com/andymai/gridfinity-layout-tool/issues/4778)) ([306473d](https://github.com/andymai/gridfinity-layout-tool/commit/306473d7dd61cfa0b141a5cf6d539b5a53f50f66))
+
+
+### Bug Fixes
+
+* **analytics:** ignore a wallet extension's window.ethereum error ([#4773](https://github.com/andymai/gridfinity-layout-tool/issues/4773)) ([2b4ec02](https://github.com/andymai/gridfinity-layout-tool/commit/2b4ec021f91668cb9b804548f6e70ccee791eda6))
+* **baseplate:** keep magnet crush ribs on split plates and after reload ([#4774](https://github.com/andymai/gridfinity-layout-tool/issues/4774)) ([d6e8c35](https://github.com/andymai/gridfinity-layout-tool/commit/d6e8c358d8bf859977243d31de8d1d77a780aa07))
+* **baseplate:** stack custom-shaped plates in the same orientation ([#4779](https://github.com/andymai/gridfinity-layout-tool/issues/4779)) ([12bea0b](https://github.com/andymai/gridfinity-layout-tool/commit/12bea0baa039525051dfcaa87004fda6993706e9))
+* follow-ups from reviewing video tips, pull tabs and stacked baseplates ([#4782](https://github.com/andymai/gridfinity-layout-tool/issues/4782)) ([f91b5c2](https://github.com/andymai/gridfinity-layout-tool/commit/f91b5c2519636c8a9f0d19602c3647e93ecc5439))
+* **generation:** build crush-rib magnet holes in the fast draft preview ([#4776](https://github.com/andymai/gridfinity-layout-tool/issues/4776)) ([3f44b5d](https://github.com/andymai/gridfinity-layout-tool/commit/3f44b5d710a25a46e44ea08fa394d60480dac64e))
+
 ## [4.527.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.526.2...gridfinity-layout-tool-v4.527.0) (2026-11-01)
 
 
