@@ -452,6 +452,7 @@
   "binDesigner.base.lipNotches.blockedLid": "Inte tillgängligt med lock. Locket har ett eget rutnät för lådan ovanpå.",
   "binDesigner.base.lipNotches.blockedShape": "Inte tillgängligt med anpassad form.",
   "binDesigner.base.lipNotches.blockedOverhang": "Inte tillgängligt med överhäng.",
+  "binDesigner.base.lipNotches.blockedLattice": "Inte tillgängligt med fotrastret Halvt förskjutet, där fötterna skulle hamna på skårorna.",
   "binDesigner.base.lipNotches.blockedSize": "Bredd och djup måste vara hela eller halva enheter.",
   "binDesigner.base.lipNotches.blockedSingleCell": "Lådan måste vara bredare eller djupare än en enhet.",
   "binDesigner.bento.backgroundNote": "Tomma celler skrivs ut som 1×1-fickor",

@@ -452,6 +452,7 @@
   "binDesigner.base.lipNotches.blockedLid": "No disponible con tapa. La tapa tiene su propia cuadrícula para la caja de arriba.",
   "binDesigner.base.lipNotches.blockedShape": "No disponible con una forma personalizada.",
   "binDesigner.base.lipNotches.blockedOverhang": "No disponible con voladizo.",
+  "binDesigner.base.lipNotches.blockedLattice": "No disponible con la retícula de pies Medio desfase, cuyos pies caerían sobre las muescas.",
   "binDesigner.base.lipNotches.blockedSize": "El ancho y la profundidad deben ir en unidades enteras o medias.",
   "binDesigner.base.lipNotches.blockedSingleCell": "La caja debe medir más de una unidad de ancho o de fondo.",
   "binDesigner.bento.backgroundNote": "Las celdas vacías se imprimen como huecos de 1×1",

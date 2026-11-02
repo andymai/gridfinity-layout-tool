@@ -452,6 +452,7 @@
   "binDesigner.base.lipNotches.blockedLid": "Není dostupné s víkem. Víko má vlastní mřížku pro box nahoře.",
   "binDesigner.base.lipNotches.blockedShape": "Není dostupné u vlastního tvaru.",
   "binDesigner.base.lipNotches.blockedOverhang": "Není dostupné s přesahem.",
+  "binDesigner.base.lipNotches.blockedLattice": "Není dostupné s rastrem patek Posun o půl, jehož patky by dosedly na zářezy.",
   "binDesigner.base.lipNotches.blockedSize": "Šířka a hloubka musí být v celých nebo polovičních jednotkách.",
   "binDesigner.base.lipNotches.blockedSingleCell": "Box musí být širší nebo hlubší než jedna jednotka.",
   "binDesigner.bento.backgroundNote": "Prázdné buňky se vytisknou jako kapsy 1×1",

@@ -452,6 +452,7 @@
   "binDesigner.base.lipNotches.blockedLid": "Niedostępne z pokrywką. Pokrywka ma własną siatkę dla pojemnika na górze.",
   "binDesigner.base.lipNotches.blockedShape": "Niedostępne przy własnym kształcie.",
   "binDesigner.base.lipNotches.blockedOverhang": "Niedostępne z nawisem.",
+  "binDesigner.base.lipNotches.blockedLattice": "Niedostępne z siatką stopek Przesunięcie o pół, bo stopki trafiłyby na wycięcia.",
   "binDesigner.base.lipNotches.blockedSize": "Szerokość i głębokość muszą być w pełnych lub połówkowych jednostkach.",
   "binDesigner.base.lipNotches.blockedSingleCell": "Pojemnik musi być szerszy lub głębszy niż jedna jednostka.",
   "binDesigner.bento.backgroundNote": "Puste komórki drukują się jako kieszenie 1×1",

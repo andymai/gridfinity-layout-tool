@@ -15,6 +15,7 @@ import { CLEARANCE } from './generatorTypes';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { pitchFromParams } from './gridPitch';
 import { buildTopShape } from './boxBuilder';
+import { LIP_NOTCH_REACH_MM } from './boxTopShape';
 import { generateBin } from './binOrchestrator';
 import { getLastSolid, setLastSolid } from './shapeCache';
 import { applySplitConnectors, computeCutFaces } from './splitConnectorBuilder';
@@ -271,6 +272,7 @@ function splitSolidIntoPieces(
         wallHeight: wallTopZ,
         lipHeight: LIP_HEIGHT,
         lipTaperWidth: LIP_TAPER_WIDTH,
+        ...(splitDims.lipNotches && { inwardReach: LIP_NOTCH_REACH_MM }),
       };
       const rawLipCuts = buildLipSlotCuts(
         params,

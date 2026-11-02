@@ -452,6 +452,7 @@
   "binDesigner.base.lipNotches.blockedLid": "Недоступно з кришкою. Кришка має власну сітку для контейнера зверху.",
   "binDesigner.base.lipNotches.blockedShape": "Недоступно для користувацької форми.",
   "binDesigner.base.lipNotches.blockedOverhang": "Недоступно з виступом.",
+  "binDesigner.base.lipNotches.blockedLattice": "Недоступно із сіткою ніжок «Зсув на пів», бо ніжки потраплять на вирізи.",
   "binDesigner.base.lipNotches.blockedSize": "Ширина й глибина мають бути в цілих або половинних одиницях.",
   "binDesigner.base.lipNotches.blockedSingleCell": "Контейнер має бути ширшим або глибшим за одну одиницю.",
   "binDesigner.bento.backgroundNote": "Порожні клітинки друкуються як кишені 1×1",

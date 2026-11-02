@@ -452,6 +452,7 @@
   "binDesigner.base.lipNotches.blockedLid": "Indisponible avec un couvercle. Le couvercle a sa propre grille pour le bac du dessus.",
   "binDesigner.base.lipNotches.blockedShape": "Indisponible avec une forme personnalisée.",
   "binDesigner.base.lipNotches.blockedOverhang": "Indisponible avec un débord.",
+  "binDesigner.base.lipNotches.blockedLattice": "Indisponible avec la trame des pieds Décalé d'un demi, dont les pieds tomberaient sur les encoches.",
   "binDesigner.base.lipNotches.blockedSize": "La largeur et la profondeur doivent être en unités entières ou demi-unités.",
   "binDesigner.base.lipNotches.blockedSingleCell": "Le bac doit dépasser une unité en largeur ou en profondeur.",
   "binDesigner.bento.backgroundNote": "Les cellules vides s'impriment en logements 1×1",

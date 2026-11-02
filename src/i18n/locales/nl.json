@@ -452,6 +452,7 @@
   "binDesigner.base.lipNotches.blockedLid": "Niet beschikbaar met een deksel. Het deksel heeft een eigen raster voor de bak erboven.",
   "binDesigner.base.lipNotches.blockedShape": "Niet beschikbaar bij een aangepaste vorm.",
   "binDesigner.base.lipNotches.blockedOverhang": "Niet beschikbaar met een overhang.",
+  "binDesigner.base.lipNotches.blockedLattice": "Niet beschikbaar met het voetjesraster Half verschoven, waarvan de voetjes op de inkepingen zouden komen.",
   "binDesigner.base.lipNotches.blockedSize": "Breedte en diepte moeten hele of halve eenheden zijn.",
   "binDesigner.base.lipNotches.blockedSingleCell": "De bak moet breder of dieper zijn dan één eenheid.",
   "binDesigner.bento.backgroundNote": "Lege cellen worden als 1×1-vakjes geprint",

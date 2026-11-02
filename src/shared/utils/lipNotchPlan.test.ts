@@ -24,6 +24,7 @@ describe('lipNotchBlocker', () => {
     ['a lid', params({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } }), 'lid'],
     ['a custom shape', params({ cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] } }), 'shape'],
     ['an overhang', params({ overhang: { right: 5 } } as Partial<BinParams>), 'overhang'],
+    ['half-offset feet', params({}, { footLatticeY: 'half' }), 'lattice'],
     ['a 1.7 unit width', params({ width: 1.7 }), 'size'],
     ['a single cell', params({ width: 1, depth: 1 }), 'singleCell'],
   ])('reports %s', (_, p, expected) => {
@@ -37,6 +38,12 @@ describe('lipNotchBlocker', () => {
       cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] },
     });
     expect(lipNotchBlocker(both)).toBe('lid');
+  });
+
+  // Uniform half sockets, or a fractional axis, leave the lattice inert.
+  it('ignores a half-offset lattice the feet do not follow', () => {
+    expect(lipNotchBlocker(params({}, { footLatticeX: 'half', halfSockets: true }))).toBeNull();
+    expect(lipNotchBlocker(params({ width: 2.5 }, { footLatticeX: 'half' }))).toBeNull();
   });
 });
 

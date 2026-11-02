@@ -3421,6 +3421,7 @@
   "binDesigner.base.lipNotches.blockedLid": "სახურავთან ერთად მიუწვდომელია. სახურავს ზედა ყუთისთვის საკუთარი ბადე აქვს.",
   "binDesigner.base.lipNotches.blockedShape": "მორგებულ ფორმაზე მიუწვდომელია.",
   "binDesigner.base.lipNotches.blockedOverhang": "ნაშვერით მიუწვდომელია.",
+  "binDesigner.base.lipNotches.blockedLattice": "მიუწვდომელია ფეხების ბადით „ნახევარი წანაცვლება“, რადგან ფეხები ჭრილებზე დაჯდება.",
   "binDesigner.base.lipNotches.blockedSize": "სიგანე და სიღრმე მთელ ან ნახევარ ერთეულებში უნდა იყოს.",
   "binDesigner.base.lipNotches.blockedSingleCell": "ყუთი სიგანით ან სიღრმით ერთ ერთეულზე მეტი უნდა იყოს.",
   "binDesigner.base.magnetHoles": "მაგნიტის ხვრელები",

@@ -128,6 +128,23 @@ export const lipNotches: ScenarioCase[] = [
       expectNotchAt(result, ...frontProbe(2, 0));
     },
   }),
+  defineScenario('lip-notches #4783', 'a divider slot on a grid line clears through the notch', {
+    assert: 'structural',
+    forExport: true,
+    // 42mm pitch puts the divider on the side walls' grid line, y = 0.
+    params: notched(2, 2, {
+      style: 'slotted',
+      slotConfig: { ...DEFAULT_BIN_PARAMS.slotConfig, x: { enabled: true, pitch: SIZE } },
+    }),
+    customAssert: (result) => {
+      const xLeft = -(2 * SIZE - GRIDFINITY.TOLERANCE) / 2 + PROBE_IN;
+      // The divider's path is open past the plain lip's reach...
+      expectNoNotchAt(result, xLeft, 0);
+      // ...while the notch survives either side of it, and on the slotless wall.
+      expect(notchSpan(result, xLeft, 2)).toBeDefined();
+      expectNotchAt(result, ...frontProbe(2, 0));
+    },
+  }),
   defineScenario('lip-notches #4783', 'a lidded bin keeps a plain lip', {
     assert: 'structural',
     forExport: true,

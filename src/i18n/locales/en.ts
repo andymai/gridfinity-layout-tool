@@ -4073,6 +4073,8 @@ const en: Record<string, string> = {
     'Not available with a lid. The lid has its own grid for the bin above.',
   'binDesigner.base.lipNotches.blockedShape': 'Not available on a custom shape.',
   'binDesigner.base.lipNotches.blockedOverhang': 'Not available with an overhang.',
+  'binDesigner.base.lipNotches.blockedLattice':
+    'Not available with a Half offset foot lattice, whose feet would land on the notches.',
   'binDesigner.base.lipNotches.blockedSize': 'Needs a width and depth in whole or half units.',
   'binDesigner.base.lipNotches.blockedSingleCell': 'Needs a bin wider or deeper than one unit.',
   'binDesigner.base.magnetHoles': 'Magnet holes',

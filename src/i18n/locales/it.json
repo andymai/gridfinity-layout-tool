@@ -452,6 +452,7 @@
   "binDesigner.base.lipNotches.blockedLid": "Non disponibile con il coperchio. Il coperchio ha una sua griglia per il contenitore sopra.",
   "binDesigner.base.lipNotches.blockedShape": "Non disponibile con una forma personalizzata.",
   "binDesigner.base.lipNotches.blockedOverhang": "Non disponibile con la sporgenza.",
+  "binDesigner.base.lipNotches.blockedLattice": "Non disponibile con il reticolo dei piedini Sfalsato di mezzo, i cui piedini finirebbero sulle tacche.",
   "binDesigner.base.lipNotches.blockedSize": "Larghezza e profondità devono essere in unità intere o mezze unità.",
   "binDesigner.base.lipNotches.blockedSingleCell": "Il contenitore deve superare un'unità in larghezza o profondità.",
   "binDesigner.bento.backgroundNote": "Le celle vuote vengono stampate come vani 1×1",

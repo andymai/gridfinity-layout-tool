@@ -56,6 +56,7 @@ const LIP_NOTCH_BLOCKED = {
   lid: 'binDesigner.base.lipNotches.blockedLid',
   shape: 'binDesigner.base.lipNotches.blockedShape',
   overhang: 'binDesigner.base.lipNotches.blockedOverhang',
+  lattice: 'binDesigner.base.lipNotches.blockedLattice',
   size: 'binDesigner.base.lipNotches.blockedSize',
   singleCell: 'binDesigner.base.lipNotches.blockedSingleCell',
 } as const satisfies Record<Exclude<LipNotchBlocker, 'noLip'>, string>;

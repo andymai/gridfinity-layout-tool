@@ -452,6 +452,7 @@
   "binDesigner.base.lipNotches.blockedLid": "有盖子时不可用。盖子自带供上方收纳盒使用的网格。",
   "binDesigner.base.lipNotches.blockedShape": "自定义形状不可用。",
   "binDesigner.base.lipNotches.blockedOverhang": "有外扩时不可用。",
+  "binDesigner.base.lipNotches.blockedLattice": "底脚排布为半格偏移时不可用，底脚会落在定位凸棱上。",
   "binDesigner.base.lipNotches.blockedSize": "宽度和深度须以半个单位为步长。",
   "binDesigner.base.lipNotches.blockedSingleCell": "收纳盒的宽度或深度须大于一个单位。",
   "binDesigner.bento.backgroundNote": "空单元格将按 1×1 凹槽打印",

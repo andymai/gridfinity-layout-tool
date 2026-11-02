@@ -452,6 +452,7 @@
   "binDesigner.base.lipNotches.blockedLid": "Mit Deckel nicht verfügbar. Der Deckel hat ein eigenes Raster für die Box darüber.",
   "binDesigner.base.lipNotches.blockedShape": "Bei einer Sonderform nicht verfügbar.",
   "binDesigner.base.lipNotches.blockedOverhang": "Mit Überstand nicht verfügbar.",
+  "binDesigner.base.lipNotches.blockedLattice": "Mit dem Fußraster Halb versetzt nicht verfügbar, da die Füße auf den Kerben landen würden.",
   "binDesigner.base.lipNotches.blockedSize": "Breite und Tiefe müssen ganze oder halbe Einheiten sein.",
   "binDesigner.base.lipNotches.blockedSingleCell": "Die Box muss breiter oder tiefer als eine Einheit sein.",
   "binDesigner.bento.backgroundNote": "Leere Zellen werden als 1×1-Taschen gedruckt",
