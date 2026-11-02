@@ -1,0 +1,30 @@
+src/features/generation/worker/generators/wallPatternBuilder.ts
+  s_2c42631c148a0b::t_cafbcf5775e670 399-400
+src/features/generation/worker/generators/wallPatternBuilder.cache.test.ts
+  s_2c42631c148a0b::t_de01ca02940fc8 130-148
+src/features/bin-designer/components/preview/GhostWallCutouts/GhostWallCutouts.test.tsx
+  s_2c42631c148a0b::t_e6cbe961a8b8bc 203-228
+src/features/generation/worker/generators/scenarios/wallCutouts.ts
+  s_2c42631c148a0b::t_b575b4db3fdff8 16-17,44
+  s_2c42631c148a0b::t_32c177341364cb 14-15
+src/features/bin-designer/components/preview/GhostWallCutouts/GhostWallCutouts.tsx
+  s_2c42631c148a0b::t_e6cbe961a8b8bc 208
+src/features/generation/worker/generators/__kernel-tests__/wallCutoutSweep.test.ts
+  s_2c42631c148a0b::t_38600c23848c0e 76-77,113-116
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f1f1f606e296e22c78e658e283fc41546583ba6f",
+  "prompts": {},
+  "sessions": {
+    "s_2c42631c148a0b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6f90d5f-00a5-4075-a4a0-4889f54d1f4f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
