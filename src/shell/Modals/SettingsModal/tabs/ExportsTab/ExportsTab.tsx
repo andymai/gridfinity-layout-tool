@@ -1,6 +1,8 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { isErr } from '@/core/result';
 import { useSettingsStore } from '@/core/store';
+import { useToastStore } from '@/core/store/toast';
 import { AlertTriangleIcon, Button, CheckIcon, Field, Input, Switch } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import {
@@ -15,6 +17,7 @@ import {
   checkExportUrl,
   isMixedContent,
   isValidHeaderName,
+  isValidHeaderValue,
   readUrlTarget,
   sendFailureMessage,
   sendToUrl,
@@ -25,6 +28,12 @@ import { FolderArrowIcon } from '../../tabIcons';
 const EXAMPLE_URL = 'https://nas.local/upload';
 const EXAMPLE_HEADER = 'X-API-Key';
 const TEST_FILE_NAME = 'gridfinity-test.txt';
+const URL_KEYS = [
+  'exportUrlEnabled',
+  'exportUrl',
+  'exportUrlHeaderName',
+  'exportUrlHeaderValue',
+] as const;
 
 function OptionHeading({ title, hint }: { title: string; hint: string }) {
   return (
@@ -39,6 +48,7 @@ function FolderOption() {
   const t = useTranslation();
   const folderName = useSettingsStore((state) => state.settings.exportFolderName);
   const [access, setAccess] = useState<FolderAccess | null>(null);
+  const [storeFailed, setStoreFailed] = useState(false);
   const supported = canPickFolder();
 
   useEffect(() => {
@@ -62,17 +72,26 @@ function FolderOption() {
 
   // A new folder can carry the old one's name, which would not re-run the effect.
   const choose = () =>
-    void pickExportFolder().then(async (name) => {
-      if (name !== null) setAccess(await getFolderAccess());
+    void pickExportFolder().then(async (picked) => {
+      setStoreFailed(isErr(picked));
+      if (!isErr(picked) && picked.value !== null) setAccess(await getFolderAccess());
     });
   const hint = t('exportDestination.folder.hint');
+  const storeNote = storeFailed && (
+    <p role="alert" className="text-xs text-warning">
+      {t('exportDestination.folder.storeFailed')}
+    </p>
+  );
   if (folderName === null) {
     return (
-      <div className="flex items-center justify-between gap-3">
-        <OptionHeading title={title} hint={hint} />
-        <Button size="sm" className="flex-shrink-0" onClick={choose}>
-          {t('exportDestination.folder.choose')}
-        </Button>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-3">
+          <OptionHeading title={title} hint={hint} />
+          <Button size="sm" className="flex-shrink-0" onClick={choose}>
+            {t('exportDestination.folder.choose')}
+          </Button>
+        </div>
+        {storeNote}
       </div>
     );
   }
@@ -112,6 +131,10 @@ function FolderOption() {
             </Button>
           </div>
         )}
+        {access === 'denied' && (
+          <p className="text-xs text-warning">{t('exportDestination.folder.denied')}</p>
+        )}
+        {storeNote}
       </div>
     </div>
   );
@@ -137,6 +160,7 @@ function UrlOption() {
   const { exportUrl, exportUrlHeaderName, exportUrlHeaderValue, updateSetting } = settings;
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<TestResult | null>(null);
+  const testRun = useRef(0);
 
   const title = t('exportDestination.url.title');
   const hint = t('exportDestination.url.hint');
@@ -165,18 +189,27 @@ function UrlOption() {
   else if (trimmedUrl !== '' && isMixedContent(new URL(trimmedUrl))) {
     urlNote = t('exportDestination.url.mixed');
   }
-  const headerOk = isValidHeaderName(exportUrlHeaderName);
+  const nameOk = isValidHeaderName(exportUrlHeaderName);
+  const valueOk = isValidHeaderValue(exportUrlHeaderValue);
+  let headerNote = t('exportDestination.url.headerHint');
+  if (!nameOk) headerNote = t('exportDestination.url.badHeader');
+  else if (!valueOk) headerNote = t('exportDestination.url.badHeaderValue');
 
+  // Bumped by every edit, so a test that was already in flight does not
+  // report on settings it never sent.
   const edit = (
     key: 'exportUrl' | 'exportUrlHeaderName' | 'exportUrlHeaderValue',
     value: string
   ) => {
+    testRun.current += 1;
     updateSetting(key, value);
+    setSending(false);
     setResult(null);
   };
 
   const sendTest = async () => {
     if (!target) return;
+    const run = ++testRun.current;
     setSending(true);
     setResult(null);
     const host = target.url.host;
@@ -185,11 +218,12 @@ function UrlOption() {
       TEST_FILE_NAME,
       target
     );
+    if (run !== testRun.current) return;
     setSending(false);
     setResult(
-      outcome.ok
-        ? { ok: true, message: t('exportDestination.url.testSent', { host }) }
-        : { ok: false, message: sendFailureMessage(outcome, host, t) }
+      isErr(outcome)
+        ? { ok: false, message: sendFailureMessage(outcome.error, host, t) }
+        : { ok: true, message: t('exportDestination.url.testSent', { host }) }
     );
   };
 
@@ -238,7 +272,7 @@ function UrlOption() {
               spellCheck={false}
               placeholder={EXAMPLE_HEADER}
               value={exportUrlHeaderName}
-              aria-invalid={!headerOk || undefined}
+              aria-invalid={!nameOk || undefined}
               aria-describedby={`${ids}-header-note`}
               onChange={(e) => edit('exportUrlHeaderName', e.target.value)}
             />
@@ -251,6 +285,7 @@ function UrlOption() {
               fullWidth
               autoComplete="off"
               value={exportUrlHeaderValue}
+              aria-invalid={!valueOk || undefined}
               aria-describedby={`${ids}-header-note`}
               onChange={(e) => edit('exportUrlHeaderValue', e.target.value)}
             />
@@ -258,9 +293,9 @@ function UrlOption() {
         </div>
         <p
           id={`${ids}-header-note`}
-          className={`mt-1 text-xs ${headerOk ? 'text-content-tertiary' : 'text-warning'}`}
+          className={`mt-1 text-xs ${nameOk && valueOk ? 'text-content-tertiary' : 'text-warning'}`}
         >
-          {headerOk ? t('exportDestination.url.headerHint') : t('exportDestination.url.badHeader')}
+          {headerNote}
         </p>
       </div>
 
@@ -295,20 +330,22 @@ function UrlOption() {
 
 export function ExportsTab() {
   const t = useTranslation();
+  const title = t('settings.exportDestination');
+
+  // No undo: the folder's permission goes with its handle and cannot come back.
+  const reset = () => {
+    useSettingsStore.getState().resetSettingKeys([...URL_KEYS]);
+    void forgetExportFolder();
+    useToastStore.getState().addToast(t('settings.section.resetDone', { section: title }), 'info');
+  };
 
   return (
     <div className="space-y-8">
       <SettingSection
         id="export-destination"
-        title={t('settings.exportDestination')}
+        title={title}
         hint={t('exportDestination.hint')}
-        resetKeys={[
-          'exportFolderName',
-          'exportUrlEnabled',
-          'exportUrl',
-          'exportUrlHeaderName',
-          'exportUrlHeaderValue',
-        ]}
+        onReset={reset}
       >
         <div className="space-y-5">
           <FolderOption />

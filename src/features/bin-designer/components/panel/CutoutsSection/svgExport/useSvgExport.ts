@@ -1,5 +1,6 @@
 /**
- * Store hook that downloads a cutout selection as an SVG.
+ * Store hook that saves a cutout selection as an SVG through the user's export
+ * destination.
  *
  * Kept separate from serialization (cutoutsToSvg) so the geometry is testable
  * without the store or a DOM anchor.
@@ -11,13 +12,18 @@ import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import type { Cutout } from '@/features/bin-designer/types';
 import { cutoutsToSvg } from './cutoutsToSvg';
 import { cutoutSvgFileName } from './cutoutSvgFileName';
 
 export interface UseSvgExportReturn {
-  /** Download the given cutouts as one SVG. Returns whether a file was written. */
-  readonly exportCutoutsAsSvg: (cutouts: readonly Cutout[]) => boolean;
+  /**
+   * Save the given cutouts as one SVG. Resolves once the file is saved locally
+   * (downloaded or written to the export folder), to false when there was
+   * nothing to save. An upload to the export URL carries on afterwards.
+   */
+  readonly exportCutoutsAsSvg: (cutouts: readonly Cutout[]) => Promise<boolean>;
 }
 
 export function useSvgExport(): UseSvgExportReturn {
@@ -25,7 +31,8 @@ export function useSvgExport(): UseSvgExportReturn {
   const t = useTranslation();
 
   const exportCutoutsAsSvg = useCallback(
-    (cutouts: readonly Cutout[]): boolean => {
+    async (cutouts: readonly Cutout[]): Promise<boolean> => {
+      primeExportFolder();
       const svg = cutoutsToSvg(cutouts);
       if (!svg) {
         addToast(t('toast.svgExport.nothingToExport'), 'error');
@@ -33,7 +40,10 @@ export function useSvgExport(): UseSvgExportReturn {
       }
 
       const { designName } = useDesignerStore.getState();
-      void deliverExport(new Blob([svg], { type: 'image/svg+xml' }), cutoutSvgFileName(designName));
+      await deliverExport(
+        new Blob([svg], { type: 'image/svg+xml' }),
+        cutoutSvgFileName(designName)
+      );
       trackEvent('cutout_svg_export', { shape_count: cutouts.length });
       return true;
     },

@@ -5072,8 +5072,15 @@
   "exportDestination.sentMany": "{count} arquivos enviados para {host}",
   "exportDestination.fail.auth": "O envio para {host} falhou (HTTP {status}). Confira o cabeçalho em Configurações.",
   "exportDestination.fail.http": "O envio para {host} falhou (HTTP {status}).",
-  "exportDestination.fail.cors": "O envio para {host} foi bloqueado. O receptor precisa permitir este site (CORS).",
+  "exportDestination.fail.cors": "O envio para {host} foi bloqueado ou interrompido. O receptor precisa permitir este site (CORS).",
   "exportDestination.fail.mixed": "O envio para {host} foi bloqueado: uma página HTTPS só pode enviar para um endereço https://.",
   "exportDestination.fail.network": "Não foi possível acessar {host}. Confira o endereço e se o receptor está rodando.",
-  "exportDestination.fail.invalid": "Não enviado: o endereço de exportação em Configurações não é válido."
+  "exportDestination.fail.invalid": "Não enviado: o endereço de exportação em Configurações não é válido.",
+  "exportDestination.folder.denied": "O navegador bloqueou o salvamento nesta pasta. Escolha-a de novo para permitir.",
+  "exportDestination.folder.storeFailed": "Não foi possível lembrar essa pasta. Tente escolhê-la de novo.",
+  "exportDestination.url.badHeaderValue": "O valor do cabeçalho tem um caractere que os navegadores não conseguem enviar, como aspas curvas.",
+  "exportDestination.fellBack": "Não foi possível salvar {file} no local escolhido, então o arquivo foi baixado.",
+  "exportDestination.failed": "Não foi possível salvar {file}. Tente exportar de novo.",
+  "exportDestination.fail.timeout": "O envio para {host} demorou demais. O arquivo pode ter chegado mesmo assim.",
+  "exportDestination.fail.redirect": "O envio para {host} foi redirecionado. Use o endereço final em Configurações."
 }

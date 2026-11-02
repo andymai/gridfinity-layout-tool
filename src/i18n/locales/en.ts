@@ -6134,12 +6134,23 @@ const en: Record<string, string> = {
     'Upload to {host} failed (HTTP {status}). Check the header in Settings.',
   'exportDestination.fail.http': 'Upload to {host} failed (HTTP {status}).',
   'exportDestination.fail.cors':
-    'Upload to {host} was blocked. The receiver has to allow this site (CORS).',
+    'Upload to {host} was blocked or cut off. The receiver has to allow this site (CORS).',
   'exportDestination.fail.mixed':
     'Upload to {host} was blocked: an HTTPS page can only send to an https:// address.',
   'exportDestination.fail.network':
     "Couldn't reach {host}. Check the address and that the receiver is running.",
   'exportDestination.fail.invalid': 'Not sent: the export address in Settings is not valid.',
+  'exportDestination.folder.denied':
+    'The browser blocked saving to this folder. Choose it again to allow it.',
+  'exportDestination.folder.storeFailed': "Couldn't remember that folder. Try choosing it again.",
+  'exportDestination.url.badHeaderValue':
+    "The header value has a character browsers can't send, such as a curly quote.",
+  'exportDestination.fellBack': "Couldn't save {file} where you chose, so it downloaded instead.",
+  'exportDestination.failed': "Couldn't save {file}. Try the export again.",
+  'exportDestination.fail.timeout':
+    'Upload to {host} timed out. It may still have reached the receiver.',
+  'exportDestination.fail.redirect':
+    'Upload to {host} was redirected. Use the final address in Settings.',
 };
 
 export default en;

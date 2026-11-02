@@ -5072,8 +5072,15 @@
   "exportDestination.sentMany": "Odesláno na {host} (souborů: {count})",
   "exportDestination.fail.auth": "Nahrání na {host} selhalo (HTTP {status}). Zkontroluj hlavičku v Nastavení.",
   "exportDestination.fail.http": "Nahrání na {host} selhalo (HTTP {status}).",
-  "exportDestination.fail.cors": "Nahrání na {host} bylo zablokováno. Příjemce musí tento web povolit (CORS).",
+  "exportDestination.fail.cors": "Nahrání na {host} bylo zablokováno nebo přerušeno. Příjemce musí tento web povolit (CORS).",
   "exportDestination.fail.mixed": "Nahrání na {host} bylo zablokováno: stránka přes HTTPS může posílat jen na adresu https://.",
   "exportDestination.fail.network": "{host} není dostupný. Zkontroluj adresu a jestli příjemce běží.",
-  "exportDestination.fail.invalid": "Neodesláno: adresa exportu v Nastavení není platná."
+  "exportDestination.fail.invalid": "Neodesláno: adresa exportu v Nastavení není platná.",
+  "exportDestination.folder.denied": "Prohlížeč zablokoval ukládání do této složky. Vyber ji znovu, abys to povolil.",
+  "exportDestination.folder.storeFailed": "Tuto složku se nepodařilo zapamatovat. Zkus ji vybrat znovu.",
+  "exportDestination.url.badHeaderValue": "Hodnota hlavičky obsahuje znak, který prohlížeče neumí odeslat, například typografickou uvozovku.",
+  "exportDestination.fellBack": "{file} se nepodařilo uložit na zvolené místo, soubor se proto stáhl.",
+  "exportDestination.failed": "{file} se nepodařilo uložit. Zkus export znovu.",
+  "exportDestination.fail.timeout": "Nahrávání na {host} trvalo příliš dlouho. Soubor ale možná dorazil.",
+  "exportDestination.fail.redirect": "Nahrávání na {host} bylo přesměrováno. V Nastavení zadej konečnou adresu."
 }

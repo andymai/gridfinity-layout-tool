@@ -5072,8 +5072,15 @@
   "exportDestination.sentMany": "Wysłano pliki ({count}) do {host}",
   "exportDestination.fail.auth": "Przesyłanie do {host} nie powiodło się (HTTP {status}). Sprawdź nagłówek w Ustawieniach.",
   "exportDestination.fail.http": "Przesyłanie do {host} nie powiodło się (HTTP {status}).",
-  "exportDestination.fail.cors": "Przesyłanie do {host} zostało zablokowane. Odbiornik musi zezwalać na tę stronę (CORS).",
+  "exportDestination.fail.cors": "Przesyłanie do {host} zostało zablokowane lub przerwane. Odbiornik musi zezwalać na tę stronę (CORS).",
   "exportDestination.fail.mixed": "Przesyłanie do {host} zostało zablokowane: strona HTTPS może wysyłać tylko na adres https://.",
   "exportDestination.fail.network": "Nie można połączyć się z {host}. Sprawdź adres i czy odbiornik działa.",
-  "exportDestination.fail.invalid": "Nie wysłano: adres eksportu w Ustawieniach jest nieprawidłowy."
+  "exportDestination.fail.invalid": "Nie wysłano: adres eksportu w Ustawieniach jest nieprawidłowy.",
+  "exportDestination.folder.denied": "Przeglądarka zablokowała zapis w tym folderze. Wybierz go ponownie, aby na to zezwolić.",
+  "exportDestination.folder.storeFailed": "Nie udało się zapamiętać tego folderu. Spróbuj wybrać go ponownie.",
+  "exportDestination.url.badHeaderValue": "Wartość nagłówka zawiera znak, którego przeglądarki nie mogą wysłać, na przykład cudzysłów drukarski.",
+  "exportDestination.fellBack": "Nie udało się zapisać {file} w wybranym miejscu, więc plik został pobrany.",
+  "exportDestination.failed": "Nie udało się zapisać {file}. Spróbuj wyeksportować ponownie.",
+  "exportDestination.fail.timeout": "Przesyłanie do {host} trwało zbyt długo. Plik mógł jednak dotrzeć do odbiornika.",
+  "exportDestination.fail.redirect": "Przesyłanie do {host} zostało przekierowane. Wpisz w Ustawieniach adres docelowy."
 }

@@ -17,6 +17,7 @@ import { getActiveBridge, workerPoolManager } from '@/shared/generation/bridge';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { FORMAT_MIME_TYPES } from '@/shared/generation/exportUtils';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { useToastStore } from '@/core/store/toast';
 import { trackToolConverted } from '@/shared/analytics/posthog';
 import { getErrorMessage } from '@/shared/utils/errors';
@@ -95,6 +96,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
 
   const downloadBaseplate = useCallback(
     async (format: ExportFileFormat, splitEnabled = true) => {
+      primeExportFolder();
       const bridge = getActiveBridge();
       if (!bridge) {
         useToastStore.getState().addToast(t('baseplate.exportNotReady'), 'error');

@@ -26,6 +26,7 @@ import { getErrorMessage } from '@/shared/utils/errors';
 import { trackToolConverted } from '@/shared/analytics/posthog';
 import { FORMAT_MIME_TYPES, FORMAT_EXTENSIONS } from '@/shared/generation/exportUtils';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import type { ExportFileFormat } from '@/shared/types/bin';
 import type { BedSize } from '@/shared/utils/fitTestPlan';
 import type { FitTestMode, FitTestOutlineSize } from '@/shared/utils/fitTestOutlinePlan';
@@ -63,6 +64,7 @@ export function useFitTestExport(): UseFitTestExportReturn {
       baseName = FIT_TEST_BASE_NAME,
       bed,
     }: DownloadOptions) => {
+      primeExportFolder();
       const bridge = getActiveBridge();
       if (!bridge) return false;
 
@@ -104,12 +106,12 @@ export function useFitTestExport(): UseFitTestExportReturn {
         const extension = FORMAT_EXTENSIONS[format];
         if (pieces.length === 1) {
           const blob = new Blob([pieces[0].data], { type: FORMAT_MIME_TYPES[format] });
-          void deliverExport(blob, `${baseName}${extension}`);
+          await deliverExport(blob, `${baseName}${extension}`);
         } else {
           // Named exactly what the dialog shows. The pieces inside carry the
           // split (`fit-test_A1.stl`), so nothing is lost by dropping a suffix
           // the filename field never knew about.
-          void deliverExport(packagePiecesAsZip(pieces, baseName, extension), `${baseName}.zip`);
+          await deliverExport(packagePiecesAsZip(pieces, baseName, extension), `${baseName}.zip`);
         }
 
         // The dialog warns about this from its own copy of the plan, but the

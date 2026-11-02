@@ -5072,8 +5072,15 @@
   "exportDestination.sentMany": "{count} 件のファイルを {host} に送信しました",
   "exportDestination.fail.auth": "{host} へのアップロードに失敗しました（HTTP {status}）。設定でヘッダーを確認してください。",
   "exportDestination.fail.http": "{host} へのアップロードに失敗しました（HTTP {status}）。",
-  "exportDestination.fail.cors": "{host} へのアップロードがブロックされました。受信側でこのサイトを許可する必要があります（CORS）。",
+  "exportDestination.fail.cors": "{host} へのアップロードがブロックされたか、途中で切断されました。受信側でこのサイトを許可する必要があります（CORS）。",
   "exportDestination.fail.mixed": "{host} へのアップロードがブロックされました。HTTPSのページからは https:// のアドレスにしか送信できません。",
   "exportDestination.fail.network": "{host} に接続できません。アドレスと受信側が動いているかを確認してください。",
-  "exportDestination.fail.invalid": "未送信: 設定のエクスポート先アドレスが正しくありません。"
+  "exportDestination.fail.invalid": "未送信: 設定のエクスポート先アドレスが正しくありません。",
+  "exportDestination.folder.denied": "ブラウザがこのフォルダーへの保存をブロックしました。許可するにはフォルダーを選び直してください。",
+  "exportDestination.folder.storeFailed": "そのフォルダーを記憶できませんでした。もう一度選んでください。",
+  "exportDestination.url.badHeaderValue": "ヘッダーの値に、ブラウザが送信できない文字（全角の引用符など）が含まれています。",
+  "exportDestination.fellBack": "{file} を選んだ場所に保存できなかったため、ダウンロードしました。",
+  "exportDestination.failed": "{file} を保存できませんでした。もう一度エクスポートしてください。",
+  "exportDestination.fail.timeout": "{host} へのアップロードがタイムアウトしました。ファイルは届いている可能性があります。",
+  "exportDestination.fail.redirect": "{host} へのアップロードはリダイレクトされました。設定でリダイレクト先のアドレスを指定してください。"
 }

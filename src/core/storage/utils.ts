@@ -6,6 +6,7 @@
  */
 
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { exportLayoutJSONWithDesigns } from './ShareService';
 import type { Layout } from '@/core/types';
 import { isOk, OK } from '@/core/result';
@@ -27,18 +28,21 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 /**
- * Download a layout as a JSON file with embedded bin designs, through the
- * user's export destination. Async because it needs to look up linked designs from IndexedDB. Fails,
- * downloading nothing, when a linked design's mesh file is missing.
+ * Save a layout as a JSON file with embedded bin designs, through the user's
+ * export destination. Looks up linked designs in IndexedDB first, and fails,
+ * saving nothing, when a linked design's mesh file is missing. Resolves once
+ * the file is saved locally (downloaded or written to the export folder); an
+ * upload to the export URL carries on afterwards and does not change the result.
  */
 export async function downloadLayoutAsFile(
   layout: Layout,
   filename?: string
 ): Promise<Result<void, StorageMeshMissingError>> {
+  primeExportFolder();
   const exported = await exportLayoutJSONWithDesigns(layout);
   if (!isOk(exported)) return exported;
   const blob = new Blob([exported.value], { type: 'application/json' });
-  void deliverExport(
+  await deliverExport(
     blob,
     filename || `${layout.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.json`
   );

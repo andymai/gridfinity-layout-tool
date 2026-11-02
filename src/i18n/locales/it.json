@@ -5072,8 +5072,15 @@
   "exportDestination.sentMany": "{count} file inviati a {host}",
   "exportDestination.fail.auth": "Caricamento su {host} non riuscito (HTTP {status}). Controlla l'intestazione nelle Impostazioni.",
   "exportDestination.fail.http": "Caricamento su {host} non riuscito (HTTP {status}).",
-  "exportDestination.fail.cors": "Caricamento su {host} bloccato. Il ricevitore deve consentire questo sito (CORS).",
+  "exportDestination.fail.cors": "Caricamento su {host} bloccato o interrotto. Il ricevitore deve consentire questo sito (CORS).",
   "exportDestination.fail.mixed": "Caricamento su {host} bloccato: una pagina HTTPS può inviare solo a un indirizzo https://.",
   "exportDestination.fail.network": "Impossibile raggiungere {host}. Controlla l'indirizzo e che il ricevitore sia attivo.",
-  "exportDestination.fail.invalid": "Non inviato: l'indirizzo di esportazione nelle Impostazioni non è valido."
+  "exportDestination.fail.invalid": "Non inviato: l'indirizzo di esportazione nelle Impostazioni non è valido.",
+  "exportDestination.folder.denied": "Il browser ha bloccato il salvataggio in questa cartella. Sceglila di nuovo per consentirlo.",
+  "exportDestination.folder.storeFailed": "Impossibile ricordare questa cartella. Prova a sceglierla di nuovo.",
+  "exportDestination.url.badHeaderValue": "Il valore dell'intestazione contiene un carattere che i browser non possono inviare, come una virgoletta tipografica.",
+  "exportDestination.fellBack": "Impossibile salvare {file} dove hai scelto, quindi è stato scaricato.",
+  "exportDestination.failed": "Impossibile salvare {file}. Riprova l'esportazione.",
+  "exportDestination.fail.timeout": "Il caricamento su {host} ha impiegato troppo tempo. Il file potrebbe comunque essere arrivato.",
+  "exportDestination.fail.redirect": "Il caricamento su {host} è stato reindirizzato. Usa l'indirizzo finale nelle Impostazioni."
 }

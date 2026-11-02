@@ -5072,8 +5072,15 @@
   "exportDestination.sentMany": "{count} filer skickade till {host}",
   "exportDestination.fail.auth": "Uppladdningen till {host} misslyckades (HTTP {status}). Kontrollera headern i Inställningar.",
   "exportDestination.fail.http": "Uppladdningen till {host} misslyckades (HTTP {status}).",
-  "exportDestination.fail.cors": "Uppladdningen till {host} blockerades. Mottagaren måste tillåta den här webbplatsen (CORS).",
+  "exportDestination.fail.cors": "Uppladdningen till {host} blockerades eller avbröts. Mottagaren måste tillåta den här webbplatsen (CORS).",
   "exportDestination.fail.mixed": "Uppladdningen till {host} blockerades: en HTTPS-sida kan bara skicka till en https://-adress.",
   "exportDestination.fail.network": "Når inte {host}. Kontrollera adressen och att mottagaren är igång.",
-  "exportDestination.fail.invalid": "Inte skickad: exportadressen i Inställningar är ogiltig."
+  "exportDestination.fail.invalid": "Inte skickad: exportadressen i Inställningar är ogiltig.",
+  "exportDestination.folder.denied": "Webbläsaren blockerade sparande i den här mappen. Välj den igen för att tillåta det.",
+  "exportDestination.folder.storeFailed": "Mappen kunde inte sparas. Försök välja den igen.",
+  "exportDestination.url.badHeaderValue": "Headervärdet innehåller ett tecken som webbläsare inte kan skicka, till exempel ett typografiskt citattecken.",
+  "exportDestination.fellBack": "Kunde inte spara {file} där du valde, så filen laddades ner i stället.",
+  "exportDestination.failed": "Kunde inte spara {file}. Försök exportera igen.",
+  "exportDestination.fail.timeout": "Uppladdningen till {host} tog för lång tid. Filen kan ändå ha kommit fram.",
+  "exportDestination.fail.redirect": "Uppladdningen till {host} omdirigerades. Ange den slutliga adressen i Inställningar."
 }

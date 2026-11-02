@@ -49,7 +49,7 @@ describe('useSvgExport', () => {
   it('downloads the selection under the design name', async () => {
     const { result } = renderHook(() => useSvgExport());
 
-    expect(result.current.exportCutoutsAsSvg([cutout()])).toBe(true);
+    await expect(result.current.exportCutoutsAsSvg([cutout()])).resolves.toBe(true);
     expect(mockAddToast).not.toHaveBeenCalled();
 
     const [blob, name] = mockTriggerDownload.mock.calls[0];
@@ -58,19 +58,21 @@ describe('useSvgExport', () => {
     await expect(blob.text()).resolves.toContain('<svg');
   });
 
-  it('toasts and writes nothing when the selection has no outline', () => {
+  it('toasts and writes nothing when the selection has no outline', async () => {
     const { result } = renderHook(() => useSvgExport());
 
-    expect(result.current.exportCutoutsAsSvg([cutout({ shape: 'text' })])).toBe(false);
+    await expect(result.current.exportCutoutsAsSvg([cutout({ shape: 'text' })])).resolves.toBe(
+      false
+    );
     expect(mockTriggerDownload).not.toHaveBeenCalled();
     expect(mockTrackEvent).not.toHaveBeenCalled();
     expect(mockAddToast).toHaveBeenCalledWith(expect.any(String), 'error');
   });
 
-  it('reports the selection size to analytics', () => {
+  it('reports the selection size to analytics', async () => {
     const { result } = renderHook(() => useSvgExport());
 
-    result.current.exportCutoutsAsSvg([cutout(), cutout({ id: 'c2', x: 20 })]);
+    await result.current.exportCutoutsAsSvg([cutout(), cutout({ id: 'c2', x: 20 })]);
     expect(mockTrackEvent).toHaveBeenCalledWith('cutout_svg_export', { shape_count: 2 });
   });
 });

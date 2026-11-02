@@ -10,6 +10,7 @@ import type { DesignId } from '@/core/types';
 import { bridgeManager } from '@/shared/generation/bridge';
 import { FORMAT_MIME_TYPES } from '@/shared/generation/exportUtils';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { withLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
@@ -39,6 +40,7 @@ export function useQuickExport(): UseQuickExportReturn {
 
   const exportToSTL = useCallback(
     async (id: DesignId, designName: string, binLabel: string) => {
+      primeExportFolder();
       if (isExporting) return;
 
       setIsExporting(true);

@@ -5072,8 +5072,15 @@
   "exportDestination.sentMany": "{count} filer sendt til {host}",
   "exportDestination.fail.auth": "Opplasting til {host} mislyktes (HTTP {status}). Sjekk headeren i Innstillinger.",
   "exportDestination.fail.http": "Opplasting til {host} mislyktes (HTTP {status}).",
-  "exportDestination.fail.cors": "Opplasting til {host} ble blokkert. Mottakeren må tillate dette nettstedet (CORS).",
+  "exportDestination.fail.cors": "Opplasting til {host} ble blokkert eller avbrutt. Mottakeren må tillate dette nettstedet (CORS).",
   "exportDestination.fail.mixed": "Opplasting til {host} ble blokkert: en HTTPS-side kan bare sende til en https://-adresse.",
   "exportDestination.fail.network": "Får ikke kontakt med {host}. Sjekk adressen og at mottakeren kjører.",
-  "exportDestination.fail.invalid": "Ikke sendt: eksportadressen i Innstillinger er ugyldig."
+  "exportDestination.fail.invalid": "Ikke sendt: eksportadressen i Innstillinger er ugyldig.",
+  "exportDestination.folder.denied": "Nettleseren blokkerte lagring i denne mappen. Velg den på nytt for å tillate det.",
+  "exportDestination.folder.storeFailed": "Kunne ikke huske den mappen. Prøv å velge den på nytt.",
+  "exportDestination.url.badHeaderValue": "Header-verdien har et tegn nettlesere ikke kan sende, for eksempel et typografisk anførselstegn.",
+  "exportDestination.fellBack": "Kunne ikke lagre {file} der du valgte, så filen ble lastet ned i stedet.",
+  "exportDestination.failed": "Kunne ikke lagre {file}. Prøv eksporten på nytt.",
+  "exportDestination.fail.timeout": "Opplasting til {host} tok for lang tid. Filen kan likevel ha kommet fram.",
+  "exportDestination.fail.redirect": "Opplasting til {host} ble videresendt. Bruk den endelige adressen i Innstillinger."
 }

@@ -1,14 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Layout } from '@/core/types';
-import { ok } from '@/core/result';
+import { err, ok, storageMeshMissing } from '@/core/result';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { exportLayoutJSONWithDesigns } from './ShareService';
 import { downloadLayoutAsFile } from './utils';
 
 vi.mock('@/shared/exportDestination/deliverExport', () => ({
-  deliverExport: vi.fn(async () => undefined),
+  deliverExport: vi.fn(() => Promise.resolve()),
 }));
 vi.mock('./ShareService', () => ({
-  exportLayoutJSONWithDesigns: vi.fn(async () => ok('{"name":"My Drawer"}')),
+  exportLayoutJSONWithDesigns: vi.fn(() => Promise.resolve(ok('{"name":"My Drawer"}'))),
 }));
 
 const layout = { name: 'My Drawer' } as Layout;
@@ -31,5 +32,13 @@ describe('downloadLayoutAsFile', () => {
     await downloadLayoutAsFile(layout, 'kitchen.json');
 
     expect(vi.mocked(deliverExport).mock.calls[0][1]).toBe('kitchen.json');
+  });
+
+  it('saves nothing and returns the error when a linked mesh is missing', async () => {
+    const missing = err(storageMeshMissing('gone'));
+    vi.mocked(exportLayoutJSONWithDesigns).mockResolvedValueOnce(missing);
+
+    expect(await downloadLayoutAsFile(layout)).toBe(missing);
+    expect(deliverExport).not.toHaveBeenCalled();
   });
 });

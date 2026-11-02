@@ -5072,8 +5072,15 @@
   "exportDestination.sentMany": "{host}(으)로 파일 {count}개를 보냈습니다",
   "exportDestination.fail.auth": "{host}(으)로 업로드하지 못했습니다(HTTP {status}). 설정에서 헤더를 확인하세요.",
   "exportDestination.fail.http": "{host}(으)로 업로드하지 못했습니다(HTTP {status}).",
-  "exportDestination.fail.cors": "{host}(으)로의 업로드가 차단되었습니다. 받는 쪽에서 이 사이트를 허용해야 합니다(CORS).",
+  "exportDestination.fail.cors": "{host}(으)로의 업로드가 차단되었거나 중간에 끊겼습니다. 받는 쪽에서 이 사이트를 허용해야 합니다(CORS).",
   "exportDestination.fail.mixed": "{host}(으)로의 업로드가 차단되었습니다. HTTPS 페이지는 https:// 주소로만 보낼 수 있습니다.",
   "exportDestination.fail.network": "{host}에 연결할 수 없습니다. 주소와 받는 쪽이 실행 중인지 확인하세요.",
-  "exportDestination.fail.invalid": "보내지 않음: 설정의 내보내기 주소가 올바르지 않습니다."
+  "exportDestination.fail.invalid": "보내지 않음: 설정의 내보내기 주소가 올바르지 않습니다.",
+  "exportDestination.folder.denied": "브라우저가 이 폴더에 저장하는 것을 차단했습니다. 허용하려면 폴더를 다시 선택하세요.",
+  "exportDestination.folder.storeFailed": "그 폴더를 기억하지 못했습니다. 다시 선택해 보세요.",
+  "exportDestination.url.badHeaderValue": "헤더 값에 브라우저가 보낼 수 없는 문자(예: 둥근 따옴표)가 있습니다.",
+  "exportDestination.fellBack": "{file}을(를) 선택한 위치에 저장하지 못해 대신 내려받았습니다.",
+  "exportDestination.failed": "{file}을(를) 저장하지 못했습니다. 다시 내보내 보세요.",
+  "exportDestination.fail.timeout": "{host}(으)로 업로드하는 데 시간이 너무 오래 걸렸습니다. 파일은 도착했을 수도 있습니다.",
+  "exportDestination.fail.redirect": "{host}(으)로의 업로드가 리디렉션되었습니다. 설정에 최종 주소를 입력하세요."
 }

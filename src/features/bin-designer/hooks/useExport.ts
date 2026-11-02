@@ -37,6 +37,7 @@ import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/spl
 import { getErrorCauses, getErrorCode } from '@/shared/utils/errors';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { ExportFileNameConfig, ExportFileFormat } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
@@ -346,6 +347,7 @@ export function useExport(): UseExportReturn {
       config: ExportFileNameConfig,
       designName?: string
     ): Promise<boolean> => {
+      primeExportFolder();
       // Engine not ready: queue the click and bail. The readiness effect above
       // will replay it once `engineReady` flips. Returning `false` lets the
       // caller (ExportDialog) skip its success path; the queued replay will
@@ -472,6 +474,7 @@ export function useExport(): UseExportReturn {
       config: ExportFileNameConfig,
       designName?: string
     ): Promise<boolean> => {
+      primeExportFolder();
       if (!engineReady || !getActiveBridge()) {
         pendingExportRef.current = { kind: 'split', format, config, designName };
         return false;

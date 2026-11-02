@@ -16,6 +16,7 @@ import { withoutLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { inlineParamsMeshes } from '@/shared/generation/meshRefs';
 import { sanitizeFileName } from './fileNaming';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 
 /**
  * Design JSON export schema.
@@ -67,11 +68,12 @@ export function exportDesignJSON(name: string, params: BinParams): string {
 }
 
 /**
- * Download bin design as JSON file.
- * Creates a blob and triggers browser download.
+ * Save a bin design as a JSON file through the user's export destination.
+ * Resolves once the file is saved locally (downloaded or written to the export
+ * folder); an upload to the export URL carries on afterwards.
  *
  * The file is self-contained: mesh refs are written out as the inline assets
- * they name. Fails, downloading nothing, when a mesh file is missing.
+ * they name. Fails, saving nothing, when a mesh file is missing.
  *
  * @param name - Design name (used for filename)
  * @param params - Complete bin parameters
@@ -86,12 +88,13 @@ export async function downloadDesignAsFile(
   name: string,
   params: BinParams
 ): Promise<Result<void, StorageMeshMissingError>> {
+  primeExportFolder();
   const inline = await inlineParamsMeshes(params);
   if (isErr(inline)) return inline;
   const json = exportDesignJSON(name, inline.value);
   const sanitized = sanitizeFileName(name);
   const filename = !sanitized || /^_+$/.test(sanitized) ? 'gridfinity-bin' : sanitized;
-  void deliverExport(new Blob([json], { type: 'application/json' }), `${filename}.json`);
+  await deliverExport(new Blob([json], { type: 'application/json' }), `${filename}.json`);
   return OK;
 }
 

@@ -12,6 +12,7 @@ import { Button, Stepper } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { bridgeManager } from '@/shared/generation/bridge';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { stlTo3MF } from '@/shared/generation/stlTo3mf';
 import type { GridfinityItem } from '@/shared/types/item';
 import { clamp } from '@/shared/utils/math';
@@ -69,6 +70,7 @@ export function ImportedMeshPanel() {
   const dims = `${asset.sizeMm.x.toFixed(1)} × ${asset.sizeMm.y.toFixed(1)} × ${asset.sizeMm.z.toFixed(1)} mm`;
 
   const exportMesh = async (format: 'stl' | '3mf'): Promise<void> => {
+    primeExportFolder();
     const item: GridfinityItem = { envelope, structure };
     const bridge = await bridgeManager.acquire();
     try {

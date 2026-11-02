@@ -5072,8 +5072,15 @@
   "exportDestination.sentMany": "{count} ფაილი გაიგზავნა {host}-ზე",
   "exportDestination.fail.auth": "{host}-ზე ატვირთვა ვერ მოხერხდა (HTTP {status}). შეამოწმეთ სათაური პარამეტრებში.",
   "exportDestination.fail.http": "{host}-ზე ატვირთვა ვერ მოხერხდა (HTTP {status}).",
-  "exportDestination.fail.cors": "{host}-ზე ატვირთვა დაიბლოკა. მიმღებმა უნდა დაუშვას ეს საიტი (CORS).",
+  "exportDestination.fail.cors": "{host}-ზე ატვირთვა დაიბლოკა ან შეწყდა. მიმღებმა უნდა დაუშვას ეს საიტი (CORS).",
   "exportDestination.fail.mixed": "{host}-ზე ატვირთვა დაიბლოკა: HTTPS გვერდს შეუძლია გაგზავნა მხოლოდ https:// მისამართზე.",
   "exportDestination.fail.network": "{host}-თან დაკავშირება ვერ მოხერხდა. შეამოწმეთ მისამართი და მუშაობს თუ არა მიმღები.",
-  "exportDestination.fail.invalid": "არ გაიგზავნა: ექსპორტის მისამართი პარამეტრებში არასწორია."
+  "exportDestination.fail.invalid": "არ გაიგზავნა: ექსპორტის მისამართი პარამეტრებში არასწორია.",
+  "exportDestination.folder.denied": "ბრაუზერმა ამ საქაღალდეში შენახვა დაბლოკა. დასაშვებად ხელახლა აირჩიეთ.",
+  "exportDestination.folder.storeFailed": "ამ საქაღალდის დამახსოვრება ვერ მოხერხდა. სცადეთ ხელახლა არჩევა.",
+  "exportDestination.url.badHeaderValue": "სათაურის მნიშვნელობაში არის სიმბოლო, რომელსაც ბრაუზერები ვერ აგზავნიან, მაგალითად ტიპოგრაფიული ბრჭყალი.",
+  "exportDestination.fellBack": "{file} არჩეულ ადგილას ვერ შეინახა, ამიტომ ფაილი ჩამოიტვირთა.",
+  "exportDestination.failed": "{file} ვერ შეინახა. სცადეთ ექსპორტი ხელახლა.",
+  "exportDestination.fail.timeout": "{host}-ზე ატვირთვას ძალიან დიდი დრო დასჭირდა. ფაილი შესაძლოა მაინც მივიდა.",
+  "exportDestination.fail.redirect": "{host}-ზე ატვირთვა გადამისამართდა. პარამეტრებში მიუთითეთ საბოლოო მისამართი."
 }

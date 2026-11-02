@@ -5072,8 +5072,15 @@
   "exportDestination.sentMany": "Надіслано файлів: {count} на {host}",
   "exportDestination.fail.auth": "Не вдалося вивантажити на {host} (HTTP {status}). Перевірте заголовок у Налаштуваннях.",
   "exportDestination.fail.http": "Не вдалося вивантажити на {host} (HTTP {status}).",
-  "exportDestination.fail.cors": "Вивантаження на {host} заблоковано. Отримувач має дозволити цей сайт (CORS).",
+  "exportDestination.fail.cors": "Вивантаження на {host} заблоковано або перервано. Отримувач має дозволити цей сайт (CORS).",
   "exportDestination.fail.mixed": "Вивантаження на {host} заблоковано: сторінка HTTPS може надсилати лише на адресу https://.",
   "exportDestination.fail.network": "Не вдається з’єднатися з {host}. Перевірте адресу і чи працює отримувач.",
-  "exportDestination.fail.invalid": "Не надіслано: адреса експорту в Налаштуваннях недійсна."
+  "exportDestination.fail.invalid": "Не надіслано: адреса експорту в Налаштуваннях недійсна.",
+  "exportDestination.folder.denied": "Браузер заблокував збереження в цю папку. Виберіть її знову, щоб дозволити.",
+  "exportDestination.folder.storeFailed": "Не вдалося запам’ятати цю папку. Спробуйте вибрати її знову.",
+  "exportDestination.url.badHeaderValue": "Значення заголовка містить символ, який браузери не можуть надіслати, наприклад типографські лапки.",
+  "exportDestination.fellBack": "Не вдалося зберегти {file} у вибране місце, тому файл завантажено.",
+  "exportDestination.failed": "Не вдалося зберегти {file}. Спробуйте експортувати знову.",
+  "exportDestination.fail.timeout": "Вивантаження на {host} тривало надто довго. Файл, можливо, все одно дійшов.",
+  "exportDestination.fail.redirect": "Вивантаження на {host} було переспрямовано. Вкажіть кінцеву адресу в Налаштуваннях."
 }

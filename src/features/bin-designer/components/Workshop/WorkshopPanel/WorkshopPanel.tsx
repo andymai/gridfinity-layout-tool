@@ -12,6 +12,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { bridgeManager } from '@/shared/generation/bridge';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { stlTo3MF } from '@/shared/generation/stlTo3mf';
 import type { GridfinityItem } from '@/shared/types/item';
 import { ASSEMBLY_PART_TYPES } from '@/shared/types/assembly';
@@ -144,6 +145,7 @@ export function WorkshopPanel() {
   const assembly: AssemblyStructure = structure;
 
   const exportBuild = async (format: 'stl' | 'step' | '3mf'): Promise<void> => {
+    primeExportFolder();
     const item: GridfinityItem = { envelope, structure: assembly };
     setExporting(true);
     let acquired = false;

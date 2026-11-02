@@ -32,6 +32,7 @@ import { parseSTLBinary } from '@/shared/generation/stlParser';
 // generation barrel would pull the whole bridge stack into this chunk.
 import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExporter';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { packageFilesAsZip } from '@/shared/generation/zipExport';
 import type { ZipBinaryFile, ZipTextFile } from '@/shared/generation/zipExport';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
@@ -85,6 +86,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
       zipBaseName: string,
       fileNameConfig: ExportFileNameConfig
     ): Promise<boolean> => {
+      primeExportFolder();
       const layout = useLayoutStore.getState().layout;
       const printSettings = useSettingsStore.getState().settings.printSettings;
       const bins = layout.bins;

@@ -4,21 +4,21 @@ import { useToastStore } from '@/core/store/toast';
 import { triggerDownload } from '@/shared/generation/exportUtils';
 import { resetAllStores } from '@/test/testUtils';
 import { deliverExport } from './deliverExport';
-import { resetExportFolderCacheForTests } from './exportFolder';
-import { inMemoryDbAccessor, folderHandleDouble } from './folderDoubles.testUtils';
+import { primeExportFolder } from './exportFolder';
+import { bytes, folderHandleDouble, inMemoryDb } from './folderDoubles.testUtils';
 
-const fakeDb = vi.hoisted((): { current: unknown } => ({ current: null }));
+const folderDb = vi.hoisted((): { current: unknown } => ({ current: null }));
 
 vi.mock('@/core/storage/backends/openSingleton', () => ({
-  createDbAccessor: () => fakeDb.current,
+  createDbAccessor: () => ({ get: () => Promise.resolve(folderDb.current) }),
 }));
 vi.mock('@/shared/generation/exportUtils', () => ({ triggerDownload: vi.fn() }));
 
-let rows: Map<string, unknown>;
+let db: ReturnType<typeof inMemoryDb>;
 let fetchMock: ReturnType<typeof vi.fn>;
 
 function useFolder(folder: ReturnType<typeof folderHandleDouble>): void {
-  rows.set('exportFolder', folder.handle);
+  db.rows.set('exportFolder', folder.handle);
   useSettingsStore.getState().updateSetting('exportFolderName', folder.handle.name);
 }
 
@@ -36,6 +36,7 @@ function toastMessages(): string[] {
 }
 
 const blob = new Blob(['solid bin']);
+const activationExpired = new DOMException('User activation is required.', 'SecurityError');
 let clock = Date.UTC(2026, 0, 1);
 
 beforeEach(() => {
@@ -44,12 +45,10 @@ beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(clock);
   resetAllStores();
-  resetExportFolderCacheForTests();
-  vi.mocked(triggerDownload).mockClear();
-  const db = inMemoryDbAccessor();
-  rows = db.rows;
-  fakeDb.current = db.accessor;
-  fetchMock = vi.fn(async () => new Response(null, { status: 200 }));
+  vi.mocked(triggerDownload).mockReset();
+  db = inMemoryDb();
+  folderDb.current = db;
+  fetchMock = vi.fn(() => Promise.resolve(new Response(null, { status: 200 })));
   vi.stubGlobal('fetch', fetchMock);
 });
 
@@ -67,13 +66,22 @@ describe('deliverExport', () => {
     expect(toastMessages()).toEqual([]);
   });
 
+  it('never rejects, and says so when even the download fails', async () => {
+    vi.mocked(triggerDownload).mockImplementation(() => {
+      throw new Error('createObjectURL failed');
+    });
+
+    await expect(deliverExport(blob, 'bin.stl')).resolves.toBeUndefined();
+    expect(toastMessages()).toEqual(["Couldn't save bin.stl. Try the export again."]);
+  });
+
   it('writes into the chosen folder instead of downloading', async () => {
     const folder = folderHandleDouble('prints');
     useFolder(folder);
 
     await deliverExport(blob, 'bin.stl');
 
-    expect(folder.files.get('bin.stl')).toBe('solid bin');
+    expect(folder.files.get('bin.stl')).toEqual(bytes('solid bin'));
     expect(triggerDownload).not.toHaveBeenCalled();
     expect(toastMessages()).toEqual(['Saved to prints/bin.stl']);
   });
@@ -97,31 +105,76 @@ describe('deliverExport', () => {
     expect(toastMessages()).toEqual(["Couldn't save to prints, so it downloaded instead."]);
   });
 
-  it('downloads when permission lapsed, and Allow again saves the file to the folder', async () => {
-    const folder = folderHandleDouble('prints', {
-      permission: 'prompt',
-      request: new DOMException('User activation is required.', 'SecurityError'),
-    });
+  it('keeps a failure toast when a later export succeeds', async () => {
+    const folder = folderHandleDouble('prints', { failWrites: true });
     useFolder(folder);
+    await deliverExport(blob, 'a.stl');
 
-    await deliverExport(blob, 'bin.stl');
+    useFolder(folderHandleDouble('prints'));
+    await deliverExport(blob, 'b.stl');
 
-    expect(triggerDownload).toHaveBeenCalledTimes(1);
-    const toast = useToastStore.getState().toasts[0];
-    expect(toast.message).toBe('No permission to save in prints, so it downloaded instead.');
-    expect(toast.action?.label).toBe('Allow again');
+    expect(toastMessages()).toEqual([
+      "Couldn't save to prints, so it downloaded instead.",
+      'Saved to prints/b.stl',
+    ]);
+  });
 
-    folder.state.request = 'granted';
-    await toast.action?.onClick();
+  describe('when the folder permission has lapsed', () => {
+    it('uses the permission the click asked for, after the export has run', async () => {
+      const folder = folderHandleDouble('prints', { permission: 'prompt', request: 'granted' });
+      useFolder(folder);
 
-    expect(folder.files.get('bin.stl')).toBe('solid bin');
-    expect(toastMessages()).toEqual(['Saved to prints/bin.stl']);
+      primeExportFolder();
+      await vi.waitFor(() => expect(folder.handle.requestPermission).toHaveBeenCalledTimes(1));
+      folder.state.request = activationExpired;
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      await deliverExport(blob, 'bin.stl');
+
+      expect(folder.files.get('bin.stl')).toEqual(bytes('solid bin'));
+      expect(folder.handle.requestPermission).toHaveBeenCalledTimes(1);
+      expect(triggerDownload).not.toHaveBeenCalled();
+    });
+
+    it('downloads without priming, and Allow again saves the file to the folder', async () => {
+      const folder = folderHandleDouble('prints', {
+        permission: 'prompt',
+        request: activationExpired,
+      });
+      useFolder(folder);
+
+      await deliverExport(blob, 'bin.stl');
+
+      expect(triggerDownload).toHaveBeenCalledTimes(1);
+      const toast = useToastStore.getState().toasts[0];
+      expect(toast.message).toBe('No permission to save in prints, so it downloaded instead.');
+      expect(toast.action?.label).toBe('Allow again');
+
+      folder.state.request = 'granted';
+      await toast.action?.onClick();
+
+      expect(folder.files.get('bin.stl')).toEqual(bytes('solid bin'));
+      expect(toastMessages()).toContain('Saved to prints/bin.stl');
+    });
+
+    it('says so again when Allow again is refused', async () => {
+      const folder = folderHandleDouble('prints', { permission: 'prompt', request: 'denied' });
+      useFolder(folder);
+      await deliverExport(blob, 'bin.stl');
+
+      await useToastStore.getState().toasts[0].action?.onClick();
+
+      const toast = useToastStore.getState().toasts.at(-1);
+      expect(toast?.message).toBe('No permission to save in prints, so it downloaded instead.');
+      expect(toast?.action?.label).toBe('Settings');
+      expect(folder.files.size).toBe(0);
+    });
   });
 
   it('downloads first, then POSTs the file with its fields and header', async () => {
     useUrl();
 
     await deliverExport(blob, 'bin.stl');
+    await vi.waitFor(() => expect(toastMessages()).toEqual(['Sent to nas.local']));
 
     expect(triggerDownload).toHaveBeenCalledWith(blob, 'bin.stl');
     expect(vi.mocked(triggerDownload).mock.invocationCallOrder[0]).toBeLessThan(
@@ -130,22 +183,23 @@ describe('deliverExport', () => {
     const [url, init] = fetchMock.mock.calls[0] as [URL, RequestInit];
     expect(url.href).toBe('https://nas.local/upload');
     expect(init.credentials).toBe('omit');
+    expect(init.redirect).toBe('manual');
     expect(init.headers).toEqual({ 'X-API-Key': 'secret' });
     const form = init.body as FormData;
+    expect(await (form.get('file') as Blob).text()).toBe('solid bin');
     expect(form.get('filename')).toBe('bin.stl');
     expect(form.get('format')).toBe('stl');
     expect(form.get('source')).toBe('gridfinity-layout-tool');
-    expect(form.get('file')).toBeInstanceOf(Blob);
-    expect(toastMessages()).toEqual(['Sent to nas.local']);
   });
 
-  it('never holds the download back for a slow upload', () => {
+  it('resolves without waiting for the upload', async () => {
     useUrl();
     fetchMock.mockReturnValue(new Promise(() => {}));
 
-    void deliverExport(blob, 'bin.stl');
+    await deliverExport(blob, 'bin.stl');
 
     expect(triggerDownload).toHaveBeenCalledWith(blob, 'bin.stl');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('keeps the download and names the problem when the upload fails', async () => {
@@ -153,6 +207,7 @@ describe('deliverExport', () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
 
     await deliverExport(blob, 'bin.stl');
+    await vi.waitFor(() => expect(toastMessages()).toHaveLength(1));
 
     expect(triggerDownload).toHaveBeenCalledWith(blob, 'bin.stl');
     const toast = useToastStore.getState().toasts[0];
@@ -179,8 +234,9 @@ describe('deliverExport', () => {
     useUrl();
 
     await deliverExport(blob, 'bin.stl');
+    await vi.waitFor(() => expect(toastMessages()).toHaveLength(2));
 
-    expect(folder.files.get('bin.stl')).toBe('solid bin');
+    expect(folder.files.get('bin.stl')).toEqual(bytes('solid bin'));
     expect(triggerDownload).not.toHaveBeenCalled();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(toastMessages().sort()).toEqual(['Saved to prints/bin.stl', 'Sent to nas.local']);

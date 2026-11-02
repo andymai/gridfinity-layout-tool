@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const PRIMITIVE = join('src', 'shared', 'generation', 'exportUtils.ts');
+const DOWNLOAD_ANCHOR = /\.download\s*=|setAttribute\(\s*['"]download['"]|<a\b[^>]*\sdownload\b/;
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -21,9 +22,18 @@ function sourceFiles(dir: string): string[] {
 describe('download routing', () => {
   it('builds a download anchor in exactly one place', () => {
     const offenders = sourceFiles('src').filter(
-      (path) => path !== PRIMITIVE && /\.download\s*=/.test(readFileSync(path, 'utf8'))
+      (path) => path !== PRIMITIVE && DOWNLOAD_ANCHOR.test(readFileSync(path, 'utf8'))
     );
     expect(offenders).toEqual([]);
+  });
+
+  it('recognises every way to mark an anchor as a download', () => {
+    expect(DOWNLOAD_ANCHOR.test('a.download = name;')).toBe(true);
+    expect(DOWNLOAD_ANCHOR.test("a.setAttribute('download', name);")).toBe(true);
+    expect(DOWNLOAD_ANCHOR.test('<a href={url} download={name}>')).toBe(true);
+    expect(DOWNLOAD_ANCHOR.test('<a href={url} download>')).toBe(true);
+    expect(DOWNLOAD_ANCHOR.test('const downloaded = await save();')).toBe(false);
+    expect(DOWNLOAD_ANCHOR.test('<Button onClick={save}>Download STL</Button>')).toBe(false);
   });
 
   it('calls the plain download primitive only from deliverExport', () => {

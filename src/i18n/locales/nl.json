@@ -5072,8 +5072,15 @@
   "exportDestination.sentMany": "{count} bestanden verstuurd naar {host}",
   "exportDestination.fail.auth": "Upload naar {host} mislukt (HTTP {status}). Controleer de header in Instellingen.",
   "exportDestination.fail.http": "Upload naar {host} mislukt (HTTP {status}).",
-  "exportDestination.fail.cors": "Upload naar {host} is geblokkeerd. De ontvanger moet deze site toestaan (CORS).",
+  "exportDestination.fail.cors": "Upload naar {host} is geblokkeerd of afgebroken. De ontvanger moet deze site toestaan (CORS).",
   "exportDestination.fail.mixed": "Upload naar {host} is geblokkeerd: een HTTPS-pagina kan alleen naar een https://-adres sturen.",
   "exportDestination.fail.network": "{host} is niet bereikbaar. Controleer het adres en of de ontvanger draait.",
-  "exportDestination.fail.invalid": "Niet verstuurd: het exportadres in Instellingen is ongeldig."
+  "exportDestination.fail.invalid": "Niet verstuurd: het exportadres in Instellingen is ongeldig.",
+  "exportDestination.folder.denied": "De browser heeft opslaan in deze map geblokkeerd. Kies de map opnieuw om het toe te staan.",
+  "exportDestination.folder.storeFailed": "Deze map kon niet worden onthouden. Probeer hem opnieuw te kiezen.",
+  "exportDestination.url.badHeaderValue": "De headerwaarde bevat een teken dat browsers niet kunnen versturen, zoals een gekrulde aanhalingsteken.",
+  "exportDestination.fellBack": "{file} kon niet op de gekozen plek worden opgeslagen, dus het is gedownload.",
+  "exportDestination.failed": "{file} kon niet worden opgeslagen. Probeer de export opnieuw.",
+  "exportDestination.fail.timeout": "Upload naar {host} duurde te lang. Het bestand is misschien toch aangekomen.",
+  "exportDestination.fail.redirect": "Upload naar {host} werd doorgestuurd. Gebruik het uiteindelijke adres in Instellingen."
 }

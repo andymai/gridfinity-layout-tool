@@ -13,6 +13,7 @@ import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { isOk } from '@/core/result';
 import { MAX_SVG_FILE_SIZE, type ParsedCutoutSpec } from '../svgImport/types';
 import { parseScanSvg, rescaleToLongestMm, type ParsedScan } from './scanIngest';
@@ -169,6 +170,7 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
   // The sheet is printed on the computer, not the phone, so the offer belongs
   // here rather than on the capture page.
   const handleDownloadSheet = useCallback(() => {
+    primeExportFolder();
     const svg = buildCalibrationSheetSvg({
       title: t('binDesigner.cutouts.scanImport.sheetTitle'),
       printHint: t('binDesigner.cutouts.scanImport.sheetPrintHint'),

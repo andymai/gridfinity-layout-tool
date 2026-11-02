@@ -5072,8 +5072,15 @@
   "exportDestination.sentMany": "{count} Dateien an {host} gesendet",
   "exportDestination.fail.auth": "Upload an {host} fehlgeschlagen (HTTP {status}). Prüfe den Header in den Einstellungen.",
   "exportDestination.fail.http": "Upload an {host} fehlgeschlagen (HTTP {status}).",
-  "exportDestination.fail.cors": "Upload an {host} wurde blockiert. Der Empfänger muss diese Seite zulassen (CORS).",
+  "exportDestination.fail.cors": "Upload an {host} wurde blockiert oder abgebrochen. Der Empfänger muss diese Seite zulassen (CORS).",
   "exportDestination.fail.mixed": "Upload an {host} wurde blockiert: Eine HTTPS-Seite kann nur an eine https://-Adresse senden.",
   "exportDestination.fail.network": "{host} ist nicht erreichbar. Prüfe die Adresse und ob der Empfänger läuft.",
-  "exportDestination.fail.invalid": "Nicht gesendet: Die Exportadresse in den Einstellungen ist ungültig."
+  "exportDestination.fail.invalid": "Nicht gesendet: Die Exportadresse in den Einstellungen ist ungültig.",
+  "exportDestination.folder.denied": "Der Browser hat das Speichern in diesem Ordner blockiert. Wähle ihn erneut, um es zu erlauben.",
+  "exportDestination.folder.storeFailed": "Dieser Ordner konnte nicht gespeichert werden. Wähle ihn noch einmal.",
+  "exportDestination.url.badHeaderValue": "Der Header-Wert enthält ein Zeichen, das Browser nicht senden können, etwa ein typografisches Anführungszeichen.",
+  "exportDestination.fellBack": "{file} konnte nicht am gewählten Ort gespeichert werden, daher wurde die Datei heruntergeladen.",
+  "exportDestination.failed": "{file} konnte nicht gespeichert werden. Versuche den Export erneut.",
+  "exportDestination.fail.timeout": "Upload an {host} hat zu lange gedauert. Die Datei ist vielleicht trotzdem beim Empfänger angekommen.",
+  "exportDestination.fail.redirect": "Upload an {host} wurde umgeleitet. Trage in den Einstellungen die endgültige Adresse ein."
 }

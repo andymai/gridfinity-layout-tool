@@ -1,3 +1,4 @@
+import { isErr } from '@/core/result';
 import { useSettingsStore } from '@/core/store/settings';
 import type { UserSettings } from '@/core/store/settings';
 import { useToastStore } from '@/core/store/toast';
@@ -7,8 +8,10 @@ import { triggerDownload } from '@/shared/generation/exportUtils';
 import { allowExportFolder, saveToExportFolder } from './exportFolder';
 import { readUrlTarget, sendFailureMessage, sendToUrl } from './sendToUrl';
 
-const FOLDER_TOAST = 'export-destination-folder';
-const URL_TOAST = 'export-destination-url';
+// Successes and failures use separate toast keys, so a later success never
+// replaces a failure the user has not read yet.
+const FOLDER = { done: 'export-folder-saved', failed: 'export-folder-failed' } as const;
+const UPLOAD = { done: 'export-url-sent', failed: 'export-url-failed' } as const;
 /** Exports this close together share one toast that counts them. */
 const STREAK_MS = 5000;
 
@@ -23,7 +26,6 @@ function nextInStreak(key: string): number {
 }
 
 function toast(key: string, type: ToastType, message: string, action?: ToastAction): void {
-  if (type === 'error') streaks.delete(key);
   useToastStore
     .getState()
     .addToast({ key, type, message, action, duration: type === 'error' ? 8000 : 3000 });
@@ -39,36 +41,38 @@ function openSettingsAction(): ToastAction {
 }
 
 function reportSaved(folder: string, file: string): void {
-  const count = nextInStreak(FOLDER_TOAST);
+  const count = nextInStreak(FOLDER.done);
   const message =
     count === 1
       ? t('exportDestination.saved', { folder, file })
       : t('exportDestination.savedMany', { folder, count });
-  toast(FOLDER_TOAST, 'success', message);
+  toast(FOLDER.done, 'success', message);
 }
 
-async function saveOrDownload(blob: Blob, fileName: string, folder: string): Promise<void> {
-  const outcome = await saveToExportFolder(blob, fileName);
-  if (outcome === 'saved') {
-    reportSaved(folder, fileName);
+async function saveOrDownload(blob: Blob, fileName: string, settingsFolder: string) {
+  const saved = await saveToExportFolder(blob, fileName);
+  if (!isErr(saved)) {
+    reportSaved(saved.value, fileName);
     return;
   }
   triggerDownload(blob, fileName);
-  if (outcome === 'failed') {
+  const folder = saved.error.folder ?? settingsFolder;
+  if (saved.error.reason === 'failed') {
     toast(
-      FOLDER_TOAST,
+      FOLDER.failed,
       'error',
       t('exportDestination.folderFailed', { folder }),
       openSettingsAction()
     );
     return;
   }
-  toast(FOLDER_TOAST, 'error', t('exportDestination.folderDenied', { folder }), {
+  const denied = t('exportDestination.folderDenied', { folder });
+  toast(FOLDER.failed, 'error', denied, {
     label: t('exportDestination.folder.allowAgain'),
     onClick: async () => {
-      if ((await allowExportFolder()) && (await saveToExportFolder(blob, fileName)) === 'saved') {
-        reportSaved(folder, fileName);
-      }
+      const retried = (await allowExportFolder()) ? await saveToExportFolder(blob, fileName) : null;
+      if (retried && !isErr(retried)) reportSaved(retried.value, fileName);
+      else toast(FOLDER.failed, 'error', denied, openSettingsAction());
     },
   });
 }
@@ -76,18 +80,18 @@ async function saveOrDownload(blob: Blob, fileName: string, folder: string): Pro
 async function send(blob: Blob, fileName: string, settings: UserSettings): Promise<void> {
   const target = readUrlTarget(settings);
   if (!target) {
-    toast(URL_TOAST, 'error', t('exportDestination.fail.invalid'), openSettingsAction());
+    toast(UPLOAD.failed, 'error', t('exportDestination.fail.invalid'), openSettingsAction());
     return;
   }
   const host = target.url.host;
   const result = await sendToUrl(blob, fileName, target);
-  if (!result.ok) {
-    toast(URL_TOAST, 'error', sendFailureMessage(result, host, t), openSettingsAction());
+  if (isErr(result)) {
+    toast(UPLOAD.failed, 'error', sendFailureMessage(result.error, host, t), openSettingsAction());
     return;
   }
-  const count = nextInStreak(URL_TOAST);
+  const count = nextInStreak(UPLOAD.done);
   toast(
-    URL_TOAST,
+    UPLOAD.done,
     'info',
     count === 1
       ? t('exportDestination.sent', { host })
@@ -95,16 +99,38 @@ async function send(blob: Blob, fileName: string, settings: UserSettings): Promi
   );
 }
 
+function tryDownload(blob: Blob, fileName: string): boolean {
+  try {
+    triggerDownload(blob, fileName);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Hand a finished export to the user: download it, or write it into the
- * chosen folder instead, and also POST it to the configured URL. With both
- * destinations off this is exactly `triggerDownload`, synchronously.
+ * Hands a finished export to the user: downloads it, or writes it into the
+ * chosen folder instead, and also POSTs it to the configured URL.
+ *
+ * Never rejects. Resolves once the local save is done (download, folder write,
+ * or the download it falls back to); the upload carries on in the background
+ * and reports through its own toast. With both destinations off this is
+ * `triggerDownload`, run synchronously.
  */
 export async function deliverExport(blob: Blob, fileName: string): Promise<void> {
-  const settings = useSettingsStore.getState().settings;
-  const folder = settings.exportFolderName;
-  if (folder === null) triggerDownload(blob, fileName);
-  const sending = settings.exportUrlEnabled ? send(blob, fileName, settings) : undefined;
-  if (folder !== null) await saveOrDownload(blob, fileName, folder);
-  await sending;
+  let triedDownload = false;
+  try {
+    const settings = useSettingsStore.getState().settings;
+    const folder = settings.exportFolderName;
+    if (folder === null) {
+      triedDownload = true;
+      triggerDownload(blob, fileName);
+    }
+    if (settings.exportUrlEnabled) void send(blob, fileName, settings).catch(() => undefined);
+    if (folder !== null) await saveOrDownload(blob, fileName, folder);
+  } catch {
+    const downloaded = !triedDownload && tryDownload(blob, fileName);
+    const message = downloaded ? 'exportDestination.fellBack' : 'exportDestination.failed';
+    toast(FOLDER.failed, 'error', t(message, { file: fileName }));
+  }
 }

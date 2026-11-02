@@ -14,6 +14,7 @@ import { bridgeManager, getActiveBridge } from '@/shared/generation/bridge';
 import type { ExportFormat, GenerationBridge } from '@/shared/generation/bridge';
 import { FORMAT_EXTENSIONS, FORMAT_MIME_TYPES } from '@/shared/generation/exportUtils';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { stlTo3MF } from '@/shared/generation/stlTo3mf';
 import { useEngineReady } from '@/shared/hooks/useEngineReady';
 import type { PrintSettings } from '@/shared/printSettings';
@@ -70,6 +71,7 @@ export function useSampleExport(config: SampleExportConfig): UseSampleExportRetu
 
   const downloadSample = useCallback(
     async (format: ExportFileFormat, baseName: string = defaultBaseName): Promise<boolean> => {
+      primeExportFolder();
       // Readiness is read live, not from `canExport`: `acquire()` publishes the
       // bridge before `init()` resolves, so a non-null bridge can still be
       // uninitialized. Both reads together close that window.

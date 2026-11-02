@@ -5072,8 +5072,15 @@
   "exportDestination.sentMany": "{count} fichiers envoyés à {host}",
   "exportDestination.fail.auth": "L'envoi vers {host} a échoué (HTTP {status}). Vérifiez l'en-tête dans les Paramètres.",
   "exportDestination.fail.http": "L'envoi vers {host} a échoué (HTTP {status}).",
-  "exportDestination.fail.cors": "L'envoi vers {host} a été bloqué. Le récepteur doit autoriser ce site (CORS).",
+  "exportDestination.fail.cors": "L'envoi vers {host} a été bloqué ou interrompu. Le récepteur doit autoriser ce site (CORS).",
   "exportDestination.fail.mixed": "L'envoi vers {host} a été bloqué : une page HTTPS ne peut envoyer qu'à une adresse https://.",
   "exportDestination.fail.network": "Impossible de joindre {host}. Vérifiez l'adresse et que le récepteur est en marche.",
-  "exportDestination.fail.invalid": "Non envoyé : l'adresse d'export dans les Paramètres n'est pas valide."
+  "exportDestination.fail.invalid": "Non envoyé : l'adresse d'export dans les Paramètres n'est pas valide.",
+  "exportDestination.folder.denied": "Le navigateur a bloqué l'enregistrement dans ce dossier. Choisissez-le à nouveau pour l'autoriser.",
+  "exportDestination.folder.storeFailed": "Impossible de mémoriser ce dossier. Essayez de le choisir à nouveau.",
+  "exportDestination.url.badHeaderValue": "La valeur de l'en-tête contient un caractère que les navigateurs ne peuvent pas envoyer, comme un guillemet typographique.",
+  "exportDestination.fellBack": "Impossible d'enregistrer {file} à l'endroit choisi, le fichier a donc été téléchargé.",
+  "exportDestination.failed": "Impossible d'enregistrer {file}. Relancez l'export.",
+  "exportDestination.fail.timeout": "L'envoi vers {host} a pris trop de temps. Le fichier est peut-être quand même arrivé.",
+  "exportDestination.fail.redirect": "L'envoi vers {host} a été redirigé. Indiquez l'adresse finale dans les Paramètres."
 }

@@ -22,6 +22,7 @@ import { createLayoutEntry } from './LayoutManager';
 import { importLayoutJSON } from './ShareService';
 import { getDesignStorePort } from './designStorePort';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 interface LinkedDesignExport {
   readonly id: string;
   readonly name: string;
@@ -181,19 +182,22 @@ export async function exportAllLayouts(
 }
 
 /**
- * Download all layouts as a single JSON archive file. Fails, downloading
- * nothing, when a linked design's mesh file is missing.
+ * Save all layouts as a single JSON archive file through the user's export
+ * destination. Fails, saving nothing, when a linked design's mesh file is
+ * missing. Resolves once the file is saved locally (downloaded or written to
+ * the export folder); an upload to the export URL carries on afterwards.
  */
 export async function downloadArchive(
   library: LayoutLibrary,
   onProgress?: (progress: ExportProgress) => void
 ): Promise<Result<ExportResult, StorageMeshMissingError>> {
+  primeExportFolder();
   const exported = await exportAllLayouts(library, onProgress);
   if (!isOk(exported)) return exported;
   const result = exported.value;
   const blob = new Blob([result.json], { type: 'application/json' });
   const date = new Date().toISOString().slice(0, 10);
-  void deliverExport(blob, `gridfinity-layouts-${date}.json`);
+  await deliverExport(blob, `gridfinity-layouts-${date}.json`);
   return exported;
 }
 /**

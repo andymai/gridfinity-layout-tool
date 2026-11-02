@@ -25,6 +25,7 @@ import { getErrorMessage } from '@/shared/utils/errors';
 import { trackToolConverted } from '@/shared/analytics/posthog';
 import { FORMAT_MIME_TYPES, FORMAT_EXTENSIONS } from '@/shared/generation/exportUtils';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { buildLabelPlateColorConfig } from '@/features/bin-designer/utils/labelPlateColors';
 import {
@@ -99,6 +100,7 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
 
   const downloadPlates = useCallback(
     async (format: ExportFileFormat, baseName: string = LABEL_PLATES_BASE_NAME) => {
+      primeExportFolder();
       const bridge = getActiveBridge();
       if (!bridge || plates.length === 0) return false;
 
@@ -130,11 +132,11 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
             colorConfig,
             printSettings: buildThreeMFPrintSettings(printSettings),
           });
-          void deliverExport(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`);
+          await deliverExport(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`);
         } else {
           const result = await runExport(format);
           const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES[format] });
-          void deliverExport(blob, `${baseName}${FORMAT_EXTENSIONS[format]}`);
+          await deliverExport(blob, `${baseName}${FORMAT_EXTENSIONS[format]}`);
         }
         // Plates are printable files: count the conversion, as the bin and
         // layout exports do.

@@ -2,14 +2,12 @@ import { vi } from 'vitest';
 
 export interface FolderDoubleOptions {
   permission?: PermissionState;
-  /** What `requestPermission` resolves; an Error makes it reject instead. */
   request?: PermissionState | Error;
   failWrites?: boolean;
 }
 
-/** Stands in for a FileSystemDirectoryHandle and records the files written into it. */
 export function folderHandleDouble(name: string, options: FolderDoubleOptions = {}) {
-  const files = new Map<string, string>();
+  const files = new Map<string, Uint8Array>();
   const state = { permission: options.permission ?? 'granted', request: options.request };
   const handle = {
     kind: 'directory',
@@ -30,7 +28,7 @@ export function folderHandleDouble(name: string, options: FolderDoubleOptions = 
           chunks.push(chunk);
         },
         close() {
-          files.set(fileName, Buffer.concat(chunks).toString('utf8'));
+          files.set(fileName, new Uint8Array(Buffer.concat(chunks)));
         },
       });
       return Promise.resolve({ createWritable: () => Promise.resolve(writable) });
@@ -39,10 +37,10 @@ export function folderHandleDouble(name: string, options: FolderDoubleOptions = 
   return { handle, files, state };
 }
 
-/** In-memory replacement for the IndexedDB accessor the folder module opens. */
-export function inMemoryDbAccessor() {
+export function inMemoryDb() {
   const rows = new Map<string, unknown>();
-  const db = {
+  return {
+    rows,
     get: vi.fn((_store: string, key: string) => Promise.resolve(rows.get(key))),
     put: vi.fn((_store: string, value: unknown, key: string) => {
       rows.set(key, value);
@@ -53,8 +51,6 @@ export function inMemoryDbAccessor() {
       return Promise.resolve();
     }),
   };
-  return {
-    rows,
-    accessor: { get: () => Promise.resolve(db), invalidate: vi.fn(), close: vi.fn() },
-  };
 }
+
+export const bytes = (text: string): Uint8Array => new TextEncoder().encode(text);

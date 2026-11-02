@@ -5072,8 +5072,15 @@
   "exportDestination.sentMany": "已将 {count} 个文件发送到 {host}",
   "exportDestination.fail.auth": "上传到 {host} 失败（HTTP {status}）。请在设置中检查请求头。",
   "exportDestination.fail.http": "上传到 {host} 失败（HTTP {status}）。",
-  "exportDestination.fail.cors": "上传到 {host} 被阻止。接收端需要允许此网站（CORS）。",
+  "exportDestination.fail.cors": "上传到 {host} 被阻止或中断。接收端需要允许此网站（CORS）。",
   "exportDestination.fail.mixed": "上传到 {host} 被阻止：HTTPS 页面只能发送到 https:// 地址。",
   "exportDestination.fail.network": "无法连接 {host}。请检查地址以及接收端是否正在运行。",
-  "exportDestination.fail.invalid": "未发送：设置中的导出地址无效。"
+  "exportDestination.fail.invalid": "未发送：设置中的导出地址无效。",
+  "exportDestination.folder.denied": "浏览器阻止了保存到此文件夹。请重新选择该文件夹以授权。",
+  "exportDestination.folder.storeFailed": "无法记住该文件夹。请重新选择。",
+  "exportDestination.url.badHeaderValue": "请求头的值包含浏览器无法发送的字符，例如弯引号。",
+  "exportDestination.fellBack": "无法将 {file} 保存到所选位置，已改为下载。",
+  "exportDestination.failed": "无法保存 {file}。请重新导出。",
+  "exportDestination.fail.timeout": "上传到 {host} 超时。文件可能已经送达。",
+  "exportDestination.fail.redirect": "上传到 {host} 被重定向。请在设置中使用最终地址。"
 }

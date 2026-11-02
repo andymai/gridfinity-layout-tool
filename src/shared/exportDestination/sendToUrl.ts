@@ -1,4 +1,6 @@
 import type { UserSettings } from '@/core/store/settings';
+import { err, OK } from '@/core/result';
+import type { Result } from '@/core/result';
 import type { TFunction } from '@/i18n';
 
 export type UrlProblem = 'invalid' | 'scheme';
@@ -10,14 +12,14 @@ export interface UrlTarget {
 }
 
 export type SendFailure =
-  | { ok: false; reason: 'http'; status: number }
-  | { ok: false; reason: 'cors' | 'mixed' | 'network' };
-
-export type SendResult = { ok: true } | SendFailure;
+  | { reason: 'http'; status: number }
+  | { reason: 'cors' | 'mixed' | 'network' | 'timeout' | 'redirect' };
 
 type UrlSettings = Pick<UserSettings, 'exportUrl' | 'exportUrlHeaderName' | 'exportUrlHeaderValue'>;
 
 const HEADER_NAME = /^[\w!#$%&'*+.^`|~-]+$/;
+// fetch throws before sending a header value outside printable ISO-8859-1.
+const HEADER_VALUE = /^[\x20-\x7e\xa0-\xff]*$/;
 const LOOPBACK_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
 const UPLOAD_TIMEOUT_MS = 120_000;
 const PROBE_TIMEOUT_MS = 10_000;
@@ -26,6 +28,8 @@ const FAILURE_KEYS = {
   cors: 'exportDestination.fail.cors',
   mixed: 'exportDestination.fail.mixed',
   network: 'exportDestination.fail.network',
+  timeout: 'exportDestination.fail.timeout',
+  redirect: 'exportDestination.fail.redirect',
 } as const;
 
 export function checkExportUrl(raw: string): UrlProblem | null {
@@ -42,6 +46,10 @@ export function isValidHeaderName(name: string): boolean {
   return trimmed === '' || HEADER_NAME.test(trimmed);
 }
 
+export function isValidHeaderValue(value: string): boolean {
+  return HEADER_VALUE.test(value);
+}
+
 /** Browsers refuse http:// requests from an https:// page, except to this machine. */
 export function isMixedContent(url: URL): boolean {
   return (
@@ -53,7 +61,11 @@ export function isMixedContent(url: URL): boolean {
 }
 
 export function readUrlTarget(settings: UrlSettings): UrlTarget | null {
-  if (checkExportUrl(settings.exportUrl) || !isValidHeaderName(settings.exportUrlHeaderName)) {
+  if (
+    checkExportUrl(settings.exportUrl) ||
+    !isValidHeaderName(settings.exportUrlHeaderName) ||
+    !isValidHeaderValue(settings.exportUrlHeaderValue)
+  ) {
     return null;
   }
   return {
@@ -67,7 +79,7 @@ export async function sendToUrl(
   blob: Blob,
   fileName: string,
   target: UrlTarget
-): Promise<SendResult> {
+): Promise<Result<void, SendFailure>> {
   const form = new FormData();
   form.append('file', blob, fileName);
   form.append('filename', fileName);
@@ -80,11 +92,17 @@ export async function sendToUrl(
       body: form,
       headers: target.headerName ? { [target.headerName]: target.headerValue } : {},
       credentials: 'omit',
+      // A followed 301 or 302 turns the POST into a GET without the file.
+      redirect: 'manual',
       signal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS),
     });
-    return response.ok ? { ok: true } : { ok: false, reason: 'http', status: response.status };
-  } catch {
-    if (isMixedContent(target.url)) return { ok: false, reason: 'mixed' };
+    if (response.type === 'opaqueredirect') return err({ reason: 'redirect' });
+    return response.ok ? OK : err({ reason: 'http', status: response.status });
+  } catch (error: unknown) {
+    if (error instanceof DOMException && error.name === 'TimeoutError') {
+      return err({ reason: 'timeout' });
+    }
+    if (isMixedContent(target.url)) return err({ reason: 'mixed' });
     // fetch rejects the same way for a refused origin and a dead host. A
     // no-cors request resolves whenever the server answers at all, so it tells
     // the two apart.
@@ -96,7 +114,7 @@ export async function sendToUrl(
       () => true,
       () => false
     );
-    return { ok: false, reason: reachable ? 'cors' : 'network' };
+    return err({ reason: reachable ? 'cors' : 'network' });
   }
 }
 
