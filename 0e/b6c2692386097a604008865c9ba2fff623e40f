@@ -1,0 +1,164 @@
+src/shared/scanTrace/traceScene.segmented.test.ts
+  s_4b9adb1d9473fb::t_57d420806fc674 118
+  s_4b9adb1d9473fb::t_2250537b3c5aa7 3-4,134,136-139,145,151
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.ts
+  s_4b9adb1d9473fb::t_94213df92fbc32 19,77,80-86
+src/i18n/locales/nl.json
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 4257
+  s_4b9adb1d9473fb::t_8a1f2d9f58b45d 1012,4224,4251-4256,4262-4263,4273
+src/features/scan-capture/README.md
+  s_4b9adb1d9473fb::t_45656b1812aa24 112,121-126,132-133,138,155-156,187-188
+src/shared/scanTrace/toolBlobs.ts
+  s_4b9adb1d9473fb::t_e2f6bf52fceba5 1-120
+src/i18n/locales/de.json
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 4257
+  s_4b9adb1d9473fb::t_8a1f2d9f58b45d 1012,4224,4251-4256,4262-4263,4273
+src/i18n/locales/fr.json
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 4257
+  s_4b9adb1d9473fb::t_8a1f2d9f58b45d 1012,4224,4251-4256,4262-4263,4273
+src/i18n/locales/it.json
+  s_4b9adb1d9473fb::t_8a1f2d9f58b45d 1012,4224,4251-4256,4262-4263,4273
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 4257
+src/i18n/locales/ko.json
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 4257
+  s_4b9adb1d9473fb::t_8a1f2d9f58b45d 1012,4224,4251-4256,4262-4263,4273
+src/shared/scanTrace/baseplateDetect.test.ts
+  s_4b9adb1d9473fb::t_57d420806fc674 269-270
+src/i18n/locales/pt-BR.json
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 4257
+  s_4b9adb1d9473fb::t_8a1f2d9f58b45d 1012,4224,4251-4256,4262-4263,4273
+src/shared/scanTrace/refineScene.ts
+  s_4b9adb1d9473fb::t_2b4759d7d165c1 68
+  s_4b9adb1d9473fb::t_c5b903d4f57c31 1-10,16-35,38-50,52-57,60-65,67,69-70,73-76,78-82
+  s_4b9adb1d9473fb::t_8101aef1d51556 11-15,36-37,51,58-59,66,71-72,77
+src/shared/scanTrace/traceScene.grid.test.ts
+  s_4b9adb1d9473fb::t_57d420806fc674 153,168,190,221-223
+  s_4b9adb1d9473fb::t_45d651a3e32acc 188-189
+  s_4b9adb1d9473fb::t_2250537b3c5aa7 8-9,197-199
+  s_4b9adb1d9473fb::t_eedce0f6beed1c 225-226
+src/shared/scanTrace/traceScene.test.ts
+  s_4b9adb1d9473fb::t_43472897a7b924 9-10,280-318
+  s_4b9adb1d9473fb::t_a399060e1e96a9 72-85,87,94-98,113-125
+  s_4b9adb1d9473fb::t_57d420806fc674 134-135,147,159,162,167,175,178,270-271
+src/i18n/locales/pl.json
+  s_4b9adb1d9473fb::t_8a1f2d9f58b45d 1012,4224,4251-4256,4262-4263,4273
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 4257
+src/shared/scanTrace/index.ts
+  s_4b9adb1d9473fb::t_947ec76053ff58 7,10-11,13
+src/i18n/locales/es.json
+  s_4b9adb1d9473fb::t_8a1f2d9f58b45d 1012,4224,4251-4256,4262-4263,4273
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 4257
+src/shared/scanTrace/refineScene.test.ts
+  s_4b9adb1d9473fb::t_057a1e69722f8b 20-23,33,43,52,63,72,81
+  s_4b9adb1d9473fb::t_600c3448b0f3d0 1-19,24-32,34-42,44-51,53-62,64-71,73-80,82-87
+src/features/scan-capture/components/ScanPage/ScanToolList.test.tsx
+  s_4b9adb1d9473fb::t_4c5788e4821913 1-38
+src/features/scan-capture/components/ScanPage/ScanPage.test.tsx
+  s_4b9adb1d9473fb::t_76c287af18592e 257
+  s_4b9adb1d9473fb::t_2b4759d7d165c1 2,20,73
+  s_4b9adb1d9473fb::t_526a1bf41198b7 254-256,258-271
+  s_4b9adb1d9473fb::t_2d23e996777416 221-253,272-297,374,423,425
+  s_4b9adb1d9473fb::t_390857e8b97614 68-69
+  s_4b9adb1d9473fb::t_2d6dfb1f2cb433 5,17-19,34-56,58-63,66-67,70-72,74
+  s_4b9adb1d9473fb::t_a1e35e16d978ef 75-80,99-100,184,427-432
+src/i18n/locales/nb.json
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 4257
+  s_4b9adb1d9473fb::t_8a1f2d9f58b45d 1012,4224,4251-4256,4262-4263,4273
+src/i18n/locales/cs.json
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 4257
+  s_4b9adb1d9473fb::t_8a1f2d9f58b45d 1012,4224,4251-4256,4262-4263,4273
+src/shared/scanTrace/colorSegment.test.ts
+  s_4b9adb1d9473fb::t_6b806f67dd0977 129-146
+  s_4b9adb1d9473fb::t_8e23a07ed8872c 89-128
+  s_4b9adb1d9473fb::t_c325ea06a83a80 223,225-228
+  s_4b9adb1d9473fb::t_f95d41c43d4edc 1-14,16-88,147-222,224,229-299,301-311,313-314
+  s_4b9adb1d9473fb::t_b16cb8fc6b9551 300,312
+  s_4b9adb1d9473fb::t_56003974203c6c 15
+src/i18n/locales/sv.json
+  s_4b9adb1d9473fb::t_8a1f2d9f58b45d 1012,4224,4251-4256,4262-4263,4273
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 4257
+src/i18n/locales/zh-CN.json
+  s_4b9adb1d9473fb::t_8a1f2d9f58b45d 1012,4224,4251-4256,4262-4263,4273
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 4257
+src/features/scan-capture/components/ScanPage/scanFlow.ts
+  s_4b9adb1d9473fb::t_cece84e0419f9b 1-19,21-59,61-67,69-96,98-134
+  s_4b9adb1d9473fb::t_01e7c2c4d29c39 20,60
+  s_4b9adb1d9473fb::t_057a1e69722f8b 68,97
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/scanIngest.test.ts
+  s_4b9adb1d9473fb::t_97ddad89706e90 64-93
+src/shared/scanTrace/traceScene.ts
+  s_4b9adb1d9473fb::t_294d3e5db8531b 164-191,195,202-219,221,225-243,260-267,287,291-292,294-297,308-309,313-314,319-332,340-341,346-347,355-356,358-364
+  s_4b9adb1d9473fb::t_9ddaf246b813ed 5-7,12-13,38-40,63,68-72,76-77,82-83
+src/features/scan-capture/components/ScanPage/ScanPage.tsx
+  s_4b9adb1d9473fb::t_2a9b1a58e53466 65-67,242,247-248,253,288,290,323-351,383-387,422-426,431-436,450-456,521-524
+  s_4b9adb1d9473fb::t_2b4759d7d165c1 33
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 361-372
+  s_4b9adb1d9473fb::t_ec43ef45532447 4-8,16,22,35-36,49-50,59,150,169-175,177,186-188,203-204,213,239-241,243-246,249-252
+  s_4b9adb1d9473fb::t_a9ec859b66dae1 46-47,153,176,178-185
+  s_4b9adb1d9473fb::t_e880b0a4f372d0 114,124,126,134,139,146,149,159,163,360,382,525
+src/i18n/locales/en.ts
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 1597
+  s_4b9adb1d9473fb::t_e68170f01b6cf4 1556,1591-1596,1605-1606,3605
+  s_4b9adb1d9473fb::t_dd4b3a8fea64c8 1598,1601,3606
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/scanIngest.ts
+  s_4b9adb1d9473fb::t_94213df92fbc32 29-34,72-76
+src/shared/scanTrace/colorSegment.ts
+  s_4b9adb1d9473fb::t_654ef724202403 5-14,22,33-36,39,41-42,82-95,97-102,104,107-117,154,209-285,312,340-341,344-345,356-370,373-375,378-382,384,386-387,389-392
+  s_4b9adb1d9473fb::t_b804bb486616d7 17,43-49,383
+  s_4b9adb1d9473fb::t_c2b47aaa3fee75 1-4,15-16,18-21,23-32,37-38,40,50-56,58-81,96,103,105-106,118-153,156-208,286-311,313-339,342-343,346-355,371-372,376-377,385,388,393
+  s_4b9adb1d9473fb::t_eb8fe8c20d8631 155
+  s_4b9adb1d9473fb::t_2538ab68317923 57
+src/features/scan-capture/components/ScanPage/ScanToolList.tsx
+  s_4b9adb1d9473fb::t_28273d9d0b52ce 1-29,31-59
+  s_4b9adb1d9473fb::t_3dfe3ddabbe06c 30
+src/i18n/locales/uk.json
+  s_4b9adb1d9473fb::t_8a1f2d9f58b45d 1012,4224,4251-4256,4262-4263,4273
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 4257
+src/i18n/locales/ka.json
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 1394
+  s_4b9adb1d9473fb::t_8a1f2d9f58b45d 1357,1388-1393,1397,1401-1402,3039
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanWithPhoneDialog.test.tsx
+  s_4b9adb1d9473fb::t_f0e9d6f9b85795 116-130
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanWithPhoneDialog.tsx
+  s_4b9adb1d9473fb::t_94213df92fbc32 188,202,305-309,326-327
+src/shared/scanTrace/toolBlobs.test.ts
+  s_4b9adb1d9473fb::t_985a4aa545db45 1-81
+  s_4b9adb1d9473fb::t_74d896144dae9e 82-84
+  s_151a7e2e72635b::t_e272c177ebf03c 85-86
+src/features/scan-capture/components/ScanPage/ScanPageGuide.tsx
+  s_4b9adb1d9473fb::t_e68170f01b6cf4 84
+  s_4b9adb1d9473fb::t_2b4759d7d165c1 120-139
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.test.ts
+  s_4b9adb1d9473fb::t_97ddad89706e90 73-90
+src/i18n/locales/ja.json
+  s_4b9adb1d9473fb::t_68fd7a6a7fa35b 4257
+  s_4b9adb1d9473fb::t_8a1f2d9f58b45d 1012,4224,4251-4256,4262-4263,4273
+src/features/scan-capture/components/ScanPage/scanFlow.test.ts
+  s_4b9adb1d9473fb::t_2b4759d7d165c1 2,12
+  s_4b9adb1d9473fb::t_04e86d9c0d4a1b 1,3-11,13-93,95-120
+  s_4b9adb1d9473fb::t_bd4a600e7852d5 94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0eb6c2692386097a604008865c9ba2fff623e40f",
+  "prompts": {},
+  "sessions": {
+    "s_151a7e2e72635b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a34cc7bf4e5d7a6bc",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
