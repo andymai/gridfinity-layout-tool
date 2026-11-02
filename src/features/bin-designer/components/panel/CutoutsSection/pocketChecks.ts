@@ -66,6 +66,11 @@ interface Placed extends PlacedCopy {
   /** As cut at the surface: clearance and the entry edge's flare included. */
   readonly rings: readonly (readonly Pt[])[];
   readonly box: Box;
+  /**
+   * Rounded growth still to add around {@link rings}: a mesh imprint's
+   * dilation, which offsetting its outline would square off at the corners.
+   */
+  readonly pad: number;
 }
 
 const KIND_ORDER: readonly PocketIssueKind[] = ['merge', 'wall', 'lip', 'thin', 'floor'];
@@ -206,12 +211,19 @@ function ringsOf(c: Cutout, board: CutoutBoard): Pt[][] {
  * its clearance, and then every outline is offset again by its entry edge,
  * the way the builder flares it, so a polygon's corners reach furthest.
  */
-function cutRingsOf(c: Cutout, drawn: Pt[][], board: CutoutBoard): Pt[][] {
+function cutRingsOf(
+  c: Cutout,
+  drawn: Pt[][],
+  board: CutoutBoard
+): { readonly rings: Pt[][]; readonly pad: number } {
   const { clearance, w, d } = clearedProfile(c);
-  const offsetBy = (rings: Pt[][], by: number) =>
-    by > 0 ? rings.map((ring) => offsetClosedPolygon(ring, by)) : rings;
+  const offsetBy = (rings: Pt[][], by: number) => ({
+    rings: by > 0 ? rings.map((ring) => offsetClosedPolygon(ring, by)) : rings,
+    pad: 0,
+  });
   const entry = entryChamferWidth(c);
-  if (c.shape === 'path' || c.shape === 'mesh') return offsetBy(drawn, clearance + entry);
+  if (c.shape === 'mesh') return { rings: drawn, pad: clearance + entry };
+  if (c.shape === 'path') return offsetBy(drawn, clearance + entry);
   if (clearance === 0) return offsetBy(drawn, entry);
   const cleared = {
     ...c,
@@ -265,7 +277,8 @@ function placePockets(cutouts: readonly Cutout[], board: CutoutBoard): Placed[] 
   return placedCopies(cutouts).flatMap(({ cutout, owner, unit }): Placed[] => {
     const drawn = ringsOf(cutout, board).filter((r) => r.length >= 3);
     if (drawn.length === 0) return [];
-    const rings = cutRingsOf(cutout, drawn, board).filter((r) => r.length >= 3);
+    const cut = cutRingsOf(cutout, drawn, board);
+    const rings = cut.rings.filter((r) => r.length >= 3);
     if (rings.length === 0) return [];
     return [
       {
@@ -276,6 +289,7 @@ function placePockets(cutouts: readonly Cutout[], board: CutoutBoard): Placed[] 
         drawnBox: boxOf(drawn),
         rings,
         box: boxOf(rings),
+        pad: cut.pad,
       },
     ];
   });
@@ -329,7 +343,7 @@ function checkPairs(pockets: readonly Placed[], book: IssueBook): void {
     for (let j = i + 1; j < pockets.length; j++) {
       const a = pockets[i];
       const b = pockets[j];
-      if (a.unit === b.unit || boxGap(a.box, b.box) >= MIN_MATERIAL_MM) continue;
+      if (a.unit === b.unit || boxGap(a.box, b.box) >= MIN_MATERIAL_MM + a.pad + b.pad) continue;
       // Crossing edges meet inside each other's box, so no reach is needed.
       if (ringsGap(a.drawn, a.drawnBox, b.drawn, b.drawnBox, 0) === 0 || nested(a.drawn, b.drawn)) {
         overlapping.add(pairKey(a.unit, b.unit));
@@ -340,13 +354,17 @@ function checkPairs(pockets: readonly Placed[], book: IssueBook): void {
   }
   for (const [a, b] of near) {
     if (overlapping.has(pairKey(a.unit, b.unit))) continue;
-    const gap = ringsGap(a.rings, a.box, b.rings, b.box, MIN_MATERIAL_MM);
-    if (gap >= MIN_MATERIAL_MM) continue;
-    // A cut that swallows the other whole is a merge too, though their
-    // outlines never touch.
-    const left = gap === 0 || nested(a.rings, b.rings) ? 0 : gap;
     const ids = a.owner === b.owner ? [a.owner] : [a.owner, b.owner].sort();
-    book.note(left === 0 ? 'merge' : 'thin', ids, [a.cutout.id, b.cutout.id], left);
+    // A cut that swallows the other whole is a merge, however far apart
+    // their outlines run.
+    if (nested(a.rings, b.rings)) {
+      book.note('merge', ids, [a.cutout.id, b.cutout.id], 0);
+      continue;
+    }
+    const pads = a.pad + b.pad;
+    const left = ringsGap(a.rings, a.box, b.rings, b.box, MIN_MATERIAL_MM + pads) - pads;
+    if (left >= MIN_MATERIAL_MM) continue;
+    book.note(left <= 0 ? 'merge' : 'thin', ids, [a.cutout.id, b.cutout.id], left);
   }
 }
 
@@ -413,11 +431,17 @@ function nearestSide(p: Pt, w: number, d: number): 'left' | 'right' | 'front' | 
 /**
  * Whether the cut opens through that wall to the top the full width of the
  * pocket, taking the lip with it there: by the generator's own rule, since a
- * leaning pocket keeps no exit. A narrower keyhole leaves the lip either side.
+ * leaning pocket keeps no exit. The generator holds an exit to the pocket's
+ * span, so a width at least that wide is the whole span; a narrower keyhole
+ * leaves the lip either side.
  */
-function opensThrough(c: Cutout, side: string, params: BinParams): boolean {
-  return effectiveOpenSides(c, params).some(
-    (s) => s.side === side && !s.tunnel && s.widthMm === undefined
+function opensThrough(p: Placed, side: string, params: BinParams): boolean {
+  const span =
+    side === 'left' || side === 'right'
+      ? p.drawnBox.maxY - p.drawnBox.minY
+      : p.drawnBox.maxX - p.drawnBox.minX;
+  return effectiveOpenSides(p.cutout, params).some(
+    (s) => s.side === side && !s.tunnel && (s.widthMm === undefined || s.widthMm >= span - 1e-6)
   );
 }
 
@@ -443,11 +467,13 @@ function checkBoxWalls(
   for (const p of pockets) {
     if (isCutoutOffBoard(p.cutout, board)) continue;
     const inset = Math.min(p.box.minX, p.box.minY, w - p.box.maxX, d - p.box.maxY);
-    if (wall + inset - cornerSlack >= needed) continue;
+    if (wall + inset - p.pad - cornerSlack >= needed) continue;
     let least = Infinity;
     let at: Pt | null = null;
     for (const q of clippedCorners(p.rings, w, d)) {
-      const m = toOuterFace(q, w, d, wall, radius);
+      // A mesh imprint's dilation comes after the clip: the generator subtracts
+      // the imprint whole, so the wall does not stop it.
+      const m = toOuterFace(q, w, d, wall, radius) - p.pad;
       if (m < least) {
         least = m;
         at = q;
@@ -456,7 +482,7 @@ function checkBoxWalls(
     if (!at) continue;
     if (least < MIN_MATERIAL_MM) {
       book.note('wall', [p.owner], [p.cutout.id], least);
-    } else if (least < lipReach && !opensThrough(p.cutout, nearestSide(at, w, d), params)) {
+    } else if (least < lipReach && !opensThrough(p, nearestSide(at, w, d), params)) {
       book.note('lip', [p.owner], [p.cutout.id], lipReach - least);
     }
   }

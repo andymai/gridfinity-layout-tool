@@ -4,6 +4,7 @@ import type { BinParams, Cutout } from '@/features/bin-designer/types';
 import { cutoutDepthFrame } from '@/shared/utils/cutoutDepth';
 import { clearedProfile } from '@/shared/utils/cutoutFit';
 import { cutoutOutlineRing } from '@/shared/utils/cutoutOutline';
+import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { checkPockets, MIN_FLOOR_MM, type PocketIssue } from './pocketChecks';
 
 const FLAT = {
@@ -114,6 +115,14 @@ describe('checkPockets between pockets', () => {
     expect(merged).toMatchObject({ kind: 'merge', ids: ['a', 'b'] });
   });
 
+  // A 5 mm entry edge on a 2 mm pocket swallows its 1 mm neighbour with room
+  // to spare, so no edge of either cut comes near the other.
+  it('reads a swallowed pocket as a merge however far its edges are', () => {
+    const big = pocket('a', { x: 20, y: 20, width: 2, depth: 2, cutDepth: 10, chamferWidth: 5 });
+    const small = pocket('b', { x: 23, y: 20.5, width: 1, depth: 1 });
+    expect(check([big, small])).toEqual([expect.objectContaining({ kind: 'merge' })]);
+  });
+
   // A polygon's entry edge flares by an offset of its outline, so its corners
   // reach out by more than the edge's width.
   it("counts a polygon's flare at its corners", () => {
@@ -205,6 +214,40 @@ describe('checkPockets between pockets', () => {
   });
 });
 
+describe('checkPockets on a mesh imprint', () => {
+  const square: MeshAsset = {
+    name: 'tool',
+    data: '',
+    triangleCount: 12,
+    sizeMm: { x: 20, y: 20, z: 5 },
+    outlines: [
+      [
+        { x: 0, y: 0 },
+        { x: 20, y: 0 },
+        { x: 20, y: 20 },
+        { x: 0, y: 20 },
+      ],
+    ],
+  };
+  const board = { ...BOARD, meshAssets: { m: square } };
+  const imprint = (overrides: Partial<Cutout>) =>
+    pocket('m', { shape: 'mesh', meshId: 'm', width: 20, depth: 20, ...overrides });
+
+  // The generator dilates an imprint round, so its corner keeps its distance.
+  it('grows an imprint round at its corners', () => {
+    const corner = imprint({ x: 20, y: 20, clearance: 1 });
+    const beyond = pocket('n', { x: 41.6, y: 41.6, width: 10, depth: 10 });
+    expect(checkPockets([corner, beyond], bin(), board)).toEqual([]);
+  });
+
+  // An imprint is subtracted whole, so nothing clips it at the wall.
+  it('catches an imprint breaking through a wall', () => {
+    const near = imprint({ x: 0.5, y: 20, clearance: 3 });
+    const [through] = checkPockets([near], bin({ wallThickness: 2 }), board);
+    expect(through).toMatchObject({ kind: 'wall', mm: expect.closeTo(-0.5, 6) });
+  });
+});
+
 describe('checkPockets against the wall', () => {
   // The builder clips every pocket tool to the interior box, so clearance that
   // reaches past a straight wall is trimmed and the wall keeps its thickness.
@@ -233,6 +276,9 @@ describe('checkPockets against the wall', () => {
     expect(check(exit(true), withLip)).toEqual([expect.objectContaining({ kind: 'lip' })]);
     const keyhole = [pocket('a', { x: 1, openSides: [{ side: 'left', widthMm: 2 }] })];
     expect(check(keyhole, withLip)).toEqual([expect.objectContaining({ kind: 'lip' })]);
+    // The generator holds an exit to the pocket's span, so this is the whole of it.
+    const wide = [pocket('a', { x: 1, openSides: [{ side: 'left', widthMm: 25 }] })];
+    expect(check(wide, withLip)).toEqual([]);
   });
 
   // The generator builds no exit for a leaning pocket, so its lip is still there.
