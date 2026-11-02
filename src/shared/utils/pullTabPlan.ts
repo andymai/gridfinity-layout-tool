@@ -56,9 +56,9 @@ function isPullTabWall(value: unknown): value is PullTabWall {
 }
 
 /**
- * Every wall this tab stands on, in a stable order. The one reader of `walls`:
- * a tab on the front or the right alone stores `wall` and reaches here through
- * the fallback, so nothing downstream has to know which field a design uses.
+ * Every wall this tab stands on, in a stable order. A tab on the front or the
+ * right alone stores `wall` and reaches here through the fallback, so geometry
+ * never has to know which field a design uses.
  *
  * Filtered and de-duplicated because a repeat would build one tab twice in the
  * same place, a coincident pair the fuse turns into a sliver.
@@ -74,7 +74,7 @@ export function resolvePullTabWalls(
   return [tab.wall === 'depth' ? 'right' : 'front'];
 }
 
-export function pullTabWallAxis(wall: PullTabOuterWall): PullTabConfig['wall'] {
+function pullTabWallAxis(wall: PullTabOuterWall): PullTabConfig['wall'] {
   return wall === 'left' || wall === 'right' ? 'depth' : 'width';
 }
 
@@ -105,10 +105,9 @@ export function resolvePullTab(value: unknown): PullTabConfig {
     wall: v.wall === 'depth' ? 'depth' : 'width',
     walls: v.walls as PullTabConfig['walls'],
   });
+  // 'width' is what an absent axis means, so only 'depth' is stored.
   const centerAxis: PullTabCenterAxis | undefined =
-    walls.includes('center') && (v.centerAxis === 'width' || v.centerAxis === 'depth')
-      ? v.centerAxis
-      : undefined;
+    walls.includes('center') && v.centerAxis === 'depth' ? 'depth' : undefined;
   return {
     enabled: v.enabled === true,
     ...pullTabWallFields(walls),
@@ -237,13 +236,19 @@ export function activePullTab(p: BinParams): PullTabConfig | null {
   return tab.enabled && !pullTabUnavailableReason(p) ? tab : null;
 }
 
+/** The rounded-rim shell carries the outer-wall tabs; a center tab is never in it. */
 export function pullTabInRimShell(p: BinParams): boolean {
-  return activePullTab(p) !== null && effectiveRimFilletRadius(p) > 0;
+  const tab = activePullTab(p);
+  return (
+    tab !== null &&
+    effectiveRimFilletRadius(p) > 0 &&
+    resolvePullTabWalls(tab).some((wall) => wall !== 'center')
+  );
 }
 
 /**
  * Inward growth of each selected wall. A selected wall too short for a tab is
- * still thickened: that is what a one-wall tab has always done there.
+ * still thickened, so a saved one-wall design keeps its geometry.
  */
 export function pullTabWallInset(p: BinParams): Readonly<Record<PullTabOuterWall, number>> {
   const tab = activePullTab(p);
@@ -261,7 +266,7 @@ function firstWall(p: BinParams): PullTabWall {
  * The axis a tab's width runs along. A center tab runs along its divider,
  * which spans the bin like the walls parallel to it.
  */
-export function pullTabAxis(p: BinParams, wall: PullTabWall): PullTabCenterAxis {
+function pullTabAxis(p: BinParams, wall: PullTabWall): PullTabCenterAxis {
   if (wall !== 'center') return pullTabWallAxis(wall);
   return pullTabCenterDivider(p)?.axis ?? (p.pullTab?.centerAxis === 'depth' ? 'depth' : 'width');
 }
@@ -280,6 +285,20 @@ export function availablePullTabWidth(p: BinParams, wall: PullTabWall = firstWal
 /** Narrowest tab a wall can carry; a shorter wall builds none. */
 export const MIN_PULL_TAB_WIDTH = 12;
 
+/** The tab width a wall with `available` mm of room gets, before checking it fits. */
+export function pullTabWidth(
+  tab: Pick<PullTabConfig, 'width' | 'widthMode' | 'widthPercent'>,
+  available: number
+): number {
+  return Math.min(
+    available,
+    Math.max(
+      MIN_PULL_TAB_WIDTH,
+      tab.widthMode === 'percent' ? (available * tab.widthPercent) / 100 : tab.width
+    )
+  );
+}
+
 /** Opposite circular arcs can meet tangentially before either turns 90 degrees. */
 function fitRounds(first: number, second: number, rise: number, maxRun: number) {
   if (rise <= 0) return { first: 0, second: 0, angle: Math.PI / 2, run: 0 };
@@ -297,8 +316,12 @@ export function planPullTab(
   floorZ: number,
   wall: PullTabWall = firstWall(p)
 ) {
-  const tab = activePullTab(p);
-  if (!tab) return null;
+  const active = activePullTab(p);
+  if (!active) return null;
+  // Which walls carry a tab is the selection's business, not one tab's: kept
+  // out so a change elsewhere in the selection leaves this plan, and the
+  // cache keys built from it, unchanged.
+  const { wall: _wall, walls: _walls, centerAxis: _centerAxis, ...tab } = active;
   // The rim stands a collar above the wall top, and a lip's taper starts
   // below it: what is left is the height a full divider reaches.
   const interiorHeightMm =
@@ -308,13 +331,7 @@ export function planPullTab(
   const center = wall === 'center' ? resolvePullTabCenter(p, interiorHeightMm) : null;
   if (center && !center.divider) return null;
   const available = availablePullTabWidth(p, wall);
-  const width = Math.min(
-    available,
-    Math.max(
-      MIN_PULL_TAB_WIDTH,
-      tab.widthMode === 'percent' ? (available * tab.widthPercent) / 100 : tab.width
-    )
-  );
+  const width = pullTabWidth(tab, available);
   if (width < MIN_PULL_TAB_WIDTH || rimZ <= floorZ + 1) return null;
   const thickness = Math.max(center ? p.compartments.thickness : p.wallThickness, tab.thickness);
   // Compartments beside a divider can carry shelves and scoops up to the rim,

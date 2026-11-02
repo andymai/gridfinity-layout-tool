@@ -346,7 +346,7 @@ export function deriveDimensions(
               ? [
                   stableSerialize([
                     rimTab.wall,
-                    ...(rimTab.walls ? [rimTab.walls] : []),
+                    ...(rimTab.walls ? [rimTab.walls.filter((wall) => wall !== 'center')] : []),
                     rimTab.thickness,
                     rimTab.width,
                     rimTab.widthMode,

@@ -68,10 +68,7 @@ function position(
   return translate(right, [innerW / 2, alongY, 0]);
 }
 
-/**
- * One shape per plan, joined. Tabs on different walls never touch, so one
- * disjoint fuse joins them. A wall that throws frees the walls built before it.
- */
+/** Tabs on different walls never touch, so one disjoint fuse joins them. */
 function joinEach(
   tabs: readonly PullTabPlan[],
   build: (p: PullTabPlan) => Shape3D | null

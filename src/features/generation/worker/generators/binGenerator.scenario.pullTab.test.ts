@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { beforeAll, describe, expect, it } from 'vitest';
+import { FeatureTag } from './featureTags';
 import { initBrepjs, getGenerateBin, getKernelName } from './__kernel-tests__/wasmInit';
 import {
   assertStructurallyValid,
@@ -802,7 +803,7 @@ describe('a pull tab on the center divider', () => {
         },
       });
       expect(deriveDimensions(built, true).compartmentsBakedIntoShell).toBe(false);
-      const dividerTag = 6;
+      const dividerTag = FeatureTag.DIVIDER;
       expect(tagAbove(getGenerateBin()(baked, undefined, true), RIM + 2).has(dividerTag)).toBe(
         false
       );
