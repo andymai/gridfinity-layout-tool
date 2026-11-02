@@ -1,0 +1,33 @@
+src/shared/utils/cutoutDepth.test.ts
+  s_4b9adb1d9473fb::t_8e518a6e5b17f9 226-233
+  s_4b9adb1d9473fb::t_4b1de036f6fdf3 140-166
+src/shared/utils/cutoutDepth.ts
+  s_4b9adb1d9473fb::t_4b1de036f6fdf3 23,105-115,120-123,128-135,185-187,200
+src/features/generation/worker/generators/scenarios/cutoutDepthModes.ts
+  s_4b9adb1d9473fb::t_857723011d4f4f 116-151,153-154
+  s_4164cd16e48c0e::t_c6b88861f9942e 152,155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7e5715a25af4ce801ee42714678aa411a65d7058",
+  "prompts": {},
+  "sessions": {
+    "s_4164cd16e48c0e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b56ca7-b90d-49fe-ad28-4c54a3c049c1",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
