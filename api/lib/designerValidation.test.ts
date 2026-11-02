@@ -1867,6 +1867,41 @@ describe('validateDesignerShare', () => {
     });
   });
 
+  describe('cutout split validation', () => {
+    const withCutouts = (cutouts: unknown) => {
+      const payload = validPayload();
+      (payload.params as Record<string, unknown>).cutouts = cutouts;
+      return validateDesignerShare(payload, JSON.stringify(payload).length);
+    };
+    const split = { a: { x: -5, y: -10 }, b: { x: -5, y: 10 }, cutDepth: 8 };
+
+    it('keeps a split, fixed or held to its floor', () => {
+      const result = withCutouts([
+        { id: 'a', split },
+        { id: 'b', split: { ...split, depthMode: 'floor', floorMm: 3 } },
+      ]);
+      expect(result.valid).toBe(true);
+      if (!result.valid) return;
+      const cutouts = (result.payload.params as { cutouts: Record<string, unknown>[] }).cutouts;
+      expect(cutouts.map((c) => c.split)).toEqual([
+        split,
+        { ...split, depthMode: 'floor', floorMm: 3 },
+      ]);
+    });
+
+    it.each([
+      ['a bare string', 'line'],
+      ['a missing point', { b: split.b, cutDepth: 8 }],
+      ['a point far off', { ...split, a: { x: 5000, y: 0 } }],
+      ['a negative depth', { ...split, cutDepth: -1 }],
+      ['a zero depth', { ...split, cutDepth: 0 }],
+      ['a through side', { ...split, depthMode: 'through' }],
+      ['a floor out of range', { ...split, depthMode: 'floor', floorMm: 900 }],
+    ])('rejects %s', (_name, bad) => {
+      expect(withCutouts([{ id: 'a', split: bad }]).valid).toBe(false);
+    });
+  });
+
   describe('cutout depth mode validation', () => {
     const withCutouts = (cutouts: unknown) => {
       const payload = validPayload();

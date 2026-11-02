@@ -6,4 +6,4 @@
  * `latest.test.ts` asserts this matches `WHATS_NEW_ENTRIES[0]`, so the
  * duplication cannot drift past CI or the pre-commit check.
  */
-export const LATEST_ENTRY_ID = 'cutout-pocket-checks';
+export const LATEST_ENTRY_ID = 'cutout-split-pockets';

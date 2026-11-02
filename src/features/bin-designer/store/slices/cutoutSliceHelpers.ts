@@ -13,6 +13,7 @@ import type {
 } from '../../types';
 import { MAX_LID_CUTOUTS } from '../../types';
 import { FINGER_SHAPES } from '@/shared/utils/fingerAccess';
+import { splitBlockedReason } from '@/shared/utils/cutoutSplit';
 import { scalePathPoints, translatePathPoints } from '../../utils/pathTransforms';
 import {
   groupChain,
@@ -86,14 +87,43 @@ export function applyPathTransform(c: Cutout, updates: Partial<Cutout>): PathPoi
  */
 export function mergeCutoutUpdate(c: Cutout, updates: Partial<Cutout>): Cutout {
   const transformedPath = applyPathTransform(c, updates);
-  const merged = withoutStrayFinger(
-    transformedPath ? { ...c, ...updates, path: transformedPath } : { ...c, ...updates }
+  const merged = withScaledSplit(
+    c,
+    withoutStrayFinger(
+      transformedPath ? { ...c, ...updates, path: transformedPath } : { ...c, ...updates }
+    )
   );
   const typedDepth = updates.cutDepth !== undefined && !('depthMode' in updates);
   if (!typedDepth && merged.depthMode !== undefined) return merged;
   if (!('depthMode' in merged) && !('floorMm' in merged)) return merged;
   const { depthMode: _mode, floorMm: _floor, ...fixed } = merged;
   return fixed;
+}
+
+/**
+ * Carry a split line through a resize, so it divides the pocket where it did.
+ * A shape that cannot be split drops it; a group, a lean or a through cut only
+ * pause it, so undoing them brings it back.
+ */
+function withScaledSplit(before: Cutout, c: Cutout): Cutout {
+  const { split } = c;
+  if (!split) return c;
+  if (splitBlockedReason(c) === 'shape') {
+    const { split: _split, ...rest } = c;
+    return rest;
+  }
+  if (split !== before.split) return c;
+  const sx = before.width !== 0 ? c.width / before.width : 1;
+  const sy = before.depth !== 0 ? c.depth / before.depth : 1;
+  if (sx === 1 && sy === 1) return c;
+  return {
+    ...c,
+    split: {
+      ...split,
+      a: { x: split.a.x * sx, y: split.a.y * sy },
+      b: { x: split.b.x * sx, y: split.b.y * sy },
+    },
+  };
 }
 
 function withoutStrayFinger(c: Cutout): Cutout {

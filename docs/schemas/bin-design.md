@@ -523,6 +523,7 @@ the 2D editor and comes out as a plain rectangle in 3D.
 | `chamferWidth`     | `number`                                                                                                                             |          |                   | >= 0, <= 5          | Size in mm of the entry edge at the cut's mouth: how far it flares out and how far it drops.                                                                                                                                                                                                                                                                                                                                               |
 | `entryProfile`     | `"chamfer"` \| `"round"`                                                                                                             |          |                   |                     | Shape of the entry edge sized by chamferWidth: a 45° bevel ('chamfer', the default when absent) or a quarter round tangent to the wall and the top ('round').                                                                                                                                                                                                                                                                              |
 | `finger`           | [`CutoutFinger`](#cutoutfinger)                                                                                                      |          |                   |                     | Makes a 'slot' or 'circle' a finger cut beside a pocket, so a fingertip can reach under the tool and lift it. Ignored on any other shape.                                                                                                                                                                                                                                                                                                  |
+| `split`            | [`CutoutSplit`](#cutoutsplit)                                                                                                        |          |                   |                     | Divides the pocket along a straight line so each side is cut to its own depth from the same top, making a step. Side A keeps cutDepth, depthMode and floorMm; side B takes the split's. Ignored on a leaning pocket, a through cut, a group member, or a mesh, text, knifeSlot or finger cut, and where the line no longer crosses the outline twice.                                                                                      |
 | `leanDeg`          | `number`                                                                                                                             |          |                   | >= -45, <= 45       | Tilt of the pocket's axis off vertical in degrees, about the opening along the shape's local depth axis; cutDepth is measured along the tilted axis. Ignored for mesh and knifeSlot shapes.                                                                                                                                                                                                                                                |
 | `array`            | [`CutoutArrayConfig`](#cutoutarrayconfig)                                                                                            |          |                   |                     |                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `engraveLabel`     | `boolean`                                                                                                                            |          |                   |                     | Engrave the label text next to this cutout.                                                                                                                                                                                                                                                                                                                                                                                                |
@@ -563,6 +564,26 @@ trough or bowl that lets a fingertip slide under the tool beside it.
 <a id="cutoutfinger"></a>
 
 1 field, in `src/features/bin-designer/types/cutout.ts`.
+
+### CutoutSplit
+
+A line that divides a pocket so each side is cut to its own depth, as for a tool
+with a thick handle and a thin blade. The pocket's own depth fields hold side A,
+left of the line looking from `a` to `b`; these hold side B.
+
+<!-- schema:CutoutSplit indexed -->
+
+<a id="cutoutsplit"></a>
+
+5 fields, in `src/features/bin-designer/types/cutout.ts`.
+
+### CutoutSplitPoint
+
+<!-- schema:CutoutSplitPoint indexed -->
+
+<a id="cutoutsplitpoint"></a>
+
+2 fields, in `src/features/bin-designer/types/cutout.ts`.
 
 ### CutoutScoopEdges
 

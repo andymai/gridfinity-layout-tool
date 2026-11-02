@@ -33,6 +33,7 @@ import {
   groupRepeatConfig,
 } from '@/shared/utils/cutoutArray';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { shallowerDepth } from '@/shared/utils/cutoutSplit';
 import {
   cutoutOutlineRing,
   meshOutlineRings,
@@ -280,7 +281,9 @@ function openings(params: OpenSideHost): Opening[] {
           bounds,
           specs,
           chamferMm: chamferOf(inst),
-          cutDepth: inst.cutDepth,
+          // A split pocket opens the wall only as deep as its shallower side,
+          // so the channel never notches the wall under a floor.
+          cutDepth: shallowerDepth(inst),
         });
       }
       continue;

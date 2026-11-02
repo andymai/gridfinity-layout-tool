@@ -13,6 +13,7 @@ import { resizeAroundCenter } from '../panel/CutoutsSection/cutoutHelpers';
 import { cutoutDepthShortfall } from '../panel/CutoutsSection/cutoutDepthShortfall';
 import { CutoutScoopControls } from './CutoutScoopControls';
 import { FingerAccessControls } from './FingerAccessControls';
+import { CutoutSplitControls, type SplitTool } from './CutoutSplitControls';
 import { fingerBottom } from '@/shared/utils/fingerAccess';
 import { CutoutDepthControl } from '../panel/CutoutsSection/CutoutDepthControl';
 import { isThroughCut } from '@/shared/utils/cutoutDepth';
@@ -73,6 +74,8 @@ interface SingleCutoutInspectorProps {
   readonly onFlattenArray?: (id: string) => void;
   /** Places a finger cut beside the pocket with this id. */
   readonly onAddFingerAccess?: (id: string) => void;
+  /** Absent where pockets cannot be split, as on a lid. */
+  readonly splitTool?: SplitTool;
   readonly disabled: boolean;
 }
 
@@ -87,6 +90,7 @@ export function SingleCutoutInspector({
   onFitCue,
   onFlattenArray,
   onAddFingerAccess,
+  splitTool,
   disabled,
 }: SingleCutoutInspectorProps) {
   const t = useTranslation();
@@ -294,6 +298,16 @@ export function SingleCutoutInspector({
                   cutout={cutout}
                   onUpdate={(patch) => onUpdate(cutout.id, patch)}
                   onAdd={onAddFingerAccess ? () => onAddFingerAccess(cutout.id) : undefined}
+                  disabled={disabled}
+                />
+              )}
+              {splitTool && (
+                <CutoutSplitControls
+                  cutout={live}
+                  maxCutDepth={maxCutDepth}
+                  drawing={splitTool.drawingId === cutout.id}
+                  onDraw={() => splitTool.onDraw(cutout.id)}
+                  onChange={(split) => splitTool.onChange(cutout.id, split)}
                   disabled={disabled}
                 />
               )}

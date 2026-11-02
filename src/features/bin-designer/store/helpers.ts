@@ -28,7 +28,12 @@ import { trackToolActivated } from '@/shared/analytics/posthog/conversionEvents'
 import { findAssemblyPart } from '@/features/bin-designer/utils/assemblyTree';
 import { syncedLidHeight } from '@/features/bin-designer/utils/lidHeightUnits';
 import { resolveSlant } from '@/shared/utils/slantPlan';
-import { cutoutDepthFrame, resolveCutoutDepth } from '@/shared/utils/cutoutDepth';
+import {
+  cutoutDepthFrame,
+  followsDepthMode,
+  resolveCutoutDepth,
+  splitSideB,
+} from '@/shared/utils/cutoutDepth';
 
 /**
  * The user's saved "default for new bins", or the factory defaults.
@@ -90,11 +95,15 @@ export function syncSlantLip(state: Draft<DesignerState>): void {
  */
 export function syncCutoutDepths(state: Draft<DesignerState>): void {
   const { cutouts } = state.params;
-  if (!cutouts.some((c) => c.depthMode !== undefined)) return;
+  if (!cutouts.some(followsDepthMode)) return;
   const frame = cutoutDepthFrame(state.params);
   for (const cutout of cutouts) {
     const cutDepth = resolveCutoutDepth(cutout, frame);
     if (cutout.cutDepth !== cutDepth) cutout.cutDepth = cutDepth;
+    if (cutout.split?.depthMode) {
+      const splitDepth = resolveCutoutDepth(splitSideB(cutout), frame);
+      if (cutout.split.cutDepth !== splitDepth) cutout.split.cutDepth = splitDepth;
+    }
   }
 }
 

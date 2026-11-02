@@ -19,6 +19,7 @@ import { dimmedBinColor } from './dimmedBinColor';
 import { isWithin } from '@/features/bin-designer/utils/cutoutHierarchy';
 import { OffBoardFrames3D } from './OffBoardFrames3D';
 import { IssueFrames3D } from './IssueFrames3D';
+import { SplitLines3D } from './SplitLines3D';
 import { KeepoutCircles3D } from './KeepoutCircles3D';
 import { CutoutLabel3D } from './CutoutLabel3D';
 import { CutoutHandles3D } from './CutoutHandles3D';
@@ -378,6 +379,7 @@ export function SceneContent({
         lidWindow={lidWindow}
       />
       <IssueFrames3D cutouts={cutouts} instanceIds={issueInstanceIds} preview={preview} />
+      <SplitLines3D cutouts={cutouts} preview={preview} selection={selection} />
 
       {/* Smart guides during drag */}
       {isDragging && (

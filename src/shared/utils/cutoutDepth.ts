@@ -160,16 +160,42 @@ export function floorUnderCutout(cutout: DepthCutout, frame: CutoutDepthFrame): 
 }
 
 /**
- * `params` with every bin cutout's `cutDepth` matching its mode, or the same
- * object when nothing moved. Lid cutouts always cut through their plate and
- * carry no mode.
+ * Side B of a split pocket as a cutout of its own, cut to side B's depth: what
+ * resolves that depth and reads its floor. Upright, as a leaning pocket cannot
+ * be split.
+ */
+export function splitSideB<C extends DepthCutout>(cutout: C & Pick<Cutout, 'split'>): C {
+  const split = cutout.split;
+  if (!split) return cutout;
+  const { depthMode: _mode, floorMm: _floor, ...rest } = cutout;
+  return {
+    ...rest,
+    cutDepth: split.cutDepth,
+    ...(split.depthMode ? { depthMode: split.depthMode } : {}),
+    ...(split.floorMm !== undefined ? { floorMm: split.floorMm } : {}),
+  } as C;
+}
+
+/** Whether a cutout holds any depth to its mode: its own, or a split's side B. */
+export function followsDepthMode(c: Pick<Cutout, 'depthMode' | 'split'>): boolean {
+  return c.depthMode !== undefined || c.split?.depthMode !== undefined;
+}
+
+/**
+ * `params` with every bin cutout's `cutDepth` matching its mode, a split's
+ * side B included, or the same object when nothing moved. Lid cutouts always
+ * cut through their plate and carry no mode.
  */
 export function withResolvedCutoutDepths<P extends BinParams>(params: P): P {
-  if (!params.cutouts.some((c) => c.depthMode !== undefined)) return params;
+  if (!params.cutouts.some(followsDepthMode)) return params;
   const frame = cutoutDepthFrame(params);
   const cutouts = params.cutouts.map((c) => {
     const cutDepth = resolveCutoutDepth(c, frame);
-    return cutDepth === c.cutDepth ? c : { ...c, cutDepth };
+    const split = c.split?.depthMode
+      ? { ...c.split, cutDepth: resolveCutoutDepth(splitSideB(c), frame) }
+      : c.split;
+    if (cutDepth === c.cutDepth && split?.cutDepth === c.split?.cutDepth) return c;
+    return { ...c, cutDepth, ...(split ? { split } : {}) };
   });
   return cutouts.some((c, i) => c !== params.cutouts[i]) ? { ...params, cutouts } : params;
 }

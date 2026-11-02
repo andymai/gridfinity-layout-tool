@@ -22,8 +22,14 @@ import {
   KNIFE_REST_MAX_GROOVE_DEPTH_MM,
 } from '../types';
 import { MAX_LID_CUTOUTS } from '../types/lid';
-import type { CutoutFingerBottom } from '../types/cutout';
-import { CUTOUT_ENTRY_PROFILES, CUTOUT_FINGER_BOTTOMS, MAX_CUTOUT_FLOOR_MM } from '../types/cutout';
+import type { CutoutFingerBottom, CutoutSplit } from '../types/cutout';
+import {
+  CUTOUT_ENTRY_PROFILES,
+  CUTOUT_FINGER_BOTTOMS,
+  MAX_CUTOUT_FLOOR_MM,
+  MAX_SPLIT_POINT_MM,
+  SPLIT_DEPTH_MODES,
+} from '../types/cutout';
 import { TEXT_MAX_LENGTH } from '../types/text';
 import { clampNumber } from './paramMigrationHelpers';
 
@@ -119,7 +125,7 @@ export function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
     migrateParentGroups(withArray.parentGroups) ?? []
   );
   return migrateScoopRadius(
-    withFinger(withOpenSides(withEntryProfile(withDepthMode(withParents)))),
+    withSplit(withFinger(withOpenSides(withEntryProfile(withDepthMode(withParents))))),
     scoopRadius
   );
 }
@@ -185,6 +191,58 @@ function withFinger(cutout: Cutout): Cutout {
   }
   const { finger: _finger, ...rest } = cutout;
   return rest;
+}
+
+const isPoint = (p: unknown): p is { x: number; y: number } => {
+  if (typeof p !== 'object' || p === null) return false;
+  const { x, y } = p as { x?: unknown; y?: unknown };
+  return [x, y].every(
+    (v) => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= MAX_SPLIT_POINT_MM
+  );
+};
+
+const isFloorMm = (v: unknown): v is number =>
+  typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= MAX_CUTOUT_FLOOR_MM;
+
+/**
+ * Keep a split with two real points and a positive depth, and drop the whole
+ * split otherwise, as half a line has no honest reading. An unknown mode or a
+ * bad floor falls back to a fixed depth. A valid split comes back by reference.
+ */
+function withSplit(cutout: Cutout): Cutout {
+  const raw: unknown = cutout.split;
+  if (raw === undefined) return cutout;
+  const split = (typeof raw === 'object' && raw !== null ? raw : {}) as Partial<
+    Record<keyof CutoutSplit, unknown>
+  >;
+  const { a, b, cutDepth, depthMode, floorMm } = split;
+  if (
+    !isPoint(a) ||
+    !isPoint(b) ||
+    typeof cutDepth !== 'number' ||
+    !(cutDepth > 0 && cutDepth <= MAX_CUTOUT_FLOOR_MM)
+  ) {
+    const { split: _split, ...rest } = cutout;
+    return rest;
+  }
+  const validMode = SPLIT_DEPTH_MODES.includes(depthMode as (typeof SPLIT_DEPTH_MODES)[number]);
+  const exact =
+    Object.keys(split).every((k) => ['a', 'b', 'cutDepth', 'depthMode', 'floorMm'].includes(k)) &&
+    Object.keys(a).length === 2 &&
+    Object.keys(b).length === 2 &&
+    (depthMode === undefined || validMode) &&
+    (floorMm === undefined || isFloorMm(floorMm));
+  if (exact) return cutout;
+  return {
+    ...cutout,
+    split: {
+      a: { x: a.x, y: a.y },
+      b: { x: b.x, y: b.y },
+      cutDepth,
+      ...(validMode ? { depthMode: 'floor' as const } : {}),
+      ...(validMode && isFloorMm(floorMm) ? { floorMm } : {}),
+    },
+  };
 }
 
 function migrateScoopRadius(cutout: Cutout, scoopRadius: number | undefined): Cutout {

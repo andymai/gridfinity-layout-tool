@@ -11,6 +11,7 @@ import type { CellMask } from '@/shared/utils/cellMask';
 import type { MaskCellSize } from './maskFit';
 import type { PathDrawingMode, VertexEditMode } from './handlers';
 import type { StartRect } from './geometry';
+import type { RulerMeasurement } from './handlers/rulerHandler';
 
 /** Direction for resize handles */
 export type ResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
@@ -94,13 +95,18 @@ export type InteractionMode =
   | { readonly type: 'marquee'; readonly startX: number; readonly startY: number }
   | PathDrawingMode
   | VertexEditMode
-  | { readonly type: 'ruler-ready' }
+  | {
+      readonly type: 'ruler-ready';
+      /** Set while drawing the line that splits this cutout, rather than measuring. */
+      readonly splitId?: string;
+    }
   | {
       readonly type: 'measuring';
       readonly startX: number;
       readonly startY: number;
       /** When true, return to ruler-ready on pointer up; otherwise return to idle (Shift+drag) */
       readonly sticky: boolean;
+      readonly splitId?: string;
     };
 
 /** Preview overrides applied during drag/resize for visual feedback */
@@ -123,6 +129,8 @@ export interface UseCutoutInteractionOptions {
   readonly canRedo?: boolean;
   readonly onLock?: (ids: readonly string[]) => void;
   readonly onUnlock?: (ids: readonly string[]) => void;
+  /** A line drawn across the cutout `splitId` names, as world points (mm). */
+  readonly onSplitLine?: (cutoutId: string, line: RulerMeasurement) => void;
   readonly startTransaction?: () => void;
   readonly commitTransaction?: () => void;
   readonly binWidth: number;

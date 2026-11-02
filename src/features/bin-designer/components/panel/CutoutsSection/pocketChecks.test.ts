@@ -387,6 +387,23 @@ describe('checkPockets under the floor', () => {
     expect(check([{ ...leaning, ...thin?.fix }])).toEqual([]);
   });
 
+  it("checks a split pocket's side B and fixes it in the split", () => {
+    const line = { a: { x: 0, y: -10 }, b: { x: 0, y: 10 } };
+    const split = pocket('a', { cutDepth: 5, split: { ...line, cutDepth: fill - 0.5 } });
+    const [thin] = check([split]);
+    expect(thin).toMatchObject({ kind: 'floor', ids: ['a'], mm: expect.closeTo(0.5, 6) });
+    expect(thin.fix?.split?.cutDepth).toBeCloseTo(fill - MIN_FLOOR_MM, 6);
+    expect(thin.fix?.split?.a).toEqual(line.a);
+    expect(check([{ ...split, ...thin.fix }])).toEqual([]);
+  });
+
+  it('raises the floor of a split side held to one', () => {
+    const line = { a: { x: 0, y: -10 }, b: { x: 0, y: 10 } };
+    const floored = { ...line, cutDepth: fill - 0.6, depthMode: 'floor' as const, floorMm: 0.6 };
+    const [thin] = check([pocket('a', { split: floored })]);
+    expect(thin.fix?.split).toEqual({ ...floored, floorMm: MIN_FLOOR_MM });
+  });
+
   it('passes through cuts, and pockets over a socketed base', () => {
     expect(check([pocket('a', { depthMode: 'through', cutDepth: fill })])).toEqual([]);
     const socketed = bin({ base: { ...DEFAULT_BIN_PARAMS.base, solid: true, stackingLip: false } });

@@ -100,6 +100,8 @@ import {
 } from '@/shared/utils/cutoutFit';
 import { planNestedOpenings } from '@/shared/utils/nestedCutoutOpenings';
 import { isThroughCut } from '@/shared/utils/cutoutDepth';
+import { depthAt, effectiveSplit, shallowerDepth } from '@/shared/utils/cutoutSplit';
+import { buildSplitTool } from './cutoutSplitTool';
 import type { FloorTrim, NestedOpening, SunkMouth } from '@/shared/utils/nestedCutoutOpenings';
 import { buildTaperedInnerEnvelope } from './taperedOuter';
 import type { ResolvedTaper } from './overhang';
@@ -751,22 +753,11 @@ export function buildUngroupedCutout(
   originY: number,
   sunk?: SunkMouth
 ): Shape3D | null {
-  const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
+  const effectiveDepth = toolDepth(cutout, solidSurfaceZ);
   if (effectiveDepth <= 0) return null;
 
-  let shape = buildUnrotatedCutoutShape({ ...cutout, cutDepth: effectiveDepth }, sunk);
+  let shape = buildLocalTool(cutout, solidSurfaceZ, sunk);
   if (!shape) return null;
-
-  const scoop = resolveScoop(cutout, effectiveDepth);
-  if (scoop.w > 0 || scoop.d > 0) {
-    const filleted = applyAxisAwareScoop(shape, cutout, scoop);
-    if (filleted !== shape) {
-      shape.delete();
-      shape = filleted;
-    }
-  }
-
-  shape = applyCutoutLean(shape, resolveCutoutLeanDeg(cutout), effectiveDepth);
 
   if (cutout.rotation !== 0) {
     const rotated = rotate(shape, -cutout.rotation, { axis: [0, 0, 1] });
@@ -781,6 +772,43 @@ export function buildUngroupedCutout(
   ]);
   shape.delete();
   return positioned;
+}
+
+/** How deep a cutout's tool reaches below the fill surface: its deeper side, when split. */
+function toolDepth(cutout: Cutout, solidSurfaceZ: number): number {
+  const split = effectiveSplit(cutout);
+  return Math.min(Math.max(cutout.cutDepth, split?.cutDepth ?? 0), solidSurfaceZ);
+}
+
+/**
+ * A cutout's tool in its own frame before it is turned, scooped and leaned,
+ * spanning z = 0 to {@link toolDepth}.
+ */
+function buildLocalTool(
+  cutout: Cutout,
+  solidSurfaceZ: number,
+  sunk: SunkMouth | undefined
+): Shape3D | null {
+  const atDepth = (cutDepth: number): Shape3D | null => {
+    let shape = buildUnrotatedCutoutShape({ ...cutout, cutDepth }, sunk);
+    if (!shape) return null;
+    const scoop = resolveScoop(cutout, cutDepth);
+    if (scoop.w > 0 || scoop.d > 0) {
+      const filleted = applyAxisAwareScoop(shape, cutout, scoop);
+      if (filleted !== shape) {
+        shape.delete();
+        shape = filleted;
+      }
+    }
+    return applyCutoutLean(shape, resolveCutoutLeanDeg(cutout), cutDepth);
+  };
+  const depthA = Math.min(cutout.cutDepth, solidSurfaceZ);
+  const split = effectiveSplit(cutout);
+  if (!split) return depthA > 0 ? atDepth(depthA) : null;
+  const depthB = Math.min(split.cutDepth, solidSurfaceZ);
+  // One entry edge round the whole mouth, sized to the side with less wall for it.
+  const chamferWidth = entryChamferWidth({ ...cutout, cutDepth: Math.min(depthA, depthB) });
+  return buildSplitTool({ ...cutout, chamferWidth }, split, depthA, depthB, atDepth);
 }
 
 /**
@@ -1052,7 +1080,7 @@ export function buildArrayUngroupedCutouts(
   originY: number,
   sunkOf: (instanceId: string) => SunkMouth | undefined = () => undefined
 ): Shape3D[] {
-  const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
+  const effectiveDepth = toolDepth(cutout, solidSurfaceZ);
   if (effectiveDepth <= 0 || !cutout.array) return [];
 
   const instances = expandCutoutArray(cutout);
@@ -1063,19 +1091,8 @@ export function buildArrayUngroupedCutouts(
   const nonUniformRotation = cutout.array.mode === 'radial' && cutout.array.rotateToCenter;
 
   const buildMaster = (sunk: SunkMouth | undefined): Shape3D | null => {
-    let master = buildUnrotatedCutoutShape({ ...cutout, cutDepth: effectiveDepth }, sunk);
+    let master = buildLocalTool(cutout, solidSurfaceZ, sunk);
     if (!master) return null;
-
-    const scoop = resolveScoop(cutout, effectiveDepth);
-    if (scoop.w > 0 || scoop.d > 0) {
-      const filleted = applyAxisAwareScoop(master, cutout, scoop);
-      if (filleted !== master) {
-        master.delete();
-        master = filleted;
-      }
-    }
-
-    master = applyCutoutLean(master, resolveCutoutLeanDeg(cutout), effectiveDepth);
 
     // Bake the uniform rotation into master so instances only need a translate.
     if (!nonUniformRotation && cutout.rotation !== 0) {
@@ -1136,7 +1153,10 @@ function buildNestedEntryFlare(
   originY: number
 ): Shape3D | null {
   const { floorDepth, flare, rise } = opening;
-  const pocket = { ...opening.pocket, cutDepth: Math.min(opening.pocket.cutDepth, solidSurfaceZ) };
+  const pocket = {
+    ...opening.pocket,
+    cutDepth: Math.min(shallowerDepth(opening.pocket), solidSurfaceZ),
+  };
   const lean = resolveCutoutLeanDeg(pocket);
   const { clearance, w, d } = clearedProfile(pocket);
   const chamfer = entryChamferWidth(pocket);
@@ -1190,7 +1210,7 @@ function buildFloorPrism(
 ): Shape3D | null {
   const chamferWidth = entryChamferWidth({
     ...floor,
-    cutDepth: Math.min(floor.cutDepth, solidSurfaceZ),
+    cutDepth: Math.min(shallowerDepth(floor), solidSurfaceZ),
   });
   const span = solidSurfaceZ + FLOOR_PRISM_UNDERSHOOT;
   let shape = buildUnrotatedCutoutShape({ ...floor, cutDepth: span, chamferWidth, leanDeg: 0 });
@@ -1965,6 +1985,18 @@ function labelOverCavity(
   originX: number,
   originY: number
 ): boolean {
+  const [lx, ly] = labelLocal(cutout, centerX, centerY, originX, originY);
+  return labelCenterInFootprint(cutout, lx, ly);
+}
+
+/** A label centre in its cutout's own frame, the frame the tool is built in. */
+function labelLocal(
+  cutout: Cutout,
+  centerX: number,
+  centerY: number,
+  originX: number,
+  originY: number
+): [number, number] {
   const dx = centerX - (originX + cutout.x + cutout.width / 2);
   const dy = centerY - (originY + cutout.y + cutout.depth / 2);
   // Localize with the inverse of the shape's world rotation —
@@ -1972,9 +2004,7 @@ function labelOverCavity(
   const theta = (cutout.rotation * Math.PI) / 180;
   const c = Math.cos(theta);
   const s = Math.sin(theta);
-  const lx = dx * c - dy * s;
-  const ly = dx * s + dy * c;
-  return labelCenterInFootprint(cutout, lx, ly);
+  return [dx * c - dy * s, dx * s + dy * c];
 }
 
 /**
@@ -2101,9 +2131,10 @@ function buildCutoutLabel(
 
   const overCavity = labelOverCavity(cutout, centerX, centerY, originX, originY);
   if (floor === 'open' && overCavity) return null;
+  const [lx, ly] = labelLocal(cutout, centerX, centerY, originX, originY);
   const surfaceZ =
     floor === 'recess' && overCavity
-      ? solidSurfaceZ - Math.min(cutout.cutDepth, solidSurfaceZ)
+      ? solidSurfaceZ - Math.min(depthAt(cutout, { x: lx, y: ly }), solidSurfaceZ)
       : solidSurfaceZ;
   const mode = cutoutLabelMode(style.mode);
   const onRecessFloor = surfaceZ < solidSurfaceZ;

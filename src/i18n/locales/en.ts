@@ -3199,6 +3199,35 @@ const en: Record<string, string> = {
     'Cuts a scoop beside this pocket so you can lift the tool out',
   'binDesigner.cutouts.finger.repeatBlocked':
     'Each copy of a repeat needs its own. Flatten to cutouts first.',
+  'binDesigner.cutouts.split.add': 'Split into two depths',
+  'binDesigner.cutouts.split.addHint':
+    'Draw a line across the pocket to cut each side to its own depth',
+  'binDesigner.cutouts.split.drawHint': 'Drag a line across the pocket on the board',
+  'binDesigner.cutouts.split.cancel': 'Stop drawing',
+  'binDesigner.cutouts.split.blocked.group':
+    'A pocket in a group cuts as one. Ungroup it to split it.',
+  'binDesigner.cutouts.split.blocked.tilt':
+    'A leaning pocket cannot be split. Set its lean to 0° first.',
+  'binDesigner.cutouts.split.blocked.through': 'A through cut has no floor to split.',
+  'binDesigner.cutouts.split.name': 'Split pocket',
+  'binDesigner.cutouts.split.nameDetail':
+    "A line across the pocket cuts each side to its own depth from the same top, with a sharp step between them. Side A keeps the pocket's own depth; side B takes the depth set here.",
+  'binDesigner.cutouts.split.paused.group':
+    'Paused while the pocket is in a group, so it cuts at one depth.',
+  'binDesigner.cutouts.split.paused.tilt':
+    'Paused while the pocket leans, so it cuts at one depth.',
+  'binDesigner.cutouts.split.paused.through': 'Paused while the pocket cuts through.',
+  'binDesigner.cutouts.split.sideBDepth': 'Side B depth',
+  'binDesigner.cutouts.split.redraw': 'Redraw line',
+  'binDesigner.cutouts.split.remove': 'Remove split',
+  'binDesigner.cutouts.split.sidesHint':
+    "Side A keeps the pocket's depth. The board marks each side.",
+  'binDesigner.cutouts.split.sideA': 'A',
+  'binDesigner.cutouts.split.sideB': 'B',
+  'binDesigner.cutouts.split.problem.crossings':
+    'That line has to cross the pocket once, from edge to edge.',
+  'binDesigner.cutouts.split.problem.small':
+    'That line leaves a sliver. Draw it further into the pocket.',
   'binDesigner.cutouts.section.transform': 'Transform',
   'binDesigner.cutouts.section.shape': 'Shape',
   'binDesigner.cutouts.section.knife': 'Knife',

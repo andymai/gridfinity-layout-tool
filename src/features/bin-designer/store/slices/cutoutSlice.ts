@@ -12,6 +12,7 @@ import type {
   Cutout,
   CutoutArrayConfig,
   CutoutColorScope,
+  CutoutSplit,
   CutoutToggleProperties,
   ReorderDirection,
   GroupOp,
@@ -422,6 +423,20 @@ export function createCutoutSlice(rawSet: Set) {
         owner.cutouts = owner.cutouts.map((c) =>
           c.id === id ? withTextFootprint(mergeCutoutUpdate(c, updates)) : c
         );
+      });
+    },
+
+    setCutoutSplit: (id: string, split: CutoutSplit | null) => {
+      set((state) => {
+        const target = cutoutList(state).find((c) => c.id === id);
+        if (!target || (split === null && target.split === undefined)) return;
+        pushHistoryEntry(state);
+        const owner = cutoutOwner(state);
+        owner.cutouts = owner.cutouts.map((c) => {
+          if (c.id !== id) return c;
+          const { split: _split, ...rest } = c;
+          return split === null ? rest : { ...rest, split };
+        });
       });
     },
 

@@ -18,6 +18,9 @@
  *   member's.
  * - A leaned pocket as the floor: it is tilted, so nothing opens onto it at one
  *   height. A leaned pocket still opens onto a level floor around it.
+ * - A split pocket's deeper side as a floor: the pocket counts at its
+ *   shallower side's depth only, so a pocket on the deeper floor keeps no
+ *   chamfer there rather than cutting one into the shallower side's plastic.
  * - Mesh imprints. They are cut after tessellation, so a pocket inside one
  *   never sees its floor, which is contoured relief in any case. An imprint
  *   inside a pocket keeps its chamfer at the surface: the mesh domain holds no
@@ -40,6 +43,7 @@ import {
   MIN_STRAIGHT_WALL_MM,
 } from './cutoutFit';
 import { resolveScoop } from './cutoutScoopHelpers';
+import { shallowerDepth } from './cutoutSplit';
 
 /** How far past a scooped floor's fillet a flare of its own carries on (mm). */
 const RISE_PAST_SCOOP_MM = 0.5;
@@ -185,7 +189,7 @@ function sameMouth(a: SunkMouth | null, b: SunkMouth | null): boolean {
 function collectUnits(cutouts: readonly Cutout[], solidSurfaceZ: number): Unit[] {
   const units: Unit[] = [];
   const add = (cutout: Cutout, ownerId: string, colorOwner: Cutout, grouped: boolean): void => {
-    const depth = Math.min(cutout.cutDepth, solidSurfaceZ);
+    const depth = Math.min(shallowerDepth(cutout), solidSurfaceZ);
     // The builder cuts nothing for a zero box, though a path still has a ring.
     if (depth <= 0 || cutout.width <= 0 || cutout.depth <= 0) return;
     const ring = cutRing(cutout, depth);

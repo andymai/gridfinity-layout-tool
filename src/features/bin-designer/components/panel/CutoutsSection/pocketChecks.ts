@@ -14,7 +14,13 @@
 import type { BinParams, Cutout } from '@/features/bin-designer/types';
 import { DEFAULT_GROUP_OP, resolveCutoutLeanDeg } from '@/features/bin-designer/types';
 import { expandCutoutArray, expandCutoutGroup } from '@/shared/utils/cutoutArray';
-import { cutoutDepthFrame, floorUnderCutout, isThroughCut } from '@/shared/utils/cutoutDepth';
+import {
+  cutoutDepthFrame,
+  floorUnderCutout,
+  isThroughCut,
+  splitSideB,
+} from '@/shared/utils/cutoutDepth';
+import { effectiveSplit } from '@/shared/utils/cutoutSplit';
 import { clearedProfile, entryChamferWidth } from '@/shared/utils/cutoutFit';
 import { cutoutOutlineRing, meshOutlineRings } from '@/shared/utils/cutoutOutline';
 import { cavityCornerRadiusMm } from '@/shared/utils/insideWallObstacles';
@@ -536,6 +542,17 @@ function floorFix(c: Cutout, floor: number): Partial<Cutout> {
   return { cutDepth: Math.floor(Math.max(0.5, c.cutDepth - shallower) * 100 + 1e-6) / 100 };
 }
 
+/** The same fix for side B of a split, written back into the split. */
+function splitFloorFix(c: Cutout, floor: number): Partial<Cutout> | undefined {
+  const { split } = c;
+  if (!split) return undefined;
+  if (split.depthMode === 'floor') return { split: { ...split, floorMm: MIN_FLOOR_MM } };
+  const cutDepth = Math.floor(Math.max(0.5, split.cutDepth - (MIN_FLOOR_MM - floor)) * 100 + 1e-6);
+  return { split: { ...split, cutDepth: cutDepth / 100 } };
+}
+
+const thinFloor = (floor: number): boolean => floor > 0.01 && floor < MIN_FLOOR_MM - 1e-6;
+
 function checkFloors(
   pockets: readonly Placed[],
   cutouts: readonly Cutout[],
@@ -546,11 +563,16 @@ function checkFloors(
   const stored = new Map(cutouts.map((c) => [c.id, c]));
   for (const p of pockets) {
     if (p.cutout.shape === 'mesh' || isThroughCut(p.cutout, params)) continue;
-    const floor = floorUnderCutout(p.cutout, frame);
-    if (floor <= 0.01 || floor >= MIN_FLOOR_MM - 1e-6) continue;
     const owner = stored.get(p.owner);
-    const fix = owner ? floorFix(owner, floor) : undefined;
-    book.note('floor', [p.owner], [p.cutout.id], floor, fix);
+    const floor = floorUnderCutout(p.cutout, frame);
+    if (thinFloor(floor)) {
+      book.note('floor', [p.owner], [p.cutout.id], floor, owner && floorFix(owner, floor));
+    }
+    if (!effectiveSplit(p.cutout)) continue;
+    const floorB = floorUnderCutout(splitSideB(p.cutout), frame);
+    if (thinFloor(floorB)) {
+      book.note('floor', [p.owner], [p.cutout.id], floorB, owner && splitFloorFix(owner, floorB));
+    }
   }
 }
 
