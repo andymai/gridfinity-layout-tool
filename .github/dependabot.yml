@@ -86,6 +86,11 @@ updates:
         update-types: ['version-update:semver-minor', 'version-update:semver-patch']
       - dependency-name: '@playwright/*'
         update-types: ['version-update:semver-minor', 'version-update:semver-patch']
+      # configureTroikaText sets useWorker: false on the troika module that
+      # drei's <Text> renders with. If this pin leaves drei's troika range,
+      # two copies ship and the setting misses drei's copy. Bump it with drei.
+      - dependency-name: 'troika-three-text'
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
 
   - package-ecosystem: 'docker'
     directory: '/'
