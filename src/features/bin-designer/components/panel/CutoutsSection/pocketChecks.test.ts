@@ -335,6 +335,12 @@ describe('checkPockets against the wall', () => {
     expect(corner.mm).toBeLessThan(1.2);
   });
 
+  // The builder clips the whole flared cut, so a wide entry edge beside a
+  // straight wall leaves that wall whole.
+  it('keeps a straight wall whole under a wide entry edge', () => {
+    expect(check([pocket('a', { x: 0.5, y: 20, chamferWidth: 2 })])).toEqual([]);
+  });
+
   it('leaves a pocket off the board to the off-board warning', () => {
     expect(check([pocket('a', { shape: 'circle', x: -2, clearance: 2 })])).toEqual([]);
   });
@@ -352,6 +358,27 @@ describe('checkPockets under the floor', () => {
   it('raises the floor of a pocket that keeps one', () => {
     const floored = pocket('a', { depthMode: 'floor', floorMm: 0.6, cutDepth: fill - 0.6 });
     expect(check([floored])[0]).toMatchObject({ kind: 'floor', fix: { floorMm: MIN_FLOOR_MM } });
+  });
+
+  it('clears its own warning once its fix is applied', () => {
+    for (const cut of [fill - 0.37, fill - 0.91, fill - 0.6]) {
+      for (const stored of [
+        pocket('a', { cutDepth: cut }),
+        pocket('a', { cutDepth: cut, depthMode: 'floor', floorMm: fill - cut }),
+      ]) {
+        const [thin] = check([stored]);
+        expect(thin?.kind).toBe('floor');
+        const fixed = { ...stored, ...thin.fix };
+        const settled =
+          fixed.depthMode === 'floor' ? { ...fixed, cutDepth: fill - (fixed.floorMm ?? 0) } : fixed;
+        expect(check([settled])).toEqual([]);
+      }
+    }
+    // A lean turns the depth change into an odd number, which rounding to the
+    // nearest hundredth could leave a hair too deep.
+    const leaning = pocket('a', { cutDepth: 18, leanDeg: 20 });
+    const [thin] = check([leaning]);
+    expect(check([{ ...leaning, ...thin?.fix }])).toEqual([]);
   });
 
   it('passes through cuts, and pockets over a socketed base', () => {

@@ -475,10 +475,14 @@ function checkBoxWalls(
     if (wall + inset - p.pad - cornerSlack >= needed) continue;
     let least = Infinity;
     let at: Pt | null = null;
-    for (const q of clippedCorners(p.rings, w, d)) {
-      // A mesh imprint's dilation comes after the clip: the generator subtracts
-      // the imprint whole, so the wall does not stop it.
-      const m = toOuterFace(q, w, d, wall, radius) - p.pad;
+    // The builder clips a drawn shape's whole flared cut to the interior, so
+    // its growth goes on before the clip. A mesh imprint is subtracted whole,
+    // so its dilation comes after: the wall does not stop it.
+    const mesh = p.cutout.shape === 'mesh';
+    const grown =
+      !mesh && p.pad > 0 ? p.rings.map((ring) => offsetClosedPolygon(ring, p.pad)) : p.rings;
+    for (const q of clippedCorners(grown, w, d)) {
+      const m = toOuterFace(q, w, d, wall, radius) - (mesh ? p.pad : 0);
       if (m < least) {
         least = m;
         at = q;
@@ -511,7 +515,8 @@ function floorFix(c: Cutout, floor: number): Partial<Cutout> {
   if (c.depthMode === 'floor') return { floorMm: MIN_FLOOR_MM };
   const tilt = (resolveCutoutLeanDeg(c) * Math.PI) / 180;
   const shallower = (MIN_FLOOR_MM - floor) / Math.cos(tilt);
-  return { cutDepth: Math.round(Math.max(0.5, c.cutDepth - shallower) * 100) / 100 };
+  // Rounded down, to the hundredths the field shows, so the fix clears its own warning.
+  return { cutDepth: Math.floor(Math.max(0.5, c.cutDepth - shallower) * 100 + 1e-6) / 100 };
 }
 
 function checkFloors(
@@ -525,7 +530,7 @@ function checkFloors(
   for (const p of pockets) {
     if (p.cutout.shape === 'mesh' || isThroughCut(p.cutout, params)) continue;
     const floor = floorUnderCutout(p.cutout, frame);
-    if (floor <= 0.01 || floor >= MIN_FLOOR_MM) continue;
+    if (floor <= 0.01 || floor >= MIN_FLOOR_MM - 1e-6) continue;
     const owner = stored.get(p.owner);
     const fix = owner ? floorFix(owner, floor) : undefined;
     book.note('floor', [p.owner], [p.cutout.id], floor, fix);
