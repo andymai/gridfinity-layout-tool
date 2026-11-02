@@ -5,7 +5,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { isOk } from '@/core/result';
-import { traceScene, traceSceneSegmented, computeAutoSeed, withCardSize } from './traceScene';
+import { traceScene, traceSceneSegmented, withCardSize } from './traceScene';
+import { interiorSeed } from './toolBlobs';
 import {
   CALIBRATION_COLS,
   CALIBRATION_ROWS,
@@ -149,7 +150,7 @@ describe('calibration sheet sizing', () => {
     expect(result.value.grid?.kind).toBe('sheet');
     expect(result.value.card).toBeNull();
 
-    const out = bbox(result.value.outputPoints);
+    const out = bbox(result.value.shapes[0].outputPoints);
     // Well inside a millimetre on a 110mm tool — the card path's own fixture
     // only manages 2.5mm on a 45mm one.
     expect(Math.abs(out.w - TOOL_W)).toBeLessThan(0.5);
@@ -164,7 +165,7 @@ describe('calibration sheet sizing', () => {
     expect(result.value.units).toBe('mm');
     expect(result.value.grid).not.toBeNull();
 
-    const out = bbox(result.value.outputPoints);
+    const out = bbox(result.value.shapes[0].outputPoints);
     // Well inside a millimetre on a 110mm tool — the card path's own fixture
     // only manages 2.5mm on a 45mm one.
     expect(Math.abs(out.w - TOOL_W)).toBeLessThan(0.5);
@@ -184,14 +185,18 @@ describe('calibration sheet sizing', () => {
   it('traces the tool rather than a marker', () => {
     const result = traceScene(scene, { smooth: false });
     if (!isOk(result)) throw new Error('fixture failed');
-    const traced = bbox(result.value.imagePoints);
+    // No marker, ring of marker edge or the paper itself comes back as a tool.
+    expect(result.value.shapes).toHaveLength(1);
+    const traced = bbox(result.value.shapes[0].imagePoints);
     const expected = bbox(toolImage);
     expect(Math.abs(traced.w - expected.w)).toBeLessThan(3);
     expect(Math.abs(traced.h - expected.h)).toBeLessThan(3);
   });
 
   it('seeds the segmenter on the tool, not on a marker', () => {
-    const seed = computeAutoSeed(scene);
+    const traced = traceScene(scene);
+    if (!isOk(traced)) throw new Error('fixture failed');
+    const seed = interiorSeed(traced.value.shapes[0].imagePoints, W, H);
     const expected = bbox(toolImage);
     const xs = toolImage.map((p) => p.x);
     const ys = toolImage.map((p) => p.y);
@@ -213,10 +218,12 @@ describe('calibration sheet sizing', () => {
     if (!isOk(raw) || !isOk(smoothed)) throw new Error('fixture failed');
 
     // Genuinely smoothed: many more vertices than the simplified polygon.
-    expect(smoothed.value.outputPoints.length).toBeGreaterThan(raw.value.outputPoints.length * 3);
+    expect(smoothed.value.shapes[0].outputPoints.length).toBeGreaterThan(
+      raw.value.shapes[0].outputPoints.length * 3
+    );
 
-    const rawBox = bbox(raw.value.outputPoints);
-    const smoothBox = bbox(smoothed.value.outputPoints);
+    const rawBox = bbox(raw.value.shapes[0].outputPoints);
+    const smoothBox = bbox(smoothed.value.shapes[0].outputPoints);
     expect(Math.abs(smoothBox.w - rawBox.w)).toBeLessThan(0.5);
     expect(Math.abs(smoothBox.h - rawBox.h)).toBeLessThan(0.5);
     expect(Math.abs(smoothBox.w - TOOL_W)).toBeLessThan(0.6);

@@ -26,6 +26,12 @@ export interface ScanBounds {
 export interface ParsedScan {
   readonly specs: readonly ParsedCutoutSpec[];
   readonly bounds: ScanBounds;
+  /**
+   * What the user gives a real size for: the whole outline, or the largest
+   * tool when several lie side by side, since nobody knows the span of a batch.
+   */
+  readonly sized: ScanBounds;
+  readonly sizedByLargest: boolean;
 }
 
 /** Bounding box across every spec's [x, x+width] × [y, y+depth] footprint. */
@@ -63,7 +69,11 @@ export function parseScanSvg(svgString: string): Result<ParsedScan, SvgImportErr
     return err({ code: 'SVG_NO_SHAPES', detail: 'Traced outline has zero size' });
   }
 
-  return ok({ specs, bounds });
+  const largest = specs.reduce((a, b) => (b.width * b.depth > a.width * a.depth ? b : a));
+  const own = computeScanBounds([largest]);
+  // A spec inside the largest one is detail on the same tool, not a second tool.
+  const sizedByLargest = own.width < bounds.width - 1e-6 || own.depth < bounds.depth - 1e-6;
+  return ok({ specs, bounds, sized: sizedByLargest ? own : bounds, sizedByLargest });
 }
 
 /**

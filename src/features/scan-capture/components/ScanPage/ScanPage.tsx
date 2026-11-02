@@ -1,10 +1,11 @@
 /**
  * Mobile capture page (`/scan/:token`).
  *
- * Standalone, lightweight route: the phone photographs a tool, segments it
- * in-browser (tap-prompted ML, with a classical fallback), lets the user
- * confirm/retap, then uploads the outline SVG to the scan session the desktop
- * is polling. The photo never leaves the device — only the traced outline.
+ * Standalone, lightweight route: the phone photographs one or more tools,
+ * finds every one in-browser (the colour segmenter, each outline then redrawn
+ * by the tap-prompted model), lets the user remove or retap, then uploads the
+ * outlines as one SVG to the scan session the desktop is polling. The photo
+ * never leaves the device — only the traced outlines.
  *
  * When a size reference is in frame — the printed calibration sheet, or a
  * wallet card — the outline is rectified to true millimetres (perspective +
@@ -12,31 +13,27 @@
  * asks for one real dimension.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Spinner } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { isOk } from '@/core/result';
 import {
   decodeImageToCanvas,
   imageDataFromCanvas,
-  computeAutoSeed,
-  segmentAt,
-  traceSceneSegmented,
-  traceScene,
+  interiorSeed,
   preloadSegmenter,
-  pointsToSvgPath,
   cardPerspectiveSkew,
   withCardSize,
   STEEP_CARD_SKEW,
   type ImageDataLike,
-  type SoftMask,
   type Point,
   type SceneTrace,
 } from '@/shared/scanTrace';
 import { loadCardSize, saveCardSize, type CardSizeMm } from '@/features/scan-capture/cardSize';
 import { CardSizeEditor } from '@/features/scan-capture/components/CardSizeEditor';
-import { ProgressSteps, CaptureGuide, CardStatusIcon, TapIcon } from './ScanPageGuide';
+import { ProgressSteps, CaptureGuide, CardStatusIcon, SentIcon, TapIcon } from './ScanPageGuide';
 import type { Step } from './ScanPageGuide';
+import { ScanToolList } from './ScanToolList';
+import { bounds, svgFromShapes, traceAll, traceTap } from './scanFlow';
 
 interface ScanPageProps {
   readonly token: string;
@@ -45,10 +42,12 @@ interface ScanPageProps {
 interface ReviewState {
   readonly canvas: HTMLCanvasElement;
   readonly image: ImageDataLike;
-  readonly toolMask: SoftMask | null;
   readonly scene: SceneTrace;
+  /** The scene before the last tap or removal, so a model that grabbed too much can be undone. */
+  readonly previous: SceneTrace | null;
   readonly photoUrl: string;
-  readonly seed: Point;
+  /** False when the model could not run, so tapping the photo does nothing. */
+  readonly canRefine: boolean;
   readonly resegmenting: boolean;
   readonly sending: boolean;
 }
@@ -57,35 +56,18 @@ type Status =
   | { readonly kind: 'capture' }
   | { readonly kind: 'processing' }
   | ({ readonly kind: 'review' } & ReviewState)
-  | { readonly kind: 'sent' }
+  | { readonly kind: 'sent'; readonly count: number }
   | { readonly kind: 'finished' }
   | { readonly kind: 'error'; readonly messageKey: string };
 
 const round1 = (n: number): number => Math.round(n * 10) / 10;
 
+/** Tool number badges, scaled to the photo so they read the same at any resolution. */
+const badgeRadius = (image: ImageDataLike): number => Math.max(image.width, image.height) * 0.025;
+
 function measuredFromKey(grid: SceneTrace['grid']): string {
   if (!grid) return 'scan.cardMeasured';
   return grid.kind === 'sheet' ? 'scan.gridMeasured' : 'scan.baseplateMeasured';
-}
-
-function bounds(points: readonly Point[]): { minX: number; minY: number; w: number; h: number } {
-  const xs = points.map((p) => p.x);
-  const ys = points.map((p) => p.y);
-  const minX = Math.min(...xs);
-  const minY = Math.min(...ys);
-  return { minX, minY, w: Math.max(...xs) - minX, h: Math.max(...ys) - minY };
-}
-
-/** Normalize to a 0-origin viewBox so the outline imports at its true size. */
-function svgFromPoints(points: readonly Point[], units: 'mm' | 'px'): string {
-  const { minX, minY, w, h } = bounds(points);
-  const shifted = points.map((p) => ({ x: p.x - minX, y: p.y - minY }));
-  // Tag mm output so the desktop can skip its scale-confirm step.
-  const unitsAttr = units === 'mm' ? ' data-scan-units="mm"' : '';
-  return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${round1(w)} ${round1(h)}"${unitsAttr}>` +
-    `<path d="${pointsToSvgPath(shifted)}"/></svg>`
-  );
 }
 
 /**
@@ -95,25 +77,6 @@ function svgFromPoints(points: readonly Point[], units: 'mm' | 'px'): string {
  */
 function cardOptions(size: CardSizeMm): { widthMm: number; heightMm: number } {
   return { widthMm: size.longMm, heightMm: size.shortMm };
-}
-
-/** Trace the object at `seed`: ML segmenter first, classical Otsu as fallback. */
-async function traceAt(
-  canvas: HTMLCanvasElement,
-  image: ImageDataLike,
-  seed: Point,
-  cardSize: CardSizeMm
-): Promise<{ scene: SceneTrace; toolMask: SoftMask | null } | null> {
-  const options = cardOptions(cardSize);
-  try {
-    const toolMask = await segmentAt(canvas, seed);
-    const traced = traceSceneSegmented(image, toolMask, options);
-    if (isOk(traced)) return { scene: traced.value, toolMask };
-  } catch {
-    // Model failed to load/run — fall through to the classical tracer.
-  }
-  const classical = traceScene(image, options);
-  return isOk(classical) ? { scene: classical.value, toolMask: null } : null;
 }
 
 export function ScanPage({ token }: ScanPageProps) {
@@ -148,10 +111,7 @@ export function ScanPage({ token }: ScanPageProps) {
         return;
       }
       const image = imageDataFromCanvas(canvas);
-      // Same card options as the trace: the seed picks the largest blob that
-      // isn't the card, so a card it fails to detect becomes a candidate tool.
-      const seed = computeAutoSeed(image, cardOptions(cardSize));
-      const traced = await traceAt(canvas, image, seed, cardSize);
+      const traced = await traceAll(canvas, image, cardOptions(cardSize));
       if (!traced) {
         setStatus({ kind: 'error', messageKey: 'scan.error.noObject' });
         return;
@@ -160,10 +120,10 @@ export function ScanPage({ token }: ScanPageProps) {
         kind: 'review',
         canvas,
         image,
-        toolMask: traced.toolMask,
         scene: traced.scene,
+        previous: null,
         photoUrl: URL.createObjectURL(file),
-        seed,
+        canRefine: traced.canRefine,
         resegmenting: false,
         sending: false,
       });
@@ -171,42 +131,60 @@ export function ScanPage({ token }: ScanPageProps) {
     [cardSize]
   );
 
-  // Re-segment around the point the user tapped on the photo.
+  // Redraw (or add) the tool the user tapped on the photo.
   const handleTap = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       const box = imageBoxRef.current;
       setStatus((prev) => {
-        if (prev.kind !== 'review' || !box || prev.toolMask === null || prev.resegmenting)
-          return prev;
+        if (prev.kind !== 'review' || !box || !prev.canRefine || prev.resegmenting) return prev;
         const rect = box.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) return prev;
         const seed: Point = {
           x: (e.clientX - rect.left) / rect.width,
           y: (e.clientY - rect.top) / rect.height,
         };
-        const { canvas, image } = prev;
+        const { canvas, image, scene: current } = prev;
         void (async () => {
           try {
-            const toolMask = await segmentAt(canvas, seed);
-            const traced = traceSceneSegmented(image, toolMask, cardOptions(cardSize));
-            if (isOk(traced)) {
+            const next = await traceTap(canvas, image, current, seed, cardOptions(cardSize));
+            if (next) {
               setStatus((s) =>
                 s.kind === 'review'
-                  ? { ...s, scene: traced.value, toolMask, seed, resegmenting: false }
+                  ? { ...s, scene: next, previous: s.scene, resegmenting: false }
                   : s
               );
               return;
             }
           } catch {
-            // Keep the previous outline on failure.
+            // Keep the previous outlines on failure.
           }
           setStatus((s) => (s.kind === 'review' ? { ...s, resegmenting: false } : s));
         })();
-        return { ...prev, seed, resegmenting: true };
+        return { ...prev, resegmenting: true };
       });
     },
     [cardSize]
   );
+
+  const handleRemove = useCallback((index: number) => {
+    setStatus((prev) =>
+      prev.kind === 'review' && prev.scene.shapes.length > 1
+        ? {
+            ...prev,
+            scene: { ...prev.scene, shapes: prev.scene.shapes.filter((_, i) => i !== index) },
+            previous: prev.scene,
+          }
+        : prev
+    );
+  }, []);
+
+  const handleUndo = useCallback(() => {
+    setStatus((prev) =>
+      prev.kind === 'review' && prev.previous && !prev.resegmenting
+        ? { ...prev, scene: prev.previous, previous: null }
+        : prev
+    );
+  }, []);
 
   const handleCardSize = useCallback((next: CardSizeMm) => {
     setCardSize(next);
@@ -222,7 +200,8 @@ export function ScanPage({ token }: ScanPageProps) {
   const handleUse = useCallback(async () => {
     if (status.kind !== 'review') return;
     const rectified = withCardSize(status.scene, cardSize.longMm, cardSize.shortMm);
-    const svg = svgFromPoints(rectified.outputPoints, rectified.units);
+    const svg = svgFromShapes(rectified.shapes, rectified.units);
+    const count = rectified.shapes.length;
     setStatus({ ...status, sending: true });
     try {
       const res = await fetch(`/api/scan-session/${token}`, {
@@ -231,7 +210,7 @@ export function ScanPage({ token }: ScanPageProps) {
         body: JSON.stringify({ svg }),
       });
       if (res.ok) {
-        setStatus({ kind: 'sent' });
+        setStatus({ kind: 'sent', count });
       } else if (res.status === 404) {
         setStatus({ kind: 'error', messageKey: 'scan.error.expired' });
       } else {
@@ -257,7 +236,21 @@ export function ScanPage({ token }: ScanPageProps) {
         ? 'review'
         : 'capture';
 
-  const measured = scene && scene.units === 'mm' ? bounds(scene.outputPoints) : null;
+  const toolCount = scene?.shapes.length ?? 0;
+  const measured = scene && scene.units === 'mm' ? bounds(scene.shapes[0].outputPoints) : null;
+  const reviewShapes = status.kind === 'review' ? status.scene.shapes : null;
+  const imageSize = status.kind === 'review' ? status.image : null;
+  // Each badge sits where the tool is widest, so it never lands off the tool.
+  const badges = useMemo(
+    () =>
+      reviewShapes && imageSize && reviewShapes.length > 1
+        ? reviewShapes.map((shape) => {
+            const at = interiorSeed(shape.imagePoints, imageSize.width, imageSize.height);
+            return { x: at.x * imageSize.width, y: at.y * imageSize.height };
+          })
+        : [],
+    [reviewShapes, imageSize]
+  );
 
   const cardSteep =
     scene !== null &&
@@ -292,9 +285,9 @@ export function ScanPage({ token }: ScanPageProps) {
             <div className="flex w-full max-w-md flex-col items-center gap-3">
               <div
                 ref={imageBoxRef}
-                onPointerDown={status.toolMask ? handleTap : undefined}
+                onPointerDown={status.canRefine ? handleTap : undefined}
                 className={`relative w-full overflow-hidden rounded-xl border border-stroke ${
-                  status.toolMask ? 'cursor-pointer' : ''
+                  status.canRefine ? 'cursor-pointer' : ''
                 }`}
               >
                 <img
@@ -327,12 +320,35 @@ export function ScanPage({ token }: ScanPageProps) {
                       vectorEffect="non-scaling-stroke"
                     />
                   ))}
-                  <polygon
-                    points={scene.imagePoints.map((p) => `${p.x},${p.y}`).join(' ')}
-                    className="fill-accent/15 stroke-accent"
-                    strokeWidth={3}
-                    vectorEffect="non-scaling-stroke"
-                  />
+                  {scene.shapes.map((shape, i) => (
+                    <polygon
+                      key={i}
+                      points={shape.imagePoints.map((p) => `${p.x},${p.y}`).join(' ')}
+                      className="fill-accent/15 stroke-accent"
+                      strokeWidth={3}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  ))}
+                  {badges.map((at, i) => (
+                    <g key={i} aria-hidden="true">
+                      <circle
+                        cx={at.x}
+                        cy={at.y}
+                        r={badgeRadius(status.image)}
+                        className="fill-accent"
+                      />
+                      <text
+                        x={at.x}
+                        y={at.y}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fontSize={badgeRadius(status.image) * 1.2}
+                        className="fill-on-accent font-semibold"
+                      >
+                        {i + 1}
+                      </text>
+                    </g>
+                  ))}
                 </svg>
                 {status.resegmenting && (
                   <div className="absolute inset-0 flex items-center justify-center bg-surface/40">
@@ -340,6 +356,19 @@ export function ScanPage({ token }: ScanPageProps) {
                   </div>
                 )}
               </div>
+
+              {status.previous && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="md"
+                  className="self-end"
+                  disabled={status.resegmenting}
+                  onClick={handleUndo}
+                >
+                  {t('scan.review.undo')}
+                </Button>
+              )}
 
               <div
                 className={`flex w-full items-start gap-2.5 rounded-lg border px-3 py-2.5 ${
@@ -350,10 +379,12 @@ export function ScanPage({ token }: ScanPageProps) {
                 {measured ? (
                   <div className="flex flex-col gap-0.5 text-left">
                     <p className="text-sm font-semibold text-content-primary">
-                      {t('binDesigner.cutouts.scanImport.resultSize', {
-                        width: round1(measured.w),
-                        depth: round1(measured.h),
-                      })}
+                      {toolCount > 1
+                        ? t('scan.review.toolsFound', { count: toolCount })
+                        : t('binDesigner.cutouts.scanImport.resultSize', {
+                            width: round1(measured.w),
+                            depth: round1(measured.h),
+                          })}
                     </p>
                     <p className="text-xs text-success">{t(measuredFromKey(scene.grid))}</p>
                     {/* A lattice fit is over-constrained, so it can report how
@@ -388,14 +419,22 @@ export function ScanPage({ token }: ScanPageProps) {
 
               {scene.card && <CardSizeEditor size={cardSize} onChange={handleCardSize} />}
 
-              {status.toolMask ? (
+              {toolCount > 1 && (
+                <ScanToolList shapes={scene.shapes} units={scene.units} onRemove={handleRemove} />
+              )}
+
+              {status.canRefine ? (
                 <div className="flex w-full items-start gap-2.5 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2.5 text-left">
                   <TapIcon />
                   <div className="flex flex-col gap-0.5">
                     <p className="text-sm font-semibold text-content-primary">
-                      {t('scan.review.confirmTitle')}
+                      {t(
+                        toolCount > 1 ? 'scan.review.confirmTitleMany' : 'scan.review.confirmTitle'
+                      )}
                     </p>
-                    <p className="text-xs text-content-secondary">{t('scan.review.tapHint')}</p>
+                    <p className="text-xs text-content-secondary">
+                      {t(toolCount > 1 ? 'scan.review.tapHintMany' : 'scan.review.tapHint')}
+                    </p>
                   </div>
                 </div>
               ) : (
@@ -408,23 +447,13 @@ export function ScanPage({ token }: ScanPageProps) {
 
           {status.kind === 'sent' && (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-success">
-                <svg
-                  width="28"
-                  height="28"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M20 6L9 17l-5-5" />
-                </svg>
-              </div>
-              <p className="text-lg font-medium">{t('scan.sent.title')}</p>
-              <p className="max-w-xs text-sm text-content-secondary">{t('scan.sent.body')}</p>
+              <SentIcon />
+              <p className="text-lg font-medium">
+                {t(status.count > 1 ? 'scan.sent.titleMany' : 'scan.sent.title')}
+              </p>
+              <p className="max-w-xs text-sm text-content-secondary">
+                {t(status.count > 1 ? 'scan.sent.bodyMany' : 'scan.sent.body')}
+              </p>
             </div>
           )}
 
@@ -489,7 +518,11 @@ export function ScanPage({ token }: ScanPageProps) {
                 disabled={status.sending || status.resegmenting}
                 onClick={() => void handleUse()}
               >
-                {status.sending ? t('scan.sending') : t('scan.use')}
+                {status.sending
+                  ? t('scan.sending')
+                  : toolCount > 1
+                    ? t('scan.useMany', { count: toolCount })
+                    : t('scan.use')}
               </Button>
             </div>
           )}

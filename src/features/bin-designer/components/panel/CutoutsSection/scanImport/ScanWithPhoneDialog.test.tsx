@@ -113,6 +113,21 @@ describe('ScanWithPhoneDialog', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
+  it('asks for the largest tool’s size when an unscaled scan holds several', async () => {
+    render(<ScanWithPhoneDialog open onClose={vi.fn()} />);
+    uploadSvg(
+      '<svg viewBox="0 0 300 100"><rect x="0" y="0" width="120" height="40"/>' +
+        '<rect x="200" y="0" width="30" height="90"/></svg>'
+    );
+
+    const field = await screen.findByLabelText('binDesigner.cutouts.scanImport.scaleLabelLargest');
+    fireEvent.change(field, { target: { value: '60' } });
+    fireEvent.click(screen.getByText('binDesigner.cutouts.scanImport.add'));
+
+    const addedSpecs = mockAddScanCutouts.mock.calls[0][0] as Array<{ width: number }>;
+    expect(Math.max(...addedSpecs.map((s) => s.width))).toBeCloseTo(60, 5);
+  });
+
   it('skips scale-confirm and adds directly when the phone produced mm output', async () => {
     const onClose = vi.fn();
     render(<ScanWithPhoneDialog open onClose={onClose} />);

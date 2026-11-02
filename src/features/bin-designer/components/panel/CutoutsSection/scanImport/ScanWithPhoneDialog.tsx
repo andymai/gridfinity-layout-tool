@@ -185,7 +185,7 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
     const targetMm = parseFloat(stage.targetText);
     if (!Number.isFinite(targetMm) || targetMm <= 0) return;
 
-    const rescaled = rescaleToLongestMm(stage.parsed.specs, stage.parsed.bounds.longest, targetMm);
+    const rescaled = rescaleToLongestMm(stage.parsed.specs, stage.parsed.sized.longest, targetMm);
     const count = addScanCutouts(rescaled);
     trackEvent('scan_import', { success: true, shape_count: count, target_mm: targetMm });
     addToast(t('toast.scanImport.success', { count }), 'success');
@@ -199,8 +199,7 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
 
   const targetMm = stage.kind === 'review' ? parseFloat(stage.targetText) : NaN;
   const targetValid = Number.isFinite(targetMm) && targetMm > 0;
-  const factor =
-    stage.kind === 'review' && targetValid ? targetMm / stage.parsed.bounds.longest : 1;
+  const factor = stage.kind === 'review' && targetValid ? targetMm / stage.parsed.sized.longest : 1;
 
   return (
     <Dialog.Root open={open} onClose={handleClose} size="md">
@@ -303,7 +302,11 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor={fieldId} className="text-sm font-medium text-content-primary">
-                {t('binDesigner.cutouts.scanImport.scaleLabel')}
+                {t(
+                  stage.parsed.sizedByLargest
+                    ? 'binDesigner.cutouts.scanImport.scaleLabelLargest'
+                    : 'binDesigner.cutouts.scanImport.scaleLabel'
+                )}
               </label>
               <Input
                 id={fieldId}
@@ -320,8 +323,8 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
               {targetValid && (
                 <p className="text-xs text-content-secondary">
                   {t('binDesigner.cutouts.scanImport.resultSize', {
-                    width: round1(stage.parsed.bounds.width * factor),
-                    depth: round1(stage.parsed.bounds.depth * factor),
+                    width: round1(stage.parsed.sized.width * factor),
+                    depth: round1(stage.parsed.sized.depth * factor),
                   })}
                 </p>
               )}

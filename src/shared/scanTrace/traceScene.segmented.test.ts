@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isOk } from '@/core/result';
-import { traceSceneSegmented, computeAutoSeed } from './traceScene';
+import { traceScene, traceSceneSegmented } from './traceScene';
+import { interiorSeed } from './toolBlobs';
 import type { SoftMask } from './softContour';
 import type { ImageDataLike, Point } from './types';
 
@@ -114,7 +115,7 @@ describe('traceSceneSegmented', () => {
     expect(result.value.units).toBe('mm');
     expect(result.value.card).not.toBeNull();
     // Speck dropped → bbox matches the 25 × 45 mm tool, not the whole frame.
-    const out = bbox(result.value.outputPoints);
+    const out = bbox(result.value.shapes[0].outputPoints);
     expect(Math.abs(out.w - 25)).toBeLessThan(2.5);
     expect(Math.abs(out.h - 45)).toBeLessThan(2.5);
   });
@@ -130,21 +131,23 @@ describe('traceSceneSegmented', () => {
   });
 });
 
-describe('computeAutoSeed', () => {
+describe('seeding the segmenter from the classical trace', () => {
   it('lands inside the tool, not on the card', () => {
-    const seed = computeAutoSeed(renderWithCard());
+    const scene = traceScene(renderWithCard());
+    if (!isOk(scene)) throw new Error('fixture failed');
+    expect(scene.value.shapes).toHaveLength(1);
+    const seed = interiorSeed(scene.value.shapes[0].imagePoints, WIDTH, HEIGHT);
     const px = { x: seed.x * WIDTH, y: seed.y * HEIGHT };
     expect(pointInPolygon(px, project(TOOL_MM))).toBe(true);
     expect(pointInPolygon(px, project(CARD_MM))).toBe(false);
   });
 
-  it('falls back to the image center for a blank image', () => {
+  it('finds nothing in a blank image', () => {
     const blank: ImageDataLike = {
       width: WIDTH,
       height: HEIGHT,
       data: new Uint8ClampedArray(WIDTH * HEIGHT * 4).fill(0),
     };
-    const seed = computeAutoSeed(blank);
-    expect(seed).toEqual({ x: 0.5, y: 0.5 });
+    expect(isOk(traceScene(blank))).toBe(false);
   });
 });

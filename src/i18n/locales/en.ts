@@ -1553,6 +1553,7 @@ const en: Record<string, string> = {
   'scan.capture.tip.sheet':
     'Best of all: print the calibration sheet, or lay the tool on a Gridfinity baseplate',
   'scan.capture.tip.topDown': 'Shoot straight down, with the whole tool in frame',
+  'scan.capture.tip.several': 'Scanning several tools? Leave a gap between each one',
   'scan.capture.exampleAlt':
     'Example photo: a tool and a bank card laid flat on a plain surface, photographed from straight above',
   'scan.capture.label.tool': 'Your tool',
@@ -1587,11 +1588,22 @@ const en: Record<string, string> = {
   'scan.review.confirmTitle': 'Is this your tool?',
   'scan.review.tapHint': 'Tap your tool in the photo if the highlighted shape is wrong.',
   'scan.review.retakeHint': 'If this looks off, retake the photo on a plainer background.',
+  'scan.review.confirmTitleMany': 'Are these your tools?',
+  'scan.review.tapHintMany':
+    'Tap a tool in the photo to redraw its outline, or to add one that was missed.',
+  'scan.review.toolsFound': '{count} tools found',
+  'scan.review.toolLabel': 'Tool {index}',
+  'scan.review.remove': 'Remove',
+  'scan.review.removeTool': 'Remove tool {index}',
+  'scan.review.undo': 'Undo',
   'scan.retake': 'Retake',
   'scan.use': 'Use this outline',
+  'scan.useMany': 'Use these {count} outlines',
   'scan.sending': 'Sending…',
   'scan.sent.title': 'Outline sent!',
   'scan.sent.body': 'It’s now in the bin designer on your computer.',
+  'scan.sent.titleMany': 'Outlines sent!',
+  'scan.sent.bodyMany': 'They’re now in the bin designer on your computer.',
   'scan.sent.another': 'Scan another',
   'scan.sent.done': 'Done',
   'scan.finished.title': 'All set!',
@@ -3590,6 +3602,8 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.scanImport.sheetPlaceHint':
     'Place the tool inside the marker frame and photograph it straight down.',
   'binDesigner.cutouts.scanImport.scaleLabel': 'Real-world size (longest side, mm)',
+  'binDesigner.cutouts.scanImport.scaleLabelLargest':
+    'Real-world size of the largest tool (longest side, mm)',
   'binDesigner.cutouts.scanImport.scaleHelp':
     'Enter the measured length so the cutout prints to scale.',
   'binDesigner.cutouts.scanImport.resultSize': '≈ {width} × {depth} mm',

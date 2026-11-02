@@ -70,6 +70,24 @@ describe('useScanImport', () => {
     expect(mockAddCutout).toHaveBeenCalledTimes(2);
   });
 
+  it('binds the tools of one scan in a shared arrange-only container', () => {
+    const { result } = renderHook(() => useScanImport());
+    result.current.addScanCutouts([spec(), spec({ x: 20 })]);
+
+    const added = mockAddCutout.mock.calls.map(([c]) => c);
+    expect(added.every((c) => c.groupId === null)).toBe(true);
+    const chains = added.map((c) => c.parentGroups);
+    expect(chains[0]).toHaveLength(1);
+    expect(chains[1]).toEqual(chains[0]);
+  });
+
+  it('leaves a single scanned tool loose', () => {
+    const { result } = renderHook(() => useScanImport());
+    result.current.addScanCutouts([spec()]);
+
+    expect(mockAddCutout.mock.calls[0][0].parentGroups).toBeUndefined();
+  });
+
   it('counts what was stored, not what was asked for', () => {
     // A refused write (the target is at its cap) must not be reported as added:
     // the caller toasts this number.
