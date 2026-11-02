@@ -53,12 +53,12 @@ function toWorld(local: Vec, rotationDeg: number): Vec {
 }
 
 /**
- * The farthest point at which a ray from the outline's centre along `dir`
- * crosses it: the outer silhouette that way, even when the centre itself falls
- * outside the shape, as it does for a C-shaped tool.
+ * Where the line through the outline's centre along `dir` crosses it, as
+ * signed distances along `dir`, smallest first. Each edge owns its start
+ * point only, so a line through a vertex counts it once.
  */
-function outlineReach(outline: readonly Vec[], dir: Vec): number | null {
-  let best: number | null = null;
+function lineCrossings(outline: readonly Vec[], dir: Vec): number[] {
+  const crossings: number[] = [];
   for (let i = 0; i < outline.length; i++) {
     const p = outline[i];
     const q = outline[(i + 1) % outline.length];
@@ -68,27 +68,43 @@ function outlineReach(outline: readonly Vec[], dir: Vec): number | null {
     if (Math.abs(denom) < 1e-12) continue;
     const t = (p.x * ey - p.y * ex) / denom;
     const u = (p.x * dir.y - p.y * dir.x) / denom;
-    if (t > 0 && u >= 0 && u <= 1 && (best === null || t > best)) best = t;
+    if (u >= 0 && u < 1) crossings.push(t);
   }
-  return best;
+  return crossings.sort((a, b) => a - b);
 }
 
-/** How far the pocket's cut outline reaches from its centre along a local axis. */
-function pocketReach(pocket: Cutout, dir: Vec): number {
+interface PocketSide {
+  /** From the pocket's centre to its outer edge that way. */
+  readonly reach: number;
+  /** How much pocket lies inward of that edge before the next one. */
+  readonly span: number;
+}
+
+/**
+ * The pocket's outer edge along a local axis and the pocket behind it: the
+ * whole pocket across for a plain shape, only the arm a C or U shape ends in.
+ * Null when the line through the centre meets no edge that way, as on the
+ * open side of a U, where a cut would stand in the plastic between its legs.
+ */
+function pocketSide(pocket: Cutout, dir: Vec): PocketSide | null {
   const cleared = clearedProfile(pocket);
-  if (pocket.shape === 'path') {
-    const outline = pathCutoutOutline(pocket);
-    const reach = outline ? outlineReach(outline, dir) : null;
-    if (reach !== null) return reach + cleared.clearance;
+  const outline = pocket.shape === 'path' ? pathCutoutOutline(pocket) : null;
+  if (outline) {
+    const crossings = lineCrossings(outline, dir);
+    const outer = crossings.at(-1);
+    if (outer === undefined || outer <= 0) return null;
+    const inner = crossings.at(-2) ?? -outer;
+    return { reach: outer + cleared.clearance, span: outer - inner + 2 * cleared.clearance };
   }
-  return Math.abs(dir.x) > 0.5 ? cleared.w / 2 : cleared.d / 2;
+  const half = Math.abs(dir.x) > 0.5 ? cleared.w / 2 : cleared.d / 2;
+  return { reach: half, span: 2 * half };
 }
 
 /**
  * A finger cut for `pocket`, without an id, or null when the pocket cannot
  * take one. Prefers the long side facing the front of the bin, where a hand
- * comes from, and turns to the other side when the front one would leave the
- * board.
+ * comes from, then the other long side, then the short sides, taking the
+ * first that stays on the board.
  */
 export function planFingerAccess(
   pocket: Cutout,
@@ -96,17 +112,16 @@ export function planFingerAccess(
   maxCutDepth: number
 ): Omit<Cutout, 'id'> | null {
   if (fingerAccessBlockedReason(pocket) !== null) return null;
-  const alongX = pocket.width >= pocket.depth;
-  const normals: readonly Vec[] = alongX
-    ? [
-        { x: 0, y: -1 },
-        { x: 0, y: 1 },
-      ]
-    : [
-        { x: -1, y: 0 },
-        { x: 1, y: 0 },
-      ];
-  const ordered = [...normals].sort(
+  const ySides: readonly Vec[] = [
+    { x: 0, y: -1 },
+    { x: 0, y: 1 },
+  ];
+  const xSides: readonly Vec[] = [
+    { x: -1, y: 0 },
+    { x: 1, y: 0 },
+  ];
+  const [long, short] = pocket.width >= pocket.depth ? [ySides, xSides] : [xSides, ySides];
+  const frontFirst = [...long].sort(
     (a, b) => toWorld(a, pocket.rotation).y - toWorld(b, pocket.rotation).y
   );
 
@@ -120,16 +135,18 @@ export function planFingerAccess(
   );
   const outward = FINGER_LENGTH_MM / 2;
 
-  const candidates = ordered.map((normal): Omit<Cutout, 'id'> => {
-    const reach = pocketReach(pocket, normal);
-    const across = reach + pocketReach(pocket, { x: -normal.x, y: -normal.y });
-    const inward = Math.max(0, Math.min(outward, across - FAR_SIDE_GAP_MM));
-    const along = reach + (outward - inward) / 2;
+  const candidates: Omit<Cutout, 'id'>[] = [];
+  for (const normal of [...frontFirst, ...short]) {
+    const side = pocketSide(pocket, normal);
+    if (!side) continue;
+    const inward = Math.max(0, Math.min(outward, side.span - FAR_SIDE_GAP_MM));
+    const along = side.reach + (outward - inward) / 2;
     const offset = toWorld({ x: normal.x * along, y: normal.y * along }, pocket.rotation);
     const length = outward + inward;
-    const width = alongX ? FINGER_WIDTH_MM : length;
-    const depthMm = alongX ? length : FINGER_WIDTH_MM;
-    return {
+    const acrossY = Math.abs(normal.y) > 0.5;
+    const width = acrossY ? FINGER_WIDTH_MM : length;
+    const depthMm = acrossY ? length : FINGER_WIDTH_MM;
+    candidates.push({
       shape: 'slot',
       x: centre.x + offset.x - width / 2,
       y: centre.y + offset.y - depthMm / 2,
@@ -143,9 +160,13 @@ export function planFingerAccess(
       finger: { bottom: 'curved' },
       entryProfile: 'round',
       chamferWidth: Math.min(FINGER_ENTRY_MM, maxEntryChamfer(depth)),
-    };
-  });
-  return candidates.find((c) => !isCutoutOffBoard({ ...c, id: 'finger' }, board)) ?? candidates[0];
+    });
+  }
+  return (
+    candidates.find((c) => !isCutoutOffBoard({ ...c, id: 'finger' }, board)) ??
+    candidates.at(0) ??
+    null
+  );
 }
 
 /**

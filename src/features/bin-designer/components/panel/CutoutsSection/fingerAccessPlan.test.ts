@@ -128,6 +128,40 @@ describe('planFingerAccess', () => {
     expect(plan && centre(plan).y).toBeCloseTo(39, 6);
   });
 
+  // The line through a U's middle meets nothing on its open side, and behind the
+  // bridge it ends in there is plastic, not pocket.
+  it('stands on the bridge of a U open to the front, within it', () => {
+    const u = pocket({
+      shape: 'path',
+      x: 20,
+      y: 20,
+      width: 60,
+      depth: 60,
+      path: [
+        corner(20, 20),
+        corner(30, 20),
+        corner(30, 70),
+        corner(70, 70),
+        corner(70, 20),
+        corner(80, 20),
+        corner(80, 80),
+        corner(20, 80),
+      ],
+    });
+    expect(planFingerAccess(u, BOARD, MAX_CUT)).toMatchObject({
+      x: 40,
+      y: 71,
+      width: 20,
+      depth: 29,
+    });
+  });
+
+  it('turns to a short side when neither long side fits the board', () => {
+    const fullDepth = pocket({ x: 60, y: 0, width: 80, depth: 60 });
+    const plan = planFingerAccess(fullDepth, { width: 200, depth: 60 }, MAX_CUT);
+    expect(plan).toMatchObject({ x: 40, y: 20, width: 40, depth: 20 });
+  });
+
   it('plans nothing for a cutout that cannot take one', () => {
     expect(planFingerAccess(pocket({ shape: 'text' }), BOARD, MAX_CUT)).toBeNull();
   });
