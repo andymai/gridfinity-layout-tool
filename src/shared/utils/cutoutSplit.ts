@@ -167,7 +167,12 @@ export function deeperDepth(c: Cutout): number {
 export function depthAt(c: Cutout, p: SplitPt): number {
   const split = effectiveSplit(c);
   if (!split) return c.cutDepth;
-  return sideOf(p, split.a, split.b) >= 0 ? c.cutDepth : split.cutDepth;
+  return onSideB(split, p) ? split.cutDepth : c.cutDepth;
+}
+
+/** Whether `p`, in the cutout's own frame, lies on side B; the line itself is A's. */
+export function onSideB(split: Pick<Split, 'a' | 'b'>, p: SplitPt): boolean {
+  return sideOf(p, split.a, split.b) < 0;
 }
 
 export function sideBShare(c: Cutout): number {

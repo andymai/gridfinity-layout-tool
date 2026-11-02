@@ -39,7 +39,7 @@ export function buildSplitTool(
   }
   const raised = translate(shallowTool, [0, 0, deep - shallow]);
   shallowTool.delete();
-  const prism = sideOfLine(cutout, split, deepIsB, deep);
+  const prism = splitSidePrism(cutout, split, deepIsB, -1, deep + 1);
   try {
     const deepHalf = unwrap(intersect(deepTool, prism));
     const shallowHalf = unwrap(cut(raised, prism));
@@ -57,10 +57,17 @@ export function buildSplitTool(
 }
 
 /**
- * A prism over one side of the line, past the tool on every other side and
- * above and below it: right of `a` to `b` for side B, left for side A.
+ * A prism over one side of the line in the cutout's own frame, from `zMin` to
+ * `zMax` and past the pocket on every other side: right of `a` to `b` for side
+ * B, left for side A.
  */
-function sideOfLine(cutout: Cutout, split: Split, sideB: boolean, depth: number): Shape3D {
+export function splitSidePrism(
+  cutout: Cutout,
+  split: Split,
+  sideB: boolean,
+  zMin: number,
+  zMax: number
+): Shape3D {
   const { a, b } = split;
   const len = Math.hypot(b.x - a.x, b.y - a.y);
   const ux = (b.x - a.x) / len;
@@ -82,8 +89,8 @@ function sideOfLine(cutout: Cutout, split: Split, sideB: boolean, depth: number)
     .lineTo([e.x + nx * reach, e.y + ny * reach])
     .lineTo([s.x + nx * reach, s.y + ny * reach])
     .close();
-  const prism = sketch(outline, 'XY').extrude(depth + 2);
-  const placed = translate(prism, [0, 0, -1]);
+  const prism = sketch(outline, 'XY').extrude(zMax - zMin);
+  const placed = translate(prism, [0, 0, zMin]);
   prism.delete();
   return placed;
 }

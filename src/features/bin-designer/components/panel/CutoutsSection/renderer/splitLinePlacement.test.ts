@@ -61,6 +61,31 @@ describe('placeSplits', () => {
     expect(splits.every((s) => s.ownerId === 'c')).toBe(true);
   });
 
+  it('keeps a dragged path divided while the drag is live', () => {
+    const corner = (x: number, y: number) => ({
+      x,
+      y,
+      handleIn: null,
+      handleOut: null,
+      symmetric: false,
+    });
+    const path = cutout({
+      shape: 'path',
+      path: [corner(20, 30), corner(60, 30), corner(60, 50), corner(20, 50)],
+    });
+    const splits = placeSplits([path], new Map([['c', { x: 60, y: 30 }]]));
+    expect(splits.map((s) => s.from)).toEqual([{ x: 75, y: 30 }]);
+  });
+
+  it('scales an off-centre line with a live resize', () => {
+    const [s] = placeSplits([cutout()], new Map([['c', { width: 80 }]]));
+    expect(s.from.x).toBeCloseTo(20 + 40 - 10, 6);
+  });
+
+  it('draws nothing for a hidden pocket', () => {
+    expect(placeSplits([cutout({ hidden: true })], new Map())).toEqual([]);
+  });
+
   it('dashes a paused split and skips a shape that cannot hold one', () => {
     expect(placeSplits([cutout({ leanDeg: 10 })], new Map())[0].live).toBe(false);
     expect(placeSplits([cutout({ shape: 'text' })], new Map())).toEqual([]);

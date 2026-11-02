@@ -7,6 +7,7 @@ import {
   splitSides,
   type SplitPt,
 } from '@/shared/utils/cutoutSplit';
+import { mergeCutoutUpdate } from '@/features/bin-designer/store/slices/cutoutSliceHelpers';
 import type { PreviewMap } from '../useCutoutInteraction';
 
 export interface PlacedSplit {
@@ -40,9 +41,12 @@ function centre(ring: readonly SplitPt[]): SplitPt {
 /** Every split line on the board, one per placed copy, in the editor's frame. */
 export function placeSplits(cutouts: readonly Cutout[], preview: PreviewMap): PlacedSplit[] {
   return cutouts.flatMap((stored) => {
-    const c = { ...stored, ...preview.get(stored.id) };
+    // Merged as a commit merges it, so a dragged path or a resized pocket
+    // carries its line along while the gesture is live.
+    const live = preview.get(stored.id);
+    const c = live ? mergeCutoutUpdate(stored, live) : stored;
     const { split } = c;
-    if (!split || splitBlockedReason(c) === 'shape') return [];
+    if (!split || c.hidden === true || splitBlockedReason(c) === 'shape') return [];
     return (c.array ? expandCutoutArray(c) : [c]).flatMap((copy): PlacedSplit[] => {
       const sides = splitSides(copy, split);
       if (typeof sides === 'string') return [];
