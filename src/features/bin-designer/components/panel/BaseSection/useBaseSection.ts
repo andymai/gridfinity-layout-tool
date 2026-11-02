@@ -376,7 +376,8 @@ export function useBaseSection() {
       const switched = switchBodyType(params, next, bodyTypeMemory);
       if (switched.params === params) return;
       setParams(switched.params);
-      setBodyTypeMemory(switched.memory);
+      // `setParams` can refuse the write, and the memory must then stay with it.
+      if (useDesignerStore.getState().params !== params) setBodyTypeMemory(switched.memory);
     },
     [params, bodyTypeMemory, setParams, setBodyTypeMemory]
   );

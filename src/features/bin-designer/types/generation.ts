@@ -9,6 +9,7 @@ import type {
   TypeStemWarning,
 } from '@/shared/types/generation';
 import type { BinParams } from './binParams';
+import type { BodyTypeMemory } from './bodyTypeMemory';
 import type { ItemEnvelope, ItemKind, ItemStructure } from '@/shared/types/item';
 
 /**
@@ -124,6 +125,11 @@ export interface HistoryEntry {
   readonly itemKind?: ItemKind;
   readonly structure?: ItemStructure | null;
   readonly envelope?: ItemEnvelope | null;
+  /**
+   * Captured with the params so undo puts back what the next body-type switch
+   * can give back. Absent on entries from before the field existed.
+   */
+  readonly bodyTypeMemory?: BodyTypeMemory | null;
 }
 
 // Designer UI State Types

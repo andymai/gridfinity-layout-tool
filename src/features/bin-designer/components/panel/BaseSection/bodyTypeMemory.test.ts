@@ -109,6 +109,48 @@ describe('switchBodyType', () => {
     expect(back.params.height).not.toBe(6);
   });
 
+  it('keeps Nesting magnets through a body that cannot hold them', () => {
+    const nesting = walk(designedBin(), ['nesting']);
+    expect(nesting.params.base.trayBottom?.attachment).toBe('magnetic');
+
+    const back = walk(designedBin(), ['nesting', 'flat', 'nesting']);
+    expect(back.params.base.trayBottom?.attachment).toBe('magnetic');
+  });
+
+  it('gives magnets back in the encoding of the body it lands on', () => {
+    const nesting = walk(designedBin(), ['spacer', 'nesting']);
+    expect(nesting.params.base.trayBottom?.attachment).toBe('magnetic');
+  });
+
+  it('holds a height the next body would only floor, for one that keeps it', () => {
+    const spacer: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      height: 1,
+      base: { ...DEFAULT_BIN_PARAMS.base, spacer: true },
+    };
+    const end = walk(spacer, ['standard', 'flat', 'spacer']);
+    expect(end.params.height).toBe(1);
+  });
+
+  it('holds a grid that no longer fits instead of refusing the switch', () => {
+    const eightCols: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 4,
+      compartments: {
+        ...DEFAULT_BIN_PARAMS.compartments,
+        cols: 8,
+        rows: 1,
+        cells: [0, 1, 2, 3, 4, 5, 6, 7],
+      },
+    };
+    const tile = walk(eightCols, ['tile']);
+    const narrow = switchBodyType({ ...tile.params, width: 1 }, 'standard', tile.memory);
+    expect(narrow.params.compartments.cols).toBe(1);
+
+    const wide = switchBodyType({ ...narrow.params, width: 4 }, 'flat', narrow.memory);
+    expect(wide.params.compartments.cols).toBe(8);
+  });
+
   it('refuses a restore that would turn off something enabled since', () => {
     const flatWithPattern = resolveConstraints(
       { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } },

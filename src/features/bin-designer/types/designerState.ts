@@ -65,8 +65,8 @@ import type {
   SplitPieceMeshEntry,
 } from './generation';
 import type { PerfSnapshot } from '@/shared/types/generation';
+import type { BodyTypeMemory } from './bodyTypeMemory';
 import type {
-  BodyTypeMemory,
   DesignerHistory,
   DesignerUIState,
   DesignerCategory,

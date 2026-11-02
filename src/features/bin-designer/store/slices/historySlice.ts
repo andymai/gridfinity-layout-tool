@@ -27,6 +27,7 @@ import {
   restoreHistoryEntry,
   getPendingMeshCache,
   setPendingMeshCache,
+  snapshotBodyTypeMemory,
 } from '../helpers';
 import { createCachedMesh } from '../meshCacheManager';
 
@@ -56,6 +57,7 @@ export function createHistorySlice(set: Set, get: Get) {
         const currentEntry: HistoryEntry = {
           params: current(state.params),
           mesh: getPendingMeshCache(),
+          bodyTypeMemory: snapshotBodyTypeMemory(state),
           ...(state.itemKind !== 'bin'
             ? {
                 itemKind: state.itemKind,
@@ -84,6 +86,7 @@ export function createHistorySlice(set: Set, get: Get) {
         const currentEntry: HistoryEntry = {
           params: current(state.params),
           mesh: getPendingMeshCache(),
+          bodyTypeMemory: snapshotBodyTypeMemory(state),
           ...(state.itemKind !== 'bin'
             ? {
                 itemKind: state.itemKind,

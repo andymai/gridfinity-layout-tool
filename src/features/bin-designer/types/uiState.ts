@@ -5,27 +5,7 @@ import type { HistoryEntry, SplitPieceMeshEntry } from './generation';
 import type { AssemblyPartType } from '@/shared/types/assembly';
 import type { OverhangHighlightSide } from './walls';
 import type { MeasurePoint } from '@/features/bin-designer/utils/measure3d';
-import type { FeatureKey } from '@/shared/constraints';
-
-/**
- * A setting a body-type switch cleared. Keys are top-level `BinParams` keys or
- * `base.<key>`.
- */
-export interface ClearedBodySetting {
-  /** The feature it turns back on; null for a plain value (height, collar). */
-  readonly feature: FeatureKey | null;
-  /** The user's values from before the switch that cleared them. */
-  readonly original: Readonly<Record<string, unknown>>;
-  /** What the switch left. A slot that no longer reads this was edited since. */
-  readonly left: Readonly<Record<string, unknown>>;
-}
-
-/** What the last body-type switch took away, held so a later one can give it back. */
-export interface BodyTypeMemory {
-  /** The body type that switch landed on. The memory is void from any other. */
-  readonly bodyType: string;
-  readonly cleared: readonly ClearedBodySetting[];
-}
+import type { BodyTypeMemory } from './bodyTypeMemory';
 
 /**
  * Eyedropper click anchor: which zone was hit and the viewport coords

@@ -953,6 +953,26 @@ describe('useBaseSection — base-only bin residue', () => {
       expect(params.extraWallHeightMm).toBe(5);
     });
 
+    it('still gives the height back after undoing the return from Base only', () => {
+      useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, height: 6 } });
+      const { result } = renderHook(() => useBaseSection());
+      act(() => {
+        result.current.handlers.setBodyType('tile');
+      });
+      act(() => {
+        result.current.handlers.setBodyType('standard');
+      });
+      act(() => {
+        useDesignerStore.getState().undo();
+      });
+      expect(useDesignerStore.getState().params.height).toBe(1);
+
+      act(() => {
+        result.current.handlers.setBodyType('standard');
+      });
+      expect(useDesignerStore.getState().params.height).toBe(6);
+    });
+
     it('does not carry what a switch cleared into the next design', () => {
       useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, height: 6 } });
       const { result } = renderHook(() => useBaseSection());

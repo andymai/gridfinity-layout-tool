@@ -16,7 +16,8 @@
 import { FEATURE_MANIFESTS, getFeatureStatus, resolveConstraints } from '@/shared/constraints';
 import type { FeatureKey } from '@/shared/constraints';
 import type { BinParams, BodyTypeMemory, ClearedBodySetting } from '@/features/bin-designer/types';
-import { isEffectiveTile } from '@/features/bin-designer/types/base';
+import { validateCompartmentSizes } from '@/features/bin-designer/utils/validation';
+import { isOk } from '@/core/result';
 import { bodyTypeParams, deriveBodyType } from './bodyType';
 import type { BodyType } from './bodyType';
 import { finalizeBaseParams } from './finalizeBaseParams';
@@ -30,9 +31,9 @@ const ARCHETYPE_FEATURES: ReadonlySet<FeatureKey> = new Set<FeatureKey>([
 ]);
 
 /**
- * Config that belongs to one body type. A feature stored in it (magnets on a
- * Nesting base live in `trayBottom`) is carried by `bodyTypeParams` instead:
- * restoring the slot elsewhere would leave tray config on a bin with no tray.
+ * Config that belongs to one body type. A feature stored there (magnets on a
+ * Nesting base live in `trayBottom`) is remembered without it, since writing
+ * the slot onto another body would leave tray config on a bin with no tray.
  */
 const ARCHETYPE_SLOTS: ReadonlySet<string> = new Set([
   'base.trayBottom',
@@ -123,8 +124,7 @@ function collectCleared(before: BinParams, after: BinParams): ClearedBodySetting
     if (ARCHETYPE_FEATURES.has(feature)) continue;
     const manifest = FEATURE_MANIFESTS[feature];
     if (!manifest.isEnabled(before) || manifest.isEnabled(after)) continue;
-    const slots = featureSlots(before, feature);
-    if (slots.length === 0 || slots.some((slot) => ARCHETYPE_SLOTS.has(slot))) continue;
+    const slots = featureSlots(before, feature).filter((slot) => !ARCHETYPE_SLOTS.has(slot));
     cleared.push({ feature, original: readSlots(before, slots), left: readSlots(after, slots) });
   }
   for (const slot of PLAIN_SLOTS) {
@@ -138,19 +138,13 @@ function collectCleared(before: BinParams, after: BinParams): ClearedBodySetting
   return cleared;
 }
 
-/** `params` with `setting` restored, or null when the body `next` cannot carry it. */
-function giveBack(
-  params: BinParams,
-  setting: ClearedBodySetting,
+/** `candidate` with `feature` on and `original` kept, or null if body `next` cannot carry it. */
+function enableOn(
+  candidate: BinParams,
+  feature: FeatureKey,
+  original: Slots,
   next: BodyType
 ): BinParams | null {
-  const candidate = writeSlots(params, setting.original);
-  if (setting.feature === null) {
-    // Base only pins height and collar, so restoring them there would only be
-    // undone by `finalizeBaseParams`, and the user's value lost with it.
-    return isEffectiveTile(candidate.base) ? null : candidate;
-  }
-  const { feature } = setting;
   const resolution = resolveConstraints(candidate, { feature, enabled: true });
   if (resolution.autoDisabled.length > 0) return null;
   // The engine hands back the candidate untouched when the enable is blocked,
@@ -159,10 +153,52 @@ function giveBack(
   if (!status.enabled || !status.available) return null;
   // Its enable patch writes defaults (a fresh fillet radius); the user's own
   // values win, while any implication it applied (a solid floor) stays.
-  const settled = writeSlots(resolution.params, setting.original);
+  const settled = writeSlots(resolution.params, original);
   // `base.style` holds both the attachment and the flat and lid bodies, so
   // giving magnets back can silently change which body this is.
   return deriveBodyType(settled.base) === next ? settled : null;
+}
+
+function compartmentsFit(params: BinParams): boolean {
+  const { compartments } = params;
+  return isOk(
+    validateCompartmentSizes(
+      params.width,
+      params.depth,
+      params.wallThickness,
+      compartments.cols,
+      compartments.rows,
+      compartments.thickness,
+      params.gridUnitMm,
+      params.gridUnitMmY
+    )
+  );
+}
+
+/** `params` with `setting` restored, or null when the body `next` cannot carry it. */
+function giveBack(
+  params: BinParams,
+  setting: ClearedBodySetting,
+  next: BodyType
+): BinParams | null {
+  const { feature, original } = setting;
+  // A feature's own values can be in the encoding of the body that cleared them
+  // (magnets are `base.style` on a socketed base, `trayBottom` on Nesting). When
+  // they do not fit the target, its own enable patch turns the feature on.
+  const restored =
+    feature === null
+      ? writeSlots(params, original)
+      : (enableOn(writeSlots(params, original), feature, original, next) ??
+        enableOn(params, feature, {}, next));
+  if (!restored) return null;
+  // Held, not spent, when finalizing would undo it at once (Base only pins the
+  // height, a floor raises it): a later body may keep it.
+  const restoredSlots = readSlots(restored, Object.keys(original));
+  if (!slotsMatch(finalizeBaseParams(restored), restoredSlots)) return null;
+  // `setParams` refuses a grid whose cells no longer fit (the bin may have
+  // shrunk since), and would refuse the whole switch with it.
+  if ('compartments' in original && !compartmentsFit(restored)) return null;
+  return restored;
 }
 
 export interface BodyTypeSwitch {
