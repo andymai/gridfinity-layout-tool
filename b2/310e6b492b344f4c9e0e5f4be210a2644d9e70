@@ -1,0 +1,21 @@
+src/features/bin-designer/components/panel/CutoutsSection/pocketChecks.test.ts
+  s_4b9adb1d9473fb::t_fc81767b07d484 344-349
+src/features/bin-designer/components/panel/CutoutsSection/pocketChecks.ts
+  s_4b9adb1d9473fb::t_218adae360a33d 74-79,226,229-233,235-255,313,498-502
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b2310e6b492b344f4c9e0e5f4be210a2644d9e70",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
