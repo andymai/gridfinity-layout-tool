@@ -1,0 +1,36 @@
+src/shared/utils/cutoutSplit.ts
+  s_4b9adb1d9473fb::t_95ab2808170de0 170-175
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_4b9adb1d9473fb::t_eeacbe846746be 103-104,1905-1906
+  s_4b9adb1d9473fb::t_95ab2808170de0 2142-2182,2184-2235,2240-2243
+  s_4b9adb1d9473fb::t_f05ea63c9bb705 2236-2239
+  s_4b9adb1d9473fb::t_2bf17f154b16da 1907
+src/features/generation/worker/generators/cutoutSplitTool.ts
+  s_4b9adb1d9473fb::t_95ab2808170de0 42,60-62,64-70,92-93
+src/features/bin-designer/components/panel/CutoutsSection/renderer/splitLinePlacement.test.ts
+  s_4b9adb1d9473fb::t_4cd83ce4648d17 76-77
+  s_4b9adb1d9473fb::t_b8611c83218e96 64-75,78-88
+src/features/bin-designer/components/panel/CutoutsSection/renderer/splitLinePlacement.ts
+  s_4b9adb1d9473fb::t_b8611c83218e96 10,44-47,49
+src/features/generation/worker/generators/binGenerator.scenario.cutoutSplitLabel.test.ts
+  s_4b9adb1d9473fb::t_e513e6eb02990b 85-86,88-89
+  s_4b9adb1d9473fb::t_f05ea63c9bb705 1-84,87,90-110
+package.json
+  s_4b9adb1d9473fb::t_7377e859991ec5 122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b3b04c9e0187c939b93975a466f6451894e3d5d0",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
