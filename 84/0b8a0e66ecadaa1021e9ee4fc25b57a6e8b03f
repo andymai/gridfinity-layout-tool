@@ -1,0 +1,113 @@
+src/i18n/locales/ka.json
+  s_f721a21584cb95::t_595e7f34db05e8 5075,5078-5085
+src/i18n/locales/pt-BR.json
+  s_f721a21584cb95::t_595e7f34db05e8 5075,5078-5085
+src/features/bin-designer/hooks/useExport.ts
+  s_f721a21584cb95::t_3bf9fe6af0985d 40,350,477
+src/core/storage/utils.ts
+  s_f721a21584cb95::t_3bf9fe6af0985d 9,31-35,41,45
+src/i18n/locales/nb.json
+  s_f721a21584cb95::t_595e7f34db05e8 5075,5078-5085
+src/shared/exportDestination/singleDownloadPath.test.ts
+  s_f721a21584cb95::t_ead938f6aad444 12,36
+  s_f721a21584cb95::t_405a477eb522ba 25,30-35
+  s_f721a21584cb95::t_d3aac6f8ea6183 37-38
+src/i18n/locales/uk.json
+  s_f721a21584cb95::t_595e7f34db05e8 5075,5078-5085
+src/i18n/locales/en.ts
+  s_f721a21584cb95::t_595e7f34db05e8 6137,6143-6153
+src/i18n/locales/pl.json
+  s_f721a21584cb95::t_595e7f34db05e8 5075,5078-5085
+src/shell/layoutExport/useLayoutExport.ts
+  s_f721a21584cb95::t_3bf9fe6af0985d 35,89
+src/i18n/locales/it.json
+  s_f721a21584cb95::t_595e7f34db05e8 5075,5078-5085
+src/features/design-linking/hooks/useQuickExport.ts
+  s_f721a21584cb95::t_3bf9fe6af0985d 13,43
+src/shell/Modals/SettingsModal/tabs/ExportsTab/ExportsTab.test.tsx
+  s_f721a21584cb95::t_7f1bea2805b4ef 8,12,15,20,34-36,116-128,150-169,196-237,241
+src/i18n/locales/de.json
+  s_f721a21584cb95::t_595e7f34db05e8 5075,5078-5085
+src/i18n/locales/zh-CN.json
+  s_f721a21584cb95::t_595e7f34db05e8 5075,5078-5085
+src/features/bin-designer/hooks/useFitTestExport.ts
+  s_f721a21584cb95::t_3bf9fe6af0985d 29,67,109,114
+src/shared/exportDestination/folderDoubles.testUtils.ts
+  s_f721a21584cb95::t_8e32db26757b60 10,31,40,42-43,55-56
+src/shared/exportDestination/deliverExport.test.ts
+  s_f721a21584cb95::t_8945742ecdc4eb 7-8,10,13,17,21,39,48-51,69-77,84,108-109,111,113-114,116-120,122-125,127-170,177,186,189,195,199,202,210,237,239
+src/shared/exportDestination/exportFolder.ts
+  s_f721a21584cb95::t_e654b0ee8610a2 30,71,78-81
+  s_f721a21584cb95::t_9f3034de599eef 2-5,17-23,31,45-46,48-49,52,54,57,65-70,72-77,82,85,92-99,102,112-117,122-123,126-130,132-137,140,142,146-161
+  s_f721a21584cb95::t_30584b89114f86 83
+src/i18n/locales/cs.json
+  s_f721a21584cb95::t_595e7f34db05e8 5075,5078-5085
+src/shared/exportDestination/deliverExport.ts
+  s_f721a21584cb95::t_9b1a400df3ce6a 1,11-14,44,49,52-55,59-60,62,69-70,73-75,83,88-89,92,94,108-110,112-118,122-125,127-131,135
+  s_f721a21584cb95::t_d84fa0530daeff 102-107,121,126,132-134
+src/features/baseplate/hooks/useBaseplateExport.ts
+  s_f721a21584cb95::t_3bf9fe6af0985d 20,99
+src/i18n/locales/nl.json
+  s_f721a21584cb95::t_595e7f34db05e8 5075,5078-5085
+src/core/storage/BulkArchiveService.ts
+  s_f721a21584cb95::t_3bf9fe6af0985d 25,185-188,194,200
+src/features/bin-designer/components/panel/ToolRackSection/ToolRackParameterPanel.tsx
+  s_f721a21584cb95::t_3bf9fe6af0985d 17,65
+src/features/bin-designer/utils/designJson.ts
+  s_f721a21584cb95::t_3bf9fe6af0985d 19,71-73,76,91,97
+src/features/bin-designer/components/panel/CutoutsSection/svgExport/useSvgExport.test.ts
+  s_f721a21584cb95::t_2662aa2c9bee6d 52,61,64-66,72,75
+src/shared/exportDestination/exportFolder.test.ts
+  s_f721a21584cb95::t_306786a729ce96 2,5,15,18,21-25,29-30,49,51-52,54,56,61,65,67-85,91-92,94-96,107,115,117-118,120-121,125-137,140,142,147-148,152-161,165-189,191
+src/i18n/locales/fr.json
+  s_f721a21584cb95::t_595e7f34db05e8 5075,5078-5085
+src/features/bin-designer/components/panel/CutoutsSection/svgExport/useSvgExport.ts
+  s_f721a21584cb95::t_3bf9fe6af0985d 2-3,15,21-26,34-35,43-46
+src/shared/exportDestination/sendToUrl.ts
+  s_f721a21584cb95::t_7c22d40ad26cb1 2-3,15-16,21-22,31-32,49-52,64-68,82,95-96,99-105,117
+src/shell/Modals/SettingsModal/tabs/ExportsTab/ExportsTab.tsx
+  s_f721a21584cb95::t_c29f72ed6c2d7b 1,3,5,20,31-36,51,75-77,80-84,87-94,134-137,163,192-196,198-199,204,206,212,221,224-226,275,288,296,298,333-340,346,348
+src/i18n/locales/ko.json
+  s_f721a21584cb95::t_595e7f34db05e8 5075,5078-5085
+src/features/bin-designer/components/panel/ImportedMeshSection/ImportedMeshPanel.tsx
+  s_f721a21584cb95::t_3bf9fe6af0985d 15,73
+src/features/bin-designer/hooks/useLabelPlateExport.ts
+  s_f721a21584cb95::t_3bf9fe6af0985d 28,103,135,139
+src/shared/hooks/useSampleExport.ts
+  s_f721a21584cb95::t_3bf9fe6af0985d 17,74
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_f721a21584cb95::t_e654b0ee8610a2 578
+src/shared/exportDestination/sendToUrl.test.ts
+  s_f721a21584cb95::t_b428f90e1c2df4 2,8,50-57,90-96,107,113,117,138-159,169,177,190,199,202-204,207-208,211-214,217-222
+src/core/storage/utils.test.ts
+  s_f721a21584cb95::t_824afbdba782df 3,5,9,12,36-42
+  s_f721a21584cb95::t_3ac800d6025ba6 43
+src/i18n/locales/es.json
+  s_f721a21584cb95::t_595e7f34db05e8 5075,5078-5085
+src/i18n/locales/ja.json
+  s_f721a21584cb95::t_595e7f34db05e8 5075,5078-5085
+docs/self-hosting.md
+  s_f721a21584cb95::t_ac47960708c95e 84-86,93-94,97,99-101,110-112
+src/i18n/locales/sv.json
+  s_f721a21584cb95::t_595e7f34db05e8 5075,5078-5085
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanWithPhoneDialog.tsx
+  s_f721a21584cb95::t_3bf9fe6af0985d 16,173
+src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.tsx
+  s_f721a21584cb95::t_3bf9fe6af0985d 15,148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "840b8a0e66ecadaa1021e9ee4fc25b57a6e8b03f",
+  "prompts": {},
+  "sessions": {
+    "s_f721a21584cb95": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14ff3cc8-6691-4939-a25c-f6ba932191ef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
