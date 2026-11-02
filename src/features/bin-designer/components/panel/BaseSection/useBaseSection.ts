@@ -22,6 +22,7 @@ import type {
   WallPatternType,
 } from '@/features/bin-designer/types';
 import { maxBinRimFilletRadius, rimFilletAvailable } from '@/shared/utils/rimFillet';
+import { lipNotchBlocker } from '@/shared/utils/lipNotchPlan';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { isFractional } from '@/core/constants';
 import {
@@ -365,6 +366,13 @@ export function useBaseSection() {
     [params, commit]
   );
 
+  // Off is stored as absent, so switching it back off restores the design's
+  // community fingerprint rather than leaving a `false` behind.
+  const toggleLipNotches = useCallback(() => {
+    const { lipNotches, ...rest } = params.base;
+    commit({ ...params, base: lipNotches === true ? rest : { ...rest, lipNotches: true } });
+  }, [params, commit]);
+
   const toggleRimFillet = useCallback(() => {
     updateBase({ rimFillet: !base.rimFillet });
   }, [base.rimFillet, updateBase]);
@@ -655,6 +663,8 @@ export function useBaseSection() {
       lowProfile: base.lowProfile === true,
       lightweightMode: base.lightweightMode ?? DEFAULT_LIGHTWEIGHT_MODE,
       lipTip: resolveLipTip(base),
+      lipNotches: base.lipNotches === true,
+      lipNotchBlocker: lipNotchBlocker(params),
       rimFilletAvailable: rimFilletAvailable(params) && !base.tile,
       rimFilletRadius: Math.min(base.rimFilletRadius ?? 0.4, maxBinRimFilletRadius(params)),
       rimFilletMax: maxBinRimFilletRadius(params),
@@ -704,6 +714,7 @@ export function useBaseSection() {
       toggleScrew,
       toggleStackingLip,
       setLipTip,
+      toggleLipNotches,
       toggleRimFillet,
       setRimFilletRadius,
       toggleLightweight,

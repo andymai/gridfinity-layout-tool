@@ -39,6 +39,7 @@ import { addOuterWalls } from './directMeshWalls';
 import { creaseEdges } from './utils/creaseEdges';
 import { forEachSocketCell, resolveSocketCellPlan } from './socketBuilder';
 import { resolveSlant } from '@/shared/utils/slantPlan';
+import { resolveLipNotches } from '@/shared/utils/lipNotchPlan';
 import {
   SIZE,
   HEIGHT_UNIT,
@@ -380,6 +381,8 @@ const DIRECT_MESH_BASE_STYLES: ReadonlySet<BinParams['base']['style']> = new Set
 export function canBinUseDirectMesh(params: BinParams): boolean {
   if (params.pullTab?.enabled) return false;
   if (resolveSlant(params)) return false;
+  // The procedural lip is one ring; it has no notches to emit.
+  if (resolveLipNotches(params)) return false;
   const { base } = params;
   if (base.rimFillet && !base.stackingLip) return false;
 

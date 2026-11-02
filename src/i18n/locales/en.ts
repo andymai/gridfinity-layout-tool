@@ -4066,6 +4066,15 @@ const en: Record<string, string> = {
     'Cuts a flat off the point so the top layer has something solid under it. Bins stack exactly as before.',
   'binDesigner.base.lipTip.flat.hint':
     'Planes the point off level, leaving a band wide enough for a full top perimeter. Takes more off the peak than the other two. Bins stack exactly as before.',
+  'binDesigner.base.lipNotches': 'Lip notches',
+  'binDesigner.base.lipNotchesDetail':
+    'A small ridge on the lip at each grid line. Smaller bins stacked on top lock to a cell instead of sliding, and same-size bins still seat as usual.',
+  'binDesigner.base.lipNotches.blockedLid':
+    'Not available with a lid. The lid has its own grid for the bin above.',
+  'binDesigner.base.lipNotches.blockedShape': 'Not available on a custom shape.',
+  'binDesigner.base.lipNotches.blockedOverhang': 'Not available with an overhang.',
+  'binDesigner.base.lipNotches.blockedSize': 'Needs a width and depth in whole or half units.',
+  'binDesigner.base.lipNotches.blockedSingleCell': 'A one-cell bin has no grid line to notch.',
   'binDesigner.base.magnetHoles': 'Magnet holes',
   'binDesigner.base.magnetDiameter': 'Magnet diameter',
   'binDesigner.base.magnetDepth': 'Magnet depth',

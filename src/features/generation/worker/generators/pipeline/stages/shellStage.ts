@@ -198,11 +198,17 @@ export const shellStage: PipelineStage = {
         // wall too short to carry one has to take the fuse path, where
         // `buildTopShape` can be told to leave it off.
         dim.lipHasSupport &&
+        // Notches come from per-cell pockets the integrated cut tool has no
+        // equivalent for.
+        !dim.lipNotches &&
         // Same reasoning as the taper above: the integrated builder authors its
         // own lip profile and has no peak treatment, so a rounded or chamfered
         // tip would show in the export and not in the draft. Take the fuse path
         // and let `buildTopShape` own the finish for both.
         resolveLipTip(params.base) === 'sharp';
+      const notchGrid = dim.lipNotches
+        ? { fractionalEdgeX: params.fractionalEdgeX, fractionalEdgeY: params.fractionalEdgeY }
+        : undefined;
 
       let built = withScope((scope: DisposalScope) => {
         // Base-only bin: `boxWallHeight` is 0, and extruding a zero-length
@@ -254,7 +260,8 @@ export const shellStage: PipelineStage = {
               pitch,
               params.cellMask,
               dim.overhang,
-              resolveLipTip(params.base)
+              resolveLipTip(params.base),
+              notchGrid
             )
           );
           // Seated ON the slab top: `buildTopShape` hangs its own material
@@ -322,7 +329,8 @@ export const shellStage: PipelineStage = {
                 pitch,
                 params.cellMask,
                 dim.overhang,
-                resolveLipTip(params.base)
+                resolveLipTip(params.base),
+                notchGrid
               )
             );
             const top = scope.register(translate(lipBase, [0, 0, boxWallHeight]));

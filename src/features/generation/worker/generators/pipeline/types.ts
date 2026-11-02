@@ -213,6 +213,11 @@ export interface BinDimensions {
    * (it mirrors the support and has no way to omit it).
    */
   readonly lipHasSupport: boolean;
+  /**
+   * The lip carries a notch at every internal grid line. Resolved once so the
+   * shell key and every lip builder (`shellStage`, `splitBinBuilder`) agree.
+   */
+  readonly lipNotches: boolean;
   readonly interiorHeight: number;
   readonly maxDimension: number;
   readonly shellKey: string;

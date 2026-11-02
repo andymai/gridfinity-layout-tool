@@ -73,6 +73,40 @@ describe('BaseSection', () => {
     expect(screen.getByText('Lightweight floor')).toBeInTheDocument();
   });
 
+  describe('lip notches', () => {
+    const sized = (over: Partial<typeof DEFAULT_BIN_PARAMS> = {}) => {
+      act(() => {
+        useDesignerStore.setState({
+          params: { ...DEFAULT_BIN_PARAMS, width: 3, depth: 2, ...over },
+        });
+      });
+    };
+
+    it('stores the toggle on, and nothing at all once off again', async () => {
+      const user = userEvent.setup();
+      render(<BaseSection />);
+      sized();
+      const toggle = screen.getByRole('switch', { name: 'Lip notches' });
+      await user.click(toggle);
+      expect(useDesignerStore.getState().params.base.lipNotches).toBe(true);
+      await user.click(toggle);
+      expect('lipNotches' in useDesignerStore.getState().params.base).toBe(false);
+    });
+
+    it('says why it is off on a lidded bin', () => {
+      render(<BaseSection />);
+      sized({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
+      expect(screen.getByRole('switch', { name: 'Lip notches' })).toBeDisabled();
+      expect(screen.getByText(/Not available with a lid/)).toBeInTheDocument();
+    });
+
+    it('is not offered without a lip', () => {
+      render(<BaseSection />);
+      sized({ base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false } });
+      expect(screen.queryByRole('switch', { name: 'Lip notches' })).not.toBeInTheDocument();
+    });
+  });
+
   describe('body type', () => {
     it('offers the archetypes as one exclusive choice', () => {
       render(<BaseSection />);

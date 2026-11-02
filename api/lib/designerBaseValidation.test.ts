@@ -32,3 +32,14 @@ describe('validateBase low-profile flag', () => {
     expect(validateBase({ ...base, lowProfile: 'yes' })).toContain('lowProfile');
   });
 });
+
+describe('validateBase lip notches flag', () => {
+  it('accepts the flag absent or boolean', () => {
+    expect(validateBase({ ...base, lipNotches: true })).toBeNull();
+    expect(validateBase({ ...base, lipNotches: false })).toBeNull();
+  });
+
+  it('rejects a non-boolean', () => {
+    expect(validateBase({ ...base, lipNotches: 'on' })).toContain('lipNotches');
+  });
+});

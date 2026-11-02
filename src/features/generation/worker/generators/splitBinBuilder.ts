@@ -244,7 +244,12 @@ function splitSolidIntoPieces(
       { x: gridUnitMmX, y: gridUnitMmY },
       params.cellMask,
       overhang,
-      resolveLipTip(params.base)
+      resolveLipTip(params.base),
+      // Notched on the whole bin's lattice, so each piece's notches land where
+      // the unsplit bin's do.
+      splitDims.lipNotches
+        ? { fractionalEdgeX: params.fractionalEdgeX, fractionalEdgeY: params.fractionalEdgeY }
+        : undefined
     );
     // The same plane `shellStage` seats an unsplit bin's lip on, so the
     // piece's rim lands where the whole bin's does. `buildTopShape` carries its

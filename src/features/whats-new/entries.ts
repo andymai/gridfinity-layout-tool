@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'lip-notches',
+    date: '2026-11-01',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Smaller bins stay put when stacked on bigger ones' },
+    body: {
+      en: 'Turn on Lip notches under Top rim on the Shape page. The stacking lip gets a small ridge at each grid line, so a smaller bin set on a bigger one drops into a grid cell instead of sliding along the rim. Bins of the same size still stack exactly as before, and the outside of the lip does not change. It is off for a bin with a lid, since the lid has its own grid on top.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'pull-tab-center-divider',
     date: '2026-11-01',
     kind: 'new',

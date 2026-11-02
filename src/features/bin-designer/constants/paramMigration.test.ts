@@ -2159,6 +2159,19 @@ describe('migrateParams - low-profile flag', () => {
   });
 });
 
+describe('migrateParams - lip notches flag', () => {
+  it('keeps notches that are on', () => {
+    const migrated = migrateParams({ base: { ...DEFAULT_BIN_PARAMS.base, lipNotches: true } });
+    expect(migrated.base.lipNotches).toBe(true);
+  });
+
+  it('stores nothing when off, absent or false', () => {
+    expect('lipNotches' in migrateParams({ base: DEFAULT_BIN_PARAMS.base }).base).toBe(false);
+    const stale = migrateParams({ base: { ...DEFAULT_BIN_PARAMS.base, lipNotches: false } });
+    expect('lipNotches' in stale.base).toBe(false);
+  });
+});
+
 describe('migrateParams slant', () => {
   it('leaves no slant key on an upright design', () => {
     expect(migrateParams({ ...DEFAULT_BIN_PARAMS }).slant).toBeUndefined();
