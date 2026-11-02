@@ -345,8 +345,9 @@ export function buildFullParams(
   // tile, plain or cut as an outline, is congruent about neither flip axis, so
   // its flipped copies carry the corner to the opposite side of the tower
   // (an overhang at one seam); that beats flattening a radius the user asked
-  // for. Only a shaped tile no turn maps onto itself prints every copy turned
-  // instead (`planPlateFlip`).
+  // for. A shaped tile no turn maps onto itself, or a cut radius whose corner
+  // hangs further than plain rounding's can, prints every copy turned instead
+  // (`planPlateFlip`).
   // Only the implicit spec radius is squared, via `roundingOn` below.
   // Dovetail connectors survive: tongues, grooves, and the dovetail key are
   // full-height vertical prisms that flip cleanly. Only snap clip is

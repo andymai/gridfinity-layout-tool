@@ -10,6 +10,7 @@ import { effectiveCornerRadii } from '@/shared/generation/baseplateCorners';
 import { plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import type { BaseplateTiling } from '../types/tiling';
 import { groupPiecesByFingerprint } from './pieceFingerprint';
+import { plainRoundingLimit } from './buildFullParams';
 import { turnedPlateOverhangMm } from './plateTurnOverhang';
 
 /** Non-null mesh buffers (xyz-interleaved positions/normals, line-pair edges). */
@@ -290,9 +291,25 @@ export function planPlateFlip(params: PlateFlipInput): PlateFlip {
     SHAPED_SEAM_OVERHANG_TOLERANCE_MM;
   if (lands(first)) return first;
   if (lands(second)) return second;
-  // Corner rounding cut as an outline only moves a rounded corner, which a
-  // plain-rounded plate already prints with the bottom upright.
-  if (params.outlineIsCornerRounding) return first;
+  // A plain-rounded corner, which stops at its cell's center, prints upright
+  // while hanging (√2 − 1)·limit past a square one. A rounding cut as an
+  // outline gets the same allowance on top of the padding the turn already
+  // shifts; a larger radius strips cells and turns the bottom plate.
+  if (params.outlineIsCornerRounding) {
+    const minPadding = Math.min(
+      params.paddingLeft,
+      params.paddingRight,
+      params.paddingFront,
+      params.paddingBack
+    );
+    const allowance =
+      SHAPED_SEAM_OVERHANG_TOLERANCE_MM +
+      (first.axis === 'x' ? aboutX.overhangMm : aboutY.overhangMm) +
+      (Math.SQRT2 - 1) * plainRoundingLimit(params.gridUnitMm, minPadding);
+    if (turnedPlateOverhangMm(params, first.axis, first.offsetMm, allowance) <= allowance) {
+      return first;
+    }
+  }
   return { ...first, flipBottom: true };
 }
 

@@ -485,6 +485,8 @@ describe('planPlateFlip', () => {
       expect(resolve(22).outline).toBeDefined();
       expect(planPlateFlip(resolve(21))).not.toHaveProperty('flipBottom');
       expect(planPlateFlip(resolve(22))).not.toHaveProperty('flipBottom');
+      // Past what plain rounding can hang over, the corner turns the bottom.
+      expect(planPlateFlip(resolve(30)).flipBottom).toBe(true);
 
       const drawer = buildFullParams(
         {
@@ -525,6 +527,23 @@ describe('planPlateFlip', () => {
       );
       expect(both.outlineIsCornerRounding).toBe(true);
       expect(planPlateFlip(both)).toEqual({ axis: 'y', offsetMm: 0 });
+    });
+
+    it('turns the bottom when a cut radius strips a whole corner cell', () => {
+      const huge = buildFullParams(
+        {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          stackPrint: { enabled: true, gapMm: mm(0.2) },
+          cornerRadii: { tl: mm(200), tr: mm(0), bl: mm(0), br: mm(0) },
+        },
+        12 * 42,
+        12 * 42,
+        42,
+        'end',
+        'end'
+      );
+      expect(huge.outlineIsCornerRounding).toBe(true);
+      expect(planPlateFlip(huge).flipBottom).toBe(true);
     });
 
     it('keeps the bottom upright for padding beside a cut corner rounding', () => {
