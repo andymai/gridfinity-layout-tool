@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { Locator, Page } from '@playwright/test';
+import type { FeatureTipId } from '../../src/features/bin-designer/data/featureTips';
 import type { DesignerStoreModule, SettingsStoreModule } from './appModules';
 import { FPS } from './encode';
 import { CLIP_CAMERA } from './stage';
@@ -153,17 +154,27 @@ async function dismissToasts(ui: UiSession): Promise<void> {
   await ui.warm(30);
 }
 
-async function openCutEditor(ui: UiSession, base: string, theme: Theme): Promise<void> {
+async function openCutEditor(
+  ui: UiSession,
+  base: string,
+  theme: Theme,
+  params: ParamOverrides,
+  ready: Locator
+): Promise<void> {
   const { page } = ui;
-  await openDesigner(ui, base, theme, { fresh: true, params: { width: 2, depth: 2, height: 4 } });
+  await openDesigner(ui, base, theme, { fresh: true, params });
   await ui.preClick(page.getByRole('radio', { name: 'Custom Cutouts' }).first());
   await ui.waitBuilt();
   await ui.preClick(page.getByText('Cut Editor').first());
-  const circle = page.getByRole('button', { name: 'Circle', exact: true }).first();
-  await untilVisible(ui, circle, 90, 100);
+  await untilVisible(ui, ready, 90, 100);
   await page.waitForTimeout(2000);
   await ui.warm(30);
   await dismissToasts(ui);
+}
+
+interface Take {
+  frames: Buffer[];
+  params: ParamOverrides;
 }
 
 /**
@@ -171,16 +182,13 @@ async function openCutEditor(ui: UiSession, base: string, theme: Theme): Promise
  * controls while 3 x 2 and then Fill bin are clicked, then the whole board
  * full of pockets. The dock scrolls between shots, off camera.
  */
-async function cutEditorTake(
-  base: string,
-  theme: Theme
-): Promise<{ frames: Buffer[]; params: ParamOverrides }> {
+async function cutEditorTake(base: string, theme: Theme): Promise<Take> {
   const ui = await openUi(VIEWPORT, theme, STORAGE);
   const { page } = ui;
   try {
-    await openCutEditor(ui, base, theme);
-    const toScreen = await boardToScreen(page);
     const circle = page.getByRole('button', { name: 'Circle', exact: true }).first();
+    await openCutEditor(ui, base, theme, { width: 2, depth: 2, height: 4 }, circle);
+    const toScreen = await boardToScreen(page);
 
     const center = POCKET_CENTER_MM;
     const from = toScreen([center[0] - POCKET_MM / 2, center[1] + POCKET_MM / 2]);
@@ -250,11 +258,6 @@ async function cutEditorTake(
   }
 }
 
-interface Take {
-  frames: Buffer[];
-  params: ParamOverrides;
-}
-
 /** A take per theme; the virtual clock makes both the same length. */
 async function twoTakes(
   base: string,
@@ -293,15 +296,23 @@ async function withResult(
   return { frames: out, poster };
 }
 
-const cutEditor: Tip = {
-  id: 'cutEditor',
-  color: '#38bdf8',
-  async capture({ stage, base }) {
-    stage.setTint(this.color);
-    const { editor, params } = await twoTakes(base, cutEditorTake);
-    return withResult(stage, editor, params);
-  },
-};
+function uiTip(
+  id: FeatureTipId,
+  color: string,
+  take: (base: string, theme: Theme) => Promise<Take>
+): Tip {
+  return {
+    id,
+    color,
+    async capture({ stage, base }) {
+      stage.setTint(color);
+      const { editor, params } = await twoTakes(base, take);
+      return withResult(stage, editor, params);
+    },
+  };
+}
+
+const cutEditor = uiTip('cutEditor', '#38bdf8', cutEditorTake);
 
 const PANEL_VIEWPORT = { width: 1280, height: 900 };
 /** The editor half of the split at the taller viewport. */
@@ -341,15 +352,7 @@ async function customShapeTake(base: string, theme: Theme): Promise<Take> {
   }
 }
 
-const customShape: Tip = {
-  id: 'customShape',
-  color: '#c084fc',
-  async capture({ stage, base }) {
-    stage.setTint(this.color);
-    const { editor, params } = await twoTakes(base, customShapeTake);
-    return withResult(stage, editor, params);
-  },
-};
+const customShape = uiTip('customShape', '#c084fc', customShapeTake);
 
 /** The column and row steppers, then the grid while two cells are dragged into one. */
 async function compartmentsTake(base: string, theme: Theme): Promise<Take> {
@@ -396,15 +399,7 @@ async function compartmentsTake(base: string, theme: Theme): Promise<Take> {
   }
 }
 
-const compartments: Tip = {
-  id: 'compartments',
-  color: '#2dd4bf',
-  async capture({ stage, base }) {
-    stage.setTint(this.color);
-    const { editor, params } = await twoTakes(base, compartmentsTake);
-    return withResult(stage, editor, params);
-  },
-};
+const compartments = uiTip('compartments', '#2dd4bf', compartmentsTake);
 
 const SCAN_OUTLINE = readFileSync(
   resolve(process.cwd(), 'scripts/feature-tips/fixtures/scan-outline.svg'),
@@ -453,15 +448,8 @@ async function scanTake(base: string, theme: Theme): Promise<Take> {
   const { page } = ui;
   try {
     const relay = await relayScan(page);
-    await openDesigner(ui, base, theme, { fresh: true, params: { width: 2, depth: 5, height: 5 } });
-    await ui.preClick(page.getByRole('radio', { name: 'Custom Cutouts' }).first());
-    await ui.waitBuilt();
-    await ui.preClick(page.getByText('Cut Editor').first());
     const scan = page.getByRole('button', { name: 'Scan with your phone', exact: true }).first();
-    await untilVisible(ui, scan, 90, 100);
-    await page.waitForTimeout(2000);
-    await ui.warm(30);
-    await dismissToasts(ui);
+    await openCutEditor(ui, base, theme, { width: 2, depth: 5, height: 5 }, scan);
 
     const frames: Buffer[] = [];
     const s = await boxOf(scan);
@@ -501,14 +489,6 @@ async function scanTake(base: string, theme: Theme): Promise<Take> {
   }
 }
 
-const scanToPocket: Tip = {
-  id: 'scanToPocket',
-  color: '#f472b6',
-  async capture({ stage, base }) {
-    stage.setTint(this.color);
-    const { editor, params } = await twoTakes(base, scanTake);
-    return withResult(stage, editor, params);
-  },
-};
+const scanToPocket = uiTip('scanToPocket', '#f472b6', scanTake);
 
 export const TIPS_UI: readonly Tip[] = [cutEditor, customShape, compartments, scanToPocket];

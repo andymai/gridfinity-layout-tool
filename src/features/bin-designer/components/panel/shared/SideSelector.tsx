@@ -167,18 +167,17 @@ function SingleSide({ sides, value, onSelect, ariaLabel }: SingleSideSelectorPro
 }
 
 function MultiSide({ sides, onToggle, ariaLabel, center }: MultiSideSelectorProps) {
+  const centerOn = center !== undefined && center.active && !center.disabled;
   const middle = center && (
     <Button
       variant="ghost"
       type="button"
       role="switch"
-      aria-checked={center.active && !center.disabled}
+      aria-checked={centerOn}
       disabled={center.disabled}
       title={center.title}
       onClick={center.onToggle}
-      className={`col-start-2 row-start-2 ${CHIP_BASE} ${
-        center.active && !center.disabled ? CHIP_ON : CHIP_OFF
-      }`}
+      className={`col-start-2 row-start-2 ${CHIP_BASE} ${centerOn ? CHIP_ON : CHIP_OFF}`}
     >
       {center.label}
     </Button>

@@ -222,6 +222,20 @@ export async function openUi(
       cx,
       cy,
     ] as const);
+  const press = async (): Promise<void> => {
+    await page.evaluate(() => (window as unknown as PageHooks).__cursor.press());
+    buttons = 1;
+    await mouse('mousePressed');
+    await frame();
+  };
+  const release = async (): Promise<void> => {
+    buttons = 0;
+    await mouse('mouseReleased');
+    await page.evaluate(([x, y]) => (window as unknown as PageHooks).__cursor.release(x, y), [
+      cx,
+      cy,
+    ] as const);
+  };
 
   const session: UiSession = {
     page,
@@ -271,24 +285,13 @@ export async function openUi(
     async clickAt(x, y) {
       await session.moveTo(x, y);
       await session.hold(0.06);
-      await page.evaluate(() => (window as unknown as PageHooks).__cursor.press());
-      buttons = 1;
-      await mouse('mousePressed');
-      await frame();
-      buttons = 0;
-      await mouse('mouseReleased');
-      await page.evaluate(([x, y]) => (window as unknown as PageHooks).__cursor.release(x, y), [
-        cx,
-        cy,
-      ] as const);
+      await press();
+      await release();
       await session.hold(0.12);
     },
     async drag(from, to, n) {
       await session.moveTo(...from);
-      await page.evaluate(() => (window as unknown as PageHooks).__cursor.press());
-      buttons = 1;
-      await mouse('mousePressed');
-      await frame();
+      await press();
       for (let i = 1; i <= n; i++) {
         const e = easeInOut(i / n);
         cx = from[0] + (to[0] - from[0]) * e;
@@ -297,12 +300,7 @@ export async function openUi(
         await drawCursor();
         await frame();
       }
-      buttons = 0;
-      await mouse('mouseReleased');
-      await page.evaluate(([x, y]) => (window as unknown as PageHooks).__cursor.release(x, y), [
-        cx,
-        cy,
-      ] as const);
+      await release();
       await session.hold(0.06);
     },
     async reveal(target) {
@@ -344,8 +342,7 @@ export async function openUi(
       await session.warm(6);
     },
     async preClick(target) {
-      await target.evaluate((el) => el.scrollIntoView({ block: 'center' }));
-      await session.warm(6);
+      await session.preReveal(target);
       // Actionability waits never settle on a frozen clock.
       await target.click({ force: true });
       await session.warm(6);

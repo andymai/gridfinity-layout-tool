@@ -87,7 +87,7 @@ function distanceToBelow(below: BelowRows, x: number, y: number, reach: number):
       if (dy >= best || dy > reach) continue;
       closer = true;
       for (const [lo, hi] of below.spans[i]) {
-        const dx = x < lo ? lo - x : x > hi ? x - hi : 0;
+        const dx = Math.max(lo - x, 0, x - hi);
         best = Math.min(best, Math.hypot(dx, dy));
       }
     }

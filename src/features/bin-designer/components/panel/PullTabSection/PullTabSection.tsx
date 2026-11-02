@@ -41,8 +41,9 @@ function perAxis(plans: readonly PullTabPlan[], read: (plan: PullTabPlan) => num
   const along = (axis: PullTabCenterAxis) => plans.find((plan) => plan.axis === axis);
   const front = along('width');
   const side = along('depth');
-  if (!front || !side || read(front).toFixed(1) === read(side).toFixed(1)) return null;
-  return { front: read(front).toFixed(1), side: read(side).toFixed(1) };
+  if (!front || !side) return null;
+  const readings = { front: read(front).toFixed(1), side: read(side).toFixed(1) };
+  return readings.front === readings.side ? null : readings;
 }
 
 const FIELD_INFO: Partial<Record<keyof typeof PULL_TAB_LIMITS, string>> = {
@@ -63,8 +64,8 @@ export function PullTabSection() {
   const { wallHeight } = binDimensions(params);
   const rim = wallHeight + (params.extraWallHeightMm ?? 0);
   const walls = resolvePullTabWalls(tab);
-  const enabled = { ...params, pullTab: { ...tab, enabled: true } };
-  const plans = planPullTabs(enabled, rim, params.wallThickness);
+  const enabledParams = { ...params, pullTab: { ...tab, enabled: true } };
+  const plans = planPullTabs(enabledParams, rim, params.wallThickness);
   // The steppers show the longest wall's tab: the one the settings reach
   // unclamped, so a switch between mm and % keeps that tab's width. A shorter
   // wall's tab is narrower, which the axis hints report.
@@ -76,11 +77,12 @@ export function PullTabSection() {
         : plan,
     null
   );
-  const longestWall = Math.max(...walls.map((wall) => availablePullTabWidth(params, wall)));
+  const wallRooms = walls.map((wall) => availablePullTabWidth(params, wall));
+  const longestWall = Math.max(...wallRooms);
   // Read even when nothing builds, so a unit switch made while fixing a
   // blocked selection keeps the tab's size.
   const longestTabWidth = pullTabWidth(tab, longestWall);
-  const tooShort = walls.some((wall) => availablePullTabWidth(params, wall) < MIN_PULL_TAB_WIDTH);
+  const tooShort = wallRooms.some((room) => room < MIN_PULL_TAB_WIDTH);
   const belowRim = Math.max(
     0,
     ...plans.map((plan) => rim - plan.recessTop + plan.recessHeight)

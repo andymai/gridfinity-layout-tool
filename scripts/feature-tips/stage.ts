@@ -95,6 +95,14 @@ const GPU_ARGS = [
 ];
 
 const toBuffer = (dataUrl: string): Buffer => Buffer.from(dataUrl.split(',')[1] ?? '', 'base64');
+const toFrames = (urls: Record<Theme, string>): ThemeFrames => ({
+  light: toBuffer(urls.light),
+  dark: toBuffer(urls.dark),
+});
+const toDataUrls = (frames: ThemeFrames): Record<Theme, string> => ({
+  light: `data:image/png;base64,${frames.light.toString('base64')}`,
+  dark: `data:image/png;base64,${frames.dark.toString('base64')}`,
+});
 
 export async function openStage(
   base: string,
@@ -212,24 +220,14 @@ async function setUpStage(
         ([v, c]) => (window as unknown as Bridge).__tip.render(v, c),
         [view, tint] as const
       );
-      return { light: toBuffer(urls.light), dark: toBuffer(urls.dark) };
+      return toFrames(urls);
     },
     async blend(a, b, t) {
       const urls = await page.evaluate(
         ([x, y, k]) => (window as unknown as Bridge).__tip.blend(x, y, k),
-        [
-          {
-            light: `data:image/png;base64,${a.light.toString('base64')}`,
-            dark: `data:image/png;base64,${a.dark.toString('base64')}`,
-          },
-          {
-            light: `data:image/png;base64,${b.light.toString('base64')}`,
-            dark: `data:image/png;base64,${b.dark.toString('base64')}`,
-          },
-          t,
-        ] as const
+        [toDataUrls(a), toDataUrls(b), t] as const
       );
-      return { light: toBuffer(urls.light), dark: toBuffer(urls.dark) };
+      return toFrames(urls);
     },
     close: () => browser.close(),
   };
@@ -325,8 +323,13 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
     }
   };
 
-  const lidInput = (): HTMLInputElement | null =>
-    document.querySelector<HTMLInputElement>('#dev-thumbnail-route input[type="range"]');
+  const lidInput = (): HTMLInputElement => {
+    const input = document.querySelector<HTMLInputElement>(
+      '#dev-thumbnail-route input[type="range"]'
+    );
+    if (!input) throw new Error('no lid slider: is the lid enabled and built?');
+    return input;
+  };
 
   const onSurface = (src: HTMLCanvasElement, color: string): string => {
     const c = document.createElement('canvas');
@@ -389,16 +392,13 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
       }),
     setLidOffset(value: number): number {
       const input = lidInput();
-      if (!input) throw new Error('no lid slider: is the lid enabled and built?');
       const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
       setter?.call(input, String(value));
       input.dispatchEvent(new Event('input', { bubbles: true }));
       return Number(input.value);
     },
     lidOffsetMax(): number {
-      const input = lidInput();
-      if (!input) throw new Error('no lid slider: is the lid enabled and built?');
-      return Number(input.max);
+      return Number(lidInput().max);
     },
     bounds(): Bounds {
       const s = scene();

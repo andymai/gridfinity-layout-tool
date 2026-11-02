@@ -34,7 +34,6 @@ function validWalls(walls: unknown): boolean {
   );
 }
 
-/** Returns an error message, or null when `tab` is a valid pull tab. */
 export function validatePullTab(tab: unknown): string | null {
   if (
     !isObject(tab) ||

@@ -125,18 +125,21 @@ function FeatureTipCard({ tip, detail }: { tip: FeatureTipId; detail?: ReactNode
       </div>
       {chips && (
         <div className="flex flex-wrap gap-1 px-1">
-          {chips.map((c, i) => (
-            <span
-              key={c.labelKey}
-              aria-current={playing && i === chip ? 'true' : undefined}
-              className={cn(
-                'rounded-full px-2 py-0.5 text-micro font-medium transition-colors',
-                playing && i === chip ? 'bg-accent/15 text-accent' : 'text-content-tertiary'
-              )}
-            >
-              {t(c.labelKey)}
-            </span>
-          ))}
+          {chips.map((c, i) => {
+            const lit = playing && i === chip;
+            return (
+              <span
+                key={c.labelKey}
+                aria-current={lit ? 'true' : undefined}
+                className={cn(
+                  'rounded-full px-2 py-0.5 text-micro font-medium transition-colors',
+                  lit ? 'bg-accent/15 text-accent' : 'text-content-tertiary'
+                )}
+              >
+                {t(c.labelKey)}
+              </span>
+            );
+          })}
         </div>
       )}
       <p className="px-1 text-xs leading-relaxed text-content-secondary">{t(captionKey)}</p>
