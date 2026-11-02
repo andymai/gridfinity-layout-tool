@@ -22,24 +22,48 @@ function bin(cutout: Cutout): Partial<BinParams> {
   return { style: 'solid', base: FLAT, height: 3, cutouts: [cutout] };
 }
 
-/**
- * How far below the top the surface is, `PROBE_OUT` outside the pocket's left
- * wall at its mid-depth: where the entry edge has dropped to there.
- */
-function dropOutsideWall(result: MeshData, params: BinParams): number {
+/** How far below the top the surface is at a point in the cutout frame. */
+function dropAt(result: MeshData, params: BinParams, x: number, y: number): number {
   const bb = boundingBox(result.vertices);
   const innerW = bb.maxX - bb.minX - 2 * params.wallThickness;
   const innerD = bb.maxY - bb.minY - 2 * params.wallThickness;
-  const x = -innerW / 2 + POCKET.x - PROBE_OUT;
-  const y = -innerD / 2 + POCKET.y + POCKET.depth / 2;
-  const crossings = columnCrossings(result, x, y);
+  const crossings = columnCrossings(result, -innerW / 2 + x, -innerD / 2 + y);
   return bb.maxZ - (crossings.at(-1) ?? 0);
+}
+
+/**
+ * The drop `PROBE_OUT` outside the pocket's left wall at its mid-depth: where
+ * the entry edge has fallen to there.
+ */
+function dropOutsideWall(result: MeshData, params: BinParams): number {
+  return dropAt(result, params, POCKET.x - PROBE_OUT, POCKET.y + POCKET.depth / 2);
 }
 
 // A chamfer drops `EDGE - PROBE_OUT` there; a quarter round, tangent to the
 // top, only `EDGE - sqrt(EDGE² - (EDGE - PROBE_OUT)²)`.
 const CHAMFER_DROP = EDGE - PROBE_OUT;
 const ROUND_DROP = EDGE - Math.sqrt(EDGE ** 2 - (EDGE - PROBE_OUT) ** 2);
+
+const SHALLOW_FLOOR = 4;
+
+/** A 16 mm round with a rounded edge, opening onto a 4 mm-deep pocket's floor. */
+function onShallowFloor(at: { readonly x: number; readonly y: number }): Partial<BinParams> {
+  return {
+    ...bin(makeCutout({ ...POCKET })),
+    cutouts: [
+      makeCutout({ id: 'outer', x: 10, y: 10, width: 50, depth: 40, cutDepth: SHALLOW_FLOOR }),
+      makeCutout({
+        id: 'inner',
+        ...POCKET,
+        ...at,
+        shape: 'circle',
+        width: 16,
+        depth: 16,
+        entryProfile: 'round',
+      }),
+    ],
+  };
+}
 
 function corner(x: number, y: number): PathPoint {
   return { x, y, handleIn: null, handleOut: null, symmetric: false };
@@ -77,24 +101,25 @@ export const cutoutEntryEdges = [
       expect(dropOutsideWall(result, params)).toBeCloseTo(ROUND_DROP, 1);
     },
   }),
+  // Wholly inside the shallow pocket, the round is sunk to its floor.
   defineScenario('cutoutEntryEdges', 'rounded entry where a pocket opens onto another floor', {
-    params: {
-      ...bin(makeCutout({ ...POCKET, width: 50, depth: 40, x: 10, y: 10, cutDepth: 4 })),
-      cutouts: [
-        makeCutout({ id: 'outer', x: 10, y: 10, width: 50, depth: 40, cutDepth: 4 }),
-        makeCutout({
-          id: 'inner',
-          ...POCKET,
-          shape: 'circle',
-          x: 25,
-          y: 20,
-          width: 16,
-          depth: 16,
-          entryProfile: 'round',
-        }),
-      ],
-    },
+    params: onShallowFloor({ x: 25, y: 20 }),
     forExport: true,
     assert: 'structural',
+    customAssert: (result, params) => {
+      const drop = dropAt(result, params, 25 - PROBE_OUT, 28) - SHALLOW_FLOOR;
+      expect(drop).toBeCloseTo(ROUND_DROP, 1);
+    },
+  }),
+  // Crossing the shallow pocket's back edge, the round there is a flare of its
+  // own, trimmed to the shallow outline. Probed in front of the circle, inside it.
+  defineScenario('cutoutEntryEdges', 'rounded entry trimmed to a floor it crosses', {
+    params: onShallowFloor({ x: 27, y: 42 }),
+    forExport: true,
+    assert: 'structural',
+    customAssert: (result, params) => {
+      const drop = dropAt(result, params, 35, 42 - PROBE_OUT) - SHALLOW_FLOOR;
+      expect(drop).toBeCloseTo(ROUND_DROP, 1);
+    },
   }),
 ];
