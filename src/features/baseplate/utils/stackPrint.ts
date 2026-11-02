@@ -284,9 +284,13 @@ export function planPlateFlip(params: PlateFlipInput): PlateFlip {
   const y: PlateFlip = { axis: 'y', offsetMm: aboutY.seatMm };
   const [first, second] = preferY ? [y, x] : [x, y];
   if (params.outline === undefined) return first;
+  // A rounded corner turned over a square one hangs (√2 − 1)·r past it, which a
+  // plain-rounded plate already prints with; a radius cut as an outline gets
+  // the same allowance, so only a real shape difference turns the bottom plate.
+  const tolerance =
+    SHAPED_SEAM_OVERHANG_TOLERANCE_MM + (Math.SQRT2 - 1) * Math.max(r.tl, r.tr, r.bl, r.br);
   const lands = (f: PlateFlip): boolean =>
-    turnedPlateOverhangMm(params, f.axis, f.offsetMm, SHAPED_SEAM_OVERHANG_TOLERANCE_MM) <=
-    SHAPED_SEAM_OVERHANG_TOLERANCE_MM;
+    turnedPlateOverhangMm(params, f.axis, f.offsetMm, tolerance) <= tolerance;
   if (lands(first)) return first;
   if (lands(second)) return second;
   return { ...first, flipBottom: true };

@@ -463,6 +463,30 @@ describe('planPlateFlip', () => {
       }
     );
 
+    it('keeps the bottom upright under a rounded corner cut as an outline, as plain rounding does', () => {
+      const radii = { tl: 22, tr: 0, bl: 0, br: 0 };
+      const corner: DrawerOutline = {
+        vertices: cornerCutVertices(4 * 42, 4 * 42, {
+          tl: { kind: 'radius', r: 22 },
+          tr: { kind: 'none' },
+          bl: { kind: 'none' },
+          br: { kind: 'none' },
+        }),
+      };
+      expect(planPlateFlip(plate({ outline: corner, cornerRadii: radii }))).not.toHaveProperty(
+        'flipBottom'
+      );
+      const lShape = cells([
+        [0, 0],
+        [4, 0],
+        [4, 2],
+        [2, 2],
+        [2, 4],
+        [0, 4],
+      ]);
+      expect(planPlateFlip(plate({ outline: lShape, cornerRadii: radii })).flipBottom).toBe(true);
+    });
+
     it('takes the turn the outline is symmetric about, keeping the bottom plate upright', () => {
       // Back-middle cell missing: the padding tie picks X, which would move the
       // gap to the front; only the Y turn keeps it at the back.
