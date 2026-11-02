@@ -8,7 +8,7 @@
  * just adjust their rotation.
  */
 
-import type { Cutout, PathPoint } from '@/features/bin-designer/types';
+import type { Cutout, CutoutSplit, PathPoint } from '@/features/bin-designer/types';
 import { getPathBounds } from './pathGeometry';
 import { cutoutPatternBounds, selectionVisualBounds } from './cutoutGroups';
 
@@ -41,6 +41,18 @@ function mirrorPathPointY(pt: PathPoint, centerY: number): PathPoint {
 }
 
 /**
+ * A split line mirrored in the cutout's own frame. A mirror turns left into
+ * right, so the ends swap to keep each depth on the half it was cut to.
+ */
+function mirroredSplit(split: CutoutSplit, axis: 'x' | 'y'): CutoutSplit {
+  const m = (p: CutoutSplit['a']) => (axis === 'x' ? { x: -p.x, y: p.y } : { x: p.x, y: -p.y });
+  return { ...split, a: m(split.b), b: m(split.a) };
+}
+
+const withSplit = (cutout: Cutout, axis: 'x' | 'y'): Partial<Cutout> =>
+  cutout.split ? { split: mirroredSplit(cutout.split, axis) } : {};
+
+/**
  * Flip a cutout horizontally (mirror left↔right).
  *
  * - Rectangle/Circle: `rotation = (360 - rotation) % 360`
@@ -59,9 +71,10 @@ export function flipCutoutHorizontal(cutout: Cutout): Partial<Cutout> {
       y: newBounds.minY,
       width: newBounds.maxX - newBounds.minX,
       depth: newBounds.maxY - newBounds.minY,
+      ...withSplit(cutout, 'x'),
     };
   }
-  return { rotation: (360 - cutout.rotation) % 360 };
+  return { rotation: (360 - cutout.rotation) % 360, ...withSplit(cutout, 'x') };
 }
 
 /**
@@ -83,9 +96,11 @@ export function flipCutoutVertical(cutout: Cutout): Partial<Cutout> {
       y: newBounds.minY,
       width: newBounds.maxX - newBounds.minX,
       depth: newBounds.maxY - newBounds.minY,
+      ...withSplit(cutout, 'y'),
     };
   }
-  return { rotation: (180 - cutout.rotation + 360) % 360 };
+  // On a shape symmetric about its own axes, turning to 180 - θ mirrors its own x.
+  return { rotation: (180 - cutout.rotation + 360) % 360, ...withSplit(cutout, 'x') };
 }
 
 /**

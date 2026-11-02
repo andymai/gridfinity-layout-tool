@@ -8,7 +8,7 @@
  * path / vertex edit / measurement.
  */
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { Cutout, CutoutShape, PathPoint } from '@/features/bin-designer/types';
 import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -119,6 +119,11 @@ export function useCutoutPointerHandlers(
     commitTransaction,
   } = opts;
   const lastLineRef = useRef<RulerMeasurement | null>(null);
+  // A drag ended any way but pointer up (Escape, blur) must not be the line a
+  // later click commits.
+  useEffect(() => {
+    if (mode.type !== 'measuring') lastLineRef.current = null;
+  }, [mode.type]);
 
   const handlePointerMove = useCallback(
     (mmX: number, mmY: number, shiftKey?: boolean, altKey?: boolean) => {

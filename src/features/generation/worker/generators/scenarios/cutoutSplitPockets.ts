@@ -84,6 +84,19 @@ export const cutoutSplitPockets = [
       expect(dropIn(result, params, 8, -2)).toBeCloseTo(SHALLOW, 1);
     },
   }),
+  // A 1 mm side has wall for a 0.8 mm entry edge only, and the deep side takes
+  // the same, so the rim runs on unbroken where the line meets it.
+  defineScenario('cutoutSplitPockets', 'one entry edge runs round both sides', {
+    params: bin(makeCutout({ ...POCKET, chamferWidth: 2, split: { ...ACROSS, cutDepth: 1 } })),
+    forExport: true,
+    assert: 'structural',
+    customAssert: (result, params) => {
+      for (const x of [30, 50]) {
+        expect(dropAt(result, params, x, 30 - 1.5)).toBeCloseTo(0, 1);
+        expect(dropAt(result, params, x, 30 - 0.4)).toBeCloseTo(0.4, 1);
+      }
+    },
+  }),
   defineScenario('cutoutSplitPockets', 'scooped sides keep flat floors at their depths', {
     params: bin(makeCutout({ ...POCKET, scoopRadius: 3, split: { ...ACROSS, cutDepth: SHALLOW } })),
     forExport: true,

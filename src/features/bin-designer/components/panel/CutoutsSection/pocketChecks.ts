@@ -565,14 +565,19 @@ function checkFloors(
     if (p.cutout.shape === 'mesh' || isThroughCut(p.cutout, params)) continue;
     const owner = stored.get(p.owner);
     const floor = floorUnderCutout(p.cutout, frame);
-    if (thinFloor(floor)) {
-      book.note('floor', [p.owner], [p.cutout.id], floor, owner && floorFix(owner, floor));
-    }
-    if (!effectiveSplit(p.cutout)) continue;
-    const floorB = floorUnderCutout(splitSideB(p.cutout), frame);
-    if (thinFloor(floorB)) {
-      book.note('floor', [p.owner], [p.cutout.id], floorB, owner && splitFloorFix(owner, floorB));
-    }
+    const floorB = effectiveSplit(p.cutout)
+      ? floorUnderCutout(splitSideB(p.cutout), frame)
+      : Infinity;
+    const thinA = thinFloor(floor);
+    const thinB = thinFloor(floorB);
+    if (!thinA && !thinB) continue;
+    // One issue per pocket, its fix leaving both sides of a split whole.
+    const fix = owner && {
+      ...(thinA ? floorFix(owner, floor) : {}),
+      ...(thinB ? splitFloorFix(owner, floorB) : {}),
+    };
+    const worst = Math.min(thinA ? floor : Infinity, thinB ? floorB : Infinity);
+    book.note('floor', [p.owner], [p.cutout.id], worst, fix);
   }
 }
 

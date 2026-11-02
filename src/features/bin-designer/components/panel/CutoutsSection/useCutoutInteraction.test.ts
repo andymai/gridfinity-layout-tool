@@ -786,6 +786,34 @@ describe('useCutoutInteraction', () => {
       expect(result.current.mode).toEqual({ type: 'idle' });
     });
 
+    it('never commits a line from a drag that was cancelled', () => {
+      const onSplitLine = vi.fn();
+      const { result } = renderHook(() => useCutoutInteraction({ ...defaultOpts, onSplitLine }));
+      act(() =>
+        result.current.setMode({
+          type: 'measuring',
+          startX: 20,
+          startY: 0,
+          sticky: true,
+          splitId: 'a',
+        })
+      );
+      act(() => result.current.handlePointerMove(20, 60));
+      act(() => result.current.setMode({ type: 'idle' }));
+      act(() =>
+        result.current.setMode({
+          type: 'measuring',
+          startX: 5,
+          startY: 5,
+          sticky: true,
+          splitId: 'a',
+        })
+      );
+      act(() => result.current.handlePointerUp());
+      expect(onSplitLine).not.toHaveBeenCalled();
+      expect(result.current.mode).toEqual({ type: 'ruler-ready', splitId: 'a' });
+    });
+
     it('reads a click as no line and keeps waiting for one', () => {
       const onSplitLine = vi.fn();
       const { result } = renderHook(() => useCutoutInteraction({ ...defaultOpts, onSplitLine }));

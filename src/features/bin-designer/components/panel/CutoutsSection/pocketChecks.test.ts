@@ -397,6 +397,15 @@ describe('checkPockets under the floor', () => {
     expect(check([{ ...split, ...thin.fix }])).toEqual([]);
   });
 
+  it('fixes both sides of a split in one go when both floors are thin', () => {
+    const line = { a: { x: 0, y: -10 }, b: { x: 0, y: 10 } };
+    const split = pocket('a', { cutDepth: fill - 0.4, split: { ...line, cutDepth: fill - 0.8 } });
+    const issues = check([split]);
+    expect(issues).toHaveLength(1);
+    expect(issues[0].mm).toBeCloseTo(0.4, 6);
+    expect(check([{ ...split, ...issues[0].fix }])).toEqual([]);
+  });
+
   it('raises the floor of a split side held to one', () => {
     const line = { a: { x: 0, y: -10 }, b: { x: 0, y: 10 } };
     const floored = { ...line, cutDepth: fill - 0.6, depthMode: 'floor' as const, floorMm: 0.6 };

@@ -789,26 +789,30 @@ function buildLocalTool(
   solidSurfaceZ: number,
   sunk: SunkMouth | undefined
 ): Shape3D | null {
-  const atDepth = (cutDepth: number): Shape3D | null => {
-    let shape = buildUnrotatedCutoutShape({ ...cutout, cutDepth }, sunk);
-    if (!shape) return null;
-    const scoop = resolveScoop(cutout, cutDepth);
-    if (scoop.w > 0 || scoop.d > 0) {
-      const filleted = applyAxisAwareScoop(shape, cutout, scoop);
-      if (filleted !== shape) {
-        shape.delete();
-        shape = filleted;
+  const atDepth =
+    (c: Cutout) =>
+    (cutDepth: number): Shape3D | null => {
+      let shape = buildUnrotatedCutoutShape({ ...c, cutDepth }, sunk);
+      if (!shape) return null;
+      const scoop = resolveScoop(c, cutDepth);
+      if (scoop.w > 0 || scoop.d > 0) {
+        const filleted = applyAxisAwareScoop(shape, c, scoop);
+        if (filleted !== shape) {
+          shape.delete();
+          shape = filleted;
+        }
       }
-    }
-    return applyCutoutLean(shape, resolveCutoutLeanDeg(cutout), cutDepth);
-  };
+      return applyCutoutLean(shape, resolveCutoutLeanDeg(c), cutDepth);
+    };
   const depthA = Math.min(cutout.cutDepth, solidSurfaceZ);
   const split = effectiveSplit(cutout);
-  if (!split) return depthA > 0 ? atDepth(depthA) : null;
+  if (!split) return depthA > 0 ? atDepth(cutout)(depthA) : null;
   const depthB = Math.min(split.cutDepth, solidSurfaceZ);
-  // One entry edge round the whole mouth, sized to the side with less wall for it.
+  // Both halves take the entry edge the shallower side has wall for, or the
+  // rims differ where the line meets the mouth and leave a notch.
   const chamferWidth = entryChamferWidth({ ...cutout, cutDepth: Math.min(depthA, depthB) });
-  return buildSplitTool({ ...cutout, chamferWidth }, split, depthA, depthB, atDepth);
+  const shared = { ...cutout, chamferWidth };
+  return buildSplitTool(shared, split, depthA, depthB, atDepth(shared));
 }
 
 /**

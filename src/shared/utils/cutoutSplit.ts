@@ -153,13 +153,11 @@ export function effectiveSplit(c: Cutout): Split | null {
   return typeof splitSides(c, split) === 'string' ? null : split;
 }
 
-/** The depth of a split pocket's shallower side, or its one depth. */
 export function shallowerDepth(c: Cutout): number {
   const split = effectiveSplit(c);
   return split ? Math.min(c.cutDepth, split.cutDepth) : c.cutDepth;
 }
 
-/** The depth of a split pocket's deeper side, or its one depth. */
 export function deeperDepth(c: Cutout): number {
   const split = effectiveSplit(c);
   return split ? Math.max(c.cutDepth, split.cutDepth) : c.cutDepth;
@@ -172,7 +170,6 @@ export function depthAt(c: Cutout, p: SplitPt): number {
   return sideOf(p, split.a, split.b) >= 0 ? c.cutDepth : split.cutDepth;
 }
 
-/** The share of the pocket's outline on side B: 0 when it cuts whole. */
 export function sideBShare(c: Cutout): number {
   const split = effectiveSplit(c);
   if (!split) return 0;
