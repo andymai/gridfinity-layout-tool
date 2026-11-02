@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { resetAllStores } from '@/test/testUtils';
 import type { Cutout } from '@/features/bin-designer/types';
 import { ShadowBoardButton } from './ShadowBoardButton';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
-const exportShadowBoard = vi.fn(async () => true);
+const exportShadowBoard = vi.fn(async () => ({ ok: true as const, value: undefined }));
 vi.mock('../panel/CutoutsSection/shadowBoard', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   useShadowBoardExport: () => exportShadowBoard,
@@ -31,7 +32,7 @@ const trigger = () => screen.getByRole('button', { name: 'binDesigner.shadowBoar
 describe('ShadowBoardButton', () => {
   beforeEach(() => {
     exportShadowBoard.mockClear();
-    useDesignerStore.setState(useDesignerStore.getInitialState());
+    resetAllStores();
   });
 
   it('waits for a pocket to export', () => {

@@ -3432,7 +3432,9 @@ const en: Record<string, string> = {
   'binDesigner.shadowBoard.clearance': "Include each pocket's clearance",
   'binDesigner.shadowBoard.download.svg': 'Download SVG',
   'binDesigner.shadowBoard.download.dxf': 'Download DXF',
-  'binDesigner.shadowBoard.nothing': 'This bin has no openings to export.',
+  'binDesigner.shadowBoard.problem.empty': 'This bin has no openings to export.',
+  'binDesigner.shadowBoard.problem.meshMissing':
+    'An imported model is still loading. Try again in a moment.',
   'binDesigner.cutouts.fitTest.dialogTitle': 'Cutout fit test',
   'binDesigner.cutouts.fitTest.dialogDescription':
     'A thin slice of this bin’s top, with every cutout at its real size, position and spacing. Print it, try your parts, and adjust Clearance until they drop in.',

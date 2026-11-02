@@ -28,7 +28,7 @@ export function ShadowBoardButton() {
   const download = async () => {
     setBusy(true);
     try {
-      if (await exportShadowBoard(format, clearance)) setOpen(false);
+      if ((await exportShadowBoard(format, clearance)).ok) setOpen(false);
     } finally {
       setBusy(false);
     }

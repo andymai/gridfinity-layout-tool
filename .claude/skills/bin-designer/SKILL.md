@@ -179,6 +179,14 @@ would share its walls, and coplanar faces between tools are where booleans go
 non-manifold. `throughBlockedReason` gates groups, lean, tapered walls and
 detachable feet.
 
+## Shadow board export
+
+`panel/CutoutsSection/shadowBoard/` writes the top as SVG or DXF and must cut
+the way the worker cuts: mesh imprints outside group booleans, pockets clipped
+to the interior, non-tunnel open sides out to the footprint, path clearance via
+`pathCutoutCut`. Sample with the shared `cutoutOutlineRing`, never the editor's
+`getCutoutOutline`, which inflates arcs for its fit checks.
+
 ## Compartment geometry and the size lock
 
 ### A `dividerOverride` moves the compartment wall
