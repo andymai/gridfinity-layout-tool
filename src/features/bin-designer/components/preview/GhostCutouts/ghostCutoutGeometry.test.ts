@@ -45,6 +45,38 @@ describe('buildCutoutGhostPositions', () => {
     expect(Math.max(...pts.map((p) => p.y))).toBeCloseTo(20);
   });
 
+  it('ghosts an island inside a path the way it ghosts the outline', () => {
+    const corner = (x: number, y: number) => ({
+      x,
+      y,
+      handleIn: null,
+      handleOut: null,
+      symmetric: false,
+    });
+    const ring = (x0: number, y0: number, x1: number, y1: number) => [
+      corner(x0, y0),
+      corner(x1, y0),
+      corner(x1, y1),
+      corner(x0, y1),
+    ];
+    const plain = cutout({
+      shape: 'path',
+      x: 10,
+      y: 10,
+      width: 40,
+      depth: 20,
+      path: ring(10, 10, 50, 30),
+    });
+    const withIsland = { ...plain, holes: [ring(25, 15, 35, 25)] };
+    const base = points(buildCutoutGhostPositions([plain], 0, 0, SURFACE));
+    const pts = points(buildCutoutGhostPositions([withIsland], 0, 0, SURFACE));
+    const islandPts = pts.slice(base.length);
+    expect(islandPts.length).toBeGreaterThan(0);
+    expect(Math.min(...islandPts.map((p) => p.x))).toBeCloseTo(25);
+    expect(Math.max(...islandPts.map((p) => p.x))).toBeCloseTo(35);
+    expect(new Set(islandPts.map((p) => p.z))).toEqual(new Set([SURFACE, SURFACE - 8]));
+  });
+
   it('rounds the outline for a corner radius instead of drawing the sharp box', () => {
     const pts = points(buildCutoutGhostPositions([cutout({ cornerRadius: 4 })], 0, 0, SURFACE));
     // The sharp corner (10,10) is replaced by an arc that stays r*(1-cos45)

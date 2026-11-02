@@ -4,17 +4,11 @@
  */
 
 import type { Draft } from 'immer';
-import type {
-  DesignerState,
-  Cutout,
-  CutoutTarget,
-  CutoutToggleProperties,
-  PathPoint,
-} from '../../types';
+import type { DesignerState, Cutout, CutoutTarget, CutoutToggleProperties } from '../../types';
 import { MAX_LID_CUTOUTS } from '../../types';
 import { FINGER_SHAPES } from '@/shared/utils/fingerAccess';
 import { splitBlockedReason } from '@/shared/utils/cutoutSplit';
-import { scalePathPoints, translatePathPoints } from '../../utils/pathTransforms';
+import { mapPathRings, scalePathPoints, translatePathPoints } from '../../utils/pathTransforms';
 import {
   groupChain,
   referencedGroupIds,
@@ -62,8 +56,12 @@ export function cutoutOwner(state: Draft<DesignerState>): { cutouts: Cutout[] } 
 }
 
 // Points are absolute, handles are relative — scale around the old origin
-// first so the bounds end up flush with the new x/y, then translate.
-export function applyPathTransform(c: Cutout, updates: Partial<Cutout>): PathPoint[] | undefined {
+// first so the bounds end up flush with the new x/y, then translate. Islands
+// go the same way as the outline they sit in.
+export function applyPathTransform(
+  c: Cutout,
+  updates: Partial<Cutout>
+): Pick<Cutout, 'path' | 'holes'> | undefined {
   if (!c.path || c.path.length === 0 || updates.path) return undefined;
   const newX = updates.x ?? c.x;
   const newY = updates.y ?? c.y;
@@ -76,8 +74,10 @@ export function applyPathTransform(c: Cutout, updates: Partial<Cutout>): PathPoi
   const dy = newY - c.y;
   const translated = dx !== 0 || dy !== 0;
   if (!scaled && !translated) return undefined;
-  const scaledPoints = scaled ? scalePathPoints(c.path, scaleX, scaleY, c.x, c.y) : c.path;
-  return translated ? translatePathPoints(scaledPoints, dx, dy) : [...scaledPoints];
+  return mapPathRings(c, (ring) => {
+    const scaledPoints = scaled ? scalePathPoints(ring, scaleX, scaleY, c.x, c.y) : ring;
+    return translated ? translatePathPoints(scaledPoints, dx, dy) : [...scaledPoints];
+  });
 }
 
 /**
@@ -86,11 +86,11 @@ export function applyPathTransform(c: Cutout, updates: Partial<Cutout>): PathPoi
  * mode in place would quietly overwrite the number the user just entered.
  */
 export function mergeCutoutUpdate(c: Cutout, updates: Partial<Cutout>): Cutout {
-  const transformedPath = applyPathTransform(c, updates);
+  const transformedRings = applyPathTransform(c, updates);
   const merged = withScaledSplit(
     c,
     withoutStrayFinger(
-      transformedPath ? { ...c, ...updates, path: transformedPath } : { ...c, ...updates }
+      transformedRings ? { ...c, ...updates, ...transformedRings } : { ...c, ...updates }
     )
   );
   const typedDepth = updates.cutDepth !== undefined && !('depthMode' in updates);

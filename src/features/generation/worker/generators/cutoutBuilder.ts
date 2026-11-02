@@ -89,6 +89,7 @@ import {
   pathCutoutCut,
   pathCutoutOutline,
   pathCutoutSections,
+  pathCutoutHoles,
   pathHoleCuts,
 } from '@/shared/utils/pathCutoutOutline';
 import type { PathCutoutSections } from '@/shared/utils/pathCutoutOutline';
@@ -2048,7 +2049,11 @@ function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean
     case 'path': {
       const outline = pathCutoutOutline(cutout);
       if (!outline) return Math.abs(lx) <= hw && Math.abs(ly) <= hd;
-      return pointInPolyline(outline, lx, ly);
+      // A caption over an island lands on the surface the island keeps.
+      return (
+        pointInPolyline(outline, lx, ly) &&
+        !pathCutoutHoles(cutout).some((hole) => pointInPolyline(hole, lx, ly))
+      );
     }
     case 'mesh':
       // The imported pocket floor is an arbitrary surface with no flat plane to

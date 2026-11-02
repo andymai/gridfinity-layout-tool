@@ -146,8 +146,14 @@ export function getCutoutOutline(
     if (flat.length < MIN_RING_POINTS) return null;
     // Paths rotate about their own vertex-bounds center (see `PathShapeMesh`),
     // not the width/depth box, whose metadata can lag the actual points.
+    // Islands turn about that same centre and follow the outline as rings.
     const b = getPathBounds(cutout.path);
-    return [rotateRing(flat, (b.minX + b.maxX) / 2, (b.minY + b.maxY) / 2, cutout.rotation)];
+    const turn = (ring: Point2D[]) =>
+      rotateRing(ring, (b.minX + b.maxX) / 2, (b.minY + b.maxY) / 2, cutout.rotation);
+    const holes = (cutout.holes ?? [])
+      .map((hole) => flattenPath(hole))
+      .filter((ring) => ring.length >= MIN_RING_POINTS);
+    return [turn(flat), ...holes.map(turn)];
   }
 
   if (cutout.width <= 0 || cutout.depth <= 0) return null;

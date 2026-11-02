@@ -21,6 +21,7 @@ import { expandCutoutArray, expandCutoutGroup } from '@/shared/utils/cutoutArray
 import { DEFAULT_KNIFE_PRESET } from './knifeSlotPresets';
 import { KNIFE_SLOT_DEFAULT_CHAMFER, knifeSlotDimensions } from '@/features/bin-designer/types';
 import { translatePathPoints } from './pathGeometry';
+import { mapPathRings } from '@/features/bin-designer/utils/pathTransforms';
 import { clampToBoardAxis } from './geometryCore';
 // Re-exported: the implementation moved to `shared/` so the variant resolver can
 // reach it, and every existing caller keeps importing it from here.
@@ -50,8 +51,10 @@ export function cloneCutoutsWithGroups(
   const groupMap = new Map<string, string>();
   return originals.map((original) => {
     const pos = offsetFn ? offsetFn(original) : { x: original.x, y: original.y };
+    // Through translateCutout, so a path's absolute points land with its box.
+    const placed = translateCutout(original, pos.x - original.x, pos.y - original.y);
     return {
-      ...remapGroupChain(original, groupMap, generateUUID),
+      ...remapGroupChain(placed, groupMap, generateUUID),
       id: generateUUID(),
       x: pos.x,
       y: pos.y,
@@ -64,7 +67,7 @@ export function cloneCutoutsWithGroups(
 export function translateCutout(cutout: Cutout, dx: number, dy: number): Cutout {
   const moved = { ...cutout, x: cutout.x + dx, y: cutout.y + dy };
   if (cutout.shape !== 'path' || !cutout.path || (dx === 0 && dy === 0)) return moved;
-  return { ...moved, path: translatePathPoints(cutout.path, dx, dy) };
+  return { ...moved, ...mapPathRings(cutout, (ring) => translatePathPoints(ring, dx, dy)) };
 }
 
 /**

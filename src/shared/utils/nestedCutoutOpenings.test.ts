@@ -94,6 +94,33 @@ describe('planNestedOpenings', () => {
     expect(plan.flares).toEqual([]);
   });
 
+  describe('a floor with an island', () => {
+    // The tray, as a path, with a 40 × 20 island where the slot sits.
+    const islandTray = pathCutout(
+      [
+        { x: 10, y: 10 },
+        { x: 70, y: 10 },
+        { x: 70, y: 50 },
+        { x: 10, y: 50 },
+      ],
+      {
+        id: 'tray',
+        cutDepth: 6,
+        holes: [[corner(20, 20), corner(60, 20), corner(60, 40), corner(20, 40)]],
+      }
+    );
+
+    it('leaves the chamfer of a pocket standing on the island at the surface', () => {
+      expect(isEmpty(planNestedOpenings([islandTray, SLOT], SURFACE))).toBe(true);
+    });
+
+    it('trims a pocket that runs off the island to the floor around it', () => {
+      // 35 to 65: inside the tray, but off the island's edge at 60.
+      const plan = planNestedOpenings([islandTray, { ...SLOT, x: 35 }], SURFACE);
+      expect(plan.flares.map((f) => f.trimTo?.key)).toContain('tray');
+    });
+  });
+
   it("sinks a pocket on a split floor no deeper than the split's shallower side", () => {
     const split = {
       ...TRAY,

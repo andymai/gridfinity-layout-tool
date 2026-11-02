@@ -499,6 +499,63 @@ describe('cutoutSlice - consolidated actions', () => {
       ]);
     });
 
+    it("scales and moves a path cutout's islands with its outline", () => {
+      const { addCutout, updateCutout } = useDesignerStore.getState();
+      const at = (x: number, y: number): PathPoint => ({
+        x,
+        y,
+        handleIn: null,
+        handleOut: null,
+        symmetric: false,
+      });
+      addCutout(
+        createTestCutout({
+          id: 'cutout-1',
+          shape: 'path',
+          x: 10,
+          y: 10,
+          width: 20,
+          depth: 20,
+          path: [at(10, 10), at(30, 10), at(30, 30), at(10, 30)],
+          holes: [[at(15, 15), at(25, 15), at(25, 25)]],
+        })
+      );
+
+      // Twice as wide, moved 5 right.
+      updateCutout('cutout-1', { x: 15, width: 40 });
+
+      const hole = useDesignerStore.getState().params.cutouts[0].holes?.[0];
+      expect(hole?.map((p) => [p.x, p.y])).toEqual([
+        [25, 15],
+        [45, 15],
+        [45, 25],
+      ]);
+    });
+
+    it('duplicates a path cutout with its islands moved alongside', () => {
+      const { addCutout, duplicateCutouts } = useDesignerStore.getState();
+      const at = (x: number, y: number): PathPoint => ({
+        x,
+        y,
+        handleIn: null,
+        handleOut: null,
+        symmetric: false,
+      });
+      addCutout(
+        createTestCutout({
+          id: 'cutout-1',
+          shape: 'path',
+          path: [at(10, 10), at(30, 10), at(30, 30)],
+          holes: [[at(15, 15), at(20, 15), at(20, 20)]],
+        })
+      );
+
+      duplicateCutouts(['cutout-1']);
+
+      const copy = useDesignerStore.getState().params.cutouts[1];
+      expect(copy.holes?.[0][0]).toMatchObject({ x: 20, y: 20 });
+    });
+
     it('path points stay unchanged when path is explicitly provided', () => {
       const { addCutout, updateCutout } = useDesignerStore.getState();
       const pathPoints: PathPoint[] = [

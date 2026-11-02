@@ -49,7 +49,8 @@ export const MIN_POLYLINE_POINTS = 3;
 export function bakeDistanceField(
   polygon: readonly { x: number; y: number }[],
   centerX: number,
-  centerY: number
+  centerY: number,
+  holes: readonly (readonly { x: number; y: number }[])[] = []
 ): { texture: THREE.DataTexture; boundsMin: [number, number]; boundsSize: [number, number] } {
   // Bounds are in local (recentered) space; the recenter is a constant offset,
   // so it factors out of the min/max and can be applied to the world-space box.
@@ -67,7 +68,7 @@ export function bakeDistanceField(
   const h = maxY - minY;
 
   const data = new Uint8Array(DF_RESOLUTION * DF_RESOLUTION);
-  const n = polygon.length;
+  const rings = [polygon, ...holes];
   const maxInner = Math.min(w, h) * 0.5;
 
   for (let row = 0; row < DF_RESOLUTION; row++) {
@@ -76,22 +77,25 @@ export function bakeDistanceField(
       const py = minY + ((row + 0.5) / DF_RESOLUTION) * h;
 
       let dist = Infinity;
-      for (let i = 0; i < n; i++) {
-        const ax = polygon[i].x - centerX;
-        const ay = polygon[i].y - centerY;
-        const bx = polygon[(i + 1) % n].x - centerX;
-        const by = polygon[(i + 1) % n].y - centerY;
-        const dx = bx - ax,
-          dy = by - ay;
-        const lenSq = dx * dx + dy * dy;
-        let d: number;
-        if (lenSq === 0) {
-          d = Math.hypot(px - ax, py - ay);
-        } else {
-          const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq));
-          d = Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+      for (const ring of rings) {
+        const n = ring.length;
+        for (let i = 0; i < n; i++) {
+          const ax = ring[i].x - centerX;
+          const ay = ring[i].y - centerY;
+          const bx = ring[(i + 1) % n].x - centerX;
+          const by = ring[(i + 1) % n].y - centerY;
+          const dx = bx - ax,
+            dy = by - ay;
+          const lenSq = dx * dx + dy * dy;
+          let d: number;
+          if (lenSq === 0) {
+            d = Math.hypot(px - ax, py - ay);
+          } else {
+            const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq));
+            d = Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+          }
+          if (d < dist) dist = d;
         }
-        if (d < dist) dist = d;
       }
 
       const norm = Math.min(dist / maxInner, 1);

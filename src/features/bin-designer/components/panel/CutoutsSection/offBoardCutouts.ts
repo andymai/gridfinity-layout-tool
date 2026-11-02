@@ -30,6 +30,7 @@ import type { LidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { translateCutout } from './cutoutHelpers';
 import { translatePathPoints } from './pathGeometry';
+import { mapPathRings } from '@/features/bin-designer/utils/pathTransforms';
 import { getCutoutBounds, cutoutFitsInMask, type MaskCellSize } from './maskFit';
 import { cutoutFitsInLidWindow, lidWindowOffset } from './lidWindowFit';
 import { MIN_CUTOUT_SIZE } from './geometryResize';
@@ -248,7 +249,7 @@ export function clampCutoutToBoard(cutout: Cutout, board: CutoutBoard): Partial<
   if (Math.abs(dx) < EPSILON && Math.abs(dy) < EPSILON) return resized;
   const moved: Partial<Cutout> = { ...resized, x: base.x + dx, y: base.y + dy };
   if (base.shape === 'path' && base.path) {
-    return { ...moved, path: translatePathPoints(base.path, dx, dy) };
+    return { ...moved, ...mapPathRings(base, (ring) => translatePathPoints(ring, dx, dy)) };
   }
   return moved;
 }

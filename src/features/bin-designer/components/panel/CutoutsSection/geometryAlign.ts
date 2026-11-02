@@ -19,6 +19,7 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import type { Bounds } from './geometryCore';
+import { mapPathRings, translatePathPoints } from '@/features/bin-designer/utils/pathTransforms';
 import { type ArrangeUnit, toArrangeUnits, unitsBounds } from './cutoutGroups';
 
 export type AlignMode = 'left' | 'centerX' | 'right' | 'top' | 'middleY' | 'bottom';
@@ -33,10 +34,7 @@ const EPSILON = 1e-6;
 function translate(cutout: Cutout, dx: number, dy: number): Partial<Cutout> {
   const moved = { x: cutout.x + dx, y: cutout.y + dy };
   if (cutout.shape === 'path' && cutout.path) {
-    return {
-      ...moved,
-      path: cutout.path.map((pt) => ({ ...pt, x: pt.x + dx, y: pt.y + dy })),
-    };
+    return { ...moved, ...mapPathRings(cutout, (ring) => translatePathPoints(ring, dx, dy)) };
   }
   return moved;
 }

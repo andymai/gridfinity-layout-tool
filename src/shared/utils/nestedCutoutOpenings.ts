@@ -34,7 +34,7 @@ import { cutoutOutlineRing, rotateAbout } from './cutoutOutline';
 import { expandCutoutArray, expandCutoutGroup } from './cutoutArray';
 import { pointInPolyline } from './drawerOutlineGeometry';
 import { outlinesComeWithin, outlinesTouch } from './outlineSegments';
-import { pathCutoutCut } from './pathCutoutOutline';
+import { pathCutoutCut, pathHoleCuts } from './pathCutoutOutline';
 import type { Pt } from './polygonOffset';
 import {
   clearedProfile,
@@ -117,6 +117,8 @@ interface Unit {
   readonly depth: number;
   /** The outline it is cut to at its floor, clearance included. */
   readonly ring: Pt[];
+  /** Islands standing in it at its floor, each shrunk by the clearance. */
+  readonly islands: readonly Pt[][];
   readonly bounds: Bounds;
 }
 
@@ -203,6 +205,7 @@ function collectUnits(cutouts: readonly Cutout[], solidSurfaceZ: number): Unit[]
       grouped,
       depth,
       ring,
+      islands: islandRings(cutout, depth),
       bounds: boundsOf(ring),
     });
   };
@@ -256,6 +259,21 @@ function cutRing(cutout: Cutout, depth: number, rotation = cutout.rotation): Pt[
   return ring ? ring.map(([x, y]) => ({ x, y })) : null;
 }
 
+/** {@link cutRing} for a path's islands: each one at its floor, in the interior frame. */
+function islandRings(cutout: Cutout, depth: number): Pt[][] {
+  if (cutout.shape !== 'path' || !cutout.holes) return [];
+  const cx = cutout.x + cutout.width / 2;
+  const cy = cutout.y + cutout.depth / 2;
+  const { clearance } = clearedProfile(cutout);
+  const chamfer = entryChamferWidth({ ...cutout, cutDepth: depth });
+  return pathHoleCuts(cutout, clearance, chamfer > MIN_LOFTED_CHAMFER ? chamfer : 0).map((cut) =>
+    cut.base.map((p) => {
+      const [x, y] = rotateAbout(cx + p.x, cy + p.y, cx, cy, cutout.rotation);
+      return { x, y };
+    })
+  );
+}
+
 function pocketOpenings(unit: Unit, floors: readonly Unit[]): PocketOpenings {
   if (!takesChamfer(unit.cutout)) return { sinkTo: null, below: [] };
   const chamfer = unit.cutout.chamferWidth ?? 0;
@@ -289,8 +307,13 @@ function openingOnto(unit: Unit, chamfer: number, floor: Unit): NestedOpening | 
   const slack = (FLARE_CORNER_REACH * chamfer) / cos + CONTAINMENT_MARGIN_MM;
   if (!boundsMeet(boundsOf(section), floor.bounds, slack)) return null;
 
-  const relation = relate(section, floor.ring, slack);
-  if (relation === 'apart') return null;
+  const outer = relate(section, floor.ring, slack);
+  if (outer === 'apart') return null;
+  // A pocket standing on one of the floor's islands opens at the surface, not
+  // onto that floor; one that reaches an island is trimmed round it.
+  const onIslands = floor.islands.map((island) => relate(section, island, slack));
+  if (onIslands.includes('inside')) return null;
+  const relation = onIslands.includes('crossing') ? 'crossing' : outer;
   // A leaned flare's extension sweeps sideways as it rises, so only a vertical
   // one stays inside the outline it starts in.
   const trimTo =
