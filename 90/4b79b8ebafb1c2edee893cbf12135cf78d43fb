@@ -1,0 +1,190 @@
+src/features/bin-designer/components/panel/CutoutsSection/CutoutDepthControl.test.tsx
+  s_4b9adb1d9473fb::t_d515c5295d4a2e 1-113
+src/features/generation/worker/generators/scenarios/index.ts
+  s_4b9adb1d9473fb::t_0924ca63fd0eea 69,145
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_4b9adb1d9473fb::t_767cbca0a511e6 1708-1754
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_4b9adb1d9473fb::t_7c394b64d6d83f 43
+  s_4b9adb1d9473fb::t_12cee718893f3f 384-386,536
+src/shared/utils/applyOverrides.test.ts
+  s_4b9adb1d9473fb::t_767cbca0a511e6 84-101
+.claude/skills/bin-designer/SKILL.md
+  s_4b9adb1d9473fb::t_95e15a2d9a13a0 161-179
+src/features/bin-designer/utils/heightForCutDepth.test.ts
+  s_4b9adb1d9473fb::t_42c16e4daf4547 1-14,17-30
+  s_4b9adb1d9473fb::t_40273ab492bee3 15-16
+src/shared/utils/applyOverrides.ts
+  s_4b9adb1d9473fb::t_efef702cb0a772 17,45-50,75,88
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_4b9adb1d9473fb::t_e1c2ee2b9c2ba6 1237-1242,1279-1280,1287-1288,1339-1345,1381-1392,1526,1553-1561
+  s_4b9adb1d9473fb::t_c8d77d3ba77eab 95,1320-1323,1593-1600
+  s_4b9adb1d9473fb::t_5979a62eb77513 1492-1497,1507,1919-1921,1923-1927,1929,1935,1945,2011-2014,2041,2070-2075
+  s_4b9adb1d9473fb::t_09f4c725670dd3 2010
+  s_4b9adb1d9473fb::t_e630fab57593e0 1601-1602
+src/i18n/locales/nb.json
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 1028-1050
+src/features/bin-designer/types/designerState.ts
+  s_4b9adb1d9473fb::t_9f817f36342e3f 446-449
+src/features/bin-designer/components/panel/CutoutsSection/CutoutPropertyPanel.tsx
+  s_4b9adb1d9473fb::t_a1c70f2ebd0e18 16,57-58,159-166
+  s_4b9adb1d9473fb::t_240045b070e262 15,112-119
+docs/schemas/constraints.md
+  s_4b9adb1d9473fb::t_bb75c5680caeac 154,197
+src/i18n/locales/ka.json
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 2745-2767
+src/features/bin-designer/components/panel/CutoutsSection/ToolThicknessPrompt.test.tsx
+  s_4b9adb1d9473fb::t_2a85cb25fd79fa 2,4-99,102,104-110,114-115,117-120,122-136,146-147
+  s_4b9adb1d9473fb::t_9ca55063e8903f 113
+  s_4b9adb1d9473fb::t_01740300906e50 1,3,100-101,103,111-112,116,121,137-145
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_4b9adb1d9473fb::t_9f817f36342e3f 208-229
+src/i18n/locales/zh-CN.json
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 1028-1050
+src/features/bin-designer/store/designer.ts
+  s_4b9adb1d9473fb::t_be86f53fdf0b50 28,37
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_4b9adb1d9473fb::t_240045b070e262 15-16,90-91,207-213,275
+src/features/bin-designer/components/panel/CutoutsSection/ToolThicknessPrompt.tsx
+  s_4b9adb1d9473fb::t_25c300b75499ed 12,14,87
+  s_4b9adb1d9473fb::t_86e46b808061c9 18,71-74,76-77
+  s_4b9adb1d9473fb::t_a8d7c063a4ff14 1-11,17,20-21,27-34,40-41,43-70,75,78-86,88-106,108,111,113-162,171-188
+  s_4b9adb1d9473fb::t_9ca55063e8903f 15-16,165,167-168
+  s_4b9adb1d9473fb::t_4380a55906bd5a 19
+  s_4b9adb1d9473fb::t_da72acc36130be 22-26,35-37,107,109-110,112,163-164,166,169-170
+  s_4b9adb1d9473fb::t_255bcbff40de76 13,38-39,42
+  s_4b9adb1d9473fb::t_97aba1d8de72f6 189-191
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEditor.tsx
+  s_4b9adb1d9473fb::t_8cf91942f44ab8 14
+  s_4b9adb1d9473fb::t_255bcbff40de76 50,112
+  s_4b9adb1d9473fb::t_eedb1b72fe671d 113
+src/i18n/locales/uk.json
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 1028-1050
+src/i18n/locales/fr.json
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 1028-1050
+src/i18n/locales/it.json
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 1028-1050
+api/lib/designerValidation.test.ts
+  s_4b9adb1d9473fb::t_c65a2739a53e18 1820-1853
+src/features/bin-designer/components/panel/CutoutsSection/CutoutDepthControl.tsx
+  s_4b9adb1d9473fb::t_25c300b75499ed 35-37,85,97-101
+  s_4b9adb1d9473fb::t_284089eef1eb47 1-34,38-84,86-96,102-171
+src/i18n/locales/de.json
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 1028-1050
+src/features/bin-designer/constants/paramMigrationCutouts.ts
+  s_4b9adb1d9473fb::t_9a6d17cfe0b245 24,119-138
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/useSvgImport.ts
+  s_4b9adb1d9473fb::t_6f5b3cc9771b9f 44,49,106,112-113,118-120
+  s_4b9adb1d9473fb::t_6f34da22c8675f 158
+src/features/bin-designer/store/designer.scenario.depthModes.test.ts
+  s_4b9adb1d9473fb::t_582b0f03ed299e 1-125
+src/features/generation/worker/generators/binGenerator.scenario.cutoutDepthModes.test.ts
+  s_4b9adb1d9473fb::t_0924ca63fd0eea 1-5
+src/features/bin-designer/types/uiState.ts
+  s_4b9adb1d9473fb::t_9f817f36342e3f 137-142
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.test.ts
+  s_4b9adb1d9473fb::t_4b0156af2cb4b2 18,30,85-92
+  s_4b9adb1d9473fb::t_1090ea9273fdda 93-94
+src/i18n/locales/pl.json
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 1028-1050
+src/shared/schema/binContentKeys.ts
+  s_4b9adb1d9473fb::t_d45831d6059cb8 186-187
+api/lib/designerValidation.ts
+  s_4b9adb1d9473fb::t_58bc3aae4c3141 63
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_4b9adb1d9473fb::t_255bcbff40de76 732
+  s_4b9adb1d9473fb::t_8cf91942f44ab8 47
+api/lib/designerValidation.crossBoundary.test.ts
+  s_4b9adb1d9473fb::t_58bc3aae4c3141 20,75,178,180,182,300
+  s_4b9adb1d9473fb::t_2fdb421e010087 79,179,181
+src/features/generation/worker/generators/pipeline/context.ts
+  s_4b9adb1d9473fb::t_44e6e421c99e63 25,533-536,538-539
+src/features/bin-designer/constants/defaults.ts
+  s_4b9adb1d9473fb::t_9f817f36342e3f 300
+api/lib/designerValidationConstants.ts
+  s_4b9adb1d9473fb::t_707cd21a65b443 35-37
+src/features/bin-designer/store/helpers.ts
+  s_4b9adb1d9473fb::t_be86f53fdf0b50 31,86-97
+  s_4b9adb1d9473fb::t_3266b8c5c39c3c 98-100
+src/features/generation/worker/generators/binGenerator.export.cutoutDepthModes.test.ts
+  s_4b9adb1d9473fb::t_0924ca63fd0eea 1-5
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_4b9adb1d9473fb::t_240045b070e262 35,514-518
+src/i18n/locales/nl.json
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 1028-1050
+public/schema/bin-design.schema.json
+  s_4b9adb1d9473fb::t_bb75c5680caeac 680-696
+src/i18n/locales/ko.json
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 1028-1050
+docs/schemas/bin-design.md
+  s_4b9adb1d9473fb::t_bb75c5680caeac 495-538
+src/features/bin-designer/store/slices/cutoutSliceHelpers.ts
+  s_4b9adb1d9473fb::t_41bcb6e26da796 81-97
+src/i18n/locales/en.ts
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 3258-3282
+src/shared/types/bin.ts
+  s_4b9adb1d9473fb::t_65257a29ee1a30 55
+src/features/bin-designer/utils/heightForCutDepth.ts
+  s_4b9adb1d9473fb::t_25c300b75499ed 1-16
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutEditor.ts
+  s_4b9adb1d9473fb::t_255bcbff40de76 130,509
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/useSvgImport.test.ts
+  s_4b9adb1d9473fb::t_4b0156af2cb4b2 10-11,22,27,53,152-171
+src/i18n/locales/es.json
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 1028-1050
+src/features/bin-designer/constants/paramMigration.ts
+  s_4b9adb1d9473fb::t_9a6d17cfe0b245 51,577
+src/i18n/locales/sv.json
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 1028-1050
+src/features/bin-designer/types/cutout.ts
+  s_4b9adb1d9473fb::t_9a6d17cfe0b245 106-109
+  s_4b9adb1d9473fb::t_58f4f06674d189 472-475,477-482
+  s_4b9adb1d9473fb::t_2fdb421e010087 69-71,476
+  s_4b9adb1d9473fb::t_a9bf84369c3217 52-68
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.ts
+  s_4b9adb1d9473fb::t_6f5b3cc9771b9f 56,61,90,94,99-101,109
+src/features/bin-designer/types/index.ts
+  s_4b9adb1d9473fb::t_2fdb421e010087 251
+  s_4b9adb1d9473fb::t_9a6d17cfe0b245 269
+  s_4b9adb1d9473fb::t_65257a29ee1a30 241,250
+src/features/generation/worker/generators/scenarios/cutoutDepthModes.ts
+  s_4b9adb1d9473fb::t_fc0ac42c522ec4 1-71,83-110
+  s_4b9adb1d9473fb::t_0924ca63fd0eea 72-82
+api/lib/designerCutoutValidation.ts
+  s_4b9adb1d9473fb::t_2fdb421e010087 28-30
+  s_4b9adb1d9473fb::t_707cd21a65b443 31-33,100-113
+  s_4b9adb1d9473fb::t_1fb6b521cb4d41 27
+src/i18n/locales/cs.json
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 1028-1050
+src/i18n/locales/ja.json
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 1028-1050
+src/i18n/locales/pt-BR.json
+  s_4b9adb1d9473fb::t_0e6c48b2e63597 1028-1050
+src/features/generation/worker/generators/pipeline/stages/featuresStage.ts
+  s_4b9adb1d9473fb::t_65f576973563db 30-33,67
+  s_4b9adb1d9473fb::t_aa3212ad2bfaf0 68-71,76-77,110-112,125,127
+src/shared/utils/cutoutDepth.test.ts
+  s_4b9adb1d9473fb::t_4fa2c1a9d18e53 1-183
+src/shared/utils/cutoutDepth.ts
+  s_4b9adb1d9473fb::t_81a231bee53781 1-70,72-133,135,137-168
+  s_4b9adb1d9473fb::t_25c300b75499ed 134,136
+  s_4b9adb1d9473fb::t_a4a7eb79e948f8 71
+scripts/schema/bounds.test.ts
+  s_4b9adb1d9473fb::t_6559020c109f17 77,83,146,205,278
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "904b79b8ebafb1c2edee893cbf12135cf78d43fb",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
