@@ -1,0 +1,25 @@
+src/i18n/locales/cs.json
+  s_4b9adb1d9473fb::t_1b313ee4169192 1040
+src/i18n/locales/pl.json
+  s_4b9adb1d9473fb::t_f7d73d6a0c84ea 1040
+src/i18n/locales/uk.json
+  s_4b9adb1d9473fb::t_9959cc781be685 1040
+src/i18n/locales/zh-CN.json
+  s_4b9adb1d9473fb::t_a0452c2a5efb5e 1040
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a2524000f01d4a14a24480170d9b1fb903c9f8fb",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
