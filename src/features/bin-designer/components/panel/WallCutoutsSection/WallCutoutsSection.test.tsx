@@ -114,6 +114,22 @@ describe('WallCutoutsSection', () => {
       fireEvent.click(screen.getAllByRole('button', { name: /Corners/ })[0]);
     };
 
+    it('offers only the top radius on a scoop, which has no bottom corner', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true, shape: 'scoop' },
+        },
+      });
+      render(<WallCutoutsSection />);
+      expect(screen.getAllByText('Square').length).toBeGreaterThanOrEqual(1);
+      openCorners();
+
+      expect(screen.getAllByLabelText('Top corner radius (mm)').length).toBeGreaterThan(0);
+      expect(screen.queryByLabelText('Bottom corner radius (mm)')).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Auto' })).toBeNull();
+    });
+
     it('writes a top radius to every active side while linked', () => {
       enabled();
       render(<WallCutoutsSection />);
@@ -209,6 +225,19 @@ describe('WallCutoutsSection', () => {
     expect(screen.getByText('U-Shape')).toBeDefined();
     expect(screen.getByText('Scoop')).toBeDefined();
     expect(screen.getByText('Funnel')).toBeDefined();
+  });
+
+  it('offers the height on a scoop, whose depth it caps', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true, shape: 'scoop' },
+      },
+    });
+
+    render(<WallCutoutsSection />);
+    expect(screen.getByLabelText('Height (%)')).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Height unit' })).toBeDefined();
   });
 
   it('shows the density hint on a high-compartment bin with cutouts enabled', () => {

@@ -1,6 +1,57 @@
+import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
+import type { BinParams, WallCutout } from '@/shared/types/bin';
+import type { MeshData } from '@/features/generation/bridge/types';
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
+import { boundingBox, columnCrossings } from '../__kernel-tests__/meshAssertions';
+
+function topAt(mesh: MeshData, x: number, y: number): number {
+  return columnCrossings(mesh, x, y).at(-1) ?? -Infinity;
+}
+
+/**
+ * Hold a scoop on every outer wall and the one centred divider to having
+ * opened its wall: a column through the middle of each must stand well below
+ * the same column on the bin with cutouts off. A cut the boolean dropped
+ * leaves that wall solid while every other check passes.
+ */
+function scoopEverywhere(span: number, depth: number, bin: Partial<BinParams>): ScenarioCase {
+  const side: WallCutout = { ...DISABLED_WALL_CUTOUT, enabled: true, width: span, depth };
+  const walls: BinParams['walls'] = {
+    ...DEFAULT_BIN_PARAMS.walls,
+    enabled: true,
+    shape: 'scoop',
+    front: side,
+    back: side,
+    left: side,
+    right: side,
+    interior: side,
+  };
+  const compartments = { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 };
+  const name = `scoop ${span}% x ${depth}% on every wall and the divider, ${bin.width}x${bin.depth}x${bin.height}`;
+  return defineScenario('wall cutouts', name, {
+    assert: 'structural',
+    params: { ...bin, compartments, walls },
+    compareWith: {
+      params: { ...bin, compartments, walls: { ...walls, enabled: false } },
+      assert: (cut, plain) => {
+        const bb = boundingBox(plain.vertices);
+        const t = DEFAULT_BIN_PARAMS.wallThickness / 2;
+        const columns: Record<string, readonly [number, number]> = {
+          front: [0.37, bb.minY + t],
+          back: [0.37, bb.maxY - t],
+          left: [bb.minX + t, 0.41],
+          right: [bb.maxX - t, 0.41],
+          divider: [0.07, 0.41],
+        };
+        for (const [wall, [x, y]] of Object.entries(columns)) {
+          expect(topAt(cut, x, y), `${wall} is cut`).toBeLessThan(topAt(plain, x, y) - 2);
+        }
+      },
+    },
+  });
+}
 
 export const wallCutouts: ScenarioCase[] = [
   defineScenario('wall cutouts', 'standard bin with global wall cutouts', {
@@ -212,4 +263,9 @@ export const wallCutouts: ScenarioCase[] = [
       compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
     },
   }),
+  scoopEverywhere(70, 50, { width: 2, depth: 2, height: 3 }),
+  scoopEverywhere(70, 100, { width: 2, depth: 2, height: 6 }),
+  // The short walls of a 1-deep bin are narrower than the scoop is deep, so
+  // their arc is a full semicircle and the long walls' is a shallow segment.
+  scoopEverywhere(70, 100, { width: 2, depth: 1, height: 5 }),
 ];

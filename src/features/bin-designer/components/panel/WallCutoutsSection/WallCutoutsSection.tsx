@@ -72,15 +72,17 @@ function CornersDisclosure({
 }) {
   const { top, bottom } = displayCorners(walls, cfg);
   const isAuto = bottom === null;
+  // A scoop's floor is its own arc, so it has no bottom corner to round.
+  const hasBottomCorner = walls.shape !== 'scoop';
   const autoLabel = t('binDesigner.wallCutouts.cornerAuto');
   const topText = top > 0 ? `${top}mm` : t('binDesigner.wallCutouts.cornerSquare');
-  const summary = `${topText} / ${isAuto ? autoLabel : `${bottom}mm`}`;
+  const summary = hasBottomCorner ? `${topText} / ${isAuto ? autoLabel : `${bottom}mm`}` : topText;
 
   return (
     <MoreDisclosure
       label={`${t('binDesigner.wallCutouts.corners')}:`}
       summary={summary}
-      nonDefault={top > 0 || !isAuto}
+      nonDefault={top > 0 || (hasBottomCorner && !isAuto)}
     >
       <div className="flex items-end gap-2">
         <StepperField
@@ -97,39 +99,43 @@ function CornersDisclosure({
           commitMode="deferred"
         />
 
-        <StepperField
-          label={t('binDesigner.wallCutouts.cornerBottom')}
-          unit="mm"
-          value={bottom ?? seed}
-          // Auto is a real state, not a zero: the fillet is still there, sized
-          // from the cut's span. Stepping off it seeds a predictable value
-          // rather than a number the panel cannot measure.
-          displayValue={isAuto ? autoLabel : undefined}
-          onChange={isAuto ? undefined : (v) => handlers.setSideCornerBottom(side, v)}
-          onStep={(delta) =>
-            handlers.setSideCornerBottom(side, isAuto ? seed : bottom + delta * step)
-          }
-          min={0}
-          max={MAX_CUTOUT_CORNER_RADIUS}
-          step={step}
-          size="md"
-          aria-label={t('binDesigner.wallCutouts.cornerBottomAria')}
-          commitMode="deferred"
-        />
+        {hasBottomCorner && (
+          <>
+            <StepperField
+              label={t('binDesigner.wallCutouts.cornerBottom')}
+              unit="mm"
+              value={bottom ?? seed}
+              // Auto is a real state, not a zero: the fillet is still there, sized
+              // from the cut's span. Stepping off it seeds a predictable value
+              // rather than a number the panel cannot measure.
+              displayValue={isAuto ? autoLabel : undefined}
+              onChange={isAuto ? undefined : (v) => handlers.setSideCornerBottom(side, v)}
+              onStep={(delta) =>
+                handlers.setSideCornerBottom(side, isAuto ? seed : bottom + delta * step)
+              }
+              min={0}
+              max={MAX_CUTOUT_CORNER_RADIUS}
+              step={step}
+              size="md"
+              aria-label={t('binDesigner.wallCutouts.cornerBottomAria')}
+              commitMode="deferred"
+            />
 
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => handlers.setSideCornerBottom(side, isAuto ? seed : null)}
-          aria-pressed={isAuto}
-          className={`shrink-0 rounded-md border border-stroke-subtle px-1.5 py-1 text-xs font-medium transition-colors ${
-            isAuto
-              ? 'bg-accent/10 text-accent hover:bg-accent/10'
-              : 'bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-          }`}
-        >
-          {autoLabel}
-        </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => handlers.setSideCornerBottom(side, isAuto ? seed : null)}
+              aria-pressed={isAuto}
+              className={`shrink-0 rounded-md border border-stroke-subtle px-1.5 py-1 text-xs font-medium transition-colors ${
+                isAuto
+                  ? 'bg-accent/10 text-accent hover:bg-accent/10'
+                  : 'bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+              }`}
+            >
+              {autoLabel}
+            </Button>
+          </>
+        )}
       </div>
     </MoreDisclosure>
   );
@@ -174,7 +180,6 @@ function UnitToggle({
 function SizeControls({
   side,
   cfg,
-  hideDepth,
   handlers,
   spanLabel,
   heightLabel,
@@ -182,7 +187,6 @@ function SizeControls({
 }: {
   side: WallSide;
   cfg: WallCutout;
-  hideDepth: boolean;
   handlers: ReturnType<typeof useWallCutoutsSection>['handlers'];
   spanLabel: string;
   heightLabel: string;
@@ -237,46 +241,43 @@ function SizeControls({
         onClick={() => handlers.setSideWidthMm(side, isSpanMm ? null : MM_SEED)}
       />
 
-      {!hideDepth &&
-        (isHeightMm ? (
-          <StepperField
-            label={heightLabel}
-            unit="mm"
-            value={depthMm}
-            onChange={(v) => handlers.setSideDepthMm(side, Math.max(1, v))}
-            onStep={(delta) => handlers.setSideDepthMm(side, Math.max(1, depthMm + delta))}
-            min={1}
-            max={MM_MAX}
-            step={1}
-            size="md"
-            aria-label={t('binDesigner.wallCutouts.heightMmAria')}
-            commitMode="deferred"
-          />
-        ) : (
-          <StepperField
-            label={heightLabel}
-            unit="%"
-            value={cfg.depth}
-            onChange={(v) => handlers.setSideDepth(side, v)}
-            onStep={(delta) =>
-              handlers.setSideDepth(side, Math.max(0, Math.min(100, cfg.depth + delta * step)))
-            }
-            min={0}
-            max={100}
-            step={step}
-            size="md"
-            aria-label={t('binDesigner.wallCutouts.heightPercentAria')}
-            commitMode="deferred"
-          />
-        ))}
-
-      {!hideDepth && (
-        <UnitToggle
-          isMm={isHeightMm}
-          label={t('binDesigner.wallCutouts.heightUnitAria')}
-          onClick={() => handlers.setSideDepthMm(side, isHeightMm ? null : MM_SEED)}
+      {isHeightMm ? (
+        <StepperField
+          label={heightLabel}
+          unit="mm"
+          value={depthMm}
+          onChange={(v) => handlers.setSideDepthMm(side, Math.max(1, v))}
+          onStep={(delta) => handlers.setSideDepthMm(side, Math.max(1, depthMm + delta))}
+          min={1}
+          max={MM_MAX}
+          step={1}
+          size="md"
+          aria-label={t('binDesigner.wallCutouts.heightMmAria')}
+          commitMode="deferred"
+        />
+      ) : (
+        <StepperField
+          label={heightLabel}
+          unit="%"
+          value={cfg.depth}
+          onChange={(v) => handlers.setSideDepth(side, v)}
+          onStep={(delta) =>
+            handlers.setSideDepth(side, Math.max(0, Math.min(100, cfg.depth + delta * step)))
+          }
+          min={0}
+          max={100}
+          step={step}
+          size="md"
+          aria-label={t('binDesigner.wallCutouts.heightPercentAria')}
+          commitMode="deferred"
         />
       )}
+
+      <UnitToggle
+        isMm={isHeightMm}
+        label={t('binDesigner.wallCutouts.heightUnitAria')}
+        onClick={() => handlers.setSideDepthMm(side, isHeightMm ? null : MM_SEED)}
+      />
     </div>
   );
 }
@@ -341,7 +342,6 @@ export function WallCutoutsSection() {
   const { walls, activeSides, linked, blocksLid, showDensityHint } = state;
 
   const sharedSide = activeSides.length > 0 ? activeSides[0] : undefined;
-  const hideDepth = walls.shape === 'scoop';
 
   const sideStates: SideState[] = SIDE_ORDER.map((side) => ({
     side,
@@ -411,7 +411,6 @@ export function WallCutoutsSection() {
                   <SizeControls
                     side={sharedSide}
                     cfg={walls[sharedSide]}
-                    hideDepth={hideDepth}
                     handlers={handlers}
                     spanLabel={t('binDesigner.wallCutouts.span')}
                     heightLabel={t('binDesigner.wallCutouts.height')}
@@ -445,7 +444,6 @@ export function WallCutoutsSection() {
                     <SizeControls
                       side={side}
                       cfg={walls[side]}
-                      hideDepth={hideDepth}
                       handlers={handlers}
                       spanLabel={t('binDesigner.wallCutouts.span')}
                       heightLabel={t('binDesigner.wallCutouts.height')}
@@ -485,7 +483,6 @@ export function WallCutoutsSection() {
                     <SizeControls
                       side="interior"
                       cfg={walls.interior}
-                      hideDepth={hideDepth}
                       handlers={handlers}
                       spanLabel={t('binDesigner.wallCutouts.span')}
                       heightLabel={t('binDesigner.wallCutouts.height')}
