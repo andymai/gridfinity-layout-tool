@@ -1,0 +1,84 @@
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_4b9adb1d9473fb::t_7fc2b8324c82a8 479
+  s_4b9adb1d9473fb::t_f85718aa81ca9d 33,468
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_4b9adb1d9473fb::t_0e5db0766d7925 92,2052-2056
+src/features/bin-designer/components/panel/CutoutsSection/cutoutOutline.ts
+  s_4b9adb1d9473fb::t_535bc27f5fbf5b 149,151-156
+src/features/bin-designer/store/slices/cutoutSliceHelpers.ts
+  s_4b9adb1d9473fb::t_f85718aa81ca9d 60-64,77-80
+  s_f4b6d3a89e6265::t_9ea9073e7cdf6f 7,11,59,89,93
+src/features/bin-designer/components/panel/CutoutsSection/renderer/pathFill.test.ts
+  s_4b9adb1d9473fb::t_4e43948c41d4ec 1-41
+  s_f4b6d3a89e6265::t_6e9ffb0cd0bc98 42-43
+src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.ts
+  s_4b9adb1d9473fb::t_7fc2b8324c82a8 33,252
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutPointerHandlers.ts
+  s_4b9adb1d9473fb::t_9f1a6b139880a4 36
+  s_4b9adb1d9473fb::t_7fc2b8324c82a8 297
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.ts
+  s_4b9adb1d9473fb::t_7fc2b8324c82a8 24,54-55,57,70
+src/features/bin-designer/components/panel/CutoutsSection/geometryAlign.ts
+  s_4b9adb1d9473fb::t_7fc2b8324c82a8 37
+  s_4b9adb1d9473fb::t_9f1a6b139880a4 22
+src/features/bin-designer/components/panel/CutoutsSection/geometryFlips.ts
+  s_4b9adb1d9473fb::t_7fc2b8324c82a8 67-68,70,92-93,95,133,171
+  s_4b9adb1d9473fb::t_9f1a6b139880a4 13
+src/features/bin-designer/components/panel/CutoutsSection/renderer/PathShapeMesh.tsx
+  s_4b9adb1d9473fb::t_4e43948c41d4ec 12-13,138
+  s_4b9adb1d9473fb::t_61844e2250cc57 99-106,131-132,134-135,137,152,164-165,174-180,182,187,189,240-249
+src/features/bin-designer/components/preview/GhostCutouts/ghostCutoutGeometry.ts
+  s_4b9adb1d9473fb::t_18d157723d54c2 122-132,143-147,149-156
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.test.ts
+  s_4b9adb1d9473fb::t_c1d9da33490ab7 11,394-424
+src/features/bin-designer/components/panel/CutoutsSection/geometryFlips.test.ts
+  s_4b9adb1d9473fb::t_c1d9da33490ab7 70-87
+src/features/bin-designer/store/slices/cutoutSlice.test.ts
+  s_4b9adb1d9473fb::t_e9b0fd6450c2f1 502-558
+src/features/bin-designer/components/panel/CutoutsSection/renderer/outlineShapeGeometry.ts
+  s_4b9adb1d9473fb::t_61844e2250cc57 52-53,71,80-97
+src/features/bin-designer/utils/pathTransforms.ts
+  s_4b9adb1d9473fb::t_f85718aa81ca9d 34-48
+src/features/bin-designer/components/panel/CutoutsSection/booleanGeometry.ts
+  s_4b9adb1d9473fb::t_7c5df45a7af7a5 19,22-26,30
+src/shared/utils/nestedCutoutOpenings.ts
+  s_4b9adb1d9473fb::t_0e5db0766d7925 37,120-121,208,262-276,310-316
+src/features/bin-designer/components/preview/GhostCutouts/ghostCutoutGeometry.test.ts
+  s_4b9adb1d9473fb::t_69b52263e2e8e2 48-72
+  s_f4b6d3a89e6265::t_8a909ad109ddad 73-79
+src/shared/utils/cutoutOutline.ts
+  s_4b9adb1d9473fb::t_7c5df45a7af7a5 109-120
+  s_4b9adb1d9473fb::t_33f0f366d35ed0 107-108
+src/shared/utils/nestedCutoutOpenings.test.ts
+  s_4b9adb1d9473fb::t_6e14dbedc3975b 97-117,120-123
+  s_4b9adb1d9473fb::t_e06e2702517cdd 118-119
+src/features/bin-designer/components/panel/CutoutsSection/renderer/pathFill.ts
+  s_4b9adb1d9473fb::t_4e43948c41d4ec 1-15
+  s_f4b6d3a89e6265::t_aa011cc93e9ccf 16-18
+src/shared/utils/cutoutArray.ts
+  s_4b9adb1d9473fb::t_7fc2b8324c82a8 280-286
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8ecae6ec1f3e133b57441652b325b5e2ef434e2f",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f4b6d3a89e6265": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "576c9111-ae72-49e9-ade1-3900f5f4be46",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
