@@ -1,0 +1,21 @@
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/scanIngest.test.ts
+  s_4b9adb1d9473fb::t_a223ce2c158925 107-121
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/scanIngest.ts
+  s_4b9adb1d9473fb::t_a223ce2c158925 18,91-94,96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7dfd47dcac278fd9f6562fe7459e957e4e9d21bd",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
