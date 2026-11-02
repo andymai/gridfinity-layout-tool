@@ -447,6 +447,9 @@ export const MIN_PATH_POINTS = 2;
  */
 export const MAX_PATH_POINTS = 200;
 
+/** Most islands one path cutout keeps; more are dropped on load and import. */
+export const MAX_CUTOUT_HOLES = 64;
+
 /** A vertex in a bezier path with optional control handles */
 export interface PathPoint {
   /** X position in mm from bin interior left edge */
@@ -617,6 +620,13 @@ export interface Cutout {
   readonly zIndex?: number;
   /** Path vertices for pen tool shapes (required when shape === 'path') */
   readonly path?: PathPoint[];
+  /**
+   * Islands in a path cutout: closed rings in the same frame as {@link path},
+   * where the bin keeps its material to the full height, such as the middle of
+   * a traced wrench's ring. Clearance shrinks each one and the entry edge runs
+   * round it. Ignored for every other shape.
+   */
+  readonly holes?: PathPoint[][];
   /**
    * Side count for regular-polygon cutouts (required when shape === 'polygon').
    * Clamped to [{@link MIN_POLYGON_SIDES}, {@link MAX_POLYGON_SIDES}]. Ignored

@@ -200,6 +200,7 @@ export const CUTOUT_KEYS = [
   'hidden',
   'zIndex',
   'path',
+  'holes',
   'sides',
   'clearance',
   'chamferWidth',

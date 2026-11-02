@@ -168,12 +168,19 @@ class ReachSolver {
   private readonly across: Across = { gap: 0, ux: 0, uy: 0 };
   private readonly candidates: number[] = [];
 
-  constructor(points: readonly Pt[], d: number, cap: readonly number[] | undefined) {
+  constructor(
+    points: readonly Pt[],
+    d: number,
+    cap: readonly number[] | undefined,
+    inward: boolean
+  ) {
     const n = points.length;
     this.points = points;
     this.n = n;
     this.reach = points.map((_, i) => Math.max(0, Math.min(d, cap?.[i] ?? d)));
-    const sign = signedArea(points) >= 0 ? 1 : -1;
+    // Every bound below reads its direction from this one sign, so flipping it
+    // shrinks the outline with the same guarantees it grows with.
+    const sign = (signedArea(points) >= 0 ? 1 : -1) * (inward ? -1 : 1);
     this.sign = sign;
     this.miter = offsetWithSign(points, 1, sign).map((q, i) => ({
       x: q.x - points[i].x,
@@ -427,13 +434,19 @@ class ReachSolver {
  * `cap` bounds each vertex's reach, which keeps one section inside another
  * vertex for vertex when both feed a ruled loft.
  *
+ * `inward` shrinks the outline instead, as an island in a pocket shrinks by
+ * the pocket's clearance. The same two failures then sit at a convex tip and
+ * across a narrow neck, and are held back the same way, so a thin island
+ * comes out thinner but never turned inside out.
+ *
  * Every bound only ever lowers a reach and stays satisfied as others drop, so
  * each is one pass over a uniform grid rather than over all pairs.
  */
 export function offsetClosedPolygonWithinReach(
   points: readonly Pt[],
   d: number,
-  cap?: readonly number[]
+  cap?: readonly number[],
+  inward = false
 ): ReachLimitedOffset {
   if (points.length < 3 || d <= 0) {
     return {
@@ -441,7 +454,7 @@ export function offsetClosedPolygonWithinReach(
       reach: points.map(() => 0),
     };
   }
-  const solver = new ReachSolver(points, d, cap);
+  const solver = new ReachSolver(points, d, cap, inward);
   solver.boundFolds(d);
   solver.boundGaps(d);
   return { points: solver.repairContacts(), reach: solver.reach };
@@ -531,10 +544,10 @@ function withinPointBudget(points: readonly Pt[], d: number): readonly Pt[] | nu
  * Null when the outline cannot be thinned to the budget without touching
  * itself.
  */
-export function refineForOffset(points: readonly Pt[], d: number): Pt[] | null {
+export function refineForOffset(points: readonly Pt[], d: number, inward = false): Pt[] | null {
   const outline = d > 0 ? withinPointBudget(points, d) : points;
   if (!outline) return null;
-  const { reach } = offsetClosedPolygonWithinReach(outline, d);
+  const { reach } = offsetClosedPolygonWithinReach(outline, d, undefined, inward);
   const n = outline.length;
   const out: Pt[] = [];
   for (let i = 0; i < n; i++) {

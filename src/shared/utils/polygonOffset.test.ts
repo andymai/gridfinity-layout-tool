@@ -534,6 +534,39 @@ describe('offsetClosedPolygonWithinReach', () => {
   });
 });
 
+describe('offsetClosedPolygonWithinReach inward', () => {
+  it('shrinks a square by the offset on every side', () => {
+    const { points } = offsetClosedPolygonWithinReach(CCW_SQUARE, 1.5, undefined, true);
+    expect(area(points)).toBeCloseTo(7 * 7, 9);
+    for (const p of points) {
+      expect(Math.abs(p.x)).toBeCloseTo(3.5, 9);
+      expect(Math.abs(p.y)).toBeCloseTo(3.5, 9);
+    }
+  });
+
+  it('shrinks whichever way the ring winds', () => {
+    const clockwise = [...CCW_SQUARE].reverse();
+    const { points } = offsetClosedPolygonWithinReach(clockwise, 1.5, undefined, true);
+    expect(area(points)).toBeCloseTo(7 * 7, 9);
+  });
+
+  // Moved the full offset, a strip thinner than twice it would swap its long
+  // sides and come out inside out; held back, it only thins.
+  it('thins a strip narrower than twice the offset without turning it over', () => {
+    const strip: Pt[] = [
+      { x: -10, y: -1 },
+      { x: 10, y: -1 },
+      { x: 10, y: 1 },
+      { x: -10, y: 1 },
+    ];
+    const { points } = offsetClosedPolygonWithinReach(strip, 1.5, undefined, true);
+    expect(selfIntersects(points)).toBe(false);
+    expect(points[0].y).toBeLessThan(points[3].y);
+    expect(points[1].y).toBeLessThan(points[2].y);
+    expect(area(points)).toBeLessThan(area(strip));
+  });
+});
+
 describe('refineForOffset', () => {
   it('returns the outline unchanged when no vertex is held back', () => {
     expect(refine(CCW_SQUARE, 1)).toEqual(CCW_SQUARE);
