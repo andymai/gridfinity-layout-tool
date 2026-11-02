@@ -1,0 +1,111 @@
+src/i18n/locales/cs.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1218,1307,2331,5108
+src/i18n/locales/fr.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1218,1307,2331,5108
+src/features/bin-designer/store/helpers.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 10,14,169-173,194,324
+src/features/bin-designer/components/panel/BaseSection/bodyTypeMemory.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1-293
+src/features/bin-designer/components/panel/DimensionsSection/DimensionsSection.test.tsx
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 31-45
+src/features/bin-designer/store/meshCacheManager.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 95,105
+src/features/bin-designer/types/designerState.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 68,455
+src/i18n/locales/es.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1218,1307,2331,5108
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.test.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 13,15-16,901,908,913,937-956,959-998,1000-1008,1012-1017
+src/features/bin-designer/components/panel/WallsSection/useWallsSection.test.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 36-60
+src/features/bin-designer/types/bodyTypeMemory.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1-24
+src/i18n/locales/ko.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1218,1307,2331,5108
+src/features/bin-designer/README.md
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 184
+src/features/bin-designer/constants/defaults.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 301
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 5,11,234-236
+  s_4b9adb1d9473fb::t_0d1b9c03e7028f 237-239
+src/i18n/locales/it.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1218,1307,2331,5108
+src/i18n/locales/pl.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1218,1307,2331,5108
+src/features/bin-designer/store/slices/persistenceSlice.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 77
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 46,53-55,95,251
+src/features/bin-designer/components/panel/BaseSection/useBodyTypeSwitch.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1-55
+src/i18n/locales/ja.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1218,1307,2331,5108
+src/i18n/locales/zh-CN.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1218,1307,2331,5108
+src/features/bin-designer/components/panel/DimensionsSection/DimensionsSection.tsx
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 144-153,174-181
+src/features/bin-designer/store/slices/historySlice.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 30,60,89
+src/features/bin-designer/types/index.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 346
+src/features/bin-designer/components/panel/BaseSection/finalizeBaseParams.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1-58
+src/features/bin-designer/components/panel/BaseSection/bodyType.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 87-89
+src/i18n/locales/nl.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1218,1307,2331,5108
+package.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 122
+src/features/bin-designer/hooks/useCreateFromBin.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 211
+src/features/bin-designer/types/uiState.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 8,144-148
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.test.tsx
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 30-44
+src/i18n/locales/ka.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 2545,3144,3533,3535
+src/features/bin-designer/components/panel/BaseSection/bodyTypeMemory.test.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1-260
+src/i18n/locales/pt-BR.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1218,1307,2331,5108
+src/features/bin-designer/store/designer.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 70-71,76,83
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.tsx
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 18,26,135-142
+  s_4b9adb1d9473fb::t_e17f20b6a80ed0 143
+src/i18n/locales/de.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1218,1307,2331,5108
+src/features/bin-designer/components/panel/DimensionsSection/useDimensionsSection.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 160
+src/i18n/locales/nb.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1218,1307,2331,5108
+src/i18n/locales/sv.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1218,1307,2331,5108
+src/i18n/locales/uk.json
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 1218,1307,2331,5108
+src/features/bin-designer/store/meshCacheManager.test.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 130-141
+src/features/bin-designer/components/panel/WallsSection/useWallsSection.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 45,181-188,438
+src/features/bin-designer/types/generation.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 12,128-132
+src/i18n/locales/en.ts
+  s_4b9adb1d9473fb::t_f91972c7a57bf9 3030,3732-3733,4216-4217,4219-4220
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2675865615416ddaa2a0ac6c974f34176fd92f75",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
