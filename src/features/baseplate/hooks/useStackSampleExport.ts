@@ -22,11 +22,8 @@ import { useSampleExport } from '@/shared/hooks/useSampleExport';
 import type { SampleExportContext, UseSampleExportReturn } from '@/shared/hooks/useSampleExport';
 import { buildFullParams } from '../utils/buildFullParams';
 import { buildStackExportSoup } from '../utils/stackExport';
-import {
-  FORMAT_MIME_TYPES,
-  FORMAT_EXTENSIONS,
-  triggerDownload,
-} from '@/shared/generation/exportUtils';
+import { FORMAT_MIME_TYPES, FORMAT_EXTENSIONS } from '@/shared/generation/exportUtils';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
 
 /** Default download name when the dialog isn't given a custom one. */
 export const STACK_SAMPLE_BASE_NAME = 'stack-fit-sample';
@@ -83,14 +80,14 @@ export function useStackSampleExport(): UseSampleExportReturn {
           name: baseName,
           printSettings: buildThreeMFPrintSettings(printSettings),
         });
-        triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`);
+        void deliverExport(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`);
         return;
       }
 
       // STEP has no stacking notion; fall back to a baked STL tower.
       const buffer = buildSTLBuffer(soup.vertices, soup.normals, baseName);
       const blob = new Blob([buffer], { type: FORMAT_MIME_TYPES.stl });
-      triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS.stl}`);
+      void deliverExport(blob, `${baseName}${FORMAT_EXTENSIONS.stl}`);
     },
     [gridUnitMm, baseplateParams, lowProfileBase]
   );

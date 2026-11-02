@@ -4,7 +4,9 @@ import {
   parseArchive,
   exportAllLayouts,
   importArchive,
+  downloadArchive,
 } from '@/core/storage/BulkArchiveService';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import type { Layout, LayoutLibrary, LayoutEntry } from '@/core/types';
 import {
   layoutId,
@@ -24,6 +26,10 @@ import {
 } from '@/core/storage/designStorePort';
 
 // === Mocks ===
+
+vi.mock('@/shared/exportDestination/deliverExport', () => ({
+  deliverExport: vi.fn(async () => undefined),
+}));
 
 const mockLoadLayoutAsync = vi.fn();
 vi.mock('@/core/storage/LayoutService', () => ({
@@ -278,6 +284,25 @@ describe('exportAllLayouts', () => {
 });
 
 // === importArchive ===
+
+describe('downloadArchive', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetDesignStorePort();
+  });
+
+  it('hands the archive to the export destination', async () => {
+    mockLoadLayoutAsync.mockResolvedValue(makeLayout('Alpha'));
+    const library = makeLibrary([makeEntry('id-1', 'Alpha')]);
+
+    unwrap(await downloadArchive(library));
+
+    expect(deliverExport).toHaveBeenCalledTimes(1);
+    const [blob, name] = vi.mocked(deliverExport).mock.calls[0];
+    expect(name).toMatch(/^gridfinity-layouts-\d{4}-\d{2}-\d{2}\.json$/);
+    expect(JSON.parse(await blob.text()).layouts[0].name).toBe('Alpha');
+  });
+});
 
 describe('importArchive', () => {
   beforeEach(() => {

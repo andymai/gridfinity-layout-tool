@@ -15,7 +15,8 @@ import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { getActiveBridge, workerPoolManager } from '@/shared/generation/bridge';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
-import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
+import { FORMAT_MIME_TYPES } from '@/shared/generation/exportUtils';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import { useToastStore } from '@/core/store/toast';
 import { trackToolConverted } from '@/shared/analytics/posthog';
 import { getErrorMessage } from '@/shared/utils/errors';
@@ -134,7 +135,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
 
         // One un-split plate downloads directly; everything else is a ZIP with a guide.
         if (pieces.length === 1 && guideText === '') {
-          triggerDownload(
+          void deliverExport(
             new Blob([pieces[0].data], { type: FORMAT_MIME_TYPES[format] }),
             `${baseNameNoExt}${extension}`
           );
@@ -146,7 +147,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             guideText ? [{ name: 'print-guide.txt', content: guideText }] : undefined,
             assemblyImage ? [{ path: 'assembly-map.png', data: assemblyImage }] : undefined
           );
-          triggerDownload(zip, `${baseNameNoExt}.zip`);
+          void deliverExport(zip, `${baseNameNoExt}.zip`);
         }
 
         trackToolConverted('baseplate', {

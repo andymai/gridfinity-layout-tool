@@ -31,7 +31,7 @@ import { parseSTLBinary } from '@/shared/generation/stlParser';
 // Deep import: the STL builder lives in the worker-adjacent export module; the
 // generation barrel would pull the whole bridge stack into this chunk.
 import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExporter';
-import { triggerDownload } from '@/shared/generation/exportUtils';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import { packageFilesAsZip } from '@/shared/generation/zipExport';
 import type { ZipBinaryFile, ZipTextFile } from '@/shared/generation/zipExport';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
@@ -568,7 +568,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
         }
 
         const zip = packageFilesAsZip(binaryFiles, textFiles);
-        triggerDownload(zip, `${zipBaseName}.zip`);
+        void deliverExport(zip, `${zipBaseName}.zip`);
         trackEvent('ui.layoutExported', { format: 'zip', fileFormat: format });
         trackToolConverted('layout', { format, piece_count: binaryFiles.length });
 

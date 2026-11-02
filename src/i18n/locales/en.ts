@@ -1006,6 +1006,7 @@ const en: Record<string, string> = {
   'settings.tabs.integrations': 'STL Search',
   'settings.tabs.privacy': 'Privacy',
   'settings.tabs.storage': 'Storage',
+  'settings.tabs.exports': 'Exports',
   'settings.tabs.labs': 'Labs',
 
   // Settings sidebar groups
@@ -1030,6 +1031,8 @@ const en: Record<string, string> = {
   'settings.search.keywords.storageDanger': 'clear data, reset, delete, wipe',
   'settings.search.keywords.stl': 'printables, makerworld, thangs, model search',
   'settings.search.keywords.labs': 'experimental, beta, feature flags',
+  'settings.search.keywords.exportDestination':
+    'folder, upload, URL, NAS, library, webhook, download, save',
 
   // Per-section reset
   'settings.section.reset': 'Reset',
@@ -6094,6 +6097,49 @@ const en: Record<string, string> = {
   'spacemouse.status.unsupported': 'Needs a Chromium browser',
   'spacemouse.status.error': 'Connection failed',
   'spacemouse.driverManaged': 'Speed and axis direction are set in the 3Dconnexion control panel.',
+
+  // Export destination (settings and the toasts after each export)
+  'settings.exportDestination': 'Export destination',
+  'exportDestination.hint': 'Send exported files straight to your print library or NAS.',
+  'exportDestination.folder.title': 'Save to a folder',
+  'exportDestination.folder.hint': 'Exports go into a folder you pick, not your Downloads.',
+  'exportDestination.folder.unsupported': 'Saving to a folder needs Chrome or Edge over HTTPS.',
+  'exportDestination.folder.choose': 'Choose folder',
+  'exportDestination.folder.change': 'Change',
+  'exportDestination.folder.forget': 'Forget',
+  'exportDestination.folder.needsPermission':
+    'The browser needs your OK again before it saves here.',
+  'exportDestination.folder.allowAgain': 'Allow again',
+  'exportDestination.url.title': 'Send to a URL',
+  'exportDestination.url.hint': 'Each export still downloads, and a copy goes to this address.',
+  'exportDestination.url.address': 'Address',
+  'exportDestination.url.invalid': 'Enter a full address, like https://nas.local/upload',
+  'exportDestination.url.badScheme': 'The address has to start with http:// or https://',
+  'exportDestination.url.mixed':
+    'This page uses HTTPS, so the browser will likely block an http:// address.',
+  'exportDestination.url.headerName': 'Header (optional)',
+  'exportDestination.url.headerValue': 'Header value',
+  'exportDestination.url.headerHint':
+    'Sent with every upload. The value is stored in this browser only.',
+  'exportDestination.url.badHeader': 'Header names use only letters, numbers and dashes.',
+  'exportDestination.url.test': 'Send test file',
+  'exportDestination.url.testSent': 'Test file sent to {host}.',
+  'exportDestination.saved': 'Saved to {folder}/{file}',
+  'exportDestination.savedMany': 'Saved {count} files to {folder}',
+  'exportDestination.folderDenied': 'No permission to save in {folder}, so it downloaded instead.',
+  'exportDestination.folderFailed': "Couldn't save to {folder}, so it downloaded instead.",
+  'exportDestination.sent': 'Sent to {host}',
+  'exportDestination.sentMany': 'Sent {count} files to {host}',
+  'exportDestination.fail.auth':
+    'Upload to {host} failed (HTTP {status}). Check the header in Settings.',
+  'exportDestination.fail.http': 'Upload to {host} failed (HTTP {status}).',
+  'exportDestination.fail.cors':
+    'Upload to {host} was blocked. The receiver has to allow this site (CORS).',
+  'exportDestination.fail.mixed':
+    'Upload to {host} was blocked: an HTTPS page can only send to an https:// address.',
+  'exportDestination.fail.network':
+    "Couldn't reach {host}. Check the address and that the receiver is running.",
+  'exportDestination.fail.invalid': 'Not sent: the export address in Settings is not valid.',
 };
 
 export default en;

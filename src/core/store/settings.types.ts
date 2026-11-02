@@ -291,6 +291,18 @@ export interface UserSettings {
 
   /** Named multi-color palettes saved by the user. */
   savedColorPalettes: SavedColorPalette[];
+
+  /** POST every export to `exportUrl` in addition to downloading it. */
+  exportUrlEnabled: boolean;
+  exportUrl: string;
+  exportUrlHeaderName: string;
+  exportUrlHeaderValue: string;
+  /**
+   * Name of the folder exports are written into instead of downloading, or
+   * null for none. The folder handle itself lives in IndexedDB; this copy
+   * lets an export decide synchronously whether to download.
+   */
+  exportFolderName: string | null;
 }
 
 /**
@@ -398,4 +410,10 @@ export const DEFAULT_SETTINGS: UserSettings = {
   dismissedHints: [],
 
   savedColorPalettes: [],
+
+  exportUrlEnabled: false,
+  exportUrl: '',
+  exportUrlHeaderName: '',
+  exportUrlHeaderValue: '',
+  exportFolderName: null,
 };

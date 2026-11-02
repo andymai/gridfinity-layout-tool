@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render } from '@testing-library/react';
-import { GlobeIcon, BoxIcon, PlugIcon, ShieldIcon } from './tabIcons';
+import { GlobeIcon, BoxIcon, PlugIcon, ShieldIcon, FolderArrowIcon } from './tabIcons';
 import { resetAllStores } from '@/test/testUtils';
 
 describe('TabIcons', () => {
@@ -26,6 +26,11 @@ describe('TabIcons', () => {
 
   it('renders ShieldIcon', () => {
     const { container } = render(<ShieldIcon />);
+    expect(container.querySelector('svg')).toBeInTheDocument();
+  });
+
+  it('renders FolderArrowIcon', () => {
+    const { container } = render(<FolderArrowIcon />);
     expect(container.querySelector('svg')).toBeInTheDocument();
   });
 

@@ -15,6 +15,7 @@ import { migrateParams } from '../constants/paramMigration';
 import { withoutLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { inlineParamsMeshes } from '@/shared/generation/meshRefs';
 import { sanitizeFileName } from './fileNaming';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
 
 /**
  * Design JSON export schema.
@@ -88,20 +89,9 @@ export async function downloadDesignAsFile(
   const inline = await inlineParamsMeshes(params);
   if (isErr(inline)) return inline;
   const json = exportDesignJSON(name, inline.value);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-
-  // Sanitize filename
   const sanitized = sanitizeFileName(name);
   const filename = !sanitized || /^_+$/.test(sanitized) ? 'gridfinity-bin' : sanitized;
-  a.download = `${filename}.json`;
-
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  void deliverExport(new Blob([json], { type: 'application/json' }), `${filename}.json`);
   return OK;
 }
 

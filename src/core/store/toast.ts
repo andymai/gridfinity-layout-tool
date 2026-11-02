@@ -20,6 +20,8 @@ export interface Toast {
    * (e.g. Report issue) affordance. Renders only when `action` is also set.
    */
   secondaryAction?: ToastAction;
+  /** A new toast with the same key replaces this one instead of stacking. */
+  key?: string;
 }
 
 interface AddToastOptions {
@@ -28,6 +30,7 @@ interface AddToastOptions {
   duration?: number;
   action?: ToastAction;
   secondaryAction?: ToastAction;
+  key?: string;
 }
 
 interface ToastState {
@@ -72,10 +75,14 @@ export const useToastStore = create<ToastState>((set) => ({
       createdAt: Date.now(),
       action: options.action,
       secondaryAction: options.secondaryAction,
+      key: options.key,
     };
 
     set((state) => {
-      let updated = [...state.toasts, newToast];
+      let updated = [
+        ...state.toasts.filter((toast) => newToast.key === undefined || toast.key !== newToast.key),
+        newToast,
+      ];
 
       if (updated.length > MAX_TOASTS) {
         updated = updated.slice(-MAX_TOASTS);

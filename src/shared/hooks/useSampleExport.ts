@@ -12,11 +12,8 @@ import { useSettingsStore } from '@/core/store/settings';
 import { useToastStore } from '@/core/store/toast';
 import { bridgeManager, getActiveBridge } from '@/shared/generation/bridge';
 import type { ExportFormat, GenerationBridge } from '@/shared/generation/bridge';
-import {
-  FORMAT_EXTENSIONS,
-  FORMAT_MIME_TYPES,
-  triggerDownload,
-} from '@/shared/generation/exportUtils';
+import { FORMAT_EXTENSIONS, FORMAT_MIME_TYPES } from '@/shared/generation/exportUtils';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import { stlTo3MF } from '@/shared/generation/stlTo3mf';
 import { useEngineReady } from '@/shared/hooks/useEngineReady';
 import type { PrintSettings } from '@/shared/printSettings';
@@ -58,12 +55,12 @@ export async function downloadWorkerSample(
   if (format === '3mf') {
     const stlResult = await run('stl');
     const blob = stlTo3MF(stlResult.data, printSettings, { name: baseName });
-    triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`);
+    void deliverExport(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`);
     return;
   }
   const result = await run(format);
   const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES[format] });
-  triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS[format]}`);
+  void deliverExport(blob, `${baseName}${FORMAT_EXTENSIONS[format]}`);
 }
 
 export function useSampleExport(config: SampleExportConfig): UseSampleExportReturn {

@@ -10,7 +10,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { trackEvent } from '@/shared/analytics/posthog';
-import { triggerDownload } from '@/shared/generation/exportUtils';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import type { Cutout } from '@/features/bin-designer/types';
 import { cutoutsToSvg } from './cutoutsToSvg';
 import { cutoutSvgFileName } from './cutoutSvgFileName';
@@ -33,7 +33,7 @@ export function useSvgExport(): UseSvgExportReturn {
       }
 
       const { designName } = useDesignerStore.getState();
-      triggerDownload(new Blob([svg], { type: 'image/svg+xml' }), cutoutSvgFileName(designName));
+      void deliverExport(new Blob([svg], { type: 'image/svg+xml' }), cutoutSvgFileName(designName));
       trackEvent('cutout_svg_export', { shape_count: cutouts.length });
       return true;
     },

@@ -18,6 +18,7 @@ import { CategoriesTab } from './tabs/CategoriesTab/CategoriesTab';
 import { IntegrationsTab } from './tabs/IntegrationsTab/IntegrationsTab';
 import { PrivacyTab } from './tabs/PrivacyTab/PrivacyTab';
 import { StorageTab } from './tabs/StorageTab/StorageTab';
+import { ExportsTab } from './tabs/ExportsTab/ExportsTab';
 import { LabsTab } from './tabs/LabsTab/LabsTab';
 import type { SettingsModalProps, SettingsTabId } from './types';
 
@@ -45,6 +46,8 @@ function renderTab(tabId: SettingsTabId) {
       return <PrivacyTab />;
     case 'storage':
       return <StorageTab />;
+    case 'exports':
+      return <ExportsTab />;
     case 'labs':
       return <LabsTab />;
   }

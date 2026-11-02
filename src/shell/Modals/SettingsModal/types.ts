@@ -8,6 +8,7 @@ export type SettingsTabId =
   | 'account'
   | 'privacy'
   | 'storage'
+  | 'exports'
   | 'integrations'
   | 'labs';
 

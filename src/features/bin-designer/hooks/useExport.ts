@@ -36,7 +36,7 @@ import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
 import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
 import { getErrorCauses, getErrorCode } from '@/shared/utils/errors';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
-import { triggerDownload } from '@/shared/generation/exportUtils';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { ExportFileNameConfig, ExportFileFormat } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
@@ -414,7 +414,7 @@ export function useExport(): UseExportReturn {
           fileName,
           threeMFContext
         );
-        triggerDownload(blob, downloadName);
+        void deliverExport(blob, downloadName);
 
         trackBinExportSucceeded(
           buildExportTelemetry(
@@ -584,7 +584,7 @@ export function useExport(): UseExportReturn {
           );
 
           const zip = packagePiecesAsZip(convertedPieces, baseName, '.3mf');
-          triggerDownload(zip, `${baseName}_split.zip`);
+          void deliverExport(zip, `${baseName}_split.zip`);
         } else {
           const allPieces = [
             ...result.pieces.map((p) => ({ data: p.data, label: p.label })),
@@ -595,7 +595,7 @@ export function useExport(): UseExportReturn {
             baseName,
             format === 'step' ? '.step' : '.stl'
           );
-          triggerDownload(blob, `${baseName}_split.zip`);
+          void deliverExport(blob, `${baseName}_split.zip`);
         }
 
         trackBinExportSucceeded(

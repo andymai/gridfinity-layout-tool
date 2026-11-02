@@ -23,11 +23,8 @@ import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { isErr, getUserMessage } from '@/core/result';
 import { getErrorMessage } from '@/shared/utils/errors';
 import { trackToolConverted } from '@/shared/analytics/posthog';
-import {
-  FORMAT_MIME_TYPES,
-  FORMAT_EXTENSIONS,
-  triggerDownload,
-} from '@/shared/generation/exportUtils';
+import { FORMAT_MIME_TYPES, FORMAT_EXTENSIONS } from '@/shared/generation/exportUtils';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { buildLabelPlateColorConfig } from '@/features/bin-designer/utils/labelPlateColors';
 import {
@@ -133,11 +130,11 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
             colorConfig,
             printSettings: buildThreeMFPrintSettings(printSettings),
           });
-          triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`);
+          void deliverExport(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`);
         } else {
           const result = await runExport(format);
           const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES[format] });
-          triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS[format]}`);
+          void deliverExport(blob, `${baseName}${FORMAT_EXTENSIONS[format]}`);
         }
         // Plates are printable files: count the conversion, as the bin and
         // layout exports do.

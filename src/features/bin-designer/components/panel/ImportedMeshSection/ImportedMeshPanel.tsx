@@ -11,7 +11,7 @@ import { useToastStore } from '@/core/store/toast';
 import { Button, Stepper } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { bridgeManager } from '@/shared/generation/bridge';
-import { triggerDownload } from '@/shared/generation/exportUtils';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import { stlTo3MF } from '@/shared/generation/stlTo3mf';
 import type { GridfinityItem } from '@/shared/types/item';
 import { clamp } from '@/shared/utils/math';
@@ -75,13 +75,13 @@ export function ImportedMeshPanel() {
       // The worker emits STL only for this kind; 3MF is converted here.
       const result = await bridge.exportItem(item, 'stl');
       if (format === 'stl') {
-        triggerDownload(new Blob([result.data], { type: 'application/sla' }), result.fileName);
+        void deliverExport(new Blob([result.data], { type: 'application/sla' }), result.fileName);
         return;
       }
       const blob = stlTo3MF(result.data, useSettingsStore.getState().settings.printSettings, {
         name: result.fileName.replace(/\.stl$/, ''),
       });
-      triggerDownload(blob, result.fileName.replace(/\.stl$/, '.3mf'));
+      void deliverExport(blob, result.fileName.replace(/\.stl$/, '.3mf'));
     } catch {
       addToast(t('binDesigner.importedMesh.exportFailed'), 'error');
     } finally {

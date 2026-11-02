@@ -10,6 +10,7 @@ import {
   ShieldIcon,
   DatabaseIcon,
   UserIcon,
+  FolderArrowIcon,
 } from './tabIcons';
 import type { TabDefinition, TabGroup } from './types';
 
@@ -36,6 +37,7 @@ export const TAB_GROUPS: TabGroup[] = [
       { id: 'account', labelKey: 'settings.tabs.account', icon: UserIcon },
       { id: 'privacy', labelKey: 'settings.tabs.privacy', icon: ShieldIcon },
       { id: 'storage', labelKey: 'settings.tabs.storage', icon: DatabaseIcon },
+      { id: 'exports', labelKey: 'settings.tabs.exports', icon: FolderArrowIcon },
     ],
   },
   {

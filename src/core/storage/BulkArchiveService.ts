@@ -21,6 +21,7 @@ import { loadLayoutAsync } from './LayoutService';
 import { createLayoutEntry } from './LayoutManager';
 import { importLayoutJSON } from './ShareService';
 import { getDesignStorePort } from './designStorePort';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
 interface LinkedDesignExport {
   readonly id: string;
   readonly name: string;
@@ -191,16 +192,8 @@ export async function downloadArchive(
   if (!isOk(exported)) return exported;
   const result = exported.value;
   const blob = new Blob([result.json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement('a');
-  a.href = url;
   const date = new Date().toISOString().slice(0, 10);
-  a.download = `gridfinity-layouts-${date}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  void deliverExport(blob, `gridfinity-layouts-${date}.json`);
   return exported;
 }
 /**
