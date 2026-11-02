@@ -6,6 +6,9 @@
  *
  * Pockets whose drawn outlines already overlap are left alone: a stepped pocket
  * or a finger cut over its pocket overlaps on purpose, and the overlap shows.
+ *
+ * Everything is measured at the surface. Two pockets leaning toward each other
+ * can still meet below it, which these checks do not see.
  */
 
 import type { BinParams, Cutout } from '@/features/bin-designer/types';
@@ -17,6 +20,8 @@ import { clearedProfile, entryChamferWidth } from '@/shared/utils/cutoutFit';
 import { cutoutOutlineRing, meshOutlineRings } from '@/shared/utils/cutoutOutline';
 import { cavityCornerRadiusMm } from '@/shared/utils/insideWallObstacles';
 import { lipInnerReachMm } from '@/shared/utils/lipNotchPlan';
+import { normalizeOpenSides } from '@/shared/utils/cutoutOpenSides';
+import { offsetClosedPolygon } from '@/shared/utils/polygonOffset';
 import { isCutoutOffBoard, type CutoutBoard } from './offBoardCutouts';
 
 /** Three 0.4 mm perimeters: less than this between two cuts prints weak. */
@@ -55,15 +60,14 @@ interface Box {
   readonly maxY: number;
 }
 
-interface Placed {
-  readonly cutout: Cutout;
-  /** The stored cutout the instance comes from. */
-  readonly owner: string;
-  /** One pocket: an instance, or one copy of a union group. */
-  readonly unit: string;
+interface Placed extends PlacedCopy {
+  /** As drawn: what decides whether two pockets overlap on purpose. */
+  readonly drawn: readonly (readonly Pt[])[];
+  readonly drawnBox: Box;
+  /** As cut, before the flare below. */
   readonly rings: readonly (readonly Pt[])[];
   readonly box: Box;
-  /** How far the cut stands out from the drawn outline at the surface. */
+  /** How far the cut stands out from {@link rings} at the surface. */
   readonly grow: number;
 }
 
@@ -199,24 +203,49 @@ function ringsOf(c: Cutout, board: CutoutBoard): Pt[][] {
   return ring ? [ring.map(([x, y]) => ({ x, y }))] : [];
 }
 
-/** Every pocket the cutouts cut, one entry per placed copy. */
-function placePockets(cutouts: readonly Cutout[], board: CutoutBoard): Placed[] {
-  const placed: Placed[] = [];
-  const add = (c: Cutout, owner: string, unit: string) => {
-    const rings = ringsOf(c, board).filter((r) => r.length >= 3);
-    if (rings.length === 0) return;
-    // A path is offset and a mesh dilated by the clearance on every side; the
-    // other shapes grow by it across, half on each side.
-    const { clearance } = clearedProfile(c);
-    const perSide = c.shape === 'path' || c.shape === 'mesh' ? clearance : clearance / 2;
-    const grow = perSide + entryChamferWidth(c);
-    placed.push({ cutout: c, owner, unit, rings, box: boxOf(rings), grow });
+/**
+ * The outline a cut takes at the surface before its entry edge, and how much
+ * further out that edge flares. A drawn shape is cut at its cleared size,
+ * which for a polygon is a uniform scale, so its ring is redrawn at that size.
+ * A path is offset and a mesh dilated by its clearance, which the ring cannot
+ * show, so it rides on the flare instead.
+ */
+function cutRingsOf(c: Cutout, drawn: Pt[][], board: CutoutBoard): { rings: Pt[][]; grow: number } {
+  const { clearance, w, d } = clearedProfile(c);
+  const entry = entryChamferWidth(c);
+  if (c.shape === 'path' || c.shape === 'mesh') return { rings: drawn, grow: clearance + entry };
+  if (clearance === 0) return { rings: drawn, grow: entry };
+  const cleared = {
+    ...c,
+    x: c.x - (w - c.width) / 2,
+    y: c.y - (d - c.depth) / 2,
+    width: w,
+    depth: d,
   };
+  return { rings: ringsOf(cleared, board), grow: entry };
+}
+
+export interface PlacedCopy {
+  readonly cutout: Cutout;
+  /** The stored cutout the copy comes from. */
+  readonly owner: string;
+  /** One pocket: an ungrouped copy, or one copy of a union group. */
+  readonly unit: string;
+}
+
+/**
+ * Every pocket the cutouts cut, one entry per placed copy, with repeats and
+ * union groups expanded the way the generator cuts them: a legacy group can
+ * hold its repeat on one member, and the others are copied on it.
+ */
+export function placedCopies(cutouts: readonly Cutout[]): PlacedCopy[] {
+  const copies: PlacedCopy[] = [];
   const groups = new Map<string, Cutout[]>();
   for (const c of cutouts) {
     if (c.hidden === true || c.shape === 'text') continue;
     if (c.groupId === null) {
-      for (const inst of expandCutoutArray(c)) add(inst, c.id, inst.id);
+      for (const inst of expandCutoutArray(c))
+        copies.push({ cutout: inst, owner: c.id, unit: inst.id });
       continue;
     }
     const members = groups.get(c.groupId);
@@ -226,40 +255,78 @@ function placePockets(cutouts: readonly Cutout[], board: CutoutBoard): Placed[] 
   for (const [groupId, members] of groups) {
     if ((members[0].groupOp ?? DEFAULT_GROUP_OP) !== 'union') continue;
     expandCutoutGroup(members).forEach((copy, k) => {
-      copy.forEach((m, i) => add(m, members[i].id, `${groupId}#${k}`));
+      copy.forEach((m, i) =>
+        copies.push({ cutout: m, owner: members[i].id, unit: `${groupId}#${k}` })
+      );
     });
   }
-  return placed;
+  return copies;
 }
 
-/** The interior the pockets sit in, as rings in the editor's frame. */
-function interiorRings(params: BinParams, board: CutoutBoard): Pt[][] {
-  if (board.mask && board.cellSize) {
-    const { cellMmX, cellMmY } = board.cellSize;
-    return maskToPolygon(board.mask).map((loop) =>
-      loop.map((p) => ({
-        x: (p.x / MASK_CELL_SIZE) * cellMmX,
-        y: (p.y / MASK_CELL_SIZE) * cellMmY,
-      }))
-    );
-  }
-  const w = board.width;
-  const d = board.depth;
-  const r = Math.max(0, Math.min(cavityCornerRadiusMm(params), w / 2, d / 2));
-  const ring: Pt[] = [];
-  const corners: readonly [number, number, number][] = [
-    [w - r, r, -90],
-    [w - r, d - r, 0],
-    [r, d - r, 90],
-    [r, r, 180],
-  ];
-  for (const [cx, cy, start] of corners) {
-    for (let i = 0; i <= 8; i++) {
-      const a = ((start + (90 * i) / 8) * Math.PI) / 180;
-      ring.push({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) });
+function placePockets(cutouts: readonly Cutout[], board: CutoutBoard): Placed[] {
+  return placedCopies(cutouts).flatMap(({ cutout, owner, unit }): Placed[] => {
+    const drawn = ringsOf(cutout, board).filter((r) => r.length >= 3);
+    if (drawn.length === 0) return [];
+    const cut = cutRingsOf(cutout, drawn, board);
+    const rings = cut.rings.filter((r) => r.length >= 3);
+    if (rings.length === 0) return [];
+    return [
+      {
+        cutout,
+        owner,
+        unit,
+        drawn,
+        drawnBox: boxOf(drawn),
+        rings,
+        box: boxOf(rings),
+        grow: cut.grow,
+      },
+    ];
+  });
+}
+
+/**
+ * How far rings that cross the interior's edge reach past it: the farthest
+ * vertex outside. A crossing reads as no gap at all, which says nothing of how
+ * deep into the wall the cut goes.
+ */
+function overshoot(
+  rings: readonly (readonly Pt[])[],
+  interior: readonly (readonly Pt[])[]
+): number {
+  let worst = 0;
+  for (const ring of rings) {
+    for (const v of ring) {
+      const inside = interior.filter((loop) => pointInRing(loop, v)).length % 2 === 1;
+      if (inside) continue;
+      let d = Infinity;
+      for (const loop of interior) {
+        for (let i = 0; i < loop.length; i++) {
+          d = Math.min(d, pointToSegment(v, loop[i], loop[(i + 1) % loop.length]));
+        }
+      }
+      worst = Math.max(worst, d);
     }
   }
-  return [ring];
+  return worst;
+}
+
+function interiorCornerRadius(params: BinParams, board: CutoutBoard): number {
+  return Math.max(0, Math.min(cavityCornerRadiusMm(params), board.width / 2, board.depth / 2));
+}
+
+/** A custom footprint's outline, as rings in the editor's frame. */
+function maskRings(
+  mask: NonNullable<CutoutBoard['mask']>,
+  cellSize: NonNullable<CutoutBoard['cellSize']>
+): Pt[][] {
+  const { cellMmX, cellMmY } = cellSize;
+  return maskToPolygon(mask).map((loop) =>
+    loop.map((p) => ({
+      x: (p.x / MASK_CELL_SIZE) * cellMmX,
+      y: (p.y / MASK_CELL_SIZE) * cellMmY,
+    }))
+  );
 }
 
 /** Which of two readings of the same issue is worse: less plastic, or deeper under the lip. */
@@ -297,6 +364,11 @@ class IssueBook {
 }
 
 function checkPairs(pockets: readonly Placed[], book: IssueBook): void {
+  const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
+  // Pockets that overlap on purpose, by whole pocket: a union is one cavity,
+  // so overlapping any member exempts the pocket from all of them.
+  const overlapping = new Set<string>();
+  const near: (readonly [Placed, Placed])[] = [];
   for (let i = 0; i < pockets.length; i++) {
     for (let j = i + 1; j < pockets.length; j++) {
       const a = pockets[i];
@@ -304,14 +376,157 @@ function checkPairs(pockets: readonly Placed[], book: IssueBook): void {
       if (a.unit === b.unit) continue;
       const reach = a.grow + b.grow + MIN_MATERIAL_MM;
       if (boxGap(a.box, b.box) >= reach) continue;
-      const gap = ringsGap(a.rings, a.box, b.rings, b.box, reach);
-      if (gap === 0) continue;
-      const left = gap - a.grow - b.grow;
-      if (left >= MIN_MATERIAL_MM || nested(a.rings, b.rings)) continue;
-      const ids = a.owner === b.owner ? [a.owner] : [a.owner, b.owner].sort();
-      const kind = left <= 0 ? 'merge' : 'thin';
-      book.note(kind, ids, [a.cutout.id, b.cutout.id], left);
+      if (
+        ringsGap(a.drawn, a.drawnBox, b.drawn, b.drawnBox, reach) === 0 ||
+        nested(a.drawn, b.drawn)
+      ) {
+        overlapping.add(pairKey(a.unit, b.unit));
+      } else {
+        near.push([a, b]);
+      }
     }
+  }
+  for (const [a, b] of near) {
+    if (overlapping.has(pairKey(a.unit, b.unit))) continue;
+    const reach = a.grow + b.grow + MIN_MATERIAL_MM;
+    const left = ringsGap(a.rings, a.box, b.rings, b.box, reach) - a.grow - b.grow;
+    if (left >= MIN_MATERIAL_MM) continue;
+    const ids = a.owner === b.owner ? [a.owner] : [a.owner, b.owner].sort();
+    book.note(left <= 0 ? 'merge' : 'thin', ids, [a.cutout.id, b.cutout.id], left);
+  }
+}
+
+/**
+ * How far a point inside the bin's outer outline is from it: a rounded
+ * rectangle one wall out from the interior, its corners one wall rounder.
+ */
+function toOuterFace(p: Pt, w: number, d: number, wall: number, radius: number): number {
+  const qx = Math.abs(p.x - w / 2) - (w / 2 + wall - radius);
+  const qy = Math.abs(p.y - d / 2) - (d / 2 + wall - radius);
+  return radius - Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) - Math.min(Math.max(qx, qy), 0);
+}
+
+/**
+ * The corners of what is left of the rings once clipped to the interior box,
+ * as the builder clips every pocket tool. The distance to the outer face is
+ * least at one of them, since it falls toward that face in a straight line.
+ */
+function clippedCorners(rings: readonly (readonly Pt[])[], w: number, d: number): Pt[] {
+  const eps = 1e-9;
+  const inBox = (q: Pt) => q.x >= -eps && q.x <= w + eps && q.y >= -eps && q.y <= d + eps;
+  const out: Pt[] = [];
+  for (const ring of rings) {
+    for (let i = 0; i < ring.length; i++) {
+      const a = ring[i];
+      const b = ring[(i + 1) % ring.length];
+      if (inBox(a)) out.push(a);
+      for (const [axis, at] of [
+        ['x', 0],
+        ['x', w],
+        ['y', 0],
+        ['y', d],
+      ] as const) {
+        const da = a[axis] - at;
+        const db = b[axis] - at;
+        if (da < 0 === db < 0 || da === db) continue;
+        const t = da / (da - db);
+        const q = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+        if (inBox(q)) out.push(q);
+      }
+    }
+  }
+  for (const corner of [
+    { x: 0, y: 0 },
+    { x: w, y: 0 },
+    { x: w, y: d },
+    { x: 0, y: d },
+  ]) {
+    if (rings.some((ring) => pointInRing(ring, corner))) out.push(corner);
+  }
+  return out;
+}
+
+function nearestSide(p: Pt, w: number, d: number): 'left' | 'right' | 'front' | 'back' {
+  const sides = [
+    ['left', p.x],
+    ['right', w - p.x],
+    ['front', p.y],
+    ['back', d - p.y],
+  ] as const;
+  return sides.reduce((best, side) => (side[1] < best[1] ? side : best))[0];
+}
+
+/** Whether the cut opens through that wall to the top, taking the lip with it. */
+function opensThrough(c: Cutout, side: string): boolean {
+  return normalizeOpenSides(c.openSides)?.some((s) => s.side === side && !s.tunnel) ?? false;
+}
+
+/**
+ * A rectangular interior: the builder clips every pocket tool to its box, so a
+ * straight wall keeps its full thickness and only a rounded corner, which
+ * that box overhangs, can be cut thin. Material is read to the outer face.
+ */
+function checkBoxWalls(
+  pockets: readonly Placed[],
+  params: BinParams,
+  board: CutoutBoard,
+  book: IssueBook
+): void {
+  const { width: w, depth: d } = board;
+  const wall = params.wallThickness;
+  const inner = interiorCornerRadius(params, board);
+  const radius = inner + wall;
+  const lipReach = params.base.stackingLip ? lipInnerReachMm(params) : 0;
+  const needed = Math.max(lipReach, MIN_MATERIAL_MM);
+  // A rounded corner stands in from its bounding box by up to r(√2 − 1).
+  const cornerSlack = inner * (Math.SQRT2 - 1);
+  for (const p of pockets) {
+    if (isCutoutOffBoard(p.cutout, board)) continue;
+    const inset = Math.min(p.box.minX, p.box.minY, w - p.box.maxX, d - p.box.maxY);
+    if (wall + inset - p.grow - cornerSlack >= needed) continue;
+    const grown = p.grow > 0 ? p.rings.map((ring) => offsetClosedPolygon(ring, p.grow)) : p.rings;
+    let least = Infinity;
+    let at: Pt | null = null;
+    for (const q of clippedCorners(grown, w, d)) {
+      const m = toOuterFace(q, w, d, wall, radius);
+      if (m < least) {
+        least = m;
+        at = q;
+      }
+    }
+    if (!at) continue;
+    if (least < MIN_MATERIAL_MM) {
+      book.note('wall', [p.owner], [p.cutout.id], least);
+    } else if (least < lipReach && !opensThrough(p.cutout, nearestSide(at, w, d))) {
+      book.note('lip', [p.owner], [p.cutout.id], lipReach - least);
+    }
+  }
+}
+
+/**
+ * A custom footprint: its inner walls are not covered by the builder's box
+ * clip, so a cut that reaches past the outline thins the wall there.
+ */
+function checkMaskWalls(
+  pockets: readonly Placed[],
+  params: BinParams,
+  board: CutoutBoard,
+  interior: readonly (readonly Pt[])[],
+  book: IssueBook
+): void {
+  const interiorBox = boxOf(interior);
+  const lip = params.base.stackingLip
+    ? Math.max(0, lipInnerReachMm(params) - params.wallThickness)
+    : 0;
+  for (const p of pockets) {
+    if (isCutoutOffBoard(p.cutout, board)) continue;
+    const reach = p.grow + Math.max(lip, MIN_MATERIAL_MM - params.wallThickness, 0);
+    const gap = ringsGap(p.rings, p.box, interior, interiorBox, reach);
+    if (gap === Infinity) continue;
+    const cut = (gap === 0 ? -overshoot(p.rings, interior) : gap) - p.grow;
+    const wallLeft = params.wallThickness + cut;
+    if (wallLeft < MIN_MATERIAL_MM) book.note('wall', [p.owner], [p.cutout.id], wallLeft);
+    else if (cut < lip) book.note('lip', [p.owner], [p.cutout.id], lip - cut);
   }
 }
 
@@ -321,28 +536,10 @@ function checkWalls(
   board: CutoutBoard,
   book: IssueBook
 ): void {
-  const interior = interiorRings(params, board);
-  const interiorBox = boxOf(interior);
-  const lip = params.base.stackingLip
-    ? Math.max(0, lipInnerReachMm(params) - params.wallThickness)
-    : 0;
-  for (const p of pockets) {
-    if (isCutoutOffBoard(p.cutout, board)) continue;
-    const reach = p.grow + Math.max(lip, MIN_MATERIAL_MM - params.wallThickness, 0);
-    const inset = Math.min(
-      p.box.minX - interiorBox.minX,
-      p.box.minY - interiorBox.minY,
-      interiorBox.maxX - p.box.maxX,
-      interiorBox.maxY - p.box.maxY
-    );
-    if (!board.mask && inset >= reach) continue;
-    const gap = ringsGap(p.rings, p.box, interior, interiorBox, reach);
-    if (gap === Infinity) continue;
-    const cut = gap - p.grow;
-    const wallLeft = params.wallThickness + cut;
-    if (cut < 0) book.note('wall', [p.owner], [p.cutout.id], wallLeft);
-    else if (cut < lip) book.note('lip', [p.owner], [p.cutout.id], lip - cut);
-    else if (wallLeft < MIN_MATERIAL_MM) book.note('wall', [p.owner], [p.cutout.id], wallLeft);
+  if (board.mask && board.cellSize) {
+    checkMaskWalls(pockets, params, board, maskRings(board.mask, board.cellSize), book);
+  } else {
+    checkBoxWalls(pockets, params, board, book);
   }
 }
 

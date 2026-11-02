@@ -20,7 +20,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     featured: true,
     title: { en: 'Find pockets that will print too thin' },
     body: {
-      en: 'The Cut Editor now checks your pockets as they will be cut, clearance and entry edges included. It warns when two pockets would merge or leave a thin wall between them, when a pocket cuts into the bin wall or sits under the stacking lip, and when a floor is too thin to print well. Select a warning to find its pockets; a thin floor has a one-click fix. None of the warnings stops an export.',
+      en: 'The Cut Editor now checks your pockets as they will be cut, clearance and entry edges included. It warns when two pockets would merge or leave a thin wall between them, when a pocket thins a corner of the bin wall or sits under the stacking lip, and when a floor is too thin to print well. Select a warning to find its pockets; a thin floor has a one-click fix. None of the warnings stops an export.',
     },
     action: { kind: 'openTool', tool: 'designer' },
   },

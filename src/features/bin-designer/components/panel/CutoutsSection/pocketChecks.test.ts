@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, Cutout } from '@/features/bin-designer/types';
 import { cutoutDepthFrame } from '@/shared/utils/cutoutDepth';
+import { clearedProfile } from '@/shared/utils/cutoutFit';
+import { cutoutOutlineRing } from '@/shared/utils/cutoutOutline';
 import { checkPockets, MIN_FLOOR_MM, type PocketIssue } from './pocketChecks';
 
 const FLAT = {
@@ -76,6 +78,33 @@ describe('checkPockets between pockets', () => {
     expect(thin).toMatchObject({ kind: 'thin', mm: expect.closeTo(1, 1) });
   });
 
+  // A regular hexagon's clearance scales it, so its tips grow by more than half
+  // the clearance, and reading that from the cleared outline is what catches it.
+  it('measures a polygon at its cleared size, tips and all', () => {
+    const hex = (id: string, x: number) =>
+      pocket(id, {
+        shape: 'polygon',
+        sides: 6,
+        x,
+        y: 20,
+        width: (20 * 2) / Math.sqrt(3),
+        depth: 20,
+        clearance: 2,
+      });
+    const maxX = (c: Cutout) => Math.max(...(cutoutOutlineRing(c) ?? []).map(([x]) => x));
+    const minX = (c: Cutout) => Math.min(...(cutoutOutlineRing(c) ?? []).map(([x]) => x));
+    const a = hex('a', 10);
+    const b0 = hex('b', 40);
+    const b = { ...b0, x: b0.x + (maxX(a) + 3.3 - minX(b0)) };
+    const { w, d } = clearedProfile(a);
+    const tip =
+      maxX({ ...a, x: a.x - (w - a.width) / 2, y: a.y - (d - a.depth) / 2, width: w, depth: d }) -
+      maxX(a);
+    const [thin] = check([a, b]);
+    expect(tip).toBeGreaterThan(1);
+    expect(thin).toMatchObject({ kind: 'thin', mm: expect.closeTo(3.3 - 2 * tip, 3) });
+  });
+
   it('leaves pockets that overlap or nest on purpose alone', () => {
     expect(check(pair(-5))).toEqual([]);
     const tray = pocket('tray', { x: 10, y: 10, width: 60, depth: 60, cutDepth: 3 });
@@ -125,6 +154,16 @@ describe('checkPockets between pockets', () => {
     ]);
   });
 
+  // A union is one cavity: overlapping either member is overlapping it.
+  it('exempts a pocket that overlaps a union from all of its members', () => {
+    const members = [
+      pocket('m1', { groupId: 'g', groupOp: 'union' }),
+      pocket('m2', { groupId: 'g', groupOp: 'union', x: 30 }),
+    ];
+    const loose = pocket('n', { x: 5, y: 45, width: 24, depth: 20 });
+    expect(check([...members, { ...loose, y: 39 }])).toEqual([]);
+  });
+
   it('skips a subtract group, whose outline is no member of its own', () => {
     const members = [
       pocket('m1', { groupId: 'g', groupOp: 'subtract' }),
@@ -140,9 +179,10 @@ describe('checkPockets between pockets', () => {
 });
 
 describe('checkPockets against the wall', () => {
-  it('warns when clearance carries a cut into the wall', () => {
-    const [into] = check([pocket('a', { shape: 'circle', x: 0.5, clearance: 2 })]);
-    expect(into).toMatchObject({ kind: 'wall', ids: ['a'], mm: expect.closeTo(0.7, 6) });
+  // The builder clips every pocket tool to the interior box, so clearance that
+  // reaches past a straight wall is trimmed and the wall keeps its thickness.
+  it('keeps a straight wall whole, however far the clearance reaches', () => {
+    expect(check([pocket('a', { shape: 'circle', x: 0.5, clearance: 2 })])).toEqual([]);
   });
 
   // The lip stands 2.6 mm in from the outer face; through a 1.2 mm wall it
@@ -156,12 +196,30 @@ describe('checkPockets against the wall', () => {
     expect(check(near)).toEqual([]);
   });
 
+  // An exit cut open to the top takes the lip with it on that wall.
+  it('leaves a pocket that opens through the lip alone', () => {
+    const withLip = bin({ base: { ...FLAT, stackingLip: true } });
+    const exit = (tunnel: boolean) => [
+      pocket('a', { x: 1, openSides: [{ side: 'left', tunnel }] }),
+    ];
+    expect(check(exit(false), withLip)).toEqual([]);
+    expect(check(exit(true), withLip)).toEqual([expect.objectContaining({ kind: 'lip' })]);
+  });
+
   it('warns about a thin wall only where the wall itself is thin', () => {
     const near = [pocket('a', { x: 0.5 })];
     expect(check(near)).toEqual([]);
     expect(check(near, bin({ wallThickness: 0.4 }))).toEqual([
       expect.objectContaining({ kind: 'wall', mm: expect.closeTo(0.9, 6) }),
     ]);
+  });
+
+  // The interior's corners are rounded, so a pocket clear of both edges can
+  // still cut into the corner between them.
+  it('catches a cut into a rounded corner', () => {
+    const [corner] = check([pocket('a', { x: 0.5, y: 0.5, chamferWidth: 0.4 })]);
+    expect(corner).toMatchObject({ kind: 'wall', ids: ['a'] });
+    expect(corner.mm).toBeLessThan(1.2);
   });
 
   it('leaves a pocket off the board to the off-board warning', () => {
