@@ -463,6 +463,7 @@ describe('planPlateFlip', () => {
       }
     );
 
+    // Plans every piece of a split tiling, which outruns the default timeout under coverage.
     it('keeps the bottom upright under a rounded corner, whether rounded plainly or cut', () => {
       // 21mm is the most plain rounding cuts on a padless 42mm grid; 22mm is
       // cut as an outline instead.
@@ -508,7 +509,7 @@ describe('planPlateFlip', () => {
           piece.label
         ).not.toHaveProperty('flipBottom');
       }
-    });
+    }, 90_000);
 
     it('still takes a turn that lands a cut corner rounding exactly', () => {
       // Both back corners rounded: the Y turn keeps them at the back, the X
