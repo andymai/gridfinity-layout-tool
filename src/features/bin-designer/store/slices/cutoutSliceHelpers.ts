@@ -96,7 +96,6 @@ export function mergeCutoutUpdate(c: Cutout, updates: Partial<Cutout>): Cutout {
   return fixed;
 }
 
-/** Only a slot or a round is a finger cut, so any other shape drops the role. */
 function withoutStrayFinger(c: Cutout): Cutout {
   if (!('finger' in c) || (c.finger !== undefined && FINGER_SHAPES.includes(c.shape))) return c;
   const { finger: _finger, ...rest } = c;
