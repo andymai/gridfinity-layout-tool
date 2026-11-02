@@ -1,9 +1,3 @@
-/**
- * A play dot beside a designer feature. Hovering it (or tapping it) opens a
- * card with a short looping clip of the feature at work, a one-line caption,
- * and the feature's evergreen explanation, if it has one.
- */
-
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useSettingsStore } from '@/core/store';
@@ -11,6 +5,7 @@ import { IconButton, cn } from '@/design-system';
 import { PlayCircleIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { InfoDot } from '@/shared/components/InfoDot';
+import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
 import { useResolvedTheme } from '@/shared/hooks/useThemeEffect';
 import { FEATURE_TIPS } from '../../data/featureTips';
 import type { FeatureTipChip, FeatureTipId } from '../../data/featureTips';
@@ -19,7 +14,6 @@ const HOVER_DELAY_MS = 400;
 
 export interface FeatureTipProps {
   readonly tip: FeatureTipId;
-  /** The feature's name, for the dot's accessible label. */
   readonly feature: string;
   /** An evergreen explanation that would otherwise sit behind its own info dot. */
   readonly detail?: ReactNode;
@@ -50,7 +44,9 @@ function chipAt(chips: readonly FeatureTipChip[], seconds: number): number {
 function FeatureTipCard({ tip, detail }: { tip: FeatureTipId; detail?: ReactNode }) {
   const t = useTranslation();
   const theme = useResolvedTheme();
-  const reduceMotion = useSettingsStore((s) => s.settings.reduceMotion);
+  const reduceMotionSetting = useSettingsStore((s) => s.settings.reduceMotion);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const reduceMotion = reduceMotionSetting || prefersReducedMotion;
   const { captionKey, clips, chips } = FEATURE_TIPS[tip];
   const clip = clips[theme];
   const videoRef = useRef<HTMLVideoElement>(null);

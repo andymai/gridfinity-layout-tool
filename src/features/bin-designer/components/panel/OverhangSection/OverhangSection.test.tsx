@@ -367,7 +367,7 @@ describe('OverhangSection', () => {
 
   it('plays a clip of the feature from the dot beside its toggle', () => {
     render(<OverhangSection />);
-    fireEvent.click(screen.getByRole('button', { name: 'See how Overhang works' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Overhang' }));
     expect(screen.getByText(en['binDesigner.featureTip.overhang'])).toBeInTheDocument();
     expect(screen.getByText(en['binDesigner.overhang.hint'])).toBeInTheDocument();
   });

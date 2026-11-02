@@ -145,7 +145,7 @@ describe('HandleSection', () => {
 
   it('plays a clip of the feature from the dot beside its toggle', () => {
     render(<HandleSection />);
-    fireEvent.click(screen.getByRole('button', { name: 'See how Handles works' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Handles' }));
     expect(screen.getByText(en['binDesigner.featureTip.handles'])).toBeInTheDocument();
   });
 });

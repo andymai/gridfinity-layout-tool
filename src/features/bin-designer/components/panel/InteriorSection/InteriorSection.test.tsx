@@ -82,7 +82,7 @@ describe('InteriorSection', () => {
 
   it('plays a clip of the compartment editor beside the Grid Dividers caption', () => {
     render(<InteriorSection />);
-    fireEvent.click(screen.getByRole('button', { name: 'See how Grid Dividers works' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Grid Dividers' }));
     expect(screen.getByText(en['binDesigner.featureTip.compartments'])).toBeInTheDocument();
   });
 
@@ -90,13 +90,13 @@ describe('InteriorSection', () => {
     view.card = 'solid';
     const { unmount } = render(<InteriorSection />);
     expect(
-      screen.getByRole('button', { name: 'See how Scan with your phone works' })
+      screen.getByRole('button', { name: 'Watch a clip: Scan with your phone' })
     ).toBeInTheDocument();
     unmount();
 
     view.isDesktop = false;
     render(<InteriorSection />);
-    expect(screen.queryByRole('button', { name: /^See how/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Watch a clip/ })).toBeNull();
   });
 
   it('offers no scan clip while cutouts are withheld', () => {
@@ -110,7 +110,7 @@ describe('InteriorSection', () => {
     view.card = 'solid';
     try {
       render(<InteriorSection />);
-      expect(screen.queryByRole('button', { name: /^See how/ })).toBeNull();
+      expect(screen.queryByRole('button', { name: /^Watch a clip/ })).toBeNull();
     } finally {
       useDesignerStore.setState({ params: initial });
     }

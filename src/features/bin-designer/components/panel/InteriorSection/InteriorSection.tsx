@@ -10,7 +10,7 @@
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { useTranslation } from '@/i18n';
-import { useResponsive } from '@/shared/hooks/useResponsive';
+import { useCutEditorOpens } from './useCutEditorOpens';
 import { getFeatureStatus } from '@/shared/constraints';
 import { Badge } from '@/design-system';
 import { InteriorModeContent } from './InteriorModes';
@@ -35,8 +35,7 @@ const CARDS_REQUIRING_RECTANGULAR_SHAPE: ReadonlySet<InteriorCard> = new Set([
 export function InteriorSection() {
   const { state, handlers } = useInteriorSection();
   const t = useTranslation();
-  const { isDesktop } = useResponsive();
-  const cutoutsAvailable = useDesignerStore((s) => getFeatureStatus(s.params, 'cutouts').available);
+  const cutEditorOpens = useCutEditorOpens();
   const isCustomShape = useDesignerStore((s) => isPartialMask(s.params.cellMask));
   const hasAngledDividers = useDesignerStore(
     (s) => (s.params.compartments.dividerOverrides?.length ?? 0) > 0
@@ -66,9 +65,8 @@ export function InteriorSection() {
     if (card === 'standard') {
       return <FeatureTip tip="compartments" feature={t(INTERIOR_MODE_META[card].titleKey)} />;
     }
-    // Scanning starts from the Cut Editor, which opens only on desktop and
-    // only while cutouts are allowed.
-    if (card === 'solid' && isDesktop && cutoutsAvailable) {
+    // Scanning starts from the Cut Editor.
+    if (card === 'solid' && cutEditorOpens) {
       return <FeatureTip tip="scanToPocket" feature={t('binDesigner.cutouts.scanImport.title')} />;
     }
     return undefined;

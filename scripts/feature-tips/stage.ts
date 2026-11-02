@@ -37,9 +37,9 @@ export interface Bounds {
 }
 
 export interface Camera {
-  /** Degrees around Z, 0 = +X. The designer's isometric preset is -45. */
+  /** Degrees around Z, 0 = +X. */
   az: number;
-  /** Degrees above the XY plane. The isometric preset is ~30.5. */
+  /** Degrees above the XY plane. */
   el: number;
   /** Fraction of the frame's width and height the part's box may reach. */
   fill: number;
@@ -47,10 +47,9 @@ export interface Camera {
 }
 
 /**
- * The designer's isometric preset (CAMERA_PRESETS.isometric, [0.6, -0.6, 0.5]
- * at CAMERA_FOV 45) raised from ~30 to 55 degrees: at the preset's height the
- * walls hide the floor, scoops and pockets a tip is about. Higher than ~60
- * and a bin flattens into a tray.
+ * The designer's isometric direction, raised: at the preset's height the walls
+ * hide the floor, scoops and pockets a tip is about. Much higher and a bin
+ * flattens into a tray.
  */
 export const CLIP_CAMERA: Camera = { az: -45, el: 55, fill: 0.86, fov: 45 };
 

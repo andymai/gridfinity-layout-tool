@@ -223,7 +223,7 @@ async function cutEditorTake(
     const button = await boxOf(preset);
     await ui.park(button.x - 40, button.y + button.height + 30);
     // Clicking 3 x 2 swaps the presets for the grid controls, with Fill bin
-    // about 140 px further down, so the shot spans the dock from the presets down.
+    // below them, so the shot spans the dock from the presets down.
     await ui.record(
       frameAround({ x: DOCK.x, y: button.y - 30, width: DOCK.width, height: 200 }, 0, DOCK)
     );

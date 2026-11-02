@@ -9,6 +9,7 @@
 import { useTranslation } from '@/i18n';
 import { Hint } from '../shared';
 import { useResponsive } from '@/shared/hooks/useResponsive';
+import { useCutEditorOpens } from './useCutEditorOpens';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { getFeatureStatus } from '@/shared/constraints';
@@ -82,7 +83,7 @@ function SolidModeContent() {
       params: s.params,
     }))
   );
-  const { isDesktop } = useResponsive();
+  const cutEditorOpens = useCutEditorOpens();
   const t = useTranslation();
 
   // Asking the engine rather than reading `base.lightweight` directly. Three
@@ -124,9 +125,8 @@ function SolidModeContent() {
       title={t('binDesigner.editCutouts')}
       subtitle={t('binDesigner.editCutoutsSubtitle')}
       onClick={() => setCutoutEditorOpen(true)}
-      // The Cut Editor itself only opens on desktop.
       tip={
-        isDesktop ? (
+        cutEditorOpens ? (
           <FeatureTip tip="cutEditor" feature={t('binDesigner.editCutouts')} />
         ) : undefined
       }

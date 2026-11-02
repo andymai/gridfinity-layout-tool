@@ -141,7 +141,6 @@ interface PageHooks {
 
 export interface UiSession {
   page: Page;
-  /** Starts recording frames of `crop` (CSS px of the viewport). */
   /** Starts recording `crop` (CSS px, 4:3), re-rasterised to fill the frame. */
   record(crop: Rect): Promise<void>;
   /** Stops recording and returns the frames since `record`. */

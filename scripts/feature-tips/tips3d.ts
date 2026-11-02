@@ -2,6 +2,7 @@ import {
   LID_TIP_SEGMENT_SECONDS,
   LID_TIP_SEGMENTS,
 } from '../../src/features/bin-designer/data/featureTips/timing';
+import type { FeatureTipId } from '../../src/features/bin-designer/data/featureTips';
 import type { LidAttachment } from '../../src/features/bin-designer/types/lid';
 import { FPS } from './encode';
 import { CLIP_CAMERA, lerpView } from './stage';
@@ -28,7 +29,7 @@ export interface Clip {
 }
 
 export interface Tip {
-  id: string;
+  id: FeatureTipId;
   /** The feature's colour in the launch sizzle, from the app's preview palette. */
   color: string;
   capture(ctx: TipContext): Promise<Clip>;
@@ -54,7 +55,7 @@ async function renderRun(
 }
 
 interface Sweep {
-  id: string;
+  id: FeatureTipId;
   color: string;
   /** The design without the feature. */
   base: ParamOverrides;
@@ -199,7 +200,7 @@ const LID_OPEN: Partial<Record<LidAttachment, number>> = { friction: 36, slide: 
 
 /**
  * Each lid type is framed on its own, so the bin stays large whichever way its
- * lid moves. Per type, 2 s: a crossfade from the previous type's closed bin,
+ * lid moves. Per type: a crossfade from the previous type's closed bin,
  * seen from the previous framing; an ease into this type's framing; then the
  * open, a hold, and the close.
  */

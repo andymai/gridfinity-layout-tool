@@ -32,11 +32,10 @@ const DEFAULT_PANEL =
 interface InfoDotProps {
   readonly 'aria-label': string;
   readonly children: ReactNode;
-  /** Glyph in place of the info icon. */
   readonly icon?: ReactNode;
   /** Opens after the mouse rests on the dot this long. */
   readonly hoverDelayMs?: number;
-  /** Replaces the panel's default text sizing. */
+  /** Replaces the panel's default classes, sizing and padding included. */
   readonly panelClassName?: string;
 }
 
