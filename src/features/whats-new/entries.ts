@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'cutout-depth-modes',
+    date: '2026-11-02',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Pockets that cut through, or keep their floor' },
+    body: {
+      en: 'Each pocket in the Cut Editor now has a depth mode. Fixed keeps the depth you type. To floor leaves a set amount of plastic under the pocket, even when you make the bin taller. Through opens the pocket out of the bottom of the bin. Scanned and imported outlines also ask how thick the tool is, so the pocket comes out deep enough for it to sit flush.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'lip-notches',
     date: '2026-11-01',
     kind: 'new',
