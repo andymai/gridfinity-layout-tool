@@ -20,7 +20,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     featured: true,
     title: { en: 'Scan several tools in one photo' },
     body: {
-      en: 'Lay a few tools out with a gap between them and the phone scanner traces every one, each sized by your card, sheet or baseplate. The outline finder weighs colour over brightness, so a soft shadow stays out of the outline. Remove any outline you do not want or tap a tool to redraw it, and they arrive in the bin designer together, ready to arrange.',
+      en: 'Lay a few tools out with a gap between them and the phone scanner traces every one, each sized by your card, sheet or baseplate. The outline finder weighs colour over brightness, so a soft shadow stays out of the outline. Remove any outline you do not want or tap a tool to redraw it, and they arrive in the bin designer as one group.',
     },
     action: { kind: 'openTool', tool: 'designer' },
   },

@@ -77,9 +77,9 @@ export function useScanImport(): UseScanImportReturn {
       const hydrated = byDescendingArea(specs).map((spec) =>
         withScanFit(specToCutout(spec, hydrationOptions), cutDepth)
       );
-      // Several tools from one photo arrive bound in an arrange-only
-      // container, so they move as one batch and Auto-arrange can lay them out
-      // together. A container leaves every cut as it was.
+      // Several tools from one photo arrive in one arrange-only container,
+      // so the batch moves as a block and Auto-arrange inside it packs the
+      // tools. A container leaves every cut as it was.
       const containerId = hydrated.length > 1 ? generateLayoutId() : null;
       const cutouts = containerId
         ? hydrated.map((c) => ({ ...c, parentGroups: [containerId] }))
