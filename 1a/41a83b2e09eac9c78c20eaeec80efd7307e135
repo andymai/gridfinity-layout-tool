@@ -1,27 +1,27 @@
 src/features/generation/worker/generators/cutoutBuilder.ts
   s_4b9adb1d9473fb::t_fcec4ef7ecc503 1274-1283
-src/features/bin-designer/components/panel/CutoutsSection/pocketChecks.ts
-  s_4b9adb1d9473fb::t_cff61316017f55 613-615,617-619
-src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.test.ts
-  s_4b9adb1d9473fb::t_ff249e42ad3857 482-497
-src/features/bin-designer/components/panel/CutoutsSection/svgImport/svgConvertPath.ts
-  s_4b9adb1d9473fb::t_2f5304c4d3b51f 110-111,123,130-131
-  s_4b9adb1d9473fb::t_320d3c13d6158c 20,90-103,113,115-122,125-127,129,133-135,137,139-145,149-154,158-160,162
-  s_4b9adb1d9473fb::t_d3bf292114d81f 124
-  s_4b9adb1d9473fb::t_0bff646132dd0a 132
-  s_4b9adb1d9473fb::t_6d8f612aa85d1f 161
-  s_4b9adb1d9473fb::t_eccfa541183a9f 163-165
-src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.ts
-  s_4b9adb1d9473fb::t_30f587dccb444f 313
-src/features/bin-designer/components/panel/CutoutsSection/pocketChecks.test.ts
-  s_4b9adb1d9473fb::t_cff61316017f55 456-462
 src/features/generation/worker/generators/scenarios/cutoutIslands.ts
   s_4b9adb1d9473fb::t_fcec4ef7ecc503 147-169
-src/shared/utils/pathCutoutOutline.ts
-  s_4b9adb1d9473fb::t_cff61316017f55 152-156,160-161,167-174
+src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.ts
+  s_4b9adb1d9473fb::t_30f587dccb444f 313
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/svgConvertPath.ts
+  s_4b9adb1d9473fb::t_320d3c13d6158c 20,90-103,113,115-122,125-127,129,133-135,137,139-145,149-154,158-160,162
+  s_4b9adb1d9473fb::t_2f5304c4d3b51f 110-111,123,130-131
+  s_4b9adb1d9473fb::t_d2d646d489a9e1 124
+  s_4b9adb1d9473fb::t_035ab27b708140 132
+  s_4b9adb1d9473fb::t_308c26d2b49512 161
+  s_4b9adb1d9473fb::t_8a222528939a32 163-165
 src/features/bin-designer/components/panel/CutoutsSection/svgImport/svgConvertPath.test.ts
   s_4b9adb1d9473fb::t_fbb7d5e3aa1fdc 5,178-215,219
-  s_4b9adb1d9473fb::t_a29dc410816b2e 216-218
+  s_4b9adb1d9473fb::t_0d392cc18eb268 216-218
+src/shared/utils/pathCutoutOutline.ts
+  s_4b9adb1d9473fb::t_cff61316017f55 152-156,160-161,167-174
+src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.test.ts
+  s_4b9adb1d9473fb::t_ff249e42ad3857 482-497
+src/features/bin-designer/components/panel/CutoutsSection/pocketChecks.test.ts
+  s_4b9adb1d9473fb::t_cff61316017f55 456-462
+src/features/bin-designer/components/panel/CutoutsSection/pocketChecks.ts
+  s_4b9adb1d9473fb::t_cff61316017f55 613-615,617-619
 ---
 {
   "schema_version": "authorship/3.0.0",
