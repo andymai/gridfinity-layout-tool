@@ -1043,7 +1043,7 @@
   "binDesigner.cutouts.depthPrompt.thickness": "Tjocklek (mm)",
   "binDesigner.cutouts.depthPrompt.proud": "Sticker upp (mm)",
   "binDesigner.cutouts.depthPrompt.hint": "Mät den tjockaste delen. Fickan skärs så att verktyget ligger i nivå med ytan.",
-  "binDesigner.cutouts.depthPrompt.tooDeep": "Den här behållaren har plats för {max} mm.",
+  "binDesigner.cutouts.depthPrompt.tooDeep": "Den här behållaren har plats för {max} mm. Gör den högre eller låt verktyget sticka upp mer.",
   "binDesigner.cutouts.depthPrompt.raise": "Gör behållaren {height}u hög",
   "binDesigner.cutouts.depthPrompt.sameForAll": "Samma tjocklek för alla {count}",
   "binDesigner.cutouts.depthPrompt.skip": "Hoppa över",

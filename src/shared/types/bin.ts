@@ -365,6 +365,7 @@ export {
  * against different bins.
  */
 export { slideLidPlanForParams } from '@/features/bin-designer/utils/slideLidPlanForParams';
+export { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 
 /**
  * Re-export compartment-edge predicates so worker-side feature builders

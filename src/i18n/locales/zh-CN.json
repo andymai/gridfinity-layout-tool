@@ -1043,7 +1043,7 @@
   "binDesigner.cutouts.depthPrompt.thickness": "厚度 (mm)",
   "binDesigner.cutouts.depthPrompt.proud": "高出 (mm)",
   "binDesigner.cutouts.depthPrompt.hint": "测量最厚的部位。凹槽会按工具与表面齐平的深度切出。",
-  "binDesigner.cutouts.depthPrompt.tooDeep": "这个收纳盒最多容纳 {max}mm。",
+  "binDesigner.cutouts.depthPrompt.tooDeep": "这个收纳盒最多容纳 {max}mm。请加高收纳盒，或让工具多高出一些。",
   "binDesigner.cutouts.depthPrompt.raise": "将收纳盒加高到 {height}u",
   "binDesigner.cutouts.depthPrompt.sameForAll": "{count} 件都用相同厚度",
   "binDesigner.cutouts.depthPrompt.skip": "跳过",

@@ -71,7 +71,7 @@ export function CutoutDepthControl({
       // never moves it.
       writeAll((c) => ({
         depthMode: 'floor',
-        floorMm: clampFloor(c.floorMm ?? floorUnderCutout(c.cutDepth, frame)),
+        floorMm: clampFloor(c.floorMm ?? floorUnderCutout(c, frame)),
       }));
     } else {
       writeAll(() => ({ depthMode: 'through' }));

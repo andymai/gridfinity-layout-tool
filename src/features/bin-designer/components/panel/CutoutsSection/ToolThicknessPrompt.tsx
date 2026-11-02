@@ -24,7 +24,6 @@ const PLACEMENT = {
   chip: 'absolute top-3 left-1/2 z-30 w-80 -translate-x-1/2 rounded-lg bg-surface-elevated/95 p-3 shadow-lg backdrop-blur',
 } as const;
 
-/** Shallowest pocket the prompt will set. */
 const MIN_PROMPT_DEPTH_MM = 0.5;
 
 function parseMm(text: string): number {
@@ -96,7 +95,7 @@ export function ToolThicknessPrompt({
   };
 
   const apply = (): void => {
-    if (!valid) return;
+    if (!valid || tooDeep) return;
     updateCutoutsBatch(new Map(targets.map((c) => [c.id, { cutDepth: depth }])));
     finish(targets.map((c) => c.id));
   };
@@ -181,7 +180,7 @@ export function ToolThicknessPrompt({
           >
             {t('binDesigner.cutouts.depthPrompt.skip')}
           </Button>
-          <Button type="submit" variant="primary" size="sm" disabled={!valid}>
+          <Button type="submit" variant="primary" size="sm" disabled={!valid || tooDeep}>
             {t('binDesigner.cutouts.depthPrompt.apply')}
           </Button>
         </div>

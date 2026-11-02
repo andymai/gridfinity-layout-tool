@@ -1043,7 +1043,7 @@
   "binDesigner.cutouts.depthPrompt.thickness": "Dikte (mm)",
   "binDesigner.cutouts.depthPrompt.proud": "Steekt uit (mm)",
   "binDesigner.cutouts.depthPrompt.hint": "Meet het dikste deel. Het vak wordt zo gesneden dat het gereedschap vlak ligt.",
-  "binDesigner.cutouts.depthPrompt.tooDeep": "Deze bak heeft ruimte voor {max} mm.",
+  "binDesigner.cutouts.depthPrompt.tooDeep": "Deze bak heeft ruimte voor {max} mm. Maak hem hoger of laat het gereedschap verder uitsteken.",
   "binDesigner.cutouts.depthPrompt.raise": "Maak de bak {height}u hoog",
   "binDesigner.cutouts.depthPrompt.sameForAll": "Zelfde dikte voor alle {count}",
   "binDesigner.cutouts.depthPrompt.skip": "Overslaan",

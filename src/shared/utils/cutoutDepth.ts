@@ -11,10 +11,10 @@
  */
 
 import type { BinParams, Cutout, CutoutDepthMode, CutoutShape } from '@/shared/types/bin';
-import { hasDetachableFeet, resolveCutoutLeanDeg } from '@/shared/types/bin';
-import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
+import { binDimensions, hasDetachableFeet, resolveCutoutLeanDeg } from '@/shared/types/bin';
 import { socketHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask } from './cellMask';
+import { clearedProfile } from './cutoutFit';
 import { resolveDetachableFeet } from './detachableFeetPlan';
 import { resolveOverhang } from './overhang';
 
@@ -28,19 +28,15 @@ export const DEPTH_MODE_SHAPES: readonly CutoutShape[] = [
   'path',
 ];
 
-/** Thinnest floor `floor` mode offers on a bin with nothing solid underneath. */
 export const MIN_CUTOUT_FLOOR_MM = 0.6;
 
-/** Floor `floor` mode starts at when the bin has nothing solid underneath. */
 export const DEFAULT_CUTOUT_FLOOR_MM = 2;
 
 /** Shallowest pocket a floored mode resolves to, so a floor set higher than
  *  the fill leaves a visible pocket instead of none at all. */
 const MIN_FLOORED_DEPTH_MM = 0.5;
 
-/** Where depths are measured from, in mm. */
 export interface CutoutDepthFrame {
-  /** Fill above the body's underside: how deep a pocket can go and keep a floor. */
   readonly fillDepthMm: number;
   /**
    * Solid base under every pocket, counted toward its floor: a full socket.
@@ -50,14 +46,12 @@ export interface CutoutDepthFrame {
   readonly baseMm: number;
 }
 
-/** Range and starting value for {@link Cutout.floorMm}. */
 export interface CutoutFloorRange {
   readonly min: number;
   readonly max: number;
   readonly initial: number;
 }
 
-/** Why `through` is unavailable for a cutout. */
 export type CutoutThroughBlock = 'group' | 'tilt' | 'taper' | 'feet';
 
 function round2(mm: number): number {
@@ -97,11 +91,27 @@ export function cutoutDepthMode(cutout: Pick<Cutout, 'shape' | 'depthMode'>): Cu
   return cutout.depthMode ?? 'fixed';
 }
 
-/** The depth the generator cuts for `cutout` in this frame. */
-export function resolveCutoutDepth(
-  cutout: Pick<Cutout, 'shape' | 'depthMode' | 'cutDepth' | 'floorMm'>,
-  frame: CutoutDepthFrame
-): number {
+type DepthCutout = Pick<
+  Cutout,
+  'shape' | 'depthMode' | 'cutDepth' | 'floorMm' | 'leanDeg' | 'width' | 'depth' | 'clearance'
+>;
+
+/**
+ * A leaning pocket turns about its mouth, so `cutDepth` runs along the tilted
+ * axis and the low edge of its floor sits `(d/2)·|sin θ|` below the axis end.
+ * These convert between that axial depth and the drop to the floor's lowest
+ * point, using the same swept extent the generator tilts.
+ */
+function leanTerms(cutout: DepthCutout): { readonly cos: number; readonly sweep: number } {
+  const lean = (resolveCutoutLeanDeg(cutout) * Math.PI) / 180;
+  if (lean === 0) return { cos: 1, sweep: 0 };
+  return {
+    cos: Math.cos(lean),
+    sweep: (clearedProfile(cutout).d / 2) * Math.abs(Math.sin(lean)),
+  };
+}
+
+export function resolveCutoutDepth(cutout: DepthCutout, frame: CutoutDepthFrame): number {
   switch (cutoutDepthMode(cutout)) {
     case 'fixed':
       return cutout.cutDepth;
@@ -109,16 +119,20 @@ export function resolveCutoutDepth(
       return round2(frame.fillDepthMm);
     case 'floor': {
       const floor = cutout.floorMm ?? cutoutFloorRange(frame).initial;
-      const depth = frame.fillDepthMm + frame.baseMm - floor;
+      const drop = frame.fillDepthMm + frame.baseMm - floor;
+      const { cos, sweep } = leanTerms(cutout);
+      const depth = (drop - sweep) / cos;
       const shallowest = Math.min(MIN_FLOORED_DEPTH_MM, frame.fillDepthMm);
       return round2(Math.min(frame.fillDepthMm, Math.max(shallowest, depth)));
     }
   }
 }
 
-/** Floor left under a pocket of `cutDepth`, measured like {@link Cutout.floorMm}. */
-export function floorUnderCutout(cutDepth: number, frame: CutoutDepthFrame): number {
-  return round2(frame.baseMm + Math.max(0, frame.fillDepthMm - cutDepth));
+/** Floor left under the lowest point of `cutout`, measured like {@link Cutout.floorMm}. */
+export function floorUnderCutout(cutout: DepthCutout, frame: CutoutDepthFrame): number {
+  const { cos, sweep } = leanTerms(cutout);
+  const drop = Math.min(frame.fillDepthMm, cutout.cutDepth * cos + sweep);
+  return round2(frame.baseMm + frame.fillDepthMm - drop);
 }
 
 /**
@@ -159,7 +173,6 @@ export function throughBlockedReason(
   return null;
 }
 
-/** True when the generator opens this cutout out of the underside. */
 export function isThroughCut(
   cutout: Pick<Cutout, 'groupId' | 'leanDeg' | 'shape' | 'depthMode'>,
   params: BinParams

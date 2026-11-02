@@ -104,9 +104,10 @@ describe('resolveCutoutDepth', () => {
   });
 
   it('leaves the requested floor above the underside', () => {
-    const cut = resolveCutoutDepth(pocket({ depthMode: 'floor', floorMm: 8 }), SOCKETED);
+    const floored = pocket({ depthMode: 'floor', floorMm: 8 });
+    const cut = resolveCutoutDepth(floored, SOCKETED);
     expect(cut).toBe(13);
-    expect(floorUnderCutout(cut, SOCKETED)).toBe(8);
+    expect(floorUnderCutout({ ...floored, cutDepth: cut }, SOCKETED)).toBe(8);
   });
 
   it('keeps the default floor on a flat bin', () => {
@@ -119,6 +120,21 @@ describe('resolveCutoutDepth', () => {
 
   it('keeps a shallow pocket when the floor is set above the fill', () => {
     expect(resolveCutoutDepth(pocket({ depthMode: 'floor', floorMm: 40 }), SOCKETED)).toBe(0.5);
+  });
+
+  // A 20mm-deep pocket leaned 30° about its mouth drops its low floor edge
+  // (20/2)·sin 30° = 5mm below the axis end, so an 8mm floor in 21mm of fill
+  // leaves (13 - 5) / cos 30° along the axis.
+  it('holds the low edge of a leaning pocket to the floor', () => {
+    const leaning = pocket({ depth: 20, leanDeg: 30, depthMode: 'floor', floorMm: 8 });
+    const cut = resolveCutoutDepth(leaning, FLAT);
+    expect(cut).toBeCloseTo(8 / Math.cos(Math.PI / 6), 2);
+    expect(floorUnderCutout({ ...leaning, cutDepth: cut }, FLAT)).toBeCloseTo(8, 1);
+  });
+
+  it('reads the floor under a leaning pocket from its low edge', () => {
+    const leaning = pocket({ depth: 20, leanDeg: -30, cutDepth: 10 });
+    expect(floorUnderCutout(leaning, FLAT)).toBeCloseTo(21 - (10 * Math.cos(Math.PI / 6) + 5), 2);
   });
 
   it.each(['mesh', 'knifeSlot', 'text'] as const)('ignores a mode on a %s cutout', (shape) => {

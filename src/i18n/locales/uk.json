@@ -1043,7 +1043,7 @@
   "binDesigner.cutouts.depthPrompt.thickness": "Товщина (мм)",
   "binDesigner.cutouts.depthPrompt.proud": "Виступає (мм)",
   "binDesigner.cutouts.depthPrompt.hint": "Виміряйте найтовщу частину. Гніздо виріжеться так, щоб інструмент лежав урівень.",
-  "binDesigner.cutouts.depthPrompt.tooDeep": "У цьому контейнері є місце на {max} мм.",
+  "binDesigner.cutouts.depthPrompt.tooDeep": "У цьому контейнері є місце на {max} мм. Зробіть його вищим або дайте інструменту виступати більше.",
   "binDesigner.cutouts.depthPrompt.raise": "Зробити контейнер {height}u",
   "binDesigner.cutouts.depthPrompt.sameForAll": "Однакова товщина для всіх {count}",
   "binDesigner.cutouts.depthPrompt.skip": "Пропустити",

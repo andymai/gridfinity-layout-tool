@@ -2760,7 +2760,7 @@
   "binDesigner.cutouts.depthPrompt.thickness": "სისქე (mm)",
   "binDesigner.cutouts.depthPrompt.proud": "ამოშვერილი (mm)",
   "binDesigner.cutouts.depthPrompt.hint": "გაზომეთ ყველაზე სქელი ადგილი. ჯიბე ისე იჭრება, რომ ხელსაწყო ზედაპირს გაუსწორდეს.",
-  "binDesigner.cutouts.depthPrompt.tooDeep": "ამ ყუთში {max}mm ადგილია.",
+  "binDesigner.cutouts.depthPrompt.tooDeep": "ამ ყუთში {max}mm ადგილია. გაზარდეთ სიმაღლე ან ხელსაწყო მეტად ამოშვერილი დატოვეთ.",
   "binDesigner.cutouts.depthPrompt.raise": "ყუთის სიმაღლე {height}u",
   "binDesigner.cutouts.depthPrompt.sameForAll": "ერთი სისქე ყველა {count}-სთვის",
   "binDesigner.cutouts.depthPrompt.skip": "გამოტოვება",

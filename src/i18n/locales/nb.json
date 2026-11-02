@@ -1043,7 +1043,7 @@
   "binDesigner.cutouts.depthPrompt.thickness": "Tykkelse (mm)",
   "binDesigner.cutouts.depthPrompt.proud": "Stikker opp (mm)",
   "binDesigner.cutouts.depthPrompt.hint": "Mål den tykkeste delen. Lommen skjæres slik at verktøyet ligger i flukt.",
-  "binDesigner.cutouts.depthPrompt.tooDeep": "Denne boksen har plass til {max} mm.",
+  "binDesigner.cutouts.depthPrompt.tooDeep": "Denne boksen har plass til {max} mm. Gjør den høyere, eller la verktøyet stikke mer opp.",
   "binDesigner.cutouts.depthPrompt.raise": "Gjør boksen {height}u høy",
   "binDesigner.cutouts.depthPrompt.sameForAll": "Samme tykkelse for alle {count}",
   "binDesigner.cutouts.depthPrompt.skip": "Hopp over",

@@ -90,9 +90,19 @@ describe('ToolThicknessPrompt', () => {
     render(<ToolThicknessPrompt />);
     answer('20');
     expect(screen.getByRole('alert')).toHaveTextContent('This bin has room for 16.3mm.');
+    expect(screen.getByRole('button', { name: 'Set depth' })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: 'Make the bin 4u tall' }));
     expect(useDesignerStore.getState().params.height).toBe(4);
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Set depth' })).toBeEnabled();
+  });
+
+  it('lets a too-thick tool through once it is set to stick out', () => {
+    seed(['a']);
+    render(<ToolThicknessPrompt />);
+    answer('20', '4');
+    fireEvent.click(screen.getByRole('button', { name: 'Set depth' }));
+    expect(depthOf('a')).toBe(16);
   });
 
   it('answers every queued tool at once by default', () => {

@@ -1043,7 +1043,7 @@
   "binDesigner.cutouts.depthPrompt.thickness": "Spessore (mm)",
   "binDesigner.cutouts.depthPrompt.proud": "Sporge di (mm)",
   "binDesigner.cutouts.depthPrompt.hint": "Misura il punto più spesso. La tasca viene tagliata perché l’utensile resti a filo.",
-  "binDesigner.cutouts.depthPrompt.tooDeep": "Questo bin ha spazio per {max} mm.",
+  "binDesigner.cutouts.depthPrompt.tooDeep": "Questo bin ha spazio per {max} mm. Rendilo più alto o lascia sporgere di più l’utensile.",
   "binDesigner.cutouts.depthPrompt.raise": "Porta il bin a {height}u",
   "binDesigner.cutouts.depthPrompt.sameForAll": "Stesso spessore per tutti i {count}",
   "binDesigner.cutouts.depthPrompt.skip": "Salta",

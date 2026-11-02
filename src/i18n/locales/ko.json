@@ -1043,7 +1043,7 @@
   "binDesigner.cutouts.depthPrompt.thickness": "두께 (mm)",
   "binDesigner.cutouts.depthPrompt.proud": "돌출 (mm)",
   "binDesigner.cutouts.depthPrompt.hint": "가장 두꺼운 부분을 재세요. 공구가 윗면과 같은 높이가 되도록 포켓을 잘라냅니다.",
-  "binDesigner.cutouts.depthPrompt.tooDeep": "이 수납통에는 {max}mm까지 들어갑니다.",
+  "binDesigner.cutouts.depthPrompt.tooDeep": "이 수납통에는 {max}mm까지 들어갑니다. 수납통을 높이거나 공구를 더 돌출시키세요.",
   "binDesigner.cutouts.depthPrompt.raise": "수납통을 {height}u로 높이기",
   "binDesigner.cutouts.depthPrompt.sameForAll": "{count}개 모두 같은 두께",
   "binDesigner.cutouts.depthPrompt.skip": "건너뛰기",

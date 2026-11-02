@@ -91,6 +91,28 @@ export const cutoutDepthModes = [
       expect(columnCrossings(result, x + 41.5, y)).toEqual([]);
     },
   }),
+  defineScenario('cutoutDepthModes', 'leaning floored pocket keeps its low edge on the floor', {
+    params: {
+      style: 'solid',
+      base: FLAT,
+      height: 3,
+      cutouts: [
+        pocket({ x: 25.55, y: 30.55, depth: 20, leanDeg: 30, depthMode: 'floor', floorMm: 8 }),
+      ],
+    },
+    forExport: true,
+    assert: 'structural',
+    customAssert: (result) => {
+      // On a flat solid bin every vertex above the bed belongs to the top or
+      // to the pocket, so the lowest of them is the pocket floor's low edge.
+      let lowest = Infinity;
+      for (let i = 2; i < result.vertices.length; i += 3) {
+        const z = result.vertices[i];
+        if (z > 0.5 && z < lowest) lowest = z;
+      }
+      expect(lowest).toBeCloseTo(8, 1);
+    },
+  }),
   defineScenario('cutoutDepthModes', 'floored pocket keeps its floor above the underside', {
     params: {
       style: 'solid',

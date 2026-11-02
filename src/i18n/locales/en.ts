@@ -3275,7 +3275,8 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.depthPrompt.proud': 'Sticks out (mm)',
   'binDesigner.cutouts.depthPrompt.hint':
     'Measure the thickest part. The pocket is cut so the tool sits flush.',
-  'binDesigner.cutouts.depthPrompt.tooDeep': 'This bin has room for {max}mm.',
+  'binDesigner.cutouts.depthPrompt.tooDeep':
+    'This bin has room for {max}mm. Make it taller, or let the tool stick out more.',
   'binDesigner.cutouts.depthPrompt.raise': 'Make the bin {height}u tall',
   'binDesigner.cutouts.depthPrompt.sameForAll': 'Same thickness for all {count}',
   'binDesigner.cutouts.depthPrompt.skip': 'Skip',

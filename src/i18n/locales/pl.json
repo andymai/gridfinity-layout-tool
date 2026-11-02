@@ -1043,7 +1043,7 @@
   "binDesigner.cutouts.depthPrompt.thickness": "Grubość (mm)",
   "binDesigner.cutouts.depthPrompt.proud": "Wystaje (mm)",
   "binDesigner.cutouts.depthPrompt.hint": "Zmierz najgrubsze miejsce. Gniazdo zostanie wycięte tak, by narzędzie leżało równo z powierzchnią.",
-  "binDesigner.cutouts.depthPrompt.tooDeep": "Ten bin ma miejsce na {max} mm.",
+  "binDesigner.cutouts.depthPrompt.tooDeep": "Ten bin ma miejsce na {max} mm. Zwiększ go albo pozwól narzędziu bardziej wystawać.",
   "binDesigner.cutouts.depthPrompt.raise": "Zwiększ bin do {height}u",
   "binDesigner.cutouts.depthPrompt.sameForAll": "Ta sama grubość dla wszystkich {count}",
   "binDesigner.cutouts.depthPrompt.skip": "Pomiń",

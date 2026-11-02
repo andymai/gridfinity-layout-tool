@@ -1043,7 +1043,7 @@
   "binDesigner.cutouts.depthPrompt.thickness": "Grosor (mm)",
   "binDesigner.cutouts.depthPrompt.proud": "Sobresale (mm)",
   "binDesigner.cutouts.depthPrompt.hint": "Mide la parte más gruesa. El hueco se corta para que la herramienta quede a ras.",
-  "binDesigner.cutouts.depthPrompt.tooDeep": "Este contenedor tiene espacio para {max} mm.",
+  "binDesigner.cutouts.depthPrompt.tooDeep": "Este contenedor tiene espacio para {max} mm. Hazlo más alto o deja que la herramienta sobresalga más.",
   "binDesigner.cutouts.depthPrompt.raise": "Hacer el contenedor de {height}u",
   "binDesigner.cutouts.depthPrompt.sameForAll": "Mismo grosor para las {count}",
   "binDesigner.cutouts.depthPrompt.skip": "Omitir",

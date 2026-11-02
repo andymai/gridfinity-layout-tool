@@ -1916,7 +1916,6 @@ function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean
   }
 }
 
-/** Where a cutout label lands relative to the cavity it names. */
 type LabelFloor = 'recess' | 'top' | 'open';
 
 /**

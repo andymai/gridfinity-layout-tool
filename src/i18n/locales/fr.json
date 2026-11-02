@@ -1043,7 +1043,7 @@
   "binDesigner.cutouts.depthPrompt.thickness": "Épaisseur (mm)",
   "binDesigner.cutouts.depthPrompt.proud": "Dépasse de (mm)",
   "binDesigner.cutouts.depthPrompt.hint": "Mesurez la partie la plus épaisse. La poche est creusée pour que l’outil affleure.",
-  "binDesigner.cutouts.depthPrompt.tooDeep": "Ce bac a de la place pour {max} mm.",
+  "binDesigner.cutouts.depthPrompt.tooDeep": "Ce bac a de la place pour {max} mm. Rendez-le plus haut, ou laissez l’outil dépasser davantage.",
   "binDesigner.cutouts.depthPrompt.raise": "Passer le bac à {height}u",
   "binDesigner.cutouts.depthPrompt.sameForAll": "Même épaisseur pour les {count}",
   "binDesigner.cutouts.depthPrompt.skip": "Passer",

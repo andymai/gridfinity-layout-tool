@@ -1043,7 +1043,7 @@
   "binDesigner.cutouts.depthPrompt.thickness": "Tloušťka (mm)",
   "binDesigner.cutouts.depthPrompt.proud": "Přesah (mm)",
   "binDesigner.cutouts.depthPrompt.hint": "Změřte nejsilnější místo. Kapsa se vyřízne tak, aby nástroj lícoval s povrchem.",
-  "binDesigner.cutouts.depthPrompt.tooDeep": "Tento bin má místo na {max} mm.",
+  "binDesigner.cutouts.depthPrompt.tooDeep": "Tento bin má místo na {max} mm. Zvyšte ho, nebo nechte nástroj víc přesahovat.",
   "binDesigner.cutouts.depthPrompt.raise": "Zvýšit bin na {height}u",
   "binDesigner.cutouts.depthPrompt.sameForAll": "Stejná tloušťka pro všech {count}",
   "binDesigner.cutouts.depthPrompt.skip": "Přeskočit",

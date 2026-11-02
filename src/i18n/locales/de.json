@@ -1043,7 +1043,7 @@
   "binDesigner.cutouts.depthPrompt.thickness": "Dicke (mm)",
   "binDesigner.cutouts.depthPrompt.proud": "Überstand (mm)",
   "binDesigner.cutouts.depthPrompt.hint": "Die dickste Stelle messen. Die Tasche wird so tief geschnitten, dass das Werkzeug bündig liegt.",
-  "binDesigner.cutouts.depthPrompt.tooDeep": "Dieser Behälter hat Platz für {max} mm.",
+  "binDesigner.cutouts.depthPrompt.tooDeep": "Dieser Behälter hat Platz für {max} mm. Den Behälter erhöhen oder das Werkzeug weiter überstehen lassen.",
   "binDesigner.cutouts.depthPrompt.raise": "Behälter auf {height}u erhöhen",
   "binDesigner.cutouts.depthPrompt.sameForAll": "Gleiche Dicke für alle {count}",
   "binDesigner.cutouts.depthPrompt.skip": "Überspringen",

@@ -1043,7 +1043,7 @@
   "binDesigner.cutouts.depthPrompt.thickness": "Espessura (mm)",
   "binDesigner.cutouts.depthPrompt.proud": "Saliência (mm)",
   "binDesigner.cutouts.depthPrompt.hint": "Meça a parte mais grossa. O encaixe é cortado para a ferramenta ficar rente.",
-  "binDesigner.cutouts.depthPrompt.tooDeep": "Este compartimento tem espaço para {max} mm.",
+  "binDesigner.cutouts.depthPrompt.tooDeep": "Este compartimento tem espaço para {max} mm. Aumente a altura ou deixe a ferramenta sobressair mais.",
   "binDesigner.cutouts.depthPrompt.raise": "Deixar o compartimento com {height}u",
   "binDesigner.cutouts.depthPrompt.sameForAll": "Mesma espessura para as {count}",
   "binDesigner.cutouts.depthPrompt.skip": "Pular",

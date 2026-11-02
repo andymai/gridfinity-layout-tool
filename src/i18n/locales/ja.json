@@ -1043,7 +1043,7 @@
   "binDesigner.cutouts.depthPrompt.thickness": "厚み (mm)",
   "binDesigner.cutouts.depthPrompt.proud": "はみ出し (mm)",
   "binDesigner.cutouts.depthPrompt.hint": "一番厚い部分を測ってください。工具が面一になる深さでポケットを切ります。",
-  "binDesigner.cutouts.depthPrompt.tooDeep": "このビンの余裕は{max}mmです。",
+  "binDesigner.cutouts.depthPrompt.tooDeep": "このビンの余裕は{max}mmです。ビンを高くするか、工具のはみ出しを増やしてください。",
   "binDesigner.cutouts.depthPrompt.raise": "ビンを{height}uにする",
   "binDesigner.cutouts.depthPrompt.sameForAll": "{count}個すべて同じ厚み",
   "binDesigner.cutouts.depthPrompt.skip": "スキップ",
