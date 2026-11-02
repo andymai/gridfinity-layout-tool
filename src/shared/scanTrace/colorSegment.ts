@@ -286,32 +286,28 @@ export function scoreThreshold(scores: Uint8Array, sensitivity = 0): number {
 }
 
 /**
- * Give back above-threshold pixels the opening erased, region by region: a
- * region returns when it touches exactly one tool's solid core, or no core and
- * exactly one kept piece. One touching two cores is a stray line between two
- * tools and stays out, as does a speck touching nothing.
+ * Give back above-threshold pixels the opening erased, region by region. A
+ * region returns when it touches one kept piece, or when at most one piece it
+ * touches is bigger than the region itself: a screwdriver shaft rejoins its
+ * handle and carries the blade tip that survived on its own, while a line
+ * between two tools, each bigger than the line, stays out however narrow
+ * either tool is. A speck touching nothing stays out too.
  */
 function restoreThin(
   above: Uint8Array,
   kept: Uint8Array,
   width: number,
-  height: number,
-  k: number
+  height: number
 ): Uint8Array {
   const n = width * height;
   const pieces = labelComponents({ width, height, data: kept });
-  // A core holds a fully kept square of half-width k.
-  const solid = erode(kept, width, height, 2 * k + 1);
-  const isCore = new Uint8Array(pieces.components.length);
-  for (let i = 0; i < n; i++) if (solid[i] === 1) isCore[pieces.labels[i]] = 1;
-
   const lost = new Uint8Array(n);
   for (let i = 0; i < n; i++) lost[i] = above[i] === 1 && kept[i] === 0 ? 1 : 0;
   const regions = labelComponents({ width, height, data: lost });
   const count = regions.components.length;
   // Up to two distinct labels per region: enough to tell one from many.
-  const cores = new Int32Array(count * 2).fill(-1);
   const touched = new Int32Array(count * 2).fill(-1);
+  const bigger = new Int32Array(count * 2).fill(-1);
   const note = (slots: Int32Array, region: number, label: number) => {
     const at = region * 2;
     if (slots[at] === label || slots[at + 1] === label) return;
@@ -333,7 +329,9 @@ function restoreThin(
         if (kept[q] === 0) continue;
         const piece = pieces.labels[q];
         note(touched, region, piece);
-        if (isCore[piece] === 1) note(cores, region, piece);
+        if (pieces.components[piece].area > regions.components[region].area) {
+          note(bigger, region, piece);
+        }
       }
     }
   }
@@ -341,8 +339,8 @@ function restoreThin(
     (slots[r * 2] !== -1 ? 1 : 0) + (slots[r * 2 + 1] !== -1 ? 1 : 0);
   const restore = new Uint8Array(count);
   for (let r = 0; r < count; r++) {
-    const coreCount = filled(cores, r);
-    restore[r] = coreCount === 1 || (coreCount === 0 && filled(touched, r) === 1) ? 1 : 0;
+    const any = filled(touched, r);
+    restore[r] = any === 1 || (any > 1 && filled(bigger, r) <= 1) ? 1 : 0;
   }
   const out = new Uint8Array(kept);
   for (let i = 0; i < n; i++) if (lost[i] === 1 && restore[regions.labels[i]] === 1) out[i] = 1;
@@ -389,5 +387,5 @@ export function segmentTools(img: ImageDataLike, options: ColorSegmentOptions = 
   const closed = erode(dilate(opened, width, height, k), width, height, k);
   // The close can reach across an excluded marker's edge; keep it to usable pixels.
   for (let i = 0; i < n; i++) closed[i] &= usable[i];
-  return { width, height, data: restoreThin(above, closed, width, height, k) };
+  return { width, height, data: restoreThin(above, closed, width, height) };
 }

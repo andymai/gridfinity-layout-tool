@@ -163,6 +163,48 @@ describe('segmentTools', () => {
     expect(countIn(mask, line)).toBe(0);
   });
 
+  // Too narrow to hold a solid square, the second tool is still a tool, and
+  // the line joining it to the first must not be given back.
+  it('keeps a narrow tool apart from its neighbour when a stray line joins them', () => {
+    const W = 320;
+    const H = 240;
+    const wide = rect(40, 60, 120, 180);
+    const narrow = rect(180, 60, 184, 180);
+    const line = rect(121, 120, 179, 120);
+    const red = solid([170, 40, 40]);
+    const image = paint(W, H, solid([215, 210, 200]), [
+      { inside: wide, rgb: red },
+      { inside: narrow, rgb: red },
+      { inside: line, rgb: red },
+    ]);
+
+    const mask = segmentTools(image);
+
+    expect(pieces(mask)).toHaveLength(2);
+    expect(countIn(mask, line)).toBe(0);
+  });
+
+  // The blade is wide enough to survive the cleanup on its own, so the shaft
+  // touches two pieces; it still rejoins the handle, bringing the blade.
+  it('gives back a flathead shaft together with its blade tip', () => {
+    const W = 320;
+    const H = 240;
+    const handle = rect(30, 90, 110, 150);
+    const shaft = rect(111, 119, 260, 120);
+    const blade = rect(261, 117, 274, 122);
+    const blue = solid([40, 60, 170]);
+    const image = paint(W, H, solid([220, 215, 205]), [
+      { inside: handle, rgb: blue },
+      { inside: shaft, rgb: blue },
+      { inside: blade, rgb: blue },
+    ]);
+
+    const mask = segmentTools(image);
+
+    expect(countIn(mask, shaft)).toBe(area(shaft, W, H));
+    expect(pieces(mask)).toHaveLength(1);
+  });
+
   it('gives back a thin shaft the cleanup erased', () => {
     const W = 320;
     const H = 240;

@@ -14,6 +14,8 @@ import { ok, err, isOk } from '@/core/result';
 import { parseSvgString } from '../svgImport/svgParser';
 import { scaleParsedSpec } from '../svgImport/svgScaleSpec';
 import type { ParsedCutoutSpec, SvgImportError } from '../svgImport/types';
+import { minAreaRect } from '@/shared/scanTrace/minAreaRect';
+import type { Point } from '@/shared/scanTrace';
 
 /** Combined extent of all parsed specs, in the SVG's own (unscaled) units. */
 export interface ScanBounds {
@@ -27,10 +29,10 @@ export interface ParsedScan {
   readonly specs: readonly ParsedCutoutSpec[];
   readonly bounds: ScanBounds;
   /**
-   * What the user gives a real size for: the whole outline, or the longest
-   * tool when several lie side by side, since nobody knows the span of a
-   * batch. Longest, not largest by area, so the prompt names a tool the user
-   * can pick out by eye.
+   * What the user gives a real size for, measured along its own axis: the
+   * whole outline, or the longest tool when several lie side by side, since
+   * nobody knows the span of a batch. Longest, not largest by area, so the
+   * prompt names a tool the user can pick out by eye.
    */
   readonly sized: ScanBounds;
   readonly sizedByLongest: boolean;
@@ -71,11 +73,50 @@ export function parseScanSvg(svgString: string): Result<ParsedScan, SvgImportErr
     return err({ code: 'SVG_NO_SHAPES', detail: 'Traced outline has zero size' });
   }
 
-  const span = (s: ParsedCutoutSpec) => Math.max(s.width, s.depth);
-  const own = computeScanBounds([specs.reduce((a, b) => (span(b) > span(a) ? b : a))]);
+  const longest = specs
+    .map((spec) => ({ spec, size: ownSize([spec]) }))
+    .reduce((a, b) => (b.size.longest > a.size.longest ? b : a));
+  const box = computeScanBounds([longest.spec]);
   // A spec inside the longest one is detail on the same tool, not a second tool.
-  const sizedByLongest = own.width < bounds.width - 1e-6 || own.depth < bounds.depth - 1e-6;
-  return ok({ specs, bounds, sized: sizedByLongest ? own : bounds, sizedByLongest });
+  const sizedByLongest = box.width < bounds.width - 1e-6 || box.depth < bounds.depth - 1e-6;
+  return ok({
+    specs,
+    bounds,
+    sized: sizedByLongest ? longest.size : ownSize(specs),
+    sizedByLongest,
+  });
+}
+
+/** A spec's outline as points: its path, or its box turned by its rotation. */
+function outlineOf(spec: ParsedCutoutSpec): Point[] {
+  if (spec.path && spec.path.length >= 3) return spec.path.map(({ x, y }) => ({ x, y }));
+  const cx = spec.x + spec.width / 2;
+  const cy = spec.y + spec.depth / 2;
+  const a = (spec.rotation * Math.PI) / 180;
+  const cos = Math.cos(a);
+  const sin = Math.sin(a);
+  return [
+    [-1, -1],
+    [1, -1],
+    [1, 1],
+    [-1, 1],
+  ].map(([sx, sy]) => {
+    const dx = (sx * spec.width) / 2;
+    const dy = (sy * spec.depth) / 2;
+    return { x: cx + dx * cos - dy * sin, y: cy + dx * sin + dy * cos };
+  });
+}
+
+/**
+ * Long and short sides measured along the outline's own axis, the way a ruler
+ * laid along the tool reads them: a tool photographed at an angle has a
+ * bounding box shorter than the tool, and scaling by it would size the whole
+ * batch wrong.
+ */
+function ownSize(specs: readonly ParsedCutoutSpec[]): ScanBounds {
+  const rect = minAreaRect(specs.flatMap(outlineOf));
+  if (!rect) return computeScanBounds(specs);
+  return { width: rect.width, depth: rect.height, longest: rect.width };
 }
 
 /**

@@ -65,7 +65,7 @@ describe('parseScanSvg', () => {
     const result = parseScanSvg(RECT_WIDE);
     if (!isOk(result)) throw new Error('fixture failed');
     expect(result.value.sizedByLongest).toBe(false);
-    expect(result.value.sized).toEqual(result.value.bounds);
+    expect(result.value.sized.longest).toBeCloseTo(result.value.bounds.longest, 6);
   });
 
   it('sizes a scan of several tools by the longest one', () => {
@@ -88,6 +88,20 @@ describe('parseScanSvg', () => {
     );
     if (!isOk(result)) throw new Error('fixture failed');
     expect(result.value.sized.longest).toBeCloseTo(150, 5);
+  });
+
+  // 150 × 10 turned 45° spans only 113 on each axis, so a box would pick the
+  // 120 × 40 tool and size the batch by the wrong length.
+  it('measures a tool lying at an angle along its own length', () => {
+    const result = parseScanSvg(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">' +
+        '<rect x="0" y="0" width="120" height="40"/>' +
+        '<polygon points="200,10 306.07,116.07 299,123.14 192.93,17.07"/></svg>'
+    );
+    if (!isOk(result)) throw new Error('fixture failed');
+    expect(result.value.sizedByLongest).toBe(true);
+    expect(result.value.sized.longest).toBeCloseTo(150, 0);
+    expect(result.value.sized.depth).toBeCloseTo(10, 0);
   });
 
   it('treats detail inside an outline as part of one tool', () => {
