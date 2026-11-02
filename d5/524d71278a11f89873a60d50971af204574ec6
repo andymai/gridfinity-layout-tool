@@ -1,0 +1,24 @@
+src/features/bin-designer/components/panel/CutoutsSection/shadowBoard/shadowBoardPlan.ts
+  s_4b9adb1d9473fb::t_b6781682e1fd5a 18,20,33,146-154,156-158,160,162-164,168,183,192-194,196,198,201-216,221-243,308-309,329-337
+src/features/bin-designer/components/panel/CutoutsSection/shadowBoard/shadowBoardPlan.test.ts
+  s_4b9adb1d9473fb::t_8edf2e1df50c46 3,122-162,205-210
+  s_4b9adb1d9473fb::t_93822f0591ac48 211
+package.json
+  s_4b9adb1d9473fb::t_0aff5565992198 122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d5524d71278a11f89873a60d50971af204574ec6",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
