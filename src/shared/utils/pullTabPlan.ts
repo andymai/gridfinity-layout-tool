@@ -236,7 +236,7 @@ export function activePullTab(p: BinParams): PullTabConfig | null {
   return tab.enabled && !pullTabUnavailableReason(p) ? tab : null;
 }
 
-/** The rounded-rim shell carries the outer-wall tabs; a center tab is never in it. */
+/** A center tab is built by its own feature, so it never puts a tab in the rim shell. */
 export function pullTabInRimShell(p: BinParams): boolean {
   const tab = activePullTab(p);
   return (
