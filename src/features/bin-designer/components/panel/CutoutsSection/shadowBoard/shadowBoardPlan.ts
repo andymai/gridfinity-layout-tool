@@ -15,9 +15,9 @@
 import polygonClipping, { type MultiPolygon, type Polygon, type Ring } from 'polygon-clipping';
 import { err, ok, type Result } from '@/core/result';
 import type { BinParams, Cutout } from '@/features/bin-designer/types';
-import { DEFAULT_GROUP_OP } from '@/features/bin-designer/types';
+import { DEFAULT_GROUP_OP, DEFAULT_KNIFE_SPEC } from '@/features/bin-designer/types';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
+import { cutoutInterior, cutoutTaperBand } from '@/features/bin-designer/utils/binDimensions';
 import { expandCutoutArray, expandCutoutGroup } from '@/shared/utils/cutoutArray';
 import { clearedProfile } from '@/shared/utils/cutoutFit';
 import { isPartialMask, MASK_CELL_SIZE, maskToPolygon } from '@/shared/utils/cellMask';
@@ -30,6 +30,7 @@ import {
 } from '@/shared/utils/cutoutOutline';
 import { fitTestFootprintBox } from '@/shared/utils/fitTestPlan';
 import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
+import { slotCornerRadius } from '@/shared/utils/cutoutPolygon';
 import { combineGroupPolygons } from '../booleanGeometry';
 
 export interface Pt {
@@ -142,18 +143,29 @@ function openingOf(c: Cutout, params: BinParams, clearance: boolean): MultiPolyg
   return ring && ring.length >= 3 ? [[ring]] : [];
 }
 
+interface Openings {
+  /** Profile pockets, which the generator keeps inside the interior. */
+  readonly pockets: MultiPolygon;
+  /** Mesh imprints, cut from the whole bin with no interior clip. */
+  readonly imprints: MultiPolygon;
+  /** Members of groups whose boolean leaves nothing, so no channel is cut for them. */
+  readonly emptyOwners: ReadonlySet<string>;
+}
+
 /**
- * Every pocket's opening in the editor frame, before anything is merged, or
- * null when a mesh imprint's outline is missing. A mesh imprint is cut on its
- * own, never inside its group's boolean, as the generator cuts it.
+ * Every opening in the editor frame, before anything is merged, or null when
+ * a mesh imprint's outline is missing. A mesh imprint is cut on its own, never
+ * inside its group's boolean, as the generator cuts it.
  */
-function openingPolygons(params: BinParams, clearance: boolean): MultiPolygon | null {
+function openingPolygons(params: BinParams, clearance: boolean): Openings | null {
   const shapes = params.cutouts.filter((c) => c.hidden !== true && c.shape !== 'text');
-  const out: MultiPolygon = [];
+  const pockets: MultiPolygon = [];
+  const imprints: MultiPolygon = [];
+  const emptyOwners = new Set<string>();
   const add = (c: Cutout): boolean => {
     const opening = openingOf(c, params, clearance);
     if (!opening) return false;
-    out.push(...opening);
+    (c.shape === 'mesh' ? imprints : pockets).push(...opening);
     return true;
   };
   const groups = new Map<string, Cutout[]>();
@@ -168,6 +180,7 @@ function openingPolygons(params: BinParams, clearance: boolean): MultiPolygon | 
   }
   for (const members of groups.values()) {
     const op = members[0].groupOp ?? DEFAULT_GROUP_OP;
+    let built = false;
     for (const copy of expandCutoutGroup(members)) {
       if (!copy.filter((m) => m.shape === 'mesh').every(add)) return null;
       const entries = copy
@@ -176,19 +189,58 @@ function openingPolygons(params: BinParams, clearance: boolean): MultiPolygon | 
           const polygon = (openingOf(cutout, params, clearance) ?? []).at(0);
           return polygon ? [{ cutout, polygon }] : [];
         });
-      out.push(...(combineGroupPolygons(entries, op) ?? []));
+      const result = combineGroupPolygons(entries, op) ?? [];
+      if (result.length > 0) built = true;
+      pockets.push(...result);
     }
+    if (!built) for (const m of members) emptyOwners.add(m.id);
   }
-  return out;
+  return { pockets, imprints, emptyOwners };
 }
 
-/** The open sides' channels through the wall, in the editor frame; tunnels stay under the top. */
-function channelPolygons(params: BinParams, innerW: number, innerD: number): MultiPolygon {
-  return openSideChannels(params)
+/** Longer than any bin is wide, so a knife slot's exit always clears the wall (mm). */
+const KNIFE_EXIT_REACH_MARGIN = 50;
+
+/**
+ * Where pockets run out through the wall, in the editor frame: open sides
+ * that open the top (a tunnel stays under it), and knife slots with an open
+ * end. The generator cuts neither through a tapered wall.
+ */
+function exitPolygons(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  emptyOwners: ReadonlySet<string>
+): MultiPolygon {
+  if (cutoutTaperBand(params)) return [];
+  const sides: MultiPolygon = openSideChannels(params, emptyOwners)
     .filter((ch) => !ch.tunnel)
     .map((ch) => [
       openSideChannelOutline(ch, { innerW, innerD, wallThickness: params.wallThickness }),
     ]);
+  const knives: MultiPolygon = [];
+  for (const master of params.cutouts) {
+    if (master.shape !== 'knifeSlot' || master.groupId !== null || master.hidden === true) continue;
+    const openEnd = (master.knife ?? DEFAULT_KNIFE_SPEC).openEnd;
+    if (openEnd === undefined) continue;
+    for (const c of expandCutoutArray(master)) {
+      if (c.rotation % 90 !== 0) continue;
+      // From inside the slot's round end, out along its length through the wall.
+      const reach = innerW + innerD + KNIFE_EXIT_REACH_MARGIN;
+      const near = c.width / 2 - slotCornerRadius(c.width, c.depth);
+      const dir = openEnd === 'end' ? 1 : -1;
+      const cx = c.x + c.width / 2;
+      const cy = c.y + c.depth / 2;
+      const ring: Ring = [
+        [near, -c.depth / 2],
+        [near + reach, -c.depth / 2],
+        [near + reach, c.depth / 2],
+        [near, c.depth / 2],
+      ].map(([x, y]) => rotateAbout(cx + dir * x, cy + y, cx, cy, c.rotation));
+      knives.push([ring]);
+    }
+  }
+  return [...sides, ...knives];
 }
 
 function roundedRect(minX: number, minY: number, maxX: number, maxY: number, r: number): Pt[] {
@@ -253,9 +305,8 @@ export function planShadowBoard(
   options: ShadowBoardOptions
 ): Result<ShadowBoardPlan, ShadowBoardProblem> {
   const { innerW, innerD, offsetX, offsetY } = cutoutInterior(params);
-  const pockets = openingPolygons(params, options.clearance);
-  if (!pockets) return err('meshMissing');
-  if (pockets.length === 0) return err('empty');
+  const found = openingPolygons(params, options.clearance);
+  if (!found) return err('meshMissing');
 
   const toModel = (polygons: MultiPolygon): MultiPolygon =>
     polygons.map((polygon) =>
@@ -267,8 +318,6 @@ export function planShadowBoard(
   const footprintPolygon: Polygon = outline.map((ring) =>
     ring.map((p): [number, number] => [p.x, p.y])
   );
-  // The generator keeps a pocket inside the interior, and an open side's
-  // channel runs out through the wall to the footprint's edge.
   const interior: Polygon = [
     [
       [0, 0],
@@ -277,11 +326,15 @@ export function planShadowBoard(
       [0, innerD],
     ],
   ];
-  const inside = polygonClipping.intersection(union(pockets), interior);
-  const channels = union(channelPolygons(params, innerW, innerD));
-  const reaching =
-    channels.length > 0 ? polygonClipping.intersection(toModel(channels), footprintPolygon) : [];
-  const openings = union([...toModel(inside), ...reaching]);
+  // Profile pockets stay inside the interior; imprints and wall exits are cut
+  // from the whole bin, and nothing is cut where the bin has no material.
+  const inside = polygonClipping.intersection(union(found.pockets), interior);
+  const cut = union([
+    ...toModel(inside),
+    ...toModel(found.imprints),
+    ...toModel(exitPolygons(params, innerW, innerD, found.emptyOwners)),
+  ]);
+  const openings = cut.length > 0 ? polygonClipping.intersection(cut, footprintPolygon) : [];
   if (openings.length === 0) return err('empty');
   return ok({
     outline,

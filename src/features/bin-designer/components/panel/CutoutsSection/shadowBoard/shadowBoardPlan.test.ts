@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { DEFAULT_KNIFE_SPEC } from '@/features/bin-designer/types';
 import type { BinParams, Cutout } from '@/features/bin-designer/types';
 import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { fitTestFootprintBox } from '@/shared/utils/fitTestPlan';
@@ -118,6 +119,47 @@ describe('planShadowBoard openings', () => {
     expect(box(outer).maxX).toBeCloseTo(fitTestFootprintBox(params).maxX, 6);
   });
 
+  it('cuts no channel for a group whose boolean leaves nothing', () => {
+    const params = bin([
+      cut('kept', { x: 5, y: 5 }),
+      cut('a', {
+        shape: 'circle',
+        x: 30,
+        y: 30,
+        width: 10,
+        depth: 10,
+        groupId: 'g',
+        groupOp: 'intersect',
+        openSides: [{ side: 'right' }],
+      }),
+      cut('b', { shape: 'circle', x: 38, y: 38, width: 10, depth: 10, groupId: 'g' }),
+    ]);
+    const { openings } = plan(params);
+    expect(openings).toHaveLength(1);
+    expect(box(openings[0][0]).maxX).toBeLessThan(0);
+  });
+
+  it("runs a knife slot's open end out through the wall", () => {
+    const params = bin([
+      cut('k', {
+        shape: 'knifeSlot',
+        x: 30,
+        width: 30,
+        depth: 4,
+        knife: { ...DEFAULT_KNIFE_SPEC, openEnd: 'end' },
+      }),
+    ]);
+    const [[outer]] = plan(params).openings;
+    expect(box(outer).maxX).toBeCloseTo(fitTestFootprintBox(params).maxX, 6);
+  });
+
+  it('cuts nothing where a custom footprint has no material', () => {
+    const params = bin([cut('a', { x: 50, y: 50, width: 20, depth: 20 })], {
+      cellMask: { cols: 4, rows: 4, cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0] },
+    });
+    expect(planShadowBoard(params, { clearance: false })).toEqual({ ok: false, error: 'empty' });
+  });
+
   describe('mesh imprints', () => {
     const square = (x: number, y: number, h: number) => [
       { x: x - h, y: y - h },
@@ -158,6 +200,13 @@ describe('planShadowBoard openings', () => {
       );
       expect(openings).toHaveLength(1);
       expect(openings[0]).toHaveLength(1);
+    });
+
+    it('reaches past the interior with its clearance, as the bin cuts it', () => {
+      const params = bin([mesh({ x: 0, clearance: 1 })], { meshAssets: { two: asset } });
+      const { innerW, offsetX } = cutoutInterior(params);
+      const left = Math.min(...plan(params, true).openings.map(([outer]) => box(outer).minX));
+      expect(left).toBeCloseTo(-innerW / 2 + offsetX - 1, 1);
     });
 
     it('grows round by its clearance', () => {
