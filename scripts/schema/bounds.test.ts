@@ -283,7 +283,7 @@ const annotations = collectAnnotations();
  * a drop means someone deleted provenance rather than a bound legitimately
  * becoming hand-picked, which is the erosion this guards against.
  */
-const MIN_ANNOTATED_BOUNDS = 231;
+const MIN_ANNOTATED_BOUNDS = 230;
 
 describe('x-constant annotations', () => {
   it('finds annotations to check', () => {

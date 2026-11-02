@@ -220,7 +220,8 @@ function withSplit(cutout: Cutout): Cutout {
     !isPoint(a) ||
     !isPoint(b) ||
     typeof cutDepth !== 'number' ||
-    !(cutDepth > 0 && cutDepth <= MAX_CUTOUT_FLOOR_MM)
+    !Number.isFinite(cutDepth) ||
+    cutDepth <= 0
   ) {
     const { split: _split, ...rest } = cutout;
     return rest;

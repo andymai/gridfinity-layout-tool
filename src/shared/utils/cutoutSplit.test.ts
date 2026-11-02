@@ -224,6 +224,28 @@ describe('drawnSplit', () => {
     expect(drawnSplit(plain, { x: 59.99, y: 0 }, { x: 59.99, y: 80 })).toBe('small');
   });
 
+  it('takes an angled line from the copy it is drawn across, not one its extension meets', () => {
+    const repeat = pocket({
+      split: undefined,
+      array: {
+        mode: 'grid',
+        cols: 2,
+        rows: 1,
+        pitchX: 50,
+        pitchY: 0,
+        count: 0,
+        radius: 0,
+        startAngle: 0,
+        rotateToCenter: false,
+      },
+    });
+    const split = drawnSplit(repeat, { x: 80, y: 38 }, { x: 100, y: 42 });
+    if (typeof split === 'string') throw new Error(split);
+    // Drawn through the second copy's centre, so its own-frame line meets the origin.
+    const { a, b } = split;
+    expect((b.x - a.x) * (0 - a.y) - (b.y - a.y) * (0 - a.x)).toBeCloseTo(0, 6);
+  });
+
   it('takes a line across any copy of a repeat', () => {
     const repeat = pocket({
       split: undefined,

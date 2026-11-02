@@ -63,12 +63,10 @@ function splitProblem(split: unknown): string | null {
       return `.${end} must be a point within ±${CONSTRAINTS.MAX_SPLIT_POINT_MM} mm`;
     }
   }
-  if (
-    !isNumber(split.cutDepth) ||
-    split.cutDepth <= 0 ||
-    split.cutDepth > CONSTRAINTS.MAX_CUTOUT_FLOOR_MM
-  ) {
-    return `.cutDepth must be above 0 and at most ${CONSTRAINTS.MAX_CUTOUT_FLOOR_MM}`;
+  // Unbounded above, as the pocket's own depth is: a custom height unit can make
+  // a bin taller than any fixed ceiling, and the generator clamps to the fill.
+  if (!isNumber(split.cutDepth) || split.cutDepth <= 0) {
+    return '.cutDepth must be above 0';
   }
   if (
     split.depthMode !== undefined &&

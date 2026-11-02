@@ -1088,10 +1088,6 @@
         "cutDepth": {
           "type": "number",
           "exclusiveMinimum": 0,
-          "maximum": 350,
-          "x-constant": {
-            "maximum": "MAX_CUTOUT_FLOOR_MM"
-          },
           "description": "How deep side B is cut in mm. Derived from depthMode when it is set, as the pocket's own cutDepth is."
         },
         "depthMode": {

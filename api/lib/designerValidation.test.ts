@@ -1875,6 +1875,10 @@ describe('validateDesignerShare', () => {
     };
     const split = { a: { x: -5, y: -10 }, b: { x: -5, y: 10 }, cutDepth: 8 };
 
+    it('keeps side B deeper than any fixed ceiling, as a tall bin can need', () => {
+      expect(withCutouts([{ id: 'a', split: { ...split, cutDepth: 398 } }]).valid).toBe(true);
+    });
+
     it('keeps a split, fixed or held to its floor', () => {
       const result = withCutouts([
         { id: 'a', split },

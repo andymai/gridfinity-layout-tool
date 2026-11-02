@@ -229,15 +229,51 @@ function firstSideBDepth(c: Cutout): number {
   return Math.max(0.5, Math.round(c.cutDepth) / 2);
 }
 
+function inside(ring: readonly SplitPt[], p: SplitPt): boolean {
+  let hit = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const a = ring[i];
+    const b = ring[j];
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) {
+      hit = !hit;
+    }
+  }
+  return hit;
+}
+
+/** Whether the segment from `p` to `q` crosses the outline or lies in it. */
+function segmentMeets(ring: readonly SplitPt[], p: SplitPt, q: SplitPt): boolean {
+  for (let i = 0; i < ring.length; i++) {
+    const r = ring[i];
+    const s = ring[(i + 1) % ring.length];
+    if (sideOf(r, p, q) * sideOf(s, p, q) <= 0 && sideOf(p, r, s) * sideOf(q, r, s) <= 0) {
+      return true;
+    }
+  }
+  return inside(ring, p);
+}
+
 /**
  * The split a line drawn in the editor from `start` to `end` makes, or why it
- * cannot split the pocket. A repeat takes the line from whichever copy it
- * crosses, as every copy shares the master's frame. A redrawn split keeps its
- * depths, and its sides stay where they were.
+ * cannot split the pocket. A repeat takes the line from the copy the drawn
+ * segment crosses, as every copy shares the master's frame; only a drag that
+ * touches none falls back to the first copy its extension crosses. A redrawn
+ * split keeps its depths, and its sides stay where they were.
  */
 export function drawnSplit(c: Cutout, start: SplitPt, end: SplitPt): Split | SplitProblem {
+  const copies = c.array ? expandCutoutArray(c) : [c];
+  const outline = splitOutline(c);
+  const touched = outline
+    ? copies.filter((copy) =>
+        segmentMeets(
+          outline,
+          toSplitFrame(copy, start.x, start.y),
+          toSplitFrame(copy, end.x, end.y)
+        )
+      )
+    : [];
   let problem: SplitProblem = 'crossings';
-  for (const copy of c.array ? expandCutoutArray(c) : [c]) {
+  for (const copy of [...touched, ...copies.filter((x) => !touched.includes(x))]) {
     const line = alignedSplitLine(
       c.split,
       toSplitFrame(copy, start.x, start.y),

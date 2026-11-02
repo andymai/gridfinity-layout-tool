@@ -1793,6 +1793,13 @@ describe('migrateParams', () => {
         }
       });
 
+      it('keeps side B deeper than any fixed ceiling', () => {
+        const deep = { a: { x: 0, y: -10 }, b: { x: 0, y: 10 }, cutDepth: 398 };
+        expect(migrateParams({ cutouts: [pocket({ split: deep })] }).cutouts[0].split).toEqual(
+          deep
+        );
+      });
+
       it('reads a split with an unknown side B mode as a fixed depth', () => {
         const line = { a: { x: 0, y: -10, z: 1 }, b: { x: 0, y: 10 }, cutDepth: 6 };
         const [through, badFloor, floor] = migrateParams({
