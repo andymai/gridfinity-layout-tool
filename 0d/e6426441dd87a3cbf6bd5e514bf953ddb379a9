@@ -1,0 +1,57 @@
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.test.tsx
+  s_f721a21584cb95::t_f7ed3450742c7c 370
+scripts/feature-tips/tips3d.ts
+  s_f721a21584cb95::t_0868c5a060339f 203
+  s_f721a21584cb95::t_19d76a67cc2f41 5,32
+  s_f721a21584cb95::t_34296f433ada51 58
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.test.tsx
+  s_f721a21584cb95::t_f7ed3450742c7c 125
+src/features/bin-designer/components/FeatureTip/FeatureTip.tsx
+  s_f721a21584cb95::t_7544ca6cd6407c 8,47-49
+src/features/bin-designer/components/panel/ShapeSection/ShapeSection.test.tsx
+  s_f721a21584cb95::t_f7ed3450742c7c 81
+src/features/bin-designer/components/panel/InteriorSection/InteriorModes.tsx
+  s_f721a21584cb95::t_ce8ada4f4d056d 12,86,129
+src/features/bin-designer/components/FeatureTip/FeatureTip.test.tsx
+  s_f721a21584cb95::t_f7ed3450742c7c 43,53,64,85,98,113,124,141,150,157
+  s_f721a21584cb95::t_f9aa57c55c46cf 73-84,86-93
+scripts/feature-tips/stage.ts
+  s_f721a21584cb95::t_0868c5a060339f 40,42,50-52
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.tsx
+  s_f721a21584cb95::t_69ece570d3d0f8 68-69
+  s_f721a21584cb95::t_ce8ada4f4d056d 13,38
+src/features/bin-designer/components/panel/ScoopSection/ScoopSection.test.tsx
+  s_f721a21584cb95::t_bdb85d0208a415 2,6,81-85
+  s_f721a21584cb95::t_0358b39ceeb430 86
+src/features/bin-designer/components/panel/InteriorSection/useCutEditorOpens.ts
+  s_f721a21584cb95::t_74cf6e94a8336b 1-9
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.test.tsx
+  s_f721a21584cb95::t_f7ed3450742c7c 243
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_f721a21584cb95::t_bdb85d0208a415 9,84-88
+  s_f721a21584cb95::t_e92bfdd45b49c2 89-90
+scripts/feature-tips/tipsUi.ts
+  s_f721a21584cb95::t_0868c5a060339f 226
+src/features/bin-designer/components/panel/HandleSection/HandleSection.test.tsx
+  s_f721a21584cb95::t_f7ed3450742c7c 148
+src/shared/components/InfoDot/InfoDot.tsx
+  s_f721a21584cb95::t_0868c5a060339f 38
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.test.tsx
+  s_f721a21584cb95::t_f7ed3450742c7c 85,93,99,113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0de6426441dd87a3cbf6bd5e514bf953ddb379a9",
+  "prompts": {},
+  "sessions": {
+    "s_f721a21584cb95": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14ff3cc8-6691-4939-a25c-f6ba932191ef",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
