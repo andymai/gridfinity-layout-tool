@@ -453,7 +453,7 @@
   "binDesigner.base.lipNotches.blockedShape": "Bei einer Sonderform nicht verfügbar.",
   "binDesigner.base.lipNotches.blockedOverhang": "Mit Überstand nicht verfügbar.",
   "binDesigner.base.lipNotches.blockedSize": "Breite und Tiefe müssen ganze oder halbe Einheiten sein.",
-  "binDesigner.base.lipNotches.blockedSingleCell": "Eine Box mit nur einer Zelle hat keine Rasterlinie für eine Kerbe.",
+  "binDesigner.base.lipNotches.blockedSingleCell": "Die Box muss breiter oder tiefer als eine Einheit sein.",
   "binDesigner.bento.backgroundNote": "Leere Zellen werden als 1×1-Taschen gedruckt",
   "binDesigner.bento.binWideTitle": "Für den ganzen Bin",
   "binDesigner.bento.canvasLabel": "Bento-Fläche, {cols} Spalten mal {rows} Zeilen",

@@ -453,7 +453,7 @@
   "binDesigner.base.lipNotches.blockedShape": "Non disponibile con una forma personalizzata.",
   "binDesigner.base.lipNotches.blockedOverhang": "Non disponibile con la sporgenza.",
   "binDesigner.base.lipNotches.blockedSize": "Larghezza e profondità devono essere in unità intere o mezze unità.",
-  "binDesigner.base.lipNotches.blockedSingleCell": "Un contenitore di una sola cella non ha linee della griglia per la tacca.",
+  "binDesigner.base.lipNotches.blockedSingleCell": "Il contenitore deve superare un'unità in larghezza o profondità.",
   "binDesigner.bento.backgroundNote": "Le celle vuote vengono stampate come vani 1×1",
   "binDesigner.bento.binWideTitle": "Tutto il bin",
   "binDesigner.bento.canvasLabel": "Area bento, {cols} colonne per {rows} righe",

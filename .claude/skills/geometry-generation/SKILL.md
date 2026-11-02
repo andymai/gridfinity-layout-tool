@@ -269,5 +269,7 @@ too, or every threshold in them re-tunes the next time the shipped look changes.
 per perimeter cell rather than one footprint-wide profile; the ridge two pockets leave
 is the notch. Its top stays `LIP_NOTCH_TOP_DROP_MM` below the peak: carried higher, it
 meets the knife edge at a cusp and every `lipTip` fillet or chamfer silently falls back
-to sharp. `resolveLipNotches` (`@/shared/utils/lipNotchPlan`) is the one gate, read by
-the shell key, both lip builders and the direct-mesh allowlist.
+to sharp. `resolveLipNotches` (`@/shared/utils/lipNotchPlan`) is the one gate:
+`deriveDimensions` resolves it to `dims.lipNotches` for the shell key and both lip
+builders, and the direct-mesh allowlist calls it. A notched cut that throws falls back
+to the plain lip.

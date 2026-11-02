@@ -21,7 +21,10 @@ const NOTCH_TOP_Z = PEAK_Z - LIP_NOTCH_TOP_DROP_MM;
  */
 const PROBE_IN = 3;
 
-/** The span a notch puts in the probe column, or undefined when there is none. */
+/**
+ * The span a notch puts in the probe column, or undefined when there is none.
+ * Read off the export mesh: parity-paired column probes can misread a preview.
+ */
 function notchSpan(
   mesh: MeshData,
   x: number,
@@ -67,6 +70,7 @@ function notched(width: number, depth: number, extra: Partial<BinParams> = {}): 
 export const lipNotches: ScenarioCase[] = [
   defineScenario('lip-notches #4783', '3x2 notches every internal grid line', {
     assert: 'structural',
+    forExport: true,
     params: notched(3, 2),
     customAssert: (result) => {
       // Front wall: grid lines at x = -21 and +21; mid-cell at -42 and 0.
@@ -86,6 +90,7 @@ export const lipNotches: ScenarioCase[] = [
   }),
   defineScenario('lip-notches #4783', 'half-unit notches follow the fractional edge', {
     assert: 'structural',
+    forExport: true,
     // Cells run [0.5, 1, 1] from the left, so the lines sit 21mm and 63mm in.
     params: notched(2.5, 1, { fractionalEdgeX: 'start' }),
     customAssert: (result) => {
@@ -97,6 +102,7 @@ export const lipNotches: ScenarioCase[] = [
   }),
   defineScenario('lip-notches #4783', 'short wall keeps its notches without a support', {
     assert: 'structural',
+    forExport: true,
     params: notched(2, 1, { height: 1 }),
     customAssert: (result) => {
       const wallTop = GRIDFINITY.HEIGHT_UNIT;
@@ -109,6 +115,7 @@ export const lipNotches: ScenarioCase[] = [
   }),
   defineScenario('lip-notches #4783', 'a rounded peak still rounds over notches', {
     assert: 'structural',
+    forExport: true,
     params: notched(2, 2, {
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true, lipNotches: true, lipTip: 'round' },
     }),
@@ -123,6 +130,7 @@ export const lipNotches: ScenarioCase[] = [
   }),
   defineScenario('lip-notches #4783', 'a lidded bin keeps a plain lip', {
     assert: 'structural',
+    forExport: true,
     params: notched(2, 2, { lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } }),
     customAssert: (result) => {
       expectNoNotchAt(result, ...frontProbe(2, 0));

@@ -3422,7 +3422,7 @@
   "binDesigner.base.lipNotches.blockedShape": "მორგებულ ფორმაზე მიუწვდომელია.",
   "binDesigner.base.lipNotches.blockedOverhang": "ნაშვერით მიუწვდომელია.",
   "binDesigner.base.lipNotches.blockedSize": "სიგანე და სიღრმე მთელ ან ნახევარ ერთეულებში უნდა იყოს.",
-  "binDesigner.base.lipNotches.blockedSingleCell": "ერთუჯრიან ყუთს ჭრილისთვის ბადის ხაზი არ აქვს.",
+  "binDesigner.base.lipNotches.blockedSingleCell": "ყუთი სიგანით ან სიღრმით ერთ ერთეულზე მეტი უნდა იყოს.",
   "binDesigner.base.magnetHoles": "მაგნიტის ხვრელები",
   "binDesigner.base.magnetDiameter": "მაგნიტის დიამეტრი",
   "binDesigner.base.magnetDepth": "მაგნიტის სიღრმე",

@@ -453,7 +453,7 @@
   "binDesigner.base.lipNotches.blockedShape": "Není dostupné u vlastního tvaru.",
   "binDesigner.base.lipNotches.blockedOverhang": "Není dostupné s přesahem.",
   "binDesigner.base.lipNotches.blockedSize": "Šířka a hloubka musí být v celých nebo polovičních jednotkách.",
-  "binDesigner.base.lipNotches.blockedSingleCell": "Box o jedné buňce nemá čáru mřížky pro zářez.",
+  "binDesigner.base.lipNotches.blockedSingleCell": "Box musí být širší nebo hlubší než jedna jednotka.",
   "binDesigner.bento.backgroundNote": "Prázdné buňky se vytisknou jako kapsy 1×1",
   "binDesigner.bento.binWideTitle": "Pro celý bin",
   "binDesigner.bento.canvasLabel": "Plátno bento, {cols} sloupců na {rows} řádků",

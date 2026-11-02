@@ -4074,7 +4074,7 @@ const en: Record<string, string> = {
   'binDesigner.base.lipNotches.blockedShape': 'Not available on a custom shape.',
   'binDesigner.base.lipNotches.blockedOverhang': 'Not available with an overhang.',
   'binDesigner.base.lipNotches.blockedSize': 'Needs a width and depth in whole or half units.',
-  'binDesigner.base.lipNotches.blockedSingleCell': 'A one-cell bin has no grid line to notch.',
+  'binDesigner.base.lipNotches.blockedSingleCell': 'Needs a bin wider or deeper than one unit.',
   'binDesigner.base.magnetHoles': 'Magnet holes',
   'binDesigner.base.magnetDiameter': 'Magnet diameter',
   'binDesigner.base.magnetDepth': 'Magnet depth',

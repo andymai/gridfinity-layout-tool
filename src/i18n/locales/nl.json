@@ -453,7 +453,7 @@
   "binDesigner.base.lipNotches.blockedShape": "Niet beschikbaar bij een aangepaste vorm.",
   "binDesigner.base.lipNotches.blockedOverhang": "Niet beschikbaar met een overhang.",
   "binDesigner.base.lipNotches.blockedSize": "Breedte en diepte moeten hele of halve eenheden zijn.",
-  "binDesigner.base.lipNotches.blockedSingleCell": "Een bak van één vak heeft geen rasterlijn voor een inkeping.",
+  "binDesigner.base.lipNotches.blockedSingleCell": "De bak moet breder of dieper zijn dan één eenheid.",
   "binDesigner.bento.backgroundNote": "Lege cellen worden als 1×1-vakjes geprint",
   "binDesigner.bento.binWideTitle": "Hele bin",
   "binDesigner.bento.canvasLabel": "Bento-canvas, {cols} kolommen bij {rows} rijen",

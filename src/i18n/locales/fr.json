@@ -453,7 +453,7 @@
   "binDesigner.base.lipNotches.blockedShape": "Indisponible avec une forme personnalisée.",
   "binDesigner.base.lipNotches.blockedOverhang": "Indisponible avec un débord.",
   "binDesigner.base.lipNotches.blockedSize": "La largeur et la profondeur doivent être en unités entières ou demi-unités.",
-  "binDesigner.base.lipNotches.blockedSingleCell": "Un bac d’une seule case n’a aucune ligne de grille où placer une encoche.",
+  "binDesigner.base.lipNotches.blockedSingleCell": "Le bac doit dépasser une unité en largeur ou en profondeur.",
   "binDesigner.bento.backgroundNote": "Les cellules vides s'impriment en logements 1×1",
   "binDesigner.bento.binWideTitle": "Tout le bin",
   "binDesigner.bento.canvasLabel": "Zone bento, {cols} colonnes sur {rows} lignes",
