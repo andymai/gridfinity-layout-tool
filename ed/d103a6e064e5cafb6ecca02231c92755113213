@@ -1,0 +1,19 @@
+src/features/bin-designer/store/helpers.ts
+  s_883a4eee2ecc4e::t_1bab91876a07e7 169-173
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "edd103a6e064e5cafb6ecca02231c92755113213",
+  "prompts": {},
+  "sessions": {
+    "s_883a4eee2ecc4e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf59d3b6-e347-45ec-8991-5ee56bc71466",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
