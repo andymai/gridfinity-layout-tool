@@ -1,0 +1,26 @@
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/scanIngest.ts
+  s_4b9adb1d9473fb::t_2fe9c1b1c9bc48 17-18,32-35,76-79,81-119
+src/shared/scanTrace/colorSegment.ts
+  s_4b9adb1d9473fb::t_9293914df772ae 289-294
+src/shared/scanTrace/colorSegment.test.ts
+  s_4b9adb1d9473fb::t_d35d0116639fa7 166-207
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/scanIngest.test.ts
+  s_4b9adb1d9473fb::t_2fe9c1b1c9bc48 68,93-104
+  s_4b9adb1d9473fb::t_8ff38aa4dd4c77 105-106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "af4799e7cacb4b2d7dab384e55dd2c5a6440afff",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
