@@ -14,6 +14,7 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
+import { unitTag, unitTagShapeId } from '@/features/bin-designer/utils/cutoutHierarchy';
 import { toArrangeUnits, type ArrangeUnit } from './cutoutGroups';
 import type { Bounds } from './geometryCore';
 import { getCutoutBounds } from './maskFit';
@@ -31,7 +32,6 @@ export interface AutoArrangeOptions {
 export interface ArrangedPlacement {
   readonly x: number;
   readonly y: number;
-  /** Present only when the shape is turned. */
   readonly rotation?: number;
 }
 
@@ -44,9 +44,11 @@ interface Packed {
   readonly rotation?: number;
 }
 
-function packed(unit: ArrangeUnit, turn: boolean): Packed {
+function packed(unit: ArrangeUnit, turn: boolean, context: readonly string[]): Packed {
   const [only] = unit.members;
-  if (!turn || unit.members.length !== 1) return { unit, bounds: unit.bounds };
+  // A group is one block at this level even when it holds a single shape.
+  const tag = unit.members.length === 1 ? unitTag(only, context) : null;
+  if (!turn || tag === null || unitTagShapeId(tag) === null) return { unit, bounds: unit.bounds };
   const rotation = minAreaTurn(only);
   if (rotation === null) return { unit, bounds: unit.bounds };
   // Measured the way the board measures it, so the packed shape never reads as
@@ -69,11 +71,13 @@ export function autoArrangeCutouts(
   context: readonly string[] = []
 ): Record<string, ArrangedPlacement> {
   const { binWidth, gap, staggered = false, turn = false } = options;
-  const width = (p: Packed) => p.bounds.maxX - p.bounds.minX;
-  const depth = (p: Packed) => p.bounds.maxY - p.bounds.minY;
+  // Quantized, so the sines a turned outline is measured through cannot tip
+  // two equal shapes into a different order or row when arranged again.
+  const width = (p: Packed) => tidy(p.bounds.maxX - p.bounds.minX);
+  const depth = (p: Packed) => tidy(p.bounds.maxY - p.bounds.minY);
   const movable = toArrangeUnits(cutouts, context)
     .filter((unit) => !unit.locked)
-    .map((unit) => packed(unit, turn));
+    .map((unit) => packed(unit, turn, context));
   const sorted = [...movable].sort((a, b) => depth(b) - depth(a));
   const positions: Record<string, ArrangedPlacement> = {};
 

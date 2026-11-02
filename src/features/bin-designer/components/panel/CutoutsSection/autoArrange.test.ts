@@ -202,43 +202,53 @@ describe('autoArrangeCutouts', () => {
         handleOut: null,
         symmetric: false,
       });
-      const a = (40 * Math.PI) / 180;
-      const pts = [
-        [0, 0],
-        [40, 0],
-        [40, 8],
-        [0, 8],
-      ].map(([x, y]) => ({
-        x: 30 + x * Math.cos(a) - y * Math.sin(a),
-        y: 10 + x * Math.sin(a) + y * Math.cos(a),
-      }));
-      const xs = pts.map((p) => p.x);
-      const ys = pts.map((p) => p.y);
-      const bar = (id: string): Cutout => ({
-        ...createCutout(id, Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)),
-        shape: 'path',
-        x: Math.min(...xs),
-        y: Math.min(...ys),
-        path: pts.map((p) => corner(p.x, p.y)),
-      });
-      const options = { binWidth: 120, binDepth: 100, gap: 2, turn: true };
-      const once = autoArrangeCutouts([bar('a'), bar('b')], options);
-      const placed = (id: string): Cutout => {
-        const at = once[id];
-        const dx = at.x - bar(id).x;
-        const dy = at.y - bar(id).y;
+      const bar = (id: string, deg: number, at: { x: number; y: number } = { x: 30, y: 10 }) => {
+        const a = (deg * Math.PI) / 180;
+        const pts = [
+          [0, 0],
+          [40, 0],
+          [40, 8],
+          [0, 8],
+        ].map(([x, y]) => ({
+          x: at.x + x * Math.cos(a) - y * Math.sin(a),
+          y: at.y + x * Math.sin(a) + y * Math.cos(a),
+        }));
+        const xs = pts.map((q) => q.x);
+        const ys = pts.map((q) => q.y);
         return {
-          ...bar(id),
-          ...at,
-          path: pts.map((p) => corner(p.x + dx, p.y + dy)),
+          ...createCutout(id, Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)),
+          shape: 'path' as const,
+          x: Math.min(...xs),
+          y: Math.min(...ys),
+          path: pts.map((q) => corner(q.x, q.y)),
         };
       };
-      const twice = autoArrangeCutouts([placed('a'), placed('b')], options);
-      for (const id of ['a', 'b']) {
+      const bars = [bar('a', 35), bar('b', -50, { x: 80, y: 40 }), bar('c', 70, { x: 60, y: 60 })];
+      const options = { binWidth: 120, binDepth: 100, gap: 2, turn: true };
+      const once = autoArrangeCutouts(bars, options);
+      const moved = bars.map((c): Cutout => {
+        const at = once[c.id];
+        const dx = at.x - c.x;
+        const dy = at.y - c.y;
+        return {
+          ...c,
+          ...at,
+          path: (c.path ?? []).map((q) => ({ ...q, x: q.x + dx, y: q.y + dy })),
+        };
+      });
+      const twice = autoArrangeCutouts(moved, options);
+      for (const { id } of bars) {
         expect(twice[id].x).toBeCloseTo(once[id].x, 6);
         expect(twice[id].y).toBeCloseTo(once[id].y, 6);
         expect(twice[id].rotation).toBeUndefined();
       }
+    });
+
+    it('keeps a container holding one shape as a block, and turns that shape inside it', () => {
+      const alone = { ...createCutout('a', 10, 30), parentGroups: ['box'] };
+      const options = { binWidth: 70, binDepth: 100, gap: 2, turn: true };
+      expect(autoArrangeCutouts([alone], options).a.rotation).toBeUndefined();
+      expect(autoArrangeCutouts([alone], options, ['box']).a.rotation).toBe(90);
     });
 
     it('turns nothing unless asked', () => {
