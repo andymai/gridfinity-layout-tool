@@ -1,7 +1,7 @@
 import type { Cutout } from '@/features/bin-designer/types';
-import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import type { PreviewMap } from '../useCutoutInteraction';
 import { getCutoutBounds } from '../maskFit';
+import { placedCopies } from '../pocketChecks';
 import { ISSUE_COLOR } from './constants';
 import { OffBoardBounds3D } from './OffBoardBounds3D';
 
@@ -12,25 +12,23 @@ interface IssueFrames3DProps {
   readonly preview: PreviewMap;
 }
 
-/** A dashed frame around each placed copy a pocket check names, following live drags. */
 export function IssueFrames3D({ cutouts, instanceIds, preview }: IssueFrames3DProps) {
   if (instanceIds.size === 0) return null;
+  // Expanded exactly as the checks expand them, so a copy a group inherits
+  // from another member's repeat carries the same id here as in the issue.
+  const live = cutouts.map((c) => ({ ...c, ...preview.get(c.id) }));
   return (
     <>
-      {cutouts
-        .filter((c) => !c.hidden)
-        .flatMap((c) =>
-          expandCutoutArray({ ...c, ...preview.get(c.id) })
-            .filter((inst) => instanceIds.has(inst.id))
-            .map((inst) => (
-              <OffBoardBounds3D
-                key={`issue-${inst.id}`}
-                bounds={getCutoutBounds(inst)}
-                color={ISSUE_COLOR}
-                dashed
-              />
-            ))
-        )}
+      {placedCopies(live)
+        .filter(({ cutout }) => instanceIds.has(cutout.id))
+        .map(({ cutout }) => (
+          <OffBoardBounds3D
+            key={`issue-${cutout.id}`}
+            bounds={getCutoutBounds(cutout)}
+            color={ISSUE_COLOR}
+            dashed
+          />
+        ))}
     </>
   );
 }

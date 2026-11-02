@@ -74,10 +74,14 @@ describe('PocketIssueList', () => {
     }
   });
 
-  it('keeps a long list short', () => {
+  it('keeps a long list short, with the rest a click away', () => {
     show(Array.from({ length: 8 }, (_, i) => issue({ ids: [`x${i}`] })));
-    expect(screen.getAllByRole('button', { name: /plastic between/ })).toHaveLength(6);
-    expect(screen.getByText('2 more')).toBeInTheDocument();
+    const rows = () => screen.getAllByRole('button', { name: /plastic between/ });
+    expect(rows()).toHaveLength(6);
+    fireEvent.click(screen.getByRole('button', { name: 'Show 2 more' }));
+    expect(rows()).toHaveLength(8);
+    fireEvent.click(screen.getByRole('button', { name: 'Show fewer' }));
+    expect(rows()).toHaveLength(6);
   });
 
   it('shows nothing when every pocket passes', () => {

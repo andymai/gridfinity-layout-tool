@@ -3625,7 +3625,8 @@ const en: Record<string, string> = {
   'binDesigner.cutoutEditor.checks.floor':
     'Only {mm} mm of floor under {a}, which can flex or let light through',
   'binDesigner.cutoutEditor.checks.floorFix': 'Leave {mm} mm',
-  'binDesigner.cutoutEditor.checks.more': '{count} more',
+  'binDesigner.cutoutEditor.checks.more': 'Show {count} more',
+  'binDesigner.cutoutEditor.checks.fewer': 'Show fewer',
   'binDesigner.cutoutEditor.offBoardWarning.one': '1 cutout will be clipped',
   'binDesigner.cutoutEditor.offBoardWarning.other': '{count} cutouts will be clipped',
   'binDesigner.cutoutEditor.bringBackIn': 'Bring back in',

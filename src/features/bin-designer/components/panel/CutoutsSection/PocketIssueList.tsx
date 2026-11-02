@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { Alert, Button } from '@/design-system';
 import { AlertTriangleIcon } from '@/design-system/Icon';
@@ -6,12 +7,9 @@ import { LabelInfo } from '../shared/panelText';
 import { derivedLabel } from './shapeListModel';
 import { MIN_FLOOR_MM, type PocketIssue } from './pocketChecks';
 
-/** What the inspector needs to show the checks and act on them. */
 export interface PocketChecksView {
   readonly issues: readonly PocketIssue[];
-  /** The cutouts the issues name, to show each by its name. */
   readonly cutouts: readonly Cutout[];
-  /** Selects the shapes an issue names. */
   readonly onSelect: (ids: readonly string[]) => void;
   readonly onFix: (issue: PocketIssue) => void;
 }
@@ -30,6 +28,7 @@ export function PocketIssueList({
   disabled = false,
 }: PocketIssueListProps) {
   const t = useTranslation();
+  const [expanded, setExpanded] = useState(false);
   if (issues.length === 0) return null;
 
   const byId = new Map(cutouts.map((c) => [c.id, c]));
@@ -76,7 +75,7 @@ export function PocketIssueList({
         </LabelInfo>
       </div>
       <ul className="mt-1 space-y-1">
-        {issues.slice(0, SHOWN).map((issue) => (
+        {(expanded ? issues : issues.slice(0, SHOWN)).map((issue) => (
           <li key={`${issue.kind}:${issue.ids.join(':')}`} className="space-y-1">
             <Button
               type="button"
@@ -104,9 +103,17 @@ export function PocketIssueList({
         ))}
       </ul>
       {issues.length > SHOWN && (
-        <p className="mt-1 text-warning/80">
-          {t('binDesigner.cutoutEditor.checks.more', { count: issues.length - SHOWN })}
-        </p>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setExpanded((open) => !open)}
+          className="mt-1 h-auto px-0 py-0 text-warning/80 hover:underline"
+        >
+          {expanded
+            ? t('binDesigner.cutoutEditor.checks.fewer')
+            : t('binDesigner.cutoutEditor.checks.more', { count: issues.length - SHOWN })}
+        </Button>
       )}
     </Alert>
   );

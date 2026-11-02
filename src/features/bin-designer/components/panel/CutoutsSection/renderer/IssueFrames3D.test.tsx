@@ -63,6 +63,18 @@ describe('IssueFrames3D', () => {
     expect(screen.getByTestId('frame')).toHaveAttribute('data-minx', '40');
   });
 
+  // A legacy group can hold its repeat on one member; the others are copied on it.
+  it("frames a copy a group member inherits from another's repeat", () => {
+    const members = [
+      cutout({ id: 'm1', groupId: 'g', groupOp: 'union', array }),
+      cutout({ id: 'm2', groupId: 'g', groupOp: 'union', x: 12 }),
+    ];
+    render(
+      <IssueFrames3D cutouts={members} instanceIds={new Set(['m2::a1'])} preview={new Map()} />
+    );
+    expect(screen.getByTestId('frame')).toHaveAttribute('data-minx', '37');
+  });
+
   it('draws nothing for hidden shapes or an empty set', () => {
     const { container, rerender } = render(
       <IssueFrames3D
