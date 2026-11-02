@@ -72,6 +72,24 @@ describe('TabNavigation', () => {
       mockUseResponsive.mockReturnValue({ isMobile: true });
     });
 
+    it('scrolls a tab opened off screen into the strip', () => {
+      // A 390px strip with the Exports tab laid out past its right edge.
+      const box = (left: number, width: number) =>
+        ({ left, right: left + width, width, top: 0, bottom: 40, height: 40 }) as DOMRect;
+      const rect = vi
+        .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+        .mockImplementation(function (this: HTMLElement) {
+          if (this.getAttribute('role') === 'tablist') return box(0, 390);
+          return this.id === 'settings-tab-exports' ? box(900, 100) : box(0, 100);
+        });
+      try {
+        render(<TabNavigation activeTab="exports" onTabChange={onTabChange} />);
+        expect(screen.getByRole('tablist').scrollLeft).toBe(755);
+      } finally {
+        rect.mockRestore();
+      }
+    });
+
     it('renders horizontal tab bar without vertical orientation', () => {
       render(<TabNavigation activeTab="general" onTabChange={onTabChange} />);
       const tablist = screen.getByRole('tablist');
