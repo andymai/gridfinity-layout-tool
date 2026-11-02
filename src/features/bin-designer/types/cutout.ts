@@ -74,6 +74,22 @@ export type CutoutEntryProfile = 'chamfer' | 'round';
 
 export const CUTOUT_ENTRY_PROFILES: readonly CutoutEntryProfile[] = ['chamfer', 'round'];
 
+/**
+ * Floor of a finger-access cut: `curved` follows the fingertip (the deepest
+ * floor fillet the cut can take), `flat` keeps the cut's own fillet settings.
+ */
+export type CutoutFingerBottom = 'curved' | 'flat';
+
+export const CUTOUT_FINGER_BOTTOMS: readonly CutoutFingerBottom[] = ['curved', 'flat'];
+
+/**
+ * Marks a slot or round cutout as finger access: a dip beside a pocket that a
+ * fingertip reaches into to grip a tool and lift it out.
+ */
+export interface CutoutFinger {
+  readonly bottom: CutoutFingerBottom;
+}
+
 /** Ordered mode list for UI rendering and exhaustiveness checks. */
 export const CUTOUT_DEPTH_MODES: readonly CutoutDepthMode[] = ['fixed', 'floor', 'through'];
 
@@ -594,6 +610,8 @@ export interface Cutout {
   readonly chamferWidth?: number;
   /** Shape of that entry edge. Absent means `chamfer`. */
   readonly entryProfile?: CutoutEntryProfile;
+  /** Present on a finger-access cut; read only on a slot or a circle. */
+  readonly finger?: CutoutFinger;
   /**
    * Tilt of the pocket's axis off vertical, in degrees (±{@link
    * MAX_CUTOUT_LEAN_DEG}), so an item slides in at a slope. The pocket is the

@@ -123,6 +123,31 @@ describe('lid cutouts', () => {
     expect(plateSolidMm(result!, cx, outsideY, 0, plate)).toBeCloseTo(plate, 2);
   }, 120_000);
 
+  // A curved finger cut rounds its tool's bottom edge, which on a hole would
+  // pinch the opening at the plate's underside. On a 0.8mm plate the fillet is
+  // about 1mm, so the pinch shows only near the wall: 0.3mm in, it left 0.18mm.
+  it('keeps a finger-access slot a straight hole', async () => {
+    const { generateLid } = await import('./lidOrchestrator');
+    const dims = { width: 2, depth: 2, height: 3 };
+    const window = lidCutoutWindow(makeParams({ cutouts: [rect(0, 0, 1, 1)] }, dims));
+    expect(window).not.toBeNull();
+    const w = 20;
+    const d = 10;
+    const slot: Cutout = {
+      ...rect((window!.spanW - w) / 2, (window!.spanD - d) / 2, w, d),
+      shape: 'slot',
+      finger: { bottom: 'curved' },
+    };
+    const params = makeParams({ cutouts: [slot] }, dims);
+    const result = generateLid(params, undefined, true);
+    expect(result).not.toBeNull();
+
+    const plate = resolveLidPlateThickness(params);
+    const cx = slot.x + w / 2 - window!.spanW / 2 + window!.offsetX;
+    const cy = slot.y + d / 2 - window!.spanD / 2 + window!.offsetY;
+    expect(plateSolidMm(result!, cx, cy + d / 2 - 0.3, 0, plate)).toBeLessThan(0.01);
+  }, 120_000);
+
   it('removes material — the hole is not a no-op the volume cannot see', async () => {
     const { generateLid } = await import('./lidOrchestrator');
     const dims = { width: 2, depth: 2, height: 3 };

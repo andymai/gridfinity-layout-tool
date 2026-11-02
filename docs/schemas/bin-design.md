@@ -522,6 +522,7 @@ the 2D editor and comes out as a plain rectangle in 3D.
 | `clearance`        | `number`                                                                                                                             |          | `0.2`             | >= 0, <= 5          | Extra clearance in mm around the cut.                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `chamferWidth`     | `number`                                                                                                                             |          |                   | >= 0, <= 5          | Size in mm of the entry edge at the cut's mouth: how far it flares out and how far it drops.                                                                                                                                                                                                                                                                                                                                               |
 | `entryProfile`     | `"chamfer"` \| `"round"`                                                                                                             |          |                   |                     | Shape of the entry edge sized by chamferWidth: a 45° bevel ('chamfer', the default when absent) or a quarter round tangent to the wall and the top ('round').                                                                                                                                                                                                                                                                              |
+| `finger`           | [`CutoutFinger`](#cutoutfinger)                                                                                                      |          |                   |                     | Makes a 'slot' or 'circle' a finger cut beside a pocket, so a fingertip can reach under the tool and lift it. Ignored on any other shape.                                                                                                                                                                                                                                                                                                  |
 | `leanDeg`          | `number`                                                                                                                             |          |                   | >= -45, <= 45       | Tilt of the pocket's axis off vertical in degrees, about the opening along the shape's local depth axis; cutDepth is measured along the tilted axis. Ignored for mesh and knifeSlot shapes.                                                                                                                                                                                                                                                |
 | `array`            | [`CutoutArrayConfig`](#cutoutarrayconfig)                                                                                            |          |                   |                     |                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `engraveLabel`     | `boolean`                                                                                                                            |          |                   |                     | Engrave the label text next to this cutout.                                                                                                                                                                                                                                                                                                                                                                                                |
@@ -551,6 +552,17 @@ to keep the wall above the pocket.
 <a id="cutoutopensidespec"></a>
 
 3 fields, in `src/features/bin-designer/types/cutout.ts`.
+
+### CutoutFinger
+
+Marks a `slot` or `circle` as a finger cut. Write `{ "bottom": "curved" }` for a
+trough or bowl that lets a fingertip slide under the tool beside it.
+
+<!-- schema:CutoutFinger indexed -->
+
+<a id="cutoutfinger"></a>
+
+1 field, in `src/features/bin-designer/types/cutout.ts`.
 
 ### CutoutScoopEdges
 

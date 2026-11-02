@@ -225,6 +225,13 @@ describe('arrangements that are not a pattern', () => {
     expect(detectRepeatPattern(placed, BIN_W, BIN_D)).toBeNull();
   });
 
+  it('declines slots where only some are finger cuts', () => {
+    const placed = asPlacedCutouts(cutout({ shape: 'slot' }), cfg({ cols: 3, rows: 1 }));
+    placed[1] = { ...placed[1], finger: { bottom: 'curved' } };
+
+    expect(detectRepeatPattern(placed, BIN_W, BIN_D)).toBeNull();
+  });
+
   it('declines mixed rotations in a grid, which cannot be expressed', () => {
     const placed = asPlacedCutouts(cutout(), cfg({ cols: 3, rows: 1 }));
     placed[1] = { ...placed[1], rotation: 45 };

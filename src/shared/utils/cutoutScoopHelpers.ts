@@ -1,5 +1,7 @@
 import type { Cutout, CutoutScoopEdges } from '@/shared/types/bin';
 import { DEFAULT_SCOOP_EDGES } from '@/shared/types/bin';
+import { entryChamferWidth } from './cutoutFit';
+import { fingerBottom } from './fingerAccess';
 
 /**
  * Resolved scoop radii for a cutout, clamped to geometric limits.
@@ -17,6 +19,14 @@ export interface ResolvedScoop {
 export function resolveScoop(cutout: Cutout, effectiveDepth: number): ResolvedScoop {
   const maxScoop = Math.min(effectiveDepth, Math.min(cutout.width, cutout.depth) / 2) - 0.01;
   const cap = Math.max(0, maxScoop);
+  // A curved finger cut is a trough or a bowl: the deepest fillet it can hold.
+  // That stops below its entry edge, since a fillet climbing into the edge's
+  // loft fails and the builder's fallback shrinks it by a quarter.
+  if (fingerBottom(cutout) === 'curved') {
+    const wall = effectiveDepth - entryChamferWidth({ ...cutout, cutDepth: effectiveDepth });
+    const r = Math.max(0, Math.min(cap, wall - 0.01));
+    return { w: r, d: r, edges: DEFAULT_SCOOP_EDGES };
+  }
   const rawW = cutout.scoopRadiusW ?? 0;
   const rawD = cutout.scoopRadiusD ?? 0;
   if (cutout.shape !== 'rectangle') {

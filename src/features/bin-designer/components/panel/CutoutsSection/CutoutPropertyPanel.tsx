@@ -14,6 +14,8 @@ import { CutoutScoopControls } from '../../CutoutWorkspace/CutoutScoopControls';
 import { CutoutShapeControls } from './CutoutShapeControls';
 import { CutoutDepthControl } from './CutoutDepthControl';
 import { isThroughCut } from '@/shared/utils/cutoutDepth';
+import { fingerBottom } from '@/shared/utils/fingerAccess';
+import { FingerAccessControls } from '../../CutoutWorkspace/FingerAccessControls';
 import { CutoutFitControls } from './CutoutFitControls';
 import { CutoutShapeBadge } from './CutoutShapeBadge';
 import { hasFitControls, formatFitSummary, repeatBlockedReason } from './cutoutSectionVisibility';
@@ -36,6 +38,7 @@ interface CutoutPropertyPanelProps {
   readonly onFitCue?: (cue: FitCue) => void;
   /** Flatten the cutout's array into independent cutouts. */
   readonly onFlattenArray?: (id: string) => void;
+  readonly onAddFingerAccess?: (id: string) => void;
   /** Offered when the Repeat section is blocked by grouping. */
   readonly onUngroup?: (ids: readonly string[]) => void;
 }
@@ -51,6 +54,7 @@ export function CutoutPropertyPanel({
   disabled = false,
   onFitCue,
   onFlattenArray,
+  onAddFingerAccess,
   onUngroup,
 }: CutoutPropertyPanelProps) {
   const t = useTranslation();
@@ -156,7 +160,7 @@ export function CutoutPropertyPanel({
             onUpdate={(patch) => onUpdate(cutout.id, patch)}
             disabled={disabled}
           />
-          {!throughCut && (
+          {!throughCut && fingerBottom(cutout) !== 'curved' && (
             <CutoutScoopControls
               key={cutout.id}
               cutout={cutout}
@@ -164,6 +168,12 @@ export function CutoutPropertyPanel({
               onUpdate={(patch) => onUpdate(cutout.id, patch)}
             />
           )}
+          <FingerAccessControls
+            cutout={cutout}
+            onUpdate={(patch) => onUpdate(cutout.id, patch)}
+            onAdd={onAddFingerAccess ? () => onAddFingerAccess(cutout.id) : undefined}
+            disabled={disabled}
+          />
         </div>
       </MoreDisclosure>
 

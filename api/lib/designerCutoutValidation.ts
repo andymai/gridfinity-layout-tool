@@ -38,6 +38,12 @@ export const VALID_CUTOUT_DEPTH_MODES = ['floor', 'through'] as const;
 export const VALID_CUTOUT_ENTRY_PROFILES = ['chamfer', 'round'] as const;
 
 /**
+ * Cross-boundary contract: MUST match `CUTOUT_FINGER_BOTTOMS` in
+ * `src/features/bin-designer/types/cutout.ts`.
+ */
+export const VALID_CUTOUT_FINGER_BOTTOMS = ['curved', 'flat'] as const;
+
+/**
  * Global fill level for a cutout bin.
  *
  * `topOffset` reaches the generator as `wallHeight - topOffset`, so a
@@ -110,6 +116,17 @@ export function validateCutouts(value: unknown): string | null {
       )
     ) {
       return `cutouts[${i}].entryProfile must be one of: ${VALID_CUTOUT_ENTRY_PROFILES.join(', ')}`;
+    }
+    if (
+      c.finger !== undefined &&
+      !(
+        isObject(c.finger) &&
+        VALID_CUTOUT_FINGER_BOTTOMS.includes(
+          c.finger.bottom as (typeof VALID_CUTOUT_FINGER_BOTTOMS)[number]
+        )
+      )
+    ) {
+      return `cutouts[${i}].finger.bottom must be one of: ${VALID_CUTOUT_FINGER_BOTTOMS.join(', ')}`;
     }
     // The depth mode decides how deep the generator cuts, so an unknown one must
     // stop here rather than build silently as a fixed depth.

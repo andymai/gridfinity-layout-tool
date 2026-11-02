@@ -150,6 +150,14 @@ describe('derivedLabel', () => {
     });
   });
 
+  it('names a finger cut by its role rather than its shape', () => {
+    const finger = cutout({ shape: 'slot', width: 20, depth: 40, finger: { bottom: 'flat' } });
+    expect(derivedLabel(finger)).toEqual({
+      key: 'binDesigner.shapeList.derived.finger',
+      values: { w: '20', d: '40' },
+    });
+  });
+
   it('reports the side count for a polygon', () => {
     expect(derivedLabel(cutout({ shape: 'polygon', sides: 8, width: 10 })).values).toEqual({
       sides: '8',

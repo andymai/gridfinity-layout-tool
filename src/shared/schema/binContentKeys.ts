@@ -204,6 +204,7 @@ export const CUTOUT_KEYS = [
   'clearance',
   'chamferWidth',
   'entryProfile',
+  'finger',
   'leanDeg',
   'array',
   'engraveLabel',
@@ -275,6 +276,11 @@ export type _BezierHandleKeys = Assert<
 export const CUTOUT_OPEN_SIDE_SPEC_KEYS = ['side', 'widthMm', 'tunnel'] as const;
 export type _CutoutOpenSideSpecKeys = Assert<
   KeysMatch<keyof CutoutOpenSideSpec, (typeof CUTOUT_OPEN_SIDE_SPEC_KEYS)[number]>
+>;
+
+export const CUTOUT_FINGER_KEYS = ['bottom'] as const;
+export type _CutoutFingerKeys = Assert<
+  KeysMatch<keyof NonNullable<Cutout['finger']>, (typeof CUTOUT_FINGER_KEYS)[number]>
 >;
 
 export const CUTOUT_SCOOP_EDGES_KEYS = ['left', 'right', 'front', 'back'] as const;

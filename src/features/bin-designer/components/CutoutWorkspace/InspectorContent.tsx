@@ -8,7 +8,6 @@
 import { useMemo } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
-import { CHAMFER_SHAPES, MAX_CUTOUT_CHAMFER, maxEntryChamfer } from '@/features/bin-designer/types';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
 import { alignSelection, distributeSelection } from '../panel/CutoutsSection/geometryAlign';
@@ -34,8 +33,8 @@ import type { AlignMode, DistributeAxis } from '../panel/CutoutsSection/geometry
 import { SingleCutoutInspector } from './SingleCutoutInspector';
 import { CutoutDepthControl } from '../panel/CutoutsSection/CutoutDepthControl';
 import { isThroughCut } from '@/shared/utils/cutoutDepth';
-import { EntryProfileToggle } from '../panel/CutoutsSection/EntryProfileToggle';
-import { cutoutEntryProfile } from '@/shared/utils/cutoutFit';
+import { fingerBottom } from '@/shared/utils/fingerAccess';
+import { BatchEntryEdgeFields } from './BatchEntryEdgeFields';
 import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutBoardSettings } from './CutoutBoardSettings';
 import { BinSizeSection } from './BinSizeSection';
@@ -75,6 +74,7 @@ interface InspectorContentProps {
   readonly disabled?: boolean;
   readonly onFitCue?: (cue: FitCue) => void;
   readonly onFlattenArray?: (id: string) => void;
+  readonly onAddFingerAccess?: (id: string) => void;
   /** Bakes a repeated group into one independent group per copy. */
   readonly onFlattenGroupArray?: (id: string) => void;
   readonly board?: BoardSettings;
@@ -201,6 +201,7 @@ export function InspectorContent({
   disabled = false,
   onFitCue,
   onFlattenArray,
+  onAddFingerAccess,
   onFlattenGroupArray,
   board,
   offBoardCount = 0,
@@ -232,9 +233,12 @@ export function InspectorContent({
   // Same reason: the group Repeat section renders far below the early return,
   // but its hook cannot.
   const setCutoutArray = useDesignerStore((st) => st.setCutoutArray);
-  // Through cuts have no floor, so the generator drops their floor fillets.
+  // Through cuts have no floor and curved finger cuts size their own, so
+  // neither takes a fillet radius from these fields.
   const allThrough = useDesignerStore(
-    (st) => selectedCutouts.length > 0 && selectedCutouts.every((c) => isThroughCut(c, st.params))
+    (st) =>
+      selectedCutouts.length > 0 &&
+      selectedCutouts.every((c) => isThroughCut(c, st.params) || fingerBottom(c) === 'curved')
   );
 
   // Bin-level controls stay visible across every selection state so the user can
@@ -310,10 +314,6 @@ export function InspectorContent({
   const sharedY = getSharedValue(selectedCutouts, preview, 'y');
   const sharedWidth = getSharedValue(selectedCutouts, preview, 'width');
   const sharedDepth = getSharedValue(selectedCutouts, preview, 'depth');
-  const chamferCutouts = selectedCutouts.filter((c) => CHAMFER_SHAPES.includes(c.shape));
-  const sharedChamfer = getSharedValue(chamferCutouts, preview, 'chamferWidth');
-  const profiles = new Set(chamferCutouts.map(cutoutEntryProfile));
-  const sharedProfile = profiles.size === 1 ? [...profiles][0] : null;
 
   // `transformOnly` fields fall under the lock contract ("cannot be moved,
   // resized, or rotated"); cut depth and colour do not, so they still apply to
@@ -358,19 +358,6 @@ export function InspectorContent({
     if (updates.size > 0) onUpdateBatch(updates);
   };
 
-  // Chamfer headroom depends on each cutout's own cut depth, and not every
-  // shape takes one — so ineligible shapes are skipped rather than blocking the
-  // control for the whole selection.
-  const handleChamferBatch = (value: number) => {
-    if (!onUpdateBatch || selectedCutouts.length <= 1) return;
-    const updates = new Map<string, Partial<Cutout>>();
-    for (const c of selectedCutouts) {
-      if (!CHAMFER_SHAPES.includes(c.shape)) continue;
-      updates.set(c.id, { chamferWidth: Math.min(value, maxEntryChamfer(c.cutDepth)) });
-    }
-    if (updates.size > 0) onUpdateBatch(updates);
-  };
-
   const applySelectionUpdates = (updates: ReadonlyMap<string, Partial<Cutout>>) => {
     if (onUpdateBatch && updates.size > 0) onUpdateBatch(updates);
   };
@@ -411,6 +398,7 @@ export function InspectorContent({
           onUpdate={onUpdate}
           onFitCue={onFitCue}
           onFlattenArray={onFlattenArray}
+          onAddFingerAccess={onAddFingerAccess}
           disabled={disabled}
         />
       )}
@@ -558,41 +546,11 @@ export function InspectorContent({
                 )}
               </>
             )}
-            {chamferCutouts.length > 0 && (
-              <>
-                <div className="col-span-2">
-                  <EntryProfileToggle
-                    value={sharedProfile}
-                    onChange={(profile) =>
-                      applySelectionUpdates(
-                        new Map(
-                          chamferCutouts.map((c) => [
-                            c.id,
-                            { entryProfile: profile === 'chamfer' ? undefined : profile },
-                          ])
-                        )
-                      )
-                    }
-                    disabled={disabled}
-                  />
-                </div>
-                <NumberField
-                  label={t(
-                    sharedProfile === 'round'
-                      ? 'binDesigner.cutouts.entryRound'
-                      : 'binDesigner.cutouts.chamfer'
-                  )}
-                  value={sharedChamfer ?? 0}
-                  indeterminate={sharedChamfer === null}
-                  onChange={handleChamferBatch}
-                  min={0}
-                  max={MAX_CUTOUT_CHAMFER}
-                  step={0.2}
-                  unit="mm"
-                  disabled={disabled}
-                />
-              </>
-            )}
+            <BatchEntryEdgeFields
+              cutouts={selectedCutouts.map((c) => ({ ...c, ...preview.get(c.id) }))}
+              onUpdateBatch={applySelectionUpdates}
+              disabled={disabled}
+            />
           </div>
           {/* Gated exactly as the single-select inspector gates it: a lid hole
               is tagged with the flat CUTOUT tag and takes no colour, so the

@@ -310,6 +310,8 @@ export interface DesignerState {
   // Cutout actions
   /** Returns whether the cutout landed — false when the lid is at its cap. */
   addCutout: (cutout: Cutout) => boolean;
+  /** Add a finger cut bound to `pocketId`; false when nothing was added. */
+  addFingerAccess: (pocketId: string, finger: Cutout) => boolean;
   addMeshCutout: (cutout: Cutout, asset: MeshAssetEntry) => void;
   removeCutout: (id: string) => void;
   updateCutout: (id: string, updates: Partial<Cutout>) => void;

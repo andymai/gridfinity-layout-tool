@@ -12,6 +12,8 @@ import { clampRotationToBounds } from '../panel/CutoutsSection/geometry';
 import { resizeAroundCenter } from '../panel/CutoutsSection/cutoutHelpers';
 import { cutoutDepthShortfall } from '../panel/CutoutsSection/cutoutDepthShortfall';
 import { CutoutScoopControls } from './CutoutScoopControls';
+import { FingerAccessControls } from './FingerAccessControls';
+import { fingerBottom } from '@/shared/utils/fingerAccess';
 import { CutoutDepthControl } from '../panel/CutoutsSection/CutoutDepthControl';
 import { isThroughCut } from '@/shared/utils/cutoutDepth';
 import { CutoutShapeControls } from '../panel/CutoutsSection/CutoutShapeControls';
@@ -69,6 +71,8 @@ interface SingleCutoutInspectorProps {
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
   readonly onFitCue?: (cue: FitCue) => void;
   readonly onFlattenArray?: (id: string) => void;
+  /** Places a finger cut beside the pocket with this id. */
+  readonly onAddFingerAccess?: (id: string) => void;
   readonly disabled: boolean;
 }
 
@@ -82,6 +86,7 @@ export function SingleCutoutInspector({
   onUpdate,
   onFitCue,
   onFlattenArray,
+  onAddFingerAccess,
   disabled,
 }: SingleCutoutInspectorProps) {
   const t = useTranslation();
@@ -272,13 +277,24 @@ export function SingleCutoutInspector({
                   )}
                 </div>
               )}
-              {cutout.shape !== 'mesh' && !throughOnly && !throughCut && (
-                <CutoutScoopControls
-                  key={cutout.id}
+              {cutout.shape !== 'mesh' &&
+                !throughOnly &&
+                !throughCut &&
+                fingerBottom(cutout) !== 'curved' && (
+                  <CutoutScoopControls
+                    key={cutout.id}
+                    cutout={cutout}
+                    preview={preview.get(cutout.id)}
+                    disabled={disabled}
+                    onUpdate={(patch) => onUpdate(cutout.id, patch)}
+                  />
+                )}
+              {!throughOnly && (
+                <FingerAccessControls
                   cutout={cutout}
-                  preview={preview.get(cutout.id)}
-                  disabled={disabled}
                   onUpdate={(patch) => onUpdate(cutout.id, patch)}
+                  onAdd={onAddFingerAccess ? () => onAddFingerAccess(cutout.id) : undefined}
+                  disabled={disabled}
                 />
               )}
               {/* A lid's plate cuts clean through, so it has no wall to open. */}

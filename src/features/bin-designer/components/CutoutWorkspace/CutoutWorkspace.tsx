@@ -45,6 +45,7 @@ import { useSvgExport } from '../panel/CutoutsSection/svgExport';
 import { useStlImport, StlImportDialog } from '../panel/CutoutsSection/stlImport';
 import { ScanWithPhoneDialog } from '../panel/CutoutsSection/scanImport';
 import { ToolThicknessPrompt } from '../panel/CutoutsSection/ToolThicknessPrompt';
+import { useAddFingerAccess } from '../panel/CutoutsSection/useAddFingerAccess';
 import { InspectorDock } from './InspectorDock';
 import { ShapeList } from './ShapeList';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
@@ -481,6 +482,8 @@ export function CutoutWorkspace() {
     maskCellSize,
   });
 
+  const handleAddFingerAccess = useAddFingerAccess(cutouts, cutoutBoard, maxCutDepth, selectIds);
+
   /**
    * Select a shape-list row, moving the editor into that row's branch first.
    *
@@ -807,6 +810,7 @@ export function CutoutWorkspace() {
           disabled={isInteracting}
           onFitCue={setFitCue}
           onFlattenArray={handleFlattenArray}
+          onAddFingerAccess={isLid ? undefined : handleAddFingerAccess}
           onFlattenGroupArray={handleFlattenGroupArray}
           offBoardCount={offBoardIds.size}
           onClampOffBoard={offBoardUpdates.size > 0 ? handleClampOffBoard : undefined}

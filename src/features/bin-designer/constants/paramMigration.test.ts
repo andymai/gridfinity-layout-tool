@@ -1760,6 +1760,21 @@ describe('migrateParams', () => {
         expect(round.entryProfile).toBe('round');
       });
 
+      it('keeps a finger cut only on a slot or round with a known bottom', () => {
+        const [slot, round, rect, unknown, broken] = migrateParams({
+          cutouts: [
+            pocket({ shape: 'slot', finger: { bottom: 'curved' } }),
+            pocket({ id: 'q', shape: 'circle', finger: { bottom: 'flat' } }),
+            pocket({ id: 'r', finger: { bottom: 'curved' } }),
+            pocket({ id: 's', shape: 'slot', finger: { bottom: 'pointed' } }),
+            pocket({ id: 't', shape: 'slot', finger: null }),
+          ],
+        }).cutouts;
+        expect(slot.finger).toEqual({ bottom: 'curved' });
+        expect(round.finger).toEqual({ bottom: 'flat' });
+        for (const dropped of [rect, unknown, broken]) expect('finger' in dropped).toBe(false);
+      });
+
       it('leaves a cutout without a mode exactly as stored', () => {
         const stored = pocket({});
         expect(migrateParams({ cutouts: [stored] }).cutouts[0]).toEqual(stored);

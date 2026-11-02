@@ -3185,6 +3185,20 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.entryRound': 'Entry round',
   'binDesigner.cutouts.entryRoundInfo':
     'Rounded rim, smooth to the hand, so nothing catches on the way in',
+  'binDesigner.cutouts.finger.name': 'Finger access',
+  'binDesigner.cutouts.finger.nameDetail':
+    'Makes this cut a scoop beside a pocket, so a fingertip can reach under the tool and lift it',
+  'binDesigner.cutouts.finger.form': 'Finger cut shape',
+  'binDesigner.cutouts.finger.form.slot': 'Slot',
+  'binDesigner.cutouts.finger.form.circle': 'Round',
+  'binDesigner.cutouts.finger.bottom': 'Finger cut floor',
+  'binDesigner.cutouts.finger.bottom.curved': 'Curved',
+  'binDesigner.cutouts.finger.bottom.flat': 'Flat',
+  'binDesigner.cutouts.finger.add': 'Add finger access',
+  'binDesigner.cutouts.finger.addHint':
+    'Cuts a scoop beside this pocket so you can lift the tool out',
+  'binDesigner.cutouts.finger.repeatBlocked':
+    'Each copy of a repeat needs its own. Flatten to cutouts first.',
   'binDesigner.cutouts.section.transform': 'Transform',
   'binDesigner.cutouts.section.shape': 'Shape',
   'binDesigner.cutouts.section.knife': 'Knife',
@@ -3462,6 +3476,7 @@ const en: Record<string, string> = {
   'binDesigner.shapeList.derived.mesh': 'Imprint {w}×{d}',
   'binDesigner.shapeList.derived.knifeSlot': 'Knife slot {w}×{d}mm',
   'binDesigner.shapeList.derived.text': 'Text “{label}”',
+  'binDesigner.shapeList.derived.finger': 'Finger access {w}×{d}',
 
   'binDesigner.cutouts.arrange.bringForward': 'Bring Forward',
   'binDesigner.cutouts.arrange.sendBackward': 'Send Backward',

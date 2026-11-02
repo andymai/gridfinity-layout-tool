@@ -18,6 +18,7 @@ import {
   flipSelectionVertical,
 } from './geometry';
 import { useCutoutInteraction } from './useCutoutInteraction';
+import { useAddFingerAccess } from './useAddFingerAccess';
 import { useTranslation } from '@/i18n';
 import { useLoadedMeshAssets } from '@/shared/hooks/useMeshOutlines';
 import { useSvgImport } from './svgImport';
@@ -185,6 +186,13 @@ export function useCutoutEditor() {
     maskCellSize,
     meshAssets,
   });
+
+  const handleAddFingerAccess = useAddFingerAccess(
+    cutouts,
+    { width: binWidth, depth: binDepth, mask: params.cellMask, cellSize: maskCellSize, meshAssets },
+    Math.max(0, wallHeight - params.cutoutConfig.topOffset),
+    selectIds
+  );
 
   const { triggerImport: triggerSvgImport } = useSvgImport();
   const stlImport = useStlImport();
@@ -502,6 +510,7 @@ export function useCutoutEditor() {
     fitCue,
     setFitCue,
     handleFlattenArray,
+    handleAddFingerAccess,
     mode,
     setMode,
     selection,
