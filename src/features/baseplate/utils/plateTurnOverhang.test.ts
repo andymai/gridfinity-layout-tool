@@ -67,34 +67,37 @@ const rounded = (w: number, d: number, r: number, onlyTl = false): DrawerOutline
   };
 };
 
+const full = (p: TurnOverhangInput, axis: 'x' | 'y', seat: number): number =>
+  turnedPlateOverhangMm(p, axis, seat, Infinity);
+
 describe('turnedPlateOverhangMm', () => {
   it('is zero for a plate without an outline', () => {
-    expect(turnedPlateOverhangMm(plate(), 'x', 0)).toBe(0);
+    expect(full(plate(), 'x', 0)).toBe(0);
   });
 
   it('measures the cells an L turned over puts past the plate below, about either axis', () => {
-    expect(turnedPlateOverhangMm(plate({ outline: L_SHAPE }), 'x', 0)).toBeGreaterThan(U / 2);
-    expect(turnedPlateOverhangMm(plate({ outline: L_SHAPE }), 'y', 0)).toBeGreaterThan(U / 2);
+    expect(full(plate({ outline: L_SHAPE }), 'x', 0)).toBeGreaterThan(U / 2);
+    expect(full(plate({ outline: L_SHAPE }), 'y', 0)).toBeGreaterThan(U / 2);
   });
 
   it('is zero about the axis a shape is symmetric about, and half a cell about the other', () => {
-    expect(turnedPlateOverhangMm(plate({ outline: U_SHAPE }), 'y', 0)).toBeLessThan(1e-6);
-    expect(turnedPlateOverhangMm(plate({ outline: U_SHAPE }), 'x', 0)).toBeCloseTo(U / 2, 0);
+    expect(full(plate({ outline: U_SHAPE }), 'y', 0)).toBeLessThan(1e-6);
+    expect(full(plate({ outline: U_SHAPE }), 'x', 0)).toBeCloseTo(U / 2, 0);
     const c = plate({ width: 2, depth: 3, outline: C_SHAPE });
-    expect(turnedPlateOverhangMm(c, 'x', 0)).toBeLessThan(1e-6);
-    expect(turnedPlateOverhangMm(c, 'y', 0)).toBeCloseTo(U / 2, 0);
+    expect(full(c, 'x', 0)).toBeLessThan(1e-6);
+    expect(full(c, 'y', 0)).toBeCloseTo(U / 2, 0);
   });
 
   it('reads a uniformly rounded perimeter as symmetric despite its flattened arcs', () => {
     const p = plate({ width: 4, depth: 3, outline: rounded(4 * U, 3 * U, 30) });
-    expect(turnedPlateOverhangMm(p, 'x', 0)).toBeLessThan(0.2);
-    expect(turnedPlateOverhangMm(p, 'y', 0)).toBeLessThan(0.2);
+    expect(full(p, 'x', 0)).toBeLessThan(0.2);
+    expect(full(p, 'y', 0)).toBeLessThan(0.2);
   });
 
   it('catches a lone rounded corner the turn carries to the other side', () => {
     const p = plate({ width: 4, depth: 3, outline: rounded(4 * U, 3 * U, 30, true) });
-    expect(turnedPlateOverhangMm(p, 'x', 0)).toBeGreaterThan(2);
-    expect(turnedPlateOverhangMm(p, 'y', 0)).toBeGreaterThan(2);
+    expect(full(p, 'x', 0)).toBeGreaterThan(2);
+    expect(full(p, 'y', 0)).toBeGreaterThan(2);
   });
 
   it('counts padding on one side, which the turn moves off the lattice centre', () => {
@@ -104,8 +107,8 @@ describe('turnedPlateOverhangMm', () => {
       paddingFront: 8.5,
       outline: rounded(4 * U, 3 * U + 8.5, 30),
     });
-    expect(turnedPlateOverhangMm(p, 'x', 0)).toBeCloseTo(8.5, 0);
-    expect(turnedPlateOverhangMm(p, 'y', 0)).toBeLessThan(0.2);
+    expect(full(p, 'x', 0)).toBeCloseTo(8.5, 0);
+    expect(full(p, 'y', 0)).toBeLessThan(0.2);
   });
 
   it('applies the seat a fractional extent turns with', () => {
@@ -121,8 +124,8 @@ describe('turnedPlateOverhangMm', () => {
         [0, 2],
       ]),
     });
-    expect(turnedPlateOverhangMm(p, 'y', -U / 2)).toBeCloseTo(U / 2, 0);
-    expect(turnedPlateOverhangMm(p, 'y', 0)).toBeLessThan(1e-6);
+    expect(full(p, 'y', -U / 2)).toBeCloseTo(U / 2, 0);
+    expect(full(p, 'y', 0)).toBeLessThan(1e-6);
   });
 
   it('reads a small cut corner at its full depth', () => {
@@ -139,36 +142,32 @@ describe('turnedPlateOverhangMm', () => {
       },
     });
     // The turned copy's square corner reaches c / sqrt(2) past the cut.
-    expect(turnedPlateOverhangMm(p, 'x', 0)).toBeGreaterThan(1.8);
-    expect(turnedPlateOverhangMm(p, 'y', 0)).toBeGreaterThan(1.8);
+    expect(full(p, 'x', 0)).toBeGreaterThan(1.8);
+    expect(full(p, 'y', 0)).toBeGreaterThan(1.8);
   });
 
   it('measures to the plate the slab keeps, not to outline the slab cuts away', () => {
-    // A split piece keeps its parent's outline: here it runs 1mm past the slab
+    // A split piece keeps its parent's outline: here it runs 10mm past the slab
     // at the front and left, where there is no plate to rest on.
     const p = plate({
-      outline: cells([
-        [0, 0],
-        [3, 0],
-        [3, 2],
-        [0, 2],
-      ]),
-      outlineOverhang: { left: 0, right: 1, front: 0, back: 1 },
-    });
-    const shifted = {
-      ...p,
       outline: {
-        vertices: (p.outline?.vertices ?? []).map((v) => ({ x: v.x + 1, y: v.y + 1 })),
+        vertices: [
+          { x: -10, y: -10 },
+          { x: 3 * U, y: -10 },
+          { x: 3 * U, y: 2 * U },
+          { x: -10, y: 2 * U },
+        ],
       },
-    };
-    expect(turnedPlateOverhangMm(shifted, 'x', 0)).toBeGreaterThan(1);
+    });
+    expect(full(p, 'x', 0)).toBeLessThan(1e-6);
+    expect(full(p, 'y', 0)).toBeLessThan(1e-6);
   });
 
   it('stops at the first reading past a limit', () => {
     const p = plate({ outline: L_SHAPE });
     const limited = turnedPlateOverhangMm(p, 'x', 0, 1);
     expect(limited).toBeGreaterThan(1);
-    expect(limited).toBeLessThanOrEqual(turnedPlateOverhangMm(p, 'x', 0));
+    expect(limited).toBeLessThanOrEqual(full(p, 'x', 0));
     expect(turnedPlateOverhangMm(plate({ outline: U_SHAPE }), 'y', 0, 1)).toBeLessThan(1e-6);
   });
 });

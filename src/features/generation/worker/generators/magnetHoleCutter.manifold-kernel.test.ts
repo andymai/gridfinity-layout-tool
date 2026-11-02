@@ -28,6 +28,7 @@ import {
   sliceAround,
 } from './__kernel-tests__/boreSection';
 import type { SliceableMesh } from './__kernel-tests__/boreSection';
+import { CIRCLE_SEGMENTS } from './directMeshBuilder';
 import { buildMagnetHoleCutter } from './magnetHoleCutter';
 import { generateBin } from './binGenerator';
 import { generateLid } from './lidOrchestrator';
@@ -61,7 +62,6 @@ function holeSection(part: SliceableMesh): ReturnType<typeof sliceAround> {
   return sliceAround(part, MAGNET, MAGNET, boreMidZ(part, MAGNET, MAGNET, R), R + 0.5);
 }
 
-/** Slice `MOUTH_DEPTH` inside the hole from the end the magnet enters. */
 function mouthSection(part: SliceableMesh, end: 'bottom' | 'top'): ReturnType<typeof sliceAround> {
   const { zMin, zMax } = holeZSpan(part, MAGNET, MAGNET, R);
   const z = end === 'bottom' ? zMin + MOUTH_DEPTH : zMax - MOUTH_DEPTH;
@@ -126,7 +126,7 @@ describe('Manifold draft: magnet hole cutter', () => {
 
   it('the bore runs through the same ring points as the procedural draft', () => {
     const { vertices } = cutterMesh(RIBS);
-    const ring = magnetBoreProfile(R, RIBS, magnetBoreSegments(RIBS, 32));
+    const ring = magnetBoreProfile(R, RIBS, magnetBoreSegments(RIBS, CIRCLE_SEGMENTS));
     expect(ring.length).toBe(MAGNET_CRUSH_RIB_COUNT * 8);
     for (const [x, y] of ring) {
       let nearest = Infinity;

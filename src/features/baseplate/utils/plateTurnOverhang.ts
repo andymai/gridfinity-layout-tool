@@ -73,8 +73,7 @@ interface BelowRows {
 
 /**
  * Distance from (x, y) to the plate below, looking no further than `reach`:
- * past it the answer is Infinity. Rows are searched outward from the nearest
- * one and the search stops once no row left can come closer.
+ * past it the answer is Infinity.
  */
 function distanceToBelow(below: BelowRows, x: number, y: number, reach: number): number {
   const n = below.spans.length;
@@ -116,7 +115,7 @@ export function turnedPlateOverhangMm(
   params: TurnOverhangInput,
   axis: 'x' | 'y',
   seatMm: number,
-  limitMm = Infinity
+  limitMm: number
 ): number {
   if (params.outline === undefined) return 0;
   const pts = flattenOutline(params.outline);

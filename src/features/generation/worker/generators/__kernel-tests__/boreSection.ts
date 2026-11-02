@@ -22,7 +22,6 @@ export interface PolarPoint {
   readonly theta: number;
 }
 
-/** Plane-z crossings of every triangle edge within `maxR` of (cx, cy), in polar form about it. */
 export function sliceAround(
   { vertices, indices }: SliceableMesh,
   cx: number,
@@ -103,7 +102,6 @@ function largestAngularGap(points: readonly PolarPoint[]): number {
   return gap;
 }
 
-/** The plane meets a wall all the way round the hole: the bore exists. */
 function expectBoreExists(points: readonly PolarPoint[], label: string): void {
   expect(points.length, `${label}: the plane crosses a bore wall`).toBeGreaterThanOrEqual(
     MAGNET_CRUSH_RIB_COUNT * 4

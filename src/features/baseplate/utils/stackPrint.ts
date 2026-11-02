@@ -258,9 +258,7 @@ function turnCost(
  *
  * A shaped plate must also be symmetric about the turn: a turned copy is the
  * plate's mirror image in plan view, so an L turned over is a mirrored L with
- * cells over air. The padding's pick is kept when its turn lands the outline
- * on itself, else the other turn; when neither does, the bottom plate is
- * turned too so every copy coincides.
+ * cells over air.
  */
 export function planPlateFlip(params: PlateFlipInput): PlateFlip {
   const aboutX = turnCost(
@@ -296,11 +294,11 @@ export function planPlateFlip(params: PlateFlipInput): PlateFlip {
 
 /**
  * Build the meshes for one printed tower of `copies` plates. The bottom plate
- * stays upright (best bed adhesion, no overhang); every plate above it is
- * flipped upside down — community practice that minimizes overhangs while the
- * air gap lets the tower snap apart (see the baseplate README). Every copy's
- * socket lattice lands on the one below it, and the bottom sits at Z=0.
- * `flip.flipBottom` turns the bottom plate over as well when there is a plate above it.
+ * stays upright for bed adhesion unless `flip.flipBottom` turns it too; every
+ * plate above it is flipped upside down, community practice that minimizes
+ * overhangs while the air gap lets the tower snap apart (see the baseplate
+ * README). Every copy's socket lattice lands on the one below it, and the
+ * bottom sits at Z=0.
  *
  * `flip` comes from {@link planPlateFlip}: the turn negates one lateral axis
  * about 0, where the socket lattice is centred, and `flip.offsetMm` seats a
