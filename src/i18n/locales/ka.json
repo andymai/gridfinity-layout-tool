@@ -2885,6 +2885,7 @@
   "binDesigner.cutouts.autoArrange": "ავტომატური განლაგება",
   "binDesigner.cutouts.gap": "ღრეჩო",
   "binDesigner.cutouts.staggered": "რიგების წანაცვლება",
+  "binDesigner.cutouts.turnToFit": "ფორმების შემობრუნება, რომ დაეტიოს",
   "binDesigner.cutouts.clearAll": "ყველაფრის გასუფთავება",
   "binDesigner.cutouts.fitTest.button": "მორგების ტესტის დაბეჭდვა",
   "binDesigner.cutouts.fitTest.dialogDescription": "ამ ყუთის ზედაპირის თხელი ნაჭერი, ყველა ამონაჭრის რეალური ზომით, მდებარეობითა და დაშორებით. დაბეჭდეთ, სცადეთ ნაწილები და შეცვალეთ დაშორება, სანამ თავისუფლად არ ჩაჯდება.",

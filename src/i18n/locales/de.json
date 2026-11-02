@@ -1059,6 +1059,7 @@
   "binDesigner.cutouts.sizePresetMore": "Weitere Größen…",
   "binDesigner.cutouts.snapToGrid": "Am Raster einrasten",
   "binDesigner.cutouts.staggered": "Reihen versetzen",
+  "binDesigner.cutouts.turnToFit": "Formen passend drehen",
   "binDesigner.cutouts.stlImport.flipAxis": "{axis} drehen",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Dieses Modell ist größer als der Behälterinnenraum. Es wird trotzdem platziert — vergrößere den Behälter oder nutze ein kleineres Modell für eine vollständige Tasche.",
   "binDesigner.cutouts.stlImport.budget": "Mit diesem Mesh: {used} von {limit} Dreiecken",

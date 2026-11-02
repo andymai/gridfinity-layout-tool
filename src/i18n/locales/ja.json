@@ -1059,6 +1059,7 @@
   "binDesigner.cutouts.sizePresetMore": "その他のサイズ…",
   "binDesigner.cutouts.snapToGrid": "グリッドにスナップ",
   "binDesigner.cutouts.staggered": "行を互い違いに",
+  "binDesigner.cutouts.turnToFit": "形を回転して収める",
   "binDesigner.cutouts.stlImport.flipAxis": "{axis} 回転",
   "binDesigner.cutouts.stlImport.oversizeWarning": "このモデルはビンの内寸より大きいです。そのまま配置されますが、完全なポケットにはビンを大きくするか、より小さいモデルを使用してください。",
   "binDesigner.cutouts.stlImport.budget": "このメッシュを含めて {used} / {limit} 三角形",

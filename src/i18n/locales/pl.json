@@ -1059,6 +1059,7 @@
   "binDesigner.cutouts.sizePresetMore": "Więcej rozmiarów…",
   "binDesigner.cutouts.snapToGrid": "Przyciągaj do siatki",
   "binDesigner.cutouts.staggered": "Przesuń rzędy naprzemiennie",
+  "binDesigner.cutouts.turnToFit": "Obracaj kształty, by się zmieściły",
   "binDesigner.cutouts.stlImport.flipAxis": "Odbij {axis}",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Ten model jest większy niż wnętrze bina. I tak zostanie umieszczony — powiększ bin lub użyj mniejszego modelu, aby uzyskać pełną kieszeń.",
   "binDesigner.cutouts.stlImport.budget": "Z tą siatką: {used} z {limit} trójkątów",

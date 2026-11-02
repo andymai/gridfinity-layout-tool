@@ -1059,6 +1059,7 @@
   "binDesigner.cutouts.sizePresetMore": "Plus de tailles…",
   "binDesigner.cutouts.snapToGrid": "Aligner sur la grille",
   "binDesigner.cutouts.staggered": "Décaler les rangées",
+  "binDesigner.cutouts.turnToFit": "Tourner les formes pour les caser",
   "binDesigner.cutouts.stlImport.flipAxis": "Pivoter {axis}",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Ce modèle est plus grand que l'intérieur du bac. Il sera placé quand même — agrandissez le bac ou utilisez un modèle plus petit pour une empreinte complète.",
   "binDesigner.cutouts.stlImport.budget": "Avec ce maillage : {used} sur {limit} triangles",

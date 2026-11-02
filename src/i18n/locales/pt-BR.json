@@ -1059,6 +1059,7 @@
   "binDesigner.cutouts.sizePresetMore": "Mais tamanhos…",
   "binDesigner.cutouts.snapToGrid": "Encaixar na grade",
   "binDesigner.cutouts.staggered": "Escalonar linhas",
+  "binDesigner.cutouts.turnToFit": "Girar formas para caber",
   "binDesigner.cutouts.stlImport.flipAxis": "Girar {axis}",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Este modelo é maior que o interior da caixa. Ele será posicionado mesmo assim — aumente a caixa ou use um modelo menor para um encaixe completo.",
   "binDesigner.cutouts.stlImport.budget": "Com esta malha: {used} de {limit} triângulos",

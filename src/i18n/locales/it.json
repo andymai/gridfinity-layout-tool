@@ -1059,6 +1059,7 @@
   "binDesigner.cutouts.sizePresetMore": "Altre misure…",
   "binDesigner.cutouts.snapToGrid": "Aggancia alla griglia",
   "binDesigner.cutouts.staggered": "Sfalsa le righe",
+  "binDesigner.cutouts.turnToFit": "Ruota le forme per farle stare",
   "binDesigner.cutouts.stlImport.flipAxis": "Ruota {axis}",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Questo modello è più grande dell'interno del contenitore. Verrà comunque posizionato: ingrandisci il contenitore o usa un modello più piccolo per una tasca completa.",
   "binDesigner.cutouts.stlImport.budget": "Con questa mesh: {used} di {limit} triangoli",

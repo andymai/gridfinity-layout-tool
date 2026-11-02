@@ -160,12 +160,13 @@ function DistributeVIcon() {
 function AutoArrangePopover({
   onArrange,
 }: {
-  readonly onArrange: (gap: number, staggered: boolean) => void;
+  readonly onArrange: (gap: number, staggered: boolean, turn: boolean) => void;
 }) {
   const t = useTranslation();
   const [open, setOpen] = useState(false);
   const [gap, setGap] = useState(2);
   const [staggered, setStaggered] = useState(false);
+  const [turn, setTurn] = useState(true);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -194,7 +195,7 @@ function AutoArrangePopover({
         {t('binDesigner.cutouts.autoArrange')}
       </Button>
       {open && (
-        <div className="absolute top-full left-0 z-50 mt-1 rounded-lg border border-stroke-subtle bg-surface-elevated p-2 shadow-lg">
+        <div className="absolute top-full right-0 z-50 mt-1 rounded-lg border border-stroke-subtle bg-surface-elevated p-2 shadow-lg">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
               <label className="flex items-center gap-1 text-label text-content-tertiary whitespace-nowrap">
@@ -218,7 +219,7 @@ function AutoArrangePopover({
                 touchTarget={false}
                 className="text-label"
                 onClick={() => {
-                  onArrange(gap, staggered);
+                  onArrange(gap, staggered, turn);
                   setOpen(false);
                 }}
               >
@@ -229,6 +230,12 @@ function AutoArrangePopover({
               checked={staggered}
               onChange={setStaggered}
               label={t('binDesigner.cutouts.staggered')}
+              size="sm"
+            />
+            <Checkbox
+              checked={turn}
+              onChange={setTurn}
+              label={t('binDesigner.cutouts.turnToFit')}
               size="sm"
             />
           </div>
@@ -317,7 +324,7 @@ export function WorkspaceHeader({
   );
 
   const applyPositions = useCallback(
-    (positions: Record<string, { x?: number; y?: number }>) => {
+    (positions: Record<string, Partial<Pick<Cutout, 'x' | 'y' | 'rotation'>>>) => {
       const updates = new Map<string, Partial<Cutout>>(Object.entries(positions));
       if (updates.size > 0) onUpdateBatch(updates);
     },
@@ -348,9 +355,13 @@ export function WorkspaceHeader({
   );
 
   const handleAutoArrange = useCallback(
-    (gap: number, staggered: boolean) => {
+    (gap: number, staggered: boolean, turn: boolean) => {
       applyPositions(
-        autoArrangeCutouts(arrangeTargets, { binWidth, binDepth, gap, staggered }, groupContext)
+        autoArrangeCutouts(
+          arrangeTargets,
+          { binWidth, binDepth, gap, staggered, turn },
+          groupContext
+        )
       );
     },
     [arrangeTargets, binWidth, binDepth, groupContext, applyPositions]

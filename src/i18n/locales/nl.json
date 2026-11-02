@@ -1059,6 +1059,7 @@
   "binDesigner.cutouts.sizePresetMore": "Meer maten…",
   "binDesigner.cutouts.snapToGrid": "Uitlijnen op raster",
   "binDesigner.cutouts.staggered": "Rijen verspringen",
+  "binDesigner.cutouts.turnToFit": "Vormen draaien zodat ze passen",
   "binDesigner.cutouts.stlImport.flipAxis": "{axis} draaien",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Dit model is groter dan de binnenkant van de bak. Het wordt toch geplaatst — vergroot de bak of gebruik een kleiner model voor een volledige uitsparing.",
   "binDesigner.cutouts.stlImport.budget": "Met deze mesh: {used} van {limit} driehoeken",

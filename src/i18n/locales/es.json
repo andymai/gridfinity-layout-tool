@@ -1059,6 +1059,7 @@
   "binDesigner.cutouts.sizePresetMore": "Más tamaños…",
   "binDesigner.cutouts.snapToGrid": "Ajustar a cuadrícula",
   "binDesigner.cutouts.staggered": "Escalonar filas",
+  "binDesigner.cutouts.turnToFit": "Girar formas para que quepan",
   "binDesigner.cutouts.stlImport.flipAxis": "Girar {axis}",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Este modelo es más grande que el interior del contenedor. Se colocará de todos modos: amplía el contenedor o usa un modelo más pequeño para una cavidad completa.",
   "binDesigner.cutouts.stlImport.budget": "Con esta malla: {used} de {limit} triángulos",
