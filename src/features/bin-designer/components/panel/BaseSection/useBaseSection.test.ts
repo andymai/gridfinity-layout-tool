@@ -973,6 +973,36 @@ describe('useBaseSection — base-only bin residue', () => {
       expect(useDesignerStore.getState().params.height).toBe(6);
     });
 
+    it('keeps a floor-referenced solid fill through Base only, in one undo step', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          height: 6,
+          style: 'solid',
+          base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+          cutoutConfig: {
+            ...DEFAULT_BIN_PARAMS.cutoutConfig,
+            fillReference: 'floor',
+            topOffset: 4,
+          },
+        },
+      });
+      const { result } = renderHook(() => useBaseSection());
+      act(() => {
+        result.current.handlers.setBodyType('tile');
+      });
+      const tileParams = useDesignerStore.getState().params;
+      act(() => {
+        result.current.handlers.setBodyType('standard');
+      });
+      expect(useDesignerStore.getState().params.cutoutConfig.topOffset).toBe(4);
+
+      act(() => {
+        useDesignerStore.getState().undo();
+      });
+      expect(useDesignerStore.getState().params).toEqual(tileParams);
+    });
+
     it('does not carry what a switch cleared into the next design', () => {
       useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, height: 6 } });
       const { result } = renderHook(() => useBaseSection());

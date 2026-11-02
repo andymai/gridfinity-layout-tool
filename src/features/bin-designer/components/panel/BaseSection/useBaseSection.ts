@@ -51,8 +51,7 @@ import {
   isSocketlessBase,
 } from '@/features/bin-designer/types/base';
 import { deriveBodyType } from './bodyType';
-import type { BodyType } from './bodyType';
-import { switchBodyType } from './bodyTypeMemory';
+import { useBodyTypeSwitch } from './useBodyTypeSwitch';
 import { finalizeBaseParams } from './finalizeBaseParams';
 import { useMagnetPressFit } from './useMagnetPressFit';
 import { resolveSlant } from '@/shared/utils/slantPlan';
@@ -85,17 +84,15 @@ const FOOT_LATTICE_DETAIL: Partial<Record<string, string>> = {
 
 export function useBaseSection() {
   const t = useTranslation();
-  const { params, updateBase, updateFloorPattern, setParams, bodyTypeMemory, setBodyTypeMemory } =
-    useDesignerStore(
-      useShallow((s) => ({
-        params: s.params,
-        updateBase: s.updateBase,
-        updateFloorPattern: s.updateFloorPattern,
-        setParams: s.setParams,
-        bodyTypeMemory: s.ui.bodyTypeMemory,
-        setBodyTypeMemory: s.setBodyTypeMemory,
-      }))
-    );
+  const { params, updateBase, updateFloorPattern, setParams } = useDesignerStore(
+    useShallow((s) => ({
+      params: s.params,
+      updateBase: s.updateBase,
+      updateFloorPattern: s.updateFloorPattern,
+      setParams: s.setParams,
+    }))
+  );
+  const setBodyType = useBodyTypeSwitch();
 
   const base = params.base;
   const hasMagnet = hasMountingMagnets(base);
@@ -370,17 +367,6 @@ export function useBaseSection() {
     });
     commit(resolved);
   }, [params, commit]);
-
-  const setBodyType = useCallback(
-    (next: BodyType) => {
-      const switched = switchBodyType(params, next, bodyTypeMemory);
-      if (switched.params === params) return;
-      setParams(switched.params);
-      // `setParams` can refuse the write, and the memory must then stay with it.
-      if (useDesignerStore.getState().params !== params) setBodyTypeMemory(switched.memory);
-    },
-    [params, bodyTypeMemory, setParams, setBodyTypeMemory]
-  );
 
   const toggleHalfSockets = useCallback(() => {
     if (!hasHalfSockets && !halfSocketsStatus.available) return;

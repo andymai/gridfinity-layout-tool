@@ -17,6 +17,7 @@ import { FEATURE_MANIFESTS, getFeatureStatus, resolveConstraints } from '@/share
 import type { FeatureKey } from '@/shared/constraints';
 import type { BinParams, BodyTypeMemory, ClearedBodySetting } from '@/features/bin-designer/types';
 import { validateCompartmentSizes } from '@/features/bin-designer/utils/validation';
+import { heldCutoutFillMm, reanchorCutoutFill } from '@/features/bin-designer/utils/cutoutFill';
 import { isOk } from '@/core/result';
 import { bodyTypeParams, deriveBodyType } from './bodyType';
 import type { BodyType } from './bodyType';
@@ -44,8 +45,12 @@ const SHARED_SLOTS: ReadonlySet<string> = new Set([
   'base.spacer',
 ]);
 
-/** Values a switch pins or floors without any feature turning off. */
-const PLAIN_SLOTS = ['height', 'extraWallHeightMm'] as const;
+/**
+ * Values a switch pins or floors without any feature turning off. The cutout
+ * config is here for its fill: a floor-referenced fill is held in mm across the
+ * write, and Base only's slab clamps it to almost nothing.
+ */
+const PLAIN_SLOTS = ['height', 'extraWallHeightMm', 'cutoutConfig'] as const;
 
 const BASE_PREFIX = 'base.';
 
@@ -200,6 +205,14 @@ function giveBack(
   return restored;
 }
 
+/** `next` with its fill re-held the way `setParams` will on the write. */
+function holdFill(next: BinParams, heldMm: number | null): BinParams {
+  const topOffset = reanchorCutoutFill(next, heldMm);
+  return topOffset === undefined
+    ? next
+    : { ...next, cutoutConfig: { ...next.cutoutConfig, topOffset } };
+}
+
 export interface BodyTypeSwitch {
   readonly params: BinParams;
   readonly memory: BodyTypeMemory | null;
@@ -223,7 +236,8 @@ export function switchBodyType(
     memory?.bodyType === current
       ? memory.cleared.filter((setting) => slotsMatch(params, setting.left))
       : [];
-  const switched = finalizeBaseParams(bodyTypeParams(params, next));
+  const heldFill = heldCutoutFillMm(params);
+  const switched = holdFill(finalizeBaseParams(bodyTypeParams(params, next)), heldFill);
 
   let restored = switched;
   const kept: ClearedBodySetting[] = [];
@@ -240,7 +254,11 @@ export function switchBodyType(
       kept.push(setting);
     }
   }
-  const result = finalizeBaseParams(restored);
+  // A fill given back is the user's own, so it is not re-held. `setParams`
+  // re-holds it anyway, which is why the caller writes it again afterwards.
+  const result = given.some((setting) => 'cutoutConfig' in setting.original)
+    ? finalizeBaseParams(restored)
+    : holdFill(finalizeBaseParams(restored), heldFill);
 
   const carried = kept.map((setting) => ({
     ...setting,

@@ -191,6 +191,22 @@ describe('switchBodyType', () => {
     expect(end.params.height).toBe(1);
   });
 
+  it('gives a floor-referenced solid fill back after Base only clamps it', () => {
+    const solid: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      height: 6,
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutoutConfig: { ...DEFAULT_BIN_PARAMS.cutoutConfig, fillReference: 'floor', topOffset: 4 },
+    };
+    const tile = walk(solid, ['tile']);
+    expect(tile.params.cutoutConfig.topOffset).not.toBe(4);
+
+    const back = switchBodyType(tile.params, 'standard', tile.memory);
+    expect(back.params.cutoutConfig.topOffset).toBe(4);
+    expect(back.params.style).toBe('solid');
+  });
+
   it('refuses a restore that would turn off something enabled since', () => {
     const flatWithPattern = resolveConstraints(
       { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } },
