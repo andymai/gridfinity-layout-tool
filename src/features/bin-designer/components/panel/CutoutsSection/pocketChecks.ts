@@ -13,7 +13,6 @@
 
 import type { BinParams, Cutout } from '@/features/bin-designer/types';
 import { DEFAULT_GROUP_OP, resolveCutoutLeanDeg } from '@/features/bin-designer/types';
-import { MASK_CELL_SIZE, maskToPolygon } from '@/shared/utils/cellMask';
 import { expandCutoutArray, expandCutoutGroup } from '@/shared/utils/cutoutArray';
 import { cutoutDepthFrame, floorUnderCutout, isThroughCut } from '@/shared/utils/cutoutDepth';
 import { clearedProfile, entryChamferWidth } from '@/shared/utils/cutoutFit';
@@ -64,11 +63,9 @@ interface Placed extends PlacedCopy {
   /** As drawn: what decides whether two pockets overlap on purpose. */
   readonly drawn: readonly (readonly Pt[])[];
   readonly drawnBox: Box;
-  /** As cut, before the flare below. */
+  /** As cut at the surface: clearance and the entry edge's flare included. */
   readonly rings: readonly (readonly Pt[])[];
   readonly box: Box;
-  /** How far the cut stands out from {@link rings} at the surface. */
-  readonly grow: number;
 }
 
 const KIND_ORDER: readonly PocketIssueKind[] = ['merge', 'wall', 'lip', 'thin', 'floor'];
@@ -204,17 +201,18 @@ function ringsOf(c: Cutout, board: CutoutBoard): Pt[][] {
 }
 
 /**
- * The outline a cut takes at the surface before its entry edge, and how much
- * further out that edge flares. A drawn shape is cut at its cleared size,
- * which for a polygon is a uniform scale, so its ring is redrawn at that size.
- * A path is offset and a mesh dilated by its clearance, which the ring cannot
- * show, so it rides on the flare instead.
+ * The outline a cut takes at the surface. A drawn shape is cut at its cleared
+ * size (for a polygon a uniform scale), a path is offset and a mesh dilated by
+ * its clearance, and then every outline is offset again by its entry edge,
+ * the way the builder flares it, so a polygon's corners reach furthest.
  */
-function cutRingsOf(c: Cutout, drawn: Pt[][], board: CutoutBoard): { rings: Pt[][]; grow: number } {
+function cutRingsOf(c: Cutout, drawn: Pt[][], board: CutoutBoard): Pt[][] {
   const { clearance, w, d } = clearedProfile(c);
+  const offsetBy = (rings: Pt[][], by: number) =>
+    by > 0 ? rings.map((ring) => offsetClosedPolygon(ring, by)) : rings;
   const entry = entryChamferWidth(c);
-  if (c.shape === 'path' || c.shape === 'mesh') return { rings: drawn, grow: clearance + entry };
-  if (clearance === 0) return { rings: drawn, grow: entry };
+  if (c.shape === 'path' || c.shape === 'mesh') return offsetBy(drawn, clearance + entry);
+  if (clearance === 0) return offsetBy(drawn, entry);
   const cleared = {
     ...c,
     x: c.x - (w - c.width) / 2,
@@ -222,7 +220,7 @@ function cutRingsOf(c: Cutout, drawn: Pt[][], board: CutoutBoard): { rings: Pt[]
     width: w,
     depth: d,
   };
-  return { rings: ringsOf(cleared, board), grow: entry };
+  return offsetBy(ringsOf(cleared, board), entry);
 }
 
 export interface PlacedCopy {
@@ -267,8 +265,7 @@ function placePockets(cutouts: readonly Cutout[], board: CutoutBoard): Placed[] 
   return placedCopies(cutouts).flatMap(({ cutout, owner, unit }): Placed[] => {
     const drawn = ringsOf(cutout, board).filter((r) => r.length >= 3);
     if (drawn.length === 0) return [];
-    const cut = cutRingsOf(cutout, drawn, board);
-    const rings = cut.rings.filter((r) => r.length >= 3);
+    const rings = cutRingsOf(cutout, drawn, board).filter((r) => r.length >= 3);
     if (rings.length === 0) return [];
     return [
       {
@@ -279,54 +276,13 @@ function placePockets(cutouts: readonly Cutout[], board: CutoutBoard): Placed[] 
         drawnBox: boxOf(drawn),
         rings,
         box: boxOf(rings),
-        grow: cut.grow,
       },
     ];
   });
 }
 
-/**
- * How far rings that cross the interior's edge reach past it: the farthest
- * vertex outside. A crossing reads as no gap at all, which says nothing of how
- * deep into the wall the cut goes.
- */
-function overshoot(
-  rings: readonly (readonly Pt[])[],
-  interior: readonly (readonly Pt[])[]
-): number {
-  let worst = 0;
-  for (const ring of rings) {
-    for (const v of ring) {
-      const inside = interior.filter((loop) => pointInRing(loop, v)).length % 2 === 1;
-      if (inside) continue;
-      let d = Infinity;
-      for (const loop of interior) {
-        for (let i = 0; i < loop.length; i++) {
-          d = Math.min(d, pointToSegment(v, loop[i], loop[(i + 1) % loop.length]));
-        }
-      }
-      worst = Math.max(worst, d);
-    }
-  }
-  return worst;
-}
-
 function interiorCornerRadius(params: BinParams, board: CutoutBoard): number {
   return Math.max(0, Math.min(cavityCornerRadiusMm(params), board.width / 2, board.depth / 2));
-}
-
-/** A custom footprint's outline, as rings in the editor's frame. */
-function maskRings(
-  mask: NonNullable<CutoutBoard['mask']>,
-  cellSize: NonNullable<CutoutBoard['cellSize']>
-): Pt[][] {
-  const { cellMmX, cellMmY } = cellSize;
-  return maskToPolygon(mask).map((loop) =>
-    loop.map((p) => ({
-      x: (p.x / MASK_CELL_SIZE) * cellMmX,
-      y: (p.y / MASK_CELL_SIZE) * cellMmY,
-    }))
-  );
 }
 
 /** Which of two readings of the same issue is worse: less plastic, or deeper under the lip. */
@@ -373,13 +329,9 @@ function checkPairs(pockets: readonly Placed[], book: IssueBook): void {
     for (let j = i + 1; j < pockets.length; j++) {
       const a = pockets[i];
       const b = pockets[j];
-      if (a.unit === b.unit) continue;
-      const reach = a.grow + b.grow + MIN_MATERIAL_MM;
-      if (boxGap(a.box, b.box) >= reach) continue;
-      if (
-        ringsGap(a.drawn, a.drawnBox, b.drawn, b.drawnBox, reach) === 0 ||
-        nested(a.drawn, b.drawn)
-      ) {
+      if (a.unit === b.unit || boxGap(a.box, b.box) >= MIN_MATERIAL_MM) continue;
+      // Crossing edges meet inside each other's box, so no reach is needed.
+      if (ringsGap(a.drawn, a.drawnBox, b.drawn, b.drawnBox, 0) === 0 || nested(a.drawn, b.drawn)) {
         overlapping.add(pairKey(a.unit, b.unit));
       } else {
         near.push([a, b]);
@@ -388,11 +340,13 @@ function checkPairs(pockets: readonly Placed[], book: IssueBook): void {
   }
   for (const [a, b] of near) {
     if (overlapping.has(pairKey(a.unit, b.unit))) continue;
-    const reach = a.grow + b.grow + MIN_MATERIAL_MM;
-    const left = ringsGap(a.rings, a.box, b.rings, b.box, reach) - a.grow - b.grow;
-    if (left >= MIN_MATERIAL_MM) continue;
+    const gap = ringsGap(a.rings, a.box, b.rings, b.box, MIN_MATERIAL_MM);
+    if (gap >= MIN_MATERIAL_MM) continue;
+    // A cut that swallows the other whole is a merge too, though their
+    // outlines never touch.
+    const left = gap === 0 || nested(a.rings, b.rings) ? 0 : gap;
     const ids = a.owner === b.owner ? [a.owner] : [a.owner, b.owner].sort();
-    book.note(left <= 0 ? 'merge' : 'thin', ids, [a.cutout.id, b.cutout.id], left);
+    book.note(left === 0 ? 'merge' : 'thin', ids, [a.cutout.id, b.cutout.id], left);
   }
 }
 
@@ -457,11 +411,14 @@ function nearestSide(p: Pt, w: number, d: number): 'left' | 'right' | 'front' | 
 }
 
 /**
- * Whether the cut opens through that wall to the top, taking the lip with it:
- * by the generator's own rule, since a leaning pocket keeps no exit.
+ * Whether the cut opens through that wall to the top the full width of the
+ * pocket, taking the lip with it there: by the generator's own rule, since a
+ * leaning pocket keeps no exit. A narrower keyhole leaves the lip either side.
  */
 function opensThrough(c: Cutout, side: string, params: BinParams): boolean {
-  return effectiveOpenSides(c, params).some((s) => s.side === side && !s.tunnel);
+  return effectiveOpenSides(c, params).some(
+    (s) => s.side === side && !s.tunnel && s.widthMm === undefined
+  );
 }
 
 /**
@@ -486,11 +443,10 @@ function checkBoxWalls(
   for (const p of pockets) {
     if (isCutoutOffBoard(p.cutout, board)) continue;
     const inset = Math.min(p.box.minX, p.box.minY, w - p.box.maxX, d - p.box.maxY);
-    if (wall + inset - p.grow - cornerSlack >= needed) continue;
-    const grown = p.grow > 0 ? p.rings.map((ring) => offsetClosedPolygon(ring, p.grow)) : p.rings;
+    if (wall + inset - cornerSlack >= needed) continue;
     let least = Infinity;
     let at: Pt | null = null;
-    for (const q of clippedCorners(grown, w, d)) {
+    for (const q of clippedCorners(p.rings, w, d)) {
       const m = toOuterFace(q, w, d, wall, radius);
       if (m < least) {
         least = m;
@@ -507,43 +463,17 @@ function checkBoxWalls(
 }
 
 /**
- * A custom footprint: its inner walls are not covered by the builder's box
- * clip, so a cut that reaches past the outline thins the wall there.
+ * A custom footprint's walls follow the generator's tolerance-inset perimeter,
+ * not the placement grid the editor holds, so they are left unchecked rather
+ * than read wrongly; its pockets still get the pair and floor checks.
  */
-function checkMaskWalls(
-  pockets: readonly Placed[],
-  params: BinParams,
-  board: CutoutBoard,
-  interior: readonly (readonly Pt[])[],
-  book: IssueBook
-): void {
-  const interiorBox = boxOf(interior);
-  const lip = params.base.stackingLip
-    ? Math.max(0, lipInnerReachMm(params) - params.wallThickness)
-    : 0;
-  for (const p of pockets) {
-    if (isCutoutOffBoard(p.cutout, board)) continue;
-    const reach = p.grow + Math.max(lip, MIN_MATERIAL_MM - params.wallThickness, 0);
-    const gap = ringsGap(p.rings, p.box, interior, interiorBox, reach);
-    if (gap === Infinity) continue;
-    const cut = (gap === 0 ? -overshoot(p.rings, interior) : gap) - p.grow;
-    const wallLeft = params.wallThickness + cut;
-    if (wallLeft < MIN_MATERIAL_MM) book.note('wall', [p.owner], [p.cutout.id], wallLeft);
-    else if (lip > 0 && cut < lip) book.note('lip', [p.owner], [p.cutout.id], lip - cut);
-  }
-}
-
 function checkWalls(
   pockets: readonly Placed[],
   params: BinParams,
   board: CutoutBoard,
   book: IssueBook
 ): void {
-  if (board.mask && board.cellSize) {
-    checkMaskWalls(pockets, params, board, maskRings(board.mask, board.cellSize), book);
-  } else {
-    checkBoxWalls(pockets, params, board, book);
-  }
+  if (!board.mask) checkBoxWalls(pockets, params, board, book);
 }
 
 function floorFix(c: Cutout, floor: number): Partial<Cutout> {

@@ -60,7 +60,7 @@ describe('checkPockets between pockets', () => {
   it('counts clearance and entry edges against the gap', () => {
     const round = { shape: 'circle' as const };
     const [thin] = check(pair(2, { ...round, clearance: 1 }, { ...round, chamferWidth: 0.6 }));
-    expect(thin).toMatchObject({ kind: 'thin', mm: expect.closeTo(0.9, 6) });
+    expect(thin).toMatchObject({ kind: 'thin', mm: expect.closeTo(0.9, 2) });
     const [merged] = check(pair(1.5, { ...round, clearance: 1.6 }, { ...round, clearance: 1.6 }));
     expect(merged).toMatchObject({ kind: 'merge', ids: ['a', 'b'] });
   });
@@ -103,6 +103,33 @@ describe('checkPockets between pockets', () => {
     const [thin] = check([a, b]);
     expect(tip).toBeGreaterThan(1);
     expect(thin).toMatchObject({ kind: 'thin', mm: expect.closeTo(3.3 - 2 * tip, 3) });
+  });
+
+  // The first round's clearance swallows the second whole, though their cut
+  // outlines never touch.
+  it('reads a cut that swallows another as a merge', () => {
+    const small = (id: string, x: number, clearance?: number) =>
+      pocket(id, { shape: 'circle', x, y: 9, width: 2, depth: 2, clearance });
+    const [merged] = check([small('a', 9, 5), small('b', 11.2)]);
+    expect(merged).toMatchObject({ kind: 'merge', ids: ['a', 'b'] });
+  });
+
+  // A polygon's entry edge flares by an offset of its outline, so its corners
+  // reach out by more than the edge's width.
+  it("counts a polygon's flare at its corners", () => {
+    const square = (id: string, at: number) =>
+      pocket(id, {
+        shape: 'polygon',
+        sides: 4,
+        x: at,
+        y: at,
+        width: 20,
+        depth: 20,
+        chamferWidth: 1,
+      });
+    const issues = check([square('a', 20), square('b', 42.4)]);
+    expect(issues).toEqual([expect.objectContaining({ ids: ['a', 'b'] })]);
+    expect(issues[0].mm).toBeLessThan(1.2);
   });
 
   it('leaves pockets that overlap or nest on purpose alone', () => {
@@ -204,6 +231,8 @@ describe('checkPockets against the wall', () => {
     ];
     expect(check(exit(false), withLip)).toEqual([]);
     expect(check(exit(true), withLip)).toEqual([expect.objectContaining({ kind: 'lip' })]);
+    const keyhole = [pocket('a', { x: 1, openSides: [{ side: 'left', widthMm: 2 }] })];
+    expect(check(keyhole, withLip)).toEqual([expect.objectContaining({ kind: 'lip' })]);
   });
 
   // The generator builds no exit for a leaning pocket, so its lip is still there.
@@ -213,11 +242,15 @@ describe('checkPockets against the wall', () => {
     expect(check([leaning], withLip)).toEqual([expect.objectContaining({ kind: 'lip' })]);
   });
 
-  it('says nothing of a lip on a custom footprint that has none', () => {
+  // Its walls follow the generator's inset perimeter, not the placement grid.
+  it("leaves a custom footprint's walls unchecked, but not its pockets", () => {
     const mask = { cols: 4, rows: 4, cells: Array<0 | 1>(16).fill(1) };
     const board = { ...BOARD, mask, cellSize: { cellMmX: 20, cellMmY: 20 } };
-    const reaching = pocket('a', { shape: 'circle', x: 0.5, clearance: 2 });
-    expect(checkPockets([reaching], bin({ wallThickness: 2 }), board)).toEqual([]);
+    const withLip = bin({ base: { ...FLAT, stackingLip: true } });
+    expect(checkPockets([pocket('a', { x: 1 })], withLip, board)).toEqual([]);
+    expect(checkPockets(pair(1), withLip, board)).toEqual([
+      expect.objectContaining({ kind: 'thin' }),
+    ]);
   });
 
   it('warns about a thin wall only where the wall itself is thin', () => {
