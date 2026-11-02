@@ -33,11 +33,6 @@ const WIDTH_SAMPLES = 21;
  * line through a vertex at a notch's tip touches without crossing.
  */
 const VERTEX_NUDGE_MM = 1e-4;
-/**
- * At most one vertex's pair of lines per this much of the cut's width, so a
- * detailed mesh silhouette with thousands of points stays a few hundred lines.
- */
-const VERTEX_LINE_GRID_MM = 0.05;
 const MIN_FINGER_DEPTH_MM = 2;
 const FINGER_ENTRY_MM = 1;
 
@@ -228,12 +223,8 @@ function pocketSide(outline: PocketOutline, dir: Vec, keep: number): PocketSide 
   const outer = centreEdge + outline.pad;
   const lines: number[] = [];
   for (let i = 0; i < WIDTH_SAMPLES; i++) lines.push(-end + (2 * end * i) / (WIDTH_SAMPLES - 1));
-  const gridded = new Set<number>();
   for (const { a } of edges) {
     const at = a.x * tangent.x + a.y * tangent.y;
-    const cell = Math.round(at / VERTEX_LINE_GRID_MM);
-    if (gridded.has(cell)) continue;
-    gridded.add(cell);
     for (const s of [at - VERTEX_NUDGE_MM, at + VERTEX_NUDGE_MM]) {
       if (Math.abs(s) <= end) lines.push(s);
     }
