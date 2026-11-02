@@ -1,0 +1,44 @@
+src/features/bin-designer/store/helpers.ts
+  s_883a4eee2ecc4e::t_c01279fb24825d 14
+  s_883a4eee2ecc4e::t_d71fc1d15deee9 10,179-184,195,325
+src/features/bin-designer/types/generation.ts
+  s_883a4eee2ecc4e::t_8a832b8511dac2 128-132
+  s_883a4eee2ecc4e::t_930b895d5ee6d0 12
+src/features/bin-designer/store/slices/historySlice.ts
+  s_883a4eee2ecc4e::t_c01279fb24825d 30
+  s_883a4eee2ecc4e::t_d71fc1d15deee9 60,89
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_883a4eee2ecc4e::t_3094a9e68a9b0b 379-380
+src/features/bin-designer/types/index.ts
+  s_883a4eee2ecc4e::t_8a832b8511dac2 346
+src/features/bin-designer/types/designerState.ts
+  s_883a4eee2ecc4e::t_6735cd7acfe5cd 68
+src/features/bin-designer/types/uiState.ts
+  s_883a4eee2ecc4e::t_8a832b8511dac2 8
+src/features/bin-designer/types/bodyTypeMemory.ts
+  s_883a4eee2ecc4e::t_8a832b8511dac2 1-19,22
+  s_883a4eee2ecc4e::t_6735cd7acfe5cd 20-21
+src/features/bin-designer/components/panel/BaseSection/bodyTypeMemory.test.ts
+  s_883a4eee2ecc4e::t_a01f06bc5eab22 112-153
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.test.ts
+  s_883a4eee2ecc4e::t_a01f06bc5eab22 956-975
+src/features/bin-designer/components/panel/BaseSection/bodyTypeMemory.ts
+  s_883a4eee2ecc4e::t_3094a9e68a9b0b 19-20,34-36,127,141-145,156,162-202
+  s_883a4eee2ecc4e::t_b4ef184fd4fc14 203
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9e6ff83a526ba1eea764aa35d9faa7880057d56b",
+  "prompts": {},
+  "sessions": {
+    "s_883a4eee2ecc4e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf59d3b6-e347-45ec-8991-5ee56bc71466",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
