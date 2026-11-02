@@ -7,7 +7,7 @@
 import type { Cutout } from '@/features/bin-designer/types';
 import { maxEntryChamfer } from '@/features/bin-designer/types';
 import { clearedProfile } from '@/shared/utils/cutoutFit';
-import { cutoutOutlineRing } from '@/shared/utils/cutoutOutline';
+import { cutoutOutlineRing, meshOutlineRings } from '@/shared/utils/cutoutOutline';
 import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
 import { isCutoutOffBoard, type CutoutBoard } from './offBoardCutouts';
 
@@ -58,27 +58,50 @@ function toWorld(local: Vec, rotationDeg: number): Vec {
   return { x: local.x * c + local.y * s, y: -local.x * s + local.y * c };
 }
 
+interface PocketOutline {
+  /** Centred on the pocket's box and unturned; several for a mesh silhouette. */
+  readonly rings: readonly (readonly Vec[])[];
+  /** Clearance the rings leave out, which every edge still moves out by. */
+  readonly pad: number;
+}
+
 /**
- * The pocket as cut, clearance included, centred on its box and unturned. A
- * mesh imprint or a degenerate path reads as its box.
+ * The pocket as cut. A degenerate path reads as its box; a mesh imprint whose
+ * file has not arrived has no outline, and gets no plan rather than one stood
+ * on its box, which for a U-shaped tool lies between the arms.
  */
-function clearedOutline(pocket: Cutout): Vec[] {
+function pocketOutline(
+  pocket: Cutout,
+  meshAssets: CutoutBoard['meshAssets']
+): PocketOutline | null {
   const { clearance, w, d } = clearedProfile(pocket);
+  const centred = { ...pocket, x: -pocket.width / 2, y: -pocket.depth / 2, rotation: 0 };
+  if (pocket.shape === 'mesh') {
+    const rings = meshOutlineRings(centred, meshAssets?.[pocket.meshId ?? '']);
+    if (rings.length === 0) return null;
+    return { rings: rings.map((ring) => ring.map(([x, y]) => ({ x, y }))), pad: clearance };
+  }
   if (pocket.shape === 'path') {
     const cut = pathCutoutCut(pocket, clearance, 0);
-    if (cut) return cut.base.map((p) => ({ x: p.x, y: p.y }));
+    if (cut) return { rings: [cut.base.map((p) => ({ x: p.x, y: p.y }))], pad: 0 };
+  } else {
+    const ring = cutoutOutlineRing({
+      ...pocket,
+      x: -w / 2,
+      y: -d / 2,
+      width: w,
+      depth: d,
+      rotation: 0,
+    });
+    if (ring) return { rings: [ring.map(([x, y]) => ({ x, y }))], pad: 0 };
   }
-  const ring =
-    pocket.shape === 'path'
-      ? null
-      : cutoutOutlineRing({ ...pocket, x: -w / 2, y: -d / 2, width: w, depth: d, rotation: 0 });
-  if (ring) return ring.map(([x, y]) => ({ x, y }));
-  return [
+  const box = [
     { x: -w / 2, y: -d / 2 },
     { x: w / 2, y: -d / 2 },
     { x: w / 2, y: d / 2 },
     { x: -w / 2, y: d / 2 },
   ];
+  return { rings: [box], pad: 0 };
 }
 
 interface Crossing {
@@ -92,24 +115,27 @@ interface Crossing {
 const MIN_WALL_SIN = 0.2;
 
 /**
- * Where the line through `origin` along `dir` crosses the outline, smallest
+ * Where the line through `origin` along `dir` crosses the rings, smallest
  * first. Each edge owns its start point only, so a line through a vertex
- * counts it once.
+ * counts it once, and inside alternates with outside along the line however
+ * many rings it crosses.
  */
-function lineCrossings(outline: readonly Vec[], origin: Vec, dir: Vec): Crossing[] {
+function lineCrossings(rings: PocketOutline['rings'], origin: Vec, dir: Vec): Crossing[] {
   const crossings: Crossing[] = [];
-  for (let i = 0; i < outline.length; i++) {
-    const p = outline[i];
-    const q = outline[(i + 1) % outline.length];
-    const px = p.x - origin.x;
-    const py = p.y - origin.y;
-    const ex = q.x - p.x;
-    const ey = q.y - p.y;
-    const denom = dir.x * ey - dir.y * ex;
-    if (Math.abs(denom) < 1e-12) continue;
-    const t = (px * ey - py * ex) / denom;
-    const u = (px * dir.y - py * dir.x) / denom;
-    if (u >= 0 && u < 1) crossings.push({ t, sin: Math.abs(denom) / Math.hypot(ex, ey) });
+  for (const ring of rings) {
+    for (let i = 0; i < ring.length; i++) {
+      const p = ring[i];
+      const q = ring[(i + 1) % ring.length];
+      const px = p.x - origin.x;
+      const py = p.y - origin.y;
+      const ex = q.x - p.x;
+      const ey = q.y - p.y;
+      const denom = dir.x * ey - dir.y * ex;
+      if (Math.abs(denom) < 1e-12) continue;
+      const t = (px * ey - py * ex) / denom;
+      const u = (px * dir.y - py * dir.x) / denom;
+      if (u >= 0 && u < 1) crossings.push({ t, sin: Math.abs(denom) / Math.hypot(ex, ey) });
+    }
   }
   return crossings.sort((a, b) => a.t - b.t);
 }
@@ -130,25 +156,26 @@ interface PocketSide {
  * the centre line meets no edge that way, as on the open side of a U, where a
  * cut would stand in the plastic between its legs.
  */
-function pocketSide(outline: readonly Vec[], dir: Vec, keep: number): PocketSide | null {
-  const outer = lineCrossings(outline, { x: 0, y: 0 }, dir).at(-1)?.t;
-  if (outer === undefined || outer <= 0) return null;
+function pocketSide(outline: PocketOutline, dir: Vec, keep: number): PocketSide | null {
+  const centreEdge = lineCrossings(outline.rings, { x: 0, y: 0 }, dir).at(-1)?.t;
+  if (centreEdge === undefined || centreEdge <= 0) return null;
+  const outer = centreEdge + outline.pad;
   const tangent = { x: -dir.y, y: dir.x };
   const end = FINGER_WIDTH_MM / 2;
   let inward = Number.POSITIVE_INFINITY;
   for (let i = 0; i < WIDTH_SAMPLES; i++) {
     const s = -end + (2 * end * i) / (WIDTH_SAMPLES - 1);
-    const crossings = lineCrossings(outline, { x: tangent.x * s, y: tangent.y * s }, dir);
+    const crossings = lineCrossings(outline.rings, { x: tangent.x * s, y: tangent.y * s }, dir);
     let farWall: Crossing | null = null;
     for (let k = 0; k + 1 < crossings.length; k += 2) {
-      if (crossings[k].t <= outer + 1e-9) farWall = crossings[k];
+      if (crossings[k].t <= centreEdge + 1e-9) farWall = crossings[k];
     }
     if (farWall === null) continue;
     // The keep is perpendicular to the wall, so a slanted one needs more of it
     // along the line.
     const room = keep / Math.max(MIN_WALL_SIN, farWall.sin);
     const unfilled = end - Math.sqrt(Math.max(0, end * end - s * s));
-    inward = Math.min(inward, outer - farWall.t - room + unfilled);
+    inward = Math.min(inward, outer - (farWall.t - outline.pad) - room + unfilled);
   }
   return { reach: outer, inward };
 }
@@ -189,7 +216,8 @@ export function planFingerAccess(
   const outward = FINGER_LENGTH_MM / 2;
 
   const entry = Math.min(FINGER_ENTRY_MM, maxEntryChamfer(depth));
-  const outline = clearedOutline(pocket);
+  const outline = pocketOutline(pocket, board.meshAssets);
+  if (!outline) return null;
   const candidates: Omit<Cutout, 'id'>[] = [];
   for (const normal of [...frontFirst, ...short]) {
     const side = pocketSide(outline, normal, FAR_SIDE_GAP_MM + entry);

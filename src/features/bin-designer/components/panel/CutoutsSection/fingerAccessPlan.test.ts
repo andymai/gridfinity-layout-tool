@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
 import { maxEntryChamfer } from '@/features/bin-designer/types';
+import type { MeshAsset } from '@/shared/generation/meshAsset';
 import {
   FINGER_LENGTH_MM,
   FINGER_WIDTH_MM,
@@ -188,6 +189,38 @@ describe('planFingerAccess', () => {
       y: 72,
       width: 20,
       depth: 28,
+    });
+  });
+
+  describe('on a mesh imprint', () => {
+    // Its silhouette in the asset's lay-flat frame: a U open toward the front.
+    const asset: MeshAsset = {
+      name: 'tool',
+      data: '',
+      triangleCount: 12,
+      sizeMm: { x: 60, y: 60, z: 5 },
+      outlines: [
+        [
+          { x: 0, y: 0 },
+          { x: 10, y: 0 },
+          { x: 10, y: 50 },
+          { x: 50, y: 50 },
+          { x: 50, y: 0 },
+          { x: 60, y: 0 },
+          { x: 60, y: 60 },
+          { x: 0, y: 60 },
+        ],
+      ],
+    };
+    const imprint = pocket({ shape: 'mesh', meshId: 'u', x: 20, y: 20, width: 60, depth: 60 });
+
+    it('reads the silhouette, not the box, and stands on the bridge', () => {
+      const plan = planFingerAccess(imprint, { ...BOARD, meshAssets: { u: asset } }, MAX_CUT);
+      expect(plan).toMatchObject({ x: 40, y: 72, width: 20, depth: 28 });
+    });
+
+    it('plans nothing while the imprint has no silhouette to read', () => {
+      expect(planFingerAccess(imprint, BOARD, MAX_CUT)).toBeNull();
     });
   });
 

@@ -189,7 +189,7 @@ export function useCutoutEditor() {
 
   const handleAddFingerAccess = useAddFingerAccess(
     cutouts,
-    { width: binWidth, depth: binDepth, mask: params.cellMask, cellSize: maskCellSize },
+    { width: binWidth, depth: binDepth, mask: params.cellMask, cellSize: maskCellSize, meshAssets },
     Math.max(0, wallHeight - params.cutoutConfig.topOffset),
     selectIds
   );
