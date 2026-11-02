@@ -127,6 +127,18 @@ describe('handleCutoutKeyDown — typing guard', () => {
   });
 });
 
+describe('handleCutoutKeyDown — segmented controls', () => {
+  it('leaves a focused option its arrows and Tab, instead of nudging the selection', () => {
+    const ctx = makeCtx({ selection: new Set(['c1']), cutouts: [makeCutout()] });
+    const tab = press('Tab', { tagName: 'BUTTON', role: 'radio' });
+    handleCutoutKeyDown(press('ArrowRight', { tagName: 'BUTTON', role: 'radio' }), ctx);
+    handleCutoutKeyDown(tab, ctx);
+    expect(ctx.nudgeSelected).not.toHaveBeenCalled();
+    expect(tab.preventDefault).not.toHaveBeenCalled();
+    expect(ctx.setSelection).not.toHaveBeenCalled();
+  });
+});
+
 describe('handleCutoutKeyDown — deletion and selection', () => {
   it.each(['Delete', 'Backspace'])('%s deletes the selection', (key) => {
     const ctx = makeCtx({ selection: new Set(['c1']) });
