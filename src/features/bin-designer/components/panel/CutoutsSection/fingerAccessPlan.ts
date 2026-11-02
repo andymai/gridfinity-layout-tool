@@ -111,9 +111,12 @@ export function planFingerAccess(
   );
 
   const centre = { x: pocket.x + pocket.width / 2, y: pocket.y + pocket.depth / 2 };
+  // Lifted from the depth the pocket is BUILT at: one stored deeper than the
+  // fill is cut only to the fill, and lifting the stored depth would land both
+  // floors on that one plane.
   const depth = Math.min(
     maxCutDepth,
-    Math.max(MIN_FINGER_DEPTH_MM, pocket.cutDepth - FLOOR_LIFT_MM)
+    Math.max(MIN_FINGER_DEPTH_MM, Math.min(pocket.cutDepth, maxCutDepth) - FLOOR_LIFT_MM)
   );
   const outward = FINGER_LENGTH_MM / 2;
 

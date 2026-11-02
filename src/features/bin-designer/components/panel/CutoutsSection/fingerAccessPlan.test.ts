@@ -86,7 +86,7 @@ describe('planFingerAccess', () => {
   it('stops a millimetre short of the pocket floor, within the bin', () => {
     expect(planFingerAccess(pocket({ cutDepth: 10 }), BOARD, MAX_CUT)?.cutDepth).toBe(9);
     expect(planFingerAccess(pocket({ cutDepth: 2 }), BOARD, MAX_CUT)?.cutDepth).toBe(2);
-    expect(planFingerAccess(pocket({ cutDepth: 40 }), BOARD, MAX_CUT)?.cutDepth).toBe(MAX_CUT);
+    expect(planFingerAccess(pocket({ cutDepth: 40 }), BOARD, MAX_CUT)?.cutDepth).toBe(MAX_CUT - 1);
   });
 
   it('turns to the back when the front side would leave the board', () => {
