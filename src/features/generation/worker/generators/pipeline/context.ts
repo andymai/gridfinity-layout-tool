@@ -28,6 +28,7 @@ import { effectiveRimFilletRadius } from '@/shared/utils/rimFillet';
 import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 import { isFractional } from '@/core/constants';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
+import { resolveLipNotches } from '@/shared/utils/lipNotchPlan';
 import {
   HEIGHT_UNIT,
   CLEARANCE,
@@ -242,6 +243,7 @@ export function deriveDimensions(
   // Resolved once here so the cache key and the builders cannot disagree about
   // which finish this shell carries.
   const lipTip = resolveLipTip(params.base);
+  const lipNotches = resolveLipNotches(params);
   // Material actually under the lip. A base-only bin's lip bears on its floor
   // slab, not on a wall; every other base carries it on the collar-extended wall
   // the box is extruded to. See `lipHasSupport` for what the number decides.
@@ -446,6 +448,8 @@ export function deriveDimensions(
       // does nothing at all from the second render on. Appended only when
       // non-sharp, so every existing v7 key stays byte-identical.
       ...(lipTip !== 'sharp' ? [`liptip${lipTip}`] : []),
+      // Cut into the lip before it is fused, like the tip above.
+      ...(lipNotches ? ['lipnotch'] : []),
       // A solid bin's fill surface is part of its BODY (shellStage folds it into
       // `cutoutTopOffset`), so two bins differing only in the top offset are two
       // different shells. Without this the second one silently reuses the first
@@ -502,6 +506,7 @@ export function deriveDimensions(
     isSlotted,
     hasLip,
     lipHasSupport,
+    lipNotches,
     interiorHeight,
     maxDimension,
     shellKey,

@@ -15,6 +15,7 @@ import { CLEARANCE } from './generatorTypes';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { pitchFromParams } from './gridPitch';
 import { buildTopShape } from './boxBuilder';
+import { LIP_NOTCH_REACH_MM } from './boxTopShape';
 import { generateBin } from './binOrchestrator';
 import { getLastSolid, setLastSolid } from './shapeCache';
 import { applySplitConnectors, computeCutFaces } from './splitConnectorBuilder';
@@ -244,7 +245,12 @@ function splitSolidIntoPieces(
       { x: gridUnitMmX, y: gridUnitMmY },
       params.cellMask,
       overhang,
-      resolveLipTip(params.base)
+      resolveLipTip(params.base),
+      // Notched on the whole bin's lattice, so each piece's notches land where
+      // the unsplit bin's do.
+      splitDims.lipNotches
+        ? { fractionalEdgeX: params.fractionalEdgeX, fractionalEdgeY: params.fractionalEdgeY }
+        : undefined
     );
     // The same plane `shellStage` seats an unsplit bin's lip on, so the
     // piece's rim lands where the whole bin's does. `buildTopShape` carries its
@@ -266,6 +272,7 @@ function splitSolidIntoPieces(
         wallHeight: wallTopZ,
         lipHeight: LIP_HEIGHT,
         lipTaperWidth: LIP_TAPER_WIDTH,
+        ...(splitDims.lipNotches && { inwardReach: LIP_NOTCH_REACH_MM }),
       };
       const rawLipCuts = buildLipSlotCuts(
         params,

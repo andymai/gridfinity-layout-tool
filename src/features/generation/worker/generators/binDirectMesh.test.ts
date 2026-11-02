@@ -238,6 +238,13 @@ describe('binDirectMesh — canBinUseDirectMesh gate', () => {
     ).toBe(true);
   });
 
+  it('rejects a notched lip, which the procedural ring cannot emit', () => {
+    const notched = { ...DEFAULT_BIN_PARAMS.base, stackingLip: true, lipNotches: true };
+    expect(canBinUseDirectMesh(bin({ width: 3, depth: 2, base: notched }))).toBe(false);
+    // Asked for but blocked (no grid line), so the lip is plain and drafts.
+    expect(canBinUseDirectMesh(bin({ width: 1, depth: 1, base: notched }))).toBe(true);
+  });
+
   // Magnet/screw bases share the body + feet with standard; only the unseen
   // foot-underside holes differ, so they ride the direct path.
   for (const style of ['magnet', 'screw', 'magnet_and_screw'] as const) {

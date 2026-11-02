@@ -204,6 +204,21 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
     keywords: ['stacking lip', 'stack', 'lip', 'rim', 'stackable', 'mating'],
   },
   {
+    id: 'opt-lip-notches',
+    labelKey: 'binDesigner.base.lipNotches',
+    section: 'bd-base',
+    keywords: [
+      'lip notches',
+      'notch',
+      'notches',
+      'stack smaller bins',
+      'sliding',
+      'locate',
+      'register',
+      'grid lines',
+    ],
+  },
+  {
     id: 'opt-magnets',
     labelKey: 'binDesigner.base.magnetHoles',
     section: 'bd-base',

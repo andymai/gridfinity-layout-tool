@@ -180,6 +180,25 @@ describe('createInitialContext', () => {
     expect(ctxDefault.dimensions.shellKey).not.toBe(ctxCustom.dimensions.shellKey);
   });
 
+  // The notches are cut into the lip before it is fused, so they are part of
+  // the shell: sharing a key with the plain lip would reuse it forever.
+  it('keys a notched lip apart from a plain one, and a blocked request with it', () => {
+    const key = (width: number, depth: number, lipNotches?: boolean): string =>
+      createInitialContext(
+        createTestParams({
+          width,
+          depth,
+          base: {
+            ...DEFAULT_BIN_PARAMS.base,
+            stackingLip: true,
+            ...(lipNotches && { lipNotches }),
+          },
+        })
+      ).dimensions.shellKey;
+    expect(key(3, 2, true)).not.toBe(key(3, 2));
+    expect(key(1, 1, true)).toBe(key(1, 1));
+  });
+
   it('computes interiorHeight with lip deduction', () => {
     const ctx = createInitialContext(
       createTestParams({

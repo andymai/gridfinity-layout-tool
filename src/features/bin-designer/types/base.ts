@@ -512,6 +512,14 @@ export interface BaseConfig {
    * Inert while {@link stackingLip} is off: there is no peak to finish.
    */
   readonly lipTip?: LipTipStyle;
+  /**
+   * A notch on the stacking lip at every internal grid line, so a smaller bin
+   * stacked on top registers to a cell instead of sliding along the rim. Absent
+   * means off, for the same fingerprint reason as {@link lipTip}.
+   * `resolveLipNotches` (`@/shared/utils/lipNotchPlan`) decides whether it is
+   * actually built.
+   */
+  readonly lipNotches?: boolean;
   /** Optional rounding of the plain wall rim, independent of the stacking lip. */
   readonly rimFillet?: boolean;
   readonly rimFilletRadius?: number;

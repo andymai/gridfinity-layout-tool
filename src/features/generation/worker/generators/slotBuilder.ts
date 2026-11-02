@@ -63,6 +63,18 @@ export interface LipCutInfo {
   readonly lipHeight: number;
   /** Lip taper width — how far the lip extends inward from the outer wall (2.6mm) */
   readonly lipTaperWidth: number;
+  /**
+   * How far in from the outer wall the lip cutters clear, when that is past the
+   * taper: a notched lip's notches reach further, and a divider sliding in on a
+   * grid line has to pass through one. Slot POSITIONS stay on `lipTaperWidth`,
+   * which the body's wall slots were laid out with.
+   */
+  readonly inwardReach?: number;
+}
+
+/** Depth the lip cutters clear past the inner wall face. */
+function lipCutReach(lipInfo: LipCutInfo, wallThickness: number): number {
+  return Math.max(0, (lipInfo.inwardReach ?? lipInfo.lipTaperWidth) - wallThickness);
 }
 
 /**
@@ -286,8 +298,8 @@ export function buildLipSlotCuts(
   if (params.style !== 'slotted') return null;
   if (params.wallThickness < MIN_WALL_FOR_SLOTS) return null;
 
-  const lipOverhang = Math.max(0, lipInfo.lipTaperWidth - params.wallThickness);
-  if (lipOverhang <= 0) return null;
+  const cutReach = lipCutReach(lipInfo, params.wallThickness);
+  if (cutReach <= 0) return null;
 
   return withScope((scope: DisposalScope): Shape3D | null => {
     const { slotConfig } = params;
@@ -301,7 +313,7 @@ export function buildLipSlotCuts(
       const halfSpan = innerCross / 2;
       for (const crossPos of positions) {
         const lipCutters = createMirroredLipCutters(
-          lipOverhang,
+          cutReach,
           slotDepth,
           slotWidth,
           lipCutHeight,
@@ -359,6 +371,7 @@ function buildSlotCutsInScope(
   // Only cut the interior overhang — leave the outer rim intact.
   // overhang = lipTaperWidth - wallThickness (e.g. 2.6 - 0.95 = 1.65mm)
   const lipOverhang = lipInfo ? Math.max(0, lipInfo.lipTaperWidth - params.wallThickness) : 0;
+  const cutReach = lipInfo ? lipCutReach(lipInfo, params.wallThickness) : 0;
 
   // The lip swept profile also extends BELOW wallHeight (the wall-replacement
   // extension in buildTopShape). After the wall portion cut, a triangular region
@@ -408,9 +421,9 @@ function buildSlotCutsInScope(
       // Lip cutouts: remove the interior overhang above AND below wallHeight.
       // The lip profile extends below wallHeight (wall-replacement extension),
       // so the cutout must reach down to wallHeight - lipTaperWidth.
-      if (lipInfo && lipOverhang > 0) {
+      if (lipInfo && cutReach > 0) {
         const lipCutters = createMirroredLipCutters(
-          lipOverhang,
+          cutReach,
           slotDepth,
           slotWidth,
           lipCutHeight,
@@ -479,9 +492,9 @@ function buildSlotCutsInScope(
         );
       }
 
-      if (lipInfo && lipOverhang > 0) {
+      if (lipInfo && cutReach > 0) {
         const [negLip, posLip] = createMirroredLipCutters(
-          lipOverhang,
+          cutReach,
           slotDepth,
           slotWidth,
           lipCutHeight,
@@ -521,6 +534,7 @@ import type { FeatureBuilder } from './pipeline/featureBuilder';
 import { FeatureTag } from './featureTags';
 import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKeyUtils';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
+import { LIP_NOTCH_REACH_MM } from './boxTopShape';
 
 export const slotCutsFeature: FeatureBuilder = {
   name: 'slotCuts',
@@ -530,7 +544,12 @@ export const slotCutsFeature: FeatureBuilder = {
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;
     const lipInfo = dim.hasLip
-      ? { wallHeight: dim.wallHeight, lipHeight: LIP_HEIGHT, lipTaperWidth: LIP_TAPER_WIDTH }
+      ? {
+          wallHeight: dim.wallHeight,
+          lipHeight: LIP_HEIGHT,
+          lipTaperWidth: LIP_TAPER_WIDTH,
+          ...(dim.lipNotches && { inwardReach: LIP_NOTCH_REACH_MM }),
+        }
       : undefined;
     // The slot is sized to accept the divider piece, so `dividerPieces` is a
     // geometry input — and it reaches no other segment: `slotConfig` describes
@@ -564,7 +583,8 @@ export const slotCutsFeature: FeatureBuilder = {
               'lip',
               quantize(lipInfo.wallHeight),
               quantize(lipInfo.lipHeight),
-              quantize(lipInfo.lipTaperWidth)
+              quantize(lipInfo.lipTaperWidth),
+              ...(lipInfo.inwardReach !== undefined ? [quantize(lipInfo.inwardReach)] : [])
             )
           : 'none'
       )
@@ -573,7 +593,12 @@ export const slotCutsFeature: FeatureBuilder = {
   build: (ctx) => {
     const { dimensions: dim, params } = ctx;
     const lipInfo = dim.hasLip
-      ? { wallHeight: dim.wallHeight, lipHeight: LIP_HEIGHT, lipTaperWidth: LIP_TAPER_WIDTH }
+      ? {
+          wallHeight: dim.wallHeight,
+          lipHeight: LIP_HEIGHT,
+          lipTaperWidth: LIP_TAPER_WIDTH,
+          ...(dim.lipNotches && { inwardReach: LIP_NOTCH_REACH_MM }),
+        }
       : undefined;
     const result = buildSlotCuts(params, dim.innerW, dim.innerD, dim.interiorHeight, lipInfo, {
       floorZ: dim.floorThickness,

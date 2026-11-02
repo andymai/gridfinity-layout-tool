@@ -118,6 +118,7 @@ export const BASE_CONFIG_KEYS = [
   'screwDiameter',
   'stackingLip',
   'lipTip',
+  'lipNotches',
   'rimFillet',
   'rimFilletRadius',
   'solid',

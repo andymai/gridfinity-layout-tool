@@ -262,3 +262,15 @@ New designs start on `TEXT_PRESETS.engineering` while `migrateParams` backfills 
 NEUTRAL `DEFAULT_TEXT_STYLE_DEFAULTS`, so a design saved before the type system renders
 as it always did. Test fixtures measuring a host's own math must pin the neutral style
 too, or every threshold in them re-tunes the next time the shipped look changes.
+
+### Lip notches are the pockets' ridge
+
+`buildNotchedTopShapeLoft` (`boxTopShape.ts`) cuts the lip with one baseplate pocket
+per perimeter cell rather than one footprint-wide profile; the ridge two pockets leave
+is the notch. Its top stays `LIP_NOTCH_TOP_DROP_MM` below the peak: carried higher, it
+meets the knife edge at a cusp and every `lipTip` fillet or chamfer silently falls back
+to sharp. `resolveLipNotches` (`@/shared/utils/lipNotchPlan`) is the one gate:
+`deriveDimensions` resolves it to `dims.lipNotches` for the shell key and both lip
+builders, and the direct-mesh allowlist calls it. A notched cut that throws falls back
+to the plain lip. A tool cut through the lip must clear `lipInnerReachMm` (divider slots:
+`LipCutInfo.inwardReach`), not `LIP_TAPER_WIDTH`, or a thin wall leaves notch inside it.

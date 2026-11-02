@@ -173,6 +173,10 @@
             "enum": "LIP_TIP_STYLES"
           }
         },
+        "lipNotches": {
+          "type": "boolean",
+          "description": "A small ridge on the stacking lip at each grid line, so a smaller bin stacked on top locks to a cell instead of sliding along the rim. Has no effect on a bin with a lid, a custom shape or an overhang, or one sized in steps other than half a unit. Absent means off."
+        },
         "lightweightMode": {
           "enum": ["interior", "underside"],
           "default": "interior",

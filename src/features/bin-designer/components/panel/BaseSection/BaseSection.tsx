@@ -46,9 +46,20 @@ import { useTranslation } from '@/i18n';
 import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import { BodyTypeTiles } from './BodyTypeTiles';
 import { useBaseSection } from './useBaseSection';
+import type { LipNotchBlocker } from '@/shared/utils/lipNotchPlan';
 
 /** Axis key suffixes for the foot-lattice translation keys. */
 const FOOT_LATTICE_AXES = ['x', 'y'] as const;
+
+/** `noLip` has no entry: the toggle is only rendered while the lip is on. */
+const LIP_NOTCH_BLOCKED = {
+  lid: 'binDesigner.base.lipNotches.blockedLid',
+  shape: 'binDesigner.base.lipNotches.blockedShape',
+  overhang: 'binDesigner.base.lipNotches.blockedOverhang',
+  lattice: 'binDesigner.base.lipNotches.blockedLattice',
+  size: 'binDesigner.base.lipNotches.blockedSize',
+  singleCell: 'binDesigner.base.lipNotches.blockedSingleCell',
+} as const satisfies Record<Exclude<LipNotchBlocker, 'noLip'>, string>;
 
 /**
  * A family the chosen body cannot have, named rather than removed.
@@ -226,6 +237,19 @@ export function BaseSection() {
               fullWidth
             />
           </div>
+        )}
+        {state.base.stackingLip && (
+          <FeatureToggle
+            label={t('binDesigner.base.lipNotches')}
+            checked={state.lipNotches}
+            onChange={handlers.toggleLipNotches}
+            info={t('binDesigner.base.lipNotchesDetail')}
+            disabledReason={
+              state.lipNotchBlocker === null || state.lipNotchBlocker === 'noLip'
+                ? undefined
+                : t(LIP_NOTCH_BLOCKED[state.lipNotchBlocker])
+            }
+          />
         )}
       </section>
 
