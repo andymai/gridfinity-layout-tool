@@ -1037,7 +1037,7 @@
   "binDesigner.cutouts.throughBlocked.tilt": "Встановіть нахил 0, щоб прорізати наскрізь.",
   "binDesigner.cutouts.throughBlocked.taper": "Прорізати наскрізь біля звуженої стінки не можна.",
   "binDesigner.cutouts.throughBlocked.feet": "Прорізати наскрізь зі знімними ніжками не можна.",
-  "binDesigner.cutouts.throughBlocked.nesting": "Прорізати наскрізь у вкладного типу не можна.",
+  "binDesigner.cutouts.throughBlocked.nesting": "Прорізати наскрізь у вкладному типі не можна.",
   "binDesigner.cutouts.depthPrompt.title.one": "Яка товщина цього інструмента?",
   "binDesigner.cutouts.depthPrompt.title.other": "Яка товщина цих інструментів ({count})?",
   "binDesigner.cutouts.depthPrompt.remaining": "Лишилося {count}",

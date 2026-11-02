@@ -1037,7 +1037,7 @@
   "binDesigner.cutouts.throughBlocked.tilt": "Pro řez skrz nastavte náklon na 0.",
   "binDesigner.cutouts.throughBlocked.taper": "Řez skrz není možný u zkosené stěny.",
   "binDesigner.cutouts.throughBlocked.feet": "Řez skrz není možný s odnímatelnými nožičkami.",
-  "binDesigner.cutouts.throughBlocked.nesting": "Řez skrz není možný u typu Vnořitelný.",
+  "binDesigner.cutouts.throughBlocked.nesting": "Řez skrz není možný u vnořitelného typu.",
   "binDesigner.cutouts.depthPrompt.title.one": "Jak silný je tento nástroj?",
   "binDesigner.cutouts.depthPrompt.title.other": "Jak silné jsou tyto nástroje ({count})?",
   "binDesigner.cutouts.depthPrompt.remaining": "Zbývá {count}",

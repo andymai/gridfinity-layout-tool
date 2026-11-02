@@ -1037,7 +1037,7 @@
   "binDesigner.cutouts.throughBlocked.tilt": "Ustaw pochylenie na 0, aby wyciąć na wylot.",
   "binDesigner.cutouts.throughBlocked.taper": "Nie można wyciąć na wylot przy zwężającej się ściance.",
   "binDesigner.cutouts.throughBlocked.feet": "Nie można wyciąć na wylot przy odczepianych nóżkach.",
-  "binDesigner.cutouts.throughBlocked.nesting": "Nie można wyciąć na wylot przy typie Zagnieżdżany.",
+  "binDesigner.cutouts.throughBlocked.nesting": "Nie można wyciąć na wylot przy typie Zagnieżdżanym.",
   "binDesigner.cutouts.depthPrompt.title.one": "Jak grube jest to narzędzie?",
   "binDesigner.cutouts.depthPrompt.title.other": "Jak grube są te narzędzia ({count})?",
   "binDesigner.cutouts.depthPrompt.remaining": "Zostało {count}",
