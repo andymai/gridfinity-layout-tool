@@ -206,10 +206,12 @@ function ringsOf(c: Cutout, board: CutoutBoard): Pt[][] {
 }
 
 /**
- * The outline a cut takes at the surface. A drawn shape is cut at its cleared
- * size (for a polygon a uniform scale), a path is offset and a mesh dilated by
- * its clearance, and then every outline is offset again by its entry edge,
- * the way the builder flares it, so a polygon's corners reach furthest.
+ * The outline a cut takes at the surface, and any rounded growth still to add
+ * around it. A drawn shape is cut at its cleared size (for a polygon a uniform
+ * scale) and a path is offset by its clearance. The entry edge then flares
+ * each the way the builder does: a rectangle, round or slot grows its corners
+ * round with the flare, a polygon or path is offset and keeps them sharp. A
+ * mesh imprint is dilated round by clearance and entry edge alike.
  */
 function cutRingsOf(
   c: Cutout,
@@ -217,22 +219,21 @@ function cutRingsOf(
   board: CutoutBoard
 ): { readonly rings: Pt[][]; readonly pad: number } {
   const { clearance, w, d } = clearedProfile(c);
+  const entry = entryChamferWidth(c);
   const offsetBy = (rings: Pt[][], by: number) => ({
     rings: by > 0 ? rings.map((ring) => offsetClosedPolygon(ring, by)) : rings,
     pad: 0,
   });
-  const entry = entryChamferWidth(c);
   if (c.shape === 'mesh') return { rings: drawn, pad: clearance + entry };
   if (c.shape === 'path') return offsetBy(drawn, clearance + entry);
-  if (clearance === 0) return offsetBy(drawn, entry);
-  const cleared = {
-    ...c,
-    x: c.x - (w - c.width) / 2,
-    y: c.y - (d - c.depth) / 2,
-    width: w,
-    depth: d,
-  };
-  return offsetBy(ringsOf(cleared, board), entry);
+  const cleared =
+    clearance === 0
+      ? drawn
+      : ringsOf(
+          { ...c, x: c.x - (w - c.width) / 2, y: c.y - (d - c.depth) / 2, width: w, depth: d },
+          board
+        );
+  return c.shape === 'polygon' ? offsetBy(cleared, entry) : { rings: cleared, pad: entry };
 }
 
 export interface PlacedCopy {
@@ -440,8 +441,12 @@ function opensThrough(p: Placed, side: string, params: BinParams): boolean {
     side === 'left' || side === 'right'
       ? p.drawnBox.maxY - p.drawnBox.minY
       : p.drawnBox.maxX - p.drawnBox.minX;
+  // A group's exit is centred on the whole group, not this member, so only
+  // one with no width of its own is sure to cover the member.
+  const covers = (widthMm: number | undefined) =>
+    widthMm === undefined || (p.cutout.groupId === null && widthMm >= span - 1e-6);
   return effectiveOpenSides(p.cutout, params).some(
-    (s) => s.side === side && !s.tunnel && (s.widthMm === undefined || s.widthMm >= span - 1e-6)
+    (s) => s.side === side && !s.tunnel && covers(s.widthMm)
   );
 }
 

@@ -141,6 +141,14 @@ describe('checkPockets between pockets', () => {
     expect(issues[0].mm).toBeLessThan(1.2);
   });
 
+  // A rectangle's mouth grows its corners round as it flares, so two square
+  // pockets set corner to corner keep the plastic between their arcs.
+  it('flares a rectangle round at its corners', () => {
+    const square = (id: string, at: number) =>
+      pocket(id, { x: at, y: at, width: 20, depth: 20, cutDepth: 6, chamferWidth: 5 });
+    expect(check([square('a', 20), square('b', 48.2)])).toEqual([]);
+  });
+
   it('leaves pockets that overlap or nest on purpose alone', () => {
     expect(check(pair(-5))).toEqual([]);
     const tray = pocket('tray', { x: 10, y: 10, width: 60, depth: 60, cutDepth: 3 });
@@ -279,6 +287,18 @@ describe('checkPockets against the wall', () => {
     // The generator holds an exit to the pocket's span, so this is the whole of it.
     const wide = [pocket('a', { x: 1, openSides: [{ side: 'left', widthMm: 25 }] })];
     expect(check(wide, withLip)).toEqual([]);
+    // A group's exit is centred on the whole group, so 25 mm need not cover
+    // this member.
+    const grouped = [
+      pocket('a', {
+        x: 1,
+        groupId: 'g',
+        groupOp: 'union',
+        openSides: [{ side: 'left', widthMm: 25 }],
+      }),
+      pocket('b', { x: 10, y: 40, groupId: 'g', groupOp: 'union' }),
+    ];
+    expect(check(grouped, withLip)).toEqual([expect.objectContaining({ kind: 'lip', ids: ['a'] })]);
   });
 
   // The generator builds no exit for a leaning pocket, so its lip is still there.
