@@ -33,6 +33,11 @@ const WIDTH_SAMPLES = 21;
  * line through a vertex at a notch's tip touches without crossing.
  */
 const VERTEX_NUDGE_MM = 1e-4;
+/**
+ * At most one vertex's pair of lines per this much of the cut's width, so a
+ * detailed mesh silhouette with thousands of points stays a few hundred lines.
+ */
+const VERTEX_LINE_GRID_MM = 0.05;
 const MIN_FINGER_DEPTH_MM = 2;
 const FINGER_ENTRY_MM = 1;
 
@@ -156,24 +161,43 @@ function clearanceAlong(c: Crossing, dir: Vec, keep: number): number {
  * counts it once, and inside alternates with outside along the line however
  * many rings it crosses.
  */
-function lineCrossings(rings: PocketOutline['rings'], origin: Vec, dir: Vec): Crossing[] {
-  const crossings: Crossing[] = [];
+interface Edge {
+  readonly a: Vec;
+  readonly b: Vec;
+}
+
+/**
+ * The edges a line within `half` of the centre, across `tangent`, can cross.
+ * Every line the cut is measured on lies in that band, so no crossing is lost.
+ */
+function edgesInBand(rings: PocketOutline['rings'], tangent: Vec, half: number): Edge[] {
+  const edges: Edge[] = [];
   for (const ring of rings) {
     for (let i = 0; i < ring.length; i++) {
-      const p = ring[i];
-      const q = ring[(i + 1) % ring.length];
-      const px = p.x - origin.x;
-      const py = p.y - origin.y;
-      const ex = q.x - p.x;
-      const ey = q.y - p.y;
-      const denom = dir.x * ey - dir.y * ex;
-      if (Math.abs(denom) < 1e-12) continue;
-      const t = (px * ey - py * ex) / denom;
-      const u = (px * dir.y - py * dir.x) / denom;
-      if (u >= 0 && u < 1) {
-        const at = { x: origin.x + dir.x * t, y: origin.y + dir.y * t };
-        crossings.push({ t, at, a: p, b: q });
-      }
+      const a = ring[i];
+      const b = ring[(i + 1) % ring.length];
+      const sa = a.x * tangent.x + a.y * tangent.y;
+      const sb = b.x * tangent.x + b.y * tangent.y;
+      if (Math.max(sa, sb) >= -half && Math.min(sa, sb) <= half) edges.push({ a, b });
+    }
+  }
+  return edges;
+}
+
+function lineCrossings(edges: readonly Edge[], origin: Vec, dir: Vec): Crossing[] {
+  const crossings: Crossing[] = [];
+  for (const { a: p, b: q } of edges) {
+    const px = p.x - origin.x;
+    const py = p.y - origin.y;
+    const ex = q.x - p.x;
+    const ey = q.y - p.y;
+    const denom = dir.x * ey - dir.y * ex;
+    if (Math.abs(denom) < 1e-12) continue;
+    const t = (px * ey - py * ex) / denom;
+    const u = (px * dir.y - py * dir.x) / denom;
+    if (u >= 0 && u < 1) {
+      const at = { x: origin.x + dir.x * t, y: origin.y + dir.y * t };
+      crossings.push({ t, at, a: p, b: q });
     }
   }
   return crossings.sort((a, b) => a.t - b.t);
@@ -196,24 +220,27 @@ interface PocketSide {
  * cut would stand in the plastic between its legs.
  */
 function pocketSide(outline: PocketOutline, dir: Vec, keep: number): PocketSide | null {
-  const centreEdge = lineCrossings(outline.rings, { x: 0, y: 0 }, dir).at(-1)?.t;
-  if (centreEdge === undefined || centreEdge <= 0) return null;
-  const outer = centreEdge + outline.pad;
   const tangent = { x: -dir.y, y: dir.x };
   const end = FINGER_WIDTH_MM / 2;
+  const edges = edgesInBand(outline.rings, tangent, end);
+  const centreEdge = lineCrossings(edges, { x: 0, y: 0 }, dir).at(-1)?.t;
+  if (centreEdge === undefined || centreEdge <= 0) return null;
+  const outer = centreEdge + outline.pad;
   const lines: number[] = [];
   for (let i = 0; i < WIDTH_SAMPLES; i++) lines.push(-end + (2 * end * i) / (WIDTH_SAMPLES - 1));
-  for (const ring of outline.rings) {
-    for (const v of ring) {
-      const at = v.x * tangent.x + v.y * tangent.y;
-      for (const s of [at - VERTEX_NUDGE_MM, at + VERTEX_NUDGE_MM]) {
-        if (Math.abs(s) <= end) lines.push(s);
-      }
+  const gridded = new Set<number>();
+  for (const { a } of edges) {
+    const at = a.x * tangent.x + a.y * tangent.y;
+    const cell = Math.round(at / VERTEX_LINE_GRID_MM);
+    if (gridded.has(cell)) continue;
+    gridded.add(cell);
+    for (const s of [at - VERTEX_NUDGE_MM, at + VERTEX_NUDGE_MM]) {
+      if (Math.abs(s) <= end) lines.push(s);
     }
   }
   let inward = Number.POSITIVE_INFINITY;
   for (const s of lines) {
-    const crossings = lineCrossings(outline.rings, { x: tangent.x * s, y: tangent.y * s }, dir);
+    const crossings = lineCrossings(edges, { x: tangent.x * s, y: tangent.y * s }, dir);
     let farWall: Crossing | null = null;
     for (let k = 0; k + 1 < crossings.length; k += 2) {
       if (crossings[k].t <= centreEdge + 1e-9) farWall = crossings[k];
