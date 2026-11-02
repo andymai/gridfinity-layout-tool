@@ -341,6 +341,12 @@ describe('checkPockets against the wall', () => {
     expect(check([pocket('a', { x: 0.5, y: 20, chamferWidth: 2 })])).toEqual([]);
   });
 
+  // The builder rounds a rectangle's corners as it flares, so a square pocket
+  // in a bin corner keeps the plastic outside its grown arc.
+  it('grows a square pocket round before reading a bin corner', () => {
+    expect(check([pocket('a', { x: 2.5, y: 2.5, chamferWidth: 2 })])).toEqual([]);
+  });
+
   it('leaves a pocket off the board to the off-board warning', () => {
     expect(check([pocket('a', { shape: 'circle', x: -2, clearance: 2 })])).toEqual([]);
   });

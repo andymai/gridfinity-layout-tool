@@ -71,6 +71,12 @@ interface Placed extends PlacedCopy {
    * dilation, which offsetting its outline would square off at the corners.
    */
   readonly pad: number;
+  /**
+   * The whole cut as the builder clips it to the interior: {@link rings} with
+   * a drawn shape's rounded growth on. A mesh imprint is not clipped, so its
+   * dilation stays in {@link pad}.
+   */
+  readonly clipped: readonly (readonly Pt[])[];
 }
 
 const KIND_ORDER: readonly PocketIssueKind[] = ['merge', 'wall', 'lip', 'thin', 'floor'];
@@ -217,23 +223,36 @@ function cutRingsOf(
   c: Cutout,
   drawn: Pt[][],
   board: CutoutBoard
-): { readonly rings: Pt[][]; readonly pad: number } {
+): { readonly rings: Pt[][]; readonly pad: number; readonly clipped: Pt[][] } {
   const { clearance, w, d } = clearedProfile(c);
   const entry = entryChamferWidth(c);
-  const offsetBy = (rings: Pt[][], by: number) => ({
-    rings: by > 0 ? rings.map((ring) => offsetClosedPolygon(ring, by)) : rings,
-    pad: 0,
-  });
-  if (c.shape === 'mesh') return { rings: drawn, pad: clearance + entry };
+  const offsetBy = (rings: Pt[][], by: number) => {
+    const grown = by > 0 ? rings.map((ring) => offsetClosedPolygon(ring, by)) : rings;
+    return { rings: grown, pad: 0, clipped: grown };
+  };
+  if (c.shape === 'mesh') return { rings: drawn, pad: clearance + entry, clipped: drawn };
   if (c.shape === 'path') return offsetBy(drawn, clearance + entry);
-  const cleared =
-    clearance === 0
-      ? drawn
-      : ringsOf(
-          { ...c, x: c.x - (w - c.width) / 2, y: c.y - (d - c.depth) / 2, width: w, depth: d },
-          board
-        );
-  return c.shape === 'polygon' ? offsetBy(cleared, entry) : { rings: cleared, pad: entry };
+  // The same shape at a size, about the same centre, its corners rounder by
+  // whatever it grew: how the builder grows a rectangle, round or slot.
+  const sized = (sw: number, sd: number, grow: number) =>
+    ringsOf(
+      {
+        ...c,
+        x: c.x - (sw - c.width) / 2,
+        y: c.y - (sd - c.depth) / 2,
+        width: sw,
+        depth: sd,
+        cornerRadius: c.cornerRadius + grow,
+      },
+      board
+    );
+  const cleared = clearance === 0 ? drawn : sized(w, d, 0);
+  if (c.shape === 'polygon') return offsetBy(cleared, entry);
+  return {
+    rings: cleared,
+    pad: entry,
+    clipped: entry > 0 ? sized(w + 2 * entry, d + 2 * entry, entry) : cleared,
+  };
 }
 
 export interface PlacedCopy {
@@ -291,6 +310,7 @@ function placePockets(cutouts: readonly Cutout[], board: CutoutBoard): Placed[] 
         rings,
         box: boxOf(rings),
         pad: cut.pad,
+        clipped: cut.clipped.filter((r) => r.length >= 3),
       },
     ];
   });
@@ -475,14 +495,11 @@ function checkBoxWalls(
     if (wall + inset - p.pad - cornerSlack >= needed) continue;
     let least = Infinity;
     let at: Pt | null = null;
-    // The builder clips a drawn shape's whole flared cut to the interior, so
-    // its growth goes on before the clip. A mesh imprint is subtracted whole,
-    // so its dilation comes after: the wall does not stop it.
-    const mesh = p.cutout.shape === 'mesh';
-    const grown =
-      !mesh && p.pad > 0 ? p.rings.map((ring) => offsetClosedPolygon(ring, p.pad)) : p.rings;
-    for (const q of clippedCorners(grown, w, d)) {
-      const m = toOuterFace(q, w, d, wall, radius) - (mesh ? p.pad : 0);
+    // A mesh imprint is subtracted whole, so its dilation comes after the
+    // clip: the wall does not stop it.
+    const after = p.cutout.shape === 'mesh' ? p.pad : 0;
+    for (const q of clippedCorners(p.clipped, w, d)) {
+      const m = toOuterFace(q, w, d, wall, radius) - after;
       if (m < least) {
         least = m;
         at = q;
