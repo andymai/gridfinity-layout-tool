@@ -101,6 +101,8 @@ src/features/generation/worker/generators/binGenerator.scenario.cutoutEntryEdges
   s_4b9adb1d9473fb::t_53bfe8308cd7fe 1-5
 src/features/generation/README.md
   s_4b9adb1d9473fb::t_d45230405766e0 83
+docs/schemas/bin-design.md
+  s_4b9adb1d9473fb::t_32298d637f157b 523-524
 ---
 {
   "schema_version": "authorship/3.0.0",
