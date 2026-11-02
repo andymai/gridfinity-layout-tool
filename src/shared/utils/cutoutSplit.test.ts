@@ -246,6 +246,24 @@ describe('drawnSplit', () => {
     expect((b.x - a.x) * (0 - a.y) - (b.y - a.y) * (0 - a.x)).toBeCloseTo(0, 6);
   });
 
+  it('reports a sliver on the copy it is drawn across rather than splitting another', () => {
+    const repeat = pocket({
+      split: undefined,
+      array: {
+        mode: 'grid',
+        cols: 2,
+        rows: 1,
+        pitchX: 50,
+        pitchY: 0,
+        count: 0,
+        radius: 0,
+        startAngle: 0,
+        rotateToCenter: false,
+      },
+    });
+    expect(typeof drawnSplit(repeat, { x: 65, y: 48.32 }, { x: 75, y: 51.66 })).toBe('string');
+  });
+
   it('takes a line across any copy of a repeat', () => {
     const repeat = pocket({
       split: undefined,

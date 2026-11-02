@@ -261,8 +261,9 @@ function segmentMeets(ring: readonly SplitPt[], p: SplitPt, q: SplitPt): boolean
 /**
  * The split a line drawn in the editor from `start` to `end` makes, or why it
  * cannot split the pocket. A repeat takes the line from the copy the drawn
- * segment crosses, as every copy shares the master's frame; only a drag that
- * touches none falls back to the first copy its extension crosses. A redrawn
+ * segment crosses, as every copy shares the master's frame, and reports why
+ * when that copy cannot take it; only a drag that touches no copy falls back
+ * to the first one its extension crosses. A redrawn
  * split keeps its depths, and its sides stay where they were.
  */
 export function drawnSplit(c: Cutout, start: SplitPt, end: SplitPt): Split | SplitProblem {
@@ -278,7 +279,7 @@ export function drawnSplit(c: Cutout, start: SplitPt, end: SplitPt): Split | Spl
       )
     : [];
   let problem: SplitProblem = 'crossings';
-  for (const copy of [...touched, ...copies.filter((x) => !touched.includes(x))]) {
+  for (const copy of touched.length > 0 ? touched : copies) {
     const line = alignedSplitLine(
       c.split,
       toSplitFrame(copy, start.x, start.y),
