@@ -452,7 +452,7 @@
   "binDesigner.base.lipNotches.blockedLid": "Indisponível com tampa. A tampa tem a própria grade para a caixa de cima.",
   "binDesigner.base.lipNotches.blockedShape": "Indisponível em forma personalizada.",
   "binDesigner.base.lipNotches.blockedOverhang": "Indisponível com saliência.",
-  "binDesigner.base.lipNotches.blockedLattice": "Indisponível com a malha dos pés Meio deslocamento, cujos pés cairiam sobre os entalhes.",
+  "binDesigner.base.lipNotches.blockedLattice": "Indisponível com a malha dos pés “Meio deslocamento”: os pés cairiam sobre os entalhes.",
   "binDesigner.base.lipNotches.blockedSize": "Largura e profundidade precisam estar em unidades inteiras ou meias.",
   "binDesigner.base.lipNotches.blockedSingleCell": "A caixa precisa ter mais de uma unidade de largura ou profundidade.",
   "binDesigner.bento.backgroundNote": "Células vazias são impressas como cavidades 1×1",

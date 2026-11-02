@@ -24,7 +24,7 @@ import type { HandleWallDef } from '@/shared/utils/handleCutoutClip';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
 import { getSlotFreeWalls, isSlottedBody } from '@/shared/utils/slotFreeWalls';
 import { buildHandleProfile } from './handleProfiles';
-import { LIP_TAPER_WIDTH } from './generatorConstants';
+import { lipInnerReachMm } from './boxTopShape';
 import { resolvePolygonSideGeometry } from './maskPolygonEdges';
 import { pitchFromParams } from './gridPitch';
 import { isPartialMask } from '@/shared/utils/cellMask';
@@ -148,7 +148,7 @@ function buildHandleHolesInScope(
   } = params.handles;
   if (globalHeight <= 0) return null;
 
-  const lipOverhang = hasLip ? LIP_TAPER_WIDTH : 0;
+  const lipOverhang = hasLip ? lipInnerReachMm(params) : 0;
   const extrudeDepth = (wallThickness + lipOverhang) * 2 + 1;
 
   // Non-rectangular footprints map each outer side to its outermost matching

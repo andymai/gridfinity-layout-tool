@@ -45,6 +45,8 @@ import {
 } from './generatorTypes';
 import { forEachCell, type CellInfo } from './cellDecomposition';
 import { isAbortError } from './utils/abort';
+import { resolveLipNotches } from '@/shared/utils/lipNotchPlan';
+import type { BinParams } from '@/shared/types/bin';
 import { getLipCache, setLipCache } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { resolvePitch, pitchKeySegments, type GridUnitInput } from './gridPitch';
@@ -319,7 +321,15 @@ export const LIP_NOTCH_TOP_DROP_MM = 1;
  */
 export const LIP_NOTCH_NOSE_MM = LIP_SMALL_TAPER;
 
-/** Which side a half-unit column or row sits on, as {@link forEachCell} reads it. */
+/**
+ * How far in from the outer face the lip stands: its taper, or the notch reach
+ * when notches are built. A tool cut through the lip has to clear this, or a
+ * thin wall leaves a sliver of notch inside the opening.
+ */
+export function lipInnerReachMm(params: BinParams): number {
+  return resolveLipNotches(params) ? LIP_NOTCH_REACH_MM : LIP_TAPER_WIDTH;
+}
+
 export interface LipNotchGrid {
   readonly fractionalEdgeX: 'start' | 'end';
   readonly fractionalEdgeY: 'start' | 'end';

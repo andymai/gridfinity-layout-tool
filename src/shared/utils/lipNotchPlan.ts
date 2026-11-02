@@ -1,4 +1,4 @@
-import type { BinParams } from '@/shared/types/bin';
+import { hasDetachableFeet, type BinParams } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { hasOverhang, resolveOverhang } from '@/shared/utils/overhang';
 import { resolveSocketCellPlan } from '@/shared/generation/socketCellPlan';
@@ -29,8 +29,10 @@ export function lipNotchBlocker(params: LipNotchParams): LipNotchBlocker | null 
   if (params.lid.enabled) return 'lid';
   if (isPartialMask(params.cellMask)) return 'shape';
   if (hasOverhang(resolveOverhang(params.overhang))) return 'overhang';
+  // Detachable feet replace the socket and follow the lattice whatever
+  // `halfSockets` says.
   const feet = resolveSocketCellPlan(
-    params.base.halfSockets,
+    params.base.halfSockets && !hasDetachableFeet(params.base),
     params.base.footLatticeX,
     params.base.footLatticeY,
     params.cellMask,
@@ -43,7 +45,6 @@ export function lipNotchBlocker(params: LipNotchParams): LipNotchBlocker | null 
   return null;
 }
 
-/** Whether the lip is actually built with notches. */
 export function resolveLipNotches(params: LipNotchParams): boolean {
   return params.base.lipNotches === true && lipNotchBlocker(params) === null;
 }

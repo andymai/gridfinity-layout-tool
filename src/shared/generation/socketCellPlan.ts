@@ -19,7 +19,6 @@ export interface SocketCellPlan {
   readonly latticeY: FootLattice;
 }
 
-/** Plain full-cell feet on both axes — the older layout. */
 export const DEFAULT_SOCKET_CELL_PLAN: SocketCellPlan = {
   halfSockets: false,
   latticeX: 'grid',

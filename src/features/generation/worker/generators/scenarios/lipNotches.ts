@@ -1,5 +1,5 @@
 import { expect } from 'vitest';
-import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT, GRIDFINITY } from '@/shared/constants/bin';
 import { LIP_TIP_MM } from '@/shared/types/bin';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
@@ -143,6 +143,31 @@ export const lipNotches: ScenarioCase[] = [
       // ...while the notch survives either side of it, and on the slotless wall.
       expect(notchSpan(result, xLeft, 2)).toBeDefined();
       expectNotchAt(result, ...frontProbe(2, 0));
+    },
+  }),
+  defineScenario('lip-notches #4783', 'a wall cutout on a grid line clears the whole notch', {
+    assert: 'structural',
+    forExport: true,
+    // The thinnest wall and divider leave the cutout tool the least reach to
+    // spare past the notch.
+    params: notched(2, 2, {
+      wallThickness: 0.4,
+      compartments: { ...DEFAULT_BIN_PARAMS.compartments, thickness: 0.4 },
+      walls: {
+        enabled: true,
+        shape: 'u-shape',
+        width: 0,
+        depth: 0,
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 30, depth: 40 },
+        back: DISABLED_WALL_CUTOUT,
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
+      },
+    }),
+    customAssert: (result) => {
+      const yAtReach = -(2 * SIZE - GRIDFINITY.TOLERANCE) / 2 + LIP_NOTCH_REACH_MM - 0.05;
+      expectNoNotchAt(result, 0, yAtReach);
     },
   }),
   defineScenario('lip-notches #4783', 'a lidded bin keeps a plain lip', {

@@ -9,7 +9,8 @@ import { draw, translate, rotate, clone, unwrap, withScope, fuseAll } from 'brep
 import type { Shape3D, Drawing, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
-import { LIP_HEIGHT, LIP_TAPER_WIDTH, CUT_RIM_CLEARANCE } from './generatorConstants';
+import { LIP_HEIGHT, CUT_RIM_CLEARANCE } from './generatorConstants';
+import { lipInnerReachMm } from './boxTopShape';
 import { interiorDividerSegments } from './compartmentBuilder';
 import { resolvePolygonSideGeometry, type PolygonSideGeometry } from './maskPolygonEdges';
 import { pitchFromParams } from './gridPitch';
@@ -369,7 +370,7 @@ function buildWallCutoutCutsInScope(
   const cutoutShape = params.walls.shape;
 
   const maxThickness = Math.max(wallThickness, params.compartments.thickness);
-  const lipOverhang = hasLip ? LIP_TAPER_WIDTH : 0;
+  const lipOverhang = hasLip ? lipInnerReachMm(params) : 0;
   const extrudeDepth = (maxThickness + lipOverhang) * 2 + 1 + 2 * depthPadding;
   const overshoot = (hasLip ? LIP_HEIGHT : 0) + CUT_RIM_CLEARANCE;
 

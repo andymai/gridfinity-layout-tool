@@ -272,4 +272,5 @@ meets the knife edge at a cusp and every `lipTip` fillet or chamfer silently fal
 to sharp. `resolveLipNotches` (`@/shared/utils/lipNotchPlan`) is the one gate:
 `deriveDimensions` resolves it to `dims.lipNotches` for the shell key and both lip
 builders, and the direct-mesh allowlist calls it. A notched cut that throws falls back
-to the plain lip.
+to the plain lip. A tool cut through the lip must clear `lipInnerReachMm` (divider slots:
+`LipCutInfo.inwardReach`), not `LIP_TAPER_WIDTH`, or a thin wall leaves notch inside it.

@@ -45,6 +45,12 @@ describe('lipNotchBlocker', () => {
     expect(lipNotchBlocker(params({}, { footLatticeX: 'half', halfSockets: true }))).toBeNull();
     expect(lipNotchBlocker(params({ width: 2.5 }, { footLatticeX: 'half' }))).toBeNull();
   });
+
+  // Detachable feet replace the socket, so a stored halfSockets no longer exempts them.
+  it('blocks half-offset detachable feet even with half sockets stored', () => {
+    const detachable = params({}, { footLatticeX: 'half', halfSockets: true, feet: 'detachable' });
+    expect(lipNotchBlocker(detachable)).toBe('lattice');
+  });
 });
 
 describe('resolveLipNotches', () => {
