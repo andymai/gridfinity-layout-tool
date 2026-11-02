@@ -1,0 +1,85 @@
+src/features/bin-designer/components/panel/CutoutsSection/booleanGeometry.ts
+  s_4b9adb1d9473fb::t_956b11c440c6a2 50-56,58-66
+src/i18n/locales/en.ts
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 3426-3435
+src/i18n/locales/nb.json
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 868-876
+src/features/whats-new/entries.ts
+  s_4b9adb1d9473fb::t_1c06ceec256a7d 17-26
+  s_4b9adb1d9473fb::t_f6855ef569df03 16
+src/features/bin-designer/components/panel/CutoutsSection/shadowBoard/index.ts
+  s_4b9adb1d9473fb::t_a24cefb0f0f380 1-10
+src/features/bin-designer/components/CutoutWorkspace/ShadowBoardButton.tsx
+  s_4b9adb1d9473fb::t_8760680a9a90a8 1-83
+src/i18n/locales/fr.json
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 868-876
+src/features/bin-designer/components/panel/CutoutsSection/shadowBoard/shadowBoardFiles.test.ts
+  s_4b9adb1d9473fb::t_c5e18de4c3ea73 25-27
+  s_4b9adb1d9473fb::t_ffe04134e9bf7e 1-24,28-57
+src/i18n/locales/sv.json
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 868-876
+src/features/bin-designer/components/CutoutWorkspace/ShadowBoardButton.test.tsx
+  s_4b9adb1d9473fb::t_ffe04134e9bf7e 1-51
+src/shared/utils/dxfWriter.ts
+  s_4b9adb1d9473fb::t_2d407c8973a47b 116-129,139-141
+  s_4b9adb1d9473fb::t_5a6b781f75b810 1-115,130-138,142-146
+src/features/bin-designer/components/panel/CutoutsSection/shadowBoard/shadowBoardFiles.ts
+  s_4b9adb1d9473fb::t_1380c244345a97 26-27
+  s_4b9adb1d9473fb::t_76eb9c39e32603 11,54-56,96,98-100
+  s_4b9adb1d9473fb::t_fca42593de47e7 1-10,12-25,28-53,57-95,97,101
+src/i18n/locales/de.json
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 868-876
+src/i18n/locales/ko.json
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 868-876
+src/i18n/locales/uk.json
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 868-876
+src/i18n/locales/ja.json
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 868-876
+src/i18n/locales/it.json
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 868-876
+src/i18n/locales/pt-BR.json
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 868-876
+src/i18n/locales/pl.json
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 868-876
+src/features/bin-designer/components/panel/CutoutsSection/shadowBoard/shadowBoardPlan.ts
+  s_4b9adb1d9473fb::t_b1d8c91954cb10 20,155-159,162
+  s_4b9adb1d9473fb::t_bec021870fc28d 1-19,21-48,52-154,160-161,163-173,176-181
+  s_4b9adb1d9473fb::t_2574319b7d8ad4 49-51,174-175
+src/i18n/locales/ka.json
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 2890-2898
+src/shared/utils/dxfWriter.test.ts
+  s_4b9adb1d9473fb::t_ffe04134e9bf7e 1-50
+src/i18n/locales/cs.json
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 868-876
+src/features/whats-new/latest.ts
+  s_4b9adb1d9473fb::t_1c06ceec256a7d 9
+src/i18n/locales/es.json
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 868-876
+src/i18n/locales/zh-CN.json
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 868-876
+src/i18n/locales/nl.json
+  s_4b9adb1d9473fb::t_2d6c34d64a7416 868-876
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_4b9adb1d9473fb::t_f20525156b4f4b 44,266
+src/features/bin-designer/components/panel/CutoutsSection/shadowBoard/shadowBoardPlan.test.ts
+  s_4b9adb1d9473fb::t_b9733f164cbe26 1-97,120,127-153
+  s_4b9adb1d9473fb::t_cd92b244517910 98-119,121-126
+src/features/bin-designer/components/panel/CutoutsSection/shadowBoard/useShadowBoardExport.ts
+  s_4b9adb1d9473fb::t_a24cefb0f0f380 1-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6c2e153917a5c79db0c198319837bce8c93192cf",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
