@@ -160,8 +160,9 @@ Designer shares have their own limits (`MAX_PAYLOAD_BYTES` 100KB in `api/lib/des
 
 ## Cutout depth modes
 
-`Cutout.depthMode` (`floor` or `through`, absent means fixed) makes `cutDepth`
-derived: `resolveCutoutDepth` (`src/shared/utils/cutoutDepth.ts`) recomputes it
+On the shapes whose depth the user sets (`DEPTH_MODE_SHAPES`; not mesh,
+knifeSlot or text), `Cutout.depthMode` (`floor` or `through`, absent means
+fixed) makes `cutDepth` derived: `resolveCutoutDepth` (`src/shared/utils/cutoutDepth.ts`) recomputes it
 from the fill and the base, so every reader of `cutDepth` stays mode-blind. Four
 places re-derive: the store's composed `set` (`syncCutoutDepths`),
 `migrateParams`, `applyOverrides` and the worker's `createInitialContext`. A new
@@ -169,8 +170,9 @@ path that builds params outside them needs `withResolvedCutoutDepths`. A
 `cutDepth` written without `depthMode` means fixed (`mergeCutoutUpdate`);
 otherwise the next sync overwrites the number the user typed.
 
-`floorMm` is measured from the bin's underside and counts a full socket, so
-`floor` mode never cuts into one. A through cut is ONE tool, built on a surface
+`floorMm` is measured from the bin's underside. A standard socket counts toward
+it, so `floor` mode never cuts into one; flat, tray, lightweight and
+detachable-foot bases count nothing. A through cut is ONE tool, built on a surface
 raised by `belowMm` and lowered after its clip, and handed to both the body cut
 and `deferredCutTargets` (the socket carve): a second prism under the pocket
 would share its walls, and coplanar faces between tools are where booleans go

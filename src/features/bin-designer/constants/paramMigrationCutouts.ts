@@ -135,7 +135,11 @@ function withDepthMode(cutout: Cutout): Cutout {
     return cutout;
   }
   const { depthMode: _mode, floorMm: _floor, ...rest } = cutout;
-  return { ...rest, ...(validMode ? { depthMode } : {}), ...(validFloor ? { floorMm } : {}) };
+  return {
+    ...rest,
+    ...(validMode ? { depthMode } : {}),
+    ...(validMode && validFloor ? { floorMm } : {}),
+  };
 }
 
 /**

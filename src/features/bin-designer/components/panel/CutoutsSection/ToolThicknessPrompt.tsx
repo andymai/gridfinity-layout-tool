@@ -75,8 +75,8 @@ export function ToolThicknessPrompt({
   // selection the user makes while the prompt is open.
   const focusTools = useLatestRef(onFocusTools);
   useEffect(() => {
-    if (targetKey !== '') focusTools.current?.(targetKey.split('|'));
-  }, [targetKey, focusTools]);
+    if (target === 'bin' && targetKey !== '') focusTools.current?.(targetKey.split('|'));
+  }, [target, targetKey, focusTools]);
 
   if (target !== 'bin' || pending.length === 0) return null;
 
@@ -106,7 +106,14 @@ export function ToolThicknessPrompt({
       : t('binDesigner.cutouts.depthPrompt.title.other', { count: targets.length });
 
   return (
-    <section aria-label={title} className={cn('space-y-2', PLACEMENT[placement])}>
+    <section
+      aria-label={title}
+      className={cn('space-y-2', PLACEMENT[placement])}
+      // Floating over the canvas, it must not let a scroll zoom the board or a
+      // right-click open the cutout menu.
+      onWheel={(e) => e.stopPropagation()}
+      onContextMenu={(e) => e.stopPropagation()}
+    >
       <div className="flex items-baseline justify-between gap-2">
         <h3 className="text-label font-medium">{title}</h3>
         {!sameForAll && (

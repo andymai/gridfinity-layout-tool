@@ -1733,17 +1733,23 @@ describe('migrateParams', () => {
         expect([floored.cutDepth, through.cutDepth]).toEqual([13, 16.25]);
       });
 
-      it('reads an unknown mode or a broken floor as a fixed depth', () => {
-        const [unknown, badFloor] = migrateParams({
-          cutouts: [
-            pocket({ depthMode: 'deep' }),
-            pocket({ id: 'q', depthMode: 'floor', floorMm: -3 }),
-          ],
+      it('reads an unknown mode as a fixed depth, floor and all', () => {
+        const [unknown] = migrateParams({
+          cutouts: [pocket({ depthMode: 'deep', floorMm: 8 })],
         }).cutouts;
         expect('depthMode' in unknown).toBe(false);
+        expect('floorMm' in unknown).toBe(false);
         expect(unknown.cutDepth).toBe(5);
+      });
+
+      // 3u on a 4.75mm socket: the default floor is the socket, all 16.25mm of fill.
+      it('falls back to the default floor when the stored one is broken', () => {
+        const [badFloor] = migrateParams({
+          cutouts: [pocket({ depthMode: 'floor', floorMm: -3 })],
+        }).cutouts;
         expect(badFloor.depthMode).toBe('floor');
         expect('floorMm' in badFloor).toBe(false);
+        expect(badFloor.cutDepth).toBe(16.25);
       });
 
       it('leaves a cutout without a mode exactly as stored', () => {

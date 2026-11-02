@@ -1037,6 +1037,7 @@
   "binDesigner.cutouts.throughBlocked.tilt": "将倾斜设为 0 后才能贯穿。",
   "binDesigner.cutouts.throughBlocked.taper": "锥形侧壁旁无法贯穿。",
   "binDesigner.cutouts.throughBlocked.feet": "使用可拆卸底脚时无法贯穿。",
+  "binDesigner.cutouts.throughBlocked.nesting": "嵌套式下无法贯穿。",
   "binDesigner.cutouts.depthPrompt.title.one": "这件工具有多厚？",
   "binDesigner.cutouts.depthPrompt.title.other": "这 {count} 件工具有多厚？",
   "binDesigner.cutouts.depthPrompt.remaining": "还剩 {count} 件",

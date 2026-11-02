@@ -81,6 +81,15 @@ describe('applyOverrides', () => {
     expect(result?.chamferWidth).toBe(0.8);
   });
 
+  it('resolves a floored pocket even when nothing is claimed', () => {
+    const { params } = applyOverrides(
+      parent([cutout('bit', { depthMode: 'floor', floorMm: 8, cutDepth: 1 })]),
+      undefined
+    );
+    // 6u on a 4.75mm socket: 37.25mm of fill, so an 8mm floor leaves 34mm.
+    expect(params.cutouts[0].cutDepth).toBe(34);
+  });
+
   it('pins a claimed cut depth as a fixed one', () => {
     const { params } = applyOverrides(parent([cutout('bit', { depthMode: 'floor', floorMm: 8 })]), {
       cutouts: { bit: { cutDepth: 7 } },

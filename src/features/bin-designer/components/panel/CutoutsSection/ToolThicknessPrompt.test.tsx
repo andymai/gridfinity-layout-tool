@@ -139,11 +139,29 @@ describe('ToolThicknessPrompt', () => {
     expect(useDesignerStore.getState().ui.depthPromptIds).toEqual([]);
   });
 
-  it('stays away while the lid is the board', () => {
+  it('stays away while the lid is the board, and selects nothing there', () => {
     seed(['a']);
     useDesignerStore.setState((s) => ({ ui: { ...s.ui, cutoutTarget: 'lid' } }));
-    const { container } = render(<ToolThicknessPrompt />);
+    const onFocusTools = vi.fn();
+    const { container } = render(<ToolThicknessPrompt onFocusTools={onFocusTools} />);
     expect(container).toBeEmptyDOMElement();
+    expect(onFocusTools).not.toHaveBeenCalled();
+  });
+
+  it('keeps scrolls and right-clicks from reaching the board under it', () => {
+    seed(['a']);
+    const onWheel = vi.fn();
+    const onContextMenu = vi.fn();
+    render(
+      <div onWheel={onWheel} onContextMenu={onContextMenu}>
+        <ToolThicknessPrompt placement="chip" />
+      </div>
+    );
+    const field = screen.getByLabelText('Thickness (mm)');
+    fireEvent.wheel(field);
+    fireEvent.contextMenu(field);
+    expect(onWheel).not.toHaveBeenCalled();
+    expect(onContextMenu).not.toHaveBeenCalled();
   });
 
   it('selects the asked-about tools once, not again on every render', () => {

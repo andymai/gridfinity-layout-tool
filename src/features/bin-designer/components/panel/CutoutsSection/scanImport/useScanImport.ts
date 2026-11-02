@@ -96,8 +96,9 @@ export function useScanImport(): UseScanImportReturn {
       } finally {
         commitTransaction();
       }
-      // A traced outline says nothing about how thick the tool is.
-      queueDepthPrompt(addedIds);
+      // A traced outline says nothing about how thick the tool is. A lid plate
+      // is cut clean through, so only a bin has a depth to ask for.
+      if (ui.cutoutTarget === 'bin') queueDepthPrompt(addedIds);
       const added = addedIds.length;
 
       // The count STORED, not the count asked for. The scan entry point is

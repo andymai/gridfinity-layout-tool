@@ -1037,6 +1037,7 @@
   "binDesigner.cutouts.throughBlocked.tilt": "貫通させるには傾きを0にしてください。",
   "binDesigner.cutouts.throughBlocked.taper": "テーパー壁の近くでは貫通できません。",
   "binDesigner.cutouts.throughBlocked.feet": "取り外し式の脚では貫通できません。",
+  "binDesigner.cutouts.throughBlocked.nesting": "入れ子タイプでは貫通できません。",
   "binDesigner.cutouts.depthPrompt.title.one": "この工具の厚みは？",
   "binDesigner.cutouts.depthPrompt.title.other": "この{count}個の工具の厚みは？",
   "binDesigner.cutouts.depthPrompt.remaining": "残り{count}個",

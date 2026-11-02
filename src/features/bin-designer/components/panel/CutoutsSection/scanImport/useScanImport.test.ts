@@ -89,6 +89,7 @@ describe('useScanImport', () => {
     result.current.addScanCutouts([spec(), spec({ x: 20 })]);
 
     const stored = mockAddCutout.mock.calls[0][0].id;
+    expect(mockQueueDepthPrompt).toHaveBeenCalledOnce();
     expect(mockQueueDepthPrompt).toHaveBeenCalledWith([stored]);
   });
 

@@ -11,7 +11,12 @@
  */
 
 import type { BinParams, Cutout, CutoutDepthMode, CutoutShape } from '@/shared/types/bin';
-import { binDimensions, hasDetachableFeet, resolveCutoutLeanDeg } from '@/shared/types/bin';
+import {
+  binDimensions,
+  hasDetachableFeet,
+  MAX_CUTOUT_FLOOR_MM,
+  resolveCutoutLeanDeg,
+} from '@/shared/types/bin';
 import { socketHeightMm } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask } from './cellMask';
 import { clearedProfile } from './cutoutFit';
@@ -52,7 +57,7 @@ export interface CutoutFloorRange {
   readonly initial: number;
 }
 
-export type CutoutThroughBlock = 'group' | 'tilt' | 'taper' | 'feet';
+export type CutoutThroughBlock = 'group' | 'tilt' | 'taper' | 'feet' | 'nesting';
 
 function round2(mm: number): number {
   return Math.round(mm * 100) / 100;
@@ -77,7 +82,10 @@ export function cutoutDepthFrame(params: BinParams): CutoutDepthFrame {
 
 export function cutoutFloorRange(frame: CutoutDepthFrame): CutoutFloorRange {
   const min = frame.baseMm > 0 ? frame.baseMm : MIN_CUTOUT_FLOOR_MM;
-  const max = Math.max(min, frame.baseMm + frame.fillDepthMm - MIN_FLOORED_DEPTH_MM);
+  const max = Math.min(
+    MAX_CUTOUT_FLOOR_MM,
+    Math.max(min, frame.baseMm + frame.fillDepthMm - MIN_FLOORED_DEPTH_MM)
+  );
   const initial = Math.min(max, frame.baseMm > 0 ? frame.baseMm : DEFAULT_CUTOUT_FLOOR_MM);
   return { min: round2(min), max: round2(max), initial: round2(initial) };
 }
@@ -158,6 +166,8 @@ export function withResolvedCutoutDepths<P extends BinParams>(params: P): P {
  * - `tilt`: the opening under a leaning pocket would need its own lean.
  * - `taper`: the flared wall narrows the interior below the floor line.
  * - `feet`: detachable feet print separately and would close the opening.
+ * - `nesting`: a nesting body's bed-level floor is built after the cutouts and
+ *   would close the opening again.
  */
 export function throughBlockedReason(
   cutout: Pick<Cutout, 'groupId' | 'leanDeg' | 'shape'>,
@@ -170,6 +180,7 @@ export function throughBlockedReason(
   if (hasDetachableFeet(params.base) && resolveDetachableFeet(params).placements.length > 0) {
     return 'feet';
   }
+  if (params.base.style === 'lid' && params.base.trayBottom?.floorAtBed === true) return 'nesting';
   return null;
 }
 

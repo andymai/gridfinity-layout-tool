@@ -3268,6 +3268,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.throughBlocked.tilt': 'Set lean to 0 to cut through.',
   'binDesigner.cutouts.throughBlocked.taper': 'Cutting through is off beside a tapered wall.',
   'binDesigner.cutouts.throughBlocked.feet': 'Cutting through is off with detachable feet.',
+  'binDesigner.cutouts.throughBlocked.nesting': 'Cutting through is off for a Nesting body.',
   'binDesigner.cutouts.depthPrompt.title.one': 'How thick is this tool?',
   'binDesigner.cutouts.depthPrompt.title.other': 'How thick are these {count} tools?',
   'binDesigner.cutouts.depthPrompt.remaining': '{count} left',

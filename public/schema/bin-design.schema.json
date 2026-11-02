@@ -684,7 +684,7 @@
           "x-constant": {
             "enum": "STORED_CUTOUT_DEPTH_MODES"
           },
-          "description": "What the depth is held to when the bin changes. Absent: cutDepth below the fill surface, as written. 'floor': the pocket floor stays floorMm above the bin's underside. 'through': no floor, the cut opens out of the underside (not inside a group, on a tilted pocket, beside a tapered wall, or over detachable feet). Ignored for mesh, knifeSlot and text shapes."
+          "description": "What the depth is held to when the bin changes. Absent: cutDepth below the fill surface, as written. 'floor': the lowest point of the pocket floor targets floorMm above the bin's underside, within the material the bin has. 'through': no floor, the cut opens out of the underside (not inside a group, on a tilted pocket, beside a tapered wall, over detachable feet, or on a Nesting body). Ignored for mesh and knifeSlot shapes."
         },
         "floorMm": {
           "type": "number",

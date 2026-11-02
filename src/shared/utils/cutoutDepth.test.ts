@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, Cutout } from '@/shared/types/bin';
+import { DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
 import { createInitialContext } from '@/features/generation/worker/generators/pipeline/context';
 import {
   cutoutDepthFrame,
@@ -88,6 +89,10 @@ describe('cutoutFloorRange', () => {
   it('keeps a floor on a flat bin rather than opening onto the bed', () => {
     expect(cutoutFloorRange(FLAT)).toEqual({ min: 0.6, max: 20.5, initial: 2 });
   });
+
+  it('never offers a floor a design cannot store', () => {
+    expect(cutoutFloorRange({ fillDepthMm: 395, baseMm: 4.75 }).max).toBe(350);
+  });
 });
 
 describe('resolveCutoutDepth', () => {
@@ -139,6 +144,7 @@ describe('resolveCutoutDepth', () => {
 
   it.each(['mesh', 'knifeSlot', 'text'] as const)('ignores a mode on a %s cutout', (shape) => {
     expect(resolveCutoutDepth(pocket({ shape, depthMode: 'through' }), SOCKETED)).toBe(5);
+    expect(isThroughCut(pocket({ shape, depthMode: 'through' }), bin())).toBe(false);
   });
 });
 
@@ -163,34 +169,43 @@ describe('withResolvedCutoutDepths', () => {
 });
 
 describe('throughBlockedReason', () => {
+  const taper = { enabled: true, profile: 'chamfer' as const, bandHeight: 8 };
+  const blocked: readonly [string, Partial<Cutout>, Partial<BinParams>, string][] = [
+    ['a group member', { groupId: 'g' }, {}, 'group'],
+    ['a leaning pocket', { leanDeg: 20 }, {}, 'tilt'],
+    [
+      'a pocket beside a tapered wall',
+      {},
+      {
+        overhang: {
+          left: 6,
+          right: 6,
+          front: 0,
+          back: 0,
+          taper: { ...taper, left: 6, right: 6, front: 0, back: 0 },
+        },
+      },
+      'taper',
+    ],
+    ['a pocket over detachable feet', {}, { base: { ...SOLID, feet: 'detachable' } }, 'feet'],
+    [
+      'a Nesting body',
+      {},
+      {
+        base: { ...SOLID, style: 'lid', trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true } },
+      },
+      'nesting',
+    ],
+  ];
+
   it('allows a plain pocket', () => {
     expect(throughBlockedReason(pocket(), bin())).toBeNull();
     expect(isThroughCut(pocket({ depthMode: 'through' }), bin())).toBe(true);
   });
 
-  it('refuses a group member', () => {
-    expect(throughBlockedReason(pocket({ groupId: 'g' }), bin())).toBe('group');
-  });
-
-  it('refuses a leaning pocket', () => {
-    expect(throughBlockedReason(pocket({ leanDeg: 20 }), bin())).toBe('tilt');
-  });
-
-  it('refuses beside a tapered wall', () => {
-    const taper = { enabled: true, profile: 'chamfer' as const, bandHeight: 8 };
-    const overhang = {
-      left: 6,
-      right: 6,
-      front: 0,
-      back: 0,
-      taper: { ...taper, left: 6, right: 6, front: 0, back: 0 },
-    };
-    expect(throughBlockedReason(pocket(), bin({ overhang }))).toBe('taper');
-  });
-
-  it('refuses over detachable feet', () => {
-    const params = bin({ base: { ...SOLID, feet: 'detachable' } });
-    expect(throughBlockedReason(pocket(), params)).toBe('feet');
+  it.each(blocked)('refuses %s, and the generator does not cut it through', (_n, c, p, reason) => {
+    expect(throughBlockedReason(pocket(c), bin(p))).toBe(reason);
+    expect(isThroughCut(pocket({ ...c, depthMode: 'through' }), bin(p))).toBe(false);
   });
 
   it('is not a through cut unless the mode says so', () => {

@@ -125,6 +125,7 @@ export type {
 
 export {
   MIN_PATH_POINTS,
+  MAX_CUTOUT_FLOOR_MM,
   MAX_PATH_POINTS,
   DEFAULT_KNIFE_SPEC,
   knifeSlotDimensions,

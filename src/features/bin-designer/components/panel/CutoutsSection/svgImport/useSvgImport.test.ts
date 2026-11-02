@@ -150,14 +150,15 @@ describe('useSvgImport', () => {
     );
   });
 
-  it('asks for the thickness of every shape it stored on the bin', async () => {
-    mockAddCutout.mockImplementation(() => true);
+  it('asks for the thickness of every shape it stored on the bin, and only those', async () => {
+    mockAddCutout.mockImplementation(() => mockAddCutout.mock.calls.length <= 1);
     renderHook(() => useSvgImport());
 
     await importSvg(2);
 
-    const stored = mockAddCutout.mock.calls.map(([c]) => (c as { id: string }).id);
-    expect(mockQueueDepthPrompt).toHaveBeenCalledWith(stored);
+    const stored = (mockAddCutout.mock.calls[0][0] as { id: string }).id;
+    expect(mockQueueDepthPrompt).toHaveBeenCalledOnce();
+    expect(mockQueueDepthPrompt).toHaveBeenCalledWith([stored]);
   });
 
   it('does not ask for a depth on the lid, which is cut through', async () => {

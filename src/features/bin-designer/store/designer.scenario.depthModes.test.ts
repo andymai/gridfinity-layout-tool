@@ -113,6 +113,28 @@ describe('DesignerStore - cutout depth modes', () => {
       expect(useDesignerStore.getState().ui.depthPromptIds).toEqual([]);
     });
 
+    it('keeps one entry per id even when an import repeats one', () => {
+      useDesignerStore.getState().queueDepthPrompt(['a', 'a', 'b']);
+      expect(useDesignerStore.getState().ui.depthPromptIds).toEqual(['a', 'b']);
+    });
+
+    it('starts empty in a new or freshly loaded design', () => {
+      const { queueDepthPrompt, newDesign } = useDesignerStore.getState();
+      queueDepthPrompt(['a']);
+      newDesign();
+      expect(useDesignerStore.getState().ui.depthPromptIds).toEqual([]);
+      queueDepthPrompt(['b']);
+      useDesignerStore.getState().loadDesign({
+        id: 'd',
+        name: 'Saved',
+        params: useDesignerStore.getState().params,
+        thumbnail: null,
+        createdAt: 0,
+        updatedAt: 0,
+      } as unknown as Parameters<ReturnType<typeof useDesignerStore.getState>['loadDesign']>[0]);
+      expect(useDesignerStore.getState().ui.depthPromptIds).toEqual([]);
+    });
+
     it('stays out of undo', () => {
       const { addCutout, queueDepthPrompt } = useDesignerStore.getState();
       addCutout(pocket());

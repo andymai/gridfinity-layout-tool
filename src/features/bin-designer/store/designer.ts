@@ -67,8 +67,18 @@ export const useDesignerStore = create<DesignerState>()(
       ...createHistorySlice(set, get),
       ...createUISlice(set),
       ...persistenceSlice,
+      // An import's thickness prompt belongs to the design it was made in.
+      newDesign: (kind) => {
+        persistenceSlice.newDesign(kind);
+        set((state) => {
+          state.ui.depthPromptIds = [];
+        });
+      },
       loadDesign: (design: SavedDesign) => {
         persistenceSlice.loadDesign(design);
+        set((state) => {
+          state.ui.depthPromptIds = [];
+        });
         void reconcilePublishedId(design);
       },
     };

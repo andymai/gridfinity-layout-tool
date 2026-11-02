@@ -164,7 +164,7 @@ interface DepthNumberProps {
 
 function DepthNumber({ variant, indeterminate, info, ...props }: DepthNumberProps) {
   return variant === 'slider' ? (
-    <SliderInput {...props} step={0.5} unit="mm" />
+    <SliderInput {...props} info={info} step={0.5} unit="mm" />
   ) : (
     <NumberField {...props} info={info} indeterminate={indeterminate} step={0.5} unit="mm" />
   );

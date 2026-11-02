@@ -209,10 +209,12 @@ export function createUISlice(set: Set) {
       if (ids.length === 0) return;
       set((state) => {
         const queued = new Set(state.ui.depthPromptIds);
-        state.ui.depthPromptIds = [
-          ...state.ui.depthPromptIds,
-          ...ids.filter((id) => !queued.has(id)),
-        ];
+        const additions = ids.filter((id) => {
+          if (queued.has(id)) return false;
+          queued.add(id);
+          return true;
+        });
+        state.ui.depthPromptIds = [...state.ui.depthPromptIds, ...additions];
       });
     },
 

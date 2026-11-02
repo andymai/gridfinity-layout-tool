@@ -33,6 +33,7 @@ import { Collapsible, NumberField } from '@/design-system';
 import type { AlignMode, DistributeAxis } from '../panel/CutoutsSection/geometryAlign';
 import { SingleCutoutInspector } from './SingleCutoutInspector';
 import { CutoutDepthControl } from '../panel/CutoutsSection/CutoutDepthControl';
+import { isThroughCut } from '@/shared/utils/cutoutDepth';
 import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutBoardSettings } from './CutoutBoardSettings';
 import { BinSizeSection } from './BinSizeSection';
@@ -229,6 +230,10 @@ export function InspectorContent({
   // Same reason: the group Repeat section renders far below the early return,
   // but its hook cannot.
   const setCutoutArray = useDesignerStore((st) => st.setCutoutArray);
+  // Through cuts have no floor, so the generator drops their floor fillets.
+  const allThrough = useDesignerStore(
+    (st) => selectedCutouts.length > 0 && selectedCutouts.every((c) => isThroughCut(c, st.params))
+  );
 
   // Bin-level controls stay visible across every selection state so the user can
   // resize the board and clear the stacking lip without leaving the editor.
@@ -517,28 +522,36 @@ export function InspectorContent({
                   onUpdate={(updates) => onUpdateBatch?.(updates)}
                   disabled={disabled || !onUpdateBatch}
                 />
-                <NumberField
-                  label={t('binDesigner.cutouts.scoopW')}
-                  value={sharedScoopRadiusW ?? 0}
-                  indeterminate={sharedScoopRadiusW === null}
-                  onChange={(scoopRadiusW) => handleScoopAxisBatch('scoopRadiusW', scoopRadiusW)}
-                  min={0}
-                  max={sharedCutDepth ?? maxCutDepth}
-                  step={0.5}
-                  unit="mm"
-                  disabled={disabled}
-                />
-                <NumberField
-                  label={t('binDesigner.cutouts.scoopD')}
-                  value={sharedScoopRadiusD ?? 0}
-                  indeterminate={sharedScoopRadiusD === null}
-                  onChange={(scoopRadiusD) => handleScoopAxisBatch('scoopRadiusD', scoopRadiusD)}
-                  min={0}
-                  max={sharedCutDepth ?? maxCutDepth}
-                  step={0.5}
-                  unit="mm"
-                  disabled={disabled}
-                />
+                {!allThrough && (
+                  <>
+                    <NumberField
+                      label={t('binDesigner.cutouts.scoopW')}
+                      value={sharedScoopRadiusW ?? 0}
+                      indeterminate={sharedScoopRadiusW === null}
+                      onChange={(scoopRadiusW) =>
+                        handleScoopAxisBatch('scoopRadiusW', scoopRadiusW)
+                      }
+                      min={0}
+                      max={sharedCutDepth ?? maxCutDepth}
+                      step={0.5}
+                      unit="mm"
+                      disabled={disabled}
+                    />
+                    <NumberField
+                      label={t('binDesigner.cutouts.scoopD')}
+                      value={sharedScoopRadiusD ?? 0}
+                      indeterminate={sharedScoopRadiusD === null}
+                      onChange={(scoopRadiusD) =>
+                        handleScoopAxisBatch('scoopRadiusD', scoopRadiusD)
+                      }
+                      min={0}
+                      max={sharedCutDepth ?? maxCutDepth}
+                      step={0.5}
+                      unit="mm"
+                      disabled={disabled}
+                    />
+                  </>
+                )}
               </>
             )}
             {chamferCutouts.length > 0 && (

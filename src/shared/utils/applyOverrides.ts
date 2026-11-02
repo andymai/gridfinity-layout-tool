@@ -59,7 +59,7 @@ export function applyOverrides(
   parentParams: BinParams,
   overrides: DesignOverrides | undefined
 ): AppliedOverrides {
-  if (!overrides) return { params: parentParams, orphans: [] };
+  if (!overrides) return { params: withResolvedCutoutDepths(parentParams), orphans: [] };
 
   const dimensions = overrides.dimensions ?? {};
   let params: BinParams = { ...parentParams };
