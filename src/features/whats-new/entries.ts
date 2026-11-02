@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'cutout-shadow-board',
+    date: '2026-11-02',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Export a shadow board' },
+    body: {
+      en: 'The Cut Editor can now save your bin as flat outlines: its footprint and every opening at true size, as SVG or DXF. Cut a matching board, foam insert or drawer liner on a laser or CNC, with or without each pocket’s clearance. Find Export shadow board next to Print fit test.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'cutout-arrange-turn',
     date: '2026-11-02',
     kind: 'improved',

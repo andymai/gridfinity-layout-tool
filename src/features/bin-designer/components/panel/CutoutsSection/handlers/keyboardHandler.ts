@@ -58,8 +58,9 @@ export interface KeyboardHandlerContext {
 }
 
 /**
- * A focused field or switch keeps its own keys: typing stays typing, Space
- * flips the switch, and Tab moves focus on rather than cycling the selection.
+ * A focused field, switch or radio keeps its own keys: typing stays typing,
+ * Space flips the switch, arrows move between a segmented control's options,
+ * and Tab moves focus on rather than cycling the selection.
  */
 export function focusOwnsKeys(target: EventTarget | null): boolean {
   // A key sent to the window or the document has neither.
@@ -67,7 +68,8 @@ export function focusOwnsKeys(target: EventTarget | null): boolean {
   return (
     element?.tagName === 'INPUT' ||
     element?.tagName === 'TEXTAREA' ||
-    element?.getAttribute?.('role') === 'switch'
+    element?.getAttribute?.('role') === 'switch' ||
+    element?.getAttribute?.('role') === 'radio'
   );
 }
 
