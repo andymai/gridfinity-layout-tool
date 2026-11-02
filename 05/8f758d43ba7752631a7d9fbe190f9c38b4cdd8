@@ -1,0 +1,72 @@
+src/i18n/locales/pl.json
+  s_a51c3923959314::t_351cb1e532a15b 455
+src/i18n/locales/ka.json
+  s_a51c3923959314::t_351cb1e532a15b 3424
+src/features/generation/worker/generators/socketBuilder.ts
+  s_a51c3923959314::t_28eacd13564030 66
+  s_a51c3923959314::t_11ba5839eabbe0 94-98
+src/i18n/locales/zh-CN.json
+  s_a51c3923959314::t_351cb1e532a15b 455
+src/i18n/locales/ko.json
+  s_a51c3923959314::t_351cb1e532a15b 455
+src/shared/utils/lipNotchPlan.test.ts
+  s_a51c3923959314::t_a50e7a7c798e86 27,43-46
+  s_a51c3923959314::t_0c1822f419e398 42
+  s_a51c3923959314::t_fd95876606e680 47
+src/i18n/locales/uk.json
+  s_a51c3923959314::t_351cb1e532a15b 455
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_a51c3923959314::t_80f2353a3c2a17 18
+  s_a51c3923959314::t_5cb7b6a9e62fd5 275
+src/features/generation/worker/generators/scenarios/lipNotches.ts
+  s_a51c3923959314::t_a50e7a7c798e86 131-147
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_a51c3923959314::t_351cb1e532a15b 59
+src/i18n/locales/cs.json
+  s_a51c3923959314::t_351cb1e532a15b 455
+src/shared/generation/socketCellPlan.ts
+  s_a51c3923959314::t_11ba5839eabbe0 1-70
+src/i18n/locales/nl.json
+  s_a51c3923959314::t_351cb1e532a15b 455
+src/i18n/locales/it.json
+  s_a51c3923959314::t_351cb1e532a15b 455
+src/i18n/locales/fr.json
+  s_a51c3923959314::t_351cb1e532a15b 455
+src/features/generation/worker/generators/slotBuilder.ts
+  s_a51c3923959314::t_11d94b2d6b69e9 66-77,301-302,374
+  s_a51c3923959314::t_b8c3f097b67667 316,424,426
+  s_a51c3923959314::t_88156487ad0cbe 495,497,547-552,586-587,596-601
+  s_a51c3923959314::t_5cb7b6a9e62fd5 537
+src/i18n/locales/sv.json
+  s_a51c3923959314::t_351cb1e532a15b 455
+src/i18n/locales/de.json
+  s_a51c3923959314::t_351cb1e532a15b 455
+src/i18n/locales/nb.json
+  s_a51c3923959314::t_351cb1e532a15b 455
+src/i18n/locales/es.json
+  s_a51c3923959314::t_351cb1e532a15b 455
+src/i18n/locales/pt-BR.json
+  s_a51c3923959314::t_351cb1e532a15b 455
+src/i18n/locales/ja.json
+  s_a51c3923959314::t_351cb1e532a15b 455
+src/i18n/locales/en.ts
+  s_a51c3923959314::t_351cb1e532a15b 4076-4077
+src/shared/utils/lipNotchPlan.ts
+  s_a51c3923959314::t_50bbf32b8d8150 4,7-8,21-22,32-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "058f758d43ba7752631a7d9fbe190f9c38b4cdd8",
+  "prompts": {},
+  "sessions": {
+    "s_a51c3923959314": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3f4a089b-7222-4e3f-8bbf-ce9f799fd4d8",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
