@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Layout } from '@/core/types';
-import { err, ok, storageMeshMissing } from '@/core/result';
+import { err, isErr, ok, storageMeshMissing } from '@/core/result';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import { exportLayoutJSONWithDesigns } from './ShareService';
 import { downloadLayoutAsFile } from './utils';
 
 vi.mock('@/shared/exportDestination/deliverExport', () => ({
-  deliverExport: vi.fn(() => Promise.resolve()),
+  deliverExport: vi.fn(() => Promise.resolve(true)),
 }));
 vi.mock('./ShareService', () => ({
   exportLayoutJSONWithDesigns: vi.fn(() => Promise.resolve(ok('{"name":"My Drawer"}'))),
@@ -26,6 +26,14 @@ describe('downloadLayoutAsFile', () => {
     const [blob, name] = vi.mocked(deliverExport).mock.calls[0];
     expect(name).toBe('my-drawer.json');
     expect(await blob.text()).toBe('{"name":"My Drawer"}');
+  });
+
+  it('fails when the file could be neither saved nor downloaded', async () => {
+    vi.mocked(deliverExport).mockResolvedValueOnce(false);
+
+    const result = await downloadLayoutAsFile(layout);
+
+    expect(isErr(result) && result.error.code).toBe('STORAGE_NOT_SAVED');
   });
 
   it('keeps a caller-supplied file name', async () => {

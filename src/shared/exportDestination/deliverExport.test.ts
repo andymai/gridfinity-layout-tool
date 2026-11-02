@@ -71,7 +71,7 @@ describe('deliverExport', () => {
       throw new Error('createObjectURL failed');
     });
 
-    await expect(deliverExport(blob, 'bin.stl')).resolves.toBeUndefined();
+    await expect(deliverExport(blob, 'bin.stl')).resolves.toBe(false);
     expect(toastMessages()).toEqual(["Couldn't save bin.stl. Try the export again."]);
   });
 
@@ -196,10 +196,31 @@ describe('deliverExport', () => {
     useUrl();
     fetchMock.mockReturnValue(new Promise(() => {}));
 
-    await deliverExport(blob, 'bin.stl');
+    await deliverExport(blob, 'pending.stl');
 
-    expect(triggerDownload).toHaveBeenCalledWith(blob, 'bin.stl');
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(triggerDownload).toHaveBeenCalledWith(blob, 'pending.stl');
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+  });
+
+  it('sends one file to one address in call order, so the latest upload lands last', async () => {
+    useUrl();
+    let release = (): void => undefined;
+    const first = new Promise<Response>((resolve) => {
+      release = () => resolve(new Response(null, { status: 200 }));
+    });
+    fetchMock
+      .mockReturnValueOnce(first)
+      .mockReturnValueOnce(Promise.resolve(new Response(null, { status: 200 })));
+
+    await deliverExport(blob, 'queued.stl');
+    await deliverExport(new Blob(['newer']), 'queued.stl');
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    release();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    const sent = (call: number) =>
+      ((fetchMock.mock.calls[call] as [URL, RequestInit])[1].body as FormData).get('file') as Blob;
+    expect(await sent(0).text()).toBe('solid bin');
+    expect(await sent(1).text()).toBe('newer');
   });
 
   it('keeps the download and names the problem when the upload fails', async () => {

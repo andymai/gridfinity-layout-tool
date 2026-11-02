@@ -15,7 +15,7 @@ import { isErr } from '@/core/result';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
 
 vi.mock('@/shared/exportDestination/deliverExport', () => ({
-  deliverExport: vi.fn(async () => undefined),
+  deliverExport: vi.fn(async () => true),
 }));
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {

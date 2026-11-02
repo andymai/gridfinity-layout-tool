@@ -97,6 +97,15 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorCatalogEntry> = {
     severity: 'error',
   },
 
+  STORAGE_NOT_SAVED: {
+    code: 'STORAGE_NOT_SAVED',
+    defaultMessage: 'The export was neither saved to the folder nor downloaded',
+    userMessage: 'The file could not be saved',
+    recoveryHint: 'Try the export again',
+    retryable: true,
+    severity: 'error',
+  },
+
   // Validation Errors
 
   VALIDATION_OUT_OF_BOUNDS: {

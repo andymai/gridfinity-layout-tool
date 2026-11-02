@@ -16,6 +16,7 @@ const UPLOAD = { done: 'export-url-sent', failed: 'export-url-failed' } as const
 const STREAK_MS = 5000;
 
 const streaks = new Map<string, { count: number; at: number }>();
+const uploads = new Map<string, Promise<void>>();
 
 function nextInStreak(key: string): number {
   const now = Date.now();
@@ -99,6 +100,19 @@ async function send(blob: Blob, fileName: string, settings: UserSettings): Promi
   );
 }
 
+// Uploads of one file to one address run in call order, so a receiver that
+// replaces by name keeps the latest export.
+function queueUpload(blob: Blob, fileName: string, settings: UserSettings): void {
+  const key = `${settings.exportUrl}\n${fileName}`;
+  const run = (uploads.get(key) ?? Promise.resolve())
+    .then(() => send(blob, fileName, settings))
+    .catch(() => undefined);
+  uploads.set(key, run);
+  void run.then(() => {
+    if (uploads.get(key) === run) uploads.delete(key);
+  });
+}
+
 function tryDownload(blob: Blob, fileName: string): boolean {
   try {
     triggerDownload(blob, fileName);
@@ -113,11 +127,12 @@ function tryDownload(blob: Blob, fileName: string): boolean {
  * chosen folder instead, and also POSTs it to the configured URL.
  *
  * Never rejects. Resolves once the local save is done (download, folder write,
- * or the download it falls back to); the upload carries on in the background
- * and reports through its own toast. With both destinations off this is
+ * or the download it falls back to), to false only when nothing was saved; the
+ * user has been told either way. The upload carries on in the background and
+ * reports through its own toast. With both destinations off this is
  * `triggerDownload`, run synchronously.
  */
-export async function deliverExport(blob: Blob, fileName: string): Promise<void> {
+export async function deliverExport(blob: Blob, fileName: string): Promise<boolean> {
   let triedDownload = false;
   try {
     const settings = useSettingsStore.getState().settings;
@@ -126,11 +141,13 @@ export async function deliverExport(blob: Blob, fileName: string): Promise<void>
       triedDownload = true;
       triggerDownload(blob, fileName);
     }
-    if (settings.exportUrlEnabled) void send(blob, fileName, settings).catch(() => undefined);
+    if (settings.exportUrlEnabled) queueUpload(blob, fileName, settings);
     if (folder !== null) await saveOrDownload(blob, fileName, folder);
+    return true;
   } catch {
     const downloaded = !triedDownload && tryDownload(blob, fileName);
     const message = downloaded ? 'exportDestination.fellBack' : 'exportDestination.failed';
     toast(FOLDER.failed, 'error', t(message, { file: fileName }));
+    return downloaded;
   }
 }

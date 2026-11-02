@@ -28,7 +28,7 @@ import {
 // === Mocks ===
 
 vi.mock('@/shared/exportDestination/deliverExport', () => ({
-  deliverExport: vi.fn(async () => undefined),
+  deliverExport: vi.fn(async () => true),
 }));
 
 const mockLoadLayoutAsync = vi.fn();
@@ -301,6 +301,15 @@ describe('downloadArchive', () => {
     const [blob, name] = vi.mocked(deliverExport).mock.calls[0];
     expect(name).toMatch(/^gridfinity-layouts-\d{4}-\d{2}-\d{2}\.json$/);
     expect(JSON.parse(await blob.text()).layouts[0].name).toBe('Alpha');
+  });
+
+  it('fails when the archive could be neither saved nor downloaded', async () => {
+    mockLoadLayoutAsync.mockResolvedValue(makeLayout('Alpha'));
+    vi.mocked(deliverExport).mockResolvedValueOnce(false);
+
+    const result = await downloadArchive(makeLibrary([makeEntry('id-1', 'Alpha')]));
+
+    expect(isErr(result) && result.error.code).toBe('STORAGE_NOT_SAVED');
   });
 });
 

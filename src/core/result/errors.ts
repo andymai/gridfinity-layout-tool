@@ -31,6 +31,7 @@ export type ErrorCode =
   | 'STORAGE_UNAVAILABLE'
   | 'STORAGE_NETWORK_ERROR'
   | 'STORAGE_MESH_MISSING'
+  | 'STORAGE_NOT_SAVED'
   | 'VALIDATION_OUT_OF_BOUNDS'
   | 'VALIDATION_COLLISION'
   | 'VALIDATION_INVALID_LAYER'
@@ -158,6 +159,15 @@ export interface StorageMeshMissingError extends AppError {
 }
 
 /**
+ * An export was built but neither saved to the export folder nor downloaded.
+ * The delivery path has already told the user.
+ */
+export interface StorageNotSavedError extends AppError {
+  readonly kind: 'StorageError';
+  readonly code: 'STORAGE_NOT_SAVED';
+}
+
+/**
  * Union of all storage-related errors.
  */
 export type StorageError =
@@ -166,7 +176,8 @@ export type StorageError =
   | StorageCorruptedError
   | StorageUnavailableError
   | StorageNetworkError
-  | StorageMeshMissingError;
+  | StorageMeshMissingError
+  | StorageNotSavedError;
 
 // Validation Errors
 

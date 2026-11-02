@@ -40,12 +40,12 @@ export function useSvgExport(): UseSvgExportReturn {
       }
 
       const { designName } = useDesignerStore.getState();
-      await deliverExport(
+      const saved = await deliverExport(
         new Blob([svg], { type: 'image/svg+xml' }),
         cutoutSvgFileName(designName)
       );
-      trackEvent('cutout_svg_export', { shape_count: cutouts.length });
-      return true;
+      if (saved) trackEvent('cutout_svg_export', { shape_count: cutouts.length });
+      return saved;
     },
     [addToast, t]
   );

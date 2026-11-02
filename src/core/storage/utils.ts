@@ -9,8 +9,8 @@ import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { exportLayoutJSONWithDesigns } from './ShareService';
 import type { Layout } from '@/core/types';
-import { isOk, OK } from '@/core/result';
-import type { Result, StorageMeshMissingError } from '@/core/result';
+import { err, isOk, OK, storageNotSaved } from '@/core/result';
+import type { Result, StorageMeshMissingError, StorageNotSavedError } from '@/core/result';
 
 /**
  * Copy text to clipboard.
@@ -37,14 +37,14 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 export async function downloadLayoutAsFile(
   layout: Layout,
   filename?: string
-): Promise<Result<void, StorageMeshMissingError>> {
+): Promise<Result<void, StorageMeshMissingError | StorageNotSavedError>> {
   primeExportFolder();
   const exported = await exportLayoutJSONWithDesigns(layout);
   if (!isOk(exported)) return exported;
   const blob = new Blob([exported.value], { type: 'application/json' });
-  await deliverExport(
+  const saved = await deliverExport(
     blob,
     filename || `${layout.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.json`
   );
-  return OK;
+  return saved ? OK : err(storageNotSaved());
 }

@@ -106,12 +106,13 @@ export function useFitTestExport(): UseFitTestExportReturn {
         const extension = FORMAT_EXTENSIONS[format];
         if (pieces.length === 1) {
           const blob = new Blob([pieces[0].data], { type: FORMAT_MIME_TYPES[format] });
-          await deliverExport(blob, `${baseName}${extension}`);
+          if (!(await deliverExport(blob, `${baseName}${extension}`))) return false;
         } else {
           // Named exactly what the dialog shows. The pieces inside carry the
           // split (`fit-test_A1.stl`), so nothing is lost by dropping a suffix
           // the filename field never knew about.
-          await deliverExport(packagePiecesAsZip(pieces, baseName, extension), `${baseName}.zip`);
+          const zip = packagePiecesAsZip(pieces, baseName, extension);
+          if (!(await deliverExport(zip, `${baseName}.zip`))) return false;
         }
 
         // The dialog warns about this from its own copy of the plan, but the

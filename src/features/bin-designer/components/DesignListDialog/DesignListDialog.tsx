@@ -144,7 +144,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
             type: 'success',
             duration: 2000,
           });
-        } else {
+        } else if (result.error.code === 'STORAGE_MESH_MISSING') {
           addToast(t('toast.meshFileMissing'), 'error');
         }
       });
@@ -501,9 +501,10 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       d.params ? [downloadDesignAsFile(d.name, d.params)] : []
     );
     void Promise.all(downloads).then((results) => {
-      if (results.some(isErr)) {
+      const failed = results.filter(isErr);
+      if (failed.some((result) => result.error.code === 'STORAGE_MESH_MISSING')) {
         addToast(t('toast.meshFileMissing'), 'error');
-      } else if (targets.length > 0) {
+      } else if (failed.length === 0 && targets.length > 0) {
         addToast({
           message: t('binDesigner.bulk.toastExported', { count: targets.length }),
           type: 'success',

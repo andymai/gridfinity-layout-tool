@@ -133,7 +133,8 @@ function ShareModalBody({ layout, onClose }: { layout: Layout; onClose: () => vo
   const handleDownload = async () => {
     const downloaded = await downloadLayoutAsFile(layout);
     if (!isOk(downloaded)) {
-      useToastStore.getState().addToast(t('toast.meshFileMissing'), 'error');
+      if (downloaded.error.code === 'STORAGE_MESH_MISSING')
+        useToastStore.getState().addToast(t('toast.meshFileMissing'), 'error');
       return;
     }
     announceToScreenReader(t('share.file.downloaded'));

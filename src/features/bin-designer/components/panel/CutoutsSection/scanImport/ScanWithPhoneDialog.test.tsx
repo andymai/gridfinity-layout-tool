@@ -4,7 +4,7 @@ import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import { ScanWithPhoneDialog } from './ScanWithPhoneDialog';
 
 vi.mock('@/shared/exportDestination/deliverExport', () => ({
-  deliverExport: vi.fn(async () => undefined),
+  deliverExport: vi.fn(async () => true),
 }));
 
 const mockAddScanCutouts = vi.fn((..._args: unknown[]) => 1);

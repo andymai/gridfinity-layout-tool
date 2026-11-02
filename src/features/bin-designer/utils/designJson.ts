@@ -7,8 +7,8 @@
 
 import type { BinParams } from '../types';
 import type { TFunction } from '@/i18n';
-import { isErr, OK } from '@/core/result';
-import type { Result, StorageMeshMissingError } from '@/core/result';
+import { err, isErr, OK, storageNotSaved } from '@/core/result';
+import type { Result, StorageMeshMissingError, StorageNotSavedError } from '@/core/result';
 import { BIN_STYLES } from '../types';
 import { DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import { migrateParams } from '../constants/paramMigration';
@@ -87,15 +87,18 @@ export function exportDesignJSON(name: string, params: BinParams): string {
 export async function downloadDesignAsFile(
   name: string,
   params: BinParams
-): Promise<Result<void, StorageMeshMissingError>> {
+): Promise<Result<void, StorageMeshMissingError | StorageNotSavedError>> {
   primeExportFolder();
   const inline = await inlineParamsMeshes(params);
   if (isErr(inline)) return inline;
   const json = exportDesignJSON(name, inline.value);
   const sanitized = sanitizeFileName(name);
   const filename = !sanitized || /^_+$/.test(sanitized) ? 'gridfinity-bin' : sanitized;
-  await deliverExport(new Blob([json], { type: 'application/json' }), `${filename}.json`);
-  return OK;
+  const saved = await deliverExport(
+    new Blob([json], { type: 'application/json' }),
+    `${filename}.json`
+  );
+  return saved ? OK : err(storageNotSaved());
 }
 
 /**

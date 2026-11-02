@@ -132,11 +132,11 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
             colorConfig,
             printSettings: buildThreeMFPrintSettings(printSettings),
           });
-          await deliverExport(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`);
+          if (!(await deliverExport(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`))) return false;
         } else {
           const result = await runExport(format);
           const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES[format] });
-          await deliverExport(blob, `${baseName}${FORMAT_EXTENSIONS[format]}`);
+          if (!(await deliverExport(blob, `${baseName}${FORMAT_EXTENSIONS[format]}`))) return false;
         }
         // Plates are printable files: count the conversion, as the bin and
         // layout exports do.

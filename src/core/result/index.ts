@@ -104,6 +104,7 @@ export type {
   StorageUnavailableError,
   StorageNetworkError,
   StorageMeshMissingError,
+  StorageNotSavedError,
 
   // Validation errors
   ValidationError,
@@ -154,6 +155,7 @@ export {
   storageUnavailable,
   storageNetworkError,
   storageMeshMissing,
+  storageNotSaved,
 
   // Validation errors
   validationOutOfBounds,

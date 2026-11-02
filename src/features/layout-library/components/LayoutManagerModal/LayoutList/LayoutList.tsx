@@ -198,7 +198,8 @@ export function LayoutList({
           `${entry.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`
         );
         if (isOk(downloaded)) announceToScreenReader(t('layouts.announce.downloaded'));
-        else useToastStore.getState().addToast(t('toast.meshFileMissing'), 'error');
+        else if (downloaded.error.code === 'STORAGE_MESH_MISSING')
+          useToastStore.getState().addToast(t('toast.meshFileMissing'), 'error');
       }
     },
     [getLayoutData, announceToScreenReader, t]
