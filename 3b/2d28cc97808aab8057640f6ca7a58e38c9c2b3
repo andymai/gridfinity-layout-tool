@@ -1,0 +1,94 @@
+src/i18n/locales/pl.json
+  s_4b9adb1d9473fb::t_a97ad6d052915c 708-719
+src/features/bin-designer/components/panel/CutoutsSection/usePocketChecks.test.ts
+  s_4b9adb1d9473fb::t_f1d9cd94b1b003 1-69
+src/i18n/locales/cs.json
+  s_4b9adb1d9473fb::t_a97ad6d052915c 708-719
+src/i18n/locales/nl.json
+  s_4b9adb1d9473fb::t_a97ad6d052915c 708-719
+src/i18n/locales/uk.json
+  s_4b9adb1d9473fb::t_a97ad6d052915c 708-719
+src/i18n/locales/fr.json
+  s_4b9adb1d9473fb::t_a97ad6d052915c 708-719
+src/features/bin-designer/components/panel/CutoutsSection/PocketIssueList.test.tsx
+  s_4b9adb1d9473fb::t_b6b8fe02be7aaa 1-78,80-89
+  s_4b9adb1d9473fb::t_d765b926f39e17 79
+src/i18n/locales/sv.json
+  s_4b9adb1d9473fb::t_a97ad6d052915c 708-719
+src/features/bin-designer/components/panel/CutoutsSection/renderer/SceneContent.tsx
+  s_4b9adb1d9473fb::t_23a26086abebca 21,59,380
+src/features/bin-designer/components/panel/CutoutsSection/renderer/IssueFrames3D.tsx
+  s_4b9adb1d9473fb::t_30854bb6133fd3 1-36
+src/features/bin-designer/components/panel/CutoutsSection/renderer/sceneContentTypes.ts
+  s_4b9adb1d9473fb::t_23a26086abebca 73-74
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_4b9adb1d9473fb::t_6173fb6cee4932 86,211,256
+  s_4b9adb1d9473fb::t_f52f2948767b93 13
+src/features/bin-designer/components/panel/CutoutsSection/renderer/OffBoardBounds3D.tsx
+  s_4b9adb1d9473fb::t_30854bb6133fd3 15-16,22-26,40-41,45-48,50-51,54
+src/features/bin-designer/components/panel/CutoutsSection/pocketChecks.ts
+  s_4b9adb1d9473fb::t_60a3445714704a 1-207,213-264,271-273,281-282,284,286-288,290-307,309,311-312,314-342,346-369,371-386
+  s_4b9adb1d9473fb::t_be5144c3dc5ab8 265-270,274-280,283,285,289,308,310,313,343-345,370
+  s_4b9adb1d9473fb::t_350c4fc3076e41 208-212
+src/features/bin-designer/components/panel/CutoutsSection/renderer/constants.ts
+  s_4b9adb1d9473fb::t_30854bb6133fd3 68-71
+  s_4b9adb1d9473fb::t_5b94b767015c04 67
+src/features/bin-designer/components/panel/CutoutsSection/renderer/IssueFrames3D.test.tsx
+  s_4b9adb1d9473fb::t_30854bb6133fd3 1-78
+src/i18n/locales/en.ts
+  s_4b9adb1d9473fb::t_a97ad6d052915c 3611-3628
+src/i18n/locales/zh-CN.json
+  s_4b9adb1d9473fb::t_a97ad6d052915c 708-719
+src/features/bin-designer/components/CutoutWorkspace/InspectorDock.tsx
+  s_4b9adb1d9473fb::t_6173fb6cee4932 47
+  s_4b9adb1d9473fb::t_f52f2948767b93 19
+src/i18n/locales/de.json
+  s_4b9adb1d9473fb::t_a97ad6d052915c 708-719
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutCanvas3D.tsx
+  s_4b9adb1d9473fb::t_23a26086abebca 84-85,147,336
+src/i18n/locales/it.json
+  s_4b9adb1d9473fb::t_a97ad6d052915c 708-719
+src/features/bin-designer/components/panel/CutoutsSection/PocketIssueList.tsx
+  s_4b9adb1d9473fb::t_6173fb6cee4932 12-13
+  s_4b9adb1d9473fb::t_a21703dd15dead 81,83-85,88,91
+  s_4b9adb1d9473fb::t_d5728bc6458155 1-11,14-80,82,86-87,89-90,92-113
+src/i18n/locales/es.json
+  s_4b9adb1d9473fb::t_a97ad6d052915c 708-719
+src/features/bin-designer/components/CutoutWorkspace/BinSizeSection.tsx
+  s_4b9adb1d9473fb::t_6173fb6cee4932 14,48,58,147-148
+src/i18n/locales/ja.json
+  s_4b9adb1d9473fb::t_a97ad6d052915c 708-719
+src/i18n/locales/pt-BR.json
+  s_4b9adb1d9473fb::t_a97ad6d052915c 708-719
+src/i18n/locales/ko.json
+  s_4b9adb1d9473fb::t_a97ad6d052915c 708-719
+src/features/bin-designer/components/panel/CutoutsSection/pocketChecks.test.ts
+  s_4b9adb1d9473fb::t_350c4fc3076e41 56-57,59-60,62,66,68-74,77-78,144,168
+  s_4b9adb1d9473fb::t_57de1bb21069a3 1-55,58,61,63-65,79-143,145-167,169-192
+  s_4b9adb1d9473fb::t_5639641825b0b9 75-76
+  s_4b9adb1d9473fb::t_62f47efa23a0f7 67
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_4b9adb1d9473fb::t_f2f14a5bd39b56 49,487-494,757,829
+src/i18n/locales/nb.json
+  s_4b9adb1d9473fb::t_a97ad6d052915c 708-719
+src/features/bin-designer/components/panel/CutoutsSection/usePocketChecks.ts
+  s_4b9adb1d9473fb::t_f1d9cd94b1b003 1-61
+src/i18n/locales/ka.json
+  s_4b9adb1d9473fb::t_a97ad6d052915c 3050-3061
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3b2d28cc97808aab8057640f6ca7a58e38c9c2b3",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
