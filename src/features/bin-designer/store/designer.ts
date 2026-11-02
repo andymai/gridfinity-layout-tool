@@ -67,17 +67,20 @@ export const useDesignerStore = create<DesignerState>()(
       ...createHistorySlice(set, get),
       ...createUISlice(set),
       ...persistenceSlice,
-      // An import's thickness prompt belongs to the design it was made in.
+      // An import's thickness prompt and a body-type switch's cleared settings
+      // belong to the design they were made in.
       newDesign: (kind) => {
         persistenceSlice.newDesign(kind);
         set((state) => {
           state.ui.depthPromptIds = [];
+          state.ui.bodyTypeMemory = null;
         });
       },
       loadDesign: (design: SavedDesign) => {
         persistenceSlice.loadDesign(design);
         set((state) => {
           state.ui.depthPromptIds = [];
+          state.ui.bodyTypeMemory = null;
         });
         void reconcilePublishedId(design);
       },

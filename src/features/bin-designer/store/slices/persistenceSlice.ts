@@ -74,6 +74,7 @@ export function createPersistenceSlice(set: Set) {
           state.ui.interiorCard = deriveInteriorCard(migrated.style, migrated.compartments);
           state.ui.bentoWorkspaceOpen = false;
         }
+        state.ui.bodyTypeMemory = null;
 
         // saveStatus is left alone: autosave watches params and drives it, the
         // same as any other edit. Setting it here would report a state the

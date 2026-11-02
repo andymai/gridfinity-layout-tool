@@ -7,10 +7,11 @@
  * - restoreHistoryEntry: restore params + optional cached mesh from a history entry
  */
 
-import { current, type Draft } from 'immer';
+import { castDraft, current, isDraft, type Draft } from 'immer';
 import { parentGroups, unitTag } from '@/features/bin-designer/utils/cutoutHierarchy';
 import type {
   BinParams,
+  BodyTypeMemory,
   CachedMesh,
   Cutout,
   CutoutArrayConfig,
@@ -165,6 +166,11 @@ export function pruneAssemblySelection(state: Draft<DesignerState>): void {
   }
 }
 
+export function snapshotBodyTypeMemory(state: Draft<DesignerState>): BodyTypeMemory | null {
+  const memory = state.ui.bodyTypeMemory;
+  return memory && isDraft(memory) ? current(memory) : memory;
+}
+
 /**
  * Push current params (with pending mesh) to history past array.
  * Skips if inside a transaction (already pushed on transaction start).
@@ -185,6 +191,7 @@ export function pushHistoryEntry(
   const entry: HistoryEntry = {
     params: current(state.params),
     mesh: pendingMeshCache,
+    bodyTypeMemory: snapshotBodyTypeMemory(state),
     ...(state.itemKind !== 'bin'
       ? {
           itemKind: state.itemKind,
@@ -314,6 +321,7 @@ export function planCutoutArrayWrite(
 
 export function restoreHistoryEntry(state: Draft<DesignerState>, entry: HistoryEntry): void {
   state.params = entry.params;
+  state.ui.bodyTypeMemory = castDraft(entry.bodyTypeMemory ?? null);
   if (entry.itemKind !== undefined) {
     state.itemKind = entry.itemKind;
     state.structure = entry.structure ?? null;
