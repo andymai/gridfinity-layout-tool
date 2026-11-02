@@ -1020,7 +1020,8 @@ const en: Record<string, string> = {
   'settings.search.inTab': 'in {tab}',
   'settings.search.keywords.language': 'locale, translation, internationalization',
   'settings.search.keywords.theme': 'dark, light, system, color scheme',
-  'settings.search.keywords.motion': 'animation, transitions, accessibility',
+  'settings.search.keywords.motion':
+    'animation, transitions, accessibility, video, autoplay, clips',
   'settings.search.keywords.layout':
     'drawer, dimensions, grid unit, print bed, width, depth, height',
   'settings.search.keywords.print': 'filament, nozzle, infill, layer height, cost, material',
@@ -1894,7 +1895,8 @@ const en: Record<string, string> = {
   'binDesigner.pullTab.width': 'Tab width',
   'binDesigner.pullTab.widthUnit': 'Tab width unit',
   'binDesigner.pullTab.percentHint': 'Current tab width: {width} mm.',
-  'binDesigner.pullTab.widthPerAxis': 'Tab width: {front} mm front/back, {side} mm sides.',
+  'binDesigner.pullTab.widthPerAxis':
+    'Tab width: {front} mm left to right, {side} mm front to back.',
   'binDesigner.pullTab.percentHintDetail':
     '100% fills the usable wall width between the corner clearances.',
   'binDesigner.pullTab.outlineHint':
@@ -1918,7 +1920,7 @@ const en: Record<string, string> = {
   'binDesigner.pullTab.recessSize':
     'Recess width: {width} mm \u00b7 Extends below rim: {below} mm.',
   'binDesigner.pullTab.recessSizePerAxis':
-    'Recess width: {front} mm front/back, {side} mm sides \u00b7 Extends up to {below} mm below rim.',
+    'Recess: {front} mm left to right, {side} mm front to back \u00b7 Up to {below} mm below rim.',
   'binDesigner.pullTab.recessSizeDetail':
     'Border and corner radius adjust when needed to stay inside the tab.',
   'binDesigner.pullTab.rectangularOnly': 'Pull tabs need a rectangular bin.',
@@ -2283,7 +2285,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.text.rotation': 'Rotation',
   'binDesigner.lid.text.rotationOption': '{angle}°',
   'binDesigner.infoButton': 'More information',
-  'binDesigner.featureTip.watch': 'See how {feature} works',
+  'binDesigner.featureTip.watch': 'Watch a clip: {feature}',
   'binDesigner.featureTip.play': 'Play clip',
   'binDesigner.featureTip.scoops':
     'A curved ramp up the wall, so small parts slide out with one finger.',
