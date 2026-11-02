@@ -1,0 +1,27 @@
+package.json
+  s_4b9adb1d9473fb::t_39a99b8f1cba68 122
+src/features/generation/worker/generators/binGenerator.scenario.cutoutSplitLabel.test.ts
+  s_4b9adb1d9473fb::t_21cdfe2d3004f6 34,52,110-125
+src/shared/utils/cutoutSplit.ts
+  s_4b9adb1d9473fb::t_a3e2b8f51a7218 251-253,257-263,265
+src/shared/utils/cutoutSplit.test.ts
+  s_4b9adb1d9473fb::t_d066bef700f23c 267-287
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_4b9adb1d9473fb::t_aeeacfac5ba938 2222-2238
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f95b818de0a42e6d17e0a4ea5a3ab4b6e5188b37",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
