@@ -479,6 +479,22 @@ describe('centerOffBoardCutouts', () => {
     expect(isCutoutOffBoard({ ...stray, ...update }, board)).toBe(false);
   });
 
+  it("carries a path cutout's islands along with its outline", () => {
+    const stray = createCutout({
+      id: 'path',
+      shape: 'path',
+      x: 90,
+      y: 70,
+      width: 20,
+      depth: 20,
+      path: [corner(90, 70), corner(110, 70), corner(110, 90), corner(90, 90)],
+      holes: [[corner(95, 75), corner(105, 75), corner(105, 85)]],
+    });
+    const update = centerOffBoardCutouts([stray], board).get('path');
+    // Centred on the 100 × 80 board: the box moves to (40, 30), 50 left and 40 down.
+    expect(update?.holes?.[0][0]).toMatchObject({ x: 45, y: 35 });
+  });
+
   it('measures an array by every instance, not just its master', () => {
     const stray = createCutout({
       id: 'arr',

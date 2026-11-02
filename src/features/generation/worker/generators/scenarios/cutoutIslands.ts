@@ -144,6 +144,29 @@ export const cutoutIslands = [
       }
     },
   }),
+  // The pocket runs out of a shallow tray that covers its island, so the
+  // pocket's chamfer is also cut as a separate flare at the tray's floor.
+  defineScenario('cutoutIslands', 'a pocket crossing a shallower tray keeps its island', {
+    params: {
+      style: 'solid',
+      base: FLAT,
+      height: 3,
+      cutouts: [
+        makeCutout({ id: 'tray', x: 30.55, y: 25.55, width: 45, depth: 30, cutDepth: 3 }),
+        islandPocket({ id: 'pocket', clearance: 0.4, chamferWidth: 1, cutDepth: 8 }),
+      ],
+    },
+    forExport: true,
+    assert: 'structural',
+    customAssert: (result, params) => {
+      const surface = topAt(result, params, 10, 10);
+      expect(topAt(result, params, (ISLAND.x0 + ISLAND.x1) / 2, islandMidY)).toBeCloseTo(
+        surface - 3,
+        1
+      );
+      expect(topAt(result, params, POCKET.x + 5, islandMidY)).toBeCloseTo(surface - 8, 1);
+    },
+  }),
   defineScenario('cutoutIslands', 'an island leans with its pocket', {
     params: {
       style: 'solid',

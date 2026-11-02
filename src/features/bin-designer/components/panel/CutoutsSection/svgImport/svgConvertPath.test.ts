@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { convertPath } from './svgConvertPath';
 import { IDENTITY, type Matrix } from '@/shared/utils/svg';
 import type { ViewBox } from './types';
+import { MAX_CUTOUT_HOLES } from '@/features/bin-designer/types';
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -172,6 +173,48 @@ describe('convertPath subpaths and fill rules', () => {
     const specs = convertPath(withRule(SAME), IDENTITY, VIEW_BOX);
     expect(specs).toHaveLength(2);
     expect(specs?.every((s) => s.holes === undefined)).toBe(true);
+  });
+
+  // Starts inside the outline but runs out past its right edge.
+  it('keeps a subpath that crosses the outline as a pocket of its own', () => {
+    const d = 'M 0 0 L 40 0 L 40 40 L 0 40 Z M 30 15 L 50 15 L 50 25 L 30 25 Z';
+    const specs = convertPath(withRule(d, 'evenodd'), IDENTITY, VIEW_BOX);
+    expect(specs).toHaveLength(2);
+    expect(specs?.every((s) => s.holes === undefined)).toBe(true);
+  });
+
+  // Windings +, +, -, -: filled 1, 2, 1, then 0 in the middle.
+  it('keeps the centre of nested rings whose winding comes back to zero', () => {
+    const cw = (a: number, b: number) => `M ${a} ${a} L ${b} ${a} L ${b} ${b} L ${a} ${b} Z`;
+    const ccw = (a: number, b: number) => `M ${a} ${a} L ${a} ${b} L ${b} ${b} L ${b} ${a} Z`;
+    const d = [cw(0, 80), cw(10, 70), ccw(20, 60), ccw(30, 50)].join(' ');
+    const specs = convertPath(withRule(d), IDENTITY, VIEW_BOX) ?? [];
+    // Every pocket around the middle keeps it, so none of them cuts it away.
+    expect(specs.length).toBeGreaterThan(0);
+    for (const spec of specs) {
+      const xs = (spec.holes ?? []).flat().map((p) => p.x);
+      expect(Math.min(...xs)).toBeCloseTo(30, 6);
+      expect(Math.max(...xs)).toBeCloseTo(50, 6);
+    }
+  });
+
+  it('keeps at most the cap of islands, the largest first', () => {
+    const outline = 'M 0 0 L 100 0 L 100 100 L 0 100 Z';
+    const islands = Array.from({ length: MAX_CUTOUT_HOLES + 1 }, (_, k) => {
+      const x = 2 + (k % 9) * 11;
+      const y = 2 + Math.floor(k / 9) * 11;
+      const s = k === MAX_CUTOUT_HOLES ? 2 : 4;
+      return `M ${x} ${y} L ${x + s} ${y} L ${x + s} ${y + s} L ${x} ${y + s} Z`;
+    });
+    const [spec] =
+      convertPath(withRule([outline, ...islands].join(' '), 'evenodd'), IDENTITY, VIEW_BOX) ?? [];
+    expect(spec.holes).toHaveLength(MAX_CUTOUT_HOLES);
+    const smallest = Math.min(
+      ...(spec.holes ?? []).map(
+        (h) => Math.max(...h.map((p) => p.x)) - Math.min(...h.map((p) => p.x))
+      )
+    );
+    expect(smallest).toBeCloseTo(4, 6);
   });
 
   it('makes a shape inside an island its own pocket again', () => {

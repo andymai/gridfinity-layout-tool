@@ -149,17 +149,27 @@ export function pathCutoutCut(
   return pathCutoutSections(outline, clearance, chamfer) ?? { base: outline, rim: outline };
 }
 
+/** One island's sections, with the index of its ring in {@link Cutout.holes}. */
+export interface PathHoleCut extends PathCutoutSections {
+  readonly index: number;
+}
+
 /**
  * The sections each island of a path cutout is kept to: its ring shrunk by
  * the clearance and, at the rim, the chamfer too. An island too tight to
- * shrink keeps its bare ring.
+ * shrink keeps its bare ring; one that cannot be cut at all is left out, so
+ * each keeps the index of the ring it came from.
  */
 export function pathHoleCuts(
   cutout: PathCutoutFrame,
   clearance: number,
   chamfer: number
-): PathCutoutSections[] {
-  return pathCutoutHoles(cutout).map(
-    (ring) => pathCutoutSections(ring, clearance, chamfer, true) ?? { base: ring, rim: ring }
-  );
+): PathHoleCut[] {
+  if (!cutout.holes || pathCutoutOutline(cutout) === null) return [];
+  return cutout.holes.flatMap((hole, index) => {
+    const ring = centredRing(cutout, hole);
+    if (!ring) return [];
+    const cut = pathCutoutSections(ring, clearance, chamfer, true) ?? { base: ring, rim: ring };
+    return [{ ...cut, index }];
+  });
 }

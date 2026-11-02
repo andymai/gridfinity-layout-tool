@@ -1271,6 +1271,16 @@ function buildNestedEntryFlare(
   } catch {
     return null;
   }
+  // This flare cuts on its own, so it has to leave the pocket's islands standing too.
+  if (pocket.shape === 'path') {
+    shape = withIslands(shape, pathHoleCuts(pocket, clearance, chamfer), {
+      chamfer,
+      flare,
+      mouthZ,
+      topZ,
+      profile: cutoutEntryProfile(pocket),
+    });
+  }
   shape = applyCutoutLean(shape, lean, pocket.cutDepth);
   if (pocket.rotation !== 0) {
     const rotated = rotate(shape, -pocket.rotation, { axis: [0, 0, 1] });

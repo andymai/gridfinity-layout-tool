@@ -453,6 +453,13 @@ describe('islands', () => {
     expect(check([tray([square(20, 15, 30, 35)])]).filter((i) => i.kind === 'island')).toEqual([]);
   });
 
+  it('removes the thin island, not a ring before it that cannot be cut', () => {
+    const bowtie = [corner(20, 15), corner(30, 35), corner(30, 15), corner(20, 35)];
+    const narrow = square(40, 15, 42, 35);
+    const [issue] = check([tray([bowtie, narrow])]).filter((i) => i.kind === 'island');
+    expect(issue.fix).toEqual({ holes: [bowtie] });
+  });
+
   // 2 mm wide, less 0.9 mm off each side at the top.
   it('flags an island the clearance and entry edge leave too thin, and offers to remove it', () => {
     const wide = square(20, 15, 30, 35);

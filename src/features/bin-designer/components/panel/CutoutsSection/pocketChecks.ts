@@ -610,13 +610,13 @@ function checkIslands(pockets: readonly Placed[], book: IssueBook): void {
   for (const { cutout, owner } of pockets) {
     if (cutout.shape !== 'path' || !cutout.holes) continue;
     const { clearance } = clearedProfile(cutout);
-    const tops = pathHoleCuts(cutout, clearance, entryChamferWidth(cutout)).map(
-      (cut) => minAreaRect(cut.rim)?.height ?? 0
-    );
-    const thin = tops.flatMap((mm, i) => (mm < MIN_MATERIAL_MM - 1e-6 ? [i] : []));
+    const thin = pathHoleCuts(cutout, clearance, entryChamferWidth(cutout))
+      .map((cut) => ({ index: cut.index, mm: minAreaRect(cut.rim)?.height ?? 0 }))
+      .filter(({ mm }) => mm < MIN_MATERIAL_MM - 1e-6);
     if (thin.length === 0) continue;
-    const kept = cutout.holes.filter((_, i) => !thin.includes(i));
-    book.note('island', [owner], [cutout.id], Math.min(...thin.map((i) => tops[i])), {
+    const gone = new Set(thin.map((t) => t.index));
+    const kept = cutout.holes.filter((_, i) => !gone.has(i));
+    book.note('island', [owner], [cutout.id], Math.min(...thin.map((t) => t.mm)), {
       holes: kept.length > 0 ? kept : undefined,
     });
   }

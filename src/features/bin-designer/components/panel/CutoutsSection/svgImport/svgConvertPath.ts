@@ -17,6 +17,7 @@ import { SVGPathData, SVGPathDataTransformer } from 'svg-pathdata';
 import type { SVGCommand } from 'svg-pathdata';
 import { SVGPathData as SVGPathDataEnum } from 'svg-pathdata';
 import type { PathPoint } from '@/features/bin-designer/types';
+import { MAX_CUTOUT_HOLES } from '@/features/bin-designer/types';
 import type { ParsedCutoutSpec } from './types';
 import { transformPoint, type Matrix } from '@/shared/utils/svg';
 import type { ViewBox } from './types';
@@ -86,52 +87,87 @@ function insideRing(
 }
 
 /**
- * One element's sub-paths as the fill rule paints them. A sub-path inside a
- * filled one is a hole under `evenodd`, and under `nonzero` when it winds the
- * other way; one winding the same way under `nonzero` is painted over and
- * stays a pocket of its own. Anything inside a hole is a shape again.
+ * One element's sub-paths as the fill rule paints them.
+ *
+ * A sub-path counts as inside another only when its whole ring is; two that
+ * cross are separate pockets, as they always were. The fill just inside a
+ * ring is the winding of every ring around it plus its own, and just outside
+ * the same without its own: a ring with fill inside and none outside is a
+ * pocket's outline, the reverse an island. A ring with fill on both sides is
+ * painted over and stays a pocket of its own (a separate cut inside the first,
+ * as before). `evenodd` reads parity instead of winding.
+ *
+ * An island belongs to every pocket around it that does not already leave it
+ * inside one of its own islands, since each pocket cuts on its own and any one
+ * of them would carve the island away. At most {@link MAX_CUTOUT_HOLES}
+ * islands are kept per pocket, the largest, as a saved design keeps.
  */
 function nestContours(
   specs: readonly ParsedCutoutSpec[],
   rule: 'nonzero' | 'evenodd'
 ): ParsedCutoutSpec[] {
   const rings = specs.map((s) => flattenPath(s.path ?? []));
+  // An open or self-overlapping curve can enclose no net area; it still counts one way.
+  const signs = rings.map((r) => (signedArea(r) < 0 ? -1 : 1));
   const area = rings.map((r) => Math.abs(signedArea(r)));
+  const boxes = rings.map(boundsOf);
   const order = specs.map((_, i) => i).sort((a, b) => area[b] - area[a]);
-  const parentOf = new Map<number, number>();
+  const inside = (i: number, j: number): boolean =>
+    area[j] > area[i] &&
+    boxWithin(boxes[i], boxes[j]) &&
+    rings[i].length > 0 &&
+    rings[i].every((p) => insideRing(p, rings[j]));
+  const ancestors = new Map<number, number[]>();
+  for (const i of order)
+    ancestors.set(
+      i,
+      order.filter((j) => j !== i && inside(i, j))
+    );
+  const filled = (w: number): boolean => (rule === 'evenodd' ? w % 2 !== 0 : w !== 0);
+  const role = new Map<number, 'pocket' | 'island'>();
   for (const i of order) {
-    if (rings[i].length === 0) continue;
-    const probe = rings[i][0];
-    // The smallest ring around it, since bigger ones come first.
-    let parent = -1;
-    for (const j of order) {
-      if (j === i || area[j] <= area[i]) continue;
-      if (insideRing(probe, rings[j])) parent = j;
-    }
-    if (parent !== -1) parentOf.set(i, parent);
+    const anc = ancestors.get(i) ?? [];
+    const outside = rule === 'evenodd' ? anc.length : anc.reduce((w, j) => w + signs[j], 0);
+    const within = rule === 'evenodd' ? anc.length + 1 : outside + signs[i];
+    const fin = filled(within);
+    const fout = filled(outside);
+    // Only a ring with fill outside and none in is an island; anything else imports as before.
+    role.set(i, !fin && fout ? 'island' : 'pocket');
   }
-  const isHole = new Map<number, boolean>();
+  const holesOf = new Map<number, number[]>();
   for (const i of order) {
-    const parent = parentOf.get(i);
-    if (parent === undefined || isHole.get(parent) === true) {
-      isHole.set(i, false);
-      continue;
+    if (role.get(i) !== 'island') continue;
+    for (const j of ancestors.get(i) ?? []) {
+      if (role.get(j) !== 'pocket') continue;
+      const held = holesOf.get(j) ?? [];
+      // Already inside one of this pocket's islands, so the pocket leaves it alone.
+      if (held.some((h) => inside(i, h))) continue;
+      holesOf.set(j, [...held, i]);
     }
-    const opposite = Math.sign(signedArea(rings[i])) !== Math.sign(signedArea(rings[parent]));
-    isHole.set(i, rule === 'evenodd' || opposite);
-  }
-  const holesOf = new Map<number, PathPoint[][]>();
-  for (const [i, hole] of isHole) {
-    const parent = parentOf.get(i);
-    const path = specs[i].path;
-    if (!hole || parent === undefined || !path) continue;
-    holesOf.set(parent, [...(holesOf.get(parent) ?? []), path]);
   }
   return specs.flatMap((spec, i) => {
-    if (isHole.get(i) === true) return [];
-    const holes = holesOf.get(i);
-    return [holes ? { ...spec, holes } : spec];
+    if (role.get(i) !== 'pocket') return [];
+    const holes = (holesOf.get(i) ?? [])
+      .slice(0, MAX_CUTOUT_HOLES)
+      .map((h) => specs[h].path)
+      .filter((path): path is PathPoint[] => path !== undefined);
+    return [holes.length > 0 ? { ...spec, holes } : spec];
   });
+}
+
+function boundsOf(ring: readonly { x: number; y: number }[]) {
+  const xs = ring.map((p) => p.x);
+  const ys = ring.map((p) => p.y);
+  return {
+    minX: Math.min(...xs),
+    minY: Math.min(...ys),
+    maxX: Math.max(...xs),
+    maxY: Math.max(...ys),
+  };
+}
+
+function boxWithin(a: ReturnType<typeof boundsOf>, b: ReturnType<typeof boundsOf>): boolean {
+  return a.minX >= b.minX && a.minY >= b.minY && a.maxX <= b.maxX && a.maxY <= b.maxY;
 }
 
 /** Split path commands into separate contours (each starting with M). */

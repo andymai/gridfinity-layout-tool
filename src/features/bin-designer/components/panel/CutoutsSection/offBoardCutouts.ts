@@ -310,6 +310,7 @@ export function centerOffBoardCutouts(
       x: moved.x,
       y: moved.y,
       ...(moved.path ? { path: moved.path } : {}),
+      ...(moved.holes ? { holes: moved.holes } : {}),
     });
   }
   return updates;
