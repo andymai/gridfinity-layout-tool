@@ -1059,6 +1059,7 @@
   "binDesigner.cutouts.sizePresetMore": "Fler storlekar…",
   "binDesigner.cutouts.snapToGrid": "Fäst mot rutnät",
   "binDesigner.cutouts.staggered": "Förskjut rader",
+  "binDesigner.cutouts.turnToFit": "Vrid former så att de får plats",
   "binDesigner.cutouts.stlImport.flipAxis": "Rotera {axis}",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Modellen är större än lådans insida. Den placeras ändå — förstora lådan eller använd en mindre modell för en komplett ficka.",
   "binDesigner.cutouts.stlImport.budget": "Med denna mesh: {used} av {limit} trianglar",

@@ -1059,6 +1059,7 @@
   "binDesigner.cutouts.sizePresetMore": "Більше розмірів…",
   "binDesigner.cutouts.snapToGrid": "Прив’язати до сітки",
   "binDesigner.cutouts.staggered": "У шахматному порядку",
+  "binDesigner.cutouts.turnToFit": "Повертати форми, щоб вмістилися",
   "binDesigner.cutouts.stlImport.flipAxis": "Повернути {axis}",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Ця модель більша за внутрішній простір контейнера. Її все одно буде розміщено — збільште контейнер або використайте меншу модель для повної кишені.",
   "binDesigner.cutouts.stlImport.budget": "З цією сіткою: {used} з {limit} трикутників",

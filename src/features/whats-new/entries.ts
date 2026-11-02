@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'cutout-arrange-turn',
+    date: '2026-11-02',
+    kind: 'improved',
+    featured: true,
+    title: { en: 'Auto-arrange turns shapes to fit' },
+    body: {
+      en: 'Auto-arrange in the Cut Editor now turns each shape to take the least room before packing: a tool traced at an angle lies square, and a tall shape lies on its side. Groups move as one and keep their angle. Untick Turn shapes to fit to keep every angle as it is.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'cutout-split-pockets',
     date: '2026-11-02',
     kind: 'new',

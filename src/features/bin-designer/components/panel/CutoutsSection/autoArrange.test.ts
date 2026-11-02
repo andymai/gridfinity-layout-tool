@@ -151,4 +151,103 @@ describe('autoArrangeCutouts', () => {
       expect(result.next.x).toBeCloseTo(14);
     });
   });
+
+  describe('turning shapes to fit', () => {
+    it('stands portrait shapes on their side so they share one row', () => {
+      const cutouts = [createCutout('a', 10, 30), createCutout('b', 10, 30)];
+      const result = autoArrangeCutouts(cutouts, {
+        binWidth: 70,
+        binDepth: 100,
+        gap: 2,
+        turn: true,
+      });
+      expect(result.a.rotation).toBe(90);
+      expect(result.b.rotation).toBe(90);
+      // A rectangle turns about its centre, so its stored box sits 10 mm right
+      // of the silhouette and 10 mm below it.
+      expect(result.a).toMatchObject({ x: 2 + 10, y: 2 - 10 });
+      expect(result.b).toMatchObject({ x: 34 + 10, y: 2 - 10 });
+    });
+
+    it('reports no turn for a shape already at its best', () => {
+      const result = autoArrangeCutouts([createCutout('a', 30, 10)], {
+        binWidth: 70,
+        binDepth: 100,
+        gap: 2,
+        turn: true,
+      });
+      expect(result.a).toEqual({ x: 2, y: 2 });
+    });
+
+    it('moves a group as one block without turning it', () => {
+      const members = [
+        { ...createCutout('m1', 10, 30), groupId: 'g' },
+        { ...createCutout('m2', 10, 30), x: 15, groupId: 'g' },
+      ];
+      const result = autoArrangeCutouts(members, {
+        binWidth: 100,
+        binDepth: 100,
+        gap: 2,
+        turn: true,
+      });
+      expect(result.m1).toEqual({ x: 2, y: 2 });
+      expect(result.m2).toEqual({ x: 17, y: 2 });
+    });
+
+    it('lands turned shapes in the same places when arranged again', () => {
+      const corner = (x: number, y: number) => ({
+        x,
+        y,
+        handleIn: null,
+        handleOut: null,
+        symmetric: false,
+      });
+      const a = (40 * Math.PI) / 180;
+      const pts = [
+        [0, 0],
+        [40, 0],
+        [40, 8],
+        [0, 8],
+      ].map(([x, y]) => ({
+        x: 30 + x * Math.cos(a) - y * Math.sin(a),
+        y: 10 + x * Math.sin(a) + y * Math.cos(a),
+      }));
+      const xs = pts.map((p) => p.x);
+      const ys = pts.map((p) => p.y);
+      const bar = (id: string): Cutout => ({
+        ...createCutout(id, Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)),
+        shape: 'path',
+        x: Math.min(...xs),
+        y: Math.min(...ys),
+        path: pts.map((p) => corner(p.x, p.y)),
+      });
+      const options = { binWidth: 120, binDepth: 100, gap: 2, turn: true };
+      const once = autoArrangeCutouts([bar('a'), bar('b')], options);
+      const placed = (id: string): Cutout => {
+        const at = once[id];
+        const dx = at.x - bar(id).x;
+        const dy = at.y - bar(id).y;
+        return {
+          ...bar(id),
+          ...at,
+          path: pts.map((p) => corner(p.x + dx, p.y + dy)),
+        };
+      };
+      const twice = autoArrangeCutouts([placed('a'), placed('b')], options);
+      for (const id of ['a', 'b']) {
+        expect(twice[id].x).toBeCloseTo(once[id].x, 6);
+        expect(twice[id].y).toBeCloseTo(once[id].y, 6);
+        expect(twice[id].rotation).toBeUndefined();
+      }
+    });
+
+    it('turns nothing unless asked', () => {
+      const result = autoArrangeCutouts([createCutout('a', 10, 30)], {
+        binWidth: 70,
+        binDepth: 100,
+        gap: 2,
+      });
+      expect(result.a).toEqual({ x: 2, y: 2 });
+    });
+  });
 });
