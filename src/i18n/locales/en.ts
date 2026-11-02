@@ -3420,6 +3420,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.autoArrange': 'Auto-arrange',
   'binDesigner.cutouts.gap': 'Gap',
   'binDesigner.cutouts.staggered': 'Stagger rows',
+  'binDesigner.cutouts.turnToFit': 'Turn shapes to fit',
   'binDesigner.cutouts.clearAll': 'Clear all',
   'binDesigner.cutouts.fitTest.button': 'Print fit test',
   'binDesigner.cutouts.fitTest.dialogTitle': 'Cutout fit test',

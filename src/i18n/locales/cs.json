@@ -1059,6 +1059,7 @@
   "binDesigner.cutouts.sizePresetMore": "Další velikosti…",
   "binDesigner.cutouts.snapToGrid": "Přichytit k mřížce",
   "binDesigner.cutouts.staggered": "Střídat řady",
+  "binDesigner.cutouts.turnToFit": "Otáčet tvary, aby se vešly",
   "binDesigner.cutouts.stlImport.flipAxis": "Překlopit {axis}",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Tento model je větší než vnitřek binu. Přesto bude umístěn — zvětši bin nebo použij menší model pro plnou prohlubeň.",
   "binDesigner.cutouts.stlImport.budget": "S touto sítí: {used} z {limit} trojúhelníků",

@@ -1059,6 +1059,7 @@
   "binDesigner.cutouts.sizePresetMore": "Flere størrelser…",
   "binDesigner.cutouts.snapToGrid": "Fest til rutenett",
   "binDesigner.cutouts.staggered": "Forskyvde rader",
+  "binDesigner.cutouts.turnToFit": "Drei former så de får plass",
   "binDesigner.cutouts.stlImport.flipAxis": "Roter {axis}",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Denne modellen er større enn innsiden av boksen. Den plasseres likevel — gjør boksen større eller bruk en mindre modell for en full lomme.",
   "binDesigner.cutouts.stlImport.budget": "Med denne meshen: {used} av {limit} trekanter",

@@ -1059,6 +1059,7 @@
   "binDesigner.cutouts.sizePresetMore": "更多尺寸…",
   "binDesigner.cutouts.snapToGrid": "对齐到网格",
   "binDesigner.cutouts.staggered": "交错排列行",
+  "binDesigner.cutouts.turnToFit": "旋转形状以放下",
   "binDesigner.cutouts.stlImport.flipAxis": "翻转 {axis}",
   "binDesigner.cutouts.stlImport.oversizeWarning": "此模型大于收纳盒内部。它仍会被放置 — 请放大收纳盒或使用更小的模型以获得完整凹槽。",
   "binDesigner.cutouts.stlImport.budget": "包含此网格：{used} / {limit} 个三角面",

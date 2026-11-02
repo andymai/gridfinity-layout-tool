@@ -1059,6 +1059,7 @@
   "binDesigner.cutouts.sizePresetMore": "더 많은 크기…",
   "binDesigner.cutouts.snapToGrid": "그리드에 스냅",
   "binDesigner.cutouts.staggered": "행 엇갈림",
+  "binDesigner.cutouts.turnToFit": "맞도록 도형 회전",
   "binDesigner.cutouts.stlImport.flipAxis": "{axis} 뒤집기",
   "binDesigner.cutouts.stlImport.oversizeWarning": "이 모델은 수납통 내부보다 큽니다. 그래도 배치됩니다 — 온전한 포켓을 원하면 수납통을 키우거나 더 작은 모델을 사용하세요.",
   "binDesigner.cutouts.stlImport.budget": "이 메시 포함: 삼각형 {used} / {limit}개",
