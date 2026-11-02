@@ -166,6 +166,11 @@ export function pruneAssemblySelection(state: Draft<DesignerState>): void {
   }
 }
 
+export function snapshotBodyTypeMemory(state: Draft<DesignerState>): BodyTypeMemory | null {
+  const memory = state.ui.bodyTypeMemory;
+  return memory && isDraft(memory) ? current(memory) : memory;
+}
+
 /**
  * Push current params (with pending mesh) to history past array.
  * Skips if inside a transaction (already pushed on transaction start).
@@ -176,11 +181,6 @@ export function pruneAssemblySelection(state: Draft<DesignerState>): void {
  * generation epoch isn't bumped, so the worker doesn't re-run on every
  * lock/hide click.
  */
-export function snapshotBodyTypeMemory(state: Draft<DesignerState>): BodyTypeMemory | null {
-  const memory = state.ui.bodyTypeMemory;
-  return memory && isDraft(memory) ? current(memory) : memory;
-}
-
 export function pushHistoryEntry(
   state: Draft<DesignerState>,
   options: { affectsGeometry?: boolean } = {}
