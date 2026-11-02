@@ -127,4 +127,16 @@ describe('evictIfNeeded', () => {
     expect(result.past[0].params).toEqual(customParams);
     expect(result.past[0].mesh).toBeNull();
   });
+
+  it('keeps the rest of the entry when evicting its mesh', () => {
+    const MB = 1024 * 1024;
+    const bodyTypeMemory: HistoryEntry['bodyTypeMemory'] = {
+      bodyType: 'tile',
+      cleared: [{ feature: null, original: { height: 6 }, left: { height: 1 } }],
+    };
+    const past: HistoryEntry[] = [{ ...makeEntry(60 * MB), bodyTypeMemory }, makeEntry(60 * MB)];
+    const result = evictIfNeeded(past, []);
+    expect(result.past[0].mesh).toBeNull();
+    expect(result.past[0].bodyTypeMemory).toEqual(bodyTypeMemory);
+  });
 });
