@@ -9,6 +9,7 @@ import {
   floorUnderCutout,
   isThroughCut,
   resolveCutoutDepth,
+  splitSideB,
   throughBlockedReason,
   withResolvedCutoutDepths,
 } from './cutoutDepth';
@@ -192,6 +193,43 @@ describe('withResolvedCutoutDepths', () => {
     const tall = withResolvedCutoutDepths({ ...short, height: 5 });
     expect(short.cutouts.map((c) => c.cutDepth)).toEqual([13, 6]);
     expect(tall.cutouts.map((c) => c.cutDepth)).toEqual([27, 6]);
+  });
+});
+
+describe('split side B depth', () => {
+  const line = { a: { x: 0, y: -10 }, b: { x: 0, y: 10 } };
+
+  it('reads side B as a pocket of its own', () => {
+    const split = pocket({
+      depthMode: 'floor',
+      floorMm: 3,
+      split: { ...line, cutDepth: 2 },
+    });
+    const b = splitSideB(split);
+    expect(b.cutDepth).toBe(2);
+    expect(b.depthMode).toBeUndefined();
+    expect(b.floorMm).toBeUndefined();
+  });
+
+  it('holds side B to its own floor while side A keeps a fixed depth', () => {
+    const split = pocket({
+      cutDepth: 4,
+      split: { ...line, cutDepth: 1, depthMode: 'floor', floorMm: 8 },
+    });
+    const short = withResolvedCutoutDepths(bin({ cutouts: [split] }));
+    const tall = withResolvedCutoutDepths({ ...short, height: 5 });
+    expect(short.cutouts[0].split?.cutDepth).toBe(13);
+    expect(tall.cutouts[0].split?.cutDepth).toBe(27);
+    expect(tall.cutouts[0].cutDepth).toBe(4);
+  });
+
+  it('leaves a settled split by reference', () => {
+    const settled = withResolvedCutoutDepths(
+      bin({
+        cutouts: [pocket({ split: { ...line, cutDepth: 1, depthMode: 'floor', floorMm: 8 } })],
+      })
+    );
+    expect(withResolvedCutoutDepths(settled)).toBe(settled);
   });
 });
 

@@ -144,6 +144,12 @@ describe('openSideChannels', () => {
     expect(ch.edge).toBeCloseTo(40, 5);
   });
 
+  it("opens a split pocket's wall only as deep as its shallower side", () => {
+    const split = { a: { x: 0, y: -6 }, b: { x: 0, y: 6 }, cutDepth: 3 };
+    const [ch] = openSideChannels(solid({ cutouts: [rect({ split })] }));
+    expect(ch.cutDepth).toBe(3);
+  });
+
   it('measures a turned slot at its true width, not its bounding rectangle', () => {
     const [ch] = openSideChannels(
       solid({ cutouts: [rect({ shape: 'slot', rotation: 90, openSides: [{ side: 'front' }] })] })

@@ -1775,6 +1775,48 @@ describe('migrateParams', () => {
         for (const dropped of [rect, unknown, broken]) expect('finger' in dropped).toBe(false);
       });
 
+      it('keeps a whole split by reference and drops a broken one', () => {
+        const line = { a: { x: 0, y: -10 }, b: { x: 0, y: 10 }, cutDepth: 6 };
+        const kept = pocket({ split: line });
+        const [same, noPoint, noDepth, farOff, junk] = migrateParams({
+          cutouts: [
+            kept,
+            pocket({ id: 'q', split: { ...line, b: { x: 0 } } }),
+            pocket({ id: 'r', split: { ...line, cutDepth: 0 } }),
+            pocket({ id: 's', split: { ...line, a: { x: 0, y: -5000 } } }),
+            pocket({ id: 't', split: 'line' }),
+          ],
+        }).cutouts;
+        expect(same.split).toBe(kept.split);
+        for (const dropped of [noPoint, noDepth, farOff, junk]) {
+          expect('split' in dropped).toBe(false);
+        }
+      });
+
+      it('keeps side B deeper than any fixed ceiling', () => {
+        const deep = { a: { x: 0, y: -10 }, b: { x: 0, y: 10 }, cutDepth: 398 };
+        expect(migrateParams({ cutouts: [pocket({ split: deep })] }).cutouts[0].split).toEqual(
+          deep
+        );
+      });
+
+      it('reads a split with an unknown side B mode as a fixed depth', () => {
+        const line = { a: { x: 0, y: -10, z: 1 }, b: { x: 0, y: 10 }, cutDepth: 6 };
+        const [through, badFloor, floor] = migrateParams({
+          cutouts: [
+            pocket({ split: { ...line, depthMode: 'through', floorMm: 2 } }),
+            pocket({ id: 'q', split: { ...line, depthMode: 'floor', floorMm: -1 } }),
+            pocket({ id: 'r', split: { ...line, depthMode: 'floor', floorMm: 2, extra: true } }),
+          ],
+        }).cutouts;
+        const clean = { a: { x: 0, y: -10 }, b: { x: 0, y: 10 }, cutDepth: 6 };
+        expect(through.split).toEqual(clean);
+        const { cutDepth: _bad, ...badRest } = badFloor.split ?? clean;
+        expect(badRest).toEqual({ a: clean.a, b: clean.b, depthMode: 'floor' });
+        const { cutDepth: _floor, ...floorRest } = floor.split ?? clean;
+        expect(floorRest).toEqual({ a: clean.a, b: clean.b, depthMode: 'floor', floorMm: 2 });
+      });
+
       it('leaves a cutout without a mode exactly as stored', () => {
         const stored = pocket({});
         expect(migrateParams({ cutouts: [stored] }).cutouts[0]).toEqual(stored);

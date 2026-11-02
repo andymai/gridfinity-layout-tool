@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'cutout-split-pockets',
+    date: '2026-11-02',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Cut one pocket to two depths' },
+    body: {
+      en: 'Draw a line across a pocket in the Cut Editor and each side gets its own depth, with a sharp step between them. It suits a tool that sits deeper at one end, like a screwdriver whose handle is thicker than its shaft. Select a pocket and look for Split into two depths under Shape.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'cutout-pocket-checks',
     date: '2026-11-02',
     kind: 'new',

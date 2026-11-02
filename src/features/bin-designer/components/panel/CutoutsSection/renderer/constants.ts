@@ -69,6 +69,9 @@ export const OFF_BOARD_COLOR = '#ef4444'; // --color-error
  * solid amber selection and the solid red off-board frame.
  */
 export const ISSUE_COLOR = '#fb923c';
+
+/** A split pocket's dividing line: distinct from the warning frames and the selection. */
+export const SPLIT_COLOR = '#38bdf8';
 /**
  * Taper band — slate rather than a warning colour. Nothing is wrong when it
  * shows; it marks where a deep cutout gets trimmed, and it must not compete

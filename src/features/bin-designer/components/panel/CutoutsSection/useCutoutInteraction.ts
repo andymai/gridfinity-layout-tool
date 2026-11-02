@@ -55,6 +55,7 @@ export function useCutoutInteraction({
   canRedo,
   onLock,
   onUnlock,
+  onSplitLine,
   startTransaction,
   commitTransaction,
   binWidth,
@@ -375,6 +376,7 @@ export function useCutoutInteraction({
     onAdd,
     onUpdate,
     onUpdateBatch,
+    onSplitLine,
     commitTransaction,
   });
 

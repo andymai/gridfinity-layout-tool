@@ -756,4 +756,70 @@ describe('useCutoutInteraction', () => {
       );
     });
   });
+
+  describe('split line tool', () => {
+    const drawLine = (
+      result: { current: ReturnType<typeof useCutoutInteraction> },
+      to: { x: number; y: number }
+    ) => {
+      act(() =>
+        result.current.setMode({
+          type: 'measuring',
+          startX: 20,
+          startY: 0,
+          sticky: true,
+          splitId: 'a',
+        })
+      );
+      act(() => result.current.handlePointerMove(to.x, to.y));
+      act(() => result.current.handlePointerUp());
+    };
+
+    it('hands a drawn line to the split and returns to the pointer tool', () => {
+      const onSplitLine = vi.fn();
+      const { result } = renderHook(() => useCutoutInteraction({ ...defaultOpts, onSplitLine }));
+      drawLine(result, { x: 20, y: 60 });
+      expect(onSplitLine).toHaveBeenCalledWith(
+        'a',
+        expect.objectContaining({ startX: 20, startY: 0, endX: 20 })
+      );
+      expect(result.current.mode).toEqual({ type: 'idle' });
+    });
+
+    it('never commits a line from a drag that was cancelled', () => {
+      const onSplitLine = vi.fn();
+      const { result } = renderHook(() => useCutoutInteraction({ ...defaultOpts, onSplitLine }));
+      act(() =>
+        result.current.setMode({
+          type: 'measuring',
+          startX: 20,
+          startY: 0,
+          sticky: true,
+          splitId: 'a',
+        })
+      );
+      act(() => result.current.handlePointerMove(20, 60));
+      act(() => result.current.setMode({ type: 'idle' }));
+      act(() =>
+        result.current.setMode({
+          type: 'measuring',
+          startX: 5,
+          startY: 5,
+          sticky: true,
+          splitId: 'a',
+        })
+      );
+      act(() => result.current.handlePointerUp());
+      expect(onSplitLine).not.toHaveBeenCalled();
+      expect(result.current.mode).toEqual({ type: 'ruler-ready', splitId: 'a' });
+    });
+
+    it('reads a click as no line and keeps waiting for one', () => {
+      const onSplitLine = vi.fn();
+      const { result } = renderHook(() => useCutoutInteraction({ ...defaultOpts, onSplitLine }));
+      drawLine(result, { x: 20.2, y: 0.2 });
+      expect(onSplitLine).not.toHaveBeenCalled();
+      expect(result.current.mode).toEqual({ type: 'ruler-ready', splitId: 'a' });
+    });
+  });
 });

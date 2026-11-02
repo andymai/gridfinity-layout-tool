@@ -23,6 +23,7 @@ import {
 } from '@/shared/types/bin';
 import { regularPolygonPoints } from '@/shared/utils/cutoutPolygon';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import { deeperDepth, sideBShare } from '@/shared/utils/cutoutSplit';
 import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
@@ -78,7 +79,7 @@ export function canBuildFitTest(params: BinParams): boolean {
 
 /** Deepest cut the card would have to reach to keep every pocket's floor (mm). */
 export function deepestCutoutDepthMm(params: BinParams): number {
-  return fitTestCutouts(params).reduce((deepest, c) => Math.max(deepest, c.cutDepth), 0);
+  return fitTestCutouts(params).reduce((deepest, c) => Math.max(deepest, deeperDepth(c)), 0);
 }
 
 /**
@@ -346,7 +347,7 @@ export function planFitTestStampArea(
   const cutouts = fitTestCutouts(params);
   const boxes = fitTestCutoutBoxes(params);
   const floorLimit = thicknessMm - stampDepthMm;
-  const throughBoxes = boxes.filter((_, i) => cutouts[i].cutDepth >= floorLimit);
+  const throughBoxes = boxes.filter((_, i) => deeperDepth(cutouts[i]) >= floorLimit);
   // A horizontal seam blocks a strip the same way a through-hole does: glyphs
   // cut across the kerf are lost on both pieces.
   const seamBoxes = (split?.planesY ?? []).map((plane) => ({ minY: plane, maxY: plane }));
@@ -674,10 +675,14 @@ export function openingPerimeterMm(cutout: Cutout): number {
  * disagree about how much a pocket takes out.
  */
 export function cutoutDisplacementMm3(params: BinParams, maxDepthMm = Infinity): number {
-  return sumOverCutouts(
-    params,
-    (cutout) => openingAreaMm2(cutout) * Math.min(cutout.cutDepth, maxDepthMm)
-  );
+  return sumOverCutouts(params, (cutout) => {
+    const shareB = sideBShare(cutout);
+    const depthB = cutout.split?.cutDepth ?? 0;
+    return (
+      openingAreaMm2(cutout) *
+      ((1 - shareB) * Math.min(cutout.cutDepth, maxDepthMm) + shareB * Math.min(depthB, maxDepthMm))
+    );
+  });
 }
 
 /**

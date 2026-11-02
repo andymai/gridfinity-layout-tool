@@ -46,6 +46,8 @@ import { useStlImport, StlImportDialog } from '../panel/CutoutsSection/stlImport
 import { ScanWithPhoneDialog } from '../panel/CutoutsSection/scanImport';
 import { ToolThicknessPrompt } from '../panel/CutoutsSection/ToolThicknessPrompt';
 import { useAddFingerAccess } from '../panel/CutoutsSection/useAddFingerAccess';
+import type { RulerMeasurement } from '../panel/CutoutsSection/handlers/rulerHandler';
+import { drawnSplit } from '@/shared/utils/cutoutSplit';
 import { usePocketChecks } from '../panel/CutoutsSection/usePocketChecks';
 import { InspectorDock } from './InspectorDock';
 import { ShapeList } from './ShapeList';
@@ -269,6 +271,7 @@ export function CutoutWorkspace() {
   const [gridSize, setGridSize] = useState(0.5);
   const [fitCue, setFitCue] = useState<FitCue>(null);
   const mergeCutoutsIntoArray = useDesignerStore((s) => s.mergeCutoutsIntoArray);
+  const setCutoutSplit = useDesignerStore((s) => s.setCutoutSplit);
   const addToast = useToastStore((s) => s.addToast);
   const { groupContext, handleGroup, handleUngroup } = useGroupLevel({
     cutouts,
@@ -276,6 +279,24 @@ export function CutoutWorkspace() {
   });
 
   const makeRepeatRef = useRef<() => void>(() => {});
+
+  const handleSplitLine = useCallback(
+    (id: string, line: RulerMeasurement) => {
+      const cutout = cutouts.find((c) => c.id === id);
+      if (!cutout) return;
+      const split = drawnSplit(
+        cutout,
+        { x: line.startX, y: line.startY },
+        { x: line.endX, y: line.endY }
+      );
+      if (typeof split === 'string') {
+        addToast(t(`binDesigner.cutouts.split.problem.${split}`), 'error');
+        return;
+      }
+      setCutoutSplit(id, split);
+    },
+    [cutouts, addToast, t, setCutoutSplit]
+  );
 
   const handleFlattenGroupArray = useCallback(
     (id: string) => {
@@ -476,12 +497,37 @@ export function CutoutWorkspace() {
     canRedo,
     onLock: lockCutouts,
     onUnlock: unlockCutouts,
+    onSplitLine: handleSplitLine,
     binWidth,
     binDepth,
     gridSize,
     cellMask: boardMask,
     maskCellSize,
   });
+
+  const splitDrawingId =
+    (mode.type === 'ruler-ready' || mode.type === 'measuring') && mode.splitId !== undefined
+      ? mode.splitId
+      : null;
+  // The line is drawn for the pocket the inspector shows; picking another shape
+  // in the list must not leave the tool armed for the old one.
+  useEffect(() => {
+    if (splitDrawingId !== null && !selection.has(splitDrawingId)) setMode({ type: 'idle' });
+  }, [splitDrawingId, selection, setMode]);
+  const splitTool = useMemo(
+    () =>
+      isLid
+        ? undefined
+        : {
+            drawingId: splitDrawingId,
+            onDraw: (id: string) =>
+              setMode(
+                splitDrawingId === id ? { type: 'idle' } : { type: 'ruler-ready', splitId: id }
+              ),
+            onChange: setCutoutSplit,
+          },
+    [isLid, splitDrawingId, setMode, setCutoutSplit]
+  );
 
   const handleAddFingerAccess = useAddFingerAccess(cutouts, cutoutBoard, maxCutDepth, selectIds);
   const pocketChecks = usePocketChecks(
@@ -821,6 +867,7 @@ export function CutoutWorkspace() {
           onFitCue={setFitCue}
           onFlattenArray={handleFlattenArray}
           onAddFingerAccess={isLid ? undefined : handleAddFingerAccess}
+          splitTool={splitTool}
           onFlattenGroupArray={handleFlattenGroupArray}
           offBoardCount={offBoardIds.size}
           onClampOffBoard={offBoardUpdates.size > 0 ? handleClampOffBoard : undefined}

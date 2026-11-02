@@ -29,6 +29,10 @@ export interface CutoutDepthControlProps {
   readonly disabled: boolean;
   /** `slider` matches the sidebar editor, `field` the workspace inspector. */
   readonly variant?: 'field' | 'slider';
+  /** The modes offered; a split's side B never cuts through. */
+  readonly modes?: readonly CutoutDepthMode[];
+  /** Caption for the depth field, when it is not the pocket's own depth. */
+  readonly label?: string;
 }
 
 function sharedNumber(values: readonly number[]): number | null {
@@ -43,6 +47,8 @@ export function CutoutDepthControl({
   onUpdate,
   disabled,
   variant = 'field',
+  modes: offered = CUTOUT_DEPTH_MODES,
+  label,
 }: CutoutDepthControlProps) {
   const t = useTranslation();
   const params = useDesignerStore((s) => s.params);
@@ -81,7 +87,7 @@ export function CutoutDepthControl({
   const depthField = (
     <DepthNumber
       variant={variant}
-      label={t('binDesigner.cutouts.cutDepth')}
+      label={label ?? t('binDesigner.cutouts.cutDepth')}
       value={depth ?? cutouts[0].cutDepth}
       indeterminate={depth === null}
       onChange={(cutDepth) => writeAll(() => ({ cutDepth }))}
@@ -99,7 +105,7 @@ export function CutoutDepthControl({
         aria-label={t('binDesigner.cutouts.depthMode')}
         className={SEGMENT_GROUP_CLASS}
       >
-        {CUTOUT_DEPTH_MODES.map((opt) => {
+        {offered.map((opt) => {
           const unavailable = opt === 'through' && blocked !== undefined && mode !== 'through';
           return (
             <Button

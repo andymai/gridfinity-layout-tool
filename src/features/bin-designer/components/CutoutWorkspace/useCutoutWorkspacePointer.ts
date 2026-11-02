@@ -127,7 +127,8 @@ export function useCutoutWorkspacePointer({
       // Ruler tool: sticky mode (toolbar) or Shift+drag quick measurement
       if (mode.type === 'ruler-ready' || (nativeEvent.shiftKey && mode.type === 'idle')) {
         const sticky = mode.type === 'ruler-ready';
-        setMode({ type: 'measuring', startX: worldX, startY: worldY, sticky });
+        const splitId = mode.type === 'ruler-ready' ? mode.splitId : undefined;
+        setMode({ type: 'measuring', startX: worldX, startY: worldY, sticky, splitId });
         return;
       }
 

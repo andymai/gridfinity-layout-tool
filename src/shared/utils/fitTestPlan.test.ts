@@ -104,6 +104,11 @@ describe('thickness', () => {
     expect(defaultFitTestThicknessMm(board({}, [cutout({ cutDepth: 30 })]))).toBe(5);
   });
 
+  it("reaches a split pocket's deeper side", () => {
+    const split = { a: { x: 0, y: -6 }, b: { x: 0, y: 6 }, cutDepth: 11 };
+    expect(deepestCutoutDepthMm(board({}, [cutout({ split })]))).toBe(11);
+  });
+
   it('caps the range at the deepest cut plus a floor under it', () => {
     const params = board({}, [cutout({ cutDepth: 12 })]);
     expect(deepestCutoutDepthMm(params)).toBe(12);
