@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'trace-export',
+    date: '2026-11-03',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Save traced tools as a file' },
+    body: {
+      en: 'In Trace a photo, Export saves the traced outlines at their true size: an SVG or DXF for a laser or vinyl cutter, or an STL to subtract from a model in your CAD app. Tick the clearance box to add the room a pocket leaves round each tool. On your phone, Download does the same from the scan review.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'island-points-magnifier',
     date: '2026-11-03',
     kind: 'new',
