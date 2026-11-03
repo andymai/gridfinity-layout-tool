@@ -252,22 +252,15 @@ describe('shoulderBlend', () => {
     const lean = 0.25;
     const b = shoulderBlend(SIDE_AT_RIM, RIM, lean, R);
     const [cx, cy] = b.centre;
-    // The side, as the line through (SIDE_AT_RIM, RIM) that moves `lean`
-    // outboard per mm of rise. Unit direction pointing down it:
     const len = Math.hypot(lean, 1);
     const down = [-lean / len, -1 / len];
     const sideXAt = (y: number): number => SIDE_AT_RIM - lean * (RIM - y);
 
-    // Tangent to the rim: the centre sits a radius below it, the rim point
-    // directly above the centre.
     expect(cy).toBeCloseTo(RIM - R, 12);
     expect(b.rim[0]).toBeCloseTo(cx, 12);
-    // Tangent to the side: the landing is on the side, a radius from the
-    // centre, and the radius there is square to the side.
     expect(b.side[0]).toBeCloseTo(sideXAt(b.side[1]), 12);
     expect(Math.hypot(b.side[0] - cx, b.side[1] - cy)).toBeCloseTo(R, 12);
     expect((b.side[0] - cx) * down[0] + (b.side[1] - cy) * down[1]).toBeCloseTo(0, 12);
-    // The centre is a radius from the side's line, so the arc touches it once.
     const crossTrack = (cx - SIDE_AT_RIM) * down[1] - (cy - RIM) * down[0];
     expect(Math.abs(crossTrack)).toBeCloseTo(R, 12);
 
