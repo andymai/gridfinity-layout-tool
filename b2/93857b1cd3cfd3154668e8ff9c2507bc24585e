@@ -1,0 +1,47 @@
+src/features/scan-capture/components/ScanPage/ScanOverlay.tsx
+  s_4b9adb1d9473fb::t_c4eef88e741e4c 30-31,35
+src/shared/scanTrace/refineScene.ts
+  s_4b9adb1d9473fb::t_c4eef88e741e4c 37-39,44-45,59,83,85,95-100
+src/shared/scanTrace/toolBlobs.ts
+  s_4b9adb1d9473fb::t_c4eef88e741e4c 182-187,194-200
+src/features/scan-capture/components/ScanPage/ScanPage.tsx
+  s_4b9adb1d9473fb::t_9404b4bfa908af 36-44,170,175,205-206,243-246,483
+src/shared/scanTrace/traceScene.test.ts
+  s_4b9adb1d9473fb::t_cedc2cc8ed478b 10,420-422,443-461
+  s_4b9adb1d9473fb::t_2172ca150e0264 462-464
+src/shared/scanTrace/refineScene.test.ts
+  s_4b9adb1d9473fb::t_cedc2cc8ed478b 116-136
+src/features/scan-capture/components/ScanPage/scanFlow.test.ts
+  s_4b9adb1d9473fb::t_698370cae6507d 5-12,145-159
+src/features/scan-capture/components/ScanPage/ScanPage.test.tsx
+  s_4b9adb1d9473fb::t_74c36a7ffcd885 318-337
+src/shared/scanTrace/toolBlobs.test.ts
+  s_4b9adb1d9473fb::t_cedc2cc8ed478b 129-146
+src/shared/scanTrace/index.ts
+  s_4b9adb1d9473fb::t_698370cae6507d 13
+  s_4b9adb1d9473fb::t_8c1dba2582c2b6 10
+src/shared/scanTrace/traceScene.ts
+  s_4b9adb1d9473fb::t_8c1dba2582c2b6 82-94,279-283,376-384
+src/features/scan-capture/components/ScanPage/scanFlow.ts
+  s_4b9adb1d9473fb::t_698370cae6507d 5,168
+  s_4b9adb1d9473fb::t_9404b4bfa908af 11,139-141,143-167,169-173
+  s_4b9adb1d9473fb::t_c4eef88e741e4c 73-77
+package.json
+  s_4b9adb1d9473fb::t_8a695b4c27a1fe 122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b293857b1cd3cfd3154668e8ff9c2507bc24585e",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
