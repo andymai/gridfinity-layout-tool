@@ -1,0 +1,85 @@
+src/features/generation/worker/generators/lidRetentionMagnets.ts
+  s_31b5290859dfff::t_3315db84b00c69 36
+src/features/generation/worker/generators/lidClickRail.ts
+  s_31b5290859dfff::t_3315db84b00c69 27-28
+src/features/generation/worker/generators/lidInteriorRelief.scenario.test.ts
+  s_31b5290859dfff::t_3315db84b00c69 80-81,92-93
+src/features/generation/worker/generators/retentionMagnetGeometry.ts
+  s_31b5290859dfff::t_3315db84b00c69 26-27
+src/features/generation/worker/generators/lidTray.ts
+  s_31b5290859dfff::t_3315db84b00c69 18
+src/features/generation/worker/generators/lidLabelTabClearance.scenario.test.ts
+  s_31b5290859dfff::t_3315db84b00c69 211-212
+src/features/generation/worker/generators/lidCutoutGrip.scenario.test.ts
+  s_31b5290859dfff::t_3315db84b00c69 246-247
+src/features/generation/worker/generators/lidStackGrid.ts
+  s_31b5290859dfff::t_3315db84b00c69 38
+src/shared/utils/lidRailPlan.ts
+  s_31b5290859dfff::t_9946d3661f3220 1-330
+src/features/generation/worker/generators/lidProfile.ts
+  s_31b5290859dfff::t_3315db84b00c69 16
+src/shared/utils/lidInputs.ts
+  s_31b5290859dfff::t_3315db84b00c69 1-675
+src/features/generation/worker/generators/lidBuilder.ts
+  s_31b5290859dfff::t_3315db84b00c69 34-35,52
+src/features/generation/worker/generators/nestingFloorBuilder.ts
+  s_31b5290859dfff::t_3315db84b00c69 6
+src/features/generation/worker/generators/lidFill.ts
+  s_31b5290859dfff::t_3315db84b00c69 18
+src/features/generation/worker/generators/lidGripDip.scenario.test.ts
+  s_31b5290859dfff::t_3315db84b00c69 34
+src/features/generation/worker/generators/lidScoopClearance.scenario.test.ts
+  s_31b5290859dfff::t_3315db84b00c69 76-77,109-110
+src/features/generation/worker/generators/hingeSwing.scenario.test.ts
+  s_31b5290859dfff::t_3315db84b00c69 559
+src/features/generation/worker/generators/lidTextBuilder.ts
+  s_31b5290859dfff::t_3315db84b00c69 29
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_31b5290859dfff::t_3315db84b00c69 106
+src/features/generation/worker/generators/lidGripRelief.ts
+  s_31b5290859dfff::t_3315db84b00c69 36-37
+src/features/generation/worker/generators/lidCutoutBuilder.ts
+  s_31b5290859dfff::t_3315db84b00c69 48
+src/features/generation/worker/generators/lidGenerator.scenario.overhangMagnets.test.ts
+  s_31b5290859dfff::t_3315db84b00c69 83,134
+src/features/generation/worker/generators/lidOrchestrator.ts
+  s_31b5290859dfff::t_3315db84b00c69 15
+src/features/generation/worker/generators/trayBottomInputs.ts
+  s_31b5290859dfff::t_3315db84b00c69 26-27
+src/features/generation/README.md
+  s_31b5290859dfff::t_acccfdab7a0cd6 195
+src/features/generation/worker/generators/lidClickRailPartial.test.ts
+  s_31b5290859dfff::t_3315db84b00c69 10-11
+src/shared/utils/lidRailPlan.test.ts
+  s_31b5290859dfff::t_de6553bf446bf1 1-256
+src/features/generation/worker/generators/pipeline/stages/lidGripDipStage.ts
+  s_31b5290859dfff::t_3315db84b00c69 43-44
+src/features/generation/worker/generators/lidDividerClearance.scenario.test.ts
+  s_31b5290859dfff::t_3315db84b00c69 344-345
+src/features/generation/worker/generators/retentionMagnetBoss.ts
+  s_31b5290859dfff::t_3315db84b00c69 4
+src/features/generation/worker/generators/lidGripLabelInteraction.test.ts
+  s_31b5290859dfff::t_3315db84b00c69 15-16
+src/features/generation/worker/generators/slideLidPlate.ts
+  s_31b5290859dfff::t_3315db84b00c69 52
+src/features/generation/worker/generators/lidMagnets.ts
+  s_31b5290859dfff::t_3315db84b00c69 25
+src/features/generation/worker/generators/lidPolygonGrip.scenario.test.ts
+  s_31b5290859dfff::t_3315db84b00c69 114-115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e88575ee74124cb884aef6f4b14be0cb7b1b6a83",
+  "prompts": {},
+  "sessions": {
+    "s_31b5290859dfff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f5e5adf1-1df0-4dbd-bd22-c2f9cd781d9e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
