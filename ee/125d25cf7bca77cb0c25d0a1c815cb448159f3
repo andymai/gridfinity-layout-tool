@@ -1,0 +1,29 @@
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/specToCutout.ts
+  s_4b9adb1d9473fb::t_1955db470ad410 10,62-66,69-70
+src/shared/utils/tinyLoops.ts
+  s_4b9adb1d9473fb::t_567fd7b072cb14 30-78,96-115,117,119-120
+src/shared/utils/tinyLoops.test.ts
+  s_4b9adb1d9473fb::t_ae8b0bfd97d8ed 26,28-32
+  s_4b9adb1d9473fb::t_1955db470ad410 33,35-51
+  s_4b9adb1d9473fb::t_708b9ff809e76b 34
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/specToCutout.test.ts
+  s_4b9adb1d9473fb::t_3246c4781ff967 165,172-173
+  s_4b9adb1d9473fb::t_ae8b0bfd97d8ed 162,182
+  s_4b9adb1d9473fb::t_1955db470ad410 183
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ee125d25cf7bca77cb0c25d0a1c815cb448159f3",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
