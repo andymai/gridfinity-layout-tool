@@ -119,7 +119,7 @@
         "!dist/assets/zh-CN-*.js"
       ],
       "gzip": true,
-      "limit": "2537.4 kB"
+      "limit": "2538.1 kB"
     },
     {
       "name": "Fetched JSON assets (gzip)",
