@@ -80,6 +80,9 @@ function Measured({ scene }: { readonly scene: SceneTrace }) {
         tone: 'text-success',
       });
       break;
+    case 'strip':
+      lines.push({ text: t('scan.stripMeasured'), tone: 'text-success' });
+      break;
     case 'paper':
       lines.push({
         text: t(

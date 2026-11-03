@@ -218,6 +218,33 @@ describe('ScanPage', () => {
     expect(mockTrace).toHaveBeenCalled();
   });
 
+  it('asks for a look at a lone tool whose edge ran under the measuring strip', async () => {
+    const strip = {
+      a: { x: 20, y: 5 },
+      b: { x: 20, y: 60 },
+      lengthMm: 84,
+      markers: [],
+      paper: [
+        { x: 15, y: 0 },
+        { x: 25, y: 0 },
+        { x: 25, y: 65 },
+        { x: 15, y: 65 },
+      ] as const,
+    };
+    mockTrace.mockReturnValue(
+      ok({
+        ...SCENE_MM,
+        shapes: [{ ...TOOL, underStrip: true }],
+        card: null,
+        reference: { kind: 'strip', strip },
+      })
+    );
+    render(<ScanPage token={TOKEN} />);
+    selectPhoto();
+    expect(await screen.findByText('scan.review.underStrip')).toBeInTheDocument();
+    expect(screen.getByText('scan.stripMeasured')).toBeInTheDocument();
+  });
+
   it('lists every tool it found and uploads them all in one outline file', async () => {
     mockTrace.mockReturnValue(ok(SCENE_TWO));
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 });

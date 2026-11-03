@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'measuring-strips',
+    date: '2026-11-03',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Measure a tall tool at its own height' },
+    body: {
+      en: 'A tool photographed from above looks bigger on top than on the table. Print the measuring strips from the scan dialog, cut one out and lay it across the top of a tall tool: the scan measures at the strip, so the tool comes out its true size. Where the strip covers an edge, the outline is filled in across it and marked for you to check.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'trace-export',
     date: '2026-11-03',
     kind: 'new',

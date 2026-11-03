@@ -16,6 +16,17 @@ const box = (w: number, h: number): SceneShape => {
 };
 
 describe('ScanToolList', () => {
+  it('asks for a look at a tool whose edge ran under the measuring strip', () => {
+    render(
+      <ScanToolList
+        shapes={[{ ...box(120, 30), underStrip: true }, box(40, 12)]}
+        units="mm"
+        onRemove={vi.fn()}
+      />
+    );
+    expect(screen.getAllByText('scan.review.underStrip')).toHaveLength(1);
+  });
+
   it('numbers each tool and shows its size in millimetres', () => {
     render(<ScanToolList shapes={[box(120, 30), box(40, 12.5)]} units="mm" onRemove={vi.fn()} />);
     expect(screen.getAllByText('scan.review.toolLabel')).toHaveLength(2);
