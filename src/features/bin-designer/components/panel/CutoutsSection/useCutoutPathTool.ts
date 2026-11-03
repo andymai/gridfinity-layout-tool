@@ -213,9 +213,12 @@ export function useCutoutPathTool({
     (index: number, handleType: 'in' | 'out', _mmX: number, _mmY: number, ring = 0) => {
       if (mode.type !== 'vertex-editing') return;
       startTransaction?.();
+      // The handle's anchor becomes the selection, so Delete never takes a
+      // point on whichever ring was selected before.
       setMode({
         ...mode,
         ring,
+        selectedPointIndex: index,
         dragTarget: { type: 'handle', ring, index, handleType },
       });
     },

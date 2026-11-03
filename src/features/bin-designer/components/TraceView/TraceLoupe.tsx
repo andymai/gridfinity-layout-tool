@@ -32,6 +32,8 @@ export function TraceLoupe({ url, image, at, scale, screen, canvas }: TraceLoupe
         height: size,
         backgroundImage: `url("${url}")`,
         backgroundRepeat: 'no-repeat',
+        // Measured from the outer edge, as the crosshair is, not inside the border.
+        backgroundOrigin: 'border-box',
         backgroundSize: `${image.width * s}px ${image.height * s}px`,
         backgroundPosition: `${half - at.x * s}px ${half - at.y * s}px`,
       }}

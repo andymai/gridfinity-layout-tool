@@ -106,6 +106,7 @@ export function TraceCanvas({
       setGesture({ kind: 'region', from, to: from });
       return;
     }
+    if (marking) setHover(at);
     setGesture({ kind: 'press', at, last: at, moved: false });
   };
 
@@ -172,11 +173,14 @@ export function TraceCanvas({
         : [];
   const rulerMm = mode !== 'ruler' && applied?.kind === 'ruler' ? applied.ruler.lengthMm : null;
 
+  // A press that has not moved is a mark about to land, and on a touch screen
+  // there was no hover before it; a press that moved is a pan.
+  const placing = !gesture || (gesture.kind === 'press' && !gesture.moved);
   const loupeAt = !marking
     ? null
     : gesture?.kind === 'mark'
       ? (marks.at(gesture.index) ?? null)
-      : hover && !gesture
+      : hover && placing
         ? clamp(toImage(view, hover))
         : null;
 
