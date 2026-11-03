@@ -15,7 +15,7 @@ import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
 import { LID_COPLANAR_MARGIN } from './lidConstants';
 import { buildOutlineDrawing } from './lidProfile';
-import type { LidInputs, LidFillInputs } from './lidInputs';
+import type { LidInputs, LidFillInputs } from '@/shared/utils/lidInputs';
 
 export function addLidFill(
   scope: DisposalScope,

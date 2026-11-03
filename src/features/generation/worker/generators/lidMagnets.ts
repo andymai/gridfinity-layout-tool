@@ -22,7 +22,7 @@ import {
 } from './baseplateMagnets';
 import { buildMagnetHoleCutter } from './magnetHoleCutter';
 import { isLidCellFilled } from './lidStackGrid';
-import type { LidInputs } from './lidInputs';
+import type { LidInputs } from '@/shared/utils/lidInputs';
 
 export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidInputs): Shape3D {
   const {

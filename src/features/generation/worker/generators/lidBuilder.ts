@@ -31,8 +31,8 @@ import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
-import { keepsNaturalOrientation, resolveLidInputs } from './lidInputs';
-import type { LidInputs } from './lidInputs';
+import { keepsNaturalOrientation, resolveLidInputs } from '@/shared/utils/lidInputs';
+import type { LidInputs } from '@/shared/utils/lidInputs';
 import { buildLidFloor, buildMatingShell } from './lidProfile';
 import { addClickRails } from './lidClickRail';
 import { addGripRelief } from './lidGripRelief';
@@ -49,7 +49,7 @@ import type { HingeFrame, LatchWall } from './hingeBarrel';
 import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 import type { HingeGeometry } from '@/shared/utils/hingeLidPlan';
 
-export { resolveLidInputs } from './lidInputs';
+export { resolveLidInputs } from '@/shared/utils/lidInputs';
 export { chamferApexXForCavityWall } from './lidClickRail';
 
 /**
