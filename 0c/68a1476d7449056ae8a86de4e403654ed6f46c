@@ -1,0 +1,53 @@
+src/shared/outlineCleanup/closeRegion.ts
+  s_4b9adb1d9473fb::t_42d600715c6d8b 130
+  s_4b9adb1d9473fb::t_a7b91388de7059 1-22,30-74,77-82,84-129,131,134-137,140-143
+  s_4b9adb1d9473fb::t_c84d12bd8dd112 23-29,75-76,83,132-133,138-139
+src/shared/outlineCleanup/cleanOutline.ts
+  s_4b9adb1d9473fb::t_94b242dfe73615 1-98
+  s_4b9adb1d9473fb::t_25455deaa00ce4 99-101
+  s_4b9adb1d9473fb::t_79d4b16772b1a7 102-104
+src/shared/outlineCleanup/runs.test.ts
+  s_4b9adb1d9473fb::t_958737cb631ddf 1-62,64-89,91-117,119-135,138-139
+  s_4b9adb1d9473fb::t_b9fee03f0aca16 136-137
+  s_4b9adb1d9473fb::t_4f6942ff13f82f 63,90,118
+src/shared/outlineCleanup/mirror.test.ts
+  s_4b9adb1d9473fb::t_d5f067252b68b2 1-102
+src/shared/outlineCleanup/index.ts
+  s_4b9adb1d9473fb::t_66bc46e63f990a 1-18
+src/shared/outlineCleanup/closeRegion.test.ts
+  s_4b9adb1d9473fb::t_5fc5e366f808ac 1-91
+  s_e2239106c550d5::t_26afd45acab588 92-93
+src/shared/outlineCleanup/runs.ts
+  s_4b9adb1d9473fb::t_0005da6083f1d1 76-82,88-93,179-182,194-197
+  s_4b9adb1d9473fb::t_ce3b7195e0c75c 185,190
+  s_4b9adb1d9473fb::t_bd6fe76799c409 1-75,83-87,94-178,183-184,186-189,191-193,198-276
+src/shared/outlineCleanup/mirror.ts
+  s_4b9adb1d9473fb::t_b87f998ac1aaba 26-32,45-50,105-108,120-125,133-136,148-151,207-210
+  s_4b9adb1d9473fb::t_fa69d5a59774b4 1-25,33-44,51-104,109-119,126-132,137-147,152-206,211
+src/shared/outlineCleanup/cleanOutline.test.ts
+  s_4b9adb1d9473fb::t_70382d65a07312 1-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0c68a1476d7449056ae8a86de4e403654ed6f46c",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_e2239106c550d5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26ec17ea-56f1-450e-99f1-3ada95f60730",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
