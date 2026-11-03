@@ -1,0 +1,23 @@
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pathEditHandler.ts
+  s_4b9adb1d9473fb::t_a67b01913bc9d8 102-134,137-138,140-157,163-166,174-183
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pathEditHandler.test.ts
+  s_4b9adb1d9473fb::t_80f09c296669cd 15-17,19-20,802-825
+  s_4b9adb1d9473fb::t_233e33808859c0 826-827
+  s_4b9adb1d9473fb::t_0d9e72541b491b 14,18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "99d5caecac5b553b0cb19562915cb580e5ffe327",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
