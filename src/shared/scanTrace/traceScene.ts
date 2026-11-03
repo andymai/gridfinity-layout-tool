@@ -27,7 +27,7 @@ import type { ImageDataLike, Mask, Point, TraceError } from './types';
 import { simplifyRdp } from './simplify';
 import { polygonArea } from './traceImage';
 import { findCardAcrossChannels, cardHomography, type CardDetectOptions } from './cardDetect';
-import { rectifyPoints, solveHomography } from './perspective';
+import { invertHomography, rectifyPoints, solveHomography, type Homography } from './perspective';
 import { fitSmoothPolygon } from './curveFit';
 import { traceSoftContour, binarize, type SoftMask } from './softContour';
 import { symmetrizeIfRegular } from './symmetry';
@@ -249,38 +249,58 @@ function searchRegion(reference: SceneReference | null): readonly Point[] | unde
   }
 }
 
+/** The reference's map from image pixels to millimetres, or null when there is none. */
+function referenceHomography(
+  reference: SceneReference | null,
+  options: SceneTraceOptions
+): Homography | null {
+  switch (reference?.kind) {
+    case 'sheet':
+    case 'baseplate':
+      return reference.fit.homography;
+    case 'card':
+      return cardHomography(reference.card.corners, options.widthMm, options.heightMm);
+    case 'paper': {
+      const { corners, widthMm: w, heightMm: h } = reference.paper;
+      return solveHomography(corners, [
+        { x: 0, y: 0 },
+        { x: w, y: 0 },
+        { x: w, y: h },
+        { x: 0, y: h },
+      ]);
+    }
+    case 'ruler': {
+      const { a, b, lengthMm } = reference.ruler;
+      const px = Math.hypot(b.x - a.x, b.y - a.y);
+      if (!(px > 0 && lengthMm > 0)) return null;
+      const k = lengthMm / px;
+      return [k, 0, 0, 0, k, 0, 0, 0, 1];
+    }
+    default:
+      return null;
+  }
+}
+
 /** Image pixels to millimetres, or null when the scene has no reference. */
 function referenceToMm(
   reference: SceneReference | null,
   options: SceneTraceOptions
 ): ((points: readonly Point[]) => Point[]) | null {
-  if (reference?.kind === 'sheet' || reference?.kind === 'baseplate') {
-    const { homography } = reference.fit;
-    return (points) => rectifyPoints(points, homography);
-  }
-  if (reference?.kind === 'card') {
-    const h = cardHomography(reference.card.corners, options.widthMm, options.heightMm);
-    if (h) return (points) => rectifyPoints(points, h);
-  }
-  if (reference?.kind === 'paper') {
-    const { corners, widthMm: w, heightMm: h } = reference.paper;
-    const map = solveHomography(corners, [
-      { x: 0, y: 0 },
-      { x: w, y: 0 },
-      { x: w, y: h },
-      { x: 0, y: h },
-    ]);
-    if (map) return (points) => rectifyPoints(points, map);
-  }
-  if (reference?.kind === 'ruler') {
-    const { a, b, lengthMm } = reference.ruler;
-    const px = Math.hypot(b.x - a.x, b.y - a.y);
-    if (px > 0 && lengthMm > 0) {
-      const k = lengthMm / px;
-      return (points) => points.map((p) => ({ x: p.x * k, y: p.y * k }));
-    }
-  }
-  return null;
+  const h = referenceHomography(reference, options);
+  return h ? (points) => rectifyPoints(points, h) : null;
+}
+
+/**
+ * Millimetres back to image pixels, for drawing an outline worked on in
+ * millimetres over the photo it came from. Null with no reference.
+ */
+export function referenceToImage(
+  reference: SceneReference | null,
+  options: SceneTraceOptions = {}
+): ((points: readonly Point[]) => Point[]) | null {
+  const h = referenceHomography(reference, options);
+  const back = h ? invertHomography(h) : null;
+  return back ? (points) => rectifyPoints(points, back) : null;
 }
 
 /**

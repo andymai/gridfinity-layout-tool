@@ -205,6 +205,11 @@ not a panel, so the panel idioms do not apply under it. A drawn ruler or marked
 paper (`manualReference.ts`) sizes a photo with no reference; see the
 scan-capture README.
 
+A path cutout's Outline section (`components/OutlineCleanup/`) runs the
+steps in `@/shared/outlineCleanup` from the path as it stood when the section
+opened, so settings never compound, and on the outline as drawn:
+`cleanupFrame.ts` turns a rotated path out and back.
+
 ## Compartment geometry and the size lock
 
 ### A `dividerOverride` moves the compartment wall

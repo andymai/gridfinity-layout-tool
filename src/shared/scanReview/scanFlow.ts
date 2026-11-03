@@ -1,4 +1,6 @@
 import { err, isOk, ok, type Result } from '@/core/result';
+import type { PathPoint } from '@/shared/types/bin';
+import { flattenPath } from '@/shared/utils/pathGeometryBezier';
 import type { CardSizeMm } from './cardSize';
 import {
   interiorSeed,
@@ -230,6 +232,48 @@ export function svgFromShapes(
   const unitsAttr = units === 'mm' ? ' data-scan-units="mm"' : '';
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${round1(w)} ${round1(h)}"${unitsAttr}>` +
+    `${paths.join('')}</svg>`
+  );
+}
+
+/** A tool's cleaned outline and islands, in millimetres. */
+export interface CleanedTool {
+  readonly path: readonly PathPoint[];
+  readonly holes: readonly (readonly PathPoint[])[];
+}
+
+const mm = (n: number): string => String(Math.round(n * 1000) / 1000);
+
+/** One closed ring as path data, curved where either end of a step has a handle. */
+function ringData(ring: readonly PathPoint[], dx: number, dy: number): string {
+  const at = (x: number, y: number) => `${mm(x - dx)} ${mm(y - dy)}`;
+  let d = `M ${at(ring[0].x, ring[0].y)}`;
+  for (let i = 1; i <= ring.length; i++) {
+    const a = ring[i - 1];
+    const b = ring[i % ring.length];
+    if (a.handleOut || b.handleIn) {
+      const c1 = a.handleOut ? at(a.x + a.handleOut.dx, a.y + a.handleOut.dy) : at(a.x, a.y);
+      const c2 = b.handleIn ? at(b.x + b.handleIn.dx, b.y + b.handleIn.dy) : at(b.x, b.y);
+      d += ` C ${c1} ${c2} ${at(b.x, b.y)}`;
+    } else if (i < ring.length) {
+      d += ` L ${at(b.x, b.y)}`;
+    }
+  }
+  return `${d} Z`;
+}
+
+/**
+ * Cleaned tools as the millimetre SVG a scan uploads, curves kept as cubic
+ * steps so they arrive as handles rather than as many short lines.
+ */
+export function svgFromCleaned(tools: readonly CleanedTool[]): string {
+  const { minX, minY, w, h } = bounds(tools.flatMap((tool) => flattenPath(tool.path)));
+  const paths = tools.map((tool) => {
+    const d = [tool.path, ...tool.holes].map((ring) => ringData(ring, minX, minY)).join(' ');
+    return tool.holes.length > 0 ? `<path d="${d}" fill-rule="evenodd"/>` : `<path d="${d}"/>`;
+  });
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${round1(w)} ${round1(h)}" data-scan-units="mm">` +
     `${paths.join('')}</svg>`
   );
 }

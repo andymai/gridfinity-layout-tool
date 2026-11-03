@@ -3709,6 +3709,9 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.outline.roundInside': 'Round inside corners',
   'binDesigner.cutouts.outline.reset': 'Reset outline',
   'binDesigner.cutouts.outline.failed': 'Those settings leave no outline, so it stays as it was.',
+  'binDesigner.cutouts.traceView.cleanup.heading': 'Clean up outlines',
+  'binDesigner.cutouts.traceView.cleanup.hint':
+    'Applies to every tool. With several, mirror each one once added.',
   'binDesigner.cutouts.rulerTool': 'Ruler',
   'binDesigner.cutouts.dragToMeasure': 'Drag to measure distance (Shift+drag for quick measure)',
   'binDesigner.cutouts.clickToDrawPath': 'Click to place points, close path to finish',

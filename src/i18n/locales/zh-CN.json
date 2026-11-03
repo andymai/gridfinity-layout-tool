@@ -1073,6 +1073,8 @@
   "binDesigner.cutouts.outline.roundInside": "圆化内角",
   "binDesigner.cutouts.outline.reset": "重置轮廓",
   "binDesigner.cutouts.outline.failed": "这些设置不会留下任何轮廓，因此保持不变。",
+  "binDesigner.cutouts.traceView.cleanup.heading": "整理轮廓",
+  "binDesigner.cutouts.traceView.cleanup.hint": "适用于所有工具。若有多个，请在添加后逐个镜像。",
   "binDesigner.cutouts.scanImport.expired": "此扫描链接已过期。请关闭后重新打开再试。",
   "binDesigner.cutouts.scanImport.hint": "在纯色背景上拍摄一个物体以描摹其轮廓，或在下方上传描摹好的轮廓。",
   "binDesigner.cutouts.scanImport.or": "或",

@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { isOk, isErr } from '@/core/result';
 import { parseScanSvg, computeScanBounds, rescaleToLongestMm } from './scanIngest';
 import type { ParsedCutoutSpec } from '../svgImport/types';
+import { svgFromCleaned } from '@/shared/scanReview';
+import { cleanOutline, NO_CLEANUP } from '@/shared/outlineCleanup';
 
 const RECT_100 = `<svg viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100"/></svg>`;
 const RECT_WIDE = `<svg viewBox="0 0 200 100"><rect x="0" y="0" width="200" height="50"/></svg>`;
@@ -59,6 +61,23 @@ describe('parseScanSvg', () => {
     if (!isOk(result)) return;
     expect(result.value.specs[0].shape).toBe('path');
     expect(result.value.bounds.longest).toBeCloseTo(80, 5);
+  });
+
+  // The trace view sends cleaned tools as curves; they must arrive as handles,
+  // not as the many short lines a scan's outline otherwise brings.
+  it('brings a cleaned outline’s curves in as handles', () => {
+    const circle = Array.from({ length: 300 }, (_, i) => ({
+      x: 30 + 20 * Math.cos((2 * Math.PI * i) / 300),
+      y: 30 + 20 * Math.sin((2 * Math.PI * i) / 300),
+    }));
+    const cleaned = cleanOutline({ outline: circle, holes: [] }, { ...NO_CLEANUP, curves: true });
+    if (!cleaned) throw new Error('nothing cleaned');
+    const result = parseScanSvg(svgFromCleaned([cleaned]));
+    if (!isOk(result)) throw new Error('did not parse');
+    const [round] = result.value.specs;
+    expect(round.path?.length).toBeLessThan(12);
+    expect(round.path?.some((pt) => pt.handleIn !== null || pt.handleOut !== null)).toBe(true);
+    expect(round.width).toBeCloseTo(40, 0);
   });
 
   it('sizes a scan of one tool by the whole outline', () => {

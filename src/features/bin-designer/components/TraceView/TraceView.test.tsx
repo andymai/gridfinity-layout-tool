@@ -110,6 +110,29 @@ describe('TraceView', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('offers to clean up the outlines once the photo has a scale', async () => {
+    render(<TraceView open onClose={vi.fn()} onTraced={vi.fn()} />);
+    choosePhoto();
+    await screen.findAllByText('scan.review.toolLabel');
+    expect(screen.queryByText('binDesigner.cutouts.traceView.cleanup.heading')).toBeNull();
+
+    fireEvent.click(screen.getByText('binDesigner.cutouts.traceView.scale.drawRuler'));
+    const canvas = screen.getByRole('application');
+    click(canvas, 0, 50);
+    click(canvas, 100, 50);
+    fireEvent.change(screen.getByLabelText('binDesigner.cutouts.traceView.ruler.length'), {
+      target: { value: '50' },
+    });
+    fireEvent.click(screen.getByText('binDesigner.cutouts.traceView.apply'));
+
+    expect(
+      await screen.findByText('binDesigner.cutouts.traceView.cleanup.heading')
+    ).toBeInTheDocument();
+    // Two tools: one mirror setting would not suit both.
+    expect(screen.getByText('binDesigner.cutouts.traceView.cleanup.hint')).toBeInTheDocument();
+    expect(screen.queryByText('binDesigner.cutouts.outline.mirror')).toBeNull();
+  });
+
   it('leaves a marking mode on Escape without closing', async () => {
     const onClose = vi.fn();
     render(<TraceView open onClose={onClose} onTraced={vi.fn()} />);

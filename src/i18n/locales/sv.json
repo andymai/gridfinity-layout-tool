@@ -1073,6 +1073,8 @@
   "binDesigner.cutouts.outline.roundInside": "Runda inre hörn",
   "binDesigner.cutouts.outline.reset": "Återställ kontur",
   "binDesigner.cutouts.outline.failed": "Med de här inställningarna skulle ingen kontur bli kvar, så den förblir som den var.",
+  "binDesigner.cutouts.traceView.cleanup.heading": "Städa upp konturer",
+  "binDesigner.cutouts.traceView.cleanup.hint": "Gäller alla verktyg. Har du flera, spegla vart och ett när det har lagts till.",
   "binDesigner.cutouts.scanImport.expired": "Den här skannlänken har gått ut. Stäng och öppna igen för att försöka på nytt.",
   "binDesigner.cutouts.scanImport.hint": "Fotografera ett föremål mot en enfärgad bakgrund för att spåra dess kontur, eller ladda upp en spårad kontur nedan.",
   "binDesigner.cutouts.scanImport.or": "eller",

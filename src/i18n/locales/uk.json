@@ -1073,6 +1073,8 @@
   "binDesigner.cutouts.outline.roundInside": "Заокруглити внутрішні кути",
   "binDesigner.cutouts.outline.reset": "Скинути контур",
   "binDesigner.cutouts.outline.failed": "З цими налаштуваннями контуру не залишиться, тож він лишається як був.",
+  "binDesigner.cutouts.traceView.cleanup.heading": "Очистити контури",
+  "binDesigner.cutouts.traceView.cleanup.hint": "Діє на всі інструменти. Якщо їх кілька, віддзеркальте кожен після додавання.",
   "binDesigner.cutouts.scanImport.expired": "Це посилання для сканування застаріло. Закрийте та відкрийте знову, щоб повторити.",
   "binDesigner.cutouts.scanImport.hint": "Сфотографуйте об’єкт на однотонному тлі, щоб обвести його контур, або завантажте обведений контур нижче.",
   "binDesigner.cutouts.scanImport.or": "або",

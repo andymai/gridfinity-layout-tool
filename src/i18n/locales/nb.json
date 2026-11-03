@@ -1073,6 +1073,8 @@
   "binDesigner.cutouts.outline.roundInside": "Avrund innvendige hjørner",
   "binDesigner.cutouts.outline.reset": "Tilbakestill omriss",
   "binDesigner.cutouts.outline.failed": "Med disse innstillingene ville det ikke være noe omriss igjen, så det forblir som det var.",
+  "binDesigner.cutouts.traceView.cleanup.heading": "Rydd opp i omriss",
+  "binDesigner.cutouts.traceView.cleanup.hint": "Gjelder alle verktøy. Har du flere, speiler du hvert etter at det er lagt til.",
   "binDesigner.cutouts.scanImport.expired": "Denne skannelenken er utløpt. Lukk og åpne på nytt for å prøve igjen.",
   "binDesigner.cutouts.scanImport.hint": "Ta bilde av en gjenstand mot en nøytral bakgrunn for å spore omrisset, eller last opp et sporet omriss nedenfor.",
   "binDesigner.cutouts.scanImport.or": "eller",

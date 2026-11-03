@@ -1073,6 +1073,8 @@
   "binDesigner.cutouts.outline.roundInside": "Arrotonda gli angoli interni",
   "binDesigner.cutouts.outline.reset": "Ripristina il contorno",
   "binDesigner.cutouts.outline.failed": "Con queste impostazioni non resterebbe alcun contorno, quindi resta com'era.",
+  "binDesigner.cutouts.traceView.cleanup.heading": "Ripulisci i contorni",
+  "binDesigner.cutouts.traceView.cleanup.hint": "Vale per ogni utensile. Se sono più d'uno, specchia ciascuno dopo averlo aggiunto.",
   "binDesigner.cutouts.scanImport.expired": "Questo link di scansione è scaduto. Chiudi e riapri per riprovare.",
   "binDesigner.cutouts.scanImport.hint": "Fotografa un oggetto su uno sfondo semplice per tracciarne il contorno, oppure carica un contorno tracciato qui sotto.",
   "binDesigner.cutouts.scanImport.or": "oppure",

@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'outline-cleanup',
+    date: '2026-11-03',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Tidy up a traced outline' },
+    body: {
+      en: 'Select a traced or drawn outline in the cutout editor and open Outline to simplify it, smooth it into curves, square nearly straight edges to the bin, mirror it about a line, or round its inside corners. The same tools are in Trace a photo, for every tool at once. Each change starts from the outline you began with, so you can move a slider back and forth freely.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'corner-holes-only',
     date: '2026-11-02',
     kind: 'new',

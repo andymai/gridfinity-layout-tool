@@ -19,12 +19,14 @@ import {
   loadCardSize,
   saveCardSize,
   shownShapes,
+  svgFromCleaned,
   svgFromShapes,
   traceAll,
   traceTap,
   withoutShape,
   type CardSizeMm,
 } from '@/shared/scanReview';
+import { useTraceCleanup, type TraceCleanup } from './traceCleanup';
 
 export interface TracePhoto {
   /** The decoded, downscaled photo: the model's input and the tracer's frame. */
@@ -122,6 +124,7 @@ export interface TraceSession {
   readonly undo: () => void;
   readonly setKeepHoles: (keep: boolean) => void;
   readonly setCardSize: (size: CardSizeMm) => void;
+  readonly cleanup: TraceCleanup;
   /** The shown tools as the SVG the phone would upload, or null when they cannot be added. */
   readonly traced: () => string | null;
 }
@@ -321,14 +324,18 @@ export function useTraceSession(): TraceSession {
     saveCardSize(size);
   }, []);
 
-  const shapes = useMemo(() => listed.map(({ shape }) => shape), [listed]);
+  const listedShapes = useMemo(() => listed.map(({ shape }) => shape), [listed]);
+  const cardFrame = useMemo(() => cardOptions(cardSize), [cardSize]);
+  const cleanup = useTraceCleanup(sized, listedShapes, keepHoles, cardFrame);
 
   const traced = useCallback((): string | null => {
-    if (!sized || sized.units !== 'mm' || shapes.length === 0) return null;
+    if (!sized || sized.units !== 'mm' || listedShapes.length === 0) return null;
     // Mid-pass, or while a new photo loads, the outlines on hand are not the ones to add.
     if (session.working || session.loading) return null;
-    return svgFromShapes(shapes, 'mm', keepHoles);
-  }, [sized, shapes, keepHoles, session.working, session.loading]);
+    return cleanup.tools
+      ? svgFromCleaned(cleanup.tools)
+      : svgFromShapes(listedShapes, 'mm', keepHoles);
+  }, [sized, listedShapes, keepHoles, session.working, session.loading, cleanup.tools]);
 
   return {
     photo: session.photo,
@@ -337,7 +344,7 @@ export function useTraceSession(): TraceSession {
     working: session.working,
     canRefine: session.canRefine,
     scene: sized,
-    shapes,
+    shapes: cleanup.shapes,
     holesFound: sized?.shapes.some((s) => (s.holes?.length ?? 0) > 0 || s.inHole) ?? false,
     canUndo: session.previous !== null && !session.working,
     manual: session.manual,
@@ -356,6 +363,7 @@ export function useTraceSession(): TraceSession {
     undo,
     setKeepHoles,
     setCardSize,
+    cleanup,
     traced,
   };
 }

@@ -8,6 +8,8 @@ export {
   visibleShapes,
   withoutShape,
   svgFromShapes,
+  svgFromCleaned,
+  type CleanedTool,
   type TraceFlowError,
   type TracedScene,
   type ShownShape,

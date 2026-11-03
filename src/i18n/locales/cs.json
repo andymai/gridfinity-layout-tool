@@ -1073,6 +1073,8 @@
   "binDesigner.cutouts.outline.roundInside": "Zaoblit vnitřní rohy",
   "binDesigner.cutouts.outline.reset": "Obnovit obrys",
   "binDesigner.cutouts.outline.failed": "S tímto nastavením by žádný obrys nezbyl, takže zůstává beze změny.",
+  "binDesigner.cutouts.traceView.cleanup.heading": "Vyčistit obrysy",
+  "binDesigner.cutouts.traceView.cleanup.hint": "Platí pro všechny nástroje. Je-li jich víc, zrcadli každý až po přidání.",
   "binDesigner.cutouts.scanImport.expired": "Tento odkaz na sken vypršel. Zavři a znovu otevři pro nový pokus.",
   "binDesigner.cutouts.scanImport.hint": "Vyfoť předmět na jednoduchém pozadí pro obtažení jeho obrysu nebo nahraj obtažený obrys níže.",
   "binDesigner.cutouts.scanImport.or": "nebo",

@@ -209,6 +209,27 @@ export function homographyRmsError(h: Homography, pairs: readonly PointPair[]): 
   return Math.sqrt(sum / pairs.length);
 }
 
+/** The homography's inverse, or null for a degenerate one. */
+export function invertHomography(h: Homography): Homography | null {
+  const [a, b, c, d, e, f, g, k, l] = h;
+  const A = e * l - f * k;
+  const B = f * g - d * l;
+  const C = d * k - e * g;
+  const det = a * A + b * B + c * C;
+  if (!Number.isFinite(det) || Math.abs(det) < 1e-12) return null;
+  return [
+    A / det,
+    (c * k - b * l) / det,
+    (b * f - c * e) / det,
+    B / det,
+    (a * l - c * g) / det,
+    (c * d - a * f) / det,
+    C / det,
+    (b * g - a * k) / det,
+    (a * e - b * d) / det,
+  ];
+}
+
 /** Map a single point through a homography. */
 export function applyHomography(h: Homography, p: Point): Point {
   const w = h[6] * p.x + h[7] * p.y + h[8];

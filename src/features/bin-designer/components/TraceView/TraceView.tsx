@@ -6,6 +6,8 @@ import { TraceCanvas } from './TraceCanvas';
 import type { TraceMode } from './traceMode';
 import { ScalePanel } from './ScalePanel';
 import { ToolsPanel } from './ToolsPanel';
+import { OutlineCleanupControls } from '../OutlineCleanup/OutlineCleanupControls';
+import { NO_CLEANUP } from '@/shared/outlineCleanup';
 import { useTraceSession } from './useTraceSession';
 
 export interface TraceViewProps {
@@ -220,6 +222,28 @@ export function TraceView({ open, onClose, onTraced }: TraceViewProps) {
               onRemove={session.remove}
               onUndo={session.undo}
             />
+          )}
+          {session.cleanup.available && count > 0 && (
+            <section className="flex flex-col gap-2">
+              <h3 className="text-sm font-semibold text-content-primary">
+                {t('binDesigner.cutouts.traceView.cleanup.heading')}
+              </h3>
+              {!session.cleanup.canMirror && (
+                <p className="text-xs text-content-tertiary">
+                  {t('binDesigner.cutouts.traceView.cleanup.hint')}
+                </p>
+              )}
+              <OutlineCleanupControls
+                settings={session.cleanup.settings}
+                onChange={session.cleanup.set}
+                onReset={() => session.cleanup.set(NO_CLEANUP, true)}
+                yDown
+                upright={session.cleanup.upright}
+                canMirror={session.cleanup.canMirror}
+                squareTo="photo"
+                disabled={busy}
+              />
+            </section>
           )}
         </aside>
       </div>

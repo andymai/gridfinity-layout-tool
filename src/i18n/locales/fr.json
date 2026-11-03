@@ -1073,6 +1073,8 @@
   "binDesigner.cutouts.outline.roundInside": "Arrondir les angles intérieurs",
   "binDesigner.cutouts.outline.reset": "Réinitialiser le contour",
   "binDesigner.cutouts.outline.failed": "Avec ces réglages, il ne resterait aucun contour : il reste donc inchangé.",
+  "binDesigner.cutouts.traceView.cleanup.heading": "Nettoyer les contours",
+  "binDesigner.cutouts.traceView.cleanup.hint": "S’applique à chaque outil. S’il y en a plusieurs, appliquez la symétrie à chacun une fois ajouté.",
   "binDesigner.cutouts.scanImport.expired": "Ce lien de scan a expiré. Fermez puis rouvrez pour réessayer.",
   "binDesigner.cutouts.scanImport.hint": "Photographiez un objet sur un fond uni pour tracer son contour, ou importez un contour tracé ci-dessous.",
   "binDesigner.cutouts.scanImport.or": "ou",
