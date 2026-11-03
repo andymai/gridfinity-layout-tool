@@ -24,11 +24,10 @@
 import type { Result } from '@/core/result';
 import { ok, err } from '@/core/result';
 import type { ImageDataLike, Mask, Point, TraceError } from './types';
-import { simplifyRdp } from './simplify';
 import { polygonArea } from './traceImage';
 import { findCardAcrossChannels, cardHomography, type CardDetectOptions } from './cardDetect';
 import { invertHomography, rectifyPoints, solveHomography, type Homography } from './perspective';
-import { fitSmoothPolygon } from './curveFit';
+import { smoothRing } from './curveFit';
 import { traceSoftContour, binarize, type SoftMask } from './softContour';
 import { symmetrizeIfRegular } from './symmetry';
 import { detectCalibrationGrid, type GridDetectOptions } from './gridDetect';
@@ -38,6 +37,13 @@ import type { CellQuad } from './latticeBlobs';
 import { segmentTools } from './colorSegment';
 import { findToolBlobs, interiorSeed, pointInPolygon } from './toolBlobs';
 import { convexHull, minAreaRect } from './minAreaRect';
+import {
+  bridgeAcrossStrip,
+  bridgeSoftAcrossStrip,
+  detectMarkerStrip,
+  touchesStrip,
+  type SceneStrip,
+} from './measuringStrip';
 
 export interface SceneCard {
   readonly corners: readonly [Point, Point, Point, Point];
@@ -76,7 +82,13 @@ export type SceneReference =
   | { readonly kind: SceneGridKind; readonly fit: LatticeFit }
   | { readonly kind: 'card'; readonly card: SceneCard }
   | { readonly kind: 'ruler'; readonly ruler: SceneRuler }
-  | { readonly kind: 'paper'; readonly paper: ScenePaper };
+  | { readonly kind: 'paper'; readonly paper: ScenePaper }
+  | {
+      readonly kind: 'strip';
+      readonly strip: SceneStrip;
+      /** A calibration sheet under the tool, which still bounds the search and its markers. */
+      readonly sheet?: LatticeFit;
+    };
 
 export interface SceneRing {
   /** In image pixels — for overlaying on the photo. */
@@ -90,6 +102,8 @@ export interface SceneShape extends SceneRing {
   readonly holes?: readonly SceneRing[];
   /** Lies in another shape's hole: a tool of its own only while holes are kept. */
   readonly inHole?: boolean;
+  /** Reaches the measuring strip, so its edge there was bridged and wants a look. */
+  readonly underStrip?: boolean;
 }
 
 /** Narrowest hole kept, across its short axis, once the reference gives millimetres. */
@@ -115,6 +129,8 @@ interface Outline {
   readonly imagePoints: readonly Point[];
   readonly holes: readonly (readonly Point[])[];
   readonly inHole: boolean;
+  /** Bridged under a strip before, so still worth a look once the scale changes. */
+  readonly underStrip?: boolean;
 }
 
 export interface SceneTrace {
@@ -197,6 +213,10 @@ export function detectReference(
   excludeMask?: Mask
 ): SceneReference | null {
   const sheet = detectCalibrationGrid(image, options);
+  // A strip on the tool measures it at its own height, so it wins over a sheet
+  // under it, whose rows of markers it would otherwise be read from.
+  const strip = detectMarkerStrip(image, sheet ? sheet.cells.map((cell) => cell.outline) : []);
+  if (strip) return { kind: 'strip', strip, ...(sheet ? { sheet } : {}) };
   if (sheet) return { kind: 'sheet', fit: sheet };
   const baseplate = detectBaseplateGrid(image, options);
   if (baseplate) return { kind: 'baseplate', fit: baseplate };
@@ -215,6 +235,8 @@ function referenceQuads(reference: SceneReference | null): readonly (readonly Po
     case 'sheet':
     case 'baseplate':
       return reference.fit.cells.map((cell) => cell.outline);
+    case 'strip':
+      return [reference.strip.paper, ...(reference.sheet?.cells.map((cell) => cell.outline) ?? [])];
     default:
       return [];
   }
@@ -235,6 +257,10 @@ function searchRegion(reference: SceneReference | null): readonly Point[] | unde
     case 'sheet':
     case 'baseplate':
       return convexHull(reference.fit.cells.flatMap((cell) => cell.outline));
+    case 'strip':
+      return reference.sheet
+        ? convexHull(reference.sheet.cells.flatMap((cell) => cell.outline))
+        : undefined;
     case 'paper': {
       const { corners } = reference.paper;
       const cx = corners.reduce((sum, p) => sum + p.x, 0) / 4;
@@ -269,8 +295,9 @@ function referenceHomography(
         { x: 0, y: h },
       ]);
     }
-    case 'ruler': {
-      const { a, b, lengthMm } = reference.ruler;
+    case 'ruler':
+    case 'strip': {
+      const { a, b, lengthMm } = reference.kind === 'ruler' ? reference.ruler : reference.strip;
       const px = Math.hypot(b.x - a.x, b.y - a.y);
       if (!(px > 0 && lengthMm > 0)) return null;
       const k = lengthMm / px;
@@ -320,9 +347,7 @@ function finishTrace(
 ): Result<SceneTrace, TraceError> {
   const tolerance = options.simplifyTolerance ?? defaultTolerance(width, height);
   const smooth = (ring: readonly Point[]): Point[] =>
-    options.smooth === false
-      ? simplifyRdp(ring, tolerance)
-      : fitSmoothPolygon(ring, (tolerance * 0.5) ** 2);
+    smoothRing(ring, tolerance, options.smooth !== false);
   const outlines: Outline[] = [];
   for (const { contour: rawContour, holes = [], inHole = false } of raw) {
     // The curve fit reads the RAW contour, not the simplified one. Its error
@@ -360,10 +385,13 @@ function sized(
     imagePoints,
     outputPoints: toMm ? toMm(imagePoints) : imagePoints,
   });
-  const shapes = outlines.map(({ imagePoints, holes, inHole }): SceneShape => ({
+  const shapes = outlines.map(({ imagePoints, holes, inHole, underStrip }): SceneShape => ({
     ...ring(imagePoints),
     ...(holes.length > 0 ? { holes: holes.map(ring) } : {}),
     ...(inHole ? { inHole: true } : {}),
+    ...(underStrip || (reference?.kind === 'strip' && touchesStrip(imagePoints, reference.strip))
+      ? { underStrip: true }
+      : {}),
   }));
   const lattice = reference?.kind === 'sheet' || reference?.kind === 'baseplate' ? reference : null;
   return {
@@ -392,7 +420,11 @@ export function withReference(
   reference: SceneReference | null,
   options: SceneTraceOptions = {}
 ): SceneTrace {
-  const quads = referenceQuads(reference);
+  // A strip lies on a tool, so what is under it is no reference object.
+  const quads =
+    reference?.kind === 'strip'
+      ? (reference.sheet?.cells.map((cell) => cell.outline) ?? [])
+      : referenceQuads(reference);
   const outlines = scene.shapes
     .filter(({ imagePoints, holes }) => {
       // In pixels: a 1 × 1 frame leaves the seed unnormalised. On the material,
@@ -409,6 +441,7 @@ export function withReference(
       imagePoints: shape.imagePoints,
       holes: (shape.holes ?? []).map((h) => h.imagePoints),
       inHole: shape.inHole === true,
+      underStrip: shape.underStrip === true,
     }));
   return sized(outlines, reference, options);
 }
@@ -509,7 +542,9 @@ export function traceScene(
     region: options.region ?? searchRegion(reference),
     exclude: referenceQuads(reference),
   });
-  const blobs = findToolBlobs(toolMask, options.minToolAreaPx ?? defaultMinArea(width, height));
+  const mask =
+    reference?.kind === 'strip' ? bridgeAcrossStrip(toolMask, reference.strip) : toolMask;
+  const blobs = findToolBlobs(mask, options.minToolAreaPx ?? defaultMinArea(width, height));
   if (blobs.length === 0) return err({ code: 'NO_OBJECT', detail: 'No tool found' });
   return finishTrace(blobs, width, height, reference, options);
 }
@@ -530,7 +565,9 @@ export function traceSceneSegmented(
 ): Result<SceneTrace, TraceError> {
   const { width, height } = image;
   if (width <= 0 || height <= 0) return err({ code: 'NO_OBJECT', detail: 'Empty image' });
-  return buildToolTraceSoft(toolMask, reference, options);
+  const mask =
+    reference?.kind === 'strip' ? bridgeSoftAcrossStrip(toolMask, reference.strip) : toolMask;
+  return buildToolTraceSoft(mask, reference, options);
 }
 
 const samePoints = (a: readonly Point[], b: readonly Point[]): boolean =>
@@ -550,6 +587,12 @@ export function sameReference(a: SceneReference | null, b: SceneReference | null
         b.kind === 'ruler' &&
         a.ruler.lengthMm === b.ruler.lengthMm &&
         samePoints([a.ruler.a, a.ruler.b], [b.ruler.a, b.ruler.b])
+      );
+    case 'strip':
+      return (
+        b.kind === 'strip' &&
+        a.strip.lengthMm === b.strip.lengthMm &&
+        samePoints([a.strip.a, a.strip.b], [b.strip.a, b.strip.b])
       );
     case 'paper':
       return (

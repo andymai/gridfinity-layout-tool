@@ -17,9 +17,7 @@ import type { ParsedCutoutSpec } from '../svgImport/types';
 import { byDescendingArea } from '../importStackOrder';
 import { centerOffBoardCutouts, type CutoutBoard } from '../offBoardCutouts';
 import { generateLayoutId, generateUUID } from '@/shared/utils/uuid';
-
-/** Default insertion clearance (mm) applied to a scanned tool outline. */
-const SCAN_DEFAULT_CLEARANCE_MM = 0.4;
+import { SCAN_CLEARANCE_MM } from '@/shared/scanReview/traceExport';
 
 export interface UseScanImportReturn {
   /** Hydrate and add scan specs as cutouts in one undo transaction. Returns the count added. */
@@ -47,7 +45,7 @@ function withScanFit(cutout: Cutout, cutDepth: number): Cutout {
   if (cutout.shape !== 'path') return cutout;
   return {
     ...cutout,
-    clearance: SCAN_DEFAULT_CLEARANCE_MM,
+    clearance: SCAN_CLEARANCE_MM,
     chamferWidth: defaultEntryChamfer(Math.min(cutout.width, cutout.depth), cutDepth),
   };
 }

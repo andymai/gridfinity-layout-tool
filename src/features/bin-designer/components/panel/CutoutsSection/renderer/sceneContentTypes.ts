@@ -107,12 +107,13 @@ export interface SceneContentProps {
   readonly onGroupScaleStart: (mmX: number, mmY: number) => void;
   readonly segmentHover?: SegmentHoverInfo | null;
   readonly onPathDrawingVertexDown?: (index: number, mmX: number, mmY: number) => void;
-  readonly onVertexPointDown?: (index: number, mmX: number, mmY: number) => void;
+  readonly onVertexPointDown?: (index: number, mmX: number, mmY: number, ring?: number) => void;
   readonly onVertexHandleDown?: (
     index: number,
     handleType: 'in' | 'out',
     mmX: number,
-    mmY: number
+    mmY: number,
+    ring?: number
   ) => void;
   /** Externally-managed camera zoom (workspace mode) */
   readonly externalZoom?: number;

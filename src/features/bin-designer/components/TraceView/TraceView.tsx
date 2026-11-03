@@ -8,6 +8,7 @@ import { ScalePanel } from './ScalePanel';
 import { ToolsPanel } from './ToolsPanel';
 import { OutlineCleanupControls } from '../OutlineCleanup/OutlineCleanupControls';
 import { NO_CLEANUP } from '@/shared/outlineCleanup';
+import { TraceExportMenu } from '@/shared/scanReview';
 import { useTraceSession } from './useTraceSession';
 
 export interface TraceViewProps {
@@ -260,6 +261,11 @@ export function TraceView({ open, onClose, onTraced }: TraceViewProps) {
         <Button type="button" variant="ghost" onClick={onClose}>
           {t('common.cancel')}
         </Button>
+        <TraceExportMenu
+          tools={mode === 'tap' ? session.exportTools : null}
+          source="trace_view"
+          trigger="export"
+        />
         <Button type="button" variant="primary" disabled={svg === null} onClick={add}>
           {count > 1
             ? t('binDesigner.cutouts.traceView.addMany', { count })

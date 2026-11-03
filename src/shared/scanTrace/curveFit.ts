@@ -9,6 +9,8 @@
  */
 
 import fitCurve from 'fit-curve';
+import { polylineCrosses } from '@/shared/utils/outlineSegments';
+import { simplifyRdp } from './simplify';
 import type { Point } from './types';
 
 type Cubic = readonly [readonly number[], readonly number[], readonly number[], readonly number[]];
@@ -75,4 +77,25 @@ export function fitSmoothPolygon(pts: readonly Point[], maxError: number): Point
     for (let i = 0; i < steps; i++) out.push(cubicAt(b, i / steps));
   }
   return out.length >= 3 ? out : pts.slice();
+}
+
+/**
+ * A traced contour smoothed (or, with `smooth` off, only simplified) without
+ * crossing itself. A fit can fold a thin tip or a one-pixel spur over itself,
+ * and the builder cuts an outline that crosses itself as its bounding box, so
+ * the pocket comes out a rectangle. Each step down follows the contour more
+ * closely; the contour, traced along pixel edges, never crosses.
+ *
+ * @param tolerance the trace's simplification tolerance (px)
+ */
+export function smoothRing(contour: readonly Point[], tolerance: number, smooth = true): Point[] {
+  const steps = smooth
+    ? [0.5, 0.25, 0.125].map((share) => () => fitSmoothPolygon(contour, (tolerance * share) ** 2))
+    : [() => simplifyRdp(contour, tolerance)];
+  steps.push(() => simplifyRdp(contour, tolerance / 4));
+  for (const step of steps) {
+    const ring = step();
+    if (!polylineCrosses(ring)) return ring;
+  }
+  return contour.slice();
 }

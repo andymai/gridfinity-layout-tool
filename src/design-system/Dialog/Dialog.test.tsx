@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { useRef } from 'react';
 import { Dialog, ConfirmDialog } from './Dialog';
+import { Popover } from '../Popover';
 
 describe('Dialog', () => {
   beforeEach(() => {
@@ -238,6 +239,28 @@ describe('Dialog', () => {
       );
       fireEvent.keyDown(screen.getByLabelText('Field'), { key: 'Escape' });
       expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaves an Escape that closes a popover inside it to the popover', () => {
+      const onClose = vi.fn();
+      const onPopoverClose = vi.fn();
+      function WithMenu() {
+        const anchor = useRef<HTMLButtonElement>(null);
+        return (
+          <Dialog.Root open={true} onClose={onClose}>
+            <button ref={anchor} type="button">
+              Menu
+            </button>
+            <Popover anchorRef={anchor} isOpen onClose={onPopoverClose}>
+              <p>Options</p>
+            </Popover>
+          </Dialog.Root>
+        );
+      }
+      render(<WithMenu />);
+      fireEvent.keyDown(screen.getByRole('button', { name: 'Menu' }), { key: 'Escape' });
+      expect(onPopoverClose).toHaveBeenCalledOnce();
+      expect(onClose).not.toHaveBeenCalled();
     });
 
     it('does not close on Escape when closeOnEscape is false', () => {

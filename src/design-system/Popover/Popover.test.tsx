@@ -76,6 +76,34 @@ describe('Popover', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('marks an Escape it closes on as handled, so a dialog round it stays open', () => {
+    const onClose = vi.fn();
+    render(
+      <Popover anchorRef={anchorRef} isOpen onClose={onClose}>
+        <p>Content</p>
+      </Popover>
+    );
+    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    document.dispatchEvent(event);
+    expect(onClose).toHaveBeenCalledOnce();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('stacks above a modal dialog that holds its anchor', () => {
+    const modal = document.createElement('div');
+    modal.setAttribute('aria-modal', 'true');
+    modal.style.zIndex = '51';
+    document.body.appendChild(modal);
+    modal.appendChild(anchorEl);
+    render(
+      <Popover anchorRef={anchorRef} isOpen onClose={vi.fn()} aria-label="Menu">
+        <p>Content</p>
+      </Popover>
+    );
+    expect(screen.getByRole('dialog', { name: 'Menu' })).toHaveStyle({ zIndex: '52' });
+    modal.remove();
+  });
+
   it('closes on click outside', () => {
     const onClose = vi.fn();
     render(
