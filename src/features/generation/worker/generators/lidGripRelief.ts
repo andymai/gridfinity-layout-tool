@@ -33,8 +33,8 @@ import type { LidGripMode } from '@/shared/types/bin';
 import { LID_COPLANAR_MARGIN } from './lidConstants';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
-import type { LidInputs } from './lidInputs';
-import { gripPlacements } from './lidGripPlan';
+import type { LidInputs } from '@/shared/utils/lidInputs';
+import { gripPlacements } from '@/shared/utils/lidGripPlan';
 
 /**
  * Corner radius (mm) of a scallop's elevation profile. Rounds the pocket's

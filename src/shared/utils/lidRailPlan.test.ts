@@ -15,6 +15,7 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { LID_MIN_RAIL_LENGTH, resolveLidGripSpanMm } from '@/shared/types/bin';
 import { DEFAULT_LID_HINGE_CONFIG } from '@/features/bin-designer/types';
+import { MASK_CELLS_PER_UNIT } from './cellMask';
 import type { BinParams, LidGripConfig } from '@/features/bin-designer/types';
 import { resolveLidInputs } from './lidInputs';
 import { railPlacements, railSidesLostToBinDip, splitRailsAroundGrip } from './lidRailPlan';
@@ -216,6 +217,29 @@ describe('railSidesLostToBinDip', () => {
       { width: 1, depth: 1 }
     );
     expect(railSidesLostToBinDip(params)).toEqual([]);
+  });
+
+  it('tells apart two walls that face the same way along one line', () => {
+    // The 4.5x2 U: its back-facing arms are 1u and 1.5u wide and share a line.
+    // A full-width grip clears the short arm's rail and leaves the long arm
+    // two segments, which must not stand in for the short arm.
+    const cols = 4.5 * MASK_CELLS_PER_UNIT;
+    const rows = 2 * MASK_CELLS_PER_UNIT;
+    const cells = new Array<0 | 1>(cols * rows).fill(1);
+    for (let r = MASK_CELLS_PER_UNIT; r < rows; r++) {
+      for (let c = MASK_CELLS_PER_UNIT; c < 3 * MASK_CELLS_PER_UNIT; c++) cells[r * cols + c] = 0;
+    }
+    const params = makeParams(
+      {
+        mode: 'scallop',
+        coverage: 100,
+        sides: { front: false, back: true, left: false, right: false },
+      },
+      { width: 4.5, depth: 2, cellMask: { cols, rows, cells } }
+    );
+    const { split } = railsFor(params);
+    expect(split.some((rail) => rail.side === 'back')).toBe(true);
+    expect(railSidesLostToBinDip(params)).toEqual(['back']);
   });
 
   it('names every wall a full-width grip clears on a 1x1 lid', () => {

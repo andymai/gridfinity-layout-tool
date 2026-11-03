@@ -15,7 +15,7 @@ import { unwrap, cut } from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import { LID_COPLANAR_MARGIN } from './lidConstants';
 import { buildOutlineDrawing } from './lidProfile';
-import type { LidInputs } from './lidInputs';
+import type { LidInputs } from '@/shared/utils/lidInputs';
 
 export function cutTrayRecess(scope: DisposalScope, body: Shape3D, inputs: LidInputs): Shape3D {
   const { depthMm, wallMm } = inputs.tray;

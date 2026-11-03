@@ -103,7 +103,7 @@ import {
   slideLidPlanForParams,
 } from '@/features/bin-designer/utils/slideLidPlanForParams';
 import { slideSagSafeThicknessMm } from '@/shared/utils/slideLidPlan';
-import { railSidesLostToBinDip } from '@/shared/generation/lidRailPlan';
+import { railSidesLostToBinDip } from '@/shared/utils/lidRailPlan';
 
 function ceilToThicknessStep(mm: number): number {
   const steps = Math.ceil(mm / LID_TOP_THICKNESS_STEP_MM - 1e-9);

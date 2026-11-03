@@ -40,8 +40,8 @@ import { hasBinLipDip, shouldGenerateLid, LID_GRIP_MIN_WALL_MM } from '@/shared/
 import { checkCancelled } from '../../utils/abort';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from '../../generatorConstants';
 import { LID_COPLANAR_MARGIN } from '../../lidConstants';
-import { resolveLidInputs } from '../../lidInputs';
-import { gripPlacements } from '../../lidGripPlan';
+import { resolveLidInputs } from '@/shared/utils/lidInputs';
+import { gripPlacements } from '@/shared/utils/lidGripPlan';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
 

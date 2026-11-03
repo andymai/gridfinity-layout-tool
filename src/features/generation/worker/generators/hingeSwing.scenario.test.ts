@@ -556,7 +556,7 @@ describe('hinged lid', () => {
     // relationship — and it would put the catch on the hinge itself for a
     // front-hinged lid, where it fights the knuckles instead of holding the
     // free edge.
-    const { resolveLidInputs } = await import('./lidInputs');
+    const { resolveLidInputs } = await import('@/shared/utils/lidInputs');
     for (const [side, opposite] of [
       ['back', 'front'],
       ['front', 'back'],

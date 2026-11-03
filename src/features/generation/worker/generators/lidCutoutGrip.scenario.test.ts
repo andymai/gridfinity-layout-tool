@@ -243,8 +243,8 @@ describe('lid click rails keep lip to grip', () => {
         expect(worstSeatInterference(bin, lid, dz).mm).toBeLessThan(baseline + 0.05);
       }
 
-      const { railPlacements } = await import('./lidRailPlan');
-      const { resolveLidInputs } = await import('./lidInputs');
+      const { railPlacements } = await import('@/shared/utils/lidRailPlan');
+      const { resolveLidInputs } = await import('@/shared/utils/lidInputs');
       const onFront = railPlacements(resolveLidInputs(params)).filter((p) => p.rotationDeg === 180);
       expect(onFront).toHaveLength(c.expectFrontRails);
     },

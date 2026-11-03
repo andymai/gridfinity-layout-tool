@@ -27,6 +27,13 @@ import type { LidInputs } from './lidInputs';
  */
 export interface RailPlacement {
   readonly side: LidRailSide;
+  /**
+   * Index of the polygon edge the rail runs along, or null on a rectangle,
+   * where `side` already names the wall. A custom shape can face one way
+   * along two separate edges on the same line, so neither the side nor the
+   * line tells them apart.
+   */
+  readonly edge: number | null;
   /** Rail center position in world coords. */
   readonly centerX: number;
   readonly centerY: number;
@@ -137,6 +144,7 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
       const centre = (seg.lo + seg.hi) / 2;
       placements.push({
         side,
+        edge: i,
         centerX: alongX ? centre : crossPos,
         centerY: alongX ? crossPos : centre,
         length: railLen,
@@ -188,6 +196,7 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
       const center = (seg.lo + seg.hi) / 2;
       placements.push({
         side,
+        edge: null,
         centerX: (alongX ? center : railCross) + offX,
         centerY: (alongX ? railCross : center) + offY,
         length,
@@ -309,16 +318,13 @@ export function railPlacements(inputs: LidInputs): RailPlacement[] {
  *
  * Shortening a rail is the trade the dip offers; losing all of one is not
  * something the user can see in the preview, which is why the panel names it.
- * A wall is a rail's side plus its cross-axis line, because a custom shape can
- * face the same way along two separate edges.
  */
 export function railSidesLostToBinDip(params: BinParams): readonly LidRailSide[] {
   if (!binDipSplitsRails(params)) return [];
   const inputs = resolveLidInputs(params);
   const full = railPlacements(inputs);
   const split = splitRailsAroundGrip(full, inputs);
-  const wallKey = (rail: RailPlacement): string =>
-    `${rail.side}:${(isAlongX(rail) ? rail.centerY : rail.centerX).toFixed(3)}`;
+  const wallKey = (rail: RailPlacement): string => `${rail.side}:${rail.edge ?? ''}`;
   const kept = new Set(split.map(wallKey));
   return [...new Set(full.filter((rail) => !kept.has(wallKey(rail))).map((rail) => rail.side))];
 }

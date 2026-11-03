@@ -24,8 +24,8 @@ import {
 import { dropCoincidentPoints } from '@/shared/utils/polyline';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
-import { railPlacements, splitRailsAroundGrip } from './lidRailPlan';
-import type { LidInputs } from './lidInputs';
+import { railPlacements, splitRailsAroundGrip } from '@/shared/utils/lidRailPlan';
+import type { LidInputs } from '@/shared/utils/lidInputs';
 
 /** True when at least one side carries a rail, i.e. the lid is not friction-fit. */
 export function hasAnyClickRail(rails: LidInputs['clickRails']): boolean {

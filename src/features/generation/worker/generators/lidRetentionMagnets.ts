@@ -33,7 +33,7 @@ import {
   retentionMagnetPositions,
   retentionMagnetPlacementsFor,
 } from './retentionMagnetGeometry';
-import type { LidInputs } from './lidInputs';
+import type { LidInputs } from '@/shared/utils/lidInputs';
 import { buildRetentionMagnetBoss } from './retentionMagnetBoss';
 
 export function addLidRetentionMagnets(

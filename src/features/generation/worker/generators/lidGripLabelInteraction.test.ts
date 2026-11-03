@@ -12,8 +12,8 @@
  */
 // @vitest-environment node
 import { describe, it, expect } from 'vitest';
-import { railPlacements, splitRailsAroundGrip } from './lidRailPlan';
-import { resolveLidInputs } from './lidInputs';
+import { railPlacements, splitRailsAroundGrip } from '@/shared/utils/lidRailPlan';
+import { resolveLidInputs } from '@/shared/utils/lidInputs';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';

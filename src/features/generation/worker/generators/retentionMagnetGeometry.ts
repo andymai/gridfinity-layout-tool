@@ -23,8 +23,8 @@
 import type { BinParams } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { LID_MAGNET_SEAT_GAP, lidRetentionInterfaceZ } from './lidConstants';
-import { resolveLidInputs } from './lidInputs';
-import type { LidInputs } from './lidInputs';
+import { resolveLidInputs } from '@/shared/utils/lidInputs';
+import type { LidInputs } from '@/shared/utils/lidInputs';
 
 /* The boss footprint itself lives in the shared types module — the panel, the
  * grip-relief clamp and the lid cutout window all need it on the main thread.

@@ -341,8 +341,8 @@ describe('lid click rails clear compartment dividers', () => {
       }
 
       if (c.expectFrontRails !== undefined) {
-        const { railPlacements } = await import('./lidRailPlan');
-        const { resolveLidInputs } = await import('./lidInputs');
+        const { railPlacements } = await import('@/shared/utils/lidRailPlan');
+        const { resolveLidInputs } = await import('@/shared/utils/lidInputs');
         const onFrontWall = railPlacements(resolveLidInputs(params)).filter(
           (p) => p.rotationDeg === 180
         );

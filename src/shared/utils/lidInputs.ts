@@ -39,7 +39,12 @@ import { dividerRailBlocks } from '@/shared/utils/dividerRailPlan';
 import { lipGapRailBlocks, lipGaps, polygonLipGaps } from '@/shared/utils/lipGapPlan';
 import type { PolygonLipGap } from '@/shared/utils/lipGapPlan';
 import type { WallSpanBlock } from '@/shared/utils/labelTabPlan';
-import { LID_FIT_CLEARANCE, LID_CORNER_RADIUS, lidAnchorZ, lidWallBottomZ } from './lidConstants';
+import {
+  LID_FIT_CLEARANCE,
+  LID_CORNER_RADIUS,
+  lidAnchorZ,
+  lidWallBottomZ,
+} from '@/shared/types/bin';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { magnetHoleStyleFrom } from '@/shared/generation/magnetHoleStyle';
 import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
