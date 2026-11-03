@@ -358,6 +358,16 @@ describe('handleVertexEditPointerUp', () => {
     expect(setters.setMode).toHaveBeenCalledWith(expect.objectContaining({ dragTarget: null }));
   });
 
+  it('leaves the islands alone when the cutout is not turned', () => {
+    const setters = makeSetters();
+    const mode = makeMode({ dragTarget: { type: 'vertex', ring: 0, index: 0 } });
+    const islanded = { ...makeCutout(), holes: [[point(4, 4), point(6, 4), point(5, 6)]] };
+    handleVertexEditPointerMove(mode, at(-4, 0), islanded, BOUNDS, noSnap, setters);
+    const preview = setters.setPreview.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    handleVertexEditPointerUp(mode, islanded, preview, setters);
+    expect(setters.onUpdate.mock.calls[0][1]).not.toHaveProperty('holes');
+  });
+
   it('keeps the vertex selected after the drag', () => {
     const setters = makeSetters();
     handleVertexEditPointerUp(
@@ -642,6 +652,15 @@ describe('editing a turned cutout', () => {
     expect(setters.setMode).toHaveBeenCalledWith(
       expect.objectContaining({ dragTarget: { type: 'vertex', ring: 0, index: 1 } })
     );
+  });
+
+  it('commits nothing when an island went between the last move and the release', () => {
+    const setters = makeSetters();
+    const mode = makeMode({ dragTarget: { type: 'vertex', ring: 0, index: 2 } });
+    handleVertexEditPointerMove(mode, at(14, 0), turned(), BOUNDS, noSnap, setters);
+    const preview = setters.setPreview.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    handleVertexEditPointerUp(mode, { ...turned(), holes: [] }, preview, setters);
+    expect(setters.onUpdate).not.toHaveBeenCalled();
   });
 
   it('moves the dragged corner to the pointer and leaves every other point where it was', () => {

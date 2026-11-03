@@ -111,8 +111,8 @@ export function ringsOf(cutout: Pick<Cutout, 'path' | 'holes'>): (readonly PathP
 function outlineEdit(
   cutout: Cutout,
   points: PathPoint[]
-): { path: PathPoint[]; holes: PathPoint[][] | undefined } {
-  if (!cutout.rotation) return { path: points, holes: cutout.holes };
+): { path: PathPoint[]; holes?: PathPoint[][] } {
+  if (!cutout.rotation) return { path: points };
   const { minX, minY, maxX, maxY } = getPathBounds(points);
   const dx = (minX + maxX) / 2 - (cutout.x + cutout.width / 2);
   const dy = (minY + maxY) / 2 - (cutout.y + cutout.depth / 2);
@@ -374,11 +374,13 @@ export function handleVertexEditPointerUp(
 ): void {
   const previewUpdates = preview.get(cutout.id);
   const ring = mode.dragTarget?.ring ?? 0;
-  // An island preview carries every island as the drag began; if they have
-  // changed since, writing it back would restore a removed one or move the
-  // edit onto another.
+  // A preview carrying islands (any island drag, or an outline drag on a
+  // turned cutout) holds them as of the last move; if they have changed
+  // since, writing it back would restore a removed one or move the edit onto
+  // another.
   const islandsChanged =
-    ring > 0 && (previewUpdates?.holes?.length ?? 0) !== (cutout.holes?.length ?? 0);
+    previewUpdates?.holes !== undefined &&
+    previewUpdates.holes.length !== (cutout.holes?.length ?? 0);
   const moved = previewUpdates ? ringsOf({ ...cutout, ...previewUpdates }).at(ring) : undefined;
   if (previewUpdates && moved && !islandsChanged && keepsShape(moved)) {
     // The preview already holds the edit as it is to be stored, an outline's
