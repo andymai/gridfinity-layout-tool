@@ -428,6 +428,8 @@
   "binDesigner.base.magnetChamferHint": "각 구멍 입구의 45° 모따기가 자석을 똑바로 안내합니다.",
   "binDesigner.base.magnetChamferLightweight": "경량 베이스는 각 구멍 주위에 모따기를 위한 벽이 부족합니다.",
   "binDesigner.base.magnetChamferNesting": "중첩용 자석은 모따기하기엔 너무 얇은 보스에 들어갑니다.",
+  "binDesigner.base.cornerHolesOnly": "모서리만",
+  "binDesigner.base.cornerHolesOnlyDetail": "자석 구멍과 나사 구멍을 통의 바깥 모서리에만 뚫습니다. 큰 통도 자석이 적게 들고 베이스플레이트에서 더 쉽게 떼어집니다.",
   "binDesigner.base.screwDiameter": "나사 지름",
   "binDesigner.base.screwHoles": "나사 구멍",
   "binDesigner.base.section.feet": "발",

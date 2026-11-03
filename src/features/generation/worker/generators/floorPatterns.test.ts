@@ -3,6 +3,7 @@ import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
 import { resolveTrayBottomInputs } from './trayBottomInputs';
 import type { BinParams } from '@/shared/types/bin';
+import type { CellMask } from '@/shared/utils/cellMask';
 import { deriveDimensions } from './pipeline/context';
 import { floorPatternApplies, planFloorPattern } from './floorPatterns';
 import { floorWindowInset, nestingFloorWindowSpan } from './floorPatternWindow';
@@ -158,6 +159,24 @@ describe('planFloorPattern keep-outs', () => {
     const window = plan(params)?.windows[0];
     // Four corner pockets per foot, all inside the window.
     expect(window?.keepOuts).toHaveLength(4);
+  });
+
+  it('reserves only the drilled pockets when holes sit at the corners alone', () => {
+    const corners = { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' as const, cornerHolesOnly: true };
+    const windows = plan(makeParams({ base: corners }))?.windows ?? [];
+    expect(windows.map((w) => w.keepOuts.length)).toEqual([1, 1, 1, 1]);
+  });
+
+  it("keeps an L-shaped bin's five corner pockets, not the removed cell's", () => {
+    const corners = { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' as const, cornerHolesOnly: true };
+    // 2x2 at half-unit resolution, bottom row first, top-right unit removed.
+    const lShape: CellMask = {
+      cols: 4,
+      rows: 4,
+      cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0],
+    };
+    const windows = plan(makeParams({ base: corners, cellMask: lShape }))?.windows ?? [];
+    expect(windows.reduce((n, w) => n + w.keepOuts.length, 0)).toBe(5);
   });
 
   it('reserves the footprint of a divider that crosses a foot', () => {

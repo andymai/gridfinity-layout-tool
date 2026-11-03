@@ -428,6 +428,8 @@
   "binDesigner.base.magnetChamferHint": "Uno smusso a 45° all’imbocco di ogni foro guida il magnete dritto.",
   "binDesigner.base.magnetChamferLightweight": "Una base alleggerita lascia troppo poca parete attorno a ogni foro per uno smusso.",
   "binDesigner.base.magnetChamferNesting": "I magneti a incastro stanno in bossoli troppo sottili per uno smusso.",
+  "binDesigner.base.cornerHolesOnly": "Solo angoli",
+  "binDesigner.base.cornerHolesOnlyDetail": "Mette i fori per magneti e viti solo negli angoli esterni del contenitore. Un contenitore grande richiede meno magneti e si stacca più facilmente dalla baseplate.",
   "binDesigner.base.screwDiameter": "Diametro vite",
   "binDesigner.base.screwHoles": "Fori per viti",
   "binDesigner.base.section.feet": "Piedini",

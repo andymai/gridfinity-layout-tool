@@ -223,6 +223,8 @@ export interface BinDimensions {
   readonly shellKey: string;
   readonly withMagnet: boolean;
   readonly withScrew: boolean;
+  /** Holes at the outer corners only; false whenever the bin drills none. */
+  readonly cornerHolesOnly: boolean;
   /**
    * True when the shell is built with compartment cavities subtracted
    * directly (per-compartment cavity cut). In that path the divider

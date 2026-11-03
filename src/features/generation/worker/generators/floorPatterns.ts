@@ -25,7 +25,8 @@ import type { BinParams } from '@/shared/types/bin';
 import { isNestingBase, retentionBossRadius, retentionMagnetInset } from '@/shared/types/bin';
 import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
 import { resolveTrayBottomInputs } from './trayBottomInputs';
-import { isPartialMask } from '@/shared/utils/cellMask';
+import { isPartialMask, isRegionFilled } from '@/shared/utils/cellMask';
+import { outerCornerHoleFilter } from '@/shared/generation/cornerHoles';
 import type { PatternPanelSpec } from './dividerPatterns';
 import type { WorldKeepOut } from './dividerPatterns';
 import { scoopKeepOuts } from './dividerPatterns';
@@ -37,7 +38,7 @@ import { filledSocketCells } from './socketBuilder';
 import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import { footPinPositions, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { DETACHABLE_PIN_HOLE_DIAMETER_MM } from '@/shared/types/bin';
-import { forEachCell } from './cellDecomposition';
+import { forEachCell, type CellInfo } from './cellDecomposition';
 import { FLOOR_PATTERN_BORDER, floorWindowInset } from './floorPatternWindow';
 import { CLEARANCE, COPLANAR_MARGIN } from './generatorConstants';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
@@ -165,36 +166,51 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
   );
   if (radius <= 0) return [];
 
-  const out: WorldKeepOut[] = [];
+  const sites: Array<[number, number]> = [];
+  // The holes `buildBaseSocket` drills, which skips cells outside the mask.
+  const drilled: Array<[number, number]> = [];
+  const { gridUnitMmX: pitchX, gridUnitMmY: pitchY } = dim;
   forEachCell(
     params.width,
     params.depth,
     (cell) => {
-      if (!cellHostsAttachmentHoles(cell, radius, dim.gridUnitMmX, dim.gridUnitMmY)) return;
-      for (const [x, y] of magnetPositionsForCell(
+      if (!cellHostsAttachmentHoles(cell, radius, pitchX, pitchY)) return;
+      const positions = magnetPositionsForCell(
         cell,
         radius,
-        dim.gridUnitMmX,
-        dim.gridUnitMmY,
+        pitchX,
+        pitchY,
         params.magnetAnchor ?? DEFAULT_MAGNET_ANCHOR
-      )) {
-        out.push({
-          xMin: x - radius,
-          xMax: x + radius,
-          yMin: y - radius,
-          yMax: y + radius,
-          zMin: 0,
-          zMax: 0,
-        });
+      );
+      sites.push(...positions);
+      if (dim.cornerHolesOnly && cellInMask(params, cell, pitchX, pitchY)) {
+        drilled.push(...positions);
       }
     },
     {
-      gridUnitMm: { x: dim.gridUnitMmX, y: dim.gridUnitMmY },
+      gridUnitMm: { x: pitchX, y: pitchY },
       fractionalEdgeX: params.fractionalEdgeX,
       fractionalEdgeY: params.fractionalEdgeY,
     }
   );
-  return out;
+  const keep = dim.cornerHolesOnly ? outerCornerHoleFilter(drilled) : () => true;
+  return sites.filter(keep).map(([x, y]) => ({
+    xMin: x - radius,
+    xMax: x + radius,
+    yMin: y - radius,
+    yMax: y + radius,
+    zMin: 0,
+    zMax: 0,
+  }));
+}
+
+function cellInMask(params: BinParams, cell: CellInfo, pitchX: number, pitchY: number): boolean {
+  if (!isPartialMask(params.cellMask)) return true;
+  const leftUnit =
+    (cell.centerX + (params.width * pitchX) / 2 - (cell.widthUnits * pitchX) / 2) / pitchX;
+  const bottomUnit =
+    (cell.centerY + (params.depth * pitchY) / 2 - (cell.depthUnits * pitchY) / 2) / pitchY;
+  return isRegionFilled(params.cellMask, leftUnit, bottomUnit, cell.widthUnits, cell.depthUnits);
 }
 
 /**

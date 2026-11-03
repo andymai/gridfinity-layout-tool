@@ -428,6 +428,8 @@
   "binDesigner.base.magnetChamferHint": "Um chanfro de 45° na boca de cada furo guia o ímã reto para dentro.",
   "binDesigner.base.magnetChamferLightweight": "Uma base leve deixa pouca parede ao redor de cada furo para um chanfro.",
   "binDesigner.base.magnetChamferNesting": "Ímãs de encaixe ficam em ressaltos finos demais para um chanfro.",
+  "binDesigner.base.cornerHolesOnly": "Só nos cantos",
+  "binDesigner.base.cornerHolesOnlyDetail": "Coloca os furos para ímãs e parafusos só nos cantos externos da caixa. Uma caixa grande precisa de menos ímãs e sai da placa base com mais facilidade.",
   "binDesigner.base.screwDiameter": "Diâmetro do parafuso",
   "binDesigner.base.screwHoles": "Furos para parafusos",
   "binDesigner.base.section.feet": "Pés",

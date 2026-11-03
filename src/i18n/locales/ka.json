@@ -3537,6 +3537,8 @@
   "binDesigner.base.magnetChamferHint": "45°-იანი ჩამოჭრა თითოეული ნახვრეტის შესასვლელთან მაგნიტს სწორად მიმართავს.",
   "binDesigner.base.magnetChamferLightweight": "მსუბუქი ფუძე თითოეული ნახვრეტის გარშემო ჩამოჭრისთვის ძალიან ცოტა კედელს ტოვებს.",
   "binDesigner.base.magnetChamferNesting": "ჩასაწყობი მაგნიტები ჩამოჭრისთვის ძალიან თხელ ბუდეებში ზის.",
+  "binDesigner.base.cornerHolesOnly": "მხოლოდ კუთხეები",
+  "binDesigner.base.cornerHolesOnlyDetail": "მაგნიტისა და ხრახნის ხვრელები მხოლოდ ყუთის გარე კუთხეებში კეთდება. დიდ ყუთს ნაკლები მაგნიტი სჭირდება და საბაზისო ფირფიტიდან უფრო ადვილად იხსნება.",
   "binDesigner.base.screwHoles": "ხრახნის ხვრელები",
   "binDesigner.base.screwDiameter": "ხრახნის დიამეტრი",
   "binDesigner.lightweight.useUnderside": "ქვედა მხარის ღარის გამოყენება",

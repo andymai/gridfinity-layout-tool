@@ -428,6 +428,8 @@
   "binDesigner.base.magnetChamferHint": "En 45°-fas ved åpningen av hvert hull fører magneten rett inn.",
   "binDesigner.base.magnetChamferLightweight": "En lettvektsbunn gir for lite vegg rundt hvert hull til en fas.",
   "binDesigner.base.magnetChamferNesting": "Nestemagneter sitter i knaster som er for tynne for en fas.",
+  "binDesigner.base.cornerHolesOnly": "Bare hjørner",
+  "binDesigner.base.cornerHolesOnlyDetail": "Setter magnet- og skruehull bare i de ytre hjørnene av boksen. En stor boks trenger færre magneter og er lettere å løfte av bunnplaten.",
   "binDesigner.base.screwDiameter": "Skruediameter",
   "binDesigner.base.screwHoles": "Skruehull",
   "binDesigner.base.section.feet": "Føtter",

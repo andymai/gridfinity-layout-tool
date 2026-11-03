@@ -14,7 +14,7 @@ function chamferBlockerKey(base: BaseConfig, nesting: boolean): string | null {
   return null;
 }
 
-export function useMagnetPressFit(
+export function useHoleOptions(
   base: BaseConfig,
   nesting: boolean,
   updateBase: (partial: Partial<BaseConfig>) => void
@@ -24,6 +24,8 @@ export function useMagnetPressFit(
   readonly chamferUnavailable: string | undefined;
   readonly setCrushRibs: (on: boolean) => void;
   readonly setChamfer: (on: boolean) => void;
+  readonly cornerHolesOnly: boolean;
+  readonly setCornerHolesOnly: (on: boolean) => void;
 } {
   const t = useTranslation();
   const blocker = chamferBlockerKey(base, nesting);
@@ -36,11 +38,17 @@ export function useMagnetPressFit(
     (on: boolean) => updateBase({ magnetChamfer: on || undefined }),
     [updateBase]
   );
+  const setCornerHolesOnly = useCallback(
+    (on: boolean) => updateBase({ cornerHolesOnly: on || undefined }),
+    [updateBase]
+  );
   return {
     crushRibs: base.magnetCrushRibs === true,
     chamfer: base.magnetChamfer === true,
     chamferUnavailable: blocker ? t(blocker) : undefined,
     setCrushRibs,
     setChamfer,
+    cornerHolesOnly: base.cornerHolesOnly === true,
+    setCornerHolesOnly,
   };
 }

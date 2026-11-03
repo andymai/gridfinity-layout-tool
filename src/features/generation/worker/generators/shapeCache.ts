@@ -189,7 +189,8 @@ export function socketCacheKey(
   fractionalEdgeY: 'start' | 'end' = 'end',
   anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
   holeStyleKey = '',
-  socketHeight: number = GRIDFINITY.SOCKET_HEIGHT
+  socketHeight: number = GRIDFINITY.SOCKET_HEIGHT,
+  cornersOnly = false
 ): string {
   // Only append when non-default so 'end'/'end' keys stay byte-identical to
   // pre-feature keys (no needless cache invalidation; existing tests stable).
@@ -241,7 +242,8 @@ export function socketCacheKey(
       ...(holeStyleKey ? [`hole:${holeStyleKey}`] : []),
       ...(quantize(socketHeight) !== quantize(GRIDFINITY.SOCKET_HEIGHT)
         ? [`sh${quantize(socketHeight)}`]
-        : [])
+        : []),
+      ...(cornersOnly ? ['corners'] : [])
     )
   );
 }

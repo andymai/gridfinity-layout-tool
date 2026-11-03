@@ -428,6 +428,8 @@
   "binDesigner.base.magnetChamferHint": "Een afschuining van 45° aan de opening van elk gat leidt de magneet recht naar binnen.",
   "binDesigner.base.magnetChamferLightweight": "Een lichtgewicht bodem laat te weinig wand rond elk gat over voor een afschuining.",
   "binDesigner.base.magnetChamferNesting": "Nestmagneten zitten in nokken die te dun zijn voor een afschuining.",
+  "binDesigner.base.cornerHolesOnly": "Alleen hoeken",
+  "binDesigner.base.cornerHolesOnlyDetail": "Plaatst magneet- en schroefgaten alleen in de buitenhoeken van de bak. Een grote bak heeft zo minder magneten nodig en komt makkelijker los van de basisplaat.",
   "binDesigner.base.screwDiameter": "Schroefdiameter",
   "binDesigner.base.screwHoles": "Schroefgaten",
   "binDesigner.base.section.feet": "Voetjes",

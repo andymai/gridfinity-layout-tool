@@ -428,6 +428,8 @@
   "binDesigner.base.magnetChamferHint": "Un chanfrein à 45° à l’entrée de chaque trou guide l’aimant bien droit.",
   "binDesigner.base.magnetChamferLightweight": "Une base allégée laisse trop peu de paroi autour de chaque trou pour un chanfrein.",
   "binDesigner.base.magnetChamferNesting": "Les aimants d’emboîtement logent dans des bossages trop fins pour un chanfrein.",
+  "binDesigner.base.cornerHolesOnly": "Coins uniquement",
+  "binDesigner.base.cornerHolesOnlyDetail": "Place les trous pour aimants et pour vis uniquement aux coins extérieurs du bac. Un grand bac demande moins d’aimants et se retire plus facilement de la plaque de base.",
   "binDesigner.base.screwDiameter": "Diamètre de la vis",
   "binDesigner.base.screwHoles": "Trous pour vis",
   "binDesigner.base.section.feet": "Pieds",

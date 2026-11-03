@@ -344,6 +344,15 @@ export function BaseSection() {
               />
             </FeatureToggle>
           )}
+
+          {state.showCornerHoles && (
+            <FeatureToggle
+              label={t('binDesigner.base.cornerHolesOnly')}
+              checked={state.cornerHolesOnly}
+              onChange={() => handlers.setCornerHolesOnly(!state.cornerHolesOnly)}
+              info={t('binDesigner.base.cornerHolesOnlyDetail')}
+            />
+          )}
         </section>
       )}
 

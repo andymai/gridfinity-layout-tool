@@ -44,6 +44,7 @@ import { isFractional } from '@/core/constants';
 import { isPartialMask, isRegionFilled, type CellMask } from '@/shared/utils/cellMask';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { magnetChamferFits } from '@/shared/generation/magnetHoleStyle';
+import { outerCornerHoleFilter } from '@/shared/generation/cornerHoles';
 import {
   GRIDFINITY_SPEC,
   magnetInsetFromCellEdgeMm,
@@ -509,6 +510,7 @@ export interface DetachableFeetParams {
     readonly magnetDepth: number;
     readonly magnetCrushRibs?: boolean;
     readonly magnetChamfer?: boolean;
+    readonly cornerHolesOnly?: boolean;
     readonly screwDiameter: number;
     readonly feetPinDiameter?: number;
     readonly footLatticeX?: FootLattice;
@@ -563,6 +565,10 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
     ? placed.filter((foot) => cellIsFilled(foot, params.cellMask, pitchX, pitchY, params))
     : placed;
 
+  const corners = standardMagnetCorners(placements, pitchX, pitchY, params.magnetAnchor);
+  const holePositions =
+    params.base.cornerHolesOnly === true ? corners.filter(outerCornerHoleFilter(corners)) : corners;
+
   return {
     placements,
     armMm,
@@ -570,7 +576,7 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
     screw: carriesScrew
       ? {
           diameterMm: params.base.screwDiameter,
-          positions: standardMagnetCorners(placements, pitchX, pitchY, params.magnetAnchor),
+          positions: holePositions,
         }
       : undefined,
     magnet: carriesMagnet
@@ -581,7 +587,7 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
             crushRibs: params.base.magnetCrushRibs === true,
             chamfer: params.base.magnetChamfer === true && magnetChamferFits(FOOT_EMBED_MARGIN_MM),
           },
-          positions: standardMagnetCorners(placements, pitchX, pitchY, params.magnetAnchor),
+          positions: holePositions,
         }
       : undefined,
   };

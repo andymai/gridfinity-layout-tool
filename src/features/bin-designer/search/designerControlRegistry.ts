@@ -231,6 +231,12 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
     keywords: ['screw', 'screws', 'screw holes', 'mounting', 'fasten', 'countersink'],
   },
   {
+    id: 'opt-corner-holes',
+    labelKey: 'binDesigner.base.cornerHolesOnly',
+    section: 'bd-base',
+    keywords: ['corner magnets', 'corners only', 'fewer magnets', 'outer corners', 'four magnets'],
+  },
+  {
     id: 'opt-detachable-feet',
     labelKey: 'binDesigner.detachableFeet',
     section: 'bd-base',

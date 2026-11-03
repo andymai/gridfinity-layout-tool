@@ -428,6 +428,8 @@
   "binDesigner.base.magnetChamferHint": "Faza 45° przy wlocie każdego otworu prowadzi magnes prosto do środka.",
   "binDesigner.base.magnetChamferLightweight": "Lekka podstawa zostawia wokół każdego otworu za mało ścianki na fazę.",
   "binDesigner.base.magnetChamferNesting": "Magnesy do wkładania siedzą w występach zbyt cienkich na fazę.",
+  "binDesigner.base.cornerHolesOnly": "Tylko narożniki",
+  "binDesigner.base.cornerHolesOnlyDetail": "Otwory na magnesy i śruby trafiają tylko do zewnętrznych narożników pojemnika. Duży pojemnik potrzebuje mniej magnesów i łatwiej go zdjąć z płyty bazowej.",
   "binDesigner.base.screwDiameter": "Średnica śruby",
   "binDesigner.base.screwHoles": "Otwory na śruby",
   "binDesigner.base.section.feet": "Nóżki",

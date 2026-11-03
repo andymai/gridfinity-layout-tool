@@ -51,6 +51,7 @@ import {
   magnetPositionsForCell,
 } from './baseplateMagnets';
 import { buildMagnetHoleCutter } from './magnetHoleCutter';
+import { outerCornerHoleFilter } from '@/shared/generation/cornerHoles';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { PLAIN_MAGNET_HOLE, magnetHoleStyleKey } from '@/shared/generation/magnetHoleStyle';
 import type { MagnetAnchor } from '@/core/types';
@@ -416,7 +417,8 @@ export function baseSocketShapeKey(
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE,
   anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
   holeStyle: MagnetHoleStyle = PLAIN_MAGNET_HOLE,
-  socketHeight: number = SOCKET_HEIGHT
+  socketHeight: number = SOCKET_HEIGHT,
+  cornersOnly = false
 ): string {
   const usingMask = isPartialMask(cellMask);
   return socketCacheKey(
@@ -436,7 +438,8 @@ export function baseSocketShapeKey(
     fractionalEdge.y,
     anchor,
     withMagnet ? magnetHoleStyleKey(holeStyle) : '',
-    socketHeight
+    socketHeight,
+    cornersOnly && (withMagnet || withScrew)
   );
 }
 
@@ -455,7 +458,8 @@ export function buildBaseSocket(
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE,
   anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
   holeStyle: MagnetHoleStyle = PLAIN_MAGNET_HOLE,
-  socketHeight: number = SOCKET_HEIGHT
+  socketHeight: number = SOCKET_HEIGHT,
+  cornersOnly = false
 ): Shape3D {
   // Treat a fully-filled mask as a rectangle so the cache key and iteration
   // path match the existing rectangular code.
@@ -479,7 +483,8 @@ export function buildBaseSocket(
     fractionalEdge,
     anchor,
     holeStyle,
-    socketHeight
+    socketHeight,
+    cornersOnly
   );
   const cached = getSocketCache(key);
   if (cached) {
@@ -568,6 +573,7 @@ export function buildBaseSocket(
       // Cutter bounding radius (magnet is wider than the screw; both concentric).
       const holeRadius = Math.max(withMagnet ? magnetRadius : 0, withScrew ? screwRadius : 0);
 
+      const holeCells: Array<{ positions: Array<[number, number]>; chamfer: boolean }> = [];
       forEachCell(
         gridW,
         gridD,
@@ -578,17 +584,25 @@ export function buildBaseSocket(
           // foot (e.g. a 25mm-wide cell) gets the corners that fit, else a single
           // centered hole — so magnet/screw holes never breach the foot's side.
           const positions = magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor);
+          // Judged on the cell's full pattern: `chamferFitsCell` compares it
+          // position by position against the widened one.
           const chamfer =
             withMagnet &&
             holeStyle.chamfer &&
             chamferFitsCell(cell, holeRadius, unitX, unitY, anchor, positions);
-          const cutout = cutoutFor(chamfer);
-          for (const [x, y] of positions) {
-            holeTools.push(translate(cutout, [x, y, -socketHeight]));
-          }
+          holeCells.push({ positions, chamfer });
         },
         { gridUnitMm, fractionalEdgeX: fractionalEdge.x, fractionalEdgeY: fractionalEdge.y }
       );
+      const keep = cornersOnly
+        ? outerCornerHoleFilter(holeCells.flatMap((c) => c.positions))
+        : () => true;
+      for (const { positions, chamfer } of holeCells) {
+        for (const site of positions) {
+          if (!keep(site)) continue;
+          holeTools.push(translate(cutoutFor(chamfer), [site[0], site[1], -socketHeight]));
+        }
+      }
     }
 
     // Use booleanPipeline for small sockets (fuse cells → cut holes in one
