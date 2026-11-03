@@ -1,0 +1,90 @@
+src/features/bin-designer/components/TraceView/TraceView.tsx
+  s_4b9adb1d9473fb::t_4fdada380bc947 11,264-268
+src/shared/scanReview/components/TraceExportMenu/index.ts
+  s_4b9adb1d9473fb::t_726ec43ce8b27a 1
+src/design-system/Dialog/Dialog.test.tsx
+  s_4b9adb1d9473fb::t_a0ee4d5870a52a 5,244-263
+  s_4b9adb1d9473fb::t_b7265cda9f24f5 264-265
+src/shared/scanReview/components/TraceExportMenu/TraceExportMenu.tsx
+  s_4b9adb1d9473fb::t_4cdf6e4c796765 1-128
+  s_4b9adb1d9473fb::t_e40669cfd9e30f 129-131
+  s_4b9adb1d9473fb::t_967648dc4f7932 132-134
+src/design-system/Popover/Popover.tsx
+  s_4b9adb1d9473fb::t_3f0efe738b135a 53,59-64,138-139,142,148,152,166
+src/design-system/Dialog/DialogRoot.tsx
+  s_4b9adb1d9473fb::t_3f0efe738b135a 324
+src/i18n/locales/en.ts
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 1586-1598
+  s_4b9adb1d9473fb::t_3262bd0fb5921f 1599
+src/i18n/locales/fr.json
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 4347-4359
+src/shared/scanReview/traceStl.ts
+  s_4b9adb1d9473fb::t_34ad82a012bd71 67,69-71
+  s_4b9adb1d9473fb::t_e1c9db65dbb44e 1-66,68,72-83
+src/i18n/locales/it.json
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 4347-4359
+src/shared/scanReview/index.ts
+  s_4b9adb1d9473fb::t_726ec43ce8b27a 31-43
+src/i18n/locales/de.json
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 4347-4359
+src/i18n/locales/pl.json
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 4347-4359
+src/i18n/locales/pt-BR.json
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 4347-4359
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.ts
+  s_4b9adb1d9473fb::t_952b760f491908 20
+  s_4b9adb1d9473fb::t_bdec8124d7f101 48
+src/i18n/locales/ja.json
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 4347-4359
+src/i18n/locales/nb.json
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 4347-4359
+src/i18n/locales/uk.json
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 4347-4359
+src/i18n/locales/zh-CN.json
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 4347-4359
+src/i18n/locales/sv.json
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 4347-4359
+src/i18n/locales/cs.json
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 4347-4359
+src/design-system/Popover/Popover.test.tsx
+  s_4b9adb1d9473fb::t_3f0efe738b135a 79-106
+src/i18n/locales/ko.json
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 4347-4359
+src/features/scan-capture/components/ScanPage/ScanPage.tsx
+  s_4b9adb1d9473fb::t_125ed32b2a78bc 209-217
+  s_4b9adb1d9473fb::t_a4c83e1bf10904 485-495
+  s_4b9adb1d9473fb::t_4fdada380bc947 46-47
+src/i18n/locales/es.json
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 4347-4359
+src/i18n/locales/nl.json
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 4347-4359
+src/shared/scanReview/components/TraceExportMenu/TraceExportMenu.test.tsx
+  s_4b9adb1d9473fb::t_ab24168015f793 1-80
+src/shared/scanReview/traceExport.test.ts
+  s_4b9adb1d9473fb::t_c9b73f87042ad2 1-67,69-98,102-180,189-202
+  s_4b9adb1d9473fb::t_8140870ba275e0 181-188
+  s_4b9adb1d9473fb::t_49ec5f47799751 68,99-101
+src/features/bin-designer/components/TraceView/useTraceSession.ts
+  s_4b9adb1d9473fb::t_4fdada380bc947 24,29,132-133,335-338,340,344-349,379
+src/shared/scanReview/traceExport.ts
+  s_4b9adb1d9473fb::t_731b1bf0dcd7c3 1-4,8-207
+  s_4b9adb1d9473fb::t_219ee4e6f7442f 5-7
+src/i18n/locales/ka.json
+  s_4b9adb1d9473fb::t_ea610b1295dbb5 1383-1395
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1b3e84a30d5545ba1fc0d2d06e50ee07ee06bacf",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
