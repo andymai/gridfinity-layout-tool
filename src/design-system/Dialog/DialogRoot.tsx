@@ -99,6 +99,11 @@ const contentVariants = cva(
           'max-md:h-dvh max-md:max-h-none',
           'max-md:rounded-none max-md:border-0',
         ],
+        always: [
+          'left-0 top-0 translate-x-0 translate-y-0',
+          'w-full max-w-none h-dvh max-h-none',
+          'rounded-none border-0',
+        ],
       },
       mobilePresentation: {
         dialog: '',

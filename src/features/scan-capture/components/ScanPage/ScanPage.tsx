@@ -28,22 +28,24 @@ import {
   type Point,
   type SceneTrace,
 } from '@/shared/scanTrace';
-import { loadCardSize, saveCardSize, type CardSizeMm } from '@/features/scan-capture/cardSize';
-import { CardSizeEditor } from '@/features/scan-capture/components/CardSizeEditor';
-import { ProgressSteps, CaptureGuide, CardStatusIcon, SentIcon, TapIcon } from './ScanPageGuide';
-import type { Step } from './ScanPageGuide';
-import { ScanToolList } from './ScanToolList';
 import {
   bounds,
   cardOptions,
+  CardSizeEditor,
+  loadCardSize,
+  saveCardSize,
+  ScanOverlay,
+  ScanToolList,
   shownShapes,
   svgFromShapes,
   traceAll,
   traceTap,
   visibleShapes,
   withoutShape,
-} from './scanFlow';
-import { ScanOverlay } from './ScanOverlay';
+  type CardSizeMm,
+} from '@/shared/scanReview';
+import { ProgressSteps, CaptureGuide, CardStatusIcon, SentIcon, TapIcon } from './ScanPageGuide';
+import type { Step } from './ScanPageGuide';
 
 interface ScanPageProps {
   readonly token: string;

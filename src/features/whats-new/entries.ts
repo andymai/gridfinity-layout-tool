@@ -24,6 +24,17 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     action: { kind: 'openTool', tool: 'designer' },
   },
   {
+    id: 'trace-photo-desktop',
+    date: '2026-11-02',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Trace a photo on your computer' },
+    body: {
+      en: 'Scan tools from a photo you already have: in the cutout editor, open Scan and choose Trace a photo on this computer. A card, the calibration sheet or a baseplate in the photo sets the size. With none in frame, draw a ruler across something you know the length of, or click the four corners of a sheet of paper. Click a tool to redraw its outline, then add them all at once. The photo never leaves your computer.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'scan-keep-holes',
     date: '2026-11-02',
     kind: 'new',

@@ -17,7 +17,7 @@ import {
   isDefaultCardSize,
   parseCardMm,
   type CardSizeMm,
-} from '@/features/scan-capture/cardSize';
+} from '../../cardSize';
 
 export interface CardSizeEditorProps {
   readonly size: CardSizeMm;
