@@ -159,17 +159,18 @@ describe('specToCutout', () => {
       x: 0,
       y: 0,
       width: 10,
-      depth: 10.2,
+      depth: 10.3,
       cornerRadius: 0,
       rotation: 0,
+      // A curl whose tip, at 10.3, is the outline's highest point.
       path: [
         pt(0, 0),
         pt(10, 0),
         pt(10, 10),
         pt(6, 10),
         pt(4.8, 10),
-        pt(5.2, 9.8),
-        pt(5, 10.2),
+        pt(5.2, 10.3),
+        pt(5, 9.8),
         pt(0, 10),
       ],
     };
@@ -178,5 +179,7 @@ describe('specToCutout', () => {
     const cutout = specToCutout(spec, defaultOptions);
     expect(cutout.path).toHaveLength(7);
     expect(pathCutoutOutline(cutout)).not.toBeNull();
+    // The box the cutout turns about shrinks with it.
+    expect(cutout.depth).toBeCloseTo(10);
   });
 });

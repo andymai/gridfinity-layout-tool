@@ -27,8 +27,55 @@ function area(ring: readonly Pt[]): number {
   return Math.abs(sum / 2);
 }
 
-/** Edges this many apart, at most, close a loop worth looking for. */
-const LOOP_SPAN = 32;
+/** Every pair of non-adjacent edges that cross, found on a grid of cells. */
+function crossings(points: readonly Pt[]): { i: number; j: number; x: Pt }[] {
+  const n = points.length;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const p of points) {
+    minX = Math.min(minX, p.x);
+    minY = Math.min(minY, p.y);
+    maxX = Math.max(maxX, p.x);
+    maxY = Math.max(maxY, p.y);
+  }
+  const cell = Math.max(Math.hypot(maxX - minX, maxY - minY) / Math.sqrt(n), 1e-9);
+  const cells = new Map<string, number[]>();
+  for (let e = 0; e < n; e++) {
+    const a = points[e];
+    const b = points[(e + 1) % n];
+    for (
+      let cx = Math.floor((Math.min(a.x, b.x) - minX) / cell);
+      cx <= Math.floor((Math.max(a.x, b.x) - minX) / cell);
+      cx++
+    ) {
+      for (
+        let cy = Math.floor((Math.min(a.y, b.y) - minY) / cell);
+        cy <= Math.floor((Math.max(a.y, b.y) - minY) / cell);
+        cy++
+      ) {
+        const key = `${cx},${cy}`;
+        const list = cells.get(key);
+        if (list) list.push(e);
+        else cells.set(key, [e]);
+      }
+    }
+  }
+  const found = new Map<string, { i: number; j: number; x: Pt }>();
+  for (const list of cells.values()) {
+    for (let u = 0; u < list.length; u++) {
+      for (let v = u + 1; v < list.length; v++) {
+        const i = Math.min(list[u], list[v]);
+        const j = Math.max(list[u], list[v]);
+        if (j - i < 2 || (i === 0 && j === n - 1) || found.has(`${i},${j}`)) continue;
+        const x = crossing(points[i], points[i + 1], points[j], points[(j + 1) % n]);
+        if (x) found.set(`${i},${j}`, { i, j, x });
+      }
+    }
+  }
+  return [...found.values()];
+}
 
 /**
  * A closed polyline with each small loop it makes by crossing itself cut out
@@ -46,21 +93,31 @@ export function withoutTinyLoops<T extends Pt>(
 ): T[] {
   let points = [...ring];
   for (let pass = 0; pass < ring.length && polylineCrosses(points); pass++) {
-    const n = points.length;
-    let cut: { i: number; k: number; x: Pt } | null = null;
-    for (let i = 0; i < n && !cut; i++) {
-      for (let k = 2; k <= Math.min(LOOP_SPAN, n - 2) && !cut; k++) {
-        const j = (i + k) % n;
-        const x = crossing(points[i], points[(i + 1) % n], points[j], points[(j + 1) % n]);
-        if (!x) continue;
-        const loop = [x, ...Array.from({ length: k }, (_, m) => points[(i + 1 + m) % n])];
-        if (area(loop) < maxArea) cut = { i, k, x };
+    let next: T[] | null = null;
+    for (const { i, j, x } of crossings(points)) {
+      const cutAt = at(x.x, x.y, points[i]);
+      // Either side of the crossing can be the loop. A side that crosses
+      // itself can hide large lobes whose areas cancel, so only a simple one
+      // is measured; the loops inside it come out on their own.
+      const inner = points.slice(i + 1, j + 1);
+      const outer = [...points.slice(j + 1), ...points.slice(0, i + 1)];
+      for (const [loop, kept] of [
+        [inner, outer],
+        [outer, inner],
+      ] as const) {
+        const closed = [x, ...loop];
+        if (area(closed) < maxArea && !polylineCrosses(closed)) {
+          next =
+            loop === inner
+              ? [...points.slice(0, i + 1), cutAt, ...points.slice(j + 1)]
+              : [cutAt, ...kept];
+          break;
+        }
       }
+      if (next) break;
     }
-    if (!cut) break;
-    const { i, k, x } = cut;
-    const turned = [...points.slice(i), ...points.slice(0, i)];
-    points = [turned[0], at(x.x, x.y, turned[0]), ...turned.slice(k + 1)];
+    if (!next) break;
+    points = next;
   }
   return points;
 }

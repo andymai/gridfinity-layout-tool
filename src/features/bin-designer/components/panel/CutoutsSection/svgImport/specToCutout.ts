@@ -7,6 +7,7 @@
 
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
 import { withoutTinyLoops } from '@/shared/utils/tinyLoops';
+import { getPathBounds } from '../pathGeometry';
 import type { ParsedCutoutSpec } from './types';
 
 /** Options for hydrating a spec into a Cutout. */
@@ -58,9 +59,15 @@ export function specToCutout(spec: ParsedCutoutSpec, options: HydrationOptions):
   };
 
   if (spec.shape === 'path' && spec.path) {
+    const path = untangled(spec.path);
+    // A cut loop can hold the outline's extreme point, and the cutout turns
+    // about the middle of its box.
+    const cut = path.length !== spec.path.length || path.some((p, i) => p !== spec.path?.[i]);
+    const { minX, minY, maxX, maxY } = getPathBounds(path);
     return {
       ...base,
-      path: untangled(spec.path),
+      ...(cut ? { x: minX, y: minY, width: maxX - minX, depth: maxY - minY } : {}),
+      path,
       ...(spec.holes ? { holes: spec.holes.map(untangled) } : {}),
     };
   }

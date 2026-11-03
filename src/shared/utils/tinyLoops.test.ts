@@ -23,10 +23,32 @@ describe('withoutTinyLoops', () => {
     expect(polylineCrosses(CURLED)).toBe(true);
     const fixed = withoutTinyLoops(CURLED, 0.5, at);
     expect(polylineCrosses(fixed)).toBe(false);
+    // The curl's two points give way to the one where it crossed.
     expect(fixed).toHaveLength(CURLED.length - 1);
-    expect(fixed[0]).toEqual(p(6, 10));
-    expect(fixed[1].x).toBeCloseTo(5.1);
-    expect(fixed[1].y).toBeCloseTo(10);
+    expect(fixed).not.toContainEqual(p(4.8, 10));
+    expect(fixed).not.toContainEqual(p(5.2, 9.8));
+    const cutAt = fixed[4];
+    expect(cutAt.x).toBeCloseTo(5.1);
+    expect(cutAt.y).toBeCloseTo(10);
+  });
+
+  it('finds a small loop however finely it is drawn', () => {
+    // Every edge split in 21: the crossing edges end up far apart in the ring.
+    const dense = CURLED.flatMap((a, i) => {
+      const b = CURLED[(i + 1) % CURLED.length];
+      return Array.from({ length: 21 }, (_, s) =>
+        p(a.x + ((b.x - a.x) * s) / 21, a.y + ((b.y - a.y) * s) / 21)
+      );
+    });
+    expect(polylineCrosses(dense)).toBe(true);
+    expect(polylineCrosses(withoutTinyLoops(dense, 0.5, at))).toBe(false);
+  });
+
+  it('never measures a loop that crosses itself, whose lobes can cancel', () => {
+    const lobed = [p(0, -1), p(0, 1), p(10, 11), p(10, 1), p(0, 11), p(-0.01, -1), p(0.01, 1)];
+    const xs = withoutTinyLoops(lobed, 0.5, at).map((q) => q.x);
+    // The outline still spans its 10 mm, rather than collapsing to a sliver.
+    expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(9.9);
   });
 
   it('leaves a loop as large as a part of the shape, crossing and all', () => {
