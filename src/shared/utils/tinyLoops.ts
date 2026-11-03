@@ -1,4 +1,4 @@
-import { polylineCrosses } from './outlineSegments';
+import { polylineCrosses, touchesItself } from './outlineSegments';
 
 interface Pt {
   readonly x: number;
@@ -27,8 +27,26 @@ function area(ring: readonly Pt[]): number {
   return Math.abs(sum / 2);
 }
 
-/** Every pair of non-adjacent edges that cross, found on a grid of cells. */
-function crossings(points: readonly Pt[]): { i: number; j: number; x: Pt }[] {
+/**
+ * Grid entries and edge pairs a repair may visit, a vertex. An outline of long
+ * edges all spanning one box, which only a crafted file has, would otherwise
+ * visit billions of pairs on the page thread; it is left as it was.
+ */
+const WORK_PER_POINT = 4096;
+const WORK_FLOOR = 1 << 20;
+
+interface Budget {
+  left: number;
+}
+
+/**
+ * Every pair of non-adjacent edges that cross, found on a grid of cells, or
+ * null once `budget` runs out.
+ */
+function crossings(
+  points: readonly Pt[],
+  budget: Budget
+): { i: number; j: number; x: Pt }[] | null {
   const n = points.length;
   let minX = Infinity;
   let minY = Infinity;
@@ -55,6 +73,7 @@ function crossings(points: readonly Pt[]): { i: number; j: number; x: Pt }[] {
         cy <= Math.floor((Math.max(a.y, b.y) - minY) / cell);
         cy++
       ) {
+        if (--budget.left < 0) return null;
         const key = `${cx},${cy}`;
         const list = cells.get(key);
         if (list) list.push(e);
@@ -66,6 +85,7 @@ function crossings(points: readonly Pt[]): { i: number; j: number; x: Pt }[] {
   for (const list of cells.values()) {
     for (let u = 0; u < list.length; u++) {
       for (let v = u + 1; v < list.length; v++) {
+        if (--budget.left < 0) return null;
         const i = Math.min(list[u], list[v]);
         const j = Math.max(list[u], list[v]);
         if (j - i < 2 || (i === 0 && j === n - 1) || found.has(`${i},${j}`)) continue;
@@ -92,13 +112,16 @@ export function withoutTinyLoops<T extends Pt>(
   at: (x: number, y: number, from: T) => T
 ): T[] {
   let points = [...ring];
+  const budget = { left: WORK_FLOOR + WORK_PER_POINT * ring.length };
   for (let pass = 0; pass < ring.length && polylineCrosses(points); pass++) {
+    const found = crossings(points, budget);
+    if (!found) return [...ring];
     let next: T[] | null = null;
-    for (const { i, j, x } of crossings(points)) {
+    for (const { i, j, x } of found) {
       const cutAt = at(x.x, x.y, points[i]);
-      // Either side of the crossing can be the loop. A side that crosses
-      // itself can hide large lobes whose areas cancel, so only a simple one
-      // is measured; the loops inside it come out on their own.
+      // Either side of the crossing can be the loop. A side that crosses or
+      // touches itself can hide large lobes whose areas cancel, so only a
+      // simple one is measured; the loops inside it come out on their own.
       const inner = points.slice(i + 1, j + 1);
       const outer = [...points.slice(j + 1), ...points.slice(0, i + 1)];
       for (const [loop, kept] of [
@@ -106,7 +129,7 @@ export function withoutTinyLoops<T extends Pt>(
         [outer, inner],
       ] as const) {
         const closed = [x, ...loop];
-        if (area(closed) < maxArea && !polylineCrosses(closed)) {
+        if (area(closed) < maxArea && !polylineCrosses(closed) && !touchesItself(closed)) {
           next =
             loop === inner
               ? [...points.slice(0, i + 1), cutAt, ...points.slice(j + 1)]

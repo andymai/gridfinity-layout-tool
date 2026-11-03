@@ -51,6 +51,32 @@ describe('withoutTinyLoops', () => {
     expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(9.9);
   });
 
+  it('never measures a loop whose lobes only touch, at a repeated point', () => {
+    const touching = [
+      p(0, -1),
+      p(0, 1),
+      p(5, 6),
+      p(10, 11),
+      p(10, 1),
+      p(5, 6),
+      p(0, 11),
+      p(-0.01, -1),
+      p(0.01, 1),
+    ];
+    const xs = withoutTinyLoops(touching, 0.5, at).map((q) => q.x);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(9.9);
+  });
+
+  it('gives up, leaving the ring as it was, on a crafted outline too dense to search', () => {
+    // A star of 4,001 points, each joined to the one 2,000 round: every edge
+    // spans the circle and crosses most of the others.
+    const star = Array.from({ length: 4001 }, (_, k) => {
+      const a = ((k * 2000) % 4001) * ((2 * Math.PI) / 4001);
+      return p(50 * Math.cos(a), 50 * Math.sin(a));
+    });
+    expect(withoutTinyLoops(star, 0.5, at)).toEqual(star);
+  });
+
   it('leaves a loop as large as a part of the shape, crossing and all', () => {
     const bowtie = [p(0, 0), p(10, 10), p(10, 0), p(0, 10)];
     expect(withoutTinyLoops(bowtie, 0.5, at)).toEqual(bowtie);
