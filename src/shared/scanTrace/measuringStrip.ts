@@ -224,7 +224,9 @@ export function bridgeSoftAcrossStrip(soft: SoftMask, strip: SceneStrip): SoftMa
   return {
     width,
     height,
-    data: Float32Array.from(outside, (v, i) => Math.max(v, bridged.data[i])),
+    // Only the pixels the bridge adds change: the model's own values place the
+    // edges everywhere else, to a fraction of a pixel.
+    data: Float32Array.from(outside, (v, i) => (v < 0.5 && bridged.data[i] === 1 ? 1 : v)),
   };
 }
 

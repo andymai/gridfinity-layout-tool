@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { isOk } from '@/core/result';
-import { detectMarkerStrip, stripSizeMm, STRIP_MARGIN_MM } from './measuringStrip';
+import {
+  bridgeSoftAcrossStrip,
+  detectMarkerStrip,
+  stripSizeMm,
+  STRIP_MARGIN_MM,
+} from './measuringStrip';
 import { CALIBRATION_MARKER_MM, CALIBRATION_PITCH_MM, calibrationNodes } from './calibrationGrid';
 import { traceScene, traceSceneSegmented, withReference } from './traceScene';
 import type { SoftMask } from './softContour';
@@ -215,5 +220,26 @@ describe('tracing a tool under a strip', () => {
     expect(reference?.kind === 'strip' && reference.sheet).toBeTruthy();
     expect(shapes).toHaveLength(1);
     expect(Math.abs(bbox(shapes[0].outputPoints).w - 110)).toBeLessThan(2);
+  });
+
+  it('leaves the model’s confidence alone away from the strip, changing only the bridged gap', () => {
+    const across = stripLayers(4, { x: 133, y: 14 }, Math.PI / 2);
+    const strip = detectMarkerStrip(render([...across, BAR]));
+    expect(strip).not.toBeNull();
+    if (!strip) return;
+    const bar = BAR.poly.map(px);
+    const data = new Float32Array(W * H);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if (inside({ x, y }, bar) && !inside({ x, y }, strip.paper)) data[y * W + x] = 0.7;
+      }
+    }
+    const out = bridgeSoftAcrossStrip({ width: W, height: H, data }, strip).data;
+    // A pixel well inside the bar, far from the strip, keeps the model's 0.7.
+    const far = Math.round(90 * SCALE) * W + Math.round(60 * SCALE);
+    expect(out[far]).toBeCloseTo(0.7);
+    // A pixel under the strip, inside the bar, is filled.
+    const under = Math.round(90 * SCALE) * W + Math.round(120 * SCALE);
+    expect(out[under]).toBe(1);
   });
 });
