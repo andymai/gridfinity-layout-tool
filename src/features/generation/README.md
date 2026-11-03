@@ -192,7 +192,7 @@ wall never shifts the columns on the walls that stay patterned.
 ## Lid subsystem map
 
 Resolution runs on the main thread so the panel and the worker cannot disagree.
-`resolveLidInputs` (`worker/generators/lidInputs.ts`) turns params into `LidInputs`,
+`resolveLidInputs` (`src/shared/utils/lidInputs.ts`) turns params into `LidInputs`,
 reading `resolveLidPlateThickness`, `resolveLidCavityExtraMm` and
 `retentionSeatPlanes()` for the magnet interface
 (`interfaceZ = -(LID_TOP_THICKNESS_BASE + magnetDepth) - cavityExtraMm`). `lidAnchorZ`

@@ -252,6 +252,7 @@ export {
   lidHasFill,
   lidFillBottomZ,
   hasBinLipDip,
+  binDipSplitsRails,
   lidGripModeAllowed,
   DEFAULT_SCOOP_EDGES,
   CUTOUT_OPEN_SIDES,

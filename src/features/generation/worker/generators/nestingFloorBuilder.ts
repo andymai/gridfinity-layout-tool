@@ -3,7 +3,7 @@
 import { cut, fuse, intersect, translate, unwrap } from 'brepjs';
 import type { DisposalScope, Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext } from './pipeline/types';
-import type { LidInputs } from './lidInputs';
+import type { LidInputs } from '@/shared/utils/lidInputs';
 import { buildOutlineDrawing } from './lidProfile';
 import { LIP_BIG_TAPER } from './generatorConstants';
 import {

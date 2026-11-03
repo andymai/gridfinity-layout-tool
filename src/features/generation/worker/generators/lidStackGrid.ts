@@ -35,7 +35,7 @@ import { isRegionFilled } from '@/shared/utils/cellMask';
 import { forEachCell, type CellInfo } from './cellDecomposition';
 import { buildMaskDrawingAtInset } from './maskPolygon';
 import { buildOutlineDrawing } from './lidProfile';
-import type { LidInputs } from './lidInputs';
+import type { LidInputs } from '@/shared/utils/lidInputs';
 
 /**
  * Inset at the pocket floor, per side — on a lip-only top this is how far the

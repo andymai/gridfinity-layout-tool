@@ -14,9 +14,11 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { LID_MIN_RAIL_LENGTH, resolveLidGripSpanMm } from '@/shared/types/bin';
+import { DEFAULT_LID_HINGE_CONFIG } from '@/features/bin-designer/types';
+import { MASK_CELLS_PER_UNIT } from './cellMask';
 import type { BinParams, LidGripConfig } from '@/features/bin-designer/types';
 import { resolveLidInputs } from './lidInputs';
-import { railPlacements, splitRailsAroundGrip } from './lidClickRail';
+import { binDipRailEffect, railPlacements, splitRailsAroundGrip } from './lidRailPlan';
 
 function makeParams(grip: Partial<LidGripConfig>, over: Partial<BinParams> = {}): BinParams {
   return {
@@ -149,5 +151,162 @@ describe('splitRailsAroundGrip', () => {
         }
       }
     }
+  });
+});
+
+describe('hinged snap behind a dipped grip', () => {
+  // The default grip (50%, centred) is wider than the snap (40%, centred) and
+  // both sit on the free edge, so splitting would leave the lid with no catch.
+  const hinged: BinParams = {
+    ...DEFAULT_BIN_PARAMS,
+    width: 2,
+    depth: 2,
+    height: 4,
+    lid: {
+      ...DEFAULT_BIN_PARAMS.lid,
+      enabled: true,
+      attachment: 'hinge',
+      hinge: { ...DEFAULT_LID_HINGE_CONFIG, side: 'back', catchMode: 'detent' },
+      grip: {
+        ...DEFAULT_BIN_PARAMS.lid.grip,
+        mode: 'scallop',
+        binDip: true,
+        sides: { front: true, back: false, left: false, right: false },
+      },
+    },
+  };
+
+  it('keeps the snap whole', () => {
+    const { full, split } = railsFor(hinged);
+    expect(full).toHaveLength(1);
+    expect(full[0].side).toBe('front');
+    expect(split).toEqual(full);
+  });
+
+  it('reports no wall as lost', () => {
+    expect(binDipRailEffect(hinged).lostSides).toEqual([]);
+  });
+});
+
+describe('binDipRailEffect eases', () => {
+  const frontGrip = {
+    mode: 'scallop',
+    sides: { front: true, back: false, left: false, right: false },
+  } as const;
+  const noRails = { front: false, back: false, left: false, right: false };
+
+  it('is true when a rail runs behind the grip', () => {
+    expect(binDipRailEffect(makeParams(frontGrip)).eases).toBe(true);
+  });
+
+  it('answers for the dip while the toggle is still off', () => {
+    expect(binDipRailEffect(makeParams({ ...frontGrip, binDip: false })).eases).toBe(true);
+  });
+
+  it('is false when every click rail is off', () => {
+    const params = makeParams(frontGrip);
+    expect(binDipRailEffect({ ...params, lid: { ...params.lid, clickRails: noRails } }).eases).toBe(
+      false
+    );
+  });
+
+  it('is false when the rails are only on walls without a grip', () => {
+    const params = makeParams(frontGrip);
+    expect(
+      binDipRailEffect({
+        ...params,
+        lid: { ...params.lid, clickRails: { ...noRails, back: true, left: true } },
+      }).eases
+    ).toBe(false);
+  });
+
+  it('is false for a hinged lid, whose snap the dip never splits', () => {
+    const params = makeParams(frontGrip);
+    expect(
+      binDipRailEffect({
+        ...params,
+        lid: {
+          ...params.lid,
+          attachment: 'hinge',
+          hinge: { ...DEFAULT_LID_HINGE_CONFIG, side: 'back', catchMode: 'detent' },
+        },
+      }).eases
+    ).toBe(false);
+  });
+
+  it('is false with no grip to dip under', () => {
+    expect(binDipRailEffect(makeParams({ mode: 'none' })).eases).toBe(false);
+  });
+});
+
+describe('binDipRailEffect lostSides', () => {
+  it('names a wall whose whole rail sits behind the grip', () => {
+    // Half-coverage rails on a 2x2 lid are shorter than a half-coverage grip
+    // plus its quiet zone, so the front rail has nothing left either side.
+    const params = makeParams(
+      { mode: 'scallop', sides: { front: true, back: false, left: false, right: false } },
+      { width: 2, depth: 2 }
+    );
+    const { lostSides: lost } = binDipRailEffect({
+      ...params,
+      lid: { ...params.lid, clickRailCoverage: 50 },
+    });
+    expect(lost).toEqual(['front']);
+  });
+
+  it('stays quiet when the split leaves a segment on the wall', () => {
+    const params = makeParams({
+      mode: 'scallop',
+      sides: { front: true, back: true, left: true, right: true },
+    });
+    expect(binDipRailEffect(params).lostSides).toEqual([]);
+  });
+
+  it('stays quiet without the dip', () => {
+    const params = makeParams(
+      { mode: 'scallop', binDip: false, coverage: 100 },
+      { width: 1, depth: 1 }
+    );
+    expect(binDipRailEffect(params).lostSides).toEqual([]);
+  });
+
+  it('tells apart two walls that face the same way along one line', () => {
+    // The 4.5x2 U: its back-facing arms are 1u and 1.5u wide and share a line.
+    // A full-width grip clears the short arm's rail and leaves the long arm
+    // two segments, which must not stand in for the short arm.
+    const cols = 4.5 * MASK_CELLS_PER_UNIT;
+    const rows = 2 * MASK_CELLS_PER_UNIT;
+    const cells = new Array<0 | 1>(cols * rows).fill(1);
+    for (let r = MASK_CELLS_PER_UNIT; r < rows; r++) {
+      for (let c = MASK_CELLS_PER_UNIT; c < 3 * MASK_CELLS_PER_UNIT; c++) cells[r * cols + c] = 0;
+    }
+    const params = makeParams(
+      {
+        mode: 'scallop',
+        coverage: 100,
+        sides: { front: false, back: true, left: false, right: false },
+      },
+      { width: 4.5, depth: 2, cellMask: { cols, rows, cells } }
+    );
+    const { split } = railsFor(params);
+    expect(split.some((rail) => rail.side === 'back')).toBe(true);
+    expect(binDipRailEffect(params).lostSides).toEqual(['back']);
+  });
+
+  it('names every wall a full-width grip clears on a 1x1 lid', () => {
+    const params = makeParams(
+      {
+        mode: 'scallop',
+        coverage: 100,
+        sides: { front: true, back: true, left: true, right: true },
+      },
+      { width: 1, depth: 1 }
+    );
+    expect([...binDipRailEffect(params).lostSides].sort()).toEqual([
+      'back',
+      'front',
+      'left',
+      'right',
+    ]);
   });
 });

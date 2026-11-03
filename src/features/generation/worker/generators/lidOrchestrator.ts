@@ -12,7 +12,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { LidMeshData, StackPlateMeshData, ExportFormat } from '../../bridge/types';
 import type { ProgressFn } from './generatorTypes';
 import { buildLid, buildStackPlate } from './lidBuilder';
-import { keepsNaturalOrientation } from './lidInputs';
+import { keepsNaturalOrientation } from '@/shared/utils/lidInputs';
 import { toIndexedMeshData, creaseEdges } from './utils';
 import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
 import { computeTessellationTolerances, EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';

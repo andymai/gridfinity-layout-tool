@@ -23,8 +23,8 @@ import {
 
 import type { BinParams } from '@/shared/types/bin';
 import { hasAnyClickRail } from './lidClickRail';
-import { resolveLidInputs } from './lidInputs';
-import type { LidInputs } from './lidInputs';
+import { resolveLidInputs } from '@/shared/utils/lidInputs';
+import type { LidInputs } from '@/shared/utils/lidInputs';
 import { retentionInterfaceZ } from './retentionMagnetGeometry';
 
 /**

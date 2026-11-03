@@ -80,7 +80,7 @@ describe('magnetic lid with asymmetric overhang (#3048)', () => {
   });
 
   it('keeps both magnets the designed distance inboard of the lip', async () => {
-    const { resolveLidInputs } = await import('./lidInputs');
+    const { resolveLidInputs } = await import('@/shared/utils/lidInputs');
     const { retentionMagnetPositions } = await import('./retentionMagnetGeometry');
     const params = makeParams({ left: OVERHANG_MM });
     const inputs = resolveLidInputs(params);
@@ -131,7 +131,7 @@ describe('magnetic lid with asymmetric overhang (#3048)', () => {
       return n;
     };
 
-    const { resolveLidInputs } = await import('./lidInputs');
+    const { resolveLidInputs } = await import('@/shared/utils/lidInputs');
     const { retentionMagnetPositions } = await import('./retentionMagnetGeometry');
     const params = makeParams({ left: OVERHANG_MM });
     const inputs = resolveLidInputs(params);

@@ -91,6 +91,8 @@ const MESH_CACHE_VERSION = 'v29';
  * assembly-item previews (their own `item` segment) stay warm. The mirror of
  * {@link itemMeshCacheKey}'s segment.
  *
+ * `bin17`: a hinged lid keeps its snap catch whole under a grip whose bin lip
+ * is dipped.
  * `bin16`: a funnel wall cutout's top round-over lands tangent to its slope.
  * `bin15`: a scoop wall cutout's top round-over is no longer held short by a
  * bottom fillet the scoop never draws.
@@ -119,7 +121,7 @@ const MESH_CACHE_VERSION = 'v29';
  * `bin1`: a lipless bin's sliding-lid entry window no longer ramps through the
  * rim, so its entry corners keep their full wall height.
  */
-const BIN_MESH_REVISION = 'bin16';
+const BIN_MESH_REVISION = 'bin17';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for

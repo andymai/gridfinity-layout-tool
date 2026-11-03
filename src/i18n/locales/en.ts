@@ -2922,6 +2922,11 @@ const en: Record<string, string> = {
     'Removes the stacking lip across the same span so a fingertip gets under the lid, and eases the click rails there.',
   'binDesigner.lid.gripBinDipStacking':
     'A bin stacked on top has nothing to locate against along that stretch.',
+  'binDesigner.lid.gripBinDipInfo':
+    'Removes the stacking lip across the same span so a fingertip gets under the lid.',
+  'binDesigner.lid.gripBinDipRailsLost': 'Walls with no click rail left: {walls}.',
+  'binDesigner.lid.gripBinDipRailsLostDetail':
+    'The grip covers the whole rail there. To keep a snap, narrow the grip, raise the rail coverage, or turn off the lip dip.',
   'binDesigner.lid.section.tray': 'Organizer tray',
   'binDesigner.lid.matchingTrayHint':
     'A lid keeps dust out; a tray keeps things from sliding. This starts a new design sized to this bin, with a lid base already set up.',

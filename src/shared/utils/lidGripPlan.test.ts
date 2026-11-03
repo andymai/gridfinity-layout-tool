@@ -12,7 +12,7 @@ import { LID_GRIP_SPAN_MIN_MM, LID_GRIP_SPAN_MAX_MM } from '@/shared/types/bin';
 import type { BinParams, LidGripConfig } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { resolveLidInputs } from './lidInputs';
-import { gripPlacements } from './lidGripRelief';
+import { gripPlacements } from './lidGripPlan';
 
 const ALL_SIDES = { front: true, back: true, left: true, right: true } as const;
 
