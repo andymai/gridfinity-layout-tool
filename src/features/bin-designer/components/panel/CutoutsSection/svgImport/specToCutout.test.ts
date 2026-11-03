@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { specToCutout, DEFAULT_CUT_DEPTH } from './specToCutout';
 import type { ParsedCutoutSpec } from './types';
+import { pathCutoutOutline } from '@/shared/utils/pathCutoutOutline';
 
 describe('specToCutout', () => {
   const mockIdFactory = (() => {
@@ -143,5 +144,39 @@ describe('specToCutout', () => {
       defaultOptions
     );
     expect(cutout.holes).toEqual(holes);
+  });
+
+  it('cuts the tiny loops a traced path can make out of it, so it is cut to shape', () => {
+    const pt = (x: number, y: number) => ({
+      x,
+      y,
+      handleIn: null,
+      handleOut: null,
+      symmetric: false,
+    });
+    const spec: ParsedCutoutSpec = {
+      shape: 'path',
+      x: 0,
+      y: 0,
+      width: 10,
+      depth: 10.2,
+      cornerRadius: 0,
+      rotation: 0,
+      path: [
+        pt(0, 0),
+        pt(10, 0),
+        pt(10, 10),
+        pt(6, 10),
+        pt(4.8, 10),
+        pt(5.2, 9.8),
+        pt(5, 10.2),
+        pt(0, 10),
+      ],
+    };
+    // Left crossing, the builder would cut the outline's bounding box instead.
+    expect(pathCutoutOutline({ ...spec, path: spec.path })).toBeNull();
+    const cutout = specToCutout(spec, defaultOptions);
+    expect(cutout.path).toHaveLength(7);
+    expect(pathCutoutOutline(cutout)).not.toBeNull();
   });
 });

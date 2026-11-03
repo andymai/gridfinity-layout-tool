@@ -24,11 +24,10 @@
 import type { Result } from '@/core/result';
 import { ok, err } from '@/core/result';
 import type { ImageDataLike, Mask, Point, TraceError } from './types';
-import { simplifyRdp } from './simplify';
 import { polygonArea } from './traceImage';
 import { findCardAcrossChannels, cardHomography, type CardDetectOptions } from './cardDetect';
 import { invertHomography, rectifyPoints, solveHomography, type Homography } from './perspective';
-import { fitSmoothPolygon } from './curveFit';
+import { smoothRing } from './curveFit';
 import { traceSoftContour, binarize, type SoftMask } from './softContour';
 import { symmetrizeIfRegular } from './symmetry';
 import { detectCalibrationGrid, type GridDetectOptions } from './gridDetect';
@@ -320,9 +319,7 @@ function finishTrace(
 ): Result<SceneTrace, TraceError> {
   const tolerance = options.simplifyTolerance ?? defaultTolerance(width, height);
   const smooth = (ring: readonly Point[]): Point[] =>
-    options.smooth === false
-      ? simplifyRdp(ring, tolerance)
-      : fitSmoothPolygon(ring, (tolerance * 0.5) ** 2);
+    smoothRing(ring, tolerance, options.smooth !== false);
   const outlines: Outline[] = [];
   for (const { contour: rawContour, holes = [], inHole = false } of raw) {
     // The curve fit reads the RAW contour, not the simplified one. Its error

@@ -5,7 +5,8 @@
  * to the intermediate spec produced by svgParser.
  */
 
-import type { Cutout } from '@/features/bin-designer/types';
+import type { Cutout, PathPoint } from '@/features/bin-designer/types';
+import { withoutTinyLoops } from '@/shared/utils/polyline';
 import type { ParsedCutoutSpec } from './types';
 
 /** Options for hydrating a spec into a Cutout. */
@@ -18,6 +19,21 @@ export interface HydrationOptions {
 
 /** Default hydration options. */
 export const DEFAULT_CUT_DEPTH = 5;
+
+/** Loops smaller than this (mm²) are folds or rounding, never a part of the shape. */
+const TINY_LOOP_MM2 = 0.5;
+
+/** A straight-edged ring without the tiny loops a trace or its rounding can leave. */
+function untangled(ring: readonly PathPoint[]): PathPoint[] {
+  if (ring.some((p) => p.handleIn || p.handleOut)) return [...ring];
+  return withoutTinyLoops(ring, TINY_LOOP_MM2, (x, y) => ({
+    x,
+    y,
+    handleIn: null,
+    handleOut: null,
+    symmetric: false,
+  }));
+}
 
 /**
  * Convert a ParsedCutoutSpec to a full Cutout with store-ready fields.
@@ -42,7 +58,11 @@ export function specToCutout(spec: ParsedCutoutSpec, options: HydrationOptions):
   };
 
   if (spec.shape === 'path' && spec.path) {
-    return { ...base, path: spec.path, ...(spec.holes ? { holes: spec.holes } : {}) };
+    return {
+      ...base,
+      path: untangled(spec.path),
+      ...(spec.holes ? { holes: spec.holes.map(untangled) } : {}),
+    };
   }
 
   return base;
