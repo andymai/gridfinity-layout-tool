@@ -60,6 +60,25 @@ function drag(el: HTMLElement, from: Point, to: Point) {
   fireEvent.pointerUp(el, { clientX: to.x, clientY: to.y, button: 0, pointerId: 1 });
 }
 
+/** Reports an 800 by 600 box, which the loupe needs to find its corner in. */
+function measureCanvas() {
+  vi.stubGlobal(
+    'ResizeObserver',
+    class SizedObserver implements ResizeObserver {
+      private readonly report: ResizeObserverCallback;
+      constructor(report: ResizeObserverCallback) {
+        this.report = report;
+      }
+      observe(el: Element) {
+        this.report([{ contentRect: { width: 800, height: 600 } } as ResizeObserverEntry], this);
+        void el;
+      }
+      unobserve() {}
+      disconnect() {}
+    }
+  );
+}
+
 /** Never reports a size, so the canvas stays unfitted. */
 class SilentObserver {
   observe(): void {}
@@ -137,22 +156,7 @@ describe('TraceCanvas', () => {
   });
 
   it('magnifies the photo under the pointer while marking, and only then', () => {
-    // The loupe needs a measured box to find its corner in.
-    vi.stubGlobal(
-      'ResizeObserver',
-      class SizedObserver implements ResizeObserver {
-        private readonly report: ResizeObserverCallback;
-        constructor(report: ResizeObserverCallback) {
-          this.report = report;
-        }
-        observe(el: Element) {
-          this.report([{ contentRect: { width: 800, height: 600 } } as ResizeObserverEntry], this);
-          void el;
-        }
-        unobserve() {}
-        disconnect() {}
-      }
-    );
+    measureCanvas();
     const marking = renderCanvas({ mode: 'ruler' });
     fireEvent.pointerMove(marking, { clientX: 40, clientY: 30 });
     const loupe = marking.querySelector<HTMLElement>('[style*="background-image"]');
@@ -163,6 +167,17 @@ describe('TraceCanvas', () => {
     const tapping = renderCanvas();
     fireEvent.pointerMove(tapping, { clientX: 40, clientY: 30 });
     expect(tapping.querySelector('[style*="background-image"]')).toBeNull();
+  });
+
+  it('magnifies a mark about to land on a touch press, with no hover before it', () => {
+    measureCanvas();
+    const canvas = renderCanvas({ mode: 'ruler' });
+    const loupe = () => canvas.querySelector('[style*="background-image"]');
+    fireEvent.pointerDown(canvas, { clientX: 40, clientY: 30, button: 0, pointerId: 1 });
+    expect(loupe()).not.toBeNull();
+    // Moving far enough turns the press into a pan, which places nothing.
+    fireEvent.pointerMove(canvas, { clientX: 90, clientY: 80, pointerId: 1 });
+    expect(loupe()).toBeNull();
   });
 
   it('labels a ruler the user set with its length', () => {
