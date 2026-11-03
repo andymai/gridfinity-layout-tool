@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.531.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.530.0...gridfinity-layout-tool-v4.531.0) (2026-11-03)
+
+
+### Features
+
+* **bin-designer:** drill magnet and screw holes at the corners only ([#4813](https://github.com/andymai/gridfinity-layout-tool/issues/4813)) ([97ddd31](https://github.com/andymai/gridfinity-layout-tool/commit/97ddd31b58881cf6f1058e172010c0f30d041a10))
+
 ## [4.530.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.529.0...gridfinity-layout-tool-v4.530.0) (2026-11-03)
 
 
