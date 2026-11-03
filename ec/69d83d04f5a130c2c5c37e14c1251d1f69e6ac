@@ -1,0 +1,35 @@
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/specToCutout.ts
+  s_4b9adb1d9473fb::t_e492e837b43751 8-9,23-37,61-65
+src/shared/utils/polyline.test.ts
+  s_4b9adb1d9473fb::t_24ac650dbe5835 2-3,59-93
+  s_4b9adb1d9473fb::t_c42ecd7c187048 94
+src/shared/scanTrace/traceScene.ts
+  s_4b9adb1d9473fb::t_bc89af4afc9065 30,322
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/specToCutout.test.ts
+  s_4b9adb1d9473fb::t_24ac650dbe5835 4,148-180
+  s_4b9adb1d9473fb::t_738e6d5fd2672a 181
+src/shared/scanTrace/curveFit.ts
+  s_4b9adb1d9473fb::t_bc89af4afc9065 12-13,81-100
+  s_4b9adb1d9473fb::t_d38cddc71c0334 101
+src/shared/scanTrace/curveFit.test.ts
+  s_4b9adb1d9473fb::t_9f846268193917 2-4,71-125
+  s_4b9adb1d9473fb::t_3b28f1bfa9d6fb 126
+src/shared/utils/polyline.ts
+  s_4b9adb1d9473fb::t_e492e837b43751 8-9,43-107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ec69d83d04f5a130c2c5c37e14c1251d1f69e6ac",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
