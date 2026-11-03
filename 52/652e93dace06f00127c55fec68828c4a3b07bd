@@ -1,0 +1,20 @@
+src/features/bin-designer/components/TraceView/TraceCanvas.test.tsx
+  s_4b9adb1d9473fb::t_452860cf1120df 63-81,159,172-180
+  s_4b9adb1d9473fb::t_7da25f81cb44c8 181-182
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "52652e93dace06f00127c55fec68828c4a3b07bd",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
