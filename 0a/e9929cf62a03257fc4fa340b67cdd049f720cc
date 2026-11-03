@@ -1,0 +1,65 @@
+.claude/skills/bin-designer/SKILL.md
+  s_31b5290859dfff::t_7452e9544f41e3 198-201
+src/features/bin-designer/components/TraceView/TraceCanvas.test.tsx
+  s_31b5290859dfff::t_b1a6ea3087283d 63-81,158-182
+src/features/bin-designer/components/TraceView/TraceCanvas.tsx
+  s_31b5290859dfff::t_ed1366bc19b9ea 9,70,72-73,109,115-116,176-186,206,319-329
+src/features/bin-designer/components/TraceView/TraceLoupe.test.tsx
+  s_31b5290859dfff::t_31d9e2e04b03bb 1-27
+src/features/bin-designer/components/TraceView/TraceLoupe.tsx
+  s_31b5290859dfff::t_aebedc4652f1c2 1-48
+src/features/bin-designer/components/TraceView/viewport.ts
+  s_31b5290859dfff::t_2020c1cdaff21e 45-46,115
+src/features/bin-designer/components/panel/CutoutsSection/handlers/index.ts
+  s_31b5290859dfff::t_97bef1f5583ba5 33-34
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pathEditHandler.test.ts
+  s_31b5290859dfff::t_113a30abe47018 5,13-20,50,81,109,132,232,246,260,281,304,324,338,356,369-378,382,398,503-851
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pathEditHandler.ts
+  s_31b5290859dfff::t_2aad9509132362 20-23,28-31,33-39,45-46,49-56,61,82-316,333-335,340-350,359,368,371-372,381,384-385,392,394,396-397,401-403,406-415,440-441,445-446,448-449,457-463,466-471,475,490-496,515,533-547,556,574-579,585-586,593-595,598
+src/features/bin-designer/components/panel/CutoutsSection/pathGeometrySegments.test.ts
+  s_31b5290859dfff::t_de5a72b019b3c8 159-167
+src/features/bin-designer/components/panel/CutoutsSection/pathGeometrySegments.ts
+  s_31b5290859dfff::t_8b1456a83fffda 171-180
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutCanvas3D.tsx
+  s_31b5290859dfff::t_11031b920480ef 116,121-122
+src/features/bin-designer/components/panel/CutoutsSection/renderer/PathEditOverlay3D.tsx
+  s_31b5290859dfff::t_d5ad072220d22b 15-18,23-24,28-30,35-36,60,64,77-102,111-118,120-152,154-170,172,175-183
+src/features/bin-designer/components/panel/CutoutsSection/renderer/SceneContent.tsx
+  s_31b5290859dfff::t_7e029a20e4e09f 27,422-436,511,515-518
+src/features/bin-designer/components/panel/CutoutsSection/renderer/VertexMagnifier3D.test.tsx
+  s_31b5290859dfff::t_4f9254a3e22bfa 1-122
+src/features/bin-designer/components/panel/CutoutsSection/renderer/VertexMagnifier3D.tsx
+  s_31b5290859dfff::t_3385294a73c380 1-119
+src/features/bin-designer/components/panel/CutoutsSection/renderer/loupe.test.ts
+  s_31b5290859dfff::t_acefa841b2d7da 1-38
+src/features/bin-designer/components/panel/CutoutsSection/renderer/loupe.ts
+  s_31b5290859dfff::t_e0c7e462d1da71 1-75
+src/features/bin-designer/components/panel/CutoutsSection/renderer/sceneContentTypes.ts
+  s_31b5290859dfff::t_c0023db3eb7bd4 110,115-116
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutPathTool.test.ts
+  s_31b5290859dfff::t_9f8452be00faf0 1-121
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutPathTool.ts
+  s_31b5290859dfff::t_4a81d4305bcfbc 19-20,58-59,64-65,188,198,200-204,207,209-210,213,218,220-222,225-228,231,250
+src/features/whats-new/entries.ts
+  s_31b5290859dfff::t_7eb81b616c8faa 16-26
+src/features/whats-new/latest.ts
+  s_31b5290859dfff::t_a727a6f9041502 9
+src/shared/utils/pathCutoutOutline.ts
+  s_31b5290859dfff::t_f9e0eff0e91235 72-83,89-90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0ae9929cf62a03257fc4fa340b67cdd049f720cc",
+  "prompts": {},
+  "sessions": {
+    "s_31b5290859dfff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f5e5adf1-1df0-4dbd-bd22-c2f9cd781d9e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
