@@ -129,6 +129,8 @@ interface Outline {
   readonly imagePoints: readonly Point[];
   readonly holes: readonly (readonly Point[])[];
   readonly inHole: boolean;
+  /** Bridged under a strip before, so still worth a look once the scale changes. */
+  readonly underStrip?: boolean;
 }
 
 export interface SceneTrace {
@@ -383,11 +385,11 @@ function sized(
     imagePoints,
     outputPoints: toMm ? toMm(imagePoints) : imagePoints,
   });
-  const shapes = outlines.map(({ imagePoints, holes, inHole }): SceneShape => ({
+  const shapes = outlines.map(({ imagePoints, holes, inHole, underStrip }): SceneShape => ({
     ...ring(imagePoints),
     ...(holes.length > 0 ? { holes: holes.map(ring) } : {}),
     ...(inHole ? { inHole: true } : {}),
-    ...(reference?.kind === 'strip' && touchesStrip(imagePoints, reference.strip)
+    ...(underStrip || (reference?.kind === 'strip' && touchesStrip(imagePoints, reference.strip))
       ? { underStrip: true }
       : {}),
   }));
@@ -439,6 +441,7 @@ export function withReference(
       imagePoints: shape.imagePoints,
       holes: (shape.holes ?? []).map((h) => h.imagePoints),
       inHole: shape.inHole === true,
+      underStrip: shape.underStrip === true,
     }));
   return sized(outlines, reference, options);
 }

@@ -180,6 +180,18 @@ describe('tracing a tool under a strip', () => {
     expect(withReference(result.value, result.value.reference).shapes).toHaveLength(1);
   });
 
+  it('keeps the strip note when the scale is changed to a ruler', () => {
+    const across = stripLayers(4, { x: 133, y: 14 }, Math.PI / 2);
+    const result = traceScene(render([...across, BAR]), { smooth: false });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    const ruler = {
+      kind: 'ruler' as const,
+      ruler: { a: { x: 0, y: 0 }, b: { x: 300, y: 0 }, lengthMm: 100 },
+    };
+    expect(withReference(result.value, ruler).shapes[0].underStrip).toBe(true);
+  });
+
   it('bridges the model’s mask too, so a redraw keeps the whole tool', () => {
     const across = stripLayers(4, { x: 133, y: 14 }, Math.PI / 2);
     const image = render([...across, BAR]);
