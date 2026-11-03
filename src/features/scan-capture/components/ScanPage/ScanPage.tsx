@@ -43,6 +43,8 @@ import {
   visibleShapes,
   withoutShape,
   type CardSizeMm,
+  TraceExportMenu,
+  toolsFromShapes,
 } from '@/shared/scanReview';
 import { ProgressSteps, CaptureGuide, CardStatusIcon, SentIcon, TapIcon } from './ScanPageGuide';
 import type { Step } from './ScanPageGuide';
@@ -77,9 +79,10 @@ const round1 = (n: number): number => Math.round(n * 10) / 10;
 /** A redraw or an upload is under way, so the outlines must hold still. */
 const busy = (review: ReviewState): boolean => review.resegmenting || review.sending;
 
-function measuredFromKey(grid: SceneTrace['grid']): string {
-  if (!grid) return 'scan.cardMeasured';
-  return grid.kind === 'sheet' ? 'scan.gridMeasured' : 'scan.baseplateMeasured';
+function measuredFromKey(scene: SceneTrace): string {
+  if (scene.reference?.kind === 'strip') return 'scan.stripMeasured';
+  if (!scene.grid) return 'scan.cardMeasured';
+  return scene.grid.kind === 'sheet' ? 'scan.gridMeasured' : 'scan.baseplateMeasured';
 }
 
 export function ScanPage({ token }: ScanPageProps) {
@@ -203,6 +206,15 @@ export function ScanPage({ token }: ScanPageProps) {
   // image→mm map. Editing the size stays instant and can't reshape the outline.
   const scene =
     status.kind === 'review' ? withCardSize(status.scene, cardSize.longMm, cardSize.shortMm) : null;
+
+  // Saved on the phone itself, so only once the outlines are in millimetres.
+  const exportTools = useMemo(
+    () =>
+      scene && scene.units === 'mm'
+        ? toolsFromShapes(visibleShapes(scene.shapes, keepHoles, scene.units), keepHoles)
+        : null,
+    [scene, keepHoles]
+  );
 
   const handleUse = useCallback(async () => {
     if (status.kind !== 'review') return;
@@ -339,7 +351,11 @@ export function ScanPage({ token }: ScanPageProps) {
                             depth: round1(measured.h),
                           })}
                     </p>
-                    <p className="text-xs text-success">{t(measuredFromKey(scene.grid))}</p>
+                    <p className="text-xs text-success">{t(measuredFromKey(scene))}</p>
+                    {/* With one tool there is no list to carry the note. */}
+                    {toolCount === 1 && shown[0].underStrip && (
+                      <p className="text-xs text-warning">{t('scan.review.underStrip')}</p>
+                    )}
                     {/* A lattice fit is over-constrained, so it can report how
                         well it agrees with itself — the card's never can. */}
                     {scene.grid && (
@@ -468,6 +484,17 @@ export function ScanPage({ token }: ScanPageProps) {
                 {t('scan.uploadPhoto')}
               </Button>
             </div>
+          )}
+
+          {status.kind === 'review' && (
+            <TraceExportMenu
+              tools={exportTools}
+              source="phone"
+              trigger="download"
+              placement="top-start"
+              fullWidth
+              disabled={status.sending || status.resegmenting}
+            />
           )}
 
           {status.kind === 'review' && (

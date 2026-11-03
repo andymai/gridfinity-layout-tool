@@ -22,6 +22,7 @@ import { useScanImport } from './useScanImport';
 import { useScanSession } from './useScanSession';
 import { ScanQrCode } from './ScanQrCode';
 import { buildCalibrationSheetSvg, CALIBRATION_SHEET_FILENAME } from './calibrationSheetSvg';
+import { buildMeasuringStripsSvg, MEASURING_STRIPS_FILENAME } from './measuringStripsSvg';
 
 interface ScanWithPhoneDialogProps {
   /**
@@ -192,6 +193,17 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
     trackEvent('scan_calibration_sheet_download');
   }, [t]);
 
+  const handleDownloadStrips = useCallback(() => {
+    primeExportFolder();
+    const svg = buildMeasuringStripsSvg({
+      title: t('binDesigner.cutouts.scanImport.stripsTitle'),
+      printHint: t('binDesigner.cutouts.scanImport.stripsPrintHint'),
+      placeHint: t('binDesigner.cutouts.scanImport.stripsPlaceHint'),
+    });
+    void deliverExport(new Blob([svg], { type: 'image/svg+xml' }), MEASURING_STRIPS_FILENAME);
+    trackEvent('scan_measuring_strips_download');
+  }, [t]);
+
   const handleConfirm = useCallback(() => {
     if (stage.kind !== 'review') return;
     const targetMm = parseFloat(stage.targetText);
@@ -272,6 +284,12 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
                     </Button>
                     <p className="text-xs text-content-tertiary">
                       {t('binDesigner.cutouts.scanImport.calibrationSheetHelp')}
+                    </p>
+                    <Button type="button" variant="ghost" size="sm" onClick={handleDownloadStrips}>
+                      {t('binDesigner.cutouts.scanImport.measuringStrips')}
+                    </Button>
+                    <p className="text-xs text-content-tertiary">
+                      {t('binDesigner.cutouts.scanImport.measuringStripsHelp')}
                     </p>
                   </div>
                   <PrivacyHint text={t('scan.capture.privacy')} />

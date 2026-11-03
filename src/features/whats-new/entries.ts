@@ -14,6 +14,28 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'measuring-strips',
+    date: '2026-11-03',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Measure a tall tool at its own height' },
+    body: {
+      en: 'A tool photographed from above looks bigger on top than on the table. Print the measuring strips from the scan dialog, cut one out and lay it across the top of a tall tool: the scan measures at the strip, so the tool comes out its true size. Where the strip covers an edge, the outline is filled in across it and marked for you to check.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
+    id: 'trace-export',
+    date: '2026-11-03',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Save traced tools as a file' },
+    body: {
+      en: 'In Trace a photo, Export saves the traced outlines at their true size: an SVG or DXF for a laser or vinyl cutter, or an STL to subtract from a model in your CAD app. Tick the clearance box to add the room a pocket leaves round each tool. On your phone, Download does the same from the scan review.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'island-points-magnifier',
     date: '2026-11-03',
     kind: 'new',

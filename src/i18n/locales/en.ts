@@ -1583,6 +1583,20 @@ const en: Record<string, string> = {
     'Lay a bank, transit, or ID card flat beside your tool — fully in frame, on a plain surface — for exact sizing.',
   'scan.takePhoto': 'Take a photo',
   'scan.uploadPhoto': 'Upload a photo',
+  'scan.export.button.export': 'Export',
+  'scan.export.button.download': 'Download',
+  'scan.export.hint':
+    'The traced outlines at true size, as a drawing to cut from or a solid to subtract in CAD',
+  'scan.export.format': 'File format',
+  'scan.export.format.svg': 'SVG',
+  'scan.export.format.dxf': 'DXF',
+  'scan.export.format.stl': 'STL',
+  'scan.export.thickness': 'Thickness',
+  'scan.export.clearance': 'Add the pocket clearance, {mm} mm a side',
+  'scan.export.download.svg': 'Download SVG',
+  'scan.export.download.dxf': 'Download DXF',
+  'scan.export.download.stl': 'Download STL',
+  'scan.export.failed': 'The file couldn’t be made. Try again.',
   'scan.photoAlt': 'Photo of the scanned tool',
   'scan.processing': 'Finding your tool…',
   'scan.review.confirmTitle': 'Is this your tool?',
@@ -3609,6 +3623,16 @@ const en: Record<string, string> = {
     'Print at 100% (actual size): the bar above must measure exactly 100 mm.',
   'binDesigner.cutouts.scanImport.sheetPlaceHint':
     'Place the tool inside the marker frame and photograph it straight down.',
+  'binDesigner.cutouts.scanImport.measuringStrips': 'Print measuring strips',
+  'binDesigner.cutouts.scanImport.measuringStripsHelp':
+    'For a tall tool: lay a strip across its top so it is measured at its own height.',
+  'binDesigner.cutouts.scanImport.stripsTitle': 'Gridfinity Layout Tool: measuring strips',
+  'binDesigner.cutouts.scanImport.stripsPrintHint':
+    'Print at 100% (actual size): the bar above must measure exactly 100 mm. Then cut out the strips.',
+  'binDesigner.cutouts.scanImport.stripsPlaceHint':
+    'Lay one flat across the top of the tool, markers up, and photograph it straight down.',
+  'scan.stripMeasured': 'Measured to scale from the strip, at the tool’s height.',
+  'scan.review.underStrip': 'Edge under the strip filled in. Check it.',
   'binDesigner.cutouts.scanImport.scaleLabel': 'Real-world size (longest side, mm)',
   'binDesigner.cutouts.scanImport.scaleLabelLongest': 'Real-world length of the longest tool (mm)',
   'binDesigner.cutouts.scanImport.scaleHelp':
