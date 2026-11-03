@@ -1,5 +1,25 @@
 # Changelog
 
+## [4.530.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.529.0...gridfinity-layout-tool-v4.530.0) (2026-11-03)
+
+
+### Features
+
+* **bin-designer:** cut one pocket to two depths along a line ([#4797](https://github.com/andymai/gridfinity-layout-tool/issues/4797)) ([e1be471](https://github.com/andymai/gridfinity-layout-tool/commit/e1be4710c7976731775dbbc7ca414490a3cbf514))
+* **bin-designer:** export a shadow board as SVG or DXF ([#4804](https://github.com/andymai/gridfinity-layout-tool/issues/4804)) ([b3b381b](https://github.com/andymai/gridfinity-layout-tool/commit/b3b381b11b2890b9e3128d85f78668170b69dbb4))
+* **bin-designer:** keep islands standing inside path cutouts ([#4810](https://github.com/andymai/gridfinity-layout-tool/issues/4810)) ([eadde31](https://github.com/andymai/gridfinity-layout-tool/commit/eadde31b5e16a23fbe266f83bd05fad5e7ad39a7))
+* **bin-designer:** trace a photo of tools on the computer ([#4812](https://github.com/andymai/gridfinity-layout-tool/issues/4812)) ([348a480](https://github.com/andymai/gridfinity-layout-tool/commit/348a480e42d3fcd1ca606f4894acf86d91ddcb65))
+* **bin-designer:** turn shapes to fit when auto-arranging ([#4799](https://github.com/andymai/gridfinity-layout-tool/issues/4799)) ([b4acf54](https://github.com/andymai/gridfinity-layout-tool/commit/b4acf54c812d2ef80676c5c4d2935eb97a01db18))
+* **bin-designer:** warn about pockets that will print too thin ([#4795](https://github.com/andymai/gridfinity-layout-tool/issues/4795)) ([e3d839e](https://github.com/andymai/gridfinity-layout-tool/commit/e3d839efcfaa84f3b56d1f461b6d570675fbd8c3))
+* **scan:** keep the holes in a scanned tool ([#4811](https://github.com/andymai/gridfinity-layout-tool/issues/4811)) ([24302bc](https://github.com/andymai/gridfinity-layout-tool/commit/24302bc30641f916f070112b771f76841260081d))
+* **scan:** trace every tool in one photo ([#4806](https://github.com/andymai/gridfinity-layout-tool/issues/4806)) ([fed927c](https://github.com/andymai/gridfinity-layout-tool/commit/fed927c1c375652a2ecad7352f61cbfd66c9b3a5))
+
+
+### Bug Fixes
+
+* **bin-designer:** keep settings across body type switches and explain height units ([#4798](https://github.com/andymai/gridfinity-layout-tool/issues/4798)) ([ca93702](https://github.com/andymai/gridfinity-layout-tool/commit/ca9370271fa4571fae8ab55555bd36c503f46cca))
+* **bin-designer:** show the height control on scoop wall cutouts ([#4805](https://github.com/andymai/gridfinity-layout-tool/issues/4805)) ([bc6d512](https://github.com/andymai/gridfinity-layout-tool/commit/bc6d512f4080de99ad2beeab495dcb619c206116))
+
 ## [4.529.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.528.0...gridfinity-layout-tool-v4.529.0) (2026-11-02)
 
 
