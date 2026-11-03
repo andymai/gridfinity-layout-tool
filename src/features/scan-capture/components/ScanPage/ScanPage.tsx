@@ -33,7 +33,15 @@ import { CardSizeEditor } from '@/features/scan-capture/components/CardSizeEdito
 import { ProgressSteps, CaptureGuide, CardStatusIcon, SentIcon, TapIcon } from './ScanPageGuide';
 import type { Step } from './ScanPageGuide';
 import { ScanToolList } from './ScanToolList';
-import { bounds, cardOptions, svgFromShapes, traceAll, traceTap, visibleShapes } from './scanFlow';
+import {
+  bounds,
+  cardOptions,
+  svgFromShapes,
+  traceAll,
+  traceTap,
+  visibleShapes,
+  withoutShape,
+} from './scanFlow';
 import { ScanOverlay } from './ScanOverlay';
 
 interface ScanPageProps {
@@ -159,12 +167,12 @@ export function ScanPage({ token }: ScanPageProps) {
     (index: number) => {
       setStatus((prev) => {
         if (prev.kind !== 'review' || busy(prev)) return prev;
-        const listed = visibleShapes(prev.scene.shapes, keepHoles);
+        const listed = prev.scene.shapes.filter((s) => keepHoles || s.inHole !== true);
         const gone = listed.at(index);
         if (listed.length < 2 || !gone) return prev;
         return {
           ...prev,
-          scene: { ...prev.scene, shapes: prev.scene.shapes.filter((s) => s !== gone) },
+          scene: { ...prev.scene, shapes: withoutShape(prev.scene.shapes, gone) },
           previous: prev.scene,
         };
       });
@@ -194,7 +202,8 @@ export function ScanPage({ token }: ScanPageProps) {
   const handleUse = useCallback(async () => {
     if (status.kind !== 'review') return;
     const rectified = withCardSize(status.scene, cardSize.longMm, cardSize.shortMm);
-    const sending = visibleShapes(rectified.shapes, keepHoles);
+    const sending = visibleShapes(rectified.shapes, keepHoles, rectified.units);
+    if (sending.length === 0) return;
     const svg = svgFromShapes(sending, rectified.units, keepHoles);
     const count = sending.length;
     setStatus({ ...status, sending: true });
@@ -231,7 +240,10 @@ export function ScanPage({ token }: ScanPageProps) {
         ? 'review'
         : 'capture';
 
-  const shown = useMemo(() => visibleShapes(scene?.shapes ?? [], keepHoles), [scene, keepHoles]);
+  const shown = useMemo(
+    () => visibleShapes(scene?.shapes ?? [], keepHoles, scene?.units ?? 'px'),
+    [scene, keepHoles]
+  );
   const toolCount = shown.length;
   const measured = scene && scene.units === 'mm' && shown[0] ? bounds(shown[0].outputPoints) : null;
   const holesFound = scene?.shapes.some((s) => (s.holes?.length ?? 0) > 0 || s.inHole) ?? false;
@@ -468,7 +480,7 @@ export function ScanPage({ token }: ScanPageProps) {
                 type="button"
                 variant="primary"
                 fullWidth
-                disabled={status.sending || status.resegmenting}
+                disabled={status.sending || status.resegmenting || toolCount === 0}
                 onClick={() => void handleUse()}
               >
                 {status.sending

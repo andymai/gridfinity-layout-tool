@@ -179,18 +179,25 @@ export function findToolBlobs(mask: Mask, minAreaPx: number): ToolBlob[] {
  * frame: where a tap-prompted segmenter is surest to land on the tool, even an
  * L-shaped one whose centroid lies outside it.
  */
-export function interiorSeed(poly: readonly Point[], width: number, height: number): Point {
+export function interiorSeed(
+  poly: readonly Point[],
+  width: number,
+  height: number,
+  holes: readonly (readonly Point[])[] = []
+): Point {
   const xs = poly.map((p) => p.x);
   const ys = poly.map((p) => p.y);
   const x0 = Math.floor(Math.min(...xs)) - 1;
   const y0 = Math.floor(Math.min(...ys)) - 1;
   const w = Math.ceil(Math.max(...xs)) - x0 + 2;
   const h = Math.ceil(Math.max(...ys)) - y0 + 2;
-  const fill = fillPolygon(
-    poly.map((p) => ({ x: p.x - x0, y: p.y - y0 })),
-    w,
-    h
-  );
+  const local = (ring: readonly Point[]) => ring.map((p) => ({ x: p.x - x0, y: p.y - y0 }));
+  const fill = fillPolygon(local(poly), w, h);
+  // The tool's own material: a ring's seed belongs on the ring, not in its hole.
+  for (const hole of holes) {
+    const gap = fillPolygon(local(hole), w, h);
+    for (let i = 0; i < fill.length; i++) if (gap[i] === 1) fill[i] = 0;
+  }
   // Two-pass chessboard distance to the nearest outside pixel.
   const dist = new Int32Array(w * h);
   const big = w + h;

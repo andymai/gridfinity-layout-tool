@@ -79,6 +79,19 @@ const MIN_HOLE_MM = 2.5;
 /** The same in pixels, for a photo with no reference. */
 const MIN_HOLE_WIDTH_PX = 8;
 
+/**
+ * The holes of `shape` wide enough to leave an island standing. A narrower
+ * one is no use to a pocket, and a glint on a shiny tool is usually one.
+ * Judged where it is used, not where it is traced, so a corrected card size
+ * re-judges every hole.
+ */
+export function wideHoles(shape: SceneShape, units: 'mm' | 'px'): SceneRing[] {
+  const least = units === 'mm' ? MIN_HOLE_MM : MIN_HOLE_WIDTH_PX;
+  return (shape.holes ?? []).filter(
+    (hole) => (minAreaRect(hole.outputPoints)?.height ?? 0) >= least
+  );
+}
+
 /** A shape still in image pixels, before the reference sizes it. */
 interface Outline {
   readonly imagePoints: readonly Point[];
@@ -263,18 +276,11 @@ function sized(
     imagePoints,
     outputPoints: toMm ? toMm(imagePoints) : imagePoints,
   });
-  // A hole narrower than this leaves an island no clearance and entry edge
-  // would let stand; a glint on a shiny tool is usually one of these.
-  const wideEnough = (hole: SceneRing): boolean =>
-    (minAreaRect(hole.outputPoints)?.height ?? 0) >= (toMm ? MIN_HOLE_MM : MIN_HOLE_WIDTH_PX);
-  const shapes = outlines.map(({ imagePoints, holes, inHole }): SceneShape => {
-    const kept = holes.map(ring).filter(wideEnough);
-    return {
-      ...ring(imagePoints),
-      ...(kept.length > 0 ? { holes: kept } : {}),
-      ...(inHole ? { inHole: true } : {}),
-    };
-  });
+  const shapes = outlines.map(({ imagePoints, holes, inHole }): SceneShape => ({
+    ...ring(imagePoints),
+    ...(holes.length > 0 ? { holes: holes.map(ring) } : {}),
+    ...(inHole ? { inHole: true } : {}),
+  }));
   const lattice = reference && reference.kind !== 'card' ? reference : null;
   return {
     shapes,
@@ -367,8 +373,15 @@ export function buildToolTraceSoft(
     return err({ code: 'NO_OBJECT', detail: 'No tool found' });
   }
   // The outline comes sub-pixel from the confidence field; its holes from the
-  // same field thresholded, as the colour pass finds them.
-  const holes = findToolBlobs(binarize(toolSoft), minArea)[0]?.holes ?? [];
+  // same field thresholded, as the colour pass finds them. The contour is the
+  // loop enclosing most, so the holes come from the piece whose outline does,
+  // not the one with most pixels: a thin ring round a solid piece has fewer.
+  const blobs = findToolBlobs(binarize(toolSoft), minArea);
+  const owner = blobs.reduce<(typeof blobs)[number] | undefined>(
+    (best, b) => (!best || polygonArea(b.contour) > polygonArea(best.contour) ? b : best),
+    undefined
+  );
+  const holes = owner?.holes ?? [];
   return finishTrace([{ contour, holes }], width, height, reference, options);
 }
 

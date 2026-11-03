@@ -34,13 +34,15 @@ export type Refinement =
   | { readonly kind: 'tapped'; readonly at: Point };
 
 /**
- * The share of `poly`'s area that lies inside `cover` and outside its holes,
- * by grid sampling: a tool resting in a ring's hole is not covered by the ring.
+ * The share of `poly`'s material that lies on `cover`'s, by grid sampling,
+ * each without its holes: a tool resting in a ring's hole neither covers the
+ * ring nor is covered by it.
  */
 export function coverage(
   poly: readonly Point[],
   cover: readonly Point[],
-  coverHoles: readonly (readonly Point[])[] = []
+  coverHoles: readonly (readonly Point[])[] = [],
+  polyHoles: readonly (readonly Point[])[] = []
 ): number {
   const xs = poly.map((p) => p.x);
   const ys = poly.map((p) => p.y);
@@ -54,6 +56,7 @@ export function coverage(
   for (let y = y0 + step / 2; y < y1; y += step) {
     for (let x = x0 + step / 2; x < x1; x += step) {
       if (!pointInPolygon({ x, y }, poly)) continue;
+      if (polyHoles.some((h) => pointInPolygon({ x, y }, h))) continue;
       inside++;
       if (pointInPolygon({ x, y }, cover) && !coverHoles.some((h) => pointInPolygon({ x, y }, h))) {
         hit++;
@@ -77,8 +80,9 @@ export function withRefinedShape(
   if (how.kind === 'seeded') {
     if (how.index < 0 || how.index >= scene.shapes.length) return scene;
     const target = scene.shapes[how.index];
+    const targetHoles = (target.holes ?? []).map((h) => h.imagePoints);
     const agrees =
-      coverage(target.imagePoints, outline) >= MIN_AGREEMENT &&
+      coverage(target.imagePoints, outline, holes, targetHoles) >= MIN_AGREEMENT &&
       polygonArea(outline) <= MAX_GROWTH * polygonArea(target.imagePoints);
     if (!agrees) return scene;
   }
@@ -88,7 +92,12 @@ export function withRefinedShape(
     !(shape.holes ?? []).some((h) => pointInPolygon(at, h.imagePoints));
   const replaced = (shape: SceneShape, i: number): boolean =>
     (how.kind === 'seeded' ? i === how.index : tappedOn(shape, how.at)) ||
-    coverage(shape.imagePoints, outline, holes) >= SAME_TOOL;
+    coverage(
+      shape.imagePoints,
+      outline,
+      holes,
+      (shape.holes ?? []).map((h) => h.imagePoints)
+    ) >= SAME_TOOL;
   const kept = scene.shapes.filter((s, i) => !replaced(s, i));
   // A redraw stays where its outline was found: in a hole when it was seeded
   // in one, or when a tap lands it in the hole of a shape still kept.

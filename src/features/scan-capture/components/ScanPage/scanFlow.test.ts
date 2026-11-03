@@ -2,7 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type * as ScanTrace from '@/shared/scanTrace';
 import { err, ok } from '@/core/result';
 import type { SceneShape, SceneTrace } from '@/shared/scanTrace';
-import { MAX_AUTO_REFINE, svgFromShapes, traceAll, traceTap, visibleShapes } from './scanFlow';
+import {
+  MAX_AUTO_REFINE,
+  svgFromShapes,
+  traceAll,
+  traceTap,
+  visibleShapes,
+  withoutShape,
+} from './scanFlow';
 
 const mockSegment = vi.fn();
 const mockTrace = vi.fn();
@@ -135,8 +142,21 @@ describe('holes', () => {
   const nut: SceneShape = { ...box(15, 15, 25, 25), inHole: true };
 
   it('leaves a tool lying in a hole out unless holes are kept', () => {
-    expect(visibleShapes([ring, nut], false)).toEqual([ring]);
-    expect(visibleShapes([ring, nut], true)).toEqual([ring, nut]);
+    expect(visibleShapes([ring, nut], false, 'px')).toEqual([ring]);
+    expect(visibleShapes([ring, nut], true, 'px')).toEqual([ring, nut]);
+  });
+
+  // In millimetres a 20 mm hole stays and a 2 mm one goes.
+  it('keeps only the holes wide enough to leave an island standing', () => {
+    const withSlit: SceneShape = { ...ring, holes: [box(10, 10, 30, 30), box(32, 5, 34, 35)] };
+    const [shown] = visibleShapes([withSlit], true, 'mm');
+    expect(shown.holes).toEqual([box(10, 10, 30, 30)]);
+  });
+
+  it('frees a tool from a hole once the ring around it is removed', () => {
+    const other = box(50, 0, 60, 10);
+    expect(withoutShape([ring, nut, other], ring)).toEqual([box(15, 15, 25, 25), other]);
+    expect(withoutShape([ring, nut, other], other)).toEqual([ring, nut]);
   });
 
   it('writes a kept hole as an even-odd subpath of its tool', () => {

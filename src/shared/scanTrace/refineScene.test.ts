@@ -113,3 +113,24 @@ describe('withRefinedShape and holes', () => {
     expect(next.shapes.find((s) => s.imagePoints === found.imagePoints)?.inHole).toBe(true);
   });
 });
+
+describe('withRefinedShape around a ring', () => {
+  // An 80 × 80 ring with a 70 × 70 hole, and a 60 × 60 tool resting in it.
+  const ring = { ...shape(square(10, 10, 90, 90)), holes: [shape(square(15, 15, 85, 85))] };
+  const tool: SceneShape = { ...shape(square(20, 20, 80, 80)), inHole: true };
+
+  it('keeps the ring when the tool in its hole is redrawn', () => {
+    const redrawn = shape(square(21, 21, 79, 79));
+    const next = withRefinedShape(sceneOf(ring, tool), redrawn, { kind: 'seeded', index: 1 });
+    expect(next.shapes).toEqual([ring, { ...redrawn, inHole: true }]);
+  });
+
+  it("measures a ring's agreement on its material, not across its hole", () => {
+    // A redraw of the hole's contents is no redraw of the ring.
+    const next = withRefinedShape(sceneOf(ring, tool), shape(square(20, 20, 80, 80)), {
+      kind: 'seeded',
+      index: 0,
+    });
+    expect(next.shapes).toEqual([ring, tool]);
+  });
+});

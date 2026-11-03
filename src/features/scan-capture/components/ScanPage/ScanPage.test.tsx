@@ -315,6 +315,26 @@ describe('ScanPage', () => {
     vi.unstubAllGlobals();
   });
 
+  it('keeps a tool once the ring it lay in is removed, with holes off again', async () => {
+    const ring: SceneShape = { ...box(10, 10, 60, 60), holes: [box(25, 25, 45, 45)] };
+    const nut: SceneShape = { ...box(30, 30, 40, 40), inHole: true };
+    mockTrace.mockReturnValue(ok({ ...SCENE_MM, shapes: [ring, nut] }));
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+    vi.stubGlobal('fetch', fetchMock);
+    render(<ScanPage token={TOKEN} />);
+    selectPhoto();
+    const toggle = await screen.findByRole('switch', { name: 'scan.review.keepHoles' });
+
+    fireEvent.click(toggle);
+    fireEvent.click(screen.getAllByLabelText('scan.review.removeTool')[0]);
+    fireEvent.click(toggle);
+
+    fireEvent.click(screen.getByText('scan.use'));
+    await screen.findByText('scan.sent.title');
+    expect(lastUploadedSvg(fetchMock).match(/<path /g)).toHaveLength(1);
+    vi.unstubAllGlobals();
+  });
+
   it('offers no hole switch when nothing has a hole', async () => {
     render(<ScanPage token={TOKEN} />);
     selectPhoto();

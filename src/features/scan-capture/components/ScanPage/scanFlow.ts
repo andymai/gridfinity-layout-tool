@@ -2,11 +2,13 @@ import { err, isOk, ok, type Result } from '@/core/result';
 import type { CardSizeMm } from '@/features/scan-capture/cardSize';
 import {
   interiorSeed,
+  pointInPolygon,
   pointsToSvgPath,
   sameReference,
   segmentAt,
   traceScene,
   traceSceneSegmented,
+  wideHoles,
   withReference,
   withRefinedShape,
   type ImageDataLike,
@@ -68,7 +70,11 @@ export async function traceAll(
     if (index === -1) continue;
     let soft: SoftMask;
     try {
-      soft = await segmentAt(canvas, interiorSeed(shape.imagePoints, image.width, image.height));
+      const holes = (shape.holes ?? []).map((h) => h.imagePoints);
+      soft = await segmentAt(
+        canvas,
+        interiorSeed(shape.imagePoints, image.width, image.height, holes)
+      );
     } catch {
       return ok({ scene, canRefine: false });
     }
@@ -130,11 +136,41 @@ export function bounds(points: readonly Point[]): {
 }
 
 /**
- * The tools the review shows: all of them while holes are kept, otherwise
- * not one lying in another's hole, which would be a pocket inside a pocket.
+ * The tools the review shows: all of them while holes are kept, each with
+ * only the holes wide enough to keep, otherwise not one lying in another's
+ * hole, which would be a pocket inside a pocket.
  */
-export function visibleShapes(shapes: readonly SceneShape[], keepHoles: boolean): SceneShape[] {
-  return keepHoles ? [...shapes] : shapes.filter((s) => s.inHole !== true);
+export function visibleShapes(
+  shapes: readonly SceneShape[],
+  keepHoles: boolean,
+  units: 'mm' | 'px'
+): SceneShape[] {
+  if (!keepHoles) return shapes.filter((s) => s.inHole !== true);
+  return shapes.map((shape) => {
+    if (!shape.holes) return shape;
+    const { holes: _all, ...rest } = shape;
+    const holes = wideHoles(shape, units);
+    return holes.length > 0 ? { ...rest, holes } : rest;
+  });
+}
+
+/**
+ * `shapes` without `gone`, each one left reading as in a hole only while a
+ * shape still there has a hole around it: removing a ring frees what lay in it.
+ */
+export function withoutShape(shapes: readonly SceneShape[], gone: SceneShape): SceneShape[] {
+  const left = shapes.filter((s) => s !== gone);
+  return left.map((shape) => {
+    if (shape.inHole !== true) return shape;
+    const at = interiorSeed(shape.imagePoints, 1, 1);
+    const held = left.some(
+      (other) =>
+        other !== shape && (other.holes ?? []).some((h) => pointInPolygon(at, h.imagePoints))
+    );
+    if (held) return shape;
+    const { inHole: _free, ...rest } = shape;
+    return rest;
+  });
 }
 
 /**

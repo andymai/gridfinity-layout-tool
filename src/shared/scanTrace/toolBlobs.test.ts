@@ -126,6 +126,24 @@ describe('interiorSeed', () => {
     expect(pointInPolygon({ x: seed.x * 100, y: seed.y * 120 }, L)).toBe(true);
   });
 
+  it('lands on a ring, not in its hole', () => {
+    const outer = [
+      { x: 0, y: 0 },
+      { x: 40, y: 0 },
+      { x: 40, y: 40 },
+      { x: 0, y: 40 },
+    ];
+    const hole = [
+      { x: 8, y: 8 },
+      { x: 32, y: 8 },
+      { x: 32, y: 32 },
+      { x: 8, y: 32 },
+    ];
+    const seed = interiorSeed(outer, 100, 100, [hole]);
+    const p = { x: seed.x * 100, y: seed.y * 100 };
+    expect(pointInPolygon(p, outer) && !pointInPolygon(p, hole)).toBe(true);
+  });
+
   it('picks the middle of a plain box', () => {
     const seed = interiorSeed(
       [

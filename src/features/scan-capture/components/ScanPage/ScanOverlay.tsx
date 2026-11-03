@@ -27,11 +27,12 @@ export function ScanOverlay({ image, scene, shapes, keepHoles }: ScanOverlayProp
     () =>
       shapes.length > 1
         ? shapes.map((shape) => {
-            const at = interiorSeed(shape.imagePoints, image.width, image.height);
+            const holes = keepHoles ? (shape.holes ?? []).map((h) => h.imagePoints) : [];
+            const at = interiorSeed(shape.imagePoints, image.width, image.height, holes);
             return { x: at.x * image.width, y: at.y * image.height };
           })
         : [],
-    [shapes, image]
+    [shapes, image, keepHoles]
   );
   const radius = badgeRadius(image);
 

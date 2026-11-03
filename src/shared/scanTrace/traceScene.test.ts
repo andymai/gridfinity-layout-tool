@@ -7,6 +7,7 @@ import {
   buildToolTraceSoft,
   withCardSize,
   withReference,
+  wideHoles,
   sameReference,
   type SceneReference,
 } from './traceScene';
@@ -416,7 +417,9 @@ describe('traceScene holes', () => {
     }
     const result = traceScene({ width: W, height: H, data }, { smooth: false });
     if (!isOk(result)) throw new Error('fixture failed');
-    const holes = result.value.shapes[0].holes ?? [];
+    // Traced, both: judged where used, so a card correction can re-judge them.
+    expect(result.value.shapes[0].holes).toHaveLength(2);
+    const holes = wideHoles(result.value.shapes[0], result.value.units);
     expect(holes).toHaveLength(1);
     expect(bbox(holes[0].outputPoints).w).toBeGreaterThan(25);
   });
@@ -435,5 +438,27 @@ describe('traceScene holes', () => {
     const before = bbox(result.value.shapes[0].holes?.[0].outputPoints ?? []);
     const after = bbox(longer.shapes[0].holes?.[0].outputPoints ?? []);
     expect(after.w / before.w).toBeCloseTo(1.1, 1);
+  });
+});
+
+describe('buildToolTraceSoft holes', () => {
+  // A thin ring round a solid piece: the ring encloses more, the piece holds
+  // more pixels, and the ring's hole must come with the ring's outline.
+  it('takes the holes of the piece whose outline it traced', () => {
+    const W = 120;
+    const H = 120;
+    const data = new Float32Array(W * H);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const ring =
+          x >= 10 && x < 110 && y >= 10 && y < 110 && !(x >= 14 && x < 106 && y >= 14 && y < 106);
+        const piece = x >= 20 && x < 100 && y >= 20 && y < 100;
+        data[y * W + x] = ring || piece ? 1 : 0;
+      }
+    }
+    const result = buildToolTraceSoft({ width: W, height: H, data }, null, { smooth: false });
+    if (!isOk(result)) throw new Error('fixture failed');
+    expect(bbox(result.value.shapes[0].imagePoints).w).toBeGreaterThan(95);
+    expect(result.value.shapes[0].holes).toHaveLength(1);
   });
 });
