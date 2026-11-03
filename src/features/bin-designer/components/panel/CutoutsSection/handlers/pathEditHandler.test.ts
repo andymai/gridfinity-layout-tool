@@ -11,6 +11,13 @@ import {
 import type { VertexEditMode } from './pathEditHandler';
 import type { BinBounds, PointerMoveEvent } from './types';
 import { rotateAbout } from '@/shared/utils/cutoutOutline';
+import type * as outlineSegments from '@/shared/utils/outlineSegments';
+import { outlinesTouch } from '@/shared/utils/outlineSegments';
+
+vi.mock('@/shared/utils/outlineSegments', async (importOriginal) => {
+  const real = await importOriginal<typeof outlineSegments>();
+  return { ...real, outlinesTouch: vi.fn(real.outlinesTouch) };
+});
 
 function point(x: number, y: number, overrides: Partial<PathPoint> = {}): PathPoint {
   return { x, y, handleIn: null, handleOut: null, symmetric: false, ...overrides };
@@ -790,5 +797,31 @@ describe('keeping what the generator cuts', () => {
   it('still edits an island that was already outside, so it can be brought back', () => {
     const out = [point(45, 15), point(55, 15), point(50, 25)];
     expect(release(islanded([out]), 1, 0, { x: 46, y: 16 })).toHaveBeenCalled();
+  });
+});
+
+describe('the cost of a release', () => {
+  it('checks a dragged island against the outline only, skipping islands far from it', () => {
+    // 64 islands, 2 mm squares on a 10 mm grid.
+    const islands = Array.from({ length: 64 }, (_, n) => {
+      const x = 5 + (n % 8) * 10;
+      const y = 5 + Math.floor(n / 8) * 10;
+      return [point(x, y), point(x + 2, y), point(x + 2, y + 2), point(x, y + 2)];
+    });
+    const outline = [point(0, 0), point(90, 0), point(90, 90), point(0, 90)];
+    const cutout: Cutout = { ...makeCutout(outline), width: 90, depth: 90, holes: islands };
+    const setters = makeSetters();
+    const mode = makeMode({
+      ring: 1,
+      selectedPointIndex: 0,
+      dragTarget: { type: 'vertex', ring: 1, index: 0 },
+      dragFrom: dragSource(cutout),
+    });
+    handleVertexEditPointerMove(mode, at(4, 4), cutout, BOUNDS, noSnap, setters);
+    const preview = setters.setPreview.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    vi.mocked(outlinesTouch).mockClear();
+    handleVertexEditPointerUp(mode, cutout, preview, setters);
+    expect(setters.onUpdate).toHaveBeenCalled();
+    expect(outlinesTouch).toHaveBeenCalledTimes(1);
   });
 });

@@ -99,33 +99,71 @@ export function toPathFrame(cutout: Cutout, x: number, y: number): { x: number; 
 /** Clicks this close to a point pick it up; farther along an edge they add one. */
 const VERTEX_PICK_MM = 2;
 
-type Flat = Array<{ x: number; y: number }> | null;
+interface Laid {
+  readonly points: Array<{ x: number; y: number }>;
+  readonly minX: number;
+  readonly minY: number;
+  readonly maxX: number;
+  readonly maxY: number;
+}
+
+const laidRings = new WeakMap<readonly PathPoint[], Laid | null>();
+
+/** A ring as the builder cuts it, with its bounds, or null when it is not cut. */
+function laid(ring: readonly PathPoint[]): Laid | null {
+  const known = laidRings.get(ring);
+  if (known !== undefined) return known;
+  const points = cuttablePolyline(ring);
+  let result: Laid | null = null;
+  if (points) {
+    const xs = points.map((p) => p.x);
+    const ys = points.map((p) => p.y);
+    result = {
+      points,
+      minX: Math.min(...xs),
+      minY: Math.min(...ys),
+      maxX: Math.max(...xs),
+      maxY: Math.max(...ys),
+    };
+  }
+  laidRings.set(ring, result);
+  return result;
+}
+
+const boxesApart = (a: Laid, b: Laid): boolean =>
+  a.maxX < b.minX || b.maxX < a.minX || a.maxY < b.minY || b.maxY < a.minY;
 
 /**
- * Whether island `k` sits inside the outline, clear of it and of every other
- * island. One outside cuts nothing, so it would vanish from the bin while the
- * editor still drew it.
+ * Whether an island sits inside the outline without meeting it. One outside
+ * cuts nothing, so it would vanish from the bin while the editor still drew it.
  */
-function islandClear(flat: readonly Flat[], k: number): boolean {
-  const [outline, ...islands] = flat;
-  const island = islands[k];
-  if (!outline || !island) return false;
-  if (!pointInPolygon(island[0], outline) || outlinesTouch(island, outline)) return false;
-  return islands.every(
-    (other, j) =>
-      j === k ||
-      !other ||
-      (!outlinesTouch(island, other) &&
-        !pointInPolygon(island[0], other) &&
-        !pointInPolygon(other[0], island))
+function inside(outline: readonly PathPoint[], island: readonly PathPoint[]): boolean {
+  const o = laid(outline);
+  const i = laid(island);
+  if (!o || !i) return false;
+  if (i.minX < o.minX || i.maxX > o.maxX || i.minY < o.minY || i.maxY > o.maxY) return false;
+  return pointInPolygon(i.points[0], o.points) && !outlinesTouch(i.points, o.points);
+}
+
+/** Whether two islands neither meet nor hold one another. */
+function apart(a: readonly PathPoint[], b: readonly PathPoint[]): boolean {
+  const p = laid(a);
+  const q = laid(b);
+  if (!p || !q) return false;
+  if (boxesApart(p, q)) return true;
+  return (
+    !outlinesTouch(p.points, q.points) &&
+    !pointInPolygon(p.points[0], q.points) &&
+    !pointInPolygon(q.points[0], p.points)
   );
 }
 
 /**
  * Whether an edit to ring `ring` leaves a cutout the generator cuts as drawn:
- * the ring is one it keeps, and no island that was inside the outline and
- * clear of the others stops being so. An island already out can still be
- * edited, so it can be brought back in.
+ * the ring is one it keeps, and no island that was inside the outline, or
+ * apart from another island, stops being so. An island already out can still
+ * be edited, so it can be brought back in. An outline edit moves every island
+ * alike, so only their places in it are checked; an island edit, only its own.
  */
 function keepsShape(
   before: readonly (readonly PathPoint[])[],
@@ -133,10 +171,16 @@ function keepsShape(
   ring: number
 ): boolean {
   const edited = after.at(ring);
-  if (!edited || !cuttablePolyline(edited)) return false;
-  const was = before.map(cuttablePolyline);
-  const now = after.map(cuttablePolyline);
-  return now.slice(1).every((_, k) => !islandClear(was, k) || islandClear(now, k));
+  if (!edited || !laid(edited)) return false;
+  const holds = (k: number): boolean => inside(after[0], after[k]) || !inside(before[0], before[k]);
+  if (ring === 0) return after.every((_, k) => k === 0 || holds(k));
+  return (
+    holds(ring) &&
+    after.every(
+      (other, k) =>
+        k === 0 || k === ring || apart(after[ring], other) || !apart(before[ring], before[k])
+    )
+  );
 }
 
 function samePoint(a: PathPoint, b: PathPoint): boolean {
