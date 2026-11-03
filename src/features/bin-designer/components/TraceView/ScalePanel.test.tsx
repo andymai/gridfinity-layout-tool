@@ -37,6 +37,7 @@ function renderPanel(
   return render(
     <ScalePanel
       scene={UNSIZED}
+      frame={{ width: 400, height: 300 }}
       mode="tap"
       marks={[]}
       manual={false}
@@ -106,6 +107,7 @@ describe('ScalePanel', () => {
     rerender(
       <ScalePanel
         scene={UNSIZED}
+        frame={{ width: 400, height: 300 }}
         mode="paper"
         marks={dented}
         manual={false}
@@ -123,9 +125,14 @@ describe('ScalePanel', () => {
   it('sets the sheet at the chosen paper size', () => {
     renderPanel({ mode: 'paper', marks: SHEET, paperSize: 'letter' });
     fireEvent.click(screen.getByText('binDesigner.cutouts.traceView.apply'));
-    const [reference] = handlers.onApply.mock.calls[0] as [{ kind: string; paper: object }];
+    const [reference] = handlers.onApply.mock.calls[0] as [
+      { kind: string; paper: { widthMm: number; heightMm: number } },
+    ];
     expect(reference.kind).toBe('paper');
-    expect(reference.paper).toMatchObject(PAPER_SIZES.letter);
+    expect([reference.paper.widthMm, reference.paper.heightMm]).toEqual([
+      PAPER_SIZES.letter.longMm,
+      PAPER_SIZES.letter.shortMm,
+    ]);
   });
 
   it('goes back to the photo’s own reference when there is one', () => {

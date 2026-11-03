@@ -17,6 +17,8 @@ import type { TraceMode } from './traceMode';
 
 interface ScalePanelProps {
   readonly scene: SceneTrace;
+  /** The photo's size, for telling a tilted sheet's long side from its short one. */
+  readonly frame: { readonly width: number; readonly height: number };
   readonly mode: TraceMode;
   readonly marks: readonly Point[];
   readonly manual: boolean;
@@ -80,7 +82,7 @@ function Measured({ scene }: { readonly scene: SceneTrace }) {
     case 'paper':
       lines.push({
         text: t(
-          reference.paper.longMm === PAPER_SIZES.a4.longMm
+          Math.max(reference.paper.widthMm, reference.paper.heightMm) === PAPER_SIZES.a4.longMm
             ? 'binDesigner.cutouts.traceView.scale.paperA4'
             : 'binDesigner.cutouts.traceView.scale.paperLetter'
         ),
@@ -103,6 +105,7 @@ function Measured({ scene }: { readonly scene: SceneTrace }) {
 
 export function ScalePanel({
   scene,
+  frame,
   mode,
   marks,
   manual,
@@ -129,7 +132,7 @@ export function ScalePanel({
   const sized = scene.units === 'mm';
 
   const ruler = marks.length === 2 ? rulerReference(marks[0], marks[1], parseMm(lengthText)) : null;
-  const paper = marks.length === 4 ? paperReference(marks, paperSize) : null;
+  const paper = marks.length === 4 ? paperReference(marks, paperSize, frame) : null;
 
   const start = (next: 'ruler' | 'paper') => {
     setLengthText('');

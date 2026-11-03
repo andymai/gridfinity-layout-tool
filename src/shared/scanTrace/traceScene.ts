@@ -27,7 +27,7 @@ import type { ImageDataLike, Mask, Point, TraceError } from './types';
 import { simplifyRdp } from './simplify';
 import { polygonArea } from './traceImage';
 import { findCardAcrossChannels, cardHomography, type CardDetectOptions } from './cardDetect';
-import { rectifyPoints } from './perspective';
+import { rectifyPoints, solveHomography } from './perspective';
 import { fitSmoothPolygon } from './curveFit';
 import { traceSoftContour, binarize, type SoftMask } from './softContour';
 import { symmetrizeIfRegular } from './symmetry';
@@ -62,11 +62,13 @@ export interface SceneRuler {
   readonly lengthMm: number;
 }
 
-/** A sheet of paper's corners as marked, ordered [TL, TR, BR, BL], and its size. */
+/** A sheet of paper's corners as marked, ordered [TL, TR, BR, BL]. */
 export interface ScenePaper {
   readonly corners: readonly [Point, Point, Point, Point];
-  readonly longMm: number;
-  readonly shortMm: number;
+  /** The sheet's real length along TL→TR. */
+  readonly widthMm: number;
+  /** The sheet's real length along TL→BL. */
+  readonly heightMm: number;
 }
 
 /** Whatever pinned the scene to millimetres. At most one applies. */
@@ -261,9 +263,14 @@ function referenceToMm(
     if (h) return (points) => rectifyPoints(points, h);
   }
   if (reference?.kind === 'paper') {
-    const { corners, longMm, shortMm } = reference.paper;
-    const h = cardHomography(corners, longMm, shortMm);
-    if (h) return (points) => rectifyPoints(points, h);
+    const { corners, widthMm: w, heightMm: h } = reference.paper;
+    const map = solveHomography(corners, [
+      { x: 0, y: 0 },
+      { x: w, y: 0 },
+      { x: w, y: h },
+      { x: 0, y: h },
+    ]);
+    if (map) return (points) => rectifyPoints(points, map);
   }
   if (reference?.kind === 'ruler') {
     const { a, b, lengthMm } = reference.ruler;
@@ -527,8 +534,8 @@ export function sameReference(a: SceneReference | null, b: SceneReference | null
     case 'paper':
       return (
         b.kind === 'paper' &&
-        a.paper.longMm === b.paper.longMm &&
-        a.paper.shortMm === b.paper.shortMm &&
+        a.paper.widthMm === b.paper.widthMm &&
+        a.paper.heightMm === b.paper.heightMm &&
         samePoints(a.paper.corners, b.paper.corners)
       );
     default:

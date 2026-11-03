@@ -172,9 +172,10 @@ export function TraceView({ open, onClose, onTraced }: TraceViewProps) {
               {t('binDesigner.cutouts.traceView.photo.change')}
             </Button>
           )}
-          {scene && (
+          {photo && scene && (
             <ScalePanel
               scene={scene}
+              frame={photo.image}
               mode={mode}
               marks={marks}
               manual={session.manual}

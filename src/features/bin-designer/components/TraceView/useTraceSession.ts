@@ -33,13 +33,22 @@ export interface TracePhoto {
   readonly url: string;
 }
 
+/** What an undo puts back: the outlines and the settings they were traced with. */
+interface Snapshot {
+  readonly scene: SceneTrace;
+  readonly auto: SceneReference | null;
+  readonly manual: boolean;
+  readonly region: readonly Point[] | null;
+  readonly sensitivity: number;
+}
+
 interface Session {
   readonly photo: TracePhoto | null;
   readonly loading: boolean;
   readonly failed: boolean;
   readonly scene: SceneTrace | null;
-  /** The scene before the last change, so a bad redraw can be undone. */
-  readonly previous: SceneTrace | null;
+  /** The state before the last change, so a bad redraw can be undone. */
+  readonly previous: Snapshot | null;
   readonly canRefine: boolean;
   /** A trace or redraw is under way, so the outlines must hold still. */
   readonly working: boolean;
@@ -64,6 +73,17 @@ const START: Session = {
   region: null,
   sensitivity: 0,
 };
+
+const snapshot = (s: Session): Snapshot | null =>
+  s.scene
+    ? {
+        scene: s.scene,
+        auto: s.auto,
+        manual: s.manual,
+        region: s.region,
+        sensitivity: s.sensitivity,
+      }
+    : null;
 
 /** A scene with no tools yet, sized by `reference`, for a tap to add to. */
 function emptyScene(reference: SceneReference | null, options: SceneTraceOptions): SceneTrace {
@@ -113,9 +133,16 @@ export function useTraceSession(): TraceSession {
   // Each pass takes a ticket; a result lands only while its ticket is the latest,
   // so a photo, region or scale changed mid-pass never takes a stale outline.
   const ticket = useRef(0);
+  // Where the slider sits mid-drag; the session keeps the value last traced with.
+  const [dragging, setDragging] = useState<number | null>(null);
 
   useEffect(() => {
     preloadSegmenter();
+    // A closed view drops whatever it had in flight, so no photo is decoded
+    // into a URL nothing will revoke.
+    return () => {
+      ticket.current += 1;
+    };
   }, []);
 
   const photoUrl = session.photo?.url ?? null;
@@ -136,7 +163,8 @@ export function useTraceSession(): TraceSession {
   const load = useCallback(
     async (file: Blob) => {
       const mine = ++ticket.current;
-      setSession((s) => ({ ...s, loading: true, failed: false }));
+      // A new photo takes over from any redraw, whose result it will drop.
+      setSession((s) => ({ ...s, loading: true, failed: false, working: false }));
       let canvas: HTMLCanvasElement;
       try {
         canvas = await decodeImageToCanvas(file);
@@ -170,6 +198,7 @@ export function useTraceSession(): TraceSession {
       const { photo, scene } = session;
       if (!photo || !scene) return;
       const mine = ++ticket.current;
+      const before = snapshot(session);
       setSession((s) => ({ ...s, region, sensitivity, working: true }));
       const opts = options(region, sensitivity);
       void traceAll(photo.canvas, photo.image, opts, reference).then((traced) => {
@@ -177,7 +206,7 @@ export function useTraceSession(): TraceSession {
         setSession((s) => ({
           ...s,
           scene: isOk(traced) ? traced.value.scene : emptyScene(reference, opts),
-          previous: s.scene,
+          previous: before,
           canRefine: isOk(traced) ? traced.value.canRefine && s.canRefine : s.canRefine,
           manual,
           working: false,
@@ -195,12 +224,12 @@ export function useTraceSession(): TraceSession {
     [retrace, session.sensitivity, session.manual, reference]
   );
 
-  const setSensitivity = useCallback(
-    (value: number) => setSession((s) => ({ ...s, sensitivity: value })),
-    []
-  );
+  const setSensitivity = useCallback((value: number) => setDragging(value), []);
   const commitSensitivity = useCallback(
-    (value: number) => retrace(session.region, value, reference, session.manual),
+    (value: number) => {
+      setDragging(null);
+      retrace(session.region, value, reference, session.manual);
+    },
     [retrace, session.region, session.manual, reference]
   );
 
@@ -224,7 +253,7 @@ export function useTraceSession(): TraceSession {
         auto,
         manual,
         working: false,
-        previous: scene,
+        previous: snapshot(session),
         scene: withReference(scene, target, options(region, sensitivity)),
       }));
     },
@@ -236,6 +265,7 @@ export function useTraceSession(): TraceSession {
       const { photo, scene, region, sensitivity, manual, canRefine, working } = session;
       if (!photo || !scene || !canRefine || working) return;
       const mine = ++ticket.current;
+      const before = snapshot(session);
       setSession((s) => ({ ...s, working: true }));
       void traceTap(
         photo.canvas,
@@ -248,7 +278,7 @@ export function useTraceSession(): TraceSession {
         if (mine !== ticket.current) return;
         setSession((s) =>
           isOk(next)
-            ? { ...s, scene: next.value, previous: s.scene, working: false }
+            ? { ...s, scene: next.value, previous: before, working: false }
             : { ...s, canRefine: next.error !== 'modelFailed', working: false }
         );
       });
@@ -274,7 +304,7 @@ export function useTraceSession(): TraceSession {
       setSession((s) => ({
         ...s,
         scene: { ...scene, shapes: withoutShape(scene.shapes, gone) },
-        previous: scene,
+        previous: snapshot(session),
       }));
     },
     [session, listed]
@@ -282,9 +312,7 @@ export function useTraceSession(): TraceSession {
 
   const undo = useCallback(
     () =>
-      setSession((s) =>
-        s.previous && !s.working ? { ...s, scene: s.previous, previous: null } : s
-      ),
+      setSession((s) => (s.previous && !s.working ? { ...s, ...s.previous, previous: null } : s)),
     []
   );
 
@@ -296,9 +324,11 @@ export function useTraceSession(): TraceSession {
   const shapes = useMemo(() => listed.map(({ shape }) => shape), [listed]);
 
   const traced = useCallback((): string | null => {
-    if (!sized || sized.units !== 'mm' || shapes.length === 0 || session.working) return null;
+    if (!sized || sized.units !== 'mm' || shapes.length === 0) return null;
+    // Mid-pass, or while a new photo loads, the outlines on hand are not the ones to add.
+    if (session.working || session.loading) return null;
     return svgFromShapes(shapes, 'mm', keepHoles);
-  }, [sized, shapes, keepHoles, session.working]);
+  }, [sized, shapes, keepHoles, session.working, session.loading]);
 
   return {
     photo: session.photo,
@@ -313,7 +343,7 @@ export function useTraceSession(): TraceSession {
     manual: session.manual,
     hasAuto: (session.manual ? session.auto : reference) !== null,
     region: session.region,
-    sensitivity: session.sensitivity,
+    sensitivity: dragging ?? session.sensitivity,
     keepHoles,
     cardSize,
     load,

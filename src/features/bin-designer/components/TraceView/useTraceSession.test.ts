@@ -54,7 +54,8 @@ const PAPER = paperReference(
     { x: 195, y: 95 },
     { x: 5, y: 95 },
   ],
-  'a4'
+  'a4',
+  { width: W, height: H }
 );
 
 const photo = () => new File(['x'], 'tools.jpg', { type: 'image/jpeg' });
@@ -176,6 +177,76 @@ describe('useTraceSession', () => {
     act(() => result.current.tap({ x: 0.2, y: 0.2 }));
 
     await waitFor(() => expect(result.current.canRefine).toBe(false));
+  });
+
+  it('undoes a cleared ruler back to a scale a tap keeps', async () => {
+    const { result } = await loaded();
+    act(() => result.current.setScale(RULER));
+    act(() => result.current.setScale(null));
+    act(() => result.current.undo());
+    expect(result.current.manual).toBe(true);
+
+    act(() => result.current.tap({ x: 0.5, y: 0.5 }));
+    await waitFor(() => expect(result.current.working).toBe(false));
+    expect(mockTraceSegmented).toHaveBeenLastCalledWith(IMAGE, SOFT, expect.any(Object), RULER);
+  });
+
+  it('undoes a sensitivity change along with what it traced', async () => {
+    const { result } = await loaded();
+    act(() => result.current.setSensitivity(30));
+    expect(result.current.sensitivity).toBe(30);
+    act(() => result.current.commitSensitivity(30));
+    await waitFor(() => expect(result.current.working).toBe(false));
+
+    act(() => result.current.undo());
+    expect(result.current.sensitivity).toBe(0);
+  });
+
+  it('frees the old photo when a replacement fails mid-redraw', async () => {
+    const { result } = await loaded();
+    mockSegment.mockReturnValueOnce(new Promise<SoftMask>(() => {}));
+    act(() => result.current.tap({ x: 0.5, y: 0.5 }));
+    expect(result.current.working).toBe(true);
+
+    mockDecode.mockRejectedValueOnce(new Error('not an image'));
+    await act(() => result.current.load(photo()));
+
+    expect(result.current.failed).toBe(true);
+    expect(result.current.working).toBe(false);
+    expect(result.current.photo).not.toBeNull();
+  });
+
+  it('adds nothing while another photo loads', async () => {
+    const { result } = await loaded();
+    act(() => result.current.setScale(RULER));
+    expect(result.current.traced()).not.toBeNull();
+
+    let decoded: (canvas: HTMLCanvasElement) => void = () => {};
+    mockDecode.mockReturnValueOnce(new Promise((resolve) => (decoded = resolve)));
+    let pending: Promise<void> = Promise.resolve();
+    act(() => {
+      pending = result.current.load(photo());
+    });
+    expect(result.current.traced()).toBeNull();
+    await act(async () => {
+      decoded(CANVAS);
+      await pending;
+    });
+  });
+
+  it('makes no photo URL for a view closed mid-load', async () => {
+    const { result, unmount } = renderHook(() => useTraceSession());
+    let decoded: (canvas: HTMLCanvasElement) => void = () => {};
+    mockDecode.mockReturnValueOnce(new Promise((resolve) => (decoded = resolve)));
+    let pending: Promise<void> = Promise.resolve();
+    act(() => {
+      pending = result.current.load(photo());
+    });
+    unmount();
+    decoded(CANVAS);
+    await pending;
+
+    expect(URL.createObjectURL).not.toHaveBeenCalled();
   });
 
   it('says so when the photo cannot be read', async () => {

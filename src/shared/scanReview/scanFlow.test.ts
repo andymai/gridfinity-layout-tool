@@ -85,6 +85,26 @@ describe('traceAll', () => {
     expect(mockSegment).toHaveBeenCalledTimes(MAX_AUTO_REFINE);
   });
 
+  it('asks the model about the middle of a drawn region, and takes nothing outside it', async () => {
+    const region = [
+      { x: 60, y: 40 },
+      { x: 100, y: 40 },
+      { x: 100, y: 80 },
+      { x: 60, y: 80 },
+    ];
+    mockTrace.mockReturnValue(err({ code: 'NO_OBJECT', detail: '' }));
+    mockTraceSegmented.mockReturnValue(ok(scene([box(5, 5, 30, 30)])));
+
+    const outside = await traceAll(CANVAS, IMAGE, { region }, null);
+
+    expect(mockSegment).toHaveBeenCalledWith(CANVAS, { x: 0.8, y: 0.75 });
+    expect(outside).toEqual(err('noObject'));
+
+    mockTraceSegmented.mockReturnValue(ok(scene([box(65, 45, 95, 75)])));
+    const inside = await traceAll(CANVAS, IMAGE, { region }, null);
+    expect(inside.ok && inside.value.scene.shapes).toHaveLength(1);
+  });
+
   it('sizes the photo by a settled reference instead of looking for one', async () => {
     const ruler: SceneReference = {
       kind: 'ruler',

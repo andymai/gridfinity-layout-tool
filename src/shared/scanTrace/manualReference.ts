@@ -6,6 +6,7 @@
 
 import type { Point } from './types';
 import type { SceneReference } from './traceScene';
+import { solveHomography } from './perspective';
 
 /** Sheet sizes paper can be marked as, long side first. */
 export const PAPER_SIZES = {
@@ -22,6 +23,52 @@ export const MIN_RULER_PX = 10;
 const MIN_PAPER_AREA_PX = 2500;
 
 const finite = (p: Point): boolean => Number.isFinite(p.x) && Number.isFinite(p.y);
+
+/**
+ * The lens assumed when the corners cannot reveal it, as a share of the
+ * photo's longer side: about a phone's main camera. It decides the sheet's
+ * sides only for a shot tilted on one axis alone, and steeply.
+ */
+const ASSUMED_FOCAL_SHARE = 0.75;
+
+/** Focal lengths outside this share of the photo's longer side are a misread. */
+const FOCAL_SHARE_RANGE = [0.25, 4] as const;
+
+const UNIT_SQUARE: [Point, Point, Point, Point] = [
+  { x: 0, y: 0 },
+  { x: 1, y: 0 },
+  { x: 1, y: 1 },
+  { x: 0, y: 1 },
+];
+
+/**
+ * The marked rectangle's true TL→TR side over its TL→BL side, taking the
+ * principal point at the photo's middle. The two sides are the homography's
+ * first two columns, measured through the camera; the camera's focal length
+ * comes from their being square to each other, or, when an edge pair stays
+ * parallel in the photo and gives no answer, from a typical lens.
+ */
+function sideRatio(
+  corners: readonly [Point, Point, Point, Point],
+  frame: { readonly width: number; readonly height: number }
+): number | null {
+  const h = solveHomography(UNIT_SQUARE, corners);
+  if (!h) return null;
+  const cx = frame.width / 2;
+  const cy = frame.height / 2;
+  const long = Math.max(frame.width, frame.height);
+  const u = (col: 0 | 1) => [h[col] - cx * h[6 + col], h[3 + col] - cy * h[6 + col], h[6 + col]];
+  const [a, b] = [u(0), u(1)];
+  const solved = -(a[0] * b[0] + a[1] * b[1]) / (a[2] * b[2]);
+  const [lo, hi] = FOCAL_SHARE_RANGE;
+  const f2 =
+    Number.isFinite(solved) && solved >= (lo * long) ** 2 && solved <= (hi * long) ** 2
+      ? solved
+      : (ASSUMED_FOCAL_SHARE * long) ** 2;
+  const norm = (v: number[]) => (v[0] ** 2 + v[1] ** 2) / f2 + v[2] ** 2;
+  const ratio = Math.sqrt(norm(a) / norm(b));
+  return Number.isFinite(ratio) && ratio > 0 ? ratio : null;
+}
 
 /** A ruler from `a` to `b` that is `lengthMm` long, or null when either is unusable. */
 export function rulerReference(a: Point, b: Point, lengthMm: number): SceneReference | null {
@@ -51,10 +98,20 @@ function clockwise(points: readonly Point[]): [Point, Point, Point, Point] {
 }
 
 /**
- * The sheet whose corners are `points`, or null when they do not bound one:
- * not four finite points, folded in on itself, or too small to measure by.
+ * The sheet whose corners are `points` in a photo `frame` wide and high, or
+ * null when they do not bound one: not four finite points, folded in on
+ * itself, or too small to measure by.
+ *
+ * Which marked edge is the sheet's long side comes from the camera's view of
+ * the quad, not from how long each edge looks: tilted far enough, the long
+ * side of a sheet shows shorter than its short side, and taking the look at
+ * its word would stretch every tool on it.
  */
-export function paperReference(points: readonly Point[], size: PaperSize): SceneReference | null {
+export function paperReference(
+  points: readonly Point[],
+  size: PaperSize,
+  frame: { readonly width: number; readonly height: number }
+): SceneReference | null {
   if (points.length !== 4 || !points.every(finite)) return null;
   const corners = clockwise(points);
   let area = 0;
@@ -67,5 +124,14 @@ export function paperReference(points: readonly Point[], size: PaperSize): Scene
     area += p.x * q.y - q.x * p.y;
   }
   if (area / 2 < MIN_PAPER_AREA_PX) return null;
-  return { kind: 'paper', paper: { corners, ...PAPER_SIZES[size] } };
+  const { longMm, shortMm } = PAPER_SIZES[size];
+  const [tl, tr, , bl] = corners;
+  const ratio =
+    sideRatio(corners, frame) ??
+    Math.hypot(tr.x - tl.x, tr.y - tl.y) / Math.hypot(bl.x - tl.x, bl.y - tl.y);
+  const wide = ratio >= 1;
+  return {
+    kind: 'paper',
+    paper: { corners, widthMm: wide ? longMm : shortMm, heightMm: wide ? shortMm : longMm },
+  };
 }

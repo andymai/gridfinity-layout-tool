@@ -3,6 +3,7 @@ import type { CardSizeMm } from './cardSize';
 import {
   interiorSeed,
   nestShapes,
+  pointInPolygon,
   pointsToSvgPath,
   sameReference,
   segmentAt,
@@ -47,7 +48,8 @@ export interface TracedScene {
 /**
  * Every tool in the photo. The colour pass finds them and the model redraws
  * each, keeping a redraw only where it agrees; when the colour pass finds
- * nothing, the model tries the middle of the frame.
+ * nothing, the model tries the middle of the region searched, or of the
+ * frame, and a tool it finds outside that region is not taken.
  *
  * `reference` sizes the photo when one is already settled, such as a ruler
  * the user drew; left out, the photo's own reference is found.
@@ -61,13 +63,26 @@ export async function traceAll(
   const classical =
     reference === undefined ? traceScene(image, options) : traceScene(image, options, reference);
   if (!isOk(classical)) {
+    const { region } = options;
+    const seed = region
+      ? {
+          x: region.reduce((sum, p) => sum + p.x, 0) / region.length / image.width,
+          y: region.reduce((sum, p) => sum + p.y, 0) / region.length / image.height,
+        }
+      : { x: 0.5, y: 0.5 };
     try {
-      const soft = await segmentAt(canvas, { x: 0.5, y: 0.5 });
+      const soft = await segmentAt(canvas, seed);
       const traced =
         reference === undefined
           ? traceSceneSegmented(image, soft, options)
           : traceSceneSegmented(image, soft, options, reference);
-      return isOk(traced) ? ok({ scene: traced.value, canRefine: true }) : err('noObject');
+      if (!isOk(traced)) return err('noObject');
+      const [shape] = traced.value.shapes;
+      const holes = (shape.holes ?? []).map((h) => h.imagePoints);
+      if (region && !pointInPolygon(interiorSeed(shape.imagePoints, 1, 1, holes), region)) {
+        return err('noObject');
+      }
+      return ok({ scene: traced.value, canRefine: true });
     } catch {
       return err('noObject');
     }
