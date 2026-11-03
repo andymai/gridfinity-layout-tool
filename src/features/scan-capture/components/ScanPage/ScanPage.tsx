@@ -36,6 +36,7 @@ import { ScanToolList } from './ScanToolList';
 import {
   bounds,
   cardOptions,
+  shownShapes,
   svgFromShapes,
   traceAll,
   traceTap,
@@ -162,13 +163,15 @@ export function ScanPage({ token }: ScanPageProps) {
     [cardSize]
   );
 
-  // `index` counts the tools on screen, which leave out any in a hole while holes are off.
+  // `index` counts the tools on screen, judged as the list judges them.
   const handleRemove = useCallback(
     (index: number) => {
       setStatus((prev) => {
         if (prev.kind !== 'review' || busy(prev)) return prev;
-        const listed = prev.scene.shapes.filter((s) => keepHoles || s.inHole !== true);
-        const gone = listed.at(index);
+        const rectified = withCardSize(prev.scene, cardSize.longMm, cardSize.shortMm);
+        const listed = shownShapes(rectified.shapes, keepHoles, rectified.units);
+        const at = listed.at(index);
+        const gone = at && prev.scene.shapes[at.index];
         if (listed.length < 2 || !gone) return prev;
         return {
           ...prev,
@@ -177,7 +180,7 @@ export function ScanPage({ token }: ScanPageProps) {
         };
       });
     },
-    [keepHoles]
+    [keepHoles, cardSize]
   );
 
   const handleUndo = useCallback(() => {

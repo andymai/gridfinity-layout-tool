@@ -335,6 +335,30 @@ describe('ScanPage', () => {
     vi.unstubAllGlobals();
   });
 
+  it('removes the tool the list shows when a narrow hole hides another', async () => {
+    const ring: SceneShape = { ...box(10, 10, 60, 60), holes: [box(30, 30, 32, 40)] };
+    const pin: SceneShape = { ...box(30.5, 31, 31.5, 39), inHole: true };
+    const other = box(70, 10, 90, 30);
+    mockTrace.mockReturnValue(ok({ ...SCENE_MM, shapes: [ring, pin, other] }));
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+    vi.stubGlobal('fetch', fetchMock);
+    render(<ScanPage token={TOKEN} />);
+    selectPhoto();
+
+    fireEvent.click(await screen.findByRole('switch', { name: 'scan.review.keepHoles' }));
+    expect(screen.getAllByText('scan.review.toolLabel')).toHaveLength(2);
+    fireEvent.click(screen.getAllByLabelText('scan.review.removeTool')[1]);
+
+    fireEvent.click(screen.getByText('scan.use'));
+    await screen.findByText('scan.sent.title');
+    const svg = lastUploadedSvg(fetchMock);
+    expect(svg.match(/<path /g)).toHaveLength(1);
+    // The ring stays, sent as its outline alone; the tool beside it is gone.
+    expect(svg).not.toContain('fill-rule');
+    expect(svg).toContain('viewBox="0 0 50 50"');
+    vi.unstubAllGlobals();
+  });
+
   it('offers no hole switch when nothing has a hole', async () => {
     render(<ScanPage token={TOKEN} />);
     selectPhoto();

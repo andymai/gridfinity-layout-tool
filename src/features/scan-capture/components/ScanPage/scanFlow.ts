@@ -135,17 +135,24 @@ export function bounds(points: readonly Point[]): {
   return { minX, minY, w: Math.max(...xs) - minX, h: Math.max(...ys) - minY };
 }
 
+export interface ShownShape {
+  readonly shape: SceneShape;
+  /** Where the tool sits in the scene, for acting on the one the list shows. */
+  readonly index: number;
+}
+
 /**
  * The tools the review shows: all of them while holes are kept, each with
  * only the holes wide enough to keep, otherwise not one lying in another's
  * hole, which would be a pocket inside a pocket.
  */
-export function visibleShapes(
+export function shownShapes(
   shapes: readonly SceneShape[],
   keepHoles: boolean,
   units: 'mm' | 'px'
-): SceneShape[] {
-  if (!keepHoles) return shapes.filter((s) => s.inHole !== true);
+): ShownShape[] {
+  const indexed = shapes.map((shape, index) => ({ shape, index }));
+  if (!keepHoles) return indexed.filter(({ shape }) => shape.inHole !== true);
   const trimmed = shapes.map((shape) => {
     if (!shape.holes) return shape;
     const { holes: _all, ...rest } = shape;
@@ -154,9 +161,17 @@ export function visibleShapes(
   });
   // A tool whose hole was too narrow to keep now lies on its ring's material,
   // a pocket inside a pocket, so it goes with the hole.
-  return nestShapes(trimmed).filter(
-    (shape, i) => !(shapes[i].inHole === true && shape.inHole !== true)
-  );
+  return nestShapes(trimmed)
+    .map((shape, index) => ({ shape, index }))
+    .filter(({ shape, index }) => !(shapes[index].inHole === true && shape.inHole !== true));
+}
+
+export function visibleShapes(
+  shapes: readonly SceneShape[],
+  keepHoles: boolean,
+  units: 'mm' | 'px'
+): SceneShape[] {
+  return shownShapes(shapes, keepHoles, units).map(({ shape }) => shape);
 }
 
 /** `shapes` without `gone`, each still marked in a hole only while one holds it. */
