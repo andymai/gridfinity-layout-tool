@@ -3618,6 +3618,16 @@ const en: Record<string, string> = {
     'Print at 100% (actual size): the bar above must measure exactly 100 mm.',
   'binDesigner.cutouts.scanImport.sheetPlaceHint':
     'Place the tool inside the marker frame and photograph it straight down.',
+  'binDesigner.cutouts.scanImport.measuringStrips': 'Print measuring strips',
+  'binDesigner.cutouts.scanImport.measuringStripsHelp':
+    'For a tall tool: lay a strip across its top so it is measured at its own height.',
+  'binDesigner.cutouts.scanImport.stripsTitle': 'Gridfinity Layout Tool: measuring strips',
+  'binDesigner.cutouts.scanImport.stripsPrintHint':
+    'Print at 100% (actual size): the bar above must measure exactly 100 mm. Then cut out the strips.',
+  'binDesigner.cutouts.scanImport.stripsPlaceHint':
+    'Lay one flat across the top of the tool, markers up, and photograph it straight down.',
+  'scan.stripMeasured': 'Measured to scale from the strip, at the tool’s height.',
+  'scan.review.underStrip': 'Edge under the strip filled in. Check it.',
   'binDesigner.cutouts.scanImport.scaleLabel': 'Real-world size (longest side, mm)',
   'binDesigner.cutouts.scanImport.scaleLabelLongest': 'Real-world length of the longest tool (mm)',
   'binDesigner.cutouts.scanImport.scaleHelp':

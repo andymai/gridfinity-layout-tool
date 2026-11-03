@@ -79,9 +79,10 @@ const round1 = (n: number): number => Math.round(n * 10) / 10;
 /** A redraw or an upload is under way, so the outlines must hold still. */
 const busy = (review: ReviewState): boolean => review.resegmenting || review.sending;
 
-function measuredFromKey(grid: SceneTrace['grid']): string {
-  if (!grid) return 'scan.cardMeasured';
-  return grid.kind === 'sheet' ? 'scan.gridMeasured' : 'scan.baseplateMeasured';
+function measuredFromKey(scene: SceneTrace): string {
+  if (scene.reference?.kind === 'strip') return 'scan.stripMeasured';
+  if (!scene.grid) return 'scan.cardMeasured';
+  return scene.grid.kind === 'sheet' ? 'scan.gridMeasured' : 'scan.baseplateMeasured';
 }
 
 export function ScanPage({ token }: ScanPageProps) {
@@ -350,7 +351,7 @@ export function ScanPage({ token }: ScanPageProps) {
                             depth: round1(measured.h),
                           })}
                     </p>
-                    <p className="text-xs text-success">{t(measuredFromKey(scene.grid))}</p>
+                    <p className="text-xs text-success">{t(measuredFromKey(scene))}</p>
                     {/* A lattice fit is over-constrained, so it can report how
                         well it agrees with itself — the card's never can. */}
                     {scene.grid && (
