@@ -1,0 +1,19 @@
+src/features/bin-designer/components/panel/BaseSection/useHoleOptions.ts
+  s_1196eaeaf273b9::t_2734ff760d706e 1-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7e2c35d4120fe18791099844a565b8e10aaea144",
+  "prompts": {},
+  "sessions": {
+    "s_1196eaeaf273b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b13242c8-0fdf-4d44-96d0-08a157a3a632",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
