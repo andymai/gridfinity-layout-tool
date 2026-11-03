@@ -1,0 +1,30 @@
+src/shared/utils/wallCutoutPosition.ts
+  s_1196eaeaf273b9::t_d2308bae3facb8 264-293
+src/features/generation/worker/generators/wallCutoutBuilder.ts
+  s_1196eaeaf273b9::t_164c6eda2a8b1e 23,111-114
+src/features/bin-designer/components/preview/GhostWallCutouts/GhostWallCutouts.tsx
+  s_1196eaeaf273b9::t_18e98996e1ed72 230-238
+  s_1196eaeaf273b9::t_6e8bb70460ac01 18,22,165-166,172-173,193,200-202,207-218,246-247,252-258,290-292,299,301,303,320,337-340,348,355-357
+src/features/bin-designer/components/preview/GhostWallCutouts/GhostWallCutouts.test.tsx
+  s_1196eaeaf273b9::t_f3471d6efe40fb 6-7,277-329
+  s_1196eaeaf273b9::t_3d6f15b62e08eb 330
+src/shared/utils/wallCutoutPosition.test.ts
+  s_1196eaeaf273b9::t_1253c146dde5b1 9,285-306
+  s_1196eaeaf273b9::t_6ac6fc42e67873 307
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "73d62e2a7e3660ccb499be0f861c9b2d0b945774",
+  "prompts": {},
+  "sessions": {
+    "s_1196eaeaf273b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b13242c8-0fdf-4d44-96d0-08a157a3a632",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
