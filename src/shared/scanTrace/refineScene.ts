@@ -18,7 +18,7 @@
 import type { Point } from './types';
 import type { SceneShape, SceneTrace } from './traceScene';
 import { polygonArea } from './traceImage';
-import { pointInPolygon } from './toolBlobs';
+import { interiorSeed, pointInPolygon } from './toolBlobs';
 
 /** Grid samples per coverage estimate. */
 const SAMPLES = 400;
@@ -50,7 +50,9 @@ export function coverage(
   const y0 = Math.min(...ys);
   const x1 = Math.max(...xs);
   const y1 = Math.max(...ys);
-  const step = Math.max(0.5, Math.sqrt(((x1 - x0) * (y1 - y0)) / SAMPLES));
+  // Spaced by the material's area, not the box's, so a thin ring is sampled too.
+  const material = polygonArea(poly) - polyHoles.reduce((a, h) => a + polygonArea(h), 0);
+  const step = Math.max(0.5, Math.sqrt(Math.max(material, 1) / SAMPLES));
   let inside = 0;
   let hit = 0;
   for (let y = y0 + step / 2; y < y1; y += step) {
@@ -99,15 +101,31 @@ export function withRefinedShape(
       (shape.holes ?? []).map((h) => h.imagePoints)
     ) >= SAME_TOOL;
   const kept = scene.shapes.filter((s, i) => !replaced(s, i));
-  // A redraw stays where its outline was found: in a hole when it was seeded
-  // in one, or when a tap lands it in the hole of a shape still kept.
-  const inHole =
-    how.kind === 'seeded'
-      ? scene.shapes[how.index].inHole === true
-      : kept.some((s) => (s.holes ?? []).some((h) => pointInPolygon(how.at, h.imagePoints)));
-  const placed: SceneShape = { ...refined, ...(inHole ? { inHole: true } : {}) };
-  const shapes = [...kept, placed].sort(
+  const shapes = nestShapes([...kept, refined]).sort(
     (a, b) => polygonArea(b.imagePoints) - polygonArea(a.imagePoints)
   );
   return { ...scene, shapes };
+}
+
+/**
+ * `shapes` with each marked in a hole exactly when a point on its own
+ * material lies in another shape's hole. Re-decided after anything joins or
+ * leaves, since a ring added round a tool, or removed from round one,
+ * changes what lies where. A shape whose mark already reads right comes back
+ * by reference.
+ */
+export function nestShapes(shapes: readonly SceneShape[]): SceneShape[] {
+  return shapes.map((shape) => {
+    const own = (shape.holes ?? []).map((h) => h.imagePoints);
+    // In pixels: a 1 × 1 frame leaves the seed unnormalised.
+    const at = interiorSeed(shape.imagePoints, 1, 1, own);
+    const held = shapes.some(
+      (other) =>
+        other !== shape && (other.holes ?? []).some((h) => pointInPolygon(at, h.imagePoints))
+    );
+    if (held === (shape.inHole === true)) return shape;
+    if (held) return { ...shape, inHole: true };
+    const { inHole: _free, ...rest } = shape;
+    return rest;
+  });
 }

@@ -9,7 +9,7 @@ export {
   withReference,
   wideHoles,
 } from './traceScene';
-export { withRefinedShape, type Refinement } from './refineScene';
+export { nestShapes, withRefinedShape, type Refinement } from './refineScene';
 export { interiorSeed, pointInPolygon } from './toolBlobs';
 export type {
   SceneShape,

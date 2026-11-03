@@ -153,6 +153,14 @@ describe('holes', () => {
     expect(shown.holes).toEqual([box(10, 10, 30, 30)]);
   });
 
+  // 1 mm across in a millimetre scene: too narrow to keep, so the tool in it
+  // would be a pocket inside the pocket.
+  it('hides a tool whose hole was too narrow to keep', () => {
+    const slotted: SceneShape = { ...box(0, 0, 40, 40), holes: [box(10, 10, 11, 30)] };
+    const pin: SceneShape = { ...box(10.2, 15, 10.8, 25), inHole: true };
+    expect(visibleShapes([slotted, pin], true, 'mm')).toEqual([box(0, 0, 40, 40)]);
+  });
+
   it('frees a tool from a hole once the ring around it is removed', () => {
     const other = box(50, 0, 60, 10);
     expect(withoutShape([ring, nut, other], ring)).toEqual([box(15, 15, 25, 25), other]);

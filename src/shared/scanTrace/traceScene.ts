@@ -310,9 +310,15 @@ export function withReference(
 ): SceneTrace {
   const quads = referenceQuads(reference);
   const outlines = scene.shapes
-    .filter(({ imagePoints }) => {
-      // In pixels: a 1 × 1 frame leaves the seed unnormalised.
-      const seed = interiorSeed(imagePoints, 1, 1);
+    .filter(({ imagePoints, holes }) => {
+      // In pixels: a 1 × 1 frame leaves the seed unnormalised. On the material,
+      // so a card lying in a coil's hole does not take the coil with it.
+      const seed = interiorSeed(
+        imagePoints,
+        1,
+        1,
+        (holes ?? []).map((h) => h.imagePoints)
+      );
       return !quads.some((quad) => pointInPolygon(seed, quad));
     })
     .map((shape) => ({

@@ -2,7 +2,7 @@ import { err, isOk, ok, type Result } from '@/core/result';
 import type { CardSizeMm } from '@/features/scan-capture/cardSize';
 import {
   interiorSeed,
-  pointInPolygon,
+  nestShapes,
   pointsToSvgPath,
   sameReference,
   segmentAt,
@@ -146,31 +146,22 @@ export function visibleShapes(
   units: 'mm' | 'px'
 ): SceneShape[] {
   if (!keepHoles) return shapes.filter((s) => s.inHole !== true);
-  return shapes.map((shape) => {
+  const trimmed = shapes.map((shape) => {
     if (!shape.holes) return shape;
     const { holes: _all, ...rest } = shape;
     const holes = wideHoles(shape, units);
     return holes.length > 0 ? { ...rest, holes } : rest;
   });
+  // A tool whose hole was too narrow to keep now lies on its ring's material,
+  // a pocket inside a pocket, so it goes with the hole.
+  return nestShapes(trimmed).filter(
+    (shape, i) => !(shapes[i].inHole === true && shape.inHole !== true)
+  );
 }
 
-/**
- * `shapes` without `gone`, each one left reading as in a hole only while a
- * shape still there has a hole around it: removing a ring frees what lay in it.
- */
+/** `shapes` without `gone`, each still marked in a hole only while one holds it. */
 export function withoutShape(shapes: readonly SceneShape[], gone: SceneShape): SceneShape[] {
-  const left = shapes.filter((s) => s !== gone);
-  return left.map((shape) => {
-    if (shape.inHole !== true) return shape;
-    const at = interiorSeed(shape.imagePoints, 1, 1);
-    const held = left.some(
-      (other) =>
-        other !== shape && (other.holes ?? []).some((h) => pointInPolygon(at, h.imagePoints))
-    );
-    if (held) return shape;
-    const { inHole: _free, ...rest } = shape;
-    return rest;
-  });
+  return nestShapes(shapes.filter((s) => s !== gone));
 }
 
 /**

@@ -294,6 +294,42 @@ describe('withCardSize on several tools', () => {
   });
 });
 
+describe('withReference and holes', () => {
+  // A cable coil with the card lying in its hole: re-sizing by that card
+  // must not take the coil for the card.
+  it('keeps a shape whose hole holds the new card', () => {
+    const card = {
+      corners: [
+        { x: 40, y: 40 },
+        { x: 60, y: 40 },
+        { x: 60, y: 55 },
+        { x: 40, y: 55 },
+      ] as const,
+      fitness: 1,
+    };
+    const ring = (pts: Point[]) => ({ imagePoints: pts, outputPoints: pts });
+    const coil = {
+      ...ring([
+        { x: 0, y: 0 },
+        { x: 100, y: 0 },
+        { x: 100, y: 100 },
+        { x: 0, y: 100 },
+      ]),
+      holes: [
+        ring([
+          { x: 20, y: 20 },
+          { x: 80, y: 20 },
+          { x: 80, y: 80 },
+          { x: 20, y: 80 },
+        ]),
+      ],
+    };
+    const scene = { shapes: [coil], units: 'px' as const, card: null, grid: null, reference: null };
+    const next = withReference(scene, { kind: 'card', card });
+    expect(next.shapes).toHaveLength(1);
+  });
+});
+
 describe('sameReference', () => {
   const card = (dx: number): SceneReference => ({
     kind: 'card',
