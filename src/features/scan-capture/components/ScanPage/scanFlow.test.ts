@@ -161,6 +161,21 @@ describe('holes', () => {
     expect(visibleShapes([slotted, pin], true, 'mm')).toEqual([box(0, 0, 40, 40)]);
   });
 
+  // A ring's wide hole holds a slotted tool, and a pin lies in the 1 mm slot.
+  // Once the slot is filled in, the pin sits on the slotted tool's material,
+  // however wide the ring's hole around both.
+  it('hides a tool in a narrow hole of a tool that lies in a kept hole', () => {
+    const outer: SceneShape = { ...box(0, 0, 80, 80), holes: [box(5, 5, 75, 75)] };
+    const slotted: SceneShape = {
+      ...box(10, 10, 50, 50),
+      holes: [box(20, 20, 21, 40)],
+      inHole: true,
+    };
+    const pin: SceneShape = { ...box(20.2, 25, 20.8, 35), inHole: true };
+    const shown = visibleShapes([outer, slotted, pin], true, 'mm');
+    expect(shown).toEqual([outer, { ...box(10, 10, 50, 50), inHole: true }]);
+  });
+
   it('frees a tool from a hole once the ring around it is removed', () => {
     const other = box(50, 0, 60, 10);
     expect(withoutShape([ring, nut, other], ring)).toEqual([box(15, 15, 25, 25), other]);

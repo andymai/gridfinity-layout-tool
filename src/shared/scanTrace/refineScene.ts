@@ -107,22 +107,27 @@ export function withRefinedShape(
   return { ...scene, shapes };
 }
 
+const inSomeHole = (p: Point, shape: SceneShape): boolean =>
+  (shape.holes ?? []).some((h) => pointInPolygon(p, h.imagePoints));
+
 /**
  * `shapes` with each marked in a hole exactly when a point on its own
- * material lies in another shape's hole. Re-decided after anything joins or
- * leaves, since a ring added round a tool, or removed from round one,
- * changes what lies where. A shape whose mark already reads right comes back
- * by reference.
+ * material lies in another shape's hole and on no other shape's material.
+ * A tool in a slot of a tool that itself lies in a ring's hole sits in the
+ * ring's hole too; once the slot is filled in, it sits on material. Re-decided
+ * after anything joins or leaves, since a ring added round a tool, or removed
+ * from round one, changes what lies where. A shape whose mark already reads
+ * right comes back by reference.
  */
 export function nestShapes(shapes: readonly SceneShape[]): SceneShape[] {
   return shapes.map((shape) => {
     const own = (shape.holes ?? []).map((h) => h.imagePoints);
     // In pixels: a 1 × 1 frame leaves the seed unnormalised.
     const at = interiorSeed(shape.imagePoints, 1, 1, own);
-    const held = shapes.some(
-      (other) =>
-        other !== shape && (other.holes ?? []).some((h) => pointInPolygon(at, h.imagePoints))
-    );
+    const others = shapes.filter((other) => other !== shape);
+    const held =
+      others.some((other) => inSomeHole(at, other)) &&
+      !others.some((other) => pointInPolygon(at, other.imagePoints) && !inSomeHole(at, other));
     if (held === (shape.inHole === true)) return shape;
     if (held) return { ...shape, inHole: true };
     const { inHole: _free, ...rest } = shape;
