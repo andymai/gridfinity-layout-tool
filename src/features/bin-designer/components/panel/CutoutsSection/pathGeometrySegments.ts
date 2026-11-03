@@ -168,6 +168,16 @@ export function splitBezierSegment(
   p1: PathPoint,
   t: number
 ): { before: PathPoint; mid: PathPoint; after: PathPoint } {
+  if (!p0.handleOut && !p1.handleIn) {
+    // A straight edge splits where `t` measures along it, as
+    // findNearestSegment and evaluateSegmentPoint read it, and stays straight.
+    const mid = { x: p0.x + (p1.x - p0.x) * t, y: p0.y + (p1.y - p0.y) * t };
+    return {
+      before: p0,
+      mid: { ...mid, handleIn: null, handleOut: null, symmetric: false },
+      after: p1,
+    };
+  }
   const a = { x: p0.x, y: p0.y };
   const cp1 = p0.handleOut ? { x: p0.x + p0.handleOut.dx, y: p0.y + p0.handleOut.dy } : a;
   const cp2 = p1.handleIn

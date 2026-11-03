@@ -156,6 +156,15 @@ describe('flattenSegment', () => {
 // ─── splitBezierSegment ──────────────────────────────────────────────────────
 
 describe('splitBezierSegment', () => {
+  it('splits a straight edge where t measures along it, and keeps both halves straight', () => {
+    const a: PathPoint = { x: 15, y: 0, handleIn: null, handleOut: null, symmetric: false };
+    const b: PathPoint = { x: 35, y: 0, handleIn: null, handleOut: null, symmetric: false };
+    const { before, mid, after } = splitBezierSegment(a, b, 0.25);
+    expect(mid).toEqual({ x: 20, y: 0, handleIn: null, handleOut: null, symmetric: false });
+    expect(before).toEqual(a);
+    expect(after).toEqual(b);
+  });
+
   // Curved segment: p0=(0,0) with handleOut=(0,20); p1=(40,0) with handleIn=(-15,0)
   // Absolute control points: cp1=(0,20), cp2=(25,0)
   const p0: PathPoint = {

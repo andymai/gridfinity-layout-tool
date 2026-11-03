@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'island-points-magnifier',
+    date: '2026-11-03',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Edit an island’s points, up close' },
+    body: {
+      en: 'Double-click a traced or drawn outline to edit its points, and the islands inside it are editable too: drag their points, click an edge to add one, or delete one. While you drag a point, a magnifier in the corner shows it up close, so it lands right on the edge. In Trace a photo, the same magnifier helps you place ruler ends and paper corners.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'outline-cleanup',
     date: '2026-11-03',
     kind: 'new',

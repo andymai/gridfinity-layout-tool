@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { MIN_PATH_POINTS } from '@/features/bin-designer/types';
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
 import {
+  dragSource,
   handleVertexEditKeyDown,
   handleVertexEditPointerDown,
   handleVertexEditPointerMove,
@@ -9,6 +10,14 @@ import {
 } from './pathEditHandler';
 import type { VertexEditMode } from './pathEditHandler';
 import type { BinBounds, PointerMoveEvent } from './types';
+import { rotateAbout } from '@/shared/utils/cutoutOutline';
+import type * as outlineSegments from '@/shared/utils/outlineSegments';
+import { outlinesTouch } from '@/shared/utils/outlineSegments';
+
+vi.mock('@/shared/utils/outlineSegments', async (importOriginal) => {
+  const real = await importOriginal<typeof outlineSegments>();
+  return { ...real, outlinesTouch: vi.fn(real.outlinesTouch) };
+});
 
 function point(x: number, y: number, overrides: Partial<PathPoint> = {}): PathPoint {
   return { x, y, handleIn: null, handleOut: null, symmetric: false, ...overrides };
@@ -38,6 +47,7 @@ function makeMode(overrides: Partial<VertexEditMode> = {}): VertexEditMode {
   return {
     type: 'vertex-editing',
     cutoutId: 'p1',
+    ring: 0,
     selectedPointIndex: null,
     dragTarget: null,
     ...overrides,
@@ -68,7 +78,7 @@ describe('handleVertexEditPointerDown', () => {
     expect(setters.setMode).toHaveBeenCalledWith(
       expect.objectContaining({
         selectedPointIndex: 1,
-        dragTarget: { type: 'vertex', index: 1 },
+        dragTarget: { type: 'vertex', ring: 0, index: 1 },
       })
     );
   });
@@ -96,7 +106,7 @@ describe('handleVertexEditPointerDown', () => {
     );
     expect(setters.setMode).toHaveBeenCalledWith(
       expect.objectContaining({
-        dragTarget: { type: 'handle', index: 1, handleType: 'out' },
+        dragTarget: { type: 'handle', ring: 0, index: 1, handleType: 'out' },
       })
     );
   });
@@ -119,7 +129,7 @@ describe('handleVertexEditPointerDown', () => {
       setters
     );
     expect(setters.setMode).toHaveBeenCalledWith(
-      expect.objectContaining({ dragTarget: { type: 'vertex', index: 1 } })
+      expect.objectContaining({ dragTarget: { type: 'vertex', ring: 0, index: 1 } })
     );
   });
 
@@ -219,7 +229,7 @@ describe('handleVertexEditPointerMove', () => {
     const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
     const snap = (v: number): number => Math.round(v);
     handleVertexEditPointerMove(
-      makeMode({ dragTarget: { type: 'vertex', index: 0 } }),
+      makeMode({ dragTarget: { type: 'vertex', ring: 0, index: 0 } }),
       at(3.4, 7.6),
       makeCutout(),
       BOUNDS,
@@ -233,7 +243,7 @@ describe('handleVertexEditPointerMove', () => {
   it('clamps a dragged vertex inside the bin', () => {
     const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
     handleVertexEditPointerMove(
-      makeMode({ dragTarget: { type: 'vertex', index: 0 } }),
+      makeMode({ dragTarget: { type: 'vertex', ring: 0, index: 0 } }),
       at(-40, 500),
       makeCutout(),
       BOUNDS,
@@ -247,7 +257,7 @@ describe('handleVertexEditPointerMove', () => {
   it('stores a dragged handle as an offset from its point', () => {
     const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
     handleVertexEditPointerMove(
-      makeMode({ dragTarget: { type: 'handle', index: 1, handleType: 'out' } }),
+      makeMode({ dragTarget: { type: 'handle', ring: 0, index: 1, handleType: 'out' } }),
       at(14, 3),
       makeCutout(),
       BOUNDS,
@@ -268,7 +278,7 @@ describe('handleVertexEditPointerMove', () => {
     ];
     const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
     handleVertexEditPointerMove(
-      makeMode({ dragTarget: { type: 'handle', index: 1, handleType: 'out' } }),
+      makeMode({ dragTarget: { type: 'handle', ring: 0, index: 1, handleType: 'out' } }),
       at(14, 3, { altKey: true }),
       makeCutout(path),
       BOUNDS,
@@ -291,7 +301,7 @@ describe('handleVertexEditPointerMove', () => {
     ];
     const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
     handleVertexEditPointerMove(
-      makeMode({ dragTarget: { type: 'handle', index: 1, handleType: 'out' } }),
+      makeMode({ dragTarget: { type: 'handle', ring: 0, index: 1, handleType: 'out' } }),
       at(14, 3),
       makeCutout(path),
       BOUNDS,
@@ -311,7 +321,7 @@ describe('handleVertexEditPointerMove', () => {
     // overwriting whatever shrank the path in the first place.
     const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
     handleVertexEditPointerMove(
-      makeMode({ dragTarget: { type: 'handle', index: 9, handleType: 'in' } }),
+      makeMode({ dragTarget: { type: 'handle', ring: 0, index: 9, handleType: 'in' } }),
       at(5, 5),
       makeCutout(),
       BOUNDS,
@@ -325,7 +335,7 @@ describe('handleVertexEditPointerMove', () => {
     const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
     expect(() =>
       handleVertexEditPointerMove(
-        makeMode({ dragTarget: { type: 'handle', index: 9, handleType: 'in' } }),
+        makeMode({ dragTarget: { type: 'handle', ring: 0, index: 9, handleType: 'in' } }),
         at(5, 5),
         makeCutout(),
         BOUNDS,
@@ -343,7 +353,7 @@ describe('handleVertexEditPointerUp', () => {
     // inward leaves the other three corners defining the same extent.
     const moved = [point(-4, 0), point(10, 0), point(10, 10), point(0, 10)];
     handleVertexEditPointerUp(
-      makeMode({ selectedPointIndex: 0, dragTarget: { type: 'vertex', index: 0 } }),
+      makeMode({ selectedPointIndex: 0, dragTarget: { type: 'vertex', ring: 0, index: 0 } }),
       makeCutout(),
       new Map([['p1', { path: moved }]]),
       setters
@@ -356,10 +366,20 @@ describe('handleVertexEditPointerUp', () => {
     expect(setters.setMode).toHaveBeenCalledWith(expect.objectContaining({ dragTarget: null }));
   });
 
+  it('leaves the islands alone when the cutout is not turned', () => {
+    const setters = makeSetters();
+    const mode = makeMode({ dragTarget: { type: 'vertex', ring: 0, index: 0 } });
+    const islanded = { ...makeCutout(), holes: [[point(4, 4), point(6, 4), point(5, 6)]] };
+    handleVertexEditPointerMove(mode, at(-4, 0), islanded, BOUNDS, noSnap, setters);
+    const preview = setters.setPreview.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    handleVertexEditPointerUp(mode, islanded, preview, setters);
+    expect(setters.onUpdate.mock.calls[0][1]).not.toHaveProperty('holes');
+  });
+
   it('keeps the vertex selected after the drag', () => {
     const setters = makeSetters();
     handleVertexEditPointerUp(
-      makeMode({ selectedPointIndex: 2, dragTarget: { type: 'vertex', index: 2 } }),
+      makeMode({ selectedPointIndex: 2, dragTarget: { type: 'vertex', ring: 0, index: 2 } }),
       makeCutout(),
       new Map(),
       setters
@@ -375,7 +395,7 @@ describe('handleVertexEditPointerUp', () => {
     const setters = makeSetters();
     const bowtie = [point(0, 0), point(10, 10), point(10, 0), point(0, 10)];
     handleVertexEditPointerUp(
-      makeMode({ dragTarget: { type: 'vertex', index: 1 } }),
+      makeMode({ dragTarget: { type: 'vertex', ring: 0, index: 1 } }),
       makeCutout(),
       new Map([['p1', { path: bowtie }]]),
       setters
@@ -478,5 +498,354 @@ describe('handleVertexEditKeyDown', () => {
     handleVertexEditKeyDown(press('q'), makeMode({ selectedPointIndex: 1 }), makeCutout(), setters);
     expect(setters.setMode).not.toHaveBeenCalled();
     expect(setters.onUpdate).not.toHaveBeenCalled();
+  });
+});
+
+describe('editing an island', () => {
+  // A 40 mm pocket with one island, a 10 mm square in its middle.
+  const OUTER = [point(0, 0), point(40, 0), point(40, 40), point(0, 40)];
+  const ISLAND = [point(15, 15), point(25, 15), point(25, 25), point(15, 25)];
+  const islanded = (): Cutout => ({
+    ...makeCutout(OUTER),
+    width: 40,
+    depth: 40,
+    holes: [ISLAND],
+  });
+
+  it('picks up an island’s vertex as ring 1', () => {
+    const setters = makeSetters();
+    handleVertexEditPointerDown(makeMode(), at(25.2, 15.1), islanded(), 1, setters);
+    expect(setters.setMode).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ring: 1,
+        selectedPointIndex: 1,
+        dragTarget: { type: 'vertex', ring: 1, index: 1 },
+      })
+    );
+  });
+
+  it('drags the island and commits it without touching the outline or its bounds', () => {
+    const setters = makeSetters();
+    const mode = makeMode({
+      ring: 1,
+      selectedPointIndex: 1,
+      dragTarget: { type: 'vertex', ring: 1, index: 1 },
+    });
+    handleVertexEditPointerMove(mode, at(28, 13), islanded(), BOUNDS, noSnap, setters);
+
+    const preview = setters.setPreview.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    const moved = preview.get('p1');
+    expect(moved?.path).toBeUndefined();
+    expect(moved?.holes?.[0][1]).toMatchObject({ x: 28, y: 13 });
+
+    handleVertexEditPointerUp(mode, islanded(), preview, setters);
+    const committed = setters.onUpdate.mock.calls[0][1] as Partial<Cutout>;
+    expect(Object.keys(committed)).toEqual(['holes']);
+    expect(committed.holes?.[0][1]).toMatchObject({ x: 28, y: 13 });
+  });
+
+  it('adds a point on a straight edge where it was clicked, keeping the edge straight', () => {
+    const setters = makeSetters();
+    handleVertexEditPointerDown(makeMode(), at(18, 15.1), islanded(), 1, setters);
+    const committed = setters.onUpdate.mock.calls[0][1] as Partial<Cutout>;
+    expect(committed.holes?.[0][1]).toEqual(point(18, 15));
+  });
+
+  it('adds a point on an island’s edge', () => {
+    const setters = makeSetters();
+    handleVertexEditPointerDown(makeMode(), at(20, 15.2), islanded(), 1, setters);
+    const committed = setters.onUpdate.mock.calls[0][1] as Partial<Cutout>;
+    expect(committed.holes?.[0]).toHaveLength(5);
+    expect(setters.setMode).toHaveBeenCalledWith(
+      expect.objectContaining({ ring: 1, selectedPointIndex: 1 })
+    );
+  });
+
+  it('deletes the selected island point', () => {
+    const setters = makeSetters();
+    const event = new KeyboardEvent('keydown', { key: 'Delete' });
+    handleVertexEditKeyDown(
+      event,
+      makeMode({ ring: 1, selectedPointIndex: 2 }),
+      islanded(),
+      setters
+    );
+    const committed = setters.onUpdate.mock.calls[0][1] as Partial<Cutout>;
+    expect(committed.holes?.[0]).toHaveLength(3);
+    expect(committed.path).toBeUndefined();
+  });
+
+  // The island can go mid-drag: an undo, a remote edit, the pocket check's fix.
+  it('drops the preview when the dragged island is gone', () => {
+    const setters = makeSetters();
+    const mode = makeMode({
+      ring: 1,
+      selectedPointIndex: 0,
+      dragTarget: { type: 'vertex', ring: 1, index: 0 },
+    });
+    handleVertexEditPointerMove(mode, at(5, 5), makeCutout(OUTER), BOUNDS, noSnap, setters);
+    expect(setters.setPreview).toHaveBeenCalledWith(new Map());
+  });
+});
+
+describe('picking among rings', () => {
+  // An island whose corner sits 1.5 mm in from the outline's.
+  const OUTER = [point(0, 0), point(40, 0), point(40, 40), point(0, 40)];
+  const NEAR = [point(1.5, 1.5), point(10, 1.5), point(10, 10), point(1.5, 10)];
+  const cutout = (): Cutout => ({ ...makeCutout(OUTER), width: 40, depth: 40, holes: [NEAR] });
+
+  it('takes the nearest point, whichever ring comes first', () => {
+    const setters = makeSetters();
+    // Both corners are in reach: the outline's is 1.7 mm away, the island's 0.4 mm.
+    handleVertexEditPointerDown(makeMode(), at(1.2, 1.2), cutout(), 3, setters);
+    expect(setters.setMode).toHaveBeenCalledWith(
+      expect.objectContaining({ ring: 1, dragTarget: { type: 'vertex', ring: 1, index: 0 } })
+    );
+  });
+
+  it('adds a point to a short edge rather than taking its end, when zoomed out', () => {
+    // A 5 mm edge: its middle is 2.5 mm from each end, inside a wide pick but
+    // past the 2 mm a point is taken within.
+    const short = [point(15, 15), point(20, 15), point(20, 25), point(15, 25)];
+    const setters = makeSetters();
+    handleVertexEditPointerDown(
+      makeMode(),
+      at(17.5, 15.1),
+      { ...cutout(), holes: [short] },
+      4,
+      setters
+    );
+    const committed = setters.onUpdate.mock.calls[0][1] as Partial<Cutout>;
+    expect(committed.holes?.[0]).toHaveLength(5);
+  });
+
+  const SECOND = [point(30, 30), point(35, 30), point(35, 35)];
+  const twoIslands = (): Cutout => ({ ...cutout(), holes: [NEAR, SECOND] });
+  const draggingFirst = (from: Cutout) =>
+    makeMode({
+      ring: 1,
+      selectedPointIndex: 1,
+      dragTarget: { type: 'vertex', ring: 1, index: 1 },
+      dragFrom: dragSource(from),
+    });
+
+  it('commits nothing when an island went under the drag', () => {
+    const setters = makeSetters();
+    const mode = draggingFirst(twoIslands());
+    handleVertexEditPointerMove(mode, at(12, 2), twoIslands(), BOUNDS, noSnap, setters);
+    const preview = setters.setPreview.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    handleVertexEditPointerUp(mode, cutout(), preview, setters);
+    expect(setters.onUpdate).not.toHaveBeenCalled();
+  });
+
+  it('commits nothing when another island changed under the drag, its count the same', () => {
+    const setters = makeSetters();
+    const mode = draggingFirst(twoIslands());
+    handleVertexEditPointerMove(mode, at(12, 2), twoIslands(), BOUNDS, noSnap, setters);
+    const preview = setters.setPreview.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    const reshaped = [point(30, 30), point(36, 30), point(35, 35)];
+    handleVertexEditPointerUp(mode, { ...cutout(), holes: [NEAR, reshaped] }, preview, setters);
+    expect(setters.onUpdate).not.toHaveBeenCalled();
+  });
+
+  it('drops the preview rather than move another island when the dragged one goes', () => {
+    // With the first island gone, ring 1 names the second.
+    const setters = makeSetters();
+    const mode = draggingFirst(twoIslands());
+    handleVertexEditPointerMove(
+      mode,
+      at(12, 2),
+      { ...cutout(), holes: [SECOND] },
+      BOUNDS,
+      noSnap,
+      setters
+    );
+    expect(setters.setPreview).toHaveBeenCalledWith(new Map());
+  });
+
+  it('ignores Delete mid-drag, and a release after it commits nothing', () => {
+    const setters = makeSetters();
+    const event = { key: 'Delete', preventDefault: vi.fn() } as unknown as KeyboardEvent;
+    handleVertexEditKeyDown(event, draggingFirst(twoIslands()), twoIslands(), setters);
+    expect(setters.onUpdate).not.toHaveBeenCalled();
+
+    handleVertexEditPointerUp(
+      makeMode({ ring: 1, selectedPointIndex: 1 }),
+      twoIslands(),
+      new Map([['p1', { holes: [NEAR, SECOND] }]]),
+      setters
+    );
+    expect(setters.onUpdate).not.toHaveBeenCalled();
+  });
+
+  it('refuses a delete that leaves two straight points', () => {
+    const setters = makeSetters();
+    const event = { key: 'Delete', preventDefault: vi.fn() } as unknown as KeyboardEvent;
+    handleVertexEditKeyDown(
+      event,
+      makeMode({ selectedPointIndex: 0 }),
+      makeCutout([point(0, 0), point(10, 0), point(10, 10)]),
+      setters
+    );
+    expect(setters.onUpdate).not.toHaveBeenCalled();
+  });
+
+  it('leaves editing on Escape even when the selected ring is gone', () => {
+    const setters = makeSetters();
+    const event = { key: 'Escape', preventDefault: vi.fn() } as unknown as KeyboardEvent;
+    handleVertexEditKeyDown(event, makeMode({ ring: 2 }), makeCutout(), setters);
+    expect(setters.setMode).toHaveBeenCalledWith({ type: 'idle' });
+  });
+});
+
+describe('editing a turned cutout', () => {
+  const ISLAND = [point(4, 4), point(6, 4), point(6, 6), point(4, 6)];
+  const turned = (): Cutout => ({ ...makeCutout(), rotation: 90, holes: [ISLAND] });
+
+  /** Where a stored point is drawn: turned about the middle of its outline's bounds. */
+  const drawn = (c: Pick<Cutout, 'x' | 'y' | 'width' | 'depth'>, p: PathPoint): number[] =>
+    rotateAbout(p.x, p.y, c.x + c.width / 2, c.y + c.depth / 2, 90);
+
+  it('picks up the point drawn under the pointer', () => {
+    // Turned a quarter clockwise, the stored corner (10, 0) is drawn at (0, 0).
+    const setters = makeSetters();
+    handleVertexEditPointerDown(makeMode(), at(0.1, 0.1), turned(), 1, setters);
+    expect(setters.setMode).toHaveBeenCalledWith(
+      expect.objectContaining({ dragTarget: { type: 'vertex', ring: 0, index: 1 } })
+    );
+  });
+
+  it('commits nothing when an island went between the last move and the release', () => {
+    const setters = makeSetters();
+    const mode = makeMode({
+      dragTarget: { type: 'vertex', ring: 0, index: 2 },
+      dragFrom: dragSource(turned()),
+    });
+    handleVertexEditPointerMove(mode, at(14, 0), turned(), BOUNDS, noSnap, setters);
+    const preview = setters.setPreview.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    handleVertexEditPointerUp(mode, { ...turned(), holes: [] }, preview, setters);
+    expect(setters.onUpdate).not.toHaveBeenCalled();
+  });
+
+  it('moves the dragged corner to the pointer and leaves every other point where it was', () => {
+    const before = turned();
+    const setters = makeSetters();
+    const mode = makeMode({
+      selectedPointIndex: 2,
+      dragTarget: { type: 'vertex', ring: 0, index: 2 },
+    });
+    // Stored (10, 10) is drawn at (10, 0); pull it out to (14, 0).
+    handleVertexEditPointerMove(mode, at(14, 0), before, BOUNDS, noSnap, setters);
+    const preview = setters.setPreview.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    handleVertexEditPointerUp(mode, before, preview, setters);
+    const after = { ...before, ...(setters.onUpdate.mock.calls[0][1] as Partial<Cutout>) };
+
+    const outline = (after.path ?? []).map((p) => drawn(after, p));
+    const expected = [
+      [0, 10],
+      [0, 0],
+      [14, 0],
+      [10, 10],
+    ];
+    outline.forEach(([x, y], i) => {
+      expect(x).toBeCloseTo(expected[i][0]);
+      expect(y).toBeCloseTo(expected[i][1]);
+    });
+    (after.holes?.[0] ?? []).forEach((p, i) => {
+      const [x, y] = drawn(after, p);
+      const [wx, wy] = drawn(before, ISLAND[i]);
+      expect(x).toBeCloseTo(wx);
+      expect(y).toBeCloseTo(wy);
+    });
+  });
+});
+
+describe('keeping what the generator cuts', () => {
+  const OUTER = [point(0, 0), point(40, 0), point(40, 40), point(0, 40)];
+  const TRIANGLE = [point(15, 15), point(25, 15), point(20, 25)];
+  const islanded = (holes: PathPoint[][] = [TRIANGLE]): Cutout => ({
+    ...makeCutout(OUTER),
+    width: 40,
+    depth: 40,
+    holes,
+  });
+
+  function release(cutout: Cutout, ring: number, index: number, to: { x: number; y: number }) {
+    const setters = makeSetters();
+    const mode = makeMode({
+      ring,
+      selectedPointIndex: index,
+      dragTarget: { type: 'vertex', ring, index },
+      dragFrom: dragSource(cutout),
+    });
+    handleVertexEditPointerMove(mode, at(to.x, to.y), cutout, BOUNDS, noSnap, setters);
+    const preview = setters.setPreview.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    handleVertexEditPointerUp(mode, cutout, preview, setters);
+    return setters.onUpdate;
+  }
+
+  it('refuses an island point snapped onto its neighbour, which leaves two points', () => {
+    expect(release(islanded(), 1, 1, { x: 15, y: 15 })).not.toHaveBeenCalled();
+  });
+
+  it('refuses an island dragged across or out of the outline', () => {
+    expect(release(islanded(), 1, 2, { x: 20, y: 45 })).not.toHaveBeenCalled();
+  });
+
+  it('refuses an outline edit that cuts across an island', () => {
+    expect(release(islanded(), 0, 2, { x: 18, y: 18 })).not.toHaveBeenCalled();
+  });
+
+  it('refuses an island dragged onto another', () => {
+    const other = [point(28, 28), point(35, 28), point(35, 35)];
+    expect(release(islanded([TRIANGLE, other]), 1, 2, { x: 30, y: 31 })).not.toHaveBeenCalled();
+  });
+
+  it('refuses a point dragged onto the line between its neighbours, which leaves no area', () => {
+    // Outside the outline, so only the ring's own shape can refuse it.
+    const out = [point(45, 15), point(55, 15), point(50, 25)];
+    expect(release(islanded([out]), 1, 2, { x: 50, y: 15 })).not.toHaveBeenCalled();
+  });
+
+  it('refuses a point dragged onto another edge, which leaves the ring meeting itself', () => {
+    // The corner lands on the far side, so the ring keeps an area but touches itself.
+    const out = [point(45, 15), point(55, 15), point(55, 25), point(45, 25)];
+    expect(release(islanded([out]), 1, 2, { x: 45, y: 20 })).not.toHaveBeenCalled();
+  });
+
+  it('still edits a ring that already had no area, so it can be mended a step at a time', () => {
+    const flat = [point(15, 15), point(25, 15), point(20, 15)];
+    expect(release(islanded([flat]), 1, 2, { x: 22, y: 15 })).toHaveBeenCalled();
+  });
+
+  it('still edits an island that was already outside, so it can be brought back', () => {
+    const out = [point(45, 15), point(55, 15), point(50, 25)];
+    expect(release(islanded([out]), 1, 0, { x: 46, y: 16 })).toHaveBeenCalled();
+  });
+});
+
+describe('the cost of a release', () => {
+  it('checks a dragged island against the outline only, skipping islands far from it', () => {
+    // 64 islands, 2 mm squares on a 10 mm grid.
+    const islands = Array.from({ length: 64 }, (_, n) => {
+      const x = 5 + (n % 8) * 10;
+      const y = 5 + Math.floor(n / 8) * 10;
+      return [point(x, y), point(x + 2, y), point(x + 2, y + 2), point(x, y + 2)];
+    });
+    const outline = [point(0, 0), point(90, 0), point(90, 90), point(0, 90)];
+    const cutout: Cutout = { ...makeCutout(outline), width: 90, depth: 90, holes: islands };
+    const setters = makeSetters();
+    const mode = makeMode({
+      ring: 1,
+      selectedPointIndex: 0,
+      dragTarget: { type: 'vertex', ring: 1, index: 0 },
+      dragFrom: dragSource(cutout),
+    });
+    handleVertexEditPointerMove(mode, at(4, 4), cutout, BOUNDS, noSnap, setters);
+    const preview = setters.setPreview.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    vi.mocked(outlinesTouch).mockClear();
+    handleVertexEditPointerUp(mode, cutout, preview, setters);
+    expect(setters.onUpdate).toHaveBeenCalled();
+    expect(outlinesTouch).toHaveBeenCalledTimes(1);
   });
 });

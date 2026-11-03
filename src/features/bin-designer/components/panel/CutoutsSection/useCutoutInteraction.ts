@@ -56,8 +56,6 @@ export function useCutoutInteraction({
   onLock,
   onUnlock,
   onSplitLine,
-  startTransaction,
-  commitTransaction,
   binWidth,
   binDepth,
   gridSize = 0.5,
@@ -329,7 +327,6 @@ export function useCutoutInteraction({
     binDepth,
     cellMask,
     maskCellSize,
-    startTransaction,
   });
 
   const {
@@ -377,7 +374,6 @@ export function useCutoutInteraction({
     onUpdate,
     onUpdateBatch,
     onSplitLine,
-    commitTransaction,
   });
 
   // ── Sub-hooks: keyboard shortcuts, recovery effects ───────────────
