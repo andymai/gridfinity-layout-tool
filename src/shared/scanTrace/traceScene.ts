@@ -55,10 +55,26 @@ export interface SceneGrid {
   readonly rmsMm: number;
 }
 
+/** Two points marked on the photo and the real distance between them. */
+export interface SceneRuler {
+  readonly a: Point;
+  readonly b: Point;
+  readonly lengthMm: number;
+}
+
+/** A sheet of paper's corners as marked, ordered [TL, TR, BR, BL], and its size. */
+export interface ScenePaper {
+  readonly corners: readonly [Point, Point, Point, Point];
+  readonly longMm: number;
+  readonly shortMm: number;
+}
+
 /** Whatever pinned the scene to millimetres. At most one applies. */
 export type SceneReference =
   | { readonly kind: SceneGridKind; readonly fit: LatticeFit }
-  | { readonly kind: 'card'; readonly card: SceneCard };
+  | { readonly kind: 'card'; readonly card: SceneCard }
+  | { readonly kind: 'ruler'; readonly ruler: SceneRuler }
+  | { readonly kind: 'paper'; readonly paper: ScenePaper };
 
 export interface SceneRing {
   /** In image pixels — for overlaying on the photo. */
@@ -113,6 +129,8 @@ export interface SceneTraceOptions
   extends CardDetectOptions, GridDetectOptions, BaseplateDetectOptions {
   /** The colour segmenter's sensitivity, -127 to 128; 0 is automatic. */
   readonly sensitivity?: number;
+  /** Where to look, in image pixels, in place of the reference's own search area. */
+  readonly region?: readonly Point[];
   readonly simplifyTolerance?: number;
   readonly minToolAreaPx?: number;
   /**
@@ -184,23 +202,49 @@ export function detectReference(
   return card ? { kind: 'card', card } : null;
 }
 
-/** Every image region the reference occupies, so the tool trace can skip them. */
+/**
+ * Every image region the reference occupies, so the tool trace can skip them.
+ * A ruler marks a distance, not an object, and paper is the surface itself.
+ */
 function referenceQuads(reference: SceneReference | null): readonly (readonly Point[])[] {
-  if (!reference) return [];
-  return reference.kind === 'card'
-    ? [reference.card.corners]
-    : reference.fit.cells.map((cell) => cell.outline);
+  switch (reference?.kind) {
+    case 'card':
+      return [reference.card.corners];
+    case 'sheet':
+    case 'baseplate':
+      return reference.fit.cells.map((cell) => cell.outline);
+    default:
+      return [];
+  }
 }
+
+/** How far marked paper corners are pulled in, as a share of the way to the middle. */
+const PAPER_INSET = 0.02;
 
 /**
  * Where the tools can be. A lattice frames them, and its outer hull keeps the
  * table around a sheet out of the surface sample, where it would make the
- * white paper read as one giant tool. A card lies beside the tool on the same
- * surface, so the whole frame is the search.
+ * white paper read as one giant tool. Marked paper does the same, pulled in a
+ * little so a corner clicked onto the table still samples paper. A card lies
+ * beside the tool on the same surface, so the whole frame is the search.
  */
 function searchRegion(reference: SceneReference | null): readonly Point[] | undefined {
-  if (!reference || reference.kind === 'card') return undefined;
-  return convexHull(reference.fit.cells.flatMap((cell) => cell.outline));
+  switch (reference?.kind) {
+    case 'sheet':
+    case 'baseplate':
+      return convexHull(reference.fit.cells.flatMap((cell) => cell.outline));
+    case 'paper': {
+      const { corners } = reference.paper;
+      const cx = corners.reduce((sum, p) => sum + p.x, 0) / 4;
+      const cy = corners.reduce((sum, p) => sum + p.y, 0) / 4;
+      return corners.map((p) => ({
+        x: p.x + (cx - p.x) * PAPER_INSET,
+        y: p.y + (cy - p.y) * PAPER_INSET,
+      }));
+    }
+    default:
+      return undefined;
+  }
 }
 
 /** Image pixels to millimetres, or null when the scene has no reference. */
@@ -215,6 +259,19 @@ function referenceToMm(
   if (reference?.kind === 'card') {
     const h = cardHomography(reference.card.corners, options.widthMm, options.heightMm);
     if (h) return (points) => rectifyPoints(points, h);
+  }
+  if (reference?.kind === 'paper') {
+    const { corners, longMm, shortMm } = reference.paper;
+    const h = cardHomography(corners, longMm, shortMm);
+    if (h) return (points) => rectifyPoints(points, h);
+  }
+  if (reference?.kind === 'ruler') {
+    const { a, b, lengthMm } = reference.ruler;
+    const px = Math.hypot(b.x - a.x, b.y - a.y);
+    if (px > 0 && lengthMm > 0) {
+      const k = lengthMm / px;
+      return (points) => points.map((p) => ({ x: p.x * k, y: p.y * k }));
+    }
   }
   return null;
 }
@@ -281,7 +338,7 @@ function sized(
     ...(holes.length > 0 ? { holes: holes.map(ring) } : {}),
     ...(inHole ? { inHole: true } : {}),
   }));
-  const lattice = reference && reference.kind !== 'card' ? reference : null;
+  const lattice = reference?.kind === 'sheet' || reference?.kind === 'baseplate' ? reference : null;
   return {
     shapes,
     units: toMm ? 'mm' : 'px',
@@ -422,7 +479,7 @@ export function traceScene(
 
   const toolMask = segmentTools(image, {
     sensitivity: options.sensitivity,
-    region: searchRegion(reference),
+    region: options.region ?? searchRegion(reference),
     exclude: referenceQuads(reference),
   });
   const blobs = findToolBlobs(toolMask, options.minToolAreaPx ?? defaultMinArea(width, height));
@@ -449,15 +506,32 @@ export function traceSceneSegmented(
   return buildToolTraceSoft(toolMask, reference, options);
 }
 
+const samePoints = (a: readonly Point[], b: readonly Point[]): boolean =>
+  a.length === b.length && a.every((p, i) => Math.hypot(p.x - b[i].x, p.y - b[i].y) < 0.5);
+
 /**
  * True when two solved references size the photo the same way. Only the card
  * search reads the tool mask, so a lattice is the same lattice on every pass.
  */
 export function sameReference(a: SceneReference | null, b: SceneReference | null): boolean {
   if (a === null || b === null) return a === b;
-  if (a.kind !== b.kind) return false;
-  if (a.kind !== 'card' || b.kind !== 'card') return true;
-  return a.card.corners.every(
-    (p, i) => Math.hypot(p.x - b.card.corners[i].x, p.y - b.card.corners[i].y) < 0.5
-  );
+  switch (a.kind) {
+    case 'card':
+      return b.kind === 'card' && samePoints(a.card.corners, b.card.corners);
+    case 'ruler':
+      return (
+        b.kind === 'ruler' &&
+        a.ruler.lengthMm === b.ruler.lengthMm &&
+        samePoints([a.ruler.a, a.ruler.b], [b.ruler.a, b.ruler.b])
+      );
+    case 'paper':
+      return (
+        b.kind === 'paper' &&
+        a.paper.longMm === b.paper.longMm &&
+        a.paper.shortMm === b.paper.shortMm &&
+        samePoints(a.paper.corners, b.paper.corners)
+      );
+    default:
+      return a.kind === b.kind;
+  }
 }

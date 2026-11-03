@@ -13,6 +13,7 @@ import {
   withRefinedShape,
   type ImageDataLike,
   type Point,
+  type SceneReference,
   type SceneShape,
   type SceneTrace,
   type SceneTraceOptions,
@@ -47,17 +48,25 @@ export interface TracedScene {
  * Every tool in the photo. The colour pass finds them and the model redraws
  * each, keeping a redraw only where it agrees; when the colour pass finds
  * nothing, the model tries the middle of the frame.
+ *
+ * `reference` sizes the photo when one is already settled, such as a ruler
+ * the user drew; left out, the photo's own reference is found.
  */
 export async function traceAll(
   canvas: HTMLCanvasElement,
   image: ImageDataLike,
-  options: SceneTraceOptions
+  options: SceneTraceOptions,
+  reference?: SceneReference | null
 ): Promise<Result<TracedScene, 'noObject'>> {
-  const classical = traceScene(image, options);
+  const classical =
+    reference === undefined ? traceScene(image, options) : traceScene(image, options, reference);
   if (!isOk(classical)) {
     try {
       const soft = await segmentAt(canvas, { x: 0.5, y: 0.5 });
-      const traced = traceSceneSegmented(image, soft, options);
+      const traced =
+        reference === undefined
+          ? traceSceneSegmented(image, soft, options)
+          : traceSceneSegmented(image, soft, options, reference);
       return isOk(traced) ? ok({ scene: traced.value, canRefine: true }) : err('noObject');
     } catch {
       return err('noObject');
@@ -93,14 +102,16 @@ export async function traceAll(
  * The tap re-solves the reference with the tapped tool left out, so a
  * card-shaped tool taken for the card gives way to the real one. When that
  * moves the reference, the other outlines are re-sized against it, not
- * traced again, so a tool the user removed stays removed.
+ * traced again, so a tool the user removed stays removed. A `locked`
+ * reference, one the user set by hand, is kept as it is.
  */
 export async function traceTap(
   canvas: HTMLCanvasElement,
   image: ImageDataLike,
   scene: SceneTrace,
   seed: Point,
-  options: SceneTraceOptions
+  options: SceneTraceOptions,
+  locked = false
 ): Promise<Result<SceneTrace, TraceFlowError>> {
   let soft: SoftMask;
   try {
@@ -108,7 +119,9 @@ export async function traceTap(
   } catch {
     return err('modelFailed');
   }
-  const tapped = traceSceneSegmented(image, soft, options);
+  const tapped = locked
+    ? traceSceneSegmented(image, soft, options, scene.reference)
+    : traceSceneSegmented(image, soft, options);
   if (!isOk(tapped)) return err('noObject');
   const base = sameReference(tapped.value.reference, scene.reference)
     ? scene

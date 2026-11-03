@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type * as ScanTrace from '@/shared/scanTrace';
 import { err, ok } from '@/core/result';
-import type { SceneShape, SceneTrace } from '@/shared/scanTrace';
+import type { SceneReference, SceneShape, SceneTrace } from '@/shared/scanTrace';
 import {
   MAX_AUTO_REFINE,
   svgFromShapes,
@@ -84,6 +84,20 @@ describe('traceAll', () => {
 
     expect(mockSegment).toHaveBeenCalledTimes(MAX_AUTO_REFINE);
   });
+
+  it('sizes the photo by a settled reference instead of looking for one', async () => {
+    const ruler: SceneReference = {
+      kind: 'ruler',
+      ruler: { a: { x: 0, y: 0 }, b: { x: 50, y: 0 }, lengthMm: 20 },
+    };
+    mockTrace.mockReturnValue(err({ code: 'NO_OBJECT', detail: '' }));
+    mockTraceSegmented.mockReturnValue(ok(scene([box(0, 0, 1, 1)])));
+
+    await traceAll(CANVAS, IMAGE, {}, ruler);
+
+    expect(mockTrace).toHaveBeenCalledWith(IMAGE, {}, ruler);
+    expect(mockTraceSegmented).toHaveBeenCalledWith(IMAGE, EMPTY, {}, ruler);
+  });
 });
 
 describe('traceTap', () => {
@@ -111,6 +125,20 @@ describe('traceTap', () => {
     mockSegment.mockRejectedValue(new Error('no model'));
     const next = await traceTap(CANVAS, IMAGE, scene([box(5, 5, 30, 40)]), { x: 0.2, y: 0.2 }, {});
     expect(next).toEqual(err('modelFailed'));
+  });
+
+  it('keeps a reference the user set, whatever the tapped tool lies near', async () => {
+    const ruler: SceneReference = {
+      kind: 'ruler',
+      ruler: { a: { x: 0, y: 0 }, b: { x: 50, y: 0 }, lengthMm: 20 },
+    };
+    const before = { ...scene([box(50, 5, 90, 40)]), card: null, reference: ruler };
+    mockTraceSegmented.mockReturnValue(ok({ ...before, shapes: [box(5, 5, 30, 40)] }));
+
+    const next = await traceTap(CANVAS, IMAGE, before, { x: 0.15, y: 0.25 }, {}, true);
+
+    expect(mockTraceSegmented).toHaveBeenCalledWith(IMAGE, EMPTY, {}, ruler);
+    expect(next.ok && next.value.reference).toBe(ruler);
   });
 
   it('keeps the scene’s reference when the tap agrees with it', async () => {
