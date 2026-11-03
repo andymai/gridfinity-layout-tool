@@ -500,8 +500,7 @@ describe('hinged lid', () => {
 
   it('keeps the detent when a dipped grip sits over it', async () => {
     // The grip goes on the free edge, centred, which is exactly where the
-    // detent is. With the bin's lip dipped too, the rail split used to take
-    // the detent out from under the grip and leave the lid held by nothing.
+    // detent is.
     const volume = async (catchMode: 'none' | 'detent'): Promise<number> => {
       const { buildLid } = await import('./lidBuilder');
       const lid = buildLid(

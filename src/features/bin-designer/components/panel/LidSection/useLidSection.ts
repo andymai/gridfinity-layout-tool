@@ -103,7 +103,7 @@ import {
   slideLidPlanForParams,
 } from '@/features/bin-designer/utils/slideLidPlanForParams';
 import { slideSagSafeThicknessMm } from '@/shared/utils/slideLidPlan';
-import { binDipEasesRails, railSidesLostToBinDip } from '@/shared/utils/lidRailPlan';
+import { binDipRailEffect } from '@/shared/utils/lidRailPlan';
 
 function ceilToThicknessStep(mm: number): number {
   const steps = Math.ceil(mm / LID_TOP_THICKNESS_STEP_MM - 1e-9);
@@ -172,8 +172,10 @@ export function useLidSection() {
   );
 
   const compatibilityIssues = useMemo(() => checkLidCompatibility(params), [params]);
-  const gripRailsEased = useMemo(() => binDipEasesRails(params), [params]);
-  const gripRailsLost = useMemo(() => railSidesLostToBinDip(params), [params]);
+  const { eases: gripRailsEased, lostSides: gripRailsLost } = useMemo(
+    () => binDipRailEffect(params),
+    [params]
+  );
   const fixableIds = useMemo(() => fixableIdsFor(params), [params]);
   // Per-side rail conflicts (label tabs, wall cutouts, intruding handles).
   // Derived from the already-memoized issue list — avoids running the

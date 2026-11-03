@@ -1582,7 +1582,7 @@
   "binDesigner.lid.gripBinDipWarning": "Rimuove il bordo di impilamento sullo stesso tratto per infilare il dito sotto il coperchio, e ammorbidisce lì le guide a scatto.",
   "binDesigner.lid.gripBinDipStacking": "Un contenitore impilato sopra non avrà appoggio lungo quel tratto.",
   "binDesigner.lid.gripBinDipInfo": "Rimuove il bordo di impilamento sullo stesso tratto per infilare il dito sotto il coperchio.",
-  "binDesigner.lid.gripBinDipRailsLost": "Pareti senza guida a scatto rimasta: {walls}.",
+  "binDesigner.lid.gripBinDipRailsLost": "Pareti senza una guida a scatto residua: {walls}.",
   "binDesigner.lid.gripBinDipRailsLostDetail": "Lo scasso copre lì l'intera guida. Per mantenere lo scatto, restringi lo scasso, aumenta la copertura guide o disattiva l'abbassamento del bordo.",
   "binDesigner.lid.gripClamped.cavity": "Limitato dalla parete del coperchio: più a fondo sfonderebbe la cavità che afferra il contenitore.",
   "binDesigner.lid.gripClamped.edgeMagnet": "Limitato dai magneti di bordo dietro questa parete.",

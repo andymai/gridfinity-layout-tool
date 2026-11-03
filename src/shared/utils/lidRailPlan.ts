@@ -312,31 +312,35 @@ export function railPlacements(inputs: LidInputs): RailPlacement[] {
   return inputs.cellMask ? railPlacementsForPolygon(inputs) : railPlacementsForRectangle(inputs);
 }
 
-export function binDipEasesRails(params: BinParams): boolean {
-  // Forced on: the toggle's help has to warn before the user flips it.
-  const dipped = { ...params, lid: { ...params.lid, grip: { ...params.lid.grip, binDip: true } } };
-  if (!binDipSplitsRails(dipped)) return false;
-  const inputs = resolveLidInputs(dipped);
-  const full = railPlacements(inputs);
-  const totalLength = (rails: readonly RailPlacement[]): number =>
-    rails.reduce((sum, rail) => sum + rail.length, 0);
-  // A segment's length is rebuilt from its span ends, so an untouched rail can drift by an ULP.
-  return totalLength(full) - totalLength(splitRailsAroundGrip(full, inputs)) > 1e-6;
+export interface BinDipRailEffect {
+  /** The dip would shorten or remove a rail, whether or not it is on yet. */
+  readonly eases: boolean;
+  /**
+   * Sides with a wall whose every rail the dip has removed, so that wall holds
+   * by friction alone.
+   *
+   * Shortening a rail is the trade the dip offers; losing all of one is not
+   * something the user can see in the preview, which is why the panel names it.
+   */
+  readonly lostSides: readonly LidRailSide[];
 }
 
-/**
- * Sides with a wall whose every rail the bin dip removed, so that wall holds
- * by friction alone.
- *
- * Shortening a rail is the trade the dip offers; losing all of one is not
- * something the user can see in the preview, which is why the panel names it.
- */
-export function railSidesLostToBinDip(params: BinParams): readonly LidRailSide[] {
-  if (!binDipSplitsRails(params)) return [];
-  const inputs = resolveLidInputs(params);
+export function binDipRailEffect(params: BinParams): BinDipRailEffect {
+  // Forced on: the toggle's help has to warn before the user flips it.
+  const dipped = { ...params, lid: { ...params.lid, grip: { ...params.lid.grip, binDip: true } } };
+  if (!binDipSplitsRails(dipped)) return { eases: false, lostSides: [] };
+  const inputs = resolveLidInputs(dipped);
   const full = railPlacements(inputs);
   const split = splitRailsAroundGrip(full, inputs);
+  const totalLength = (rails: readonly RailPlacement[]): number =>
+    rails.reduce((sum, rail) => sum + rail.length, 0);
   const wallKey = (rail: RailPlacement): string => `${rail.side}:${rail.edge ?? ''}`;
   const kept = new Set(split.map(wallKey));
-  return [...new Set(full.filter((rail) => !kept.has(wallKey(rail))).map((rail) => rail.side))];
+  return {
+    // A segment's length is rebuilt from its span ends, so an untouched rail can drift by an ULP.
+    eases: totalLength(full) - totalLength(split) > 1e-6,
+    lostSides: params.lid.grip.binDip
+      ? [...new Set(full.filter((rail) => !kept.has(wallKey(rail))).map((rail) => rail.side))]
+      : [],
+  };
 }
