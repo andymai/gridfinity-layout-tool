@@ -14,9 +14,10 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { LID_MIN_RAIL_LENGTH, resolveLidGripSpanMm } from '@/shared/types/bin';
+import { DEFAULT_LID_HINGE_CONFIG } from '@/features/bin-designer/types';
 import type { BinParams, LidGripConfig } from '@/features/bin-designer/types';
 import { resolveLidInputs } from './lidInputs';
-import { railPlacements, splitRailsAroundGrip } from './lidClickRail';
+import { railPlacements, railSidesLostToBinDip, splitRailsAroundGrip } from './lidRailPlan';
 
 function makeParams(grip: Partial<LidGripConfig>, over: Partial<BinParams> = {}): BinParams {
   return {
@@ -149,5 +150,83 @@ describe('splitRailsAroundGrip', () => {
         }
       }
     }
+  });
+});
+
+describe('hinged snap behind a dipped grip', () => {
+  // The default grip (50%, centred) is wider than the snap (40%, centred) and
+  // both sit on the free edge, so splitting would leave the lid with no catch.
+  const hinged: BinParams = {
+    ...DEFAULT_BIN_PARAMS,
+    width: 2,
+    depth: 2,
+    height: 4,
+    lid: {
+      ...DEFAULT_BIN_PARAMS.lid,
+      enabled: true,
+      attachment: 'hinge',
+      hinge: { ...DEFAULT_LID_HINGE_CONFIG, side: 'back', catchMode: 'detent' },
+      grip: {
+        ...DEFAULT_BIN_PARAMS.lid.grip,
+        mode: 'scallop',
+        binDip: true,
+        sides: { front: true, back: false, left: false, right: false },
+      },
+    },
+  };
+
+  it('keeps the snap whole', () => {
+    const { full, split } = railsFor(hinged);
+    expect(full).toHaveLength(1);
+    expect(full[0].side).toBe('front');
+    expect(split).toEqual(full);
+  });
+
+  it('reports no wall as lost', () => {
+    expect(railSidesLostToBinDip(hinged)).toEqual([]);
+  });
+});
+
+describe('railSidesLostToBinDip', () => {
+  it('names a wall whose whole rail sits behind the grip', () => {
+    // Half-coverage rails on a 2x2 lid are shorter than a half-coverage grip
+    // plus its quiet zone, so the front rail has nothing left either side.
+    const params = makeParams(
+      { mode: 'scallop', sides: { front: true, back: false, left: false, right: false } },
+      { width: 2, depth: 2 }
+    );
+    const lost = railSidesLostToBinDip({
+      ...params,
+      lid: { ...params.lid, clickRailCoverage: 50 },
+    });
+    expect(lost).toEqual(['front']);
+  });
+
+  it('stays quiet when the split leaves a segment on the wall', () => {
+    const params = makeParams({
+      mode: 'scallop',
+      sides: { front: true, back: true, left: true, right: true },
+    });
+    expect(railSidesLostToBinDip(params)).toEqual([]);
+  });
+
+  it('stays quiet without the dip', () => {
+    const params = makeParams(
+      { mode: 'scallop', binDip: false, coverage: 100 },
+      { width: 1, depth: 1 }
+    );
+    expect(railSidesLostToBinDip(params)).toEqual([]);
+  });
+
+  it('names every wall a full-width grip clears on a 1x1 lid', () => {
+    const params = makeParams(
+      {
+        mode: 'scallop',
+        coverage: 100,
+        sides: { front: true, back: true, left: true, right: true },
+      },
+      { width: 1, depth: 1 }
+    );
+    expect([...railSidesLostToBinDip(params)].sort()).toEqual(['back', 'front', 'left', 'right']);
   });
 });

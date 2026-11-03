@@ -7,7 +7,7 @@
  */
 // @vitest-environment node
 import { describe, it, expect } from 'vitest';
-import { railPlacements } from './lidClickRail';
+import { railPlacements } from './lidRailPlan';
 import { resolveLidInputs } from './lidInputs';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams } from '@/features/bin-designer/types';

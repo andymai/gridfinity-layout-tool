@@ -77,7 +77,7 @@ beforeAll(async () => {
 
 describe('lid interior relief', () => {
   it('gives a notched wall its rail back', async () => {
-    const { railPlacements } = await import('./lidClickRail');
+    const { railPlacements } = await import('./lidRailPlan');
     const { resolveLidInputs } = await import('./lidInputs');
     const front = (p: BinParams): number =>
       railPlacements(resolveLidInputs(p)).filter((r) => r.rotationDeg === 180).length;
@@ -89,7 +89,7 @@ describe('lid interior relief', () => {
   });
 
   it('restores a wall the notching path dropped to friction-fit', async () => {
-    const { railPlacements } = await import('./lidClickRail');
+    const { railPlacements } = await import('./lidRailPlan');
     const { resolveLidInputs } = await import('./lidInputs');
     const front = (p: BinParams): number =>
       railPlacements(resolveLidInputs(p)).filter((r) => r.rotationDeg === 180).length;

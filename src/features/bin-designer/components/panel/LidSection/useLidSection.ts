@@ -103,6 +103,7 @@ import {
   slideLidPlanForParams,
 } from '@/features/bin-designer/utils/slideLidPlanForParams';
 import { slideSagSafeThicknessMm } from '@/shared/utils/slideLidPlan';
+import { railSidesLostToBinDip } from '@/shared/generation/lidRailPlan';
 
 function ceilToThicknessStep(mm: number): number {
   const steps = Math.ceil(mm / LID_TOP_THICKNESS_STEP_MM - 1e-9);
@@ -171,6 +172,7 @@ export function useLidSection() {
   );
 
   const compatibilityIssues = useMemo(() => checkLidCompatibility(params), [params]);
+  const gripRailsLost = useMemo(() => railSidesLostToBinDip(params), [params]);
   const fixableIds = useMemo(() => fixableIdsFor(params), [params]);
   // Per-side rail conflicts (label tabs, wall cutouts, intruding handles).
   // Derived from the already-memoized issue list — avoids running the
@@ -968,6 +970,8 @@ export function useLidSection() {
       gripModeAllowed: (mode: LidGripMode) => lidGripModeAllowed(params, mode),
       gripAnySide: hasAnyLidGripSide(lid.grip.sides),
       gripActive: hasLidGrip(params),
+      gripRailsEased: lid.attachment === 'clickRails',
+      gripRailsLost,
       gripDepth,
       // `gripHeight` reports the skirt budget and the skin left above the cut
       // as well as the height itself: the reason the knob exists is the

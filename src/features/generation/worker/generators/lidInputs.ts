@@ -27,7 +27,7 @@ import {
   resolveLidGripDepth,
   resolveLidGripHeightPlan,
   hasLidGrip,
-  hasBinLipDip,
+  binDipSplitsRails,
   lidFillBottomZ,
   resolveTextStyle,
 } from '@/shared/types/bin';
@@ -306,9 +306,10 @@ export interface LidInputs {
   /**
    * Whether the click rails give way behind the relief.
    *
-   * Tracks `binDip`: relief and rail occupy disjoint Z bands, so interrupting
-   * the rail buys an easier opening at the cost of snap strength, and only a
-   * user who also dipped the bin's lip has asked for that trade.
+   * Tracks `binDip` on a click-rail lid: relief and rail occupy disjoint Z
+   * bands, so interrupting the rail buys an easier opening at the cost of snap
+   * strength, and only a user who also dipped the bin's lip has asked for that
+   * trade. Never set for a hinged lid's snap; see `binDipSplitsRails`.
    */
   readonly gripSoftensSnap: boolean;
   /** Z of the bin's lip top in lid-local coords when snapped (the "anchor" line). */
@@ -651,7 +652,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     gripHeightMm: gripActive
       ? resolveLidGripHeightPlan(params.lid.grip, anchorZ, gripDepthMm).heightMm
       : 0,
-    gripSoftensSnap: hasBinLipDip(params),
+    gripSoftensSnap: binDipSplitsRails(params),
     // `extraHeightMm` deepens the cavity above the lip so tall
     // contents poking out of a short bin are enclosed; 0 = standard lid.
     // Base clearance, NOT `fitClearance` — the magnetic relief is XY-only, and

@@ -73,7 +73,7 @@ describe('lid click rails clear the scoop', () => {
     'a %s scoop keeps all four rails and still seats clear',
     async (side) => {
       const { generateLid } = await import('./lidOrchestrator');
-      const { railPlacements } = await import('./lidClickRail');
+      const { railPlacements } = await import('./lidRailPlan');
       const { resolveLidInputs } = await import('./lidInputs');
       const params = makeParams({
         scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 'auto', side },
@@ -106,7 +106,7 @@ describe('lid click rails clear the scoop', () => {
   );
 
   it.each(SIDES)('a %s scoop taken to the wall top drops that rail only', async (side) => {
-    const { railPlacements } = await import('./lidClickRail');
+    const { railPlacements } = await import('./lidRailPlan');
     const { resolveLidInputs } = await import('./lidInputs');
     // 40mm exceeds the 23mm wall, so it clamps to the wall top — squarely in
     // the rail's band. Auto never gets here; only a typed radius does.

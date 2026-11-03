@@ -498,6 +498,37 @@ describe('hinged lid', () => {
     expect(caught).toBeGreaterThan(bare);
   }, 600_000);
 
+  it('keeps the detent when a dipped grip sits over it', async () => {
+    // The grip goes on the free edge, centred, which is exactly where the
+    // detent is. With the bin's lip dipped too, the rail split used to take
+    // the detent out from under the grip and leave the lid held by nothing.
+    const volume = async (catchMode: 'none' | 'detent'): Promise<number> => {
+      const { buildLid } = await import('./lidBuilder');
+      const lid = buildLid(
+        hingeParams(
+          {
+            lid: {
+              ...DEFAULT_BIN_PARAMS.lid,
+              grip: {
+                ...DEFAULT_BIN_PARAMS.lid.grip,
+                mode: 'scallop',
+                binDip: true,
+                sides: { front: true, back: false, left: false, right: false },
+              },
+            },
+          },
+          { side: 'back', catchMode }
+        )
+      );
+      try {
+        return await solidVolumeMm3(lid);
+      } finally {
+        lid.delete();
+      }
+    };
+    expect(await volume('detent')).toBeGreaterThan((await volume('none')) + CONTACT_FLOOR_MM3);
+  }, 600_000);
+
   it('is captive — the lid cannot be lifted off', async () => {
     // The property that makes a hinge a hinge, and the one thing here that no
     // other lid in the app does. A friction or click lid comes straight off:

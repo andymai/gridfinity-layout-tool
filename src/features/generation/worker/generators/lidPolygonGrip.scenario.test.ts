@@ -111,7 +111,7 @@ async function railInterferenceDelta(params: BinParams): Promise<number> {
 }
 
 async function railsOn(params: BinParams, rotationDeg: number): Promise<number> {
-  const { railPlacements } = await import('./lidClickRail');
+  const { railPlacements } = await import('./lidRailPlan');
   const { resolveLidInputs } = await import('./lidInputs');
   return railPlacements(resolveLidInputs(params)).filter((p) => p.rotationDeg === rotationDeg)
     .length;

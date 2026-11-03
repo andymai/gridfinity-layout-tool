@@ -10,6 +10,7 @@ import { Button } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
 import { LID_RAIL_SIDES, lidGripHeightAdjustable } from '@/features/bin-designer/types';
 import type { LidGripSides, LidRailSide } from '@/features/bin-designer/types';
+import { useLocale } from '@/i18n';
 import type { useTranslation } from '@/i18n';
 import { SnappingSlider } from '../../controls/SnappingSlider';
 import { FieldLabel, Hint, Readout, SegmentGrid, SideSelector, StepperField } from '../shared';
@@ -63,6 +64,7 @@ export function LidGripControls({
   t: Translator;
 }) {
   const { grip, gripDepth, gripHeight } = state;
+  const { locale } = useLocale();
   const modeSelected = grip.mode !== 'none';
   const modeAllowed = state.gripModeAllowed(grip.mode);
   // A chamfer's 45° section is its depth, so it has no independent height to
@@ -165,9 +167,24 @@ export function LidGripControls({
             label={t('binDesigner.lid.gripBinDip')}
             checked={grip.binDip}
             onChange={handlers.toggleGripBinDip}
-            info={t('binDesigner.lid.gripBinDipWarning')}
+            info={t(
+              state.gripRailsEased
+                ? 'binDesigner.lid.gripBinDipWarning'
+                : 'binDesigner.lid.gripBinDipInfo'
+            )}
           />
           {grip.binDip && <Hint>{t('binDesigner.lid.gripBinDipStacking')}</Hint>}
+          {state.gripRailsLost.length > 0 && (
+            <Hint info={t('binDesigner.lid.gripBinDipRailsLostDetail')}>
+              {t('binDesigner.lid.gripBinDipRailsLost', {
+                walls: new Intl.ListFormat(locale, { type: 'conjunction' }).format(
+                  LID_RAIL_SIDES.filter((side) => state.gripRailsLost.includes(side)).map((side) =>
+                    t(`binDesigner.lid.side.${side}`)
+                  )
+                ),
+              })}
+            </Hint>
+          )}
         </>
       )}
     </div>

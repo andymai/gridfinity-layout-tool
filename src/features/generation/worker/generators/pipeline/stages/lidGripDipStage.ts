@@ -41,7 +41,7 @@ import { checkCancelled } from '../../utils/abort';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from '../../generatorConstants';
 import { LID_COPLANAR_MARGIN } from '../../lidConstants';
 import { resolveLidInputs } from '../../lidInputs';
-import { gripPlacements } from '../../lidGripRelief';
+import { gripPlacements } from '../../lidGripPlan';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
 

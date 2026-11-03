@@ -43,6 +43,8 @@ const META_STORE = 'binMeshMeta';
  * instead, so the other kernel's users keep their warm cache; for one that
  * only moves bins, bump {@link BIN_MESH_REVISION}.
  *
+ * `v30`: a hinged lid keeps its snap catch whole under a grip whose bin lip
+ * is dipped.
  * `v29`: a hinged lid that exports on its top face points its pin bores'
  * teardrop peak down, so the peak is the top of the hole on the print bed.
  * `v28`: a hinged lid with extra height keeps its side walls whole past the
@@ -84,7 +86,7 @@ const META_STORE = 'binMeshMeta';
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v29';
+const MESH_CACHE_VERSION = 'v30';
 
 /**
  * Bumped when only BIN output moves for unchanged params, so the persisted

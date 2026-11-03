@@ -208,7 +208,7 @@ describe('lid click rails clear label tabs', () => {
       );
 
       if (c.expectAnchorRails !== undefined) {
-        const { railPlacements } = await import('./lidClickRail');
+        const { railPlacements } = await import('./lidRailPlan');
         const { resolveLidInputs } = await import('./lidInputs');
         const anchorRotation = c.edges === 'front' ? 180 : 0;
         const onAnchorWall = railPlacements(resolveLidInputs(params)).filter(
