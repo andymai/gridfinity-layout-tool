@@ -1,0 +1,42 @@
+src/features/bin-designer/components/panel/CutoutsSection/pathGeometrySegments.ts
+  s_4b9adb1d9473fb::t_985af56ec4f484 172
+  s_4b9adb1d9473fb::t_dc6214b9728053 171,173-180
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pathEditHandler.ts
+  s_4b9adb1d9473fb::t_985af56ec4f484 103
+  s_4b9adb1d9473fb::t_dc6214b9728053 22,102,104-124,135-148,154,210-213,340,408-415
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutPathTool.ts
+  s_4b9adb1d9473fb::t_dc6214b9728053 20,198,201-204
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pathEditHandler.test.ts
+  s_4b9adb1d9473fb::t_9ae6788467aef4 810-811,813
+  s_4b9adb1d9473fb::t_52131c91ee44a4 547-553,804-809,812,814-815,817,819
+  s_4b9adb1d9473fb::t_b5ac177f991633 816,818
+  s_4b9adb1d9473fb::t_f3acc589ccdd43 820
+src/features/bin-designer/components/panel/CutoutsSection/handlers/index.ts
+  s_4b9adb1d9473fb::t_dc6214b9728053 34
+src/features/bin-designer/components/panel/CutoutsSection/pathGeometrySegments.test.ts
+  s_4b9adb1d9473fb::t_52131c91ee44a4 159-167
+src/features/bin-designer/components/panel/CutoutsSection/renderer/VertexMagnifier3D.test.tsx
+  s_4b9adb1d9473fb::t_52131c91ee44a4 36,44-47,58-63,68,79,82,87,93
+src/features/bin-designer/components/panel/CutoutsSection/renderer/SceneContent.tsx
+  s_4b9adb1d9473fb::t_dc6214b9728053 27,422-430,432-436
+src/features/bin-designer/components/panel/CutoutsSection/renderer/VertexMagnifier3D.tsx
+  s_4b9adb1d9473fb::t_dc6214b9728053 22,104-108,110
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutPathTool.test.ts
+  s_4b9adb1d9473fb::t_52131c91ee44a4 70-115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "67558c85d068b403620e98f677f4709a364d8525",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
