@@ -177,8 +177,6 @@ export function useCutoutEditor() {
     canRedo,
     onLock: lockCutouts,
     onUnlock: unlockCutouts,
-    startTransaction,
-    commitTransaction,
     binWidth,
     binDepth,
     gridSize,

@@ -71,7 +71,6 @@ interface UseCutoutPointerHandlersOptions {
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
   readonly onUpdateBatch?: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
   readonly onSplitLine?: (cutoutId: string, line: RulerMeasurement) => void;
-  readonly commitTransaction?: () => void;
 }
 
 /** A shorter drag reads as a click, which leaves the split tool waiting (mm). */
@@ -117,7 +116,6 @@ export function useCutoutPointerHandlers(
     onUpdate,
     onUpdateBatch,
     onSplitLine,
-    commitTransaction,
   } = opts;
   const lastLineRef = useRef<RulerMeasurement | null>(null);
   // A drag ended any way but pointer up (Escape, blur) must not be the line a
@@ -374,7 +372,6 @@ export function useCutoutPointerHandlers(
             setSegmentHover,
           });
         }
-        commitTransaction?.();
         return;
       }
 
@@ -404,7 +401,6 @@ export function useCutoutPointerHandlers(
     commitPendingPlace,
     commitTransformPreview,
     commitDrawing,
-    commitTransaction,
     onSplitLine,
     setMode,
     setPreview,

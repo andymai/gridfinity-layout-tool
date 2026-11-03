@@ -47,7 +47,6 @@ interface UseCutoutPathToolOptions {
   readonly binDepth: number;
   readonly cellMask?: CellMask;
   readonly maskCellSize?: MaskCellSize;
-  readonly startTransaction?: () => void;
 }
 
 export interface CutoutPathTool {
@@ -82,7 +81,6 @@ export function useCutoutPathTool({
   binDepth,
   cellMask,
   maskCellSize,
-  startTransaction,
 }: UseCutoutPathToolOptions): CutoutPathTool {
   /** Commit a closed path as a new cutout. */
   const commitPath = useCallback(
@@ -199,7 +197,6 @@ export function useCutoutPathTool({
     (index: number, _mmX: number, _mmY: number, ring = 0) => {
       if (mode.type !== 'vertex-editing') return;
       const cutout = cutouts.find((c) => c.id === mode.cutoutId);
-      startTransaction?.();
       setMode({
         ...mode,
         ring,
@@ -208,7 +205,7 @@ export function useCutoutPathTool({
         dragFrom: cutout ? dragSource(cutout) : null,
       });
     },
-    [mode, cutouts, startTransaction, setMode]
+    [mode, cutouts, setMode]
   );
 
   /** Handle vertex handle down from PathEditOverlay3D. */
@@ -216,7 +213,6 @@ export function useCutoutPathTool({
     (index: number, handleType: 'in' | 'out', _mmX: number, _mmY: number, ring = 0) => {
       if (mode.type !== 'vertex-editing') return;
       const cutout = cutouts.find((c) => c.id === mode.cutoutId);
-      startTransaction?.();
       // The handle's anchor becomes the selection, so Delete never takes a
       // point on whichever ring was selected before.
       setMode({
@@ -227,7 +223,7 @@ export function useCutoutPathTool({
         dragFrom: cutout ? dragSource(cutout) : null,
       });
     },
-    [mode, cutouts, startTransaction, setMode]
+    [mode, cutouts, setMode]
   );
 
   /** Handle background click during vertex editing (segment insertion or exit). */
@@ -239,8 +235,6 @@ export function useCutoutPathTool({
         setMode({ type: 'idle' });
         return;
       }
-      // Start a transaction so the split + any subsequent drag = one undo step
-      startTransaction?.();
       handleVertexEditPointerDown(mode, { mmX, mmY, altKey: false }, cutout, CLOSE_SNAP_THRESHOLD, {
         setMode,
         setPreview,
@@ -248,7 +242,7 @@ export function useCutoutPathTool({
         setSegmentHover,
       });
     },
-    [mode, cutouts, onUpdate, startTransaction, setMode, setPreview, setSegmentHover]
+    [mode, cutouts, onUpdate, setMode, setPreview, setSegmentHover]
   );
 
   return {

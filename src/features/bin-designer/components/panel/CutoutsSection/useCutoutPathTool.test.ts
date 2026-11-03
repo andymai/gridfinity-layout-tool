@@ -25,7 +25,6 @@ const CUTOUT: Cutout = {
 
 function tool(mode: InteractionMode) {
   const setMode = vi.fn();
-  const startTransaction = vi.fn();
   const { result } = renderHook(() =>
     useCutoutPathTool({
       mode,
@@ -40,21 +39,16 @@ function tool(mode: InteractionMode) {
       snap: (v) => v,
       binWidth: 100,
       binDepth: 100,
-      startTransaction,
     })
   );
-  return { tool: result.current, setMode, startTransaction };
+  return { tool: result.current, setMode };
 }
 
 describe('useCutoutPathTool', () => {
   it('selects the anchor of a handle it starts dragging, on the handle’s ring', () => {
     // Otherwise Delete after a handle drag removes whatever point on whichever
     // ring was selected before.
-    const {
-      tool: path,
-      setMode,
-      startTransaction,
-    } = tool({
+    const { tool: path, setMode } = tool({
       type: 'vertex-editing',
       cutoutId: 'p1',
       ring: 0,
@@ -62,7 +56,6 @@ describe('useCutoutPathTool', () => {
       dragTarget: null,
     });
     path.handleVertexHandleDown(1, 'out', 0, 0, 2);
-    expect(startTransaction).toHaveBeenCalledOnce();
     expect(setMode).toHaveBeenCalledWith({
       type: 'vertex-editing',
       cutoutId: 'p1',

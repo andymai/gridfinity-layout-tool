@@ -131,8 +131,6 @@ export interface UseCutoutInteractionOptions {
   readonly onUnlock?: (ids: readonly string[]) => void;
   /** A line drawn across the cutout `splitId` names, as world points (mm). */
   readonly onSplitLine?: (cutoutId: string, line: RulerMeasurement) => void;
-  readonly startTransaction?: () => void;
-  readonly commitTransaction?: () => void;
   readonly binWidth: number;
   readonly binDepth: number;
   readonly gridSize?: number;
