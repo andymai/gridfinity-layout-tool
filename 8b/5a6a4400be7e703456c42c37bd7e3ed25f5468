@@ -1,0 +1,120 @@
+src/shared/generation/lidRailPlan.ts
+  s_31b5290859dfff::t_7365f7234fd925 1-9
+src/i18n/locales/it.json
+  s_31b5290859dfff::t_4de945e5a1e2fa 1578-1579
+  s_31b5290859dfff::t_c2d8351b516dc5 1577
+src/i18n/locales/de.json
+  s_31b5290859dfff::t_c2d8351b516dc5 1577
+  s_31b5290859dfff::t_4de945e5a1e2fa 1578-1579
+src/features/bin-designer/types/index.ts
+  s_31b5290859dfff::t_c57edd858b50f6 223
+src/i18n/locales/ko.json
+  s_31b5290859dfff::t_4de945e5a1e2fa 1578-1579
+  s_31b5290859dfff::t_c2d8351b516dc5 1577
+src/features/generation/worker/generators/lidGripRelief.test.ts
+  s_31b5290859dfff::t_5eae54dccac406 15
+src/i18n/locales/nb.json
+  s_31b5290859dfff::t_4de945e5a1e2fa 1578-1579
+  s_31b5290859dfff::t_c2d8351b516dc5 1577
+src/features/generation/worker/generators/hingeSwing.scenario.test.ts
+  s_31b5290859dfff::t_dd945d4b47f5b3 501-531
+src/features/generation/worker/generators/lidPolygonGrip.scenario.test.ts
+  s_31b5290859dfff::t_5eae54dccac406 114
+src/features/generation/worker/generators/lidGripRelief.ts
+  s_31b5290859dfff::t_5eae54dccac406 19-21,32,37
+src/features/generation/worker/generators/lidGripPlan.ts
+  s_31b5290859dfff::t_9b72b133faa68f 1-158
+src/i18n/locales/cs.json
+  s_31b5290859dfff::t_4de945e5a1e2fa 1578-1579
+  s_31b5290859dfff::t_c2d8351b516dc5 1577
+src/i18n/locales/sv.json
+  s_31b5290859dfff::t_c2d8351b516dc5 1577
+  s_31b5290859dfff::t_4de945e5a1e2fa 1578-1579
+src/features/generation/worker/generators/lidInputs.ts
+  s_31b5290859dfff::t_566c967718f81c 30,309-312,655
+src/i18n/locales/ja.json
+  s_31b5290859dfff::t_c2d8351b516dc5 1577
+  s_31b5290859dfff::t_4de945e5a1e2fa 1578-1579
+src/i18n/locales/fr.json
+  s_31b5290859dfff::t_4de945e5a1e2fa 1578-1579
+  s_31b5290859dfff::t_c2d8351b516dc5 1577
+src/features/generation/worker/generators/lidGripLabelInteraction.test.ts
+  s_31b5290859dfff::t_5eae54dccac406 15
+src/i18n/locales/zh-CN.json
+  s_31b5290859dfff::t_c2d8351b516dc5 1577
+  s_31b5290859dfff::t_4de945e5a1e2fa 1578-1579
+src/features/bin-designer/components/panel/LidGripControls/LidGripControls.test.tsx
+  s_31b5290859dfff::t_6c96b449dd813d 8,15-18,22,26,84-115
+  s_31b5290859dfff::t_48123ad408c512 116-117
+src/features/generation/worker/generators/pipeline/stages/lidGripDipStage.ts
+  s_31b5290859dfff::t_5eae54dccac406 44
+src/features/generation/worker/generators/lidDividerClearance.scenario.test.ts
+  s_31b5290859dfff::t_5eae54dccac406 344
+src/features/generation/worker/generators/lidGripRailSplit.test.ts
+  s_31b5290859dfff::t_4de945e5a1e2fa 223-227
+  s_31b5290859dfff::t_2b74e4382d109b 17,20,155-222,228-232
+src/features/bin-designer/components/panel/LidGripControls/LidGripControls.tsx
+  s_31b5290859dfff::t_4de945e5a1e2fa 178
+  s_31b5290859dfff::t_3d7d592bb2a376 13,67,170-174,177,179-187
+src/shared/generation/meshPersistence.ts
+  s_31b5290859dfff::t_48d60313136408 46-47
+  s_31b5290859dfff::t_59a7d6711785d8 89
+src/features/bin-designer/types/lid.ts
+  s_31b5290859dfff::t_3dc42a17223389 1952-1962
+  s_31b5290859dfff::t_38270d08d7cd57 1951
+src/i18n/locales/ka.json
+  s_31b5290859dfff::t_4de945e5a1e2fa 2448-2449
+  s_31b5290859dfff::t_eaa72d4c27453c 2447
+src/features/generation/worker/generators/lidClickRail.ts
+  s_31b5290859dfff::t_5eae54dccac406 12-13,27
+src/i18n/locales/es.json
+  s_31b5290859dfff::t_c2d8351b516dc5 1577
+  s_31b5290859dfff::t_4de945e5a1e2fa 1578-1579
+src/features/generation/worker/generators/lidInteriorRelief.scenario.test.ts
+  s_31b5290859dfff::t_5eae54dccac406 80,92
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_31b5290859dfff::t_04a1609826f556 106,175,973-974
+src/features/generation/worker/generators/lidClickRailPartial.test.ts
+  s_31b5290859dfff::t_5eae54dccac406 10
+src/features/generation/worker/generators/lidLabelTabClearance.scenario.test.ts
+  s_31b5290859dfff::t_5eae54dccac406 211
+src/i18n/locales/nl.json
+  s_31b5290859dfff::t_c2d8351b516dc5 1577
+  s_31b5290859dfff::t_4de945e5a1e2fa 1578-1579
+src/i18n/locales/en.ts
+  s_31b5290859dfff::t_4de945e5a1e2fa 2913-2915
+  s_31b5290859dfff::t_c2d8351b516dc5 2911-2912
+src/features/generation/worker/generators/lidScoopClearance.scenario.test.ts
+  s_31b5290859dfff::t_5eae54dccac406 76,109
+src/i18n/locales/uk.json
+  s_31b5290859dfff::t_4de945e5a1e2fa 1578-1579
+  s_31b5290859dfff::t_c2d8351b516dc5 1577
+src/i18n/locales/pt-BR.json
+  s_31b5290859dfff::t_4de945e5a1e2fa 1578-1579
+  s_31b5290859dfff::t_c2d8351b516dc5 1577
+src/i18n/locales/pl.json
+  s_31b5290859dfff::t_c2d8351b516dc5 1577
+  s_31b5290859dfff::t_4de945e5a1e2fa 1578-1579
+src/features/generation/worker/generators/lidRailPlan.ts
+  s_31b5290859dfff::t_9811e52f500418 1-324
+src/features/generation/worker/generators/lidCutoutGrip.scenario.test.ts
+  s_31b5290859dfff::t_5eae54dccac406 246
+src/shared/types/bin.ts
+  s_31b5290859dfff::t_709e4bac68bc62 255
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8b5a6a4400be7e703456c42c37bd7e3ed25f5468",
+  "prompts": {},
+  "sessions": {
+    "s_31b5290859dfff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f5e5adf1-1df0-4dbd-bd22-c2f9cd781d9e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
