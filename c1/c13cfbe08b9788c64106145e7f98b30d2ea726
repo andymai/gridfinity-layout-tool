@@ -1,0 +1,21 @@
+src/shared/scanTrace/measuringStrip.test.ts
+  s_4b9adb1d9473fb::t_42be13c283913c 183-194
+src/shared/scanTrace/traceScene.ts
+  s_4b9adb1d9473fb::t_42be13c283913c 132-133,388,392,444
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c1c13cfbe08b9788c64106145e7f98b30d2ea726",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
