@@ -67,6 +67,52 @@ describe('useCutoutPathTool', () => {
     });
   });
 
+  it('takes the nearest point when a press lands on overlapping handles', () => {
+    const pt = (x: number, y: number) => ({
+      x,
+      y,
+      handleIn: null,
+      handleOut: null,
+      symmetric: false,
+    });
+    const islanded: Cutout = {
+      ...CUTOUT,
+      rotation: 0,
+      path: [pt(0, 0), pt(40, 0), pt(40, 40), pt(0, 40)],
+      width: 40,
+      depth: 40,
+      holes: [[pt(1.5, 1.5), pt(10, 1.5), pt(10, 10)]],
+    };
+    const setMode = vi.fn();
+    const { result } = renderHook(() =>
+      useCutoutPathTool({
+        mode: {
+          type: 'vertex-editing',
+          cutoutId: 'p1',
+          ring: 0,
+          selectedPointIndex: null,
+          dragTarget: null,
+        },
+        setMode,
+        cutouts: [islanded],
+        onAdd: () => true,
+        onUpdate: vi.fn(),
+        setSelection: vi.fn(),
+        setPathDrawingPreview: vi.fn(),
+        setPreview: vi.fn(),
+        setSegmentHover: vi.fn(),
+        snap: (v) => v,
+        binWidth: 100,
+        binDepth: 100,
+      })
+    );
+    // The outline corner's handle reported the hit, but the island's is nearer.
+    result.current.handleVertexPointDown(0, 1.2, 1.2, 0);
+    expect(setMode).toHaveBeenCalledWith(
+      expect.objectContaining({ ring: 1, selectedPointIndex: 0 })
+    );
+  });
+
   it('ignores a handle outside vertex editing', () => {
     const { tool: path, setMode } = tool({ type: 'idle' });
     path.handleVertexHandleDown(1, 'out', 0, 0, 0);

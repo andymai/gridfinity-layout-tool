@@ -544,6 +544,13 @@ describe('editing an island', () => {
     expect(committed.holes?.[0][1]).toMatchObject({ x: 28, y: 13 });
   });
 
+  it('adds a point on a straight edge where it was clicked, keeping the edge straight', () => {
+    const setters = makeSetters();
+    handleVertexEditPointerDown(makeMode(), at(18, 15.1), islanded(), 1, setters);
+    const committed = setters.onUpdate.mock.calls[0][1] as Partial<Cutout>;
+    expect(committed.holes?.[0][1]).toEqual(point(18, 15));
+  });
+
   it('adds a point on an island’s edge', () => {
     const setters = makeSetters();
     handleVertexEditPointerDown(makeMode(), at(20, 15.2), islanded(), 1, setters);
@@ -792,6 +799,23 @@ describe('keeping what the generator cuts', () => {
   it('refuses an island dragged onto another', () => {
     const other = [point(28, 28), point(35, 28), point(35, 35)];
     expect(release(islanded([TRIANGLE, other]), 1, 2, { x: 30, y: 31 })).not.toHaveBeenCalled();
+  });
+
+  it('refuses a point dragged onto the line between its neighbours, which leaves no area', () => {
+    // Outside the outline, so only the ring's own shape can refuse it.
+    const out = [point(45, 15), point(55, 15), point(50, 25)];
+    expect(release(islanded([out]), 1, 2, { x: 50, y: 15 })).not.toHaveBeenCalled();
+  });
+
+  it('refuses a point dragged onto another edge, which leaves the ring meeting itself', () => {
+    // The corner lands on the far side, so the ring keeps an area but touches itself.
+    const out = [point(45, 15), point(55, 15), point(55, 25), point(45, 25)];
+    expect(release(islanded([out]), 1, 2, { x: 45, y: 20 })).not.toHaveBeenCalled();
+  });
+
+  it('still edits a ring that already had no area, so it can be mended a step at a time', () => {
+    const flat = [point(15, 15), point(25, 15), point(20, 15)];
+    expect(release(islanded([flat]), 1, 2, { x: 22, y: 15 })).toHaveBeenCalled();
   });
 
   it('still edits an island that was already outside, so it can be brought back', () => {

@@ -19,7 +19,7 @@ import {
 } from '../pathGeometry';
 import { rotateAbout } from '@/shared/utils/cutoutOutline';
 import { cuttablePolyline } from '@/shared/utils/pathCutoutOutline';
-import { outlinesTouch } from '@/shared/utils/outlineSegments';
+import { outlinesTouch, touchesItself } from '@/shared/utils/outlineSegments';
 import { pointInPolygon } from '@/shared/scanTrace';
 import type { PointerMoveEvent, BinBounds, SnapFn, PreviewSetters, SetModeFn } from './types';
 
@@ -99,6 +99,29 @@ export function toPathFrame(cutout: Cutout, x: number, y: number): { x: number; 
 /** Clicks this close to a point pick it up; farther along an edge they add one. */
 const VERTEX_PICK_MM = 2;
 
+/**
+ * The point on any ring nearest a canvas position, within `reach`. A press
+ * on overlapping handles takes this rather than whichever handle was hit first.
+ */
+export function nearestPoint(
+  cutout: Cutout,
+  x: number,
+  y: number,
+  reach = Infinity
+): { ring: number; index: number } | null {
+  const at = toPathFrame(cutout, x, y);
+  const rings = ringsOf(cutout);
+  let best: { ring: number; index: number; d: number } | null = null;
+  for (let ring = 0; ring < rings.length; ring++) {
+    for (let index = 0; index < rings[ring].length; index++) {
+      const pt = rings[ring][index];
+      const d = Math.hypot(pt.x - at.x, pt.y - at.y);
+      if (d <= reach && (!best || d < best.d)) best = { ring, index, d };
+    }
+  }
+  return best && { ring: best.ring, index: best.index };
+}
+
 interface Laid {
   readonly points: Array<{ x: number; y: number }>;
   readonly minX: number;
@@ -109,13 +132,26 @@ interface Laid {
 
 const laidRings = new WeakMap<readonly PathPoint[], Laid | null>();
 
-/** A ring as the builder cuts it, with its bounds, or null when it is not cut. */
+function area(points: readonly { x: number; y: number }[]): number {
+  let sum = 0;
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    sum += (points[j].x + points[i].x) * (points[j].y - points[i].y);
+  }
+  return Math.abs(sum / 2);
+}
+
+/**
+ * A ring as the builder cuts it, with its bounds, or null when it is not cut.
+ * Stricter than the builder's own test: a ring with no area, or one meeting
+ * itself where a point was dragged onto another, passes that test but has no
+ * inside to cut.
+ */
 function laid(ring: readonly PathPoint[]): Laid | null {
   const known = laidRings.get(ring);
   if (known !== undefined) return known;
   const points = cuttablePolyline(ring);
   let result: Laid | null = null;
-  if (points) {
+  if (points && area(points) > 1e-6 && !touchesItself(points)) {
     const xs = points.map((p) => p.x);
     const ys = points.map((p) => p.y);
     result = {
@@ -171,7 +207,10 @@ function keepsShape(
   ring: number
 ): boolean {
   const edited = after.at(ring);
-  if (!edited || !laid(edited)) return false;
+  if (!edited) return false;
+  // A ring that was already not cut may still be edited, so it can be mended.
+  const was = before.at(ring);
+  if (!laid(edited) && (!was || laid(was))) return false;
   const holds = (k: number): boolean => inside(after[0], after[k]) || !inside(before[0], before[k]);
   if (ring === 0) return after.every((_, k) => k === 0 || holds(k));
   return (
@@ -298,15 +337,7 @@ export function handleVertexEditPointerDown(
   // Clear hover on any pointer down
   setters.setSegmentHover(null);
 
-  const pick = Math.min(threshold, VERTEX_PICK_MM);
-  let nearest: { ring: number; index: number; d: number } | null = null;
-  for (let ring = 0; ring < rings.length; ring++) {
-    for (let index = 0; index < rings[ring].length; index++) {
-      const pt = rings[ring][index];
-      const d = Math.hypot(pt.x - at.x, pt.y - at.y);
-      if (d <= pick && (!nearest || d < nearest.d)) nearest = { ring, index, d };
-    }
-  }
+  const nearest = nearestPoint(cutout, event.mmX, event.mmY, Math.min(threshold, VERTEX_PICK_MM));
   if (nearest) {
     const { ring, index } = nearest;
     setters.setMode({
@@ -374,9 +405,14 @@ export function handleVertexEditPointerDown(
     const insertIdx = seg.segmentIndex + 1;
     updated.splice(insertIdx, 0, mid);
 
-    setters.onUpdate(cutout.id, ringUpdate(cutout, seg.ring, updated));
-    setters.setMode({ ...mode, ring: seg.ring, selectedPointIndex: insertIdx, dragTarget: null });
-    return;
+    // Splitting moves the builder's samples along a curve, which can bring it
+    // onto an island it cleared.
+    const update = ringUpdate(cutout, seg.ring, updated);
+    if (keepsShape(rings, ringsOf({ ...cutout, ...update }), seg.ring)) {
+      setters.onUpdate(cutout.id, update);
+      setters.setMode({ ...mode, ring: seg.ring, selectedPointIndex: insertIdx, dragTarget: null });
+      return;
+    }
   }
 
   setters.setMode({ ...mode, selectedPointIndex: null, dragTarget: null });

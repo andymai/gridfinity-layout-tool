@@ -19,7 +19,7 @@ interface VertexMagnifier3DProps {
   readonly at: { readonly x: number; readonly y: number };
 }
 
-/** Name of the group left out of the inset, so a handle never sits on the edge below it. */
+/** Name of the groups left out of the inset, so a handle never sits on the edge below it. */
 export const UNMAGNIFIED = 'vertex-magnifier-hidden';
 
 const FRAME_COLOR = '#0d99ff';
@@ -101,11 +101,13 @@ export function VertexMagnifier3D({ at }: VertexMagnifier3DProps) {
     gl.setScissor(rect.x, rect.y, rect.size, rect.size);
     gl.setViewport(rect.x, rect.y, rect.size, rect.size);
     gl.clear(true, true, true);
-    const hidden = scene.getObjectByName(UNMAGNIFIED);
-    const wasVisible = hidden?.visible ?? false;
-    if (hidden) hidden.visible = false;
+    const hidden: THREE.Object3D[] = [];
+    scene.traverse((o) => {
+      if (o.name === UNMAGNIFIED && o.visible) hidden.push(o);
+    });
+    for (const o of hidden) o.visible = false;
     gl.render(scene, lens);
-    if (hidden) hidden.visible = wasVisible;
+    for (const o of hidden) o.visible = true;
     gl.clearDepth();
     gl.render(overlay.current.scene, overlay.current.camera);
     gl.setScissorTest(false);

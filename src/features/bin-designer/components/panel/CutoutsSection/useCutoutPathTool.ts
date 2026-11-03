@@ -17,6 +17,7 @@ import {
   handlePathDrawingVertexDown,
   handleVertexEditPointerDown,
   dragSource,
+  nearestPoint,
 } from './handlers';
 import type { PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
 import {
@@ -194,9 +195,13 @@ export function useCutoutPathTool({
 
   /** Handle vertex point down from PathEditOverlay3D. */
   const handleVertexPointDown = useCallback(
-    (index: number, _mmX: number, _mmY: number, ring = 0) => {
+    (hitIndex: number, mmX: number, mmY: number, hitRing = 0) => {
       if (mode.type !== 'vertex-editing') return;
       const cutout = cutouts.find((c) => c.id === mode.cutoutId);
+      const { ring, index } = (cutout && nearestPoint(cutout, mmX, mmY)) ?? {
+        ring: hitRing,
+        index: hitIndex,
+      };
       setMode({
         ...mode,
         ring,

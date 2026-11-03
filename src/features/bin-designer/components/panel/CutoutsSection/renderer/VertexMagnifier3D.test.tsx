@@ -33,6 +33,7 @@ interface Drawn {
   readonly scene: THREE.Object3D;
   readonly camera: THREE.Camera;
   readonly handlesVisible: boolean;
+  readonly controlsVisible: boolean;
 }
 
 function frameAt(size: { width: number; height: number }) {
@@ -40,6 +41,10 @@ function frameAt(size: { width: number; height: number }) {
   const handles = new THREE.Group();
   handles.name = UNMAGNIFIED;
   scene.add(handles);
+  // The resize and rotation controls, also left out.
+  const controls = new THREE.Group();
+  controls.name = UNMAGNIFIED;
+  scene.add(controls);
   const camera = editorCamera();
   const drawn: Drawn[] = [];
   const gl = {
@@ -50,12 +55,17 @@ function frameAt(size: { width: number; height: number }) {
     clear: vi.fn(),
     clearDepth: vi.fn(),
     render: vi.fn((s: THREE.Object3D, c: THREE.Camera) => {
-      drawn.push({ scene: s, camera: c, handlesVisible: handles.visible });
+      drawn.push({
+        scene: s,
+        camera: c,
+        handlesVisible: handles.visible,
+        controlsVisible: controls.visible,
+      });
     }),
   };
   if (!fiber.frame) throw new Error('useFrame was not called');
   fiber.frame({ gl, scene, camera, size });
-  return { gl, scene, camera, handles, drawn };
+  return { gl, scene, camera, handles, controls, drawn };
 }
 
 describe('VertexMagnifier3D', () => {
@@ -66,19 +76,21 @@ describe('VertexMagnifier3D', () => {
 
   it('draws the canvas, then the point closer with the handles hidden, then the frame', () => {
     render(<VertexMagnifier3D at={{ x: -300, y: 0 }} />);
-    const { gl, scene, camera, handles, drawn } = frameAt(SIZE);
+    const { gl, scene, camera, handles, controls, drawn } = frameAt(SIZE);
 
     expect(drawn).toHaveLength(3);
-    expect(drawn[0]).toEqual({ scene, camera, handlesVisible: true });
+    expect(drawn[0]).toEqual({ scene, camera, handlesVisible: true, controlsVisible: true });
 
     const lens = drawn[1].camera as THREE.OrthographicCamera;
     expect(drawn[1].scene).toBe(scene);
     expect(drawn[1].handlesVisible).toBe(false);
+    expect(drawn[1].controlsVisible).toBe(false);
     expect(lens.zoom).toBe(camera.zoom * LOUPE_ZOOM);
     expect([lens.position.x, lens.position.y]).toEqual([-300, 0]);
 
     expect(drawn[2].scene).not.toBe(scene);
     expect(handles.visible).toBe(true);
+    expect(controls.visible).toBe(true);
 
     // The point is in the left half, so the inset takes the top right corner.
     const x = SIZE.width - LOUPE_MARGIN_PX - LOUPE_PX;
