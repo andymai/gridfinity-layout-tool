@@ -1,7 +1,7 @@
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { SceneShape } from '@/shared/scanTrace';
-import { bounds } from './scanFlow';
+import { bounds } from '../../scanFlow';
 
 interface ScanToolListProps {
   readonly shapes: readonly SceneShape[];

@@ -1,5 +1,5 @@
 import { err, isOk, ok, type Result } from '@/core/result';
-import type { CardSizeMm } from '@/features/scan-capture/cardSize';
+import type { CardSizeMm } from './cardSize';
 import {
   interiorSeed,
   nestShapes,
