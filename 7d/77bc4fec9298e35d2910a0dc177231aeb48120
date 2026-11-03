@@ -1,0 +1,119 @@
+package.json
+  s_492a199cecd8ec::t_0de3944151da2d 122
+src/design-system/Dialog/Dialog.test.tsx
+  s_492a199cecd8ec::t_36cb53eef82d94 5,244-265
+src/design-system/Dialog/DialogRoot.tsx
+  s_492a199cecd8ec::t_b49fcdfa78ad25 324
+src/design-system/Popover/Popover.test.tsx
+  s_492a199cecd8ec::t_9d51d9792302a3 79-106
+src/design-system/Popover/Popover.tsx
+  s_492a199cecd8ec::t_7f294b16545918 53,59-64,138-139,142,148,152,166
+src/features/bin-designer/components/TraceView/ScalePanel.tsx
+  s_492a199cecd8ec::t_a925af332a4415 83-85
+src/features/bin-designer/components/TraceView/TraceView.tsx
+  s_492a199cecd8ec::t_fee5d35b124bfa 11,264-268
+src/features/bin-designer/components/TraceView/useTraceSession.ts
+  s_492a199cecd8ec::t_0a5361c7e6b9b5 24,29,132-133,335-338,340,344-349,379
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanWithPhoneDialog.tsx
+  s_492a199cecd8ec::t_af736ec20a07a0 25,196-206,288-293
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/measuringStripsSvg.test.ts
+  s_492a199cecd8ec::t_7ac94496b724d4 1-28
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/measuringStripsSvg.ts
+  s_492a199cecd8ec::t_a14fbab9eb05c3 1-90
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.ts
+  s_492a199cecd8ec::t_55934bb09c7fa5 20,48
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/specToCutout.test.ts
+  s_492a199cecd8ec::t_a53042c4963050 4,148-184
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/specToCutout.ts
+  s_492a199cecd8ec::t_4101c276a1e862 8-10,24-38,62-72
+src/features/scan-capture/components/ScanPage/ScanPage.test.tsx
+  s_492a199cecd8ec::t_2b7ab4b5a3506d 221-247
+src/features/scan-capture/components/ScanPage/ScanPage.tsx
+  s_492a199cecd8ec::t_738048f1564b57 46-47,82-85,210-218,354-358,490-500
+src/features/whats-new/entries.ts
+  s_492a199cecd8ec::t_73e5295838c602 16-37
+src/features/whats-new/latest.ts
+  s_492a199cecd8ec::t_00a25ae8908eb5 9
+src/i18n/locales/cs.json
+  s_492a199cecd8ec::t_d011493a546be7 1089-1095,4357-4369
+src/i18n/locales/de.json
+  s_492a199cecd8ec::t_3d86b224e0466e 1089-1095,4357-4369
+src/i18n/locales/en.ts
+  s_492a199cecd8ec::t_0bc24a95041b67 1586-1599,3626-3635
+src/i18n/locales/es.json
+  s_492a199cecd8ec::t_16242cfd9b75d4 1089-1095,4357-4369
+src/i18n/locales/fr.json
+  s_492a199cecd8ec::t_65dbd9a2663ef5 1089-1095,4357-4369
+src/i18n/locales/it.json
+  s_492a199cecd8ec::t_f9c7cda57f10ef 1089-1095,4357-4369
+src/i18n/locales/ja.json
+  s_492a199cecd8ec::t_192edd34f5dc74 1089-1095,4357-4369
+src/i18n/locales/ka.json
+  s_492a199cecd8ec::t_2508af07b36a5d 1383-1395,3055-3061
+src/i18n/locales/ko.json
+  s_492a199cecd8ec::t_64a82b8cf16d0e 1089-1095,4357-4369
+src/i18n/locales/nb.json
+  s_492a199cecd8ec::t_59a2189d2a381e 1089-1095,4357-4369
+src/i18n/locales/nl.json
+  s_492a199cecd8ec::t_521809a3c2a7a8 1089-1095,4357-4369
+src/i18n/locales/pl.json
+  s_492a199cecd8ec::t_3d7ddeab8a293c 1089-1095,4357-4369
+src/i18n/locales/pt-BR.json
+  s_492a199cecd8ec::t_b51fa3d011ce10 1089-1095,4357-4369
+src/i18n/locales/sv.json
+  s_492a199cecd8ec::t_dc6efab9f36442 1089-1095,4357-4369
+src/i18n/locales/uk.json
+  s_492a199cecd8ec::t_ecabd6f160bdc3 1089-1095,4357-4369
+src/i18n/locales/zh-CN.json
+  s_492a199cecd8ec::t_394bf35240ab48 1089-1095,4357-4369
+src/shared/scanReview/components/ScanToolList/ScanToolList.test.tsx
+  s_492a199cecd8ec::t_54bf568bcdc391 19-29
+src/shared/scanReview/components/ScanToolList/ScanToolList.tsx
+  s_492a199cecd8ec::t_1ff0a2298b8269 30,32-34
+src/shared/scanReview/components/TraceExportMenu/TraceExportMenu.test.tsx
+  s_492a199cecd8ec::t_e01645671893bf 1-114
+src/shared/scanReview/components/TraceExportMenu/TraceExportMenu.tsx
+  s_492a199cecd8ec::t_546888de4f7181 1-175
+src/shared/scanReview/components/TraceExportMenu/index.ts
+  s_492a199cecd8ec::t_0f1de4a5161238 1
+src/shared/scanReview/index.ts
+  s_492a199cecd8ec::t_ae95f8d7790e94 31-43
+src/shared/scanReview/traceExport.test.ts
+  s_492a199cecd8ec::t_86dfd86ddbfe2c 1-252
+src/shared/scanReview/traceExport.ts
+  s_492a199cecd8ec::t_9aff51cb9d6e7f 1-214
+src/shared/scanReview/traceStl.ts
+  s_492a199cecd8ec::t_d38a862150bb98 1-236
+src/shared/scanTrace/curveFit.test.ts
+  s_492a199cecd8ec::t_b076e2220a5edd 2-4,71-126
+src/shared/scanTrace/curveFit.ts
+  s_492a199cecd8ec::t_8b23cffe31967c 12-13,81-101
+src/shared/scanTrace/index.ts
+  s_492a199cecd8ec::t_bad53bdb09e36c 37-43
+src/shared/scanTrace/measuringStrip.test.ts
+  s_492a199cecd8ec::t_75722442ec20ba 1-257
+src/shared/scanTrace/measuringStrip.ts
+  s_492a199cecd8ec::t_4c4f6b3487267b 1-251
+src/shared/scanTrace/traceScene.ts
+  s_492a199cecd8ec::t_aab2bdab522e61 30,40-46,85-91,105-106,132-133,216-219,238-239,260-263,298-300,350,388,392-394,423-427,444,545-547,568-570,591-596
+src/shared/utils/tinyLoops.test.ts
+  s_492a199cecd8ec::t_14b20872775fc3 1-89
+src/shared/utils/tinyLoops.ts
+  s_492a199cecd8ec::t_a2e0d0544e1210 1-146
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7d77bc4fec9298e35d2910a0dc177231aeb48120",
+  "prompts": {},
+  "sessions": {
+    "s_492a199cecd8ec": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54b3ce45-e9c9-4695-b9d5-78f0e56211f1",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
