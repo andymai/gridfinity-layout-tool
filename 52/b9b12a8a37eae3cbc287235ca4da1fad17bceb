@@ -1,0 +1,21 @@
+src/shared/scanTrace/refineScene.ts
+  s_4b9adb1d9473fb::t_563a6ffdc3f329 110-112,115-120,127-130
+src/features/scan-capture/components/ScanPage/scanFlow.test.ts
+  s_4b9adb1d9473fb::t_70aa0afeff44ee 164-178
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "52b9b12a8a37eae3cbc287235ca4da1fad17bceb",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
