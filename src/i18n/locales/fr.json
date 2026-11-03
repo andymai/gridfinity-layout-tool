@@ -4257,6 +4257,8 @@
   "scan.review.remove": "Retirer",
   "scan.review.removeTool": "Retirer l'outil {index}",
   "scan.review.undo": "Annuler",
+  "scan.review.keepHoles": "Garder les trous",
+  "scan.review.keepHolesHint": "Laisse du plastique là où la surface apparaît à travers un outil, comme dans un anneau. Un reflet peut ressembler à un trou.",
   "scan.review.tapHint": "Touchez votre outil sur la photo si la forme en surbrillance est incorrecte.",
   "scan.sending": "Envoi…",
   "scan.sent.another": "En scanner un autre",

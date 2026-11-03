@@ -2,7 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type * as ScanTrace from '@/shared/scanTrace';
 import { err, ok } from '@/core/result';
 import type { SceneShape, SceneTrace } from '@/shared/scanTrace';
-import { MAX_AUTO_REFINE, svgFromShapes, traceAll, traceTap } from './scanFlow';
+import {
+  MAX_AUTO_REFINE,
+  svgFromShapes,
+  traceAll,
+  traceTap,
+  visibleShapes,
+  withoutShape,
+} from './scanFlow';
 
 const mockSegment = vi.fn();
 const mockTrace = vi.fn();
@@ -127,5 +134,63 @@ describe('svgFromShapes', () => {
 
   it('leaves an unscaled outline untagged', () => {
     expect(svgFromShapes([box(0, 0, 5, 5)], 'px')).not.toContain('data-scan-units');
+  });
+});
+
+describe('holes', () => {
+  const ring: SceneShape = { ...box(0, 0, 40, 40), holes: [box(10, 10, 30, 30)] };
+  const nut: SceneShape = { ...box(15, 15, 25, 25), inHole: true };
+
+  it('leaves a tool lying in a hole out unless holes are kept', () => {
+    expect(visibleShapes([ring, nut], false, 'px')).toEqual([ring]);
+    expect(visibleShapes([ring, nut], true, 'px')).toEqual([ring, nut]);
+  });
+
+  // In millimetres a 20 mm hole stays and a 2 mm one goes.
+  it('keeps only the holes wide enough to leave an island standing', () => {
+    const withSlit: SceneShape = { ...ring, holes: [box(10, 10, 30, 30), box(32, 5, 34, 35)] };
+    const [shown] = visibleShapes([withSlit], true, 'mm');
+    expect(shown.holes).toEqual([box(10, 10, 30, 30)]);
+  });
+
+  // 1 mm across in a millimetre scene: too narrow to keep, so the tool in it
+  // would be a pocket inside the pocket.
+  it('hides a tool whose hole was too narrow to keep', () => {
+    const slotted: SceneShape = { ...box(0, 0, 40, 40), holes: [box(10, 10, 11, 30)] };
+    const pin: SceneShape = { ...box(10.2, 15, 10.8, 25), inHole: true };
+    expect(visibleShapes([slotted, pin], true, 'mm')).toEqual([box(0, 0, 40, 40)]);
+  });
+
+  // A ring's wide hole holds a slotted tool, and a pin lies in the 1 mm slot.
+  // Once the slot is filled in, the pin sits on the slotted tool's material,
+  // however wide the ring's hole around both.
+  it('hides a tool in a narrow hole of a tool that lies in a kept hole', () => {
+    const outer: SceneShape = { ...box(0, 0, 80, 80), holes: [box(5, 5, 75, 75)] };
+    const slotted: SceneShape = {
+      ...box(10, 10, 50, 50),
+      holes: [box(20, 20, 21, 40)],
+      inHole: true,
+    };
+    const pin: SceneShape = { ...box(20.2, 25, 20.8, 35), inHole: true };
+    const shown = visibleShapes([outer, slotted, pin], true, 'mm');
+    expect(shown).toEqual([outer, { ...box(10, 10, 50, 50), inHole: true }]);
+  });
+
+  it('frees a tool from a hole once the ring around it is removed', () => {
+    const other = box(50, 0, 60, 10);
+    expect(withoutShape([ring, nut, other], ring)).toEqual([box(15, 15, 25, 25), other]);
+    expect(withoutShape([ring, nut, other], other)).toEqual([ring, nut]);
+  });
+
+  it('writes a kept hole as an even-odd subpath of its tool', () => {
+    const svg = svgFromShapes([ring], 'mm', true);
+    expect(svg).toContain('fill-rule="evenodd"');
+    expect(svg.match(/M/g)).toHaveLength(2);
+  });
+
+  it('leaves holes out of the outline when they are not kept', () => {
+    const svg = svgFromShapes([ring], 'mm', false);
+    expect(svg).not.toContain('fill-rule');
+    expect(svg.match(/M/g)).toHaveLength(1);
   });
 });

@@ -1596,6 +1596,9 @@ const en: Record<string, string> = {
   'scan.review.remove': 'Remove',
   'scan.review.removeTool': 'Remove tool {index}',
   'scan.review.undo': 'Undo',
+  'scan.review.keepHoles': 'Keep holes',
+  'scan.review.keepHolesHint':
+    'Leaves plastic where the surface shows through a tool, like inside a ring. A reflection can look like a hole.',
   'scan.retake': 'Retake',
   'scan.use': 'Use this outline',
   'scan.useMany': 'Use these {count} outlines',

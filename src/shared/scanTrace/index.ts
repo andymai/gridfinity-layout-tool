@@ -7,11 +7,13 @@ export {
   sameReference,
   withCardSize,
   withReference,
+  wideHoles,
 } from './traceScene';
-export { withRefinedShape, type Refinement } from './refineScene';
-export { interiorSeed } from './toolBlobs';
+export { nestShapes, withRefinedShape, type Refinement } from './refineScene';
+export { interiorSeed, pointInPolygon } from './toolBlobs';
 export type {
   SceneShape,
+  SceneRing,
   SceneTrace,
   SceneCard,
   SceneGrid,

@@ -4257,6 +4257,8 @@
   "scan.review.remove": "Fjern",
   "scan.review.removeTool": "Fjern verktøy {index}",
   "scan.review.undo": "Angre",
+  "scan.review.keepHoles": "Behold hull",
+  "scan.review.keepHolesHint": "Lar plast stå der underlaget synes gjennom et verktøy, som inni en ring. En refleks kan se ut som et hull.",
   "scan.review.tapHint": "Trykk på verktøyet ditt i bildet hvis den markerte formen er feil.",
   "scan.sending": "Sender …",
   "scan.sent.another": "Skann en til",

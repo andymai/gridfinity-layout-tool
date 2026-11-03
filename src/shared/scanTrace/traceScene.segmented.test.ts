@@ -151,3 +151,27 @@ describe('seeding the segmenter from the classical trace', () => {
     expect(isOk(traceScene(blank))).toBe(false);
   });
 });
+
+describe('traceSceneSegmented holes', () => {
+  it("reads a hole from the model's mask", () => {
+    const data = new Float32Array(WIDTH * HEIGHT);
+    for (let y = 40; y < 140; y++) {
+      for (let x = 200; x < 300; x++) {
+        const inHole = x >= 230 && x < 270 && y >= 70 && y < 110;
+        data[y * WIDTH + x] = inHole ? 0 : 1;
+      }
+    }
+    const result = traceSceneSegmented(
+      renderWithCard(),
+      { width: WIDTH, height: HEIGHT, data },
+      {
+        smooth: false,
+      }
+    );
+    if (!isOk(result)) throw new Error('fixture failed');
+    const hole = result.value.shapes[0].holes?.[0].imagePoints ?? [];
+    const xs = hole.map((p) => p.x);
+    expect(Math.min(...xs)).toBeCloseTo(230, 0);
+    expect(Math.max(...xs)).toBeCloseTo(269, 0);
+  });
+});

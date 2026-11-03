@@ -4257,6 +4257,8 @@
   "scan.review.remove": "Verwijderen",
   "scan.review.removeTool": "Gereedschap {index} verwijderen",
   "scan.review.undo": "Ongedaan maken",
+  "scan.review.keepHoles": "Gaten houden",
+  "scan.review.keepHolesHint": "Laat plastic staan waar de ondergrond door gereedschap heen zichtbaar is, zoals in een ring. Een weerspiegeling kan op een gat lijken.",
   "scan.review.tapHint": "Tik op je gereedschap in de foto als de gemarkeerde vorm verkeerd is.",
   "scan.sending": "Verzenden…",
   "scan.sent.another": "Nog een scannen",

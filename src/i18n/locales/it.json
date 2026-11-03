@@ -4257,6 +4257,8 @@
   "scan.review.remove": "Rimuovi",
   "scan.review.removeTool": "Rimuovi utensile {index}",
   "scan.review.undo": "Annulla",
+  "scan.review.keepHoles": "Mantieni i fori",
+  "scan.review.keepHolesHint": "Lascia plastica dove la superficie si vede attraverso l’utensile, come dentro un anello. Un riflesso può sembrare un foro.",
   "scan.review.tapHint": "Tocca il tuo utensile nella foto se la forma evidenziata è sbagliata.",
   "scan.sending": "Invio…",
   "scan.sent.another": "Scansiona un altro",

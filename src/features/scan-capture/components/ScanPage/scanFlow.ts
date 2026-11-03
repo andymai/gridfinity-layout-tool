@@ -2,11 +2,13 @@ import { err, isOk, ok, type Result } from '@/core/result';
 import type { CardSizeMm } from '@/features/scan-capture/cardSize';
 import {
   interiorSeed,
+  nestShapes,
   pointsToSvgPath,
   sameReference,
   segmentAt,
   traceScene,
   traceSceneSegmented,
+  wideHoles,
   withReference,
   withRefinedShape,
   type ImageDataLike,
@@ -68,7 +70,11 @@ export async function traceAll(
     if (index === -1) continue;
     let soft: SoftMask;
     try {
-      soft = await segmentAt(canvas, interiorSeed(shape.imagePoints, image.width, image.height));
+      const holes = (shape.holes ?? []).map((h) => h.imagePoints);
+      soft = await segmentAt(
+        canvas,
+        interiorSeed(shape.imagePoints, image.width, image.height, holes)
+      );
     } catch {
       return ok({ scene, canRefine: false });
     }
@@ -129,16 +135,69 @@ export function bounds(points: readonly Point[]): {
   return { minX, minY, w: Math.max(...xs) - minX, h: Math.max(...ys) - minY };
 }
 
+export interface ShownShape {
+  readonly shape: SceneShape;
+  /** Where the tool sits in the scene, for acting on the one the list shows. */
+  readonly index: number;
+}
+
+/**
+ * The tools the review shows: all of them while holes are kept, each with
+ * only the holes wide enough to keep, otherwise not one lying in another's
+ * hole, which would be a pocket inside a pocket.
+ */
+export function shownShapes(
+  shapes: readonly SceneShape[],
+  keepHoles: boolean,
+  units: 'mm' | 'px'
+): ShownShape[] {
+  const indexed = shapes.map((shape, index) => ({ shape, index }));
+  if (!keepHoles) return indexed.filter(({ shape }) => shape.inHole !== true);
+  const trimmed = shapes.map((shape) => {
+    if (!shape.holes) return shape;
+    const { holes: _all, ...rest } = shape;
+    const holes = wideHoles(shape, units);
+    return holes.length > 0 ? { ...rest, holes } : rest;
+  });
+  // A tool whose hole was too narrow to keep now lies on its ring's material,
+  // a pocket inside a pocket, so it goes with the hole.
+  return nestShapes(trimmed)
+    .map((shape, index) => ({ shape, index }))
+    .filter(({ shape, index }) => !(shapes[index].inHole === true && shape.inHole !== true));
+}
+
+export function visibleShapes(
+  shapes: readonly SceneShape[],
+  keepHoles: boolean,
+  units: 'mm' | 'px'
+): SceneShape[] {
+  return shownShapes(shapes, keepHoles, units).map(({ shape }) => shape);
+}
+
+/** `shapes` without `gone`, each still marked in a hole only while one holds it. */
+export function withoutShape(shapes: readonly SceneShape[], gone: SceneShape): SceneShape[] {
+  return nestShapes(shapes.filter((s) => s !== gone));
+}
+
 /**
  * One path per tool in a shared 0-origin viewBox, so the outlines import at
  * their true size and keep their places relative to each other.
  */
-export function svgFromShapes(shapes: readonly SceneShape[], units: 'mm' | 'px'): string {
+export function svgFromShapes(
+  shapes: readonly SceneShape[],
+  units: 'mm' | 'px',
+  keepHoles = false
+): string {
   const { minX, minY, w, h } = bounds(shapes.flatMap((s) => s.outputPoints));
-  const paths = shapes.map(
-    (s) =>
-      `<path d="${pointsToSvgPath(s.outputPoints.map((p) => ({ x: p.x - minX, y: p.y - minY })))}"/>`
-  );
+  const local = (points: readonly Point[]) =>
+    pointsToSvgPath(points.map((p) => ({ x: p.x - minX, y: p.y - minY })));
+  const paths = shapes.map((s) => {
+    const holes = keepHoles ? (s.holes ?? []) : [];
+    if (holes.length === 0) return `<path d="${local(s.outputPoints)}"/>`;
+    // Even-odd, so the desktop reads each hole as an island whichever way it winds.
+    const d = [s.outputPoints, ...holes.map((hole) => hole.outputPoints)].map(local).join(' ');
+    return `<path d="${d}" fill-rule="evenodd"/>`;
+  });
   // Tag mm output so the desktop can skip its scale-confirm step.
   const unitsAttr = units === 'mm' ? ' data-scan-units="mm"' : '';
   return (

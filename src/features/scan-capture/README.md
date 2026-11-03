@@ -123,7 +123,10 @@ its header holds the method), searched inside a lattice's hull when one sized th
 the table around a sheet never reads as a tool. MediaPipe's **Interactive Segmenter**
 ("Magic Touch", on-device) then redraws each tool from a seed inside it (`interiorSeed`),
 and `refineScene.ts` keeps a redraw only where it agrees with the colour outline. A tap
-redraws, or adds, the tool under it. `scanFlow.ts` runs these passes.
+redraws, or adds, the tool under it. `scanFlow.ts` runs these passes. Holes are found from the
+same mask (background regions that never reach the frame's edge) and shown only
+while the review's Keep holes switch is on; a tool lying in a hole is flagged
+`inHole` and hidden with them.
 
 The model + WASM runtime are **lazy-imported** in `interactiveSegment.ts` (dynamic
 `import('@mediapipe/tasks-vision')`), so they never enter the eager scan bundle. Assets are

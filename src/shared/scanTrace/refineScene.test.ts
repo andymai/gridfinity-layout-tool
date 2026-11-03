@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { coverage, withRefinedShape } from './refineScene';
+import { coverage, nestShapes, withRefinedShape } from './refineScene';
 import type { SceneShape, SceneTrace } from './traceScene';
 import type { Point } from './types';
 
@@ -83,5 +83,83 @@ describe('withRefinedShape', () => {
       at: { x: 135, y: 95 },
     });
     expect(next.shapes).toEqual([big, small, missed]);
+  });
+});
+
+describe('withRefinedShape and holes', () => {
+  const ring = {
+    ...shape(square(10, 10, 90, 90)),
+    holes: [shape(square(30, 30, 70, 70))],
+  };
+  const nut: SceneShape = { ...shape(square(40, 40, 60, 60)), inHole: true };
+
+  it("keeps a tool resting in a redrawn ring's hole", () => {
+    const next = withRefinedShape(sceneOf(shape(square(10, 10, 90, 90)), nut), ring, {
+      kind: 'seeded',
+      index: 0,
+    });
+    expect(next.shapes).toEqual([ring, nut]);
+  });
+
+  it('keeps the in-hole mark on a tool redrawn where it lies', () => {
+    const redrawn = shape(square(41, 41, 59, 59));
+    const next = withRefinedShape(sceneOf(ring, nut), redrawn, { kind: 'seeded', index: 1 });
+    expect(next.shapes[1]).toEqual({ ...redrawn, inHole: true });
+  });
+
+  it("marks a tool a tap finds in a ring's hole as lying there", () => {
+    const found = shape(square(35, 35, 45, 45));
+    const next = withRefinedShape(sceneOf(ring), found, { kind: 'tapped', at: { x: 40, y: 40 } });
+    expect(next.shapes.find((s) => s.imagePoints === found.imagePoints)?.inHole).toBe(true);
+  });
+});
+
+describe('withRefinedShape around a ring', () => {
+  // An 80 × 80 ring with a 70 × 70 hole, and a 60 × 60 tool resting in it.
+  const ring = { ...shape(square(10, 10, 90, 90)), holes: [shape(square(15, 15, 85, 85))] };
+  const tool: SceneShape = { ...shape(square(20, 20, 80, 80)), inHole: true };
+
+  it('keeps the ring when the tool in its hole is redrawn', () => {
+    const redrawn = shape(square(21, 21, 79, 79));
+    const next = withRefinedShape(sceneOf(ring, tool), redrawn, { kind: 'seeded', index: 1 });
+    expect(next.shapes).toEqual([ring, { ...redrawn, inHole: true }]);
+  });
+
+  it("measures a ring's agreement on its material, not across its hole", () => {
+    // A redraw of the hole's contents is no redraw of the ring.
+    const next = withRefinedShape(sceneOf(ring, tool), shape(square(20, 20, 80, 80)), {
+      kind: 'seeded',
+      index: 0,
+    });
+    expect(next.shapes).toEqual([ring, tool]);
+  });
+});
+
+describe('nesting after a merge', () => {
+  it('marks a tool in the hole of a ring a tap added round it', () => {
+    const tool = shape(square(30, 30, 50, 50));
+    const ring = { ...shape(square(10, 10, 70, 70)), holes: [shape(square(20, 20, 60, 60))] };
+    const next = withRefinedShape(sceneOf(tool), ring, { kind: 'tapped', at: { x: 15, y: 15 } });
+    expect(next.shapes.find((s) => s.imagePoints === tool.imagePoints)?.inHole).toBe(true);
+  });
+
+  it('samples a thin ring finely enough to see it matches itself', () => {
+    const outer = square(0, 0, 100, 100);
+    const hole = square(2, 2, 98, 98);
+    expect(coverage(outer, outer, [hole], [hole])).toBeCloseTo(1, 1);
+  });
+
+  // Rings in rings: the middle one's centre is the inner one's hole, so it
+  // has to be judged from its own material.
+  it('keeps a ring in a ring marked only by the ring round it', () => {
+    const ring = (a: number, b: number, t: number): SceneShape => ({
+      ...shape(square(a, a, b, b)),
+      holes: [shape(square(a + t, a + t, b - t, b - t))],
+    });
+    const middle = { ...ring(20, 80, 5), inHole: true };
+    const inner = { ...ring(35, 65, 5), inHole: true };
+    const [m, i] = nestShapes([middle, inner]);
+    expect(m.inHole).toBeUndefined();
+    expect(i.inHole).toBe(true);
   });
 });

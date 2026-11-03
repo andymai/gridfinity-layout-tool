@@ -4257,6 +4257,8 @@
   "scan.review.remove": "Entfernen",
   "scan.review.removeTool": "Werkzeug {index} entfernen",
   "scan.review.undo": "Rückgängig",
+  "scan.review.keepHoles": "Löcher behalten",
+  "scan.review.keepHolesHint": "Lässt Kunststoff stehen, wo die Unterlage durch ein Werkzeug scheint, etwa in einem Ring. Eine Spiegelung kann wie ein Loch aussehen.",
   "scan.review.tapHint": "Tippe im Foto auf dein Werkzeug, wenn die markierte Form falsch ist.",
   "scan.sending": "Wird gesendet …",
   "scan.sent.another": "Weiteres scannen",

@@ -7,6 +7,7 @@ import {
   buildToolTraceSoft,
   withCardSize,
   withReference,
+  wideHoles,
   sameReference,
   type SceneReference,
 } from './traceScene';
@@ -293,6 +294,42 @@ describe('withCardSize on several tools', () => {
   });
 });
 
+describe('withReference and holes', () => {
+  // A cable coil with the card lying in its hole: re-sizing by that card
+  // must not take the coil for the card.
+  it('keeps a shape whose hole holds the new card', () => {
+    const card = {
+      corners: [
+        { x: 40, y: 40 },
+        { x: 60, y: 40 },
+        { x: 60, y: 55 },
+        { x: 40, y: 55 },
+      ] as const,
+      fitness: 1,
+    };
+    const ring = (pts: Point[]) => ({ imagePoints: pts, outputPoints: pts });
+    const coil = {
+      ...ring([
+        { x: 0, y: 0 },
+        { x: 100, y: 0 },
+        { x: 100, y: 100 },
+        { x: 0, y: 100 },
+      ]),
+      holes: [
+        ring([
+          { x: 20, y: 20 },
+          { x: 80, y: 20 },
+          { x: 80, y: 80 },
+          { x: 20, y: 80 },
+        ]),
+      ],
+    };
+    const scene = { shapes: [coil], units: 'px' as const, card: null, grid: null, reference: null };
+    const next = withReference(scene, { kind: 'card', card });
+    expect(next.shapes).toHaveLength(1);
+  });
+});
+
 describe('sameReference', () => {
   const card = (dx: number): SceneReference => ({
     kind: 'card',
@@ -337,5 +374,127 @@ describe('withReference', () => {
     const resized = withReference(withCardAsTool, traced.value.reference);
     expect(resized.units).toBe('mm');
     expect(resized.shapes).toEqual(traced.value.shapes);
+  });
+});
+
+describe('traceScene holes', () => {
+  // A 40 × 40 mm ring with a 24 × 24 mm hole, right of the card.
+  const RING_MM: Point[] = [
+    { x: 55, y: -20 },
+    { x: 95, y: -20 },
+    { x: 95, y: 20 },
+    { x: 55, y: 20 },
+  ];
+  const HOLE_MM: Point[] = [
+    { x: 63, y: -12 },
+    { x: 87, y: -12 },
+    { x: 87, y: 12 },
+    { x: 63, y: 12 },
+  ];
+  // A 12 × 12 mm piece resting in the hole, clear of the ring all round.
+  const NUT_MM: Point[] = [
+    { x: 69, y: -6 },
+    { x: 81, y: -6 },
+    { x: 81, y: 6 },
+    { x: 69, y: 6 },
+  ];
+
+  function renderRing(withNut: boolean): ImageDataLike {
+    const W = 360;
+    const H = 260;
+    const card = project(CARD_MM);
+    const ring = project(RING_MM);
+    const hole = project(HOLE_MM);
+    const nut = project(NUT_MM);
+    const data = new Uint8ClampedArray(W * H * 4);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const at = { x, y };
+        const inTool =
+          (pointInPolygon(at, ring) && !pointInPolygon(at, hole)) ||
+          (withNut && pointInPolygon(at, nut));
+        const v = pointInPolygon(at, card) ? 235 : inTool ? 150 : 15;
+        const o = (y * W + x) * 4;
+        data[o] = data[o + 1] = data[o + 2] = v;
+        data[o + 3] = 255;
+      }
+    }
+    return { width: W, height: H, data };
+  }
+
+  it('traces a ring with its hole, both to true millimetres', () => {
+    const result = traceScene(renderRing(false), { smooth: false });
+    if (!isOk(result)) throw new Error('fixture failed');
+    const [ring] = result.value.shapes;
+    expect(ring.holes).toHaveLength(1);
+    const outer = bbox(ring.outputPoints);
+    const hole = bbox(ring.holes?.[0].outputPoints ?? []);
+    expect(Math.abs(outer.w - 40)).toBeLessThan(2.5);
+    expect(Math.abs(hole.w - 24)).toBeLessThan(2.5);
+    expect(Math.abs(hole.h - 24)).toBeLessThan(2.5);
+  });
+
+  // No reference, so widths are pixels: a 5px slit, the size of a glint on a
+  // shiny tool, is too narrow to leave an island; a 30px window is not.
+  it('drops a hole too narrow to leave an island standing', () => {
+    const W = 200;
+    const H = 200;
+    const data = new Uint8ClampedArray(W * H * 4);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const tool = x >= 20 && x < 180 && y >= 20 && y < 180;
+        const slit = x >= 40 && x < 45 && y >= 40 && y < 160;
+        const window = x >= 100 && x < 130 && y >= 80 && y < 110;
+        const v = tool && !slit && !window ? 40 : 220;
+        const o = (y * W + x) * 4;
+        data[o] = data[o + 1] = data[o + 2] = v;
+        data[o + 3] = 255;
+      }
+    }
+    const result = traceScene({ width: W, height: H, data }, { smooth: false });
+    if (!isOk(result)) throw new Error('fixture failed');
+    // Traced, both: judged where used, so a card correction can re-judge them.
+    expect(result.value.shapes[0].holes).toHaveLength(2);
+    const holes = wideHoles(result.value.shapes[0], result.value.units);
+    expect(holes).toHaveLength(1);
+    expect(bbox(holes[0].outputPoints).w).toBeGreaterThan(25);
+  });
+
+  it('flags a tool resting in the hole rather than dropping it', () => {
+    const result = traceScene(renderRing(true), { smooth: false });
+    if (!isOk(result)) throw new Error('fixture failed');
+    const flags = result.value.shapes.map((s) => s.inHole === true);
+    expect(flags).toEqual([false, true]);
+  });
+
+  it('re-sizes the hole with the outline when the card is measured', () => {
+    const result = traceScene(renderRing(false), { smooth: false });
+    if (!isOk(result)) throw new Error('fixture failed');
+    const longer = withCardSize(result.value, CARD_WIDTH_MM * 1.1, CARD_HEIGHT_MM * 1.1);
+    const before = bbox(result.value.shapes[0].holes?.[0].outputPoints ?? []);
+    const after = bbox(longer.shapes[0].holes?.[0].outputPoints ?? []);
+    expect(after.w / before.w).toBeCloseTo(1.1, 1);
+  });
+});
+
+describe('buildToolTraceSoft holes', () => {
+  // A thin ring round a solid piece: the ring encloses more, the piece holds
+  // more pixels, and the ring's hole must come with the ring's outline.
+  it('takes the holes of the piece whose outline it traced', () => {
+    const W = 120;
+    const H = 120;
+    const data = new Float32Array(W * H);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const ring =
+          x >= 10 && x < 110 && y >= 10 && y < 110 && !(x >= 14 && x < 106 && y >= 14 && y < 106);
+        const piece = x >= 20 && x < 100 && y >= 20 && y < 100;
+        data[y * W + x] = ring || piece ? 1 : 0;
+      }
+    }
+    const result = buildToolTraceSoft({ width: W, height: H, data }, null, { smooth: false });
+    if (!isOk(result)) throw new Error('fixture failed');
+    expect(bbox(result.value.shapes[0].imagePoints).w).toBeGreaterThan(95);
+    expect(result.value.shapes[0].holes).toHaveLength(1);
   });
 });

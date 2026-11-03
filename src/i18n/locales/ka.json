@@ -1392,6 +1392,8 @@
   "scan.review.remove": "წაშლა",
   "scan.review.removeTool": "ხელსაწყო {index}-ის წაშლა",
   "scan.review.undo": "გაუქმება",
+  "scan.review.keepHoles": "ხვრელების შენარჩუნება",
+  "scan.review.keepHolesHint": "ტოვებს პლასტმასს იქ, სადაც ხელსაწყოში ზედაპირი ჩანს, მაგალითად რგოლის შიგნით. ანარეკლი შეიძლება ხვრელს ჰგავდეს.",
   "scan.retake": "ხელახლა გადაღება",
   "scan.use": "ამ კონტურის გამოყენება",
   "scan.useMany": "ამ {count} კონტურის გამოყენება",

@@ -37,7 +37,7 @@ import type { LatticeFit } from './latticeFit';
 import type { CellQuad } from './latticeBlobs';
 import { segmentTools } from './colorSegment';
 import { findToolBlobs, interiorSeed, pointInPolygon } from './toolBlobs';
-import { convexHull } from './minAreaRect';
+import { convexHull, minAreaRect } from './minAreaRect';
 
 export interface SceneCard {
   readonly corners: readonly [Point, Point, Point, Point];
@@ -60,11 +60,43 @@ export type SceneReference =
   | { readonly kind: SceneGridKind; readonly fit: LatticeFit }
   | { readonly kind: 'card'; readonly card: SceneCard };
 
-export interface SceneShape {
-  /** Tool outline in image pixels — for overlaying on the photo. */
+export interface SceneRing {
+  /** In image pixels — for overlaying on the photo. */
   readonly imagePoints: readonly Point[];
-  /** Tool outline to emit: millimetres if a reference was found, else pixels. */
+  /** To emit: millimetres if a reference was found, else pixels. */
   readonly outputPoints: readonly Point[];
+}
+
+export interface SceneShape extends SceneRing {
+  /** Where the surface shows through the tool, such as inside a ring. */
+  readonly holes?: readonly SceneRing[];
+  /** Lies in another shape's hole: a tool of its own only while holes are kept. */
+  readonly inHole?: boolean;
+}
+
+/** Narrowest hole kept, across its short axis, once the reference gives millimetres. */
+const MIN_HOLE_MM = 2.5;
+/** The same in pixels, for a photo with no reference. */
+const MIN_HOLE_WIDTH_PX = 8;
+
+/**
+ * The holes of `shape` wide enough to leave an island standing. A narrower
+ * one is no use to a pocket, and a glint on a shiny tool is usually one.
+ * Judged where it is used, not where it is traced, so a corrected card size
+ * re-judges every hole.
+ */
+export function wideHoles(shape: SceneShape, units: 'mm' | 'px'): SceneRing[] {
+  const least = units === 'mm' ? MIN_HOLE_MM : MIN_HOLE_WIDTH_PX;
+  return (shape.holes ?? []).filter(
+    (hole) => (minAreaRect(hole.outputPoints)?.height ?? 0) >= least
+  );
+}
+
+/** A shape still in image pixels, before the reference sizes it. */
+interface Outline {
+  readonly imagePoints: readonly Point[];
+  readonly holes: readonly (readonly Point[])[];
+  readonly inHole: boolean;
 }
 
 export interface SceneTrace {
@@ -192,31 +224,39 @@ function referenceToMm(
  * manufactured tool's outline, and rectify through the reference's homography.
  */
 function finishTrace(
-  rawContours: readonly (readonly Point[])[],
+  raw: readonly {
+    readonly contour: readonly Point[];
+    readonly holes?: readonly (readonly Point[])[];
+    readonly inHole?: boolean;
+  }[],
   width: number,
   height: number,
   reference: SceneReference | null,
   options: SceneTraceOptions
 ): Result<SceneTrace, TraceError> {
   const tolerance = options.simplifyTolerance ?? defaultTolerance(width, height);
-  const outlines: Point[][] = [];
-  for (const rawContour of rawContours) {
+  const smooth = (ring: readonly Point[]): Point[] =>
+    options.smooth === false
+      ? simplifyRdp(ring, tolerance)
+      : fitSmoothPolygon(ring, (tolerance * 0.5) ** 2);
+  const outlines: Outline[] = [];
+  for (const { contour: rawContour, holes = [], inHole = false } of raw) {
     // The curve fit reads the RAW contour, not the simplified one. Its error
     // metric only samples the points it is given, so fitting the RDP polygon lets
     // a cubic bow far outside a long straight edge while scoring a perfect fit at
     // the two endpoints that edge was reduced to — a silent OUTWARD offset that
     // measured ~4.5mm on a 68mm tool, dwarfing everything the size reference
     // contributes. Against the dense contour the tolerance means what it says.
-    let imagePoints =
-      options.smooth === false
-        ? simplifyRdp(rawContour, tolerance)
-        : fitSmoothPolygon(rawContour, (tolerance * 0.5) ** 2);
+    let imagePoints = smooth(rawContour);
     // Clean up the slight lopsidedness of a symmetric tool (controller, pliers).
     // Gated internally on a symmetry score, so an asymmetric tool is untouched.
     if (options.smooth !== false && options.symmetrize !== false) {
       imagePoints = symmetrizeIfRegular(imagePoints);
     }
-    if (imagePoints.length >= 3 && polygonArea(imagePoints) >= 1) outlines.push(imagePoints);
+    const kept = holes.map(smooth).filter((h) => h.length >= 3 && polygonArea(h) >= 1);
+    if (imagePoints.length >= 3 && polygonArea(imagePoints) >= 1) {
+      outlines.push({ imagePoints, holes: kept, inHole });
+    }
   }
   if (outlines.length === 0) {
     return err({ code: 'DEGENERATE', detail: 'Outline collapsed to a line' });
@@ -227,14 +267,19 @@ function finishTrace(
 
 /** Outlines in image pixels, framed and sized by `reference`. */
 function sized(
-  outlines: readonly (readonly Point[])[],
+  outlines: readonly Outline[],
   reference: SceneReference | null,
   options: SceneTraceOptions
 ): SceneTrace {
   const toMm = referenceToMm(reference, options);
-  const shapes = outlines.map((imagePoints) => ({
+  const ring = (imagePoints: readonly Point[]): SceneRing => ({
     imagePoints,
     outputPoints: toMm ? toMm(imagePoints) : imagePoints,
+  });
+  const shapes = outlines.map(({ imagePoints, holes, inHole }): SceneShape => ({
+    ...ring(imagePoints),
+    ...(holes.length > 0 ? { holes: holes.map(ring) } : {}),
+    ...(inHole ? { inHole: true } : {}),
   }));
   const lattice = reference && reference.kind !== 'card' ? reference : null;
   return {
@@ -265,12 +310,22 @@ export function withReference(
 ): SceneTrace {
   const quads = referenceQuads(reference);
   const outlines = scene.shapes
-    .map((shape) => shape.imagePoints)
-    .filter((points) => {
-      // In pixels: a 1 × 1 frame leaves the seed unnormalised.
-      const seed = interiorSeed(points, 1, 1);
+    .filter(({ imagePoints, holes }) => {
+      // In pixels: a 1 × 1 frame leaves the seed unnormalised. On the material,
+      // so a card lying in a coil's hole does not take the coil with it.
+      const seed = interiorSeed(
+        imagePoints,
+        1,
+        1,
+        (holes ?? []).map((h) => h.imagePoints)
+      );
       return !quads.some((quad) => pointInPolygon(seed, quad));
-    });
+    })
+    .map((shape) => ({
+      imagePoints: shape.imagePoints,
+      holes: (shape.holes ?? []).map((h) => h.imagePoints),
+      inHole: shape.inHole === true,
+    }));
   return sized(outlines, reference, options);
 }
 
@@ -293,6 +348,14 @@ export function withCardSize(scene: SceneTrace, widthMm: number, heightMm: numbe
     shapes: scene.shapes.map((shape) => ({
       ...shape,
       outputPoints: rectifyPoints(shape.imagePoints, h),
+      ...(shape.holes
+        ? {
+            holes: shape.holes.map((hole) => ({
+              ...hole,
+              outputPoints: rectifyPoints(hole.imagePoints, h),
+            })),
+          }
+        : {}),
     })),
     units: 'mm',
   };
@@ -315,7 +378,17 @@ export function buildToolTraceSoft(
   if (contour.length < 3 || polygonArea(contour) < minArea) {
     return err({ code: 'NO_OBJECT', detail: 'No tool found' });
   }
-  return finishTrace([contour], width, height, reference, options);
+  // The outline comes sub-pixel from the confidence field; its holes from the
+  // same field thresholded, as the colour pass finds them. The contour is the
+  // loop enclosing most, so the holes come from the piece whose outline does,
+  // not the one with most pixels: a thin ring round a solid piece has fewer.
+  const blobs = findToolBlobs(binarize(toolSoft), minArea);
+  const owner = blobs.reduce<(typeof blobs)[number] | undefined>(
+    (best, b) => (!best || polygonArea(b.contour) > polygonArea(best.contour) ? b : best),
+    undefined
+  );
+  const holes = owner?.holes ?? [];
+  return finishTrace([{ contour, holes }], width, height, reference, options);
 }
 
 /**
@@ -354,13 +427,7 @@ export function traceScene(
   });
   const blobs = findToolBlobs(toolMask, options.minToolAreaPx ?? defaultMinArea(width, height));
   if (blobs.length === 0) return err({ code: 'NO_OBJECT', detail: 'No tool found' });
-  return finishTrace(
-    blobs.map((blob) => blob.contour),
-    width,
-    height,
-    reference,
-    options
-  );
+  return finishTrace(blobs, width, height, reference, options);
 }
 
 /**

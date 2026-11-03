@@ -4257,6 +4257,8 @@
   "scan.review.remove": "Remover",
   "scan.review.removeTool": "Remover ferramenta {index}",
   "scan.review.undo": "Desfazer",
+  "scan.review.keepHoles": "Manter furos",
+  "scan.review.keepHolesHint": "Deixa plástico onde a superfície aparece através da ferramenta, como dentro de um anel. Um reflexo pode parecer um furo.",
   "scan.review.tapHint": "Toque na sua ferramenta na foto se a forma destacada estiver errada.",
   "scan.sending": "Enviando…",
   "scan.sent.another": "Escanear outra",

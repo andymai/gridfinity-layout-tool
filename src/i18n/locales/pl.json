@@ -4257,6 +4257,8 @@
   "scan.review.remove": "Usuń",
   "scan.review.removeTool": "Usuń narzędzie {index}",
   "scan.review.undo": "Cofnij",
+  "scan.review.keepHoles": "Zachowaj otwory",
+  "scan.review.keepHolesHint": "Zostawia plastik tam, gdzie przez narzędzie widać podłoże, np. wewnątrz pierścienia. Odbicie może wyglądać jak otwór.",
   "scan.review.tapHint": "Dotknij narzędzia na zdjęciu, jeśli podświetlony kształt jest błędny.",
   "scan.sending": "Wysyłanie…",
   "scan.sent.another": "Zeskanuj kolejne",
