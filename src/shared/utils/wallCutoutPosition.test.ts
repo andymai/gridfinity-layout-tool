@@ -6,6 +6,7 @@ import {
   resolveCutoutCornerRadii,
   resolveCutoutDrop,
   resolveCutoutSpan,
+  cutoutSide,
   safeCutoutCornerRadii,
   shoulderBlend,
 } from './wallCutoutPosition';
@@ -279,5 +280,28 @@ describe('shoulderBlend', () => {
     expect(b.rim[0] - SIDE_AT_RIM).toBeLessThan(R);
     expect(b.rim[0] - SIDE_AT_RIM).toBeGreaterThan(0);
     expect(RIM - b.side[1]).toBeLessThan(R);
+  });
+});
+
+describe('cutoutSide', () => {
+  const CUT = 40;
+  const DROP = 30;
+  const CLEARANCE = 2;
+
+  it('keeps a u-shape vertical at half the span', () => {
+    expect(cutoutSide('u-shape', CUT, DROP, CLEARANCE)).toEqual({
+      bottomHalfWidth: CUT / 2,
+      lean: 0,
+      halfWidthAtRim: CUT / 2,
+    });
+  });
+
+  it("runs a funnel from the profile's top corner to 60% of the span at the floor", () => {
+    const side = cutoutSide('funnel', CUT, DROP, CLEARANCE);
+    const halfWidthAt = (heightAboveRim: number): number =>
+      side.halfWidthAtRim + side.lean * heightAboveRim;
+    expect(halfWidthAt(CLEARANCE)).toBeCloseTo(CUT / 2, 12);
+    expect(halfWidthAt(-DROP)).toBeCloseTo(CUT * 0.3, 12);
+    expect(side.bottomHalfWidth).toBeCloseTo(CUT * 0.3, 12);
   });
 });

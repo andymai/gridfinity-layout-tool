@@ -261,6 +261,36 @@ export function safeCutoutCornerRadii(
   };
 }
 
+/** A funnel's floor spans this fraction of its opening. */
+export const FUNNEL_TAPER_RATIO = 0.6;
+
+/** The straight run of a u-shape's or funnel's side, half-widths from the cut's centre. */
+export interface CutoutSide {
+  readonly bottomHalfWidth: number;
+  /** Outboard travel per mm of rise: 0 for a u-shape. */
+  readonly lean: number;
+  /** Where the side, extended, meets the rim. */
+  readonly halfWidthAtRim: number;
+}
+
+/**
+ * The side runs from the profile's top corner, `rimClearance` above the rim at
+ * half the span, down to the floor `drop` below the rim. A top round-over
+ * rounds the shoulder off this line rather than moving it, so the taper below
+ * a rounded shoulder is the taper below a square one.
+ */
+export function cutoutSide(
+  shape: 'u-shape' | 'funnel',
+  cutWidth: number,
+  drop: number,
+  rimClearance: number
+): CutoutSide {
+  const topHalfWidth = cutWidth / 2;
+  const bottomHalfWidth = shape === 'funnel' ? topHalfWidth * FUNNEL_TAPER_RATIO : topHalfWidth;
+  const lean = (topHalfWidth - bottomHalfWidth) / (drop + rimClearance);
+  return { bottomHalfWidth, lean, halfWidthAtRim: topHalfWidth - lean * rimClearance };
+}
+
 type Point = readonly [number, number];
 
 /**

@@ -20,6 +20,7 @@ import {
   UNBOUNDED_SLACK,
   computeCutoutCenter,
   cornerSlackFor,
+  cutoutSide,
   resolveCutoutCornerRadii,
   resolveCutoutDrop,
   resolveCutoutSpan,
@@ -37,9 +38,6 @@ export {
   cornerSlackFor,
 } from '@/shared/utils/wallCutoutPosition';
 export type { CornerSlack } from '@/shared/utils/wallCutoutPosition';
-
-/** Funnel taper ratio: bottom width is 60% of top width. */
-const FUNNEL_TAPER_RATIO = 0.6;
 
 /**
  * Build a 2D cutout profile (Drawing) for the given shape.
@@ -110,14 +108,10 @@ export function buildCutoutProfile(
       // U-shape and funnel are the same pen — a straight-sided u-shape is the
       // degenerate funnel with no taper.
       const topHW = cutWidth / 2;
-      const bottomHW = cutoutShape === 'funnel' ? (cutWidth * FUNNEL_TAPER_RATIO) / 2 : topHW;
-      // The side runs between the profile's top and bottom corners whatever
-      // the round-over, so a radius rounds the shoulder without changing the
-      // taper the user sees below it.
-      const lean = (topHW - bottomHW) / (topY - bottomY);
-      const sideAtRim = topHW - lean * (topY - rimY);
-      const right = blendOrSquare(sideAtRim, rimY, lean, safe.topRight);
-      const left = blendOrSquare(sideAtRim, rimY, lean, safe.topLeft);
+      const side = cutoutSide(cutoutShape, cutWidth, rimY - bottomY, topY - rimY);
+      const bottomHW = side.bottomHalfWidth;
+      const right = blendOrSquare(side.halfWidthAtRim, rimY, side.lean, safe.topRight);
+      const left = blendOrSquare(side.halfWidthAtRim, rimY, side.lean, safe.topLeft);
 
       let pen = draw([-(left?.rim[0] ?? topHW), topY]).lineTo([right?.rim[0] ?? topHW, topY]);
       pen = penTopFlare(pen, right, 1);
