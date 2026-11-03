@@ -67,6 +67,21 @@ describe('SliderInput', () => {
     expect(onChange).toHaveBeenCalledWith(9);
   });
 
+  it('reports a finished change once, typed or stepped', () => {
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    render(<SliderInput {...defaultProps} value={5} onChange={onChange} onCommit={onCommit} />);
+
+    fireEvent.click(screen.getByText('5'));
+    const input = screen.getByRole('textbox');
+    fireEvent.change(input, { target: { value: '7' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onCommit).toHaveBeenCalledWith(7);
+
+    fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
+    expect(onCommit).toHaveBeenCalledTimes(2);
+  });
+
   it('cancels editing on Escape key', () => {
     const onChange = vi.fn();
     render(<SliderInput {...defaultProps} value={5} onChange={onChange} />);

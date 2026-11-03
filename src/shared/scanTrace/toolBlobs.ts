@@ -113,7 +113,11 @@ function traceRegion(labels: Int32Array, width: number, region: Region): Point[]
 }
 
 /** The mask's tools, largest first. */
-export function findToolBlobs(mask: Mask, minAreaPx: number): ToolBlob[] {
+export function findToolBlobs(
+  mask: Mask,
+  minAreaPx: number,
+  holeShare: number = HOLE_SHARE
+): ToolBlob[] {
   const { width, height } = mask;
   const { labels, components } = labelComponents(mask);
   const largest = components.reduce((m, c) => Math.max(m, c.area), 0);
@@ -143,7 +147,7 @@ export function findToolBlobs(mask: Mask, minAreaPx: number): ToolBlob[] {
     if (background.open.has(region.label)) continue;
     const owner = slot.get(labels[(region.start.y - 1) * width + region.start.x]);
     if (owner === undefined) continue;
-    if (region.area < Math.max(MIN_HOLE_PX, keep[owner].area * HOLE_SHARE)) continue;
+    if (region.area < Math.max(MIN_HOLE_PX, keep[owner].area * holeShare)) continue;
     holes[owner].push(traceRegion(background.labels, width, region));
   }
 

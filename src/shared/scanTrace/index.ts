@@ -8,6 +8,7 @@ export {
   withCardSize,
   withReference,
   wideHoles,
+  referenceToImage,
 } from './traceScene';
 export { nestShapes, withRefinedShape, type Refinement } from './refineScene';
 export { interiorSeed, pointInPolygon } from './toolBlobs';

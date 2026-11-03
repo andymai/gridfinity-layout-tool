@@ -121,6 +121,13 @@ export function createHistorySlice(set: Set, get: Get) {
       });
     },
 
+    invalidateGeometry: () => {
+      setPendingMeshCache(null);
+      set((state) => {
+        state.generation.epoch += 1;
+      });
+    },
+
     // Generation actions
     setGenerationStatus: (status: GenerationStatus) => {
       set((state) => {

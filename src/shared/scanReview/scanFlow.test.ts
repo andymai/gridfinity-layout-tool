@@ -4,6 +4,7 @@ import { err, ok } from '@/core/result';
 import type { SceneReference, SceneShape, SceneTrace } from '@/shared/scanTrace';
 import {
   MAX_AUTO_REFINE,
+  svgFromCleaned,
   svgFromShapes,
   traceAll,
   traceTap,
@@ -169,6 +170,39 @@ describe('traceTap', () => {
 
     expect(mockTrace).not.toHaveBeenCalled();
     expect(next.ok && next.value.shapes).toHaveLength(2);
+  });
+});
+
+describe('svgFromCleaned', () => {
+  const corner = (x: number, y: number) => ({
+    x,
+    y,
+    handleIn: null,
+    handleOut: null,
+    symmetric: false,
+  });
+
+  it('writes a curved step as a cubic and a straight one as a line', () => {
+    const path = [
+      { ...corner(0, 0), handleOut: { dx: 5, dy: 0 } },
+      { ...corner(10, 10), handleIn: { dx: 0, dy: -5 } },
+      corner(0, 10),
+    ];
+    const svg = svgFromCleaned([{ path, holes: [] }]);
+    expect(svg).toContain('d="M 0 0 C 5 0 10 5 10 10 L 0 10 Z"');
+    expect(svg).toContain('data-scan-units="mm"');
+  });
+
+  it('writes islands as even-odd subpaths', () => {
+    const square = (x0: number, x1: number) => [
+      corner(x0, x0),
+      corner(x1, x0),
+      corner(x1, x1),
+      corner(x0, x1),
+    ];
+    const svg = svgFromCleaned([{ path: square(0, 30), holes: [square(10, 20)] }]);
+    expect(svg).toContain('fill-rule="evenodd"');
+    expect(svg.match(/M /g)).toHaveLength(2);
   });
 });
 

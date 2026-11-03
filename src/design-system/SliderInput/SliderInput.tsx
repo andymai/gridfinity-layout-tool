@@ -19,6 +19,11 @@ export interface SliderInputProps {
   value: number;
   /** Called when value changes */
   onChange: (value: number) => void;
+  /**
+   * Called once a change is finished: a drag released, a key step, or a typed
+   * value accepted. Use it to close one undo step over a whole drag.
+   */
+  onCommit?: (value: number) => void;
   /** Minimum value */
   min: number;
   /** Maximum value */
@@ -41,6 +46,7 @@ export function SliderInput({
   label,
   value,
   onChange,
+  onCommit,
   min,
   max,
   step = 1,
@@ -85,7 +91,10 @@ export function SliderInput({
         <EditableValueBadge
           label={label}
           value={value}
-          onChange={onChange}
+          onChange={(typed) => {
+            onChange(typed);
+            onCommit?.(typed);
+          }}
           min={min}
           max={max}
           step={step}
@@ -106,6 +115,7 @@ export function SliderInput({
       <Slider
         value={value}
         onChange={onChange}
+        onCommit={onCommit}
         min={min}
         max={max}
         step={step}

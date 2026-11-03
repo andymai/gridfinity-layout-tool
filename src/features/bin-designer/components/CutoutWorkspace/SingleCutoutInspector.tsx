@@ -32,6 +32,7 @@ import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutKnifeControls } from './CutoutKnifeControls';
 import { CutoutOpenSidesControls } from './CutoutOpenSidesControls';
 import { CutoutEngraveLabelControls } from './CutoutEngraveLabelControls';
+import { CutoutOutlineSection } from '../OutlineCleanup/CutoutOutlineSection';
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
 import { Collapsible, SliderInput, NumberField } from '@/design-system';
 
@@ -321,6 +322,17 @@ export function SingleCutoutInspector({
               )}
             </div>
           </Collapsible>
+        </div>
+      )}
+
+      {cutout.shape === 'path' && (
+        <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
+          <CutoutOutlineSection
+            key={cutout.id}
+            cutout={cutout}
+            disabled={disabled}
+            onUpdate={onUpdate}
+          />
         </div>
       )}
 

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { err, isOk } from '@/core/result';
 import { paperReference, rulerReference, PAPER_SIZES, MIN_RULER_PX } from './manualReference';
 import {
+  referenceToImage,
   sameReference,
   traceScene,
   withReference,
@@ -206,6 +207,27 @@ describe('paperReference', () => {
     const { w, h } = size(traced.value.shapes[0].outputPoints);
     expect(Math.abs(w - 60)).toBeLessThan(3);
     expect(Math.abs(h - 25)).toBeLessThan(3);
+  });
+});
+
+describe('referenceToImage', () => {
+  // Sized, then mapped back: a tool's millimetre outline lands on its pixels.
+  it('takes an outline in millimetres back onto the photo', () => {
+    const ruler = rulerReference({ x: 10, y: 10 }, { x: 210, y: 10 }, 100);
+    const paper = sheetOf(SHEET_PX, 'a4');
+    const tool = TOOL_MM.map(cam);
+    for (const reference of [ruler, paper]) {
+      const sized = withReference(sceneOf(tool), reference).shapes[0].outputPoints;
+      const back = referenceToImage(reference)?.(sized) ?? [];
+      back.forEach((p, i) => {
+        expect(p.x).toBeCloseTo(tool[i].x, 6);
+        expect(p.y).toBeCloseTo(tool[i].y, 6);
+      });
+    }
+  });
+
+  it('has nothing to map with no reference', () => {
+    expect(referenceToImage(null)).toBeNull();
   });
 });
 
