@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { err, ok } from '@/core/result';
+import { err, isOk, ok } from '@/core/result';
 import type * as ScanTrace from '@/shared/scanTrace';
 import {
   paperReference,
@@ -47,7 +47,7 @@ const box = (x0: number, y0: number, x1: number, y1: number): SceneShape => {
 const TOOLS = [box(10, 10, 50, 40), box(100, 20, 150, 80)];
 const SCENE: SceneTrace = { shapes: TOOLS, units: 'px', card: null, grid: null, reference: null };
 const RULER = rulerReference({ x: 0, y: 0 }, { x: 100, y: 0 }, 50);
-const PAPER = paperReference(
+const MARKED = paperReference(
   [
     { x: 5, y: 5 },
     { x: 195, y: 5 },
@@ -57,6 +57,7 @@ const PAPER = paperReference(
   'a4',
   { width: W, height: H }
 );
+const PAPER = isOk(MARKED) ? MARKED.value : null;
 
 const photo = () => new File(['x'], 'tools.jpg', { type: 'image/jpeg' });
 

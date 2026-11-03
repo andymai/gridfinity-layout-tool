@@ -1039,6 +1039,7 @@
   "binDesigner.cutouts.traceView.paper.hint": "Kliknij cztery rogi kartki. Przeciągnij róg, aby go poprawić.",
   "binDesigner.cutouts.traceView.paper.count": "Zaznaczono {count} z 4 rogów",
   "binDesigner.cutouts.traceView.paper.invalid": "Te rogi nie tworzą kartki. Przeciągnij każdy na róg papieru.",
+  "binDesigner.cutouts.traceView.paper.tooSteep": "Pod tym kątem nie da się odróżnić dłuższego boku kartki od krótszego. Zrób zdjęcie bardziej z góry albo narysuj linijkę.",
   "binDesigner.cutouts.traceView.tools.heading": "Narzędzia",
   "binDesigner.cutouts.traceView.tools.none": "Nie znaleziono jeszcze narzędzi. Kliknij narzędzie na zdjęciu albo narysuj wokół nich obszar.",
   "binDesigner.cutouts.traceView.tools.tapHint": "Kliknij narzędzie, aby ponownie narysować jego obrys, albo takie, które zostało pominięte.",

@@ -4,6 +4,7 @@
  * apart, or the four corners of a sheet of paper.
  */
 
+import { err, ok, type Result } from '@/core/result';
 import type { Point } from './types';
 import type { SceneReference } from './traceScene';
 import { solveHomography } from './perspective';
@@ -24,15 +25,14 @@ const MIN_PAPER_AREA_PX = 2500;
 
 const finite = (p: Point): boolean => Number.isFinite(p.x) && Number.isFinite(p.y);
 
-/**
- * The lens assumed when the corners cannot reveal it, as a share of the
- * photo's longer side: about a phone's main camera. It decides the sheet's
- * sides only for a shot tilted on one axis alone, and steeply.
- */
-const ASSUMED_FOCAL_SHARE = 0.75;
-
 /** Focal lengths outside this share of the photo's longer side are a misread. */
 const FOCAL_SHARE_RANGE = [0.25, 4] as const;
+
+/**
+ * Lenses a photo could come from, as a share of its longer side: an
+ * ultra-wide to a short telephoto.
+ */
+const LENS_SHARE_RANGE = [0.4, 1.5] as const;
 
 const UNIT_SQUARE: [Point, Point, Point, Point] = [
   { x: 0, y: 0 },
@@ -42,32 +42,38 @@ const UNIT_SQUARE: [Point, Point, Point, Point] = [
 ];
 
 /**
- * The marked rectangle's true TL→TR side over its TL→BL side, taking the
- * principal point at the photo's middle. The two sides are the homography's
- * first two columns, measured through the camera; the camera's focal length
- * comes from their being square to each other, or, when an edge pair stays
- * parallel in the photo and gives no answer, from a typical lens.
+ * Whether the marked sheet's TL→TR side is its long one, taking the principal
+ * point at the photo's middle, or null when the photo cannot say.
+ *
+ * The two sides are the homography's first two columns, measured through the
+ * camera. The focal length comes from their being square to each other. When
+ * an edge pair stays parallel in the photo that gives no answer, and the
+ * sides are compared at both ends of the lens range instead: a shot tilted
+ * gently reads the same through any lens, while one tilted steeply on that
+ * one axis can read either way, and guessing would stretch every tool.
  */
-function sideRatio(
+function longSideFirst(
   corners: readonly [Point, Point, Point, Point],
   frame: { readonly width: number; readonly height: number }
-): number | null {
+): boolean | null {
+  const [tl, tr, , bl] = corners;
+  const looks = Math.hypot(tr.x - tl.x, tr.y - tl.y) >= Math.hypot(bl.x - tl.x, bl.y - tl.y);
   const h = solveHomography(UNIT_SQUARE, corners);
-  if (!h) return null;
+  if (!h) return looks;
   const cx = frame.width / 2;
   const cy = frame.height / 2;
   const long = Math.max(frame.width, frame.height);
   const u = (col: 0 | 1) => [h[col] - cx * h[6 + col], h[3 + col] - cy * h[6 + col], h[6 + col]];
   const [a, b] = [u(0), u(1)];
+  const norm = (v: number[], f2: number) => (v[0] ** 2 + v[1] ** 2) / f2 + v[2] ** 2;
+  const wideAt = (f2: number) => norm(a, f2) >= norm(b, f2);
   const solved = -(a[0] * b[0] + a[1] * b[1]) / (a[2] * b[2]);
   const [lo, hi] = FOCAL_SHARE_RANGE;
-  const f2 =
-    Number.isFinite(solved) && solved >= (lo * long) ** 2 && solved <= (hi * long) ** 2
-      ? solved
-      : (ASSUMED_FOCAL_SHARE * long) ** 2;
-  const norm = (v: number[]) => (v[0] ** 2 + v[1] ** 2) / f2 + v[2] ** 2;
-  const ratio = Math.sqrt(norm(a) / norm(b));
-  return Number.isFinite(ratio) && ratio > 0 ? ratio : null;
+  if (Number.isFinite(solved) && solved >= (lo * long) ** 2 && solved <= (hi * long) ** 2) {
+    return wideAt(solved);
+  }
+  const [wide, tele] = LENS_SHARE_RANGE.map((share) => wideAt((share * long) ** 2));
+  return wide === tele ? wide : null;
 }
 
 /** A ruler from `a` to `b` that is `lengthMm` long, or null when either is unusable. */
@@ -98,9 +104,14 @@ function clockwise(points: readonly Point[]): [Point, Point, Point, Point] {
 }
 
 /**
- * The sheet whose corners are `points` in a photo `frame` wide and high, or
- * null when they do not bound one: not four finite points, folded in on
- * itself, or too small to measure by.
+ * Why marked corners make no sheet: they do not bound one (not four finite
+ * points, folded in on themselves, or too small to measure by), or the photo
+ * is too steep to tell the sheet's long side from its short one.
+ */
+export type PaperError = 'notSheet' | 'tooSteep';
+
+/**
+ * The sheet whose corners are `points` in a photo `frame` wide and high.
  *
  * Which marked edge is the sheet's long side comes from the camera's view of
  * the quad, not from how long each edge looks: tilted far enough, the long
@@ -111,8 +122,8 @@ export function paperReference(
   points: readonly Point[],
   size: PaperSize,
   frame: { readonly width: number; readonly height: number }
-): SceneReference | null {
-  if (points.length !== 4 || !points.every(finite)) return null;
+): Result<SceneReference, PaperError> {
+  if (points.length !== 4 || !points.every(finite)) return err('notSheet');
   const corners = clockwise(points);
   let area = 0;
   for (let i = 0; i < 4; i++) {
@@ -120,18 +131,15 @@ export function paperReference(
     const q = corners[(i + 1) % 4];
     const r = corners[(i + 2) % 4];
     // Every turn the same way round, or the quad is dented and no sheet.
-    if ((q.x - p.x) * (r.y - q.y) - (q.y - p.y) * (r.x - q.x) <= 0) return null;
+    if ((q.x - p.x) * (r.y - q.y) - (q.y - p.y) * (r.x - q.x) <= 0) return err('notSheet');
     area += p.x * q.y - q.x * p.y;
   }
-  if (area / 2 < MIN_PAPER_AREA_PX) return null;
+  if (area / 2 < MIN_PAPER_AREA_PX) return err('notSheet');
+  const wide = longSideFirst(corners, frame);
+  if (wide === null) return err('tooSteep');
   const { longMm, shortMm } = PAPER_SIZES[size];
-  const [tl, tr, , bl] = corners;
-  const ratio =
-    sideRatio(corners, frame) ??
-    Math.hypot(tr.x - tl.x, tr.y - tl.y) / Math.hypot(bl.x - tl.x, bl.y - tl.y);
-  const wide = ratio >= 1;
-  return {
+  return ok({
     kind: 'paper',
     paper: { corners, widthMm: wide ? longMm : shortMm, heightMm: wide ? shortMm : longMm },
-  };
+  });
 }

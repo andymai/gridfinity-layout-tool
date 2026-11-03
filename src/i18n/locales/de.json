@@ -1039,6 +1039,7 @@
   "binDesigner.cutouts.traceView.paper.hint": "Klicke auf die vier Ecken des Blatts. Zieh eine Ecke, um sie anzupassen.",
   "binDesigner.cutouts.traceView.paper.count": "{count} von 4 Ecken markiert",
   "binDesigner.cutouts.traceView.paper.invalid": "Diese Ecken ergeben kein Blatt. Zieh jede auf eine Ecke des Papiers.",
+  "binDesigner.cutouts.traceView.paper.tooSteep": "Aus diesem Winkel lässt sich die lange Seite des Blatts nicht von der kurzen unterscheiden. Fotografiere mehr von oben oder zieh ein Lineal.",
   "binDesigner.cutouts.traceView.tools.heading": "Werkzeuge",
   "binDesigner.cutouts.traceView.tools.none": "Noch keine Werkzeuge gefunden. Klicke auf ein Werkzeug im Foto oder zieh einen Bereich darum.",
   "binDesigner.cutouts.traceView.tools.tapHint": "Klicke auf ein Werkzeug, um seinen Umriss neu zu zeichnen, oder auf eines, das übersehen wurde.",

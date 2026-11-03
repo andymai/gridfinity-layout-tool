@@ -1039,6 +1039,7 @@
   "binDesigner.cutouts.traceView.paper.hint": "Klik op de vier hoeken van het vel. Sleep een hoek om hem bij te stellen.",
   "binDesigner.cutouts.traceView.paper.count": "{count} van 4 hoeken gemarkeerd",
   "binDesigner.cutouts.traceView.paper.invalid": "Deze hoeken vormen geen vel. Sleep elk naar een hoek van het papier.",
+  "binDesigner.cutouts.traceView.paper.tooSteep": "Vanuit deze hoek is de lange zijde van het vel niet van de korte te onderscheiden. Fotografeer meer recht van boven, of trek een liniaal.",
   "binDesigner.cutouts.traceView.tools.heading": "Gereedschap",
   "binDesigner.cutouts.traceView.tools.none": "Nog geen gereedschap gevonden. Klik op gereedschap in de foto, of trek er een gebied omheen.",
   "binDesigner.cutouts.traceView.tools.tapHint": "Klik op gereedschap om de omtrek opnieuw te tekenen, of op gereedschap dat gemist is.",

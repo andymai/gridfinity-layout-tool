@@ -1039,6 +1039,7 @@
   "binDesigner.cutouts.traceView.paper.hint": "Клацніть чотири кути аркуша. Перетягніть кут, щоб уточнити його.",
   "binDesigner.cutouts.traceView.paper.count": "Позначено {count} з 4 кутів",
   "binDesigner.cutouts.traceView.paper.invalid": "Ці кути не утворюють аркуш. Перетягніть кожен на кут паперу.",
+  "binDesigner.cutouts.traceView.paper.tooSteep": "Під таким кутом не можна відрізнити довгу сторону аркуша від короткої. Сфотографуйте більш згори або проведіть лінійку.",
   "binDesigner.cutouts.traceView.tools.heading": "Інструменти",
   "binDesigner.cutouts.traceView.tools.none": "Інструментів ще не знайдено. Клацніть інструмент на фото або обведіть навколо них область.",
   "binDesigner.cutouts.traceView.tools.tapHint": "Клацніть інструмент, щоб перемалювати його контур, або той, що пропущено.",

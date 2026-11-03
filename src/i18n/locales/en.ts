@@ -3669,6 +3669,8 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.traceView.paper.count': '{count} of 4 corners marked',
   'binDesigner.cutouts.traceView.paper.invalid':
     'Those corners don’t make a sheet. Drag each one onto a corner of the paper.',
+  'binDesigner.cutouts.traceView.paper.tooSteep':
+    'At this angle the sheet’s long side can’t be told from its short one. Shoot from more directly above, or draw a ruler.',
   'binDesigner.cutouts.traceView.tools.heading': 'Tools',
   'binDesigner.cutouts.traceView.tools.none':
     'No tools found yet. Click a tool in the photo, or draw a region around them.',

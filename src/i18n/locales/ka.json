@@ -3090,6 +3090,7 @@
   "binDesigner.cutouts.traceView.paper.hint": "დააწკაპუნეთ ფურცლის ოთხივე კუთხეზე. კუთხის შესასწორებლად გადაათრიეთ.",
   "binDesigner.cutouts.traceView.paper.count": "მონიშნულია {count} კუთხე 4-დან",
   "binDesigner.cutouts.traceView.paper.invalid": "ეს კუთხეები ფურცელს არ ქმნის. გადაათრიეთ თითოეული ქაღალდის კუთხეზე.",
+  "binDesigner.cutouts.traceView.paper.tooSteep": "ამ კუთხიდან ფურცლის გრძელი მხარე მოკლისგან ვერ გაირჩევა. გადაიღეთ უფრო ზემოდან ან გაავლეთ სახაზავი.",
   "binDesigner.cutouts.traceView.tools.heading": "ხელსაწყოები",
   "binDesigner.cutouts.traceView.tools.none": "ხელსაწყოები ჯერ ვერ მოიძებნა. დააწკაპუნეთ ხელსაწყოზე ფოტოში ან შემოხაზეთ არე.",
   "binDesigner.cutouts.traceView.tools.tapHint": "დააწკაპუნეთ ხელსაწყოზე მისი კონტურის ხელახლა დასახაზად, ან გამოტოვებულზე მის დასამატებლად.",

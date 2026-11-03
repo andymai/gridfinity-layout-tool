@@ -1039,6 +1039,7 @@
   "binDesigner.cutouts.traceView.paper.hint": "Fai clic sui quattro angoli del foglio. Trascina un angolo per regolarlo.",
   "binDesigner.cutouts.traceView.paper.count": "{count} angoli su 4 segnati",
   "binDesigner.cutouts.traceView.paper.invalid": "Questi angoli non formano un foglio. Trascina ciascuno su un angolo della carta.",
+  "binDesigner.cutouts.traceView.paper.tooSteep": "Da questa angolazione non si distingue il lato lungo del foglio da quello corto. Scatta più dall'alto o traccia un righello.",
   "binDesigner.cutouts.traceView.tools.heading": "Utensili",
   "binDesigner.cutouts.traceView.tools.none": "Ancora nessun utensile trovato. Fai clic su un utensile nella foto o traccia un'area intorno.",
   "binDesigner.cutouts.traceView.tools.tapHint": "Fai clic su un utensile per ridisegnarne il contorno, o su uno che è sfuggito.",

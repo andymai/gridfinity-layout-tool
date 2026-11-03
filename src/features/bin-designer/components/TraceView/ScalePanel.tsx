@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Button, Input, SegmentedControl } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { isOk } from '@/core/result';
 import { CardSizeEditor, type CardSizeMm } from '@/shared/scanReview';
 import {
   cardPerspectiveSkew,
@@ -132,7 +133,9 @@ export function ScalePanel({
   const sized = scene.units === 'mm';
 
   const ruler = marks.length === 2 ? rulerReference(marks[0], marks[1], parseMm(lengthText)) : null;
-  const paper = marks.length === 4 ? paperReference(marks, paperSize, frame) : null;
+  const sheet = marks.length === 4 ? paperReference(marks, paperSize, frame) : null;
+  const paper = sheet && isOk(sheet) ? sheet.value : null;
+  const paperProblem = sheet && !isOk(sheet) ? sheet.error : null;
 
   const start = (next: 'ruler' | 'paper') => {
     setLengthText('');
@@ -204,9 +207,13 @@ export function ScalePanel({
           <p className="text-xs text-content-tertiary">
             {t('binDesigner.cutouts.traceView.paper.count', { count: marks.length })}
           </p>
-          {marks.length === 4 && paper === null && (
+          {paperProblem && (
             <p className="text-xs text-warning">
-              {t('binDesigner.cutouts.traceView.paper.invalid')}
+              {t(
+                paperProblem === 'tooSteep'
+                  ? 'binDesigner.cutouts.traceView.paper.tooSteep'
+                  : 'binDesigner.cutouts.traceView.paper.invalid'
+              )}
             </p>
           )}
           <div className="flex gap-2">

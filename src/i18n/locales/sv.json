@@ -1039,6 +1039,7 @@
   "binDesigner.cutouts.traceView.paper.hint": "Klicka på arkets fyra hörn. Dra ett hörn för att justera det.",
   "binDesigner.cutouts.traceView.paper.count": "{count} av 4 hörn markerade",
   "binDesigner.cutouts.traceView.paper.invalid": "De här hörnen bildar inget ark. Dra vart och ett till ett hörn av pappret.",
+  "binDesigner.cutouts.traceView.paper.tooSteep": "Från den här vinkeln går det inte att skilja arkets långsida från kortsidan. Fota mer rakt uppifrån, eller dra en linjal.",
   "binDesigner.cutouts.traceView.tools.heading": "Verktyg",
   "binDesigner.cutouts.traceView.tools.none": "Inga verktyg hittade än. Klicka på ett verktyg i fotot, eller dra ett område runt dem.",
   "binDesigner.cutouts.traceView.tools.tapHint": "Klicka på ett verktyg för att rita om dess kontur, eller på ett som missades.",

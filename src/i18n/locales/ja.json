@@ -1039,6 +1039,7 @@
   "binDesigner.cutouts.traceView.paper.hint": "紙の四隅をクリックします。角をドラッグすると調整できます。",
   "binDesigner.cutouts.traceView.paper.count": "4つの角のうち{count}つを指定済み",
   "binDesigner.cutouts.traceView.paper.invalid": "この4点では用紙になりません。それぞれを紙の角にドラッグしてください。",
+  "binDesigner.cutouts.traceView.paper.tooSteep": "この角度では用紙の長辺と短辺を見分けられません。もっと真上から撮影するか、定規を引いてください。",
   "binDesigner.cutouts.traceView.tools.heading": "工具",
   "binDesigner.cutouts.traceView.tools.none": "まだ工具が見つかりません。写真の工具をクリックするか、工具を囲む範囲を描いてください。",
   "binDesigner.cutouts.traceView.tools.tapHint": "工具をクリックすると輪郭を描き直します。見つからなかった工具もクリックで追加できます。",

@@ -1039,6 +1039,7 @@
   "binDesigner.cutouts.traceView.paper.hint": "点击纸张的四个角。拖动角点可调整。",
   "binDesigner.cutouts.traceView.paper.count": "已标出 {count}/4 个角",
   "binDesigner.cutouts.traceView.paper.invalid": "这些角无法构成一张纸。请将每个点拖到纸的角上。",
+  "binDesigner.cutouts.traceView.paper.tooSteep": "这个角度无法分辨纸张的长边和短边。请更接近正上方拍摄，或画一条标尺。",
   "binDesigner.cutouts.traceView.tools.heading": "工具",
   "binDesigner.cutouts.traceView.tools.none": "尚未找到工具。点击照片中的工具，或在其周围画出区域。",
   "binDesigner.cutouts.traceView.tools.tapHint": "点击工具可重新描绘其轮廓，也可点击漏掉的工具来添加。",

@@ -1039,6 +1039,7 @@
   "binDesigner.cutouts.traceView.paper.hint": "Haz clic en las cuatro esquinas de la hoja. Arrastra una esquina para ajustarla.",
   "binDesigner.cutouts.traceView.paper.count": "{count} de 4 esquinas marcadas",
   "binDesigner.cutouts.traceView.paper.invalid": "Esas esquinas no forman una hoja. Arrastra cada una a una esquina del papel.",
+  "binDesigner.cutouts.traceView.paper.tooSteep": "Desde este ángulo no se distingue el lado largo de la hoja del corto. Haz la foto más desde arriba o dibuja una regla.",
   "binDesigner.cutouts.traceView.tools.heading": "Herramientas",
   "binDesigner.cutouts.traceView.tools.none": "Aún no se encontraron herramientas. Haz clic en una herramienta de la foto o dibuja una región a su alrededor.",
   "binDesigner.cutouts.traceView.tools.tapHint": "Haz clic en una herramienta para redibujar su contorno, o en una que se haya pasado por alto.",

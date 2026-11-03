@@ -196,6 +196,15 @@ islands behind. The worker cuts each island out of the tool full height
 (`withIslands`), shrunk by the clearance with the reach-limited offset's
 `inward` mode, so a thin island thins rather than turns inside out.
 
+## Photo tracing
+
+`components/TraceView/` traces a photo on the desktop with the phone's passes
+from `@/shared/scanReview` and hands the Scan dialog the same millimetre SVG a
+phone uploads, so both land through one import path. It is a full-screen view,
+not a panel, so the panel idioms do not apply under it. A drawn ruler or marked
+paper (`manualReference.ts`) sizes a photo with no reference; see the
+scan-capture README.
+
 ## Compartment geometry and the size lock
 
 ### A `dividerOverride` moves the compartment wall

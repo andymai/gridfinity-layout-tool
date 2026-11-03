@@ -1039,6 +1039,7 @@
   "binDesigner.cutouts.traceView.paper.hint": "Cliquez sur les quatre coins de la feuille. Faites glisser un coin pour l’ajuster.",
   "binDesigner.cutouts.traceView.paper.count": "{count} coins sur 4 marqués",
   "binDesigner.cutouts.traceView.paper.invalid": "Ces coins ne forment pas une feuille. Faites glisser chacun sur un coin du papier.",
+  "binDesigner.cutouts.traceView.paper.tooSteep": "Sous cet angle, on ne peut pas distinguer le grand côté de la feuille du petit. Photographiez plus à la verticale, ou tracez une règle.",
   "binDesigner.cutouts.traceView.tools.heading": "Outils",
   "binDesigner.cutouts.traceView.tools.none": "Aucun outil trouvé pour l’instant. Cliquez sur un outil dans la photo, ou tracez une zone autour.",
   "binDesigner.cutouts.traceView.tools.tapHint": "Cliquez sur un outil pour retracer son contour, ou sur un outil oublié.",

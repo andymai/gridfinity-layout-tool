@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { isOk } from '@/core/result';
+import { err, isOk } from '@/core/result';
 import { paperReference, rulerReference, PAPER_SIZES, MIN_RULER_PX } from './manualReference';
-import { sameReference, traceScene, withReference, type SceneTrace } from './traceScene';
+import {
+  sameReference,
+  traceScene,
+  withReference,
+  type SceneReference,
+  type SceneTrace,
+} from './traceScene';
 import type { ImageDataLike, Point } from './types';
 
 // A tilted pinhole camera over the table, far enough back to frame a sheet.
@@ -33,6 +39,13 @@ const SHEET_MM = rect(-148.5, -105, 148.5, 105);
 const TOOL_MM = rect(-30, -12.5, 30, 12.5);
 const SHEET_PX = SHEET_MM.map(cam);
 const FRAME = { width: W, height: H };
+
+/** The sheet marked by `points`, which the test expects to be one. */
+function sheetOf(points: readonly Point[], size: 'a4' | 'letter'): SceneReference {
+  const sheet = paperReference(points, size, FRAME);
+  if (!isOk(sheet)) throw new Error(`no sheet: ${sheet.error}`);
+  return sheet.value;
+}
 
 function inside(p: Point, poly: readonly Point[]): boolean {
   let hit = false;
@@ -110,7 +123,7 @@ describe('rulerReference', () => {
 
 describe('paperReference', () => {
   it('rectifies a tool on a tilted sheet to true millimetres', () => {
-    const paper = paperReference(SHEET_PX, 'a4', FRAME);
+    const paper = sheetOf(SHEET_PX, 'a4');
     const sized = withReference(sceneOf(TOOL_MM.map(cam)), paper);
     const { w, h } = size(sized.shapes[0].outputPoints);
     expect(w).toBeCloseTo(60, 0);
@@ -128,7 +141,7 @@ describe('paperReference', () => {
       { x: -10, y: 30 },
       { x: -30, y: 30 },
     ];
-    const paper = paperReference(shuffled, 'a4', FRAME);
+    const paper = sheetOf(shuffled, 'a4');
     const out = withReference(sceneOf(tool.map(cam)), paper).shapes[0].outputPoints;
     expect(Math.sign(signedArea(out))).toBe(Math.sign(signedArea(tool)));
     expect(signedArea(out)).toBeCloseTo(signedArea(tool), -1);
@@ -144,26 +157,39 @@ describe('paperReference', () => {
       Math.hypot(bl.x - tl.x, bl.y - tl.y)
     );
 
-    const paper = paperReference(sheet, 'a4', FRAME);
+    const paper = sheetOf(sheet, 'a4');
     const tool = withReference(sceneOf(TOOL_MM.map(steep)), paper).shapes[0];
     const { w, h } = size(tool.outputPoints);
     expect(w).toBeCloseTo(60, 0);
     expect(h).toBeCloseTo(25, 0);
   });
 
+  // Tilted on one axis alone the corners give no lens. Gently, every lens
+  // reads the sheet the same way; steeply, they disagree, and the sheet is
+  // refused rather than guessed.
+  it('reads a sheet tilted on one axis when every lens agrees, and refuses one that is steep', () => {
+    const gentle = camera(0.6, 0);
+    const paper = sheetOf(rect(-105, -148.5, 105, 148.5).map(gentle), 'a4');
+    const tool = withReference(sceneOf(TOOL_MM.map(gentle)), paper).shapes[0];
+    expect(size(tool.outputPoints).w).toBeCloseTo(60, 0);
+
+    const steep = rect(-105, -148.5, 105, 148.5).map(camera(1.1, 0));
+    expect(paperReference(steep, 'a4', FRAME)).toEqual(err('tooSteep'));
+  });
+
   it('turns no sheet up from a dented quad, three points or a speck', () => {
-    expect(paperReference(SHEET_PX.slice(0, 3), 'a4', FRAME)).toBeNull();
+    expect(paperReference(SHEET_PX.slice(0, 3), 'a4', FRAME)).toEqual(err('notSheet'));
     // Pulled in past the diagonal from the bottom right corner.
     const pit = { x: (SHEET_PX[0].x + 200) / 2, y: (SHEET_PX[0].y + 150) / 2 };
     const dented = [SHEET_PX[0], SHEET_PX[1], pit, SHEET_PX[3]];
-    expect(paperReference(dented, 'a4', FRAME)).toBeNull();
-    expect(paperReference(rect(10, 10, 20, 20), 'letter', FRAME)).toBeNull();
+    expect(paperReference(dented, 'a4', FRAME)).toEqual(err('notSheet'));
+    expect(paperReference(rect(10, 10, 20, 20), 'letter', FRAME)).toEqual(err('notSheet'));
   });
 
   it('carries the chosen sheet size', () => {
-    const paper = paperReference(SHEET_PX, 'letter', FRAME);
+    const paper = sheetOf(SHEET_PX, 'letter');
     expect(paper?.kind === 'paper' && paper.paper.widthMm).toBe(PAPER_SIZES.letter.longMm);
-    expect(sameReference(paper, paperReference(SHEET_PX, 'a4', FRAME))).toBe(false);
+    expect(sameReference(paper, sheetOf(SHEET_PX, 'a4'))).toBe(false);
   });
 
   // The table around the sheet is darker than the paper, so searched as a
@@ -173,7 +199,7 @@ describe('paperReference', () => {
       { poly: SHEET_PX, v: 235 },
       { poly: TOOL_MM.map(cam), v: 120 },
     ]);
-    const paper = paperReference(SHEET_PX, 'a4', FRAME);
+    const paper = sheetOf(SHEET_PX, 'a4');
     const traced = traceScene(image, { smooth: false }, paper);
     if (!isOk(traced)) throw new Error('fixture failed');
     expect(traced.value.shapes).toHaveLength(1);

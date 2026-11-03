@@ -1039,6 +1039,7 @@
   "binDesigner.cutouts.traceView.paper.hint": "Klikk på de fire hjørnene av arket. Dra et hjørne for å justere det.",
   "binDesigner.cutouts.traceView.paper.count": "{count} av 4 hjørner markert",
   "binDesigner.cutouts.traceView.paper.invalid": "Disse hjørnene danner ikke et ark. Dra hvert av dem til et hjørne av papiret.",
+  "binDesigner.cutouts.traceView.paper.tooSteep": "Fra denne vinkelen går det ikke an å skille arkets lange side fra den korte. Ta bildet mer rett ovenfra, eller tegn en linjal.",
   "binDesigner.cutouts.traceView.tools.heading": "Verktøy",
   "binDesigner.cutouts.traceView.tools.none": "Ingen verktøy funnet ennå. Klikk på et verktøy i bildet, eller tegn et område rundt dem.",
   "binDesigner.cutouts.traceView.tools.tapHint": "Klikk på et verktøy for å tegne omrisset på nytt, eller på et som ble oversett.",

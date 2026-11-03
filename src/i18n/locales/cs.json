@@ -1039,6 +1039,7 @@
   "binDesigner.cutouts.traceView.paper.hint": "Klikni na čtyři rohy listu. Přetažením rohu ho uprav.",
   "binDesigner.cutouts.traceView.paper.count": "Označeno {count} ze 4 rohů",
   "binDesigner.cutouts.traceView.paper.invalid": "Tyto rohy netvoří list. Přetáhni každý na roh papíru.",
+  "binDesigner.cutouts.traceView.paper.tooSteep": "Z tohoto úhlu nejde poznat delší stranu listu od kratší. Vyfoť ho víc shora, nebo natáhni pravítko.",
   "binDesigner.cutouts.traceView.tools.heading": "Nástroje",
   "binDesigner.cutouts.traceView.tools.none": "Zatím nenalezeny žádné nástroje. Klikni na nástroj ve fotce, nebo kolem nich natáhni oblast.",
   "binDesigner.cutouts.traceView.tools.tapHint": "Kliknutím na nástroj překreslíš jeho obrys, nebo přidáš ten, který chybí.",
