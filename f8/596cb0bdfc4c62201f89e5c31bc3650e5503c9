@@ -1,0 +1,34 @@
+src/shared/scanTrace/traceScene.ts
+  s_4b9adb1d9473fb::t_896e31c555242f 313-316
+  s_4b9adb1d9473fb::t_8beb48ebbb7748 317-319
+src/features/scan-capture/components/ScanPage/scanFlow.test.ts
+  s_4b9adb1d9473fb::t_8207de40b28850 156-163
+src/shared/scanTrace/refineScene.ts
+  s_4b9adb1d9473fb::t_896e31c555242f 21,53-55,104,109-130
+  s_4b9adb1d9473fb::t_9ccd0d48e32ec8 131
+src/features/scan-capture/components/ScanPage/scanFlow.ts
+  s_4b9adb1d9473fb::t_896e31c555242f 5,149,155-159,162,164
+src/shared/scanTrace/refineScene.test.ts
+  s_4b9adb1d9473fb::t_8207de40b28850 2,137-164
+  s_4b9adb1d9473fb::t_6f787537bf9647 165
+src/shared/scanTrace/index.ts
+  s_4b9adb1d9473fb::t_896e31c555242f 12
+src/shared/scanTrace/traceScene.test.ts
+  s_4b9adb1d9473fb::t_8207de40b28850 297-332
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f8596cb0bdfc4c62201f89e5c31bc3650e5503c9",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
