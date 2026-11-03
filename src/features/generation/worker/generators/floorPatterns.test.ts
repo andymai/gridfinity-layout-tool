@@ -6,6 +6,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { deriveDimensions } from './pipeline/context';
 import { floorPatternApplies, planFloorPattern } from './floorPatterns';
+import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { floorWindowInset, nestingFloorWindowSpan } from './floorPatternWindow';
 import { CLEARANCE, FOOT_INSET_BOT, SIZE, SOCKET_HEIGHT } from './generatorConstants';
 
@@ -165,6 +166,26 @@ describe('planFloorPattern keep-outs', () => {
     const corners = { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' as const, cornerHolesOnly: true };
     const windows = plan(makeParams({ base: corners }))?.windows ?? [];
     expect(windows.map((w) => w.keepOuts.length)).toEqual([1, 1, 1, 1]);
+  });
+
+  it('reserves the screw bores detachable feet drill at the corners', () => {
+    const params = makeParams({
+      width: 2.5,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'screw',
+        feet: 'detachable',
+        cornerHolesOnly: true,
+      },
+    });
+    const dim = deriveDimensions(params, false);
+    expect(dim.detachableFeet).toBe(true);
+    const centres = (planFloorPattern(params, dim)?.windows ?? []).flatMap((w) =>
+      w.keepOuts.map((k) => `${w.x + (k.uMin + k.uMax) / 2},${w.y + (k.zMin + k.zMax) / 2}`)
+    );
+    for (const [x, y] of resolveDetachableFeet(params).screw?.positions ?? []) {
+      expect(centres).toContain(`${x},${y}`);
+    }
   });
 
   it("keeps an L-shaped bin's five corner pockets, not the removed cell's", () => {

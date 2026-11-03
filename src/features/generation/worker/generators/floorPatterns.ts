@@ -165,6 +165,21 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
     dim.withScrew ? params.base.screwDiameter / 2 : 0
   );
   if (radius <= 0) return [];
+  const keepOut = ([x, y]: readonly [number, number]): WorldKeepOut => ({
+    xMin: x - radius,
+    xMax: x + radius,
+    yMin: y - radius,
+    yMax: y + radius,
+    zMin: 0,
+    zMax: 0,
+  });
+
+  // Detachable feet sit on whole cells only, so their outer corners can lie
+  // inside the hull of the cell sites below, which counts a fractional edge.
+  if (dim.cornerHolesOnly && dim.detachableFeet) {
+    const resolved = resolveDetachableFeet(params);
+    return (resolved.screw?.positions ?? resolved.magnet?.positions ?? []).map(keepOut);
+  }
 
   const sites: Array<[number, number]> = [];
   // The holes `buildBaseSocket` drills, which skips cells outside the mask.
@@ -194,14 +209,7 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
     }
   );
   const keep = dim.cornerHolesOnly ? outerCornerHoleFilter(drilled) : () => true;
-  return sites.filter(keep).map(([x, y]) => ({
-    xMin: x - radius,
-    xMax: x + radius,
-    yMin: y - radius,
-    yMax: y + radius,
-    zMin: 0,
-    zMax: 0,
-  }));
+  return sites.filter(keep).map(keepOut);
 }
 
 function cellInMask(params: BinParams, cell: CellInfo, pitchX: number, pitchY: number): boolean {
