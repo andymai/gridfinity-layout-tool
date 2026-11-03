@@ -27,6 +27,7 @@ import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacemen
 import { resolveTrayBottomInputs } from './trayBottomInputs';
 import { isPartialMask, isRegionFilled } from '@/shared/utils/cellMask';
 import { outerCornerHoleFilter } from '@/shared/generation/cornerHoles';
+import { DEFAULT_SOCKET_CELL_PLAN } from '@/shared/generation/socketCellPlan';
 import type { PatternPanelSpec } from './dividerPatterns';
 import type { WorldKeepOut } from './dividerPatterns';
 import { scoopKeepOuts } from './dividerPatterns';
@@ -174,42 +175,40 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
     zMax: 0,
   });
 
-  // Detachable feet sit on whole cells only, so their outer corners can lie
-  // inside the hull of the cell sites below, which counts a fractional edge.
-  if (dim.cornerHolesOnly && dim.detachableFeet) {
+  const pitch = { x: dim.gridUnitMmX, y: dim.gridUnitMmY };
+  const anchor = params.magnetAnchor ?? DEFAULT_MAGNET_ANCHOR;
+  const sitesOf = (cell: CellInfo): Array<[number, number]> =>
+    cellHostsAttachmentHoles(cell, radius, pitch.x, pitch.y)
+      ? magnetPositionsForCell(cell, radius, pitch.x, pitch.y, anchor)
+      : [];
+  const edge = { x: params.fractionalEdgeX, y: params.fractionalEdgeY };
+  const cells: CellInfo[] = [];
+  forEachCell(params.width, params.depth, (cell) => cells.push(cell), {
+    gridUnitMm: pitch,
+    fractionalEdgeX: edge.x,
+    fractionalEdgeY: edge.y,
+  });
+
+  if (!dim.cornerHolesOnly) return cells.flatMap(sitesOf).map(keepOut);
+
+  // The corners are taken over the holes the active builder actually drills.
+  // Detachable feet sit on whole cells only, and the lightweight base walks the
+  // socket cells, which split a partly removed cell into halves.
+  if (dim.detachableFeet) {
     const resolved = resolveDetachableFeet(params);
     return (resolved.screw?.positions ?? resolved.magnet?.positions ?? []).map(keepOut);
   }
-
-  const sites: Array<[number, number]> = [];
-  // The holes `buildBaseSocket` drills, which skips cells outside the mask.
-  const drilled: Array<[number, number]> = [];
-  const { gridUnitMmX: pitchX, gridUnitMmY: pitchY } = dim;
-  forEachCell(
-    params.width,
-    params.depth,
-    (cell) => {
-      if (!cellHostsAttachmentHoles(cell, radius, pitchX, pitchY)) return;
-      const positions = magnetPositionsForCell(
-        cell,
-        radius,
-        pitchX,
-        pitchY,
-        params.magnetAnchor ?? DEFAULT_MAGNET_ANCHOR
-      );
-      sites.push(...positions);
-      if (dim.cornerHolesOnly && cellInMask(params, cell, pitchX, pitchY)) {
-        drilled.push(...positions);
-      }
-    },
-    {
-      gridUnitMm: { x: pitchX, y: pitchY },
-      fractionalEdgeX: params.fractionalEdgeX,
-      fractionalEdgeY: params.fractionalEdgeY,
-    }
-  );
-  const keep = dim.cornerHolesOnly ? outerCornerHoleFilter(drilled) : () => true;
-  return sites.filter(keep).map(keepOut);
+  const drilled = dim.lightweight
+    ? filledSocketCells(
+        params.width,
+        params.depth,
+        params.cellMask,
+        pitch,
+        DEFAULT_SOCKET_CELL_PLAN,
+        edge
+      ).flatMap(sitesOf)
+    : cells.filter((cell) => cellInMask(params, cell, pitch.x, pitch.y)).flatMap(sitesOf);
+  return drilled.filter(outerCornerHoleFilter(drilled)).map(keepOut);
 }
 
 function cellInMask(params: BinParams, cell: CellInfo, pitchX: number, pitchY: number): boolean {

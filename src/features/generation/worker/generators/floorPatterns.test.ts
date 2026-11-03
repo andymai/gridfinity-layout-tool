@@ -188,6 +188,28 @@ describe('planFloorPattern keep-outs', () => {
     }
   });
 
+  it('reserves the corners an underside-relief base drills in a split cell', () => {
+    // 2x2 at half-unit resolution with only the top-right half-unit removed, so
+    // the lightweight base splits that cell into three half cells.
+    const notch: CellMask = { cols: 4, rows: 4, cells: [...Array<1>(15).fill(1), 0] };
+    const params = makeParams({
+      cellMask: notch,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'magnet',
+        lightweight: true,
+        lightweightMode: 'underside',
+        cornerHolesOnly: true,
+      },
+    });
+    const dim = deriveDimensions(params, false);
+    const centres = (planFloorPattern(params, dim)?.windows ?? []).flatMap((w) =>
+      w.keepOuts.map((k) => `${w.x + (k.uMin + k.uMax) / 2},${w.y + (k.zMin + k.zMax) / 2}`)
+    );
+    expect(centres).toContain('31.5,10.5');
+    expect(centres).toContain('10.5,31.5');
+  });
+
   it("keeps an L-shaped bin's five corner pockets, not the removed cell's", () => {
     const corners = { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' as const, cornerHolesOnly: true };
     // 2x2 at half-unit resolution, bottom row first, top-right unit removed.

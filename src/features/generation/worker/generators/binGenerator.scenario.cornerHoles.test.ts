@@ -16,6 +16,8 @@ import type { CellMask } from '@/shared/utils/cellMask';
 import type { MeshData } from '@/features/generation/bridge/types';
 import { forEachCell } from './cellDecomposition';
 import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
+import { filledSocketCells } from './socketBuilder';
+import { DEFAULT_SOCKET_CELL_PLAN } from '@/shared/generation/socketCellPlan';
 
 const PITCH = 42;
 const MAGNET_RADIUS = DEFAULT_BIN_PARAMS.base.magnetDiameter / 2;
@@ -94,6 +96,29 @@ describe('corner-only attachment holes', () => {
       true
     );
     expect(drilledSites(mesh, sites(3, 2))).toEqual(OUTER_3x2);
+  }, 120_000);
+
+  it('drills the corners of the split cells under an underside relief', () => {
+    // 2x2 at half-unit resolution with only the top-right half-unit removed:
+    // the lightweight base splits that cell into three half cells.
+    const notch: CellMask = { cols: 4, rows: 4, cells: [...Array<1>(15).fill(1), 0] };
+    const candidates = filledSocketCells(2, 2, notch, PITCH, DEFAULT_SOCKET_CELL_PLAN).flatMap(
+      (cell) =>
+        cellHostsAttachmentHoles(cell, MAGNET_RADIUS, PITCH, PITCH)
+          ? magnetPositionsForCell(cell, MAGNET_RADIUS, PITCH, PITCH)
+          : []
+    );
+    const mesh = generateBin(
+      makeParams(
+        { cornerHolesOnly: true, lightweight: true, lightweightMode: 'underside' },
+        { width: 2, depth: 2, cellMask: notch }
+      ),
+      undefined,
+      true
+    );
+    expect(drilledSites(mesh, candidates)).toEqual(
+      ['-34,-34', '-34,34', '-8,34', '10.5,31.5', '31.5,10.5', '34,-34', '34,-8'].sort()
+    );
   }, 120_000);
 
   it("drills an L-shaped bin's five convex corners", () => {
