@@ -16,6 +16,7 @@ import {
   handlePathDrawingPointerDown,
   handlePathDrawingVertexDown,
   handleVertexEditPointerDown,
+  dragSource,
 } from './handlers';
 import type { PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
 import {
@@ -197,21 +198,24 @@ export function useCutoutPathTool({
   const handleVertexPointDown = useCallback(
     (index: number, _mmX: number, _mmY: number, ring = 0) => {
       if (mode.type !== 'vertex-editing') return;
+      const cutout = cutouts.find((c) => c.id === mode.cutoutId);
       startTransaction?.();
       setMode({
         ...mode,
         ring,
         selectedPointIndex: index,
         dragTarget: { type: 'vertex', ring, index },
+        dragFrom: cutout ? dragSource(cutout) : null,
       });
     },
-    [mode, startTransaction, setMode]
+    [mode, cutouts, startTransaction, setMode]
   );
 
   /** Handle vertex handle down from PathEditOverlay3D. */
   const handleVertexHandleDown = useCallback(
     (index: number, handleType: 'in' | 'out', _mmX: number, _mmY: number, ring = 0) => {
       if (mode.type !== 'vertex-editing') return;
+      const cutout = cutouts.find((c) => c.id === mode.cutoutId);
       startTransaction?.();
       // The handle's anchor becomes the selection, so Delete never takes a
       // point on whichever ring was selected before.
@@ -220,9 +224,10 @@ export function useCutoutPathTool({
         ring,
         selectedPointIndex: index,
         dragTarget: { type: 'handle', ring, index, handleType },
+        dragFrom: cutout ? dragSource(cutout) : null,
       });
     },
-    [mode, startTransaction, setMode]
+    [mode, cutouts, startTransaction, setMode]
   );
 
   /** Handle background click during vertex editing (segment insertion or exit). */

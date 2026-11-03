@@ -16,9 +16,11 @@ import {
   enforceSymmetry,
   getPathBounds,
   evaluateSegmentPoint,
-  isSelfIntersecting,
 } from '../pathGeometry';
 import { rotateAbout } from '@/shared/utils/cutoutOutline';
+import { cuttablePolyline } from '@/shared/utils/pathCutoutOutline';
+import { outlinesTouch } from '@/shared/utils/outlineSegments';
+import { pointInPolygon } from '@/shared/scanTrace';
 import type { PointerMoveEvent, BinBounds, SnapFn, PreviewSetters, SetModeFn } from './types';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -44,6 +46,14 @@ export interface VertexEditMode {
   readonly ring: number;
   readonly selectedPointIndex: number | null;
   readonly dragTarget: VertexDragTarget | null;
+  /** The rings and turn the drag began from, to tell when they change under it. */
+  readonly dragFrom?: DragSource | null;
+}
+
+export type DragSource = Pick<Cutout, 'path' | 'holes' | 'rotation'>;
+
+export function dragSource(cutout: Cutout): DragSource {
+  return { path: cutout.path, holes: cutout.holes, rotation: cutout.rotation };
 }
 
 /** Info about the segment the cursor is hovering near (for add-point preview). */
@@ -89,13 +99,77 @@ export function toPathFrame(cutout: Cutout, x: number, y: number): { x: number; 
 /** Clicks this close to a point pick it up; farther along an edge they add one. */
 const VERTEX_PICK_MM = 2;
 
+type Flat = Array<{ x: number; y: number }> | null;
+
 /**
- * A ring the generator keeps: two straight anchors bound nothing, and a ring
- * crossing itself is dropped, which would leave an island's pocket cut through.
+ * Whether island `k` sits inside the outline, clear of it and of every other
+ * island. One outside cuts nothing, so it would vanish from the bin while the
+ * editor still drew it.
  */
-function keepsShape(points: readonly PathPoint[]): boolean {
-  const curved = points.some((p) => p.handleIn !== null || p.handleOut !== null);
-  return (points.length >= 3 || curved) && !isSelfIntersecting(points);
+function islandClear(flat: readonly Flat[], k: number): boolean {
+  const [outline, ...islands] = flat;
+  const island = islands[k];
+  if (!outline || !island) return false;
+  if (!pointInPolygon(island[0], outline) || outlinesTouch(island, outline)) return false;
+  return islands.every(
+    (other, j) =>
+      j === k ||
+      !other ||
+      (!outlinesTouch(island, other) &&
+        !pointInPolygon(island[0], other) &&
+        !pointInPolygon(other[0], island))
+  );
+}
+
+/**
+ * Whether an edit to ring `ring` leaves a cutout the generator cuts as drawn:
+ * the ring is one it keeps, and no island that was inside the outline and
+ * clear of the others stops being so. An island already out can still be
+ * edited, so it can be brought back in.
+ */
+function keepsShape(
+  before: readonly (readonly PathPoint[])[],
+  after: readonly (readonly PathPoint[])[],
+  ring: number
+): boolean {
+  const edited = after.at(ring);
+  if (!edited || !cuttablePolyline(edited)) return false;
+  const was = before.map(cuttablePolyline);
+  const now = after.map(cuttablePolyline);
+  return now.slice(1).every((_, k) => !islandClear(was, k) || islandClear(now, k));
+}
+
+function samePoint(a: PathPoint, b: PathPoint): boolean {
+  return (
+    a.x === b.x &&
+    a.y === b.y &&
+    a.symmetric === b.symmetric &&
+    a.handleIn?.dx === b.handleIn?.dx &&
+    a.handleIn?.dy === b.handleIn?.dy &&
+    a.handleOut?.dx === b.handleOut?.dx &&
+    a.handleOut?.dy === b.handleOut?.dy
+  );
+}
+
+/**
+ * Whether the rings or the turn changed since the drag began: an undo, a
+ * remote edit or a pocket check's fix. The preview was built from the rings as
+ * they were, so writing it back would undo that change or move the edit onto
+ * another ring.
+ */
+function changedSince(cutout: Cutout, from: DragSource | null | undefined): boolean {
+  if (!from) return false;
+  if (cutout.rotation !== from.rotation) return true;
+  const now = ringsOf(cutout);
+  const then = ringsOf(from);
+  return (
+    now.length !== then.length ||
+    now.some(
+      (ring, i) =>
+        ring !== then[i] &&
+        (ring.length !== then[i].length || ring.some((p, j) => !samePoint(p, then[i][j])))
+    )
+  );
 }
 
 export function ringsOf(cutout: Pick<Cutout, 'path' | 'holes'>): (readonly PathPoint[])[] {
@@ -196,6 +270,7 @@ export function handleVertexEditPointerDown(
       ring,
       selectedPointIndex: index,
       dragTarget: { type: 'vertex', ring, index },
+      dragFrom: dragSource(cutout),
     });
     return;
   }
@@ -219,6 +294,7 @@ export function handleVertexEditPointerDown(
         setters.setMode({
           ...mode,
           dragTarget: { type: 'handle', ring: mode.ring, index: selectedIndex, handleType: 'in' },
+          dragFrom: dragSource(cutout),
         });
         return;
       }
@@ -231,6 +307,7 @@ export function handleVertexEditPointerDown(
         setters.setMode({
           ...mode,
           dragTarget: { type: 'handle', ring: mode.ring, index: selectedIndex, handleType: 'out' },
+          dragFrom: dragSource(cutout),
         });
         return;
       }
@@ -297,10 +374,10 @@ export function handleVertexEditPointerMove(
   }
 
   const { dragTarget } = mode;
-  // An island the drag began on can vanish mid-drag (an undo, a remote edit);
+  // An island the drag began on can also vanish without a recorded source;
   // see the stale-index note below.
   const path = rings.at(dragTarget.ring);
-  if (!path) {
+  if (!path || changedSince(cutout, mode.dragFrom)) {
     setters.setPreview(new Map());
     return;
   }
@@ -373,27 +450,22 @@ export function handleVertexEditPointerUp(
   setters: VertexEditSetters
 ): void {
   const previewUpdates = preview.get(cutout.id);
-  const ring = mode.dragTarget?.ring ?? 0;
-  // A preview carrying islands (any island drag, or an outline drag on a
-  // turned cutout) holds them as of the last move; if they have changed
-  // since, writing it back would restore a removed one or move the edit onto
-  // another.
-  const islandsChanged =
-    previewUpdates?.holes !== undefined &&
-    previewUpdates.holes.length !== (cutout.holes?.length ?? 0);
-  const moved = previewUpdates ? ringsOf({ ...cutout, ...previewUpdates }).at(ring) : undefined;
-  if (previewUpdates && moved && !islandsChanged && keepsShape(moved)) {
-    // The preview already holds the edit as it is to be stored, an outline's
-    // shift for a turned cutout included.
-    setters.onUpdate(
-      cutout.id,
-      ring === 0
-        ? {
-            ...pathBoundsUpdate(moved),
-            ...(previewUpdates.holes ? { holes: previewUpdates.holes } : {}),
-          }
-        : { holes: previewUpdates.holes }
-    );
+  const target = mode.dragTarget;
+  if (target && previewUpdates && !changedSince(cutout, mode.dragFrom)) {
+    const after = ringsOf({ ...cutout, ...previewUpdates });
+    if (keepsShape(ringsOf(cutout), after, target.ring)) {
+      // The preview already holds the edit as it is to be stored, an outline's
+      // shift for a turned cutout included.
+      setters.onUpdate(
+        cutout.id,
+        target.ring === 0
+          ? {
+              ...pathBoundsUpdate(after[0]),
+              ...(previewUpdates.holes ? { holes: previewUpdates.holes } : {}),
+            }
+          : { holes: previewUpdates.holes }
+      );
+    }
   }
 
   // Clear preview and drag target, keep selection
@@ -401,6 +473,7 @@ export function handleVertexEditPointerUp(
   setters.setMode({
     ...mode,
     dragTarget: null,
+    dragFrom: null,
   });
 }
 
@@ -429,17 +502,20 @@ export function handleVertexEditKeyDown(
   switch (event.key) {
     case 'Delete':
     case 'Backspace': {
-      if (mode.selectedPointIndex === null) return;
+      // A drag in progress would write its preview over the deletion on release.
+      if (mode.selectedPointIndex === null || mode.dragTarget) return;
       // An index past the end splices nothing, so the "updated" path came back
       // identical and was committed anyway — an undo entry that undoes to
       // itself. The path shrinks outside this handler, so the index can lead.
       if (mode.selectedPointIndex >= path.length) return;
 
       const updated = removePoint(path, mode.selectedPointIndex);
-      if (!updated || !keepsShape(updated)) return;
+      if (!updated) return;
+      const update = ringUpdate(cutout, mode.ring, updated);
+      if (!keepsShape(ringsOf(cutout), ringsOf({ ...cutout, ...update }), mode.ring)) return;
 
       event.preventDefault();
-      setters.onUpdate(cutout.id, ringUpdate(cutout, mode.ring, updated));
+      setters.onUpdate(cutout.id, update);
 
       // Adjust selection index: if we removed the last point, select the new last
       const newIndex =

@@ -2,6 +2,26 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useCutoutPathTool } from './useCutoutPathTool';
 import type { InteractionMode } from './cutoutInteractionTypes';
+import type { Cutout } from '@/features/bin-designer/types';
+
+const CUTOUT: Cutout = {
+  id: 'p1',
+  shape: 'path',
+  x: 0,
+  y: 0,
+  width: 10,
+  depth: 10,
+  cutDepth: 5,
+  rotation: 15,
+  cornerRadius: 0,
+  label: '',
+  groupId: null,
+  path: [
+    { x: 0, y: 0, handleIn: null, handleOut: null, symmetric: false },
+    { x: 10, y: 0, handleIn: null, handleOut: null, symmetric: false },
+    { x: 5, y: 10, handleIn: null, handleOut: null, symmetric: false },
+  ],
+};
 
 function tool(mode: InteractionMode) {
   const setMode = vi.fn();
@@ -10,7 +30,7 @@ function tool(mode: InteractionMode) {
     useCutoutPathTool({
       mode,
       setMode,
-      cutouts: [],
+      cutouts: [CUTOUT],
       onAdd: () => true,
       onUpdate: vi.fn(),
       setSelection: vi.fn(),
@@ -49,6 +69,8 @@ describe('useCutoutPathTool', () => {
       ring: 2,
       selectedPointIndex: 1,
       dragTarget: { type: 'handle', ring: 2, index: 1, handleType: 'out' },
+      // What the drag began from, so a change under it cancels the release.
+      dragFrom: { path: CUTOUT.path, holes: undefined, rotation: 15 },
     });
   });
 

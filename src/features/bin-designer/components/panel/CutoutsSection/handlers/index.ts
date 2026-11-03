@@ -30,6 +30,7 @@ export {
   handleVertexEditPointerMove,
   handleVertexEditPointerUp,
   handleVertexEditKeyDown,
+  dragSource,
 } from './pathEditHandler';
 export type { VertexEditMode, VertexEditSetters, SegmentHoverInfo } from './pathEditHandler';
 
