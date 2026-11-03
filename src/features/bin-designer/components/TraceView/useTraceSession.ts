@@ -21,10 +21,12 @@ import {
   shownShapes,
   svgFromCleaned,
   svgFromShapes,
+  toolsFromShapes,
   traceAll,
   traceTap,
   withoutShape,
   type CardSizeMm,
+  type CleanedTool,
 } from '@/shared/scanReview';
 import { useTraceCleanup, type TraceCleanup } from './traceCleanup';
 
@@ -127,6 +129,8 @@ export interface TraceSession {
   readonly cleanup: TraceCleanup;
   /** The shown tools as the SVG the phone would upload, or null when they cannot be added. */
   readonly traced: () => string | null;
+  /** The shown tools, cleaned, to save as files; null when they cannot be added. */
+  readonly exportTools: readonly CleanedTool[] | null;
 }
 
 export function useTraceSession(): TraceSession {
@@ -328,14 +332,21 @@ export function useTraceSession(): TraceSession {
   const cardFrame = useMemo(() => cardOptions(cardSize), [cardSize]);
   const cleanup = useTraceCleanup(sized, listedShapes, keepHoles, cardFrame);
 
+  // Mid-pass, or while a new photo loads, the outlines on hand are not the ones to add.
+  const ready =
+    sized?.units === 'mm' && listedShapes.length > 0 && !session.working && !session.loading;
+
   const traced = useCallback((): string | null => {
-    if (!sized || sized.units !== 'mm' || listedShapes.length === 0) return null;
-    // Mid-pass, or while a new photo loads, the outlines on hand are not the ones to add.
-    if (session.working || session.loading) return null;
+    if (!ready) return null;
     return cleanup.tools
       ? svgFromCleaned(cleanup.tools)
       : svgFromShapes(listedShapes, 'mm', keepHoles);
-  }, [sized, listedShapes, keepHoles, session.working, session.loading, cleanup.tools]);
+  }, [ready, listedShapes, keepHoles, cleanup.tools]);
+
+  const exportTools = useMemo(
+    () => (ready ? (cleanup.tools ?? toolsFromShapes(listedShapes, keepHoles)) : null),
+    [ready, listedShapes, keepHoles, cleanup.tools]
+  );
 
   return {
     photo: session.photo,
@@ -365,5 +376,6 @@ export function useTraceSession(): TraceSession {
     setCardSize,
     cleanup,
     traced,
+    exportTools,
   };
 }

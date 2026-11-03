@@ -321,7 +321,7 @@ export function DialogRoot({
   const handleContentKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (!containKeyboard) return;
-      if (e.key === 'Escape' && canDismiss && isTopmostDialog(dialogId)) {
+      if (e.key === 'Escape' && !e.defaultPrevented && canDismiss && isTopmostDialog(dialogId)) {
         e.preventDefault();
         onClose();
       }

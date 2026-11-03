@@ -43,6 +43,8 @@ import {
   visibleShapes,
   withoutShape,
   type CardSizeMm,
+  TraceExportMenu,
+  toolsFromShapes,
 } from '@/shared/scanReview';
 import { ProgressSteps, CaptureGuide, CardStatusIcon, SentIcon, TapIcon } from './ScanPageGuide';
 import type { Step } from './ScanPageGuide';
@@ -203,6 +205,15 @@ export function ScanPage({ token }: ScanPageProps) {
   // image→mm map. Editing the size stays instant and can't reshape the outline.
   const scene =
     status.kind === 'review' ? withCardSize(status.scene, cardSize.longMm, cardSize.shortMm) : null;
+
+  // Saved on the phone itself, so only once the outlines are in millimetres.
+  const exportTools = useMemo(
+    () =>
+      scene && scene.units === 'mm'
+        ? toolsFromShapes(visibleShapes(scene.shapes, keepHoles, scene.units), keepHoles)
+        : null,
+    [scene, keepHoles]
+  );
 
   const handleUse = useCallback(async () => {
     if (status.kind !== 'review') return;
@@ -468,6 +479,17 @@ export function ScanPage({ token }: ScanPageProps) {
                 {t('scan.uploadPhoto')}
               </Button>
             </div>
+          )}
+
+          {status.kind === 'review' && (
+            <TraceExportMenu
+              tools={exportTools}
+              source="phone"
+              trigger="download"
+              placement="top-start"
+              fullWidth
+              disabled={status.sending || status.resegmenting}
+            />
           )}
 
           {status.kind === 'review' && (
