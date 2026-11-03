@@ -83,7 +83,7 @@ describe('LidGripControls', () => {
 
   describe('rails lost to the dip', () => {
     const allSides = { front: true, back: true, left: true, right: true };
-    const lost = /No click rail left on/;
+    const lost = /Walls with no click rail left/;
 
     it('names the walls a full-width grip leaves without a rail', () => {
       renderControls(
@@ -91,7 +91,7 @@ describe('LidGripControls', () => {
         { bin: { width: 1, depth: 1 }, lid: { attachment: 'clickRails', clickRails: allSides } }
       );
       expect(screen.getByText(lost)).toHaveTextContent(
-        'No click rail left on: Front, Back, Left, and Right.'
+        'Walls with no click rail left: Front, Back, Left, and Right.'
       );
     });
 

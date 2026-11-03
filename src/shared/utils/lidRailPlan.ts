@@ -312,6 +312,18 @@ export function railPlacements(inputs: LidInputs): RailPlacement[] {
   return inputs.cellMask ? railPlacementsForPolygon(inputs) : railPlacementsForRectangle(inputs);
 }
 
+export function binDipEasesRails(params: BinParams): boolean {
+  // Forced on: the toggle's help has to warn before the user flips it.
+  const dipped = { ...params, lid: { ...params.lid, grip: { ...params.lid.grip, binDip: true } } };
+  if (!binDipSplitsRails(dipped)) return false;
+  const inputs = resolveLidInputs(dipped);
+  const full = railPlacements(inputs);
+  const totalLength = (rails: readonly RailPlacement[]): number =>
+    rails.reduce((sum, rail) => sum + rail.length, 0);
+  // A segment's length is rebuilt from its span ends, so an untouched rail can drift by an ULP.
+  return totalLength(full) - totalLength(splitRailsAroundGrip(full, inputs)) > 1e-6;
+}
+
 /**
  * Sides with a wall whose every rail the bin dip removed, so that wall holds
  * by friction alone.

@@ -18,7 +18,12 @@ import { DEFAULT_LID_HINGE_CONFIG } from '@/features/bin-designer/types';
 import { MASK_CELLS_PER_UNIT } from './cellMask';
 import type { BinParams, LidGripConfig } from '@/features/bin-designer/types';
 import { resolveLidInputs } from './lidInputs';
-import { railPlacements, railSidesLostToBinDip, splitRailsAroundGrip } from './lidRailPlan';
+import {
+  binDipEasesRails,
+  railPlacements,
+  railSidesLostToBinDip,
+  splitRailsAroundGrip,
+} from './lidRailPlan';
 
 function makeParams(grip: Partial<LidGripConfig>, over: Partial<BinParams> = {}): BinParams {
   return {
@@ -185,6 +190,57 @@ describe('hinged snap behind a dipped grip', () => {
 
   it('reports no wall as lost', () => {
     expect(railSidesLostToBinDip(hinged)).toEqual([]);
+  });
+});
+
+describe('binDipEasesRails', () => {
+  const frontGrip = {
+    mode: 'scallop',
+    sides: { front: true, back: false, left: false, right: false },
+  } as const;
+  const noRails = { front: false, back: false, left: false, right: false };
+
+  it('is true when a rail runs behind the grip', () => {
+    expect(binDipEasesRails(makeParams(frontGrip))).toBe(true);
+  });
+
+  it('answers for the dip while the toggle is still off', () => {
+    expect(binDipEasesRails(makeParams({ ...frontGrip, binDip: false }))).toBe(true);
+  });
+
+  it('is false when every click rail is off', () => {
+    const params = makeParams(frontGrip);
+    expect(binDipEasesRails({ ...params, lid: { ...params.lid, clickRails: noRails } })).toBe(
+      false
+    );
+  });
+
+  it('is false when the rails are only on walls without a grip', () => {
+    const params = makeParams(frontGrip);
+    expect(
+      binDipEasesRails({
+        ...params,
+        lid: { ...params.lid, clickRails: { ...noRails, back: true, left: true } },
+      })
+    ).toBe(false);
+  });
+
+  it('is false for a hinged lid, whose snap the dip never splits', () => {
+    const params = makeParams(frontGrip);
+    expect(
+      binDipEasesRails({
+        ...params,
+        lid: {
+          ...params.lid,
+          attachment: 'hinge',
+          hinge: { ...DEFAULT_LID_HINGE_CONFIG, side: 'back', catchMode: 'detent' },
+        },
+      })
+    ).toBe(false);
+  });
+
+  it('is false with no grip to dip under', () => {
+    expect(binDipEasesRails(makeParams({ mode: 'none' }))).toBe(false);
   });
 });
 
