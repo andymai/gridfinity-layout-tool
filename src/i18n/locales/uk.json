@@ -1072,7 +1072,7 @@
   "binDesigner.cutouts.outline.keep.average": "Середнє",
   "binDesigner.cutouts.outline.roundInside": "Заокруглити внутрішні кути",
   "binDesigner.cutouts.outline.reset": "Скинути контур",
-  "binDesigner.cutouts.outline.failed": "З цими налаштуваннями контуру не залишиться, тож він лишається як був.",
+  "binDesigner.cutouts.outline.failed": "З цими налаштуваннями не виходить одна виїмка, тож контур лишається як був.",
   "binDesigner.cutouts.traceView.cleanup.heading": "Очистити контури",
   "binDesigner.cutouts.traceView.cleanup.hint": "Діє на всі інструменти. Якщо їх кілька, віддзеркальте кожен після додавання.",
   "binDesigner.cutouts.scanImport.expired": "Це посилання для сканування застаріло. Закрийте та відкрийте знову, щоб повторити.",

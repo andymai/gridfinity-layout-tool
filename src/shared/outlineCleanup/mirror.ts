@@ -85,14 +85,16 @@ const fromRing = (ring: Ring): Pt[] => {
   return points;
 };
 
-function ringArea(ring: readonly Pt[]): number {
-  let sum = 0;
-  for (let i = 0; i < ring.length; i++) {
-    const a = ring[i];
-    const b = ring[(i + 1) % ring.length];
-    sum += a.x * b.y - b.x * a.y;
-  }
-  return Math.abs(sum) / 2;
+/**
+ * `shape` as one pocket and its islands, or null when it falls apart into
+ * several: keeping one half of a U about its middle leaves two legs, and a
+ * region holds one outline, so dropping a leg would lose part of the pocket.
+ */
+function onePocket(shape: MultiPolygon): Region | null {
+  if (shape.length !== 1) return null;
+  const [outline, ...holes] = shape[0].map(fromRing);
+  if (outline.length < 3) return null;
+  return { outline, holes: holes.filter((h) => h.length >= 3) };
 }
 
 /** The kept half of `region`, joined to its mirror image. */
@@ -128,14 +130,7 @@ function keepHalf(region: Region, axis: MirrorAxis, keep: 'low' | 'high'): Regio
   } catch {
     return null;
   }
-  const largest = joined
-    .map((poly) => poly.map(fromRing))
-    .reduce<Pt[][] | null>(
-      (best, poly) => (!best || ringArea(poly[0]) > ringArea(best[0]) ? poly : best),
-      null
-    );
-  if (!largest || largest[0].length < 3) return null;
-  return { outline: largest[0], holes: largest.slice(1).filter((h) => h.length >= 3) };
+  return onePocket(joined);
 }
 
 function resample(ring: readonly Pt[]): Pt[] {
@@ -206,6 +201,15 @@ export function mirrorRegion(region: Region, axis: MirrorAxis, keep: MirrorKeep)
   });
   // Pairing each point with its nearest mirror point evens the outline out
   // but leaves it only nearly symmetric; one half of it, mirrored, is exact.
-  const even = keepHalf({ outline, holes: [] }, axis, 'low');
-  return { outline: even?.outline ?? outline, holes: region.holes };
+  const even = keepHalf({ outline, holes: [] }, axis, 'low')?.outline ?? outline;
+  if (region.holes.length === 0) return { outline: even, holes: [] };
+  // The averaged walls can move across an island near them: cut the islands
+  // from the new outline, so one that now crosses it joins the wall.
+  try {
+    return onePocket(
+      polygonClipping.difference([toRing(even)], ...region.holes.map((h) => [toRing(h)]))
+    );
+  } catch {
+    return null;
+  }
 }

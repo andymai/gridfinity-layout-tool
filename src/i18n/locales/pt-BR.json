@@ -1072,7 +1072,7 @@
   "binDesigner.cutouts.outline.keep.average": "Média",
   "binDesigner.cutouts.outline.roundInside": "Arredondar cantos internos",
   "binDesigner.cutouts.outline.reset": "Redefinir contorno",
-  "binDesigner.cutouts.outline.failed": "Com esses ajustes não sobraria contorno, então ele fica como estava.",
+  "binDesigner.cutouts.outline.failed": "Com esses ajustes não fica uma única cavidade, então o contorno fica como estava.",
   "binDesigner.cutouts.traceView.cleanup.heading": "Limpar contornos",
   "binDesigner.cutouts.traceView.cleanup.hint": "Vale para todas as ferramentas. Com várias, espelhe cada uma depois de adicioná-la.",
   "binDesigner.cutouts.scanImport.expired": "Este link de escaneamento expirou. Feche e abra novamente para tentar de novo.",

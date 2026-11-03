@@ -244,7 +244,6 @@ export interface CleanedTool {
 
 const mm = (n: number): string => String(Math.round(n * 1000) / 1000);
 
-/** One closed ring as path data, curved where either end of a step has a handle. */
 function ringData(ring: readonly PathPoint[], dx: number, dy: number): string {
   const at = (x: number, y: number) => `${mm(x - dx)} ${mm(y - dy)}`;
   let d = `M ${at(ring[0].x, ring[0].y)}`;

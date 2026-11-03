@@ -1072,7 +1072,7 @@
   "binDesigner.cutouts.outline.keep.average": "평균",
   "binDesigner.cutouts.outline.roundInside": "안쪽 모서리 둥글게",
   "binDesigner.cutouts.outline.reset": "윤곽 초기화",
-  "binDesigner.cutouts.outline.failed": "이 설정으로는 윤곽이 남지 않아 그대로 둡니다.",
+  "binDesigner.cutouts.outline.failed": "이 설정으로는 하나의 포켓이 되지 않아 윤곽을 그대로 둡니다.",
   "binDesigner.cutouts.traceView.cleanup.heading": "윤곽 정리",
   "binDesigner.cutouts.traceView.cleanup.hint": "모든 공구에 적용됩니다. 여러 개라면 추가한 뒤 공구마다 대칭을 적용하세요.",
   "binDesigner.cutouts.scanImport.expired": "이 스캔 링크가 만료되었습니다. 닫았다가 다시 열어 재시도하세요.",

@@ -377,6 +377,13 @@ export interface DesignerState {
   // Transaction + batch cutout actions
   startTransaction: () => void;
   commitTransaction: () => void;
+  /**
+   * Regenerate from the params as they stand, with no undo entry. Inside a
+   * transaction only the first change bumps the generation epoch, so a
+   * caller that changed geometry over several ticks of one transaction
+   * calls this once it commits.
+   */
+  invalidateGeometry: () => void;
   updateCutoutsBatch: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
   removeCutoutsBatch: (ids: readonly string[]) => void;
   /**

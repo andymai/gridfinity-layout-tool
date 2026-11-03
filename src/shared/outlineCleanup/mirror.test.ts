@@ -77,6 +77,36 @@ describe('mirrorRegion', () => {
     expect(kept?.holes).toHaveLength(2);
   });
 
+  // Keeping the top of a U about its middle leaves its two legs apart.
+  it('refuses a half that falls apart rather than dropping part of it', () => {
+    const u = [
+      { x: 0, y: 0 },
+      { x: 30, y: 0 },
+      { x: 30, y: 30 },
+      { x: 20, y: 30 },
+      { x: 20, y: 10 },
+      { x: 10, y: 10 },
+      { x: 10, y: 30 },
+      { x: 0, y: 30 },
+    ];
+    expect(mirrorRegion({ outline: u, holes: [] }, mirrorAxis(u, 'horizontal'), 'high')).toBeNull();
+  });
+
+  // Averaged with the tabbed side, the plain left wall moves in to about x = 3,
+  // across an island beside it: the island joins the wall instead of standing
+  // outside the pocket.
+  it('cuts the islands from an averaged outline', () => {
+    const island = [
+      { x: 1, y: 2 },
+      { x: 5, y: 2 },
+      { x: 5, y: 4 },
+      { x: 1, y: 4 },
+    ];
+    const even = mirrorRegion({ outline: LOPSIDED, holes: [island] }, upright, 'average');
+    if (!even) throw new Error('missed');
+    expect(even.holes).toEqual([]);
+  });
+
   it('averages the two halves into one even outline', () => {
     const even = mirrorRegion({ outline: LOPSIDED, holes: [] }, upright, 'average');
     if (!even) throw new Error('missed');

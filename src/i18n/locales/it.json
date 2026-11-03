@@ -1072,7 +1072,7 @@
   "binDesigner.cutouts.outline.keep.average": "Media",
   "binDesigner.cutouts.outline.roundInside": "Arrotonda gli angoli interni",
   "binDesigner.cutouts.outline.reset": "Ripristina il contorno",
-  "binDesigner.cutouts.outline.failed": "Con queste impostazioni non resterebbe alcun contorno, quindi resta com'era.",
+  "binDesigner.cutouts.outline.failed": "Queste impostazioni non lasciano un'unica tasca, quindi il contorno resta com'era.",
   "binDesigner.cutouts.traceView.cleanup.heading": "Ripulisci i contorni",
   "binDesigner.cutouts.traceView.cleanup.hint": "Vale per ogni utensile. Se sono più d'uno, specchia ciascuno dopo averlo aggiunto.",
   "binDesigner.cutouts.scanImport.expired": "Questo link di scansione è scaduto. Chiudi e riapri per riprovare.",

@@ -40,8 +40,19 @@ function capture(cutout: Cutout): Baseline | null {
   return { original: { path, holes, x, y, width, depth }, region, rounded: new Map() };
 }
 
-const samePath = (a: readonly PathPoint[] | undefined, b: readonly PathPoint[] | undefined) =>
-  a === b || JSON.stringify(a) === JSON.stringify(b);
+/** What a baseline is read from: an edit to any of it made elsewhere starts it over. */
+interface Shape {
+  readonly path: readonly PathPoint[] | undefined;
+  readonly holes: readonly (readonly PathPoint[])[] | undefined;
+  readonly rotation: number;
+}
+
+const shapeOf = (c: Cutout): Shape => ({ path: c.path, holes: c.holes, rotation: c.rotation });
+
+const sameShape = (a: Shape, b: Shape) =>
+  a.rotation === b.rotation &&
+  (a.path === b.path || JSON.stringify(a.path) === JSON.stringify(b.path)) &&
+  (a.holes === b.holes || JSON.stringify(a.holes ?? []) === JSON.stringify(b.holes ?? []));
 
 /**
  * Cleanup for one path cutout. The outline as it stood when the section
@@ -54,21 +65,24 @@ export function CutoutOutlineSection({
   onUpdate,
 }: CutoutOutlineSectionProps) {
   const t = useTranslation();
-  const { startTransaction, commitTransaction } = useDesignerStore(
+  const { startTransaction, commitTransaction, invalidateGeometry } = useDesignerStore(
     useShallow((s) => ({
       startTransaction: s.startTransaction,
       commitTransaction: s.commitTransaction,
+      invalidateGeometry: s.invalidateGeometry,
     }))
   );
   const [baseline, setBaseline] = useState(() => capture(cutout));
   const [settings, setSettings] = useState<CleanupSettings>(NO_CLEANUP);
-  const [written, setWritten] = useState(cutout.path);
+  const [written, setWritten] = useState<Shape>(() => shapeOf(cutout));
   const [failed, setFailed] = useState(false);
-  // A drag holds one undo step open until it is released.
+  // A drag holds one undo step open until it is released, counting its steps:
+  // only the first change in a transaction regenerates the model.
   const open = useRef(false);
+  const steps = useRef(0);
 
-  if (!samePath(cutout.path, written)) {
-    setWritten(cutout.path);
+  if (!sameShape(shapeOf(cutout), written)) {
+    setWritten(shapeOf(cutout));
     setBaseline(capture(cutout));
     setSettings(NO_CLEANUP);
     setFailed(false);
@@ -102,13 +116,16 @@ export function CutoutOutlineSection({
       if (!open.current) {
         startTransaction();
         open.current = true;
+        steps.current = 0;
       }
-      setWritten(patch.path);
+      steps.current += 1;
+      setWritten({ path: patch.path, holes: patch.holes, rotation: cutout.rotation });
       onUpdate(cutout.id, patch);
     }
     if (done && open.current) {
       commitTransaction();
       open.current = false;
+      if (steps.current > 1) invalidateGeometry();
     }
   };
 

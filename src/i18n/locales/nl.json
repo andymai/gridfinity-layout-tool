@@ -1072,7 +1072,7 @@
   "binDesigner.cutouts.outline.keep.average": "Gemiddelde",
   "binDesigner.cutouts.outline.roundInside": "Binnenhoeken afronden",
   "binDesigner.cutouts.outline.reset": "Omtrek terugzetten",
-  "binDesigner.cutouts.outline.failed": "Met deze instellingen blijft er geen omtrek over, dus blijft hij zoals hij was.",
+  "binDesigner.cutouts.outline.failed": "Met deze instellingen ontstaat er niet één uitsparing, dus blijft de omtrek zoals hij was.",
   "binDesigner.cutouts.traceView.cleanup.heading": "Omtrekken opschonen",
   "binDesigner.cutouts.traceView.cleanup.hint": "Geldt voor elk gereedschap. Bij meerdere spiegel je elk na het toevoegen.",
   "binDesigner.cutouts.scanImport.expired": "Deze scanlink is verlopen. Sluit en open opnieuw om het nog eens te proberen.",

@@ -127,7 +127,9 @@ export function closeRegion(region: Region, radius: number): ClosedRegion | null
     closed[i] = pocket[i] === 1 || toOutside[i] > r2 ? 1 : 0;
   }
 
-  const blob = findToolBlobs({ width, height, data: closed }, 4).at(0);
+  // No speck share: an island too small to matter in a photo still stands
+  // here, and only the radius decides which go.
+  const blob = findToolBlobs({ width, height, data: closed }, 4, 0).at(0);
   if (!blob) return null;
   // Each ring is traced through its own pixels' centres, half a pixel short
   // of the edge between pocket and plastic: push every ring out to it.

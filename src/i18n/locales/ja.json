@@ -1072,7 +1072,7 @@
   "binDesigner.cutouts.outline.keep.average": "平均",
   "binDesigner.cutouts.outline.roundInside": "内側の角を丸める",
   "binDesigner.cutouts.outline.reset": "輪郭をリセット",
-  "binDesigner.cutouts.outline.failed": "この設定では輪郭が残らないため、変更しません。",
+  "binDesigner.cutouts.outline.failed": "この設定ではひとつのポケットにならないため、輪郭は変更しません。",
   "binDesigner.cutouts.traceView.cleanup.heading": "輪郭を整える",
   "binDesigner.cutouts.traceView.cleanup.hint": "すべての工具に適用されます。複数ある場合は、追加後に工具ごとに対称化してください。",
   "binDesigner.cutouts.scanImport.expired": "このスキャンリンクは期限切れです。閉じてから開き直してもう一度お試しください。",

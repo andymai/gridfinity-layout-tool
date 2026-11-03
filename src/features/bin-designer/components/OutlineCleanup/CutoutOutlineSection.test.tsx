@@ -122,6 +122,26 @@ describe('CutoutOutlineSection', () => {
     expect(screen.queryByText('binDesigner.cutouts.outline.reset')).toBeNull();
   });
 
+  it('starts over when the cutout is turned or an island changes elsewhere', () => {
+    const cutout = pathCutout(tracedL());
+    const { rerender, onUpdate } = open(cutout);
+    fireEvent.click(screen.getByRole('switch', { name: 'binDesigner.cutouts.outline.curves' }));
+    // Only the turn changes: the outline is the section's own last write.
+    const turned = { ...cutout, ...lastPatch(onUpdate), rotation: 15 };
+    rerender(<Harness cutout={turned} onUpdate={onUpdate} />);
+    expect(screen.queryByText('binDesigner.cutouts.outline.reset')).toBeNull();
+
+    fireEvent.click(screen.getByRole('switch', { name: 'binDesigner.cutouts.outline.curves' }));
+    const island = [
+      { x: 14, y: 30, handleIn: null, handleOut: null, symmetric: false },
+      { x: 20, y: 30, handleIn: null, handleOut: null, symmetric: false },
+      { x: 20, y: 40, handleIn: null, handleOut: null, symmetric: false },
+    ];
+    const islanded = { ...cutout, ...lastPatch(onUpdate), rotation: 15, holes: [island] };
+    rerender(<Harness cutout={islanded} onUpdate={onUpdate} />);
+    expect(screen.queryByText('binDesigner.cutouts.outline.reset')).toBeNull();
+  });
+
   // Squared as drawn: a turned cutout's edges come out square to the bin, not
   // to its own stored frame.
   it('squares a turned cutout to the bin', () => {

@@ -97,7 +97,6 @@ export function findCorners(ring: readonly Pt[], window: number): number[] {
   return corners;
 }
 
-/** The points from `from` to `to` around the ring, both ends included. */
 function slice(ring: readonly Pt[], from: number, to: number): Pt[] {
   const out: Pt[] = [];
   const n = ring.length;
@@ -108,7 +107,6 @@ function slice(ring: readonly Pt[], from: number, to: number): Pt[] {
   return out;
 }
 
-/** The farthest any point of `run` lies from the chord joining its ends. */
 function chordDeviation(run: readonly Pt[]): number {
   const a = run[0];
   const b = run[run.length - 1];
@@ -180,7 +178,6 @@ function offsetFrom(p: Pt, a: Pt, b: Pt): number {
   return l === 0 ? len(e) : (e.x * d.y - e.y * d.x) / l;
 }
 
-/** Indices Ramer-Douglas-Peucker keeps along an open run, both ends included. */
 function rdpIndices(run: readonly Pt[], tolerance: number): number[] {
   const n = run.length;
   const keep = new Uint8Array(n);

@@ -1072,7 +1072,7 @@
   "binDesigner.cutouts.outline.keep.average": "Średnia",
   "binDesigner.cutouts.outline.roundInside": "Zaokrąglij wewnętrzne narożniki",
   "binDesigner.cutouts.outline.reset": "Przywróć obrys",
-  "binDesigner.cutouts.outline.failed": "Przy tych ustawieniach nie zostałby żaden obrys, więc pozostaje bez zmian.",
+  "binDesigner.cutouts.outline.failed": "Przy tych ustawieniach nie powstaje jedna kieszeń, więc obrys pozostaje bez zmian.",
   "binDesigner.cutouts.traceView.cleanup.heading": "Uporządkuj obrysy",
   "binDesigner.cutouts.traceView.cleanup.hint": "Dotyczy każdego narzędzia. Przy kilku odbij każde po dodaniu.",
   "binDesigner.cutouts.scanImport.expired": "Ten link do skanowania wygasł. Zamknij i otwórz ponownie, aby spróbować jeszcze raz.",

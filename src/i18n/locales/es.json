@@ -1072,7 +1072,7 @@
   "binDesigner.cutouts.outline.keep.average": "Promedio",
   "binDesigner.cutouts.outline.roundInside": "Redondear esquinas interiores",
   "binDesigner.cutouts.outline.reset": "Restablecer contorno",
-  "binDesigner.cutouts.outline.failed": "Con estos ajustes no quedaría contorno, así que se mantiene como estaba.",
+  "binDesigner.cutouts.outline.failed": "Con estos ajustes no queda un único hueco, así que el contorno se mantiene como estaba.",
   "binDesigner.cutouts.traceView.cleanup.heading": "Limpiar contornos",
   "binDesigner.cutouts.traceView.cleanup.hint": "Se aplica a todas las herramientas. Si hay varias, refleja cada una tras añadirla.",
   "binDesigner.cutouts.scanImport.expired": "Este enlace de escaneo caducó. Ciérralo y vuelve a abrirlo para intentarlo de nuevo.",

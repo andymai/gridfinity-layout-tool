@@ -75,6 +75,24 @@ describe('closeRegion', () => {
     expect(kept).toBeCloseTo(100 - 4 * (1 - Math.PI / 4) * 4, 0);
   });
 
+  // A photo's speck filter would drop an island this small next to so large a
+  // pocket; here only the radius decides.
+  it('keeps a small island the radius leaves standing', () => {
+    const outline = [
+      { x: 0, y: 0 },
+      { x: 150, y: 0 },
+      { x: 150, y: 150 },
+      { x: 0, y: 150 },
+    ];
+    const island = [
+      { x: 70, y: 70 },
+      { x: 73, y: 70 },
+      { x: 73, y: 73 },
+      { x: 70, y: 73 },
+    ];
+    expect(closeRegion({ outline, holes: [island] }, 0.5)?.region.holes).toHaveLength(1);
+  });
+
   it('fills in an island too thin for the radius', () => {
     const outline = [
       { x: 0, y: 0 },

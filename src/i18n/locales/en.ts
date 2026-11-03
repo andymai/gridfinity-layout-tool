@@ -3708,7 +3708,8 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.outline.keep.average': 'Average',
   'binDesigner.cutouts.outline.roundInside': 'Round inside corners',
   'binDesigner.cutouts.outline.reset': 'Reset outline',
-  'binDesigner.cutouts.outline.failed': 'Those settings leave no outline, so it stays as it was.',
+  'binDesigner.cutouts.outline.failed':
+    'Those settings don’t leave a single pocket, so the outline stays as it was.',
   'binDesigner.cutouts.traceView.cleanup.heading': 'Clean up outlines',
   'binDesigner.cutouts.traceView.cleanup.hint':
     'Applies to every tool. With several, mirror each one once added.',
