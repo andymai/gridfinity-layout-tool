@@ -69,13 +69,25 @@ interface PathCutoutFrame {
   readonly holes?: readonly (readonly PathPoint[])[];
 }
 
+/**
+ * A ring flattened as the builder cuts it, or null when it cannot be cut: an
+ * outline that can't is cut as its bounding box, an island that can't is left
+ * out. The editor refuses an edit that makes one, so what it draws is cut.
+ */
+export function cuttablePolyline(
+  ring: readonly PathPoint[]
+): Array<{ x: number; y: number }> | null {
+  const polyline = dropCoincidentPoints(flattenPathToPolyline(ring));
+  return polyline.length < 3 || polylineSelfIntersects(polyline) ? null : polyline;
+}
+
 /** A ring flattened and centred on the cutout's box, or null when it cannot be cut. */
 function centredRing(
   cutout: PathCutoutFrame,
   ring: readonly PathPoint[]
 ): Array<{ x: number; y: number }> | null {
-  const polyline = dropCoincidentPoints(flattenPathToPolyline(ring));
-  if (polyline.length < 3 || polylineSelfIntersects(polyline)) return null;
+  const polyline = cuttablePolyline(ring);
+  if (!polyline) return null;
   const cx = cutout.x + cutout.width / 2;
   const cy = cutout.y + cutout.depth / 2;
   return polyline.map((p) => ({ x: p.x - cx, y: p.y - cy }));

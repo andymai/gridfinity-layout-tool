@@ -24,6 +24,7 @@ import { KeepoutCircles3D } from './KeepoutCircles3D';
 import { CutoutLabel3D } from './CutoutLabel3D';
 import { CutoutHandles3D } from './CutoutHandles3D';
 import { RotationHandle3D } from './RotationHandle3D';
+import { UNMAGNIFIED } from './VertexMagnifier3D';
 import { SmartGuides3D } from './SmartGuides3D';
 import { DimensionTooltip3D } from './DimensionTooltip3D';
 import { DimensionAnnotations3D } from './DimensionAnnotations3D';
@@ -418,16 +419,21 @@ export function SceneContent({
           elements likewise: their box follows the caption and its set size. A
           knife slot's box is derived from its blade measurements, so it is
           sized in the Knife panel, never dragged out of true here. */}
-      {selectedCutout &&
-        selectedCutout.shape !== 'mesh' &&
-        selectedCutout.shape !== 'text' &&
-        selectedCutout.shape !== 'knifeSlot' &&
-        !isInteracting && <CutoutHandles3D cutout={selectedCutout} onResizeStart={onResizeStart} />}
+      {/* Left out of the point magnifier, where a corner handle would sit on the point. */}
+      <group name={UNMAGNIFIED}>
+        {selectedCutout &&
+          selectedCutout.shape !== 'mesh' &&
+          selectedCutout.shape !== 'text' &&
+          selectedCutout.shape !== 'knifeSlot' &&
+          !isInteracting && (
+            <CutoutHandles3D cutout={selectedCutout} onResizeStart={onResizeStart} />
+          )}
 
-      {/* Rotation handle (not during interactions) */}
-      {selectedCutout && !isInteracting && (
-        <RotationHandle3D cutout={selectedCutout} onRotateStart={onRotateStart} />
-      )}
+        {/* Rotation handle (not during interactions) */}
+        {selectedCutout && !isInteracting && (
+          <RotationHandle3D cutout={selectedCutout} onRotateStart={onRotateStart} />
+        )}
+      </group>
 
       {/* Group bounding box + handles for multi-selection */}
       {groupBounds && (
@@ -502,12 +508,14 @@ export function SceneContent({
           return (
             <PathEditOverlay3D
               cutout={editCutout}
+              selectedRing={mode.ring}
               selectedPointIndex={mode.selectedPointIndex}
               previewOverrides={preview.get(editCutout.id)}
               segmentHover={segmentHover}
-              onPointDown={(index, mmX, mmY) => onVertexPointDown?.(index, mmX, mmY)}
-              onHandleDown={(index, handleType, mmX, mmY) =>
-                onVertexHandleDown?.(index, handleType, mmX, mmY)
+              dragTarget={mode.dragTarget}
+              onPointDown={(index, mmX, mmY, ring) => onVertexPointDown?.(index, mmX, mmY, ring)}
+              onHandleDown={(index, handleType, mmX, mmY, ring) =>
+                onVertexHandleDown?.(index, handleType, mmX, mmY, ring)
               }
             />
           );

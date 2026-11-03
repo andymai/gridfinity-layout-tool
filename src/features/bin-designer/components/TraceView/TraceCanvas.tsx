@@ -6,6 +6,7 @@ import type { Point, SceneShape, SceneTrace } from '@/shared/scanTrace';
 import { toImage, useViewport } from './viewport';
 import type { TracePhoto } from './useTraceSession';
 import { MARKS_NEEDED, type TraceMode } from './traceMode';
+import { TraceLoupe } from './TraceLoupe';
 
 interface TraceCanvasProps {
   readonly photo: TracePhoto;
@@ -66,8 +67,10 @@ export function TraceCanvas({
   const t = useTranslation();
   const box = useRef<HTMLDivElement | null>(null);
   const { width, height } = photo.image;
-  const { view, zoomBy, panBy, fit } = useViewport(photo.image, box);
+  const { view, box: measured, zoomBy, panBy, fit } = useViewport(photo.image, box);
   const [gesture, setGesture] = useState<Gesture | null>(null);
+  // Where the pointer is while marking, in screen pixels, for the loupe.
+  const [hover, setHover] = useState<Point | null>(null);
 
   const local = (e: React.PointerEvent): Point => {
     const r = box.current?.getBoundingClientRect();
@@ -103,12 +106,14 @@ export function TraceCanvas({
       setGesture({ kind: 'region', from, to: from });
       return;
     }
+    if (marking) setHover(at);
     setGesture({ kind: 'press', at, last: at, moved: false });
   };
 
   const handleMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!gesture) return;
     const at = local(e);
+    if (marking) setHover(at);
+    if (!gesture) return;
     if (gesture.kind === 'pan' || (gesture.kind === 'press' && gesture.moved)) {
       panBy(at.x - gesture.last.x, at.y - gesture.last.y);
       setGesture({ ...gesture, last: at });
@@ -168,6 +173,17 @@ export function TraceCanvas({
         : [];
   const rulerMm = mode !== 'ruler' && applied?.kind === 'ruler' ? applied.ruler.lengthMm : null;
 
+  // A press that has not moved is a mark about to land, and on a touch screen
+  // there was no hover before it; a press that moved is a pan.
+  const placing = !gesture || (gesture.kind === 'press' && !gesture.moved);
+  const loupeAt = !marking
+    ? null
+    : gesture?.kind === 'mark'
+      ? (marks.at(gesture.index) ?? null)
+      : hover && placing
+        ? clamp(toImage(view, hover))
+        : null;
+
   const cursor =
     gesture?.kind === 'pan' || (gesture?.kind === 'press' && gesture.moved)
       ? 'cursor-grabbing'
@@ -187,6 +203,7 @@ export function TraceCanvas({
       onPointerMove={handleMove}
       onPointerUp={handleUp}
       onPointerCancel={() => setGesture(null)}
+      onPointerLeave={() => setHover(null)}
       onContextMenu={(e) => e.preventDefault()}
     >
       <div
@@ -298,6 +315,17 @@ export function TraceCanvas({
           ))}
         </svg>
       </div>
+
+      {loupeAt && hover && (
+        <TraceLoupe
+          url={photo.url}
+          image={photo.image}
+          at={loupeAt}
+          scale={view.scale}
+          screen={hover}
+          canvas={measured ?? { width: 0, height: 0 }}
+        />
+      )}
 
       {busy && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-surface/30">

@@ -42,6 +42,8 @@ export const toImage = (view: View, p: Point): Point => ({
 
 export interface Viewport {
   readonly view: View;
+  /** The box's measured size, once measured. */
+  readonly box: Size | null;
   /** Zoom about a screen point, the box's middle when none is given. */
   readonly zoomBy: (factor: number, at?: Point) => void;
   readonly panBy: (dx: number, dy: number) => void;
@@ -110,5 +112,5 @@ export function useViewport(image: Size, box: RefObject<HTMLElement | null>): Vi
     return () => el.removeEventListener('wheel', onWheel);
   }, [box, zoomBy]);
 
-  return { view, zoomBy, panBy, fit };
+  return { view, box: size, zoomBy, panBy, fit };
 }
