@@ -22,6 +22,7 @@ import {
   resolveCutoutDrop,
   resolveCutoutSpan,
   safeCutoutCornerRadii,
+  shoulderBlend,
   type SafeCornerRadii,
 } from '@/shared/utils/wallCutoutPosition';
 
@@ -91,11 +92,12 @@ export function GhostWallCutouts() {
     };
 
     /**
-     * A quarter-arc corner, tessellated from `from` to `to` around `centre`.
+     * A corner arc, tessellated anticlockwise from `startAngle` around `centre`.
      *
-     * Both radii the panel exposes are quarter arcs against the same pair of
-     * axes: the top round-over blends the rim into the cut's side, the bottom
-     * fillet blends the side into the floor. Only the quadrant differs.
+     * On a straight side both radii the panel exposes are quarter arcs against
+     * the same pair of axes: the top round-over blends the rim into the cut's
+     * side, the bottom fillet blends the side into the floor. Only the quadrant
+     * differs. A funnel's leaning side shortens the top one's `sweep`.
      */
     const addQuarter = (
       axis: 'front-back' | 'left-right',
@@ -104,12 +106,13 @@ export function GhostWallCutouts() {
       centreX: number,
       centreZ: number,
       startAngle: number,
-      radius: number
+      radius: number,
+      sweep = Math.PI / 2
     ) => {
       if (radius <= 0) return;
       for (let i = 0; i < ARC_SEGMENTS; i++) {
-        const a0 = startAngle + (Math.PI / 2) * (i / ARC_SEGMENTS);
-        const a1 = startAngle + (Math.PI / 2) * ((i + 1) / ARC_SEGMENTS);
+        const a0 = startAngle + sweep * (i / ARC_SEGMENTS);
+        const a1 = startAngle + sweep * ((i + 1) / ARC_SEGMENTS);
         pushLine(
           axis,
           cx,
@@ -239,14 +242,35 @@ export function GhostWallCutouts() {
       const z0 = cz - hh;
       const z1 = cz + hh;
       const bottomHW = hw * FUNNEL_TAPER;
+      const lean = (hw - bottomHW) / (z1 - z0);
+      const right = shoulderBlend(hw, z1, lean, corner.topRight);
+      const left = shoulderBlend(hw, z1, lean, corner.topLeft);
       pushLine(axis, cx, cy, -bottomHW, z0, bottomHW, z0); // Bottom
-      pushLine(axis, cx, cy, hw, z1 - corner.topRight, bottomHW, z0); // Right taper
-      pushLine(axis, cx, cy, -hw, z1 - corner.topLeft, -bottomHW, z0); // Left taper
+      pushLine(axis, cx, cy, right.side[0], right.side[1], bottomHW, z0); // Right taper
+      pushLine(axis, cx, cy, -left.side[0], left.side[1], -bottomHW, z0); // Left taper
       // No bottom fillet here: the taper meets the floor at an oblique angle,
-      // so its blend is not the quarter arc `addQuarter` draws, and an outline
-      // that is wrong by a visible amount is worse than one that is plainly
-      // approximate. The solid still fillets it.
-      addTopFlares(axis, cx, cy, hw, z1, corner);
+      // and an outline that is wrong by a visible amount is worse than one
+      // that is plainly approximate. The solid still fillets it.
+      addQuarter(
+        axis,
+        cx,
+        cy,
+        right.centre[0],
+        right.centre[1],
+        Math.PI / 2,
+        right.radius,
+        right.sweep
+      );
+      addQuarter(
+        axis,
+        cx,
+        cy,
+        -left.centre[0],
+        left.centre[1],
+        Math.PI / 2 - left.sweep,
+        left.radius,
+        left.sweep
+      );
     };
 
     const addOutline = (

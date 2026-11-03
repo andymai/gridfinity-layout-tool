@@ -295,7 +295,9 @@ function wallGaps(
       // The opening AT THE LIP, not the nominal span. A rounded shoulder is a
       // flare that reaches its full radius exactly at the rim, so the stretch
       // with no lip is wider than the cut the user set — per end, since one
-      // end can sit flush against the wall and take no round at all.
+      // end can sit flush against the wall and take no round at all. A
+      // funnel's leaning side reaches less (`shoulderBlend`), so for it this
+      // is a bound that costs a rail a little length, never its grip.
       const round = safeCutoutCornerRadii(
         resolveCutoutCornerRadii(params.walls, cfg, cutWidth),
         cutWidth,

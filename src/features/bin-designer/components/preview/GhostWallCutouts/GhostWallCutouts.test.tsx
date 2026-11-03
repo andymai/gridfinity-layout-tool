@@ -226,6 +226,52 @@ describe('GhostWallCutouts', () => {
     }
   });
 
+  it("turns a funnel's round-over smoothly onto its slope", () => {
+    // Where two outline segments meet, the angle the outline turns through.
+    // Along a tessellated arc that is one step of the arc; where a blend lands
+    // vertically on a leaning side it is the whole lean on top.
+    const ARC_STEP = Math.PI / 2 / 16;
+    generating({
+      shape: 'funnel',
+      left: { ...DEFAULT_BIN_PARAMS.walls.left, cornerRadiusTop: 4 },
+      right: { ...DEFAULT_BIN_PARAMS.walls.right, cornerRadiusTop: 4 },
+    });
+    render(<GhostWallCutouts />);
+
+    const p = captured.positions;
+    const segments: Array<[number[], number[]]> = [];
+    for (let i = 0; i < p.length; i += 6) {
+      segments.push([p.slice(i, i + 3), p.slice(i + 3, i + 6)]);
+    }
+    const zs = segments.flat().map((pt) => pt[2]);
+    const midZ = (Math.min(...zs) + Math.max(...zs)) / 2;
+    const same = (a: number[], b: number[]): boolean =>
+      Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) < 1e-6;
+    const away = (seg: [number[], number[]], at: number[]): number[] => {
+      const far = same(seg[0], at) ? seg[1] : seg[0];
+      return [far[0] - at[0], far[1] - at[1], far[2] - at[2]];
+    };
+
+    let junctions = 0;
+    let sharpest = 0;
+    segments.forEach((a, i) => {
+      for (const at of a) {
+        if (at[2] < midZ) continue;
+        segments.slice(i + 1).forEach((b) => {
+          if (!same(b[0], at) && !same(b[1], at)) return;
+          const u = away(a, at);
+          const v = away(b, at);
+          const cos =
+            (u[0] * v[0] + u[1] * v[1] + u[2] * v[2]) / (Math.hypot(...u) * Math.hypot(...v));
+          sharpest = Math.max(sharpest, Math.PI - Math.acos(Math.min(1, Math.max(-1, cos))));
+          junctions++;
+        });
+      }
+    });
+    expect(junctions).toBeGreaterThan(0);
+    expect(sharpest).toBeLessThan(ARC_STEP + 1e-6);
+  });
+
   it('draws nothing extra when both radii are on their defaults', () => {
     generating({});
     render(<GhostWallCutouts />);

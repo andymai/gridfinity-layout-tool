@@ -10,7 +10,7 @@ import {
   cornerSlackFor,
 } from './wallCutoutBuilder';
 import type { CornerSlack } from './wallCutoutBuilder';
-import type { CutoutCornerRadii } from '@/shared/utils/wallCutoutPosition';
+import { shoulderBlend, type CutoutCornerRadii } from '@/shared/utils/wallCutoutPosition';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { CUT_RIM_CLEARANCE, LIP_HEIGHT } from './generatorConstants';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
@@ -545,12 +545,34 @@ describe('buildSingleCutout corner placement', () => {
       expect(openingAt(TOP_R - 0.5)).toBeLessThan(CUT_WIDTH + 0.2);
     });
 
-    it('flares the funnel and the scoop the same way', () => {
-      for (const shape of ['funnel', 'scoop'] as const) {
+    it('flares the scoop the same way', () => {
+      expect(spanAtZ('scoop', WALL_HEIGHT, CUT_HEIGHT, undefined, withTop(TOP_R))).toBeCloseTo(
+        CUT_WIDTH + 2 * TOP_R,
+        1
+      );
+    });
+
+    it("lands the funnel's round-over on its slope", () => {
+      // The funnel's side runs from the profile's top corner down to 60% of
+      // the span at the floor. A blend that drops vertically onto it leaves a
+      // crease where the two meet; a tangent one hands over to the slope with
+      // no change of direction, and the slope below keeps its taper.
+      const bottomHW = (CUT_WIDTH * 0.6) / 2;
+      const lean = (CUT_WIDTH / 2 - bottomHW) / (CUT_HEIGHT + OVERSHOOT);
+      const sideAtRim = CUT_WIDTH / 2 - lean * OVERSHOOT;
+      const blend = shoulderBlend(sideAtRim, 0, lean, TOP_R);
+      const [cx, cy] = blend.centre;
+      const landing = -blend.side[1];
+      const openingAt = (depth: number): number =>
+        2 *
+        (depth <= landing
+          ? cx - Math.sqrt(TOP_R * TOP_R - (cy + depth) ** 2)
+          : sideAtRim - lean * depth);
+      for (const depth of [0, 1, landing / 2, landing - 0.5, landing + 0.5, landing + 5]) {
         expect(
-          spanAtZ(shape, WALL_HEIGHT, CUT_HEIGHT, undefined, withTop(TOP_R)),
-          shape
-        ).toBeCloseTo(CUT_WIDTH + 2 * TOP_R, 1);
+          spanAtZ('funnel', WALL_HEIGHT - depth, CUT_HEIGHT, undefined, withTop(TOP_R)),
+          `${depth.toFixed(2)}mm below the rim`
+        ).toBeCloseTo(openingAt(depth), 1);
       }
     });
 

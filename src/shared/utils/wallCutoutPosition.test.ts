@@ -7,6 +7,7 @@ import {
   resolveCutoutDrop,
   resolveCutoutSpan,
   safeCutoutCornerRadii,
+  shoulderBlend,
 } from './wallCutoutPosition';
 
 describe('computeCutoutCenter', () => {
@@ -230,5 +231,53 @@ describe('safeCutoutCornerRadii', () => {
     // declines to widen the gap by, or the two disagree about the opening.
     const safe = safeCutoutCornerRadii({ top: 0.05, bottom: 0.05 }, CUT, DEPTH, LIP);
     expect(safe).toEqual({ topLeft: 0, topRight: 0, bottomLeft: 0, bottomRight: 0 });
+  });
+});
+
+describe('shoulderBlend', () => {
+  const RIM = 40;
+  const SIDE_AT_RIM = 20;
+  const R = 5;
+
+  it('is a quarter arc on a straight side', () => {
+    const b = shoulderBlend(SIDE_AT_RIM, RIM, 0, R);
+    expect(b.rim).toEqual([SIDE_AT_RIM + R, RIM]);
+    expect(b.side).toEqual([SIDE_AT_RIM, RIM - R]);
+    expect(b.centre).toEqual([SIDE_AT_RIM + R, RIM - R]);
+    expect(b.sweep).toBeCloseTo(Math.PI / 2, 12);
+  });
+
+  it('lands tangent to a leaning side, not vertically onto it', () => {
+    const lean = 0.25;
+    const b = shoulderBlend(SIDE_AT_RIM, RIM, lean, R);
+    const [cx, cy] = b.centre;
+    // The side, as the line through (SIDE_AT_RIM, RIM) that moves `lean`
+    // outboard per mm of rise. Unit direction pointing down it:
+    const len = Math.hypot(lean, 1);
+    const down = [-lean / len, -1 / len];
+    const sideXAt = (y: number): number => SIDE_AT_RIM - lean * (RIM - y);
+
+    // Tangent to the rim: the centre sits a radius below it, the rim point
+    // directly above the centre.
+    expect(cy).toBeCloseTo(RIM - R, 12);
+    expect(b.rim[0]).toBeCloseTo(cx, 12);
+    // Tangent to the side: the landing is on the side, a radius from the
+    // centre, and the radius there is square to the side.
+    expect(b.side[0]).toBeCloseTo(sideXAt(b.side[1]), 12);
+    expect(Math.hypot(b.side[0] - cx, b.side[1] - cy)).toBeCloseTo(R, 12);
+    expect((b.side[0] - cx) * down[0] + (b.side[1] - cy) * down[1]).toBeCloseTo(0, 12);
+    // The centre is a radius from the side's line, so the arc touches it once.
+    const crossTrack = (cx - SIDE_AT_RIM) * down[1] - (cy - RIM) * down[0];
+    expect(Math.abs(crossTrack)).toBeCloseTo(R, 12);
+
+    expect(Math.hypot(b.mid[0] - cx, b.mid[1] - cy)).toBeCloseTo(R, 12);
+    expect(b.sweep).toBeCloseTo(Math.PI / 2 - Math.atan(lean), 12);
+  });
+
+  it('reaches less than its radius on a leaning side', () => {
+    const b = shoulderBlend(SIDE_AT_RIM, RIM, 0.25, R);
+    expect(b.rim[0] - SIDE_AT_RIM).toBeLessThan(R);
+    expect(b.rim[0] - SIDE_AT_RIM).toBeGreaterThan(0);
+    expect(RIM - b.side[1]).toBeLessThan(R);
   });
 });
