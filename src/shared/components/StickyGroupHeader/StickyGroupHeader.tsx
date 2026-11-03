@@ -10,7 +10,31 @@
 
 import { useState, useId, type ReactNode } from 'react';
 import { Button } from '@/design-system';
+import { cn } from '@/design-system/cn';
 import { ChevronDownIcon } from '@/design-system/Icon';
+
+/**
+ * `band` is for a panel whose groups hold their own small-caps sub-headers:
+ * the default header is set in that same style, so with several groups open
+ * the two levels read alike and a group's end is hard to find.
+ */
+export type StickyGroupHeaderVariant = 'default' | 'band';
+
+const ROOT_CLASS: Record<StickyGroupHeaderVariant, string> = {
+  default: 'border-b border-stroke-subtle',
+  band: 'border-t-8 border-surface',
+};
+
+const BUTTON_CLASS: Record<StickyGroupHeaderVariant, string> = {
+  default:
+    'backdrop-blur-sm bg-surface-secondary/90 border-b border-stroke-subtle/50 px-4 py-3 hover:bg-surface-hover/50',
+  band: 'bg-surface-elevated border-y border-stroke px-4 py-2.5 hover:bg-surface-hover',
+};
+
+const TITLE_CLASS: Record<StickyGroupHeaderVariant, string> = {
+  default: 'text-label font-bold text-content-tertiary uppercase tracking-widest',
+  band: 'text-title text-content',
+};
 
 interface StickyGroupHeaderBaseProps {
   title: string;
@@ -24,6 +48,7 @@ interface StickyGroupHeaderBaseProps {
    *  dot; there is no separate boolean, so the mark cannot exist unlabelled:
    *  the dot itself is aria-hidden and would otherwise be visual-only. */
   modifiedLabel?: string;
+  variant?: StickyGroupHeaderVariant;
   children: ReactNode;
 }
 
@@ -43,6 +68,7 @@ export function StickyGroupHeader({
   summary,
   badge,
   modifiedLabel,
+  variant = 'default',
   children,
 }: StickyGroupHeaderProps) {
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
@@ -56,12 +82,15 @@ export function StickyGroupHeader({
   const contentId = useId();
 
   return (
-    <div className="border-b border-stroke-subtle">
+    <div className={ROOT_CLASS[variant]} data-variant={variant}>
       <Button
         type="button"
         variant="ghost"
         touchTarget={false}
-        className="sticky top-0 z-10 flex w-full items-center justify-start gap-2 rounded-none backdrop-blur-sm bg-surface-secondary/90 border-b border-stroke-subtle/50 px-4 py-3 hover:bg-surface-hover/50 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
+        className={cn(
+          'sticky top-0 z-10 flex w-full items-center justify-start gap-2 rounded-none transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset',
+          BUTTON_CLASS[variant]
+        )}
         onClick={() => {
           setHasToggled(true);
           setExpanded(!expanded);
@@ -70,12 +99,14 @@ export function StickyGroupHeader({
         aria-controls={contentId}
       >
         <ChevronDownIcon
-          className={`transition-transform duration-200 text-content-tertiary ${expanded ? 'rotate-0' : '-rotate-90'}`}
-          size="xs"
+          className={cn(
+            'transition-transform duration-200',
+            variant === 'band' ? 'text-content-secondary' : 'text-content-tertiary',
+            expanded ? 'rotate-0' : '-rotate-90'
+          )}
+          size={variant === 'band' ? 'sm' : 'xs'}
         />
-        <span className="text-label font-bold text-content-tertiary uppercase tracking-widest">
-          {title}
-        </span>
+        <span className={TITLE_CLASS[variant]}>{title}</span>
         {modifiedLabel && (
           <>
             {/* `title` as well as the sr-only text: a bare dot is unexplained
