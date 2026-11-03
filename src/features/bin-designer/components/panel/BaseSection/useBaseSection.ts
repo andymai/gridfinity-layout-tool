@@ -53,7 +53,7 @@ import {
 import { deriveBodyType } from './bodyType';
 import { useBodyTypeSwitch } from './useBodyTypeSwitch';
 import { finalizeBaseParams } from './finalizeBaseParams';
-import { useMagnetPressFit } from './useMagnetPressFit';
+import { useHoleOptions } from './useHoleOptions';
 import { resolveSlant } from '@/shared/utils/slantPlan';
 
 /**
@@ -100,7 +100,7 @@ export function useBaseSection() {
   const hasScrew = isScrewStyle(base.style);
   const trayBottom = resolveTrayBottomConfig(base.trayBottom, params.lid.retentionMagnet);
   const hasHalfSockets = base.halfSockets;
-  const pressFit = useMagnetPressFit(base, nestingBase, updateBase);
+  const holes = useHoleOptions(base, nestingBase, updateBase);
   // The foot lattice is inert in two cases, and the picker shows what the part
   // will actually be built with rather than the stored choice. The stored value
   // is left alone so it comes back when the blocker does.
@@ -543,9 +543,9 @@ export function useBaseSection() {
       detachableUnplaceable,
       detachableSavingPercent,
       hasMagnet,
-      magnetCrushRibs: pressFit.crushRibs,
-      magnetChamfer: pressFit.chamfer,
-      magnetChamferUnavailable: pressFit.chamferUnavailable,
+      magnetCrushRibs: holes.crushRibs,
+      magnetChamfer: holes.chamfer,
+      magnetChamferUnavailable: holes.chamferUnavailable,
       magnetDiameter: nestingBase ? trayBottom.retentionMagnet.diameter : base.magnetDiameter,
       magnetDepth: nestingBase ? trayBottom.retentionMagnet.depth : base.magnetDepth,
       magnetDiameterMin: nestingBase
@@ -571,6 +571,9 @@ export function useBaseSection() {
       magnetEdgeMax: LID_MAGNET_EDGE_COUNT_MAX,
       magnetEdgeStep: LID_MAGNET_EDGE_COUNT_STEP,
       hasScrew,
+      // A Nesting body places its retention magnets itself.
+      showCornerHoles: (hasMagnet || hasScrew) && !nestingBase,
+      cornerHolesOnly: holes.cornerHolesOnly,
       bodyType,
       trayBottom,
       hasHalfSockets,
@@ -632,6 +635,7 @@ export function useBaseSection() {
           : undefined,
       toggleMagnet,
       toggleScrew,
+      setCornerHolesOnly: holes.setCornerHolesOnly,
       toggleStackingLip,
       setLipTip,
       toggleLipNotches,
@@ -657,8 +661,8 @@ export function useBaseSection() {
       setMagnetDiameter,
       setMagnetHeight,
       setMagnetEdgeCount,
-      setMagnetCrushRibs: pressFit.setCrushRibs,
-      setMagnetChamfer: pressFit.setChamfer,
+      setMagnetCrushRibs: holes.setCrushRibs,
+      setMagnetChamfer: holes.setChamfer,
       setScrewDiameter,
       toggleFloorPattern,
       setFloorPatternType,

@@ -428,6 +428,8 @@
   "binDesigner.base.magnetChamferHint": "Eine 45°-Fase an der Öffnung jedes Lochs führt den Magneten gerade hinein.",
   "binDesigner.base.magnetChamferLightweight": "Ein Leichtbau-Boden lässt um jedes Loch zu wenig Wand für eine Fase.",
   "binDesigner.base.magnetChamferNesting": "Stapelmagnete sitzen in Buchsen, die für eine Fase zu dünn sind.",
+  "binDesigner.base.cornerHolesOnly": "Nur Ecken",
+  "binDesigner.base.cornerHolesOnlyDetail": "Setzt Magnet- und Schraubenlöcher nur in die äußeren Ecken der Box. Eine große Box braucht so weniger Magnete und lässt sich leichter von der Grundplatte abheben.",
   "binDesigner.base.screwDiameter": "Schraubendurchmesser",
   "binDesigner.base.screwHoles": "Schraubenlöcher",
   "binDesigner.base.section.feet": "Füße",

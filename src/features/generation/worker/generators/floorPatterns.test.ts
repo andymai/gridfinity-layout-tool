@@ -3,8 +3,10 @@ import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
 import { resolveTrayBottomInputs } from './trayBottomInputs';
 import type { BinParams } from '@/shared/types/bin';
+import type { CellMask } from '@/shared/utils/cellMask';
 import { deriveDimensions } from './pipeline/context';
 import { floorPatternApplies, planFloorPattern } from './floorPatterns';
+import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { floorWindowInset, nestingFloorWindowSpan } from './floorPatternWindow';
 import { CLEARANCE, FOOT_INSET_BOT, SIZE, SOCKET_HEIGHT } from './generatorConstants';
 
@@ -158,6 +160,66 @@ describe('planFloorPattern keep-outs', () => {
     const window = plan(params)?.windows[0];
     // Four corner pockets per foot, all inside the window.
     expect(window?.keepOuts).toHaveLength(4);
+  });
+
+  it('reserves only the drilled pockets when holes sit at the corners alone', () => {
+    const corners = { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' as const, cornerHolesOnly: true };
+    const windows = plan(makeParams({ base: corners }))?.windows ?? [];
+    expect(windows.map((w) => w.keepOuts.length)).toEqual([1, 1, 1, 1]);
+  });
+
+  it('reserves the screw bores detachable feet drill at the corners', () => {
+    const params = makeParams({
+      width: 2.5,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'screw',
+        feet: 'detachable',
+        cornerHolesOnly: true,
+      },
+    });
+    const dim = deriveDimensions(params, false);
+    expect(dim.detachableFeet).toBe(true);
+    const centres = (planFloorPattern(params, dim)?.windows ?? []).flatMap((w) =>
+      w.keepOuts.map((k) => `${w.x + (k.uMin + k.uMax) / 2},${w.y + (k.zMin + k.zMax) / 2}`)
+    );
+    for (const [x, y] of resolveDetachableFeet(params).screw?.positions ?? []) {
+      expect(centres).toContain(`${x},${y}`);
+    }
+  });
+
+  it('reserves the corners an underside-relief base drills in a split cell', () => {
+    // 2x2 at half-unit resolution with only the top-right half-unit removed, so
+    // the lightweight base splits that cell into three half cells.
+    const notch: CellMask = { cols: 4, rows: 4, cells: [...Array<1>(15).fill(1), 0] };
+    const params = makeParams({
+      cellMask: notch,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'magnet',
+        lightweight: true,
+        lightweightMode: 'underside',
+        cornerHolesOnly: true,
+      },
+    });
+    const dim = deriveDimensions(params, false);
+    const centres = (planFloorPattern(params, dim)?.windows ?? []).flatMap((w) =>
+      w.keepOuts.map((k) => `${w.x + (k.uMin + k.uMax) / 2},${w.y + (k.zMin + k.zMax) / 2}`)
+    );
+    expect(centres).toContain('31.5,10.5');
+    expect(centres).toContain('10.5,31.5');
+  });
+
+  it("keeps an L-shaped bin's five corner pockets, not the removed cell's", () => {
+    const corners = { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' as const, cornerHolesOnly: true };
+    // 2x2 at half-unit resolution, bottom row first, top-right unit removed.
+    const lShape: CellMask = {
+      cols: 4,
+      rows: 4,
+      cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0],
+    };
+    const windows = plan(makeParams({ base: corners, cellMask: lShape }))?.windows ?? [];
+    expect(windows.reduce((n, w) => n + w.keepOuts.length, 0)).toBe(5);
   });
 
   it('reserves the footprint of a divider that crosses a foot', () => {

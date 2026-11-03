@@ -379,3 +379,34 @@ describe('BaseSection magnet press-fit options', () => {
     expect(screen.getByText(/too little wall around each hole/)).toBeInTheDocument();
   });
 });
+
+describe('BaseSection corner-only holes', () => {
+  const withBase = (base: Partial<typeof DEFAULT_BIN_PARAMS.base>) =>
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, ...base } },
+      ui: { ...DEFAULT_UI_STATE },
+    });
+
+  it('stores the choice as present-or-absent, never false', async () => {
+    withBase({ style: 'screw' });
+    const user = userEvent.setup();
+    render(<BaseSection />);
+    const corners = screen.getByRole('switch', { name: 'Corners only' });
+    expect(corners).not.toBeChecked();
+
+    await user.click(corners);
+    expect(useDesignerStore.getState().params.base.cornerHolesOnly).toBe(true);
+
+    await user.click(corners);
+    expect(useDesignerStore.getState().params.base.cornerHolesOnly).toBeUndefined();
+  });
+
+  it('is offered only while the base drills magnet or screw holes', () => {
+    withBase({ style: 'standard' });
+    render(<BaseSection />);
+    expect(screen.queryByRole('switch', { name: 'Corners only' })).not.toBeInTheDocument();
+
+    act(() => withBase({ style: 'magnet' }));
+    expect(screen.getByRole('switch', { name: 'Corners only' })).toBeInTheDocument();
+  });
+});

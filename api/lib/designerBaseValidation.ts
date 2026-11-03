@@ -64,6 +64,7 @@ export function validateBase(base: unknown): string | null {
   for (const key of [
     'magnetCrushRibs',
     'magnetChamfer',
+    'cornerHolesOnly',
     'lowProfile',
     'rimFillet',
     'lipNotches',

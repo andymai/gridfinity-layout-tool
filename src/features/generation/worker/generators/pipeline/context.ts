@@ -226,6 +226,7 @@ export function deriveDimensions(
     !noAttachment && (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw');
   const withScrew =
     !noAttachment && (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
+  const cornerHolesOnly = (withMagnet || withScrew) && params.base.cornerHolesOnly === true;
 
   // Nothing under the body once the feet come off. The printed part is
   // SOCKET_HEIGHT shorter than the assembly, which is why `assembledHeight`
@@ -438,6 +439,7 @@ export function deriveDimensions(
       // body, and a 1u body can floor its wall at MIN_BODY_WALL_MM in both
       // profiles. Appended only when set, so standard keys stay byte-identical.
       ...(params.base.lowProfile === true && !socketless ? ['lowprofile'] : []),
+      ...(cornerHolesOnly ? ['corner-holes'] : []),
       // The one thing `omitLipSolid` changes is this shell, so it must not
       // share a cache entry with the lipped shell it is otherwise identical to.
       // Appended only when set, so every ordinary bin keeps a byte-identical
@@ -514,6 +516,7 @@ export function deriveDimensions(
     omitLipSolid: omitsLipSolid,
     withMagnet,
     withScrew,
+    cornerHolesOnly,
     compartmentsBakedIntoShell,
     overhang,
     innerOffsetX,

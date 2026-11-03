@@ -55,6 +55,7 @@ import { SIZE, CLEARANCE, SOCKET_HEIGHT, MAGNET_FLOOR } from './generatorConstan
 import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import { buildMagnetHoleCutter } from './magnetHoleCutter';
+import { outerCornerHoleFilter } from '@/shared/generation/cornerHoles';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { PLAIN_MAGNET_HOLE, magnetChamferFits } from '@/shared/generation/magnetHoleStyle';
 import type { MagnetAnchor } from '@/core/types';
@@ -173,7 +174,8 @@ export function buildLightweightBase(
    */
   floorThickness?: number,
   holeStyle: MagnetHoleStyle = PLAIN_MAGNET_HOLE,
-  socketHeight: number = SOCKET_HEIGHT
+  socketHeight: number = SOCKET_HEIGHT,
+  cornersOnly = false
 ): LightweightBase {
   const usingMask = isPartialMask(cellMask);
   // Per-axis pitch: unitX scales width/columns, unitY scales depth/rows.
@@ -374,6 +376,7 @@ export function buildLightweightBase(
         (withMagnet ? magnetDepth : socketHeight) + (withMagnet ? MAGNET_FLOOR : 0);
       const pads: Shape3D[] = [];
       const drills: Shape3D[] = [];
+      const cellPositions: Array<Array<[number, number]>> = [];
       forEachSocketCell(
         gridW,
         gridD,
@@ -385,7 +388,14 @@ export function buildLightweightBase(
           if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
           // Fit-or-center magnet positions so a non-square/small foot's pads and
           // drills stay inside the foot instead of breaching its side.
-          const positions = magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor);
+          cellPositions.push(magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor));
+        },
+        fractionalEdge
+      );
+      const keep = cornersOnly ? outerCornerHoleFilter(cellPositions.flat()) : () => true;
+      for (const all of cellPositions) {
+        const positions = all.filter(keep);
+        if (positions.length > 0) {
           for (const p of buildCellPads(
             scope,
             positions,
@@ -426,9 +436,8 @@ export function buildLightweightBase(
               );
             }
           }
-        },
-        fractionalEdge
-      );
+        }
+      }
       if (pads.length > 0) {
         const padUnion = scope.register(unwrap(fuseAll(pads as ValidSolid[])));
         const padded = unwrap(fuse(base, padUnion));

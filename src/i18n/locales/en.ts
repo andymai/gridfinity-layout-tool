@@ -4279,6 +4279,9 @@ const en: Record<string, string> = {
   'binDesigner.base.magnetChamferLightweight':
     'A lightweight base leaves too little wall around each hole for a lead-in.',
   'binDesigner.base.magnetChamferNesting': 'Nesting magnets sit in bosses too thin for a lead-in.',
+  'binDesigner.base.cornerHolesOnly': 'Corners only',
+  'binDesigner.base.cornerHolesOnlyDetail':
+    'Puts magnet and screw holes only at the outer corners of the bin. A large bin needs fewer magnets and lifts off the baseplate more easily.',
   'binDesigner.base.screwHoles': 'Screw holes',
   'binDesigner.base.screwDiameter': 'Screw diameter',
   'binDesigner.lightweight.useUnderside': 'Use underside relief',

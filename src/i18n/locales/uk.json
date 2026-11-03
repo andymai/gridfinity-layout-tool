@@ -428,6 +428,8 @@
   "binDesigner.base.magnetChamferHint": "Фаска 45° на вході кожного отвору спрямовує магніт рівно.",
   "binDesigner.base.magnetChamferLightweight": "Полегшена основа залишає надто мало стінки навколо кожного отвору для фаски.",
   "binDesigner.base.magnetChamferNesting": "Магніти для вкладання сидять у бобишках, надто тонких для фаски.",
+  "binDesigner.base.cornerHolesOnly": "Лише кути",
+  "binDesigner.base.cornerHolesOnlyDetail": "Отвори для магнітів і гвинтів робляться лише в зовнішніх кутах контейнера. Великому контейнеру потрібно менше магнітів, і його легше зняти з опорної плити.",
   "binDesigner.base.screwDiameter": "Діаметр гвинта",
   "binDesigner.base.screwHoles": "Отвори для гвинтів",
   "binDesigner.base.section.feet": "Ніжки",

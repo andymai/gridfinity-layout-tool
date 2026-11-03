@@ -428,6 +428,8 @@
   "binDesigner.base.magnetChamferHint": "各穴の開口部の45°面取りがマグネットをまっすぐ導きます。",
   "binDesigner.base.magnetChamferLightweight": "軽量ベースでは各穴の周りに面取り用の壁が足りません。",
   "binDesigner.base.magnetChamferNesting": "ネスト用マグネットのボスは面取りには薄すぎます。",
+  "binDesigner.base.cornerHolesOnly": "角のみ",
+  "binDesigner.base.cornerHolesOnlyDetail": "マグネット穴とネジ穴をビンの外側の角だけに開けます。大きなビンでもマグネットが少なくて済み、ベースプレートから外しやすくなります。",
   "binDesigner.base.screwDiameter": "ネジ直径",
   "binDesigner.base.screwHoles": "ネジ穴",
   "binDesigner.base.section.feet": "脚",

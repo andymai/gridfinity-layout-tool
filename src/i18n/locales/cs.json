@@ -428,6 +428,8 @@
   "binDesigner.base.magnetChamferHint": "Zkosení 45° u ústí každého otvoru navede magnet rovně dovnitř.",
   "binDesigner.base.magnetChamferLightweight": "Odlehčené dno nechává kolem otvoru příliš málo stěny pro zkosení.",
   "binDesigner.base.magnetChamferNesting": "Magnety pro vkládání sedí v nálitcích příliš tenkých pro zkosení.",
+  "binDesigner.base.cornerHolesOnly": "Jen rohy",
+  "binDesigner.base.cornerHolesOnlyDetail": "Otvory pro magnety a šrouby budou jen ve vnějších rozích boxu. Velký box tak potřebuje méně magnetů a snáz se zvedá ze základní desky.",
   "binDesigner.base.screwDiameter": "Průměr šroubu",
   "binDesigner.base.screwHoles": "Otvory pro šrouby",
   "binDesigner.base.section.feet": "Nožky",

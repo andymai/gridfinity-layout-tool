@@ -499,6 +499,13 @@ export interface BaseConfig {
    * bosses, feet), where the plain mouth stays. Absent means off.
    */
   readonly magnetChamfer?: boolean;
+  /**
+   * Drill the magnet and screw holes at the bin's outer corners only, instead
+   * of under every foot (`outerCornerHoleFilter`). Absent means every foot, for
+   * the same fingerprint reason as {@link magnetCrushRibs}. Inert without magnet
+   * or screw holes.
+   */
+  readonly cornerHolesOnly?: boolean;
   readonly screwDiameter: number;
   readonly stackingLip: boolean;
   /**

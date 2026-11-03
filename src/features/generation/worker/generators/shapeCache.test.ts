@@ -23,6 +23,24 @@ describe('socketCacheKey', () => {
     expect(key).toBe('v2|2|2|42|true|false|3.1|2|1.5|false|false|rect');
   });
 
+  it('appends a segment only for corner-only holes', () => {
+    const args = [2, 2, true, false, 3.1, 2.0, 1.5, false, false, ''] as const;
+    const every = socketCacheKey(...args);
+    const corners = socketCacheKey(
+      ...args,
+      undefined,
+      undefined,
+      'end',
+      'end',
+      undefined,
+      '',
+      undefined,
+      true
+    );
+    expect(every).toBe('v2|2|2|42|true|false|3.1|2|1.5|false|false|rect');
+    expect(corners).toBe(`${every}|corners`);
+  });
+
   it('differs when magnet flag changes', () => {
     const a = socketCacheKey(1, 1, true, false, 3.1, 2.0, 1.5, false, false, '');
     const b = socketCacheKey(1, 1, false, false, 3.1, 2.0, 1.5, false, false, '');

@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'corner-holes-only',
+    date: '2026-11-02',
+    kind: 'new',
+    title: { en: 'Magnet and screw holes at the corners only' },
+    body: {
+      en: 'Turn on Corners only under Mounting in the bin designer and a bin gets its magnet and screw holes at the outer corners instead of under every foot. A large bin then needs just four magnets and lifts off the baseplate more easily.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'trace-photo-desktop',
     date: '2026-11-02',
     kind: 'new',

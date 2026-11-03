@@ -115,6 +115,10 @@
           "type": "boolean",
           "description": "45 degree lead-in at each magnet hole's mouth. Skipped where the surrounding wall is too thin. Absent means off."
         },
+        "cornerHolesOnly": {
+          "type": "boolean",
+          "description": "Drill the magnet and screw holes at the bin's outer corners only, instead of under every foot. Absent means every foot."
+        },
         "screwDiameter": {
           "type": "number",
           "minimum": 2,

@@ -321,3 +321,39 @@ describe('half-offset placement', () => {
     });
   });
 });
+
+describe('corner-only holes', () => {
+  const resolveCorners = (cornerHolesOnly: boolean) =>
+    resolveDetachableFeet({
+      width: 3,
+      depth: 2,
+      gridUnitMm: 42,
+      fractionalEdgeX: 'end',
+      fractionalEdgeY: 'end',
+      base: {
+        style: 'magnet_and_screw',
+        magnetDiameter: 6.5,
+        magnetDepth: 2,
+        screwDiameter: 3,
+        cornerHolesOnly,
+      },
+    });
+
+  it('offers the four outer corners to both the magnet and the screw', () => {
+    const corners = resolveCorners(true);
+    const expected = [
+      [-55, -34],
+      [-55, 34],
+      [55, -34],
+      [55, 34],
+    ];
+    const sorted = (ps: ReadonlyArray<readonly [number, number]> | undefined) =>
+      [...(ps ?? [])].map(([x, y]) => [x, y]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    expect(sorted(corners.magnet?.positions)).toEqual(expected);
+    expect(sorted(corners.screw?.positions)).toEqual(expected);
+  });
+
+  it('offers every corner a foot covers when off', () => {
+    expect(resolveCorners(false).magnet?.positions.length).toBeGreaterThan(4);
+  });
+});

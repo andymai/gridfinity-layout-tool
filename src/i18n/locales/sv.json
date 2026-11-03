@@ -428,6 +428,8 @@
   "binDesigner.base.magnetChamferHint": "En 45°-fas vid öppningen av varje hål styr magneten rakt in.",
   "binDesigner.base.magnetChamferLightweight": "En lättviktsbotten lämnar för lite vägg runt varje hål för en fas.",
   "binDesigner.base.magnetChamferNesting": "Nästmagneter sitter i klackar som är för tunna för en fas.",
+  "binDesigner.base.cornerHolesOnly": "Bara hörnen",
+  "binDesigner.base.cornerHolesOnlyDetail": "Sätter magnet- och skruvhål bara i lådans yttre hörn. En stor låda behöver färre magneter och lyfts lättare av bottenplattan.",
   "binDesigner.base.screwDiameter": "Skruvdiameter",
   "binDesigner.base.screwHoles": "Skruvhål",
   "binDesigner.base.section.feet": "Fötter",

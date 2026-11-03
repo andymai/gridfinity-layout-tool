@@ -428,6 +428,8 @@
   "binDesigner.base.magnetChamferHint": "每个孔口的 45° 倒角引导磁铁笔直压入。",
   "binDesigner.base.magnetChamferLightweight": "轻量化底部在每个孔周围留下的壁太薄，无法倒角。",
   "binDesigner.base.magnetChamferNesting": "嵌套磁铁所在的凸台太薄，无法倒角。",
+  "binDesigner.base.cornerHolesOnly": "仅外角",
+  "binDesigner.base.cornerHolesOnlyDetail": "磁铁孔和螺丝孔只开在收纳盒的外角。大号收纳盒所需磁铁更少，也更容易从底板上取下。",
   "binDesigner.base.screwDiameter": "螺丝直径",
   "binDesigner.base.screwHoles": "螺丝孔",
   "binDesigner.base.section.feet": "底脚",

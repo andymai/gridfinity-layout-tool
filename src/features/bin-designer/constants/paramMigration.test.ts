@@ -2322,6 +2322,19 @@ describe('migrateParams - lip notches flag', () => {
   });
 });
 
+describe('migrateParams - corner holes flag', () => {
+  it('keeps corner-only holes that are on', () => {
+    const migrated = migrateParams({ base: { ...DEFAULT_BIN_PARAMS.base, cornerHolesOnly: true } });
+    expect(migrated.base.cornerHolesOnly).toBe(true);
+  });
+
+  it('stores nothing when off, absent or false', () => {
+    expect('cornerHolesOnly' in migrateParams({ base: DEFAULT_BIN_PARAMS.base }).base).toBe(false);
+    const stale = migrateParams({ base: { ...DEFAULT_BIN_PARAMS.base, cornerHolesOnly: false } });
+    expect('cornerHolesOnly' in stale.base).toBe(false);
+  });
+});
+
 describe('migrateParams slant', () => {
   it('leaves no slant key on an upright design', () => {
     expect(migrateParams({ ...DEFAULT_BIN_PARAMS }).slant).toBeUndefined();

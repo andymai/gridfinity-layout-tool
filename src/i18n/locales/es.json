@@ -428,6 +428,8 @@
   "binDesigner.base.magnetChamferHint": "Un chaflán a 45° en la boca de cada agujero guía el imán recto hacia dentro.",
   "binDesigner.base.magnetChamferLightweight": "Una base aligerada deja muy poca pared alrededor de cada agujero para un chaflán.",
   "binDesigner.base.magnetChamferNesting": "Los imanes de encaje van en resaltes demasiado finos para un chaflán.",
+  "binDesigner.base.cornerHolesOnly": "Solo esquinas",
+  "binDesigner.base.cornerHolesOnlyDetail": "Pone los orificios para imanes y tornillos solo en las esquinas exteriores de la caja. Una caja grande necesita menos imanes y se levanta de la placa base con más facilidad.",
   "binDesigner.base.screwDiameter": "Diámetro del tornillo",
   "binDesigner.base.screwHoles": "Orificios para tornillos",
   "binDesigner.base.section.feet": "Pies",

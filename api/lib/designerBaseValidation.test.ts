@@ -43,3 +43,14 @@ describe('validateBase lip notches flag', () => {
     expect(validateBase({ ...base, lipNotches: 'on' })).toContain('lipNotches');
   });
 });
+
+describe('validateBase corner-holes flag', () => {
+  it('accepts the flag absent or boolean', () => {
+    expect(validateBase({ ...base, cornerHolesOnly: true })).toBeNull();
+    expect(validateBase({ ...base, cornerHolesOnly: false })).toBeNull();
+  });
+
+  it('rejects a non-boolean', () => {
+    expect(validateBase({ ...base, cornerHolesOnly: 'corners' })).toContain('cornerHolesOnly');
+  });
+});

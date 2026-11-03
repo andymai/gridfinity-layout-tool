@@ -140,7 +140,8 @@ export const shellStage: PipelineStage = {
         params.magnetAnchor,
         dim.floorThickness,
         magnetHoleStyleFrom(params.base),
-        dim.socketHeight
+        dim.socketHeight,
+        dim.cornerHolesOnly
       );
       floorOpenings = liteBase.floorOpenings;
     }
@@ -540,7 +541,8 @@ export const shellStage: PipelineStage = {
           { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
           params.magnetAnchor,
           magnetHoleStyleFrom(params.base),
-          dim.socketHeight
+          dim.socketHeight,
+          dim.cornerHolesOnly
         );
     // `withScope` can't wrap this section (it must yield TWO survivors — body
     // and socket — on the preview path), so dispose manually on any throw to
@@ -604,7 +606,8 @@ export const shellStage: PipelineStage = {
             { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
             params.magnetAnchor,
             magnetHoleStyleFrom(params.base),
-            dim.socketHeight
+            dim.socketHeight,
+            dim.cornerHolesOnly
           )}|${feetFused ? overhangKey(dim.overhang) : 'nofeet'}`;
 
       return { ...ctx, solid: body, deferredSolid: socket, deferredSolidKey };
