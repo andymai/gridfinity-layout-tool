@@ -1,5 +1,6 @@
 import { MAX_PATH_POINTS, MIN_PATH_POINTS, type PathPoint } from '@/shared/types/bin';
-import { closeRegion } from './closeRegion';
+import { flattenPath } from '@/shared/utils/pathGeometryBezier';
+import { closeRegion, type ClosedRegion } from './closeRegion';
 import {
   mirrorAxis,
   mirrorRegion,
@@ -68,37 +69,64 @@ function fitWithin(
   return null;
 }
 
+/** Each rounding already made, keyed by every setting that shaped what it rounded. */
+export type RoundingCache = Map<string, ClosedRegion | null>;
+
+/** Flattening step for a fitted outline about to be rounded, in mm. */
+const ROUNDING_STEP_MM = 0.05;
+
+function fitRegion(
+  region: Region,
+  tolerance: number,
+  settings: CleanupSettings,
+  axisAngle: number
+): CleanedOutline | null {
+  const path = fitWithin(region.outline, tolerance, settings, axisAngle);
+  if (!path) return null;
+  const holes = region.holes
+    .map((hole) => fitWithin(hole, tolerance, settings, axisAngle))
+    .filter((hole): hole is PathPoint[] => hole !== null);
+  return { path, holes };
+}
+
 /**
- * `region` cleaned up: inside corners rounded, mirrored, then each ring fitted
- * corner to corner as straight segments or curves, square edges squared to
- * axes at `axisAngle`. Every step works from the dense rings it is given, so a
- * caller that keeps the original and re-runs on each change never compounds
- * one fit on another. Null when the steps leave no pocket.
+ * `region` cleaned up: mirrored, then each ring fitted corner to corner as
+ * straight segments or curves, square edges squared to axes at `axisAngle`,
+ * and last its inside corners rounded and the result fitted again. Rounding
+ * comes after the fit so it rounds the outline's real corners, not every dip
+ * in a traced edge's noise. Every step starts from the rings it is given, so
+ * a caller that keeps the original and re-runs on each change never
+ * compounds one fit on another. Null when the steps leave no pocket.
+ *
+ * `rounded` keeps the roundings already made of this one `region`, for a
+ * caller re-running on every step of a slider: the raster close is slow.
  */
 export function cleanOutline(
   region: Region,
   settings: CleanupSettings,
-  axisAngle = 0
+  axisAngle = 0,
+  rounded?: RoundingCache
 ): CleanedOutline | null {
   let current = region;
-  let floor = FLOOR_MM;
-  if (settings.roundInside > 0) {
-    const closed = closeRegion(current, settings.roundInside);
-    if (!closed) return null;
-    current = closed.region;
-    floor = Math.max(floor, closed.pixel);
-  }
   if (settings.mirror) {
     const axis = mirrorAxis(current.outline, settings.mirror.axis);
     const mirrored = mirrorRegion(current, axis, settings.mirror.keep);
     if (!mirrored) return null;
     current = mirrored;
   }
-  const tolerance = Math.max(settings.simplify, floor);
-  const path = fitWithin(current.outline, tolerance, settings, axisAngle);
-  if (!path) return null;
-  const holes = current.holes
-    .map((hole) => fitWithin(hole, tolerance, settings, axisAngle))
-    .filter((hole): hole is PathPoint[] => hole !== null);
-  return { path, holes };
+  const fitted = fitRegion(current, Math.max(settings.simplify, FLOOR_MM), settings, axisAngle);
+  if (!fitted || settings.roundInside <= 0) return fitted;
+
+  const key = JSON.stringify({ ...settings, axisAngle });
+  let closed = rounded?.get(key);
+  if (closed === undefined) {
+    const dense = {
+      outline: flattenPath(fitted.path, ROUNDING_STEP_MM),
+      holes: fitted.holes.map((hole) => flattenPath(hole, ROUNDING_STEP_MM)),
+    };
+    closed = closeRegion(dense, settings.roundInside);
+    rounded?.set(key, closed);
+  }
+  if (!closed) return null;
+  return fitRegion(closed.region, Math.max(settings.simplify, closed.pixel), settings, axisAngle);
 }

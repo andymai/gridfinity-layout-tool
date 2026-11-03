@@ -3683,6 +3683,32 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.traceView.sensitivityAuto': 'Auto',
   'binDesigner.cutouts.traceView.sensitivityHint':
     'Raise it to pick up faint tools, lower it to drop shadows and specks.',
+  'binDesigner.cutouts.outline.section': 'Outline',
+  'binDesigner.cutouts.outline.simplify': 'Simplify',
+  'binDesigner.cutouts.outline.curves': 'Smooth into curves',
+  'binDesigner.cutouts.outline.curvesDetail':
+    'Fits curves with handles in place of many short straight steps, so the outline is smooth and quick to edit.',
+  'binDesigner.cutouts.outline.straighten': 'Straighten edges',
+  'binDesigner.cutouts.outline.straightenDetail':
+    'Straight edges within a few degrees of the bin’s sides snap square to them.',
+  'binDesigner.cutouts.outline.straightenPhotoDetail':
+    'Straight edges within a few degrees of the photo’s sides snap square to them.',
+  'binDesigner.cutouts.outline.mirror': 'Mirror',
+  'binDesigner.cutouts.outline.mirrorDetail':
+    'Makes the outline symmetric about a line, keeping one half or averaging both.',
+  'binDesigner.cutouts.outline.axis': 'Mirror line',
+  'binDesigner.cutouts.outline.axisDetected': 'Detected',
+  'binDesigner.cutouts.outline.axisUpright': 'Upright',
+  'binDesigner.cutouts.outline.axisLevel': 'Level',
+  'binDesigner.cutouts.outline.keep': 'Keep',
+  'binDesigner.cutouts.outline.keep.left': 'Left',
+  'binDesigner.cutouts.outline.keep.right': 'Right',
+  'binDesigner.cutouts.outline.keep.top': 'Top',
+  'binDesigner.cutouts.outline.keep.bottom': 'Bottom',
+  'binDesigner.cutouts.outline.keep.average': 'Average',
+  'binDesigner.cutouts.outline.roundInside': 'Round inside corners',
+  'binDesigner.cutouts.outline.reset': 'Reset outline',
+  'binDesigner.cutouts.outline.failed': 'Those settings leave no outline, so it stays as it was.',
   'binDesigner.cutouts.rulerTool': 'Ruler',
   'binDesigner.cutouts.dragToMeasure': 'Drag to measure distance (Shift+drag for quick measure)',
   'binDesigner.cutouts.clickToDrawPath': 'Click to place points, close path to finish',

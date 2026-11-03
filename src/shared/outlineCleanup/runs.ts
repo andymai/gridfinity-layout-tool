@@ -173,13 +173,144 @@ interface Step {
 
 type Cubic = number[][];
 
+function offsetFrom(p: Pt, a: Pt, b: Pt): number {
+  const d = sub(b, a);
+  const l = len(d);
+  const e = sub(p, a);
+  return l === 0 ? len(e) : (e.x * d.y - e.y * d.x) / l;
+}
+
+/** Indices Ramer-Douglas-Peucker keeps along an open run, both ends included. */
+function rdpIndices(run: readonly Pt[], tolerance: number): number[] {
+  const n = run.length;
+  const keep = new Uint8Array(n);
+  keep[0] = 1;
+  keep[n - 1] = 1;
+  const stack: [number, number][] = [[0, n - 1]];
+  for (let top = stack.pop(); top; top = stack.pop()) {
+    const [a, b] = top;
+    let worst = -1;
+    let at = -1;
+    for (let i = a + 1; i < b; i++) {
+      const d = Math.abs(offsetFrom(run[i], run[a], run[b]));
+      if (d > worst) {
+        worst = d;
+        at = i;
+      }
+    }
+    if (worst > tolerance) {
+      keep[at] = 1;
+      stack.push([a, at], [at, b]);
+    }
+  }
+  const out: number[] = [];
+  for (let i = 0; i < n; i++) if (keep[i] === 1) out.push(i);
+  return out;
+}
+
+/** Shortest stretch, in mm, kept as a straight piece of its own. */
+const MIN_LINE_MM = 3;
+/**
+ * A stretch is straight when a parabola fitted along it bows by at most this
+ * share of the tolerance: a straight line then stays within the tolerance
+ * too. Fitting the bow, rather than reading offsets from the chord, keeps a
+ * noisy edge straight even when the corners it runs between sit off its line.
+ */
+const BOW_SHARE = 0.5;
+
+/** A stretch of a run, straight or curved, its ends shared with its neighbours. */
+interface Piece {
+  readonly points: readonly Pt[];
+  readonly straight: boolean;
+}
+
+/** The bow of the least-squares parabola through `points`, across its chord, in mm. */
+function bow(points: readonly Pt[]): number {
+  const a = points[0];
+  const b = points[points.length - 1];
+  const length = len(sub(b, a));
+  const dir = { x: (b.x - a.x) / length, y: (b.y - a.y) / length };
+  // Normal equations for v = p u^2 + q u + r, with u spanning -1 to 1.
+  const s = [0, 0, 0, 0, 0];
+  const t = [0, 0, 0];
+  for (const pt of points) {
+    const e = sub(pt, a);
+    const u = (2 * (e.x * dir.x + e.y * dir.y)) / length - 1;
+    const v = e.x * -dir.y + e.y * dir.x;
+    for (let k = 0, uk = 1; k < 5; k++, uk *= u) {
+      s[k] += uk;
+      if (k < 3) t[k] += uk * v;
+    }
+  }
+  const m = [
+    [s[4], s[3], s[2], t[2]],
+    [s[3], s[2], s[1], t[1]],
+    [s[2], s[1], s[0], t[0]],
+  ];
+  for (let c = 0; c < 3; c++) {
+    let pivot = c;
+    for (let r = c + 1; r < 3; r++) if (Math.abs(m[r][c]) > Math.abs(m[pivot][c])) pivot = r;
+    [m[c], m[pivot]] = [m[pivot], m[c]];
+    if (Math.abs(m[c][c]) < 1e-12) return 0;
+    for (let r = 0; r < 3; r++) {
+      if (r === c) continue;
+      const f = m[r][c] / m[c][c];
+      for (let k = c; k < 4; k++) m[r][k] -= f * m[c][k];
+    }
+  }
+  return Math.abs(m[0][3] / m[0][0]);
+}
+
+function isStraight(points: readonly Pt[], tolerance: number): boolean {
+  const a = points[0];
+  const b = points[points.length - 1];
+  if (len(sub(b, a)) < MIN_LINE_MM) return false;
+  return points.length < 4 || bow(points) <= BOW_SHARE * tolerance;
+}
+
+/**
+ * A run split into its straight pieces and the curved spans between them,
+ * so a fitted curve never bends a straight edge and a straight edge stays
+ * one line however its curve-fitted neighbours fall.
+ */
+function piecesOf(run: readonly Pt[], tolerance: number, between: boolean): Piece[] {
+  if (run.length <= 2) return [{ points: run, straight: true }];
+  // A whole run between two corners that stays within the tolerance of its
+  // chord is a straight edge, whatever its noise looks like across it.
+  if (
+    between &&
+    chordDeviation(run) <= tolerance &&
+    len(sub(run[run.length - 1], run[0])) >= MIN_LINE_MM
+  ) {
+    return [{ points: run, straight: true }];
+  }
+  const kept = rdpIndices(run, tolerance);
+  const out: Piece[] = [];
+  let curved: number | null = null;
+  for (let k = 0; k + 1 < kept.length; k++) {
+    const a = kept[k];
+    const b = kept[k + 1];
+    const stretch = run.slice(a, b + 1);
+    if (isStraight(stretch, tolerance)) {
+      if (curved !== null) out.push({ points: run.slice(curved, a + 1), straight: false });
+      curved = null;
+      out.push({ points: stretch, straight: true });
+    } else if (curved === null) {
+      curved = a;
+    }
+  }
+  if (curved !== null) out.push({ points: run.slice(curved), straight: false });
+  return out;
+}
+
 function fitSteps(run: readonly Pt[], tolerance: number, curves: boolean): Step[] {
   const end = run[run.length - 1];
-  if (run.length <= 2 || chordDeviation(run) <= tolerance) return [{ to: end }];
-  if (!curves)
-    return simplifyRdp(run, tolerance)
+  const lines = () =>
+    simplifyRdp(run, tolerance)
       .slice(1)
       .map((to) => ({ to }));
+  if (run.length <= 2) return [{ to: end }];
+  if (!curves) return lines();
   const points: number[][] = [];
   for (const p of run) {
     const last = points.at(-1);
@@ -191,10 +322,7 @@ function fitSteps(run: readonly Pt[], tolerance: number, curves: boolean): Step[
   } catch {
     cubics = [];
   }
-  if (cubics.length === 0)
-    return simplifyRdp(run, tolerance)
-      .slice(1)
-      .map((to) => ({ to }));
+  if (cubics.length === 0) return lines();
   return cubics.map((b, i) => ({
     to: i === cubics.length - 1 ? end : { x: b[3][0], y: b[3][1] },
     c1: { x: b[1][0], y: b[1][1] },
@@ -206,44 +334,46 @@ export interface FitOptions {
   /** How far, in mm, the fitted outline may stray from the dense one. */
   readonly tolerance: number;
   readonly curves: boolean;
-  /** Square nearly square straight runs to these axes, at this angle; null leaves them. */
+  /** Square nearly square straight edges to these axes, at this angle; null leaves them. */
   readonly axisAngle: number | null;
   /** The corner window, in mm. */
   readonly window: number;
 }
 
 /**
- * A dense closed ring as path points: corners kept, each run between them
- * fitted on its own, nearly square straight runs squared to the axes.
+ * A dense closed ring as path points: corners kept, straight edges kept
+ * straight and, when asked, squared to the axes, the curved spans between
+ * them fitted as curves or fine straight steps.
  */
 export function fitRing(ring: readonly Pt[], options: FitOptions): PathPoint[] {
   const { tolerance, curves, axisAngle, window } = options;
   const corners = findCorners(ring, window);
-  const closed = corners.length === 0;
-  const stops = closed ? [0] : corners;
-  const runs = stops.map((from, k) => slice(ring, from, stops[(k + 1) % stops.length]));
-  const lines = runs.map((run) =>
-    axisAngle === null || closed ? null : squaredLine(run, axisAngle, tolerance)
+  const stops = corners.length === 0 ? [0] : corners;
+  const pieces = stops.flatMap((from, k) =>
+    piecesOf(slice(ring, from, stops[(k + 1) % stops.length]), tolerance, corners.length > 0)
   );
-  // Each corner moves onto the squared runs either side of it.
-  const at = stops.map((index, k) => {
-    const before = lines[(k - 1 + stops.length) % stops.length];
+  const m = pieces.length;
+  const lines = pieces.map((piece) =>
+    piece.straight && axisAngle !== null ? squaredLine(piece.points, axisAngle, tolerance) : null
+  );
+  // Where each piece starts, moved onto the squared lines either side of it.
+  const at = pieces.map((piece, k) => {
+    const before = lines[(k - 1 + m) % m];
     const after = lines[k];
-    if (before && after) return intersect(before, after) ?? project(ring[index], after);
-    if (after) return project(ring[index], after);
-    if (before) return project(ring[index], before);
-    return ring[index];
+    const p = piece.points[0];
+    if (before && after) return intersect(before, after) ?? project(p, after);
+    if (after) return project(p, after);
+    if (before) return project(p, before);
+    return p;
   });
   const steps: Step[] = [];
-  runs.forEach((run, k) => {
-    const start = at[k];
-    const stop = at[(k + 1) % stops.length];
-    if (lines[k]) {
+  pieces.forEach((piece, k) => {
+    const stop = at[(k + 1) % m];
+    if (piece.straight) {
       steps.push({ to: stop });
       return;
     }
-    const moved = [start, ...run.slice(1, -1), stop];
-    steps.push(...fitSteps(moved, tolerance, curves));
+    steps.push(...fitSteps([at[k], ...piece.points.slice(1, -1), stop], tolerance, curves));
   });
   return toPathPoints(at[0], steps);
 }

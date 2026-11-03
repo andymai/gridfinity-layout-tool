@@ -4,6 +4,7 @@ export {
   NO_CLEANUP,
   type CleanupSettings,
   type CleanedOutline,
+  type RoundingCache,
   type MirrorSetting,
 } from './cleanOutline';
 export {
@@ -15,4 +16,4 @@ export {
   type Region,
 } from './mirror';
 export { findCorners, fitRing, type Pt } from './runs';
-export { closeRegion } from './closeRegion';
+export { closeRegion, type ClosedRegion } from './closeRegion';

@@ -59,6 +59,23 @@ describe('cleanOutline', () => {
     });
   });
 
+  // Rounded after the fit, the corner rounds and the edges either side stay
+  // dead straight, rather than every dip in the trace's wobble filling in.
+  it('rounds the inside corner of a traced L and leaves its edges straight', () => {
+    const cleaned = cleanOutline(
+      { outline: tracedL(), holes: [] },
+      { ...NO_CLEANUP, simplify: 0.3, curves: true, straighten: true, roundInside: 3 }
+    );
+    if (!cleaned) throw new Error('nothing left');
+    // The inner upright edge, from where the corner's arc ends up to the top.
+    const innerEdge = cleaned.path.filter((p) => p.y > 17.5 && Math.abs(p.x - 15) < 1);
+    expect(innerEdge.length).toBeGreaterThanOrEqual(2);
+    const xs = innerEdge.map((p) => p.x);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeLessThan(1e-9);
+    const corner = cleaned.path.find((p) => Math.hypot(p.x - 15, p.y - 15) < 0.5);
+    expect(corner).toBeUndefined();
+  });
+
   it('runs every step together into a finite, closed outline', () => {
     const cleaned = cleanOutline(
       { outline: tracedL(), holes: [] },
