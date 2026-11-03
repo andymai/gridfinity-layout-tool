@@ -1,0 +1,24 @@
+src/features/generation/worker/generators/floorPatterns.ts
+  s_1196eaeaf273b9::t_a3086cae108f19 30,178-197,201-211
+src/features/generation/worker/generators/floorPatterns.test.ts
+  s_1196eaeaf273b9::t_2046c80888ad32 191-212
+src/features/generation/worker/generators/binGenerator.scenario.cornerHoles.test.ts
+  s_1196eaeaf273b9::t_8df2d4c0005a08 19-20,101-121
+  s_1196eaeaf273b9::t_97b6eeb165310c 122-123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3ada924e732293104d554934685e872311a023b8",
+  "prompts": {},
+  "sessions": {
+    "s_1196eaeaf273b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b13242c8-0fdf-4d44-96d0-08a157a3a632",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
