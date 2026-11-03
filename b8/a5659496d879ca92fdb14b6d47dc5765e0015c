@@ -1,0 +1,45 @@
+src/features/bin-designer/components/TraceView/ScalePanel.test.tsx
+  s_4b9adb1d9473fb::t_4be0179c7949ed 128-130,132-135
+  s_4b9adb1d9473fb::t_a75d4f827c2014 40,110
+src/shared/scanTrace/manualReference.ts
+  s_4b9adb1d9473fb::t_5a262e4b1c427f 29-30,32
+  s_4b9adb1d9473fb::t_28b735b7597c34 101-108,110-114,127-129,131-136
+  s_4b9adb1d9473fb::t_8c92f6558ff529 9,27-28,31,33-72,130
+src/shared/scanReview/scanFlow.test.ts
+  s_4b9adb1d9473fb::t_f67898475fc546 88-107
+src/features/bin-designer/components/TraceView/ScalePanel.tsx
+  s_4b9adb1d9473fb::t_a75d4f827c2014 20-21,85,108,135
+src/features/bin-designer/components/TraceView/useTraceSession.test.ts
+  s_4b9adb1d9473fb::t_c19788566c7f49 182-251
+  s_4b9adb1d9473fb::t_a75d4f827c2014 57-58
+src/features/bin-designer/components/TraceView/useTraceSession.ts
+  s_4b9adb1d9473fb::t_307d5afb365acc 36-44,50-51,77-87,136-137,141-145,166-167,201,209,227,229-232,256,268,281,307,315,327-329,331,346
+src/shared/scanReview/scanFlow.ts
+  s_4b9adb1d9473fb::t_f67898475fc546 6,51-52,66-72,74,79-85
+src/shared/scanTrace/traceScene.ts
+  s_4b9adb1d9473fb::t_28b735b7597c34 30,65,68-71,266-273,537-538
+src/shared/scanTrace/manualReference.test.ts
+  s_4b9adb1d9473fb::t_e5997ce09a9e63 137,139,141-153
+  s_4b9adb1d9473fb::t_a75d4f827c2014 35,113,131,155,159-160,164-166,176
+  s_4b9adb1d9473fb::t_5a262e4b1c427f 138,140
+src/features/bin-designer/components/TraceView/TraceView.tsx
+  s_4b9adb1d9473fb::t_a75d4f827c2014 175,178
+package.json
+  s_4b9adb1d9473fb::t_5ef66f2bcc24f4 122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b8a5659496d879ca92fdb14b6d47dc5765e0015c",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
