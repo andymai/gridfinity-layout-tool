@@ -54,12 +54,14 @@ export interface CutoutPathTool {
   readonly handlePathBackgroundDown: (mmX: number, mmY: number, shiftKey: boolean) => void;
   readonly onPathDrawingVertexDown: (index: number, mmX: number, mmY: number) => void;
   readonly enterVertexEditing: (cutoutId: string) => void;
-  readonly handleVertexPointDown: (index: number, mmX: number, mmY: number) => void;
+  /** `ring` is 0 for the outline, k for island k - 1. */
+  readonly handleVertexPointDown: (index: number, mmX: number, mmY: number, ring?: number) => void;
   readonly handleVertexHandleDown: (
     index: number,
     handleType: 'in' | 'out',
     mmX: number,
-    mmY: number
+    mmY: number,
+    ring?: number
   ) => void;
   readonly handleVertexBackgroundDown: (mmX: number, mmY: number) => void;
 }
@@ -183,6 +185,7 @@ export function useCutoutPathTool({
       setMode({
         type: 'vertex-editing',
         cutoutId,
+        ring: 0,
         selectedPointIndex: null,
         dragTarget: null,
       });
@@ -192,13 +195,14 @@ export function useCutoutPathTool({
 
   /** Handle vertex point down from PathEditOverlay3D. */
   const handleVertexPointDown = useCallback(
-    (index: number, _mmX: number, _mmY: number) => {
+    (index: number, _mmX: number, _mmY: number, ring = 0) => {
       if (mode.type !== 'vertex-editing') return;
       startTransaction?.();
       setMode({
         ...mode,
+        ring,
         selectedPointIndex: index,
-        dragTarget: { type: 'vertex', index },
+        dragTarget: { type: 'vertex', ring, index },
       });
     },
     [mode, startTransaction, setMode]
@@ -206,12 +210,13 @@ export function useCutoutPathTool({
 
   /** Handle vertex handle down from PathEditOverlay3D. */
   const handleVertexHandleDown = useCallback(
-    (index: number, handleType: 'in' | 'out', _mmX: number, _mmY: number) => {
+    (index: number, handleType: 'in' | 'out', _mmX: number, _mmY: number, ring = 0) => {
       if (mode.type !== 'vertex-editing') return;
       startTransaction?.();
       setMode({
         ...mode,
-        dragTarget: { type: 'handle', index, handleType },
+        ring,
+        dragTarget: { type: 'handle', ring, index, handleType },
       });
     },
     [mode, startTransaction, setMode]

@@ -136,6 +136,35 @@ describe('TraceCanvas', () => {
     expect(onRegion).not.toHaveBeenCalled();
   });
 
+  it('magnifies the photo under the pointer while marking, and only then', () => {
+    // The loupe needs a measured box to find its corner in.
+    vi.stubGlobal(
+      'ResizeObserver',
+      class SizedObserver implements ResizeObserver {
+        private readonly report: ResizeObserverCallback;
+        constructor(report: ResizeObserverCallback) {
+          this.report = report;
+        }
+        observe(el: Element) {
+          this.report([{ contentRect: { width: 800, height: 600 } } as ResizeObserverEntry], this);
+          void el;
+        }
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+    const marking = renderCanvas({ mode: 'ruler' });
+    fireEvent.pointerMove(marking, { clientX: 40, clientY: 30 });
+    const loupe = marking.querySelector<HTMLElement>('[style*="background-image"]');
+    expect(loupe).not.toBeNull();
+    fireEvent.pointerLeave(marking);
+    expect(marking.querySelector('[style*="background-image"]')).toBeNull();
+
+    const tapping = renderCanvas();
+    fireEvent.pointerMove(tapping, { clientX: 40, clientY: 30 });
+    expect(tapping.querySelector('[style*="background-image"]')).toBeNull();
+  });
+
   it('labels a ruler the user set with its length', () => {
     renderCanvas({
       scene: {

@@ -502,12 +502,14 @@ export function SceneContent({
           return (
             <PathEditOverlay3D
               cutout={editCutout}
+              selectedRing={mode.ring}
               selectedPointIndex={mode.selectedPointIndex}
               previewOverrides={preview.get(editCutout.id)}
               segmentHover={segmentHover}
-              onPointDown={(index, mmX, mmY) => onVertexPointDown?.(index, mmX, mmY)}
-              onHandleDown={(index, handleType, mmX, mmY) =>
-                onVertexHandleDown?.(index, handleType, mmX, mmY)
+              dragTarget={mode.dragTarget}
+              onPointDown={(index, mmX, mmY, ring) => onVertexPointDown?.(index, mmX, mmY, ring)}
+              onHandleDown={(index, handleType, mmX, mmY, ring) =>
+                onVertexHandleDown?.(index, handleType, mmX, mmY, ring)
               }
             />
           );

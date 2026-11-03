@@ -22,21 +22,32 @@ import type { PointerMoveEvent, BinBounds, SnapFn, PreviewSetters, SetModeFn } f
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-/** Target being dragged during vertex editing. */
+/**
+ * Target being dragged during vertex editing. `ring` 0 is the outline and
+ * ring k the cutout's island k - 1.
+ */
 export type VertexDragTarget =
-  | { readonly type: 'vertex'; readonly index: number }
-  | { readonly type: 'handle'; readonly index: number; readonly handleType: 'in' | 'out' };
+  | { readonly type: 'vertex'; readonly ring: number; readonly index: number }
+  | {
+      readonly type: 'handle';
+      readonly ring: number;
+      readonly index: number;
+      readonly handleType: 'in' | 'out';
+    };
 
 /** Mode state for vertex editing, entered by double-clicking a path cutout. */
 export interface VertexEditMode {
   readonly type: 'vertex-editing';
   readonly cutoutId: string;
+  /** The ring the selected point is on, as in `VertexDragTarget`. */
+  readonly ring: number;
   readonly selectedPointIndex: number | null;
   readonly dragTarget: VertexDragTarget | null;
 }
 
 /** Info about the segment the cursor is hovering near (for add-point preview). */
 export interface SegmentHoverInfo {
+  readonly ring: number;
   readonly segmentIndex: number;
   readonly t: number;
   readonly x: number;
@@ -57,6 +68,42 @@ function pathBoundsUpdate(path: readonly PathPoint[]): Partial<Cutout> {
   return { path: [...path], x: minX, y: minY, width: maxX - minX, depth: maxY - minY };
 }
 
+/** The outline, then each island, each as ring `VertexDragTarget` numbers it. */
+export function ringsOf(cutout: Pick<Cutout, 'path' | 'holes'>): (readonly PathPoint[])[] {
+  return [cutout.path ?? [], ...(cutout.holes ?? [])];
+}
+
+/** The cutout with ring `ring` replaced, as a preview: no bounds, just the points. */
+function ringPreview(cutout: Cutout, ring: number, points: PathPoint[]): Partial<Cutout> {
+  if (ring === 0) return { path: points };
+  const holes = [...(cutout.holes ?? [])];
+  holes[ring - 1] = points;
+  return { holes };
+}
+
+/** The same as a store update: an outline brings its bounds, islands never move them. */
+function ringUpdate(cutout: Cutout, ring: number, points: PathPoint[]): Partial<Cutout> {
+  return ring === 0 ? pathBoundsUpdate(points) : ringPreview(cutout, ring, points);
+}
+
+/** The ring nearest the point within `threshold` and where on it, outline first on a tie. */
+function nearestSegment(
+  x: number,
+  y: number,
+  rings: readonly (readonly PathPoint[])[],
+  threshold: number
+): { ring: number; segmentIndex: number; t: number } | null {
+  let best: { ring: number; segmentIndex: number; t: number; d: number } | null = null;
+  rings.forEach((points, ring) => {
+    const seg = findNearestSegment(x, y, points, threshold);
+    if (!seg) return;
+    const at = evaluateSegmentPoint(points, seg.segmentIndex, seg.t);
+    const d = Math.hypot(at.x - x, at.y - y);
+    if (!best || d < best.d) best = { ring, ...seg, d };
+  });
+  return best;
+}
+
 // ── Pointer Down ─────────────────────────────────────────────────────────────
 
 /**
@@ -73,20 +120,24 @@ export function handleVertexEditPointerDown(
   threshold: number,
   setters: VertexEditSetters
 ): void {
-  const path = cutout.path;
-  if (!path || path.length === 0) return;
+  const rings = ringsOf(cutout);
+  if (rings[0].length === 0) return;
 
   // Clear hover on any pointer down
   setters.setSegmentHover(null);
 
-  for (let i = 0; i < path.length; i++) {
-    if (isNearPoint(event.mmX, event.mmY, path[i].x, path[i].y, threshold)) {
-      setters.setMode({
-        ...mode,
-        selectedPointIndex: i,
-        dragTarget: { type: 'vertex', index: i },
-      });
-      return;
+  for (let ring = 0; ring < rings.length; ring++) {
+    const points = rings[ring];
+    for (let i = 0; i < points.length; i++) {
+      if (isNearPoint(event.mmX, event.mmY, points[i].x, points[i].y, threshold)) {
+        setters.setMode({
+          ...mode,
+          ring,
+          selectedPointIndex: i,
+          dragTarget: { type: 'vertex', ring, index: i },
+        });
+        return;
+      }
     }
   }
 
@@ -96,7 +147,7 @@ export function handleVertexEditPointerDown(
   // TypeError and took the editor down with it, so a stale index is treated
   // as no selection and the click falls through to the segment test below.
   const selectedPoint =
-    mode.selectedPointIndex === null ? undefined : path[mode.selectedPointIndex];
+    mode.selectedPointIndex === null ? undefined : rings.at(mode.ring)?.[mode.selectedPointIndex];
 
   if (selectedPoint !== undefined && mode.selectedPointIndex !== null) {
     const pt = selectedPoint;
@@ -108,7 +159,7 @@ export function handleVertexEditPointerDown(
       if (isNearPoint(event.mmX, event.mmY, hx, hy, threshold)) {
         setters.setMode({
           ...mode,
-          dragTarget: { type: 'handle', index: selectedIndex, handleType: 'in' },
+          dragTarget: { type: 'handle', ring: mode.ring, index: selectedIndex, handleType: 'in' },
         });
         return;
       }
@@ -120,30 +171,31 @@ export function handleVertexEditPointerDown(
       if (isNearPoint(event.mmX, event.mmY, hx, hy, threshold)) {
         setters.setMode({
           ...mode,
-          dragTarget: { type: 'handle', index: selectedIndex, handleType: 'out' },
+          dragTarget: { type: 'handle', ring: mode.ring, index: selectedIndex, handleType: 'out' },
         });
         return;
       }
     }
   }
 
-  const seg = findNearestSegment(event.mmX, event.mmY, path, threshold);
+  const seg = nearestSegment(event.mmX, event.mmY, rings, threshold);
   if (seg) {
+    const points = rings[seg.ring];
     const { before, mid, after } = splitBezierSegment(
-      path[seg.segmentIndex],
-      path[(seg.segmentIndex + 1) % path.length],
+      points[seg.segmentIndex],
+      points[(seg.segmentIndex + 1) % points.length],
       seg.t
     );
 
-    const updatedPath: PathPoint[] = [...path];
-    updatedPath[seg.segmentIndex] = before;
-    updatedPath[(seg.segmentIndex + 1) % path.length] = after;
+    const updated: PathPoint[] = [...points];
+    updated[seg.segmentIndex] = before;
+    updated[(seg.segmentIndex + 1) % points.length] = after;
 
     const insertIdx = seg.segmentIndex + 1;
-    updatedPath.splice(insertIdx, 0, mid);
+    updated.splice(insertIdx, 0, mid);
 
-    setters.onUpdate(cutout.id, pathBoundsUpdate(updatedPath));
-    setters.setMode({ ...mode, selectedPointIndex: insertIdx, dragTarget: null });
+    setters.onUpdate(cutout.id, ringUpdate(cutout, seg.ring, updated));
+    setters.setMode({ ...mode, ring: seg.ring, selectedPointIndex: insertIdx, dragTarget: null });
     return;
   }
 
@@ -169,15 +221,15 @@ export function handleVertexEditPointerMove(
   snap: SnapFn,
   setters: Pick<VertexEditSetters, 'setPreview' | 'setSegmentHover'>
 ): void {
-  const path = cutout.path;
-  if (!path || path.length === 0) return;
+  const rings = ringsOf(cutout);
+  if (rings[0].length === 0) return;
 
   // When not dragging, compute segment hover for add-point preview
   if (!mode.dragTarget) {
-    const seg = findNearestSegment(event.mmX, event.mmY, path, SEGMENT_HOVER_THRESHOLD);
+    const seg = nearestSegment(event.mmX, event.mmY, rings, SEGMENT_HOVER_THRESHOLD);
     if (seg) {
-      const pt = evaluateSegmentPoint(path, seg.segmentIndex, seg.t);
-      setters.setSegmentHover({ segmentIndex: seg.segmentIndex, t: seg.t, x: pt.x, y: pt.y });
+      const pt = evaluateSegmentPoint(rings[seg.ring], seg.segmentIndex, seg.t);
+      setters.setSegmentHover({ ...seg, x: pt.x, y: pt.y });
     } else {
       setters.setSegmentHover(null);
     }
@@ -185,6 +237,13 @@ export function handleVertexEditPointerMove(
   }
 
   const { dragTarget } = mode;
+  // An island the drag began on can vanish mid-drag (an undo, a remote edit);
+  // see the stale-index note below.
+  const path = rings.at(dragTarget.ring);
+  if (!path) {
+    setters.setPreview(new Map());
+    return;
+  }
 
   if (dragTarget.type === 'vertex') {
     // Snap and clamp the vertex position
@@ -193,7 +252,7 @@ export function handleVertexEditPointerMove(
 
     const updatedPath = updatePoint(path, dragTarget.index, { x, y });
 
-    setters.setPreview(new Map([[cutout.id, { path: updatedPath }]]));
+    setters.setPreview(new Map([[cutout.id, ringPreview(cutout, dragTarget.ring, updatedPath)]]));
   } else {
     // Same stale-index hazard as the pointer-down hit test: the path can
     // shrink mid-drag (an undo, a remote edit), and reading past its end threw
@@ -230,7 +289,7 @@ export function handleVertexEditPointerMove(
 
     const updatedPath = updatePoint(path, dragTarget.index, updatedPoint);
 
-    setters.setPreview(new Map([[cutout.id, { path: updatedPath }]]));
+    setters.setPreview(new Map([[cutout.id, ringPreview(cutout, dragTarget.ring, updatedPath)]]));
   }
 }
 
@@ -248,11 +307,11 @@ export function handleVertexEditPointerUp(
   setters: VertexEditSetters
 ): void {
   const previewUpdates = preview.get(cutout.id);
-  if (previewUpdates?.path) {
-    // Reject edits that create self-intersecting paths
-    if (!isSelfIntersecting(previewUpdates.path)) {
-      setters.onUpdate(cutout.id, pathBoundsUpdate(previewUpdates.path));
-    }
+  const ring = mode.dragTarget?.ring ?? 0;
+  const moved = previewUpdates ? ringsOf({ ...cutout, ...previewUpdates }).at(ring) : undefined;
+  // Reject edits that create self-intersecting rings
+  if (previewUpdates && moved && !isSelfIntersecting(moved)) {
+    setters.onUpdate(cutout.id, ringUpdate(cutout, ring, [...moved]));
   }
 
   // Clear preview and drag target, keep selection
@@ -277,7 +336,7 @@ export function handleVertexEditKeyDown(
   cutout: Cutout,
   setters: VertexEditSetters
 ): void {
-  const path = cutout.path;
+  const path = ringsOf(cutout).at(mode.ring);
   if (!path) return;
 
   switch (event.key) {
@@ -293,7 +352,7 @@ export function handleVertexEditKeyDown(
       if (!updated) return; // would drop below MIN_PATH_POINTS anchors
 
       event.preventDefault();
-      setters.onUpdate(cutout.id, pathBoundsUpdate(updated));
+      setters.onUpdate(cutout.id, ringUpdate(cutout, mode.ring, updated));
 
       // Adjust selection index: if we removed the last point, select the new last
       const newIndex =

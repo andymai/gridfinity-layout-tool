@@ -195,6 +195,10 @@ that moves, scales or mirrors a path must do the same to its holes through
 islands behind. The worker cuts each island out of the tool full height
 (`withIslands`), shrunk by the clearance with the reach-limited offset's
 `inward` mode, so a thin island thins rather than turns inside out.
+Vertex editing works on rings: `ringsOf` in `handlers/pathEditHandler.ts`
+numbers the outline 0 and island k as k + 1, and every drag target and hover
+carries its ring. `VertexMagnifier3D` takes over the render loop only while a
+point is dragged.
 
 ## Photo tracing
 
