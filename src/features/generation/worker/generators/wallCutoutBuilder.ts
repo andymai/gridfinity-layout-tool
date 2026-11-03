@@ -20,12 +20,15 @@ import {
   UNBOUNDED_SLACK,
   computeCutoutCenter,
   cornerSlackFor,
+  cutoutSide,
   resolveCutoutCornerRadii,
   resolveCutoutDrop,
   resolveCutoutSpan,
   safeCutoutCornerRadii,
+  shoulderBlend,
   type CornerSlack,
   type CutoutCornerRadii,
+  type ShoulderBlend,
 } from '@/shared/utils/wallCutoutPosition';
 
 // Re-exported for consumers that were importing them from this module
@@ -35,15 +38,6 @@ export {
   cornerSlackFor,
 } from '@/shared/utils/wallCutoutPosition';
 export type { CornerSlack } from '@/shared/utils/wallCutoutPosition';
-
-/** Funnel taper ratio: bottom width is 60% of top width. */
-const FUNNEL_TAPER_RATIO = 0.6;
-
-/**
- * Distance from a quarter-arc's chord midpoint out to the arc, as a fraction of
- * the radius: `1 − cos(45°)`. The mid-arc point `threePointsArcTo` needs.
- */
-const QUARTER_ARC_BULGE = 1 - Math.SQRT1_2;
 
 /**
  * Build a 2D cutout profile (Drawing) for the given shape.
@@ -95,16 +89,18 @@ export function buildCutoutProfile(
       // seat at the wall body's top face.
       const chordY = Math.min(topY - overshoot, rimY - topR);
       const sagitta = Math.min(hw, chordY - bottomY);
+      const right = blendOrSquare(hw, rimY, 0, safe.topRight);
+      const left = blendOrSquare(hw, rimY, 0, safe.topLeft);
       // Where the cut's own side starts on each end: under the round-over when
       // there is one, at the profile's top edge when there is not.
-      const sideTop = (r: number): number => (r > MIN_CUTOUT_CORNER_RADIUS ? rimY - r : topY);
+      const sideTop = (blend: ShoulderBlend | null): number => blend?.side[1] ?? topY;
 
-      let pen = draw([-(hw + safe.topLeft), topY]).lineTo([hw + safe.topRight, topY]);
-      pen = penTopFlare(pen, hw, rimY, safe.topRight, 1);
-      if (chordY < sideTop(safe.topRight) - 1e-6) pen = pen.lineTo([hw, chordY]);
+      let pen = draw([-(left?.rim[0] ?? hw), topY]).lineTo([right?.rim[0] ?? hw, topY]);
+      pen = penTopFlare(pen, right, 1);
+      if (chordY < sideTop(right) - 1e-6) pen = pen.lineTo([hw, chordY]);
       pen = pen.sagittaArc(-cutWidth, 0, sagitta);
-      if (chordY < sideTop(safe.topLeft) - 1e-6) pen = pen.lineTo([-hw, sideTop(safe.topLeft)]);
-      return penTopFlare(pen, hw, rimY, safe.topLeft, -1).close();
+      if (chordY < sideTop(left) - 1e-6) pen = pen.lineTo([-hw, sideTop(left)]);
+      return penTopFlare(pen, left, -1).close();
     }
 
     case 'u-shape':
@@ -112,27 +108,39 @@ export function buildCutoutProfile(
       // U-shape and funnel are the same pen — a straight-sided u-shape is the
       // degenerate funnel with no taper.
       const topHW = cutWidth / 2;
-      const bottomHW = cutoutShape === 'funnel' ? (cutWidth * FUNNEL_TAPER_RATIO) / 2 : topHW;
+      const side = cutoutSide(cutoutShape, cutWidth, rimY - bottomY, topY - rimY);
+      const bottomHW = side.bottomHalfWidth;
+      const right = blendOrSquare(side.halfWidthAtRim, rimY, side.lean, safe.topRight);
+      const left = blendOrSquare(side.halfWidthAtRim, rimY, side.lean, safe.topLeft);
 
-      let pen = draw([-(topHW + safe.topLeft), topY]).lineTo([topHW + safe.topRight, topY]);
-      pen = penTopFlare(pen, topHW, rimY, safe.topRight, 1);
+      let pen = draw([-(left?.rim[0] ?? topHW), topY]).lineTo([right?.rim[0] ?? topHW, topY]);
+      pen = penTopFlare(pen, right, 1);
       pen = pen.lineTo([bottomHW, bottomY]);
       if (safe.bottomRight > MIN_CUTOUT_CORNER_RADIUS) pen = pen.customCorner(safe.bottomRight);
       pen = pen.lineTo([-bottomHW, bottomY]);
       if (safe.bottomLeft > MIN_CUTOUT_CORNER_RADIUS) pen = pen.customCorner(safe.bottomLeft);
-      if (safe.topLeft > MIN_CUTOUT_CORNER_RADIUS) pen = pen.lineTo([-topHW, rimY - safe.topLeft]);
-      return penTopFlare(pen, topHW, rimY, safe.topLeft, -1).close();
+      if (left) pen = pen.lineTo([-left.side[0], left.side[1]]);
+      return penTopFlare(pen, left, -1).close();
     }
   }
+}
+
+function blendOrSquare(
+  sideAtRim: number,
+  rimY: number,
+  lean: number,
+  radius: number
+): ShoulderBlend | null {
+  return radius > MIN_CUTOUT_CORNER_RADIUS ? shoulderBlend(sideAtRim, rimY, lean, radius) : null;
 }
 
 /**
  * Draw one end of the top round-over: from the rim plane, outboard of the cut,
  * down to where the cut's own side resumes.
  *
- * Written as an explicit quarter arc rather than `customCorner`, which fillets
- * two drawn curves and would need the rim run to be LONGER than the radius to
- * have something left to trim. Sized exactly it silently declines to fillet
+ * Written as an explicit arc rather than `customCorner`, which fillets two
+ * drawn curves and would need the rim run to be LONGER than the blend's reach
+ * to have something left to trim. Sized exactly it silently declines to fillet
  * (`removeCorner` returns the curves untouched); sized longer it leaves a
  * horizontal face lying in the material's own top plane, which is a coincident
  * face for the boolean to trip over. Neither failure is loud.
@@ -143,19 +151,14 @@ export function buildCutoutProfile(
  */
 function penTopFlare(
   pen: ReturnType<typeof draw>,
-  halfWidth: number,
-  rimY: number,
-  radius: number,
+  blend: ShoulderBlend | null,
   dir: 1 | -1
 ): ReturnType<typeof draw> {
-  if (radius <= MIN_CUTOUT_CORNER_RADIUS) return pen;
-  const bulge = radius * QUARTER_ARC_BULGE;
-  const outer = dir * (halfWidth + radius);
-  const inner = dir * halfWidth;
-  const via: [number, number] = [dir * (halfWidth + bulge), rimY - bulge];
+  if (!blend) return pen;
+  const at = ([x, y]: readonly [number, number]): [number, number] => [dir * x, y];
   return dir === 1
-    ? pen.lineTo([outer, rimY]).threePointsArcTo([inner, rimY - radius], via)
-    : pen.threePointsArcTo([outer, rimY], via);
+    ? pen.lineTo(at(blend.rim)).threePointsArcTo(at(blend.side), at(blend.mid))
+    : pen.threePointsArcTo(at(blend.rim), at(blend.mid));
 }
 
 /**

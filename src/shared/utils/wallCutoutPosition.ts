@@ -261,6 +261,81 @@ export function safeCutoutCornerRadii(
   };
 }
 
+/** A funnel's floor spans this fraction of its opening. */
+export const FUNNEL_TAPER_RATIO = 0.6;
+
+/** The straight run of a u-shape's or funnel's side, half-widths from the cut's centre. */
+export interface CutoutSide {
+  readonly bottomHalfWidth: number;
+  /** Outboard travel per mm of rise: 0 for a u-shape. */
+  readonly lean: number;
+  /** Where the side, extended, meets the rim. */
+  readonly halfWidthAtRim: number;
+}
+
+/**
+ * The side runs from the profile's top corner, `rimClearance` above the rim at
+ * half the span, down to the floor `drop` below the rim. A top round-over
+ * rounds the shoulder off this line rather than moving it, so the taper below
+ * a rounded shoulder is the taper below a square one.
+ */
+export function cutoutSide(
+  shape: 'u-shape' | 'funnel',
+  cutWidth: number,
+  drop: number,
+  rimClearance: number
+): CutoutSide {
+  const topHalfWidth = cutWidth / 2;
+  const bottomHalfWidth = shape === 'funnel' ? topHalfWidth * FUNNEL_TAPER_RATIO : topHalfWidth;
+  const lean = (topHalfWidth - bottomHalfWidth) / (drop + rimClearance);
+  return { bottomHalfWidth, lean, halfWidthAtRim: topHalfWidth - lean * rimClearance };
+}
+
+type Point = readonly [number, number];
+
+/**
+ * A top round-over tangent to both the rim plane and the cut's own side, in
+ * the cut's frame for the right-hand end of the span (mirror x for the left).
+ *
+ * `lean` is how far the side moves outboard per mm it rises: 0 for a u-shape,
+ * positive for a funnel. On a leaning side the blend lands on the slope rather
+ * than dropping vertically onto it, and it reaches less than its radius both
+ * along the rim and down the side, because the corner it rounds is obtuse.
+ */
+export interface ShoulderBlend {
+  readonly radius: number;
+  readonly centre: Point;
+  /** Where the arc leaves the rim, directly above the centre. */
+  readonly rim: Point;
+  /** Where it lands on the side. */
+  readonly side: Point;
+  /** Halfway round the arc, the third point a three-point arc needs. */
+  readonly mid: Point;
+  /** Angle the arc turns through from `rim` to `side`, in radians. */
+  readonly sweep: number;
+}
+
+/** `sideAtRim` is where the side, extended, meets the rim plane at `rimY`. */
+export function shoulderBlend(
+  sideAtRim: number,
+  rimY: number,
+  lean: number,
+  radius: number
+): ShoulderBlend {
+  const slope = Math.hypot(1, lean);
+  const reach = radius / (slope + lean);
+  const centre: Point = [sideAtRim + reach, rimY - radius];
+  const sweep = Math.PI / 2 - Math.atan(lean);
+  return {
+    radius,
+    centre,
+    rim: [centre[0], rimY],
+    side: [sideAtRim - (reach * lean) / slope, rimY - reach / slope],
+    mid: [centre[0] - radius * Math.sin(sweep / 2), centre[1] + radius * Math.cos(sweep / 2)],
+    sweep,
+  };
+}
+
 /** Zero out a radius too small to be worth a curve. */
 function snap(radius: number): number {
   return radius > MIN_CUTOUT_CORNER_RADIUS ? radius : 0;
