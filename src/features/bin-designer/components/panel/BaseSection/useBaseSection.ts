@@ -571,7 +571,7 @@ export function useBaseSection() {
       magnetEdgeMax: LID_MAGNET_EDGE_COUNT_MAX,
       magnetEdgeStep: LID_MAGNET_EDGE_COUNT_STEP,
       hasScrew,
-      // Nesting magnets already sit in four corner bosses.
+      // A Nesting body places its retention magnets itself.
       showCornerHoles: (hasMagnet || hasScrew) && !nestingBase,
       cornerHolesOnly: holes.cornerHolesOnly,
       bodyType,
