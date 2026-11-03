@@ -7,6 +7,7 @@
  * up, with the tools' bounds starting at the origin.
  */
 
+import { err, ok, type Result } from '@/core/result';
 import type { PathPoint } from '@/shared/types/bin';
 import type { SceneShape } from '@/shared/scanTrace';
 import { writeDxf } from '@/shared/utils/dxfWriter';
@@ -66,7 +67,6 @@ const corner = (p: Pt): PathPoint => ({
   symmetric: false,
 });
 
-/** The phone's traced shapes as tools, their islands kept only when asked. */
 export function toolsFromShapes(shapes: readonly SceneShape[], keepHoles: boolean): CleanedTool[] {
   return shapes.map((shape) => ({
     path: shape.outputPoints.map(corner),
@@ -172,7 +172,6 @@ function upright(tools: readonly FlatTool[]): FlatTool[] {
   return tools.map((tool) => ({ outline: up(tool.outline), islands: tool.islands.map(up) }));
 }
 
-/** The tools as a DXF, a layer a tool holding its outline and its islands. */
 export function traceDxf(tools: readonly CleanedTool[], options: TraceExportOptions): string {
   const layers = upright(flatTools(tools, options.clearance)).map((tool, i) => ({
     name: `TOOL_${i + 1}`,
@@ -188,18 +187,26 @@ export function traceDxf(tools: readonly CleanedTool[], options: TraceExportOpti
   ]);
 }
 
-/** The file for `format`, ready to save. */
+/**
+ * Fails for an STL whose thickness isn't a positive number, which would write
+ * an unreadable file, or whose chunk can't load (offline after an update).
+ */
 export async function traceExportBlob(
   tools: readonly CleanedTool[],
   format: TraceExportFormat,
   options: TraceExportOptions
-): Promise<Blob> {
-  if (format === 'svg') return new Blob([traceSvg(tools, options)], { type: MIME.svg });
-  if (format === 'dxf') return new Blob([traceDxf(tools, options)], { type: MIME.dxf });
-  // The extruder triangulates with three, which the phone loads only for this.
-  const { extrudedStl } = await import('./traceStl');
-  const solid = extrudedStl(upright(flatTools(tools, options.clearance)), options.thicknessMm);
-  return new Blob([solid], { type: MIME.stl });
+): Promise<Result<Blob, 'unbuilt'>> {
+  try {
+    if (format === 'svg') return ok(new Blob([traceSvg(tools, options)], { type: MIME.svg }));
+    if (format === 'dxf') return ok(new Blob([traceDxf(tools, options)], { type: MIME.dxf }));
+    if (!(Number.isFinite(options.thicknessMm) && options.thicknessMm > 0)) return err('unbuilt');
+    // The extruder triangulates with three, which the phone loads only for this.
+    const { extrudedStl } = await import('./traceStl');
+    const solid = extrudedStl(upright(flatTools(tools, options.clearance)), options.thicknessMm);
+    return ok(new Blob([solid], { type: MIME.stl }));
+  } catch {
+    return err('unbuilt');
+  }
 }
 
 export function traceExportFileName(format: TraceExportFormat): string {

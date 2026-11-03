@@ -79,27 +79,50 @@ function loops(ring: readonly Vector2[]): Vector2[][] {
 /** How far a pinch point steps into each loop that meets there (mm): far below any print. */
 const PINCH_STEP = 1e-3;
 
+/** The sign of the larger of `loops`: the way their ring ran overall. */
+function senseOf(loops: readonly Vector2[][]): number {
+  let best = 0;
+  let sense = 0;
+  for (const loop of loops) {
+    const a = signedArea(loop);
+    if (Math.abs(a) > best) {
+      best = Math.abs(a);
+      sense = Math.sign(a);
+    }
+  }
+  return sense;
+}
+
 /**
- * `rings` with every point two of them share stepped a hair into each, so
- * loops split at a pinch no longer meet there.
+ * The loops one ring split into, with each point they share stepped a hair
+ * apart. A loop wound against the ring is a bay inside another loop's
+ * corner, so it alone steps, into itself; loops wound with the ring sit
+ * corner to corner, so each steps into its own.
  */
-function parted(rings: readonly Vector2[][]): Vector2[][] {
+function parted(loops: readonly Vector2[][]): Vector2[][] {
+  const sense = senseOf(loops);
   const key = (p: Vector2) => `${p.x},${p.y}`;
-  const count = new Map<string, number>();
-  for (const ring of rings) for (const p of ring) count.set(key(p), (count.get(key(p)) ?? 0) + 1);
-  return rings.map((ring) => {
-    const sense = Math.sign(signedArea(ring));
-    return ring.map((p, i) => {
-      if ((count.get(key(p)) ?? 0) < 2) return p;
+  const shared = new Map<string, number>();
+  for (const loop of loops) {
+    if (Math.sign(signedArea(loop)) !== sense) continue;
+    for (const p of loop) shared.set(key(p), (shared.get(key(p)) ?? 0) + 1);
+  }
+  const all = new Map<string, number>();
+  for (const loop of loops) for (const p of loop) all.set(key(p), (all.get(key(p)) ?? 0) + 1);
+  return loops.map((loop) => {
+    const own = Math.sign(signedArea(loop));
+    return loop.map((p, i) => {
+      const steps = own === sense ? (shared.get(key(p)) ?? 0) > 1 : (all.get(key(p)) ?? 0) > 1;
+      if (!steps) return p;
       const a = p
         .clone()
-        .sub(ring[(i - 1 + ring.length) % ring.length])
+        .sub(loop[(i - 1 + loop.length) % loop.length])
         .normalize();
-      const b = ring[(i + 1) % ring.length].clone().sub(p).normalize();
+      const b = loop[(i + 1) % loop.length].clone().sub(p).normalize();
       // The inside lies left of the way a counter-clockwise ring runs.
       let step = new Vector2(-(a.y + b.y), a.x + b.x);
       if (step.lengthSq() < 1e-18) step = new Vector2(-a.y, a.x);
-      return p.clone().addScaledVector(step.normalize(), PINCH_STEP * sense);
+      return p.clone().addScaledVector(step.normalize(), PINCH_STEP * own);
     });
   });
 }
@@ -128,27 +151,25 @@ function contains(ring: readonly Vector2[], p: Vector2): boolean {
 /**
  * A tool's outline and islands as simple solids, each with the holes inside
  * it. A loop of the outline wound against it is a bay its pinch closed off,
- * so it is a hole too.
+ * so a hole; a loop of an island wound against it is tool left standing in
+ * the hole, so a solid.
  */
 function solids(tool: ExtrudedTool): { outline: Vector2[]; islands: Vector2[][] }[] {
   const outer = parted(loops(pruned(tool.outline)));
   if (outer.length === 0) return [];
-  const sense = Math.sign(
-    signedArea(outer.reduce((a, b) => (Math.abs(signedArea(b)) > Math.abs(signedArea(a)) ? b : a)))
-  );
-  const parts = outer.filter((loop) => Math.sign(signedArea(loop)) === sense);
-  const holes = [
-    ...outer.filter((loop) => Math.sign(signedArea(loop)) !== sense),
-    ...tool.islands.flatMap((ring) => {
-      const pieces = parted(loops(pruned(ring)));
-      const biggest = pieces.reduce<Vector2[] | null>(
-        (a, b) => (!a || Math.abs(signedArea(b)) > Math.abs(signedArea(a)) ? b : a),
-        null
-      );
-      const own = biggest ? Math.sign(signedArea(biggest)) : 0;
-      return pieces.filter((loop) => Math.sign(signedArea(loop)) === own);
-    }),
-  ];
+  const parts: Vector2[][] = [];
+  const holes: Vector2[][] = [];
+  const sort = (pieces: Vector2[][], solidSense: number) => {
+    for (const loop of pieces) {
+      (Math.sign(signedArea(loop)) === solidSense ? parts : holes).push(loop);
+    }
+  };
+  const sense = senseOf(outer);
+  sort(outer, sense);
+  for (const ring of tool.islands) {
+    const pieces = parted(loops(pruned(ring)));
+    sort(pieces, -senseOf(pieces));
+  }
   return parts.map((outline) => ({
     outline,
     islands: holes.filter((hole) => contains(outline, inside(hole))),

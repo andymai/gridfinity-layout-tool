@@ -158,8 +158,9 @@ describe('traceDxf', () => {
 
 describe('the STL', () => {
   async function solid(tools: readonly CleanedTool[]) {
-    const blob = await traceExportBlob(tools, 'stl', AS_TRACED);
-    return stlTriangles(await blob.arrayBuffer());
+    const built = await traceExportBlob(tools, 'stl', AS_TRACED);
+    if (!built.ok) throw new Error('the STL was not built');
+    return stlTriangles(await built.value.arrayBuffer());
   }
 
   // Two squares meeting at one corner, traced as one outline through it.
@@ -168,9 +169,24 @@ describe('the STL', () => {
     holes: [],
   };
 
+  // A square with a bay cut in from one corner, the outline running round
+  // the bay and back through that corner.
+  const BAYED: CleanedTool = {
+    path: [pt(0, 0), pt(2, 4), pt(4, 2), pt(0, 0), pt(10, 0), pt(10, 10), pt(0, 10)],
+    holes: [],
+  };
+  // A 20 mm square whose 10 mm island has a sliver of tool, 6 mm², pinched
+  // off inside it at one corner.
+  const ISLAND_BAY: CleanedTool = {
+    path: square(0, 0, 20),
+    holes: [[pt(5, 5), pt(7, 9), pt(9, 7), pt(5, 5), pt(15, 5), pt(15, 15), pt(5, 15)]],
+  };
+
   it.each([
     ['two tools, one with an island', [RING, LOWER]],
     ['an outline that pinches at a point', [PINCHED]],
+    ['an outline pinched round a bay', [BAYED]],
+    ['an island pinched round tool left in it', [ISLAND_BAY]],
   ])(
     'is closed: every edge meets one other triangle, running the other way (%s)',
     async (_, tools) => {
@@ -210,5 +226,27 @@ describe('the STL', () => {
       return sum + (a[0] * cross[0] + a[1] * cross[1] + a[2] * cross[2]) / 6;
     }, 0);
     expect(volume).toBeCloseTo(840, 3);
+  });
+
+  it('keeps the tool an island pinches off inside itself', async () => {
+    const triangles = await solid([ISLAND_BAY]);
+    const volume = triangles.reduce((sum, [a, b, c]) => {
+      const cross = [
+        b[1] * c[2] - b[2] * c[1],
+        b[2] * c[0] - b[0] * c[2],
+        b[0] * c[1] - b[1] * c[0],
+      ];
+      return sum + (a[0] * cross[0] + a[1] * cross[1] + a[2] * cross[2]) / 6;
+    }, 0);
+    // (400 - 100 + 6) mm² over 10 mm.
+    expect(volume).toBeCloseTo(3060, 0);
+  });
+
+  it('refuses an STL with no thickness, which would write an unreadable file', async () => {
+    const built = await traceExportBlob([RING], 'stl', {
+      clearance: false,
+      thicknessMm: Number.NaN,
+    });
+    expect(built.ok).toBe(false);
   });
 });
