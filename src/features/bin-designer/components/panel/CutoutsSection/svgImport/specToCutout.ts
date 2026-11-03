@@ -6,7 +6,7 @@
  */
 
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
-import { withoutTinyLoops } from '@/shared/utils/polyline';
+import { withoutTinyLoops } from '@/shared/utils/tinyLoops';
 import type { ParsedCutoutSpec } from './types';
 
 /** Options for hydrating a spec into a Cutout. */
