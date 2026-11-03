@@ -352,6 +352,10 @@ export function ScanPage({ token }: ScanPageProps) {
                           })}
                     </p>
                     <p className="text-xs text-success">{t(measuredFromKey(scene))}</p>
+                    {/* With one tool there is no list to carry the note. */}
+                    {toolCount === 1 && shown[0].underStrip && (
+                      <p className="text-xs text-warning">{t('scan.review.underStrip')}</p>
+                    )}
                     {/* A lattice fit is over-constrained, so it can report how
                         well it agrees with itself — the card's never can. */}
                     {scene.grid && (

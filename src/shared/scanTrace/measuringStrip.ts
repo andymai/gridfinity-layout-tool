@@ -9,23 +9,22 @@
  */
 
 import type { ImageDataLike, Mask, Point } from './types';
+import { fillPolygon } from './colorSegment';
+import { binarize, type SoftMask } from './softContour';
 import { toGrayscale, computeOtsuThreshold } from './mask';
 import { findQuadBlobs, quadArea, type BlobScanOptions, type CellQuad } from './latticeBlobs';
 import { pointInPolygon } from './toolBlobs';
 import { CALIBRATION_MARKER_MM, CALIBRATION_PITCH_MM } from './calibrationGrid';
 
-/** How many markers each printed strip carries. */
 export const STRIP_MARKER_COUNTS = [3, 4, 5] as const;
 /** White paper beyond the markers on every side, mm. */
 export const STRIP_MARGIN_MM = 6;
 
-/** A strip's paper, in millimetres along and across it. */
 export function stripSizeMm(markers: number): { readonly length: number; readonly width: number } {
   const border = CALIBRATION_MARKER_MM + 2 * STRIP_MARGIN_MM;
   return { length: (markers - 1) * CALIBRATION_PITCH_MM + border, width: border };
 }
 
-/** A strip found in a photo: its end markers' centres and the paper round them. */
 export interface SceneStrip {
   readonly a: Point;
   readonly b: Point;
@@ -61,7 +60,6 @@ interface Blob {
   readonly side: number;
 }
 
-/** The marker after `from` along `step`, if one sits where the next should. */
 function nextAlong(blobs: readonly Blob[], from: Blob, step: Point): Blob | null {
   const want = { x: from.center.x + step.x, y: from.center.y + step.y };
   const reach = SLACK * Math.hypot(step.x, step.y);
@@ -74,7 +72,25 @@ function nextAlong(blobs: readonly Blob[], from: Blob, step: Point): Blob | null
   return best;
 }
 
-/** The longest straight, evenly spaced row of markers, two marker widths apart. */
+/**
+ * Whether `row` reads as a printed strip: markers of the printed size for
+ * its spacing, evenly along a straight line.
+ */
+function isStrip(row: readonly Blob[]): boolean {
+  const a = row[0].center;
+  const b = row[row.length - 1].center;
+  const pxPerMm = dist(a, b) / ((row.length - 1) * CALIBRATION_PITCH_MM);
+  const markerMm = row.reduce((s, m) => s + m.side, 0) / row.length / pxPerMm;
+  return (
+    Math.abs(markerMm / CALIBRATION_MARKER_MM - 1) <= SLACK && rowRmsMm(row, pxPerMm) <= MAX_RMS_MM
+  );
+}
+
+/**
+ * The longest row of markers two marker widths apart that reads as a strip.
+ * Each row is checked before it is ranked, so a bent longer one cannot hide
+ * a straight shorter one.
+ */
 function bestRow(blobs: readonly Blob[]): Blob[] | null {
   let best: Blob[] | null = null;
   const most = STRIP_MARKER_COUNTS[STRIP_MARKER_COUNTS.length - 1];
@@ -93,14 +109,13 @@ function bestRow(blobs: readonly Blob[]): Blob[] | null {
         row.push(next);
         next = nextAlong(blobs, next, step);
       }
-      if (row.length > most || row.length < STRIP_MARKER_COUNTS[0]) continue;
+      if (row.length > most || row.length < STRIP_MARKER_COUNTS[0] || !isStrip(row)) continue;
       if (!best || row.length > best.length) best = row;
     }
   }
   return best;
 }
 
-/** How far the row's markers stray from an even, straight one, in mm. */
 function rowRmsMm(row: readonly Blob[], pxPerMm: number): number {
   const a = row[0].center;
   const b = row[row.length - 1].center;
@@ -113,7 +128,6 @@ function rowRmsMm(row: readonly Blob[], pxPerMm: number): number {
   return Math.sqrt(sum / row.length) / pxPerMm;
 }
 
-/** The strip's paper round a row of markers, in image pixels. */
 function paperAround(a: Point, b: Point, pxPerMm: number): [Point, Point, Point, Point] {
   const length = dist(a, b);
   const ux = (b.x - a.x) / length;
@@ -149,9 +163,6 @@ export function detectMarkerStrip(
     const b = row[row.length - 1].center;
     const lengthMm = (row.length - 1) * CALIBRATION_PITCH_MM;
     const pxPerMm = dist(a, b) / lengthMm;
-    const markerMm = row.reduce((s, m) => s + m.side, 0) / row.length / pxPerMm;
-    if (Math.abs(markerMm / CALIBRATION_MARKER_MM - 1) > SLACK) continue;
-    if (rowRmsMm(row, pxPerMm) > MAX_RMS_MM) continue;
     return {
       a,
       b,
@@ -198,6 +209,23 @@ export function bridgeAcrossStrip(mask: Mask, strip: SceneStrip): Mask {
     }
   }
   return { width, height, data };
+}
+
+/**
+ * The model's soft mask with the strip's paper taken out and the tool joined
+ * across it, as `bridgeAcrossStrip` does for the colour pass. Without it, a
+ * redraw keeps only the larger piece the strip leaves visible.
+ */
+export function bridgeSoftAcrossStrip(soft: SoftMask, strip: SceneStrip): SoftMask {
+  const { width, height } = soft;
+  const paper = fillPolygon(strip.paper, width, height);
+  const outside = Float32Array.from(soft.data, (v, i) => (paper[i] === 1 ? 0 : v));
+  const bridged = bridgeAcrossStrip(binarize({ width, height, data: outside }), strip);
+  return {
+    width,
+    height,
+    data: Float32Array.from(outside, (v, i) => Math.max(v, bridged.data[i])),
+  };
 }
 
 function segmentsCross(a: Point, b: Point, c: Point, d: Point): boolean {

@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { isOk } from '@/core/result';
 import { detectMarkerStrip, stripSizeMm, STRIP_MARGIN_MM } from './measuringStrip';
-import { CALIBRATION_MARKER_MM, CALIBRATION_PITCH_MM } from './calibrationGrid';
-import { traceScene } from './traceScene';
+import { CALIBRATION_MARKER_MM, CALIBRATION_PITCH_MM, calibrationNodes } from './calibrationGrid';
+import { traceScene, traceSceneSegmented, withReference } from './traceScene';
+import type { SoftMask } from './softContour';
 import type { ImageDataLike, Point } from './types';
 
 const W = 760;
@@ -66,19 +67,26 @@ function stripLayers(
 }
 
 /** Draws the first layer a pixel falls in, over a mid-grey table. */
-function render(layers: readonly { poly: Point[]; value: number }[]): ImageDataLike {
-  const shown = layers.map((l) => ({ ...l, poly: l.poly.map(px) }));
-  const data = new Uint8ClampedArray(W * H * 4);
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
+function render(
+  layers: readonly { poly: Point[]; value: number }[],
+  frame = { width: W, height: H, scale: SCALE, table: 140 }
+): ImageDataLike {
+  const { width, height, scale, table } = frame;
+  const shown = layers.map((l) => ({
+    ...l,
+    poly: l.poly.map((p) => ({ x: p.x * scale, y: p.y * scale })),
+  }));
+  const data = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
       const layer = shown.find((l) => inside({ x, y }, l.poly));
-      const v = layer ? layer.value : 140;
-      const o = (y * W + x) * 4;
+      const v = layer ? layer.value : table;
+      const o = (y * width + x) * 4;
       data[o] = data[o + 1] = data[o + 2] = v;
       data[o + 3] = 255;
     }
   }
-  return { width: W, height: H, data };
+  return { width, height, data };
 }
 
 const bbox = (points: readonly Point[]) => {
@@ -107,6 +115,15 @@ describe('detectMarkerStrip', () => {
   it('wants three markers in a row, so two squares are not a strip', () => {
     const two = stripLayers(3, { x: 40, y: 60 }, 0).filter((_, i) => i !== 2);
     expect(detectMarkerStrip(render(two))).toBeNull();
+  });
+
+  it('takes a straight short strip over a longer row that is bent', () => {
+    // Five markers whose middle one sits 2 mm off the line, and a true strip.
+    const bent = stripLayers(5, { x: 20, y: 20 }, 0).map((layer, i) =>
+      i === 2 ? { ...layer, poly: layer.poly.map((p) => ({ x: p.x, y: p.y + 2 })) } : layer
+    );
+    const strip = detectMarkerStrip(render([...bent, ...stripLayers(3, { x: 30, y: 110 }, 0)]));
+    expect(strip?.lengthMm).toBe(2 * CALIBRATION_PITCH_MM);
   });
 
   it('passes over markers inside an area it is told to leave, such as a sheet’s', () => {
@@ -145,5 +162,58 @@ describe('tracing a tool under a strip', () => {
     const [shape] = result.value.shapes;
     expect(bbox(shape.outputPoints).w).toBeLessThan(160 - 10);
     expect(shape.underStrip).toBe(true);
+  });
+
+  it('keeps a tool whose middle lies under the strip when the scale is set again', () => {
+    // A 60 mm square, the strip down its middle, so its deepest point is under the paper.
+    const square = { poly: rect(90, 60, 60, 60), value: 90 };
+    const middle = stripLayers(4, { x: 133, y: 14 }, Math.PI / 2);
+    const result = traceScene(render([...middle, square]), { smooth: false });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.shapes).toHaveLength(1);
+    expect(withReference(result.value, result.value.reference).shapes).toHaveLength(1);
+  });
+
+  it('bridges the model’s mask too, so a redraw keeps the whole tool', () => {
+    const across = stripLayers(4, { x: 133, y: 14 }, Math.PI / 2);
+    const image = render([...across, BAR]);
+    const strip = detectMarkerStrip(image);
+    expect(strip).not.toBeNull();
+    if (!strip) return;
+    // What a model sees: the bar's two visible pieces, either side of the paper.
+    const bar = BAR.poly.map(px);
+    const data = new Float32Array(W * H);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if (inside({ x, y }, bar) && !inside({ x, y }, strip.paper)) data[y * W + x] = 1;
+      }
+    }
+    const soft: SoftMask = { width: W, height: H, data };
+    const redrawn = traceSceneSegmented(image, soft, { smooth: false }, { kind: 'strip', strip });
+    expect(isOk(redrawn)).toBe(true);
+    if (!isOk(redrawn)) return;
+    expect(Math.abs(bbox(redrawn.value.shapes[0].outputPoints).w - 160)).toBeLessThan(1.5);
+  });
+
+  it('keeps a calibration sheet under the strip from tracing as tools', () => {
+    // A sheet on a dark table, a tool inside its ring, a strip across the tool.
+    const frame = { width: 600, height: 600, scale: 2, table: 70 };
+    const half = CALIBRATION_MARKER_MM / 2;
+    const ring = calibrationNodes().map((n) => ({
+      poly: rect(40 + n.x - half, 40 + n.y - half, CALIBRATION_MARKER_MM, CALIBRATION_MARKER_MM),
+      value: 20,
+    }));
+    const tool = { poly: rect(85, 120, 110, 30), value: 100 };
+    const strip = stripLayers(3, { x: 127, y: 75 }, Math.PI / 2);
+    const paper = { poly: rect(15, 15, 168 + 50, 210 + 50), value: 245 };
+    const result = traceScene(render([...strip, ...ring, tool, paper], frame), { smooth: false });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    const { reference, shapes } = result.value;
+    expect(reference?.kind).toBe('strip');
+    expect(reference?.kind === 'strip' && reference.sheet).toBeTruthy();
+    expect(shapes).toHaveLength(1);
+    expect(Math.abs(bbox(shapes[0].outputPoints).w - 110)).toBeLessThan(2);
   });
 });

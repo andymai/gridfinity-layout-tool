@@ -39,6 +39,7 @@ import { findToolBlobs, interiorSeed, pointInPolygon } from './toolBlobs';
 import { convexHull, minAreaRect } from './minAreaRect';
 import {
   bridgeAcrossStrip,
+  bridgeSoftAcrossStrip,
   detectMarkerStrip,
   touchesStrip,
   type SceneStrip,
@@ -82,7 +83,12 @@ export type SceneReference =
   | { readonly kind: 'card'; readonly card: SceneCard }
   | { readonly kind: 'ruler'; readonly ruler: SceneRuler }
   | { readonly kind: 'paper'; readonly paper: ScenePaper }
-  | { readonly kind: 'strip'; readonly strip: SceneStrip };
+  | {
+      readonly kind: 'strip';
+      readonly strip: SceneStrip;
+      /** A calibration sheet under the tool, which still bounds the search and its markers. */
+      readonly sheet?: LatticeFit;
+    };
 
 export interface SceneRing {
   /** In image pixels — for overlaying on the photo. */
@@ -208,7 +214,7 @@ export function detectReference(
   // A strip on the tool measures it at its own height, so it wins over a sheet
   // under it, whose rows of markers it would otherwise be read from.
   const strip = detectMarkerStrip(image, sheet ? sheet.cells.map((cell) => cell.outline) : []);
-  if (strip) return { kind: 'strip', strip };
+  if (strip) return { kind: 'strip', strip, ...(sheet ? { sheet } : {}) };
   if (sheet) return { kind: 'sheet', fit: sheet };
   const baseplate = detectBaseplateGrid(image, options);
   if (baseplate) return { kind: 'baseplate', fit: baseplate };
@@ -228,7 +234,7 @@ function referenceQuads(reference: SceneReference | null): readonly (readonly Po
     case 'baseplate':
       return reference.fit.cells.map((cell) => cell.outline);
     case 'strip':
-      return [reference.strip.paper];
+      return [reference.strip.paper, ...(reference.sheet?.cells.map((cell) => cell.outline) ?? [])];
     default:
       return [];
   }
@@ -249,6 +255,10 @@ function searchRegion(reference: SceneReference | null): readonly Point[] | unde
     case 'sheet':
     case 'baseplate':
       return convexHull(reference.fit.cells.flatMap((cell) => cell.outline));
+    case 'strip':
+      return reference.sheet
+        ? convexHull(reference.sheet.cells.flatMap((cell) => cell.outline))
+        : undefined;
     case 'paper': {
       const { corners } = reference.paper;
       const cx = corners.reduce((sum, p) => sum + p.x, 0) / 4;
@@ -408,7 +418,11 @@ export function withReference(
   reference: SceneReference | null,
   options: SceneTraceOptions = {}
 ): SceneTrace {
-  const quads = referenceQuads(reference);
+  // A strip lies on a tool, so what is under it is no reference object.
+  const quads =
+    reference?.kind === 'strip'
+      ? (reference.sheet?.cells.map((cell) => cell.outline) ?? [])
+      : referenceQuads(reference);
   const outlines = scene.shapes
     .filter(({ imagePoints, holes }) => {
       // In pixels: a 1 × 1 frame leaves the seed unnormalised. On the material,
@@ -548,7 +562,9 @@ export function traceSceneSegmented(
 ): Result<SceneTrace, TraceError> {
   const { width, height } = image;
   if (width <= 0 || height <= 0) return err({ code: 'NO_OBJECT', detail: 'Empty image' });
-  return buildToolTraceSoft(toolMask, reference, options);
+  const mask =
+    reference?.kind === 'strip' ? bridgeSoftAcrossStrip(toolMask, reference.strip) : toolMask;
+  return buildToolTraceSoft(mask, reference, options);
 }
 
 const samePoints = (a: readonly Point[], b: readonly Point[]): boolean =>
