@@ -150,6 +150,13 @@ parametric cutouts: scanned outlines import with a default `clearance` + `chamfe
 clearance/chamfer and fillets its bottom edges for the scoop. This keeps the phone pipeline simple
 and the fit fully tunable on the desktop.
 
+## Desktop
+
+The bin designer's trace view (`components/TraceView/`) runs the same passes on a photo
+dropped in on the computer and hands the scan dialog the millimetre SVG a phone uploads.
+With no reference in frame, `manualReference.ts` builds one from a drawn ruler or four
+marked paper corners; marked paper also bounds the search, like a lattice's hull.
+
 ## Pieces
 
 - `scanRouting.ts` — pure `/scan/:token` path helpers (`isScanPath`, `getScanToken`).

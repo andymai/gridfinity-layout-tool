@@ -7,13 +7,14 @@
  * scale, so the user confirms the longest side in mm before it becomes a cutout.
  */
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Dialog, Button, Input, Spinner } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
+import { lazyWithRetry } from '@/shared/utils/lazyWithRetry';
 import { isOk } from '@/core/result';
 import { MAX_SVG_FILE_SIZE, type ParsedCutoutSpec } from '../svgImport/types';
 import { parseScanSvg, rescaleToLongestMm, type ParsedScan } from './scanIngest';
@@ -32,6 +33,11 @@ interface ScanWithPhoneDialogProps {
   readonly open: boolean;
   readonly onClose: () => void;
 }
+
+// The tracer and its model load only once someone traces a photo here.
+const TraceView = lazyWithRetry(() =>
+  import('../../../TraceView/TraceView').then((m) => ({ default: m.TraceView }))
+);
 
 type Stage =
   | { readonly kind: 'awaiting' }
@@ -76,6 +82,7 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
   const fieldId = useId();
   const [stage, setStage] = useState<Stage>({ kind: 'awaiting' });
   const [added, setAdded] = useState(0);
+  const [tracing, setTracing] = useState(false);
 
   // A scan can arrive mid scale-confirm; read the live stage from a ref (the
   // poll fires outside render) and hold the latecomer until we're back to
@@ -102,12 +109,13 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
   const handleClose = useCallback(() => {
     setStage({ kind: 'awaiting' });
     setAdded(0);
+    setTracing(false);
     pendingScanRef.current = null;
     onClose();
   }, [onClose]);
 
   const ingestSvg = useCallback(
-    (svg: string) => {
+    (svg: string, source: 'phone' | 'desktop' = 'phone') => {
       const result = parseScanSvg(svg);
       if (!isOk(result)) {
         addToast(t('toast.scanImport.parseFailed'), 'error');
@@ -118,7 +126,11 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
       // specs are to scale — add them directly and skip the scale-confirm step.
       if (/data-scan-units\s*=\s*["']mm["']/.test(svg)) {
         const count = addScanCutouts(result.value.specs);
-        trackEvent('scan_import', { success: true, shape_count: count, source: 'phone_mm' });
+        trackEvent('scan_import', {
+          success: true,
+          shape_count: count,
+          source: source === 'desktop' ? 'desktop_trace' : 'phone_mm',
+        });
         addToast(t('toast.scanImport.success', { count }), 'success');
         setAdded((n) => n + count);
         return;
@@ -202,159 +214,185 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
   const factor = stage.kind === 'review' && targetValid ? targetMm / stage.parsed.sized.longest : 1;
 
   return (
-    <Dialog.Root open={open} onClose={handleClose} size="md">
-      <Dialog.Header title={t('binDesigner.cutouts.scanImport.title')} />
-      <Dialog.Body>
-        {stage.kind === 'awaiting' ? (
-          <div className="flex flex-col items-center gap-4 py-2 text-center">
-            {added > 0 && (
-              <p className="flex w-full items-center justify-center gap-2 rounded-lg border border-success/40 bg-success/10 px-3 py-2 text-sm text-success">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                  className="shrink-0"
-                >
-                  <path d="M20 6L9 17l-5-5" />
-                </svg>
-                {t(
-                  added === 1
-                    ? 'binDesigner.cutouts.scanImport.added.one'
-                    : 'binDesigner.cutouts.scanImport.added.other',
-                  { count: added }
-                )}
-              </p>
-            )}
-            {scan.phase === 'unavailable' || scan.phase === 'expired' ? (
-              <p className="text-sm text-content-secondary">
-                {t(
-                  scan.phase === 'expired'
-                    ? 'binDesigner.cutouts.scanImport.expired'
-                    : 'binDesigner.cutouts.scanImport.unavailable'
-                )}
-              </p>
-            ) : scan.phase === 'waiting' && scan.url ? (
-              <>
-                <ScanQrCode url={scan.url} alt={t('binDesigner.cutouts.scanImport.qrAlt')} />
+    <>
+      <Dialog.Root open={open} onClose={handleClose} size="md">
+        <Dialog.Header title={t('binDesigner.cutouts.scanImport.title')} />
+        <Dialog.Body>
+          {stage.kind === 'awaiting' ? (
+            <div className="flex flex-col items-center gap-4 py-2 text-center">
+              {added > 0 && (
+                <p className="flex w-full items-center justify-center gap-2 rounded-lg border border-success/40 bg-success/10 px-3 py-2 text-sm text-success">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    className="shrink-0"
+                  >
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                  {t(
+                    added === 1
+                      ? 'binDesigner.cutouts.scanImport.added.one'
+                      : 'binDesigner.cutouts.scanImport.added.other',
+                    { count: added }
+                  )}
+                </p>
+              )}
+              {scan.phase === 'unavailable' || scan.phase === 'expired' ? (
                 <p className="text-sm text-content-secondary">
-                  {t('binDesigner.cutouts.scanImport.hint')}
+                  {t(
+                    scan.phase === 'expired'
+                      ? 'binDesigner.cutouts.scanImport.expired'
+                      : 'binDesigner.cutouts.scanImport.unavailable'
+                  )}
                 </p>
-                {/* Fallback if the QR can't be scanned/rendered: the link itself. */}
-                <p className="max-w-full break-all font-mono text-micro text-content-tertiary">
-                  {scan.url}
-                </p>
-                <p className="flex items-center gap-2 text-xs text-content-tertiary">
+              ) : scan.phase === 'waiting' && scan.url ? (
+                <>
+                  <ScanQrCode url={scan.url} alt={t('binDesigner.cutouts.scanImport.qrAlt')} />
+                  <p className="text-sm text-content-secondary">
+                    {t('binDesigner.cutouts.scanImport.hint')}
+                  </p>
+                  {/* Fallback if the QR can't be scanned/rendered: the link itself. */}
+                  <p className="max-w-full break-all font-mono text-micro text-content-tertiary">
+                    {scan.url}
+                  </p>
+                  <p className="flex items-center gap-2 text-xs text-content-tertiary">
+                    <Spinner size="sm" />
+                    {t('binDesigner.cutouts.scanImport.waiting')}
+                  </p>
+                  <div className="flex w-full flex-col items-center gap-1 rounded-lg border border-stroke-subtle bg-surface-elevated px-3 py-2.5">
+                    <Button type="button" variant="ghost" size="sm" onClick={handleDownloadSheet}>
+                      {t('binDesigner.cutouts.scanImport.calibrationSheet')}
+                    </Button>
+                    <p className="text-xs text-content-tertiary">
+                      {t('binDesigner.cutouts.scanImport.calibrationSheetHelp')}
+                    </p>
+                  </div>
+                  <PrivacyHint text={t('scan.capture.privacy')} />
+                </>
+              ) : (
+                <p className="flex items-center gap-2 py-6 text-sm text-content-secondary">
                   <Spinner size="sm" />
                   {t('binDesigner.cutouts.scanImport.waiting')}
                 </p>
-                <div className="flex w-full flex-col items-center gap-1 rounded-lg border border-stroke-subtle bg-surface-elevated px-3 py-2.5">
-                  <Button type="button" variant="ghost" size="sm" onClick={handleDownloadSheet}>
-                    {t('binDesigner.cutouts.scanImport.calibrationSheet')}
-                  </Button>
-                  <p className="text-xs text-content-tertiary">
-                    {t('binDesigner.cutouts.scanImport.calibrationSheetHelp')}
-                  </p>
-                </div>
-                <PrivacyHint text={t('scan.capture.privacy')} />
-              </>
-            ) : (
-              <p className="flex items-center gap-2 py-6 text-sm text-content-secondary">
-                <Spinner size="sm" />
-                {t('binDesigner.cutouts.scanImport.waiting')}
-              </p>
-            )}
-
-            <div className="flex w-full items-center gap-3 text-xs text-content-tertiary">
-              <span className="h-px flex-1 bg-stroke-subtle" />
-              {t('binDesigner.cutouts.scanImport.or')}
-              <span className="h-px flex-1 bg-stroke-subtle" />
-            </div>
-
-            <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()}>
-              {t('binDesigner.cutouts.scanImport.upload')}
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".svg,image/svg+xml"
-              hidden
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleFile(file);
-                e.target.value = '';
-              }}
-            />
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-center rounded-md border border-stroke-subtle bg-surface-elevated p-3">
-              <img
-                src={previewUrl ?? undefined}
-                alt={t('binDesigner.cutouts.scanImport.previewAlt')}
-                className="max-h-48 w-auto"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label htmlFor={fieldId} className="text-sm font-medium text-content-primary">
-                {t(
-                  stage.parsed.sizedByLongest
-                    ? 'binDesigner.cutouts.scanImport.scaleLabelLongest'
-                    : 'binDesigner.cutouts.scanImport.scaleLabel'
-                )}
-              </label>
-              <Input
-                id={fieldId}
-                type="number"
-                min={0}
-                step={0.5}
-                value={stage.targetText}
-                error={stage.targetText !== '' && !targetValid}
-                onChange={(e) => setStage({ ...stage, targetText: e.target.value })}
-              />
-              <p className="text-xs text-content-tertiary">
-                {t('binDesigner.cutouts.scanImport.scaleHelp')}
-              </p>
-              {targetValid && (
-                <p className="text-xs text-content-secondary">
-                  {t('binDesigner.cutouts.scanImport.resultSize', {
-                    width: round1(stage.parsed.sized.width * factor),
-                    depth: round1(stage.parsed.sized.depth * factor),
-                  })}
-                </p>
               )}
+
+              <div className="flex w-full items-center gap-3 text-xs text-content-tertiary">
+                <span className="h-px flex-1 bg-stroke-subtle" />
+                {t('binDesigner.cutouts.scanImport.or')}
+                <span className="h-px flex-1 bg-stroke-subtle" />
+              </div>
+
+              <div className="flex w-full flex-col items-center gap-1">
+                <Button type="button" variant="secondary" onClick={() => setTracing(true)}>
+                  {t('binDesigner.cutouts.traceView.open')}
+                </Button>
+                <p className="text-xs text-content-tertiary">
+                  {t('binDesigner.cutouts.traceView.openHelp')}
+                </p>
+              </div>
+              <Button type="button" variant="ghost" onClick={() => fileInputRef.current?.click()}>
+                {t('binDesigner.cutouts.scanImport.upload')}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".svg,image/svg+xml"
+                hidden
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFile(file);
+                  e.target.value = '';
+                }}
+              />
             </div>
-          </div>
-        )}
-      </Dialog.Body>
-      <Dialog.Footer>
-        {stage.kind === 'review' ? (
-          <>
-            <Button type="button" variant="ghost" onClick={() => setStage({ kind: 'awaiting' })}>
-              {t('binDesigner.cutouts.scanImport.back')}
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-center rounded-md border border-stroke-subtle bg-surface-elevated p-3">
+                <img
+                  src={previewUrl ?? undefined}
+                  alt={t('binDesigner.cutouts.scanImport.previewAlt')}
+                  className="max-h-48 w-auto"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label htmlFor={fieldId} className="text-sm font-medium text-content-primary">
+                  {t(
+                    stage.parsed.sizedByLongest
+                      ? 'binDesigner.cutouts.scanImport.scaleLabelLongest'
+                      : 'binDesigner.cutouts.scanImport.scaleLabel'
+                  )}
+                </label>
+                <Input
+                  id={fieldId}
+                  type="number"
+                  min={0}
+                  step={0.5}
+                  value={stage.targetText}
+                  error={stage.targetText !== '' && !targetValid}
+                  onChange={(e) => setStage({ ...stage, targetText: e.target.value })}
+                />
+                <p className="text-xs text-content-tertiary">
+                  {t('binDesigner.cutouts.scanImport.scaleHelp')}
+                </p>
+                {targetValid && (
+                  <p className="text-xs text-content-secondary">
+                    {t('binDesigner.cutouts.scanImport.resultSize', {
+                      width: round1(stage.parsed.sized.width * factor),
+                      depth: round1(stage.parsed.sized.depth * factor),
+                    })}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </Dialog.Body>
+        <Dialog.Footer>
+          {stage.kind === 'review' ? (
+            <>
+              <Button type="button" variant="ghost" onClick={() => setStage({ kind: 'awaiting' })}>
+                {t('binDesigner.cutouts.scanImport.back')}
+              </Button>
+              <Button type="button" variant="ghost" onClick={handleClose}>
+                {t('common.cancel')}
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                disabled={!targetValid}
+                onClick={handleConfirm}
+              >
+                {t('binDesigner.cutouts.scanImport.add')}
+              </Button>
+            </>
+          ) : added > 0 ? (
+            <Button type="button" variant="primary" onClick={handleClose}>
+              {t('binDesigner.cutouts.scanImport.done')}
             </Button>
+          ) : (
             <Button type="button" variant="ghost" onClick={handleClose}>
               {t('common.cancel')}
             </Button>
-            <Button type="button" variant="primary" disabled={!targetValid} onClick={handleConfirm}>
-              {t('binDesigner.cutouts.scanImport.add')}
-            </Button>
-          </>
-        ) : added > 0 ? (
-          <Button type="button" variant="primary" onClick={handleClose}>
-            {t('binDesigner.cutouts.scanImport.done')}
-          </Button>
-        ) : (
-          <Button type="button" variant="ghost" onClick={handleClose}>
-            {t('common.cancel')}
-          </Button>
-        )}
-      </Dialog.Footer>
-    </Dialog.Root>
+          )}
+        </Dialog.Footer>
+      </Dialog.Root>
+      {/* Outside the dialog's tree: events from a portal still bubble through
+        React parents, and this one's would reach the dialog's handlers. */}
+      {open && tracing && (
+        <Suspense fallback={null}>
+          <TraceView
+            open
+            onClose={() => setTracing(false)}
+            onTraced={(svg) => ingestSvg(svg, 'desktop')}
+          />
+        </Suspense>
+      )}
+    </>
   );
 }

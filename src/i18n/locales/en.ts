@@ -3625,6 +3625,62 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.scanImport.emptyCta': 'Scan a real tool with your phone',
   'binDesigner.cutouts.scanImport.emptyHelp':
     'Photograph any tool to trace its exact outline automatically.',
+  'binDesigner.cutouts.traceView.title': 'Trace a photo',
+  'binDesigner.cutouts.traceView.open': 'Trace a photo on this computer',
+  'binDesigner.cutouts.traceView.openHelp':
+    'Use a photo you already have. It never leaves this computer.',
+  'binDesigner.cutouts.traceView.drop.title': 'Drop a photo of your tools here',
+  'binDesigner.cutouts.traceView.drop.choose': 'Choose a photo',
+  'binDesigner.cutouts.traceView.drop.tipSurface':
+    'Lay the tools on a plain surface, with a gap between each.',
+  'binDesigner.cutouts.traceView.drop.tipReference':
+    'A card, the calibration sheet or a baseplate in the photo sets the size for you.',
+  'binDesigner.cutouts.traceView.drop.tipManual':
+    'Nothing like that in frame? Measure something in the photo, or mark a sheet of paper.',
+  'binDesigner.cutouts.traceView.privacy': 'Your photo never leaves this computer.',
+  'binDesigner.cutouts.traceView.photo.change': 'Choose another photo',
+  'binDesigner.cutouts.traceView.needsScale': 'Set the scale to add these tools.',
+  'binDesigner.cutouts.traceView.addMany': 'Add {count} to bin',
+  'binDesigner.cutouts.traceView.canvasLabel': 'Photo to trace',
+  'binDesigner.cutouts.traceView.rulerLength': '{length} mm',
+  'binDesigner.cutouts.traceView.zoomIn': 'Zoom in',
+  'binDesigner.cutouts.traceView.zoomOut': 'Zoom out',
+  'binDesigner.cutouts.traceView.fit': 'Fit photo',
+  'binDesigner.cutouts.traceView.scale.heading': 'Scale',
+  'binDesigner.cutouts.traceView.scale.ruler': 'Measured to scale from your ruler ({length} mm).',
+  'binDesigner.cutouts.traceView.scale.paperA4': 'Measured to scale from the A4 sheet.',
+  'binDesigner.cutouts.traceView.scale.paperLetter': 'Measured to scale from the US Letter sheet.',
+  'binDesigner.cutouts.traceView.scale.none': 'No size reference found',
+  'binDesigner.cutouts.traceView.scale.noneHint':
+    'Draw a ruler across something you know the length of, or mark the corners of a sheet of paper the tools lie on.',
+  'binDesigner.cutouts.traceView.scale.drawRuler': 'Draw a ruler',
+  'binDesigner.cutouts.traceView.scale.markPaper': 'Mark paper corners',
+  'binDesigner.cutouts.traceView.scale.usePhoto': 'Use the photo’s reference',
+  'binDesigner.cutouts.traceView.scale.clear': 'Clear scale',
+  'binDesigner.cutouts.traceView.ruler.hint':
+    'Click both ends of something you know the length of. Drag an end to adjust it.',
+  'binDesigner.cutouts.traceView.ruler.length': 'Length (mm)',
+  'binDesigner.cutouts.traceView.apply': 'Set scale',
+  'binDesigner.cutouts.traceView.paper.size': 'Paper size',
+  'binDesigner.cutouts.traceView.paper.a4': 'A4',
+  'binDesigner.cutouts.traceView.paper.letter': 'US Letter',
+  'binDesigner.cutouts.traceView.paper.hint':
+    'Click the four corners of the sheet. Drag a corner to adjust it.',
+  'binDesigner.cutouts.traceView.paper.count': '{count} of 4 corners marked',
+  'binDesigner.cutouts.traceView.paper.invalid':
+    'Those corners don’t make a sheet. Drag each one onto a corner of the paper.',
+  'binDesigner.cutouts.traceView.tools.heading': 'Tools',
+  'binDesigner.cutouts.traceView.tools.none':
+    'No tools found yet. Click a tool in the photo, or draw a region around them.',
+  'binDesigner.cutouts.traceView.tools.tapHint':
+    'Click a tool to redraw its outline, or click one that was missed.',
+  'binDesigner.cutouts.traceView.region.draw': 'Draw region',
+  'binDesigner.cutouts.traceView.region.clear': 'Clear region',
+  'binDesigner.cutouts.traceView.region.hint': 'Drag a box around the tools to look only there.',
+  'binDesigner.cutouts.traceView.sensitivity': 'Sensitivity',
+  'binDesigner.cutouts.traceView.sensitivityAuto': 'Auto',
+  'binDesigner.cutouts.traceView.sensitivityHint':
+    'Raise it to pick up faint tools, lower it to drop shadows and specks.',
   'binDesigner.cutouts.rulerTool': 'Ruler',
   'binDesigner.cutouts.dragToMeasure': 'Drag to measure distance (Shift+drag for quick measure)',
   'binDesigner.cutouts.clickToDrawPath': 'Click to place points, close path to finish',

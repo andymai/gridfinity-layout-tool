@@ -13,15 +13,17 @@ interface ScanOverlayProps {
   /** The tools to draw, in the order the list numbers them. */
   readonly shapes: readonly SceneShape[];
   readonly keepHoles: boolean;
+  /** Badge size in image pixels; by default a share of the photo, so it reads the same at any resolution. */
+  readonly badgeRadius?: number;
 }
 
-/** Tool number badges, scaled to the photo so they read the same at any resolution. */
-const badgeRadius = (image: ImageDataLike): number => Math.max(image.width, image.height) * 0.025;
+const defaultBadgeRadius = (image: ImageDataLike): number =>
+  Math.max(image.width, image.height) * 0.025;
 
 const ring = (points: readonly Point[]): string =>
   `M ${points.map((p) => `${p.x} ${p.y}`).join(' L ')} Z`;
 
-export function ScanOverlay({ image, scene, shapes, keepHoles }: ScanOverlayProps) {
+export function ScanOverlay({ image, scene, shapes, keepHoles, badgeRadius }: ScanOverlayProps) {
   // Each badge sits where the tool is widest, so it never lands off the tool.
   const badges = useMemo(
     () =>
@@ -34,7 +36,7 @@ export function ScanOverlay({ image, scene, shapes, keepHoles }: ScanOverlayProp
         : [],
     [shapes, image, keepHoles]
   );
-  const radius = badgeRadius(image);
+  const radius = badgeRadius ?? defaultBadgeRadius(image);
 
   return (
     <svg

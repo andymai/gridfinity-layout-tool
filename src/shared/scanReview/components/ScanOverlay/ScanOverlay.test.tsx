@@ -55,4 +55,13 @@ describe('ScanOverlay', () => {
     );
     expect(two.container.querySelectorAll('text')).toHaveLength(2);
   });
+
+  it('sizes the number badges as asked', () => {
+    const other = box(60, 10, 90, 30);
+    const props = { image: IMAGE, scene: scene([ring, other]), shapes: [ring, other] };
+    const fixed = render(<ScanOverlay {...props} keepHoles={false} badgeRadius={3} />);
+    expect(fixed.container.querySelector('circle')?.getAttribute('r')).toBe('3');
+    const shared = render(<ScanOverlay {...props} keepHoles={false} />);
+    expect(shared.container.querySelector('circle')?.getAttribute('r')).toBe('2.5');
+  });
 });
