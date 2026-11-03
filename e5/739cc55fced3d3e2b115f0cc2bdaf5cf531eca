@@ -1,0 +1,31 @@
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pathEditHandler.ts
+  s_4b9adb1d9473fb::t_85d011939e62cd 21-23,49-56,102-123,125-128,130-172,273,297,310,377,380,453-468,476,505-506,513-515,518
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutPathTool.test.ts
+  s_4b9adb1d9473fb::t_6502c7e744c744 5-24,33,72-73
+src/shared/utils/pathCutoutOutline.ts
+  s_4b9adb1d9473fb::t_85d011939e62cd 77-79
+  s_4b9adb1d9473fb::t_e950198210fe1d 72-76,80-83,89-90
+src/features/bin-designer/components/panel/CutoutsSection/handlers/index.ts
+  s_4b9adb1d9473fb::t_85d011939e62cd 33
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pathEditHandler.test.ts
+  s_4b9adb1d9473fb::t_6502c7e744c744 5,608-638,640-657,659-661,706-709,748-793
+  s_4b9adb1d9473fb::t_1b7bd0171fc043 794
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutPathTool.ts
+  s_4b9adb1d9473fb::t_85d011939e62cd 19,201,208,211,218,227,230
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e5739cc55fced3d3e2b115f0cc2bdaf5cf531eca",
+  "prompts": {},
+  "sessions": {
+    "s_4b9adb1d9473fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d026ead-d5ae-43ff-b7af-cd5e2a5d65dd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
