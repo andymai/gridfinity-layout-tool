@@ -70,6 +70,7 @@
     "binDesigner.cutouts.repeat.radius",
     "binDesigner.cutouts.rotation",
     "binDesigner.cutouts.scanImport.resultSize",
+    "binDesigner.cutouts.traceView.rulerLength",
     "binDesigner.cutouts.scoopUniform",
     "binDesigner.cutouts.section.color",
     "binDesigner.cutouts.section.label",

@@ -160,6 +160,21 @@ describe('Dialog', () => {
       expect(className).toContain('max-md:h-dvh');
       expect(className).toContain('max-md:rounded-none');
     });
+
+    // A full-viewport view: the centring and size classes give way to the edges.
+    it('fills the viewport at every width', () => {
+      render(
+        <Dialog.Root open={true} onClose={vi.fn()} size="5xl" fullScreen="always">
+          <Dialog.Header title="Test" />
+          <Dialog.Body>Content</Dialog.Body>
+        </Dialog.Root>
+      );
+      const classes = screen.getByRole('dialog').className.split(/\s+/);
+      expect(classes).toEqual(expect.arrayContaining(['left-0', 'top-0', 'w-full', 'h-dvh']));
+      expect(classes).not.toContain('left-1/2');
+      expect(classes).not.toContain('max-w-5xl');
+      expect(classes).not.toContain('max-h-[90vh]');
+    });
   });
 
   describe('overlay', () => {

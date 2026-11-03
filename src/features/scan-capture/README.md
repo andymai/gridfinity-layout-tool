@@ -123,7 +123,7 @@ its header holds the method), searched inside a lattice's hull when one sized th
 the table around a sheet never reads as a tool. MediaPipe's **Interactive Segmenter**
 ("Magic Touch", on-device) then redraws each tool from a seed inside it (`interiorSeed`),
 and `refineScene.ts` keeps a redraw only where it agrees with the colour outline. A tap
-redraws, or adds, the tool under it. `scanFlow.ts` runs these passes. Holes are found from the
+redraws, or adds, the tool under it. `@/shared/scanReview` runs these passes for the phone and the desktop alike. Holes are found from the
 same mask (background regions that never reach the frame's edge) and shown only
 while the review's Keep holes switch is on; a tool lying in a hole is flagged
 `inHole` and hidden with them.
@@ -150,6 +150,13 @@ parametric cutouts: scanned outlines import with a default `clearance` + `chamfe
 clearance/chamfer and fillets its bottom edges for the scoop. This keeps the phone pipeline simple
 and the fit fully tunable on the desktop.
 
+## Desktop
+
+The bin designer's trace view (`components/TraceView/`) runs the same passes on a photo
+dropped in on the computer and hands the scan dialog the millimetre SVG a phone uploads.
+With no reference in frame, `manualReference.ts` builds one from a drawn ruler or four
+marked paper corners; marked paper also bounds the search, like a lattice's hull.
+
 ## Pieces
 
 - `scanRouting.ts` — pure `/scan/:token` path helpers (`isScanPath`, `getScanToken`).
@@ -157,12 +164,15 @@ and the fit fully tunable on the desktop.
 - `components/ScanPage.tsx` — the capture UI: guided capture → segment → review (tap to
   redo, remove a tool) → upload, one SVG path per tool. App-like full-bleed layout with
   safe-area handling and a fixed action bar.
+
+In `@/shared/scanReview`, shared with the desktop's trace view:
+
 - `cardSize.ts` — the reference card's real dimensions (long/short, not width/height,
   because that is what `cardHomography` consumes), validated and remembered per device.
   The sheet and the baseplate have no equivalent: their sizes are printed or moulded in,
   so `withCardSize` is a no-op on a lattice-sized scene.
-- `components/CardSizeEditor/` — collapsed readout + caliper entry for that size, shown on
-  the review screen only when a card was actually detected.
+- `CardSizeEditor` — collapsed readout + caliper entry for that size, shown on the review
+  screen only when a card was actually detected.
 
 In `@/shared/scanTrace`, for the lattice references:
 

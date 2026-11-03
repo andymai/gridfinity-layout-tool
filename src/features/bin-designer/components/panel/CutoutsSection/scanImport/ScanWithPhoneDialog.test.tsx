@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import { trackEvent } from '@/shared/analytics/posthog';
 import { ScanWithPhoneDialog } from './ScanWithPhoneDialog';
 
 vi.mock('@/shared/exportDestination/deliverExport', () => ({
@@ -23,6 +24,14 @@ vi.mock('./useScanSession', () => ({
   useScanSession: (_active: boolean, onSvg: (svg: string) => void) => {
     session.onSvg = onSvg;
     return session.current;
+  },
+}));
+
+const trace = vi.hoisted(() => ({ onTraced: null as ((svg: string) => void) | null }));
+vi.mock('../../../TraceView/TraceView', () => ({
+  TraceView: ({ onTraced }: { onTraced: (svg: string) => void }) => {
+    trace.onTraced = onTraced;
+    return <p>trace view</p>;
   },
 }));
 
@@ -53,6 +62,24 @@ describe('ScanWithPhoneDialog', () => {
     session.current = { phase: 'unavailable', url: null };
     URL.createObjectURL = vi.fn(() => 'blob:mock');
     URL.revokeObjectURL = vi.fn();
+  });
+
+  it('adds what a photo traced on this computer, as a desktop trace', async () => {
+    render(<ScanWithPhoneDialog open onClose={vi.fn()} />);
+    fireEvent.click(screen.getByText('binDesigner.cutouts.traceView.open'));
+    await screen.findByText('trace view');
+
+    act(() =>
+      trace.onTraced?.(
+        '<svg viewBox="0 0 50 30" data-scan-units="mm"><path d="M 0 0 L 50 0 L 50 30 L 0 30 Z"/></svg>'
+      )
+    );
+
+    expect(mockAddScanCutouts).toHaveBeenCalledTimes(1);
+    expect(trackEvent).toHaveBeenCalledWith(
+      'scan_import',
+      expect.objectContaining({ success: true, source: 'desktop_trace' })
+    );
   });
 
   it('shows the upload affordance in the awaiting state', () => {
