@@ -3301,6 +3301,10 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.repeat.presetLabel': 'Start with',
   'binDesigner.cutouts.repeat.presetRing': 'Ring of {count}',
   'binDesigner.cutouts.repeat.presetNoFit': 'Not enough room from this position',
+  'binDesigner.cutouts.repeat.noRoomRows': 'No room for another row from here',
+  'binDesigner.cutouts.repeat.noRoomCols': 'No room for another column from here',
+  'binDesigner.cutouts.repeat.noRoomDetail':
+    'Copies are added toward the far edge of the bin. To make room, move the selection away from that edge or lower the pitch.',
   'binDesigner.cutouts.repeat.blockedGrouped': 'Select the whole group to repeat it as one piece.',
   'binDesigner.cutouts.repeat.blockedDescendant': 'Something inside this group already repeats.',
   'binDesigner.cutouts.repeat.blockedDescendantDetail':
