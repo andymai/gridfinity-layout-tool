@@ -1,0 +1,28 @@
+src/features/bin-designer/utils/startScan.ts
+  s_169ca198965180::t_5db72caeaa6f2d 16-28
+src/features/bin-designer/utils/startScan.test.ts
+  s_169ca198965180::t_1e3eaf2fc8570c 4,82-91
+  s_169ca198965180::t_9e7586bf6e0d5b 92-93
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.tsx
+  s_169ca198965180::t_5db72caeaa6f2d 25,46
+src/features/bin-designer/components/ParameterPanel/DesignerSearchBar/DesignerSearchBar.tsx
+  s_169ca198965180::t_5db72caeaa6f2d 8,56
+src/features/bin-designer/search/searchCoverage.test.tsx
+  s_169ca198965180::t_1e3eaf2fc8570c 29-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "30ebd2b3e1af6ef2ff32a254e958e5acd66e8066",
+  "prompts": {},
+  "sessions": {
+    "s_169ca198965180": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7cae772c-5519-4831-875c-a4d30af16b6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
