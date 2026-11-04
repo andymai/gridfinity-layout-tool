@@ -1010,7 +1010,7 @@
   "binDesigner.cutouts.dropPhoto": "Solte uma foto para contorná-la",
   "binDesigner.cutouts.phoneList.title": "Rebaixos deste bin",
   "binDesigner.cutouts.phoneList.hint": "Mova e mude a forma deles em um computador.",
-  "binDesigner.cutouts.phoneList.offFloor": "Nem todos os encaixes cabem neste bin. Mova-os em um computador.",
+  "binDesigner.cutouts.phoneList.offFloor": "Nem todos os rebaixos cabem neste bin. Mova-os em um computador.",
   "binDesigner.cutouts.traceView.title": "Contornar uma foto",
   "binDesigner.cutouts.traceView.open": "De uma foto neste computador",
   "binDesigner.cutouts.traceView.openHelp": "Use uma foto que você já tem. Ela nunca sai deste computador.",

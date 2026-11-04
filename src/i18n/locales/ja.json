@@ -1010,7 +1010,7 @@
   "binDesigner.cutouts.dropPhoto": "写真をドロップしてトレース",
   "binDesigner.cutouts.phoneList.title": "このビンのくぼみ",
   "binDesigner.cutouts.phoneList.hint": "移動や形の変更はコンピューターで行えます。",
-  "binDesigner.cutouts.phoneList.offFloor": "すべてのポケットはこのビンに収まりません。コンピューターで移動してください。",
+  "binDesigner.cutouts.phoneList.offFloor": "一部のポケットがこのビンに収まりません。コンピューターで移動してください。",
   "binDesigner.cutouts.traceView.title": "写真をトレース",
   "binDesigner.cutouts.traceView.open": "このコンピューターの写真から",
   "binDesigner.cutouts.traceView.openHelp": "手持ちの写真を使えます。写真がこのコンピューターの外に出ることはありません。",

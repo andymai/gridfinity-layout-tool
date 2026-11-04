@@ -30,9 +30,9 @@ export function binBoard(params: BinParams): CutoutBoard {
   };
 }
 
-/** The pockets hanging past the bin's floor. */
 export function offFloorIds(params: BinParams): ReadonlySet<string> {
-  return getOffBoardCutoutIds(params.cutouts, binBoard(params));
+  const cut = params.cutouts.filter((c) => c.hidden !== true);
+  return getOffBoardCutoutIds(cut, binBoard(params));
 }
 
 /** A custom footprint's missing cells, in interior mm, scaled the way the editor's board is. */

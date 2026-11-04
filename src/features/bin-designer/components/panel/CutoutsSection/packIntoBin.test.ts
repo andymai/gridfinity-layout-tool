@@ -3,7 +3,7 @@ import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, Cutout } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
-import { packIntoBin } from './packIntoBin';
+import { offFloorIds, packIntoBin } from './packIntoBin';
 import { getCutoutBounds, rectFitsInMask } from './maskFit';
 import { translateCutoutPreview } from './cutoutHelpers';
 
@@ -77,6 +77,12 @@ describe('packIntoBin', () => {
     const b = getCutoutBounds(translateCutoutPreview(rect('a', 20, 20), placements.a));
     const cell = { cellMmX: innerW / 4, cellMmY: innerD / 4 };
     expect(rectFitsInMask(mask, b.minX, b.minY, 20, 20, cell)).toBe(true);
+  });
+
+  it('leaves hidden pockets, which are never cut, out of the off-floor set', () => {
+    const stray = { ...rect('stray', 900, 20), x: 2, y: 2 };
+    expect(offFloorIds(bin([stray]))).toEqual(new Set(['stray']));
+    expect(offFloorIds(bin([{ ...stray, hidden: true }])).size).toBe(0);
   });
 
   it('grows the bin until a long tool and its neighbours fit', () => {
