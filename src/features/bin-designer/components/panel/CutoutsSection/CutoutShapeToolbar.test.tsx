@@ -268,7 +268,7 @@ describe('CutoutShapeToolbar', () => {
     expect(onImportSvg).toHaveBeenCalledOnce();
   });
 
-  it('renders the scan-with-phone button when onScanWithPhone is provided', () => {
+  it('renders the scan-tool button when onScanTool is provided', () => {
     render(
       <CutoutShapeToolbar
         mode={idleMode}
@@ -276,13 +276,13 @@ describe('CutoutShapeToolbar', () => {
         snapEnabled={true}
         onSnapToggle={vi.fn()}
         {...gridSizeProps}
-        onScanWithPhone={vi.fn()}
+        onScanTool={vi.fn()}
       />
     );
     expect(screen.getByTitle('binDesigner.cutouts.scanImport.title')).toBeInTheDocument();
   });
 
-  it('does not render the scan-with-phone button when onScanWithPhone is not provided', () => {
+  it('does not render the scan-tool button when onScanTool is not provided', () => {
     render(
       <CutoutShapeToolbar
         mode={idleMode}
@@ -295,8 +295,8 @@ describe('CutoutShapeToolbar', () => {
     expect(screen.queryByTitle('binDesigner.cutouts.scanImport.title')).not.toBeInTheDocument();
   });
 
-  it('calls onScanWithPhone when the scan button is clicked', () => {
-    const onScanWithPhone = vi.fn();
+  it('calls onScanTool when the scan button is clicked', () => {
+    const onScanTool = vi.fn();
     render(
       <CutoutShapeToolbar
         mode={idleMode}
@@ -304,12 +304,12 @@ describe('CutoutShapeToolbar', () => {
         snapEnabled={true}
         onSnapToggle={vi.fn()}
         {...gridSizeProps}
-        onScanWithPhone={onScanWithPhone}
+        onScanTool={onScanTool}
       />
     );
 
     fireEvent.click(screen.getByTitle('binDesigner.cutouts.scanImport.title'));
-    expect(onScanWithPhone).toHaveBeenCalledOnce();
+    expect(onScanTool).toHaveBeenCalledOnce();
   });
 
   it('does not claim K for scan in the vertical tooltip, since K arms the knife slot', () => {
@@ -321,7 +321,7 @@ describe('CutoutShapeToolbar', () => {
         onSnapToggle={vi.fn()}
         {...gridSizeProps}
         vertical
-        onScanWithPhone={vi.fn()}
+        onScanTool={vi.fn()}
       />
     );
 

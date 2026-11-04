@@ -90,3 +90,10 @@ export type { SparklesIconProps } from './icons/Sparkles';
 
 export { MoreHorizontalIcon } from './icons/MoreHorizontal';
 export type { MoreHorizontalIconProps } from './icons/MoreHorizontal';
+
+export { ImageIcon } from './icons/Image';
+export type { ImageIconProps } from './icons/Image';
+export { ScanToolIcon } from './icons/ScanTool';
+export type { ScanToolIconProps } from './icons/ScanTool';
+export { SmartphoneIcon } from './icons/Smartphone';
+export type { SmartphoneIconProps } from './icons/Smartphone';

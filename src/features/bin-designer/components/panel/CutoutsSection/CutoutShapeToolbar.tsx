@@ -9,6 +9,7 @@ import type { ReactNode } from 'react';
 import type { CutoutShape } from '@/features/bin-designer/types';
 import type { InteractionMode } from './useCutoutInteraction';
 import { Button } from '@/design-system';
+import { ScanToolIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 
 /** Styled tooltip wrapper for vertical toolbar buttons */
@@ -44,8 +45,7 @@ interface CutoutShapeToolbarProps {
   readonly onImportSvg?: () => void;
   /** Callback to trigger STL mesh import. When omitted, the button is hidden. */
   readonly onImportStl?: () => void;
-  /** Callback to open the scan-with-phone dialog. When omitted, the button is hidden. */
-  readonly onScanWithPhone?: () => void;
+  readonly onScanTool?: () => void;
 }
 
 export function CutoutShapeToolbar({
@@ -58,7 +58,7 @@ export function CutoutShapeToolbar({
   vertical = false,
   onImportSvg,
   onImportStl,
-  onScanWithPhone,
+  onScanTool,
 }: CutoutShapeToolbarProps) {
   const t = useTranslation();
   // Derive which tool is "active" across all transient interaction states
@@ -101,7 +101,7 @@ export function CutoutShapeToolbar({
   const btnActive = 'bg-accent text-on-accent shadow-sm ring-1 ring-accent/40';
   const btnInactive =
     'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover hover:text-content-primary hover:border-stroke';
-  // The phone-scan action is special (not a drawing tool); a subtle accent tint
+  // The scan action is special (not a drawing tool); a subtle accent tint
   // makes it discoverable without competing with the active-tool highlight.
   const btnAccent =
     'border border-accent/40 bg-accent/10 text-accent hover:bg-accent/15 hover:border-accent/60';
@@ -406,7 +406,7 @@ export function CutoutShapeToolbar({
           </Button>
         )}
 
-      {onScanWithPhone &&
+      {onScanTool &&
         wrap(
           t('binDesigner.cutouts.scanImport.title'),
           null,
@@ -415,26 +415,11 @@ export function CutoutShapeToolbar({
             variant="ghost"
             touchTarget={false}
             className={`${btnBase} ${btnAccent}`}
-            onClick={onScanWithPhone}
+            onClick={onScanTool}
             aria-label={t('binDesigner.cutouts.scanImport.title')}
             title={!vertical ? t('binDesigner.cutouts.scanImport.title') : undefined}
           >
-            <svg
-              className={iconSize}
-              viewBox="0 0 14 14"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              {/* Phone body */}
-              <rect x="3.5" y="1" width="7" height="12" rx="1.5" />
-              {/* Camera lens */}
-              <circle cx="7" cy="4" r="0.75" fill="currentColor" stroke="none" />
-              {/* Home indicator */}
-              <path d="M6 11.25h2" />
-            </svg>
+            <ScanToolIcon className={iconSize} />
             {!vertical && t('binDesigner.cutouts.scanImport.buttonLabel')}
           </Button>
         )}

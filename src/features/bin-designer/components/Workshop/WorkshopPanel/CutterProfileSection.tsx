@@ -13,7 +13,7 @@ import type { AssemblyPartNode } from '@/shared/types/assembly';
 import { defaultCutterProfile } from '@/shared/items/assembly/descriptor';
 import { clamp } from '@/shared/utils/math';
 import { ShapePicker } from '../../panel/shared';
-import { ScanWithPhoneDialog } from '../../panel/CutoutsSection/scanImport/ScanWithPhoneDialog';
+import { ScanToolDialog } from '../../panel/CutoutsSection/scanImport/ScanToolDialog';
 import type { ParsedCutoutSpec } from '../../panel/CutoutsSection/svgImport/types';
 import { specToCutterProfile } from '../cutterProfileImport';
 
@@ -190,11 +190,7 @@ export function CutterProfileSection({ node }: CutterProfileSectionProps) {
           </Button>
         )}
       </div>
-      <ScanWithPhoneDialog
-        open={scanOpen}
-        onClose={() => setScanOpen(false)}
-        onImport={importSpecs}
-      />
+      <ScanToolDialog open={scanOpen} onClose={() => setScanOpen(false)} onImport={importSpecs} />
     </div>
   );
 }
