@@ -3160,7 +3160,7 @@
   "binDesigner.cutouts.clearAllConfirmTitle": "ყველა ამონაჭრის გასუფთავება",
   "binDesigner.cutouts.clearAllConfirmMessage": "ეს წაშლის ყველა {count} ამონაჭერს. მოქმედების გაუქმება შეგიძლიათ.",
   "binDesigner.editCutouts": "ჭრის რედაქტორი",
-  "binDesigner.editCutoutsSubtitle": "დახაზეთ ფიგურები ან დაასკანერეთ ნამდვილი ხელსაწყო",
+  "binDesigner.editCutoutsSubtitle": "დახაზეთ ფიგურები ან დაასკანირეთ ნამდვილი ხელსაწყო",
   "binDesigner.cutoutEditor.done": "დასრულება",
   "binDesigner.cutoutEditor.title": "ამონაჭრების რედაქტორი",
   "binDesigner.cutoutEditor.zoomIn": "მასშტაბის გაზრდა",
