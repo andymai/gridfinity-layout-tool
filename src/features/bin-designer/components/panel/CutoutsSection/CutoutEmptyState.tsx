@@ -12,7 +12,6 @@ import { useTranslation } from '@/i18n';
 interface CutoutEmptyStateProps {
   /** Sidebar uses compact sizing; workspace uses larger sizing */
   readonly variant: 'sidebar' | 'workspace';
-  /** When set, shows a "Scan a tool" call to action. */
   readonly onScanTool?: () => void;
 }
 
