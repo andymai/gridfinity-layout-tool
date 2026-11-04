@@ -1,0 +1,21 @@
+src/shared/hooks/useLinkedDesignOverhangs.test.ts
+  s_fa6b1a192f3376::t_39d5a480fc581d 38-45
+src/shared/hooks/useLinkedDesignOverhangs.ts
+  s_fa6b1a192f3376::t_419c4bafdefd68 19-41,44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f007d8484a5a5732e87c4f85f43622b5abfbf0e5",
+  "prompts": {},
+  "sessions": {
+    "s_fa6b1a192f3376": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "78835baa-98ee-4035-90c0-fb29acee90ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
