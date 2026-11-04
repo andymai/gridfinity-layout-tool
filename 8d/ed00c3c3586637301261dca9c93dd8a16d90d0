@@ -1,0 +1,20 @@
+src/features/whats-new/entries.ts
+  s_fa6b1a192f3376::t_1ceeb0b2210904 17-25
+  s_fa6b1a192f3376::t_93513f3c7b8714 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8ded00c3c3586637301261dca9c93dd8a16d90d0",
+  "prompts": {},
+  "sessions": {
+    "s_fa6b1a192f3376": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "78835baa-98ee-4035-90c0-fb29acee90ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
