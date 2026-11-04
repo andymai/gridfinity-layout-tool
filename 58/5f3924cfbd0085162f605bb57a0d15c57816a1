@@ -1,0 +1,29 @@
+src/features/bin-designer/hooks/useScanDialogFollowsWorkspace.ts
+  s_169ca198965180::t_83c5bed1f9981e 17-18
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.test.ts
+  s_169ca198965180::t_957752d05e095d 266-272
+  s_169ca198965180::t_83c5bed1f9981e 264-265,273-284
+src/features/bin-designer/hooks/useScanDialogFollowsWorkspace.test.ts
+  s_169ca198965180::t_83c5bed1f9981e 21-28
+src/features/bin-designer/hooks/useScanLaunchBridge.ts
+  s_169ca198965180::t_83c5bed1f9981e 12,18,28-30,73,78,99-101,103
+src/features/bin-designer/hooks/useScanLaunchBridge.test.ts
+  s_169ca198965180::t_957752d05e095d 12-15,30-31,47-54
+  s_169ca198965180::t_a0b04a9f88383e 55-56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "585f3924cfbd0085162f605bb57a0d15c57816a1",
+  "prompts": {},
+  "sessions": {
+    "s_169ca198965180": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7cae772c-5519-4831-875c-a4d30af16b6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
