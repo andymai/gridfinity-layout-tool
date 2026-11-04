@@ -1,0 +1,100 @@
+src/features/bin-designer/components/DesignerPage/DesignerPage.tsx
+  s_169ca198965180::t_e90cda3cb01ac3 15,162
+src/shared/scanReview/components/ScanCaptureFlow/ScanCaptureFlow.tsx
+  s_169ca198965180::t_d810e6d4fb5a68 1-574
+src/features/scan-capture/components/ScanPage/ScanPage.tsx
+  s_169ca198965180::t_d810e6d4fb5a68 2-3,6,8-10,17-18,20-25,27-28,30-31,33-34,36
+src/features/bin-designer/hooks/useScanDialogFollowsWorkspace.test.ts
+  s_169ca198965180::t_68f6c98d66e5dd 22,24,29
+src/features/bin-designer/components/ParameterPanel/DesignerSearchBar/DesignerSearchBar.tsx
+  s_169ca198965180::t_e90cda3cb01ac3 54
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.tsx
+  s_169ca198965180::t_e90cda3cb01ac3 47,114
+src/features/bin-designer/components/PhoneScanDialog/PhoneScanDialog.tsx
+  s_169ca198965180::t_6bf9ec909e8cd8 21,25,78,82,86
+  s_169ca198965180::t_17785f1b0639a1 1-20,22-24,26-77,79-81,83-85,87-147
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanScaleField.tsx
+  s_169ca198965180::t_6bf9ec909e8cd8 4
+  s_169ca198965180::t_155f3bfb02451e 1-3,5-73
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/index.ts
+  s_169ca198965180::t_6bf9ec909e8cd8 4-10
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/scanIngest.ts
+  s_169ca198965180::t_155f3bfb02451e 73-80
+  s_169ca198965180::t_6bf9ec909e8cd8 67-72
+src/features/bin-designer/components/panel/CutoutsSection/packIntoBin.test.ts
+  s_169ca198965180::t_715831be4cb844 1-54
+src/features/bin-designer/components/PhoneScanDialog/PhoneScanDialog.test.tsx
+  s_169ca198965180::t_ecb0059797c781 1-92
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanScaleField.test.tsx
+  s_169ca198965180::t_6bf9ec909e8cd8 3-4
+  s_169ca198965180::t_715831be4cb844 1-2,5-37
+src/shell/Modals/WhatsNewModal/whatsNewShared.ts
+  s_169ca198965180::t_e90cda3cb01ac3 98
+src/features/bin-designer/components/panel/InteriorSection/InteriorModes.tsx
+  s_169ca198965180::t_e90cda3cb01ac3 27,92,141-154
+src/features/bin-designer/components/PhoneScanDialog/index.ts
+  s_169ca198965180::t_17785f1b0639a1 1
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanToolDialog.tsx
+  s_169ca198965180::t_21f27543a49794 10,12,217-218
+  s_169ca198965180::t_6bf9ec909e8cd8 23-30
+  s_169ca198965180::t_155f3bfb02451e 136,233-234,314-319
+src/features/bin-designer/components/panel/InteriorSection/InteriorModes.test.tsx
+  s_169ca198965180::t_d9417fab304b73 35-37,128-129,132,136-138
+src/features/bin-designer/utils/startScan.test.ts
+  s_169ca198965180::t_68f6c98d66e5dd 28-36
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_169ca198965180::t_faf59c848027bc 126-137
+src/features/bin-designer/components/panel/CutoutsSection/packIntoBin.ts
+  s_169ca198965180::t_faf59c848027bc 1-33,37-41
+  s_169ca198965180::t_24f430ea933e26 34-36
+src/shell/Modals/WhatsNewModal/whatsNewShared.test.tsx
+  s_169ca198965180::t_d9417fab304b73 1
+src/features/bin-designer/types/designerState.ts
+  s_169ca198965180::t_faf59c848027bc 458-460
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.ts
+  s_169ca198965180::t_faf59c848027bc 24,27-36,82-98,101-105,123,130-159,161-162,179-186
+  s_169ca198965180::t_b03823ba1e15e0 121-122
+src/features/bin-designer/utils/startScan.ts
+  s_169ca198965180::t_faf59c848027bc 30-33,35-37,41-42
+src/features/bin-designer/hooks/useScanDialogFollowsWorkspace.ts
+  s_169ca198965180::t_e90cda3cb01ac3 14,18-24
+src/shared/scanReview/components/ScanCaptureFlow/ScanCaptureFlow.test.tsx
+  s_169ca198965180::t_9936f91b20b0db 18-38
+  s_169ca198965180::t_94c0aa698f191b 1-17,39-87
+src/features/bin-designer/types/uiState.ts
+  s_169ca198965180::t_faf59c848027bc 127-128
+src/shared/scanReview/components/ScanCaptureFlow/index.ts
+  s_169ca198965180::t_d810e6d4fb5a68 1
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.test.tsx
+  s_169ca198965180::t_d9417fab304b73 50,53,55,57,59,62-63
+src/features/bin-designer/hooks/useScanLaunchBridge.test.ts
+  s_169ca198965180::t_68f6c98d66e5dd 47-57
+src/features/bin-designer/hooks/useScanLaunchBridge.ts
+  s_169ca198965180::t_e90cda3cb01ac3 62-63,75,79
+src/features/bin-designer/constants/defaults.ts
+  s_169ca198965180::t_faf59c848027bc 296
+src/shared/scanReview/components/ScanCaptureFlow/ScanCaptureGuide.test.tsx
+  s_169ca198965180::t_d810e6d4fb5a68 1-31
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.test.ts
+  s_169ca198965180::t_68f6c98d66e5dd 24,34,240-249,252-262
+  s_169ca198965180::t_2f3c34c1b2187b 250-251
+  s_169ca198965180::t_9627b62e571205 263-264
+src/features/bin-designer/search/designerControlRegistry.ts
+  s_169ca198965180::t_e90cda3cb01ac3 529
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8608bd6f6617d0427a2383f93eeda7ed11b65887",
+  "prompts": {},
+  "sessions": {
+    "s_169ca198965180": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7cae772c-5519-4831-875c-a4d30af16b6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
