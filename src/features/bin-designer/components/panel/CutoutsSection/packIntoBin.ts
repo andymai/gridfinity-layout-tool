@@ -26,6 +26,7 @@ export function binBoard(params: BinParams): CutoutBoard {
     depth: innerD,
     mask,
     cellSize: mask ? { cellMmX: innerW / mask.cols, cellMmY: innerD / mask.rows } : undefined,
+    meshAssets: params.meshAssets,
   };
 }
 

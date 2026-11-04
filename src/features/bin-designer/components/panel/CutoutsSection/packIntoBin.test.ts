@@ -64,13 +64,18 @@ describe('packIntoBin', () => {
   });
 
   it("keeps tools out of a custom footprint's notch", () => {
-    // Bottom-left cell missing: an L-shaped 2x2 bin.
-    const mask: CellMask = { cols: 2, rows: 2, cells: [0, 1, 1, 1] };
+    // Masks are half-bin cells, so a 2x2 bin's is 4x4. Its bottom-left grid
+    // cell is missing: an L-shaped bin.
+    const mask: CellMask = {
+      cols: 4,
+      rows: 4,
+      cells: [0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    };
     const params: BinParams = { ...bin([rect('a', 20, 20)]), cellMask: mask };
     const { innerW, innerD } = cutoutInterior(params);
     const { placements } = packIntoBin(params, false);
     const b = getCutoutBounds(translateCutoutPreview(rect('a', 20, 20), placements.a));
-    const cell = { cellMmX: innerW / 2, cellMmY: innerD / 2 };
+    const cell = { cellMmX: innerW / 4, cellMmY: innerD / 4 };
     expect(rectFitsInMask(mask, b.minX, b.minY, 20, 20, cell)).toBe(true);
   });
 

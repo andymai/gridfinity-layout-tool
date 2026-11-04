@@ -39,6 +39,11 @@ interface PendingScale {
   readonly parsed: ParsedScan;
 }
 
+function offFloorIds(): ReadonlySet<string> {
+  const { params } = useDesignerStore.getState();
+  return getOffBoardCutoutIds(params.cutouts, binBoard(params));
+}
+
 export function PhoneScanDialog() {
   const t = useTranslation();
   const source = useDesignerStore((s) => s.ui.phoneScanSource);
@@ -63,11 +68,12 @@ export function PhoneScanDialog() {
 
   const land = useCallback(
     (specs: readonly ParsedCutoutSpec[], targetMm?: number) => {
+      const before = offFloorIds();
       const count = addScanCutouts(specs, undefined, { pack: true });
       // Packing grows the bin, but not past the size limit or a custom
-      // footprint, and there's no editor here to show what didn't fit.
-      const { params } = useDesignerStore.getState();
-      const offFloor = getOffBoardCutoutIds(params.cutouts, binBoard(params)).size > 0;
+      // footprint, and there's no editor here to show what didn't fit. A locked
+      // pocket already off the floor isn't this scan's doing.
+      const offFloor = [...offFloorIds()].some((id) => !before.has(id));
       trackEvent('scan_import', {
         success: true,
         shape_count: count,

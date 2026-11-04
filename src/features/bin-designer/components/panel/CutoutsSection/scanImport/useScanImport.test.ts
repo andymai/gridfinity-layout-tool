@@ -264,13 +264,18 @@ describe('useScanImport', () => {
       expect([...batch.keys()].sort()).toEqual(added.map((c) => c.id).sort());
       const { innerW, innerD } = cutoutInterior(mockParams);
       expect(mockParams.width).toBeGreaterThan(2);
-      for (const c of added) {
-        const b = getCutoutBounds(translateCutoutPreview(c, batch.get(c.id) ?? {}));
+      const placed = added.map((c) =>
+        getCutoutBounds(translateCutoutPreview(c, batch.get(c.id) ?? {}))
+      );
+      for (const b of placed) {
         expect(b.minX).toBeGreaterThanOrEqual(0);
         expect(b.minY).toBeGreaterThanOrEqual(0);
         expect(b.maxX).toBeLessThanOrEqual(innerW + 1e-6);
         expect(b.maxY).toBeLessThanOrEqual(innerD + 1e-6);
       }
+      const [a, b] = placed;
+      const apart = a.maxX <= b.minX || b.maxX <= a.minX || a.maxY <= b.minY || b.maxY <= a.minY;
+      expect(apart).toBe(true);
 
       const open = mockStartTransaction.mock.invocationCallOrder[0];
       const commit = mockCommitTransaction.mock.invocationCallOrder[0];

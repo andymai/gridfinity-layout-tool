@@ -143,6 +143,33 @@ describe('PhoneScanDialog', () => {
     expect(toast.type).toBe('info');
   });
 
+  it('does not blame the scan for a locked pocket already past the floor', async () => {
+    const pinned: Cutout = {
+      id: 'pinned',
+      shape: 'rectangle',
+      x: 2,
+      y: 2,
+      width: 900,
+      depth: 20,
+      cutDepth: 10,
+      rotation: 0,
+      cornerRadius: 0,
+      label: '',
+      groupId: null,
+      locked: true,
+    };
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, style: 'solid', cutouts: [pinned] },
+    });
+    const use = await openFlow();
+    await act(async () => {
+      await use(MM_SVG, 1);
+    });
+
+    const [toast] = useToastStore.getState().toasts;
+    expect(toast.message).toBe('toast.scanImport.success');
+  });
+
   it('turns an unreadable outline back to the flow as an error', async () => {
     const use = await openFlow();
     let outcome: ScanUseOutcome | undefined;
