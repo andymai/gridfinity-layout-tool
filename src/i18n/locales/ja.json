@@ -4820,6 +4820,7 @@
   "toast.binBlocked.default": "ビンをここに移動できません",
   "toast.binBlocked.exceedsHeight": "ビンがドロワーの高さを超えます",
   "toast.binRotated": "ビンを回転しました",
+  "toast.binHalfTurned": "ビンを180°回転しました",
   "toast.binSizeLocked": "このビンのサイズはロックされています",
   "toast.binsDeleted": "{count}個のビンを削除しました",
   "toast.binsDisplacedByShape": "{count}個のビンをスタッシュへ移動しました（新しい形状の外）",

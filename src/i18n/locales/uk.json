@@ -4820,6 +4820,7 @@
   "toast.binBlocked.default": "Не можна перемістити бін сюди",
   "toast.binBlocked.exceedsHeight": "Бін перевищить висоту шухляди",
   "toast.binRotated": "Бін обернуто",
+  "toast.binHalfTurned": "Бін повернуто на 180°",
   "toast.binSizeLocked": "Розмір цього біна заблоковано",
   "toast.binsDeleted": "Видалено {count} бінів",
   "toast.binsDisplacedByShape": "{count} бін(и) переміщено до сховку (поза новою формою)",

@@ -44,6 +44,7 @@ const CHECKED_FIELDS = [
   'locked',
   'items',
   'slant',
+  'halfTurned',
 ] as const satisfies readonly (keyof Bin)[];
 
 type CheckedFields = Pick<Bin, (typeof CHECKED_FIELDS)[number]>;
@@ -120,6 +121,7 @@ function wellFormedCheckedFields(bin: object): Partial<CheckedFields> {
     ...(raw.locked === true ? { locked: true } : {}),
     ...(items ? { items } : {}),
     ...(slant ? { slant } : {}),
+    ...(raw.halfTurned === true ? { halfTurned: true } : {}),
   };
 }
 

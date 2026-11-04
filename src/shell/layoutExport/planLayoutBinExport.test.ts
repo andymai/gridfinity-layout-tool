@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { designId, gridUnits, mm } from '@/core/types';
+import { binId, designId, gridUnits, heightUnits, mm } from '@/core/types';
 import type { Bin, Drawer, StoredBaseplateParams } from '@/core/types';
 import { createTestBin } from '@/test/testUtils';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
@@ -607,6 +607,43 @@ describe('planLayoutBinExport', () => {
     });
   });
 
+  describe('half-turned bins', () => {
+    const overhang = { left: 5, right: 0, front: 0, back: 0, enabled: true };
+    const plan = (bins: Bin[]) =>
+      planLayoutBinExport({
+        bins,
+        loaded: [{ id: designId('d1'), design: design('d1', 'Tray', { width: 2, depth: 2 }) }],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
+
+    it('shares one file with a bin standing the other way when nothing differs', () => {
+      const result = plan([
+        linkedBin('d1'),
+        { ...linkedBin('d1'), id: binId('b2'), x: gridUnits(3), halfTurned: true },
+      ]);
+      expect(result.exportable).toHaveLength(1);
+      expect(result.manifestBins[0].quantity).toBe(2);
+    });
+
+    it('builds a placed overhang on the side of the design that faces it', () => {
+      const result = plan([linkedBin('d1', { overhang, halfTurned: true })]);
+      expect(result.exportable[0].params.overhang).toMatchObject({ left: 0, right: 5 });
+    });
+
+    it('exports apart two bins whose overhangs land on different sides of the design', () => {
+      const result = plan([
+        linkedBin('d1', { overhang }),
+        { ...linkedBin('d1', { overhang, halfTurned: true }), id: binId('b2'), x: gridUnits(3) },
+      ]);
+      expect(result.exportable).toHaveLength(2);
+    });
+  });
+
   describe('oversized bins (#3074)', () => {
     // 256mm bed at the stock 42mm pitch fits 6 units per axis.
     const bigBin = (w: number, d: number): LoadedDesign => ({
@@ -785,6 +822,19 @@ describe('planLayoutBinExport', () => {
         baseplate: undefined,
         printBed: PRINT_BED,
       });
+
+    it('builds a placed slant facing the drawer on a half-turned design', () => {
+      const result = plan([
+        linkedBin('d1', {
+          width: gridUnits(1),
+          depth: gridUnits(2),
+          height: heightUnits(6),
+          halfTurned: true,
+          slant: { angleDeg: 40, side: 'left' },
+        }),
+      ]);
+      expect(result.exportable[0].params.slant?.side).toBe('right');
+    });
 
     it('exports the last bin of a row apart, with its end support and no lip', () => {
       const result = plan([

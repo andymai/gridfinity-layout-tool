@@ -12,7 +12,7 @@
 import { useLayoutStore } from '@/core/store/layout';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '@/core/constants';
 import { canPlaceBin } from '@/shared/utils/validation';
-import { isBinLocked, validateBinRotation } from '@/shared/utils/binLocation';
+import { isBinLocked, planBinRotation } from '@/shared/utils/binLocation';
 import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
 import { getLayerBins } from '@/shared/utils/bins';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -251,23 +251,20 @@ export function handleRotate(e: KeyboardEvent, ctx: KeyboardContext): boolean {
     return true;
   }
 
-  const result = validateBinRotation(bin, ctx.layout);
-  if (!result.valid) {
-    ctx.addToast(result.message, 'error');
+  const plan = planBinRotation(bin, ctx.layout);
+  if (!plan.valid) {
+    ctx.addToast(plan.message, 'error');
     return true;
   }
 
   ctx.batch(() => {
-    const updates: Partial<typeof bin> = { width: bin.depth, depth: bin.width };
-    if (result.movedTo) {
-      updates.x = result.movedTo.x as GridUnits;
-      updates.y = result.movedTo.y as GridUnits;
-    }
-    ctx.updateBin(bin.id, updates);
+    ctx.updateBin(bin.id, plan.updates);
   });
 
-  if (result.movedTo) {
-    ctx.addToast(ctx.t('toast.rotateRepositioned', { distance: result.movedTo.distance }), 'info');
+  if (plan.movedTo) {
+    ctx.addToast(ctx.t('toast.rotateRepositioned', { distance: plan.movedTo.distance }), 'info');
+  } else if (plan.halfTurnedInPlace) {
+    ctx.addToast(ctx.t('toast.binHalfTurned'), 'info');
   }
   return true;
 }

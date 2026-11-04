@@ -4820,6 +4820,7 @@
   "toast.binBlocked.default": "Impossible de déplacer le bin ici",
   "toast.binBlocked.exceedsHeight": "Le bin dépasserait la hauteur du tiroir",
   "toast.binRotated": "Bin pivoté",
+  "toast.binHalfTurned": "Bac tourné de 180°",
   "toast.binSizeLocked": "La taille de ce bac est verrouillée",
   "toast.binsDeleted": "{count} bin(s) supprimé(s)",
   "toast.binsDisplacedByShape": "{count} bac(s) déplacés en réserve (hors de la nouvelle forme)",

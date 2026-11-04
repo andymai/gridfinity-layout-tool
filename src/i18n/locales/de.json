@@ -4820,6 +4820,7 @@
   "toast.binBlocked.default": "Bin kann hier nicht verschoben werden",
   "toast.binBlocked.exceedsHeight": "Bin würde die Schubladenhöhe überschreiten",
   "toast.binRotated": "Bin gedreht",
+  "toast.binHalfTurned": "Bin um 180° gedreht",
   "toast.binSizeLocked": "Die Größe dieses Bins ist gesperrt",
   "toast.binsDeleted": "{count} Bin(s) gelöscht",
   "toast.binsDisplacedByShape": "{count} Bin(s) in die Ablage verschoben (außerhalb der neuen Form)",

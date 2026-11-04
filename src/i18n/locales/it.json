@@ -4820,6 +4820,7 @@
   "toast.binBlocked.default": "Impossibile spostare il bin qui",
   "toast.binBlocked.exceedsHeight": "Il bin supererebbe l'altezza del cassetto",
   "toast.binRotated": "Bin ruotato",
+  "toast.binHalfTurned": "Bin ruotato di 180°",
   "toast.binSizeLocked": "Le dimensioni di questo bin sono bloccate",
   "toast.binsDeleted": "Eliminati {count} bin",
   "toast.binsDisplacedByShape": "{count} bin spostati nell'area di sosta (fuori dalla nuova forma)",

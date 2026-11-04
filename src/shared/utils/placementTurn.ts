@@ -1,4 +1,5 @@
-import type { SlantSide } from '@/core/types';
+import { isFractional } from '@/core/constants';
+import type { Bin, OverhangConfig, SlantSide } from '@/core/types';
 
 const EPS = 1e-6;
 
@@ -40,4 +41,60 @@ export function sideInPlacement(side: SlantSide): SlantSide {
 /** Which side of a turned design faces a given way in the drawer. */
 export function sideInDesign(side: SlantSide): SlantSide {
   return CLOCKWISE[side];
+}
+
+const OPPOSITE: Record<SlantSide, SlantSide> = {
+  left: 'right',
+  right: 'left',
+  front: 'back',
+  back: 'front',
+};
+
+export function oppositeSide(side: SlantSide): SlantSide {
+  return OPPOSITE[side];
+}
+
+/**
+ * Whether a bin can stand half a turn from its footprint. Only a linked bin has
+ * a design that looks different turned round. A pair stands where its partner
+ * needs it, and a half-unit footprint's whole feet would land off the grid.
+ */
+export function canHalfTurn(
+  bin: Pick<Bin, 'linkedDesignId' | 'pairId' | 'width' | 'depth'>
+): boolean {
+  return (
+    bin.linkedDesignId !== undefined &&
+    bin.pairId === undefined &&
+    !isFractional(bin.width) &&
+    !isFractional(bin.depth)
+  );
+}
+
+/** Which side of a placed design faces a given way in the drawer, however it stands. */
+export function placedSideInDesign(
+  side: SlantSide,
+  placed: Pick<Bin, 'width' | 'depth' | 'halfTurned'>,
+  design: { readonly width: number; readonly depth: number }
+): SlantSide {
+  const turned = isTurnedPlacement(placed, design) ? sideInDesign(side) : side;
+  return placed.halfTurned ? oppositeSide(turned) : turned;
+}
+
+/**
+ * A placement's overhang is stated in the drawer; the design is built facing its
+ * own way. Covers the half turn only: a quarter-turned bin's sides are not
+ * remapped here.
+ */
+export function overhangInDesign(
+  overhang: OverhangConfig,
+  placed: Pick<Bin, 'halfTurned'>
+): OverhangConfig {
+  if (!placed.halfTurned) return overhang;
+  return {
+    ...overhang,
+    left: overhang.right,
+    right: overhang.left,
+    front: overhang.back,
+    back: overhang.front,
+  };
 }

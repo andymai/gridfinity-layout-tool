@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'bin-half-turn',
+    date: '2026-11-04',
+    kind: 'improved',
+    title: { en: 'Turn a placed bin all the way round' },
+    body: {
+      en: 'Rotate (R) now takes a bin linked to a saved design through all four directions, so a bin with an overhang can reach over the edge of the drawer instead of into its neighbour, with no redesign. A square bin, or one with no room for a quarter turn, turns 180° where it stands. The 3D preview shows which way it faces.',
+    },
+    action: { kind: 'openTool', tool: 'layout' },
+  },
+  {
     id: 'long-bins-fit-diagonally',
     date: '2026-11-04',
     kind: 'fixed',

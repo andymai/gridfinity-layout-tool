@@ -895,6 +895,30 @@ describe('useBinInspector', () => {
       expect(bin.depth).toBe(2);
     });
 
+    it('half turns a square linked bin where it stands', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [
+        {
+          ...createBin('bin1', 'layer1'),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          linkedDesignId: toDesignId('d1'),
+        },
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.rotateBin();
+      });
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.halfTurned).toBe(true);
+      expect(bin.width).toBe(2);
+    });
+
     it('returns true on success', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [{ ...createBin('bin1', 'layer1'), width: gridUnits(2), depth: gridUnits(3) }];

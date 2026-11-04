@@ -4820,6 +4820,7 @@
   "toast.binBlocked.default": "Não é possível mover o bin aqui",
   "toast.binBlocked.exceedsHeight": "O bin excederia a altura da gaveta",
   "toast.binRotated": "Bin rotacionado",
+  "toast.binHalfTurned": "Bin girado 180°",
   "toast.binSizeLocked": "O tamanho deste bin está bloqueado",
   "toast.binsDeleted": "{count} bin(s) excluído(s)",
   "toast.binsDisplacedByShape": "{count} bin(s) movidos para o depósito (fora do novo formato)",

@@ -4820,6 +4820,7 @@
   "toast.binBlocked.default": "Kan inte flytta bin hit",
   "toast.binBlocked.exceedsHeight": "Bin skulle överstiga lådans höjd",
   "toast.binRotated": "Fack roterat",
+  "toast.binHalfTurned": "Facket vridet 180°",
   "toast.binSizeLocked": "Storleken på det här facket är låst",
   "toast.binsDeleted": "Raderade {count} fack",
   "toast.binsDisplacedByShape": "{count} bin(s) flyttade till förrådet (utanför den nya formen)",

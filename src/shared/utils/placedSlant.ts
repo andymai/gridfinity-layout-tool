@@ -13,7 +13,7 @@ import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { footprintsOverlap } from './collision';
 import { resolveBinOverhang } from './drawerMargin';
 import { edgeForPosition } from './fractionalEdge';
-import { isTurnedPlacement, sideInPlacement } from './placementTurn';
+import { isTurnedPlacement, oppositeSide, sideInPlacement } from './placementTurn';
 import {
   planSupportFor,
   slantPlanFor,
@@ -105,6 +105,19 @@ function placementFacts(bin: Bin): LinkedSlantFacts | undefined {
     fractionalEdgeX: stored.fractionalEdgeX ?? 'end',
     fractionalEdgeY: stored.fractionalEdgeY ?? 'end',
   };
+  const standing = quarterTurnedFacts(bin, facts);
+  if (!bin.halfTurned) return standing;
+  return {
+    ...standing,
+    ...(standing.config
+      ? { config: { ...standing.config, side: oppositeSide(standing.config.side) } }
+      : {}),
+    fractionalEdgeX: otherEdge(standing.fractionalEdgeX),
+    fractionalEdgeY: otherEdge(standing.fractionalEdgeY),
+  };
+}
+
+function quarterTurnedFacts(bin: Bin, facts: LinkedSlantFacts): LinkedSlantFacts {
   if (facts.width === undefined || facts.depth === undefined) return facts;
   if (!isTurnedPlacement(bin, { width: facts.width, depth: facts.depth })) return facts;
   return {

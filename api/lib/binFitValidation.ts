@@ -46,6 +46,7 @@ export interface BinFitFields {
   extendToMargin?: boolean;
   marginTaper?: MarginTaperShape;
   overhang?: BinOverhangShape;
+  halfTurned?: boolean;
 }
 
 function isTaperProfile(value: unknown): value is TaperProfile {
@@ -137,6 +138,7 @@ export function sanitizeBinFitFields(value: unknown): BinFitFields {
     ...(isBoolean(bin.extendToMargin) ? { extendToMargin: bin.extendToMargin } : {}),
     ...(marginTaper ? { marginTaper } : {}),
     ...(overhang ? { overhang } : {}),
+    ...(bin.halfTurned === true ? { halfTurned: true } : {}),
   };
 }
 

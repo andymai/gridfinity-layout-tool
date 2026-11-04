@@ -23,10 +23,10 @@ import { useRestingStack } from '@/shared/hooks/useRestingStack';
 import { isErr, getUserMessage } from '@/core/result';
 import { canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
 import { clamp } from '@/shared/utils/math';
-import { isBinLocked, validateBinRotation } from '@/shared/utils/binLocation';
+import { isBinLocked, planBinRotation } from '@/shared/utils/binLocation';
 import { expandPairIds } from '@/shared/utils/binPairs';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
-import type { GridUnits, HeightUnits, Bin, BinItem, LayerId } from '@/core/types';
+import type { GridUnits, HeightUnits, BinItem, LayerId } from '@/core/types';
 import {
   layerId as toLayerId,
   categoryId as toCategoryId,
@@ -424,9 +424,9 @@ export function useBinInspector(): UseBinInspectorReturn {
       return false;
     }
 
-    const result = validateBinRotation(bin, layout);
-    if (!result.valid) {
-      addToast(result.message, 'error');
+    const plan = planBinRotation(bin, layout);
+    if (!plan.valid) {
+      addToast(plan.message, 'error');
       return false;
     }
 
@@ -434,18 +434,18 @@ export function useBinInspector(): UseBinInspectorReturn {
     mlTracking.trackRotation(bin, 1);
 
     batch(() => {
-      const updates: Partial<Bin> = { width: bin.depth, depth: bin.width };
-      if (result.movedTo) {
-        updates.x = result.movedTo.x as GridUnits;
-        updates.y = result.movedTo.y as GridUnits;
-      }
-      updateBin(bin.id, updates);
+      updateBin(bin.id, plan.updates);
     });
+
+    if (plan.halfTurnedInPlace) {
+      addToast(t('toast.binHalfTurned'), 'info');
+      return true;
+    }
 
     emitLinkedBinResize(bin, { width: bin.depth, depth: bin.width, height: bin.height });
 
-    if (result.movedTo) {
-      addToast(t('toast.rotateRepositioned', { distance: result.movedTo.distance }), 'info');
+    if (plan.movedTo) {
+      addToast(t('toast.rotateRepositioned', { distance: plan.movedTo.distance }), 'info');
     }
 
     return true;

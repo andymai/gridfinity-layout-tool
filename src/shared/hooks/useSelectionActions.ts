@@ -7,6 +7,7 @@ import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { isBinLocked } from '@/shared/utils/binLocation';
+import { quarterTurnUpdates } from '@/shared/utils/rotation';
 import { expandPairIds } from '@/shared/utils/binPairs';
 import { STAGING_ID } from '@/core/constants';
 import type { CategoryId, LayerId, HeightUnits } from '@/core/types';
@@ -117,7 +118,7 @@ export function useSelectionActions() {
 
     batch(() => {
       for (const bin of rotatable) {
-        updateBin(bin.id, { width: bin.depth, depth: bin.width });
+        updateBin(bin.id, quarterTurnUpdates(bin));
       }
     });
 
