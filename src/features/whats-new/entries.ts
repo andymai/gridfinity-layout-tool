@@ -19,7 +19,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     kind: 'improved',
     title: { en: 'Turn a placed bin all the way round' },
     body: {
-      en: 'Rotate (R) now takes a bin linked to a saved design through all four directions, so a bin with an overhang can reach over the edge of the drawer instead of into its neighbour, with no redesign. A square bin, or one with no room for a quarter turn, turns 180° where it stands. The 3D preview shows which way it faces.',
+      en: 'Rotate (R) now takes a bin linked to a saved design through all four directions, so a bin with an overhang can reach over the edge of the drawer instead of into its neighbour, with no redesign. A square bin, or one with no room for a quarter turn, turns 180° where it stands. The 3D preview shows which way it faces. Half-unit bins and paired bins turn as they did before.',
     },
     action: { kind: 'openTool', tool: 'layout' },
   },

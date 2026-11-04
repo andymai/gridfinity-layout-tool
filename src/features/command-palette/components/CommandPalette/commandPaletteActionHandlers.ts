@@ -246,10 +246,18 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       if (!bin || isBinLocked(bin)) return null;
       return () => {
         const plan = planBinRotation(bin, layout);
-        if (!plan.valid) return;
+        if (!plan.valid) {
+          addToast(plan.message, 'error');
+          return;
+        }
         batch(() => {
           updateBin(bin.id, plan.updates);
         });
+        if (plan.movedTo) {
+          addToast(t('toast.rotateRepositioned', { distance: plan.movedTo.distance }), 'info');
+        } else if (plan.halfTurnedInPlace) {
+          addToast(t('toast.binHalfTurned'), 'info');
+        }
       };
     };
 

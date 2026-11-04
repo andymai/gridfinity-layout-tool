@@ -44,6 +44,7 @@ export function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): bool
     prevBin.notes !== nextBin.notes ||
     prevBin.linkedDesignId !== nextBin.linkedDesignId ||
     prevBin.extendToMargin !== nextBin.extendToMargin ||
+    prevBin.halfTurned !== nextBin.halfTurned ||
     prevBin.locked !== nextBin.locked ||
     prevBin.slant?.angleDeg !== nextBin.slant?.angleDeg ||
     prevBin.slant?.side !== nextBin.slant?.side ||
