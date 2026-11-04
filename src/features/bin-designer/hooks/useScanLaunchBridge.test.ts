@@ -67,6 +67,27 @@ describe('useScanLaunchBridge', () => {
     expect(useDesignerStore.getState().ui.scanDialogSource).toBeNull();
   });
 
+  it('starts a scan bin from the factory base when saved defaults would block it', async () => {
+    openDesign('open');
+    renderHook(() => useScanLaunchBridge());
+    act(() => useScanLaunchStore.getState().requestScan('palette', true));
+    await waitFor(() => expect(useDesignerStore.getState().currentDesignId).toBeNull());
+
+    // As if the user's saved default were a spacer body.
+    act(() => {
+      const s = useDesignerStore.getState();
+      useDesignerStore.setState({
+        params: { ...s.params, base: { ...s.params.base, spacer: true } },
+      });
+    });
+    openDesign('fresh');
+
+    const s = useDesignerStore.getState();
+    expect(s.params.base.spacer).toBe(false);
+    expect(s.params.style).toBe('solid');
+    expect(s.ui.scanDialogSource).toBe('palette');
+  });
+
   it('drops a second request while a new bin is on its way', async () => {
     openDesign('open');
     renderHook(() => useScanLaunchBridge());
@@ -81,7 +102,7 @@ describe('useScanLaunchBridge', () => {
   });
 
   it('leaves the designer alone when it closes while saves settle', async () => {
-    let settle: (saved: boolean) => void = () => {};
+    let settle: ((saved: boolean) => void) | null = null;
     const { settleDesignSaves } = await import('./designSaveGate');
     vi.mocked(settleDesignSaves).mockImplementationOnce(
       () => new Promise<boolean>((resolve) => (settle = resolve))
@@ -89,9 +110,10 @@ describe('useScanLaunchBridge', () => {
     openDesign('open');
     const { unmount } = renderHook(() => useScanLaunchBridge());
     act(() => useScanLaunchStore.getState().requestScan('palette', true));
+    expect(settle).not.toBeNull();
 
     unmount();
-    await act(async () => settle(true));
+    await act(async () => settle?.(true));
 
     expect(useDesignerStore.getState().currentDesignId).toBe('open');
   });

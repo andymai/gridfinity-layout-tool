@@ -13,6 +13,7 @@ import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { canStartScan, startScan } from '@/features/bin-designer/utils/startScan';
+import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { settleDesignSaves } from './designSaveGate';
 
 /** A request older than this is from a navigation that never arrived; drop it. */
@@ -46,6 +47,14 @@ export function useScanLaunchBridge(): void {
     if (pending === null || currentDesignId === null) return;
     awaitingNewBin.current = null;
     if (Date.now() - pending.since > SCAN_LAUNCH_STALE_MS) return;
+    // Saved defaults can leave a new bin unable to take cutouts (a spacer or
+    // tile body, an interior lightweight floor); a bin made for a scan starts
+    // from the factory base instead, or the factory bin if that isn't enough.
+    const { params, setParams } = useDesignerStore.getState();
+    if (!canStartScan(params)) {
+      setParams({ base: DEFAULT_BIN_PARAMS.base });
+      if (!canStartScan(useDesignerStore.getState().params)) setParams({ ...DEFAULT_BIN_PARAMS });
+    }
     startScan(pending.source, { growBin: true });
   }, [currentDesignId]);
 

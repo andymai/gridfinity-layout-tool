@@ -25,6 +25,7 @@ import { useDesignerUrlSync } from '@/features/bin-designer/hooks/useDesignerUrl
 import { useUnsavedWarning } from '@/features/bin-designer/hooks/useUnsavedWarning';
 import { useBinDefaultCommandBridge } from '@/features/bin-designer/hooks/useBinDefaultCommandBridge';
 import { useScanLaunchBridge } from '@/features/bin-designer/hooks/useScanLaunchBridge';
+import { useScanDialogFollowsWorkspace } from '@/features/bin-designer/hooks/useScanDialogFollowsWorkspace';
 import { useCommunityPublishLifecycle } from '@/features/bin-designer/hooks/useCommunityPublish';
 import { useDesignerFirstRun } from '@/features/bin-designer/hooks/useDesignerFirstRun';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
@@ -97,6 +98,7 @@ export function DesignerPage() {
     (s) => s.ui.cutoutEditorOpen && (s.ui.cutoutTarget === 'lid' || s.params.style === 'solid')
   );
   const bentoWorkspaceOpen = useDesignerStore((s) => s.ui.bentoWorkspaceOpen);
+  useScanDialogFollowsWorkspace(isDesktop && cutoutEditorOpen);
   const designListOpen = useDesignerStore((s) => s.ui.designListOpen);
   const versionsOpen = useDesignerStore((s) => s.ui.versionsOpen);
   const setVersionsOpen = useDesignerStore((s) => s.setVersionsOpen);
