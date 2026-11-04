@@ -1,0 +1,19 @@
+scripts/feature-tips/tipsUi.ts
+  s_169ca198965180::t_413f93cf221337 96-108,464-467
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "690a48228b188df0b4b561d5cc62bf04a6acb2f2",
+  "prompts": {},
+  "sessions": {
+    "s_169ca198965180": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7cae772c-5519-4831-875c-a4d30af16b6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
