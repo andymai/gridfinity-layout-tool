@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.532.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.531.0...gridfinity-layout-tool-v4.532.0) (2026-11-04)
+
+
+### Features
+
+* **bin-designer:** clean up a traced outline ([#4815](https://github.com/andymai/gridfinity-layout-tool/issues/4815)) ([343d469](https://github.com/andymai/gridfinity-layout-tool/commit/343d469829f36a57ee9355667383a10aaf373e8e))
+* **bin-designer:** edit an island's points, with a magnifier ([#4819](https://github.com/andymai/gridfinity-layout-tool/issues/4819)) ([f476172](https://github.com/andymai/gridfinity-layout-tool/commit/f4761726598f098f318e67abdb25f3990e6975dc))
+* **scan:** measure a tall tool at its own height with a strip on top ([#4825](https://github.com/andymai/gridfinity-layout-tool/issues/4825)) ([49277fd](https://github.com/andymai/gridfinity-layout-tool/commit/49277fdff2937f2fa372f0c596c0d6ee9a9bdff4))
+* **scan:** save traced tools as SVG, DXF or STL ([#4824](https://github.com/andymai/gridfinity-layout-tool/issues/4824)) ([6054eb0](https://github.com/andymai/gridfinity-layout-tool/commit/6054eb0e8f412513e9aa1de880d65fd02e21edb9))
+
+
+### Bug Fixes
+
+* **bin-designer:** keep a hinged lid's snap when the lip is dipped ([#4821](https://github.com/andymai/gridfinity-layout-tool/issues/4821)) ([603e4b8](https://github.com/andymai/gridfinity-layout-tool/commit/603e4b8d92889e0b0da57acab3dd9a3448f9483c))
+* **bin-designer:** round a funnel cutout's top shoulder onto its slope ([#4820](https://github.com/andymai/gridfinity-layout-tool/issues/4820)) ([8d460d3](https://github.com/andymai/gridfinity-layout-tool/commit/8d460d30aa46eb2b021ce49e9d8945a27fcf5c31))
+* **scan:** keep traced outlines from crossing themselves ([#4823](https://github.com/andymai/gridfinity-layout-tool/issues/4823)) ([8720879](https://github.com/andymai/gridfinity-layout-tool/commit/872087946e43cbf86a8fe33a2c8f1e37bced6886))
+
 ## [4.531.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.530.0...gridfinity-layout-tool-v4.531.0) (2026-11-03)
 
 
