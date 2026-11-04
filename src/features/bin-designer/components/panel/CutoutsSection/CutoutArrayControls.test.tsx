@@ -58,6 +58,52 @@ function renderControls(
 }
 
 describe('CutoutArrayControls', () => {
+  describe('when there is no room to grow', () => {
+    const row: CutoutArrayConfig = { ...arrayCfg, cols: 5, rows: 1, pitchX: 14, pitchY: 14 };
+    const renderIn = (
+      cutout: Cutout,
+      array: CutoutArrayConfig,
+      binWidth: number,
+      binDepth: number
+    ) =>
+      render(
+        <CutoutArrayControls
+          box={cutout}
+          array={array}
+          binWidth={binWidth}
+          binDepth={binDepth}
+          onChange={vi.fn()}
+          onFlatten={vi.fn()}
+        />
+      );
+
+    it('says why Rows stays at 1 when a second row would pass the far edge', () => {
+      // 30mm of bin past y=20 leaves 0mm beyond the 10mm cutout: pitch 14 cannot fit.
+      renderIn(makeCutout({ y: 20, array: row }), row, 80, 30);
+      expect(screen.getByText('binDesigner.cutouts.repeat.noRoomRows')).toBeInTheDocument();
+      expect(screen.queryByText('binDesigner.cutouts.repeat.noRoomCols')).not.toBeInTheDocument();
+    });
+
+    it('says why Columns stays at 1 when a second column would pass the far edge', () => {
+      const column: CutoutArrayConfig = { ...row, cols: 1, rows: 3 };
+      renderIn(makeCutout({ x: 20, array: column }), column, 30, 80);
+      expect(screen.getByText('binDesigner.cutouts.repeat.noRoomCols')).toBeInTheDocument();
+      expect(screen.queryByText('binDesigner.cutouts.repeat.noRoomRows')).not.toBeInTheDocument();
+    });
+
+    it('stays quiet when both axes have room', () => {
+      renderIn(makeCutout({ array: row }), row, 80, 80);
+      expect(screen.queryByText('binDesigner.cutouts.repeat.noRoomRows')).not.toBeInTheDocument();
+      expect(screen.queryByText('binDesigner.cutouts.repeat.noRoomCols')).not.toBeInTheDocument();
+    });
+
+    it('does not apply to a radial repeat, which has neither field', () => {
+      const ring: CutoutArrayConfig = { ...row, mode: 'radial' };
+      renderIn(makeCutout({ y: 20, array: ring }), ring, 80, 30);
+      expect(screen.queryByText('binDesigner.cutouts.repeat.noRoomRows')).not.toBeInTheDocument();
+    });
+  });
+
   it('offers a create button when there is no array', () => {
     const onUpdate = vi.fn();
     renderControls(makeCutout(), { onUpdate });
