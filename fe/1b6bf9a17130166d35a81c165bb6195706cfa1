@@ -1,0 +1,80 @@
+src/features/bin-designer/types/uiState.ts
+  s_169ca198965180::t_f4b016a2e8fac3 13-21
+src/i18n/locales/zh-CN.json
+  s_169ca198965180::t_e2fbe2ecf020e5 1010
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.ts
+  s_169ca198965180::t_5eb9b02e163da9 30,225-227
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanToolDialog.test.tsx
+  s_169ca198965180::t_8991b45af2a730 34-38,40-48,50-51,151-167
+  s_169ca198965180::t_99fbc326c247dc 168-169
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/photoFile.ts
+  s_169ca198965180::t_c018ff99467c05 1-24
+src/i18n/locales/es.json
+  s_169ca198965180::t_e2fbe2ecf020e5 1010
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/photoFile.test.ts
+  s_169ca198965180::t_c018ff99467c05 1-28
+src/features/bin-designer/components/CutoutWorkspace/usePhotoDropAndPaste.ts
+  s_169ca198965180::t_6ff3f34fa1009d 1-53
+src/i18n/locales/de.json
+  s_169ca198965180::t_e2fbe2ecf020e5 1010
+src/i18n/locales/nb.json
+  s_169ca198965180::t_e2fbe2ecf020e5 1010
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanToolDialog.tsx
+  s_169ca198965180::t_aaac635ddb4746 41-44,63-70,392,396-400
+src/i18n/locales/ka.json
+  s_169ca198965180::t_e2fbe2ecf020e5 3080
+src/i18n/locales/sv.json
+  s_169ca198965180::t_e2fbe2ecf020e5 1010
+src/i18n/locales/uk.json
+  s_169ca198965180::t_e2fbe2ecf020e5 1010
+src/features/bin-designer/components/CutoutWorkspace/usePhotoDropAndPaste.test.ts
+  s_169ca198965180::t_8991b45af2a730 1-72
+src/i18n/locales/it.json
+  s_169ca198965180::t_e2fbe2ecf020e5 1010
+src/features/bin-designer/components/TraceView/TraceView.tsx
+  s_169ca198965180::t_aaac635ddb4746 19-20,64,83-89
+  s_169ca198965180::t_a8b6dace653bdb 90
+src/i18n/locales/ja.json
+  s_169ca198965180::t_e2fbe2ecf020e5 1010
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutKeyboardShortcuts.ts
+  s_169ca198965180::t_5eb9b02e163da9 26
+src/i18n/locales/pl.json
+  s_169ca198965180::t_e2fbe2ecf020e5 1010
+src/features/bin-designer/components/TraceView/TraceView.test.tsx
+  s_169ca198965180::t_8991b45af2a730 82-91
+src/i18n/locales/en.ts
+  s_169ca198965180::t_e2fbe2ecf020e5 3658
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.test.ts
+  s_169ca198965180::t_c9be2c79f8356c 268-277
+src/i18n/locales/ko.json
+  s_169ca198965180::t_e2fbe2ecf020e5 1010
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutClipboard.ts
+  s_169ca198965180::t_5eb9b02e163da9 71-72,122-123,142,151
+src/i18n/locales/nl.json
+  s_169ca198965180::t_e2fbe2ecf020e5 1010
+src/i18n/locales/fr.json
+  s_169ca198965180::t_e2fbe2ecf020e5 1010
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_169ca198965180::t_665cb634ef0eb3 821
+  s_169ca198965180::t_f4b016a2e8fac3 74-75,234-247,770-772,811,813-820
+src/i18n/locales/pt-BR.json
+  s_169ca198965180::t_e2fbe2ecf020e5 1010
+src/i18n/locales/cs.json
+  s_169ca198965180::t_e2fbe2ecf020e5 1010
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fe1b6bf9a17130166d35a81c165bb6195706cfa1",
+  "prompts": {},
+  "sessions": {
+    "s_169ca198965180": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7cae772c-5519-4831-875c-a4d30af16b6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
