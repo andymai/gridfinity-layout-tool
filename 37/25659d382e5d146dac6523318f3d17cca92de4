@@ -1,0 +1,72 @@
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEditor.tsx
+  s_169ca198965180::t_4b7928e4d8f028 19,135
+src/i18n/locales/it.json
+  s_169ca198965180::t_12f607fd41c473 729,1280
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutInteraction.test.ts
+  s_169ca198965180::t_5b2f489a01f463 5,52-54
+  s_169ca198965180::t_c1fb55752efebc 55-56
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_169ca198965180::t_eb007d64f0dd23 898-900
+  s_169ca198965180::t_4b7928e4d8f028 55,785
+src/i18n/locales/de.json
+  s_169ca198965180::t_12f607fd41c473 729,1280
+src/i18n/locales/nb.json
+  s_169ca198965180::t_12f607fd41c473 729,1280
+src/i18n/locales/nl.json
+  s_169ca198965180::t_12f607fd41c473 729,1280
+src/features/bin-designer/components/CutoutWorkspace/CutoutQuickstartOverlay.tsx
+  s_169ca198965180::t_eb007d64f0dd23 15-16,19-22,26-70,97-99,152-164
+  s_169ca198965180::t_cba6ca750d3485 165-168
+src/i18n/locales/es.json
+  s_169ca198965180::t_12f607fd41c473 729,1280
+src/i18n/locales/sv.json
+  s_169ca198965180::t_12f607fd41c473 729,1280
+src/i18n/locales/ko.json
+  s_169ca198965180::t_12f607fd41c473 729,1280
+src/features/bin-designer/components/panel/CutoutsSection/cutoutSectionVisibility.ts
+  s_169ca198965180::t_c6056587b88d67 9-18
+src/features/bin-designer/components/panel/CutoutsSection/cutoutSectionVisibility.test.ts
+  s_169ca198965180::t_f63a37424ac35d 9
+  s_169ca198965180::t_5b2f489a01f463 138-150,157-161
+  s_169ca198965180::t_eb007d64f0dd23 151-156
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeToolbar.tsx
+  s_169ca198965180::t_ca5bf406a5c6ff 21,28,111,412
+src/i18n/locales/en.ts
+  s_169ca198965180::t_1b89c35cad6afd 3759,3831-3832
+src/i18n/locales/pt-BR.json
+  s_169ca198965180::t_12f607fd41c473 729,1280
+src/i18n/locales/uk.json
+  s_169ca198965180::t_12f607fd41c473 729,1280
+src/i18n/locales/fr.json
+  s_169ca198965180::t_12f607fd41c473 729,1280
+src/i18n/locales/zh-CN.json
+  s_169ca198965180::t_12f607fd41c473 729,1280
+src/i18n/locales/pl.json
+  s_169ca198965180::t_12f607fd41c473 729,1280
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeToolbar.test.tsx
+  s_169ca198965180::t_4279d6ffd987f6 314-331
+src/i18n/locales/ka.json
+  s_169ca198965180::t_12f607fd41c473 3163,3220
+src/features/bin-designer/components/CutoutWorkspace/CutoutQuickstartOverlay.test.tsx
+  s_169ca198965180::t_eb007d64f0dd23 6,17-23
+src/i18n/locales/ja.json
+  s_169ca198965180::t_12f607fd41c473 729,1280
+src/i18n/locales/cs.json
+  s_169ca198965180::t_12f607fd41c473 729,1280
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3725659d382e5d146dac6523318f3d17cca92de4",
+  "prompts": {},
+  "sessions": {
+    "s_169ca198965180": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7cae772c-5519-4831-875c-a4d30af16b6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
