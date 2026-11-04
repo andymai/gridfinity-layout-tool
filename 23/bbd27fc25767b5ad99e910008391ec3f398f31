@@ -1,0 +1,34 @@
+src/shared/utils/rotation.ts
+  s_fa6b1a192f3376::t_4d68fe47fcc5a1 25,114-127
+  s_fa6b1a192f3376::t_e8ddd6d5991265 128-130
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_fa6b1a192f3376::t_4d68fe47fcc5a1 442-443
+src/features/bin-inspector/hooks/useBinInspector.test.ts
+  s_fa6b1a192f3376::t_4d68fe47fcc5a1 898,900-920,922-923
+  s_fa6b1a192f3376::t_05c109c264e17c 899,921
+src/shared/utils/placementTurn.ts
+  s_fa6b1a192f3376::t_4d68fe47fcc5a1 93,100-110
+src/shared/utils/placementTurn.test.ts
+  s_fa6b1a192f3376::t_4d68fe47fcc5a1 96-107
+  s_fa6b1a192f3376::t_64bcb0330db1e7 108-110
+src/shared/utils/rotation.test.ts
+  s_fa6b1a192f3376::t_4d68fe47fcc5a1 437-459
+src/shared/hooks/useSelectionActions.ts
+  s_fa6b1a192f3376::t_4d68fe47fcc5a1 10,88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "23bbd27fc25767b5ad99e910008391ec3f398f31",
+  "prompts": {},
+  "sessions": {
+    "s_fa6b1a192f3376": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "78835baa-98ee-4035-90c0-fb29acee90ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
