@@ -7,7 +7,8 @@ describe('firstPhoto', () => {
   it('picks the first photo and passes over an SVG outline', () => {
     const svg = file('outline.svg', 'image/svg+xml');
     const jpg = file('tools.jpg', 'image/jpeg');
-    expect(firstPhoto([svg, jpg])).toBe(jpg);
+    const png = file('more.png', 'image/png');
+    expect(firstPhoto([svg, jpg, png])).toBe(jpg);
   });
 
   it('finds nothing in text or an empty list', () => {

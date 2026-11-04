@@ -243,8 +243,6 @@ export function CutoutWorkspace() {
     closeScanDialog();
     setDroppedPhoto(null);
   }, [closeScanDialog]);
-  // Off while a scan dialog is up, so a paste inside it stays its own.
-  const photoDrop = usePhotoDropAndPaste(!isLid && scanDialogSource === null, takePhoto);
 
   // Mirrors the dock's own collapsed state (which it persists) so the canvas
   // knows whether the inspector is there to hold the repeat suggestion.
@@ -283,6 +281,12 @@ export function CutoutWorkspace() {
     fitToView,
     handleWheel,
   } = useCutoutWorkspaceCamera(binWidth, binDepth);
+  // Off while a scan dialog is up, so a paste inside it stays its own.
+  const photoDrop = usePhotoDropAndPaste(
+    !isLid && scanDialogSource === null,
+    takePhoto,
+    canvasContainerRef
+  );
 
   // Ruler sync: scale=1 for WebGL (world units = mm), zoom from camera
   const scale = 1;

@@ -1,24 +1,30 @@
 import { useEffect, useState } from 'react';
-import type { DragEvent } from 'react';
+import type { DragEvent, RefObject } from 'react';
 import { dragHasPhoto, firstPhoto } from '../panel/CutoutsSection/scanImport/photoFile';
 import { focusOwnsKeys } from '../panel/CutoutsSection/handlers/keyboardHandler';
 
 export type PhotoArrival = 'drop' | 'paste';
 
+const carriesFiles = (types: readonly string[] | DOMStringList): boolean =>
+  Array.from(types).includes('Files');
+
 /**
  * A photo dropped on the board, or pasted into the editor, goes to Trace a
- * photo. `onPhoto` must be stable: the paste listener re-registers when it changes.
+ * photo. `onPhoto` must be stable: the paste listener re-registers when it
+ * changes. `scope` is the board: a paste is ignored while it sits in an inert
+ * subtree (a variant's locked editor), which a window listener can't see.
  */
 export function usePhotoDropAndPaste(
   enabled: boolean,
-  onPhoto: (file: File, how: PhotoArrival) => void
+  onPhoto: (file: File, how: PhotoArrival) => void,
+  scope?: RefObject<HTMLElement | null>
 ) {
   const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
     if (!enabled) return;
     const onPaste = (e: ClipboardEvent) => {
-      if (focusOwnsKeys(e.target)) return;
+      if (focusOwnsKeys(e.target) || scope?.current?.closest('[inert]')) return;
       const file = firstPhoto(e.clipboardData?.files);
       if (!file) return;
       e.preventDefault();
@@ -26,14 +32,17 @@ export function usePhotoDropAndPaste(
     };
     window.addEventListener('paste', onPaste);
     return () => window.removeEventListener('paste', onPaste);
-  }, [enabled, onPhoto]);
+  }, [enabled, onPhoto, scope]);
 
+  // Any file drag is claimed, so a file that isn't a photo is refused here
+  // rather than opened by the browser in place of the app.
   const dropHandlers = {
     onDragOver: (e: DragEvent<HTMLElement>) => {
-      if (!enabled || !dragHasPhoto(e.dataTransfer.items)) return;
+      if (!enabled || !carriesFiles(e.dataTransfer.types)) return;
       e.preventDefault();
-      e.dataTransfer.dropEffect = 'copy';
-      setDragging(true);
+      const photo = dragHasPhoto(e.dataTransfer.items);
+      e.dataTransfer.dropEffect = photo ? 'copy' : 'none';
+      setDragging(photo);
     },
     onDragLeave: (e: DragEvent<HTMLElement>) => {
       if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
@@ -41,11 +50,10 @@ export function usePhotoDropAndPaste(
     },
     onDrop: (e: DragEvent<HTMLElement>) => {
       setDragging(false);
-      if (!enabled) return;
-      const file = firstPhoto(e.dataTransfer.files);
-      if (!file) return;
+      if (!enabled || !carriesFiles(e.dataTransfer.types)) return;
       e.preventDefault();
-      onPhoto(file, 'drop');
+      const file = firstPhoto(e.dataTransfer.files);
+      if (file) onPhoto(file, 'drop');
     },
   };
 

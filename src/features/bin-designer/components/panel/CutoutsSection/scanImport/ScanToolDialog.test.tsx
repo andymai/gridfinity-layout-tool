@@ -84,6 +84,9 @@ describe('ScanToolDialog', () => {
     session.current = { phase: 'unavailable', url: null };
     session.active = false;
     session.attempt = 0;
+    trace.onTraced = null;
+    trace.onClose = null;
+    trace.initialPhoto = undefined;
     URL.createObjectURL = vi.fn(() => 'blob:mock');
     URL.revokeObjectURL = vi.fn();
   });

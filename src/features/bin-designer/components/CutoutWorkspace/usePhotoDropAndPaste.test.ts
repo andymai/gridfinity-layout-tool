@@ -19,6 +19,7 @@ function drag(files: File[]): DragEvent<HTMLElement> {
     preventDefault: vi.fn(),
     dataTransfer: {
       files,
+      types: files.length > 0 ? ['Files'] : [],
       items: files.map((f) => ({ kind: 'file', type: f.type })),
       dropEffect: 'none',
     },
@@ -37,8 +38,23 @@ describe('usePhotoDropAndPaste', () => {
     expect(event.defaultPrevented).toBe(true);
 
     const input = document.createElement('input');
-    paste([photo], input);
+    const intoField = paste([photo], input);
     expect(onPhoto).toHaveBeenCalledOnce();
+    expect(intoField.defaultPrevented).toBe(false);
+  });
+
+  it('ignores a paste while the board sits in an inert subtree', () => {
+    const onPhoto = vi.fn();
+    const locked = document.createElement('div');
+    locked.setAttribute('inert', '');
+    const board = document.createElement('div');
+    locked.appendChild(board);
+    document.body.appendChild(locked);
+    renderHook(() => usePhotoDropAndPaste(true, onPhoto, { current: board }));
+
+    paste([photo]);
+    expect(onPhoto).not.toHaveBeenCalled();
+    locked.remove();
   });
 
   it('ignores pastes and drops while switched off', () => {
@@ -61,12 +77,14 @@ describe('usePhotoDropAndPaste', () => {
     expect(onPhoto).toHaveBeenCalledWith(photo, 'drop');
   });
 
-  it('leaves an SVG outline alone', () => {
+  it('refuses an SVG outline without handing it on or letting the browser open it', () => {
     const onPhoto = vi.fn();
     const { result } = renderHook(() => usePhotoDropAndPaste(true, onPhoto));
     act(() => result.current.dropHandlers.onDragOver(drag([outline])));
     expect(result.current.dragging).toBe(false);
-    act(() => result.current.dropHandlers.onDrop(drag([outline])));
+    const dropped = drag([outline]);
+    act(() => result.current.dropHandlers.onDrop(dropped));
     expect(onPhoto).not.toHaveBeenCalled();
+    expect(dropped.preventDefault).toHaveBeenCalled();
   });
 });
