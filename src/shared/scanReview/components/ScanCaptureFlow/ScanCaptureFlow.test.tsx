@@ -84,4 +84,17 @@ describe('ScanCaptureFlow', () => {
     await waitFor(() => expect(onUse).toHaveBeenCalledWith(expect.stringContaining('<svg'), 1));
     expect(await screen.findByText('scan.takePhoto')).toBeInTheDocument();
   });
+
+  it('keeps the review open to try again when the caller throws', async () => {
+    const onUse = vi.fn(() => Promise.reject(new Error('store refused')));
+    render(<ScanCaptureFlow layout="embedded" onUse={onUse} />);
+    selectPhoto();
+    fireEvent.click(await screen.findByText('scan.use'));
+
+    await waitFor(() => expect(onUse).toHaveBeenCalledTimes(1));
+    const use = await screen.findByRole('button', { name: 'scan.use' });
+    await waitFor(() => expect(use).toBeEnabled());
+    fireEvent.click(use);
+    await waitFor(() => expect(onUse).toHaveBeenCalledTimes(2));
+  });
 });

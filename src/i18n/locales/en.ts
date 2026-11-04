@@ -1539,6 +1539,8 @@ const en: Record<string, string> = {
   'toast.svgImport.unsupportedFile': 'File is not a valid SVG',
   'toast.svgImport.fileTooLarge': 'SVG file is too large (max 5 MB)',
   'toast.scanImport.success': 'Added {count} cutout(s) from your scan',
+  'toast.scanImport.offFloor':
+    'Added {count} cutout(s), but not all of them fit in this bin. Move them on a computer.',
   'toast.scanImport.parseFailed':
     "Couldn't read that outline. Try a photo on a plain, high-contrast background.",
   'toast.scanImport.fileTooLarge': 'Outline file is too large (max 5 MB)',

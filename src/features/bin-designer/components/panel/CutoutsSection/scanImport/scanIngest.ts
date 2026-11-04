@@ -58,12 +58,6 @@ export function computeScanBounds(specs: readonly ParsedCutoutSpec[]): ScanBound
   return { width, depth, longest: Math.max(width, depth) };
 }
 
-/**
- * Parse a scanned SVG outline into specs plus their measured bounds.
- *
- * Rejects outlines that parse but have zero size — the scale-confirm step
- * divides by the longest side, and a degenerate outline can't be placed.
- */
 /** The millimetres typed for a pixel scan's longest side, or null while it isn't a size. */
 export function scaleTargetMm(targetText: string): number | null {
   const mm = parseFloat(targetText);
@@ -78,6 +72,12 @@ export function isScaledScan(svg: string): boolean {
   return /data-scan-units\s*=\s*["']mm["']/.test(svg);
 }
 
+/**
+ * Parse a scanned SVG outline into specs plus their measured bounds.
+ *
+ * Rejects outlines that parse but have zero size — the scale-confirm step
+ * divides by the longest side, and a degenerate outline can't be placed.
+ */
 export function parseScanSvg(svgString: string): Result<ParsedScan, SvgImportError> {
   const parsed = parseSvgString(svgString);
   if (!isOk(parsed)) return parsed;

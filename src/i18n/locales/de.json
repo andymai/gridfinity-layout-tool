@@ -4900,6 +4900,7 @@
   "toast.svgExport.nothingToExport": "Nichts in der Auswahl hat eine exportierbare Kontur",
   "toast.scanImport.parseFailed": "Diese Kontur konnte nicht gelesen werden. Versuche ein Foto vor einem schlichten, kontrastreichen Hintergrund.",
   "toast.scanImport.success": "{count} Ausschnitt(e) aus deinem Scan hinzugefügt",
+  "toast.scanImport.offFloor": "{count} Ausschnitt(e) hinzugefügt, aber nicht alle passen in diesen Bin. Verschiebe sie am Computer.",
   "toast.selectedAll": "{count} Bin(s) ausgewählt",
   "toast.selectedByCategory": "{count} {name} Bin(s) ausgewählt",
   "toast.selectionInverted": "Auswahl umgekehrt ({count} Bin(s))",

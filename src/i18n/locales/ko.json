@@ -4900,6 +4900,7 @@
   "toast.svgExport.nothingToExport": "선택 항목에 내보낼 윤곽선이 없습니다",
   "toast.scanImport.parseFailed": "그 윤곽선을 읽을 수 없었습니다. 단색의 대비가 높은 배경에서 촬영해 보세요.",
   "toast.scanImport.success": "스캔에서 컷아웃 {count}개를 추가했습니다",
+  "toast.scanImport.offFloor": "컷아웃 {count}개를 추가했지만 모두 이 수납통에 들어가지는 않습니다. 컴퓨터에서 옮겨 주세요.",
   "toast.selectedAll": "수납통 {count}개를 선택했습니다",
   "toast.selectedByCategory": "{name} 수납통 {count}개를 선택했습니다",
   "toast.selectionInverted": "선택을 반전했습니다(수납통 {count}개)",

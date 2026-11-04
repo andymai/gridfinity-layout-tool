@@ -235,8 +235,9 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
     const svg = svgFromShapes(sending, rectified.units, keepHoles);
     const count = sending.length;
     setStatus({ ...status, sending: true });
-    const outcome = await onUse(svg, count);
-    if (outcome.kind === 'sent') setStatus({ kind: 'sent', count });
+    const outcome = await onUse(svg, count).catch(() => null);
+    if (outcome === null) setStatus(status);
+    else if (outcome.kind === 'sent') setStatus({ kind: 'sent', count });
     else if (outcome.kind === 'error') setStatus({ kind: 'error', messageKey: outcome.messageKey });
     else setStatus({ kind: 'capture' });
   }, [status, onUse, cardSize, keepHoles]);
@@ -506,7 +507,7 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
                 type="button"
                 variant="secondary"
                 fullWidth
-                disabled={status.sending}
+                disabled={busy(status)}
                 onClick={reset}
               >
                 {t('scan.retake')}

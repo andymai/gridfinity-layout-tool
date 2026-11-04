@@ -1342,6 +1342,7 @@
   "toast.svgImport.unsupportedFile": "ფაილი სწორი SVG არ არის",
   "toast.svgImport.fileTooLarge": "SVG ფაილი ზედმეტად დიდია (მაქს. 5 MB)",
   "toast.scanImport.success": "თქვენი სკანიდან დამატებულია {count} ჭრილი",
+  "toast.scanImport.offFloor": "დამატებულია {count} ჭრილი, მაგრამ ყველა ამ ყუთში არ ეტევა. გადაიტანეთ ისინი კომპიუტერზე.",
   "toast.scanImport.parseFailed": "კონტურის წაკითხვა ვერ მოხერხდა. სცადეთ ფოტო ერთგვაროვან, მაღალი კონტრასტის ფონზე.",
   "toast.scanImport.fileTooLarge": "კონტურის ფაილი ზედმეტად დიდია (მაქს. 5 MB)",
   "toast.svgExport.nothingToExport": "მონიშნულში არაფერს აქვს ექსპორტისთვის კონტური",

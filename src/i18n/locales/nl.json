@@ -4900,6 +4900,7 @@
   "toast.svgExport.nothingToExport": "Niets in de selectie heeft een contour om te exporteren",
   "toast.scanImport.parseFailed": "Kon die omtrek niet lezen. Probeer een foto tegen een effen achtergrond met veel contrast.",
   "toast.scanImport.success": "{count} uitsparing(en) toegevoegd vanuit je scan",
+  "toast.scanImport.offFloor": "{count} uitsparing(en) toegevoegd, maar ze passen niet allemaal in deze bin. Verplaats ze op een computer.",
   "toast.selectedAll": "{count} bin(s) geselecteerd",
   "toast.selectedByCategory": "{count} {name} bin(s) geselecteerd",
   "toast.selectionInverted": "Selectie omgekeerd ({count} bin(s))",

@@ -125,6 +125,10 @@ export function createUISlice(set: Set) {
 
     openPhoneScan: (source: ScanSource) => {
       set((state) => {
+        state.ui.cutoutTarget = 'bin';
+        // The flow is full screen; when it closes the panel is on Interior,
+        // where the tool-thickness question waits.
+        state.ui.activeCategory = 'interior';
         state.ui.phoneScanSource = source;
       });
     },

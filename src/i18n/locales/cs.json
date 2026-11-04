@@ -4900,6 +4900,7 @@
   "toast.svgExport.nothingToExport": "Nic ve výběru nemá obrys k exportu",
   "toast.scanImport.parseFailed": "Ten obrys se nepodařilo přečíst. Zkus fotku na jednoduchém, kontrastním pozadí.",
   "toast.scanImport.success": "Přidáno {count} výřezů z tvého skenu",
+  "toast.scanImport.offFloor": "Přidáno {count} výřezů, ale ne všechny se do tohoto binu vejdou. Přesuň je na počítači.",
   "toast.selectedAll": "Vybráno {count} binů",
   "toast.selectedByCategory": "Vybráno {count} binů {name}",
   "toast.selectionInverted": "Výběr obrácen ({count} binů)",

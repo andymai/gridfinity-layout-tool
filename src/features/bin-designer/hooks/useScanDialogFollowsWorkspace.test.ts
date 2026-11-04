@@ -10,7 +10,7 @@ describe('useScanDialogFollowsWorkspace', () => {
 
   it('keeps the dialog while the workspace shows, and closes it once it stops', () => {
     useDesignerStore.getState().openScanDialog('header');
-    const { rerender } = renderHook(({ shown }) => useScanDialogFollowsWorkspace(shown), {
+    const { rerender } = renderHook(({ shown }) => useScanDialogFollowsWorkspace(shown, false), {
       initialProps: { shown: true },
     });
     expect(useDesignerStore.getState().ui.scanDialogSource).toBe('header');
@@ -19,10 +19,21 @@ describe('useScanDialogFollowsWorkspace', () => {
     expect(useDesignerStore.getState().ui.scanDialogSource).toBeNull();
   });
 
+  it('closes the phone flow once the window widens past it', () => {
+    useDesignerStore.getState().openPhoneScan('card');
+    const { rerender } = renderHook(({ phone }) => useScanDialogFollowsWorkspace(false, phone), {
+      initialProps: { phone: true },
+    });
+    expect(useDesignerStore.getState().ui.phoneScanSource).toBe('card');
+
+    rerender({ phone: false });
+    expect(useDesignerStore.getState().ui.phoneScanSource).toBeNull();
+  });
+
   it('closes the dialog and the phone flow when the designer is left', () => {
     useDesignerStore.getState().openScanDialog('palette', true);
     useDesignerStore.getState().openPhoneScan('card');
-    const { unmount } = renderHook(() => useScanDialogFollowsWorkspace(true));
+    const { unmount } = renderHook(() => useScanDialogFollowsWorkspace(true, true));
     unmount();
     expect(useDesignerStore.getState().ui.scanDialogSource).toBeNull();
     expect(useDesignerStore.getState().ui.growBinForScan).toBe(false);

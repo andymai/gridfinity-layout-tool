@@ -4900,6 +4900,7 @@
   "toast.svgExport.nothingToExport": "Ingenting i utvalget har et omriss å eksportere",
   "toast.scanImport.parseFailed": "Kunne ikke lese omrisset. Prøv et bilde mot en nøytral bakgrunn med god kontrast.",
   "toast.scanImport.success": "La til {count} utskjæring(er) fra skanningen",
+  "toast.scanImport.offFloor": "La til {count} utskjæring(er), men ikke alle får plass i denne binen. Flytt dem på en datamaskin.",
   "toast.selectedAll": "Valgte {count} bin(s)",
   "toast.selectedByCategory": "Valgte {count} {name} bin(s)",
   "toast.selectionInverted": "Invertert utvalg ({count} bin(s))",

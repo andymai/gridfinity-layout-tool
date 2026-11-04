@@ -4900,6 +4900,7 @@
   "toast.svgExport.nothingToExport": "Nic w zaznaczeniu nie ma konturu do wyeksportowania",
   "toast.scanImport.parseFailed": "Nie udało się odczytać tego obrysu. Spróbuj zdjęcia na gładkim, kontrastowym tle.",
   "toast.scanImport.success": "Dodano {count} wycięcie(-a) ze skanu",
+  "toast.scanImport.offFloor": "Dodano {count} wycięcie(-a), ale nie wszystkie mieszczą się w tym binie. Przesuń je na komputerze.",
   "toast.selectedAll": "Zaznaczono {count} bin(ów)",
   "toast.selectedByCategory": "Zaznaczono {count} bin(ów) {name}",
   "toast.selectionInverted": "Odwrócono zaznaczenie ({count} bin(ów))",

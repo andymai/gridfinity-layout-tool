@@ -6,6 +6,8 @@ import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { ParsedCutoutSpec } from '../svgImport/types';
+import { getCutoutBounds } from '../maskFit';
+import { translateCutoutPreview } from '../cutoutHelpers';
 
 // Mirrors the store contract: `addCutout` reports whether the cutout landed,
 // and the hook's returned count is what it actually stored. The parameter is
@@ -256,7 +258,29 @@ describe('useScanImport', () => {
       expect(added.every((c) => c.parentGroups === undefined)).toBe(true);
       expect(mockSetParams).toHaveBeenCalledOnce();
       expect(mockUpdateBatch).toHaveBeenCalledOnce();
+
+      // Every tool placed, and every placement inside the grown bin.
+      const batch = mockUpdateBatch.mock.calls[0][0];
+      expect([...batch.keys()].sort()).toEqual(added.map((c) => c.id).sort());
+      const { innerW, innerD } = cutoutInterior(mockParams);
+      expect(mockParams.width).toBeGreaterThan(2);
+      const placed = added.map((c) =>
+        getCutoutBounds(translateCutoutPreview(c, batch.get(c.id) ?? {}))
+      );
+      for (const b of placed) {
+        expect(b.minX).toBeGreaterThanOrEqual(0);
+        expect(b.minY).toBeGreaterThanOrEqual(0);
+        expect(b.maxX).toBeLessThanOrEqual(innerW + 1e-6);
+        expect(b.maxY).toBeLessThanOrEqual(innerD + 1e-6);
+      }
+      const [a, b] = placed;
+      const apart = a.maxX <= b.minX || b.maxX <= a.minX || a.maxY <= b.minY || b.maxY <= a.minY;
+      expect(apart).toBe(true);
+
+      const open = mockStartTransaction.mock.invocationCallOrder[0];
       const commit = mockCommitTransaction.mock.invocationCallOrder[0];
+      expect(open).toBeLessThan(mockAddCutout.mock.invocationCallOrder[0]);
+      expect(mockSetParams.mock.invocationCallOrder[0]).toBeLessThan(commit);
       expect(mockUpdateBatch.mock.invocationCallOrder[0]).toBeLessThan(commit);
       mockAddCutout.mockImplementation((_c: Cutout) => true);
     });

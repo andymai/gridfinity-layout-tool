@@ -140,6 +140,46 @@ describe('autoArrangeCutouts', () => {
       expect(result.solo).toEqual({ x: 2, y: 2 });
     });
 
+    it('packs around a locked shape instead of over it', () => {
+      const cutouts = [
+        { ...createCutout('pinned', 30, 30), x: 2, y: 2, locked: true },
+        createCutout('a', 20, 20),
+        createCutout('b', 20, 20),
+      ];
+
+      const result = autoArrangeCutouts(cutouts, { binWidth: 100, binDepth: 100, gap: 2 });
+
+      expect(result.pinned).toBeUndefined();
+      // Past the locked 30mm square and its 2mm gap, then on along the row.
+      expect(result.a).toEqual({ x: 34, y: 2 });
+      expect(result.b).toEqual({ x: 56, y: 2 });
+    });
+
+    it('drops to the next row when a locked shape blocks the rest of a row', () => {
+      const cutouts = [
+        { ...createCutout('wall', 80, 30), x: 18, y: 2, locked: true },
+        createCutout('a', 20, 20),
+      ];
+
+      const result = autoArrangeCutouts(cutouts, { binWidth: 100, binDepth: 100, gap: 2 });
+
+      // No room left of the locked bar (2 + 20 + 2 > 18), none right of it.
+      expect(result.a).toEqual({ x: 2, y: 34 });
+    });
+
+    it('keeps clear of keep-out floor', () => {
+      const cutouts = [createCutout('a', 20, 20)];
+
+      const result = autoArrangeCutouts(cutouts, {
+        binWidth: 100,
+        binDepth: 100,
+        gap: 2,
+        keepOut: [{ minX: 0, minY: 0, maxX: 50, maxY: 50 }],
+      });
+
+      expect(result.a).toEqual({ x: 52, y: 2 });
+    });
+
     it('claims the rotated footprint of a shape, not its unrotated box', () => {
       const cutouts = [
         { ...createCutout('turned', 30, 10), rotation: 90 },

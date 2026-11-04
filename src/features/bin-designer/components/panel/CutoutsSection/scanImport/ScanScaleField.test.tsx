@@ -4,7 +4,13 @@ import { ScanScaleField } from './ScanScaleField';
 import { scaleTargetMm } from './scanIngest';
 import type { ParsedScan } from './scanIngest';
 
-vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
+// The echo mock fills only placeholders in the key, so it would drop the size.
+vi.mock('@/i18n', () => ({
+  useTranslation:
+    () =>
+    (key: string, params?: Record<string, unknown>): string =>
+      params ? `${key} ${Object.values(params).join('x')}` : key,
+}));
 
 const parsed = {
   specs: [],
@@ -20,8 +26,17 @@ describe('ScanScaleField', () => {
 
   it('shows the size a typed measurement gives and reports each edit', () => {
     const onChange = vi.fn();
-    render(<ScanScaleField svg="<svg/>" parsed={parsed} targetText="200" onChange={onChange} />);
-    expect(screen.getByText('binDesigner.cutouts.scanImport.resultSize')).toBeInTheDocument();
+    const { rerender } = render(
+      <ScanScaleField svg="<svg/>" parsed={parsed} targetText="200" onChange={onChange} />
+    );
+    // 200mm along a 100px longest side doubles the 100 × 50 outline.
+    expect(
+      screen.getByText('binDesigner.cutouts.scanImport.resultSize 200x100')
+    ).toBeInTheDocument();
+    rerender(<ScanScaleField svg="<svg/>" parsed={parsed} targetText="75" onChange={onChange} />);
+    expect(
+      screen.getByText('binDesigner.cutouts.scanImport.resultSize 75x37.5')
+    ).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('binDesigner.cutouts.scanImport.scaleLabel'), {
       target: { value: '150' },

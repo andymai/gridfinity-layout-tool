@@ -20,8 +20,6 @@ import { SCAN_CLEARANCE_MM } from '@/shared/scanReview/traceExport';
 import { computeGrowToFit } from '../growBinToFit';
 import { getCutoutBounds } from '../maskFit';
 import { translateCutout } from '../cutoutHelpers';
-// The scan entry point is hidden while the lid is the target, so a scan always
-// lands on the bin's floor.
 import { binBoard, packIntoBin } from '../packIntoBin';
 
 export interface UseScanImportReturn {
