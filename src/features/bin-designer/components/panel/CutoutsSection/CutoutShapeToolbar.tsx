@@ -45,7 +45,6 @@ interface CutoutShapeToolbarProps {
   readonly onImportSvg?: () => void;
   /** Callback to trigger STL mesh import. When omitted, the button is hidden. */
   readonly onImportStl?: () => void;
-  /** Opens the "Scan a tool" dialog. When omitted, the button is hidden. */
   readonly onScanTool?: () => void;
 }
 
