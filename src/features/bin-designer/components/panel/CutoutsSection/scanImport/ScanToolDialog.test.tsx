@@ -104,7 +104,7 @@ describe('ScanToolDialog', () => {
   });
 
   it('retries a dead phone session when the phone route is picked again', () => {
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     choosePhone();
     expect(session.attempt).toBe(0);
 
@@ -115,7 +115,7 @@ describe('ScanToolDialog', () => {
 
   it('keeps keyboard focus inside the dialog across route changes', () => {
     session.current = { phase: 'waiting', url: 'https://example.com/scan/abc' };
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     choosePhone();
     expect(document.activeElement).toBe(
       screen.getByText('binDesigner.cutouts.scanImport.back').closest('button')

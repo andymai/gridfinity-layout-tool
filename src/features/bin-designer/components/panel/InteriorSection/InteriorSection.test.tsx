@@ -6,6 +6,7 @@ import { DEFAULT_BIN_PARAMS } from '../../../constants';
 import { DEFAULT_TRAY_BOTTOM } from '../../../types';
 import type { InteriorCard } from '../../../types';
 import en from '@/i18n/locales/en';
+import type * as StartScanModule from '../../../utils/startScan';
 
 vi.mock('./InteriorModes', () => ({
   InteriorModeContent: ({ card }: { card: InteriorCard }) => (
@@ -26,6 +27,11 @@ vi.mock('./useInteriorSection', () => ({
 vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({ isDesktop: view.isDesktop }),
 }));
+const mockStartScan = vi.hoisted(() => vi.fn());
+vi.mock('../../../utils/startScan', async (importOriginal) => ({
+  ...(await importOriginal<typeof StartScanModule>()),
+  startScan: mockStartScan,
+}));
 
 describe('InteriorSection', () => {
   beforeEach(() => {
@@ -33,6 +39,27 @@ describe('InteriorSection', () => {
     mockSetStyle.mockClear();
     view.card = 'standard';
     view.isDesktop = true;
+  });
+
+  it('offers scanning under the tiles in a divided bin, switching on the way in', () => {
+    render(<InteriorSection />);
+    const link = screen.getByRole('button', { name: en['binDesigner.interior.scanLink'] });
+    expect(link).toHaveAttribute('data-help-target', 'bd-scan-tool');
+
+    fireEvent.click(link);
+    expect(mockStartScan).toHaveBeenCalledWith('interior_link');
+  });
+
+  it('leaves the link out on Custom Cutouts, which has its own scan button, and off desktop', () => {
+    view.card = 'solid';
+    const { unmount } = render(<InteriorSection />);
+    expect(screen.queryByText(en['binDesigner.interior.scanLink'])).toBeNull();
+    unmount();
+
+    view.card = 'standard';
+    view.isDesktop = false;
+    render(<InteriorSection />);
+    expect(screen.queryByText(en['binDesigner.interior.scanLink'])).toBeNull();
   });
 
   it('offers the four modes as tiles', () => {

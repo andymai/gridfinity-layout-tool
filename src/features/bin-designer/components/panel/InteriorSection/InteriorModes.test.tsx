@@ -26,9 +26,12 @@ vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 const mocks = vi.hoisted(() => ({
   setBentoWorkspaceOpen: vi.fn(),
   setCutoutEditorOpen: vi.fn(),
+  startScan: vi.fn(),
   params: {} as BinParams,
   isDesktop: true,
 }));
+
+vi.mock('../../../utils/startScan', () => ({ startScan: mocks.startScan }));
 
 vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({
@@ -113,6 +116,20 @@ describe('InteriorModes', () => {
 
       fireEvent.click(screen.getByText('binDesigner.editCutouts'));
       expect(mocks.setCutoutEditorOpen).toHaveBeenCalledWith(true);
+    });
+
+    it('offers Scan a tool beside the launcher', () => {
+      render(<InteriorModeContent card="solid" />);
+
+      fireEvent.click(screen.getByText('binDesigner.cutouts.scanImport.title'));
+      expect(mocks.startScan).toHaveBeenCalledWith('card');
+    });
+
+    it('offers no scan where the editor cannot open', () => {
+      mocks.isDesktop = false;
+      render(<InteriorModeContent card="solid" />);
+
+      expect(screen.queryByText('binDesigner.cutouts.scanImport.title')).toBeNull();
     });
 
     it('offers a clip of the editor at work beside its launcher', () => {

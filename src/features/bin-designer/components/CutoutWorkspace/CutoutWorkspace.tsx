@@ -239,7 +239,9 @@ export function CutoutWorkspace() {
   // Quickstart overlay state
   const { quickstartSeen, markQuickstartSeen } = useCutoutQuickstart();
   const [overlayForcedVisible, setOverlayForcedVisible] = useState(false);
-  const showQuickstart = !quickstartSeen || overlayForcedVisible;
+  // Held back while the scan dialog is up, so opening straight into a scan
+  // shows one overlay at a time; the card follows once the dialog closes.
+  const showQuickstart = (!quickstartSeen || overlayForcedVisible) && scanDialogSource === null;
 
   const handleDismissQuickstart = useCallback(() => {
     markQuickstartSeen();

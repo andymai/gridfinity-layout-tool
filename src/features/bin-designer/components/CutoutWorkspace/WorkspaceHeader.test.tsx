@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { WorkspaceHeader } from './WorkspaceHeader';
 
@@ -65,6 +65,17 @@ describe('WorkspaceHeader', () => {
   it('renders the workspace title', () => {
     render(<WorkspaceHeader {...defaultProps} />);
     expect(screen.getByText('binDesigner.cutoutEditor.title')).toBeInTheDocument();
+  });
+
+  it('offers a labeled Scan a tool button when scanning is available', () => {
+    const onScanTool = vi.fn();
+    const { unmount } = render(<WorkspaceHeader {...defaultProps} onScanTool={onScanTool} />);
+    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.cutouts.scanImport.title' }));
+    expect(onScanTool).toHaveBeenCalledOnce();
+    unmount();
+
+    render(<WorkspaceHeader {...defaultProps} />);
+    expect(screen.queryByText('binDesigner.cutouts.scanImport.title')).toBeNull();
   });
 
   it('displays the zoom percentage', () => {
