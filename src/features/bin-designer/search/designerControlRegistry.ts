@@ -6,9 +6,9 @@
  * - `DESIGNER_OPTION_RECORDS` — finer sub-options inside those sections
  *   (Lightweight floor, Screw holes, Lid grip, …). Each reuses an existing
  *   translated label key and carries English-only synonyms, so richer coverage
- *   costs no new translation. An option's `section` is both its breadcrumb
- *   parent and its jump target: only section-level markers exist in the DOM, so
- *   selecting an option lands the user on the section that holds it.
+ *   costs no new translation. An option's `section` is its breadcrumb parent
+ *   and its jump target. Most options have no marker of their own, so they land
+ *   on the section; one that names a `target` lands on that marker inside it.
  *
  * A control's category is not duplicated here — it comes from `categoryForControl`
  * in the settings manifest, the single source of truth.

@@ -41,6 +41,8 @@ interface UseCutoutKeyboardShortcutsOptions {
   readonly setMode: (next: InteractionMode) => void;
   readonly setSegmentHover: (next: SegmentHoverInfo | null) => void;
   readonly setSelection: (next: ReadonlySet<string>) => void;
+  readonly onImportSvg?: () => void;
+  readonly onImportStl?: () => void;
 }
 
 export function useCutoutKeyboardShortcuts(deps: UseCutoutKeyboardShortcutsOptions): void {
@@ -71,6 +73,8 @@ export function useCutoutKeyboardShortcuts(deps: UseCutoutKeyboardShortcutsOptio
     setMode,
     setSegmentHover,
     setSelection,
+    onImportSvg,
+    onImportStl,
   } = deps;
 
   useEffect(() => {
@@ -107,6 +111,8 @@ export function useCutoutKeyboardShortcuts(deps: UseCutoutKeyboardShortcutsOptio
         // something a keydown listener should re-register for.
         groupContext: useCutoutSelection.getState().groupContext,
         exitGroup: useCutoutSelection.getState().exitGroup,
+        onImportSvg,
+        onImportStl,
       });
     };
 
@@ -139,5 +145,7 @@ export function useCutoutKeyboardShortcuts(deps: UseCutoutKeyboardShortcutsOptio
     setMode,
     setSegmentHover,
     setSelection,
+    onImportSvg,
+    onImportStl,
   ]);
 }

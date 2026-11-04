@@ -565,3 +565,36 @@ describe('handleCutoutKeyDown — vertex editing mode', () => {
     expect(ctx.deleteSelected).not.toHaveBeenCalled();
   });
 });
+
+describe('handleCutoutKeyDown — import shortcuts', () => {
+  it('I opens the SVG import and J the STL import, as their tooltips say', () => {
+    const onImportSvg = vi.fn();
+    const onImportStl = vi.fn();
+    const ctx = makeCtx({ onImportSvg, onImportStl });
+
+    const i = press('i');
+    handleCutoutKeyDown(i, ctx);
+    expect(onImportSvg).toHaveBeenCalledOnce();
+    expect(i.preventDefault).toHaveBeenCalled();
+
+    handleCutoutKeyDown(press('j'), ctx);
+    expect(onImportStl).toHaveBeenCalledOnce();
+    expect(ctx.setMode).not.toHaveBeenCalled();
+  });
+
+  it('leaves J alone where the STL import is not offered', () => {
+    const event = press('j');
+    handleCutoutKeyDown(event, makeCtx({ onImportSvg: vi.fn() }));
+    expect(event.preventDefault).not.toHaveBeenCalled();
+  });
+
+  it('leaves Ctrl+I and Ctrl+J to the browser', () => {
+    const onImportSvg = vi.fn();
+    const onImportStl = vi.fn();
+    const ctx = makeCtx({ onImportSvg, onImportStl });
+    handleCutoutKeyDown(press('i', { ctrlKey: true }), ctx);
+    handleCutoutKeyDown(press('j', { ctrlKey: true }), ctx);
+    expect(onImportSvg).not.toHaveBeenCalled();
+    expect(onImportStl).not.toHaveBeenCalled();
+  });
+});

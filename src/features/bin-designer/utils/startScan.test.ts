@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
-import { canStartScan, startScan } from './startScan';
+import { canStartScan, selectCanStartScan, startScan } from './startScan';
 
 describe('startScan', () => {
   beforeEach(() => {
@@ -77,5 +77,17 @@ describe('scan dialog state', () => {
     s.closeScanDialog();
     expect(useDesignerStore.getState().ui.scanDialogSource).toBeNull();
     expect(useDesignerStore.getState().ui.cutoutEditorOpen).toBe(true);
+  });
+});
+
+describe('selectCanStartScan', () => {
+  it('answers like canStartScan and follows a params change', () => {
+    const blocked = {
+      ...DEFAULT_BIN_PARAMS,
+      base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true, lightweightMode: 'interior' as const },
+    };
+    expect(selectCanStartScan({ params: DEFAULT_BIN_PARAMS })).toBe(true);
+    expect(selectCanStartScan({ params: blocked })).toBe(false);
+    expect(selectCanStartScan({ params: DEFAULT_BIN_PARAMS })).toBe(true);
   });
 });
