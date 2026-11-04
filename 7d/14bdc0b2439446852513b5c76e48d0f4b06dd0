@@ -1,0 +1,31 @@
+src/features/bin-designer/components/panel/CutoutsSection/packIntoBin.test.ts
+  s_169ca198965180::t_fa8a3d69760b8e 67-73,78
+src/i18n/locales/it.json
+  s_169ca198965180::t_fa8a3d69760b8e 4901
+src/features/bin-designer/components/PhoneScanDialog/PhoneScanDialog.tsx
+  s_169ca198965180::t_fa8a3d69760b8e 42-46,71,74-76
+src/i18n/locales/ko.json
+  s_169ca198965180::t_fa8a3d69760b8e 4901
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.test.ts
+  s_169ca198965180::t_fa8a3d69760b8e 267-270,276-278
+src/features/bin-designer/components/panel/CutoutsSection/packIntoBin.ts
+  s_169ca198965180::t_fa8a3d69760b8e 29
+src/features/bin-designer/components/PhoneScanDialog/PhoneScanDialog.test.tsx
+  s_169ca198965180::t_be27f5ecd5347c 146-172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7d14bdc0b2439446852513b5c76e48d0f4b06dd0",
+  "prompts": {},
+  "sessions": {
+    "s_169ca198965180": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7cae772c-5519-4831-875c-a4d30af16b6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
