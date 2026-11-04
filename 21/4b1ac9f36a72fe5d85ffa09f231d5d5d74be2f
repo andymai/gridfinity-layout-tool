@@ -1,0 +1,28 @@
+src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
+  s_fa6b1a192f3376::t_ffbe048bd010a3 125,127,129
+src/shell/keyboard/handlers.ts
+  s_fa6b1a192f3376::t_ffbe048bd010a3 260
+src/shell/keyboard/types.ts
+  s_fa6b1a192f3376::t_0ba4c540bd6150 50
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_fa6b1a192f3376::t_ffbe048bd010a3 436
+  s_fa6b1a192f3376::t_0ba4c540bd6150 23
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_fa6b1a192f3376::t_ffbe048bd010a3 253
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "214b1ac9f36a72fe5d85ffa09f231d5d5d74be2f",
+  "prompts": {},
+  "sessions": {
+    "s_fa6b1a192f3376": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "78835baa-98ee-4035-90c0-fb29acee90ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
