@@ -231,10 +231,6 @@ export function CutoutWorkspace() {
   const scanDialogSource = useDesignerStore((s) => s.ui.scanDialogSource);
   const openScanDialog = useDesignerStore((s) => s.openScanDialog);
   const closeScanDialog = useDesignerStore((s) => s.closeScanDialog);
-  // The workspace can unmount with the editor flag still up (an undo out of
-  // Custom Cutouts, a window too narrow for it); the dialog goes with it rather
-  // than reappearing when the workspace next mounts.
-  useEffect(() => closeScanDialog, [closeScanDialog]);
   const [droppedPhoto, setDroppedPhoto] = useState<File | null>(null);
   const takePhoto = useCallback(
     (file: File, how: PhotoArrival) => {
@@ -523,6 +519,9 @@ export function CutoutWorkspace() {
     onLock: lockCutouts,
     onUnlock: unlockCutouts,
     onSplitLine: handleSplitLine,
+    onImportSvg: triggerSvgImport,
+    // Matches the toolbar: an STL lands in the bin's array, never the lid's.
+    onImportStl: isLid ? undefined : stlImport.triggerImport,
     binWidth,
     binDepth,
     gridSize,

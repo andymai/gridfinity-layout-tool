@@ -55,6 +55,8 @@ export interface KeyboardHandlerContext {
   readonly groupContext?: readonly string[];
   /** Step out one level; Escape walks back up the way double-click walked down. */
   readonly exitGroup?: () => void;
+  readonly onImportSvg?: () => void;
+  readonly onImportStl?: () => void;
 }
 
 /**
@@ -315,6 +317,22 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
         e.preventDefault();
         e.stopImmediatePropagation();
         ctx.setMode({ type: 'placing', shape: 'text' });
+      }
+      break;
+
+    case 'i':
+      if (!mod && ctx.onImportSvg) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        ctx.onImportSvg();
+      }
+      break;
+
+    case 'j':
+      if (!mod && ctx.onImportStl) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        ctx.onImportStl();
       }
       break;
 

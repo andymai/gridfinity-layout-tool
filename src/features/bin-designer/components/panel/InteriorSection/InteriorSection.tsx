@@ -7,7 +7,6 @@
  * inline with controls or a workspace launcher.
  */
 
-import { useMemo } from 'react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { useTranslation } from '@/i18n';
@@ -23,7 +22,7 @@ import { ModeTiles } from '../shared';
 import { FeatureTip } from '../../FeatureTip';
 import { INTERIOR_CARDS } from '../../../types';
 import type { InteriorCard } from '../../../types';
-import { canStartScan, startScan } from '../../../utils/startScan';
+import { selectCanStartScan, startScan } from '../../../utils/startScan';
 import { SCAN_TOOL_TARGET } from '../../../search/designerControlRegistry';
 
 /**
@@ -44,8 +43,7 @@ export function InteriorSection() {
   const { isDesktop } = useResponsive();
   // Custom Cutouts carries its own scan button; every other mode gets this
   // link, which switches the interior on the way in.
-  const params = useDesignerStore((s) => s.params);
-  const scanPossible = useMemo(() => canStartScan(params), [params]);
+  const scanPossible = useDesignerStore(selectCanStartScan);
   const offerScanLink = isDesktop && state.card !== 'solid' && scanPossible;
   const isCustomShape = useDesignerStore((s) => isPartialMask(s.params.cellMask));
   const hasAngledDividers = useDesignerStore(

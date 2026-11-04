@@ -13,6 +13,19 @@ export function canStartScan(params: BinParams): boolean {
   return getFeatureStatus(asCustomCutouts(params), 'cutouts').available;
 }
 
+let lastAnswer: { readonly params: BinParams; readonly canStart: boolean } | null = null;
+
+/**
+ * `canStartScan` as a store selector: the constraint check reruns only when the
+ * params object changes, and a component re-renders only when the answer does.
+ */
+export function selectCanStartScan(state: { readonly params: BinParams }): boolean {
+  if (lastAnswer?.params !== state.params) {
+    lastAnswer = { params: state.params, canStart: canStartScan(state.params) };
+  }
+  return lastAnswer.canStart;
+}
+
 /**
  * Open the cut editor on the bin with the "Scan a tool" dialog up, switching
  * the interior to Custom Cutouts first the way its card does (one undo step).

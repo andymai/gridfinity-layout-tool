@@ -26,6 +26,8 @@ const GOLDEN: { query: string; expect: string[] }[] = [
   { query: 'honeycomb', expect: ['Lightweight floor'] },
   { query: 'magnet', expect: ['Magnet holes'] },
   { query: 'screw', expect: ['Screw holes'] },
+  { query: 'scan', expect: ['Scan a tool'] },
+  { query: 'trace', expect: ['Scan a tool'] },
   { query: 'fewer magnets', expect: ['Corners only'] },
   { query: 'stacking lip', expect: ['Stacking lip'] },
   { query: 'feet', expect: ['Detachable feet'] },
