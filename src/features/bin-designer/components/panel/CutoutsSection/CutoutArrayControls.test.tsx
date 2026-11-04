@@ -78,7 +78,6 @@ describe('CutoutArrayControls', () => {
       );
 
     it('says why Rows stays at 1 when a second row would pass the far edge', () => {
-      // 30mm of bin past y=20 leaves 0mm beyond the 10mm cutout: pitch 14 cannot fit.
       renderIn(makeCutout({ y: 20, array: row }), row, 80, 30);
       expect(screen.getByText('binDesigner.cutouts.repeat.noRoomRows')).toBeInTheDocument();
       expect(screen.queryByText('binDesigner.cutouts.repeat.noRoomCols')).not.toBeInTheDocument();
