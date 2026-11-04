@@ -1007,6 +1007,7 @@
   "binDesigner.cutouts.scanImport.calibrationSheetHelp": "比卡片更准确：以 100% 打印，然后把工具放在打印的方框内。",
   "binDesigner.cutouts.scanImport.done": "完成",
   "binDesigner.cutouts.scanImport.emptyHelp": "拍摄任意工具，自动描摹其精确轮廓。",
+  "binDesigner.cutouts.dropPhoto": "放下照片即可描摹",
   "binDesigner.cutouts.traceView.title": "描摹照片",
   "binDesigner.cutouts.traceView.open": "用这台电脑上的照片",
   "binDesigner.cutouts.traceView.openHelp": "使用你已有的照片。照片不会离开这台电脑。",

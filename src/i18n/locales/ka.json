@@ -3077,6 +3077,7 @@
   "binDesigner.cutouts.scanImport.unavailable": "ტელეფონით სკანირება ამჟამად მიუწვდომელია. ამის ნაცვლად ატვირთეთ მოხაზული კონტური.",
   "binDesigner.cutouts.scanImport.expired": "სკანირების ბმულს ვადა გაუვიდა. ხელახლა საცდელად დახურეთ და ისევ გახსენით.",
   "binDesigner.cutouts.scanImport.emptyHelp": "ზუსტი კონტურის ავტომატურად ამოსაცნობად ნებისმიერ ხელსაწყოს გადაუღეთ.",
+  "binDesigner.cutouts.dropPhoto": "ჩააგდეთ ფოტო მის მოსახაზად",
   "binDesigner.cutouts.traceView.title": "ფოტოს კონტურის მოხაზვა",
   "binDesigner.cutouts.traceView.open": "ამ კომპიუტერზე არსებული ფოტოდან",
   "binDesigner.cutouts.traceView.openHelp": "გამოიყენეთ ფოტო, რომელიც უკვე გაქვთ. ის ამ კომპიუტერს არასოდეს ტოვებს.",

@@ -23,7 +23,7 @@ interface UseCutoutKeyboardShortcutsOptions {
   readonly selectAll: () => void;
   readonly nudgeSelected: (dx: number, dy: number) => void;
   readonly copySelected: () => void;
-  readonly pasteFromClipboard: () => void;
+  readonly pasteFromClipboard: () => boolean;
   readonly duplicateSelected: () => void;
   readonly makeRepeat?: () => void;
   readonly undoWithToast: () => void;

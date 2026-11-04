@@ -38,6 +38,10 @@ interface ScanToolDialogProps {
   readonly open: boolean;
   readonly onClose: () => void;
   readonly source: ScanSource;
+  /** A photo dropped or pasted on the editor: opens straight into Trace a photo with it. */
+  readonly photo?: File | null;
+  /** Called once Trace a photo closes, so the caller can let the photo go. */
+  readonly onPhotoDone?: () => void;
 }
 
 // The tracer and its model load only once someone traces a photo here.
@@ -56,7 +60,14 @@ type Stage =
 
 const round1 = (n: number): number => Math.round(n * 10) / 10;
 
-export function ScanToolDialog({ open, onClose, onImport, source }: ScanToolDialogProps) {
+export function ScanToolDialog({
+  open,
+  onClose,
+  onImport,
+  source,
+  photo,
+  onPhotoDone,
+}: ScanToolDialogProps) {
   const t = useTranslation();
   const addToast = useToastStore((s) => s.addToast);
   const { addScanCutouts: addToCutouts } = useScanImport();
@@ -378,11 +389,15 @@ export function ScanToolDialog({ open, onClose, onImport, source }: ScanToolDial
       </Dialog.Root>
       {/* Outside the dialog's tree: events from a portal still bubble through
         React parents, and this one's would reach the dialog's handlers. */}
-      {open && tracing && (
+      {open && (tracing || photo) && (
         <Suspense fallback={null}>
           <TraceView
             open
-            onClose={() => setTracing(false)}
+            initialPhoto={photo}
+            onClose={() => {
+              setTracing(false);
+              onPhotoDone?.();
+            }}
             onTraced={(svg) => ingestSvg(svg, 'desktop')}
           />
         </Suspense>

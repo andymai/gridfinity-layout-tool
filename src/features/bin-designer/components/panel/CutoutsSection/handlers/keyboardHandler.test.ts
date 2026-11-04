@@ -265,6 +265,16 @@ describe('handleCutoutKeyDown — clipboard', () => {
     expect(ctx.duplicateSelected).toHaveBeenCalledTimes(1);
   });
 
+  it('lets the browser paste go ahead when nothing is copied in the editor', () => {
+    const empty = press('v', { ctrlKey: true });
+    handleCutoutKeyDown(empty, makeCtx({ pasteFromClipboard: vi.fn(() => false) }));
+    expect(empty.preventDefault).not.toHaveBeenCalled();
+
+    const copied = press('v', { ctrlKey: true });
+    handleCutoutKeyDown(copied, makeCtx({ pasteFromClipboard: vi.fn(() => true) }));
+    expect(copied.preventDefault).toHaveBeenCalled();
+  });
+
   it('maps mod+shift+d to make repeat, leaving plain duplicate alone', () => {
     const ctx = makeCtx();
     handleCutoutKeyDown(press('d', { metaKey: true, shiftKey: true }), ctx);

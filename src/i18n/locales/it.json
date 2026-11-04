@@ -1007,6 +1007,7 @@
   "binDesigner.cutouts.scanImport.calibrationSheetHelp": "Più preciso di una carta: stampa al 100% e appoggia l’utensile dentro la cornice stampata.",
   "binDesigner.cutouts.scanImport.done": "Fatto",
   "binDesigner.cutouts.scanImport.emptyHelp": "Fotografa un utensile qualsiasi per tracciarne automaticamente il contorno esatto.",
+  "binDesigner.cutouts.dropPhoto": "Rilascia una foto per ricalcarla",
   "binDesigner.cutouts.traceView.title": "Ricalca una foto",
   "binDesigner.cutouts.traceView.open": "Da una foto su questo computer",
   "binDesigner.cutouts.traceView.openHelp": "Usa una foto che hai già. Non lascia mai questo computer.",

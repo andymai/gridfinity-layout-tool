@@ -71,6 +71,8 @@ import { useTranslation } from '@/i18n';
 import { useLoadedMeshAssets } from '@/shared/hooks/useMeshOutlines';
 import { useCutoutWorkspaceCamera } from './useCutoutWorkspaceCamera';
 import { useCutoutWorkspacePointer } from './useCutoutWorkspacePointer';
+import { usePhotoDropAndPaste, type PhotoArrival } from './usePhotoDropAndPaste';
+import { ScanToolIcon } from '@/design-system/Icon';
 import { buildCutoutContextActions } from './cutoutWorkspaceContextActions';
 
 export function CutoutWorkspace() {
@@ -229,6 +231,20 @@ export function CutoutWorkspace() {
   const scanDialogSource = useDesignerStore((s) => s.ui.scanDialogSource);
   const openScanDialog = useDesignerStore((s) => s.openScanDialog);
   const closeScanDialog = useDesignerStore((s) => s.closeScanDialog);
+  const [droppedPhoto, setDroppedPhoto] = useState<File | null>(null);
+  const takePhoto = useCallback(
+    (file: File, how: PhotoArrival) => {
+      setDroppedPhoto(file);
+      openScanDialog(how);
+    },
+    [openScanDialog]
+  );
+  const handleScanDialogClose = useCallback(() => {
+    closeScanDialog();
+    setDroppedPhoto(null);
+  }, [closeScanDialog]);
+  // Off while a scan dialog is up, so a paste inside it stays its own.
+  const photoDrop = usePhotoDropAndPaste(!isLid && scanDialogSource === null, takePhoto);
 
   // Mirrors the dock's own collapsed state (which it persists) so the canvas
   // knows whether the inspector is there to hold the repeat suggestion.
@@ -751,7 +767,9 @@ export function CutoutWorkspace() {
         <ScanToolDialog
           open={scanDialogSource !== null && !isLid}
           source={scanDialogSource ?? 'toolbar'}
-          onClose={closeScanDialog}
+          onClose={handleScanDialogClose}
+          photo={droppedPhoto}
+          onPhotoDone={() => setDroppedPhoto(null)}
         />
 
         <StlImportDialog
@@ -790,8 +808,17 @@ export function CutoutWorkspace() {
               className={`relative flex-1 overflow-hidden bg-surface ${spaceHeld ? 'cursor-grab' : ''}`}
               onWheel={handleWheel}
               onContextMenu={handleContextMenu}
+              {...photoDrop.dropHandlers}
             >
-              {showsEmptyBoardHint(cutouts.length, mode) && (
+              {photoDrop.dragging && (
+                <div className="pointer-events-none absolute inset-2 z-20 flex items-center justify-center rounded-lg border-2 border-dashed border-accent bg-accent/10">
+                  <span className="flex items-center gap-2 rounded-md bg-surface px-3 py-2 text-sm font-medium text-content-primary shadow">
+                    <ScanToolIcon size="sm" className="text-accent" />
+                    {t('binDesigner.cutouts.dropPhoto')}
+                  </span>
+                </div>
+              )}
+              {showsEmptyBoardHint(cutouts.length, mode) && !photoDrop.dragging && (
                 <CutoutEmptyState
                   variant="workspace"
                   onScanTool={!isLid ? () => openScanDialog('empty_board') : undefined}

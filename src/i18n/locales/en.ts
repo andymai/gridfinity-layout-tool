@@ -3655,6 +3655,7 @@ const en: Record<string, string> = {
     'This scan link expired. Close and reopen to try again.',
   'binDesigner.cutouts.scanImport.emptyHelp':
     'Photograph any tool to trace its exact outline automatically.',
+  'binDesigner.cutouts.dropPhoto': 'Drop a photo to trace it',
   'binDesigner.cutouts.traceView.title': 'Trace a photo',
   'binDesigner.cutouts.traceView.open': 'From a photo on this computer',
   'binDesigner.cutouts.traceView.openHelp':

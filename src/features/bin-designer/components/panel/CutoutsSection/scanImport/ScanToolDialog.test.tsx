@@ -31,10 +31,24 @@ vi.mock('./useScanSession', () => ({
   },
 }));
 
-const trace = vi.hoisted(() => ({ onTraced: null as ((svg: string) => void) | null }));
+const trace = vi.hoisted(() => ({
+  onTraced: null as ((svg: string) => void) | null,
+  onClose: null as (() => void) | null,
+  initialPhoto: null as File | null | undefined,
+}));
 vi.mock('../../../TraceView/TraceView', () => ({
-  TraceView: ({ onTraced }: { onTraced: (svg: string) => void }) => {
+  TraceView: ({
+    onTraced,
+    onClose,
+    initialPhoto,
+  }: {
+    onTraced: (svg: string) => void;
+    onClose: () => void;
+    initialPhoto?: File | null;
+  }) => {
     trace.onTraced = onTraced;
+    trace.onClose = onClose;
+    trace.initialPhoto = initialPhoto;
     return <p>trace view</p>;
   },
 }));
@@ -132,6 +146,25 @@ describe('ScanToolDialog', () => {
     expect(screen.queryByText('binDesigner.cutouts.scanImport.unavailable')).toBeNull();
     choosePhone();
     expect(screen.getByText('binDesigner.cutouts.scanImport.unavailable')).toBeInTheDocument();
+  });
+
+  it('opens straight into Trace a photo with a dropped photo, and lets it go on close', async () => {
+    const photo = new File(['x'], 'tools.jpg', { type: 'image/jpeg' });
+    const onPhotoDone = vi.fn();
+    render(
+      <ScanToolDialog
+        open
+        source="drop"
+        onClose={vi.fn()}
+        photo={photo}
+        onPhotoDone={onPhotoDone}
+      />
+    );
+    await screen.findByText('trace view');
+    expect(trace.initialPhoto).toBe(photo);
+
+    act(() => trace.onClose?.());
+    expect(onPhotoDone).toHaveBeenCalledOnce();
   });
 
   it('adds what a photo traced on this computer, as a desktop trace', async () => {

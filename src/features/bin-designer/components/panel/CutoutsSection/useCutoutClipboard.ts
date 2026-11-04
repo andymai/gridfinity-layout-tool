@@ -68,7 +68,8 @@ interface UseCutoutClipboardOptions {
 export interface CutoutClipboard {
   readonly clipboard: readonly Cutout[];
   readonly copySelected: () => void;
-  readonly pasteFromClipboard: () => void;
+  /** False when nothing is copied, so the caller can leave the browser's paste alone. */
+  readonly pasteFromClipboard: () => boolean;
   readonly duplicateSelected: () => void;
 }
 
@@ -118,8 +119,8 @@ export function useCutoutClipboard({
     }
   }, [cutouts, selection, addToast, t]);
 
-  const pasteFromClipboard = useCallback(() => {
-    if (clipboard.length === 0) return;
+  const pasteFromClipboard = useCallback((): boolean => {
+    if (clipboard.length === 0) return false;
     pasteCountRef.current += 1;
     const offset = PASTE_OFFSET * pasteCountRef.current;
 
@@ -138,7 +139,7 @@ export function useCutoutClipboard({
             );
           })
         : clipboard;
-    if (placeable.length === 0) return;
+    if (placeable.length === 0) return true;
 
     addClonedCutouts(
       placeable,
@@ -147,6 +148,7 @@ export function useCutoutClipboard({
       (original) => clampedOffset(original, offset, binWidth, binDepth),
       reportClipped
     );
+    return true;
   }, [
     clipboard,
     onAdd,
