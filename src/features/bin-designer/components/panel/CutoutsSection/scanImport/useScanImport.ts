@@ -19,6 +19,8 @@ import { centerOffBoardCutouts, type CutoutBoard } from '../offBoardCutouts';
 import { generateLayoutId, generateUUID } from '@/shared/utils/uuid';
 import { SCAN_CLEARANCE_MM } from '@/shared/scanReview/traceExport';
 import { computeGrowToFit } from '../growBinToFit';
+import { getCutoutBounds } from '../maskFit';
+import { translateCutout } from '../cutoutHelpers';
 
 export interface UseScanImportReturn {
   /** Hydrate and add scan specs as cutouts in one undo transaction. Returns the count added. */
@@ -49,6 +51,22 @@ function withScanFit(cutout: Cutout, cutDepth: number): Cutout {
     clearance: SCAN_CLEARANCE_MM,
     chamferWidth: defaultEntryChamfer(Math.min(cutout.width, cutout.depth), cutDepth),
   };
+}
+
+/**
+ * The batch moved so its far corner is its size. A trace's frame can sit a
+ * hair before the origin, which `computeGrowToFit` refuses to size; the batch
+ * is centred on the board right after, so where it starts doesn't matter.
+ */
+function atOrigin(cutouts: readonly Cutout[]): Cutout[] {
+  let minX = 0;
+  let minY = 0;
+  for (const cutout of cutouts) {
+    const b = getCutoutBounds(cutout);
+    minX = Math.min(minX, b.minX);
+    minY = Math.min(minY, b.minY);
+  }
+  return cutouts.map((c) => translateCutout(c, -minX, -minY));
 }
 
 export function useScanImport(): UseScanImportReturn {
@@ -91,7 +109,11 @@ export function useScanImport(): UseScanImportReturn {
         // Grown before placing, so the scan centers on the floor it will have.
         let board = params;
         if (ui.growBinForScan) {
-          const grown = computeGrowToFit(params, [...params.cutouts, ...cutouts], ui.halfGridMode);
+          const grown = computeGrowToFit(
+            params,
+            [...params.cutouts, ...atOrigin(cutouts)],
+            ui.halfGridMode
+          );
           if (grown) {
             setParams({ width: grown.width, depth: grown.depth });
             board = useDesignerStore.getState().params;

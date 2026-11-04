@@ -93,9 +93,15 @@ describe('ScanToolDialog', () => {
     expect(trackEvent).not.toHaveBeenCalledWith('scan_opened', expect.anything());
 
     rerender(<ScanToolDialog open source="header" onClose={vi.fn()} />);
-    rerender(<ScanToolDialog open source="header" onClose={vi.fn()} />);
+    rerender(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     expect(trackEvent).toHaveBeenCalledWith('scan_opened', { source: 'header' });
-    expect(vi.mocked(trackEvent).mock.calls.filter(([e]) => e === 'scan_opened')).toHaveLength(1);
+    const opened = () => vi.mocked(trackEvent).mock.calls.filter(([e]) => e === 'scan_opened');
+    expect(opened()).toHaveLength(1);
+
+    rerender(<ScanToolDialog open={false} source="toolbar" onClose={vi.fn()} />);
+    rerender(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
+    expect(opened()).toHaveLength(2);
+    expect(trackEvent).toHaveBeenLastCalledWith('scan_opened', { source: 'toolbar' });
   });
 
   it('opens on the two routes without starting a phone session', () => {

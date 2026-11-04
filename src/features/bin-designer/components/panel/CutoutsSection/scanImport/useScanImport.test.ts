@@ -254,6 +254,13 @@ describe('useScanImport', () => {
       expect(placed.x).toBeGreaterThan(0);
     });
 
+    it('grows for a trace whose frame starts a hair before the origin', () => {
+      mockGrowBin = true;
+      const { result } = renderHook(() => useScanImport());
+      result.current.addScanCutouts([spec({ width: 150, depth: 30, y: -0.03 })]);
+      expect(mockSetParams).toHaveBeenCalledOnce();
+    });
+
     it('leaves a bin it was not started for at its size', () => {
       const { result } = renderHook(() => useScanImport());
       result.current.addScanCutouts([spec({ width: 150, depth: 30 })]);

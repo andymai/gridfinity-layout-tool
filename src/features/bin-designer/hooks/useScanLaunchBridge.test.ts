@@ -67,6 +67,35 @@ describe('useScanLaunchBridge', () => {
     expect(useDesignerStore.getState().ui.scanDialogSource).toBeNull();
   });
 
+  it('drops a second request while a new bin is on its way', async () => {
+    openDesign('open');
+    renderHook(() => useScanLaunchBridge());
+    act(() => useScanLaunchStore.getState().requestScan('palette', true));
+    await waitFor(() => expect(useDesignerStore.getState().currentDesignId).toBeNull());
+
+    act(() => useScanLaunchStore.getState().requestScan('whats_new', false));
+    openDesign('fresh');
+
+    expect(useDesignerStore.getState().ui.scanDialogSource).toBe('palette');
+    expect(useScanLaunchStore.getState().request).toBeNull();
+  });
+
+  it('leaves the designer alone when it closes while saves settle', async () => {
+    let settle: (saved: boolean) => void = () => {};
+    const { settleDesignSaves } = await import('./designSaveGate');
+    vi.mocked(settleDesignSaves).mockImplementationOnce(
+      () => new Promise<boolean>((resolve) => (settle = resolve))
+    );
+    openDesign('open');
+    const { unmount } = renderHook(() => useScanLaunchBridge());
+    act(() => useScanLaunchStore.getState().requestScan('palette', true));
+
+    unmount();
+    await act(async () => settle(true));
+
+    expect(useDesignerStore.getState().currentDesignId).toBe('open');
+  });
+
   it('drops a request from a navigation that never arrived', () => {
     openDesign('open');
     act(() => {

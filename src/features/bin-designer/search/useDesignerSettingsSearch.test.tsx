@@ -13,6 +13,7 @@ const allAvailable: ControlAvailabilityContext = {
   viewMode: 'rail',
   slideTrayEnabled: true,
   slantVisible: true,
+  scanAvailable: true,
 };
 
 const restricted: ControlAvailabilityContext = {
@@ -22,12 +23,22 @@ const restricted: ControlAvailabilityContext = {
   viewMode: 'scroll',
   slideTrayEnabled: false,
   slantVisible: false,
+  scanAvailable: false,
 };
 
 const ids = (results: { controlId: string }[]) => results.map((r) => r.controlId);
 const labels = (results: { label: string }[]) => results.map((r) => r.label);
 
 describe('useDesignerSettingsSearch', () => {
+  it('offers Scan a tool only where its button renders', () => {
+    const offers = (ctx: typeof allAvailable): boolean =>
+      renderHook(() => useDesignerSettingsSearch('scan', ctx)).result.current.some(
+        (r) => r.id === 'opt-scan-tool' && r.target === 'bd-scan-tool'
+      );
+    expect(offers(allAvailable)).toBe(true);
+    expect(offers({ ...allAvailable, scanAvailable: false })).toBe(false);
+  });
+
   it('browses only the sections, ordered by category, when the query is empty', () => {
     const { result } = renderHook(() => useDesignerSettingsSearch('', allAvailable));
     expect(result.current).toHaveLength(DESIGNER_CONTROL_SEARCH.length);
