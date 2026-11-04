@@ -1,0 +1,96 @@
+src/i18n/locales/en.ts
+  s_169ca198965180::t_29018860554a01 5084,6091
+src/i18n/locales/de.json
+  s_169ca198965180::t_29018860554a01 2628,5173
+src/i18n/locales/ka.json
+  s_169ca198965180::t_29018860554a01 4225,5036
+src/features/whats-new/entries.ts
+  s_169ca198965180::t_29018860554a01 17-26
+  s_169ca198965180::t_7f5c4dd75f1da2 16
+src/i18n/locales/uk.json
+  s_169ca198965180::t_29018860554a01 2628,5173
+src/shared/hooks/useScanLaunch.ts
+  s_169ca198965180::t_e4433a74250465 1-20
+src/features/bin-designer/utils/startScan.ts
+  s_169ca198965180::t_58fd05ec57205f 19,21,26
+src/shell/Modals/WhatsNewModal/whatsNewShared.ts
+  s_169ca198965180::t_97328bfa4dbeea 8-9,36-47,61-62,99-104,112-113
+src/i18n/locales/cs.json
+  s_169ca198965180::t_29018860554a01 2628,5173
+src/i18n/locales/nb.json
+  s_169ca198965180::t_29018860554a01 2628,5173
+src/features/bin-designer/hooks/useScanLaunchBridge.test.ts
+  s_169ca198965180::t_55ea73251bf34a 1-86
+src/i18n/locales/sv.json
+  s_169ca198965180::t_29018860554a01 2628,5173
+src/i18n/locales/it.json
+  s_169ca198965180::t_29018860554a01 2628,5173
+src/features/bin-designer/hooks/useScanLaunchBridge.ts
+  s_169ca198965180::t_c5d779b2824acc 1-67
+src/i18n/locales/nl.json
+  s_169ca198965180::t_29018860554a01 2628,5173
+src/shell/Modals/WhatsNewModal/whatsNewShared.test.tsx
+  s_169ca198965180::t_2fc73fa438d8db 1,9-14,35-36,40-61,105-108
+  s_169ca198965180::t_a53d6819cdf733 109-111
+src/i18n/locales/ko.json
+  s_169ca198965180::t_29018860554a01 2628,5173
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.ts
+  s_169ca198965180::t_a22eb49d364e30 21,55-64,91-108,126
+src/features/whats-new/latest.ts
+  s_169ca198965180::t_2b942f718f1fe9 9
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_169ca198965180::t_97328bfa4dbeea 39-40,66-68,529-530
+  s_169ca198965180::t_db6732490e3be2 230
+src/i18n/locales/pt-BR.json
+  s_169ca198965180::t_29018860554a01 2628,5173
+src/shared/hooks/useDesignerRouting.ts
+  s_169ca198965180::t_21c39cd5f8a0f4 35
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_169ca198965180::t_58fd05ec57205f 102-105,109,115,122,135
+src/i18n/locales/fr.json
+  s_169ca198965180::t_29018860554a01 2628,5173
+src/features/bin-designer/constants/defaults.ts
+  s_169ca198965180::t_58fd05ec57205f 295
+src/features/bin-designer/types/uiState.ts
+  s_169ca198965180::t_58fd05ec57205f 9,13,114-118
+src/features/command-palette/commands.ts
+  s_169ca198965180::t_db6732490e3be2 112-116
+  s_169ca198965180::t_0cf85391bfe1e9 111
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.test.ts
+  s_169ca198965180::t_411f81dc0042bf 20-23,32,40,65-66,237-261
+  s_169ca198965180::t_dfaf9c64c545dc 262
+src/features/whats-new/types.ts
+  s_169ca198965180::t_97328bfa4dbeea 21-22
+src/i18n/locales/es.json
+  s_169ca198965180::t_29018860554a01 2628,5173
+src/core/store/scanLaunch.test.ts
+  s_169ca198965180::t_cb4cd6afe60a00 1-24
+src/i18n/locales/ja.json
+  s_169ca198965180::t_29018860554a01 2628,5173
+src/i18n/locales/pl.json
+  s_169ca198965180::t_29018860554a01 2628,5173
+src/core/store/scanLaunch.ts
+  s_169ca198965180::t_cb4cd6afe60a00 1-33
+src/i18n/locales/zh-CN.json
+  s_169ca198965180::t_29018860554a01 2628,5173
+src/features/bin-designer/types/designerState.ts
+  s_169ca198965180::t_58fd05ec57205f 456
+src/features/bin-designer/components/DesignerPage/DesignerPage.tsx
+  s_169ca198965180::t_c5d779b2824acc 27,84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c382ee85f98d31d1517923a5124c1f53df670bda",
+  "prompts": {},
+  "sessions": {
+    "s_169ca198965180": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7cae772c-5519-4831-875c-a4d30af16b6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
