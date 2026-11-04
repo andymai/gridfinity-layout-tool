@@ -74,8 +74,24 @@ describe('ScanToolDialog', () => {
     URL.revokeObjectURL = vi.fn();
   });
 
+  it('reports where it was opened from, once per opening', () => {
+    const { rerender } = render(<ScanToolDialog open={false} source="header" onClose={vi.fn()} />);
+    expect(trackEvent).not.toHaveBeenCalledWith('scan_opened', expect.anything());
+
+    rerender(<ScanToolDialog open source="header" onClose={vi.fn()} />);
+    rerender(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
+    expect(trackEvent).toHaveBeenCalledWith('scan_opened', { source: 'header' });
+    const opened = () => vi.mocked(trackEvent).mock.calls.filter(([e]) => e === 'scan_opened');
+    expect(opened()).toHaveLength(1);
+
+    rerender(<ScanToolDialog open={false} source="toolbar" onClose={vi.fn()} />);
+    rerender(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
+    expect(opened()).toHaveLength(2);
+    expect(trackEvent).toHaveBeenLastCalledWith('scan_opened', { source: 'toolbar' });
+  });
+
   it('opens on the two routes without starting a phone session', () => {
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     expect(screen.getByText('binDesigner.cutouts.scanImport.routePhone')).toBeInTheDocument();
     expect(screen.getByText('binDesigner.cutouts.traceView.open')).toBeInTheDocument();
     expect(session.active).toBe(false);
@@ -83,7 +99,7 @@ describe('ScanToolDialog', () => {
 
   it('keeps the phone session alive after going back to the routes', () => {
     session.current = { phase: 'waiting', url: 'https://example.com/scan/abc' };
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     choosePhone();
     expect(session.active).toBe(true);
     expect(screen.getByText('https://example.com/scan/abc')).toBeInTheDocument();
@@ -94,7 +110,7 @@ describe('ScanToolDialog', () => {
   });
 
   it('retries a dead phone session when the phone route is picked again', () => {
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     choosePhone();
     expect(session.attempt).toBe(0);
 
@@ -105,7 +121,7 @@ describe('ScanToolDialog', () => {
 
   it('keeps keyboard focus inside the dialog across route changes', () => {
     session.current = { phase: 'waiting', url: 'https://example.com/scan/abc' };
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     choosePhone();
     expect(document.activeElement).toBe(
       screen.getByText('binDesigner.cutouts.scanImport.back').closest('button')
@@ -118,14 +134,14 @@ describe('ScanToolDialog', () => {
   });
 
   it('says when phone scanning is unavailable, behind the phone route', () => {
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     expect(screen.queryByText('binDesigner.cutouts.scanImport.unavailable')).toBeNull();
     choosePhone();
     expect(screen.getByText('binDesigner.cutouts.scanImport.unavailable')).toBeInTheDocument();
   });
 
   it('adds what a photo traced on this computer, as a desktop trace', async () => {
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     fireEvent.click(screen.getByText('binDesigner.cutouts.traceView.open'));
     await screen.findByText('trace view');
 
@@ -143,13 +159,13 @@ describe('ScanToolDialog', () => {
   });
 
   it('shows the upload affordance in the awaiting state', () => {
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     expect(screen.getByText('binDesigner.cutouts.scanImport.upload')).toBeInTheDocument();
   });
 
   it('shows the on-device privacy note while awaiting a QR scan', () => {
     session.current = { phase: 'waiting', url: 'https://example.com/scan/abc' };
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     choosePhone();
     expect(screen.queryByAltText('scan.capture.exampleAlt')).toBeNull();
     expect(screen.getByText('scan.capture.privacy')).toBeInTheDocument();
@@ -159,7 +175,7 @@ describe('ScanToolDialog', () => {
   // beside the QR code rather than on the capture page.
   it('downloads the calibration sheet from the awaiting state', () => {
     session.current = { phase: 'waiting', url: 'https://example.com/scan/abc' };
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     choosePhone();
 
     fireEvent.click(screen.getByText('binDesigner.cutouts.scanImport.calibrationSheet'));
@@ -172,7 +188,7 @@ describe('ScanToolDialog', () => {
   });
 
   it('moves to review with an empty scale field after a valid upload', async () => {
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     uploadSvg(RECT_SVG);
 
     // The field starts empty — the traced pixel extent is not a real-world
@@ -186,7 +202,7 @@ describe('ScanToolDialog', () => {
 
   it('rescales and adds cutouts on confirm, then stays open for another scan', async () => {
     const onClose = vi.fn();
-    render(<ScanToolDialog open onClose={onClose} />);
+    render(<ScanToolDialog open source="toolbar" onClose={onClose} />);
     uploadSvg(RECT_SVG);
 
     const field = await screen.findByLabelText('binDesigner.cutouts.scanImport.scaleLabel');
@@ -203,7 +219,7 @@ describe('ScanToolDialog', () => {
   });
 
   it('asks for the longest tool’s length when an unscaled scan holds several', async () => {
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     uploadSvg(
       '<svg viewBox="0 0 300 100"><rect x="0" y="0" width="120" height="40"/>' +
         '<rect x="200" y="0" width="30" height="90"/></svg>'
@@ -219,7 +235,7 @@ describe('ScanToolDialog', () => {
 
   it('skips scale-confirm and adds directly when the phone produced mm output', async () => {
     const onClose = vi.fn();
-    render(<ScanToolDialog open onClose={onClose} />);
+    render(<ScanToolDialog open source="toolbar" onClose={onClose} />);
     uploadSvg(
       `<svg viewBox="0 0 100 100" data-scan-units="mm"><rect x="0" y="0" width="100" height="100"/></svg>`
     );
@@ -232,7 +248,7 @@ describe('ScanToolDialog', () => {
 
   it('buffers a scan that arrives during scale-confirm instead of clobbering it', async () => {
     session.current = { phase: 'waiting', url: 'https://example.com/scan/abc' };
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     choosePhone();
 
     // First pixel scan → scale-confirm.
@@ -256,7 +272,7 @@ describe('ScanToolDialog', () => {
   });
 
   it('disables Add when the scale is non-positive', async () => {
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     uploadSvg(RECT_SVG);
 
     const field = await screen.findByLabelText('binDesigner.cutouts.scanImport.scaleLabel');
@@ -267,7 +283,7 @@ describe('ScanToolDialog', () => {
   });
 
   it('toasts an error when the upload is not a usable outline', async () => {
-    render(<ScanToolDialog open onClose={vi.fn()} />);
+    render(<ScanToolDialog open source="toolbar" onClose={vi.fn()} />);
     uploadSvg(`<svg viewBox="0 0 10 10"></svg>`);
 
     await waitFor(() =>

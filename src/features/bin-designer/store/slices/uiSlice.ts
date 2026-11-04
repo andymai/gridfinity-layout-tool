@@ -11,6 +11,7 @@ import type {
   BodyTypeMemory,
   ColorTool,
   CutoutTarget,
+  ScanSource,
   DesignerCategory,
   DesignerSelection,
   PickerOverlayState,
@@ -98,6 +99,22 @@ export function createUISlice(set: Set) {
         // part — the same class of leak `setBentoWorkspaceOpen` clears
         // `selectedBentoCompartmentId` for.
         state.ui.cutoutTarget = open ? target : 'bin';
+        if (!open) state.ui.scanDialogSource = null;
+      });
+    },
+
+    openScanDialog: (source: ScanSource) => {
+      set((state) => {
+        state.ui.cutoutEditorOpen = true;
+        state.ui.bentoWorkspaceOpen = false;
+        state.ui.cutoutTarget = 'bin';
+        state.ui.scanDialogSource = source;
+      });
+    },
+
+    closeScanDialog: () => {
+      set((state) => {
+        state.ui.scanDialogSource = null;
       });
     },
 
@@ -109,6 +126,7 @@ export function createUISlice(set: Set) {
         // winning, and the other's exit button pointing at nothing.
         if (open) {
           state.ui.cutoutEditorOpen = false;
+          state.ui.scanDialogSource = null;
           // Closing the editor from here has to reset the target too, or
           // `cutoutTarget` stays on the lid with no editor open and the next
           // cutout action writes the wrong array.

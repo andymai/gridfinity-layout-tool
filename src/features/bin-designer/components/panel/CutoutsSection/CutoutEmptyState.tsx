@@ -1,8 +1,7 @@
 /**
- * Empty state overlay for the cutout editor canvas.
- *
- * Shows an animated draw tutorial (matching the grid editor's pattern)
- * and keyboard shortcut hints. Renders when no cutouts exist.
+ * Empty state overlay for the cutout editor canvas: the two ways to start,
+ * drawing a shape and scanning a tool, as equal choices. Renders when no
+ * cutouts exist.
  */
 
 import { Button } from '@/design-system';
@@ -16,92 +15,114 @@ interface CutoutEmptyStateProps {
 }
 
 export function CutoutEmptyState({ variant, onScanTool }: CutoutEmptyStateProps) {
-  const t = useTranslation();
   const isWorkspace = variant === 'workspace';
-
-  // Animation container dimensions
   const containerW = isWorkspace ? 120 : 104;
   const containerH = isWorkspace ? 88 : 80;
 
+  // A container query, not a viewport one: the board shares its row with the
+  // inspector dock, so the window width says nothing about the room here.
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-[5]">
-      <div className="flex flex-col items-center p-6 rounded-xl max-w-xs text-center bg-surface opacity-95 backdrop-blur-sm">
-        {/* Animated draw gesture */}
-        <div
-          className="mb-3 relative"
-          style={{ width: containerW, height: containerH }}
-          aria-hidden="true"
-        >
-          {/* Click ring — expands and fades */}
-          <div
-            className="absolute rounded-full border-2 border-accent animate-cutout-draw-hint-click"
-            style={{ width: 36, height: 36, top: -14, left: -14 }}
-          />
-          {/* Dashed rectangle — grows with cursor */}
-          <div className="absolute top-0 left-0 border-2 border-dashed border-accent/60 bg-accent/10 rounded-sm animate-cutout-draw-hint-rect" />
-          {/* Cursor — drags diagonally */}
-          <div
-            className="absolute top-0 left-0 animate-cutout-draw-hint-cursor"
-            style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.25))' }}
-          >
-            <svg width="20" height="24" viewBox="0 0 18 22" fill="none">
-              <path
-                d="M2 1 L2 17 L6.2 13 L9.5 20 L12.2 18.8 L9 12.5 L14 12.5 Z"
-                fill="white"
-                stroke="#222"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-        </div>
-
-        <p className="font-medium mb-1 text-sm text-content-secondary">
-          {t('binDesigner.cutouts.emptyHint')}
-        </p>
-
-        {/* Keyboard shortcut hints */}
-        <div className="text-left text-xs space-y-1.5 text-content-tertiary w-full mt-2">
-          <ShortcutHint shortcut="R" label={t('binDesigner.cutouts.shortcutRect')} />
-          <ShortcutHint shortcut="C" label={t('binDesigner.cutouts.shortcutCircle')} />
-          <ShortcutHint shortcut="G" label={t('binDesigner.cutouts.shortcutPolygon')} />
-          <ShortcutHint shortcut="S" label={t('binDesigner.cutouts.shortcutSlot')} />
-          <ShortcutHint shortcut="P" label={t('binDesigner.cutouts.shortcutPen')} />
-          {isWorkspace && (
-            <ShortcutHint shortcut="V" label={t('binDesigner.cutouts.shortcutSelect')} />
-          )}
-        </div>
-
+    <div className="@container absolute inset-0 flex items-center justify-center pointer-events-none z-[5] p-3">
+      <div className="flex flex-col @lg:flex-row items-center @lg:items-stretch gap-4 @lg:gap-6 p-6 rounded-xl max-w-xs @lg:max-w-xl text-center bg-surface opacity-95 backdrop-blur-sm">
+        <DrawChoice isWorkspace={isWorkspace} width={containerW} height={containerH} />
         {onScanTool && (
-          <div className="pointer-events-auto mt-4 w-full border-t border-stroke-subtle pt-3">
-            <Button type="button" variant="secondary" size="sm" fullWidth onClick={onScanTool}>
-              <span className="flex items-center justify-center gap-2">
-                <ScanToolIcon size="xs" />
-                {t('binDesigner.cutouts.scanImport.title')}
-              </span>
-            </Button>
-            <p className="mt-1.5 text-label text-content-tertiary">
-              {t('binDesigner.cutouts.scanImport.emptyHelp')}
-            </p>
-            <p className="mt-1 flex items-center justify-center gap-1 text-micro text-content-disabled">
-              <svg
-                className="h-3 w-3 shrink-0"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              {t('scan.capture.privacy')}
-            </p>
-          </div>
+          <>
+            <div className="h-px w-full @lg:h-auto @lg:w-px bg-stroke-subtle" aria-hidden="true" />
+            <ScanChoice height={containerH} onScanTool={onScanTool} />
+          </>
         )}
       </div>
+    </div>
+  );
+}
+
+function DrawChoice({
+  isWorkspace,
+  width,
+  height,
+}: {
+  readonly isWorkspace: boolean;
+  readonly width: number;
+  readonly height: number;
+}) {
+  const t = useTranslation();
+  return (
+    <div className="flex flex-col items-center @lg:flex-1">
+      {/* Animated draw gesture */}
+      <div className="mb-3 relative" style={{ width, height }} aria-hidden="true">
+        {/* Click ring — expands and fades */}
+        <div
+          className="absolute rounded-full border-2 border-accent animate-cutout-draw-hint-click"
+          style={{ width: 36, height: 36, top: -14, left: -14 }}
+        />
+        {/* Dashed rectangle — grows with cursor */}
+        <div className="absolute top-0 left-0 border-2 border-dashed border-accent/60 bg-accent/10 rounded-sm animate-cutout-draw-hint-rect" />
+        {/* Cursor — drags diagonally */}
+        <div
+          className="absolute top-0 left-0 animate-cutout-draw-hint-cursor"
+          style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.25))' }}
+        >
+          <svg width="20" height="24" viewBox="0 0 18 22" fill="none">
+            <path
+              d="M2 1 L2 17 L6.2 13 L9.5 20 L12.2 18.8 L9 12.5 L14 12.5 Z"
+              fill="white"
+              stroke="#222"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <p className="font-medium mb-1 text-sm text-content-secondary">
+        {t('binDesigner.cutouts.emptyHint')}
+      </p>
+
+      <div className="text-left text-xs space-y-1.5 text-content-tertiary w-full mt-2">
+        <ShortcutHint shortcut="R" label={t('binDesigner.cutouts.shortcutRect')} />
+        <ShortcutHint shortcut="C" label={t('binDesigner.cutouts.shortcutCircle')} />
+        <ShortcutHint shortcut="G" label={t('binDesigner.cutouts.shortcutPolygon')} />
+        <ShortcutHint shortcut="S" label={t('binDesigner.cutouts.shortcutSlot')} />
+        <ShortcutHint shortcut="P" label={t('binDesigner.cutouts.shortcutPen')} />
+        {isWorkspace && (
+          <ShortcutHint shortcut="V" label={t('binDesigner.cutouts.shortcutSelect')} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ScanChoice({
+  height,
+  onScanTool,
+}: {
+  readonly height: number;
+  readonly onScanTool: () => void;
+}) {
+  const t = useTranslation();
+  return (
+    <div className="flex flex-col items-center @lg:flex-1 @lg:justify-center">
+      <div
+        className="hidden @lg:flex mb-3 items-center justify-center text-accent"
+        style={{ height }}
+        aria-hidden="true"
+      >
+        <ScanToolIcon className="h-14 w-14" strokeWidth={1.5} />
+      </div>
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        fullWidth
+        className="pointer-events-auto"
+        leftIcon={<ScanToolIcon size="xs" />}
+        onClick={onScanTool}
+      >
+        {t('binDesigner.cutouts.scanImport.title')}
+      </Button>
+      <p className="mt-2 text-label text-content-tertiary">
+        {t('binDesigner.cutouts.scanImport.emptyHelp')}
+      </p>
     </div>
   );
 }

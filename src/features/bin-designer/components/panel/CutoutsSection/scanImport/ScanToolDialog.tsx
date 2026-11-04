@@ -18,6 +18,7 @@ import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { lazyWithRetry } from '@/shared/utils/lazyWithRetry';
 import { isOk } from '@/core/result';
+import type { ScanSource } from '@/features/bin-designer/types';
 import { MAX_SVG_FILE_SIZE, type ParsedCutoutSpec } from '../svgImport/types';
 import { parseScanSvg, rescaleToLongestMm, type ParsedScan } from './scanIngest';
 import { useScanImport } from './useScanImport';
@@ -36,6 +37,7 @@ interface ScanToolDialogProps {
   readonly onImport?: (specs: readonly ParsedCutoutSpec[]) => number;
   readonly open: boolean;
   readonly onClose: () => void;
+  readonly source: ScanSource;
 }
 
 // The tracer and its model load only once someone traces a photo here.
@@ -54,7 +56,7 @@ type Stage =
 
 const round1 = (n: number): number => Math.round(n * 10) / 10;
 
-export function ScanToolDialog({ open, onClose, onImport }: ScanToolDialogProps) {
+export function ScanToolDialog({ open, onClose, onImport, source }: ScanToolDialogProps) {
   const t = useTranslation();
   const addToast = useToastStore((s) => s.addToast);
   const { addScanCutouts: addToCutouts } = useScanImport();
@@ -79,6 +81,13 @@ export function ScanToolDialog({ open, onClose, onImport }: ScanToolDialogProps)
     focusOnRoute.current = false;
     (route === 'phone' ? backButtonRef : phoneCardRef).current?.focus();
   }, [route]);
+
+  // Counted on the closed-to-open edge only, with the source it opened from.
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (open && !wasOpen.current) trackEvent('scan_opened', { source });
+    wasOpen.current = open;
+  }, [open, source]);
 
   // A scan can arrive mid scale-confirm; read the live stage from a ref (the
   // poll fires outside render) and hold the latecomer until we're back to

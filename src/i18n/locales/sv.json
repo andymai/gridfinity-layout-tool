@@ -1409,6 +1409,7 @@
   "binDesigner.insertsDisableLightweight": "Kan inte kombinera golvinsatser med lätt golv",
   "binDesigner.interior.bento.description": "Fack i valfri storlek, väggar där du vill",
   "binDesigner.interior.bento.title": "Bento",
+  "binDesigner.interior.scanLink": "Har du ett verktyg som ska passa? Skanna det",
   "binDesigner.interior.slotted.description": "Slitsar för insättbara avdelare",
   "binDesigner.interior.slotted.title": "Borttagbara avdelare",
   "binDesigner.interior.solid.description": "Verktygsformade urtag skurna uppifrån: rita dem eller skanna ett riktigt verktyg.",

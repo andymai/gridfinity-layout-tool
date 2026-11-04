@@ -1409,6 +1409,7 @@
   "binDesigner.insertsDisableLightweight": "바닥 인서트와 경량 바닥을 함께 쓸 수 없습니다",
   "binDesigner.interior.bento.description": "원하는 크기의 칸, 원하는 위치의 벽",
   "binDesigner.interior.bento.title": "도시락",
+  "binDesigner.interior.scanLink": "맞춰 넣을 공구가 있나요? 스캔하세요",
   "binDesigner.interior.slotted.description": "끼울 수 있는 칸막이용 슬롯",
   "binDesigner.interior.slotted.title": "탈착식 칸막이",
   "binDesigner.interior.solid.description": "위에서 파낸 공구 모양 오목부: 직접 그리거나 실제 공구를 스캔하세요.",

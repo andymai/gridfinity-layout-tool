@@ -7,6 +7,10 @@ import type { OverhangHighlightSide } from './walls';
 import type { MeasurePoint } from '@/features/bin-designer/utils/measure3d';
 import type { BodyTypeMemory } from './bodyTypeMemory';
 
+/** Where a "Scan a tool" dialog was opened from, reported with `scan_opened`. */
+export type ScanSource =
+  'card' | 'interior_link' | 'header' | 'toolbar' | 'empty_board' | 'workshop';
+
 /**
  * Eyedropper click anchor: which zone was hit and the viewport coords
  * where the picker should open. Kept in the store so every exit path
@@ -104,6 +108,8 @@ export interface DesignerUIState {
    * twenty action signatures.
    */
   readonly cutoutTarget: CutoutTarget;
+  /** Where the open "Scan a tool" dialog was opened from; null while it is closed. */
+  readonly scanDialogSource: ScanSource | null;
   /** Whether the full-workspace bento editor is open (desktop only) */
   readonly bentoWorkspaceOpen: boolean;
   /**

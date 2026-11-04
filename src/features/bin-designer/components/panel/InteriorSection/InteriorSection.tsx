@@ -12,7 +12,9 @@ import { isPartialMask } from '@/shared/utils/cellMask';
 import { useTranslation } from '@/i18n';
 import { useCutEditorOpens } from './useCutEditorOpens';
 import { getFeatureStatus } from '@/shared/constraints';
-import { Badge } from '@/design-system';
+import { Badge, Button } from '@/design-system';
+import { ScanToolIcon } from '@/design-system/Icon';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 import { InteriorModeContent } from './InteriorModes';
 import { INTERIOR_MODE_META } from './interiorModeMeta';
 import { useInteriorSection } from './useInteriorSection';
@@ -20,6 +22,8 @@ import { ModeTiles } from '../shared';
 import { FeatureTip } from '../../FeatureTip';
 import { INTERIOR_CARDS } from '../../../types';
 import type { InteriorCard } from '../../../types';
+import { selectCanStartScan, startScan } from '../../../utils/startScan';
+import { SCAN_TOOL_TARGET } from '../../../search/designerControlRegistry';
 
 /**
  * Grid Dividers, Bento (compartment grids) and Slotted (divider slots) assume a
@@ -36,6 +40,11 @@ export function InteriorSection() {
   const { state, handlers } = useInteriorSection();
   const t = useTranslation();
   const cutEditorOpens = useCutEditorOpens();
+  const { isDesktop } = useResponsive();
+  // Custom Cutouts carries its own scan button; every other mode gets this
+  // link, which switches the interior on the way in.
+  const scanPossible = useDesignerStore(selectCanStartScan);
+  const offerScanLink = isDesktop && state.card !== 'solid' && scanPossible;
   const isCustomShape = useDesignerStore((s) => isPartialMask(s.params.cellMask));
   const hasAngledDividers = useDesignerStore(
     (s) => (s.params.compartments.dividerOverrides?.length ?? 0) > 0
@@ -92,6 +101,23 @@ export function InteriorSection() {
             </Badge>
           ) : undefined,
       }))}
+      // A blocked mode greys out its own controls; scanning switches away from
+      // it, so the link stays live.
+      ungated={
+        offerScanLink ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-accent"
+            leftIcon={<ScanToolIcon size="xs" />}
+            onClick={() => startScan('interior_link')}
+            data-help-target={SCAN_TOOL_TARGET}
+          >
+            {t('binDesigner.interior.scanLink')}
+          </Button>
+        ) : undefined
+      }
     >
       <InteriorModeContent card={state.card} />
     </ModeTiles>

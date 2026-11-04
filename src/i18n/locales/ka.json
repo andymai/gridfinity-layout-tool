@@ -3534,6 +3534,7 @@
   "binDesigner.interior.slotted.title": "მოსახსნელი გამყოფები",
   "binDesigner.interior.slotted.description": "ჩასასმელი გამყოფების ჭრილები",
   "binDesigner.interior.solid.title": "მორგებული ამონაჭრები",
+  "binDesigner.interior.scanLink": "გაქვთ ხელსაწყო, რომელიც უნდა მოერგოს? დაასკანირეთ",
   "binDesigner.interior.solid.description": "ხელსაწყოს ფორმის ზედა ჩაღრმავებები: დახაზეთ ან რეალური ხელსაწყო დაასკანირეთ.",
   "binDesigner.resetView": "ხედის საწყისზე დაბრუნება (R)",
   "binDesigner.toggleWireframe": "კარკასული ხედის გადართვა (W)",

@@ -1409,6 +1409,7 @@
   "binDesigner.insertsDisableLightweight": "Nelze kombinovat vložky do dna s odlehčeným dnem",
   "binDesigner.interior.bento.description": "Přihrádky libovolné velikosti, stěny kam chcete",
   "binDesigner.interior.bento.title": "Bento",
+  "binDesigner.interior.scanLink": "Máš nástroj, který se má vejít? Naskenuj ho",
   "binDesigner.interior.slotted.description": "Drážky pro zasouvací přepážky",
   "binDesigner.interior.slotted.title": "Vyjímatelné přepážky",
   "binDesigner.interior.solid.description": "Prohlubně ve tvaru nástroje vyřezané shora: nakresli je nebo naskenuj skutečný nástroj.",

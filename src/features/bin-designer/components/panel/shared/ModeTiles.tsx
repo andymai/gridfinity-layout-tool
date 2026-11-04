@@ -23,6 +23,8 @@ interface ModeTilesProps<T extends string> {
   readonly columns?: 2 | 3;
   /** The chosen mode's own controls. */
   readonly children?: ReactNode;
+  /** Shown under the caption and never gated, for an action that leaves the chosen mode. */
+  readonly ungated?: ReactNode;
 }
 
 const COLUMNS = { 2: 'grid-cols-2', 3: 'grid-cols-3' } as const;
@@ -38,6 +40,7 @@ export function ModeTiles<T extends string>({
   options,
   columns = 3,
   children,
+  ungated,
 }: ModeTilesProps<T>) {
   const tiles = useRef<Partial<Record<string, HTMLButtonElement | null>>>({});
   const chosen = options.find((option) => option.value === value);
@@ -116,6 +119,7 @@ export function ModeTiles<T extends string>({
           {blockedReason === undefined && chosen.tip}
         </div>
       )}
+      {ungated}
       {blockedReason === undefined ? (
         children
       ) : (

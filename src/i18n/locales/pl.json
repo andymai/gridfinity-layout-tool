@@ -1409,6 +1409,7 @@
   "binDesigner.insertsDisableLightweight": "Nie można łączyć wkładek podłogowych z lekką podłogą",
   "binDesigner.interior.bento.description": "Przegrody dowolnej wielkości, ścianki gdzie chcesz",
   "binDesigner.interior.bento.title": "Bento",
+  "binDesigner.interior.scanLink": "Masz narzędzie, które ma się zmieścić? Zeskanuj je",
   "binDesigner.interior.slotted.description": "Szczeliny na wsuwane przegródki",
   "binDesigner.interior.slotted.title": "Wyjmowane przegródki",
   "binDesigner.interior.solid.description": "Wgłębienia w kształcie narzędzi cięte od góry: narysuj je lub zeskanuj prawdziwe narzędzie.",

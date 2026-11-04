@@ -190,7 +190,12 @@ export function CutterProfileSection({ node }: CutterProfileSectionProps) {
           </Button>
         )}
       </div>
-      <ScanToolDialog open={scanOpen} onClose={() => setScanOpen(false)} onImport={importSpecs} />
+      <ScanToolDialog
+        open={scanOpen}
+        source="workshop"
+        onClose={() => setScanOpen(false)}
+        onImport={importSpecs}
+      />
     </div>
   );
 }
