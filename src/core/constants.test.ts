@@ -149,6 +149,26 @@ describe('calcBedCapacityForBin', () => {
     expect(calcBedCapacityForBin(2, 12, 256, 42, 256, 42).diagonal).toBeUndefined();
   });
 
+  it('charges an overhang against the diagonal', () => {
+    // 63 + 294 = 357mm of sides fits 256 * sqrt(2) = 362mm; 6mm more does not.
+    expect(calcBedCapacityForBin(1.5, 7, 256, 42, 256, 42, { width: 0, depth: 5 }).diagonal).toBe(
+      true
+    );
+    expect(calcBedCapacityForBin(1.5, 7, 256, 42, 256, 42, { width: 0, depth: 6 })).toEqual({
+      width: 6,
+      depth: 6,
+    });
+  });
+
+  it('charges an overhang across the width the same way', () => {
+    expect(calcBedCapacityForBin(7, 1.5, 256, 42, 256, 42, { width: 5, depth: 0 }).diagonal).toBe(
+      true
+    );
+    expect(
+      calcBedCapacityForBin(7, 1.5, 256, 42, 256, 42, { width: 6, depth: 0 }).diagonal
+    ).toBeUndefined();
+  });
+
   it('keeps the cut capacity for a bin too big even diagonally', () => {
     expect(calcBedCapacityForBin(1.5, 8, 256, 42)).toEqual({ width: 6, depth: 6 });
   });

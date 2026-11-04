@@ -668,7 +668,7 @@ describe('ExportDialog', () => {
 
   describe('oversized bin under STEP (#3501)', () => {
     beforeEach(() => {
-      mockSplitState = { needsSplit: true, fitsDiagonally: false, splitPieceCount: 4 };
+      mockSplitState = { ...mockSplitState, needsSplit: true, splitPieceCount: 4 };
       mockDownloadSplit.mockResolvedValue(true);
       setupStore({
         exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, format: 'step' },
@@ -702,7 +702,7 @@ describe('ExportDialog', () => {
 
   describe('bin that fits the bed only lying diagonally', () => {
     beforeEach(() => {
-      mockSplitState = { needsSplit: false, fitsDiagonally: true, splitPieceCount: 2 };
+      mockSplitState = { ...mockSplitState, fitsDiagonally: true, splitPieceCount: 2 };
       mockDownloadBin.mockResolvedValue(true);
       mockDownloadSplit.mockResolvedValue(true);
       setupStore({
@@ -735,6 +735,21 @@ describe('ExportDialog', () => {
       expect(mockDownloadSplit).toHaveBeenCalled();
       expect(mockDownloadBin).not.toHaveBeenCalled();
     });
+  });
+
+  it('reminds about turning a slanted bin, with no split to offer', () => {
+    setupStore({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 1.5,
+        depth: 6,
+        height: 4,
+        slant: { angleDeg: 30, side: 'back' },
+      },
+    });
+    render(<ExportDialog />);
+    expect(screen.getByText(/laid diagonally\. Turn it in your slicer/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/split into pieces/i)).not.toBeInTheDocument();
   });
 
   describe('hinge hardware', () => {

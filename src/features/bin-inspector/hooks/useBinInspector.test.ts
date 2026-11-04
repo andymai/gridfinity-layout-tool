@@ -257,6 +257,37 @@ describe('useBinInspector', () => {
       expect(result.current.constraints.needsSplit).toBe(false);
       expect(result.current.constraints.maxGridUnits).toEqual({ width: 5, depth: 6 });
     });
+
+    describe('a long bin on a 256mm bed', () => {
+      const seed = (overhang?: Bin['overhang']): void => {
+        const bin = {
+          ...createBin('bin1', 'layer1'),
+          width: gridUnits(1.5),
+          depth: gridUnits(7),
+          overhang,
+        };
+        const layout = useLayoutStore.getState().layout;
+        layout.bins = [bin];
+        layout.printBedSize = mm(256);
+        layout.printBedDepth = undefined;
+        layout.gridUnitMm = mm(42);
+        useLayoutStore.setState({ layout });
+        useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
+      };
+
+      it('reads as fitting diagonally', () => {
+        seed();
+        const { result } = renderHook(() => useBinInspector());
+        expect(result.current.constraints.needsSplit).toBe(false);
+        expect(result.current.constraints.maxGridUnits.diagonal).toBe(true);
+      });
+
+      it('needs a split once its overhang passes the diagonal, as the layout ZIP cuts it', () => {
+        seed({ left: 0, right: 0, front: 10, back: 10, enabled: true });
+        const { result } = renderHook(() => useBinInspector());
+        expect(result.current.constraints.needsSplit).toBe(true);
+      });
+    });
   });
 
   describe('updateField', () => {

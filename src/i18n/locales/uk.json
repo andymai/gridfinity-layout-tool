@@ -2112,7 +2112,7 @@
   "binDesigner.splitExport.downloadSplit": "Завантажити розділений {format} (ZIP)",
   "binDesigner.splitExport.enableSplit": "Розділити на частини",
   "binDesigner.splitExport.exceedsPrintBed": "Цей бін перевищує ваш друкарський стіл ({size}мм). Його буде розділено на {count} частин.",
-  "binDesigner.splitExport.fitsDiagonally": "Цей бін вміщується на ваш друкарський стіл ({size}мм) лише по діагоналі. Поверніть його в слайсері або розділіть на {count} частин.",
+  "binDesigner.splitExport.fitsDiagonally": "Цей бін вміщується на ваш друкарський стіл ({size}мм) лише по діагоналі. Поверніть його в слайсері або розділіть на частини ({count}).",
   "binDesigner.splitExport.success": "Розділений експорт завершено ({count} частин)",
   "binDesigner.splitWallConnectors": "З’єднувачі стінок",
   "binDesigner.startANewDesign": "Почати новий дизайн",

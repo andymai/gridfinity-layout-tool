@@ -123,6 +123,14 @@ export interface BedCapacity {
   readonly diagonal?: boolean;
 }
 
+/** How far a bin's body reaches past its footprint across each axis, in mm. */
+export interface OverhangSpan {
+  readonly width: number;
+  readonly depth: number;
+}
+
+const NO_OVERHANG_SPAN: OverhangSpan = { width: 0, depth: 0 };
+
 /**
  * A printed part lies either way round on the plate, so a bin is fitted in
  * both orientations. `asIs` is the capacity along the bin's own axes; `turned`
@@ -154,6 +162,10 @@ export function pickBedOrientation(
  * Both orientations are derived from the pitches, never by transposing one
  * capacity: on a non-square grid the turned width still counts in the X pitch
  * against the bed's depth, which a swap of `{width, depth}` gets wrong.
+ *
+ * `overhang` is charged against the diagonal only. Reading a bin as whole is a
+ * claim about the part that gets exported, so it has to count what the exporter
+ * counts, or the grid calls whole a bin the layout ZIP then cuts.
  */
 export function calcBedCapacityForBin(
   binWidth: number,
@@ -161,7 +173,8 @@ export function calcBedCapacityForBin(
   printBedWidthMm: number,
   gridUnitMm: number,
   printBedDepthMm?: number,
-  gridUnitMmY: number = gridUnitMm
+  gridUnitMmY: number = gridUnitMm,
+  overhang: OverhangSpan = NO_OVERHANG_SPAN
 ): BedCapacity {
   const depthMm = printBedDepthMm ?? printBedWidthMm;
   const capacity = pickBedOrientation(
@@ -171,7 +184,12 @@ export function calcBedCapacityForBin(
     calcMaxGridUnits(depthMm, gridUnitMm, printBedWidthMm, gridUnitMmY)
   );
   if (binWidth <= capacity.width && binDepth <= capacity.depth) return capacity;
-  return fitsBedAtAnyAngle(binWidth * gridUnitMm, binDepth * gridUnitMmY, printBedWidthMm, depthMm)
+  return fitsBedAtAnyAngle(
+    binWidth * gridUnitMm + overhang.width,
+    binDepth * gridUnitMmY + overhang.depth,
+    printBedWidthMm,
+    depthMm
+  )
     ? { width: binWidth, depth: binDepth, diagonal: true }
     : capacity;
 }

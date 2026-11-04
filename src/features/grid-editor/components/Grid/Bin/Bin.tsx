@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useInteractionStore, useSettingsStore } from '@/core/store';
 import { useResponsive } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
-import { calcBedCapacityForBin, getCellSizeY, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
+import { getCellSizeY, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { getBinTextColors, getBinPatternColor } from '@/shared/utils';
 import { isBinLocked } from '@/shared/utils/binLocation';
@@ -23,6 +23,7 @@ import { ICON_PATHS, WARNING_ICON } from './binConstants';
 import type { BinProps } from './binPropsAreEqual';
 import { binPropsAreEqual } from './binPropsAreEqual';
 import { useBinHighlighting } from './useBinHighlighting';
+import { useBinNeedsSplit } from './useBinNeedsSplit';
 import { useBinSelection } from './useBinSelection';
 import { useBinPointerInteraction } from './useBinPointerInteraction';
 
@@ -70,10 +71,8 @@ function BinComponent({
     categoryId: bin.category,
   });
 
-  const { printBedSize, printBedDepth, gridUnitMm, gridUnitMmY } = useLayoutStore(
+  const { gridUnitMm, gridUnitMmY } = useLayoutStore(
     useShallow((state) => ({
-      printBedSize: state.layout.printBedSize,
-      printBedDepth: state.layout.printBedDepth,
       gridUnitMm: state.layout.gridUnitMm,
       gridUnitMmY: effectiveGridUnitMmY(state.layout),
     }))
@@ -108,16 +107,7 @@ function BinComponent({
   // Hide resize handles during multi-select
   const isMultiSelect = selectedBinIds.length > 1;
 
-  // Calculate max grid units that fit on print bed (accounting for gaps)
-  const maxGrid = calcBedCapacityForBin(
-    bin.width,
-    bin.depth,
-    printBedSize,
-    gridUnitMm,
-    printBedDepth,
-    gridUnitMmY
-  );
-  const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
+  const needsSplit = useBinNeedsSplit(bin);
   const riseKey = useLinkedRiseKey();
   const restingZ = useLayoutStore(
     (state) =>

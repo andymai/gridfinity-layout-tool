@@ -16,6 +16,7 @@ import {
   isBinLocked,
 } from '@/shared/utils/binLocation';
 import { calcBedCapacityForBin } from '@/core/constants';
+import { useBinOverhangSpan } from '@/shared/hooks/useBinOverhangSpan';
 import {
   ContextMenuContainer,
   ContextMenuItem,
@@ -63,6 +64,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const { menuRef } = useContextMenu();
 
   const layout = useLayoutStore((state) => state.layout);
+  const overhangSpanFor = useBinOverhangSpan();
   const { deleteBin, moveBinToStaging, moveBinFromStaging, duplicateBin, updateBin } =
     useMutations();
   const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
@@ -185,7 +187,8 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
     layout.printBedSize,
     layout.gridUnitMm,
     layout.printBedDepth,
-    effectiveGridUnitMmY(layout)
+    effectiveGridUnitMmY(layout),
+    overhangSpanFor(bin)
   );
   const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
 

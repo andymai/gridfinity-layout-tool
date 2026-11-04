@@ -2112,7 +2112,7 @@
   "binDesigner.splitExport.downloadSplit": "Stáhnout dělené {format} (ZIP)",
   "binDesigner.splitExport.enableSplit": "Rozdělit na díly",
   "binDesigner.splitExport.exceedsPrintBed": "Tento bin přesahuje tvou podložku tiskárny ({size} mm). Bude rozdělen na {count} dílů.",
-  "binDesigner.splitExport.fitsDiagonally": "Tento bin se vejde na tvou podložku tiskárny ({size} mm) jen položený úhlopříčně. Otoč ho ve sliceru, nebo ho rozděl na {count} dílů.",
+  "binDesigner.splitExport.fitsDiagonally": "Tento bin se vejde na tvou podložku tiskárny ({size} mm) jen položený úhlopříčně. Otoč ho ve sliceru, nebo ho rozděl na díly ({count}).",
   "binDesigner.splitExport.success": "Dělený export dokončen ({count} dílů)",
   "binDesigner.splitWallConnectors": "Spojky ve stěnách",
   "binDesigner.startANewDesign": "Začít nový návrh",

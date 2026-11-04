@@ -16,6 +16,7 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useMobileStore } from '@/core/store/mobile';
 import { useMutations } from '@/shared/contexts';
 import { calcBedCapacityForBin, CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { useBinOverhangSpan } from '@/shared/hooks/useBinOverhangSpan';
 import { maxClearanceHeight } from '@/shared/utils/restingStack';
 import { maxPlaceableHeight } from '@/shared/utils/validationPlacement';
 import { useRestingStack } from '@/shared/hooks/useRestingStack';
@@ -69,6 +70,7 @@ export function useBinInspector(): UseBinInspectorReturn {
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
 
   const layout = useLayoutStore((state) => state.layout);
+  const overhangSpanFor = useBinOverhangSpan();
   const { updateBin, deleteBin, moveBinToStaging } = useMutations();
 
   const selectedBins = useMemo(
@@ -101,7 +103,8 @@ export function useBinInspector(): UseBinInspectorReturn {
       layout.printBedSize,
       layout.gridUnitMm,
       layout.printBedDepth,
-      gridUnitMmY
+      gridUnitMmY,
+      overhangSpanFor(bin)
     );
     const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
 
@@ -156,7 +159,7 @@ export function useBinInspector(): UseBinInspectorReturn {
       heightRange: `${minHeight}u – ${maxHeight}u`,
       maxHeightReason: limitedByStack ? 'remaining_space' : 'drawer_height',
     };
-  }, [bin, layer, layout, restingStack, gridUnitMmY]);
+  }, [bin, layer, layout, restingStack, gridUnitMmY, overhangSpanFor]);
 
   // Collect all unique custom property keys from all bins in the layout (for suggestions)
   const existingPropertyKeys = useMemo(() => {

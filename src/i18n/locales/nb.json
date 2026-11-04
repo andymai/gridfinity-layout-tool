@@ -2112,7 +2112,7 @@
   "binDesigner.splitExport.downloadSplit": "Last ned delt {format} (ZIP)",
   "binDesigner.splitExport.enableSplit": "Del opp i deler",
   "binDesigner.splitExport.exceedsPrintBed": "Denne binnen overskrider printplaten din ({size}mm). Den vil bli delt i {count} deler.",
-  "binDesigner.splitExport.fitsDiagonally": "Denne binnen passer på printplaten din ({size}mm) bare lagt diagonalt. Vri den i sliceren, eller del den i {count} deler.",
+  "binDesigner.splitExport.fitsDiagonally": "Denne binen passer på printplaten din ({size}mm) bare lagt diagonalt. Vri den i sliceren, eller del den i {count} deler.",
   "binDesigner.splitExport.success": "Delt eksport fullført ({count} deler)",
   "binDesigner.splitWallConnectors": "Veggkoblinger",
   "binDesigner.startANewDesign": "Start et nytt design",

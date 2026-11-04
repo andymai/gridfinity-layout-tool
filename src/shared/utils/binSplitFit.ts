@@ -67,7 +67,6 @@ function axisChunkUnits(
 
 type ChunkUnits = { width: number; depth: number };
 
-/** How a bin goes onto one build plate. */
 export interface BinBedFit {
   /** What {@link binSplitChunkUnits} returns: the bin's own size when it prints whole. */
   readonly chunk: ChunkUnits;
