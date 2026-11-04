@@ -319,7 +319,6 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       }
       break;
 
-    // I: import an SVG
     case 'i':
       if (!mod && ctx.onImportSvg) {
         e.preventDefault();
@@ -328,7 +327,6 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       }
       break;
 
-    // J: import an STL
     case 'j':
       if (!mod && ctx.onImportStl) {
         e.preventDefault();
