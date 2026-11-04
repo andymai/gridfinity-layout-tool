@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { Card } from '@/design-system';
 import { ImageIcon, SmartphoneIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
@@ -6,13 +6,15 @@ import { useTranslation } from '@/i18n';
 interface ScanRouteChoiceProps {
   readonly onPhone: () => void;
   readonly onComputer: () => void;
+  readonly phoneCardRef?: RefObject<HTMLElement | null>;
 }
 
-export function ScanRouteChoice({ onPhone, onComputer }: ScanRouteChoiceProps) {
+export function ScanRouteChoice({ onPhone, onComputer, phoneCardRef }: ScanRouteChoiceProps) {
   const t = useTranslation();
   return (
     <div className="grid w-full gap-3 sm:grid-cols-2">
       <RouteCard
+        cardRef={phoneCardRef}
         icon={<SmartphoneIcon size="lg" />}
         title={t('binDesigner.cutouts.scanImport.routePhone')}
         help={t('binDesigner.cutouts.scanImport.routePhoneHelp')}
@@ -29,11 +31,13 @@ export function ScanRouteChoice({ onPhone, onComputer }: ScanRouteChoiceProps) {
 }
 
 function RouteCard({
+  cardRef,
   icon,
   title,
   help,
   onClick,
 }: {
+  readonly cardRef?: RefObject<HTMLElement | null>;
   readonly icon: ReactNode;
   readonly title: string;
   readonly help: string;
@@ -41,6 +45,7 @@ function RouteCard({
 }) {
   return (
     <Card
+      ref={cardRef}
       as="button"
       interactive
       padding="lg"

@@ -20,12 +20,14 @@ const session = vi.hoisted(() => ({
   current: { phase: 'unavailable', url: null as string | null },
   onSvg: null as ((svg: string) => void) | null,
   active: false,
+  attempt: 0,
 }));
 vi.mock('./useScanSession', () => ({
-  useScanSession: (active: boolean, onSvg: (svg: string) => void) => {
+  useScanSession: (active: boolean, onSvg: (svg: string) => void, attempt = 0) => {
     session.active = active;
+    session.attempt = attempt;
     session.onSvg = onSvg;
-    return session.current;
+    return active ? session.current : { phase: 'idle', url: null };
   },
 }));
 
@@ -67,6 +69,7 @@ describe('ScanToolDialog', () => {
     vi.clearAllMocks();
     session.current = { phase: 'unavailable', url: null };
     session.active = false;
+    session.attempt = 0;
     URL.createObjectURL = vi.fn(() => 'blob:mock');
     URL.revokeObjectURL = vi.fn();
   });
@@ -88,6 +91,30 @@ describe('ScanToolDialog', () => {
     fireEvent.click(screen.getByText('binDesigner.cutouts.scanImport.back'));
     expect(screen.getByText('binDesigner.cutouts.scanImport.routePhone')).toBeInTheDocument();
     expect(session.active).toBe(true);
+  });
+
+  it('retries a dead phone session when the phone route is picked again', () => {
+    render(<ScanToolDialog open onClose={vi.fn()} />);
+    choosePhone();
+    expect(session.attempt).toBe(0);
+
+    fireEvent.click(screen.getByText('binDesigner.cutouts.scanImport.back'));
+    choosePhone();
+    expect(session.attempt).toBe(1);
+  });
+
+  it('keeps keyboard focus inside the dialog across route changes', () => {
+    session.current = { phase: 'waiting', url: 'https://example.com/scan/abc' };
+    render(<ScanToolDialog open onClose={vi.fn()} />);
+    choosePhone();
+    expect(document.activeElement).toBe(
+      screen.getByText('binDesigner.cutouts.scanImport.back').closest('button')
+    );
+
+    fireEvent.click(screen.getByText('binDesigner.cutouts.scanImport.back'));
+    expect(document.activeElement).toBe(
+      screen.getByText('binDesigner.cutouts.scanImport.routePhone').closest('button')
+    );
   });
 
   it('says when phone scanning is unavailable, behind the phone route', () => {

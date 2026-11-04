@@ -3,12 +3,6 @@ import { Icon, type IconProps } from '../Icon';
 
 export type ImageIconProps = Omit<IconProps, 'children'>;
 
-/**
- * Photo glyph: a frame with a sun and a hill.
- *
- * @example
- * <ImageIcon size="md" />
- */
 export const ImageIcon = forwardRef<SVGSVGElement, ImageIconProps>((props, ref) => (
   <Icon ref={ref} {...props}>
     <rect x="3" y="3" width="18" height="18" rx="2" />

@@ -20,11 +20,19 @@ export interface ScanSessionState {
   readonly url: string | null;
 }
 
-export function useScanSession(active: boolean, onSvg: (svg: string) => void): ScanSessionState {
+/**
+ * `attempt` restarts the session while active: bumping it after an
+ * unavailable or expired phase opens a fresh one with a new link.
+ */
+export function useScanSession(
+  active: boolean,
+  onSvg: (svg: string) => void,
+  attempt = 0
+): ScanSessionState {
   const [phase, setPhase] = useState<ScanSessionPhase>('idle');
   const [url, setUrl] = useState<string | null>(null);
 
-  // Hold the latest callback in a ref so the effect depends only on `active`.
+  // Hold the latest callback in a ref so the effect depends only on `active` and `attempt`.
   const onSvgRef = useRef(onSvg);
   useEffect(() => {
     onSvgRef.current = onSvg;
@@ -108,7 +116,7 @@ export function useScanSession(active: boolean, onSvg: (svg: string) => void): S
       setPhase('idle');
       setUrl(null);
     };
-  }, [active]);
+  }, [active, attempt]);
 
   return { phase, url };
 }

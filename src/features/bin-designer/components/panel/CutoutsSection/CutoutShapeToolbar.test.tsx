@@ -268,7 +268,7 @@ describe('CutoutShapeToolbar', () => {
     expect(onImportSvg).toHaveBeenCalledOnce();
   });
 
-  it('renders the scan-with-phone button when onScanTool is provided', () => {
+  it('renders the scan-tool button when onScanTool is provided', () => {
     render(
       <CutoutShapeToolbar
         mode={idleMode}
@@ -282,7 +282,7 @@ describe('CutoutShapeToolbar', () => {
     expect(screen.getByTitle('binDesigner.cutouts.scanImport.title')).toBeInTheDocument();
   });
 
-  it('does not render the scan-with-phone button when onScanTool is not provided', () => {
+  it('does not render the scan-tool button when onScanTool is not provided', () => {
     render(
       <CutoutShapeToolbar
         mode={idleMode}

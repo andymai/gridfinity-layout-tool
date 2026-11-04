@@ -8,6 +8,7 @@
  */
 
 import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import type { RefObject } from 'react';
 import { Dialog, Button, Input, Spinner } from '@/design-system';
 import { ArrowLeftIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
@@ -67,6 +68,17 @@ export function ScanToolDialog({ open, onClose, onImport }: ScanToolDialogProps)
   // Latched once the phone route is picked, so going Back to the choice keeps
   // the session polling: a phone already on the capture page can still deliver.
   const [phoneStarted, setPhoneStarted] = useState(false);
+  const [sessionAttempt, setSessionAttempt] = useState(0);
+  // Each route swap unmounts the focused control, so focus is handed on
+  // explicitly or it falls out of the dialog's focus trap.
+  const backButtonRef = useRef<HTMLButtonElement | null>(null);
+  const phoneCardRef = useRef<HTMLElement | null>(null);
+  const focusOnRoute = useRef(false);
+  useEffect(() => {
+    if (!focusOnRoute.current) return;
+    focusOnRoute.current = false;
+    (route === 'phone' ? backButtonRef : phoneCardRef).current?.focus();
+  }, [route]);
 
   // A scan can arrive mid scale-confirm; read the live stage from a ref (the
   // poll fires outside render) and hold the latecomer until we're back to
@@ -205,7 +217,7 @@ export function ScanToolDialog({ open, onClose, onImport }: ScanToolDialogProps)
   // One handoff session from picking the phone route until the dialog closes,
   // so several tools can be scanned in a row; the scale-confirm step pauses on
   // its own UI, not the poll.
-  const scan = useScanSession(open && phoneStarted, ingestSvg);
+  const scan = useScanSession(open && phoneStarted, ingestSvg, sessionAttempt);
 
   const targetMm = stage.kind === 'review' ? parseFloat(stage.targetText) : NaN;
   const targetValid = Number.isFinite(targetMm) && targetMm > 0;
@@ -244,8 +256,13 @@ export function ScanToolDialog({ open, onClose, onImport }: ScanToolDialogProps)
               )}
               {route === 'choose' ? (
                 <ScanRouteChoice
+                  phoneCardRef={phoneCardRef}
                   onPhone={() => {
+                    if (scan.phase === 'unavailable' || scan.phase === 'expired') {
+                      setSessionAttempt((n) => n + 1);
+                    }
                     setPhoneStarted(true);
+                    focusOnRoute.current = true;
                     setRoute('phone');
                   }}
                   onComputer={() => setTracing(true)}
@@ -253,7 +270,11 @@ export function ScanToolDialog({ open, onClose, onImport }: ScanToolDialogProps)
               ) : (
                 <ScanPhoneRoute
                   scan={scan}
-                  onBack={() => setRoute('choose')}
+                  backButtonRef={backButtonRef}
+                  onBack={() => {
+                    focusOnRoute.current = true;
+                    setRoute('choose');
+                  }}
                   onDownloadSheet={handleDownloadSheet}
                   onDownloadStrips={handleDownloadStrips}
                 />
@@ -367,11 +388,18 @@ export function ScanToolDialog({ open, onClose, onImport }: ScanToolDialogProps)
 interface ScanPhoneRouteProps {
   readonly scan: ScanSessionState;
   readonly onBack: () => void;
+  readonly backButtonRef: RefObject<HTMLButtonElement | null>;
   readonly onDownloadSheet: () => void;
   readonly onDownloadStrips: () => void;
 }
 
-function ScanPhoneRoute({ scan, onBack, onDownloadSheet, onDownloadStrips }: ScanPhoneRouteProps) {
+function ScanPhoneRoute({
+  scan,
+  onBack,
+  backButtonRef,
+  onDownloadSheet,
+  onDownloadStrips,
+}: ScanPhoneRouteProps) {
   const t = useTranslation();
   return (
     <>
@@ -379,6 +407,7 @@ function ScanPhoneRoute({ scan, onBack, onDownloadSheet, onDownloadStrips }: Sca
         type="button"
         variant="ghost"
         size="sm"
+        ref={backButtonRef}
         onClick={onBack}
         leftIcon={<ArrowLeftIcon size="xs" />}
         className="self-start"
