@@ -4898,6 +4898,7 @@
   "toast.svgExport.nothingToExport": "Nada en la selección tiene un contorno para exportar",
   "toast.scanImport.parseFailed": "No se pudo leer ese contorno. Prueba una foto sobre un fondo liso y con buen contraste.",
   "toast.scanImport.success": "Se añadieron {count} recorte(s) de tu escaneo",
+  "toast.scanImport.offFloor": "Se añadieron {count} recorte(s), pero no todos caben en este bin. Muévelos en un ordenador.",
   "toast.selectedAll": "{count} bin(s) seleccionados",
   "toast.selectedByCategory": "{count} bin(s) de {name} seleccionados",
   "toast.selectionInverted": "Selección invertida ({count} bin(s))",

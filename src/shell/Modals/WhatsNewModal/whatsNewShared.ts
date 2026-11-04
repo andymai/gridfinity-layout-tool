@@ -6,7 +6,6 @@ import { useTranslation } from '@/i18n';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useScanLaunch } from '@/shared/hooks/useScanLaunch';
-import { useResponsive } from '@/shared/hooks/useResponsive';
 import type { WhatsNewAction, WhatsNewEntry, WhatsNewKind } from '@/features/whats-new';
 import type { Locale } from '@/i18n/types';
 
@@ -59,7 +58,6 @@ export function useEntryActivation(onNavigate: () => void): Activate {
   const { navigateToDesigner, navigateToPlanner } = useDesignerRouting();
   const { navigateToBaseplate } = useBaseplateRouting();
   const launchScan = useScanLaunch();
-  const { isDesktop } = useResponsive();
 
   const run = useCallback(
     (action: WhatsNewAction) => {
@@ -97,10 +95,7 @@ export function useEntryActivation(onNavigate: () => void): Activate {
             }
           }
         case 'scanTool':
-          // The cut editor only renders on desktop; elsewhere the designer is
-          // the nearest place the entry can point.
-          if (isDesktop) launchScan('whats_new');
-          else navigateToDesigner();
+          launchScan('whats_new');
           return;
         default: {
           const _exhaustive: never = action;
@@ -109,7 +104,6 @@ export function useEntryActivation(onNavigate: () => void): Activate {
       }
     },
     [
-      isDesktop,
       launchScan,
       navigateToBaseplate,
       navigateToDesigner,

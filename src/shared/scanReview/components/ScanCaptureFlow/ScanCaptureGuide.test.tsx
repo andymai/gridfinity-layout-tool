@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { useTranslation } from '@/i18n';
-import { CaptureGuide, CardStatusIcon, ProgressSteps } from './ScanPageGuide';
+import { CaptureGuide, CardStatusIcon, ProgressSteps } from './ScanCaptureGuide';
 
 function GuideHarness() {
   const t = useTranslation();

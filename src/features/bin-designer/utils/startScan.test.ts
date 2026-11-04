@@ -25,6 +25,15 @@ describe('startScan', () => {
     expect(s.history.past.length).toBe(undoDepth + 1);
   });
 
+  it('opens the phone flow without the cut editor below desktop', () => {
+    startScan('card', { phone: true });
+    const s = useDesignerStore.getState();
+    expect(s.params.style).toBe('solid');
+    expect(s.ui.phoneScanSource).toBe('card');
+    expect(s.ui.cutoutEditorOpen).toBe(false);
+    expect(s.ui.scanDialogSource).toBeNull();
+  });
+
   it('leaves a Custom Cutouts bin as it is', () => {
     startScan('card');
     const params = useDesignerStore.getState().params;

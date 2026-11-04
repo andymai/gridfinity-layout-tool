@@ -293,6 +293,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   cutoutTarget: 'bin',
   scanDialogSource: null,
   growBinForScan: false,
+  phoneScanSource: null,
   bentoWorkspaceOpen: false,
   interiorCard: 'standard',
   previewCompartments: null,

@@ -455,6 +455,9 @@ export interface DesignerState {
   /** Open the cut editor on the bin with the "Scan a tool" dialog up. */
   openScanDialog: (source: ScanSource, growBin?: boolean) => void;
   closeScanDialog: () => void;
+  /** Open the phone scan flow, which packs what it scans into the bin. */
+  openPhoneScan: (source: ScanSource) => void;
+  closePhoneScan: () => void;
   setBentoWorkspaceOpen: (open: boolean) => void;
   setInteriorCard: (card: InteriorCard) => void;
   setShapeEditorOpen: (open: boolean) => void;

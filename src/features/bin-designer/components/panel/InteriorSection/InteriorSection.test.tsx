@@ -47,19 +47,20 @@ describe('InteriorSection', () => {
     expect(link).toHaveAttribute('data-help-target', 'bd-scan-tool');
 
     fireEvent.click(link);
-    expect(mockStartScan).toHaveBeenCalledWith('interior_link');
+    expect(mockStartScan).toHaveBeenCalledWith('interior_link', { phone: false });
   });
 
-  it('leaves the link out on Custom Cutouts, which has its own scan button, and off desktop', () => {
+  it('leaves the link out on Custom Cutouts, which has its own scan button', () => {
     view.card = 'solid';
-    const { unmount } = render(<InteriorSection />);
-    expect(screen.queryByText(en['binDesigner.interior.scanLink'])).toBeNull();
-    unmount();
-
-    view.card = 'standard';
-    view.isDesktop = false;
     render(<InteriorSection />);
     expect(screen.queryByText(en['binDesigner.interior.scanLink'])).toBeNull();
+  });
+
+  it('offers the phone scan off desktop', () => {
+    view.isDesktop = false;
+    render(<InteriorSection />);
+    fireEvent.click(screen.getByRole('button', { name: en['binDesigner.interior.scanLink'] }));
+    expect(mockStartScan).toHaveBeenCalledWith('interior_link', { phone: true });
   });
 
   it('offers the four modes as tiles', () => {

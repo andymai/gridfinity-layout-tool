@@ -44,6 +44,17 @@ describe('useScanLaunchBridge', () => {
     expect(s.params.style).toBe('solid');
   });
 
+  it('opens the phone flow off desktop', () => {
+    viewport.isDesktop = false;
+    openDesign('open');
+    renderHook(() => useScanLaunchBridge());
+
+    act(() => useScanLaunchStore.getState().requestScan('whats_new', false));
+    const s = useDesignerStore.getState();
+    expect(s.ui.phoneScanSource).toBe('whats_new');
+    expect(s.ui.scanDialogSource).toBeNull();
+  });
+
   it('starts a new bin rather than scanning into a variant', async () => {
     variant.isVariant = true;
     openDesign('variant');
