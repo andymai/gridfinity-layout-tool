@@ -1,0 +1,146 @@
+src/shared/utils/placementTurn.ts
+  s_fa6b1a192f3376::t_7b65faf0fb42b4 1-2
+  s_fa6b1a192f3376::t_bfffdd0b18763d 45-96
+  s_fa6b1a192f3376::t_b3d510a0cd0e50 97-100
+src/shared/utils/rotation.test.ts
+  s_fa6b1a192f3376::t_5728d6391b43da 3-4,330-346,351-410,421-432
+  s_fa6b1a192f3376::t_88f278b74e430a 10,347-350,411-420
+  s_fa6b1a192f3376::t_c3edb00885b6b3 433-446
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_fa6b1a192f3376::t_7b65faf0fb42b4 49,317-318,330-332
+src/i18n/locales/fr.json
+  s_fa6b1a192f3376::t_2fc51d82708361 4823
+src/features/bin-inspector/hooks/useBinInspector.test.ts
+  s_fa6b1a192f3376::t_4ccdf50ceee711 905
+  s_fa6b1a192f3376::t_533bb03a3ae6fe 898-904,906-921
+src/shared/utils/validationPlacement.ts
+  s_fa6b1a192f3376::t_bfffdd0b18763d 138,156-158,172
+src/shared/hooks/useSelectionActions.ts
+  s_fa6b1a192f3376::t_2fc51d82708361 10
+  s_fa6b1a192f3376::t_7b65faf0fb42b4 121
+src/i18n/locales/en.ts
+  s_fa6b1a192f3376::t_2fc51d82708361 1651
+src/i18n/locales/pl.json
+  s_fa6b1a192f3376::t_2fc51d82708361 4823
+src/shared/utils/validation.test.ts
+  s_fa6b1a192f3376::t_33efc364e2d866 742
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_fa6b1a192f3376::t_3d53017f02af95 630
+  s_fa6b1a192f3376::t_33efc364e2d866 2
+  s_fa6b1a192f3376::t_533bb03a3ae6fe 610-629,631-643
+  s_fa6b1a192f3376::t_d61f95d19c7169 644,826-838
+  s_fa6b1a192f3376::t_c226b1db420204 645-646
+docs/schemas/layout.md
+  s_fa6b1a192f3376::t_2fc51d82708361 166
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_fa6b1a192f3376::t_7b65faf0fb42b4 26,427-429,437,440-444,447-448
+  s_fa6b1a192f3376::t_2fc51d82708361 29
+src/i18n/locales/nb.json
+  s_fa6b1a192f3376::t_2fc51d82708361 4823
+src/core/cqrs/v2/domain/bin/updateBin.test.ts
+  s_fa6b1a192f3376::t_d61f95d19c7169 194-218
+src/shared/utils/validationSalvage.ts
+  s_fa6b1a192f3376::t_bfffdd0b18763d 47,124
+public/schema/layout.schema.json
+  s_fa6b1a192f3376::t_bfffdd0b18763d 569-573
+api/lib/binFitValidation.test.ts
+  s_fa6b1a192f3376::t_5728d6391b43da 74-75
+  s_fa6b1a192f3376::t_4f47ce228b8efa 73
+  s_fa6b1a192f3376::t_d121f08e2ff413 76-77
+src/shared/utils/binLocation.test.ts
+  s_fa6b1a192f3376::t_5728d6391b43da 4,73,83,98,117,136,156,184,220,253,256,272,287,306,322,337
+  s_fa6b1a192f3376::t_3d53017f02af95 10,15
+src/shared/utils/placementTurn.test.ts
+  s_fa6b1a192f3376::t_5728d6391b43da 3-12,36-106
+src/shared/utils/placedSlant.test.ts
+  s_fa6b1a192f3376::t_d61f95d19c7169 205-231
+src/core/cqrs/v2/domain/bin/duplicateBin.ts
+  s_fa6b1a192f3376::t_bfffdd0b18763d 54
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_fa6b1a192f3376::t_7b65faf0fb42b4 248-249,251
+  s_fa6b1a192f3376::t_2fc51d82708361 34
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/placement.ts
+  s_fa6b1a192f3376::t_8057c3deff9062 24-33
+src/features/staging/components/Staging/Staging.tsx
+  s_fa6b1a192f3376::t_2fc51d82708361 23
+  s_fa6b1a192f3376::t_4a53ae87e41ce8 231
+api/lib/binFitValidation.ts
+  s_fa6b1a192f3376::t_bfffdd0b18763d 49,141
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_fa6b1a192f3376::t_7b65faf0fb42b4 58,508
+src/features/whats-new/latest.ts
+  s_fa6b1a192f3376::t_8dd12432d8f850 9
+src/shared/utils/binLocation.ts
+  s_fa6b1a192f3376::t_7b65faf0fb42b4 78-79,81
+  s_fa6b1a192f3376::t_5728d6391b43da 2,82
+src/core/cqrs/v2/domain/bin/updateBin.ts
+  s_fa6b1a192f3376::t_bfffdd0b18763d 69,109,191-195,206
+src/core/store/layout/binActions.ts
+  s_fa6b1a192f3376::t_bfffdd0b18763d 61-62,72
+src/shared/schema/layoutKeys.ts
+  s_fa6b1a192f3376::t_bfffdd0b18763d 88
+src/i18n/locales/it.json
+  s_fa6b1a192f3376::t_2fc51d82708361 4823
+src/i18n/locales/de.json
+  s_fa6b1a192f3376::t_2fc51d82708361 4823
+src/i18n/locales/pt-BR.json
+  s_fa6b1a192f3376::t_2fc51d82708361 4823
+src/i18n/locales/zh-CN.json
+  s_fa6b1a192f3376::t_2fc51d82708361 4823
+src/features/whats-new/entries.ts
+  s_fa6b1a192f3376::t_8dd12432d8f850 17-25
+  s_fa6b1a192f3376::t_d5157d0f28e3b6 16
+src/i18n/locales/es.json
+  s_fa6b1a192f3376::t_2fc51d82708361 4823
+src/i18n/locales/ka.json
+  s_fa6b1a192f3376::t_2fc51d82708361 1441
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/placement.test.ts
+  s_fa6b1a192f3376::t_4f47ce228b8efa 119-147
+  s_fa6b1a192f3376::t_d61f95d19c7169 4,7-13
+  s_fa6b1a192f3376::t_5728d6391b43da 100-118
+  s_fa6b1a192f3376::t_43716eabe715d7 148-151
+src/i18n/locales/ko.json
+  s_fa6b1a192f3376::t_2fc51d82708361 4823
+src/core/types/layout.ts
+  s_fa6b1a192f3376::t_bfffdd0b18763d 170-173
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/LinkedBinMesh.tsx
+  s_fa6b1a192f3376::t_8057c3deff9062 6,51
+src/i18n/locales/sv.json
+  s_fa6b1a192f3376::t_2fc51d82708361 4823
+src/shared/utils/placedSlant.ts
+  s_fa6b1a192f3376::t_7b65faf0fb42b4 16,108-120
+src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
+  s_fa6b1a192f3376::t_2fc51d82708361 28
+  s_fa6b1a192f3376::t_7b65faf0fb42b4 118-120,126,129-132
+  s_fa6b1a192f3376::t_517416e09651f5 13
+src/i18n/locales/cs.json
+  s_fa6b1a192f3376::t_2fc51d82708361 4823
+src/core/cqrs/validation/schemas.ts
+  s_fa6b1a192f3376::t_bfffdd0b18763d 141
+src/shell/keyboard/handlers.ts
+  s_fa6b1a192f3376::t_7b65faf0fb42b4 15,254-256,261,264-267
+src/i18n/locales/ja.json
+  s_fa6b1a192f3376::t_2fc51d82708361 4823
+src/i18n/locales/nl.json
+  s_fa6b1a192f3376::t_2fc51d82708361 4823
+src/shared/utils/rotation.ts
+  s_fa6b1a192f3376::t_7b65faf0fb42b4 3-4,108-183
+src/i18n/locales/uk.json
+  s_fa6b1a192f3376::t_2fc51d82708361 4823
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5286aaca2726155c0ad9bd807539dccf9d18729e",
+  "prompts": {},
+  "sessions": {
+    "s_fa6b1a192f3376": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "78835baa-98ee-4035-90c0-fb29acee90ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
