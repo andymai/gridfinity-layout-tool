@@ -22,17 +22,7 @@ export type RotationResult =
  * @returns Validation result with error message if invalid
  */
 export function validateRotationInPlace(bin: Bin, layout: Layout): RotationResult {
-  const rotatedRect = {
-    x: bin.x,
-    y: bin.y,
-    width: bin.depth,
-    depth: bin.width,
-    height: bin.height,
-    clearanceHeight: bin.clearanceHeight,
-    linkedDesignId: bin.linkedDesignId,
-  };
-
-  const validation = canPlaceBin(rotatedRect, bin.layerId, layout, bin.id);
+  const validation = canPlaceBin(quarterTurnCandidate(bin), bin.layerId, layout, bin.id);
 
   if (!validation.valid) {
     let message = 'Cannot rotate bin';
@@ -118,6 +108,23 @@ export function quarterTurnUpdates(
     width: bin.depth,
     depth: bin.width,
     ...(canHalfTurn(bin) && bin.width < bin.depth ? { halfTurned: !bin.halfTurned } : {}),
+  };
+}
+
+/**
+ * The bin as a quarter turn would leave it, for checking placement. The half turn
+ * travels with it, because it decides which way a design's end support reaches.
+ */
+export function quarterTurnCandidate(bin: Bin) {
+  const turned = quarterTurnUpdates(bin);
+  return {
+    x: bin.x,
+    y: bin.y,
+    height: bin.height,
+    clearanceHeight: bin.clearanceHeight,
+    linkedDesignId: bin.linkedDesignId,
+    ...turned,
+    halfTurned: turned.halfTurned ?? bin.halfTurned,
   };
 }
 

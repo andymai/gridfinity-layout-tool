@@ -895,6 +895,32 @@ describe('useBinInspector', () => {
       expect(bin.depth).toBe(2);
     });
 
+    it('turns a linked bin without resizing its design, as the R key does', () => {
+      vi.mocked(emitSyncEvent).mockClear();
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [
+        {
+          ...createBin('bin1', 'layer1'),
+          width: gridUnits(1),
+          depth: gridUnits(2),
+          linkedDesignId: toDesignId('d1'),
+        },
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.rotateBin();
+      });
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.width).toBe(2);
+      expect(bin.halfTurned).toBe(true);
+      expect(emitSyncEvent).not.toHaveBeenCalled();
+    });
+
     it('half turns a square linked bin where it stands', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [
@@ -944,34 +970,6 @@ describe('useBinInspector', () => {
       });
 
       expect(rotateResult).toBe(false);
-    });
-
-    it('emits bin-resized event when rotating a linked bin', () => {
-      const layout = useLayoutStore.getState().layout;
-      layout.bins = [
-        {
-          ...createBin('bin1', 'layer1'),
-          width: gridUnits(2),
-          depth: gridUnits(3),
-          linkedDesignId: toDesignId('design-1'),
-        },
-      ];
-      useLayoutStore.setState({ layout });
-      useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
-      vi.mocked(emitSyncEvent).mockClear();
-
-      const { result } = renderHook(() => useBinInspector());
-
-      act(() => {
-        result.current.rotateBin();
-      });
-
-      expect(emitSyncEvent).toHaveBeenCalledWith({
-        type: 'bin-resized',
-        binId: 'bin1',
-        linkedDesignId: 'design-1',
-        newDimensions: { width: 3, depth: 2, height: 3 },
-      });
     });
   });
 

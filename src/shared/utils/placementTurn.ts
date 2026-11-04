@@ -90,11 +90,23 @@ export function overhangInDesign(
   placed: Pick<Bin, 'halfTurned'>
 ): OverhangConfig {
   if (!placed.halfTurned) return overhang;
+  const { taper } = overhang;
   return {
     ...overhang,
     left: overhang.right,
     right: overhang.left,
     front: overhang.back,
     back: overhang.front,
+    ...(taper
+      ? {
+          taper: {
+            ...taper,
+            left: taper.right,
+            right: taper.left,
+            front: taper.back,
+            back: taper.front,
+          },
+        }
+      : {}),
   };
 }

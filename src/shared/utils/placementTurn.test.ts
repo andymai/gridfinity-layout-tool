@@ -93,6 +93,25 @@ describe('overhangInDesign', () => {
     expect(overhangInDesign(overhang, { halfTurned: false })).toBe(overhang);
   });
 
+  it('takes a taper round with the overhang it belongs to', () => {
+    const taper = {
+      profile: 'chamfer' as const,
+      bandHeight: 8,
+      left: 2,
+      right: 0,
+      front: 0,
+      back: 1,
+    };
+    expect(overhangInDesign({ ...overhang, taper }, { halfTurned: true }).taper).toEqual({
+      profile: 'chamfer',
+      bandHeight: 8,
+      left: 0,
+      right: 2,
+      front: 1,
+      back: 0,
+    });
+  });
+
   it('swaps opposite sides on a half-turned bin and keeps the rest', () => {
     expect(overhangInDesign(overhang, { halfTurned: true })).toEqual({
       left: 2,

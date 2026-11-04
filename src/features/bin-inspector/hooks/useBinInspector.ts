@@ -437,15 +437,10 @@ export function useBinInspector(): UseBinInspectorReturn {
       updateBin(bin.id, plan.updates);
     });
 
-    if (plan.halfTurnedInPlace) {
-      addToast(t('toast.binHalfTurned'), 'info');
-      return true;
-    }
-
-    emitLinkedBinResize(bin, { width: bin.depth, depth: bin.width, height: bin.height });
-
     if (plan.movedTo) {
       addToast(t('toast.rotateRepositioned', { distance: plan.movedTo.distance }), 'info');
+    } else if (plan.halfTurnedInPlace) {
+      addToast(t('toast.binHalfTurned'), 'info');
     }
 
     return true;

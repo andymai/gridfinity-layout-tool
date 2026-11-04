@@ -434,6 +434,29 @@ describe('planBinTurn', () => {
     expect(planBinTurn(bin, layout, true)).toMatchObject({ valid: false });
   });
 
+  it('checks a quarter turn with the half turn it would bring', () => {
+    // Facing front next, past the drawer edge: the old flag reads as facing back.
+    registerLinkedSlantResolver(() => ({
+      width: 2,
+      depth: 1,
+      config: { angleDeg: 40, side: 'back', endSupport: true },
+    }));
+    const layout = createTestLayout();
+    const bin = linked({
+      x: gridUnits(2),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(2),
+      height: heightUnits(6),
+    });
+    layout.bins = [bin];
+    expect(planBinTurn(bin, layout, true)).toEqual({
+      valid: true,
+      updates: { halfTurned: true },
+      halfTurnedInPlace: true,
+    });
+  });
+
   it('leaves a half-unit footprint with its old choices', () => {
     const layout = createTestLayout();
     const bin = linked({ width: gridUnits(1.5), depth: gridUnits(1.5) });
