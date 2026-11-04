@@ -29,6 +29,13 @@ function bin(overhang?: OverhangConfig): Bin {
   });
 }
 
+describe('binPropsAreEqual — half turn', () => {
+  it('detects a half turn, which changes nothing about the footprint', () => {
+    const a = bin();
+    expect(binPropsAreEqual(props(a), props({ ...a, halfTurned: true }))).toBe(false);
+  });
+});
+
 describe('binPropsAreEqual — overhang', () => {
   it('treats a rebuilt but identical overhang as equal', () => {
     const a = bin({ enabled: true, left: 0, right: 14, front: 0, back: 0, feet: false });

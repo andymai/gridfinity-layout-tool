@@ -46,7 +46,7 @@ import {
 import { dedupeFileNames } from './dedupeFileNames';
 import type { ManifestBinEntry, ManifestSkipped } from './buildLayoutManifest';
 import { normalizeSlant, planSlantSupport } from '@/shared/utils/slantPlan';
-import { isTurnedPlacement, sideInDesign } from '@/shared/utils/placementTurn';
+import { overhangInDesign, placedSideInDesign } from '@/shared/utils/placementTurn';
 import { placementCaption, withPlacedTabCaption } from '@/shared/utils/placedCaption';
 
 /** A linked design id resolved against storage; `design` is null when it failed to load. */
@@ -314,7 +314,8 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
       imprintStepSkipped.add(b.linkedDesignId);
       continue;
     }
-    const overhang = resolveBinOverhang(b, drawer, baseplate);
+    const drawerOverhang = resolveBinOverhang(b, drawer, baseplate);
+    const overhang = drawerOverhang && overhangInDesign(drawerOverhang, b);
     // Inject the layout's magnet anchor and foot profile (source of truth),
     // overriding any value saved on the design, so exported bins mate with the
     // baseplate.
@@ -326,10 +327,9 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
     // carry the end support its design does not; then the lip goes, as it
     // does for any slanted design. It faces the drawer, so a design that
     // stands turned prints it turned back.
-    const placed =
-      b.slant && isTurnedPlacement(b, design.params)
-        ? { ...b.slant, side: sideInDesign(b.slant.side) }
-        : b.slant;
+    const placed = b.slant
+      ? { ...b.slant, side: placedSideInDesign(b.slant.side, b, design.params) }
+      : b.slant;
     const slanted = normalizeSlant(placed ? { ...fitted, slant: placed } : fitted);
     const params = withPlacedTabCaption(slanted, b.label);
     // Keyed only when the label reaches the mesh, so every other design still

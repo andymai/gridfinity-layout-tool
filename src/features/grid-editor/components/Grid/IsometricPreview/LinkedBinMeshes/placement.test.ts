@@ -1,10 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
 import type { BinId } from '@/core/types';
-import { binId, designId } from '@/core/types';
+import { binId, designId, gridUnits } from '@/core/types';
 import { createTestBin } from '@/test/testUtils';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
-import { isRotatedPlacement, designEntryFor, partitionByDesignMesh } from './placement';
+import { quarterTurnUpdates } from '@/shared/utils/rotation';
+import {
+  placementTurnRadians,
+  isRotatedPlacement,
+  designEntryFor,
+  partitionByDesignMesh,
+} from './placement';
 import type { DesignGeometryEntry } from './useDesignGeometries';
 
 const D1 = designId('design-1');
@@ -89,5 +95,57 @@ describe('partitionByDesignMesh', () => {
 
     expect(designMeshBins).toHaveLength(0);
     expect(plainBins).toEqual([linked]);
+  });
+});
+
+describe('placementTurnRadians', () => {
+  it('is zero for a bin standing as its design was drawn', () => {
+    expect(placementTurnRadians({ width: 2, depth: 1 }, 2, 1)).toBe(0);
+  });
+
+  it('adds a quarter for a swapped footprint', () => {
+    expect(placementTurnRadians({ width: 1, depth: 2 }, 2, 1)).toBeCloseTo(Math.PI / 2);
+  });
+
+  it('adds a half for a half-turned bin', () => {
+    expect(placementTurnRadians({ width: 2, depth: 1, halfTurned: true }, 2, 1)).toBeCloseTo(
+      Math.PI
+    );
+    expect(placementTurnRadians({ width: 1, depth: 2, halfTurned: true }, 2, 1)).toBeCloseTo(
+      (3 * Math.PI) / 2
+    );
+  });
+
+  it('half turns a square design, which never takes a quarter', () => {
+    expect(placementTurnRadians({ width: 2, depth: 2, halfTurned: true }, 2, 2)).toBeCloseTo(
+      Math.PI
+    );
+  });
+});
+
+describe('pressing Rotate on a linked bin', () => {
+  /** The mesh's turn in quarters after each of `presses` presses. */
+  function walk(design: { width: number; depth: number }, presses: number): number[] {
+    let bin = createTestBin({
+      width: gridUnits(design.width),
+      depth: gridUnits(design.depth),
+      linkedDesignId: designId('d1'),
+    });
+    const turns: number[] = [];
+    for (let i = 0; i < presses; i++) {
+      bin = { ...bin, ...quarterTurnUpdates(bin) };
+      turns.push(
+        Math.round(placementTurnRadians(bin, design.width, design.depth) / (Math.PI / 2)) % 4
+      );
+    }
+    return turns;
+  }
+
+  it('walks a wide design through all four orientations, turning one way', () => {
+    expect(walk({ width: 2, depth: 1 }, 4)).toEqual([1, 2, 3, 0]);
+  });
+
+  it('walks a tall design through all four orientations, turning one way', () => {
+    expect(walk({ width: 1, depth: 2 }, 4)).toEqual([3, 2, 1, 0]);
   });
 });

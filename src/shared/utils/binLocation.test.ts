@@ -1,18 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import {
   getBinLocationContext,
-  validateBinRotation,
+  planBinRotation,
   isBinInStash,
   isBinLocked,
   isBinOnGrid,
   type BinLocation,
-  type RotationResult,
 } from '@/shared/utils/binLocation';
+import type { BinTurnPlan } from '@/shared/utils/rotation';
 import { STAGING_ID } from '@/core/constants';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
 import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
 
-function expectRotationInvalid(result: RotationResult): Extract<RotationResult, { valid: false }> {
+function expectRotationInvalid(result: BinTurnPlan): Extract<BinTurnPlan, { valid: false }> {
   expect(result.valid).toBe(false);
   if (result.valid) throw new Error('Expected an invalid rotation');
   return result;
@@ -70,7 +70,7 @@ describe('binLocation utility', () => {
     });
   });
 
-  describe('validateBinRotation', () => {
+  describe('planBinRotation', () => {
     describe('for stash bins', () => {
       it('always returns valid for stash bins', () => {
         const layout = createTestLayout();
@@ -80,7 +80,7 @@ describe('binLocation utility', () => {
           depth: gridUnits(100),
         });
 
-        const result = validateBinRotation(bin, layout);
+        const result = planBinRotation(bin, layout);
 
         expect(result.valid).toBe(true);
       });
@@ -95,7 +95,7 @@ describe('binLocation utility', () => {
           depth: gridUnits(3),
         });
 
-        const result = validateBinRotation(bin, layout);
+        const result = planBinRotation(bin, layout);
 
         expect(result.valid).toBe(true);
       });
@@ -114,7 +114,7 @@ describe('binLocation utility', () => {
           layerId: layerId('layer1'),
         });
 
-        const result = validateBinRotation(bin, layout);
+        const result = planBinRotation(bin, layout);
 
         expect(result.valid).toBe(true);
       });
@@ -133,7 +133,7 @@ describe('binLocation utility', () => {
           layerId: layerId('layer1'),
         });
 
-        const result = validateBinRotation(bin, layout);
+        const result = planBinRotation(bin, layout);
 
         // 6-wide rotated bin can NEVER fit in a 5-wide drawer, so this should fail
         expect(expectRotationInvalid(result).message).toContain('exceed drawer bounds');
@@ -153,7 +153,7 @@ describe('binLocation utility', () => {
           layerId: layerId('layer1'),
         });
 
-        const result = validateBinRotation(bin, layout);
+        const result = planBinRotation(bin, layout);
 
         // 6-deep rotated bin can NEVER fit in a 5-deep drawer, so this should fail
         expect(expectRotationInvalid(result).message).toContain('exceed drawer bounds');
@@ -181,7 +181,7 @@ describe('binLocation utility', () => {
           layerId: layerId('layer1'),
         });
 
-        const result = validateBinRotation(bin, layout);
+        const result = planBinRotation(bin, layout);
 
         // Smart rotation should find a nearby position to avoid collision
         // In a 10x8 drawer with blocker at (3,0), the 4x2 rotated bin can fit elsewhere
@@ -217,7 +217,7 @@ describe('binLocation utility', () => {
           layerId: layerId('layer1'),
         });
 
-        const result = validateBinRotation(bin, layout);
+        const result = planBinRotation(bin, layout);
 
         expect(result.valid).toBe(true);
       });
@@ -250,10 +250,10 @@ describe('binLocation utility', () => {
           layerId: layerId('layer2'),
         });
 
-        const result = validateBinRotation(bin, layout);
+        const result = planBinRotation(bin, layout);
 
         // This could be valid or invalid depending on whether the rotated bin overlaps the blocked zone
-        // The key is that validateBinRotation correctly checks blocked zones
+        // The key is that planBinRotation correctly checks blocked zones
         expect(result).toHaveProperty('valid');
       });
 
@@ -269,7 +269,7 @@ describe('binLocation utility', () => {
           layerId: layerId('layer1'),
         });
 
-        const result = validateBinRotation(bin, layout);
+        const result = planBinRotation(bin, layout);
 
         expect(result.valid).toBe(true);
       });
@@ -284,7 +284,7 @@ describe('binLocation utility', () => {
           layerId: layerId('layer1'),
         });
 
-        const result = validateBinRotation(bin, layout);
+        const result = planBinRotation(bin, layout);
 
         expect(result.valid).toBe(true);
       });
@@ -303,7 +303,7 @@ describe('binLocation utility', () => {
           layerId: layerId('layer1'),
         });
 
-        const result = validateBinRotation(bin, layout);
+        const result = planBinRotation(bin, layout);
 
         expect(result.valid).toBe(true);
       });
@@ -319,7 +319,7 @@ describe('binLocation utility', () => {
           clearanceHeight: heightUnits(2),
         });
 
-        const result = validateBinRotation(bin, layout);
+        const result = planBinRotation(bin, layout);
 
         expect(result.valid).toBe(true);
       });
@@ -334,7 +334,7 @@ describe('binLocation utility', () => {
           layerId: layerId('layer1'),
         });
 
-        const result = validateBinRotation(bin, layout);
+        const result = planBinRotation(bin, layout);
 
         expect(result.valid).toBe(true);
       });

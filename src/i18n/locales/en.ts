@@ -1648,6 +1648,7 @@ const en: Record<string, string> = {
     "Couldn't save some recent changes. Your undo history may be incomplete.",
   'toast.binsDeleted': 'Deleted {count} bin(s)',
   'toast.binRotated': 'Bin rotated',
+  'toast.binHalfTurned': 'Bin turned 180°',
   'toast.clearComplete': 'Cleared {count} bin(s) from layer',
   'toast.fillComplete': 'Added {count} bin(s) to fill gaps',
   'toast.fillWithSize': 'Added {count} {width}×{depth} bins',

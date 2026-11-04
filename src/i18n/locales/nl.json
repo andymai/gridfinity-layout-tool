@@ -4820,6 +4820,7 @@
   "toast.binBlocked.default": "Bin kan hier niet worden verplaatst",
   "toast.binBlocked.exceedsHeight": "Bin zou de ladehoogte overschrijden",
   "toast.binRotated": "Bin geroteerd",
+  "toast.binHalfTurned": "Bak 180° gedraaid",
   "toast.binSizeLocked": "De afmetingen van deze bin zijn vergrendeld",
   "toast.binsDeleted": "{count} bin(s) verwijderd",
   "toast.binsDisplacedByShape": "{count} bin(s) naar de stash verplaatst (buiten de nieuwe vorm)",

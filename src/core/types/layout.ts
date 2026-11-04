@@ -167,6 +167,10 @@ export interface Bin {
   // of a slanted row can carry the end support its design does not. Unlike
   // `overhang` it survives a move: nothing in it depends on the position.
   slant?: SlantConfig;
+  // The linked design stands half a turn from how its footprint reads, so a
+  // one-sided design can face either way on the same cells. Width and depth can
+  // only ever show a quarter turn.
+  halfTurned?: boolean;
   // Freezes the bin's size: while set, `width`, `depth` and `height`
   // are rejected by `bin.update`, and the bin is skipped by every flow that
   // resizes on the user's behalf (rotation, linked-design dimension sync,

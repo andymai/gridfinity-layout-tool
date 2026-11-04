@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
 import type { DesignGeometryEntry } from './useDesignGeometries';
-import { isRotatedPlacement } from './placement';
+import { placementTurnRadians } from './placement';
 
 interface LinkedBinMeshProps {
   binData: BinRenderData;
@@ -43,13 +43,12 @@ export const LinkedBinMesh = memo(function LinkedBinMesh({
   const toHalfUnits = (mm: number): number => Math.round((mm / gridUnitMm) * 2) / 2;
   const designW = isRest ? toHalfUnits(entry.rest.widthMm) : entry.width;
   const designD = isRest ? toHalfUnits(entry.rest.depthMm) : entry.depth;
-  const rotated = isRotatedPlacement(bin.width, bin.depth, designW, designD);
   const geometry = isRest ? entry.rest.geometry : entry.geometry;
 
   return (
     <group
       position={[binData.x + bin.width / 2, binData.y + bin.depth / 2, binData.z]}
-      rotation={[0, 0, rotated ? Math.PI / 2 : 0]}
+      rotation={[0, 0, placementTurnRadians(bin, designW, designD)]}
       scale={[scale, scale, scale]}
     >
       <mesh geometry={geometry}>

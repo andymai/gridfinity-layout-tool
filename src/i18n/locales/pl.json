@@ -4820,6 +4820,7 @@
   "toast.binBlocked.default": "Nie można tu przenieść bina",
   "toast.binBlocked.exceedsHeight": "Bin przekroczyłby wysokość szuflady",
   "toast.binRotated": "Bin obrócony",
+  "toast.binHalfTurned": "Bin obrócony o 180°",
   "toast.binSizeLocked": "Rozmiar tego binu jest zablokowany",
   "toast.binsDeleted": "Usunięto {count} bin(ów)",
   "toast.binsDisplacedByShape": "{count} bin(ów) przeniesionych do Stash (poza nowym kształtem)",

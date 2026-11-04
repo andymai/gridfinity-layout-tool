@@ -138,6 +138,7 @@ const binPartialSchema = z
     pairId: z.string().min(1).nullable(),
     pairRole: z.enum(['block', 'rest']).nullable(),
     slant: slantSchema.nullable(),
+    halfTurned: z.boolean(),
     id: binIdSchema,
   })
   .partial();

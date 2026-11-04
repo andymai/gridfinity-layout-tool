@@ -21,6 +21,16 @@ export function isRotatedPlacement(
   );
 }
 
+/** How far the design's mesh turns to stand the way the bin does, in radians. */
+export function placementTurnRadians(
+  bin: { readonly width: number; readonly depth: number; readonly halfTurned?: boolean },
+  designWidth: number,
+  designDepth: number
+): number {
+  const quarter = isRotatedPlacement(bin.width, bin.depth, designWidth, designDepth);
+  return (quarter ? Math.PI / 2 : 0) + (bin.halfTurned ? Math.PI : 0);
+}
+
 /** Resolve the design geometry for a bin, or undefined for unlinked/unresolved bins. */
 export function designEntryFor(
   binData: BinRenderData,

@@ -10,11 +10,7 @@ import {
 import { useMutations } from '@/shared/contexts';
 import { useResponsive, useExpandToFit } from '@/shared/hooks';
 import { useContextMenu } from '@/shared/hooks/useContextMenu';
-import {
-  validateBinRotation,
-  getBinLocationContext,
-  isBinLocked,
-} from '@/shared/utils/binLocation';
+import { planBinRotation, getBinLocationContext, isBinLocked } from '@/shared/utils/binLocation';
 import { calcBedCapacityForBin } from '@/core/constants';
 import { useBinOverhangSpan } from '@/shared/hooks/useBinOverhangSpan';
 import {
@@ -29,7 +25,7 @@ import { isErr, isOk, getUserMessage } from '@/core/result';
 import { useTranslation } from '@/i18n';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { Button } from '@/design-system';
-import type { Bin, GridUnits, LayerId } from '@/core/types';
+import type { Bin, LayerId } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 
 const BinContextMenuDesignSection = lazyWithRetry(() =>
@@ -119,24 +115,19 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   };
 
   const handleRotate = () => {
-    const result = validateBinRotation(bin, layout);
-    if (!result.valid) {
-      addToast(result.message, 'error');
+    const plan = planBinRotation(bin, layout);
+    if (!plan.valid) {
+      addToast(plan.message, 'error');
       onClose();
       return;
     }
 
-    batch(() => {
-      const updates: Partial<Bin> = { width: bin.depth, depth: bin.width };
-      if (result.movedTo) {
-        updates.x = result.movedTo.x as GridUnits;
-        updates.y = result.movedTo.y as GridUnits;
-      }
-      updateBin(bin.id, updates);
-    });
+    const turned = batch(() => isOk(updateBin(bin.id, plan.updates)));
 
-    if (result.movedTo) {
-      addToast(t('toast.rotateRepositioned', { distance: result.movedTo.distance }), 'info');
+    if (turned && plan.movedTo) {
+      addToast(t('toast.rotateRepositioned', { distance: plan.movedTo.distance }), 'info');
+    } else if (turned && plan.halfTurnedInPlace) {
+      addToast(t('toast.binHalfTurned'), 'info');
     }
 
     onClose();

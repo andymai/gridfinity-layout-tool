@@ -566,6 +566,11 @@
           "$ref": "https://gridfinitylayouttool.com/schema/bin-design.schema.json#/$defs/SlantConfig",
           "description": "Per-placement slant. Wins over the linked design's own, so the last bin of a slanted row can carry the end support its design does not."
         },
+        "halfTurned": {
+          "type": "boolean",
+          "default": false,
+          "description": "The linked design stands half a turn from how its footprint reads, so a one-sided design can face either way on the same cells. Ignored on a bin with no linked design."
+        },
         "locked": {
           "type": "boolean",
           "default": false,

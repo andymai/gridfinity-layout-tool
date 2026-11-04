@@ -191,6 +191,31 @@ describe('v2 bin.update', () => {
     });
   });
 
+  describe('half turn', () => {
+    it('sets it, keeping the previous for undo', () => {
+      const layout = makeLayout({ bins: [makeBin('bin_1')] });
+      const set = updateBin.handle(
+        { id: 'bin_1', updates: { halfTurned: true } },
+        { aggregate: layout }
+      );
+      expect(isOk(set) && set.value.event.payload.changes.halfTurned).toBe(true);
+      expect(isOk(set) && set.value.event.payload.previous.halfTurned).toBeUndefined();
+    });
+
+    it("refuses one that would swing a design's end support out of the drawer", () => {
+      const design = designId('leaning');
+      registerLinkedSlantResolver(() => ({
+        config: { angleDeg: 40, side: 'back', endSupport: true },
+      }));
+      const layout = makeLayout({ bins: [makeBin('bin_1', { linkedDesignId: design })] });
+      const result = updateBin.handle(
+        { id: 'bin_1', updates: { halfTurned: true } },
+        { aggregate: layout }
+      );
+      expect(isOk(result)).toBe(false);
+    });
+  });
+
   describe('slant', () => {
     const SLANT = { angleDeg: 40, side: 'back' as const, endSupport: true };
 

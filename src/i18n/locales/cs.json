@@ -4820,6 +4820,7 @@
   "toast.binBlocked.default": "Bin sem nelze přesunout",
   "toast.binBlocked.exceedsHeight": "Bin by přesáhl výšku zásuvky",
   "toast.binRotated": "Bin otočen",
+  "toast.binHalfTurned": "Bin otočen o 180°",
   "toast.binSizeLocked": "Velikost tohoto binu je zamčená",
   "toast.binsDeleted": "Smazáno {count} binů",
   "toast.binsDisplacedByShape": "{count} binů přesunuto do Stash (mimo nový tvar)",

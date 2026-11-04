@@ -1438,6 +1438,7 @@
   "toast.eventPersistFailed": "ბოლო ცვლილებების ნაწილის შენახვა ვერ მოხერხდა. გაუქმებების ისტორია შეიძლება არასრული იყოს.",
   "toast.binsDeleted": "წაიშალა {count} ყუთი",
   "toast.binRotated": "ყუთი მობრუნდა",
+  "toast.binHalfTurned": "ყუთი შემობრუნდა 180°-ით",
   "toast.clearComplete": "ფენიდან გასუფთავდა {count} ყუთი",
   "toast.fillComplete": "სიცარიელეების შესავსებად დამატებულია {count} ყუთი",
   "toast.fillWithSize": "დამატებულია {count} ცალი {width}×{depth} ყუთი",

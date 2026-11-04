@@ -4820,6 +4820,7 @@
   "toast.binBlocked.default": "Kan ikke flytte bin hit",
   "toast.binBlocked.exceedsHeight": "Bin ville overstige skuffehøyden",
   "toast.binRotated": "Bin rotert",
+  "toast.binHalfTurned": "Binen er rotert 180°",
   "toast.binSizeLocked": "Størrelsen på denne beholderen er låst",
   "toast.binsDeleted": "Slettet {count} bin(s)",
   "toast.binsDisplacedByShape": "{count} bin(ner) flyttet til lageret (utenfor den nye formen)",

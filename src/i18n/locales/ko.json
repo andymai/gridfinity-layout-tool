@@ -4820,6 +4820,7 @@
   "toast.binBlocked.default": "여기에 수납통을 옮길 수 없습니다",
   "toast.binBlocked.exceedsHeight": "수납통이 서랍 높이를 초과합니다",
   "toast.binRotated": "수납통을 회전했습니다",
+  "toast.binHalfTurned": "수납통을 180° 회전했습니다",
   "toast.binSizeLocked": "이 수납통의 크기는 잠겨 있습니다",
   "toast.binsDeleted": "수납통 {count}개를 삭제했습니다",
   "toast.binsDisplacedByShape": "수납통 {count}개를 임시 보관함으로 이동했습니다(새 모양 바깥)",

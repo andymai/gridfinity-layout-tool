@@ -4820,6 +4820,7 @@
   "toast.binBlocked.default": "无法将收纳盒移到这里",
   "toast.binBlocked.exceedsHeight": "收纳盒会超出抽屉高度",
   "toast.binRotated": "收纳盒已旋转",
+  "toast.binHalfTurned": "收纳盒已旋转 180°",
   "toast.binSizeLocked": "该收纳盒的尺寸已锁定",
   "toast.binsDeleted": "已删除 {count} 个收纳盒",
   "toast.binsDisplacedByShape": "{count} 个收纳盒被移入暂存区（在新形状之外）",
