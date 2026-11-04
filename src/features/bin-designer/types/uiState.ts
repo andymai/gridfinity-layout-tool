@@ -6,10 +6,11 @@ import type { AssemblyPartType } from '@/shared/types/assembly';
 import type { OverhangHighlightSide } from './walls';
 import type { MeasurePoint } from '@/features/bin-designer/utils/measure3d';
 import type { BodyTypeMemory } from './bodyTypeMemory';
+import type { ScanLaunchSource } from '@/core/store/scanLaunch';
 
 /** Where a "Scan a tool" dialog was opened from, reported with `scan_opened`. */
 export type ScanSource =
-  'card' | 'interior_link' | 'header' | 'toolbar' | 'empty_board' | 'workshop';
+  'card' | 'interior_link' | 'header' | 'toolbar' | 'empty_board' | 'workshop' | ScanLaunchSource;
 
 /**
  * Eyedropper click anchor: which zone was hit and the viewport coords
@@ -110,6 +111,11 @@ export interface DesignerUIState {
   readonly cutoutTarget: CutoutTarget;
   /** Where the open "Scan a tool" dialog was opened from; null while it is closed. */
   readonly scanDialogSource: ScanSource | null;
+  /**
+   * Set for a bin started by "Scan a tool": each scan added while the dialog
+   * stays open grows the bin to fit, in the same undo step as the add.
+   */
+  readonly growBinForScan: boolean;
   /** Whether the full-workspace bento editor is open (desktop only) */
   readonly bentoWorkspaceOpen: boolean;
   /**

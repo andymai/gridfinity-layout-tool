@@ -99,22 +99,27 @@ export function createUISlice(set: Set) {
         // part — the same class of leak `setBentoWorkspaceOpen` clears
         // `selectedBentoCompartmentId` for.
         state.ui.cutoutTarget = open ? target : 'bin';
-        if (!open) state.ui.scanDialogSource = null;
+        if (!open) {
+          state.ui.scanDialogSource = null;
+          state.ui.growBinForScan = false;
+        }
       });
     },
 
-    openScanDialog: (source: ScanSource) => {
+    openScanDialog: (source: ScanSource, growBin = false) => {
       set((state) => {
         state.ui.cutoutEditorOpen = true;
         state.ui.bentoWorkspaceOpen = false;
         state.ui.cutoutTarget = 'bin';
         state.ui.scanDialogSource = source;
+        state.ui.growBinForScan = growBin;
       });
     },
 
     closeScanDialog: () => {
       set((state) => {
         state.ui.scanDialogSource = null;
+        state.ui.growBinForScan = false;
       });
     },
 
@@ -127,6 +132,7 @@ export function createUISlice(set: Set) {
         if (open) {
           state.ui.cutoutEditorOpen = false;
           state.ui.scanDialogSource = null;
+          state.ui.growBinForScan = false;
           // Closing the editor from here has to reset the target too, or
           // `cutoutTarget` stays on the lid with no editor open and the next
           // cutout action writes the wrong array.

@@ -5,6 +5,8 @@ import { useViewStore } from '@/core/store/view';
 import { useTranslation } from '@/i18n';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
+import { useScanLaunch } from '@/shared/hooks/useScanLaunch';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 import type { WhatsNewAction, WhatsNewEntry, WhatsNewKind } from '@/features/whats-new';
 import type { Locale } from '@/i18n/types';
 
@@ -31,9 +33,18 @@ export function useDestinationLabel(entry: WhatsNewEntry): string | null {
   if (entry.labs !== undefined) return t('whatsNew.action.openLabs');
   const action = entry.action;
   if (!action) return null;
-  return action.kind === 'openTool'
-    ? t(`whatsNew.action.openTool.${action.tool}`)
-    : t(`whatsNew.action.openModal.${action.modal}`);
+  switch (action.kind) {
+    case 'openTool':
+      return t(`whatsNew.action.openTool.${action.tool}`);
+    case 'openModal':
+      return t(`whatsNew.action.openModal.${action.modal}`);
+    case 'scanTool':
+      return t('whatsNew.action.scanTool');
+    default: {
+      const _exhaustive: never = action;
+      throw new Error(`whats-new: unknown action ${JSON.stringify(_exhaustive)}`);
+    }
+  }
 }
 
 /**
@@ -47,6 +58,8 @@ export function useEntryActivation(onNavigate: () => void): Activate {
   const openLabsDrawer = useLabsStore((state) => state.openDrawer);
   const { navigateToDesigner, navigateToPlanner } = useDesignerRouting();
   const { navigateToBaseplate } = useBaseplateRouting();
+  const launchScan = useScanLaunch();
+  const { isDesktop } = useResponsive();
 
   const run = useCallback(
     (action: WhatsNewAction) => {
@@ -83,6 +96,12 @@ export function useEntryActivation(onNavigate: () => void): Activate {
               throw new Error(`whats-new: unknown modal ${_exhaustive as string}`);
             }
           }
+        case 'scanTool':
+          // The cut editor only renders on desktop; elsewhere the designer is
+          // the nearest place the entry can point.
+          if (isDesktop) launchScan('whats_new');
+          else navigateToDesigner();
+          return;
         default: {
           const _exhaustive: never = action;
           throw new Error(`whats-new: unknown action ${JSON.stringify(_exhaustive)}`);
@@ -90,6 +109,8 @@ export function useEntryActivation(onNavigate: () => void): Activate {
       }
     },
     [
+      isDesktop,
+      launchScan,
       navigateToBaseplate,
       navigateToDesigner,
       navigateToPlanner,

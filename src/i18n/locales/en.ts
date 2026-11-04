@@ -5081,6 +5081,7 @@ const en: Record<string, string> = {
   // Tool commands
   'commandPalette.toggleHalfBin': 'Toggle Half-Bin Mode',
   'commandPalette.fillGaps': 'Fill Layer Gaps',
+  'commandPalette.scanTool': 'Scan a Tool',
 
   // Export commands
   'commandPalette.exportLayout3D': 'Export Layout as ZIP (3D)',
@@ -6087,6 +6088,7 @@ const en: Record<string, string> = {
   'whatsNew.action.openModal.baseplateLibrary': 'Open baseplate library',
   'whatsNew.action.openModal.print': 'Open print list',
   'whatsNew.action.openModal.designGallery': 'Open gallery',
+  'whatsNew.action.scanTool': 'Scan a tool',
   'whatsNew.action.openLabs': 'Open Labs',
   'settings.general.showUpdateSummaries': 'Show update summaries',
   'settings.search.keywords.updateSummaries':

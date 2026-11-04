@@ -18,6 +18,9 @@ import { byDescendingArea } from '../importStackOrder';
 import { centerOffBoardCutouts, type CutoutBoard } from '../offBoardCutouts';
 import { generateLayoutId, generateUUID } from '@/shared/utils/uuid';
 import { SCAN_CLEARANCE_MM } from '@/shared/scanReview/traceExport';
+import { computeGrowToFit } from '../growBinToFit';
+import { getCutoutBounds } from '../maskFit';
+import { translateCutout } from '../cutoutHelpers';
 
 export interface UseScanImportReturn {
   /** Hydrate and add scan specs as cutouts in one undo transaction. Returns the count added. */
@@ -50,15 +53,33 @@ function withScanFit(cutout: Cutout, cutDepth: number): Cutout {
   };
 }
 
+/**
+ * The batch moved so its far corner is its size. A trace's frame can sit a
+ * hair before the origin, which `computeGrowToFit` refuses to size; the batch
+ * is centred on the board right after, so where it starts doesn't matter.
+ */
+function atOrigin(cutouts: readonly Cutout[]): Cutout[] {
+  let minX = 0;
+  let minY = 0;
+  for (const cutout of cutouts) {
+    const b = getCutoutBounds(cutout);
+    minX = Math.min(minX, b.minX);
+    minY = Math.min(minY, b.minY);
+  }
+  return cutouts.map((c) => translateCutout(c, -minX, -minY));
+}
+
 export function useScanImport(): UseScanImportReturn {
-  const { addCutout, startTransaction, commitTransaction, queueDepthPrompt } = useDesignerStore(
-    useShallow((s) => ({
-      addCutout: s.addCutout,
-      startTransaction: s.startTransaction,
-      commitTransaction: s.commitTransaction,
-      queueDepthPrompt: s.queueDepthPrompt,
-    }))
-  );
+  const { addCutout, setParams, startTransaction, commitTransaction, queueDepthPrompt } =
+    useDesignerStore(
+      useShallow((s) => ({
+        addCutout: s.addCutout,
+        setParams: s.setParams,
+        startTransaction: s.startTransaction,
+        commitTransaction: s.commitTransaction,
+        queueDepthPrompt: s.queueDepthPrompt,
+      }))
+    );
 
   const addScanCutouts = useCallback(
     (specs: readonly ParsedCutoutSpec[], cutDepth: number = DEFAULT_CUT_DEPTH): number => {
@@ -82,19 +103,31 @@ export function useScanImport(): UseScanImportReturn {
       const cutouts = containerId
         ? hydrated.map((c) => ({ ...c, parentGroups: [containerId] }))
         : hydrated;
-      // Unlike an SVG, a scan has no layout to keep: its coordinates are the
-      // outline's own frame, corner at the origin, which sits flush in the bin's
-      // corner and a rounding hair past it. One scan moves to the middle as a
-      // block; a scan the bin cannot hold stays put and keeps its warning.
-      const moves = centerOffBoardCutouts(
-        cutouts,
-        binBoard(params),
-        new Set(cutouts.map((c) => c.id))
-      );
-
       const addedIds: string[] = [];
       startTransaction();
       try {
+        // Grown before placing, so the scan centers on the floor it will have.
+        let board = params;
+        if (ui.growBinForScan) {
+          const grown = computeGrowToFit(
+            params,
+            [...params.cutouts, ...atOrigin(cutouts)],
+            ui.halfGridMode
+          );
+          if (grown) {
+            setParams({ width: grown.width, depth: grown.depth });
+            board = useDesignerStore.getState().params;
+          }
+        }
+        // Unlike an SVG, a scan has no layout to keep: its coordinates are the
+        // outline's own frame, corner at the origin, which sits flush in the bin's
+        // corner and a rounding hair past it. One scan moves to the middle as a
+        // block; a scan the bin cannot hold stays put and keeps its warning.
+        const moves = centerOffBoardCutouts(
+          cutouts,
+          binBoard(board),
+          new Set(cutouts.map((c) => c.id))
+        );
         for (const cutout of cutouts) {
           if (addCutout({ ...cutout, ...moves.get(cutout.id) })) addedIds.push(cutout.id);
         }
@@ -112,7 +145,7 @@ export function useScanImport(): UseScanImportReturn {
       // remember why it happened to be right.
       return added;
     },
-    [addCutout, startTransaction, commitTransaction, queueDepthPrompt]
+    [addCutout, setParams, startTransaction, commitTransaction, queueDepthPrompt]
   );
 
   return { addScanCutouts };

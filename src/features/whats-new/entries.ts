@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'scan-a-tool-anywhere',
+    date: '2026-11-04',
+    kind: 'improved',
+    featured: true,
+    title: { en: 'Scan a tool from more places' },
+    body: {
+      en: 'Photograph a tool and the bin designer cuts a pocket that fits it. Start from Scan a tool on the Custom Cutouts card, the link under the other Interior modes, the Cut Editor’s header, or the command palette (Ctrl/Cmd+K, then type scan). It asks first whether the photo is on your phone or already on this computer. From the command palette outside the bin designer, it starts a new bin that grows to fit what you scan.',
+    },
+    action: { kind: 'scanTool' },
+  },
+  {
     id: 'measuring-strips',
     date: '2026-11-03',
     kind: 'new',
