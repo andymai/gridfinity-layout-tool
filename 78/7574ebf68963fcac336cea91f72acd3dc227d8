@@ -1,0 +1,48 @@
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.tsx
+  s_169ca198965180::t_b2e77bdbe01691 106-122
+src/features/bin-designer/search/useDesignerSettingsSearch.ts
+  s_169ca198965180::t_36882efcd49bfd 114-117
+src/features/bin-designer/components/panel/shared/ModeTiles.test.tsx
+  s_169ca198965180::t_cb8afa67152cb1 61-76
+src/features/bin-designer/search/searchCoverage.test.tsx
+  s_169ca198965180::t_36882efcd49bfd 20
+src/features/bin-designer/components/panel/shared/ModeTiles.tsx
+  s_169ca198965180::t_b2e77bdbe01691 26-27,43,122
+src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.tsx
+  s_169ca198965180::t_5c130687fab931 538,627-628,630-634
+src/features/bin-designer/utils/startScan.ts
+  s_169ca198965180::t_575a7343267cff 7
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_169ca198965180::t_575a7343267cff 232-235
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanToolDialog.tsx
+  s_169ca198965180::t_575a7343267cff 85-86,88-89
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanToolDialog.test.tsx
+  s_169ca198965180::t_575a7343267cff 82,84-90
+src/features/bin-designer/search/designerControlRegistry.ts
+  s_169ca198965180::t_36882efcd49bfd 529-530,555-556
+src/features/bin-designer/search/designerControlRegistry.test.ts
+  s_169ca198965180::t_36882efcd49bfd 19,67
+src/features/bin-designer/search/useDesignerSettingsSearch.test.tsx
+  s_169ca198965180::t_5c130687fab931 33-41
+  s_169ca198965180::t_36882efcd49bfd 16,26
+src/i18n/locales/pl.json
+  s_169ca198965180::t_575a7343267cff 1412
+src/features/bin-designer/components/ParameterPanel/DesignerSearchBar/DesignerSearchBar.tsx
+  s_169ca198965180::t_36882efcd49bfd 8-9,55-57,61-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "787574ebf68963fcac336cea91f72acd3dc227d8",
+  "prompts": {},
+  "sessions": {
+    "s_169ca198965180": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7cae772c-5519-4831-875c-a4d30af16b6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
