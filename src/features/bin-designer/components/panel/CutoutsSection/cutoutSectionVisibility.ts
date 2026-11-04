@@ -6,6 +6,16 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { CLEARANCE_SHAPES, CHAMFER_SHAPES } from '@/features/bin-designer/types';
+import type { InteractionMode } from './cutoutInteractionTypes';
+
+/**
+ * Whether the empty-board hint (draw shortcuts and the scan entry) shows. An
+ * armed tool counts as at rest: an empty board opens with the rectangle tool
+ * armed, so gating on `idle` alone hides the hint on every first view.
+ */
+export function showsEmptyBoardHint(cutoutCount: number, mode: InteractionMode): boolean {
+  return cutoutCount === 0 && (mode.type === 'idle' || mode.type === 'placing');
+}
 
 /** Which insertion-fit field is focused, for the live canvas cue. */
 export type FitCue = 'clearance' | 'chamfer' | null;

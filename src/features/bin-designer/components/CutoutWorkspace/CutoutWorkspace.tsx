@@ -52,6 +52,7 @@ import { usePocketChecks } from '../panel/CutoutsSection/usePocketChecks';
 import { InspectorDock } from './InspectorDock';
 import { ShapeList } from './ShapeList';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
+import { showsEmptyBoardHint } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { applyFlattenArray, applyFlattenGroupArray } from '../panel/CutoutsSection/cutoutHelpers';
 import { CutoutContextMenu } from '../panel/CutoutsSection/CutoutContextMenu';
 import { TopRuler, LeftRuler, RulerCorner } from './Rulers';
@@ -781,7 +782,7 @@ export function CutoutWorkspace() {
               onWheel={handleWheel}
               onContextMenu={handleContextMenu}
             >
-              {cutouts.length === 0 && mode.type === 'idle' && (
+              {showsEmptyBoardHint(cutouts.length, mode) && (
                 <CutoutEmptyState
                   variant="workspace"
                   onScanWithPhone={!isLid ? () => setScanDialogOpen(true) : undefined}
@@ -894,7 +895,9 @@ export function CutoutWorkspace() {
         <RepeatSuggestion suggestion={repeatSuggestion} placement="chip" disabled={isInteracting} />
       )}
 
-      {showQuickstart && <CutoutQuickstartOverlay onDismiss={handleDismissQuickstart} />}
+      {showQuickstart && (
+        <CutoutQuickstartOverlay onDismiss={handleDismissQuickstart} showScan={!isLid} />
+      )}
 
       {contextMenu && (
         <CutoutContextMenu

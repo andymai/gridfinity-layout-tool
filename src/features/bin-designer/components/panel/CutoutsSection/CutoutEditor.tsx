@@ -16,6 +16,7 @@ import { CutoutPropertyPanel } from './CutoutPropertyPanel';
 import { AlignmentToolbar } from './AlignmentToolbar';
 import { CutoutContextMenu } from './CutoutContextMenu';
 import { CutoutEmptyState } from './CutoutEmptyState';
+import { showsEmptyBoardHint } from './cutoutSectionVisibility';
 import { CutoutFillControls } from '@/features/bin-designer/components/controls';
 import { useCutoutEditor } from './useCutoutEditor';
 import { CANVAS_WIDTH } from './useCutoutEditor';
@@ -131,7 +132,7 @@ export function CutoutEditor() {
         className="relative rounded border border-stroke-subtle bg-surface-secondary overflow-hidden"
         onContextMenu={handleContextMenu}
       >
-        {cutouts.length === 0 && mode.type === 'idle' && (
+        {showsEmptyBoardHint(cutouts.length, mode) && (
           <CutoutEmptyState variant="sidebar" onScanWithPhone={() => setScanDialogOpen(true)} />
         )}
         <CutoutCanvas3D

@@ -18,17 +18,15 @@ function ToolbarTooltip({
   children,
 }: {
   readonly label: string;
-  readonly shortcut: string;
+  readonly shortcut: string | null;
   readonly children: ReactNode;
 }) {
   return (
     <div className="relative group">
       {children}
-      {/* eslint-disable i18next/no-literal-string -- formatting parens around shortcut key */}
       <div className="tooltip hidden group-hover:block absolute left-full top-1/2 -translate-y-1/2 ml-2 z-50">
-        {label} ({shortcut})
+        {shortcut === null ? label : `${label} (${shortcut})`}
       </div>
-      {/* eslint-enable i18next/no-literal-string */}
     </div>
   );
 }
@@ -110,7 +108,7 @@ export function CutoutShapeToolbar({
   const iconSize = vertical ? 'h-5 w-5' : 'h-3.5 w-3.5';
 
   /** Conditionally wraps a button in a ToolbarTooltip (vertical mode only) */
-  const wrap = (label: string, shortcut: string, btn: ReactNode) =>
+  const wrap = (label: string, shortcut: string | null, btn: ReactNode) =>
     vertical ? (
       <ToolbarTooltip label={label} shortcut={shortcut}>
         {btn}
@@ -411,7 +409,7 @@ export function CutoutShapeToolbar({
       {onScanWithPhone &&
         wrap(
           t('binDesigner.cutouts.scanImport.title'),
-          'K',
+          null,
           <Button
             type="button"
             variant="ghost"

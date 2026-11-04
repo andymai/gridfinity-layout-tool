@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useCutoutInteraction } from './useCutoutInteraction';
+import { showsEmptyBoardHint } from './cutoutSectionVisibility';
 
 const createCutout = (id: string, overrides: Partial<Cutout> = {}): Cutout => ({
   id,
@@ -46,6 +47,11 @@ describe('useCutoutInteraction', () => {
   it('starts in rectangle placing mode on an empty board', () => {
     const { result } = renderHook(() => useCutoutInteraction({ ...defaultOpts, cutouts: [] }));
     expect(result.current.mode).toEqual({ type: 'placing', shape: 'rectangle' });
+  });
+
+  it('opens an empty board in a mode that shows the empty-board hint', () => {
+    const { result } = renderHook(() => useCutoutInteraction({ ...defaultOpts, cutouts: [] }));
+    expect(showsEmptyBoardHint(0, result.current.mode)).toBe(true);
   });
 
   it('keeps the pointer tool when cutouts arrive after mount', () => {
