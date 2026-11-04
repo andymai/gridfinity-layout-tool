@@ -2,9 +2,13 @@ import type { BinParams } from '@/shared/types/bin';
 import {
   LABEL_PLATE_HEIGHT_MM,
   LABEL_SOCKET_WALL_MM,
+  defaultLabelShelfTopMm,
   effectiveLabelSocketClearance,
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
+import { isPartialMask } from '@/shared/utils/cellMask';
+import { planLabelTabLayout } from '@/shared/utils/labelTabPlan';
+import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
 import { planLabelPlateSeats } from './labelTabBuilder';
 
 /** An axis-aligned box in the bin-interior frame, open upward from `z0`. */
@@ -51,5 +55,47 @@ export function planLabelSocketKeepouts(
       y1: Math.max(anchorEdge, openEdge),
       z0: seat.z,
     };
+  });
+}
+
+/**
+ * The air above a tab held below the interior ceiling. The fillet climbs to that
+ * ceiling, so a corner rounded under the tab would stand proud of it by the
+ * little the tab was held back. A tab the user lowered further is left out: well
+ * below the ceiling, the rounded corner rising from it is just the corner.
+ *
+ * Reaches past any side the tab shares with a wall or divider, because the
+ * fillet's bonding overlap runs inside them and a cut ending on their face would
+ * leave a coplanar sliver for the fuse.
+ */
+export function planLabelShelfKeepouts(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  interiorHeight: number,
+  wallThickness: number
+): LabelSocketKeepout[] {
+  if (!params.label.enabled || isPartialMask(params.cellMask)) return [];
+  const layout = planLabelTabLayout(params, innerW, innerD, interiorHeight, wallThickness);
+  if (!layout) return [];
+  const { shelfTopZ, tabDepth } = layout.dims;
+  const highest = defaultLabelShelfTopMm(
+    interiorHeight,
+    params.base.stackingLip,
+    params.label,
+    labelShelfKeepoutMm(params)
+  );
+  if (highest >= interiorHeight || shelfTopZ < highest) return [];
+
+  const reach = 0.75 * Math.min(wallThickness, params.compartments.thickness);
+  return layout.plannedRows.flatMap((planned) => {
+    const towardBack = planned.anchor === 'back';
+    return planned.slots.map((slot) => ({
+      x0: slot.tabXStart - (slot.touchesLeft ? reach : 0),
+      x1: slot.tabXStart + slot.tabWidth + (slot.touchesRight ? reach : 0),
+      y0: towardBack ? slot.positionY - tabDepth : slot.positionY - reach,
+      y1: towardBack ? slot.positionY + reach : slot.positionY + tabDepth,
+      z0: shelfTopZ,
+    }));
   });
 }

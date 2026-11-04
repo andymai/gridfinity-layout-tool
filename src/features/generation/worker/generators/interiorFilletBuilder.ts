@@ -52,7 +52,7 @@ import type { ResolvedTaper } from './overhang';
 import { buildWallCutoutCuts, interiorDividerTopZ } from './wallCutoutBuilder';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import type { BinDimensions } from './pipeline/types';
-import { planLabelSocketKeepouts } from './labelSocketKeepouts';
+import { planLabelShelfKeepouts, planLabelSocketKeepouts } from './labelSocketKeepouts';
 import type { LabelSocketKeepout } from './labelSocketKeepouts';
 import { sketch } from './meshUtils';
 
@@ -338,13 +338,11 @@ function trimDoorways(
 }
 
 function labelSocketKeepouts(params: BinParams, dim: BinDimensions): LabelSocketKeepout[] {
-  return planLabelSocketKeepouts(
-    params,
-    dim.innerW,
-    dim.innerD,
-    dim.interiorHeight,
-    params.wallThickness
-  );
+  const { innerW, innerD, interiorHeight } = dim;
+  return [
+    ...planLabelSocketKeepouts(params, innerW, innerD, interiorHeight, params.wallThickness),
+    ...planLabelShelfKeepouts(params, innerW, innerD, interiorHeight, params.wallThickness),
+  ];
 }
 
 /**

@@ -31,6 +31,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
 import {
   assertPocketCornersOpen,
+  assertShelfLevelAcrossTab,
   assertSlideCavity,
   assertSlidePathOpen,
 } from '../__kernel-tests__/labelSocketClearance';
@@ -444,6 +445,24 @@ export const labelSockets: ScenarioCase[] = [
       customAssert: (result, params) => assertSlidePathOpen(result, params, '2x3-lowered-slide'),
     }
   ),
+
+  // On a lipped bin the click-in shelf sinks below the ceiling the fillet climbs
+  // to, so a corner rounded under the tab would stand proud of its border.
+  defineScenario('label sockets', 'lipped left-aligned tab stays level across a 10mm fillet', {
+    params: {
+      width: 2,
+      depth: 2,
+      height: 10,
+      wallThickness: 2.4,
+      interiorFilletMm: 10,
+      label: { ...SOCKET_LABEL, alignment: 'left' as const, width: 50 },
+    },
+    customAssert: (result, params) =>
+      assertShelfLevelAcrossTab(result, params, {
+        sunkMm: LABEL_SOCKET_STACK_RELIEF_MM,
+        label: 'lipped-left-fillet-10',
+      }),
+  }),
 
   // A fillet this wide reaches a pocket even behind full 1mm end walls.
   defineScenario('label sockets', '2×1 socket clears a 10mm interior fillet', {
