@@ -1,0 +1,69 @@
+src/i18n/locales/nb.json
+  s_169ca198965180::t_e6dc98cc4f7ba1 1011-1012
+src/features/bin-designer/components/PhoneToolList/PhoneToolList.test.tsx
+  s_169ca198965180::t_99fb58d591e07e 57-59,61,66-67,76-77
+  s_169ca198965180::t_ea5a2f47bdd472 54,56,60,62-64,68-75
+  s_169ca198965180::t_15b35bad4b37da 23-26,29,55,65
+  s_169ca198965180::t_20c3c46251f062 1-22,27-28,30-53,78-87
+src/i18n/locales/ka.json
+  s_169ca198965180::t_e6dc98cc4f7ba1 3081-3082
+src/i18n/locales/en.ts
+  s_169ca198965180::t_e6dc98cc4f7ba1 3659-3660
+src/i18n/locales/ko.json
+  s_169ca198965180::t_e6dc98cc4f7ba1 1011-1012
+src/i18n/locales/zh-CN.json
+  s_169ca198965180::t_e6dc98cc4f7ba1 1011-1012
+src/i18n/locales/pl.json
+  s_169ca198965180::t_e6dc98cc4f7ba1 1011-1012
+src/features/bin-designer/components/panel/CutoutsSection/packIntoBin.ts
+  s_169ca198965180::t_e1e7aa48990880 6,12-22
+  s_169ca198965180::t_ea5a2f47bdd472 31-34,36-40,49
+  s_169ca198965180::t_a293eb455b5092 23
+src/i18n/locales/es.json
+  s_169ca198965180::t_e6dc98cc4f7ba1 1011-1012
+src/features/bin-designer/components/PhoneToolList/PhoneToolList.tsx
+  s_169ca198965180::t_e6dc98cc4f7ba1 1-14,16-44,52-55,57-67,69-79,83-115
+  s_169ca198965180::t_606c457dfc5c05 80-82
+  s_169ca198965180::t_ea5a2f47bdd472 15,45-51,56,68
+src/i18n/locales/fr.json
+  s_169ca198965180::t_e6dc98cc4f7ba1 1011-1012
+src/i18n/locales/it.json
+  s_169ca198965180::t_e6dc98cc4f7ba1 1011-1012
+src/features/bin-designer/components/PhoneToolList/index.ts
+  s_169ca198965180::t_e6dc98cc4f7ba1 1
+src/i18n/locales/ja.json
+  s_169ca198965180::t_e6dc98cc4f7ba1 1011-1012
+src/i18n/locales/pt-BR.json
+  s_169ca198965180::t_e6dc98cc4f7ba1 1011-1012
+src/i18n/locales/sv.json
+  s_169ca198965180::t_e6dc98cc4f7ba1 1011-1012
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.ts
+  s_169ca198965180::t_e6dc98cc4f7ba1 13
+  s_169ca198965180::t_e1e7aa48990880 17,23-25
+src/features/bin-designer/components/panel/InteriorSection/InteriorModes.tsx
+  s_169ca198965180::t_606c457dfc5c05 28,156
+src/i18n/locales/cs.json
+  s_169ca198965180::t_e6dc98cc4f7ba1 1011-1012
+src/i18n/locales/nl.json
+  s_169ca198965180::t_e6dc98cc4f7ba1 1011-1012
+src/i18n/locales/de.json
+  s_169ca198965180::t_e6dc98cc4f7ba1 1011-1012
+src/i18n/locales/uk.json
+  s_169ca198965180::t_e6dc98cc4f7ba1 1011-1012
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a46894d5cd5ea1f8b483fe5f751f5594b97c7c75",
+  "prompts": {},
+  "sessions": {
+    "s_169ca198965180": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7cae772c-5519-4831-875c-a4d30af16b6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
