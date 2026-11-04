@@ -526,6 +526,8 @@ export interface ControlAvailabilityContext {
   readonly slideTrayEnabled: boolean;
   /** The `slant` labs flag, or a design that already leans: when the Slant section mounts. */
   readonly slantVisible: boolean;
+  /** Desktop, with a bin that can take cutouts: when a "Scan a tool" entry renders. */
+  readonly scanAvailable: boolean;
 }
 
 /**
@@ -550,6 +552,8 @@ export function isDesignerControlAvailable(
       return ctx.slantVisible;
     case 'bd-print-fit':
       return ctx.viewMode === 'rail' || ctx.needsSplit;
+    case SCAN_TOOL_TARGET:
+      return ctx.scanAvailable;
     default:
       return true;
   }

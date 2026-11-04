@@ -535,7 +535,7 @@ export function WorkspaceHeader({
   };
 
   return (
-    <div className="flex flex-col border-b border-stroke-subtle bg-surface-secondary">
+    <div className="@container flex flex-col border-b border-stroke-subtle bg-surface-secondary">
       <div className="flex h-10 items-center justify-between px-3">
         <div className="flex min-w-0 items-center gap-3 flex-shrink-0">
           <span className="text-sm font-medium text-content">
@@ -624,8 +624,14 @@ export function WorkspaceHeader({
               leftIcon={<ScanToolIcon size="xs" />}
               onClick={onScanTool}
               disabled={disabled}
+              aria-label={t('binDesigner.cutouts.scanImport.title')}
+              title={t('binDesigner.cutouts.scanImport.title')}
             >
-              {t('binDesigner.cutouts.scanImport.title')}
+              {/* The editor shares its row with the 3D preview and can be narrow;
+                  the label goes before Done would be clipped. */}
+              <span className="hidden @2xl:inline">
+                {t('binDesigner.cutouts.scanImport.title')}
+              </span>
             </Button>
           )}
           <div className="flex items-center gap-0.5 rounded border border-stroke-subtle bg-surface-elevated">

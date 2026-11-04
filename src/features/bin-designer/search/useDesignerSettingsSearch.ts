@@ -111,8 +111,10 @@ export function useDesignerSettingsSearch(
     }
 
     // Finer sub-options join the sections only once the user is searching.
-    const options = DESIGNER_OPTION_RECORDS.filter((o) =>
-      isDesignerControlAvailable(o.section, ctx)
+    const options = DESIGNER_OPTION_RECORDS.filter(
+      (o) =>
+        isDesignerControlAvailable(o.section, ctx) &&
+        (o.target === undefined || isDesignerControlAvailable(o.target, ctx))
     ).flatMap((o): SearchableRecord<ResultMeta>[] => {
       const category = categoryForControl(o.section);
       const titleKey = TITLE_KEY_OF_SECTION.get(o.section);
