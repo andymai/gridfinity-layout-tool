@@ -43,6 +43,20 @@ describe('usePhotoDropAndPaste', () => {
     expect(intoField.defaultPrevented).toBe(false);
   });
 
+  it('leaves a paste made inside another dialog to that dialog', () => {
+    const onPhoto = vi.fn();
+    renderHook(() => usePhotoDropAndPaste(true, onPhoto));
+    const dialog = document.createElement('div');
+    dialog.setAttribute('role', 'dialog');
+    const button = document.createElement('button');
+    dialog.appendChild(button);
+    document.body.appendChild(dialog);
+
+    paste([photo], button);
+    expect(onPhoto).not.toHaveBeenCalled();
+    dialog.remove();
+  });
+
   it('ignores a paste while the board sits in an inert subtree', () => {
     const onPhoto = vi.fn();
     const locked = document.createElement('div');

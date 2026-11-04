@@ -25,6 +25,8 @@ export function usePhotoDropAndPaste(
     if (!enabled) return;
     const onPaste = (e: ClipboardEvent) => {
       if (focusOwnsKeys(e.target) || scope?.current?.closest('[inert]')) return;
+      // Another dialog open over the editor owns the paste.
+      if (e.target instanceof Element && e.target.closest('[role="dialog"]')) return;
       const file = firstPhoto(e.clipboardData?.files);
       if (!file) return;
       e.preventDefault();
