@@ -499,6 +499,9 @@ export function CutoutWorkspace() {
     onLock: lockCutouts,
     onUnlock: unlockCutouts,
     onSplitLine: handleSplitLine,
+    onImportSvg: triggerSvgImport,
+    // Matches the toolbar: an STL lands in the bin's array, never the lid's.
+    onImportStl: isLid ? undefined : stlImport.triggerImport,
     binWidth,
     binDepth,
     gridSize,
