@@ -1,5 +1,6 @@
 import type { Layout, Category, BinId, LayoutId, LayerId, CategoryId } from './types';
 import { binId, layerId, categoryId, mm, gridUnits, heightUnits } from './types';
+import { fitsBedAtAnyAngle } from './bedFit';
 export const CONSTRAINTS = {
   GRID_MIN: 0.5, // Minimum drawer dimension (supports half-unit increments)
   GRID_MAX: 50,
@@ -115,6 +116,11 @@ export function calcMaxGridUnits(
 export interface BedCapacity {
   readonly width: number;
   readonly depth: number;
+  /**
+   * Set when the bin overruns the bed square-on and at 90° but fits lying at
+   * an angle. The capacity is then the bin's own size, so it reads as fitting.
+   */
+  readonly diagonal?: boolean;
 }
 
 /**
@@ -142,7 +148,8 @@ export function pickBedOrientation(
 /**
  * Bed capacity oriented for one bin: `calcMaxGridUnits` fitted both ways round
  * via `pickBedOrientation`. Compare the bin's own width and depth against the
- * result; a bin that only fits the bed turned 90° reads as fitting.
+ * result; a bin that only fits the bed turned 90°, or lying at an angle, reads
+ * as fitting.
  *
  * Both orientations are derived from the pitches, never by transposing one
  * capacity: on a non-square grid the turned width still counts in the X pitch
@@ -157,12 +164,16 @@ export function calcBedCapacityForBin(
   gridUnitMmY: number = gridUnitMm
 ): BedCapacity {
   const depthMm = printBedDepthMm ?? printBedWidthMm;
-  return pickBedOrientation(
+  const capacity = pickBedOrientation(
     binWidth,
     binDepth,
     calcMaxGridUnits(printBedWidthMm, gridUnitMm, depthMm, gridUnitMmY),
     calcMaxGridUnits(depthMm, gridUnitMm, printBedWidthMm, gridUnitMmY)
   );
+  if (binWidth <= capacity.width && binDepth <= capacity.depth) return capacity;
+  return fitsBedAtAnyAngle(binWidth * gridUnitMm, binDepth * gridUnitMmY, printBedWidthMm, depthMm)
+    ? { width: binWidth, depth: binDepth, diagonal: true }
+    : capacity;
 }
 
 export const STAGING_ID = '__staging__' as LayerId;

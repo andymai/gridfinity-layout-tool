@@ -564,6 +564,7 @@ const en: Record<string, string> = {
   'inspector.deselectAllBins': 'Deselect all bins',
   'inspector.deselectBin': 'Deselect bin',
   'inspector.fitsPrintBedDimensions': '{binWidth}×{binDepth} fits print bed ({max}mm)',
+  'inspector.fitsPrintBedDiagonally': '{binWidth}×{binDepth} fits print bed laid diagonally',
   'inspector.layer': 'Layer',
   'inspector.extendToMargin': 'Extend into drawer margin',
   'inspector.extendToMargin.hint':
@@ -4500,6 +4501,8 @@ const en: Record<string, string> = {
   'binDesigner.startANewDesign': 'Start a new design',
   'binDesigner.splitExport.exceedsPrintBed':
     'This bin exceeds your print bed ({size}mm). It will be split into {count} pieces.',
+  'binDesigner.splitExport.fitsDiagonally':
+    'This bin fits your print bed ({size}mm) only when laid diagonally. Turn it in your slicer, or split it into {count} pieces.',
   'binDesigner.splitExport.enableSplit': 'Split into pieces',
   'binDesigner.splitExport.downloadSplit': 'Download Split {format} (ZIP)',
   'binDesigner.splitExport.success': 'Split export completed ({count} pieces)',

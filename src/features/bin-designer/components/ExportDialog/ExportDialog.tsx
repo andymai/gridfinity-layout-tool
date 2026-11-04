@@ -86,13 +86,17 @@ export function ExportDialog() {
     exportProgress: exportFraction,
     downloadBin,
     needsSplit,
+    fitsDiagonally,
     splitPieceCount,
     downloadSplit,
   } = useExport();
   // Plates print apart from the bin, so the bin's download never carries them;
   // offering them here is what keeps a design's plates from going unnoticed.
   const { plates, isExporting: isExportingPlates, downloadPlates } = useLabelPlateExport();
-  const [splitEnabled, setSplitEnabled] = useState(true);
+  // Null until the box is ticked or cleared: a bin that only fits lying
+  // diagonally prints whole unless the user asks for pieces.
+  const [splitChoice, setSplitChoice] = useState<boolean | null>(null);
+  const splitEnabled = splitChoice ?? !fitsDiagonally;
   const [justExported, setJustExported] = useState(false);
   // With plates, the dialog finishes only once both files are taken, so the
   // first download never takes away the button for the other.
@@ -122,7 +126,7 @@ export function ExportDialog() {
   }, [designName, params, addToast, t]);
 
   const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
-  const useSplitExport = needsSplit && splitEnabled;
+  const useSplitExport = (needsSplit || fitsDiagonally) && splitEnabled;
 
   // Colored cutouts and compartments are multi-color on their own; zone colors
   // count only with the toggle on and a zone that differs from the body. STL
@@ -361,15 +365,17 @@ export function ExportDialog() {
         visible: plates.length > 0 && engineReady,
       }}
       splitBanner={
-        needsSplit
+        needsSplit || fitsDiagonally
           ? {
-              message: t('binDesigner.splitExport.exceedsPrintBed', {
-                size: printBedSize,
-                count: splitPieceCount,
-              }),
+              message: t(
+                fitsDiagonally
+                  ? 'binDesigner.splitExport.fitsDiagonally'
+                  : 'binDesigner.splitExport.exceedsPrintBed',
+                { size: printBedSize, count: splitPieceCount }
+              ),
               checkboxLabel: t('binDesigner.splitExport.enableSplit'),
               checked: splitEnabled,
-              onCheckedChange: setSplitEnabled,
+              onCheckedChange: setSplitChoice,
             }
           : null
       }

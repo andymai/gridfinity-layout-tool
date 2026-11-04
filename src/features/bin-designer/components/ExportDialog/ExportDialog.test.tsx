@@ -23,7 +23,7 @@ const mockLoadDesign = vi.fn();
 let mockShouldPromptSupport = false;
 const mockRecordExport = vi.fn();
 /** Split state the mocked hook reports; reset to "fits the bed" per test. */
-let mockSplitState = { needsSplit: false, splitPieceCount: 1 };
+let mockSplitState = { needsSplit: false, fitsDiagonally: false, splitPieceCount: 1 };
 const mockDownloadPlates = vi.fn(async () => true);
 let mockPlates: { widthU: number; text: string }[] = [];
 
@@ -92,6 +92,7 @@ vi.mock('@/features/bin-designer/hooks/useExport', () => ({
     downloadSplit: mockDownloadSplit,
     hasDividers: false,
     needsSplit: mockSplitState.needsSplit,
+    fitsDiagonally: mockSplitState.fitsDiagonally,
     splitPieceCount: mockSplitState.splitPieceCount,
     maxGridUnits: 6,
   }),
@@ -130,7 +131,7 @@ function setupStore(overrides: Record<string, unknown> = {}) {
 describe('ExportDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSplitState = { needsSplit: false, splitPieceCount: 1 };
+    mockSplitState = { needsSplit: false, fitsDiagonally: false, splitPieceCount: 1 };
     mockPlates = [];
     setupStore();
   });
@@ -667,7 +668,7 @@ describe('ExportDialog', () => {
 
   describe('oversized bin under STEP (#3501)', () => {
     beforeEach(() => {
-      mockSplitState = { needsSplit: true, splitPieceCount: 4 };
+      mockSplitState = { needsSplit: true, fitsDiagonally: false, splitPieceCount: 4 };
       mockDownloadSplit.mockResolvedValue(true);
       setupStore({
         exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, format: 'step' },
@@ -696,6 +697,43 @@ describe('ExportDialog', () => {
     it('names the download a ZIP — a split STEP is many files', () => {
       render(<ExportDialog />);
       expect(screen.getByText(/\.zip$/)).toBeInTheDocument();
+    });
+  });
+
+  describe('bin that fits the bed only lying diagonally', () => {
+    beforeEach(() => {
+      mockSplitState = { needsSplit: false, fitsDiagonally: true, splitPieceCount: 2 };
+      mockDownloadBin.mockResolvedValue(true);
+      mockDownloadSplit.mockResolvedValue(true);
+      setupStore({
+        exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, format: 'stl' },
+      });
+    });
+
+    it('says so and leaves the split unticked', () => {
+      render(<ExportDialog />);
+      expect(screen.getByText(/only when laid diagonally/i)).toBeInTheDocument();
+      expect(screen.queryByText(/exceeds your print bed/i)).not.toBeInTheDocument();
+      expect(screen.getByLabelText(/split into pieces/i)).not.toBeChecked();
+    });
+
+    it('exports the bin whole by default', async () => {
+      render(<ExportDialog />);
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /^download stl$/i }));
+      });
+      expect(mockDownloadBin).toHaveBeenCalled();
+      expect(mockDownloadSplit).not.toHaveBeenCalled();
+    });
+
+    it('splits once the box is ticked', async () => {
+      render(<ExportDialog />);
+      fireEvent.click(screen.getByLabelText(/split into pieces/i));
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /download split stl/i }));
+      });
+      expect(mockDownloadSplit).toHaveBeenCalled();
+      expect(mockDownloadBin).not.toHaveBeenCalled();
     });
   });
 
@@ -810,7 +848,7 @@ describe('ExportDialog', () => {
 describe('ExportDialog — design JSON', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSplitState = { needsSplit: false, splitPieceCount: 1 };
+    mockSplitState = { needsSplit: false, fitsDiagonally: false, splitPieceCount: 1 };
     setupStore();
   });
 
