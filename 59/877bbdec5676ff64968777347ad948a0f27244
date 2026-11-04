@@ -1,0 +1,97 @@
+src/design-system/Icon/index.ts
+  s_169ca198965180::t_7d028b27e9dfa1 93-99
+src/i18n/locales/cs.json
+  s_169ca198965180::t_ac38d0f412a98e 732,1004-1005,1011,1098,1414
+scripts/feature-tips/tipsUi.ts
+  s_169ca198965180::t_09357b521a3ccd 451,464
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanToolDialog.test.tsx
+  s_169ca198965180::t_4e817b2db0e5af 1-15,19-21,23-24,27-53,58-68,70-71,91-92,100-125,127-135,137-208,210-250
+  s_169ca198965180::t_f4aa050e12742b 16-18,22,25-26,54-57,69,72-85,87-90,126,136,209
+  s_169ca198965180::t_3ae4aaff521735 93-99
+  s_169ca198965180::t_cd27a22adb73ae 86
+src/i18n/locales/ka.json
+  s_169ca198965180::t_ac38d0f412a98e 3047,3049-3050,3081,3220,3537
+src/i18n/locales/nb.json
+  s_169ca198965180::t_ac38d0f412a98e 732,1004-1005,1011,1098,1414
+src/design-system/Icon/icons/Smartphone.tsx
+  s_169ca198965180::t_7d028b27e9dfa1 1-19
+src/i18n/locales/de.json
+  s_169ca198965180::t_ac38d0f412a98e 732,1004-1005,1011,1098,1414
+src/i18n/locales/es.json
+  s_169ca198965180::t_ac38d0f412a98e 732,1004-1005,1011,1098,1414
+src/i18n/locales/pt-BR.json
+  s_169ca198965180::t_ac38d0f412a98e 732,1004-1005,1011,1098,1414
+src/features/bin-designer/components/Workshop/WorkshopPanel/CutterProfileSection.tsx
+  s_169ca198965180::t_4e817b2db0e5af 16,193
+src/i18n/locales/it.json
+  s_169ca198965180::t_ac38d0f412a98e 732,1004-1005,1011,1098,1414
+src/i18n/locales/nl.json
+  s_169ca198965180::t_ac38d0f412a98e 732,1004-1005,1011,1098,1414
+src/i18n/locales/uk.json
+  s_169ca198965180::t_ac38d0f412a98e 732,1004-1005,1011,1098,1414
+src/i18n/locales/ko.json
+  s_169ca198965180::t_ac38d0f412a98e 732,1004-1005,1011,1098,1414
+src/i18n/locales/ja.json
+  s_169ca198965180::t_ac38d0f412a98e 732,1004-1005,1011,1098,1414
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEmptyState.tsx
+  s_169ca198965180::t_8761ca06b27e1b 9,15,80-81
+  s_169ca198965180::t_4e817b2db0e5af 16,19,76,78
+src/features/bin-designer/components/CutoutWorkspace/CutoutQuickstartOverlay.tsx
+  s_169ca198965180::t_1fb8c259e95018 11,35
+  s_169ca198965180::t_e83dd55a133e0c 36-41
+src/i18n/locales/zh-CN.json
+  s_169ca198965180::t_ac38d0f412a98e 732,1004-1005,1011,1098,1414
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanRouteChoice.test.tsx
+  s_169ca198965180::t_1ababb170d49b1 1-26
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeToolbar.tsx
+  s_169ca198965180::t_8761ca06b27e1b 12,423
+  s_169ca198965180::t_1fb8c259e95018 48,105
+  s_169ca198965180::t_4e817b2db0e5af 49,62,410,419
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEmptyState.test.tsx
+  s_169ca198965180::t_1ababb170d49b1 29,35
+  s_169ca198965180::t_4e817b2db0e5af 33-34,38,42
+src/design-system/Icon/icons/Image.tsx
+  s_169ca198965180::t_7d028b27e9dfa1 1-20
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeToolbar.test.tsx
+  s_169ca198965180::t_4e817b2db0e5af 271,279,285,298-299,307,312,324
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_169ca198965180::t_4e817b2db0e5af 46,741,746,788
+src/i18n/locales/fr.json
+  s_169ca198965180::t_ac38d0f412a98e 732,1004-1005,1011,1098,1414
+src/design-system/Icon/icons/ScanTool.tsx
+  s_169ca198965180::t_7d028b27e9dfa1 1-20
+src/i18n/locales/en.ts
+  s_169ca198965180::t_ac38d0f412a98e 3613,3615-3617,3659,3833,4215
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEditor.tsx
+  s_169ca198965180::t_4e817b2db0e5af 13,100,103,136
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanRouteChoice.tsx
+  s_169ca198965180::t_d40a867decaea6 1-55
+src/i18n/locales/sv.json
+  s_169ca198965180::t_ac38d0f412a98e 732,1004-1005,1011,1098,1414
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanToolDialog.tsx
+  s_169ca198965180::t_4da50024bd2bb6 2,4-7,25,66-69,97-98,205-208,245-252,254-259,261-267
+  s_169ca198965180::t_3ae4aaff521735 11-12,23-24,364-455
+  s_169ca198965180::t_4e817b2db0e5af 1,3,8-10,13-22,26-65,70-96,99-204,209-244,253,260,268-363,456-457
+src/i18n/locales/pl.json
+  s_169ca198965180::t_ac38d0f412a98e 732,1004-1005,1011,1098,1414
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/index.ts
+  s_169ca198965180::t_4e817b2db0e5af 1
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.test.tsx
+  s_169ca198965180::t_fb06c4971cfd55 92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "59877bbdec5676ff64968777347ad948a0f27244",
+  "prompts": {},
+  "sessions": {
+    "s_169ca198965180": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7cae772c-5519-4831-875c-a4d30af16b6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
