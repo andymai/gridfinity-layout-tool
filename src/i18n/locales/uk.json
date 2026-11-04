@@ -1409,6 +1409,7 @@
   "binDesigner.insertsDisableLightweight": "Не можна поєднати підлогові вставки з полегшеною підлогою",
   "binDesigner.interior.bento.description": "Відділення будь-якого розміру, стінки де забажаєте",
   "binDesigner.interior.bento.title": "Бенто",
+  "binDesigner.interior.scanLink": "Маєте інструмент, який треба вмістити? Відскануйте його",
   "binDesigner.interior.slotted.description": "Слоти для вставних розділювачів",
   "binDesigner.interior.slotted.title": "Знімні розділювачі",
   "binDesigner.interior.solid.description": "Заглиблення у формі інструмента, вирізані згори: намалюйте їх або скануйте справжній інструмент.",

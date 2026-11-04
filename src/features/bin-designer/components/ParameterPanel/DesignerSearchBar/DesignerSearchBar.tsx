@@ -73,7 +73,7 @@ export function DesignerSearchBar({ viewMode, needsSplit }: DesignerSearchBarPro
   const choose = (index: number) => {
     const result = results.at(index);
     if (!result) return;
-    jumpToDesignerControl(result.controlId);
+    jumpToDesignerControl(result.controlId, result.target);
     setQuery('');
     setActiveIndex(0);
     inputRef.current?.blur();

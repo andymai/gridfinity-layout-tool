@@ -1409,6 +1409,7 @@
   "binDesigner.insertsDisableLightweight": "Impossible de combiner des inserts de fond avec un fond allégé",
   "binDesigner.interior.bento.description": "Compartiments de toute taille, cloisons où vous voulez",
   "binDesigner.interior.bento.title": "Bento",
+  "binDesigner.interior.scanLink": "Un outil à caser ? Scannez-le",
   "binDesigner.interior.slotted.description": "Fentes pour cloisons amovibles",
   "binDesigner.interior.slotted.title": "Séparateurs amovibles",
   "binDesigner.interior.solid.description": "Creux en forme d’outil découpés par le dessus : dessinez-les ou scannez un outil réel.",

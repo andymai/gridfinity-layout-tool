@@ -1409,6 +1409,7 @@
   "binDesigner.insertsDisableLightweight": "Kan vloerinzetstukken niet combineren met een lichtgewicht bodem",
   "binDesigner.interior.bento.description": "Vakken in elk formaat, wanden waar je ze wilt",
   "binDesigner.interior.bento.title": "Bento",
+  "binDesigner.interior.scanLink": "Gereedschap dat moet passen? Scan het",
   "binDesigner.interior.slotted.description": "Sleuven voor inzetbare scheidingen",
   "binDesigner.interior.slotted.title": "Verwijderbare scheidingswanden",
   "binDesigner.interior.solid.description": "Gereedschapsvormige uitsparingen van bovenaf: teken ze of scan echt gereedschap.",

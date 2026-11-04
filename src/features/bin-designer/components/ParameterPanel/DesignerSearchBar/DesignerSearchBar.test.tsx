@@ -42,7 +42,14 @@ describe('DesignerSearchBar', () => {
     const input = open();
     fireEvent.change(input, { target: { value: 'scoop' } });
     fireEvent.click(screen.getByRole('option', { name: /finger scoop/i }));
-    expect(jumpToDesignerControl).toHaveBeenCalledWith('bd-scoop');
+    expect(jumpToDesignerControl).toHaveBeenCalledWith('bd-scoop', undefined);
     expect((input as HTMLInputElement).value).toBe('');
+  });
+
+  it('lands "scan" on the scan button inside Interior', () => {
+    const input = open();
+    fireEvent.change(input, { target: { value: 'scan' } });
+    fireEvent.click(screen.getByRole('option', { name: /scan a tool/i }));
+    expect(jumpToDesignerControl).toHaveBeenCalledWith('bd-interior', 'bd-scan-tool');
   });
 });

@@ -100,7 +100,11 @@ export function CutoutEditor() {
         onScanTool={() => setScanDialogOpen(true)}
       />
 
-      <ScanToolDialog open={scanDialogOpen} onClose={() => setScanDialogOpen(false)} />
+      <ScanToolDialog
+        open={scanDialogOpen}
+        source="toolbar"
+        onClose={() => setScanDialogOpen(false)}
+      />
 
       <StlImportDialog
         pending={stlImport.pending}

@@ -1409,6 +1409,7 @@
   "binDesigner.insertsDisableLightweight": "No se pueden combinar insertos de suelo con un suelo ligero",
   "binDesigner.interior.bento.description": "Compartimentos de cualquier tamaño, paredes donde quieras",
   "binDesigner.interior.bento.title": "Bento",
+  "binDesigner.interior.scanLink": "¿Tienes una herramienta que encajar? Escanéala",
   "binDesigner.interior.slotted.description": "Ranuras para divisores extraíbles",
   "binDesigner.interior.slotted.title": "Divisores removibles",
   "binDesigner.interior.solid.description": "Huecos con forma de herramienta cortados desde arriba: dibújalos o escanea una herramienta real.",

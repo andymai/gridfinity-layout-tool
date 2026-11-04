@@ -164,6 +164,9 @@ export const DESIGNER_CONTROL_SEARCH: readonly DesignerControlSearchEntry[] = [
   },
 ];
 
+/** Marks every visible "Scan a tool" entry in the panel. */
+export const SCAN_TOOL_TARGET = 'bd-scan-tool';
+
 export interface DesignerOptionRecord {
   /** Unique id (also the React key for the result row). */
   readonly id: string;
@@ -171,6 +174,12 @@ export interface DesignerOptionRecord {
   readonly labelKey: string;
   /** The owning section's controlId — the breadcrumb parent and the jump target. */
   readonly section: string;
+  /**
+   * A marker inside the section to land on once it is open, for an option that
+   * is one button rather than a whole section. Absent from the DOM, the jump
+   * stops at the section.
+   */
+  readonly target?: string;
   /** English-only, match-only synonyms; never displayed, so they need no locale. */
   readonly keywords: readonly string[];
 }
@@ -366,6 +375,13 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
     labelKey: 'binDesigner.interior.slotted.title',
     section: 'bd-interior',
     keywords: ['removable dividers', 'slotted', 'slots', 'adjustable dividers'],
+  },
+  {
+    id: 'opt-scan-tool',
+    labelKey: 'binDesigner.cutouts.scanImport.title',
+    section: 'bd-interior',
+    target: SCAN_TOOL_TARGET,
+    keywords: ['scan', 'trace', 'photo', 'picture', 'camera', 'phone', 'outline', 'tool shape'],
   },
   {
     id: 'opt-interior-solid',

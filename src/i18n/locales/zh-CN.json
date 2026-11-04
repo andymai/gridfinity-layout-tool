@@ -1409,6 +1409,7 @@
   "binDesigner.insertsDisableLightweight": "底面插件无法与减重底面并用",
   "binDesigner.interior.bento.description": "任意大小的隔层，隔墙随心摆放",
   "binDesigner.interior.bento.title": "便当",
+  "binDesigner.interior.scanLink": "有要放进去的工具？扫描它",
   "binDesigner.interior.slotted.description": "用于插入隔板的槽",
   "binDesigner.interior.slotted.title": "可拆卸隔板",
   "binDesigner.interior.solid.description": "从顶部切出按工具形状的凹槽：手动绘制，或扫描一件真实工具。",

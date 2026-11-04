@@ -1409,6 +1409,7 @@
   "binDesigner.insertsDisableLightweight": "Bodeneinsätze lassen sich nicht mit Leichtbau-Boden kombinieren",
   "binDesigner.interior.bento.description": "Fächer in beliebiger Größe, Wände wo du willst",
   "binDesigner.interior.bento.title": "Bento",
+  "binDesigner.interior.scanLink": "Ein Werkzeug soll hineinpassen? Scanne es",
   "binDesigner.interior.slotted.description": "Schlitze für einsetzbare Trennwände",
   "binDesigner.interior.slotted.title": "Herausnehmbare Trennwände",
   "binDesigner.interior.solid.description": "Werkzeugförmige Aussparungen, von oben geschnitten: zeichne sie oder scanne ein echtes Werkzeug.",

@@ -1409,6 +1409,7 @@
   "binDesigner.insertsDisableLightweight": "Impossibile combinare gli inserti del fondo con un fondo alleggerito",
   "binDesigner.interior.bento.description": "Scomparti di qualsiasi dimensione, pareti dove vuoi",
   "binDesigner.interior.bento.title": "Bento",
+  "binDesigner.interior.scanLink": "Hai un utensile da far entrare? Scansionalo",
   "binDesigner.interior.slotted.description": "Fessure per divisori inseribili",
   "binDesigner.interior.slotted.title": "Divisori rimovibili",
   "binDesigner.interior.solid.description": "Incavi a forma di utensile tagliati dall'alto: disegnali o scansiona un utensile reale.",

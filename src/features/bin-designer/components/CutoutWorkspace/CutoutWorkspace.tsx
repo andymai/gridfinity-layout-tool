@@ -226,7 +226,9 @@ export function CutoutWorkspace() {
   const t = useTranslation();
   const { triggerImport: triggerSvgImport } = useSvgImport();
   const stlImport = useStlImport();
-  const [scanDialogOpen, setScanDialogOpen] = useState(false);
+  const scanDialogSource = useDesignerStore((s) => s.ui.scanDialogSource);
+  const openScanDialog = useDesignerStore((s) => s.openScanDialog);
+  const closeScanDialog = useDesignerStore((s) => s.closeScanDialog);
 
   // Mirrors the dock's own collapsed state (which it persists) so the canvas
   // knows whether the inspector is there to hold the repeat suggestion.
@@ -718,6 +720,7 @@ export function CutoutWorkspace() {
         onClearAll={clearCutouts}
         disabled={isInteracting}
         onShowHelp={handleShowHelp}
+        onScanTool={!isLid ? () => openScanDialog('header') : undefined}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -738,12 +741,16 @@ export function CutoutWorkspace() {
               // board they would report success and add the shape to a part the
               // canvas is not showing.
               onImportStl={isLid ? undefined : stlImport.triggerImport}
-              onScanTool={!isLid ? () => setScanDialogOpen(true) : undefined}
+              onScanTool={!isLid ? () => openScanDialog('toolbar') : undefined}
             />
           </div>
         </div>
 
-        <ScanToolDialog open={scanDialogOpen} onClose={() => setScanDialogOpen(false)} />
+        <ScanToolDialog
+          open={scanDialogSource !== null && !isLid}
+          source={scanDialogSource ?? 'toolbar'}
+          onClose={closeScanDialog}
+        />
 
         <StlImportDialog
           pending={stlImport.pending}
@@ -785,7 +792,7 @@ export function CutoutWorkspace() {
               {showsEmptyBoardHint(cutouts.length, mode) && (
                 <CutoutEmptyState
                   variant="workspace"
-                  onScanTool={!isLid ? () => setScanDialogOpen(true) : undefined}
+                  onScanTool={!isLid ? () => openScanDialog('empty_board') : undefined}
                 />
               )}
               <ToolThicknessPrompt placement="chip" onFocusTools={(ids) => selectIds(ids, false)} />

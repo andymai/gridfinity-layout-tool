@@ -1409,6 +1409,7 @@
   "binDesigner.insertsDisableLightweight": "Não é possível combinar insertos de piso com um piso leve",
   "binDesigner.interior.bento.description": "Compartimentos de qualquer tamanho, paredes onde você quiser",
   "binDesigner.interior.bento.title": "Bento",
+  "binDesigner.interior.scanLink": "Tem uma ferramenta para encaixar? Escaneie",
   "binDesigner.interior.slotted.description": "Ranhuras para divisores inseríveis",
   "binDesigner.interior.slotted.title": "Divisores removíveis",
   "binDesigner.interior.solid.description": "Rebaixos em forma de ferramenta cortados de cima: desenhe ou escaneie uma ferramenta real.",

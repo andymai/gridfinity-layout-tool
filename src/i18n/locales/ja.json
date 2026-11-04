@@ -1409,6 +1409,7 @@
   "binDesigner.insertsDisableLightweight": "フロアインサートと軽量フロアは併用できません",
   "binDesigner.interior.bento.description": "好きな大きさの仕切り、壁は自由な位置に",
   "binDesigner.interior.bento.title": "弁当箱",
+  "binDesigner.interior.scanLink": "入れたい工具がありますか？スキャンしましょう",
   "binDesigner.interior.slotted.description": "差し込み式仕切り板用のスロット",
   "binDesigner.interior.slotted.title": "取り外し可能な仕切り板",
   "binDesigner.interior.solid.description": "上面から切り込む工具形のくぼみ。描くか、実物の工具をスキャンします。",
