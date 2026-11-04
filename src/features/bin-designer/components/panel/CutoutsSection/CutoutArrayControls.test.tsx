@@ -97,10 +97,25 @@ describe('CutoutArrayControls', () => {
       expect(screen.queryByText('binDesigner.cutouts.repeat.noRoomCols')).not.toBeInTheDocument();
     });
 
+    it('says the same for a staggered repeat', () => {
+      const staggered: CutoutArrayConfig = { ...row, mode: 'staggered' };
+      renderIn(makeCutout({ y: 20, array: staggered }), staggered, 80, 30);
+      expect(screen.getByText('binDesigner.cutouts.repeat.noRoomRows')).toBeInTheDocument();
+    });
+
     it('does not apply to a radial repeat, which has neither field', () => {
       const ring: CutoutArrayConfig = { ...row, mode: 'radial' };
-      renderIn(makeCutout({ y: 20, array: ring }), ring, 80, 30);
+      renderIn(makeCutout({ x: 20, y: 20, array: ring }), ring, 30, 30);
       expect(screen.queryByText('binDesigner.cutouts.repeat.noRoomRows')).not.toBeInTheDocument();
+      expect(screen.queryByText('binDesigner.cutouts.repeat.noRoomCols')).not.toBeInTheDocument();
+    });
+
+    it('offers the explanation once when both axes are full', () => {
+      const single: CutoutArrayConfig = { ...row, cols: 1, rows: 1 };
+      renderIn(makeCutout({ x: 20, y: 20, array: single }), single, 30, 30);
+      expect(screen.getByText('binDesigner.cutouts.repeat.noRoomRows')).toBeInTheDocument();
+      expect(screen.getByText('binDesigner.cutouts.repeat.noRoomCols')).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: 'binDesigner.infoButton' })).toHaveLength(1);
     });
   });
 

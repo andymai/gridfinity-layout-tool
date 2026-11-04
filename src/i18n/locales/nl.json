@@ -984,7 +984,7 @@
   "binDesigner.cutouts.repeat.presetNoFit": "Niet genoeg ruimte vanaf deze positie",
   "binDesigner.cutouts.repeat.noRoomRows": "Vanaf hier geen ruimte voor nog een rij",
   "binDesigner.cutouts.repeat.noRoomCols": "Vanaf hier geen ruimte voor nog een kolom",
-  "binDesigner.cutouts.repeat.noRoomDetail": "Kopieën worden toegevoegd richting de andere rand van de bin. Maak ruimte door de selectie van die rand weg te schuiven of de afstand te verkleinen.",
+  "binDesigner.cutouts.repeat.noRoomDetail": "Kopieën worden toegevoegd richting de andere rand van de bak. Maak ruimte door de selectie van die rand weg te schuiven of de afstand te verkleinen.",
   "binDesigner.cutouts.repeat.presetRing": "Ring van {count}",
   "binDesigner.cutouts.repeat.radius": "Straal",
   "binDesigner.cutouts.repeat.remove": "Reeks verwijderen",

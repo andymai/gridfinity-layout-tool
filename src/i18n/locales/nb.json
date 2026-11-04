@@ -984,7 +984,7 @@
   "binDesigner.cutouts.repeat.presetNoFit": "Ikke nok plass fra denne posisjonen",
   "binDesigner.cutouts.repeat.noRoomRows": "Ikke plass til en rad til herfra",
   "binDesigner.cutouts.repeat.noRoomCols": "Ikke plass til en kolonne til herfra",
-  "binDesigner.cutouts.repeat.noRoomDetail": "Kopier legges til mot den motsatte kanten av binnen. For å få plass, flytt utvalget bort fra den kanten eller reduser avstanden.",
+  "binDesigner.cutouts.repeat.noRoomDetail": "Kopier legges til mot den motsatte kanten av binen. For å få plass, flytt utvalget bort fra den kanten eller reduser avstanden.",
   "binDesigner.cutouts.repeat.presetRing": "Ring med {count}",
   "binDesigner.cutouts.repeat.radius": "Radius",
   "binDesigner.cutouts.repeat.remove": "Fjern matrise",

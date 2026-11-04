@@ -302,7 +302,9 @@ export function CutoutArrayControls({
           the rule is stated. A count cap can't be the cause: MAX_ARRAY_INSTANCES /
           MAX_ARRAY_COUNT leaves room for 8, so a max of 1 is always lack of space. */}
       {array.mode !== 'radial' && bounds.maxRows === 1 && (
-        <Hint info={t('binDesigner.cutouts.repeat.noRoomDetail')}>
+        <Hint
+          info={bounds.maxCols === 1 ? undefined : t('binDesigner.cutouts.repeat.noRoomDetail')}
+        >
           {t('binDesigner.cutouts.repeat.noRoomRows')}
         </Hint>
       )}
