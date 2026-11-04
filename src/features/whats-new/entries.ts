@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'long-bins-fit-diagonally',
+    date: '2026-11-04',
+    kind: 'fixed',
+    title: { en: 'Long bins that fit your bed diagonally print whole' },
+    body: {
+      en: 'A long, narrow bin that fits your print bed only laid corner to corner, like a 1.5 × 7 bin on a 256mm bed, was split into pieces and flagged as too big. It now prints whole. The export dialog reminds you to turn it in your slicer, and you can still tick Split into pieces if a clip or purge line takes up a corner of your bed.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'scan-a-tool-anywhere',
     date: '2026-11-04',
     kind: 'improved',
