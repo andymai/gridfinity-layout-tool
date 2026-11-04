@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, OverhangConfig } from '@/shared/types/bin';
-import { binSplitChunkUnits } from './binSplitFit';
+import { binBedFit, binSplitChunkUnits } from './binSplitFit';
 import { getSplitPieceCount, getSplitPositions } from './splitPositions';
 
 const BED = 180;
@@ -167,5 +167,47 @@ describe('binSplitChunkUnits on a slanted bin', () => {
     expect(
       binSplitChunkUnits({ width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask }, 256)
     ).toEqual(binSplitChunkUnits(big, 256));
+  });
+});
+
+describe('binBedFit across the diagonal', () => {
+  const long = params({ width: 1.5, depth: 7 });
+
+  it('prints a 1.5 x 7 bin whole on a 256mm bed, keeping the square-on cut', () => {
+    const fit = binBedFit(long, 256);
+    expect(fit.diagonal).toBe(true);
+    expect(fit.chunk).toEqual({ width: 1.5, depth: 7 });
+    expect(binSplitChunkUnits(long, 256)).toEqual(fit.chunk);
+    expect(getSplitPieceCount(1.5, 7, fit.squareOn.width, fit.squareOn.depth)).toBe(2);
+  });
+
+  it('charges both sides of the overhang against the diagonal', () => {
+    // 63 + 294 = 357mm of sides fits 256 * sqrt(2) = 362mm; 6mm more does not.
+    expect(binBedFit({ ...long, overhang: overhang({ front: 3, back: 2 }) }, 256).diagonal).toBe(
+      true
+    );
+    expect(binBedFit({ ...long, overhang: overhang({ front: 3, back: 3 }) }, 256).diagonal).toBe(
+      false
+    );
+  });
+
+  it('is not diagonal for a bin that fits square-on or turned', () => {
+    expect(binBedFit(params({ width: 5, depth: 6 }), 256, 210).diagonal).toBe(false);
+    expect(binBedFit(params(), BED).diagonal).toBe(false);
+  });
+
+  it('never lays a slanted bin diagonally, since it never splits', () => {
+    const leaning: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 1.5,
+      depth: 7,
+      height: 6,
+      slant: { angleDeg: 30, side: 'back' },
+    };
+    expect(binBedFit(leaning, 256)).toEqual({
+      chunk: { width: 1.5, depth: 7 },
+      squareOn: { width: 1.5, depth: 7 },
+      diagonal: false,
+    });
   });
 });

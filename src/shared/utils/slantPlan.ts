@@ -1,3 +1,4 @@
+import { fitsBedAtAnyAngle } from '@/core/bedFit';
 import { SLANT_MAX_DEG, SLANT_SIDES } from '@/core/types';
 import type { SlantConfig, SlantSide } from '@/core/types';
 import type { BinParams } from '@/shared/types/bin';
@@ -174,22 +175,42 @@ export function slantTopOffsetMm(params: SlantExtentInputs): number {
   return slant.k * Math.max(0, topZ - pivotZ);
 }
 
+/** The leaning body's plan footprint, top offset included; null for an upright bin. */
+function slantedFootprintMm(params: SlantExtentInputs): { w: number; d: number } | null {
+  const slant = resolveSlant(params);
+  if (!slant) return null;
+  const offset = slantTopOffsetMm(params);
+  const pitchY = params.gridUnitMmY ?? params.gridUnitMm;
+  return {
+    w: params.width * params.gridUnitMm - 0.5 + (slant.axis === 'x' ? offset : 0),
+    d: params.depth * pitchY - 0.5 + (slant.axis === 'y' ? offset : 0),
+  };
+}
+
 /**
- * Whether the leaning body, top offset included, fits the bed either way
- * round. A slanted bin cannot be split, so this is the whole answer.
+ * Whether the leaning body, top offset included, fits the bed at any angle. A
+ * slanted bin cannot be split, so this is the whole answer.
  */
 export function slantedBinFitsBed(
   params: SlantExtentInputs,
   bedWidthMm: number,
   bedDepthMm: number = bedWidthMm
 ): boolean {
-  const slant = resolveSlant(params);
-  if (!slant) return true;
-  const offset = slantTopOffsetMm(params);
-  const pitchY = params.gridUnitMmY ?? params.gridUnitMm;
-  const w = params.width * params.gridUnitMm - 0.5 + (slant.axis === 'x' ? offset : 0);
-  const d = params.depth * pitchY - 0.5 + (slant.axis === 'y' ? offset : 0);
-  return (w <= bedWidthMm && d <= bedDepthMm) || (w <= bedDepthMm && d <= bedWidthMm);
+  const footprint = slantedFootprintMm(params);
+  return !footprint || fitsBedAtAnyAngle(footprint.w, footprint.d, bedWidthMm, bedDepthMm);
+}
+
+/** The slanted bin overruns the bed square-on and at 90°, but fits lying at an angle. */
+export function slantedBinFitsOnlyDiagonally(
+  params: SlantExtentInputs,
+  bedWidthMm: number,
+  bedDepthMm: number = bedWidthMm
+): boolean {
+  const footprint = slantedFootprintMm(params);
+  if (!footprint) return false;
+  const { w, d } = footprint;
+  if ((w <= bedWidthMm && d <= bedDepthMm) || (w <= bedDepthMm && d <= bedWidthMm)) return false;
+  return fitsBedAtAnyAngle(w, d, bedWidthMm, bedDepthMm);
 }
 
 /** Clearance between the leaning wall and the support's slope, measured square to the slope. */

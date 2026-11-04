@@ -6,6 +6,7 @@
  * lets the multi-action hook import only what it needs.
  */
 
+import type { BedCapacity } from '@/core/constants';
 import type { Bin, BinItem, Category, Layer, Layout } from '@/core/types';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
 
@@ -18,7 +19,7 @@ export interface BinConstraints {
   minHeight: number;
   maxHeight: number;
   maxClearance: number;
-  maxGridUnits: { width: number; depth: number };
+  maxGridUnits: BedCapacity;
   needsSplit: boolean;
   heightRange: string;
   /** Why the maximum height is what it is */

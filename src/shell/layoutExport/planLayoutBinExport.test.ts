@@ -637,11 +637,12 @@ describe('planLayoutBinExport', () => {
     it('charges an overhang against the bed before deciding the fit', () => {
       // 6 units at the 42mm pitch is 252mm — inside a 256mm bed on nominal
       // dimensions, but a 9mm overhang pushes the printed part past the plate.
+      // Four deep, so it cannot lie across the diagonal instead.
       const overhung: LoadedDesign = {
         id: designId('big'),
         design: design('big', 'Wide', {
           width: 6,
-          depth: 2,
+          depth: 4,
           height: 3,
           overhang: { left: 9, right: 0, front: 0, back: 0, feet: false },
         }),
@@ -663,7 +664,7 @@ describe('planLayoutBinExport', () => {
     it('leaves the same bin whole without the overhang', () => {
       const plan = planLayoutBinExport({
         bins: [linkedBin('big')],
-        loaded: [bigBin(6, 2)],
+        loaded: [bigBin(6, 4)],
         format: 'stl',
         fileNameConfig: CONFIG,
         printSettings: DEFAULT_PRINT_SETTINGS,
@@ -689,6 +690,21 @@ describe('planLayoutBinExport', () => {
 
       expect(plan.exportable[0].split).toBeNull();
       expect(plan.manifestBins[0].splitPieces).toBeUndefined();
+    });
+
+    it('leaves a bin whole that fits the bed lying diagonally', () => {
+      const plan = planLayoutBinExport({
+        bins: [linkedBin('big')],
+        loaded: [bigBin(1.5, 7)],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
+
+      expect(plan.exportable[0].split).toBeNull();
     });
 
     it('splits under STEP too — each piece ships as its own exact BREP solid (#3501)', () => {

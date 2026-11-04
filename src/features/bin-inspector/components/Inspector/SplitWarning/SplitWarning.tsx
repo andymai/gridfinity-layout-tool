@@ -1,9 +1,10 @@
+import type { BedCapacity } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 
 interface SplitWarningProps {
   binWidth: number;
   binDepth: number;
-  maxGridUnits: { width: number; depth: number };
+  maxGridUnits: BedCapacity;
   gridUnitMm: number;
   printBedSize: number;
   printBedDepth: number;
@@ -132,11 +133,13 @@ export function SplitWarning({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
         <span className="text-xs text-content-tertiary">
-          {t('inspector.fitsPrintBedDimensions', {
-            binWidth,
-            binDepth,
-            max: `${maxGridUnits.width}×${maxGridUnits.depth}`,
-          })}
+          {maxGridUnits.diagonal
+            ? t('inspector.fitsPrintBedDiagonally', { binWidth, binDepth })
+            : t('inspector.fitsPrintBedDimensions', {
+                binWidth,
+                binDepth,
+                max: `${maxGridUnits.width}×${maxGridUnits.depth}`,
+              })}
         </span>
       </div>
     );

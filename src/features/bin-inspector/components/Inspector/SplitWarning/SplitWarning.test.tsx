@@ -26,6 +26,19 @@ describe('SplitWarning', () => {
       const svg = container.querySelector('svg.text-success');
       expect(svg).toBeInTheDocument();
     });
+
+    it('says when the fit relies on lying the bin diagonally', () => {
+      render(
+        <SplitWarning
+          {...defaultProps}
+          binWidth={1.5}
+          binDepth={7}
+          maxGridUnits={{ width: 1.5, depth: 7, diagonal: true }}
+        />
+      );
+
+      expect(screen.getByText('1.5×7 fits print bed laid diagonally')).toBeInTheDocument();
+    });
   });
 
   describe('when bin exceeds print bed', () => {

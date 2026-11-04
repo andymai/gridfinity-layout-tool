@@ -36,4 +36,10 @@ describe('PrintPage', () => {
     expect(container.textContent).toContain('binDesigner.printFit.slantTooLarge');
     expect(container.textContent).not.toContain('binDesigner.printFit.fits');
   });
+
+  it('says a long bin fits laid diagonally instead of offering a split', () => {
+    useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, width: 1.5, depth: 7 } });
+    const { container } = render(<PrintPage />);
+    expect(container.textContent).toContain('binDesigner.printFit.fitsDiagonally');
+  });
 });
