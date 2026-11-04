@@ -1007,6 +1007,7 @@
   "binDesigner.cutouts.scanImport.calibrationSheetHelp": "Mais precisa que um cartão: imprima em 100% e coloque a ferramenta dentro da moldura impressa.",
   "binDesigner.cutouts.scanImport.done": "Concluído",
   "binDesigner.cutouts.scanImport.emptyHelp": "Fotografe qualquer ferramenta para traçar seu contorno exato automaticamente.",
+  "binDesigner.cutouts.dropPhoto": "Solte uma foto para contorná-la",
   "binDesigner.cutouts.traceView.title": "Contornar uma foto",
   "binDesigner.cutouts.traceView.open": "De uma foto neste computador",
   "binDesigner.cutouts.traceView.openHelp": "Use uma foto que você já tem. Ela nunca sai deste computador.",

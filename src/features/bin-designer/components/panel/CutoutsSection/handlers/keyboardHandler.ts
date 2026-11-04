@@ -27,7 +27,7 @@ export interface KeyboardHandlerContext {
   readonly selectAll: () => void;
   readonly nudgeSelected: (dx: number, dy: number) => void;
   readonly copySelected: () => void;
-  readonly pasteFromClipboard: () => void;
+  readonly pasteFromClipboard: () => boolean;
   readonly duplicateSelected: () => void;
   /**
    * Ctrl+Shift+D. Creates a repeat from a single selected cutout, or collapses
@@ -224,8 +224,9 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       break;
     case 'v':
       if (mod) {
-        e.preventDefault();
-        ctx.pasteFromClipboard();
+        // With nothing copied here the browser's paste goes ahead, so an image
+        // on the system clipboard reaches the editor as a photo to trace.
+        if (ctx.pasteFromClipboard()) e.preventDefault();
       } else {
         e.preventDefault();
         e.stopImmediatePropagation();

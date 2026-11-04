@@ -1007,6 +1007,7 @@
   "binDesigner.cutouts.scanImport.calibrationSheetHelp": "Más precisa que una tarjeta: imprime al 100 % y coloca la herramienta dentro del marco impreso.",
   "binDesigner.cutouts.scanImport.done": "Listo",
   "binDesigner.cutouts.scanImport.emptyHelp": "Fotografía cualquier herramienta para trazar su contorno exacto automáticamente.",
+  "binDesigner.cutouts.dropPhoto": "Suelta una foto para calcarla",
   "binDesigner.cutouts.traceView.title": "Trazar una foto",
   "binDesigner.cutouts.traceView.open": "Desde una foto en este ordenador",
   "binDesigner.cutouts.traceView.openHelp": "Usa una foto que ya tengas. Nunca sale de este ordenador.",

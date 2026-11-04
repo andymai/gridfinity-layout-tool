@@ -1007,6 +1007,7 @@
   "binDesigner.cutouts.scanImport.calibrationSheetHelp": "Genauer als eine Karte: mit 100 % drucken und das Werkzeug in den gedruckten Rahmen legen.",
   "binDesigner.cutouts.scanImport.done": "Fertig",
   "binDesigner.cutouts.scanImport.emptyHelp": "Fotografiere ein beliebiges Werkzeug, um seine genaue Kontur automatisch zu erfassen.",
+  "binDesigner.cutouts.dropPhoto": "Foto hier ablegen, um es nachzuzeichnen",
   "binDesigner.cutouts.traceView.title": "Foto nachzeichnen",
   "binDesigner.cutouts.traceView.open": "Von einem Foto auf diesem Computer",
   "binDesigner.cutouts.traceView.openHelp": "Nutze ein Foto, das du schon hast. Es verlässt diesen Computer nie.",

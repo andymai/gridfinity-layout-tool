@@ -1007,6 +1007,7 @@
   "binDesigner.cutouts.scanImport.calibrationSheetHelp": "Точніше за картку: надрукуйте у 100 % і покладіть інструмент усередину надрукованої рамки.",
   "binDesigner.cutouts.scanImport.done": "Готово",
   "binDesigner.cutouts.scanImport.emptyHelp": "Сфотографуйте будь-який інструмент, щоб автоматично відтворити його точний контур.",
+  "binDesigner.cutouts.dropPhoto": "Перетягніть фото, щоб обвести його",
   "binDesigner.cutouts.traceView.title": "Обвести фото",
   "binDesigner.cutouts.traceView.open": "З фото на цьому комп’ютері",
   "binDesigner.cutouts.traceView.openHelp": "Використайте фото, яке у вас уже є. Воно ніколи не залишає цей комп’ютер.",

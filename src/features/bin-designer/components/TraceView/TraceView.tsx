@@ -16,6 +16,8 @@ export interface TraceViewProps {
   readonly onClose: () => void;
   /** The traced tools as the millimetre SVG a phone scan uploads. */
   readonly onTraced: (svg: string) => void;
+  /** A photo dropped or pasted on the editor, loaded on open. */
+  readonly initialPhoto?: File | null;
 }
 
 const isImage = (file: File): boolean => file.type.startsWith('image/');
@@ -59,7 +61,7 @@ function DropZone({ onChoose }: { readonly onChoose: () => void }) {
  * from what is in frame or by hand, find and fix the tools, and add them.
  * Runs the phone's pipeline and hands back the same SVG it uploads.
  */
-export function TraceView({ open, onClose, onTraced }: TraceViewProps) {
+export function TraceView({ open, onClose, onTraced, initialPhoto }: TraceViewProps) {
   const t = useTranslation();
   const session = useTraceSession();
   const [mode, setMode] = useState<TraceMode>('tap');
@@ -77,6 +79,14 @@ export function TraceView({ open, onClose, onTraced }: TraceViewProps) {
     void session.load(file);
   };
   const pick = () => fileInput.current?.click();
+
+  const { load } = session;
+  const loadedInitial = useRef<File | null>(null);
+  useEffect(() => {
+    if (!open || !initialPhoto || loadedInitial.current === initialPhoto) return;
+    loadedInitial.current = initialPhoto;
+    void load(initialPhoto);
+  }, [open, initialPhoto, load]);
 
   // Escape leaves a marking mode before it can reach the dialog. Captured on
   // the window, since the dialog stops every key that bubbles out of it.

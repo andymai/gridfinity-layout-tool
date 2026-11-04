@@ -1007,6 +1007,7 @@
   "binDesigner.cutouts.scanImport.calibrationSheetHelp": "Přesnější než karta: vytiskněte ve 100 % a nástroj položte dovnitř vytištěného rámu.",
   "binDesigner.cutouts.scanImport.done": "Hotovo",
   "binDesigner.cutouts.scanImport.emptyHelp": "Vyfoť jakýkoli nástroj pro automatické obtažení jeho přesného obrysu.",
+  "binDesigner.cutouts.dropPhoto": "Pusť sem fotku a obkresli ji",
   "binDesigner.cutouts.traceView.title": "Obkreslit fotku",
   "binDesigner.cutouts.traceView.open": "Z fotky na tomto počítači",
   "binDesigner.cutouts.traceView.openHelp": "Použij fotku, kterou už máš. Nikdy neopustí tento počítač.",

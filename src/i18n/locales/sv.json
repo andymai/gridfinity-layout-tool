@@ -1007,6 +1007,7 @@
   "binDesigner.cutouts.scanImport.calibrationSheetHelp": "Mer exakt än ett kort: skriv ut i 100 % och lägg verktyget innanför den utskrivna ramen.",
   "binDesigner.cutouts.scanImport.done": "Klar",
   "binDesigner.cutouts.scanImport.emptyHelp": "Fotografera valfritt verktyg för att automatiskt spåra dess exakta kontur.",
+  "binDesigner.cutouts.dropPhoto": "Släpp ett foto för att spåra det",
   "binDesigner.cutouts.traceView.title": "Spåra ett foto",
   "binDesigner.cutouts.traceView.open": "Från ett foto på den här datorn",
   "binDesigner.cutouts.traceView.openHelp": "Använd ett foto du redan har. Det lämnar aldrig den här datorn.",

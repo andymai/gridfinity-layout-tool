@@ -10,7 +10,15 @@ import type { ScanLaunchSource } from '@/core/store/scanLaunch';
 
 /** Where a "Scan a tool" dialog was opened from, reported with `scan_opened`. */
 export type ScanSource =
-  'card' | 'interior_link' | 'header' | 'toolbar' | 'empty_board' | 'workshop' | ScanLaunchSource;
+  | 'card'
+  | 'interior_link'
+  | 'header'
+  | 'toolbar'
+  | 'empty_board'
+  | 'workshop'
+  | 'drop'
+  | 'paste'
+  | ScanLaunchSource;
 
 /**
  * Eyedropper click anchor: which zone was hit and the viewport coords
