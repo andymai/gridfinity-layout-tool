@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { CutoutQuickstartOverlay } from './CutoutQuickstartOverlay';
 
 describe('CutoutQuickstartOverlay', () => {
-  it('renders all 7 feature rows', () => {
+  it('renders all 8 feature rows', () => {
     render(<CutoutQuickstartOverlay onDismiss={vi.fn()} />);
     expect(screen.getByText(/shapes/i)).toBeInTheDocument();
     expect(screen.getByText(/drag a marquee/i)).toBeInTheDocument();
@@ -14,6 +14,13 @@ describe('CutoutQuickstartOverlay', () => {
     // Pan and fit exist but are invisible on the canvas, so the overlay is the
     // only place a user learns them.
     expect(screen.getByText(/space-drag or middle-drag to pan/i)).toBeInTheDocument();
+    expect(screen.getByText(/trace a real tool from a photo/i)).toBeInTheDocument();
+    expect(screen.getAllByRole('listitem')).toHaveLength(8);
+  });
+
+  it('leaves out the scan row where the scan button is hidden', () => {
+    render(<CutoutQuickstartOverlay onDismiss={vi.fn()} showScan={false} />);
+    expect(screen.queryByText(/trace a real tool from a photo/i)).toBeNull();
     expect(screen.getAllByRole('listitem')).toHaveLength(7);
   });
 

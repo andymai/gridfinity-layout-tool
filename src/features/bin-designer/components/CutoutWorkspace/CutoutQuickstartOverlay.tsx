@@ -12,11 +12,61 @@ import { useTranslation } from '@/i18n';
 
 interface CutoutQuickstartOverlayProps {
   readonly onDismiss: () => void;
+  /** False on boards the scan flow cannot add to, which hide its button. */
+  readonly showScan?: boolean;
 }
 
-export function CutoutQuickstartOverlay({ onDismiss }: CutoutQuickstartOverlayProps) {
+export function CutoutQuickstartOverlay({
+  onDismiss,
+  showScan = true,
+}: CutoutQuickstartOverlayProps) {
   const t = useTranslation();
   const dismissRef = useRef<HTMLButtonElement>(null);
+
+  const rows: readonly { readonly key: string; readonly icon: ReactNode; readonly text: string }[] =
+    [
+      {
+        key: 'shapes',
+        icon: <ShapesIcon />,
+        text: t('binDesigner.cutoutEditor.quickstart.shapes'),
+      },
+      ...(showScan
+        ? [{ key: 'scan', icon: <ScanIcon />, text: t('binDesigner.cutoutEditor.quickstart.scan') }]
+        : []),
+      {
+        key: 'select',
+        icon: <SelectIcon />,
+        text: t('binDesigner.cutoutEditor.quickstart.select'),
+      },
+      {
+        key: 'vertex',
+        icon: <VertexIcon />,
+        text: t('binDesigner.cutoutEditor.quickstart.vertex'),
+      },
+      {
+        key: 'rightClick',
+        icon: <MenuIcon />,
+        text: t('binDesigner.cutoutEditor.quickstart.rightClick'),
+      },
+      {
+        key: 'precision',
+        icon: <GridIcon />,
+        text: t('binDesigner.cutoutEditor.quickstart.precision'),
+      },
+      {
+        key: 'repeat',
+        icon: <RepeatIcon />,
+        text: t('binDesigner.cutoutEditor.quickstart.repeat'),
+      },
+      // Pan and fit already existed and nothing said so, which reads as their
+      // absence: the view controls are the one group a user cannot discover by
+      // clicking around the canvas.
+      {
+        key: 'navigate',
+        icon: <NavigateIcon />,
+        text: t('binDesigner.cutoutEditor.quickstart.navigate'),
+      },
+    ];
 
   useEffect(() => {
     dismissRef.current?.focus();
@@ -44,44 +94,9 @@ export function CutoutQuickstartOverlay({ onDismiss }: CutoutQuickstartOverlayPr
 
         {/* role="list" restores list semantics that Safari/iOS VoiceOver strips when list-style:none is applied. */}
         <ul className="space-y-2 list-none" role="list">
-          <FeatureRow
-            index={0}
-            icon={<ShapesIcon />}
-            text={t('binDesigner.cutoutEditor.quickstart.shapes')}
-          />
-          <FeatureRow
-            index={1}
-            icon={<SelectIcon />}
-            text={t('binDesigner.cutoutEditor.quickstart.select')}
-          />
-          <FeatureRow
-            index={2}
-            icon={<VertexIcon />}
-            text={t('binDesigner.cutoutEditor.quickstart.vertex')}
-          />
-          <FeatureRow
-            index={3}
-            icon={<MenuIcon />}
-            text={t('binDesigner.cutoutEditor.quickstart.rightClick')}
-          />
-          <FeatureRow
-            index={4}
-            icon={<GridIcon />}
-            text={t('binDesigner.cutoutEditor.quickstart.precision')}
-          />
-          <FeatureRow
-            index={5}
-            icon={<RepeatIcon />}
-            text={t('binDesigner.cutoutEditor.quickstart.repeat')}
-          />
-          {/* Pan and fit already existed and nothing said so, which reads as
-              their absence — the view controls are the one group a user cannot
-              discover by clicking around the canvas. */}
-          <FeatureRow
-            index={6}
-            icon={<NavigateIcon />}
-            text={t('binDesigner.cutoutEditor.quickstart.navigate')}
-          />
+          {rows.map((row, index) => (
+            <FeatureRow key={row.key} index={index} icon={row.icon} text={row.text} />
+          ))}
         </ul>
 
         <Button
@@ -130,6 +145,23 @@ function ShapesIcon() {
       <rect x="2" y="2.5" width="7" height="7" rx="1" />
       <circle cx="14" cy="14" r="3.5" />
       <path d="M3 16 L8 11 L9 13 L12 10" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ScanIcon() {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="5" y="1.5" width="10" height="17" rx="2" />
+      <circle cx="10" cy="5.5" r="1" fill="currentColor" stroke="none" />
+      <path d="M8.5 15.5h3" />
     </svg>
   );
 }

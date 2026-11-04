@@ -3756,7 +3756,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.clearAllConfirmMessage':
     'This will remove all {count} cutouts. You can undo this action.',
   'binDesigner.editCutouts': 'Cut Editor',
-  'binDesigner.editCutoutsSubtitle': 'Draw rectangles, circles & pen paths',
+  'binDesigner.editCutoutsSubtitle': 'Draw shapes or scan a real tool',
   'binDesigner.cutoutEditor.done': 'Done',
   'binDesigner.cutoutEditor.title': 'Cutout Editor',
   'binDesigner.cutoutEditor.zoomIn': 'Zoom in',
@@ -3828,6 +3828,8 @@ const en: Record<string, string> = {
     'Select 3 or more matching cutouts to turn them into one repeat',
   'binDesigner.cutoutEditor.quickstart.navigate':
     'Navigate: scroll to zoom, Space-drag or middle-drag to pan, Ctrl+0 to fit',
+  'binDesigner.cutoutEditor.quickstart.scan':
+    'Scan (phone button): trace a real tool from a photo on your phone or this computer',
   'binDesigner.cutoutEditor.quickstart.dismiss': 'Got it',
   'binDesigner.quickstart.title': 'Design a custom bin',
   'binDesigner.quickstart.livePreview':

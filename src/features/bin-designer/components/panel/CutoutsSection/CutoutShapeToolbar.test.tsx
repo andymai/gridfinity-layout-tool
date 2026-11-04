@@ -311,6 +311,24 @@ describe('CutoutShapeToolbar', () => {
     fireEvent.click(screen.getByTitle('binDesigner.cutouts.scanImport.title'));
     expect(onScanWithPhone).toHaveBeenCalledOnce();
   });
+
+  it('does not claim K for scan in the vertical tooltip, since K arms the knife slot', () => {
+    render(
+      <CutoutShapeToolbar
+        mode={idleMode}
+        onSelectShape={vi.fn()}
+        snapEnabled={true}
+        onSnapToggle={vi.fn()}
+        {...gridSizeProps}
+        vertical
+        onScanWithPhone={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('binDesigner.cutouts.scanImport.title')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.cutouts.addKnifeSlot (K)')).toBeInTheDocument();
+    expect(screen.queryByText('binDesigner.cutouts.scanImport.title (K)')).toBeNull();
+  });
 });
 
 describe('CutoutShapeToolbar text tool', () => {
