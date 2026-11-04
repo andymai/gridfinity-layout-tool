@@ -35,6 +35,14 @@ describe('useLinkedDesignOverhangs', () => {
     expect(result.current.size).toBe(0);
   });
 
+  it('shares one map between callers, since the grid calls this once per bin', () => {
+    upsertRegistryEntry(makeRef('d1', { left: 61.5, right: 42, front: 0, back: 0 }));
+
+    const first = renderHook(() => useLinkedDesignOverhangs());
+    const second = renderHook(() => useLinkedDesignOverhangs());
+    expect(second.result.current).toBe(first.result.current);
+  });
+
   it('reads a design overhang off the registry as an enabled config', () => {
     upsertRegistryEntry(makeRef('d1', { left: 61.5, right: 42, front: 0, back: 0 }));
 
