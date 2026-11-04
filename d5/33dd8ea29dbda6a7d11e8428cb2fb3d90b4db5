@@ -1,0 +1,25 @@
+src/features/whats-new/entries.ts
+  s_fa6b1a192f3376::t_d0cdb3c41a6125 22
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_fa6b1a192f3376::t_07a2934dd0c629 249-252,256-260
+src/features/grid-editor/components/Grid/Bin/binPropsAreEqual.test.ts
+  s_fa6b1a192f3376::t_07a2934dd0c629 32-38
+src/features/grid-editor/components/Grid/Bin/binPropsAreEqual.ts
+  s_fa6b1a192f3376::t_d0cdb3c41a6125 47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d533dd8ea29dbda6a7d11e8428cb2fb3d90b4db5",
+  "prompts": {},
+  "sessions": {
+    "s_fa6b1a192f3376": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "78835baa-98ee-4035-90c0-fb29acee90ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
