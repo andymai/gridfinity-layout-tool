@@ -1,0 +1,91 @@
+src/i18n/locales/it.json
+  s_fa6b1a192f3376::t_1b1a02904a627a 2115,3807
+src/shared/utils/binSplitFit.test.ts
+  s_fa6b1a192f3376::t_56292bc2c1cf94 4,172-212
+  s_fa6b1a192f3376::t_368798450c2e3e 213
+src/features/bin-inspector/components/Inspector/SplitWarning/SplitWarning.test.tsx
+  s_fa6b1a192f3376::t_de17aeaa0bb039 29-41
+src/i18n/locales/pl.json
+  s_fa6b1a192f3376::t_1b1a02904a627a 2115,3807
+src/i18n/locales/ja.json
+  s_fa6b1a192f3376::t_1b1a02904a627a 2115,3807
+src/core/bedFit.ts
+  s_fa6b1a192f3376::t_a73e9177d33abd 1-28
+src/features/print-export/hooks/usePrintList.test.ts
+  s_fa6b1a192f3376::t_31d0ca09ced602 681-682,685,692-699
+  s_fa6b1a192f3376::t_947beec95f1006 700-701
+src/core/constants.ts
+  s_fa6b1a192f3376::t_e060f808b113c9 119-123
+  s_fa6b1a192f3376::t_f50005f7a111cb 3
+  s_fa6b1a192f3376::t_c6c0b3fe7b5d17 151-152,167,173-176
+src/i18n/locales/fr.json
+  s_fa6b1a192f3376::t_1b1a02904a627a 2115,3807
+src/features/bin-inspector/hooks/binInspectorTypes.ts
+  s_fa6b1a192f3376::t_31abc1f337717a 9,22
+src/i18n/locales/nl.json
+  s_fa6b1a192f3376::t_1b1a02904a627a 2115,3807
+src/i18n/locales/ka.json
+  s_fa6b1a192f3376::t_1b1a02904a627a 530,3768
+src/i18n/locales/sv.json
+  s_fa6b1a192f3376::t_1b1a02904a627a 2115,3807
+src/features/bin-designer/hooks/useExport.ts
+  s_fa6b1a192f3376::t_3eac9de94e39da 171-174,177,179
+  s_fa6b1a192f3376::t_73e804e4f2b88d 675
+  s_fa6b1a192f3376::t_3e18744be7d7d5 99-103
+  s_fa6b1a192f3376::t_61fc2ebbfef224 30
+  s_fa6b1a192f3376::t_b82de261e1d1e7 178,180,184,187
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_fa6b1a192f3376::t_31d0ca09ced602 640,645,667
+  s_fa6b1a192f3376::t_4364424aac04fd 695-709
+src/i18n/locales/es.json
+  s_fa6b1a192f3376::t_1b1a02904a627a 2115,3807
+src/i18n/locales/zh-CN.json
+  s_fa6b1a192f3376::t_1b1a02904a627a 2115,3807
+src/core/constants.test.ts
+  s_fa6b1a192f3376::t_56292bc2c1cf94 137-144,146-147,149-154
+  s_fa6b1a192f3376::t_ea67c9d7074bb7 145,148
+src/i18n/locales/nb.json
+  s_fa6b1a192f3376::t_1b1a02904a627a 2115,3807
+src/i18n/locales/cs.json
+  s_fa6b1a192f3376::t_1b1a02904a627a 2115,3807
+src/i18n/locales/en.ts
+  s_fa6b1a192f3376::t_1b1a02904a627a 567,4504-4505
+src/features/bin-inspector/components/Inspector/SplitWarning/SplitWarning.tsx
+  s_fa6b1a192f3376::t_31abc1f337717a 1,7,136-142
+src/features/bin-designer/components/ExportDialog/ExportDialog.test.tsx
+  s_fa6b1a192f3376::t_402addebe4fc7c 26,95,134,671,703-739,851
+src/core/bedFit.test.ts
+  s_fa6b1a192f3376::t_ef57533af8c79c 1-64
+src/shared/utils/binSplitFit.ts
+  s_fa6b1a192f3376::t_882ae24fb26fab 18
+  s_fa6b1a192f3376::t_60b739215867ee 68-120,135-136,142-143
+src/i18n/locales/pt-BR.json
+  s_fa6b1a192f3376::t_1b1a02904a627a 2115,3807
+src/i18n/locales/uk.json
+  s_fa6b1a192f3376::t_1b1a02904a627a 2115,3807
+src/features/bin-designer/hooks/useExport.test.ts
+  s_fa6b1a192f3376::t_c52c86788dc538 5-6,422-433
+  s_fa6b1a192f3376::t_0133a85b4fdff0 434-435
+src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
+  s_fa6b1a192f3376::t_b9288a65c0d631 89,96-99,129,368,370-375,378
+src/i18n/locales/de.json
+  s_fa6b1a192f3376::t_1b1a02904a627a 2115,3807
+src/i18n/locales/ko.json
+  s_fa6b1a192f3376::t_1b1a02904a627a 2115,3807
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "34905c8c93b34fff97e1bb4996b88f90ae895e8d",
+  "prompts": {},
+  "sessions": {
+    "s_fa6b1a192f3376": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "78835baa-98ee-4035-90c0-fb29acee90ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
