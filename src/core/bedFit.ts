@@ -21,8 +21,8 @@ export function fitsBedAtAnyAngle(
   const a = Math.max(bedWidthMm, bedDepthMm);
   const b = Math.min(bedWidthMm, bedDepthMm);
   if (p <= a && q <= b) return true;
-  // A square part is as wide at every angle as it is square-on, and the
-  // formula divides by p - q.
-  if (q > b || p === q) return false;
+  // Also what keeps p - q non-zero below: a square part that got past the line
+  // above has q > b.
+  if (q > b) return false;
   return ((a + b) / (p + q)) ** 2 + ((a - b) / (p - q)) ** 2 >= 2 - 1e-9;
 }

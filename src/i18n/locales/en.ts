@@ -359,7 +359,7 @@ const en: Record<string, string> = {
   'sidebar.heightUnitTooltip': 'Height of one vertical unit in mm (standard = 7mm)',
   'sidebar.printBed': 'Print bed',
   'sidebar.printBedTooltip':
-    'Bins wider than {maxWidth} or deeper than {maxDepth} will be split for printing',
+    'Bins wider than {maxWidth} or deeper than {maxDepth} are split for printing, unless they fit the bed diagonally',
   'sidebar.halfBinMode': 'Half-grid mode',
   'sidebar.bottom': 'Bottom',
   'sidebar.collapseLeftPanel': 'Collapse left panel',
@@ -3042,6 +3042,8 @@ const en: Record<string, string> = {
   'binDesigner.panel.viewAsScroll': 'Single scroll',
   'binDesigner.panel.viewAsRail': 'Compact sections',
   'binDesigner.printFit.fits': 'Fits your {width} × {depth} mm print bed.',
+  'binDesigner.printFit.fitsDiagonally':
+    'Fits your {width} × {depth} mm print bed laid diagonally. Turn it in your slicer.',
   'binDesigner.printFit.slantTooLarge':
     'This slanted bin is too big for your {width} \u00d7 {depth} mm print bed.',
   'binDesigner.slant.title': 'Slant',
