@@ -250,9 +250,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
           addToast(plan.message, 'error');
           return;
         }
-        batch(() => {
-          updateBin(bin.id, plan.updates);
-        });
+        if (!batch(() => isOk(updateBin(bin.id, plan.updates)))) return;
         if (plan.movedTo) {
           addToast(t('toast.rotateRepositioned', { distance: plan.movedTo.distance }), 'info');
         } else if (plan.halfTurnedInPlace) {

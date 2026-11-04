@@ -257,9 +257,7 @@ export function handleRotate(e: KeyboardEvent, ctx: KeyboardContext): boolean {
     return true;
   }
 
-  ctx.batch(() => {
-    ctx.updateBin(bin.id, plan.updates);
-  });
+  if (!ctx.batch(() => isOk(ctx.updateBin(bin.id, plan.updates)))) return true;
 
   if (plan.movedTo) {
     ctx.addToast(ctx.t('toast.rotateRepositioned', { distance: plan.movedTo.distance }), 'info');

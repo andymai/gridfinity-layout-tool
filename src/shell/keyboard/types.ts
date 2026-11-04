@@ -47,7 +47,7 @@ export interface KeyboardContext {
   batch: <T>(fn: () => T) => T;
   deleteBin: (id: BinId) => void;
   duplicateBin: (id: BinId) => Result<BinId, ValidationError | LayoutError>;
-  updateBin: (id: BinId, updates: Partial<Bin>) => void;
+  updateBin: (id: BinId, updates: Partial<Bin>) => Result<unknown, unknown>;
 
   // Mode toggles
   toggleHalfGridMode: () => Result<undefined, LayoutError>;

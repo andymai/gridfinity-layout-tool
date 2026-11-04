@@ -20,7 +20,7 @@ import { useBinOverhangSpan } from '@/shared/hooks/useBinOverhangSpan';
 import { maxClearanceHeight } from '@/shared/utils/restingStack';
 import { maxPlaceableHeight } from '@/shared/utils/validationPlacement';
 import { useRestingStack } from '@/shared/hooks/useRestingStack';
-import { isErr, getUserMessage } from '@/core/result';
+import { isErr, isOk, getUserMessage } from '@/core/result';
 import { canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
 import { clamp } from '@/shared/utils/math';
 import { isBinLocked, planBinRotation } from '@/shared/utils/binLocation';
@@ -433,9 +433,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     // Track rotation BEFORE executing (capture original dimensions)
     mlTracking.trackRotation(bin, 1);
 
-    batch(() => {
-      updateBin(bin.id, plan.updates);
-    });
+    if (!batch(() => isOk(updateBin(bin.id, plan.updates)))) return false;
 
     if (plan.movedTo) {
       addToast(t('toast.rotateRepositioned', { distance: plan.movedTo.distance }), 'info');

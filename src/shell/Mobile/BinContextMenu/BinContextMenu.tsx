@@ -122,13 +122,11 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
       return;
     }
 
-    batch(() => {
-      updateBin(bin.id, plan.updates);
-    });
+    const turned = batch(() => isOk(updateBin(bin.id, plan.updates)));
 
-    if (plan.movedTo) {
+    if (turned && plan.movedTo) {
       addToast(t('toast.rotateRepositioned', { distance: plan.movedTo.distance }), 'info');
-    } else if (plan.halfTurnedInPlace) {
+    } else if (turned && plan.halfTurnedInPlace) {
       addToast(t('toast.binHalfTurned'), 'info');
     }
 
