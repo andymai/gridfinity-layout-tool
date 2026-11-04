@@ -1,0 +1,21 @@
+src/i18n/locales/ko.json
+  s_169ca198965180::t_6c3eadf077cdc1 1011-1012
+src/i18n/locales/sv.json
+  s_169ca198965180::t_633654c39e132d 1011
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "781506dd712f1e0f48638f37bd2cfec2e9715cb0",
+  "prompts": {},
+  "sessions": {
+    "s_169ca198965180": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7cae772c-5519-4831-875c-a4d30af16b6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
