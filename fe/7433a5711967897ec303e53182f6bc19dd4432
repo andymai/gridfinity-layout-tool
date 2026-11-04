@@ -1,0 +1,33 @@
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanToolDialog.test.tsx
+  s_169ca198965180::t_b931d9c7b4bb3a 107,118
+src/features/bin-designer/components/panel/InteriorSection/InteriorModes.test.tsx
+  s_169ca198965180::t_e1452a32b52898 29,34-35,121-133
+  s_169ca198965180::t_c62303a44664c2 134
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.test.tsx
+  s_169ca198965180::t_e1452a32b52898 30-31,33-34,44-63
+  s_169ca198965180::t_ca74be51d28ba6 9,32
+  s_169ca198965180::t_f06641f85f3bc1 64
+src/features/bin-designer/utils/startScan.test.ts
+  s_169ca198965180::t_4aacd04e3ee564 1-81
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_169ca198965180::t_1453f8bbc572af 242-244
+src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.test.tsx
+  s_169ca198965180::t_cbbf8daea98c06 2,70-78
+  s_169ca198965180::t_14ba59faba3ba8 79-80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fe7433a5711967897ec303e53182f6bc19dd4432",
+  "prompts": {},
+  "sessions": {
+    "s_169ca198965180": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7cae772c-5519-4831-875c-a4d30af16b6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
