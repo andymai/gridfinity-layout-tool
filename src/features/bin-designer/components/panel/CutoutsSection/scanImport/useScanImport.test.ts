@@ -261,6 +261,27 @@ describe('useScanImport', () => {
       expect(mockSetParams).toHaveBeenCalledOnce();
     });
 
+    it('grows for a traced path with a vertex before the origin', () => {
+      mockGrowBin = true;
+      const corner = (x: number, y: number) => ({
+        x,
+        y,
+        handleIn: null,
+        handleOut: null,
+        symmetric: false,
+      });
+      const { result } = renderHook(() => useScanImport());
+      result.current.addScanCutouts([
+        spec({
+          shape: 'path',
+          width: 150,
+          depth: 30,
+          path: [corner(0, -0.4), corner(150, 0), corner(150, 30), corner(0, 30)],
+        }),
+      ]);
+      expect(mockSetParams).toHaveBeenCalledOnce();
+    });
+
     it('leaves a bin it was not started for at its size', () => {
       const { result } = renderHook(() => useScanImport());
       result.current.addScanCutouts([spec({ width: 150, depth: 30 })]);

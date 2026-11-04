@@ -18,4 +18,12 @@ describe('useScanDialogFollowsWorkspace', () => {
     rerender({ shown: false });
     expect(useDesignerStore.getState().ui.scanDialogSource).toBeNull();
   });
+
+  it('closes the dialog when the designer is left', () => {
+    useDesignerStore.getState().openScanDialog('palette', true);
+    const { unmount } = renderHook(() => useScanDialogFollowsWorkspace(true));
+    unmount();
+    expect(useDesignerStore.getState().ui.scanDialogSource).toBeNull();
+    expect(useDesignerStore.getState().ui.growBinForScan).toBe(false);
+  });
 });

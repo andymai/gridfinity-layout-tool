@@ -9,12 +9,13 @@ import { useEffect, useRef } from 'react';
 import { useToastStore } from '@/core/store/toast';
 import { useScanLaunchStore, type ScanLaunchSource } from '@/core/store/scanLaunch';
 import { getStaticTranslation } from '@/i18n';
-import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
+import { dispatchSyntheticPopstate, useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { canStartScan, startScan } from '@/features/bin-designer/utils/startScan';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { settleDesignSaves } from './designSaveGate';
+import { useVariantContext } from './useVariantContext';
 
 /** A request older than this is from a navigation that never arrived; drop it. */
 export const SCAN_LAUNCH_STALE_MS = 15_000;
@@ -24,6 +25,9 @@ export function useScanLaunchBridge(): void {
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
   const { syncUrlToDesign } = useDesignerRouting();
   const { isDesktop } = useResponsive();
+  // A variant's params are its parent's to change (the panel is locked for the
+  // same reason), so a scan never lands in one; it starts a new bin instead.
+  const variant = useVariantContext(currentDesignId);
   const busy = useRef(false);
   // A new bin takes two steps: `newDesign()` clears the id, and the scan opens
   // once init assigns the fresh one, so auto-save tracks the bin it lands in.
@@ -66,12 +70,12 @@ export function useScanLaunchBridge(): void {
       useScanLaunchStore.getState().takeRequest();
       return;
     }
-    if (currentDesignId === null) return;
+    if (currentDesignId === null || variant.isLoading) return;
     const taken = useScanLaunchStore.getState().takeRequest();
     if (!taken || Date.now() - taken.requestedAt > SCAN_LAUNCH_STALE_MS || !isDesktop) return;
 
     const { itemKind, params } = useDesignerStore.getState();
-    if (!taken.newBin && itemKind === 'bin' && canStartScan(params)) {
+    if (!taken.newBin && itemKind === 'bin' && !variant.isVariant && canStartScan(params)) {
       startScan(taken.source);
       return;
     }
@@ -92,6 +96,9 @@ export function useScanLaunchBridge(): void {
       awaitingNewBin.current = { source: taken.source, since: Date.now() };
       useDesignerStore.getState().newDesign();
       syncUrlToDesign(null);
+      // Each routing hook keeps its own copy of the URL; init's copy has to
+      // drop the old id too, or it waits on that id and never makes the bin.
+      dispatchSyntheticPopstate();
     });
-  }, [request, currentDesignId, isDesktop, syncUrlToDesign]);
+  }, [request, currentDesignId, isDesktop, syncUrlToDesign, variant.isLoading, variant.isVariant]);
 }

@@ -14,4 +14,6 @@ export function useScanDialogFollowsWorkspace(workspaceShown: boolean): void {
   useEffect(() => {
     if (scanDialogOpen && !workspaceShown) closeScanDialog();
   }, [scanDialogOpen, workspaceShown, closeScanDialog]);
+  // Leaving the designer (Back, another tool) takes the dialog with it.
+  useEffect(() => closeScanDialog, [closeScanDialog]);
 }

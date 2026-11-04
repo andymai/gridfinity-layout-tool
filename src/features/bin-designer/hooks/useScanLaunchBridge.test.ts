@@ -9,6 +9,10 @@ vi.mock('./designSaveGate', () => ({
   settleDesignSaves: vi.fn(async () => gate.saved),
 }));
 const viewport = vi.hoisted(() => ({ isDesktop: true }));
+const variant = vi.hoisted(() => ({ isVariant: false, isLoading: false }));
+vi.mock('./useVariantContext', () => ({
+  useVariantContext: () => ({ ...variant, reload: () => {} }),
+}));
 vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({ isDesktop: viewport.isDesktop }),
 }));
@@ -23,6 +27,8 @@ describe('useScanLaunchBridge', () => {
     useScanLaunchStore.setState({ request: null });
     gate.saved = true;
     viewport.isDesktop = true;
+    variant.isVariant = false;
+    variant.isLoading = false;
   });
 
   it('scans into the open bin when asked from inside the designer', () => {
@@ -36,6 +42,16 @@ describe('useScanLaunchBridge', () => {
     expect(s.ui.scanDialogSource).toBe('palette');
     expect(s.ui.growBinForScan).toBe(false);
     expect(s.params.style).toBe('solid');
+  });
+
+  it('starts a new bin rather than scanning into a variant', async () => {
+    variant.isVariant = true;
+    openDesign('variant');
+    renderHook(() => useScanLaunchBridge());
+
+    act(() => useScanLaunchStore.getState().requestScan('whats_new', false));
+    await waitFor(() => expect(useDesignerStore.getState().currentDesignId).toBeNull());
+    expect(useDesignerStore.getState().ui.scanDialogSource).toBeNull();
   });
 
   it('waits for a design to load, then starts a new bin that grows to fit', async () => {
