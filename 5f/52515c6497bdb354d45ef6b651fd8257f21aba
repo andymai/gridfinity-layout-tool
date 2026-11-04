@@ -1,0 +1,27 @@
+src/features/bin-designer/hooks/useScanDialogFollowsWorkspace.test.ts
+  s_169ca198965180::t_ddbace0640a4f3 1-21
+src/features/bin-designer/hooks/useScanLaunchBridge.test.ts
+  s_169ca198965180::t_ddbace0640a4f3 70-90,105,113,116
+src/features/bin-designer/hooks/useScanDialogFollowsWorkspace.ts
+  s_169ca198965180::t_ddbace0640a4f3 1-17
+src/features/bin-designer/components/DesignerPage/DesignerPage.tsx
+  s_169ca198965180::t_ddbace0640a4f3 28,101
+src/features/bin-designer/hooks/useScanLaunchBridge.ts
+  s_169ca198965180::t_ddbace0640a4f3 16,50-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5f52515c6497bdb354d45ef6b651fd8257f21aba",
+  "prompts": {},
+  "sessions": {
+    "s_169ca198965180": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7cae772c-5519-4831-875c-a4d30af16b6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
