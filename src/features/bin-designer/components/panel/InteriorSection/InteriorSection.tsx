@@ -103,20 +103,24 @@ export function InteriorSection() {
             </Badge>
           ) : undefined,
       }))}
+      // A blocked mode greys out its own controls; scanning switches away from
+      // it, so the link stays live.
+      ungated={
+        offerScanLink ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-accent"
+            leftIcon={<ScanToolIcon size="xs" />}
+            onClick={() => startScan('interior_link')}
+            data-help-target={SCAN_TOOL_TARGET}
+          >
+            {t('binDesigner.interior.scanLink')}
+          </Button>
+        ) : undefined
+      }
     >
-      {offerScanLink && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start text-accent"
-          leftIcon={<ScanToolIcon size="xs" />}
-          onClick={() => startScan('interior_link')}
-          data-help-target={SCAN_TOOL_TARGET}
-        >
-          {t('binDesigner.interior.scanLink')}
-        </Button>
-      )}
       <InteriorModeContent card={state.card} />
     </ModeTiles>
   );

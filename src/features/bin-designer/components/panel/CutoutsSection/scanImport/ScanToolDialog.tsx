@@ -82,8 +82,11 @@ export function ScanToolDialog({ open, onClose, onImport, source }: ScanToolDial
     (route === 'phone' ? backButtonRef : phoneCardRef).current?.focus();
   }, [route]);
 
+  // Counted on the closed-to-open edge only, with the source it opened from.
+  const wasOpen = useRef(false);
   useEffect(() => {
-    if (open) trackEvent('scan_opened', { source });
+    if (open && !wasOpen.current) trackEvent('scan_opened', { source });
+    wasOpen.current = open;
   }, [open, source]);
 
   // A scan can arrive mid scale-confirm; read the live stage from a ref (the

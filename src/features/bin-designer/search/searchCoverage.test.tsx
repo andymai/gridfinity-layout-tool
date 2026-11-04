@@ -17,6 +17,7 @@ const ALL_AVAILABLE: ControlAvailabilityContext = {
   viewMode: 'rail',
   slideTrayEnabled: true,
   slantVisible: true,
+  scanAvailable: true,
 };
 
 const GOLDEN: { query: string; expect: string[] }[] = [

@@ -4,7 +4,7 @@ import type { BinParams, ScanSource } from '@/features/bin-designer/types';
 
 /** The params a scan runs on: the bin as Custom Cutouts, switched if it isn't already. */
 function asCustomCutouts(params: BinParams): BinParams {
-  if (params.style === 'solid') return params;
+  if (params.style === 'solid' && params.base.solid) return params;
   return resolveConstraints(params, { feature: 'style.solid', enabled: true }).params;
 }
 
