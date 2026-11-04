@@ -1,0 +1,37 @@
+src/features/generation/worker/generators/__kernel-tests__/labelSocketClearance.ts
+  s_fa6b1a192f3376::t_13423f1dbb7f3c 19,144-185
+  s_fa6b1a192f3376::t_c78140f8ed2814 21,186-210
+  s_fa6b1a192f3376::t_ca634e44dbdb8a 211
+src/shared/generation/meshPersistence.ts
+  s_fa6b1a192f3376::t_c78140f8ed2814 94-95
+  s_fa6b1a192f3376::t_8f60f1e77cd89b 126
+src/features/generation/worker/generators/labelSocketKeepouts.test.ts
+  s_fa6b1a192f3376::t_8f60f1e77cd89b 4-5,66-112
+  s_fa6b1a192f3376::t_bf2e255f3a2e31 113-115
+src/features/generation/worker/generators/interiorFilletBuilder.ts
+  s_fa6b1a192f3376::t_8f60f1e77cd89b 55,341-345
+src/features/generation/worker/generators/labelSocketKeepouts.ts
+  s_fa6b1a192f3376::t_8f60f1e77cd89b 5,9-11,60-99
+  s_fa6b1a192f3376::t_7f6fafe1a2f8ca 100-101
+src/features/generation/worker/generators/scenarios/labelSockets.ts
+  s_fa6b1a192f3376::t_13423f1dbb7f3c 34,449-465
+  s_fa6b1a192f3376::t_46ae95136dd552 466
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.labelSockets.test.ts.snap
+  s_fa6b1a192f3376::t_d578ad88a54b73 42-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1cf49ee9b373d594df0ff0526d9995f255cd48ad",
+  "prompts": {},
+  "sessions": {
+    "s_fa6b1a192f3376": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "78835baa-98ee-4035-90c0-fb29acee90ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
