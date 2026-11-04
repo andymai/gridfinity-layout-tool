@@ -3610,8 +3610,11 @@ const en: Record<string, string> = {
   'binDesigner.importedMesh.exportStl': 'Export STL',
   'binDesigner.importedMesh.export3mf': '3MF',
   'binDesigner.importedMesh.exportFailed': 'Export failed. Try again',
-  'binDesigner.cutouts.scanImport.title': 'Scan with your phone',
+  'binDesigner.cutouts.scanImport.title': 'Scan a tool',
   'binDesigner.cutouts.scanImport.buttonLabel': 'Scan',
+  'binDesigner.cutouts.scanImport.routePhone': 'With your phone',
+  'binDesigner.cutouts.scanImport.routePhoneHelp':
+    'Scan a QR code, then photograph the tool with your phone.',
   'binDesigner.cutouts.scanImport.hint':
     'Photograph an object on a plain background to trace its outline, or upload a traced outline below.',
   'binDesigner.cutouts.scanImport.upload': 'Upload outline (SVG)',
@@ -3646,16 +3649,14 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.scanImport.previewAlt': 'Traced outline preview',
   'binDesigner.cutouts.scanImport.qrAlt': 'QR code to open the scanner on your phone',
   'binDesigner.cutouts.scanImport.waiting': 'Waiting for your photo…',
-  'binDesigner.cutouts.scanImport.or': 'or',
   'binDesigner.cutouts.scanImport.unavailable':
     'Phone scanning isn’t available right now. Upload a traced outline instead.',
   'binDesigner.cutouts.scanImport.expired':
     'This scan link expired. Close and reopen to try again.',
-  'binDesigner.cutouts.scanImport.emptyCta': 'Scan a real tool with your phone',
   'binDesigner.cutouts.scanImport.emptyHelp':
     'Photograph any tool to trace its exact outline automatically.',
   'binDesigner.cutouts.traceView.title': 'Trace a photo',
-  'binDesigner.cutouts.traceView.open': 'Trace a photo on this computer',
+  'binDesigner.cutouts.traceView.open': 'From a photo on this computer',
   'binDesigner.cutouts.traceView.openHelp':
     'Use a photo you already have. It never leaves this computer.',
   'binDesigner.cutouts.traceView.drop.title': 'Drop a photo of your tools here',
@@ -3829,7 +3830,7 @@ const en: Record<string, string> = {
   'binDesigner.cutoutEditor.quickstart.navigate':
     'Navigate: scroll to zoom, Space-drag or middle-drag to pan, Ctrl+0 to fit',
   'binDesigner.cutoutEditor.quickstart.scan':
-    'Scan (phone button): trace a real tool from a photo on your phone or this computer',
+    'Scan a tool: trace a real tool from a photo on your phone or this computer',
   'binDesigner.cutoutEditor.quickstart.dismiss': 'Got it',
   'binDesigner.quickstart.title': 'Design a custom bin',
   'binDesigner.quickstart.livePreview':
@@ -4211,7 +4212,7 @@ const en: Record<string, string> = {
   'binDesigner.interior.slotted.description': 'Slots for insertable dividers',
   'binDesigner.interior.solid.title': 'Custom Cutouts',
   'binDesigner.interior.solid.description':
-    'Top-cut tool-shaped recesses: draw them or scan a real tool with your phone.',
+    'Top-cut tool-shaped recesses: draw them or scan a real tool.',
   'binDesigner.resetView': 'Reset view (R)',
   'binDesigner.toggleWireframe': 'Toggle wireframe (W)',
   'binDesigner.changePreviewColor': 'Change preview color',

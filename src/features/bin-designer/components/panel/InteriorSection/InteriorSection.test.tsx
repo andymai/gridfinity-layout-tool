@@ -89,9 +89,7 @@ describe('InteriorSection', () => {
   it('offers the scan clip on Custom Cutouts only where the Cut Editor opens', () => {
     view.card = 'solid';
     const { unmount } = render(<InteriorSection />);
-    expect(
-      screen.getByRole('button', { name: 'Watch a clip: Scan with your phone' })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Watch a clip: Scan a tool' })).toBeInTheDocument();
     unmount();
 
     view.isDesktop = false;

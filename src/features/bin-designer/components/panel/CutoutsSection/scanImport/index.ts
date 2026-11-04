@@ -1,4 +1,4 @@
-export { ScanWithPhoneDialog } from './ScanWithPhoneDialog';
+export { ScanToolDialog } from './ScanToolDialog';
 export { useScanImport } from './useScanImport';
 export type { UseScanImportReturn } from './useScanImport';
 export { parseScanSvg, computeScanBounds, rescaleToLongestMm } from './scanIngest';

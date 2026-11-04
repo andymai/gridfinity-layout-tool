@@ -1,14 +1,15 @@
 /**
- * "Scan with your phone" dialog.
+ * "Scan a tool" dialog.
  *
- * Shows a QR code that opens the phone capture page; when the phone uploads a
- * traced outline it arrives here and moves to the scale-confirm step. A manual
- * SVG upload is always offered as a fallback. The outline carries no real-world
- * scale, so the user confirms the longest side in mm before it becomes a cutout.
+ * Opens on a choice of route: the phone (a QR code to the capture page, whose
+ * uploads arrive here) or a photo on this computer (Trace a photo). A manual
+ * SVG upload is always offered as a fallback. An outline without real-world
+ * scale goes through a scale-confirm step before it becomes a cutout.
  */
 
 import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Dialog, Button, Input, Spinner } from '@/design-system';
+import { ArrowLeftIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { trackEvent } from '@/shared/analytics/posthog';
@@ -19,12 +20,13 @@ import { isOk } from '@/core/result';
 import { MAX_SVG_FILE_SIZE, type ParsedCutoutSpec } from '../svgImport/types';
 import { parseScanSvg, rescaleToLongestMm, type ParsedScan } from './scanIngest';
 import { useScanImport } from './useScanImport';
-import { useScanSession } from './useScanSession';
+import { useScanSession, type ScanSessionState } from './useScanSession';
 import { ScanQrCode } from './ScanQrCode';
+import { ScanRouteChoice } from './ScanRouteChoice';
 import { buildCalibrationSheetSvg, CALIBRATION_SHEET_FILENAME } from './calibrationSheetSvg';
 import { buildMeasuringStripsSvg, MEASURING_STRIPS_FILENAME } from './measuringStripsSvg';
 
-interface ScanWithPhoneDialogProps {
+interface ScanToolDialogProps {
   /**
    * Replaces the default commit into the bin's cutout list. Returns how many
    * specs were consumed (drives the success toast). The Workshop uses this
@@ -51,30 +53,7 @@ type Stage =
 
 const round1 = (n: number): number => Math.round(n * 10) / 10;
 
-function PrivacyHint({ text }: { readonly text: string }) {
-  return (
-    <span className="flex items-center justify-center gap-1.5 text-label text-content-tertiary">
-      <svg
-        width="12"
-        height="12"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-        className="shrink-0"
-      >
-        <rect x="3" y="11" width="18" height="11" rx="2" />
-        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-      </svg>
-      {text}
-    </span>
-  );
-}
-
-export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDialogProps) {
+export function ScanToolDialog({ open, onClose, onImport }: ScanToolDialogProps) {
   const t = useTranslation();
   const addToast = useToastStore((s) => s.addToast);
   const { addScanCutouts: addToCutouts } = useScanImport();
@@ -84,6 +63,10 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
   const [stage, setStage] = useState<Stage>({ kind: 'awaiting' });
   const [added, setAdded] = useState(0);
   const [tracing, setTracing] = useState(false);
+  const [route, setRoute] = useState<'choose' | 'phone'>('choose');
+  // Latched once the phone route is picked, so going Back to the choice keeps
+  // the session polling: a phone already on the capture page can still deliver.
+  const [phoneStarted, setPhoneStarted] = useState(false);
 
   // A scan can arrive mid scale-confirm; read the live stage from a ref (the
   // poll fires outside render) and hold the latecomer until we're back to
@@ -111,6 +94,8 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
     setStage({ kind: 'awaiting' });
     setAdded(0);
     setTracing(false);
+    setRoute('choose');
+    setPhoneStarted(false);
     pendingScanRef.current = null;
     onClose();
   }, [onClose]);
@@ -217,9 +202,10 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
     setStage({ kind: 'awaiting' });
   }, [stage, addScanCutouts, addToast, t]);
 
-  // One handoff session for the dialog's lifetime so several tools can be
-  // scanned in a row; the scale-confirm step pauses on its own UI, not the poll.
-  const scan = useScanSession(open, ingestSvg);
+  // One handoff session from picking the phone route until the dialog closes,
+  // so several tools can be scanned in a row; the scale-confirm step pauses on
+  // its own UI, not the poll.
+  const scan = useScanSession(open && phoneStarted, ingestSvg);
 
   const targetMm = stage.kind === 'review' ? parseFloat(stage.targetText) : NaN;
   const targetValid = Number.isFinite(targetMm) && targetMm > 0;
@@ -256,66 +242,29 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
                   )}
                 </p>
               )}
-              {scan.phase === 'unavailable' || scan.phase === 'expired' ? (
-                <p className="text-sm text-content-secondary">
-                  {t(
-                    scan.phase === 'expired'
-                      ? 'binDesigner.cutouts.scanImport.expired'
-                      : 'binDesigner.cutouts.scanImport.unavailable'
-                  )}
-                </p>
-              ) : scan.phase === 'waiting' && scan.url ? (
-                <>
-                  <ScanQrCode url={scan.url} alt={t('binDesigner.cutouts.scanImport.qrAlt')} />
-                  <p className="text-sm text-content-secondary">
-                    {t('binDesigner.cutouts.scanImport.hint')}
-                  </p>
-                  {/* Fallback if the QR can't be scanned/rendered: the link itself. */}
-                  <p className="max-w-full break-all font-mono text-micro text-content-tertiary">
-                    {scan.url}
-                  </p>
-                  <p className="flex items-center gap-2 text-xs text-content-tertiary">
-                    <Spinner size="sm" />
-                    {t('binDesigner.cutouts.scanImport.waiting')}
-                  </p>
-                  <div className="flex w-full flex-col items-center gap-1 rounded-lg border border-stroke-subtle bg-surface-elevated px-3 py-2.5">
-                    <Button type="button" variant="ghost" size="sm" onClick={handleDownloadSheet}>
-                      {t('binDesigner.cutouts.scanImport.calibrationSheet')}
-                    </Button>
-                    <p className="text-xs text-content-tertiary">
-                      {t('binDesigner.cutouts.scanImport.calibrationSheetHelp')}
-                    </p>
-                    <Button type="button" variant="ghost" size="sm" onClick={handleDownloadStrips}>
-                      {t('binDesigner.cutouts.scanImport.measuringStrips')}
-                    </Button>
-                    <p className="text-xs text-content-tertiary">
-                      {t('binDesigner.cutouts.scanImport.measuringStripsHelp')}
-                    </p>
-                  </div>
-                  <PrivacyHint text={t('scan.capture.privacy')} />
-                </>
+              {route === 'choose' ? (
+                <ScanRouteChoice
+                  onPhone={() => {
+                    setPhoneStarted(true);
+                    setRoute('phone');
+                  }}
+                  onComputer={() => setTracing(true)}
+                />
               ) : (
-                <p className="flex items-center gap-2 py-6 text-sm text-content-secondary">
-                  <Spinner size="sm" />
-                  {t('binDesigner.cutouts.scanImport.waiting')}
-                </p>
+                <ScanPhoneRoute
+                  scan={scan}
+                  onBack={() => setRoute('choose')}
+                  onDownloadSheet={handleDownloadSheet}
+                  onDownloadStrips={handleDownloadStrips}
+                />
               )}
-
-              <div className="flex w-full items-center gap-3 text-xs text-content-tertiary">
-                <span className="h-px flex-1 bg-stroke-subtle" />
-                {t('binDesigner.cutouts.scanImport.or')}
-                <span className="h-px flex-1 bg-stroke-subtle" />
-              </div>
-
-              <div className="flex w-full flex-col items-center gap-1">
-                <Button type="button" variant="secondary" onClick={() => setTracing(true)}>
-                  {t('binDesigner.cutouts.traceView.open')}
-                </Button>
-                <p className="text-xs text-content-tertiary">
-                  {t('binDesigner.cutouts.traceView.openHelp')}
-                </p>
-              </div>
-              <Button type="button" variant="ghost" onClick={() => fileInputRef.current?.click()}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                className="text-content-tertiary"
+              >
                 {t('binDesigner.cutouts.scanImport.upload')}
               </Button>
               <input
@@ -412,5 +361,97 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
         </Suspense>
       )}
     </>
+  );
+}
+
+interface ScanPhoneRouteProps {
+  readonly scan: ScanSessionState;
+  readonly onBack: () => void;
+  readonly onDownloadSheet: () => void;
+  readonly onDownloadStrips: () => void;
+}
+
+function ScanPhoneRoute({ scan, onBack, onDownloadSheet, onDownloadStrips }: ScanPhoneRouteProps) {
+  const t = useTranslation();
+  return (
+    <>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={onBack}
+        leftIcon={<ArrowLeftIcon size="xs" />}
+        className="self-start"
+      >
+        {t('binDesigner.cutouts.scanImport.back')}
+      </Button>
+      {scan.phase === 'unavailable' || scan.phase === 'expired' ? (
+        <p className="text-sm text-content-secondary">
+          {t(
+            scan.phase === 'expired'
+              ? 'binDesigner.cutouts.scanImport.expired'
+              : 'binDesigner.cutouts.scanImport.unavailable'
+          )}
+        </p>
+      ) : scan.phase === 'waiting' && scan.url ? (
+        <>
+          <ScanQrCode url={scan.url} alt={t('binDesigner.cutouts.scanImport.qrAlt')} />
+          <p className="text-sm text-content-secondary">
+            {t('binDesigner.cutouts.scanImport.hint')}
+          </p>
+          {/* Fallback if the QR can't be scanned/rendered: the link itself. */}
+          <p className="max-w-full break-all font-mono text-micro text-content-tertiary">
+            {scan.url}
+          </p>
+          <p className="flex items-center gap-2 text-xs text-content-tertiary">
+            <Spinner size="sm" />
+            {t('binDesigner.cutouts.scanImport.waiting')}
+          </p>
+          <div className="flex w-full flex-col items-center gap-1 rounded-lg border border-stroke-subtle bg-surface-elevated px-3 py-2.5">
+            <Button type="button" variant="ghost" size="sm" onClick={onDownloadSheet}>
+              {t('binDesigner.cutouts.scanImport.calibrationSheet')}
+            </Button>
+            <p className="text-xs text-content-tertiary">
+              {t('binDesigner.cutouts.scanImport.calibrationSheetHelp')}
+            </p>
+            <Button type="button" variant="ghost" size="sm" onClick={onDownloadStrips}>
+              {t('binDesigner.cutouts.scanImport.measuringStrips')}
+            </Button>
+            <p className="text-xs text-content-tertiary">
+              {t('binDesigner.cutouts.scanImport.measuringStripsHelp')}
+            </p>
+          </div>
+          <PrivacyHint text={t('scan.capture.privacy')} />
+        </>
+      ) : (
+        <p className="flex items-center gap-2 py-6 text-sm text-content-secondary">
+          <Spinner size="sm" />
+          {t('binDesigner.cutouts.scanImport.waiting')}
+        </p>
+      )}
+    </>
+  );
+}
+
+function PrivacyHint({ text }: { readonly text: string }) {
+  return (
+    <span className="flex items-center justify-center gap-1.5 text-label text-content-tertiary">
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className="shrink-0"
+      >
+        <rect x="3" y="11" width="18" height="11" rx="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+      {text}
+    </span>
   );
 }

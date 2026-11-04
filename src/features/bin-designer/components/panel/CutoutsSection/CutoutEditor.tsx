@@ -10,7 +10,7 @@ import { GroupBreadcrumb } from '../../CutoutWorkspace/GroupBreadcrumb';
 import { CutoutCanvas3D } from './renderer';
 import { CutoutShapeToolbar } from './CutoutShapeToolbar';
 import { StlImportDialog } from './stlImport';
-import { ScanWithPhoneDialog } from './scanImport';
+import { ScanToolDialog } from './scanImport';
 import { ToolThicknessPrompt } from './ToolThicknessPrompt';
 import { CutoutPropertyPanel } from './CutoutPropertyPanel';
 import { AlignmentToolbar } from './AlignmentToolbar';
@@ -97,10 +97,10 @@ export function CutoutEditor() {
         onGridSizeChange={setGridSize}
         onImportSvg={triggerSvgImport}
         onImportStl={stlImport.triggerImport}
-        onScanWithPhone={() => setScanDialogOpen(true)}
+        onScanTool={() => setScanDialogOpen(true)}
       />
 
-      <ScanWithPhoneDialog open={scanDialogOpen} onClose={() => setScanDialogOpen(false)} />
+      <ScanToolDialog open={scanDialogOpen} onClose={() => setScanDialogOpen(false)} />
 
       <StlImportDialog
         pending={stlImport.pending}
@@ -133,7 +133,7 @@ export function CutoutEditor() {
         onContextMenu={handleContextMenu}
       >
         {showsEmptyBoardHint(cutouts.length, mode) && (
-          <CutoutEmptyState variant="sidebar" onScanWithPhone={() => setScanDialogOpen(true)} />
+          <CutoutEmptyState variant="sidebar" onScanTool={() => setScanDialogOpen(true)} />
         )}
         <CutoutCanvas3D
           cutouts={cutouts}

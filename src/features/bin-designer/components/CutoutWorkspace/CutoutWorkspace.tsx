@@ -43,7 +43,7 @@ import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
 import { useSvgImport } from '../panel/CutoutsSection/svgImport';
 import { useSvgExport } from '../panel/CutoutsSection/svgExport';
 import { useStlImport, StlImportDialog } from '../panel/CutoutsSection/stlImport';
-import { ScanWithPhoneDialog } from '../panel/CutoutsSection/scanImport';
+import { ScanToolDialog } from '../panel/CutoutsSection/scanImport';
 import { ToolThicknessPrompt } from '../panel/CutoutsSection/ToolThicknessPrompt';
 import { useAddFingerAccess } from '../panel/CutoutsSection/useAddFingerAccess';
 import type { RulerMeasurement } from '../panel/CutoutsSection/handlers/rulerHandler';
@@ -738,12 +738,12 @@ export function CutoutWorkspace() {
               // board they would report success and add the shape to a part the
               // canvas is not showing.
               onImportStl={isLid ? undefined : stlImport.triggerImport}
-              onScanWithPhone={!isLid ? () => setScanDialogOpen(true) : undefined}
+              onScanTool={!isLid ? () => setScanDialogOpen(true) : undefined}
             />
           </div>
         </div>
 
-        <ScanWithPhoneDialog open={scanDialogOpen} onClose={() => setScanDialogOpen(false)} />
+        <ScanToolDialog open={scanDialogOpen} onClose={() => setScanDialogOpen(false)} />
 
         <StlImportDialog
           pending={stlImport.pending}
@@ -785,7 +785,7 @@ export function CutoutWorkspace() {
               {showsEmptyBoardHint(cutouts.length, mode) && (
                 <CutoutEmptyState
                   variant="workspace"
-                  onScanWithPhone={!isLid ? () => setScanDialogOpen(true) : undefined}
+                  onScanTool={!isLid ? () => setScanDialogOpen(true) : undefined}
                 />
               )}
               <ToolThicknessPrompt placement="chip" onFocusTools={(ids) => selectIds(ids, false)} />

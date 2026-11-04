@@ -8,6 +8,7 @@
 import type { ReactNode } from 'react';
 import { useEffect, useRef } from 'react';
 import { Button } from '@/design-system';
+import { ScanToolIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 
 interface CutoutQuickstartOverlayProps {
@@ -31,7 +32,13 @@ export function CutoutQuickstartOverlay({
         text: t('binDesigner.cutoutEditor.quickstart.shapes'),
       },
       ...(showScan
-        ? [{ key: 'scan', icon: <ScanIcon />, text: t('binDesigner.cutoutEditor.quickstart.scan') }]
+        ? [
+            {
+              key: 'scan',
+              icon: <ScanToolIcon size="md" />,
+              text: t('binDesigner.cutoutEditor.quickstart.scan'),
+            },
+          ]
         : []),
       {
         key: 'select',
@@ -145,23 +152,6 @@ function ShapesIcon() {
       <rect x="2" y="2.5" width="7" height="7" rx="1" />
       <circle cx="14" cy="14" r="3.5" />
       <path d="M3 16 L8 11 L9 13 L12 10" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function ScanIcon() {
-  return (
-    <svg
-      viewBox="0 0 20 20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="5" y="1.5" width="10" height="17" rx="2" />
-      <circle cx="10" cy="5.5" r="1" fill="currentColor" stroke="none" />
-      <path d="M8.5 15.5h3" />
     </svg>
   );
 }
