@@ -15,8 +15,7 @@
  *  - **A unit with any locked member never moves.** The lock is documented as
  *    "cannot be moved", and moving the rest of the group around a pinned member
  *    would tear the group apart. Align and distribute still let such a unit
- *    anchor the bounds; auto-arrange re-packs around it without reserving its
- *    footprint, so a locked unit can end up overlapped.
+ *    anchor the bounds, and auto-arrange packs around them.
  *
  * Bounds are the *rotated* silhouette. A group's box is meaningless otherwise,
  * and every consumer expresses a move as a translation, so the unrotated
