@@ -101,7 +101,6 @@ export function planLabelShelfKeepouts(
   });
 }
 
-/** Everything the interior fillet has to leave empty around a bin's label tabs. */
 export function planLabelTabKeepouts(
   params: BinParams,
   innerW: number,
@@ -115,7 +114,6 @@ export function planLabelTabKeepouts(
   ];
 }
 
-/** Identifies the keepouts for a cache key: their placement is what the fillet's cut depends on. */
 export function labelTabKeepoutsKey(keepouts: readonly LabelSocketKeepout[]): string {
   return stableSerialize(
     keepouts.map((k) => [

@@ -123,7 +123,6 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...pathfinderOps,
   ...lightweight,
   ...labelSockets,
-  ...labelTabFillet,
   ...wallPatterns,
   ...kumikoPatterns,
   ...kumikoWrapping,
@@ -153,4 +152,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...cutoutFingerAccess,
   ...cutoutSplitPockets,
   ...cutoutIslands,
+  ...labelTabFillet,
 ];
